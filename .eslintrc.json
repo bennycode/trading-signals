@@ -1,0 +1,87 @@
+{
+  "env": {
+    "browser": true,
+    "node": true
+  },
+  "extends": ["prettier"],
+  "parser": "@typescript-eslint/parser",
+  "parserOptions": {
+    "ecmaFeatures": {
+      "jsx": true
+    },
+    "ecmaVersion": 8,
+    "project": "./tsconfig.json",
+    "sourceType": "module"
+  },
+  "plugins": ["@typescript-eslint", "typescript-sort-keys", "prettier"],
+  "rules": {
+    "@typescript-eslint/array-type": "error",
+    "@typescript-eslint/consistent-type-assertions": "error",
+    "@typescript-eslint/explicit-function-return-type": "error",
+    "@typescript-eslint/member-ordering": [
+      "error",
+      {
+        "default": [
+          "public-instance-field",
+          "private-instance-field",
+          "public-constructor",
+          "private-constructor",
+          "public-instance-method",
+          "protected-instance-method",
+          "private-instance-method"
+        ]
+      }
+    ],
+    "@typescript-eslint/no-floating-promises": "error",
+    "@typescript-eslint/no-namespace": "error",
+    "@typescript-eslint/no-this-alias": "error",
+    "@typescript-eslint/no-unused-vars": "error",
+    "@typescript-eslint/prefer-for-of": "off",
+    "@typescript-eslint/prefer-readonly": "error",
+    "@typescript-eslint/typedef": "off",
+    "curly": "error",
+    "dot-notation": "error",
+    "no-console": [
+      "error",
+      {
+        "allow": ["error", "info", "warn"]
+      }
+    ],
+    "no-const-assign": "error",
+    "no-dupe-class-members": "error",
+    "no-duplicate-case": "error",
+    "no-duplicate-imports": "error",
+    "no-else-return": "error",
+    "no-inner-declarations": "error",
+    "no-lonely-if": "error",
+    "no-redeclare": "error",
+    "no-return-await": "error",
+    "no-sequences": "error",
+    "no-shadow": "off",
+    "no-sparse-arrays": "error",
+    "no-template-curly-in-string": "error",
+    "no-unneeded-ternary": "error",
+    "no-unused-expressions": "error",
+    "no-useless-return": "error",
+    "no-var": "error",
+    "one-var": ["error", "never"],
+    "prefer-arrow-callback": "error",
+    "prefer-const": "error",
+    "prefer-promise-reject-errors": "error",
+    "prettier/prettier": "error",
+    "sort-imports": "off",
+    "sort-keys": [
+      "warn",
+      "asc",
+      {
+        "caseSensitive": true,
+        "natural": true
+      }
+    ],
+    "sort-vars": "error",
+    "space-in-parens": "error",
+    "strict": ["error", "global"],
+    "typescript-sort-keys/interface": ["warn", "asc", {"caseSensitive": false}],
+    "typescript-sort-keys/string-enum": ["warn", "asc", {"caseSensitive": false}]
+  }
+}

@@ -1,0 +1,15 @@
+version: 1
+
+update_configs:
+  - package_manager: 'javascript'
+    directory: '/'
+    update_schedule: 'weekly'
+    commit_message:
+      prefix: 'chore'
+      include_scope: true
+    automerged_updates:
+      - match:
+          dependency_type: 'all'
+          update_type: 'all'
+    target_branch: 'master'
+    version_requirement_updates: 'auto'
