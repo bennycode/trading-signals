@@ -1,6 +1,6 @@
 {
   "bugs": {
-    "url": "https://github.com/bennyn/technical-indicators/issues"
+    "url": "https://github.com/bennyn/trading-signals/issues"
   },
   "dependencies": {
     "@types/big.js": "4.0.5",
@@ -34,7 +34,7 @@
     "dist",
     "!dist/**/*.test.*"
   ],
-  "homepage": "https://documentup.com/bennyn/technical-indicators",
+  "homepage": "https://documentup.com/bennyn/trading-signals",
   "keywords": [
     "ema",
     "exponential-moving-average",
@@ -42,14 +42,14 @@
     "simple-moving-average",
     "sma",
     "technical-analysis",
-    "technical-indicators"
+    "trading-signals"
   ],
   "license": "UNLICENSED",
   "main": "dist/index.js",
-  "name": "technical-indicators",
+  "name": "trading-signal",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/bennyn/technical-indicators.git"
+    "url": "git+https://github.com/bennyn/trading-signals.git"
   },
   "scripts": {
     "build": "tsc",

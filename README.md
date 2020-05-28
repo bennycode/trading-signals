@@ -15,7 +15,7 @@ Provide a TypeScript implementation for common technical indicators with arbitra
 
 ```typescript
 import Big from 'big.js';
-import {SMA} from 'technical-indicators';
+import {SMA} from 'trading-signals';
 
 const sma = new SMA(3);
 sma.update(new Big(40));
