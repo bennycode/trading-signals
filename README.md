@@ -1,19 +1,25 @@
-# ts-node-starter
+# Technical Indicators
 
-TEXT
+Technical indicators to run technical analysis with JavaScript / TypeScript.
 
-## ❯ Features
+## Motivation
 
-- TEXT
+Provide a TypeScript implementation for common technical indicators with arbitrary-precision decimal arithmetic.
 
-## ❯ Installation
+## Supported Indicators
 
-```bash
-TEXT
-```
+- Exponential Moving Average (EMA)
+- Simple Moving Average (SMA)
 
-## ❯ Usage
+## Usage
 
 ```typescript
-// TEXT
+import Big from 'big.js';
+import {SMA} from 'technical-indicators';
+
+const sma = new SMA(3);
+sma.update(new Big(40));
+sma.update(new Big(30));
+sma.update(new Big(20));
+console.log(sma.getResult().valueOf()); // "30"
 ```

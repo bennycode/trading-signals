@@ -1,9 +1,12 @@
 {
   "bugs": {
-    "url": "https://github.com/bennyn/ts-node-starter/issues"
+    "url": "https://github.com/bennyn/technical-indicators/issues"
   },
-  "dependencies": {},
-  "description": "",
+  "dependencies": {
+    "@types/big.js": "4.0.5",
+    "big.js": "5.2.2"
+  },
+  "description": "Technical indicators to run technical analysis with JavaScript / TypeScript.",
   "devDependencies": {
     "@types/jasmine": "3.5.10",
     "@typescript-eslint/eslint-plugin": "3.0.2",
@@ -31,15 +34,22 @@
     "dist",
     "!dist/**/*.test.*"
   ],
-  "homepage": "https://github.com/bennyn/ts-node-starter#readme",
-  "keywords": [],
+  "homepage": "https://documentup.com/bennyn/technical-indicators",
+  "keywords": [
+    "ema",
+    "exponential-moving-average",
+    "moving-average",
+    "simple-moving-average",
+    "sma",
+    "technical-analysis",
+    "technical-indicators"
+  ],
   "license": "UNLICENSED",
   "main": "dist/index.js",
-  "name": "ts-node-starter",
-  "private": true,
+  "name": "technical-indicators",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/bennyn/ts-node-starter.git"
+    "url": "git+https://github.com/bennyn/technical-indicators.git"
   },
   "scripts": {
     "build": "tsc",
