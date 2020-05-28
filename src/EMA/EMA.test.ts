@@ -10,7 +10,7 @@ const ema26results = results.weight_26;
 
 describe('EMA', () => {
   describe('getResult', () => {
-    it('should correctly calculate EMAs with weight 10', () => {
+    it('correctly calculates EMAs with weight 10', () => {
       const ema = new EMA(10);
       prices.forEach((price, index) => {
         ema.update(new Big(price));
@@ -20,7 +20,7 @@ describe('EMA', () => {
       });
     });
 
-    it('should correctly calculate EMAs with weight 12', () => {
+    it('correctly calculates EMAs with weight 12', () => {
       const ema = new EMA(12);
       prices.forEach((price, index) => {
         ema.update(new Big(price));
@@ -30,7 +30,7 @@ describe('EMA', () => {
       });
     });
 
-    it('should correctly calculate EMAs with weight 26', () => {
+    it('correctly calculates EMAs with weight 26', () => {
       const ema = new EMA(26);
       prices.forEach((price, index) => {
         ema.update(new Big(price));

@@ -1,4 +1,4 @@
-# Technical Indicators
+# Trading Signals
 
 Technical indicators to run technical analysis with JavaScript / TypeScript.
 
@@ -10,6 +10,7 @@ Provide a TypeScript implementation for common technical indicators with arbitra
 
 - Exponential Moving Average (EMA)
 - Simple Moving Average (SMA)
+- Smoothed Moving Average (SMMA)
 
 ## Usage
 
