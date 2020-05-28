@@ -46,7 +46,7 @@
   ],
   "license": "UNLICENSED",
   "main": "dist/index.js",
-  "name": "trading-signal",
+  "name": "trading-signals",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/bennyn/trading-signals.git"
@@ -71,5 +71,5 @@
     "test": "nyc --nycrc-path=nyc.config.coverage.js jasmine --config=jasmine.json",
     "test:dev": "nyc jasmine --config=jasmine.json"
   },
-  "version": "0.0.2"
+  "version": "0.0.0"
 }
