@@ -1,4 +1,4 @@
-import Big from 'big.js';
+import Big, {BigSource} from 'big.js';
 
 export abstract class MovingAverage {
   protected result: Big | undefined;
@@ -12,5 +12,5 @@ export abstract class MovingAverage {
     return this.result;
   }
 
-  abstract update(price: Big): void;
+  abstract update(price: BigSource): void;
 }

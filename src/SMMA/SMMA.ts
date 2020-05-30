@@ -1,4 +1,4 @@
-import Big from 'big.js';
+import Big, {BigSource} from 'big.js';
 import {SMA} from '../';
 
 class SMMA {
@@ -14,8 +14,8 @@ class SMMA {
     this.result = new Big(0);
   }
 
-  update(price: Big): void {
-    this.prices.push(price);
+  update(price: BigSource): void {
+    this.prices.push(new Big(price));
 
     if (this.prices.length < this.interval) {
       this.sma.update(price);

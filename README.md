@@ -15,12 +15,23 @@ Provide a TypeScript implementation for common technical indicators with arbitra
 ## Usage
 
 ```typescript
-import Big from 'big.js';
 import {SMA} from 'trading-signals';
 
 const sma = new SMA(3);
-sma.update(new Big(40));
+
+// You can add numbers:
+sma.update(40);
+sma.update(30);
+sma.update(20);
+
+// You can add strings:
+sma.update('10');
+
+// You can add arbitrary-precision decimals:
+import Big from 'big.js';
 sma.update(new Big(30));
-sma.update(new Big(20));
-console.log(sma.getResult().valueOf()); // "30"
+
+// You can get the result in various formats:
+console.log(sma.getResult().valueOf()); // "20"
+console.log(sma.getResult().toFixed(2)); // "20.00"
 ```
