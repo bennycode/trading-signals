@@ -37,14 +37,15 @@
   "homepage": "https://documentup.com/bennyn/trading-signals",
   "keywords": [
     "ema",
-    "smma",
-    "trading",
-    "trading-signals",
     "exponential-moving-average",
     "moving-average",
+    "rsi",
     "simple-moving-average",
     "sma",
+    "smma",
     "technical-analysis",
+    "trading",
+    "trading-signals",
     "trading-signals"
   ],
   "license": "UNLICENSED",
