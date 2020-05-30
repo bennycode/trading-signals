@@ -7,7 +7,7 @@ export abstract class MovingAverage {
 
   getResult(): Big {
     if (!this.result) {
-      throw Error('No enough input data');
+      throw Error('Not enough input data');
     }
     return this.result;
   }
