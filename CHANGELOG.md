@@ -1,3 +1,9 @@
+#### 0.0.5 (2020-05-30)
+
+##### New Features
+
+- Add Rate-of-Change (ROC) indicator ([#4](https://github.com/bennyn/trading-signals/pull/4)) ([f02b5efe](https://github.com/bennyn/trading-signals/commit/f02b5efe061220fa73c1300c6fd88ede4b0e211c))
+
 #### 0.0.4 (2020-05-30)
 
 ##### New Features
