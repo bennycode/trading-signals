@@ -8,10 +8,11 @@ Provide a TypeScript implementation for common technical indicators with arbitra
 
 ## Supported Indicators
 
-- Exponential Moving Average (EMA)
-- Relative Strength Index (RSI)
-- Simple Moving Average (SMA)
-- Smoothed Moving Average (SMMA)
+1. Exponential Moving Average (EMA)
+1. Rate-of-Change (ROC)
+1. Relative Strength Index (RSI)
+1. Simple Moving Average (SMA)
+1. Smoothed Moving Average (SMMA)
 
 ## Usage
 
