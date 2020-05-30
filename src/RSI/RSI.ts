@@ -51,9 +51,7 @@ export class RSI {
     const max = new Big(100);
     this.result = max.minus(max.div(relativeStrength.add(1)));
 
-    if (this.prices.length > this.interval) {
-      this.prices.shift();
-    }
+    this.prices.shift();
   }
 
   getResult(): Big {

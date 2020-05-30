@@ -2,7 +2,7 @@ import {Big as BigNumber} from 'big.js';
 import {RSI} from './RSI';
 
 import prices from '../test/fixtures/prices.json';
-import * as results from '../test/fixtures/RSI/results.json';
+import results from '../test/fixtures/RSI/results.json';
 
 const rsi2results = results.interval_2;
 const rsi12results = results.interval_12;
@@ -35,6 +35,13 @@ describe('RSI', () => {
         const res = new BigNumber(rsi26results[index]);
         expect(rsi.getResult().toPrecision(12)).toEqual(res.toPrecision(12));
       });
+    });
+
+    it('prevents division by zero errors when the average gain and average loss equal 0', () => {
+      const rsi = new RSI(1);
+      rsi.update(0);
+      rsi.update(0);
+      expect(rsi.getResult().toFixed(0)).toBe('99');
     });
   });
 });
