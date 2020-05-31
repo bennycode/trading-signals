@@ -19,8 +19,8 @@ export class DMA {
 
   getResult(): {long: Big; short: Big} {
     return {
-      short: this.short.getResult(),
       long: this.long.getResult(),
+      short: this.short.getResult(),
     };
   }
 }
