@@ -40,7 +40,7 @@ describe('EMA', () => {
       });
     });
 
-    it('throws an error if there is not enough input data', () => {
+    it('throws an error when there is not enough input data', () => {
       const ema = new EMA(10);
       try {
         ema.getResult();

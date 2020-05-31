@@ -56,14 +56,14 @@ describe('ROC', () => {
       });
     });
 
-    it('throws an error when there is not enough input data to calculate the result.', () => {
+    it('throws an error when there is not enough input data', () => {
       const roc = new ROC(6);
       expect(() => roc.getResult()).toThrowError(Error);
     });
   });
 
   describe('isStable', () => {
-    it('returns true when it can return reliable data.', () => {
+    it('returns true when it can return reliable data', () => {
       const interval = 5;
       const indicator = new ROC(interval);
 

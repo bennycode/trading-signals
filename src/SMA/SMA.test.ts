@@ -75,7 +75,7 @@ describe('SMA', () => {
       expect(actual.toPrecision(12)).toEqual(expected.toPrecision(12));
     });
 
-    it('throws an error if there is not enough input data', () => {
+    it('throws an error when there is not enough input data', () => {
       const sma = new SMA(26);
       try {
         sma.getResult();
