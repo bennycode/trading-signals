@@ -1,5 +1,5 @@
 import Big from 'big.js';
-import {EMA} from '..';
+import {EMA, NotEnoughDataError} from '..';
 
 import results from '../test/fixtures/EMA/results.json';
 import prices from '../test/fixtures/prices.json';
@@ -42,11 +42,12 @@ describe('EMA', () => {
 
     it('throws an error when there is not enough input data', () => {
       const ema = new EMA(10);
+
       try {
         ema.getResult();
         fail('Expected error');
       } catch (error) {
-        expect(error).toBeDefined();
+        expect(error).toBeInstanceOf(NotEnoughDataError);
       }
     });
   });

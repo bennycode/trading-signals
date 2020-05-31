@@ -14,8 +14,8 @@ describe('RSI', () => {
       const rsi = new RSI(2);
       prices.forEach((price, index) => {
         rsi.update(price);
-        const res = new BigNumber(rsi2results[index]);
-        expect(rsi.getResult().toPrecision(12)).toEqual(res.toPrecision(12));
+        const expected = new BigNumber(rsi2results[index]);
+        expect(rsi.getResult().toPrecision(12)).toEqual(expected.toPrecision(12));
       });
     });
 
@@ -23,8 +23,8 @@ describe('RSI', () => {
       const rsi = new RSI(12);
       prices.forEach((price, index) => {
         rsi.update(price);
-        const res = new BigNumber(rsi12results[index]);
-        expect(rsi.getResult().toPrecision(12)).toEqual(res.toPrecision(12));
+        const expected = new BigNumber(rsi12results[index]);
+        expect(rsi.getResult().toPrecision(12)).toEqual(expected.toPrecision(12));
       });
     });
 
@@ -32,8 +32,8 @@ describe('RSI', () => {
       const rsi = new RSI(26);
       prices.forEach((price, index) => {
         rsi.update(price);
-        const res = new BigNumber(rsi26results[index]);
-        expect(rsi.getResult().toPrecision(12)).toEqual(res.toPrecision(12));
+        const expected = new BigNumber(rsi26results[index]);
+        expect(rsi.getResult().toPrecision(12)).toEqual(expected.toPrecision(12));
       });
     });
 

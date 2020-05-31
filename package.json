@@ -68,9 +68,10 @@
     "fix": "yarn fix:other && yarn fix:code",
     "fix:code": "yarn lint:code --fix",
     "fix:other": "yarn prettier --write",
-    "lint": "yarn lint:code && yarn lint:other",
+    "lint": "yarn lint:types && yarn lint:code && yarn lint:other",
     "lint:code": "eslint --ignore-path .gitignore --ext .js,.jsx,.ts,.tsx .",
     "lint:other": "yarn prettier --list-different",
+    "lint:types": "tsc --noEmit",
     "postversion": "git push origin && git push origin --tags && npm publish",
     "prettier": "prettier --ignore-path .gitignore --loglevel silent \"**/*.{json,scss,yml}\"",
     "preversion": "git checkout master && git pull && yarn && yarn test && yarn dist",
@@ -78,7 +79,7 @@
     "release:minor": "generate-changelog -m -x \"chore,docs,refactor,style,test\" && yarn changelog:commit && npm version minor",
     "release:patch": "generate-changelog -p -x \"chore,docs,refactor,style,test\" && yarn changelog:commit && npm version patch",
     "test": "nyc --nycrc-path=nyc.config.coverage.json jasmine --config=jasmine.json",
-    "test:dev": "nyc jasmine --config=jasmine.json"
+    "test:dev": "nyc --nycrc-path=nyc.config.json jasmine --config=jasmine.json"
   },
   "version": "0.0.6"
 }

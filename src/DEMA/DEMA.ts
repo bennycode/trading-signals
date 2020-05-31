@@ -1,5 +1,5 @@
 import Big, {BigSource} from 'big.js';
-import {EMA} from '..';
+import {EMA, NotEnoughDataError} from '..';
 
 export class DEMA {
   private result: Big | undefined;
@@ -21,7 +21,7 @@ export class DEMA {
 
   getResult(): Big {
     if (!this.result) {
-      throw Error('Not enough input data');
+      throw new NotEnoughDataError();
     }
 
     return this.result;

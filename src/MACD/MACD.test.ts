@@ -3,6 +3,7 @@ import Big from 'big.js';
 
 import prices from '../test/fixtures/prices.json';
 import results from '../test/fixtures/MACD/results.json';
+import {NotEnoughDataError} from '../error';
 
 describe('MACD', () => {
   describe('getResult', () => {
@@ -24,8 +25,14 @@ describe('MACD', () => {
     });
 
     it('throws an error when there is not enough input data', () => {
-      const indicator = new MACD({longInterval: 26, shortInterval: 12, signalInterval: 9, useDEMA: true});
-      expect(() => indicator.getResult()).toThrowError();
+      const macd = new MACD({longInterval: 26, shortInterval: 12, signalInterval: 9, useDEMA: true});
+
+      try {
+        macd.getResult();
+        fail('Expected error');
+      } catch (error) {
+        expect(error).toBeInstanceOf(NotEnoughDataError);
+      }
     });
   });
 
