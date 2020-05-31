@@ -1,6 +1,8 @@
 import Big, {BigSource} from 'big.js';
 import {SMA} from '..';
 
+export type DMAResult = {long: Big; short: Big};
+
 export class DMA {
   public readonly long: SMA;
   public readonly short: SMA;
@@ -17,7 +19,7 @@ export class DMA {
     this.long.update(price);
   }
 
-  getResult(): {long: Big; short: Big} {
+  getResult(): DMAResult {
     return {
       long: this.long.getResult(),
       short: this.short.getResult(),

@@ -42,6 +42,7 @@
     "ema",
     "exponential-moving-average",
     "indicator",
+    "macd",
     "moving-average",
     "roc",
     "rsi",
