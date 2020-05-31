@@ -18,9 +18,9 @@ describe('DEMA', () => {
       });
     });
 
-    it('throws an error when there is not enough input data to calculate the result.', () => {
+    it('throws an error when there is not enough input data', () => {
       const dema = new DEMA(10);
-      expect(() => dema.getResult()).toThrowError(Error);
+      expect(() => dema.getResult()).toThrowError();
     });
   });
 });
