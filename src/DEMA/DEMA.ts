@@ -2,25 +2,28 @@ import Big, {BigSource} from 'big.js';
 import {EMA} from '..';
 
 export class DEMA {
-  public readonly long: EMA;
-  public readonly short: EMA;
+  private result: Big | undefined;
 
-  constructor(short: number, long: number) {
-    this.short = new EMA(short);
-    this.long = new EMA(long);
+  private readonly inner: EMA;
+  private readonly outer: EMA;
+
+  constructor(interval: number) {
+    this.inner = new EMA(interval);
+    this.outer = new EMA(interval);
   }
 
-  update(_price: BigSource): void {
-    const price = new Big(_price);
+  update(price: BigSource): void {
+    this.inner.update(price);
+    this.outer.update(this.inner.getResult());
 
-    this.short.update(price);
-    this.long.update(price);
+    this.result = this.inner.getResult().times(2).sub(this.outer.getResult());
   }
 
-  getResult(): {long: Big; short: Big} {
-    return {
-      long: this.long.getResult(),
-      short: this.short.getResult(),
-    };
+  getResult(): Big {
+    if (!this.result) {
+      throw Error('Not enough input data');
+    }
+
+    return this.result;
   }
 }
