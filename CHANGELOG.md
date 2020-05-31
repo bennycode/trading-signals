@@ -1,3 +1,9 @@
+### 0.1.0 (2020-05-31)
+
+##### New Features
+
+- Add Moving Average Convergence Divergence (MACD) indicator ([#7](https://github.com/bennyn/trading-signals/pull/7)) ([38a645de](https://github.com/bennyn/trading-signals/commit/38a645de45db1fb2e072c4dfb9df9a124600ef9a))
+
 #### 0.0.5 (2020-05-30)
 
 ##### New Features
