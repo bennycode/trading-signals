@@ -1,4 +1,5 @@
 import Big, {BigSource} from 'big.js';
+import {NotEnoughDataError} from '../error';
 
 export class ROC {
   private readonly interval: number;
@@ -36,7 +37,7 @@ export class ROC {
 
   getResult(): Big {
     if (!this.result) {
-      throw Error('Not enough input data');
+      throw new NotEnoughDataError();
     }
 
     return this.result;

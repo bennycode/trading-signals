@@ -1,5 +1,5 @@
 import Big from 'big.js';
-import {SMA} from '..';
+import {NotEnoughDataError, SMA} from '..';
 
 import prices from '../test/fixtures/prices.json';
 import testData from '../test/fixtures/SMA/LTC-USDT-1m.json';
@@ -77,11 +77,12 @@ describe('SMA', () => {
 
     it('throws an error when there is not enough input data', () => {
       const sma = new SMA(26);
+
       try {
         sma.getResult();
         fail('Expected error');
       } catch (error) {
-        expect(error).toBeDefined();
+        expect(error).toBeInstanceOf(NotEnoughDataError);
       }
     });
   });

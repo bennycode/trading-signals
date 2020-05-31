@@ -1,5 +1,6 @@
 import {Big as BigNumber} from 'big.js';
 import {ROC} from './ROC';
+import {NotEnoughDataError} from '../error';
 
 const prices = [81.59, 81.06, 82.87, 83.0, 83.61, 83.15, 82.84, 83.99, 84.55, 84.36, 85.53, 86.54, 86.89, 87.77, 87.29];
 /*************************************************
@@ -51,14 +52,20 @@ describe('ROC', () => {
           return;
         }
 
-        const res = new BigNumber(Number(results[index]));
-        expect(roc.getResult().toFixed(2)).toEqual(res.toFixed(2));
+        const expected = new BigNumber(Number(results[index]));
+        expect(roc.getResult().toFixed(2)).toEqual(expected.toFixed(2));
       });
     });
 
     it('throws an error when there is not enough input data', () => {
       const roc = new ROC(6);
-      expect(() => roc.getResult()).toThrowError(Error);
+
+      try {
+        roc.getResult();
+        fail('Expected error');
+      } catch (error) {
+        expect(error).toBeInstanceOf(NotEnoughDataError);
+      }
     });
   });
 
