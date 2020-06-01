@@ -15,9 +15,9 @@ describe('SMA', () => {
       const sma = new SMA(3);
       sma.update(40);
       sma.update(30);
-      expect(sma.isStable).toBe(false);
+      expect(sma.isStable).toBeFalse();
       sma.update(20);
-      expect(sma.isStable).toBe(true);
+      expect(sma.isStable).toBeTrue();
       sma.update('10');
       sma.update(new Big(30));
       expect(sma.getResult().valueOf()).toBe('20');

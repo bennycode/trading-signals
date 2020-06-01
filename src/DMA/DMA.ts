@@ -12,6 +12,10 @@ export class DMA {
     this.long = new SMA(long);
   }
 
+  get isStable(): boolean {
+    return this.long.isStable;
+  }
+
   update(_price: BigSource): void {
     const price = new Big(_price);
 

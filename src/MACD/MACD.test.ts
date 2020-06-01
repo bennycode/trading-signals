@@ -63,11 +63,11 @@ describe('MACD', () => {
       ];
 
       expect(mockedPrices.length).toBe(longInterval);
-      expect(macd.isStable).toBe(false);
+      expect(macd.isStable).toBeFalse();
 
       mockedPrices.forEach(price => macd.update(price));
 
-      expect(macd.isStable).toBe(true);
+      expect(macd.isStable).toBeTrue();
     });
   });
 });
