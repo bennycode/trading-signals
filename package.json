@@ -53,7 +53,7 @@
     "technical",
     "trading"
   ],
-  "license": "UNLICENSED",
+  "license": "MIT",
   "main": "dist/index.js",
   "name": "trading-signals",
   "repository": {
