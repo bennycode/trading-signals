@@ -48,7 +48,7 @@ describe('ROC', () => {
       prices.forEach((price, index) => {
         roc.update(new BigNumber(price));
 
-        if (!roc.isStable()) {
+        if (!roc.isStable) {
           return;
         }
 
@@ -84,11 +84,11 @@ describe('ROC', () => {
       ];
 
       expect(mockedPrices.length).toBe(interval + 1);
-      expect(indicator.isStable()).toBe(false);
+      expect(indicator.isStable).toBe(false);
 
       mockedPrices.forEach(price => indicator.update(price));
 
-      expect(indicator.isStable()).toBe(true);
+      expect(indicator.isStable).toBe(true);
     });
   });
 });

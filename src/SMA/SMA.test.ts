@@ -10,6 +10,20 @@ const SMA12results = results.weight_12;
 const SMA26results = results.weight_26;
 
 describe('SMA', () => {
+  describe('isStable', () => {
+    it('knows when there is enough input data', () => {
+      const sma = new SMA(3);
+      sma.update(40);
+      sma.update(30);
+      expect(sma.isStable).toBe(false);
+      sma.update(20);
+      expect(sma.isStable).toBe(true);
+      sma.update('10');
+      sma.update(new Big(30));
+      expect(sma.getResult().valueOf()).toBe('20');
+    });
+  });
+
   describe('getResult', () => {
     it('matches the moving average logic from Binance exchange', () => {
       const shortMovingAverageLength = 20;
@@ -31,21 +45,21 @@ describe('SMA', () => {
 
     it('calculates SMAs with Binance candles', () => {
       const candles = [{close: 17.79}, {close: 17.73}, {close: 17.73}, {close: 17.76}, {close: 17.8}, {close: 17.81}];
-      const indicator = new SMA(5);
+      const sma = new SMA(5);
 
       for (let index = 0; index < 5; index++) {
         const candle = candles[index];
-        indicator.update(new Big(candle.close));
+        sma.update(new Big(candle.close));
       }
 
-      expect(indicator.getResult()).toEqual(new Big('17.762'));
+      expect(sma.getResult()).toEqual(new Big('17.762'));
 
       const lastCandle = candles[candles.length - 1];
-      indicator.update(new Big(lastCandle.close));
+      sma.update(new Big(lastCandle.close));
 
-      expect(indicator.getResult()).toEqual(new Big('17.766'));
+      expect(sma.getResult()).toEqual(new Big('17.766'));
       // Testing consecutive call
-      expect(indicator.getResult()).toEqual(new Big('17.766'));
+      expect(sma.getResult()).toEqual(new Big('17.766'));
     });
 
     it('calculates SMAs with window length 10', () => {
