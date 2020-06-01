@@ -37,6 +37,8 @@
   "homepage": "https://documentup.com/bennyn/trading-signals",
   "keywords": [
     "analysis",
+    "atr",
+    "average",
     "bollinger",
     "dema",
     "dma",
@@ -44,6 +46,7 @@
     "exponential-moving-average",
     "indicator",
     "macd",
+    "math",
     "moving-average",
     "roc",
     "rsi",

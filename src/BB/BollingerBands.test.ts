@@ -1,7 +1,7 @@
 import {BollingerBands} from './BollingerBands';
 import {Big} from 'big.js';
 
-import results from '../test/fixtures/BB/results.json';
+import data from '../test/fixtures/BB/data.json';
 import {NotEnoughDataError} from '../error';
 
 describe('BollingerBands', () => {
@@ -9,16 +9,16 @@ describe('BollingerBands', () => {
     it('calculates Bollinger Bands with interval 20', () => {
       const bb = new BollingerBands(20);
 
-      results.prices.forEach((price, index) => {
+      data.prices.forEach((price, index) => {
         bb.update(new Big(price));
 
         if (!bb.isStable) {
           return;
         }
 
-        const resMiddle = new Big(Number(results.middle[index]));
-        const resLower = new Big(Number(results.lower[index]));
-        const resUpper = new Big(Number(results.upper[index]));
+        const resMiddle = new Big(Number(data.middle[index]));
+        const resLower = new Big(Number(data.lower[index]));
+        const resUpper = new Big(Number(data.upper[index]));
 
         const {middle, upper, lower} = bb.getResult();
 
