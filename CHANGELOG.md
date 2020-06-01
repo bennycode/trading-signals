@@ -1,3 +1,9 @@
+### 0.4.0 (2020-06-01)
+
+##### New Features
+
+- Add Average True Range (ATR) indicator ([#13](https://github.com/bennyn/trading-signals/pull/13)) ([e6f88ea8](https://github.com/bennyn/trading-signals/commit/e6f88ea8f3d39d3679b57dff842b4f35c01c9749))
+
 ### 0.2.0 (2020-06-01)
 
 ### 0.1.0 (2020-05-31)
