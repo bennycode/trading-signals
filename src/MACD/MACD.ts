@@ -33,7 +33,7 @@ export class MACD {
     this.signal = config.useDEMA ? new DEMA(config.signalInterval) : new EMA(config.signalInterval);
   }
 
-  isStable(): boolean {
+  get isStable(): boolean {
     return this.age >= this.config.longInterval;
   }
 

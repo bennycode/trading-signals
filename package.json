@@ -37,6 +37,7 @@
   "homepage": "https://documentup.com/bennyn/trading-signals",
   "keywords": [
     "analysis",
+    "bollinger",
     "dema",
     "dma",
     "ema",
@@ -51,6 +52,8 @@
     "sma",
     "smma",
     "technical",
+    "technical-indicators",
+    "technical-overlays",
     "trading"
   ],
   "license": "MIT",

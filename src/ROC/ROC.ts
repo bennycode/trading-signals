@@ -10,7 +10,7 @@ export class ROC {
     this.interval = interval;
   }
 
-  isStable(): boolean {
+  get isStable(): boolean {
     return this.result !== undefined;
   }
 

@@ -39,7 +39,7 @@ describe('MACD', () => {
   describe('isStable', () => {
     it('knows when it can return reliable data', () => {
       const longInterval = 18;
-      const indicator = new MACD({longInterval, shortInterval: 9, signalInterval: 9, useDEMA: false});
+      const macd = new MACD({longInterval, shortInterval: 9, signalInterval: 9, useDEMA: false});
 
       const mockedPrices = [
         new Big('0.00019040'),
@@ -63,11 +63,11 @@ describe('MACD', () => {
       ];
 
       expect(mockedPrices.length).toBe(longInterval);
-      expect(indicator.isStable()).toBe(false);
+      expect(macd.isStable).toBe(false);
 
-      mockedPrices.forEach(price => indicator.update(price));
+      mockedPrices.forEach(price => macd.update(price));
 
-      expect(indicator.isStable()).toBe(true);
+      expect(macd.isStable).toBe(true);
     });
   });
 });
