@@ -1,3 +1,4 @@
+export * from './ATR/ATR';
 export * from './BB/BollingerBands';
 export * from './DEMA/DEMA';
 export * from './DMA/DMA';

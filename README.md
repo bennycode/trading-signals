@@ -10,9 +10,10 @@ Provide a TypeScript implementation for common technical indicators with arbitra
 
 ## Supported Indicators
 
+1. Average True Range (ATR)
+1. Bollinger Bands (BB)
 1. Double Exponential Moving Average (DEMA)
 1. Double Moving Average (DMA)
-1. Bollinger Bands (BB)
 1. Exponential Moving Average (EMA)
 1. Moving Average Convergence Divergence (MACD)
 1. Rate-of-Change (ROC)
