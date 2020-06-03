@@ -10,6 +10,7 @@ Provide a TypeScript implementation for common technical indicators with arbitra
 
 ## Supported Indicators
 
+1. Average Directional Index (ADX)
 1. Average True Range (ATR)
 1. Bollinger Bands (BB)
 1. Double Exponential Moving Average (DEMA)
