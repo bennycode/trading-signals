@@ -45,3 +45,24 @@ sma.update(new Big(30));
 console.log(sma.getResult().valueOf()); // "20"
 console.log(sma.getResult().toFixed(2)); // "20.00"
 ```
+
+## Contributing
+
+Contributions, issues and feature requests are welcome!
+
+Feel free to check the [issues page](https://github.com/bennyn/trading-signals/issues).
+
+## Maintainers
+
+[![Benny Neugebauer on Stack Exchange][stack_exchange_bennyn_badge]][stack_exchange_bennyn_url]
+
+## License
+
+This project is [MIT](./LICENSE) licensed.
+
+## Show your support
+
+Give a ⭐️ if this project helped you!<
+
+[stack_exchange_bennyn_badge]: https://stackexchange.com/users/flair/203782.png?theme=default
+[stack_exchange_bennyn_url]: https://stackexchange.com/users/203782/benny-neugebauer?tab=accounts
