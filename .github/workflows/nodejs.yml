@@ -23,3 +23,11 @@ jobs:
         if: |
           contains(github.event.commits[0].message, '[skip ci]') == false &&
           contains(github.event.commits[0].message, '[ci skip]') == false
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v1.0.5
+        with:
+          fail_ci_if_error: false
+          file: ./coverage/lcov.info
+          flags: unittests
+          token: ${{ secrets.CODECOV_TOKEN }}
+          yml: ./codecov.yml
