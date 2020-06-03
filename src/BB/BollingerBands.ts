@@ -1,6 +1,7 @@
 import Big, {BigSource} from 'big.js';
 import {SMA} from '../SMA/SMA';
 import {NotEnoughDataError} from '../error';
+import {MathAnalysis} from '../util';
 
 export type BollingerBandsResult = {
   lower: Big;
@@ -41,7 +42,7 @@ export class BollingerBands {
 
     const avg = this.middleSMA.getResult();
     const squareDiffs = this.prices.map((price: Big) => price.sub(avg).pow(2));
-    const standardDeviation = this.getAverage(squareDiffs).sqrt();
+    const standardDeviation = MathAnalysis.getAverage(squareDiffs).sqrt();
 
     this.result = {
       lower: avg.sub(standardDeviation.times(this.deviationMultiplier)),
@@ -56,13 +57,5 @@ export class BollingerBands {
     }
 
     return this.result;
-  }
-
-  private getAverage(values: Big[]): Big {
-    const sum = values.reduce((prev: Big, current: Big) => {
-      return prev.add(current);
-    }, new Big(0));
-
-    return sum.div(values.length);
   }
 }

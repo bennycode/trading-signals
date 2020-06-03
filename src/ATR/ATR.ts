@@ -1,7 +1,7 @@
 import Big, {BigSource} from 'big.js';
 import {NotEnoughDataError, SMMA} from '..';
 
-type Candle = {close: BigSource; high: BigSource; low: BigSource};
+export type ATRCandle = {close: BigSource; high: BigSource; low: BigSource};
 
 /**
  * Average True Range
@@ -13,10 +13,10 @@ type Candle = {close: BigSource; high: BigSource; low: BigSource};
 export class ATR {
   private readonly interval: number;
   private readonly smma: SMMA;
-  private readonly candles: Candle[] = [];
+  private readonly candles: ATRCandle[] = [];
 
   private result: Big | undefined;
-  private prevCandle: Candle | undefined;
+  private prevCandle: ATRCandle | undefined;
 
   constructor(interval: number) {
     this.interval = interval;
@@ -28,7 +28,7 @@ export class ATR {
     return this.candles.length > this.interval;
   }
 
-  update(candle: Candle): void {
+  update(candle: ATRCandle): void {
     this.candles.push(candle);
 
     if (!this.prevCandle) {
@@ -59,7 +59,7 @@ export class ATR {
     return this.result;
   }
 
-  private trueRange(prevCandle: Candle, currentCandle: Candle): Big {
+  private trueRange(prevCandle: ATRCandle, currentCandle: ATRCandle): Big {
     const prevClose = new Big(prevCandle.close);
     const low = new Big(currentCandle.low);
     const high = new Big(currentCandle.high);

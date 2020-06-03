@@ -1,3 +1,4 @@
+export * from './ADX/ADX';
 export * from './ATR/ATR';
 export * from './BB/BollingerBands';
 export * from './DEMA/DEMA';
@@ -9,3 +10,4 @@ export * from './ROC/ROC';
 export * from './RSI/RSI';
 export * from './SMA/SMA';
 export * from './SMMA/SMMA';
+export * from './util';
