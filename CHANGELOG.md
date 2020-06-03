@@ -1,3 +1,10 @@
+## 1.0.0 (2020-06-03)
+
+##### New Features
+
+- Add Average Directional Index (ADX) indicator ([#14](https://github.com/bennyn/trading-signals/pull/14)) ([1a21d531](https://github.com/bennyn/trading-signals/commit/1a21d531519d4a5c61d0eb51ab89651319b412f4))
+- Add `isStable` to DMA indicator ([5f1f9dcb](https://github.com/bennyn/trading-signals/commit/5f1f9dcb30f2e4238d54db5f542c8534c9a66294))
+
 ### 0.4.0 (2020-06-01)
 
 ##### New Features
