@@ -8,6 +8,12 @@ Technical indicators and overlays to run technical analysis with JavaScript / Ty
 
 Provide a TypeScript implementation for common technical indicators with arbitrary-precision decimal arithmetic.
 
+## Features
+
+- **Accurate.** Don't rely on type `number` and its precision limits. Use [Big][1].
+- **Typed.** Source code is 100% TypeScript. No need to install external typings.
+- **Tested.** Code coverage is 100%. No surprises when using it.
+
 ## Supported Indicators
 
 1. Average Directional Index (ADX)
@@ -62,7 +68,8 @@ This project is [MIT](./LICENSE) licensed.
 
 ## Show your support
 
-Give a ⭐️ if this project helped you!<
+Give a ⭐️ if this project helped you!
 
+[1]: http://mikemcl.github.io/big.js/
 [stack_exchange_bennyn_badge]: https://stackexchange.com/users/flair/203782.png?theme=default
 [stack_exchange_bennyn_url]: https://stackexchange.com/users/203782/benny-neugebauer?tab=accounts
