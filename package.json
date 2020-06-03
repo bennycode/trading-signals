@@ -88,5 +88,5 @@
     "test": "nyc --nycrc-path=nyc.config.coverage.json jasmine --config=jasmine.json",
     "test:dev": "nyc --nycrc-path=nyc.config.json jasmine --config=jasmine.json"
   },
-  "version": "0.4.0"
+  "version": "1.0.0"
 }
