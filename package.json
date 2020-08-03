@@ -9,7 +9,7 @@
   "description": "Technical indicators to run technical analysis with JavaScript / TypeScript.",
   "devDependencies": {
     "@types/jasmine": "3.5.12",
-    "@typescript-eslint/eslint-plugin": "3.7.0",
+    "@typescript-eslint/eslint-plugin": "3.7.1",
     "@typescript-eslint/parser": "3.7.1",
     "eslint": "7.6.0",
     "eslint-config-prettier": "6.11.0",
