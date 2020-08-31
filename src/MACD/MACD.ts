@@ -20,14 +20,10 @@ export class MACD {
   private readonly short: EMA | DEMA;
   private readonly signal: EMA | DEMA;
 
-  private readonly config: any;
   private age: number = 0;
-
   private result: MACDResult | undefined;
 
-  constructor(config: MACDConfig) {
-    this.config = config;
-
+  constructor(private readonly config: MACDConfig) {
     this.long = config.useDEMA ? new DEMA(config.longInterval) : new EMA(config.longInterval);
     this.short = config.useDEMA ? new DEMA(config.shortInterval) : new EMA(config.shortInterval);
     this.signal = config.useDEMA ? new DEMA(config.signalInterval) : new EMA(config.signalInterval);
