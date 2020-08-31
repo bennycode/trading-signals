@@ -1,15 +1,15 @@
 import Big, {BigSource} from 'big.js';
 import {SMA} from '../';
+import {MovingAverage} from '../MA/MovingAverage';
 
-class SMMA {
-  private readonly interval: number;
-  private result: Big;
+class SMMA extends MovingAverage {
+  protected result: Big;
 
   private readonly prices: Big[] = [];
   private readonly sma: SMA;
 
   constructor(interval: number) {
-    this.interval = interval;
+    super(interval);
     this.sma = new SMA(interval);
     this.result = new Big(0);
   }

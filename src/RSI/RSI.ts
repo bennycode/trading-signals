@@ -1,20 +1,17 @@
 import Big, {BigSource} from 'big.js';
-import {SMMA} from '..';
+import {EMA, SMMA} from '..';
+import {MovingAverage} from '../MA/MovingAverage';
 
 export class RSI {
-  private readonly interval: number;
   private readonly prices: Big[] = [];
   private result: Big;
 
-  private readonly avgGain: SMMA;
-  private readonly avgLoss: SMMA;
+  private readonly avgGain: MovingAverage;
+  private readonly avgLoss: MovingAverage;
 
-  constructor(interval: number) {
-    this.interval = interval;
-
-    this.avgGain = new SMMA(this.interval);
-    this.avgLoss = new SMMA(this.interval);
-
+  constructor(private readonly interval: number, Indicator: typeof EMA | typeof SMMA = SMMA) {
+    this.avgGain = new Indicator(this.interval);
+    this.avgLoss = new Indicator(this.interval);
     this.result = new Big(0);
   }
 
