@@ -1,3 +1,9 @@
+### 1.1.0 (2020-09-04)
+
+##### New Features
+
+- Add option to use EMA for RSI calculation ([#70](https://github.com/bennyn/trading-signals/pull/70)) ([33b7b750](https://github.com/bennyn/trading-signals/commit/33b7b750c387926fa551b6ee86fc2fe64b29360e))
+
 #### 1.0.1 (2020-06-15)
 
 ## 1.0.0 (2020-06-03)
