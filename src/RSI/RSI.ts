@@ -1,5 +1,5 @@
 import Big, {BigSource} from 'big.js';
-import {EMA, SMMA} from '..';
+import {EMA, NotEnoughDataError, SMMA} from '..';
 import {MovingAverage} from '../MA/MovingAverage';
 
 export class RSI {
@@ -52,6 +52,13 @@ export class RSI {
   }
 
   getResult(): Big {
+    if (!this.isStable) {
+      throw new NotEnoughDataError();
+    }
     return this.result;
+  }
+
+  get isStable(): boolean {
+    return this.prices.length === this.interval;
   }
 }
