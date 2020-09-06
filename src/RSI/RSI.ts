@@ -59,6 +59,6 @@ export class RSI {
   }
 
   get isStable(): boolean {
-    return this.prices.length === this.interval;
+    return this.result.gt(0);
   }
 }
