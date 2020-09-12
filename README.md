@@ -52,23 +52,28 @@ console.log(sma.getResult().valueOf()); // "20"
 console.log(sma.getResult().toFixed(2)); // "20.00"
 ```
 
+## Maintainers
+
+[![Benny Neugebauer on Stack Exchange][stack_exchange_bennyn_badge]][stack_exchange_bennyn_url]
+
 ## Contributing
 
 Contributions, issues and feature requests are welcome!
 
 Feel free to check the [issues page](https://github.com/bennyn/trading-signals/issues).
 
-## Maintainers
-
-[![Benny Neugebauer on Stack Exchange][stack_exchange_bennyn_badge]][stack_exchange_bennyn_url]
-
 ## License
 
 This project is [MIT](./LICENSE) licensed.
 
-## Show your support
+## ⭐️ Show your support ⭐️
 
-Give a ⭐️ if this project helped you!
+[Please leave a star](https://github.com/bennyn/trading-signals/stargazers) if you find this project useful.
+
+If you like this project, you might also like these related projects:
+
+- [**coinbase-pro-node**](https://github.com/bennyn/coinbase-pro-node), Actively maintained Coinbase Pro API written in TypeScript.
+- [**binance-api-node**](https://github.com/Ashlar/binance-api-node), Heavily tested and Promise-based Binance API.
 
 [1]: http://mikemcl.github.io/big.js/
 [stack_exchange_bennyn_badge]: https://stackexchange.com/users/flair/203782.png?theme=default
