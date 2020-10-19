@@ -17,7 +17,7 @@
     "eslint-plugin-typescript-sort-keys": "1.5.0",
     "generate-changelog": "1.8.0",
     "husky": "4.3.0",
-    "jasmine": "3.6.1",
+    "jasmine": "3.6.2",
     "lint-staged": "10.4.2",
     "nyc": "15.1.0",
     "prettier": "2.1.2",
