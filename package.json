@@ -81,7 +81,7 @@
     "lint:types": "tsc --noEmit",
     "postversion": "git push origin && git push origin --tags && npm publish",
     "prettier": "prettier --ignore-path .gitignore --loglevel silent \"**/*.{json,scss,yml}\"",
-    "preversion": "git checkout master && git pull && yarn && yarn test && yarn dist",
+    "preversion": "git checkout main && git pull && yarn && yarn test && yarn dist",
     "release:major": "generate-changelog -M -x \"chore,docs,refactor,style,test\" && yarn changelog:commit && npm version major",
     "release:minor": "generate-changelog -m -x \"chore,docs,refactor,style,test\" && yarn changelog:commit && npm version minor",
     "release:patch": "generate-changelog -p -x \"chore,docs,refactor,style,test\" && yarn changelog:commit && npm version patch",

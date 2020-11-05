@@ -11,5 +11,5 @@ update_configs:
       - match:
           dependency_type: 'all'
           update_type: 'all'
-    target_branch: 'master'
+    target_branch: 'main'
     version_requirement_updates: 'auto'
