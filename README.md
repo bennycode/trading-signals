@@ -60,7 +60,7 @@ console.log(sma.getResult().toFixed(2)); // "20.00"
 
 Contributions, issues and feature requests are welcome!
 
-Feel free to check the [issues page](https://github.com/bennyn/trading-signals/issues).
+Feel free to check the [issues page](https://github.com/bennycode/trading-signals/issues).
 
 ## License
 
@@ -68,11 +68,11 @@ This project is [MIT](./LICENSE) licensed.
 
 ## ⭐️ Show your support ⭐️
 
-[Please leave a star](https://github.com/bennyn/trading-signals/stargazers) if you find this project useful.
+[Please leave a star](https://github.com/bennycode/trading-signals/stargazers) if you find this project useful.
 
 If you like this project, you might also like these related projects:
 
-- [**coinbase-pro-node**](https://github.com/bennyn/coinbase-pro-node), Actively maintained Coinbase Pro API written in TypeScript.
+- [**coinbase-pro-node**](https://github.com/bennycode/coinbase-pro-node), Actively maintained Coinbase Pro API written in TypeScript.
 - [**binance-api-node**](https://github.com/Ashlar/binance-api-node), Heavily tested and Promise-based Binance API.
 
 [1]: http://mikemcl.github.io/big.js/

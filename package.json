@@ -1,6 +1,6 @@
 {
   "bugs": {
-    "url": "https://github.com/bennyn/trading-signals/issues"
+    "url": "https://github.com/bennycode/trading-signals/issues"
   },
   "dependencies": {
     "@types/big.js": "6.0.0",
@@ -65,7 +65,7 @@
   "name": "trading-signals",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/bennyn/trading-signals.git"
+    "url": "git+https://github.com/bennycode/trading-signals.git"
   },
   "scripts": {
     "build": "tsc",
