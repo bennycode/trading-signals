@@ -64,7 +64,7 @@ describe('RSI', () => {
       expect(rsi.getResult().toFixed(0)).toBe('99');
     });
 
-    /** @see https://github.com/bennyn/trading-signals/issues/64 */
+    /** @see https://github.com/bennycode/trading-signals/issues/64 */
     it(`is compatible with results calculated by 'tulind'`, () => {
       const interval = 14;
       const rsi = new RSI(interval, SMMA);
