@@ -34,7 +34,7 @@
     "dist",
     "!dist/**/*.test.*"
   ],
-  "homepage": "https://documentup.com/bennyn/trading-signals",
+  "homepage": "https://documentup.com/bennycode/trading-signals",
   "keywords": [
     "adx",
     "analysis",
