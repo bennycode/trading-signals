@@ -1,15 +1,16 @@
 import Big, {BigSource} from 'big.js';
-import {SMA} from '..';
+import {EMA, SMA} from '..';
+import {MovingAverage} from '../MA/MovingAverage';
 
 export type DMAResult = {long: Big; short: Big};
 
 export class DMA {
-  public readonly long: SMA;
-  public readonly short: SMA;
+  public readonly long: MovingAverage;
+  public readonly short: MovingAverage;
 
-  constructor(short: number, long: number) {
-    this.short = new SMA(short);
-    this.long = new SMA(long);
+  constructor(short: number, long: number, Indicator: typeof EMA | typeof SMA = SMA) {
+    this.short = new Indicator(short);
+    this.long = new Indicator(long);
   }
 
   get isStable(): boolean {
