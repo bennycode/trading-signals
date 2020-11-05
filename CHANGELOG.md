@@ -1,3 +1,9 @@
+### 1.2.0 (2020-11-05)
+
+##### New Features
+
+- Add option to use EMA for DMA calculation ([#116](https://github.com/bennycode/trading-signals/pull/116)) ([90323796](https://github.com/bennycode/trading-signals/commit/90323796cc94604b6a84b5deb9f620d9e0d4b33b))
+
 #### 1.1.1 (2020-09-06)
 
 ### 1.1.0 (2020-09-04)
