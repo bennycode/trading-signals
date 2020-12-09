@@ -1,3 +1,9 @@
+#### 1.2.1 (2020-12-09)
+
+##### Bug Fixes
+
+- Check long interval when using moving average crossover with EMA ([#142](https://github.com/bennycode/trading-signals/pull/142)) ([4c218a9e](https://github.com/bennycode/trading-signals/commit/4c218a9e467dca41dd3579ed30ab55bbb2765f6e))
+
 ### 1.2.0 (2020-11-05)
 
 ##### New Features
