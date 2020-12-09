@@ -30,8 +30,19 @@ describe('DMA', () => {
   });
 
   describe('isStable', () => {
-    it('is dependant on the long interval', () => {
+    it('is dependant on the long interval (SMA)', () => {
       const dma = new DMA(3, 5);
+      dma.update(40);
+      dma.update(30);
+      dma.update(20);
+      expect(dma.isStable).toBeFalse();
+      dma.update(10);
+      dma.update(30);
+      expect(dma.isStable).toBeTrue();
+    });
+
+    it('is dependant on the long interval (EMA)', () => {
+      const dma = new DMA(3, 5, EMA);
       dma.update(40);
       dma.update(30);
       dma.update(20);

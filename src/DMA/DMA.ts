@@ -7,6 +7,7 @@ export type DMAResult = {long: Big; short: Big};
 export class DMA {
   public readonly long: MovingAverage;
   public readonly short: MovingAverage;
+  private received: number = 0;
 
   constructor(short: number, long: number, Indicator: typeof EMA | typeof SMA = SMA) {
     this.short = new Indicator(short);
@@ -14,14 +15,14 @@ export class DMA {
   }
 
   get isStable(): boolean {
-    return this.long.isStable;
+    return this.received >= this.long.interval;
   }
 
   update(_price: BigSource): void {
     const price = new Big(_price);
-
     this.short.update(price);
     this.long.update(price);
+    this.received += 1;
   }
 
   getResult(): DMAResult {
