@@ -52,6 +52,36 @@ console.log(sma.getResult().valueOf()); // "20"
 console.log(sma.getResult().toFixed(2)); // "20.00"
 ```
 
+## Good to know
+
+This library draws attention to miscalculations by throwing errors instead of returning default values. If you call `getResult()`, before an indicator has received the required amount of input values, a `NotEnoughDataError` will be thrown.
+
+**Example:**
+
+```ts
+import {SMA} from 'trading-signals';
+
+// Our interval is 3, so we need 3 input values
+const sma = new SMA(3);
+
+// We supply 2 input values
+sma.update(10);
+sma.update(40);
+
+try {
+  // We will get an error, because the minimum amount of inputs is 3
+  sma.getResult();
+} catch (error) {
+  console.log(error.constructor.name); // "NotEnoughDataError"
+}
+
+// We will supply the 3rd input value
+sma.update(70);
+
+// Now, we will receive a proper result
+console.log(sma.getResult().valueOf()); // "40"
+```
+
 ## Alternatives
 
 - [Tulip Indicators [ANSI C]](https://github.com/TulipCharts/tulipindicators)
