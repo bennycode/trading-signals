@@ -3,14 +3,14 @@ import Big, {BigSource} from 'big.js';
 import {DEMA, NotEnoughDataError} from '..';
 
 export type MACDConfig = {
+  indicator: typeof EMA | typeof DEMA;
   longInterval: number;
   shortInterval: number;
   signalInterval: number;
-  useDEMA: boolean;
 };
 
 export type MACDResult = {
-  diff: Big;
+  histogram: Big;
   macd: Big;
   signal: Big;
 };
@@ -24,9 +24,9 @@ export class MACD {
   private result: MACDResult | undefined;
 
   constructor(private readonly config: MACDConfig) {
-    this.long = config.useDEMA ? new DEMA(config.longInterval) : new EMA(config.longInterval);
-    this.short = config.useDEMA ? new DEMA(config.shortInterval) : new EMA(config.shortInterval);
-    this.signal = config.useDEMA ? new DEMA(config.signalInterval) : new EMA(config.signalInterval);
+    this.long = new config.indicator(config.longInterval);
+    this.short = new config.indicator(config.shortInterval);
+    this.signal = new config.indicator(config.signalInterval);
   }
 
   get isStable(): boolean {
@@ -54,13 +54,15 @@ export class MACD {
      */
     this.signal.update(diff);
 
+    const signal = this.signal.getResult();
+
     /**
      * The MACD-Histogram represents the difference between MACD and its 9-day EMA, the signal line.
      */
     this.result = {
-      diff: diff,
-      macd: diff.sub(this.signal.getResult()),
-      signal: this.signal.getResult(),
+      histogram: diff.sub(signal),
+      macd: diff,
+      signal,
     };
 
     this.age++;

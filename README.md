@@ -1,6 +1,6 @@
 # Trading Signals
 
-![Language Details](https://img.shields.io/github/languages/top/bennyn/trading-signals) ![Code Coverage](https://img.shields.io/codecov/c/github/bennyn/trading-signals/main) ![License](https://img.shields.io/npm/l/trading-signals.svg) ![Package Version](https://img.shields.io/npm/v/trading-signals.svg) ![Dependency Updates](https://img.shields.io/david/bennyn/trading-signals.svg)
+![Language Details](https://img.shields.io/github/languages/top/bennycode/trading-signals) ![Code Coverage](https://img.shields.io/codecov/c/github/bennycode/trading-signals/main) ![License](https://img.shields.io/npm/l/trading-signals.svg) ![Package Version](https://img.shields.io/npm/v/trading-signals.svg) ![Dependency Updates](https://img.shields.io/david/bennycode/trading-signals.svg)
 
 Technical indicators and overlays to run technical analysis with JavaScript / TypeScript.
 
@@ -52,9 +52,14 @@ console.log(sma.getResult().valueOf()); // "20"
 console.log(sma.getResult().toFixed(2)); // "20.00"
 ```
 
+## Alternatives
+
+- [Tulip Indicators [ANSI C]](https://github.com/TulipCharts/tulipindicators)
+- [Pandas TA [Python]](https://github.com/twopirllc/pandas-ta)
+
 ## Maintainers
 
-[![Benny Neugebauer on Stack Exchange][stack_exchange_bennyn_badge]][stack_exchange_bennyn_url]
+[![Benny Neugebauer on Stack Exchange][stack_exchange_bennycode_badge]][stack_exchange_bennycode_url]
 
 ## Contributing
 
@@ -76,5 +81,5 @@ If you like this project, you might also like these related projects:
 - [**binance-api-node**](https://github.com/Ashlar/binance-api-node), Heavily tested and Promise-based Binance API.
 
 [1]: http://mikemcl.github.io/big.js/
-[stack_exchange_bennyn_badge]: https://stackexchange.com/users/flair/203782.png?theme=default
-[stack_exchange_bennyn_url]: https://stackexchange.com/users/203782/benny-neugebauer?tab=accounts
+[stack_exchange_bennycode_badge]: https://stackexchange.com/users/flair/203782.png?theme=default
+[stack_exchange_bennycode_url]: https://stackexchange.com/users/203782/benny-neugebauer?tab=accounts
