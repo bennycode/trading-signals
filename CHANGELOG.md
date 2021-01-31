@@ -1,3 +1,9 @@
+### 1.3.0 (2021-01-31)
+
+##### Bug Fixes
+
+- Align MACD results with Tulip Indicators ([#171](https://github.com/bennycode/trading-signals/pull/171)) ([5923be10](https://github.com/bennycode/trading-signals/commit/5923be1078fb2c4964785d36fdf1d26096c19ac6))
+
 #### 1.2.1 (2020-12-09)
 
 ##### Bug Fixes
