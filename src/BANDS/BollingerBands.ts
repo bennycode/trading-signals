@@ -2,19 +2,14 @@ import Big, {BigSource} from 'big.js';
 import {SMA} from '../SMA/SMA';
 import {NotEnoughDataError} from '../error';
 import {MathAnalysis} from '../util';
-
-export type BollingerBandsResult = {
-  lower: Big;
-  middle: Big;
-  upper: Big;
-};
+import {BandsResult} from './BandsResult';
 
 export class BollingerBands {
   public readonly interval: number;
   public readonly deviationMultiplier: number;
   private readonly middleSMA: SMA;
   private readonly prices: Big[] = [];
-  private result: BollingerBandsResult | undefined;
+  private result: BandsResult | undefined;
 
   constructor(interval: number = 0, deviationMultiplier: number = 2) {
     this.interval = interval;
@@ -51,7 +46,7 @@ export class BollingerBands {
     };
   }
 
-  getResult(): BollingerBandsResult {
+  getResult(): BandsResult {
     if (!this.result) {
       throw new NotEnoughDataError();
     }

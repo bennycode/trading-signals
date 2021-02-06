@@ -40,7 +40,12 @@ describe('MACD', () => {
         '0.98',
         '0.62',
       ];
-      const indicator = new MACD({longInterval: 5, shortInterval: 2, signalInterval: 9, indicator: EMA});
+      const indicator = new MACD({
+        indicator: EMA,
+        longInterval: 5,
+        shortInterval: 2,
+        signalInterval: 9,
+      });
 
       for (const [index, input] of Object.entries(inputs)) {
         indicator.update(input);
@@ -54,7 +59,12 @@ describe('MACD', () => {
     });
 
     it('throws an error when there is not enough input data', () => {
-      const macd = new MACD({longInterval: 26, shortInterval: 12, signalInterval: 9, indicator: DEMA});
+      const macd = new MACD({
+        indicator: DEMA,
+        longInterval: 26,
+        shortInterval: 12,
+        signalInterval: 9,
+      });
 
       try {
         macd.getResult();
@@ -68,7 +78,12 @@ describe('MACD', () => {
   describe('isStable', () => {
     it('knows when it can return reliable data', () => {
       const longInterval = 18;
-      const macd = new MACD({longInterval, shortInterval: 9, signalInterval: 9, indicator: EMA});
+      const macd = new MACD({
+        indicator: EMA,
+        longInterval,
+        shortInterval: 9,
+        signalInterval: 9,
+      });
 
       const mockedPrices = [
         new Big('0.00019040'),
