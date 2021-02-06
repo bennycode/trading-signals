@@ -1,3 +1,9 @@
+### 1.4.0 (2021-02-06)
+
+##### New Features
+
+- Add Acceleration Bands (ABANDS) indicator ([#175](https://github.com/bennycode/trading-signals/pull/175)) ([67d1d881](https://github.com/bennycode/trading-signals/commit/67d1d8813cae2a9d6ea9b92926cc9114cc0d50b4))
+
 ### 1.3.0 (2021-01-31)
 
 ##### Bug Fixes
