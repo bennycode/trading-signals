@@ -43,7 +43,7 @@ export class AccelerationBands {
 
     // (Low * (1 - 4 * (High - Low)/ (High + Low)))
     this.lowerBand.update(new Big(low).mul(new Big(1).minus(coefficient)));
-    // Close
+    // (Close)
     this.middleBand.update(close);
     // (High * ( 1 + 4 * (High - Low) / (High + Low)))
     this.upperBand.update(new Big(high).mul(new Big(1).plus(coefficient)));
