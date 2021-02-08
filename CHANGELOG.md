@@ -1,3 +1,9 @@
+### 1.5.0 (2021-02-08)
+
+##### New Features
+
+- Expose read-only intervals ([f849a8c5](https://github.com/bennycode/trading-signals/commit/f849a8c5c01f1f2c25833b9425040f8b52e2dffd))
+
 ### 1.4.0 (2021-02-06)
 
 ##### New Features
