@@ -12,19 +12,23 @@ export class AccelerationBands {
   /**
    * Acceleration Bands
    *
-   * @param period The period of the three moving average (middle, upper and lower band)
-   * @param width A coefficient specifying the distance between the middle band and upper or lower bands
-   * @param Indicator Which indicator (EMA, SMA) to use
+   * @param interval The interval that is being used for the three moving averages which create lower, middle and upper bands
+   * @param width A coefficient specifying the distance between the middle band and upper/lower bands
+   * @param Indicator Which average (SMA, EMA) to use
    *
    * @see https://www.tradingtechnologies.com/xtrader-help/x-study/technical-indicator-definitions/acceleration-bands-abands/
    * @see https://www.motivewave.com/studies/acceleration_bands.htm
    * @see https://github.com/QuantConnect/Lean/blob/master/Indicators/AccelerationBands.cs
    * @see https://github.com/twopirllc/pandas-ta/blob/master/pandas_ta/volatility/accbands.py
    */
-  constructor(public readonly period: number, public readonly width: number, Indicator: typeof EMA | typeof SMA = SMA) {
-    this.lowerBand = new Indicator(period);
-    this.middleBand = new Indicator(period);
-    this.upperBand = new Indicator(period);
+  constructor(
+    public readonly interval: number,
+    public readonly width: number,
+    Indicator: typeof EMA | typeof SMA = SMA
+  ) {
+    this.lowerBand = new Indicator(interval);
+    this.middleBand = new Indicator(interval);
+    this.upperBand = new Indicator(interval);
   }
 
   get isStable(): boolean {
