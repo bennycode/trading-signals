@@ -8,7 +8,6 @@ export class AccelerationBands {
   private readonly lowerBand: EMA | SMA;
   private readonly middleBand: EMA | SMA;
   private readonly upperBand: EMA | SMA;
-  private readonly width: Big;
 
   /**
    * Acceleration Bands
@@ -22,11 +21,10 @@ export class AccelerationBands {
    * @see https://github.com/QuantConnect/Lean/blob/master/Indicators/AccelerationBands.cs
    * @see https://github.com/twopirllc/pandas-ta/blob/master/pandas_ta/volatility/accbands.py
    */
-  constructor(period: number, width: number, Indicator: typeof EMA | typeof SMA = SMA) {
+  constructor(public readonly period: number, public readonly width: number, Indicator: typeof EMA | typeof SMA = SMA) {
     this.lowerBand = new Indicator(period);
     this.middleBand = new Indicator(period);
     this.upperBand = new Indicator(period);
-    this.width = new Big(width);
   }
 
   get isStable(): boolean {
@@ -39,7 +37,7 @@ export class AccelerationBands {
   }
 
   update(high: BigSource, low: BigSource, close: BigSource): void {
-    const coefficient = this.width.mul(new Big(high).minus(low).div(new Big(high).plus(low)));
+    const coefficient = new Big(high).minus(low).div(new Big(high).plus(low)).mul(this.width);
 
     // (Low * (1 - 4 * (High - Low)/ (High + Low)))
     this.lowerBand.update(new Big(low).mul(new Big(1).minus(coefficient)));

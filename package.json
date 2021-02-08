@@ -86,7 +86,8 @@
     "release:minor": "generate-changelog -m -x \"chore,docs,refactor,style,test\" && yarn changelog:commit && npm version minor",
     "release:patch": "generate-changelog -p -x \"chore,docs,refactor,style,test\" && yarn changelog:commit && npm version patch",
     "test": "nyc --nycrc-path=nyc.config.coverage.json jasmine --config=jasmine.json",
-    "test:dev": "nyc --nycrc-path=nyc.config.json jasmine --config=jasmine.json"
+    "test:dev": "nyc --nycrc-path=nyc.config.json jasmine --config=jasmine.json",
+    "test:types": "yarn lint:types"
   },
   "version": "1.4.0"
 }

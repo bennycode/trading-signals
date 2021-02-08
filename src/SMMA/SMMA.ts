@@ -8,7 +8,7 @@ class SMMA extends MovingAverage {
   private readonly prices: Big[] = [];
   private readonly sma: SMA;
 
-  constructor(interval: number) {
+  constructor(public readonly interval: number) {
     super(interval);
     this.sma = new SMA(interval);
     this.result = new Big(0);

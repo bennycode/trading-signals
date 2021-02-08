@@ -16,10 +16,10 @@ export type MACDResult = {
 };
 
 export class MACD {
-  private readonly long: EMA | DEMA;
-  private readonly short: EMA | DEMA;
-  private readonly signal: EMA | DEMA;
+  public readonly long: EMA | DEMA;
+  public readonly short: EMA | DEMA;
 
+  private readonly signal: EMA | DEMA;
   private age: number = 0;
   private result: MACDResult | undefined;
 

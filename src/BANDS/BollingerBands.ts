@@ -5,15 +5,11 @@ import {MathAnalysis} from '../util';
 import {BandsResult} from './BandsResult';
 
 export class BollingerBands {
-  public readonly interval: number;
-  public readonly deviationMultiplier: number;
   private readonly middleSMA: SMA;
   private readonly prices: Big[] = [];
   private result: BandsResult | undefined;
 
-  constructor(interval: number = 0, deviationMultiplier: number = 2) {
-    this.interval = interval;
-    this.deviationMultiplier = deviationMultiplier;
+  constructor(public readonly interval: number = 0, public readonly deviationMultiplier: number = 2) {
     this.middleSMA = new SMA(this.interval);
   }
 

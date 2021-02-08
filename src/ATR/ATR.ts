@@ -11,16 +11,13 @@ export type ATRCandle = {close: BigSource; high: BigSource; low: BigSource};
  * waning interest.
  */
 export class ATR {
-  private readonly interval: number;
   private readonly smma: SMMA;
   private readonly candles: ATRCandle[] = [];
 
   private result: Big | undefined;
   private prevCandle: ATRCandle | undefined;
 
-  constructor(interval: number) {
-    this.interval = interval;
-
+  constructor(public readonly interval: number) {
     this.smma = new SMMA(interval);
   }
 

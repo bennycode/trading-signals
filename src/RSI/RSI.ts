@@ -9,7 +9,7 @@ export class RSI {
   private readonly avgGain: MovingAverage;
   private readonly avgLoss: MovingAverage;
 
-  constructor(private readonly interval: number, Indicator: typeof EMA | typeof SMMA = SMMA) {
+  constructor(public readonly interval: number, Indicator: typeof EMA | typeof SMMA = SMMA) {
     this.avgGain = new Indicator(this.interval);
     this.avgLoss = new Indicator(this.interval);
     this.result = new Big(0);

@@ -7,7 +7,7 @@ export class DEMA {
   private readonly inner: EMA;
   private readonly outer: EMA;
 
-  constructor(interval: number) {
+  constructor(public readonly interval: number) {
     this.inner = new EMA(interval);
     this.outer = new EMA(interval);
   }

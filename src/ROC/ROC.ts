@@ -2,11 +2,10 @@ import Big, {BigSource} from 'big.js';
 import {NotEnoughDataError} from '../error';
 
 export class ROC {
-  private readonly interval: number;
   private readonly priceHistory: Big[] = [];
   private result: Big | undefined;
 
-  constructor(interval: number) {
+  constructor(public readonly interval: number) {
     this.interval = interval;
   }
 
