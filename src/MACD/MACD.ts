@@ -30,7 +30,7 @@ export class MACD {
   }
 
   get isStable(): boolean {
-    return this.age >= this.config.longInterval;
+    return this.age >= Math.max(this.config.longInterval, this.config.shortInterval, this.config.signalInterval);
   }
 
   update(_price: BigSource): void {
