@@ -1,8 +1,9 @@
 import Big, {BigSource} from 'big.js';
 import {EMA, NotEnoughDataError, SMMA} from '..';
 import {MovingAverage} from '../MA/MovingAverage';
+import {SimpleIndicator} from '../Indicator';
 
-export class RSI {
+export class RSI implements SimpleIndicator {
   private readonly prices: Big[] = [];
   private result: Big;
 

@@ -1,10 +1,11 @@
 import Big, {BigSource} from 'big.js';
 import {EMA, SMA} from '..';
 import {MovingAverage} from '../MA/MovingAverage';
+import {Indicator} from '../Indicator';
 
 export type DMAResult = {long: Big; short: Big};
 
-export class DMA {
+export class DMA implements Indicator {
   public readonly long: MovingAverage;
   public readonly short: MovingAverage;
   private received: number = 0;

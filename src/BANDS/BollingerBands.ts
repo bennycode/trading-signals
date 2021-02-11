@@ -3,8 +3,9 @@ import {SMA} from '../SMA/SMA';
 import {NotEnoughDataError} from '../error';
 import {MathAnalysis} from '../util';
 import {BandsResult} from './BandsResult';
+import {Indicator} from '../Indicator';
 
-export class BollingerBands {
+export class BollingerBands implements Indicator {
   private readonly middleSMA: SMA;
   private readonly prices: Big[] = [];
   private result: BandsResult | undefined;

@@ -1,7 +1,8 @@
 import Big, {BigSource} from 'big.js';
 import {EMA, NotEnoughDataError} from '..';
+import {SimpleIndicator} from '../Indicator';
 
-export class DEMA {
+export class DEMA implements SimpleIndicator {
   private result: Big | undefined;
 
   private readonly inner: EMA;
@@ -17,6 +18,16 @@ export class DEMA {
     this.outer.update(this.inner.getResult());
 
     this.result = this.inner.getResult().times(2).sub(this.outer.getResult());
+  }
+
+  get isStable(): boolean {
+    try {
+      this.inner.getResult();
+      this.outer.getResult();
+      return true;
+    } catch (error) {
+      return false;
+    }
   }
 
   getResult(): Big {

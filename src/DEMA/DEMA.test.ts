@@ -30,4 +30,14 @@ describe('DEMA', () => {
       }
     });
   });
+
+  describe('isStable', () => {
+    it('is stable when there are enough inputs to fill the interval', () => {
+      const dema = new DEMA(2);
+      expect(dema.isStable).toBeFalse();
+      dema.update(1);
+      dema.update(2);
+      expect(dema.isStable).toBeTrue();
+    });
+  });
 });

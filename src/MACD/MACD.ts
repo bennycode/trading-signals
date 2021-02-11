@@ -1,6 +1,7 @@
 import {EMA} from '../EMA/EMA';
 import Big, {BigSource} from 'big.js';
 import {DEMA, NotEnoughDataError} from '..';
+import {Indicator} from '../Indicator';
 
 export type MACDConfig = {
   indicator: typeof EMA | typeof DEMA;
@@ -15,7 +16,7 @@ export type MACDResult = {
   signal: Big;
 };
 
-export class MACD {
+export class MACD implements Indicator {
   public readonly long: EMA | DEMA;
   public readonly short: EMA | DEMA;
 

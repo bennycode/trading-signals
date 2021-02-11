@@ -1,7 +1,8 @@
 import Big, {BigSource} from 'big.js';
 import {NotEnoughDataError} from '../error';
+import {SimpleIndicator} from '../Indicator';
 
-export class ROC {
+export class ROC implements SimpleIndicator {
   private readonly priceHistory: Big[] = [];
   private result: Big | undefined;
 

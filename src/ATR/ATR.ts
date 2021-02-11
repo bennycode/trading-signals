@@ -1,5 +1,6 @@
 import Big, {BigSource} from 'big.js';
 import {NotEnoughDataError, SMMA} from '..';
+import {SimpleIndicator} from '../Indicator';
 
 export type ATRCandle = {close: BigSource; high: BigSource; low: BigSource};
 
@@ -10,7 +11,7 @@ export type ATRCandle = {close: BigSource; high: BigSource; low: BigSource};
  * traders prepared to continue to bid up or sell down a stock through the course of the day. Decreasing range suggests
  * waning interest.
  */
-export class ATR {
+export class ATR implements SimpleIndicator {
   private readonly smma: SMMA;
   private readonly candles: ATRCandle[] = [];
 

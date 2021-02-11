@@ -1,7 +1,7 @@
 import {Big} from 'big.js';
-
 import {NotEnoughDataError} from '../error';
 import {ATR, ATRCandle, MathAnalysis, SMMA} from '..';
+import {SimpleIndicator} from '../Indicator';
 
 /**
  * Average Directional Index
@@ -14,7 +14,7 @@ import {ATR, ATRCandle, MathAnalysis, SMMA} from '..';
  * Generally, ADX readings below 20 indicate trend weakness, and readings above 40 indicate trend strength.
  * An extremely strong trend is indicated by readings above 50.
  */
-export class ADX {
+export class ADX implements SimpleIndicator {
   private readonly interval: number;
   private readonly candles: ATRCandle[] = [];
 

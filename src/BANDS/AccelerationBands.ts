@@ -3,8 +3,9 @@ import {EMA} from '../EMA/EMA';
 import Big, {BigSource} from 'big.js';
 import {NotEnoughDataError} from '../error';
 import {BandsResult} from './BandsResult';
+import {Indicator} from '../Indicator';
 
-export class AccelerationBands {
+export class AccelerationBands implements Indicator {
   private readonly lowerBand: EMA | SMA;
   private readonly middleBand: EMA | SMA;
   private readonly upperBand: EMA | SMA;
@@ -12,7 +13,8 @@ export class AccelerationBands {
   /**
    * Acceleration Bands
    *
-   * @param interval The interval that is being used for the three moving averages which create lower, middle and upper bands
+   * @param interval The interval that is being used for the three moving averages which create lower, middle and upper
+   *   bands
    * @param width A coefficient specifying the distance between the middle band and upper/lower bands
    * @param Indicator Which average (SMA, EMA) to use
    *
