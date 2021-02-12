@@ -1,6 +1,7 @@
 export * from './ADX/ADX';
 export * from './ATR/ATR';
 export * from './BANDS';
+export * from './CG/CG';
 export * from './DEMA/DEMA';
 export * from './DMA/DMA';
 export * from './EMA/EMA';
