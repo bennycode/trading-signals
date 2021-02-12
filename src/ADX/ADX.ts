@@ -15,20 +15,15 @@ import {SimpleIndicator} from '../Indicator';
  * An extremely strong trend is indicated by readings above 50.
  */
 export class ADX implements SimpleIndicator {
-  private readonly interval: number;
   private readonly candles: ATRCandle[] = [];
-
   private readonly atr: ATR;
   private readonly smoothedPDM: SMMA;
   private readonly smoothedMDM: SMMA;
   private readonly dxValues: Big[] = [];
-
   private prevCandle: ATRCandle | undefined;
   private result: Big | undefined;
 
-  constructor(interval: number) {
-    this.interval = interval;
-
+  constructor(public interval: number) {
     this.atr = new ATR(interval);
     this.smoothedPDM = new SMMA(interval);
     this.smoothedMDM = new SMMA(interval);
