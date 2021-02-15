@@ -112,7 +112,8 @@ This project is [MIT](./LICENSE) licensed.
 If you like this project, you might also like these related projects:
 
 - [**coinbase-pro-node**](https://github.com/bennycode/coinbase-pro-node), Actively maintained Coinbase Pro API written in TypeScript.
-- [**binance-api-node**](https://github.com/Ashlar/binance-api-node), Heavily tested and Promise-based Binance API.
+- [**ig-trading-api**](https://github.com/bennycode/ig-trading-api), IG CFD Trading API written in TypeScript.
+- [**binance-api-node**](https://github.com/Ashlar/binance-api-node), Heavily tested and Promise-based Binance API with TypeScript definitions.
 
 [1]: http://mikemcl.github.io/big.js/
 [stack_exchange_bennycode_badge]: https://stackexchange.com/users/flair/203782.png?theme=default
