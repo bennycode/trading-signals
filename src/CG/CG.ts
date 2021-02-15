@@ -8,7 +8,7 @@ import {NotEnoughDataError} from '../error';
  *
  * @note According to the specification, the price inputs shall be calculated the following way:
  * ((High Price + Low Price) / 2)
- * @note The selected interval should be half the dominant cycle length
+ * @note The selected interval should be half the dominant cycle length (signal line)
  * @note If the interval gets too short, the CG oscillator loses its smoothing and gets a little too nervous for
  *   profitable trading
  * @see http://www.mesasoftware.com/papers/TheCGOscillator.pdf
@@ -51,7 +51,7 @@ export class CG implements SimpleIndicator {
   }
 
   getResult(): Big {
-    if (!this.result) {
+    if (!this.isStable || !this.result) {
       throw new NotEnoughDataError();
     }
 
