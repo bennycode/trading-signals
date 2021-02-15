@@ -20,6 +20,7 @@ Provide a TypeScript implementation for common technical indicators with arbitra
 1. Average Directional Index (ADX)
 1. Average True Range (ATR)
 1. Bollinger Bands (BBANDS)
+1. Center of Gravity (CG)
 1. Double Exponential Moving Average (DEMA)
 1. Double Moving Average (DMA)
 1. Exponential Moving Average (EMA)
@@ -85,8 +86,10 @@ console.log(sma.getResult().valueOf()); // "40"
 
 ## Alternatives
 
-- [Tulip Indicators [ANSI C]](https://github.com/TulipCharts/tulipindicators)
-- [Pandas TA [Python]](https://github.com/twopirllc/pandas-ta)
+- [Tulip Indicators (ANSI C)](https://github.com/TulipCharts/tulipindicators)
+- [Pandas TA (Python)](https://github.com/twopirllc/pandas-ta)
+- [libindicators (C#)](https://github.com/mgfx/libindicators)
+- [Cloud9Trader Technical Indicators (JavaScript)](https://github.com/Cloud9Trader/TechnicalIndicators)
 
 ## Maintainers
 
