@@ -13,3 +13,6 @@ update_configs:
           update_type: 'all'
     target_branch: 'main'
     version_requirement_updates: 'auto'
+    ignored_updates:
+      - match:
+          dependency_name: "husky"
