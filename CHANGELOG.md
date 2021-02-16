@@ -1,3 +1,10 @@
+### 1.6.0 (2021-02-16)
+
+##### New Features
+
+- Add Center of Gravity (CG) oscillator ([#185](https://github.com/bennycode/trading-signals/pull/185)) ([f5aa6137](https://github.com/bennycode/trading-signals/commit/f5aa6137b8d2186443c2e4ea9e77661fc9e2b7e8))
+- **ADX:** Make interval public ([81351743](https://github.com/bennycode/trading-signals/commit/813517436ed8845769f097ef5ed55af651d84093))
+
 #### 1.5.1 (2021-02-08)
 
 ### 1.5.0 (2021-02-08)
