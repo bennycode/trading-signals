@@ -15,4 +15,4 @@ update_configs:
     version_requirement_updates: 'auto'
     ignored_updates:
       - match:
-          dependency_name: "husky"
+          dependency_name: 'husky'
