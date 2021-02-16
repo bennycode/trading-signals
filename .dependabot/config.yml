@@ -16,3 +16,4 @@ update_configs:
     ignored_updates:
       - match:
           dependency_name: 'husky'
+          version_requirement: '>= 5'
