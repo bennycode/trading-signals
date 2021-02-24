@@ -89,7 +89,8 @@ console.log(sma.getResult().valueOf()); // "40"
 - [Tulip Indicators (ANSI C)](https://github.com/TulipCharts/tulipindicators)
 - [Pandas TA (Python)](https://github.com/twopirllc/pandas-ta)
 - [libindicators (C#)](https://github.com/mgfx/libindicators)
-- [Cloud9Trader Technical Indicators (JavaScript)](https://github.com/Cloud9Trader/TechnicalIndicators)
+- [Cloud9Trader Indicators (JavaScript)](https://github.com/Cloud9Trader/TechnicalIndicators)
+- [Crypto Trading Hub Indicators (TypeScript)](https://github.com/anandanand84/technicalindicators)
 
 ## Maintainers
 
