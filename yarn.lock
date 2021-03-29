@@ -240,10 +240,10 @@
   resolved "https://registry.npmjs.org/@types/big.js/-/big.js-6.0.2.tgz#a86938c1bb4511e69d91f69823cacc3f48ff1fa3"
   integrity sha512-7NdmOT3zjtghMofDwP1nAJCJWVjc/96V5msXRAZ4lPrvpGlajA95VQec7OXwA2wQaVmhjt+F5ko8pjvQU1tTFA==
 
-"@types/jasmine@3.6.7":
-  version "3.6.7"
-  resolved "https://registry.npmjs.org/@types/jasmine/-/jasmine-3.6.7.tgz#e762d3ead78538efb7900ab932d7daf334acb0b4"
-  integrity sha512-8dtfiykrpe4Ysn6ONj0tOjmpDIh1vWxPk80eutSeWmyaJvAZXZ84219fS4gLrvz05eidhp7BP17WVQBaXHSyXQ==
+"@types/jasmine@3.6.9":
+  version "3.6.9"
+  resolved "https://registry.npmjs.org/@types/jasmine/-/jasmine-3.6.9.tgz#8785870f87839b7d91b45d7b226380f28dee5d9f"
+  integrity sha512-B53NIwMj/AO0O+xfSWLYmKB0Mo6TYxfv2Mk8/c1T2w/e38t55iaPR6p7pHXTTtqfTmevPK3i8T1YweYFTZlxDw==
 
 "@types/json-schema@^7.0.3":
   version "7.0.7"
