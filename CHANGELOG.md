@@ -1,3 +1,9 @@
+#### 1.6.1 (2021-04-17)
+
+##### Bug Fixes
+
+- **macd:** Ensure MACD histogram compatibility with Tulip Indicators ([#219](https://github.com/bennycode/trading-signals/pull/219)) ([3e27d4e9](https://github.com/bennycode/trading-signals/commit/3e27d4e9caf2f8d4a43851158f57527439ae2f09))
+
 ### 1.6.0 (2021-02-16)
 
 ##### New Features
