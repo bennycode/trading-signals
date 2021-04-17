@@ -23,6 +23,7 @@ describe('MACD', () => {
         87.77,
         87.29,
       ];
+
       const expectedMacds = [
         undefined,
         undefined,
@@ -40,6 +41,43 @@ describe('MACD', () => {
         '0.98',
         '0.62',
       ];
+
+      const expectedMacdSignals = [
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        '0.62',
+        '0.56',
+        '0.47',
+        '0.46',
+        '0.49',
+        '0.47',
+        '0.51', // Note: Tulip indicators example (https://tulipindicators.org/macd) shows "0.52" because they are rounding "0.51492" up.
+        '0.60',
+        '0.66',
+        '0.72',
+        '0.70',
+      ];
+
+      const expectedMacdHistograms = [
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        '0.00',
+        '-0.21',
+        '-0.36',
+        '-0.05',
+        '0.09',
+        '-0.05',
+        '0.17',
+        '0.33',
+        '0.24',
+        '0.26',
+        '-0.08',
+      ];
+
       const indicator = new MACD({
         indicator: EMA,
         longInterval: 5,
@@ -50,10 +88,16 @@ describe('MACD', () => {
       for (const [index, input] of Object.entries(inputs)) {
         indicator.update(input);
 
-        const expectedMacd = expectedMacds[parseInt(index, 10)];
+        const key = parseInt(index, 10);
+        const expectedMacd = expectedMacds[key]!;
+        const expectedMacdSignal = expectedMacdSignals[key]!;
+        const expectedMacdHistogram = expectedMacdHistograms[key]!;
+
         if (expectedMacd !== undefined) {
-          const {macd} = indicator.getResult();
-          expect(macd.toFixed(2)).toBe(expectedMacd);
+          const result = indicator.getResult();
+          expect(result.macd.toFixed(2)).withContext('MACD').toBe(expectedMacd);
+          expect(result.signal.toFixed(2)).withContext('MACD Signal').toBe(expectedMacdSignal);
+          expect(result.histogram.toFixed(2)).withContext('MACD Histogram').toBe(expectedMacdHistogram);
         }
       }
     });
