@@ -31,7 +31,7 @@ export class MACD implements Indicator {
   }
 
   get isStable(): boolean {
-    return this.age >= Math.max(this.config.longInterval, this.config.shortInterval, this.config.signalInterval);
+    return this.age >= this.config.longInterval;
   }
 
   update(_price: BigSource): void {
@@ -39,6 +39,7 @@ export class MACD implements Indicator {
 
     this.short.update(price);
     this.long.update(price);
+    this.age++;
 
     const shortEMA = this.short.getResult();
     const longEMA = this.long.getResult();
@@ -47,30 +48,30 @@ export class MACD implements Indicator {
      * Standard MACD is the short (usually 12 periods) EMA less the long (usually 26 periods) EMA. Closing prices are
      * used to form the moving averages.
      */
-    const diff = shortEMA.sub(longEMA);
+    const macd = shortEMA.sub(longEMA);
+
+    if (this.isStable) {
+      /**
+       * A short (usually 9 periods) EMA of MACD is plotted along side to act as a signal line to identify turns in the
+       * indicator. It gets updated once the long EMA has enough input data.
+       */
+      this.signal.update(macd);
+    }
+
+    const signal = this.isStable ? this.signal.getResult() : new Big(0);
 
     /**
-     * A short (usually 9 periods) EMA of MACD is plotted along side to act as a signal line to identify turns in the
-     * indicator.
-     */
-    this.signal.update(diff);
-
-    const signal = this.signal.getResult();
-
-    /**
-     * The MACD-Histogram represents the difference between MACD and its 9-day EMA, the signal line.
+     * The MACD histogram is calculated as the MACD indicator minus the signal line (usually 9 periods) EMA.
      */
     this.result = {
-      histogram: diff.sub(signal),
-      macd: diff,
+      histogram: macd.sub(signal),
+      macd: macd,
       signal,
     };
-
-    this.age++;
   }
 
   getResult(): MACDResult {
-    if (!this.result) {
+    if (!this.isStable || !this.result) {
       throw new NotEnoughDataError();
     }
 
