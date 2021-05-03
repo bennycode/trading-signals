@@ -4,7 +4,7 @@
   },
   "dependencies": {
     "@types/big.js": "6.0.2",
-    "big.js": "6.0.3"
+    "big.js": "6.1.0"
   },
   "description": "Technical indicators to run technical analysis with JavaScript / TypeScript.",
   "devDependencies": {
