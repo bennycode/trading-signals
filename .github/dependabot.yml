@@ -3,6 +3,7 @@ updates:
   - package-ecosystem: npm
     directory: '/'
     schedule:
+      day: monday
       interval: weekly
       time: '02:00'
     pull-request-branch-name:
