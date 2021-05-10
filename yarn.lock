@@ -471,10 +471,10 @@ balanced-match@^1.0.0:
   resolved "https://registry.npmjs.org/balanced-match/-/balanced-match-1.0.0.tgz#89b4d199ab2bee49de164ea02b89ce462d71b767"
   integrity sha1-ibTRmasr7kneFk6gK4nORi1xt2c=
 
-big.js@6.1.0:
-  version "6.1.0"
-  resolved "https://registry.npmjs.org/big.js/-/big.js-6.1.0.tgz#98d9f6479082211c6ff6e76d3cf4ce66347f4210"
-  integrity sha512-63M0bP7/NdPR2blqkkw8fBfoXg/izt0FpvqmmknYdG1bA5A2nCFUpbGLQJuHXlzmkIBTJqfe6gKzlOYN7uHiJQ==
+big.js@6.1.1:
+  version "6.1.1"
+  resolved "https://registry.npmjs.org/big.js/-/big.js-6.1.1.tgz#63b35b19dc9775c94991ee5db7694880655d5537"
+  integrity sha512-1vObw81a8ylZO5ePrtMay0n018TcftpTA5HFKDaSuiUDBo8biRBtjIobw60OpwuvrGk+FsxKamqN4cnmj/eXdg==
 
 bluebird@^3.0.6:
   version "3.7.2"
