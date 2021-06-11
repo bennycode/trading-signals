@@ -1,7 +1,15 @@
 import {Big} from 'big.js';
 import {NotEnoughDataError} from '../error';
 import {ATR, ATRCandle, MathAnalysis, SMMA} from '..';
-import {SimpleIndicator} from '../Indicator';
+import {Indicator} from '../Indicator';
+
+export type ADXResult = {
+  adx: Big;
+  /** Minus Directional Indicator (-DI) */
+  mdi: Big;
+  /** Plus Directional Indicator (+DI) */
+  pdi: Big;
+};
 
 /**
  * Average Directional Index
@@ -14,14 +22,16 @@ import {SimpleIndicator} from '../Indicator';
  * Generally, ADX readings below 20 indicate trend weakness, and readings above 40 indicate trend strength.
  * An extremely strong trend is indicated by readings above 50.
  */
-export class ADX implements SimpleIndicator {
+export class ADX implements Indicator {
   private readonly candles: ATRCandle[] = [];
   private readonly atr: ATR;
   private readonly smoothedPDM: SMMA;
   private readonly smoothedMDM: SMMA;
   private readonly dxValues: Big[] = [];
   private prevCandle: ATRCandle | undefined;
-  private result: Big | undefined;
+  private adx: Big | undefined;
+  private pdi: Big = new Big(0);
+  private mdi: Big = new Big(0);
 
   constructor(public interval: number) {
     this.atr = new ATR(interval);
@@ -55,7 +65,7 @@ export class ADX implements SimpleIndicator {
     this.smoothedMDM.update(mdm);
     this.smoothedPDM.update(pdm);
 
-    // prevCandle isn't needed anymore therefore we can update it for the next iteration.
+    // Previous candle isn't needed anymore therefore we can update it for the next iteration.
     this.prevCandle = candle;
 
     if (this.candles.length <= this.interval) {
@@ -69,7 +79,7 @@ export class ADX implements SimpleIndicator {
      *
      * This is the green Plus Directional Indicator line (+DI) when plotting.
      */
-    const pdi = this.smoothedPDM.getResult().div(this.atr.getResult()).times(100);
+    this.pdi = this.smoothedPDM.getResult().div(this.atr.getResult()).times(100);
 
     /**
      * Divide the smoothed Minus Directional Movement (-DM)
@@ -78,7 +88,7 @@ export class ADX implements SimpleIndicator {
      *
      * This is the red Minus Directional Indicator line (-DI) when plotting.
      */
-    const mdi = this.smoothedMDM.getResult().div(this.atr.getResult()).times(100);
+    this.mdi = this.smoothedMDM.getResult().div(this.atr.getResult()).times(100);
 
     /**
      * The Directional Movement Index (DX) equals
@@ -87,7 +97,7 @@ export class ADX implements SimpleIndicator {
      *
      * Multiply by 100 to move the decimal point two places.
      */
-    const dx = pdi.sub(mdi).abs().div(pdi.add(mdi)).times(100);
+    const dx = this.pdi.sub(this.mdi).abs().div(this.pdi.add(this.mdi)).times(100);
 
     /**
      * The dx values only really have to be kept for the very first ADX calculation
@@ -105,11 +115,11 @@ export class ADX implements SimpleIndicator {
       return;
     }
 
-    if (!this.result) {
+    if (!this.adx) {
       /**
        * The first ADX value is simply a <interval> average of DX.
        */
-      this.result = MathAnalysis.getAverage(this.dxValues);
+      this.adx = MathAnalysis.getAverage(this.dxValues);
       return;
     }
 
@@ -119,17 +129,21 @@ export class ADX implements SimpleIndicator {
      * adding the most recent DX value,
      * and dividing this total by <interval>.
      */
-    this.result = this.result
+    this.adx = this.adx
       .times(this.interval - 1)
       .add(dx)
       .div(this.interval);
   }
 
-  getResult(): Big {
-    if (!this.result) {
+  getResult(): ADXResult {
+    if (!this.adx) {
       throw new NotEnoughDataError();
     }
-    return this.result;
+    return {
+      adx: this.adx,
+      mdi: this.mdi,
+      pdi: this.pdi,
+    };
   }
 
   private directionalMovement(prevCandle: ATRCandle, currentCandle: ATRCandle): {mdm: Big; pdm: Big} {
