@@ -1,3 +1,9 @@
+### 1.7.0 (2021-06-11)
+
+##### New Features
+
+- **ADX:** Return directional indicators (+DI & -DI) ([458466fe](https://github.com/bennycode/trading-signals/commit/458466fe51109c5bd9742e51da6b1bf6abd419e9))
+
 #### 1.6.1 (2021-04-17)
 
 ##### Bug Fixes
