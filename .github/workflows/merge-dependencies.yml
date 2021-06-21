@@ -13,6 +13,8 @@ jobs:
         node-version: [12.x]
     if: github.actor == 'dependabot[bot]'
     steps:
+      - name: 'Checkout repository'
+        uses: actions/checkout@v2.3.4
       - name: 'Automerge dependency updates from Dependabot'
         uses: ahmadnassri/action-dependabot-auto-merge@v2.4.0
         # Guarantee that commit comes from Dependabot (don't blindly trust external GitHub Actions)
