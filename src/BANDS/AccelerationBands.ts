@@ -5,7 +5,7 @@ import {NotEnoughDataError} from '../error';
 import {BandsResult} from './BandsResult';
 import {Indicator} from '../Indicator';
 
-export class AccelerationBands implements Indicator {
+export class AccelerationBands implements Indicator<BandsResult> {
   private readonly lowerBand: EMA | SMA;
   private readonly middleBand: EMA | SMA;
   private readonly upperBand: EMA | SMA;

@@ -16,7 +16,7 @@ export type MACDResult = {
   signal: Big;
 };
 
-export class MACD implements Indicator {
+export class MACD implements Indicator<MACDResult> {
   public readonly long: EMA | DEMA;
   public readonly short: EMA | DEMA;
 

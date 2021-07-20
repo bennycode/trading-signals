@@ -5,7 +5,7 @@ import {MathAnalysis} from '../util';
 import {BandsResult} from './BandsResult';
 import {Indicator} from '../Indicator';
 
-export class BollingerBands implements Indicator {
+export class BollingerBands implements Indicator<BandsResult> {
   private readonly middleSMA: SMA;
   private readonly prices: Big[] = [];
   private result: BandsResult | undefined;

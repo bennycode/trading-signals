@@ -22,7 +22,7 @@ export type ADXResult = {
  * Generally, ADX readings below 20 indicate trend weakness, and readings above 40 indicate trend strength.
  * An extremely strong trend is indicated by readings above 50.
  */
-export class ADX implements Indicator {
+export class ADX implements Indicator<ADXResult> {
   private readonly candles: ATRCandle[] = [];
   private readonly atr: ATR;
   private readonly smoothedPDM: SMMA;

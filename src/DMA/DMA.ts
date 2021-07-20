@@ -5,7 +5,7 @@ import {Indicator} from '../Indicator';
 
 export type DMAResult = {long: Big; short: Big};
 
-export class DMA implements Indicator {
+export class DMA implements Indicator<DMAResult> {
   public readonly long: MovingAverage;
   public readonly short: MovingAverage;
   private received: number = 0;
