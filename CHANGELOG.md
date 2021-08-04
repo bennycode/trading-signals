@@ -1,3 +1,9 @@
+### 1.9.0 (2021-08-04)
+
+##### New Features
+
+- Add Awesome Oscillator (AO) ([#287](https://github.com/bennycode/trading-signals/pull/287)) ([2dcba835](https://github.com/bennycode/trading-signals/commit/2dcba835b4f873848cefc034cab3e21348c51046))
+
 ### 1.8.0 (2021-07-20)
 
 ### 1.7.0 (2021-06-11)
