@@ -1,4 +1,5 @@
 import {AO} from './AO';
+import {NotEnoughDataError} from '../error';
 
 describe('AO', () => {
   describe('getResult', () => {
@@ -37,6 +38,17 @@ describe('AO', () => {
           const expected = aos.shift();
           expect(parseFloat(actual)).toBe(expected!);
         }
+      }
+    });
+
+    it('throws an error when there is not enough input data', () => {
+      const ao = new AO(5, 34);
+
+      try {
+        ao.getResult();
+        fail('Expected error');
+      } catch (error) {
+        expect(error).toBeInstanceOf(NotEnoughDataError);
       }
     });
   });
