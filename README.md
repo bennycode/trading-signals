@@ -18,6 +18,7 @@ Provide a TypeScript implementation for common technical indicators with arbitra
 
 1. Acceleration Bands (ABANDS)
 1. Average Directional Index (ADX)
+1. Awesome Oscillator (AO)
 1. Average True Range (ATR)
 1. Bollinger Bands (BBANDS)
 1. Center of Gravity (CG)
