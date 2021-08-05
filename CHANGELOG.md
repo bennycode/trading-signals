@@ -1,3 +1,9 @@
+#### 1.10.1 (2021-08-05)
+
+##### Refactors
+
+- **AC,AO:** Expose internal indicators ([71273704](https://github.com/bennycode/trading-signals/commit/71273704fcd878a2a82c3346c9ee5e3a541c0390))
+
 ### 1.10.0 (2021-08-05)
 
 ##### New Features
