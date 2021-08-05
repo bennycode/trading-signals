@@ -1,7 +1,8 @@
 import {Big} from 'big.js';
 import {NotEnoughDataError} from '../error';
-import {ATR, ATRCandle, MathAnalysis, SMMA} from '..';
+import {ATR, ATRCandle, SMMA} from '..';
 import {Indicator} from '../Indicator';
+import {getAverage} from '../util/getAverage';
 
 export type ADXResult = {
   adx: Big;
@@ -119,7 +120,7 @@ export class ADX implements Indicator<ADXResult> {
       /**
        * The first ADX value is simply a <interval> average of DX.
        */
-      this.adx = MathAnalysis.getAverage(this.dxValues);
+      this.adx = getAverage(this.dxValues);
       return;
     }
 
