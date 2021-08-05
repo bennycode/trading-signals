@@ -8,13 +8,14 @@ import {NotEnoughDataError} from '../error';
  * It has been developed by the technical analyst and charting enthusiast Bill Williams.
  */
 export class AO implements SimpleIndicator {
+  public readonly long: SMA;
+  public readonly short: SMA;
+
   private result: Big | undefined;
-  private readonly shortSMA: SMA;
-  private readonly longSMA: SMA;
 
   constructor(public readonly shortInterval: number, public readonly longInterval: number) {
-    this.shortSMA = new SMA(shortInterval);
-    this.longSMA = new SMA(longInterval);
+    this.short = new SMA(shortInterval);
+    this.long = new SMA(longInterval);
   }
 
   get isStable(): boolean {
@@ -33,11 +34,11 @@ export class AO implements SimpleIndicator {
     const candleSum = new Big(low).add(high);
     const medianPrice = candleSum.div(2);
 
-    this.shortSMA.update(medianPrice);
-    this.longSMA.update(medianPrice);
+    this.short.update(medianPrice);
+    this.long.update(medianPrice);
 
-    if (this.shortSMA.isStable && this.longSMA.isStable) {
-      this.result = this.shortSMA.getResult().sub(this.longSMA.getResult());
+    if (this.short.isStable && this.long.isStable) {
+      this.result = this.short.getResult().sub(this.long.getResult());
     }
   }
 }

@@ -13,14 +13,15 @@ import {MOM} from '../MOM/MOM';
  * change of momentum.
  */
 export class AC implements SimpleIndicator {
+  public readonly ao: AO;
   public readonly momentum: MOM;
-  private readonly ao: AO;
+  public readonly signal: SMA;
+
   private result: Big | undefined;
-  private readonly signalSMA: SMA;
 
   constructor(public readonly shortAO: number, public readonly longAO: number, public readonly signalInterval: number) {
     this.ao = new AO(shortAO, longAO);
-    this.signalSMA = new SMA(signalInterval);
+    this.signal = new SMA(signalInterval);
     this.momentum = new MOM(1);
   }
 
@@ -40,9 +41,9 @@ export class AC implements SimpleIndicator {
     this.ao.update(low, high);
     if (this.ao.isStable) {
       const ao = this.ao.getResult();
-      this.signalSMA.update(ao);
-      if (this.signalSMA.isStable) {
-        this.result = ao.sub(this.signalSMA.getResult());
+      this.signal.update(ao);
+      if (this.signal.isStable) {
+        this.result = ao.sub(this.signal.getResult());
         this.momentum.update(this.result);
       }
     }
