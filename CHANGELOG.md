@@ -1,3 +1,15 @@
+### 1.10.0 (2021-08-05)
+
+##### New Features
+
+- Add Momentum to Accelerator Oscillator ([#290](https://github.com/bennycode/trading-signals/pull/290)) ([ae9bc24e](https://github.com/bennycode/trading-signals/commit/ae9bc24eb318e0bdad7c64c1d54a5ca28e0885c7))
+- Add Momentum (MOM) ([#289](https://github.com/bennycode/trading-signals/pull/289)) ([eea7899f](https://github.com/bennycode/trading-signals/commit/eea7899ff9eb78b2b7a70fd068570ff0f0bcc331))
+- Add Accelerator Oscillator (AC) ([#288](https://github.com/bennycode/trading-signals/pull/288)) ([2fd93c20](https://github.com/bennycode/trading-signals/commit/2fd93c204454c6051371799ea759fe573b50d9b1))
+
+##### Refactors
+
+- **util:** Export `getAverage` separately ([6f4a1c58](https://github.com/bennycode/trading-signals/commit/6f4a1c58d63d34b51cd41967f75dd8bf416ae962))
+
 ### 1.9.0 (2021-08-04)
 
 ##### New Features
