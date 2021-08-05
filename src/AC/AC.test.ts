@@ -258,6 +258,7 @@ describe('AC', () => {
       // https://github.com/jesse-ai/jesse/blob/53297462d48ebf43f9df46ab5005076d25073e5e/tests/test_indicators.py#L14
       expect(ac.isStable).toBeTrue();
       expect(ac.getResult().toFixed(2)).toBe('-21.97');
+      expect(ac.momentum.getResult().toFixed(2)).toBe('-9.22');
     });
 
     it('throws an error when there is not enough input data', () => {

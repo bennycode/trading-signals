@@ -3,6 +3,7 @@ import Big, {BigSource} from 'big.js';
 import {NotEnoughDataError} from '../error';
 import {AO} from '../AO/AO';
 import {SMA} from '../SMA/SMA';
+import {MOM} from '../MOM/MOM';
 
 /**
  * The Accelerator Oscillator (AC) is an indicator used to detect when a momentum changes. It has been developed by
@@ -12,6 +13,7 @@ import {SMA} from '../SMA/SMA';
  * change of momentum.
  */
 export class AC implements SimpleIndicator {
+  public readonly momentum: MOM;
   private readonly ao: AO;
   private result: Big | undefined;
   private readonly signalSMA: SMA;
@@ -19,6 +21,7 @@ export class AC implements SimpleIndicator {
   constructor(public readonly shortAO: number, public readonly longAO: number, public readonly signalInterval: number) {
     this.ao = new AO(shortAO, longAO);
     this.signalSMA = new SMA(signalInterval);
+    this.momentum = new MOM(1);
   }
 
   get isStable(): boolean {
@@ -40,6 +43,7 @@ export class AC implements SimpleIndicator {
       this.signalSMA.update(ao);
       if (this.signalSMA.isStable) {
         this.result = ao.sub(this.signalSMA.getResult());
+        this.momentum.update(this.result);
       }
     }
   }
