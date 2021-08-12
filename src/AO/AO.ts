@@ -30,7 +30,7 @@ export class AO implements SimpleIndicator {
     return this.result;
   }
 
-  update(low: BigSource, high: BigSource): void {
+  update(low: BigSource, high: BigSource): void | Big {
     const candleSum = new Big(low).add(high);
     const medianPrice = candleSum.div(2);
 
@@ -39,6 +39,7 @@ export class AO implements SimpleIndicator {
 
     if (this.short.isStable && this.long.isStable) {
       this.result = this.short.getResult().sub(this.long.getResult());
+      return this.result;
     }
   }
 }

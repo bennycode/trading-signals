@@ -37,14 +37,14 @@ export class AC implements SimpleIndicator {
     return this.result;
   }
 
-  update(low: BigSource, high: BigSource): void {
-    this.ao.update(low, high);
-    if (this.ao.isStable) {
-      const ao = this.ao.getResult();
+  update(low: BigSource, high: BigSource): void | Big {
+    const ao = this.ao.update(low, high);
+    if (ao) {
       this.signal.update(ao);
       if (this.signal.isStable) {
         this.result = ao.sub(this.signal.getResult());
         this.momentum.update(this.result);
+        return this.result;
       }
     }
   }
