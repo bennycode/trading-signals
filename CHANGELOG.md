@@ -1,3 +1,9 @@
+#### 1.10.2 (2021-08-12)
+
+##### New Features
+
+- **AC,AO:** Directly return result on update ([1ea3efe4](https://github.com/bennycode/trading-signals/commit/1ea3efe45d29a0fc3ea6c3791127185c85d89e29))
+
 #### 1.10.1 (2021-08-05)
 
 ##### Refactors
