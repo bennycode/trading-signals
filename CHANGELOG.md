@@ -1,3 +1,9 @@
+## 2.0.0 (2021-08-15)
+
+##### New Features
+
+- **AC,AO,ATR,CG,DEMA,EMA,MOM,ROC,RSI,SMA,SMMA:** Save highest & lowest values for all simple indicators ([#295](https://github.com/bennycode/trading-signals/pull/295)) ([7c6433be](https://github.com/bennycode/trading-signals/commit/7c6433be075994d2b21fb9f02ae462bf257d825e))
+
 #### 1.10.2 (2021-08-12)
 
 ##### New Features
