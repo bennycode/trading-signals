@@ -31,6 +31,7 @@ describe('AO', () => {
         5.3673, 4.5294, 4.764, 4.1044, 1.6913, -1.3769, -4.2062, -7.7196, -10.6241, -11.4972, -9.6358, -7.9344,
       ];
       const ao = new AO(5, 34);
+
       for (let i = 0; i < lows.length; i++) {
         const newResult = ao.update(lows[i], highs[i]);
         if (ao.isStable) {
@@ -40,6 +41,9 @@ describe('AO', () => {
           expect(parseFloat(actual)).toBe(expected!);
         }
       }
+
+      expect(ao.lowest!.toFixed(2)).toBe('-11.50');
+      expect(ao.highest!.toFixed(2)).toBe('33.35');
     });
 
     it('throws an error when there is not enough input data', () => {
