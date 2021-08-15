@@ -17,6 +17,9 @@ describe('DEMA', () => {
         const result = new Big(dema10results[index]);
         expect(dema.getResult().toPrecision(12)).toEqual(result.toPrecision(12));
       });
+
+      expect(dema.lowest!.toFixed(2)).toBe('24.89');
+      expect(dema.highest!.toFixed(2)).toBe('83.22');
     });
 
     it('throws an error when there is not enough input data', () => {
@@ -38,6 +41,8 @@ describe('DEMA', () => {
       dema.update(1);
       dema.update(2);
       expect(dema.isStable).toBeTrue();
+      expect(dema.lowest!.toFixed(2)).toBe('1.00');
+      expect(dema.highest!.toFixed(2)).toBe('1.89');
     });
   });
 });

@@ -15,7 +15,7 @@ describe('RSI', () => {
     it('throws an error when there is not enough input data', () => {
       const rsi = new RSI(2);
       rsi.update(0);
-
+      expect(rsi.isStable).toBeFalse();
       try {
         rsi.getResult();
         fail('Expected error');
@@ -26,6 +26,7 @@ describe('RSI', () => {
 
     it('calculates RSI with interval 2', () => {
       const rsi = new RSI(2);
+
       prices.forEach((price, index) => {
         rsi.update(price);
         if (rsi.isStable) {
@@ -33,10 +34,14 @@ describe('RSI', () => {
           expect(rsi.getResult().toPrecision(12)).toEqual(expected.toPrecision(12));
         }
       });
+
+      expect(rsi.lowest!.toFixed(2)).toBe('0.00');
+      expect(rsi.highest!.toFixed(2)).toBe('89.13');
     });
 
     it('calculates RSI with interval 12', () => {
       const rsi = new RSI(12);
+
       prices.forEach((price, index) => {
         rsi.update(price);
         if (rsi.isStable) {
@@ -44,10 +49,14 @@ describe('RSI', () => {
           expect(rsi.getResult().toPrecision(12)).toEqual(expected.toPrecision(12));
         }
       });
+
+      expect(rsi.lowest!.toFixed(2)).toBe('0.00');
+      expect(rsi.highest!.toFixed(2)).toBe('55.65');
     });
 
     it('calculates RSI with interval 26', () => {
       const rsi = new RSI(26);
+
       prices.forEach((price, index) => {
         rsi.update(price);
         if (rsi.isStable) {
@@ -55,6 +64,9 @@ describe('RSI', () => {
           expect(rsi.getResult().toPrecision(12)).toEqual(expected.toPrecision(12));
         }
       });
+
+      expect(rsi.lowest!.toFixed(2)).toBe('0.00');
+      expect(rsi.highest!.toFixed(2)).toBe('51.14');
     });
 
     it('prevents division by zero errors when the average gain and average loss equal 0', () => {
@@ -71,12 +83,14 @@ describe('RSI', () => {
       const ohlc = Object.values(dataFile);
       const closes = ohlc.map(candle => candle[4]);
       const results: string[] = [];
+
       for (const close of closes) {
         rsi.update(close);
         if (rsi.isStable) {
           results.push(rsi.getResult().valueOf());
         }
       }
+
       expect(closes.length).toBe(500);
       expect(results.length).toBe(closes.length - interval);
       expect(results[0].startsWith('78.997289972899')).toBeTrue();

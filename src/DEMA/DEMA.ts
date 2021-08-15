@@ -2,13 +2,12 @@ import Big, {BigSource} from 'big.js';
 import {EMA, NotEnoughDataError} from '..';
 import {SimpleIndicator} from '../Indicator';
 
-export class DEMA implements SimpleIndicator {
-  private result: Big | undefined;
-
+export class DEMA extends SimpleIndicator {
   private readonly inner: EMA;
   private readonly outer: EMA;
 
   constructor(public readonly interval: number) {
+    super();
     this.inner = new EMA(interval);
     this.outer = new EMA(interval);
   }
@@ -16,8 +15,7 @@ export class DEMA implements SimpleIndicator {
   update(price: BigSource): void {
     this.inner.update(price);
     this.outer.update(this.inner.getResult());
-
-    this.result = this.inner.getResult().times(2).sub(this.outer.getResult());
+    this.setResult(this.inner.getResult().times(2).sub(this.outer.getResult()));
   }
 
   get isStable(): boolean {

@@ -7,13 +7,12 @@ import {NotEnoughDataError} from '../error';
  * The Awesome Oscillator (AO) is an indicator used to measure market momentum.
  * It has been developed by the technical analyst and charting enthusiast Bill Williams.
  */
-export class AO implements SimpleIndicator {
+export class AO extends SimpleIndicator {
   public readonly long: SMA;
   public readonly short: SMA;
 
-  private result: Big | undefined;
-
   constructor(public readonly shortInterval: number, public readonly longInterval: number) {
+    super();
     this.short = new SMA(shortInterval);
     this.long = new SMA(longInterval);
   }
@@ -38,8 +37,8 @@ export class AO implements SimpleIndicator {
     this.long.update(medianPrice);
 
     if (this.short.isStable && this.long.isStable) {
-      this.result = this.short.getResult().sub(this.long.getResult());
-      return this.result;
+      const result = this.setResult(this.short.getResult().sub(this.long.getResult()));
+      return result;
     }
   }
 }

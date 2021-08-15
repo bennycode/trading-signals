@@ -12,6 +12,6 @@ export class EMA extends MovingAverage {
 
     const weightFactor = 2 / (this.interval + 1);
 
-    this.result = price.times(weightFactor).add(this.result.times(1 - weightFactor));
+    this.setResult(price.times(weightFactor).add(this.result.times(1 - weightFactor)));
   }
 }

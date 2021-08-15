@@ -43,8 +43,9 @@ const results = [
 
 describe('ROC', () => {
   describe('getResult', () => {
-    it('should correctly calculate ROC with interval 5', () => {
+    it('calculates ROC with interval 5', () => {
       const roc = new ROC(5);
+
       prices.forEach((price, index) => {
         roc.update(new BigNumber(price));
 
@@ -55,6 +56,9 @@ describe('ROC', () => {
         const expected = new BigNumber(Number(results[index]));
         expect(roc.getResult().toFixed(2)).toEqual(expected.toFixed(2));
       });
+
+      expect(roc.lowest!.toFixed(2)).toBe('0.01');
+      expect(roc.highest!.toFixed(2)).toBe('0.04');
     });
 
     it('throws an error when there is not enough input data', () => {

@@ -10,6 +10,7 @@ describe('MOM', () => {
       ];
       const outputs = [1.56, 1.78, 1.12, 1.55, 0.75, 2.38, 3.7, 2.9, 3.22, 2.93];
       const momentum = new MOM(5);
+
       for (const input of inputs) {
         momentum.update(input);
         if (momentum.isStable) {
@@ -18,6 +19,9 @@ describe('MOM', () => {
           expect(parseFloat(actual)).toBe(expected!);
         }
       }
+
+      expect(momentum.lowest!.toFixed(2)).toBe('0.75');
+      expect(momentum.highest!.toFixed(2)).toBe('3.70');
     });
 
     it('throws an error when there is not enough input data', () => {

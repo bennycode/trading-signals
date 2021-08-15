@@ -2,11 +2,11 @@ import Big, {BigSource} from 'big.js';
 import {NotEnoughDataError} from '../error';
 import {SimpleIndicator} from '../Indicator';
 
-export class ROC implements SimpleIndicator {
+export class ROC extends SimpleIndicator {
   private readonly priceHistory: Big[] = [];
-  private result: Big | undefined;
 
   constructor(public readonly interval: number) {
+    super();
     this.interval = interval;
   }
 
@@ -32,7 +32,7 @@ export class ROC implements SimpleIndicator {
     const comparePrice = this.priceHistory.shift() as Big;
 
     // (Close - Close <interval> periods ago) / (Close <interval> periods ago)
-    this.result = price.sub(comparePrice).div(comparePrice);
+    this.setResult(price.sub(comparePrice).div(comparePrice));
   }
 
   getResult(): Big {

@@ -21,26 +21,28 @@ describe('SMA', () => {
       sma.update('10');
       sma.update(new Big(30));
       expect(sma.getResult().valueOf()).toBe('20');
+      expect(sma.lowest!.toFixed(2)).toBe('20.00');
+      expect(sma.highest!.toFixed(2)).toBe('30.00');
     });
   });
 
   describe('getResult', () => {
     it('matches the moving average logic from Binance exchange', () => {
-      const shortMovingAverageLength = 20;
-      const twentyCandles = testData.slice(Math.max(testData.length - shortMovingAverageLength, 1));
-      const shortMovingAverage = new SMA(shortMovingAverageLength);
+      const shortInterval = 20;
+      const twentyCandles = testData.slice(Math.max(testData.length - shortInterval, 1));
+      const short = new SMA(shortInterval);
       twentyCandles.forEach(candle => {
-        shortMovingAverage.update(new Big(candle.close));
+        short.update(new Big(candle.close));
       });
-      expect(shortMovingAverage.getResult()!.toFixed(8)).toBe('85.78650000');
+      expect(short.getResult()!.toFixed(8)).toBe('85.78650000');
 
-      const longMovingAverageLength = 40;
-      const fourtyCandles = testData.slice(Math.max(testData.length - longMovingAverageLength, 1));
-      const longMovingAverage = new SMA(longMovingAverageLength);
+      const longInterval = 40;
+      const fourtyCandles = testData.slice(Math.max(testData.length - longInterval, 1));
+      const long = new SMA(longInterval);
       fourtyCandles.forEach(candle => {
-        longMovingAverage.update(new Big(candle.close));
+        long.update(new Big(candle.close));
       });
-      expect(longMovingAverage.getResult()!.toFixed(8)).toBe('85.95125000');
+      expect(long.getResult()!.toFixed(8)).toBe('85.95125000');
     });
 
     it('calculates SMAs with Binance candles', () => {
@@ -69,6 +71,8 @@ describe('SMA', () => {
       const actual = sma.getResult();
       const expected = new Big(SMA10results[interval - 1]);
       expect(actual.toPrecision(12)).toEqual(expected.toPrecision(12));
+      expect(sma.lowest!.toFixed(2)).toBe('52.50');
+      expect(sma.highest!.toFixed(2)).toBe('52.50');
     });
 
     it('calculates SMAs with window length 12', () => {
@@ -78,6 +82,8 @@ describe('SMA', () => {
       const actual = sma.getResult();
       const expected = new Big(SMA12results[interval - 1]);
       expect(actual.toPrecision(12)).toEqual(expected.toPrecision(12));
+      expect(sma.lowest!.toFixed(2)).toBe('57.58');
+      expect(sma.highest!.toFixed(2)).toBe('57.58');
     });
 
     it('calculates SMAs with window length 26', () => {
@@ -87,6 +93,8 @@ describe('SMA', () => {
       const actual = sma.getResult();
       const expected = new Big(SMA26results[interval - 1]);
       expect(actual.toPrecision(12)).toEqual(expected.toPrecision(12));
+      expect(sma.lowest!.toFixed(2)).toBe('51.15');
+      expect(sma.highest!.toFixed(2)).toBe('51.15');
     });
 
     it('throws an error when there is not enough input data', () => {
