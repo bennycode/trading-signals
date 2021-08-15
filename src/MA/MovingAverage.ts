@@ -2,10 +2,10 @@ import Big, {BigSource} from 'big.js';
 import {NotEnoughDataError} from '../error';
 import {SimpleIndicator} from '../Indicator';
 
-export abstract class MovingAverage implements SimpleIndicator {
-  protected result: Big | undefined;
-
-  constructor(public readonly interval: number) {}
+export abstract class MovingAverage extends SimpleIndicator {
+  constructor(public readonly interval: number) {
+    super();
+  }
 
   get isStable(): boolean {
     return !!this.result;

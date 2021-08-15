@@ -11,14 +11,13 @@ export type ATRCandle = {close: BigSource; high: BigSource; low: BigSource};
  * traders prepared to continue to bid up or sell down a stock through the course of the day. Decreasing range suggests
  * waning interest.
  */
-export class ATR implements SimpleIndicator {
+export class ATR extends SimpleIndicator {
   private readonly smma: SMMA;
   private readonly candles: ATRCandle[] = [];
-
-  private result: Big | undefined;
   private prevCandle: ATRCandle | undefined;
 
   constructor(public readonly interval: number) {
+    super();
     this.smma = new SMMA(interval);
   }
 
@@ -46,7 +45,7 @@ export class ATR implements SimpleIndicator {
 
     this.smma.update(trueRange);
 
-    this.result = this.smma.getResult();
+    this.setResult(this.smma.getResult());
     this.prevCandle = candle;
   }
 

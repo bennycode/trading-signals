@@ -8,4 +8,28 @@ export interface Indicator<T> {
   update(...args: any): void;
 }
 
-export interface SimpleIndicator extends Indicator<Big> {}
+export abstract class SimpleIndicator implements Indicator<Big> {
+  highest?: Big;
+  lowest?: Big;
+  protected result?: Big;
+
+  abstract isStable: boolean;
+
+  abstract getResult(): Big;
+
+  protected setResult(value: Big): Big {
+    this.result = value;
+
+    if (!this.highest || value.gt(this.highest)) {
+      this.highest = value;
+    }
+
+    if (!this.lowest || value.lt(this.lowest)) {
+      this.lowest = value;
+    }
+
+    return this.result;
+  }
+
+  abstract update(...args: any): void;
+}

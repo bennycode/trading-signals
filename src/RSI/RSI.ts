@@ -3,17 +3,15 @@ import {EMA, NotEnoughDataError, SMMA} from '..';
 import {MovingAverage} from '../MA/MovingAverage';
 import {SimpleIndicator} from '../Indicator';
 
-export class RSI implements SimpleIndicator {
+export class RSI extends SimpleIndicator {
   private readonly prices: Big[] = [];
-  private result: Big;
-
   private readonly avgGain: MovingAverage;
   private readonly avgLoss: MovingAverage;
 
   constructor(public readonly interval: number, Indicator: typeof EMA | typeof SMMA = SMMA) {
+    super();
     this.avgGain = new Indicator(this.interval);
     this.avgLoss = new Indicator(this.interval);
-    this.result = new Big(0);
   }
 
   update(price: BigSource): void {
@@ -38,7 +36,7 @@ export class RSI implements SimpleIndicator {
 
     // as long as there are not enough values as the required interval, the result should always be 0
     if (this.prices.length <= this.interval) {
-      this.result = new Big(0);
+      this.setResult(new Big(0));
       return;
     }
 
@@ -47,7 +45,7 @@ export class RSI implements SimpleIndicator {
       : this.avgGain.getResult().div(this.avgLoss.getResult());
 
     const max = new Big(100);
-    this.result = max.minus(max.div(relativeStrength.add(1)));
+    this.setResult(max.minus(max.div(relativeStrength.add(1))));
 
     this.prices.shift();
   }
@@ -56,10 +54,13 @@ export class RSI implements SimpleIndicator {
     if (!this.isStable) {
       throw new NotEnoughDataError();
     }
-    return this.result;
+    return this.result!;
   }
 
   get isStable(): boolean {
-    return this.result.gt(0);
+    if (this.result) {
+      return this.result.gt(0);
+    }
+    return false;
   }
 }

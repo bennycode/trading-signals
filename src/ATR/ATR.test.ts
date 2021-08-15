@@ -20,6 +20,9 @@ describe('ATR', () => {
           expect(atr.getResult().toFixed(4)).toEqual(res.toFixed(4));
         }
       });
+
+      expect(atr.lowest!.toFixed(2)).toBe('0.00');
+      expect(atr.highest!.toFixed(2)).toBe('1.37');
     });
 
     it('throws an error when there is not enough input data', () => {

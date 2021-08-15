@@ -12,14 +12,13 @@ import {MOM} from '../MOM/MOM';
  * down before buy orders come in. The Accelerator Oscillator also looks at whether there is an acceleration in the
  * change of momentum.
  */
-export class AC implements SimpleIndicator {
+export class AC extends SimpleIndicator {
   public readonly ao: AO;
   public readonly momentum: MOM;
   public readonly signal: SMA;
 
-  private result: Big | undefined;
-
   constructor(public readonly shortAO: number, public readonly longAO: number, public readonly signalInterval: number) {
+    super();
     this.ao = new AO(shortAO, longAO);
     this.signal = new SMA(signalInterval);
     this.momentum = new MOM(1);
@@ -42,8 +41,8 @@ export class AC implements SimpleIndicator {
     if (ao) {
       this.signal.update(ao);
       if (this.signal.isStable) {
-        this.result = ao.sub(this.signal.getResult());
-        this.momentum.update(this.result);
+        const result = this.setResult(ao.sub(this.signal.getResult()));
+        this.momentum.update(result);
         return this.result;
       }
     }

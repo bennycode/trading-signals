@@ -14,6 +14,8 @@ describe('CG', () => {
       expect(cg.isStable).toBeFalse();
       cg.update(60);
       expect(cg.isStable).toBeTrue();
+      expect(cg.lowest!.toFixed(2)).toBe('1.00');
+      expect(cg.highest!.toFixed(2)).toBe('3.67');
     });
   });
 

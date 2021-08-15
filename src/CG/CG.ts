@@ -13,17 +13,17 @@ import {NotEnoughDataError} from '../error';
  *   profitable trading
  * @see http://www.mesasoftware.com/papers/TheCGOscillator.pdf
  */
-export class CG implements SimpleIndicator {
+export class CG extends SimpleIndicator {
   public signal: SMA;
 
   private readonly prices: Big[] = [];
-  private result: Big | undefined;
 
   get isStable(): boolean {
     return this.prices.length >= this.interval && this.signal.isStable;
   }
 
   constructor(public readonly interval: number, public readonly signalInterval: number) {
+    super();
     this.signal = new SMA(signalInterval);
   }
 
@@ -47,7 +47,7 @@ export class CG implements SimpleIndicator {
 
     this.signal.update(cg);
 
-    this.result = cg;
+    this.setResult(cg);
   }
 
   getResult(): Big {

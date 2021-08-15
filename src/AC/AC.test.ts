@@ -259,6 +259,8 @@ describe('AC', () => {
       expect(ac.isStable).toBeTrue();
       expect(ac.getResult().toFixed(2)).toBe('-21.97');
       expect(ac.momentum.getResult().toFixed(2)).toBe('-9.22');
+      expect(ac.lowest!.toFixed(2)).toBe('-21.97');
+      expect(ac.highest!.toFixed(2)).toBe('11.65');
     });
 
     it('throws an error when there is not enough input data', () => {
