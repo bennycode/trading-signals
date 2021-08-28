@@ -3,7 +3,7 @@ import {SMA} from '../';
 import {MovingAverage} from '../MA/MovingAverage';
 
 class SMMA extends MovingAverage {
-  private readonly prices: Big[] = [];
+  public readonly prices: Big[] = [];
   private readonly sma: SMA;
 
   constructor(public readonly interval: number) {
@@ -26,6 +26,10 @@ class SMMA extends MovingAverage {
           .add(price)
           .div(this.interval)
       );
+    }
+
+    if (this.prices.length > this.interval) {
+      this.prices.shift();
     }
   }
 

@@ -4,7 +4,7 @@ import {MovingAverage} from '../MA/MovingAverage';
 import {SimpleIndicator} from '../Indicator';
 
 export class RSI extends SimpleIndicator {
-  private readonly prices: Big[] = [];
+  public readonly prices: Big[] = [];
   private readonly avgGain: MovingAverage;
   private readonly avgLoss: MovingAverage;
 
@@ -47,7 +47,9 @@ export class RSI extends SimpleIndicator {
     const max = new Big(100);
     this.setResult(max.minus(max.div(relativeStrength.add(1))));
 
-    this.prices.shift();
+    while (this.prices.length > this.interval) {
+      this.prices.shift();
+    }
   }
 
   getResult(): Big {

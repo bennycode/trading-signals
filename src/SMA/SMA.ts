@@ -2,7 +2,7 @@ import Big, {BigSource} from 'big.js';
 import {MovingAverage} from '../MA/MovingAverage';
 
 export class SMA extends MovingAverage {
-  private readonly prices: Big[] = [];
+  public readonly prices: Big[] = [];
 
   update(price: BigSource): void {
     this.prices.push(new Big(price));
