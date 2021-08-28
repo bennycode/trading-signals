@@ -18,7 +18,7 @@ export class CG extends SimpleIndicator {
 
   public readonly prices: Big[] = [];
 
-  get isStable(): boolean {
+  override get isStable(): boolean {
     return this.prices.length >= this.interval && this.signal.isStable;
   }
 
@@ -27,7 +27,7 @@ export class CG extends SimpleIndicator {
     this.signal = new SMA(signalInterval);
   }
 
-  update(price: BigSource): void {
+  override update(price: BigSource): void {
     this.prices.push(new Big(price));
 
     if (this.prices.length > this.interval) {
@@ -50,7 +50,7 @@ export class CG extends SimpleIndicator {
     this.setResult(cg);
   }
 
-  getResult(): Big {
+  override getResult(): Big {
     if (!this.isStable || !this.result) {
       throw new NotEnoughDataError();
     }

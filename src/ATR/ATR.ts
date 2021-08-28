@@ -21,11 +21,11 @@ export class ATR extends SimpleIndicator {
     this.smma = new SMMA(interval);
   }
 
-  get isStable(): boolean {
+  override get isStable(): boolean {
     return this.candles.length > this.interval;
   }
 
-  update(candle: ATRCandle): void {
+  override update(candle: ATRCandle): void {
     this.candles.push(candle);
 
     if (!this.prevCandle) {
@@ -49,7 +49,7 @@ export class ATR extends SimpleIndicator {
     this.prevCandle = candle;
   }
 
-  getResult(): Big {
+  override getResult(): Big {
     if (!this.result) {
       throw new NotEnoughDataError();
     }

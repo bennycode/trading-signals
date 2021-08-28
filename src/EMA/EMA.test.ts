@@ -17,7 +17,7 @@ describe('EMA', () => {
         ema.update(new Big(price));
         const actual = ema.getResult();
         const expected = new Big(ema10results[index]);
-        expect(actual!.toPrecision(12)).toEqual(expected.toPrecision(12));
+        expect(actual.toPrecision(12)).toEqual(expected.toPrecision(12));
       });
 
       expect(ema.lowest!.toFixed(2)).toBe('38.20');
@@ -45,7 +45,7 @@ describe('EMA', () => {
         ema.update(new Big(price));
         const actual = ema.getResult();
         const expected = new Big(ema26results[index]);
-        expect(actual!.toPrecision(12)).toEqual(expected.toPrecision(12));
+        expect(actual.toPrecision(12)).toEqual(expected.toPrecision(12));
       });
 
       expect(ema.lowest!.toFixed(2)).toBe('48.29');

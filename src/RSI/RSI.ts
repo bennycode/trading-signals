@@ -14,7 +14,7 @@ export class RSI extends SimpleIndicator {
     this.avgLoss = new Indicator(this.interval);
   }
 
-  update(price: BigSource): void {
+  override update(price: BigSource): void {
     const currentClose = new Big(price);
     this.prices.push(currentClose);
 
@@ -52,14 +52,14 @@ export class RSI extends SimpleIndicator {
     }
   }
 
-  getResult(): Big {
+  override getResult(): Big {
     if (!this.isStable) {
       throw new NotEnoughDataError();
     }
     return this.result!;
   }
 
-  get isStable(): boolean {
+  override get isStable(): boolean {
     if (this.result) {
       return this.result.gt(0);
     }

@@ -7,11 +7,11 @@ export abstract class MovingAverage extends SimpleIndicator {
     super();
   }
 
-  get isStable(): boolean {
+  override get isStable(): boolean {
     return !!this.result;
   }
 
-  getResult(): Big {
+  override getResult(): Big {
     if (!this.result) {
       throw new NotEnoughDataError();
     }

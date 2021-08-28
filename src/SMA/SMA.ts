@@ -4,7 +4,7 @@ import {MovingAverage} from '../MA/MovingAverage';
 export class SMA extends MovingAverage {
   public readonly prices: Big[] = [];
 
-  update(price: BigSource): void {
+  override update(price: BigSource): void {
     this.prices.push(new Big(price));
 
     if (this.prices.length > this.interval) {

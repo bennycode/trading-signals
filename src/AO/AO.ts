@@ -17,11 +17,11 @@ export class AO extends SimpleIndicator {
     this.long = new SMA(longInterval);
   }
 
-  get isStable(): boolean {
+  override get isStable(): boolean {
     return this.result !== undefined;
   }
 
-  getResult(): Big {
+  override getResult(): Big {
     if (!this.result) {
       throw new NotEnoughDataError();
     }
@@ -29,7 +29,7 @@ export class AO extends SimpleIndicator {
     return this.result;
   }
 
-  update(low: BigSource, high: BigSource): void | Big {
+  override update(low: BigSource, high: BigSource): void | Big {
     const candleSum = new Big(low).add(high);
     const medianPrice = candleSum.div(2);
 

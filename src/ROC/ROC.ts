@@ -10,11 +10,11 @@ export class ROC extends SimpleIndicator {
     this.interval = interval;
   }
 
-  get isStable(): boolean {
+  override get isStable(): boolean {
     return this.result !== undefined;
   }
 
-  update(_price: BigSource): void {
+  override update(_price: BigSource): void {
     const price = new Big(_price);
 
     this.priceHistory.push(price);
@@ -35,7 +35,7 @@ export class ROC extends SimpleIndicator {
     this.setResult(price.sub(comparePrice).div(comparePrice));
   }
 
-  getResult(): Big {
+  override getResult(): Big {
     if (!this.result) {
       throw new NotEnoughDataError();
     }

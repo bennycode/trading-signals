@@ -16,18 +16,18 @@ export class MOM extends SimpleIndicator {
     this.history = getFixedArray<BigSource>(this.historyLength);
   }
 
-  update(value: BigSource): void {
+  override update(value: BigSource): void {
     this.history.push(value);
     if (this.history.length === this.historyLength) {
       this.setResult(new Big(value).minus(this.history[0]));
     }
   }
 
-  get isStable(): boolean {
+  override get isStable(): boolean {
     return this.result !== undefined;
   }
 
-  getResult(): Big {
+  override getResult(): Big {
     if (!this.result) {
       throw new NotEnoughDataError();
     }

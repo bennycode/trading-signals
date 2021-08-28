@@ -11,7 +11,7 @@ class SMMA extends MovingAverage {
     this.sma = new SMA(interval);
   }
 
-  update(price: BigSource): void {
+  override update(price: BigSource): void {
     this.prices.push(new Big(price));
 
     if (this.prices.length < this.interval) {
@@ -33,7 +33,7 @@ class SMMA extends MovingAverage {
     }
   }
 
-  getResult(): Big {
+  override getResult(): Big {
     return this.result || new Big(0);
   }
 }

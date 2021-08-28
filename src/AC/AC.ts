@@ -24,11 +24,11 @@ export class AC extends SimpleIndicator {
     this.momentum = new MOM(1);
   }
 
-  get isStable(): boolean {
+  override get isStable(): boolean {
     return this.result !== undefined;
   }
 
-  getResult(): Big {
+  override getResult(): Big {
     if (!this.result) {
       throw new NotEnoughDataError();
     }
@@ -36,7 +36,7 @@ export class AC extends SimpleIndicator {
     return this.result;
   }
 
-  update(low: BigSource, high: BigSource): void | Big {
+  override update(low: BigSource, high: BigSource): void | Big {
     const ao = this.ao.update(low, high);
     if (ao) {
       this.signal.update(ao);

@@ -12,13 +12,13 @@ export class DEMA extends SimpleIndicator {
     this.outer = new EMA(interval);
   }
 
-  update(price: BigSource): void {
+  override update(price: BigSource): void {
     this.inner.update(price);
     this.outer.update(this.inner.getResult());
     this.setResult(this.inner.getResult().times(2).sub(this.outer.getResult()));
   }
 
-  get isStable(): boolean {
+  override get isStable(): boolean {
     try {
       this.inner.getResult();
       this.outer.getResult();
@@ -28,7 +28,7 @@ export class DEMA extends SimpleIndicator {
     }
   }
 
-  getResult(): Big {
+  override getResult(): Big {
     if (!this.result) {
       throw new NotEnoughDataError();
     }
