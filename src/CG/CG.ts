@@ -27,7 +27,7 @@ export class CG extends SimpleIndicator {
     this.signal = new SMA(signalInterval);
   }
 
-  override update(price: BigSource): void {
+  override update(price: BigSource): Big {
     this.prices.push(new Big(price));
 
     if (this.prices.length > this.interval) {
@@ -47,7 +47,7 @@ export class CG extends SimpleIndicator {
 
     this.signal.update(cg);
 
-    this.setResult(cg);
+    return this.setResult(cg);
   }
 
   override getResult(): Big {
