@@ -10,6 +10,23 @@ const SMA12results = results.weight_12;
 const SMA26results = results.weight_26;
 
 describe('SMA', () => {
+  describe('prices', () => {
+    it('does not cache more prices than necessary to fill the interval', () => {
+      const sma = new SMA(3);
+      sma.update(1);
+      sma.update(2);
+      expect(sma.prices.length).toBe(2);
+      sma.update(3);
+      expect(sma.prices.length).toBe(3);
+      sma.update(4);
+      expect(sma.prices.length).toBe(3);
+      sma.update(5);
+      expect(sma.prices.length).toBe(3);
+      sma.update(6);
+      expect(sma.prices.length).toBe(3);
+    });
+  });
+
   describe('isStable', () => {
     it('knows when there is enough input data', () => {
       const sma = new SMA(3);

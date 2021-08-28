@@ -2,6 +2,23 @@ import {NotEnoughDataError} from '../error';
 import {CG} from './CG';
 
 describe('CG', () => {
+  describe('prices', () => {
+    it('does not cache more prices than necessary to fill the interval', () => {
+      const cg = new CG(3, 6);
+      cg.update(1);
+      cg.update(2);
+      expect(cg.prices.length).toBe(2);
+      cg.update(3);
+      expect(cg.prices.length).toBe(3);
+      cg.update(4);
+      expect(cg.prices.length).toBe(3);
+      cg.update(5);
+      expect(cg.prices.length).toBe(3);
+      cg.update(6);
+      expect(cg.prices.length).toBe(3);
+    });
+  });
+
   describe('isStable', () => {
     it('is stable when the inputs can fill the signal interval ', () => {
       const cg = new CG(5, 6);

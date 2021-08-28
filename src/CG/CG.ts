@@ -16,7 +16,7 @@ import {NotEnoughDataError} from '../error';
 export class CG extends SimpleIndicator {
   public signal: SMA;
 
-  private readonly prices: Big[] = [];
+  public readonly prices: Big[] = [];
 
   get isStable(): boolean {
     return this.prices.length >= this.interval && this.signal.isStable;

@@ -1,4 +1,4 @@
-import {Big as BigNumber} from 'big.js';
+import {Big} from 'big.js';
 import {RSI} from './RSI';
 import {NotEnoughDataError, SMMA} from '..';
 
@@ -30,7 +30,7 @@ describe('RSI', () => {
       prices.forEach((price, index) => {
         rsi.update(price);
         if (rsi.isStable) {
-          const expected = new BigNumber(rsi2results[index]);
+          const expected = new Big(rsi2results[index]);
           expect(rsi.getResult().toPrecision(12)).toEqual(expected.toPrecision(12));
         }
       });
@@ -45,7 +45,7 @@ describe('RSI', () => {
       prices.forEach((price, index) => {
         rsi.update(price);
         if (rsi.isStable) {
-          const expected = new BigNumber(rsi12results[index]);
+          const expected = new Big(rsi12results[index]);
           expect(rsi.getResult().toPrecision(12)).toEqual(expected.toPrecision(12));
         }
       });
@@ -60,7 +60,7 @@ describe('RSI', () => {
       prices.forEach((price, index) => {
         rsi.update(price);
         if (rsi.isStable) {
-          const expected = new BigNumber(rsi26results[index]);
+          const expected = new Big(rsi26results[index]);
           expect(rsi.getResult().toPrecision(12)).toEqual(expected.toPrecision(12));
         }
       });
@@ -99,12 +99,20 @@ describe('RSI', () => {
   });
 
   describe('isStable', () => {
-    it('is stable when the amount of inputs is higher than the required interval', () => {
-      const rsi = new RSI(14);
-      rsi.update('62.69000000');
-      rsi.update('62.71000000');
-      rsi.update('62.29000000');
+    // Test vectors taken from: https://tulipindicators.org/rsi
+    it('is stable when the amount of inputs is bigger than the required interval', () => {
+      const rsi = new RSI(5);
+      rsi.update(81.59);
+      rsi.update(81.06);
+      rsi.update(82.87);
       expect(rsi.isStable).toBeFalse();
+      rsi.update(83.0);
+      rsi.update(83.61);
+      rsi.update(83.15);
+      expect(rsi.isStable).toBeTrue();
+      expect(rsi.getResult().toFixed(2)).toBe('72.03');
+      rsi.update(82.84);
+      expect(rsi.getResult().toFixed(2)).toBe('64.93');
     });
   });
 });

@@ -5,6 +5,23 @@ import data from '../test/fixtures/BB/data.json';
 import {NotEnoughDataError} from '../error';
 
 describe('BollingerBands', () => {
+  describe('prices', () => {
+    it('does not cache more prices than necessary to fill the interval', () => {
+      const bb = new BollingerBands(3);
+      bb.update(1);
+      bb.update(2);
+      expect(bb.prices.length).toBe(2);
+      bb.update(3);
+      expect(bb.prices.length).toBe(3);
+      bb.update(4);
+      expect(bb.prices.length).toBe(3);
+      bb.update(5);
+      expect(bb.prices.length).toBe(3);
+      bb.update(6);
+      expect(bb.prices.length).toBe(3);
+    });
+  });
+
   describe('getResult', () => {
     it('calculates Bollinger Bands with interval 20', () => {
       const bb = new BollingerBands(20);

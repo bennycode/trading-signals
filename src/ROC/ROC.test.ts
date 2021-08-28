@@ -1,4 +1,4 @@
-import {Big as BigNumber} from 'big.js';
+import {Big} from 'big.js';
 import {ROC} from './ROC';
 import {NotEnoughDataError} from '../error';
 
@@ -47,13 +47,13 @@ describe('ROC', () => {
       const roc = new ROC(5);
 
       prices.forEach((price, index) => {
-        roc.update(new BigNumber(price));
+        roc.update(new Big(price));
 
         if (!roc.isStable) {
           return;
         }
 
-        const expected = new BigNumber(Number(results[index]));
+        const expected = new Big(Number(results[index]));
         expect(roc.getResult().toFixed(2)).toEqual(expected.toFixed(2));
       });
 
@@ -79,12 +79,12 @@ describe('ROC', () => {
       const indicator = new ROC(interval);
 
       const mockedPrices = [
-        new BigNumber('0.00019040'),
-        new BigNumber('0.00019071'),
-        new BigNumber('0.00019198'),
-        new BigNumber('0.00019220'),
-        new BigNumber('0.00019214'),
-        new BigNumber('0.00019205'),
+        new Big('0.00019040'),
+        new Big('0.00019071'),
+        new Big('0.00019198'),
+        new Big('0.00019220'),
+        new Big('0.00019214'),
+        new Big('0.00019205'),
       ];
 
       expect(mockedPrices.length).toBe(interval + 1);

@@ -6,8 +6,8 @@ import {Indicator} from '../Indicator';
 import {getAverage} from '../util/getAverage';
 
 export class BollingerBands implements Indicator<BandsResult> {
+  public readonly prices: Big[] = [];
   private readonly middleSMA: SMA;
-  private readonly prices: Big[] = [];
   private result: BandsResult | undefined;
 
   constructor(public readonly interval: number = 0, public readonly deviationMultiplier: number = 2) {

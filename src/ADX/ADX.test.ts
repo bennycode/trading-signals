@@ -1,4 +1,4 @@
-import {Big as BigNumber} from 'big.js';
+import {Big} from 'big.js';
 import {ADX} from './ADX';
 
 import data from '../test/fixtures/ADX/data.json';
@@ -15,8 +15,8 @@ describe('ADX', () => {
         indicator.update(candle);
 
         if (indicator.isStable) {
-          const res = new BigNumber(adx14results[index] as number);
-          expect(indicator.getResult().adx.toFixed(4)).toEqual(res.toFixed(4));
+          const result = new Big(adx14results[index] || 0);
+          expect(indicator.getResult().adx.toFixed(4)).toEqual(result.toFixed(4));
         }
       });
     });
