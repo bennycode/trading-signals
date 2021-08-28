@@ -14,8 +14,10 @@ describe('DEMA', () => {
 
       prices.forEach((price, index) => {
         dema.update(new Big(price));
-        const result = new Big(dema10results[index]);
-        expect(dema.getResult().toPrecision(12)).toEqual(result.toPrecision(12));
+        if (dema.isStable) {
+          const result = new Big(dema10results[index]);
+          expect(dema.getResult().toPrecision(12)).toEqual(result.toPrecision(12));
+        }
       });
 
       expect(dema.lowest!.toFixed(2)).toBe('24.89');

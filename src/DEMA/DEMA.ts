@@ -12,10 +12,10 @@ export class DEMA extends SimpleIndicator {
     this.outer = new EMA(interval);
   }
 
-  override update(price: BigSource): void {
-    this.inner.update(price);
-    this.outer.update(this.inner.getResult());
-    this.setResult(this.inner.getResult().times(2).sub(this.outer.getResult()));
+  override update(price: BigSource): Big {
+    const innerResult = this.inner.update(price);
+    const outerResult = this.outer.update(innerResult);
+    return this.setResult(innerResult.times(2).sub(outerResult));
   }
 
   override get isStable(): boolean {
@@ -23,7 +23,7 @@ export class DEMA extends SimpleIndicator {
       this.inner.getResult();
       this.outer.getResult();
       return true;
-    } catch (error) {
+    } catch {
       return false;
     }
   }
