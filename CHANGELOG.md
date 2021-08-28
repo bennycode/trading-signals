@@ -1,3 +1,13 @@
+### 2.1.0 (2021-08-28)
+
+##### New Features
+
+- **EMA,DEMA,MACD:** Don't emit values before minimum amount of data is received ([#308](https://github.com/bennycode/trading-signals/pull/308)) ([9074514c](https://github.com/bennycode/trading-signals/commit/9074514ce9d7e40b8d772817255ddff5aed40d0c))
+
+##### Refactors
+
+- Mark overridden functions ([ad94144b](https://github.com/bennycode/trading-signals/commit/ad94144bf5c07fc1a9123cac5eac7a35ac12437b))
+
 #### 2.0.1 (2021-08-28)
 
 ##### New Features
