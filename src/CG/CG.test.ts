@@ -20,7 +20,7 @@ describe('CG', () => {
   });
 
   describe('isStable', () => {
-    it('is stable when the inputs can fill the signal interval ', () => {
+    it('is stable when the inputs can fill the signal interval', () => {
       const cg = new CG(5, 6);
       cg.update(10);
       cg.update(20);

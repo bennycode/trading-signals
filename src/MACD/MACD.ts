@@ -37,12 +37,9 @@ export class MACD implements Indicator<MACDResult> {
   update(_price: BigSource): void {
     const price = new Big(_price);
 
-    this.short.update(price);
-    this.long.update(price);
+    const shortEMA = this.short.update(price);
+    const longEMA = this.long.update(price);
     this.age++;
-
-    const shortEMA = this.short.getResult();
-    const longEMA = this.long.getResult();
 
     /**
      * Standard MACD is the short (usually 12 periods) EMA less the long (usually 26 periods) EMA. Closing prices are
@@ -50,23 +47,19 @@ export class MACD implements Indicator<MACDResult> {
      */
     const macd = shortEMA.sub(longEMA);
 
-    if (this.isStable) {
-      /**
-       * A short (usually 9 periods) EMA of MACD is plotted along side to act as a signal line to identify turns in the
-       * indicator. It gets updated once the long EMA has enough input data.
-       */
-      this.signal.update(macd);
-    }
-
-    const signal = this.isStable ? this.signal.getResult() : new Big(0);
+    /**
+     * A short (usually 9 periods) EMA of MACD is plotted along side to act as a signal line to identify turns in the
+     * indicator. It gets updated once the long EMA has enough input data.
+     */
+    const signalLine = this.isStable ? this.signal.update(macd) : new Big(0);
 
     /**
      * The MACD histogram is calculated as the MACD indicator minus the signal line (usually 9 periods) EMA.
      */
     this.result = {
-      histogram: macd.sub(signal),
+      histogram: macd.sub(signalLine),
       macd: macd,
-      signal,
+      signal: signalLine,
     };
   }
 

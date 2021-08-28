@@ -15,9 +15,11 @@ describe('EMA', () => {
 
       prices.forEach((price, index) => {
         ema.update(new Big(price));
-        const actual = ema.getResult();
-        const expected = new Big(ema10results[index]);
-        expect(actual.toPrecision(12)).toEqual(expected.toPrecision(12));
+        if (ema.isStable) {
+          const actual = ema.getResult();
+          const expected = new Big(ema10results[index]);
+          expect(actual.toPrecision(12)).toEqual(expected.toPrecision(12));
+        }
       });
 
       expect(ema.lowest!.toFixed(2)).toBe('38.20');
@@ -29,9 +31,11 @@ describe('EMA', () => {
 
       prices.forEach((price, index) => {
         ema.update(new Big(price));
-        const actual = ema.getResult();
-        const expected = new Big(ema12results[index]);
-        expect(actual!.toPrecision(12)).toEqual(expected.toPrecision(12));
+        if (ema.isStable) {
+          const actual = ema.getResult();
+          const expected = new Big(ema12results[index]);
+          expect(actual!.toPrecision(12)).toEqual(expected.toPrecision(12));
+        }
       });
 
       expect(ema.lowest!.toFixed(2)).toBe('40.43');
@@ -43,9 +47,11 @@ describe('EMA', () => {
 
       prices.forEach((price, index) => {
         ema.update(new Big(price));
-        const actual = ema.getResult();
-        const expected = new Big(ema26results[index]);
-        expect(actual.toPrecision(12)).toEqual(expected.toPrecision(12));
+        if (ema.isStable) {
+          const actual = ema.getResult();
+          const expected = new Big(ema26results[index]);
+          expect(actual.toPrecision(12)).toEqual(expected.toPrecision(12));
+        }
       });
 
       expect(ema.lowest!.toFixed(2)).toBe('48.29');
@@ -61,6 +67,17 @@ describe('EMA', () => {
       } catch (error) {
         expect(error).toBeInstanceOf(NotEnoughDataError);
       }
+    });
+  });
+
+  describe('isStable', () => {
+    it('is stable when the inputs can fill the signal interval', () => {
+      const ema = new EMA(3);
+      ema.update(1);
+      ema.update(2);
+      expect(ema.isStable).toBeFalse();
+      ema.update(3);
+      expect(ema.isStable).toBeTrue();
     });
   });
 });
