@@ -71,7 +71,7 @@ describe('EMA', () => {
   });
 
   describe('isStable', () => {
-    it('is stable when the inputs can fill the signal interval ', () => {
+    it('is stable when the inputs can fill the signal interval', () => {
       const ema = new EMA(3);
       ema.update(1);
       ema.update(2);

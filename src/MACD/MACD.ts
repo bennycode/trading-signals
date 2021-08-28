@@ -46,15 +46,12 @@ export class MACD implements Indicator<MACDResult> {
      * used to form the moving averages.
      */
     const macd = shortEMA.sub(longEMA);
-    let signalLine = new Big(0);
 
-    if (this.isStable) {
-      /**
-       * A short (usually 9 periods) EMA of MACD is plotted along side to act as a signal line to identify turns in the
-       * indicator. It gets updated once the long EMA has enough input data.
-       */
-      signalLine = this.signal.update(macd);
-    }
+    /**
+     * A short (usually 9 periods) EMA of MACD is plotted along side to act as a signal line to identify turns in the
+     * indicator. It gets updated once the long EMA has enough input data.
+     */
+    const signalLine = this.isStable ? this.signal.update(macd) : new Big(0);
 
     /**
      * The MACD histogram is calculated as the MACD indicator minus the signal line (usually 9 periods) EMA.
