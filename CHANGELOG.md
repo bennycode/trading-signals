@@ -1,3 +1,13 @@
+#### 2.0.1 (2021-08-28)
+
+##### New Features
+
+- **util:** Export utilities ([bb59af17](https://github.com/bennycode/trading-signals/commit/bb59af17e9443a3b089eb777e7467a1ff31a4465))
+
+##### Bug Fixes
+
+- **SMMA,RSI,ATR,ADX:** Don't cache more prices than necessary to fill the interval ([#307](https://github.com/bennycode/trading-signals/pull/307)) ([2bb0a638](https://github.com/bennycode/trading-signals/commit/2bb0a638e84ea605526d9314f8887609e486f7eb))
+
 ## 2.0.0 (2021-08-15)
 
 ##### New Features
