@@ -8,6 +8,7 @@ export * from './DEMA/DEMA';
 export * from './DMA/DMA';
 export * from './EMA/EMA';
 export * from './error';
+export * from './Indicator';
 export * from './MACD/MACD';
 export * from './MOM/MOM';
 export * from './ROC/ROC';
