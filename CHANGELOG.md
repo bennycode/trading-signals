@@ -1,3 +1,9 @@
+### 2.2.0 (2021-08-29)
+
+##### New Features
+
+- Export `SimpleIndicator` & `Indicator` interface ([2e7e5447](https://github.com/bennycode/trading-signals/commit/2e7e5447125376c93b0a81c2d546b5f1debe1879))
+
 ### 2.1.0 (2021-08-28)
 
 ##### New Features
