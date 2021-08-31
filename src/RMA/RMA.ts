@@ -3,7 +3,7 @@ import {MovingAverage} from '../MA/MovingAverage';
 import {NotEnoughDataError} from '../error';
 
 /**
- * Welles Wilder's Moving Average: The calculation is similar to Exponential Moving Averages with the difference that a smoothing factor of 1/interval is being used which makes it respond more slowly to price changes.
+ * John Welles Wilder Jr.'s Moving Average: The calculation is similar to Exponential Moving Averages with the difference that a smoothing factor of 1/interval is being used which makes it respond more slowly to price changes.
  */
 export class RMA extends MovingAverage {
   private pricesCounter = 0;
