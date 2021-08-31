@@ -95,7 +95,7 @@ console.log(sma.getResult().valueOf()); // "40"
 - [libindicators (C#)](https://github.com/mgfx/libindicators)
 - [Cloud9Trader Indicators (JavaScript)](https://github.com/Cloud9Trader/TechnicalIndicators)
 - [Crypto Trading Hub Indicators (TypeScript)](https://github.com/anandanand84/technicalindicators)
-- [Technical Analysis Library using Pandas and Numpy](https://github.com/bukosabino/ta)
+- [Technical Analysis Library using Pandas and Numpy (Python)](https://github.com/bukosabino/ta)
 
 ## Maintainers
 
