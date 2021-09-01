@@ -16,19 +16,19 @@ export type ATRCandle = {close: BigSource; high: BigSource; low: BigSource};
  */
 export class ATR extends SimpleIndicator {
   private readonly candles: ATRCandle[] = [];
-  private readonly indicator: MovingAverage;
+  private readonly smoothing: MovingAverage;
   private prevCandle: ATRCandle | undefined;
 
-  constructor(public readonly interval: number, Indicator: typeof EMA | typeof SMA | typeof SMMA = SMMA) {
+  constructor(public readonly interval: number, SmoothingIndicator: typeof EMA | typeof SMA | typeof SMMA = SMMA) {
     super();
-    this.indicator = new Indicator(interval);
+    this.smoothing = new SmoothingIndicator(interval);
   }
 
   override get isStable(): boolean {
     return this.candles.length > this.interval;
   }
 
-  override update(candle: ATRCandle): void {
+  override update(candle: ATRCandle): Big | void {
     this.candles.push(candle);
 
     if (!this.prevCandle) {
@@ -46,10 +46,12 @@ export class ATR extends SimpleIndicator {
 
     const trueRange = this.trueRange(this.prevCandle, candle);
 
-    this.indicator.update(trueRange);
+    this.smoothing.update(trueRange);
 
-    this.setResult(this.indicator.getResult());
     this.prevCandle = candle;
+    if (this.smoothing.isStable) {
+      return this.setResult(this.smoothing.getResult());
+    }
   }
 
   override getResult(): Big {

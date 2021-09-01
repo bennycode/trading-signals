@@ -16,12 +16,12 @@ describe('ATR', () => {
         atr.update(candle);
 
         if (atr.isStable) {
-          const res = new Big(Number(atr14results[index]));
-          expect(atr.getResult().toFixed(4)).toEqual(res.toFixed(4));
+          const result = new Big(Number(atr14results[index]));
+          expect(atr.getResult().toFixed(4)).toEqual(result.toFixed(4));
         }
       });
 
-      expect(atr.lowest!.toFixed(2)).toBe('0.00');
+      expect(atr.lowest!.toFixed(2)).toBe('0.55');
       expect(atr.highest!.toFixed(2)).toBe('1.37');
     });
 
