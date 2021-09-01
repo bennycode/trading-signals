@@ -14,7 +14,7 @@ export type ADXResult = {
 };
 
 /**
- * Average Directional Index
+ * Average Directional Index (Trend)
  *
  * The ADX does not indicate trend direction or momentum, only trend strength. It is a lagging indicator; that is, a
  * trend must have established itself before the ADX will generate a signal that a trend is under way.
@@ -23,6 +23,8 @@ export type ADXResult = {
  *
  * Generally, ADX readings below 20 indicate trend weakness, and readings above 40 indicate trend strength.
  * An extremely strong trend is indicated by readings above 50.
+ *
+ * @see https://www.investopedia.com/terms/a/adx.asp
  */
 export class ADX implements Indicator<ADXResult> {
   private readonly candles: ATRCandle[] = [];
@@ -36,7 +38,7 @@ export class ADX implements Indicator<ADXResult> {
   private mdi: Big = new Big(0);
 
   constructor(public interval: number, SmoothingIndicator: typeof EMA | typeof SMA | typeof SMMA = SMMA) {
-    this.atr = new ATR(interval);
+    this.atr = new ATR(interval, SmoothingIndicator);
     this.smoothedPDM = new SmoothingIndicator(interval);
     this.smoothedMDM = new SmoothingIndicator(interval);
   }

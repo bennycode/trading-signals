@@ -6,11 +6,13 @@ import {MovingAverage} from '../MA/MovingAverage';
 export type ATRCandle = {close: BigSource; high: BigSource; low: BigSource};
 
 /**
- * Average True Range
+ * Average True Range (Volatility)
  *
  * The idea of ranges is that they show the commitment or enthusiasm of traders. Large or increasing ranges suggest
  * traders prepared to continue to bid up or sell down a stock through the course of the day. Decreasing range suggests
  * waning interest.
+ *
+ * @see https://www.investopedia.com/terms/a/atr.asp
  */
 export class ATR extends SimpleIndicator {
   private readonly candles: ATRCandle[] = [];
