@@ -4,11 +4,10 @@ import {NotEnoughDataError} from '../error';
 import {SMA} from '../SMA/SMA';
 
 /**
- * John Welles Wilder Jr.'s Moving Average: The calculation is similar to Exponential Moving Averages with the
+ * John Welles Wilder Jr.'s Moving Average (RMA): The calculation is similar to Exponential Moving Averages with the
  * difference that a smoothing factor of 1/interval is being used which makes it respond more slowly to price changes.
  */
 export class RMA extends MovingAverage {
-  private pricesCounter: number = 0;
   private readonly underlying: SMA;
   private readonly smoothing: Big;
 
@@ -19,8 +18,6 @@ export class RMA extends MovingAverage {
   }
 
   update(price: BigSource): Big | void {
-    this.pricesCounter++;
-
     const sma = this.underlying.update(price);
 
     if (this.result) {
@@ -33,10 +30,6 @@ export class RMA extends MovingAverage {
 
   override getResult(): Big {
     if (!this.result) {
-      throw new NotEnoughDataError();
-    }
-
-    if (this.pricesCounter < this.interval) {
       throw new NotEnoughDataError();
     }
 

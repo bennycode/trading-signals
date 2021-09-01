@@ -18,7 +18,6 @@ class SMMA extends MovingAverage {
       this.sma.update(price);
     } else if (this.prices.length === this.interval) {
       this.sma.update(price);
-      // TODO: Add return
       this.setResult(this.sma.getResult());
     } else {
       this.setResult(
@@ -32,6 +31,8 @@ class SMMA extends MovingAverage {
     if (this.prices.length > this.interval) {
       this.prices.shift();
     }
+
+    return this.result;
   }
 
   override getResult(): Big {
