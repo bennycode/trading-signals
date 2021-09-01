@@ -4,7 +4,7 @@ import {MovingAverage} from '../MA/MovingAverage';
 export class SMA extends MovingAverage {
   public readonly prices: Big[] = [];
 
-  override update(price: BigSource): void {
+  override update(price: BigSource): Big | void {
     this.prices.push(new Big(price));
 
     if (this.prices.length > this.interval) {
@@ -13,7 +13,7 @@ export class SMA extends MovingAverage {
 
     if (this.prices.length === this.interval) {
       const sum = this.prices.reduce((a, b) => a.plus(b), new Big('0'));
-      this.setResult(sum.div(this.prices.length));
+      return this.setResult(sum.div(this.prices.length));
     }
   }
 }

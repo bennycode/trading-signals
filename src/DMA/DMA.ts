@@ -19,8 +19,7 @@ export class DMA implements Indicator<DMAResult> {
     return this.received >= this.long.interval;
   }
 
-  update(_price: BigSource): void {
-    const price = new Big(_price);
+  update(price: BigSource): void {
     this.short.update(price);
     this.long.update(price);
     this.received += 1;

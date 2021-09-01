@@ -1,25 +1,34 @@
 import Big, {BigSource} from 'big.js';
 import {MovingAverage} from '../MA/MovingAverage';
 import {NotEnoughDataError} from '../error';
+import {SMA} from '../SMA/SMA';
 
 /**
- * John Welles Wilder Jr.'s Moving Average: The calculation is similar to Exponential Moving Averages with the difference that a smoothing factor of 1/interval is being used which makes it respond more slowly to price changes.
+ * John Welles Wilder Jr.'s Moving Average: The calculation is similar to Exponential Moving Averages with the
+ * difference that a smoothing factor of 1/interval is being used which makes it respond more slowly to price changes.
  */
 export class RMA extends MovingAverage {
-  private pricesCounter = 0;
+  private pricesCounter: number = 0;
+  private readonly underlying: SMA;
+  private readonly smoothing: Big;
 
-  update(_price: BigSource): Big {
+  constructor(public readonly interval: number) {
+    super(interval);
+    this.underlying = new SMA(interval);
+    this.smoothing = new Big(1).div(this.interval);
+  }
+
+  update(price: BigSource): Big | void {
     this.pricesCounter++;
-    const price = new Big(_price);
 
-    // If it's the first update there is no previous result and a default has to be set.
-    if (!this.result) {
-      this.result = price;
+    const sma = this.underlying.update(price);
+
+    if (this.result) {
+      const smoothed = new Big(price).minus(this.result).mul(this.smoothing);
+      return this.setResult(smoothed.plus(this.result));
+    } else if (!this.result && sma) {
+      return this.setResult(sma);
     }
-
-    const weightFactor = 1 / this.interval;
-
-    return this.setResult(price.times(weightFactor).add(this.result.times(1 - weightFactor)));
   }
 
   override getResult(): Big {

@@ -18,11 +18,9 @@ export class BollingerBands implements Indicator<BandsResult> {
     return this.prices.length >= this.interval;
   }
 
-  update(_price: BigSource): void {
-    const price = new Big(_price);
-
+  update(price: BigSource): void {
     this.middleSMA.update(price);
-    this.prices.push(price);
+    this.prices.push(new Big(price));
 
     while (this.prices.length > this.interval) {
       this.prices.shift();

@@ -18,5 +18,5 @@ export abstract class MovingAverage extends SimpleIndicator {
     return this.result;
   }
 
-  abstract update(price: BigSource): void;
+  abstract update(price: BigSource): Big | void;
 }
