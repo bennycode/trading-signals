@@ -1,8 +1,9 @@
 import {Big} from 'big.js';
 import {NotEnoughDataError} from '../error';
-import {ATR, ATRCandle, SMMA} from '..';
+import {ATR, ATRCandle, MovingAverageTypeContext, SMMA} from '..';
 import {Indicator} from '../Indicator';
 import {getAverage} from '../util/getAverage';
+import {MovingAverage} from '../MA/MovingAverage';
 
 export type ADXResult = {
   adx: Big;
@@ -13,7 +14,7 @@ export type ADXResult = {
 };
 
 /**
- * Average Directional Index
+ * Average Directional Index (Trend Strength)
  *
  * The ADX does not indicate trend direction or momentum, only trend strength. It is a lagging indicator; that is, a
  * trend must have established itself before the ADX will generate a signal that a trend is under way.
@@ -21,23 +22,26 @@ export type ADXResult = {
  * ADX will range between 0 and 100.
  *
  * Generally, ADX readings below 20 indicate trend weakness, and readings above 40 indicate trend strength.
- * An extremely strong trend is indicated by readings above 50.
+ * A strong trend is indicated by readings above 50. ADX values of 75-100 signal an extremely strong trend.
+ *
+ * @see https://www.investopedia.com/terms/a/adx.asp
+ * @see https://learn.tradimo.com/technical-analysis-how-to-work-with-indicators/adx-determing-the-strength-of-price-movement
  */
 export class ADX implements Indicator<ADXResult> {
   private readonly candles: ATRCandle[] = [];
   private readonly atr: ATR;
-  private readonly smoothedPDM: SMMA;
-  private readonly smoothedMDM: SMMA;
+  private readonly smoothedPDM: MovingAverage;
+  private readonly smoothedMDM: MovingAverage;
   private readonly dxValues: Big[] = [];
   private prevCandle: ATRCandle | undefined;
   private adx: Big | undefined;
   private pdi: Big = new Big(0);
   private mdi: Big = new Big(0);
 
-  constructor(public interval: number) {
-    this.atr = new ATR(interval);
-    this.smoothedPDM = new SMMA(interval);
-    this.smoothedMDM = new SMMA(interval);
+  constructor(public interval: number, SmoothingIndicator: MovingAverageTypeContext = SMMA) {
+    this.atr = new ATR(interval, SmoothingIndicator);
+    this.smoothedPDM = new SmoothingIndicator(interval);
+    this.smoothedMDM = new SmoothingIndicator(interval);
   }
 
   get isStable(): boolean {
@@ -46,7 +50,7 @@ export class ADX implements Indicator<ADXResult> {
 
   update(candle: ATRCandle): void {
     this.candles.push(candle);
-    this.atr.update(candle);
+    const atrResult = this.atr.update(candle);
 
     if (!this.prevCandle) {
       this.prevCandle = candle;
@@ -60,13 +64,11 @@ export class ADX implements Indicator<ADXResult> {
      */
     const {mdm, pdm} = this.directionalMovement(this.prevCandle, candle);
 
-    /**
-     * Smooth these periodic values using SMMA.
-     */
+    // Smooth these periodic values:
     this.smoothedMDM.update(mdm);
     this.smoothedPDM.update(pdm);
 
-    // Previous candle isn't needed anymore therefore we can update it for the next iteration.
+    // Previous candle isn't needed anymore therefore we can update it for the next iteration:
     this.prevCandle = candle;
 
     if (this.candles.length <= this.interval) {
@@ -80,7 +82,7 @@ export class ADX implements Indicator<ADXResult> {
      *
      * This is the green Plus Directional Indicator line (+DI) when plotting.
      */
-    this.pdi = this.smoothedPDM.getResult().div(this.atr.getResult()).times(100);
+    this.pdi = this.smoothedPDM.getResult().div(atrResult!).times(100);
 
     /**
      * Divide the smoothed Minus Directional Movement (-DM)
@@ -89,7 +91,7 @@ export class ADX implements Indicator<ADXResult> {
      *
      * This is the red Minus Directional Indicator line (-DI) when plotting.
      */
-    this.mdi = this.smoothedMDM.getResult().div(this.atr.getResult()).times(100);
+    this.mdi = this.smoothedMDM.getResult().div(atrResult!).times(100);
 
     /**
      * The Directional Movement Index (DX) equals
@@ -159,13 +161,13 @@ export class ADX implements Indicator<ADXResult> {
 
     return {
       /**
-       * If the downmove is greater than the upmove and greater than zero,
-       * the -DM equals the downmove; otherwise, it equals zero.
+       * If the down-move is greater than the up-move and greater than zero,
+       * the -DM equals the down-move; otherwise, it equals zero.
        */
       mdm: downMove.gt(upMove) && downMove.gt(new Big(0)) ? downMove : new Big(0),
       /**
-       * If the upmove is greater than the downmove and greater than zero,
-       * the +DM equals the upmove; otherwise, it equals zero.
+       * If the up-move is greater than the down-move and greater than zero,
+       * the +DM equals the up-move; otherwise, it equals zero.
        */
       pdm: upMove.gt(downMove) && upMove.gt(new Big(0)) ? upMove : new Big(0),
     };
