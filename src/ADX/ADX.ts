@@ -1,8 +1,9 @@
 import {Big} from 'big.js';
 import {NotEnoughDataError} from '../error';
-import {ATR, ATRCandle, SMMA} from '..';
+import {ATR, ATRCandle, EMA, SMA, SMMA} from '..';
 import {Indicator} from '../Indicator';
 import {getAverage} from '../util/getAverage';
+import {MovingAverage} from '../MA/MovingAverage';
 
 export type ADXResult = {
   adx: Big;
@@ -26,18 +27,18 @@ export type ADXResult = {
 export class ADX implements Indicator<ADXResult> {
   private readonly candles: ATRCandle[] = [];
   private readonly atr: ATR;
-  private readonly smoothedPDM: SMMA;
-  private readonly smoothedMDM: SMMA;
+  private readonly smoothedPDM: MovingAverage;
+  private readonly smoothedMDM: MovingAverage;
   private readonly dxValues: Big[] = [];
   private prevCandle: ATRCandle | undefined;
   private adx: Big | undefined;
   private pdi: Big = new Big(0);
   private mdi: Big = new Big(0);
 
-  constructor(public interval: number) {
+  constructor(public interval: number, SmoothingIndicator: typeof EMA | typeof SMA | typeof SMMA = SMMA) {
     this.atr = new ATR(interval);
-    this.smoothedPDM = new SMMA(interval);
-    this.smoothedMDM = new SMMA(interval);
+    this.smoothedPDM = new SmoothingIndicator(interval);
+    this.smoothedMDM = new SmoothingIndicator(interval);
   }
 
   get isStable(): boolean {

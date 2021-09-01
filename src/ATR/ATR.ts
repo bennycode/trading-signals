@@ -1,6 +1,7 @@
 import Big, {BigSource} from 'big.js';
-import {NotEnoughDataError, SMMA} from '..';
+import {EMA, NotEnoughDataError, SMA, SMMA} from '..';
 import {SimpleIndicator} from '../Indicator';
+import {MovingAverage} from '../MA/MovingAverage';
 
 export type ATRCandle = {close: BigSource; high: BigSource; low: BigSource};
 
@@ -12,13 +13,13 @@ export type ATRCandle = {close: BigSource; high: BigSource; low: BigSource};
  * waning interest.
  */
 export class ATR extends SimpleIndicator {
-  private readonly smma: SMMA;
   private readonly candles: ATRCandle[] = [];
+  private readonly indicator: MovingAverage;
   private prevCandle: ATRCandle | undefined;
 
-  constructor(public readonly interval: number) {
+  constructor(public readonly interval: number, Indicator: typeof EMA | typeof SMA | typeof SMMA = SMMA) {
     super();
-    this.smma = new SMMA(interval);
+    this.indicator = new Indicator(interval);
   }
 
   override get isStable(): boolean {
@@ -43,9 +44,9 @@ export class ATR extends SimpleIndicator {
 
     const trueRange = this.trueRange(this.prevCandle, candle);
 
-    this.smma.update(trueRange);
+    this.indicator.update(trueRange);
 
-    this.setResult(this.smma.getResult());
+    this.setResult(this.indicator.getResult());
     this.prevCandle = candle;
   }
 
