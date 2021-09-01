@@ -1,6 +1,6 @@
 import {Big} from 'big.js';
 import {NotEnoughDataError} from '../error';
-import {ATR, ATRCandle, EMA, SMA, SMMA} from '..';
+import {ATR, ATRCandle, MovingAverageTypeContext, SMMA} from '..';
 import {Indicator} from '../Indicator';
 import {getAverage} from '../util/getAverage';
 import {MovingAverage} from '../MA/MovingAverage';
@@ -38,7 +38,7 @@ export class ADX implements Indicator<ADXResult> {
   private pdi: Big = new Big(0);
   private mdi: Big = new Big(0);
 
-  constructor(public interval: number, SmoothingIndicator: typeof EMA | typeof SMA | typeof SMMA = SMMA) {
+  constructor(public interval: number, SmoothingIndicator: MovingAverageTypeContext = SMMA) {
     this.atr = new ATR(interval, SmoothingIndicator);
     this.smoothedPDM = new SmoothingIndicator(interval);
     this.smoothedMDM = new SmoothingIndicator(interval);

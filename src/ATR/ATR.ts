@@ -1,7 +1,8 @@
 import Big, {BigSource} from 'big.js';
-import {EMA, NotEnoughDataError, SMA, SMMA} from '..';
+import {NotEnoughDataError, SMMA} from '..';
 import {SimpleIndicator} from '../Indicator';
 import {MovingAverage} from '../MA/MovingAverage';
+import {MovingAverageTypeContext} from '../MA/MovingAverageTypeContext';
 
 export type ATRCandle = {close: BigSource; high: BigSource; low: BigSource};
 
@@ -19,7 +20,7 @@ export class ATR extends SimpleIndicator {
   private readonly smoothing: MovingAverage;
   private prevCandle: ATRCandle | undefined;
 
-  constructor(public readonly interval: number, SmoothingIndicator: typeof EMA | typeof SMA | typeof SMMA = SMMA) {
+  constructor(public readonly interval: number, SmoothingIndicator: MovingAverageTypeContext = SMMA) {
     super();
     this.smoothing = new SmoothingIndicator(interval);
   }
