@@ -1,5 +1,5 @@
 import Big, {BigSource} from 'big.js';
-import {EMA, NotEnoughDataError, SMMA} from '..';
+import {MovingAverageTypeContext, NotEnoughDataError, SMMA} from '..';
 import {MovingAverage} from '../MA/MovingAverage';
 import {SimpleIndicator} from '../Indicator';
 
@@ -8,7 +8,7 @@ export class RSI extends SimpleIndicator {
   private readonly avgGain: MovingAverage;
   private readonly avgLoss: MovingAverage;
 
-  constructor(public readonly interval: number, Indicator: typeof EMA | typeof SMMA = SMMA) {
+  constructor(public readonly interval: number, Indicator: MovingAverageTypeContext = SMMA) {
     super();
     this.avgGain = new Indicator(this.interval);
     this.avgLoss = new Indicator(this.interval);

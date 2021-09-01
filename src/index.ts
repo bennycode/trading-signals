@@ -9,6 +9,8 @@ export * from './DMA/DMA';
 export * from './EMA/EMA';
 export * from './error';
 export * from './Indicator';
+export * from './MA/MovingAverage';
+export * from './MA/MovingAverageTypeContext';
 export * from './MACD/MACD';
 export * from './MOM/MOM';
 export * from './ROC/ROC';
