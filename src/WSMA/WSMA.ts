@@ -4,24 +4,27 @@ import {NotEnoughDataError} from '../error';
 import {SMA} from '../SMA/SMA';
 
 /**
- * John Welles Wilder Jr.'s Moving Average (RMA): The calculation is similar to Exponential Moving Averages with the
- * difference that a smoothing factor of 1/interval is being used which makes it respond more slowly to price changes.
+ * Wilder's Smoothed Moving Average (Trend)
+ *
+ * Developed by John Welles Wilder, Jr. to help identifying and spotting bullish and bearish trends. Similar to
+ * Exponential Moving Averages with the difference that a smoothing factor of 1/interval is being used, which makes it
+ * respond more slowly to price changes.
  */
-export class RMA extends MovingAverage {
-  private readonly underlying: SMA;
-  private readonly smoothing: Big;
+export class WSMA extends MovingAverage {
+  private readonly indicator: SMA;
+  private readonly smoothingFactor: Big;
 
   constructor(public readonly interval: number) {
     super(interval);
-    this.underlying = new SMA(interval);
-    this.smoothing = new Big(1).div(this.interval);
+    this.indicator = new SMA(interval);
+    this.smoothingFactor = new Big(1).div(this.interval);
   }
 
   update(price: BigSource): Big | void {
-    const sma = this.underlying.update(price);
+    const sma = this.indicator.update(price);
 
     if (this.result) {
-      const smoothed = new Big(price).minus(this.result).mul(this.smoothing);
+      const smoothed = new Big(price).minus(this.result).mul(this.smoothingFactor);
       return this.setResult(smoothed.plus(this.result));
     } else if (!this.result && sma) {
       return this.setResult(sma);
