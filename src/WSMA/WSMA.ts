@@ -4,11 +4,17 @@ import {NotEnoughDataError} from '../error';
 import {SMA} from '../SMA/SMA';
 
 /**
- * Wilder's Smoothed Moving Average (Trend)
+ * Wilder's Smoothed Moving Average (WSMA)
+ * Category: Trend
  *
- * Developed by John Welles Wilder, Jr. to help identifying and spotting bullish and bearish trends. Similar to
+ * Developed by **John Welles Wilder, Jr.** to help identifying and spotting bullish and bearish trends. Similar to
  * Exponential Moving Averages with the difference that a smoothing factor of 1/interval is being used, which makes it
  * respond more slowly to price changes.
+ *
+ * Synonyms:
+ * - Welles Wilder's Smoothing (WWS)
+ * - Wilder's Moving Average (WMA)
+ * - Modified Exponential Moving Average (MEMA)
  */
 export class WSMA extends MovingAverage {
   private readonly indicator: SMA;
