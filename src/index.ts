@@ -13,6 +13,7 @@ export * from './MA/MovingAverage';
 export * from './MA/MovingAverageTypeContext';
 export * from './MACD/MACD';
 export * from './MOM/MOM';
+export * from './WSMA/WSMA';
 export * from './ROC/ROC';
 export * from './RSI/RSI';
 export * from './SMA/SMA';
