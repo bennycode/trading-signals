@@ -17,8 +17,8 @@ Provide a TypeScript implementation for common technical indicators with arbitra
 ## Technical Indicator Types
 
 - Trend indicators: Measure the direction of a trend
-- Volume Indicators: Measure the strength of a trend (based on volume)
-- Volatility Indicators: Measure the strength of a trend (based on price)
+- Volume indicators: Measure the strength of a trend (based on volume)
+- Volatility indicators: Measure the strength of a trend (based on price)
 - Momentum indicators: Measure the speed of price movement
 
 ## Supported Technical Indicators
