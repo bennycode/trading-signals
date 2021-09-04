@@ -16,6 +16,14 @@ export type MACDResult = {
   signal: Big;
 };
 
+/**
+ * Moving Average Convergence Divergence (MACD)
+ * Type: Momentum
+ *
+ * The MACD triggers trading signals when it crosses above (bullish buying opportunity) or below (bearish selling opportunity) its signal line. MACD can be used together with the RSI to provide a more accurate trading signal.
+ *
+ * @see https://www.investopedia.com/terms/m/macd.asp
+ */
 export class MACD implements Indicator<MACDResult> {
   public readonly long: EMA | DEMA;
   public readonly short: EMA | DEMA;

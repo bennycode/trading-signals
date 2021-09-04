@@ -2,6 +2,14 @@ import Big, {BigSource} from 'big.js';
 import {NotEnoughDataError} from '../error';
 import {SimpleIndicator} from '../Indicator';
 
+/**
+ * Rate Of Change Indicator (ROC)
+ * Type: Momentum
+ *
+ * A positive Rate of Change (ROC) signals a high momentum and a positive trend. A decreasing ROC or even negative ROC indicates a downtrend.
+ *
+ * @see https://www.investopedia.com/terms/r/rateofchange.asp
+ */
 export class ROC extends SimpleIndicator {
   private readonly priceHistory: BigSource[] = [];
 

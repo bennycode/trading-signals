@@ -14,7 +14,14 @@ Provide a TypeScript implementation for common technical indicators with arbitra
 - **Typed.** Source code is 100% TypeScript. No need to install external typings.
 - **Tested.** Code coverage is 100%. No surprises when using it.
 
-## Supported Indicators
+## Technical Indicator Types
+
+- Trend indicators: Measure the direction of a trend
+- Volume Indicators: Measure the strength of a trend (based on volume)
+- Volatility Indicators: Measure the strength of a trend (based on price)
+- Momentum indicators: Measure the speed of price movement
+
+## Supported Technical Indicators
 
 1. Acceleration Bands (ABANDS)
 1. Accelerator Oscillator (AC)
@@ -24,7 +31,7 @@ Provide a TypeScript implementation for common technical indicators with arbitra
 1. Bollinger Bands (BBANDS)
 1. Center of Gravity (CG)
 1. Double Exponential Moving Average (DEMA)
-1. Double Moving Average (DMA)
+1. Dual Moving Average (DMA)
 1. Exponential Moving Average (EMA)
 1. Momentum (MOM)
 1. Moving Average Convergence Divergence (MACD)
@@ -87,6 +94,12 @@ sma.update(70);
 // Now, we will receive a proper result
 console.log(sma.getResult().valueOf()); // "40"
 ```
+
+## Disclaimer
+
+The information and publications of "trading-signals" are not intended to be and do not constitute financial advice, investment advice or any other trading advice.
+
+All trading signals from this library are intended to be used and must be used for informational purposes only. It is very important to do your own analysis before making any investment based on your own personal circumstances. If you need financial advice or further advice in general, it is recommended that you identify a relevantly qualified individual in your jurisdiction who can advise you accordingly.
 
 ## Alternatives
 

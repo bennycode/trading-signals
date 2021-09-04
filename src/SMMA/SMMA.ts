@@ -2,6 +2,14 @@ import Big, {BigSource} from 'big.js';
 import {SMA} from '../';
 import {MovingAverage} from '../MA/MovingAverage';
 
+/**
+ * Smoothed Moving Average (SMMA)
+ * Type: Trend
+ *
+ * The Smoothed Moving Average (SMMA) has a much larger delay than the SMA or EMA. It is ideal for long-term trend validation.
+ *
+ * @see https://www.chartmill.com/documentation/technical-analysis-indicators/217-MOVING-AVERAGES-%7C-The-Smoothed-Moving-Average-%28SMMA%29
+ */
 class SMMA extends MovingAverage {
   public readonly prices: Big[] = [];
   private readonly sma: SMA;

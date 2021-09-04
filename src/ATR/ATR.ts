@@ -7,11 +7,12 @@ import {MovingAverageTypeContext} from '../MA/MovingAverageTypeContext';
 export type ATRCandle = {close: BigSource; high: BigSource; low: BigSource};
 
 /**
- * Average True Range (Volatility)
+ * Average True Range (ATR)
+ * Type: Volatility
  *
- * The idea of ranges is that they show the commitment or enthusiasm of traders. Large or increasing ranges suggest
- * traders prepared to continue to bid up or sell down a stock through the course of the day. Decreasing range suggests
- * waning interest.
+ * The ATR was developed by **John Welles Wilder, Jr.**. The idea of ranges is that they show the commitment or
+ * enthusiasm of traders. Large or increasing ranges suggest traders prepared to continue to bid up or sell down a
+ * stock through the course of the day. Decreasing range indicates declining interest.
  *
  * @see https://www.investopedia.com/terms/a/atr.asp
  */

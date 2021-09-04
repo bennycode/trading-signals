@@ -4,6 +4,9 @@ import {SMA} from '../SMA/SMA';
 import {NotEnoughDataError} from '../error';
 
 /**
+ * Center of Gravity (CG)
+ * Type: Trend
+ *
  * Implementation of the Center of Gravity (CG) oscillator by John Ehlers.
  *
  * @note According to the specification, the price inputs shall be calculated the following way:
