@@ -1,32 +1,36 @@
 import Big, {BigSource} from 'big.js';
-import {EMA, NotEnoughDataError, SMA, SMMA} from '..';
+import {NotEnoughDataError, SMMA} from '..';
 import {SimpleIndicator} from '../Indicator';
 import {MovingAverage} from '../MA/MovingAverage';
+import {MovingAverageTypeContext} from '../MA/MovingAverageTypeContext';
 
 export type ATRCandle = {close: BigSource; high: BigSource; low: BigSource};
 
 /**
- * Average True Range
+ * Average True Range (ATR)
+ * Type: Volatility
  *
- * The idea of ranges is that they show the commitment or enthusiasm of traders. Large or increasing ranges suggest
- * traders prepared to continue to bid up or sell down a stock through the course of the day. Decreasing range suggests
- * waning interest.
+ * The ATR was developed by **John Welles Wilder, Jr.**. The idea of ranges is that they show the commitment or
+ * enthusiasm of traders. Large or increasing ranges suggest traders prepared to continue to bid up or sell down a
+ * stock through the course of the day. Decreasing range indicates declining interest.
+ *
+ * @see https://www.investopedia.com/terms/a/atr.asp
  */
 export class ATR extends SimpleIndicator {
   private readonly candles: ATRCandle[] = [];
-  private readonly indicator: MovingAverage;
+  private readonly smoothing: MovingAverage;
   private prevCandle: ATRCandle | undefined;
 
-  constructor(public readonly interval: number, Indicator: typeof EMA | typeof SMA | typeof SMMA = SMMA) {
+  constructor(public readonly interval: number, SmoothingIndicator: MovingAverageTypeContext = SMMA) {
     super();
-    this.indicator = new Indicator(interval);
+    this.smoothing = new SmoothingIndicator(interval);
   }
 
   override get isStable(): boolean {
     return this.candles.length > this.interval;
   }
 
-  override update(candle: ATRCandle): void {
+  override update(candle: ATRCandle): Big | void {
     this.candles.push(candle);
 
     if (!this.prevCandle) {
@@ -44,10 +48,12 @@ export class ATR extends SimpleIndicator {
 
     const trueRange = this.trueRange(this.prevCandle, candle);
 
-    this.indicator.update(trueRange);
+    this.smoothing.update(trueRange);
 
-    this.setResult(this.indicator.getResult());
     this.prevCandle = candle;
+    if (this.smoothing.isStable) {
+      return this.setResult(this.smoothing.getResult());
+    }
   }
 
   override getResult(): Big {

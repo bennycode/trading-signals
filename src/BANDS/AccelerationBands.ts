@@ -1,22 +1,30 @@
 import {SMA} from '../SMA/SMA';
-import {EMA} from '../EMA/EMA';
 import Big, {BigSource} from 'big.js';
 import {NotEnoughDataError} from '../error';
 import {BandsResult} from './BandsResult';
 import {Indicator} from '../Indicator';
+import {MovingAverageTypeContext} from '../MA/MovingAverageTypeContext';
+import {MovingAverage} from '../MA/MovingAverage';
 
 export class AccelerationBands implements Indicator<BandsResult> {
-  private readonly lowerBand: EMA | SMA;
-  private readonly middleBand: EMA | SMA;
-  private readonly upperBand: EMA | SMA;
+  private readonly lowerBand: MovingAverage;
+  private readonly middleBand: MovingAverage;
+  private readonly upperBand: MovingAverage;
 
   /**
-   * Acceleration Bands
+   * Acceleration Bands (ABANDS)
+   * Type: Volatility
+   *
+   * Acceleration bands are set as an envelope around a moving average. The upper and lower bands are of equal distance
+   * from the middle band.
+   *
+   * Two consecutive closes outside Acceleration Bands suggest an entry point in the direction of the breakout (either
+   * bullish or bearish). A long position is usually kept till the first close back inside the bands.
    *
    * @param interval The interval that is being used for the three moving averages which create lower, middle and upper
    *   bands
    * @param width A coefficient specifying the distance between the middle band and upper/lower bands
-   * @param Indicator Which average (SMA, EMA) to use
+   * @param Indicator Which moving average (SMA, EMA, ...) to use
    *
    * @see https://www.tradingtechnologies.com/xtrader-help/x-study/technical-indicator-definitions/acceleration-bands-abands/
    * @see https://www.motivewave.com/studies/acceleration_bands.htm
@@ -26,7 +34,7 @@ export class AccelerationBands implements Indicator<BandsResult> {
   constructor(
     public readonly interval: number,
     public readonly width: number,
-    Indicator: typeof EMA | typeof SMA = SMA
+    Indicator: MovingAverageTypeContext = SMA
   ) {
     this.lowerBand = new Indicator(interval);
     this.middleBand = new Indicator(interval);
