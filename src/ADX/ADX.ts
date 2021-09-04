@@ -14,7 +14,7 @@ export type ADXResult = {
 };
 
 /**
- * Average Directional Index (Trend Strength)
+ * Average Directional Index (ADX)
  * Type: Volatility
  *
  * The ADX was developed by **John Welles Wilder, Jr.**. It is a lagging indicator; that is, a
