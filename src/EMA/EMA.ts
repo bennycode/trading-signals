@@ -2,6 +2,14 @@ import Big, {BigSource} from 'big.js';
 import {MovingAverage} from '../MA/MovingAverage';
 import {NotEnoughDataError} from '../error';
 
+/**
+ * Exponential Moving Average (EMA)
+ * Type: Trend
+ *
+ * Compared to SMA, the EMA puts more emphasis on the recent prices to reduce lag. Due to its responsiveness to price changes, it rises faster and falls faster than the SMA when the price is inclining or declining.
+ *
+ * @see https://www.investopedia.com/terms/e/ema.asp
+ */
 export class EMA extends MovingAverage {
   private pricesCounter = 0;
 

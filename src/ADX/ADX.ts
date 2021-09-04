@@ -14,15 +14,19 @@ export type ADXResult = {
 };
 
 /**
- * Average Directional Index (Trend Strength)
+ * Average Directional Index (ADX)
+ * Type: Volatility
  *
- * The ADX does not indicate trend direction or momentum, only trend strength. It is a lagging indicator; that is, a
+ * The ADX was developed by **John Welles Wilder, Jr.**. It is a lagging indicator; that is, a
  * trend must have established itself before the ADX will generate a signal that a trend is under way.
  *
  * ADX will range between 0 and 100.
  *
  * Generally, ADX readings below 20 indicate trend weakness, and readings above 40 indicate trend strength.
  * A strong trend is indicated by readings above 50. ADX values of 75-100 signal an extremely strong trend.
+ *
+ * If ADX increases, it means that volatility is increasing and indicating the beginning of a new trend.
+ * If ADX decreases, it means that volatility is decreasing, and the current trend is slowing down and may even reverse.
  *
  * @see https://www.investopedia.com/terms/a/adx.asp
  * @see https://learn.tradimo.com/technical-analysis-how-to-work-with-indicators/adx-determing-the-strength-of-price-movement

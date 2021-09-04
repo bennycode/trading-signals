@@ -6,11 +6,16 @@ import {SMA} from '../SMA/SMA';
 import {MOM} from '../MOM/MOM';
 
 /**
+ * Accelerator Oscillator (AC)
+ * Type: Momentum
+ *
  * The Accelerator Oscillator (AC) is an indicator used to detect when a momentum changes. It has been developed by
  * Bill Williams. If the momentum in an uptrend is starting to slow down, that could suggest that there is less
  * interest in the asset. This typically leads to selling. In the inverse, momentum to the downside will start to slow
  * down before buy orders come in. The Accelerator Oscillator also looks at whether there is an acceleration in the
  * change of momentum.
+ *
+ * @see https://www.thinkmarkets.com/en/indicators/bill-williams-accelerator/
  */
 export class AC extends SimpleIndicator {
   public readonly ao: AO;

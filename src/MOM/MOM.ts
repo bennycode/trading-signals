@@ -4,7 +4,12 @@ import {getFixedArray} from '../util/getFixedArray';
 import {NotEnoughDataError} from '../error';
 
 /**
+ * Momentum Indicator (MOM)
+ * Type: Momentum
+ *
  * The Momentum indicator returns the change between the current price and the price n times ago.
+ *
+ * @see https://www.warriortrading.com/momentum-indicator/
  */
 export class MOM extends SimpleIndicator {
   private readonly history: BigSource[];
