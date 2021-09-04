@@ -1,14 +1,15 @@
 import {SMA} from '../SMA/SMA';
-import {EMA} from '../EMA/EMA';
 import Big, {BigSource} from 'big.js';
 import {NotEnoughDataError} from '../error';
 import {BandsResult} from './BandsResult';
 import {Indicator} from '../Indicator';
+import {MovingAverageTypeContext} from '../MA/MovingAverageTypeContext';
+import {MovingAverage} from '../MA/MovingAverage';
 
 export class AccelerationBands implements Indicator<BandsResult> {
-  private readonly lowerBand: EMA | SMA;
-  private readonly middleBand: EMA | SMA;
-  private readonly upperBand: EMA | SMA;
+  private readonly lowerBand: MovingAverage;
+  private readonly middleBand: MovingAverage;
+  private readonly upperBand: MovingAverage;
 
   /**
    * Acceleration Bands (ABANDS)
@@ -33,7 +34,7 @@ export class AccelerationBands implements Indicator<BandsResult> {
   constructor(
     public readonly interval: number,
     public readonly width: number,
-    Indicator: typeof EMA | typeof SMA = SMA
+    Indicator: MovingAverageTypeContext = SMA
   ) {
     this.lowerBand = new Indicator(interval);
     this.middleBand = new Indicator(interval);
