@@ -97,9 +97,9 @@ console.log(sma.getResult().valueOf()); // "40"
 
 ## Disclaimer
 
-The information and publications of "trading-signals" are not intended to be and do not constitute financial advice, investment advice or any other trading advice.
+The information and publications of [trading-signals](https://github.com/bennycode/trading-signals) do not constitute financial advice, investment advice, trading advice or any other form of advice. All results from [trading-signals](https://github.com/bennycode/trading-signals) are intended for information purposes only.
 
-All trading signals from this library are intended to be used and must be used for informational purposes only. It is very important to do your own analysis before making any investment based on your own personal circumstances. If you need financial advice or further advice in general, it is recommended that you identify a relevantly qualified individual in your jurisdiction who can advise you accordingly.
+It is very important to do your own analysis before making any investment based on your own personal circumstances. If you need financial advice or further advice in general, it is recommended that you identify a relevantly qualified individual in your jurisdiction who can advise you accordingly.
 
 ## Alternatives
 
