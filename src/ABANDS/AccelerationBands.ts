@@ -1,7 +1,7 @@
 import {SMA} from '../SMA/SMA';
 import Big, {BigSource} from 'big.js';
 import {NotEnoughDataError} from '../error';
-import {BandsResult} from './BandsResult';
+import {BandsResult} from '../util/BandsResult';
 import {Indicator} from '../Indicator';
 import {MovingAverageTypeContext} from '../MA/MovingAverageTypeContext';
 import {MovingAverage} from '../MA/MovingAverage';
