@@ -2,7 +2,7 @@ import {StochasticOscillator} from './StochasticOscillator';
 import {NotEnoughDataError} from '../error';
 
 describe('StochasticOscillator', () => {
-  describe('getResult', () => {
+  describe('update', () => {
     // Test vectors taken from: https://runkit.com/anandaravindan/stochastic
     it('is stable when the amount of inputs is bigger than the required interval', () => {
       const highs = [
@@ -70,13 +70,25 @@ describe('StochasticOscillator', () => {
         stoch.update({high: 2, low: 1, close: 1});
         stoch.update({high: 3, low: 1, close: 1});
         stoch.update({high: 4, low: 1, close: 1});
-        stoch.update({high: 5, low: 1, close: 1}); // Emits 1st of 3 required values for period %d
-        stoch.update({high: 6, low: 1, close: 1}); // Emits 2nd of 3 required values for period %d
+        stoch.update({high: 5, low: 1, close: 1}); // Emits 1st of 3 required values for %d period
+        stoch.update({high: 6, low: 1, close: 1}); // Emits 2nd of 3 required values for %d period
         stoch.getResult();
         fail('Expected error');
       } catch (error) {
         expect(error).toBeInstanceOf(NotEnoughDataError);
       }
+    });
+
+    it('prevents division by zero errors when highest high and lowest low have the same value', () => {
+      const stoch = new StochasticOscillator(5, 3);
+      stoch.update({high: 100, low: 100, close: 100});
+      stoch.update({high: 100, low: 100, close: 100});
+      stoch.update({high: 100, low: 100, close: 100});
+      stoch.update({high: 100, low: 100, close: 100});
+      stoch.update({high: 100, low: 100, close: 100});
+      stoch.update({high: 100, low: 100, close: 100});
+      const result = stoch.update({high: 100, low: 100, close: 100})!;
+      expect(result.k.toFixed(2)).toBe('0.00');
     });
   });
 });

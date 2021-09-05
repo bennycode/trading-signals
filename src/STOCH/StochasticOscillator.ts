@@ -38,6 +38,13 @@ export class StochasticOscillator implements Indicator<StochasticResult> {
   private readonly candles: ATRCandle[] = [];
   private result?: StochasticResult;
 
+  /**
+   * Constructs a Stochastic Oscillator.
+   *
+   * @param periodK Typical intervals for the %k period are 5, 9, or 14
+   * @param periodD The standard interval for the %d period is 3
+   * @param [Indicator] Moving average type to smooth values (%d period)
+   */
   constructor(
     public readonly periodK: number,
     public readonly periodD: number,
@@ -64,8 +71,8 @@ export class StochasticOscillator implements Indicator<StochasticResult> {
     if (this.candles.length === this.periodK) {
       const highest = getMaximum(this.candles.map(candle => candle.high));
       const lowest = getMinimum(this.candles.map(candle => candle.low));
-      let fastK = new Big(100).mul(new Big(candle.close).minus(lowest));
       const divisor = new Big(highest).minus(lowest);
+      let fastK = new Big(100).mul(new Big(candle.close).minus(lowest));
       fastK = fastK.div(divisor.eq(0) ? 1 : divisor);
       const dResult = this.d.update(fastK);
       if (dResult) {
