@@ -6,7 +6,7 @@ Technical indicators and overlays to run technical analysis with JavaScript / Ty
 
 ## Motivation
 
-Provide a TypeScript implementation for common technical indicators with arbitrary-precision decimal arithmetic.
+The "trading-signals" library provides a TypeScript implementation for common technical indicators with arbitrary-precision decimal arithmetic. This library puts more emphasis on the correctness of the calculation than on performance.
 
 ## Features
 
@@ -66,9 +66,13 @@ console.log(sma.getResult().valueOf()); // "20"
 console.log(sma.getResult().toFixed(2)); // "20.00"
 ```
 
-## Good to know
+### When to use `update(...)`?
 
-This library draws attention to miscalculations by throwing errors instead of returning default values. If you call `getResult()`, before an indicator has received the required amount of input values, a `NotEnoughDataError` will be thrown.
+You have to call an indicator's `update` method to enter input data. The update method may or may not return a result from the indicator depending on whether the minimum amount of input data has been reached.
+
+### When to use `getResult()`?
+
+You can call `getResult()` at any point in time, but it throws errors unless an indicator has received the minimum amount of data. If you call `getResult()`, before an indicator has received the required amount of input values, a `NotEnoughDataError` will be thrown.
 
 **Example:**
 
@@ -95,6 +99,8 @@ sma.update(70);
 // Now, we will receive a proper result
 console.log(sma.getResult().valueOf()); // "40"
 ```
+
+Most of the time, the minimum amount of data depends on the interval / time period used.
 
 ## Disclaimer
 
