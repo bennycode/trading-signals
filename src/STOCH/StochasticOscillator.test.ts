@@ -22,9 +22,26 @@ describe('StochasticOscillator', () => {
         [87.87, 87.01, 87.29],
       ];
 
-      const so = new StochasticOscillator(5, 3, 3);
-      for (const [high, low, close] of candles) {
-        so.update(high, low, close);
+      const expectations: [string, string][] = [
+        ['77.39', '75.70'],
+        ['83.13', '78.01'],
+        ['84.87', '81.79'],
+        ['88.36', '85.45'],
+        ['95.25', '89.49'],
+        ['96.74', '93.45'],
+        ['91.09', '94.36'],
+      ];
+
+      const stoch = new StochasticOscillator(5, 3, 3);
+      for (let i = 0; i < candles.length; i++) {
+        const [high, low, close] = candles[i];
+        stoch.update({high, low, close});
+        if (stoch.isStable) {
+          const [stoch_k, stoch_d] = expectations[i];
+          const result = stoch.getResult();
+          expect(result.k.valueOf()).withContext('%k').toBe(stoch_k);
+          expect(result.d.valueOf()).withContext('%d').toBe(stoch_d);
+        }
       }
     });
   });

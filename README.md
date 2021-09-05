@@ -39,6 +39,7 @@ Provide a TypeScript implementation for common technical indicators with arbitra
 1. Relative Strength Index (RSI)
 1. Simple Moving Average (SMA)
 1. Smoothed Moving Average (SMMA)
+1. Stochastic Oscillator (STOCH)
 1. Wilder's Smoothed Moving Average (WSMA)
 
 ## Usage

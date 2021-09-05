@@ -1,6 +1,7 @@
 import {Indicator} from '../Indicator';
-import Big, {BigSource} from 'big.js';
+import Big from 'big.js';
 import {SMA} from '../SMA/SMA';
+import {ATRCandle} from '../ATR/ATR';
 
 export interface StochasticResult {
   d: Big;
@@ -38,7 +39,7 @@ export class StochasticOscillator implements Indicator<StochasticResult> {
     return this.isStable ? {k: new Big(0), d: new Big(0)} : {k: new Big(1), d: new Big(1)};
   }
 
-  update(high: BigSource, low: BigSource, close: BigSource): void {
+  update({high, low, close}: ATRCandle): void {
     const test = new Big(high).plus(low).plus(close);
     if (test.gt(0)) {
       this.isStable = true;
