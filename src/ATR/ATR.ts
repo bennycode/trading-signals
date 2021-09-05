@@ -1,10 +1,10 @@
-import Big, {BigSource} from 'big.js';
-import {NotEnoughDataError, SMMA} from '..';
+import Big from 'big.js';
+import {NotEnoughDataError} from '../error';
 import {SimpleIndicator} from '../Indicator';
 import {MovingAverage} from '../MA/MovingAverage';
 import {MovingAverageTypeContext} from '../MA/MovingAverageTypeContext';
-
-export type ATRCandle = {close: BigSource; high: BigSource; low: BigSource};
+import {SMMA} from '../SMMA/SMMA';
+import {HighLowClose} from '../util';
 
 /**
  * Average True Range (ATR)
@@ -17,9 +17,9 @@ export type ATRCandle = {close: BigSource; high: BigSource; low: BigSource};
  * @see https://www.investopedia.com/terms/a/atr.asp
  */
 export class ATR extends SimpleIndicator {
-  private readonly candles: ATRCandle[] = [];
+  private readonly candles: HighLowClose[] = [];
   private readonly smoothing: MovingAverage;
-  private prevCandle: ATRCandle | undefined;
+  private prevCandle: HighLowClose | undefined;
 
   constructor(public readonly interval: number, SmoothingIndicator: MovingAverageTypeContext = SMMA) {
     super();
@@ -30,7 +30,7 @@ export class ATR extends SimpleIndicator {
     return this.candles.length > this.interval;
   }
 
-  override update(candle: ATRCandle): Big | void {
+  override update(candle: HighLowClose): Big | void {
     this.candles.push(candle);
 
     if (!this.prevCandle) {
@@ -63,7 +63,7 @@ export class ATR extends SimpleIndicator {
     return this.result;
   }
 
-  private trueRange(prevCandle: ATRCandle, currentCandle: ATRCandle): Big {
+  private trueRange(prevCandle: HighLowClose, currentCandle: HighLowClose): Big {
     const prevClose = new Big(prevCandle.close);
     const low = new Big(currentCandle.low);
     const high = new Big(currentCandle.high);

@@ -1,6 +1,6 @@
 import {Big} from 'big.js';
 import {NotEnoughDataError} from '../error';
-import {ATR, ATRCandle, MovingAverageTypeContext, SMMA} from '..';
+import {ATR, HighLowClose, MovingAverageTypeContext, SMMA} from '..';
 import {Indicator} from '../Indicator';
 import {getAverage} from '../util/getAverage';
 import {MovingAverage} from '../MA/MovingAverage';
@@ -32,12 +32,12 @@ export type ADXResult = {
  * @see https://learn.tradimo.com/technical-analysis-how-to-work-with-indicators/adx-determing-the-strength-of-price-movement
  */
 export class ADX implements Indicator<ADXResult> {
-  private readonly candles: ATRCandle[] = [];
+  private readonly candles: HighLowClose[] = [];
   private readonly atr: ATR;
   private readonly smoothedPDM: MovingAverage;
   private readonly smoothedMDM: MovingAverage;
   private readonly dxValues: Big[] = [];
-  private prevCandle: ATRCandle | undefined;
+  private prevCandle: HighLowClose | undefined;
   private adx: Big | undefined;
   private pdi: Big = new Big(0);
   private mdi: Big = new Big(0);
@@ -52,7 +52,7 @@ export class ADX implements Indicator<ADXResult> {
     return this.dxValues.length >= this.interval;
   }
 
-  update(candle: ATRCandle): void {
+  update(candle: HighLowClose): void {
     this.candles.push(candle);
     const atrResult = this.atr.update(candle);
 
@@ -153,7 +153,7 @@ export class ADX implements Indicator<ADXResult> {
     };
   }
 
-  private directionalMovement(prevCandle: ATRCandle, currentCandle: ATRCandle): {mdm: Big; pdm: Big} {
+  private directionalMovement(prevCandle: HighLowClose, currentCandle: HighLowClose): {mdm: Big; pdm: Big} {
     const currentHigh = new Big(currentCandle.high);
     const lastHigh = new Big(prevCandle.high);
 

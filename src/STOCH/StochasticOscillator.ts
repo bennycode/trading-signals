@@ -1,12 +1,12 @@
 import {Indicator} from '../Indicator';
 import Big from 'big.js';
 import {SMA} from '../SMA/SMA';
-import {ATRCandle} from '../ATR/ATR';
 import {MovingAverageTypeContext} from '../MA/MovingAverageTypeContext';
 import {MovingAverage} from '../MA/MovingAverage';
 import {getMaximum} from '../util/getMaximum';
 import {getMinimum} from '../util/getMinimum';
 import {NotEnoughDataError} from '../error';
+import {HighLowClose} from '../util';
 
 export interface StochasticResult {
   d: Big;
@@ -33,7 +33,7 @@ export interface StochasticResult {
 export class StochasticOscillator implements Indicator<StochasticResult> {
   public readonly d: MovingAverage;
 
-  private readonly candles: ATRCandle[] = [];
+  private readonly candles: HighLowClose[] = [];
   private result?: StochasticResult;
 
   /**
@@ -59,7 +59,7 @@ export class StochasticOscillator implements Indicator<StochasticResult> {
     return this.result;
   }
 
-  update(candle: ATRCandle): StochasticResult | void {
+  update(candle: HighLowClose): StochasticResult | void {
     this.candles.push(candle);
 
     if (this.candles.length > this.periodK) {
