@@ -2,6 +2,11 @@ import {Indicator} from '../Indicator';
 import Big from 'big.js';
 import {SMA} from '../SMA/SMA';
 import {ATRCandle} from '../ATR/ATR';
+import {MovingAverageTypeContext} from '../MA/MovingAverageTypeContext';
+import {MovingAverage} from '../MA/MovingAverage';
+import {getMaximum} from '../util/getMaximum';
+import {getMinimum} from '../util/getMinimum';
+import {NotEnoughDataError} from '../error';
 
 export interface StochasticResult {
   d: Big;
@@ -9,40 +14,70 @@ export interface StochasticResult {
 }
 
 /**
- * The stochastic oscillator is a momentum indicator developed by George Lane in the late 1950s.
- * - the %k period n
- - the %k slowing period m
- - the %d period p
-
- k: is a Simple Moving Average of period m (slow) applied to fastk
- d: is a Simple Moving Average of period p (long) applied to %k
-
+ * Stochastic Oscillator (STOCH)
+ * Type: Momentum
+ *
+ * The Stochastic Oscillator was developed by George Lane and is range-bound between 0 and 100. The Stochastic
+ * Oscillator attempts to predict price turning points. A value of 80 indicates that the asset is on the verge of being
+ * overbought. By default a Simple Moving Average (SMA) is used. When the momentum starts to slow, the Stochastic
+ * Oscillator values start to turn down.
+ *
+ * The %K values represent the relation between current close to the period's price range (high/low). It is sometimes
+ * referred as the "fast" stochastic indicator (fastk). The %D values represent a Moving Average of the %K values. It
+ * is sometimes referred as the "slow" stochastic indicator.
+ *
+ * In the case of an uptrend, prices tend to make higher highs, and the settlement price usually tends to be in the
+ * upper end of that time period's trading range.
+ *
  * @see https://en.wikipedia.org/wiki/Stochastic_oscillator
- * @see https://tulipindicators.org/stoch
+ * @see https://www.investopedia.com/terms/s/stochasticoscillator.asp
  */
 export class StochasticOscillator implements Indicator<StochasticResult> {
-  isStable: boolean = false;
+  public readonly d: MovingAverage;
 
-  public readonly short: SMA;
-  public readonly long: SMA;
+  private readonly candles: ATRCandle[] = [];
+  private result?: StochasticResult;
 
   constructor(
-    public readonly interval: number,
-    public readonly shortSmaInterval: number,
-    public readonly longSmaInterval: number
+    public readonly periodK: number,
+    public readonly periodD: number,
+    Indicator: MovingAverageTypeContext = SMA
   ) {
-    this.short = new SMA(shortSmaInterval);
-    this.long = new SMA(longSmaInterval);
+    this.d = new Indicator(periodD);
   }
 
   getResult(): StochasticResult {
-    return this.isStable ? {k: new Big(0), d: new Big(0)} : {k: new Big(1), d: new Big(1)};
+    if (!this.result) {
+      throw new NotEnoughDataError();
+    }
+
+    return this.result;
   }
 
-  update({high, low, close}: ATRCandle): void {
-    const test = new Big(high).plus(low).plus(close);
-    if (test.gt(0)) {
-      this.isStable = true;
+  update(candle: ATRCandle): StochasticResult | void {
+    this.candles.push(candle);
+
+    if (this.candles.length > this.periodK) {
+      this.candles.shift();
     }
+
+    if (this.candles.length === this.periodK) {
+      const highest = getMaximum(this.candles.map(candle => candle.high));
+      const lowest = getMinimum(this.candles.map(candle => candle.low));
+      let fastK = new Big(100).mul(new Big(candle.close).minus(lowest));
+      const divisor = new Big(highest).minus(lowest);
+      fastK = fastK.div(divisor.eq(0) ? 1 : divisor);
+      const dResult = this.d.update(fastK);
+      if (dResult) {
+        return (this.result = {
+          k: fastK,
+          d: dResult,
+        });
+      }
+    }
+  }
+
+  get isStable(): boolean {
+    return this.result !== undefined;
   }
 }

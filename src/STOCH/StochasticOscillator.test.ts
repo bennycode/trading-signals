@@ -1,47 +1,81 @@
 import {StochasticOscillator} from './StochasticOscillator';
+import {NotEnoughDataError} from '../error';
 
 describe('StochasticOscillator', () => {
   describe('getResult', () => {
-    // Test vectors taken from: https://tulipindicators.org/stoch
+    // Test vectors taken from: https://runkit.com/anandaravindan/stochastic
     it('is stable when the amount of inputs is bigger than the required interval', () => {
-      const candles: [number, number, number][] = [
-        [82.15, 81.29, 81.59],
-        [81.89, 80.64, 81.06],
-        [83.03, 81.31, 82.87],
-        [83.3, 82.65, 83.0],
-        [83.85, 83.07, 83.61],
-        [83.9, 83.11, 83.15],
-        [83.33, 82.49, 82.84],
-        [84.3, 82.3, 83.99],
-        [84.84, 84.15, 84.55],
-        [85.0, 84.11, 84.36],
-        [85.9, 84.03, 85.53],
-        [86.58, 85.39, 86.54],
-        [86.98, 85.76, 86.89],
-        [88.0, 87.17, 87.77],
-        [87.87, 87.01, 87.29],
+      const highs = [
+        127.009, 127.616, 126.591, 127.347, 128.173, 128.432, 127.367, 126.422, 126.9, 126.85, 125.646, 125.716,
+        127.158, 127.715, 127.686, 128.223, 128.273, 128.093, 128.273, 127.735, 128.77, 129.287, 130.063, 129.118,
+        129.287, 128.472, 128.093, 128.651, 129.138, 128.641,
+      ];
+      const lows = [
+        125.357, 126.163, 124.93, 126.094, 126.82, 126.482, 126.034, 124.83, 126.392, 125.716, 124.562, 124.572,
+        125.069, 126.86, 126.631, 126.8, 126.711, 126.8, 126.134, 125.925, 126.989, 127.815, 128.472, 128.064, 127.606,
+        127.596, 126.999, 126.9, 127.487, 127.397,
+      ];
+      const closes = [
+        125.357, 126.163, 124.93, 126.094, 126.82, 126.482, 126.034, 124.83, 126.392, 125.716, 124.562, 124.572,
+        125.069, 127.288, 127.178, 128.014, 127.109, 127.725, 127.059, 127.327, 128.71, 127.875, 128.581, 128.601,
+        127.934, 128.113, 127.596, 127.596, 128.69, 128.273,
       ];
 
-      const expectations: [string, string][] = [
-        ['77.39', '75.70'],
-        ['83.13', '78.01'],
-        ['84.87', '81.79'],
-        ['88.36', '85.45'],
-        ['95.25', '89.49'],
-        ['96.74', '93.45'],
-        ['91.09', '94.36'],
+      const expectations = [
+        {k: '89.20', d: '75.75'},
+        {k: '65.81', d: '74.20'},
+        {k: '81.73', d: '78.91'},
+        {k: '64.52', d: '70.69'},
+        {k: '74.51', d: '73.59'},
+        {k: '98.57', d: '79.20'},
+        {k: '70.12', d: '81.07'},
+        {k: '73.06', d: '80.58'},
+        {k: '73.42', d: '72.20'},
+        {k: '61.23', d: '69.24'},
+        {k: '60.95', d: '65.20'},
+        {k: '40.38', d: '54.19'},
+        {k: '40.38', d: '47.24'},
+        {k: '66.82', d: '49.19'},
+        {k: '56.74', d: '54.65'},
       ];
 
-      const stoch = new StochasticOscillator(5, 3, 3);
-      for (let i = 0; i < candles.length; i++) {
-        const [high, low, close] = candles[i];
-        stoch.update({high, low, close});
+      const stoch = new StochasticOscillator(14, 3);
+
+      for (let i = 0; i < highs.length; i++) {
+        stoch.update({
+          high: highs[i],
+          low: lows[i],
+          close: closes[i],
+        });
         if (stoch.isStable) {
-          const [stoch_k, stoch_d] = expectations[i];
-          const result = stoch.getResult();
-          expect(result.k.valueOf()).withContext('%k').toBe(stoch_k);
-          expect(result.d.valueOf()).withContext('%d').toBe(stoch_d);
+          const {k, d} = stoch.getResult();
+          const expected = expectations.shift()!;
+          expect(k.toFixed(2)).toBe(expected.k);
+          expect(d.toFixed(2)).toBe(expected.d);
         }
+      }
+
+      const {k, d} = stoch.getResult();
+      expect(k.toFixed(2)).toBe('56.74');
+      expect(d.toFixed(2)).toBe('54.65');
+    });
+  });
+
+  describe('getResult', () => {
+    it('throws an error when there is not enough input data', () => {
+      const stoch = new StochasticOscillator(5, 3);
+
+      try {
+        stoch.update({high: 1, low: 1, close: 1});
+        stoch.update({high: 2, low: 1, close: 1});
+        stoch.update({high: 3, low: 1, close: 1});
+        stoch.update({high: 4, low: 1, close: 1});
+        stoch.update({high: 5, low: 1, close: 1}); // Emits 1st of 3 required values for period %d
+        stoch.update({high: 6, low: 1, close: 1}); // Emits 2nd of 3 required values for period %d
+        stoch.getResult();
+        fail('Expected error');
+      } catch (error) {
+        expect(error).toBeInstanceOf(NotEnoughDataError);
       }
     });
   });
