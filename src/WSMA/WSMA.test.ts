@@ -40,17 +40,6 @@ describe('WSMA', () => {
 
       expect(wsma.getResult().toFixed(2)).toBe(results[results.length - 1]);
     });
-  });
-
-  describe('isStable', () => {
-    it('is stable when the inputs can fill the signal interval', () => {
-      const wsma = new WSMA(3);
-      wsma.update(1);
-      wsma.update(2);
-      expect(wsma.isStable).toBeFalse();
-      wsma.update(3);
-      expect(wsma.isStable).toBeTrue();
-    });
 
     it('throws an error when there is no input data', () => {
       const wsma = new WSMA(3);
@@ -74,6 +63,17 @@ describe('WSMA', () => {
       } catch (error) {
         expect(error).toBeInstanceOf(NotEnoughDataError);
       }
+    });
+  });
+
+  describe('isStable', () => {
+    it('is stable when the inputs can fill the signal interval', () => {
+      const wsma = new WSMA(3);
+      wsma.update(1);
+      wsma.update(2);
+      expect(wsma.isStable).toBeFalse();
+      wsma.update(3);
+      expect(wsma.isStable).toBeTrue();
     });
   });
 });
