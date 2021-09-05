@@ -19,15 +19,13 @@ export interface StochasticResult {
  *
  * The Stochastic Oscillator was developed by George Lane and is range-bound between 0 and 100. The Stochastic
  * Oscillator attempts to predict price turning points. A value of 80 indicates that the asset is on the verge of being
- * overbought. By default a Simple Moving Average (SMA) is used. When the momentum starts to slow, the Stochastic
- * Oscillator values start to turn down.
+ * overbought. By default a Simple Moving Average (SMA) is used. When the momentum starts to slow down, the Stochastic
+ * Oscillator values start to turn down. In the case of an uptrend, prices tend to make higher highs, and the
+ * settlement price usually tends to be in the upper end of that time period's trading range.
  *
- * The %K values represent the relation between current close to the period's price range (high/low). It is sometimes
- * referred as the "fast" stochastic indicator (fastk). The %D values represent a Moving Average of the %K values. It
- * is sometimes referred as the "slow" stochastic indicator.
- *
- * In the case of an uptrend, prices tend to make higher highs, and the settlement price usually tends to be in the
- * upper end of that time period's trading range.
+ * The %k values represent the relation between current close to the period's price range (high/low). It is sometimes
+ * referred as the "fast" stochastic period (fastk). The %d values represent a Moving Average of the %k values. It
+ * is sometimes referred as the "slow" period.
  *
  * @see https://en.wikipedia.org/wiki/Stochastic_oscillator
  * @see https://www.investopedia.com/terms/s/stochasticoscillator.asp
