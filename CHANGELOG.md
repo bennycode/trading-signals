@@ -1,3 +1,22 @@
+### 2.3.0 (2021-09-05)
+
+##### Documentation Changes
+
+- Specify technical indicator types ([#316](https://github.com/bennycode/trading-signals/pull/316)) ([edff17ef](https://github.com/bennycode/trading-signals/commit/edff17ef6db556565635b0c6e324fc1dde1399ea))
+- Add Technical Analysis Library using Pandas ([7cf77846](https://github.com/bennycode/trading-signals/commit/7cf7784610378c2c5e68815d41312d99cefe0330))
+- Add Technical Analysis Library using Pandas ([26baa759](https://github.com/bennycode/trading-signals/commit/26baa75960b8d44191df75aacdb0390f4a5d9b1f))
+
+##### New Features
+
+- **STOCH:** Add Stochastic Oscillator ([#314](https://github.com/bennycode/trading-signals/pull/314)) ([6d13ca6a](https://github.com/bennycode/trading-signals/commit/6d13ca6a6702d21cf7837fa9e919759c2da504dd))
+- **WSMA:** Add Wilder's Smoothed Moving Average (WSMA) ([#313](https://github.com/bennycode/trading-signals/pull/313)) ([a9a94343](https://github.com/bennycode/trading-signals/commit/a9a943439f66c643adc7a83b2f94a5505d07a7ad))
+- **ADX,ATR,RSI:** Add option to use EMA or SMA for smoothing results ([#312](https://github.com/bennycode/trading-signals/pull/312)) ([c75f34e7](https://github.com/bennycode/trading-signals/commit/c75f34e7673d7462e4de1c58d92a8e524593269a))
+
+##### Refactors
+
+- **ADX,ATR,STOCH:** Share high low close type ([e3d677f5](https://github.com/bennycode/trading-signals/commit/e3d677f527c6eaeadbcb2f6626402484ca74b43c))
+- **ABANDS,BBANDS:** Reorganize source code files ([300b4413](https://github.com/bennycode/trading-signals/commit/300b441382bf71e5eaf9bcfb5245960ac1c5dc67))
+
 ### 2.2.0 (2021-08-29)
 
 ##### New Features
