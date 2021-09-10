@@ -4,7 +4,7 @@ updates:
     directory: '/'
     schedule:
       day: monday
-      interval: weekly
+      interval: monthly
       time: '02:00'
     pull-request-branch-name:
       separator: '-'
