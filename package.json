@@ -20,7 +20,7 @@
     "jasmine": "3.9.0",
     "lint-staged": "11.1.2",
     "nyc": "15.1.0",
-    "prettier": "2.4.0",
+    "prettier": "2.4.1",
     "pretty-quick": "3.1.1",
     "rimraf": "3.0.2",
     "ts-node": "10.2.1",
