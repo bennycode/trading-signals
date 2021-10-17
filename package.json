@@ -32,6 +32,7 @@
   },
   "files": [
     "dist",
+    "!dist/test",
     "!dist/**/*.test.*"
   ],
   "homepage": "https://documentup.com/bennycode/trading-signals",
