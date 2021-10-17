@@ -21,7 +21,7 @@ describe('ADX', () => {
     });
 
     it('supports different smoothing indicators', () => {
-      // Test vectors taken from:
+      // Test data taken from:
       // https://github.com/TulipCharts/tulipindicators/commit/41e59fb33cef5bc97b03d2751dab2b006525c23f
       const highs = [
         148.115, 148.226, 148.027, 149.603, 149.739, 150.782, 151.247, 151.084, 151.855, 151.874, 150.977, 151.693,
