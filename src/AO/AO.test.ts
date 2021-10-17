@@ -4,7 +4,8 @@ import {NotEnoughDataError} from '../error';
 describe('AO', () => {
   describe('getResult', () => {
     it('works with an interval setting of 5/34', () => {
-      // Test vectors taken from: https://github.com/TulipCharts/tulipindicators/blob/v0.8.0/tests/extra.txt#L17-L20
+      // Test data taken from:
+      // https://github.com/TulipCharts/tulipindicators/blob/v0.8.0/tests/extra.txt#L17-L20
       const highs = [
         32.11, 27.62, 28.26, 28.02, 26.93, 26.65, 27.25, 27.58, 27.9, 28.9, 29.34, 29.82, 29.54, 29.3, 29.5, 29.5, 29.7,
         29.14, 27.17, 30.34, 30.26, 30.14, 29.98, 30.55, 32.11, 34.16, 39.5, 50.78, 51.38, 51.34, 50.7, 44.23, 42.71,
