@@ -104,7 +104,7 @@ Most of the time, the minimum amount of data depends on the interval / time peri
 
 ## Performance
 
-You can run `yarn start:benchmark` to see the runtime performance of each technical indicator. This will give you an understanding of which indicators can be calculated faster than others.
+You can run `yarn start:benchmark` to see the runtime performance of each technical indicator on your machine. This will give you an understanding of which indicators can be calculated faster than others.
 
 ## Disclaimer
 
