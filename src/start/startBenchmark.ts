@@ -8,7 +8,7 @@ const price = 72;
 const bb = new BollingerBands(interval, 2);
 const sma = new SMA(interval);
 
-new Benchmark.Suite('Trading Signals')
+new Benchmark.Suite('Technical Indicators')
   .add('BollingerBands', () => {
     while (!bb.isStable) {
       bb.update(price);
