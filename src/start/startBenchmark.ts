@@ -9,14 +9,14 @@ const bb = new BollingerBands(interval, 2);
 const sma = new SMA(interval);
 
 new Benchmark.Suite('Trading Signals')
-  .add('SMA', () => {
-    while (!sma.isStable) {
-      sma.update(price);
-    }
-  })
   .add('BollingerBands', () => {
     while (!bb.isStable) {
       bb.update(price);
+    }
+  })
+  .add('SMA', () => {
+    while (!sma.isStable) {
+      sma.update(price);
     }
   })
   .on('cycle', (event: Event) => {
