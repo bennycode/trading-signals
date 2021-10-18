@@ -102,6 +102,10 @@ console.log(sma.getResult().valueOf()); // "40"
 
 Most of the time, the minimum amount of data depends on the interval / time period used.
 
+## Performance
+
+You can run `yarn start:benchmark` to see the runtime performance of each technical indicator on your machine. This will give you an understanding of which indicators can be calculated faster than others.
+
 ## Disclaimer
 
 The information and publications of [trading-signals](https://github.com/bennycode/trading-signals) do not constitute financial advice, investment advice, trading advice or any other form of advice. All results from [trading-signals](https://github.com/bennycode/trading-signals) are intended for information purposes only.

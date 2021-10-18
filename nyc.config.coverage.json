@@ -2,7 +2,7 @@
   "all": true,
   "branches": 100,
   "check-coverage": true,
-  "exclude": ["**/*.d.ts", "**/*.test*.ts", "**/index.ts", "**/demo/**/*"],
+  "exclude": ["**/*.d.ts", "**/*.test*.ts", "**/index.ts", "**/start/**/*"],
   "extension": [".ts"],
   "functions": 100,
   "include": ["src/**/*.ts"],
