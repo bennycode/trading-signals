@@ -23,21 +23,21 @@ describe('StochasticOscillator', () => {
       ];
 
       const expectations = [
-        {k: '89.20', d: '75.75'},
-        {k: '65.81', d: '74.20'},
-        {k: '81.73', d: '78.91'},
-        {k: '64.52', d: '70.69'},
-        {k: '74.51', d: '73.59'},
-        {k: '98.57', d: '79.20'},
-        {k: '70.12', d: '81.07'},
-        {k: '73.06', d: '80.58'},
-        {k: '73.42', d: '72.20'},
-        {k: '61.23', d: '69.24'},
-        {k: '60.95', d: '65.20'},
-        {k: '40.38', d: '54.19'},
-        {k: '40.38', d: '47.24'},
-        {k: '66.82', d: '49.19'},
-        {k: '56.74', d: '54.65'},
+        {d: '75.75', k: '89.20'},
+        {d: '74.20', k: '65.81'},
+        {d: '78.91', k: '81.73'},
+        {d: '70.69', k: '64.52'},
+        {d: '73.59', k: '74.51'},
+        {d: '79.20', k: '98.57'},
+        {d: '81.07', k: '70.12'},
+        {d: '80.58', k: '73.06'},
+        {d: '72.20', k: '73.42'},
+        {d: '69.24', k: '61.23'},
+        {d: '65.20', k: '60.95'},
+        {d: '54.19', k: '40.38'},
+        {d: '47.24', k: '40.38'},
+        {d: '49.19', k: '66.82'},
+        {d: '54.65', k: '56.74'},
       ];
 
       const stoch = new StochasticOscillator(14, 3);
@@ -67,12 +67,12 @@ describe('StochasticOscillator', () => {
       const stoch = new StochasticOscillator(5, 3);
 
       try {
-        stoch.update({high: 1, low: 1, close: 1});
-        stoch.update({high: 2, low: 1, close: 1});
-        stoch.update({high: 3, low: 1, close: 1});
-        stoch.update({high: 4, low: 1, close: 1});
-        stoch.update({high: 5, low: 1, close: 1}); // Emits 1st of 3 required values for %d period
-        stoch.update({high: 6, low: 1, close: 1}); // Emits 2nd of 3 required values for %d period
+        stoch.update({close: 1, high: 1, low: 1});
+        stoch.update({close: 1, high: 2, low: 1});
+        stoch.update({close: 1, high: 3, low: 1});
+        stoch.update({close: 1, high: 4, low: 1});
+        stoch.update({close: 1, high: 5, low: 1}); // Emits 1st of 3 required values for %d period
+        stoch.update({close: 1, high: 6, low: 1}); // Emits 2nd of 3 required values for %d period
         stoch.getResult();
         fail('Expected error');
       } catch (error) {
