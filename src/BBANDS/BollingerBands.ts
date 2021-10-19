@@ -22,19 +22,15 @@ import {getAverage} from '../util/getAverage';
  */
 export class BollingerBands implements Indicator<BandsResult> {
   public readonly prices: Big[] = [];
-  private readonly middle: SMA;
   private result: BandsResult | undefined;
 
-  constructor(public readonly interval: number = 0, public readonly deviationMultiplier: number = 2) {
-    this.middle = new SMA(this.interval);
-  }
+  constructor(public readonly interval: number = 0, public readonly deviationMultiplier: number = 2) {}
 
   get isStable(): boolean {
     return this.prices.length >= this.interval;
   }
 
   update(price: BigSource): void {
-    this.middle.update(price);
     this.prices.push(new Big(price));
 
     while (this.prices.length > this.interval) {
@@ -45,7 +41,7 @@ export class BollingerBands implements Indicator<BandsResult> {
       return;
     }
 
-    const middle = this.middle.getResult();
+    const middle = SMA.getResultFromBatch(this.prices);
     const squareDiffs = this.prices.map((price: Big) => price.sub(middle).pow(2));
     const standardDeviation = getAverage(squareDiffs).sqrt();
 
