@@ -88,7 +88,7 @@ describe('StochasticOscillator', () => {
       stoch.update({close: 100, high: 100, low: 100});
       stoch.update({close: 100, high: 100, low: 100});
       stoch.update({close: 100, high: 100, low: 100});
-      const result = stoch.update({high: 100, low: 100, close: 100})!;
+      const result = stoch.update({close: 100, high: 100, low: 100})!;
       expect(result.k.toFixed(2)).toBe('0.00');
       expect(result.d.toFixed(2)).toBe('0.00');
     });
