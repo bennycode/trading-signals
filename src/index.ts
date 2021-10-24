@@ -16,7 +16,6 @@ export * from './MACD/MACD';
 export * from './MOM/MOM';
 export * from './ROC/ROC';
 export * from './RSI/RSI';
-export * from './SMA/FasterSMA';
 export * from './SMA/SMA';
 export * from './SMMA/SMMA';
 export * from './STOCH/StochasticOscillator';

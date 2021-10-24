@@ -12,6 +12,6 @@ export function getAverage(values: BigSource[]): Big {
   return sum.div(values.length);
 }
 
-export function fasterGetAverage(values: number[]): number {
+export function getFasterAverage(values: number[]): number {
   return values.reduce((sum: number, x: number) => sum + x, 0) / values.length;
 }

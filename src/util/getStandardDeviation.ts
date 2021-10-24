@@ -1,4 +1,4 @@
-import {fasterGetAverage, getAverage} from './getAverage';
+import {getFasterAverage, getAverage} from './getAverage';
 import Big, {BigSource} from 'big.js';
 
 /**
@@ -15,8 +15,8 @@ export function getStandardDeviation(values: BigSource[], average?: BigSource): 
 }
 
 export function getFasterStandardDeviation(values: number[], average?: number): number {
-  const middle = average || fasterGetAverage(values);
+  const middle = average || getFasterAverage(values);
   const squaredDifferences = values.map(value => value - middle).map(value => value * value);
-  const averageDifference = fasterGetAverage(squaredDifferences);
+  const averageDifference = getFasterAverage(squaredDifferences);
   return Math.sqrt(averageDifference);
 }

@@ -1,5 +1,6 @@
 import Big, {BigSource} from 'big.js';
 import {MovingAverage} from '../MA/MovingAverage';
+import {NotEnoughDataError} from '../error';
 
 /**
  * Simple Moving Average (SMA)
@@ -28,5 +29,36 @@ export class SMA extends MovingAverage {
   static getResultFromBatch(prices: BigSource[]): Big {
     const sum = prices.reduce((a: Big, b: BigSource) => a.plus(b), new Big('0'));
     return sum.div(prices.length);
+  }
+}
+
+export class FasterSMA {
+  protected result?: number;
+  public readonly prices: number[] = [];
+
+  constructor(public readonly interval: number) {}
+
+  isStable(): boolean {
+    return this.prices.length === this.interval;
+  }
+
+  getResult(): number {
+    if (!this.result) {
+      throw new NotEnoughDataError();
+    }
+    return this.result;
+  }
+
+  update(price: number): number | void {
+    this.prices.push(price);
+
+    if (this.prices.length > this.interval) {
+      this.prices.shift();
+    }
+
+    if (this.prices.length === this.interval) {
+      const sum = this.prices.reduce((a, b) => a + b, 0);
+      return (this.result = sum / this.prices.length);
+    }
   }
 }

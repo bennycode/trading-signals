@@ -1,4 +1,4 @@
-import {fasterGetAverage, getAverage} from './getAverage';
+import {getFasterAverage, getAverage} from './getAverage';
 
 describe('getAverage', () => {
   it('does not fail when entering an empty array', () => {
@@ -8,17 +8,15 @@ describe('getAverage', () => {
 
   it('returns the average of all given prices', () => {
     const prices = [20, 30, 40];
-
     const average = getAverage(prices);
     expect(average.valueOf()).toBe('30');
   });
 });
 
-describe('fasterGetAverage', () => {
+describe('getFasterAverage', () => {
   it('only works with the primitive data type number', () => {
     const prices = [20, 30, 40];
-
-    const average = fasterGetAverage(prices);
+    const average = getFasterAverage(prices);
     expect(average).toBe(30);
   });
 });
