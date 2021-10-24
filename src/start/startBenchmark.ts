@@ -1,29 +1,33 @@
 import Benchmark, {Event} from 'benchmark';
-import {BollingerBands} from '../BBANDS/BollingerBands';
-import {SMA} from '../SMA/SMA';
-import {FasterSMA} from '../SMA/FasterSMA';
+import {BollingerBands, FasterBollingerBands} from '../BBANDS/BollingerBands';
+import {SMA, FasterSMA} from '../SMA/SMA';
 import candles from '../test/fixtures/candles/100-candles.json';
 import {getFasterAverage, getAverage, getFasterStandardDeviation, getStandardDeviation} from '../util';
 
 const interval = 20;
 const prices = candles.map(candle => parseInt(candle.close, 10));
 
-const bb = new BollingerBands(interval, 2);
-const sma = new SMA(interval);
-const fasterSMA = new FasterSMA(interval);
-
 new Benchmark.Suite('Technical Indicators')
   .add('BollingerBands', () => {
+    const bb = new BollingerBands(interval, 2);
     for (const price of prices) {
       bb.update(price);
     }
   })
+  .add('FasterBollingerBands', () => {
+    const fasterBB = new FasterBollingerBands(interval, 2);
+    for (const price of prices) {
+      fasterBB.update(price);
+    }
+  })
   .add('SMA', () => {
+    const sma = new SMA(interval);
     for (const price of prices) {
       sma.update(price);
     }
   })
   .add('FasterSMA', () => {
+    const fasterSMA = new FasterSMA(interval);
     for (const price of prices) {
       fasterSMA.update(price);
     }
@@ -31,7 +35,7 @@ new Benchmark.Suite('Technical Indicators')
   .add('getAverage', () => {
     return getAverage(prices);
   })
-  .add('fasterGetAverage', () => {
+  .add('getFasterAverage', () => {
     return getFasterAverage(prices);
   })
   .add('getStandardDeviation', () => {
