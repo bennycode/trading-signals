@@ -75,8 +75,8 @@ export class StochasticOscillator implements Indicator<StochasticResult> {
       const dResult = this.d.update(fastK);
       if (dResult) {
         return (this.result = {
-          k: fastK,
           d: dResult,
+          k: fastK,
         });
       }
     }

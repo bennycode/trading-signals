@@ -44,9 +44,9 @@ describe('StochasticOscillator', () => {
 
       for (let i = 0; i < highs.length; i++) {
         stoch.update({
+          close: closes[i],
           high: highs[i],
           low: lows[i],
-          close: closes[i],
         });
         if (stoch.isStable) {
           const {k, d} = stoch.getResult();
@@ -82,13 +82,13 @@ describe('StochasticOscillator', () => {
 
     it('prevents division by zero errors when highest high and lowest low have the same value', () => {
       const stoch = new StochasticOscillator(5, 3);
-      stoch.update({high: 100, low: 100, close: 100});
-      stoch.update({high: 100, low: 100, close: 100});
-      stoch.update({high: 100, low: 100, close: 100});
-      stoch.update({high: 100, low: 100, close: 100});
-      stoch.update({high: 100, low: 100, close: 100});
-      stoch.update({high: 100, low: 100, close: 100});
-      const result = stoch.update({high: 100, low: 100, close: 100})!;
+      stoch.update({close: 100, high: 100, low: 100});
+      stoch.update({close: 100, high: 100, low: 100});
+      stoch.update({close: 100, high: 100, low: 100});
+      stoch.update({close: 100, high: 100, low: 100});
+      stoch.update({close: 100, high: 100, low: 100});
+      stoch.update({close: 100, high: 100, low: 100});
+      const result = stoch.update({close: 100, high: 100, low: 100})!;
       expect(result.k.toFixed(2)).toBe('0.00');
       expect(result.d.toFixed(2)).toBe('0.00');
     });
