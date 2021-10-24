@@ -2,9 +2,10 @@ import Benchmark, {Event} from 'benchmark';
 import {BollingerBands} from '../BBANDS/BollingerBands';
 import {SMA} from '../SMA/SMA';
 import {FasterSMA} from '../SMA/FasterSMA';
+import candles from '../test/fixtures/candles/100-candles.json';
 
 const interval = 20;
-const price = 72;
+const prices = candles.map(candle => parseInt(candle.close, 10));
 
 const bb = new BollingerBands(interval, 2);
 const sma = new SMA(interval);
@@ -12,17 +13,17 @@ const fasterSMA = new FasterSMA(interval);
 
 new Benchmark.Suite('Technical Indicators')
   .add('BollingerBands', () => {
-    while (!bb.isStable) {
+    for (const price of prices) {
       bb.update(price);
     }
   })
   .add('SMA', () => {
-    while (!sma.isStable) {
+    for (const price of prices) {
       sma.update(price);
     }
   })
   .add('FasterSMA', () => {
-    while (!fasterSMA.isStable) {
+    for (const price of prices) {
       fasterSMA.update(price);
     }
   })
