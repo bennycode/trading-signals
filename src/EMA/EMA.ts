@@ -12,6 +12,12 @@ import {NotEnoughDataError} from '../error';
  */
 export class EMA extends MovingAverage {
   private pricesCounter = 0;
+  private readonly weightFactor: number;
+
+  constructor(public readonly interval: number) {
+    super(interval);
+    this.weightFactor = 2 / (this.interval + 1);
+  }
 
   update(_price: BigSource): Big {
     this.pricesCounter++;
@@ -22,9 +28,7 @@ export class EMA extends MovingAverage {
       this.result = price;
     }
 
-    const weightFactor = 2 / (this.interval + 1);
-
-    return this.setResult(price.times(weightFactor).add(this.result.times(1 - weightFactor)));
+    return this.setResult(price.times(this.weightFactor).add(this.result.times(1 - this.weightFactor)));
   }
 
   override getResult(): Big {
