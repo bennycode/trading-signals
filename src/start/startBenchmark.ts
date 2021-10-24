@@ -3,6 +3,7 @@ import {BollingerBands} from '../BBANDS/BollingerBands';
 import {SMA} from '../SMA/SMA';
 import {FasterSMA} from '../SMA/FasterSMA';
 import candles from '../test/fixtures/candles/100-candles.json';
+import {fasterGetAverage, getAverage} from '../util';
 
 const interval = 20;
 const prices = candles.map(candle => parseInt(candle.close, 10));
@@ -26,6 +27,12 @@ new Benchmark.Suite('Technical Indicators')
     for (const price of prices) {
       fasterSMA.update(price);
     }
+  })
+  .add('getAverage', () => {
+    return getAverage(prices);
+  })
+  .add('fasterGetAverage', () => {
+    return fasterGetAverage(prices);
   })
   .on('cycle', (event: Event) => {
     console.info(String(event.target));
