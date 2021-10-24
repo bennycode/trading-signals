@@ -1,6 +1,5 @@
-import {BollingerBands} from './BollingerBands';
+import {BollingerBands, FasterBollingerBands} from './BollingerBands';
 import {Big} from 'big.js';
-
 import data from '../test/fixtures/BB/data.json';
 import {NotEnoughDataError} from '../error';
 
@@ -45,9 +44,9 @@ describe('BollingerBands', () => {
       });
     });
 
-    it('has a default configuration', () => {
-      const bb = new BollingerBands();
-      expect(bb.interval).toBe(0);
+    it('has a default standard deviation multiplier configuration', () => {
+      const bb = new BollingerBands(5);
+      expect(bb.interval).toBe(5);
       expect(bb.deviationMultiplier).toBe(2);
     });
 
@@ -137,6 +136,38 @@ describe('BollingerBands', () => {
           expect(middle.toFixed(2)).toBe(`${expectedMid}`);
           expect(upper.toFixed(2)).toBe(`${expectedUp}`);
         }
+      }
+    });
+  });
+});
+
+describe('FasterBollingerBands', () => {
+  describe('getResult', () => {
+    it('only works with plain numbers', () => {
+      // Test data taken from:
+      // https://tulipindicators.org/bbands
+      const prices = [
+        81.59, 81.06, 82.87, 83.0, 83.61, 83.15, 82.84, 83.99, 84.55, 84.36, 85.53, 86.54, 86.89, 87.77, 87.29,
+      ];
+      const fasterBB = new FasterBollingerBands(5, 2);
+      for (const price of prices) {
+        fasterBB.update(price);
+      }
+      expect(fasterBB.isStable).toBeTrue();
+      const actual = fasterBB.getResult();
+      expect(actual.lower.toFixed(2)).toBe('85.29');
+      expect(actual.middle.toFixed(2)).toBe('86.80');
+      expect(actual.upper.toFixed(2)).toBe('88.32');
+    });
+
+    it('throws an error when there is not enough input data', () => {
+      const fasterBB = new FasterBollingerBands(5);
+
+      try {
+        fasterBB.getResult();
+        fail('Expected error');
+      } catch (error) {
+        expect(error).toBeInstanceOf(NotEnoughDataError);
       }
     });
   });

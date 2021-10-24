@@ -1,6 +1,14 @@
-import type Big from 'big.js';
+import Big from 'big.js';
 
-export interface Indicator<T> {
+export interface FasterIndicator<T = number> {
+  getResult(): T;
+
+  isStable: boolean;
+
+  update(price: number): void | T;
+}
+
+export interface Indicator<T = Big> {
   getResult(): T;
 
   isStable: boolean;
@@ -8,7 +16,7 @@ export interface Indicator<T> {
   update(...args: any): void;
 }
 
-export abstract class SimpleIndicator implements Indicator<Big> {
+export abstract class SimpleIndicator implements Indicator {
   highest?: Big;
   lowest?: Big;
   protected result?: Big;

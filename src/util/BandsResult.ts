@@ -5,3 +5,9 @@ export interface BandsResult {
   middle: Big;
   upper: Big;
 }
+
+export interface FasterBandsResult {
+  lower: number;
+  middle: number;
+  upper: number;
+}

@@ -156,7 +156,7 @@ describe('FasterSMA', () => {
           expect(actual.toFixed(3)).toBe(expected);
         }
       }
-      expect(sma.isStable()).toBeTrue();
+      expect(sma.isStable).toBeTrue();
       expect(sma.getResult()).toBe(86.804);
     });
 
