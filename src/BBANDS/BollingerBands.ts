@@ -3,7 +3,7 @@ import {SMA} from '../SMA/SMA';
 import {NotEnoughDataError} from '../error';
 import {BandsResult} from '../util/BandsResult';
 import {Indicator} from '../Indicator';
-import {getAverage} from '../util/getAverage';
+import {getStandardDeviation} from '../util';
 
 /**
  * Bollinger Bands (BBANDS)
@@ -42,8 +42,7 @@ export class BollingerBands implements Indicator<BandsResult> {
     }
 
     const middle = SMA.getResultFromBatch(this.prices);
-    const squareDiffs = this.prices.map((price: Big) => price.sub(middle).pow(2));
-    const standardDeviation = getAverage(squareDiffs).sqrt();
+    const standardDeviation = getStandardDeviation(this.prices, middle);
 
     this.result = {
       lower: middle.sub(standardDeviation.times(this.deviationMultiplier)),

@@ -42,6 +42,12 @@ The "trading-signals" library provides a TypeScript implementation for common te
 1. Stochastic Oscillator (STOCH)
 1. Wilder's Smoothed Moving Average (WSMA)
 
+Utility Methods:
+
+1. Average
+1. Standard Deviation
+1. Rolling Standard Deviation
+
 ## Usage
 
 ```typescript
