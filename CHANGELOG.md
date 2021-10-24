@@ -1,3 +1,28 @@
+### 2.4.0 (2021-10-24)
+
+##### Documentation Changes
+
+- Explain `update` & `getResult` ([f2a0e745](https://github.com/bennycode/trading-signals/commit/f2a0e745f5ba4aba7f60d027ec7a7d44019c8478))
+
+##### New Features
+
+- **BBANDS:** Add faster Bollinger Bands implementation based on numbers ([#338](https://github.com/bennycode/trading-signals/pull/338)) ([d262dad4](https://github.com/bennycode/trading-signals/commit/d262dad415644394c5e738503c6885569d12cd3a))
+- Add Standard Deviation ([#337](https://github.com/bennycode/trading-signals/pull/337)) ([b89dbcdc](https://github.com/bennycode/trading-signals/commit/b89dbcdccf1df46086f358345bcd0182e4aef0e9))
+- **util:** Add faster average implementation based on numbers ([2029f1c3](https://github.com/bennycode/trading-signals/commit/2029f1c3ec72831de9a8578e3e23d0143d167168))
+- **SMA:** Add faster SMA implementation based on numbers ([#336](https://github.com/bennycode/trading-signals/pull/336)) ([ea918088](https://github.com/bennycode/trading-signals/commit/ea918088894850b64bde8221581a5587d97c6a3b))
+
+##### Other Changes
+
+- bennycode/trading-signals into main ([c8120128](https://github.com/bennycode/trading-signals/commit/c8120128ac93ff74ea7075aefe183c749b7a92da))
+
+##### Refactors
+
+- **util:** Change faster prefix ([d4894377](https://github.com/bennycode/trading-signals/commit/d4894377832726c94add3b6a5e6364f77f6b9fad))
+- **SMA:**
+  - Export FasterSMA from SMA directory ([cfe98337](https://github.com/bennycode/trading-signals/commit/cfe983372e1155dfd652b1951705b728de00cc38))
+  - Re-use static `getResultFromBatch` method ([89e08a6a](https://github.com/bennycode/trading-signals/commit/89e08a6a9a0cc699951122dca7285c2a2da98402))
+- **EMA:** Calculate weight factor only once ([80b368f1](https://github.com/bennycode/trading-signals/commit/80b368f19b030c6823159cc5062d109bae5ce478))
+
 ### 2.3.0 (2021-09-05)
 
 ##### Documentation Changes
