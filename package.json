@@ -10,7 +10,7 @@
   "devDependencies": {
     "@types/benchmark": "2.1.1",
     "@types/jasmine": "3.10.1",
-    "@types/node": "16.11.1",
+    "@types/node": "16.11.6",
     "@typescript-eslint/eslint-plugin": "4.32.0",
     "@typescript-eslint/parser": "4.33.0",
     "benchmark": "2.1.4",
