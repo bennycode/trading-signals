@@ -1,3 +1,18 @@
+#### 2.4.1 (2021-11-07)
+
+##### Documentation Changes
+
+- Describe faster implementations ([#354](https://github.com/bennycode/trading-signals/pull/354)) ([a61afe61](https://github.com/bennycode/trading-signals/commit/a61afe61be50f9adc443eaf6011e550dba168a9d))
+
+##### New Features
+
+- **ci:** Automatically add GitHub labels to PRs ([#349](https://github.com/bennycode/trading-signals/pull/349)) ([35c976d3](https://github.com/bennycode/trading-signals/commit/35c976d39b557cfdba50ce076ac9a576eb6ecaf6))
+- **EMA:** Add faster EMA implementation ([#348](https://github.com/bennycode/trading-signals/pull/348)) ([98d8ad72](https://github.com/bennycode/trading-signals/commit/98d8ad72587e4aafda29f5f36fb3118bdc62cc36))
+
+##### Refactors
+
+- Simplify indicator interfaces ([#351](https://github.com/bennycode/trading-signals/pull/351)) ([992eeefe](https://github.com/bennycode/trading-signals/commit/992eeefeb36817341e4ec75519783dd09892fcd6))
+
 ### 2.4.0 (2021-10-24)
 
 ##### Documentation Changes
