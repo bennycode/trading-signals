@@ -2,7 +2,7 @@ import Big, {BigSource} from 'big.js';
 import {SMA} from '../SMA/SMA';
 import {NotEnoughDataError} from '../error';
 import {BandsResult, FasterBandsResult} from '../util/BandsResult';
-import {FasterIndicator, Indicator} from '../Indicator';
+import {Indicator} from '../Indicator';
 import {getFasterAverage, getFasterStandardDeviation, getStandardDeviation} from '../util';
 
 /**
@@ -60,7 +60,7 @@ export class BollingerBands implements Indicator<BandsResult> {
   }
 }
 
-export class FasterBollingerBands implements FasterIndicator<FasterBandsResult> {
+export class FasterBollingerBands implements Indicator<FasterBandsResult> {
   public readonly prices: number[] = [];
   private result: FasterBandsResult | undefined;
 

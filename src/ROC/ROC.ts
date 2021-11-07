@@ -1,6 +1,6 @@
 import Big, {BigSource} from 'big.js';
 import {NotEnoughDataError} from '../error';
-import {SimpleIndicator} from '../Indicator';
+import {BigIndicatorSeries} from '../Indicator';
 
 /**
  * Rate Of Change Indicator (ROC)
@@ -10,7 +10,7 @@ import {SimpleIndicator} from '../Indicator';
  *
  * @see https://www.investopedia.com/terms/r/rateofchange.asp
  */
-export class ROC extends SimpleIndicator {
+export class ROC extends BigIndicatorSeries {
   private readonly priceHistory: BigSource[] = [];
 
   constructor(public readonly interval: number) {

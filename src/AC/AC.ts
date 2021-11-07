@@ -1,4 +1,4 @@
-import {SimpleIndicator} from '../Indicator';
+import {BigIndicatorSeries} from '../Indicator';
 import Big, {BigSource} from 'big.js';
 import {NotEnoughDataError} from '../error';
 import {AO} from '../AO/AO';
@@ -17,7 +17,7 @@ import {MOM} from '../MOM/MOM';
  *
  * @see https://www.thinkmarkets.com/en/indicators/bill-williams-accelerator/
  */
-export class AC extends SimpleIndicator {
+export class AC extends BigIndicatorSeries {
   public readonly ao: AO;
   public readonly momentum: MOM;
   public readonly signal: SMA;

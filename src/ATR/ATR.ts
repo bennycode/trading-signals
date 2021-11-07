@@ -1,6 +1,6 @@
 import Big from 'big.js';
 import {NotEnoughDataError} from '../error';
-import {SimpleIndicator} from '../Indicator';
+import {BigIndicatorSeries} from '../Indicator';
 import {MovingAverage} from '../MA/MovingAverage';
 import {MovingAverageTypeContext} from '../MA/MovingAverageTypeContext';
 import {SMMA} from '../SMMA/SMMA';
@@ -16,7 +16,7 @@ import {HighLowClose} from '../util';
  *
  * @see https://www.investopedia.com/terms/a/atr.asp
  */
-export class ATR extends SimpleIndicator {
+export class ATR extends BigIndicatorSeries {
   private readonly candles: HighLowClose[] = [];
   private readonly smoothing: MovingAverage;
   private prevCandle: HighLowClose | undefined;

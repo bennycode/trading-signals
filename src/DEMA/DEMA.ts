@@ -1,6 +1,6 @@
 import Big, {BigSource} from 'big.js';
 import {EMA, NotEnoughDataError} from '..';
-import {SimpleIndicator} from '../Indicator';
+import {BigIndicatorSeries} from '../Indicator';
 
 /**
  * Double Exponential Moving Average (DEMA)
@@ -12,7 +12,7 @@ import {SimpleIndicator} from '../Indicator';
  *
  * @see https://www.investopedia.com/terms/d/double-exponential-moving-average.asp
  */
-export class DEMA extends SimpleIndicator {
+export class DEMA extends BigIndicatorSeries {
   private readonly inner: EMA;
   private readonly outer: EMA;
 

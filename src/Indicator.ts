@@ -5,10 +5,25 @@ export interface Indicator<T = Big> {
 
   isStable: boolean;
 
-  update(...args: any): void;
+  update(...args: any): void | T;
 }
 
-export abstract class SimpleIndicator implements Indicator {
+/** Defines indicators which only require a single value (usually the price) to get updated. */
+export interface SimpleIndicator<T = Big> extends Indicator<T> {
+  update(value: T): void | T;
+}
+
+export type SimpleNumberIndicator = SimpleIndicator<number>;
+
+/**
+ * Tracks results of an indicator over time and memorizes the highest & lowest result.
+ */
+export interface IndicatorSeries<T = Big> extends Indicator<T> {
+  highest?: T;
+  lowest?: T;
+}
+
+export abstract class BigIndicatorSeries implements IndicatorSeries {
   highest?: Big;
   lowest?: Big;
   protected result?: Big;
@@ -34,15 +49,7 @@ export abstract class SimpleIndicator implements Indicator {
   abstract update(...args: any): void;
 }
 
-export interface FasterIndicator<T = number> {
-  getResult(): T;
-
-  isStable: boolean;
-
-  update(price: number): void | T;
-}
-
-export abstract class FasterSimpleIndicator implements FasterIndicator {
+export abstract class NumberIndicatorSeries implements IndicatorSeries<number> {
   highest?: number;
   lowest?: number;
   protected result?: number;
