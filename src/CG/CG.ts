@@ -1,4 +1,4 @@
-import {SimpleIndicator} from '../Indicator';
+import {BigIndicatorSeries} from '../Indicator';
 import Big, {BigSource} from 'big.js';
 import {SMA} from '../SMA/SMA';
 import {NotEnoughDataError} from '../error';
@@ -16,7 +16,7 @@ import {NotEnoughDataError} from '../error';
  *   profitable trading
  * @see http://www.mesasoftware.com/papers/TheCGOscillator.pdf
  */
-export class CG extends SimpleIndicator {
+export class CG extends BigIndicatorSeries {
   public signal: SMA;
 
   public readonly prices: Big[] = [];

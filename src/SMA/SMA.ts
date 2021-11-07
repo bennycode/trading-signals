@@ -1,7 +1,7 @@
 import Big, {BigSource} from 'big.js';
 import {MovingAverage} from '../MA/MovingAverage';
 import {NotEnoughDataError} from '../error';
-import {FasterIndicator} from '../Indicator';
+import {SimpleNumberIndicator} from '../Indicator';
 
 /**
  * Simple Moving Average (SMA)
@@ -33,7 +33,7 @@ export class SMA extends MovingAverage {
   }
 }
 
-export class FasterSMA implements FasterIndicator {
+export class FasterSMA implements SimpleNumberIndicator {
   protected result?: number;
   public readonly prices: number[] = [];
 

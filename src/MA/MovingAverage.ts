@@ -1,6 +1,6 @@
 import Big, {BigSource} from 'big.js';
 import {NotEnoughDataError} from '../error';
-import {FasterSimpleIndicator, SimpleIndicator} from '../Indicator';
+import {NumberIndicatorSeries, BigIndicatorSeries} from '../Indicator';
 
 /**
  * Moving Average (MA)
@@ -10,7 +10,7 @@ import {FasterSimpleIndicator, SimpleIndicator} from '../Indicator';
  *
  * @see https://www.investopedia.com/terms/m/movingaverage.asp
  */
-export abstract class MovingAverage extends SimpleIndicator {
+export abstract class MovingAverage extends BigIndicatorSeries {
   constructor(public readonly interval: number) {
     super();
   }
@@ -29,7 +29,7 @@ export abstract class MovingAverage extends SimpleIndicator {
   abstract update(price: BigSource): Big | void;
 }
 
-export abstract class FasterMovingAverage extends FasterSimpleIndicator {
+export abstract class FasterMovingAverage extends NumberIndicatorSeries {
   constructor(public readonly interval: number) {
     super();
   }

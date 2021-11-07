@@ -1,4 +1,4 @@
-import {SimpleIndicator} from '../Indicator';
+import {BigIndicatorSeries} from '../Indicator';
 import Big, {BigSource} from 'big.js';
 import {SMA} from '../SMA/SMA';
 import {NotEnoughDataError} from '../error';
@@ -16,7 +16,7 @@ import {NotEnoughDataError} from '../error';
  * @see https://www.tradingview.com/support/solutions/43000501826-awesome-oscillator-ao/
  * @see https://tradingstrategyguides.com/bill-williams-awesome-oscillator-strategy/
  */
-export class AO extends SimpleIndicator {
+export class AO extends BigIndicatorSeries {
   public readonly long: SMA;
   public readonly short: SMA;
 

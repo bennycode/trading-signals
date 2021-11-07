@@ -1,7 +1,7 @@
 import Big, {BigSource} from 'big.js';
 import {MovingAverageTypeContext, NotEnoughDataError, SMMA} from '..';
 import {MovingAverage} from '../MA/MovingAverage';
-import {SimpleIndicator} from '../Indicator';
+import {BigIndicatorSeries} from '../Indicator';
 
 /**
  * Relative Strength Index (RSI)
@@ -18,7 +18,7 @@ import {SimpleIndicator} from '../Indicator';
  *
  * @see https://www.investopedia.com/terms/r/rsi.asp
  */
-export class RSI extends SimpleIndicator {
+export class RSI extends BigIndicatorSeries {
   public readonly prices: Big[] = [];
   private readonly avgGain: MovingAverage;
   private readonly avgLoss: MovingAverage;

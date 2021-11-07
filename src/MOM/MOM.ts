@@ -1,4 +1,4 @@
-import {SimpleIndicator} from '../Indicator';
+import {BigIndicatorSeries} from '../Indicator';
 import Big, {BigSource} from 'big.js';
 import {getFixedArray} from '../util/getFixedArray';
 import {NotEnoughDataError} from '../error';
@@ -11,7 +11,7 @@ import {NotEnoughDataError} from '../error';
  *
  * @see https://www.warriortrading.com/momentum-indicator/
  */
-export class MOM extends SimpleIndicator {
+export class MOM extends BigIndicatorSeries {
   private readonly history: BigSource[];
   private readonly historyLength: number;
 
