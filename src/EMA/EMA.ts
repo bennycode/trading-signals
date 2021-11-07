@@ -1,5 +1,5 @@
 import Big, {BigSource} from 'big.js';
-import {MovingAverage} from '../MA/MovingAverage';
+import {FasterMovingAverage, MovingAverage} from '../MA/MovingAverage';
 import {NotEnoughDataError} from '../error';
 
 /**
@@ -32,6 +32,48 @@ export class EMA extends MovingAverage {
   }
 
   override getResult(): Big {
+    if (!this.result) {
+      throw new NotEnoughDataError();
+    }
+
+    if (this.pricesCounter < this.interval) {
+      throw new NotEnoughDataError();
+    }
+
+    return this.result;
+  }
+
+  override get isStable(): boolean {
+    try {
+      this.getResult();
+      return true;
+    } catch {
+      return false;
+    }
+  }
+}
+
+export class FasterEMA extends FasterMovingAverage {
+  private pricesCounter = 0;
+  private readonly weightFactor: number;
+
+  constructor(public readonly interval: number) {
+    super(interval);
+    this.weightFactor = 2 / (this.interval + 1);
+  }
+
+  update(price: number): number {
+    this.pricesCounter++;
+
+    // If it's the first update there is no previous result and a default has to be set.
+    if (!this.result) {
+      this.result = price;
+    }
+
+    return this.setResult(price * this.weightFactor + this.result * (1 - this.weightFactor));
+  }
+
+  override getResult(): number {
     if (!this.result) {
       throw new NotEnoughDataError();
     }
