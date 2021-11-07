@@ -31,3 +31,8 @@ jobs:
           flags: unittests
           token: ${{ secrets.CODECOV_TOKEN }}
           yml: ./codecov.yml
+      - name: Release
+        uses: xt0rted/action-gh-release@testing
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          generate_release_notes: true
