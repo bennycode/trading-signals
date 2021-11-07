@@ -1,6 +1,6 @@
 import Big, {BigSource} from 'big.js';
 import {NotEnoughDataError} from '../error';
-import {SimpleIndicator} from '../Indicator';
+import {FasterSimpleIndicator, SimpleIndicator} from '../Indicator';
 
 /**
  * Moving Average (MA)
@@ -27,4 +27,23 @@ export abstract class MovingAverage extends SimpleIndicator {
   }
 
   abstract update(price: BigSource): Big | void;
+}
+
+export abstract class FasterMovingAverage extends FasterSimpleIndicator {
+  constructor(public readonly interval: number) {
+    super();
+  }
+
+  override get isStable(): boolean {
+    return !!this.result;
+  }
+
+  override getResult(): number {
+    if (!this.result) {
+      throw new NotEnoughDataError();
+    }
+    return this.result;
+  }
+
+  abstract update(price: number): number | void;
 }
