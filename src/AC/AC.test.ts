@@ -5,7 +5,7 @@ describe('AC', () => {
   describe('getResult', () => {
     it('works with a signal line of SMA(5)', () => {
       const ac = new AC(5, 34, 5);
-      // Test data taken from:
+      // Test data verified with:
       // https://github.com/jesse-ai/jesse/blob/8e502d070c24bed29db80e1d0938781d8cdb1046/tests/data/test_candles_indicators.py#L4351
       const candles = [
         [1563408000000, 210.8, 225.73, 229.65, 205.71, 609081.49094],

@@ -15,9 +15,9 @@ export class MOM extends BigIndicatorSeries {
   private readonly history: BigSource[];
   private readonly historyLength: number;
 
-  constructor(public readonly length: number) {
+  constructor(public readonly interval: number) {
     super();
-    this.historyLength = length + 1;
+    this.historyLength = interval + 1;
     this.history = getFixedArray<BigSource>(this.historyLength);
   }
 

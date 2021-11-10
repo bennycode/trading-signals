@@ -130,7 +130,7 @@ describe('SMA', () => {
 describe('FasterSMA', () => {
   describe('getResult', () => {
     it('calculates the moving average based on the last 5 prices', () => {
-      // Test data taken from:
+      // Test data verified with:
       // https://github.com/TulipCharts/tulipindicators/blob/v0.8.0/tests/untest.txt#L359-L361
       const prices = [
         81.59, 81.06, 82.87, 83.0, 83.61, 83.15, 82.84, 83.99, 84.55, 84.36, 85.53, 86.54, 86.89, 87.77, 87.29,

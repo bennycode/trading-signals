@@ -3,7 +3,7 @@ import Big, {BigSource} from 'big.js';
 
 /**
  * Standard deviation calculates how prices for a collection of prices are spread out from the average price of these
- * prices.
+ * prices. Standard deviation makes outliers even more visible than mean absolute deviation (MAD).
  *
  * @see https://www.mathsisfun.com/data/standard-deviation-formulas.html
  * @see https://www.youtube.com/watch?v=9-8E8L_77-8

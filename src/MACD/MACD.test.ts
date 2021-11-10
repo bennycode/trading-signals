@@ -5,7 +5,7 @@ import {DEMA, EMA, NotEnoughDataError} from '..';
 describe('MACD', () => {
   describe('getResult', () => {
     it('is compatible with results from Tulip Indicators (TI)', () => {
-      // Test data taken from:
+      // Test data verified with:
       // https://tulipindicators.org/macd
       const inputs = [
         81.59, 81.06, 82.87, 83.0, 83.61, 83.15, 82.84, 83.99, 84.55, 84.36, 85.53, 86.54, 86.89, 87.77, 87.29,
