@@ -46,7 +46,7 @@ export abstract class BigIndicatorSeries implements IndicatorSeries {
     return this.result;
   }
 
-  abstract update(...args: any): void;
+  abstract update(...args: any): void | Big;
 }
 
 export abstract class NumberIndicatorSeries implements IndicatorSeries<number> {

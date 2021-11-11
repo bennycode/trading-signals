@@ -46,8 +46,7 @@ export class AO extends BigIndicatorSeries {
     this.long.update(medianPrice);
 
     if (this.short.isStable && this.long.isStable) {
-      const result = this.setResult(this.short.getResult().sub(this.long.getResult()));
-      return result;
+      return this.setResult(this.short.getResult().sub(this.long.getResult()));
     }
   }
 }
