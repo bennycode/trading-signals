@@ -9,7 +9,9 @@ import {MAD} from '../MAD/MAD';
  * Commodity Channel Index (CCI)
  * Type: Momentum
  *
- * The Commodity Channel Index (CCI) compares the current mean price with the average mean price over a period of time.
+ * The Commodity Channel Index (CCI), developed by Donald Lambert in 1980, compares the current mean price with the average mean price over a period of time. Approximately 70 to 80 percent of CCI values are between −100 and +100, which makes it an oscillator. Values above +100 imply an overbought condition, while values below −100 imply an oversold condition.
+ *
+ * According to [Investopia.com](https://www.investopedia.com/articles/active-trading/031914/how-traders-can-utilize-cci-commodity-channel-index-trade-stock-trends.asp#multiple-timeframe-cci-strategy), traders often buy when the CCI dips below -100 and then rallies back above -100 to sell the security when it moves above +100 and then drops back below +100.
  *
  * @see https://en.wikipedia.org/wiki/Commodity_channel_index
  */
