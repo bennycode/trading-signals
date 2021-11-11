@@ -37,7 +37,7 @@ export class CCI extends BigIndicatorSeries {
   }
 
   update(candle: HighLowClose): void | Big {
-    const typicalPrice = this.storeTypicalPrice(candle);
+    const typicalPrice = this.cacheTypicalPrice(candle);
     this.sma.update(typicalPrice);
     if (this.sma.isStable) {
       const mean = this.sma.getResult();
@@ -48,7 +48,7 @@ export class CCI extends BigIndicatorSeries {
     }
   }
 
-  private storeTypicalPrice({high, low, close}: HighLowClose): Big {
+  private cacheTypicalPrice({high, low, close}: HighLowClose): Big {
     const typicalPrice = new Big(high).plus(low).plus(close).div(3);
     this.typicalPrices.push(typicalPrice);
     if (this.typicalPrices.length > this.interval) {
