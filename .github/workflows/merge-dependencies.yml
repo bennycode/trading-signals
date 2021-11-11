@@ -10,7 +10,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest]
-        node-version: [12.x]
+        node-version: [16.x]
     if: github.actor == 'dependabot[bot]'
     steps:
       - name: 'Checkout repository'

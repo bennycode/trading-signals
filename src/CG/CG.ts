@@ -1,7 +1,6 @@
 import {BigIndicatorSeries} from '../Indicator';
 import Big, {BigSource} from 'big.js';
 import {SMA} from '../SMA/SMA';
-import {NotEnoughDataError} from '../error';
 
 /**
  * Center of Gravity (CG)
@@ -51,13 +50,5 @@ export class CG extends BigIndicatorSeries {
     this.signal.update(cg);
 
     return this.setResult(cg);
-  }
-
-  override getResult(): Big {
-    if (!this.isStable || !this.result) {
-      throw new NotEnoughDataError();
-    }
-
-    return this.result;
   }
 }

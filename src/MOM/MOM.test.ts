@@ -4,7 +4,7 @@ import {NotEnoughDataError} from '../error';
 describe('MOM', () => {
   describe('getResult', () => {
     it('returns the price 5 intervals ago', () => {
-      // Test data taken from:
+      // Test data verified with:
       // https://github.com/TulipCharts/tulipindicators/blob/v0.8.0/tests/untest.txt#L286-L288
       const inputs = [
         81.59, 81.06, 82.87, 83.0, 83.61, 83.15, 82.84, 83.99, 84.55, 84.36, 85.53, 86.54, 86.89, 87.77, 87.29,

@@ -4,7 +4,7 @@ import {NotEnoughDataError} from '../error';
 describe('StochasticOscillator', () => {
   describe('update', () => {
     it('is stable when the amount of inputs is bigger than the required interval', () => {
-      // Test data taken from:
+      // Test data verified with:
       // https://runkit.com/anandaravindan/stochastic
       const highs = [
         127.009, 127.616, 126.591, 127.347, 128.173, 128.432, 127.367, 126.422, 126.9, 126.85, 125.646, 125.716,

@@ -9,7 +9,7 @@ describe('getStandardDeviation', () => {
   });
 
   it('can be used to calculate a "Window Rolling Standard Deviation / Standard Deviation Over Period"', () => {
-    // Test data taken from:
+    // Test data verified with:
     // https://github.com/TulipCharts/tulipindicators/blob/v0.8.0/tests/untest.txt#L367-L369
     const prices = [81.59, 81.06, 82.87, 83.0, 83.61];
     const average = SMA.getResultFromBatch(prices);

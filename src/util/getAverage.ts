@@ -1,5 +1,8 @@
 import Big, {BigSource} from 'big.js';
 
+/**
+ * Return the mean / average value.
+ */
 export function getAverage(values: BigSource[]): Big {
   if (values.length === 0) {
     return new Big(0);

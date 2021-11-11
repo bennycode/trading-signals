@@ -1,4 +1,5 @@
 import Big from 'big.js';
+import {NotEnoughDataError} from './error';
 
 export interface Indicator<T = Big> {
   getResult(): T;
@@ -30,7 +31,13 @@ export abstract class BigIndicatorSeries implements IndicatorSeries {
 
   abstract isStable: boolean;
 
-  abstract getResult(): Big;
+  getResult(): Big {
+    if (!this.result) {
+      throw new NotEnoughDataError();
+    }
+
+    return this.result;
+  }
 
   protected setResult(value: Big): Big {
     this.result = value;
@@ -46,7 +53,7 @@ export abstract class BigIndicatorSeries implements IndicatorSeries {
     return this.result;
   }
 
-  abstract update(...args: any): void;
+  abstract update(...args: any): void | Big;
 }
 
 export abstract class NumberIndicatorSeries implements IndicatorSeries<number> {
@@ -56,7 +63,13 @@ export abstract class NumberIndicatorSeries implements IndicatorSeries<number> {
 
   abstract isStable: boolean;
 
-  abstract getResult(): number;
+  getResult(): number {
+    if (!this.result) {
+      throw new NotEnoughDataError();
+    }
+
+    return this.result;
+  }
 
   protected setResult(value: number): number {
     this.result = value;

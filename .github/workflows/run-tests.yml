@@ -7,7 +7,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [12.x]
+        node-version: [16.x]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
@@ -32,7 +32,7 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
           yml: ./codecov.yml
       - name: Release
-        uses: xt0rted/action-gh-release@testing
+        uses: softprops/action-gh-release@0465cdad11d833cabb6414f885edd2ccdfda4b96
         if: startsWith(github.ref, 'refs/tags/')
         with:
           generate_release_notes: true

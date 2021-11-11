@@ -99,7 +99,7 @@ describe('RSI', () => {
   });
 
   describe('isStable', () => {
-    // Test data taken from:
+    // Test data verified with:
     // https://tulipindicators.org/rsi
     it('is stable when the amount of inputs is bigger than the required interval', () => {
       const rsi = new RSI(5);

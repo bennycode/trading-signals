@@ -8,13 +8,17 @@ Technical indicators and overlays to run technical analysis with JavaScript / Ty
 
 The "trading-signals" library provides a TypeScript implementation for common technical indicators with arbitrary-precision decimal arithmetic.
 
-The main focus of this library is on the accuracy of calculations, but using the [faster implementations](./README.md#faster-implementations) it is also suitable for calculations where performance is important.
+The main focus of this library is on the accuracy of calculations, but using the [fast implementations](#fast-implementations) it is also suitable for calculations where performance is important.
 
-## Features
+## Benefits & Features
 
-- **Accurate.** Don't rely on type `number` and its precision limits. Use [Big][1].
-- **Typed.** Source code is 100% TypeScript. No need to install external typings.
+- **Accurate.** Indicators with intervals will return a result only when the period is reached.
+- **Convenient.** Indicators with intervals will save their all-time highs and lows.
+- **Fast.** If you need high throughput, you can use the [fast implementations](#fast-implementations).
+- **Precise.** Better accuracy than calculating with numbers thanks to [big.js][1].
 - **Tested.** Code coverage is 100%. No surprises when using it.
+- **Typed.** Source code is 100% TypeScript. No need to install external typings.
+- **Verified.** All results are verified with [other libraries](#alternatives) to guarantee correctness.
 
 ## Technical Indicator Types
 
@@ -32,9 +36,11 @@ The main focus of this library is on the accuracy of calculations, but using the
 1. Awesome Oscillator (AO)
 1. Bollinger Bands (BBANDS)
 1. Center of Gravity (CG)
+1. Commodity Channel Index (CCI)
 1. Double Exponential Moving Average (DEMA)
 1. Dual Moving Average (DMA)
 1. Exponential Moving Average (EMA)
+1. Mean Absolute Deviation (MAD)
 1. Momentum (MOM)
 1. Moving Average Convergence Divergence (MACD)
 1. Rate-of-Change (ROC)
@@ -120,7 +126,7 @@ JavaScript is very bad with numbers. When calculating `0.1 + 0.2` it shows you `
 
 As specified by the ECMAScript standard, all arithmetic in JavaScript uses [double-precision floating-point arithmetic](https://en.wikipedia.org/wiki/Double-precision_floating-point_format), which is only accurate until certain extent. To increase the accuracy and avoid miscalculations, the [trading-signals](https://github.com/bennycode/trading-signals) library uses [big.js][1] which offers arbitrary-precision decimal arithmetic. However, this arbitrary accuracy comes with a downside: Calculations with it are not as performant as with the primitive data type `number`.
 
-### Faster implementations
+### Fast implementations
 
 To get the best of both worlds (high accuracy & high performance), you will find two implementations of each indicator (e.g. `SMA` & `FasterSMA`). The standard implementation uses big.js and the `Faster`-prefixed version uses common `number` types. Use the standard one when you need high accuracy and use the `Faster`-one when you need high performance.
 
