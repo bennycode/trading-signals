@@ -39,8 +39,18 @@ export class MAD extends BigIndicatorSeries {
     }
 
     if (this.prices.length === this.interval) {
-      this.setResult(getMeanAbsoluteDeviation(this.prices));
+      this.setResult(MAD.getResultFromBatch(this.prices));
     }
+  }
+
+  static getResultFromBatch(prices: BigSource[], average?: BigSource): Big {
+    const mean = average || getAverage(prices);
+    let sum = new Big(0);
+    for (let i = 0; i < prices.length; i++) {
+      const deviation = new Big(prices[i]).minus(mean).abs();
+      sum = sum.plus(deviation);
+    }
+    return sum.div(prices.length);
   }
 }
 
@@ -80,14 +90,4 @@ export class FasterMAD extends NumberIndicatorSeries {
       this.setResult(sum / this.interval);
     }
   }
-}
-
-export function getMeanAbsoluteDeviation(prices: BigSource[], average?: BigSource): Big {
-  const mean = average || getAverage(prices);
-  let sum = new Big(0);
-  for (let i = 0; i < prices.length; i++) {
-    const deviation = new Big(prices[i]).minus(mean).abs();
-    sum = sum.plus(deviation);
-  }
-  return sum.div(prices.length);
 }

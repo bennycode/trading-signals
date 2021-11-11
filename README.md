@@ -10,9 +10,10 @@ The "trading-signals" library provides a TypeScript implementation for common te
 
 The main focus of this library is on the accuracy of calculations, but using the [fast implementations](#fast-implementations) it is also suitable for calculations where performance is important.
 
-## Features
+## Benefits & Features
 
 - **Accurate.** Indicators with intervals will return a result only when the period is reached.
+- **Convenient.** Indicators with intervals will save their all-time highs and lows.
 - **Fast.** If you need high throughput, you can use the [fast implementations](#fast-implementations).
 - **Precise.** Better accuracy than calculating with numbers thanks to [big.js][1].
 - **Tested.** Code coverage is 100%. No surprises when using it.

@@ -1,9 +1,9 @@
-import {Indicator} from '../Indicator';
+import {BigIndicatorSeries} from '../Indicator';
 import {Big, BigSource} from 'big.js';
 import {NotEnoughDataError} from '../error';
 import {getFixedArray, HighLowClose} from '../util';
 import {SMA} from '../SMA/SMA';
-import {getMeanAbsoluteDeviation} from '../MAD/MAD';
+import {MAD} from '../MAD/MAD';
 
 /**
  * Commodity Channel Index (CCI)
@@ -13,13 +13,14 @@ import {getMeanAbsoluteDeviation} from '../MAD/MAD';
  *
  * @see https://en.wikipedia.org/wiki/Commodity_channel_index
  */
-export class CCI implements Indicator<Big> {
+export class CCI extends BigIndicatorSeries {
   public readonly prices: BigSource[] = [];
-  private result?: Big;
+  protected result?: Big;
   private readonly sma: SMA;
   private readonly typicalPrices: Big[];
 
   constructor(public readonly interval: number) {
+    super();
     this.sma = new SMA(this.interval);
     this.typicalPrices = getFixedArray(this.interval);
   }
@@ -36,16 +37,16 @@ export class CCI implements Indicator<Big> {
     return this.result;
   }
 
-  update({high, low, close}: HighLowClose): void {
+  update({high, low, close}: HighLowClose): void | Big {
     const typicalPrice = new Big(high).plus(low).plus(close).div(3);
     this.typicalPrices.push(typicalPrice);
     this.sma.update(typicalPrice);
     if (this.sma.isStable) {
       const mean = this.sma.getResult();
-      const meanDeviation = getMeanAbsoluteDeviation(this.typicalPrices, mean);
+      const meanDeviation = MAD.getResultFromBatch(this.typicalPrices, mean);
       const a = typicalPrice.minus(mean);
       const b = new Big(0.015).mul(meanDeviation);
-      this.result = a.div(b);
+      return this.setResult(a.div(b));
     }
   }
 }
