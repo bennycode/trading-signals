@@ -16,8 +16,8 @@ import {CCI, FasterCCI} from '../CCI/CCI';
 const interval = 20;
 const prices: number[] = candles.map(candle => parseInt(candle.close, 10));
 const highLowCloses: HighLowCloseNumbers[] = candles.map(candle => ({
-  high: parseInt(candle.high, 10),
   close: parseInt(candle.close, 10),
+  high: parseInt(candle.high, 10),
   low: parseInt(candle.low, 10),
 }));
 
