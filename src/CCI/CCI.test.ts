@@ -1,4 +1,4 @@
-import {CCI} from './CCI';
+import {CCI, FasterCCI} from './CCI';
 import {NotEnoughDataError} from '../error';
 
 describe('CCI', () => {
@@ -26,21 +26,45 @@ describe('CCI', () => {
   describe('getResult', () => {
     it('calculates the Commodity Channel Index (CCI)', () => {
       const cci = new CCI(5);
+      const fasterCCI = new FasterCCI(5);
       for (const candle of candles) {
         cci.update(candle);
-        if (cci.isStable) {
+        fasterCCI.update(candle);
+        if (cci.isStable && fasterCCI.isStable) {
           const expected = expectations.shift();
           expect(cci.getResult().toFixed(2)).toBe(expected!);
+          expect(fasterCCI.getResult().toFixed(2)).toBe(expected!);
         }
       }
       const actual = cci.getResult().toFixed(2);
       expect(actual).toBe('71.93');
     });
 
+    it("stores the highest and lowest result throughout the indicator's lifetime", () => {
+      const cci = new CCI(5);
+      const fasterCCI = new FasterCCI(5);
+      for (const candle of candles) {
+        cci.update(candle);
+        fasterCCI.update(candle);
+      }
+      expect(cci.highest!.toFixed(2)).toBe('166.67');
+      expect(cci.lowest!.toFixed(2)).toBe('71.93');
+      expect(fasterCCI.highest!.toFixed(2)).toBe('166.67');
+      expect(fasterCCI.lowest!.toFixed(2)).toBe('71.93');
+    });
+
     it('throws an error when there is not enough input data', () => {
       const cci = new CCI(5);
       try {
         cci.getResult();
+        fail('Expected error');
+      } catch (error) {
+        expect(error).toBeInstanceOf(NotEnoughDataError);
+      }
+
+      const fasterCCI = new FasterCCI(5);
+      try {
+        fasterCCI.getResult();
         fail('Expected error');
       } catch (error) {
         expect(error).toBeInstanceOf(NotEnoughDataError);

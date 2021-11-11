@@ -3,17 +3,47 @@ import candles from '../test/fixtures/candles/100-candles.json';
 import {FasterMAD, MAD} from '../MAD/MAD';
 import {BollingerBands, FasterBollingerBands} from '../BBANDS/BollingerBands';
 import {EMA, FasterEMA} from '../EMA/EMA';
-import {getFasterAverage, getAverage, getFasterStandardDeviation, getStandardDeviation} from '../util';
-import {SMA, FasterSMA} from '../SMA/SMA';
+import {
+  getAverage,
+  getFasterAverage,
+  getFasterStandardDeviation,
+  getStandardDeviation,
+  HighLowCloseNumbers,
+} from '../util';
+import {FasterSMA, SMA} from '../SMA/SMA';
+import {CCI, FasterCCI} from '../CCI/CCI';
 
 const interval = 20;
-const prices = candles.map(candle => parseInt(candle.close, 10));
+const prices: number[] = candles.map(candle => parseInt(candle.close, 10));
+const highLowCloses: HighLowCloseNumbers[] = candles.map(candle => ({
+  close: parseInt(candle.close, 10),
+  high: parseInt(candle.high, 10),
+  low: parseInt(candle.low, 10),
+}));
 
 new Benchmark.Suite('Technical Indicators')
   .add('BollingerBands', () => {
     const bb = new BollingerBands(interval, 2);
     for (const price of prices) {
       bb.update(price);
+    }
+  })
+  .add('FasterBollingerBands', () => {
+    const fasterBB = new FasterBollingerBands(interval, 2);
+    for (const price of prices) {
+      fasterBB.update(price);
+    }
+  })
+  .add('CCI', () => {
+    const cci = new CCI(interval);
+    for (const candle of highLowCloses) {
+      cci.update(candle);
+    }
+  })
+  .add('FasterCCI', () => {
+    const fasterCCI = new FasterCCI(interval);
+    for (const candle of highLowCloses) {
+      fasterCCI.update(candle);
     }
   })
   .add('EMA', () => {
@@ -26,12 +56,6 @@ new Benchmark.Suite('Technical Indicators')
     const fasterEMA = new FasterEMA(interval);
     for (const price of prices) {
       fasterEMA.update(price);
-    }
-  })
-  .add('FasterBollingerBands', () => {
-    const fasterBB = new FasterBollingerBands(interval, 2);
-    for (const price of prices) {
-      fasterBB.update(price);
     }
   })
   .add('MAD', () => {

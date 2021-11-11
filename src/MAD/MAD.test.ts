@@ -82,8 +82,8 @@ describe('MAD', () => {
       // Test data verified with:
       // https://en.wikipedia.org/wiki/Average_absolute_deviation#Mean_absolute_deviation_around_a_central_point
       const prices = [2, 2, 3, 4, 14];
-      const result = MAD.getResultFromBatch(prices);
-      expect(result.valueOf()).toBe('3.6');
+      expect(MAD.getResultFromBatch(prices).valueOf()).toBe('3.6');
+      expect(FasterMAD.getResultFromBatch(prices).valueOf()).toBe(3.6);
     });
 
     it('accepts a supplied mean', () => {
@@ -91,8 +91,8 @@ describe('MAD', () => {
       // https://en.wikipedia.org/wiki/Average_absolute_deviation#Mean_absolute_deviation_around_a_central_point
       const prices = [2, 2, 3, 4, 14];
       const mean = 5;
-      const result = MAD.getResultFromBatch(prices, mean);
-      expect(result.valueOf()).toBe('3.6');
+      expect(MAD.getResultFromBatch(prices, mean).valueOf()).toBe('3.6');
+      expect(FasterMAD.getResultFromBatch(prices, mean).valueOf()).toBe(3.6);
     });
   });
 });

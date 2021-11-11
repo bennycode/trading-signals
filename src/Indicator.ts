@@ -85,5 +85,5 @@ export abstract class NumberIndicatorSeries implements IndicatorSeries<number> {
     return this.result;
   }
 
-  abstract update(...args: any): void;
+  abstract update(...args: any): void | number;
 }
