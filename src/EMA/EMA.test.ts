@@ -1,61 +1,32 @@
-import Big from 'big.js';
 import {EMA, FasterEMA, NotEnoughDataError} from '..';
 
-import results from '../test/fixtures/EMA/results.json';
-import prices from '../test/fixtures/prices.json';
-
-const ema10results = results.weight_10;
-const ema12results = results.weight_12;
-const ema26results = results.weight_26;
-
 describe('EMA', () => {
+  // Test data verified with:
+  // https://tulipindicators.org/ema
+  const prices = [
+    81.59, 81.06, 82.87, 83.0, 83.61, 83.15, 82.84, 83.99, 84.55, 84.36, 85.53, 86.54, 86.89, 87.77, 87.29,
+  ];
+  let expectations: string[] = [];
+
+  beforeEach(() => {
+    expectations = ['82.71', '82.86', '82.85', '83.23', '83.67', '83.90', '84.44', '85.14', '85.73', '86.41', '86.70'];
+  });
+
   describe('getResult', () => {
-    it('calculates EMAs with weight 10', () => {
-      const ema = new EMA(10);
-
-      prices.forEach((price, index) => {
-        ema.update(new Big(price));
-        if (ema.isStable) {
-          const actual = ema.getResult();
-          const expected = new Big(ema10results[index]);
-          expect(actual.toPrecision(12)).toEqual(expected.toPrecision(12));
+    it('calculates the Exponential Moving Average over a period of 5', () => {
+      const ema = new EMA(5);
+      const fasterEMA = new FasterEMA(5);
+      for (const price of prices) {
+        ema.update(price);
+        fasterEMA.update(price);
+        if (ema.isStable && fasterEMA.isStable) {
+          const expected = expectations.shift();
+          expect(ema.getResult().toFixed(2)).toBe(expected!);
+          expect(fasterEMA.getResult().toFixed(2)).toBe(expected!);
         }
-      });
-
-      expect(ema.lowest!.toFixed(2)).toBe('38.20');
-      expect(ema.highest!.toFixed(2)).toBe('81.00');
-    });
-
-    it('calculates EMAs with weight 12', () => {
-      const ema = new EMA(12);
-
-      prices.forEach((price, index) => {
-        ema.update(new Big(price));
-        if (ema.isStable) {
-          const actual = ema.getResult();
-          const expected = new Big(ema12results[index]);
-          expect(actual!.toPrecision(12)).toEqual(expected.toPrecision(12));
-        }
-      });
-
-      expect(ema.lowest!.toFixed(2)).toBe('40.43');
-      expect(ema.highest!.toFixed(2)).toBe('81.00');
-    });
-
-    it('calculates EMAs with weight 26', () => {
-      const ema = new EMA(26);
-
-      prices.forEach((price, index) => {
-        ema.update(new Big(price));
-        if (ema.isStable) {
-          const actual = ema.getResult();
-          const expected = new Big(ema26results[index]);
-          expect(actual.toPrecision(12)).toEqual(expected.toPrecision(12));
-        }
-      });
-
-      expect(ema.lowest!.toFixed(2)).toBe('48.29');
-      expect(ema.highest!.toFixed(2)).toBe('81.00');
+      }
+      expect(ema.getResult().toFixed(2)).toBe('86.70');
+      expect(fasterEMA.getResult().toFixed(2)).toBe('86.70');
     });
 
     it('throws an error when there is not enough input data', () => {
@@ -66,92 +37,18 @@ describe('EMA', () => {
         fail('Expected error');
       } catch (error) {
         expect(error).toBeInstanceOf(NotEnoughDataError);
+        expect(ema.isStable).toBeFalse();
       }
-    });
-  });
 
-  describe('isStable', () => {
-    it('is stable when the inputs can fill the signal interval', () => {
-      const ema = new EMA(3);
-      ema.update(1);
-      ema.update(2);
-      expect(ema.isStable).toBeFalse();
-      ema.update(3);
-      expect(ema.isStable).toBeTrue();
-    });
-  });
-});
-
-describe('FasterEMA', () => {
-  describe('getResult', () => {
-    it('calculates EMAs with weight 10', () => {
-      const ema = new FasterEMA(10);
-
-      prices.forEach((price, index) => {
-        ema.update(price);
-        if (ema.isStable) {
-          const actual = ema.getResult();
-          const expected = ema10results[index];
-          expect(actual).toEqual(expected);
-        }
-      });
-
-      expect(ema.lowest!.toFixed(2)).toBe('38.20');
-      expect(ema.highest!.toFixed(2)).toBe('81.00');
-    });
-
-    it('calculates EMAs with weight 12', () => {
-      const ema = new FasterEMA(12);
-
-      prices.forEach((price, index) => {
-        ema.update(price);
-        if (ema.isStable) {
-          const actual = ema.getResult();
-          const expected = ema12results[index];
-          expect(actual).toEqual(expected);
-        }
-      });
-
-      expect(ema.lowest!.toFixed(2)).toBe('40.43');
-      expect(ema.highest!.toFixed(2)).toBe('81.00');
-    });
-
-    it('calculates EMAs with weight 26', () => {
-      const ema = new FasterEMA(26);
-
-      prices.forEach((price, index) => {
-        ema.update(price);
-        if (ema.isStable) {
-          const actual = ema.getResult();
-          const expected = ema26results[index];
-          expect(actual).toEqual(expected);
-        }
-      });
-
-      expect(ema.lowest!.toFixed(2)).toBe('48.29');
-      expect(ema.highest!.toFixed(2)).toBe('81.00');
-    });
-
-    it('throws an error when there is not enough input data', () => {
-      const ema = new FasterEMA(10);
+      const fasterEMA = new FasterEMA(10);
 
       try {
-        ema.getResult();
+        fasterEMA.getResult();
         fail('Expected error');
       } catch (error) {
         expect(error).toBeInstanceOf(NotEnoughDataError);
+        expect(fasterEMA.isStable).toBeFalse();
       }
-    });
-  });
-
-  describe('isStable', () => {
-    it('is stable when the inputs can fill the signal interval', () => {
-      const ema = new FasterEMA(3);
-      ema.update(1);
-      ema.update(2);
-      expect(ema.isStable).toBeFalse();
-      ema.update(3);
-      expect(ema.isStable).toBeTrue();
     });
   });
 });

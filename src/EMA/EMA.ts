@@ -32,15 +32,11 @@ export class EMA extends MovingAverage {
   }
 
   override getResult(): Big {
-    if (!this.result) {
-      throw new NotEnoughDataError();
-    }
-
     if (this.pricesCounter < this.interval) {
       throw new NotEnoughDataError();
     }
 
-    return this.result;
+    return this.result!;
   }
 
   override get isStable(): boolean {
@@ -74,15 +70,11 @@ export class FasterEMA extends FasterMovingAverage {
   }
 
   override getResult(): number {
-    if (!this.result) {
-      throw new NotEnoughDataError();
-    }
-
     if (this.pricesCounter < this.interval) {
       throw new NotEnoughDataError();
     }
 
-    return this.result;
+    return this.result!;
   }
 
   override get isStable(): boolean {
