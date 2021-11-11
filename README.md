@@ -52,7 +52,7 @@ The main focus of this library is on the accuracy of calculations, but using the
 
 Utility Methods:
 
-1. Average
+1. Average / Mean
 1. Standard Deviation
 1. Rolling Standard Deviation
 
