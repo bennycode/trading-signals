@@ -73,4 +73,14 @@ export class FasterMAD extends NumberIndicatorSeries {
       this.setResult(sum / this.interval);
     }
   }
+
+  static getResultFromBatch(prices: number[], average?: number): number {
+    const mean = average || getFasterAverage(prices);
+    let sum = 0;
+    for (let i = 0; i < prices.length; i++) {
+      const deviation = Math.abs(prices[i] - mean);
+      sum += deviation;
+    }
+    return sum / prices.length;
+  }
 }
