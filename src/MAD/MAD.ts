@@ -1,7 +1,6 @@
 import {Big, BigSource} from 'big.js';
 import {BigIndicatorSeries, NumberIndicatorSeries} from '../Indicator';
 import {getAverage, getFasterAverage} from '../util';
-import {NotEnoughDataError} from '../error';
 
 /**
  * Mean Absolute Deviation (MAD)
@@ -21,14 +20,6 @@ export class MAD extends BigIndicatorSeries {
 
   override get isStable(): boolean {
     return this.result !== undefined;
-  }
-
-  override getResult(): Big {
-    if (!this.result) {
-      throw new NotEnoughDataError();
-    }
-
-    return this.result;
   }
 
   override update(price: BigSource): void {
@@ -63,14 +54,6 @@ export class FasterMAD extends NumberIndicatorSeries {
 
   override get isStable(): boolean {
     return this.result !== undefined;
-  }
-
-  override getResult(): number {
-    if (!this.result) {
-      throw new NotEnoughDataError();
-    }
-
-    return this.result;
   }
 
   override update(price: number): void {

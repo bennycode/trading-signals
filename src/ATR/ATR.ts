@@ -1,5 +1,4 @@
 import Big from 'big.js';
-import {NotEnoughDataError} from '../error';
 import {BigIndicatorSeries} from '../Indicator';
 import {MovingAverage} from '../MA/MovingAverage';
 import {MovingAverageTypeContext} from '../MA/MovingAverageTypeContext';
@@ -54,13 +53,6 @@ export class ATR extends BigIndicatorSeries {
     if (this.smoothing.isStable) {
       return this.setResult(this.smoothing.getResult());
     }
-  }
-
-  override getResult(): Big {
-    if (!this.result) {
-      throw new NotEnoughDataError();
-    }
-    return this.result;
   }
 
   private trueRange(prevCandle: HighLowClose, currentCandle: HighLowClose): Big {

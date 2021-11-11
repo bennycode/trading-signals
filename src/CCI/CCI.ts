@@ -1,6 +1,5 @@
 import {BigIndicatorSeries} from '../Indicator';
 import {Big, BigSource} from 'big.js';
-import {NotEnoughDataError} from '../error';
 import {HighLowClose} from '../util';
 import {SMA} from '../SMA/SMA';
 import {MAD} from '../MAD/MAD';
@@ -28,14 +27,6 @@ export class CCI extends BigIndicatorSeries {
 
   get isStable(): boolean {
     return this.result !== undefined;
-  }
-
-  getResult(): Big {
-    if (!this.result) {
-      throw new NotEnoughDataError();
-    }
-
-    return this.result;
   }
 
   update(candle: HighLowClose): void | Big {

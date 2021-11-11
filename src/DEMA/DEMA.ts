@@ -1,5 +1,5 @@
 import Big, {BigSource} from 'big.js';
-import {EMA, NotEnoughDataError} from '..';
+import {EMA} from '..';
 import {BigIndicatorSeries} from '../Indicator';
 
 /**
@@ -36,13 +36,5 @@ export class DEMA extends BigIndicatorSeries {
     } catch {
       return false;
     }
-  }
-
-  override getResult(): Big {
-    if (!this.result) {
-      throw new NotEnoughDataError();
-    }
-
-    return this.result;
   }
 }

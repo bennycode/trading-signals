@@ -1,12 +1,12 @@
 import Big, {BigSource} from 'big.js';
-import {NotEnoughDataError} from '../error';
 import {BigIndicatorSeries} from '../Indicator';
 
 /**
  * Rate Of Change Indicator (ROC)
  * Type: Momentum
  *
- * A positive Rate of Change (ROC) signals a high momentum and a positive trend. A decreasing ROC or even negative ROC indicates a downtrend.
+ * A positive Rate of Change (ROC) signals a high momentum and a positive trend. A decreasing ROC or even negative ROC
+ * indicates a downtrend.
  *
  * @see https://www.investopedia.com/terms/r/rateofchange.asp
  */
@@ -39,13 +39,5 @@ export class ROC extends BigIndicatorSeries {
 
     // (Close - Close <interval> periods ago) / (Close <interval> periods ago)
     return this.setResult(new Big(price).sub(comparePrice).div(comparePrice));
-  }
-
-  override getResult(): Big {
-    if (!this.result) {
-      throw new NotEnoughDataError();
-    }
-
-    return this.result;
   }
 }

@@ -1,7 +1,6 @@
 import {BigIndicatorSeries} from '../Indicator';
 import Big, {BigSource} from 'big.js';
 import {SMA} from '../SMA/SMA';
-import {NotEnoughDataError} from '../error';
 
 /**
  * Awesome Oscillator (AO)
@@ -10,8 +9,9 @@ import {NotEnoughDataError} from '../error';
  * The Awesome Oscillator (AO) is an indicator used to measure market momentum.
  * It has been developed by the technical analyst and charting enthusiast Bill Williams.
  *
- * When AO crosses above Zero, short term momentum is rising faster than long term momentum which signals a bullish buying opportunity.
- * When AO crosses below Zero, short term momentum is falling faster then the long term momentum which signals a bearish selling opportunity.
+ * When AO crosses above Zero, short term momentum is rising faster than long term momentum which signals a bullish
+ * buying opportunity. When AO crosses below Zero, short term momentum is falling faster then the long term momentum
+ * which signals a bearish selling opportunity.
  *
  * @see https://www.tradingview.com/support/solutions/43000501826-awesome-oscillator-ao/
  * @see https://tradingstrategyguides.com/bill-williams-awesome-oscillator-strategy/
@@ -28,14 +28,6 @@ export class AO extends BigIndicatorSeries {
 
   override get isStable(): boolean {
     return this.result !== undefined;
-  }
-
-  override getResult(): Big {
-    if (!this.result) {
-      throw new NotEnoughDataError();
-    }
-
-    return this.result;
   }
 
   override update(low: BigSource, high: BigSource): void | Big {

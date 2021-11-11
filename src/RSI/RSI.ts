@@ -1,5 +1,5 @@
 import Big, {BigSource} from 'big.js';
-import {MovingAverageTypeContext, NotEnoughDataError, SMMA} from '..';
+import {MovingAverageTypeContext, SMMA} from '..';
 import {MovingAverage} from '../MA/MovingAverage';
 import {BigIndicatorSeries} from '../Indicator';
 
@@ -14,7 +14,8 @@ import {BigIndicatorSeries} from '../Indicator';
  * The RSI is mostly useful in markets that alternate between bullish and bearish movements.
  *
  * A RSI value of 30 or below indicates an oversold condition (not a good time to sell because there is an oversupply).
- * A RSI value of 70 or above indicates an overbought condition (sell high opportunity because market may correct the price in the near future).
+ * A RSI value of 70 or above indicates an overbought condition (sell high opportunity because market may correct the
+ * price in the near future).
  *
  * @see https://www.investopedia.com/terms/r/rsi.asp
  */
@@ -65,13 +66,6 @@ export class RSI extends BigIndicatorSeries {
     while (this.prices.length > this.interval) {
       this.prices.shift();
     }
-  }
-
-  override getResult(): Big {
-    if (!this.isStable) {
-      throw new NotEnoughDataError();
-    }
-    return this.result!;
   }
 
   override get isStable(): boolean {

@@ -1,7 +1,6 @@
 import {BigIndicatorSeries} from '../Indicator';
 import Big, {BigSource} from 'big.js';
 import {getFixedArray} from '../util/getFixedArray';
-import {NotEnoughDataError} from '../error';
 
 /**
  * Momentum Indicator (MOM)
@@ -30,13 +29,5 @@ export class MOM extends BigIndicatorSeries {
 
   override get isStable(): boolean {
     return this.result !== undefined;
-  }
-
-  override getResult(): Big {
-    if (!this.result) {
-      throw new NotEnoughDataError();
-    }
-
-    return this.result;
   }
 }

@@ -1,6 +1,5 @@
 import {BigIndicatorSeries} from '../Indicator';
 import Big, {BigSource} from 'big.js';
-import {NotEnoughDataError} from '../error';
 import {AO} from '../AO/AO';
 import {SMA} from '../SMA/SMA';
 import {MOM} from '../MOM/MOM';
@@ -31,14 +30,6 @@ export class AC extends BigIndicatorSeries {
 
   override get isStable(): boolean {
     return this.result !== undefined;
-  }
-
-  override getResult(): Big {
-    if (!this.result) {
-      throw new NotEnoughDataError();
-    }
-
-    return this.result;
   }
 
   override update(low: BigSource, high: BigSource): void | Big {
