@@ -1,3 +1,14 @@
+### 2.5.0 (2021-11-12)
+
+##### Documentation Changes
+
+- Map mean to average ([2ef901cc](https://github.com/bennycode/trading-signals/commit/2ef901cc06dbb659f54986f5cda3a3ab2863c480))
+
+##### New Features
+
+- **CCI:** Add faster CCI implementation ([#356](https://github.com/bennycode/trading-signals/pull/356)) ([f90e95b6](https://github.com/bennycode/trading-signals/commit/f90e95b69dd207eb6bc0c43e67c804fabb7a6677))
+- **CCI,MAD:** Add Commodity Channel Index (CCI) & Mean Absolute Deviation (MAD) ([#355](https://github.com/bennycode/trading-signals/pull/355)) ([754398f3](https://github.com/bennycode/trading-signals/commit/754398f3f94d364d138a84d955602add83ecea5b))
+
 #### 2.4.1 (2021-11-07)
 
 ##### Documentation Changes
