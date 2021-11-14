@@ -3,7 +3,7 @@ Thanks for your contribution!
 Please check the following to make sure your contribution follows our guideline when adding a new indicator.
 
 You can find a great example here:
-
+https://github.com/bennycode/trading-signals/pull/361/files
 -->
 
 ## Checklist for new indicators
