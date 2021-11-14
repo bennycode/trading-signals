@@ -1,10 +1,12 @@
 import {Big} from 'big.js';
 import {RSI} from './RSI';
-import {NotEnoughDataError, SMMA} from '..';
 
 import dataFile from '../test/fixtures/RSI/500-candles-WRX-BTC-1h.json';
 import prices from '../test/fixtures/prices.json';
 import results from '../test/fixtures/RSI/results.json';
+
+import {NotEnoughDataError} from '../error';
+import {WSMA} from '../WSMA/WSMA';
 
 const rsi2results = results.interval_2;
 const rsi12results = results.interval_12;
@@ -79,7 +81,7 @@ describe('RSI', () => {
     /** @see https://github.com/bennycode/trading-signals/issues/64 */
     it(`is compatible with results calculated by 'tulind'`, () => {
       const interval = 14;
-      const rsi = new RSI(interval, SMMA);
+      const rsi = new RSI(interval, WSMA);
       const ohlc = Object.values(dataFile);
       const closes = ohlc.map(candle => candle[4]);
       const results: string[] = [];

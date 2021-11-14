@@ -20,7 +20,7 @@ describe('TR', () => {
     {high: 88.0, low: 87.17, close: 87.77},
     {high: 87.87, low: 87.01, close: 87.29},
   ];
-  const expectations: string[] = [
+  const expectations = [
     '0.86',
     '1.25',
     '1.97',
@@ -54,14 +54,14 @@ describe('TR', () => {
       expect(tr.isStable).toBeTrue();
       expect(fasterTR.isStable).toBeTrue();
 
+      expect(tr.getResult().toFixed(2)).toBe('0.86');
+      expect(fasterTR.getResult().toFixed(2)).toBe('0.86');
+
       expect(tr.lowest?.toFixed(2)).toBe('0.65');
       expect(fasterTR.lowest?.toFixed(2)).toBe('0.65');
 
       expect(tr.highest?.toFixed(2)).toBe('2.00');
       expect(fasterTR.highest?.toFixed(2)).toBe('2.00');
-
-      expect(tr.getResult().toFixed(2)).toBe('0.86');
-      expect(fasterTR.getResult().toFixed(2)).toBe('0.86');
     });
   });
 });

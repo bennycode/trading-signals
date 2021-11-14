@@ -2,8 +2,9 @@ import Big from 'big.js';
 import {BigIndicatorSeries} from '../Indicator';
 import {MovingAverage} from '../MA/MovingAverage';
 import {MovingAverageTypeContext} from '../MA/MovingAverageTypeContext';
-import {SMMA} from '../SMMA/SMMA';
+import {TR} from '../TR/TR';
 import {HighLowClose} from '../util';
+import {WSMA} from '../WSMA/WSMA';
 
 /**
  * Average True Range (ATR)
@@ -16,53 +17,20 @@ import {HighLowClose} from '../util';
  * @see https://www.investopedia.com/terms/a/atr.asp
  */
 export class ATR extends BigIndicatorSeries {
-  private readonly candles: HighLowClose[] = [];
+  private readonly tr: TR;
   private readonly smoothing: MovingAverage;
-  private prevCandle: HighLowClose | undefined;
 
-  constructor(public readonly interval: number, SmoothingIndicator: MovingAverageTypeContext = SMMA) {
+  constructor(public readonly interval: number, SmoothingIndicator: MovingAverageTypeContext = WSMA) {
     super();
+    this.tr = new TR();
     this.smoothing = new SmoothingIndicator(interval);
   }
 
-  override get isStable(): boolean {
-    return this.candles.length > this.interval;
-  }
-
   override update(candle: HighLowClose): Big | void {
-    this.candles.push(candle);
-
-    if (!this.prevCandle) {
-      this.prevCandle = candle;
-      return;
-    }
-
-    /**
-     * The interval is used as a lookback period,
-     * therefore one extra candle is kept
-     */
-    if (this.candles.length > this.interval + 1) {
-      this.candles.shift();
-    }
-
-    const trueRange = this.trueRange(this.prevCandle, candle);
-
+    const trueRange = this.tr.update(candle);
     this.smoothing.update(trueRange);
-
-    this.prevCandle = candle;
     if (this.smoothing.isStable) {
       return this.setResult(this.smoothing.getResult());
     }
-  }
-
-  private trueRange(prevCandle: HighLowClose, currentCandle: HighLowClose): Big {
-    const prevClose = new Big(prevCandle.close);
-    const low = new Big(currentCandle.low);
-    const high = new Big(currentCandle.high);
-    return this.getMaximum([high.sub(low), high.sub(prevClose).abs(), low.sub(prevClose).abs()]);
-  }
-
-  private getMaximum(values: Big[]): Big {
-    return values.reduce((max: Big, current: Big) => (current.gt(max) ? current : max), values[0]);
   }
 }
