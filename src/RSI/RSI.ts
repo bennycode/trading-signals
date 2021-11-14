@@ -1,7 +1,8 @@
 import Big, {BigSource} from 'big.js';
-import {MovingAverageTypeContext, SMMA} from '..';
 import {MovingAverage} from '../MA/MovingAverage';
 import {BigIndicatorSeries} from '../Indicator';
+import {MovingAverageTypeContext} from '../MA/MovingAverageTypeContext';
+import {WSMA} from '../WSMA/WSMA';
 
 /**
  * Relative Strength Index (RSI)
@@ -24,7 +25,7 @@ export class RSI extends BigIndicatorSeries {
   private readonly avgGain: MovingAverage;
   private readonly avgLoss: MovingAverage;
 
-  constructor(public readonly interval: number, Indicator: MovingAverageTypeContext = SMMA) {
+  constructor(public readonly interval: number, Indicator: MovingAverageTypeContext = WSMA) {
     super();
     this.avgGain = new Indicator(this.interval);
     this.avgLoss = new Indicator(this.interval);

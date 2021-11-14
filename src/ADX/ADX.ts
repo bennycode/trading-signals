@@ -1,9 +1,12 @@
 import {Big} from 'big.js';
 import {NotEnoughDataError} from '../error';
-import {ATR, HighLowClose, MovingAverageTypeContext, SMMA} from '..';
 import {Indicator} from '../Indicator';
 import {getAverage} from '../util/getAverage';
 import {MovingAverage} from '../MA/MovingAverage';
+import {ATR} from '../ATR/ATR';
+import {HighLowClose} from '../util/HighLowClose';
+import {MovingAverageTypeContext} from '../MA/MovingAverageTypeContext';
+import {WSMA} from '../WSMA/WSMA';
 
 export type ADXResult = {
   adx: Big;
@@ -26,7 +29,8 @@ export type ADXResult = {
  * A strong trend is indicated by readings above 50. ADX values of 75-100 signal an extremely strong trend.
  *
  * If ADX increases, it means that volatility is increasing and indicating the beginning of a new trend.
- * If ADX decreases, it means that volatility is decreasing, and the current trend is slowing down and may even reverse.
+ * If ADX decreases, it means that volatility is decreasing, and the current trend is slowing down and may even
+ * reverse.
  *
  * @see https://www.investopedia.com/terms/a/adx.asp
  * @see https://learn.tradimo.com/technical-analysis-how-to-work-with-indicators/adx-determing-the-strength-of-price-movement
@@ -42,7 +46,7 @@ export class ADX implements Indicator<ADXResult> {
   private pdi: Big = new Big(0);
   private mdi: Big = new Big(0);
 
-  constructor(public interval: number, SmoothingIndicator: MovingAverageTypeContext = SMMA) {
+  constructor(public interval: number, SmoothingIndicator: MovingAverageTypeContext = WSMA) {
     this.atr = new ATR(interval, SmoothingIndicator);
     this.smoothedPDM = new SmoothingIndicator(interval);
     this.smoothedMDM = new SmoothingIndicator(interval);

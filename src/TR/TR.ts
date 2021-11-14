@@ -16,7 +16,7 @@ import {getMaximum, HighLowClose, HighLowCloseNumbers} from '../util';
 export class TR extends BigIndicatorSeries {
   private previousCandle?: HighLowClose;
 
-  update(candle: HighLowClose): void | Big {
+  update(candle: HighLowClose): Big {
     const high = new Big(candle.high);
     const highLow = high.minus(candle.low);
     if (this.previousCandle) {
@@ -33,7 +33,7 @@ export class TR extends BigIndicatorSeries {
 export class FasterTR extends NumberIndicatorSeries {
   private previousCandle?: HighLowCloseNumbers;
 
-  update(candle: HighLowCloseNumbers): void | number {
+  update(candle: HighLowCloseNumbers): number {
     const {high, low} = candle;
     const highLow = high - low;
     if (this.previousCandle) {
