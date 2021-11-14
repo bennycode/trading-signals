@@ -1,14 +1,18 @@
 <!--
 Thanks for your contribution!
 Please check the following to make sure your contribution follows our guideline when adding a new indicator.
+
+You can find a great example here:
+https://github.com/bennycode/trading-signals/pull/361/files
 -->
 
-## Checklist
+## Checklist for new indicators
 
-- [ ] New indicator has been implemented by extending `BigIndicatorSeries` ([Example](https://github.com/bennycode/trading-signals/pull/355/files))
-- [ ] A "faster" version of this indicator has been implemented by extending `NumberIndicatorSeries` ([Example](https://github.com/bennycode/trading-signals/pull/356/files))
-- [ ] Tests for `getResult` have been added for both indicators (standard & faster version) ([Example](https://github.com/bennycode/trading-signals/pull/356/files))
-- [ ] Tests for error throwing when there is not enough input data have been added for both indicators (standard & faster version) ([Example](https://github.com/bennycode/trading-signals/pull/356/files))
-- [ ] Tests for highest and lowest result caching have been added for both indicators (standard & faster version) ([Example](https://github.com/bennycode/trading-signals/pull/356/files))
-- [ ] Indicators (standard & faster version) are exposed in `index.ts` file ([Example](https://github.com/bennycode/trading-signals/commit/2e7e5447125376c93b0a81c2d546b5f1debe1879))
-- [ ] Indicators (standard & faster version) are added to `startBenchmark.ts` ([Example](https://github.com/bennycode/trading-signals/pull/350/files))
+- [ ] Indicator is implemented by extending `BigIndicatorSeries`
+- [ ] A "faster" version of this indicator is implemented by extending `NumberIndicatorSeries`
+- [ ] Tests for `getResult` are present
+- [ ] Tests for highest and lowest result caching are present
+- [ ] Tests for error handling are present (if not done in base class)
+- [ ] Indicators (standard & faster version) are exposed in `src/index.ts`
+- [ ] Indicators (standard & faster version) are added to `startBenchmark.ts`
+- [ ] Indicator is listed in `README.md`

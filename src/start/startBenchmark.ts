@@ -12,6 +12,7 @@ import {
 } from '../util';
 import {FasterSMA, SMA} from '../SMA/SMA';
 import {CCI, FasterCCI} from '../CCI/CCI';
+import {FasterTR, TR} from '../TR/TR';
 
 const interval = 20;
 const prices: number[] = candles.map(candle => parseInt(candle.close, 10));
@@ -80,6 +81,18 @@ new Benchmark.Suite('Technical Indicators')
     const fasterSMA = new FasterSMA(interval);
     for (const price of prices) {
       fasterSMA.update(price);
+    }
+  })
+  .add('TR', () => {
+    const tr = new TR();
+    for (const candle of highLowCloses) {
+      tr.update(candle);
+    }
+  })
+  .add('FasterTR', () => {
+    const fasterTR = new FasterTR();
+    for (const candle of highLowCloses) {
+      fasterTR.update(candle);
     }
   })
   .add('getAverage', () => {

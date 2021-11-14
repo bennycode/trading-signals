@@ -29,7 +29,9 @@ export abstract class BigIndicatorSeries implements IndicatorSeries {
   lowest?: Big;
   protected result?: Big;
 
-  abstract isStable: boolean;
+  get isStable(): boolean {
+    return this.result !== undefined;
+  }
 
   getResult(): Big {
     if (!this.result) {
@@ -61,7 +63,9 @@ export abstract class NumberIndicatorSeries implements IndicatorSeries<number> {
   lowest?: number;
   protected result?: number;
 
-  abstract isStable: boolean;
+  get isStable(): boolean {
+    return this.result !== undefined;
+  }
 
   getResult(): number {
     if (!this.result) {
