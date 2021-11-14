@@ -10,15 +10,18 @@ The "trading-signals" library provides a TypeScript implementation for common te
 
 The main focus of this library is on the accuracy of calculations, but using the provided [faster implementations][2] you can also use it where performance is important.
 
+All indicators can be updated over time by streaming data (prices or candles) to the `update` method. Some indicators also provide `static` batch methods for further performance improvements when providing data up-front during a backtest or historical data import.
+
 ## Benefits & Features
 
 - **Accurate.** Indicators with intervals will return a result only when the period is reached.
 - **Convenient.** Indicators with intervals will save their all-time highs and lows.
 - **Fast.** If you need high throughput, you can use the included [faster implementations][2].
-- **Precise.** Better accuracy than calculating with numbers thanks to [big.js][1].
+- **Precise.** Better accuracy than calculating with primitive numbers thanks to [big.js][1].
 - **Tested.** Code coverage is 100%. No surprises when using it.
 - **Typed.** Source code is 100% TypeScript. No need to install external typings.
 - **Verified.** All results are verified with [other libraries](#alternatives) to guarantee correctness.
+- **Versatile.** Indicators can be updated up-front or by streaming prices.
 
 ## Technical Indicator Types
 
@@ -48,6 +51,7 @@ The main focus of this library is on the accuracy of calculations, but using the
 1. Simple Moving Average (SMA)
 1. Smoothed Moving Average (SMMA)
 1. Stochastic Oscillator (STOCH)
+1. True Range (TR)
 1. Wilder's Smoothed Moving Average (WSMA)
 
 Utility Methods:
@@ -142,13 +146,14 @@ It is very important to do your own analysis before making any investment based 
 
 ## Alternatives
 
-- [Tulip Indicators (ANSI C)](https://github.com/TulipCharts/tulipindicators)
-- [Pandas TA (Python)](https://github.com/twopirllc/pandas-ta)
-- [Jesse Trading Bot Indicators (Python)](https://docs.jesse.trade/docs/indicators/reference.html)
-- [libindicators (C#)](https://github.com/mgfx/libindicators)
 - [Cloud9Trader Indicators (JavaScript)](https://github.com/Cloud9Trader/TechnicalIndicators)
 - [Crypto Trading Hub Indicators (TypeScript)](https://github.com/anandanand84/technicalindicators)
+- [Jesse Trading Bot Indicators (Python)](https://docs.jesse.trade/docs/indicators/reference.html)
+- [libindicators (C#)](https://github.com/mgfx/libindicators)
+- [Pandas TA (Python)](https://github.com/twopirllc/pandas-ta)
+- [Technical Analysis for Rust (Rust)](https://github.com/greyblake/ta-rs)
 - [Technical Analysis Library using Pandas and Numpy (Python)](https://github.com/bukosabino/ta)
+- [Tulip Indicators (ANSI C)](https://github.com/TulipCharts/tulipindicators)
 
 ## Maintainers
 
