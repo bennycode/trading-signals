@@ -1,25 +1,8 @@
-import {Big} from 'big.js';
 import {ADX} from './ADX';
-import data from '../test/fixtures/ADX/data.json';
 import {EMA, NotEnoughDataError} from '..';
-
-const candles = data.candles;
-const adx14results = data.interval_14;
 
 describe('ADX', () => {
   describe('getResult', () => {
-    it('uses SMMA by default for smoothing the results', () => {
-      const adx = new ADX(14);
-      candles.forEach((candle, index) => {
-        adx.update(candle);
-
-        if (adx.isStable) {
-          const result = new Big(adx14results[index] || 0);
-          expect(adx.getResult().adx.toFixed(4)).toEqual(result.toFixed(4));
-        }
-      });
-    });
-
     it('supports different smoothing indicators', () => {
       // Test data verified with:
       // https://github.com/TulipCharts/tulipindicators/commit/41e59fb33cef5bc97b03d2751dab2b006525c23f
@@ -46,6 +29,7 @@ describe('ADX', () => {
           low: lows[i],
         });
       }
+      expect(adx.isStable).toBeTrue();
       expect(adx.getResult().adx.toFixed(2)).toBe('20.28');
     });
 
