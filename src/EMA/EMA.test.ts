@@ -6,11 +6,19 @@ describe('EMA', () => {
   const prices = [
     81.59, 81.06, 82.87, 83.0, 83.61, 83.15, 82.84, 83.99, 84.55, 84.36, 85.53, 86.54, 86.89, 87.77, 87.29,
   ];
-  let expectations: string[] = [];
-
-  beforeEach(() => {
-    expectations = ['82.71', '82.86', '82.85', '83.23', '83.67', '83.90', '84.44', '85.14', '85.73', '86.41', '86.70'];
-  });
+  const expectations: string[] = [
+    '82.71',
+    '82.86',
+    '82.85',
+    '83.23',
+    '83.67',
+    '83.90',
+    '84.44',
+    '85.14',
+    '85.73',
+    '86.41',
+    '86.70',
+  ];
 
   describe('getResult', () => {
     it('calculates the Exponential Moving Average over a period of 5', () => {
