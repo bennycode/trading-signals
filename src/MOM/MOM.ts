@@ -26,8 +26,4 @@ export class MOM extends BigIndicatorSeries {
       this.setResult(new Big(value).minus(this.history[0]));
     }
   }
-
-  override get isStable(): boolean {
-    return this.result !== undefined;
-  }
 }

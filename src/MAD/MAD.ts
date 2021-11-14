@@ -18,10 +18,6 @@ export class MAD extends BigIndicatorSeries {
     super();
   }
 
-  override get isStable(): boolean {
-    return this.result !== undefined;
-  }
-
   override update(price: BigSource): void {
     this.prices.push(price);
 
@@ -50,10 +46,6 @@ export class FasterMAD extends NumberIndicatorSeries {
 
   constructor(public readonly interval: number) {
     super();
-  }
-
-  override get isStable(): boolean {
-    return this.result !== undefined;
   }
 
   override update(price: number): void {

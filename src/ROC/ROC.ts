@@ -18,10 +18,6 @@ export class ROC extends BigIndicatorSeries {
     this.interval = interval;
   }
 
-  override get isStable(): boolean {
-    return this.result !== undefined;
-  }
-
   override update(price: BigSource): Big | void {
     this.priceHistory.push(price);
     if (this.priceHistory.length <= this.interval) {

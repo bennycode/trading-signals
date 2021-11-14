@@ -31,10 +31,6 @@ export class CCI extends BigIndicatorSeries {
     this.sma = new SMA(this.interval);
   }
 
-  get isStable(): boolean {
-    return this.result !== undefined;
-  }
-
   update(candle: HighLowClose): void | Big {
     const typicalPrice = this.cacheTypicalPrice(candle);
     this.sma.update(typicalPrice);
@@ -66,10 +62,6 @@ export class FasterCCI extends NumberIndicatorSeries {
   constructor(public readonly interval: number) {
     super();
     this.sma = new FasterSMA(this.interval);
-  }
-
-  override get isStable(): boolean {
-    return this.result !== undefined;
   }
 
   override update(candle: HighLowCloseNumbers): void | number {

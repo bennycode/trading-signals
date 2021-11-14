@@ -28,10 +28,6 @@ export class AC extends BigIndicatorSeries {
     this.momentum = new MOM(1);
   }
 
-  override get isStable(): boolean {
-    return this.result !== undefined;
-  }
-
   override update(low: BigSource, high: BigSource): void | Big {
     const ao = this.ao.update(low, high);
     if (ao) {

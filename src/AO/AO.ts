@@ -26,10 +26,6 @@ export class AO extends BigIndicatorSeries {
     this.long = new SMA(longInterval);
   }
 
-  override get isStable(): boolean {
-    return this.result !== undefined;
-  }
-
   override update(low: BigSource, high: BigSource): void | Big {
     const candleSum = new Big(low).add(high);
     const medianPrice = candleSum.div(2);
