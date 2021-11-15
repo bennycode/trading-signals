@@ -54,12 +54,9 @@ export class RSI extends BigIndicatorSeries {
 
     this.previousPrice = price;
 
-    if (!this.avgGain.isStable) {
-      return;
+    if (this.avgGain.isStable) {
+      const relativeStrength = this.avgGain.getResult().div(this.avgLoss.getResult());
+      return this.setResult(this.maxValue.minus(this.maxValue.div(relativeStrength.add(1))));
     }
-
-    const relativeStrength = this.avgGain.getResult().div(this.avgLoss.getResult());
-
-    return this.setResult(this.maxValue.minus(this.maxValue.div(relativeStrength.add(1))));
   }
 }
