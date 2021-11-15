@@ -3,7 +3,7 @@ import {NotEnoughDataError} from '../error';
 
 describe('RSI', () => {
   describe('getResult', () => {
-    fit('calculates the relative strength index', () => {
+    it('calculates the relative strength index', () => {
       // Test data verified with:
       // https://github.com/TulipCharts/tulipindicators/blob/v0.8.0/tests/untest.txt#L347-L349
       const prices = [
@@ -46,13 +46,6 @@ describe('RSI', () => {
         expect(rsi.isStable).toBeFalse();
         expect(error).toBeInstanceOf(NotEnoughDataError);
       }
-    });
-
-    it('prevents division by zero errors when the average gain and average loss equal 0', () => {
-      const rsi = new RSI(1);
-      rsi.update(0);
-      rsi.update(0);
-      expect(rsi.getResult().toFixed(0)).toBe('99');
     });
   });
 });

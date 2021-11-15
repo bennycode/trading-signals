@@ -21,9 +21,10 @@ import {WSMA} from '../WSMA/WSMA';
  * @see https://www.investopedia.com/terms/r/rsi.asp
  */
 export class RSI extends BigIndicatorSeries {
-  public readonly prices: Big[] = [];
+  private previousPrice?: BigSource;
   private readonly avgGain: MovingAverage;
   private readonly avgLoss: MovingAverage;
+  private readonly maxValue = new Big(100);
 
   constructor(public readonly interval: number, Indicator: MovingAverageTypeContext = WSMA) {
     super();
@@ -33,14 +34,14 @@ export class RSI extends BigIndicatorSeries {
 
   override update(price: BigSource): void | Big {
     const currentClose = new Big(price);
-    this.prices.push(currentClose);
 
-    // at least 2 prices are required to do a calculation
-    if (this.prices.length === 1) {
+    if (!this.previousPrice) {
+      // At least 2 prices are required to do a calculation
+      this.previousPrice = price;
       return;
     }
 
-    const lastClose = this.prices[this.prices.length - 2];
+    const lastClose = new Big(this.previousPrice);
 
     // Update average gain/loss
     if (currentClose.gt(lastClose)) {
@@ -51,26 +52,14 @@ export class RSI extends BigIndicatorSeries {
       this.avgGain.update(new Big(0)); // price went down, therefore no gain
     }
 
-    // as long as there are not enough values as the required interval, the result should always be 0
-    if (this.prices.length <= this.interval) {
-      this.result = new Big(0);
+    this.previousPrice = price;
+
+    if (!this.avgGain.isStable) {
       return;
-    } else if (this.prices.length > this.interval) {
-      this.prices.shift();
     }
 
-    const relativeStrength = this.avgLoss.getResult().eq(new Big(0))
-      ? new Big(100)
-      : this.avgGain.getResult().div(this.avgLoss.getResult());
+    const relativeStrength = this.avgGain.getResult().div(this.avgLoss.getResult());
 
-    const max = new Big(100);
-    return this.setResult(max.minus(max.div(relativeStrength.add(1))));
-  }
-
-  override get isStable(): boolean {
-    if (this.result) {
-      return this.result.gt(0);
-    }
-    return false;
+    return this.setResult(this.maxValue.minus(this.maxValue.div(relativeStrength.add(1))));
   }
 }
