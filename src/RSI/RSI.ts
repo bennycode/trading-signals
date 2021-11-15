@@ -31,7 +31,7 @@ export class RSI extends BigIndicatorSeries {
     this.avgLoss = new Indicator(this.interval);
   }
 
-  override update(price: BigSource): void {
+  override update(price: BigSource): void | Big {
     const currentClose = new Big(price);
     this.prices.push(currentClose);
 
@@ -53,8 +53,10 @@ export class RSI extends BigIndicatorSeries {
 
     // as long as there are not enough values as the required interval, the result should always be 0
     if (this.prices.length <= this.interval) {
-      this.setResult(new Big(0));
+      this.result = new Big(0);
       return;
+    } else if (this.prices.length > this.interval) {
+      this.prices.shift();
     }
 
     const relativeStrength = this.avgLoss.getResult().eq(new Big(0))
@@ -62,11 +64,7 @@ export class RSI extends BigIndicatorSeries {
       : this.avgGain.getResult().div(this.avgLoss.getResult());
 
     const max = new Big(100);
-    this.setResult(max.minus(max.div(relativeStrength.add(1))));
-
-    while (this.prices.length > this.interval) {
-      this.prices.shift();
-    }
+    return this.setResult(max.minus(max.div(relativeStrength.add(1))));
   }
 
   override get isStable(): boolean {
