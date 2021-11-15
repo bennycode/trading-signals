@@ -17,7 +17,7 @@ describe('CCI', () => {
     {close: 87.77, high: 88.0, low: 87.17},
     {close: 87.29, high: 87.87, low: 87.01},
   ];
-  const expectations: string[] = ['166.67', '82.02', '95.50', '130.91', '99.16', '116.34', '71.93'];
+  const expectations = ['166.67', '82.02', '95.50', '130.91', '99.16', '116.34', '71.93'];
 
   describe('getResult', () => {
     it('calculates the Commodity Channel Index (CCI)', () => {

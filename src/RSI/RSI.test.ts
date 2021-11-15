@@ -1,19 +1,40 @@
-import {Big} from 'big.js';
 import {RSI} from './RSI';
-
-import dataFile from '../test/fixtures/RSI/500-candles-WRX-BTC-1h.json';
-import prices from '../test/fixtures/prices.json';
-import results from '../test/fixtures/RSI/results.json';
-
 import {NotEnoughDataError} from '../error';
-import {WSMA} from '../WSMA/WSMA';
-
-const rsi2results = results.interval_2;
-const rsi12results = results.interval_12;
-const rsi26results = results.interval_26;
 
 describe('RSI', () => {
   describe('getResult', () => {
+    it('calculates the relative strength index', () => {
+      // Test data verified with:
+      // https://github.com/TulipCharts/tulipindicators/blob/v0.8.0/tests/untest.txt#L347-L349
+      const prices = [
+        81.59, 81.06, 82.87, 83.0, 83.61, 83.15, 82.84, 83.99, 84.55, 84.36, 85.53, 86.54, 86.89, 87.77, 87.29,
+      ];
+      const expectations = [
+        '72.034',
+        '64.927',
+        '75.936',
+        '79.796',
+        '74.713',
+        '83.033',
+        '87.478',
+        '88.755',
+        '91.483',
+        '78.498',
+      ];
+      const rsi = new RSI(5);
+      for (const price of prices) {
+        rsi.update(price);
+        if (rsi.isStable) {
+          const expected = expectations.shift();
+          expect(rsi.getResult().toFixed(3)).toBe(expected!);
+        }
+      }
+      expect(rsi.isStable).toBeTrue();
+      expect(rsi.getResult().toFixed(2)).toBe('78.50');
+      expect(rsi.lowest?.toFixed(2)).toBe('64.93');
+      expect(rsi.highest?.toFixed(2)).toBe('91.48');
+    });
+
     it('throws an error when there is not enough input data', () => {
       const rsi = new RSI(2);
       rsi.update(0);
@@ -22,100 +43,9 @@ describe('RSI', () => {
         rsi.getResult();
         fail('Expected error');
       } catch (error) {
+        expect(rsi.isStable).toBeFalse();
         expect(error).toBeInstanceOf(NotEnoughDataError);
       }
-    });
-
-    it('calculates RSI with interval 2', () => {
-      const rsi = new RSI(2);
-
-      prices.forEach((price, index) => {
-        rsi.update(price);
-        if (rsi.isStable) {
-          const expected = new Big(rsi2results[index]);
-          expect(rsi.getResult().toPrecision(12)).toEqual(expected.toPrecision(12));
-        }
-      });
-
-      expect(rsi.lowest!.toFixed(2)).toBe('0.00');
-      expect(rsi.highest!.toFixed(2)).toBe('89.13');
-    });
-
-    it('calculates RSI with interval 12', () => {
-      const rsi = new RSI(12);
-
-      prices.forEach((price, index) => {
-        rsi.update(price);
-        if (rsi.isStable) {
-          const expected = new Big(rsi12results[index]);
-          expect(rsi.getResult().toPrecision(12)).toEqual(expected.toPrecision(12));
-        }
-      });
-
-      expect(rsi.lowest!.toFixed(2)).toBe('0.00');
-      expect(rsi.highest!.toFixed(2)).toBe('55.65');
-    });
-
-    it('calculates RSI with interval 26', () => {
-      const rsi = new RSI(26);
-
-      prices.forEach((price, index) => {
-        rsi.update(price);
-        if (rsi.isStable) {
-          const expected = new Big(rsi26results[index]);
-          expect(rsi.getResult().toPrecision(12)).toEqual(expected.toPrecision(12));
-        }
-      });
-
-      expect(rsi.lowest!.toFixed(2)).toBe('0.00');
-      expect(rsi.highest!.toFixed(2)).toBe('51.14');
-    });
-
-    it('prevents division by zero errors when the average gain and average loss equal 0', () => {
-      const rsi = new RSI(1);
-      rsi.update(0);
-      rsi.update(0);
-      expect(rsi.getResult().toFixed(0)).toBe('99');
-    });
-
-    /** @see https://github.com/bennycode/trading-signals/issues/64 */
-    it(`is compatible with results calculated by 'tulind'`, () => {
-      const interval = 14;
-      const rsi = new RSI(interval, WSMA);
-      const ohlc = Object.values(dataFile);
-      const closes = ohlc.map(candle => candle[4]);
-      const results: string[] = [];
-
-      for (const close of closes) {
-        rsi.update(close);
-        if (rsi.isStable) {
-          results.push(rsi.getResult().valueOf());
-        }
-      }
-
-      expect(closes.length).toBe(500);
-      expect(results.length).toBe(closes.length - interval);
-      expect(results[0].startsWith('78.997289972899')).toBeTrue();
-      expect(results[results.length - 1].startsWith('47.3794658392')).toBeTrue();
-    });
-  });
-
-  describe('isStable', () => {
-    // Test data verified with:
-    // https://tulipindicators.org/rsi
-    it('is stable when the amount of inputs is bigger than the required interval', () => {
-      const rsi = new RSI(5);
-      rsi.update(81.59);
-      rsi.update(81.06);
-      rsi.update(82.87);
-      expect(rsi.isStable).toBeFalse();
-      rsi.update(83.0);
-      rsi.update(83.61);
-      rsi.update(83.15);
-      expect(rsi.isStable).toBeTrue();
-      expect(rsi.getResult().toFixed(2)).toBe('72.03');
-      rsi.update(82.84);
-      expect(rsi.getResult().toFixed(2)).toBe('64.93');
     });
   });
 });
