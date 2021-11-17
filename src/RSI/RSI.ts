@@ -33,22 +33,21 @@ export class RSI extends BigIndicatorSeries {
   }
 
   override update(price: BigSource): void | Big {
-    const currentClose = new Big(price);
-
     if (!this.previousPrice) {
       // At least 2 prices are required to do a calculation
       this.previousPrice = price;
       return;
     }
 
-    const lastClose = new Big(this.previousPrice);
+    const currentPrice = new Big(price);
+    const previousPrice = new Big(this.previousPrice);
 
     // Update average gain/loss
-    if (currentClose.gt(lastClose)) {
+    if (currentPrice.gt(previousPrice)) {
       this.avgLoss.update(new Big(0)); // price went up, therefore no loss
-      this.avgGain.update(currentClose.sub(lastClose));
+      this.avgGain.update(currentPrice.sub(previousPrice));
     } else {
-      this.avgLoss.update(lastClose.sub(currentClose));
+      this.avgLoss.update(previousPrice.sub(currentPrice));
       this.avgGain.update(new Big(0)); // price went down, therefore no gain
     }
 
