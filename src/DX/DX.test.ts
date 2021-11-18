@@ -2,7 +2,9 @@ import {DX} from './DX';
 
 describe('DX', () => {
   describe('getResult', () => {
-    it('getResult', () => {
+    it('calculates the Directional Movement Index (DX)', () => {
+      // Test data verified with:
+      // https://tulipindicators.org/dx
       const candles = [
         {high: 82.15, low: 81.29, close: 81.59},
         {high: 81.89, low: 80.64, close: 81.06},
@@ -29,7 +31,7 @@ describe('DX', () => {
         '52.77',
         '55.91',
         '69.96',
-        '76.90', // check with tulipchart
+        '76.90', // The official TI page has a rounding mistake here
         '80.26',
         '86.51',
         '75.61',
@@ -47,6 +49,27 @@ describe('DX', () => {
 
       expect(dx.isStable).toBeTrue();
       expect(dx.getResult().toFixed(2)).toBe('75.61');
+      expect(dx.lowest!.toFixed(2)).toBe('11.09');
+      expect(dx.highest!.toFixed(2)).toBe('86.51');
+    });
+
+    it('returns zero when there is no trend', () => {
+      const candles = [
+        {high: 100, low: 90, close: 95},
+        {high: 100, low: 90, close: 95},
+        {high: 100, low: 90, close: 95},
+        {high: 100, low: 90, close: 95},
+        {high: 100, low: 90, close: 95},
+      ];
+
+      const dx = new DX(5);
+
+      for (const candle of candles) {
+        dx.update(candle);
+      }
+
+      expect(dx.isStable).toBeTrue();
+      expect(dx.getResult().valueOf()).toBe('0');
     });
   });
 });

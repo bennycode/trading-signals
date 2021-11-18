@@ -17,6 +17,7 @@ All indicators can be updated over time by streaming data (prices or candles) to
 - **Accurate.** Indicators with intervals will return a result only when the period is reached.
 - **Convenient.** Indicators with intervals will save their all-time highs and lows.
 - **Fast.** If you need high throughput, you can use the included [faster implementations][2].
+- **Flexible.** All advanced indicators support different smoothing overlays (WSMA, etc.).
 - **Precise.** Better accuracy than calculating with primitive numbers thanks to [big.js][1].
 - **Tested.** Code coverage is 100%. No surprises when using it.
 - **Typed.** Source code is 100% TypeScript. No need to install external typings.
@@ -25,10 +26,10 @@ All indicators can be updated over time by streaming data (prices or candles) to
 
 ## Technical Indicator Types
 
-- Trend indicators: Measure the direction of a trend
+- Trend indicators: Measure the direction of a trend (uptrend, downtrend or sideways trend)
 - Volume indicators: Measure the strength of a trend (based on volume)
-- Volatility indicators: Measure the strength of a trend (based on price)
-- Momentum indicators: Measure the speed of price movement
+- Volatility indicators: Measure how much disagreement there is in the market based on price (statistical measure of its dispersion)
+- Momentum indicators: Measure the strength of a trend (based on price / speed of price movement)
 
 ## Supported Technical Indicators
 
@@ -40,6 +41,7 @@ All indicators can be updated over time by streaming data (prices or candles) to
 1. Bollinger Bands (BBANDS)
 1. Center of Gravity (CG)
 1. Commodity Channel Index (CCI)
+1. Directional Movement Index (DMI / DX)
 1. Double Exponential Moving Average (DEMA)
 1. Dual Moving Average (DMA)
 1. Exponential Moving Average (EMA)
@@ -51,7 +53,7 @@ All indicators can be updated over time by streaming data (prices or candles) to
 1. Simple Moving Average (SMA)
 1. Stochastic Oscillator (STOCH)
 1. True Range (TR)
-1. Wilder's Smoothed Moving Average (WSMA)
+1. Wilder's Smoothed Moving Average (WSMA / WMA / WWS / SMMA / MEMA)
 
 Utility Methods:
 

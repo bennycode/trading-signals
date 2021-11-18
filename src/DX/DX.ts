@@ -7,10 +7,17 @@ import {WSMA} from '../WSMA/WSMA';
 import {ATR} from '../ATR/ATR';
 
 /**
- * Momentum
- * DX, DMI
- * https://www.tradingview.com/scripts/directionalmovement/
- * https://medium.com/codex/algorithmic-trading-with-average-directional-index-in-python-2b5a20ecf06a
+ * Directional Movement Index (DMI / DX)
+ * Type: Momentum
+ *
+ * The DX was developed by **John Welles Wilder, Jr.**. and may help traders assess the strength of a trend but NOT the
+ * direction of the trend.
+ *
+ * If there is no change in the trend, then the DX is `0`. The return value increases when there is a stronger trend
+ * (either negative or positive). When +DI is above -DI, then there is more upward pressure than downward pressure in
+ * the market.
+ *
+ * @see https://www.fidelity.com/learning-center/trading-investing/technical-analysis/technical-indicator-guide/dmi
  */
 export class DX extends BigIndicatorSeries {
   private readonly movesUp: MovingAverage;
@@ -18,11 +25,11 @@ export class DX extends BigIndicatorSeries {
   private previousCandle?: HighLowClose;
   private readonly atr: ATR;
 
-  constructor(public readonly interval: number, Indicator: MovingAverageTypeContext = WSMA) {
+  constructor(public readonly interval: number, SmoothingIndicator: MovingAverageTypeContext = WSMA) {
     super();
-    this.movesUp = new Indicator(this.interval);
-    this.movesDown = new Indicator(this.interval);
-    this.atr = new ATR(this.interval, Indicator);
+    this.movesUp = new SmoothingIndicator(this.interval);
+    this.movesDown = new SmoothingIndicator(this.interval);
+    this.atr = new ATR(this.interval, SmoothingIndicator);
   }
 
   update(candle: HighLowClose): Big | void {
@@ -46,13 +53,13 @@ export class DX extends BigIndicatorSeries {
     const noHigherHighs = higherHigh.lt(0);
     const lowsRiseFaster = higherHigh.lt(lowerLow);
 
-    // +DM
+    // Plus Directional Movement (+DM)
     const pdm = noHigherHighs || lowsRiseFaster ? new Big(0) : higherHigh;
 
     const noLowerLows = lowerLow.lt(0);
     const highsRiseFaster = lowerLow.lt(higherHigh);
 
-    // -DM
+    // Minus Directional Movement (-DM)
     const mdm = noLowerLows || highsRiseFaster ? new Big(0) : lowerLow;
 
     this.movesUp.update(pdm);
@@ -61,13 +68,18 @@ export class DX extends BigIndicatorSeries {
     this.previousCandle = candle;
 
     if (this.movesUp.isStable) {
-      // +DI
+      // Plus Directional Indicator (+DI)
       const pdi = this.movesUp.getResult().div(this.atr.getResult());
-      // -DI
+      // Minus Directional Indicator (-DI)
       const mdi = this.movesDown.getResult().div(this.atr.getResult());
 
       const dmDiff = pdi.minus(mdi).abs();
       const dmSum = pdi.plus(mdi);
+
+      // Prevent division by zero
+      if (dmSum.eq(0)) {
+        return this.setResult(new Big(0));
+      }
 
       return this.setResult(dmDiff.div(dmSum).mul(100));
     }
