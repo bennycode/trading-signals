@@ -1,3 +1,21 @@
+## 3.0.0 (2021-11-19)
+
+##### Documentation Changes
+
+- Use reference-style link definition ([#360](https://github.com/bennycode/trading-signals/pull/360)) ([74aa0133](https://github.com/bennycode/trading-signals/commit/74aa0133aba2820bd055839550f6a9233b55f3c7))
+
+##### New Features
+
+- **ATR,WSMA:** Add faster implementations ([#367](https://github.com/bennycode/trading-signals/pull/367)) ([65823cbf](https://github.com/bennycode/trading-signals/commit/65823cbf9ac6677564a580bc0c022c6e0461b416))
+- **DX:** Add Directional Movement Index (DX) ([#365](https://github.com/bennycode/trading-signals/pull/365)) ([2c51d7c0](https://github.com/bennycode/trading-signals/commit/2c51d7c0fc35ce3342414b4130edb64d4652e693))
+- **TR:** Add True Range (TR) implementation ([#361](https://github.com/bennycode/trading-signals/pull/361)) ([9c4a6d02](https://github.com/bennycode/trading-signals/commit/9c4a6d02bcecdde6dbe5b568c6ec547512164364))
+
+##### Refactors
+
+- **ADX:** Return direct result and +DI & -DI only via getters ([#368](https://github.com/bennycode/trading-signals/pull/368)) ([2c0818fe](https://github.com/bennycode/trading-signals/commit/2c0818fee37038836f8cfc979a791359d7a6f8bd))
+- **SMMA,WSMA:** Replaced SMMA with WSMA ([#362](https://github.com/bennycode/trading-signals/pull/362)) ([80a0f2c4](https://github.com/bennycode/trading-signals/commit/80a0f2c4f736cab79d1ee10f8ffe22f03eb7be63))
+- Remove "isStable" override ([77901cfb](https://github.com/bennycode/trading-signals/commit/77901cfb07ba1cc96fc39421791359fdb7aeb1e1))
+
 ### 2.5.0 (2021-11-12)
 
 ##### Documentation Changes
