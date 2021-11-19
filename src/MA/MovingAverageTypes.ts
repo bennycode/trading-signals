@@ -1,5 +1,6 @@
-import {EMA} from '../EMA/EMA';
-import {WSMA} from '../WSMA/WSMA';
-import {SMA} from '../SMA/SMA';
+import {EMA, FasterEMA} from '../EMA/EMA';
+import {FasterWSMA, WSMA} from '../WSMA/WSMA';
+import {FasterSMA, SMA} from '../SMA/SMA';
 
-export type MovingAverageTypeContext = typeof EMA | typeof WSMA | typeof SMA;
+export type MovingAverageTypes = typeof EMA | typeof SMA | typeof WSMA;
+export type FasterMovingAverageTypes = typeof FasterEMA | typeof FasterSMA | typeof FasterWSMA;

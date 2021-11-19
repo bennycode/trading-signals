@@ -1,5 +1,5 @@
 import Big, {BigSource} from 'big.js';
-import {MovingAverage, MovingAverageTypeContext, SMA} from '..';
+import {MovingAverage, MovingAverageTypes, SMA} from '..';
 import {Indicator} from '../Indicator';
 
 export type DMAResult = {long: Big; short: Big};
@@ -21,7 +21,7 @@ export class DMA implements Indicator<DMAResult> {
   public readonly short: MovingAverage;
   private received: number = 0;
 
-  constructor(short: number, long: number, Indicator: MovingAverageTypeContext = SMA) {
+  constructor(short: number, long: number, Indicator: MovingAverageTypes = SMA) {
     this.short = new Indicator(short);
     this.long = new Indicator(long);
   }

@@ -5,7 +5,7 @@ import {getAverage} from '../util/getAverage';
 import {MovingAverage} from '../MA/MovingAverage';
 import {ATR} from '../ATR/ATR';
 import {HighLowClose} from '../util/HighLowClose';
-import {MovingAverageTypeContext} from '../MA/MovingAverageTypeContext';
+import {MovingAverageTypes} from '../MA/MovingAverageTypes';
 import {WSMA} from '../WSMA/WSMA';
 
 export type ADXResult = {
@@ -46,7 +46,7 @@ export class ADX implements Indicator<ADXResult> {
   private pdi: Big = new Big(0);
   private mdi: Big = new Big(0);
 
-  constructor(public interval: number, SmoothingIndicator: MovingAverageTypeContext = WSMA) {
+  constructor(public interval: number, SmoothingIndicator: MovingAverageTypes = WSMA) {
     this.atr = new ATR(interval, SmoothingIndicator);
     this.smoothedPDM = new SmoothingIndicator(interval);
     this.smoothedMDM = new SmoothingIndicator(interval);

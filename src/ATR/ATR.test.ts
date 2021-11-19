@@ -1,4 +1,4 @@
-import {ATR} from './ATR';
+import {ATR, FasterATR} from './ATR';
 import {NotEnoughDataError} from '..';
 
 describe('ATR', () => {
@@ -26,20 +26,29 @@ describe('ATR', () => {
       const expectations = ['1.12', '1.05', '1.01', '1.21', '1.14', '1.09', '1.24', '1.23', '1.23', '1.21', '1.14'];
 
       const atr = new ATR(5);
+      const fasterATR = new FasterATR(5);
+
       for (const candle of candles) {
         atr.update(candle);
-        if (atr.isStable) {
+        fasterATR.update(candle);
+        if (atr.isStable && fasterATR.isStable) {
           const expected = expectations.shift();
           expect(atr.getResult().toFixed(2)).toBe(expected!);
+          expect(fasterATR.getResult().toFixed(2)).toBe(expected!);
         }
       }
+
       expect(atr.isStable).toBeTrue();
+      expect(fasterATR.isStable).toBeTrue();
 
       expect(atr.getResult().toFixed(2)).toBe('1.14');
+      expect(fasterATR.getResult().toFixed(2)).toBe('1.14');
 
       expect(atr.lowest!.toFixed(2)).toBe('1.01');
+      expect(fasterATR.lowest!.toFixed(2)).toBe('1.01');
 
       expect(atr.highest!.toFixed(2)).toBe('1.24');
+      expect(fasterATR.highest!.toFixed(2)).toBe('1.24');
     });
 
     it('throws an error when there is not enough input data', () => {
