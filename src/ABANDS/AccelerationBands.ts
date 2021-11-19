@@ -3,7 +3,7 @@ import Big, {BigSource} from 'big.js';
 import {NotEnoughDataError} from '../error';
 import {BandsResult} from '../util/BandsResult';
 import {Indicator} from '../Indicator';
-import {MovingAverageTypeContext} from '../MA/MovingAverageTypeContext';
+import {MovingAverageTypes} from '../MA/MovingAverageTypes';
 import {MovingAverage} from '../MA/MovingAverage';
 
 export class AccelerationBands implements Indicator<BandsResult> {
@@ -31,11 +31,7 @@ export class AccelerationBands implements Indicator<BandsResult> {
    * @see https://github.com/QuantConnect/Lean/blob/master/Indicators/AccelerationBands.cs
    * @see https://github.com/twopirllc/pandas-ta/blob/master/pandas_ta/volatility/accbands.py
    */
-  constructor(
-    public readonly interval: number,
-    public readonly width: number,
-    Indicator: MovingAverageTypeContext = SMA
-  ) {
+  constructor(public readonly interval: number, public readonly width: number, Indicator: MovingAverageTypes = SMA) {
     this.lowerBand = new Indicator(interval);
     this.middleBand = new Indicator(interval);
     this.upperBand = new Indicator(interval);

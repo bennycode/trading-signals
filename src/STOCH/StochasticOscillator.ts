@@ -1,7 +1,7 @@
 import {Indicator} from '../Indicator';
 import Big from 'big.js';
 import {SMA} from '../SMA/SMA';
-import {MovingAverageTypeContext} from '../MA/MovingAverageTypeContext';
+import {MovingAverageTypes} from '../MA/MovingAverageTypes';
 import {MovingAverage} from '../MA/MovingAverage';
 import {getMaximum} from '../util/getMaximum';
 import {getMinimum} from '../util/getMinimum';
@@ -43,11 +43,7 @@ export class StochasticOscillator implements Indicator<StochasticResult> {
    * @param periodD The standard interval for the %d period is 3
    * @param [Indicator] Moving average type to smooth values (%d period)
    */
-  constructor(
-    public readonly periodK: number,
-    public readonly periodD: number,
-    Indicator: MovingAverageTypeContext = SMA
-  ) {
+  constructor(public readonly periodK: number, public readonly periodD: number, Indicator: MovingAverageTypes = SMA) {
     this.d = new Indicator(periodD);
   }
 

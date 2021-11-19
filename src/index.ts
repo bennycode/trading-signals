@@ -13,7 +13,7 @@ export * from './EMA/EMA';
 export * from './error';
 export * from './Indicator';
 export * from './MA/MovingAverage';
-export * from './MA/MovingAverageTypeContext';
+export * from './MA/MovingAverageTypes';
 export * from './MACD/MACD';
 export * from './MAD/MAD';
 export * from './MOM/MOM';

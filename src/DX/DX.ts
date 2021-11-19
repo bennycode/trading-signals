@@ -2,7 +2,7 @@ import {BigIndicatorSeries} from '../Indicator';
 import {HighLowClose} from '../util';
 import Big from 'big.js';
 import {MovingAverage} from '../MA/MovingAverage';
-import {MovingAverageTypeContext} from '../MA/MovingAverageTypeContext';
+import {MovingAverageTypes} from '../MA/MovingAverageTypes';
 import {WSMA} from '../WSMA/WSMA';
 import {ATR} from '../ATR/ATR';
 
@@ -25,7 +25,7 @@ export class DX extends BigIndicatorSeries {
   private previousCandle?: HighLowClose;
   private readonly atr: ATR;
 
-  constructor(public readonly interval: number, SmoothingIndicator: MovingAverageTypeContext = WSMA) {
+  constructor(public readonly interval: number, SmoothingIndicator: MovingAverageTypes = WSMA) {
     super();
     this.movesUp = new SmoothingIndicator(this.interval);
     this.movesDown = new SmoothingIndicator(this.interval);

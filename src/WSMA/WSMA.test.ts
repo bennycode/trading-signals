@@ -1,4 +1,4 @@
-import {WSMA} from './WSMA';
+import {FasterWSMA, WSMA} from './WSMA';
 import {NotEnoughDataError} from '../error';
 
 describe('WSMA', () => {
@@ -29,16 +29,29 @@ describe('WSMA', () => {
       ];
       const expectations = ['62.9750', '63.0675', '63.0540', '63.1995', '63.2408', '63.2739', '63.1066', '62.8540'];
       const wsma = new WSMA(5);
+      const fasterWSMA = new FasterWSMA(5);
 
       for (const price of prices) {
         wsma.update(price);
-        if (wsma.isStable) {
+        fasterWSMA.update(price);
+        if (wsma.isStable && fasterWSMA.isStable) {
           const expected = expectations.shift();
           expect(wsma.getResult().toFixed(4)).toBe(expected!);
+          expect(fasterWSMA.getResult().toFixed(4)).toBe(expected!);
         }
       }
 
+      expect(wsma.isStable).toBeTrue();
+      expect(fasterWSMA.isStable).toBeTrue();
+
       expect(wsma.getResult().toFixed(4)).toBe('62.8540');
+      expect(fasterWSMA.getResult().toFixed(4)).toBe('62.8540');
+
+      expect(wsma.highest!.toFixed(4)).toBe('63.2739');
+      expect(fasterWSMA.highest!.toFixed(4)).toBe('63.2739');
+
+      expect(wsma.lowest!.toFixed(4)).toBe('62.8540');
+      expect(fasterWSMA.lowest!.toFixed(4)).toBe('62.8540');
     });
 
     it('throws an error when there is no input data', () => {

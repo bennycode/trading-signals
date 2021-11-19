@@ -2,7 +2,13 @@ import Benchmark, {Event} from 'benchmark';
 import candles from '../test/fixtures/candles/100-candles.json';
 import {FasterMAD, MAD} from '../MAD/MAD';
 import {BollingerBands, FasterBollingerBands} from '../BBANDS/BollingerBands';
-import {EMA, FasterEMA} from '../EMA/EMA';
+import {FasterEMA, EMA} from '../EMA/EMA';
+import {FasterSMA, SMA} from '../SMA/SMA';
+import {FasterCCI, CCI} from '../CCI/CCI';
+import {FasterTR, TR} from '../TR/TR';
+import {DX} from '../DX/DX';
+import {FasterWSMA, WSMA} from '../WSMA/WSMA';
+import {FasterATR, ATR} from '../ATR/ATR';
 import {
   getAverage,
   getFasterAverage,
@@ -10,10 +16,6 @@ import {
   getStandardDeviation,
   HighLowCloseNumbers,
 } from '../util';
-import {FasterSMA, SMA} from '../SMA/SMA';
-import {CCI, FasterCCI} from '../CCI/CCI';
-import {FasterTR, TR} from '../TR/TR';
-import {DX} from '../DX/DX';
 
 const interval = 20;
 const prices: number[] = candles.map(candle => parseInt(candle.close, 10));
@@ -24,6 +26,18 @@ const highLowCloses: HighLowCloseNumbers[] = candles.map(candle => ({
 }));
 
 new Benchmark.Suite('Technical Indicators')
+  .add('ATR', () => {
+    const atr = new ATR(interval);
+    for (const candle of highLowCloses) {
+      atr.update(candle);
+    }
+  })
+  .add('FasterATR', () => {
+    const fasterATR = new FasterATR(interval);
+    for (const candle of highLowCloses) {
+      fasterATR.update(candle);
+    }
+  })
   .add('BollingerBands', () => {
     const bb = new BollingerBands(interval, 2);
     for (const price of prices) {
@@ -100,6 +114,18 @@ new Benchmark.Suite('Technical Indicators')
     const fasterTR = new FasterTR();
     for (const candle of highLowCloses) {
       fasterTR.update(candle);
+    }
+  })
+  .add('WSMA', () => {
+    const wsma = new WSMA(interval);
+    for (const price of prices) {
+      wsma.update(price);
+    }
+  })
+  .add('FasterWSMA', () => {
+    const fasterWSMA = new FasterWSMA(interval);
+    for (const price of prices) {
+      fasterWSMA.update(price);
     }
   })
   .add('getAverage', () => {
