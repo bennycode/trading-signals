@@ -8,14 +8,14 @@ import {ATR} from '../ATR/ATR';
 
 /**
  * Directional Movement Index (DMI / DX)
- * Type: Momentum
+ * Type: Momentum, Trend (using +DI & -DI)
  *
- * The DX was developed by **John Welles Wilder, Jr.**. and may help traders assess the strength of a trend but NOT the
- * direction of the trend.
+ * The DX was developed by **John Welles Wilder, Jr.**. and may help traders assess the strength of a trend (momentum)
+ * and direction of the trend.
  *
  * If there is no change in the trend, then the DX is `0`. The return value increases when there is a stronger trend
- * (either negative or positive). When +DI is above -DI, then there is more upward pressure than downward pressure in
- * the market.
+ * (either negative or positive). To detect if the trend is bullish or bearish you have to compare +DI and -DI. When
+ * +DI is above -DI, then there is more upward pressure than downward pressure in the market.
  *
  * @see https://www.fidelity.com/learning-center/trading-investing/technical-analysis/technical-indicator-guide/dmi
  */
@@ -24,6 +24,10 @@ export class DX extends BigIndicatorSeries {
   private readonly movesDown: MovingAverage;
   private previousCandle?: HighLowClose;
   private readonly atr: ATR;
+  /** Minus Directional Indicator (-DI) */
+  public mdi?: Big;
+  /** Plus Directional Indicator (+DI) */
+  public pdi?: Big;
 
   constructor(public readonly interval: number, SmoothingIndicator: MovingAverageTypes = WSMA) {
     super();
@@ -68,13 +72,11 @@ export class DX extends BigIndicatorSeries {
     this.previousCandle = candle;
 
     if (this.movesUp.isStable) {
-      // Plus Directional Indicator (+DI)
-      const pdi = this.movesUp.getResult().div(this.atr.getResult());
-      // Minus Directional Indicator (-DI)
-      const mdi = this.movesDown.getResult().div(this.atr.getResult());
+      this.pdi = this.movesUp.getResult().div(this.atr.getResult());
+      this.mdi = this.movesDown.getResult().div(this.atr.getResult());
 
-      const dmDiff = pdi.minus(mdi).abs();
-      const dmSum = pdi.plus(mdi);
+      const dmDiff = this.pdi.minus(this.mdi).abs();
+      const dmSum = this.pdi.plus(this.mdi);
 
       // Prevent division by zero
       if (dmSum.eq(0)) {
