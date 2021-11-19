@@ -18,20 +18,6 @@
     "@typescript-eslint/array-type": "error",
     "@typescript-eslint/consistent-type-assertions": "error",
     "@typescript-eslint/explicit-function-return-type": "error",
-    "@typescript-eslint/member-ordering": [
-      "error",
-      {
-        "default": [
-          "public-instance-field",
-          "private-instance-field",
-          "public-constructor",
-          "private-constructor",
-          "public-instance-method",
-          "protected-instance-method",
-          "private-instance-method"
-        ]
-      }
-    ],
     "@typescript-eslint/no-floating-promises": "error",
     "@typescript-eslint/no-namespace": "error",
     "@typescript-eslint/no-this-alias": "error",

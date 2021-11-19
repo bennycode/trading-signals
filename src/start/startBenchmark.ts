@@ -1,5 +1,6 @@
 import Benchmark, {Event} from 'benchmark';
 import candles from '../test/fixtures/candles/100-candles.json';
+import {ADX} from '../ADX/ADX';
 import {FasterMAD, MAD} from '../MAD/MAD';
 import {BollingerBands, FasterBollingerBands} from '../BBANDS/BollingerBands';
 import {FasterEMA, EMA} from '../EMA/EMA';
@@ -26,6 +27,12 @@ const highLowCloses: HighLowCloseNumbers[] = candles.map(candle => ({
 }));
 
 new Benchmark.Suite('Technical Indicators')
+  .add('ADX', () => {
+    const adx = new ADX(interval);
+    for (const candle of highLowCloses) {
+      adx.update(candle);
+    }
+  })
   .add('ATR', () => {
     const atr = new ATR(interval);
     for (const candle of highLowCloses) {
