@@ -8,6 +8,7 @@ export * from './CCI/CCI';
 export * from './CG/CG';
 export * from './DEMA/DEMA';
 export * from './DMA/DMA';
+export * from './DX/DX';
 export * from './EMA/EMA';
 export * from './error';
 export * from './Indicator';
