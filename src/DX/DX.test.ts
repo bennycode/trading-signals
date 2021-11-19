@@ -55,11 +55,11 @@ describe('DX', () => {
 
     it('returns zero when there is no trend', () => {
       const candles = [
-        {high: 100, low: 90, close: 95},
-        {high: 100, low: 90, close: 95},
-        {high: 100, low: 90, close: 95},
-        {high: 100, low: 90, close: 95},
-        {high: 100, low: 90, close: 95},
+        {close: 95, high: 100, low: 90},
+        {close: 95, high: 100, low: 90},
+        {close: 95, high: 100, low: 90},
+        {close: 95, high: 100, low: 90},
+        {close: 95, high: 100, low: 90},
       ];
 
       const dx = new DX(5);
