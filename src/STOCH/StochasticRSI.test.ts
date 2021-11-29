@@ -21,6 +21,16 @@ describe('StochasticRSI', () => {
         }
       }
       expect(stochRSI.isStable).toBeTrue();
+      expect(fasterStochRSI.isStable).toBeTrue();
+
+      expect(stochRSI.getResult().valueOf()).toBe('0');
+      expect(fasterStochRSI.getResult()).toBe(0);
+
+      expect(stochRSI.highest!.valueOf()).toBe('1');
+      expect(fasterStochRSI.highest!.valueOf()).toBe(1);
+
+      expect(stochRSI.lowest!.valueOf()).toBe('0');
+      expect(fasterStochRSI.lowest!.valueOf()).toBe(0);
     });
   });
 });

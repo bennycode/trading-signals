@@ -37,8 +37,6 @@ export abstract class BigIndicatorSeries implements IndicatorSeries {
   }
 
   protected setResult(value: Big): Big {
-    this.result = value;
-
     if (!this.highest || value.gt(this.highest)) {
       this.highest = value;
     }
@@ -47,7 +45,7 @@ export abstract class BigIndicatorSeries implements IndicatorSeries {
       this.lowest = value;
     }
 
-    return this.result;
+    return (this.result = value);
   }
 
   abstract update(...args: any): void | Big;
@@ -55,17 +53,17 @@ export abstract class BigIndicatorSeries implements IndicatorSeries {
 
 export abstract class NumberIndicatorSeries implements IndicatorSeries<number> {
   /** Highest return value over the lifetime (not interval!) of the indicator. */
-  highest?: number;
+  highest: number | undefined = undefined;
   /** Lowest return value over the lifetime (not interval!) of the indicator. */
-  lowest?: number;
-  protected result?: number;
+  lowest: number | undefined = undefined;
+  protected result: number | undefined = undefined;
 
   get isStable(): boolean {
     return this.result !== undefined;
   }
 
   getResult(): number {
-    if (!this.result) {
+    if (this.result === undefined) {
       throw new NotEnoughDataError();
     }
 
@@ -73,8 +71,6 @@ export abstract class NumberIndicatorSeries implements IndicatorSeries<number> {
   }
 
   protected setResult(value: number): number {
-    this.result = value;
-
     if (!this.highest || value > this.highest) {
       this.highest = value;
     }
@@ -83,7 +79,7 @@ export abstract class NumberIndicatorSeries implements IndicatorSeries<number> {
       this.lowest = value;
     }
 
-    return this.result;
+    return (this.result = value);
   }
 
   abstract update(...args: any): void | number;

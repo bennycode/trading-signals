@@ -26,7 +26,7 @@ describe('RSI', () => {
       for (const price of prices) {
         rsi.update(price);
         fasterRSI.update(price);
-        if (rsi.isStable) {
+        if (rsi.isStable && fasterRSI.isStable) {
           const expected = expectations.shift();
           expect(rsi.getResult().toFixed(3)).toBe(expected!);
           expect(fasterRSI.getResult().toFixed(3)).toBe(expected!);
