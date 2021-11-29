@@ -25,7 +25,9 @@ export interface IndicatorSeries<T = Big> extends Indicator<T> {
 }
 
 export abstract class BigIndicatorSeries implements IndicatorSeries {
+  /** Highest return value over the lifetime (not interval!) of the indicator. */
   highest?: Big;
+  /** Lowest return value over the lifetime (not interval!) of the indicator. */
   lowest?: Big;
   protected result?: Big;
 
@@ -59,7 +61,9 @@ export abstract class BigIndicatorSeries implements IndicatorSeries {
 }
 
 export abstract class NumberIndicatorSeries implements IndicatorSeries<number> {
+  /** Highest return value over the lifetime (not interval!) of the indicator. */
   highest?: number;
+  /** Lowest return value over the lifetime (not interval!) of the indicator. */
   lowest?: number;
   protected result?: number;
 
