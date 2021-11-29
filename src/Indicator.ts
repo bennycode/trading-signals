@@ -9,11 +9,6 @@ export interface Indicator<T = Big> {
   update(...args: any): void | T;
 }
 
-/** Defines indicators which only require a single value (usually the price) to get updated. */
-export interface SimpleIndicator<T = Big> extends Indicator<T> {
-  update(value: T): void | T;
-}
-
 /**
  * Tracks results of an indicator over time and memorizes the highest & lowest result.
  */
