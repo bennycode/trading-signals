@@ -18,7 +18,7 @@ export class MAD extends BigIndicatorSeries {
     super();
   }
 
-  override update(price: BigSource): void {
+  override update(price: BigSource): void | Big {
     this.prices.push(price);
 
     if (this.prices.length > this.interval) {
@@ -26,7 +26,7 @@ export class MAD extends BigIndicatorSeries {
     }
 
     if (this.prices.length === this.interval) {
-      this.setResult(MAD.getResultFromBatch(this.prices));
+      return this.setResult(MAD.getResultFromBatch(this.prices));
     }
   }
 
@@ -48,7 +48,7 @@ export class FasterMAD extends NumberIndicatorSeries {
     super();
   }
 
-  override update(price: number): void {
+  override update(price: number): void | number {
     this.prices.push(price);
 
     if (this.prices.length > this.interval) {
@@ -62,7 +62,7 @@ export class FasterMAD extends NumberIndicatorSeries {
         const deviation = Math.abs(this.prices[i] - mean);
         sum += deviation;
       }
-      this.setResult(sum / this.interval);
+      return this.setResult(sum / this.interval);
     }
   }
 
