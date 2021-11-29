@@ -19,6 +19,7 @@ import {
   HighLowCloseNumbers,
   Period,
 } from '../util';
+import {FasterRSI, RSI} from '../RSI/RSI';
 
 const interval = 20;
 const prices: number[] = candles.map(candle => parseInt(candle.close, 10));
@@ -111,6 +112,18 @@ new Benchmark.Suite('Technical Indicators')
     const fasterPeriod = new FasterPeriod(interval);
     for (const price of prices) {
       fasterPeriod.update(price);
+    }
+  })
+  .add('RSI', () => {
+    const rsi = new RSI(interval);
+    for (const price of prices) {
+      rsi.update(price);
+    }
+  })
+  .add('FasterRSI', () => {
+    const fasterRSI = new FasterRSI(interval);
+    for (const price of prices) {
+      fasterRSI.update(price);
     }
   })
   .add('SMA', () => {
