@@ -1,8 +1,8 @@
 import Big, {BigSource} from 'big.js';
-import {MovingAverage} from '../MA/MovingAverage';
-import {BigIndicatorSeries} from '../Indicator';
-import {MovingAverageTypes} from '../MA/MovingAverageTypes';
-import {WSMA} from '../WSMA/WSMA';
+import {FasterMovingAverage, MovingAverage} from '../MA/MovingAverage';
+import {BigIndicatorSeries, NumberIndicatorSeries} from '../Indicator';
+import {FasterMovingAverageTypes, MovingAverageTypes} from '../MA/MovingAverageTypes';
+import {FasterWSMA, WSMA} from '../WSMA/WSMA';
 
 /**
  * Relative Strength Index (RSI)
@@ -26,10 +26,10 @@ export class RSI extends BigIndicatorSeries {
   private readonly avgLoss: MovingAverage;
   private readonly maxValue = new Big(100);
 
-  constructor(public readonly interval: number, Indicator: MovingAverageTypes = WSMA) {
+  constructor(public readonly interval: number, SmoothingIndicator: MovingAverageTypes = WSMA) {
     super();
-    this.avgGain = new Indicator(this.interval);
-    this.avgLoss = new Indicator(this.interval);
+    this.avgGain = new SmoothingIndicator(this.interval);
+    this.avgLoss = new SmoothingIndicator(this.interval);
   }
 
   override update(price: BigSource): void | Big {
@@ -56,6 +56,41 @@ export class RSI extends BigIndicatorSeries {
     if (this.avgGain.isStable) {
       const relativeStrength = this.avgGain.getResult().div(this.avgLoss.getResult());
       return this.setResult(this.maxValue.minus(this.maxValue.div(relativeStrength.add(1))));
+    }
+  }
+}
+
+export class FasterRSI extends NumberIndicatorSeries {
+  private previousPrice?: number;
+  private readonly avgGain: FasterMovingAverage;
+  private readonly avgLoss: FasterMovingAverage;
+  private readonly maxValue = 100;
+
+  constructor(public readonly interval: number, SmoothingIndicator: FasterMovingAverageTypes = FasterWSMA) {
+    super();
+    this.avgGain = new SmoothingIndicator(this.interval);
+    this.avgLoss = new SmoothingIndicator(this.interval);
+  }
+
+  override update(price: number): void | number {
+    if (!this.previousPrice) {
+      this.previousPrice = price;
+      return;
+    }
+
+    if (price > this.previousPrice) {
+      this.avgLoss.update(0);
+      this.avgGain.update(price - this.previousPrice);
+    } else {
+      this.avgLoss.update(this.previousPrice - price);
+      this.avgGain.update(0);
+    }
+
+    this.previousPrice = price;
+
+    if (this.avgGain.isStable) {
+      const relativeStrength = this.avgGain.getResult() / this.avgLoss.getResult();
+      return this.setResult(this.maxValue - this.maxValue / (relativeStrength + 1));
     }
   }
 }

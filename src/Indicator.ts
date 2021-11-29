@@ -9,13 +9,6 @@ export interface Indicator<T = Big> {
   update(...args: any): void | T;
 }
 
-/** Defines indicators which only require a single value (usually the price) to get updated. */
-export interface SimpleIndicator<T = Big> extends Indicator<T> {
-  update(value: T): void | T;
-}
-
-export type SimpleNumberIndicator = SimpleIndicator<number>;
-
 /**
  * Tracks results of an indicator over time and memorizes the highest & lowest result.
  */
@@ -25,7 +18,9 @@ export interface IndicatorSeries<T = Big> extends Indicator<T> {
 }
 
 export abstract class BigIndicatorSeries implements IndicatorSeries {
+  /** Highest return value over the lifetime (not interval!) of the indicator. */
   highest?: Big;
+  /** Lowest return value over the lifetime (not interval!) of the indicator. */
   lowest?: Big;
   protected result?: Big;
 
@@ -42,8 +37,6 @@ export abstract class BigIndicatorSeries implements IndicatorSeries {
   }
 
   protected setResult(value: Big): Big {
-    this.result = value;
-
     if (!this.highest || value.gt(this.highest)) {
       this.highest = value;
     }
@@ -52,14 +45,16 @@ export abstract class BigIndicatorSeries implements IndicatorSeries {
       this.lowest = value;
     }
 
-    return this.result;
+    return (this.result = value);
   }
 
   abstract update(...args: any): void | Big;
 }
 
 export abstract class NumberIndicatorSeries implements IndicatorSeries<number> {
+  /** Highest return value over the lifetime (not interval!) of the indicator. */
   highest?: number;
+  /** Lowest return value over the lifetime (not interval!) of the indicator. */
   lowest?: number;
   protected result?: number;
 
@@ -68,7 +63,7 @@ export abstract class NumberIndicatorSeries implements IndicatorSeries<number> {
   }
 
   getResult(): number {
-    if (!this.result) {
+    if (this.result === undefined) {
       throw new NotEnoughDataError();
     }
 
@@ -76,8 +71,6 @@ export abstract class NumberIndicatorSeries implements IndicatorSeries<number> {
   }
 
   protected setResult(value: number): number {
-    this.result = value;
-
     if (!this.highest || value > this.highest) {
       this.highest = value;
     }
@@ -86,7 +79,7 @@ export abstract class NumberIndicatorSeries implements IndicatorSeries<number> {
       this.lowest = value;
     }
 
-    return this.result;
+    return (this.result = value);
   }
 
   abstract update(...args: any): void | number;

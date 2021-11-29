@@ -1,4 +1,4 @@
-import {RSI} from './RSI';
+import {FasterRSI, RSI} from './RSI';
 import {NotEnoughDataError} from '../error';
 
 describe('RSI', () => {
@@ -22,17 +22,27 @@ describe('RSI', () => {
         '78.498',
       ];
       const rsi = new RSI(5);
+      const fasterRSI = new FasterRSI(5);
       for (const price of prices) {
         rsi.update(price);
-        if (rsi.isStable) {
+        fasterRSI.update(price);
+        if (rsi.isStable && fasterRSI.isStable) {
           const expected = expectations.shift();
           expect(rsi.getResult().toFixed(3)).toBe(expected!);
+          expect(fasterRSI.getResult().toFixed(3)).toBe(expected!);
         }
       }
       expect(rsi.isStable).toBeTrue();
+      expect(fasterRSI.isStable).toBeTrue();
+
       expect(rsi.getResult().toFixed(2)).toBe('78.50');
+      expect(fasterRSI.getResult().toFixed(2)).toBe('78.50');
+
       expect(rsi.lowest?.toFixed(2)).toBe('64.93');
+      expect(fasterRSI.lowest?.toFixed(2)).toBe('64.93');
+
       expect(rsi.highest?.toFixed(2)).toBe('91.48');
+      expect(fasterRSI.highest?.toFixed(2)).toBe('91.48');
     });
 
     it('throws an error when there is not enough input data', () => {

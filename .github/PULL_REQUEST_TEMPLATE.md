@@ -8,7 +8,7 @@ https://github.com/bennycode/trading-signals/commit/9c4a6d02bcecdde6dbe5b568c6ec
 
 ## Checklist for new indicators
 
-- [ ] Indicator is implemented by extending `BigIndicatorSeries`
+- [ ] Indicator is documented and implemented by extending `BigIndicatorSeries`
 - [ ] A "faster" version of this indicator is implemented by extending `NumberIndicatorSeries`
 - [ ] Tests for `getResult` are present
 - [ ] Tests for highest and lowest result caching are present

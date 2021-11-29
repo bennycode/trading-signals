@@ -52,6 +52,7 @@ All indicators can be updated over time by streaming data (prices or candles) to
 1. Relative Strength Index (RSI)
 1. Simple Moving Average (SMA)
 1. Stochastic Oscillator (STOCH)
+1. Stochastic RSI (STOCHRSI)
 1. True Range (TR)
 1. Wilder's Smoothed Moving Average (WSMA / WMA / WWS / SMMA / MEMA)
 

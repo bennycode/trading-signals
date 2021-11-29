@@ -11,12 +11,16 @@ import {DX} from '../DX/DX';
 import {FasterWSMA, WSMA} from '../WSMA/WSMA';
 import {FasterATR, ATR} from '../ATR/ATR';
 import {
+  FasterPeriod,
   getAverage,
   getFasterAverage,
   getFasterStandardDeviation,
   getStandardDeviation,
   HighLowCloseNumbers,
+  Period,
 } from '../util';
+import {FasterRSI, RSI} from '../RSI/RSI';
+import {FasterStochasticRSI, StochasticRSI} from '../STOCH/StochasticRSI';
 
 const interval = 20;
 const prices: number[] = candles.map(candle => parseInt(candle.close, 10));
@@ -99,6 +103,30 @@ new Benchmark.Suite('Technical Indicators')
       fasterMad.update(price);
     }
   })
+  .add('Period', () => {
+    const period = new Period(interval);
+    for (const price of prices) {
+      period.update(price);
+    }
+  })
+  .add('FasterPeriod', () => {
+    const fasterPeriod = new FasterPeriod(interval);
+    for (const price of prices) {
+      fasterPeriod.update(price);
+    }
+  })
+  .add('RSI', () => {
+    const rsi = new RSI(interval);
+    for (const price of prices) {
+      rsi.update(price);
+    }
+  })
+  .add('FasterRSI', () => {
+    const fasterRSI = new FasterRSI(interval);
+    for (const price of prices) {
+      fasterRSI.update(price);
+    }
+  })
   .add('SMA', () => {
     const sma = new SMA(interval);
     for (const price of prices) {
@@ -109,6 +137,18 @@ new Benchmark.Suite('Technical Indicators')
     const fasterSMA = new FasterSMA(interval);
     for (const price of prices) {
       fasterSMA.update(price);
+    }
+  })
+  .add('StochasticRSI', () => {
+    const stochRSI = new StochasticRSI(interval);
+    for (const price of prices) {
+      stochRSI.update(price);
+    }
+  })
+  .add('FasterStochasticRSI', () => {
+    const fasterStochRSI = new FasterStochasticRSI(interval);
+    for (const price of prices) {
+      fasterStochRSI.update(price);
     }
   })
   .add('TR', () => {
