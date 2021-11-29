@@ -1,3 +1,11 @@
+### 3.1.0 (2021-11-29)
+
+##### New Features
+
+- **STOCHRSI:** Add Stochastic RSI ([#370](https://github.com/bennycode/trading-signals/pull/370)) ([ebc4964c](https://github.com/bennycode/trading-signals/commit/ebc4964c02e4672dc9fb06fa68387c508a097445))
+- **BBANDS:** Return values on update ([e3a96c80](https://github.com/bennycode/trading-signals/commit/e3a96c8078c010bda4c1a7c00bf9e1fc0a04b7ec))
+- **MAD:** Return values on update ([77e6c36a](https://github.com/bennycode/trading-signals/commit/77e6c36ae1905e718d515cc3a1d93b393d2d2e7f))
+
 ## 3.0.0 (2021-11-19)
 
 ##### Documentation Changes
