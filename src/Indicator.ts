@@ -14,8 +14,6 @@ export interface SimpleIndicator<T = Big> extends Indicator<T> {
   update(value: T): void | T;
 }
 
-export type SimpleNumberIndicator = SimpleIndicator<number>;
-
 /**
  * Tracks results of an indicator over time and memorizes the highest & lowest result.
  */
