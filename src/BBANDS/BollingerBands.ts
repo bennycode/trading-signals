@@ -30,7 +30,7 @@ export class BollingerBands implements Indicator<BandsResult> {
     return this.prices.length === this.interval;
   }
 
-  update(price: BigSource): void {
+  update(price: BigSource): void | BandsResult {
     this.prices.push(new Big(price));
 
     if (this.prices.length > this.interval) {
@@ -44,11 +44,11 @@ export class BollingerBands implements Indicator<BandsResult> {
     const middle = SMA.getResultFromBatch(this.prices);
     const standardDeviation = getStandardDeviation(this.prices, middle);
 
-    this.result = {
+    return (this.result = {
       lower: middle.sub(standardDeviation.times(this.deviationMultiplier)),
       middle,
       upper: middle.add(standardDeviation.times(this.deviationMultiplier)),
-    };
+    });
   }
 
   getResult(): BandsResult {
@@ -66,7 +66,7 @@ export class FasterBollingerBands implements Indicator<FasterBandsResult> {
 
   constructor(public readonly interval: number, public readonly deviationMultiplier: number = 2) {}
 
-  update(price: number): void {
+  update(price: number): void | FasterBandsResult {
     this.prices.push(price);
 
     if (this.prices.length > this.interval) {
@@ -76,11 +76,11 @@ export class FasterBollingerBands implements Indicator<FasterBandsResult> {
     const middle = getFasterAverage(this.prices);
     const standardDeviation = getFasterStandardDeviation(this.prices, middle);
 
-    this.result = {
+    return (this.result = {
       lower: middle - standardDeviation * this.deviationMultiplier,
       middle,
       upper: middle + standardDeviation * this.deviationMultiplier,
-    };
+    });
   }
 
   getResult(): FasterBandsResult {
