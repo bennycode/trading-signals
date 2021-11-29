@@ -53,10 +53,10 @@ export abstract class BigIndicatorSeries implements IndicatorSeries {
 
 export abstract class NumberIndicatorSeries implements IndicatorSeries<number> {
   /** Highest return value over the lifetime (not interval!) of the indicator. */
-  highest: number | undefined = undefined;
+  highest?: number;
   /** Lowest return value over the lifetime (not interval!) of the indicator. */
-  lowest: number | undefined = undefined;
-  protected result: number | undefined = undefined;
+  lowest?: number;
+  protected result?: number;
 
   get isStable(): boolean {
     return this.result !== undefined;
