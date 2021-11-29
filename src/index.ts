@@ -21,6 +21,7 @@ export * from './ROC/ROC';
 export * from './RSI/RSI';
 export * from './SMA/SMA';
 export * from './STOCH/StochasticOscillator';
+export * from './STOCH/StochasticRSI';
 export * from './TR/TR';
 export * from './util';
 export * from './WSMA/WSMA';

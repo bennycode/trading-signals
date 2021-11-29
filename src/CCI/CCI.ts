@@ -37,9 +37,9 @@ export class CCI extends BigIndicatorSeries {
     if (this.sma.isStable) {
       const mean = this.sma.getResult();
       const meanDeviation = MAD.getResultFromBatch(this.typicalPrices, mean);
-      const a = typicalPrice.minus(mean);
-      const b = new Big(0.015).mul(meanDeviation);
-      return this.setResult(a.div(b));
+      const numerator = typicalPrice.minus(mean);
+      const denominator = new Big(0.015).mul(meanDeviation);
+      return this.setResult(numerator.div(denominator));
     }
   }
 
@@ -70,9 +70,9 @@ export class FasterCCI extends NumberIndicatorSeries {
     if (this.sma.isStable) {
       const mean = this.sma.getResult();
       const meanDeviation = FasterMAD.getResultFromBatch(this.typicalPrices, mean);
-      const a = typicalPrice - mean;
-      const b = 0.015 * meanDeviation;
-      return this.setResult(a / b);
+      const numerator = typicalPrice - mean;
+      const denominator = 0.015 * meanDeviation;
+      return this.setResult(numerator / denominator);
     }
   }
 

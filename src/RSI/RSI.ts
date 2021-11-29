@@ -26,10 +26,10 @@ export class RSI extends BigIndicatorSeries {
   private readonly avgLoss: MovingAverage;
   private readonly maxValue = new Big(100);
 
-  constructor(public readonly interval: number, Indicator: MovingAverageTypes = WSMA) {
+  constructor(public readonly interval: number, SmoothingIndicator: MovingAverageTypes = WSMA) {
     super();
-    this.avgGain = new Indicator(this.interval);
-    this.avgLoss = new Indicator(this.interval);
+    this.avgGain = new SmoothingIndicator(this.interval);
+    this.avgLoss = new SmoothingIndicator(this.interval);
   }
 
   override update(price: BigSource): void | Big {

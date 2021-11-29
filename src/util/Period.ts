@@ -16,7 +16,7 @@ export class Period implements Indicator {
   }
 
   getResult(): Big {
-    return this.values[this.values.length];
+    return this.values[this.values.length - 1];
   }
 
   update(value: BigSource): void {

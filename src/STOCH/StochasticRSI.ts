@@ -2,15 +2,17 @@ import {BigIndicatorSeries} from '../Indicator';
 import {RSI} from '../RSI/RSI';
 import Big, {BigSource} from 'big.js';
 import {Period} from '../util/Period';
+import {MovingAverageTypes} from '../MA/MovingAverageTypes';
+import {WSMA} from '../WSMA/WSMA';
 
 export class StochasticRSI extends BigIndicatorSeries {
-  private readonly rsi: RSI;
   private readonly period: Period;
+  private readonly rsi: RSI;
 
-  constructor(public readonly interval: number) {
+  constructor(public readonly interval: number, SmoothingIndicator: MovingAverageTypes = WSMA) {
     super();
-    this.rsi = new RSI(interval);
     this.period = new Period(interval);
+    this.rsi = new RSI(interval, SmoothingIndicator);
   }
 
   override update(price: BigSource): void | Big {
