@@ -11,11 +11,13 @@ import {DX} from '../DX/DX';
 import {FasterWSMA, WSMA} from '../WSMA/WSMA';
 import {FasterATR, ATR} from '../ATR/ATR';
 import {
+  FasterPeriod,
   getAverage,
   getFasterAverage,
   getFasterStandardDeviation,
   getStandardDeviation,
   HighLowCloseNumbers,
+  Period,
 } from '../util';
 
 const interval = 20;
@@ -97,6 +99,18 @@ new Benchmark.Suite('Technical Indicators')
     const fasterMad = new FasterMAD(interval);
     for (const price of prices) {
       fasterMad.update(price);
+    }
+  })
+  .add('Period', () => {
+    const period = new Period(interval);
+    for (const price of prices) {
+      period.update(price);
+    }
+  })
+  .add('FasterPeriod', () => {
+    const fasterPeriod = new FasterPeriod(interval);
+    for (const price of prices) {
+      fasterPeriod.update(price);
     }
   })
   .add('SMA', () => {

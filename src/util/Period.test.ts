@@ -1,4 +1,4 @@
-import {Period} from './Period';
+import {FasterPeriod, Period} from './Period';
 
 describe('Period', () => {
   describe('getResult', () => {
@@ -7,6 +7,10 @@ describe('Period', () => {
       period.update(72);
       period.update(1337);
       expect(period.getResult().valueOf()).toBe('1337');
+
+      const fasterPeriod = new FasterPeriod(5);
+      fasterPeriod.update(1);
+      expect(fasterPeriod.getResult()).toBe(1);
     });
   });
 
@@ -31,14 +35,18 @@ describe('Period', () => {
         '85.53',
       ];
       const period = new Period(5);
+      const fasterPeriod = new FasterPeriod(5);
       for (const price of prices) {
         period.update(price);
+        fasterPeriod.update(price);
         if (period.isStable) {
           const expected = lowest.shift();
           expect(period.lowest?.toFixed(2)).toBe(expected);
+          expect(fasterPeriod.lowest?.toFixed(2)).toBe(expected);
         }
       }
       expect(period.highest?.toFixed(2)).toBe('87.77');
+      expect(fasterPeriod.highest?.toFixed(2)).toBe('87.77');
     });
   });
 });

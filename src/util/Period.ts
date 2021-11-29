@@ -31,3 +31,31 @@ export class Period implements Indicator {
     return this.values.length === this.interval;
   }
 }
+
+export class FasterPeriod implements Indicator<number> {
+  public values: number[];
+  /** Highest return value during the current period. */
+  public highest?: number;
+  /** Lowest return value during the current period. */
+  public lowest?: number;
+
+  constructor(public readonly interval: number) {
+    this.values = getFixedArray<number>(interval);
+  }
+
+  getResult(): number {
+    return this.values[this.values.length - 1];
+  }
+
+  update(value: number): void {
+    this.values.push(value);
+    if (this.isStable) {
+      this.lowest = Math.min(...this.values);
+      this.highest = Math.max(...this.values);
+    }
+  }
+
+  get isStable(): boolean {
+    return this.values.length === this.interval;
+  }
+}
