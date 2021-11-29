@@ -1,4 +1,4 @@
-import {StochasticRSI} from './StochasticRSI';
+import {FasterStochasticRSI, StochasticRSI} from './StochasticRSI';
 
 describe('StochasticRSI', () => {
   describe('getResult', () => {
@@ -10,11 +10,14 @@ describe('StochasticRSI', () => {
       ];
       const expectations = ['0.658', '1.000', '1.000', '1.000', '1.000', '0.000'];
       const stochRSI = new StochasticRSI(5);
+      const fasterStochRSI = new FasterStochasticRSI(5);
       for (const price of prices) {
         const result = stochRSI.update(price);
-        if (result) {
+        const fasterResult = fasterStochRSI.update(price);
+        if (result && fasterResult) {
           const expected = expectations.shift();
           expect(result.toFixed(3)).toBe(expected!);
+          expect(fasterResult.toFixed(3)).toBe(expected!);
         }
       }
       expect(stochRSI.isStable).toBeTrue();

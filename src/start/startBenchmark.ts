@@ -20,6 +20,7 @@ import {
   Period,
 } from '../util';
 import {FasterRSI, RSI} from '../RSI/RSI';
+import {FasterStochasticRSI, StochasticRSI} from '../STOCH/StochasticRSI';
 
 const interval = 20;
 const prices: number[] = candles.map(candle => parseInt(candle.close, 10));
@@ -136,6 +137,18 @@ new Benchmark.Suite('Technical Indicators')
     const fasterSMA = new FasterSMA(interval);
     for (const price of prices) {
       fasterSMA.update(price);
+    }
+  })
+  .add('StochasticRSI', () => {
+    const stochRSI = new StochasticRSI(interval);
+    for (const price of prices) {
+      stochRSI.update(price);
+    }
+  })
+  .add('FasterStochasticRSI', () => {
+    const fasterStochRSI = new FasterStochasticRSI(interval);
+    for (const price of prices) {
+      fasterStochRSI.update(price);
     }
   })
   .add('TR', () => {
