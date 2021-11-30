@@ -67,16 +67,16 @@ new Benchmark.Suite('Technical Indicators')
       cci.update(candle);
     }
   })
-  .add('DX', () => {
-    const dx = new DX(interval);
-    for (const candle of highLowCloses) {
-      dx.update(candle);
-    }
-  })
   .add('FasterCCI', () => {
     const fasterCCI = new FasterCCI(interval);
     for (const candle of highLowCloses) {
       fasterCCI.update(candle);
+    }
+  })
+  .add('DX', () => {
+    const dx = new DX(interval);
+    for (const candle of highLowCloses) {
+      dx.update(candle);
     }
   })
   .add('EMA', () => {
