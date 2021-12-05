@@ -16,7 +16,7 @@ export class AccelerationBands implements Indicator<BandsResult, HighLowClose> {
    * Acceleration Bands (ABANDS)
    * Type: Volatility
    *
-   * Acceleration bands are set as an envelope around a moving average. The upper and lower bands are of equal distance
+   * Acceleration bands created by Price Headley are set as an envelope around a moving average. The upper and lower bands are of equal distance
    * from the middle band.
    *
    * Two consecutive closes outside Acceleration Bands suggest an entry point in the direction of the breakout (either
@@ -32,7 +32,11 @@ export class AccelerationBands implements Indicator<BandsResult, HighLowClose> {
    * @see https://github.com/QuantConnect/Lean/blob/master/Indicators/AccelerationBands.cs
    * @see https://github.com/twopirllc/pandas-ta/blob/master/pandas_ta/volatility/accbands.py
    */
-  constructor(public readonly interval: number, public readonly width: number, Indicator: MovingAverageTypes = SMA) {
+  constructor(
+    public readonly interval: number,
+    public readonly width: number = 4,
+    Indicator: MovingAverageTypes = SMA
+  ) {
     this.lowerBand = new Indicator(interval);
     this.middleBand = new Indicator(interval);
     this.upperBand = new Indicator(interval);
@@ -45,11 +49,11 @@ export class AccelerationBands implements Indicator<BandsResult, HighLowClose> {
   update({high, low, close}: HighLowClose): void {
     const coefficient = new Big(high).minus(low).div(new Big(high).plus(low)).mul(this.width);
 
-    // (Low * (1 - 4 * (High - Low)/ (High + Low)))
+    // (Low * (1 - width * (High - Low)/ (High + Low)))
     this.lowerBand.update(new Big(low).mul(new Big(1).minus(coefficient)));
     // (Close)
     this.middleBand.update(close);
-    // (High * ( 1 + 4 * (High - Low) / (High + Low)))
+    // (High * ( 1 + width * (High - Low) / (High + Low)))
     this.upperBand.update(new Big(high).mul(new Big(1).plus(coefficient)));
   }
 
@@ -73,7 +77,7 @@ export class FasterAccelerationBands implements Indicator<FasterBandsResult, Hig
 
   constructor(
     public readonly interval: number,
-    public readonly width: number,
+    public readonly width: number = 4,
     Indicator: FasterMovingAverageTypes = FasterSMA
   ) {
     this.lowerBand = new Indicator(interval);
@@ -82,7 +86,7 @@ export class FasterAccelerationBands implements Indicator<FasterBandsResult, Hig
   }
 
   update({high, low, close}: HighLowCloseNumbers): void {
-    const coefficient = high - low / high + low * this.width;
+    const coefficient = ((high - low) / (high + low)) * this.width;
     this.lowerBand.update(low * (1 - coefficient));
     this.middleBand.update(close);
     this.upperBand.update(high * (1 + coefficient));
