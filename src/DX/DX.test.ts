@@ -81,7 +81,7 @@ describe('DX', () => {
       }
 
       expect(dx.isStable).toBeTrue();
-      // expect(fasterDX.isStable).toBeTrue();
+      expect(fasterDX.isStable).toBeTrue();
 
       expect(dx.getResult().valueOf()).toBe('0');
       expect(fasterDX.getResult().valueOf()).toBe(0);
