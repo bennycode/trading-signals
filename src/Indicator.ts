@@ -1,20 +1,20 @@
 import Big, {BigSource} from 'big.js';
 import {NotEnoughDataError} from './error';
 
-export interface Indicator<Output = Big, Input = BigSource> {
-  getResult(): Output;
+export interface Indicator<Result = Big, Input = BigSource> {
+  getResult(): Result;
 
   isStable: boolean;
 
-  update(input: Input): void | Output;
+  update(input: Input): void | Result;
 }
 
 /**
  * Tracks results of an indicator over time and memorizes the highest & lowest result.
  */
-export interface IndicatorSeries<Output = Big> extends Indicator<Output> {
-  highest?: Output;
-  lowest?: Output;
+export interface IndicatorSeries<Result = Big> extends Indicator<Result> {
+  highest?: Result;
+  lowest?: Result;
 }
 
 export abstract class BigIndicatorSeries implements IndicatorSeries {
