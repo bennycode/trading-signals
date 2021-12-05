@@ -35,8 +35,8 @@ describe('AO', () => {
 
       for (let i = 0; i < lows.length; i++) {
         const newResult = ao.update({
-          low: lows[i],
           high: highs[i],
+          low: lows[i],
         });
         if (ao.isStable) {
           expect(newResult!).not.toBeUndefined();
