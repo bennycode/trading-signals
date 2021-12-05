@@ -1,5 +1,6 @@
-import {AO} from './AO';
+import {AO, FasterAO} from './AO';
 import {NotEnoughDataError} from '../error';
+import {HighLowNumber} from '../util';
 
 describe('AO', () => {
   describe('getResult', () => {
@@ -32,22 +33,30 @@ describe('AO', () => {
         5.3673, 4.5294, 4.764, 4.1044, 1.6913, -1.3769, -4.2062, -7.7196, -10.6241, -11.4972, -9.6358, -7.9344,
       ];
       const ao = new AO(5, 34);
+      const fasterAO = new FasterAO(5, 34);
 
       for (let i = 0; i < lows.length; i++) {
-        const newResult = ao.update({
+        const candle: HighLowNumber = {
           high: highs[i],
           low: lows[i],
-        });
-        if (ao.isStable) {
-          expect(newResult!).not.toBeUndefined();
+        };
+        const result = ao.update(candle);
+        const fasterResult = fasterAO.update(candle);
+        if (ao.isStable && fasterAO.isStable) {
+          expect(result).not.toBeUndefined();
+          expect(fasterResult).not.toBeUndefined();
           const actual = ao.getResult().toFixed(4);
-          const expected = aos.shift();
-          expect(parseFloat(actual)).toBe(expected!);
+          const expected = aos.shift()!;
+          expect(parseFloat(actual)).toBe(expected);
+          expect(fasterResult!.toFixed(4)).toBe(expected.toFixed(4));
         }
       }
 
       expect(ao.lowest!.toFixed(2)).toBe('-11.50');
+      expect(fasterAO.lowest!.toFixed(2)).toBe('-11.50');
+
       expect(ao.highest!.toFixed(2)).toBe('33.35');
+      expect(fasterAO.highest!.toFixed(2)).toBe('33.35');
     });
 
     it('throws an error when there is not enough input data', () => {

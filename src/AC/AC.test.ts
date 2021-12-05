@@ -1,10 +1,13 @@
-import {AC} from './AC';
+import {AC, FasterAC} from './AC';
 import {NotEnoughDataError} from '../error';
+import {HighLowNumber} from '../util';
 
 describe('AC', () => {
   describe('getResult', () => {
     it('works with a signal line of SMA(5)', () => {
       const ac = new AC(5, 34, 5);
+      const fasterAC = new FasterAC(5, 34, 5);
+
       // Test data verified with:
       // https://github.com/jesse-ai/jesse/blob/8e502d070c24bed29db80e1d0938781d8cdb1046/tests/data/test_candles_indicators.py#L4351
       const candles = [
@@ -251,16 +254,27 @@ describe('AC', () => {
 
       for (const candle of candles) {
         const [, , , high, low] = candle;
-        ac.update({high, low});
+        const input: HighLowNumber = {high, low};
+        ac.update(input);
+        fasterAC.update(input);
       }
 
       // Result verified with:
       // https://github.com/jesse-ai/jesse/blob/53297462d48ebf43f9df46ab5005076d25073e5e/tests/test_indicators.py#L14
       expect(ac.isStable).toBeTrue();
+      expect(fasterAC.isStable).toBeTrue();
+
       expect(ac.getResult().toFixed(2)).toBe('-21.97');
+      expect(fasterAC.getResult().toFixed(2)).toBe('-21.97');
+
       expect(ac.momentum.getResult().toFixed(2)).toBe('-9.22');
+      expect(fasterAC.momentum.getResult().toFixed(2)).toBe('-9.22');
+
       expect(ac.lowest!.toFixed(2)).toBe('-21.97');
+      expect(fasterAC.lowest!.toFixed(2)).toBe('-21.97');
+
       expect(ac.highest!.toFixed(2)).toBe('11.65');
+      expect(fasterAC.highest!.toFixed(2)).toBe('11.65');
     });
 
     it('throws an error when there is not enough input data', () => {
