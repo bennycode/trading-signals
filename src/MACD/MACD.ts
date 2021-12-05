@@ -72,7 +72,7 @@ export class MACD implements Indicator<MACDResult> {
   }
 
   getResult(): MACDResult {
-    if (!this.isStable || !this.result) {
+    if (!this.isStable || this.result === undefined) {
       throw new NotEnoughDataError();
     }
 

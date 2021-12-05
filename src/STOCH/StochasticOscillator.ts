@@ -48,7 +48,7 @@ export class StochasticOscillator implements Indicator<StochasticResult, HighLow
   }
 
   getResult(): StochasticResult {
-    if (!this.result) {
+    if (this.result === undefined) {
       throw new NotEnoughDataError();
     }
 

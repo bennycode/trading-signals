@@ -7,7 +7,7 @@ import {FasterEMA, EMA} from '../EMA/EMA';
 import {FasterSMA, SMA} from '../SMA/SMA';
 import {FasterCCI, CCI} from '../CCI/CCI';
 import {FasterTR, TR} from '../TR/TR';
-import {DX} from '../DX/DX';
+import {DX, FasterDX} from '../DX/DX';
 import {FasterWSMA, WSMA} from '../WSMA/WSMA';
 import {FasterATR, ATR} from '../ATR/ATR';
 import {
@@ -117,6 +117,12 @@ new Benchmark.Suite('Technical Indicators')
     const dx = new DX(interval);
     for (const candle of highLowCloses) {
       dx.update(candle);
+    }
+  })
+  .add('FasterDX', () => {
+    const fasterDX = new FasterDX(interval);
+    for (const candle of highLowCloses) {
+      fasterDX.update(candle);
     }
   })
   .add('EMA', () => {

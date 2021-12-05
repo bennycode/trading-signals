@@ -5,7 +5,7 @@ class MyAverage extends FasterMovingAverage {
   total = 0;
 
   update(price: number): number | void {
-    if (!this.result) {
+    if (this.result === undefined) {
       this.result = 0;
     }
     this.iterations += 1;

@@ -29,7 +29,7 @@ export abstract class BigIndicatorSeries<Input = BigSource> implements Indicator
   }
 
   getResult(): Big {
-    if (!this.result) {
+    if (this.result === undefined) {
       throw new NotEnoughDataError();
     }
 
@@ -37,11 +37,11 @@ export abstract class BigIndicatorSeries<Input = BigSource> implements Indicator
   }
 
   protected setResult(value: Big): Big {
-    if (!this.highest || value.gt(this.highest)) {
+    if (this.highest === undefined || value.gt(this.highest)) {
       this.highest = value;
     }
 
-    if (!this.lowest || value.lt(this.lowest)) {
+    if (this.lowest === undefined || value.lt(this.lowest)) {
       this.lowest = value;
     }
 
@@ -71,11 +71,11 @@ export abstract class NumberIndicatorSeries<Input = number> implements Indicator
   }
 
   protected setResult(value: number): number {
-    if (!this.highest || value > this.highest) {
+    if (this.highest === undefined || value > this.highest) {
       this.highest = value;
     }
 
-    if (!this.lowest || value < this.lowest) {
+    if (this.lowest === undefined || value < this.lowest) {
       this.lowest = value;
     }
 

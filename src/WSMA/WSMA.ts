@@ -34,7 +34,7 @@ export class WSMA extends MovingAverage {
     if (this.result) {
       const smoothed = new Big(price).minus(this.result).mul(this.smoothingFactor);
       return this.setResult(smoothed.plus(this.result));
-    } else if (!this.result && sma) {
+    } else if (this.result === undefined && sma) {
       return this.setResult(sma);
     }
   }
@@ -52,10 +52,10 @@ export class FasterWSMA extends NumberIndicatorSeries {
 
   update(price: number): number | void {
     const sma = this.indicator.update(price);
-    if (this.result) {
+    if (this.result !== undefined) {
       const smoothed = (price - this.result) * this.smoothingFactor;
       return this.setResult(smoothed + this.result);
-    } else if (!this.result && sma) {
+    } else if (this.result === undefined && sma !== undefined) {
       return this.setResult(sma);
     }
   }
