@@ -3,7 +3,7 @@ import {BigIndicatorSeries, NumberIndicatorSeries} from '../Indicator';
 import {FasterMovingAverage, MovingAverage} from '../MA/MovingAverage';
 import {FasterMovingAverageTypes, MovingAverageTypes} from '../MA/MovingAverageTypes';
 import {FasterTR, TR} from '../TR/TR';
-import {HighLowClose, HighLowCloseNumbers} from '../util';
+import {HighLowClose, HighLowCloseNumber} from '../util';
 import {FasterWSMA, WSMA} from '../WSMA/WSMA';
 
 /**
@@ -16,7 +16,7 @@ import {FasterWSMA, WSMA} from '../WSMA/WSMA';
  *
  * @see https://www.investopedia.com/terms/a/atr.asp
  */
-export class ATR extends BigIndicatorSeries {
+export class ATR extends BigIndicatorSeries<HighLowClose> {
   private readonly tr: TR;
   private readonly smoothing: MovingAverage;
 
@@ -35,7 +35,7 @@ export class ATR extends BigIndicatorSeries {
   }
 }
 
-export class FasterATR extends NumberIndicatorSeries {
+export class FasterATR extends NumberIndicatorSeries<HighLowCloseNumber> {
   private readonly tr: FasterTR;
   private readonly smoothing: FasterMovingAverage;
 
@@ -45,7 +45,7 @@ export class FasterATR extends NumberIndicatorSeries {
     this.smoothing = new SmoothingIndicator(interval);
   }
 
-  update(candle: HighLowCloseNumbers): number | void {
+  update(candle: HighLowCloseNumber): number | void {
     const trueRange = this.tr.update(candle);
     this.smoothing.update(trueRange);
     if (this.smoothing.isStable) {

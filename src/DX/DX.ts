@@ -19,7 +19,7 @@ import {ATR} from '../ATR/ATR';
  *
  * @see https://www.fidelity.com/learning-center/trading-investing/technical-analysis/technical-indicator-guide/dmi
  */
-export class DX extends BigIndicatorSeries {
+export class DX extends BigIndicatorSeries<HighLowClose> {
   private readonly movesUp: MovingAverage;
   private readonly movesDown: MovingAverage;
   private previousCandle?: HighLowClose;

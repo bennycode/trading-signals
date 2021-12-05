@@ -251,7 +251,7 @@ describe('AC', () => {
 
       for (const candle of candles) {
         const [, , , high, low] = candle;
-        ac.update(low, high);
+        ac.update({high, low});
       }
 
       // Result verified with:

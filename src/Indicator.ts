@@ -1,23 +1,23 @@
-import Big from 'big.js';
+import Big, {BigSource} from 'big.js';
 import {NotEnoughDataError} from './error';
 
-export interface Indicator<T = Big> {
-  getResult(): T;
+export interface Indicator<Result = Big, Input = BigSource> {
+  getResult(): Result;
 
   isStable: boolean;
 
-  update(...args: any): void | T;
+  update(input: Input): void | Result;
 }
 
 /**
  * Tracks results of an indicator over time and memorizes the highest & lowest result.
  */
-export interface IndicatorSeries<T = Big> extends Indicator<T> {
-  highest?: T;
-  lowest?: T;
+export interface IndicatorSeries<Result = Big, Input = BigSource> extends Indicator<Result, Input> {
+  highest?: Result;
+  lowest?: Result;
 }
 
-export abstract class BigIndicatorSeries implements IndicatorSeries {
+export abstract class BigIndicatorSeries<Input = BigSource> implements IndicatorSeries<Big, Input> {
   /** Highest return value over the lifetime (not interval!) of the indicator. */
   highest?: Big;
   /** Lowest return value over the lifetime (not interval!) of the indicator. */
@@ -48,10 +48,10 @@ export abstract class BigIndicatorSeries implements IndicatorSeries {
     return (this.result = value);
   }
 
-  abstract update(...args: any): void | Big;
+  abstract update(input: Input): void | Big;
 }
 
-export abstract class NumberIndicatorSeries implements IndicatorSeries<number> {
+export abstract class NumberIndicatorSeries<Input = number> implements IndicatorSeries<number, Input> {
   /** Highest return value over the lifetime (not interval!) of the indicator. */
   highest?: number;
   /** Lowest return value over the lifetime (not interval!) of the indicator. */
@@ -82,5 +82,5 @@ export abstract class NumberIndicatorSeries implements IndicatorSeries<number> {
     return (this.result = value);
   }
 
-  abstract update(...args: any): void | number;
+  abstract update(input: Input): void | number;
 }

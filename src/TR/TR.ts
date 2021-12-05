@@ -1,6 +1,6 @@
 import Big from 'big.js';
 import {BigIndicatorSeries, NumberIndicatorSeries} from '../Indicator';
-import {getMaximum, HighLowClose, HighLowCloseNumbers} from '../util';
+import {getMaximum, HighLowClose, HighLowCloseNumber} from '../util';
 
 /**
  * True Range (TR)
@@ -13,7 +13,7 @@ import {getMaximum, HighLowClose, HighLowCloseNumbers} from '../util';
  *
  * @see https://www.linnsoft.com/techind/true-range-tr
  */
-export class TR extends BigIndicatorSeries {
+export class TR extends BigIndicatorSeries<HighLowClose> {
   private previousCandle?: HighLowClose;
 
   update(candle: HighLowClose): Big {
@@ -30,10 +30,10 @@ export class TR extends BigIndicatorSeries {
   }
 }
 
-export class FasterTR extends NumberIndicatorSeries {
-  private previousCandle?: HighLowCloseNumbers;
+export class FasterTR extends NumberIndicatorSeries<HighLowCloseNumber> {
+  private previousCandle?: HighLowCloseNumber;
 
-  update(candle: HighLowCloseNumbers): number {
+  update(candle: HighLowCloseNumber): number {
     const {high, low} = candle;
     const highLow = high - low;
     if (this.previousCandle) {

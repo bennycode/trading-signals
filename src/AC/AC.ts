@@ -1,8 +1,9 @@
 import {BigIndicatorSeries} from '../Indicator';
-import Big, {BigSource} from 'big.js';
+import Big from 'big.js';
 import {AO} from '../AO/AO';
 import {SMA} from '../SMA/SMA';
 import {MOM} from '../MOM/MOM';
+import {HighLow} from '../util';
 
 /**
  * Accelerator Oscillator (AC)
@@ -16,7 +17,7 @@ import {MOM} from '../MOM/MOM';
  *
  * @see https://www.thinkmarkets.com/en/indicators/bill-williams-accelerator/
  */
-export class AC extends BigIndicatorSeries {
+export class AC extends BigIndicatorSeries<HighLow> {
   public readonly ao: AO;
   public readonly momentum: MOM;
   public readonly signal: SMA;
@@ -28,8 +29,8 @@ export class AC extends BigIndicatorSeries {
     this.momentum = new MOM(1);
   }
 
-  override update(low: BigSource, high: BigSource): void | Big {
-    const ao = this.ao.update(low, high);
+  override update(input: HighLow): void | Big {
+    const ao = this.ao.update(input);
     if (ao) {
       this.signal.update(ao);
       if (this.signal.isStable) {

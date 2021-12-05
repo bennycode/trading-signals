@@ -30,7 +30,7 @@ export interface StochasticResult {
  * @see https://en.wikipedia.org/wiki/Stochastic_oscillator
  * @see https://www.investopedia.com/terms/s/stochasticoscillator.asp
  */
-export class StochasticOscillator implements Indicator<StochasticResult> {
+export class StochasticOscillator implements Indicator<StochasticResult, HighLowClose> {
   public readonly d: MovingAverage;
 
   private readonly candles: HighLowClose[] = [];

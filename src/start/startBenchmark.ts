@@ -16,21 +16,34 @@ import {
   getFasterAverage,
   getFasterStandardDeviation,
   getStandardDeviation,
-  HighLowCloseNumbers,
+  HighLowCloseNumber,
   Period,
 } from '../util';
 import {FasterRSI, RSI} from '../RSI/RSI';
 import {FasterStochasticRSI, StochasticRSI} from '../STOCH/StochasticRSI';
+import {AccelerationBands, FasterAccelerationBands} from '../ABANDS/AccelerationBands';
 
 const interval = 20;
 const prices: number[] = candles.map(candle => parseInt(candle.close, 10));
-const highLowCloses: HighLowCloseNumbers[] = candles.map(candle => ({
+const highLowCloses: HighLowCloseNumber[] = candles.map(candle => ({
   close: parseInt(candle.close, 10),
   high: parseInt(candle.high, 10),
   low: parseInt(candle.low, 10),
 }));
 
 new Benchmark.Suite('Technical Indicators')
+  .add('AccelerationBands', () => {
+    const accBands = new AccelerationBands(interval, 4);
+    for (const candle of highLowCloses) {
+      accBands.update(candle);
+    }
+  })
+  .add('FasterAccelerationBands', () => {
+    const fasterAccBands = new FasterAccelerationBands(interval, 4);
+    for (const candle of highLowCloses) {
+      fasterAccBands.update(candle);
+    }
+  })
   .add('ADX', () => {
     const adx = new ADX(interval);
     for (const candle of highLowCloses) {
