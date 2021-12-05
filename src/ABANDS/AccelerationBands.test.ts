@@ -80,10 +80,10 @@ describe('AccelerationBands', () => {
       expect(fasterResult.lower.toFixed(4)).toBe('187.1217');
 
       expect(result.middle.toFixed(4)).toBe('194.5920');
-      expect(fasterResult.lower.toFixed(4)).toBe('187.1217');
+      expect(fasterResult.middle.toFixed(4)).toBe('194.5920');
 
       expect(result.upper.toFixed(4)).toBe('201.9392');
-      expect(fasterResult.lower.toFixed(4)).toBe('187.1217');
+      expect(fasterResult.upper.toFixed(4)).toBe('201.9392');
     });
 
     it('throws an error when there is not enough input data', () => {
