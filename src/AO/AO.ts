@@ -1,7 +1,9 @@
-import {BigIndicatorSeries} from '../Indicator';
+import {BigIndicatorSeries, NumberIndicatorSeries} from '../Indicator';
 import Big from 'big.js';
-import {SMA} from '../SMA/SMA';
-import {HighLow} from '../util';
+import {FasterSMA, SMA} from '../SMA/SMA';
+import {HighLow, HighLowNumber} from '../util';
+import {FasterMovingAverageTypes, MovingAverageTypes} from '../MA/MovingAverageTypes';
+import {FasterMovingAverage, MovingAverage} from '../MA/MovingAverage';
 
 /**
  * Awesome Oscillator (AO)
@@ -18,13 +20,17 @@ import {HighLow} from '../util';
  * @see https://tradingstrategyguides.com/bill-williams-awesome-oscillator-strategy/
  */
 export class AO extends BigIndicatorSeries<HighLow> {
-  public readonly long: SMA;
-  public readonly short: SMA;
+  public readonly long: MovingAverage;
+  public readonly short: MovingAverage;
 
-  constructor(public readonly shortInterval: number, public readonly longInterval: number) {
+  constructor(
+    public readonly shortInterval: number,
+    public readonly longInterval: number,
+    SmoothingIndicator: MovingAverageTypes = SMA
+  ) {
     super();
-    this.short = new SMA(shortInterval);
-    this.long = new SMA(longInterval);
+    this.short = new SmoothingIndicator(shortInterval);
+    this.long = new SmoothingIndicator(longInterval);
   }
 
   override update({low, high}: HighLow): void | Big {
@@ -34,8 +40,34 @@ export class AO extends BigIndicatorSeries<HighLow> {
     this.short.update(medianPrice);
     this.long.update(medianPrice);
 
-    if (this.short.isStable && this.long.isStable) {
+    if (this.long.isStable) {
       return this.setResult(this.short.getResult().sub(this.long.getResult()));
+    }
+  }
+}
+
+export class FasterAO extends NumberIndicatorSeries<HighLowNumber> {
+  public readonly long: FasterMovingAverage;
+  public readonly short: FasterMovingAverage;
+
+  constructor(
+    public readonly shortInterval: number,
+    public readonly longInterval: number,
+    SmoothingIndicator: FasterMovingAverageTypes = FasterSMA
+  ) {
+    super();
+    this.short = new SmoothingIndicator(shortInterval);
+    this.long = new SmoothingIndicator(longInterval);
+  }
+
+  override update({low, high}: HighLowNumber): void | number {
+    const medianPrice = (low + high) / 2;
+
+    this.short.update(medianPrice);
+    this.long.update(medianPrice);
+
+    if (this.long.isStable) {
+      return this.setResult(this.short.getResult() - this.long.getResult());
     }
   }
 }

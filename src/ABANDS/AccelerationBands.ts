@@ -25,17 +25,21 @@ export class AccelerationBands implements Indicator<BandsResult, HighLowClose> {
    * @param interval The interval that is being used for the three moving averages which create lower, middle and upper
    *   bands
    * @param width A coefficient specifying the distance between the middle band and upper/lower bands
-   * @param Indicator Which moving average (SMA, EMA, ...) to use
+   * @param SmoothingIndicator Which moving average (SMA, EMA, ...) to use
    *
    * @see https://www.tradingtechnologies.com/xtrader-help/x-study/technical-indicator-definitions/acceleration-bands-abands/
    * @see https://www.motivewave.com/studies/acceleration_bands.htm
    * @see https://github.com/QuantConnect/Lean/blob/master/Indicators/AccelerationBands.cs
    * @see https://github.com/twopirllc/pandas-ta/blob/master/pandas_ta/volatility/accbands.py
    */
-  constructor(public readonly interval: number, public readonly width: number, Indicator: MovingAverageTypes = SMA) {
-    this.lowerBand = new Indicator(interval);
-    this.middleBand = new Indicator(interval);
-    this.upperBand = new Indicator(interval);
+  constructor(
+    public readonly interval: number,
+    public readonly width: number,
+    SmoothingIndicator: MovingAverageTypes = SMA
+  ) {
+    this.lowerBand = new SmoothingIndicator(interval);
+    this.middleBand = new SmoothingIndicator(interval);
+    this.upperBand = new SmoothingIndicator(interval);
   }
 
   get isStable(): boolean {
@@ -74,11 +78,11 @@ export class FasterAccelerationBands implements Indicator<FasterBandsResult, Hig
   constructor(
     public readonly interval: number,
     public readonly width: number,
-    Indicator: FasterMovingAverageTypes = FasterSMA
+    SmoothingIndicator: FasterMovingAverageTypes = FasterSMA
   ) {
-    this.lowerBand = new Indicator(interval);
-    this.middleBand = new Indicator(interval);
-    this.upperBand = new Indicator(interval);
+    this.lowerBand = new SmoothingIndicator(interval);
+    this.middleBand = new SmoothingIndicator(interval);
+    this.upperBand = new SmoothingIndicator(interval);
   }
 
   update({high, low, close}: HighLowCloseNumber): void {
