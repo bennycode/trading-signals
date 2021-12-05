@@ -33,13 +33,13 @@ const highLowCloses: HighLowCloseNumbers[] = candles.map(candle => ({
 
 new Benchmark.Suite('Technical Indicators')
   .add('AccelerationBands', () => {
-    const accBands = new AccelerationBands(interval);
+    const accBands = new AccelerationBands(interval, 4);
     for (const candle of highLowCloses) {
       accBands.update(candle);
     }
   })
   .add('FasterAccelerationBands', () => {
-    const fasterAccBands = new FasterAccelerationBands(interval);
+    const fasterAccBands = new FasterAccelerationBands(interval, 4);
     for (const candle of highLowCloses) {
       fasterAccBands.update(candle);
     }

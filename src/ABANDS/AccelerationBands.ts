@@ -32,11 +32,7 @@ export class AccelerationBands implements Indicator<BandsResult, HighLowClose> {
    * @see https://github.com/QuantConnect/Lean/blob/master/Indicators/AccelerationBands.cs
    * @see https://github.com/twopirllc/pandas-ta/blob/master/pandas_ta/volatility/accbands.py
    */
-  constructor(
-    public readonly interval: number,
-    public readonly width: number = 4,
-    Indicator: MovingAverageTypes = SMA
-  ) {
+  constructor(public readonly interval: number, public readonly width: number, Indicator: MovingAverageTypes = SMA) {
     this.lowerBand = new Indicator(interval);
     this.middleBand = new Indicator(interval);
     this.upperBand = new Indicator(interval);
@@ -77,7 +73,7 @@ export class FasterAccelerationBands implements Indicator<FasterBandsResult, Hig
 
   constructor(
     public readonly interval: number,
-    public readonly width: number = 4,
+    public readonly width: number,
     Indicator: FasterMovingAverageTypes = FasterSMA
   ) {
     this.lowerBand = new Indicator(interval);
