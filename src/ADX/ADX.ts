@@ -29,7 +29,7 @@ import {DX} from '../DX/DX';
  * @see https://learn.tradimo.com/technical-analysis-how-to-work-with-indicators/adx-determing-the-strength-of-price-movement
  * @see https://medium.com/codex/algorithmic-trading-with-average-directional-index-in-python-2b5a20ecf06a
  */
-export class ADX extends BigIndicatorSeries {
+export class ADX extends BigIndicatorSeries<HighLowClose> {
   private readonly dx: DX;
   private readonly adx: MovingAverage;
 

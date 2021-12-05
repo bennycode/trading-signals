@@ -5,7 +5,7 @@ import {BandsResult, FasterBandsResult} from '../util/BandsResult';
 import {Indicator} from '../Indicator';
 import {FasterMovingAverageTypes, MovingAverageTypes} from '../MA/MovingAverageTypes';
 import {FasterMovingAverage, MovingAverage} from '../MA/MovingAverage';
-import {HighLowClose, HighLowCloseNumbers} from '../util';
+import {HighLowClose, HighLowCloseNumber} from '../util';
 
 export class AccelerationBands implements Indicator<BandsResult, HighLowClose> {
   private readonly lowerBand: MovingAverage;
@@ -66,7 +66,7 @@ export class AccelerationBands implements Indicator<BandsResult, HighLowClose> {
   }
 }
 
-export class FasterAccelerationBands implements Indicator<FasterBandsResult, HighLowCloseNumbers> {
+export class FasterAccelerationBands implements Indicator<FasterBandsResult, HighLowCloseNumber> {
   private readonly lowerBand: FasterMovingAverage;
   private readonly middleBand: FasterMovingAverage;
   private readonly upperBand: FasterMovingAverage;
@@ -81,7 +81,7 @@ export class FasterAccelerationBands implements Indicator<FasterBandsResult, Hig
     this.upperBand = new Indicator(interval);
   }
 
-  update({high, low, close}: HighLowCloseNumbers): void {
+  update({high, low, close}: HighLowCloseNumber): void {
     const coefficient = ((high - low) / (high + low)) * this.width;
     this.lowerBand.update(low * (1 - coefficient));
     this.middleBand.update(close);

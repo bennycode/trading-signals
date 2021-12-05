@@ -1,6 +1,6 @@
 import {BigIndicatorSeries, NumberIndicatorSeries} from '../Indicator';
 import {Big, BigSource} from 'big.js';
-import {HighLowClose, HighLowCloseNumbers} from '../util';
+import {HighLowClose, HighLowCloseNumber} from '../util';
 import {FasterSMA, SMA} from '../SMA/SMA';
 import {FasterMAD, MAD} from '../MAD/MAD';
 
@@ -20,7 +20,7 @@ import {FasterMAD, MAD} from '../MAD/MAD';
  *
  * @see https://en.wikipedia.org/wiki/Commodity_channel_index
  */
-export class CCI extends BigIndicatorSeries {
+export class CCI extends BigIndicatorSeries<HighLowClose> {
   public readonly prices: BigSource[] = [];
   protected result?: Big;
   private readonly sma: SMA;
@@ -53,7 +53,7 @@ export class CCI extends BigIndicatorSeries {
   }
 }
 
-export class FasterCCI extends NumberIndicatorSeries {
+export class FasterCCI extends NumberIndicatorSeries<HighLowCloseNumber> {
   public readonly prices: number[] = [];
   protected result?: number;
   private readonly sma: FasterSMA;
@@ -64,7 +64,7 @@ export class FasterCCI extends NumberIndicatorSeries {
     this.sma = new FasterSMA(this.interval);
   }
 
-  override update(candle: HighLowCloseNumbers): void | number {
+  override update(candle: HighLowCloseNumber): void | number {
     const typicalPrice = this.cacheTypicalPrice(candle);
     this.sma.update(typicalPrice);
     if (this.sma.isStable) {
@@ -76,7 +76,7 @@ export class FasterCCI extends NumberIndicatorSeries {
     }
   }
 
-  private cacheTypicalPrice({high, low, close}: HighLowCloseNumbers): number {
+  private cacheTypicalPrice({high, low, close}: HighLowCloseNumber): number {
     const typicalPrice = (high + low + close) / 3;
     this.typicalPrices.push(typicalPrice);
     if (this.typicalPrices.length > this.interval) {

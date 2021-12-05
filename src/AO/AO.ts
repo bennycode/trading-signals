@@ -1,6 +1,7 @@
 import {BigIndicatorSeries} from '../Indicator';
-import Big, {BigSource} from 'big.js';
+import Big from 'big.js';
 import {SMA} from '../SMA/SMA';
+import {HighLow} from '../util';
 
 /**
  * Awesome Oscillator (AO)
@@ -16,7 +17,7 @@ import {SMA} from '../SMA/SMA';
  * @see https://www.tradingview.com/support/solutions/43000501826-awesome-oscillator-ao/
  * @see https://tradingstrategyguides.com/bill-williams-awesome-oscillator-strategy/
  */
-export class AO extends BigIndicatorSeries {
+export class AO extends BigIndicatorSeries<HighLow> {
   public readonly long: SMA;
   public readonly short: SMA;
 
@@ -26,7 +27,7 @@ export class AO extends BigIndicatorSeries {
     this.long = new SMA(longInterval);
   }
 
-  override update(low: BigSource, high: BigSource): void | Big {
+  override update({low, high}: HighLow): void | Big {
     const candleSum = new Big(low).add(high);
     const medianPrice = candleSum.div(2);
 

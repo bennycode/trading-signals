@@ -2,7 +2,7 @@ import {AccelerationBands, FasterAccelerationBands} from './AccelerationBands';
 import {NotEnoughDataError} from '../error';
 import {SMA} from '../SMA/SMA';
 import {EMA} from '../EMA/EMA';
-import {HighLowCloseNumbers} from '../util';
+import {HighLowCloseNumber} from '../util';
 
 describe('AccelerationBands', () => {
   describe('constructor', () => {
@@ -69,7 +69,7 @@ describe('AccelerationBands', () => {
       expect(fasterResult.upper.toFixed(4)).toBe('201.8016');
 
       // See: https://github.com/QuantConnect/Lean/blob/master/Tests/TestData/spy_acceleration_bands_20_4.txt#L22
-      const candle: HighLowCloseNumbers = {high: 195.03, low: 189.12, close: 195};
+      const candle: HighLowCloseNumber = {high: 195.03, low: 189.12, close: 195};
       accBands.update(candle);
       fasterAccBands.update(candle);
 

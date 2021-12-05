@@ -16,7 +16,7 @@ import {
   getFasterAverage,
   getFasterStandardDeviation,
   getStandardDeviation,
-  HighLowCloseNumbers,
+  HighLowCloseNumber,
   Period,
 } from '../util';
 import {FasterRSI, RSI} from '../RSI/RSI';
@@ -25,7 +25,7 @@ import {AccelerationBands, FasterAccelerationBands} from '../ABANDS/Acceleration
 
 const interval = 20;
 const prices: number[] = candles.map(candle => parseInt(candle.close, 10));
-const highLowCloses: HighLowCloseNumbers[] = candles.map(candle => ({
+const highLowCloses: HighLowCloseNumber[] = candles.map(candle => ({
   close: parseInt(candle.close, 10),
   high: parseInt(candle.high, 10),
   low: parseInt(candle.low, 10),
