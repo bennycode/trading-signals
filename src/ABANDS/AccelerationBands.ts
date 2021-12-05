@@ -1,12 +1,13 @@
-import {SMA} from '../SMA/SMA';
-import Big, {BigSource} from 'big.js';
+import {FasterSMA, SMA} from '../SMA/SMA';
+import Big from 'big.js';
 import {NotEnoughDataError} from '../error';
-import {BandsResult} from '../util/BandsResult';
+import {BandsResult, FasterBandsResult} from '../util/BandsResult';
 import {Indicator} from '../Indicator';
-import {MovingAverageTypes} from '../MA/MovingAverageTypes';
-import {MovingAverage} from '../MA/MovingAverage';
+import {FasterMovingAverageTypes, MovingAverageTypes} from '../MA/MovingAverageTypes';
+import {FasterMovingAverage, MovingAverage} from '../MA/MovingAverage';
+import {HighLowClose, HighLowCloseNumbers} from '../util';
 
-export class AccelerationBands implements Indicator<BandsResult> {
+export class AccelerationBands implements Indicator<BandsResult, HighLowClose> {
   private readonly lowerBand: MovingAverage;
   private readonly middleBand: MovingAverage;
   private readonly upperBand: MovingAverage;
@@ -38,15 +39,10 @@ export class AccelerationBands implements Indicator<BandsResult> {
   }
 
   get isStable(): boolean {
-    try {
-      this.middleBand.getResult();
-      return true;
-    } catch (error) {
-      return false;
-    }
+    return this.middleBand.isStable;
   }
 
-  update(high: BigSource, low: BigSource, close: BigSource): void {
+  update({high, low, close}: HighLowClose): void {
     const coefficient = new Big(high).minus(low).div(new Big(high).plus(low)).mul(this.width);
 
     // (Low * (1 - 4 * (High - Low)/ (High + Low)))
@@ -58,6 +54,45 @@ export class AccelerationBands implements Indicator<BandsResult> {
   }
 
   getResult(): BandsResult {
+    if (!this.isStable) {
+      throw new NotEnoughDataError();
+    }
+
+    return {
+      lower: this.lowerBand.getResult(),
+      middle: this.middleBand.getResult(),
+      upper: this.upperBand.getResult(),
+    };
+  }
+}
+
+export class FasterAccelerationBands implements Indicator<FasterBandsResult, HighLowCloseNumbers> {
+  private readonly lowerBand: FasterMovingAverage;
+  private readonly middleBand: FasterMovingAverage;
+  private readonly upperBand: FasterMovingAverage;
+
+  constructor(
+    public readonly interval: number,
+    public readonly width: number,
+    Indicator: FasterMovingAverageTypes = FasterSMA
+  ) {
+    this.lowerBand = new Indicator(interval);
+    this.middleBand = new Indicator(interval);
+    this.upperBand = new Indicator(interval);
+  }
+
+  update({high, low, close}: HighLowCloseNumbers): void {
+    const coefficient = high - low / high + low * this.width;
+    this.lowerBand.update(low * (1 - coefficient));
+    this.middleBand.update(close);
+    this.upperBand.update(high * (1 + coefficient));
+  }
+
+  get isStable(): boolean {
+    return this.middleBand.isStable;
+  }
+
+  getResult(): FasterBandsResult {
     if (!this.isStable) {
       throw new NotEnoughDataError();
     }
