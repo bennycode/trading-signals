@@ -23,6 +23,8 @@ import {FasterRSI, RSI} from '../RSI/RSI';
 import {FasterStochasticRSI, StochasticRSI} from '../STOCH/StochasticRSI';
 import {AccelerationBands, FasterAccelerationBands} from '../ABANDS/AccelerationBands';
 import {FasterMOM, MOM} from '../MOM/MOM';
+import {AO, FasterAO} from '../AO/AO';
+import {AC, FasterAC} from '../AC/AC';
 
 const interval = 20;
 const prices: number[] = candles.map(candle => parseInt(candle.close, 10));
@@ -45,10 +47,34 @@ new Benchmark.Suite('Technical Indicators')
       fasterAccBands.update(candle);
     }
   })
+  .add('AC', () => {
+    const ac = new AC(5, 34, 5);
+    for (const candle of highLowCloses) {
+      ac.update(candle);
+    }
+  })
+  .add('FasterAC', () => {
+    const fasterAC = new FasterAC(5, 34, 5);
+    for (const candle of highLowCloses) {
+      fasterAC.update(candle);
+    }
+  })
   .add('ADX', () => {
     const adx = new ADX(interval);
     for (const candle of highLowCloses) {
       adx.update(candle);
+    }
+  })
+  .add('AO', () => {
+    const ao = new AO(5, 34);
+    for (const candle of highLowCloses) {
+      ao.update(candle);
+    }
+  })
+  .add('FasterAO', () => {
+    const fasterAO = new FasterAO(5, 34);
+    for (const candle of highLowCloses) {
+      fasterAO.update(candle);
     }
   })
   .add('ATR', () => {
