@@ -22,6 +22,7 @@ import {
 import {FasterRSI, RSI} from '../RSI/RSI';
 import {FasterStochasticRSI, StochasticRSI} from '../STOCH/StochasticRSI';
 import {AccelerationBands, FasterAccelerationBands} from '../ABANDS/AccelerationBands';
+import {FasterMOM, MOM} from '../MOM/MOM';
 
 const interval = 20;
 const prices: number[] = candles.map(candle => parseInt(candle.close, 10));
@@ -114,6 +115,18 @@ new Benchmark.Suite('Technical Indicators')
     const fasterMad = new FasterMAD(interval);
     for (const price of prices) {
       fasterMad.update(price);
+    }
+  })
+  .add('MOM', () => {
+    const mom = new MOM(interval);
+    for (const price of prices) {
+      mom.update(price);
+    }
+  })
+  .add('FasterMOM', () => {
+    const fasterMOM = new FasterMOM(interval);
+    for (const price of prices) {
+      fasterMOM.update(price);
     }
   })
   .add('Period', () => {
