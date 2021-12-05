@@ -50,12 +50,6 @@ new Benchmark.Suite('Technical Indicators')
       adx.update(candle);
     }
   })
-  .add('ADX', () => {
-    const adx = new ADX(interval);
-    for (const candle of highLowCloses) {
-      adx.update(candle);
-    }
-  })
   .add('ATR', () => {
     const atr = new ATR(interval);
     for (const candle of highLowCloses) {
