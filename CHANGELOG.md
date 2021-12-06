@@ -1,3 +1,16 @@
+### 3.2.0 (2021-12-06)
+
+##### New Features
+
+- **DMA:** Add faster implementation ([#375](https://github.com/bennycode/trading-signals/pull/375)) ([c8ddcbde](https://github.com/bennycode/trading-signals/commit/c8ddcbde59293f37247bb8092ddaa63bb7451cea))
+- **ADX,DX:** Add faster implementation ([#374](https://github.com/bennycode/trading-signals/pull/374)) ([575c4d4b](https://github.com/bennycode/trading-signals/commit/575c4d4ba7c1b0f413c86052918213d24d29bba4))
+- **AC,AO,MOM:** Add faster implementation ([#373](https://github.com/bennycode/trading-signals/pull/373)) ([c821c64b](https://github.com/bennycode/trading-signals/commit/c821c64b63c078e29d28f92d206006a2aa5aeacd))
+- **ABANDS:** Add faster implementation ([#372](https://github.com/bennycode/trading-signals/pull/372)) ([74841cbc](https://github.com/bennycode/trading-signals/commit/74841cbc9e6fbb5fef66bf218899c8e4d0514f34))
+
+##### Refactors
+
+- Run faster implementation after original implementation ([1583ed54](https://github.com/bennycode/trading-signals/commit/1583ed549f760b2be0acbea114431ae1a7c028b2))
+
 ### 3.1.0 (2021-11-29)
 
 ##### New Features
