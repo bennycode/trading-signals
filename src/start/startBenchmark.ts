@@ -1,6 +1,6 @@
 import Benchmark, {Event} from 'benchmark';
 import candles from '../test/fixtures/candles/100-candles.json';
-import {ADX} from '../ADX/ADX';
+import {ADX, FasterADX} from '../ADX/ADX';
 import {FasterMAD, MAD} from '../MAD/MAD';
 import {BollingerBands, FasterBollingerBands} from '../BBANDS/BollingerBands';
 import {FasterEMA, EMA} from '../EMA/EMA';
@@ -63,6 +63,12 @@ new Benchmark.Suite('Technical Indicators')
     const adx = new ADX(interval);
     for (const candle of highLowCloses) {
       adx.update(candle);
+    }
+  })
+  .add('FasterADX', () => {
+    const fasterADX = new FasterADX(interval);
+    for (const candle of highLowCloses) {
+      fasterADX.update(candle);
     }
   })
   .add('AO', () => {
