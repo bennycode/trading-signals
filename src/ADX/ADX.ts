@@ -35,8 +35,8 @@ export class ADX extends BigIndicatorSeries<HighLowClose> {
 
   constructor(public readonly interval: number, SmoothingIndicator: MovingAverageTypes = WSMA) {
     super();
-    this.dx = new DX(interval, SmoothingIndicator);
     this.adx = new SmoothingIndicator(this.interval);
+    this.dx = new DX(interval, SmoothingIndicator);
   }
 
   get mdi(): Big | void {
@@ -64,8 +64,8 @@ export class FasterADX extends NumberIndicatorSeries<HighLowCloseNumber> {
 
   constructor(public readonly interval: number, SmoothingIndicator: FasterMovingAverageTypes = FasterWSMA) {
     super();
-    this.dx = new FasterDX(interval, SmoothingIndicator);
     this.adx = new SmoothingIndicator(this.interval);
+    this.dx = new FasterDX(interval, SmoothingIndicator);
   }
 
   get mdi(): number | void {

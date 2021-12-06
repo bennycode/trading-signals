@@ -52,7 +52,7 @@ describe('ADX', () => {
 
       // Verify uptrend detection (+DI > -DI):
       expect(adx.pdi!.gt(adx.mdi!)).toBeTrue();
-      expect(fasterADX.pdi > fasterADX.mdi!).toBeTrue();
+      expect(fasterADX.pdi > fasterADX.mdi).toBeTrue();
 
       expect(adx.pdi!.toFixed(2)).toBe('0.42');
       expect(fasterADX.pdi!.toFixed(2)).toBe('0.42');
