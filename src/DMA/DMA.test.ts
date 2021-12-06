@@ -1,5 +1,5 @@
 import twoDays from '../test/fixtures/DMA/LTC-USDT-1h-2d.json';
-import {DMA} from './DMA';
+import {DMA, FasterDMA} from './DMA';
 import {EMA, SMA} from '..';
 
 describe('DMA', () => {
@@ -56,15 +56,21 @@ describe('DMA', () => {
   describe('getResult', () => {
     it('detects uptrends', () => {
       const dma = new DMA(3, 8);
+      const fasterDMA = new FasterDMA(3, 8);
       const nineHours = twoDays.slice(0, 9);
 
       for (const oneHour of nineHours) {
         const price = oneHour.close;
         dma.update(price);
+        fasterDMA.update(parseFloat(price));
       }
 
       const {short, long} = dma.getResult();
       expect(short.gt(long)).toBeTrue();
+
+      const fasterResult = fasterDMA.getResult();
+      expect(fasterDMA.isStable).toBeTrue();
+      expect(fasterResult.short > fasterResult.long).toBeTrue();
     });
   });
 });
