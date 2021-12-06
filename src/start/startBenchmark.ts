@@ -25,6 +25,7 @@ import {AccelerationBands, FasterAccelerationBands} from '../ABANDS/Acceleration
 import {FasterMOM, MOM} from '../MOM/MOM';
 import {AO, FasterAO} from '../AO/AO';
 import {AC, FasterAC} from '../AC/AC';
+import {DMA, FasterDMA} from '../DMA/DMA';
 
 const interval = 20;
 const prices: number[] = candles.map(candle => parseInt(candle.close, 10));
@@ -117,6 +118,18 @@ new Benchmark.Suite('Technical Indicators')
     const fasterCCI = new FasterCCI(interval);
     for (const candle of highLowCloses) {
       fasterCCI.update(candle);
+    }
+  })
+  .add('DMA', () => {
+    const dma = new DMA(3, 6);
+    for (const price of prices) {
+      dma.update(price);
+    }
+  })
+  .add('FasterDMA', () => {
+    const fasterDMA = new FasterDMA(3, 6);
+    for (const price of prices) {
+      fasterDMA.update(price);
     }
   })
   .add('DX', () => {

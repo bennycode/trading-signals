@@ -1,8 +1,15 @@
 import Big, {BigSource} from 'big.js';
-import {MovingAverage, MovingAverageTypes, SMA} from '..';
 import {Indicator} from '../Indicator';
+import {FasterMovingAverage, MovingAverage} from '../MA/MovingAverage';
+import {FasterMovingAverageTypes, MovingAverageTypes} from '../MA/MovingAverageTypes';
+import {FasterSMA, SMA} from '../SMA/SMA';
 
 export type DMAResult = {long: Big; short: Big};
+
+export interface FasterDMAResult {
+  long: number;
+  short: number;
+}
 
 /**
  * Dual Moving Average (DMA)
@@ -17,9 +24,8 @@ export type DMAResult = {long: Big; short: Big};
  * @see https://faculty.fuqua.duke.edu/~charvey/Teaching/BA453_2002/CCAM/CCAM.htm#_Toc2634228
  */
 export class DMA implements Indicator<DMAResult> {
-  public readonly long: MovingAverage;
   public readonly short: MovingAverage;
-  private received: number = 0;
+  public readonly long: MovingAverage;
 
   constructor(short: number, long: number, Indicator: MovingAverageTypes = SMA) {
     this.short = new Indicator(short);
@@ -27,16 +33,41 @@ export class DMA implements Indicator<DMAResult> {
   }
 
   get isStable(): boolean {
-    return this.received >= this.long.interval;
+    return this.long.isStable;
   }
 
   update(price: BigSource): void {
     this.short.update(price);
     this.long.update(price);
-    this.received += 1;
   }
 
   getResult(): DMAResult {
+    return {
+      long: this.long.getResult(),
+      short: this.short.getResult(),
+    };
+  }
+}
+
+export class FasterDMA implements Indicator<FasterDMAResult, number> {
+  public readonly short: FasterMovingAverage;
+  public readonly long: FasterMovingAverage;
+
+  constructor(short: number, long: number, SmoothingIndicator: FasterMovingAverageTypes = FasterSMA) {
+    this.short = new SmoothingIndicator(short);
+    this.long = new SmoothingIndicator(long);
+  }
+
+  get isStable(): boolean {
+    return this.long.isStable;
+  }
+
+  update(price: number): void {
+    this.short.update(price);
+    this.long.update(price);
+  }
+
+  getResult(): FasterDMAResult {
     return {
       long: this.long.getResult(),
       short: this.short.getResult(),
