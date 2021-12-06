@@ -1,4 +1,4 @@
-import {DX} from './DX';
+import {DX, FasterDX} from './DX';
 
 describe('DX', () => {
   describe('getResult', () => {
@@ -38,19 +38,29 @@ describe('DX', () => {
       ];
 
       const dx = new DX(5);
+      const fasterDX = new FasterDX(5);
 
       for (const candle of candles) {
         dx.update(candle);
-        if (dx.isStable) {
-          const expected = expectations.shift();
-          expect(dx.getResult().toFixed(2)).toBe(expected!);
+        fasterDX.update(candle);
+        if (dx.isStable && fasterDX.isStable) {
+          const expected = expectations.shift()!;
+          expect(dx.getResult().toFixed(2)).toBe(expected);
+          expect(fasterDX.getResult().toFixed(2)).toBe(expected);
         }
       }
 
       expect(dx.isStable).toBeTrue();
+      expect(fasterDX.isStable).toBeTrue();
+
       expect(dx.getResult().toFixed(2)).toBe('75.61');
+      expect(fasterDX.getResult().toFixed(2)).toBe('75.61');
+
       expect(dx.lowest!.toFixed(2)).toBe('11.09');
+      expect(fasterDX.lowest!.toFixed(2)).toBe('11.09');
+
       expect(dx.highest!.toFixed(2)).toBe('86.51');
+      expect(fasterDX.highest!.toFixed(2)).toBe('86.51');
     });
 
     it('returns zero when there is no trend', () => {
@@ -63,13 +73,18 @@ describe('DX', () => {
       ];
 
       const dx = new DX(5);
+      const fasterDX = new FasterDX(5);
 
       for (const candle of candles) {
         dx.update(candle);
+        fasterDX.update(candle);
       }
 
       expect(dx.isStable).toBeTrue();
+      expect(fasterDX.isStable).toBeTrue();
+
       expect(dx.getResult().valueOf()).toBe('0');
+      expect(fasterDX.getResult().valueOf()).toBe(0);
     });
   });
 });

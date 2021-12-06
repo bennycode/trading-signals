@@ -1,4 +1,4 @@
-import {ADX} from './ADX';
+import {ADX, FasterADX} from './ADX';
 
 describe('ADX', () => {
   describe('getResult', () => {
@@ -26,23 +26,39 @@ describe('ADX', () => {
       const expectations = [41.38, 44.29, 49.42, 54.92, 59.99, 65.29, 67.36];
 
       const adx = new ADX(5);
+      const fasterADX = new FasterADX(5);
 
       for (const candle of candles) {
         adx.update(candle);
-        if (adx.isStable) {
+        fasterADX.update(candle);
+        if (adx.isStable && fasterADX.isStable) {
           const expected = expectations.shift();
           expect(adx.getResult().toFixed(2)).toBe(`${expected}`);
+          expect(fasterADX.getResult().toFixed(2)).toBe(`${expected}`);
         }
       }
 
       expect(adx.isStable).toBeTrue();
+      expect(fasterADX.isStable).toBeTrue();
+
       expect(adx.getResult().toFixed(2)).toBe('67.36');
+      expect(fasterADX.getResult().toFixed(2)).toBe('67.36');
+
       expect(adx.lowest!.toFixed(2)).toBe('41.38');
+      expect(fasterADX.lowest!.toFixed(2)).toBe('41.38');
+
       expect(adx.highest!.toFixed(2)).toBe('67.36');
+      expect(fasterADX.highest!.toFixed(2)).toBe('67.36');
+
       // Verify uptrend detection (+DI > -DI):
       expect(adx.pdi!.gt(adx.mdi!)).toBeTrue();
+      expect(fasterADX.pdi > fasterADX.mdi).toBeTrue();
+
       expect(adx.pdi!.toFixed(2)).toBe('0.42');
+      expect(fasterADX.pdi!.toFixed(2)).toBe('0.42');
+
       expect(adx.mdi!.toFixed(2)).toBe('0.06');
+      expect(fasterADX.mdi!.toFixed(2)).toBe('0.06');
     });
   });
 });

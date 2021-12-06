@@ -52,7 +52,7 @@ export class BollingerBands implements Indicator<BandsResult> {
   }
 
   getResult(): BandsResult {
-    if (!this.result) {
+    if (this.result === undefined) {
       throw new NotEnoughDataError();
     }
 
@@ -84,7 +84,7 @@ export class FasterBollingerBands implements Indicator<FasterBandsResult> {
   }
 
   getResult(): FasterBandsResult {
-    if (!this.result) {
+    if (this.result === undefined) {
       throw new NotEnoughDataError();
     }
 

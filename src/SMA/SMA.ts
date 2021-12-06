@@ -1,6 +1,5 @@
 import Big, {BigSource} from 'big.js';
 import {FasterMovingAverage, MovingAverage} from '../MA/MovingAverage';
-import {NotEnoughDataError} from '../error';
 
 /**
  * Simple Moving Average (SMA)
@@ -35,17 +34,6 @@ export class SMA extends MovingAverage {
 export class FasterSMA extends FasterMovingAverage {
   protected result?: number;
   public readonly prices: number[] = [];
-
-  get isStable(): boolean {
-    return this.prices.length === this.interval;
-  }
-
-  getResult(): number {
-    if (!this.result) {
-      throw new NotEnoughDataError();
-    }
-    return this.result;
-  }
 
   update(price: number): void | number {
     this.prices.push(price);

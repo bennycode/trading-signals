@@ -1,10 +1,10 @@
 import {Big} from 'big.js';
-import {BigIndicatorSeries} from '../Indicator';
-import {MovingAverage} from '../MA/MovingAverage';
-import {HighLowClose} from '../util/HighLowClose';
-import {MovingAverageTypes} from '../MA/MovingAverageTypes';
-import {WSMA} from '../WSMA/WSMA';
-import {DX} from '../DX/DX';
+import {BigIndicatorSeries, NumberIndicatorSeries} from '../Indicator';
+import {FasterMovingAverage, MovingAverage} from '../MA/MovingAverage';
+import {HighLowClose, HighLowCloseNumber} from '../util/HighLowClose';
+import {FasterMovingAverageTypes, MovingAverageTypes} from '../MA/MovingAverageTypes';
+import {FasterWSMA, WSMA} from '../WSMA/WSMA';
+import {DX, FasterDX} from '../DX/DX';
 
 /**
  * Average Directional Index (ADX)
@@ -35,8 +35,8 @@ export class ADX extends BigIndicatorSeries<HighLowClose> {
 
   constructor(public readonly interval: number, SmoothingIndicator: MovingAverageTypes = WSMA) {
     super();
-    this.dx = new DX(interval, SmoothingIndicator);
     this.adx = new SmoothingIndicator(this.interval);
+    this.dx = new DX(interval, SmoothingIndicator);
   }
 
   get mdi(): Big | void {
@@ -48,6 +48,35 @@ export class ADX extends BigIndicatorSeries<HighLowClose> {
   }
 
   update(candle: HighLowClose): Big | void {
+    const result = this.dx.update(candle);
+    if (result) {
+      this.adx.update(result);
+    }
+    if (this.adx.isStable) {
+      return this.setResult(this.adx.getResult());
+    }
+  }
+}
+
+export class FasterADX extends NumberIndicatorSeries<HighLowCloseNumber> {
+  private readonly dx: FasterDX;
+  private readonly adx: FasterMovingAverage;
+
+  constructor(public readonly interval: number, SmoothingIndicator: FasterMovingAverageTypes = FasterWSMA) {
+    super();
+    this.adx = new SmoothingIndicator(this.interval);
+    this.dx = new FasterDX(interval, SmoothingIndicator);
+  }
+
+  get mdi(): number | void {
+    return this.dx.mdi;
+  }
+
+  get pdi(): number | void {
+    return this.dx.pdi;
+  }
+
+  update(candle: HighLowCloseNumber): void | number {
     const result = this.dx.update(candle);
     if (result) {
       this.adx.update(result);

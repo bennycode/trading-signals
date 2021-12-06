@@ -1,10 +1,10 @@
-import {BigIndicatorSeries} from '../Indicator';
-import {HighLowClose} from '../util';
-import Big from 'big.js';
-import {MovingAverage} from '../MA/MovingAverage';
-import {MovingAverageTypes} from '../MA/MovingAverageTypes';
-import {WSMA} from '../WSMA/WSMA';
-import {ATR} from '../ATR/ATR';
+import {BigIndicatorSeries, NumberIndicatorSeries} from '../Indicator';
+import {HighLowClose, HighLowCloseNumber} from '../util';
+import Big, {BigSource} from 'big.js';
+import {FasterMovingAverage, MovingAverage} from '../MA/MovingAverage';
+import {FasterMovingAverageTypes, MovingAverageTypes} from '../MA/MovingAverageTypes';
+import {FasterWSMA, WSMA} from '../WSMA/WSMA';
+import {ATR, FasterATR} from '../ATR/ATR';
 
 /**
  * Directional Movement Index (DMI / DX)
@@ -31,17 +31,21 @@ export class DX extends BigIndicatorSeries<HighLowClose> {
 
   constructor(public readonly interval: number, SmoothingIndicator: MovingAverageTypes = WSMA) {
     super();
-    this.movesUp = new SmoothingIndicator(this.interval);
-    this.movesDown = new SmoothingIndicator(this.interval);
     this.atr = new ATR(this.interval, SmoothingIndicator);
+    this.movesDown = new SmoothingIndicator(this.interval);
+    this.movesUp = new SmoothingIndicator(this.interval);
+  }
+
+  private updateState(candle: HighLowClose, pdm: BigSource = 0, mdm: BigSource = 0): void {
+    this.atr.update(candle);
+    this.movesDown.update(mdm);
+    this.movesUp.update(pdm);
+    this.previousCandle = candle;
   }
 
   update(candle: HighLowClose): Big | void {
     if (!this.previousCandle) {
-      this.atr.update(candle);
-      this.movesUp.update(new Big(0));
-      this.movesDown.update(new Big(0));
-      this.previousCandle = candle;
+      this.updateState(candle);
       return;
     }
 
@@ -66,10 +70,7 @@ export class DX extends BigIndicatorSeries<HighLowClose> {
     // Minus Directional Movement (-DM)
     const mdm = noLowerLows || highsRiseFaster ? new Big(0) : lowerLow;
 
-    this.movesUp.update(pdm);
-    this.movesDown.update(mdm);
-    this.atr.update(candle);
-    this.previousCandle = candle;
+    this.updateState(candle, pdm, mdm);
 
     if (this.movesUp.isStable) {
       this.pdi = this.movesUp.getResult().div(this.atr.getResult());
@@ -84,6 +85,71 @@ export class DX extends BigIndicatorSeries<HighLowClose> {
       }
 
       return this.setResult(dmDiff.div(dmSum).mul(100));
+    }
+  }
+}
+
+export class FasterDX extends NumberIndicatorSeries<HighLowCloseNumber> {
+  private readonly movesUp: FasterMovingAverage;
+  private readonly movesDown: FasterMovingAverage;
+  private previousCandle?: HighLowCloseNumber;
+  private readonly atr: FasterATR;
+  public mdi?: number;
+  public pdi?: number;
+
+  constructor(public readonly interval: number, SmoothingIndicator: FasterMovingAverageTypes = FasterWSMA) {
+    super();
+    this.atr = new FasterATR(this.interval, SmoothingIndicator);
+    this.movesDown = new SmoothingIndicator(this.interval);
+    this.movesUp = new SmoothingIndicator(this.interval);
+  }
+
+  private updateState(candle: HighLowCloseNumber, pdm: number = 0, mdm: number = 0): void {
+    this.atr.update(candle);
+    this.movesUp.update(pdm);
+    this.movesDown.update(mdm);
+    this.previousCandle = candle;
+  }
+
+  update(candle: HighLowCloseNumber): number | void {
+    if (!this.previousCandle) {
+      this.updateState(candle);
+      return;
+    }
+
+    const currentHigh = candle.high;
+    const previousHigh = this.previousCandle.high;
+
+    const currentLow = candle.low;
+    const previousLow = this.previousCandle.low;
+
+    const higherHigh = currentHigh - previousHigh;
+    const lowerLow = previousLow - currentLow;
+
+    const noHigherHighs = higherHigh < 0;
+    const lowsRiseFaster = higherHigh < lowerLow;
+
+    const pdm = noHigherHighs || lowsRiseFaster ? 0 : higherHigh;
+
+    const noLowerLows = lowerLow < 0;
+    const highsRiseFaster = lowerLow < higherHigh;
+
+    const mdm = noLowerLows || highsRiseFaster ? 0 : lowerLow;
+
+    this.updateState(candle, pdm, mdm);
+
+    if (this.movesUp.isStable) {
+      this.pdi = this.movesUp.getResult() / this.atr.getResult();
+      this.mdi = this.movesDown.getResult() / this.atr.getResult();
+
+      const dmDiff = Math.abs(this.pdi - this.mdi);
+      const dmSum = this.pdi + this.mdi;
+
+      if (dmSum === 0) {
+        return this.setResult(0);
+      }
+
+      return this.setResult((dmDiff / dmSum) * 100);
     }
   }
 }

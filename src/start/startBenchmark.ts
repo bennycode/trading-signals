@@ -1,13 +1,13 @@
 import Benchmark, {Event} from 'benchmark';
 import candles from '../test/fixtures/candles/100-candles.json';
-import {ADX} from '../ADX/ADX';
+import {ADX, FasterADX} from '../ADX/ADX';
 import {FasterMAD, MAD} from '../MAD/MAD';
 import {BollingerBands, FasterBollingerBands} from '../BBANDS/BollingerBands';
 import {FasterEMA, EMA} from '../EMA/EMA';
 import {FasterSMA, SMA} from '../SMA/SMA';
 import {FasterCCI, CCI} from '../CCI/CCI';
 import {FasterTR, TR} from '../TR/TR';
-import {DX} from '../DX/DX';
+import {DX, FasterDX} from '../DX/DX';
 import {FasterWSMA, WSMA} from '../WSMA/WSMA';
 import {FasterATR, ATR} from '../ATR/ATR';
 import {
@@ -65,6 +65,12 @@ new Benchmark.Suite('Technical Indicators')
       adx.update(candle);
     }
   })
+  .add('FasterADX', () => {
+    const fasterADX = new FasterADX(interval);
+    for (const candle of highLowCloses) {
+      fasterADX.update(candle);
+    }
+  })
   .add('AO', () => {
     const ao = new AO(5, 34);
     for (const candle of highLowCloses) {
@@ -117,6 +123,12 @@ new Benchmark.Suite('Technical Indicators')
     const dx = new DX(interval);
     for (const candle of highLowCloses) {
       dx.update(candle);
+    }
+  })
+  .add('FasterDX', () => {
+    const fasterDX = new FasterDX(interval);
+    for (const candle of highLowCloses) {
+      fasterDX.update(candle);
     }
   })
   .add('EMA', () => {
