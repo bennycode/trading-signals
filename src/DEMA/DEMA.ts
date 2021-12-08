@@ -1,6 +1,6 @@
 import Big, {BigSource} from 'big.js';
-import {EMA} from '..';
-import {BigIndicatorSeries} from '../Indicator';
+import {EMA, FasterEMA} from '../EMA/EMA';
+import {BigIndicatorSeries, NumberIndicatorSeries} from '../Indicator';
 
 /**
  * Double Exponential Moving Average (DEMA)
@@ -29,12 +29,27 @@ export class DEMA extends BigIndicatorSeries {
   }
 
   override get isStable(): boolean {
-    try {
-      this.inner.getResult();
-      this.outer.getResult();
-      return true;
-    } catch {
-      return false;
-    }
+    return this.outer.isStable;
+  }
+}
+
+export class FasterDEMA extends NumberIndicatorSeries {
+  private readonly inner: FasterEMA;
+  private readonly outer: FasterEMA;
+
+  constructor(public readonly interval: number) {
+    super();
+    this.inner = new FasterEMA(interval);
+    this.outer = new FasterEMA(interval);
+  }
+
+  override update(price: number): number {
+    const innerResult = this.inner.update(price);
+    const outerResult = this.outer.update(innerResult);
+    return this.setResult(innerResult * 2 - outerResult);
+  }
+
+  override get isStable(): boolean {
+    return this.outer.isStable;
   }
 }
