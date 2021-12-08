@@ -1,5 +1,5 @@
 import {NotEnoughDataError} from '../error';
-import {CG} from './CG';
+import {CG, FasterCG} from './CG';
 
 describe('CG', () => {
   describe('prices', () => {
@@ -31,33 +31,41 @@ describe('CG', () => {
       expect(cg.isStable).toBeFalse();
       cg.update(60);
       expect(cg.isStable).toBeTrue();
-      expect(cg.lowest!.toFixed(2)).toBe('1.00');
-      expect(cg.highest!.toFixed(2)).toBe('3.67');
     });
   });
 
   describe('getResult', () => {
     it('indicates a downtrend when the center of gravity falls below the signal line', () => {
       const cg = new CG(5, 10);
-      cg.update(100);
-      cg.update(110);
-      cg.update(120);
-      cg.update(130);
-      cg.update(140);
-      cg.update(150);
-      cg.update(160);
-      cg.update(170);
-      cg.update(180);
-      cg.update(190);
-      cg.update(200);
+      const fasterCG = new FasterCG(5, 10);
+      const values = [100, 110, 120, 130, 140, 150, 160, 170, 180, 190, 200];
+      for (const value of values) {
+        cg.update(value);
+        fasterCG.update(value);
+      }
       let cgResult = cg.getResult();
       let signalResult = cg.signal.getResult();
       expect(cgResult.gt(signalResult)).toBeTrue();
-      cg.update(150);
-      cg.update(110);
+      [150, 110, 90, 130].forEach(price => {
+        cg.update(price);
+        fasterCG.update(price);
+      });
+
+      expect(cg.isStable).toBeTrue();
+      expect(fasterCG.isStable).toBeTrue();
+
       cgResult = cg.getResult();
       signalResult = cg.signal.getResult();
       expect(cgResult.gt(signalResult)).toBeFalse();
+
+      expect(cgResult.toFixed(4)).toBe('2.7059');
+      expect(fasterCG.getResult().toFixed(4)).toBe('2.7059');
+
+      expect(cg.lowest!.toFixed(4)).toBe('2.6081');
+      expect(fasterCG.lowest!.toFixed(4)).toBe('2.6081');
+
+      expect(cg.highest!.toFixed(4)).toBe('3.1176');
+      expect(fasterCG.highest!.toFixed(4)).toBe('3.1176');
     });
 
     it('throws an error when there is not enough input data', () => {
@@ -75,6 +83,10 @@ describe('CG', () => {
       const cg = new CG(1, 1);
       cg.update(0);
       expect(cg.getResult().valueOf()).toBe('0');
+
+      const fasterCG = new FasterCG(1, 1);
+      fasterCG.update(0);
+      expect(fasterCG.getResult().valueOf()).toBe(0);
     });
   });
 });

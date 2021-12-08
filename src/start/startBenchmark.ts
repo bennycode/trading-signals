@@ -26,8 +26,11 @@ import {FasterMOM, MOM} from '../MOM/MOM';
 import {AO, FasterAO} from '../AO/AO';
 import {AC, FasterAC} from '../AC/AC';
 import {DMA, FasterDMA} from '../DMA/DMA';
+import {CG, FasterCG} from '../CG/CG';
 
+const shortInterval = 10;
 const interval = 20;
+const longInterval = 40;
 const prices: number[] = candles.map(candle => parseInt(candle.close, 10));
 const highLowCloses: HighLowCloseNumber[] = candles.map(candle => ({
   close: parseInt(candle.close, 10),
@@ -49,13 +52,13 @@ new Benchmark.Suite('Technical Indicators')
     }
   })
   .add('AC', () => {
-    const ac = new AC(5, 34, 5);
+    const ac = new AC(shortInterval, longInterval, interval);
     for (const candle of highLowCloses) {
       ac.update(candle);
     }
   })
   .add('FasterAC', () => {
-    const fasterAC = new FasterAC(5, 34, 5);
+    const fasterAC = new FasterAC(shortInterval, longInterval, interval);
     for (const candle of highLowCloses) {
       fasterAC.update(candle);
     }
@@ -73,13 +76,13 @@ new Benchmark.Suite('Technical Indicators')
     }
   })
   .add('AO', () => {
-    const ao = new AO(5, 34);
+    const ao = new AO(shortInterval, interval);
     for (const candle of highLowCloses) {
       ao.update(candle);
     }
   })
   .add('FasterAO', () => {
-    const fasterAO = new FasterAO(5, 34);
+    const fasterAO = new FasterAO(shortInterval, interval);
     for (const candle of highLowCloses) {
       fasterAO.update(candle);
     }
@@ -118,6 +121,18 @@ new Benchmark.Suite('Technical Indicators')
     const fasterCCI = new FasterCCI(interval);
     for (const candle of highLowCloses) {
       fasterCCI.update(candle);
+    }
+  })
+  .add('CG', () => {
+    const cg = new CG(shortInterval, interval);
+    for (const price of prices) {
+      cg.update(price);
+    }
+  })
+  .add('FasterCG', () => {
+    const fasterCG = new FasterCG(shortInterval, interval);
+    for (const price of prices) {
+      fasterCG.update(price);
     }
   })
   .add('DMA', () => {

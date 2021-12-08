@@ -1,6 +1,6 @@
-import {BigIndicatorSeries} from '../Indicator';
+import {BigIndicatorSeries, NumberIndicatorSeries} from '../Indicator';
 import Big, {BigSource} from 'big.js';
-import {SMA} from '../SMA/SMA';
+import {FasterSMA, SMA} from '../SMA/SMA';
 
 /**
  * Center of Gravity (CG)
@@ -21,7 +21,7 @@ export class CG extends BigIndicatorSeries {
   public readonly prices: Big[] = [];
 
   override get isStable(): boolean {
-    return this.prices.length >= this.interval && this.signal.isStable;
+    return this.signal.isStable;
   }
 
   constructor(public readonly interval: number, public readonly signalInterval: number) {
@@ -29,7 +29,7 @@ export class CG extends BigIndicatorSeries {
     this.signal = new SMA(signalInterval);
   }
 
-  override update(price: BigSource): Big {
+  override update(price: BigSource): void | Big {
     this.prices.push(new Big(price));
 
     if (this.prices.length > this.interval) {
@@ -49,6 +49,48 @@ export class CG extends BigIndicatorSeries {
 
     this.signal.update(cg);
 
-    return this.setResult(cg);
+    if (this.signal.isStable) {
+      return this.setResult(cg);
+    }
+  }
+}
+
+export class FasterCG extends NumberIndicatorSeries {
+  public signal: FasterSMA;
+
+  public readonly prices: number[] = [];
+
+  override get isStable(): boolean {
+    return this.signal.isStable;
+  }
+
+  constructor(public readonly interval: number, public readonly signalInterval: number) {
+    super();
+    this.signal = new FasterSMA(signalInterval);
+  }
+
+  override update(price: number): void | number {
+    this.prices.push(price);
+
+    if (this.prices.length > this.interval) {
+      this.prices.shift();
+    }
+
+    let nominator = 0;
+    let denominator = 0;
+
+    for (let i = 0; i < this.prices.length; ++i) {
+      const price = this.prices[i];
+      nominator = nominator + price * (i + 1);
+      denominator = denominator + price;
+    }
+
+    const cg = denominator > 0 ? nominator / denominator : 0;
+
+    this.signal.update(cg);
+
+    if (this.signal.isStable) {
+      return this.setResult(cg);
+    }
   }
 }
