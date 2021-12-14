@@ -1,3 +1,14 @@
+#### 3.2.1 (2021-12-14)
+
+##### New Features
+
+- **DEMA:** Add faster implementation ([e26d546f](https://github.com/bennycode/trading-signals/commit/e26d546faf6aa90c3c42be9005646f5d9a50cf20))
+- **CG:** Add faster implementation ([abd00a6d](https://github.com/bennycode/trading-signals/commit/abd00a6db0cf037013cb32dde55e3de44ab9427e))
+
+##### Bug Fixes
+
+- **RSI,STOCH:** Prevent division by zero errors ([#379](https://github.com/bennycode/trading-signals/pull/379)) ([265f6b04](https://github.com/bennycode/trading-signals/commit/265f6b04c228fb89a27b1b2ff1cc1fc472f627af))
+
 ### 3.2.0 (2021-12-06)
 
 ##### New Features
