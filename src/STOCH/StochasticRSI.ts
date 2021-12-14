@@ -31,14 +31,18 @@ export class StochasticRSI extends BigIndicatorSeries {
   }
 
   override update(price: BigSource): void | Big {
-    const rsi = this.rsi.update(price);
-    if (rsi) {
-      this.period.update(rsi);
-      if (this.period.isStable) {
-        const min = this.period.lowest!;
-        const max = this.period.highest!;
-        const numerator = rsi.minus(min);
+    const rsiResult = this.rsi.update(price);
+    if (rsiResult) {
+      const periodResult = this.period.update(rsiResult);
+      if (periodResult) {
+        const min = periodResult.lowest;
+        const max = periodResult.highest;
         const denominator = max.minus(min);
+        // Prevent division by zero: https://github.com/bennycode/trading-signals/issues/378
+        if (denominator.eq(0)) {
+          return this.setResult(new Big(100));
+        }
+        const numerator = rsiResult.minus(min);
         return this.setResult(numerator.div(denominator));
       }
     }
@@ -56,14 +60,18 @@ export class FasterStochasticRSI extends NumberIndicatorSeries {
   }
 
   override update(price: number): void | number {
-    const rsi = this.rsi.update(price);
-    if (rsi) {
-      this.period.update(rsi);
-      if (this.period.isStable) {
-        const min = this.period.lowest!;
-        const max = this.period.highest!;
-        const numerator = rsi - min;
+    const rsiResult = this.rsi.update(price);
+    if (rsiResult) {
+      const periodResult = this.period.update(rsiResult);
+      if (periodResult) {
+        const min = periodResult.lowest;
+        const max = periodResult.highest;
         const denominator = max - min;
+        // Prevent division by zero: https://github.com/bennycode/trading-signals/issues/378
+        if (denominator === 0) {
+          return this.setResult(100);
+        }
+        const numerator = rsiResult - min;
         return this.setResult(numerator / denominator);
       }
     }

@@ -18,6 +18,7 @@ import {FasterWSMA, WSMA} from '../WSMA/WSMA';
  * A RSI value of 70 or above indicates an overbought condition (sell high opportunity because market may correct the
  * price in the near future).
  *
+ * @see https://en.wikipedia.org/wiki/Relative_strength_index
  * @see https://www.investopedia.com/terms/r/rsi.asp
  */
 export class RSI extends BigIndicatorSeries {
@@ -54,7 +55,12 @@ export class RSI extends BigIndicatorSeries {
     this.previousPrice = price;
 
     if (this.avgGain.isStable) {
-      const relativeStrength = this.avgGain.getResult().div(this.avgLoss.getResult());
+      const avgLoss = this.avgLoss.getResult();
+      // Prevent division by zero: https://github.com/bennycode/trading-signals/issues/378
+      if (avgLoss.eq(0)) {
+        return this.setResult(new Big(100));
+      }
+      const relativeStrength = this.avgGain.getResult().div(avgLoss);
       return this.setResult(this.maxValue.minus(this.maxValue.div(relativeStrength.add(1))));
     }
   }
@@ -89,7 +95,12 @@ export class FasterRSI extends NumberIndicatorSeries {
     this.previousPrice = price;
 
     if (this.avgGain.isStable) {
-      const relativeStrength = this.avgGain.getResult() / this.avgLoss.getResult();
+      const avgLoss = this.avgLoss.getResult();
+      // Prevent division by zero: https://github.com/bennycode/trading-signals/issues/378
+      if (avgLoss === 0) {
+        return this.setResult(100);
+      }
+      const relativeStrength = this.avgGain.getResult() / avgLoss;
       return this.setResult(this.maxValue - this.maxValue / (relativeStrength + 1));
     }
   }

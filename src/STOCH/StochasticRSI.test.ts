@@ -32,5 +32,21 @@ describe('StochasticRSI', () => {
       expect(stochRSI.lowest!.valueOf()).toBe('0');
       expect(fasterStochRSI.lowest!.valueOf()).toBe(0);
     });
+
+    it('catches division by zero errors', () => {
+      const stochRSI = new StochasticRSI(2);
+      stochRSI.update(2);
+      stochRSI.update(2);
+      stochRSI.update(2);
+      stochRSI.update(2);
+      expect(stochRSI.getResult().valueOf()).toBe('100');
+
+      const fasterStochRSI = new FasterStochasticRSI(2);
+      fasterStochRSI.update(2);
+      fasterStochRSI.update(2);
+      fasterStochRSI.update(2);
+      fasterStochRSI.update(2);
+      expect(fasterStochRSI.getResult().valueOf()).toBe(100);
+    });
   });
 });

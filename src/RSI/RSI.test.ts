@@ -45,6 +45,20 @@ describe('RSI', () => {
       expect(fasterRSI.highest?.toFixed(2)).toBe('91.48');
     });
 
+    it('catches division by zero errors', () => {
+      const rsi = new RSI(2);
+      rsi.update(2);
+      rsi.update(2);
+      rsi.update(2);
+      expect(rsi.getResult().valueOf()).toBe('100');
+
+      const fasterRSI = new FasterRSI(2);
+      fasterRSI.update(2);
+      fasterRSI.update(2);
+      fasterRSI.update(2);
+      expect(fasterRSI.getResult().valueOf()).toBe(100);
+    });
+
     it('throws an error when there is not enough input data', () => {
       const rsi = new RSI(2);
       rsi.update(0);
