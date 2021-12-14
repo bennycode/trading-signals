@@ -2,15 +2,20 @@ import {FasterPeriod, Period} from './Period';
 
 describe('Period', () => {
   describe('getResult', () => {
-    it('returns the most recently added value', () => {
-      const period = new Period(5);
+    it('returns the highest and lowest value of the current period', () => {
+      const period = new Period(2);
       period.update(72);
       period.update(1337);
-      expect(period.getResult().valueOf()).toBe('1337');
+      const {highest, lowest} = period.getResult();
+      expect(lowest.valueOf()).toBe('72');
+      expect(highest.valueOf()).toBe('1337');
 
-      const fasterPeriod = new FasterPeriod(5);
-      fasterPeriod.update(1);
-      expect(fasterPeriod.getResult()).toBe(1);
+      const fasterPeriod = new FasterPeriod(2);
+      fasterPeriod.update(72);
+      fasterPeriod.update(1337);
+      const {highest: fastestHighest, lowest: fastestLowest} = fasterPeriod.getResult();
+      expect(fastestLowest).toBe(72);
+      expect(fastestHighest).toBe(1337);
     });
   });
 

@@ -4,7 +4,17 @@ import {getFixedArray} from './getFixedArray';
 import {getMinimum} from './getMinimum';
 import {getMaximum} from './getMaximum';
 
-export class Period implements Indicator {
+export interface PeriodResult {
+  highest: Big;
+  lowest: Big;
+}
+
+export interface FasterPeriodResult {
+  highest: number;
+  lowest: number;
+}
+
+export class Period implements Indicator<PeriodResult> {
   public values: Big[];
   /** Highest return value during the current period. */
   public highest?: Big;
@@ -15,15 +25,19 @@ export class Period implements Indicator {
     this.values = getFixedArray<Big>(interval);
   }
 
-  getResult(): Big {
-    return this.values[this.values.length - 1];
+  getResult(): PeriodResult {
+    return {
+      highest: this.highest!,
+      lowest: this.lowest!,
+    };
   }
 
-  update(value: BigSource): void {
+  update(value: BigSource): PeriodResult | void {
     this.values.push(new Big(value));
     if (this.isStable) {
       this.lowest = getMinimum(this.values);
       this.highest = getMaximum(this.values);
+      return this.getResult();
     }
   }
 
@@ -32,7 +46,7 @@ export class Period implements Indicator {
   }
 }
 
-export class FasterPeriod implements Indicator<number> {
+export class FasterPeriod implements Indicator<FasterPeriodResult> {
   public values: number[];
   /** Highest return value during the current period. */
   public highest?: number;
@@ -43,15 +57,19 @@ export class FasterPeriod implements Indicator<number> {
     this.values = getFixedArray<number>(interval);
   }
 
-  getResult(): number {
-    return this.values[this.values.length - 1];
+  getResult(): FasterPeriodResult {
+    return {
+      highest: this.highest!,
+      lowest: this.lowest!,
+    };
   }
 
-  update(value: number): void {
+  update(value: number): FasterPeriodResult | void {
     this.values.push(value);
     if (this.isStable) {
       this.lowest = Math.min(...this.values);
       this.highest = Math.max(...this.values);
+      return this.getResult();
     }
   }
 
