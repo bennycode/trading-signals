@@ -11,8 +11,8 @@ https://github.com/bennycode/trading-signals/commit/9c4a6d02bcecdde6dbe5b568c6ec
 - [ ] Indicator is documented and implemented by extending `BigIndicatorSeries`
 - [ ] A "faster" version of this indicator is implemented by extending `NumberIndicatorSeries`
 - [ ] Tests for `getResult` are present
-- [ ] Tests for highest and lowest result caching are present
-- [ ] Tests for error handling are present (if not done in base class)
+- [ ] Tests for highest and lowest result caching are present (if not already existent for base class)
+- [ ] Tests for error handling are present (if not already existent for base class)
 - [ ] Indicators (standard & faster version) are exposed in `src/index.ts`
 - [ ] Indicators (standard & faster version) are added to `startBenchmark.ts`
 - [ ] Indicator is listed in `README.md`

@@ -1,32 +1,52 @@
 import Benchmark, {Event} from 'benchmark';
 import candles from '../test/fixtures/candles/100-candles.json';
-import {ADX, FasterADX} from '../ADX/ADX';
-import {FasterMAD, MAD} from '../MAD/MAD';
-import {BollingerBands, FasterBollingerBands} from '../BBANDS/BollingerBands';
-import {FasterEMA, EMA} from '../EMA/EMA';
-import {FasterSMA, SMA} from '../SMA/SMA';
-import {FasterCCI, CCI} from '../CCI/CCI';
-import {FasterTR, TR} from '../TR/TR';
-import {DX, FasterDX} from '../DX/DX';
-import {FasterWSMA, WSMA} from '../WSMA/WSMA';
-import {FasterATR, ATR} from '../ATR/ATR';
 import {
+  AC,
+  AccelerationBands,
+  ADX,
+  AO,
+  ATR,
+  BollingerBands,
+  BollingerBandsWidth,
+  CCI,
+  CG,
+  DMA,
+  DX,
+  EMA,
+  FasterAC,
+  FasterAccelerationBands,
+  FasterADX,
+  FasterAO,
+  FasterATR,
+  FasterBollingerBands,
+  FasterBollingerBandsWidth,
+  FasterCCI,
+  FasterCG,
+  FasterDMA,
+  FasterDX,
+  FasterEMA,
+  FasterMAD,
+  FasterMOM,
   FasterPeriod,
+  FasterRSI,
+  FasterSMA,
+  FasterStochasticRSI,
+  FasterTR,
+  FasterWSMA,
   getAverage,
   getFasterAverage,
   getFasterStandardDeviation,
   getStandardDeviation,
   HighLowCloseNumber,
+  MAD,
+  MOM,
   Period,
-} from '../util';
-import {FasterRSI, RSI} from '../RSI/RSI';
-import {FasterStochasticRSI, StochasticRSI} from '../STOCH/StochasticRSI';
-import {AccelerationBands, FasterAccelerationBands} from '../ABANDS/AccelerationBands';
-import {FasterMOM, MOM} from '../MOM/MOM';
-import {AO, FasterAO} from '../AO/AO';
-import {AC, FasterAC} from '../AC/AC';
-import {DMA, FasterDMA} from '../DMA/DMA';
-import {CG, FasterCG} from '../CG/CG';
+  RSI,
+  SMA,
+  StochasticRSI,
+  TR,
+  WSMA,
+} from '..';
 
 const shortInterval = 10;
 const interval = 20;
@@ -109,6 +129,18 @@ new Benchmark.Suite('Technical Indicators')
     const fasterBB = new FasterBollingerBands(interval, 2);
     for (const price of prices) {
       fasterBB.update(price);
+    }
+  })
+  .add('BollingerBandsWidth', () => {
+    const bbw = new BollingerBandsWidth(new BollingerBands(interval, 2));
+    for (const price of prices) {
+      bbw.update(price);
+    }
+  })
+  .add('FasterBollingerBandsWidth', () => {
+    const fasterBBW = new FasterBollingerBandsWidth(new FasterBollingerBands(interval, 2));
+    for (const price of prices) {
+      fasterBBW.update(price);
     }
   })
   .add('CCI', () => {
