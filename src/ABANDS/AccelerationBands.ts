@@ -16,8 +16,8 @@ export class AccelerationBands implements Indicator<BandsResult, HighLowClose> {
    * Acceleration Bands (ABANDS)
    * Type: Volatility
    *
-   * Acceleration bands created by Price Headley are set as an envelope around a moving average. The upper and lower bands are of equal distance
-   * from the middle band.
+   * Acceleration bands created by Price Headley are set as an envelope around a moving average. The upper and lower
+   * bands are of equal distance from the middle band.
    *
    * Two consecutive closes outside Acceleration Bands suggest an entry point in the direction of the breakout (either
    * bullish or bearish). A long position is usually kept till the first close back inside the bands.
@@ -47,7 +47,8 @@ export class AccelerationBands implements Indicator<BandsResult, HighLowClose> {
   }
 
   update({high, low, close}: HighLowClose): void {
-    const coefficient = new Big(high).minus(low).div(new Big(high).plus(low)).mul(this.width);
+    const highPlusLow = new Big(high).plus(low);
+    const coefficient = highPlusLow.eq(0) ? new Big(0) : new Big(high).minus(low).div(highPlusLow).mul(this.width);
 
     // (Low * (1 - width * (High - Low)/ (High + Low)))
     this.lowerBand.update(new Big(low).mul(new Big(1).minus(coefficient)));
@@ -86,7 +87,9 @@ export class FasterAccelerationBands implements Indicator<FasterBandsResult, Hig
   }
 
   update({high, low, close}: HighLowCloseNumber): void {
-    const coefficient = ((high - low) / (high + low)) * this.width;
+    const highPlusLow = high + low;
+    const coefficient = highPlusLow === 0 ? 0 : ((high - low) / highPlusLow) * this.width;
+
     this.lowerBand.update(low * (1 - coefficient));
     this.middleBand.update(close);
     this.upperBand.update(high * (1 + coefficient));

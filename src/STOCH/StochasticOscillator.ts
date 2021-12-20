@@ -67,6 +67,7 @@ export class StochasticOscillator implements Indicator<StochasticResult, HighLow
       const lowest = getMinimum(this.candles.map(candle => candle.low));
       const divisor = new Big(highest).minus(lowest);
       let fastK = new Big(100).mul(new Big(candle.close).minus(lowest));
+      // Prevent division by zero
       fastK = fastK.div(divisor.eq(0) ? 1 : divisor);
       const dResult = this.d.update(fastK);
       if (dResult) {

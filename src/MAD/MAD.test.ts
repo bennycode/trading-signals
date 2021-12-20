@@ -74,6 +74,11 @@ describe('MAD', () => {
   });
 
   describe('getResultFromBatch', () => {
+    it("doesn't crash when the array is empty", () => {
+      const result = MAD.getResultFromBatch([]);
+      expect(result.valueOf()).toBe('0');
+    });
+
     it('calculates the mean when no mean is given', () => {
       // Test data verified with:
       // https://en.wikipedia.org/wiki/Average_absolute_deviation#Mean_absolute_deviation_around_a_central_point

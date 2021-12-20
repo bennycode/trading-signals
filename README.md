@@ -19,6 +19,7 @@ All indicators can be updated over time by streaming data (prices or candles) to
 - **Fast.** If you need high throughput, you can use the included [faster implementations][2].
 - **Flexible.** All advanced indicators support different smoothing overlays (WSMA, etc.).
 - **Precise.** Better accuracy than calculating with primitive numbers thanks to [big.js][1].
+- **Robust.** Checked against common division by zero mistakes.
 - **Tested.** Code coverage is 100%. No surprises when using it.
 - **Typed.** Source code is 100% TypeScript. No need to install external typings.
 - **Verified.** All results are verified with [other libraries](#alternatives) to guarantee correctness.
