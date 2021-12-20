@@ -37,7 +37,7 @@ export class MAD extends BigIndicatorSeries {
       const deviation = new Big(prices[i]).minus(mean).abs();
       sum = sum.plus(deviation);
     }
-    return sum.div(prices.length);
+    return sum.div(prices.length || 1);
   }
 }
 

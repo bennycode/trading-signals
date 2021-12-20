@@ -104,4 +104,26 @@ describe('AccelerationBands', () => {
       }
     });
   });
+
+  describe('update', () => {
+    it("doesn't crash when supplying zeroes", () => {
+      const accBands = new AccelerationBands(20, 2);
+      return accBands.update({
+        high: 0,
+        low: 0,
+        close: 0,
+      });
+    });
+  });
+});
+
+describe('FaserAccelerationBands', () => {
+  it("doesn't crash when supplying zeroes", () => {
+    const accBands = new FasterAccelerationBands(20, 2);
+    return accBands.update({
+      high: 0,
+      low: 0,
+      close: 0,
+    });
+  });
 });

@@ -125,6 +125,13 @@ describe('SMA', () => {
       }
     });
   });
+
+  describe('getResultFromBatch', () => {
+    it("doesn't crash when the array is empty", () => {
+      const result = SMA.getResultFromBatch([]);
+      expect(result.valueOf()).toBe('0');
+    });
+  });
 });
 
 describe('FasterSMA', () => {
