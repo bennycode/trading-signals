@@ -32,9 +32,9 @@ describe('MAD', () => {
         mad.update(price);
         fasterMAD.update(price);
         if (mad.isStable && fasterMAD.isStable) {
-          const expected = expectations.shift();
-          expect(mad.getResult().toFixed(2)).toBe(expected!);
-          expect(fasterMAD.getResult().toFixed(2)).toBe(expected!);
+          const expected = expectations.shift()!;
+          expect(mad.getResult().toFixed(2)).toBe(expected);
+          expect(fasterMAD.getResult().toFixed(2)).toBe(expected);
         }
       }
       expect(mad.getResult().toFixed(2)).toBe('0.62');

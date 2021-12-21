@@ -4,6 +4,7 @@ export * from './ADX/ADX';
 export * from './AO/AO';
 export * from './ATR/ATR';
 export * from './BBANDS/BollingerBands';
+export * from './BBW/BollingerBandsWidth';
 export * from './CCI/CCI';
 export * from './CG/CG';
 export * from './DEMA/DEMA';
