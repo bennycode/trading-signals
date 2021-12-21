@@ -1,3 +1,13 @@
+### 3.3.0 (2021-12-21)
+
+##### New Features
+
+- **BBANDS,BBW:** Add Bollinger Bands Width (BBW) ([#381](https://github.com/bennycode/trading-signals/pull/381)) ([e3516d40](https://github.com/bennycode/trading-signals/commit/e3516d4017492f179b5cefad157e6c0f4009ab1f))
+
+##### Bug Fixes
+
+- **STOCH,SMA,MAD,ABANDS:** Prevent division by zero mistakes ([#380](https://github.com/bennycode/trading-signals/pull/380)) ([6837b145](https://github.com/bennycode/trading-signals/commit/6837b145c89ea0ad80c9afee38a79f1bd5cea870))
+
 #### 3.2.1 (2021-12-14)
 
 ##### New Features
