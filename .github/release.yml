@@ -1,0 +1,22 @@
+# https://docs.github.com/en/repositories/releasing-projects-on-github/automatically-generated-release-notes#example-configuration
+changelog:
+  exclude:
+    authors:
+      - 'dependabot'
+  categories:
+    - title: 'New'
+      labels:
+        - 'type: feature ✨'
+    - title: 'Improved'
+      labels:
+        - 'type: docs 📋'
+        - 'type: style 🎨'
+    - title: 'Fixed'
+      labels:
+        - 'type: bug(fix) 🐞'
+    - title: 'Documentation'
+      labels:
+        - 'type: docs 📋'
+    - title: 'Other Changes'
+      labels:
+        - '*'
