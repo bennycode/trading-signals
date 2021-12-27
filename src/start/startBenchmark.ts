@@ -10,6 +10,7 @@ import {
   BollingerBandsWidth,
   CCI,
   CG,
+  DEMA,
   DMA,
   DX,
   EMA,
@@ -22,6 +23,7 @@ import {
   FasterBollingerBandsWidth,
   FasterCCI,
   FasterCG,
+  FasterDEMA,
   FasterDMA,
   FasterDX,
   FasterEMA,
@@ -29,6 +31,7 @@ import {
   FasterMAD,
   FasterMOM,
   FasterPeriod,
+  FasterROC,
   FasterRSI,
   FasterSMA,
   FasterStochasticRSI,
@@ -43,6 +46,7 @@ import {
   MAD,
   MOM,
   Period,
+  ROC,
   RSI,
   SMA,
   StochasticRSI,
@@ -169,6 +173,18 @@ new Benchmark.Suite('Technical Indicators')
       fasterCG.update(price);
     }
   })
+  .add('DEMA', () => {
+    const dema = new DEMA(interval);
+    for (const price of prices) {
+      dema.update(price);
+    }
+  })
+  .add('FasterDEMA', () => {
+    const fasterDEMA = new FasterDEMA(interval);
+    for (const price of prices) {
+      fasterDEMA.update(price);
+    }
+  })
   .add('DMA', () => {
     const dma = new DMA(3, 6);
     for (const price of prices) {
@@ -256,6 +272,18 @@ new Benchmark.Suite('Technical Indicators')
     const fasterPeriod = new FasterPeriod(interval);
     for (const price of prices) {
       fasterPeriod.update(price);
+    }
+  })
+  .add('ROC', () => {
+    const roc = new ROC(interval);
+    for (const price of prices) {
+      roc.update(price);
+    }
+  })
+  .add('FasterROC', () => {
+    const fasterROC = new FasterROC(interval);
+    for (const price of prices) {
+      fasterROC.update(price);
     }
   })
   .add('RSI', () => {
