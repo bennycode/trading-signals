@@ -1,3 +1,18 @@
+### 3.5.0 (2021-12-27)
+
+##### New Features
+
+- **STOCH:** Add faster implementation ([#386](https://github.com/bennycode/trading-signals/pull/386)) ([c6c38d25](https://github.com/bennycode/trading-signals/commit/c6c38d25d6e79a6d4c7e0885f556f2859b575b4d))
+- **ROC:** Add faster implementation ([#385](https://github.com/bennycode/trading-signals/pull/385)) ([1064ebb8](https://github.com/bennycode/trading-signals/commit/1064ebb80d6eb87cd6c9c343efdee90c6af0ef4d))
+
+##### Bug Fixes
+
+- **ADX,BBW,STOCH:** Process zeros ([#387](https://github.com/bennycode/trading-signals/pull/387)) ([b478e79e](https://github.com/bennycode/trading-signals/commit/b478e79ee8f9ebe2f1550a78d00085aa4afef351))
+
+##### Refactors
+
+- **test:** Replace Jasmine with Jest ([#388](https://github.com/bennycode/trading-signals/pull/388)) ([d8d97408](https://github.com/bennycode/trading-signals/commit/d8d97408a8146a1b0d4bc27a29d65ecf1cdceefd))
+
 ### 3.4.0 (2021-12-27)
 
 ##### New Features
