@@ -76,11 +76,11 @@ describe('ROC', () => {
       ];
 
       expect(mockedPrices.length).toBe(interval + 1);
-      expect(indicator.isStable).toBeFalse();
+      expect(indicator.isStable).toBe(false);
 
       mockedPrices.forEach(price => indicator.update(price));
 
-      expect(indicator.isStable).toBeTrue();
+      expect(indicator.isStable).toBe(true);
     });
   });
 });

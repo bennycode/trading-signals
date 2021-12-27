@@ -24,8 +24,8 @@ describe('MOM', () => {
         }
       }
 
-      expect(momentum.isStable).toBeTrue();
-      expect(fasterMomentum.isStable).toBeTrue();
+      expect(momentum.isStable).toBe(true);
+      expect(fasterMomentum.isStable).toBe(true);
 
       expect(momentum.lowest!.toFixed(2)).toBe('0.75');
       expect(fasterMomentum.lowest!.toFixed(2)).toBe('0.75');

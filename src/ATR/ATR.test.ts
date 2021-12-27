@@ -38,8 +38,8 @@ describe('ATR', () => {
         }
       }
 
-      expect(atr.isStable).toBeTrue();
-      expect(fasterATR.isStable).toBeTrue();
+      expect(atr.isStable).toBe(true);
+      expect(fasterATR.isStable).toBe(true);
 
       expect(atr.getResult().toFixed(2)).toBe('1.14');
       expect(fasterATR.getResult().toFixed(2)).toBe('1.14');

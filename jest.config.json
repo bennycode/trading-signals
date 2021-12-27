@@ -1,0 +1,17 @@
+{
+  "collectCoverage": false,
+  "collectCoverageFrom": ["**/*.{ts,tsx}", "!**/*.d.ts", "!**/index.ts", "!**/start*.ts"],
+  "coverageReporters": ["html", "lcov", "text"],
+  "coverageThreshold": {
+    "global": {
+      "branches": 100,
+      "functions": 100,
+      "lines": 100,
+      "statements": 100
+    }
+  },
+  "preset": "ts-jest",
+  "setupFilesAfterEnv": [],
+  "testEnvironment": "node",
+  "testRegex": "\\.test\\.tsx?$"
+}
