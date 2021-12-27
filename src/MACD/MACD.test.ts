@@ -1,13 +1,13 @@
-import {MACD} from './MACD';
+import {FasterMACD, MACD} from './MACD';
 import Big from 'big.js';
-import {DEMA, EMA, NotEnoughDataError} from '..';
+import {DEMA, EMA, FasterEMA, NotEnoughDataError} from '..';
 
 describe('MACD', () => {
   describe('getResult', () => {
     it('is compatible with results from Tulip Indicators (TI)', () => {
       // Test data verified with:
       // https://tulipindicators.org/macd
-      const inputs = [
+      const prices = [
         81.59, 81.06, 82.87, 83.0, 83.61, 83.15, 82.84, 83.99, 84.55, 84.36, 85.53, 86.54, 86.89, 87.77, 87.29,
       ];
 
@@ -66,28 +66,41 @@ describe('MACD', () => {
         '-0.08',
       ];
 
-      const indicator = new MACD({
+      const macd = new MACD({
         indicator: EMA,
         longInterval: 5,
         shortInterval: 2,
         signalInterval: 9,
       });
 
-      for (const [index, input] of Object.entries(inputs)) {
-        indicator.update(input);
+      const fasterMACD = new FasterMACD(new FasterEMA(2), new FasterEMA(5), new FasterEMA(9));
+
+      for (const [index, input] of Object.entries(prices)) {
+        macd.update(input);
+        fasterMACD.update(input);
 
         const key = parseInt(index, 10);
-        const expectedMacd = expectedMacds[key]!;
+        const expectedMacd = expectedMacds[key];
         const expectedMacdSignal = expectedMacdSignals[key]!;
         const expectedMacdHistogram = expectedMacdHistograms[key]!;
 
         if (expectedMacd !== undefined) {
-          const result = indicator.getResult();
-          expect(result.macd.toFixed(2)).withContext('MACD').toBe(expectedMacd);
-          expect(result.signal.toFixed(2)).withContext('MACD Signal').toBe(expectedMacdSignal);
-          expect(result.histogram.toFixed(2)).withContext('MACD Histogram').toBe(expectedMacdHistogram);
+          const result = macd.getResult();
+          const fasterResult = fasterMACD.getResult();
+
+          expect(result.macd.toFixed(2)).toBe(expectedMacd);
+          expect(fasterResult.macd.toFixed(2)).toBe(expectedMacd);
+
+          expect(result.signal.toFixed(2)).toBe(expectedMacdSignal);
+          expect(fasterResult.signal.toFixed(2)).toBe(expectedMacdSignal);
+
+          expect(result.histogram.toFixed(2)).toBe(expectedMacdHistogram);
+          expect(fasterResult.histogram.toFixed(2)).toBe(expectedMacdHistogram);
         }
       }
+
+      expect(macd.isStable).toBeTrue();
+      expect(fasterMACD.isStable).toBeTrue();
     });
 
     it('throws an error when there is not enough input data', () => {
@@ -100,6 +113,15 @@ describe('MACD', () => {
 
       try {
         macd.getResult();
+        fail('Expected error');
+      } catch (error) {
+        expect(error).toBeInstanceOf(NotEnoughDataError);
+      }
+
+      const fasterMACD = new FasterMACD(new FasterEMA(12), new FasterEMA(26), new FasterEMA(9));
+
+      try {
+        fasterMACD.getResult();
         fail('Expected error');
       } catch (error) {
         expect(error).toBeInstanceOf(NotEnoughDataError);

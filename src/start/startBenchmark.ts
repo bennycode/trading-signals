@@ -25,6 +25,7 @@ import {
   FasterDMA,
   FasterDX,
   FasterEMA,
+  FasterMACD,
   FasterMAD,
   FasterMOM,
   FasterPeriod,
@@ -38,6 +39,7 @@ import {
   getFasterStandardDeviation,
   getStandardDeviation,
   HighLowCloseNumber,
+  MACD,
   MAD,
   MOM,
   Period,
@@ -201,6 +203,23 @@ new Benchmark.Suite('Technical Indicators')
     const fasterEMA = new FasterEMA(interval);
     for (const price of prices) {
       fasterEMA.update(price);
+    }
+  })
+  .add('MACD', () => {
+    const mad = new MACD({
+      indicator: EMA,
+      longInterval: 5,
+      shortInterval: 2,
+      signalInterval: 9,
+    });
+    for (const price of prices) {
+      mad.update(price);
+    }
+  })
+  .add('FasterMACD', () => {
+    const fasterMACD = new FasterMACD(new FasterEMA(2), new FasterEMA(5), new FasterEMA(9));
+    for (const price of prices) {
+      fasterMACD.update(price);
     }
   })
   .add('MAD', () => {
