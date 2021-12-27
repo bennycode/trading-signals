@@ -9,7 +9,7 @@ on:
       - main
 
 jobs:
-  run-tests:
+  test:
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -17,10 +17,12 @@ jobs:
     steps:
       - name: 'Checkout repository'
         uses: actions/checkout@v2
+
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v1
         with:
           node-version: ${{ matrix.node-version }}
+
       - name: 'Install, lint, and test'
         run: |
           yarn install
@@ -29,6 +31,7 @@ jobs:
         if: |
           contains(github.event.commits[0].message, '[skip ci]') == false &&
           contains(github.event.commits[0].message, '[ci skip]') == false
+
       - name: 'Upload coverage reports to Codecov'
         uses: codecov/codecov-action@v1.0.5
         with:
