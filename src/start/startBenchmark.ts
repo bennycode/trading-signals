@@ -10,6 +10,7 @@ import {
   BollingerBandsWidth,
   CCI,
   CG,
+  DEMA,
   DMA,
   DX,
   EMA,
@@ -22,6 +23,7 @@ import {
   FasterBollingerBandsWidth,
   FasterCCI,
   FasterCG,
+  FasterDEMA,
   FasterDMA,
   FasterDX,
   FasterEMA,
@@ -169,6 +171,18 @@ new Benchmark.Suite('Technical Indicators')
     const fasterCG = new FasterCG(shortInterval, interval);
     for (const price of prices) {
       fasterCG.update(price);
+    }
+  })
+  .add('DEMA', () => {
+    const dema = new DEMA(interval);
+    for (const price of prices) {
+      dema.update(price);
+    }
+  })
+  .add('FasterDEMA', () => {
+    const fasterDEMA = new FasterDEMA(interval);
+    for (const price of prices) {
+      fasterDEMA.update(price);
     }
   })
   .add('DMA', () => {
