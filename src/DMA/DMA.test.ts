@@ -12,8 +12,8 @@ describe('DMA', () => {
       dma.update(100);
       dma.update(30.71);
       dma.update(30);
-      expect(dma.getResult().short.toFixed(8)).withContext('short').toBe('53.57000000');
-      expect(dma.getResult().long.toFixed(8)).withContext('long').toBe('43.26833333');
+      expect(dma.getResult().short.toFixed(8)).toBe('53.57000000');
+      expect(dma.getResult().long.toFixed(8)).toBe('43.26833333');
     });
 
     it('can be used with exponential moving averages', () => {
@@ -24,8 +24,8 @@ describe('DMA', () => {
       dma.update(100);
       dma.update(30.71);
       dma.update(30);
-      expect(dma.getResult().short.toFixed(8)).withContext('short').toBe('38.92125000');
-      expect(dma.getResult().long.toFixed(8)).withContext('long').toBe('41.96735289');
+      expect(dma.getResult().short.toFixed(8)).toBe('38.92125000');
+      expect(dma.getResult().long.toFixed(8)).toBe('41.96735289');
     });
   });
 
@@ -35,10 +35,10 @@ describe('DMA', () => {
       dma.update(40);
       dma.update(30);
       dma.update(20);
-      expect(dma.isStable).toBeFalse();
+      expect(dma.isStable).toBe(false);
       dma.update(10);
       dma.update(30);
-      expect(dma.isStable).toBeTrue();
+      expect(dma.isStable).toBe(true);
     });
 
     it('is dependant on the long interval (EMA)', () => {
@@ -46,10 +46,10 @@ describe('DMA', () => {
       dma.update(40);
       dma.update(30);
       dma.update(20);
-      expect(dma.isStable).toBeFalse();
+      expect(dma.isStable).toBe(false);
       dma.update(10);
       dma.update(30);
-      expect(dma.isStable).toBeTrue();
+      expect(dma.isStable).toBe(true);
     });
   });
 
@@ -66,11 +66,11 @@ describe('DMA', () => {
       }
 
       const {short, long} = dma.getResult();
-      expect(short.gt(long)).toBeTrue();
+      expect(short.gt(long)).toBe(true);
 
       const fasterResult = fasterDMA.getResult();
-      expect(fasterDMA.isStable).toBeTrue();
-      expect(fasterResult.short > fasterResult.long).toBeTrue();
+      expect(fasterDMA.isStable).toBe(true);
+      expect(fasterResult.short > fasterResult.long).toBe(true);
     });
   });
 });

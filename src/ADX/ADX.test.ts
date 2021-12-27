@@ -38,8 +38,8 @@ describe('ADX', () => {
         }
       }
 
-      expect(adx.isStable).toBeTrue();
-      expect(fasterADX.isStable).toBeTrue();
+      expect(adx.isStable).toBe(true);
+      expect(fasterADX.isStable).toBe(true);
 
       expect(adx.getResult().toFixed(2)).toBe('67.36');
       expect(fasterADX.getResult().toFixed(2)).toBe('67.36');
@@ -51,8 +51,8 @@ describe('ADX', () => {
       expect(fasterADX.highest!.toFixed(2)).toBe('67.36');
 
       // Verify uptrend detection (+DI > -DI):
-      expect(adx.pdi!.gt(adx.mdi!)).toBeTrue();
-      expect(fasterADX.pdi > fasterADX.mdi).toBeTrue();
+      expect(adx.pdi!.gt(adx.mdi!)).toBe(true);
+      expect(fasterADX.pdi > fasterADX.mdi).toBe(true);
 
       expect(adx.pdi!.toFixed(2)).toBe('0.42');
       expect(fasterADX.pdi!.toFixed(2)).toBe('0.42');

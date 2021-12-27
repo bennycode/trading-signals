@@ -99,8 +99,8 @@ describe('MACD', () => {
         }
       }
 
-      expect(macd.isStable).toBeTrue();
-      expect(fasterMACD.isStable).toBeTrue();
+      expect(macd.isStable).toBe(true);
+      expect(fasterMACD.isStable).toBe(true);
     });
 
     it('throws an error when there is not enough input data', () => {
@@ -161,11 +161,11 @@ describe('MACD', () => {
       ];
 
       expect(mockedPrices.length).toBe(longInterval);
-      expect(macd.isStable).toBeFalse();
+      expect(macd.isStable).toBe(false);
 
       mockedPrices.forEach(price => macd.update(price));
 
-      expect(macd.isStable).toBeTrue();
+      expect(macd.isStable).toBe(true);
     });
   });
 });

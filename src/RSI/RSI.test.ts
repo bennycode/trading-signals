@@ -32,8 +32,8 @@ describe('RSI', () => {
           expect(fasterRSI.getResult().toFixed(3)).toBe(expected!);
         }
       }
-      expect(rsi.isStable).toBeTrue();
-      expect(fasterRSI.isStable).toBeTrue();
+      expect(rsi.isStable).toBe(true);
+      expect(fasterRSI.isStable).toBe(true);
 
       expect(rsi.getResult().toFixed(2)).toBe('78.50');
       expect(fasterRSI.getResult().toFixed(2)).toBe('78.50');
@@ -62,12 +62,12 @@ describe('RSI', () => {
     it('throws an error when there is not enough input data', () => {
       const rsi = new RSI(2);
       rsi.update(0);
-      expect(rsi.isStable).toBeFalse();
+      expect(rsi.isStable).toBe(false);
       try {
         rsi.getResult();
         fail('Expected error');
       } catch (error) {
-        expect(rsi.isStable).toBeFalse();
+        expect(rsi.isStable).toBe(false);
         expect(error).toBeInstanceOf(NotEnoughDataError);
       }
     });

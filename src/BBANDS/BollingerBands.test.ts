@@ -153,7 +153,7 @@ describe('FasterBollingerBands', () => {
       for (const price of prices) {
         fasterBB.update(price);
       }
-      expect(fasterBB.isStable).toBeTrue();
+      expect(fasterBB.isStable).toBe(true);
       const actual = fasterBB.getResult();
       expect(actual.lower.toFixed(2)).toBe('85.29');
       expect(actual.middle.toFixed(2)).toBe('86.80');

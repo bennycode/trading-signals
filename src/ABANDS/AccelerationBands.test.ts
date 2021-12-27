@@ -17,10 +17,10 @@ describe('AccelerationBands', () => {
   describe('getResult', () => {
     it('returns upper, middle and lower bands', () => {
       const accBands = new AccelerationBands(20, 4);
-      expect(accBands.isStable).toBeFalse();
+      expect(accBands.isStable).toBe(false);
 
       const fasterAccBands = new FasterAccelerationBands(20, 4);
-      expect(fasterAccBands.isStable).toBeFalse();
+      expect(fasterAccBands.isStable).toBe(false);
 
       // Test data from: https://github.com/QuantConnect/Lean/blob/master/Tests/TestData/spy_acceleration_bands_20_4.txt
       const candles = [
@@ -56,8 +56,8 @@ describe('AccelerationBands', () => {
       let fasterResult = fasterAccBands.getResult();
 
       // See: https://github.com/QuantConnect/Lean/blob/master/Tests/TestData/spy_acceleration_bands_20_4.txt#L21
-      expect(accBands.isStable).toBeTrue();
-      expect(fasterAccBands.isStable).toBeTrue();
+      expect(accBands.isStable).toBe(true);
+      expect(fasterAccBands.isStable).toBe(true);
 
       expect(result.lower.toFixed(4)).toBe('187.6891');
       expect(fasterResult.lower.toFixed(4)).toBe('187.6891');

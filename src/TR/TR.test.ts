@@ -51,8 +51,8 @@ describe('TR', () => {
           expect(fasterTR.getResult().toFixed(2)).toBe(expected!);
         }
       }
-      expect(tr.isStable).toBeTrue();
-      expect(fasterTR.isStable).toBeTrue();
+      expect(tr.isStable).toBe(true);
+      expect(fasterTR.isStable).toBe(true);
 
       expect(tr.getResult().toFixed(2)).toBe('0.86');
       expect(fasterTR.getResult().toFixed(2)).toBe('0.86');
