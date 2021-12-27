@@ -1,79 +1,81 @@
-import {StochasticOscillator} from './StochasticOscillator';
+import {FasterStochasticOscillator, StochasticOscillator} from './StochasticOscillator';
 import {NotEnoughDataError} from '../error';
 
 describe('StochasticOscillator', () => {
   describe('update', () => {
-    it('is stable when the amount of inputs is bigger than the required interval', () => {
+    it('calculates the StochasticOscillator', () => {
       // Test data verified with:
-      // https://runkit.com/anandaravindan/stochastic
-      const highs = [
-        127.009, 127.616, 126.591, 127.347, 128.173, 128.432, 127.367, 126.422, 126.9, 126.85, 125.646, 125.716,
-        127.158, 127.715, 127.686, 128.223, 128.273, 128.093, 128.273, 127.735, 128.77, 129.287, 130.063, 129.118,
-        129.287, 128.472, 128.093, 128.651, 129.138, 128.641,
-      ];
-      const lows = [
-        125.357, 126.163, 124.93, 126.094, 126.82, 126.482, 126.034, 124.83, 126.392, 125.716, 124.562, 124.572,
-        125.069, 126.86, 126.631, 126.8, 126.711, 126.8, 126.134, 125.925, 126.989, 127.815, 128.472, 128.064, 127.606,
-        127.596, 126.999, 126.9, 127.487, 127.397,
-      ];
-      const closes = [
-        125.357, 126.163, 124.93, 126.094, 126.82, 126.482, 126.034, 124.83, 126.392, 125.716, 124.562, 124.572,
-        125.069, 127.288, 127.178, 128.014, 127.109, 127.725, 127.059, 127.327, 128.71, 127.875, 128.581, 128.601,
-        127.934, 128.113, 127.596, 127.596, 128.69, 128.273,
-      ];
-
-      const expectations = [
-        {d: '75.75', k: '89.20'},
-        {d: '74.20', k: '65.81'},
-        {d: '78.91', k: '81.73'},
-        {d: '70.69', k: '64.52'},
-        {d: '73.59', k: '74.51'},
-        {d: '79.20', k: '98.57'},
-        {d: '81.07', k: '70.12'},
-        {d: '80.58', k: '73.06'},
-        {d: '72.20', k: '73.42'},
-        {d: '69.24', k: '61.23'},
-        {d: '65.20', k: '60.95'},
-        {d: '54.19', k: '40.38'},
-        {d: '47.24', k: '40.38'},
-        {d: '49.19', k: '66.82'},
-        {d: '54.65', k: '56.74'},
+      // https://tulipindicators.org/stoch
+      const candles = [
+        {high: 82.15, low: 81.29, close: 81.59},
+        {high: 81.89, low: 80.64, close: 81.06},
+        {high: 83.03, low: 81.31, close: 82.87},
+        {high: 83.3, low: 82.65, close: 83.0},
+        {high: 83.85, low: 83.07, close: 83.61},
+        {high: 83.9, low: 83.11, close: 83.15},
+        {high: 83.33, low: 82.49, close: 82.84},
+        {high: 84.3, low: 82.3, close: 83.99},
+        {high: 84.84, low: 84.15, close: 84.55},
+        {high: 85.0, low: 84.11, close: 84.36},
+        {high: 85.9, low: 84.03, close: 85.53},
+        {high: 86.58, low: 85.39, close: 86.54},
+        {high: 86.98, low: 85.76, close: 86.89},
+        {high: 88.0, low: 87.17, close: 87.77},
+        {high: 87.87, low: 87.01, close: 87.29},
       ];
 
-      const stoch = new StochasticOscillator(14, 3);
+      const stochKs = ['77.39', '83.13', '84.87', '88.36', '95.25', '96.74', '91.09'];
 
-      for (let i = 0; i < highs.length; i++) {
-        stoch.update({
-          close: closes[i],
-          high: highs[i],
-          low: lows[i],
-        });
-        if (stoch.isStable) {
-          const {k, d} = stoch.getResult();
-          const expected = expectations.shift()!;
-          expect(k.toFixed(2)).toBe(expected.k);
-          expect(d.toFixed(2)).toBe(expected.d);
+      const stochDs = ['75.70', '78.01', '81.79', '85.45', '89.49', '93.45', '94.36'];
+
+      const stoch = new StochasticOscillator(5, 3, 3);
+      const fasterStoch = new FasterStochasticOscillator(5, 3, 3);
+
+      for (const candle of candles) {
+        const stochResult = stoch.update(candle);
+        const fasterStochResult = fasterStoch.update(candle);
+        if (fasterStoch.isStable && fasterStochResult && stoch.isStable && stochResult) {
+          const stochD = stochDs.shift()!;
+          const stochK = stochKs.shift()!;
+
+          expect(stochResult.stochD.toFixed(2)).toEqual(stochD);
+          expect(fasterStochResult.stochD.toFixed(2)).toEqual(stochD);
+
+          expect(stochResult.stochD.toFixed(2)).toEqual(stochD);
+          expect(fasterStochResult.stochK.toFixed(2)).toEqual(stochK);
         }
       }
 
-      const {k, d} = stoch.getResult();
-      expect(k.toFixed(2)).toBe('56.74');
-      expect(d.toFixed(2)).toBe('54.65');
+      expect(stoch.isStable).toBeTrue();
+      expect(fasterStoch.isStable).toBeTrue();
+
+      expect(stoch.getResult().stochK.toFixed(2)).toBe('91.09');
+      expect(fasterStoch.getResult().stochK.toFixed(2)).toBe('91.09');
     });
   });
 
   describe('getResult', () => {
     it('throws an error when there is not enough input data', () => {
-      const stoch = new StochasticOscillator(5, 3);
+      const stoch = new StochasticOscillator(5, 3, 3);
+
+      stoch.update({close: 1, high: 1, low: 1});
+      stoch.update({close: 1, high: 2, low: 1});
+      stoch.update({close: 1, high: 3, low: 1});
+      stoch.update({close: 1, high: 4, low: 1});
+      stoch.update({close: 1, high: 5, low: 1}); // Emits 1st of 3 required values for %d period
+      stoch.update({close: 1, high: 6, low: 1}); // Emits 2nd of 3 required values for %d period
 
       try {
-        stoch.update({close: 1, high: 1, low: 1});
-        stoch.update({close: 1, high: 2, low: 1});
-        stoch.update({close: 1, high: 3, low: 1});
-        stoch.update({close: 1, high: 4, low: 1});
-        stoch.update({close: 1, high: 5, low: 1}); // Emits 1st of 3 required values for %d period
-        stoch.update({close: 1, high: 6, low: 1}); // Emits 2nd of 3 required values for %d period
         stoch.getResult();
+        fail('Expected error');
+      } catch (error) {
+        expect(error).toBeInstanceOf(NotEnoughDataError);
+      }
+
+      const fasterStoch = new FasterStochasticOscillator(5, 3, 3);
+
+      try {
+        fasterStoch.getResult();
         fail('Expected error');
       } catch (error) {
         expect(error).toBeInstanceOf(NotEnoughDataError);
@@ -81,7 +83,9 @@ describe('StochasticOscillator', () => {
     });
 
     it('prevents division by zero errors when highest high and lowest low have the same value', () => {
-      const stoch = new StochasticOscillator(5, 3);
+      const stoch = new StochasticOscillator(5, 3, 3);
+      stoch.update({close: 100, high: 100, low: 100});
+      stoch.update({close: 100, high: 100, low: 100});
       stoch.update({close: 100, high: 100, low: 100});
       stoch.update({close: 100, high: 100, low: 100});
       stoch.update({close: 100, high: 100, low: 100});
@@ -89,8 +93,15 @@ describe('StochasticOscillator', () => {
       stoch.update({close: 100, high: 100, low: 100});
       stoch.update({close: 100, high: 100, low: 100});
       const result = stoch.update({close: 100, high: 100, low: 100})!;
-      expect(result.k.toFixed(2)).toBe('0.00');
-      expect(result.d.toFixed(2)).toBe('0.00');
+      expect(result.stochK.toFixed(2)).toBe('0.00');
+      expect(result.stochD.toFixed(2)).toBe('0.00');
+
+      const fasterStoch = new FasterStochasticOscillator(1, 2, 2);
+      fasterStoch.update({close: 100, high: 100, low: 100});
+      fasterStoch.update({close: 100, high: 100, low: 100});
+      const {stochK, stochD} = fasterStoch.getResult();
+      expect(stochK.toFixed(2)).toBe('0.00');
+      expect(stochD.toFixed(2)).toBe('0.00');
     });
   });
 });
