@@ -29,7 +29,7 @@ export class FasterBollingerBandsWidth extends NumberIndicatorSeries {
 
   override update(price: number): void | number {
     const result = this.bollingerBands.update(price);
-    if (result) {
+    if (result !== undefined) {
       return this.setResult((result.upper - result.lower) / result.middle);
     }
   }

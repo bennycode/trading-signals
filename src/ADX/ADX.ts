@@ -78,7 +78,7 @@ export class FasterADX extends NumberIndicatorSeries<HighLowCloseNumber> {
 
   update(candle: HighLowCloseNumber): void | number {
     const result = this.dx.update(candle);
-    if (result) {
+    if (result !== undefined) {
       this.adx.update(result);
     }
     if (this.adx.isStable) {
