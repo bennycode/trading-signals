@@ -34,6 +34,7 @@ import {
   FasterROC,
   FasterRSI,
   FasterSMA,
+  FasterStochasticOscillator,
   FasterStochasticRSI,
   FasterTR,
   FasterWSMA,
@@ -49,6 +50,7 @@ import {
   ROC,
   RSI,
   SMA,
+  StochasticOscillator,
   StochasticRSI,
   TR,
   WSMA,
@@ -308,6 +310,18 @@ new Benchmark.Suite('Technical Indicators')
     const fasterSMA = new FasterSMA(interval);
     for (const price of prices) {
       fasterSMA.update(price);
+    }
+  })
+  .add('StochasticOscillator', () => {
+    const stoch = new StochasticOscillator(shortInterval, interval, interval);
+    for (const candle of candles) {
+      stoch.update(candle);
+    }
+  })
+  .add('FasterStochasticOscillator', () => {
+    const fasterStoch = new FasterStochasticOscillator(shortInterval, interval, interval);
+    for (const candle of highLowCloses) {
+      fasterStoch.update(candle);
     }
   })
   .add('StochasticRSI', () => {

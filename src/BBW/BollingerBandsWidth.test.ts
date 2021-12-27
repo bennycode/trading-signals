@@ -3,7 +3,7 @@ import {BollingerBandsWidth, FasterBollingerBandsWidth} from './BollingerBandsWi
 
 describe('BollingerBandsWidth', () => {
   describe('getResult', () => {
-    it('calculates the Bollinger Bands Width', () => {
+    it('calculates the Bollinger Bands Width (BBW)', () => {
       // eBay Inc. (EBAY) daily stock prices in USD on NASDAQ with CBOE BZX exchange
       const candles = [
         {open: 72.06, high: 72.07, low: 68.08, close: 68.21}, // 2021/07/30
