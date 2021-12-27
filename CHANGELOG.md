@@ -1,3 +1,9 @@
+### 3.4.0 (2021-12-27)
+
+##### New Features
+
+- **MACD:** Add faster implementation ([#384](https://github.com/bennycode/trading-signals/pull/384)) ([9d330d5d](https://github.com/bennycode/trading-signals/commit/9d330d5dd211b375f2dd8cb1b476297025912b30))
+
 ### 3.3.0 (2021-12-21)
 
 ##### New Features
