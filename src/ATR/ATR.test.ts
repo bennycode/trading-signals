@@ -1,5 +1,6 @@
+import {NotEnoughDataError} from '../error/NotEnoughDataError';
+import {FasterWSMA, WSMA} from '../WSMA/WSMA';
 import {ATR, FasterATR} from './ATR';
-import {NotEnoughDataError} from '..';
 
 describe('ATR', () => {
   describe('getResult', () => {
@@ -25,8 +26,8 @@ describe('ATR', () => {
       ];
       const expectations = ['1.12', '1.05', '1.01', '1.21', '1.14', '1.09', '1.24', '1.23', '1.23', '1.21', '1.14'];
 
-      const atr = new ATR(5);
-      const fasterATR = new FasterATR(5);
+      const atr = new ATR(new WSMA(5));
+      const fasterATR = new FasterATR(new FasterWSMA(5));
 
       for (const candle of candles) {
         atr.update(candle);
@@ -52,7 +53,7 @@ describe('ATR', () => {
     });
 
     it('throws an error when there is not enough input data', () => {
-      const atr = new ATR(14);
+      const atr = new ATR(new WSMA(14));
 
       try {
         atr.getResult();

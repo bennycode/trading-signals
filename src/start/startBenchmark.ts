@@ -116,13 +116,13 @@ new Benchmark.Suite('Technical Indicators')
     }
   })
   .add('ATR', () => {
-    const atr = new ATR(interval);
+    const atr = new ATR(new WSMA(interval));
     for (const candle of highLowCloses) {
       atr.update(candle);
     }
   })
   .add('FasterATR', () => {
-    const fasterATR = new FasterATR(interval);
+    const fasterATR = new FasterATR(new FasterWSMA(interval));
     for (const candle of highLowCloses) {
       fasterATR.update(candle);
     }

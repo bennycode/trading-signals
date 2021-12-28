@@ -31,7 +31,7 @@ export class DX extends BigIndicatorSeries<HighLowClose> {
 
   constructor(public readonly interval: number, SmoothingIndicator: MovingAverageTypes = WSMA) {
     super();
-    this.atr = new ATR(this.interval, SmoothingIndicator);
+    this.atr = new ATR(new SmoothingIndicator(this.interval));
     this.movesDown = new SmoothingIndicator(this.interval);
     this.movesUp = new SmoothingIndicator(this.interval);
   }
@@ -99,7 +99,7 @@ export class FasterDX extends NumberIndicatorSeries<HighLowCloseNumber> {
 
   constructor(public readonly interval: number, SmoothingIndicator: FasterMovingAverageTypes = FasterWSMA) {
     super();
-    this.atr = new FasterATR(this.interval, SmoothingIndicator);
+    this.atr = new FasterATR(new SmoothingIndicator(this.interval));
     this.movesDown = new SmoothingIndicator(this.interval);
     this.movesUp = new SmoothingIndicator(this.interval);
   }
