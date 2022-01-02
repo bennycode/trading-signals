@@ -9,7 +9,7 @@ export class ExternalObject<T> {
     [K: symbol]: T;
   };
 }
-export const enum MacdIndicatorEnum {
+export const enum MACDIndicatorEnum {
   EMA = 0,
   DEMA = 1,
 }
@@ -17,7 +17,7 @@ export interface MacdConfig {
   longInterval: number;
   shortInterval: number;
   signalInterval: number;
-  indicator: MacdIndicatorEnum;
+  indicator: MACDIndicatorEnum;
 }
 export interface MacdResult {
   histogram: number;

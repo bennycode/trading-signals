@@ -1,7 +1,7 @@
 import {MACD} from './MACD';
 import Big from 'big.js';
 import {DEMA, EMA, NotEnoughDataError} from '..';
-import {MACD as NativeMACD, MacdIndicatorEnum} from '../../native';
+import {MACD as NativeMACD, MACDIndicatorEnum} from '../../native';
 
 describe('MACD', () => {
   describe('getResult', () => {
@@ -75,7 +75,7 @@ describe('MACD', () => {
       });
 
       const nativeMacd = new NativeMACD({
-        indicator: MacdIndicatorEnum.EMA,
+        indicator: MACDIndicatorEnum.EMA,
         longInterval: 5,
         shortInterval: 2,
         signalInterval: 9,

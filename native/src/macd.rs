@@ -5,7 +5,7 @@ use crate::utils::MaIndicator;
 use napi::bindgen_prelude::ToNapiValue;
 use std::cell::Cell;
 
-#[napi]
+#[napi(js_name = "MACDIndicatorEnum")]
 pub enum MacdIndicatorEnum {
   EMA,
   DEMA,

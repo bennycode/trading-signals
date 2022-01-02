@@ -192,9 +192,9 @@ if (!nativeBinding) {
   throw new Error(`Failed to load native binding`);
 }
 
-const {DEMA, EMA, MacdIndicatorEnum, MACD} = nativeBinding;
+const {DEMA, EMA, MACDIndicatorEnum, MACD} = nativeBinding;
 
 module.exports.DEMA = DEMA;
 module.exports.EMA = EMA;
-module.exports.MacdIndicatorEnum = MacdIndicatorEnum;
+module.exports.MACDIndicatorEnum = MACDIndicatorEnum;
 module.exports.MACD = MACD;
