@@ -61,7 +61,7 @@ export class FasterStochasticRSI extends NumberIndicatorSeries {
 
   override update(price: number): void | number {
     const rsiResult = this.rsi.update(price);
-    if (rsiResult) {
+    if (rsiResult !== undefined) {
       const periodResult = this.period.update(rsiResult);
       if (periodResult) {
         const min = periodResult.lowest;

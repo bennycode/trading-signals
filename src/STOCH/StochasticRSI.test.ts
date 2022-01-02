@@ -20,8 +20,8 @@ describe('StochasticRSI', () => {
           expect(fasterResult.toFixed(3)).toBe(expected!);
         }
       }
-      expect(stochRSI.isStable).toBeTrue();
-      expect(fasterStochRSI.isStable).toBeTrue();
+      expect(stochRSI.isStable).toBe(true);
+      expect(fasterStochRSI.isStable).toBe(true);
 
       expect(stochRSI.getResult().valueOf()).toBe('0');
       expect(fasterStochRSI.getResult()).toBe(0);

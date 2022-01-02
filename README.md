@@ -48,7 +48,7 @@ All indicators can be updated over time by streaming data (prices or candles) to
 1. Dual Moving Average (DMA)
 1. Exponential Moving Average (EMA)
 1. Mean Absolute Deviation (MAD)
-1. Momentum (MOM)
+1. Momentum (MOM / MTM)
 1. Moving Average Convergence Divergence (MACD)
 1. Rate-of-Change (ROC)
 1. Relative Strength Index (RSI)

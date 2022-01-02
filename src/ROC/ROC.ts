@@ -1,5 +1,5 @@
 import Big, {BigSource} from 'big.js';
-import {BigIndicatorSeries} from '../Indicator';
+import {BigIndicatorSeries, NumberIndicatorSeries} from '../Indicator';
 
 /**
  * Rate Of Change Indicator (ROC)
@@ -11,29 +11,41 @@ import {BigIndicatorSeries} from '../Indicator';
  * @see https://www.investopedia.com/terms/r/rateofchange.asp
  */
 export class ROC extends BigIndicatorSeries {
-  private readonly priceHistory: BigSource[] = [];
+  public readonly prices: Big[] = [];
 
   constructor(public readonly interval: number) {
     super();
-    this.interval = interval;
   }
 
   override update(price: BigSource): Big | void {
-    this.priceHistory.push(price);
-    if (this.priceHistory.length <= this.interval) {
-      /**
-       * The priceHistory needs to have N prices in it before a result can be calculated with the following value. For
-       * an interval of 5, the first result can be given on the 6th value.
-       */
-      return;
-    }
+    this.prices.push(new Big(price));
 
     /**
-     * Take the price this.interval periods ago.
+     * The priceHistory needs to have N prices in it before a result can be calculated with the following value. For
+     * an interval of 5, the first result can be given on the 6th value.
      */
-    const comparePrice = this.priceHistory.shift() as Big;
+    if (this.prices.length > this.interval) {
+      const comparePrice = this.prices.shift()!;
 
-    // (Close - Close <interval> periods ago) / (Close <interval> periods ago)
-    return this.setResult(new Big(price).sub(comparePrice).div(comparePrice));
+      return this.setResult(new Big(price).sub(comparePrice).div(comparePrice));
+    }
+  }
+}
+
+export class FasterROC extends NumberIndicatorSeries {
+  public readonly prices: number[] = [];
+
+  constructor(public readonly interval: number) {
+    super();
+  }
+
+  override update(price: number): void | number {
+    this.prices.push(price);
+
+    if (this.prices.length > this.interval) {
+      const comparePrice = this.prices.shift()!;
+
+      return this.setResult((price - comparePrice) / comparePrice);
+    }
   }
 }

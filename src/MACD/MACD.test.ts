@@ -1,14 +1,14 @@
-import {MACD} from './MACD';
-import Big from 'big.js';
-import {DEMA, EMA, NotEnoughDataError} from '..';
+import {FasterMACD, MACD} from './MACD';
 import {MACD as NativeMACD, MACDIndicatorEnum} from '../../native';
+import Big from 'big.js';
+import {DEMA, EMA, FasterEMA, NotEnoughDataError} from '..';
 
 describe('MACD', () => {
   describe('getResult', () => {
     it('is compatible with results from Tulip Indicators (TI)', () => {
       // Test data verified with:
       // https://tulipindicators.org/macd
-      const inputs = [
+      const prices = [
         81.59, 81.06, 82.87, 83.0, 83.61, 83.15, 82.84, 83.99, 84.55, 84.36, 85.53, 86.54, 86.89, 87.77, 87.29,
       ];
 
@@ -74,30 +74,46 @@ describe('MACD', () => {
         signalInterval: 9,
       });
 
-      const nativeMacd = new NativeMACD({
+      const fasterMACD = new FasterMACD(new FasterEMA(2), new FasterEMA(5), new FasterEMA(9));
+      const nativeMACD = new NativeMACD({
         indicator: MACDIndicatorEnum.EMA,
-        longInterval: 5,
-        shortInterval: 2,
-        signalInterval: 9,
+        longInterval: 9,
+        shortInterval: 5,
+        signalInterval: 2,
       });
 
-      [macd, nativeMacd].forEach(indicator => {
-        for (const [index, input] of Object.entries(inputs)) {
-          indicator.update(input);
+      for (const [index, input] of Object.entries(prices)) {
+        macd.update(input);
+        fasterMACD.update(input);
+        nativeMACD.update(input);
 
-          const key = parseInt(index, 10);
-          const expectedMacd = expectedMacds[key]!;
-          const expectedMacdSignal = expectedMacdSignals[key]!;
-          const expectedMacdHistogram = expectedMacdHistograms[key]!;
+        const key = parseInt(index, 10);
+        const expectedMacd = expectedMacds[key];
+        const expectedMacdSignal = expectedMacdSignals[key]!;
+        const expectedMacdHistogram = expectedMacdHistograms[key]!;
 
-          if (expectedMacd !== undefined) {
-            const result = indicator.getResult();
-            expect(result.macd.toFixed(2)).withContext('MACD').toBe(expectedMacd);
-            expect(result.signal.toFixed(2)).withContext('MACD Signal').toBe(expectedMacdSignal);
-            expect(result.histogram.toFixed(2)).withContext('MACD Histogram').toBe(expectedMacdHistogram);
-          }
+        if (expectedMacd !== undefined) {
+          const result = macd.getResult();
+          const fasterResult = fasterMACD.getResult();
+          const nativeResult = nativeMACD.getResult();
+
+          expect(result.macd.toFixed(2)).toBe(expectedMacd);
+          expect(fasterResult.macd.toFixed(2)).toBe(expectedMacd);
+          expect(nativeResult.macd.toFixed(2)).toBe(expectedMacd);
+
+          expect(result.signal.toFixed(2)).toBe(expectedMacdSignal);
+          expect(fasterResult.signal.toFixed(2)).toBe(expectedMacdSignal);
+          expect(nativeResult.signal.toFixed(2)).toBe(expectedMacdSignal);
+
+          expect(result.histogram.toFixed(2)).toBe(expectedMacdHistogram);
+          expect(fasterResult.histogram.toFixed(2)).toBe(expectedMacdHistogram);
+          expect(nativeResult.histogram.toFixed(2)).toBe(expectedMacdHistogram);
         }
-      });
+      }
+
+      expect(macd.isStable).toBe(true);
+      expect(fasterMACD.isStable).toBe(true);
+      expect(nativeMACD.isStable).toBe(true);
     });
 
     it('throws an error when there is not enough input data', () => {
@@ -110,6 +126,15 @@ describe('MACD', () => {
 
       try {
         macd.getResult();
+        fail('Expected error');
+      } catch (error) {
+        expect(error).toBeInstanceOf(NotEnoughDataError);
+      }
+
+      const fasterMACD = new FasterMACD(new FasterEMA(12), new FasterEMA(26), new FasterEMA(9));
+
+      try {
+        fasterMACD.getResult();
         fail('Expected error');
       } catch (error) {
         expect(error).toBeInstanceOf(NotEnoughDataError);
@@ -149,11 +174,11 @@ describe('MACD', () => {
       ];
 
       expect(mockedPrices.length).toBe(longInterval);
-      expect(macd.isStable).toBeFalse();
+      expect(macd.isStable).toBe(false);
 
       mockedPrices.forEach(price => macd.update(price));
 
-      expect(macd.isStable).toBeTrue();
+      expect(macd.isStable).toBe(true);
     });
   });
 });

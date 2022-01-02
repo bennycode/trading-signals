@@ -26,11 +26,11 @@ describe('CG', () => {
       cg.update(20);
       cg.update(30);
       cg.update(40);
-      expect(cg.isStable).toBeFalse();
+      expect(cg.isStable).toBe(false);
       cg.update(50);
-      expect(cg.isStable).toBeFalse();
+      expect(cg.isStable).toBe(false);
       cg.update(60);
-      expect(cg.isStable).toBeTrue();
+      expect(cg.isStable).toBe(true);
     });
   });
 
@@ -45,18 +45,18 @@ describe('CG', () => {
       }
       let cgResult = cg.getResult();
       let signalResult = cg.signal.getResult();
-      expect(cgResult.gt(signalResult)).toBeTrue();
+      expect(cgResult.gt(signalResult)).toBe(true);
       [150, 110, 90, 130].forEach(price => {
         cg.update(price);
         fasterCG.update(price);
       });
 
-      expect(cg.isStable).toBeTrue();
-      expect(fasterCG.isStable).toBeTrue();
+      expect(cg.isStable).toBe(true);
+      expect(fasterCG.isStable).toBe(true);
 
       cgResult = cg.getResult();
       signalResult = cg.signal.getResult();
-      expect(cgResult.gt(signalResult)).toBeFalse();
+      expect(cgResult.gt(signalResult)).toBe(false);
 
       expect(cgResult.toFixed(4)).toBe('2.7059');
       expect(fasterCG.getResult().toFixed(4)).toBe('2.7059');

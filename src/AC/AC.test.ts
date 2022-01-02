@@ -261,8 +261,8 @@ describe('AC', () => {
 
       // Result verified with:
       // https://github.com/jesse-ai/jesse/blob/53297462d48ebf43f9df46ab5005076d25073e5e/tests/test_indicators.py#L14
-      expect(ac.isStable).toBeTrue();
-      expect(fasterAC.isStable).toBeTrue();
+      expect(ac.isStable).toBe(true);
+      expect(fasterAC.isStable).toBe(true);
 
       expect(ac.getResult().toFixed(2)).toBe('-21.97');
       expect(fasterAC.getResult().toFixed(2)).toBe('-21.97');

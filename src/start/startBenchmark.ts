@@ -10,6 +10,7 @@ import {
   BollingerBandsWidth,
   CCI,
   CG,
+  DEMA,
   DMA,
   DX,
   EMA,
@@ -22,14 +23,18 @@ import {
   FasterBollingerBandsWidth,
   FasterCCI,
   FasterCG,
+  FasterDEMA,
   FasterDMA,
   FasterDX,
   FasterEMA,
+  FasterMACD,
   FasterMAD,
   FasterMOM,
   FasterPeriod,
+  FasterROC,
   FasterRSI,
   FasterSMA,
+  FasterStochasticOscillator,
   FasterStochasticRSI,
   FasterTR,
   FasterWSMA,
@@ -38,11 +43,14 @@ import {
   getFasterStandardDeviation,
   getStandardDeviation,
   HighLowCloseNumber,
+  MACD,
   MAD,
   MOM,
   Period,
+  ROC,
   RSI,
   SMA,
+  StochasticOscillator,
   StochasticRSI,
   TR,
   WSMA,
@@ -167,6 +175,18 @@ new Benchmark.Suite('Technical Indicators')
       fasterCG.update(price);
     }
   })
+  .add('DEMA', () => {
+    const dema = new DEMA(interval);
+    for (const price of prices) {
+      dema.update(price);
+    }
+  })
+  .add('FasterDEMA', () => {
+    const fasterDEMA = new FasterDEMA(interval);
+    for (const price of prices) {
+      fasterDEMA.update(price);
+    }
+  })
   .add('DMA', () => {
     const dma = new DMA(3, 6);
     for (const price of prices) {
@@ -201,6 +221,23 @@ new Benchmark.Suite('Technical Indicators')
     const fasterEMA = new FasterEMA(interval);
     for (const price of prices) {
       fasterEMA.update(price);
+    }
+  })
+  .add('MACD', () => {
+    const mad = new MACD({
+      indicator: EMA,
+      longInterval: 5,
+      shortInterval: 2,
+      signalInterval: 9,
+    });
+    for (const price of prices) {
+      mad.update(price);
+    }
+  })
+  .add('FasterMACD', () => {
+    const fasterMACD = new FasterMACD(new FasterEMA(2), new FasterEMA(5), new FasterEMA(9));
+    for (const price of prices) {
+      fasterMACD.update(price);
     }
   })
   .add('MAD', () => {
@@ -239,6 +276,18 @@ new Benchmark.Suite('Technical Indicators')
       fasterPeriod.update(price);
     }
   })
+  .add('ROC', () => {
+    const roc = new ROC(interval);
+    for (const price of prices) {
+      roc.update(price);
+    }
+  })
+  .add('FasterROC', () => {
+    const fasterROC = new FasterROC(interval);
+    for (const price of prices) {
+      fasterROC.update(price);
+    }
+  })
   .add('RSI', () => {
     const rsi = new RSI(interval);
     for (const price of prices) {
@@ -261,6 +310,18 @@ new Benchmark.Suite('Technical Indicators')
     const fasterSMA = new FasterSMA(interval);
     for (const price of prices) {
       fasterSMA.update(price);
+    }
+  })
+  .add('StochasticOscillator', () => {
+    const stoch = new StochasticOscillator(shortInterval, interval, interval);
+    for (const candle of candles) {
+      stoch.update(candle);
+    }
+  })
+  .add('FasterStochasticOscillator', () => {
+    const fasterStoch = new FasterStochasticOscillator(shortInterval, interval, interval);
+    for (const candle of highLowCloses) {
+      fasterStoch.update(candle);
     }
   })
   .add('StochasticRSI', () => {

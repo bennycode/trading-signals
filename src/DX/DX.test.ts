@@ -50,8 +50,8 @@ describe('DX', () => {
         }
       }
 
-      expect(dx.isStable).toBeTrue();
-      expect(fasterDX.isStable).toBeTrue();
+      expect(dx.isStable).toBe(true);
+      expect(fasterDX.isStable).toBe(true);
 
       expect(dx.getResult().toFixed(2)).toBe('75.61');
       expect(fasterDX.getResult().toFixed(2)).toBe('75.61');
@@ -80,8 +80,8 @@ describe('DX', () => {
         fasterDX.update(candle);
       }
 
-      expect(dx.isStable).toBeTrue();
-      expect(fasterDX.isStable).toBeTrue();
+      expect(dx.isStable).toBe(true);
+      expect(fasterDX.isStable).toBe(true);
 
       expect(dx.getResult().valueOf()).toBe('0');
       expect(fasterDX.getResult().valueOf()).toBe(0);

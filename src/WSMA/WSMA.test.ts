@@ -41,8 +41,8 @@ describe('WSMA', () => {
         }
       }
 
-      expect(wsma.isStable).toBeTrue();
-      expect(fasterWSMA.isStable).toBeTrue();
+      expect(wsma.isStable).toBe(true);
+      expect(fasterWSMA.isStable).toBe(true);
 
       expect(wsma.getResult().toFixed(4)).toBe('62.8540');
       expect(fasterWSMA.getResult().toFixed(4)).toBe('62.8540');
@@ -84,9 +84,9 @@ describe('WSMA', () => {
       const wsma = new WSMA(3);
       wsma.update(1);
       wsma.update(2);
-      expect(wsma.isStable).toBeFalse();
+      expect(wsma.isStable).toBe(false);
       wsma.update(3);
-      expect(wsma.isStable).toBeTrue();
+      expect(wsma.isStable).toBe(true);
     });
   });
 });

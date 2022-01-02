@@ -50,7 +50,7 @@ describe('EMA', () => {
         fail('Expected error');
       } catch (error) {
         expect(error).toBeInstanceOf(NotEnoughDataError);
-        expect(ema.isStable).toBeFalse();
+        expect(ema.isStable).toBe(false);
       }
 
       const fasterEMA = new FasterEMA(10);
@@ -60,7 +60,7 @@ describe('EMA', () => {
         fail('Expected error');
       } catch (error) {
         expect(error).toBeInstanceOf(NotEnoughDataError);
-        expect(fasterEMA.isStable).toBeFalse();
+        expect(fasterEMA.isStable).toBe(false);
       }
     });
   });
