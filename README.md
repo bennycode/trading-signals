@@ -56,6 +56,7 @@ All indicators can be updated over time by streaming data (prices or candles) to
 1. Stochastic Oscillator (STOCH)
 1. Stochastic RSI (STOCHRSI)
 1. True Range (TR)
+1. On-Balance Volume (OBV)
 1. Wilder's Smoothed Moving Average (WSMA / WMA / WWS / SMMA / MEMA)
 
 Utility Methods:
