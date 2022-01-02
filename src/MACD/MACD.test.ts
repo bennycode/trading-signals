@@ -1,6 +1,7 @@
 import {MACD} from './MACD';
 import Big from 'big.js';
 import {DEMA, EMA, NotEnoughDataError} from '..';
+import {MACD as NativeMACD, MacdIndicatorEnum} from '../../native';
 
 describe('MACD', () => {
   describe('getResult', () => {
@@ -66,28 +67,37 @@ describe('MACD', () => {
         '-0.08',
       ];
 
-      const indicator = new MACD({
+      const macd = new MACD({
         indicator: EMA,
         longInterval: 5,
         shortInterval: 2,
         signalInterval: 9,
       });
 
-      for (const [index, input] of Object.entries(inputs)) {
-        indicator.update(input);
+      const nativeMacd = new NativeMACD({
+        indicator: MacdIndicatorEnum.EMA,
+        longInterval: 5,
+        shortInterval: 2,
+        signalInterval: 9,
+      });
 
-        const key = parseInt(index, 10);
-        const expectedMacd = expectedMacds[key]!;
-        const expectedMacdSignal = expectedMacdSignals[key]!;
-        const expectedMacdHistogram = expectedMacdHistograms[key]!;
+      [macd, nativeMacd].forEach(indicator => {
+        for (const [index, input] of Object.entries(inputs)) {
+          indicator.update(input);
 
-        if (expectedMacd !== undefined) {
-          const result = indicator.getResult();
-          expect(result.macd.toFixed(2)).withContext('MACD').toBe(expectedMacd);
-          expect(result.signal.toFixed(2)).withContext('MACD Signal').toBe(expectedMacdSignal);
-          expect(result.histogram.toFixed(2)).withContext('MACD Histogram').toBe(expectedMacdHistogram);
+          const key = parseInt(index, 10);
+          const expectedMacd = expectedMacds[key]!;
+          const expectedMacdSignal = expectedMacdSignals[key]!;
+          const expectedMacdHistogram = expectedMacdHistograms[key]!;
+
+          if (expectedMacd !== undefined) {
+            const result = indicator.getResult();
+            expect(result.macd.toFixed(2)).withContext('MACD').toBe(expectedMacd);
+            expect(result.signal.toFixed(2)).withContext('MACD Signal').toBe(expectedMacdSignal);
+            expect(result.histogram.toFixed(2)).withContext('MACD Histogram').toBe(expectedMacdHistogram);
+          }
         }
-      }
+      });
     });
 
     it('throws an error when there is not enough input data', () => {

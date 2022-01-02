@@ -1,4 +1,5 @@
 import {EMA, FasterEMA, NotEnoughDataError} from '..';
+import {EMA as NativeEMA} from '../../native';
 
 describe('EMA', () => {
   // Test data verified with:
@@ -21,20 +22,24 @@ describe('EMA', () => {
   ];
 
   describe('getResult', () => {
-    it('calculates the Exponential Moving Average over a period of 5', () => {
+    fit('calculates the Exponential Moving Average over a period of 5', () => {
       const ema = new EMA(5);
       const fasterEMA = new FasterEMA(5);
+      const nativeEMA = new NativeEMA(5);
       for (const price of prices) {
         ema.update(price);
         fasterEMA.update(price);
-        if (ema.isStable && fasterEMA.isStable) {
+        nativeEMA.update(price);
+        if (ema.isStable && fasterEMA.isStable && nativeEMA.isStable) {
           const expected = expectations.shift();
           expect(ema.getResult().toFixed(2)).toBe(expected!);
           expect(fasterEMA.getResult().toFixed(2)).toBe(expected!);
+          expect(nativeEMA.getResult().toFixed(2)).toBe(expected!);
         }
       }
       expect(ema.getResult().toFixed(2)).toBe('86.70');
       expect(fasterEMA.getResult().toFixed(2)).toBe('86.70');
+      expect(nativeEMA.getResult().toFixed(2)).toBe('86.70');
     });
 
     it('throws an error when there is not enough input data', () => {

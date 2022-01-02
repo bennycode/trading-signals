@@ -11,6 +11,7 @@ coverage/
 dist/
 lerna-debug.log
 node_modules/
+native/target
 npm-debug.log*
 package-lock.json
 yarn-error.log
