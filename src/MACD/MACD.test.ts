@@ -77,9 +77,9 @@ describe('MACD', () => {
       const fasterMACD = new FasterMACD(new FasterEMA(2), new FasterEMA(5), new FasterEMA(9));
       const nativeMACD = new NativeMACD({
         indicator: MACDIndicatorEnum.EMA,
-        longInterval: 9,
-        shortInterval: 5,
-        signalInterval: 2,
+        longInterval: 5,
+        shortInterval: 2,
+        signalInterval: 9,
       });
 
       for (const [index, input] of Object.entries(prices)) {

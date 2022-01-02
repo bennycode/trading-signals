@@ -92,6 +92,7 @@
     "release:patch": "generate-changelog -p -x \"chore,test\" && yarn changelog:commit && npm version patch",
     "start:benchmark": "ts-node ./src/start/startBenchmark.ts",
     "test": "yarn test:dev --coverage",
+    "dev": "jest",
     "test:dev": "jest ./src",
     "test:types": "yarn lint:types"
   },
