@@ -30,6 +30,7 @@ import {
   FasterMACD,
   FasterMAD,
   FasterMOM,
+  FasterOBV,
   FasterPeriod,
   FasterROC,
   FasterRSI,
@@ -46,6 +47,7 @@ import {
   MACD,
   MAD,
   MOM,
+  OBV,
   Period,
   ROC,
   RSI,
@@ -64,6 +66,13 @@ const highLowCloses: HighLowCloseNumber[] = candles.map(candle => ({
   close: parseInt(candle.close, 10),
   high: parseInt(candle.high, 10),
   low: parseInt(candle.low, 10),
+}));
+const candleNumbers = candles.map(candle => ({
+  close: parseInt(candle.close, 10),
+  high: parseInt(candle.high, 10),
+  low: parseInt(candle.low, 10),
+  open: parseInt(candle.open, 10),
+  volume: parseInt(candle.volume, 10),
 }));
 
 new Benchmark.Suite('Technical Indicators')
@@ -262,6 +271,18 @@ new Benchmark.Suite('Technical Indicators')
     const fasterMOM = new FasterMOM(interval);
     for (const price of prices) {
       fasterMOM.update(price);
+    }
+  })
+  .add('OBV', () => {
+    const obv = new OBV();
+    for (const candle of candles) {
+      obv.update(candle);
+    }
+  })
+  .add('FasterOBV', () => {
+    const fasterOBV = new FasterOBV();
+    for (const candle of candleNumbers) {
+      fasterOBV.update(candle);
     }
   })
   .add('Period', () => {
