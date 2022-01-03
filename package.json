@@ -85,7 +85,7 @@
     "lint:other": "yarn prettier --list-different",
     "lint:types": "tsc --noEmit",
     "postversion": "git push origin && git push origin --tags && npm publish",
-    "prettier": "prettier --ignore-path .gitignore --loglevel silent \"**/*.{json,scss,yml}\"",
+    "prettier": "prettier --ignore-path .gitignore --loglevel error \"**/*.{json,scss,yml}\"",
     "preversion": "git checkout main && git pull && yarn && yarn test && yarn dist",
     "release:major": "generate-changelog -M -x \"chore,test\" && yarn changelog:commit && npm version major",
     "release:minor": "generate-changelog -m -x \"chore,test\" && yarn changelog:commit && npm version minor",
