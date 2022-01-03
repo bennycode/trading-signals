@@ -1,3 +1,13 @@
+### 3.6.0 (2022-01-03)
+
+##### New Features
+
+- **OBV:** Add On-Balance Volume (OBV) ([#394](https://github.com/bennycode/trading-signals/pull/394)) ([65b23140](https://github.com/bennycode/trading-signals/commit/65b23140c3d78a5da9d1dd8bd7945077475adbdd))
+
+##### Refactors
+
+- Sort supported technical indicators ([c2be2192](https://github.com/bennycode/trading-signals/commit/c2be21929a7e48d591f85ae2cf67ff0ae3c28828))
+
 ### 3.5.0 (2021-12-27)
 
 ##### New Features
