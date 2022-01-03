@@ -50,13 +50,13 @@ All indicators can be updated over time by streaming data (prices or candles) to
 1. Mean Absolute Deviation (MAD)
 1. Momentum (MOM / MTM)
 1. Moving Average Convergence Divergence (MACD)
+1. On-Balance Volume (OBV)
 1. Rate-of-Change (ROC)
 1. Relative Strength Index (RSI)
 1. Simple Moving Average (SMA)
 1. Stochastic Oscillator (STOCH)
 1. Stochastic RSI (STOCHRSI)
 1. True Range (TR)
-1. On-Balance Volume (OBV)
 1. Wilder's Smoothed Moving Average (WSMA / WMA / WWS / SMMA / MEMA)
 
 Utility Methods:
