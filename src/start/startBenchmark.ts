@@ -30,6 +30,7 @@ import {
   FasterMACD,
   FasterMAD,
   FasterMOM,
+  FasterOBV,
   FasterPeriod,
   FasterROC,
   FasterRSI,
@@ -42,10 +43,11 @@ import {
   getFasterAverage,
   getFasterStandardDeviation,
   getStandardDeviation,
-  HighLowCloseNumber,
   MACD,
   MAD,
   MOM,
+  OBV,
+  OpenHighLowCloseVolumeNumber,
   Period,
   ROC,
   RSI,
@@ -60,70 +62,72 @@ const shortInterval = 10;
 const interval = 20;
 const longInterval = 40;
 const prices: number[] = candles.map(candle => parseInt(candle.close, 10));
-const highLowCloses: HighLowCloseNumber[] = candles.map(candle => ({
+const openHighLowCloseVolumes: OpenHighLowCloseVolumeNumber[] = candles.map(candle => ({
   close: parseInt(candle.close, 10),
   high: parseInt(candle.high, 10),
   low: parseInt(candle.low, 10),
+  open: parseInt(candle.open, 10),
+  volume: parseInt(candle.volume, 10),
 }));
 
 new Benchmark.Suite('Technical Indicators')
   .add('AccelerationBands', () => {
     const accBands = new AccelerationBands(interval, 4);
-    for (const candle of highLowCloses) {
+    for (const candle of openHighLowCloseVolumes) {
       accBands.update(candle);
     }
   })
   .add('FasterAccelerationBands', () => {
     const fasterAccBands = new FasterAccelerationBands(interval, 4);
-    for (const candle of highLowCloses) {
+    for (const candle of openHighLowCloseVolumes) {
       fasterAccBands.update(candle);
     }
   })
   .add('AC', () => {
     const ac = new AC(shortInterval, longInterval, interval);
-    for (const candle of highLowCloses) {
+    for (const candle of openHighLowCloseVolumes) {
       ac.update(candle);
     }
   })
   .add('FasterAC', () => {
     const fasterAC = new FasterAC(shortInterval, longInterval, interval);
-    for (const candle of highLowCloses) {
+    for (const candle of openHighLowCloseVolumes) {
       fasterAC.update(candle);
     }
   })
   .add('ADX', () => {
     const adx = new ADX(interval);
-    for (const candle of highLowCloses) {
+    for (const candle of openHighLowCloseVolumes) {
       adx.update(candle);
     }
   })
   .add('FasterADX', () => {
     const fasterADX = new FasterADX(interval);
-    for (const candle of highLowCloses) {
+    for (const candle of openHighLowCloseVolumes) {
       fasterADX.update(candle);
     }
   })
   .add('AO', () => {
     const ao = new AO(shortInterval, interval);
-    for (const candle of highLowCloses) {
+    for (const candle of openHighLowCloseVolumes) {
       ao.update(candle);
     }
   })
   .add('FasterAO', () => {
     const fasterAO = new FasterAO(shortInterval, interval);
-    for (const candle of highLowCloses) {
+    for (const candle of openHighLowCloseVolumes) {
       fasterAO.update(candle);
     }
   })
   .add('ATR', () => {
     const atr = new ATR(interval);
-    for (const candle of highLowCloses) {
+    for (const candle of openHighLowCloseVolumes) {
       atr.update(candle);
     }
   })
   .add('FasterATR', () => {
     const fasterATR = new FasterATR(interval);
-    for (const candle of highLowCloses) {
+    for (const candle of openHighLowCloseVolumes) {
       fasterATR.update(candle);
     }
   })
@@ -153,13 +157,13 @@ new Benchmark.Suite('Technical Indicators')
   })
   .add('CCI', () => {
     const cci = new CCI(interval);
-    for (const candle of highLowCloses) {
+    for (const candle of openHighLowCloseVolumes) {
       cci.update(candle);
     }
   })
   .add('FasterCCI', () => {
     const fasterCCI = new FasterCCI(interval);
-    for (const candle of highLowCloses) {
+    for (const candle of openHighLowCloseVolumes) {
       fasterCCI.update(candle);
     }
   })
@@ -201,13 +205,13 @@ new Benchmark.Suite('Technical Indicators')
   })
   .add('DX', () => {
     const dx = new DX(interval);
-    for (const candle of highLowCloses) {
+    for (const candle of openHighLowCloseVolumes) {
       dx.update(candle);
     }
   })
   .add('FasterDX', () => {
     const fasterDX = new FasterDX(interval);
-    for (const candle of highLowCloses) {
+    for (const candle of openHighLowCloseVolumes) {
       fasterDX.update(candle);
     }
   })
@@ -262,6 +266,18 @@ new Benchmark.Suite('Technical Indicators')
     const fasterMOM = new FasterMOM(interval);
     for (const price of prices) {
       fasterMOM.update(price);
+    }
+  })
+  .add('OBV', () => {
+    const obv = new OBV();
+    for (const candle of openHighLowCloseVolumes) {
+      obv.update(candle);
+    }
+  })
+  .add('FasterOBV', () => {
+    const fasterOBV = new FasterOBV();
+    for (const candle of openHighLowCloseVolumes) {
+      fasterOBV.update(candle);
     }
   })
   .add('Period', () => {
@@ -320,7 +336,7 @@ new Benchmark.Suite('Technical Indicators')
   })
   .add('FasterStochasticOscillator', () => {
     const fasterStoch = new FasterStochasticOscillator(shortInterval, interval, interval);
-    for (const candle of highLowCloses) {
+    for (const candle of openHighLowCloseVolumes) {
       fasterStoch.update(candle);
     }
   })
@@ -338,13 +354,13 @@ new Benchmark.Suite('Technical Indicators')
   })
   .add('TR', () => {
     const tr = new TR();
-    for (const candle of highLowCloses) {
+    for (const candle of openHighLowCloseVolumes) {
       tr.update(candle);
     }
   })
   .add('FasterTR', () => {
     const fasterTR = new FasterTR();
-    for (const candle of highLowCloses) {
+    for (const candle of openHighLowCloseVolumes) {
       fasterTR.update(candle);
     }
   })

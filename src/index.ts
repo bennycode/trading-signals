@@ -18,6 +18,7 @@ export * from './MA/MovingAverageTypes';
 export * from './MACD/MACD';
 export * from './MAD/MAD';
 export * from './MOM/MOM';
+export * from './OBV/OBV';
 export * from './ROC/ROC';
 export * from './RSI/RSI';
 export * from './SMA/SMA';
