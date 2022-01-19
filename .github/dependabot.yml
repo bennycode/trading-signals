@@ -1,11 +1,19 @@
 version: 2
 updates:
-  - package-ecosystem: npm
+  - package-ecosystem: 'github-actions'
     directory: '/'
     schedule:
-      day: monday
-      interval: monthly
+      day: 'monday'
+      interval: 'monthly'
       time: '02:00'
+      timezone: 'Europe/Berlin'
+  - package-ecosystem: 'npm'
+    directory: '/'
+    schedule:
+      day: 'monday'
+      interval: 'monthly'
+      time: '02:00'
+      timezone: 'Europe/Berlin'
     pull-request-branch-name:
       separator: '-'
     open-pull-requests-limit: 99
