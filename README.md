@@ -159,6 +159,7 @@ It is very important to do your own analysis before making any investment based 
 - [Technical Analysis for Rust (Rust)](https://github.com/greyblake/ta-rs)
 - [Technical Analysis Library using Pandas and Numpy (Python)](https://github.com/bukosabino/ta)
 - [Tulip Indicators (ANSI C)](https://github.com/TulipCharts/tulipindicators)
+- [ta4j (Java)](https://github.com/ta4j/ta4j)
 
 ## Maintainers
 
