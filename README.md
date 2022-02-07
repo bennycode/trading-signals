@@ -165,6 +165,8 @@ It is very important to do your own analysis before making any investment based 
 
 [![Benny Neugebauer on Stack Exchange][stack_exchange_bennycode_badge]][stack_exchange_bennycode_url]
 
+- [Follow Benny on Twitter](https://twitter.com/bennycode) or [on YouTube](https://www.youtube.com/typescripttv)
+
 ## Contributing
 
 Contributions, issues and feature requests are welcome!
