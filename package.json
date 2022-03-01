@@ -10,7 +10,7 @@
   "devDependencies": {
     "@types/benchmark": "2.1.1",
     "@types/jest": "27.4.0",
-    "@types/node": "16.11.21",
+    "@types/node": "16.11.26",
     "@typescript-eslint/eslint-plugin": "5.10.2",
     "@typescript-eslint/parser": "5.13.0",
     "benchmark": "2.1.4",
