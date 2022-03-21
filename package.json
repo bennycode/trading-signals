@@ -12,7 +12,7 @@
     "@types/jest": "27.4.1",
     "@types/node": "16.11.26",
     "@typescript-eslint/eslint-plugin": "5.13.0",
-    "@typescript-eslint/parser": "5.13.0",
+    "@typescript-eslint/parser": "5.16.0",
     "benchmark": "2.1.4",
     "eslint": "8.10.0",
     "eslint-config-prettier": "8.4.0",
