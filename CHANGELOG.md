@@ -1,3 +1,11 @@
+#### 3.6.1 (2022-03-29)
+
+##### Documentation Changes
+
+- Generate API docs ([#435](https://github.com/bennycode/trading-signals/pull/435)) ([358b3e58](https://github.com/bennycode/trading-signals/commit/358b3e582190e1c8ada61f7ee3cc85d07afec294))
+- Add contact details ([4c87ea7e](https://github.com/bennycode/trading-signals/commit/4c87ea7e263e2d91782d704cceba9754f78d3daa))
+- Add ta4j ([0a3a54e1](https://github.com/bennycode/trading-signals/commit/0a3a54e1ab525b3260d8a43e74461d2d58a2a8b9))
+
 ### 3.6.0 (2022-01-03)
 
 ##### New Features
