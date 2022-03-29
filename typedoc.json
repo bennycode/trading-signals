@@ -1,0 +1,10 @@
+{
+  "cleanOutputDir": false,
+  "entryPoints": ["src"],
+  "exclude": ["**/demo/**/*", "**/payload/**/*", "**/test/**/*", "**/*+(index|.test*).ts"],
+  "excludeExternals": true,
+  "excludePrivate": true,
+  "excludeProtected": true,
+  "out": "docs",
+  "theme": "markdown"
+}
