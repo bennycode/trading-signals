@@ -806,10 +806,10 @@
   resolved "https://registry.npmjs.org/@types/benchmark/-/benchmark-2.1.1.tgz#d763df29717d93aa333eb11f421ef383a5df5673"
   integrity sha512-XmdNOarpSSxnb3DE2rRFOFsEyoqXLUL+7H8nSGS25vs+JS0018bd+cW5Ma9vdlkPmoTHSQ6e8EUFMFMxeE4l+g==
 
-"@types/big.js@6.1.3":
-  version "6.1.3"
-  resolved "https://registry.npmjs.org/@types/big.js/-/big.js-6.1.3.tgz#c008dec4dae24c7a338ebb4521c46e9609020807"
-  integrity sha512-fHh2h1cFlvGP0kFCqoAsnuQoM0n3xHB6HxgZvELt7dji+BtK/j938MRL0nG5AA45EgibuFcPjgLlkqfUPCyoKw==
+"@types/big.js@6.1.4":
+  version "6.1.4"
+  resolved "https://registry.npmjs.org/@types/big.js/-/big.js-6.1.4.tgz#a2299b68c4a9e39099661e5fb3ddf14c7b29f4cb"
+  integrity sha512-yBEfFBLpvnIS9MLcKG4XIpBhMRjDWEf4cSJ/uR5cPq2JrYB+yhYMPK8cF17hGfWmsWL7LuzJF/N4APRtmcg4sw==
 
 "@types/graceful-fs@^4.1.2":
   version "4.1.5"
@@ -1246,10 +1246,10 @@ benchmark@2.1.4:
     lodash "^4.17.4"
     platform "^1.3.3"
 
-big.js@6.1.1:
-  version "6.1.1"
-  resolved "https://registry.npmjs.org/big.js/-/big.js-6.1.1.tgz#63b35b19dc9775c94991ee5db7694880655d5537"
-  integrity sha512-1vObw81a8ylZO5ePrtMay0n018TcftpTA5HFKDaSuiUDBo8biRBtjIobw60OpwuvrGk+FsxKamqN4cnmj/eXdg==
+big.js@6.2.0:
+  version "6.2.0"
+  resolved "https://registry.npmjs.org/big.js/-/big.js-6.2.0.tgz#39c60822aecb0f34a1d79a90fe9908a0ddf45e1d"
+  integrity sha512-paIKvJiAaOYdLt6MfnvxkDo64lTOV257XYJyX3oJnJQocIclUn+48k6ZerH/c5FxWE6DGJu1TKDYis7tqHg9kg==
 
 bluebird@^3.0.6:
   version "3.7.2"
