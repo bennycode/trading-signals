@@ -3,8 +3,8 @@
     "url": "https://github.com/bennycode/trading-signals/issues"
   },
   "dependencies": {
-    "@types/big.js": "6.1.4",
-    "big.js": "6.2.0"
+    "@types/big.js": "6.1.5",
+    "big.js": "6.2.1"
   },
   "description": "Technical indicators to run technical analysis with JavaScript / TypeScript.",
   "devDependencies": {
