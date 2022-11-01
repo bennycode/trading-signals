@@ -3888,10 +3888,10 @@ typedoc-plugin-markdown@3.13.6:
   dependencies:
     handlebars "^4.7.7"
 
-typedoc@0.23.15:
-  version "0.23.15"
-  resolved "https://registry.npmjs.org/typedoc/-/typedoc-0.23.15.tgz#6d995c47d34e5785dadffe0ebc28372bd019e5e5"
-  integrity sha512-x9Zu+tTnwxb9YdVr+zvX7LYzyBl1nieOr6lrSHbHsA22/RJK2m4Y525WIg5Mj4jWCmfL47v6f4hUzY7EIuwS5w==
+typedoc@0.23.19:
+  version "0.23.19"
+  resolved "https://registry.npmjs.org/typedoc/-/typedoc-0.23.19.tgz#6c8b76a7b5c1fc316e961464f0d6c3592ff09328"
+  integrity sha512-70jPL0GQnSJtgQqI7ifOWxpTXrB3sxc4SWPPRn3K0wdx3txI6ZIT/ZYMF39dNg2Gjmql45cO+cAKXJp0TpqOVA==
   dependencies:
     lunr "^2.3.9"
     marked "^4.0.19"
