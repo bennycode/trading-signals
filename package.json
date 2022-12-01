@@ -14,7 +14,7 @@
     "@typescript-eslint/eslint-plugin": "5.42.0",
     "@typescript-eslint/parser": "5.45.0",
     "benchmark": "2.1.4",
-    "eslint": "8.26.0",
+    "eslint": "8.28.0",
     "eslint-config-prettier": "8.5.0",
     "eslint-plugin-prettier": "4.2.1",
     "eslint-plugin-typescript-sort-keys": "2.1.0",
