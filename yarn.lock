@@ -865,10 +865,10 @@
   resolved "https://registry.npmjs.org/@types/node/-/node-17.0.5.tgz#57ca67ec4e57ad9e4ef5a6bab48a15387a1c83e0"
   integrity sha512-w3mrvNXLeDYV1GKTZorGJQivK6XLCoGwpnyJFbJVK/aTBQUxOCaa/GlFAAN3OTDFcb7h5tiFG+YXCO2By+riZw==
 
-"@types/node@16.18.4":
-  version "16.18.4"
-  resolved "https://registry.npmjs.org/@types/node/-/node-16.18.4.tgz#712ba61b4caf091fc6490301b1888356638c17bd"
-  integrity sha512-9qGjJ5GyShZjUfx2ArBIGM+xExdfLvvaCyQR0t6yRXKPcWCVYF/WemtX/uIU3r7FYECXRXkIiw2Vnhn6y8d+pw==
+"@types/node@16.18.11":
+  version "16.18.11"
+  resolved "https://registry.npmjs.org/@types/node/-/node-16.18.11.tgz#cbb15c12ca7c16c85a72b6bdc4d4b01151bb3cae"
+  integrity sha512-3oJbGBUWuS6ahSnEq1eN2XrCyf4YsWI8OyCvo7c64zQJNplk3mO84t53o8lfTk+2ji59g5ycfc6qQ3fdHliHuA==
 
 "@types/parse-json@^4.0.0":
   version "4.0.0"
