@@ -167,6 +167,10 @@ It is very important to do your own analysis before making any investment based 
 
 - [Follow Benny on Twitter](https://twitter.com/bennycode) or [on YouTube](https://www.youtube.com/typescripttv)
 
+## Stargazers
+
+[![Stargazers](https://reporoster.com/stars/bennycode/trading-signals)](https://github.com/bennycode/trading-signals/stargazers)
+
 ## Contributing
 
 Contributions, issues and feature requests are welcome!
