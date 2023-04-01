@@ -2,6 +2,8 @@
 
 # Class: FasterROC
 
+Tracks results of an indicator over time and memorizes the highest & lowest result.
+
 ## Hierarchy
 
 - [`NumberIndicatorSeries`](NumberIndicatorSeries.md)
@@ -48,7 +50,7 @@
 
 #### Defined in
 
-[ROC/ROC.ts:38](https://github.com/bennycode/trading-signals/blob/95cb489/src/ROC/ROC.ts#L38)
+[ROC/ROC.ts:38](https://github.com/bennycode/trading-signals/blob/53d8192/src/ROC/ROC.ts#L38)
 
 ## Properties
 
@@ -64,13 +66,17 @@ Highest return value over the lifetime (not interval!) of the indicator.
 
 #### Defined in
 
-[Indicator.ts:56](https://github.com/bennycode/trading-signals/blob/95cb489/src/Indicator.ts#L56)
+[Indicator.ts:56](https://github.com/bennycode/trading-signals/blob/53d8192/src/Indicator.ts#L56)
 
 ---
 
 ### interval
 
 • `Readonly` **interval**: `number`
+
+#### Defined in
+
+[ROC/ROC.ts:38](https://github.com/bennycode/trading-signals/blob/53d8192/src/ROC/ROC.ts#L38)
 
 ---
 
@@ -86,7 +92,7 @@ Lowest return value over the lifetime (not interval!) of the indicator.
 
 #### Defined in
 
-[Indicator.ts:58](https://github.com/bennycode/trading-signals/blob/95cb489/src/Indicator.ts#L58)
+[Indicator.ts:58](https://github.com/bennycode/trading-signals/blob/53d8192/src/Indicator.ts#L58)
 
 ---
 
@@ -96,7 +102,7 @@ Lowest return value over the lifetime (not interval!) of the indicator.
 
 #### Defined in
 
-[ROC/ROC.ts:36](https://github.com/bennycode/trading-signals/blob/95cb489/src/ROC/ROC.ts#L36)
+[ROC/ROC.ts:36](https://github.com/bennycode/trading-signals/blob/53d8192/src/ROC/ROC.ts#L36)
 
 ## Accessors
 
@@ -114,7 +120,7 @@ NumberIndicatorSeries.isStable
 
 #### Defined in
 
-[Indicator.ts:61](https://github.com/bennycode/trading-signals/blob/95cb489/src/Indicator.ts#L61)
+[Indicator.ts:61](https://github.com/bennycode/trading-signals/blob/53d8192/src/Indicator.ts#L61)
 
 ## Methods
 
@@ -132,7 +138,7 @@ NumberIndicatorSeries.isStable
 
 #### Defined in
 
-[Indicator.ts:65](https://github.com/bennycode/trading-signals/blob/95cb489/src/Indicator.ts#L65)
+[Indicator.ts:65](https://github.com/bennycode/trading-signals/blob/53d8192/src/Indicator.ts#L65)
 
 ---
 
@@ -156,4 +162,4 @@ NumberIndicatorSeries.isStable
 
 #### Defined in
 
-[ROC/ROC.ts:42](https://github.com/bennycode/trading-signals/blob/95cb489/src/ROC/ROC.ts#L42)
+[ROC/ROC.ts:42](https://github.com/bennycode/trading-signals/blob/53d8192/src/ROC/ROC.ts#L42)

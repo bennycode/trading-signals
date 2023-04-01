@@ -17,7 +17,7 @@
 
 #### Defined in
 
-[DMA/DMA.ts:10](https://github.com/bennycode/trading-signals/blob/95cb489/src/DMA/DMA.ts#L10)
+[DMA/DMA.ts:10](https://github.com/bennycode/trading-signals/blob/53d8192/src/DMA/DMA.ts#L10)
 
 ---
 
@@ -27,4 +27,4 @@
 
 #### Defined in
 
-[DMA/DMA.ts:11](https://github.com/bennycode/trading-signals/blob/95cb489/src/DMA/DMA.ts#L11)
+[DMA/DMA.ts:11](https://github.com/bennycode/trading-signals/blob/53d8192/src/DMA/DMA.ts#L11)

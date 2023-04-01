@@ -12,13 +12,12 @@ Generally, ADX readings below 20 indicate trend weakness, and readings above 40 
 
 If ADX increases, it means that volatility is increasing and indicating the beginning of a new trend. If ADX decreases, it means that volatility is decreasing, and the current trend is slowing down and may even reverse. When +DI is above -DI, then there is more upward pressure than downward pressure in the market.
 
-**`see`** https://www.investopedia.com/terms/a/adx.asp
+**`See`**
 
-**`see`** https://www.youtube.com/watch?v=n2J1H3NeF70
-
-**`see`** https://learn.tradimo.com/technical-analysis-how-to-work-with-indicators/adx-determing-the-strength-of-price-movement
-
-**`see`** https://medium.com/codex/algorithmic-trading-with-average-directional-index-in-python-2b5a20ecf06a
+- https://www.investopedia.com/terms/a/adx.asp
+- https://www.youtube.com/watch?v=n2J1H3NeF70
+- https://learn.tradimo.com/technical-analysis-how-to-work-with-indicators/adx-determing-the-strength-of-price-movement
+- https://medium.com/codex/algorithmic-trading-with-average-directional-index-in-python-2b5a20ecf06a
 
 ## Hierarchy
 
@@ -68,7 +67,7 @@ If ADX increases, it means that volatility is increasing and indicating the begi
 
 #### Defined in
 
-[ADX/ADX.ts:36](https://github.com/bennycode/trading-signals/blob/95cb489/src/ADX/ADX.ts#L36)
+[ADX/ADX.ts:36](https://github.com/bennycode/trading-signals/blob/53d8192/src/ADX/ADX.ts#L36)
 
 ## Properties
 
@@ -84,13 +83,17 @@ Highest return value over the lifetime (not interval!) of the indicator.
 
 #### Defined in
 
-[Indicator.ts:22](https://github.com/bennycode/trading-signals/blob/95cb489/src/Indicator.ts#L22)
+[Indicator.ts:22](https://github.com/bennycode/trading-signals/blob/53d8192/src/Indicator.ts#L22)
 
 ---
 
 ### interval
 
 • `Readonly` **interval**: `number`
+
+#### Defined in
+
+[ADX/ADX.ts:36](https://github.com/bennycode/trading-signals/blob/53d8192/src/ADX/ADX.ts#L36)
 
 ---
 
@@ -106,7 +109,7 @@ Lowest return value over the lifetime (not interval!) of the indicator.
 
 #### Defined in
 
-[Indicator.ts:24](https://github.com/bennycode/trading-signals/blob/95cb489/src/Indicator.ts#L24)
+[Indicator.ts:24](https://github.com/bennycode/trading-signals/blob/53d8192/src/Indicator.ts#L24)
 
 ## Accessors
 
@@ -124,7 +127,7 @@ BigIndicatorSeries.isStable
 
 #### Defined in
 
-[Indicator.ts:27](https://github.com/bennycode/trading-signals/blob/95cb489/src/Indicator.ts#L27)
+[Indicator.ts:27](https://github.com/bennycode/trading-signals/blob/53d8192/src/Indicator.ts#L27)
 
 ---
 
@@ -138,7 +141,7 @@ BigIndicatorSeries.isStable
 
 #### Defined in
 
-[ADX/ADX.ts:42](https://github.com/bennycode/trading-signals/blob/95cb489/src/ADX/ADX.ts#L42)
+[ADX/ADX.ts:42](https://github.com/bennycode/trading-signals/blob/53d8192/src/ADX/ADX.ts#L42)
 
 ---
 
@@ -152,7 +155,7 @@ BigIndicatorSeries.isStable
 
 #### Defined in
 
-[ADX/ADX.ts:46](https://github.com/bennycode/trading-signals/blob/95cb489/src/ADX/ADX.ts#L46)
+[ADX/ADX.ts:46](https://github.com/bennycode/trading-signals/blob/53d8192/src/ADX/ADX.ts#L46)
 
 ## Methods
 
@@ -170,7 +173,7 @@ BigIndicatorSeries.isStable
 
 #### Defined in
 
-[Indicator.ts:31](https://github.com/bennycode/trading-signals/blob/95cb489/src/Indicator.ts#L31)
+[Indicator.ts:31](https://github.com/bennycode/trading-signals/blob/53d8192/src/Indicator.ts#L31)
 
 ---
 
@@ -194,4 +197,4 @@ BigIndicatorSeries.isStable
 
 #### Defined in
 
-[ADX/ADX.ts:50](https://github.com/bennycode/trading-signals/blob/95cb489/src/ADX/ADX.ts#L50)
+[ADX/ADX.ts:50](https://github.com/bennycode/trading-signals/blob/53d8192/src/ADX/ADX.ts#L50)

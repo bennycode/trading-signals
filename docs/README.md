@@ -70,25 +70,27 @@ Utility Methods:
 ## Usage
 
 ```typescript
-import {SMA} from 'trading-signals';
+import {Big, SMA} from 'trading-signals';
 
 const sma = new SMA(3);
 
-// You can add numbers:
+// You can add numbers individually:
 sma.update(40);
 sma.update(30);
 sma.update(20);
+
+// You can add multiple numbers at once:
+sma.updates([20, 40, 80]);
 
 // You can add strings:
 sma.update('10');
 
 // You can add arbitrary-precision decimals:
-import Big from 'big.js';
 sma.update(new Big(30));
 
 // You can get the result in various formats:
-console.log(sma.getResult().valueOf()); // "20"
-console.log(sma.getResult().toFixed(2)); // "20.00"
+console.log(sma.getResult().toFixed(2)); // "40.00"
+console.log(sma.getResult().toFixed(4)); // "40.0000"
 ```
 
 ### When to use `update(...)`?
@@ -139,7 +141,28 @@ As specified by the ECMAScript standard, all arithmetic in JavaScript uses [doub
 
 ### Faster implementations
 
-To get the best of both worlds (high accuracy & high performance), you will find two implementations of each indicator (e.g. `SMA` & `FasterSMA`). The standard implementation uses big.js and the `Faster`-prefixed version uses common `number` types. Use the standard one when you need high accuracy and use the `Faster`-one when you need high performance.
+To get the best of both worlds (high accuracy & high performance), you will find two implementations of each indicator (e.g. `SMA` & `FasterSMA`). The standard implementation uses [big.js][1] and the `Faster`-prefixed version uses common `number` types. Use the standard one when you need high accuracy and use the `Faster`-one when you need high performance:
+
+```ts
+import {FasterSMA} from './SMA/SMA';
+
+const fasterSMA = new FasterSMA(5);
+console.log(fasterSMA.updates([1, 2, 3, 4, 5]));
+```
+
+```ts
+import {FasterStochasticRSI, FasterSMA} from 'trading-signals';
+
+const fasterStochRSI = new FasterStochasticRSI(3, FasterSMA);
+fasterStochRSI.update(1);
+fasterStochRSI.update(2);
+fasterStochRSI.update(3);
+fasterStochRSI.update(4);
+fasterStochRSI.update(5);
+fasterStochRSI.update(6);
+
+console.log(fasterStochRSI.getResult());
+```
 
 ### Benchmarks
 
@@ -168,6 +191,10 @@ It is very important to do your own analysis before making any investment based 
 [![Benny Neugebauer on Stack Exchange][stack_exchange_bennycode_badge]][stack_exchange_bennycode_url]
 
 - [Follow Benny on Twitter](https://twitter.com/bennycode) or [on YouTube](https://www.youtube.com/typescripttv)
+
+## Stargazers
+
+[![Stargazers](https://reporoster.com/stars/bennycode/trading-signals)](https://github.com/bennycode/trading-signals/stargazers)
 
 ## Contributing
 

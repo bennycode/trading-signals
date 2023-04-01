@@ -18,7 +18,7 @@
 
 #### Defined in
 
-[util/BandsResult.ts:4](https://github.com/bennycode/trading-signals/blob/95cb489/src/util/BandsResult.ts#L4)
+[util/BandsResult.ts:4](https://github.com/bennycode/trading-signals/blob/53d8192/src/util/BandsResult.ts#L4)
 
 ---
 
@@ -28,7 +28,7 @@
 
 #### Defined in
 
-[util/BandsResult.ts:5](https://github.com/bennycode/trading-signals/blob/95cb489/src/util/BandsResult.ts#L5)
+[util/BandsResult.ts:5](https://github.com/bennycode/trading-signals/blob/53d8192/src/util/BandsResult.ts#L5)
 
 ---
 
@@ -38,4 +38,4 @@
 
 #### Defined in
 
-[util/BandsResult.ts:6](https://github.com/bennycode/trading-signals/blob/95cb489/src/util/BandsResult.ts#L6)
+[util/BandsResult.ts:6](https://github.com/bennycode/trading-signals/blob/53d8192/src/util/BandsResult.ts#L6)

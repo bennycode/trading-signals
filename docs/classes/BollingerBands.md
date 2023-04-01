@@ -8,7 +8,9 @@ Bollinger Bands (BBANDS), developed by John A. Bollinger, are set as an envelope
 
 When the upper and lower bands expand, there can be "M" and "W" formations. The "W" formation indicates a bullish movement and the "M" formation indicates a bearish movement.
 
-**`see`** https://www.investopedia.com/terms/b/bollingerbands.asp
+**`See`**
+
+https://www.investopedia.com/terms/b/bollingerbands.asp
 
 ## Implements
 
@@ -50,7 +52,7 @@ When the upper and lower bands expand, there can be "M" and "W" formations. The 
 
 #### Defined in
 
-[BBANDS/BollingerBands.ts:32](https://github.com/bennycode/trading-signals/blob/95cb489/src/BBANDS/BollingerBands.ts#L32)
+[BBANDS/BollingerBands.ts:32](https://github.com/bennycode/trading-signals/blob/53d8192/src/BBANDS/BollingerBands.ts#L32)
 
 ## Properties
 
@@ -58,11 +60,23 @@ When the upper and lower bands expand, there can be "M" and "W" formations. The 
 
 • `Readonly` **deviationMultiplier**: `number` = `2`
 
+The number of standard deviations away from the Middle Band that the Upper and Lower Bands should be
+
+#### Defined in
+
+[BBANDS/BollingerBands.ts:32](https://github.com/bennycode/trading-signals/blob/53d8192/src/BBANDS/BollingerBands.ts#L32)
+
 ---
 
 ### interval
 
 • `Readonly` **interval**: `number`
+
+The time period to be used in calculating the Middle Band
+
+#### Defined in
+
+[BBANDS/BollingerBands.ts:32](https://github.com/bennycode/trading-signals/blob/53d8192/src/BBANDS/BollingerBands.ts#L32)
 
 ---
 
@@ -72,7 +86,7 @@ When the upper and lower bands expand, there can be "M" and "W" formations. The 
 
 #### Defined in
 
-[BBANDS/BollingerBands.ts:24](https://github.com/bennycode/trading-signals/blob/95cb489/src/BBANDS/BollingerBands.ts#L24)
+[BBANDS/BollingerBands.ts:24](https://github.com/bennycode/trading-signals/blob/53d8192/src/BBANDS/BollingerBands.ts#L24)
 
 ## Accessors
 
@@ -90,7 +104,7 @@ When the upper and lower bands expand, there can be "M" and "W" formations. The 
 
 #### Defined in
 
-[BBANDS/BollingerBands.ts:34](https://github.com/bennycode/trading-signals/blob/95cb489/src/BBANDS/BollingerBands.ts#L34)
+[BBANDS/BollingerBands.ts:34](https://github.com/bennycode/trading-signals/blob/53d8192/src/BBANDS/BollingerBands.ts#L34)
 
 ## Methods
 
@@ -108,7 +122,7 @@ When the upper and lower bands expand, there can be "M" and "W" formations. The 
 
 #### Defined in
 
-[BBANDS/BollingerBands.ts:55](https://github.com/bennycode/trading-signals/blob/95cb489/src/BBANDS/BollingerBands.ts#L55)
+[BBANDS/BollingerBands.ts:55](https://github.com/bennycode/trading-signals/blob/53d8192/src/BBANDS/BollingerBands.ts#L55)
 
 ---
 
@@ -132,4 +146,4 @@ When the upper and lower bands expand, there can be "M" and "W" formations. The 
 
 #### Defined in
 
-[BBANDS/BollingerBands.ts:38](https://github.com/bennycode/trading-signals/blob/95cb489/src/BBANDS/BollingerBands.ts#L38)
+[BBANDS/BollingerBands.ts:38](https://github.com/bennycode/trading-signals/blob/53d8192/src/BBANDS/BollingerBands.ts#L38)

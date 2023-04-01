@@ -19,7 +19,7 @@ Slow stochastic indicator (%D)
 
 #### Defined in
 
-[STOCH/StochasticOscillator.ts:18](https://github.com/bennycode/trading-signals/blob/95cb489/src/STOCH/StochasticOscillator.ts#L18)
+[STOCH/StochasticOscillator.ts:18](https://github.com/bennycode/trading-signals/blob/53d8192/src/STOCH/StochasticOscillator.ts#L18)
 
 ---
 
@@ -31,4 +31,4 @@ Fast stochastic indicator (%K)
 
 #### Defined in
 
-[STOCH/StochasticOscillator.ts:20](https://github.com/bennycode/trading-signals/blob/95cb489/src/STOCH/StochasticOscillator.ts#L20)
+[STOCH/StochasticOscillator.ts:20](https://github.com/bennycode/trading-signals/blob/53d8192/src/STOCH/StochasticOscillator.ts#L20)

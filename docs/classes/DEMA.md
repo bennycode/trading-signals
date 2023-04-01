@@ -6,7 +6,9 @@ Double Exponential Moving Average (DEMA) Type: Trend
 
 The Double Exponential Moving Average (DEMA) was developed by Patrick G. Mulloy. It attempts to remove the lag associated with Moving Averages by placing more weight on recent values. It has its name because the value of an EMA is doubled which makes it responds more quickly to short-term price changes than a normal EMA.
 
-**`see`** https://www.investopedia.com/terms/d/double-exponential-moving-average.asp
+**`See`**
+
+https://www.investopedia.com/terms/d/double-exponential-moving-average.asp
 
 ## Hierarchy
 
@@ -53,7 +55,7 @@ The Double Exponential Moving Average (DEMA) was developed by Patrick G. Mulloy.
 
 #### Defined in
 
-[DEMA/DEMA.ts:19](https://github.com/bennycode/trading-signals/blob/95cb489/src/DEMA/DEMA.ts#L19)
+[DEMA/DEMA.ts:19](https://github.com/bennycode/trading-signals/blob/53d8192/src/DEMA/DEMA.ts#L19)
 
 ## Properties
 
@@ -69,13 +71,17 @@ Highest return value over the lifetime (not interval!) of the indicator.
 
 #### Defined in
 
-[Indicator.ts:22](https://github.com/bennycode/trading-signals/blob/95cb489/src/Indicator.ts#L22)
+[Indicator.ts:22](https://github.com/bennycode/trading-signals/blob/53d8192/src/Indicator.ts#L22)
 
 ---
 
 ### interval
 
 • `Readonly` **interval**: `number`
+
+#### Defined in
+
+[DEMA/DEMA.ts:19](https://github.com/bennycode/trading-signals/blob/53d8192/src/DEMA/DEMA.ts#L19)
 
 ---
 
@@ -91,7 +97,7 @@ Lowest return value over the lifetime (not interval!) of the indicator.
 
 #### Defined in
 
-[Indicator.ts:24](https://github.com/bennycode/trading-signals/blob/95cb489/src/Indicator.ts#L24)
+[Indicator.ts:24](https://github.com/bennycode/trading-signals/blob/53d8192/src/Indicator.ts#L24)
 
 ## Accessors
 
@@ -109,7 +115,7 @@ BigIndicatorSeries.isStable
 
 #### Defined in
 
-[DEMA/DEMA.ts:31](https://github.com/bennycode/trading-signals/blob/95cb489/src/DEMA/DEMA.ts#L31)
+[DEMA/DEMA.ts:31](https://github.com/bennycode/trading-signals/blob/53d8192/src/DEMA/DEMA.ts#L31)
 
 ## Methods
 
@@ -127,7 +133,7 @@ BigIndicatorSeries.isStable
 
 #### Defined in
 
-[Indicator.ts:31](https://github.com/bennycode/trading-signals/blob/95cb489/src/Indicator.ts#L31)
+[Indicator.ts:31](https://github.com/bennycode/trading-signals/blob/53d8192/src/Indicator.ts#L31)
 
 ---
 
@@ -151,4 +157,4 @@ BigIndicatorSeries.isStable
 
 #### Defined in
 
-[DEMA/DEMA.ts:25](https://github.com/bennycode/trading-signals/blob/95cb489/src/DEMA/DEMA.ts#L25)
+[DEMA/DEMA.ts:25](https://github.com/bennycode/trading-signals/blob/53d8192/src/DEMA/DEMA.ts#L25)

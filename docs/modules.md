@@ -74,7 +74,7 @@
 - [PeriodResult](interfaces/PeriodResult.md)
 - [StochasticResult](interfaces/StochasticResult.md)
 
-### Type aliases
+### Type Aliases
 
 - [DMAResult](modules.md#dmaresult)
 - [FasterMACDResult](modules.md#fastermacdresult)
@@ -101,7 +101,7 @@
 - [getMinimum](modules.md#getminimum)
 - [getStandardDeviation](modules.md#getstandarddeviation)
 
-## Type aliases
+## Type Aliases
 
 ### DMAResult
 
@@ -116,7 +116,7 @@
 
 #### Defined in
 
-[DMA/DMA.ts:7](https://github.com/bennycode/trading-signals/blob/95cb489/src/DMA/DMA.ts#L7)
+[DMA/DMA.ts:7](https://github.com/bennycode/trading-signals/blob/53d8192/src/DMA/DMA.ts#L7)
 
 ---
 
@@ -134,7 +134,7 @@
 
 #### Defined in
 
-[MACD/MACD.ts:19](https://github.com/bennycode/trading-signals/blob/95cb489/src/MACD/MACD.ts#L19)
+[MACD/MACD.ts:18](https://github.com/bennycode/trading-signals/blob/53d8192/src/MACD/MACD.ts#L18)
 
 ---
 
@@ -144,7 +144,7 @@
 
 #### Defined in
 
-[MA/MovingAverageTypes.ts:6](https://github.com/bennycode/trading-signals/blob/95cb489/src/MA/MovingAverageTypes.ts#L6)
+[MA/MovingAverageTypes.ts:6](https://github.com/bennycode/trading-signals/blob/53d8192/src/MA/MovingAverageTypes.ts#L6)
 
 ---
 
@@ -161,7 +161,7 @@
 
 #### Defined in
 
-[util/HighLowClose.ts:3](https://github.com/bennycode/trading-signals/blob/95cb489/src/util/HighLowClose.ts#L3)
+[util/HighLowClose.ts:3](https://github.com/bennycode/trading-signals/blob/53d8192/src/util/HighLowClose.ts#L3)
 
 ---
 
@@ -171,7 +171,7 @@
 
 #### Defined in
 
-[util/HighLowClose.ts:5](https://github.com/bennycode/trading-signals/blob/95cb489/src/util/HighLowClose.ts#L5)
+[util/HighLowClose.ts:5](https://github.com/bennycode/trading-signals/blob/53d8192/src/util/HighLowClose.ts#L5)
 
 ---
 
@@ -181,7 +181,7 @@
 
 #### Defined in
 
-[util/HighLowClose.ts:13](https://github.com/bennycode/trading-signals/blob/95cb489/src/util/HighLowClose.ts#L13)
+[util/HighLowClose.ts:13](https://github.com/bennycode/trading-signals/blob/53d8192/src/util/HighLowClose.ts#L13)
 
 ---
 
@@ -198,7 +198,7 @@
 
 #### Defined in
 
-[util/HighLowClose.ts:11](https://github.com/bennycode/trading-signals/blob/95cb489/src/util/HighLowClose.ts#L11)
+[util/HighLowClose.ts:11](https://github.com/bennycode/trading-signals/blob/53d8192/src/util/HighLowClose.ts#L11)
 
 ---
 
@@ -217,7 +217,7 @@
 
 #### Defined in
 
-[MACD/MACD.ts:6](https://github.com/bennycode/trading-signals/blob/95cb489/src/MACD/MACD.ts#L6)
+[MACD/MACD.ts:5](https://github.com/bennycode/trading-signals/blob/53d8192/src/MACD/MACD.ts#L5)
 
 ---
 
@@ -235,7 +235,7 @@
 
 #### Defined in
 
-[MACD/MACD.ts:13](https://github.com/bennycode/trading-signals/blob/95cb489/src/MACD/MACD.ts#L13)
+[MACD/MACD.ts:12](https://github.com/bennycode/trading-signals/blob/53d8192/src/MACD/MACD.ts#L12)
 
 ---
 
@@ -245,7 +245,7 @@
 
 #### Defined in
 
-[MA/MovingAverageTypes.ts:5](https://github.com/bennycode/trading-signals/blob/95cb489/src/MA/MovingAverageTypes.ts#L5)
+[MA/MovingAverageTypes.ts:5](https://github.com/bennycode/trading-signals/blob/53d8192/src/MA/MovingAverageTypes.ts#L5)
 
 ---
 
@@ -255,7 +255,7 @@
 
 #### Defined in
 
-[util/HighLowClose.ts:7](https://github.com/bennycode/trading-signals/blob/95cb489/src/util/HighLowClose.ts#L7)
+[util/HighLowClose.ts:7](https://github.com/bennycode/trading-signals/blob/53d8192/src/util/HighLowClose.ts#L7)
 
 ---
 
@@ -265,7 +265,7 @@
 
 #### Defined in
 
-[util/HighLowClose.ts:15](https://github.com/bennycode/trading-signals/blob/95cb489/src/util/HighLowClose.ts#L15)
+[util/HighLowClose.ts:15](https://github.com/bennycode/trading-signals/blob/53d8192/src/util/HighLowClose.ts#L15)
 
 ---
 
@@ -275,7 +275,7 @@
 
 #### Defined in
 
-[util/HighLowClose.ts:9](https://github.com/bennycode/trading-signals/blob/95cb489/src/util/HighLowClose.ts#L9)
+[util/HighLowClose.ts:9](https://github.com/bennycode/trading-signals/blob/53d8192/src/util/HighLowClose.ts#L9)
 
 ---
 
@@ -285,7 +285,7 @@
 
 #### Defined in
 
-[util/HighLowClose.ts:17](https://github.com/bennycode/trading-signals/blob/95cb489/src/util/HighLowClose.ts#L17)
+[util/HighLowClose.ts:17](https://github.com/bennycode/trading-signals/blob/53d8192/src/util/HighLowClose.ts#L17)
 
 ## Functions
 
@@ -307,7 +307,7 @@ Return the mean / average value.
 
 #### Defined in
 
-[util/getAverage.ts:6](https://github.com/bennycode/trading-signals/blob/95cb489/src/util/getAverage.ts#L6)
+[util/getAverage.ts:6](https://github.com/bennycode/trading-signals/blob/53d8192/src/util/getAverage.ts#L6)
 
 ---
 
@@ -327,7 +327,7 @@ Return the mean / average value.
 
 #### Defined in
 
-[util/getAverage.ts:14](https://github.com/bennycode/trading-signals/blob/95cb489/src/util/getAverage.ts#L14)
+[util/getAverage.ts:14](https://github.com/bennycode/trading-signals/blob/53d8192/src/util/getAverage.ts#L14)
 
 ---
 
@@ -348,7 +348,7 @@ Return the mean / average value.
 
 #### Defined in
 
-[util/getStandardDeviation.ts:17](https://github.com/bennycode/trading-signals/blob/95cb489/src/util/getStandardDeviation.ts#L17)
+[util/getStandardDeviation.ts:17](https://github.com/bennycode/trading-signals/blob/53d8192/src/util/getStandardDeviation.ts#L17)
 
 ---
 
@@ -374,7 +374,7 @@ Return the mean / average value.
 
 #### Defined in
 
-[util/getFixedArray.ts:1](https://github.com/bennycode/trading-signals/blob/95cb489/src/util/getFixedArray.ts#L1)
+[util/getFixedArray.ts:1](https://github.com/bennycode/trading-signals/blob/53d8192/src/util/getFixedArray.ts#L1)
 
 ---
 
@@ -394,7 +394,7 @@ Return the mean / average value.
 
 #### Defined in
 
-[util/getMaximum.ts:3](https://github.com/bennycode/trading-signals/blob/95cb489/src/util/getMaximum.ts#L3)
+[util/getMaximum.ts:3](https://github.com/bennycode/trading-signals/blob/53d8192/src/util/getMaximum.ts#L3)
 
 ---
 
@@ -414,7 +414,7 @@ Return the mean / average value.
 
 #### Defined in
 
-[util/getMinimum.ts:3](https://github.com/bennycode/trading-signals/blob/95cb489/src/util/getMinimum.ts#L3)
+[util/getMinimum.ts:3](https://github.com/bennycode/trading-signals/blob/53d8192/src/util/getMinimum.ts#L3)
 
 ---
 
@@ -424,9 +424,10 @@ Return the mean / average value.
 
 Standard deviation calculates how prices for a collection of prices are spread out from the average price of these prices. Standard deviation makes outliers even more visible than mean absolute deviation (MAD).
 
-**`see`** https://www.mathsisfun.com/data/standard-deviation-formulas.html
+**`See`**
 
-**`see`** https://www.youtube.com/watch?v=9-8E8L_77-8
+- https://www.mathsisfun.com/data/standard-deviation-formulas.html
+- https://www.youtube.com/watch?v=9-8E8L_77-8
 
 #### Parameters
 
@@ -441,4 +442,4 @@ Standard deviation calculates how prices for a collection of prices are spread o
 
 #### Defined in
 
-[util/getStandardDeviation.ts:11](https://github.com/bennycode/trading-signals/blob/95cb489/src/util/getStandardDeviation.ts#L11)
+[util/getStandardDeviation.ts:11](https://github.com/bennycode/trading-signals/blob/53d8192/src/util/getStandardDeviation.ts#L11)

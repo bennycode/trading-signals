@@ -6,7 +6,9 @@ Exponential Moving Average (EMA) Type: Trend
 
 Compared to SMA, the EMA puts more emphasis on the recent prices to reduce lag. Due to its responsiveness to price changes, it rises faster and falls faster than the SMA when the price is inclining or declining.
 
-**`see`** https://www.investopedia.com/terms/e/ema.asp
+**`See`**
+
+https://www.investopedia.com/terms/e/ema.asp
 
 ## Hierarchy
 
@@ -34,6 +36,7 @@ Compared to SMA, the EMA puts more emphasis on the recent prices to reduce lag. 
 
 - [getResult](EMA.md#getresult)
 - [update](EMA.md#update)
+- [updates](EMA.md#updates)
 
 ## Constructors
 
@@ -53,7 +56,7 @@ Compared to SMA, the EMA puts more emphasis on the recent prices to reduce lag. 
 
 #### Defined in
 
-[EMA/EMA.ts:17](https://github.com/bennycode/trading-signals/blob/95cb489/src/EMA/EMA.ts#L17)
+[EMA/EMA.ts:17](https://github.com/bennycode/trading-signals/blob/53d8192/src/EMA/EMA.ts#L17)
 
 ## Properties
 
@@ -69,7 +72,7 @@ Highest return value over the lifetime (not interval!) of the indicator.
 
 #### Defined in
 
-[Indicator.ts:22](https://github.com/bennycode/trading-signals/blob/95cb489/src/Indicator.ts#L22)
+[Indicator.ts:22](https://github.com/bennycode/trading-signals/blob/53d8192/src/Indicator.ts#L22)
 
 ---
 
@@ -80,6 +83,10 @@ Highest return value over the lifetime (not interval!) of the indicator.
 #### Inherited from
 
 [MovingAverage](MovingAverage.md).[interval](MovingAverage.md#interval)
+
+#### Defined in
+
+[EMA/EMA.ts:17](https://github.com/bennycode/trading-signals/blob/53d8192/src/EMA/EMA.ts#L17)
 
 ---
 
@@ -95,7 +102,7 @@ Lowest return value over the lifetime (not interval!) of the indicator.
 
 #### Defined in
 
-[Indicator.ts:24](https://github.com/bennycode/trading-signals/blob/95cb489/src/Indicator.ts#L24)
+[Indicator.ts:24](https://github.com/bennycode/trading-signals/blob/53d8192/src/Indicator.ts#L24)
 
 ## Accessors
 
@@ -113,7 +120,7 @@ MovingAverage.isStable
 
 #### Defined in
 
-[EMA/EMA.ts:42](https://github.com/bennycode/trading-signals/blob/95cb489/src/EMA/EMA.ts#L42)
+[EMA/EMA.ts:42](https://github.com/bennycode/trading-signals/blob/53d8192/src/EMA/EMA.ts#L42)
 
 ## Methods
 
@@ -131,7 +138,7 @@ MovingAverage.isStable
 
 #### Defined in
 
-[EMA/EMA.ts:34](https://github.com/bennycode/trading-signals/blob/95cb489/src/EMA/EMA.ts#L34)
+[EMA/EMA.ts:34](https://github.com/bennycode/trading-signals/blob/53d8192/src/EMA/EMA.ts#L34)
 
 ---
 
@@ -155,4 +162,28 @@ MovingAverage.isStable
 
 #### Defined in
 
-[EMA/EMA.ts:22](https://github.com/bennycode/trading-signals/blob/95cb489/src/EMA/EMA.ts#L22)
+[EMA/EMA.ts:22](https://github.com/bennycode/trading-signals/blob/53d8192/src/EMA/EMA.ts#L22)
+
+---
+
+### updates
+
+▸ **updates**(`prices`): `void` \| `Big`
+
+#### Parameters
+
+| Name     | Type          |
+| :------- | :------------ |
+| `prices` | `BigSource`[] |
+
+#### Returns
+
+`void` \| `Big`
+
+#### Inherited from
+
+[MovingAverage](MovingAverage.md).[updates](MovingAverage.md#updates)
+
+#### Defined in
+
+[MA/MovingAverage.ts:17](https://github.com/bennycode/trading-signals/blob/53d8192/src/MA/MovingAverage.ts#L17)

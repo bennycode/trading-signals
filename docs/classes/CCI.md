@@ -8,7 +8,9 @@ The Commodity Channel Index (CCI), developed by Donald Lambert in 1980, compares
 
 According to [Investopia.com](https://www.investopedia.com/articles/active-trading/031914/how-traders-can-utilize-cci-commodity-channel-index-trade-stock-trends.asp#multiple-timeframe-cci-strategy), traders often buy when the CCI dips below -100 and then rallies back above -100 to sell the security when it moves above +100 and then drops back below +100.
 
-**`see`** https://en.wikipedia.org/wiki/Commodity_channel_index
+**`See`**
+
+https://en.wikipedia.org/wiki/Commodity_channel_index
 
 ## Hierarchy
 
@@ -56,7 +58,7 @@ According to [Investopia.com](https://www.investopedia.com/articles/active-tradi
 
 #### Defined in
 
-[CCI/CCI.ts:29](https://github.com/bennycode/trading-signals/blob/95cb489/src/CCI/CCI.ts#L29)
+[CCI/CCI.ts:29](https://github.com/bennycode/trading-signals/blob/53d8192/src/CCI/CCI.ts#L29)
 
 ## Properties
 
@@ -72,13 +74,17 @@ Highest return value over the lifetime (not interval!) of the indicator.
 
 #### Defined in
 
-[Indicator.ts:22](https://github.com/bennycode/trading-signals/blob/95cb489/src/Indicator.ts#L22)
+[Indicator.ts:22](https://github.com/bennycode/trading-signals/blob/53d8192/src/Indicator.ts#L22)
 
 ---
 
 ### interval
 
 • `Readonly` **interval**: `number`
+
+#### Defined in
+
+[CCI/CCI.ts:29](https://github.com/bennycode/trading-signals/blob/53d8192/src/CCI/CCI.ts#L29)
 
 ---
 
@@ -94,7 +100,7 @@ Lowest return value over the lifetime (not interval!) of the indicator.
 
 #### Defined in
 
-[Indicator.ts:24](https://github.com/bennycode/trading-signals/blob/95cb489/src/Indicator.ts#L24)
+[Indicator.ts:24](https://github.com/bennycode/trading-signals/blob/53d8192/src/Indicator.ts#L24)
 
 ---
 
@@ -104,7 +110,7 @@ Lowest return value over the lifetime (not interval!) of the indicator.
 
 #### Defined in
 
-[CCI/CCI.ts:24](https://github.com/bennycode/trading-signals/blob/95cb489/src/CCI/CCI.ts#L24)
+[CCI/CCI.ts:24](https://github.com/bennycode/trading-signals/blob/53d8192/src/CCI/CCI.ts#L24)
 
 ## Accessors
 
@@ -122,7 +128,7 @@ BigIndicatorSeries.isStable
 
 #### Defined in
 
-[Indicator.ts:27](https://github.com/bennycode/trading-signals/blob/95cb489/src/Indicator.ts#L27)
+[Indicator.ts:27](https://github.com/bennycode/trading-signals/blob/53d8192/src/Indicator.ts#L27)
 
 ## Methods
 
@@ -140,7 +146,7 @@ BigIndicatorSeries.isStable
 
 #### Defined in
 
-[Indicator.ts:31](https://github.com/bennycode/trading-signals/blob/95cb489/src/Indicator.ts#L31)
+[Indicator.ts:31](https://github.com/bennycode/trading-signals/blob/53d8192/src/Indicator.ts#L31)
 
 ---
 
@@ -164,4 +170,4 @@ BigIndicatorSeries.isStable
 
 #### Defined in
 
-[CCI/CCI.ts:34](https://github.com/bennycode/trading-signals/blob/95cb489/src/CCI/CCI.ts#L34)
+[CCI/CCI.ts:34](https://github.com/bennycode/trading-signals/blob/53d8192/src/CCI/CCI.ts#L34)

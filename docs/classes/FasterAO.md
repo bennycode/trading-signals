@@ -2,6 +2,8 @@
 
 # Class: FasterAO
 
+Tracks results of an indicator over time and memorizes the highest & lowest result.
+
 ## Hierarchy
 
 - [`NumberIndicatorSeries`](NumberIndicatorSeries.md)<[`HighLowNumber`](../modules.md#highlownumber)\>
@@ -52,7 +54,7 @@
 
 #### Defined in
 
-[AO/AO.ts:53](https://github.com/bennycode/trading-signals/blob/95cb489/src/AO/AO.ts#L53)
+[AO/AO.ts:53](https://github.com/bennycode/trading-signals/blob/53d8192/src/AO/AO.ts#L53)
 
 ## Properties
 
@@ -68,7 +70,7 @@ Highest return value over the lifetime (not interval!) of the indicator.
 
 #### Defined in
 
-[Indicator.ts:56](https://github.com/bennycode/trading-signals/blob/95cb489/src/Indicator.ts#L56)
+[Indicator.ts:56](https://github.com/bennycode/trading-signals/blob/53d8192/src/Indicator.ts#L56)
 
 ---
 
@@ -78,13 +80,17 @@ Highest return value over the lifetime (not interval!) of the indicator.
 
 #### Defined in
 
-[AO/AO.ts:50](https://github.com/bennycode/trading-signals/blob/95cb489/src/AO/AO.ts#L50)
+[AO/AO.ts:50](https://github.com/bennycode/trading-signals/blob/53d8192/src/AO/AO.ts#L50)
 
 ---
 
 ### longInterval
 
 • `Readonly` **longInterval**: `number`
+
+#### Defined in
+
+[AO/AO.ts:55](https://github.com/bennycode/trading-signals/blob/53d8192/src/AO/AO.ts#L55)
 
 ---
 
@@ -100,7 +106,7 @@ Lowest return value over the lifetime (not interval!) of the indicator.
 
 #### Defined in
 
-[Indicator.ts:58](https://github.com/bennycode/trading-signals/blob/95cb489/src/Indicator.ts#L58)
+[Indicator.ts:58](https://github.com/bennycode/trading-signals/blob/53d8192/src/Indicator.ts#L58)
 
 ---
 
@@ -110,13 +116,17 @@ Lowest return value over the lifetime (not interval!) of the indicator.
 
 #### Defined in
 
-[AO/AO.ts:51](https://github.com/bennycode/trading-signals/blob/95cb489/src/AO/AO.ts#L51)
+[AO/AO.ts:51](https://github.com/bennycode/trading-signals/blob/53d8192/src/AO/AO.ts#L51)
 
 ---
 
 ### shortInterval
 
 • `Readonly` **shortInterval**: `number`
+
+#### Defined in
+
+[AO/AO.ts:54](https://github.com/bennycode/trading-signals/blob/53d8192/src/AO/AO.ts#L54)
 
 ## Accessors
 
@@ -134,7 +144,7 @@ NumberIndicatorSeries.isStable
 
 #### Defined in
 
-[Indicator.ts:61](https://github.com/bennycode/trading-signals/blob/95cb489/src/Indicator.ts#L61)
+[Indicator.ts:61](https://github.com/bennycode/trading-signals/blob/53d8192/src/Indicator.ts#L61)
 
 ## Methods
 
@@ -152,19 +162,19 @@ NumberIndicatorSeries.isStable
 
 #### Defined in
 
-[Indicator.ts:65](https://github.com/bennycode/trading-signals/blob/95cb489/src/Indicator.ts#L65)
+[Indicator.ts:65](https://github.com/bennycode/trading-signals/blob/53d8192/src/Indicator.ts#L65)
 
 ---
 
 ### update
 
-▸ **update**(`__namedParameters`): `number` \| `void`
+▸ **update**(`«destructured»`): `number` \| `void`
 
 #### Parameters
 
-| Name                | Type                                           |
-| :------------------ | :--------------------------------------------- |
-| `__namedParameters` | [`HighLowNumber`](../modules.md#highlownumber) |
+| Name             | Type                                           |
+| :--------------- | :--------------------------------------------- |
+| `«destructured»` | [`HighLowNumber`](../modules.md#highlownumber) |
 
 #### Returns
 
@@ -176,4 +186,4 @@ NumberIndicatorSeries.isStable
 
 #### Defined in
 
-[AO/AO.ts:63](https://github.com/bennycode/trading-signals/blob/95cb489/src/AO/AO.ts#L63)
+[AO/AO.ts:63](https://github.com/bennycode/trading-signals/blob/53d8192/src/AO/AO.ts#L63)

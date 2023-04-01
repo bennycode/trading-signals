@@ -42,7 +42,7 @@
 
 #### Defined in
 
-[BBANDS/BollingerBands.ts:68](https://github.com/bennycode/trading-signals/blob/95cb489/src/BBANDS/BollingerBands.ts#L68)
+[BBANDS/BollingerBands.ts:68](https://github.com/bennycode/trading-signals/blob/53d8192/src/BBANDS/BollingerBands.ts#L68)
 
 ## Properties
 
@@ -50,11 +50,19 @@
 
 • `Readonly` **deviationMultiplier**: `number` = `2`
 
+#### Defined in
+
+[BBANDS/BollingerBands.ts:68](https://github.com/bennycode/trading-signals/blob/53d8192/src/BBANDS/BollingerBands.ts#L68)
+
 ---
 
 ### interval
 
 • `Readonly` **interval**: `number`
+
+#### Defined in
+
+[BBANDS/BollingerBands.ts:68](https://github.com/bennycode/trading-signals/blob/53d8192/src/BBANDS/BollingerBands.ts#L68)
 
 ---
 
@@ -64,7 +72,7 @@
 
 #### Defined in
 
-[BBANDS/BollingerBands.ts:65](https://github.com/bennycode/trading-signals/blob/95cb489/src/BBANDS/BollingerBands.ts#L65)
+[BBANDS/BollingerBands.ts:65](https://github.com/bennycode/trading-signals/blob/53d8192/src/BBANDS/BollingerBands.ts#L65)
 
 ## Accessors
 
@@ -82,7 +90,7 @@
 
 #### Defined in
 
-[BBANDS/BollingerBands.ts:95](https://github.com/bennycode/trading-signals/blob/95cb489/src/BBANDS/BollingerBands.ts#L95)
+[BBANDS/BollingerBands.ts:95](https://github.com/bennycode/trading-signals/blob/53d8192/src/BBANDS/BollingerBands.ts#L95)
 
 ## Methods
 
@@ -100,7 +108,7 @@
 
 #### Defined in
 
-[BBANDS/BollingerBands.ts:87](https://github.com/bennycode/trading-signals/blob/95cb489/src/BBANDS/BollingerBands.ts#L87)
+[BBANDS/BollingerBands.ts:87](https://github.com/bennycode/trading-signals/blob/53d8192/src/BBANDS/BollingerBands.ts#L87)
 
 ---
 
@@ -124,4 +132,4 @@
 
 #### Defined in
 
-[BBANDS/BollingerBands.ts:70](https://github.com/bennycode/trading-signals/blob/95cb489/src/BBANDS/BollingerBands.ts#L70)
+[BBANDS/BollingerBands.ts:70](https://github.com/bennycode/trading-signals/blob/53d8192/src/BBANDS/BollingerBands.ts#L70)

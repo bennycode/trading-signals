@@ -6,13 +6,21 @@ Center of Gravity (CG) Type: Trend
 
 Implementation of the Center of Gravity (CG) oscillator by John Ehlers.
 
-**`note`** According to the specification, the price inputs shall be calculated the following way: ((High Price + Low Price) / 2)
+**`Note`**
 
-**`note`** The selected interval should be half the dominant cycle length (signal line)
+According to the specification, the price inputs shall be calculated the following way: ((High Price + Low Price) / 2)
 
-**`note`** If the interval gets too short, the CG oscillator loses its smoothing and gets a little too nervous for profitable trading
+**`Note`**
 
-**`see`** http://www.mesasoftware.com/papers/TheCGOscillator.pdf
+The selected interval should be half the dominant cycle length (signal line)
+
+**`Note`**
+
+If the interval gets too short, the CG oscillator loses its smoothing and gets a little too nervous for profitable trading
+
+**`See`**
+
+http://www.mesasoftware.com/papers/TheCGOscillator.pdf
 
 ## Hierarchy
 
@@ -63,7 +71,7 @@ Implementation of the Center of Gravity (CG) oscillator by John Ehlers.
 
 #### Defined in
 
-[CG/CG.ts:27](https://github.com/bennycode/trading-signals/blob/95cb489/src/CG/CG.ts#L27)
+[CG/CG.ts:27](https://github.com/bennycode/trading-signals/blob/53d8192/src/CG/CG.ts#L27)
 
 ## Properties
 
@@ -79,13 +87,17 @@ Highest return value over the lifetime (not interval!) of the indicator.
 
 #### Defined in
 
-[Indicator.ts:22](https://github.com/bennycode/trading-signals/blob/95cb489/src/Indicator.ts#L22)
+[Indicator.ts:22](https://github.com/bennycode/trading-signals/blob/53d8192/src/Indicator.ts#L22)
 
 ---
 
 ### interval
 
 • `Readonly` **interval**: `number`
+
+#### Defined in
+
+[CG/CG.ts:27](https://github.com/bennycode/trading-signals/blob/53d8192/src/CG/CG.ts#L27)
 
 ---
 
@@ -101,7 +113,7 @@ Lowest return value over the lifetime (not interval!) of the indicator.
 
 #### Defined in
 
-[Indicator.ts:24](https://github.com/bennycode/trading-signals/blob/95cb489/src/Indicator.ts#L24)
+[Indicator.ts:24](https://github.com/bennycode/trading-signals/blob/53d8192/src/Indicator.ts#L24)
 
 ---
 
@@ -111,7 +123,7 @@ Lowest return value over the lifetime (not interval!) of the indicator.
 
 #### Defined in
 
-[CG/CG.ts:21](https://github.com/bennycode/trading-signals/blob/95cb489/src/CG/CG.ts#L21)
+[CG/CG.ts:21](https://github.com/bennycode/trading-signals/blob/53d8192/src/CG/CG.ts#L21)
 
 ---
 
@@ -121,13 +133,17 @@ Lowest return value over the lifetime (not interval!) of the indicator.
 
 #### Defined in
 
-[CG/CG.ts:19](https://github.com/bennycode/trading-signals/blob/95cb489/src/CG/CG.ts#L19)
+[CG/CG.ts:19](https://github.com/bennycode/trading-signals/blob/53d8192/src/CG/CG.ts#L19)
 
 ---
 
 ### signalInterval
 
 • `Readonly` **signalInterval**: `number`
+
+#### Defined in
+
+[CG/CG.ts:27](https://github.com/bennycode/trading-signals/blob/53d8192/src/CG/CG.ts#L27)
 
 ## Accessors
 
@@ -145,7 +161,7 @@ BigIndicatorSeries.isStable
 
 #### Defined in
 
-[CG/CG.ts:23](https://github.com/bennycode/trading-signals/blob/95cb489/src/CG/CG.ts#L23)
+[CG/CG.ts:23](https://github.com/bennycode/trading-signals/blob/53d8192/src/CG/CG.ts#L23)
 
 ## Methods
 
@@ -163,7 +179,7 @@ BigIndicatorSeries.isStable
 
 #### Defined in
 
-[Indicator.ts:31](https://github.com/bennycode/trading-signals/blob/95cb489/src/Indicator.ts#L31)
+[Indicator.ts:31](https://github.com/bennycode/trading-signals/blob/53d8192/src/Indicator.ts#L31)
 
 ---
 
@@ -187,4 +203,4 @@ BigIndicatorSeries.isStable
 
 #### Defined in
 
-[CG/CG.ts:32](https://github.com/bennycode/trading-signals/blob/95cb489/src/CG/CG.ts#L32)
+[CG/CG.ts:32](https://github.com/bennycode/trading-signals/blob/53d8192/src/CG/CG.ts#L32)

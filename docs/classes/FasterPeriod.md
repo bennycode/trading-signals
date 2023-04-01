@@ -42,7 +42,7 @@
 
 #### Defined in
 
-[util/Period.ts:56](https://github.com/bennycode/trading-signals/blob/95cb489/src/util/Period.ts#L56)
+[util/Period.ts:56](https://github.com/bennycode/trading-signals/blob/53d8192/src/util/Period.ts#L56)
 
 ## Properties
 
@@ -54,13 +54,17 @@ Highest return value during the current period.
 
 #### Defined in
 
-[util/Period.ts:52](https://github.com/bennycode/trading-signals/blob/95cb489/src/util/Period.ts#L52)
+[util/Period.ts:52](https://github.com/bennycode/trading-signals/blob/53d8192/src/util/Period.ts#L52)
 
 ---
 
 ### interval
 
 • `Readonly` **interval**: `number`
+
+#### Defined in
+
+[util/Period.ts:56](https://github.com/bennycode/trading-signals/blob/53d8192/src/util/Period.ts#L56)
 
 ---
 
@@ -72,7 +76,7 @@ Lowest return value during the current period.
 
 #### Defined in
 
-[util/Period.ts:54](https://github.com/bennycode/trading-signals/blob/95cb489/src/util/Period.ts#L54)
+[util/Period.ts:54](https://github.com/bennycode/trading-signals/blob/53d8192/src/util/Period.ts#L54)
 
 ---
 
@@ -82,7 +86,7 @@ Lowest return value during the current period.
 
 #### Defined in
 
-[util/Period.ts:50](https://github.com/bennycode/trading-signals/blob/95cb489/src/util/Period.ts#L50)
+[util/Period.ts:50](https://github.com/bennycode/trading-signals/blob/53d8192/src/util/Period.ts#L50)
 
 ## Accessors
 
@@ -100,7 +104,7 @@ Lowest return value during the current period.
 
 #### Defined in
 
-[util/Period.ts:76](https://github.com/bennycode/trading-signals/blob/95cb489/src/util/Period.ts#L76)
+[util/Period.ts:76](https://github.com/bennycode/trading-signals/blob/53d8192/src/util/Period.ts#L76)
 
 ## Methods
 
@@ -118,7 +122,7 @@ Lowest return value during the current period.
 
 #### Defined in
 
-[util/Period.ts:60](https://github.com/bennycode/trading-signals/blob/95cb489/src/util/Period.ts#L60)
+[util/Period.ts:60](https://github.com/bennycode/trading-signals/blob/53d8192/src/util/Period.ts#L60)
 
 ---
 
@@ -142,4 +146,4 @@ Lowest return value during the current period.
 
 #### Defined in
 
-[util/Period.ts:67](https://github.com/bennycode/trading-signals/blob/95cb489/src/util/Period.ts#L67)
+[util/Period.ts:67](https://github.com/bennycode/trading-signals/blob/53d8192/src/util/Period.ts#L67)

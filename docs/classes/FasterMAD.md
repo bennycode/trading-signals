@@ -2,6 +2,8 @@
 
 # Class: FasterMAD
 
+Tracks results of an indicator over time and memorizes the highest & lowest result.
+
 ## Hierarchy
 
 - [`NumberIndicatorSeries`](NumberIndicatorSeries.md)
@@ -49,7 +51,7 @@
 
 #### Defined in
 
-[MAD/MAD.ts:47](https://github.com/bennycode/trading-signals/blob/95cb489/src/MAD/MAD.ts#L47)
+[MAD/MAD.ts:47](https://github.com/bennycode/trading-signals/blob/53d8192/src/MAD/MAD.ts#L47)
 
 ## Properties
 
@@ -65,13 +67,17 @@ Highest return value over the lifetime (not interval!) of the indicator.
 
 #### Defined in
 
-[Indicator.ts:56](https://github.com/bennycode/trading-signals/blob/95cb489/src/Indicator.ts#L56)
+[Indicator.ts:56](https://github.com/bennycode/trading-signals/blob/53d8192/src/Indicator.ts#L56)
 
 ---
 
 ### interval
 
 • `Readonly` **interval**: `number`
+
+#### Defined in
+
+[MAD/MAD.ts:47](https://github.com/bennycode/trading-signals/blob/53d8192/src/MAD/MAD.ts#L47)
 
 ---
 
@@ -87,7 +93,7 @@ Lowest return value over the lifetime (not interval!) of the indicator.
 
 #### Defined in
 
-[Indicator.ts:58](https://github.com/bennycode/trading-signals/blob/95cb489/src/Indicator.ts#L58)
+[Indicator.ts:58](https://github.com/bennycode/trading-signals/blob/53d8192/src/Indicator.ts#L58)
 
 ---
 
@@ -97,7 +103,7 @@ Lowest return value over the lifetime (not interval!) of the indicator.
 
 #### Defined in
 
-[MAD/MAD.ts:45](https://github.com/bennycode/trading-signals/blob/95cb489/src/MAD/MAD.ts#L45)
+[MAD/MAD.ts:45](https://github.com/bennycode/trading-signals/blob/53d8192/src/MAD/MAD.ts#L45)
 
 ## Accessors
 
@@ -115,7 +121,7 @@ NumberIndicatorSeries.isStable
 
 #### Defined in
 
-[Indicator.ts:61](https://github.com/bennycode/trading-signals/blob/95cb489/src/Indicator.ts#L61)
+[Indicator.ts:61](https://github.com/bennycode/trading-signals/blob/53d8192/src/Indicator.ts#L61)
 
 ## Methods
 
@@ -133,7 +139,7 @@ NumberIndicatorSeries.isStable
 
 #### Defined in
 
-[Indicator.ts:65](https://github.com/bennycode/trading-signals/blob/95cb489/src/Indicator.ts#L65)
+[Indicator.ts:65](https://github.com/bennycode/trading-signals/blob/53d8192/src/Indicator.ts#L65)
 
 ---
 
@@ -157,7 +163,7 @@ NumberIndicatorSeries.isStable
 
 #### Defined in
 
-[MAD/MAD.ts:51](https://github.com/bennycode/trading-signals/blob/95cb489/src/MAD/MAD.ts#L51)
+[MAD/MAD.ts:51](https://github.com/bennycode/trading-signals/blob/53d8192/src/MAD/MAD.ts#L51)
 
 ---
 
@@ -178,4 +184,4 @@ NumberIndicatorSeries.isStable
 
 #### Defined in
 
-[MAD/MAD.ts:69](https://github.com/bennycode/trading-signals/blob/95cb489/src/MAD/MAD.ts#L69)
+[MAD/MAD.ts:69](https://github.com/bennycode/trading-signals/blob/53d8192/src/MAD/MAD.ts#L69)

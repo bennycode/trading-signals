@@ -11,7 +11,9 @@ The Stochastic RSI is an oscillator ranging from 0 to 1 and was developed by Tus
 - Overbought doesn't mean that the price will reverse lower but it shows that the RSI reached an extreme
 - Oversold doesn't mean that the price will reverse higher but it shows that the RSI reached an extreme
 
-**`see`** https://www.investopedia.com/terms/s/stochrsi.asp
+**`See`**
+
+https://www.investopedia.com/terms/s/stochrsi.asp
 
 ## Hierarchy
 
@@ -59,7 +61,7 @@ The Stochastic RSI is an oscillator ranging from 0 to 1 and was developed by Tus
 
 #### Defined in
 
-[STOCH/StochasticRSI.ts:27](https://github.com/bennycode/trading-signals/blob/95cb489/src/STOCH/StochasticRSI.ts#L27)
+[STOCH/StochasticRSI.ts:27](https://github.com/bennycode/trading-signals/blob/53d8192/src/STOCH/StochasticRSI.ts#L27)
 
 ## Properties
 
@@ -75,13 +77,17 @@ Highest return value over the lifetime (not interval!) of the indicator.
 
 #### Defined in
 
-[Indicator.ts:22](https://github.com/bennycode/trading-signals/blob/95cb489/src/Indicator.ts#L22)
+[Indicator.ts:22](https://github.com/bennycode/trading-signals/blob/53d8192/src/Indicator.ts#L22)
 
 ---
 
 ### interval
 
 • `Readonly` **interval**: `number`
+
+#### Defined in
+
+[STOCH/StochasticRSI.ts:27](https://github.com/bennycode/trading-signals/blob/53d8192/src/STOCH/StochasticRSI.ts#L27)
 
 ---
 
@@ -97,7 +103,7 @@ Lowest return value over the lifetime (not interval!) of the indicator.
 
 #### Defined in
 
-[Indicator.ts:24](https://github.com/bennycode/trading-signals/blob/95cb489/src/Indicator.ts#L24)
+[Indicator.ts:24](https://github.com/bennycode/trading-signals/blob/53d8192/src/Indicator.ts#L24)
 
 ## Accessors
 
@@ -115,7 +121,7 @@ BigIndicatorSeries.isStable
 
 #### Defined in
 
-[Indicator.ts:27](https://github.com/bennycode/trading-signals/blob/95cb489/src/Indicator.ts#L27)
+[Indicator.ts:27](https://github.com/bennycode/trading-signals/blob/53d8192/src/Indicator.ts#L27)
 
 ## Methods
 
@@ -133,7 +139,7 @@ BigIndicatorSeries.isStable
 
 #### Defined in
 
-[Indicator.ts:31](https://github.com/bennycode/trading-signals/blob/95cb489/src/Indicator.ts#L31)
+[Indicator.ts:31](https://github.com/bennycode/trading-signals/blob/53d8192/src/Indicator.ts#L31)
 
 ---
 
@@ -157,4 +163,4 @@ BigIndicatorSeries.isStable
 
 #### Defined in
 
-[STOCH/StochasticRSI.ts:33](https://github.com/bennycode/trading-signals/blob/95cb489/src/STOCH/StochasticRSI.ts#L33)
+[STOCH/StochasticRSI.ts:33](https://github.com/bennycode/trading-signals/blob/53d8192/src/STOCH/StochasticRSI.ts#L33)

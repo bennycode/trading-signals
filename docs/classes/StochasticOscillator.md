@@ -8,9 +8,10 @@ The Stochastic Oscillator was developed by George Lane and is range-bound betwee
 
 The stochastic k (%k) values represent the relation between current close to the period's price range (high/low). It is sometimes referred as the "fast" stochastic period (fastk). The stochastic d (%d) values represent a Moving Average of the %k values. It is sometimes referred as the "slow" period.
 
-**`see`** https://en.wikipedia.org/wiki/Stochastic_oscillator
+**`See`**
 
-**`see`** https://www.investopedia.com/terms/s/stochasticoscillator.asp
+- https://en.wikipedia.org/wiki/Stochastic_oscillator
+- https://www.investopedia.com/terms/s/stochasticoscillator.asp
 
 ## Implements
 
@@ -55,7 +56,7 @@ Constructs a Stochastic Oscillator.
 
 #### Defined in
 
-[STOCH/StochasticOscillator.ts:54](https://github.com/bennycode/trading-signals/blob/95cb489/src/STOCH/StochasticOscillator.ts#L54)
+[STOCH/StochasticOscillator.ts:54](https://github.com/bennycode/trading-signals/blob/53d8192/src/STOCH/StochasticOscillator.ts#L54)
 
 ## Properties
 
@@ -63,17 +64,35 @@ Constructs a Stochastic Oscillator.
 
 • `Readonly` **m**: `number`
 
+The %k slowing period
+
+#### Defined in
+
+[STOCH/StochasticOscillator.ts:54](https://github.com/bennycode/trading-signals/blob/53d8192/src/STOCH/StochasticOscillator.ts#L54)
+
 ---
 
 ### n
 
 • `Readonly` **n**: `number`
 
+The %k period
+
+#### Defined in
+
+[STOCH/StochasticOscillator.ts:54](https://github.com/bennycode/trading-signals/blob/53d8192/src/STOCH/StochasticOscillator.ts#L54)
+
 ---
 
 ### p
 
 • `Readonly` **p**: `number`
+
+The %d period
+
+#### Defined in
+
+[STOCH/StochasticOscillator.ts:54](https://github.com/bennycode/trading-signals/blob/53d8192/src/STOCH/StochasticOscillator.ts#L54)
 
 ## Accessors
 
@@ -91,7 +110,7 @@ Constructs a Stochastic Oscillator.
 
 #### Defined in
 
-[STOCH/StochasticOscillator.ts:92](https://github.com/bennycode/trading-signals/blob/95cb489/src/STOCH/StochasticOscillator.ts#L92)
+[STOCH/StochasticOscillator.ts:92](https://github.com/bennycode/trading-signals/blob/53d8192/src/STOCH/StochasticOscillator.ts#L92)
 
 ## Methods
 
@@ -109,7 +128,7 @@ Constructs a Stochastic Oscillator.
 
 #### Defined in
 
-[STOCH/StochasticOscillator.ts:59](https://github.com/bennycode/trading-signals/blob/95cb489/src/STOCH/StochasticOscillator.ts#L59)
+[STOCH/StochasticOscillator.ts:59](https://github.com/bennycode/trading-signals/blob/53d8192/src/STOCH/StochasticOscillator.ts#L59)
 
 ---
 
@@ -133,4 +152,4 @@ Constructs a Stochastic Oscillator.
 
 #### Defined in
 
-[STOCH/StochasticOscillator.ts:67](https://github.com/bennycode/trading-signals/blob/95cb489/src/STOCH/StochasticOscillator.ts#L67)
+[STOCH/StochasticOscillator.ts:67](https://github.com/bennycode/trading-signals/blob/53d8192/src/STOCH/StochasticOscillator.ts#L67)

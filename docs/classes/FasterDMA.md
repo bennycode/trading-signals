@@ -42,7 +42,7 @@
 
 #### Defined in
 
-[DMA/DMA.ts:56](https://github.com/bennycode/trading-signals/blob/95cb489/src/DMA/DMA.ts#L56)
+[DMA/DMA.ts:56](https://github.com/bennycode/trading-signals/blob/53d8192/src/DMA/DMA.ts#L56)
 
 ## Properties
 
@@ -52,7 +52,7 @@
 
 #### Defined in
 
-[DMA/DMA.ts:54](https://github.com/bennycode/trading-signals/blob/95cb489/src/DMA/DMA.ts#L54)
+[DMA/DMA.ts:54](https://github.com/bennycode/trading-signals/blob/53d8192/src/DMA/DMA.ts#L54)
 
 ---
 
@@ -62,7 +62,7 @@
 
 #### Defined in
 
-[DMA/DMA.ts:53](https://github.com/bennycode/trading-signals/blob/95cb489/src/DMA/DMA.ts#L53)
+[DMA/DMA.ts:53](https://github.com/bennycode/trading-signals/blob/53d8192/src/DMA/DMA.ts#L53)
 
 ## Accessors
 
@@ -80,7 +80,7 @@
 
 #### Defined in
 
-[DMA/DMA.ts:61](https://github.com/bennycode/trading-signals/blob/95cb489/src/DMA/DMA.ts#L61)
+[DMA/DMA.ts:61](https://github.com/bennycode/trading-signals/blob/53d8192/src/DMA/DMA.ts#L61)
 
 ## Methods
 
@@ -98,7 +98,7 @@
 
 #### Defined in
 
-[DMA/DMA.ts:70](https://github.com/bennycode/trading-signals/blob/95cb489/src/DMA/DMA.ts#L70)
+[DMA/DMA.ts:70](https://github.com/bennycode/trading-signals/blob/53d8192/src/DMA/DMA.ts#L70)
 
 ---
 
@@ -122,4 +122,4 @@
 
 #### Defined in
 
-[DMA/DMA.ts:65](https://github.com/bennycode/trading-signals/blob/95cb489/src/DMA/DMA.ts#L65)
+[DMA/DMA.ts:65](https://github.com/bennycode/trading-signals/blob/53d8192/src/DMA/DMA.ts#L65)

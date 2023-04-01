@@ -2,6 +2,8 @@
 
 # Class: FasterOBV
 
+Tracks results of an indicator over time and memorizes the highest & lowest result.
+
 ## Hierarchy
 
 - [`NumberIndicatorSeries`](NumberIndicatorSeries.md)<[`OpenHighLowCloseVolumeNumber`](../modules.md#openhighlowclosevolumenumber)\>
@@ -47,7 +49,7 @@
 
 #### Defined in
 
-[OBV/OBV.ts:35](https://github.com/bennycode/trading-signals/blob/95cb489/src/OBV/OBV.ts#L35)
+[OBV/OBV.ts:35](https://github.com/bennycode/trading-signals/blob/53d8192/src/OBV/OBV.ts#L35)
 
 ---
 
@@ -63,7 +65,7 @@ Highest return value over the lifetime (not interval!) of the indicator.
 
 #### Defined in
 
-[Indicator.ts:56](https://github.com/bennycode/trading-signals/blob/95cb489/src/Indicator.ts#L56)
+[Indicator.ts:56](https://github.com/bennycode/trading-signals/blob/53d8192/src/Indicator.ts#L56)
 
 ---
 
@@ -79,7 +81,7 @@ Lowest return value over the lifetime (not interval!) of the indicator.
 
 #### Defined in
 
-[Indicator.ts:58](https://github.com/bennycode/trading-signals/blob/95cb489/src/Indicator.ts#L58)
+[Indicator.ts:58](https://github.com/bennycode/trading-signals/blob/53d8192/src/Indicator.ts#L58)
 
 ## Accessors
 
@@ -97,7 +99,7 @@ NumberIndicatorSeries.isStable
 
 #### Defined in
 
-[Indicator.ts:61](https://github.com/bennycode/trading-signals/blob/95cb489/src/Indicator.ts#L61)
+[Indicator.ts:61](https://github.com/bennycode/trading-signals/blob/53d8192/src/Indicator.ts#L61)
 
 ## Methods
 
@@ -115,7 +117,7 @@ NumberIndicatorSeries.isStable
 
 #### Defined in
 
-[Indicator.ts:65](https://github.com/bennycode/trading-signals/blob/95cb489/src/Indicator.ts#L65)
+[Indicator.ts:65](https://github.com/bennycode/trading-signals/blob/53d8192/src/Indicator.ts#L65)
 
 ---
 
@@ -139,4 +141,4 @@ NumberIndicatorSeries.isStable
 
 #### Defined in
 
-[OBV/OBV.ts:37](https://github.com/bennycode/trading-signals/blob/95cb489/src/OBV/OBV.ts#L37)
+[OBV/OBV.ts:37](https://github.com/bennycode/trading-signals/blob/53d8192/src/OBV/OBV.ts#L37)

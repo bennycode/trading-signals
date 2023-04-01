@@ -8,7 +8,9 @@ The DX was developed by **John Welles Wilder, Jr.**. and may help traders assess
 
 If there is no change in the trend, then the DX is `0`. The return value increases when there is a stronger trend (either negative or positive). To detect if the trend is bullish or bearish you have to compare +DI and -DI. When +DI is above -DI, then there is more upward pressure than downward pressure in the market.
 
-**`see`** https://www.fidelity.com/learning-center/trading-investing/technical-analysis/technical-indicator-guide/dmi
+**`See`**
+
+https://www.fidelity.com/learning-center/trading-investing/technical-analysis/technical-indicator-guide/dmi
 
 ## Hierarchy
 
@@ -58,7 +60,7 @@ If there is no change in the trend, then the DX is `0`. The return value increas
 
 #### Defined in
 
-[DX/DX.ts:32](https://github.com/bennycode/trading-signals/blob/95cb489/src/DX/DX.ts#L32)
+[DX/DX.ts:32](https://github.com/bennycode/trading-signals/blob/53d8192/src/DX/DX.ts#L32)
 
 ## Properties
 
@@ -74,13 +76,17 @@ Highest return value over the lifetime (not interval!) of the indicator.
 
 #### Defined in
 
-[Indicator.ts:22](https://github.com/bennycode/trading-signals/blob/95cb489/src/Indicator.ts#L22)
+[Indicator.ts:22](https://github.com/bennycode/trading-signals/blob/53d8192/src/Indicator.ts#L22)
 
 ---
 
 ### interval
 
 • `Readonly` **interval**: `number`
+
+#### Defined in
+
+[DX/DX.ts:32](https://github.com/bennycode/trading-signals/blob/53d8192/src/DX/DX.ts#L32)
 
 ---
 
@@ -96,7 +102,7 @@ Lowest return value over the lifetime (not interval!) of the indicator.
 
 #### Defined in
 
-[Indicator.ts:24](https://github.com/bennycode/trading-signals/blob/95cb489/src/Indicator.ts#L24)
+[Indicator.ts:24](https://github.com/bennycode/trading-signals/blob/53d8192/src/Indicator.ts#L24)
 
 ---
 
@@ -108,7 +114,7 @@ Minus Directional Indicator (-DI)
 
 #### Defined in
 
-[DX/DX.ts:28](https://github.com/bennycode/trading-signals/blob/95cb489/src/DX/DX.ts#L28)
+[DX/DX.ts:28](https://github.com/bennycode/trading-signals/blob/53d8192/src/DX/DX.ts#L28)
 
 ---
 
@@ -120,7 +126,7 @@ Plus Directional Indicator (+DI)
 
 #### Defined in
 
-[DX/DX.ts:30](https://github.com/bennycode/trading-signals/blob/95cb489/src/DX/DX.ts#L30)
+[DX/DX.ts:30](https://github.com/bennycode/trading-signals/blob/53d8192/src/DX/DX.ts#L30)
 
 ## Accessors
 
@@ -138,7 +144,7 @@ BigIndicatorSeries.isStable
 
 #### Defined in
 
-[Indicator.ts:27](https://github.com/bennycode/trading-signals/blob/95cb489/src/Indicator.ts#L27)
+[Indicator.ts:27](https://github.com/bennycode/trading-signals/blob/53d8192/src/Indicator.ts#L27)
 
 ## Methods
 
@@ -156,7 +162,7 @@ BigIndicatorSeries.isStable
 
 #### Defined in
 
-[Indicator.ts:31](https://github.com/bennycode/trading-signals/blob/95cb489/src/Indicator.ts#L31)
+[Indicator.ts:31](https://github.com/bennycode/trading-signals/blob/53d8192/src/Indicator.ts#L31)
 
 ---
 
@@ -180,4 +186,4 @@ BigIndicatorSeries.isStable
 
 #### Defined in
 
-[DX/DX.ts:46](https://github.com/bennycode/trading-signals/blob/95cb489/src/DX/DX.ts#L46)
+[DX/DX.ts:46](https://github.com/bennycode/trading-signals/blob/53d8192/src/DX/DX.ts#L46)

@@ -44,13 +44,17 @@
 
 #### Defined in
 
-[MACD/MACD.ts:100](https://github.com/bennycode/trading-signals/blob/95cb489/src/MACD/MACD.ts#L100)
+[MACD/MACD.ts:99](https://github.com/bennycode/trading-signals/blob/53d8192/src/MACD/MACD.ts#L99)
 
 ## Properties
 
 ### long
 
 • `Readonly` **long**: [`FasterEMA`](FasterEMA.md) \| [`FasterDEMA`](FasterDEMA.md)
+
+#### Defined in
+
+[MACD/MACD.ts:101](https://github.com/bennycode/trading-signals/blob/53d8192/src/MACD/MACD.ts#L101)
 
 ---
 
@@ -60,7 +64,7 @@
 
 #### Defined in
 
-[MACD/MACD.ts:97](https://github.com/bennycode/trading-signals/blob/95cb489/src/MACD/MACD.ts#L97)
+[MACD/MACD.ts:96](https://github.com/bennycode/trading-signals/blob/53d8192/src/MACD/MACD.ts#L96)
 
 ---
 
@@ -68,11 +72,19 @@
 
 • `Readonly` **short**: [`FasterEMA`](FasterEMA.md) \| [`FasterDEMA`](FasterDEMA.md)
 
+#### Defined in
+
+[MACD/MACD.ts:100](https://github.com/bennycode/trading-signals/blob/53d8192/src/MACD/MACD.ts#L100)
+
 ---
 
 ### signal
 
 • `Readonly` **signal**: [`FasterEMA`](FasterEMA.md) \| [`FasterDEMA`](FasterDEMA.md)
+
+#### Defined in
+
+[MACD/MACD.ts:102](https://github.com/bennycode/trading-signals/blob/53d8192/src/MACD/MACD.ts#L102)
 
 ## Accessors
 
@@ -90,7 +102,7 @@
 
 #### Defined in
 
-[MACD/MACD.ts:114](https://github.com/bennycode/trading-signals/blob/95cb489/src/MACD/MACD.ts#L114)
+[MACD/MACD.ts:113](https://github.com/bennycode/trading-signals/blob/53d8192/src/MACD/MACD.ts#L113)
 
 ## Methods
 
@@ -108,7 +120,7 @@
 
 #### Defined in
 
-[MACD/MACD.ts:106](https://github.com/bennycode/trading-signals/blob/95cb489/src/MACD/MACD.ts#L106)
+[MACD/MACD.ts:105](https://github.com/bennycode/trading-signals/blob/53d8192/src/MACD/MACD.ts#L105)
 
 ---
 
@@ -132,4 +144,4 @@
 
 #### Defined in
 
-[MACD/MACD.ts:118](https://github.com/bennycode/trading-signals/blob/95cb489/src/MACD/MACD.ts#L118)
+[MACD/MACD.ts:117](https://github.com/bennycode/trading-signals/blob/53d8192/src/MACD/MACD.ts#L117)

@@ -2,6 +2,8 @@
 
 # Class: FasterMovingAverage
 
+Tracks results of an indicator over time and memorizes the highest & lowest result.
+
 ## Hierarchy
 
 - [`NumberIndicatorSeries`](NumberIndicatorSeries.md)
@@ -32,6 +34,7 @@
 
 - [getResult](FasterMovingAverage.md#getresult)
 - [update](FasterMovingAverage.md#update)
+- [updates](FasterMovingAverage.md#updates)
 
 ## Constructors
 
@@ -51,7 +54,7 @@
 
 #### Defined in
 
-[MA/MovingAverage.ts:21](https://github.com/bennycode/trading-signals/blob/95cb489/src/MA/MovingAverage.ts#L21)
+[MA/MovingAverage.ts:26](https://github.com/bennycode/trading-signals/blob/53d8192/src/MA/MovingAverage.ts#L26)
 
 ## Properties
 
@@ -67,13 +70,17 @@ Highest return value over the lifetime (not interval!) of the indicator.
 
 #### Defined in
 
-[Indicator.ts:56](https://github.com/bennycode/trading-signals/blob/95cb489/src/Indicator.ts#L56)
+[Indicator.ts:56](https://github.com/bennycode/trading-signals/blob/53d8192/src/Indicator.ts#L56)
 
 ---
 
 ### interval
 
 • `Readonly` **interval**: `number`
+
+#### Defined in
+
+[MA/MovingAverage.ts:26](https://github.com/bennycode/trading-signals/blob/53d8192/src/MA/MovingAverage.ts#L26)
 
 ---
 
@@ -89,7 +96,7 @@ Lowest return value over the lifetime (not interval!) of the indicator.
 
 #### Defined in
 
-[Indicator.ts:58](https://github.com/bennycode/trading-signals/blob/95cb489/src/Indicator.ts#L58)
+[Indicator.ts:58](https://github.com/bennycode/trading-signals/blob/53d8192/src/Indicator.ts#L58)
 
 ## Accessors
 
@@ -107,7 +114,7 @@ NumberIndicatorSeries.isStable
 
 #### Defined in
 
-[Indicator.ts:61](https://github.com/bennycode/trading-signals/blob/95cb489/src/Indicator.ts#L61)
+[Indicator.ts:61](https://github.com/bennycode/trading-signals/blob/53d8192/src/Indicator.ts#L61)
 
 ## Methods
 
@@ -125,7 +132,7 @@ NumberIndicatorSeries.isStable
 
 #### Defined in
 
-[Indicator.ts:65](https://github.com/bennycode/trading-signals/blob/95cb489/src/Indicator.ts#L65)
+[Indicator.ts:65](https://github.com/bennycode/trading-signals/blob/53d8192/src/Indicator.ts#L65)
 
 ---
 
@@ -149,4 +156,24 @@ NumberIndicatorSeries.isStable
 
 #### Defined in
 
-[MA/MovingAverage.ts:25](https://github.com/bennycode/trading-signals/blob/95cb489/src/MA/MovingAverage.ts#L25)
+[MA/MovingAverage.ts:35](https://github.com/bennycode/trading-signals/blob/53d8192/src/MA/MovingAverage.ts#L35)
+
+---
+
+### updates
+
+▸ **updates**(`prices`): `number` \| `void`
+
+#### Parameters
+
+| Name     | Type       |
+| :------- | :--------- |
+| `prices` | `number`[] |
+
+#### Returns
+
+`number` \| `void`
+
+#### Defined in
+
+[MA/MovingAverage.ts:30](https://github.com/bennycode/trading-signals/blob/53d8192/src/MA/MovingAverage.ts#L30)

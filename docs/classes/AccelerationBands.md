@@ -38,13 +38,12 @@ Acceleration bands created by Price Headley are set as an envelope around a movi
 
 Two consecutive closes outside Acceleration Bands suggest an entry point in the direction of the breakout (either bullish or bearish). A long position is usually kept till the first close back inside the bands.
 
-**`see`** https://www.tradingtechnologies.com/xtrader-help/x-study/technical-indicator-definitions/acceleration-bands-abands/
+**`See`**
 
-**`see`** https://www.motivewave.com/studies/acceleration_bands.htm
-
-**`see`** https://github.com/QuantConnect/Lean/blob/master/Indicators/AccelerationBands.cs
-
-**`see`** https://github.com/twopirllc/pandas-ta/blob/master/pandas_ta/volatility/accbands.py
+- https://www.tradingtechnologies.com/xtrader-help/x-study/technical-indicator-definitions/acceleration-bands-abands/
+- https://www.motivewave.com/studies/acceleration_bands.htm
+- https://github.com/QuantConnect/Lean/blob/master/Indicators/AccelerationBands.cs
+- https://github.com/twopirllc/pandas-ta/blob/master/pandas_ta/volatility/accbands.py
 
 #### Parameters
 
@@ -56,7 +55,7 @@ Two consecutive closes outside Acceleration Bands suggest an entry point in the 
 
 #### Defined in
 
-[ABANDS/AccelerationBands.ts:35](https://github.com/bennycode/trading-signals/blob/95cb489/src/ABANDS/AccelerationBands.ts#L35)
+[ABANDS/AccelerationBands.ts:35](https://github.com/bennycode/trading-signals/blob/53d8192/src/ABANDS/AccelerationBands.ts#L35)
 
 ## Properties
 
@@ -64,11 +63,23 @@ Two consecutive closes outside Acceleration Bands suggest an entry point in the 
 
 • `Readonly` **interval**: `number`
 
+The interval that is being used for the three moving averages which create lower, middle and upper bands
+
+#### Defined in
+
+[ABANDS/AccelerationBands.ts:36](https://github.com/bennycode/trading-signals/blob/53d8192/src/ABANDS/AccelerationBands.ts#L36)
+
 ---
 
 ### width
 
 • `Readonly` **width**: `number`
+
+A coefficient specifying the distance between the middle band and upper/lower bands
+
+#### Defined in
+
+[ABANDS/AccelerationBands.ts:37](https://github.com/bennycode/trading-signals/blob/53d8192/src/ABANDS/AccelerationBands.ts#L37)
 
 ## Accessors
 
@@ -86,7 +97,7 @@ Two consecutive closes outside Acceleration Bands suggest an entry point in the 
 
 #### Defined in
 
-[ABANDS/AccelerationBands.ts:45](https://github.com/bennycode/trading-signals/blob/95cb489/src/ABANDS/AccelerationBands.ts#L45)
+[ABANDS/AccelerationBands.ts:45](https://github.com/bennycode/trading-signals/blob/53d8192/src/ABANDS/AccelerationBands.ts#L45)
 
 ## Methods
 
@@ -104,19 +115,19 @@ Two consecutive closes outside Acceleration Bands suggest an entry point in the 
 
 #### Defined in
 
-[ABANDS/AccelerationBands.ts:61](https://github.com/bennycode/trading-signals/blob/95cb489/src/ABANDS/AccelerationBands.ts#L61)
+[ABANDS/AccelerationBands.ts:61](https://github.com/bennycode/trading-signals/blob/53d8192/src/ABANDS/AccelerationBands.ts#L61)
 
 ---
 
 ### update
 
-▸ **update**(`__namedParameters`): `void`
+▸ **update**(`«destructured»`): `void`
 
 #### Parameters
 
-| Name                | Type                                         |
-| :------------------ | :------------------------------------------- |
-| `__namedParameters` | [`HighLowClose`](../modules.md#highlowclose) |
+| Name             | Type                                         |
+| :--------------- | :------------------------------------------- |
+| `«destructured»` | [`HighLowClose`](../modules.md#highlowclose) |
 
 #### Returns
 
@@ -128,4 +139,4 @@ Two consecutive closes outside Acceleration Bands suggest an entry point in the 
 
 #### Defined in
 
-[ABANDS/AccelerationBands.ts:49](https://github.com/bennycode/trading-signals/blob/95cb489/src/ABANDS/AccelerationBands.ts#L49)
+[ABANDS/AccelerationBands.ts:49](https://github.com/bennycode/trading-signals/blob/53d8192/src/ABANDS/AccelerationBands.ts#L49)

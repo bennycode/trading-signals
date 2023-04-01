@@ -6,7 +6,9 @@ Mean Absolute Deviation (MAD) Type: Volatility
 
 The mean absolute deviation (MAD) is calculating the absolute deviation / difference from the mean over a period. Large outliers will reflect in a higher MAD.
 
-**`see`** https://en.wikipedia.org/wiki/Average_absolute_deviation
+**`See`**
+
+https://en.wikipedia.org/wiki/Average_absolute_deviation
 
 ## Hierarchy
 
@@ -55,7 +57,7 @@ The mean absolute deviation (MAD) is calculating the absolute deviation / differ
 
 #### Defined in
 
-[MAD/MAD.ts:17](https://github.com/bennycode/trading-signals/blob/95cb489/src/MAD/MAD.ts#L17)
+[MAD/MAD.ts:17](https://github.com/bennycode/trading-signals/blob/53d8192/src/MAD/MAD.ts#L17)
 
 ## Properties
 
@@ -71,13 +73,17 @@ Highest return value over the lifetime (not interval!) of the indicator.
 
 #### Defined in
 
-[Indicator.ts:22](https://github.com/bennycode/trading-signals/blob/95cb489/src/Indicator.ts#L22)
+[Indicator.ts:22](https://github.com/bennycode/trading-signals/blob/53d8192/src/Indicator.ts#L22)
 
 ---
 
 ### interval
 
 • `Readonly` **interval**: `number`
+
+#### Defined in
+
+[MAD/MAD.ts:17](https://github.com/bennycode/trading-signals/blob/53d8192/src/MAD/MAD.ts#L17)
 
 ---
 
@@ -93,7 +99,7 @@ Lowest return value over the lifetime (not interval!) of the indicator.
 
 #### Defined in
 
-[Indicator.ts:24](https://github.com/bennycode/trading-signals/blob/95cb489/src/Indicator.ts#L24)
+[Indicator.ts:24](https://github.com/bennycode/trading-signals/blob/53d8192/src/Indicator.ts#L24)
 
 ---
 
@@ -103,7 +109,7 @@ Lowest return value over the lifetime (not interval!) of the indicator.
 
 #### Defined in
 
-[MAD/MAD.ts:15](https://github.com/bennycode/trading-signals/blob/95cb489/src/MAD/MAD.ts#L15)
+[MAD/MAD.ts:15](https://github.com/bennycode/trading-signals/blob/53d8192/src/MAD/MAD.ts#L15)
 
 ## Accessors
 
@@ -121,7 +127,7 @@ BigIndicatorSeries.isStable
 
 #### Defined in
 
-[Indicator.ts:27](https://github.com/bennycode/trading-signals/blob/95cb489/src/Indicator.ts#L27)
+[Indicator.ts:27](https://github.com/bennycode/trading-signals/blob/53d8192/src/Indicator.ts#L27)
 
 ## Methods
 
@@ -139,7 +145,7 @@ BigIndicatorSeries.isStable
 
 #### Defined in
 
-[Indicator.ts:31](https://github.com/bennycode/trading-signals/blob/95cb489/src/Indicator.ts#L31)
+[Indicator.ts:31](https://github.com/bennycode/trading-signals/blob/53d8192/src/Indicator.ts#L31)
 
 ---
 
@@ -163,7 +169,7 @@ BigIndicatorSeries.isStable
 
 #### Defined in
 
-[MAD/MAD.ts:21](https://github.com/bennycode/trading-signals/blob/95cb489/src/MAD/MAD.ts#L21)
+[MAD/MAD.ts:21](https://github.com/bennycode/trading-signals/blob/53d8192/src/MAD/MAD.ts#L21)
 
 ---
 
@@ -184,4 +190,4 @@ BigIndicatorSeries.isStable
 
 #### Defined in
 
-[MAD/MAD.ts:33](https://github.com/bennycode/trading-signals/blob/95cb489/src/MAD/MAD.ts#L33)
+[MAD/MAD.ts:33](https://github.com/bennycode/trading-signals/blob/53d8192/src/MAD/MAD.ts#L33)

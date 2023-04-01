@@ -6,7 +6,9 @@ Moving Average Convergence Divergence (MACD) Type: Momentum
 
 The MACD triggers trading signals when it crosses above (bullish buying opportunity) or below (bearish selling opportunity) its signal line. MACD can be used together with the RSI to provide a more accurate trading signal.
 
-**`see`** https://www.investopedia.com/terms/m/macd.asp
+**`See`**
+
+https://www.investopedia.com/terms/m/macd.asp
 
 ## Implements
 
@@ -47,7 +49,7 @@ The MACD triggers trading signals when it crosses above (bullish buying opportun
 
 #### Defined in
 
-[MACD/MACD.ts:42](https://github.com/bennycode/trading-signals/blob/95cb489/src/MACD/MACD.ts#L42)
+[MACD/MACD.ts:41](https://github.com/bennycode/trading-signals/blob/53d8192/src/MACD/MACD.ts#L41)
 
 ## Properties
 
@@ -57,7 +59,7 @@ The MACD triggers trading signals when it crosses above (bullish buying opportun
 
 #### Defined in
 
-[MACD/MACD.ts:36](https://github.com/bennycode/trading-signals/blob/95cb489/src/MACD/MACD.ts#L36)
+[MACD/MACD.ts:35](https://github.com/bennycode/trading-signals/blob/53d8192/src/MACD/MACD.ts#L35)
 
 ---
 
@@ -67,7 +69,7 @@ The MACD triggers trading signals when it crosses above (bullish buying opportun
 
 #### Defined in
 
-[MACD/MACD.ts:35](https://github.com/bennycode/trading-signals/blob/95cb489/src/MACD/MACD.ts#L35)
+[MACD/MACD.ts:34](https://github.com/bennycode/trading-signals/blob/53d8192/src/MACD/MACD.ts#L34)
 
 ---
 
@@ -77,7 +79,7 @@ The MACD triggers trading signals when it crosses above (bullish buying opportun
 
 #### Defined in
 
-[MACD/MACD.ts:37](https://github.com/bennycode/trading-signals/blob/95cb489/src/MACD/MACD.ts#L37)
+[MACD/MACD.ts:36](https://github.com/bennycode/trading-signals/blob/53d8192/src/MACD/MACD.ts#L36)
 
 ## Accessors
 
@@ -95,7 +97,7 @@ The MACD triggers trading signals when it crosses above (bullish buying opportun
 
 #### Defined in
 
-[MACD/MACD.ts:48](https://github.com/bennycode/trading-signals/blob/95cb489/src/MACD/MACD.ts#L48)
+[MACD/MACD.ts:47](https://github.com/bennycode/trading-signals/blob/53d8192/src/MACD/MACD.ts#L47)
 
 ## Methods
 
@@ -113,7 +115,7 @@ The MACD triggers trading signals when it crosses above (bullish buying opportun
 
 #### Defined in
 
-[MACD/MACD.ts:87](https://github.com/bennycode/trading-signals/blob/95cb489/src/MACD/MACD.ts#L87)
+[MACD/MACD.ts:86](https://github.com/bennycode/trading-signals/blob/53d8192/src/MACD/MACD.ts#L86)
 
 ---
 
@@ -137,4 +139,4 @@ The MACD triggers trading signals when it crosses above (bullish buying opportun
 
 #### Defined in
 
-[MACD/MACD.ts:52](https://github.com/bennycode/trading-signals/blob/95cb489/src/MACD/MACD.ts#L52)
+[MACD/MACD.ts:51](https://github.com/bennycode/trading-signals/blob/53d8192/src/MACD/MACD.ts#L51)

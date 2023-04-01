@@ -6,7 +6,9 @@ Simple Moving Average (SMA) Type: Trend
 
 The Simple Moving Average (SMA) creates an average of all prices within a fixed interval. The SMA weights the prices of all periods equally which makes it not as responsive to recent prices as the EMA.
 
-**`see`** https://www.investopedia.com/terms/s/sma.asp
+**`See`**
+
+https://www.investopedia.com/terms/s/sma.asp
 
 ## Hierarchy
 
@@ -35,6 +37,7 @@ The Simple Moving Average (SMA) creates an average of all prices within a fixed 
 
 - [getResult](SMA.md#getresult)
 - [update](SMA.md#update)
+- [updates](SMA.md#updates)
 - [getResultFromBatch](SMA.md#getresultfrombatch)
 
 ## Constructors
@@ -55,7 +58,7 @@ The Simple Moving Average (SMA) creates an average of all prices within a fixed 
 
 #### Defined in
 
-[MA/MovingAverage.ts:13](https://github.com/bennycode/trading-signals/blob/95cb489/src/MA/MovingAverage.ts#L13)
+[MA/MovingAverage.ts:13](https://github.com/bennycode/trading-signals/blob/53d8192/src/MA/MovingAverage.ts#L13)
 
 ## Properties
 
@@ -71,7 +74,7 @@ Highest return value over the lifetime (not interval!) of the indicator.
 
 #### Defined in
 
-[Indicator.ts:22](https://github.com/bennycode/trading-signals/blob/95cb489/src/Indicator.ts#L22)
+[Indicator.ts:22](https://github.com/bennycode/trading-signals/blob/53d8192/src/Indicator.ts#L22)
 
 ---
 
@@ -82,6 +85,10 @@ Highest return value over the lifetime (not interval!) of the indicator.
 #### Inherited from
 
 [MovingAverage](MovingAverage.md).[interval](MovingAverage.md#interval)
+
+#### Defined in
+
+[MA/MovingAverage.ts:13](https://github.com/bennycode/trading-signals/blob/53d8192/src/MA/MovingAverage.ts#L13)
 
 ---
 
@@ -97,7 +104,7 @@ Lowest return value over the lifetime (not interval!) of the indicator.
 
 #### Defined in
 
-[Indicator.ts:24](https://github.com/bennycode/trading-signals/blob/95cb489/src/Indicator.ts#L24)
+[Indicator.ts:24](https://github.com/bennycode/trading-signals/blob/53d8192/src/Indicator.ts#L24)
 
 ---
 
@@ -107,7 +114,7 @@ Lowest return value over the lifetime (not interval!) of the indicator.
 
 #### Defined in
 
-[SMA/SMA.ts:14](https://github.com/bennycode/trading-signals/blob/95cb489/src/SMA/SMA.ts#L14)
+[SMA/SMA.ts:14](https://github.com/bennycode/trading-signals/blob/53d8192/src/SMA/SMA.ts#L14)
 
 ## Accessors
 
@@ -125,7 +132,7 @@ MovingAverage.isStable
 
 #### Defined in
 
-[Indicator.ts:27](https://github.com/bennycode/trading-signals/blob/95cb489/src/Indicator.ts#L27)
+[Indicator.ts:27](https://github.com/bennycode/trading-signals/blob/53d8192/src/Indicator.ts#L27)
 
 ## Methods
 
@@ -143,7 +150,7 @@ MovingAverage.isStable
 
 #### Defined in
 
-[Indicator.ts:31](https://github.com/bennycode/trading-signals/blob/95cb489/src/Indicator.ts#L31)
+[Indicator.ts:31](https://github.com/bennycode/trading-signals/blob/53d8192/src/Indicator.ts#L31)
 
 ---
 
@@ -167,7 +174,31 @@ MovingAverage.isStable
 
 #### Defined in
 
-[SMA/SMA.ts:16](https://github.com/bennycode/trading-signals/blob/95cb489/src/SMA/SMA.ts#L16)
+[SMA/SMA.ts:16](https://github.com/bennycode/trading-signals/blob/53d8192/src/SMA/SMA.ts#L16)
+
+---
+
+### updates
+
+▸ **updates**(`prices`): `void` \| `Big`
+
+#### Parameters
+
+| Name     | Type          |
+| :------- | :------------ |
+| `prices` | `BigSource`[] |
+
+#### Returns
+
+`void` \| `Big`
+
+#### Inherited from
+
+[MovingAverage](MovingAverage.md).[updates](MovingAverage.md#updates)
+
+#### Defined in
+
+[MA/MovingAverage.ts:17](https://github.com/bennycode/trading-signals/blob/53d8192/src/MA/MovingAverage.ts#L17)
 
 ---
 
@@ -187,4 +218,4 @@ MovingAverage.isStable
 
 #### Defined in
 
-[SMA/SMA.ts:28](https://github.com/bennycode/trading-signals/blob/95cb489/src/SMA/SMA.ts#L28)
+[SMA/SMA.ts:28](https://github.com/bennycode/trading-signals/blob/53d8192/src/SMA/SMA.ts#L28)

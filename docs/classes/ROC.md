@@ -6,7 +6,9 @@ Rate Of Change Indicator (ROC) Type: Momentum
 
 A positive Rate of Change (ROC) signals a high momentum and a positive trend. A decreasing ROC or even negative ROC indicates a downtrend.
 
-**`see`** https://www.investopedia.com/terms/r/rateofchange.asp
+**`See`**
+
+https://www.investopedia.com/terms/r/rateofchange.asp
 
 ## Hierarchy
 
@@ -54,7 +56,7 @@ A positive Rate of Change (ROC) signals a high momentum and a positive trend. A 
 
 #### Defined in
 
-[ROC/ROC.ts:16](https://github.com/bennycode/trading-signals/blob/95cb489/src/ROC/ROC.ts#L16)
+[ROC/ROC.ts:16](https://github.com/bennycode/trading-signals/blob/53d8192/src/ROC/ROC.ts#L16)
 
 ## Properties
 
@@ -70,13 +72,17 @@ Highest return value over the lifetime (not interval!) of the indicator.
 
 #### Defined in
 
-[Indicator.ts:22](https://github.com/bennycode/trading-signals/blob/95cb489/src/Indicator.ts#L22)
+[Indicator.ts:22](https://github.com/bennycode/trading-signals/blob/53d8192/src/Indicator.ts#L22)
 
 ---
 
 ### interval
 
 • `Readonly` **interval**: `number`
+
+#### Defined in
+
+[ROC/ROC.ts:16](https://github.com/bennycode/trading-signals/blob/53d8192/src/ROC/ROC.ts#L16)
 
 ---
 
@@ -92,7 +98,7 @@ Lowest return value over the lifetime (not interval!) of the indicator.
 
 #### Defined in
 
-[Indicator.ts:24](https://github.com/bennycode/trading-signals/blob/95cb489/src/Indicator.ts#L24)
+[Indicator.ts:24](https://github.com/bennycode/trading-signals/blob/53d8192/src/Indicator.ts#L24)
 
 ---
 
@@ -102,7 +108,7 @@ Lowest return value over the lifetime (not interval!) of the indicator.
 
 #### Defined in
 
-[ROC/ROC.ts:14](https://github.com/bennycode/trading-signals/blob/95cb489/src/ROC/ROC.ts#L14)
+[ROC/ROC.ts:14](https://github.com/bennycode/trading-signals/blob/53d8192/src/ROC/ROC.ts#L14)
 
 ## Accessors
 
@@ -120,7 +126,7 @@ BigIndicatorSeries.isStable
 
 #### Defined in
 
-[Indicator.ts:27](https://github.com/bennycode/trading-signals/blob/95cb489/src/Indicator.ts#L27)
+[Indicator.ts:27](https://github.com/bennycode/trading-signals/blob/53d8192/src/Indicator.ts#L27)
 
 ## Methods
 
@@ -138,7 +144,7 @@ BigIndicatorSeries.isStable
 
 #### Defined in
 
-[Indicator.ts:31](https://github.com/bennycode/trading-signals/blob/95cb489/src/Indicator.ts#L31)
+[Indicator.ts:31](https://github.com/bennycode/trading-signals/blob/53d8192/src/Indicator.ts#L31)
 
 ---
 
@@ -162,4 +168,4 @@ BigIndicatorSeries.isStable
 
 #### Defined in
 
-[ROC/ROC.ts:20](https://github.com/bennycode/trading-signals/blob/95cb489/src/ROC/ROC.ts#L20)
+[ROC/ROC.ts:20](https://github.com/bennycode/trading-signals/blob/53d8192/src/ROC/ROC.ts#L20)

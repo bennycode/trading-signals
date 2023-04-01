@@ -17,7 +17,7 @@
 
 #### Defined in
 
-[util/Period.ts:8](https://github.com/bennycode/trading-signals/blob/95cb489/src/util/Period.ts#L8)
+[util/Period.ts:8](https://github.com/bennycode/trading-signals/blob/53d8192/src/util/Period.ts#L8)
 
 ---
 
@@ -27,4 +27,4 @@
 
 #### Defined in
 
-[util/Period.ts:9](https://github.com/bennycode/trading-signals/blob/95cb489/src/util/Period.ts#L9)
+[util/Period.ts:9](https://github.com/bennycode/trading-signals/blob/53d8192/src/util/Period.ts#L9)

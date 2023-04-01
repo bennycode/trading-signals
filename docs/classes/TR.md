@@ -8,7 +8,9 @@ The True Range (TR) was developed by **John Welles Wilder, Jr.**. The range (R) 
 
 Low return values indicate a sideways trend with little volatility.
 
-**`see`** https://www.linnsoft.com/techind/true-range-tr
+**`See`**
+
+https://www.linnsoft.com/techind/true-range-tr
 
 ## Hierarchy
 
@@ -60,7 +62,7 @@ Highest return value over the lifetime (not interval!) of the indicator.
 
 #### Defined in
 
-[Indicator.ts:22](https://github.com/bennycode/trading-signals/blob/95cb489/src/Indicator.ts#L22)
+[Indicator.ts:22](https://github.com/bennycode/trading-signals/blob/53d8192/src/Indicator.ts#L22)
 
 ---
 
@@ -76,7 +78,7 @@ Lowest return value over the lifetime (not interval!) of the indicator.
 
 #### Defined in
 
-[Indicator.ts:24](https://github.com/bennycode/trading-signals/blob/95cb489/src/Indicator.ts#L24)
+[Indicator.ts:24](https://github.com/bennycode/trading-signals/blob/53d8192/src/Indicator.ts#L24)
 
 ## Accessors
 
@@ -94,7 +96,7 @@ BigIndicatorSeries.isStable
 
 #### Defined in
 
-[Indicator.ts:27](https://github.com/bennycode/trading-signals/blob/95cb489/src/Indicator.ts#L27)
+[Indicator.ts:27](https://github.com/bennycode/trading-signals/blob/53d8192/src/Indicator.ts#L27)
 
 ## Methods
 
@@ -112,7 +114,7 @@ BigIndicatorSeries.isStable
 
 #### Defined in
 
-[Indicator.ts:31](https://github.com/bennycode/trading-signals/blob/95cb489/src/Indicator.ts#L31)
+[Indicator.ts:31](https://github.com/bennycode/trading-signals/blob/53d8192/src/Indicator.ts#L31)
 
 ---
 
@@ -136,4 +138,4 @@ BigIndicatorSeries.isStable
 
 #### Defined in
 
-[TR/TR.ts:19](https://github.com/bennycode/trading-signals/blob/95cb489/src/TR/TR.ts#L19)
+[TR/TR.ts:19](https://github.com/bennycode/trading-signals/blob/53d8192/src/TR/TR.ts#L19)

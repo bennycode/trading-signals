@@ -42,7 +42,7 @@
 
 #### Defined in
 
-[ABANDS/AccelerationBands.ts:79](https://github.com/bennycode/trading-signals/blob/95cb489/src/ABANDS/AccelerationBands.ts#L79)
+[ABANDS/AccelerationBands.ts:79](https://github.com/bennycode/trading-signals/blob/53d8192/src/ABANDS/AccelerationBands.ts#L79)
 
 ## Properties
 
@@ -50,11 +50,19 @@
 
 • `Readonly` **interval**: `number`
 
+#### Defined in
+
+[ABANDS/AccelerationBands.ts:80](https://github.com/bennycode/trading-signals/blob/53d8192/src/ABANDS/AccelerationBands.ts#L80)
+
 ---
 
 ### width
 
 • `Readonly` **width**: `number`
+
+#### Defined in
+
+[ABANDS/AccelerationBands.ts:81](https://github.com/bennycode/trading-signals/blob/53d8192/src/ABANDS/AccelerationBands.ts#L81)
 
 ## Accessors
 
@@ -72,7 +80,7 @@
 
 #### Defined in
 
-[ABANDS/AccelerationBands.ts:98](https://github.com/bennycode/trading-signals/blob/95cb489/src/ABANDS/AccelerationBands.ts#L98)
+[ABANDS/AccelerationBands.ts:98](https://github.com/bennycode/trading-signals/blob/53d8192/src/ABANDS/AccelerationBands.ts#L98)
 
 ## Methods
 
@@ -90,19 +98,19 @@
 
 #### Defined in
 
-[ABANDS/AccelerationBands.ts:102](https://github.com/bennycode/trading-signals/blob/95cb489/src/ABANDS/AccelerationBands.ts#L102)
+[ABANDS/AccelerationBands.ts:102](https://github.com/bennycode/trading-signals/blob/53d8192/src/ABANDS/AccelerationBands.ts#L102)
 
 ---
 
 ### update
 
-▸ **update**(`__namedParameters`): `void`
+▸ **update**(`«destructured»`): `void`
 
 #### Parameters
 
-| Name                | Type                                                     |
-| :------------------ | :------------------------------------------------------- |
-| `__namedParameters` | [`HighLowCloseNumber`](../modules.md#highlowclosenumber) |
+| Name             | Type                                                     |
+| :--------------- | :------------------------------------------------------- |
+| `«destructured»` | [`HighLowCloseNumber`](../modules.md#highlowclosenumber) |
 
 #### Returns
 
@@ -114,4 +122,4 @@
 
 #### Defined in
 
-[ABANDS/AccelerationBands.ts:89](https://github.com/bennycode/trading-signals/blob/95cb489/src/ABANDS/AccelerationBands.ts#L89)
+[ABANDS/AccelerationBands.ts:89](https://github.com/bennycode/trading-signals/blob/53d8192/src/ABANDS/AccelerationBands.ts#L89)

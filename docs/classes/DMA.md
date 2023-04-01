@@ -8,7 +8,9 @@ The DMA consists of two moving averages: Short-term & long-term.
 
 Dual Moving Average Crossover: A short-term MA crossing above a long-term MA indicates a bullish buying opportunity. A short-term MA crossing below a long-term MA indicates a bearish selling opportunity.
 
-**`see`** https://faculty.fuqua.duke.edu/~charvey/Teaching/BA453_2002/CCAM/CCAM.htm#_Toc2634228
+**`See`**
+
+https://faculty.fuqua.duke.edu/~charvey/Teaching/BA453_2002/CCAM/CCAM.htm#_Toc2634228
 
 ## Implements
 
@@ -50,7 +52,7 @@ Dual Moving Average Crossover: A short-term MA crossing above a long-term MA ind
 
 #### Defined in
 
-[DMA/DMA.ts:30](https://github.com/bennycode/trading-signals/blob/95cb489/src/DMA/DMA.ts#L30)
+[DMA/DMA.ts:30](https://github.com/bennycode/trading-signals/blob/53d8192/src/DMA/DMA.ts#L30)
 
 ## Properties
 
@@ -60,7 +62,7 @@ Dual Moving Average Crossover: A short-term MA crossing above a long-term MA ind
 
 #### Defined in
 
-[DMA/DMA.ts:28](https://github.com/bennycode/trading-signals/blob/95cb489/src/DMA/DMA.ts#L28)
+[DMA/DMA.ts:28](https://github.com/bennycode/trading-signals/blob/53d8192/src/DMA/DMA.ts#L28)
 
 ---
 
@@ -70,7 +72,7 @@ Dual Moving Average Crossover: A short-term MA crossing above a long-term MA ind
 
 #### Defined in
 
-[DMA/DMA.ts:27](https://github.com/bennycode/trading-signals/blob/95cb489/src/DMA/DMA.ts#L27)
+[DMA/DMA.ts:27](https://github.com/bennycode/trading-signals/blob/53d8192/src/DMA/DMA.ts#L27)
 
 ## Accessors
 
@@ -88,7 +90,7 @@ Dual Moving Average Crossover: A short-term MA crossing above a long-term MA ind
 
 #### Defined in
 
-[DMA/DMA.ts:35](https://github.com/bennycode/trading-signals/blob/95cb489/src/DMA/DMA.ts#L35)
+[DMA/DMA.ts:35](https://github.com/bennycode/trading-signals/blob/53d8192/src/DMA/DMA.ts#L35)
 
 ## Methods
 
@@ -106,7 +108,7 @@ Dual Moving Average Crossover: A short-term MA crossing above a long-term MA ind
 
 #### Defined in
 
-[DMA/DMA.ts:44](https://github.com/bennycode/trading-signals/blob/95cb489/src/DMA/DMA.ts#L44)
+[DMA/DMA.ts:44](https://github.com/bennycode/trading-signals/blob/53d8192/src/DMA/DMA.ts#L44)
 
 ---
 
@@ -130,4 +132,4 @@ Dual Moving Average Crossover: A short-term MA crossing above a long-term MA ind
 
 #### Defined in
 
-[DMA/DMA.ts:39](https://github.com/bennycode/trading-signals/blob/95cb489/src/DMA/DMA.ts#L39)
+[DMA/DMA.ts:39](https://github.com/bennycode/trading-signals/blob/53d8192/src/DMA/DMA.ts#L39)

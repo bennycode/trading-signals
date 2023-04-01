@@ -6,7 +6,9 @@ Average True Range (ATR) Type: Volatility
 
 The ATR was developed by **John Welles Wilder, Jr.**. The idea of ranges is that they show the commitment or enthusiasm of traders. Large or increasing ranges suggest traders prepared to continue to bid up or sell down a stock through the course of the day. Decreasing range indicates declining interest.
 
-**`see`** https://www.investopedia.com/terms/a/atr.asp
+**`See`**
+
+https://www.investopedia.com/terms/a/atr.asp
 
 ## Hierarchy
 
@@ -54,7 +56,7 @@ The ATR was developed by **John Welles Wilder, Jr.**. The idea of ranges is that
 
 #### Defined in
 
-[ATR/ATR.ts:23](https://github.com/bennycode/trading-signals/blob/95cb489/src/ATR/ATR.ts#L23)
+[ATR/ATR.ts:23](https://github.com/bennycode/trading-signals/blob/53d8192/src/ATR/ATR.ts#L23)
 
 ## Properties
 
@@ -70,13 +72,17 @@ Highest return value over the lifetime (not interval!) of the indicator.
 
 #### Defined in
 
-[Indicator.ts:22](https://github.com/bennycode/trading-signals/blob/95cb489/src/Indicator.ts#L22)
+[Indicator.ts:22](https://github.com/bennycode/trading-signals/blob/53d8192/src/Indicator.ts#L22)
 
 ---
 
 ### interval
 
 • `Readonly` **interval**: `number`
+
+#### Defined in
+
+[ATR/ATR.ts:23](https://github.com/bennycode/trading-signals/blob/53d8192/src/ATR/ATR.ts#L23)
 
 ---
 
@@ -92,7 +98,7 @@ Lowest return value over the lifetime (not interval!) of the indicator.
 
 #### Defined in
 
-[Indicator.ts:24](https://github.com/bennycode/trading-signals/blob/95cb489/src/Indicator.ts#L24)
+[Indicator.ts:24](https://github.com/bennycode/trading-signals/blob/53d8192/src/Indicator.ts#L24)
 
 ## Accessors
 
@@ -110,7 +116,7 @@ BigIndicatorSeries.isStable
 
 #### Defined in
 
-[Indicator.ts:27](https://github.com/bennycode/trading-signals/blob/95cb489/src/Indicator.ts#L27)
+[Indicator.ts:27](https://github.com/bennycode/trading-signals/blob/53d8192/src/Indicator.ts#L27)
 
 ## Methods
 
@@ -128,7 +134,7 @@ BigIndicatorSeries.isStable
 
 #### Defined in
 
-[Indicator.ts:31](https://github.com/bennycode/trading-signals/blob/95cb489/src/Indicator.ts#L31)
+[Indicator.ts:31](https://github.com/bennycode/trading-signals/blob/53d8192/src/Indicator.ts#L31)
 
 ---
 
@@ -152,4 +158,4 @@ BigIndicatorSeries.isStable
 
 #### Defined in
 
-[ATR/ATR.ts:29](https://github.com/bennycode/trading-signals/blob/95cb489/src/ATR/ATR.ts#L29)
+[ATR/ATR.ts:29](https://github.com/bennycode/trading-signals/blob/53d8192/src/ATR/ATR.ts#L29)

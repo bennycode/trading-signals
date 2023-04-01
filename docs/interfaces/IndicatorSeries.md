@@ -43,7 +43,7 @@ Tracks results of an indicator over time and memorizes the highest & lowest resu
 
 #### Defined in
 
-[Indicator.ts:16](https://github.com/bennycode/trading-signals/blob/95cb489/src/Indicator.ts#L16)
+[Indicator.ts:16](https://github.com/bennycode/trading-signals/blob/53d8192/src/Indicator.ts#L16)
 
 ---
 
@@ -57,7 +57,7 @@ Tracks results of an indicator over time and memorizes the highest & lowest resu
 
 #### Defined in
 
-[Indicator.ts:7](https://github.com/bennycode/trading-signals/blob/95cb489/src/Indicator.ts#L7)
+[Indicator.ts:7](https://github.com/bennycode/trading-signals/blob/53d8192/src/Indicator.ts#L7)
 
 ---
 
@@ -67,7 +67,7 @@ Tracks results of an indicator over time and memorizes the highest & lowest resu
 
 #### Defined in
 
-[Indicator.ts:17](https://github.com/bennycode/trading-signals/blob/95cb489/src/Indicator.ts#L17)
+[Indicator.ts:17](https://github.com/bennycode/trading-signals/blob/53d8192/src/Indicator.ts#L17)
 
 ## Methods
 
@@ -85,7 +85,7 @@ Tracks results of an indicator over time and memorizes the highest & lowest resu
 
 #### Defined in
 
-[Indicator.ts:5](https://github.com/bennycode/trading-signals/blob/95cb489/src/Indicator.ts#L5)
+[Indicator.ts:5](https://github.com/bennycode/trading-signals/blob/53d8192/src/Indicator.ts#L5)
 
 ---
 
@@ -109,4 +109,4 @@ Tracks results of an indicator over time and memorizes the highest & lowest resu
 
 #### Defined in
 
-[Indicator.ts:9](https://github.com/bennycode/trading-signals/blob/95cb489/src/Indicator.ts#L9)
+[Indicator.ts:9](https://github.com/bennycode/trading-signals/blob/53d8192/src/Indicator.ts#L9)

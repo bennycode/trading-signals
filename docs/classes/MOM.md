@@ -6,9 +6,10 @@ Momentum Indicator (MOM / MTM) Type: Momentum
 
 The Momentum indicator returns the change between the current price and the price n times ago.
 
-**`see`** https://en.wikipedia.org/wiki/Momentum_(technical_analysis)
+**`See`**
 
-**`see`** https://www.warriortrading.com/momentum-indicator/
+- https://en.wikipedia.org/wiki/Momentum_(technical_analysis)
+- https://www.warriortrading.com/momentum-indicator/
 
 ## Hierarchy
 
@@ -55,7 +56,7 @@ The Momentum indicator returns the change between the current price and the pric
 
 #### Defined in
 
-[MOM/MOM.ts:18](https://github.com/bennycode/trading-signals/blob/95cb489/src/MOM/MOM.ts#L18)
+[MOM/MOM.ts:18](https://github.com/bennycode/trading-signals/blob/53d8192/src/MOM/MOM.ts#L18)
 
 ## Properties
 
@@ -71,13 +72,17 @@ Highest return value over the lifetime (not interval!) of the indicator.
 
 #### Defined in
 
-[Indicator.ts:22](https://github.com/bennycode/trading-signals/blob/95cb489/src/Indicator.ts#L22)
+[Indicator.ts:22](https://github.com/bennycode/trading-signals/blob/53d8192/src/Indicator.ts#L22)
 
 ---
 
 ### interval
 
 • `Readonly` **interval**: `number`
+
+#### Defined in
+
+[MOM/MOM.ts:18](https://github.com/bennycode/trading-signals/blob/53d8192/src/MOM/MOM.ts#L18)
 
 ---
 
@@ -93,7 +98,7 @@ Lowest return value over the lifetime (not interval!) of the indicator.
 
 #### Defined in
 
-[Indicator.ts:24](https://github.com/bennycode/trading-signals/blob/95cb489/src/Indicator.ts#L24)
+[Indicator.ts:24](https://github.com/bennycode/trading-signals/blob/53d8192/src/Indicator.ts#L24)
 
 ## Accessors
 
@@ -111,7 +116,7 @@ BigIndicatorSeries.isStable
 
 #### Defined in
 
-[Indicator.ts:27](https://github.com/bennycode/trading-signals/blob/95cb489/src/Indicator.ts#L27)
+[Indicator.ts:27](https://github.com/bennycode/trading-signals/blob/53d8192/src/Indicator.ts#L27)
 
 ## Methods
 
@@ -129,7 +134,7 @@ BigIndicatorSeries.isStable
 
 #### Defined in
 
-[Indicator.ts:31](https://github.com/bennycode/trading-signals/blob/95cb489/src/Indicator.ts#L31)
+[Indicator.ts:31](https://github.com/bennycode/trading-signals/blob/53d8192/src/Indicator.ts#L31)
 
 ---
 
@@ -153,4 +158,4 @@ BigIndicatorSeries.isStable
 
 #### Defined in
 
-[MOM/MOM.ts:24](https://github.com/bennycode/trading-signals/blob/95cb489/src/MOM/MOM.ts#L24)
+[MOM/MOM.ts:24](https://github.com/bennycode/trading-signals/blob/53d8192/src/MOM/MOM.ts#L24)

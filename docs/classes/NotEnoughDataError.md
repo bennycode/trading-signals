@@ -32,4 +32,4 @@ Error.constructor
 
 #### Defined in
 
-[error/NotEnoughDataError.ts:2](https://github.com/bennycode/trading-signals/blob/95cb489/src/error/NotEnoughDataError.ts#L2)
+[error/NotEnoughDataError.ts:2](https://github.com/bennycode/trading-signals/blob/53d8192/src/error/NotEnoughDataError.ts#L2)

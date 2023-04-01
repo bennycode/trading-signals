@@ -2,6 +2,8 @@
 
 # Class: FasterCCI
 
+Tracks results of an indicator over time and memorizes the highest & lowest result.
+
 ## Hierarchy
 
 - [`NumberIndicatorSeries`](NumberIndicatorSeries.md)<[`HighLowCloseNumber`](../modules.md#highlowclosenumber)\>
@@ -48,7 +50,7 @@
 
 #### Defined in
 
-[CCI/CCI.ts:62](https://github.com/bennycode/trading-signals/blob/95cb489/src/CCI/CCI.ts#L62)
+[CCI/CCI.ts:62](https://github.com/bennycode/trading-signals/blob/53d8192/src/CCI/CCI.ts#L62)
 
 ## Properties
 
@@ -64,13 +66,17 @@ Highest return value over the lifetime (not interval!) of the indicator.
 
 #### Defined in
 
-[Indicator.ts:56](https://github.com/bennycode/trading-signals/blob/95cb489/src/Indicator.ts#L56)
+[Indicator.ts:56](https://github.com/bennycode/trading-signals/blob/53d8192/src/Indicator.ts#L56)
 
 ---
 
 ### interval
 
 • `Readonly` **interval**: `number`
+
+#### Defined in
+
+[CCI/CCI.ts:62](https://github.com/bennycode/trading-signals/blob/53d8192/src/CCI/CCI.ts#L62)
 
 ---
 
@@ -86,7 +92,7 @@ Lowest return value over the lifetime (not interval!) of the indicator.
 
 #### Defined in
 
-[Indicator.ts:58](https://github.com/bennycode/trading-signals/blob/95cb489/src/Indicator.ts#L58)
+[Indicator.ts:58](https://github.com/bennycode/trading-signals/blob/53d8192/src/Indicator.ts#L58)
 
 ---
 
@@ -96,7 +102,7 @@ Lowest return value over the lifetime (not interval!) of the indicator.
 
 #### Defined in
 
-[CCI/CCI.ts:57](https://github.com/bennycode/trading-signals/blob/95cb489/src/CCI/CCI.ts#L57)
+[CCI/CCI.ts:57](https://github.com/bennycode/trading-signals/blob/53d8192/src/CCI/CCI.ts#L57)
 
 ## Accessors
 
@@ -114,7 +120,7 @@ NumberIndicatorSeries.isStable
 
 #### Defined in
 
-[Indicator.ts:61](https://github.com/bennycode/trading-signals/blob/95cb489/src/Indicator.ts#L61)
+[Indicator.ts:61](https://github.com/bennycode/trading-signals/blob/53d8192/src/Indicator.ts#L61)
 
 ## Methods
 
@@ -132,7 +138,7 @@ NumberIndicatorSeries.isStable
 
 #### Defined in
 
-[Indicator.ts:65](https://github.com/bennycode/trading-signals/blob/95cb489/src/Indicator.ts#L65)
+[Indicator.ts:65](https://github.com/bennycode/trading-signals/blob/53d8192/src/Indicator.ts#L65)
 
 ---
 
@@ -156,4 +162,4 @@ NumberIndicatorSeries.isStable
 
 #### Defined in
 
-[CCI/CCI.ts:67](https://github.com/bennycode/trading-signals/blob/95cb489/src/CCI/CCI.ts#L67)
+[CCI/CCI.ts:67](https://github.com/bennycode/trading-signals/blob/53d8192/src/CCI/CCI.ts#L67)

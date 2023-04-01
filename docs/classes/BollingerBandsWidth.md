@@ -4,7 +4,9 @@
 
 The Bollinger Bands Width (BBW) indicator, developed by John A. Bollinger, merges the information of Bollinger Bands into one definite number. It defines the narrowness of the underlying Bollinger Bands by representing the difference between the Upper Band and the Lower Band.
 
-**`see`** https://www.tradingview.com/support/solutions/43000501972-bollinger-bands-width-bbw/
+**`See`**
+
+https://www.tradingview.com/support/solutions/43000501972-bollinger-bands-width-bbw/
 
 ## Hierarchy
 
@@ -51,13 +53,17 @@ The Bollinger Bands Width (BBW) indicator, developed by John A. Bollinger, merge
 
 #### Defined in
 
-[BBW/BollingerBandsWidth.ts:13](https://github.com/bennycode/trading-signals/blob/95cb489/src/BBW/BollingerBandsWidth.ts#L13)
+[BBW/BollingerBandsWidth.ts:13](https://github.com/bennycode/trading-signals/blob/53d8192/src/BBW/BollingerBandsWidth.ts#L13)
 
 ## Properties
 
 ### bollingerBands
 
 • `Readonly` **bollingerBands**: [`BollingerBands`](BollingerBands.md)
+
+#### Defined in
+
+[BBW/BollingerBandsWidth.ts:13](https://github.com/bennycode/trading-signals/blob/53d8192/src/BBW/BollingerBandsWidth.ts#L13)
 
 ---
 
@@ -73,7 +79,7 @@ Highest return value over the lifetime (not interval!) of the indicator.
 
 #### Defined in
 
-[Indicator.ts:22](https://github.com/bennycode/trading-signals/blob/95cb489/src/Indicator.ts#L22)
+[Indicator.ts:22](https://github.com/bennycode/trading-signals/blob/53d8192/src/Indicator.ts#L22)
 
 ---
 
@@ -89,7 +95,7 @@ Lowest return value over the lifetime (not interval!) of the indicator.
 
 #### Defined in
 
-[Indicator.ts:24](https://github.com/bennycode/trading-signals/blob/95cb489/src/Indicator.ts#L24)
+[Indicator.ts:24](https://github.com/bennycode/trading-signals/blob/53d8192/src/Indicator.ts#L24)
 
 ## Accessors
 
@@ -107,7 +113,7 @@ BigIndicatorSeries.isStable
 
 #### Defined in
 
-[Indicator.ts:27](https://github.com/bennycode/trading-signals/blob/95cb489/src/Indicator.ts#L27)
+[Indicator.ts:27](https://github.com/bennycode/trading-signals/blob/53d8192/src/Indicator.ts#L27)
 
 ## Methods
 
@@ -125,7 +131,7 @@ BigIndicatorSeries.isStable
 
 #### Defined in
 
-[Indicator.ts:31](https://github.com/bennycode/trading-signals/blob/95cb489/src/Indicator.ts#L31)
+[Indicator.ts:31](https://github.com/bennycode/trading-signals/blob/53d8192/src/Indicator.ts#L31)
 
 ---
 
@@ -149,4 +155,4 @@ BigIndicatorSeries.isStable
 
 #### Defined in
 
-[BBW/BollingerBandsWidth.ts:17](https://github.com/bennycode/trading-signals/blob/95cb489/src/BBW/BollingerBandsWidth.ts#L17)
+[BBW/BollingerBandsWidth.ts:17](https://github.com/bennycode/trading-signals/blob/53d8192/src/BBW/BollingerBandsWidth.ts#L17)

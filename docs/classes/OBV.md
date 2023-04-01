@@ -6,7 +6,9 @@ On-Balance Volume (OBV) Type: Momentum
 
 On-balance volume (OBV) is a technical trading momentum indicator that uses volume flow to predict changes in stock price. Joseph Granville first developed the OBV metric in the 1963 book Granville's New Key to Stock Market Profits.
 
-**`see`** https://www.investopedia.com/terms/o/onbalancevolume.asp
+**`See`**
+
+https://www.investopedia.com/terms/o/onbalancevolume.asp
 
 ## Hierarchy
 
@@ -53,7 +55,7 @@ On-balance volume (OBV) is a technical trading momentum indicator that uses volu
 
 #### Defined in
 
-[OBV/OBV.ts:15](https://github.com/bennycode/trading-signals/blob/95cb489/src/OBV/OBV.ts#L15)
+[OBV/OBV.ts:15](https://github.com/bennycode/trading-signals/blob/53d8192/src/OBV/OBV.ts#L15)
 
 ---
 
@@ -69,7 +71,7 @@ Highest return value over the lifetime (not interval!) of the indicator.
 
 #### Defined in
 
-[Indicator.ts:22](https://github.com/bennycode/trading-signals/blob/95cb489/src/Indicator.ts#L22)
+[Indicator.ts:22](https://github.com/bennycode/trading-signals/blob/53d8192/src/Indicator.ts#L22)
 
 ---
 
@@ -85,7 +87,7 @@ Lowest return value over the lifetime (not interval!) of the indicator.
 
 #### Defined in
 
-[Indicator.ts:24](https://github.com/bennycode/trading-signals/blob/95cb489/src/Indicator.ts#L24)
+[Indicator.ts:24](https://github.com/bennycode/trading-signals/blob/53d8192/src/Indicator.ts#L24)
 
 ## Accessors
 
@@ -103,7 +105,7 @@ BigIndicatorSeries.isStable
 
 #### Defined in
 
-[Indicator.ts:27](https://github.com/bennycode/trading-signals/blob/95cb489/src/Indicator.ts#L27)
+[Indicator.ts:27](https://github.com/bennycode/trading-signals/blob/53d8192/src/Indicator.ts#L27)
 
 ## Methods
 
@@ -121,7 +123,7 @@ BigIndicatorSeries.isStable
 
 #### Defined in
 
-[Indicator.ts:31](https://github.com/bennycode/trading-signals/blob/95cb489/src/Indicator.ts#L31)
+[Indicator.ts:31](https://github.com/bennycode/trading-signals/blob/53d8192/src/Indicator.ts#L31)
 
 ---
 
@@ -145,4 +147,4 @@ BigIndicatorSeries.isStable
 
 #### Defined in
 
-[OBV/OBV.ts:17](https://github.com/bennycode/trading-signals/blob/95cb489/src/OBV/OBV.ts#L17)
+[OBV/OBV.ts:17](https://github.com/bennycode/trading-signals/blob/53d8192/src/OBV/OBV.ts#L17)

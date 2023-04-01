@@ -13,7 +13,9 @@ Synonyms:
 - Welles Wilder's Smoothing (WWS)
 - Wilder's Moving Average (WMA)
 
-**`see`** https://tlc.thinkorswim.com/center/reference/Tech-Indicators/studies-library/V-Z/WildersSmoothing
+**`See`**
+
+https://tlc.thinkorswim.com/center/reference/Tech-Indicators/studies-library/V-Z/WildersSmoothing
 
 ## Hierarchy
 
@@ -41,6 +43,7 @@ Synonyms:
 
 - [getResult](WSMA.md#getresult)
 - [update](WSMA.md#update)
+- [updates](WSMA.md#updates)
 
 ## Constructors
 
@@ -60,7 +63,7 @@ Synonyms:
 
 #### Defined in
 
-[WSMA/WSMA.ts:26](https://github.com/bennycode/trading-signals/blob/95cb489/src/WSMA/WSMA.ts#L26)
+[WSMA/WSMA.ts:26](https://github.com/bennycode/trading-signals/blob/53d8192/src/WSMA/WSMA.ts#L26)
 
 ## Properties
 
@@ -76,7 +79,7 @@ Highest return value over the lifetime (not interval!) of the indicator.
 
 #### Defined in
 
-[Indicator.ts:22](https://github.com/bennycode/trading-signals/blob/95cb489/src/Indicator.ts#L22)
+[Indicator.ts:22](https://github.com/bennycode/trading-signals/blob/53d8192/src/Indicator.ts#L22)
 
 ---
 
@@ -87,6 +90,10 @@ Highest return value over the lifetime (not interval!) of the indicator.
 #### Inherited from
 
 [MovingAverage](MovingAverage.md).[interval](MovingAverage.md#interval)
+
+#### Defined in
+
+[WSMA/WSMA.ts:26](https://github.com/bennycode/trading-signals/blob/53d8192/src/WSMA/WSMA.ts#L26)
 
 ---
 
@@ -102,7 +109,7 @@ Lowest return value over the lifetime (not interval!) of the indicator.
 
 #### Defined in
 
-[Indicator.ts:24](https://github.com/bennycode/trading-signals/blob/95cb489/src/Indicator.ts#L24)
+[Indicator.ts:24](https://github.com/bennycode/trading-signals/blob/53d8192/src/Indicator.ts#L24)
 
 ## Accessors
 
@@ -120,7 +127,7 @@ MovingAverage.isStable
 
 #### Defined in
 
-[Indicator.ts:27](https://github.com/bennycode/trading-signals/blob/95cb489/src/Indicator.ts#L27)
+[Indicator.ts:27](https://github.com/bennycode/trading-signals/blob/53d8192/src/Indicator.ts#L27)
 
 ## Methods
 
@@ -138,7 +145,7 @@ MovingAverage.isStable
 
 #### Defined in
 
-[Indicator.ts:31](https://github.com/bennycode/trading-signals/blob/95cb489/src/Indicator.ts#L31)
+[Indicator.ts:31](https://github.com/bennycode/trading-signals/blob/53d8192/src/Indicator.ts#L31)
 
 ---
 
@@ -162,4 +169,28 @@ MovingAverage.isStable
 
 #### Defined in
 
-[WSMA/WSMA.ts:32](https://github.com/bennycode/trading-signals/blob/95cb489/src/WSMA/WSMA.ts#L32)
+[WSMA/WSMA.ts:37](https://github.com/bennycode/trading-signals/blob/53d8192/src/WSMA/WSMA.ts#L37)
+
+---
+
+### updates
+
+▸ **updates**(`prices`): `void` \| `Big`
+
+#### Parameters
+
+| Name     | Type          |
+| :------- | :------------ |
+| `prices` | `BigSource`[] |
+
+#### Returns
+
+`void` \| `Big`
+
+#### Overrides
+
+[MovingAverage](MovingAverage.md).[updates](MovingAverage.md#updates)
+
+#### Defined in
+
+[WSMA/WSMA.ts:32](https://github.com/bennycode/trading-signals/blob/53d8192/src/WSMA/WSMA.ts#L32)

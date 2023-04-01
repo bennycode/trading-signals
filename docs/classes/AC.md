@@ -6,7 +6,9 @@ Accelerator Oscillator (AC) Type: Momentum
 
 The Accelerator Oscillator (AC) is an indicator used to detect when a momentum changes. It has been developed by Bill Williams. If the momentum in an uptrend is starting to slow down, that could suggest that there is less interest in the asset. This typically leads to selling. In the inverse, momentum to the downside will start to slow down before buy orders come in. The Accelerator Oscillator also looks at whether there is an acceleration in the change of momentum.
 
-**`see`** https://www.thinkmarkets.com/en/indicators/bill-williams-accelerator/
+**`See`**
+
+https://www.thinkmarkets.com/en/indicators/bill-williams-accelerator/
 
 ## Hierarchy
 
@@ -60,7 +62,7 @@ The Accelerator Oscillator (AC) is an indicator used to detect when a momentum c
 
 #### Defined in
 
-[AC/AC.ts:25](https://github.com/bennycode/trading-signals/blob/95cb489/src/AC/AC.ts#L25)
+[AC/AC.ts:25](https://github.com/bennycode/trading-signals/blob/53d8192/src/AC/AC.ts#L25)
 
 ## Properties
 
@@ -70,7 +72,7 @@ The Accelerator Oscillator (AC) is an indicator used to detect when a momentum c
 
 #### Defined in
 
-[AC/AC.ts:21](https://github.com/bennycode/trading-signals/blob/95cb489/src/AC/AC.ts#L21)
+[AC/AC.ts:21](https://github.com/bennycode/trading-signals/blob/53d8192/src/AC/AC.ts#L21)
 
 ---
 
@@ -86,13 +88,17 @@ Highest return value over the lifetime (not interval!) of the indicator.
 
 #### Defined in
 
-[Indicator.ts:22](https://github.com/bennycode/trading-signals/blob/95cb489/src/Indicator.ts#L22)
+[Indicator.ts:22](https://github.com/bennycode/trading-signals/blob/53d8192/src/Indicator.ts#L22)
 
 ---
 
 ### longAO
 
 • `Readonly` **longAO**: `number`
+
+#### Defined in
+
+[AC/AC.ts:25](https://github.com/bennycode/trading-signals/blob/53d8192/src/AC/AC.ts#L25)
 
 ---
 
@@ -108,7 +114,7 @@ Lowest return value over the lifetime (not interval!) of the indicator.
 
 #### Defined in
 
-[Indicator.ts:24](https://github.com/bennycode/trading-signals/blob/95cb489/src/Indicator.ts#L24)
+[Indicator.ts:24](https://github.com/bennycode/trading-signals/blob/53d8192/src/Indicator.ts#L24)
 
 ---
 
@@ -118,13 +124,17 @@ Lowest return value over the lifetime (not interval!) of the indicator.
 
 #### Defined in
 
-[AC/AC.ts:22](https://github.com/bennycode/trading-signals/blob/95cb489/src/AC/AC.ts#L22)
+[AC/AC.ts:22](https://github.com/bennycode/trading-signals/blob/53d8192/src/AC/AC.ts#L22)
 
 ---
 
 ### shortAO
 
 • `Readonly` **shortAO**: `number`
+
+#### Defined in
+
+[AC/AC.ts:25](https://github.com/bennycode/trading-signals/blob/53d8192/src/AC/AC.ts#L25)
 
 ---
 
@@ -134,13 +144,17 @@ Lowest return value over the lifetime (not interval!) of the indicator.
 
 #### Defined in
 
-[AC/AC.ts:23](https://github.com/bennycode/trading-signals/blob/95cb489/src/AC/AC.ts#L23)
+[AC/AC.ts:23](https://github.com/bennycode/trading-signals/blob/53d8192/src/AC/AC.ts#L23)
 
 ---
 
 ### signalInterval
 
 • `Readonly` **signalInterval**: `number`
+
+#### Defined in
+
+[AC/AC.ts:25](https://github.com/bennycode/trading-signals/blob/53d8192/src/AC/AC.ts#L25)
 
 ## Accessors
 
@@ -158,7 +172,7 @@ BigIndicatorSeries.isStable
 
 #### Defined in
 
-[Indicator.ts:27](https://github.com/bennycode/trading-signals/blob/95cb489/src/Indicator.ts#L27)
+[Indicator.ts:27](https://github.com/bennycode/trading-signals/blob/53d8192/src/Indicator.ts#L27)
 
 ## Methods
 
@@ -176,7 +190,7 @@ BigIndicatorSeries.isStable
 
 #### Defined in
 
-[Indicator.ts:31](https://github.com/bennycode/trading-signals/blob/95cb489/src/Indicator.ts#L31)
+[Indicator.ts:31](https://github.com/bennycode/trading-signals/blob/53d8192/src/Indicator.ts#L31)
 
 ---
 
@@ -200,4 +214,4 @@ BigIndicatorSeries.isStable
 
 #### Defined in
 
-[AC/AC.ts:32](https://github.com/bennycode/trading-signals/blob/95cb489/src/AC/AC.ts#L32)
+[AC/AC.ts:32](https://github.com/bennycode/trading-signals/blob/53d8192/src/AC/AC.ts#L32)

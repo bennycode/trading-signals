@@ -8,9 +8,10 @@ The Awesome Oscillator (AO) is an indicator used to measure market momentum. It 
 
 When AO crosses above Zero, short term momentum is rising faster than long term momentum which signals a bullish buying opportunity. When AO crosses below Zero, short term momentum is falling faster then the long term momentum which signals a bearish selling opportunity.
 
-**`see`** https://www.tradingview.com/support/solutions/43000501826-awesome-oscillator-ao/
+**`See`**
 
-**`see`** https://tradingstrategyguides.com/bill-williams-awesome-oscillator-strategy/
+- https://www.tradingview.com/support/solutions/43000501826-awesome-oscillator-ao/
+- https://tradingstrategyguides.com/bill-williams-awesome-oscillator-strategy/
 
 ## Hierarchy
 
@@ -62,7 +63,7 @@ When AO crosses above Zero, short term momentum is rising faster than long term 
 
 #### Defined in
 
-[AO/AO.ts:26](https://github.com/bennycode/trading-signals/blob/95cb489/src/AO/AO.ts#L26)
+[AO/AO.ts:26](https://github.com/bennycode/trading-signals/blob/53d8192/src/AO/AO.ts#L26)
 
 ## Properties
 
@@ -78,7 +79,7 @@ Highest return value over the lifetime (not interval!) of the indicator.
 
 #### Defined in
 
-[Indicator.ts:22](https://github.com/bennycode/trading-signals/blob/95cb489/src/Indicator.ts#L22)
+[Indicator.ts:22](https://github.com/bennycode/trading-signals/blob/53d8192/src/Indicator.ts#L22)
 
 ---
 
@@ -88,13 +89,17 @@ Highest return value over the lifetime (not interval!) of the indicator.
 
 #### Defined in
 
-[AO/AO.ts:23](https://github.com/bennycode/trading-signals/blob/95cb489/src/AO/AO.ts#L23)
+[AO/AO.ts:23](https://github.com/bennycode/trading-signals/blob/53d8192/src/AO/AO.ts#L23)
 
 ---
 
 ### longInterval
 
 • `Readonly` **longInterval**: `number`
+
+#### Defined in
+
+[AO/AO.ts:28](https://github.com/bennycode/trading-signals/blob/53d8192/src/AO/AO.ts#L28)
 
 ---
 
@@ -110,7 +115,7 @@ Lowest return value over the lifetime (not interval!) of the indicator.
 
 #### Defined in
 
-[Indicator.ts:24](https://github.com/bennycode/trading-signals/blob/95cb489/src/Indicator.ts#L24)
+[Indicator.ts:24](https://github.com/bennycode/trading-signals/blob/53d8192/src/Indicator.ts#L24)
 
 ---
 
@@ -120,13 +125,17 @@ Lowest return value over the lifetime (not interval!) of the indicator.
 
 #### Defined in
 
-[AO/AO.ts:24](https://github.com/bennycode/trading-signals/blob/95cb489/src/AO/AO.ts#L24)
+[AO/AO.ts:24](https://github.com/bennycode/trading-signals/blob/53d8192/src/AO/AO.ts#L24)
 
 ---
 
 ### shortInterval
 
 • `Readonly` **shortInterval**: `number`
+
+#### Defined in
+
+[AO/AO.ts:27](https://github.com/bennycode/trading-signals/blob/53d8192/src/AO/AO.ts#L27)
 
 ## Accessors
 
@@ -144,7 +153,7 @@ BigIndicatorSeries.isStable
 
 #### Defined in
 
-[Indicator.ts:27](https://github.com/bennycode/trading-signals/blob/95cb489/src/Indicator.ts#L27)
+[Indicator.ts:27](https://github.com/bennycode/trading-signals/blob/53d8192/src/Indicator.ts#L27)
 
 ## Methods
 
@@ -162,19 +171,19 @@ BigIndicatorSeries.isStable
 
 #### Defined in
 
-[Indicator.ts:31](https://github.com/bennycode/trading-signals/blob/95cb489/src/Indicator.ts#L31)
+[Indicator.ts:31](https://github.com/bennycode/trading-signals/blob/53d8192/src/Indicator.ts#L31)
 
 ---
 
 ### update
 
-▸ **update**(`__namedParameters`): `void` \| `Big`
+▸ **update**(`«destructured»`): `void` \| `Big`
 
 #### Parameters
 
-| Name                | Type                               |
-| :------------------ | :--------------------------------- |
-| `__namedParameters` | [`HighLow`](../modules.md#highlow) |
+| Name             | Type                               |
+| :--------------- | :--------------------------------- |
+| `«destructured»` | [`HighLow`](../modules.md#highlow) |
 
 #### Returns
 
@@ -186,4 +195,4 @@ BigIndicatorSeries.isStable
 
 #### Defined in
 
-[AO/AO.ts:36](https://github.com/bennycode/trading-signals/blob/95cb489/src/AO/AO.ts#L36)
+[AO/AO.ts:36](https://github.com/bennycode/trading-signals/blob/53d8192/src/AO/AO.ts#L36)

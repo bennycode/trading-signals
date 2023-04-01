@@ -2,6 +2,8 @@
 
 # Class: FasterEMA
 
+Tracks results of an indicator over time and memorizes the highest & lowest result.
+
 ## Hierarchy
 
 - [`FasterMovingAverage`](FasterMovingAverage.md)
@@ -28,6 +30,7 @@
 
 - [getResult](FasterEMA.md#getresult)
 - [update](FasterEMA.md#update)
+- [updates](FasterEMA.md#updates)
 
 ## Constructors
 
@@ -47,7 +50,7 @@
 
 #### Defined in
 
-[EMA/EMA.ts:56](https://github.com/bennycode/trading-signals/blob/95cb489/src/EMA/EMA.ts#L56)
+[EMA/EMA.ts:56](https://github.com/bennycode/trading-signals/blob/53d8192/src/EMA/EMA.ts#L56)
 
 ## Properties
 
@@ -63,7 +66,7 @@ Highest return value over the lifetime (not interval!) of the indicator.
 
 #### Defined in
 
-[Indicator.ts:56](https://github.com/bennycode/trading-signals/blob/95cb489/src/Indicator.ts#L56)
+[Indicator.ts:56](https://github.com/bennycode/trading-signals/blob/53d8192/src/Indicator.ts#L56)
 
 ---
 
@@ -74,6 +77,10 @@ Highest return value over the lifetime (not interval!) of the indicator.
 #### Inherited from
 
 [FasterMovingAverage](FasterMovingAverage.md).[interval](FasterMovingAverage.md#interval)
+
+#### Defined in
+
+[EMA/EMA.ts:56](https://github.com/bennycode/trading-signals/blob/53d8192/src/EMA/EMA.ts#L56)
 
 ---
 
@@ -89,7 +96,7 @@ Lowest return value over the lifetime (not interval!) of the indicator.
 
 #### Defined in
 
-[Indicator.ts:58](https://github.com/bennycode/trading-signals/blob/95cb489/src/Indicator.ts#L58)
+[Indicator.ts:58](https://github.com/bennycode/trading-signals/blob/53d8192/src/Indicator.ts#L58)
 
 ## Accessors
 
@@ -107,7 +114,7 @@ FasterMovingAverage.isStable
 
 #### Defined in
 
-[EMA/EMA.ts:80](https://github.com/bennycode/trading-signals/blob/95cb489/src/EMA/EMA.ts#L80)
+[EMA/EMA.ts:80](https://github.com/bennycode/trading-signals/blob/53d8192/src/EMA/EMA.ts#L80)
 
 ## Methods
 
@@ -125,7 +132,7 @@ FasterMovingAverage.isStable
 
 #### Defined in
 
-[EMA/EMA.ts:72](https://github.com/bennycode/trading-signals/blob/95cb489/src/EMA/EMA.ts#L72)
+[EMA/EMA.ts:72](https://github.com/bennycode/trading-signals/blob/53d8192/src/EMA/EMA.ts#L72)
 
 ---
 
@@ -149,4 +156,28 @@ FasterMovingAverage.isStable
 
 #### Defined in
 
-[EMA/EMA.ts:61](https://github.com/bennycode/trading-signals/blob/95cb489/src/EMA/EMA.ts#L61)
+[EMA/EMA.ts:61](https://github.com/bennycode/trading-signals/blob/53d8192/src/EMA/EMA.ts#L61)
+
+---
+
+### updates
+
+▸ **updates**(`prices`): `number` \| `void`
+
+#### Parameters
+
+| Name     | Type       |
+| :------- | :--------- |
+| `prices` | `number`[] |
+
+#### Returns
+
+`number` \| `void`
+
+#### Inherited from
+
+[FasterMovingAverage](FasterMovingAverage.md).[updates](FasterMovingAverage.md#updates)
+
+#### Defined in
+
+[MA/MovingAverage.ts:30](https://github.com/bennycode/trading-signals/blob/53d8192/src/MA/MovingAverage.ts#L30)

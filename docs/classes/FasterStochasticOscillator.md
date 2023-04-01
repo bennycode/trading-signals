@@ -44,7 +44,7 @@
 
 #### Defined in
 
-[STOCH/StochasticOscillator.ts:108](https://github.com/bennycode/trading-signals/blob/95cb489/src/STOCH/StochasticOscillator.ts#L108)
+[STOCH/StochasticOscillator.ts:108](https://github.com/bennycode/trading-signals/blob/53d8192/src/STOCH/StochasticOscillator.ts#L108)
 
 ## Properties
 
@@ -54,7 +54,7 @@
 
 #### Defined in
 
-[STOCH/StochasticOscillator.ts:98](https://github.com/bennycode/trading-signals/blob/95cb489/src/STOCH/StochasticOscillator.ts#L98)
+[STOCH/StochasticOscillator.ts:98](https://github.com/bennycode/trading-signals/blob/53d8192/src/STOCH/StochasticOscillator.ts#L98)
 
 ---
 
@@ -62,17 +62,35 @@
 
 • **m**: `number`
 
+The %k slowing period
+
+#### Defined in
+
+[STOCH/StochasticOscillator.ts:108](https://github.com/bennycode/trading-signals/blob/53d8192/src/STOCH/StochasticOscillator.ts#L108)
+
 ---
 
 ### n
 
 • **n**: `number`
 
+The %k period
+
+#### Defined in
+
+[STOCH/StochasticOscillator.ts:108](https://github.com/bennycode/trading-signals/blob/53d8192/src/STOCH/StochasticOscillator.ts#L108)
+
 ---
 
 ### p
 
 • **p**: `number`
+
+The %d period
+
+#### Defined in
+
+[STOCH/StochasticOscillator.ts:108](https://github.com/bennycode/trading-signals/blob/53d8192/src/STOCH/StochasticOscillator.ts#L108)
 
 ## Accessors
 
@@ -90,7 +108,7 @@
 
 #### Defined in
 
-[STOCH/StochasticOscillator.ts:121](https://github.com/bennycode/trading-signals/blob/95cb489/src/STOCH/StochasticOscillator.ts#L121)
+[STOCH/StochasticOscillator.ts:121](https://github.com/bennycode/trading-signals/blob/53d8192/src/STOCH/StochasticOscillator.ts#L121)
 
 ## Methods
 
@@ -108,7 +126,7 @@
 
 #### Defined in
 
-[STOCH/StochasticOscillator.ts:113](https://github.com/bennycode/trading-signals/blob/95cb489/src/STOCH/StochasticOscillator.ts#L113)
+[STOCH/StochasticOscillator.ts:113](https://github.com/bennycode/trading-signals/blob/53d8192/src/STOCH/StochasticOscillator.ts#L113)
 
 ---
 
@@ -132,4 +150,4 @@
 
 #### Defined in
 
-[STOCH/StochasticOscillator.ts:125](https://github.com/bennycode/trading-signals/blob/95cb489/src/STOCH/StochasticOscillator.ts#L125)
+[STOCH/StochasticOscillator.ts:125](https://github.com/bennycode/trading-signals/blob/53d8192/src/STOCH/StochasticOscillator.ts#L125)

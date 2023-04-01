@@ -2,6 +2,8 @@
 
 # Class: FasterWSMA
 
+Tracks results of an indicator over time and memorizes the highest & lowest result.
+
 ## Hierarchy
 
 - [`NumberIndicatorSeries`](NumberIndicatorSeries.md)
@@ -28,6 +30,7 @@
 
 - [getResult](FasterWSMA.md#getresult)
 - [update](FasterWSMA.md#update)
+- [updates](FasterWSMA.md#updates)
 
 ## Constructors
 
@@ -47,7 +50,7 @@
 
 #### Defined in
 
-[WSMA/WSMA.ts:47](https://github.com/bennycode/trading-signals/blob/95cb489/src/WSMA/WSMA.ts#L47)
+[WSMA/WSMA.ts:52](https://github.com/bennycode/trading-signals/blob/53d8192/src/WSMA/WSMA.ts#L52)
 
 ## Properties
 
@@ -63,13 +66,17 @@ Highest return value over the lifetime (not interval!) of the indicator.
 
 #### Defined in
 
-[Indicator.ts:56](https://github.com/bennycode/trading-signals/blob/95cb489/src/Indicator.ts#L56)
+[Indicator.ts:56](https://github.com/bennycode/trading-signals/blob/53d8192/src/Indicator.ts#L56)
 
 ---
 
 ### interval
 
 • `Readonly` **interval**: `number`
+
+#### Defined in
+
+[WSMA/WSMA.ts:52](https://github.com/bennycode/trading-signals/blob/53d8192/src/WSMA/WSMA.ts#L52)
 
 ---
 
@@ -85,7 +92,7 @@ Lowest return value over the lifetime (not interval!) of the indicator.
 
 #### Defined in
 
-[Indicator.ts:58](https://github.com/bennycode/trading-signals/blob/95cb489/src/Indicator.ts#L58)
+[Indicator.ts:58](https://github.com/bennycode/trading-signals/blob/53d8192/src/Indicator.ts#L58)
 
 ## Accessors
 
@@ -103,7 +110,7 @@ NumberIndicatorSeries.isStable
 
 #### Defined in
 
-[Indicator.ts:61](https://github.com/bennycode/trading-signals/blob/95cb489/src/Indicator.ts#L61)
+[Indicator.ts:61](https://github.com/bennycode/trading-signals/blob/53d8192/src/Indicator.ts#L61)
 
 ## Methods
 
@@ -121,7 +128,7 @@ NumberIndicatorSeries.isStable
 
 #### Defined in
 
-[Indicator.ts:65](https://github.com/bennycode/trading-signals/blob/95cb489/src/Indicator.ts#L65)
+[Indicator.ts:65](https://github.com/bennycode/trading-signals/blob/53d8192/src/Indicator.ts#L65)
 
 ---
 
@@ -145,4 +152,24 @@ NumberIndicatorSeries.isStable
 
 #### Defined in
 
-[WSMA/WSMA.ts:53](https://github.com/bennycode/trading-signals/blob/95cb489/src/WSMA/WSMA.ts#L53)
+[WSMA/WSMA.ts:63](https://github.com/bennycode/trading-signals/blob/53d8192/src/WSMA/WSMA.ts#L63)
+
+---
+
+### updates
+
+▸ **updates**(`prices`): `number` \| `void`
+
+#### Parameters
+
+| Name     | Type       |
+| :------- | :--------- |
+| `prices` | `number`[] |
+
+#### Returns
+
+`number` \| `void`
+
+#### Defined in
+
+[WSMA/WSMA.ts:58](https://github.com/bennycode/trading-signals/blob/53d8192/src/WSMA/WSMA.ts#L58)

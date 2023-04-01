@@ -2,6 +2,8 @@
 
 # Class: FasterAC
 
+Tracks results of an indicator over time and memorizes the highest & lowest result.
+
 ## Hierarchy
 
 - [`NumberIndicatorSeries`](NumberIndicatorSeries.md)<[`HighLowNumber`](../modules.md#highlownumber)\>
@@ -54,7 +56,7 @@
 
 #### Defined in
 
-[AC/AC.ts:50](https://github.com/bennycode/trading-signals/blob/95cb489/src/AC/AC.ts#L50)
+[AC/AC.ts:50](https://github.com/bennycode/trading-signals/blob/53d8192/src/AC/AC.ts#L50)
 
 ## Properties
 
@@ -64,7 +66,7 @@
 
 #### Defined in
 
-[AC/AC.ts:46](https://github.com/bennycode/trading-signals/blob/95cb489/src/AC/AC.ts#L46)
+[AC/AC.ts:46](https://github.com/bennycode/trading-signals/blob/53d8192/src/AC/AC.ts#L46)
 
 ---
 
@@ -80,13 +82,17 @@ Highest return value over the lifetime (not interval!) of the indicator.
 
 #### Defined in
 
-[Indicator.ts:56](https://github.com/bennycode/trading-signals/blob/95cb489/src/Indicator.ts#L56)
+[Indicator.ts:56](https://github.com/bennycode/trading-signals/blob/53d8192/src/Indicator.ts#L56)
 
 ---
 
 ### longAO
 
 • `Readonly` **longAO**: `number`
+
+#### Defined in
+
+[AC/AC.ts:50](https://github.com/bennycode/trading-signals/blob/53d8192/src/AC/AC.ts#L50)
 
 ---
 
@@ -102,7 +108,7 @@ Lowest return value over the lifetime (not interval!) of the indicator.
 
 #### Defined in
 
-[Indicator.ts:58](https://github.com/bennycode/trading-signals/blob/95cb489/src/Indicator.ts#L58)
+[Indicator.ts:58](https://github.com/bennycode/trading-signals/blob/53d8192/src/Indicator.ts#L58)
 
 ---
 
@@ -112,13 +118,17 @@ Lowest return value over the lifetime (not interval!) of the indicator.
 
 #### Defined in
 
-[AC/AC.ts:47](https://github.com/bennycode/trading-signals/blob/95cb489/src/AC/AC.ts#L47)
+[AC/AC.ts:47](https://github.com/bennycode/trading-signals/blob/53d8192/src/AC/AC.ts#L47)
 
 ---
 
 ### shortAO
 
 • `Readonly` **shortAO**: `number`
+
+#### Defined in
+
+[AC/AC.ts:50](https://github.com/bennycode/trading-signals/blob/53d8192/src/AC/AC.ts#L50)
 
 ---
 
@@ -128,13 +138,17 @@ Lowest return value over the lifetime (not interval!) of the indicator.
 
 #### Defined in
 
-[AC/AC.ts:48](https://github.com/bennycode/trading-signals/blob/95cb489/src/AC/AC.ts#L48)
+[AC/AC.ts:48](https://github.com/bennycode/trading-signals/blob/53d8192/src/AC/AC.ts#L48)
 
 ---
 
 ### signalInterval
 
 • `Readonly` **signalInterval**: `number`
+
+#### Defined in
+
+[AC/AC.ts:50](https://github.com/bennycode/trading-signals/blob/53d8192/src/AC/AC.ts#L50)
 
 ## Accessors
 
@@ -152,7 +166,7 @@ NumberIndicatorSeries.isStable
 
 #### Defined in
 
-[Indicator.ts:61](https://github.com/bennycode/trading-signals/blob/95cb489/src/Indicator.ts#L61)
+[Indicator.ts:61](https://github.com/bennycode/trading-signals/blob/53d8192/src/Indicator.ts#L61)
 
 ## Methods
 
@@ -170,7 +184,7 @@ NumberIndicatorSeries.isStable
 
 #### Defined in
 
-[Indicator.ts:65](https://github.com/bennycode/trading-signals/blob/95cb489/src/Indicator.ts#L65)
+[Indicator.ts:65](https://github.com/bennycode/trading-signals/blob/53d8192/src/Indicator.ts#L65)
 
 ---
 
@@ -194,4 +208,4 @@ NumberIndicatorSeries.isStable
 
 #### Defined in
 
-[AC/AC.ts:57](https://github.com/bennycode/trading-signals/blob/95cb489/src/AC/AC.ts#L57)
+[AC/AC.ts:57](https://github.com/bennycode/trading-signals/blob/53d8192/src/AC/AC.ts#L57)

@@ -2,6 +2,8 @@
 
 # Class: FasterCG
 
+Tracks results of an indicator over time and memorizes the highest & lowest result.
+
 ## Hierarchy
 
 - [`NumberIndicatorSeries`](NumberIndicatorSeries.md)
@@ -51,7 +53,7 @@
 
 #### Defined in
 
-[CG/CG.ts:67](https://github.com/bennycode/trading-signals/blob/95cb489/src/CG/CG.ts#L67)
+[CG/CG.ts:67](https://github.com/bennycode/trading-signals/blob/53d8192/src/CG/CG.ts#L67)
 
 ## Properties
 
@@ -67,13 +69,17 @@ Highest return value over the lifetime (not interval!) of the indicator.
 
 #### Defined in
 
-[Indicator.ts:56](https://github.com/bennycode/trading-signals/blob/95cb489/src/Indicator.ts#L56)
+[Indicator.ts:56](https://github.com/bennycode/trading-signals/blob/53d8192/src/Indicator.ts#L56)
 
 ---
 
 ### interval
 
 • `Readonly` **interval**: `number`
+
+#### Defined in
+
+[CG/CG.ts:67](https://github.com/bennycode/trading-signals/blob/53d8192/src/CG/CG.ts#L67)
 
 ---
 
@@ -89,7 +95,7 @@ Lowest return value over the lifetime (not interval!) of the indicator.
 
 #### Defined in
 
-[Indicator.ts:58](https://github.com/bennycode/trading-signals/blob/95cb489/src/Indicator.ts#L58)
+[Indicator.ts:58](https://github.com/bennycode/trading-signals/blob/53d8192/src/Indicator.ts#L58)
 
 ---
 
@@ -99,7 +105,7 @@ Lowest return value over the lifetime (not interval!) of the indicator.
 
 #### Defined in
 
-[CG/CG.ts:61](https://github.com/bennycode/trading-signals/blob/95cb489/src/CG/CG.ts#L61)
+[CG/CG.ts:61](https://github.com/bennycode/trading-signals/blob/53d8192/src/CG/CG.ts#L61)
 
 ---
 
@@ -109,13 +115,17 @@ Lowest return value over the lifetime (not interval!) of the indicator.
 
 #### Defined in
 
-[CG/CG.ts:59](https://github.com/bennycode/trading-signals/blob/95cb489/src/CG/CG.ts#L59)
+[CG/CG.ts:59](https://github.com/bennycode/trading-signals/blob/53d8192/src/CG/CG.ts#L59)
 
 ---
 
 ### signalInterval
 
 • `Readonly` **signalInterval**: `number`
+
+#### Defined in
+
+[CG/CG.ts:67](https://github.com/bennycode/trading-signals/blob/53d8192/src/CG/CG.ts#L67)
 
 ## Accessors
 
@@ -133,7 +143,7 @@ NumberIndicatorSeries.isStable
 
 #### Defined in
 
-[CG/CG.ts:63](https://github.com/bennycode/trading-signals/blob/95cb489/src/CG/CG.ts#L63)
+[CG/CG.ts:63](https://github.com/bennycode/trading-signals/blob/53d8192/src/CG/CG.ts#L63)
 
 ## Methods
 
@@ -151,7 +161,7 @@ NumberIndicatorSeries.isStable
 
 #### Defined in
 
-[Indicator.ts:65](https://github.com/bennycode/trading-signals/blob/95cb489/src/Indicator.ts#L65)
+[Indicator.ts:65](https://github.com/bennycode/trading-signals/blob/53d8192/src/Indicator.ts#L65)
 
 ---
 
@@ -175,4 +185,4 @@ NumberIndicatorSeries.isStable
 
 #### Defined in
 
-[CG/CG.ts:72](https://github.com/bennycode/trading-signals/blob/95cb489/src/CG/CG.ts#L72)
+[CG/CG.ts:72](https://github.com/bennycode/trading-signals/blob/53d8192/src/CG/CG.ts#L72)

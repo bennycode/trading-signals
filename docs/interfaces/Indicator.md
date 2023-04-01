@@ -49,7 +49,7 @@
 
 #### Defined in
 
-[Indicator.ts:7](https://github.com/bennycode/trading-signals/blob/95cb489/src/Indicator.ts#L7)
+[Indicator.ts:7](https://github.com/bennycode/trading-signals/blob/53d8192/src/Indicator.ts#L7)
 
 ## Methods
 
@@ -63,7 +63,7 @@
 
 #### Defined in
 
-[Indicator.ts:5](https://github.com/bennycode/trading-signals/blob/95cb489/src/Indicator.ts#L5)
+[Indicator.ts:5](https://github.com/bennycode/trading-signals/blob/53d8192/src/Indicator.ts#L5)
 
 ---
 
@@ -83,4 +83,4 @@
 
 #### Defined in
 
-[Indicator.ts:9](https://github.com/bennycode/trading-signals/blob/95cb489/src/Indicator.ts#L9)
+[Indicator.ts:9](https://github.com/bennycode/trading-signals/blob/53d8192/src/Indicator.ts#L9)

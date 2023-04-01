@@ -6,7 +6,9 @@ Moving Average (MA) Type: Trend
 
 Base class for trend-following (lagging) indicators. The longer the moving average interval, the greater the lag.
 
-**`see`** https://www.investopedia.com/terms/m/movingaverage.asp
+**`See`**
+
+https://www.investopedia.com/terms/m/movingaverage.asp
 
 ## Hierarchy
 
@@ -40,6 +42,7 @@ Base class for trend-following (lagging) indicators. The longer the moving avera
 
 - [getResult](MovingAverage.md#getresult)
 - [update](MovingAverage.md#update)
+- [updates](MovingAverage.md#updates)
 
 ## Constructors
 
@@ -59,7 +62,7 @@ Base class for trend-following (lagging) indicators. The longer the moving avera
 
 #### Defined in
 
-[MA/MovingAverage.ts:13](https://github.com/bennycode/trading-signals/blob/95cb489/src/MA/MovingAverage.ts#L13)
+[MA/MovingAverage.ts:13](https://github.com/bennycode/trading-signals/blob/53d8192/src/MA/MovingAverage.ts#L13)
 
 ## Properties
 
@@ -75,13 +78,17 @@ Highest return value over the lifetime (not interval!) of the indicator.
 
 #### Defined in
 
-[Indicator.ts:22](https://github.com/bennycode/trading-signals/blob/95cb489/src/Indicator.ts#L22)
+[Indicator.ts:22](https://github.com/bennycode/trading-signals/blob/53d8192/src/Indicator.ts#L22)
 
 ---
 
 ### interval
 
 • `Readonly` **interval**: `number`
+
+#### Defined in
+
+[MA/MovingAverage.ts:13](https://github.com/bennycode/trading-signals/blob/53d8192/src/MA/MovingAverage.ts#L13)
 
 ---
 
@@ -97,7 +104,7 @@ Lowest return value over the lifetime (not interval!) of the indicator.
 
 #### Defined in
 
-[Indicator.ts:24](https://github.com/bennycode/trading-signals/blob/95cb489/src/Indicator.ts#L24)
+[Indicator.ts:24](https://github.com/bennycode/trading-signals/blob/53d8192/src/Indicator.ts#L24)
 
 ## Accessors
 
@@ -115,7 +122,7 @@ BigIndicatorSeries.isStable
 
 #### Defined in
 
-[Indicator.ts:27](https://github.com/bennycode/trading-signals/blob/95cb489/src/Indicator.ts#L27)
+[Indicator.ts:27](https://github.com/bennycode/trading-signals/blob/53d8192/src/Indicator.ts#L27)
 
 ## Methods
 
@@ -133,7 +140,7 @@ BigIndicatorSeries.isStable
 
 #### Defined in
 
-[Indicator.ts:31](https://github.com/bennycode/trading-signals/blob/95cb489/src/Indicator.ts#L31)
+[Indicator.ts:31](https://github.com/bennycode/trading-signals/blob/53d8192/src/Indicator.ts#L31)
 
 ---
 
@@ -157,4 +164,24 @@ BigIndicatorSeries.isStable
 
 #### Defined in
 
-[MA/MovingAverage.ts:17](https://github.com/bennycode/trading-signals/blob/95cb489/src/MA/MovingAverage.ts#L17)
+[MA/MovingAverage.ts:22](https://github.com/bennycode/trading-signals/blob/53d8192/src/MA/MovingAverage.ts#L22)
+
+---
+
+### updates
+
+▸ **updates**(`prices`): `void` \| `Big`
+
+#### Parameters
+
+| Name     | Type          |
+| :------- | :------------ |
+| `prices` | `BigSource`[] |
+
+#### Returns
+
+`void` \| `Big`
+
+#### Defined in
+
+[MA/MovingAverage.ts:17](https://github.com/bennycode/trading-signals/blob/53d8192/src/MA/MovingAverage.ts#L17)

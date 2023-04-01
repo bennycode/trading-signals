@@ -2,6 +2,8 @@
 
 # Class: FasterDX
 
+Tracks results of an indicator over time and memorizes the highest & lowest result.
+
 ## Hierarchy
 
 - [`NumberIndicatorSeries`](NumberIndicatorSeries.md)<[`HighLowCloseNumber`](../modules.md#highlowclosenumber)\>
@@ -50,7 +52,7 @@
 
 #### Defined in
 
-[DX/DX.ts:100](https://github.com/bennycode/trading-signals/blob/95cb489/src/DX/DX.ts#L100)
+[DX/DX.ts:100](https://github.com/bennycode/trading-signals/blob/53d8192/src/DX/DX.ts#L100)
 
 ## Properties
 
@@ -66,13 +68,17 @@ Highest return value over the lifetime (not interval!) of the indicator.
 
 #### Defined in
 
-[Indicator.ts:56](https://github.com/bennycode/trading-signals/blob/95cb489/src/Indicator.ts#L56)
+[Indicator.ts:56](https://github.com/bennycode/trading-signals/blob/53d8192/src/Indicator.ts#L56)
 
 ---
 
 ### interval
 
 • `Readonly` **interval**: `number`
+
+#### Defined in
+
+[DX/DX.ts:100](https://github.com/bennycode/trading-signals/blob/53d8192/src/DX/DX.ts#L100)
 
 ---
 
@@ -88,7 +94,7 @@ Lowest return value over the lifetime (not interval!) of the indicator.
 
 #### Defined in
 
-[Indicator.ts:58](https://github.com/bennycode/trading-signals/blob/95cb489/src/Indicator.ts#L58)
+[Indicator.ts:58](https://github.com/bennycode/trading-signals/blob/53d8192/src/Indicator.ts#L58)
 
 ---
 
@@ -98,7 +104,7 @@ Lowest return value over the lifetime (not interval!) of the indicator.
 
 #### Defined in
 
-[DX/DX.ts:97](https://github.com/bennycode/trading-signals/blob/95cb489/src/DX/DX.ts#L97)
+[DX/DX.ts:97](https://github.com/bennycode/trading-signals/blob/53d8192/src/DX/DX.ts#L97)
 
 ---
 
@@ -108,7 +114,7 @@ Lowest return value over the lifetime (not interval!) of the indicator.
 
 #### Defined in
 
-[DX/DX.ts:98](https://github.com/bennycode/trading-signals/blob/95cb489/src/DX/DX.ts#L98)
+[DX/DX.ts:98](https://github.com/bennycode/trading-signals/blob/53d8192/src/DX/DX.ts#L98)
 
 ## Accessors
 
@@ -126,7 +132,7 @@ NumberIndicatorSeries.isStable
 
 #### Defined in
 
-[Indicator.ts:61](https://github.com/bennycode/trading-signals/blob/95cb489/src/Indicator.ts#L61)
+[Indicator.ts:61](https://github.com/bennycode/trading-signals/blob/53d8192/src/Indicator.ts#L61)
 
 ## Methods
 
@@ -144,7 +150,7 @@ NumberIndicatorSeries.isStable
 
 #### Defined in
 
-[Indicator.ts:65](https://github.com/bennycode/trading-signals/blob/95cb489/src/Indicator.ts#L65)
+[Indicator.ts:65](https://github.com/bennycode/trading-signals/blob/53d8192/src/Indicator.ts#L65)
 
 ---
 
@@ -168,4 +174,4 @@ NumberIndicatorSeries.isStable
 
 #### Defined in
 
-[DX/DX.ts:114](https://github.com/bennycode/trading-signals/blob/95cb489/src/DX/DX.ts#L114)
+[DX/DX.ts:114](https://github.com/bennycode/trading-signals/blob/53d8192/src/DX/DX.ts#L114)

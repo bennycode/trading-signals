@@ -2,6 +2,8 @@
 
 # Class: FasterRSI
 
+Tracks results of an indicator over time and memorizes the highest & lowest result.
+
 ## Hierarchy
 
 - [`NumberIndicatorSeries`](NumberIndicatorSeries.md)
@@ -48,7 +50,7 @@
 
 #### Defined in
 
-[RSI/RSI.ts:75](https://github.com/bennycode/trading-signals/blob/95cb489/src/RSI/RSI.ts#L75)
+[RSI/RSI.ts:75](https://github.com/bennycode/trading-signals/blob/53d8192/src/RSI/RSI.ts#L75)
 
 ## Properties
 
@@ -64,13 +66,17 @@ Highest return value over the lifetime (not interval!) of the indicator.
 
 #### Defined in
 
-[Indicator.ts:56](https://github.com/bennycode/trading-signals/blob/95cb489/src/Indicator.ts#L56)
+[Indicator.ts:56](https://github.com/bennycode/trading-signals/blob/53d8192/src/Indicator.ts#L56)
 
 ---
 
 ### interval
 
 • `Readonly` **interval**: `number`
+
+#### Defined in
+
+[RSI/RSI.ts:75](https://github.com/bennycode/trading-signals/blob/53d8192/src/RSI/RSI.ts#L75)
 
 ---
 
@@ -86,7 +92,7 @@ Lowest return value over the lifetime (not interval!) of the indicator.
 
 #### Defined in
 
-[Indicator.ts:58](https://github.com/bennycode/trading-signals/blob/95cb489/src/Indicator.ts#L58)
+[Indicator.ts:58](https://github.com/bennycode/trading-signals/blob/53d8192/src/Indicator.ts#L58)
 
 ## Accessors
 
@@ -104,7 +110,7 @@ NumberIndicatorSeries.isStable
 
 #### Defined in
 
-[Indicator.ts:61](https://github.com/bennycode/trading-signals/blob/95cb489/src/Indicator.ts#L61)
+[Indicator.ts:61](https://github.com/bennycode/trading-signals/blob/53d8192/src/Indicator.ts#L61)
 
 ## Methods
 
@@ -122,7 +128,7 @@ NumberIndicatorSeries.isStable
 
 #### Defined in
 
-[Indicator.ts:65](https://github.com/bennycode/trading-signals/blob/95cb489/src/Indicator.ts#L65)
+[Indicator.ts:65](https://github.com/bennycode/trading-signals/blob/53d8192/src/Indicator.ts#L65)
 
 ---
 
@@ -146,4 +152,4 @@ NumberIndicatorSeries.isStable
 
 #### Defined in
 
-[RSI/RSI.ts:81](https://github.com/bennycode/trading-signals/blob/95cb489/src/RSI/RSI.ts#L81)
+[RSI/RSI.ts:81](https://github.com/bennycode/trading-signals/blob/53d8192/src/RSI/RSI.ts#L81)

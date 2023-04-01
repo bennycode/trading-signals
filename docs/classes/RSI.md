@@ -10,9 +10,10 @@ The RSI is mostly useful in markets that alternate between bullish and bearish m
 
 A RSI value of 30 or below indicates an oversold condition (not a good time to sell because there is an oversupply). A RSI value of 70 or above indicates an overbought condition (sell high opportunity because market may correct the price in the near future).
 
-**`see`** https://en.wikipedia.org/wiki/Relative_strength_index
+**`See`**
 
-**`see`** https://www.investopedia.com/terms/r/rsi.asp
+- https://en.wikipedia.org/wiki/Relative_strength_index
+- https://www.investopedia.com/terms/r/rsi.asp
 
 ## Hierarchy
 
@@ -60,7 +61,7 @@ A RSI value of 30 or below indicates an oversold condition (not a good time to s
 
 #### Defined in
 
-[RSI/RSI.ts:30](https://github.com/bennycode/trading-signals/blob/95cb489/src/RSI/RSI.ts#L30)
+[RSI/RSI.ts:30](https://github.com/bennycode/trading-signals/blob/53d8192/src/RSI/RSI.ts#L30)
 
 ## Properties
 
@@ -76,13 +77,17 @@ Highest return value over the lifetime (not interval!) of the indicator.
 
 #### Defined in
 
-[Indicator.ts:22](https://github.com/bennycode/trading-signals/blob/95cb489/src/Indicator.ts#L22)
+[Indicator.ts:22](https://github.com/bennycode/trading-signals/blob/53d8192/src/Indicator.ts#L22)
 
 ---
 
 ### interval
 
 • `Readonly` **interval**: `number`
+
+#### Defined in
+
+[RSI/RSI.ts:30](https://github.com/bennycode/trading-signals/blob/53d8192/src/RSI/RSI.ts#L30)
 
 ---
 
@@ -98,7 +103,7 @@ Lowest return value over the lifetime (not interval!) of the indicator.
 
 #### Defined in
 
-[Indicator.ts:24](https://github.com/bennycode/trading-signals/blob/95cb489/src/Indicator.ts#L24)
+[Indicator.ts:24](https://github.com/bennycode/trading-signals/blob/53d8192/src/Indicator.ts#L24)
 
 ## Accessors
 
@@ -116,7 +121,7 @@ BigIndicatorSeries.isStable
 
 #### Defined in
 
-[Indicator.ts:27](https://github.com/bennycode/trading-signals/blob/95cb489/src/Indicator.ts#L27)
+[Indicator.ts:27](https://github.com/bennycode/trading-signals/blob/53d8192/src/Indicator.ts#L27)
 
 ## Methods
 
@@ -134,7 +139,7 @@ BigIndicatorSeries.isStable
 
 #### Defined in
 
-[Indicator.ts:31](https://github.com/bennycode/trading-signals/blob/95cb489/src/Indicator.ts#L31)
+[Indicator.ts:31](https://github.com/bennycode/trading-signals/blob/53d8192/src/Indicator.ts#L31)
 
 ---
 
@@ -158,4 +163,4 @@ BigIndicatorSeries.isStable
 
 #### Defined in
 
-[RSI/RSI.ts:36](https://github.com/bennycode/trading-signals/blob/95cb489/src/RSI/RSI.ts#L36)
+[RSI/RSI.ts:36](https://github.com/bennycode/trading-signals/blob/53d8192/src/RSI/RSI.ts#L36)
