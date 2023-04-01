@@ -871,6 +871,18 @@
   resolved "https://registry.npmjs.org/@tsconfig/node16/-/node16-1.0.2.tgz#423c77877d0569db20e1fc80885ac4118314010e"
   integrity sha512-eZxlbI8GZscaGS7kkc/trHTT5xgrjH3/1n2JDwusC9iahPKWMRvRjJSAN5mCXviuTGQ/lHnhvv8Q1YTpnfz9gA==
 
+"@tstv/eslint-config@2.0.1":
+  version "2.0.1"
+  resolved "https://registry.npmjs.org/@tstv/eslint-config/-/eslint-config-2.0.1.tgz#8cc89397a78e33fdcd8a78c3621bd0d46214473a"
+  integrity sha512-4E477Zq5KoRose9CqapbwhWAUFW6StaH/bhpRI5YUmTP87EQRo8DtjXS44Kp5xVnBSC6MtUb8OVVau2ZRBAkWw==
+  dependencies:
+    "@typescript-eslint/eslint-plugin" "5.57.0"
+    "@typescript-eslint/parser" "5.57.0"
+    eslint-config-prettier "8.8.0"
+    eslint-plugin-prettier "4.2.1"
+    eslint-plugin-sort-keys-fix "1.1.2"
+    eslint-plugin-unused-imports "2.0.0"
+
 "@types/babel__core@^7.1.14":
   version "7.1.17"
   resolved "https://registry.npmjs.org/@types/babel__core/-/babel__core-7.1.17.tgz#f50ac9d20d64153b510578d84f9643f9a3afbe64"
@@ -1702,6 +1714,18 @@ eslint-plugin-sort-keys-fix@1.1.2:
     esutils "^2.0.2"
     natural-compare "^1.4.0"
     requireindex "~1.2.0"
+
+eslint-plugin-unused-imports@2.0.0:
+  version "2.0.0"
+  resolved "https://registry.npmjs.org/eslint-plugin-unused-imports/-/eslint-plugin-unused-imports-2.0.0.tgz#d8db8c4d0cfa0637a8b51ce3fd7d1b6bc3f08520"
+  integrity sha512-3APeS/tQlTrFa167ThtP0Zm0vctjr4M44HMpeg1P4bK6wItarumq0Ma82xorMKdFsWpphQBlRPzw/pxiVELX1A==
+  dependencies:
+    eslint-rule-composer "^0.3.0"
+
+eslint-rule-composer@^0.3.0:
+  version "0.3.0"
+  resolved "https://registry.npmjs.org/eslint-rule-composer/-/eslint-rule-composer-0.3.0.tgz#79320c927b0c5c0d3d3d2b76c8b4a488f25bbaf9"
+  integrity sha512-bt+Sh8CtDmn2OajxvNO+BX7Wn4CIWMpTRm3MaiKPCQcnnlm0CS2mhui6QaoeQugs+3Kj2ESKEEGJUdVafwhiCg==
 
 eslint-scope@^5.1.1:
   version "5.1.1"
