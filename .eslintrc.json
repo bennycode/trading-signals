@@ -13,7 +13,7 @@
     "project": "./tsconfig.json",
     "sourceType": "module"
   },
-  "plugins": ["@typescript-eslint", "typescript-sort-keys", "prettier"],
+  "plugins": ["@typescript-eslint", "prettier", "sort-keys-fix"],
   "rules": {
     "@typescript-eslint/array-type": "error",
     "@typescript-eslint/consistent-type-assertions": "error",
@@ -21,7 +21,12 @@
     "@typescript-eslint/no-floating-promises": "error",
     "@typescript-eslint/no-namespace": "error",
     "@typescript-eslint/no-this-alias": "error",
-    "@typescript-eslint/no-unused-vars": ["error", {"argsIgnorePattern": "^_"}],
+    "@typescript-eslint/no-unused-vars": [
+      "error",
+      {
+        "argsIgnorePattern": "^_"
+      }
+    ],
     "@typescript-eslint/prefer-for-of": "off",
     "@typescript-eslint/prefer-readonly": "error",
     "@typescript-eslint/typedef": "off",
@@ -56,7 +61,7 @@
     "prefer-promise-reject-errors": "error",
     "prettier/prettier": "error",
     "sort-imports": "off",
-    "sort-keys": [
+    "sort-keys-fix/sort-keys-fix": [
       "warn",
       "asc",
       {
@@ -66,8 +71,6 @@
     ],
     "sort-vars": "error",
     "space-in-parens": "error",
-    "strict": ["error", "global"],
-    "typescript-sort-keys/interface": ["warn", "asc", {"caseSensitive": false}],
-    "typescript-sort-keys/string-enum": ["warn", "asc", {"caseSensitive": false}]
+    "strict": ["error", "global"]
   }
 }
