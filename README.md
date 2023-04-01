@@ -137,7 +137,34 @@ As specified by the ECMAScript standard, all arithmetic in JavaScript uses [doub
 
 ### Faster implementations
 
-To get the best of both worlds (high accuracy & high performance), you will find two implementations of each indicator (e.g. `SMA` & `FasterSMA`). The standard implementation uses big.js and the `Faster`-prefixed version uses common `number` types. Use the standard one when you need high accuracy and use the `Faster`-one when you need high performance.
+To get the best of both worlds (high accuracy & high performance), you will find two implementations of each indicator (e.g. `SMA` & `FasterSMA`). The standard implementation uses big.js and the `Faster`-prefixed version uses common `number` types. Use the standard one when you need high accuracy and use the `Faster`-one when you need high performance:
+
+```ts
+import {FasterSMA} from 'trading-signals';
+
+const fasterSMA = new FasterSMA(5);
+fasterSMA.update(1);
+fasterSMA.update(2);
+fasterSMA.update(3);
+fasterSMA.update(4);
+fasterSMA.update(5);
+
+console.log(fasterSMA.getResult());
+```
+
+```ts
+import {FasterStochasticRSI, FasterSMA} from 'trading-signals';
+
+const fasterStochRSI = new FasterStochasticRSI(3, FasterSMA);
+fasterStochRSI.update(1);
+fasterStochRSI.update(2);
+fasterStochRSI.update(3);
+fasterStochRSI.update(4);
+fasterStochRSI.update(5);
+fasterStochRSI.update(6);
+
+console.log(fasterStochRSI.getResult());
+```
 
 ### Benchmarks
 
