@@ -1,3 +1,20 @@
+### 3.7.0 (2023-04-01)
+
+##### Documentation Changes
+
+- Describe how to use faster methods ([c2d914b1](https://github.com/bennycode/trading-signals/commit/c2d914b10ab79908516bbc74c70c239d91ae34ab))
+- Show Stargazers ([dd1413ae](https://github.com/bennycode/trading-signals/commit/dd1413aebc0b306fc2b95e404d49ba5044d5ce7d))
+
+##### New Features
+
+- Re-export Big ([dc6008d0](https://github.com/bennycode/trading-signals/commit/dc6008d0d7db9e3184d3a7aff4c4b56887b30d85))
+- **WSMA,MA:** Support multiple updates at once ([6eb875c4](https://github.com/bennycode/trading-signals/commit/6eb875c4d95acb4e04cb57aa9e91248cb58fd3b8))
+
+##### Refactors
+
+- Use @tstv/eslint-config ([6f4da152](https://github.com/bennycode/trading-signals/commit/6f4da152dbde2de8214771bc545a8705384078c4))
+- Sort keys automatically ([1612904a](https://github.com/bennycode/trading-signals/commit/1612904ab06b753b87a1be669638643da81ed3a8))
+
 #### 3.6.1 (2022-03-29)
 
 ##### Documentation Changes
