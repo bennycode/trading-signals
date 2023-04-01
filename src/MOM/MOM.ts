@@ -1,5 +1,5 @@
 import {BigIndicatorSeries, NumberIndicatorSeries} from '../Indicator';
-import Big, {BigSource} from 'big.js';
+import {Big, BigSource} from '..';
 import {getFixedArray} from '../util/getFixedArray';
 
 /**

@@ -1,4 +1,4 @@
-import {Big, BigSource} from 'big.js';
+import {Big, BigSource} from '..';
 import {Indicator} from '../Indicator';
 import {getFixedArray} from './getFixedArray';
 import {getMinimum} from './getMinimum';

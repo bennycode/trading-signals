@@ -1,4 +1,4 @@
-import {Big} from 'big.js';
+import {Big} from '..';
 import {BigIndicatorSeries, NumberIndicatorSeries} from '../Indicator';
 import {FasterMovingAverage, MovingAverage} from '../MA/MovingAverage';
 import {HighLowClose, HighLowCloseNumber} from '../util/HighLowClose';

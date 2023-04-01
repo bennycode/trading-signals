@@ -1,5 +1,5 @@
 import {BollingerBands, FasterBollingerBands} from './BollingerBands';
-import {Big} from 'big.js';
+import {Big} from '..';
 import data from '../test/fixtures/BB/data.json';
 import {NotEnoughDataError} from '../error';
 

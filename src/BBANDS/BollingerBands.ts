@@ -1,4 +1,4 @@
-import Big, {BigSource} from 'big.js';
+import {Big, BigSource} from '..';
 import {SMA} from '../SMA/SMA';
 import {NotEnoughDataError} from '../error';
 import {BandsResult, FasterBandsResult} from '../util/BandsResult';

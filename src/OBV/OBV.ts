@@ -1,4 +1,4 @@
-import Big from 'big.js';
+import {Big} from '..';
 import {BigIndicatorSeries, NumberIndicatorSeries} from '../Indicator';
 import {OpenHighLowCloseVolume, OpenHighLowCloseVolumeNumber} from '../util';
 

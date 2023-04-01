@@ -1,6 +1,5 @@
 import {EMA, FasterEMA} from '../EMA/EMA';
-import Big, {BigSource} from 'big.js';
-import {DEMA, FasterDEMA, NotEnoughDataError} from '..';
+import {Big, BigSource, DEMA, FasterDEMA, NotEnoughDataError} from '..';
 import {Indicator} from '../Indicator';
 
 export type MACDConfig = {

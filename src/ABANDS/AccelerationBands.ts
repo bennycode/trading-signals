@@ -1,5 +1,5 @@
+import {Big} from '..';
 import {FasterSMA, SMA} from '../SMA/SMA';
-import Big from 'big.js';
 import {NotEnoughDataError} from '../error';
 import {BandsResult, FasterBandsResult} from '../util/BandsResult';
 import {Indicator} from '../Indicator';

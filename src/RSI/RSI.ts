@@ -1,4 +1,4 @@
-import Big, {BigSource} from 'big.js';
+import {Big, BigSource} from '..';
 import {FasterMovingAverage, MovingAverage} from '../MA/MovingAverage';
 import {BigIndicatorSeries, NumberIndicatorSeries} from '../Indicator';
 import {FasterMovingAverageTypes, MovingAverageTypes} from '../MA/MovingAverageTypes';

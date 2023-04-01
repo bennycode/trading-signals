@@ -1,4 +1,4 @@
-import {Big} from 'big.js';
+import {Big} from '..';
 import {DEMA, FasterDEMA} from './DEMA';
 import {NotEnoughDataError} from '../error';
 

@@ -1,3 +1,4 @@
+export {default as Big, BigSource} from 'big.js';
 export * from './ABANDS/AccelerationBands';
 export * from './AC/AC';
 export * from './ADX/ADX';

@@ -1,5 +1,5 @@
 import {getFasterAverage, getAverage} from './getAverage';
-import Big, {BigSource} from 'big.js';
+import {Big, BigSource} from '..';
 
 /**
  * Standard deviation calculates how prices for a collection of prices are spread out from the average price of these

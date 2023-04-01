@@ -1,6 +1,6 @@
 import {BigIndicatorSeries, NumberIndicatorSeries} from '../Indicator';
 import {FasterRSI, RSI} from '../RSI/RSI';
-import Big, {BigSource} from 'big.js';
+import {Big, BigSource} from '..';
 import {FasterPeriod, Period} from '../util/Period';
 import {FasterMovingAverageTypes, MovingAverageTypes} from '../MA/MovingAverageTypes';
 import {FasterWSMA, WSMA} from '../WSMA/WSMA';

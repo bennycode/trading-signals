@@ -1,5 +1,5 @@
 import {Indicator} from '../Indicator';
-import Big from 'big.js';
+import {Big} from '..';
 import {FasterSMA, SMA} from '../SMA/SMA';
 import {getMaximum} from '../util/getMaximum';
 import {getMinimum} from '../util/getMinimum';

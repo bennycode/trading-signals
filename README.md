@@ -68,25 +68,27 @@ Utility Methods:
 ## Usage
 
 ```typescript
-import {SMA} from 'trading-signals';
+import {Big, SMA} from 'trading-signals';
 
 const sma = new SMA(3);
 
-// You can add numbers:
+// You can add numbers individually:
 sma.update(40);
 sma.update(30);
 sma.update(20);
+
+// You can add multiple numbers at once:
+sma.updates([20, 40, 80]);
 
 // You can add strings:
 sma.update('10');
 
 // You can add arbitrary-precision decimals:
-import Big from 'big.js';
 sma.update(new Big(30));
 
 // You can get the result in various formats:
-console.log(sma.getResult().valueOf()); // "20"
-console.log(sma.getResult().toFixed(2)); // "20.00"
+console.log(sma.getResult().toFixed(2)); // "40.00"
+console.log(sma.getResult().toFixed(4)); // "40.0000"
 ```
 
 ### When to use `update(...)`?
@@ -137,19 +139,13 @@ As specified by the ECMAScript standard, all arithmetic in JavaScript uses [doub
 
 ### Faster implementations
 
-To get the best of both worlds (high accuracy & high performance), you will find two implementations of each indicator (e.g. `SMA` & `FasterSMA`). The standard implementation uses big.js and the `Faster`-prefixed version uses common `number` types. Use the standard one when you need high accuracy and use the `Faster`-one when you need high performance:
+To get the best of both worlds (high accuracy & high performance), you will find two implementations of each indicator (e.g. `SMA` & `FasterSMA`). The standard implementation uses [big.js][1] and the `Faster`-prefixed version uses common `number` types. Use the standard one when you need high accuracy and use the `Faster`-one when you need high performance:
 
 ```ts
-import {FasterSMA} from 'trading-signals';
+import {FasterSMA} from './SMA/SMA';
 
 const fasterSMA = new FasterSMA(5);
-fasterSMA.update(1);
-fasterSMA.update(2);
-fasterSMA.update(3);
-fasterSMA.update(4);
-fasterSMA.update(5);
-
-console.log(fasterSMA.getResult());
+console.log(fasterSMA.updates([1, 2, 3, 4, 5]));
 ```
 
 ```ts

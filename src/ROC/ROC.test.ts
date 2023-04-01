@@ -1,4 +1,4 @@
-import {Big} from 'big.js';
+import {Big} from '..';
 import {FasterROC, ROC} from './ROC';
 import {NotEnoughDataError} from '../error';
 

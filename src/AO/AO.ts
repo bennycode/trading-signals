@@ -1,5 +1,5 @@
 import {BigIndicatorSeries, NumberIndicatorSeries} from '../Indicator';
-import Big from 'big.js';
+import {Big} from '..';
 import {FasterSMA, SMA} from '../SMA/SMA';
 import {HighLow, HighLowNumber} from '../util';
 import {FasterMovingAverageTypes, MovingAverageTypes} from '../MA/MovingAverageTypes';
