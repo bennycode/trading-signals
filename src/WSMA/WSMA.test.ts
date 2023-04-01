@@ -14,7 +14,7 @@ describe('WSMA', () => {
         wsma.update(price);
         if (wsma.isStable) {
           const expected = expectations.shift();
-          expect(wsma.getResult().toFixed(2)).toBe(expected!);
+          expect(wsma.getResult().toFixed(2)).toBe(expected);
         }
       }
 
@@ -26,18 +26,34 @@ describe('WSMA', () => {
       // https://github.com/TulipCharts/tulipindicators/blob/v0.8.0/tests/atoz.txt#L299-L302
       const prices = [
         62.125, 61.125, 62.3438, 65.3125, 63.9688, 63.4375, 63, 63.7812, 63.4062, 63.4062, 62.4375, 61.8438,
-      ];
-      const expectations = ['62.9750', '63.0675', '63.0540', '63.1995', '63.2408', '63.2739', '63.1066', '62.8540'];
-      const wsma = new WSMA(5);
-      const fasterWSMA = new FasterWSMA(5);
+      ] as const;
+      const expectations = [
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        '62.9750',
+        '63.0675',
+        '63.0540',
+        '63.1995',
+        '63.2408',
+        '63.2739',
+        '63.1066',
+        '62.8540',
+      ] as const;
 
-      for (const price of prices) {
+      const interval = 5;
+      const wsma = new WSMA(interval);
+      const fasterWSMA = new FasterWSMA(interval);
+
+      for (let i = 0; i < prices.length; i++) {
+        const price = prices[i];
         wsma.update(price);
         fasterWSMA.update(price);
         if (wsma.isStable && fasterWSMA.isStable) {
-          const expected = expectations.shift();
-          expect(wsma.getResult().toFixed(4)).toBe(expected!);
-          expect(fasterWSMA.getResult().toFixed(4)).toBe(expected!);
+          const expected = expectations[i];
+          expect(wsma.getResult().toFixed(4)).toBe(expected);
+          expect(fasterWSMA.getResult().toFixed(4)).toBe(expected);
         }
       }
 
@@ -47,11 +63,11 @@ describe('WSMA', () => {
       expect(wsma.getResult().toFixed(4)).toBe('62.8540');
       expect(fasterWSMA.getResult().toFixed(4)).toBe('62.8540');
 
-      expect(wsma.highest!.toFixed(4)).toBe('63.2739');
-      expect(fasterWSMA.highest!.toFixed(4)).toBe('63.2739');
+      expect(wsma.highest?.toFixed(4)).toBe('63.2739');
+      expect(fasterWSMA.highest?.toFixed(4)).toBe('63.2739');
 
-      expect(wsma.lowest!.toFixed(4)).toBe('62.8540');
-      expect(fasterWSMA.lowest!.toFixed(4)).toBe('62.8540');
+      expect(wsma.lowest?.toFixed(4)).toBe('62.8540');
+      expect(fasterWSMA.lowest?.toFixed(4)).toBe('62.8540');
     });
 
     it('throws an error when there is no input data', () => {
