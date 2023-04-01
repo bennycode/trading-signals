@@ -1,4 +1,4 @@
-import Big, {BigSource} from 'big.js';
+import {Big, BigSource} from '..';
 import {MovingAverage} from '../MA/MovingAverage';
 import {FasterSMA, SMA} from '../SMA/SMA';
 import {NumberIndicatorSeries} from '../Indicator';
@@ -29,6 +29,11 @@ export class WSMA extends MovingAverage {
     this.smoothingFactor = new Big(1).div(this.interval);
   }
 
+  updates(prices: BigSource[]): Big | void {
+    prices.forEach(price => this.update(price));
+    return this.result;
+  }
+
   update(price: BigSource): Big | void {
     const sma = this.indicator.update(price);
     if (this.result) {
@@ -48,6 +53,11 @@ export class FasterWSMA extends NumberIndicatorSeries {
     super();
     this.indicator = new FasterSMA(interval);
     this.smoothingFactor = 1 / this.interval;
+  }
+
+  updates(prices: number[]): number | void {
+    prices.forEach(price => this.update(price));
+    return this.result;
   }
 
   update(price: number): number | void {

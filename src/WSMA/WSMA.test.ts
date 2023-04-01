@@ -95,6 +95,22 @@ describe('WSMA', () => {
     });
   });
 
+  describe('updates', () => {
+    it('supports multiple updates at once', () => {
+      const prices = [11, 12, 13, 14, 15, 16, 18, 19, 22, 23, 23];
+
+      const interval = 5;
+      const wsma = new WSMA(interval);
+      const fasterWSMA = new FasterWSMA(interval);
+
+      wsma.updates(prices);
+      fasterWSMA.updates(prices);
+
+      expect(wsma.getResult().toFixed(2)).toBe('18.97');
+      expect(fasterWSMA.getResult().toFixed(2)).toBe('18.97');
+    });
+  });
+
   describe('isStable', () => {
     it('is stable when the inputs can fill the signal interval', () => {
       const wsma = new WSMA(3);

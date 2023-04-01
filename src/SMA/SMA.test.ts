@@ -1,5 +1,4 @@
-import Big from 'big.js';
-import {NotEnoughDataError, SMA, FasterSMA} from '..';
+import {Big, FasterSMA, NotEnoughDataError, SMA} from '..';
 
 describe('SMA', () => {
   describe('prices', () => {
@@ -16,6 +15,21 @@ describe('SMA', () => {
       expect(sma.prices.length).toBe(3);
       sma.update(6);
       expect(sma.prices.length).toBe(3);
+    });
+  });
+
+  describe('updates', () => {
+    it('supports multiple updates at once', () => {
+      const prices = [1, 2, 3, 4, 5];
+      const interval = 5;
+
+      const sma = new SMA(interval);
+      const fasterSMA = new FasterSMA(interval);
+      sma.updates(prices);
+      fasterSMA.updates(prices);
+
+      expect(sma.getResult().toFixed()).toBe('3');
+      expect(fasterSMA.getResult().toFixed()).toBe('3');
     });
   });
 
@@ -104,7 +118,7 @@ describe('SMA', () => {
   });
 
   describe('getResultFromBatch', () => {
-    it("doesn't crash when the array is empty", () => {
+    it(`doesn't crash when the array is empty`, () => {
       const result = SMA.getResultFromBatch([]);
       expect(result.valueOf()).toBe('0');
     });
