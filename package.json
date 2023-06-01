@@ -10,7 +10,7 @@
   "devDependencies": {
     "@tstv/eslint-config": "2.0.1",
     "@types/benchmark": "2.1.2",
-    "@types/jest": "29.5.0",
+    "@types/jest": "29.5.2",
     "@types/node": "18.15.11",
     "benchmark": "2.1.4",
     "eslint": "8.37.0",
