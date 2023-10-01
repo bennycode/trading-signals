@@ -9,7 +9,7 @@
   "description": "Technical indicators to run technical analysis with JavaScript / TypeScript.",
   "devDependencies": {
     "@tstv/eslint-config": "2.0.1",
-    "@types/benchmark": "2.1.2",
+    "@types/benchmark": "2.1.3",
     "@types/jest": "29.5.0",
     "@types/node": "18.15.11",
     "benchmark": "2.1.4",
