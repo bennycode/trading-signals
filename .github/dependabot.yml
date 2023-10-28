@@ -24,7 +24,7 @@ updates:
           - '>= 5'
       - dependency-name: '@types/node'
         versions:
-          - '>= 17'
+          - '>= 20'
     commit-message:
       prefix: chore
       include: scope
