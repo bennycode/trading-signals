@@ -75,7 +75,7 @@ describe('WSMA', () => {
 
       try {
         wsma.getResult();
-        fail('Expected error');
+        throw new Error('Expected error');
       } catch (error) {
         expect(error).toBeInstanceOf(NotEnoughDataError);
       }
@@ -88,7 +88,7 @@ describe('WSMA', () => {
 
       try {
         wsma.getResult();
-        fail('Expected error');
+        throw new Error('Expected error');
       } catch (error) {
         expect(error).toBeInstanceOf(NotEnoughDataError);
       }

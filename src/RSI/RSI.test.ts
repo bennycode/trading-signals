@@ -65,7 +65,7 @@ describe('RSI', () => {
       expect(rsi.isStable).toBe(false);
       try {
         rsi.getResult();
-        fail('Expected error');
+        throw new Error('Expected error');
       } catch (error) {
         expect(rsi.isStable).toBe(false);
         expect(error).toBeInstanceOf(NotEnoughDataError);

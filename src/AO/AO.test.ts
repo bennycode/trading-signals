@@ -64,7 +64,7 @@ describe('AO', () => {
 
       try {
         ao.getResult();
-        fail('Expected error');
+        throw new Error('Expected error');
       } catch (error) {
         expect(error).toBeInstanceOf(NotEnoughDataError);
       }

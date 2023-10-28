@@ -42,7 +42,7 @@ describe('EMA', () => {
 
       try {
         ema.getResult();
-        fail('Expected error');
+        throw new Error('Expected error');
       } catch (error) {
         expect(error).toBeInstanceOf(NotEnoughDataError);
         expect(ema.isStable).toBe(false);
@@ -52,7 +52,7 @@ describe('EMA', () => {
 
       try {
         fasterEMA.getResult();
-        fail('Expected error');
+        throw new Error('Expected error');
       } catch (error) {
         expect(error).toBeInstanceOf(NotEnoughDataError);
         expect(fasterEMA.isStable).toBe(false);

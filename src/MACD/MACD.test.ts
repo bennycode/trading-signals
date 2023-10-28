@@ -112,7 +112,7 @@ describe('MACD', () => {
 
       try {
         macd.getResult();
-        fail('Expected error');
+        throw new Error('Expected error');
       } catch (error) {
         expect(error).toBeInstanceOf(NotEnoughDataError);
       }
@@ -121,7 +121,7 @@ describe('MACD', () => {
 
       try {
         fasterMACD.getResult();
-        fail('Expected error');
+        throw new Error('Expected error');
       } catch (error) {
         expect(error).toBeInstanceOf(NotEnoughDataError);
       }

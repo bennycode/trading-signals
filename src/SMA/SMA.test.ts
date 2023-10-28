@@ -101,7 +101,7 @@ describe('SMA', () => {
 
       try {
         sma.getResult();
-        fail('Expected error');
+        throw new Error('Expected error');
       } catch (error) {
         expect(error).toBeInstanceOf(NotEnoughDataError);
       }
@@ -110,7 +110,7 @@ describe('SMA', () => {
 
       try {
         fasterSMA.getResult();
-        fail('Expected error');
+        throw new Error('Expected error');
       } catch (error) {
         expect(error).toBeInstanceOf(NotEnoughDataError);
       }

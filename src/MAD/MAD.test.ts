@@ -58,7 +58,7 @@ describe('MAD', () => {
       const mad = new MAD(5);
       try {
         mad.getResult();
-        fail('Expected error');
+        throw new Error('Expected error');
       } catch (error) {
         expect(error).toBeInstanceOf(NotEnoughDataError);
       }
@@ -66,7 +66,7 @@ describe('MAD', () => {
       const fasterMAD = new FasterMAD(5);
       try {
         fasterMAD.getResult();
-        fail('Expected error');
+        throw new Error('Expected error');
       } catch (error) {
         expect(error).toBeInstanceOf(NotEnoughDataError);
       }

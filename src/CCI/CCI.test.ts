@@ -53,7 +53,7 @@ describe('CCI', () => {
       const cci = new CCI(5);
       try {
         cci.getResult();
-        fail('Expected error');
+        throw new Error('Expected error');
       } catch (error) {
         expect(error).toBeInstanceOf(NotEnoughDataError);
       }
@@ -61,7 +61,7 @@ describe('CCI', () => {
       const fasterCCI = new FasterCCI(5);
       try {
         fasterCCI.getResult();
-        fail('Expected error');
+        throw new Error('Expected error');
       } catch (error) {
         expect(error).toBeInstanceOf(NotEnoughDataError);
       }

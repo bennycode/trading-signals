@@ -17,9 +17,11 @@
     "removeComments": true,
     "resolveJsonModule": true,
     "rootDir": "src",
+    "skipLibCheck": true,
     "sourceMap": true,
     "strict": true,
-    "target": "es6"
+    "target": "es6",
+    "types": ["vitest/globals"]
   },
-  "exclude": ["dist", "node_modules"]
+  "exclude": ["dist", "node_modules", "vitest.config.ts"]
 }
