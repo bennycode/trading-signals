@@ -4,12 +4,9 @@
 .DS_Store
 .idea/
 .vscode/
-.yarnclean
 config.json
 coverage/
 dist/
 lerna-debug.log
 node_modules/
 npm-debug.log*
-package-lock.json
-yarn-error.log
