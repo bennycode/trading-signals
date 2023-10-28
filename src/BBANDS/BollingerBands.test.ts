@@ -55,7 +55,7 @@ describe('BollingerBands', () => {
 
       try {
         bb.getResult();
-        fail('Expected error');
+        throw new Error('Expected error');
       } catch (error) {
         expect(error).toBeInstanceOf(NotEnoughDataError);
       }
@@ -165,7 +165,7 @@ describe('FasterBollingerBands', () => {
 
       try {
         fasterBB.getResult();
-        fail('Expected error');
+        throw new Error('Expected error');
       } catch (error) {
         expect(error).toBeInstanceOf(NotEnoughDataError);
       }

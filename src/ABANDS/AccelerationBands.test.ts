@@ -90,7 +90,7 @@ describe('AccelerationBands', () => {
       const accBands = new AccelerationBands(20, 2);
       try {
         accBands.getResult();
-        fail('Expected error');
+        throw new Error('Expected error');
       } catch (error) {
         expect(error).toBeInstanceOf(NotEnoughDataError);
       }
@@ -98,7 +98,7 @@ describe('AccelerationBands', () => {
       const fasterAccBands = new FasterAccelerationBands(20, 2);
       try {
         fasterAccBands.getResult();
-        fail('Expected error');
+        throw new Error('Expected error');
       } catch (error) {
         expect(error).toBeInstanceOf(NotEnoughDataError);
       }

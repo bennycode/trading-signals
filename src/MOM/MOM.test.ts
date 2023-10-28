@@ -39,7 +39,7 @@ describe('MOM', () => {
 
       try {
         momentum.getResult();
-        fail('Expected error');
+        throw new Error('Expected error');
       } catch (error) {
         expect(error).toBeInstanceOf(NotEnoughDataError);
       }

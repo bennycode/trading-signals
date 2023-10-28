@@ -55,7 +55,7 @@ describe('OBV', () => {
       expect(obv.isStable).toBe(false);
       try {
         obv.getResult();
-        fail('Expected error');
+        throw new Error('Expected error');
       } catch (error) {
         expect(obv.isStable).toBe(false);
         expect(error).toBeInstanceOf(NotEnoughDataError);
