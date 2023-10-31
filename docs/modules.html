@@ -45,232 +45,352 @@
         <div class="tsd-page-title">
           <h2>trading-signals</h2>
         </div>
-        <div class="tsd-panel tsd-typography">
-          <a id="md:trading-signals" class="tsd-anchor"></a>
-          <h1><a href="#md:trading-signals">Trading Signals</a></h1>
-          <p>
-            <img src="https://img.shields.io/github/languages/top/bennycode/trading-signals" alt="Language Details" />
-            <img src="https://img.shields.io/codecov/c/github/bennycode/trading-signals/main" alt="Code Coverage" />
-            <img src="https://img.shields.io/npm/l/trading-signals.svg" alt="License" />
-            <img src="https://img.shields.io/npm/v/trading-signals.svg" alt="Package Version" />
-          </p>
-          <p>Technical indicators and overlays to run technical analysis with JavaScript / TypeScript.</p>
-          <a id="md:motivation" class="tsd-anchor"></a>
-          <h2><a href="#md:motivation">Motivation</a></h2>
-          <p>
-            The &quot;trading-signals&quot; library provides a TypeScript implementation for common technical indicators
-            with arbitrary-precision decimal arithmetic.
-          </p>
-          <p>
-            The main focus of this library is on the accuracy of calculations, but using the provided
-            <a href="#faster-implementations">faster implementations</a> you can also use it where performance is
-            important.
-          </p>
-          <p>
-            All indicators can be updated over time by streaming data (prices or candles) to the
-            <code>update</code> method. Some indicators also provide <code>static</code> batch methods for further
-            performance improvements when providing data up-front during a backtest or historical data import.
-          </p>
-          <a id="md:benefits-amp-features" class="tsd-anchor"></a>
-          <h2><a href="#md:benefits-amp-features">Benefits &amp; Features</a></h2>
-          <ul>
-            <li>
-              <strong>Accurate.</strong> Indicators with intervals will return a result only when the period is reached.
-            </li>
-            <li><strong>Convenient.</strong> Indicators with intervals will save their all-time highs and lows.</li>
-            <li>
-              <strong>Fast.</strong> If you need high throughput, you can use the included
-              <a href="#faster-implementations">faster implementations</a>.
-            </li>
-            <li>
-              <strong>Flexible.</strong> All advanced indicators support different smoothing overlays (WSMA, etc.).
-            </li>
-            <li><strong>Modern.</strong> Uses ECMAScript Modules (ESM) syntax.</li>
-            <li>
-              <strong>Precise.</strong> Better accuracy than calculating with primitive numbers thanks to
-              <a href="http://mikemcl.github.io/big.js/">big.js</a>.
-            </li>
-            <li><strong>Robust.</strong> Checked against common division by zero mistakes.</li>
-            <li><strong>Tested.</strong> Code coverage is 100%. No surprises when using it.</li>
-            <li><strong>Typed.</strong> Source code is 100% TypeScript. No need to install external typings.</li>
-            <li>
-              <strong>Verified.</strong> All results are verified with <a href="#alternatives">other libraries</a> to
-              guarantee correctness.
-            </li>
-            <li><strong>Versatile.</strong> Indicators can be updated up-front or by streaming prices.</li>
-          </ul>
-          <a id="md:technical-indicator-types" class="tsd-anchor"></a>
-          <h2><a href="#md:technical-indicator-types">Technical Indicator Types</a></h2>
-          <ul>
-            <li>Trend indicators: Measure the direction of a trend (uptrend, downtrend or sideways trend)</li>
-            <li>Volume indicators: Measure the strength of a trend (based on volume)</li>
-            <li>
-              Volatility indicators: Measure how much disagreement there is in the market based on price (statistical
-              measure of its dispersion)
-            </li>
-            <li>Momentum indicators: Measure the strength of a trend (based on price / speed of price movement)</li>
-          </ul>
-          <a id="md:supported-technical-indicators" class="tsd-anchor"></a>
-          <h2><a href="#md:supported-technical-indicators">Supported Technical Indicators</a></h2>
-          <ol>
-            <li>Acceleration Bands (ABANDS)</li>
-            <li>Accelerator Oscillator (AC)</li>
-            <li>Average Directional Index (ADX)</li>
-            <li>Average True Range (ATR)</li>
-            <li>Awesome Oscillator (AO)</li>
-            <li>Bollinger Bands (BBANDS)</li>
-            <li>Bollinger Bands Width (BBW)</li>
-            <li>Center of Gravity (CG)</li>
-            <li>Commodity Channel Index (CCI)</li>
-            <li>Directional Movement Index (DMI / DX)</li>
-            <li>Double Exponential Moving Average (DEMA)</li>
-            <li>Dual Moving Average (DMA)</li>
-            <li>Exponential Moving Average (EMA)</li>
-            <li>Mean Absolute Deviation (MAD)</li>
-            <li>Momentum (MOM / MTM)</li>
-            <li>Moving Average Convergence Divergence (MACD)</li>
-            <li>On-Balance Volume (OBV)</li>
-            <li>Rate-of-Change (ROC)</li>
-            <li>Relative Strength Index (RSI)</li>
-            <li>Simple Moving Average (SMA)</li>
-            <li>Stochastic Oscillator (STOCH)</li>
-            <li>Stochastic RSI (STOCHRSI)</li>
-            <li>True Range (TR)</li>
-            <li>Wilder&#39;s Smoothed Moving Average (WSMA / WMA / WWS / SMMA / MEMA)</li>
-          </ol>
-          <p>Utility Methods:</p>
-          <ol>
-            <li>Average / Mean</li>
-            <li>Standard Deviation</li>
-            <li>Rolling Standard Deviation</li>
-          </ol>
-          <a id="md:usage" class="tsd-anchor"></a>
-          <h2><a href="#md:usage">Usage</a></h2>
-          <pre><code class="language-typescript"><span class="hl-0">import</span><span class="hl-1"> {</span><span class="hl-2">Big</span><span class="hl-1">, </span><span class="hl-2">SMA</span><span class="hl-1">} </span><span class="hl-0">from</span><span class="hl-1"> </span><span class="hl-3">&#39;trading-signals&#39;</span><span class="hl-1">;</span><br/><br/><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-5">sma</span><span class="hl-1"> = </span><span class="hl-4">new</span><span class="hl-1"> </span><span class="hl-6">SMA</span><span class="hl-1">(</span><span class="hl-7">3</span><span class="hl-1">);</span><br/><br/><span class="hl-8">// You can add numbers individually:</span><br/><span class="hl-2">sma</span><span class="hl-1">.</span><span class="hl-6">update</span><span class="hl-1">(</span><span class="hl-7">40</span><span class="hl-1">);</span><br/><span class="hl-2">sma</span><span class="hl-1">.</span><span class="hl-6">update</span><span class="hl-1">(</span><span class="hl-7">30</span><span class="hl-1">);</span><br/><span class="hl-2">sma</span><span class="hl-1">.</span><span class="hl-6">update</span><span class="hl-1">(</span><span class="hl-7">20</span><span class="hl-1">);</span><br/><br/><span class="hl-8">// You can add multiple numbers at once:</span><br/><span class="hl-2">sma</span><span class="hl-1">.</span><span class="hl-6">updates</span><span class="hl-1">([</span><span class="hl-7">20</span><span class="hl-1">, </span><span class="hl-7">40</span><span class="hl-1">, </span><span class="hl-7">80</span><span class="hl-1">]);</span><br/><br/><span class="hl-8">// You can add strings:</span><br/><span class="hl-2">sma</span><span class="hl-1">.</span><span class="hl-6">update</span><span class="hl-1">(</span><span class="hl-3">&#39;10&#39;</span><span class="hl-1">);</span><br/><br/><span class="hl-8">// You can add arbitrary-precision decimals:</span><br/><span class="hl-2">sma</span><span class="hl-1">.</span><span class="hl-6">update</span><span class="hl-1">(</span><span class="hl-4">new</span><span class="hl-1"> </span><span class="hl-6">Big</span><span class="hl-1">(</span><span class="hl-7">30</span><span class="hl-1">));</span><br/><br/><span class="hl-8">// You can get the result in various formats:</span><br/><span class="hl-2">console</span><span class="hl-1">.</span><span class="hl-6">log</span><span class="hl-1">(</span><span class="hl-2">sma</span><span class="hl-1">.</span><span class="hl-6">getResult</span><span class="hl-1">().</span><span class="hl-6">toFixed</span><span class="hl-1">(</span><span class="hl-7">2</span><span class="hl-1">)); </span><span class="hl-8">// &quot;40.00&quot;</span><br/><span class="hl-2">console</span><span class="hl-1">.</span><span class="hl-6">log</span><span class="hl-1">(</span><span class="hl-2">sma</span><span class="hl-1">.</span><span class="hl-6">getResult</span><span class="hl-1">().</span><span class="hl-6">toFixed</span><span class="hl-1">(</span><span class="hl-7">4</span><span class="hl-1">)); </span><span class="hl-8">// &quot;40.0000&quot;</span>
-</code><button>Copy</button></pre>
-          <a id="md:when-to-use-update" class="tsd-anchor"></a>
-          <h3>
-            <a href="#md:when-to-use-update">When to use <code>update(...)</code>?</a>
-          </h3>
-          <p>
-            You have to call an indicator&#39;s <code>update</code> method to enter input data. The update method may or
-            may not return a result from the indicator depending on whether the minimum amount of input data has been
-            reached.
-          </p>
-          <a id="md:when-to-use-getresult" class="tsd-anchor"></a>
-          <h3>
-            <a href="#md:when-to-use-getresult">When to use <code>getResult()</code>?</a>
-          </h3>
-          <p>
-            You can call <code>getResult()</code> at any point in time, but it throws errors unless an indicator has
-            received the minimum amount of data. If you call <code>getResult()</code>, before an indicator has received
-            the required amount of input values, a <code>NotEnoughDataError</code> will be thrown.
-          </p>
-          <p><strong>Example:</strong></p>
-          <pre><code class="language-ts"><span class="hl-0">import</span><span class="hl-1"> {</span><span class="hl-2">SMA</span><span class="hl-1">} </span><span class="hl-0">from</span><span class="hl-1"> </span><span class="hl-3">&#39;trading-signals&#39;</span><span class="hl-1">;</span><br/><br/><span class="hl-8">// Our interval is 3, so we need 3 input values</span><br/><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-5">sma</span><span class="hl-1"> = </span><span class="hl-4">new</span><span class="hl-1"> </span><span class="hl-6">SMA</span><span class="hl-1">(</span><span class="hl-7">3</span><span class="hl-1">);</span><br/><br/><span class="hl-8">// We supply 2 input values</span><br/><span class="hl-2">sma</span><span class="hl-1">.</span><span class="hl-6">update</span><span class="hl-1">(</span><span class="hl-7">10</span><span class="hl-1">);</span><br/><span class="hl-2">sma</span><span class="hl-1">.</span><span class="hl-6">update</span><span class="hl-1">(</span><span class="hl-7">40</span><span class="hl-1">);</span><br/><br/><span class="hl-0">try</span><span class="hl-1"> {</span><br/><span class="hl-1">  </span><span class="hl-8">// We will get an error, because the minimum amount of inputs is 3</span><br/><span class="hl-1">  </span><span class="hl-2">sma</span><span class="hl-1">.</span><span class="hl-6">getResult</span><span class="hl-1">();</span><br/><span class="hl-1">} </span><span class="hl-0">catch</span><span class="hl-1"> (</span><span class="hl-2">error</span><span class="hl-1">) {</span><br/><span class="hl-1">  </span><span class="hl-2">console</span><span class="hl-1">.</span><span class="hl-6">log</span><span class="hl-1">(</span><span class="hl-2">error</span><span class="hl-1">.</span><span class="hl-2">constructor</span><span class="hl-1">.</span><span class="hl-2">name</span><span class="hl-1">); </span><span class="hl-8">// &quot;NotEnoughDataError&quot;</span><br/><span class="hl-1">}</span><br/><br/><span class="hl-8">// We will supply the 3rd input value</span><br/><span class="hl-2">sma</span><span class="hl-1">.</span><span class="hl-6">update</span><span class="hl-1">(</span><span class="hl-7">70</span><span class="hl-1">);</span><br/><br/><span class="hl-8">// Now, we will receive a proper result</span><br/><span class="hl-2">console</span><span class="hl-1">.</span><span class="hl-6">log</span><span class="hl-1">(</span><span class="hl-2">sma</span><span class="hl-1">.</span><span class="hl-6">getResult</span><span class="hl-1">().</span><span class="hl-6">valueOf</span><span class="hl-1">()); </span><span class="hl-8">// &quot;40&quot;</span>
-</code><button>Copy</button></pre>
-          <p>Most of the time, the minimum amount of data depends on the interval / time period used.</p>
-          <a id="md:performance" class="tsd-anchor"></a>
-          <h2><a href="#md:performance">Performance</a></h2>
-          <a id="md:arbitrary-precision-decimal-arithmetic" class="tsd-anchor"></a>
-          <h3><a href="#md:arbitrary-precision-decimal-arithmetic">Arbitrary-precision decimal arithmetic</a></h3>
-          <p>
-            JavaScript is very bad with numbers. When calculating <code>0.1 + 0.2</code> it shows you
-            <code>0.30000000000000004</code>, but the truth is <code>0.3</code>.
-          </p>
-          <p><img src="./js-arithmetic.png" alt="JavaScript arithmetic" /></p>
-          <p>
-            As specified by the ECMAScript standard, all arithmetic in JavaScript uses
-            <a href="https://en.wikipedia.org/wiki/Double-precision_floating-point_format"
-              >double-precision floating-point arithmetic</a
-            >, which is only accurate until certain extent. To increase the accuracy and avoid miscalculations, the
-            <a href="https://github.com/bennycode/trading-signals">trading-signals</a> library uses
-            <a href="http://mikemcl.github.io/big.js/">big.js</a> which offers arbitrary-precision decimal arithmetic.
-            However, this arbitrary accuracy comes with a downside: Calculations with it are not as performant as with
-            the primitive data type <code>number</code>.
-          </p>
-          <a id="md:faster-implementations" class="tsd-anchor"></a>
-          <h3><a href="#md:faster-implementations">Faster implementations</a></h3>
-          <p>
-            To get the best of both worlds (high accuracy &amp; high performance), you will find two implementations of
-            each indicator (e.g. <code>SMA</code> &amp; <code>FasterSMA</code>). The standard implementation uses
-            <a href="http://mikemcl.github.io/big.js/">big.js</a> and the <code>Faster</code>-prefixed version uses
-            common <code>number</code> types. Use the standard one when you need high accuracy and use the
-            <code>Faster</code>-one when you need high performance:
-          </p>
-          <pre><code class="language-ts"><span class="hl-0">import</span><span class="hl-1"> {</span><span class="hl-2">FasterSMA</span><span class="hl-1">} </span><span class="hl-0">from</span><span class="hl-1"> </span><span class="hl-3">&#39;./SMA/SMA&#39;</span><span class="hl-1">;</span><br/><br/><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-5">fasterSMA</span><span class="hl-1"> = </span><span class="hl-4">new</span><span class="hl-1"> </span><span class="hl-6">FasterSMA</span><span class="hl-1">(</span><span class="hl-7">5</span><span class="hl-1">);</span><br/><span class="hl-2">console</span><span class="hl-1">.</span><span class="hl-6">log</span><span class="hl-1">(</span><span class="hl-2">fasterSMA</span><span class="hl-1">.</span><span class="hl-6">updates</span><span class="hl-1">([</span><span class="hl-7">1</span><span class="hl-1">, </span><span class="hl-7">2</span><span class="hl-1">, </span><span class="hl-7">3</span><span class="hl-1">, </span><span class="hl-7">4</span><span class="hl-1">, </span><span class="hl-7">5</span><span class="hl-1">]));</span>
-</code><button>Copy</button></pre>
-          <pre><code class="language-ts"><span class="hl-0">import</span><span class="hl-1"> {</span><span class="hl-2">FasterStochasticRSI</span><span class="hl-1">, </span><span class="hl-2">FasterSMA</span><span class="hl-1">} </span><span class="hl-0">from</span><span class="hl-1"> </span><span class="hl-3">&#39;trading-signals&#39;</span><span class="hl-1">;</span><br/><br/><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-5">fasterStochRSI</span><span class="hl-1"> = </span><span class="hl-4">new</span><span class="hl-1"> </span><span class="hl-6">FasterStochasticRSI</span><span class="hl-1">(</span><span class="hl-7">3</span><span class="hl-1">, </span><span class="hl-2">FasterSMA</span><span class="hl-1">);</span><br/><span class="hl-2">fasterStochRSI</span><span class="hl-1">.</span><span class="hl-6">update</span><span class="hl-1">(</span><span class="hl-7">1</span><span class="hl-1">);</span><br/><span class="hl-2">fasterStochRSI</span><span class="hl-1">.</span><span class="hl-6">update</span><span class="hl-1">(</span><span class="hl-7">2</span><span class="hl-1">);</span><br/><span class="hl-2">fasterStochRSI</span><span class="hl-1">.</span><span class="hl-6">update</span><span class="hl-1">(</span><span class="hl-7">3</span><span class="hl-1">);</span><br/><span class="hl-2">fasterStochRSI</span><span class="hl-1">.</span><span class="hl-6">update</span><span class="hl-1">(</span><span class="hl-7">4</span><span class="hl-1">);</span><br/><span class="hl-2">fasterStochRSI</span><span class="hl-1">.</span><span class="hl-6">update</span><span class="hl-1">(</span><span class="hl-7">5</span><span class="hl-1">);</span><br/><span class="hl-2">fasterStochRSI</span><span class="hl-1">.</span><span class="hl-6">update</span><span class="hl-1">(</span><span class="hl-7">6</span><span class="hl-1">);</span><br/><br/><span class="hl-2">console</span><span class="hl-1">.</span><span class="hl-6">log</span><span class="hl-1">(</span><span class="hl-2">fasterStochRSI</span><span class="hl-1">.</span><span class="hl-6">getResult</span><span class="hl-1">());</span>
-</code><button>Copy</button></pre>
-          <a id="md:benchmarks" class="tsd-anchor"></a>
-          <h3><a href="#md:benchmarks">Benchmarks</a></h3>
-          <p>
-            You can run <code>yarn start:benchmark</code> to see the runtime performance of each technical indicator on
-            your machine. This will give you an understanding of which indicators can be calculated faster than others.
-          </p>
-          <a id="md:disclaimer" class="tsd-anchor"></a>
-          <h2><a href="#md:disclaimer">Disclaimer</a></h2>
-          <p>
-            The information and publications of
-            <a href="https://github.com/bennycode/trading-signals">trading-signals</a> do not constitute financial
-            advice, investment advice, trading advice or any other form of advice. All results from
-            <a href="https://github.com/bennycode/trading-signals">trading-signals</a> are intended for information
-            purposes only.
-          </p>
-          <p>
-            It is very important to do your own analysis before making any investment based on your own personal
-            circumstances. If you need financial advice or further advice in general, it is recommended that you
-            identify a relevantly qualified individual in your jurisdiction who can advise you accordingly.
-          </p>
-          <a id="md:alternatives" class="tsd-anchor"></a>
-          <h2><a href="#md:alternatives">Alternatives</a></h2>
-          <ul>
-            <li>
-              <a href="https://github.com/Cloud9Trader/TechnicalIndicators">Cloud9Trader Indicators (JavaScript)</a>
-            </li>
-            <li>
-              <a href="https://github.com/anandanand84/technicalindicators"
-                >Crypto Trading Hub Indicators (TypeScript)</a
-              >
-            </li>
-            <li>
-              <a href="https://docs.jesse.trade/docs/indicators/reference.html"
-                >Jesse Trading Bot Indicators (Python)</a
-              >
-            </li>
-            <li><a href="https://github.com/mgfx/libindicators">libindicators (C#)</a></li>
-            <li><a href="https://github.com/twopirllc/pandas-ta">Pandas TA (Python)</a></li>
-            <li><a href="https://github.com/greyblake/ta-rs">Technical Analysis for Rust (Rust)</a></li>
-            <li>
-              <a href="https://github.com/bukosabino/ta">Technical Analysis Library using Pandas and Numpy (Python)</a>
-            </li>
-            <li><a href="https://github.com/TulipCharts/tulipindicators">Tulip Indicators (ANSI C)</a></li>
-            <li><a href="https://github.com/ta4j/ta4j">ta4j (Java)</a></li>
-          </ul>
-          <a id="md:maintainers" class="tsd-anchor"></a>
-          <h2><a href="#md:maintainers">Maintainers</a></h2>
-          <p>
-            <a href="https://stackexchange.com/users/203782/benny-neugebauer?tab=accounts"
-              ><img
-                src="https://stackexchange.com/users/flair/203782.png?theme=default"
-                alt="Benny Neugebauer on Stack Exchange"
-            /></a>
-          </p>
-          <a id="md:⭐️-become-a-typescript-rockstar-⭐️" class="tsd-anchor"></a>
-          <h2><a href="#md:⭐️-become-a-typescript-rockstar-⭐️">⭐️ Become a TypeScript rockstar! ⭐️</a></h2>
-          <p>
-            This package was built by Benny Code. Checkout my
-            <a href="https://typescript.tv/"><strong>TypeScript course</strong></a> to become a coding rockstar!
-          </p>
-          <p>
-            <a href="https://typescript.tv/"
-              ><img src="https://raw.githubusercontent.com/bennycode/trading-signals/main/tstv.png"
-            /></a>
-          </p>
-          <a id="md:license" class="tsd-anchor"></a>
-          <h2><a href="#md:license">License</a></h2>
-          <p>This project is <a href="./LICENSE">MIT</a> licensed.</p>
-        </div>
+        <section class="tsd-panel-group tsd-index-group">
+          <section class="tsd-panel tsd-index-panel">
+            <h3 class="tsd-index-heading uppercase">Index</h3>
+            <section class="tsd-index-section">
+              <h3 class="tsd-index-heading">Classes</h3>
+              <div class="tsd-index-list">
+                <a href="classes/AC.html" class="tsd-index-link"
+                  ><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-128"></use></svg><span>AC</span></a
+                >
+                <a href="classes/ADX.html" class="tsd-index-link"
+                  ><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-128"></use></svg><span>ADX</span></a
+                >
+                <a href="classes/AO.html" class="tsd-index-link"
+                  ><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-128"></use></svg><span>AO</span></a
+                >
+                <a href="classes/ATR.html" class="tsd-index-link"
+                  ><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-128"></use></svg><span>ATR</span></a
+                >
+                <a href="classes/AccelerationBands.html" class="tsd-index-link"
+                  ><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-128"></use></svg
+                  ><span>Acceleration<wbr />Bands</span></a
+                >
+                <a href="classes/BigIndicatorSeries.html" class="tsd-index-link"
+                  ><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-128"></use></svg
+                  ><span>Big<wbr />Indicator<wbr />Series</span></a
+                >
+                <a href="classes/BollingerBands.html" class="tsd-index-link"
+                  ><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-128"></use></svg
+                  ><span>Bollinger<wbr />Bands</span></a
+                >
+                <a href="classes/BollingerBandsWidth.html" class="tsd-index-link"
+                  ><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-128"></use></svg
+                  ><span>Bollinger<wbr />Bands<wbr />Width</span></a
+                >
+                <a href="classes/CCI.html" class="tsd-index-link"
+                  ><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-128"></use></svg><span>CCI</span></a
+                >
+                <a href="classes/CG.html" class="tsd-index-link"
+                  ><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-128"></use></svg><span>CG</span></a
+                >
+                <a href="classes/DEMA.html" class="tsd-index-link"
+                  ><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-128"></use></svg><span>DEMA</span></a
+                >
+                <a href="classes/DMA.html" class="tsd-index-link"
+                  ><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-128"></use></svg><span>DMA</span></a
+                >
+                <a href="classes/DX.html" class="tsd-index-link"
+                  ><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-128"></use></svg><span>DX</span></a
+                >
+                <a href="classes/EMA.html" class="tsd-index-link"
+                  ><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-128"></use></svg><span>EMA</span></a
+                >
+                <a href="classes/FasterAC.html" class="tsd-index-link"
+                  ><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-128"></use></svg
+                  ><span>FasterAC</span></a
+                >
+                <a href="classes/FasterADX.html" class="tsd-index-link"
+                  ><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-128"></use></svg
+                  ><span>FasterADX</span></a
+                >
+                <a href="classes/FasterAO.html" class="tsd-index-link"
+                  ><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-128"></use></svg
+                  ><span>FasterAO</span></a
+                >
+                <a href="classes/FasterATR.html" class="tsd-index-link"
+                  ><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-128"></use></svg
+                  ><span>FasterATR</span></a
+                >
+                <a href="classes/FasterAccelerationBands.html" class="tsd-index-link"
+                  ><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-128"></use></svg
+                  ><span>Faster<wbr />Acceleration<wbr />Bands</span></a
+                >
+                <a href="classes/FasterBollingerBands.html" class="tsd-index-link"
+                  ><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-128"></use></svg
+                  ><span>Faster<wbr />Bollinger<wbr />Bands</span></a
+                >
+                <a href="classes/FasterBollingerBandsWidth.html" class="tsd-index-link"
+                  ><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-128"></use></svg
+                  ><span>Faster<wbr />Bollinger<wbr />Bands<wbr />Width</span></a
+                >
+                <a href="classes/FasterCCI.html" class="tsd-index-link"
+                  ><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-128"></use></svg
+                  ><span>FasterCCI</span></a
+                >
+                <a href="classes/FasterCG.html" class="tsd-index-link"
+                  ><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-128"></use></svg
+                  ><span>FasterCG</span></a
+                >
+                <a href="classes/FasterDEMA.html" class="tsd-index-link"
+                  ><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-128"></use></svg
+                  ><span>FasterDEMA</span></a
+                >
+                <a href="classes/FasterDMA.html" class="tsd-index-link"
+                  ><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-128"></use></svg
+                  ><span>FasterDMA</span></a
+                >
+                <a href="classes/FasterDX.html" class="tsd-index-link"
+                  ><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-128"></use></svg
+                  ><span>FasterDX</span></a
+                >
+                <a href="classes/FasterEMA.html" class="tsd-index-link"
+                  ><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-128"></use></svg
+                  ><span>FasterEMA</span></a
+                >
+                <a href="classes/FasterMACD.html" class="tsd-index-link"
+                  ><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-128"></use></svg
+                  ><span>FasterMACD</span></a
+                >
+                <a href="classes/FasterMAD.html" class="tsd-index-link"
+                  ><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-128"></use></svg
+                  ><span>FasterMAD</span></a
+                >
+                <a href="classes/FasterMOM.html" class="tsd-index-link"
+                  ><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-128"></use></svg
+                  ><span>FasterMOM</span></a
+                >
+                <a href="classes/FasterMovingAverage.html" class="tsd-index-link"
+                  ><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-128"></use></svg
+                  ><span>Faster<wbr />Moving<wbr />Average</span></a
+                >
+                <a href="classes/FasterOBV.html" class="tsd-index-link"
+                  ><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-128"></use></svg
+                  ><span>FasterOBV</span></a
+                >
+                <a href="classes/FasterPeriod.html" class="tsd-index-link"
+                  ><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-128"></use></svg
+                  ><span>Faster<wbr />Period</span></a
+                >
+                <a href="classes/FasterROC.html" class="tsd-index-link"
+                  ><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-128"></use></svg
+                  ><span>FasterROC</span></a
+                >
+                <a href="classes/FasterRSI.html" class="tsd-index-link"
+                  ><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-128"></use></svg
+                  ><span>FasterRSI</span></a
+                >
+                <a href="classes/FasterSMA.html" class="tsd-index-link"
+                  ><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-128"></use></svg
+                  ><span>FasterSMA</span></a
+                >
+                <a href="classes/FasterStochasticOscillator.html" class="tsd-index-link"
+                  ><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-128"></use></svg
+                  ><span>Faster<wbr />Stochastic<wbr />Oscillator</span></a
+                >
+                <a href="classes/FasterStochasticRSI.html" class="tsd-index-link"
+                  ><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-128"></use></svg
+                  ><span>Faster<wbr />StochasticRSI</span></a
+                >
+                <a href="classes/FasterTR.html" class="tsd-index-link"
+                  ><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-128"></use></svg
+                  ><span>FasterTR</span></a
+                >
+                <a href="classes/FasterWSMA.html" class="tsd-index-link"
+                  ><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-128"></use></svg
+                  ><span>FasterWSMA</span></a
+                >
+                <a href="classes/MACD.html" class="tsd-index-link"
+                  ><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-128"></use></svg><span>MACD</span></a
+                >
+                <a href="classes/MAD.html" class="tsd-index-link"
+                  ><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-128"></use></svg><span>MAD</span></a
+                >
+                <a href="classes/MOM.html" class="tsd-index-link"
+                  ><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-128"></use></svg><span>MOM</span></a
+                >
+                <a href="classes/MovingAverage.html" class="tsd-index-link"
+                  ><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-128"></use></svg
+                  ><span>Moving<wbr />Average</span></a
+                >
+                <a href="classes/NotEnoughDataError.html" class="tsd-index-link"
+                  ><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-128"></use></svg
+                  ><span>Not<wbr />Enough<wbr />Data<wbr />Error</span></a
+                >
+                <a href="classes/NumberIndicatorSeries.html" class="tsd-index-link"
+                  ><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-128"></use></svg
+                  ><span>Number<wbr />Indicator<wbr />Series</span></a
+                >
+                <a href="classes/OBV.html" class="tsd-index-link"
+                  ><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-128"></use></svg><span>OBV</span></a
+                >
+                <a href="classes/Period.html" class="tsd-index-link"
+                  ><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-128"></use></svg
+                  ><span>Period</span></a
+                >
+                <a href="classes/ROC.html" class="tsd-index-link"
+                  ><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-128"></use></svg><span>ROC</span></a
+                >
+                <a href="classes/RSI.html" class="tsd-index-link"
+                  ><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-128"></use></svg><span>RSI</span></a
+                >
+                <a href="classes/SMA.html" class="tsd-index-link"
+                  ><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-128"></use></svg><span>SMA</span></a
+                >
+                <a href="classes/StochasticOscillator.html" class="tsd-index-link"
+                  ><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-128"></use></svg
+                  ><span>Stochastic<wbr />Oscillator</span></a
+                >
+                <a href="classes/StochasticRSI.html" class="tsd-index-link"
+                  ><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-128"></use></svg
+                  ><span>StochasticRSI</span></a
+                >
+                <a href="classes/TR.html" class="tsd-index-link"
+                  ><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-128"></use></svg><span>TR</span></a
+                >
+                <a href="classes/WSMA.html" class="tsd-index-link"
+                  ><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-128"></use></svg><span>WSMA</span></a
+                >
+              </div>
+            </section>
+            <section class="tsd-index-section">
+              <h3 class="tsd-index-heading">Interfaces</h3>
+              <div class="tsd-index-list">
+                <a href="interfaces/BandsResult.html" class="tsd-index-link"
+                  ><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-256"></use></svg
+                  ><span>Bands<wbr />Result</span></a
+                >
+                <a href="interfaces/FasterBandsResult.html" class="tsd-index-link"
+                  ><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-256"></use></svg
+                  ><span>Faster<wbr />Bands<wbr />Result</span></a
+                >
+                <a href="interfaces/FasterDMAResult.html" class="tsd-index-link"
+                  ><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-256"></use></svg
+                  ><span>FasterDMAResult</span></a
+                >
+                <a href="interfaces/FasterPeriodResult.html" class="tsd-index-link"
+                  ><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-256"></use></svg
+                  ><span>Faster<wbr />Period<wbr />Result</span></a
+                >
+                <a href="interfaces/FasterStochasticResult.html" class="tsd-index-link"
+                  ><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-256"></use></svg
+                  ><span>Faster<wbr />Stochastic<wbr />Result</span></a
+                >
+                <a href="interfaces/Indicator.html" class="tsd-index-link"
+                  ><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-256"></use></svg
+                  ><span>Indicator</span></a
+                >
+                <a href="interfaces/IndicatorSeries.html" class="tsd-index-link"
+                  ><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-256"></use></svg
+                  ><span>Indicator<wbr />Series</span></a
+                >
+                <a href="interfaces/PeriodResult.html" class="tsd-index-link"
+                  ><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-256"></use></svg
+                  ><span>Period<wbr />Result</span></a
+                >
+                <a href="interfaces/StochasticResult.html" class="tsd-index-link"
+                  ><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-256"></use></svg
+                  ><span>Stochastic<wbr />Result</span></a
+                >
+              </div>
+            </section>
+            <section class="tsd-index-section">
+              <h3 class="tsd-index-heading">Type Aliases</h3>
+              <div class="tsd-index-list">
+                <a href="types/DMAResult.html" class="tsd-index-link"
+                  ><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-2097152"></use></svg
+                  ><span>DMAResult</span></a
+                >
+                <a href="types/FasterMACDResult.html" class="tsd-index-link"
+                  ><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-2097152"></use></svg
+                  ><span>FasterMACDResult</span></a
+                >
+                <a href="types/FasterMovingAverageTypes.html" class="tsd-index-link"
+                  ><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-2097152"></use></svg
+                  ><span>Faster<wbr />Moving<wbr />Average<wbr />Types</span></a
+                >
+                <a href="types/HighLow.html" class="tsd-index-link"
+                  ><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-2097152"></use></svg
+                  ><span>High<wbr />Low</span></a
+                >
+                <a href="types/HighLowClose.html" class="tsd-index-link"
+                  ><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-2097152"></use></svg
+                  ><span>High<wbr />Low<wbr />Close</span></a
+                >
+                <a href="types/HighLowCloseNumber.html" class="tsd-index-link"
+                  ><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-2097152"></use></svg
+                  ><span>High<wbr />Low<wbr />Close<wbr />Number</span></a
+                >
+                <a href="types/HighLowNumber.html" class="tsd-index-link"
+                  ><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-2097152"></use></svg
+                  ><span>High<wbr />Low<wbr />Number</span></a
+                >
+                <a href="types/MACDConfig.html" class="tsd-index-link"
+                  ><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-2097152"></use></svg
+                  ><span>MACDConfig</span></a
+                >
+                <a href="types/MACDResult.html" class="tsd-index-link"
+                  ><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-2097152"></use></svg
+                  ><span>MACDResult</span></a
+                >
+                <a href="types/MovingAverageTypes.html" class="tsd-index-link"
+                  ><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-2097152"></use></svg
+                  ><span>Moving<wbr />Average<wbr />Types</span></a
+                >
+                <a href="types/OpenHighLowClose.html" class="tsd-index-link"
+                  ><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-2097152"></use></svg
+                  ><span>Open<wbr />High<wbr />Low<wbr />Close</span></a
+                >
+                <a href="types/OpenHighLowCloseNumber.html" class="tsd-index-link"
+                  ><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-2097152"></use></svg
+                  ><span>Open<wbr />High<wbr />Low<wbr />Close<wbr />Number</span></a
+                >
+                <a href="types/OpenHighLowCloseVolume.html" class="tsd-index-link"
+                  ><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-2097152"></use></svg
+                  ><span>Open<wbr />High<wbr />Low<wbr />Close<wbr />Volume</span></a
+                >
+                <a href="types/OpenHighLowCloseVolumeNumber.html" class="tsd-index-link"
+                  ><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-2097152"></use></svg
+                  ><span>Open<wbr />High<wbr />Low<wbr />Close<wbr />Volume<wbr />Number</span></a
+                >
+              </div>
+            </section>
+            <section class="tsd-index-section">
+              <h3 class="tsd-index-heading">Functions</h3>
+              <div class="tsd-index-list">
+                <a href="functions/getAverage.html" class="tsd-index-link"
+                  ><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-64"></use></svg
+                  ><span>get<wbr />Average</span></a
+                >
+                <a href="functions/getFasterAverage.html" class="tsd-index-link"
+                  ><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-64"></use></svg
+                  ><span>get<wbr />Faster<wbr />Average</span></a
+                >
+                <a href="functions/getFasterStandardDeviation.html" class="tsd-index-link"
+                  ><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-64"></use></svg
+                  ><span>get<wbr />Faster<wbr />Standard<wbr />Deviation</span></a
+                >
+                <a href="functions/getFixedArray.html" class="tsd-index-link"
+                  ><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-64"></use></svg
+                  ><span>get<wbr />Fixed<wbr />Array</span></a
+                >
+                <a href="functions/getMaximum.html" class="tsd-index-link"
+                  ><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-64"></use></svg
+                  ><span>get<wbr />Maximum</span></a
+                >
+                <a href="functions/getMinimum.html" class="tsd-index-link"
+                  ><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-64"></use></svg
+                  ><span>get<wbr />Minimum</span></a
+                >
+                <a href="functions/getStandardDeviation.html" class="tsd-index-link"
+                  ><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-64"></use></svg
+                  ><span>get<wbr />Standard<wbr />Deviation</span></a
+                >
+              </div>
+            </section>
+          </section>
+        </section>
       </div>
       <div class="col-sidebar">
         <div class="page-menu">
@@ -326,99 +446,6 @@
               </div>
             </details>
           </div>
-          <details open class="tsd-index-accordion tsd-page-navigation">
-            <summary class="tsd-accordion-summary">
-              <h3>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><use href="#icon-chevronDown"></use></svg>On
-                This Page
-              </h3>
-            </summary>
-            <div class="tsd-accordion-details">
-              <ul>
-                <li>
-                  <ul>
-                    <li>
-                      <a href="#md:trading-signals"
-                        ><span>Trading <wbr />Signals</span></a
-                      >
-                    </li>
-                    <li>
-                      <ul>
-                        <li>
-                          <a href="#md:motivation"><span>Motivation</span></a>
-                        </li>
-                        <li>
-                          <a href="#md:benefits-amp-features"
-                            ><span>Benefits &amp; <wbr />Features</span></a
-                          >
-                        </li>
-                        <li>
-                          <a href="#md:technical-indicator-types"
-                            ><span>Technical <wbr />Indicator <wbr />Types</span></a
-                          >
-                        </li>
-                        <li>
-                          <a href="#md:supported-technical-indicators"
-                            ><span>Supported <wbr />Technical <wbr />Indicators</span></a
-                          >
-                        </li>
-                        <li>
-                          <a href="#md:usage"><span>Usage</span></a>
-                        </li>
-                        <li>
-                          <ul>
-                            <li>
-                              <a href="#md:when-to-use-update"><span>When to use update(...)?</span></a>
-                            </li>
-                            <li>
-                              <a href="#md:when-to-use-getresult"
-                                ><span>When to use get<wbr />Result()?</span></a
-                              >
-                            </li>
-                          </ul>
-                        </li>
-                        <li>
-                          <a href="#md:performance"><span>Performance</span></a>
-                        </li>
-                        <li>
-                          <ul>
-                            <li>
-                              <a href="#md:arbitrary-precision-decimal-arithmetic"
-                                ><span>Arbitrary-<wbr />precision decimal arithmetic</span></a
-                              >
-                            </li>
-                            <li>
-                              <a href="#md:faster-implementations"><span>Faster implementations</span></a>
-                            </li>
-                            <li>
-                              <a href="#md:benchmarks"><span>Benchmarks</span></a>
-                            </li>
-                          </ul>
-                        </li>
-                        <li>
-                          <a href="#md:disclaimer"><span>Disclaimer</span></a>
-                        </li>
-                        <li>
-                          <a href="#md:alternatives"><span>Alternatives</span></a>
-                        </li>
-                        <li>
-                          <a href="#md:maintainers"><span>Maintainers</span></a>
-                        </li>
-                        <li>
-                          <a href="#md:⭐️-become-a-typescript-rockstar-⭐️"
-                            ><span>⭐️ <wbr />Become a <wbr />Type<wbr />Script rockstar! ⭐️</span></a
-                          >
-                        </li>
-                        <li>
-                          <a href="#md:license"><span>License</span></a>
-                        </li>
-                      </ul>
-                    </li>
-                  </ul>
-                </li>
-              </ul>
-            </div>
-          </details>
         </div>
         <div class="site-menu">
           <nav class="tsd-navigation">

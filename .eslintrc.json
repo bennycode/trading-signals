@@ -1,4 +1,4 @@
 {
   "extends": "@tstv/eslint-config",
-  "ignorePatterns": ["vitest.config.ts"]
+  "ignorePatterns": ["vitest.config.ts", "docs"]
 }
