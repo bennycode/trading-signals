@@ -188,31 +188,15 @@ It is very important to do your own analysis before making any investment based 
 
 [![Benny Neugebauer on Stack Exchange][stack_exchange_bennycode_badge]][stack_exchange_bennycode_url]
 
-- [Follow Benny on Twitter](https://twitter.com/bennycode) or [on YouTube](https://www.youtube.com/typescripttv)
-
-## Stargazers
-
-[![Stargazers](https://reporoster.com/stars/bennycode/trading-signals)](https://github.com/bennycode/trading-signals/stargazers)
-
-## Contributing
-
-Contributions, issues and feature requests are welcome!
-
-Feel free to check the [issues page](https://github.com/bennycode/trading-signals/issues).
-
 ## License
 
 This project is [MIT](./LICENSE) licensed.
 
-## ⭐️ Show your support ⭐️
+## ⭐️ Become a TypeScript rockstar! ⭐️
 
-[Please leave a star](https://github.com/bennycode/trading-signals/stargazers) if you find this project useful.
+This package was built by Benny Code. Checkout my [TypeScript course](https://typescript.tv/) to become a coding rockstar!
 
-If you like this project, you might also like these related projects:
-
-- [**coinbase-pro-node**](https://github.com/bennycode/coinbase-pro-node), Actively maintained Coinbase Pro API written in TypeScript.
-- [**ig-trading-api**](https://github.com/bennycode/ig-trading-api), IG CFD Trading API written in TypeScript.
-- [**binance-api-node**](https://github.com/Ashlar/binance-api-node), Heavily tested and Promise-based Binance API with TypeScript definitions.
+[<img src="https://raw.githubusercontent.com/bennycode/trading-signals/main/tstv.png">](https://typescript.tv/)
 
 [1]: http://mikemcl.github.io/big.js/
 [2]: #faster-implementations
