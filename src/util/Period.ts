@@ -1,8 +1,8 @@
-import {Big, BigSource} from '..';
-import {Indicator} from '../Indicator';
-import {getFixedArray} from './getFixedArray';
-import {getMinimum} from './getMinimum';
-import {getMaximum} from './getMaximum';
+import {Big, BigSource} from '../index.js';
+import {Indicator} from '../Indicator.js';
+import {getFixedArray} from './getFixedArray.js';
+import {getMinimum} from './getMinimum.js';
+import {getMaximum} from './getMaximum.js';
 
 export interface PeriodResult {
   highest: Big;

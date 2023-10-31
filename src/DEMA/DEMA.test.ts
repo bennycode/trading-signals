@@ -1,6 +1,6 @@
-import {Big} from '..';
-import {DEMA, FasterDEMA} from './DEMA';
-import {NotEnoughDataError} from '../error';
+import {Big} from '../index.js';
+import {DEMA, FasterDEMA} from './DEMA.js';
+import {NotEnoughDataError} from '../error/index.js';
 
 const dema10results = [
   81, 62.157024793388416, 65.1412471825695, 49.61361928829999, 42.570707415663364, 34.597495090487996,

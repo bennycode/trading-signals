@@ -1,6 +1,6 @@
-import {Big} from '..';
-import {FasterROC, ROC} from './ROC';
-import {NotEnoughDataError} from '../error';
+import {Big} from '../index.js';
+import {FasterROC, ROC} from './ROC.js';
+import {NotEnoughDataError} from '../error/index.js';
 
 describe('ROC', () => {
   describe('getResult', () => {

@@ -1,6 +1,6 @@
-import {Big} from '..';
-import {BigIndicatorSeries, NumberIndicatorSeries} from '../Indicator';
-import {getMaximum, HighLowClose, HighLowCloseNumber} from '../util';
+import {Big} from '../index.js';
+import {BigIndicatorSeries, NumberIndicatorSeries} from '../Indicator.js';
+import {getMaximum, HighLowClose, HighLowCloseNumber} from '../util/index.js';
 
 /**
  * True Range (TR)

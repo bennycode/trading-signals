@@ -1,10 +1,10 @@
-import {BigIndicatorSeries, NumberIndicatorSeries} from '../Indicator';
-import {HighLowClose, HighLowCloseNumber} from '../util';
-import {Big, BigSource} from '..';
-import {FasterMovingAverage, MovingAverage} from '../MA/MovingAverage';
-import {FasterMovingAverageTypes, MovingAverageTypes} from '../MA/MovingAverageTypes';
-import {FasterWSMA, WSMA} from '../WSMA/WSMA';
-import {ATR, FasterATR} from '../ATR/ATR';
+import {BigIndicatorSeries, NumberIndicatorSeries} from '../Indicator.js';
+import {HighLowClose, HighLowCloseNumber} from '../util/index.js';
+import {Big, BigSource} from '../index.js';
+import {FasterMovingAverage, MovingAverage} from '../MA/MovingAverage.js';
+import {FasterMovingAverageTypes, MovingAverageTypes} from '../MA/MovingAverageTypes.js';
+import {FasterWSMA, WSMA} from '../WSMA/WSMA.js';
+import {ATR, FasterATR} from '../ATR/ATR.js';
 
 /**
  * Directional Movement Index (DMI / DX)

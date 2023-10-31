@@ -18,6 +18,7 @@ All indicators can be updated over time by streaming data (prices or candles) to
 - **Convenient.** Indicators with intervals will save their all-time highs and lows.
 - **Fast.** If you need high throughput, you can use the included [faster implementations][2].
 - **Flexible.** All advanced indicators support different smoothing overlays (WSMA, etc.).
+- **Modern.** Uses ECMAScript Modules (ESM) syntax.
 - **Precise.** Better accuracy than calculating with primitive numbers thanks to [big.js][1].
 - **Robust.** Checked against common division by zero mistakes.
 - **Tested.** Code coverage is 100%. No surprises when using it.
@@ -188,13 +189,9 @@ It is very important to do your own analysis before making any investment based 
 
 [![Benny Neugebauer on Stack Exchange][stack_exchange_bennycode_badge]][stack_exchange_bennycode_url]
 
-## License
-
-This project is [MIT](./LICENSE) licensed.
-
 ## ⭐️ Become a TypeScript rockstar! ⭐️
 
-This package was built by Benny Code. Checkout my [TypeScript course](https://typescript.tv/) to become a coding rockstar!
+This package was built by Benny Code. Checkout my [**TypeScript course**](https://typescript.tv/) to become a coding rockstar!
 
 [<img src="https://raw.githubusercontent.com/bennycode/trading-signals/main/tstv.png">](https://typescript.tv/)
 
@@ -202,3 +199,7 @@ This package was built by Benny Code. Checkout my [TypeScript course](https://ty
 [2]: #faster-implementations
 [stack_exchange_bennycode_badge]: https://stackexchange.com/users/flair/203782.png?theme=default
 [stack_exchange_bennycode_url]: https://stackexchange.com/users/203782/benny-neugebauer?tab=accounts
+
+## License
+
+This project is [MIT](./LICENSE) licensed.

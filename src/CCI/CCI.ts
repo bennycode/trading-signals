@@ -1,8 +1,8 @@
-import {BigIndicatorSeries, NumberIndicatorSeries} from '../Indicator';
-import {Big, BigSource} from '..';
-import {HighLowClose, HighLowCloseNumber} from '../util';
-import {FasterSMA, SMA} from '../SMA/SMA';
-import {FasterMAD, MAD} from '../MAD/MAD';
+import {BigIndicatorSeries, NumberIndicatorSeries} from '../Indicator.js';
+import {Big, BigSource} from '../index.js';
+import {HighLowClose, HighLowCloseNumber} from '../util/index.js';
+import {FasterSMA, SMA} from '../SMA/SMA.js';
+import {FasterMAD, MAD} from '../MAD/MAD.js';
 
 /**
  * Commodity Channel Index (CCI)
@@ -22,7 +22,6 @@ import {FasterMAD, MAD} from '../MAD/MAD';
  */
 export class CCI extends BigIndicatorSeries<HighLowClose> {
   public readonly prices: BigSource[] = [];
-  protected result?: Big;
   private readonly sma: SMA;
   private readonly typicalPrices: Big[] = [];
 
@@ -55,7 +54,6 @@ export class CCI extends BigIndicatorSeries<HighLowClose> {
 
 export class FasterCCI extends NumberIndicatorSeries<HighLowCloseNumber> {
   public readonly prices: number[] = [];
-  protected result?: number;
   private readonly sma: FasterSMA;
   private readonly typicalPrices: number[] = [];
 

@@ -1,9 +1,9 @@
-import {Big, BigSource} from '..';
-import {SMA} from '../SMA/SMA';
-import {NotEnoughDataError} from '../error';
-import {BandsResult, FasterBandsResult} from '../util/BandsResult';
-import {Indicator} from '../Indicator';
-import {getFasterAverage, getFasterStandardDeviation, getStandardDeviation} from '../util';
+import {Big, BigSource} from '../index.js';
+import {SMA} from '../SMA/SMA.js';
+import {NotEnoughDataError} from '../error/index.js';
+import {BandsResult, FasterBandsResult} from '../util/BandsResult.js';
+import {Indicator} from '../Indicator.js';
+import {getFasterAverage, getFasterStandardDeviation, getStandardDeviation} from '../util/index.js';
 
 /**
  * Bollinger Bands (BBANDS)

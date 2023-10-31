@@ -1,4 +1,4 @@
-import {EMA, FasterEMA, NotEnoughDataError} from '..';
+import {EMA, FasterEMA, NotEnoughDataError} from '../index.js';
 
 describe('EMA', () => {
   // Test data verified with:

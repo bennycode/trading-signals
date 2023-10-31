@@ -1,4 +1,4 @@
-import {FasterStochasticRSI, StochasticRSI} from './StochasticRSI';
+import {FasterStochasticRSI, StochasticRSI} from './StochasticRSI.js';
 
 describe('StochasticRSI', () => {
   describe('getResult', () => {

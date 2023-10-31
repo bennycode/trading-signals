@@ -1,7 +1,7 @@
-import {Big, BigSource} from '..';
-import {MovingAverage} from '../MA/MovingAverage';
-import {FasterSMA, SMA} from '../SMA/SMA';
-import {NumberIndicatorSeries} from '../Indicator';
+import {Big, BigSource} from '../index.js';
+import {MovingAverage} from '../MA/MovingAverage.js';
+import {FasterSMA, SMA} from '../SMA/SMA.js';
+import {NumberIndicatorSeries} from '../Indicator.js';
 
 /**
  * Wilder's Smoothed Moving Average (WSMA)

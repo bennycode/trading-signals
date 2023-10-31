@@ -1,6 +1,6 @@
-import {EMA, FasterEMA} from '../EMA/EMA';
-import {Big, BigSource, DEMA, FasterDEMA, NotEnoughDataError} from '..';
-import {Indicator} from '../Indicator';
+import {EMA, FasterEMA} from '../EMA/EMA.js';
+import {Big, BigSource, DEMA, FasterDEMA, NotEnoughDataError} from '../index.js';
+import {Indicator} from '../Indicator.js';
 
 export type MACDConfig = {
   indicator: typeof EMA | typeof DEMA;

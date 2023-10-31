@@ -1,5 +1,5 @@
-import {Big, BigSource} from '..';
-import {BigIndicatorSeries, NumberIndicatorSeries} from '../Indicator';
+import {Big, BigSource} from '../index.js';
+import {BigIndicatorSeries, NumberIndicatorSeries} from '../Indicator.js';
 
 /**
  * Moving Average (MA)

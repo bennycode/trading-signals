@@ -1,9 +1,9 @@
-import {BigIndicatorSeries, NumberIndicatorSeries} from '../Indicator';
-import {AO, FasterAO} from '../AO/AO';
-import {FasterSMA, SMA} from '../SMA/SMA';
-import {FasterMOM, MOM} from '../MOM/MOM';
-import {HighLow, HighLowNumber} from '../util';
-import {Big} from '..';
+import {BigIndicatorSeries, NumberIndicatorSeries} from '../Indicator.js';
+import {AO, FasterAO} from '../AO/AO.js';
+import {FasterSMA, SMA} from '../SMA/SMA.js';
+import {FasterMOM, MOM} from '../MOM/MOM.js';
+import {HighLow, HighLowNumber} from '../util/index.js';
+import {Big} from '../index.js';
 
 /**
  * Accelerator Oscillator (AC)

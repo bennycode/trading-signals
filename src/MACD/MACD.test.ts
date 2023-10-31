@@ -1,5 +1,5 @@
-import {FasterMACD, MACD} from './MACD';
-import {Big, DEMA, EMA, FasterEMA, NotEnoughDataError} from '..';
+import {FasterMACD, MACD} from './MACD.js';
+import {Big, DEMA, EMA, FasterEMA, NotEnoughDataError} from '../index.js';
 
 describe('MACD', () => {
   describe('getResult', () => {

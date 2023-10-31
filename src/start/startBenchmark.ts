@@ -1,5 +1,5 @@
 import Benchmark, {Event} from 'benchmark';
-import candles from '../test/fixtures/candles/100-candles.json';
+import candles from '../test/fixtures/candles/100-candles.json' assert {type: 'json'};
 import {
   AC,
   AccelerationBands,
@@ -56,7 +56,7 @@ import {
   StochasticRSI,
   TR,
   WSMA,
-} from '..';
+} from '../index.js';
 
 const shortInterval = 10;
 const interval = 20;

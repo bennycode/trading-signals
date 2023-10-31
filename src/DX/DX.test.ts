@@ -1,4 +1,4 @@
-import {DX, FasterDX} from './DX';
+import {DX, FasterDX} from './DX.js';
 
 describe('DX', () => {
   describe('getResult', () => {

@@ -1,5 +1,5 @@
-import {CCI, FasterCCI} from './CCI';
-import {NotEnoughDataError} from '../error';
+import {CCI, FasterCCI} from './CCI.js';
+import {NotEnoughDataError} from '../error/index.js';
 
 describe('CCI', () => {
   // Test data verified with:

@@ -1,6 +1,6 @@
-import {Big, BigSource} from '..';
-import {EMA, FasterEMA} from '../EMA/EMA';
-import {BigIndicatorSeries, NumberIndicatorSeries} from '../Indicator';
+import {Big, BigSource} from '../index.js';
+import {EMA, FasterEMA} from '../EMA/EMA.js';
+import {BigIndicatorSeries, NumberIndicatorSeries} from '../Indicator.js';
 
 /**
  * Double Exponential Moving Average (DEMA)

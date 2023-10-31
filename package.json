@@ -91,5 +91,6 @@
     "test:dev": "vitest run --passWithNoTests",
     "test:types": "npm run lint:types"
   },
+  "type": "module",
   "version": "3.7.0"
 }

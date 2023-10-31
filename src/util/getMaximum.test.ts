@@ -1,4 +1,4 @@
-import {getMaximum} from './getMaximum';
+import {getMaximum} from './getMaximum.js';
 
 describe('getMaximum', () => {
   it('returns the highest from all given values', () => {
