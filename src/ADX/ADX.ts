@@ -1,10 +1,10 @@
-import {Big} from '..';
-import {BigIndicatorSeries, NumberIndicatorSeries} from '../Indicator';
-import {FasterMovingAverage, MovingAverage} from '../MA/MovingAverage';
-import {HighLowClose, HighLowCloseNumber} from '../util/HighLowClose';
-import {FasterMovingAverageTypes, MovingAverageTypes} from '../MA/MovingAverageTypes';
-import {FasterWSMA, WSMA} from '../WSMA/WSMA';
-import {DX, FasterDX} from '../DX/DX';
+import {Big} from '../index.js';
+import {BigIndicatorSeries, NumberIndicatorSeries} from '../Indicator.js';
+import {FasterMovingAverage, MovingAverage} from '../MA/MovingAverage.js';
+import {HighLowClose, HighLowCloseNumber} from '../util/HighLowClose.js';
+import {FasterMovingAverageTypes, MovingAverageTypes} from '../MA/MovingAverageTypes.js';
+import {FasterWSMA, WSMA} from '../WSMA/WSMA.js';
+import {DX, FasterDX} from '../DX/DX.js';
 
 /**
  * Average Directional Index (ADX)

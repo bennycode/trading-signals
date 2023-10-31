@@ -1,4 +1,4 @@
-import {getFixedArray} from './getFixedArray';
+import {getFixedArray} from './getFixedArray.js';
 
 describe('getFixedArray', () => {
   describe('push', () => {

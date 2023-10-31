@@ -1,6 +1,6 @@
-import {BigIndicatorSeries, NumberIndicatorSeries} from '../Indicator';
-import {Big, BigSource} from '..';
-import {FasterSMA, SMA} from '../SMA/SMA';
+import {BigIndicatorSeries, NumberIndicatorSeries} from '../Indicator.js';
+import {Big, BigSource} from '../index.js';
+import {FasterSMA, SMA} from '../SMA/SMA.js';
 
 /**
  * Center of Gravity (CG)

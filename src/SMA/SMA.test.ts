@@ -1,4 +1,4 @@
-import {Big, FasterSMA, NotEnoughDataError, SMA} from '..';
+import {Big, FasterSMA, NotEnoughDataError, SMA} from '../index.js';
 
 describe('SMA', () => {
   describe('prices', () => {

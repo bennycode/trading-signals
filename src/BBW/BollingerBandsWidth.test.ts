@@ -1,5 +1,5 @@
-import {BollingerBands, FasterBollingerBands} from '../BBANDS/BollingerBands';
-import {BollingerBandsWidth, FasterBollingerBandsWidth} from './BollingerBandsWidth';
+import {BollingerBands, FasterBollingerBands} from '../BBANDS/BollingerBands.js';
+import {BollingerBandsWidth, FasterBollingerBandsWidth} from './BollingerBandsWidth.js';
 
 describe('BollingerBandsWidth', () => {
   describe('getResult', () => {

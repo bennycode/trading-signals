@@ -1,6 +1,6 @@
-import {Big, BigSource} from '..';
-import {BigIndicatorSeries, NumberIndicatorSeries} from '../Indicator';
-import {getAverage, getFasterAverage} from '../util';
+import {Big, BigSource} from '../index.js';
+import {BigIndicatorSeries, NumberIndicatorSeries} from '../Indicator.js';
+import {getAverage, getFasterAverage} from '../util/index.js';
 
 /**
  * Mean Absolute Deviation (MAD)

@@ -1,4 +1,4 @@
-import {FasterPeriod, Period} from './Period';
+import {FasterPeriod, Period} from './Period.js';
 
 describe('Period', () => {
   describe('getResult', () => {

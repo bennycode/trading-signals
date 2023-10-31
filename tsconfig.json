@@ -2,12 +2,11 @@
   "compilerOptions": {
     "declaration": true,
     "emitDecoratorMetadata": true,
-    "esModuleInterop": true,
     "experimentalDecorators": true,
     "forceConsistentCasingInFileNames": true,
-    "lib": ["es2017"],
-    "module": "commonjs",
-    "moduleResolution": "node",
+    "lib": ["es2023"],
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
     "newLine": "lf",
     "noEmitOnError": true,
     "noImplicitReturns": true,
@@ -20,7 +19,7 @@
     "skipLibCheck": true,
     "sourceMap": true,
     "strict": true,
-    "target": "es6",
+    "target": "es2022",
     "types": ["vitest/globals"]
   },
   "exclude": ["dist", "node_modules", "vitest.config.ts"]

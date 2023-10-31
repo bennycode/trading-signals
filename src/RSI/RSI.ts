@@ -1,8 +1,8 @@
-import {Big, BigSource} from '..';
-import {FasterMovingAverage, MovingAverage} from '../MA/MovingAverage';
-import {BigIndicatorSeries, NumberIndicatorSeries} from '../Indicator';
-import {FasterMovingAverageTypes, MovingAverageTypes} from '../MA/MovingAverageTypes';
-import {FasterWSMA, WSMA} from '../WSMA/WSMA';
+import {Big, BigSource} from '../index.js';
+import {FasterMovingAverage, MovingAverage} from '../MA/MovingAverage.js';
+import {BigIndicatorSeries, NumberIndicatorSeries} from '../Indicator.js';
+import {FasterMovingAverageTypes, MovingAverageTypes} from '../MA/MovingAverageTypes.js';
+import {FasterWSMA, WSMA} from '../WSMA/WSMA.js';
 
 /**
  * Relative Strength Index (RSI)

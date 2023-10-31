@@ -1,10 +1,10 @@
-import {Big} from '..';
-import {BigIndicatorSeries, NumberIndicatorSeries} from '../Indicator';
-import {FasterMovingAverage, MovingAverage} from '../MA/MovingAverage';
-import {FasterMovingAverageTypes, MovingAverageTypes} from '../MA/MovingAverageTypes';
-import {FasterTR, TR} from '../TR/TR';
-import {HighLowClose, HighLowCloseNumber} from '../util';
-import {FasterWSMA, WSMA} from '../WSMA/WSMA';
+import {Big} from '../index.js';
+import {BigIndicatorSeries, NumberIndicatorSeries} from '../Indicator.js';
+import {FasterMovingAverage, MovingAverage} from '../MA/MovingAverage.js';
+import {FasterMovingAverageTypes, MovingAverageTypes} from '../MA/MovingAverageTypes.js';
+import {FasterTR, TR} from '../TR/TR.js';
+import {HighLowClose, HighLowCloseNumber} from '../util/index.js';
+import {FasterWSMA, WSMA} from '../WSMA/WSMA.js';
 
 /**
  * Average True Range (ATR)

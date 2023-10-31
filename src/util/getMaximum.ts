@@ -1,4 +1,4 @@
-import {Big, BigSource} from '..';
+import {Big, BigSource} from '../index.js';
 
 export function getMaximum(values: BigSource[]): Big {
   let max = new Big(Number.MIN_SAFE_INTEGER);

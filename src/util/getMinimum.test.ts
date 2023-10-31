@@ -1,4 +1,4 @@
-import {getMinimum} from './getMinimum';
+import {getMinimum} from './getMinimum.js';
 
 describe('getMinimum', () => {
   it('returns the lowest from all given values', () => {

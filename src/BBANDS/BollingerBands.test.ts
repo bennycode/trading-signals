@@ -1,7 +1,7 @@
-import {BollingerBands, FasterBollingerBands} from './BollingerBands';
-import {Big} from '..';
-import data from '../test/fixtures/BB/data.json';
-import {NotEnoughDataError} from '../error';
+import {BollingerBands, FasterBollingerBands} from './BollingerBands.js';
+import {Big} from '../index.js';
+import data from '../test/fixtures/BB/data.json' assert {type: 'json'};
+import {NotEnoughDataError} from '../error/index.js';
 
 describe('BollingerBands', () => {
   describe('prices', () => {

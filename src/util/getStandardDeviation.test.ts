@@ -1,5 +1,5 @@
-import {SMA} from '../SMA/SMA';
-import {getFasterStandardDeviation, getStandardDeviation} from './getStandardDeviation';
+import {SMA} from '../SMA/SMA.js';
+import {getFasterStandardDeviation, getStandardDeviation} from './getStandardDeviation.js';
 
 describe('getStandardDeviation', () => {
   it('returns the standard deviation', () => {

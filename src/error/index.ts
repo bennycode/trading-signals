@@ -1,1 +1,1 @@
-export * from './NotEnoughDataError';
+export * from './NotEnoughDataError.js';

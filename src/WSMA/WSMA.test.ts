@@ -1,5 +1,5 @@
-import {FasterWSMA, WSMA} from './WSMA';
-import {NotEnoughDataError} from '../error';
+import {FasterWSMA, WSMA} from './WSMA.js';
+import {NotEnoughDataError} from '../error/index.js';
 
 describe('WSMA', () => {
   describe('getResult', () => {

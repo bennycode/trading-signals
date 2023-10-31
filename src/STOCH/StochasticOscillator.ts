@@ -1,10 +1,10 @@
-import {Indicator} from '../Indicator';
-import {Big} from '..';
-import {FasterSMA, SMA} from '../SMA/SMA';
-import {getMaximum} from '../util/getMaximum';
-import {getMinimum} from '../util/getMinimum';
-import {NotEnoughDataError} from '../error';
-import {HighLowClose, HighLowCloseNumber} from '../util';
+import {Indicator} from '../Indicator.js';
+import {Big} from '../index.js';
+import {FasterSMA, SMA} from '../SMA/SMA.js';
+import {getMaximum} from '../util/getMaximum.js';
+import {getMinimum} from '../util/getMinimum.js';
+import {NotEnoughDataError} from '../error/index.js';
+import {HighLowClose, HighLowCloseNumber} from '../util/index.js';
 
 export interface StochasticResult {
   /** Slow stochastic indicator (%D) */

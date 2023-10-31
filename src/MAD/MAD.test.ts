@@ -1,5 +1,5 @@
-import {FasterMAD, MAD} from './MAD';
-import {NotEnoughDataError} from '../error';
+import {FasterMAD, MAD} from './MAD.js';
+import {NotEnoughDataError} from '../error/index.js';
 
 describe('MAD', () => {
   // Test data verified with:

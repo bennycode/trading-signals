@@ -1,5 +1,5 @@
-import {Big, BigSource} from '..';
-import {FasterMovingAverage, MovingAverage} from '../MA/MovingAverage';
+import {Big, BigSource} from '../index.js';
+import {FasterMovingAverage, MovingAverage} from '../MA/MovingAverage.js';
 
 /**
  * Simple Moving Average (SMA)
@@ -32,7 +32,6 @@ export class SMA extends MovingAverage {
 }
 
 export class FasterSMA extends FasterMovingAverage {
-  protected result?: number;
   public readonly prices: number[] = [];
 
   update(price: number): void | number {

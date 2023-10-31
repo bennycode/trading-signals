@@ -1,5 +1,5 @@
-import {ATR, FasterATR} from './ATR';
-import {NotEnoughDataError} from '..';
+import {ATR, FasterATR} from './ATR.js';
+import {NotEnoughDataError} from '../index.js';
 
 describe('ATR', () => {
   describe('getResult', () => {

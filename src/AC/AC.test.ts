@@ -1,6 +1,6 @@
-import {AC, FasterAC} from './AC';
-import {NotEnoughDataError} from '../error';
-import {HighLowNumber} from '../util';
+import {AC, FasterAC} from './AC.js';
+import {NotEnoughDataError} from '../error/index.js';
+import {HighLowNumber} from '../util/index.js';
 
 describe('AC', () => {
   describe('getResult', () => {

@@ -1,6 +1,6 @@
-import {Big, BigSource} from '..';
-import {FasterMovingAverage, MovingAverage} from '../MA/MovingAverage';
-import {NotEnoughDataError} from '../error';
+import {Big, BigSource} from '../index.js';
+import {FasterMovingAverage, MovingAverage} from '../MA/MovingAverage.js';
+import {NotEnoughDataError} from '../error/index.js';
 
 /**
  * Exponential Moving Average (EMA)
