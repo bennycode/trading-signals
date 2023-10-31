@@ -1,3 +1,22 @@
+## 4.0.0 (2023-10-31)
+
+##### Documentation Changes
+
+- updated CHANGELOG.md ([97d75d7d](https://github.com/bennycode/trading-signals/commit/97d75d7ddb5806a1031261d979a9ab6fb9206c63))
+- Add logo ([#609](https://github.com/bennycode/trading-signals/pull/609)) ([44265522](https://github.com/bennycode/trading-signals/commit/44265522525bbbc865ad1d79b9679cc7c874ffa5))
+- Describe ATR values ([5ef9ed36](https://github.com/bennycode/trading-signals/commit/5ef9ed36e47e382cd685a82d07bba7cb68c01525))
+
+##### Other Changes
+
+- Use default theme ([cfccd6e8](https://github.com/bennycode/trading-signals/commit/cfccd6e847fca052fdb33b1c89e58cf3a6d369e2))
+- Update dependencies" ([3494cd85](https://github.com/bennycode/trading-signals/commit/3494cd8567863183c18c12bcfe9252af9ccbf6ba))
+
+##### Refactors
+
+- Switch to ESM ([#610](https://github.com/bennycode/trading-signals/pull/610)) ([7354a03d](https://github.com/bennycode/trading-signals/commit/7354a03d6611a7029e0d2135f262fa8bee6ec230))
+- Switch from Jest to Vitest ([#608](https://github.com/bennycode/trading-signals/pull/608)) ([4984c9a4](https://github.com/bennycode/trading-signals/commit/4984c9a45ecd15b20c83f19e60ccc14fc30edd68))
+- Replace yarn with npm ([#598](https://github.com/bennycode/trading-signals/pull/598)) ([7f758456](https://github.com/bennycode/trading-signals/commit/7f758456d0cac9550e24fe70d7cdf93132dc4f92))
+
 #### 3.7.1 (2023-10-31)
 
 ##### Documentation Changes
