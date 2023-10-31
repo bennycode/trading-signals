@@ -6,5 +6,5 @@
   "excludePrivate": true,
   "excludeProtected": true,
   "out": "docs",
-  "theme": "markdown"
+  "theme": "default"
 }
