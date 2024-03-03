@@ -13,8 +13,12 @@ import {FasterMovingAverage, MovingAverage} from '../MA/MovingAverage.js';
 export class SMA extends MovingAverage {
   public readonly prices: BigSource[] = [];
 
-  override update(price: BigSource): Big | void {
-    this.prices.push(price);
+  override update(price: BigSource, replace: boolean = false): Big | void {
+    if (this.prices.length && replace) {
+      this.prices[this.prices.length - 1] = price;
+    } else {
+      this.prices.push(price);
+    }
 
     if (this.prices.length > this.interval) {
       this.prices.shift();
@@ -34,8 +38,12 @@ export class SMA extends MovingAverage {
 export class FasterSMA extends FasterMovingAverage {
   public readonly prices: number[] = [];
 
-  update(price: number): void | number {
-    this.prices.push(price);
+  update(price: number, replace: boolean = false): void | number {
+    if (this.prices.length && replace) {
+      this.prices[this.prices.length - 1] = price;
+    } else {
+      this.prices.push(price);
+    }
 
     if (this.prices.length > this.interval) {
       this.prices.shift();

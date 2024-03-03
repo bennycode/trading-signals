@@ -18,6 +18,7 @@ All indicators can be updated over time by streaming data (prices or candles) to
 - **Convenient.** Indicators with intervals will save their all-time highs and lows.
 - **Fast.** If you need high throughput, you can use the included [faster implementations][2].
 - **Flexible.** All advanced indicators support different smoothing overlays (WSMA, etc.).
+- **Live.** It allows for the replacement of values, enabling live charting.
 - **Modern.** Uses ECMAScript Modules (ESM) syntax.
 - **Precise.** Better accuracy than calculating with primitive numbers thanks to [big.js][1].
 - **Robust.** Checked against common division by zero mistakes.
