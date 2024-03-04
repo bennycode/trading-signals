@@ -66,14 +66,21 @@ export class FasterEMA extends FasterMovingAverage {
     this.weightFactor = 2 / (this.interval + 1);
   }
 
-  update(price: number): number {
-    this.pricesCounter++;
+  update(price: number, replace: boolean = false): number {
+    if (!replace) {
+      this.pricesCounter++;
+    } else if (replace && this.pricesCounter === 0) {
+      this.pricesCounter++;
+    }
 
     // If it's the first update there is no previous result and a default has to be set.
     if (this.result === undefined) {
       this.result = price;
     }
 
+    if (replace && this.previousResult) {
+      return this.setResult(price * this.weightFactor + this.previousResult * (1 - this.weightFactor));
+    }
     return this.setResult(price * this.weightFactor + this.result * (1 - this.weightFactor));
   }
 

@@ -59,6 +59,7 @@ export abstract class NumberIndicatorSeries<Input = number> implements Indicator
   highest?: number;
   /** Lowest return value over the lifetime (not interval!) of the indicator. */
   lowest?: number;
+  protected previousResult?: number;
   protected result?: number;
 
   get isStable(): boolean {
@@ -82,6 +83,7 @@ export abstract class NumberIndicatorSeries<Input = number> implements Indicator
       this.lowest = value;
     }
 
+    this.previousResult = this.result;
     return (this.result = value);
   }
 
