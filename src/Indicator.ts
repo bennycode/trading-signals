@@ -22,6 +22,8 @@ export abstract class BigIndicatorSeries<Input = BigSource> implements Indicator
   highest?: Big;
   /** Lowest return value over the lifetime (not interval!) of the indicator. */
   lowest?: Big;
+  /** Previous results can be useful, if a user wants to update a recent value instead of adding a new value. Essential for real-time data like growing candlesticks. */
+  protected previousResult?: Big;
   protected result?: Big;
 
   get isStable(): boolean {
@@ -45,6 +47,7 @@ export abstract class BigIndicatorSeries<Input = BigSource> implements Indicator
       this.lowest = value;
     }
 
+    this.previousResult = this.result;
     return (this.result = value);
   }
 

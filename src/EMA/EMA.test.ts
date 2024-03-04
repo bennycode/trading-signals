@@ -1,4 +1,5 @@
 import {EMA, FasterEMA, NotEnoughDataError} from '../index.js';
+import {describe} from 'vitest';
 
 describe('EMA', () => {
   // Test data verified with:
@@ -19,6 +20,19 @@ describe('EMA', () => {
     '86.41',
     '86.70',
   ];
+
+  describe('update', () => {
+    it('can replace recently added values', () => {
+      const ema = new EMA(5);
+      ema.update('81.59');
+      ema.update('81.06');
+      ema.update('82.87');
+      ema.update('83.0');
+      ema.update('90'); // this value gets replaced with the next call<
+      ema.update('83.61', true);
+      expect(ema.getResult().toFixed(2)).toBe('82.71');
+    });
+  });
 
   describe('getResult', () => {
     it('calculates the Exponential Moving Average over a period of 5', () => {

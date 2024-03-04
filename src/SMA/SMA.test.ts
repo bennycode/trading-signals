@@ -1,4 +1,5 @@
 import {Big, FasterSMA, NotEnoughDataError, SMA} from '../index.js';
+import {describe} from 'vitest';
 
 describe('SMA', () => {
   describe('prices', () => {
@@ -18,20 +19,7 @@ describe('SMA', () => {
     });
   });
 
-  describe('updates', () => {
-    it('supports multiple updates at once', () => {
-      const prices = [1, 2, 3, 4, 5];
-      const interval = 5;
-
-      const sma = new SMA(interval);
-      const fasterSMA = new FasterSMA(interval);
-      sma.updates(prices);
-      fasterSMA.updates(prices);
-
-      expect(sma.getResult().toFixed()).toBe('3');
-      expect(fasterSMA.getResult().toFixed()).toBe('3');
-    });
-
+  describe('update', () => {
     it('can replace recently added values', () => {
       const interval = 3;
 
@@ -55,6 +43,21 @@ describe('SMA', () => {
 
       expect(sma.getResult().toFixed()).toBe('20');
       expect(fasterSMA.getResult().toFixed()).toBe('20');
+    });
+  });
+
+  describe('updates', () => {
+    it('supports multiple updates at once', () => {
+      const prices = [1, 2, 3, 4, 5];
+      const interval = 5;
+
+      const sma = new SMA(interval);
+      const fasterSMA = new FasterSMA(interval);
+      sma.updates(prices);
+      fasterSMA.updates(prices);
+
+      expect(sma.getResult().toFixed()).toBe('3');
+      expect(fasterSMA.getResult().toFixed()).toBe('3');
     });
   });
 
