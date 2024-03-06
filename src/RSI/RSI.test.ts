@@ -2,6 +2,25 @@ import {FasterRSI, RSI} from './RSI.js';
 import {NotEnoughDataError} from '../error/index.js';
 
 describe('RSI', () => {
+  describe('update', () => {
+    it('can replace recently added values', () => {
+      const rsi = new RSI(5);
+      rsi.update('81.59');
+      rsi.update('81.06');
+      rsi.update('82.87');
+      rsi.update('83.0');
+      rsi.update('83.61');
+      rsi.update('83.15');
+      rsi.update('82.84');
+      rsi.update('90'); // this value gets replaced with the next call<
+      rsi.update('83.99', true);
+
+      expect(rsi.isStable).toBe(true);
+
+      expect(rsi.getResult().toFixed(2)).toBe('75.94');
+    });
+  });
+
   describe('getResult', () => {
     it('calculates the relative strength index', () => {
       // Test data verified with:
