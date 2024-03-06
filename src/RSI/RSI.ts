@@ -50,7 +50,6 @@ export class RSI extends BigIndicatorSeries {
     const currentPrice = new Big(price);
     const previousPrice = new Big(this.previousPrices[this.previousPrices.length - 2]);
 
-    // Update average gain/loss
     if (currentPrice.gt(previousPrice)) {
       this.avgLoss.update(new Big(0), replace); // price went up, therefore no loss
       this.avgGain.update(currentPrice.sub(previousPrice), replace);
@@ -72,7 +71,7 @@ export class RSI extends BigIndicatorSeries {
 }
 
 export class FasterRSI extends NumberIndicatorSeries {
-  private previousPrice?: number;
+  private readonly previousPrices: number[] = [];
   private readonly avgGain: FasterMovingAverage;
   private readonly avgLoss: FasterMovingAverage;
   private readonly maxValue = 100;
@@ -83,21 +82,30 @@ export class FasterRSI extends NumberIndicatorSeries {
     this.avgLoss = new SmoothingIndicator(this.interval);
   }
 
-  override update(price: number): void | number {
-    if (!this.previousPrice) {
-      this.previousPrice = price;
+  override update(price: number, replace: boolean = false): void | number {
+    if (this.previousPrices.length && replace) {
+      // Replace the last price with the provided price
+      this.previousPrices[this.previousPrices.length - 1] = price;
+    } else {
+      // Add the price to the list of previous prices
+      this.previousPrices.push(price);
+    }
+
+    // Ensure at least 2 prices are available for calculation
+    if (this.previousPrices.length < 2) {
       return;
     }
 
-    if (price > this.previousPrice) {
-      this.avgLoss.update(0);
-      this.avgGain.update(price - this.previousPrice);
-    } else {
-      this.avgLoss.update(this.previousPrice - price);
-      this.avgGain.update(0);
-    }
+    const currentPrice = price;
+    const previousPrice = this.previousPrices[this.previousPrices.length - 2];
 
-    this.previousPrice = price;
+    if (currentPrice > previousPrice) {
+      this.avgLoss.update(0, replace);
+      this.avgGain.update(price - previousPrice, replace);
+    } else {
+      this.avgLoss.update(previousPrice - currentPrice, replace);
+      this.avgGain.update(0, replace);
+    }
 
     if (this.avgGain.isStable) {
       const avgLoss = this.avgLoss.getResult();
