@@ -36,19 +36,13 @@ export class WSMA extends MovingAverage {
 
   update(price: BigSource, replace: boolean = false): Big | void {
     const sma = this.indicator.update(price, replace);
-
-    if (replace && this.result && this.previousResult) {
-      // Calculate the smoothed value
+    if (replace && this.previousResult) {
       const smoothed = new Big(price).minus(this.previousResult).mul(this.smoothingFactor);
-      // Calculate the new result
       return this.setResult(smoothed.plus(this.previousResult));
     } else if (!replace && this.result) {
-      // Calculate the smoothed value
       const smoothed = new Big(price).minus(this.result).mul(this.smoothingFactor);
-      // Calculate the new result
       return this.setResult(smoothed.plus(this.result));
     } else if (this.result === undefined && sma) {
-      // Set the initial result if the result is undefined
       return this.setResult(sma);
     }
   }
@@ -69,9 +63,12 @@ export class FasterWSMA extends NumberIndicatorSeries {
     return this.result;
   }
 
-  update(price: number): number | void {
+  update(price: number, replace: boolean = false): number | void {
     const sma = this.indicator.update(price);
-    if (this.result !== undefined) {
+    if (replace && this.previousResult !== undefined) {
+      const smoothed = (price - this.previousResult) * this.smoothingFactor;
+      return this.setResult(smoothed + this.previousResult);
+    } else if (!replace && this.result !== undefined) {
       const smoothed = (price - this.result) * this.smoothingFactor;
       return this.setResult(smoothed + this.result);
     } else if (this.result === undefined && sma !== undefined) {
