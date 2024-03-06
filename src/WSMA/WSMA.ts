@@ -34,12 +34,21 @@ export class WSMA extends MovingAverage {
     return this.result;
   }
 
-  update(price: BigSource): Big | void {
-    const sma = this.indicator.update(price);
-    if (this.result) {
+  update(price: BigSource, replace: boolean = false): Big | void {
+    const sma = this.indicator.update(price, replace);
+
+    if (replace && this.result && this.previousResult) {
+      // Calculate the smoothed value
+      const smoothed = new Big(price).minus(this.previousResult).mul(this.smoothingFactor);
+      // Calculate the new result
+      return this.setResult(smoothed.plus(this.previousResult));
+    } else if (!replace && this.result) {
+      // Calculate the smoothed value
       const smoothed = new Big(price).minus(this.result).mul(this.smoothingFactor);
+      // Calculate the new result
       return this.setResult(smoothed.plus(this.result));
     } else if (this.result === undefined && sma) {
+      // Set the initial result if the result is undefined
       return this.setResult(sma);
     }
   }
