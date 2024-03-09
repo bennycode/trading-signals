@@ -22,7 +22,7 @@ import {FasterWSMA, WSMA} from '../WSMA/WSMA.js';
  * @see https://www.investopedia.com/terms/r/rsi.asp
  */
 export class RSI extends BigIndicatorSeries {
-  private previousPrice?: BigSource;
+  private readonly previousPrices: BigSource[] = [];
   private readonly avgGain: MovingAverage;
   private readonly avgLoss: MovingAverage;
   private readonly maxValue = new Big(100);
@@ -33,41 +33,45 @@ export class RSI extends BigIndicatorSeries {
     this.avgLoss = new SmoothingIndicator(this.interval);
   }
 
-  override update(price: BigSource): void | Big {
-    if (!this.previousPrice) {
-      // At least 2 prices are required to do a calculation
-      this.previousPrice = price;
+  override update(price: BigSource, replace: boolean = false): void | Big {
+    if (this.previousPrices.length && replace) {
+      // Replace the last price with the provided price
+      this.previousPrices[this.previousPrices.length - 1] = price;
+    } else {
+      // Add the price to the list of previous prices
+      this.previousPrices.push(price);
+    }
+
+    // Ensure at least 2 prices are available for calculation
+    if (this.previousPrices.length < 2) {
       return;
     }
 
     const currentPrice = new Big(price);
-    const previousPrice = new Big(this.previousPrice);
+    const previousPrice = new Big(this.previousPrices[this.previousPrices.length - 2]);
 
-    // Update average gain/loss
     if (currentPrice.gt(previousPrice)) {
-      this.avgLoss.update(new Big(0)); // price went up, therefore no loss
-      this.avgGain.update(currentPrice.sub(previousPrice));
+      this.avgLoss.update(new Big(0), replace); // price went up, therefore no loss
+      this.avgGain.update(currentPrice.sub(previousPrice), replace);
     } else {
-      this.avgLoss.update(previousPrice.sub(currentPrice));
-      this.avgGain.update(new Big(0)); // price went down, therefore no gain
+      this.avgLoss.update(previousPrice.sub(currentPrice), replace);
+      this.avgGain.update(new Big(0), replace); // price went down, therefore no gain
     }
-
-    this.previousPrice = price;
 
     if (this.avgGain.isStable) {
       const avgLoss = this.avgLoss.getResult();
       // Prevent division by zero: https://github.com/bennycode/trading-signals/issues/378
       if (avgLoss.eq(0)) {
-        return this.setResult(new Big(100));
+        return this.setResult(new Big(100), replace);
       }
       const relativeStrength = this.avgGain.getResult().div(avgLoss);
-      return this.setResult(this.maxValue.minus(this.maxValue.div(relativeStrength.add(1))));
+      return this.setResult(this.maxValue.minus(this.maxValue.div(relativeStrength.add(1))), replace);
     }
   }
 }
 
 export class FasterRSI extends NumberIndicatorSeries {
-  private previousPrice?: number;
+  private readonly previousPrices: number[] = [];
   private readonly avgGain: FasterMovingAverage;
   private readonly avgLoss: FasterMovingAverage;
   private readonly maxValue = 100;
@@ -78,30 +82,39 @@ export class FasterRSI extends NumberIndicatorSeries {
     this.avgLoss = new SmoothingIndicator(this.interval);
   }
 
-  override update(price: number): void | number {
-    if (!this.previousPrice) {
-      this.previousPrice = price;
+  override update(price: number, replace: boolean = false): void | number {
+    if (this.previousPrices.length && replace) {
+      // Replace the last price with the provided price
+      this.previousPrices[this.previousPrices.length - 1] = price;
+    } else {
+      // Add the price to the list of previous prices
+      this.previousPrices.push(price);
+    }
+
+    // Ensure at least 2 prices are available for calculation
+    if (this.previousPrices.length < 2) {
       return;
     }
 
-    if (price > this.previousPrice) {
-      this.avgLoss.update(0);
-      this.avgGain.update(price - this.previousPrice);
-    } else {
-      this.avgLoss.update(this.previousPrice - price);
-      this.avgGain.update(0);
-    }
+    const currentPrice = price;
+    const previousPrice = this.previousPrices[this.previousPrices.length - 2];
 
-    this.previousPrice = price;
+    if (currentPrice > previousPrice) {
+      this.avgLoss.update(0, replace);
+      this.avgGain.update(price - previousPrice, replace);
+    } else {
+      this.avgLoss.update(previousPrice - currentPrice, replace);
+      this.avgGain.update(0, replace);
+    }
 
     if (this.avgGain.isStable) {
       const avgLoss = this.avgLoss.getResult();
       // Prevent division by zero: https://github.com/bennycode/trading-signals/issues/378
       if (avgLoss === 0) {
-        return this.setResult(100);
+        return this.setResult(100, replace);
       }
       const relativeStrength = this.avgGain.getResult() / avgLoss;
-      return this.setResult(this.maxValue - this.maxValue / (relativeStrength + 1));
+      return this.setResult(this.maxValue - this.maxValue / (relativeStrength + 1), replace);
     }
   }
 }

@@ -36,9 +36,9 @@ export class DMA implements Indicator<DMAResult> {
     return this.long.isStable;
   }
 
-  update(price: BigSource): void {
-    this.short.update(price);
-    this.long.update(price);
+  update(price: BigSource, replace: boolean = false): void {
+    this.short.update(price, replace);
+    this.long.update(price, replace);
   }
 
   getResult(): DMAResult {
@@ -62,9 +62,9 @@ export class FasterDMA implements Indicator<FasterDMAResult, number> {
     return this.long.isStable;
   }
 
-  update(price: number): void {
-    this.short.update(price);
-    this.long.update(price);
+  update(price: number, replace: boolean = false): void {
+    this.short.update(price, replace);
+    this.long.update(price, replace);
   }
 
   getResult(): FasterDMAResult {

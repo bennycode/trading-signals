@@ -30,7 +30,7 @@ export class StochasticRSI extends BigIndicatorSeries {
     this.rsi = new RSI(interval, SmoothingIndicator);
   }
 
-  override update(price: BigSource): void | Big {
+  override update(price: BigSource, replace: boolean = false): void | Big {
     const rsiResult = this.rsi.update(price);
     if (rsiResult) {
       const periodResult = this.period.update(rsiResult);
@@ -40,10 +40,10 @@ export class StochasticRSI extends BigIndicatorSeries {
         const denominator = max.minus(min);
         // Prevent division by zero: https://github.com/bennycode/trading-signals/issues/378
         if (denominator.eq(0)) {
-          return this.setResult(new Big(100));
+          return this.setResult(new Big(100), replace);
         }
         const numerator = rsiResult.minus(min);
-        return this.setResult(numerator.div(denominator));
+        return this.setResult(numerator.div(denominator), replace);
       }
     }
   }
@@ -59,7 +59,7 @@ export class FasterStochasticRSI extends NumberIndicatorSeries {
     this.rsi = new FasterRSI(interval, SmoothingIndicator);
   }
 
-  override update(price: number): void | number {
+  override update(price: number, replace: boolean = false): void | number {
     const rsiResult = this.rsi.update(price);
     if (rsiResult !== undefined) {
       const periodResult = this.period.update(rsiResult);
@@ -69,10 +69,10 @@ export class FasterStochasticRSI extends NumberIndicatorSeries {
         const denominator = max - min;
         // Prevent division by zero: https://github.com/bennycode/trading-signals/issues/378
         if (denominator === 0) {
-          return this.setResult(100);
+          return this.setResult(100, replace);
         }
         const numerator = rsiResult - min;
-        return this.setResult(numerator / denominator);
+        return this.setResult(numerator / denominator, replace);
       }
     }
   }

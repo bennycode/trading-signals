@@ -29,12 +29,12 @@ export class AC extends BigIndicatorSeries<HighLow> {
     this.signal = new SMA(signalInterval);
   }
 
-  override update(input: HighLow): void | Big {
+  override update(input: HighLow, replace: boolean = false): void | Big {
     const ao = this.ao.update(input);
     if (ao) {
       this.signal.update(ao);
       if (this.signal.isStable) {
-        const result = this.setResult(ao.sub(this.signal.getResult()));
+        const result = this.setResult(ao.sub(this.signal.getResult()), replace);
         this.momentum.update(result);
         return this.result;
       }
@@ -54,12 +54,12 @@ export class FasterAC extends NumberIndicatorSeries<HighLowNumber> {
     this.signal = new FasterSMA(signalInterval);
   }
 
-  override update(input: HighLowNumber): void | number {
+  override update(input: HighLowNumber, replace: boolean = false): void | number {
     const ao = this.ao.update(input);
     if (ao) {
       this.signal.update(ao);
       if (this.signal.isStable) {
-        const result = this.setResult(ao - this.signal.getResult());
+        const result = this.setResult(ao - this.signal.getResult(), replace);
         this.momentum.update(result);
         return this.result;
       }

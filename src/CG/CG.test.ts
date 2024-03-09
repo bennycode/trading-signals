@@ -34,6 +34,53 @@ describe('CG', () => {
     });
   });
 
+  describe('update', () => {
+    it('can replace recently added values', () => {
+      const cg = new CG(5, 10);
+      const fasterCG = new FasterCG(5, 10);
+      const values = [100, 110, 120, 130, 140, 150, 160, 170, 180, 190, 200];
+      for (const value of values) {
+        cg.update(value);
+        fasterCG.update(value);
+      }
+
+      let cgResult = cg.getResult();
+      let signalResult = cg.signal.getResult();
+
+      expect(cgResult.gt(signalResult)).toBe(true);
+
+      cg.update(150);
+      cg.update(110);
+      cg.update(200);
+      cg.update(90, true);
+      cg.update(100);
+      cg.update(130, true);
+
+      fasterCG.update(150);
+      fasterCG.update(110);
+      fasterCG.update(200);
+      fasterCG.update(90, true);
+      fasterCG.update(100);
+      fasterCG.update(130, true);
+
+      expect(cg.isStable).toBe(true);
+      expect(fasterCG.isStable).toBe(true);
+
+      cgResult = cg.getResult();
+      signalResult = cg.signal.getResult();
+
+      expect(cgResult.gt(signalResult)).toBe(false);
+
+      expect(cgResult.toFixed(4)).toBe('2.7059');
+      expect(cg.lowest!.toFixed(4)).toBe('2.6081');
+      expect(cg.highest!.toFixed(4)).toBe('3.1176');
+
+      expect(fasterCG.getResult().toFixed(4)).toBe('2.7059');
+      expect(fasterCG.lowest!.toFixed(4)).toBe('2.6081');
+      expect(fasterCG.highest!.toFixed(4)).toBe('3.1176');
+    });
+  });
+
   describe('getResult', () => {
     it('indicates a downtrend when the center of gravity falls below the signal line', () => {
       const cg = new CG(5, 10);

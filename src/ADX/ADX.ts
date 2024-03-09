@@ -47,13 +47,13 @@ export class ADX extends BigIndicatorSeries<HighLowClose> {
     return this.dx.pdi;
   }
 
-  update(candle: HighLowClose): Big | void {
+  update(candle: HighLowClose, replace: boolean = false): Big | void {
     const result = this.dx.update(candle);
     if (result) {
       this.adx.update(result);
     }
     if (this.adx.isStable) {
-      return this.setResult(this.adx.getResult());
+      return this.setResult(this.adx.getResult(), replace);
     }
   }
 }
@@ -76,13 +76,13 @@ export class FasterADX extends NumberIndicatorSeries<HighLowCloseNumber> {
     return this.dx.pdi;
   }
 
-  update(candle: HighLowCloseNumber): void | number {
+  update(candle: HighLowCloseNumber, replace: boolean = false): void | number {
     const result = this.dx.update(candle);
     if (result !== undefined) {
       this.adx.update(result);
     }
     if (this.adx.isStable) {
-      return this.setResult(this.adx.getResult());
+      return this.setResult(this.adx.getResult(), replace);
     }
   }
 }

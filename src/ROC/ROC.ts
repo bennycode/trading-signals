@@ -17,7 +17,7 @@ export class ROC extends BigIndicatorSeries {
     super();
   }
 
-  override update(price: BigSource): Big | void {
+  override update(price: BigSource, replace: boolean = false): Big | void {
     this.prices.push(new Big(price));
 
     /**
@@ -27,7 +27,7 @@ export class ROC extends BigIndicatorSeries {
     if (this.prices.length > this.interval) {
       const comparePrice = this.prices.shift()!;
 
-      return this.setResult(new Big(price).sub(comparePrice).div(comparePrice));
+      return this.setResult(new Big(price).sub(comparePrice).div(comparePrice), replace);
     }
   }
 }
@@ -39,13 +39,13 @@ export class FasterROC extends NumberIndicatorSeries {
     super();
   }
 
-  override update(price: number): void | number {
+  override update(price: number, replace: boolean = false): void | number {
     this.prices.push(price);
 
     if (this.prices.length > this.interval) {
       const comparePrice = this.prices.shift()!;
 
-      return this.setResult((price - comparePrice) / comparePrice);
+      return this.setResult((price - comparePrice) / comparePrice, replace);
     }
   }
 }

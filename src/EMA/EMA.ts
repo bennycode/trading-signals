@@ -6,7 +6,8 @@ import {NotEnoughDataError} from '../error/index.js';
  * Exponential Moving Average (EMA)
  * Type: Trend
  *
- * Compared to SMA, the EMA puts more emphasis on the recent prices to reduce lag. Due to its responsiveness to price changes, it rises faster and falls faster than the SMA when the price is inclining or declining.
+ * Compared to SMA, the EMA puts more emphasis on the recent prices to reduce lag. Due to its responsiveness to price
+ * changes, it rises faster and falls faster than the SMA when the price is inclining or declining.
  *
  * @see https://www.investopedia.com/terms/e/ema.asp
  */
@@ -19,16 +20,24 @@ export class EMA extends MovingAverage {
     this.weightFactor = 2 / (this.interval + 1);
   }
 
-  update(_price: BigSource): Big {
-    this.pricesCounter++;
+  update(_price: BigSource, replace: boolean = false): Big {
+    if (!replace) {
+      this.pricesCounter++;
+    } else if (replace && this.pricesCounter === 0) {
+      this.pricesCounter++;
+    }
     const price = new Big(_price);
 
-    // If it's the first update there is no previous result and a default has to be set.
-    if (this.result === undefined) {
-      this.result = price;
+    if (replace && this.previousResult) {
+      return this.setResult(
+        price.times(this.weightFactor).add(this.previousResult.times(1 - this.weightFactor)),
+        replace
+      );
     }
-
-    return this.setResult(price.times(this.weightFactor).add(this.result.times(1 - this.weightFactor)));
+    return this.setResult(
+      price.times(this.weightFactor).add((this.result ?? price).times(1 - this.weightFactor)),
+      replace
+    );
   }
 
   override getResult(): Big {
@@ -58,15 +67,20 @@ export class FasterEMA extends FasterMovingAverage {
     this.weightFactor = 2 / (this.interval + 1);
   }
 
-  update(price: number): number {
-    this.pricesCounter++;
-
-    // If it's the first update there is no previous result and a default has to be set.
-    if (this.result === undefined) {
-      this.result = price;
+  update(price: number, replace: boolean = false): number {
+    if (!replace) {
+      this.pricesCounter++;
+    } else if (replace && this.pricesCounter === 0) {
+      this.pricesCounter++;
     }
 
-    return this.setResult(price * this.weightFactor + this.result * (1 - this.weightFactor));
+    if (replace && this.previousResult !== undefined) {
+      return this.setResult(price * this.weightFactor + this.previousResult * (1 - this.weightFactor), replace);
+    }
+    return this.setResult(
+      price * this.weightFactor + (this.result !== undefined ? this.result : price) * (1 - this.weightFactor),
+      replace
+    );
   }
 
   override getResult(): number {

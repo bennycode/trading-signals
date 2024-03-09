@@ -2,6 +2,34 @@ import {FasterMOM, MOM} from './MOM.js';
 import {NotEnoughDataError} from '../error/index.js';
 
 describe('MOM', () => {
+  describe('update', () => {
+    it('can replace recently added values', () => {
+      const momentum = new MOM(5);
+      const fasterMomentum = new FasterMOM(5);
+
+      momentum.update('81.59');
+      fasterMomentum.update(81.59);
+      momentum.update('81.06');
+      fasterMomentum.update(81.06);
+      momentum.update('82.87');
+      fasterMomentum.update(82.87);
+      momentum.update('83.0');
+      fasterMomentum.update(83.0);
+      momentum.update('83.61');
+      fasterMomentum.update(83.61);
+      momentum.update('90');
+      fasterMomentum.update(90);
+      momentum.update('83.15', true);
+      fasterMomentum.update(83.15, true);
+
+      expect(momentum.isStable).toBe(true);
+      expect(fasterMomentum.isStable).toBe(true);
+
+      expect(momentum.getResult().toFixed(2)).toBe('1.56');
+      expect(fasterMomentum.getResult().toFixed(2)).toBe('1.56');
+    });
+  });
+
   describe('getResult', () => {
     it('returns the price 5 intervals ago', () => {
       // Test data verified with:
