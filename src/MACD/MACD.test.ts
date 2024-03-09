@@ -4,27 +4,28 @@ import {Big, DEMA, EMA, FasterEMA, NotEnoughDataError} from '../index.js';
 describe('MACD', () => {
   describe('update', () => {
     it('can replace recently added values', () => {
-      const ema = new MACD({
+      const macd = new MACD({
         indicator: EMA,
         longInterval: 5,
         shortInterval: 2,
         signalInterval: 9,
       });
-      // const fasterEMA = new FasterEMA(5);
-      ema.update('81.59');
-      // fasterEMA.update(81.59);
-      ema.update('81.06');
-      // fasterEMA.update(81.06);
-      ema.update('82.87');
-      // fasterEMA.update(82.87);
-      ema.update('83.0');
-      // fasterEMA.update(83.0);
-      ema.update('90'); // this value gets replaced with the next call<
-      // fasterEMA.update(90); // this value gets replaced with the next call<
-      ema.update('83.61', true);
-      // fasterEMA.update(83.61, true);
-      expect(ema.getResult().macd.toFixed(2)).toBe('0.62');
-      // expect(fasterEMA.getResult().toFixed(2)).toBe('82.71');
+      const fasterMACD = new FasterMACD(new FasterEMA(2), new FasterEMA(5), new FasterEMA(9));
+
+      macd.update('81.59');
+      fasterMACD.update(81.59);
+      macd.update('81.06');
+      fasterMACD.update(81.06);
+      macd.update('82.87');
+      fasterMACD.update(82.87);
+      macd.update('83.0');
+      fasterMACD.update(83.0);
+      macd.update('90'); // this value gets replaced with the next call<
+      fasterMACD.update(90); // this value gets replaced with the next call<
+      macd.update('83.61', true);
+      fasterMACD.update(83.61, true);
+      expect(macd.getResult().macd.toFixed(2)).toBe('0.62');
+      expect(fasterMACD.getResult().macd.toFixed(2)).toBe('0.62');
     });
   });
 
