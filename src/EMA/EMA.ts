@@ -28,15 +28,16 @@ export class EMA extends MovingAverage {
     }
     const price = new Big(_price);
 
-    // If it's the first update there is no previous result and a default has to be set.
-    if (this.result === undefined) {
-      this.result = price;
-    }
-
     if (replace && this.previousResult) {
-      return this.setResult(price.times(this.weightFactor).add(this.previousResult.times(1 - this.weightFactor)));
+      return this.setResult(
+        price.times(this.weightFactor).add(this.previousResult.times(1 - this.weightFactor)),
+        replace
+      );
     }
-    return this.setResult(price.times(this.weightFactor).add(this.result.times(1 - this.weightFactor)));
+    return this.setResult(
+      price.times(this.weightFactor).add((this.result ?? price).times(1 - this.weightFactor)),
+      replace
+    );
   }
 
   override getResult(): Big {
@@ -73,15 +74,13 @@ export class FasterEMA extends FasterMovingAverage {
       this.pricesCounter++;
     }
 
-    // If it's the first update there is no previous result and a default has to be set.
-    if (this.result === undefined) {
-      this.result = price;
-    }
-
     if (replace && this.previousResult !== undefined) {
-      return this.setResult(price * this.weightFactor + this.previousResult * (1 - this.weightFactor));
+      return this.setResult(price * this.weightFactor + this.previousResult * (1 - this.weightFactor), replace);
     }
-    return this.setResult(price * this.weightFactor + this.result * (1 - this.weightFactor));
+    return this.setResult(
+      price * this.weightFactor + (this.result !== undefined ? this.result : price) * (1 - this.weightFactor),
+      replace
+    );
   }
 
   override getResult(): number {

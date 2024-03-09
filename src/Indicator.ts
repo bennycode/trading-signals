@@ -19,8 +19,10 @@ export interface IndicatorSeries<Result = Big, Input = BigSource> extends Indica
 
 export abstract class BigIndicatorSeries<Input = BigSource> implements IndicatorSeries<Big, Input> {
   /** Highest return value over the lifetime (not interval!) of the indicator. */
+  protected previousHighest?: Big;
   highest?: Big;
   /** Lowest return value over the lifetime (not interval!) of the indicator. */
+  protected previousLowest?: Big;
   lowest?: Big;
   /** Previous results can be useful, if a user wants to update a recent value instead of adding a new value. Essential for real-time data like growing candlesticks. */
   protected previousResult?: Big;
@@ -38,16 +40,24 @@ export abstract class BigIndicatorSeries<Input = BigSource> implements Indicator
     return this.result;
   }
 
-  protected setResult(value: Big): Big {
-    if (this.highest === undefined || value.gt(this.highest)) {
+  protected setResult(value: Big, replace: boolean = false): Big {
+    if (replace && this.previousHighest) {
+      this.highest = value.gt(this.previousHighest) ? value : this.previousHighest;
+    } else if (this.highest === undefined || value.gt(this.highest)) {
+      this.previousHighest = this.highest;
       this.highest = value;
     }
 
-    if (this.lowest === undefined || value.lt(this.lowest)) {
+    if (replace && this.previousLowest) {
+      this.lowest = value.lt(this.previousLowest) ? value : this.previousLowest;
+      console.log(this.lowest.toFixed(4));
+    } else if (this.lowest === undefined || value.lt(this.lowest)) {
+      this.previousLowest = this.lowest;
       this.lowest = value;
     }
 
     this.previousResult = this.result;
+
     return (this.result = value);
   }
 
@@ -56,8 +66,10 @@ export abstract class BigIndicatorSeries<Input = BigSource> implements Indicator
 
 export abstract class NumberIndicatorSeries<Input = number> implements IndicatorSeries<number, Input> {
   /** Highest return value over the lifetime (not interval!) of the indicator. */
+  protected previousHighest?: number;
   highest?: number;
   /** Lowest return value over the lifetime (not interval!) of the indicator. */
+  protected previousLowest?: number;
   lowest?: number;
   protected previousResult?: number;
   protected result?: number;
@@ -74,12 +86,19 @@ export abstract class NumberIndicatorSeries<Input = number> implements Indicator
     return this.result;
   }
 
-  protected setResult(value: number): number {
-    if (this.highest === undefined || value > this.highest) {
+  protected setResult(value: number, replace: boolean = false): number {
+    if (replace && this.previousHighest !== undefined) {
+      this.highest = value > this.previousHighest ? value : this.previousHighest;
+    } else if (this.highest === undefined || value > this.highest) {
+      this.previousHighest = this.highest;
       this.highest = value;
     }
 
-    if (this.lowest === undefined || value < this.lowest) {
+    if (replace && this.previousLowest) {
+      this.lowest = value < this.previousLowest ? value : this.previousLowest;
+      console.log(this.lowest.toFixed(4));
+    } else if (this.lowest === undefined || value < this.lowest) {
+      this.previousLowest = this.lowest;
       this.lowest = value;
     }
 

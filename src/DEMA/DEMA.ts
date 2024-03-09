@@ -25,7 +25,7 @@ export class DEMA extends BigIndicatorSeries {
   override update(price: BigSource, replace: boolean = false): Big {
     const innerResult = this.inner.update(price, replace);
     const outerResult = this.outer.update(innerResult, replace);
-    return this.setResult(innerResult.times(2).sub(outerResult));
+    return this.setResult(innerResult.times(2).sub(outerResult), replace);
   }
 
   override get isStable(): boolean {
@@ -46,7 +46,7 @@ export class FasterDEMA extends NumberIndicatorSeries {
   override update(price: number, replace: boolean = false): number {
     const innerResult = this.inner.update(price, replace);
     const outerResult = this.outer.update(innerResult, replace);
-    return this.setResult(innerResult * 2 - outerResult);
+    return this.setResult(innerResult * 2 - outerResult, replace);
   }
 
   override get isStable(): boolean {

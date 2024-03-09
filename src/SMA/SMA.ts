@@ -25,7 +25,7 @@ export class SMA extends MovingAverage {
     }
 
     if (this.prices.length === this.interval) {
-      return this.setResult(SMA.getResultFromBatch(this.prices));
+      return this.setResult(SMA.getResultFromBatch(this.prices), replace);
     }
   }
 
@@ -51,7 +51,7 @@ export class FasterSMA extends FasterMovingAverage {
 
     if (this.prices.length === this.interval) {
       const sum = this.prices.reduce((a, b) => a + b, 0);
-      return this.setResult(sum / this.prices.length);
+      return this.setResult(sum / this.prices.length, replace);
     }
   }
 }

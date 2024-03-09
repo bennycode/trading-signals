@@ -62,10 +62,10 @@ export class RSI extends BigIndicatorSeries {
       const avgLoss = this.avgLoss.getResult();
       // Prevent division by zero: https://github.com/bennycode/trading-signals/issues/378
       if (avgLoss.eq(0)) {
-        return this.setResult(new Big(100));
+        return this.setResult(new Big(100), replace);
       }
       const relativeStrength = this.avgGain.getResult().div(avgLoss);
-      return this.setResult(this.maxValue.minus(this.maxValue.div(relativeStrength.add(1))));
+      return this.setResult(this.maxValue.minus(this.maxValue.div(relativeStrength.add(1))), replace);
     }
   }
 }
@@ -111,10 +111,10 @@ export class FasterRSI extends NumberIndicatorSeries {
       const avgLoss = this.avgLoss.getResult();
       // Prevent division by zero: https://github.com/bennycode/trading-signals/issues/378
       if (avgLoss === 0) {
-        return this.setResult(100);
+        return this.setResult(100, replace);
       }
       const relativeStrength = this.avgGain.getResult() / avgLoss;
-      return this.setResult(this.maxValue - this.maxValue / (relativeStrength + 1));
+      return this.setResult(this.maxValue - this.maxValue / (relativeStrength + 1), replace);
     }
   }
 }
