@@ -48,12 +48,16 @@ export class MACD implements Indicator<MACDResult> {
     return this.result !== undefined;
   }
 
-  update(_price: BigSource): void | MACDResult {
+  update(_price: BigSource, replace: boolean = false): void | MACDResult {
     const price = new Big(_price);
-    this.prices.push(price);
+    if (this.prices.length && replace) {
+      this.prices[this.prices.length - 1] = price;
+    } else {
+      this.prices.push(price);
+    }
 
-    const short = this.short.update(price);
-    const long = this.long.update(price);
+    const short = this.short.update(price, replace);
+    const long = this.long.update(price, replace);
 
     if (this.prices.length > this.long.interval) {
       this.prices.shift();

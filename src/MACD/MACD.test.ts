@@ -2,6 +2,32 @@ import {FasterMACD, MACD} from './MACD.js';
 import {Big, DEMA, EMA, FasterEMA, NotEnoughDataError} from '../index.js';
 
 describe('MACD', () => {
+  describe('update', () => {
+    it('can replace recently added values', () => {
+      const ema = new MACD({
+        indicator: EMA,
+        longInterval: 5,
+        shortInterval: 2,
+        signalInterval: 9,
+      });
+      // const fasterEMA = new FasterEMA(5);
+      ema.update('81.59');
+      // fasterEMA.update(81.59);
+      ema.update('81.06');
+      // fasterEMA.update(81.06);
+      ema.update('82.87');
+      // fasterEMA.update(82.87);
+      ema.update('83.0');
+      // fasterEMA.update(83.0);
+      ema.update('90'); // this value gets replaced with the next call<
+      // fasterEMA.update(90); // this value gets replaced with the next call<
+      ema.update('83.61', true);
+      // fasterEMA.update(83.61, true);
+      expect(ema.getResult().macd.toFixed(2)).toBe('0.62');
+      // expect(fasterEMA.getResult().toFixed(2)).toBe('82.71');
+    });
+  });
+
   describe('getResult', () => {
     it('is compatible with results from Tulip Indicators (TI)', () => {
       // Test data verified with:
