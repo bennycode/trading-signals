@@ -78,7 +78,7 @@ export class FasterEMA extends FasterMovingAverage {
       this.result = price;
     }
 
-    if (replace && this.previousResult) {
+    if (replace && this.previousResult !== undefined) {
       return this.setResult(price * this.weightFactor + this.previousResult * (1 - this.weightFactor));
     }
     return this.setResult(price * this.weightFactor + this.result * (1 - this.weightFactor));
