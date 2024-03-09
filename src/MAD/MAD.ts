@@ -18,8 +18,12 @@ export class MAD extends BigIndicatorSeries {
     super();
   }
 
-  override update(price: BigSource): void | Big {
-    this.prices.push(price);
+  override update(price: BigSource, replace: boolean = false): void | Big {
+    if (this.prices.length && replace) {
+      this.prices[this.prices.length - 1] = price;
+    } else {
+      this.prices.push(price);
+    }
 
     if (this.prices.length > this.interval) {
       this.prices.shift();
@@ -48,8 +52,12 @@ export class FasterMAD extends NumberIndicatorSeries {
     super();
   }
 
-  override update(price: number): void | number {
-    this.prices.push(price);
+  override update(price: number, replace: boolean = false): void | number {
+    if (this.prices.length && replace) {
+      this.prices[this.prices.length - 1] = price;
+    } else {
+      this.prices.push(price);
+    }
 
     if (this.prices.length > this.interval) {
       this.prices.shift();

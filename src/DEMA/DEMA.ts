@@ -25,7 +25,6 @@ export class DEMA extends BigIndicatorSeries {
   override update(price: BigSource, replace: boolean = false): Big {
     const innerResult = this.inner.update(price, replace);
     const outerResult = this.outer.update(innerResult, replace);
-    console.log(price, replace, innerResult, outerResult);
     return this.setResult(innerResult.times(2).sub(outerResult));
   }
 
