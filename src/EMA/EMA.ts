@@ -49,7 +49,7 @@ export class EMA extends MovingAverage {
   }
 
   getResultFromBatch(prices: BigSource[]): Big {
-    let result: Big | undefined;
+    let result: Big = new Big(0);
     prices.forEach(price => {
       if (result) {
         result = new Big(price).times(2 / (prices.length + 1)).add(result.times(1 - 2 / (prices.length + 1)));
@@ -57,6 +57,7 @@ export class EMA extends MovingAverage {
         result = new Big(price);
       }
     });
+    return result;
   }
 }
 

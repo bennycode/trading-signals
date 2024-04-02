@@ -45,7 +45,7 @@ export class WSMA extends MovingAverage {
   }
 
   getResultFromBatch(prices: BigSource[]): Big {
-    let result: Big | undefined;
+    let result = new Big(0);
     prices.forEach(price => {
       const sma = this.indicator.getResultFromBatch([price]);
       if (result) {
