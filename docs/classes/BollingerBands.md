@@ -41,7 +41,7 @@ https://www.investopedia.com/terms/b/bollingerbands.asp
 
 ### constructor
 
-• **new BollingerBands**(`interval`, `deviationMultiplier?`)
+• **new BollingerBands**(`interval`, `deviationMultiplier?`, `smoothing?`)
 
 #### Parameters
 
