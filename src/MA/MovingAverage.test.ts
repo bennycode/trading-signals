@@ -12,6 +12,10 @@ class MyAverage extends FasterMovingAverage {
     this.total += price;
     return (this.result = this.total / this.iterations);
   }
+
+  getResultFromBatch(prices: number[]): number {
+    return prices.reduce((a, b) => a + b, 0) / prices.length;
+  }
 }
 
 describe('FasterMovingAverage', () => {

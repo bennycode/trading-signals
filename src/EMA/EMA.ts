@@ -97,4 +97,17 @@ export class FasterEMA extends FasterMovingAverage {
       return false;
     }
   }
+
+  getResultFromBatch(prices: number[]): number {
+    let result: number | undefined;
+    prices.forEach(price => {
+      if (result !== undefined) {
+        result = price * 2 / (prices.length + 1) + result * (1 - 2 / (prices.length + 1));
+      } else {
+        result = price;
+      }
+    });
+
+    return result!;
+  }
 }

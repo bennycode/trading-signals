@@ -46,4 +46,9 @@ export class FasterSMA extends FasterMovingAverage {
       return this.setResult(sum / this.prices.length);
     }
   }
+
+  getResultFromBatch(prices: number[]): number {
+    const sum = prices.reduce((a, b) => a + b, 0);
+    return sum / (prices.length || 1);
+  }
 }

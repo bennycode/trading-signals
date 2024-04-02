@@ -35,4 +35,6 @@ export abstract class FasterMovingAverage extends NumberIndicatorSeries {
   }
 
   abstract update(price: number): number | void;
+
+  abstract getResultFromBatch(prices: number[]): number;
 }
