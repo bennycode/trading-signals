@@ -28,7 +28,11 @@ export class BollingerBands implements Indicator<BandsResult> {
    * @param deviationMultiplier - The number of standard deviations away from the Middle Band that the Upper and Lower
    *   Bands should be
    */
-  constructor(public readonly interval: number, public readonly deviationMultiplier: number = 2, private smoothing: MovingAverage = new SMA(interval)) {}
+  constructor(
+    public readonly interval: number,
+    public readonly deviationMultiplier: number = 2,
+    private readonly smoothing: MovingAverage = new SMA(interval)
+  ) {}
 
   get isStable(): boolean {
     return this.result !== undefined;
