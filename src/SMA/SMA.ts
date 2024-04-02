@@ -21,11 +21,11 @@ export class SMA extends MovingAverage {
     }
 
     if (this.prices.length === this.interval) {
-      return this.setResult(SMA.getResultFromBatch(this.prices));
+      return this.setResult(this.getResultFromBatch(this.prices));
     }
   }
 
-  static getResultFromBatch(prices: BigSource[]): Big {
+  getResultFromBatch(prices: BigSource[]): Big {
     const sum = prices.reduce((a: Big, b: BigSource) => a.plus(b), new Big('0'));
     return sum.div(prices.length || 1);
   }

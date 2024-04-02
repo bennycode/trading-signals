@@ -47,6 +47,17 @@ export class EMA extends MovingAverage {
       return false;
     }
   }
+
+  getResultFromBatch(prices: BigSource[]): Big {
+    let result: Big | undefined;
+    prices.forEach(price => {
+      if (result) {
+        result = new Big(price).times(2 / (prices.length + 1)).add(result.times(1 - 2 / (prices.length + 1)));
+      } else {
+        result = new Big(price);
+      }
+    });
+  }
 }
 
 export class FasterEMA extends FasterMovingAverage {

@@ -19,6 +19,8 @@ export abstract class MovingAverage extends BigIndicatorSeries {
     return this.result;
   }
 
+  abstract getResultFromBatch(prices: BigSource[]): Big;
+
   abstract update(price: BigSource): Big | void;
 }
 

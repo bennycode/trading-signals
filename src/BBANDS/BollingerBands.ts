@@ -1,5 +1,4 @@
-import {Big, BigSource} from '../index.js';
-import {SMA} from '../SMA/SMA.js';
+import {Big, BigSource, MovingAverage, MovingAverageTypes, SMA} from '../index.js';
 import {NotEnoughDataError} from '../error/index.js';
 import {BandsResult, FasterBandsResult} from '../util/BandsResult.js';
 import {Indicator} from '../Indicator.js';
@@ -29,7 +28,7 @@ export class BollingerBands implements Indicator<BandsResult> {
    * @param deviationMultiplier - The number of standard deviations away from the Middle Band that the Upper and Lower
    *   Bands should be
    */
-  constructor(public readonly interval: number, public readonly deviationMultiplier: number = 2) {}
+  constructor(public readonly interval: number, public readonly deviationMultiplier: number = 2, private smoothing: MovingAverage = new SMA(interval)) {}
 
   get isStable(): boolean {
     return this.result !== undefined;
@@ -41,7 +40,7 @@ export class BollingerBands implements Indicator<BandsResult> {
     if (this.prices.length > this.interval) {
       this.prices.shift();
 
-      const middle = SMA.getResultFromBatch(this.prices);
+      const middle = this.smoothing.getResultFromBatch(this.prices);
       const standardDeviation = getStandardDeviation(this.prices, middle);
 
       return (this.result = {

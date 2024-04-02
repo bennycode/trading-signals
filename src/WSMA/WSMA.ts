@@ -43,6 +43,20 @@ export class WSMA extends MovingAverage {
       return this.setResult(sma);
     }
   }
+
+  getResultFromBatch(prices: BigSource[]): Big {
+    let result: Big | undefined;
+    prices.forEach(price => {
+      const sma = this.indicator.getResultFromBatch([price]);
+      if (result) {
+        const smoothed = new Big(price).minus(result).mul(this.smoothingFactor);
+        result = smoothed.plus(result);
+      } else if (result === undefined && sma) {
+        result = sma;
+      }
+    });
+    return result;
+  }
 }
 
 export class FasterWSMA extends NumberIndicatorSeries {
