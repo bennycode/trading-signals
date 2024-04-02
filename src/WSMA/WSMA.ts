@@ -83,4 +83,18 @@ export class FasterWSMA extends NumberIndicatorSeries {
       return this.setResult(sma);
     }
   }
+
+  getResultFromBatch(prices: number[]): number {
+    let result: number | undefined = undefined;
+    prices.forEach(price => {
+      const sma = this.indicator.getResultFromBatch([price]);
+      if (result !== undefined) {
+        const smoothed = (price - result) * this.smoothingFactor;
+        result = smoothed + result;
+      } else if (result === undefined && sma !== undefined) {
+        result = sma;
+      }
+    });
+    return result || 0;
+  }
 }

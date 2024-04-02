@@ -1,4 +1,4 @@
-import {Big, BigSource, MovingAverage, MovingAverageTypes, SMA} from '../index.js';
+import {Big, BigSource, MovingAverage, SMA} from '../index.js';
 import {NotEnoughDataError} from '../error/index.js';
 import {BandsResult, FasterBandsResult} from '../util/BandsResult.js';
 import {Indicator} from '../Indicator.js';
