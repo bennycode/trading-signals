@@ -49,15 +49,16 @@ export class EMA extends MovingAverage {
   }
 
   getResultFromBatch(prices: BigSource[]): Big {
-    let result: Big = new Big(0);
+    let result: Big | null = null;
+    const weightFactor = 2 / (prices.length + 1);
     prices.forEach(price => {
       if (result) {
-        result = new Big(price).times(2 / (prices.length + 1)).add(result.times(1 - 2 / (prices.length + 1)));
+        result = new Big(price).times(weightFactor).add(result.times(1 - weightFactor));
       } else {
         result = new Big(price);
       }
     });
-    return result;
+    return result || new Big(0);
   }
 }
 
@@ -100,9 +101,10 @@ export class FasterEMA extends FasterMovingAverage {
 
   getResultFromBatch(prices: number[]): number {
     let result: number | undefined;
+    const weightFactor = 2 / (prices.length + 1);
     prices.forEach(price => {
       if (result !== undefined) {
-        result = (price * 2) / (prices.length + 1) + result * (1 - 2 / (prices.length + 1));
+        result = price * weightFactor + result * (1 - weightFactor);
       } else {
         result = price;
       }

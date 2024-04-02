@@ -45,9 +45,9 @@ export class WSMA extends MovingAverage {
   }
 
   getResultFromBatch(prices: BigSource[]): Big {
-    let result = new Big(0);
+    let result: Big | undefined;
     prices.forEach(price => {
-      const sma = this.indicator.getResultFromBatch([price]);
+      const sma = this.indicator.update(price);
       if (result) {
         const smoothed = new Big(price).minus(result).mul(this.smoothingFactor);
         result = smoothed.plus(result);
@@ -55,7 +55,7 @@ export class WSMA extends MovingAverage {
         result = sma;
       }
     });
-    return result;
+    return result || new Big(0);
   }
 }
 
@@ -85,9 +85,9 @@ export class FasterWSMA extends NumberIndicatorSeries {
   }
 
   getResultFromBatch(prices: number[]): number {
-    let result: number | undefined = undefined;
+    let result: number | undefined;
     prices.forEach(price => {
-      const sma = this.indicator.getResultFromBatch([price]);
+      const sma = this.indicator.update(price);
       if (result !== undefined) {
         const smoothed = (price - result) * this.smoothingFactor;
         result = smoothed + result;
