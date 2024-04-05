@@ -33,12 +33,29 @@ describe('EMA', () => {
       fasterEMA.update(82.87);
       ema.update('83.0');
       fasterEMA.update(83.0);
-      ema.update('90'); // this value gets replaced with the next call<
-      fasterEMA.update(90); // this value gets replaced with the next call<
+      ema.update('90'); // this value gets replaced with the next call
+      fasterEMA.update(90); // this value gets replaced with the next call
       ema.update('83.61', true);
       fasterEMA.update(83.61, true);
       expect(ema.getResult().toFixed(2)).toBe('82.71');
       expect(fasterEMA.getResult().toFixed(2)).toBe('82.71');
+    });
+
+    it('will simply add prices when there are no prices to replace', () => {
+      const ema = new EMA(5);
+      ema.update(prices[0], true);
+      ema.update(prices[1]);
+      ema.update(prices[2]);
+      ema.update(prices[3]);
+      ema.update(prices[4]);
+      expect(ema.getResult().toFixed(2)).toBe('82.71');
+
+      const fasterEMA = new FasterEMA(5);
+      fasterEMA.update(prices[0], true);
+      fasterEMA.update(prices[1]);
+      fasterEMA.update(prices[2]);
+      fasterEMA.update(prices[3]);
+      fasterEMA.update(prices[4]);
     });
   });
 

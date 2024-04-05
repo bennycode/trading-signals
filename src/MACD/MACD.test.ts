@@ -20,8 +20,8 @@ describe('MACD', () => {
       fasterMACD.update(82.87);
       macd.update('83.0');
       fasterMACD.update(83.0);
-      macd.update('90'); // this value gets replaced with the next call<
-      fasterMACD.update(90); // this value gets replaced with the next call<
+      macd.update('90'); // this value gets replaced with the next call
+      fasterMACD.update(90); // this value gets replaced with the next call
       macd.update('83.61', true);
       fasterMACD.update(83.61, true);
 

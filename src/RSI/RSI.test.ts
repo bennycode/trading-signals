@@ -20,8 +20,8 @@ describe('RSI', () => {
       fasterRSI.update(83.15);
       rsi.update('82.84');
       fasterRSI.update(82.84);
-      rsi.update('90'); // this value gets replaced with the next call<
-      fasterRSI.update(90); // this value gets replaced with the next call<
+      rsi.update('90'); // this value gets replaced with the next call
+      fasterRSI.update(90); // this value gets replaced with the next call
       rsi.update('83.99', true);
       fasterRSI.update(83.99, true);
 

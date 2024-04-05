@@ -18,8 +18,8 @@ describe('WSMA', () => {
       fasterWSMA.update(15);
       wsma.update('16');
       fasterWSMA.update(16);
-      wsma.update('20'); // this value gets replaced with the next call<
-      fasterWSMA.update(20); // this value gets replaced with the next call<
+      wsma.update('20'); // this value gets replaced with the next call
+      fasterWSMA.update(20); // this value gets replaced with the next call
       wsma.update('18', true);
       fasterWSMA.update(18, true);
 
