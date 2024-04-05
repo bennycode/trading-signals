@@ -1,3 +1,13 @@
+## 5.0.0 (2024-04-05)
+
+##### Documentation Changes
+
+- Mention live-charting functionality ([03740200](https://github.com/bennycode/trading-signals/commit/03740200c79550e94df73db850aa4f8629332607))
+
+##### New Features
+
+- **AC,ADX,CG,DEMA,DMA,EMA,MACD,MAD,MOM,ROC,RSI,SMA,STOCH,TR,WSMA:** Allow replacing values ([#654](https://github.com/bennycode/trading-signals/pull/654)) ([4f95dfa0](https://github.com/bennycode/trading-signals/commit/4f95dfa0c75a292ef3c01b7f2658c48779473dc7))
+
 ## 4.0.0 (2023-10-31)
 
 ##### Documentation Changes
