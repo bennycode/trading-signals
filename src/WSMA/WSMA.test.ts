@@ -2,6 +2,35 @@ import {FasterWSMA, WSMA} from './WSMA.js';
 import {NotEnoughDataError} from '../error/index.js';
 
 describe('WSMA', () => {
+  describe('update', () => {
+    it('can replace recently added values', () => {
+      const wsma = new WSMA(5);
+      const fasterWSMA = new FasterWSMA(5);
+      wsma.update('11');
+      fasterWSMA.update(11);
+      wsma.update('12');
+      fasterWSMA.update(12);
+      wsma.update('13');
+      fasterWSMA.update(13);
+      wsma.update('14');
+      fasterWSMA.update(14);
+      wsma.update('15');
+      fasterWSMA.update(15);
+      wsma.update('16');
+      fasterWSMA.update(16);
+      wsma.update('20'); // this value gets replaced with the next call
+      fasterWSMA.update(20); // this value gets replaced with the next call
+      wsma.update('18', true);
+      fasterWSMA.update(18, true);
+
+      expect(wsma.isStable).toBe(true);
+      expect(fasterWSMA.isStable).toBe(true);
+
+      expect(wsma.getResult().toFixed(2)).toBe('14.48');
+      expect(fasterWSMA.getResult().toFixed(2)).toBe('14.48');
+    });
+  });
+
   describe('getResult', () => {
     it('calculates the WSMA based on a SMA', () => {
       // Test data verified with:

@@ -270,11 +270,11 @@ describe('AC', () => {
       expect(ac.momentum.getResult().toFixed(2)).toBe('-9.22');
       expect(fasterAC.momentum.getResult().toFixed(2)).toBe('-9.22');
 
-      expect(ac.lowest!.toFixed(2)).toBe('-21.97');
-      expect(fasterAC.lowest!.toFixed(2)).toBe('-21.97');
+      expect(ac.lowest?.toFixed(2)).toBe('-21.97');
+      expect(fasterAC.lowest?.toFixed(2)).toBe('-21.97');
 
-      expect(ac.highest!.toFixed(2)).toBe('11.65');
-      expect(fasterAC.highest!.toFixed(2)).toBe('11.65');
+      expect(ac.highest?.toFixed(2)).toBe('11.65');
+      expect(fasterAC.highest?.toFixed(2)).toBe('11.65');
     });
 
     it('throws an error when there is not enough input data', () => {

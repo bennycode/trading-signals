@@ -29,8 +29,12 @@ export class CG extends BigIndicatorSeries {
     this.signal = new SMA(signalInterval);
   }
 
-  override update(price: BigSource): void | Big {
-    this.prices.push(new Big(price));
+  override update(price: BigSource, replace: boolean = false): void | Big {
+    if (this.prices.length && replace) {
+      this.prices[this.prices.length - 1] = new Big(price);
+    } else {
+      this.prices.push(new Big(price));
+    }
 
     if (this.prices.length > this.interval) {
       this.prices.shift();
@@ -47,10 +51,10 @@ export class CG extends BigIndicatorSeries {
 
     const cg = denominator.gt(0) ? nominator.div(denominator) : new Big(0);
 
-    this.signal.update(cg);
+    this.signal.update(cg, replace);
 
     if (this.signal.isStable) {
-      return this.setResult(cg);
+      return this.setResult(cg, replace);
     }
   }
 }
@@ -69,8 +73,12 @@ export class FasterCG extends NumberIndicatorSeries {
     this.signal = new FasterSMA(signalInterval);
   }
 
-  override update(price: number): void | number {
-    this.prices.push(price);
+  override update(price: number, replace: boolean = false): void | number {
+    if (this.prices.length && replace) {
+      this.prices[this.prices.length - 1] = price;
+    } else {
+      this.prices.push(price);
+    }
 
     if (this.prices.length > this.interval) {
       this.prices.shift();
@@ -87,10 +95,10 @@ export class FasterCG extends NumberIndicatorSeries {
 
     const cg = denominator > 0 ? nominator / denominator : 0;
 
-    this.signal.update(cg);
+    this.signal.update(cg, replace);
 
     if (this.signal.isStable) {
-      return this.setResult(cg);
+      return this.setResult(cg, replace);
     }
   }
 }

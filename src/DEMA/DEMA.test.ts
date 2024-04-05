@@ -13,6 +13,41 @@ const dema10results = [
 ];
 
 describe('DEMA', () => {
+  describe('update', () => {
+    it('can replace recently added values', () => {
+      const dema = new DEMA(10);
+      const fasterDEMA = new FasterDEMA(10);
+      dema.update(81);
+      fasterDEMA.update(81);
+      dema.update(24);
+      fasterDEMA.update(24);
+      dema.update(75);
+      fasterDEMA.update(75);
+      dema.update(21);
+      fasterDEMA.update(21);
+      dema.update(34);
+      fasterDEMA.update(34);
+      dema.update(25);
+      fasterDEMA.update(25);
+      dema.update(72);
+      fasterDEMA.update(72);
+      dema.update(92);
+      fasterDEMA.update(92);
+      dema.update(100);
+      fasterDEMA.update(100);
+      dema.update(99, true);
+      fasterDEMA.update(99, true);
+      dema.update(2);
+      fasterDEMA.update(2);
+
+      expect(dema.isStable).toBe(true);
+      expect(fasterDEMA.isStable).toBe(true);
+
+      expect(dema.getResult().toFixed(2)).toBe('48.96');
+      expect(fasterDEMA.getResult().toFixed(2)).toBe('48.96');
+    });
+  });
+
   describe('getResult', () => {
     it('calculates the DEMA with interval 10', () => {
       const prices = [
