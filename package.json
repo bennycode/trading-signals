@@ -92,5 +92,5 @@
     "test:types": "npm run lint:types"
   },
   "type": "module",
-  "version": "4.0.0"
+  "version": "5.0.0"
 }
