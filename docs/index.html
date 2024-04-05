@@ -24,9 +24,7 @@
               ><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><use href="#icon-search"></use></svg></label
             ><input type="text" id="tsd-search-field" aria-label="Search" />
           </div>
-          <div class="field">
-            <div id="tsd-toolbar-links"></div>
-          </div>
+          <div class="field"><div id="tsd-toolbar-links"></div></div>
           <ul class="results">
             <li class="state loading">Preparing search index...</li>
             <li class="state failure">The search index is not available</li>
@@ -42,9 +40,7 @@
     </header>
     <div class="container container-main">
       <div class="col-content">
-        <div class="tsd-page-title">
-          <h2>trading-signals</h2>
-        </div>
+        <div class="tsd-page-title"><h2>trading-signals</h2></div>
         <div class="tsd-panel tsd-typography">
           <a id="md:trading-signals" class="tsd-anchor"></a>
           <h1><a href="#md:trading-signals">Trading Signals</a></h1>
@@ -63,7 +59,7 @@
           </p>
           <p>
             The main focus of this library is on the accuracy of calculations, but using the provided
-            <a href="#faster-implementations">faster implementations</a> you can also use it where performance is
+            <a href="#md:faster-implementations">faster implementations</a> you can also use it where performance is
             important.
           </p>
           <p>
@@ -80,11 +76,12 @@
             <li><strong>Convenient.</strong> Indicators with intervals will save their all-time highs and lows.</li>
             <li>
               <strong>Fast.</strong> If you need high throughput, you can use the included
-              <a href="#faster-implementations">faster implementations</a>.
+              <a href="#md:faster-implementations">faster implementations</a>.
             </li>
             <li>
               <strong>Flexible.</strong> All advanced indicators support different smoothing overlays (WSMA, etc.).
             </li>
+            <li><strong>Live.</strong> It allows for the replacement of values, enabling live charting.</li>
             <li><strong>Modern.</strong> Uses ECMAScript Modules (ESM) syntax.</li>
             <li>
               <strong>Precise.</strong> Better accuracy than calculating with primitive numbers thanks to
@@ -94,7 +91,7 @@
             <li><strong>Tested.</strong> Code coverage is 100%. No surprises when using it.</li>
             <li><strong>Typed.</strong> Source code is 100% TypeScript. No need to install external typings.</li>
             <li>
-              <strong>Verified.</strong> All results are verified with <a href="#alternatives">other libraries</a> to
+              <strong>Verified.</strong> All results are verified with <a href="#md:alternatives">other libraries</a> to
               guarantee correctness.
             </li>
             <li><strong>Versatile.</strong> Indicators can be updated up-front or by streaming prices.</li>
@@ -146,7 +143,7 @@
           </ol>
           <a id="md:usage" class="tsd-anchor"></a>
           <h2><a href="#md:usage">Usage</a></h2>
-          <pre><code class="language-typescript"><span class="hl-0">import</span><span class="hl-1"> {</span><span class="hl-2">Big</span><span class="hl-1">, </span><span class="hl-2">SMA</span><span class="hl-1">} </span><span class="hl-0">from</span><span class="hl-1"> </span><span class="hl-3">&#39;trading-signals&#39;</span><span class="hl-1">;</span><br/><br/><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-5">sma</span><span class="hl-1"> = </span><span class="hl-4">new</span><span class="hl-1"> </span><span class="hl-6">SMA</span><span class="hl-1">(</span><span class="hl-7">3</span><span class="hl-1">);</span><br/><br/><span class="hl-8">// You can add numbers individually:</span><br/><span class="hl-2">sma</span><span class="hl-1">.</span><span class="hl-6">update</span><span class="hl-1">(</span><span class="hl-7">40</span><span class="hl-1">);</span><br/><span class="hl-2">sma</span><span class="hl-1">.</span><span class="hl-6">update</span><span class="hl-1">(</span><span class="hl-7">30</span><span class="hl-1">);</span><br/><span class="hl-2">sma</span><span class="hl-1">.</span><span class="hl-6">update</span><span class="hl-1">(</span><span class="hl-7">20</span><span class="hl-1">);</span><br/><br/><span class="hl-8">// You can add multiple numbers at once:</span><br/><span class="hl-2">sma</span><span class="hl-1">.</span><span class="hl-6">updates</span><span class="hl-1">([</span><span class="hl-7">20</span><span class="hl-1">, </span><span class="hl-7">40</span><span class="hl-1">, </span><span class="hl-7">80</span><span class="hl-1">]);</span><br/><br/><span class="hl-8">// You can add strings:</span><br/><span class="hl-2">sma</span><span class="hl-1">.</span><span class="hl-6">update</span><span class="hl-1">(</span><span class="hl-3">&#39;10&#39;</span><span class="hl-1">);</span><br/><br/><span class="hl-8">// You can add arbitrary-precision decimals:</span><br/><span class="hl-2">sma</span><span class="hl-1">.</span><span class="hl-6">update</span><span class="hl-1">(</span><span class="hl-4">new</span><span class="hl-1"> </span><span class="hl-6">Big</span><span class="hl-1">(</span><span class="hl-7">30</span><span class="hl-1">));</span><br/><br/><span class="hl-8">// You can get the result in various formats:</span><br/><span class="hl-2">console</span><span class="hl-1">.</span><span class="hl-6">log</span><span class="hl-1">(</span><span class="hl-2">sma</span><span class="hl-1">.</span><span class="hl-6">getResult</span><span class="hl-1">().</span><span class="hl-6">toFixed</span><span class="hl-1">(</span><span class="hl-7">2</span><span class="hl-1">)); </span><span class="hl-8">// &quot;40.00&quot;</span><br/><span class="hl-2">console</span><span class="hl-1">.</span><span class="hl-6">log</span><span class="hl-1">(</span><span class="hl-2">sma</span><span class="hl-1">.</span><span class="hl-6">getResult</span><span class="hl-1">().</span><span class="hl-6">toFixed</span><span class="hl-1">(</span><span class="hl-7">4</span><span class="hl-1">)); </span><span class="hl-8">// &quot;40.0000&quot;</span>
+          <pre><code class="language-typescript"><span class="hl-0">import</span><span class="hl-1"> {</span><span class="hl-2">Big</span><span class="hl-1">, </span><span class="hl-2">SMA</span><span class="hl-1">} </span><span class="hl-0">from</span><span class="hl-1"> </span><span class="hl-3">&#39;trading-signals&#39;</span><span class="hl-1">;</span><br/><br/><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-5">sma</span><span class="hl-1"> = </span><span class="hl-4">new</span><span class="hl-1"> </span><span class="hl-6">SMA</span><span class="hl-1">(</span><span class="hl-7">3</span><span class="hl-1">);</span><br/><br/><span class="hl-8">// You can add numbers individually:</span><br/><span class="hl-2">sma</span><span class="hl-1">.</span><span class="hl-6">update</span><span class="hl-1">(</span><span class="hl-7">40</span><span class="hl-1">);</span><br/><span class="hl-2">sma</span><span class="hl-1">.</span><span class="hl-6">update</span><span class="hl-1">(</span><span class="hl-7">30</span><span class="hl-1">);</span><br/><span class="hl-2">sma</span><span class="hl-1">.</span><span class="hl-6">update</span><span class="hl-1">(</span><span class="hl-7">20</span><span class="hl-1">);</span><br/><br/><span class="hl-8">// You can add multiple numbers at once:</span><br/><span class="hl-2">sma</span><span class="hl-1">.</span><span class="hl-6">updates</span><span class="hl-1">([</span><span class="hl-7">20</span><span class="hl-1">, </span><span class="hl-7">40</span><span class="hl-1">, </span><span class="hl-7">80</span><span class="hl-1">]);</span><br/><br/><span class="hl-8">// You can add strings:</span><br/><span class="hl-2">sma</span><span class="hl-1">.</span><span class="hl-6">update</span><span class="hl-1">(</span><span class="hl-3">&#39;10&#39;</span><span class="hl-1">);</span><br/><br/><span class="hl-8">// You can replace a previous value (useful for live charts):</span><br/><span class="hl-2">sma</span><span class="hl-1">.</span><span class="hl-6">update</span><span class="hl-1">(</span><span class="hl-3">&#39;40&#39;</span><span class="hl-1">, </span><span class="hl-4">true</span><span class="hl-1">);</span><br/><br/><span class="hl-8">// You can add arbitrary-precision decimals:</span><br/><span class="hl-2">sma</span><span class="hl-1">.</span><span class="hl-6">update</span><span class="hl-1">(</span><span class="hl-4">new</span><span class="hl-1"> </span><span class="hl-6">Big</span><span class="hl-1">(</span><span class="hl-7">30</span><span class="hl-1">));</span><br/><br/><span class="hl-8">// You can get the result in various formats:</span><br/><span class="hl-2">console</span><span class="hl-1">.</span><span class="hl-6">log</span><span class="hl-1">(</span><span class="hl-2">sma</span><span class="hl-1">.</span><span class="hl-6">getResult</span><span class="hl-1">().</span><span class="hl-6">toFixed</span><span class="hl-1">(</span><span class="hl-7">2</span><span class="hl-1">)); </span><span class="hl-8">// &quot;40.00&quot;</span><br/><span class="hl-2">console</span><span class="hl-1">.</span><span class="hl-6">log</span><span class="hl-1">(</span><span class="hl-2">sma</span><span class="hl-1">.</span><span class="hl-6">getResult</span><span class="hl-1">().</span><span class="hl-6">toFixed</span><span class="hl-1">(</span><span class="hl-7">4</span><span class="hl-1">)); </span><span class="hl-8">// &quot;40.0000&quot;</span>
 </code><button>Copy</button></pre>
           <a id="md:when-to-use-update" class="tsd-anchor"></a>
           <h3>
@@ -544,14 +541,14 @@
       </div>
     </div>
     <div class="tsd-generator">
-      <p>Generated using <a href="https://typedoc.org/" rel="noopener" target="_blank">TypeDoc</a></p>
+      <p>Generated using <a href="https://typedoc.org/" target="_blank">TypeDoc</a></p>
     </div>
     <div class="overlay"></div>
     <svg style="display: none">
       <g id="icon-1">
         <rect
           fill="var(--color-icon-background)"
-          stroke="var(--color-ts-namespace)"
+          stroke="var(--color-ts-module)"
           stroke-width="1.5"
           x="1"
           y="1"
@@ -559,13 +556,13 @@
           height="22"
           rx="6"></rect>
         <path
-          d="M9.33 16V7.24H10.77L13.446 14.74C13.43 14.54 13.41 14.296 13.386 14.008C13.37 13.712 13.354 13.404 13.338 13.084C13.33 12.756 13.326 12.448 13.326 12.16V7.24H14.37V16H12.93L10.266 8.5C10.282 8.692 10.298 8.936 10.314 9.232C10.33 9.52 10.342 9.828 10.35 10.156C10.366 10.476 10.374 10.784 10.374 11.08V16H9.33Z"
+          d="M9.162 16V7.24H10.578L11.514 10.072C11.602 10.328 11.674 10.584 11.73 10.84C11.794 11.088 11.842 11.28 11.874 11.416C11.906 11.28 11.954 11.088 12.018 10.84C12.082 10.584 12.154 10.324 12.234 10.06L13.122 7.24H14.538V16H13.482V12.82C13.482 12.468 13.49 12.068 13.506 11.62C13.53 11.172 13.558 10.716 13.59 10.252C13.622 9.78 13.654 9.332 13.686 8.908C13.726 8.476 13.762 8.1 13.794 7.78L12.366 12.16H11.334L9.894 7.78C9.934 8.092 9.97 8.456 10.002 8.872C10.042 9.28 10.078 9.716 10.11 10.18C10.142 10.636 10.166 11.092 10.182 11.548C10.206 12.004 10.218 12.428 10.218 12.82V16H9.162Z"
           fill="var(--color-text)"></path>
       </g>
       <g id="icon-2">
         <rect
           fill="var(--color-icon-background)"
-          stroke="var(--color-ts-namespace)"
+          stroke="var(--color-ts-module)"
           stroke-width="1.5"
           x="1"
           y="1"
@@ -573,7 +570,7 @@
           height="22"
           rx="6"></rect>
         <path
-          d="M9.33 16V7.24H10.77L13.446 14.74C13.43 14.54 13.41 14.296 13.386 14.008C13.37 13.712 13.354 13.404 13.338 13.084C13.33 12.756 13.326 12.448 13.326 12.16V7.24H14.37V16H12.93L10.266 8.5C10.282 8.692 10.298 8.936 10.314 9.232C10.33 9.52 10.342 9.828 10.35 10.156C10.366 10.476 10.374 10.784 10.374 11.08V16H9.33Z"
+          d="M9.162 16V7.24H10.578L11.514 10.072C11.602 10.328 11.674 10.584 11.73 10.84C11.794 11.088 11.842 11.28 11.874 11.416C11.906 11.28 11.954 11.088 12.018 10.84C12.082 10.584 12.154 10.324 12.234 10.06L13.122 7.24H14.538V16H13.482V12.82C13.482 12.468 13.49 12.068 13.506 11.62C13.53 11.172 13.558 10.716 13.59 10.252C13.622 9.78 13.654 9.332 13.686 8.908C13.726 8.476 13.762 8.1 13.794 7.78L12.366 12.16H11.334L9.894 7.78C9.934 8.092 9.97 8.456 10.002 8.872C10.042 9.28 10.078 9.716 10.11 10.18C10.142 10.636 10.166 11.092 10.182 11.548C10.206 12.004 10.218 12.428 10.218 12.82V16H9.162Z"
           fill="var(--color-text)"></path>
       </g>
       <g id="icon-4">
