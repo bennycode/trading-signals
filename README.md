@@ -85,6 +85,9 @@ sma.updates([20, 40, 80]);
 // You can add strings:
 sma.update('10');
 
+// You can replace a previous value (useful for live charts):
+sma.update('40', true);
+
 // You can add arbitrary-precision decimals:
 sma.update(new Big(30));
 
