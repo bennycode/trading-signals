@@ -42,15 +42,17 @@ describe('TR', () => {
     it('calculates the True Range (TR)', () => {
       const tr = new TR();
       const fasterTR = new FasterTR();
-      for (const candle of candles) {
+
+      candles.forEach((candle, i) => {
         tr.update(candle);
         fasterTR.update(candle);
         if (tr.isStable && fasterTR.isStable) {
-          const expected = expectations.shift();
+          const expected = expectations[i]; // .shift();
           expect(tr.getResult().toFixed(2)).toBe(expected!);
           expect(fasterTR.getResult().toFixed(2)).toBe(expected!);
         }
-      }
+      });
+
       expect(tr.isStable).toBe(true);
       expect(fasterTR.isStable).toBe(true);
 
@@ -62,6 +64,42 @@ describe('TR', () => {
 
       expect(tr.highest?.toFixed(2)).toBe('2.00');
       expect(fasterTR.highest?.toFixed(2)).toBe('2.00');
+    });
+
+    it('should replace recently added values', () => {
+      const tr = new TR();
+      const fasterTR = new FasterTR();
+
+      // Update candles except last one.
+      candles.slice(-1).forEach((candle, i) => {
+        tr.update(candle);
+        fasterTR.update(candle);
+      });
+
+      const expected = expectations.at(-1);
+      const lastCandle = candles.at(-1)!;
+      const otherCandle = {close: 84.55, high: 84.84, low: 84.15};
+
+      // Add the last candle
+      tr.update(lastCandle);
+      fasterTR.update(lastCandle);
+
+      expect(tr.getResult().toFixed(2)).toBe(expected);
+      expect(fasterTR.getResult().toFixed(2)).toBe(expected);
+
+      // Replace the last candle with some other candle.
+      tr.update(otherCandle, true);
+      fasterTR.update(otherCandle, true);
+
+      expect(tr.getResult().toFixed(2)).not.toBe(expected);
+      expect(fasterTR.getResult().toFixed(2)).not.toBe(expected);
+
+      // Replace other candle again with the last candle.
+      tr.update(lastCandle, true);
+      fasterTR.update(lastCandle, true);
+
+      expect(tr.getResult().toFixed(2)).toBe(expected);
+      expect(fasterTR.getResult().toFixed(2)).toBe(expected);
     });
   });
 });
