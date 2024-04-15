@@ -71,7 +71,7 @@ describe('TR', () => {
       const fasterTR = new FasterTR();
 
       // Update candles except last one.
-      candles.slice(-1).forEach((candle, i) => {
+      candles.slice(-1).forEach(candle => {
         tr.update(candle);
         fasterTR.update(candle);
       });
