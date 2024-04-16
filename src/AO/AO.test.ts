@@ -48,15 +48,15 @@ describe('AO', () => {
           const actual = ao.getResult().toFixed(4);
           const expected = aos.shift()!;
           expect(parseFloat(actual)).toBe(expected);
-          expect(fasterResult!.toFixed(4)).toBe(expected.toFixed(4));
+          expect(fasterResult?.toFixed(4)).toBe(expected.toFixed(4));
         }
       }
 
-      expect(ao.lowest!.toFixed(2)).toBe('-11.50');
-      expect(fasterAO.lowest!.toFixed(2)).toBe('-11.50');
+      expect(ao.lowest?.toFixed(2)).toBe('-11.50');
+      expect(fasterAO.lowest?.toFixed(2)).toBe('-11.50');
 
-      expect(ao.highest!.toFixed(2)).toBe('33.35');
-      expect(fasterAO.highest!.toFixed(2)).toBe('33.35');
+      expect(ao.highest?.toFixed(2)).toBe('33.35');
+      expect(fasterAO.highest?.toFixed(2)).toBe('33.35');
     });
 
     it('throws an error when there is not enough input data', () => {

@@ -55,11 +55,11 @@ describe('MOM', () => {
       expect(momentum.isStable).toBe(true);
       expect(fasterMomentum.isStable).toBe(true);
 
-      expect(momentum.lowest!.toFixed(2)).toBe('0.75');
-      expect(fasterMomentum.lowest!.toFixed(2)).toBe('0.75');
+      expect(momentum.lowest?.toFixed(2)).toBe('0.75');
+      expect(fasterMomentum.lowest?.toFixed(2)).toBe('0.75');
 
-      expect(momentum.highest!.toFixed(2)).toBe('3.70');
-      expect(fasterMomentum.highest!.toFixed(2)).toBe('3.70');
+      expect(momentum.highest?.toFixed(2)).toBe('3.70');
+      expect(fasterMomentum.highest?.toFixed(2)).toBe('3.70');
     });
 
     it('throws an error when there is not enough input data', () => {

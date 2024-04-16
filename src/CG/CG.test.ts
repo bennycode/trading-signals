@@ -72,12 +72,12 @@ describe('CG', () => {
       expect(cgResult.gt(signalResult)).toBe(false);
 
       expect(cgResult.toFixed(4)).toBe('2.7059');
-      expect(cg.lowest!.toFixed(4)).toBe('2.6081');
-      expect(cg.highest!.toFixed(4)).toBe('3.1176');
+      expect(cg.lowest?.toFixed(4)).toBe('2.6081');
+      expect(cg.highest?.toFixed(4)).toBe('3.1176');
 
       expect(fasterCG.getResult().toFixed(4)).toBe('2.7059');
-      expect(fasterCG.lowest!.toFixed(4)).toBe('2.6081');
-      expect(fasterCG.highest!.toFixed(4)).toBe('3.1176');
+      expect(fasterCG.lowest?.toFixed(4)).toBe('2.6081');
+      expect(fasterCG.highest?.toFixed(4)).toBe('3.1176');
     });
   });
 
@@ -108,11 +108,11 @@ describe('CG', () => {
       expect(cgResult.toFixed(4)).toBe('2.7059');
       expect(fasterCG.getResult().toFixed(4)).toBe('2.7059');
 
-      expect(cg.lowest!.toFixed(4)).toBe('2.6081');
-      expect(fasterCG.lowest!.toFixed(4)).toBe('2.6081');
+      expect(cg.lowest?.toFixed(4)).toBe('2.6081');
+      expect(fasterCG.lowest?.toFixed(4)).toBe('2.6081');
 
-      expect(cg.highest!.toFixed(4)).toBe('3.1176');
-      expect(fasterCG.highest!.toFixed(4)).toBe('3.1176');
+      expect(cg.highest?.toFixed(4)).toBe('3.1176');
+      expect(fasterCG.highest?.toFixed(4)).toBe('3.1176');
     });
 
     it('throws an error when there is not enough input data', () => {

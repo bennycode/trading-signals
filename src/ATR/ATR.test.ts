@@ -44,11 +44,11 @@ describe('ATR', () => {
       expect(atr.getResult().toFixed(2)).toBe('1.14');
       expect(fasterATR.getResult().toFixed(2)).toBe('1.14');
 
-      expect(atr.lowest!.toFixed(2)).toBe('1.01');
-      expect(fasterATR.lowest!.toFixed(2)).toBe('1.01');
+      expect(atr.lowest?.toFixed(2)).toBe('1.01');
+      expect(fasterATR.lowest?.toFixed(2)).toBe('1.01');
 
-      expect(atr.highest!.toFixed(2)).toBe('1.24');
-      expect(fasterATR.highest!.toFixed(2)).toBe('1.24');
+      expect(atr.highest?.toFixed(2)).toBe('1.24');
+      expect(fasterATR.highest?.toFixed(2)).toBe('1.24');
     });
 
     it('throws an error when there is not enough input data', () => {

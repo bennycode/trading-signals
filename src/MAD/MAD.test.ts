@@ -81,8 +81,8 @@ describe('MAD', () => {
       }
       expect(mad.highest!.valueOf()).toBe('1.0184');
       expect(mad.lowest!.valueOf()).toBe('0.2288');
-      expect(fasterMAD.highest!.toFixed(4)).toBe('1.0184');
-      expect(fasterMAD.lowest!.toFixed(4)).toBe('0.2288');
+      expect(fasterMAD.highest?.toFixed(4)).toBe('1.0184');
+      expect(fasterMAD.lowest?.toFixed(4)).toBe('0.2288');
     });
 
     it('throws an error when there is not enough input data', () => {

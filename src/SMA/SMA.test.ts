@@ -72,8 +72,8 @@ describe('SMA', () => {
       sma.update('10');
       sma.update(new Big(30));
       expect(sma.getResult().valueOf()).toBe('20');
-      expect(sma.lowest!.toFixed(2)).toBe('20.00');
-      expect(sma.highest!.toFixed(2)).toBe('30.00');
+      expect(sma.lowest?.toFixed(2)).toBe('20.00');
+      expect(sma.highest?.toFixed(2)).toBe('30.00');
     });
   });
 
@@ -117,11 +117,11 @@ describe('SMA', () => {
       expect(sma.getResult().toFixed(3)).toBe('86.804');
       expect(fasterSMA.getResult()).toBe(86.804);
 
-      expect(sma.highest!.toFixed(2)).toBe('86.80');
-      expect(fasterSMA.highest!.toFixed(2)).toBe('86.80');
+      expect(sma.highest?.toFixed(2)).toBe('86.80');
+      expect(fasterSMA.highest?.toFixed(2)).toBe('86.80');
 
-      expect(sma.lowest!.toFixed(2)).toBe('82.43');
-      expect(fasterSMA.lowest!.toFixed(2)).toBe('82.43');
+      expect(sma.lowest?.toFixed(2)).toBe('82.43');
+      expect(fasterSMA.lowest?.toFixed(2)).toBe('82.43');
     });
 
     it('throws an error when there is not enough input data', () => {
