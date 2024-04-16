@@ -1,4 +1,4 @@
-import Benchmark, {Event} from 'benchmark';
+import Benchmark, {type Event} from 'benchmark';
 import candles from '../test/fixtures/candles/100-candles.json' assert {type: 'json'};
 import {
   AC,
@@ -47,7 +47,6 @@ import {
   MAD,
   MOM,
   OBV,
-  OpenHighLowCloseVolumeNumber,
   Period,
   ROC,
   RSI,
@@ -56,6 +55,7 @@ import {
   StochasticRSI,
   TR,
   WSMA,
+  type OpenHighLowCloseVolumeNumber,
 } from '../index.js';
 
 const shortInterval = 10;

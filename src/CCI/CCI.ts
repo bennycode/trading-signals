@@ -1,6 +1,6 @@
 import {BigIndicatorSeries, NumberIndicatorSeries} from '../Indicator.js';
-import {Big, BigSource} from '../index.js';
-import {HighLowClose, HighLowCloseNumber} from '../util/index.js';
+import {Big, type BigSource} from '../index.js';
+import type {HighLowClose, HighLowCloseNumber} from '../util/index.js';
 import {FasterSMA, SMA} from '../SMA/SMA.js';
 import {FasterMAD, MAD} from '../MAD/MAD.js';
 

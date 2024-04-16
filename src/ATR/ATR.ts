@@ -1,9 +1,9 @@
-import {Big} from '../index.js';
+import type {Big} from '../index.js';
 import {BigIndicatorSeries, NumberIndicatorSeries} from '../Indicator.js';
-import {FasterMovingAverage, MovingAverage} from '../MA/MovingAverage.js';
-import {FasterMovingAverageTypes, MovingAverageTypes} from '../MA/MovingAverageTypes.js';
+import type {FasterMovingAverage, MovingAverage} from '../MA/MovingAverage.js';
+import type {FasterMovingAverageTypes, MovingAverageTypes} from '../MA/MovingAverageTypes.js';
 import {FasterTR, TR} from '../TR/TR.js';
-import {HighLowClose, HighLowCloseNumber} from '../util/index.js';
+import type {HighLowClose, HighLowCloseNumber} from '../util/index.js';
 import {FasterWSMA, WSMA} from '../WSMA/WSMA.js';
 
 /**
@@ -32,7 +32,10 @@ export class ATR extends BigIndicatorSeries<HighLowClose> {
   private readonly tr: TR;
   private readonly smoothing: MovingAverage;
 
-  constructor(public readonly interval: number, SmoothingIndicator: MovingAverageTypes = WSMA) {
+  constructor(
+    public readonly interval: number,
+    SmoothingIndicator: MovingAverageTypes = WSMA
+  ) {
     super();
     this.tr = new TR();
     this.smoothing = new SmoothingIndicator(interval);
@@ -51,7 +54,10 @@ export class FasterATR extends NumberIndicatorSeries<HighLowCloseNumber> {
   private readonly tr: FasterTR;
   private readonly smoothing: FasterMovingAverage;
 
-  constructor(public readonly interval: number, SmoothingIndicator: FasterMovingAverageTypes = FasterWSMA) {
+  constructor(
+    public readonly interval: number,
+    SmoothingIndicator: FasterMovingAverageTypes = FasterWSMA
+  ) {
     super();
     this.tr = new FasterTR();
     this.smoothing = new SmoothingIndicator(interval);

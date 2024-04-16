@@ -1,4 +1,4 @@
-import {Big, BigSource} from './index.js';
+import type {Big, BigSource} from './index.js';
 import {NotEnoughDataError} from './error/index.js';
 
 export interface Indicator<Result = Big, Input = BigSource> {

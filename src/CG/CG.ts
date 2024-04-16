@@ -1,5 +1,5 @@
 import {BigIndicatorSeries, NumberIndicatorSeries} from '../Indicator.js';
-import {Big, BigSource} from '../index.js';
+import {Big, type BigSource} from '../index.js';
 import {FasterSMA, SMA} from '../SMA/SMA.js';
 
 /**
@@ -24,7 +24,10 @@ export class CG extends BigIndicatorSeries {
     return this.signal.isStable;
   }
 
-  constructor(public readonly interval: number, public readonly signalInterval: number) {
+  constructor(
+    public readonly interval: number,
+    public readonly signalInterval: number
+  ) {
     super();
     this.signal = new SMA(signalInterval);
   }
@@ -68,7 +71,10 @@ export class FasterCG extends NumberIndicatorSeries {
     return this.signal.isStable;
   }
 
-  constructor(public readonly interval: number, public readonly signalInterval: number) {
+  constructor(
+    public readonly interval: number,
+    public readonly signalInterval: number
+  ) {
     super();
     this.signal = new FasterSMA(signalInterval);
   }

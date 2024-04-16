@@ -2,8 +2,8 @@ import {BigIndicatorSeries, NumberIndicatorSeries} from '../Indicator.js';
 import {AO, FasterAO} from '../AO/AO.js';
 import {FasterSMA, SMA} from '../SMA/SMA.js';
 import {FasterMOM, MOM} from '../MOM/MOM.js';
-import {HighLow, HighLowNumber} from '../util/index.js';
-import {Big} from '../index.js';
+import type {HighLow, HighLowNumber} from '../util/index.js';
+import type {Big} from '../index.js';
 
 /**
  * Accelerator Oscillator (AC)
@@ -22,7 +22,11 @@ export class AC extends BigIndicatorSeries<HighLow> {
   public readonly momentum: MOM;
   public readonly signal: SMA;
 
-  constructor(public readonly shortAO: number, public readonly longAO: number, public readonly signalInterval: number) {
+  constructor(
+    public readonly shortAO: number,
+    public readonly longAO: number,
+    public readonly signalInterval: number
+  ) {
     super();
     this.ao = new AO(shortAO, longAO);
     this.momentum = new MOM(1);
@@ -47,7 +51,11 @@ export class FasterAC extends NumberIndicatorSeries<HighLowNumber> {
   public readonly momentum: FasterMOM;
   public readonly signal: FasterSMA;
 
-  constructor(public readonly shortAO: number, public readonly longAO: number, public readonly signalInterval: number) {
+  constructor(
+    public readonly shortAO: number,
+    public readonly longAO: number,
+    public readonly signalInterval: number
+  ) {
     super();
     this.ao = new FasterAO(shortAO, longAO);
     this.momentum = new FasterMOM(1);

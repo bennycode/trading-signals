@@ -1,4 +1,4 @@
-import {Big, BigSource} from '../index.js';
+import type {Big, BigSource} from '../index.js';
 import {EMA, FasterEMA} from '../EMA/EMA.js';
 import {BigIndicatorSeries, NumberIndicatorSeries} from '../Indicator.js';
 
