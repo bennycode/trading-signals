@@ -1,3 +1,9 @@
+#### 5.0.1 (2024-04-16)
+
+##### Bug Fixes
+
+- **TR:** Correct replace feature ([#666](https://github.com/bennycode/trading-signals/pull/666)) ([041cedad](https://github.com/bennycode/trading-signals/commit/041cedade55d454920a289b3626beb12223f4472))
+
 ## 5.0.0 (2024-04-05)
 
 ##### Documentation Changes
