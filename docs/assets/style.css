@@ -397,7 +397,8 @@ dd {
 }
 body {
   background: var(--color-background);
-  font-family: 'Segoe UI', sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, sans-serif,
+    'Apple Color Emoji', 'Segoe UI Emoji';
   font-size: 16px;
   color: var(--color-text);
 }
@@ -1107,7 +1108,9 @@ ul.tsd-type-parameter-list h5 {
   overflow: hidden;
   opacity: 0.8;
   height: 40px;
-  transition: opacity 0.1s, background-color 0.2s;
+  transition:
+    opacity 0.1s,
+    background-color 0.2s;
   vertical-align: bottom;
   cursor: pointer;
 }
