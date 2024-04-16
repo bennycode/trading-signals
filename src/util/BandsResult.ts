@@ -1,4 +1,4 @@
-import {Big} from '../index.js';
+import type {Big} from '../index.js';
 
 export interface BandsResult {
   lower: Big;

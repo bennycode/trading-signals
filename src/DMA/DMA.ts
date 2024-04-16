@@ -1,7 +1,7 @@
-import {Big, BigSource} from '../index.js';
-import {Indicator} from '../Indicator.js';
-import {FasterMovingAverage, MovingAverage} from '../MA/MovingAverage.js';
-import {FasterMovingAverageTypes, MovingAverageTypes} from '../MA/MovingAverageTypes.js';
+import type {Big, BigSource} from '../index.js';
+import type {Indicator} from '../Indicator.js';
+import type {FasterMovingAverage, MovingAverage} from '../MA/MovingAverage.js';
+import type {FasterMovingAverageTypes, MovingAverageTypes} from '../MA/MovingAverageTypes.js';
 import {FasterSMA, SMA} from '../SMA/SMA.js';
 
 export type DMAResult = {long: Big; short: Big};

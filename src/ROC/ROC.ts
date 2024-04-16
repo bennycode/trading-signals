@@ -1,4 +1,4 @@
-import {Big, BigSource} from '../index.js';
+import {Big, type BigSource} from '../index.js';
 import {BigIndicatorSeries, NumberIndicatorSeries} from '../Indicator.js';
 
 /**

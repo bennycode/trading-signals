@@ -1,7 +1,7 @@
-import {Big, BigSource} from '../index.js';
-import {FasterMovingAverage, MovingAverage} from '../MA/MovingAverage.js';
+import {Big, type BigSource} from '../index.js';
+import type {FasterMovingAverage, MovingAverage} from '../MA/MovingAverage.js';
 import {BigIndicatorSeries, NumberIndicatorSeries} from '../Indicator.js';
-import {FasterMovingAverageTypes, MovingAverageTypes} from '../MA/MovingAverageTypes.js';
+import type {FasterMovingAverageTypes, MovingAverageTypes} from '../MA/MovingAverageTypes.js';
 import {FasterWSMA, WSMA} from '../WSMA/WSMA.js';
 
 /**
@@ -27,7 +27,10 @@ export class RSI extends BigIndicatorSeries {
   private readonly avgLoss: MovingAverage;
   private readonly maxValue = new Big(100);
 
-  constructor(public readonly interval: number, SmoothingIndicator: MovingAverageTypes = WSMA) {
+  constructor(
+    public readonly interval: number,
+    SmoothingIndicator: MovingAverageTypes = WSMA
+  ) {
     super();
     this.avgGain = new SmoothingIndicator(this.interval);
     this.avgLoss = new SmoothingIndicator(this.interval);
@@ -76,7 +79,10 @@ export class FasterRSI extends NumberIndicatorSeries {
   private readonly avgLoss: FasterMovingAverage;
   private readonly maxValue = 100;
 
-  constructor(public readonly interval: number, SmoothingIndicator: FasterMovingAverageTypes = FasterWSMA) {
+  constructor(
+    public readonly interval: number,
+    SmoothingIndicator: FasterMovingAverageTypes = FasterWSMA
+  ) {
     super();
     this.avgGain = new SmoothingIndicator(this.interval);
     this.avgLoss = new SmoothingIndicator(this.interval);

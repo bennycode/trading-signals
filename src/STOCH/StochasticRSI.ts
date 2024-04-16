@@ -1,8 +1,8 @@
 import {BigIndicatorSeries, NumberIndicatorSeries} from '../Indicator.js';
 import {FasterRSI, RSI} from '../RSI/RSI.js';
-import {Big, BigSource} from '../index.js';
+import {Big, type BigSource} from '../index.js';
 import {FasterPeriod, Period} from '../util/Period.js';
-import {FasterMovingAverageTypes, MovingAverageTypes} from '../MA/MovingAverageTypes.js';
+import type {FasterMovingAverageTypes, MovingAverageTypes} from '../MA/MovingAverageTypes.js';
 import {FasterWSMA, WSMA} from '../WSMA/WSMA.js';
 
 /**
@@ -24,7 +24,10 @@ export class StochasticRSI extends BigIndicatorSeries {
   private readonly period: Period;
   private readonly rsi: RSI;
 
-  constructor(public readonly interval: number, SmoothingIndicator: MovingAverageTypes = WSMA) {
+  constructor(
+    public readonly interval: number,
+    SmoothingIndicator: MovingAverageTypes = WSMA
+  ) {
     super();
     this.period = new Period(interval);
     this.rsi = new RSI(interval, SmoothingIndicator);
@@ -53,7 +56,10 @@ export class FasterStochasticRSI extends NumberIndicatorSeries {
   private readonly period: FasterPeriod;
   private readonly rsi: FasterRSI;
 
-  constructor(public readonly interval: number, SmoothingIndicator: FasterMovingAverageTypes = FasterWSMA) {
+  constructor(
+    public readonly interval: number,
+    SmoothingIndicator: FasterMovingAverageTypes = FasterWSMA
+  ) {
     super();
     this.period = new FasterPeriod(interval);
     this.rsi = new FasterRSI(interval, SmoothingIndicator);

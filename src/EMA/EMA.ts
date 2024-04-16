@@ -1,4 +1,4 @@
-import {Big, BigSource} from '../index.js';
+import {Big, type BigSource} from '../index.js';
 import {FasterMovingAverage, MovingAverage} from '../MA/MovingAverage.js';
 import {NotEnoughDataError} from '../error/index.js';
 

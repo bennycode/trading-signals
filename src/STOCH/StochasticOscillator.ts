@@ -1,10 +1,10 @@
-import {Indicator} from '../Indicator.js';
+import type {Indicator} from '../Indicator.js';
 import {Big} from '../index.js';
 import {FasterSMA, SMA} from '../SMA/SMA.js';
 import {getMaximum} from '../util/getMaximum.js';
 import {getMinimum} from '../util/getMinimum.js';
 import {NotEnoughDataError} from '../error/index.js';
-import {HighLowClose, HighLowCloseNumber} from '../util/index.js';
+import type {HighLowClose, HighLowCloseNumber} from '../util/index.js';
 
 export interface StochasticResult {
   /** Slow stochastic indicator (%D) */
@@ -51,7 +51,11 @@ export class StochasticOscillator implements Indicator<StochasticResult, HighLow
    * @param m The %k slowing period
    * @param p The %d period
    */
-  constructor(public readonly n: number, public readonly m: number, public readonly p: number) {
+  constructor(
+    public readonly n: number,
+    public readonly m: number,
+    public readonly p: number
+  ) {
     this.periodM = new SMA(m);
     this.periodP = new SMA(p);
   }
@@ -105,7 +109,11 @@ export class FasterStochasticOscillator implements Indicator<FasterStochasticRes
    * @param m The %k slowing period
    * @param p The %d period
    */
-  constructor(public n: number, public m: number, public p: number) {
+  constructor(
+    public n: number,
+    public m: number,
+    public p: number
+  ) {
     this.periodM = new FasterSMA(m);
     this.periodP = new FasterSMA(p);
   }

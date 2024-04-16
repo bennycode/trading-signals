@@ -1,6 +1,6 @@
 import {BigIndicatorSeries, NumberIndicatorSeries} from '../Indicator.js';
-import {Big, BigSource} from '../index.js';
-import {BollingerBands, FasterBollingerBands} from '../BBANDS/BollingerBands.js';
+import type {Big, BigSource} from '../index.js';
+import type {BollingerBands, FasterBollingerBands} from '../BBANDS/BollingerBands.js';
 
 /**
  * The Bollinger Bands Width (BBW) indicator, developed by John A. Bollinger, merges the information of Bollinger Bands

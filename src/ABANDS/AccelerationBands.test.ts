@@ -2,7 +2,7 @@ import {AccelerationBands, FasterAccelerationBands} from './AccelerationBands.js
 import {NotEnoughDataError} from '../error/index.js';
 import {SMA} from '../SMA/SMA.js';
 import {EMA} from '../EMA/EMA.js';
-import {HighLowCloseNumber} from '../util/index.js';
+import type {HighLowCloseNumber} from '../util/index.js';
 
 describe('AccelerationBands', () => {
   describe('constructor', () => {
