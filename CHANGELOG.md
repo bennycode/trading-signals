@@ -1,3 +1,13 @@
+#### 5.0.2 (2024-05-06)
+
+##### Documentation Changes
+
+- Add sponsoring ([3cf5348b](https://github.com/bennycode/trading-signals/commit/3cf5348be21af2e60505e66b1039ba971b880c89))
+
+##### Bug Fixes
+
+- Remove console logs in Indicator.ts ([#676](https://github.com/bennycode/trading-signals/pull/676)) ([1108a449](https://github.com/bennycode/trading-signals/commit/1108a4494775ac9b54330c9b4246cbcb170c9c1e))
+
 #### 5.0.1 (2024-04-16)
 
 ##### Bug Fixes
