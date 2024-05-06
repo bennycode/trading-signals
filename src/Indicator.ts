@@ -50,7 +50,6 @@ export abstract class BigIndicatorSeries<Input = BigSource> implements Indicator
 
     if (replace && this.previousLowest) {
       this.lowest = value.lt(this.previousLowest) ? value : this.previousLowest;
-      console.log(this.lowest.toFixed(4));
     } else if (this.lowest === undefined || value.lt(this.lowest)) {
       this.previousLowest = this.lowest;
       this.lowest = value;
@@ -96,7 +95,6 @@ export abstract class NumberIndicatorSeries<Input = number> implements Indicator
 
     if (replace && this.previousLowest) {
       this.lowest = value < this.previousLowest ? value : this.previousLowest;
-      console.log(this.lowest.toFixed(4));
     } else if (this.lowest === undefined || value < this.lowest) {
       this.previousLowest = this.lowest;
       this.lowest = value;
