@@ -20,6 +20,10 @@ export abstract class MovingAverage extends BigIndicatorSeries {
   }
 
   abstract update(price: BigSource, replace?: boolean): Big | void;
+
+  replace(price: BigSource) {
+    return this.update(price, true);
+  }
 }
 
 export abstract class FasterMovingAverage extends NumberIndicatorSeries {
@@ -33,4 +37,8 @@ export abstract class FasterMovingAverage extends NumberIndicatorSeries {
   }
 
   abstract update(price: number, replace?: boolean): number | void;
+
+  replace(price: number) {
+    return this.update(price, true);
+  }
 }

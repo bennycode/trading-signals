@@ -60,7 +60,11 @@ export abstract class BigIndicatorSeries<Input = BigSource> implements Indicator
     return (this.result = value);
   }
 
-  abstract update(input: Input): void | Big;
+  abstract update(input: Input, replace?: boolean): void | Big;
+
+  replace(input: Input) {
+    return this.update(input, true);
+  }
 }
 
 export abstract class NumberIndicatorSeries<Input = number> implements IndicatorSeries<number, Input> {
@@ -104,5 +108,9 @@ export abstract class NumberIndicatorSeries<Input = number> implements Indicator
     return (this.result = value);
   }
 
-  abstract update(input: Input): void | number;
+  abstract update(input: Input, replace?: boolean): void | number;
+
+  replace(input: Input) {
+    return this.update(input, true);
+  }
 }

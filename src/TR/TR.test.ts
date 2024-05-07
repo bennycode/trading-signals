@@ -19,7 +19,7 @@ describe('TR', () => {
     {close: 86.89, high: 86.98, low: 85.76},
     {close: 87.77, high: 88.0, low: 87.17},
     {close: 87.29, high: 87.87, low: 87.01},
-  ];
+  ] as const;
   const expectations = [
     '0.86',
     '1.25',
@@ -36,7 +36,7 @@ describe('TR', () => {
     '1.22',
     '1.11',
     '0.86',
-  ];
+  ] as const;
 
   describe('getResult', () => {
     it('calculates the True Range (TR)', () => {
@@ -89,17 +89,17 @@ describe('TR', () => {
       expect(tr.getResult().toFixed(2)).toBe(expected);
       expect(fasterTR.getResult().toFixed(2)).toBe(expected);
 
-      // Replace the last candle with some other candle.
-      tr.update(otherCandle, true);
-      fasterTR.update(otherCandle, true);
+      // Replace the last candle with some other candle
+      tr.replace(otherCandle);
+      fasterTR.replace(otherCandle);
 
       expect(tr.getResult().toFixed(2)).not.toBe(expected);
       expect(fasterTR.getResult().toFixed(2)).not.toBe(expected);
 
-      // Replace other candle again with the last candle.
+      // Replace other candle again with the last candle
       if (lastCandle) {
-        tr.update(lastCandle, true);
-        fasterTR.update(lastCandle, true);
+        tr.replace(lastCandle);
+        fasterTR.replace(lastCandle);
       }
 
       expect(tr.getResult().toFixed(2)).toBe(expected);
