@@ -20,7 +20,7 @@ describe('SMA', () => {
   });
 
   describe('update', () => {
-    it('can replace recently added values', () => {
+    it('replaces recently added values', () => {
       const interval = 3;
 
       const sma = new SMA(interval);
@@ -32,17 +32,26 @@ describe('SMA', () => {
       sma.update(30);
       fasterSMA.update(30);
 
+      // Add the last candle
       sma.update(40);
       fasterSMA.update(40);
 
       expect(sma.getResult().toFixed()).toBe('30');
       expect(fasterSMA.getResult().toFixed()).toBe('30');
 
-      sma.update(10, true);
-      fasterSMA.update(10, true);
+      // Replace the last candle with some other candle
+      sma.replace(10);
+      fasterSMA.replace(10);
 
       expect(sma.getResult().toFixed()).toBe('20');
       expect(fasterSMA.getResult().toFixed()).toBe('20');
+
+      // Replace other candle again with the last candle
+      sma.replace(40);
+      fasterSMA.replace(40);
+
+      expect(sma.getResult().toFixed()).toBe('30');
+      expect(fasterSMA.getResult().toFixed()).toBe('30');
     });
   });
 
