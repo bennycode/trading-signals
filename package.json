@@ -89,8 +89,7 @@
     "start:benchmark": "ts-node ./src/start/startBenchmark.ts",
     "test": "npm run test:dev -- --coverage",
     "test:dev": "vitest run --passWithNoTests",
-    "test:types": "npm run lint:types",
-    "prepare": "tsc"
+    "test:types": "npm run lint:types"
   },
   "type": "module",
   "version": "5.0.4"
