@@ -1,3 +1,17 @@
+#### 5.0.3 (2024-05-08)
+
+##### Documentation Changes
+
+- Fix image link for GitHub Pages ([2afb42ba](https://github.com/bennycode/trading-signals/commit/2afb42bac5085cee7b1c7fee885e837030d81560))
+
+##### New Features
+
+- **MA,SMA,TR:** Expose "replace" function ([#678](https://github.com/bennycode/trading-signals/pull/678)) ([4a1f221d](https://github.com/bennycode/trading-signals/commit/4a1f221d12c1e2a8a1151693de705922027dbb27))
+
+##### Bug Fixes
+
+- **ATR,AO,CG,SMA,TR:** Fix caching of highest and lowest result ([#679](https://github.com/bennycode/trading-signals/pull/679)) ([bcb73a66](https://github.com/bennycode/trading-signals/commit/bcb73a661a60a052378455c11331250a4ba0a7ba))
+
 #### 5.0.2 (2024-05-06)
 
 ##### Documentation Changes
