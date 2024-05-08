@@ -6,7 +6,7 @@ describe('EMA', () => {
   // https://tulipindicators.org/ema
   const prices = [
     81.59, 81.06, 82.87, 83.0, 83.61, 83.15, 82.84, 83.99, 84.55, 84.36, 85.53, 86.54, 86.89, 87.77, 87.29,
-  ];
+  ] as const;
   const expectations = [
     '82.71',
     '82.86',
@@ -19,12 +19,13 @@ describe('EMA', () => {
     '85.73',
     '86.41',
     '86.70',
-  ];
+  ] as const;
 
-  describe('update', () => {
-    it('can replace recently added values', () => {
-      const ema = new EMA(5);
-      const fasterEMA = new FasterEMA(5);
+  describe('replace', () => {
+    it('replaces recently added values', () => {
+      const interval = 5;
+      const ema = new EMA(interval);
+      const fasterEMA = new FasterEMA(interval);
       ema.update('81.59');
       fasterEMA.update(81.59);
       ema.update('81.06');
@@ -33,12 +34,49 @@ describe('EMA', () => {
       fasterEMA.update(82.87);
       ema.update('83.0');
       fasterEMA.update(83.0);
-      ema.update('90'); // this value gets replaced with the next call
-      fasterEMA.update(90); // this value gets replaced with the next call
-      ema.update('83.61', true);
-      fasterEMA.update(83.61, true);
-      expect(ema.getResult().toFixed(2)).toBe('82.71');
-      expect(fasterEMA.getResult().toFixed(2)).toBe('82.71');
+
+      // Add the latest value
+      const latestValue = 90;
+      const latestResult = '84.84';
+      const latestLow = '81.41';
+      const latestHigh = '84.84';
+
+      ema.update(latestValue);
+      expect(ema.getResult()?.toFixed(2)).toBe(latestResult);
+      expect(ema.lowest?.toFixed(2)).toBe(latestLow);
+      expect(ema.highest?.toFixed(2)).toBe(latestHigh);
+
+      fasterEMA.update(latestValue);
+      expect(fasterEMA.getResult()?.toFixed(2)).toBe(latestResult);
+      expect(fasterEMA.lowest?.toFixed(2)).toBe(latestLow);
+      expect(fasterEMA.highest?.toFixed(2)).toBe(latestHigh);
+
+      // Replace the latest value with some other value
+      const someOtherValue = 830.61;
+      const otherResult = '331.71';
+      const otherLow = '81.41';
+      const otherHigh = '331.71';
+
+      ema.replace(someOtherValue);
+      expect(ema.getResult()?.toFixed(2)).toBe(otherResult);
+      expect(ema.lowest?.toFixed(2)).toBe(otherLow);
+      expect(ema.highest?.toFixed(2)).toBe(otherHigh);
+
+      fasterEMA.replace(someOtherValue);
+      expect(fasterEMA.getResult()?.toFixed(2)).toBe(otherResult);
+      expect(fasterEMA.lowest?.toFixed(2)).toBe(otherLow);
+      expect(fasterEMA.highest?.toFixed(2)).toBe(otherHigh);
+
+      // Replace the other value with the latest value
+      ema.replace(latestValue);
+      expect(ema.getResult()?.toFixed(2)).toBe(latestResult);
+      expect(ema.lowest?.toFixed(2)).toBe(latestLow);
+      expect(ema.highest?.toFixed(2)).toBe(latestHigh);
+
+      fasterEMA.replace(latestValue);
+      expect(fasterEMA.getResult()?.toFixed(2)).toBe(latestResult);
+      expect(fasterEMA.lowest?.toFixed(2)).toBe(latestLow);
+      expect(fasterEMA.highest?.toFixed(2)).toBe(latestHigh);
     });
 
     it('will simply add prices when there are no prices to replace', () => {
@@ -61,15 +99,17 @@ describe('EMA', () => {
 
   describe('getResult', () => {
     it('calculates the Exponential Moving Average over a period of 5', () => {
-      const ema = new EMA(5);
-      const fasterEMA = new FasterEMA(5);
-      for (const price of prices) {
+      const interval = 5;
+      const ema = new EMA(interval);
+      const fasterEMA = new FasterEMA(interval);
+      for (let i = 0; i < prices.length; i++) {
+        const price = prices[i];
         ema.update(price);
         fasterEMA.update(price);
         if (ema.isStable && fasterEMA.isStable) {
-          const expected = expectations.shift();
-          expect(ema.getResult().toFixed(2)).toBe(expected!);
-          expect(fasterEMA.getResult().toFixed(2)).toBe(expected!);
+          const expected = expectations[i - (interval - 1)];
+          expect(ema.getResult().toFixed(2)).toBe(expected);
+          expect(fasterEMA.getResult().toFixed(2)).toBe(expected);
         }
       }
       expect(ema.getResult().toFixed(2)).toBe('86.70');
