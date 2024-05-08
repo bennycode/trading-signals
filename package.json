@@ -68,7 +68,7 @@
   "scripts": {
     "build": "tsc",
     "changelog:commit": "git add CHANGELOG.md && git commit -m \"docs: updated CHANGELOG.md\"",
-    "clean": "rimraf coverage dist",
+    "clean": "rimraf coverage dist docs",
     "dist": "npm run clean && npm run build",
     "docs": "npm run docs:build",
     "docs:build": "typedoc src/index.ts",
