@@ -181,8 +181,7 @@ describe('SMA', () => {
 
   describe('getResultFromBatch', () => {
     it(`doesn't crash when the array is empty`, () => {
-      const sma = new SMA(5);
-      const result = sma.getResultFromBatch([]);
+      const result = SMA.getResultFromBatch([]);
       expect(result.valueOf()).toBe('0');
     });
   });
