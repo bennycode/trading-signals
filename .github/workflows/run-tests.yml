@@ -8,35 +8,12 @@ on:
     branches:
       - main
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
-  test:
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node-version: [18.x]
-    steps:
-      - name: 'Checkout repository'
-        uses: actions/checkout@v4
-
-      - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ matrix.node-version }}
-
-      - name: 'Install, lint, and test'
-        run: |
-          npm install
-          npm run lint
-          npm test
-        if: |
-          contains(github.event.commits[0].message, '[skip ci]') == false &&
-          contains(github.event.commits[0].message, '[ci skip]') == false
-
-      - name: 'Upload coverage reports to Codecov'
-        uses: codecov/codecov-action@v4.3.0
-        with:
-          fail_ci_if_error: false
-          file: ./coverage/lcov.info
-          flags: unittests
-          token: ${{ secrets.CODECOV_TOKEN }}
-          yml: ./codecov.yml
+  test-coverage:
+    uses: bennycode/actions/.github/workflows/test-coverage.yml@main
+    secrets:
+      CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
