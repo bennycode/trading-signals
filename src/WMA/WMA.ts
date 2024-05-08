@@ -38,7 +38,7 @@ export class WMA extends MovingAverage {
       const weightBase = (this.interval * (this.interval + 1)) / 2; // the numerator will always be even and the value will be an int.
       const weightedMa = weightedPricesSum.div(weightBase);
 
-      return this.setResult(weightedMa);
+      return this.setResult(weightedMa, replace);
     }
   }
 }
@@ -72,7 +72,7 @@ export class FasterWMA extends FasterMovingAverage {
 
       const weightedMa = weightedPricesSum / weightBase;
 
-      return this.setResult(weightedMa);
+      return this.setResult(weightedMa, replace);
     }
   }
 }
