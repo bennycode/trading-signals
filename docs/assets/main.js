@@ -351,12 +351,12 @@
           j =
             /^(.+?)(ational|tional|enci|anci|izer|bli|alli|entli|eli|ousli|ization|ation|ator|alism|iveness|fulness|ousness|aliti|iviti|biliti|logi)$/,
           $ = /^(.+?)(icate|ative|alize|iciti|ical|ful|ness)$/,
-          N = /^(.+?)(al|ance|ence|er|ic|able|ible|ant|ement|ment|ent|ou|ism|ate|iti|ous|ive|ize)$/,
+          V = /^(.+?)(al|ance|ence|er|ic|able|ible|ant|ement|ment|ent|ou|ism|ate|iti|ous|ive|ize)$/,
           q = /^(.+?)(s|t)(ion)$/,
           C = /^(.+?)e$/,
           z = /ll$/,
           W = new RegExp('^' + s + i + '[^aeiouwxy]$'),
-          V = function (c) {
+          N = function (c) {
             var v, P, T, h, x, O, M;
             if (c.length < 3) return c;
             if (
@@ -398,7 +398,7 @@
               var E = h.exec(c);
               (v = E[1]), (P = E[2]), (h = y), h.test(v) && (c = v + n[P]);
             }
-            if (((h = N), (x = q), h.test(c))) {
+            if (((h = V), (x = q), h.test(c))) {
               var E = h.exec(c);
               (v = E[1]), (h = p), h.test(v) && (c = v);
             } else if (x.test(c)) {
@@ -418,7 +418,7 @@
             );
           };
         return function (R) {
-          return R.update(V);
+          return R.update(N);
         };
       })()),
         t.Pipeline.registerFunction(t.stemmer, 'stemmer');
@@ -772,8 +772,8 @@
                     }),
                     !s[j])
                   ) {
-                    for (var N = 0; N < A.length; N++) {
-                      var q = A[N],
+                    for (var V = 0; V < A.length; V++) {
+                      var q = A[V],
                         C = new t.FieldRef(q, m),
                         z = B[q],
                         W;
@@ -789,9 +789,9 @@
                 o[m] = o[m].intersect(y);
               }
           }
-          for (var V = t.Set.complete, R = t.Set.empty, l = 0; l < this.fields.length; l++) {
+          for (var N = t.Set.complete, R = t.Set.empty, l = 0; l < this.fields.length; l++) {
             var m = this.fields[l];
-            o[m] && (V = V.intersect(o[m])), a[m] && (R = R.union(a[m]));
+            o[m] && (N = N.intersect(o[m])), a[m] && (R = R.union(a[m]));
           }
           var c = Object.keys(r),
             v = [],
@@ -807,7 +807,7 @@
           for (var l = 0; l < c.length; l++) {
             var T = t.FieldRef.fromString(c[l]),
               h = T.docRef;
-            if (V.contains(h) && !R.contains(h)) {
+            if (N.contains(h) && !R.contains(h)) {
               var x = this.fieldVectors[T],
                 O = i[T.fieldName].similarity(x),
                 M;
@@ -1383,7 +1383,8 @@
         this.ensureFocusedElementVisible(),
         this.listenForCodeCopies(),
         window.addEventListener('hashchange', () => this.ensureFocusedElementVisible()),
-        document.body.style.display || (this.scrollToHash(), this.updateIndexVisibility());
+        document.body.style.display ||
+          (this.ensureFocusedElementVisible(), this.updateIndexVisibility(), this.scrollToHash());
     }
     createComponents(e) {
       re.forEach(n => {
@@ -1397,10 +1398,15 @@
     }
     showPage() {
       document.body.style.display &&
-        (document.body.style.removeProperty('display'), this.scrollToHash(), this.updateIndexVisibility());
+        (console.log('Show page'),
+        document.body.style.removeProperty('display'),
+        this.ensureFocusedElementVisible(),
+        this.updateIndexVisibility(),
+        this.scrollToHash());
     }
     scrollToHash() {
       if (location.hash) {
+        console.log('Scorlling');
         let e = document.getElementById(location.hash.substring(1));
         if (!e) return;
         e.scrollIntoView({behavior: 'instant', block: 'start'});
@@ -1513,14 +1519,14 @@
     n.addEventListener(
       'input',
       ie(() => {
-        Ne(t, e, n, r);
+        Ve(t, e, n, r);
       }, 200)
     );
     let i = !1;
     n.addEventListener('keydown', s => {
       (i = !0),
         s.key == 'Enter'
-          ? Ve(e, n)
+          ? Ne(e, n)
           : s.key == 'Escape'
             ? n.blur()
             : s.key == 'ArrowUp'
@@ -1539,7 +1545,7 @@
           (!n.matches(':focus') && s.key === '/' && (n.focus(), s.preventDefault()));
       });
   }
-  function Ne(t, e, n, r) {
+  function Ve(t, e, n, r) {
     if (!r.index || !r.data) return;
     e.textContent = '';
     let i = n.value.trim(),
@@ -1593,7 +1599,7 @@
       r && (n.classList.remove('current'), r.classList.add('current'));
     }
   }
-  function Ve(t, e) {
+  function Ne(t, e) {
     let n = t.querySelector('.current');
     if ((n || (n = t.querySelector('li:first-child')), n)) {
       let r = n.querySelector('a');
