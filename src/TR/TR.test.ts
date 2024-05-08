@@ -78,8 +78,10 @@ describe('TR', () => {
         fasterTR.update(candle);
       });
 
-      const expected = expectations.at(-1);
       const lastCandle = candles.at(-1);
+      const latestResult = expectations.at(-1);
+      const latestLow = '0.86';
+      const latestHigh = '0.86';
 
       // Add the latest value
       if (lastCandle) {
@@ -87,17 +89,29 @@ describe('TR', () => {
         fasterTR.update(lastCandle);
       }
 
-      expect(tr.getResult().toFixed(2)).toBe(expected);
-      expect(fasterTR.getResult().toFixed(2)).toBe(expected);
+      expect(tr.getResult().toFixed(2)).toBe(latestResult);
+      expect(tr.lowest?.toFixed(2)).toBe(latestLow);
+      expect(tr.highest?.toFixed(2)).toBe(latestHigh);
+
+      expect(fasterTR.getResult().toFixed(2)).toBe(latestResult);
+      expect(fasterTR.lowest?.toFixed(2)).toBe(latestLow);
+      expect(fasterTR.highest?.toFixed(2)).toBe(latestHigh);
 
       // Replace the latest value with some other value
       const someOtherValue = {close: 84.55, high: 84.84, low: 84.15};
+      const otherResult = '3.14';
+      const otherLow = '0.86';
+      const otherHigh = '3.14';
 
       tr.replace(someOtherValue);
-      fasterTR.replace(someOtherValue);
+      expect(tr.getResult().toFixed(2)).toBe(otherResult);
+      expect(tr.lowest?.toFixed(2)).toBe(otherLow);
+      expect(tr.highest?.toFixed(2)).toBe(otherHigh);
 
-      expect(tr.getResult().toFixed(2)).not.toBe(expected);
-      expect(fasterTR.getResult().toFixed(2)).not.toBe(expected);
+      fasterTR.replace(someOtherValue);
+      expect(fasterTR.getResult().toFixed(2)).toBe(otherResult);
+      expect(fasterTR.lowest?.toFixed(2)).toBe(otherLow);
+      expect(fasterTR.highest?.toFixed(2)).toBe(otherHigh);
 
       // Replace the other value with the latest value
       if (lastCandle) {
@@ -105,8 +119,13 @@ describe('TR', () => {
         fasterTR.replace(lastCandle);
       }
 
-      expect(tr.getResult().toFixed(2)).toBe(expected);
-      expect(fasterTR.getResult().toFixed(2)).toBe(expected);
+      expect(tr.getResult().toFixed(2)).toBe(latestResult);
+      expect(tr.lowest?.toFixed(2)).toBe(latestLow);
+      expect(tr.highest?.toFixed(2)).toBe(latestHigh);
+
+      expect(fasterTR.getResult().toFixed(2)).toBe(latestResult);
+      expect(fasterTR.lowest?.toFixed(2)).toBe(latestLow);
+      expect(fasterTR.highest?.toFixed(2)).toBe(latestHigh);
     });
   });
 });

@@ -97,16 +97,19 @@ describe('ATR', () => {
 
       // Add the latest value
       const latestValue = {close: 1337, high: 1337, low: 1337};
+      const latestResult = '250.85';
+      const latestLow = '1.01';
+      const latestHigh = '250.85';
 
       atr.update(latestValue);
-      expect(atr.getResult().toFixed(2)).toBe('250.85');
-      expect(atr.lowest?.toFixed(2)).toBe('1.01');
-      expect(atr.highest?.toFixed(2), 'new record high').toBe('250.85');
+      expect(atr.getResult().toFixed(2)).toBe(latestResult);
+      expect(atr.lowest?.toFixed(2)).toBe(latestLow);
+      expect(atr.highest?.toFixed(2), 'new record high').toBe(latestHigh);
 
       fasterATR.update(latestValue);
-      expect(fasterATR.getResult().toFixed(2)).toBe('250.85');
-      expect(fasterATR.lowest?.toFixed(2)).toBe('1.01');
-      expect(fasterATR.highest?.toFixed(2), 'new record high').toBe('250.85');
+      expect(fasterATR.getResult().toFixed(2)).toBe(latestResult);
+      expect(fasterATR.lowest?.toFixed(2)).toBe(latestLow);
+      expect(fasterATR.highest?.toFixed(2), 'new record high').toBe(latestHigh);
 
       // Replace the latest value with some other value
       const someOtherValue = {
@@ -114,27 +117,30 @@ describe('ATR', () => {
         high: 1,
         low: 1,
       };
+      const otherResult = '18.17';
+      const otherLow = '1.01';
+      const otherHigh = '18.17';
 
       atr.replace(someOtherValue);
-      expect(atr.getResult().toFixed(2)).toBe('18.17');
-      expect(atr.lowest?.toFixed(2)).toBe('1.01');
-      expect(atr.highest?.toFixed(2)).toBe('18.17');
+      expect(atr.getResult().toFixed(2)).toBe(otherResult);
+      expect(atr.lowest?.toFixed(2)).toBe(otherLow);
+      expect(atr.highest?.toFixed(2)).toBe(otherHigh);
 
       fasterATR.replace(someOtherValue);
-      expect(fasterATR.getResult().toFixed(2)).toBe('18.17');
-      expect(fasterATR.lowest?.toFixed(2)).toBe('1.01');
-      expect(fasterATR.highest?.toFixed(2)).toBe('18.17');
+      expect(fasterATR.getResult().toFixed(2)).toBe(otherResult);
+      expect(fasterATR.lowest?.toFixed(2)).toBe(otherLow);
+      expect(fasterATR.highest?.toFixed(2)).toBe(otherHigh);
 
       // Replace the other value with the latest value
       atr.replace(latestValue);
-      expect(atr.getResult().toFixed(2)).toBe('250.85');
-      expect(atr.lowest?.toFixed(2), 'lowest reset').toBe('1.01');
-      expect(atr.highest?.toFixed(2), 'highest reset').toBe('250.85');
+      expect(atr.getResult().toFixed(2)).toBe(latestResult);
+      expect(atr.lowest?.toFixed(2), 'lowest reset').toBe(latestLow);
+      expect(atr.highest?.toFixed(2), 'highest reset').toBe(latestHigh);
 
       fasterATR.replace(latestValue);
-      expect(fasterATR.getResult().toFixed(2)).toBe('250.85');
-      expect(fasterATR.lowest?.toFixed(2), 'lowest reset').toBe('1.01');
-      expect(fasterATR.highest?.toFixed(2), 'highest reset').toBe('250.85');
+      expect(fasterATR.getResult().toFixed(2)).toBe(latestResult);
+      expect(fasterATR.lowest?.toFixed(2), 'lowest reset').toBe(latestLow);
+      expect(fasterATR.highest?.toFixed(2), 'highest reset').toBe(latestHigh);
     });
   });
 });

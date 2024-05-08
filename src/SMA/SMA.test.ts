@@ -21,7 +21,7 @@ describe('SMA', () => {
 
   describe('replace', () => {
     it('replaces recently added values', () => {
-      const interval = 3;
+      const interval = 2;
 
       const sma = new SMA(interval);
       const fasterSMA = new FasterSMA(interval);
@@ -34,28 +34,46 @@ describe('SMA', () => {
 
       // Add the latest value
       const latestValue = 40;
+      const latestResult = '35.00';
+      const latestLow = '25.00';
+      const latestHigh = '35.00';
 
       sma.update(latestValue);
-      fasterSMA.update(latestValue);
+      expect(sma.getResult().toFixed(2)).toBe(latestResult);
+      expect(sma.lowest?.toFixed(2)).toBe(latestLow);
+      expect(sma.highest?.toFixed(2)).toBe(latestHigh);
 
-      expect(sma.getResult().toFixed()).toBe('30');
-      expect(fasterSMA.getResult().toFixed()).toBe('30');
+      fasterSMA.update(latestValue);
+      expect(fasterSMA.getResult().toFixed(2)).toBe(latestResult);
+      expect(fasterSMA.lowest?.toFixed(2)).toBe(latestLow);
+      expect(fasterSMA.highest?.toFixed(2)).toBe(latestHigh);
 
       // Replace the latest value with some other value
-      const someOtherValue = 10;
+      const someOtherValue = 82;
+      const otherResult = '56.00';
+      const otherLow = '25.00';
+      const otherHigh = '56.00';
 
       sma.replace(someOtherValue);
-      fasterSMA.replace(someOtherValue);
+      expect(sma.getResult().toFixed(2)).toBe(otherResult);
+      expect(sma.lowest?.toFixed(2)).toBe(otherLow);
+      expect(sma.highest?.toFixed(2)).toBe(otherHigh);
 
-      expect(sma.getResult().toFixed()).toBe('20');
-      expect(fasterSMA.getResult().toFixed()).toBe('20');
+      fasterSMA.replace(someOtherValue);
+      expect(fasterSMA.getResult().toFixed(2)).toBe(otherResult);
+      expect(fasterSMA.lowest?.toFixed(2)).toBe(otherLow);
+      expect(fasterSMA.highest?.toFixed(2)).toBe(otherHigh);
 
       // Replace the other value with the latest value
       sma.replace(latestValue);
-      fasterSMA.replace(latestValue);
+      expect(sma.getResult().toFixed(2)).toBe(latestResult);
+      expect(sma.lowest?.toFixed(2)).toBe(latestLow);
+      expect(sma.highest?.toFixed(2)).toBe(latestHigh);
 
-      expect(sma.getResult().toFixed()).toBe('30');
-      expect(fasterSMA.getResult().toFixed()).toBe('30');
+      fasterSMA.replace(latestValue);
+      expect(fasterSMA.getResult().toFixed(2)).toBe(latestResult);
+      expect(fasterSMA.lowest?.toFixed(2)).toBe(latestLow);
+      expect(fasterSMA.highest?.toFixed(2)).toBe(latestHigh);
     });
   });
 

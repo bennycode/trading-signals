@@ -20,40 +20,46 @@ describe('WSMA', () => {
 
       // Add the latest value
       const latestValue = 15;
+      const latestResult = '13.44';
+      const latestLow = '12.00';
+      const latestHigh = '13.44';
 
       wsma.update(latestValue);
-      expect(wsma.getResult().toFixed(2)).toBe('13.44');
-      expect(wsma.lowest?.toFixed(2)).toBe('12.00');
-      expect(wsma.highest?.toFixed(2)).toBe('13.44');
+      expect(wsma.getResult().toFixed(2)).toBe(latestResult);
+      expect(wsma.lowest?.toFixed(2)).toBe(latestLow);
+      expect(wsma.highest?.toFixed(2)).toBe(latestHigh);
 
       fasterWSMA.update(latestValue);
-      expect(fasterWSMA.getResult().toFixed(2)).toBe('13.44');
-      expect(fasterWSMA.lowest?.toFixed(2)).toBe('12.00');
-      expect(fasterWSMA.highest?.toFixed(2)).toBe('13.44');
+      expect(fasterWSMA.getResult().toFixed(2)).toBe(latestResult);
+      expect(fasterWSMA.lowest?.toFixed(2)).toBe(latestLow);
+      expect(fasterWSMA.highest?.toFixed(2)).toBe(latestHigh);
 
       // Replace the latest value with some other value
       const someOtherValue = 1000;
+      const otherResult = '341.78';
+      const otherLow = '12.00';
+      const otherHigh = '341.78';
 
       wsma.replace(someOtherValue);
-      expect(wsma.getResult().toFixed(2)).toBe('341.78');
-      expect(wsma.lowest?.toFixed(2)).toBe('12.00');
-      expect(wsma.highest?.toFixed(2), 'new record high').toBe('341.78');
+      expect(wsma.getResult().toFixed(2)).toBe(otherResult);
+      expect(wsma.lowest?.toFixed(2)).toBe(otherLow);
+      expect(wsma.highest?.toFixed(2), 'new record high').toBe(otherHigh);
 
       fasterWSMA.replace(someOtherValue);
-      expect(fasterWSMA.getResult().toFixed(2)).toBe('341.78');
-      expect(fasterWSMA.lowest?.toFixed(2)).toBe('12.00');
-      expect(fasterWSMA.highest?.toFixed(2), 'new record high').toBe('341.78');
+      expect(fasterWSMA.getResult().toFixed(2)).toBe(otherResult);
+      expect(fasterWSMA.lowest?.toFixed(2)).toBe(otherLow);
+      expect(fasterWSMA.highest?.toFixed(2), 'new record high').toBe(otherHigh);
 
       // Replace the other value with the latest value
       wsma.replace(latestValue);
-      expect(wsma.getResult().toFixed(2)).toBe('13.44');
-      expect(wsma.lowest?.toFixed(2), 'lowest reset').toBe('12.00');
-      expect(wsma.highest?.toFixed(2), 'highest reset').toBe('13.44');
+      expect(wsma.getResult().toFixed(2)).toBe(latestResult);
+      expect(wsma.lowest?.toFixed(2), 'lowest reset').toBe(latestLow);
+      expect(wsma.highest?.toFixed(2), 'highest reset').toBe(latestHigh);
 
       fasterWSMA.replace(latestValue);
-      expect(fasterWSMA.getResult().toFixed(2)).toBe('13.44');
-      expect(fasterWSMA.lowest?.toFixed(2), 'lowest reset').toBe('12.00');
-      expect(fasterWSMA.highest?.toFixed(2), 'highest reset').toBe('13.44');
+      expect(fasterWSMA.getResult().toFixed(2)).toBe(latestResult);
+      expect(fasterWSMA.lowest?.toFixed(2), 'lowest reset').toBe(latestLow);
+      expect(fasterWSMA.highest?.toFixed(2), 'highest reset').toBe(latestHigh);
     });
   });
 

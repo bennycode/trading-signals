@@ -47,46 +47,52 @@ describe('CG', () => {
 
       // Add the latest value
       const latestValue = 200;
+      const latestResult = '3.0851';
+      const latestLow = '3.0851';
+      const latestHigh = '3.1176';
 
       cg.update(latestValue);
       expect(cg.prices.length).toBe(5);
-      expect(cg.getResult().toFixed(4)).toBe('3.0851');
-      expect(cg.lowest?.toFixed(4)).toBe('3.0851');
-      expect(cg.highest?.toFixed(4)).toBe('3.1176');
+      expect(cg.getResult().toFixed(4)).toBe(latestResult);
+      expect(cg.lowest?.toFixed(4)).toBe(latestLow);
+      expect(cg.highest?.toFixed(4)).toBe(latestHigh);
 
       fasterCG.update(latestValue);
       expect(fasterCG.prices.length).toBe(5);
-      expect(fasterCG.getResult().toFixed(4)).toBe('3.0851');
-      expect(fasterCG.lowest?.toFixed(4)).toBe('3.0851');
-      expect(fasterCG.highest?.toFixed(4)).toBe('3.1176');
+      expect(fasterCG.getResult().toFixed(4)).toBe(latestResult);
+      expect(fasterCG.lowest?.toFixed(4)).toBe(latestLow);
+      expect(fasterCG.highest?.toFixed(4)).toBe(latestHigh);
 
       // Replace the latest value with some other value
       const someOtherValue = 900;
+      const otherResult = '3.9024';
+      const otherLow = '3.1111';
+      const otherHigh = '3.9024';
 
       cg.replace(someOtherValue);
       expect(cg.prices.length).toBe(5);
-      expect(cg.getResult().toFixed(4)).toBe('3.9024');
-      expect(cg.lowest?.toFixed(4)).toBe('3.1111');
-      expect(cg.highest?.toFixed(4)).toBe('3.9024');
+      expect(cg.getResult().toFixed(4)).toBe(otherResult);
+      expect(cg.lowest?.toFixed(4)).toBe(otherLow);
+      expect(cg.highest?.toFixed(4)).toBe(otherHigh);
 
       fasterCG.replace(someOtherValue);
       expect(fasterCG.prices.length).toBe(5);
-      expect(fasterCG.getResult().toFixed(4)).toBe('3.9024');
-      expect(fasterCG.lowest?.toFixed(4)).toBe('3.1111');
-      expect(fasterCG.highest?.toFixed(4)).toBe('3.9024');
+      expect(fasterCG.getResult().toFixed(4)).toBe(otherResult);
+      expect(fasterCG.lowest?.toFixed(4)).toBe(otherLow);
+      expect(fasterCG.highest?.toFixed(4)).toBe(otherHigh);
 
       // Replace the other value with the latest value
       cg.replace(latestValue);
       expect(cg.prices.length).toBe(5);
-      expect(cg.getResult().toFixed(4)).toBe('3.0851');
-      expect(cg.lowest?.toFixed(4)).toBe('3.0851');
-      expect(cg.highest?.toFixed(4)).toBe('3.1176');
+      expect(cg.getResult().toFixed(4)).toBe(latestResult);
+      expect(cg.lowest?.toFixed(4)).toBe(latestLow);
+      expect(cg.highest?.toFixed(4)).toBe(latestHigh);
 
       fasterCG.replace(latestValue);
       expect(fasterCG.prices.length).toBe(5);
-      expect(fasterCG.getResult().toFixed(4)).toBe('3.0851');
-      expect(fasterCG.lowest?.toFixed(4)).toBe('3.0851');
-      expect(fasterCG.highest?.toFixed(4)).toBe('3.1176');
+      expect(fasterCG.getResult().toFixed(4)).toBe(latestResult);
+      expect(fasterCG.lowest?.toFixed(4)).toBe(latestLow);
+      expect(fasterCG.highest?.toFixed(4)).toBe(latestHigh);
     });
   });
 
