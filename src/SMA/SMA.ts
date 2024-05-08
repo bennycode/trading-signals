@@ -29,7 +29,7 @@ export class SMA extends MovingAverage {
     }
   }
 
-  getResultFromBatch(prices: BigSource[]): Big {
+  static getResultFromBatch(prices: BigSource[]): Big {
     const sum = prices.reduce((a: Big, b: BigSource) => a.plus(b), new Big('0'));
     return sum.div(prices.length || 1);
   }
@@ -55,7 +55,7 @@ export class FasterSMA extends FasterMovingAverage {
     }
   }
 
-  getResultFromBatch(prices: number[]): number {
+  static getResultFromBatch(prices: number[]): number {
     const sum = prices.reduce((a, b) => a + b, 0);
     return sum / (prices.length || 1);
   }
