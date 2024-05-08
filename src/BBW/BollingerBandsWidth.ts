@@ -17,7 +17,7 @@ export class BollingerBandsWidth extends BigIndicatorSeries {
   override update(price: BigSource): void | Big {
     const result = this.bollingerBands.update(price);
     if (result) {
-      return this.setResult(result.upper.minus(result.lower).div(result.middle));
+      return this.setResult(result.upper.minus(result.lower).div(result.middle), false);
     }
   }
 }
@@ -30,7 +30,7 @@ export class FasterBollingerBandsWidth extends NumberIndicatorSeries {
   override update(price: number): void | number {
     const result = this.bollingerBands.update(price);
     if (result !== undefined) {
-      return this.setResult((result.upper - result.lower) / result.middle);
+      return this.setResult((result.upper - result.lower) / result.middle, false);
     }
   }
 }
