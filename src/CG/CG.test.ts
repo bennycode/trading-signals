@@ -47,6 +47,7 @@ describe('CG', () => {
 
       // Add the latest value
       const latestValue = 200;
+
       cg.update(latestValue);
       expect(cg.prices.length).toBe(5);
       expect(cg.getResult().toFixed(4)).toBe('3.0851');
@@ -61,6 +62,7 @@ describe('CG', () => {
 
       // Replace the latest value with some other value
       const someOtherValue = 900;
+
       cg.replace(someOtherValue);
       expect(cg.prices.length).toBe(5);
       expect(cg.getResult().toFixed(4)).toBe('3.9024');

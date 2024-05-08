@@ -92,6 +92,7 @@ describe('TR', () => {
 
       // Replace the latest value with some other value
       const someOtherValue = {close: 84.55, high: 84.84, low: 84.15};
+
       tr.replace(someOtherValue);
       fasterTR.replace(someOtherValue);
 

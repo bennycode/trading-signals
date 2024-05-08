@@ -34,6 +34,7 @@ describe('SMA', () => {
 
       // Add the latest value
       const latestValue = 40;
+
       sma.update(latestValue);
       fasterSMA.update(latestValue);
 
@@ -42,6 +43,7 @@ describe('SMA', () => {
 
       // Replace the latest value with some other value
       const someOtherValue = 10;
+
       sma.replace(someOtherValue);
       fasterSMA.replace(someOtherValue);
 

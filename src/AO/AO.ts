@@ -33,15 +33,15 @@ export class AO extends BigIndicatorSeries<HighLow> {
     this.long = new SmoothingIndicator(longInterval);
   }
 
-  override update({low, high}: HighLow): void | Big {
+  override update({low, high}: HighLow, replace: boolean = false): void | Big {
     const candleSum = new Big(low).add(high);
     const medianPrice = candleSum.div(2);
 
-    this.short.update(medianPrice);
-    this.long.update(medianPrice);
+    this.short.update(medianPrice, replace);
+    this.long.update(medianPrice, replace);
 
     if (this.long.isStable) {
-      return this.setResult(this.short.getResult().sub(this.long.getResult()));
+      return this.setResult(this.short.getResult().sub(this.long.getResult()), replace);
     }
   }
 }
@@ -60,14 +60,14 @@ export class FasterAO extends NumberIndicatorSeries<HighLowNumber> {
     this.long = new SmoothingIndicator(longInterval);
   }
 
-  override update({low, high}: HighLowNumber): void | number {
+  override update({low, high}: HighLowNumber, replace: boolean = false): void | number {
     const medianPrice = (low + high) / 2;
 
-    this.short.update(medianPrice);
-    this.long.update(medianPrice);
+    this.short.update(medianPrice, replace);
+    this.long.update(medianPrice, replace);
 
     if (this.long.isStable) {
-      return this.setResult(this.short.getResult() - this.long.getResult());
+      return this.setResult(this.short.getResult() - this.long.getResult(), replace);
     }
   }
 }
