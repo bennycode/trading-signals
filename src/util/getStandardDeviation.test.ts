@@ -24,8 +24,7 @@ describe('getFasterStandardDeviation', () => {
     const std = getFasterStandardDeviation(prices);
     expect(std.toFixed(2)).toBe('2.98');
     const fivePrices = [81.59, 81.06, 82.87, 83.0, 83.61];
-    const sma = new SMA(5);
-    const stdDev = getStandardDeviation(fivePrices, sma.getResultFromBatch(fivePrices));
+    const stdDev = getStandardDeviation(fivePrices, SMA.getResultFromBatch(fivePrices));
     expect(stdDev.toFixed(2)).toBe('0.95');
   });
 });
