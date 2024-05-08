@@ -1,3 +1,13 @@
+#### 5.0.4 (2024-05-08)
+
+##### New Features
+
+- **WMA:** Add Weighted Moving Average (WMA) ([#677](https://github.com/bennycode/trading-signals/pull/677)) ([87bb0fbb](https://github.com/bennycode/trading-signals/commit/87bb0fbb5410c674c9ffc93058ab2616c920e1d9))
+
+##### Bug Fixes
+
+- **WMA:** Fix caching of highest and lowest result ([#684](https://github.com/bennycode/trading-signals/pull/684)) ([0a8ec39d](https://github.com/bennycode/trading-signals/commit/0a8ec39d8c72ee5069b4da186530cb794948bd67))
+
 #### 5.0.3 (2024-05-08)
 
 ##### Documentation Changes
