@@ -84,10 +84,10 @@ export class DX extends BigIndicatorSeries<HighLowClose> {
 
       // Prevent division by zero
       if (dmSum.eq(0)) {
-        return this.setResult(new Big(0));
+        return this.setResult(new Big(0), false);
       }
 
-      return this.setResult(dmDiff.div(dmSum).mul(100));
+      return this.setResult(dmDiff.div(dmSum).mul(100), false);
     }
   }
 }
@@ -152,10 +152,10 @@ export class FasterDX extends NumberIndicatorSeries<HighLowCloseNumber> {
       const dmSum = this.pdi + this.mdi;
 
       if (dmSum === 0) {
-        return this.setResult(0);
+        return this.setResult(0, false);
       }
 
-      return this.setResult((dmDiff / dmSum) * 100);
+      return this.setResult((dmDiff / dmSum) * 100, false);
     }
   }
 }

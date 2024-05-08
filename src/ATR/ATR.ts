@@ -41,11 +41,11 @@ export class ATR extends BigIndicatorSeries<HighLowClose> {
     this.smoothing = new SmoothingIndicator(interval);
   }
 
-  override update(candle: HighLowClose): Big | void {
-    const trueRange = this.tr.update(candle);
-    this.smoothing.update(trueRange);
+  override update(candle: HighLowClose, replace: boolean = false): Big | void {
+    const trueRange = this.tr.update(candle, replace);
+    this.smoothing.update(trueRange, replace);
     if (this.smoothing.isStable) {
-      return this.setResult(this.smoothing.getResult());
+      return this.setResult(this.smoothing.getResult(), replace);
     }
   }
 }
@@ -63,11 +63,11 @@ export class FasterATR extends NumberIndicatorSeries<HighLowCloseNumber> {
     this.smoothing = new SmoothingIndicator(interval);
   }
 
-  update(candle: HighLowCloseNumber): number | void {
-    const trueRange = this.tr.update(candle);
-    this.smoothing.update(trueRange);
+  update(candle: HighLowCloseNumber, replace: boolean = false): number | void {
+    const trueRange = this.tr.update(candle, replace);
+    this.smoothing.update(trueRange, replace);
     if (this.smoothing.isStable) {
-      return this.setResult(this.smoothing.getResult());
+      return this.setResult(this.smoothing.getResult(), replace);
     }
   }
 }

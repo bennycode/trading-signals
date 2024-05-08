@@ -38,7 +38,7 @@ export class CCI extends BigIndicatorSeries<HighLowClose> {
       const meanDeviation = MAD.getResultFromBatch(this.typicalPrices, mean);
       const numerator = typicalPrice.minus(mean);
       const denominator = new Big(0.015).mul(meanDeviation);
-      return this.setResult(numerator.div(denominator));
+      return this.setResult(numerator.div(denominator), false);
     }
   }
 
@@ -70,7 +70,7 @@ export class FasterCCI extends NumberIndicatorSeries<HighLowCloseNumber> {
       const meanDeviation = FasterMAD.getResultFromBatch(this.typicalPrices, mean);
       const numerator = typicalPrice - mean;
       const denominator = 0.015 * meanDeviation;
-      return this.setResult(numerator / denominator);
+      return this.setResult(numerator / denominator, false);
     }
   }
 

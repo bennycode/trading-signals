@@ -1,5 +1,5 @@
-import type {Big, BigSource} from './index.js';
 import {NotEnoughDataError} from './error/index.js';
+import type {Big, BigSource} from './index.js';
 
 export interface Indicator<Result = Big, Input = BigSource> {
   getResult(): Result;
@@ -40,23 +40,37 @@ export abstract class BigIndicatorSeries<Input = BigSource> implements Indicator
     return this.result;
   }
 
-  protected setResult(value: Big, replace: boolean = false): Big {
-    if (replace && this.previousHighest) {
-      this.highest = value.gt(this.previousHighest) ? value : this.previousHighest;
-    } else if (this.highest === undefined || value.gt(this.highest)) {
+  protected setResult(value: Big, replace: boolean): Big {
+    // Load cached values when replacing the latest value
+    if (replace) {
+      this.highest = this.previousHighest;
+      this.lowest = this.previousLowest;
+      this.result = this.previousResult;
+    }
+
+    // Check if there is a new high
+    if (this.highest === undefined) {
+      this.highest = value;
+    } else if (value.gt(this.highest)) {
       this.previousHighest = this.highest;
       this.highest = value;
+    } else {
+      this.previousHighest = this.highest;
     }
 
-    if (replace && this.previousLowest) {
-      this.lowest = value.lt(this.previousLowest) ? value : this.previousLowest;
-    } else if (this.lowest === undefined || value.lt(this.lowest)) {
+    // Check if there is a new low
+    if (this.lowest === undefined) {
+      this.lowest = value;
+    } else if (value.lt(this.lowest)) {
       this.previousLowest = this.lowest;
       this.lowest = value;
+    } else {
+      this.previousLowest = this.lowest;
     }
 
+    // Cache previous result
     this.previousResult = this.result;
-
+    // Set new result
     return (this.result = value);
   }
 
@@ -89,22 +103,37 @@ export abstract class NumberIndicatorSeries<Input = number> implements Indicator
     return this.result;
   }
 
-  protected setResult(value: number, replace: boolean = false): number {
-    if (replace && this.previousHighest !== undefined) {
-      this.highest = value > this.previousHighest ? value : this.previousHighest;
-    } else if (this.highest === undefined || value > this.highest) {
+  protected setResult(value: number, replace: boolean): number {
+    // Load cached values when replacing the latest value
+    if (replace) {
+      this.highest = this.previousHighest;
+      this.lowest = this.previousLowest;
+      this.result = this.previousResult;
+    }
+
+    // Check if there is a new high
+    if (this.highest === undefined) {
+      this.highest = value;
+    } else if (value > this.highest) {
       this.previousHighest = this.highest;
       this.highest = value;
+    } else {
+      this.previousHighest = this.highest;
     }
 
-    if (replace && this.previousLowest) {
-      this.lowest = value < this.previousLowest ? value : this.previousLowest;
-    } else if (this.lowest === undefined || value < this.lowest) {
+    // Check if there is a new low
+    if (this.lowest === undefined) {
+      this.lowest = value;
+    } else if (value < this.lowest) {
       this.previousLowest = this.lowest;
       this.lowest = value;
+    } else {
+      this.previousLowest = this.lowest;
     }
 
+    // Cache previous result
     this.previousResult = this.result;
+    // Set new result
     return (this.result = value);
   }
 

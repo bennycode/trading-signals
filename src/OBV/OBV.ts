@@ -27,7 +27,7 @@ export class OBV extends BigIndicatorSeries<OpenHighLowCloseVolume> {
     const currentPrice = new Big(candle.close);
     const nextResult = currentPrice.gt(prevPrice) ? candle.volume : currentPrice.lt(prevPrice) ? -candle.volume : 0;
 
-    return this.setResult(prevResult.add(nextResult));
+    return this.setResult(prevResult.add(nextResult), false);
   }
 }
 
@@ -47,6 +47,6 @@ export class FasterOBV extends NumberIndicatorSeries<OpenHighLowCloseVolumeNumbe
     const currentPrice = candle.close;
     const nextResult = currentPrice > prevPrice ? candle.volume : currentPrice < prevPrice ? -candle.volume : 0;
 
-    return this.setResult(prevResult + nextResult);
+    return this.setResult(prevResult + nextResult, false);
   }
 }
