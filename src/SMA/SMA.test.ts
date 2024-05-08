@@ -114,7 +114,7 @@ describe('SMA', () => {
       // https://github.com/TulipCharts/tulipindicators/blob/v0.8.0/tests/untest.txt#L359-L361
       const prices = [
         81.59, 81.06, 82.87, 83.0, 83.61, 83.15, 82.84, 83.99, 84.55, 84.36, 85.53, 86.54, 86.89, 87.77, 87.29,
-      ];
+      ] as const;
       const expectations = [
         '82.426',
         '82.738',
@@ -127,16 +127,19 @@ describe('SMA', () => {
         '85.574',
         '86.218',
         '86.804',
-      ];
-      const sma = new SMA(5);
-      const fasterSMA = new FasterSMA(5);
+      ] as const;
 
-      for (const price of prices) {
+      const interval = 5;
+      const sma = new SMA(interval);
+      const fasterSMA = new FasterSMA(interval);
+
+      for (let i = 0; i < prices.length; i++) {
+        const price = prices[i];
         const result = sma.update(price);
         const fasterResult = fasterSMA.update(price);
 
         if (result && fasterResult) {
-          const expected = expectations.shift()!;
+          const expected = expectations[i - (interval - 1)];
           expect(result.toFixed(3)).toBe(expected);
           expect(fasterResult.toFixed(3)).toBe(expected);
         }
