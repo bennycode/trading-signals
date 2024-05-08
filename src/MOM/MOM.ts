@@ -1,5 +1,5 @@
 import {BigIndicatorSeries, NumberIndicatorSeries} from '../Indicator.js';
-import {Big, BigSource} from '../index.js';
+import {Big, type BigSource} from '../index.js';
 import {getFixedArray} from '../util/getFixedArray.js';
 
 /**
@@ -21,10 +21,14 @@ export class MOM extends BigIndicatorSeries {
     this.history = getFixedArray<BigSource>(this.historyLength);
   }
 
-  override update(value: BigSource): void | Big {
-    this.history.push(value);
+  override update(value: BigSource, replace: boolean = false): void | Big {
+    if (this.history.length && replace) {
+      this.history[this.history.length - 1] = value;
+    } else {
+      this.history.push(value);
+    }
     if (this.history.length === this.historyLength) {
-      return this.setResult(new Big(value).minus(this.history[0]));
+      return this.setResult(new Big(value).minus(this.history[0]), replace);
     }
   }
 }
@@ -39,10 +43,14 @@ export class FasterMOM extends NumberIndicatorSeries {
     this.history = getFixedArray<number>(this.historyLength);
   }
 
-  override update(value: number): void | number {
-    this.history.push(value);
+  override update(value: number, replace: boolean = false): void | number {
+    if (this.history.length && replace) {
+      this.history[this.history.length - 1] = value;
+    } else {
+      this.history.push(value);
+    }
     if (this.history.length === this.historyLength) {
-      return this.setResult(value - this.history[0]);
+      return this.setResult(value - this.history[0], replace);
     }
   }
 }

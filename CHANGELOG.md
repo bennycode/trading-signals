@@ -1,3 +1,53 @@
+#### 5.0.4 (2024-05-08)
+
+##### New Features
+
+- **WMA:** Add Weighted Moving Average (WMA) ([#677](https://github.com/bennycode/trading-signals/pull/677)) ([87bb0fbb](https://github.com/bennycode/trading-signals/commit/87bb0fbb5410c674c9ffc93058ab2616c920e1d9))
+
+##### Bug Fixes
+
+- **WMA:** Fix caching of highest and lowest result ([#684](https://github.com/bennycode/trading-signals/pull/684)) ([0a8ec39d](https://github.com/bennycode/trading-signals/commit/0a8ec39d8c72ee5069b4da186530cb794948bd67))
+
+#### 5.0.3 (2024-05-08)
+
+##### Documentation Changes
+
+- Fix image link for GitHub Pages ([2afb42ba](https://github.com/bennycode/trading-signals/commit/2afb42bac5085cee7b1c7fee885e837030d81560))
+
+##### New Features
+
+- **MA,SMA,TR:** Expose "replace" function ([#678](https://github.com/bennycode/trading-signals/pull/678)) ([4a1f221d](https://github.com/bennycode/trading-signals/commit/4a1f221d12c1e2a8a1151693de705922027dbb27))
+
+##### Bug Fixes
+
+- **ATR,AO,CG,SMA,TR:** Fix caching of highest and lowest result ([#679](https://github.com/bennycode/trading-signals/pull/679)) ([bcb73a66](https://github.com/bennycode/trading-signals/commit/bcb73a661a60a052378455c11331250a4ba0a7ba))
+
+#### 5.0.2 (2024-05-06)
+
+##### Documentation Changes
+
+- Add sponsoring ([3cf5348b](https://github.com/bennycode/trading-signals/commit/3cf5348be21af2e60505e66b1039ba971b880c89))
+
+##### Bug Fixes
+
+- Remove console logs in Indicator.ts ([#676](https://github.com/bennycode/trading-signals/pull/676)) ([1108a449](https://github.com/bennycode/trading-signals/commit/1108a4494775ac9b54330c9b4246cbcb170c9c1e))
+
+#### 5.0.1 (2024-04-16)
+
+##### Bug Fixes
+
+- **TR:** Correct replace feature ([#666](https://github.com/bennycode/trading-signals/pull/666)) ([041cedad](https://github.com/bennycode/trading-signals/commit/041cedade55d454920a289b3626beb12223f4472))
+
+## 5.0.0 (2024-04-05)
+
+##### Documentation Changes
+
+- Mention live-charting functionality ([03740200](https://github.com/bennycode/trading-signals/commit/03740200c79550e94df73db850aa4f8629332607))
+
+##### New Features
+
+- **AC,ADX,CG,DEMA,DMA,EMA,MACD,MAD,MOM,ROC,RSI,SMA,STOCH,TR,WSMA:** Allow replacing values ([#654](https://github.com/bennycode/trading-signals/pull/654)) ([4f95dfa0](https://github.com/bennycode/trading-signals/commit/4f95dfa0c75a292ef3c01b7f2658c48779473dc7))
+
 ## 4.0.0 (2023-10-31)
 
 ##### Documentation Changes

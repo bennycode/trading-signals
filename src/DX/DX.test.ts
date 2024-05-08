@@ -56,11 +56,11 @@ describe('DX', () => {
       expect(dx.getResult().toFixed(2)).toBe('75.61');
       expect(fasterDX.getResult().toFixed(2)).toBe('75.61');
 
-      expect(dx.lowest!.toFixed(2)).toBe('11.09');
-      expect(fasterDX.lowest!.toFixed(2)).toBe('11.09');
+      expect(dx.lowest?.toFixed(2)).toBe('11.09');
+      expect(fasterDX.lowest?.toFixed(2)).toBe('11.09');
 
-      expect(dx.highest!.toFixed(2)).toBe('86.51');
-      expect(fasterDX.highest!.toFixed(2)).toBe('86.51');
+      expect(dx.highest?.toFixed(2)).toBe('86.51');
+      expect(fasterDX.highest?.toFixed(2)).toBe('86.51');
     });
 
     it('returns zero when there is no trend', () => {

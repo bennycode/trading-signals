@@ -1,5 +1,5 @@
-import {Big, BigSource} from '../index.js';
-import {Indicator} from '../Indicator.js';
+import {Big, type BigSource} from '../index.js';
+import type {Indicator} from '../Indicator.js';
 import {getFixedArray} from './getFixedArray.js';
 import {getMinimum} from './getMinimum.js';
 import {getMaximum} from './getMaximum.js';

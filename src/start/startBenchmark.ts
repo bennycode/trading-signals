@@ -1,4 +1,4 @@
-import Benchmark, {Event} from 'benchmark';
+import Benchmark, {type Event} from 'benchmark';
 import candles from '../test/fixtures/candles/100-candles.json' assert {type: 'json'};
 import {
   AC,
@@ -39,6 +39,7 @@ import {
   FasterStochasticRSI,
   FasterTR,
   FasterWSMA,
+  FasterWMA,
   getAverage,
   getFasterAverage,
   getFasterStandardDeviation,
@@ -47,7 +48,6 @@ import {
   MAD,
   MOM,
   OBV,
-  OpenHighLowCloseVolumeNumber,
   Period,
   ROC,
   RSI,
@@ -56,6 +56,8 @@ import {
   StochasticRSI,
   TR,
   WSMA,
+  WMA,
+  type OpenHighLowCloseVolumeNumber,
 } from '../index.js';
 
 const shortInterval = 10;
@@ -374,6 +376,18 @@ new Benchmark.Suite('Technical Indicators')
     const fasterWSMA = new FasterWSMA(interval);
     for (const price of prices) {
       fasterWSMA.update(price);
+    }
+  })
+  .add('WMA', () => {
+    const wma = new WMA(interval);
+    for (const price of prices) {
+      wma.update(price);
+    }
+  })
+  .add('FasterWMA', () => {
+    const fasterWMA = new FasterWMA(interval);
+    for (const price of prices) {
+      fasterWMA.update(price);
     }
   })
   .add('getAverage', () => {

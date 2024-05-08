@@ -43,10 +43,10 @@ describe('CCI', () => {
         cci.update(candle);
         fasterCCI.update(candle);
       }
-      expect(cci.highest!.toFixed(2)).toBe('166.67');
-      expect(cci.lowest!.toFixed(2)).toBe('71.93');
-      expect(fasterCCI.highest!.toFixed(2)).toBe('166.67');
-      expect(fasterCCI.lowest!.toFixed(2)).toBe('71.93');
+      expect(cci.highest?.toFixed(2)).toBe('166.67');
+      expect(cci.lowest?.toFixed(2)).toBe('71.93');
+      expect(fasterCCI.highest?.toFixed(2)).toBe('166.67');
+      expect(fasterCCI.lowest?.toFixed(2)).toBe('71.93');
     });
 
     it('throws an error when there is not enough input data', () => {

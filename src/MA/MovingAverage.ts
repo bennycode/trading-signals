@@ -1,4 +1,4 @@
-import {Big, BigSource} from '../index.js';
+import type {Big, BigSource} from '../index.js';
 import {BigIndicatorSeries, NumberIndicatorSeries} from '../Indicator.js';
 
 /**
@@ -21,7 +21,11 @@ export abstract class MovingAverage extends BigIndicatorSeries {
 
   abstract getResultFromBatch(prices: BigSource[]): Big;
 
-  abstract update(price: BigSource): Big | void;
+  abstract update(price: BigSource, replace?: boolean): Big | void;
+
+  replace(price: BigSource) {
+    return this.update(price, true);
+  }
 }
 
 export abstract class FasterMovingAverage extends NumberIndicatorSeries {
@@ -34,7 +38,11 @@ export abstract class FasterMovingAverage extends NumberIndicatorSeries {
     return this.result;
   }
 
-  abstract update(price: number): number | void;
+  abstract update(price: number, replace?: boolean): number | void;
 
   abstract getResultFromBatch(prices: number[]): number;
+
+  replace(price: number) {
+    return this.update(price, true);
+  }
 }

@@ -19,7 +19,7 @@ describe('TR', () => {
     {close: 86.89, high: 86.98, low: 85.76},
     {close: 87.77, high: 88.0, low: 87.17},
     {close: 87.29, high: 87.87, low: 87.01},
-  ];
+  ] as const;
   const expectations = [
     '0.86',
     '1.25',
@@ -36,21 +36,23 @@ describe('TR', () => {
     '1.22',
     '1.11',
     '0.86',
-  ];
+  ] as const;
 
   describe('getResult', () => {
     it('calculates the True Range (TR)', () => {
       const tr = new TR();
       const fasterTR = new FasterTR();
-      for (const candle of candles) {
+
+      candles.forEach((candle, i) => {
         tr.update(candle);
         fasterTR.update(candle);
         if (tr.isStable && fasterTR.isStable) {
-          const expected = expectations.shift();
+          const expected = expectations[i];
           expect(tr.getResult().toFixed(2)).toBe(expected!);
           expect(fasterTR.getResult().toFixed(2)).toBe(expected!);
         }
-      }
+      });
+
       expect(tr.isStable).toBe(true);
       expect(fasterTR.isStable).toBe(true);
 
@@ -62,6 +64,68 @@ describe('TR', () => {
 
       expect(tr.highest?.toFixed(2)).toBe('2.00');
       expect(fasterTR.highest?.toFixed(2)).toBe('2.00');
+    });
+  });
+
+  describe('replace', () => {
+    it('replaces recently added values', () => {
+      const tr = new TR();
+      const fasterTR = new FasterTR();
+
+      // Update candles except last one.
+      candles.slice(-1).forEach(candle => {
+        tr.update(candle);
+        fasterTR.update(candle);
+      });
+
+      const lastCandle = candles.at(-1);
+      const latestResult = expectations.at(-1);
+      const latestLow = '0.86';
+      const latestHigh = '0.86';
+
+      // Add the latest value
+      if (lastCandle) {
+        tr.update(lastCandle);
+        fasterTR.update(lastCandle);
+      }
+
+      expect(tr.getResult().toFixed(2)).toBe(latestResult);
+      expect(tr.lowest?.toFixed(2)).toBe(latestLow);
+      expect(tr.highest?.toFixed(2)).toBe(latestHigh);
+
+      expect(fasterTR.getResult().toFixed(2)).toBe(latestResult);
+      expect(fasterTR.lowest?.toFixed(2)).toBe(latestLow);
+      expect(fasterTR.highest?.toFixed(2)).toBe(latestHigh);
+
+      // Replace the latest value with some other value
+      const someOtherValue = {close: 84.55, high: 84.84, low: 84.15};
+      const otherResult = '3.14';
+      const otherLow = '0.86';
+      const otherHigh = '3.14';
+
+      tr.replace(someOtherValue);
+      expect(tr.getResult().toFixed(2)).toBe(otherResult);
+      expect(tr.lowest?.toFixed(2)).toBe(otherLow);
+      expect(tr.highest?.toFixed(2)).toBe(otherHigh);
+
+      fasterTR.replace(someOtherValue);
+      expect(fasterTR.getResult().toFixed(2)).toBe(otherResult);
+      expect(fasterTR.lowest?.toFixed(2)).toBe(otherLow);
+      expect(fasterTR.highest?.toFixed(2)).toBe(otherHigh);
+
+      // Replace the other value with the latest value
+      if (lastCandle) {
+        tr.replace(lastCandle);
+        fasterTR.replace(lastCandle);
+      }
+
+      expect(tr.getResult().toFixed(2)).toBe(latestResult);
+      expect(tr.lowest?.toFixed(2)).toBe(latestLow);
+      expect(tr.highest?.toFixed(2)).toBe(latestHigh);
+
+      expect(fasterTR.getResult().toFixed(2)).toBe(latestResult);
+      expect(fasterTR.lowest?.toFixed(2)).toBe(latestLow);
+      expect(fasterTR.highest?.toFixed(2)).toBe(latestHigh);
     });
   });
 });

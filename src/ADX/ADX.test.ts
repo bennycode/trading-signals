@@ -44,21 +44,21 @@ describe('ADX', () => {
       expect(adx.getResult().toFixed(2)).toBe('67.36');
       expect(fasterADX.getResult().toFixed(2)).toBe('67.36');
 
-      expect(adx.lowest!.toFixed(2)).toBe('41.38');
-      expect(fasterADX.lowest!.toFixed(2)).toBe('41.38');
+      expect(adx.lowest?.toFixed(2)).toBe('41.38');
+      expect(fasterADX.lowest?.toFixed(2)).toBe('41.38');
 
-      expect(adx.highest!.toFixed(2)).toBe('67.36');
-      expect(fasterADX.highest!.toFixed(2)).toBe('67.36');
+      expect(adx.highest?.toFixed(2)).toBe('67.36');
+      expect(fasterADX.highest?.toFixed(2)).toBe('67.36');
 
       // Verify uptrend detection (+DI > -DI):
       expect(adx.pdi!.gt(adx.mdi!)).toBe(true);
       expect(fasterADX.pdi > fasterADX.mdi).toBe(true);
 
-      expect(adx.pdi!.toFixed(2)).toBe('0.42');
-      expect(fasterADX.pdi!.toFixed(2)).toBe('0.42');
+      expect(adx.pdi?.toFixed(2)).toBe('0.42');
+      expect(fasterADX.pdi?.toFixed(2)).toBe('0.42');
 
-      expect(adx.mdi!.toFixed(2)).toBe('0.06');
-      expect(fasterADX.mdi!.toFixed(2)).toBe('0.06');
+      expect(adx.mdi?.toFixed(2)).toBe('0.06');
+      expect(fasterADX.mdi?.toFixed(2)).toBe('0.06');
     });
   });
 });

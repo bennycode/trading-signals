@@ -1,6 +1,6 @@
-import {EMA, FasterEMA} from '../EMA/EMA.js';
-import {Big, BigSource, DEMA, FasterDEMA, NotEnoughDataError} from '../index.js';
-import {Indicator} from '../Indicator.js';
+import type {EMA, FasterEMA} from '../EMA/EMA.js';
+import {Big, NotEnoughDataError, type BigSource, type DEMA, type FasterDEMA} from '../index.js';
+import type {Indicator} from '../Indicator.js';
 
 export type MACDConfig = {
   indicator: typeof EMA | typeof DEMA;
@@ -48,12 +48,16 @@ export class MACD implements Indicator<MACDResult> {
     return this.result !== undefined;
   }
 
-  update(_price: BigSource): void | MACDResult {
+  update(_price: BigSource, replace: boolean = false): void | MACDResult {
     const price = new Big(_price);
-    this.prices.push(price);
+    if (this.prices.length && replace) {
+      this.prices[this.prices.length - 1] = price;
+    } else {
+      this.prices.push(price);
+    }
 
-    const short = this.short.update(price);
-    const long = this.long.update(price);
+    const short = this.short.update(price, replace);
+    const long = this.long.update(price, replace);
 
     if (this.prices.length > this.long.interval) {
       this.prices.shift();
@@ -114,11 +118,15 @@ export class FasterMACD implements Indicator<FasterMACDResult> {
     return this.result !== undefined;
   }
 
-  update(price: number): void | FasterMACDResult {
-    this.prices.push(price);
+  update(price: number, replace: boolean = false): void | FasterMACDResult {
+    if (this.prices.length && replace) {
+      this.prices[this.prices.length - 1] = price;
+    } else {
+      this.prices.push(price);
+    }
 
-    const short = this.short.update(price);
-    const long = this.long.update(price);
+    const short = this.short.update(price, replace);
+    const long = this.long.update(price, replace);
 
     if (this.prices.length > this.long.interval) {
       this.prices.shift();
@@ -126,7 +134,7 @@ export class FasterMACD implements Indicator<FasterMACDResult> {
 
     if (this.prices.length === this.long.interval) {
       const macd = short - long;
-      const signal = this.signal.update(macd);
+      const signal = this.signal.update(macd, replace);
 
       return (this.result = {
         histogram: macd - signal,

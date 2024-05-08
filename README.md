@@ -18,6 +18,7 @@ All indicators can be updated over time by streaming data (prices or candles) to
 - **Convenient.** Indicators with intervals will save their all-time highs and lows.
 - **Fast.** If you need high throughput, you can use the included [faster implementations][2].
 - **Flexible.** All advanced indicators support different smoothing overlays (WSMA, etc.).
+- **Live.** It allows for the replacement of values, enabling live charting.
 - **Modern.** Uses ECMAScript Modules (ESM) syntax.
 - **Precise.** Better accuracy than calculating with primitive numbers thanks to [big.js][1].
 - **Robust.** Checked against common division by zero mistakes.
@@ -58,7 +59,8 @@ All indicators can be updated over time by streaming data (prices or candles) to
 1. Stochastic Oscillator (STOCH)
 1. Stochastic RSI (STOCHRSI)
 1. True Range (TR)
-1. Wilder's Smoothed Moving Average (WSMA / WMA / WWS / SMMA / MEMA)
+1. Weighted Moving Average (WMA)
+1. Wilder's Smoothed Moving Average (WSMA / WWS / SMMA / MEMA)
 
 Utility Methods:
 
@@ -83,6 +85,9 @@ sma.updates([20, 40, 80]);
 
 // You can add strings:
 sma.update('10');
+
+// You can replace a previous value (useful for live charts):
+sma.replace('40');
 
 // You can add arbitrary-precision decimals:
 sma.update(new Big(30));
@@ -134,7 +139,7 @@ Most of the time, the minimum amount of data depends on the interval / time peri
 
 JavaScript is very bad with numbers. When calculating `0.1 + 0.2` it shows you `0.30000000000000004`, but the truth is `0.3`.
 
-![JavaScript arithmetic](./js-arithmetic.png)
+![JavaScript arithmetic](https://raw.githubusercontent.com/bennycode/trading-signals/HEAD/js-arithmetic.png)
 
 As specified by the ECMAScript standard, all arithmetic in JavaScript uses [double-precision floating-point arithmetic](https://en.wikipedia.org/wiki/Double-precision_floating-point_format), which is only accurate until certain extent. To increase the accuracy and avoid miscalculations, the [trading-signals](https://github.com/bennycode/trading-signals) library uses [big.js][1] which offers arbitrary-precision decimal arithmetic. However, this arbitrary accuracy comes with a downside: Calculations with it are not as performant as with the primitive data type `number`.
 

@@ -29,11 +29,11 @@ describe('ROC', () => {
         }
       }
 
-      expect(roc.lowest!.toFixed(2)).toBe('0.01');
-      expect(fasterROC.lowest!.toFixed(2)).toBe('0.01');
+      expect(roc.lowest?.toFixed(2)).toBe('0.01');
+      expect(fasterROC.lowest?.toFixed(2)).toBe('0.01');
 
-      expect(roc.highest!.toFixed(2)).toBe('0.04');
-      expect(fasterROC.highest!.toFixed(2)).toBe('0.04');
+      expect(roc.highest?.toFixed(2)).toBe('0.04');
+      expect(fasterROC.highest?.toFixed(2)).toBe('0.04');
     });
 
     it('identifies a down-trending asset by a negative ROC', () => {
@@ -45,8 +45,8 @@ describe('ROC', () => {
         roc.update(new Big(price));
       });
 
-      expect(roc.lowest!.toFixed(2)).toBe('-0.83');
-      expect(roc.highest!.toFixed(2)).toBe('-0.50');
+      expect(roc.lowest?.toFixed(2)).toBe('-0.83');
+      expect(roc.highest?.toFixed(2)).toBe('-0.50');
     });
 
     it('throws an error when there is not enough input data', () => {

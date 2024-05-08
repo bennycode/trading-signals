@@ -1,7 +1,7 @@
 import {Big, BigSource, MovingAverage, SMA} from '../index.js';
 import {NotEnoughDataError} from '../error/index.js';
-import {BandsResult, FasterBandsResult} from '../util/BandsResult.js';
-import {Indicator} from '../Indicator.js';
+import type {BandsResult, FasterBandsResult} from '../util/BandsResult.js';
+import type {Indicator} from '../Indicator.js';
 import {getFasterAverage, getFasterStandardDeviation, getStandardDeviation} from '../util/index.js';
 
 /**
@@ -68,7 +68,10 @@ export class FasterBollingerBands implements Indicator<FasterBandsResult> {
   public readonly prices: number[] = [];
   private result: FasterBandsResult | undefined;
 
-  constructor(public readonly interval: number, public readonly deviationMultiplier: number = 2) {}
+  constructor(
+    public readonly interval: number,
+    public readonly deviationMultiplier: number = 2
+  ) {}
 
   update(price: number): void | FasterBandsResult {
     this.prices.push(price);

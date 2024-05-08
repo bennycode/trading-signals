@@ -1,8 +1,8 @@
-import {Big} from '../index.js';
+import type {Big} from '../index.js';
 import {BigIndicatorSeries, NumberIndicatorSeries} from '../Indicator.js';
-import {FasterMovingAverage, MovingAverage} from '../MA/MovingAverage.js';
-import {HighLowClose, HighLowCloseNumber} from '../util/HighLowClose.js';
-import {FasterMovingAverageTypes, MovingAverageTypes} from '../MA/MovingAverageTypes.js';
+import type {FasterMovingAverage, MovingAverage} from '../MA/MovingAverage.js';
+import type {HighLowClose, HighLowCloseNumber} from '../util/HighLowClose.js';
+import type {FasterMovingAverageTypes, MovingAverageTypes} from '../MA/MovingAverageTypes.js';
 import {FasterWSMA, WSMA} from '../WSMA/WSMA.js';
 import {DX, FasterDX} from '../DX/DX.js';
 
@@ -33,7 +33,10 @@ export class ADX extends BigIndicatorSeries<HighLowClose> {
   private readonly dx: DX;
   private readonly adx: MovingAverage;
 
-  constructor(public readonly interval: number, SmoothingIndicator: MovingAverageTypes = WSMA) {
+  constructor(
+    public readonly interval: number,
+    SmoothingIndicator: MovingAverageTypes = WSMA
+  ) {
     super();
     this.adx = new SmoothingIndicator(this.interval);
     this.dx = new DX(interval, SmoothingIndicator);
@@ -47,13 +50,13 @@ export class ADX extends BigIndicatorSeries<HighLowClose> {
     return this.dx.pdi;
   }
 
-  update(candle: HighLowClose): Big | void {
+  update(candle: HighLowClose, replace: boolean = false): Big | void {
     const result = this.dx.update(candle);
     if (result) {
       this.adx.update(result);
     }
     if (this.adx.isStable) {
-      return this.setResult(this.adx.getResult());
+      return this.setResult(this.adx.getResult(), replace);
     }
   }
 }
@@ -62,7 +65,10 @@ export class FasterADX extends NumberIndicatorSeries<HighLowCloseNumber> {
   private readonly dx: FasterDX;
   private readonly adx: FasterMovingAverage;
 
-  constructor(public readonly interval: number, SmoothingIndicator: FasterMovingAverageTypes = FasterWSMA) {
+  constructor(
+    public readonly interval: number,
+    SmoothingIndicator: FasterMovingAverageTypes = FasterWSMA
+  ) {
     super();
     this.adx = new SmoothingIndicator(this.interval);
     this.dx = new FasterDX(interval, SmoothingIndicator);
@@ -76,13 +82,13 @@ export class FasterADX extends NumberIndicatorSeries<HighLowCloseNumber> {
     return this.dx.pdi;
   }
 
-  update(candle: HighLowCloseNumber): void | number {
+  update(candle: HighLowCloseNumber, replace: boolean = false): void | number {
     const result = this.dx.update(candle);
     if (result !== undefined) {
       this.adx.update(result);
     }
     if (this.adx.isStable) {
-      return this.setResult(this.adx.getResult());
+      return this.setResult(this.adx.getResult(), replace);
     }
   }
 }

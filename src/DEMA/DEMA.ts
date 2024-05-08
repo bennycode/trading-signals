@@ -1,4 +1,4 @@
-import {Big, BigSource} from '../index.js';
+import type {Big, BigSource} from '../index.js';
 import {EMA, FasterEMA} from '../EMA/EMA.js';
 import {BigIndicatorSeries, NumberIndicatorSeries} from '../Indicator.js';
 
@@ -22,10 +22,10 @@ export class DEMA extends BigIndicatorSeries {
     this.outer = new EMA(interval);
   }
 
-  override update(price: BigSource): Big {
-    const innerResult = this.inner.update(price);
-    const outerResult = this.outer.update(innerResult);
-    return this.setResult(innerResult.times(2).sub(outerResult));
+  override update(price: BigSource, replace: boolean = false): Big {
+    const innerResult = this.inner.update(price, replace);
+    const outerResult = this.outer.update(innerResult, replace);
+    return this.setResult(innerResult.times(2).sub(outerResult), replace);
   }
 
   override get isStable(): boolean {
@@ -43,10 +43,10 @@ export class FasterDEMA extends NumberIndicatorSeries {
     this.outer = new FasterEMA(interval);
   }
 
-  override update(price: number): number {
-    const innerResult = this.inner.update(price);
-    const outerResult = this.outer.update(innerResult);
-    return this.setResult(innerResult * 2 - outerResult);
+  override update(price: number, replace: boolean = false): number {
+    const innerResult = this.inner.update(price, replace);
+    const outerResult = this.outer.update(innerResult, replace);
+    return this.setResult(innerResult * 2 - outerResult, replace);
   }
 
   override get isStable(): boolean {
