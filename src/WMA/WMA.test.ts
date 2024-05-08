@@ -31,30 +31,64 @@ describe('WMA', () => {
     });
   });
 
-  describe('update', () => {
-    it('can replace recently added values', () => {
+  describe('replace', () => {
+    it('replaces recently added values', () => {
       const interval = 3;
 
       const wma = new WMA(interval);
       const fasterWMA = new FasterWMA(interval);
 
-      wma.update(30);
-      fasterWMA.update(30);
+      wma.update(11);
+      fasterWMA.update(11);
+      wma.update(12);
+      fasterWMA.update(12);
+      wma.update(13);
+      fasterWMA.update(13);
+      wma.update(14);
+      fasterWMA.update(14);
 
-      wma.update(60);
-      fasterWMA.update(60);
+      // Add the latest value
+      const latestValue = 15;
+      const latestResult = '14.33';
+      const latestLow = '12.33';
+      const latestHigh = '14.33';
 
-      wma.update(90);
-      fasterWMA.update(90);
+      wma.update(latestValue);
+      expect(wma.getResult().toFixed(2)).toBe(latestResult);
+      expect(wma.lowest?.toFixed(2)).toBe(latestLow);
+      expect(wma.highest?.toFixed(2)).toBe(latestHigh);
 
-      expect(wma.getResult().toFixed()).toBe('70');
-      expect(fasterWMA.getResult().toFixed()).toBe('70');
+      fasterWMA.update(latestValue);
+      expect(fasterWMA.getResult().toFixed(2)).toBe(latestResult);
+      expect(fasterWMA.lowest?.toFixed(2)).toBe(latestLow);
+      expect(fasterWMA.highest?.toFixed(2)).toBe(latestHigh);
 
-      wma.update(60, true);
-      fasterWMA.update(60, true);
+      // Replace the latest value with some other value
+      const someOtherValue = 1000;
+      const otherResult = '506.83';
+      const otherLow = '12.33';
+      const otherHigh = '506.83';
 
-      expect(wma.getResult().toFixed()).toBe('55');
-      expect(fasterWMA.getResult().toFixed()).toBe('55');
+      wma.replace(someOtherValue);
+      expect(wma.getResult().toFixed(2)).toBe(otherResult);
+      expect(wma.lowest?.toFixed(2)).toBe(otherLow);
+      expect(wma.highest?.toFixed(2), 'new record high').toBe(otherHigh);
+
+      fasterWMA.replace(someOtherValue);
+      expect(fasterWMA.getResult().toFixed(2)).toBe(otherResult);
+      expect(fasterWMA.lowest?.toFixed(2)).toBe(otherLow);
+      expect(fasterWMA.highest?.toFixed(2), 'new record high').toBe(otherHigh);
+
+      // Replace the other value with the latest value
+      wma.replace(latestValue);
+      expect(wma.getResult().toFixed(2)).toBe(latestResult);
+      expect(wma.lowest?.toFixed(2), 'lowest reset').toBe(latestLow);
+      expect(wma.highest?.toFixed(2), 'highest reset').toBe(latestHigh);
+
+      fasterWMA.replace(latestValue);
+      expect(fasterWMA.getResult().toFixed(2)).toBe(latestResult);
+      expect(fasterWMA.lowest?.toFixed(2), 'lowest reset').toBe(latestLow);
+      expect(fasterWMA.highest?.toFixed(2), 'highest reset').toBe(latestHigh);
     });
   });
 

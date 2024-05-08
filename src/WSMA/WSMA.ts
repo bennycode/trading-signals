@@ -15,7 +15,6 @@ import {NumberIndicatorSeries} from '../Indicator.js';
  * - Modified Exponential Moving Average (MEMA)
  * - Smoothed Moving Average (SMMA)
  * - Welles Wilder's Smoothing (WWS)
- * - Wilder's Moving Average (WMA)
  *
  * @see https://tlc.thinkorswim.com/center/reference/Tech-Indicators/studies-library/V-Z/WildersSmoothing
  */
