@@ -12,8 +12,7 @@ describe('getStandardDeviation', () => {
     // Test data verified with:
     // https://github.com/TulipCharts/tulipindicators/blob/v0.8.0/tests/untest.txt#L367-L369
     const prices = [81.59, 81.06, 82.87, 83.0, 83.61];
-    const sma = new SMA(5);
-    const average = sma.getResultFromBatch(prices);
+    const average = SMA.getResultFromBatch(prices);
     const stdDev = getStandardDeviation(prices, average);
     expect(stdDev.toFixed(2)).toBe('0.95');
   });
