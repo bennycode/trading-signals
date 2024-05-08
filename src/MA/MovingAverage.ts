@@ -19,8 +19,6 @@ export abstract class MovingAverage extends BigIndicatorSeries {
     return this.result;
   }
 
-  abstract getResultFromBatch(prices: BigSource[]): Big;
-
   abstract update(price: BigSource, replace?: boolean): Big | void;
 
   replace(price: BigSource) {
@@ -39,8 +37,6 @@ export abstract class FasterMovingAverage extends NumberIndicatorSeries {
   }
 
   abstract update(price: number, replace?: boolean): number | void;
-
-  abstract getResultFromBatch(prices: number[]): number;
 
   replace(price: number) {
     return this.update(price, true);
