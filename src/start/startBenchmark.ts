@@ -39,6 +39,7 @@ import {
   FasterStochasticRSI,
   FasterTR,
   FasterWSMA,
+  FasterWMA,
   getAverage,
   getFasterAverage,
   getFasterStandardDeviation,
@@ -55,6 +56,7 @@ import {
   StochasticRSI,
   TR,
   WSMA,
+  WMA,
   type OpenHighLowCloseVolumeNumber,
 } from '../index.js';
 
@@ -374,6 +376,18 @@ new Benchmark.Suite('Technical Indicators')
     const fasterWSMA = new FasterWSMA(interval);
     for (const price of prices) {
       fasterWSMA.update(price);
+    }
+  })
+  .add('WMA', () => {
+    const wma = new WMA(interval);
+    for (const price of prices) {
+      wma.update(price);
+    }
+  })
+  .add('FasterWMA', () => {
+    const fasterWMA = new FasterWMA(interval);
+    for (const price of prices) {
+      fasterWMA.update(price);
     }
   })
   .add('getAverage', () => {
