@@ -1,10 +1,11 @@
-export function calculateUpwardStreaks(prices: number[]) {
+export function getStreaks(prices: number[], side: 'up' | 'down') {
   const streaks: number[] = [];
   let currentStreak = 0;
 
   for (let i = 1; i < prices.length; i++) {
-    if (prices[i] > prices[i - 1]) {
-      // Increment streak if the current price is higher
+    const isUpward = side === 'up' && prices[i] > prices[i - 1];
+    const isDownward = side === 'down' && prices[i] < prices[i - 1];
+    if (isUpward || isDownward) {
       currentStreak++;
     } else {
       // Save the streak if it ends
