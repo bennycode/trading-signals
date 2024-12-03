@@ -1,10 +1,18 @@
 export type Streak = {
+  /** Length of the streak */
   length: number;
   /** Price change percentage during the streak */
   percentage: number;
 };
 
-export function getStreaks(prices: number[], side: 'up' | 'down'): Streak[] {
+/**
+ * Tracks the lengths (streaks) of continuous price movements (up or down).
+ *
+ * @param prices A series of prices
+ * @param keepSide If you want to receive only uptrends or downtrends
+ * @returns An array of objects representing the filtered streaks
+ */
+export function getStreaks(prices: number[], keepSide: 'up' | 'down'): Streak[] {
   const streaks: Streak[] = [];
   let currentStreak = 0;
 
@@ -16,8 +24,8 @@ export function getStreaks(prices: number[], side: 'up' | 'down'): Streak[] {
   }
 
   for (let i = 1; i < prices.length; i++) {
-    const isUpward = side === 'up' && prices[i] > prices[i - 1];
-    const isDownward = side === 'down' && prices[i] < prices[i - 1];
+    const isUpward = keepSide === 'up' && prices[i] > prices[i - 1];
+    const isDownward = keepSide === 'down' && prices[i] < prices[i - 1];
     if (isUpward || isDownward) {
       currentStreak++;
     } else {
