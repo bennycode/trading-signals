@@ -30,7 +30,7 @@ describe('getStreaks', () => {
   describe('special cases', () => {
     it("doesn't record a streak of 1", () => {
       const actual = getStreaks([1], 'up');
-      expect(actual.map(s => s.length)).toStrictEqual([3, 2, 3]);
+      expect(actual.map(s => s.length)).toStrictEqual([]);
     });
   });
 });
