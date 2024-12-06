@@ -3,13 +3,15 @@ import {defineConfig} from 'vitest/config';
 export default defineConfig({
   test: {
     coverage: {
-      branches: 0,
-      functions: 0,
       include: ['**/*.{ts,tsx}', '!**/*.d.ts', '!**/cli.ts', '!**/index.ts', '!**/start*.ts'],
-      lines: 0,
       provider: 'v8',
       reporter: ['html', 'lcov', 'text'],
-      statements: 0,
+      thresholds: {
+        branches: 100,
+        functions: 100,
+        lines: 100,
+        statements: 100,
+      },
     },
     environment: 'node',
     globals: true,

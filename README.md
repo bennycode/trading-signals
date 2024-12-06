@@ -90,11 +90,11 @@ sma.update('10');
 sma.replace('40');
 
 // You can add arbitrary-precision decimals:
-sma.update(new Big(30));
+sma.update(new Big(30.0009));
 
 // You can get the result in various formats:
-console.log(sma.getResult().toFixed(2)); // "40.00"
-console.log(sma.getResult().toFixed(4)); // "40.0000"
+console.log(sma.getResult().toFixed(2)); // "50.00"
+console.log(sma.getResult().toFixed(4)); // "50.0003"
 ```
 
 ### When to use `update(...)`?
