@@ -48,6 +48,15 @@ export class MACD implements Indicator<MACDResult> {
     return this.result !== undefined;
   }
 
+  replace(price: BigSource) {
+    return this.update(price, true);
+  }
+
+  updates(prices: BigSource[]) {
+    prices.forEach(price => this.update(price));
+    return this.result;
+  }
+
   update(_price: BigSource, replace: boolean = false): void | MACDResult {
     const price = new Big(_price);
     if (this.prices.length && replace) {
@@ -74,7 +83,7 @@ export class MACD implements Indicator<MACDResult> {
        * A short (usually 9 periods) EMA of MACD is plotted along side to act as a signal line to identify turns in the
        * indicator. It gets updated once the long EMA has enough input data.
        */
-      const signal = this.signal.update(macd);
+      const signal = this.signal.update(macd, replace);
 
       /**
        * The MACD histogram is calculated as the MACD indicator minus the signal line (usually 9 periods) EMA.

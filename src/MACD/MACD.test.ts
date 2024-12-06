@@ -2,6 +2,33 @@ import {FasterMACD, MACD} from './MACD.js';
 import {Big, DEMA, EMA, FasterEMA, NotEnoughDataError} from '../index.js';
 
 describe('MACD', () => {
+  describe('replace', () => {
+    it('guarantees that a replacement is done correctly', () => {
+      const macd = new MACD({
+        indicator: EMA,
+        longInterval: 5,
+        shortInterval: 2,
+        signalInterval: 9,
+      });
+      const macdWithReplace = new MACD({
+        indicator: EMA,
+        longInterval: 5,
+        shortInterval: 2,
+        signalInterval: 9,
+      });
+
+      macd.updates(['81.59', '81.06', '82.87', '83.0', '90', '83.61']);
+
+      macdWithReplace.updates(['81.59', '81.06', '82.87', '83.0', '100']);
+      macdWithReplace.replace(90);
+      macdWithReplace.update('83.61');
+
+      expect(macdWithReplace.getResult().histogram.toFixed()).toBe(macd.getResult().histogram.toFixed());
+      expect(macdWithReplace.getResult().macd.toFixed()).toBe(macd.getResult().macd.toFixed());
+      expect(macdWithReplace.getResult().signal.toFixed()).toBe(macd.getResult().signal.toFixed());
+    });
+  });
+
   describe('update', () => {
     it('can replace recently added values', () => {
       const macd = new MACD({
