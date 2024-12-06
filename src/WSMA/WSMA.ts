@@ -28,7 +28,7 @@ export class WSMA extends MovingAverage {
     this.smoothingFactor = new Big(1).div(this.interval);
   }
 
-  updates(prices: BigSource[]): Big | void {
+  updates(prices: BigSource[]) {
     prices.forEach(price => this.update(price));
     return this.result;
   }
