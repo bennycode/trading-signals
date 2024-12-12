@@ -34,12 +34,12 @@ export class AC extends BigIndicatorSeries<HighLow> {
   }
 
   override update(input: HighLow, replace: boolean = false): void | Big {
-    const ao = this.ao.update(input);
+    const ao = this.ao.update(input, replace);
     if (ao) {
-      this.signal.update(ao);
+      this.signal.update(ao, replace);
       if (this.signal.isStable) {
         const result = this.setResult(ao.sub(this.signal.getResult()), replace);
-        this.momentum.update(result);
+        this.momentum.update(result, replace);
         return this.result;
       }
     }
@@ -63,12 +63,12 @@ export class FasterAC extends NumberIndicatorSeries<HighLowNumber> {
   }
 
   override update(input: HighLowNumber, replace: boolean = false): void | number {
-    const ao = this.ao.update(input);
+    const ao = this.ao.update(input, replace);
     if (ao) {
-      this.signal.update(ao);
+      this.signal.update(ao, replace);
       if (this.signal.isStable) {
         const result = this.setResult(ao - this.signal.getResult(), replace);
-        this.momentum.update(result);
+        this.momentum.update(result, replace);
         return this.result;
       }
     }
