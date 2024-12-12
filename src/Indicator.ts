@@ -8,7 +8,8 @@ export interface Indicator<Result = Big, Input = BigSource> {
 
   update(input: Input): void | Result;
 
-  // TODO: Implement this function once for all indicators, make sure all indicators return "this.result" here
+  // TODO: Implement this function for all indicators, ensuring each returns "this.result"
+  // TODO: Add support for the "replace" parameter in the future
   updates(input: Input[]): void | Result;
 }
 

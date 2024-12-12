@@ -40,6 +40,7 @@ export class BollingerBands implements Indicator<BandsResult> {
 
   updates(prices: BigSource[]) {
     prices.forEach(price => this.update(price));
+    return this.result;
   }
 
   update(price: BigSource): void | BandsResult {
