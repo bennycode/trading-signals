@@ -84,21 +84,25 @@ describe('StochasticOscillator', () => {
 
     it('prevents division by zero errors when highest high and lowest low have the same value', () => {
       const stoch = new StochasticOscillator(5, 3, 3);
-      stoch.update({close: 100, high: 100, low: 100});
-      stoch.update({close: 100, high: 100, low: 100});
-      stoch.update({close: 100, high: 100, low: 100});
-      stoch.update({close: 100, high: 100, low: 100});
-      stoch.update({close: 100, high: 100, low: 100});
-      stoch.update({close: 100, high: 100, low: 100});
-      stoch.update({close: 100, high: 100, low: 100});
-      stoch.update({close: 100, high: 100, low: 100});
-      const result = stoch.update({close: 100, high: 100, low: 100})!;
-      expect(result.stochK.toFixed(2)).toBe('0.00');
-      expect(result.stochD.toFixed(2)).toBe('0.00');
+      stoch.updates([
+        {close: 100, high: 100, low: 100},
+        {close: 100, high: 100, low: 100},
+        {close: 100, high: 100, low: 100},
+        {close: 100, high: 100, low: 100},
+        {close: 100, high: 100, low: 100},
+        {close: 100, high: 100, low: 100},
+        {close: 100, high: 100, low: 100},
+        {close: 100, high: 100, low: 100},
+      ]);
+      const result = stoch.update({close: 100, high: 100, low: 100});
+      expect(result?.stochK.toFixed(2)).toBe('0.00');
+      expect(result?.stochD.toFixed(2)).toBe('0.00');
 
       const fasterStoch = new FasterStochasticOscillator(1, 2, 2);
-      fasterStoch.update({close: 100, high: 100, low: 100});
-      fasterStoch.update({close: 100, high: 100, low: 100});
+      fasterStoch.updates([
+        {close: 100, high: 100, low: 100},
+        {close: 100, high: 100, low: 100},
+      ]);
       const {stochK, stochD} = fasterStoch.getResult();
       expect(stochK.toFixed(2)).toBe('0.00');
       expect(stochD.toFixed(2)).toBe('0.00');

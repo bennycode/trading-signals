@@ -27,9 +27,11 @@ describe('EMA', () => {
       const ema = new EMA(interval);
       const emaWithReplace = new EMA(interval);
 
-      ema.updates([prices[0], prices[1], prices[2], prices[3], prices[4]]);
+      const subset = [prices[0], prices[1], prices[2]];
 
-      emaWithReplace.updates([prices[0], prices[1], prices[2], '8239239']);
+      ema.updates([...subset, prices[3], prices[4]]);
+
+      emaWithReplace.updates([...subset, '8239239']);
       emaWithReplace.replace(prices[3]);
       emaWithReplace.update(prices[4]);
 

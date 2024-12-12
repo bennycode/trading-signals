@@ -9,9 +9,11 @@ describe('WSMA', () => {
       const wsma = new WSMA(interval);
       const wsmaWithReplace = new WSMA(interval);
 
-      wsma.updates([11, 12, 13, 14, 15]);
+      const subset = [11, 12, 13];
 
-      wsmaWithReplace.updates([11, 12, 13, 50]);
+      wsma.updates([...subset, 14, 15]);
+
+      wsmaWithReplace.updates([...subset, 50]);
       wsmaWithReplace.replace(14);
       wsmaWithReplace.update(15);
 

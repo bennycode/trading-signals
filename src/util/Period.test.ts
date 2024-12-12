@@ -1,21 +1,31 @@
+import {NotEnoughDataError} from '../error/NotEnoughDataError.js';
 import {FasterPeriod, Period} from './Period.js';
 
 describe('Period', () => {
   describe('getResult', () => {
     it('returns the highest and lowest value of the current period', () => {
+      const values = [72, 1337];
       const period = new Period(2);
-      period.update(72);
-      period.update(1337);
+      period.updates(values);
       const {highest, lowest} = period.getResult();
       expect(lowest.valueOf()).toBe('72');
       expect(highest.valueOf()).toBe('1337');
 
       const fasterPeriod = new FasterPeriod(2);
-      fasterPeriod.update(72);
-      fasterPeriod.update(1337);
+      fasterPeriod.updates(values);
       const {highest: fastestHighest, lowest: fastestLowest} = fasterPeriod.getResult();
       expect(fastestLowest).toBe(72);
       expect(fastestHighest).toBe(1337);
+    });
+
+    it('throws an error when there is not enough input data', () => {
+      const period = new Period(2);
+      try {
+        period.getResult();
+        throw new Error('Expected error');
+      } catch (error) {
+        expect(error).toBeInstanceOf(NotEnoughDataError);
+      }
     });
   });
 
