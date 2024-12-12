@@ -1,6 +1,5 @@
-import {AC, FasterAC} from './AC.js';
 import {NotEnoughDataError} from '../error/index.js';
-import type {HighLowNumber} from '../util/index.js';
+import {AC, FasterAC} from './AC.js';
 
 describe('AC', () => {
   // Test data verified with:
@@ -256,21 +255,22 @@ describe('AC', () => {
     it('guarantees that a replacement is done correctly', () => {
       const ac = new AC(5, 34, 5);
       const acWithReplace = new AC(5, 34, 5);
+
       ac.updates(mappedCandles);
       acWithReplace.updates(mappedCandles);
 
-      ac.update({
+      const correct = {
         high: 200,
         low: 100,
-      });
-      acWithReplace.update({
+      };
+      const wrong = {
         high: 5_000,
         low: 3_000,
-      });
-      acWithReplace.replace({
-        high: 200,
-        low: 100,
-      });
+      };
+
+      ac.update(correct);
+      acWithReplace.update(wrong);
+      acWithReplace.replace(correct);
 
       expect(acWithReplace.getResult().toFixed()).toBe(ac.getResult().toFixed());
     });
