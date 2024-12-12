@@ -127,6 +127,11 @@ export class FasterMACD implements Indicator<FasterMACDResult> {
     return this.result !== undefined;
   }
 
+  updates(prices: number[]) {
+    prices.forEach(price => this.update(price));
+    return this.result;
+  }
+
   update(price: number, replace: boolean = false): void | FasterMACDResult {
     if (this.prices.length && replace) {
       this.prices[this.prices.length - 1] = price;

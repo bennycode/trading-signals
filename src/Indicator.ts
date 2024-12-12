@@ -7,6 +7,9 @@ export interface Indicator<Result = Big, Input = BigSource> {
   isStable: boolean;
 
   update(input: Input): void | Result;
+
+  // TODO: Implement this function once for all indicators, make sure all indicators return "this.result" here
+  updates(input: Input[]): void | Result;
 }
 
 /**
@@ -74,6 +77,11 @@ export abstract class BigIndicatorSeries<Input = BigSource> implements Indicator
     return (this.result = value);
   }
 
+  updates(prices: Input[]): void | Big {
+    prices.forEach(price => this.update(price));
+    return this.result;
+  }
+
   abstract update(input: Input, replace?: boolean): void | Big;
 
   replace(input: Input) {
@@ -135,6 +143,11 @@ export abstract class NumberIndicatorSeries<Input = number> implements Indicator
     this.previousResult = this.result;
     // Set new result
     return (this.result = value);
+  }
+
+  updates(prices: Input[]): number | void {
+    prices.forEach(price => this.update(price));
+    return this.result;
   }
 
   abstract update(input: Input, replace?: boolean): void | number;

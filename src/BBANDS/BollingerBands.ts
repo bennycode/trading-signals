@@ -38,6 +38,10 @@ export class BollingerBands implements Indicator<BandsResult> {
     return this.result !== undefined;
   }
 
+  updates(prices: BigSource[]) {
+    prices.forEach(price => this.update(price));
+  }
+
   update(price: BigSource): void | BandsResult {
     this.prices.push(new Big(price));
 
@@ -72,6 +76,11 @@ export class FasterBollingerBands implements Indicator<FasterBandsResult> {
     public readonly interval: number,
     public readonly deviationMultiplier: number = 2
   ) {}
+
+  updates(prices: number[]) {
+    prices.forEach(price => this.update(price));
+    return this.result;
+  }
 
   update(price: number): void | FasterBandsResult {
     this.prices.push(price);

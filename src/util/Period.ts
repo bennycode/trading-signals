@@ -1,4 +1,4 @@
-import {Big, type BigSource} from '../index.js';
+import {Big, NotEnoughDataError, type BigSource} from '../index.js';
 import type {Indicator} from '../Indicator.js';
 import {getFixedArray} from './getFixedArray.js';
 import {getMinimum} from './getMinimum.js';
@@ -26,10 +26,18 @@ export class Period implements Indicator<PeriodResult> {
   }
 
   getResult(): PeriodResult {
+    if (!this.lowest || !this.highest) {
+      throw new NotEnoughDataError();
+    }
+
     return {
-      highest: this.highest!,
-      lowest: this.lowest!,
+      highest: this.highest,
+      lowest: this.lowest,
     };
+  }
+
+  updates(values: BigSource[]) {
+    values.forEach(value => this.update(value));
   }
 
   update(value: BigSource): PeriodResult | void {
@@ -55,6 +63,10 @@ export class FasterPeriod implements Indicator<FasterPeriodResult> {
 
   constructor(public readonly interval: number) {
     this.values = getFixedArray<number>(interval);
+  }
+
+  updates(values: number[]) {
+    values.forEach(value => this.update(value));
   }
 
   getResult(): FasterPeriodResult {

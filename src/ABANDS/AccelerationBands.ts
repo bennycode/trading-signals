@@ -42,11 +42,15 @@ export class AccelerationBands implements Indicator<BandsResult, HighLowClose> {
     this.upperBand = new SmoothingIndicator(interval);
   }
 
+  updates(prices: HighLowClose[]) {
+    prices.forEach(price => this.update(price));
+  }
+
   get isStable(): boolean {
     return this.middleBand.isStable;
   }
 
-  update({high, low, close}: HighLowClose): void {
+  update({high, low, close}: HighLowClose) {
     const highPlusLow = new Big(high).plus(low);
     const coefficient = highPlusLow.eq(0) ? new Big(0) : new Big(high).minus(low).div(highPlusLow).mul(this.width);
 
@@ -84,6 +88,10 @@ export class FasterAccelerationBands implements Indicator<FasterBandsResult, Hig
     this.lowerBand = new SmoothingIndicator(interval);
     this.middleBand = new SmoothingIndicator(interval);
     this.upperBand = new SmoothingIndicator(interval);
+  }
+
+  updates(prices: HighLowCloseNumber[]) {
+    prices.forEach(price => this.update(price));
   }
 
   update({high, low, close}: HighLowCloseNumber): void {
