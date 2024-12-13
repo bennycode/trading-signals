@@ -40,6 +40,8 @@ export class Period implements Indicator<PeriodResult> {
     values.forEach(value => this.update(value));
   }
 
+  // TODO: Implement "replace"
+  // Info: This may not work with "getFixedArray" as it shifts values out of our control
   update(value: BigSource): PeriodResult | void {
     this.values.push(new Big(value));
     if (this.isStable) {

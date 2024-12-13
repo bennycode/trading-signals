@@ -33,7 +33,8 @@ export class StochasticRSI extends BigIndicatorSeries {
     this.rsi = new RSI(interval, SmoothingIndicator);
   }
 
-  override update(price: BigSource, replace: boolean = false): void | Big {
+  // TODO: Implement "replace"
+  override update(price: BigSource): void | Big {
     const rsiResult = this.rsi.update(price);
     if (rsiResult) {
       const periodResult = this.period.update(rsiResult);
@@ -43,10 +44,10 @@ export class StochasticRSI extends BigIndicatorSeries {
         const denominator = max.minus(min);
         // Prevent division by zero: https://github.com/bennycode/trading-signals/issues/378
         if (denominator.eq(0)) {
-          return this.setResult(new Big(100), replace);
+          return this.setResult(new Big(100), false);
         }
         const numerator = rsiResult.minus(min);
-        return this.setResult(numerator.div(denominator), replace);
+        return this.setResult(numerator.div(denominator), false);
       }
     }
   }

@@ -63,7 +63,7 @@ export class FasterWSMA extends NumberIndicatorSeries {
   }
 
   update(price: number, replace: boolean = false): number | void {
-    const sma = this.indicator.update(price);
+    const sma = this.indicator.update(price, replace);
     if (replace && this.previousResult !== undefined) {
       const smoothed = (price - this.previousResult) * this.smoothingFactor;
       return this.setResult(smoothed + this.previousResult, replace);

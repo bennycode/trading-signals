@@ -50,6 +50,7 @@ export class ADX extends BigIndicatorSeries<HighLowClose> {
     return this.dx.pdi;
   }
 
+  // TODO: Implement "replace" parameter
   update(candle: HighLowClose): Big | void {
     const result = this.dx.update(candle);
     if (result) {

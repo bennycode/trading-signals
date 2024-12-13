@@ -6,6 +6,7 @@ export interface Indicator<Result = Big, Input = BigSource> {
 
   isStable: boolean;
 
+  // TODO: Add "replace" parameter
   update(input: Input): void | Result;
 
   // TODO: Implement this function for all indicators, ensuring each returns "this.result"

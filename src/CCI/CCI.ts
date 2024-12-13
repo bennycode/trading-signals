@@ -30,6 +30,7 @@ export class CCI extends BigIndicatorSeries<HighLowClose> {
     this.sma = new SMA(this.interval);
   }
 
+  // TODO: Implement "replace" parameter
   update(candle: HighLowClose): void | Big {
     const typicalPrice = this.cacheTypicalPrice(candle);
     this.sma.update(typicalPrice);
