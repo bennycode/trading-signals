@@ -38,8 +38,7 @@ describe('Indicator', () => {
 
     it('returns the cross sum', () => {
       const itc = new IndicatorTestClass();
-      itc.update(20);
-      itc.update(40);
+      itc.updates([20, 40]);
       expect(itc.getResult().toString()).toBe('30');
     });
   });

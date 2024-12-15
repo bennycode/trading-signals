@@ -36,6 +36,10 @@ export class DMA implements Indicator<DMAResult> {
     return this.long.isStable;
   }
 
+  updates(prices: BigSource[]) {
+    prices.forEach(price => this.update(price));
+  }
+
   update(price: BigSource, replace: boolean = false): void {
     this.short.update(price, replace);
     this.long.update(price, replace);
@@ -60,6 +64,10 @@ export class FasterDMA implements Indicator<FasterDMAResult, number> {
 
   get isStable(): boolean {
     return this.long.isStable;
+  }
+
+  updates(prices: number[]) {
+    prices.forEach(price => this.update(price));
   }
 
   update(price: number, replace: boolean = false): void {

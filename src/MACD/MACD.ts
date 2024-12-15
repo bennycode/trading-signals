@@ -1,5 +1,5 @@
 import type {EMA, FasterEMA} from '../EMA/EMA.js';
-import {Big, NotEnoughDataError, type BigSource, type DEMA, type FasterDEMA} from '../index.js';
+import {Big, NotEnoughDataError, pushUpdate, type BigSource, type DEMA, type FasterDEMA} from '../index.js';
 import type {Indicator} from '../Indicator.js';
 
 export type MACDConfig = {
@@ -48,13 +48,18 @@ export class MACD implements Indicator<MACDResult> {
     return this.result !== undefined;
   }
 
+  replace(price: BigSource) {
+    return this.update(price, true);
+  }
+
+  updates(prices: BigSource[]) {
+    prices.forEach(price => this.update(price));
+    return this.result;
+  }
+
   update(_price: BigSource, replace: boolean = false): void | MACDResult {
     const price = new Big(_price);
-    if (this.prices.length && replace) {
-      this.prices[this.prices.length - 1] = price;
-    } else {
-      this.prices.push(price);
-    }
+    pushUpdate(this.prices, replace, price);
 
     const short = this.short.update(price, replace);
     const long = this.long.update(price, replace);
@@ -74,7 +79,7 @@ export class MACD implements Indicator<MACDResult> {
        * A short (usually 9 periods) EMA of MACD is plotted along side to act as a signal line to identify turns in the
        * indicator. It gets updated once the long EMA has enough input data.
        */
-      const signal = this.signal.update(macd);
+      const signal = this.signal.update(macd, replace);
 
       /**
        * The MACD histogram is calculated as the MACD indicator minus the signal line (usually 9 periods) EMA.
@@ -106,6 +111,10 @@ export class FasterMACD implements Indicator<FasterMACDResult> {
     public readonly signal: FasterEMA | FasterDEMA
   ) {}
 
+  replace(input: number): void | FasterMACDResult {
+    return this.update(input, true);
+  }
+
   getResult(): FasterMACDResult {
     if (this.result === undefined) {
       throw new NotEnoughDataError();
@@ -118,12 +127,13 @@ export class FasterMACD implements Indicator<FasterMACDResult> {
     return this.result !== undefined;
   }
 
+  updates(prices: number[]) {
+    prices.forEach(price => this.update(price));
+    return this.result;
+  }
+
   update(price: number, replace: boolean = false): void | FasterMACDResult {
-    if (this.prices.length && replace) {
-      this.prices[this.prices.length - 1] = price;
-    } else {
-      this.prices.push(price);
-    }
+    pushUpdate(this.prices, replace, price);
 
     const short = this.short.update(price, replace);
     const long = this.long.update(price, replace);

@@ -1,4 +1,4 @@
-import {Big, type BigSource} from '../index.js';
+import {Big, pushUpdate, type BigSource} from '../index.js';
 import {FasterMovingAverage, MovingAverage} from '../MA/MovingAverage.js';
 
 /**
@@ -18,11 +18,7 @@ export class WMA extends MovingAverage {
   }
 
   override update(price: BigSource, replace: boolean = false): Big | void {
-    if (this.prices.length && replace) {
-      this.prices[this.prices.length - 1] = price;
-    } else {
-      this.prices.push(price);
-    }
+    pushUpdate(this.prices, replace, price);
 
     if (this.prices.length > this.interval) {
       this.prices.shift();
@@ -51,11 +47,7 @@ export class FasterWMA extends FasterMovingAverage {
   }
 
   override update(price: number, replace: boolean = false): number | void {
-    if (this.prices.length && replace) {
-      this.prices[this.prices.length - 1] = price;
-    } else {
-      this.prices.push(price);
-    }
+    pushUpdate(this.prices, replace, price);
 
     if (this.prices.length > this.interval) {
       this.prices.shift();

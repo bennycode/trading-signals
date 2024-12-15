@@ -22,6 +22,25 @@ describe('EMA', () => {
   ] as const;
 
   describe('replace', () => {
+    it('guarantees that a replacement is done correctly', () => {
+      const interval = 5;
+      const ema = new EMA(interval);
+      const emaWithReplace = new EMA(interval);
+
+      const subset = [prices[0], prices[1], prices[2]];
+
+      ema.updates([...subset, prices[3], prices[4]]);
+
+      emaWithReplace.updates([...subset, '8239239']);
+      emaWithReplace.replace(prices[3]);
+      emaWithReplace.update(prices[4]);
+
+      const actual = emaWithReplace.getResult().toFixed();
+      const expected = ema.getResult().toFixed();
+
+      expect(actual).toBe(expected);
+    });
+
     it('replaces recently added values', () => {
       const interval = 5;
       const ema = new EMA(interval);

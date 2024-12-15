@@ -34,19 +34,19 @@ export class StochasticRSI extends BigIndicatorSeries {
   }
 
   override update(price: BigSource, replace: boolean = false): void | Big {
-    const rsiResult = this.rsi.update(price);
+    const rsiResult = this.rsi.update(price, replace);
     if (rsiResult) {
-      const periodResult = this.period.update(rsiResult);
+      const periodResult = this.period.update(rsiResult, replace);
       if (periodResult) {
         const min = periodResult.lowest;
         const max = periodResult.highest;
         const denominator = max.minus(min);
         // Prevent division by zero: https://github.com/bennycode/trading-signals/issues/378
         if (denominator.eq(0)) {
-          return this.setResult(new Big(100), replace);
+          return this.setResult(new Big(100), false);
         }
         const numerator = rsiResult.minus(min);
-        return this.setResult(numerator.div(denominator), replace);
+        return this.setResult(numerator.div(denominator), false);
       }
     }
   }
@@ -66,9 +66,9 @@ export class FasterStochasticRSI extends NumberIndicatorSeries {
   }
 
   override update(price: number, replace: boolean = false): void | number {
-    const rsiResult = this.rsi.update(price);
+    const rsiResult = this.rsi.update(price, replace);
     if (rsiResult !== undefined) {
-      const periodResult = this.period.update(rsiResult);
+      const periodResult = this.period.update(rsiResult, replace);
       if (periodResult) {
         const min = periodResult.lowest;
         const max = periodResult.highest;

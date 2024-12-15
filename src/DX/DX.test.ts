@@ -75,10 +75,8 @@ describe('DX', () => {
       const dx = new DX(5);
       const fasterDX = new FasterDX(5);
 
-      for (const candle of candles) {
-        dx.update(candle);
-        fasterDX.update(candle);
-      }
+      dx.updates(candles);
+      fasterDX.updates(candles);
 
       expect(dx.isStable).toBe(true);
       expect(fasterDX.isStable).toBe(true);

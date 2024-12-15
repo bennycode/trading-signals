@@ -19,10 +19,33 @@ describe('CCI', () => {
   ];
   const expectations = ['166.67', '82.02', '95.50', '130.91', '99.16', '116.34', '71.93'];
 
+  describe('replace', () => {
+    it('guarantees that a replacement is done correctly', () => {
+      const interval = 5;
+      const cci = new CCI(interval);
+      const cciWithReplace = new CCI(interval);
+
+      const correct = {close: 300, high: 300, low: 300};
+      const wrong = {close: 1_000, high: 1_000, low: 1_000};
+
+      cci.updates(candles);
+      cci.update(correct);
+
+      cciWithReplace.updates(candles);
+      cciWithReplace.update(wrong);
+
+      const expected = cci.getResult();
+      const actual = cciWithReplace.getResult();
+
+      expect(actual.toFixed()).toBe(expected.toFixed());
+    });
+  });
+
   describe('getResult', () => {
     it('calculates the Commodity Channel Index (CCI)', () => {
-      const cci = new CCI(5);
-      const fasterCCI = new FasterCCI(5);
+      const interval = 5;
+      const cci = new CCI(interval);
+      const fasterCCI = new FasterCCI(interval);
       for (const candle of candles) {
         cci.update(candle);
         fasterCCI.update(candle);

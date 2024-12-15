@@ -1,3 +1,3 @@
 {
-  "*.{js,jsx,ts,tsx}": ["yarn fix:code"]
+  "*.{js,jsx,ts,tsx}": ["npm run fix:code"]
 }

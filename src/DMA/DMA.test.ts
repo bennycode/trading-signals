@@ -7,24 +7,14 @@ describe('DMA', () => {
     it('can replace recently added values', () => {
       const dma = new DMA(3, 6, SMA);
       const fasterDMA = new FasterDMA(3, 6, FasterSMA);
-      dma.update(41);
-      dma.update(37);
-      dma.update(20.9);
-      dma.update(100);
-      dma.update(30.71);
-      dma.update(40);
+      dma.updates([41, 37, 20.9, 100, 30.71, 40]);
       dma.update(30, true);
 
       expect(dma.isStable).toBe(true);
       expect(dma.getResult().short.toFixed(8)).toBe('53.57000000');
       expect(dma.getResult().long.toFixed(8)).toBe('43.26833333');
 
-      fasterDMA.update(41);
-      fasterDMA.update(37);
-      fasterDMA.update(20.9);
-      fasterDMA.update(100);
-      fasterDMA.update(30.71);
-      fasterDMA.update(40);
+      fasterDMA.updates([41, 37, 20.9, 100, 30.71, 40]);
       fasterDMA.update(30, true);
 
       expect(fasterDMA.isStable).toBe(true);

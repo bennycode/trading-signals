@@ -46,6 +46,7 @@ export class DX extends BigIndicatorSeries<HighLowClose> {
     this.previousCandle = candle;
   }
 
+  // TODO: Implement "replace" parameter
   update(candle: HighLowClose): Big | void {
     if (!this.previousCandle) {
       this.updateState(candle);

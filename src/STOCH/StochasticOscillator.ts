@@ -60,6 +60,11 @@ export class StochasticOscillator implements Indicator<StochasticResult, HighLow
     this.periodP = new SMA(p);
   }
 
+  updates(candles: HighLowClose[]) {
+    candles.forEach(candle => this.update(candle));
+    return this.result;
+  }
+
   getResult(): StochasticResult {
     if (this.result === undefined) {
       throw new NotEnoughDataError();
@@ -128,6 +133,11 @@ export class FasterStochasticOscillator implements Indicator<FasterStochasticRes
 
   get isStable(): boolean {
     return this.result !== undefined;
+  }
+
+  updates(candles: HighLowCloseNumber[]) {
+    candles.forEach(candle => this.update(candle));
+    return this.result;
   }
 
   update(candle: HighLowCloseNumber): void | FasterStochasticResult {
