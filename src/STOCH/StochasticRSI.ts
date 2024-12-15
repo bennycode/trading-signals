@@ -33,11 +33,10 @@ export class StochasticRSI extends BigIndicatorSeries {
     this.rsi = new RSI(interval, SmoothingIndicator);
   }
 
-  // TODO: Implement "replace"
-  override update(price: BigSource): void | Big {
-    const rsiResult = this.rsi.update(price);
+  override update(price: BigSource, replace: boolean = false): void | Big {
+    const rsiResult = this.rsi.update(price, replace);
     if (rsiResult) {
-      const periodResult = this.period.update(rsiResult);
+      const periodResult = this.period.update(rsiResult, replace);
       if (periodResult) {
         const min = periodResult.lowest;
         const max = periodResult.highest;
@@ -67,9 +66,9 @@ export class FasterStochasticRSI extends NumberIndicatorSeries {
   }
 
   override update(price: number, replace: boolean = false): void | number {
-    const rsiResult = this.rsi.update(price);
+    const rsiResult = this.rsi.update(price, replace);
     if (rsiResult !== undefined) {
-      const periodResult = this.period.update(rsiResult);
+      const periodResult = this.period.update(rsiResult, replace);
       if (periodResult) {
         const min = periodResult.lowest;
         const max = periodResult.highest;

@@ -1,5 +1,5 @@
 import type {EMA, FasterEMA} from '../EMA/EMA.js';
-import {Big, NotEnoughDataError, type BigSource, type DEMA, type FasterDEMA} from '../index.js';
+import {Big, NotEnoughDataError, pushUpdate, type BigSource, type DEMA, type FasterDEMA} from '../index.js';
 import type {Indicator} from '../Indicator.js';
 
 export type MACDConfig = {
@@ -59,11 +59,7 @@ export class MACD implements Indicator<MACDResult> {
 
   update(_price: BigSource, replace: boolean = false): void | MACDResult {
     const price = new Big(_price);
-    if (this.prices.length && replace) {
-      this.prices[this.prices.length - 1] = price;
-    } else {
-      this.prices.push(price);
-    }
+    pushUpdate(this.prices, replace, price);
 
     const short = this.short.update(price, replace);
     const long = this.long.update(price, replace);
@@ -115,6 +111,10 @@ export class FasterMACD implements Indicator<FasterMACDResult> {
     public readonly signal: FasterEMA | FasterDEMA
   ) {}
 
+  replace(input: number): void | FasterMACDResult {
+    return this.update(input, true);
+  }
+
   getResult(): FasterMACDResult {
     if (this.result === undefined) {
       throw new NotEnoughDataError();
@@ -133,11 +133,7 @@ export class FasterMACD implements Indicator<FasterMACDResult> {
   }
 
   update(price: number, replace: boolean = false): void | FasterMACDResult {
-    if (this.prices.length && replace) {
-      this.prices[this.prices.length - 1] = price;
-    } else {
-      this.prices.push(price);
-    }
+    pushUpdate(this.prices, replace, price);
 
     const short = this.short.update(price, replace);
     const long = this.long.update(price, replace);

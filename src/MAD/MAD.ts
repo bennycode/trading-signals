@@ -1,6 +1,6 @@
 import {Big, type BigSource} from '../index.js';
 import {BigIndicatorSeries, NumberIndicatorSeries} from '../Indicator.js';
-import {getAverage, getFasterAverage} from '../util/index.js';
+import {getAverage, getFasterAverage, pushUpdate} from '../util/index.js';
 
 /**
  * Mean Absolute Deviation (MAD)
@@ -19,11 +19,7 @@ export class MAD extends BigIndicatorSeries {
   }
 
   override update(price: BigSource, replace: boolean = false): void | Big {
-    if (this.prices.length && replace) {
-      this.prices[this.prices.length - 1] = price;
-    } else {
-      this.prices.push(price);
-    }
+    pushUpdate(this.prices, replace, price);
 
     if (this.prices.length > this.interval) {
       this.prices.shift();
@@ -53,11 +49,7 @@ export class FasterMAD extends NumberIndicatorSeries {
   }
 
   override update(price: number, replace: boolean = false): void | number {
-    if (this.prices.length && replace) {
-      this.prices[this.prices.length - 1] = price;
-    } else {
-      this.prices.push(price);
-    }
+    pushUpdate(this.prices, replace, price);
 
     if (this.prices.length > this.interval) {
       this.prices.shift();

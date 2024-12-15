@@ -1,4 +1,4 @@
-import {Big, NotEnoughDataError, type BigSource} from '../index.js';
+import {Big, NotEnoughDataError, pushUpdate, type BigSource} from '../index.js';
 import type {Indicator} from '../Indicator.js';
 import {getFixedArray} from './getFixedArray.js';
 import {getMinimum} from './getMinimum.js';
@@ -15,38 +15,50 @@ export interface FasterPeriodResult {
 }
 
 export class Period implements Indicator<PeriodResult> {
-  public values: Big[];
+  private readonly values: Big[];
   /** Highest return value during the current period. */
-  public highest?: Big;
+  private _highest?: Big;
   /** Lowest return value during the current period. */
-  public lowest?: Big;
+  private _lowest?: Big;
+
+  get highest() {
+    return this._highest;
+  }
+
+  get lowest() {
+    return this._lowest;
+  }
 
   constructor(public readonly interval: number) {
     this.values = getFixedArray<Big>(interval);
   }
 
+  replace(input: Big.BigSource) {
+    return this.update(input, true);
+  }
+
   getResult(): PeriodResult {
-    if (!this.lowest || !this.highest) {
+    if (!this._lowest || !this._highest) {
       throw new NotEnoughDataError();
     }
 
     return {
-      highest: this.highest,
-      lowest: this.lowest,
+      highest: this._highest,
+      lowest: this._lowest,
     };
   }
 
   updates(values: BigSource[]) {
+    // TODO: Use foreach with last
     values.forEach(value => this.update(value));
   }
 
-  // TODO: Implement "replace"
-  // Info: This may not work with "getFixedArray" as it shifts values out of our control
-  update(value: BigSource): PeriodResult | void {
-    this.values.push(new Big(value));
+  override update(value: BigSource, replace: boolean = false): PeriodResult | void {
+    pushUpdate(this.values, replace, new Big(value));
+
     if (this.isStable) {
-      this.lowest = getMinimum(this.values);
-      this.highest = getMaximum(this.values);
+      this._lowest = getMinimum(this.values);
+      this._highest = getMaximum(this.values);
       return this.getResult();
     }
   }
@@ -59,12 +71,24 @@ export class Period implements Indicator<PeriodResult> {
 export class FasterPeriod implements Indicator<FasterPeriodResult> {
   public values: number[];
   /** Highest return value during the current period. */
-  public highest?: number;
+  private _highest?: number;
   /** Lowest return value during the current period. */
-  public lowest?: number;
+  private _lowest?: number;
+
+  get highest() {
+    return this._highest;
+  }
+
+  get lowest() {
+    return this._lowest;
+  }
 
   constructor(public readonly interval: number) {
     this.values = getFixedArray<number>(interval);
+  }
+
+  replace(input: number): void | FasterPeriodResult {
+    return this.update(input, true);
   }
 
   updates(values: number[]) {
@@ -72,17 +96,22 @@ export class FasterPeriod implements Indicator<FasterPeriodResult> {
   }
 
   getResult(): FasterPeriodResult {
+    if (!this._lowest || !this._highest) {
+      throw new NotEnoughDataError();
+    }
+
     return {
-      highest: this.highest!,
-      lowest: this.lowest!,
+      highest: this._highest,
+      lowest: this._lowest,
     };
   }
 
-  update(value: number): FasterPeriodResult | void {
-    this.values.push(value);
+  update(value: number, replace: boolean = false): FasterPeriodResult | void {
+    pushUpdate(this.values, replace, value);
+
     if (this.isStable) {
-      this.lowest = Math.min(...this.values);
-      this.highest = Math.max(...this.values);
+      this._lowest = Math.min(...this.values);
+      this._highest = Math.max(...this.values);
       return this.getResult();
     }
   }

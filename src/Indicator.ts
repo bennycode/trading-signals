@@ -6,12 +6,11 @@ export interface Indicator<Result = Big, Input = BigSource> {
 
   isStable: boolean;
 
-  // TODO: Add "replace" parameter
-  update(input: Input): void | Result;
+  replace(input: Input): void | Result;
 
-  // TODO: Implement this function for all indicators, ensuring each returns "this.result"
-  // TODO: Add support for the "replace" parameter in the future
-  updates(input: Input[]): void | Result;
+  update(input: Input, replace: boolean): void | Result;
+
+  updates(input: Input[], replace: boolean): void | Result;
 }
 
 /**
@@ -80,11 +79,11 @@ export abstract class BigIndicatorSeries<Input = BigSource> implements Indicator
   }
 
   updates(prices: Input[]): void | Big {
-    prices.forEach(price => this.update(price));
+    prices.forEach(price => this.update(price, false));
     return this.result;
   }
 
-  abstract update(input: Input, replace?: boolean): void | Big;
+  abstract update(input: Input, replace: boolean): void | Big;
 
   replace(input: Input) {
     return this.update(input, true);

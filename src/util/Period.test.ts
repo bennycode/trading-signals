@@ -2,16 +2,33 @@ import {NotEnoughDataError} from '../error/NotEnoughDataError.js';
 import {FasterPeriod, Period} from './Period.js';
 
 describe('Period', () => {
+  describe('replace', () => {
+    it('guarantees that a replacement is done correctly', () => {
+      const interval = 5;
+      const period = new Period(interval);
+      const periodWithReplace = new Period(interval);
+
+      const subset = [30, 40, 50, 60];
+      period.updates([...subset, 70]);
+      periodWithReplace.updates([...subset, 90]);
+      periodWithReplace.replace(70);
+
+      expect(periodWithReplace.lowest?.toFixed()).toBe(period.lowest?.toFixed());
+      expect(periodWithReplace.highest?.toFixed()).toBe(period.highest?.toFixed());
+    });
+  });
+
   describe('getResult', () => {
     it('returns the highest and lowest value of the current period', () => {
       const values = [72, 1337];
-      const period = new Period(2);
+      const interval = 2;
+      const period = new Period(interval);
       period.updates(values);
       const {highest, lowest} = period.getResult();
       expect(lowest.valueOf()).toBe('72');
       expect(highest.valueOf()).toBe('1337');
 
-      const fasterPeriod = new FasterPeriod(2);
+      const fasterPeriod = new FasterPeriod(interval);
       fasterPeriod.updates(values);
       const {highest: fastestHighest, lowest: fastestLowest} = fasterPeriod.getResult();
       expect(fastestLowest).toBe(72);
@@ -49,19 +66,20 @@ describe('Period', () => {
         '84.36',
         '85.53',
       ];
-      const period = new Period(5);
-      const fasterPeriod = new FasterPeriod(5);
+      const interval = 5;
+      const period = new Period(interval);
+      const fasterPeriod = new FasterPeriod(interval);
       for (const price of prices) {
         period.update(price);
         fasterPeriod.update(price);
         if (period.isStable) {
           const expected = lowest.shift();
           expect(period.lowest?.toFixed(2)).toBe(expected);
-          expect(fasterPeriod.lowest?.toFixed(2)).toBe(expected);
+          expect(fasterPeriod._lowest?.toFixed(2)).toBe(expected);
         }
       }
       expect(period.highest?.toFixed(2)).toBe('87.77');
-      expect(fasterPeriod.highest?.toFixed(2)).toBe('87.77');
+      expect(fasterPeriod._highest?.toFixed(2)).toBe('87.77');
     });
   });
 });

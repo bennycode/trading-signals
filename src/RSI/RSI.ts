@@ -1,4 +1,4 @@
-import {Big, type BigSource} from '../index.js';
+import {Big, pushUpdate, type BigSource} from '../index.js';
 import type {FasterMovingAverage, MovingAverage} from '../MA/MovingAverage.js';
 import {BigIndicatorSeries, NumberIndicatorSeries} from '../Indicator.js';
 import type {FasterMovingAverageTypes, MovingAverageTypes} from '../MA/MovingAverageTypes.js';
@@ -37,13 +37,7 @@ export class RSI extends BigIndicatorSeries {
   }
 
   override update(price: BigSource, replace: boolean = false): void | Big {
-    if (this.previousPrices.length && replace) {
-      // Replace the last price with the provided price
-      this.previousPrices[this.previousPrices.length - 1] = price;
-    } else {
-      // Add the price to the list of previous prices
-      this.previousPrices.push(price);
-    }
+    pushUpdate(this.previousPrices, replace, price);
 
     // Ensure at least 2 prices are available for calculation
     if (this.previousPrices.length < 2) {
@@ -89,13 +83,7 @@ export class FasterRSI extends NumberIndicatorSeries {
   }
 
   override update(price: number, replace: boolean = false): void | number {
-    if (this.previousPrices.length && replace) {
-      // Replace the last price with the provided price
-      this.previousPrices[this.previousPrices.length - 1] = price;
-    } else {
-      // Add the price to the list of previous prices
-      this.previousPrices.push(price);
-    }
+    pushUpdate(this.previousPrices, replace, price);
 
     // Ensure at least 2 prices are available for calculation
     if (this.previousPrices.length < 2) {
