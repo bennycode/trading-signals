@@ -1,4 +1,5 @@
 import type {Big, BigSource} from '../index.js';
+import {TechnicalIndicator} from '../index.js';
 import type {Indicator} from '../Indicator.js';
 import type {FasterMovingAverage, MovingAverage} from '../MA/MovingAverage.js';
 import type {FasterMovingAverageTypes, MovingAverageTypes} from '../MA/MovingAverageTypes.js';
@@ -23,11 +24,12 @@ export interface FasterDMAResult {
  *
  * @see https://faculty.fuqua.duke.edu/~charvey/Teaching/BA453_2002/CCAM/CCAM.htm#_Toc2634228
  */
-export class DMA implements Indicator<DMAResult> {
+export class DMA extends TechnicalIndicator<DMAResult, BigSource> {
   public readonly short: MovingAverage;
   public readonly long: MovingAverage;
 
   constructor(short: number, long: number, Indicator: MovingAverageTypes = SMA) {
+    super();
     this.short = new Indicator(short);
     this.long = new Indicator(long);
   }
