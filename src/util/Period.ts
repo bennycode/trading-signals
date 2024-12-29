@@ -53,7 +53,7 @@ export class Period implements Indicator<PeriodResult> {
     values.forEach(value => this.update(value));
   }
 
-  override update(value: BigSource, replace: boolean = false): PeriodResult | void {
+  update(value: BigSource, replace: boolean = false): PeriodResult | void {
     pushUpdate(this.values, replace, new Big(value));
 
     if (this.isStable) {

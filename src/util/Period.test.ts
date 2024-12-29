@@ -28,6 +28,9 @@ describe('Period', () => {
       expect(lowest.valueOf()).toBe('72');
       expect(highest.valueOf()).toBe('1337');
 
+      expect(period.lowest?.valueOf()).toBe('72');
+      expect(period.highest?.valueOf()).toBe('1337');
+
       const fasterPeriod = new FasterPeriod(interval);
       fasterPeriod.updates(values);
       const {highest: fastestHighest, lowest: fastestLowest} = fasterPeriod.getResult();
