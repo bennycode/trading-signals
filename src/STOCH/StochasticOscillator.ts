@@ -1,5 +1,4 @@
-import type {Indicator} from '../Indicator.js';
-import {Big} from '../index.js';
+import {Big, TechnicalIndicator} from '../index.js';
 import {FasterSMA, SMA} from '../SMA/SMA.js';
 import {getMaximum} from '../util/getMaximum.js';
 import {getMinimum} from '../util/getMinimum.js';
@@ -37,7 +36,7 @@ export interface FasterStochasticResult {
  * @see https://en.wikipedia.org/wiki/Stochastic_oscillator
  * @see https://www.investopedia.com/terms/s/stochasticoscillator.asp
  */
-export class StochasticOscillator implements Indicator<StochasticResult, HighLowClose> {
+export class StochasticOscillator extends TechnicalIndicator<StochasticResult, HighLowClose> {
   private readonly periodM: SMA;
   private readonly periodP: SMA;
 
@@ -56,6 +55,7 @@ export class StochasticOscillator implements Indicator<StochasticResult, HighLow
     public readonly m: number,
     public readonly p: number
   ) {
+    super();
     this.periodM = new SMA(m);
     this.periodP = new SMA(p);
   }
@@ -103,7 +103,7 @@ export class StochasticOscillator implements Indicator<StochasticResult, HighLow
   }
 }
 
-export class FasterStochasticOscillator implements Indicator<FasterStochasticResult, HighLowCloseNumber> {
+export class FasterStochasticOscillator extends TechnicalIndicator<FasterStochasticResult, HighLowCloseNumber> {
   public readonly candles: HighLowCloseNumber[] = [];
   private result: FasterStochasticResult | undefined;
   private readonly periodM: FasterSMA;
@@ -119,6 +119,7 @@ export class FasterStochasticOscillator implements Indicator<FasterStochasticRes
     public m: number,
     public p: number
   ) {
+    super();
     this.periodM = new FasterSMA(m);
     this.periodP = new FasterSMA(p);
   }

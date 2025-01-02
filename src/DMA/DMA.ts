@@ -1,6 +1,5 @@
 import type {Big, BigSource} from '../index.js';
 import {TechnicalIndicator} from '../index.js';
-import type {Indicator} from '../Indicator.js';
 import type {FasterMovingAverage, MovingAverage} from '../MA/MovingAverage.js';
 import type {FasterMovingAverageTypes, MovingAverageTypes} from '../MA/MovingAverageTypes.js';
 import {FasterSMA, SMA} from '../SMA/SMA.js';
@@ -55,11 +54,12 @@ export class DMA extends TechnicalIndicator<DMAResult, BigSource> {
   }
 }
 
-export class FasterDMA implements Indicator<FasterDMAResult, number> {
+export class FasterDMA extends TechnicalIndicator<FasterDMAResult, number> {
   public readonly short: FasterMovingAverage;
   public readonly long: FasterMovingAverage;
 
   constructor(short: number, long: number, SmoothingIndicator: FasterMovingAverageTypes = FasterSMA) {
+    super();
     this.short = new SmoothingIndicator(short);
     this.long = new SmoothingIndicator(long);
   }

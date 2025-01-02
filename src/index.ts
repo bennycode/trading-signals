@@ -1,4 +1,7 @@
 export {default as Big, type BigSource} from 'big.js';
+export * from './Indicator.js';
+export * from './MA/MovingAverage.js';
+export * from './MA/MovingAverageTypes.js';
 export * from './ABANDS/AccelerationBands.js';
 export * from './AC/AC.js';
 export * from './ADX/ADX.js';
@@ -13,9 +16,6 @@ export * from './DMA/DMA.js';
 export * from './DX/DX.js';
 export * from './EMA/EMA.js';
 export * from './error/index.js';
-export * from './Indicator.js';
-export * from './MA/MovingAverage.js';
-export * from './MA/MovingAverageTypes.js';
 export * from './MACD/MACD.js';
 export * from './MAD/MAD.js';
 export * from './MOM/MOM.js';

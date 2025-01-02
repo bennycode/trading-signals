@@ -78,11 +78,11 @@ describe('Period', () => {
         if (period.isStable) {
           const expected = lowest.shift();
           expect(period.lowest?.toFixed(2)).toBe(expected);
-          expect(fasterPeriod._lowest?.toFixed(2)).toBe(expected);
+          expect(fasterPeriod.lowest?.toFixed(2)).toBe(expected);
         }
       }
       expect(period.highest?.toFixed(2)).toBe('87.77');
-      expect(fasterPeriod._highest?.toFixed(2)).toBe('87.77');
+      expect(fasterPeriod.highest?.toFixed(2)).toBe('87.77');
     });
   });
 });

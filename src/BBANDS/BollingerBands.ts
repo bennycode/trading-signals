@@ -1,8 +1,7 @@
-import {Big, type BigSource} from '../index.js';
+import {Big, TechnicalIndicator, type BigSource} from '../index.js';
 import {SMA} from '../SMA/SMA.js';
 import {NotEnoughDataError} from '../error/index.js';
 import type {BandsResult, FasterBandsResult} from '../util/BandsResult.js';
-import type {Indicator} from '../Indicator.js';
 import {getFasterAverage, getFasterStandardDeviation, getStandardDeviation} from '../util/index.js';
 
 /**
@@ -20,7 +19,7 @@ import {getFasterAverage, getFasterStandardDeviation, getStandardDeviation} from
  *
  * @see https://www.investopedia.com/terms/b/bollingerbands.asp
  */
-export class BollingerBands implements Indicator<BandsResult> {
+export class BollingerBands extends TechnicalIndicator<BandsResult, BigSource> {
   public readonly prices: Big[] = [];
   private result: BandsResult | undefined;
 
@@ -32,7 +31,9 @@ export class BollingerBands implements Indicator<BandsResult> {
   constructor(
     public readonly interval: number,
     public readonly deviationMultiplier: number = 2
-  ) {}
+  ) {
+    super();
+  }
 
   get isStable(): boolean {
     return this.result !== undefined;
@@ -69,14 +70,16 @@ export class BollingerBands implements Indicator<BandsResult> {
   }
 }
 
-export class FasterBollingerBands implements Indicator<FasterBandsResult> {
+export class FasterBollingerBands extends TechnicalIndicator<FasterBandsResult, BigSource> {
   public readonly prices: number[] = [];
   private result: FasterBandsResult | undefined;
 
   constructor(
     public readonly interval: number,
     public readonly deviationMultiplier: number = 2
-  ) {}
+  ) {
+    super();
+  }
 
   updates(prices: number[]) {
     prices.forEach(price => this.update(price));
