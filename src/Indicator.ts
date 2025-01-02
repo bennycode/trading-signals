@@ -1,12 +1,32 @@
 import {NotEnoughDataError} from './error/index.js';
-import type {Big, BigSource} from './index.js';
+import {getLastFromForEach, type Big, type BigSource} from './index.js';
 
 export interface Indicator<Result = Big, Input = BigSource> {
   getResult(): Result;
 
   isStable: boolean;
 
-  update(input: Input): void | Result;
+  replace(input: Input): void | Result;
+
+  update(input: Input, replace: boolean): void | Result;
+
+  updates(input: Input[], replace: boolean): void | Result;
+}
+
+export abstract class TechnicalIndicator<Result, Input> implements Indicator<Result, Input> {
+  accessor isStable: boolean = false;
+
+  abstract getResult(): Result;
+
+  replace(input: Input) {
+    return this.update(input, true);
+  }
+
+  abstract update(input: Input, replace: boolean): void | Result;
+
+  updates(inputs: Input[], replace: boolean) {
+    return getLastFromForEach(inputs, input => this.update(input, replace));
+  }
 }
 
 /**
@@ -74,7 +94,12 @@ export abstract class BigIndicatorSeries<Input = BigSource> implements Indicator
     return (this.result = value);
   }
 
-  abstract update(input: Input, replace?: boolean): void | Big;
+  updates(prices: Input[]): void | Big {
+    prices.forEach(price => this.update(price, false));
+    return this.result;
+  }
+
+  abstract update(input: Input, replace: boolean): void | Big;
 
   replace(input: Input) {
     return this.update(input, true);
@@ -135,6 +160,11 @@ export abstract class NumberIndicatorSeries<Input = number> implements Indicator
     this.previousResult = this.result;
     // Set new result
     return (this.result = value);
+  }
+
+  updates(prices: Input[]): number | void {
+    prices.forEach(price => this.update(price));
+    return this.result;
   }
 
   abstract update(input: Input, replace?: boolean): void | number;

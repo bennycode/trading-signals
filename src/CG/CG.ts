@@ -1,5 +1,5 @@
 import {BigIndicatorSeries, NumberIndicatorSeries} from '../Indicator.js';
-import {Big, type BigSource} from '../index.js';
+import {Big, pushUpdate, type BigSource} from '../index.js';
 import {FasterSMA, SMA} from '../SMA/SMA.js';
 
 /**
@@ -33,11 +33,7 @@ export class CG extends BigIndicatorSeries {
   }
 
   override update(price: BigSource, replace: boolean = false): void | Big {
-    if (this.prices.length && replace) {
-      this.prices[this.prices.length - 1] = new Big(price);
-    } else {
-      this.prices.push(new Big(price));
-    }
+    pushUpdate(this.prices, replace, new Big(price));
 
     if (this.prices.length > this.interval) {
       this.prices.shift();
@@ -80,11 +76,7 @@ export class FasterCG extends NumberIndicatorSeries {
   }
 
   override update(price: number, replace: boolean = false): void | number {
-    if (this.prices.length && replace) {
-      this.prices[this.prices.length - 1] = price;
-    } else {
-      this.prices.push(price);
-    }
+    pushUpdate(this.prices, replace, price);
 
     if (this.prices.length > this.interval) {
       this.prices.shift();

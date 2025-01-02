@@ -1,13 +1,12 @@
-import {Big} from '../index.js';
+import {Big, TechnicalIndicator} from '../index.js';
 import {FasterSMA, SMA} from '../SMA/SMA.js';
 import {NotEnoughDataError} from '../error/index.js';
 import type {BandsResult, FasterBandsResult} from '../util/BandsResult.js';
-import type {Indicator} from '../Indicator.js';
 import type {FasterMovingAverageTypes, MovingAverageTypes} from '../MA/MovingAverageTypes.js';
 import type {FasterMovingAverage, MovingAverage} from '../MA/MovingAverage.js';
 import type {HighLowClose, HighLowCloseNumber} from '../util/index.js';
 
-export class AccelerationBands implements Indicator<BandsResult, HighLowClose> {
+export class AccelerationBands extends TechnicalIndicator<BandsResult, HighLowClose> {
   private readonly lowerBand: MovingAverage;
   private readonly middleBand: MovingAverage;
   private readonly upperBand: MovingAverage;
@@ -37,16 +36,21 @@ export class AccelerationBands implements Indicator<BandsResult, HighLowClose> {
     public readonly width: number,
     SmoothingIndicator: MovingAverageTypes = SMA
   ) {
+    super();
     this.lowerBand = new SmoothingIndicator(interval);
     this.middleBand = new SmoothingIndicator(interval);
     this.upperBand = new SmoothingIndicator(interval);
+  }
+
+  updates(prices: HighLowClose[]) {
+    prices.forEach(price => this.update(price));
   }
 
   get isStable(): boolean {
     return this.middleBand.isStable;
   }
 
-  update({high, low, close}: HighLowClose): void {
+  update({high, low, close}: HighLowClose) {
     const highPlusLow = new Big(high).plus(low);
     const coefficient = highPlusLow.eq(0) ? new Big(0) : new Big(high).minus(low).div(highPlusLow).mul(this.width);
 
@@ -71,7 +75,7 @@ export class AccelerationBands implements Indicator<BandsResult, HighLowClose> {
   }
 }
 
-export class FasterAccelerationBands implements Indicator<FasterBandsResult, HighLowCloseNumber> {
+export class FasterAccelerationBands extends TechnicalIndicator<FasterBandsResult, HighLowCloseNumber> {
   private readonly lowerBand: FasterMovingAverage;
   private readonly middleBand: FasterMovingAverage;
   private readonly upperBand: FasterMovingAverage;
@@ -81,9 +85,14 @@ export class FasterAccelerationBands implements Indicator<FasterBandsResult, Hig
     public readonly width: number,
     SmoothingIndicator: FasterMovingAverageTypes = FasterSMA
   ) {
+    super();
     this.lowerBand = new SmoothingIndicator(interval);
     this.middleBand = new SmoothingIndicator(interval);
     this.upperBand = new SmoothingIndicator(interval);
+  }
+
+  updates(prices: HighLowCloseNumber[]) {
+    prices.forEach(price => this.update(price));
   }
 
   update({high, low, close}: HighLowCloseNumber): void {

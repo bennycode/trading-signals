@@ -108,11 +108,13 @@ describe('AccelerationBands', () => {
   describe('update', () => {
     it("doesn't crash when supplying zeroes", () => {
       const accBands = new AccelerationBands(20, 2);
-      return accBands.update({
-        close: 0,
-        high: 0,
-        low: 0,
-      });
+      return accBands.updates([
+        {
+          close: 0,
+          high: 0,
+          low: 0,
+        },
+      ]);
     });
   });
 });
@@ -120,10 +122,12 @@ describe('AccelerationBands', () => {
 describe('FaserAccelerationBands', () => {
   it("doesn't crash when supplying zeroes", () => {
     const accBands = new FasterAccelerationBands(20, 2);
-    return accBands.update({
-      close: 0,
-      high: 0,
-      low: 0,
-    });
+    return accBands.updates([
+      {
+        close: 0,
+        high: 0,
+        low: 0,
+      },
+    ]);
   });
 });

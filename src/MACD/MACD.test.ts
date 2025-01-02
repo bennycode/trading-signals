@@ -2,6 +2,37 @@ import {FasterMACD, MACD} from './MACD.js';
 import {Big, DEMA, EMA, FasterEMA, NotEnoughDataError} from '../index.js';
 
 describe('MACD', () => {
+  describe('replace', () => {
+    it('guarantees that a replacement is done correctly', () => {
+      const macd = new MACD({
+        indicator: EMA,
+        longInterval: 5,
+        shortInterval: 2,
+        signalInterval: 9,
+      });
+      const macdWithReplace = new MACD({
+        indicator: EMA,
+        longInterval: 5,
+        shortInterval: 2,
+        signalInterval: 9,
+      });
+
+      const subset = ['10', '20', '80', '81.59', '81.06', '82.87', '83.0'];
+
+      macd.updates([...subset, '90', '83.61']);
+
+      macdWithReplace.updates([...subset, '100']);
+      macdWithReplace.replace(90);
+      macdWithReplace.update('83.61');
+
+      expect(macdWithReplace.short.getResult().toFixed(), 'short').toBe(macd.short.getResult().toFixed());
+      expect(macdWithReplace.long.getResult().toFixed(), 'long').toBe(macd.long.getResult().toFixed());
+      expect(macdWithReplace.getResult().histogram.toFixed(), 'histogram').toBe(macd.getResult().histogram.toFixed());
+      expect(macdWithReplace.getResult().macd.toFixed(), 'macd').toBe(macd.getResult().macd.toFixed());
+      expect(macdWithReplace.getResult().signal.toFixed(), 'signal').toBe(macd.getResult().signal.toFixed());
+    });
+  });
+
   describe('update', () => {
     it('can replace recently added values', () => {
       const macd = new MACD({
@@ -12,14 +43,10 @@ describe('MACD', () => {
       });
       const fasterMACD = new FasterMACD(new FasterEMA(2), new FasterEMA(5), new FasterEMA(9));
 
-      macd.update('81.59');
-      fasterMACD.update(81.59);
-      macd.update('81.06');
-      fasterMACD.update(81.06);
-      macd.update('82.87');
-      fasterMACD.update(82.87);
-      macd.update('83.0');
-      fasterMACD.update(83.0);
+      const subset = [81.59, 81.06, 82.87, 83.0];
+      macd.updates(subset);
+      fasterMACD.updates(subset);
+
       macd.update('90'); // this value gets replaced with the next call
       fasterMACD.update(90); // this value gets replaced with the next call
       macd.update('83.61', true);
@@ -193,7 +220,7 @@ describe('MACD', () => {
       expect(mockedPrices.length).toBe(longInterval);
       expect(macd.isStable).toBe(false);
 
-      mockedPrices.forEach(price => macd.update(price));
+      macd.updates(mockedPrices);
 
       expect(macd.isStable).toBe(true);
     });

@@ -1,21 +1,51 @@
+import {NotEnoughDataError} from '../error/NotEnoughDataError.js';
 import {FasterPeriod, Period} from './Period.js';
 
 describe('Period', () => {
+  describe('replace', () => {
+    it('guarantees that a replacement is done correctly', () => {
+      const interval = 5;
+      const period = new Period(interval);
+      const periodWithReplace = new Period(interval);
+
+      const subset = [30, 40, 50, 60];
+      period.updates([...subset, 70]);
+      periodWithReplace.updates([...subset, 90]);
+      periodWithReplace.replace(70);
+
+      expect(periodWithReplace.lowest?.toFixed()).toBe(period.lowest?.toFixed());
+      expect(periodWithReplace.highest?.toFixed()).toBe(period.highest?.toFixed());
+    });
+  });
+
   describe('getResult', () => {
     it('returns the highest and lowest value of the current period', () => {
-      const period = new Period(2);
-      period.update(72);
-      period.update(1337);
+      const values = [72, 1337];
+      const interval = 2;
+      const period = new Period(interval);
+      period.updates(values);
       const {highest, lowest} = period.getResult();
       expect(lowest.valueOf()).toBe('72');
       expect(highest.valueOf()).toBe('1337');
 
-      const fasterPeriod = new FasterPeriod(2);
-      fasterPeriod.update(72);
-      fasterPeriod.update(1337);
+      expect(period.lowest?.valueOf()).toBe('72');
+      expect(period.highest?.valueOf()).toBe('1337');
+
+      const fasterPeriod = new FasterPeriod(interval);
+      fasterPeriod.updates(values);
       const {highest: fastestHighest, lowest: fastestLowest} = fasterPeriod.getResult();
       expect(fastestLowest).toBe(72);
       expect(fastestHighest).toBe(1337);
+    });
+
+    it('throws an error when there is not enough input data', () => {
+      const period = new Period(2);
+      try {
+        period.getResult();
+        throw new Error('Expected error');
+      } catch (error) {
+        expect(error).toBeInstanceOf(NotEnoughDataError);
+      }
     });
   });
 
@@ -39,8 +69,9 @@ describe('Period', () => {
         '84.36',
         '85.53',
       ];
-      const period = new Period(5);
-      const fasterPeriod = new FasterPeriod(5);
+      const interval = 5;
+      const period = new Period(interval);
+      const fasterPeriod = new FasterPeriod(interval);
       for (const price of prices) {
         period.update(price);
         fasterPeriod.update(price);

@@ -3,6 +3,26 @@ import {NotEnoughDataError} from '../error/index.js';
 
 describe('WSMA', () => {
   describe('replace', () => {
+    it('guarantees that a replacement is done correctly', () => {
+      const interval = 3;
+
+      const wsma = new WSMA(interval);
+      const wsmaWithReplace = new WSMA(interval);
+
+      const subset = [11, 12, 13];
+
+      wsma.updates([...subset, 14, 15]);
+
+      wsmaWithReplace.updates([...subset, 50]);
+      wsmaWithReplace.replace(14);
+      wsmaWithReplace.update(15);
+
+      const actual = wsmaWithReplace.getResult().toFixed();
+      const expected = wsma.getResult().toFixed();
+
+      expect(actual).toBe(expected);
+    });
+
     it('replaces recently added values', () => {
       const interval = 3;
 
