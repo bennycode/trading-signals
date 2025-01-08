@@ -1,6 +1,7 @@
-import {Big, type BigSource} from '../index.js';
+import type {BigSource} from 'big.js';
 import {FasterMovingAverage, MovingAverage} from '../MA/MovingAverage.js';
 import {NotEnoughDataError} from '../error/index.js';
+import Big from 'big.js';
 
 /**
  * Exponential Moving Average (EMA)
@@ -15,7 +16,7 @@ export class EMA extends MovingAverage {
   private pricesCounter = 0;
   private readonly weightFactor: number;
 
-  constructor(public readonly interval: number) {
+  constructor(public override readonly interval: number) {
     super(interval);
     this.weightFactor = 2 / (this.interval + 1);
   }
@@ -62,7 +63,7 @@ export class FasterEMA extends FasterMovingAverage {
   private pricesCounter = 0;
   private readonly weightFactor: number;
 
-  constructor(public readonly interval: number) {
+  constructor(public override readonly interval: number) {
     super(interval);
     this.weightFactor = 2 / (this.interval + 1);
   }

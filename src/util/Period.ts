@@ -1,8 +1,11 @@
-import {Big, NotEnoughDataError, pushUpdate, type BigSource} from '../index.js';
 import type {Indicator} from '../Indicator.js';
 import {getFixedArray} from './getFixedArray.js';
 import {getMinimum} from './getMinimum.js';
 import {getMaximum} from './getMaximum.js';
+import type {BigSource} from 'big.js';
+import Big from 'big.js';
+import {NotEnoughDataError} from '../error/NotEnoughDataError.js';
+import {pushUpdate} from './pushUpdate.js';
 
 export interface PeriodResult {
   highest: Big;

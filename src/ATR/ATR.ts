@@ -1,9 +1,8 @@
-import type {Big} from '../index.js';
 import {BigIndicatorSeries, NumberIndicatorSeries} from '../Indicator.js';
 import type {FasterMovingAverage, MovingAverage} from '../MA/MovingAverage.js';
 import type {FasterMovingAverageTypes, MovingAverageTypes} from '../MA/MovingAverageTypes.js';
 import {FasterTR, TR} from '../TR/TR.js';
-import type {HighLowClose, HighLowCloseNumber} from '../util/index.js';
+import type {HighLowClose, HighLowCloseNumber} from '../util/HighLowClose.js';
 import {FasterWSMA, WSMA} from '../WSMA/WSMA.js';
 
 /**

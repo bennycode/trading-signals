@@ -1,6 +1,6 @@
-import {Big} from '../index.js';
+import Big from 'big.js';
 import {BigIndicatorSeries, NumberIndicatorSeries} from '../Indicator.js';
-import type {OpenHighLowCloseVolume, OpenHighLowCloseVolumeNumber} from '../util/index.js';
+import type {OpenHighLowCloseVolume, OpenHighLowCloseVolumeNumber} from '../util/HighLowClose.js';
 
 /**
  * On-Balance Volume (OBV)

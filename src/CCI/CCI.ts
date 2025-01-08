@@ -1,8 +1,9 @@
 import {BigIndicatorSeries, NumberIndicatorSeries} from '../Indicator.js';
-import {Big, pushUpdate, type BigSource} from '../index.js';
-import type {HighLowClose, HighLowCloseNumber} from '../util/index.js';
+import {pushUpdate, type HighLowClose, type HighLowCloseNumber} from '../util/index.js';
 import {FasterSMA, SMA} from '../SMA/SMA.js';
 import {FasterMAD, MAD} from '../MAD/MAD.js';
+import type {BigSource} from 'big.js';
+import Big from 'big.js';
 
 /**
  * Commodity Channel Index (CCI)

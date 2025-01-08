@@ -1,6 +1,10 @@
+import type {BigSource} from 'big.js';
+import Big from 'big.js';
+import type {DEMA, FasterDEMA} from '../DEMA/DEMA.js';
 import type {EMA, FasterEMA} from '../EMA/EMA.js';
-import {Big, NotEnoughDataError, pushUpdate, type BigSource, type DEMA, type FasterDEMA} from '../index.js';
+import {NotEnoughDataError} from '../error/NotEnoughDataError.js';
 import type {Indicator} from '../Indicator.js';
+import {pushUpdate} from '../util/pushUpdate.js';
 
 export type MACDConfig = {
   indicator: typeof EMA | typeof DEMA;

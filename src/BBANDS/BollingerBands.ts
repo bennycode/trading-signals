@@ -1,6 +1,8 @@
-import {Big, TechnicalIndicator, type BigSource} from '../index.js';
+import type {BigSource} from 'big.js';
+import Big from 'big.js';
+import {NotEnoughDataError} from '../error/NotEnoughDataError.js';
+import {TechnicalIndicator} from '../Indicator.js';
 import {SMA} from '../SMA/SMA.js';
-import {NotEnoughDataError} from '../error/index.js';
 import type {BandsResult, FasterBandsResult} from '../util/BandsResult.js';
 import {getFasterAverage, getFasterStandardDeviation, getStandardDeviation} from '../util/index.js';
 
@@ -21,7 +23,6 @@ import {getFasterAverage, getFasterStandardDeviation, getStandardDeviation} from
  */
 export class BollingerBands extends TechnicalIndicator<BandsResult, BigSource> {
   public readonly prices: Big[] = [];
-  private result: BandsResult | undefined;
 
   /**
    * @param interval - The time period to be used in calculating the Middle Band
@@ -33,15 +34,6 @@ export class BollingerBands extends TechnicalIndicator<BandsResult, BigSource> {
     public readonly deviationMultiplier: number = 2
   ) {
     super();
-  }
-
-  get isStable(): boolean {
-    return this.result !== undefined;
-  }
-
-  updates(prices: BigSource[]) {
-    prices.forEach(price => this.update(price));
-    return this.result;
   }
 
   update(price: BigSource): void | BandsResult {
@@ -72,18 +64,12 @@ export class BollingerBands extends TechnicalIndicator<BandsResult, BigSource> {
 
 export class FasterBollingerBands extends TechnicalIndicator<FasterBandsResult, BigSource> {
   public readonly prices: number[] = [];
-  private result: FasterBandsResult | undefined;
 
   constructor(
     public readonly interval: number,
     public readonly deviationMultiplier: number = 2
   ) {
     super();
-  }
-
-  updates(prices: number[]) {
-    prices.forEach(price => this.update(price));
-    return this.result;
   }
 
   update(price: number): void | FasterBandsResult {
@@ -109,9 +95,5 @@ export class FasterBollingerBands extends TechnicalIndicator<FasterBandsResult, 
     }
 
     return this.result;
-  }
-
-  get isStable(): boolean {
-    return this.result !== undefined;
   }
 }

@@ -1,4 +1,4 @@
-import type {Big} from '../index.js';
+import type {Big} from 'big.js';
 import {BigIndicatorSeries, NumberIndicatorSeries} from '../Indicator.js';
 import type {FasterMovingAverage, MovingAverage} from '../MA/MovingAverage.js';
 import type {HighLowClose, HighLowCloseNumber} from '../util/HighLowClose.js';
@@ -54,7 +54,7 @@ export class ADX extends BigIndicatorSeries<HighLowClose> {
   update(candle: HighLowClose): Big | void {
     const result = this.dx.update(candle);
     if (result) {
-      this.adx.update(result);
+      this.adx.update(result, false);
     }
     if (this.adx.isStable) {
       return this.setResult(this.adx.getResult(), false);

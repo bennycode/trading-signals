@@ -1,5 +1,7 @@
-import {Big, pushUpdate, type BigSource} from '../index.js';
+import type {BigSource} from 'big.js';
+import Big from 'big.js';
 import {FasterMovingAverage, MovingAverage} from '../MA/MovingAverage.js';
+import {pushUpdate} from '../util/pushUpdate.js';
 
 /**
  * Weighted Moving Average (WMA)
@@ -13,7 +15,7 @@ import {FasterMovingAverage, MovingAverage} from '../MA/MovingAverage.js';
 export class WMA extends MovingAverage {
   public readonly prices: BigSource[] = [];
 
-  constructor(public readonly interval: number) {
+  constructor(public override readonly interval: number) {
     super(interval);
   }
 
@@ -42,7 +44,7 @@ export class WMA extends MovingAverage {
 export class FasterWMA extends FasterMovingAverage {
   public readonly prices: number[] = [];
 
-  constructor(public readonly interval: number) {
+  constructor(public override readonly interval: number) {
     super(interval);
   }
 

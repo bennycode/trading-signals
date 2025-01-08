@@ -1,5 +1,5 @@
-import type {Big, BigSource} from '../index.js';
-import {TechnicalIndicator} from '../index.js';
+import type {BigSource} from 'big.js';
+import {TechnicalIndicator} from '../Indicator.js';
 import type {FasterMovingAverage, MovingAverage} from '../MA/MovingAverage.js';
 import type {FasterMovingAverageTypes, MovingAverageTypes} from '../MA/MovingAverageTypes.js';
 import {FasterSMA, SMA} from '../SMA/SMA.js';
@@ -33,12 +33,8 @@ export class DMA extends TechnicalIndicator<DMAResult, BigSource> {
     this.long = new Indicator(long);
   }
 
-  get isStable(): boolean {
+  override get isStable(): boolean {
     return this.long.isStable;
-  }
-
-  updates(prices: BigSource[]) {
-    prices.forEach(price => this.update(price));
   }
 
   update(price: BigSource, replace: boolean = false): void {
@@ -64,12 +60,8 @@ export class FasterDMA extends TechnicalIndicator<FasterDMAResult, number> {
     this.long = new SmoothingIndicator(long);
   }
 
-  get isStable(): boolean {
+  override get isStable(): boolean {
     return this.long.isStable;
-  }
-
-  updates(prices: number[]) {
-    prices.forEach(price => this.update(price));
   }
 
   update(price: number, replace: boolean = false): void {

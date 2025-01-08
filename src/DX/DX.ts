@@ -1,10 +1,11 @@
 import {BigIndicatorSeries, NumberIndicatorSeries} from '../Indicator.js';
-import type {HighLowClose, HighLowCloseNumber} from '../util/index.js';
-import {Big, type BigSource} from '../index.js';
 import type {FasterMovingAverage, MovingAverage} from '../MA/MovingAverage.js';
 import type {FasterMovingAverageTypes, MovingAverageTypes} from '../MA/MovingAverageTypes.js';
 import {FasterWSMA, WSMA} from '../WSMA/WSMA.js';
 import {ATR, FasterATR} from '../ATR/ATR.js';
+import type {BigSource} from 'big.js';
+import Big from 'big.js';
+import type {HighLowClose, HighLowCloseNumber} from '../util/HighLowClose.js';
 
 /**
  * Directional Movement Index (DMI / DX)
@@ -41,8 +42,8 @@ export class DX extends BigIndicatorSeries<HighLowClose> {
 
   private updateState(candle: HighLowClose, pdm: BigSource = 0, mdm: BigSource = 0): void {
     this.atr.update(candle);
-    this.movesDown.update(mdm);
-    this.movesUp.update(pdm);
+    this.movesDown.update(mdm, false);
+    this.movesUp.update(pdm, false);
     this.previousCandle = candle;
   }
 

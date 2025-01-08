@@ -3,7 +3,7 @@ import {AO, FasterAO} from '../AO/AO.js';
 import {FasterSMA, SMA} from '../SMA/SMA.js';
 import {FasterMOM, MOM} from '../MOM/MOM.js';
 import type {HighLow, HighLowNumber} from '../util/index.js';
-import type {Big} from '../index.js';
+import type {Big} from 'big.js';
 
 /**
  * Accelerator Oscillator (AC)

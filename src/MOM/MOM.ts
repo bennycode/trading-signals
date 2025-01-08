@@ -1,6 +1,8 @@
+import type {BigSource} from 'big.js';
+import Big from 'big.js';
 import {BigIndicatorSeries, NumberIndicatorSeries} from '../Indicator.js';
-import {Big, pushUpdate, type BigSource} from '../index.js';
 import {getFixedArray} from '../util/getFixedArray.js';
+import {pushUpdate} from '../util/pushUpdate.js';
 
 /**
  * Momentum Indicator (MOM / MTM)

@@ -1,6 +1,8 @@
+import type {BigSource} from 'big.js';
+import Big from 'big.js';
 import {BigIndicatorSeries, NumberIndicatorSeries} from '../Indicator.js';
-import {Big, pushUpdate, type BigSource} from '../index.js';
 import {FasterSMA, SMA} from '../SMA/SMA.js';
+import {pushUpdate} from '../util/pushUpdate.js';
 
 /**
  * Center of Gravity (CG)

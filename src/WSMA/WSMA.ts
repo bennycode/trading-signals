@@ -1,7 +1,8 @@
-import {Big, type BigSource} from '../index.js';
 import {MovingAverage} from '../MA/MovingAverage.js';
 import {FasterSMA, SMA} from '../SMA/SMA.js';
 import {NumberIndicatorSeries} from '../Indicator.js';
+import type {BigSource} from 'big.js';
+import Big from 'big.js';
 
 /**
  * Wilder's Smoothed Moving Average (WSMA)
@@ -22,15 +23,10 @@ export class WSMA extends MovingAverage {
   private readonly indicator: SMA;
   private readonly smoothingFactor: Big;
 
-  constructor(public readonly interval: number) {
+  constructor(public override readonly interval: number) {
     super(interval);
     this.indicator = new SMA(interval);
     this.smoothingFactor = new Big(1).div(this.interval);
-  }
-
-  updates(prices: BigSource[]) {
-    prices.forEach(price => this.update(price));
-    return this.result;
   }
 
   update(price: BigSource, replace: boolean = false): Big | void {
@@ -57,7 +53,7 @@ export class FasterWSMA extends NumberIndicatorSeries {
     this.smoothingFactor = 1 / this.interval;
   }
 
-  updates(prices: number[]): number | void {
+  override updates(prices: number[]): number | void {
     prices.forEach(price => this.update(price));
     return this.result;
   }

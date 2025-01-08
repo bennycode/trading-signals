@@ -1,4 +1,5 @@
-import {Big, type BigSource} from '../index.js';
+import type {BigSource} from 'big.js';
+import Big from 'big.js';
 
 /**
  * Return the mean / average value.

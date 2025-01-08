@@ -1,9 +1,9 @@
 import {BigIndicatorSeries, NumberIndicatorSeries} from '../Indicator.js';
-import {Big} from '../index.js';
 import {FasterSMA, SMA} from '../SMA/SMA.js';
 import type {HighLow, HighLowNumber} from '../util/index.js';
 import type {FasterMovingAverageTypes, MovingAverageTypes} from '../MA/MovingAverageTypes.js';
 import type {FasterMovingAverage, MovingAverage} from '../MA/MovingAverage.js';
+import Big from 'big.js';
 
 /**
  * Awesome Oscillator (AO)

@@ -1,5 +1,6 @@
-import {Big, type BigSource} from '../index.js';
+import type {BigSource} from 'big.js';
 import {BigIndicatorSeries, NumberIndicatorSeries} from '../Indicator.js';
+import Big from 'big.js';
 
 /**
  * Rate Of Change Indicator (ROC)

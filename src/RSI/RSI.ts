@@ -1,8 +1,10 @@
-import {Big, pushUpdate, type BigSource} from '../index.js';
 import type {FasterMovingAverage, MovingAverage} from '../MA/MovingAverage.js';
 import {BigIndicatorSeries, NumberIndicatorSeries} from '../Indicator.js';
 import type {FasterMovingAverageTypes, MovingAverageTypes} from '../MA/MovingAverageTypes.js';
 import {FasterWSMA, WSMA} from '../WSMA/WSMA.js';
+import type {BigSource} from 'big.js';
+import Big from 'big.js';
+import {pushUpdate} from '../util/pushUpdate.js';
 
 /**
  * Relative Strength Index (RSI)

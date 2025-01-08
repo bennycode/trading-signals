@@ -1,10 +1,11 @@
-import {Big, TechnicalIndicator} from '../index.js';
 import {FasterSMA, SMA} from '../SMA/SMA.js';
-import {NotEnoughDataError} from '../error/index.js';
 import type {BandsResult, FasterBandsResult} from '../util/BandsResult.js';
 import type {FasterMovingAverageTypes, MovingAverageTypes} from '../MA/MovingAverageTypes.js';
 import type {FasterMovingAverage, MovingAverage} from '../MA/MovingAverage.js';
 import type {HighLowClose, HighLowCloseNumber} from '../util/index.js';
+import Big from 'big.js';
+import {NotEnoughDataError} from '../error/NotEnoughDataError.js';
+import {TechnicalIndicator} from '../Indicator.js';
 
 export class AccelerationBands extends TechnicalIndicator<BandsResult, HighLowClose> {
   private readonly lowerBand: MovingAverage;
@@ -42,11 +43,7 @@ export class AccelerationBands extends TechnicalIndicator<BandsResult, HighLowCl
     this.upperBand = new SmoothingIndicator(interval);
   }
 
-  updates(prices: HighLowClose[]) {
-    prices.forEach(price => this.update(price));
-  }
-
-  get isStable(): boolean {
+  override get isStable(): boolean {
     return this.middleBand.isStable;
   }
 
@@ -55,11 +52,11 @@ export class AccelerationBands extends TechnicalIndicator<BandsResult, HighLowCl
     const coefficient = highPlusLow.eq(0) ? new Big(0) : new Big(high).minus(low).div(highPlusLow).mul(this.width);
 
     // (Low * (1 - width * (High - Low)/ (High + Low)))
-    this.lowerBand.update(new Big(low).mul(new Big(1).minus(coefficient)));
+    this.lowerBand.update(new Big(low).mul(new Big(1).minus(coefficient)), false);
     // (Close)
-    this.middleBand.update(close);
+    this.middleBand.update(close, false);
     // (High * ( 1 + width * (High - Low) / (High + Low)))
-    this.upperBand.update(new Big(high).mul(new Big(1).plus(coefficient)));
+    this.upperBand.update(new Big(high).mul(new Big(1).plus(coefficient)), false);
   }
 
   getResult(): BandsResult {
@@ -91,10 +88,6 @@ export class FasterAccelerationBands extends TechnicalIndicator<FasterBandsResul
     this.upperBand = new SmoothingIndicator(interval);
   }
 
-  updates(prices: HighLowCloseNumber[]) {
-    prices.forEach(price => this.update(price));
-  }
-
   update({high, low, close}: HighLowCloseNumber): void {
     const highPlusLow = high + low;
     const coefficient = highPlusLow === 0 ? 0 : ((high - low) / highPlusLow) * this.width;
@@ -104,7 +97,7 @@ export class FasterAccelerationBands extends TechnicalIndicator<FasterBandsResul
     this.upperBand.update(high * (1 + coefficient));
   }
 
-  get isStable(): boolean {
+  override get isStable(): boolean {
     return this.middleBand.isStable;
   }
 

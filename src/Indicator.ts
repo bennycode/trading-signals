@@ -1,5 +1,6 @@
-import {NotEnoughDataError} from './error/index.js';
-import {getLastFromForEach, type Big, type BigSource} from './index.js';
+import type {BigSource} from 'big.js';
+import {NotEnoughDataError} from './error/NotEnoughDataError.js';
+import {getLastFromForEach} from './util/getLastFromForEach.js';
 
 export interface Indicator<Result = Big, Input = BigSource> {
   getResult(): Result;
@@ -14,9 +15,13 @@ export interface Indicator<Result = Big, Input = BigSource> {
 }
 
 export abstract class TechnicalIndicator<Result, Input> implements Indicator<Result, Input> {
-  accessor isStable: boolean = false;
+  protected result: Result | undefined;
 
   abstract getResult(): Result;
+
+  get isStable(): boolean {
+    return this.result !== undefined;
+  }
 
   replace(input: Input) {
     return this.update(input, true);
@@ -24,7 +29,7 @@ export abstract class TechnicalIndicator<Result, Input> implements Indicator<Res
 
   abstract update(input: Input, replace: boolean): void | Result;
 
-  updates(inputs: Input[], replace: boolean) {
+  updates(inputs: Input[], replace: boolean = false) {
     return getLastFromForEach(inputs, input => this.update(input, replace));
   }
 }

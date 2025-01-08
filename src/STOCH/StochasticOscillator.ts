@@ -1,9 +1,10 @@
-import {Big, TechnicalIndicator} from '../index.js';
 import {FasterSMA, SMA} from '../SMA/SMA.js';
 import {getMaximum} from '../util/getMaximum.js';
 import {getMinimum} from '../util/getMinimum.js';
-import {NotEnoughDataError} from '../error/index.js';
-import type {HighLowClose, HighLowCloseNumber} from '../util/index.js';
+import Big from 'big.js';
+import {TechnicalIndicator} from '../Indicator.js';
+import type {HighLowClose, HighLowCloseNumber} from '../util/HighLowClose.js';
+import {NotEnoughDataError} from '../error/NotEnoughDataError.js';
 
 export interface StochasticResult {
   /** Slow stochastic indicator (%D) */
@@ -39,9 +40,7 @@ export interface FasterStochasticResult {
 export class StochasticOscillator extends TechnicalIndicator<StochasticResult, HighLowClose> {
   private readonly periodM: SMA;
   private readonly periodP: SMA;
-
   private readonly candles: HighLowClose[] = [];
-  private result?: StochasticResult;
 
   /**
    * Constructs a Stochastic Oscillator.
@@ -58,11 +57,6 @@ export class StochasticOscillator extends TechnicalIndicator<StochasticResult, H
     super();
     this.periodM = new SMA(m);
     this.periodP = new SMA(p);
-  }
-
-  updates(candles: HighLowClose[]) {
-    candles.forEach(candle => this.update(candle));
-    return this.result;
   }
 
   getResult(): StochasticResult {
@@ -97,15 +91,10 @@ export class StochasticOscillator extends TechnicalIndicator<StochasticResult, H
       }
     }
   }
-
-  get isStable(): boolean {
-    return this.result !== undefined;
-  }
 }
 
 export class FasterStochasticOscillator extends TechnicalIndicator<FasterStochasticResult, HighLowCloseNumber> {
   public readonly candles: HighLowCloseNumber[] = [];
-  private result: FasterStochasticResult | undefined;
   private readonly periodM: FasterSMA;
   private readonly periodP: FasterSMA;
 
@@ -129,15 +118,6 @@ export class FasterStochasticOscillator extends TechnicalIndicator<FasterStochas
       throw new NotEnoughDataError();
     }
 
-    return this.result;
-  }
-
-  get isStable(): boolean {
-    return this.result !== undefined;
-  }
-
-  updates(candles: HighLowCloseNumber[]) {
-    candles.forEach(candle => this.update(candle));
     return this.result;
   }
 
