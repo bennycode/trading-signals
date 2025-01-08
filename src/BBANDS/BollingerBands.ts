@@ -1,6 +1,5 @@
 import type {BigSource} from 'big.js';
 import Big from 'big.js';
-import {NotEnoughDataError} from '../error/NotEnoughDataError.js';
 import {TechnicalIndicator} from '../Indicator.js';
 import {SMA} from '../SMA/SMA.js';
 import type {BandsResult, FasterBandsResult} from '../util/BandsResult.js';
@@ -52,14 +51,6 @@ export class BollingerBands extends TechnicalIndicator<BandsResult, BigSource> {
       });
     }
   }
-
-  getResult(): BandsResult {
-    if (this.result === undefined) {
-      throw new NotEnoughDataError();
-    }
-
-    return this.result;
-  }
 }
 
 export class FasterBollingerBands extends TechnicalIndicator<FasterBandsResult, BigSource> {
@@ -87,13 +78,5 @@ export class FasterBollingerBands extends TechnicalIndicator<FasterBandsResult, 
         upper: middle + standardDeviation * this.deviationMultiplier,
       });
     }
-  }
-
-  getResult(): FasterBandsResult {
-    if (this.result === undefined) {
-      throw new NotEnoughDataError();
-    }
-
-    return this.result;
   }
 }

@@ -4,6 +4,7 @@ import type {DEMA, FasterDEMA} from '../DEMA/DEMA.js';
 import type {EMA, FasterEMA} from '../EMA/EMA.js';
 import {NotEnoughDataError} from '../error/NotEnoughDataError.js';
 import type {Indicator} from '../Indicator.js';
+import {TechnicalIndicator} from '../Indicator.js';
 import {pushUpdate} from '../util/pushUpdate.js';
 
 export type MACDConfig = {
@@ -34,31 +35,18 @@ export type FasterMACDResult = {
  *
  * @see https://www.investopedia.com/terms/m/macd.asp
  */
-export class MACD implements Indicator<MACDResult> {
+export class MACD extends TechnicalIndicator<MACDResult, BigSource> {
   public readonly prices: BigSource[] = [];
   public readonly long: EMA | DEMA;
   public readonly short: EMA | DEMA;
 
   private readonly signal: EMA | DEMA;
-  private result: MACDResult | undefined;
 
   constructor(config: MACDConfig) {
+    super();
     this.long = new config.indicator(config.longInterval);
     this.short = new config.indicator(config.shortInterval);
     this.signal = new config.indicator(config.signalInterval);
-  }
-
-  get isStable(): boolean {
-    return this.result !== undefined;
-  }
-
-  replace(price: BigSource) {
-    return this.update(price, true);
-  }
-
-  updates(prices: BigSource[]) {
-    prices.forEach(price => this.update(price));
-    return this.result;
   }
 
   update(_price: BigSource, replace: boolean = false): void | MACDResult {
@@ -94,14 +82,6 @@ export class MACD implements Indicator<MACDResult> {
         signal,
       });
     }
-  }
-
-  getResult(): MACDResult {
-    if (!this.isStable || this.result === undefined) {
-      throw new NotEnoughDataError();
-    }
-
-    return this.result;
   }
 }
 

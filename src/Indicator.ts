@@ -17,7 +17,13 @@ export interface Indicator<Result = Big, Input = BigSource> {
 export abstract class TechnicalIndicator<Result, Input> implements Indicator<Result, Input> {
   protected result: Result | undefined;
 
-  abstract getResult(): Result;
+  getResult(): Result {
+    if (this.result === undefined) {
+      throw new NotEnoughDataError();
+    }
+
+    return this.result;
+  }
 
   get isStable(): boolean {
     return this.result !== undefined;

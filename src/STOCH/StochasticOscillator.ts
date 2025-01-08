@@ -1,10 +1,9 @@
+import Big from 'big.js';
+import {TechnicalIndicator} from '../Indicator.js';
 import {FasterSMA, SMA} from '../SMA/SMA.js';
 import {getMaximum} from '../util/getMaximum.js';
 import {getMinimum} from '../util/getMinimum.js';
-import Big from 'big.js';
-import {TechnicalIndicator} from '../Indicator.js';
 import type {HighLowClose, HighLowCloseNumber} from '../util/HighLowClose.js';
-import {NotEnoughDataError} from '../error/NotEnoughDataError.js';
 
 export interface StochasticResult {
   /** Slow stochastic indicator (%D) */
@@ -59,14 +58,6 @@ export class StochasticOscillator extends TechnicalIndicator<StochasticResult, H
     this.periodP = new SMA(p);
   }
 
-  getResult(): StochasticResult {
-    if (this.result === undefined) {
-      throw new NotEnoughDataError();
-    }
-
-    return this.result;
-  }
-
   update(candle: HighLowClose): void | StochasticResult {
     this.candles.push(candle);
 
@@ -111,14 +102,6 @@ export class FasterStochasticOscillator extends TechnicalIndicator<FasterStochas
     super();
     this.periodM = new FasterSMA(m);
     this.periodP = new FasterSMA(p);
-  }
-
-  getResult(): FasterStochasticResult {
-    if (this.result === undefined) {
-      throw new NotEnoughDataError();
-    }
-
-    return this.result;
   }
 
   update(candle: HighLowCloseNumber): void | FasterStochasticResult {

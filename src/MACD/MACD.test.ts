@@ -49,8 +49,8 @@ describe('MACD', () => {
 
       macd.update('90'); // this value gets replaced with the next call
       fasterMACD.update(90); // this value gets replaced with the next call
-      macd.update('83.61', true);
-      fasterMACD.update(83.61, true);
+      macd.replace('83.61');
+      fasterMACD.replace(83.61);
 
       expect(macd.isStable).toBe(true);
       expect(fasterMACD.isStable).toBe(true);

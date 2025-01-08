@@ -5,16 +5,23 @@ describe('Period', () => {
   describe('replace', () => {
     it('guarantees that a replacement is done correctly', () => {
       const interval = 5;
+      const expectedLow = '30';
+      const expectedHigh = '70';
+
       const period = new Period(interval);
       const periodWithReplace = new Period(interval);
+      const fasterPeriodWithReplace = new FasterPeriod(interval);
 
       const subset = [30, 40, 50, 60];
       period.updates([...subset, 70]);
       periodWithReplace.updates([...subset, 90]);
       periodWithReplace.replace(70);
+      fasterPeriodWithReplace.updates([...subset, 90]);
+      fasterPeriodWithReplace.replace(70);
 
-      expect(periodWithReplace.lowest?.toFixed()).toBe(period.lowest?.toFixed());
-      expect(periodWithReplace.highest?.toFixed()).toBe(period.highest?.toFixed());
+      expect(periodWithReplace.lowest?.toFixed()).toBe(expectedLow);
+      expect(periodWithReplace.highest?.toFixed()).toBe(expectedHigh);
+      expect(fasterPeriodWithReplace.highest?.toFixed()).toBe(expectedHigh);
     });
   });
 
