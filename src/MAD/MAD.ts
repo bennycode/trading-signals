@@ -19,7 +19,7 @@ export class MAD extends BigIndicatorSeries {
     super();
   }
 
-  override update(price: BigSource, replace: boolean = false): void | Big {
+  override update(price: BigSource, replace: boolean = false) {
     pushUpdate(this.prices, replace, price);
 
     if (this.prices.length > this.interval) {
@@ -29,6 +29,8 @@ export class MAD extends BigIndicatorSeries {
     if (this.prices.length === this.interval) {
       return this.setResult(MAD.getResultFromBatch(this.prices), replace);
     }
+
+    return null;
   }
 
   static getResultFromBatch(prices: BigSource[], average?: BigSource): Big {
@@ -49,7 +51,7 @@ export class FasterMAD extends NumberIndicatorSeries {
     super();
   }
 
-  override update(price: number, replace: boolean = false): void | number {
+  override update(price: number, replace: boolean = false) {
     pushUpdate(this.prices, replace, price);
 
     if (this.prices.length > this.interval) {
@@ -65,6 +67,8 @@ export class FasterMAD extends NumberIndicatorSeries {
       }
       return this.setResult(sum / this.interval, replace);
     }
+
+    return null;
   }
 
   static getResultFromBatch(prices: number[], average?: number): number {

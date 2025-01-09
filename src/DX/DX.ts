@@ -48,10 +48,10 @@ export class DX extends BigIndicatorSeries<HighLowClose> {
   }
 
   // TODO: Implement "replace" parameter
-  update(candle: HighLowClose): Big | void {
+  update(candle: HighLowClose) {
     if (!this.previousCandle) {
       this.updateState(candle);
-      return;
+      return null;
     }
 
     const currentHigh = new Big(candle.high);
@@ -91,6 +91,8 @@ export class DX extends BigIndicatorSeries<HighLowClose> {
 
       return this.setResult(dmDiff.div(dmSum).mul(100), false);
     }
+
+    return null;
   }
 }
 
@@ -119,10 +121,10 @@ export class FasterDX extends NumberIndicatorSeries<HighLowCloseNumber> {
     this.previousCandle = candle;
   }
 
-  update(candle: HighLowCloseNumber): number | void {
+  update(candle: HighLowCloseNumber) {
     if (!this.previousCandle) {
       this.updateState(candle);
-      return;
+      return null;
     }
 
     const currentHigh = candle.high;
@@ -159,5 +161,7 @@ export class FasterDX extends NumberIndicatorSeries<HighLowCloseNumber> {
 
       return this.setResult((dmDiff / dmSum) * 100, false);
     }
+
+    return null;
   }
 }

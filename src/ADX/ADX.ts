@@ -51,7 +51,7 @@ export class ADX extends BigIndicatorSeries<HighLowClose> {
   }
 
   // TODO: Implement "replace" parameter
-  update(candle: HighLowClose): Big | void {
+  update(candle: HighLowClose) {
     const result = this.dx.update(candle);
     if (result) {
       this.adx.update(result, false);
@@ -59,6 +59,7 @@ export class ADX extends BigIndicatorSeries<HighLowClose> {
     if (this.adx.isStable) {
       return this.setResult(this.adx.getResult(), false);
     }
+    return null;
   }
 }
 
@@ -83,13 +84,14 @@ export class FasterADX extends NumberIndicatorSeries<HighLowCloseNumber> {
     return this.dx.pdi;
   }
 
-  update(candle: HighLowCloseNumber): void | number {
+  update(candle: HighLowCloseNumber) {
     const result = this.dx.update(candle);
-    if (result !== undefined) {
+    if (result) {
       this.adx.update(result);
     }
     if (this.adx.isStable) {
       return this.setResult(this.adx.getResult(), false);
     }
+    return null;
   }
 }

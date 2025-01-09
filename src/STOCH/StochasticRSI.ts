@@ -34,7 +34,7 @@ export class StochasticRSI extends BigIndicatorSeries {
     this.rsi = new RSI(interval, SmoothingIndicator);
   }
 
-  override update(price: BigSource, replace: boolean = false): void | Big {
+  override update(price: BigSource, replace: boolean = false) {
     const rsiResult = this.rsi.update(price, replace);
     if (rsiResult) {
       const periodResult = this.period.update(rsiResult, replace);
@@ -50,6 +50,8 @@ export class StochasticRSI extends BigIndicatorSeries {
         return this.setResult(numerator.div(denominator), false);
       }
     }
+
+    return null;
   }
 }
 
@@ -66,9 +68,9 @@ export class FasterStochasticRSI extends NumberIndicatorSeries {
     this.rsi = new FasterRSI(interval, SmoothingIndicator);
   }
 
-  override update(price: number, replace: boolean = false): void | number {
+  override update(price: number, replace: boolean = false) {
     const rsiResult = this.rsi.update(price, replace);
-    if (rsiResult !== undefined) {
+    if (rsiResult) {
       const periodResult = this.period.update(rsiResult, replace);
       if (periodResult) {
         const min = periodResult.lowest;
@@ -82,5 +84,7 @@ export class FasterStochasticRSI extends NumberIndicatorSeries {
         return this.setResult(numerator / denominator, replace);
       }
     }
+
+    return null;
   }
 }

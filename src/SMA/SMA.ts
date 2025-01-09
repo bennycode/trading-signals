@@ -15,7 +15,7 @@ import Big from 'big.js';
 export class SMA extends MovingAverage {
   public readonly prices: BigSource[] = [];
 
-  override update(price: BigSource, replace: boolean = false): Big | void {
+  override update(price: BigSource, replace: boolean = false) {
     pushUpdate(this.prices, replace, price);
 
     if (this.prices.length > this.interval) {
@@ -25,6 +25,8 @@ export class SMA extends MovingAverage {
     if (this.prices.length === this.interval) {
       return this.setResult(SMA.getResultFromBatch(this.prices), replace);
     }
+
+    return null;
   }
 
   static getResultFromBatch(prices: BigSource[]): Big {
@@ -36,7 +38,7 @@ export class SMA extends MovingAverage {
 export class FasterSMA extends FasterMovingAverage {
   public readonly prices: number[] = [];
 
-  override update(price: number, replace: boolean = false): void | number {
+  override update(price: number, replace: boolean = false) {
     pushUpdate(this.prices, replace, price);
 
     if (this.prices.length > this.interval) {
@@ -47,5 +49,7 @@ export class FasterSMA extends FasterMovingAverage {
       const sum = this.prices.reduce((a, b) => a + b, 0);
       return this.setResult(sum / this.prices.length, replace);
     }
+
+    return null;
   }
 }

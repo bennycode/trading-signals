@@ -23,12 +23,14 @@ export class MOM extends BigIndicatorSeries {
     this.history = getFixedArray<BigSource>(this.historyLength);
   }
 
-  override update(value: BigSource, replace: boolean = false): void | Big {
+  override update(value: BigSource, replace: boolean = false) {
     pushUpdate(this.history, replace, value);
 
     if (this.history.length === this.historyLength) {
       return this.setResult(new Big(value).minus(this.history[0]), replace);
     }
+
+    return null;
   }
 }
 
@@ -42,11 +44,13 @@ export class FasterMOM extends NumberIndicatorSeries {
     this.history = getFixedArray<number>(this.historyLength);
   }
 
-  override update(value: number, replace: boolean = false): void | number {
+  override update(value: number, replace: boolean = false) {
     pushUpdate(this.history, replace, value);
 
     if (this.history.length === this.historyLength) {
       return this.setResult(value - this.history[0], replace);
     }
+
+    return null;
   }
 }

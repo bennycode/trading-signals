@@ -58,7 +58,7 @@ export class StochasticOscillator extends TechnicalIndicator<StochasticResult, H
     this.periodP = new SMA(p);
   }
 
-  update(candle: HighLowClose): void | StochasticResult {
+  update(candle: HighLowClose) {
     this.candles.push(candle);
 
     if (this.candles.length > this.n) {
@@ -81,6 +81,8 @@ export class StochasticOscillator extends TechnicalIndicator<StochasticResult, H
         });
       }
     }
+
+    return null;
   }
 }
 
@@ -104,7 +106,7 @@ export class FasterStochasticOscillator extends TechnicalIndicator<FasterStochas
     this.periodP = new FasterSMA(p);
   }
 
-  update(candle: HighLowCloseNumber): void | FasterStochasticResult {
+  update(candle: HighLowCloseNumber) {
     this.candles.push(candle);
 
     if (this.candles.length > this.n) {
@@ -120,12 +122,15 @@ export class FasterStochasticOscillator extends TechnicalIndicator<FasterStochas
       fastK = fastK / (divisor === 0 ? 1 : divisor);
       const stochK = this.periodM.update(fastK); // (stoch_k, %k)
       const stochD = stochK && this.periodP.update(stochK); // (stoch_d, %d)
-      if (stochK !== undefined && stochD !== undefined) {
+
+      if (stochK !== null && stochD !== null) {
         return (this.result = {
           stochD,
           stochK,
         });
       }
     }
+
+    return null;
   }
 }

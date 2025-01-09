@@ -14,11 +14,11 @@ import type {OpenHighLowCloseVolume, OpenHighLowCloseVolumeNumber} from '../util
 export class OBV extends BigIndicatorSeries<OpenHighLowCloseVolume> {
   public readonly candles: OpenHighLowCloseVolume[] = [];
 
-  override update(candle: OpenHighLowCloseVolume): Big | void {
+  override update(candle: OpenHighLowCloseVolume) {
     this.candles.push(candle);
 
     if (this.candles.length === 1) {
-      return;
+      return null;
     }
 
     const prevCandle = this.candles[this.candles.length - 2];
@@ -34,11 +34,11 @@ export class OBV extends BigIndicatorSeries<OpenHighLowCloseVolume> {
 export class FasterOBV extends NumberIndicatorSeries<OpenHighLowCloseVolumeNumber> {
   public readonly candles: OpenHighLowCloseVolumeNumber[] = [];
 
-  update(candle: OpenHighLowCloseVolumeNumber): void | number {
+  update(candle: OpenHighLowCloseVolumeNumber) {
     this.candles.push(candle);
 
     if (this.candles.length === 1) {
-      return;
+      return null;
     }
 
     const prevCandle = this.candles[this.candles.length - 2];

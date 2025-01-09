@@ -77,16 +77,14 @@ describe('RSI', () => {
     });
 
     it('catches division by zero errors', () => {
+      const updates = [2, 2, 2];
+
       const rsi = new RSI(2);
-      rsi.update(2);
-      rsi.update(2);
-      rsi.update(2);
+      rsi.updates(updates);
       expect(rsi.getResult().valueOf()).toBe('100');
 
       const fasterRSI = new FasterRSI(2);
-      fasterRSI.update(2);
-      fasterRSI.update(2);
-      fasterRSI.update(2);
+      fasterRSI.updates(updates);
       expect(fasterRSI.getResult().valueOf()).toBe(100);
     });
 

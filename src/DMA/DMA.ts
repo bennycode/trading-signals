@@ -48,7 +48,7 @@ export class DMA extends TechnicalIndicator<DMAResult, BigSource> {
       });
     }
 
-    return void 0;
+    return null;
   }
 }
 
@@ -77,6 +77,6 @@ export class FasterDMA extends TechnicalIndicator<FasterDMAResult, number> {
       });
     }
 
-    return void 0;
+    return null;
   }
 }

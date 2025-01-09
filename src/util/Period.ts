@@ -36,7 +36,7 @@ export class Period extends TechnicalIndicator<PeriodResult, BigSource> {
     this.values = getFixedArray<Big>(interval);
   }
 
-  update(value: BigSource, replace: boolean = false): PeriodResult | void {
+  update(value: BigSource, replace: boolean = false) {
     pushUpdate(this.values, replace, new Big(value));
 
     if (this.values.length === this.interval) {
@@ -47,6 +47,8 @@ export class Period extends TechnicalIndicator<PeriodResult, BigSource> {
         lowest: this._lowest,
       });
     }
+
+    return null;
   }
 }
 
@@ -70,7 +72,7 @@ export class FasterPeriod extends TechnicalIndicator<FasterPeriodResult, number>
     this.values = getFixedArray<number>(interval);
   }
 
-  update(value: number, replace: boolean = false): FasterPeriodResult | void {
+  update(value: number, replace: boolean = false) {
     pushUpdate(this.values, replace, value);
 
     if (this.values.length === this.interval) {
@@ -81,5 +83,7 @@ export class FasterPeriod extends TechnicalIndicator<FasterPeriodResult, number>
         lowest: this._lowest,
       });
     }
+
+    return null;
   }
 }

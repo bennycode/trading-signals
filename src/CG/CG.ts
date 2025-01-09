@@ -34,7 +34,7 @@ export class CG extends BigIndicatorSeries {
     this.signal = new SMA(signalInterval);
   }
 
-  override update(price: BigSource, replace: boolean = false): void | Big {
+  override update(price: BigSource, replace: boolean = false) {
     pushUpdate(this.prices, replace, new Big(price));
 
     if (this.prices.length > this.interval) {
@@ -57,6 +57,8 @@ export class CG extends BigIndicatorSeries {
     if (this.signal.isStable) {
       return this.setResult(cg, replace);
     }
+
+    return null;
   }
 }
 
@@ -77,7 +79,7 @@ export class FasterCG extends NumberIndicatorSeries {
     this.signal = new FasterSMA(signalInterval);
   }
 
-  override update(price: number, replace: boolean = false): void | number {
+  override update(price: number, replace: boolean = false) {
     pushUpdate(this.prices, replace, price);
 
     if (this.prices.length > this.interval) {
@@ -100,5 +102,7 @@ export class FasterCG extends NumberIndicatorSeries {
     if (this.signal.isStable) {
       return this.setResult(cg, replace);
     }
+
+    return null;
   }
 }

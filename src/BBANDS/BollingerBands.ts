@@ -35,7 +35,7 @@ export class BollingerBands extends TechnicalIndicator<BandsResult, BigSource> {
     super();
   }
 
-  update(price: BigSource): void | BandsResult {
+  update(price: BigSource) {
     this.prices.push(new Big(price));
 
     if (this.prices.length > this.interval) {
@@ -50,6 +50,8 @@ export class BollingerBands extends TechnicalIndicator<BandsResult, BigSource> {
         upper: middle.add(standardDeviation.times(this.deviationMultiplier)),
       });
     }
+
+    return null;
   }
 }
 
@@ -63,7 +65,7 @@ export class FasterBollingerBands extends TechnicalIndicator<FasterBandsResult, 
     super();
   }
 
-  update(price: number): void | FasterBandsResult {
+  update(price: number) {
     this.prices.push(price);
 
     if (this.prices.length > this.interval) {
@@ -78,5 +80,7 @@ export class FasterBollingerBands extends TechnicalIndicator<FasterBandsResult, 
         upper: middle + standardDeviation * this.deviationMultiplier,
       });
     }
+
+    return null;
   }
 }

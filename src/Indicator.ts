@@ -7,17 +7,17 @@ interface Indicator<Result = Big, Input = BigSource> {
 
   isStable: boolean;
 
-  replace(input: Input): void | Result;
+  replace(input: Input): Result | null;
 
-  update(input: Input, replace: boolean): void | Result;
+  update(input: Input, replace: boolean): Result | null;
 
-  updates(input: Input[], replace: boolean): void | Result;
+  updates(input: Input[], replace: boolean): Result | null;
 }
 
 export abstract class TechnicalIndicator<Result, Input> implements Indicator<Result, Input> {
   protected result: Result | undefined;
 
-  getResult(): Result {
+  getResult() {
     if (this.result === undefined) {
       throw new NotEnoughDataError();
     }
@@ -33,7 +33,7 @@ export abstract class TechnicalIndicator<Result, Input> implements Indicator<Res
     return this.update(input, true);
   }
 
-  abstract update(input: Input, replace: boolean): void | Result;
+  abstract update(input: Input, replace: boolean): Result | null;
 
   updates(inputs: Input[], replace: boolean = false) {
     return getLastFromForEach(inputs, input => this.update(input, replace));
@@ -57,13 +57,13 @@ export abstract class BigIndicatorSeries<Input = BigSource> implements Indicator
   lowest?: Big;
   /** Previous results can be useful, if a user wants to update a recent value instead of adding a new value. Essential for real-time data like growing candlesticks. */
   protected previousResult?: Big;
-  protected result?: Big;
+  protected result: Big | undefined;
 
   get isStable(): boolean {
     return this.result !== undefined;
   }
 
-  getResult(): Big {
+  getResult() {
     if (this.result === undefined) {
       throw new NotEnoughDataError();
     }
@@ -105,12 +105,11 @@ export abstract class BigIndicatorSeries<Input = BigSource> implements Indicator
     return (this.result = value);
   }
 
-  updates(prices: Input[]): void | Big {
-    prices.forEach(price => this.update(price, false));
-    return this.result;
+  updates(inputs: Input[], replace: boolean = false) {
+    return getLastFromForEach(inputs, input => this.update(input, replace));
   }
 
-  abstract update(input: Input, replace: boolean): void | Big;
+  abstract update(input: Input, replace: boolean): null | Big;
 
   replace(input: Input) {
     return this.update(input, true);
@@ -125,7 +124,7 @@ export abstract class NumberIndicatorSeries<Input = number> implements Indicator
   protected previousLowest?: number;
   lowest?: number;
   protected previousResult?: number;
-  protected result?: number;
+  protected result: number | undefined;
 
   get isStable(): boolean {
     return this.result !== undefined;
@@ -173,12 +172,11 @@ export abstract class NumberIndicatorSeries<Input = number> implements Indicator
     return (this.result = value);
   }
 
-  updates(prices: Input[]): number | void {
-    prices.forEach(price => this.update(price));
-    return this.result;
+  updates(inputs: Input[], replace: boolean = false) {
+    return getLastFromForEach(inputs, input => this.update(input, replace));
   }
 
-  abstract update(input: Input, replace?: boolean): void | number;
+  abstract update(input: Input, replace?: boolean): null | number;
 
   replace(input: Input) {
     return this.update(input, true);

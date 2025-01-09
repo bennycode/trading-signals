@@ -1,9 +1,8 @@
-import {BigIndicatorSeries, NumberIndicatorSeries} from '../Indicator.js';
 import {AO, FasterAO} from '../AO/AO.js';
-import {FasterSMA, SMA} from '../SMA/SMA.js';
+import {BigIndicatorSeries, NumberIndicatorSeries} from '../Indicator.js';
 import {FasterMOM, MOM} from '../MOM/MOM.js';
+import {FasterSMA, SMA} from '../SMA/SMA.js';
 import type {HighLow, HighLowNumber} from '../util/index.js';
-import type {Big} from 'big.js';
 
 /**
  * Accelerator Oscillator (AC)
@@ -33,16 +32,17 @@ export class AC extends BigIndicatorSeries<HighLow> {
     this.signal = new SMA(signalInterval);
   }
 
-  override update(input: HighLow, replace: boolean = false): void | Big {
+  override update(input: HighLow, replace: boolean = false) {
     const ao = this.ao.update(input, replace);
     if (ao) {
       this.signal.update(ao, replace);
       if (this.signal.isStable) {
         const result = this.setResult(ao.sub(this.signal.getResult()), replace);
         this.momentum.update(result, replace);
-        return this.result;
+        return result;
       }
     }
+    return null;
   }
 }
 
@@ -62,15 +62,16 @@ export class FasterAC extends NumberIndicatorSeries<HighLowNumber> {
     this.signal = new FasterSMA(signalInterval);
   }
 
-  override update(input: HighLowNumber, replace: boolean = false): void | number {
+  override update(input: HighLowNumber, replace: boolean = false) {
     const ao = this.ao.update(input, replace);
     if (ao) {
       this.signal.update(ao, replace);
       if (this.signal.isStable) {
         const result = this.setResult(ao - this.signal.getResult(), replace);
         this.momentum.update(result, replace);
-        return this.result;
+        return result;
       }
     }
+    return null;
   }
 }

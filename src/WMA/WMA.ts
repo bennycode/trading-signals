@@ -19,7 +19,7 @@ export class WMA extends MovingAverage {
     super(interval);
   }
 
-  override update(price: BigSource, replace: boolean = false): Big | void {
+  override update(price: BigSource, replace: boolean = false) {
     pushUpdate(this.prices, replace, price);
 
     if (this.prices.length > this.interval) {
@@ -38,6 +38,8 @@ export class WMA extends MovingAverage {
 
       return this.setResult(weightedMa, replace);
     }
+
+    return null;
   }
 }
 
@@ -48,7 +50,7 @@ export class FasterWMA extends FasterMovingAverage {
     super(interval);
   }
 
-  override update(price: number, replace: boolean = false): number | void {
+  override update(price: number, replace: boolean = false) {
     pushUpdate(this.prices, replace, price);
 
     if (this.prices.length > this.interval) {
@@ -68,5 +70,7 @@ export class FasterWMA extends FasterMovingAverage {
 
       return this.setResult(weightedMa, replace);
     }
+
+    return null;
   }
 }

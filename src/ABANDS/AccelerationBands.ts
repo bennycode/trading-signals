@@ -65,7 +65,7 @@ export class AccelerationBands extends TechnicalIndicator<BandsResult, HighLowCl
       });
     }
 
-    return void 0;
+    return null;
   }
 }
 
@@ -101,7 +101,7 @@ export class FasterAccelerationBands extends TechnicalIndicator<FasterBandsResul
       });
     }
 
-    return void 0;
+    return null;
   }
 
   override get isStable(): boolean {
