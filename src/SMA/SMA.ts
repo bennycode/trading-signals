@@ -13,6 +13,7 @@ import Big from 'big.js';
  * @see https://www.investopedia.com/terms/s/sma.asp
  */
 export class SMA extends MovingAverage {
+  // TODO: Use "getFixedArray"
   public readonly prices: BigSource[] = [];
 
   update(price: BigSource, replace: boolean) {

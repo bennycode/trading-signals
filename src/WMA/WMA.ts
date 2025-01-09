@@ -13,6 +13,7 @@ import {pushUpdate} from '../util/pushUpdate.js';
  * @see https://corporatefinanceinstitute.com/resources/career-map/sell-side/capital-markets/weighted-moving-average-wma/
  */
 export class WMA extends MovingAverage {
+  // TODO: Use "getFixedArray"
   public readonly prices: BigSource[] = [];
 
   constructor(public override readonly interval: number) {

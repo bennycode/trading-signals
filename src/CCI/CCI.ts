@@ -1,5 +1,5 @@
 import {BigIndicatorSeries, NumberIndicatorSeries} from '../Indicator.js';
-import {pushUpdate, type HighLowClose, type HighLowCloseNumber} from '../util/index.js';
+import {getFixedArray, pushUpdate, type HighLowClose, type HighLowCloseNumber} from '../util/index.js';
 import {FasterSMA, SMA} from '../SMA/SMA.js';
 import {FasterMAD, MAD} from '../MAD/MAD.js';
 import type {BigSource} from 'big.js';
@@ -24,16 +24,18 @@ import Big from 'big.js';
 export class CCI extends BigIndicatorSeries<HighLowClose> {
   public readonly prices: BigSource[] = [];
   private readonly sma: SMA;
-  private readonly typicalPrices: Big[] = [];
+  private readonly typicalPrices: Big[];
 
   constructor(public readonly interval: number) {
     super();
     this.sma = new SMA(this.interval);
+    this.typicalPrices = getFixedArray(interval);
   }
 
   update(candle: HighLowClose, replace: boolean) {
     const typicalPrice = this.cacheTypicalPrice(candle, replace);
     this.sma.update(typicalPrice, replace);
+
     if (this.sma.isStable) {
       const mean = this.sma.getResult();
       const meanDeviation = MAD.getResultFromBatch(this.typicalPrices, mean);
@@ -47,27 +49,25 @@ export class CCI extends BigIndicatorSeries<HighLowClose> {
 
   private cacheTypicalPrice({high, low, close}: HighLowClose, replace: boolean): Big {
     const typicalPrice = new Big(high).plus(low).plus(close).div(3);
-    pushUpdate(this.typicalPrices, replace, typicalPrice);
-    if (this.typicalPrices.length > this.interval) {
-      this.typicalPrices.shift();
-    }
-    return typicalPrice;
+    return pushUpdate(this.typicalPrices, replace, typicalPrice);
   }
 }
 
 export class FasterCCI extends NumberIndicatorSeries<HighLowCloseNumber> {
   public readonly prices: number[] = [];
   private readonly sma: FasterSMA;
-  private readonly typicalPrices: number[] = [];
+  private readonly typicalPrices: number[];
 
   constructor(public readonly interval: number) {
     super();
     this.sma = new FasterSMA(this.interval);
+    this.typicalPrices = getFixedArray(interval);
   }
 
   update(candle: HighLowCloseNumber, replace: boolean) {
     const typicalPrice = this.cacheTypicalPrice(candle, replace);
     this.sma.update(typicalPrice, replace);
+
     if (this.sma.isStable) {
       const mean = this.sma.getResult();
       const meanDeviation = FasterMAD.getResultFromBatch(this.typicalPrices, mean);
@@ -81,10 +81,6 @@ export class FasterCCI extends NumberIndicatorSeries<HighLowCloseNumber> {
 
   private cacheTypicalPrice({high, low, close}: HighLowCloseNumber, replace: boolean): number {
     const typicalPrice = (high + low + close) / 3;
-    pushUpdate(this.typicalPrices, replace, typicalPrice);
-    if (this.typicalPrices.length > this.interval) {
-      this.typicalPrices.shift();
-    }
-    return typicalPrice;
+    return pushUpdate(this.typicalPrices, replace, typicalPrice);
   }
 }

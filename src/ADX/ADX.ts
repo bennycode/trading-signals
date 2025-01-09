@@ -50,15 +50,17 @@ export class ADX extends BigIndicatorSeries<HighLowClose> {
     return this.dx.pdi;
   }
 
-  // TODO: Test "replace" parameter
   update(candle: HighLowClose, replace: boolean) {
     const result = this.dx.update(candle, replace);
-    if (result) {
+
+    if (result !== null) {
       this.adx.update(result, replace);
     }
+
     if (this.adx.isStable) {
       return this.setResult(this.adx.getResult(), replace);
     }
+
     return null;
   }
 }
@@ -86,12 +88,15 @@ export class FasterADX extends NumberIndicatorSeries<HighLowCloseNumber> {
 
   update(candle: HighLowCloseNumber, replace: boolean) {
     const result = this.dx.update(candle, replace);
-    if (result) {
+
+    if (result !== null) {
       this.adx.update(result, replace);
     }
+
     if (this.adx.isStable) {
       return this.setResult(this.adx.getResult(), replace);
     }
+
     return null;
   }
 }

@@ -13,6 +13,7 @@ import {pushUpdate} from '../util/pushUpdate.js';
  * @see https://www.investopedia.com/terms/r/rateofchange.asp
  */
 export class ROC extends BigIndicatorSeries {
+  // TODO: Use "getFixedArray"
   public readonly prices: Big[] = [];
 
   constructor(public readonly interval: number) {

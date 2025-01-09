@@ -35,8 +35,8 @@ describe('StochasticOscillator', () => {
         const stochResult = stoch.add(candle);
         const fasterStochResult = fasterStoch.add(candle);
         if (fasterStoch.isStable && fasterStochResult && stoch.isStable && stochResult) {
-          const stochD = stochDs.shift()!;
-          const stochK = stochKs.shift()!;
+          const stochD = stochDs.shift();
+          const stochK = stochKs.shift();
 
           expect(stochResult.stochD.toFixed(2)).toEqual(stochD);
           expect(fasterStochResult.stochD.toFixed(2)).toEqual(stochD);

@@ -24,6 +24,7 @@ import {pushUpdate} from '../util/pushUpdate.js';
  * @see https://www.investopedia.com/terms/r/rsi.asp
  */
 export class RSI extends BigIndicatorSeries {
+  // TODO: Use "getFixedArray"
   private readonly previousPrices: BigSource[] = [];
   private readonly avgGain: MovingAverage;
   private readonly avgLoss: MovingAverage;
@@ -55,6 +56,11 @@ export class RSI extends BigIndicatorSeries {
     } else {
       this.avgLoss.update(previousPrice.sub(currentPrice), replace);
       this.avgGain.update(new Big(0), replace); // price went down, therefore no gain
+    }
+
+    // Avoids memory leaks
+    if (this.previousPrices.length > this.interval) {
+      this.previousPrices.shift();
     }
 
     if (this.avgGain.isStable) {
@@ -103,6 +109,11 @@ export class FasterRSI extends NumberIndicatorSeries {
     } else {
       this.avgLoss.update(previousPrice - currentPrice, replace);
       this.avgGain.update(0, replace);
+    }
+
+    // Avoids memory leaks
+    if (this.previousPrices.length > this.interval) {
+      this.previousPrices.shift();
     }
 
     if (this.avgGain.isStable) {

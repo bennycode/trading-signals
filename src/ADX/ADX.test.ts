@@ -21,6 +21,29 @@ describe('ADX', () => {
     {close: 87.29, high: 87.87, low: 87.01},
   ];
 
+  describe('replace', () => {
+    it('guarantees that a replacement is done correctly', () => {
+      const interval = 5;
+      const adx = new ADX(interval);
+      const adxWithReplace = new ADX(interval);
+
+      adx.updates(candles, false);
+      adxWithReplace.updates(candles, false);
+
+      const correct = {close: 90, high: 90, low: 90};
+      const wrong = {close: 1_000, high: 1_000, low: 1_000};
+
+      adx.add(correct);
+      adxWithReplace.add(wrong);
+
+      expect(adx.getResult().toFixed()).not.toBe(adxWithReplace.getResult().toFixed());
+
+      adxWithReplace.replace(correct);
+
+      expect(adx.getResult().toFixed()).toBe(adxWithReplace.getResult().toFixed());
+    });
+  });
+
   describe('getResult', () => {
     it('calculates the Average Directional Index (ADX)', () => {
       const expectations = [41.38, 44.29, 49.42, 54.92, 59.99, 65.29, 67.36];

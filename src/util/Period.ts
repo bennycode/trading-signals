@@ -69,7 +69,7 @@ export class FasterPeriod extends TechnicalIndicator<FasterPeriodResult, number>
 
   constructor(public readonly interval: number) {
     super();
-    this.values = getFixedArray<number>(interval);
+    this.values = getFixedArray(interval);
   }
 
   update(value: number, replace: boolean) {

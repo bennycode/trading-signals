@@ -40,6 +40,7 @@ export interface FasterStochasticResult {
 export class StochasticOscillator extends TechnicalIndicator<StochasticResult, HighLowClose> {
   private readonly periodM: SMA;
   private readonly periodP: SMA;
+  // TODO: Use "getFixedArray"
   private readonly candles: HighLowClose[] = [];
 
   /**

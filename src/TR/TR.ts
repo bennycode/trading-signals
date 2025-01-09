@@ -16,24 +16,25 @@ import type {HighLowClose, HighLowCloseNumber} from '../util/HighLowClose.js';
  */
 export class TR extends BigIndicatorSeries<HighLowClose> {
   private previousCandle?: HighLowClose;
-  private twoPreviousCandle?: HighLowClose;
+  private secondLastCandle?: HighLowClose;
 
   update(candle: HighLowClose, replace: boolean): Big {
     const high = new Big(candle.high);
     const highLow = high.minus(candle.low);
 
     if (this.previousCandle && replace) {
-      this.previousCandle = this.twoPreviousCandle;
+      this.previousCandle = this.secondLastCandle;
     }
 
     if (this.previousCandle) {
       const highClose = high.minus(this.previousCandle.close).abs();
       const lowClose = new Big(candle.low).minus(this.previousCandle.close).abs();
-      this.twoPreviousCandle = this.previousCandle;
+      this.secondLastCandle = this.previousCandle;
       this.previousCandle = candle;
       return this.setResult(getMaximum([highLow, highClose, lowClose]), replace);
     }
-    this.twoPreviousCandle = this.previousCandle;
+
+    this.secondLastCandle = this.previousCandle;
     this.previousCandle = candle;
 
     return this.setResult(highLow, replace);

@@ -24,6 +24,7 @@ export class DX extends BigIndicatorSeries<HighLowClose> {
   private readonly movesUp: MovingAverage;
   private readonly movesDown: MovingAverage;
   private previousCandle?: HighLowClose;
+  private secondLastCandle?: HighLowClose;
   private readonly atr: ATR;
   /** Minus Directional Indicator (-DI) */
   public mdi?: Big;
@@ -44,14 +45,20 @@ export class DX extends BigIndicatorSeries<HighLowClose> {
     this.atr.update(candle, replace);
     this.movesDown.update(mdm, replace);
     this.movesUp.update(pdm, replace);
+    if (this.previousCandle) {
+      this.secondLastCandle = this.previousCandle;
+    }
     this.previousCandle = candle;
   }
 
-  // TODO: Implement "replace" parameter
   update(candle: HighLowClose, replace: boolean) {
     if (!this.previousCandle) {
       this.updateState(candle, 0, 0, replace);
       return null;
+    }
+
+    if (this.secondLastCandle && replace) {
+      this.previousCandle = this.secondLastCandle;
     }
 
     const currentHigh = new Big(candle.high);
@@ -100,6 +107,7 @@ export class FasterDX extends NumberIndicatorSeries<HighLowCloseNumber> {
   private readonly movesUp: FasterMovingAverage;
   private readonly movesDown: FasterMovingAverage;
   private previousCandle?: HighLowCloseNumber;
+  private secondLastCandle?: HighLowCloseNumber;
   private readonly atr: FasterATR;
   public mdi?: number;
   public pdi?: number;
@@ -118,6 +126,9 @@ export class FasterDX extends NumberIndicatorSeries<HighLowCloseNumber> {
     this.atr.update(candle, replace);
     this.movesUp.update(pdm, replace);
     this.movesDown.update(mdm, replace);
+    if (this.previousCandle) {
+      this.secondLastCandle = this.previousCandle;
+    }
     this.previousCandle = candle;
   }
 
@@ -125,6 +136,10 @@ export class FasterDX extends NumberIndicatorSeries<HighLowCloseNumber> {
     if (!this.previousCandle) {
       this.updateState(candle, 0, 0, replace);
       return null;
+    }
+
+    if (this.secondLastCandle && replace) {
+      this.previousCandle = this.secondLastCandle;
     }
 
     const currentHigh = candle.high;

@@ -13,6 +13,7 @@ import {getAverage, getFasterAverage, pushUpdate} from '../util/index.js';
  * @see https://en.wikipedia.org/wiki/Average_absolute_deviation
  */
 export class MAD extends BigIndicatorSeries {
+  // TODO: Use "getFixedArray"
   public readonly prices: BigSource[] = [];
 
   constructor(public readonly interval: number) {

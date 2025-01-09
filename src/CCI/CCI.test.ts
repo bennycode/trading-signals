@@ -26,18 +26,19 @@ describe('CCI', () => {
       const cciWithReplace = new CCI(interval);
 
       const correct = {close: 300, high: 300, low: 300};
-      const wrong = {close: 1_000, high: 1_000, low: 1_000};
+      const wrong = {close: 99_000, high: 99_000, low: 99_000};
 
       cci.updates(candles, false);
-      cci.add(correct);
-
       cciWithReplace.updates(candles, false);
+
+      cci.add(correct);
       cciWithReplace.add(wrong);
 
-      const expected = cci.getResult();
-      const actual = cciWithReplace.getResult();
+      expect(cci.getResult().toFixed()).not.toBe(cciWithReplace.getResult().toFixed());
 
-      expect(actual.toFixed()).toBe(expected.toFixed());
+      cciWithReplace.replace(correct);
+
+      expect(cci.getResult().toFixed()).toBe(cciWithReplace.getResult().toFixed());
     });
   });
 
