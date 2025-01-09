@@ -2,8 +2,6 @@ import type {BigSource} from 'big.js';
 import Big from 'big.js';
 import type {DEMA, FasterDEMA} from '../DEMA/DEMA.js';
 import type {EMA, FasterEMA} from '../EMA/EMA.js';
-import {NotEnoughDataError} from '../error/NotEnoughDataError.js';
-import type {Indicator} from '../Indicator.js';
 import {TechnicalIndicator} from '../Indicator.js';
 import {pushUpdate} from '../util/pushUpdate.js';
 
@@ -85,35 +83,15 @@ export class MACD extends TechnicalIndicator<MACDResult, BigSource> {
   }
 }
 
-export class FasterMACD implements Indicator<FasterMACDResult> {
+export class FasterMACD extends TechnicalIndicator<FasterMACDResult, number> {
   public readonly prices: number[] = [];
-  private result: FasterMACDResult | undefined;
 
   constructor(
     public readonly short: FasterEMA | FasterDEMA,
     public readonly long: FasterEMA | FasterDEMA,
     public readonly signal: FasterEMA | FasterDEMA
-  ) {}
-
-  replace(input: number): void | FasterMACDResult {
-    return this.update(input, true);
-  }
-
-  getResult(): FasterMACDResult {
-    if (this.result === undefined) {
-      throw new NotEnoughDataError();
-    }
-
-    return this.result;
-  }
-
-  get isStable(): boolean {
-    return this.result !== undefined;
-  }
-
-  updates(prices: number[]) {
-    prices.forEach(price => this.update(price));
-    return this.result;
+  ) {
+    super();
   }
 
   update(price: number, replace: boolean = false): void | FasterMACDResult {

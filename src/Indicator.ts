@@ -2,7 +2,7 @@ import type {BigSource} from 'big.js';
 import {NotEnoughDataError} from './error/NotEnoughDataError.js';
 import {getLastFromForEach} from './util/getLastFromForEach.js';
 
-export interface Indicator<Result = Big, Input = BigSource> {
+interface Indicator<Result = Big, Input = BigSource> {
   getResult(): Result;
 
   isStable: boolean;
