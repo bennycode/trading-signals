@@ -13,10 +13,10 @@ describe('Period', () => {
       const fasterPeriodWithReplace = new FasterPeriod(interval);
 
       const subset = [30, 40, 50, 60];
-      period.updates([...subset, 70]);
-      periodWithReplace.updates([...subset, 90]);
+      period.updates([...subset, 70], false);
+      periodWithReplace.updates([...subset, 90], false);
       periodWithReplace.replace(70);
-      fasterPeriodWithReplace.updates([...subset, 90]);
+      fasterPeriodWithReplace.updates([...subset, 90], false);
       fasterPeriodWithReplace.replace(70);
 
       expect(periodWithReplace.lowest?.toFixed()).toBe(expectedLow);
@@ -30,7 +30,7 @@ describe('Period', () => {
       const values = [72, 1337];
       const interval = 2;
       const period = new Period(interval);
-      period.updates(values);
+      period.updates(values, false);
       const {highest, lowest} = period.getResult();
       expect(lowest.valueOf()).toBe('72');
       expect(highest.valueOf()).toBe('1337');
@@ -39,7 +39,7 @@ describe('Period', () => {
       expect(period.highest?.valueOf()).toBe('1337');
 
       const fasterPeriod = new FasterPeriod(interval);
-      fasterPeriod.updates(values);
+      fasterPeriod.updates(values, false);
       const {highest: fastestHighest, lowest: fastestLowest} = fasterPeriod.getResult();
       expect(fastestLowest).toBe(72);
       expect(fastestHighest).toBe(1337);
@@ -80,8 +80,8 @@ describe('Period', () => {
       const period = new Period(interval);
       const fasterPeriod = new FasterPeriod(interval);
       for (const price of prices) {
-        period.update(price);
-        fasterPeriod.update(price);
+        period.add(price);
+        fasterPeriod.add(price);
         if (period.isStable) {
           const expected = lowest.shift();
           expect(period.lowest?.toFixed(2)).toBe(expected);

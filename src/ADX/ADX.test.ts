@@ -29,8 +29,8 @@ describe('ADX', () => {
       const fasterADX = new FasterADX(5);
 
       for (const candle of candles) {
-        adx.update(candle);
-        fasterADX.update(candle);
+        adx.add(candle);
+        fasterADX.add(candle);
         if (adx.isStable && fasterADX.isStable) {
           const expected = expectations.shift();
           expect(adx.getResult().toFixed(2)).toBe(`${expected}`);

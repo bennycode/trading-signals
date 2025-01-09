@@ -37,7 +37,7 @@ export class DMA extends TechnicalIndicator<DMAResult, BigSource> {
     return this.long.isStable;
   }
 
-  update(price: BigSource, replace: boolean = false) {
+  update(price: BigSource, replace: boolean) {
     this.short.update(price, replace);
     this.long.update(price, replace);
 
@@ -66,7 +66,7 @@ export class FasterDMA extends TechnicalIndicator<FasterDMAResult, number> {
     return this.long.isStable;
   }
 
-  update(price: number, replace: boolean = false) {
+  update(price: number, replace: boolean) {
     this.short.update(price, replace);
     this.long.update(price, replace);
 

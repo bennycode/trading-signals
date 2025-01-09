@@ -47,7 +47,7 @@ export class MACD extends TechnicalIndicator<MACDResult, BigSource> {
     this.signal = new config.indicator(config.signalInterval);
   }
 
-  update(_price: BigSource, replace: boolean = false) {
+  update(_price: BigSource, replace: boolean) {
     const price = new Big(_price);
     pushUpdate(this.prices, replace, price);
 
@@ -95,7 +95,7 @@ export class FasterMACD extends TechnicalIndicator<FasterMACDResult, number> {
     super();
   }
 
-  update(price: number, replace: boolean = false) {
+  update(price: number, replace: boolean) {
     pushUpdate(this.prices, replace, price);
 
     const short = this.short.update(price, replace);

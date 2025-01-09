@@ -28,11 +28,11 @@ describe('CCI', () => {
       const correct = {close: 300, high: 300, low: 300};
       const wrong = {close: 1_000, high: 1_000, low: 1_000};
 
-      cci.updates(candles);
-      cci.update(correct);
+      cci.updates(candles, false);
+      cci.add(correct);
 
-      cciWithReplace.updates(candles);
-      cciWithReplace.update(wrong);
+      cciWithReplace.updates(candles, false);
+      cciWithReplace.add(wrong);
 
       const expected = cci.getResult();
       const actual = cciWithReplace.getResult();
@@ -47,8 +47,8 @@ describe('CCI', () => {
       const cci = new CCI(interval);
       const fasterCCI = new FasterCCI(interval);
       for (const candle of candles) {
-        cci.update(candle);
-        fasterCCI.update(candle);
+        cci.add(candle);
+        fasterCCI.add(candle);
         if (cci.isStable && fasterCCI.isStable) {
           const expected = expectations.shift();
           expect(cci.getResult().toFixed(2)).toBe(expected!);
@@ -63,8 +63,8 @@ describe('CCI', () => {
       const cci = new CCI(5);
       const fasterCCI = new FasterCCI(5);
       for (const candle of candles) {
-        cci.update(candle);
-        fasterCCI.update(candle);
+        cci.add(candle);
+        fasterCCI.add(candle);
       }
       expect(cci.highest?.toFixed(2)).toBe('166.67');
       expect(cci.lowest?.toFixed(2)).toBe('71.93');

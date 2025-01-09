@@ -48,8 +48,8 @@ describe('AccelerationBands', () => {
 
       for (const candle of candles) {
         const {close, high, low} = candle;
-        accBands.update({close, high, low});
-        fasterAccBands.update({close, high, low});
+        accBands.add({close, high, low});
+        fasterAccBands.add({close, high, low});
       }
 
       let result = accBands.getResult();
@@ -70,8 +70,8 @@ describe('AccelerationBands', () => {
 
       // See: https://github.com/QuantConnect/Lean/blob/master/Tests/TestData/spy_acceleration_bands_20_4.txt#L22
       const candle: HighLowCloseNumber = {close: 195, high: 195.03, low: 189.12};
-      accBands.update(candle);
-      fasterAccBands.update(candle);
+      accBands.add(candle);
+      fasterAccBands.add(candle);
 
       result = accBands.getResult();
       fasterResult = fasterAccBands.getResult();
@@ -108,13 +108,16 @@ describe('AccelerationBands', () => {
   describe('update', () => {
     it("doesn't crash when supplying zeroes", () => {
       const accBands = new AccelerationBands(20, 2);
-      return accBands.updates([
-        {
-          close: 0,
-          high: 0,
-          low: 0,
-        },
-      ]);
+      return accBands.updates(
+        [
+          {
+            close: 0,
+            high: 0,
+            low: 0,
+          },
+        ],
+        false
+      );
     });
   });
 });
@@ -122,12 +125,15 @@ describe('AccelerationBands', () => {
 describe('FaserAccelerationBands', () => {
   it("doesn't crash when supplying zeroes", () => {
     const accBands = new FasterAccelerationBands(20, 2);
-    return accBands.updates([
-      {
-        close: 0,
-        high: 0,
-        low: 0,
-      },
-    ]);
+    return accBands.updates(
+      [
+        {
+          close: 0,
+          high: 0,
+          low: 0,
+        },
+      ],
+      false
+    );
   });
 });

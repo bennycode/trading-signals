@@ -5,16 +5,16 @@ describe('CG', () => {
   describe('prices', () => {
     it('does not cache more prices than necessary to fill the interval', () => {
       const cg = new CG(3, 6);
-      cg.update(1);
-      cg.update(2);
+      cg.add(1);
+      cg.add(2);
       expect(cg.prices.length).toBe(2);
-      cg.update(3);
+      cg.add(3);
       expect(cg.prices.length).toBe(3);
-      cg.update(4);
+      cg.add(4);
       expect(cg.prices.length).toBe(3);
-      cg.update(5);
+      cg.add(5);
       expect(cg.prices.length).toBe(3);
-      cg.update(6);
+      cg.add(6);
       expect(cg.prices.length).toBe(3);
     });
   });
@@ -22,14 +22,14 @@ describe('CG', () => {
   describe('isStable', () => {
     it('is stable when the inputs can fill the signal interval', () => {
       const cg = new CG(5, 6);
-      cg.update(10);
-      cg.update(20);
-      cg.update(30);
-      cg.update(40);
+      cg.add(10);
+      cg.add(20);
+      cg.add(30);
+      cg.add(40);
       expect(cg.isStable).toBe(false);
-      cg.update(50);
+      cg.add(50);
       expect(cg.isStable).toBe(false);
-      cg.update(60);
+      cg.add(60);
       expect(cg.isStable).toBe(true);
     });
   });
@@ -41,8 +41,8 @@ describe('CG', () => {
 
       const values = [100, 110, 120, 130, 140, 150, 160, 170, 180, 190, 200];
       for (const value of values) {
-        cg.update(value);
-        fasterCG.update(value);
+        cg.add(value);
+        fasterCG.add(value);
       }
 
       // Add the latest value
@@ -51,13 +51,13 @@ describe('CG', () => {
       const latestLow = '3.0851';
       const latestHigh = '3.1176';
 
-      cg.update(latestValue);
+      cg.add(latestValue);
       expect(cg.prices.length).toBe(5);
       expect(cg.getResult().toFixed(4)).toBe(latestResult);
       expect(cg.lowest?.toFixed(4)).toBe(latestLow);
       expect(cg.highest?.toFixed(4)).toBe(latestHigh);
 
-      fasterCG.update(latestValue);
+      fasterCG.add(latestValue);
       expect(fasterCG.prices.length).toBe(5);
       expect(fasterCG.getResult().toFixed(4)).toBe(latestResult);
       expect(fasterCG.lowest?.toFixed(4)).toBe(latestLow);
@@ -102,15 +102,15 @@ describe('CG', () => {
       const fasterCG = new FasterCG(5, 10);
       const values = [100, 110, 120, 130, 140, 150, 160, 170, 180, 190, 200];
       for (const value of values) {
-        cg.update(value);
-        fasterCG.update(value);
+        cg.add(value);
+        fasterCG.add(value);
       }
       let cgResult = cg.getResult();
       let signalResult = cg.signal.getResult();
       expect(cgResult.gt(signalResult)).toBe(true);
       [150, 110, 90, 130].forEach(price => {
-        cg.update(price);
-        fasterCG.update(price);
+        cg.add(price);
+        fasterCG.add(price);
       });
 
       expect(cg.isStable).toBe(true);
@@ -143,11 +143,11 @@ describe('CG', () => {
 
     it('is protected against division by zero errors', () => {
       const cg = new CG(1, 1);
-      cg.update(0);
+      cg.add(0);
       expect(cg.getResult().valueOf()).toBe('0');
 
       const fasterCG = new FasterCG(1, 1);
-      fasterCG.update(0);
+      fasterCG.add(0);
       expect(fasterCG.getResult().valueOf()).toBe(0);
     });
   });

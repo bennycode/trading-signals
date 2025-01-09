@@ -18,7 +18,7 @@ export class TR extends BigIndicatorSeries<HighLowClose> {
   private previousCandle?: HighLowClose;
   private twoPreviousCandle?: HighLowClose;
 
-  override update(candle: HighLowClose, replace: boolean = false): Big {
+  update(candle: HighLowClose, replace: boolean): Big {
     const high = new Big(candle.high);
     const highLow = high.minus(candle.low);
 
@@ -44,7 +44,7 @@ export class FasterTR extends NumberIndicatorSeries<HighLowCloseNumber> {
   private previousCandle?: HighLowCloseNumber;
   private twoPreviousCandle?: HighLowCloseNumber;
 
-  override update(candle: HighLowCloseNumber, replace: boolean = false): number {
+  update(candle: HighLowCloseNumber, replace: boolean): number {
     const {high, low} = candle;
     const highLow = high - low;
 

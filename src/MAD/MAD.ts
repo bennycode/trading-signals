@@ -19,7 +19,7 @@ export class MAD extends BigIndicatorSeries {
     super();
   }
 
-  override update(price: BigSource, replace: boolean = false) {
+  update(price: BigSource, replace: boolean) {
     pushUpdate(this.prices, replace, price);
 
     if (this.prices.length > this.interval) {
@@ -51,7 +51,7 @@ export class FasterMAD extends NumberIndicatorSeries {
     super();
   }
 
-  override update(price: number, replace: boolean = false) {
+  update(price: number, replace: boolean) {
     pushUpdate(this.prices, replace, price);
 
     if (this.prices.length > this.interval) {

@@ -29,11 +29,11 @@ describe('EMA', () => {
 
       const subset = [prices[0], prices[1], prices[2]];
 
-      ema.updates([...subset, prices[3], prices[4]]);
+      ema.updates([...subset, prices[3], prices[4]], false);
 
-      emaWithReplace.updates([...subset, '8239239']);
+      emaWithReplace.updates([...subset, '8239239'], false);
       emaWithReplace.replace(prices[3]);
-      emaWithReplace.update(prices[4]);
+      emaWithReplace.add(prices[4]);
 
       const actual = emaWithReplace.getResult().toFixed();
       const expected = ema.getResult().toFixed();
@@ -45,14 +45,14 @@ describe('EMA', () => {
       const interval = 5;
       const ema = new EMA(interval);
       const fasterEMA = new FasterEMA(interval);
-      ema.update('81.59');
-      fasterEMA.update(81.59);
-      ema.update('81.06');
-      fasterEMA.update(81.06);
-      ema.update('82.87');
-      fasterEMA.update(82.87);
-      ema.update('83.0');
-      fasterEMA.update(83.0);
+      ema.add('81.59');
+      fasterEMA.add(81.59);
+      ema.add('81.06');
+      fasterEMA.add(81.06);
+      ema.add('82.87');
+      fasterEMA.add(82.87);
+      ema.add('83.0');
+      fasterEMA.add(83.0);
 
       // Add the latest value
       const latestValue = 90;
@@ -60,12 +60,12 @@ describe('EMA', () => {
       const latestLow = '81.41';
       const latestHigh = '84.84';
 
-      ema.update(latestValue);
+      ema.add(latestValue);
       expect(ema.getResult()?.toFixed(2)).toBe(latestResult);
       expect(ema.lowest?.toFixed(2)).toBe(latestLow);
       expect(ema.highest?.toFixed(2)).toBe(latestHigh);
 
-      fasterEMA.update(latestValue);
+      fasterEMA.add(latestValue);
       expect(fasterEMA.getResult()?.toFixed(2)).toBe(latestResult);
       expect(fasterEMA.lowest?.toFixed(2)).toBe(latestLow);
       expect(fasterEMA.highest?.toFixed(2)).toBe(latestHigh);
@@ -101,18 +101,18 @@ describe('EMA', () => {
     it('will simply add prices when there are no prices to replace', () => {
       const ema = new EMA(5);
       ema.update(prices[0], true);
-      ema.update(prices[1]);
-      ema.update(prices[2]);
-      ema.update(prices[3]);
-      ema.update(prices[4]);
+      ema.add(prices[1]);
+      ema.add(prices[2]);
+      ema.add(prices[3]);
+      ema.add(prices[4]);
       expect(ema.getResult().toFixed(2)).toBe('82.71');
 
       const fasterEMA = new FasterEMA(5);
       fasterEMA.update(prices[0], true);
-      fasterEMA.update(prices[1]);
-      fasterEMA.update(prices[2]);
-      fasterEMA.update(prices[3]);
-      fasterEMA.update(prices[4]);
+      fasterEMA.add(prices[1]);
+      fasterEMA.add(prices[2]);
+      fasterEMA.add(prices[3]);
+      fasterEMA.add(prices[4]);
     });
   });
 
@@ -123,8 +123,8 @@ describe('EMA', () => {
       const fasterEMA = new FasterEMA(interval);
       for (let i = 0; i < prices.length; i++) {
         const price = prices[i];
-        ema.update(price);
-        fasterEMA.update(price);
+        ema.add(price);
+        fasterEMA.add(price);
         if (ema.isStable && fasterEMA.isStable) {
           const expected = expectations[i - (interval - 1)];
           expect(ema.getResult().toFixed(2)).toBe(expected);

@@ -256,8 +256,8 @@ describe('AC', () => {
       const ac = new AC(5, 34, 5);
       const acWithReplace = new AC(5, 34, 5);
 
-      ac.updates(mappedCandles);
-      acWithReplace.updates(mappedCandles);
+      ac.updates(mappedCandles, false);
+      acWithReplace.updates(mappedCandles, false);
 
       const correct = {
         high: 200,
@@ -268,8 +268,8 @@ describe('AC', () => {
         low: 3_000,
       };
 
-      ac.update(correct);
-      acWithReplace.update(wrong);
+      ac.add(correct);
+      acWithReplace.add(wrong);
       acWithReplace.replace(correct);
 
       expect(acWithReplace.getResult().toFixed()).toBe(ac.getResult().toFixed());
@@ -282,8 +282,8 @@ describe('AC', () => {
       const fasterAC = new FasterAC(5, 34, 5);
 
       for (const candle of mappedCandles) {
-        ac.update(candle);
-        fasterAC.update(candle);
+        ac.add(candle);
+        fasterAC.add(candle);
       }
 
       // Result verified with:

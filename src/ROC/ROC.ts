@@ -1,6 +1,7 @@
 import type {BigSource} from 'big.js';
 import {BigIndicatorSeries, NumberIndicatorSeries} from '../Indicator.js';
 import Big from 'big.js';
+import {pushUpdate} from '../util/pushUpdate.js';
 
 /**
  * Rate Of Change Indicator (ROC)
@@ -18,8 +19,8 @@ export class ROC extends BigIndicatorSeries {
     super();
   }
 
-  override update(price: BigSource, replace: boolean = false) {
-    this.prices.push(new Big(price));
+  update(price: BigSource, replace: boolean) {
+    pushUpdate(this.prices, replace, price);
 
     /**
      * The priceHistory needs to have N prices in it before a result can be calculated with the following value. For
@@ -42,8 +43,8 @@ export class FasterROC extends NumberIndicatorSeries {
     super();
   }
 
-  override update(price: number, replace: boolean = false) {
-    this.prices.push(price);
+  update(price: number, replace: boolean) {
+    pushUpdate(this.prices, replace, price);
 
     if (this.prices.length > this.interval) {
       const comparePrice = this.prices.shift()!;

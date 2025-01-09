@@ -36,7 +36,7 @@ export class Period extends TechnicalIndicator<PeriodResult, BigSource> {
     this.values = getFixedArray<Big>(interval);
   }
 
-  update(value: BigSource, replace: boolean = false) {
+  update(value: BigSource, replace: boolean) {
     pushUpdate(this.values, replace, new Big(value));
 
     if (this.values.length === this.interval) {
@@ -72,7 +72,7 @@ export class FasterPeriod extends TechnicalIndicator<FasterPeriodResult, number>
     this.values = getFixedArray<number>(interval);
   }
 
-  update(value: number, replace: boolean = false) {
+  update(value: number, replace: boolean) {
     pushUpdate(this.values, replace, value);
 
     if (this.values.length === this.interval) {

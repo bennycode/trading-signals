@@ -38,7 +38,7 @@ export class RSI extends BigIndicatorSeries {
     this.avgLoss = new SmoothingIndicator(this.interval);
   }
 
-  override update(price: BigSource, replace: boolean = false) {
+  update(price: BigSource, replace: boolean) {
     pushUpdate(this.previousPrices, replace, price);
 
     // Ensure at least 2 prices are available for calculation
@@ -86,7 +86,7 @@ export class FasterRSI extends NumberIndicatorSeries {
     this.avgLoss = new SmoothingIndicator(this.interval);
   }
 
-  override update(price: number, replace: boolean = false) {
+  update(price: number, replace: boolean) {
     pushUpdate(this.previousPrices, replace, price);
 
     // Ensure at least 2 prices are available for calculation
@@ -106,7 +106,6 @@ export class FasterRSI extends NumberIndicatorSeries {
     }
 
     if (this.avgGain.isStable) {
-      console.log('STABLE!');
       const avgLoss = this.avgLoss.getResult();
       // Prevent division by zero: https://github.com/bennycode/trading-signals/issues/378
       if (avgLoss === 0) {

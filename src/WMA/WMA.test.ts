@@ -6,26 +6,26 @@ describe('WMA', () => {
     it('does not cache more prices than necessary to fill the interval', () => {
       const wma = new WMA(3);
       const fasterWMA = new FasterWMA(3);
-      wma.update(1);
-      fasterWMA.update(1);
-      wma.update(2);
-      fasterWMA.update(2);
+      wma.add(1);
+      fasterWMA.add(1);
+      wma.add(2);
+      fasterWMA.add(2);
       expect(wma.prices.length).toBe(2);
       expect(fasterWMA.prices.length).toBe(2);
-      wma.update(3);
-      fasterWMA.update(3);
+      wma.add(3);
+      fasterWMA.add(3);
       expect(wma.prices.length).toBe(3);
       expect(fasterWMA.prices.length).toBe(3);
-      wma.update(4);
-      fasterWMA.update(4);
+      wma.add(4);
+      fasterWMA.add(4);
       expect(wma.prices.length).toBe(3);
       expect(fasterWMA.prices.length).toBe(3);
-      wma.update(5);
-      fasterWMA.update(5);
+      wma.add(5);
+      fasterWMA.add(5);
       expect(wma.prices.length).toBe(3);
       expect(fasterWMA.prices.length).toBe(3);
-      wma.update(6);
-      fasterWMA.update(6);
+      wma.add(6);
+      fasterWMA.add(6);
       expect(wma.prices.length).toBe(3);
       expect(fasterWMA.prices.length).toBe(3);
     });
@@ -38,14 +38,14 @@ describe('WMA', () => {
       const wma = new WMA(interval);
       const fasterWMA = new FasterWMA(interval);
 
-      wma.update(11);
-      fasterWMA.update(11);
-      wma.update(12);
-      fasterWMA.update(12);
-      wma.update(13);
-      fasterWMA.update(13);
-      wma.update(14);
-      fasterWMA.update(14);
+      wma.add(11);
+      fasterWMA.add(11);
+      wma.add(12);
+      fasterWMA.add(12);
+      wma.add(13);
+      fasterWMA.add(13);
+      wma.add(14);
+      fasterWMA.add(14);
 
       // Add the latest value
       const latestValue = 15;
@@ -53,12 +53,12 @@ describe('WMA', () => {
       const latestLow = '12.33';
       const latestHigh = '14.33';
 
-      wma.update(latestValue);
+      wma.add(latestValue);
       expect(wma.getResult().toFixed(2)).toBe(latestResult);
       expect(wma.lowest?.toFixed(2)).toBe(latestLow);
       expect(wma.highest?.toFixed(2)).toBe(latestHigh);
 
-      fasterWMA.update(latestValue);
+      fasterWMA.add(latestValue);
       expect(fasterWMA.getResult().toFixed(2)).toBe(latestResult);
       expect(fasterWMA.lowest?.toFixed(2)).toBe(latestLow);
       expect(fasterWMA.highest?.toFixed(2)).toBe(latestHigh);
@@ -99,8 +99,8 @@ describe('WMA', () => {
 
       const wma = new WMA(interval);
       const fasterWMA = new FasterWMA(interval);
-      wma.updates(prices);
-      fasterWMA.updates(prices);
+      wma.updates(prices, false);
+      fasterWMA.updates(prices, false);
 
       expect(wma.getResult().toFixed()).toBe('74');
       expect(fasterWMA.getResult().toFixed()).toBe('74');
@@ -110,13 +110,13 @@ describe('WMA', () => {
   describe('isStable', () => {
     it('knows when there is enough input data', () => {
       const wma = new WMA(3);
-      wma.update(30);
-      wma.update(60);
+      wma.add(30);
+      wma.add(60);
       expect(wma.isStable).toBe(false);
-      wma.update(90);
+      wma.add(90);
       expect(wma.isStable).toBe(true);
-      wma.update('120');
-      wma.update(new Big(60));
+      wma.add('120');
+      wma.add(new Big(60));
       expect(wma.getResult().valueOf()).toBe('85');
       expect(wma.lowest?.toFixed(2)).toBe('70.00');
       expect(wma.highest?.toFixed(2)).toBe('100.00');
@@ -131,8 +131,8 @@ describe('WMA', () => {
       const fasterWMA = new FasterWMA(5);
 
       for (const price of prices) {
-        const result = wma.update(price);
-        const fasterResult = fasterWMA.update(price);
+        const result = wma.add(price);
+        const fasterResult = fasterWMA.add(price);
 
         if (result && fasterResult) {
           const expected = expectations.shift()!;

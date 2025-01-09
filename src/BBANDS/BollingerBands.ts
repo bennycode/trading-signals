@@ -3,7 +3,7 @@ import Big from 'big.js';
 import {TechnicalIndicator} from '../Indicator.js';
 import {SMA} from '../SMA/SMA.js';
 import type {BandsResult, FasterBandsResult} from '../util/BandsResult.js';
-import {getFasterAverage, getFasterStandardDeviation, getStandardDeviation} from '../util/index.js';
+import {getFasterAverage, getFasterStandardDeviation, getStandardDeviation, pushUpdate} from '../util/index.js';
 
 /**
  * Bollinger Bands (BBANDS)
@@ -35,8 +35,8 @@ export class BollingerBands extends TechnicalIndicator<BandsResult, BigSource> {
     super();
   }
 
-  update(price: BigSource) {
-    this.prices.push(new Big(price));
+  update(price: BigSource, replace: boolean) {
+    pushUpdate(this.prices, replace, new Big(price));
 
     if (this.prices.length > this.interval) {
       this.prices.shift();
@@ -65,8 +65,8 @@ export class FasterBollingerBands extends TechnicalIndicator<FasterBandsResult, 
     super();
   }
 
-  update(price: number) {
-    this.prices.push(price);
+  update(price: number, replace: boolean) {
+    pushUpdate(this.prices, replace, price);
 
     if (this.prices.length > this.interval) {
       this.prices.shift();

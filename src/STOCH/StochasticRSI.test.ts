@@ -7,8 +7,8 @@ describe('StochasticRSI', () => {
       const stochRSI = new StochasticRSI(interval);
       const stochRSIWithReplace = new StochasticRSI(interval);
 
-      stochRSI.updates([2, 2, 2, 2]);
-      stochRSIWithReplace.updates([2, 2, 2, 1]);
+      stochRSI.updates([2, 2, 2, 2], false);
+      stochRSIWithReplace.updates([2, 2, 2, 1], false);
       stochRSIWithReplace.replace(2);
 
       expect(stochRSI.getResult().valueOf()).toBe(stochRSIWithReplace.getResult().valueOf());
@@ -27,8 +27,8 @@ describe('StochasticRSI', () => {
       const stochRSI = new StochasticRSI(interval);
       const fasterStochRSI = new FasterStochasticRSI(interval);
       for (const price of prices) {
-        const result = stochRSI.update(price);
-        const fasterResult = fasterStochRSI.update(price);
+        const result = stochRSI.add(price);
+        const fasterResult = fasterStochRSI.add(price);
         if (result && fasterResult) {
           const expected = expectations.shift();
           expect(result.toFixed(3)).toBe(expected!);
@@ -51,11 +51,11 @@ describe('StochasticRSI', () => {
     it('catches division by zero errors', () => {
       const interval = 2;
       const stochRSI = new StochasticRSI(interval);
-      stochRSI.updates([2, 2, 2, 2]);
+      stochRSI.updates([2, 2, 2, 2], false);
       expect(stochRSI.getResult().valueOf()).toBe('100');
 
       const fasterStochRSI = new FasterStochasticRSI(interval);
-      fasterStochRSI.updates([2, 2, 2, 2]);
+      fasterStochRSI.updates([2, 2, 2, 2], false);
       expect(fasterStochRSI.getResult().valueOf()).toBe(100);
     });
   });

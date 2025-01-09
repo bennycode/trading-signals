@@ -34,7 +34,7 @@ export class CG extends BigIndicatorSeries {
     this.signal = new SMA(signalInterval);
   }
 
-  override update(price: BigSource, replace: boolean = false) {
+  update(price: BigSource, replace: boolean) {
     pushUpdate(this.prices, replace, new Big(price));
 
     if (this.prices.length > this.interval) {
@@ -79,7 +79,7 @@ export class FasterCG extends NumberIndicatorSeries {
     this.signal = new FasterSMA(signalInterval);
   }
 
-  override update(price: number, replace: boolean = false) {
+  update(price: number, replace: boolean) {
     pushUpdate(this.prices, replace, price);
 
     if (this.prices.length > this.interval) {

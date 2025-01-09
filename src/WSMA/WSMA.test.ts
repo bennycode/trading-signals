@@ -11,11 +11,11 @@ describe('WSMA', () => {
 
       const subset = [11, 12, 13];
 
-      wsma.updates([...subset, 14, 15]);
+      wsma.updates([...subset, 14, 15], false);
 
-      wsmaWithReplace.updates([...subset, 50]);
+      wsmaWithReplace.updates([...subset, 50], false);
       wsmaWithReplace.replace(14);
-      wsmaWithReplace.update(15);
+      wsmaWithReplace.add(15);
 
       const actual = wsmaWithReplace.getResult().toFixed();
       const expected = wsma.getResult().toFixed();
@@ -29,14 +29,14 @@ describe('WSMA', () => {
       const wsma = new WSMA(interval);
       const fasterWSMA = new FasterWSMA(interval);
 
-      wsma.update(11);
-      fasterWSMA.update(11);
-      wsma.update(12);
-      fasterWSMA.update(12);
-      wsma.update(13);
-      fasterWSMA.update(13);
-      wsma.update(14);
-      fasterWSMA.update(14);
+      wsma.add(11);
+      fasterWSMA.add(11);
+      wsma.add(12);
+      fasterWSMA.add(12);
+      wsma.add(13);
+      fasterWSMA.add(13);
+      wsma.add(14);
+      fasterWSMA.add(14);
 
       // Add the latest value
       const latestValue = 15;
@@ -44,12 +44,12 @@ describe('WSMA', () => {
       const latestLow = '12.00';
       const latestHigh = '13.44';
 
-      wsma.update(latestValue);
+      wsma.add(latestValue);
       expect(wsma.getResult().toFixed(2)).toBe(latestResult);
       expect(wsma.lowest?.toFixed(2)).toBe(latestLow);
       expect(wsma.highest?.toFixed(2)).toBe(latestHigh);
 
-      fasterWSMA.update(latestValue);
+      fasterWSMA.add(latestValue);
       expect(fasterWSMA.getResult().toFixed(2)).toBe(latestResult);
       expect(fasterWSMA.lowest?.toFixed(2)).toBe(latestLow);
       expect(fasterWSMA.highest?.toFixed(2)).toBe(latestHigh);
@@ -92,7 +92,7 @@ describe('WSMA', () => {
       const wsma = new WSMA(5);
 
       for (const price of prices) {
-        wsma.update(price);
+        wsma.add(price);
         if (wsma.isStable) {
           const expected = expectations.shift();
           expect(wsma.getResult().toFixed(2)).toBe(expected);
@@ -129,8 +129,8 @@ describe('WSMA', () => {
 
       for (let i = 0; i < prices.length; i++) {
         const price = prices[i];
-        wsma.update(price);
-        fasterWSMA.update(price);
+        wsma.add(price);
+        fasterWSMA.add(price);
         if (wsma.isStable && fasterWSMA.isStable) {
           const expected = expectations[i];
           expect(wsma.getResult().toFixed(4)).toBe(expected);
@@ -164,8 +164,8 @@ describe('WSMA', () => {
 
     it('throws an error when there is not enough input data', () => {
       const wsma = new WSMA(3);
-      wsma.update(1);
-      wsma.update(2);
+      wsma.add(1);
+      wsma.add(2);
 
       try {
         wsma.getResult();
@@ -184,8 +184,8 @@ describe('WSMA', () => {
       const wsma = new WSMA(interval);
       const fasterWSMA = new FasterWSMA(interval);
 
-      wsma.updates(prices);
-      fasterWSMA.updates(prices);
+      wsma.updates(prices, false);
+      fasterWSMA.updates(prices, false);
 
       expect(wsma.getResult().toFixed(2)).toBe('18.97');
       expect(fasterWSMA.getResult().toFixed(2)).toBe('18.97');
@@ -195,10 +195,10 @@ describe('WSMA', () => {
   describe('isStable', () => {
     it('is stable when the inputs can fill the signal interval', () => {
       const wsma = new WSMA(3);
-      wsma.update(1);
-      wsma.update(2);
+      wsma.add(1);
+      wsma.add(2);
       expect(wsma.isStable).toBe(false);
-      wsma.update(3);
+      wsma.add(3);
       expect(wsma.isStable).toBe(true);
     });
   });

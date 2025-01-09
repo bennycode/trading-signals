@@ -43,8 +43,8 @@ describe('ATR', () => {
 
       for (let i = 0; i < candles.length; i++) {
         const candle = candles[i];
-        atr.update(candle);
-        fasterATR.update(candle);
+        atr.add(candle);
+        fasterATR.add(candle);
         if (atr.isStable && fasterATR.isStable) {
           const expected = expectations[i - (interval - 1)];
           expect(atr.getResult().toFixed(2)).toBe(expected!);
@@ -83,8 +83,8 @@ describe('ATR', () => {
       const fasterATR = new FasterATR(interval);
 
       for (const candle of candles) {
-        atr.update(candle);
-        fasterATR.update(candle);
+        atr.add(candle);
+        fasterATR.add(candle);
       }
 
       expect(atr.getResult().toFixed(2)).toBe('1.14');
@@ -101,12 +101,12 @@ describe('ATR', () => {
       const latestLow = '1.01';
       const latestHigh = '250.85';
 
-      atr.update(latestValue);
+      atr.add(latestValue);
       expect(atr.getResult().toFixed(2)).toBe(latestResult);
       expect(atr.lowest?.toFixed(2)).toBe(latestLow);
       expect(atr.highest?.toFixed(2), 'new record high').toBe(latestHigh);
 
-      fasterATR.update(latestValue);
+      fasterATR.add(latestValue);
       expect(fasterATR.getResult().toFixed(2)).toBe(latestResult);
       expect(fasterATR.lowest?.toFixed(2)).toBe(latestLow);
       expect(fasterATR.highest?.toFixed(2), 'new record high').toBe(latestHigh);

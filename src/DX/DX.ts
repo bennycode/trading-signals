@@ -40,17 +40,17 @@ export class DX extends BigIndicatorSeries<HighLowClose> {
     this.movesUp = new SmoothingIndicator(this.interval);
   }
 
-  private updateState(candle: HighLowClose, pdm: BigSource = 0, mdm: BigSource = 0): void {
-    this.atr.update(candle);
-    this.movesDown.update(mdm, false);
-    this.movesUp.update(pdm, false);
+  private updateState(candle: HighLowClose, pdm: BigSource, mdm: BigSource, replace: boolean): void {
+    this.atr.update(candle, replace);
+    this.movesDown.update(mdm, replace);
+    this.movesUp.update(pdm, replace);
     this.previousCandle = candle;
   }
 
   // TODO: Implement "replace" parameter
-  update(candle: HighLowClose) {
+  update(candle: HighLowClose, replace: boolean) {
     if (!this.previousCandle) {
-      this.updateState(candle);
+      this.updateState(candle, 0, 0, replace);
       return null;
     }
 
@@ -75,7 +75,7 @@ export class DX extends BigIndicatorSeries<HighLowClose> {
     // Minus Directional Movement (-DM)
     const mdm = noLowerLows || highsRiseFaster ? new Big(0) : lowerLow;
 
-    this.updateState(candle, pdm, mdm);
+    this.updateState(candle, pdm, mdm, replace);
 
     if (this.movesUp.isStable) {
       this.pdi = this.movesUp.getResult().div(this.atr.getResult());
@@ -86,10 +86,10 @@ export class DX extends BigIndicatorSeries<HighLowClose> {
 
       // Prevent division by zero
       if (dmSum.eq(0)) {
-        return this.setResult(new Big(0), false);
+        return this.setResult(new Big(0), replace);
       }
 
-      return this.setResult(dmDiff.div(dmSum).mul(100), false);
+      return this.setResult(dmDiff.div(dmSum).mul(100), replace);
     }
 
     return null;
@@ -114,16 +114,16 @@ export class FasterDX extends NumberIndicatorSeries<HighLowCloseNumber> {
     this.movesUp = new SmoothingIndicator(this.interval);
   }
 
-  private updateState(candle: HighLowCloseNumber, pdm: number = 0, mdm: number = 0): void {
-    this.atr.update(candle);
-    this.movesUp.update(pdm);
-    this.movesDown.update(mdm);
+  private updateState(candle: HighLowCloseNumber, pdm: number, mdm: number, replace: boolean): void {
+    this.atr.update(candle, replace);
+    this.movesUp.update(pdm, replace);
+    this.movesDown.update(mdm, replace);
     this.previousCandle = candle;
   }
 
-  update(candle: HighLowCloseNumber) {
+  update(candle: HighLowCloseNumber, replace: boolean) {
     if (!this.previousCandle) {
-      this.updateState(candle);
+      this.updateState(candle, 0, 0, replace);
       return null;
     }
 
@@ -146,7 +146,7 @@ export class FasterDX extends NumberIndicatorSeries<HighLowCloseNumber> {
 
     const mdm = noLowerLows || highsRiseFaster ? 0 : lowerLow;
 
-    this.updateState(candle, pdm, mdm);
+    this.updateState(candle, pdm, mdm, replace);
 
     if (this.movesUp.isStable) {
       this.pdi = this.movesUp.getResult() / this.atr.getResult();
@@ -156,10 +156,10 @@ export class FasterDX extends NumberIndicatorSeries<HighLowCloseNumber> {
       const dmSum = this.pdi + this.mdi;
 
       if (dmSum === 0) {
-        return this.setResult(0, false);
+        return this.setResult(0, replace);
       }
 
-      return this.setResult((dmDiff / dmSum) * 100, false);
+      return this.setResult((dmDiff / dmSum) * 100, replace);
     }
 
     return null;

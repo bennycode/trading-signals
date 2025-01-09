@@ -44,8 +44,8 @@ describe('TR', () => {
       const fasterTR = new FasterTR();
 
       candles.forEach((candle, i) => {
-        tr.update(candle);
-        fasterTR.update(candle);
+        tr.add(candle);
+        fasterTR.add(candle);
         if (tr.isStable && fasterTR.isStable) {
           const expected = expectations[i];
           expect(tr.getResult().toFixed(2)).toBe(expected!);
@@ -74,8 +74,8 @@ describe('TR', () => {
 
       // Update candles except last one.
       candles.slice(-1).forEach(candle => {
-        tr.update(candle);
-        fasterTR.update(candle);
+        tr.add(candle);
+        fasterTR.add(candle);
       });
 
       const lastCandle = candles.at(-1);
@@ -85,8 +85,8 @@ describe('TR', () => {
 
       // Add the latest value
       if (lastCandle) {
-        tr.update(lastCandle);
-        fasterTR.update(lastCandle);
+        tr.add(lastCandle);
+        fasterTR.add(lastCandle);
       }
 
       expect(tr.getResult().toFixed(2)).toBe(latestResult);

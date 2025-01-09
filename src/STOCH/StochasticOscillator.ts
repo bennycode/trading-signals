@@ -4,6 +4,7 @@ import {FasterSMA, SMA} from '../SMA/SMA.js';
 import {getMaximum} from '../util/getMaximum.js';
 import {getMinimum} from '../util/getMinimum.js';
 import type {HighLowClose, HighLowCloseNumber} from '../util/HighLowClose.js';
+import {pushUpdate} from '../util/pushUpdate.js';
 
 export interface StochasticResult {
   /** Slow stochastic indicator (%D) */
@@ -58,8 +59,8 @@ export class StochasticOscillator extends TechnicalIndicator<StochasticResult, H
     this.periodP = new SMA(p);
   }
 
-  update(candle: HighLowClose) {
-    this.candles.push(candle);
+  update(candle: HighLowClose, replace: boolean) {
+    pushUpdate(this.candles, replace, candle);
 
     if (this.candles.length > this.n) {
       this.candles.shift();
@@ -72,8 +73,8 @@ export class StochasticOscillator extends TechnicalIndicator<StochasticResult, H
       let fastK = new Big(100).mul(new Big(candle.close).minus(lowest));
       // Prevent division by zero
       fastK = fastK.div(divisor.eq(0) ? 1 : divisor);
-      const stochK = this.periodM.update(fastK); // (stoch_k, %k)
-      const stochD = stochK && this.periodP.update(stochK); // (stoch_d, %d)
+      const stochK = this.periodM.update(fastK, replace); // (stoch_k, %k)
+      const stochD = stochK && this.periodP.update(stochK, replace); // (stoch_d, %d)
       if (stochK && stochD) {
         return (this.result = {
           stochD,
@@ -106,8 +107,8 @@ export class FasterStochasticOscillator extends TechnicalIndicator<FasterStochas
     this.periodP = new FasterSMA(p);
   }
 
-  update(candle: HighLowCloseNumber) {
-    this.candles.push(candle);
+  update(candle: HighLowCloseNumber, replace: boolean) {
+    pushUpdate(this.candles, replace, candle);
 
     if (this.candles.length > this.n) {
       this.candles.shift();
@@ -120,8 +121,8 @@ export class FasterStochasticOscillator extends TechnicalIndicator<FasterStochas
       let fastK = (candle.close - lowest) * 100;
       // Prevent division by zero
       fastK = fastK / (divisor === 0 ? 1 : divisor);
-      const stochK = this.periodM.update(fastK); // (stoch_k, %k)
-      const stochD = stochK && this.periodP.update(stochK); // (stoch_d, %d)
+      const stochK = this.periodM.update(fastK, replace); // (stoch_k, %k)
+      const stochD = stochK && this.periodP.update(stochK, replace); // (stoch_d, %d)
 
       if (stochK !== null && stochD !== null) {
         return (this.result = {

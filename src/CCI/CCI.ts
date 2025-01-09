@@ -31,7 +31,7 @@ export class CCI extends BigIndicatorSeries<HighLowClose> {
     this.sma = new SMA(this.interval);
   }
 
-  update(candle: HighLowClose, replace: boolean = false) {
+  update(candle: HighLowClose, replace: boolean) {
     const typicalPrice = this.cacheTypicalPrice(candle, replace);
     this.sma.update(typicalPrice, replace);
     if (this.sma.isStable) {
@@ -39,7 +39,7 @@ export class CCI extends BigIndicatorSeries<HighLowClose> {
       const meanDeviation = MAD.getResultFromBatch(this.typicalPrices, mean);
       const numerator = typicalPrice.minus(mean);
       const denominator = new Big(0.015).mul(meanDeviation);
-      return this.setResult(numerator.div(denominator), false);
+      return this.setResult(numerator.div(denominator), replace);
     }
 
     return null;
@@ -65,7 +65,7 @@ export class FasterCCI extends NumberIndicatorSeries<HighLowCloseNumber> {
     this.sma = new FasterSMA(this.interval);
   }
 
-  override update(candle: HighLowCloseNumber, replace: boolean = false) {
+  update(candle: HighLowCloseNumber, replace: boolean) {
     const typicalPrice = this.cacheTypicalPrice(candle, replace);
     this.sma.update(typicalPrice, replace);
     if (this.sma.isStable) {
@@ -73,7 +73,7 @@ export class FasterCCI extends NumberIndicatorSeries<HighLowCloseNumber> {
       const meanDeviation = FasterMAD.getResultFromBatch(this.typicalPrices, mean);
       const numerator = typicalPrice - mean;
       const denominator = 0.015 * meanDeviation;
-      return this.setResult(numerator / denominator, false);
+      return this.setResult(numerator / denominator, replace);
     }
 
     return null;

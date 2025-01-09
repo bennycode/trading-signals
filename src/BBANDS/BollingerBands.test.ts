@@ -7,15 +7,15 @@ describe('BollingerBands', () => {
   describe('prices', () => {
     it('does not cache more prices than necessary to fill the interval', () => {
       const bb = new BollingerBands(3);
-      bb.updates([1, 2]);
+      bb.updates([1, 2], false);
       expect(bb.prices.length).toBe(2);
-      bb.update(3);
+      bb.add(3);
       expect(bb.prices.length).toBe(3);
-      bb.update(4);
+      bb.add(4);
       expect(bb.prices.length).toBe(3);
-      bb.update(5);
+      bb.add(5);
       expect(bb.prices.length).toBe(3);
-      bb.update(6);
+      bb.add(6);
       expect(bb.prices.length).toBe(3);
     });
   });
@@ -25,7 +25,7 @@ describe('BollingerBands', () => {
       const bb = new BollingerBands(20);
 
       data.prices.forEach((price, index) => {
-        bb.update(new Big(price));
+        bb.add(new Big(price));
 
         if (!bb.isStable) {
           return;
@@ -125,7 +125,7 @@ describe('BollingerBands', () => {
 
       for (let i = 0; i < inputs.length; i++) {
         const price = inputs[i];
-        bb.update(price);
+        bb.add(price);
         if (bb.isStable) {
           const {lower, middle, upper} = bb.getResult();
           const expectedLow = expectedLows[i];
@@ -149,7 +149,7 @@ describe('FasterBollingerBands', () => {
         81.59, 81.06, 82.87, 83.0, 83.61, 83.15, 82.84, 83.99, 84.55, 84.36, 85.53, 86.54, 86.89, 87.77, 87.29,
       ];
       const fasterBB = new FasterBollingerBands(5, 2);
-      fasterBB.updates(prices);
+      fasterBB.updates(prices, false);
       expect(fasterBB.isStable).toBe(true);
       const actual = fasterBB.getResult();
       expect(actual.lower.toFixed(2)).toBe('85.29');

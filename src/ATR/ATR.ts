@@ -40,7 +40,7 @@ export class ATR extends BigIndicatorSeries<HighLowClose> {
     this.smoothing = new SmoothingIndicator(interval);
   }
 
-  override update(candle: HighLowClose, replace: boolean = false) {
+  update(candle: HighLowClose, replace: boolean) {
     const trueRange = this.tr.update(candle, replace);
     this.smoothing.update(trueRange, replace);
     if (this.smoothing.isStable) {
@@ -63,7 +63,7 @@ export class FasterATR extends NumberIndicatorSeries<HighLowCloseNumber> {
     this.smoothing = new SmoothingIndicator(interval);
   }
 
-  update(candle: HighLowCloseNumber, replace: boolean = false) {
+  update(candle: HighLowCloseNumber, replace: boolean) {
     const trueRange = this.tr.update(candle, replace);
     this.smoothing.update(trueRange, replace);
     if (this.smoothing.isStable) {

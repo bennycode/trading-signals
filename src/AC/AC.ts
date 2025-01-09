@@ -32,7 +32,7 @@ export class AC extends BigIndicatorSeries<HighLow> {
     this.signal = new SMA(signalInterval);
   }
 
-  override update(input: HighLow, replace: boolean = false) {
+  update(input: HighLow, replace: boolean) {
     const ao = this.ao.update(input, replace);
     if (ao) {
       this.signal.update(ao, replace);
@@ -62,7 +62,7 @@ export class FasterAC extends NumberIndicatorSeries<HighLowNumber> {
     this.signal = new FasterSMA(signalInterval);
   }
 
-  override update(input: HighLowNumber, replace: boolean = false) {
+  update(input: HighLowNumber, replace: boolean) {
     const ao = this.ao.update(input, replace);
     if (ao) {
       this.signal.update(ao, replace);

@@ -20,8 +20,8 @@ describe('ROC', () => {
       const fasterROC = new FasterROC(5);
 
       for (const price of prices) {
-        roc.update(price);
-        fasterROC.update(price);
+        roc.add(price);
+        fasterROC.add(price);
 
         if (roc.isStable) {
           const expected = expectations.shift()!;
@@ -42,7 +42,7 @@ describe('ROC', () => {
       const prices = [1000, 900, 800, 700, 600, 500, 400, 300, 200, 100];
 
       prices.forEach(price => {
-        roc.update(new Big(price));
+        roc.add(new Big(price));
       });
 
       expect(roc.lowest?.toFixed(2)).toBe('-0.83');
@@ -78,7 +78,7 @@ describe('ROC', () => {
       expect(mockedPrices.length).toBe(interval + 1);
       expect(indicator.isStable).toBe(false);
 
-      mockedPrices.forEach(price => indicator.update(price));
+      mockedPrices.forEach(price => indicator.add(price));
 
       expect(indicator.isStable).toBe(true);
     });

@@ -4,13 +4,10 @@ import {getLastFromForEach} from './util/getLastFromForEach.js';
 
 interface Indicator<Result = Big, Input = BigSource> {
   getResult(): Result;
-
   isStable: boolean;
-
+  add(input: Input): Result | null;
   replace(input: Input): Result | null;
-
   update(input: Input, replace: boolean): Result | null;
-
   updates(input: Input[], replace: boolean): Result | null;
 }
 
@@ -29,13 +26,17 @@ export abstract class TechnicalIndicator<Result, Input> implements Indicator<Res
     return this.result !== undefined;
   }
 
+  add(input: Input) {
+    return this.update(input, false);
+  }
+
   replace(input: Input) {
     return this.update(input, true);
   }
 
   abstract update(input: Input, replace: boolean): Result | null;
 
-  updates(inputs: Input[], replace: boolean = false) {
+  updates(inputs: Input[], replace: boolean) {
     return getLastFromForEach(inputs, input => this.update(input, replace));
   }
 }
@@ -43,34 +44,16 @@ export abstract class TechnicalIndicator<Result, Input> implements Indicator<Res
 /**
  * Tracks results of an indicator over time and memorizes the highest & lowest result.
  */
-export interface IndicatorSeries<Result = Big, Input = BigSource> extends Indicator<Result, Input> {
+export abstract class BaseIndicatorSeries<Result, Input> extends TechnicalIndicator<Result, Input> {
+  protected previousHighest?: Result;
   highest?: Result;
+  protected previousLowest?: Result;
   lowest?: Result;
+  protected previousResult?: Result;
+  protected abstract setResult(value: Result, replace: boolean): Result;
 }
 
-export abstract class BigIndicatorSeries<Input = BigSource> implements IndicatorSeries<Big, Input> {
-  /** Highest return value over the lifetime (not interval!) of the indicator. */
-  protected previousHighest?: Big;
-  highest?: Big;
-  /** Lowest return value over the lifetime (not interval!) of the indicator. */
-  protected previousLowest?: Big;
-  lowest?: Big;
-  /** Previous results can be useful, if a user wants to update a recent value instead of adding a new value. Essential for real-time data like growing candlesticks. */
-  protected previousResult?: Big;
-  protected result: Big | undefined;
-
-  get isStable(): boolean {
-    return this.result !== undefined;
-  }
-
-  getResult() {
-    if (this.result === undefined) {
-      throw new NotEnoughDataError();
-    }
-
-    return this.result;
-  }
-
+export abstract class BigIndicatorSeries<Input = BigSource> extends BaseIndicatorSeries<Big, Input> {
   protected setResult(value: Big, replace: boolean): Big {
     // Load cached values when replacing the latest value
     if (replace) {
@@ -104,40 +87,9 @@ export abstract class BigIndicatorSeries<Input = BigSource> implements Indicator
     // Set new result
     return (this.result = value);
   }
-
-  updates(inputs: Input[], replace: boolean = false) {
-    return getLastFromForEach(inputs, input => this.update(input, replace));
-  }
-
-  abstract update(input: Input, replace: boolean): null | Big;
-
-  replace(input: Input) {
-    return this.update(input, true);
-  }
 }
 
-export abstract class NumberIndicatorSeries<Input = number> implements IndicatorSeries<number, Input> {
-  /** Highest return value over the lifetime (not interval!) of the indicator. */
-  protected previousHighest?: number;
-  highest?: number;
-  /** Lowest return value over the lifetime (not interval!) of the indicator. */
-  protected previousLowest?: number;
-  lowest?: number;
-  protected previousResult?: number;
-  protected result: number | undefined;
-
-  get isStable(): boolean {
-    return this.result !== undefined;
-  }
-
-  getResult(): number {
-    if (this.result === undefined) {
-      throw new NotEnoughDataError();
-    }
-
-    return this.result;
-  }
-
+export abstract class NumberIndicatorSeries<Input = number> extends BaseIndicatorSeries<number, Input> {
   protected setResult(value: number, replace: boolean): number {
     // Load cached values when replacing the latest value
     if (replace) {
@@ -170,15 +122,5 @@ export abstract class NumberIndicatorSeries<Input = number> implements Indicator
     this.previousResult = this.result;
     // Set new result
     return (this.result = value);
-  }
-
-  updates(inputs: Input[], replace: boolean = false) {
-    return getLastFromForEach(inputs, input => this.update(input, replace));
-  }
-
-  abstract update(input: Input, replace?: boolean): null | number;
-
-  replace(input: Input) {
-    return this.update(input, true);
   }
 }

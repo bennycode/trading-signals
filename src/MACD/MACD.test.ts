@@ -19,11 +19,11 @@ describe('MACD', () => {
 
       const subset = ['10', '20', '80', '81.59', '81.06', '82.87', '83.0'];
 
-      macd.updates([...subset, '90', '83.61']);
+      macd.updates([...subset, '90', '83.61'], false);
 
-      macdWithReplace.updates([...subset, '100']);
+      macdWithReplace.updates([...subset, '100'], false);
       macdWithReplace.replace(90);
-      macdWithReplace.update('83.61');
+      macdWithReplace.add('83.61');
 
       expect(macdWithReplace.short.getResult().toFixed(), 'short').toBe(macd.short.getResult().toFixed());
       expect(macdWithReplace.long.getResult().toFixed(), 'long').toBe(macd.long.getResult().toFixed());
@@ -44,11 +44,11 @@ describe('MACD', () => {
       const fasterMACD = new FasterMACD(new FasterEMA(2), new FasterEMA(5), new FasterEMA(9));
 
       const subset = [81.59, 81.06, 82.87, 83.0];
-      macd.updates(subset);
-      fasterMACD.updates(subset);
+      macd.updates(subset, false);
+      fasterMACD.updates(subset, false);
 
-      macd.update('90'); // this value gets replaced with the next call
-      fasterMACD.update(90); // this value gets replaced with the next call
+      macd.add('90'); // this value gets replaced with the next call
+      fasterMACD.add(90); // this value gets replaced with the next call
       macd.replace('83.61');
       fasterMACD.replace(83.61);
 
@@ -133,8 +133,8 @@ describe('MACD', () => {
       const fasterMACD = new FasterMACD(new FasterEMA(2), new FasterEMA(5), new FasterEMA(9));
 
       for (const [index, input] of Object.entries(prices)) {
-        macd.update(input);
-        fasterMACD.update(input);
+        macd.add(input);
+        fasterMACD.add(input);
 
         const key = parseInt(index, 10);
         const expectedMacd = expectedMacds[key];
@@ -220,7 +220,7 @@ describe('MACD', () => {
       expect(mockedPrices.length).toBe(longInterval);
       expect(macd.isStable).toBe(false);
 
-      macd.updates(mockedPrices);
+      macd.updates(mockedPrices, false);
 
       expect(macd.isStable).toBe(true);
     });

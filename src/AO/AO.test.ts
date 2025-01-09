@@ -43,8 +43,8 @@ describe('AO', () => {
           high: highs[i],
           low: lows[i],
         };
-        const result = ao.update(candle);
-        const fasterResult = fasterAO.update(candle);
+        const result = ao.add(candle);
+        const fasterResult = fasterAO.add(candle);
         if (ao.isStable && fasterAO.isStable) {
           expect(result).not.toBeUndefined();
           expect(fasterResult).not.toBeUndefined();
@@ -83,11 +83,11 @@ describe('AO', () => {
       const fasterAO = new FasterAO(shortInterval, longInterval);
 
       lows.forEach((low, index) => {
-        ao.update({
+        ao.add({
           high: highs[index],
           low,
         });
-        fasterAO.update({
+        fasterAO.add({
           high: highs[index],
           low,
         });
@@ -108,12 +108,12 @@ describe('AO', () => {
       const latestLow = '-11.50';
       const latestHigh = '749.69';
 
-      ao.update(latestValue);
+      ao.add(latestValue);
       expect(ao.getResult()?.toFixed(2)).toBe(latestResult);
       expect(ao.lowest?.toFixed(2)).toBe(latestLow);
       expect(ao.highest?.toFixed(2), 'new record high').toBe(latestHigh);
 
-      fasterAO.update(latestValue);
+      fasterAO.add(latestValue);
       expect(fasterAO.getResult()?.toFixed(2)).toBe(latestResult);
       expect(fasterAO.lowest?.toFixed(2)).toBe(latestLow);
       expect(fasterAO.highest?.toFixed(2), 'new record high').toBe(latestHigh);

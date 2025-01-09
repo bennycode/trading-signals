@@ -33,7 +33,7 @@ export class AO extends BigIndicatorSeries<HighLow> {
     this.long = new SmoothingIndicator(longInterval);
   }
 
-  override update({low, high}: HighLow, replace: boolean = false) {
+  update({low, high}: HighLow, replace: boolean) {
     const candleSum = new Big(low).add(high);
     const medianPrice = candleSum.div(2);
 
@@ -62,7 +62,7 @@ export class FasterAO extends NumberIndicatorSeries<HighLowNumber> {
     this.long = new SmoothingIndicator(longInterval);
   }
 
-  override update({low, high}: HighLowNumber, replace: boolean = false) {
+  update({low, high}: HighLowNumber, replace: boolean) {
     const medianPrice = (low + high) / 2;
 
     this.short.update(medianPrice, replace);

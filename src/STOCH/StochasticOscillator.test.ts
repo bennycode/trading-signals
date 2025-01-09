@@ -32,8 +32,8 @@ describe('StochasticOscillator', () => {
       const fasterStoch = new FasterStochasticOscillator(5, 3, 3);
 
       for (const candle of candles) {
-        const stochResult = stoch.update(candle);
-        const fasterStochResult = fasterStoch.update(candle);
+        const stochResult = stoch.add(candle);
+        const fasterStochResult = fasterStoch.add(candle);
         if (fasterStoch.isStable && fasterStochResult && stoch.isStable && stochResult) {
           const stochD = stochDs.shift()!;
           const stochK = stochKs.shift()!;
@@ -58,12 +58,12 @@ describe('StochasticOscillator', () => {
     it('throws an error when there is not enough input data', () => {
       const stoch = new StochasticOscillator(5, 3, 3);
 
-      stoch.update({close: 1, high: 1, low: 1});
-      stoch.update({close: 1, high: 2, low: 1});
-      stoch.update({close: 1, high: 3, low: 1});
-      stoch.update({close: 1, high: 4, low: 1});
-      stoch.update({close: 1, high: 5, low: 1}); // Emits 1st of 3 required values for %d period
-      stoch.update({close: 1, high: 6, low: 1}); // Emits 2nd of 3 required values for %d period
+      stoch.add({close: 1, high: 1, low: 1});
+      stoch.add({close: 1, high: 2, low: 1});
+      stoch.add({close: 1, high: 3, low: 1});
+      stoch.add({close: 1, high: 4, low: 1});
+      stoch.add({close: 1, high: 5, low: 1}); // Emits 1st of 3 required values for %d period
+      stoch.add({close: 1, high: 6, low: 1}); // Emits 2nd of 3 required values for %d period
 
       try {
         stoch.getResult();
@@ -84,25 +84,31 @@ describe('StochasticOscillator', () => {
 
     it('prevents division by zero errors when highest high and lowest low have the same value', () => {
       const stoch = new StochasticOscillator(5, 3, 3);
-      stoch.updates([
-        {close: 100, high: 100, low: 100},
-        {close: 100, high: 100, low: 100},
-        {close: 100, high: 100, low: 100},
-        {close: 100, high: 100, low: 100},
-        {close: 100, high: 100, low: 100},
-        {close: 100, high: 100, low: 100},
-        {close: 100, high: 100, low: 100},
-        {close: 100, high: 100, low: 100},
-      ]);
-      const result = stoch.update({close: 100, high: 100, low: 100});
+      stoch.updates(
+        [
+          {close: 100, high: 100, low: 100},
+          {close: 100, high: 100, low: 100},
+          {close: 100, high: 100, low: 100},
+          {close: 100, high: 100, low: 100},
+          {close: 100, high: 100, low: 100},
+          {close: 100, high: 100, low: 100},
+          {close: 100, high: 100, low: 100},
+          {close: 100, high: 100, low: 100},
+        ],
+        false
+      );
+      const result = stoch.add({close: 100, high: 100, low: 100});
       expect(result?.stochK.toFixed(2)).toBe('0.00');
       expect(result?.stochD.toFixed(2)).toBe('0.00');
 
       const fasterStoch = new FasterStochasticOscillator(1, 2, 2);
-      fasterStoch.updates([
-        {close: 100, high: 100, low: 100},
-        {close: 100, high: 100, low: 100},
-      ]);
+      fasterStoch.updates(
+        [
+          {close: 100, high: 100, low: 100},
+          {close: 100, high: 100, low: 100},
+        ],
+        false
+      );
       const {stochK, stochD} = fasterStoch.getResult();
       expect(stochK.toFixed(2)).toBe('0.00');
       expect(stochD.toFixed(2)).toBe('0.00');
