@@ -1,6 +1,6 @@
 import {BigIndicatorSeries, NumberIndicatorSeries} from '../Indicator.js';
-import type {Big, BigSource} from '../index.js';
 import type {BollingerBands, FasterBollingerBands} from '../BBANDS/BollingerBands.js';
+import type {BigSource} from 'big.js';
 
 /**
  * The Bollinger Bands Width (BBW) indicator, developed by John A. Bollinger, merges the information of Bollinger Bands
@@ -14,11 +14,13 @@ export class BollingerBandsWidth extends BigIndicatorSeries {
     super();
   }
 
-  override update(price: BigSource): void | Big {
-    const result = this.bollingerBands.update(price);
+  update(price: BigSource, replace: boolean) {
+    const result = this.bollingerBands.update(price, replace);
     if (result) {
-      return this.setResult(result.upper.minus(result.lower).div(result.middle), false);
+      return this.setResult(result.upper.minus(result.lower).div(result.middle), replace);
     }
+
+    return null;
   }
 }
 
@@ -27,10 +29,12 @@ export class FasterBollingerBandsWidth extends NumberIndicatorSeries {
     super();
   }
 
-  override update(price: number): void | number {
-    const result = this.bollingerBands.update(price);
-    if (result !== undefined) {
-      return this.setResult((result.upper - result.lower) / result.middle, false);
+  update(price: number, replace: boolean) {
+    const result = this.bollingerBands.update(price, replace);
+    if (result) {
+      return this.setResult((result.upper - result.lower) / result.middle, replace);
     }
+
+    return null;
   }
 }

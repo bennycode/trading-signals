@@ -1,9 +1,9 @@
-import {Big, type BigSource} from '../index.js';
+import type {BigSource} from 'big.js';
+import Big from 'big.js';
+import {TechnicalIndicator} from '../Indicator.js';
 import {SMA} from '../SMA/SMA.js';
-import {NotEnoughDataError} from '../error/index.js';
 import type {BandsResult, FasterBandsResult} from '../util/BandsResult.js';
-import type {Indicator} from '../Indicator.js';
-import {getFasterAverage, getFasterStandardDeviation, getStandardDeviation} from '../util/index.js';
+import {getFasterAverage, getFasterStandardDeviation, getStandardDeviation, pushUpdate} from '../util/index.js';
 
 /**
  * Bollinger Bands (BBANDS)
@@ -20,9 +20,9 @@ import {getFasterAverage, getFasterStandardDeviation, getStandardDeviation} from
  *
  * @see https://www.investopedia.com/terms/b/bollingerbands.asp
  */
-export class BollingerBands implements Indicator<BandsResult> {
+export class BollingerBands extends TechnicalIndicator<BandsResult, BigSource> {
+  // TODO: Use "getFixedArray"
   public readonly prices: Big[] = [];
-  private result: BandsResult | undefined;
 
   /**
    * @param interval - The time period to be used in calculating the Middle Band
@@ -32,14 +32,12 @@ export class BollingerBands implements Indicator<BandsResult> {
   constructor(
     public readonly interval: number,
     public readonly deviationMultiplier: number = 2
-  ) {}
-
-  get isStable(): boolean {
-    return this.result !== undefined;
+  ) {
+    super();
   }
 
-  update(price: BigSource): void | BandsResult {
-    this.prices.push(new Big(price));
+  update(price: BigSource, replace: boolean) {
+    pushUpdate(this.prices, replace, new Big(price));
 
     if (this.prices.length > this.interval) {
       this.prices.shift();
@@ -53,28 +51,23 @@ export class BollingerBands implements Indicator<BandsResult> {
         upper: middle.add(standardDeviation.times(this.deviationMultiplier)),
       });
     }
-  }
 
-  getResult(): BandsResult {
-    if (this.result === undefined) {
-      throw new NotEnoughDataError();
-    }
-
-    return this.result;
+    return null;
   }
 }
 
-export class FasterBollingerBands implements Indicator<FasterBandsResult> {
+export class FasterBollingerBands extends TechnicalIndicator<FasterBandsResult, BigSource> {
   public readonly prices: number[] = [];
-  private result: FasterBandsResult | undefined;
 
   constructor(
     public readonly interval: number,
     public readonly deviationMultiplier: number = 2
-  ) {}
+  ) {
+    super();
+  }
 
-  update(price: number): void | FasterBandsResult {
-    this.prices.push(price);
+  update(price: number, replace: boolean) {
+    pushUpdate(this.prices, replace, price);
 
     if (this.prices.length > this.interval) {
       this.prices.shift();
@@ -88,17 +81,7 @@ export class FasterBollingerBands implements Indicator<FasterBandsResult> {
         upper: middle + standardDeviation * this.deviationMultiplier,
       });
     }
-  }
 
-  getResult(): FasterBandsResult {
-    if (this.result === undefined) {
-      throw new NotEnoughDataError();
-    }
-
-    return this.result;
-  }
-
-  get isStable(): boolean {
-    return this.result !== undefined;
+    return null;
   }
 }

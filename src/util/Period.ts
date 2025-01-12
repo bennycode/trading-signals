@@ -1,8 +1,10 @@
-import {Big, type BigSource} from '../index.js';
-import type {Indicator} from '../Indicator.js';
+import type {BigSource} from 'big.js';
+import Big from 'big.js';
+import {TechnicalIndicator} from '../Indicator.js';
 import {getFixedArray} from './getFixedArray.js';
-import {getMinimum} from './getMinimum.js';
 import {getMaximum} from './getMaximum.js';
+import {getMinimum} from './getMinimum.js';
+import {pushUpdate} from './pushUpdate.js';
 
 export interface PeriodResult {
   highest: Big;
@@ -14,66 +16,74 @@ export interface FasterPeriodResult {
   lowest: number;
 }
 
-export class Period implements Indicator<PeriodResult> {
-  public values: Big[];
+export class Period extends TechnicalIndicator<PeriodResult, BigSource> {
+  private readonly values: Big[];
   /** Highest return value during the current period. */
-  public highest?: Big;
+  private _highest?: Big;
   /** Lowest return value during the current period. */
-  public lowest?: Big;
+  private _lowest?: Big;
+
+  get highest() {
+    return this._highest;
+  }
+
+  get lowest() {
+    return this._lowest;
+  }
 
   constructor(public readonly interval: number) {
+    super();
     this.values = getFixedArray<Big>(interval);
   }
 
-  getResult(): PeriodResult {
-    return {
-      highest: this.highest!,
-      lowest: this.lowest!,
-    };
-  }
+  update(value: BigSource, replace: boolean) {
+    pushUpdate(this.values, replace, new Big(value));
 
-  update(value: BigSource): PeriodResult | void {
-    this.values.push(new Big(value));
-    if (this.isStable) {
-      this.lowest = getMinimum(this.values);
-      this.highest = getMaximum(this.values);
-      return this.getResult();
+    if (this.values.length === this.interval) {
+      this._lowest = getMinimum(this.values);
+      this._highest = getMaximum(this.values);
+      return (this.result = {
+        highest: this._highest,
+        lowest: this._lowest,
+      });
     }
-  }
 
-  get isStable(): boolean {
-    return this.values.length === this.interval;
+    return null;
   }
 }
 
-export class FasterPeriod implements Indicator<FasterPeriodResult> {
+export class FasterPeriod extends TechnicalIndicator<FasterPeriodResult, number> {
   public values: number[];
   /** Highest return value during the current period. */
-  public highest?: number;
+  private _highest?: number;
   /** Lowest return value during the current period. */
-  public lowest?: number;
+  private _lowest?: number;
+
+  get highest() {
+    return this._highest;
+  }
+
+  get lowest() {
+    return this._lowest;
+  }
 
   constructor(public readonly interval: number) {
-    this.values = getFixedArray<number>(interval);
+    super();
+    this.values = getFixedArray(interval);
   }
 
-  getResult(): FasterPeriodResult {
-    return {
-      highest: this.highest!,
-      lowest: this.lowest!,
-    };
-  }
+  update(value: number, replace: boolean) {
+    pushUpdate(this.values, replace, value);
 
-  update(value: number): FasterPeriodResult | void {
-    this.values.push(value);
-    if (this.isStable) {
-      this.lowest = Math.min(...this.values);
-      this.highest = Math.max(...this.values);
-      return this.getResult();
+    if (this.values.length === this.interval) {
+      this._lowest = Math.min(...this.values);
+      this._highest = Math.max(...this.values);
+      return (this.result = {
+        highest: this._highest,
+        lowest: this._lowest,
+      });
     }
-  }
 
-  get isStable(): boolean {
-    return this.values.length === this.interval;
+    return null;
   }
 }

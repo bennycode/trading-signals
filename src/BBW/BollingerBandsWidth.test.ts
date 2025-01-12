@@ -47,8 +47,8 @@ describe('BollingerBandsWidth', () => {
       const fasterBBW = new FasterBollingerBandsWidth(new FasterBollingerBands(20, 2));
 
       for (const {close} of candles) {
-        bbw.update(close);
-        fasterBBW.update(close);
+        bbw.add(close);
+        fasterBBW.add(close);
         if (bbw.isStable) {
           const expected = expectations.shift()!;
           expect(bbw.getResult().toFixed(2)).toBe(`${expected}`);

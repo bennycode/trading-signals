@@ -29,8 +29,8 @@ describe('OBV', () => {
       const obv = new OBV();
       const fasterOBV = new FasterOBV();
       for (const candle of candles) {
-        obv.update(candle);
-        fasterOBV.update(candle);
+        obv.add(candle);
+        fasterOBV.add(candle);
         if (obv.isStable && fasterOBV.isStable) {
           const expected = expectations.shift();
           expect(obv.getResult().toFixed(3)).toBe(expected!);

@@ -1,4 +1,4 @@
-import type {Big} from '../index.js';
+import type {Big} from 'big.js';
 import {BigIndicatorSeries, NumberIndicatorSeries} from '../Indicator.js';
 import type {FasterMovingAverage, MovingAverage} from '../MA/MovingAverage.js';
 import type {HighLowClose, HighLowCloseNumber} from '../util/HighLowClose.js';
@@ -50,14 +50,18 @@ export class ADX extends BigIndicatorSeries<HighLowClose> {
     return this.dx.pdi;
   }
 
-  update(candle: HighLowClose, replace: boolean = false): Big | void {
-    const result = this.dx.update(candle);
-    if (result) {
-      this.adx.update(result);
+  update(candle: HighLowClose, replace: boolean) {
+    const result = this.dx.update(candle, replace);
+
+    if (result !== null) {
+      this.adx.update(result, replace);
     }
+
     if (this.adx.isStable) {
       return this.setResult(this.adx.getResult(), replace);
     }
+
+    return null;
   }
 }
 
@@ -82,13 +86,17 @@ export class FasterADX extends NumberIndicatorSeries<HighLowCloseNumber> {
     return this.dx.pdi;
   }
 
-  update(candle: HighLowCloseNumber, replace: boolean = false): void | number {
-    const result = this.dx.update(candle);
-    if (result !== undefined) {
-      this.adx.update(result);
+  update(candle: HighLowCloseNumber, replace: boolean) {
+    const result = this.dx.update(candle, replace);
+
+    if (result !== null) {
+      this.adx.update(result, replace);
     }
+
     if (this.adx.isStable) {
       return this.setResult(this.adx.getResult(), replace);
     }
+
+    return null;
   }
 }

@@ -76,157 +76,157 @@ new Benchmark.Suite('Technical Indicators')
   .add('AccelerationBands', () => {
     const accBands = new AccelerationBands(interval, 4);
     for (const candle of floatCandles) {
-      accBands.update(candle);
+      accBands.add(candle);
     }
   })
   .add('FasterAccelerationBands', () => {
     const fasterAccBands = new FasterAccelerationBands(interval, 4);
     for (const candle of floatCandles) {
-      fasterAccBands.update(candle);
+      fasterAccBands.add(candle);
     }
   })
   .add('AC', () => {
     const ac = new AC(shortInterval, longInterval, interval);
     for (const candle of floatCandles) {
-      ac.update(candle);
+      ac.add(candle);
     }
   })
   .add('FasterAC', () => {
     const fasterAC = new FasterAC(shortInterval, longInterval, interval);
     for (const candle of floatCandles) {
-      fasterAC.update(candle);
+      fasterAC.add(candle);
     }
   })
   .add('ADX', () => {
     const adx = new ADX(interval);
     for (const candle of floatCandles) {
-      adx.update(candle);
+      adx.add(candle);
     }
   })
   .add('FasterADX', () => {
     const fasterADX = new FasterADX(interval);
     for (const candle of floatCandles) {
-      fasterADX.update(candle);
+      fasterADX.add(candle);
     }
   })
   .add('AO', () => {
     const ao = new AO(shortInterval, interval);
     for (const candle of floatCandles) {
-      ao.update(candle);
+      ao.add(candle);
     }
   })
   .add('FasterAO', () => {
     const fasterAO = new FasterAO(shortInterval, interval);
     for (const candle of floatCandles) {
-      fasterAO.update(candle);
+      fasterAO.add(candle);
     }
   })
   .add('ATR', () => {
     const atr = new ATR(interval);
     for (const candle of floatCandles) {
-      atr.update(candle);
+      atr.add(candle);
     }
   })
   .add('FasterATR', () => {
     const fasterATR = new FasterATR(interval);
     for (const candle of floatCandles) {
-      fasterATR.update(candle);
+      fasterATR.add(candle);
     }
   })
   .add('BollingerBands', () => {
     const bb = new BollingerBands(interval, 2);
     for (const price of prices) {
-      bb.update(price);
+      bb.add(price);
     }
   })
   .add('FasterBollingerBands', () => {
     const fasterBB = new FasterBollingerBands(interval, 2);
     for (const price of prices) {
-      fasterBB.update(price);
+      fasterBB.add(price);
     }
   })
   .add('BollingerBandsWidth', () => {
     const bbw = new BollingerBandsWidth(new BollingerBands(interval, 2));
     for (const price of prices) {
-      bbw.update(price);
+      bbw.add(price);
     }
   })
   .add('FasterBollingerBandsWidth', () => {
     const fasterBBW = new FasterBollingerBandsWidth(new FasterBollingerBands(interval, 2));
     for (const price of prices) {
-      fasterBBW.update(price);
+      fasterBBW.add(price);
     }
   })
   .add('CCI', () => {
     const cci = new CCI(interval);
     for (const candle of floatCandles) {
-      cci.update(candle);
+      cci.add(candle);
     }
   })
   .add('FasterCCI', () => {
     const fasterCCI = new FasterCCI(interval);
     for (const candle of floatCandles) {
-      fasterCCI.update(candle);
+      fasterCCI.add(candle);
     }
   })
   .add('CG', () => {
     const cg = new CG(shortInterval, interval);
     for (const price of prices) {
-      cg.update(price);
+      cg.add(price);
     }
   })
   .add('FasterCG', () => {
     const fasterCG = new FasterCG(shortInterval, interval);
     for (const price of prices) {
-      fasterCG.update(price);
+      fasterCG.add(price);
     }
   })
   .add('DEMA', () => {
     const dema = new DEMA(interval);
     for (const price of prices) {
-      dema.update(price);
+      dema.add(price);
     }
   })
   .add('FasterDEMA', () => {
     const fasterDEMA = new FasterDEMA(interval);
     for (const price of prices) {
-      fasterDEMA.update(price);
+      fasterDEMA.add(price);
     }
   })
   .add('DMA', () => {
     const dma = new DMA(3, 6);
     for (const price of prices) {
-      dma.update(price);
+      dma.add(price);
     }
   })
   .add('FasterDMA', () => {
     const fasterDMA = new FasterDMA(3, 6);
     for (const price of prices) {
-      fasterDMA.update(price);
+      fasterDMA.add(price);
     }
   })
   .add('DX', () => {
     const dx = new DX(interval);
     for (const candle of floatCandles) {
-      dx.update(candle);
+      dx.add(candle);
     }
   })
   .add('FasterDX', () => {
     const fasterDX = new FasterDX(interval);
     for (const candle of floatCandles) {
-      fasterDX.update(candle);
+      fasterDX.add(candle);
     }
   })
   .add('EMA', () => {
     const ema = new EMA(interval);
     for (const price of prices) {
-      ema.update(price);
+      ema.add(price);
     }
   })
   .add('FasterEMA', () => {
     const fasterEMA = new FasterEMA(interval);
     for (const price of prices) {
-      fasterEMA.update(price);
+      fasterEMA.add(price);
     }
   })
   .add('MACD', () => {
@@ -237,157 +237,157 @@ new Benchmark.Suite('Technical Indicators')
       signalInterval: 9,
     });
     for (const price of prices) {
-      mad.update(price);
+      mad.add(price);
     }
   })
   .add('FasterMACD', () => {
     const fasterMACD = new FasterMACD(new FasterEMA(2), new FasterEMA(5), new FasterEMA(9));
     for (const price of prices) {
-      fasterMACD.update(price);
+      fasterMACD.add(price);
     }
   })
   .add('MAD', () => {
     const mad = new MAD(interval);
     for (const price of prices) {
-      mad.update(price);
+      mad.add(price);
     }
   })
   .add('FasterMAD', () => {
     const fasterMad = new FasterMAD(interval);
     for (const price of prices) {
-      fasterMad.update(price);
+      fasterMad.add(price);
     }
   })
   .add('MOM', () => {
     const mom = new MOM(interval);
     for (const price of prices) {
-      mom.update(price);
+      mom.add(price);
     }
   })
   .add('FasterMOM', () => {
     const fasterMOM = new FasterMOM(interval);
     for (const price of prices) {
-      fasterMOM.update(price);
+      fasterMOM.add(price);
     }
   })
   .add('OBV', () => {
     const obv = new OBV();
     for (const candle of floatCandles) {
-      obv.update(candle);
+      obv.add(candle);
     }
   })
   .add('FasterOBV', () => {
     const fasterOBV = new FasterOBV();
     for (const candle of floatCandles) {
-      fasterOBV.update(candle);
+      fasterOBV.add(candle);
     }
   })
   .add('Period', () => {
     const period = new Period(interval);
     for (const price of prices) {
-      period.update(price);
+      period.add(price);
     }
   })
   .add('FasterPeriod', () => {
     const fasterPeriod = new FasterPeriod(interval);
     for (const price of prices) {
-      fasterPeriod.update(price);
+      fasterPeriod.add(price);
     }
   })
   .add('ROC', () => {
     const roc = new ROC(interval);
     for (const price of prices) {
-      roc.update(price);
+      roc.add(price);
     }
   })
   .add('FasterROC', () => {
     const fasterROC = new FasterROC(interval);
     for (const price of prices) {
-      fasterROC.update(price);
+      fasterROC.add(price);
     }
   })
   .add('RSI', () => {
     const rsi = new RSI(interval);
     for (const price of prices) {
-      rsi.update(price);
+      rsi.add(price);
     }
   })
   .add('FasterRSI', () => {
     const fasterRSI = new FasterRSI(interval);
     for (const price of prices) {
-      fasterRSI.update(price);
+      fasterRSI.add(price);
     }
   })
   .add('SMA', () => {
     const sma = new SMA(interval);
     for (const price of prices) {
-      sma.update(price);
+      sma.add(price);
     }
   })
   .add('FasterSMA', () => {
     const fasterSMA = new FasterSMA(interval);
     for (const price of prices) {
-      fasterSMA.update(price);
+      fasterSMA.add(price);
     }
   })
   .add('StochasticOscillator', () => {
     const stoch = new StochasticOscillator(shortInterval, interval, interval);
     for (const candle of candles) {
-      stoch.update(candle);
+      stoch.add(candle);
     }
   })
   .add('FasterStochasticOscillator', () => {
     const fasterStoch = new FasterStochasticOscillator(shortInterval, interval, interval);
     for (const candle of floatCandles) {
-      fasterStoch.update(candle);
+      fasterStoch.add(candle);
     }
   })
   .add('StochasticRSI', () => {
     const stochRSI = new StochasticRSI(interval);
     for (const price of prices) {
-      stochRSI.update(price);
+      stochRSI.add(price);
     }
   })
   .add('FasterStochasticRSI', () => {
     const fasterStochRSI = new FasterStochasticRSI(interval);
     for (const price of prices) {
-      fasterStochRSI.update(price);
+      fasterStochRSI.add(price);
     }
   })
   .add('TR', () => {
     const tr = new TR();
     for (const candle of floatCandles) {
-      tr.update(candle);
+      tr.add(candle);
     }
   })
   .add('FasterTR', () => {
     const fasterTR = new FasterTR();
     for (const candle of floatCandles) {
-      fasterTR.update(candle);
+      fasterTR.add(candle);
     }
   })
   .add('WSMA', () => {
     const wsma = new WSMA(interval);
     for (const price of prices) {
-      wsma.update(price);
+      wsma.add(price);
     }
   })
   .add('FasterWSMA', () => {
     const fasterWSMA = new FasterWSMA(interval);
     for (const price of prices) {
-      fasterWSMA.update(price);
+      fasterWSMA.add(price);
     }
   })
   .add('WMA', () => {
     const wma = new WMA(interval);
     for (const price of prices) {
-      wma.update(price);
+      wma.add(price);
     }
   })
   .add('FasterWMA', () => {
     const fasterWMA = new FasterWMA(interval);
     for (const price of prices) {
-      fasterWMA.update(price);
+      fasterWMA.add(price);
     }
   })
   .add('getAverage', () => {

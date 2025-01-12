@@ -1,6 +1,8 @@
+import type {BigSource} from 'big.js';
+import Big from 'big.js';
 import {BigIndicatorSeries, NumberIndicatorSeries} from '../Indicator.js';
-import {Big, type BigSource} from '../index.js';
 import {FasterSMA, SMA} from '../SMA/SMA.js';
+import {pushUpdate} from '../util/pushUpdate.js';
 
 /**
  * Center of Gravity (CG)
@@ -17,7 +19,7 @@ import {FasterSMA, SMA} from '../SMA/SMA.js';
  */
 export class CG extends BigIndicatorSeries {
   public signal: SMA;
-
+  // TODO: Use "getFixedArray"
   public readonly prices: Big[] = [];
 
   override get isStable(): boolean {
@@ -32,12 +34,8 @@ export class CG extends BigIndicatorSeries {
     this.signal = new SMA(signalInterval);
   }
 
-  override update(price: BigSource, replace: boolean = false): void | Big {
-    if (this.prices.length && replace) {
-      this.prices[this.prices.length - 1] = new Big(price);
-    } else {
-      this.prices.push(new Big(price));
-    }
+  update(price: BigSource, replace: boolean) {
+    pushUpdate(this.prices, replace, new Big(price));
 
     if (this.prices.length > this.interval) {
       this.prices.shift();
@@ -59,6 +57,8 @@ export class CG extends BigIndicatorSeries {
     if (this.signal.isStable) {
       return this.setResult(cg, replace);
     }
+
+    return null;
   }
 }
 
@@ -79,12 +79,8 @@ export class FasterCG extends NumberIndicatorSeries {
     this.signal = new FasterSMA(signalInterval);
   }
 
-  override update(price: number, replace: boolean = false): void | number {
-    if (this.prices.length && replace) {
-      this.prices[this.prices.length - 1] = price;
-    } else {
-      this.prices.push(price);
-    }
+  update(price: number, replace: boolean) {
+    pushUpdate(this.prices, replace, price);
 
     if (this.prices.length > this.interval) {
       this.prices.shift();
@@ -106,5 +102,7 @@ export class FasterCG extends NumberIndicatorSeries {
     if (this.signal.isStable) {
       return this.setResult(cg, replace);
     }
+
+    return null;
   }
 }

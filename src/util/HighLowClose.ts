@@ -1,4 +1,4 @@
-import type {BigSource} from '../index.js';
+import type {BigSource} from 'big.js';
 
 export type HighLow = {high: BigSource; low: BigSource};
 

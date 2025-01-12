@@ -6,22 +6,22 @@ describe('RSI', () => {
     it('can replace recently added values', () => {
       const rsi = new RSI(5);
       const fasterRSI = new FasterRSI(5);
-      rsi.update('81.59');
-      fasterRSI.update(81.59);
-      rsi.update('81.06');
-      fasterRSI.update(81.06);
-      rsi.update('82.87');
-      fasterRSI.update(82.87);
-      rsi.update('83.0');
-      fasterRSI.update(83.0);
-      rsi.update('83.61');
-      fasterRSI.update(83.61);
-      rsi.update('83.15');
-      fasterRSI.update(83.15);
-      rsi.update('82.84');
-      fasterRSI.update(82.84);
-      rsi.update('90'); // this value gets replaced with the next call
-      fasterRSI.update(90); // this value gets replaced with the next call
+      rsi.add('81.59');
+      fasterRSI.add(81.59);
+      rsi.add('81.06');
+      fasterRSI.add(81.06);
+      rsi.add('82.87');
+      fasterRSI.add(82.87);
+      rsi.add('83.0');
+      fasterRSI.add(83.0);
+      rsi.add('83.61');
+      fasterRSI.add(83.61);
+      rsi.add('83.15');
+      fasterRSI.add(83.15);
+      rsi.add('82.84');
+      fasterRSI.add(82.84);
+      rsi.add('90'); // this value gets replaced with the next call
+      fasterRSI.add(90); // this value gets replaced with the next call
       rsi.update('83.99', true);
       fasterRSI.update(83.99, true);
 
@@ -55,8 +55,8 @@ describe('RSI', () => {
       const rsi = new RSI(5);
       const fasterRSI = new FasterRSI(5);
       for (const price of prices) {
-        rsi.update(price);
-        fasterRSI.update(price);
+        rsi.add(price);
+        fasterRSI.add(price);
         if (rsi.isStable && fasterRSI.isStable) {
           const expected = expectations.shift();
           expect(rsi.getResult().toFixed(3)).toBe(expected!);
@@ -77,22 +77,20 @@ describe('RSI', () => {
     });
 
     it('catches division by zero errors', () => {
+      const updates = [2, 2, 2];
+
       const rsi = new RSI(2);
-      rsi.update(2);
-      rsi.update(2);
-      rsi.update(2);
+      rsi.updates(updates, false);
       expect(rsi.getResult().valueOf()).toBe('100');
 
       const fasterRSI = new FasterRSI(2);
-      fasterRSI.update(2);
-      fasterRSI.update(2);
-      fasterRSI.update(2);
+      fasterRSI.updates(updates, false);
       expect(fasterRSI.getResult().valueOf()).toBe(100);
     });
 
     it('throws an error when there is not enough input data', () => {
       const rsi = new RSI(2);
-      rsi.update(0);
+      rsi.add(0);
       expect(rsi.isStable).toBe(false);
       try {
         rsi.getResult();

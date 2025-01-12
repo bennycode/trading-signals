@@ -1,6 +1,7 @@
-import {Big, type BigSource} from '../index.js';
+import type {BigSource} from 'big.js';
+import Big from 'big.js';
 import {BigIndicatorSeries, NumberIndicatorSeries} from '../Indicator.js';
-import {getAverage, getFasterAverage} from '../util/index.js';
+import {getAverage, getFasterAverage, pushUpdate} from '../util/index.js';
 
 /**
  * Mean Absolute Deviation (MAD)
@@ -12,18 +13,15 @@ import {getAverage, getFasterAverage} from '../util/index.js';
  * @see https://en.wikipedia.org/wiki/Average_absolute_deviation
  */
 export class MAD extends BigIndicatorSeries {
+  // TODO: Use "getFixedArray"
   public readonly prices: BigSource[] = [];
 
   constructor(public readonly interval: number) {
     super();
   }
 
-  override update(price: BigSource, replace: boolean = false): void | Big {
-    if (this.prices.length && replace) {
-      this.prices[this.prices.length - 1] = price;
-    } else {
-      this.prices.push(price);
-    }
+  update(price: BigSource, replace: boolean) {
+    pushUpdate(this.prices, replace, price);
 
     if (this.prices.length > this.interval) {
       this.prices.shift();
@@ -32,6 +30,8 @@ export class MAD extends BigIndicatorSeries {
     if (this.prices.length === this.interval) {
       return this.setResult(MAD.getResultFromBatch(this.prices), replace);
     }
+
+    return null;
   }
 
   static getResultFromBatch(prices: BigSource[], average?: BigSource): Big {
@@ -52,12 +52,8 @@ export class FasterMAD extends NumberIndicatorSeries {
     super();
   }
 
-  override update(price: number, replace: boolean = false): void | number {
-    if (this.prices.length && replace) {
-      this.prices[this.prices.length - 1] = price;
-    } else {
-      this.prices.push(price);
-    }
+  update(price: number, replace: boolean) {
+    pushUpdate(this.prices, replace, price);
 
     if (this.prices.length > this.interval) {
       this.prices.shift();
@@ -72,6 +68,8 @@ export class FasterMAD extends NumberIndicatorSeries {
       }
       return this.setResult(sum / this.interval, replace);
     }
+
+    return null;
   }
 
   static getResultFromBatch(prices: number[], average?: number): number {

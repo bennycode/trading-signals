@@ -1,5 +1,7 @@
-import {Big, type BigSource} from '../index.js';
+import type {BigSource} from 'big.js';
+import Big from 'big.js';
 import {FasterMovingAverage, MovingAverage} from '../MA/MovingAverage.js';
+import {pushUpdate} from '../util/pushUpdate.js';
 
 /**
  * Weighted Moving Average (WMA)
@@ -11,18 +13,15 @@ import {FasterMovingAverage, MovingAverage} from '../MA/MovingAverage.js';
  * @see https://corporatefinanceinstitute.com/resources/career-map/sell-side/capital-markets/weighted-moving-average-wma/
  */
 export class WMA extends MovingAverage {
+  // TODO: Use "getFixedArray"
   public readonly prices: BigSource[] = [];
 
-  constructor(public readonly interval: number) {
+  constructor(public override readonly interval: number) {
     super(interval);
   }
 
-  override update(price: BigSource, replace: boolean = false): Big | void {
-    if (this.prices.length && replace) {
-      this.prices[this.prices.length - 1] = price;
-    } else {
-      this.prices.push(price);
-    }
+  update(price: BigSource, replace: boolean) {
+    pushUpdate(this.prices, replace, price);
 
     if (this.prices.length > this.interval) {
       this.prices.shift();
@@ -40,22 +39,20 @@ export class WMA extends MovingAverage {
 
       return this.setResult(weightedMa, replace);
     }
+
+    return null;
   }
 }
 
 export class FasterWMA extends FasterMovingAverage {
   public readonly prices: number[] = [];
 
-  constructor(public readonly interval: number) {
+  constructor(public override readonly interval: number) {
     super(interval);
   }
 
-  override update(price: number, replace: boolean = false): number | void {
-    if (this.prices.length && replace) {
-      this.prices[this.prices.length - 1] = price;
-    } else {
-      this.prices.push(price);
-    }
+  update(price: number, replace: boolean) {
+    pushUpdate(this.prices, replace, price);
 
     if (this.prices.length > this.interval) {
       this.prices.shift();
@@ -74,5 +71,7 @@ export class FasterWMA extends FasterMovingAverage {
 
       return this.setResult(weightedMa, replace);
     }
+
+    return null;
   }
 }

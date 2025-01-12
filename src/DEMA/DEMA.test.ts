@@ -17,28 +17,28 @@ describe('DEMA', () => {
     it('can replace recently added values', () => {
       const dema = new DEMA(10);
       const fasterDEMA = new FasterDEMA(10);
-      dema.update(81);
-      fasterDEMA.update(81);
-      dema.update(24);
-      fasterDEMA.update(24);
-      dema.update(75);
-      fasterDEMA.update(75);
-      dema.update(21);
-      fasterDEMA.update(21);
-      dema.update(34);
-      fasterDEMA.update(34);
-      dema.update(25);
-      fasterDEMA.update(25);
-      dema.update(72);
-      fasterDEMA.update(72);
-      dema.update(92);
-      fasterDEMA.update(92);
-      dema.update(100);
-      fasterDEMA.update(100);
+      dema.add(81);
+      fasterDEMA.add(81);
+      dema.add(24);
+      fasterDEMA.add(24);
+      dema.add(75);
+      fasterDEMA.add(75);
+      dema.add(21);
+      fasterDEMA.add(21);
+      dema.add(34);
+      fasterDEMA.add(34);
+      dema.add(25);
+      fasterDEMA.add(25);
+      dema.add(72);
+      fasterDEMA.add(72);
+      dema.add(92);
+      fasterDEMA.add(92);
+      dema.add(100);
+      fasterDEMA.add(100);
       dema.update(99, true);
       fasterDEMA.update(99, true);
-      dema.update(2);
-      fasterDEMA.update(2);
+      dema.add(2);
+      fasterDEMA.add(2);
 
       expect(dema.isStable).toBe(true);
       expect(fasterDEMA.isStable).toBe(true);
@@ -59,8 +59,8 @@ describe('DEMA', () => {
       const fasterDEMA = new FasterDEMA(10);
 
       prices.forEach((price, index) => {
-        dema.update(price);
-        fasterDEMA.update(price);
+        dema.add(price);
+        fasterDEMA.add(price);
         if (dema.isStable) {
           const result = new Big(dema10results[index]);
           expect(dema.getResult().toPrecision(12)).toEqual(result.toPrecision(12));
@@ -94,8 +94,8 @@ describe('DEMA', () => {
     it('is stable when there are enough inputs to fill the interval', () => {
       const dema = new DEMA(2);
       expect(dema.isStable).toBe(false);
-      dema.update(1);
-      dema.update(2);
+      dema.add(1);
+      dema.add(2);
       expect(dema.isStable).toBe(true);
       expect(dema.lowest?.toFixed(2)).toBe('1.00');
       expect(dema.highest?.toFixed(2)).toBe('1.89');

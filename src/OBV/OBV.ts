@@ -1,6 +1,7 @@
-import {Big} from '../index.js';
+import Big from 'big.js';
 import {BigIndicatorSeries, NumberIndicatorSeries} from '../Indicator.js';
-import type {OpenHighLowCloseVolume, OpenHighLowCloseVolumeNumber} from '../util/index.js';
+import type {OpenHighLowCloseVolume, OpenHighLowCloseVolumeNumber} from '../util/HighLowClose.js';
+import {pushUpdate} from '../util/pushUpdate.js';
 
 /**
  * On-Balance Volume (OBV)
@@ -14,11 +15,11 @@ import type {OpenHighLowCloseVolume, OpenHighLowCloseVolumeNumber} from '../util
 export class OBV extends BigIndicatorSeries<OpenHighLowCloseVolume> {
   public readonly candles: OpenHighLowCloseVolume[] = [];
 
-  override update(candle: OpenHighLowCloseVolume): Big | void {
-    this.candles.push(candle);
+  update(candle: OpenHighLowCloseVolume, replace: boolean) {
+    pushUpdate(this.candles, replace, candle);
 
     if (this.candles.length === 1) {
-      return;
+      return null;
     }
 
     const prevCandle = this.candles[this.candles.length - 2];
@@ -27,18 +28,18 @@ export class OBV extends BigIndicatorSeries<OpenHighLowCloseVolume> {
     const currentPrice = new Big(candle.close);
     const nextResult = currentPrice.gt(prevPrice) ? candle.volume : currentPrice.lt(prevPrice) ? -candle.volume : 0;
 
-    return this.setResult(prevResult.add(nextResult), false);
+    return this.setResult(prevResult.add(nextResult), replace);
   }
 }
 
 export class FasterOBV extends NumberIndicatorSeries<OpenHighLowCloseVolumeNumber> {
   public readonly candles: OpenHighLowCloseVolumeNumber[] = [];
 
-  update(candle: OpenHighLowCloseVolumeNumber): void | number {
-    this.candles.push(candle);
+  update(candle: OpenHighLowCloseVolumeNumber, replace: boolean) {
+    pushUpdate(this.candles, replace, candle);
 
     if (this.candles.length === 1) {
-      return;
+      return null;
     }
 
     const prevCandle = this.candles[this.candles.length - 2];

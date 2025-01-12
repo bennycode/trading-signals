@@ -1,6 +1,20 @@
 import {FasterStochasticRSI, StochasticRSI} from './StochasticRSI.js';
 
 describe('StochasticRSI', () => {
+  describe('replace', () => {
+    it('replaces the most recently added value', () => {
+      const interval = 2;
+      const stochRSI = new StochasticRSI(interval);
+      const stochRSIWithReplace = new StochasticRSI(interval);
+
+      stochRSI.updates([2, 2, 2, 2], false);
+      stochRSIWithReplace.updates([2, 2, 2, 1], false);
+      stochRSIWithReplace.replace(2);
+
+      expect(stochRSI.getResult().valueOf()).toBe(stochRSIWithReplace.getResult().valueOf());
+    });
+  });
+
   describe('getResult', () => {
     it('calculates the Stochastic RSI', () => {
       // Test data verified with:
@@ -9,11 +23,12 @@ describe('StochasticRSI', () => {
         81.59, 81.06, 82.87, 83.0, 83.61, 83.15, 82.84, 83.99, 84.55, 84.36, 85.53, 86.54, 86.89, 87.77, 87.29,
       ];
       const expectations = ['0.658', '1.000', '1.000', '1.000', '1.000', '0.000'];
-      const stochRSI = new StochasticRSI(5);
-      const fasterStochRSI = new FasterStochasticRSI(5);
+      const interval = 5;
+      const stochRSI = new StochasticRSI(interval);
+      const fasterStochRSI = new FasterStochasticRSI(interval);
       for (const price of prices) {
-        const result = stochRSI.update(price);
-        const fasterResult = fasterStochRSI.update(price);
+        const result = stochRSI.add(price);
+        const fasterResult = fasterStochRSI.add(price);
         if (result && fasterResult) {
           const expected = expectations.shift();
           expect(result.toFixed(3)).toBe(expected!);
@@ -34,18 +49,13 @@ describe('StochasticRSI', () => {
     });
 
     it('catches division by zero errors', () => {
-      const stochRSI = new StochasticRSI(2);
-      stochRSI.update(2);
-      stochRSI.update(2);
-      stochRSI.update(2);
-      stochRSI.update(2);
+      const interval = 2;
+      const stochRSI = new StochasticRSI(interval);
+      stochRSI.updates([2, 2, 2, 2], false);
       expect(stochRSI.getResult().valueOf()).toBe('100');
 
-      const fasterStochRSI = new FasterStochasticRSI(2);
-      fasterStochRSI.update(2);
-      fasterStochRSI.update(2);
-      fasterStochRSI.update(2);
-      fasterStochRSI.update(2);
+      const fasterStochRSI = new FasterStochasticRSI(interval);
+      fasterStochRSI.updates([2, 2, 2, 2], false);
       expect(fasterStochRSI.getResult().valueOf()).toBe(100);
     });
   });

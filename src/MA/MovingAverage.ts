@@ -1,4 +1,3 @@
-import type {Big, BigSource} from '../index.js';
 import {BigIndicatorSeries, NumberIndicatorSeries} from '../Indicator.js';
 
 /**
@@ -13,32 +12,10 @@ export abstract class MovingAverage extends BigIndicatorSeries {
   constructor(public readonly interval: number) {
     super();
   }
-
-  updates(prices: BigSource[]): Big | void {
-    prices.forEach(price => this.update(price));
-    return this.result;
-  }
-
-  abstract update(price: BigSource, replace?: boolean): Big | void;
-
-  replace(price: BigSource) {
-    return this.update(price, true);
-  }
 }
 
 export abstract class FasterMovingAverage extends NumberIndicatorSeries {
   constructor(public readonly interval: number) {
     super();
-  }
-
-  updates(prices: number[]): number | void {
-    prices.forEach(price => this.update(price));
-    return this.result;
-  }
-
-  abstract update(price: number, replace?: boolean): number | void;
-
-  replace(price: number) {
-    return this.update(price, true);
   }
 }

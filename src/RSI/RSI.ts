@@ -1,8 +1,10 @@
-import {Big, type BigSource} from '../index.js';
 import type {FasterMovingAverage, MovingAverage} from '../MA/MovingAverage.js';
 import {BigIndicatorSeries, NumberIndicatorSeries} from '../Indicator.js';
 import type {FasterMovingAverageTypes, MovingAverageTypes} from '../MA/MovingAverageTypes.js';
 import {FasterWSMA, WSMA} from '../WSMA/WSMA.js';
+import type {BigSource} from 'big.js';
+import Big from 'big.js';
+import {pushUpdate} from '../util/pushUpdate.js';
 
 /**
  * Relative Strength Index (RSI)
@@ -22,6 +24,7 @@ import {FasterWSMA, WSMA} from '../WSMA/WSMA.js';
  * @see https://www.investopedia.com/terms/r/rsi.asp
  */
 export class RSI extends BigIndicatorSeries {
+  // TODO: Use "getFixedArray"
   private readonly previousPrices: BigSource[] = [];
   private readonly avgGain: MovingAverage;
   private readonly avgLoss: MovingAverage;
@@ -36,18 +39,12 @@ export class RSI extends BigIndicatorSeries {
     this.avgLoss = new SmoothingIndicator(this.interval);
   }
 
-  override update(price: BigSource, replace: boolean = false): void | Big {
-    if (this.previousPrices.length && replace) {
-      // Replace the last price with the provided price
-      this.previousPrices[this.previousPrices.length - 1] = price;
-    } else {
-      // Add the price to the list of previous prices
-      this.previousPrices.push(price);
-    }
+  update(price: BigSource, replace: boolean) {
+    pushUpdate(this.previousPrices, replace, price);
 
     // Ensure at least 2 prices are available for calculation
     if (this.previousPrices.length < 2) {
-      return;
+      return null;
     }
 
     const currentPrice = new Big(price);
@@ -61,6 +58,11 @@ export class RSI extends BigIndicatorSeries {
       this.avgGain.update(new Big(0), replace); // price went down, therefore no gain
     }
 
+    // Avoids memory leaks
+    if (this.previousPrices.length > this.interval) {
+      this.previousPrices.shift();
+    }
+
     if (this.avgGain.isStable) {
       const avgLoss = this.avgLoss.getResult();
       // Prevent division by zero: https://github.com/bennycode/trading-signals/issues/378
@@ -70,6 +72,8 @@ export class RSI extends BigIndicatorSeries {
       const relativeStrength = this.avgGain.getResult().div(avgLoss);
       return this.setResult(this.maxValue.minus(this.maxValue.div(relativeStrength.add(1))), replace);
     }
+
+    return null;
   }
 }
 
@@ -88,18 +92,12 @@ export class FasterRSI extends NumberIndicatorSeries {
     this.avgLoss = new SmoothingIndicator(this.interval);
   }
 
-  override update(price: number, replace: boolean = false): void | number {
-    if (this.previousPrices.length && replace) {
-      // Replace the last price with the provided price
-      this.previousPrices[this.previousPrices.length - 1] = price;
-    } else {
-      // Add the price to the list of previous prices
-      this.previousPrices.push(price);
-    }
+  update(price: number, replace: boolean) {
+    pushUpdate(this.previousPrices, replace, price);
 
     // Ensure at least 2 prices are available for calculation
     if (this.previousPrices.length < 2) {
-      return;
+      return null;
     }
 
     const currentPrice = price;
@@ -113,6 +111,11 @@ export class FasterRSI extends NumberIndicatorSeries {
       this.avgGain.update(0, replace);
     }
 
+    // Avoids memory leaks
+    if (this.previousPrices.length > this.interval) {
+      this.previousPrices.shift();
+    }
+
     if (this.avgGain.isStable) {
       const avgLoss = this.avgLoss.getResult();
       // Prevent division by zero: https://github.com/bennycode/trading-signals/issues/378
@@ -122,5 +125,7 @@ export class FasterRSI extends NumberIndicatorSeries {
       const relativeStrength = this.avgGain.getResult() / avgLoss;
       return this.setResult(this.maxValue - this.maxValue / (relativeStrength + 1), replace);
     }
+
+    return null;
   }
 }

@@ -4,7 +4,7 @@ class MyAverage extends FasterMovingAverage {
   iterations = 0;
   total = 0;
 
-  update(price: number): number | void {
+  update(price: number) {
     if (this.result === undefined) {
       this.result = 0;
     }
@@ -19,8 +19,8 @@ describe('FasterMovingAverage', () => {
     const average = new MyAverage(Infinity);
     expect(average.isStable).toBe(false);
     expect(() => average.getResult()).toThrowError();
-    average.update(50);
-    average.update(100);
+    average.add(50);
+    average.add(100);
     const result = average.getResult();
     expect(result).toBe(75);
   });

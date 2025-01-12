@@ -1,10 +1,11 @@
 import {BigIndicatorSeries, NumberIndicatorSeries} from '../Indicator.js';
-import type {HighLowClose, HighLowCloseNumber} from '../util/index.js';
-import {Big, type BigSource} from '../index.js';
 import type {FasterMovingAverage, MovingAverage} from '../MA/MovingAverage.js';
 import type {FasterMovingAverageTypes, MovingAverageTypes} from '../MA/MovingAverageTypes.js';
 import {FasterWSMA, WSMA} from '../WSMA/WSMA.js';
 import {ATR, FasterATR} from '../ATR/ATR.js';
+import type {BigSource} from 'big.js';
+import Big from 'big.js';
+import type {HighLowClose, HighLowCloseNumber} from '../util/HighLowClose.js';
 
 /**
  * Directional Movement Index (DMI / DX)
@@ -23,6 +24,7 @@ export class DX extends BigIndicatorSeries<HighLowClose> {
   private readonly movesUp: MovingAverage;
   private readonly movesDown: MovingAverage;
   private previousCandle?: HighLowClose;
+  private secondLastCandle?: HighLowClose;
   private readonly atr: ATR;
   /** Minus Directional Indicator (-DI) */
   public mdi?: Big;
@@ -39,17 +41,24 @@ export class DX extends BigIndicatorSeries<HighLowClose> {
     this.movesUp = new SmoothingIndicator(this.interval);
   }
 
-  private updateState(candle: HighLowClose, pdm: BigSource = 0, mdm: BigSource = 0): void {
-    this.atr.update(candle);
-    this.movesDown.update(mdm);
-    this.movesUp.update(pdm);
+  private updateState(candle: HighLowClose, pdm: BigSource, mdm: BigSource, replace: boolean): void {
+    this.atr.update(candle, replace);
+    this.movesDown.update(mdm, replace);
+    this.movesUp.update(pdm, replace);
+    if (this.previousCandle) {
+      this.secondLastCandle = this.previousCandle;
+    }
     this.previousCandle = candle;
   }
 
-  update(candle: HighLowClose): Big | void {
+  update(candle: HighLowClose, replace: boolean) {
     if (!this.previousCandle) {
-      this.updateState(candle);
-      return;
+      this.updateState(candle, 0, 0, replace);
+      return null;
+    }
+
+    if (this.secondLastCandle && replace) {
+      this.previousCandle = this.secondLastCandle;
     }
 
     const currentHigh = new Big(candle.high);
@@ -73,7 +82,7 @@ export class DX extends BigIndicatorSeries<HighLowClose> {
     // Minus Directional Movement (-DM)
     const mdm = noLowerLows || highsRiseFaster ? new Big(0) : lowerLow;
 
-    this.updateState(candle, pdm, mdm);
+    this.updateState(candle, pdm, mdm, replace);
 
     if (this.movesUp.isStable) {
       this.pdi = this.movesUp.getResult().div(this.atr.getResult());
@@ -84,11 +93,13 @@ export class DX extends BigIndicatorSeries<HighLowClose> {
 
       // Prevent division by zero
       if (dmSum.eq(0)) {
-        return this.setResult(new Big(0), false);
+        return this.setResult(new Big(0), replace);
       }
 
-      return this.setResult(dmDiff.div(dmSum).mul(100), false);
+      return this.setResult(dmDiff.div(dmSum).mul(100), replace);
     }
+
+    return null;
   }
 }
 
@@ -96,6 +107,7 @@ export class FasterDX extends NumberIndicatorSeries<HighLowCloseNumber> {
   private readonly movesUp: FasterMovingAverage;
   private readonly movesDown: FasterMovingAverage;
   private previousCandle?: HighLowCloseNumber;
+  private secondLastCandle?: HighLowCloseNumber;
   private readonly atr: FasterATR;
   public mdi?: number;
   public pdi?: number;
@@ -110,17 +122,24 @@ export class FasterDX extends NumberIndicatorSeries<HighLowCloseNumber> {
     this.movesUp = new SmoothingIndicator(this.interval);
   }
 
-  private updateState(candle: HighLowCloseNumber, pdm: number = 0, mdm: number = 0): void {
-    this.atr.update(candle);
-    this.movesUp.update(pdm);
-    this.movesDown.update(mdm);
+  private updateState(candle: HighLowCloseNumber, pdm: number, mdm: number, replace: boolean): void {
+    this.atr.update(candle, replace);
+    this.movesUp.update(pdm, replace);
+    this.movesDown.update(mdm, replace);
+    if (this.previousCandle) {
+      this.secondLastCandle = this.previousCandle;
+    }
     this.previousCandle = candle;
   }
 
-  update(candle: HighLowCloseNumber): number | void {
+  update(candle: HighLowCloseNumber, replace: boolean) {
     if (!this.previousCandle) {
-      this.updateState(candle);
-      return;
+      this.updateState(candle, 0, 0, replace);
+      return null;
+    }
+
+    if (this.secondLastCandle && replace) {
+      this.previousCandle = this.secondLastCandle;
     }
 
     const currentHigh = candle.high;
@@ -142,7 +161,7 @@ export class FasterDX extends NumberIndicatorSeries<HighLowCloseNumber> {
 
     const mdm = noLowerLows || highsRiseFaster ? 0 : lowerLow;
 
-    this.updateState(candle, pdm, mdm);
+    this.updateState(candle, pdm, mdm, replace);
 
     if (this.movesUp.isStable) {
       this.pdi = this.movesUp.getResult() / this.atr.getResult();
@@ -152,10 +171,12 @@ export class FasterDX extends NumberIndicatorSeries<HighLowCloseNumber> {
       const dmSum = this.pdi + this.mdi;
 
       if (dmSum === 0) {
-        return this.setResult(0, false);
+        return this.setResult(0, replace);
       }
 
-      return this.setResult((dmDiff / dmSum) * 100, false);
+      return this.setResult((dmDiff / dmSum) * 100, replace);
     }
+
+    return null;
   }
 }

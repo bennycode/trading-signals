@@ -1,21 +1,58 @@
+import {NotEnoughDataError} from '../error/NotEnoughDataError.js';
 import {FasterPeriod, Period} from './Period.js';
 
 describe('Period', () => {
+  describe('replace', () => {
+    it('replaces the most recently added value', () => {
+      const interval = 5;
+      const expectedLow = '30';
+      const expectedHigh = '70';
+
+      const period = new Period(interval);
+      const periodWithReplace = new Period(interval);
+      const fasterPeriodWithReplace = new FasterPeriod(interval);
+
+      const subset = [30, 40, 50, 60];
+      period.updates([...subset, 70], false);
+      periodWithReplace.updates([...subset, 90], false);
+      periodWithReplace.replace(70);
+      fasterPeriodWithReplace.updates([...subset, 90], false);
+      fasterPeriodWithReplace.replace(70);
+
+      expect(periodWithReplace.lowest?.toFixed()).toBe(expectedLow);
+      expect(periodWithReplace.highest?.toFixed()).toBe(expectedHigh);
+      expect(fasterPeriodWithReplace.highest?.toFixed()).toBe(expectedHigh);
+    });
+  });
+
   describe('getResult', () => {
     it('returns the highest and lowest value of the current period', () => {
-      const period = new Period(2);
-      period.update(72);
-      period.update(1337);
+      const values = [72, 1337];
+      const interval = 2;
+      const period = new Period(interval);
+      period.updates(values, false);
       const {highest, lowest} = period.getResult();
       expect(lowest.valueOf()).toBe('72');
       expect(highest.valueOf()).toBe('1337');
 
-      const fasterPeriod = new FasterPeriod(2);
-      fasterPeriod.update(72);
-      fasterPeriod.update(1337);
+      expect(period.lowest?.valueOf()).toBe('72');
+      expect(period.highest?.valueOf()).toBe('1337');
+
+      const fasterPeriod = new FasterPeriod(interval);
+      fasterPeriod.updates(values, false);
       const {highest: fastestHighest, lowest: fastestLowest} = fasterPeriod.getResult();
       expect(fastestLowest).toBe(72);
       expect(fastestHighest).toBe(1337);
+    });
+
+    it('throws an error when there is not enough input data', () => {
+      const period = new Period(2);
+      try {
+        period.getResult();
+        throw new Error('Expected error');
+      } catch (error) {
+        expect(error).toBeInstanceOf(NotEnoughDataError);
+      }
     });
   });
 
@@ -39,11 +76,12 @@ describe('Period', () => {
         '84.36',
         '85.53',
       ];
-      const period = new Period(5);
-      const fasterPeriod = new FasterPeriod(5);
+      const interval = 5;
+      const period = new Period(interval);
+      const fasterPeriod = new FasterPeriod(interval);
       for (const price of prices) {
-        period.update(price);
-        fasterPeriod.update(price);
+        period.add(price);
+        fasterPeriod.add(price);
         if (period.isStable) {
           const expected = lowest.shift();
           expect(period.lowest?.toFixed(2)).toBe(expected);

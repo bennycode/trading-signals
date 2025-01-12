@@ -1,10 +1,10 @@
-import type {Indicator} from '../Indicator.js';
-import {Big} from '../index.js';
+import Big from 'big.js';
+import {TechnicalIndicator} from '../Indicator.js';
 import {FasterSMA, SMA} from '../SMA/SMA.js';
 import {getMaximum} from '../util/getMaximum.js';
 import {getMinimum} from '../util/getMinimum.js';
-import {NotEnoughDataError} from '../error/index.js';
-import type {HighLowClose, HighLowCloseNumber} from '../util/index.js';
+import type {HighLowClose, HighLowCloseNumber} from '../util/HighLowClose.js';
+import {pushUpdate} from '../util/pushUpdate.js';
 
 export interface StochasticResult {
   /** Slow stochastic indicator (%D) */
@@ -37,12 +37,11 @@ export interface FasterStochasticResult {
  * @see https://en.wikipedia.org/wiki/Stochastic_oscillator
  * @see https://www.investopedia.com/terms/s/stochasticoscillator.asp
  */
-export class StochasticOscillator implements Indicator<StochasticResult, HighLowClose> {
+export class StochasticOscillator extends TechnicalIndicator<StochasticResult, HighLowClose> {
   private readonly periodM: SMA;
   private readonly periodP: SMA;
-
+  // TODO: Use "getFixedArray"
   private readonly candles: HighLowClose[] = [];
-  private result?: StochasticResult;
 
   /**
    * Constructs a Stochastic Oscillator.
@@ -56,20 +55,13 @@ export class StochasticOscillator implements Indicator<StochasticResult, HighLow
     public readonly m: number,
     public readonly p: number
   ) {
+    super();
     this.periodM = new SMA(m);
     this.periodP = new SMA(p);
   }
 
-  getResult(): StochasticResult {
-    if (this.result === undefined) {
-      throw new NotEnoughDataError();
-    }
-
-    return this.result;
-  }
-
-  update(candle: HighLowClose): void | StochasticResult {
-    this.candles.push(candle);
+  update(candle: HighLowClose, replace: boolean) {
+    pushUpdate(this.candles, replace, candle);
 
     if (this.candles.length > this.n) {
       this.candles.shift();
@@ -82,8 +74,8 @@ export class StochasticOscillator implements Indicator<StochasticResult, HighLow
       let fastK = new Big(100).mul(new Big(candle.close).minus(lowest));
       // Prevent division by zero
       fastK = fastK.div(divisor.eq(0) ? 1 : divisor);
-      const stochK = this.periodM.update(fastK); // (stoch_k, %k)
-      const stochD = stochK && this.periodP.update(stochK); // (stoch_d, %d)
+      const stochK = this.periodM.update(fastK, replace); // (stoch_k, %k)
+      const stochD = stochK && this.periodP.update(stochK, replace); // (stoch_d, %d)
       if (stochK && stochD) {
         return (this.result = {
           stochD,
@@ -91,16 +83,13 @@ export class StochasticOscillator implements Indicator<StochasticResult, HighLow
         });
       }
     }
-  }
 
-  get isStable(): boolean {
-    return this.result !== undefined;
+    return null;
   }
 }
 
-export class FasterStochasticOscillator implements Indicator<FasterStochasticResult, HighLowCloseNumber> {
+export class FasterStochasticOscillator extends TechnicalIndicator<FasterStochasticResult, HighLowCloseNumber> {
   public readonly candles: HighLowCloseNumber[] = [];
-  private result: FasterStochasticResult | undefined;
   private readonly periodM: FasterSMA;
   private readonly periodP: FasterSMA;
 
@@ -114,24 +103,13 @@ export class FasterStochasticOscillator implements Indicator<FasterStochasticRes
     public m: number,
     public p: number
   ) {
+    super();
     this.periodM = new FasterSMA(m);
     this.periodP = new FasterSMA(p);
   }
 
-  getResult(): FasterStochasticResult {
-    if (this.result === undefined) {
-      throw new NotEnoughDataError();
-    }
-
-    return this.result;
-  }
-
-  get isStable(): boolean {
-    return this.result !== undefined;
-  }
-
-  update(candle: HighLowCloseNumber): void | FasterStochasticResult {
-    this.candles.push(candle);
+  update(candle: HighLowCloseNumber, replace: boolean) {
+    pushUpdate(this.candles, replace, candle);
 
     if (this.candles.length > this.n) {
       this.candles.shift();
@@ -144,14 +122,17 @@ export class FasterStochasticOscillator implements Indicator<FasterStochasticRes
       let fastK = (candle.close - lowest) * 100;
       // Prevent division by zero
       fastK = fastK / (divisor === 0 ? 1 : divisor);
-      const stochK = this.periodM.update(fastK); // (stoch_k, %k)
-      const stochD = stochK && this.periodP.update(stochK); // (stoch_d, %d)
-      if (stochK !== undefined && stochD !== undefined) {
+      const stochK = this.periodM.update(fastK, replace); // (stoch_k, %k)
+      const stochD = stochK && this.periodP.update(stochK, replace); // (stoch_d, %d)
+
+      if (stochK !== null && stochD !== null) {
         return (this.result = {
           stochD,
           stochK,
         });
       }
     }
+
+    return null;
   }
 }

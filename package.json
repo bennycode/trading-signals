@@ -13,6 +13,7 @@
     "@types/node": "^18.15.11",
     "@vitest/coverage-v8": "^1.1.1",
     "benchmark": "^2.1.4",
+    "dependency-cruiser": "^16.9.0",
     "eslint": "^8.50.0",
     "generate-changelog": "^1.8.0",
     "husky": "^4.3.8",
@@ -87,8 +88,9 @@
     "release:minor": "generate-changelog -m -x \"chore,test\" && npm run changelog:commit && npm run docs:release && npm version minor",
     "release:patch": "generate-changelog -p -x \"chore,test\" && npm run changelog:commit && npm run docs:release && npm version patch",
     "start:benchmark": "tsc --noEmit && node --no-warnings=ExperimentalWarning --loader ts-node/esm/transpile-only  ./src/start/startBenchmark.ts",
-    "test": "npm run test:dev -- --coverage",
+    "test": "npm run test:types && npm run test:imports && npm run test:dev -- --coverage",
     "test:dev": "vitest run --passWithNoTests",
+    "test:imports": "depcruise src --include-only \"^src\"",
     "test:types": "npm run lint:types"
   },
   "type": "module",

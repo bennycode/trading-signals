@@ -9,6 +9,7 @@
     "moduleResolution": "nodenext",
     "newLine": "lf",
     "noEmitOnError": true,
+    "noImplicitOverride": true,
     "noImplicitReturns": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,

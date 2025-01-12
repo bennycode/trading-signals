@@ -1,5 +1,5 @@
-import type {Big, BigSource} from '../index.js';
-import type {Indicator} from '../Indicator.js';
+import type {BigSource} from 'big.js';
+import {TechnicalIndicator} from '../Indicator.js';
 import type {FasterMovingAverage, MovingAverage} from '../MA/MovingAverage.js';
 import type {FasterMovingAverageTypes, MovingAverageTypes} from '../MA/MovingAverageTypes.js';
 import {FasterSMA, SMA} from '../SMA/SMA.js';
@@ -23,54 +23,60 @@ export interface FasterDMAResult {
  *
  * @see https://faculty.fuqua.duke.edu/~charvey/Teaching/BA453_2002/CCAM/CCAM.htm#_Toc2634228
  */
-export class DMA implements Indicator<DMAResult> {
+export class DMA extends TechnicalIndicator<DMAResult, BigSource> {
   public readonly short: MovingAverage;
   public readonly long: MovingAverage;
 
   constructor(short: number, long: number, Indicator: MovingAverageTypes = SMA) {
+    super();
     this.short = new Indicator(short);
     this.long = new Indicator(long);
   }
 
-  get isStable(): boolean {
+  override get isStable(): boolean {
     return this.long.isStable;
   }
 
-  update(price: BigSource, replace: boolean = false): void {
+  update(price: BigSource, replace: boolean) {
     this.short.update(price, replace);
     this.long.update(price, replace);
-  }
 
-  getResult(): DMAResult {
-    return {
-      long: this.long.getResult(),
-      short: this.short.getResult(),
-    };
+    if (this.isStable) {
+      return (this.result = {
+        long: this.long.getResult(),
+        short: this.short.getResult(),
+      });
+    }
+
+    return null;
   }
 }
 
-export class FasterDMA implements Indicator<FasterDMAResult, number> {
+export class FasterDMA extends TechnicalIndicator<FasterDMAResult, number> {
   public readonly short: FasterMovingAverage;
   public readonly long: FasterMovingAverage;
 
   constructor(short: number, long: number, SmoothingIndicator: FasterMovingAverageTypes = FasterSMA) {
+    super();
     this.short = new SmoothingIndicator(short);
     this.long = new SmoothingIndicator(long);
   }
 
-  get isStable(): boolean {
+  override get isStable(): boolean {
     return this.long.isStable;
   }
 
-  update(price: number, replace: boolean = false): void {
+  update(price: number, replace: boolean) {
     this.short.update(price, replace);
     this.long.update(price, replace);
-  }
 
-  getResult(): FasterDMAResult {
-    return {
-      long: this.long.getResult(),
-      short: this.short.getResult(),
-    };
+    if (this.isStable) {
+      return (this.result = {
+        long: this.long.getResult(),
+        short: this.short.getResult(),
+      });
+    }
+
+    return null;
   }
 }

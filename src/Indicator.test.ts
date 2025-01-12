@@ -6,7 +6,7 @@ describe('Indicator', () => {
   class IndicatorTestClass extends BigIndicatorSeries {
     public readonly inputs: Big[] = [];
 
-    update(input: BigSource, replace: boolean = false): void | Big {
+    update(input: BigSource, replace: boolean) {
       if (replace) {
         this.inputs.pop();
       }
@@ -20,7 +20,7 @@ describe('Indicator', () => {
     it('is unstable when no values are entered', () => {
       const itc = new IndicatorTestClass();
       expect(itc.isStable).toBe(false);
-      itc.update(1);
+      itc.add(1);
       expect(itc.isStable).toBe(true);
     });
   });
@@ -38,8 +38,7 @@ describe('Indicator', () => {
 
     it('returns the cross sum', () => {
       const itc = new IndicatorTestClass();
-      itc.update(20);
-      itc.update(40);
+      itc.updates([20, 40], false);
       expect(itc.getResult().toString()).toBe('30');
     });
   });
@@ -50,7 +49,7 @@ describe('Indicator', () => {
       expect(itc.lowest).toBeUndefined();
       expect(itc.highest).toBeUndefined();
 
-      itc.update(100);
+      itc.add(100);
       expect(itc.inputs.length).toBe(1);
       expect(itc.getResult().toString()).toBe('100');
       expect(itc.lowest?.toString()).toBe('100');
@@ -68,7 +67,7 @@ describe('Indicator', () => {
       expect(itc.lowest?.toString()).toBe('60');
       expect(itc.highest?.toString()).toBe('60');
 
-      itc.update(20);
+      itc.add(20);
       expect(itc.inputs.length).toBe(2);
       expect(itc.getResult().toString()).toBe('40');
       expect(itc.lowest?.toString(), 'lowest cross sum seen (60+20/2)').toBe('40');
@@ -81,7 +80,7 @@ describe('Indicator', () => {
       expect(itc.lowest?.toString(), 'lowest cross sum seen (60+20/2)').toBe('40');
       expect(itc.highest?.toString(), 'highest cross sum seen (60/1)').toBe('60');
 
-      itc.update(211);
+      itc.add(211);
       expect(itc.inputs.length).toBe(3);
       expect(itc.getResult().toString()).toBe('97');
       expect(itc.lowest?.toString()).toBe('40');

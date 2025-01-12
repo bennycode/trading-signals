@@ -1,9 +1,9 @@
 import {BigIndicatorSeries, NumberIndicatorSeries} from '../Indicator.js';
-import {Big} from '../index.js';
 import {FasterSMA, SMA} from '../SMA/SMA.js';
 import type {HighLow, HighLowNumber} from '../util/index.js';
 import type {FasterMovingAverageTypes, MovingAverageTypes} from '../MA/MovingAverageTypes.js';
 import type {FasterMovingAverage, MovingAverage} from '../MA/MovingAverage.js';
+import Big from 'big.js';
 
 /**
  * Awesome Oscillator (AO)
@@ -33,7 +33,7 @@ export class AO extends BigIndicatorSeries<HighLow> {
     this.long = new SmoothingIndicator(longInterval);
   }
 
-  override update({low, high}: HighLow, replace: boolean = false): void | Big {
+  update({low, high}: HighLow, replace: boolean) {
     const candleSum = new Big(low).add(high);
     const medianPrice = candleSum.div(2);
 
@@ -43,6 +43,8 @@ export class AO extends BigIndicatorSeries<HighLow> {
     if (this.long.isStable) {
       return this.setResult(this.short.getResult().sub(this.long.getResult()), replace);
     }
+
+    return null;
   }
 }
 
@@ -60,7 +62,7 @@ export class FasterAO extends NumberIndicatorSeries<HighLowNumber> {
     this.long = new SmoothingIndicator(longInterval);
   }
 
-  override update({low, high}: HighLowNumber, replace: boolean = false): void | number {
+  update({low, high}: HighLowNumber, replace: boolean) {
     const medianPrice = (low + high) / 2;
 
     this.short.update(medianPrice, replace);
@@ -69,5 +71,7 @@ export class FasterAO extends NumberIndicatorSeries<HighLowNumber> {
     if (this.long.isStable) {
       return this.setResult(this.short.getResult() - this.long.getResult(), replace);
     }
+
+    return null;
   }
 }

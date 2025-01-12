@@ -1,4 +1,4 @@
-import type {Big, BigSource} from '../index.js';
+import type {BigSource} from 'big.js';
 import {EMA, FasterEMA} from '../EMA/EMA.js';
 import {BigIndicatorSeries, NumberIndicatorSeries} from '../Indicator.js';
 
@@ -22,7 +22,7 @@ export class DEMA extends BigIndicatorSeries {
     this.outer = new EMA(interval);
   }
 
-  override update(price: BigSource, replace: boolean = false): Big {
+  update(price: BigSource, replace: boolean): Big {
     const innerResult = this.inner.update(price, replace);
     const outerResult = this.outer.update(innerResult, replace);
     return this.setResult(innerResult.times(2).sub(outerResult), replace);
@@ -43,7 +43,7 @@ export class FasterDEMA extends NumberIndicatorSeries {
     this.outer = new FasterEMA(interval);
   }
 
-  override update(price: number, replace: boolean = false): number {
+  update(price: number, replace: boolean): number {
     const innerResult = this.inner.update(price, replace);
     const outerResult = this.outer.update(innerResult, replace);
     return this.setResult(innerResult * 2 - outerResult, replace);

@@ -1,7 +1,8 @@
-import {Big, type BigSource} from '../index.js';
 import {MovingAverage} from '../MA/MovingAverage.js';
 import {FasterSMA, SMA} from '../SMA/SMA.js';
 import {NumberIndicatorSeries} from '../Indicator.js';
+import type {BigSource} from 'big.js';
+import Big from 'big.js';
 
 /**
  * Wilder's Smoothed Moving Average (WSMA)
@@ -22,28 +23,26 @@ export class WSMA extends MovingAverage {
   private readonly indicator: SMA;
   private readonly smoothingFactor: Big;
 
-  constructor(public readonly interval: number) {
+  constructor(public override readonly interval: number) {
     super(interval);
     this.indicator = new SMA(interval);
     this.smoothingFactor = new Big(1).div(this.interval);
   }
 
-  updates(prices: BigSource[]): Big | void {
-    prices.forEach(price => this.update(price));
-    return this.result;
-  }
-
-  update(price: BigSource, replace: boolean = false): Big | void {
+  update(price: BigSource, replace: boolean) {
     const sma = this.indicator.update(price, replace);
+
     if (replace && this.previousResult) {
       const smoothed = new Big(price).minus(this.previousResult).mul(this.smoothingFactor);
       return this.setResult(smoothed.plus(this.previousResult), replace);
-    } else if (!replace && this.result) {
+    } else if (!replace && this.result !== undefined) {
       const smoothed = new Big(price).minus(this.result).mul(this.smoothingFactor);
       return this.setResult(smoothed.plus(this.result), replace);
-    } else if (this.result === undefined && sma) {
+    } else if (this.result === undefined && sma !== null) {
       return this.setResult(sma, replace);
     }
+
+    return null;
   }
 }
 
@@ -57,21 +56,18 @@ export class FasterWSMA extends NumberIndicatorSeries {
     this.smoothingFactor = 1 / this.interval;
   }
 
-  updates(prices: number[]): number | void {
-    prices.forEach(price => this.update(price));
-    return this.result;
-  }
-
-  update(price: number, replace: boolean = false): number | void {
-    const sma = this.indicator.update(price);
+  update(price: number, replace: boolean) {
+    const sma = this.indicator.update(price, replace);
     if (replace && this.previousResult !== undefined) {
       const smoothed = (price - this.previousResult) * this.smoothingFactor;
       return this.setResult(smoothed + this.previousResult, replace);
     } else if (!replace && this.result !== undefined) {
       const smoothed = (price - this.result) * this.smoothingFactor;
       return this.setResult(smoothed + this.result, replace);
-    } else if (this.result === undefined && sma !== undefined) {
+    } else if (this.result === undefined && sma !== null) {
       return this.setResult(sma, replace);
     }
+
+    return null;
   }
 }

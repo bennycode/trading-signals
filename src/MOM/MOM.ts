@@ -1,6 +1,8 @@
+import type {BigSource} from 'big.js';
+import Big from 'big.js';
 import {BigIndicatorSeries, NumberIndicatorSeries} from '../Indicator.js';
-import {Big, type BigSource} from '../index.js';
 import {getFixedArray} from '../util/getFixedArray.js';
+import {pushUpdate} from '../util/pushUpdate.js';
 
 /**
  * Momentum Indicator (MOM / MTM)
@@ -21,15 +23,14 @@ export class MOM extends BigIndicatorSeries {
     this.history = getFixedArray<BigSource>(this.historyLength);
   }
 
-  override update(value: BigSource, replace: boolean = false): void | Big {
-    if (this.history.length && replace) {
-      this.history[this.history.length - 1] = value;
-    } else {
-      this.history.push(value);
-    }
+  update(value: BigSource, replace: boolean) {
+    pushUpdate(this.history, replace, value);
+
     if (this.history.length === this.historyLength) {
       return this.setResult(new Big(value).minus(this.history[0]), replace);
     }
+
+    return null;
   }
 }
 
@@ -43,14 +44,13 @@ export class FasterMOM extends NumberIndicatorSeries {
     this.history = getFixedArray<number>(this.historyLength);
   }
 
-  override update(value: number, replace: boolean = false): void | number {
-    if (this.history.length && replace) {
-      this.history[this.history.length - 1] = value;
-    } else {
-      this.history.push(value);
-    }
+  update(value: number, replace: boolean) {
+    pushUpdate(this.history, replace, value);
+
     if (this.history.length === this.historyLength) {
       return this.setResult(value - this.history[0], replace);
     }
+
+    return null;
   }
 }

@@ -13,22 +13,22 @@ describe('MAD', () => {
     it('can replace recently added values', () => {
       const mad = new MAD(5);
       const fasterMAD = new FasterMAD(5);
-      mad.update(81.59);
-      fasterMAD.update(81.59);
-      mad.update(81.06);
-      fasterMAD.update(81.06);
-      mad.update(82.87);
-      fasterMAD.update(82.87);
-      mad.update(83.0);
-      fasterMAD.update(83.0);
-      mad.update(83.61);
-      fasterMAD.update(83.61);
-      mad.update(83.15);
-      fasterMAD.update(83.15);
-      mad.update(82.84);
-      fasterMAD.update(82.84);
-      mad.update(90);
-      fasterMAD.update(90);
+      mad.add(81.59);
+      fasterMAD.add(81.59);
+      mad.add(81.06);
+      fasterMAD.add(81.06);
+      mad.add(82.87);
+      fasterMAD.add(82.87);
+      mad.add(83.0);
+      fasterMAD.add(83.0);
+      mad.add(83.61);
+      fasterMAD.add(83.61);
+      mad.add(83.15);
+      fasterMAD.add(83.15);
+      mad.add(82.84);
+      fasterMAD.add(82.84);
+      mad.add(90);
+      fasterMAD.add(90);
       mad.update(83.99, true);
       fasterMAD.update(83.99, true);
 
@@ -48,8 +48,8 @@ describe('MAD', () => {
       const mad = new MAD(5);
       const fasterMAD = new FasterMAD(5);
       for (const price of prices) {
-        mad.update(price);
-        fasterMAD.update(price);
+        mad.add(price);
+        fasterMAD.add(price);
       }
       const actual = mad.getResult().valueOf();
       expect(actual).toBe('3.6');
@@ -60,8 +60,8 @@ describe('MAD', () => {
       const mad = new MAD(5);
       const fasterMAD = new FasterMAD(5);
       for (const price of prices) {
-        mad.update(price);
-        fasterMAD.update(price);
+        mad.add(price);
+        fasterMAD.add(price);
         if (mad.isStable && fasterMAD.isStable) {
           const expected = expectations.shift()!;
           expect(mad.getResult().toFixed(2)).toBe(expected);
@@ -76,8 +76,8 @@ describe('MAD', () => {
       const mad = new MAD(5);
       const fasterMAD = new FasterMAD(5);
       for (const price of prices) {
-        mad.update(price);
-        fasterMAD.update(price);
+        mad.add(price);
+        fasterMAD.add(price);
       }
       expect(mad.highest!.valueOf()).toBe('1.0184');
       expect(mad.lowest!.valueOf()).toBe('0.2288');

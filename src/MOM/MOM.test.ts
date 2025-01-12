@@ -7,18 +7,18 @@ describe('MOM', () => {
       const momentum = new MOM(5);
       const fasterMomentum = new FasterMOM(5);
 
-      momentum.update('81.59');
-      fasterMomentum.update(81.59);
-      momentum.update('81.06');
-      fasterMomentum.update(81.06);
-      momentum.update('82.87');
-      fasterMomentum.update(82.87);
-      momentum.update('83.0');
-      fasterMomentum.update(83.0);
-      momentum.update('83.61');
-      fasterMomentum.update(83.61);
-      momentum.update('90');
-      fasterMomentum.update(90);
+      momentum.add('81.59');
+      fasterMomentum.add(81.59);
+      momentum.add('81.06');
+      fasterMomentum.add(81.06);
+      momentum.add('82.87');
+      fasterMomentum.add(82.87);
+      momentum.add('83.0');
+      fasterMomentum.add(83.0);
+      momentum.add('83.61');
+      fasterMomentum.add(83.61);
+      momentum.add('90');
+      fasterMomentum.add(90);
       momentum.update('83.15', true);
       fasterMomentum.update(83.15, true);
 
@@ -42,8 +42,8 @@ describe('MOM', () => {
       const fasterMomentum = new FasterMOM(5);
 
       for (const input of inputs) {
-        momentum.update(input);
-        fasterMomentum.update(input);
+        momentum.add(input);
+        fasterMomentum.add(input);
         if (momentum.isStable && fasterMomentum.isStable) {
           const actual = momentum.getResult().toFixed(3);
           const expected = outputs.shift()!;

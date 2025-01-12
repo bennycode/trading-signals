@@ -1,9 +1,10 @@
 import {BigIndicatorSeries, NumberIndicatorSeries} from '../Indicator.js';
 import {FasterRSI, RSI} from '../RSI/RSI.js';
-import {Big, type BigSource} from '../index.js';
 import {FasterPeriod, Period} from '../util/Period.js';
 import type {FasterMovingAverageTypes, MovingAverageTypes} from '../MA/MovingAverageTypes.js';
 import {FasterWSMA, WSMA} from '../WSMA/WSMA.js';
+import type {BigSource} from 'big.js';
+import Big from 'big.js';
 
 /**
  * Stochastic RSI (STOCHRSI)
@@ -33,22 +34,24 @@ export class StochasticRSI extends BigIndicatorSeries {
     this.rsi = new RSI(interval, SmoothingIndicator);
   }
 
-  override update(price: BigSource, replace: boolean = false): void | Big {
-    const rsiResult = this.rsi.update(price);
+  update(price: BigSource, replace: boolean) {
+    const rsiResult = this.rsi.update(price, replace);
     if (rsiResult) {
-      const periodResult = this.period.update(rsiResult);
+      const periodResult = this.period.update(rsiResult, replace);
       if (periodResult) {
         const min = periodResult.lowest;
         const max = periodResult.highest;
         const denominator = max.minus(min);
         // Prevent division by zero: https://github.com/bennycode/trading-signals/issues/378
         if (denominator.eq(0)) {
-          return this.setResult(new Big(100), replace);
+          return this.setResult(new Big(100), false);
         }
         const numerator = rsiResult.minus(min);
-        return this.setResult(numerator.div(denominator), replace);
+        return this.setResult(numerator.div(denominator), false);
       }
     }
+
+    return null;
   }
 }
 
@@ -65,10 +68,10 @@ export class FasterStochasticRSI extends NumberIndicatorSeries {
     this.rsi = new FasterRSI(interval, SmoothingIndicator);
   }
 
-  override update(price: number, replace: boolean = false): void | number {
-    const rsiResult = this.rsi.update(price);
-    if (rsiResult !== undefined) {
-      const periodResult = this.period.update(rsiResult);
+  update(price: number, replace: boolean) {
+    const rsiResult = this.rsi.update(price, replace);
+    if (rsiResult) {
+      const periodResult = this.period.update(rsiResult, replace);
       if (periodResult) {
         const min = periodResult.lowest;
         const max = periodResult.highest;
@@ -81,5 +84,7 @@ export class FasterStochasticRSI extends NumberIndicatorSeries {
         return this.setResult(numerator / denominator, replace);
       }
     }
+
+    return null;
   }
 }

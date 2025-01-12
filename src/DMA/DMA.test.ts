@@ -7,24 +7,14 @@ describe('DMA', () => {
     it('can replace recently added values', () => {
       const dma = new DMA(3, 6, SMA);
       const fasterDMA = new FasterDMA(3, 6, FasterSMA);
-      dma.update(41);
-      dma.update(37);
-      dma.update(20.9);
-      dma.update(100);
-      dma.update(30.71);
-      dma.update(40);
+      dma.updates([41, 37, 20.9, 100, 30.71, 40], false);
       dma.update(30, true);
 
       expect(dma.isStable).toBe(true);
       expect(dma.getResult().short.toFixed(8)).toBe('53.57000000');
       expect(dma.getResult().long.toFixed(8)).toBe('43.26833333');
 
-      fasterDMA.update(41);
-      fasterDMA.update(37);
-      fasterDMA.update(20.9);
-      fasterDMA.update(100);
-      fasterDMA.update(30.71);
-      fasterDMA.update(40);
+      fasterDMA.updates([41, 37, 20.9, 100, 30.71, 40], false);
       fasterDMA.update(30, true);
 
       expect(fasterDMA.isStable).toBe(true);
@@ -36,24 +26,24 @@ describe('DMA', () => {
   describe('constructor', () => {
     it('can be used with simple moving averages', () => {
       const dma = new DMA(3, 6, SMA);
-      dma.update(41);
-      dma.update(37);
-      dma.update(20.9);
-      dma.update(100);
-      dma.update(30.71);
-      dma.update(30);
+      dma.add(41);
+      dma.add(37);
+      dma.add(20.9);
+      dma.add(100);
+      dma.add(30.71);
+      dma.add(30);
       expect(dma.getResult().short.toFixed(8)).toBe('53.57000000');
       expect(dma.getResult().long.toFixed(8)).toBe('43.26833333');
     });
 
     it('can be used with exponential moving averages', () => {
       const dma = new DMA(3, 6, EMA);
-      dma.update(41);
-      dma.update(37);
-      dma.update(20.9);
-      dma.update(100);
-      dma.update(30.71);
-      dma.update(30);
+      dma.add(41);
+      dma.add(37);
+      dma.add(20.9);
+      dma.add(100);
+      dma.add(30.71);
+      dma.add(30);
       expect(dma.getResult().short.toFixed(8)).toBe('38.92125000');
       expect(dma.getResult().long.toFixed(8)).toBe('41.96735289');
     });
@@ -62,23 +52,23 @@ describe('DMA', () => {
   describe('isStable', () => {
     it('is dependant on the long interval (SMA)', () => {
       const dma = new DMA(3, 5);
-      dma.update(40);
-      dma.update(30);
-      dma.update(20);
+      dma.add(40);
+      dma.add(30);
+      dma.add(20);
       expect(dma.isStable).toBe(false);
-      dma.update(10);
-      dma.update(30);
+      dma.add(10);
+      dma.add(30);
       expect(dma.isStable).toBe(true);
     });
 
     it('is dependant on the long interval (EMA)', () => {
       const dma = new DMA(3, 5, EMA);
-      dma.update(40);
-      dma.update(30);
-      dma.update(20);
+      dma.add(40);
+      dma.add(30);
+      dma.add(20);
       expect(dma.isStable).toBe(false);
-      dma.update(10);
-      dma.update(30);
+      dma.add(10);
+      dma.add(30);
       expect(dma.isStable).toBe(true);
     });
   });
@@ -91,8 +81,8 @@ describe('DMA', () => {
 
       for (const oneHour of nineHours) {
         const price = oneHour.close;
-        dma.update(price);
-        fasterDMA.update(parseFloat(price));
+        dma.add(price);
+        fasterDMA.add(parseFloat(price));
       }
 
       const {short, long} = dma.getResult();
