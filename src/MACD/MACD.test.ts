@@ -3,7 +3,7 @@ import {Big, DEMA, EMA, FasterEMA, NotEnoughDataError} from '../index.js';
 
 describe('MACD', () => {
   describe('replace', () => {
-    it('guarantees that a replacement is done correctly', () => {
+    it('replaces the most recently added value', () => {
       const macd = new MACD({
         indicator: EMA,
         longInterval: 5,

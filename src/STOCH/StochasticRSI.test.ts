@@ -2,7 +2,7 @@ import {FasterStochasticRSI, StochasticRSI} from './StochasticRSI.js';
 
 describe('StochasticRSI', () => {
   describe('replace', () => {
-    it('guarantees that a replacement is done correctly', () => {
+    it('replaces the most recently added value', () => {
       const interval = 2;
       const stochRSI = new StochasticRSI(interval);
       const stochRSIWithReplace = new StochasticRSI(interval);

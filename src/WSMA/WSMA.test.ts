@@ -3,7 +3,7 @@ import {NotEnoughDataError} from '../error/index.js';
 
 describe('WSMA', () => {
   describe('replace', () => {
-    it('guarantees that a replacement is done correctly', () => {
+    it('replaces the most recently added value', () => {
       const interval = 3;
 
       const wsma = new WSMA(interval);

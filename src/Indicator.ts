@@ -36,7 +36,7 @@ export abstract class TechnicalIndicator<Result, Input> implements Indicator<Res
 
   abstract update(input: Input, replace: boolean): Result | null;
 
-  updates(inputs: Input[], replace: boolean) {
+  updates(inputs: readonly Input[], replace: boolean = false) {
     return getLastFromForEach(inputs, input => this.update(input, replace));
   }
 }

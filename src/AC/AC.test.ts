@@ -252,7 +252,7 @@ describe('AC', () => {
   }));
 
   describe('replace', () => {
-    it('guarantees that a replacement is done correctly', () => {
+    it('replaces the most recently added value', () => {
       const ac = new AC(5, 34, 5);
       const acWithReplace = new AC(5, 34, 5);
 

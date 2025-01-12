@@ -22,7 +22,7 @@ describe('ADX', () => {
   ];
 
   describe('replace', () => {
-    it('guarantees that a replacement is done correctly', () => {
+    it('replaces the most recently added value', () => {
       const interval = 5;
       const adx = new ADX(interval);
       const adxWithReplace = new ADX(interval);

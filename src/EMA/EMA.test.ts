@@ -22,7 +22,7 @@ describe('EMA', () => {
   ] as const;
 
   describe('replace', () => {
-    it('guarantees that a replacement is done correctly', () => {
+    it('replaces the most recently added value', () => {
       const interval = 5;
       const ema = new EMA(interval);
       const emaWithReplace = new EMA(interval);

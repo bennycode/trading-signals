@@ -35,6 +35,29 @@ describe('ATR', () => {
     '1.14',
   ] as const;
 
+  describe('replace', () => {
+    it('replaces the most recently added value', () => {
+      const interval = 5;
+      const correct = {close: 3, high: 4, low: 1};
+      const wrong = {close: 1_111, high: 9_999, low: 0};
+
+      const atr = new ATR(interval);
+      const atrWithReplace = new ATR(interval);
+
+      atr.updates(candles, false);
+      atrWithReplace.updates(candles, false);
+
+      atr.add(correct);
+      atrWithReplace.add(wrong);
+
+      expect(atr.getResult().toFixed()).not.toBe(atrWithReplace.getResult().toFixed());
+
+      atrWithReplace.replace(correct);
+
+      expect(atr.getResult().toFixed()).toBe(atrWithReplace.getResult().toFixed());
+    });
+  });
+
   describe('getResult', () => {
     it('calculates the Average True Range (ATR)', () => {
       const interval = 5;

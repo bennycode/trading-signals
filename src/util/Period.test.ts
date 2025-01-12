@@ -3,7 +3,7 @@ import {FasterPeriod, Period} from './Period.js';
 
 describe('Period', () => {
   describe('replace', () => {
-    it('guarantees that a replacement is done correctly', () => {
+    it('replaces the most recently added value', () => {
       const interval = 5;
       const expectedLow = '30';
       const expectedHigh = '70';
