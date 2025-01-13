@@ -1,3 +1,13 @@
+#### 6.0.1 (2025-01-13)
+
+##### Documentation Changes
+
+- Add imports ([410723bf](https://github.com/bennycode/trading-signals/commit/410723bf773b84bb107529378f081f40546b6e4b))
+
+##### Refactors
+
+- Return values from multiple updates ([#751](https://github.com/bennycode/trading-signals/pull/751)) ([1be58d98](https://github.com/bennycode/trading-signals/commit/1be58d985bf276c24fe66b01b34e34eb6b930f47))
+
 ## 6.0.0 (2025-01-13)
 
 ##### Documentation Changes
