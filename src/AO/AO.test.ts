@@ -30,7 +30,7 @@ describe('AO', () => {
     5.3673, 4.5294, 4.764, 4.1044, 1.6913, -1.3769, -4.2062, -7.7196, -10.6241, -11.4972, -9.6358, -7.9344,
   ] as const;
 
-  describe('getResult', () => {
+  describe('getResultOrThrow', () => {
     it('works with an interval setting of 5/34', () => {
       const shortInterval = 5;
       const longInterval = 34;
@@ -48,7 +48,7 @@ describe('AO', () => {
         if (ao.isStable && fasterAO.isStable) {
           expect(result).not.toBeUndefined();
           expect(fasterResult).not.toBeUndefined();
-          const actual = ao.getResult().toFixed(4);
+          const actual = ao.getResultOrThrow().toFixed(4);
           const expected = aos[i - (longInterval - 1)];
           expect(parseFloat(actual)).toBe(expected);
           expect(fasterResult?.toFixed(4)).toBe(expected.toFixed(4));
@@ -66,7 +66,7 @@ describe('AO', () => {
       const ao = new AO(5, 34);
 
       try {
-        ao.getResult();
+        ao.getResultOrThrow();
         throw new Error('Expected error');
       } catch (error) {
         expect(error).toBeInstanceOf(NotEnoughDataError);
@@ -109,12 +109,12 @@ describe('AO', () => {
       const latestHigh = '749.69';
 
       ao.add(latestValue);
-      expect(ao.getResult()?.toFixed(2)).toBe(latestResult);
+      expect(ao.getResultOrThrow()?.toFixed(2)).toBe(latestResult);
       expect(ao.lowest?.toFixed(2)).toBe(latestLow);
       expect(ao.highest?.toFixed(2), 'new record high').toBe(latestHigh);
 
       fasterAO.add(latestValue);
-      expect(fasterAO.getResult()?.toFixed(2)).toBe(latestResult);
+      expect(fasterAO.getResultOrThrow()?.toFixed(2)).toBe(latestResult);
       expect(fasterAO.lowest?.toFixed(2)).toBe(latestLow);
       expect(fasterAO.highest?.toFixed(2), 'new record high').toBe(latestHigh);
 
@@ -128,23 +128,23 @@ describe('AO', () => {
       const otherHigh = '33.35';
 
       ao.replace(someOtherValue);
-      expect(ao.getResult()?.toFixed(2)).toBe(otherResult);
+      expect(ao.getResultOrThrow()?.toFixed(2)).toBe(otherResult);
       expect(ao.lowest?.toFixed(2), 'new record low').toBe(otherLow);
       expect(ao.highest?.toFixed(2)).toBe(otherHigh);
 
       fasterAO.replace(someOtherValue);
-      expect(fasterAO.getResult()?.toFixed(2)).toBe(otherResult);
+      expect(fasterAO.getResultOrThrow()?.toFixed(2)).toBe(otherResult);
       expect(fasterAO.lowest?.toFixed(2), 'new record low').toBe(otherLow);
       expect(fasterAO.highest?.toFixed(2)).toBe(otherHigh);
 
       // Replace the other value with the latest value
       ao.replace(latestValue);
-      expect(ao.getResult()?.toFixed(2)).toBe(latestResult);
+      expect(ao.getResultOrThrow()?.toFixed(2)).toBe(latestResult);
       expect(ao.lowest?.toFixed(2), 'lowest reset').toBe(latestLow);
       expect(ao.highest?.toFixed(2), 'highest reset').toBe(latestHigh);
 
       fasterAO.replace(latestValue);
-      expect(fasterAO.getResult()?.toFixed(2)).toBe(latestResult);
+      expect(fasterAO.getResultOrThrow()?.toFixed(2)).toBe(latestResult);
       expect(fasterAO.lowest?.toFixed(2), 'lowest reset').toBe(latestLow);
       expect(fasterAO.highest?.toFixed(2), 'highest reset').toBe(latestHigh);
     });

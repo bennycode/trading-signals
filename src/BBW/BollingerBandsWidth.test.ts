@@ -2,7 +2,7 @@ import {BollingerBands, FasterBollingerBands} from '../BBANDS/BollingerBands.js'
 import {BollingerBandsWidth, FasterBollingerBandsWidth} from './BollingerBandsWidth.js';
 
 describe('BollingerBandsWidth', () => {
-  describe('getResult', () => {
+  describe('getResultOrThrow', () => {
     it('calculates the Bollinger Bands Width (BBW)', () => {
       // eBay Inc. (EBAY) daily stock prices in USD on NASDAQ with CBOE BZX exchange
       const candles = [
@@ -51,8 +51,8 @@ describe('BollingerBandsWidth', () => {
         fasterBBW.add(close);
         if (bbw.isStable) {
           const expected = expectations.shift()!;
-          expect(bbw.getResult().toFixed(2)).toBe(`${expected}`);
-          expect(fasterBBW.getResult().toFixed(2)).toBe(expected);
+          expect(bbw.getResultOrThrow().toFixed(2)).toBe(`${expected}`);
+          expect(fasterBBW.getResultOrThrow().toFixed(2)).toBe(expected);
         }
       }
     });

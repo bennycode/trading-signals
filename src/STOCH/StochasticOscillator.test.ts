@@ -49,12 +49,12 @@ describe('StochasticOscillator', () => {
       expect(stoch.isStable).toBe(true);
       expect(fasterStoch.isStable).toBe(true);
 
-      expect(stoch.getResult().stochK.toFixed(2)).toBe('91.09');
-      expect(fasterStoch.getResult().stochK.toFixed(2)).toBe('91.09');
+      expect(stoch.getResultOrThrow().stochK.toFixed(2)).toBe('91.09');
+      expect(fasterStoch.getResultOrThrow().stochK.toFixed(2)).toBe('91.09');
     });
   });
 
-  describe('getResult', () => {
+  describe('getResultOrThrow', () => {
     it('throws an error when there is not enough input data', () => {
       const stoch = new StochasticOscillator(5, 3, 3);
 
@@ -66,7 +66,7 @@ describe('StochasticOscillator', () => {
       stoch.add({close: 1, high: 6, low: 1}); // Emits 2nd of 3 required values for %d period
 
       try {
-        stoch.getResult();
+        stoch.getResultOrThrow();
         throw new Error('Expected error');
       } catch (error) {
         expect(error).toBeInstanceOf(NotEnoughDataError);
@@ -75,7 +75,7 @@ describe('StochasticOscillator', () => {
       const fasterStoch = new FasterStochasticOscillator(5, 3, 3);
 
       try {
-        fasterStoch.getResult();
+        fasterStoch.getResultOrThrow();
         throw new Error('Expected error');
       } catch (error) {
         expect(error).toBeInstanceOf(NotEnoughDataError);
@@ -109,7 +109,7 @@ describe('StochasticOscillator', () => {
         ],
         false
       );
-      const {stochK, stochD} = fasterStoch.getResult();
+      const {stochK, stochD} = fasterStoch.getResultOrThrow();
       expect(stochK.toFixed(2)).toBe('0.00');
       expect(stochD.toFixed(2)).toBe('0.00');
     });

@@ -43,8 +43,8 @@ export class DMA extends TechnicalIndicator<DMAResult, BigSource> {
 
     if (this.isStable) {
       return (this.result = {
-        long: this.long.getResult(),
-        short: this.short.getResult(),
+        long: this.long.getResultOrThrow(),
+        short: this.short.getResultOrThrow(),
       });
     }
 
@@ -72,8 +72,8 @@ export class FasterDMA extends TechnicalIndicator<FasterDMAResult, number> {
 
     if (this.isStable) {
       return (this.result = {
-        long: this.long.getResult(),
-        short: this.short.getResult(),
+        long: this.long.getResultOrThrow(),
+        short: this.short.getResultOrThrow(),
       });
     }
 

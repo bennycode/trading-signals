@@ -14,7 +14,7 @@ describe('AccelerationBands', () => {
     });
   });
 
-  describe('getResult', () => {
+  describe('getResultOrThrow', () => {
     it('returns upper, middle and lower bands', () => {
       const accBands = new AccelerationBands(20, 4);
       expect(accBands.isStable).toBe(false);
@@ -52,8 +52,8 @@ describe('AccelerationBands', () => {
         fasterAccBands.add({close, high, low});
       }
 
-      let result = accBands.getResult();
-      let fasterResult = fasterAccBands.getResult();
+      let result = accBands.getResultOrThrow();
+      let fasterResult = fasterAccBands.getResultOrThrow();
 
       // See: https://github.com/QuantConnect/Lean/blob/master/Tests/TestData/spy_acceleration_bands_20_4.txt#L21
       expect(accBands.isStable).toBe(true);
@@ -73,8 +73,8 @@ describe('AccelerationBands', () => {
       accBands.add(candle);
       fasterAccBands.add(candle);
 
-      result = accBands.getResult();
-      fasterResult = fasterAccBands.getResult();
+      result = accBands.getResultOrThrow();
+      fasterResult = fasterAccBands.getResultOrThrow();
 
       expect(result.lower.toFixed(4)).toBe('187.1217');
       expect(fasterResult.lower.toFixed(4)).toBe('187.1217');
@@ -89,7 +89,7 @@ describe('AccelerationBands', () => {
     it('throws an error when there is not enough input data', () => {
       const accBands = new AccelerationBands(20, 2);
       try {
-        accBands.getResult();
+        accBands.getResultOrThrow();
         throw new Error('Expected error');
       } catch (error) {
         expect(error).toBeInstanceOf(NotEnoughDataError);
@@ -97,7 +97,7 @@ describe('AccelerationBands', () => {
 
       const fasterAccBands = new FasterAccelerationBands(20, 2);
       try {
-        fasterAccBands.getResult();
+        fasterAccBands.getResultOrThrow();
         throw new Error('Expected error');
       } catch (error) {
         expect(error).toBeInstanceOf(NotEnoughDataError);

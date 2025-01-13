@@ -93,17 +93,17 @@ sma.replace('40');
 sma.update(new Big(30.0009));
 
 // You can get the result in various formats:
-console.log(sma.getResult().toFixed(2)); // "50.00"
-console.log(sma.getResult().toFixed(4)); // "50.0003"
+console.log(sma.getResultOrThrow().toFixed(2)); // "50.00"
+console.log(sma.getResultOrThrow().toFixed(4)); // "50.0003"
 ```
 
 ### When to use `update(...)`?
 
 You have to call an indicator's `update` method to enter input data. The update method may or may not return a result from the indicator depending on whether the minimum amount of input data has been reached.
 
-### When to use `getResult()`?
+### When to use `getResultOrThrow()`?
 
-You can call `getResult()` at any point in time, but it throws errors unless an indicator has received the minimum amount of data. If you call `getResult()`, before an indicator has received the required amount of input values, a `NotEnoughDataError` will be thrown.
+You can call `getResultOrThrow()` at any point in time, but it throws errors unless an indicator has received the minimum amount of data. If you call `getResultOrThrow()`, before an indicator has received the required amount of input values, a `NotEnoughDataError` will be thrown.
 
 **Example:**
 
@@ -119,7 +119,7 @@ sma.update(40);
 
 try {
   // We will get an error, because the minimum amount of inputs is 3
-  sma.getResult();
+  sma.getResultOrThrow();
 } catch (error) {
   console.log(error.constructor.name); // "NotEnoughDataError"
 }
@@ -128,7 +128,7 @@ try {
 sma.update(70);
 
 // Now, we will receive a proper result
-console.log(sma.getResult().valueOf()); // "40"
+console.log(sma.getResultOrThrow().valueOf()); // "40"
 ```
 
 Most of the time, the minimum amount of data depends on the interval / time period used.
@@ -165,7 +165,7 @@ fasterStochRSI.update(4);
 fasterStochRSI.update(5);
 fasterStochRSI.update(6);
 
-console.log(fasterStochRSI.getResult());
+console.log(fasterStochRSI.getResultOrThrow());
 ```
 
 ### Benchmarks

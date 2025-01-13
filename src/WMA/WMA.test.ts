@@ -54,12 +54,12 @@ describe('WMA', () => {
       const latestHigh = '14.33';
 
       wma.add(latestValue);
-      expect(wma.getResult().toFixed(2)).toBe(latestResult);
+      expect(wma.getResultOrThrow().toFixed(2)).toBe(latestResult);
       expect(wma.lowest?.toFixed(2)).toBe(latestLow);
       expect(wma.highest?.toFixed(2)).toBe(latestHigh);
 
       fasterWMA.add(latestValue);
-      expect(fasterWMA.getResult().toFixed(2)).toBe(latestResult);
+      expect(fasterWMA.getResultOrThrow().toFixed(2)).toBe(latestResult);
       expect(fasterWMA.lowest?.toFixed(2)).toBe(latestLow);
       expect(fasterWMA.highest?.toFixed(2)).toBe(latestHigh);
 
@@ -70,23 +70,23 @@ describe('WMA', () => {
       const otherHigh = '506.83';
 
       wma.replace(someOtherValue);
-      expect(wma.getResult().toFixed(2)).toBe(otherResult);
+      expect(wma.getResultOrThrow().toFixed(2)).toBe(otherResult);
       expect(wma.lowest?.toFixed(2)).toBe(otherLow);
       expect(wma.highest?.toFixed(2), 'new record high').toBe(otherHigh);
 
       fasterWMA.replace(someOtherValue);
-      expect(fasterWMA.getResult().toFixed(2)).toBe(otherResult);
+      expect(fasterWMA.getResultOrThrow().toFixed(2)).toBe(otherResult);
       expect(fasterWMA.lowest?.toFixed(2)).toBe(otherLow);
       expect(fasterWMA.highest?.toFixed(2), 'new record high').toBe(otherHigh);
 
       // Replace the other value with the latest value
       wma.replace(latestValue);
-      expect(wma.getResult().toFixed(2)).toBe(latestResult);
+      expect(wma.getResultOrThrow().toFixed(2)).toBe(latestResult);
       expect(wma.lowest?.toFixed(2), 'lowest reset').toBe(latestLow);
       expect(wma.highest?.toFixed(2), 'highest reset').toBe(latestHigh);
 
       fasterWMA.replace(latestValue);
-      expect(fasterWMA.getResult().toFixed(2)).toBe(latestResult);
+      expect(fasterWMA.getResultOrThrow().toFixed(2)).toBe(latestResult);
       expect(fasterWMA.lowest?.toFixed(2), 'lowest reset').toBe(latestLow);
       expect(fasterWMA.highest?.toFixed(2), 'highest reset').toBe(latestHigh);
     });
@@ -102,8 +102,8 @@ describe('WMA', () => {
       wma.updates(prices, false);
       fasterWMA.updates(prices, false);
 
-      expect(wma.getResult().toFixed()).toBe('74');
-      expect(fasterWMA.getResult().toFixed()).toBe('74');
+      expect(wma.getResultOrThrow().toFixed()).toBe('74');
+      expect(fasterWMA.getResultOrThrow().toFixed()).toBe('74');
     });
   });
 
@@ -117,13 +117,13 @@ describe('WMA', () => {
       expect(wma.isStable).toBe(true);
       wma.add('120');
       wma.add(new Big(60));
-      expect(wma.getResult().valueOf()).toBe('85');
+      expect(wma.getResultOrThrow().valueOf()).toBe('85');
       expect(wma.lowest?.toFixed(2)).toBe('70.00');
       expect(wma.highest?.toFixed(2)).toBe('100.00');
     });
   });
 
-  describe('getResult', () => {
+  describe('getResultOrThrow', () => {
     it('calculates the moving average based on the last 5 prices', () => {
       const prices = [91, 90, 89, 88, 90];
       const expectations = ['89.33'];
@@ -149,7 +149,7 @@ describe('WMA', () => {
       const wma = new WMA(26);
 
       try {
-        wma.getResult();
+        wma.getResultOrThrow();
         throw new Error('Expected error');
       } catch (error) {
         expect(error).toBeInstanceOf(NotEnoughDataError);
@@ -158,7 +158,7 @@ describe('WMA', () => {
       const fasterWMA = new FasterWMA(5);
 
       try {
-        fasterWMA.getResult();
+        fasterWMA.getResultOrThrow();
         throw new Error('Expected error');
       } catch (error) {
         expect(error).toBeInstanceOf(NotEnoughDataError);

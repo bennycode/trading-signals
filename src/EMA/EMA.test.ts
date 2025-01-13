@@ -35,8 +35,8 @@ describe('EMA', () => {
       emaWithReplace.replace(prices[3]);
       emaWithReplace.add(prices[4]);
 
-      const actual = emaWithReplace.getResult().toFixed();
-      const expected = ema.getResult().toFixed();
+      const actual = emaWithReplace.getResultOrThrow().toFixed();
+      const expected = ema.getResultOrThrow().toFixed();
 
       expect(actual).toBe(expected);
     });
@@ -61,12 +61,12 @@ describe('EMA', () => {
       const latestHigh = '84.84';
 
       ema.add(latestValue);
-      expect(ema.getResult()?.toFixed(2)).toBe(latestResult);
+      expect(ema.getResultOrThrow()?.toFixed(2)).toBe(latestResult);
       expect(ema.lowest?.toFixed(2)).toBe(latestLow);
       expect(ema.highest?.toFixed(2)).toBe(latestHigh);
 
       fasterEMA.add(latestValue);
-      expect(fasterEMA.getResult()?.toFixed(2)).toBe(latestResult);
+      expect(fasterEMA.getResultOrThrow()?.toFixed(2)).toBe(latestResult);
       expect(fasterEMA.lowest?.toFixed(2)).toBe(latestLow);
       expect(fasterEMA.highest?.toFixed(2)).toBe(latestHigh);
 
@@ -77,23 +77,23 @@ describe('EMA', () => {
       const otherHigh = '331.71';
 
       ema.replace(someOtherValue);
-      expect(ema.getResult()?.toFixed(2)).toBe(otherResult);
+      expect(ema.getResultOrThrow()?.toFixed(2)).toBe(otherResult);
       expect(ema.lowest?.toFixed(2)).toBe(otherLow);
       expect(ema.highest?.toFixed(2)).toBe(otherHigh);
 
       fasterEMA.replace(someOtherValue);
-      expect(fasterEMA.getResult()?.toFixed(2)).toBe(otherResult);
+      expect(fasterEMA.getResultOrThrow()?.toFixed(2)).toBe(otherResult);
       expect(fasterEMA.lowest?.toFixed(2)).toBe(otherLow);
       expect(fasterEMA.highest?.toFixed(2)).toBe(otherHigh);
 
       // Replace the other value with the latest value
       ema.replace(latestValue);
-      expect(ema.getResult()?.toFixed(2)).toBe(latestResult);
+      expect(ema.getResultOrThrow()?.toFixed(2)).toBe(latestResult);
       expect(ema.lowest?.toFixed(2)).toBe(latestLow);
       expect(ema.highest?.toFixed(2)).toBe(latestHigh);
 
       fasterEMA.replace(latestValue);
-      expect(fasterEMA.getResult()?.toFixed(2)).toBe(latestResult);
+      expect(fasterEMA.getResultOrThrow()?.toFixed(2)).toBe(latestResult);
       expect(fasterEMA.lowest?.toFixed(2)).toBe(latestLow);
       expect(fasterEMA.highest?.toFixed(2)).toBe(latestHigh);
     });
@@ -105,7 +105,7 @@ describe('EMA', () => {
       ema.add(prices[2]);
       ema.add(prices[3]);
       ema.add(prices[4]);
-      expect(ema.getResult().toFixed(2)).toBe('82.71');
+      expect(ema.getResultOrThrow().toFixed(2)).toBe('82.71');
 
       const fasterEMA = new FasterEMA(5);
       fasterEMA.update(prices[0], true);
@@ -116,7 +116,7 @@ describe('EMA', () => {
     });
   });
 
-  describe('getResult', () => {
+  describe('getResultOrThrow', () => {
     it('calculates the Exponential Moving Average over a period of 5', () => {
       const interval = 5;
       const ema = new EMA(interval);
@@ -127,19 +127,19 @@ describe('EMA', () => {
         fasterEMA.add(price);
         if (ema.isStable && fasterEMA.isStable) {
           const expected = expectations[i - (interval - 1)];
-          expect(ema.getResult().toFixed(2)).toBe(expected);
-          expect(fasterEMA.getResult().toFixed(2)).toBe(expected);
+          expect(ema.getResultOrThrow().toFixed(2)).toBe(expected);
+          expect(fasterEMA.getResultOrThrow().toFixed(2)).toBe(expected);
         }
       }
-      expect(ema.getResult().toFixed(2)).toBe('86.70');
-      expect(fasterEMA.getResult().toFixed(2)).toBe('86.70');
+      expect(ema.getResultOrThrow().toFixed(2)).toBe('86.70');
+      expect(fasterEMA.getResultOrThrow().toFixed(2)).toBe('86.70');
     });
 
     it('throws an error when there is not enough input data', () => {
       const ema = new EMA(10);
 
       try {
-        ema.getResult();
+        ema.getResultOrThrow();
         throw new Error('Expected error');
       } catch (error) {
         expect(error).toBeInstanceOf(NotEnoughDataError);
@@ -149,7 +149,7 @@ describe('EMA', () => {
       const fasterEMA = new FasterEMA(10);
 
       try {
-        fasterEMA.getResult();
+        fasterEMA.getResultOrThrow();
         throw new Error('Expected error');
       } catch (error) {
         expect(error).toBeInstanceOf(NotEnoughDataError);

@@ -2,7 +2,7 @@ import {FasterOBV, OBV} from './OBV.js';
 import {NotEnoughDataError} from '../error/index.js';
 
 describe('OBV', () => {
-  describe('getResult', () => {
+  describe('getResultOrThrow', () => {
     it('calculates the relative strength index', () => {
       // Test data verified with:
       // https://www.investopedia.com/terms/o/onbalancevolume.asp#mntl-sc-block_1-0-27
@@ -33,15 +33,15 @@ describe('OBV', () => {
         fasterOBV.add(candle);
         if (obv.isStable && fasterOBV.isStable) {
           const expected = expectations.shift();
-          expect(obv.getResult().toFixed(3)).toBe(expected!);
-          expect(fasterOBV.getResult().toFixed(3)).toBe(expected!);
+          expect(obv.getResultOrThrow().toFixed(3)).toBe(expected!);
+          expect(fasterOBV.getResultOrThrow().toFixed(3)).toBe(expected!);
         }
       }
       expect(obv.isStable).toBe(true);
       expect(fasterOBV.isStable).toBe(true);
 
-      expect(obv.getResult().toFixed(2)).toBe('72100.00');
-      expect(fasterOBV.getResult().toFixed(2)).toBe('72100.00');
+      expect(obv.getResultOrThrow().toFixed(2)).toBe('72100.00');
+      expect(fasterOBV.getResultOrThrow().toFixed(2)).toBe('72100.00');
 
       expect(obv.lowest?.toFixed(2)).toBe('600.00');
       expect(fasterOBV.lowest?.toFixed(2)).toBe('600.00');
@@ -54,7 +54,7 @@ describe('OBV', () => {
       const obv = new OBV();
       expect(obv.isStable).toBe(false);
       try {
-        obv.getResult();
+        obv.getResultOrThrow();
         throw new Error('Expected error');
       } catch (error) {
         expect(obv.isStable).toBe(false);

@@ -85,8 +85,8 @@ export class DX extends BigIndicatorSeries<HighLowClose> {
     this.updateState(candle, pdm, mdm, replace);
 
     if (this.movesUp.isStable) {
-      this.pdi = this.movesUp.getResult().div(this.atr.getResult());
-      this.mdi = this.movesDown.getResult().div(this.atr.getResult());
+      this.pdi = this.movesUp.getResultOrThrow().div(this.atr.getResultOrThrow());
+      this.mdi = this.movesDown.getResultOrThrow().div(this.atr.getResultOrThrow());
 
       const dmDiff = this.pdi.minus(this.mdi).abs();
       const dmSum = this.pdi.plus(this.mdi);
@@ -164,8 +164,8 @@ export class FasterDX extends NumberIndicatorSeries<HighLowCloseNumber> {
     this.updateState(candle, pdm, mdm, replace);
 
     if (this.movesUp.isStable) {
-      this.pdi = this.movesUp.getResult() / this.atr.getResult();
-      this.mdi = this.movesDown.getResult() / this.atr.getResult();
+      this.pdi = this.movesUp.getResultOrThrow() / this.atr.getResultOrThrow();
+      this.mdi = this.movesDown.getResultOrThrow() / this.atr.getResultOrThrow();
 
       const dmDiff = Math.abs(this.pdi - this.mdi);
       const dmSum = this.pdi + this.mdi;

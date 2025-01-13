@@ -50,15 +50,15 @@ describe('ATR', () => {
       atr.add(correct);
       atrWithReplace.add(wrong);
 
-      expect(atr.getResult().toFixed()).not.toBe(atrWithReplace.getResult().toFixed());
+      expect(atr.getResultOrThrow().toFixed()).not.toBe(atrWithReplace.getResultOrThrow().toFixed());
 
       atrWithReplace.replace(correct);
 
-      expect(atr.getResult().toFixed()).toBe(atrWithReplace.getResult().toFixed());
+      expect(atr.getResultOrThrow().toFixed()).toBe(atrWithReplace.getResultOrThrow().toFixed());
     });
   });
 
-  describe('getResult', () => {
+  describe('getResultOrThrow', () => {
     it('calculates the Average True Range (ATR)', () => {
       const interval = 5;
       const atr = new ATR(interval);
@@ -70,19 +70,19 @@ describe('ATR', () => {
         fasterATR.add(candle);
         if (atr.isStable && fasterATR.isStable) {
           const expected = expectations[i - (interval - 1)];
-          expect(atr.getResult().toFixed(2)).toBe(expected!);
-          expect(fasterATR.getResult().toFixed(2)).toBe(expected!);
+          expect(atr.getResultOrThrow().toFixed(2)).toBe(expected!);
+          expect(fasterATR.getResultOrThrow().toFixed(2)).toBe(expected!);
         }
       }
 
       expect(atr.isStable).toBe(true);
       expect(fasterATR.isStable).toBe(true);
 
-      expect(atr.getResult().toFixed(2)).toBe('1.14');
+      expect(atr.getResultOrThrow().toFixed(2)).toBe('1.14');
       expect(atr.lowest?.toFixed(2)).toBe('1.01');
       expect(atr.highest?.toFixed(2)).toBe('1.24');
 
-      expect(fasterATR.getResult().toFixed(2)).toBe('1.14');
+      expect(fasterATR.getResultOrThrow().toFixed(2)).toBe('1.14');
       expect(fasterATR.lowest?.toFixed(2)).toBe('1.01');
       expect(fasterATR.highest?.toFixed(2)).toBe('1.24');
     });
@@ -91,7 +91,7 @@ describe('ATR', () => {
       const atr = new ATR(14);
 
       try {
-        atr.getResult();
+        atr.getResultOrThrow();
         throw new Error('Expected error');
       } catch (error) {
         expect(error).toBeInstanceOf(NotEnoughDataError);
@@ -110,11 +110,11 @@ describe('ATR', () => {
         fasterATR.add(candle);
       }
 
-      expect(atr.getResult().toFixed(2)).toBe('1.14');
+      expect(atr.getResultOrThrow().toFixed(2)).toBe('1.14');
       expect(atr.lowest?.toFixed(2)).toBe('1.01');
       expect(atr.highest?.toFixed(2)).toBe('1.24');
 
-      expect(fasterATR.getResult().toFixed(2)).toBe('1.14');
+      expect(fasterATR.getResultOrThrow().toFixed(2)).toBe('1.14');
       expect(fasterATR.lowest?.toFixed(2)).toBe('1.01');
       expect(fasterATR.highest?.toFixed(2)).toBe('1.24');
 
@@ -125,12 +125,12 @@ describe('ATR', () => {
       const latestHigh = '250.85';
 
       atr.add(latestValue);
-      expect(atr.getResult().toFixed(2)).toBe(latestResult);
+      expect(atr.getResultOrThrow().toFixed(2)).toBe(latestResult);
       expect(atr.lowest?.toFixed(2)).toBe(latestLow);
       expect(atr.highest?.toFixed(2), 'new record high').toBe(latestHigh);
 
       fasterATR.add(latestValue);
-      expect(fasterATR.getResult().toFixed(2)).toBe(latestResult);
+      expect(fasterATR.getResultOrThrow().toFixed(2)).toBe(latestResult);
       expect(fasterATR.lowest?.toFixed(2)).toBe(latestLow);
       expect(fasterATR.highest?.toFixed(2), 'new record high').toBe(latestHigh);
 
@@ -145,23 +145,23 @@ describe('ATR', () => {
       const otherHigh = '18.17';
 
       atr.replace(someOtherValue);
-      expect(atr.getResult().toFixed(2)).toBe(otherResult);
+      expect(atr.getResultOrThrow().toFixed(2)).toBe(otherResult);
       expect(atr.lowest?.toFixed(2)).toBe(otherLow);
       expect(atr.highest?.toFixed(2)).toBe(otherHigh);
 
       fasterATR.replace(someOtherValue);
-      expect(fasterATR.getResult().toFixed(2)).toBe(otherResult);
+      expect(fasterATR.getResultOrThrow().toFixed(2)).toBe(otherResult);
       expect(fasterATR.lowest?.toFixed(2)).toBe(otherLow);
       expect(fasterATR.highest?.toFixed(2)).toBe(otherHigh);
 
       // Replace the other value with the latest value
       atr.replace(latestValue);
-      expect(atr.getResult().toFixed(2)).toBe(latestResult);
+      expect(atr.getResultOrThrow().toFixed(2)).toBe(latestResult);
       expect(atr.lowest?.toFixed(2), 'lowest reset').toBe(latestLow);
       expect(atr.highest?.toFixed(2), 'highest reset').toBe(latestHigh);
 
       fasterATR.replace(latestValue);
-      expect(fasterATR.getResult().toFixed(2)).toBe(latestResult);
+      expect(fasterATR.getResultOrThrow().toFixed(2)).toBe(latestResult);
       expect(fasterATR.lowest?.toFixed(2), 'lowest reset').toBe(latestLow);
       expect(fasterATR.highest?.toFixed(2), 'highest reset').toBe(latestHigh);
     });

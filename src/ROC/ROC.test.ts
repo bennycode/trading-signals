@@ -3,7 +3,7 @@ import {FasterROC, ROC} from './ROC.js';
 import {NotEnoughDataError} from '../error/index.js';
 
 describe('ROC', () => {
-  describe('getResult', () => {
+  describe('getResultOrThrow', () => {
     it('identifies an up-trending asset by a positive ROC', () => {
       // Test data verified with:
       // https://tulipindicators.org/roc
@@ -25,7 +25,7 @@ describe('ROC', () => {
 
         if (roc.isStable) {
           const expected = expectations.shift()!;
-          expect(roc.getResult().toFixed(2)).toEqual(expected.toFixed(2));
+          expect(roc.getResultOrThrow().toFixed(2)).toEqual(expected.toFixed(2));
         }
       }
 
@@ -53,7 +53,7 @@ describe('ROC', () => {
       const roc = new ROC(6);
 
       try {
-        roc.getResult();
+        roc.getResultOrThrow();
         throw new Error('Expected error');
       } catch (error) {
         expect(error).toBeInstanceOf(NotEnoughDataError);

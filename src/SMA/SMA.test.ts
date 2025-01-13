@@ -39,12 +39,12 @@ describe('SMA', () => {
       const latestHigh = '35.00';
 
       sma.add(latestValue);
-      expect(sma.getResult().toFixed(2)).toBe(latestResult);
+      expect(sma.getResultOrThrow().toFixed(2)).toBe(latestResult);
       expect(sma.lowest?.toFixed(2)).toBe(latestLow);
       expect(sma.highest?.toFixed(2)).toBe(latestHigh);
 
       fasterSMA.add(latestValue);
-      expect(fasterSMA.getResult().toFixed(2)).toBe(latestResult);
+      expect(fasterSMA.getResultOrThrow().toFixed(2)).toBe(latestResult);
       expect(fasterSMA.lowest?.toFixed(2)).toBe(latestLow);
       expect(fasterSMA.highest?.toFixed(2)).toBe(latestHigh);
 
@@ -55,23 +55,23 @@ describe('SMA', () => {
       const otherHigh = '56.00';
 
       sma.replace(someOtherValue);
-      expect(sma.getResult().toFixed(2)).toBe(otherResult);
+      expect(sma.getResultOrThrow().toFixed(2)).toBe(otherResult);
       expect(sma.lowest?.toFixed(2)).toBe(otherLow);
       expect(sma.highest?.toFixed(2)).toBe(otherHigh);
 
       fasterSMA.replace(someOtherValue);
-      expect(fasterSMA.getResult().toFixed(2)).toBe(otherResult);
+      expect(fasterSMA.getResultOrThrow().toFixed(2)).toBe(otherResult);
       expect(fasterSMA.lowest?.toFixed(2)).toBe(otherLow);
       expect(fasterSMA.highest?.toFixed(2)).toBe(otherHigh);
 
       // Replace the other value with the latest value
       sma.replace(latestValue);
-      expect(sma.getResult().toFixed(2)).toBe(latestResult);
+      expect(sma.getResultOrThrow().toFixed(2)).toBe(latestResult);
       expect(sma.lowest?.toFixed(2)).toBe(latestLow);
       expect(sma.highest?.toFixed(2)).toBe(latestHigh);
 
       fasterSMA.replace(latestValue);
-      expect(fasterSMA.getResult().toFixed(2)).toBe(latestResult);
+      expect(fasterSMA.getResultOrThrow().toFixed(2)).toBe(latestResult);
       expect(fasterSMA.lowest?.toFixed(2)).toBe(latestLow);
       expect(fasterSMA.highest?.toFixed(2)).toBe(latestHigh);
     });
@@ -87,8 +87,8 @@ describe('SMA', () => {
       sma.updates(prices, false);
       fasterSMA.updates(prices, false);
 
-      expect(sma.getResult().toFixed()).toBe('3');
-      expect(fasterSMA.getResult().toFixed()).toBe('3');
+      expect(sma.getResultOrThrow().toFixed()).toBe('3');
+      expect(fasterSMA.getResultOrThrow().toFixed()).toBe('3');
     });
   });
 
@@ -102,13 +102,13 @@ describe('SMA', () => {
       expect(sma.isStable).toBe(true);
       sma.add('10');
       sma.add(new Big(30));
-      expect(sma.getResult().valueOf()).toBe('20');
+      expect(sma.getResultOrThrow().valueOf()).toBe('20');
       expect(sma.lowest?.toFixed(2)).toBe('20.00');
       expect(sma.highest?.toFixed(2)).toBe('30.00');
     });
   });
 
-  describe('getResult', () => {
+  describe('getResultOrThrow', () => {
     it('calculates the moving average based on the last 5 prices', () => {
       // Test data verified with:
       // https://github.com/TulipCharts/tulipindicators/blob/v0.8.0/tests/untest.txt#L359-L361
@@ -148,8 +148,8 @@ describe('SMA', () => {
       expect(sma.isStable).toBe(true);
       expect(fasterSMA.isStable).toBe(true);
 
-      expect(sma.getResult().toFixed(3)).toBe('86.804');
-      expect(fasterSMA.getResult()).toBe(86.804);
+      expect(sma.getResultOrThrow().toFixed(3)).toBe('86.804');
+      expect(fasterSMA.getResultOrThrow()).toBe(86.804);
 
       expect(sma.highest?.toFixed(2)).toBe('86.80');
       expect(fasterSMA.highest?.toFixed(2)).toBe('86.80');
@@ -162,7 +162,7 @@ describe('SMA', () => {
       const sma = new SMA(26);
 
       try {
-        sma.getResult();
+        sma.getResultOrThrow();
         throw new Error('Expected error');
       } catch (error) {
         expect(error).toBeInstanceOf(NotEnoughDataError);
@@ -171,7 +171,7 @@ describe('SMA', () => {
       const fasterSMA = new FasterSMA(5);
 
       try {
-        fasterSMA.getResult();
+        fasterSMA.getResultOrThrow();
         throw new Error('Expected error');
       } catch (error) {
         expect(error).toBeInstanceOf(NotEnoughDataError);

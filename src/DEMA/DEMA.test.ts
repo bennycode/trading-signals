@@ -43,12 +43,12 @@ describe('DEMA', () => {
       expect(dema.isStable).toBe(true);
       expect(fasterDEMA.isStable).toBe(true);
 
-      expect(dema.getResult().toFixed(2)).toBe('48.96');
-      expect(fasterDEMA.getResult().toFixed(2)).toBe('48.96');
+      expect(dema.getResultOrThrow().toFixed(2)).toBe('48.96');
+      expect(fasterDEMA.getResultOrThrow().toFixed(2)).toBe('48.96');
     });
   });
 
-  describe('getResult', () => {
+  describe('getResultOrThrow', () => {
     it('calculates the DEMA with interval 10', () => {
       const prices = [
         81, 24, 75, 21, 34, 25, 72, 92, 99, 2, 86, 80, 76, 8, 87, 75, 32, 65, 41, 9, 13, 26, 56, 28, 65, 58, 17, 90, 87,
@@ -63,8 +63,8 @@ describe('DEMA', () => {
         fasterDEMA.add(price);
         if (dema.isStable) {
           const result = new Big(dema10results[index]);
-          expect(dema.getResult().toPrecision(12)).toEqual(result.toPrecision(12));
-          expect(fasterDEMA.getResult().toPrecision(4)).toEqual(result.toPrecision(4));
+          expect(dema.getResultOrThrow().toPrecision(12)).toEqual(result.toPrecision(12));
+          expect(fasterDEMA.getResultOrThrow().toPrecision(4)).toEqual(result.toPrecision(4));
         }
       });
 
@@ -82,7 +82,7 @@ describe('DEMA', () => {
       const dema = new DEMA(10);
 
       try {
-        dema.getResult();
+        dema.getResultOrThrow();
         throw new Error('Expected error');
       } catch (error) {
         expect(error).toBeInstanceOf(NotEnoughDataError);

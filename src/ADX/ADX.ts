@@ -65,7 +65,7 @@ export class ADX extends BigIndicatorSeries<HighLowClose> {
     }
 
     if (this.smoothed.isStable) {
-      return this.setResult(this.smoothed.getResult(), replace);
+      return this.setResult(this.smoothed.getResultOrThrow(), replace);
     }
 
     return null;
@@ -101,7 +101,7 @@ export class FasterADX extends NumberIndicatorSeries<HighLowCloseNumber> {
     }
 
     if (this.smoothed.isStable) {
-      return this.setResult(this.smoothed.getResult(), replace);
+      return this.setResult(this.smoothed.getResultOrThrow(), replace);
     }
 
     return null;

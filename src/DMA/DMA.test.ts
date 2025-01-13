@@ -11,15 +11,15 @@ describe('DMA', () => {
       dma.update(30, true);
 
       expect(dma.isStable).toBe(true);
-      expect(dma.getResult().short.toFixed(8)).toBe('53.57000000');
-      expect(dma.getResult().long.toFixed(8)).toBe('43.26833333');
+      expect(dma.getResultOrThrow().short.toFixed(8)).toBe('53.57000000');
+      expect(dma.getResultOrThrow().long.toFixed(8)).toBe('43.26833333');
 
       fasterDMA.updates([41, 37, 20.9, 100, 30.71, 40], false);
       fasterDMA.update(30, true);
 
       expect(fasterDMA.isStable).toBe(true);
-      expect(fasterDMA.getResult().short.toFixed(8)).toBe('53.57000000');
-      expect(fasterDMA.getResult().long.toFixed(8)).toBe('43.26833333');
+      expect(fasterDMA.getResultOrThrow().short.toFixed(8)).toBe('53.57000000');
+      expect(fasterDMA.getResultOrThrow().long.toFixed(8)).toBe('43.26833333');
     });
   });
 
@@ -32,8 +32,8 @@ describe('DMA', () => {
       dma.add(100);
       dma.add(30.71);
       dma.add(30);
-      expect(dma.getResult().short.toFixed(8)).toBe('53.57000000');
-      expect(dma.getResult().long.toFixed(8)).toBe('43.26833333');
+      expect(dma.getResultOrThrow().short.toFixed(8)).toBe('53.57000000');
+      expect(dma.getResultOrThrow().long.toFixed(8)).toBe('43.26833333');
     });
 
     it('can be used with exponential moving averages', () => {
@@ -44,8 +44,8 @@ describe('DMA', () => {
       dma.add(100);
       dma.add(30.71);
       dma.add(30);
-      expect(dma.getResult().short.toFixed(8)).toBe('38.92125000');
-      expect(dma.getResult().long.toFixed(8)).toBe('41.96735289');
+      expect(dma.getResultOrThrow().short.toFixed(8)).toBe('38.92125000');
+      expect(dma.getResultOrThrow().long.toFixed(8)).toBe('41.96735289');
     });
   });
 
@@ -73,7 +73,7 @@ describe('DMA', () => {
     });
   });
 
-  describe('getResult', () => {
+  describe('getResultOrThrow', () => {
     it('detects uptrends', () => {
       const dma = new DMA(3, 8);
       const fasterDMA = new FasterDMA(3, 8);
@@ -85,11 +85,11 @@ describe('DMA', () => {
         fasterDMA.add(parseFloat(price));
       }
 
-      const {short, long} = dma.getResult();
+      const {short, long} = dma.getResultOrThrow();
       expect(dma.isStable).toBe(true);
       expect(short.gt(long)).toBe(true);
 
-      const fasterResult = fasterDMA.getResult();
+      const fasterResult = fasterDMA.getResultOrThrow();
       expect(fasterDMA.isStable).toBe(true);
       expect(fasterResult.short > fasterResult.long).toBe(true);
     });

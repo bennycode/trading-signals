@@ -38,7 +38,7 @@ describe('TR', () => {
     '0.86',
   ] as const;
 
-  describe('getResult', () => {
+  describe('getResultOrThrow', () => {
     it('calculates the True Range (TR)', () => {
       const tr = new TR();
       const fasterTR = new FasterTR();
@@ -48,16 +48,16 @@ describe('TR', () => {
         fasterTR.add(candle);
         if (tr.isStable && fasterTR.isStable) {
           const expected = expectations[i];
-          expect(tr.getResult().toFixed(2)).toBe(expected!);
-          expect(fasterTR.getResult().toFixed(2)).toBe(expected!);
+          expect(tr.getResultOrThrow().toFixed(2)).toBe(expected!);
+          expect(fasterTR.getResultOrThrow().toFixed(2)).toBe(expected!);
         }
       });
 
       expect(tr.isStable).toBe(true);
       expect(fasterTR.isStable).toBe(true);
 
-      expect(tr.getResult().toFixed(2)).toBe('0.86');
-      expect(fasterTR.getResult().toFixed(2)).toBe('0.86');
+      expect(tr.getResultOrThrow().toFixed(2)).toBe('0.86');
+      expect(fasterTR.getResultOrThrow().toFixed(2)).toBe('0.86');
 
       expect(tr.lowest?.toFixed(2)).toBe('0.65');
       expect(fasterTR.lowest?.toFixed(2)).toBe('0.65');
@@ -89,11 +89,11 @@ describe('TR', () => {
         fasterTR.add(lastCandle);
       }
 
-      expect(tr.getResult().toFixed(2)).toBe(latestResult);
+      expect(tr.getResultOrThrow().toFixed(2)).toBe(latestResult);
       expect(tr.lowest?.toFixed(2)).toBe(latestLow);
       expect(tr.highest?.toFixed(2)).toBe(latestHigh);
 
-      expect(fasterTR.getResult().toFixed(2)).toBe(latestResult);
+      expect(fasterTR.getResultOrThrow().toFixed(2)).toBe(latestResult);
       expect(fasterTR.lowest?.toFixed(2)).toBe(latestLow);
       expect(fasterTR.highest?.toFixed(2)).toBe(latestHigh);
 
@@ -104,12 +104,12 @@ describe('TR', () => {
       const otherHigh = '3.14';
 
       tr.replace(someOtherValue);
-      expect(tr.getResult().toFixed(2)).toBe(otherResult);
+      expect(tr.getResultOrThrow().toFixed(2)).toBe(otherResult);
       expect(tr.lowest?.toFixed(2)).toBe(otherLow);
       expect(tr.highest?.toFixed(2)).toBe(otherHigh);
 
       fasterTR.replace(someOtherValue);
-      expect(fasterTR.getResult().toFixed(2)).toBe(otherResult);
+      expect(fasterTR.getResultOrThrow().toFixed(2)).toBe(otherResult);
       expect(fasterTR.lowest?.toFixed(2)).toBe(otherLow);
       expect(fasterTR.highest?.toFixed(2)).toBe(otherHigh);
 
@@ -119,11 +119,11 @@ describe('TR', () => {
         fasterTR.replace(lastCandle);
       }
 
-      expect(tr.getResult().toFixed(2)).toBe(latestResult);
+      expect(tr.getResultOrThrow().toFixed(2)).toBe(latestResult);
       expect(tr.lowest?.toFixed(2)).toBe(latestLow);
       expect(tr.highest?.toFixed(2)).toBe(latestHigh);
 
-      expect(fasterTR.getResult().toFixed(2)).toBe(latestResult);
+      expect(fasterTR.getResultOrThrow().toFixed(2)).toBe(latestResult);
       expect(fasterTR.lowest?.toFixed(2)).toBe(latestLow);
       expect(fasterTR.highest?.toFixed(2)).toBe(latestHigh);
     });

@@ -11,11 +11,11 @@ describe('StochasticRSI', () => {
       stochRSIWithReplace.updates([2, 2, 2, 1], false);
       stochRSIWithReplace.replace(2);
 
-      expect(stochRSI.getResult().valueOf()).toBe(stochRSIWithReplace.getResult().valueOf());
+      expect(stochRSI.getResultOrThrow().valueOf()).toBe(stochRSIWithReplace.getResultOrThrow().valueOf());
     });
   });
 
-  describe('getResult', () => {
+  describe('getResultOrThrow', () => {
     it('calculates the Stochastic RSI', () => {
       // Test data verified with:
       // https://github.com/TulipCharts/tulipindicators/blob/0bc8dfc46cfc89366bf8cef6dfad1fb6f81b3b7b/tests/untest.txt#L382-L384
@@ -38,8 +38,8 @@ describe('StochasticRSI', () => {
       expect(stochRSI.isStable).toBe(true);
       expect(fasterStochRSI.isStable).toBe(true);
 
-      expect(stochRSI.getResult().valueOf()).toBe('0');
-      expect(fasterStochRSI.getResult()).toBe(0);
+      expect(stochRSI.getResultOrThrow().valueOf()).toBe('0');
+      expect(fasterStochRSI.getResultOrThrow()).toBe(0);
 
       expect(stochRSI.highest!.valueOf()).toBe('1');
       expect(fasterStochRSI.highest!.valueOf()).toBe(1);
@@ -52,11 +52,11 @@ describe('StochasticRSI', () => {
       const interval = 2;
       const stochRSI = new StochasticRSI(interval);
       stochRSI.updates([2, 2, 2, 2], false);
-      expect(stochRSI.getResult().valueOf()).toBe('100');
+      expect(stochRSI.getResultOrThrow().valueOf()).toBe('100');
 
       const fasterStochRSI = new FasterStochasticRSI(interval);
       fasterStochRSI.updates([2, 2, 2, 2], false);
-      expect(fasterStochRSI.getResult().valueOf()).toBe(100);
+      expect(fasterStochRSI.getResultOrThrow().valueOf()).toBe(100);
     });
   });
 });

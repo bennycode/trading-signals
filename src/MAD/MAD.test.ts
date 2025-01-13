@@ -35,12 +35,12 @@ describe('MAD', () => {
       expect(mad.isStable).toBe(true);
       expect(fasterMAD.isStable).toBe(true);
 
-      expect(mad.getResult().toFixed(2)).toBe('0.39');
-      expect(fasterMAD.getResult().toFixed(2)).toBe('0.39');
+      expect(mad.getResultOrThrow().toFixed(2)).toBe('0.39');
+      expect(fasterMAD.getResultOrThrow().toFixed(2)).toBe('0.39');
     });
   });
 
-  describe('getResult', () => {
+  describe('getResultOrThrow', () => {
     it('calculates the absolute deviation from the mean over a period', () => {
       // Test data verified with:
       // https://en.wikipedia.org/wiki/Average_absolute_deviation#Mean_absolute_deviation_around_a_central_point
@@ -51,9 +51,9 @@ describe('MAD', () => {
         mad.add(price);
         fasterMAD.add(price);
       }
-      const actual = mad.getResult().valueOf();
+      const actual = mad.getResultOrThrow().valueOf();
       expect(actual).toBe('3.6');
-      expect(fasterMAD.getResult().valueOf()).toBe(3.6);
+      expect(fasterMAD.getResultOrThrow().valueOf()).toBe(3.6);
     });
 
     it('is compatible with results from Tulip Indicators (TI)', () => {
@@ -64,12 +64,12 @@ describe('MAD', () => {
         fasterMAD.add(price);
         if (mad.isStable && fasterMAD.isStable) {
           const expected = expectations.shift()!;
-          expect(mad.getResult().toFixed(2)).toBe(expected);
-          expect(fasterMAD.getResult().toFixed(2)).toBe(expected);
+          expect(mad.getResultOrThrow().toFixed(2)).toBe(expected);
+          expect(fasterMAD.getResultOrThrow().toFixed(2)).toBe(expected);
         }
       }
-      expect(mad.getResult().toFixed(2)).toBe('0.62');
-      expect(fasterMAD.getResult().toFixed(2)).toBe('0.62');
+      expect(mad.getResultOrThrow().toFixed(2)).toBe('0.62');
+      expect(fasterMAD.getResultOrThrow().toFixed(2)).toBe('0.62');
     });
 
     it("stores the highest and lowest result throughout the indicator's lifetime", () => {
@@ -88,7 +88,7 @@ describe('MAD', () => {
     it('throws an error when there is not enough input data', () => {
       const mad = new MAD(5);
       try {
-        mad.getResult();
+        mad.getResultOrThrow();
         throw new Error('Expected error');
       } catch (error) {
         expect(error).toBeInstanceOf(NotEnoughDataError);
@@ -96,7 +96,7 @@ describe('MAD', () => {
 
       const fasterMAD = new FasterMAD(5);
       try {
-        fasterMAD.getResult();
+        fasterMAD.getResultOrThrow();
         throw new Error('Expected error');
       } catch (error) {
         expect(error).toBeInstanceOf(NotEnoughDataError);

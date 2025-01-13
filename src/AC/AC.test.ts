@@ -272,11 +272,11 @@ describe('AC', () => {
       acWithReplace.add(wrong);
       acWithReplace.replace(correct);
 
-      expect(acWithReplace.getResult().toFixed()).toBe(ac.getResult().toFixed());
+      expect(acWithReplace.getResultOrThrow().toFixed()).toBe(ac.getResultOrThrow().toFixed());
     });
   });
 
-  describe('getResult', () => {
+  describe('getResultOrThrow', () => {
     it('works with a signal line of SMA(5)', () => {
       const ac = new AC(5, 34, 5);
       const fasterAC = new FasterAC(5, 34, 5);
@@ -291,11 +291,11 @@ describe('AC', () => {
       expect(ac.isStable).toBe(true);
       expect(fasterAC.isStable).toBe(true);
 
-      expect(ac.getResult().toFixed(2)).toBe('-21.97');
-      expect(fasterAC.getResult().toFixed(2)).toBe('-21.97');
+      expect(ac.getResultOrThrow().toFixed(2)).toBe('-21.97');
+      expect(fasterAC.getResultOrThrow().toFixed(2)).toBe('-21.97');
 
-      expect(ac.momentum.getResult().toFixed(2)).toBe('-9.22');
-      expect(fasterAC.momentum.getResult().toFixed(2)).toBe('-9.22');
+      expect(ac.momentum.getResultOrThrow().toFixed(2)).toBe('-9.22');
+      expect(fasterAC.momentum.getResultOrThrow().toFixed(2)).toBe('-9.22');
 
       expect(ac.lowest?.toFixed(2)).toBe('-21.97');
       expect(fasterAC.lowest?.toFixed(2)).toBe('-21.97');
@@ -308,7 +308,7 @@ describe('AC', () => {
       const ac = new AC(5, 34, 5);
 
       try {
-        ac.getResult();
+        ac.getResultOrThrow();
         throw new Error('Expected error');
       } catch (error) {
         expect(error).toBeInstanceOf(NotEnoughDataError);

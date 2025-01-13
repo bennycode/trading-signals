@@ -44,7 +44,7 @@ export class ATR extends BigIndicatorSeries<HighLowClose> {
     const trueRange = this.tr.update(candle, replace);
     this.smoothing.update(trueRange, replace);
     if (this.smoothing.isStable) {
-      return this.setResult(this.smoothing.getResult(), replace);
+      return this.setResult(this.smoothing.getResultOrThrow(), replace);
     }
     return null;
   }
@@ -67,7 +67,7 @@ export class FasterATR extends NumberIndicatorSeries<HighLowCloseNumber> {
     const trueRange = this.tr.update(candle, replace);
     this.smoothing.update(trueRange, replace);
     if (this.smoothing.isStable) {
-      return this.setResult(this.smoothing.getResult(), replace);
+      return this.setResult(this.smoothing.getResultOrThrow(), replace);
     }
 
     return null;

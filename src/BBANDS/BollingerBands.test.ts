@@ -20,7 +20,7 @@ describe('BollingerBands', () => {
     });
   });
 
-  describe('getResult', () => {
+  describe('getResultOrThrow', () => {
     it('calculates Bollinger Bands with interval 20', () => {
       const bb = new BollingerBands(20);
 
@@ -35,7 +35,7 @@ describe('BollingerBands', () => {
         const resLower = new Big(Number(data.lower[index]));
         const resUpper = new Big(Number(data.upper[index]));
 
-        const {middle, upper, lower} = bb.getResult();
+        const {middle, upper, lower} = bb.getResultOrThrow();
 
         expect(middle.toPrecision(12)).toEqual(resMiddle.toPrecision(12));
         expect(lower.toPrecision(12)).toEqual(resLower.toPrecision(12));
@@ -53,7 +53,7 @@ describe('BollingerBands', () => {
       const bb = new BollingerBands(20);
 
       try {
-        bb.getResult();
+        bb.getResultOrThrow();
         throw new Error('Expected error');
       } catch (error) {
         expect(error).toBeInstanceOf(NotEnoughDataError);
@@ -127,7 +127,7 @@ describe('BollingerBands', () => {
         const price = inputs[i];
         bb.add(price);
         if (bb.isStable) {
-          const {lower, middle, upper} = bb.getResult();
+          const {lower, middle, upper} = bb.getResultOrThrow();
           const expectedLow = expectedLows[i];
           const expectedMid = expectedMids[i];
           const expectedUp = expectedUps[i];
@@ -141,7 +141,7 @@ describe('BollingerBands', () => {
 });
 
 describe('FasterBollingerBands', () => {
-  describe('getResult', () => {
+  describe('getResultOrThrow', () => {
     it('only works with plain numbers', () => {
       // Test data verified with:
       // https://tulipindicators.org/bbands
@@ -151,7 +151,7 @@ describe('FasterBollingerBands', () => {
       const fasterBB = new FasterBollingerBands(5, 2);
       fasterBB.updates(prices, false);
       expect(fasterBB.isStable).toBe(true);
-      const actual = fasterBB.getResult();
+      const actual = fasterBB.getResultOrThrow();
       expect(actual.lower.toFixed(2)).toBe('85.29');
       expect(actual.middle.toFixed(2)).toBe('86.80');
       expect(actual.upper.toFixed(2)).toBe('88.32');
@@ -161,7 +161,7 @@ describe('FasterBollingerBands', () => {
       const fasterBB = new FasterBollingerBands(5);
 
       try {
-        fasterBB.getResult();
+        fasterBB.getResultOrThrow();
         throw new Error('Expected error');
       } catch (error) {
         expect(error).toBeInstanceOf(NotEnoughDataError);

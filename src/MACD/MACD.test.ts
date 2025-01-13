@@ -25,11 +25,15 @@ describe('MACD', () => {
       macdWithReplace.replace(90);
       macdWithReplace.add('83.61');
 
-      expect(macdWithReplace.short.getResult().toFixed(), 'short').toBe(macd.short.getResult().toFixed());
-      expect(macdWithReplace.long.getResult().toFixed(), 'long').toBe(macd.long.getResult().toFixed());
-      expect(macdWithReplace.getResult().histogram.toFixed(), 'histogram').toBe(macd.getResult().histogram.toFixed());
-      expect(macdWithReplace.getResult().macd.toFixed(), 'macd').toBe(macd.getResult().macd.toFixed());
-      expect(macdWithReplace.getResult().signal.toFixed(), 'signal').toBe(macd.getResult().signal.toFixed());
+      expect(macdWithReplace.short.getResultOrThrow().toFixed(), 'short').toBe(macd.short.getResultOrThrow().toFixed());
+      expect(macdWithReplace.long.getResultOrThrow().toFixed(), 'long').toBe(macd.long.getResultOrThrow().toFixed());
+      expect(macdWithReplace.getResultOrThrow().histogram.toFixed(), 'histogram').toBe(
+        macd.getResultOrThrow().histogram.toFixed()
+      );
+      expect(macdWithReplace.getResultOrThrow().macd.toFixed(), 'macd').toBe(macd.getResultOrThrow().macd.toFixed());
+      expect(macdWithReplace.getResultOrThrow().signal.toFixed(), 'signal').toBe(
+        macd.getResultOrThrow().signal.toFixed()
+      );
     });
   });
 
@@ -55,12 +59,12 @@ describe('MACD', () => {
       expect(macd.isStable).toBe(true);
       expect(fasterMACD.isStable).toBe(true);
 
-      expect(macd.getResult().macd.toFixed(2)).toBe('0.62');
-      expect(fasterMACD.getResult().macd.toFixed(2)).toBe('0.62');
+      expect(macd.getResultOrThrow().macd.toFixed(2)).toBe('0.62');
+      expect(fasterMACD.getResultOrThrow().macd.toFixed(2)).toBe('0.62');
     });
   });
 
-  describe('getResult', () => {
+  describe('getResultOrThrow', () => {
     it('is compatible with results from Tulip Indicators (TI)', () => {
       // Test data verified with:
       // https://tulipindicators.org/macd
@@ -142,8 +146,8 @@ describe('MACD', () => {
         const expectedMacdHistogram = expectedMacdHistograms[key]!;
 
         if (expectedMacd !== undefined) {
-          const result = macd.getResult();
-          const fasterResult = fasterMACD.getResult();
+          const result = macd.getResultOrThrow();
+          const fasterResult = fasterMACD.getResultOrThrow();
 
           expect(result.macd.toFixed(2)).toBe(expectedMacd);
           expect(fasterResult.macd.toFixed(2)).toBe(expectedMacd);
@@ -169,7 +173,7 @@ describe('MACD', () => {
       });
 
       try {
-        macd.getResult();
+        macd.getResultOrThrow();
         throw new Error('Expected error');
       } catch (error) {
         expect(error).toBeInstanceOf(NotEnoughDataError);
@@ -178,7 +182,7 @@ describe('MACD', () => {
       const fasterMACD = new FasterMACD(new FasterEMA(12), new FasterEMA(26), new FasterEMA(9));
 
       try {
-        fasterMACD.getResult();
+        fasterMACD.getResultOrThrow();
         throw new Error('Expected error');
       } catch (error) {
         expect(error).toBeInstanceOf(NotEnoughDataError);

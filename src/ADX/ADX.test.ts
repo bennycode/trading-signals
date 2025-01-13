@@ -40,15 +40,15 @@ describe('ADX', () => {
       adx.add(correct);
       adxWithReplace.add(wrong);
 
-      expect(adx.getResult().toFixed()).not.toBe(adxWithReplace.getResult().toFixed());
+      expect(adx.getResultOrThrow().toFixed()).not.toBe(adxWithReplace.getResultOrThrow().toFixed());
 
       adxWithReplace.replace(correct);
 
-      expect(adx.getResult().toFixed()).toBe(adxWithReplace.getResult().toFixed());
+      expect(adx.getResultOrThrow().toFixed()).toBe(adxWithReplace.getResultOrThrow().toFixed());
     });
   });
 
-  describe('getResult', () => {
+  describe('getResultOrThrow', () => {
     it('calculates the Average Directional Index (ADX)', () => {
       const interval = 5;
       const adx = new ADX(interval);
@@ -59,16 +59,16 @@ describe('ADX', () => {
         fasterADX.add(candle);
         if (adx.isStable && fasterADX.isStable) {
           const expected = expectations.shift();
-          expect(adx.getResult().toFixed(2)).toBe(`${expected}`);
-          expect(fasterADX.getResult().toFixed(2)).toBe(`${expected}`);
+          expect(adx.getResultOrThrow().toFixed(2)).toBe(`${expected}`);
+          expect(fasterADX.getResultOrThrow().toFixed(2)).toBe(`${expected}`);
         }
       }
 
       expect(adx.isStable).toBe(true);
       expect(fasterADX.isStable).toBe(true);
 
-      expect(adx.getResult().toFixed(2)).toBe('67.36');
-      expect(fasterADX.getResult().toFixed(2)).toBe('67.36');
+      expect(adx.getResultOrThrow().toFixed(2)).toBe('67.36');
+      expect(fasterADX.getResultOrThrow().toFixed(2)).toBe('67.36');
 
       expect(adx.lowest?.toFixed(2)).toBe('41.38');
       expect(fasterADX.lowest?.toFixed(2)).toBe('41.38');
