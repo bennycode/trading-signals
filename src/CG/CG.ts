@@ -19,7 +19,6 @@ import {pushUpdate} from '../util/pushUpdate.js';
  */
 export class CG extends BigIndicatorSeries {
   public signal: SMA;
-  // TODO: Use "getFixedArray"
   public readonly prices: Big[] = [];
 
   override get isStable(): boolean {

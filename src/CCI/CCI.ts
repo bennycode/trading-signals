@@ -1,9 +1,8 @@
-import {BigIndicatorSeries, NumberIndicatorSeries} from '../Indicator.js';
-import {getFixedArray, pushUpdate, type HighLowClose, type HighLowCloseNumber} from '../util/index.js';
-import {FasterSMA, SMA} from '../SMA/SMA.js';
-import {FasterMAD, MAD} from '../MAD/MAD.js';
-import type {BigSource} from 'big.js';
 import Big from 'big.js';
+import {BigIndicatorSeries, NumberIndicatorSeries} from '../Indicator.js';
+import {FasterMAD, MAD} from '../MAD/MAD.js';
+import {FasterSMA, SMA} from '../SMA/SMA.js';
+import {pushUpdate, type HighLowClose, type HighLowCloseNumber} from '../util/index.js';
 
 /**
  * Commodity Channel Index (CCI)
@@ -30,19 +29,22 @@ import Big from 'big.js';
  * @see https://en.wikipedia.org/wiki/Commodity_channel_index
  */
 export class CCI extends BigIndicatorSeries<HighLowClose> {
-  public readonly prices: BigSource[] = [];
   private readonly sma: SMA;
   private readonly typicalPrices: Big[];
 
   constructor(public readonly interval: number) {
     super();
     this.sma = new SMA(this.interval);
-    this.typicalPrices = getFixedArray(interval);
+    this.typicalPrices = [];
   }
 
   update(candle: HighLowClose, replace: boolean) {
     const typicalPrice = this.cacheTypicalPrice(candle, replace);
     this.sma.update(typicalPrice, replace);
+
+    if (this.typicalPrices.length > this.interval) {
+      this.typicalPrices.shift();
+    }
 
     if (this.sma.isStable) {
       const mean = this.sma.getResultOrThrow();
@@ -63,19 +65,22 @@ export class CCI extends BigIndicatorSeries<HighLowClose> {
 }
 
 export class FasterCCI extends NumberIndicatorSeries<HighLowCloseNumber> {
-  public readonly prices: number[] = [];
   private readonly sma: FasterSMA;
   private readonly typicalPrices: number[];
 
   constructor(public readonly interval: number) {
     super();
     this.sma = new FasterSMA(this.interval);
-    this.typicalPrices = getFixedArray(interval);
+    this.typicalPrices = [];
   }
 
   update(candle: HighLowCloseNumber, replace: boolean) {
     const typicalPrice = this.cacheTypicalPrice(candle, replace);
     this.sma.update(typicalPrice, replace);
+
+    if (this.typicalPrices.length > this.interval) {
+      this.typicalPrices.shift();
+    }
 
     if (this.sma.isStable) {
       const mean = this.sma.getResultOrThrow();

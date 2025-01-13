@@ -1,7 +1,6 @@
 import type {BigSource} from 'big.js';
 import Big from 'big.js';
 import {BigIndicatorSeries, NumberIndicatorSeries} from '../Indicator.js';
-import {getFixedArray} from '../util/getFixedArray.js';
 import {pushUpdate} from '../util/pushUpdate.js';
 
 /**
@@ -20,11 +19,15 @@ export class MOM extends BigIndicatorSeries {
   constructor(public readonly interval: number) {
     super();
     this.historyLength = interval + 1;
-    this.history = getFixedArray<BigSource>(this.historyLength);
+    this.history = [];
   }
 
   update(value: BigSource, replace: boolean) {
     pushUpdate(this.history, replace, value);
+
+    if (this.history.length > this.historyLength) {
+      this.history.shift();
+    }
 
     if (this.history.length === this.historyLength) {
       return this.setResult(new Big(value).minus(this.history[0]), replace);
@@ -41,11 +44,15 @@ export class FasterMOM extends NumberIndicatorSeries {
   constructor(public readonly interval: number) {
     super();
     this.historyLength = interval + 1;
-    this.history = getFixedArray<number>(this.historyLength);
+    this.history = [];
   }
 
   update(value: number, replace: boolean) {
     pushUpdate(this.history, replace, value);
+
+    if (this.history.length > this.historyLength) {
+      this.history.shift();
+    }
 
     if (this.history.length === this.historyLength) {
       return this.setResult(value - this.history[0], replace);

@@ -1,7 +1,6 @@
 import type {BigSource} from 'big.js';
 import Big from 'big.js';
 import {TechnicalIndicator} from '../Indicator.js';
-import {getFixedArray} from './getFixedArray.js';
 import {getMaximum} from './getMaximum.js';
 import {getMinimum} from './getMinimum.js';
 import {pushUpdate} from './pushUpdate.js';
@@ -33,11 +32,15 @@ export class Period extends TechnicalIndicator<PeriodResult, BigSource> {
 
   constructor(public readonly interval: number) {
     super();
-    this.values = getFixedArray<Big>(interval);
+    this.values = [];
   }
 
   update(value: BigSource, replace: boolean) {
     pushUpdate(this.values, replace, new Big(value));
+
+    if (this.values.length > this.interval) {
+      this.values.shift();
+    }
 
     if (this.values.length === this.interval) {
       this._lowest = getMinimum(this.values);
@@ -69,11 +72,15 @@ export class FasterPeriod extends TechnicalIndicator<FasterPeriodResult, number>
 
   constructor(public readonly interval: number) {
     super();
-    this.values = getFixedArray(interval);
+    this.values = [];
   }
 
   update(value: number, replace: boolean) {
     pushUpdate(this.values, replace, value);
+
+    if (this.values.length > this.interval) {
+      this.values.shift();
+    }
 
     if (this.values.length === this.interval) {
       this._lowest = Math.min(...this.values);

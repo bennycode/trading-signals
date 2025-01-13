@@ -21,7 +21,6 @@ import {getFasterAverage, getFasterStandardDeviation, getStandardDeviation, push
  * @see https://www.investopedia.com/terms/b/bollingerbands.asp
  */
 export class BollingerBands extends TechnicalIndicator<BandsResult, BigSource> {
-  // TODO: Use "getFixedArray"
   public readonly prices: Big[] = [];
 
   /**
