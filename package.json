@@ -8,6 +8,7 @@
   },
   "description": "Technical indicators to run technical analysis with JavaScript / TypeScript.",
   "devDependencies": {
+    "@arethetypeswrong/cli": "^0.17.3",
     "@tstv/eslint-config": "^3.1.6",
     "@types/benchmark": "^2.1.3",
     "@types/node": "^18.15.11",
@@ -22,10 +23,18 @@
     "pretty-quick": "^4.0.0",
     "rimraf": "^6.0.1",
     "ts-node": "^10.9.1",
+    "tsup": "^8.3.5",
     "typedoc": "0.27.6",
     "typedoc-plugin-markdown": "^4.0.3",
     "typescript": "^5.2.2",
     "vitest": "^1.1.1"
+  },
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "default": "./dist/index.cjs"
+    },
+    "./package.json": "./package.json"
   },
   "files": [
     "dist",
@@ -67,7 +76,7 @@
     "url": "git+https://github.com/bennycode/trading-signals.git"
   },
   "scripts": {
-    "build": "tsc",
+    "build": "tsup",
     "changelog:commit": "git add CHANGELOG.md && git commit -m \"docs: updated CHANGELOG.md\"",
     "clean": "rimraf coverage dist docs",
     "dist": "npm run clean && npm run build",
@@ -83,13 +92,14 @@
     "lint:types": "tsc --noEmit",
     "postversion": "git push origin && git push origin --tags && npm publish",
     "prettier": "prettier --ignore-path .gitignore --loglevel error \"**/*.{json,scss,yml}\"",
-    "preversion": "git checkout main && git pull && npm install && npm run test && npm run dist",
+    "preversion": "git checkout main && git pull && npm install && npm run test && npm run dist && npm run test:exports",
     "release:major": "generate-changelog -M -x \"chore,test\" && npm run changelog:commit && npm run docs:release && npm version major",
     "release:minor": "generate-changelog -m -x \"chore,test\" && npm run changelog:commit && npm run docs:release && npm version minor",
     "release:patch": "generate-changelog -p -x \"chore,test\" && npm run changelog:commit && npm run docs:release && npm version patch",
     "start:benchmark": "tsc --noEmit && node --no-warnings=ExperimentalWarning --loader ts-node/esm/transpile-only  ./src/start/startBenchmark.ts",
-    "test": "npm run test:types && npm run test:imports && npm run test:dev -- --coverage",
-    "test:dev": "vitest run --passWithNoTests",
+    "test": "npm run test:types && npm run test:imports && npm run test:units -- --coverage",
+    "test:units": "vitest run --passWithNoTests",
+    "test:exports": "attw --pack .",
     "test:imports": "depcruise src --include-only \"^src\"",
     "test:types": "npm run lint:types"
   },

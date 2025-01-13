@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "declaration": true,
-    "emitDecoratorMetadata": true,
+    "emitDecoratorMetadata": false,
     "experimentalDecorators": true,
     "forceConsistentCasingInFileNames": true,
     "lib": ["es2023"],
