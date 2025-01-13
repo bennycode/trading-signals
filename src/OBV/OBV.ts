@@ -16,7 +16,7 @@ export class OBV extends BigIndicatorSeries<OpenHighLowCloseVolume> {
   public readonly candles: OpenHighLowCloseVolume[] = [];
 
   update(candle: OpenHighLowCloseVolume, replace: boolean) {
-    pushUpdate(this.candles, replace, candle);
+    pushUpdate(this.candles, replace, candle, 2);
 
     if (this.candles.length === 1) {
       return null;
@@ -36,7 +36,7 @@ export class FasterOBV extends NumberIndicatorSeries<OpenHighLowCloseVolumeNumbe
   public readonly candles: OpenHighLowCloseVolumeNumber[] = [];
 
   update(candle: OpenHighLowCloseVolumeNumber, replace: boolean) {
-    pushUpdate(this.candles, replace, candle);
+    pushUpdate(this.candles, replace, candle, 2);
 
     if (this.candles.length === 1) {
       return null;

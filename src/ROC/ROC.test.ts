@@ -16,8 +16,9 @@ describe('ROC', () => {
         0.03452791999, 0.03808397397, 0.03473210052,
       ];
 
-      const roc = new ROC(5);
-      const fasterROC = new FasterROC(5);
+      const interval = 5;
+      const roc = new ROC(interval);
+      const fasterROC = new FasterROC(interval);
 
       for (const price of prices) {
         roc.add(price);

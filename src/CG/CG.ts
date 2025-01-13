@@ -34,11 +34,7 @@ export class CG extends BigIndicatorSeries {
   }
 
   update(price: BigSource, replace: boolean) {
-    pushUpdate(this.prices, replace, new Big(price));
-
-    if (this.prices.length > this.interval) {
-      this.prices.shift();
-    }
+    pushUpdate(this.prices, replace, new Big(price), this.interval);
 
     let nominator = new Big(0);
     let denominator = new Big(0);
@@ -79,11 +75,7 @@ export class FasterCG extends NumberIndicatorSeries {
   }
 
   update(price: number, replace: boolean) {
-    pushUpdate(this.prices, replace, price);
-
-    if (this.prices.length > this.interval) {
-      this.prices.shift();
-    }
+    pushUpdate(this.prices, replace, price, this.interval);
 
     let nominator = 0;
     let denominator = 0;

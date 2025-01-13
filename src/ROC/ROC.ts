@@ -20,15 +20,13 @@ export class ROC extends BigIndicatorSeries {
   }
 
   update(price: BigSource, replace: boolean) {
-    pushUpdate(this.prices, replace, price);
+    const comparePrice = pushUpdate(this.prices, replace, price, this.interval);
 
     /**
      * The priceHistory needs to have N prices in it before a result can be calculated with the following value. For
      * an interval of 5, the first result can be given on the 6th value.
      */
-    if (this.prices.length > this.interval) {
-      const comparePrice = this.prices.shift()!;
-
+    if (comparePrice) {
       return this.setResult(new Big(price).sub(comparePrice).div(comparePrice), replace);
     }
 
@@ -44,11 +42,9 @@ export class FasterROC extends NumberIndicatorSeries {
   }
 
   update(price: number, replace: boolean) {
-    pushUpdate(this.prices, replace, price);
+    const comparePrice = pushUpdate(this.prices, replace, price, this.interval);
 
-    if (this.prices.length > this.interval) {
-      const comparePrice = this.prices.shift()!;
-
+    if (comparePrice) {
       return this.setResult((price - comparePrice) / comparePrice, replace);
     }
 

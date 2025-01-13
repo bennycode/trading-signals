@@ -3,7 +3,13 @@ import Big from 'big.js';
 import {TechnicalIndicator} from '../Indicator.js';
 import {SMA} from '../SMA/SMA.js';
 import type {BandsResult, FasterBandsResult} from '../util/BandsResult.js';
-import {getFasterAverage, getFasterStandardDeviation, getStandardDeviation, pushUpdate} from '../util/index.js';
+import {
+  getAverage,
+  getFasterAverage,
+  getFasterStandardDeviation,
+  getStandardDeviation,
+  pushUpdate,
+} from '../util/index.js';
 
 /**
  * Bollinger Bands (BBANDS)
@@ -36,12 +42,10 @@ export class BollingerBands extends TechnicalIndicator<BandsResult, BigSource> {
   }
 
   update(price: BigSource, replace: boolean) {
-    pushUpdate(this.prices, replace, new Big(price));
+    pushUpdate(this.prices, replace, new Big(price), this.interval);
 
-    if (this.prices.length > this.interval) {
-      this.prices.shift();
-
-      const middle = SMA.getResultFromBatch(this.prices);
+    if (this.prices.length === this.interval) {
+      const middle = getAverage(this.prices);
       const standardDeviation = getStandardDeviation(this.prices, middle);
 
       return (this.result = {
@@ -66,11 +70,9 @@ export class FasterBollingerBands extends TechnicalIndicator<FasterBandsResult, 
   }
 
   update(price: number, replace: boolean) {
-    pushUpdate(this.prices, replace, price);
+    pushUpdate(this.prices, replace, price, this.interval);
 
-    if (this.prices.length > this.interval) {
-      this.prices.shift();
-
+    if (this.prices.length === this.interval) {
       const middle = getFasterAverage(this.prices);
       const standardDeviation = getFasterStandardDeviation(this.prices, middle);
 

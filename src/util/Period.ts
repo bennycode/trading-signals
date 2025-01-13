@@ -36,11 +36,7 @@ export class Period extends TechnicalIndicator<PeriodResult, BigSource> {
   }
 
   update(value: BigSource, replace: boolean) {
-    pushUpdate(this.values, replace, new Big(value));
-
-    if (this.values.length > this.interval) {
-      this.values.shift();
-    }
+    pushUpdate(this.values, replace, new Big(value), this.interval);
 
     if (this.values.length === this.interval) {
       this._lowest = getMinimum(this.values);
@@ -76,11 +72,7 @@ export class FasterPeriod extends TechnicalIndicator<FasterPeriodResult, number>
   }
 
   update(value: number, replace: boolean) {
-    pushUpdate(this.values, replace, value);
-
-    if (this.values.length > this.interval) {
-      this.values.shift();
-    }
+    pushUpdate(this.values, replace, value, this.interval);
 
     if (this.values.length === this.interval) {
       this._lowest = Math.min(...this.values);

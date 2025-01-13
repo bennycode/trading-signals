@@ -16,11 +16,7 @@ export class SMA extends MovingAverage {
   public readonly prices: BigSource[] = [];
 
   update(price: BigSource, replace: boolean) {
-    pushUpdate(this.prices, replace, price);
-
-    if (this.prices.length > this.interval) {
-      this.prices.shift();
-    }
+    pushUpdate(this.prices, replace, price, this.interval);
 
     if (this.prices.length === this.interval) {
       return this.setResult(SMA.getResultFromBatch(this.prices), replace);
@@ -39,11 +35,7 @@ export class FasterSMA extends FasterMovingAverage {
   public readonly prices: number[] = [];
 
   update(price: number, replace: boolean) {
-    pushUpdate(this.prices, replace, price);
-
-    if (this.prices.length > this.interval) {
-      this.prices.shift();
-    }
+    pushUpdate(this.prices, replace, price, this.interval);
 
     if (this.prices.length === this.interval) {
       const sum = this.prices.reduce((a, b) => a + b, 0);

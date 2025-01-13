@@ -60,11 +60,7 @@ export class StochasticOscillator extends TechnicalIndicator<StochasticResult, H
   }
 
   update(candle: HighLowClose, replace: boolean) {
-    pushUpdate(this.candles, replace, candle);
-
-    if (this.candles.length > this.n) {
-      this.candles.shift();
-    }
+    pushUpdate(this.candles, replace, candle, this.n);
 
     if (this.candles.length === this.n) {
       const highest = getMaximum(this.candles.map(candle => candle.high));
@@ -108,11 +104,7 @@ export class FasterStochasticOscillator extends TechnicalIndicator<FasterStochas
   }
 
   update(candle: HighLowCloseNumber, replace: boolean) {
-    pushUpdate(this.candles, replace, candle);
-
-    if (this.candles.length > this.n) {
-      this.candles.shift();
-    }
+    pushUpdate(this.candles, replace, candle, this.n);
 
     if (this.candles.length === this.n) {
       const highest = Math.max(...this.candles.map(candle => candle.high));
