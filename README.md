@@ -12,20 +12,83 @@ The main focus of this library is on the accuracy of calculations, but using the
 
 All indicators can be updated over time by streaming data (prices or candles) to the `update` method. Some indicators also provide `static` batch methods for further performance improvements when providing data up-front during a backtest or historical data import.
 
-## Benefits & Features
+## Usage
 
-- **Accurate.** Indicators with intervals will return a result only when the period is reached.
-- **Convenient.** Indicators with intervals will save their all-time highs and lows.
-- **Fast.** If you need high throughput, you can use the included [faster implementations][2].
-- **Flexible.** All advanced indicators support different smoothing overlays (WSMA, etc.).
-- **Live.** It allows for the replacement of values, enabling live charting.
-- **Modern.** Uses ECMAScript Modules (ESM) syntax.
-- **Precise.** Better accuracy than calculating with primitive numbers thanks to [big.js][1].
-- **Robust.** Checked against common division by zero mistakes.
-- **Tested.** Code coverage is 100%. No surprises when using it.
-- **Typed.** Source code is 100% TypeScript. No need to install external typings.
-- **Verified.** All results are verified with [other libraries](#alternatives) to guarantee correctness.
-- **Versatile.** Indicators can be updated up-front or by streaming prices.
+```typescript
+import {Big, SMA} from 'trading-signals';
+
+const sma = new SMA(3);
+
+// You can add values individually:
+sma.add(40);
+sma.add(30);
+sma.add(20);
+
+// You can add multiple values at once:
+sma.updates([20, 40, 80]);
+
+// You can add stringified values:
+sma.add('10');
+
+// You can replace a previous value (useful for live charting):
+sma.replace('40');
+
+// You can add arbitrary-precision decimals:
+sma.add(new Big(30.0009));
+
+// You can check if an indicator is stable:
+console.log(sma.isStable); // true
+
+// If an indicator is stable, you can get its result:
+console.log(sma.getResult()?.toFixed()); // "50.0003"
+
+// You can also get the result without optional chaining:
+console.log(sma.getResultOrThrow().toFixed()); // "50.0003"
+
+// Various precisions are available too:
+console.log(sma.getResultOrThrow().toFixed(2)); // "50.00"
+console.log(sma.getResultOrThrow().toFixed(4)); // "50.0003"
+
+// Each indicator also includes convenient features such as "lowest" and "highest" lifetime values:
+console.log(sma.lowest?.toFixed(2)); // "23.33"
+console.log(sma.highest?.toFixed(2)); // "53.33"
+```
+
+### When to use `add(...)`?
+
+To input data, you need to call the indicator's `add` method. Depending on whether the minimum required input data for the interval has been reached, the `add` method may or may not return a result from the indicator.
+
+### When to use `getResultOrThrow()`?
+
+You can call `getResultOrThrow()` at any point in time, but it throws errors unless an indicator has received the minimum amount of data. If you call `getResultOrThrow()`, before an indicator has received the required amount of input values, a `NotEnoughDataError` will be thrown.
+
+**Example:**
+
+```ts
+import {SMA} from 'trading-signals';
+
+// Our interval is 3, so we need 3 input values
+const sma = new SMA(3);
+
+// We supply 2 input values
+sma.update(10);
+sma.update(40);
+
+try {
+  // We will get an error, because the minimum amount of inputs is 3
+  sma.getResultOrThrow();
+} catch (error) {
+  console.log(error.constructor.name); // "NotEnoughDataError"
+}
+
+// We will supply the 3rd input value
+sma.update(70);
+
+// Now, we will receive a proper result
+console.log(sma.getResultOrThrow().valueOf()); // "40"
+```
+
+Most of the time, the minimum amount of data depends on the interval / time period used.
 
 ## Technical Indicator Types
 
@@ -67,71 +130,6 @@ Utility Methods:
 1. Average / Mean
 1. Standard Deviation
 1. Rolling Standard Deviation
-
-## Usage
-
-```typescript
-import {Big, SMA} from 'trading-signals';
-
-const sma = new SMA(3);
-
-// You can add numbers individually:
-sma.update(40);
-sma.update(30);
-sma.update(20);
-
-// You can add multiple numbers at once:
-sma.updates([20, 40, 80]);
-
-// You can add strings:
-sma.update('10');
-
-// You can replace a previous value (useful for live charts):
-sma.replace('40');
-
-// You can add arbitrary-precision decimals:
-sma.update(new Big(30.0009));
-
-// You can get the result in various formats:
-console.log(sma.getResultOrThrow().toFixed(2)); // "50.00"
-console.log(sma.getResultOrThrow().toFixed(4)); // "50.0003"
-```
-
-### When to use `update(...)`?
-
-You have to call an indicator's `update` method to enter input data. The update method may or may not return a result from the indicator depending on whether the minimum amount of input data has been reached.
-
-### When to use `getResultOrThrow()`?
-
-You can call `getResultOrThrow()` at any point in time, but it throws errors unless an indicator has received the minimum amount of data. If you call `getResultOrThrow()`, before an indicator has received the required amount of input values, a `NotEnoughDataError` will be thrown.
-
-**Example:**
-
-```ts
-import {SMA} from 'trading-signals';
-
-// Our interval is 3, so we need 3 input values
-const sma = new SMA(3);
-
-// We supply 2 input values
-sma.update(10);
-sma.update(40);
-
-try {
-  // We will get an error, because the minimum amount of inputs is 3
-  sma.getResultOrThrow();
-} catch (error) {
-  console.log(error.constructor.name); // "NotEnoughDataError"
-}
-
-// We will supply the 3rd input value
-sma.update(70);
-
-// Now, we will receive a proper result
-console.log(sma.getResultOrThrow().valueOf()); // "40"
-```
-
-Most of the time, the minimum amount of data depends on the interval / time period used.
 
 ## Performance
 
