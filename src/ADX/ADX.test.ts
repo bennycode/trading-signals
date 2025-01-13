@@ -3,6 +3,7 @@ import {ADX, FasterADX} from './ADX.js';
 describe('ADX', () => {
   // Test data verified with:
   // https://tulipindicators.org/adx
+  // @see https://github.com/TulipCharts/tulipindicators/blob/v0.9.1/tests/untest.txt#L36-L37
   const candles = [
     {close: 81.59, high: 82.15, low: 81.29},
     {close: 81.06, high: 81.89, low: 80.64},
@@ -20,6 +21,9 @@ describe('ADX', () => {
     {close: 87.77, high: 88.0, low: 87.17},
     {close: 87.29, high: 87.87, low: 87.01},
   ];
+
+  // @see https://github.com/TulipCharts/tulipindicators/blob/v0.9.1/tests/untest.txt#L38
+  const expectations = [41.38, 44.29, 49.42, 54.92, 59.99, 65.29, 67.36];
 
   describe('replace', () => {
     it('replaces the most recently added value', () => {
@@ -46,10 +50,9 @@ describe('ADX', () => {
 
   describe('getResult', () => {
     it('calculates the Average Directional Index (ADX)', () => {
-      const expectations = [41.38, 44.29, 49.42, 54.92, 59.99, 65.29, 67.36];
-
-      const adx = new ADX(5);
-      const fasterADX = new FasterADX(5);
+      const interval = 5;
+      const adx = new ADX(interval);
+      const fasterADX = new FasterADX(interval);
 
       for (const candle of candles) {
         adx.add(candle);
@@ -82,6 +85,28 @@ describe('ADX', () => {
 
       expect(adx.mdi?.toFixed(2)).toBe('0.06');
       expect(fasterADX.mdi?.toFixed(2)).toBe('0.06');
+    });
+  });
+
+  describe('isStable', () => {
+    it('requires at least (2x interval - 1) candles to produce a meaningful result (because of +DI and -DI warm-up)', () => {
+      const interval = 5;
+      const necessaryCandlesAmount = 2 * interval - 1;
+      const initialCandles = candles.slice(0, necessaryCandlesAmount - 1);
+      const adx = new ADX(interval);
+      const fasterADX = new FasterADX(interval);
+
+      // Add necessary candles - 1
+      adx.updates(initialCandles);
+      fasterADX.updates(initialCandles);
+      expect(adx.isStable).toBe(false);
+      expect(fasterADX.isStable).toBe(false);
+
+      // Add one more candle to make it stable
+      adx.add({close: 10, high: 11, low: 9});
+      fasterADX.add({close: 10, high: 11, low: 9});
+      expect(adx.isStable).toBe(true);
+      expect(fasterADX.isStable).toBe(true);
     });
   });
 });

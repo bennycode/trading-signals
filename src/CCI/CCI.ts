@@ -14,9 +14,6 @@ import Big from 'big.js';
  * which makes it an oscillator. Values above +100 imply an overbought condition, while values below −100 imply an
  * oversold condition.
  *
- * Note: Traders often combine CCI with other indicators to confirm trends or signals, as using it alone can lead to false signals.
- * It’s particularly useful in volatile markets or when identifying shorter-term trading opportunities.
- *
  * According to
  * [Investopia.com](https://www.investopedia.com/articles/active-trading/031914/how-traders-can-utilize-cci-commodity-channel-index-trade-stock-trends.asp#multiple-timeframe-cci-strategy),
  * traders often buy when the CCI dips below -100 and then rallies back above -100 to sell the security when it moves
@@ -26,6 +23,9 @@ import Big from 'big.js';
  * -100 and below: Indicates an oversold condition or the start of a strong downtrend.
  * +100 and above: Indicates an overbought condition or the start of a strong uptrend.
  * Values near 0 often signal a lack of clear momentum.
+ *
+ * Note: Traders often combine CCI with other indicators to confirm trends or signals, as using it alone can lead to false signals.
+ * It’s particularly useful in volatile markets or when identifying shorter-term trading opportunities.
  *
  * @see https://en.wikipedia.org/wiki/Commodity_channel_index
  */
