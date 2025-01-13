@@ -32,8 +32,8 @@ describe('API Contract', () => {
       expect(sma.getResultOrThrow().toFixed()).toBe('50.0003');
 
       // Various precisions are available too:
-      expect(sma.getResultOrThrow().toFixed(2)).toBe('50.00'); // "50.00"
-      expect(sma.getResultOrThrow().toFixed(4)).toBe('50.0003'); // "50.00"
+      expect(sma.getResultOrThrow().toFixed(2)).toBe('50.00');
+      expect(sma.getResultOrThrow().toFixed(4)).toBe('50.0003');
 
       // Each indicator also includes convenient features such as "lowest" and "highest" lifetime values:
       expect(sma.lowest?.toFixed(2)).toBe('23.33');
