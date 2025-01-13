@@ -24,7 +24,6 @@ import {pushUpdate} from '../util/pushUpdate.js';
  * @see https://www.investopedia.com/terms/r/rsi.asp
  */
 export class RSI extends BigIndicatorSeries {
-  // TODO: Use "getFixedArray"
   private readonly previousPrices: BigSource[] = [];
   private readonly avgGain: MovingAverage;
   private readonly avgLoss: MovingAverage;

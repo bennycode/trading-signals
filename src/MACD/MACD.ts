@@ -34,7 +34,6 @@ export type FasterMACDResult = {
  * @see https://www.investopedia.com/terms/m/macd.asp
  */
 export class MACD extends TechnicalIndicator<MACDResult, BigSource> {
-  // TODO: Use "getFixedArray"
   public readonly prices: BigSource[] = [];
   public readonly long: EMA | DEMA;
   public readonly short: EMA | DEMA;
