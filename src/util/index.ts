@@ -1,6 +1,5 @@
 export * from './BandsResult.js';
 export * from './getAverage.js';
-export * from './getLastFromForEach.js';
 export * from './getMaximum.js';
 export * from './getMinimum.js';
 export * from './getStandardDeviation.js';
