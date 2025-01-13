@@ -91,7 +91,7 @@
     "lint:other": "npm run prettier -- --list-different",
     "lint:types": "tsc --noEmit",
     "postversion": "git push origin && git push origin --tags && npm publish",
-    "prettier": "prettier --ignore-path .gitignore --loglevel error \"**/*.{json,scss,yml}\"",
+    "prettier": "prettier --ignore-path .gitignore --log-level error \"**/*.{json,scss,yml}\"",
     "preversion": "git checkout main && git pull && npm install && npm run test && npm run dist && npm run test:exports",
     "release:major": "generate-changelog -M -x \"chore,test\" && npm run changelog:commit && npm run docs:release && npm version major",
     "release:minor": "generate-changelog -m -x \"chore,test\" && npm run changelog:commit && npm run docs:release && npm version minor",

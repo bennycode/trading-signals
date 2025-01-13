@@ -10,10 +10,11 @@ import {pushUpdate} from '../util/pushUpdate.js';
  *
  * Implementation of the Center of Gravity (CG) oscillator by John Ehlers.
  *
- * @note According to the specification, the price inputs shall be calculated the following way:
+ * Note:
+ * - According to the specification, the price inputs shall be calculated the following way:
  * ((High Price + Low Price) / 2)
- * @note The selected interval should be half the dominant cycle length (signal line)
- * @note If the interval gets too short, the CG oscillator loses its smoothing and gets a little too nervous for
+ * - The selected interval should be half the dominant cycle length (signal line)
+ * - If the interval gets too short, the CG oscillator loses its smoothing and gets a little too nervous for
  *   profitable trading
  * @see http://www.mesasoftware.com/papers/TheCGOscillator.pdf
  */
