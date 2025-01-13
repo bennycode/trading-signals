@@ -26,9 +26,9 @@ export class DX extends BigIndicatorSeries<HighLowClose> {
   private previousCandle?: HighLowClose;
   private secondLastCandle?: HighLowClose;
   private readonly atr: ATR;
-  /** Minus Directional Indicator (-DI) */
+  /** Negative (Minus) Directional Indicator (-DI) */
   public mdi?: Big;
-  /** Plus Directional Indicator (+DI) */
+  /** Positive (Plus) Directional Indicator (+DI) */
   public pdi?: Big;
 
   constructor(

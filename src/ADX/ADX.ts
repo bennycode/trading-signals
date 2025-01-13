@@ -1,10 +1,9 @@
-import type {Big} from 'big.js';
+import {DX, FasterDX} from '../DX/DX.js';
 import {BigIndicatorSeries, NumberIndicatorSeries} from '../Indicator.js';
 import type {FasterMovingAverage, MovingAverage} from '../MA/MovingAverage.js';
-import type {HighLowClose, HighLowCloseNumber} from '../util/HighLowClose.js';
 import type {FasterMovingAverageTypes, MovingAverageTypes} from '../MA/MovingAverageTypes.js';
+import type {HighLowClose, HighLowCloseNumber} from '../util/HighLowClose.js';
 import {FasterWSMA, WSMA} from '../WSMA/WSMA.js';
-import {DX, FasterDX} from '../DX/DX.js';
 
 /**
  * Average Directional Index (ADX)
@@ -19,34 +18,42 @@ import {DX, FasterDX} from '../DX/DX.js';
  * Generally, ADX readings below 20 indicate trend weakness, and readings above 40 indicate trend strength.
  * A strong trend is indicated by readings above 50. ADX values of 75-100 signal an extremely strong trend.
  *
+ * Interpretation:
  * If ADX increases, it means that volatility is increasing and indicating the beginning of a new trend.
  * If ADX decreases, it means that volatility is decreasing, and the current trend is slowing down and may even
  * reverse.
  * When +DI is above -DI, then there is more upward pressure than downward pressure in the market.
  *
+ * Note:
+ * The ADX calculation relies on the DX becoming stable before producing meaningful results.
+ * For an interval of 5, at least 9 candles are required. The first 5 candles are used to stabilize the DX, which then generates the initial ADX value.
+ * The subsequent 4 candles produce additional ADX values, allowing it to stabilize with 5 values for an interval of 5.
+ *
  * @see https://www.investopedia.com/terms/a/adx.asp
+ * @see https://en.wikipedia.org/wiki/Average_directional_movement_index
+ * @see https://paperswithbacktest.com/wiki/wilders-adx-dmi-indicator-calculation-method
  * @see https://www.youtube.com/watch?v=n2J1H3NeF70
  * @see https://learn.tradimo.com/technical-analysis-how-to-work-with-indicators/adx-determing-the-strength-of-price-movement
  * @see https://medium.com/codex/algorithmic-trading-with-average-directional-index-in-python-2b5a20ecf06a
  */
 export class ADX extends BigIndicatorSeries<HighLowClose> {
   private readonly dx: DX;
-  private readonly adx: MovingAverage;
+  private readonly smoothed: MovingAverage;
 
   constructor(
     public readonly interval: number,
     SmoothingIndicator: MovingAverageTypes = WSMA
   ) {
     super();
-    this.adx = new SmoothingIndicator(this.interval);
-    this.dx = new DX(interval, SmoothingIndicator);
+    this.smoothed = new SmoothingIndicator(this.interval);
+    this.dx = new DX(this.interval, SmoothingIndicator);
   }
 
-  get mdi(): Big | void {
+  get mdi() {
     return this.dx.mdi;
   }
 
-  get pdi(): Big | void {
+  get pdi() {
     return this.dx.pdi;
   }
 
@@ -54,11 +61,11 @@ export class ADX extends BigIndicatorSeries<HighLowClose> {
     const result = this.dx.update(candle, replace);
 
     if (result !== null) {
-      this.adx.update(result, replace);
+      this.smoothed.update(result, replace);
     }
 
-    if (this.adx.isStable) {
-      return this.setResult(this.adx.getResult(), replace);
+    if (this.smoothed.isStable) {
+      return this.setResult(this.smoothed.getResult(), replace);
     }
 
     return null;
@@ -67,14 +74,14 @@ export class ADX extends BigIndicatorSeries<HighLowClose> {
 
 export class FasterADX extends NumberIndicatorSeries<HighLowCloseNumber> {
   private readonly dx: FasterDX;
-  private readonly adx: FasterMovingAverage;
+  private readonly smoothed: FasterMovingAverage;
 
   constructor(
     public readonly interval: number,
     SmoothingIndicator: FasterMovingAverageTypes = FasterWSMA
   ) {
     super();
-    this.adx = new SmoothingIndicator(this.interval);
+    this.smoothed = new SmoothingIndicator(this.interval);
     this.dx = new FasterDX(interval, SmoothingIndicator);
   }
 
@@ -90,11 +97,11 @@ export class FasterADX extends NumberIndicatorSeries<HighLowCloseNumber> {
     const result = this.dx.update(candle, replace);
 
     if (result !== null) {
-      this.adx.update(result, replace);
+      this.smoothed.update(result, replace);
     }
 
-    if (this.adx.isStable) {
-      return this.setResult(this.adx.getResult(), replace);
+    if (this.smoothed.isStable) {
+      return this.setResult(this.smoothed.getResult(), replace);
     }
 
     return null;
