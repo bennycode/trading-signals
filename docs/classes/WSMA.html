@@ -1,5 +1,5 @@
 <!doctype html>
-<html class="default" lang="en">
+<html class="default" lang="en" data-base="..">
   <head>
     <meta charset="utf-8" />
     <meta http-equiv="x-ua-compatible" content="IE=edge" />
@@ -12,6 +12,7 @@
     <script async src="../assets/icons.js" id="tsd-icons-script"></script>
     <script async src="../assets/search.js" id="tsd-search-script"></script>
     <script async src="../assets/navigation.js" id="tsd-nav-script"></script>
+    <script async src="../assets/hierarchy.js" id="tsd-hierarchy-script"></script>
   </head>
   <body>
     <script>
@@ -21,7 +22,7 @@
     </script>
     <header class="tsd-page-toolbar">
       <div class="tsd-toolbar-contents container">
-        <div class="table-cell" id="tsd-search" data-base="..">
+        <div class="table-cell" id="tsd-search">
           <div class="field">
             <label for="tsd-search-field" class="tsd-widget tsd-toolbar-icon search no-caption"
               ><svg width="16" height="16" viewBox="0 0 16 16" fill="none">
@@ -54,7 +55,7 @@
         </div>
         <section class="tsd-panel tsd-comment">
           <div class="tsd-comment tsd-typography">
-            <p>Wilder&#39;s Smoothed Moving Average (WSMA) Type: Trend</p>
+            <p>Wilder's Smoothed Moving Average (WSMA) Type: Trend</p>
             <p>
               Developed by <strong>John Welles Wilder, Jr.</strong> to help identifying and spotting bullish and bearish
               trends. Similar to Exponential Moving Averages with the difference that a smoothing factor of 1/interval
@@ -64,26 +65,32 @@
             <ul>
               <li>Modified Exponential Moving Average (MEMA)</li>
               <li>Smoothed Moving Average (SMMA)</li>
-              <li>Welles Wilder&#39;s Smoothing (WWS)</li>
+              <li>Welles Wilder's Smoothing (WWS)</li>
             </ul>
           </div>
           <div class="tsd-comment tsd-typography">
-            <h4>See</h4>
-            <p>
-              <a
-                href="https://tlc.thinkorswim.com/center/reference/Tech-Indicators/studies-library/V-Z/WildersSmoothing"
-                >https://tlc.thinkorswim.com/center/reference/Tech-Indicators/studies-library/V-Z/WildersSmoothing</a
-              >
-            </p>
+            <div class="tsd-tag-see">
+              <h4 class="tsd-anchor-link">
+                <a id="see" class="tsd-anchor"></a>See<a href="#see" aria-label="Permalink" class="tsd-anchor-icon"
+                  ><svg viewBox="0 0 24 24"><use href="../assets/icons.svg#icon-anchor"></use></svg
+                ></a>
+              </h4>
+              <p>
+                <a
+                  href="https://tlc.thinkorswim.com/center/reference/Tech-Indicators/studies-library/V-Z/WildersSmoothing"
+                  >https://tlc.thinkorswim.com/center/reference/Tech-Indicators/studies-library/V-Z/WildersSmoothing</a
+                >
+              </p>
+            </div>
           </div>
         </section>
-        <section class="tsd-panel tsd-hierarchy">
-          <h4>Hierarchy (<a class="link" href="../hierarchy.html#WSMA">view full</a>)</h4>
+        <section class="tsd-panel tsd-hierarchy" data-refl="2209">
+          <h4>Hierarchy (<a href="../hierarchy.html#WSMA">View Summary</a>)</h4>
           <ul class="tsd-hierarchy">
-            <li>
+            <li class="tsd-hierarchy-item">
               <a href="MovingAverage.html" class="tsd-signature-type tsd-kind-class">MovingAverage</a>
               <ul class="tsd-hierarchy">
-                <li><span class="target">WSMA</span></li>
+                <li class="tsd-hierarchy-item"><span class="tsd-hierarchy-target">WSMA</span></li>
               </ul>
             </li>
           </ul>
@@ -93,15 +100,15 @@
             <li>
               Defined in
               <a
-                href="https://github.com/bennycode/trading-signals/blob/a4207a2d80227beebf5b3cf0bfa965402aeb87a5/src/WSMA/WSMA.ts#L21"
-                >WSMA/WSMA.ts:21</a
+                href="https://github.com/bennycode/trading-signals/blob/14d986623e281b5801b7330ed6da06fd890b4c21/src/WSMA/WSMA.ts#L22"
+                >WSMA/WSMA.ts:22</a
               >
             </li>
           </ul>
         </aside>
         <section class="tsd-panel-group tsd-index-group">
           <section class="tsd-panel tsd-index-panel">
-            <details class="tsd-index-content tsd-index-accordion" open>
+            <details class="tsd-index-content tsd-accordion" open>
               <summary class="tsd-accordion-summary tsd-index-summary">
                 <h5 class="tsd-index-heading uppercase" role="button" aria-expanded="false" tabindex="0">
                   <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
@@ -144,7 +151,7 @@
                 <section class="tsd-index-section">
                   <h3 class="tsd-index-heading">Accessors</h3>
                   <div class="tsd-index-list">
-                    <a href="WSMA.html#isStable" class="tsd-index-link tsd-is-inherited"
+                    <a href="WSMA.html#isstable" class="tsd-index-link tsd-is-inherited"
                       ><svg class="tsd-kind-icon" viewBox="0 0 24 24">
                         <use href="../assets/icons.svg#icon-262144"></use></svg
                       ><span>is<wbr />Stable</span></a
@@ -154,10 +161,20 @@
                 <section class="tsd-index-section">
                   <h3 class="tsd-index-heading">Methods</h3>
                   <div class="tsd-index-list">
-                    <a href="WSMA.html#getResult" class="tsd-index-link tsd-is-inherited"
+                    <a href="WSMA.html#add" class="tsd-index-link tsd-is-inherited"
+                      ><svg class="tsd-kind-icon" viewBox="0 0 24 24">
+                        <use href="../assets/icons.svg#icon-2048"></use></svg
+                      ><span>add</span></a
+                    >
+                    <a href="WSMA.html#getresult" class="tsd-index-link tsd-is-inherited"
                       ><svg class="tsd-kind-icon" viewBox="0 0 24 24">
                         <use href="../assets/icons.svg#icon-2048"></use></svg
                       ><span>get<wbr />Result</span></a
+                    >
+                    <a href="WSMA.html#getresultorthrow" class="tsd-index-link tsd-is-inherited"
+                      ><svg class="tsd-kind-icon" viewBox="0 0 24 24">
+                        <use href="../assets/icons.svg#icon-2048"></use></svg
+                      ><span>get<wbr />Result<wbr />Or<wbr />Throw</span></a
                     >
                     <a href="WSMA.html#replace" class="tsd-index-link tsd-is-inherited"
                       ><svg class="tsd-kind-icon" viewBox="0 0 24 24">
@@ -169,7 +186,7 @@
                         <use href="../assets/icons.svg#icon-2048"></use></svg
                       ><span>update</span></a
                     >
-                    <a href="WSMA.html#updates" class="tsd-index-link"
+                    <a href="WSMA.html#updates" class="tsd-index-link tsd-is-inherited"
                       ><svg class="tsd-kind-icon" viewBox="0 0 24 24">
                         <use href="../assets/icons.svg#icon-2048"></use></svg
                       ><span>updates</span></a
@@ -180,403 +197,554 @@
             </details>
           </section>
         </section>
-        <section class="tsd-panel-group tsd-member-group">
-          <h2>Constructors</h2>
-          <section class="tsd-panel tsd-member">
-            <a id="constructor" class="tsd-anchor"></a>
-            <h3 class="tsd-anchor-link">
-              <span>constructor</span
-              ><a href="#constructor" aria-label="Permalink" class="tsd-anchor-icon"
-                ><svg viewBox="0 0 24 24"><use href="../assets/icons.svg#icon-anchor"></use></svg
-              ></a>
-            </h3>
-            <ul class="tsd-signatures">
-              <li class="tsd-signature tsd-anchor-link">
-                <a id="constructor.new_WSMA" class="tsd-anchor"></a
-                ><span class="tsd-kind-constructor-signature">new WSMA</span><span class="tsd-signature-symbol">(</span
-                ><span class="tsd-kind-parameter">interval</span><span class="tsd-signature-symbol">)</span
-                ><span class="tsd-signature-symbol">: </span
-                ><a href="WSMA.html" class="tsd-signature-type tsd-kind-class">WSMA</a
-                ><a href="#constructor.new_WSMA" aria-label="Permalink" class="tsd-anchor-icon"
+        <details class="tsd-panel-group tsd-member-group tsd-accordion" open>
+          <summary class="tsd-accordion-summary" data-key="section-Constructors">
+            <h2>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                <use href="../assets/icons.svg#icon-chevronDown"></use>
+              </svg>
+              Constructors
+            </h2>
+          </summary>
+          <section>
+            <section class="tsd-panel tsd-member">
+              <a id="constructor" class="tsd-anchor"></a>
+              <h3 class="tsd-anchor-link">
+                <span>constructor</span
+                ><a href="#constructor" aria-label="Permalink" class="tsd-anchor-icon"
                   ><svg viewBox="0 0 24 24"><use href="../assets/icons.svg#icon-anchor"></use></svg
                 ></a>
-              </li>
-              <li class="tsd-description">
-                <div class="tsd-parameters">
-                  <h4 class="tsd-parameters-title">Parameters</h4>
-                  <ul class="tsd-parameter-list">
-                    <li>
-                      <span
-                        ><span class="tsd-kind-parameter">interval</span>:
-                        <span class="tsd-signature-type">number</span></span
+              </h3>
+              <ul class="tsd-signatures">
+                <li class="tsd-signature tsd-anchor-link">
+                  <a id="constructorwsma" class="tsd-anchor"></a><span class="tsd-signature-keyword">new</span>
+                  <span class="tsd-kind-constructor-signature">WSMA</span><span class="tsd-signature-symbol">(</span
+                  ><span class="tsd-kind-parameter">interval</span><span class="tsd-signature-symbol">:</span>
+                  <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">)</span
+                  ><span class="tsd-signature-symbol">:</span>
+                  <a href="WSMA.html" class="tsd-signature-type tsd-kind-class">WSMA</a
+                  ><a href="#constructorwsma" aria-label="Permalink" class="tsd-anchor-icon"
+                    ><svg viewBox="0 0 24 24"><use href="../assets/icons.svg#icon-anchor"></use></svg
+                  ></a>
+                </li>
+                <li class="tsd-description">
+                  <div class="tsd-parameters">
+                    <h4 class="tsd-parameters-title">Parameters</h4>
+                    <ul class="tsd-parameter-list">
+                      <li>
+                        <span
+                          ><span class="tsd-kind-parameter">interval</span>:
+                          <span class="tsd-signature-type">number</span></span
+                        >
+                      </li>
+                    </ul>
+                  </div>
+                  <h4 class="tsd-returns-title">
+                    Returns <a href="WSMA.html" class="tsd-signature-type tsd-kind-class">WSMA</a>
+                  </h4>
+                  <aside class="tsd-sources">
+                    <p>
+                      Overrides <a href="MovingAverage.html">MovingAverage</a>.<a href="MovingAverage.html#constructor"
+                        >constructor</a
                       >
-                    </li>
-                  </ul>
-                </div>
-                <h4 class="tsd-returns-title">
-                  Returns <a href="WSMA.html" class="tsd-signature-type tsd-kind-class">WSMA</a>
-                </h4>
-                <aside class="tsd-sources">
-                  <p>
-                    Overrides <a href="MovingAverage.html">MovingAverage</a>.<a href="MovingAverage.html#constructor"
-                      >constructor</a
-                    >
-                  </p>
-                  <ul>
-                    <li>
-                      Defined in
-                      <a
-                        href="https://github.com/bennycode/trading-signals/blob/a4207a2d80227beebf5b3cf0bfa965402aeb87a5/src/WSMA/WSMA.ts#L25"
-                        >WSMA/WSMA.ts:25</a
-                      >
-                    </li>
-                  </ul>
-                </aside>
-              </li>
-            </ul>
-          </section>
-        </section>
-        <section class="tsd-panel-group tsd-member-group">
-          <h2>Properties</h2>
-          <section class="tsd-panel tsd-member tsd-is-inherited">
-            <a id="highest" class="tsd-anchor"></a>
-            <h3 class="tsd-anchor-link">
-              <code class="tsd-tag ts-flagOptional">Optional</code> <span>highest</span
-              ><a href="#highest" aria-label="Permalink" class="tsd-anchor-icon"
-                ><svg viewBox="0 0 24 24"><use href="../assets/icons.svg#icon-anchor"></use></svg
-              ></a>
-            </h3>
-            <div class="tsd-signature">
-              <span class="tsd-kind-property">highest</span><span class="tsd-signature-symbol">?:</span>
-              <span class="tsd-signature-type">Big</span>
-            </div>
-            <aside class="tsd-sources">
-              <p>
-                Inherited from <a href="MovingAverage.html">MovingAverage</a>.<a href="MovingAverage.html#highest"
-                  >highest</a
-                >
-              </p>
-              <ul>
-                <li>
-                  Defined in
-                  <a
-                    href="https://github.com/bennycode/trading-signals/blob/a4207a2d80227beebf5b3cf0bfa965402aeb87a5/src/Indicator.ts#L23"
-                    >Indicator.ts:23</a
-                  >
+                    </p>
+                    <ul>
+                      <li>
+                        Defined in
+                        <a
+                          href="https://github.com/bennycode/trading-signals/blob/14d986623e281b5801b7330ed6da06fd890b4c21/src/WSMA/WSMA.ts#L26"
+                          >WSMA/WSMA.ts:26</a
+                        >
+                      </li>
+                    </ul>
+                  </aside>
                 </li>
               </ul>
-            </aside>
+            </section>
           </section>
-          <section class="tsd-panel tsd-member tsd-is-inherited">
-            <a id="interval" class="tsd-anchor"></a>
-            <h3 class="tsd-anchor-link">
-              <code class="tsd-tag ts-flagReadonly">Readonly</code> <span>interval</span
-              ><a href="#interval" aria-label="Permalink" class="tsd-anchor-icon"
-                ><svg viewBox="0 0 24 24"><use href="../assets/icons.svg#icon-anchor"></use></svg
-              ></a>
-            </h3>
-            <div class="tsd-signature">
-              <span class="tsd-kind-property">interval</span><span class="tsd-signature-symbol">:</span>
-              <span class="tsd-signature-type">number</span>
-            </div>
-            <aside class="tsd-sources">
-              <p>
-                Inherited from <a href="MovingAverage.html">MovingAverage</a>.<a href="MovingAverage.html#interval"
-                  >interval</a
-                >
-              </p>
-              <ul>
-                <li>
-                  Defined in
-                  <a
-                    href="https://github.com/bennycode/trading-signals/blob/a4207a2d80227beebf5b3cf0bfa965402aeb87a5/src/WSMA/WSMA.ts#L25"
-                    >WSMA/WSMA.ts:25</a
+        </details>
+        <details class="tsd-panel-group tsd-member-group tsd-accordion" open>
+          <summary class="tsd-accordion-summary" data-key="section-Properties">
+            <h2>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                <use href="../assets/icons.svg#icon-chevronDown"></use>
+              </svg>
+              Properties
+            </h2>
+          </summary>
+          <section>
+            <section class="tsd-panel tsd-member tsd-is-inherited">
+              <a id="highest" class="tsd-anchor"></a>
+              <h3 class="tsd-anchor-link">
+                <code class="tsd-tag">Optional</code><span>highest</span
+                ><a href="#highest" aria-label="Permalink" class="tsd-anchor-icon"
+                  ><svg viewBox="0 0 24 24"><use href="../assets/icons.svg#icon-anchor"></use></svg
+                ></a>
+              </h3>
+              <div class="tsd-signature">
+                <span class="tsd-kind-property">highest</span><span class="tsd-signature-symbol">?:</span>
+                <span class="tsd-signature-type">Big</span>
+              </div>
+              <aside class="tsd-sources">
+                <p>
+                  Inherited from <a href="MovingAverage.html">MovingAverage</a>.<a href="MovingAverage.html#highest"
+                    >highest</a
                   >
+                </p>
+                <ul>
+                  <li>
+                    Defined in
+                    <a
+                      href="https://github.com/bennycode/trading-signals/blob/14d986623e281b5801b7330ed6da06fd890b4c21/src/Indicator.ts#L60"
+                      >Indicator.ts:60</a
+                    >
+                  </li>
+                </ul>
+              </aside>
+            </section>
+            <section class="tsd-panel tsd-member tsd-is-inherited">
+              <a id="interval" class="tsd-anchor"></a>
+              <h3 class="tsd-anchor-link">
+                <code class="tsd-tag">Readonly</code><span>interval</span
+                ><a href="#interval" aria-label="Permalink" class="tsd-anchor-icon"
+                  ><svg viewBox="0 0 24 24"><use href="../assets/icons.svg#icon-anchor"></use></svg
+                ></a>
+              </h3>
+              <div class="tsd-signature">
+                <span class="tsd-kind-property">interval</span><span class="tsd-signature-symbol">:</span>
+                <span class="tsd-signature-type">number</span>
+              </div>
+              <aside class="tsd-sources">
+                <p>
+                  Inherited from <a href="MovingAverage.html">MovingAverage</a>.<a href="MovingAverage.html#interval"
+                    >interval</a
+                  >
+                </p>
+                <ul>
+                  <li>
+                    Defined in
+                    <a
+                      href="https://github.com/bennycode/trading-signals/blob/14d986623e281b5801b7330ed6da06fd890b4c21/src/WSMA/WSMA.ts#L26"
+                      >WSMA/WSMA.ts:26</a
+                    >
+                  </li>
+                </ul>
+              </aside>
+            </section>
+            <section class="tsd-panel tsd-member tsd-is-inherited">
+              <a id="lowest" class="tsd-anchor"></a>
+              <h3 class="tsd-anchor-link">
+                <code class="tsd-tag">Optional</code><span>lowest</span
+                ><a href="#lowest" aria-label="Permalink" class="tsd-anchor-icon"
+                  ><svg viewBox="0 0 24 24"><use href="../assets/icons.svg#icon-anchor"></use></svg
+                ></a>
+              </h3>
+              <div class="tsd-signature">
+                <span class="tsd-kind-property">lowest</span><span class="tsd-signature-symbol">?:</span>
+                <span class="tsd-signature-type">Big</span>
+              </div>
+              <aside class="tsd-sources">
+                <p>
+                  Inherited from <a href="MovingAverage.html">MovingAverage</a>.<a href="MovingAverage.html#lowest"
+                    >lowest</a
+                  >
+                </p>
+                <ul>
+                  <li>
+                    Defined in
+                    <a
+                      href="https://github.com/bennycode/trading-signals/blob/14d986623e281b5801b7330ed6da06fd890b4c21/src/Indicator.ts#L62"
+                      >Indicator.ts:62</a
+                    >
+                  </li>
+                </ul>
+              </aside>
+            </section>
+          </section>
+        </details>
+        <details class="tsd-panel-group tsd-member-group tsd-accordion" open>
+          <summary class="tsd-accordion-summary" data-key="section-Accessors">
+            <h2>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                <use href="../assets/icons.svg#icon-chevronDown"></use>
+              </svg>
+              Accessors
+            </h2>
+          </summary>
+          <section>
+            <section class="tsd-panel tsd-member tsd-is-inherited">
+              <a id="isstable" class="tsd-anchor"></a>
+              <h3 class="tsd-anchor-link">
+                <span>is<wbr />Stable</span
+                ><a href="#isstable" aria-label="Permalink" class="tsd-anchor-icon"
+                  ><svg viewBox="0 0 24 24"><use href="../assets/icons.svg#icon-anchor"></use></svg
+                ></a>
+              </h3>
+              <ul class="tsd-signatures tsd-is-inherited">
+                <li class="tsd-signature" id="isstable-1">
+                  <span class="tsd-signature-keyword">get</span> <span class="tsd-kind-get-signature">isStable</span
+                  ><span class="tsd-signature-symbol">()</span><span class="tsd-signature-symbol">:</span>
+                  <span class="tsd-signature-type">boolean</span>
+                </li>
+                <li class="tsd-description">
+                  <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">boolean</span></h4>
+                  <aside class="tsd-sources">
+                    <p>Inherited from MovingAverage.isStable</p>
+                    <ul>
+                      <li>
+                        Defined in
+                        <a
+                          href="https://github.com/bennycode/trading-signals/blob/14d986623e281b5801b7330ed6da06fd890b4c21/src/Indicator.ts#L36"
+                          >Indicator.ts:36</a
+                        >
+                      </li>
+                    </ul>
+                  </aside>
                 </li>
               </ul>
-            </aside>
+            </section>
           </section>
-          <section class="tsd-panel tsd-member tsd-is-inherited">
-            <a id="lowest" class="tsd-anchor"></a>
-            <h3 class="tsd-anchor-link">
-              <code class="tsd-tag ts-flagOptional">Optional</code> <span>lowest</span
-              ><a href="#lowest" aria-label="Permalink" class="tsd-anchor-icon"
-                ><svg viewBox="0 0 24 24"><use href="../assets/icons.svg#icon-anchor"></use></svg
-              ></a>
-            </h3>
-            <div class="tsd-signature">
-              <span class="tsd-kind-property">lowest</span><span class="tsd-signature-symbol">?:</span>
-              <span class="tsd-signature-type">Big</span>
-            </div>
-            <aside class="tsd-sources">
-              <p>
-                Inherited from <a href="MovingAverage.html">MovingAverage</a>.<a href="MovingAverage.html#lowest"
-                  >lowest</a
-                >
-              </p>
-              <ul>
-                <li>
-                  Defined in
-                  <a
-                    href="https://github.com/bennycode/trading-signals/blob/a4207a2d80227beebf5b3cf0bfa965402aeb87a5/src/Indicator.ts#L26"
-                    >Indicator.ts:26</a
-                  >
+        </details>
+        <details class="tsd-panel-group tsd-member-group tsd-accordion" open>
+          <summary class="tsd-accordion-summary" data-key="section-Methods">
+            <h2>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                <use href="../assets/icons.svg#icon-chevronDown"></use>
+              </svg>
+              Methods
+            </h2>
+          </summary>
+          <section>
+            <section class="tsd-panel tsd-member tsd-is-inherited">
+              <a id="add" class="tsd-anchor"></a>
+              <h3 class="tsd-anchor-link">
+                <span>add</span
+                ><a href="#add" aria-label="Permalink" class="tsd-anchor-icon"
+                  ><svg viewBox="0 0 24 24"><use href="../assets/icons.svg#icon-anchor"></use></svg
+                ></a>
+              </h3>
+              <ul class="tsd-signatures tsd-is-inherited">
+                <li class="tsd-signature tsd-anchor-link">
+                  <a id="add-1" class="tsd-anchor"></a><span class="tsd-kind-call-signature">add</span
+                  ><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">input</span
+                  ><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">BigSource</span
+                  ><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span>
+                  <span class="tsd-signature-type">null</span> <span class="tsd-signature-symbol">|</span>
+                  <span class="tsd-signature-type">Big</span
+                  ><a href="#add-1" aria-label="Permalink" class="tsd-anchor-icon"
+                    ><svg viewBox="0 0 24 24"><use href="../assets/icons.svg#icon-anchor"></use></svg
+                  ></a>
+                </li>
+                <li class="tsd-description">
+                  <div class="tsd-parameters">
+                    <h4 class="tsd-parameters-title">Parameters</h4>
+                    <ul class="tsd-parameter-list">
+                      <li>
+                        <span
+                          ><span class="tsd-kind-parameter">input</span>:
+                          <span class="tsd-signature-type">BigSource</span></span
+                        >
+                      </li>
+                    </ul>
+                  </div>
+                  <h4 class="tsd-returns-title">
+                    Returns <span class="tsd-signature-type">null</span> <span class="tsd-signature-symbol">|</span>
+                    <span class="tsd-signature-type">Big</span>
+                  </h4>
+                  <aside class="tsd-sources">
+                    <p>
+                      Inherited from <a href="MovingAverage.html">MovingAverage</a>.<a href="MovingAverage.html#add"
+                        >add</a
+                      >
+                    </p>
+                    <ul>
+                      <li>
+                        Defined in
+                        <a
+                          href="https://github.com/bennycode/trading-signals/blob/14d986623e281b5801b7330ed6da06fd890b4c21/src/Indicator.ts#L40"
+                          >Indicator.ts:40</a
+                        >
+                      </li>
+                    </ul>
+                  </aside>
                 </li>
               </ul>
-            </aside>
-          </section>
-        </section>
-        <section class="tsd-panel-group tsd-member-group">
-          <h2>Accessors</h2>
-          <section class="tsd-panel tsd-member tsd-is-inherited">
-            <a id="isStable" class="tsd-anchor"></a>
-            <h3 class="tsd-anchor-link">
-              <span>is<wbr />Stable</span
-              ><a href="#isStable" aria-label="Permalink" class="tsd-anchor-icon"
-                ><svg viewBox="0 0 24 24"><use href="../assets/icons.svg#icon-anchor"></use></svg
-              ></a>
-            </h3>
-            <ul class="tsd-signatures tsd-is-inherited">
-              <li class="tsd-signature" id="isStable.isStable-1">
-                <span class="tsd-signature-keyword">get</span> isStable<span class="tsd-signature-symbol">(</span
-                ><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span
-                ><span class="tsd-signature-type">boolean</span>
-              </li>
-              <li class="tsd-description">
-                <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">boolean</span></h4>
-                <aside class="tsd-sources">
-                  <p>Inherited from MovingAverage.isStable</p>
-                  <ul>
-                    <li>
-                      Defined in
-                      <a
-                        href="https://github.com/bennycode/trading-signals/blob/a4207a2d80227beebf5b3cf0bfa965402aeb87a5/src/Indicator.ts#L31"
-                        >Indicator.ts:31</a
-                      >
-                    </li>
-                  </ul>
-                </aside>
-              </li>
-            </ul>
-          </section>
-        </section>
-        <section class="tsd-panel-group tsd-member-group">
-          <h2>Methods</h2>
-          <section class="tsd-panel tsd-member tsd-is-inherited">
-            <a id="getResult" class="tsd-anchor"></a>
-            <h3 class="tsd-anchor-link">
-              <span>get<wbr />Result</span
-              ><a href="#getResult" aria-label="Permalink" class="tsd-anchor-icon"
-                ><svg viewBox="0 0 24 24"><use href="../assets/icons.svg#icon-anchor"></use></svg
-              ></a>
-            </h3>
-            <ul class="tsd-signatures tsd-is-inherited">
-              <li class="tsd-signature tsd-anchor-link">
-                <a id="getResult.getResult-1" class="tsd-anchor"></a
-                ><span class="tsd-kind-call-signature">get<wbr />Result</span><span class="tsd-signature-symbol">(</span
-                ><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span
-                ><span class="tsd-signature-type">Big</span
-                ><a href="#getResult.getResult-1" aria-label="Permalink" class="tsd-anchor-icon"
+            </section>
+            <section class="tsd-panel tsd-member tsd-is-inherited">
+              <a id="getresult" class="tsd-anchor"></a>
+              <h3 class="tsd-anchor-link">
+                <span>get<wbr />Result</span
+                ><a href="#getresult" aria-label="Permalink" class="tsd-anchor-icon"
                   ><svg viewBox="0 0 24 24"><use href="../assets/icons.svg#icon-anchor"></use></svg
                 ></a>
-              </li>
-              <li class="tsd-description">
-                <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Big</span></h4>
-                <aside class="tsd-sources">
-                  <p>
-                    Inherited from <a href="MovingAverage.html">MovingAverage</a>.<a href="MovingAverage.html#getResult"
-                      >getResult</a
-                    >
-                  </p>
-                  <ul>
-                    <li>
-                      Defined in
-                      <a
-                        href="https://github.com/bennycode/trading-signals/blob/a4207a2d80227beebf5b3cf0bfa965402aeb87a5/src/Indicator.ts#L35"
-                        >Indicator.ts:35</a
+              </h3>
+              <ul class="tsd-signatures tsd-is-inherited">
+                <li class="tsd-signature tsd-anchor-link">
+                  <a id="getresult-1" class="tsd-anchor"></a><span class="tsd-kind-call-signature">getResult</span
+                  ><span class="tsd-signature-symbol">()</span><span class="tsd-signature-symbol">:</span>
+                  <span class="tsd-signature-type">null</span> <span class="tsd-signature-symbol">|</span>
+                  <span class="tsd-signature-type">Big</span
+                  ><a href="#getresult-1" aria-label="Permalink" class="tsd-anchor-icon"
+                    ><svg viewBox="0 0 24 24"><use href="../assets/icons.svg#icon-anchor"></use></svg
+                  ></a>
+                </li>
+                <li class="tsd-description">
+                  <h4 class="tsd-returns-title">
+                    Returns <span class="tsd-signature-type">null</span> <span class="tsd-signature-symbol">|</span>
+                    <span class="tsd-signature-type">Big</span>
+                  </h4>
+                  <aside class="tsd-sources">
+                    <p>
+                      Inherited from <a href="MovingAverage.html">MovingAverage</a>.<a
+                        href="MovingAverage.html#getresult"
+                        >getResult</a
                       >
-                    </li>
-                  </ul>
-                </aside>
-              </li>
-            </ul>
-          </section>
-          <section class="tsd-panel tsd-member tsd-is-inherited">
-            <a id="replace" class="tsd-anchor"></a>
-            <h3 class="tsd-anchor-link">
-              <span>replace</span
-              ><a href="#replace" aria-label="Permalink" class="tsd-anchor-icon"
-                ><svg viewBox="0 0 24 24"><use href="../assets/icons.svg#icon-anchor"></use></svg
-              ></a>
-            </h3>
-            <ul class="tsd-signatures tsd-is-inherited">
-              <li class="tsd-signature tsd-anchor-link">
-                <a id="replace.replace-1" class="tsd-anchor"></a><span class="tsd-kind-call-signature">replace</span
-                ><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">price</span
-                ><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span
-                ><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol"> | </span
-                ><span class="tsd-signature-type">Big</span
-                ><a href="#replace.replace-1" aria-label="Permalink" class="tsd-anchor-icon"
+                    </p>
+                    <ul>
+                      <li>
+                        Defined in
+                        <a
+                          href="https://github.com/bennycode/trading-signals/blob/14d986623e281b5801b7330ed6da06fd890b4c21/src/Indicator.ts#L20"
+                          >Indicator.ts:20</a
+                        >
+                      </li>
+                    </ul>
+                  </aside>
+                </li>
+              </ul>
+            </section>
+            <section class="tsd-panel tsd-member tsd-is-inherited">
+              <a id="getresultorthrow" class="tsd-anchor"></a>
+              <h3 class="tsd-anchor-link">
+                <span>get<wbr />Result<wbr />Or<wbr />Throw</span
+                ><a href="#getresultorthrow" aria-label="Permalink" class="tsd-anchor-icon"
                   ><svg viewBox="0 0 24 24"><use href="../assets/icons.svg#icon-anchor"></use></svg
                 ></a>
-              </li>
-              <li class="tsd-description">
-                <div class="tsd-parameters">
-                  <h4 class="tsd-parameters-title">Parameters</h4>
-                  <ul class="tsd-parameter-list">
-                    <li>
-                      <span
-                        ><span class="tsd-kind-parameter">price</span>:
-                        <span class="tsd-signature-type">BigSource</span></span
+              </h3>
+              <ul class="tsd-signatures tsd-is-inherited">
+                <li class="tsd-signature tsd-anchor-link">
+                  <a id="getresultorthrow-1" class="tsd-anchor"></a
+                  ><span class="tsd-kind-call-signature">getResultOrThrow</span
+                  ><span class="tsd-signature-symbol">()</span><span class="tsd-signature-symbol">:</span>
+                  <span class="tsd-signature-type">Big</span
+                  ><a href="#getresultorthrow-1" aria-label="Permalink" class="tsd-anchor-icon"
+                    ><svg viewBox="0 0 24 24"><use href="../assets/icons.svg#icon-anchor"></use></svg
+                  ></a>
+                </li>
+                <li class="tsd-description">
+                  <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Big</span></h4>
+                  <aside class="tsd-sources">
+                    <p>
+                      Inherited from <a href="MovingAverage.html">MovingAverage</a>.<a
+                        href="MovingAverage.html#getresultorthrow"
+                        >getResultOrThrow</a
                       >
-                    </li>
-                  </ul>
-                </div>
-                <h4 class="tsd-returns-title">
-                  Returns <span class="tsd-signature-type">void</span><span class="tsd-signature-symbol"> | </span
-                  ><span class="tsd-signature-type">Big</span>
-                </h4>
-                <aside class="tsd-sources">
-                  <p>
-                    Inherited from <a href="MovingAverage.html">MovingAverage</a>.<a href="MovingAverage.html#replace"
-                      >replace</a
-                    >
-                  </p>
-                  <ul>
-                    <li>
-                      Defined in
-                      <a
-                        href="https://github.com/bennycode/trading-signals/blob/a4207a2d80227beebf5b3cf0bfa965402aeb87a5/src/MA/MovingAverage.ts#L24"
-                        >MA/MovingAverage.ts:24</a
-                      >
-                    </li>
-                  </ul>
-                </aside>
-              </li>
-            </ul>
-          </section>
-          <section class="tsd-panel tsd-member">
-            <a id="update" class="tsd-anchor"></a>
-            <h3 class="tsd-anchor-link">
-              <span>update</span
-              ><a href="#update" aria-label="Permalink" class="tsd-anchor-icon"
-                ><svg viewBox="0 0 24 24"><use href="../assets/icons.svg#icon-anchor"></use></svg
-              ></a>
-            </h3>
-            <ul class="tsd-signatures">
-              <li class="tsd-signature tsd-anchor-link">
-                <a id="update.update-1" class="tsd-anchor"></a><span class="tsd-kind-call-signature">update</span
-                ><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">price</span>,
-                <span class="tsd-kind-parameter">replace</span><span class="tsd-signature-symbol">?</span
-                ><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span
-                ><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol"> | </span
-                ><span class="tsd-signature-type">Big</span
-                ><a href="#update.update-1" aria-label="Permalink" class="tsd-anchor-icon"
+                    </p>
+                    <ul>
+                      <li>
+                        Defined in
+                        <a
+                          href="https://github.com/bennycode/trading-signals/blob/14d986623e281b5801b7330ed6da06fd890b4c21/src/Indicator.ts#L28"
+                          >Indicator.ts:28</a
+                        >
+                      </li>
+                    </ul>
+                  </aside>
+                </li>
+              </ul>
+            </section>
+            <section class="tsd-panel tsd-member tsd-is-inherited">
+              <a id="replace" class="tsd-anchor"></a>
+              <h3 class="tsd-anchor-link">
+                <span>replace</span
+                ><a href="#replace" aria-label="Permalink" class="tsd-anchor-icon"
                   ><svg viewBox="0 0 24 24"><use href="../assets/icons.svg#icon-anchor"></use></svg
                 ></a>
-              </li>
-              <li class="tsd-description">
-                <div class="tsd-parameters">
-                  <h4 class="tsd-parameters-title">Parameters</h4>
-                  <ul class="tsd-parameter-list">
-                    <li>
-                      <span
-                        ><span class="tsd-kind-parameter">price</span>:
-                        <span class="tsd-signature-type">BigSource</span></span
+              </h3>
+              <ul class="tsd-signatures tsd-is-inherited">
+                <li class="tsd-signature tsd-anchor-link">
+                  <a id="replace-1" class="tsd-anchor"></a><span class="tsd-kind-call-signature">replace</span
+                  ><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">input</span
+                  ><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">BigSource</span
+                  ><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span>
+                  <span class="tsd-signature-type">null</span> <span class="tsd-signature-symbol">|</span>
+                  <span class="tsd-signature-type">Big</span
+                  ><a href="#replace-1" aria-label="Permalink" class="tsd-anchor-icon"
+                    ><svg viewBox="0 0 24 24"><use href="../assets/icons.svg#icon-anchor"></use></svg
+                  ></a>
+                </li>
+                <li class="tsd-description">
+                  <div class="tsd-parameters">
+                    <h4 class="tsd-parameters-title">Parameters</h4>
+                    <ul class="tsd-parameter-list">
+                      <li>
+                        <span
+                          ><span class="tsd-kind-parameter">input</span>:
+                          <span class="tsd-signature-type">BigSource</span></span
+                        >
+                      </li>
+                    </ul>
+                  </div>
+                  <h4 class="tsd-returns-title">
+                    Returns <span class="tsd-signature-type">null</span> <span class="tsd-signature-symbol">|</span>
+                    <span class="tsd-signature-type">Big</span>
+                  </h4>
+                  <aside class="tsd-sources">
+                    <p>
+                      Inherited from <a href="MovingAverage.html">MovingAverage</a>.<a href="MovingAverage.html#replace"
+                        >replace</a
                       >
-                    </li>
-                    <li>
-                      <span
-                        ><span class="tsd-kind-parameter">replace</span>: <span class="tsd-signature-type">boolean</span
-                        ><span class="tsd-signature-symbol"> = false</span></span
-                      >
-                    </li>
-                  </ul>
-                </div>
-                <h4 class="tsd-returns-title">
-                  Returns <span class="tsd-signature-type">void</span><span class="tsd-signature-symbol"> | </span
-                  ><span class="tsd-signature-type">Big</span>
-                </h4>
-                <aside class="tsd-sources">
-                  <p>
-                    Overrides <a href="MovingAverage.html">MovingAverage</a>.<a href="MovingAverage.html#update"
-                      >update</a
-                    >
-                  </p>
-                  <ul>
-                    <li>
-                      Defined in
-                      <a
-                        href="https://github.com/bennycode/trading-signals/blob/a4207a2d80227beebf5b3cf0bfa965402aeb87a5/src/WSMA/WSMA.ts#L36"
-                        >WSMA/WSMA.ts:36</a
-                      >
-                    </li>
-                  </ul>
-                </aside>
-              </li>
-            </ul>
-          </section>
-          <section class="tsd-panel tsd-member">
-            <a id="updates" class="tsd-anchor"></a>
-            <h3 class="tsd-anchor-link">
-              <span>updates</span
-              ><a href="#updates" aria-label="Permalink" class="tsd-anchor-icon"
-                ><svg viewBox="0 0 24 24"><use href="../assets/icons.svg#icon-anchor"></use></svg
-              ></a>
-            </h3>
-            <ul class="tsd-signatures">
-              <li class="tsd-signature tsd-anchor-link">
-                <a id="updates.updates-1" class="tsd-anchor"></a><span class="tsd-kind-call-signature">updates</span
-                ><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">prices</span
-                ><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span
-                ><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol"> | </span
-                ><span class="tsd-signature-type">Big</span
-                ><a href="#updates.updates-1" aria-label="Permalink" class="tsd-anchor-icon"
+                    </p>
+                    <ul>
+                      <li>
+                        Defined in
+                        <a
+                          href="https://github.com/bennycode/trading-signals/blob/14d986623e281b5801b7330ed6da06fd890b4c21/src/Indicator.ts#L44"
+                          >Indicator.ts:44</a
+                        >
+                      </li>
+                    </ul>
+                  </aside>
+                </li>
+              </ul>
+            </section>
+            <section class="tsd-panel tsd-member">
+              <a id="update" class="tsd-anchor"></a>
+              <h3 class="tsd-anchor-link">
+                <span>update</span
+                ><a href="#update" aria-label="Permalink" class="tsd-anchor-icon"
                   ><svg viewBox="0 0 24 24"><use href="../assets/icons.svg#icon-anchor"></use></svg
                 ></a>
-              </li>
-              <li class="tsd-description">
-                <div class="tsd-parameters">
-                  <h4 class="tsd-parameters-title">Parameters</h4>
-                  <ul class="tsd-parameter-list">
-                    <li>
-                      <span
-                        ><span class="tsd-kind-parameter">prices</span>:
-                        <span class="tsd-signature-type">BigSource</span
-                        ><span class="tsd-signature-symbol">[]</span></span
+              </h3>
+              <ul class="tsd-signatures">
+                <li class="tsd-signature tsd-anchor-link">
+                  <a id="update-1" class="tsd-anchor"></a><span class="tsd-kind-call-signature">update</span
+                  ><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">price</span
+                  ><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">BigSource</span
+                  ><span class="tsd-signature-symbol">,</span> <span class="tsd-kind-parameter">replace</span
+                  ><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span
+                  ><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span>
+                  <span class="tsd-signature-type">null</span> <span class="tsd-signature-symbol">|</span>
+                  <span class="tsd-signature-type">Big</span
+                  ><a href="#update-1" aria-label="Permalink" class="tsd-anchor-icon"
+                    ><svg viewBox="0 0 24 24"><use href="../assets/icons.svg#icon-anchor"></use></svg
+                  ></a>
+                </li>
+                <li class="tsd-description">
+                  <div class="tsd-parameters">
+                    <h4 class="tsd-parameters-title">Parameters</h4>
+                    <ul class="tsd-parameter-list">
+                      <li>
+                        <span
+                          ><span class="tsd-kind-parameter">price</span>:
+                          <span class="tsd-signature-type">BigSource</span></span
+                        >
+                      </li>
+                      <li>
+                        <span
+                          ><span class="tsd-kind-parameter">replace</span>:
+                          <span class="tsd-signature-type">boolean</span></span
+                        >
+                      </li>
+                    </ul>
+                  </div>
+                  <h4 class="tsd-returns-title">
+                    Returns <span class="tsd-signature-type">null</span> <span class="tsd-signature-symbol">|</span>
+                    <span class="tsd-signature-type">Big</span>
+                  </h4>
+                  <aside class="tsd-sources">
+                    <p>
+                      Overrides <a href="MovingAverage.html">MovingAverage</a>.<a href="MovingAverage.html#update"
+                        >update</a
                       >
-                    </li>
-                  </ul>
-                </div>
-                <h4 class="tsd-returns-title">
-                  Returns <span class="tsd-signature-type">void</span><span class="tsd-signature-symbol"> | </span
-                  ><span class="tsd-signature-type">Big</span>
-                </h4>
-                <aside class="tsd-sources">
-                  <p>
-                    Overrides <a href="MovingAverage.html">MovingAverage</a>.<a href="MovingAverage.html#updates"
-                      >updates</a
-                    >
-                  </p>
-                  <ul>
-                    <li>
-                      Defined in
-                      <a
-                        href="https://github.com/bennycode/trading-signals/blob/a4207a2d80227beebf5b3cf0bfa965402aeb87a5/src/WSMA/WSMA.ts#L31"
-                        >WSMA/WSMA.ts:31</a
+                    </p>
+                    <ul>
+                      <li>
+                        Defined in
+                        <a
+                          href="https://github.com/bennycode/trading-signals/blob/14d986623e281b5801b7330ed6da06fd890b4c21/src/WSMA/WSMA.ts#L32"
+                          >WSMA/WSMA.ts:32</a
+                        >
+                      </li>
+                    </ul>
+                  </aside>
+                </li>
+              </ul>
+            </section>
+            <section class="tsd-panel tsd-member tsd-is-inherited">
+              <a id="updates" class="tsd-anchor"></a>
+              <h3 class="tsd-anchor-link">
+                <span>updates</span
+                ><a href="#updates" aria-label="Permalink" class="tsd-anchor-icon"
+                  ><svg viewBox="0 0 24 24"><use href="../assets/icons.svg#icon-anchor"></use></svg
+                ></a>
+              </h3>
+              <ul class="tsd-signatures tsd-is-inherited">
+                <li class="tsd-signature tsd-anchor-link">
+                  <a id="updates-1" class="tsd-anchor"></a><span class="tsd-kind-call-signature">updates</span
+                  ><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">inputs</span
+                  ><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-keyword">readonly</span>
+                  <span class="tsd-signature-type">BigSource</span><span class="tsd-signature-symbol">[]</span
+                  ><span class="tsd-signature-symbol">,</span> <span class="tsd-kind-parameter">replace</span
+                  ><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">boolean</span
+                  ><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span>
+                  <span class="tsd-signature-type">null</span> <span class="tsd-signature-symbol">|</span>
+                  <span class="tsd-signature-type">Big</span
+                  ><a href="#updates-1" aria-label="Permalink" class="tsd-anchor-icon"
+                    ><svg viewBox="0 0 24 24"><use href="../assets/icons.svg#icon-anchor"></use></svg
+                  ></a>
+                </li>
+                <li class="tsd-description">
+                  <div class="tsd-parameters">
+                    <h4 class="tsd-parameters-title">Parameters</h4>
+                    <ul class="tsd-parameter-list">
+                      <li>
+                        <span
+                          ><span class="tsd-kind-parameter">inputs</span>:
+                          <span class="tsd-signature-keyword">readonly</span>
+                          <span class="tsd-signature-type">BigSource</span
+                          ><span class="tsd-signature-symbol">[]</span></span
+                        >
+                      </li>
+                      <li>
+                        <span
+                          ><span class="tsd-kind-parameter">replace</span>:
+                          <span class="tsd-signature-type">boolean</span
+                          ><span class="tsd-signature-symbol"> = false</span></span
+                        >
+                      </li>
+                    </ul>
+                  </div>
+                  <h4 class="tsd-returns-title">
+                    Returns <span class="tsd-signature-type">null</span> <span class="tsd-signature-symbol">|</span>
+                    <span class="tsd-signature-type">Big</span>
+                  </h4>
+                  <aside class="tsd-sources">
+                    <p>
+                      Inherited from <a href="MovingAverage.html">MovingAverage</a>.<a href="MovingAverage.html#updates"
+                        >updates</a
                       >
-                    </li>
-                  </ul>
-                </aside>
-              </li>
-            </ul>
+                    </p>
+                    <ul>
+                      <li>
+                        Defined in
+                        <a
+                          href="https://github.com/bennycode/trading-signals/blob/14d986623e281b5801b7330ed6da06fd890b4c21/src/Indicator.ts#L50"
+                          >Indicator.ts:50</a
+                        >
+                      </li>
+                    </ul>
+                  </aside>
+                </li>
+              </ul>
+            </section>
           </section>
-        </section>
+        </details>
       </div>
       <div class="col-sidebar">
         <div class="page-menu">
           <div class="tsd-navigation settings">
-            <details class="tsd-index-accordion">
+            <details class="tsd-accordion">
               <summary class="tsd-accordion-summary">
                 <h3>
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
@@ -586,40 +754,38 @@
               </summary>
               <div class="tsd-accordion-details">
                 <div class="tsd-filter-visibility">
-                  <h4 class="uppercase">Member Visibility</h4>
-                  <form>
-                    <ul id="tsd-filter-options">
-                      <li class="tsd-filter-item">
-                        <label class="tsd-filter-input"
-                          ><input type="checkbox" id="tsd-filter-inherited" name="inherited" checked /><svg
-                            width="32"
-                            height="32"
-                            viewBox="0 0 32 32"
-                            aria-hidden="true">
-                            <rect
-                              class="tsd-checkbox-background"
-                              width="30"
-                              height="30"
-                              x="1"
-                              y="1"
-                              rx="6"
-                              fill="none"></rect>
-                            <path
-                              class="tsd-checkbox-checkmark"
-                              d="M8.35422 16.8214L13.2143 21.75L24.6458 10.25"
-                              stroke="none"
-                              stroke-width="3.5"
-                              stroke-linejoin="round"
-                              fill="none"></path></svg
-                          ><span>Inherited</span></label
-                        >
-                      </li>
-                    </ul>
-                  </form>
+                  <span class="settings-label">Member Visibility</span>
+                  <ul id="tsd-filter-options">
+                    <li class="tsd-filter-item">
+                      <label class="tsd-filter-input"
+                        ><input type="checkbox" id="tsd-filter-inherited" name="inherited" checked /><svg
+                          width="32"
+                          height="32"
+                          viewBox="0 0 32 32"
+                          aria-hidden="true">
+                          <rect
+                            class="tsd-checkbox-background"
+                            width="30"
+                            height="30"
+                            x="1"
+                            y="1"
+                            rx="6"
+                            fill="none"></rect>
+                          <path
+                            class="tsd-checkbox-checkmark"
+                            d="M8.35422 16.8214L13.2143 21.75L24.6458 10.25"
+                            stroke="none"
+                            stroke-width="3.5"
+                            stroke-linejoin="round"
+                            fill="none"></path></svg
+                        ><span>Inherited</span></label
+                      >
+                    </li>
+                  </ul>
                 </div>
                 <div class="tsd-theme-toggle">
-                  <h4 class="uppercase">Theme</h4>
-                  <select id="tsd-theme">
+                  <label class="settings-label" for="tsd-theme">Theme</label
+                  ><select id="tsd-theme">
                     <option value="os">OS</option>
                     <option value="light">Light</option>
                     <option value="dark">Dark</option>
@@ -628,7 +794,7 @@
               </div>
             </details>
           </div>
-          <details open class="tsd-index-accordion tsd-page-navigation">
+          <details open class="tsd-accordion tsd-page-navigation">
             <summary class="tsd-accordion-summary">
               <h3>
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
@@ -637,44 +803,96 @@
               </h3>
             </summary>
             <div class="tsd-accordion-details">
-              <a href="#constructor" class=""
-                ><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="../assets/icons.svg#icon-512"></use></svg
-                ><span>constructor</span></a
-              ><a href="#highest" class="tsd-is-inherited"
-                ><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="../assets/icons.svg#icon-1024"></use></svg
-                ><span>highest</span></a
-              ><a href="#interval" class="tsd-is-inherited"
-                ><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="../assets/icons.svg#icon-1024"></use></svg
-                ><span>interval</span></a
-              ><a href="#lowest" class="tsd-is-inherited"
-                ><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="../assets/icons.svg#icon-1024"></use></svg
-                ><span>lowest</span></a
-              ><a href="#isStable" class="tsd-is-inherited"
-                ><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="../assets/icons.svg#icon-262144"></use></svg
-                ><span>is<wbr />Stable</span></a
-              ><a href="#getResult" class="tsd-is-inherited"
-                ><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="../assets/icons.svg#icon-2048"></use></svg
-                ><span>get<wbr />Result</span></a
-              ><a href="#replace" class="tsd-is-inherited"
-                ><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="../assets/icons.svg#icon-2048"></use></svg
-                ><span>replace</span></a
-              ><a href="#update" class=""
-                ><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="../assets/icons.svg#icon-2048"></use></svg
-                ><span>update</span></a
-              ><a href="#updates" class=""
-                ><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="../assets/icons.svg#icon-2048"></use></svg
-                ><span>updates</span></a
-              >
+              <details open class="tsd-accordion tsd-page-navigation-section">
+                <summary class="tsd-accordion-summary" data-key="section-Constructors">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                    <use href="../assets/icons.svg#icon-chevronDown"></use></svg
+                  >Constructors
+                </summary>
+                <div>
+                  <a href="#constructor" class=""
+                    ><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="../assets/icons.svg#icon-512"></use></svg
+                    ><span>constructor</span></a
+                  >
+                </div>
+              </details>
+              <details open class="tsd-accordion tsd-page-navigation-section">
+                <summary class="tsd-accordion-summary" data-key="section-Properties">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                    <use href="../assets/icons.svg#icon-chevronDown"></use></svg
+                  >Properties
+                </summary>
+                <div>
+                  <a href="#highest" class="tsd-is-inherited"
+                    ><svg class="tsd-kind-icon" viewBox="0 0 24 24">
+                      <use href="../assets/icons.svg#icon-1024"></use></svg
+                    ><span>highest</span></a
+                  ><a href="#interval" class="tsd-is-inherited"
+                    ><svg class="tsd-kind-icon" viewBox="0 0 24 24">
+                      <use href="../assets/icons.svg#icon-1024"></use></svg
+                    ><span>interval</span></a
+                  ><a href="#lowest" class="tsd-is-inherited"
+                    ><svg class="tsd-kind-icon" viewBox="0 0 24 24">
+                      <use href="../assets/icons.svg#icon-1024"></use></svg
+                    ><span>lowest</span></a
+                  >
+                </div>
+              </details>
+              <details open class="tsd-accordion tsd-page-navigation-section">
+                <summary class="tsd-accordion-summary" data-key="section-Accessors">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                    <use href="../assets/icons.svg#icon-chevronDown"></use></svg
+                  >Accessors
+                </summary>
+                <div>
+                  <a href="#isstable" class="tsd-is-inherited"
+                    ><svg class="tsd-kind-icon" viewBox="0 0 24 24">
+                      <use href="../assets/icons.svg#icon-262144"></use></svg
+                    ><span>is<wbr />Stable</span></a
+                  >
+                </div>
+              </details>
+              <details open class="tsd-accordion tsd-page-navigation-section">
+                <summary class="tsd-accordion-summary" data-key="section-Methods">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                    <use href="../assets/icons.svg#icon-chevronDown"></use></svg
+                  >Methods
+                </summary>
+                <div>
+                  <a href="#add" class="tsd-is-inherited"
+                    ><svg class="tsd-kind-icon" viewBox="0 0 24 24">
+                      <use href="../assets/icons.svg#icon-2048"></use></svg
+                    ><span>add</span></a
+                  ><a href="#getresult" class="tsd-is-inherited"
+                    ><svg class="tsd-kind-icon" viewBox="0 0 24 24">
+                      <use href="../assets/icons.svg#icon-2048"></use></svg
+                    ><span>get<wbr />Result</span></a
+                  ><a href="#getresultorthrow" class="tsd-is-inherited"
+                    ><svg class="tsd-kind-icon" viewBox="0 0 24 24">
+                      <use href="../assets/icons.svg#icon-2048"></use></svg
+                    ><span>get<wbr />Result<wbr />Or<wbr />Throw</span></a
+                  ><a href="#replace" class="tsd-is-inherited"
+                    ><svg class="tsd-kind-icon" viewBox="0 0 24 24">
+                      <use href="../assets/icons.svg#icon-2048"></use></svg
+                    ><span>replace</span></a
+                  ><a href="#update" class=""
+                    ><svg class="tsd-kind-icon" viewBox="0 0 24 24">
+                      <use href="../assets/icons.svg#icon-2048"></use></svg
+                    ><span>update</span></a
+                  ><a href="#updates" class="tsd-is-inherited"
+                    ><svg class="tsd-kind-icon" viewBox="0 0 24 24">
+                      <use href="../assets/icons.svg#icon-2048"></use></svg
+                    ><span>updates</span></a
+                  >
+                </div>
+              </details>
             </div>
           </details>
         </div>
         <div class="site-menu">
           <nav class="tsd-navigation">
-            <a href="../modules.html"
-              ><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="../assets/icons.svg#icon-1"></use></svg
-              ><span>trading-signals</span></a
-            >
-            <ul class="tsd-small-nested-navigation" id="tsd-nav-container" data-base="..">
+            <a href="../modules.html">trading-signals</a>
+            <ul class="tsd-small-nested-navigation" id="tsd-nav-container">
               <li>Loading...</li>
             </ul>
           </nav>

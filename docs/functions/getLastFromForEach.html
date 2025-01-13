@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta http-equiv="x-ua-compatible" content="IE=edge" />
-    <title>getAverage | trading-signals</title>
+    <title>getLastFromForEach | trading-signals</title>
     <meta name="description" content="Documentation for trading-signals" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="stylesheet" href="../assets/style.css" />
@@ -49,44 +49,127 @@
         <div class="tsd-page-title">
           <ul class="tsd-breadcrumb">
             <li><a href="../modules.html">trading-signals</a></li>
-            <li><a href="getAverage.html">getAverage</a></li>
+            <li><a href="getLastFromForEach.html">getLastFromForEach</a></li>
           </ul>
-          <h1>Function getAverage</h1>
+          <h1>Function getLastFromForEach</h1>
         </div>
         <section class="tsd-panel">
           <ul class="tsd-signatures">
             <li class="tsd-signature tsd-anchor-link">
-              <a id="getaverage" class="tsd-anchor"></a><span class="tsd-kind-call-signature">getAverage</span
-              ><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">values</span
-              ><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">BigSource</span
-              ><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">)</span
-              ><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">Big</span
-              ><a href="#getaverage" aria-label="Permalink" class="tsd-anchor-icon"
+              <a id="getlastfromforeach" class="tsd-anchor"></a
+              ><span class="tsd-kind-call-signature">getLastFromForEach</span
+              ><span class="tsd-signature-symbol">&lt;</span
+              ><a class="tsd-signature-type tsd-kind-type-parameter" href="getLastFromForEach.html#getlastfromforeacht"
+                >T</a
+              ><span class="tsd-signature-symbol">,</span>
+              <a class="tsd-signature-type tsd-kind-type-parameter" href="getLastFromForEach.html#getlastfromforeachr"
+                >R</a
+              ><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">(</span><br />    <span
+                class="tsd-kind-parameter"
+                >array</span
+              ><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-keyword">readonly</span>
+              <a class="tsd-signature-type tsd-kind-type-parameter" href="getLastFromForEach.html#getlastfromforeacht"
+                >T</a
+              ><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">,</span><br />    <span
+                class="tsd-kind-parameter"
+                >callback</span
+              ><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">(</span
+              ><span class="tsd-kind-parameter">value</span><span class="tsd-signature-symbol">:</span>
+              <a class="tsd-signature-type tsd-kind-type-parameter" href="getLastFromForEach.html#getlastfromforeacht"
+                >T</a
+              ><span class="tsd-signature-symbol">,</span> <span class="tsd-kind-parameter">index</span
+              ><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span
+              ><span class="tsd-signature-symbol">,</span> <span class="tsd-kind-parameter">array</span
+              ><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-keyword">readonly</span>
+              <a class="tsd-signature-type tsd-kind-type-parameter" href="getLastFromForEach.html#getlastfromforeacht"
+                >T</a
+              ><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">)</span>
+              <span class="tsd-signature-symbol">=&gt;</span>
+              <a class="tsd-signature-type tsd-kind-type-parameter" href="getLastFromForEach.html#getlastfromforeachr"
+                >R</a
+              ><span class="tsd-signature-symbol">,</span><br /><span class="tsd-signature-symbol">)</span
+              ><span class="tsd-signature-symbol">:</span>
+              <a class="tsd-signature-type tsd-kind-type-parameter" href="getLastFromForEach.html#getlastfromforeachr"
+                >R</a
+              >
+              <span class="tsd-signature-symbol">|</span> <span class="tsd-signature-type">null</span
+              ><a href="#getlastfromforeach" aria-label="Permalink" class="tsd-anchor-icon"
                 ><svg viewBox="0 0 24 24"><use href="../assets/icons.svg#icon-anchor"></use></svg
               ></a>
             </li>
             <li class="tsd-description">
-              <div class="tsd-comment tsd-typography"><p>Return the mean / average value.</p></div>
+              <section class="tsd-panel">
+                <h4>Type Parameters</h4>
+                <ul class="tsd-type-parameter-list">
+                  <li>
+                    <span
+                      ><a id="getlastfromforeacht" class="tsd-anchor"></a
+                      ><span class="tsd-kind-type-parameter">T</span></span
+                    >
+                  </li>
+                  <li>
+                    <span
+                      ><a id="getlastfromforeachr" class="tsd-anchor"></a
+                      ><span class="tsd-kind-type-parameter">R</span></span
+                    >
+                  </li>
+                </ul>
+              </section>
               <div class="tsd-parameters">
                 <h4 class="tsd-parameters-title">Parameters</h4>
                 <ul class="tsd-parameter-list">
                   <li>
                     <span
-                      ><span class="tsd-kind-parameter">values</span>: <span class="tsd-signature-type">BigSource</span
+                      ><span class="tsd-kind-parameter">array</span>:
+                      <span class="tsd-signature-keyword">readonly</span>
+                      <a
+                        class="tsd-signature-type tsd-kind-type-parameter"
+                        href="getLastFromForEach.html#getlastfromforeacht"
+                        >T</a
                       ><span class="tsd-signature-symbol">[]</span></span
+                    >
+                  </li>
+                  <li>
+                    <span
+                      ><span class="tsd-kind-parameter">callback</span>: <span class="tsd-signature-symbol">(</span
+                      ><span class="tsd-kind-parameter">value</span><span class="tsd-signature-symbol">:</span>
+                      <a
+                        class="tsd-signature-type tsd-kind-type-parameter"
+                        href="getLastFromForEach.html#getlastfromforeacht"
+                        >T</a
+                      ><span class="tsd-signature-symbol">,</span> <span class="tsd-kind-parameter">index</span
+                      ><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span
+                      ><span class="tsd-signature-symbol">,</span> <span class="tsd-kind-parameter">array</span
+                      ><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-keyword">readonly</span>
+                      <a
+                        class="tsd-signature-type tsd-kind-type-parameter"
+                        href="getLastFromForEach.html#getlastfromforeacht"
+                        >T</a
+                      ><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">)</span>
+                      <span class="tsd-signature-symbol">=&gt;</span>
+                      <a
+                        class="tsd-signature-type tsd-kind-type-parameter"
+                        href="getLastFromForEach.html#getlastfromforeachr"
+                        >R</a
+                      ></span
                     >
                   </li>
                 </ul>
               </div>
-              <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Big</span></h4>
-              <div class="tsd-comment tsd-typography"></div>
+              <h4 class="tsd-returns-title">
+                Returns
+                <a class="tsd-signature-type tsd-kind-type-parameter" href="getLastFromForEach.html#getlastfromforeachr"
+                  >R</a
+                >
+                <span class="tsd-signature-symbol">|</span> <span class="tsd-signature-type">null</span>
+              </h4>
               <aside class="tsd-sources">
                 <ul>
                   <li>
                     Defined in
                     <a
-                      href="https://github.com/bennycode/trading-signals/blob/14d986623e281b5801b7330ed6da06fd890b4c21/src/util/getAverage.ts#L7"
-                      >util/getAverage.ts:7</a
+                      href="https://github.com/bennycode/trading-signals/blob/14d986623e281b5801b7330ed6da06fd890b4c21/src/util/getLastFromForEach.ts#L1"
+                      >util/getLastFromForEach.ts:1</a
                     >
                   </li>
                 </ul>

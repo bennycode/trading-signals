@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta http-equiv="x-ua-compatible" content="IE=edge" />
-    <title>OpenHighLowCloseNumber | trading-signals</title>
+    <title>getStreaks | trading-signals</title>
     <meta name="description" content="Documentation for trading-signals" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="stylesheet" href="../assets/style.css" />
@@ -49,28 +49,76 @@
         <div class="tsd-page-title">
           <ul class="tsd-breadcrumb">
             <li><a href="../modules.html">trading-signals</a></li>
-            <li><a href="OpenHighLowCloseNumber.html">OpenHighLowCloseNumber</a></li>
+            <li><a href="getStreaks.html">getStreaks</a></li>
           </ul>
-          <h1>Type Alias OpenHighLowCloseNumber</h1>
+          <h1>Function getStreaks</h1>
         </div>
-        <div class="tsd-signature">
-          <span class="tsd-kind-type-alias">OpenHighLowCloseNumber</span><span class="tsd-signature-symbol">:</span>
-          <a href="HighLowCloseNumber.html" class="tsd-signature-type tsd-kind-type-alias">HighLowCloseNumber</a>
-          <span class="tsd-signature-symbol">&amp;</span> <span class="tsd-signature-symbol">{</span>
-          <span class="tsd-kind-property">open</span><span class="tsd-signature-symbol">:</span>
-          <span class="tsd-signature-type">number</span> <span class="tsd-signature-symbol">}</span>
-        </div>
-        <aside class="tsd-sources">
-          <ul>
-            <li>
-              Defined in
-              <a
-                href="https://github.com/bennycode/trading-signals/blob/14d986623e281b5801b7330ed6da06fd890b4c21/src/util/HighLowClose.ts#L15"
-                >util/HighLowClose.ts:15</a
-              >
+        <section class="tsd-panel">
+          <ul class="tsd-signatures">
+            <li class="tsd-signature tsd-anchor-link">
+              <a id="getstreaks" class="tsd-anchor"></a><span class="tsd-kind-call-signature">getStreaks</span
+              ><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">prices</span
+              ><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span
+              ><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">,</span>
+              <span class="tsd-kind-parameter">keepSide</span><span class="tsd-signature-symbol">:</span>
+              <span class="tsd-signature-type">&quot;up&quot;</span> <span class="tsd-signature-symbol">|</span>
+              <span class="tsd-signature-type">&quot;down&quot;</span><span class="tsd-signature-symbol">)</span
+              ><span class="tsd-signature-symbol">:</span>
+              <a href="../types/Streak.html" class="tsd-signature-type tsd-kind-type-alias">Streak</a
+              ><span class="tsd-signature-symbol">[]</span
+              ><a href="#getstreaks" aria-label="Permalink" class="tsd-anchor-icon"
+                ><svg viewBox="0 0 24 24"><use href="../assets/icons.svg#icon-anchor"></use></svg
+              ></a>
+            </li>
+            <li class="tsd-description">
+              <div class="tsd-comment tsd-typography">
+                <p>Tracks the lengths (streaks) of continuous price movements (up or down).</p>
+              </div>
+              <div class="tsd-parameters">
+                <h4 class="tsd-parameters-title">Parameters</h4>
+                <ul class="tsd-parameter-list">
+                  <li>
+                    <span
+                      ><span class="tsd-kind-parameter">prices</span>: <span class="tsd-signature-type">number</span
+                      ><span class="tsd-signature-symbol">[]</span></span
+                    >
+                    <div class="tsd-comment tsd-typography"><p>A series of prices</p></div>
+                    <div class="tsd-comment tsd-typography"></div>
+                  </li>
+                  <li>
+                    <span
+                      ><span class="tsd-kind-parameter">keepSide</span>:
+                      <span class="tsd-signature-type">&quot;up&quot;</span>
+                      <span class="tsd-signature-symbol">|</span>
+                      <span class="tsd-signature-type">&quot;down&quot;</span></span
+                    >
+                    <div class="tsd-comment tsd-typography">
+                      <p>If you want to receive only uptrends or downtrends</p>
+                    </div>
+                    <div class="tsd-comment tsd-typography"></div>
+                  </li>
+                </ul>
+              </div>
+              <h4 class="tsd-returns-title">
+                Returns <a href="../types/Streak.html" class="tsd-signature-type tsd-kind-type-alias">Streak</a
+                ><span class="tsd-signature-symbol">[]</span>
+              </h4>
+              <p>An array of objects representing the filtered streaks</p>
+              <div class="tsd-comment tsd-typography"></div>
+              <aside class="tsd-sources">
+                <ul>
+                  <li>
+                    Defined in
+                    <a
+                      href="https://github.com/bennycode/trading-signals/blob/14d986623e281b5801b7330ed6da06fd890b4c21/src/util/getStreaks.ts#L15"
+                      >util/getStreaks.ts:15</a
+                    >
+                  </li>
+                </ul>
+              </aside>
             </li>
           </ul>
-        </aside>
+        </section>
       </div>
       <div class="col-sidebar">
         <div class="page-menu">
