@@ -168,7 +168,7 @@ console.log(fasterStochRSI.getResultOrThrow());
 
 ### Benchmarks
 
-You can run `yarn start:benchmark` to see the runtime performance of each technical indicator on your machine. This will give you an understanding of which indicators can be calculated faster than others.
+You can run `npm run start:benchmark` to see the runtime performance of each technical indicator on your machine. This will give you an understanding of which indicators can be calculated faster than others.
 
 ## Disclaimer
 
