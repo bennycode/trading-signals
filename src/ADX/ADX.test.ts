@@ -102,7 +102,7 @@ describe('ADX', () => {
       expect(adx.isStable).toBe(false);
       expect(fasterADX.isStable).toBe(false);
 
-      // Add one more candles to make it stable
+      // Add one more candle to make it stable
       adx.add({close: 10, high: 11, low: 9});
       fasterADX.add({close: 10, high: 11, low: 9});
       expect(adx.isStable).toBe(true);
