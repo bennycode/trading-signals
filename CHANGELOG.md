@@ -1,3 +1,30 @@
+## 6.0.0 (2025-01-13)
+
+##### Documentation Changes
+
+- Use npm instead of yarn ([64ceebf5](https://github.com/bennycode/trading-signals/commit/64ceebf58380e4ae1489d06eb57c2ed76d47e6f2))
+
+##### New Features
+
+- Publish CJS and ESM versions ([#750](https://github.com/bennycode/trading-signals/pull/750)) ([37f9c295](https://github.com/bennycode/trading-signals/commit/37f9c295cb99474f69d40fcd30ae39576bc0dc66))
+- **AC, CCI, MACD, StochasticRSI, ADX, WSMA:** Add replacing values ([#734](https://github.com/bennycode/trading-signals/pull/734)) ([5f280272](https://github.com/bennycode/trading-signals/commit/5f280272cb9480b49e7decd085ee6e44a88709bd))
+- **util:** Calculate streaks ([#725](https://github.com/bennycode/trading-signals/pull/725)) ([0f807399](https://github.com/bennycode/trading-signals/commit/0f8073992abcd2676a0636fee858f5b656281ab7))
+- **WMA:** Add WMA to moving average types ([#685](https://github.com/bennycode/trading-signals/pull/685)) ([a0bc5705](https://github.com/bennycode/trading-signals/commit/a0bc5705e9aa8a2b9e0fed9414ad9deb9694c287))
+
+##### Bug Fixes
+
+- Adjust release configs ([048ef425](https://github.com/bennycode/trading-signals/commit/048ef425b63ccc011db71b12b7d25db7d6000bcd))
+
+##### Other Changes
+
+- Remove "getFixedArray" ([#747](https://github.com/bennycode/trading-signals/pull/747)) ([cd290685](https://github.com/bennycode/trading-signals/commit/cd2906853b6c890d2a3ea6114d2f2034668e7c9a))
+- Make "getResult" return null ([#746](https://github.com/bennycode/trading-signals/pull/746)) ([3f004b58](https://github.com/bennycode/trading-signals/commit/3f004b58a4460fae228d11e9cb08cd4726933818))
+- Rename "getResult" to "getResultOrThrow" ([#745](https://github.com/bennycode/trading-signals/pull/745)) ([c022140a](https://github.com/bennycode/trading-signals/commit/c022140ac2ea8a0b30daa69042e73f1bb7d28a9b))
+
+##### Refactors
+
+- Limit array when pushing updates ([#748](https://github.com/bennycode/trading-signals/pull/748)) ([0c40dcf6](https://github.com/bennycode/trading-signals/commit/0c40dcf6e0979d12751bfca7da4dfdfd53c5d3b6))
+
 #### 5.0.4 (2024-05-08)
 
 ##### New Features
