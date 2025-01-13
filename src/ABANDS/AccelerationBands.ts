@@ -59,9 +59,9 @@ export class AccelerationBands extends TechnicalIndicator<BandsResult, HighLowCl
 
     if (this.isStable) {
       return (this.result = {
-        lower: this.lowerBand.getResult(),
-        middle: this.middleBand.getResult(),
-        upper: this.upperBand.getResult(),
+        lower: this.lowerBand.getResultOrThrow(),
+        middle: this.middleBand.getResultOrThrow(),
+        upper: this.upperBand.getResultOrThrow(),
       });
     }
 
@@ -95,9 +95,9 @@ export class FasterAccelerationBands extends TechnicalIndicator<FasterBandsResul
 
     if (this.isStable) {
       return (this.result = {
-        lower: this.lowerBand.getResult(),
-        middle: this.middleBand.getResult(),
-        upper: this.upperBand.getResult(),
+        lower: this.lowerBand.getResultOrThrow(),
+        middle: this.middleBand.getResultOrThrow(),
+        upper: this.upperBand.getResultOrThrow(),
       });
     }
 

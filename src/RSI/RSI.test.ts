@@ -28,12 +28,12 @@ describe('RSI', () => {
       expect(rsi.isStable).toBe(true);
       expect(fasterRSI.isStable).toBe(true);
 
-      expect(rsi.getResult().toFixed(2)).toBe('75.94');
-      expect(fasterRSI.getResult().toFixed(2)).toBe('75.94');
+      expect(rsi.getResultOrThrow().toFixed(2)).toBe('75.94');
+      expect(fasterRSI.getResultOrThrow().toFixed(2)).toBe('75.94');
     });
   });
 
-  describe('getResult', () => {
+  describe('getResultOrThrow', () => {
     it('calculates the relative strength index', () => {
       // Test data verified with:
       // https://github.com/TulipCharts/tulipindicators/blob/v0.8.0/tests/untest.txt#L347-L349
@@ -59,15 +59,15 @@ describe('RSI', () => {
         fasterRSI.add(price);
         if (rsi.isStable && fasterRSI.isStable) {
           const expected = expectations.shift();
-          expect(rsi.getResult().toFixed(3)).toBe(expected!);
-          expect(fasterRSI.getResult().toFixed(3)).toBe(expected!);
+          expect(rsi.getResultOrThrow().toFixed(3)).toBe(expected!);
+          expect(fasterRSI.getResultOrThrow().toFixed(3)).toBe(expected!);
         }
       }
       expect(rsi.isStable).toBe(true);
       expect(fasterRSI.isStable).toBe(true);
 
-      expect(rsi.getResult().toFixed(2)).toBe('78.50');
-      expect(fasterRSI.getResult().toFixed(2)).toBe('78.50');
+      expect(rsi.getResultOrThrow().toFixed(2)).toBe('78.50');
+      expect(fasterRSI.getResultOrThrow().toFixed(2)).toBe('78.50');
 
       expect(rsi.lowest?.toFixed(2)).toBe('64.93');
       expect(fasterRSI.lowest?.toFixed(2)).toBe('64.93');
@@ -81,11 +81,11 @@ describe('RSI', () => {
 
       const rsi = new RSI(2);
       rsi.updates(updates, false);
-      expect(rsi.getResult().valueOf()).toBe('100');
+      expect(rsi.getResultOrThrow().valueOf()).toBe('100');
 
       const fasterRSI = new FasterRSI(2);
       fasterRSI.updates(updates, false);
-      expect(fasterRSI.getResult().valueOf()).toBe(100);
+      expect(fasterRSI.getResultOrThrow().valueOf()).toBe(100);
     });
 
     it('throws an error when there is not enough input data', () => {
@@ -93,7 +93,7 @@ describe('RSI', () => {
       rsi.add(0);
       expect(rsi.isStable).toBe(false);
       try {
-        rsi.getResult();
+        rsi.getResultOrThrow();
         throw new Error('Expected error');
       } catch (error) {
         expect(rsi.isStable).toBe(false);

@@ -17,8 +17,8 @@ describe('WSMA', () => {
       wsmaWithReplace.replace(14);
       wsmaWithReplace.add(15);
 
-      const actual = wsmaWithReplace.getResult().toFixed();
-      const expected = wsma.getResult().toFixed();
+      const actual = wsmaWithReplace.getResultOrThrow().toFixed();
+      const expected = wsma.getResultOrThrow().toFixed();
 
       expect(actual).toBe(expected);
     });
@@ -45,12 +45,12 @@ describe('WSMA', () => {
       const latestHigh = '13.44';
 
       wsma.add(latestValue);
-      expect(wsma.getResult().toFixed(2)).toBe(latestResult);
+      expect(wsma.getResultOrThrow().toFixed(2)).toBe(latestResult);
       expect(wsma.lowest?.toFixed(2)).toBe(latestLow);
       expect(wsma.highest?.toFixed(2)).toBe(latestHigh);
 
       fasterWSMA.add(latestValue);
-      expect(fasterWSMA.getResult().toFixed(2)).toBe(latestResult);
+      expect(fasterWSMA.getResultOrThrow().toFixed(2)).toBe(latestResult);
       expect(fasterWSMA.lowest?.toFixed(2)).toBe(latestLow);
       expect(fasterWSMA.highest?.toFixed(2)).toBe(latestHigh);
 
@@ -61,29 +61,29 @@ describe('WSMA', () => {
       const otherHigh = '341.78';
 
       wsma.replace(someOtherValue);
-      expect(wsma.getResult().toFixed(2)).toBe(otherResult);
+      expect(wsma.getResultOrThrow().toFixed(2)).toBe(otherResult);
       expect(wsma.lowest?.toFixed(2)).toBe(otherLow);
       expect(wsma.highest?.toFixed(2), 'new record high').toBe(otherHigh);
 
       fasterWSMA.replace(someOtherValue);
-      expect(fasterWSMA.getResult().toFixed(2)).toBe(otherResult);
+      expect(fasterWSMA.getResultOrThrow().toFixed(2)).toBe(otherResult);
       expect(fasterWSMA.lowest?.toFixed(2)).toBe(otherLow);
       expect(fasterWSMA.highest?.toFixed(2), 'new record high').toBe(otherHigh);
 
       // Replace the other value with the latest value
       wsma.replace(latestValue);
-      expect(wsma.getResult().toFixed(2)).toBe(latestResult);
+      expect(wsma.getResultOrThrow().toFixed(2)).toBe(latestResult);
       expect(wsma.lowest?.toFixed(2), 'lowest reset').toBe(latestLow);
       expect(wsma.highest?.toFixed(2), 'highest reset').toBe(latestHigh);
 
       fasterWSMA.replace(latestValue);
-      expect(fasterWSMA.getResult().toFixed(2)).toBe(latestResult);
+      expect(fasterWSMA.getResultOrThrow().toFixed(2)).toBe(latestResult);
       expect(fasterWSMA.lowest?.toFixed(2), 'lowest reset').toBe(latestLow);
       expect(fasterWSMA.highest?.toFixed(2), 'highest reset').toBe(latestHigh);
     });
   });
 
-  describe('getResult', () => {
+  describe('getResultOrThrow', () => {
     it('calculates the WSMA based on a SMA', () => {
       // Test data verified with:
       // https://runkit.com/anandaravindan/wema
@@ -95,11 +95,11 @@ describe('WSMA', () => {
         wsma.add(price);
         if (wsma.isStable) {
           const expected = expectations.shift();
-          expect(wsma.getResult().toFixed(2)).toBe(expected);
+          expect(wsma.getResultOrThrow().toFixed(2)).toBe(expected);
         }
       }
 
-      expect(wsma.getResult().toFixed(2)).toBe('18.97');
+      expect(wsma.getResultOrThrow().toFixed(2)).toBe('18.97');
     });
 
     it('is compatible with results from Tulip Indicators (TI)', () => {
@@ -133,16 +133,16 @@ describe('WSMA', () => {
         fasterWSMA.add(price);
         if (wsma.isStable && fasterWSMA.isStable) {
           const expected = expectations[i];
-          expect(wsma.getResult().toFixed(4)).toBe(expected);
-          expect(fasterWSMA.getResult().toFixed(4)).toBe(expected);
+          expect(wsma.getResultOrThrow().toFixed(4)).toBe(expected);
+          expect(fasterWSMA.getResultOrThrow().toFixed(4)).toBe(expected);
         }
       }
 
       expect(wsma.isStable).toBe(true);
       expect(fasterWSMA.isStable).toBe(true);
 
-      expect(wsma.getResult().toFixed(4)).toBe('62.8540');
-      expect(fasterWSMA.getResult().toFixed(4)).toBe('62.8540');
+      expect(wsma.getResultOrThrow().toFixed(4)).toBe('62.8540');
+      expect(fasterWSMA.getResultOrThrow().toFixed(4)).toBe('62.8540');
 
       expect(wsma.highest?.toFixed(4)).toBe('63.2739');
       expect(fasterWSMA.highest?.toFixed(4)).toBe('63.2739');
@@ -155,7 +155,7 @@ describe('WSMA', () => {
       const wsma = new WSMA(3);
 
       try {
-        wsma.getResult();
+        wsma.getResultOrThrow();
         throw new Error('Expected error');
       } catch (error) {
         expect(error).toBeInstanceOf(NotEnoughDataError);
@@ -168,7 +168,7 @@ describe('WSMA', () => {
       wsma.add(2);
 
       try {
-        wsma.getResult();
+        wsma.getResultOrThrow();
         throw new Error('Expected error');
       } catch (error) {
         expect(error).toBeInstanceOf(NotEnoughDataError);
@@ -187,8 +187,8 @@ describe('WSMA', () => {
       wsma.updates(prices, false);
       fasterWSMA.updates(prices, false);
 
-      expect(wsma.getResult().toFixed(2)).toBe('18.97');
-      expect(fasterWSMA.getResult().toFixed(2)).toBe('18.97');
+      expect(wsma.getResultOrThrow().toFixed(2)).toBe('18.97');
+      expect(fasterWSMA.getResultOrThrow().toFixed(2)).toBe('18.97');
     });
   });
 

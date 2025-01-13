@@ -63,18 +63,18 @@ describe('DX', () => {
       fasterDXWithReplace.add(wrong);
 
       // We need to verify the four decimal places, as the results are otherwise too similar:
-      expect(dx.getResult().toFixed(4)).not.toBe(dxWithReplace.getResult().toFixed(4));
-      expect(fasterDX.getResult().toFixed(4)).not.toBe(fasterDXWithReplace.getResult().toFixed(4));
+      expect(dx.getResultOrThrow().toFixed(4)).not.toBe(dxWithReplace.getResultOrThrow().toFixed(4));
+      expect(fasterDX.getResultOrThrow().toFixed(4)).not.toBe(fasterDXWithReplace.getResultOrThrow().toFixed(4));
 
       dxWithReplace.replace(correct);
       fasterDXWithReplace.replace(correct);
 
-      expect(dx.getResult().toFixed(4)).toBe(dxWithReplace.getResult().toFixed(4));
-      expect(fasterDX.getResult().toFixed(4)).toBe(fasterDXWithReplace.getResult().toFixed(4));
+      expect(dx.getResultOrThrow().toFixed(4)).toBe(dxWithReplace.getResultOrThrow().toFixed(4));
+      expect(fasterDX.getResultOrThrow().toFixed(4)).toBe(fasterDXWithReplace.getResultOrThrow().toFixed(4));
     });
   });
 
-  describe('getResult', () => {
+  describe('getResultOrThrow', () => {
     it('calculates the Directional Movement Index (DX)', () => {
       const interval = 5;
       const dx = new DX(interval);
@@ -85,16 +85,16 @@ describe('DX', () => {
         fasterDX.add(candle);
         if (dx.isStable && fasterDX.isStable) {
           const expected = expectations.shift();
-          expect(dx.getResult().toFixed(2)).toBe(expected);
-          expect(fasterDX.getResult().toFixed(2)).toBe(expected);
+          expect(dx.getResultOrThrow().toFixed(2)).toBe(expected);
+          expect(fasterDX.getResultOrThrow().toFixed(2)).toBe(expected);
         }
       }
 
       expect(dx.isStable).toBe(true);
       expect(fasterDX.isStable).toBe(true);
 
-      expect(dx.getResult().toFixed(2)).toBe('75.61');
-      expect(fasterDX.getResult().toFixed(2)).toBe('75.61');
+      expect(dx.getResultOrThrow().toFixed(2)).toBe('75.61');
+      expect(fasterDX.getResultOrThrow().toFixed(2)).toBe('75.61');
 
       expect(dx.lowest?.toFixed(2)).toBe('11.09');
       expect(fasterDX.lowest?.toFixed(2)).toBe('11.09');
@@ -121,8 +121,8 @@ describe('DX', () => {
       expect(dx.isStable).toBe(true);
       expect(fasterDX.isStable).toBe(true);
 
-      expect(dx.getResult().valueOf()).toBe('0');
-      expect(fasterDX.getResult().valueOf()).toBe(0);
+      expect(dx.getResultOrThrow().valueOf()).toBe('0');
+      expect(fasterDX.getResultOrThrow().valueOf()).toBe(0);
     });
   });
 });

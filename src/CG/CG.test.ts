@@ -53,13 +53,13 @@ describe('CG', () => {
 
       cg.add(latestValue);
       expect(cg.prices.length).toBe(5);
-      expect(cg.getResult().toFixed(4)).toBe(latestResult);
+      expect(cg.getResultOrThrow().toFixed(4)).toBe(latestResult);
       expect(cg.lowest?.toFixed(4)).toBe(latestLow);
       expect(cg.highest?.toFixed(4)).toBe(latestHigh);
 
       fasterCG.add(latestValue);
       expect(fasterCG.prices.length).toBe(5);
-      expect(fasterCG.getResult().toFixed(4)).toBe(latestResult);
+      expect(fasterCG.getResultOrThrow().toFixed(4)).toBe(latestResult);
       expect(fasterCG.lowest?.toFixed(4)).toBe(latestLow);
       expect(fasterCG.highest?.toFixed(4)).toBe(latestHigh);
 
@@ -71,32 +71,32 @@ describe('CG', () => {
 
       cg.replace(someOtherValue);
       expect(cg.prices.length).toBe(5);
-      expect(cg.getResult().toFixed(4)).toBe(otherResult);
+      expect(cg.getResultOrThrow().toFixed(4)).toBe(otherResult);
       expect(cg.lowest?.toFixed(4)).toBe(otherLow);
       expect(cg.highest?.toFixed(4)).toBe(otherHigh);
 
       fasterCG.replace(someOtherValue);
       expect(fasterCG.prices.length).toBe(5);
-      expect(fasterCG.getResult().toFixed(4)).toBe(otherResult);
+      expect(fasterCG.getResultOrThrow().toFixed(4)).toBe(otherResult);
       expect(fasterCG.lowest?.toFixed(4)).toBe(otherLow);
       expect(fasterCG.highest?.toFixed(4)).toBe(otherHigh);
 
       // Replace the other value with the latest value
       cg.replace(latestValue);
       expect(cg.prices.length).toBe(5);
-      expect(cg.getResult().toFixed(4)).toBe(latestResult);
+      expect(cg.getResultOrThrow().toFixed(4)).toBe(latestResult);
       expect(cg.lowest?.toFixed(4)).toBe(latestLow);
       expect(cg.highest?.toFixed(4)).toBe(latestHigh);
 
       fasterCG.replace(latestValue);
       expect(fasterCG.prices.length).toBe(5);
-      expect(fasterCG.getResult().toFixed(4)).toBe(latestResult);
+      expect(fasterCG.getResultOrThrow().toFixed(4)).toBe(latestResult);
       expect(fasterCG.lowest?.toFixed(4)).toBe(latestLow);
       expect(fasterCG.highest?.toFixed(4)).toBe(latestHigh);
     });
   });
 
-  describe('getResult', () => {
+  describe('getResultOrThrow', () => {
     it('indicates a downtrend when the center of gravity falls below the signal line', () => {
       const cg = new CG(5, 10);
       const fasterCG = new FasterCG(5, 10);
@@ -105,8 +105,8 @@ describe('CG', () => {
         cg.add(value);
         fasterCG.add(value);
       }
-      let cgResult = cg.getResult();
-      let signalResult = cg.signal.getResult();
+      let cgResult = cg.getResultOrThrow();
+      let signalResult = cg.signal.getResultOrThrow();
       expect(cgResult.gt(signalResult)).toBe(true);
       [150, 110, 90, 130].forEach(price => {
         cg.add(price);
@@ -116,12 +116,12 @@ describe('CG', () => {
       expect(cg.isStable).toBe(true);
       expect(fasterCG.isStable).toBe(true);
 
-      cgResult = cg.getResult();
-      signalResult = cg.signal.getResult();
+      cgResult = cg.getResultOrThrow();
+      signalResult = cg.signal.getResultOrThrow();
       expect(cgResult.gt(signalResult)).toBe(false);
 
       expect(cgResult.toFixed(4)).toBe('2.7059');
-      expect(fasterCG.getResult().toFixed(4)).toBe('2.7059');
+      expect(fasterCG.getResultOrThrow().toFixed(4)).toBe('2.7059');
 
       expect(cg.lowest?.toFixed(4)).toBe('2.6081');
       expect(fasterCG.lowest?.toFixed(4)).toBe('2.6081');
@@ -134,7 +134,7 @@ describe('CG', () => {
       const cg = new CG(10, 20);
 
       try {
-        cg.getResult();
+        cg.getResultOrThrow();
         throw new Error('Expected error');
       } catch (error) {
         expect(error).toBeInstanceOf(NotEnoughDataError);
@@ -144,11 +144,11 @@ describe('CG', () => {
     it('is protected against division by zero errors', () => {
       const cg = new CG(1, 1);
       cg.add(0);
-      expect(cg.getResult().valueOf()).toBe('0');
+      expect(cg.getResultOrThrow().valueOf()).toBe('0');
 
       const fasterCG = new FasterCG(1, 1);
       fasterCG.add(0);
-      expect(fasterCG.getResult().valueOf()).toBe(0);
+      expect(fasterCG.getResultOrThrow().valueOf()).toBe(0);
     });
   });
 });

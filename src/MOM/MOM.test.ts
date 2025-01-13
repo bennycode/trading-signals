@@ -25,12 +25,12 @@ describe('MOM', () => {
       expect(momentum.isStable).toBe(true);
       expect(fasterMomentum.isStable).toBe(true);
 
-      expect(momentum.getResult().toFixed(2)).toBe('1.56');
-      expect(fasterMomentum.getResult().toFixed(2)).toBe('1.56');
+      expect(momentum.getResultOrThrow().toFixed(2)).toBe('1.56');
+      expect(fasterMomentum.getResultOrThrow().toFixed(2)).toBe('1.56');
     });
   });
 
-  describe('getResult', () => {
+  describe('getResultOrThrow', () => {
     it('returns the price 5 intervals ago', () => {
       // Test data verified with:
       // https://github.com/TulipCharts/tulipindicators/blob/v0.8.0/tests/untest.txt#L286-L288
@@ -45,10 +45,10 @@ describe('MOM', () => {
         momentum.add(input);
         fasterMomentum.add(input);
         if (momentum.isStable && fasterMomentum.isStable) {
-          const actual = momentum.getResult().toFixed(3);
+          const actual = momentum.getResultOrThrow().toFixed(3);
           const expected = outputs.shift()!;
           expect(parseFloat(actual)).toBe(expected);
-          expect(fasterMomentum.getResult().toFixed(2)).toBe(expected.toFixed(2));
+          expect(fasterMomentum.getResultOrThrow().toFixed(2)).toBe(expected.toFixed(2));
         }
       }
 
@@ -66,7 +66,7 @@ describe('MOM', () => {
       const momentum = new MOM(5);
 
       try {
-        momentum.getResult();
+        momentum.getResultOrThrow();
         throw new Error('Expected error');
       } catch (error) {
         expect(error).toBeInstanceOf(NotEnoughDataError);

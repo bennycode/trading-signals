@@ -37,7 +37,7 @@ export class AC extends BigIndicatorSeries<HighLow> {
     if (ao) {
       this.signal.update(ao, replace);
       if (this.signal.isStable) {
-        const result = this.setResult(ao.sub(this.signal.getResult()), replace);
+        const result = this.setResult(ao.sub(this.signal.getResultOrThrow()), replace);
         this.momentum.update(result, replace);
         return result;
       }
@@ -67,7 +67,7 @@ export class FasterAC extends NumberIndicatorSeries<HighLowNumber> {
     if (ao) {
       this.signal.update(ao, replace);
       if (this.signal.isStable) {
-        const result = this.setResult(ao - this.signal.getResult(), replace);
+        const result = this.setResult(ao - this.signal.getResultOrThrow(), replace);
         this.momentum.update(result, replace);
         return result;
       }

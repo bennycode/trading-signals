@@ -52,15 +52,15 @@ describe('CCI', () => {
       cci.add(correct);
       cciWithReplace.add(wrong);
 
-      expect(cci.getResult().toFixed()).not.toBe(cciWithReplace.getResult().toFixed());
+      expect(cci.getResultOrThrow().toFixed()).not.toBe(cciWithReplace.getResultOrThrow().toFixed());
 
       cciWithReplace.replace(correct);
 
-      expect(cci.getResult().toFixed()).toBe(cciWithReplace.getResult().toFixed());
+      expect(cci.getResultOrThrow().toFixed()).toBe(cciWithReplace.getResultOrThrow().toFixed());
     });
   });
 
-  describe('getResult', () => {
+  describe('getResultOrThrow', () => {
     it('calculates the Commodity Channel Index (CCI)', () => {
       const interval = 5;
       const cci = new CCI(interval);
@@ -70,11 +70,11 @@ describe('CCI', () => {
         fasterCCI.add(candle);
         if (cci.isStable && fasterCCI.isStable) {
           const expected = expectations.shift();
-          expect(cci.getResult().toFixed(2)).toBe(expected);
-          expect(fasterCCI.getResult().toFixed(2)).toBe(expected);
+          expect(cci.getResultOrThrow().toFixed(2)).toBe(expected);
+          expect(fasterCCI.getResultOrThrow().toFixed(2)).toBe(expected);
         }
       }
-      const actual = cci.getResult().toFixed(2);
+      const actual = cci.getResultOrThrow().toFixed(2);
       expect(actual).toBe('71.93');
     });
 
@@ -94,7 +94,7 @@ describe('CCI', () => {
     it('throws an error when there is not enough input data', () => {
       const cci = new CCI(5);
       try {
-        cci.getResult();
+        cci.getResultOrThrow();
         throw new Error('Expected error');
       } catch (error) {
         expect(error).toBeInstanceOf(NotEnoughDataError);
@@ -102,7 +102,7 @@ describe('CCI', () => {
 
       const fasterCCI = new FasterCCI(5);
       try {
-        fasterCCI.getResult();
+        fasterCCI.getResultOrThrow();
         throw new Error('Expected error');
       } catch (error) {
         expect(error).toBeInstanceOf(NotEnoughDataError);

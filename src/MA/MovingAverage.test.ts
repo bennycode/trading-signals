@@ -18,10 +18,10 @@ describe('FasterMovingAverage', () => {
   it('can be used to implement custom average calculations based on primitive numbers', () => {
     const average = new MyAverage(Infinity);
     expect(average.isStable).toBe(false);
-    expect(() => average.getResult()).toThrowError();
+    expect(() => average.getResultOrThrow()).toThrowError();
     average.add(50);
     average.add(100);
-    const result = average.getResult();
+    const result = average.getResultOrThrow();
     expect(result).toBe(75);
   });
 });

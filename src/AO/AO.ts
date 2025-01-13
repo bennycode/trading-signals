@@ -41,7 +41,7 @@ export class AO extends BigIndicatorSeries<HighLow> {
     this.long.update(medianPrice, replace);
 
     if (this.long.isStable) {
-      return this.setResult(this.short.getResult().sub(this.long.getResult()), replace);
+      return this.setResult(this.short.getResultOrThrow().sub(this.long.getResultOrThrow()), replace);
     }
 
     return null;
@@ -69,7 +69,7 @@ export class FasterAO extends NumberIndicatorSeries<HighLowNumber> {
     this.long.update(medianPrice, replace);
 
     if (this.long.isStable) {
-      return this.setResult(this.short.getResult() - this.long.getResult(), replace);
+      return this.setResult(this.short.getResultOrThrow() - this.long.getResultOrThrow(), replace);
     }
 
     return null;

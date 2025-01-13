@@ -25,11 +25,11 @@ describe('Indicator', () => {
     });
   });
 
-  describe('getResult', () => {
+  describe('getResultOrThrow', () => {
     it('throws an error when there is not enough input data', () => {
       const itc = new IndicatorTestClass();
       try {
-        itc.getResult();
+        itc.getResultOrThrow();
         throw new Error('Expected error');
       } catch (error) {
         expect(error).toBeInstanceOf(NotEnoughDataError);
@@ -39,7 +39,7 @@ describe('Indicator', () => {
     it('returns the cross sum', () => {
       const itc = new IndicatorTestClass();
       itc.updates([20, 40], false);
-      expect(itc.getResult().toString()).toBe('30');
+      expect(itc.getResultOrThrow().toString()).toBe('30');
     });
   });
 
@@ -51,45 +51,45 @@ describe('Indicator', () => {
 
       itc.add(100);
       expect(itc.inputs.length).toBe(1);
-      expect(itc.getResult().toString()).toBe('100');
+      expect(itc.getResultOrThrow().toString()).toBe('100');
       expect(itc.lowest?.toString()).toBe('100');
       expect(itc.highest?.toString()).toBe('100');
 
       itc.replace(200);
       expect(itc.inputs.length).toBe(1);
-      expect(itc.getResult().toString()).toBe('200');
+      expect(itc.getResultOrThrow().toString()).toBe('200');
       expect(itc.lowest?.toString()).toBe('200');
       expect(itc.highest?.toString()).toBe('200');
 
       itc.replace(60);
       expect(itc.inputs.length).toBe(1);
-      expect(itc.getResult().toString()).toBe('60');
+      expect(itc.getResultOrThrow().toString()).toBe('60');
       expect(itc.lowest?.toString()).toBe('60');
       expect(itc.highest?.toString()).toBe('60');
 
       itc.add(20);
       expect(itc.inputs.length).toBe(2);
-      expect(itc.getResult().toString()).toBe('40');
+      expect(itc.getResultOrThrow().toString()).toBe('40');
       expect(itc.lowest?.toString(), 'lowest cross sum seen (60+20/2)').toBe('40');
       expect(itc.highest?.toString(), 'highest cross sum seen (60/1)').toBe('60');
 
       // Replacing an update with itself should be a "noop"
       itc.replace(20);
       expect(itc.inputs.length).toBe(2);
-      expect(itc.getResult().toString()).toBe('40');
+      expect(itc.getResultOrThrow().toString()).toBe('40');
       expect(itc.lowest?.toString(), 'lowest cross sum seen (60+20/2)').toBe('40');
       expect(itc.highest?.toString(), 'highest cross sum seen (60/1)').toBe('60');
 
       itc.add(211);
       expect(itc.inputs.length).toBe(3);
-      expect(itc.getResult().toString()).toBe('97');
+      expect(itc.getResultOrThrow().toString()).toBe('97');
       expect(itc.lowest?.toString()).toBe('40');
       expect(itc.highest?.toString()).toBe('97');
 
       // Replacing an update with itself should be a "noop"
       itc.replace(211);
       expect(itc.inputs.length).toBe(3);
-      expect(itc.getResult().toString()).toBe('97');
+      expect(itc.getResultOrThrow().toString()).toBe('97');
       expect(itc.lowest?.toString()).toBe('40');
       expect(itc.highest?.toString()).toBe('97');
     });

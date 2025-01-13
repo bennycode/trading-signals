@@ -25,13 +25,13 @@ describe('Period', () => {
     });
   });
 
-  describe('getResult', () => {
+  describe('getResultOrThrow', () => {
     it('returns the highest and lowest value of the current period', () => {
       const values = [72, 1337];
       const interval = 2;
       const period = new Period(interval);
       period.updates(values, false);
-      const {highest, lowest} = period.getResult();
+      const {highest, lowest} = period.getResultOrThrow();
       expect(lowest.valueOf()).toBe('72');
       expect(highest.valueOf()).toBe('1337');
 
@@ -40,7 +40,7 @@ describe('Period', () => {
 
       const fasterPeriod = new FasterPeriod(interval);
       fasterPeriod.updates(values, false);
-      const {highest: fastestHighest, lowest: fastestLowest} = fasterPeriod.getResult();
+      const {highest: fastestHighest, lowest: fastestLowest} = fasterPeriod.getResultOrThrow();
       expect(fastestLowest).toBe(72);
       expect(fastestHighest).toBe(1337);
     });
@@ -48,7 +48,7 @@ describe('Period', () => {
     it('throws an error when there is not enough input data', () => {
       const period = new Period(2);
       try {
-        period.getResult();
+        period.getResultOrThrow();
         throw new Error('Expected error');
       } catch (error) {
         expect(error).toBeInstanceOf(NotEnoughDataError);
