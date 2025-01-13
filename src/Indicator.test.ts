@@ -109,7 +109,7 @@ describe('Indicator', () => {
   });
 
   describe('updates', () => {
-    it('returns all values from multiple updates', () => {
+    it('returns all results from multiple updates', () => {
       const itc = new IndicatorTestClass();
       const results = itc.updates([100, 1_000, 10_000]);
       expect(results.map(big => big?.toString())).toEqual(['100', '550', '3700']);
