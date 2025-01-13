@@ -2,14 +2,16 @@ import type {BigSource} from 'big.js';
 import {NotEnoughDataError} from './error/NotEnoughDataError.js';
 import {getLastFromForEach} from './util/getLastFromForEach.js';
 
+type Nullable<Result> = Result | null;
+
 interface Indicator<Result = Big, Input = BigSource> {
   isStable: boolean;
-  add(input: Input): Result | null;
-  getResult(): Result | null;
+  add(input: Input): Nullable<Result>;
+  getResult(): Nullable<Result>;
   getResultOrThrow(): Result;
-  replace(input: Input): Result | null;
-  update(input: Input, replace: boolean): Result | null;
-  updates(input: Input[], replace: boolean): Result | null;
+  replace(input: Input): Nullable<Result>;
+  update(input: Input, replace: boolean): Nullable<Result>;
+  updates(input: Input[], replace: boolean): Nullable<Result>;
 }
 
 export abstract class TechnicalIndicator<Result, Input> implements Indicator<Result, Input> {
