@@ -25,6 +25,19 @@ describe('Indicator', () => {
     });
   });
 
+  describe('getResult', () => {
+    it('returns the result if an indicator is stable', () => {
+      const itc = new IndicatorTestClass();
+      itc.add(1);
+      expect(itc.getResult()?.toFixed()).toBe('1');
+    });
+
+    it("returns null if an indicator isn't stable", () => {
+      const itc = new IndicatorTestClass();
+      expect(itc.getResult()).toBe(null);
+    });
+  });
+
   describe('getResultOrThrow', () => {
     it('throws an error when there is not enough input data', () => {
       const itc = new IndicatorTestClass();

@@ -3,9 +3,10 @@ import {NotEnoughDataError} from './error/NotEnoughDataError.js';
 import {getLastFromForEach} from './util/getLastFromForEach.js';
 
 interface Indicator<Result = Big, Input = BigSource> {
-  getResultOrThrow(): Result;
   isStable: boolean;
   add(input: Input): Result | null;
+  getResult(): Result | null;
+  getResultOrThrow(): Result;
   replace(input: Input): Result | null;
   update(input: Input, replace: boolean): Result | null;
   updates(input: Input[], replace: boolean): Result | null;
@@ -13,6 +14,14 @@ interface Indicator<Result = Big, Input = BigSource> {
 
 export abstract class TechnicalIndicator<Result, Input> implements Indicator<Result, Input> {
   protected result: Result | undefined;
+
+  getResult() {
+    try {
+      return this.getResultOrThrow();
+    } catch {
+      return null;
+    }
+  }
 
   getResultOrThrow() {
     if (this.result === undefined) {
