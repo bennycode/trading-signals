@@ -20,11 +20,7 @@ export class WMA extends MovingAverage {
   }
 
   update(price: BigSource, replace: boolean) {
-    pushUpdate(this.prices, replace, price);
-
-    if (this.prices.length > this.interval) {
-      this.prices.shift();
-    }
+    pushUpdate(this.prices, replace, price, this.interval);
 
     if (this.prices.length === this.interval) {
       const weightedPricesSum = this.prices.reduce((acc: Big, price: BigSource, index: number) => {
@@ -51,11 +47,7 @@ export class FasterWMA extends FasterMovingAverage {
   }
 
   update(price: number, replace: boolean) {
-    pushUpdate(this.prices, replace, price);
-
-    if (this.prices.length > this.interval) {
-      this.prices.shift();
-    }
+    pushUpdate(this.prices, replace, price, this.interval);
 
     if (this.prices.length === this.interval) {
       const weightedPricesSum = this.prices.reduce((acc: number, price: number, index: number) => {
@@ -65,7 +57,6 @@ export class FasterWMA extends FasterMovingAverage {
       }, 0);
 
       const weightBase = (this.interval * (this.interval + 1)) / 2; // the numerator will always be even and the value will be an int.
-
       const weightedMa = weightedPricesSum / weightBase;
 
       return this.setResult(weightedMa, replace);

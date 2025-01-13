@@ -20,11 +20,7 @@ export class MAD extends BigIndicatorSeries {
   }
 
   update(price: BigSource, replace: boolean) {
-    pushUpdate(this.prices, replace, price);
-
-    if (this.prices.length > this.interval) {
-      this.prices.shift();
-    }
+    pushUpdate(this.prices, replace, price, this.interval);
 
     if (this.prices.length === this.interval) {
       return this.setResult(MAD.getResultFromBatch(this.prices), replace);
@@ -52,11 +48,7 @@ export class FasterMAD extends NumberIndicatorSeries {
   }
 
   update(price: number, replace: boolean) {
-    pushUpdate(this.prices, replace, price);
-
-    if (this.prices.length > this.interval) {
-      this.prices.shift();
-    }
+    pushUpdate(this.prices, replace, price, this.interval);
 
     if (this.prices.length === this.interval) {
       const mean = getFasterAverage(this.prices);

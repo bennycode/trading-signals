@@ -23,11 +23,7 @@ export class MOM extends BigIndicatorSeries {
   }
 
   update(value: BigSource, replace: boolean) {
-    pushUpdate(this.history, replace, value);
-
-    if (this.history.length > this.historyLength) {
-      this.history.shift();
-    }
+    pushUpdate(this.history, replace, value, this.historyLength);
 
     if (this.history.length === this.historyLength) {
       return this.setResult(new Big(value).minus(this.history[0]), replace);
@@ -48,11 +44,7 @@ export class FasterMOM extends NumberIndicatorSeries {
   }
 
   update(value: number, replace: boolean) {
-    pushUpdate(this.history, replace, value);
-
-    if (this.history.length > this.historyLength) {
-      this.history.shift();
-    }
+    pushUpdate(this.history, replace, value, this.historyLength);
 
     if (this.history.length === this.historyLength) {
       return this.setResult(value - this.history[0], replace);

@@ -39,7 +39,7 @@ export class RSI extends BigIndicatorSeries {
   }
 
   update(price: BigSource, replace: boolean) {
-    pushUpdate(this.previousPrices, replace, price);
+    pushUpdate(this.previousPrices, replace, price, this.interval);
 
     // Ensure at least 2 prices are available for calculation
     if (this.previousPrices.length < 2) {
@@ -55,11 +55,6 @@ export class RSI extends BigIndicatorSeries {
     } else {
       this.avgLoss.update(previousPrice.sub(currentPrice), replace);
       this.avgGain.update(new Big(0), replace); // price went down, therefore no gain
-    }
-
-    // Avoids memory leaks
-    if (this.previousPrices.length > this.interval) {
-      this.previousPrices.shift();
     }
 
     if (this.avgGain.isStable) {
@@ -92,7 +87,7 @@ export class FasterRSI extends NumberIndicatorSeries {
   }
 
   update(price: number, replace: boolean) {
-    pushUpdate(this.previousPrices, replace, price);
+    pushUpdate(this.previousPrices, replace, price, this.interval);
 
     // Ensure at least 2 prices are available for calculation
     if (this.previousPrices.length < 2) {
@@ -108,11 +103,6 @@ export class FasterRSI extends NumberIndicatorSeries {
     } else {
       this.avgLoss.update(previousPrice - currentPrice, replace);
       this.avgGain.update(0, replace);
-    }
-
-    // Avoids memory leaks
-    if (this.previousPrices.length > this.interval) {
-      this.previousPrices.shift();
     }
 
     if (this.avgGain.isStable) {

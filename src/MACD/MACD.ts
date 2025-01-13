@@ -49,14 +49,10 @@ export class MACD extends TechnicalIndicator<MACDResult, BigSource> {
 
   update(_price: BigSource, replace: boolean) {
     const price = new Big(_price);
-    pushUpdate(this.prices, replace, price);
+    pushUpdate(this.prices, replace, price, this.long.interval);
 
     const short = this.short.update(price, replace);
     const long = this.long.update(price, replace);
-
-    if (this.prices.length > this.long.interval) {
-      this.prices.shift();
-    }
 
     if (this.prices.length === this.long.interval) {
       /**
@@ -96,14 +92,10 @@ export class FasterMACD extends TechnicalIndicator<FasterMACDResult, number> {
   }
 
   update(price: number, replace: boolean) {
-    pushUpdate(this.prices, replace, price);
+    pushUpdate(this.prices, replace, price, this.long.interval);
 
     const short = this.short.update(price, replace);
     const long = this.long.update(price, replace);
-
-    if (this.prices.length > this.long.interval) {
-      this.prices.shift();
-    }
 
     if (this.prices.length === this.long.interval) {
       const macd = short - long;
