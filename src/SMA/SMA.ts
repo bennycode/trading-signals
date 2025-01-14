@@ -1,6 +1,6 @@
 import type {BigSource} from 'big.js';
 import {FasterMovingAverage, MovingAverage} from '../MA/MovingAverage.js';
-import {getAverage} from '../util/getAverage.js';
+import {getAverage, getFasterAverage} from '../util/getAverage.js';
 import {pushUpdate} from '../util/pushUpdate.js';
 
 /**
@@ -33,8 +33,7 @@ export class FasterSMA extends FasterMovingAverage {
     pushUpdate(this.prices, replace, price, this.interval);
 
     if (this.prices.length === this.interval) {
-      const sum = this.prices.reduce((a, b) => a + b, 0);
-      return this.setResult(sum / this.prices.length, replace);
+      return this.setResult(getFasterAverage(this.prices), replace);
     }
 
     return null;
