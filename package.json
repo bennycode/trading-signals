@@ -27,7 +27,7 @@
     "typedoc": "0.27.6",
     "typedoc-plugin-markdown": "^4.0.3",
     "typescript": "^5.2.2",
-    "vitest": "^1.1.1"
+    "vitest": "^3.0.5"
   },
   "exports": {
     ".": {
