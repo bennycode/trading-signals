@@ -1,7 +1,9 @@
 export {default as Big, type BigSource} from 'big.js';
+// Abstractions
 export * from './Indicator.js';
 export * from './MA/MovingAverage.js';
 export * from './MA/MovingAverageTypes.js';
+// Individual Indicators & Utils
 export * from './ABANDS/AccelerationBands.js';
 export * from './AC/AC.js';
 export * from './ADX/ADX.js';
@@ -20,6 +22,7 @@ export * from './MACD/MACD.js';
 export * from './MAD/MAD.js';
 export * from './MOM/MOM.js';
 export * from './OBV/OBV.js';
+export * from './RMA/RMA.js';
 export * from './ROC/ROC.js';
 export * from './RSI/RSI.js';
 export * from './SMA/SMA.js';

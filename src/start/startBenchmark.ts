@@ -32,14 +32,15 @@ import {
   FasterMOM,
   FasterOBV,
   FasterPeriod,
+  FasterRMA,
   FasterROC,
   FasterRSI,
   FasterSMA,
   FasterStochasticOscillator,
   FasterStochasticRSI,
   FasterTR,
-  FasterWSMA,
   FasterWMA,
+  FasterWSMA,
   getAverage,
   getFasterAverage,
   getFasterStandardDeviation,
@@ -49,14 +50,15 @@ import {
   MOM,
   OBV,
   Period,
+  RMA,
   ROC,
   RSI,
   SMA,
   StochasticOscillator,
   StochasticRSI,
   TR,
-  WSMA,
   WMA,
+  WSMA,
   type OpenHighLowCloseVolumeNumber,
 } from '../index.js';
 
@@ -227,6 +229,18 @@ new Benchmark.Suite('Technical Indicators')
     const fasterEMA = new FasterEMA(interval);
     for (const price of prices) {
       fasterEMA.add(price);
+    }
+  })
+  .add('RMA', () => {
+    const indicator = new RMA(interval);
+    for (const price of prices) {
+      indicator.add(price);
+    }
+  })
+  .add('FasterRMA', () => {
+    const indicator = new FasterRMA(interval);
+    for (const price of prices) {
+      indicator.add(price);
     }
   })
   .add('MACD', () => {
