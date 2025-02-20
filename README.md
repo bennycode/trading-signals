@@ -137,6 +137,7 @@ Most of the time, the minimum amount of data depends on the interval / time peri
 1. Moving Average Convergence Divergence (MACD)
 1. On-Balance Volume (OBV)
 1. Rate-of-Change (ROC)
+1. Relative Moving Average (RMA)
 1. Relative Strength Index (RSI)
 1. Simple Moving Average (SMA)
 1. Stochastic Oscillator (STOCH)
@@ -201,12 +202,13 @@ It is very important to do your own analysis before making any investment based 
 - [Cloud9Trader Indicators (JavaScript)](https://github.com/Cloud9Trader/TechnicalIndicators)
 - [Crypto Trading Hub Indicators (TypeScript)](https://github.com/anandanand84/technicalindicators)
 - [Jesse Trading Bot Indicators (Python)](https://docs.jesse.trade/docs/indicators/reference.html)
+- [LEAN Indicators](https://github.com/QuantConnect/Lean/tree/master/Indicators)
 - [libindicators (C#)](https://github.com/mgfx/libindicators)
 - [Pandas TA (Python)](https://github.com/twopirllc/pandas-ta)
+- [ta4j (Java)](https://github.com/ta4j/ta4j)
 - [Technical Analysis for Rust (Rust)](https://github.com/greyblake/ta-rs)
 - [Technical Analysis Library using Pandas and Numpy (Python)](https://github.com/bukosabino/ta)
 - [Tulip Indicators (ANSI C)](https://github.com/TulipCharts/tulipindicators)
-- [ta4j (Java)](https://github.com/ta4j/ta4j)
 
 ## Maintainers
 
