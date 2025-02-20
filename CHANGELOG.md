@@ -1,3 +1,13 @@
+### 6.1.0 (2025-02-20)
+
+##### New Features
+
+- **RMA:** Add Relative Moving Average ([#764](https://github.com/bennycode/trading-signals/pull/764)) ([cab30858](https://github.com/bennycode/trading-signals/commit/cab308589401565ea7561e7ad379e7d902bdf4b8))
+
+##### Refactors
+
+- **SMA:** Use average-calculating code ([fa3a57d9](https://github.com/bennycode/trading-signals/commit/fa3a57d91e94561a40e1926c77bad1a1cfa3388e))
+
 #### 6.0.1 (2025-01-13)
 
 ##### Documentation Changes
