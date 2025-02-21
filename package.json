@@ -87,7 +87,7 @@
     "fix:code": "npm run lint:code -- --fix",
     "fix:other": "npm run prettier -- --write",
     "lint": "npm run lint:types && npm run lint:code && npm run lint:other",
-    "lint:code": "eslint --ignore-path .gitignore --ext .js,.jsx,.ts,.tsx .",
+    "lint:code": "eslint .",
     "lint:other": "npm run prettier -- --list-different",
     "lint:types": "tsc --noEmit",
     "postversion": "git push origin && git push origin --tags && npm publish",
