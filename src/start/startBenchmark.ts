@@ -27,6 +27,7 @@ import {
   FasterDMA,
   FasterDX,
   FasterEMA,
+  FasterLINREG,
   FasterMACD,
   FasterMAD,
   FasterMOM,
@@ -45,6 +46,7 @@ import {
   getFasterAverage,
   getFasterStandardDeviation,
   getStandardDeviation,
+  LINREG,
   MACD,
   MAD,
   MOM,
@@ -229,6 +231,18 @@ new Benchmark.Suite('Technical Indicators')
     const fasterEMA = new FasterEMA(interval);
     for (const price of prices) {
       fasterEMA.add(price);
+    }
+  })
+  .add('LINREG', () => {
+    const linreg = new LINREG({period: interval});
+    for (const price of prices) {
+      linreg.add(price);
+    }
+  })
+  .add('FasterLINREG', () => {
+    const fasterLINREG = new FasterLINREG({period: interval});
+    for (const price of prices) {
+      fasterLINREG.add(price);
     }
   })
   .add('RMA', () => {
