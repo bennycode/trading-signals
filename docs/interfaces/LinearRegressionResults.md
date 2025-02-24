@@ -1,24 +1,32 @@
-[trading-signals](../README.md) / [Exports](../modules.md) / LINREGResult
+[trading-signals](../README.md) / [Exports](../modules.md) / LinearRegressionResult
 
-# Interface: LINREGResult
+# Interface: LinearRegressionResult
 
-Results returned by the Linear Regression (LINREG) indicator calculations.
+Results returned by the Linear Regression (LinearRegression) indicator calculations.
 
 ## Properties
 
+### prediction
+
+• **prediction**: `Big` | `number`
+
+The predicted value for the next period based on the regression line.
+
+---
+
 ### slope
 
-• **slope**: `Big`
+• **slope**: `Big` | `number`
 
-The slope of the regression line, representing the average rate of change
+The slope of the regression line, representing the average rate of change per period.
 
 ---
 
 ### intercept
 
-• **intercept**: `Big`
+• **intercept**: `Big` | `number`
 
-The y-intercept of the regression line, representing the base level
+The y-intercept of the regression line, representing the base level (value at x=0).
 
 ---
 

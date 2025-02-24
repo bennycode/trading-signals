@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta http-equiv="x-ua-compatible" content="IE=edge" />
-    <title>LINREG | trading-signals</title>
+    <title>LinearRegression | trading-signals</title>
     <meta name="description" content="Documentation for trading-signals" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="stylesheet" href="../assets/style.css" />
@@ -45,17 +45,18 @@
         <div class="tsd-page-title">
           <ul class="tsd-breadcrumb">
             <li><a href="../modules.html">trading-signals</a></li>
-            <li><a href="LINREG.html">LINREG</a></li>
+            <li><a href="LinearRegression.html">LinearRegression</a></li>
           </ul>
-          <h1>Class LINREG</h1>
+          <h1>Classes LinearRegression and FasterLinearRegression</h1>
         </div>
         <section class="tsd-panel tsd-comment">
           <div class="tsd-comment tsd-typography">
-            <p>Linear Regression (LINREG) Type: Trend</p>
+            <p>Linear Regression (LinearRegression) Type: Trend</p>
             <p>
               Linear regression is a statistical method used to find relationships between variables. In trading, it is
               used to identify and analyze price trends by fitting a straight line through a set of data points. This
-              implementation provides both the regression line parameters and statistical measures of fit.
+              implementation calculates the basic regression line parameters (slope, intercept) and predicts the next
+              value.
             </p>
           </div>
         </section>
@@ -63,9 +64,10 @@
           <h4>Hierarchy</h4>
           <ul class="tsd-hierarchy">
             <li>
-              <a href="TechnicalIndicator.html" class="tsd-signature-type">TechnicalIndicator</a>
+              <span>TechnicalIndicator</span>
               <ul class="tsd-hierarchy">
-                <li><span class="target">LINREG</span></li>
+                <li><span class="target">LinearRegression</span></li>
+                <li><span class="target">FasterLinearRegression</span></li>
               </ul>
             </li>
           </ul>
@@ -83,11 +85,11 @@
           <h3>Constructor</h3>
           <ul class="tsd-signatures">
             <li class="tsd-signature">
-              <span class="tsd-signature-keyword">new</span> <span class="tsd-kind-class">LINREG</span>
+              <span class="tsd-signature-keyword">new</span> <span class="tsd-kind-class">LinearRegression</span>
               <span class="tsd-signature-symbol">(</span>
               <span class="tsd-kind-parameter">config</span>
               <span class="tsd-signature-symbol">: </span>
-              <span class="tsd-signature-type">LINREGConfig</span>
+              <span class="tsd-signature-type">LinearRegressionConfig</span>
               <span class="tsd-signature-symbol">)</span>
             </li>
           </ul>
@@ -103,8 +105,8 @@
             <tbody>
               <tr>
                 <td><code>config</code></td>
-                <td><span class="tsd-signature-type">LINREGConfig</span></td>
-                <td>Configuration for the LINREG indicator</td>
+                <td><span class="tsd-signature-type">LinearRegressionConfig</span></td>
+                <td>Configuration object containing the period for regression analysis</td>
               </tr>
             </tbody>
           </table>
@@ -117,13 +119,13 @@
               <span class="tsd-signature-symbol">(</span>
               <span class="tsd-kind-parameter">price</span>
               <span class="tsd-signature-symbol">: </span>
-              <span class="tsd-signature-type">BigSource</span>,
+              <span class="tsd-signature-type">BigSource | number</span>,
               <span class="tsd-kind-parameter">replace</span>
               <span class="tsd-signature-symbol">: </span>
               <span class="tsd-signature-type">boolean</span>
               <span class="tsd-signature-symbol">)</span>
               <span class="tsd-signature-symbol">: </span>
-              <span class="tsd-signature-type">LINREGResult</span>
+              <span class="tsd-signature-type">LinearRegressionResult | FasterLinearRegressionResult</span>
               <span class="tsd-signature-symbol"> | </span>
               <span class="tsd-signature-type">null</span>
             </li>
@@ -140,7 +142,7 @@
             <tbody>
               <tr>
                 <td><code>price</code></td>
-                <td><span class="tsd-signature-type">BigSource</span></td>
+                <td><span class="tsd-signature-type">BigSource | number</span></td>
                 <td>The new price value</td>
               </tr>
               <tr>
@@ -152,6 +154,20 @@
           </table>
           <h4>Returns</h4>
           <p>The updated regression results or null if insufficient data</p>
+
+          <h3>Results</h3>
+          <p>Both implementations return an object containing:</p>
+          <ul>
+            <li><code>prediction</code>: The predicted value for the next period</li>
+            <li><code>slope</code>: The slope of the regression line</li>
+            <li><code>intercept</code>: The y-intercept of the regression line</li>
+          </ul>
+
+          <h3>Optimizations</h3>
+          <p>
+            The FasterLinearRegression implementation includes special handling for perfect linear trends and uses
+            native JavaScript numbers for better performance.
+          </p>
         </section>
       </div>
     </div>
