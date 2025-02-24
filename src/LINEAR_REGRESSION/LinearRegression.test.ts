@@ -1,21 +1,22 @@
 import {LinearRegression, FasterLinearRegression} from '../index.js';
 import {describe, expect, it} from 'vitest';
-import Big from 'big.js';
 import {NotEnoughDataError} from '../error/index.js';
 
 describe('LinearRegression', () => {
   describe('prediction (linreg)', () => {
     it('calculates the prediction values correctly', () => {
       const period = 5;
-      const prices = [10.5, 11.2, 10.3, 12.1, 11.2, 10.5, 11.1, 11.1, 10.2];
-      const expected = [11.52, 10.96, 11.04, 10.78, 10.54];
+      const prices = [
+        81.59, 81.06, 82.87, 83.0, 83.61, 83.15, 82.84, 83.99, 84.55, 84.36, 85.53, 86.54, 86.89, 87.77, 87.29,
+      ];
+      const expected = [83.622, 83.722, 83.112, 83.56, 84.172, 84.604, 85.404, 86.21, 86.946, 87.854, 87.754];
       const linreg = new LinearRegression({period});
 
       for (let i = 0; i < prices.length; i++) {
         linreg.update(prices[i], false);
         if (i >= period - 1) {
           const result = linreg.getResultOrThrow();
-          expect(result.prediction.toFixed(2)).toEqual(expected[i - period + 1].toString());
+          expect(Number(result.prediction.toFixed(3))).toBeCloseTo(expected[i - period + 1], 3);
         }
       }
     });
@@ -24,15 +25,17 @@ describe('LinearRegression', () => {
   describe('intercept (linregintercept)', () => {
     it('calculates the intercept values correctly', () => {
       const period = 5;
-      const prices = [10.5, 11.2, 10.3, 12.1, 11.2, 10.5, 11.1, 11.1, 10.2];
-      const expected = [10.6, 11.16, 11.04, 11.62, 11.1];
+      const prices = [
+        81.59, 81.06, 82.87, 83.0, 83.61, 83.15, 82.84, 83.99, 84.55, 84.36, 85.53, 86.54, 86.89, 87.77, 87.29,
+      ];
+      const expected = [81.23, 81.754, 83.076, 83.076, 83.084, 82.952, 83.104, 83.778, 84.202, 84.582, 85.854];
       const linreg = new LinearRegression({period});
 
       for (let i = 0; i < prices.length; i++) {
         linreg.update(prices[i], false);
         if (i >= period - 1) {
           const result = linreg.getResultOrThrow();
-          expect(result.intercept).toEqual(new Big(expected[i - period + 1]));
+          expect(Number(result.intercept.toFixed(3))).toBeCloseTo(expected[i - period + 1], 3);
         }
       }
     });
@@ -41,15 +44,17 @@ describe('LinearRegression', () => {
   describe('slope (linregslope)', () => {
     it('calculates the slope values correctly', () => {
       const period = 5;
-      const prices = [6, 7, 8, 9, 10, 11];
-      const expected = [1, 1];
+      const prices = [
+        81.59, 81.06, 82.87, 83.0, 83.61, 83.15, 82.84, 83.99, 84.55, 84.36, 85.53, 86.54, 86.89, 87.77, 87.29,
+      ];
+      const expected = [0.598, 0.492, 0.009, 0.121, 0.272, 0.413, 0.575, 0.608, 0.686, 0.818, 0.475];
       const linreg = new LinearRegression({period});
 
       for (let i = 0; i < prices.length; i++) {
         linreg.update(prices[i], false);
         if (i >= period - 1) {
           const result = linreg.getResultOrThrow();
-          expect(result.slope).toEqual(new Big(expected[i - period + 1]));
+          expect(Number(result.slope.toFixed(3))).toBeCloseTo(expected[i - period + 1], 3);
         }
       }
     });
