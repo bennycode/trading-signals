@@ -202,6 +202,7 @@ It is very important to do your own analysis before making any investment based 
 
 - [Cloud9Trader Indicators (JavaScript)](https://github.com/Cloud9Trader/TechnicalIndicators)
 - [Crypto Trading Hub Indicators (TypeScript)](https://github.com/anandanand84/technicalindicators)
+- [Indicator TS](https://github.com/cinar/indicatorts)
 - [Jesse Trading Bot Indicators (Python)](https://docs.jesse.trade/docs/indicators/reference.html)
 - [LEAN Indicators](https://github.com/QuantConnect/Lean/tree/master/Indicators)
 - [libindicators (C#)](https://github.com/mgfx/libindicators)

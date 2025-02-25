@@ -5,6 +5,8 @@ import {NotEnoughDataError} from '../error/index.js';
 describe('LinearRegression', () => {
   describe('prediction (linreg)', () => {
     it('calculates the prediction values correctly', () => {
+      // Test data verified with:
+      // https://github.com/TulipCharts/tulipindicators/blob/v0.9.1/tests/untest.txt#L222
       const period = 5;
       const prices = [
         81.59, 81.06, 82.87, 83.0, 83.61, 83.15, 82.84, 83.99, 84.55, 84.36, 85.53, 86.54, 86.89, 87.77, 87.29,
@@ -24,6 +26,8 @@ describe('LinearRegression', () => {
 
   describe('intercept (linregintercept)', () => {
     it('calculates the intercept values correctly', () => {
+      // Test data verified with:
+      // https://github.com/TulipCharts/tulipindicators/blob/v0.9.1/tests/untest.txt#L226
       const period = 5;
       const prices = [
         81.59, 81.06, 82.87, 83.0, 83.61, 83.15, 82.84, 83.99, 84.55, 84.36, 85.53, 86.54, 86.89, 87.77, 87.29,
@@ -43,6 +47,8 @@ describe('LinearRegression', () => {
 
   describe('slope (linregslope)', () => {
     it('calculates the slope values correctly', () => {
+      // Test data verified with:
+      // https://github.com/TulipCharts/tulipindicators/blob/v0.9.1/tests/untest.txt#L230
       const period = 5;
       const prices = [
         81.59, 81.06, 82.87, 83.0, 83.61, 83.15, 82.84, 83.99, 84.55, 84.36, 85.53, 86.54, 86.89, 87.77, 87.29,

@@ -63,6 +63,7 @@ describe('BollingerBands', () => {
     it('is compatible with results from Tulip Indicators (TI)', () => {
       // Test data verified with:
       // https://tulipindicators.org/bbands
+      // https://github.com/TulipCharts/tulipindicators/blob/v0.9.1/tests/untest.txt#L86
       const inputs = [
         81.59, 81.06, 82.87, 83.0, 83.61, 83.15, 82.84, 83.99, 84.55, 84.36, 85.53, 86.54, 86.89, 87.77, 87.29,
       ];

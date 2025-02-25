@@ -150,10 +150,10 @@ export class FasterLinearRegression extends TechnicalIndicator<FasterLinearRegre
   }
 
   override getResultOrThrow(): FasterLinearRegressionResult {
-    if (this.prices.length < this.period) {
+    if (!this.result) {
       throw new NotEnoughDataError();
     }
-    return this.result!;
+    return this.result;
   }
 
   override get isStable(): boolean {
