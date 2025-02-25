@@ -1,3 +1,13 @@
+### 6.2.0 (2025-02-25)
+
+##### New Features
+
+- **LINREG:** Add Linear Regression ([6ae426c3](https://github.com/bennycode/trading-signals/commit/6ae426c3e23e43dd022a03b3534d15f7cfbf5a5f))
+
+##### Refactors
+
+- **LINREG:** Expose Linear Regression ([4b701bfd](https://github.com/bennycode/trading-signals/commit/4b701bfd26cd4437819e1494cddd74ec8ecc72df))
+
 ### 6.1.0 (2025-02-20)
 
 ##### New Features
