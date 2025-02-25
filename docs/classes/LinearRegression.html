@@ -1,0 +1,178 @@
+<!doctype html>
+<html class="default" lang="en" data-base="..">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="x-ua-compatible" content="IE=edge" />
+    <title>LinearRegression | trading-signals</title>
+    <meta name="description" content="Documentation for trading-signals" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="../assets/style.css" />
+    <link rel="stylesheet" href="../assets/highlight.css" />
+    <script defer src="../assets/main.js"></script>
+    <script async src="../assets/icons.js" id="tsd-icons-script"></script>
+    <script async src="../assets/search.js" id="tsd-search-script"></script>
+    <script async src="../assets/navigation.js" id="tsd-nav-script"></script>
+    <script async src="../assets/hierarchy.js" id="tsd-hierarchy-script"></script>
+  </head>
+  <body>
+    <script>
+      document.documentElement.dataset.theme = localStorage.getItem('tsd-theme') || 'os';
+      document.body.style.display = 'none';
+      setTimeout(() => (app ? app.showPage() : document.body.style.removeProperty('display')), 500);
+    </script>
+    <header class="tsd-page-toolbar">
+      <div class="tsd-toolbar-contents container">
+        <div class="table-cell" id="tsd-search">
+          <div class="field">
+            <label for="tsd-search-field" class="tsd-widget tsd-toolbar-icon search no-caption">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <use href="../assets/icons.svg#icon-search"></use>
+              </svg>
+            </label>
+            <input type="text" id="tsd-search-field" aria-label="Search" />
+          </div>
+          <div class="field"><div id="tsd-toolbar-links"></div></div>
+          <ul class="results">
+            <li class="state loading">Preparing search index...</li>
+            <li class="state failure">The search index is not available</li>
+          </ul>
+          <a href="../index.html" class="title">trading-signals</a>
+        </div>
+      </div>
+    </header>
+    <div class="container container-main">
+      <div class="col-content">
+        <div class="tsd-page-title">
+          <ul class="tsd-breadcrumb">
+            <li><a href="../modules.html">trading-signals</a></li>
+            <li><a href="LinearRegression.html">LinearRegression</a></li>
+          </ul>
+          <h1>Classes LinearRegression and FasterLinearRegression</h1>
+        </div>
+        <section class="tsd-panel tsd-comment">
+          <div class="tsd-comment tsd-typography">
+            <p>Linear Regression (LinearRegression) Type: Trend</p>
+            <p>
+              Linear regression is a statistical method used to find relationships between variables. In trading, it is
+              used to identify and analyze price trends by fitting a straight line through a set of data points. This
+              implementation calculates the basic regression line parameters (slope, intercept) and predicts the next
+              value.
+            </p>
+          </div>
+        </section>
+        <section class="tsd-panel tsd-hierarchy">
+          <h4>Hierarchy</h4>
+          <ul class="tsd-hierarchy">
+            <li>
+              <span>TechnicalIndicator</span>
+              <ul class="tsd-hierarchy">
+                <li><span class="target">LinearRegression</span></li>
+                <li><span class="target">FasterLinearRegression</span></li>
+              </ul>
+            </li>
+          </ul>
+        </section>
+        <section class="tsd-panel-group tsd-index-group">
+          <section class="tsd-panel tsd-index-panel">
+            <h3>Properties</h3>
+            <ul class="tsd-index-list">
+              <li><a href="#prices">prices</a></li>
+              <li><a href="#period">period</a></li>
+            </ul>
+          </section>
+        </section>
+        <section class="tsd-panel">
+          <h3>Constructor</h3>
+          <ul class="tsd-signatures">
+            <li class="tsd-signature">
+              <span class="tsd-signature-keyword">new</span> <span class="tsd-kind-class">LinearRegression</span>
+              <span class="tsd-signature-symbol">(</span>
+              <span class="tsd-kind-parameter">config</span>
+              <span class="tsd-signature-symbol">: </span>
+              <span class="tsd-signature-type">LinearRegressionConfig</span>
+              <span class="tsd-signature-symbol">)</span>
+            </li>
+          </ul>
+          <h4>Parameters</h4>
+          <table>
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Type</th>
+                <th>Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>config</code></td>
+                <td><span class="tsd-signature-type">LinearRegressionConfig</span></td>
+                <td>Configuration object containing the period for regression analysis</td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+        <section class="tsd-panel">
+          <h3>Methods</h3>
+          <ul class="tsd-signatures">
+            <li class="tsd-signature">
+              <span class="tsd-kind-method">update</span>
+              <span class="tsd-signature-symbol">(</span>
+              <span class="tsd-kind-parameter">price</span>
+              <span class="tsd-signature-symbol">: </span>
+              <span class="tsd-signature-type">BigSource | number</span>,
+              <span class="tsd-kind-parameter">replace</span>
+              <span class="tsd-signature-symbol">: </span>
+              <span class="tsd-signature-type">boolean</span>
+              <span class="tsd-signature-symbol">)</span>
+              <span class="tsd-signature-symbol">: </span>
+              <span class="tsd-signature-type">LinearRegressionResult | FasterLinearRegressionResult</span>
+              <span class="tsd-signature-symbol"> | </span>
+              <span class="tsd-signature-type">null</span>
+            </li>
+          </ul>
+          <h4>Parameters</h4>
+          <table>
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Type</th>
+                <th>Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>price</code></td>
+                <td><span class="tsd-signature-type">BigSource | number</span></td>
+                <td>The new price value</td>
+              </tr>
+              <tr>
+                <td><code>replace</code></td>
+                <td><span class="tsd-signature-type">boolean</span></td>
+                <td>Whether to replace the last value</td>
+              </tr>
+            </tbody>
+          </table>
+          <h4>Returns</h4>
+          <p>The updated regression results or null if insufficient data</p>
+
+          <h3>Results</h3>
+          <p>Both implementations return an object containing:</p>
+          <ul>
+            <li><code>prediction</code>: The predicted value for the next period</li>
+            <li><code>slope</code>: The slope of the regression line</li>
+            <li><code>intercept</code>: The y-intercept of the regression line</li>
+          </ul>
+
+          <h3>Optimizations</h3>
+          <p>
+            The FasterLinearRegression implementation includes special handling for perfect linear trends and uses
+            native JavaScript numbers for better performance.
+          </p>
+        </section>
+      </div>
+    </div>
+    <footer>
+      <p class="tsd-generator">Generated using <a href="https://typedoc.org/" target="_blank">TypeDoc</a></p>
+    </footer>
+  </body>
+</html>

@@ -132,6 +132,7 @@ Most of the time, the minimum amount of data depends on the interval / time peri
 1. Double Exponential Moving Average (DEMA)
 1. Dual Moving Average (DMA)
 1. Exponential Moving Average (EMA)
+1. Linear Regression (LINREG)
 1. Mean Absolute Deviation (MAD)
 1. Momentum (MOM / MTM)
 1. Moving Average Convergence Divergence (MACD)
