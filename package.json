@@ -15,7 +15,7 @@
     "@vitest/coverage-v8": "^1.1.1",
     "benchmark": "^2.1.4",
     "dependency-cruiser": "^16.9.0",
-    "eslint": "^8.57.0",
+    "eslint": "^9.21.0",
     "generate-changelog": "^1.8.0",
     "husky": "^4.3.8",
     "lint-staged": "^15.0.2",
