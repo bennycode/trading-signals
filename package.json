@@ -24,7 +24,7 @@
     "rimraf": "^6.0.1",
     "ts-node": "^10.9.1",
     "tsup": "^8.3.5",
-    "typedoc": "0.27.6",
+    "typedoc": "0.27.9",
     "typedoc-plugin-markdown": "^4.0.3",
     "typescript": "^5.2.2",
     "vitest": "^1.1.1"
