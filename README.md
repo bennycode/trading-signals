@@ -137,6 +137,7 @@ Most of the time, the minimum amount of data depends on the interval / time peri
 1. Momentum (MOM / MTM)
 1. Moving Average Convergence Divergence (MACD)
 1. On-Balance Volume (OBV)
+1. Parabolic SAR (PSAR)
 1. Rate-of-Change (ROC)
 1. Relative Moving Average (RMA)
 1. Relative Strength Index (RSI)

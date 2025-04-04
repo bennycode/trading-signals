@@ -1,5 +1,5 @@
 import Benchmark, {type Event} from 'benchmark';
-import candles from '../test/fixtures/candles/100-candles.json' assert {type: 'json'};
+import candles from '../test/fixtures/candles/100-candles.json' with {type: 'json'};
 import {
   AC,
   AccelerationBands,
@@ -33,6 +33,7 @@ import {
   FasterMOM,
   FasterOBV,
   FasterPeriod,
+  FasterPSAR,
   FasterRMA,
   FasterROC,
   FasterRSI,
@@ -55,6 +56,7 @@ import {
   RMA,
   ROC,
   RSI,
+  PSAR,
   SMA,
   StochasticOscillator,
   StochasticRSI,
@@ -320,6 +322,24 @@ new Benchmark.Suite('Technical Indicators')
     const fasterPeriod = new FasterPeriod(interval);
     for (const price of prices) {
       fasterPeriod.add(price);
+    }
+  })
+  .add('PSAR', () => {
+    const psar = new PSAR({
+      accelerationMax: 0.2,
+      accelerationStep: 0.02,
+    });
+    for (const candle of floatCandles) {
+      psar.add(candle);
+    }
+  })
+  .add('FasterPSAR', () => {
+    const fasterPSAR = new FasterPSAR({
+      accelerationMax: 0.2,
+      accelerationStep: 0.02,
+    });
+    for (const candle of floatCandles) {
+      fasterPSAR.add(candle);
     }
   })
   .add('ROC', () => {
