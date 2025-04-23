@@ -1,5 +1,5 @@
 <!doctype html>
-<html class="default" lang="en" data-base="..">
+<html class="default" lang="en" data-base="../">
   <head>
     <meta charset="utf-8" />
     <meta http-equiv="x-ua-compatible" content="IE=edge" />
@@ -18,38 +18,42 @@
     <script>
       document.documentElement.dataset.theme = localStorage.getItem('tsd-theme') || 'os';
       document.body.style.display = 'none';
-      setTimeout(() => (app ? app.showPage() : document.body.style.removeProperty('display')), 500);
+      setTimeout(() => (window.app ? app.showPage() : document.body.style.removeProperty('display')), 500);
     </script>
     <header class="tsd-page-toolbar">
       <div class="tsd-toolbar-contents container">
-        <div class="table-cell" id="tsd-search">
-          <div class="field">
-            <label for="tsd-search-field" class="tsd-widget tsd-toolbar-icon search no-caption"
-              ><svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                <use href="../assets/icons.svg#icon-search"></use></svg></label
-            ><input type="text" id="tsd-search-field" aria-label="Search" />
-          </div>
-          <div class="field"><div id="tsd-toolbar-links"></div></div>
-          <ul class="results">
-            <li class="state loading">Preparing search index...</li>
-            <li class="state failure">The search index is not available</li>
-          </ul>
-          <a href="../index.html" class="title">trading-signals</a>
-        </div>
-        <div class="table-cell" id="tsd-widgets">
-          <a href="#" class="tsd-widget tsd-toolbar-icon menu no-caption" data-toggle="menu" aria-label="Menu"
-            ><svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-              <use href="../assets/icons.svg#icon-menu"></use></svg
-          ></a>
-        </div>
+        <a href="../index.html" class="title">trading-signals</a>
+        <div id="tsd-toolbar-links"></div>
+        <button id="tsd-search-trigger" class="tsd-widget" aria-label="Search">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+            <use href="../assets/icons.svg#icon-search"></use>
+          </svg>
+        </button>
+        <dialog id="tsd-search" aria-label="Search">
+          <input
+            role="combobox"
+            id="tsd-search-input"
+            aria-controls="tsd-search-results"
+            aria-autocomplete="list"
+            aria-expanded="true"
+            autocapitalize="off"
+            autocomplete="off"
+            placeholder="Search the docs"
+            maxlength="100" />
+          <ul role="listbox" id="tsd-search-results"></ul>
+          <div id="tsd-search-status" aria-live="polite" aria-atomic="true"><div>Preparing search index...</div></div>
+        </dialog>
+        <a href="#" class="tsd-widget menu" id="tsd-toolbar-menu-trigger" data-toggle="menu" aria-label="Menu"
+          ><svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+            <use href="../assets/icons.svg#icon-menu"></use></svg
+        ></a>
       </div>
     </header>
     <div class="container container-main">
       <div class="col-content">
         <div class="tsd-page-title">
-          <ul class="tsd-breadcrumb">
-            <li><a href="../modules.html">trading-signals</a></li>
-            <li><a href="FasterTR.html">FasterTR</a></li>
+          <ul class="tsd-breadcrumb" aria-label="Breadcrumb">
+            <li><a href="" aria-current="page">FasterTR</a></li>
           </ul>
           <h1>Class FasterTR</h1>
         </div>
@@ -59,7 +63,7 @@
           </div>
           <div class="tsd-comment tsd-typography"></div>
         </section>
-        <section class="tsd-panel tsd-hierarchy" data-refl="2018">
+        <section class="tsd-panel tsd-hierarchy" data-refl="2034">
           <h4>Hierarchy (<a href="../hierarchy.html#FasterTR">View Summary</a>)</h4>
           <ul class="tsd-hierarchy">
             <li class="tsd-hierarchy-item">
@@ -79,7 +83,7 @@
             <li>
               Defined in
               <a
-                href="https://github.com/bennycode/trading-signals/blob/452f3d2a97224135126c0e998d5672522ddecb7c/src/TR/TR.ts#L44"
+                href="https://github.com/bennycode/trading-signals/blob/993eaa4b21ecb87fab89d5756c1d4a702daf3128/src/TR/TR.ts#L44"
                 >TR/TR.ts:44</a
               >
             </li>
@@ -89,19 +93,17 @@
           <section class="tsd-panel tsd-index-panel">
             <details class="tsd-index-content tsd-accordion" open>
               <summary class="tsd-accordion-summary tsd-index-summary">
-                <h5 class="tsd-index-heading uppercase" role="button" aria-expanded="false" tabindex="0">
-                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                    <use href="../assets/icons.svg#icon-chevronSmall"></use>
-                  </svg>
-                  Index
-                </h5>
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                  <use href="../assets/icons.svg#icon-chevronSmall"></use>
+                </svg>
+                <h5 class="tsd-index-heading uppercase">Index</h5>
               </summary>
               <div class="tsd-accordion-details">
                 <section class="tsd-index-section">
                   <h3 class="tsd-index-heading">Constructors</h3>
                   <div class="tsd-index-list">
-                    <a href="FasterTR.html#constructor" class="tsd-index-link"
-                      ><svg class="tsd-kind-icon" viewBox="0 0 24 24">
+                    <a href="#constructor" class="tsd-index-link"
+                      ><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Constructor">
                         <use href="../assets/icons.svg#icon-512"></use></svg
                       ><span>constructor</span></a
                     >
@@ -110,13 +112,13 @@
                 <section class="tsd-index-section">
                   <h3 class="tsd-index-heading">Properties</h3>
                   <div class="tsd-index-list">
-                    <a href="FasterTR.html#highest" class="tsd-index-link tsd-is-inherited"
-                      ><svg class="tsd-kind-icon" viewBox="0 0 24 24">
+                    <a href="#highest" class="tsd-index-link tsd-is-inherited"
+                      ><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Property">
                         <use href="../assets/icons.svg#icon-1024"></use></svg
                       ><span>highest?</span></a
                     >
-                    <a href="FasterTR.html#lowest" class="tsd-index-link tsd-is-inherited"
-                      ><svg class="tsd-kind-icon" viewBox="0 0 24 24">
+                    <a href="#lowest" class="tsd-index-link tsd-is-inherited"
+                      ><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Property">
                         <use href="../assets/icons.svg#icon-1024"></use></svg
                       ><span>lowest?</span></a
                     >
@@ -125,8 +127,8 @@
                 <section class="tsd-index-section">
                   <h3 class="tsd-index-heading">Accessors</h3>
                   <div class="tsd-index-list">
-                    <a href="FasterTR.html#isstable" class="tsd-index-link tsd-is-inherited"
-                      ><svg class="tsd-kind-icon" viewBox="0 0 24 24">
+                    <a href="#isstable" class="tsd-index-link tsd-is-inherited"
+                      ><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Accessor">
                         <use href="../assets/icons.svg#icon-262144"></use></svg
                       ><span>is<wbr />Stable</span></a
                     >
@@ -135,33 +137,33 @@
                 <section class="tsd-index-section">
                   <h3 class="tsd-index-heading">Methods</h3>
                   <div class="tsd-index-list">
-                    <a href="FasterTR.html#add" class="tsd-index-link tsd-is-inherited"
-                      ><svg class="tsd-kind-icon" viewBox="0 0 24 24">
+                    <a href="#add" class="tsd-index-link tsd-is-inherited"
+                      ><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method">
                         <use href="../assets/icons.svg#icon-2048"></use></svg
                       ><span>add</span></a
                     >
-                    <a href="FasterTR.html#getresult" class="tsd-index-link tsd-is-inherited"
-                      ><svg class="tsd-kind-icon" viewBox="0 0 24 24">
+                    <a href="#getresult" class="tsd-index-link tsd-is-inherited"
+                      ><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method">
                         <use href="../assets/icons.svg#icon-2048"></use></svg
                       ><span>get<wbr />Result</span></a
                     >
-                    <a href="FasterTR.html#getresultorthrow" class="tsd-index-link tsd-is-inherited"
-                      ><svg class="tsd-kind-icon" viewBox="0 0 24 24">
+                    <a href="#getresultorthrow" class="tsd-index-link tsd-is-inherited"
+                      ><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method">
                         <use href="../assets/icons.svg#icon-2048"></use></svg
                       ><span>get<wbr />Result<wbr />Or<wbr />Throw</span></a
                     >
-                    <a href="FasterTR.html#replace" class="tsd-index-link tsd-is-inherited"
-                      ><svg class="tsd-kind-icon" viewBox="0 0 24 24">
+                    <a href="#replace" class="tsd-index-link tsd-is-inherited"
+                      ><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method">
                         <use href="../assets/icons.svg#icon-2048"></use></svg
                       ><span>replace</span></a
                     >
-                    <a href="FasterTR.html#update" class="tsd-index-link"
-                      ><svg class="tsd-kind-icon" viewBox="0 0 24 24">
+                    <a href="#update" class="tsd-index-link"
+                      ><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method">
                         <use href="../assets/icons.svg#icon-2048"></use></svg
                       ><span>update</span></a
                     >
-                    <a href="FasterTR.html#updates" class="tsd-index-link tsd-is-inherited"
-                      ><svg class="tsd-kind-icon" viewBox="0 0 24 24">
+                    <a href="#updates" class="tsd-index-link tsd-is-inherited"
+                      ><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method">
                         <use href="../assets/icons.svg#icon-2048"></use></svg
                       ><span>updates</span></a
                     >
@@ -173,44 +175,44 @@
         </section>
         <details class="tsd-panel-group tsd-member-group tsd-accordion" open>
           <summary class="tsd-accordion-summary" data-key="section-Constructors">
-            <h2>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                <use href="../assets/icons.svg#icon-chevronDown"></use>
-              </svg>
-              Constructors
-            </h2>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <use href="../assets/icons.svg#icon-chevronDown"></use>
+            </svg>
+            <h2>Constructors</h2>
           </summary>
           <section>
             <section class="tsd-panel tsd-member">
-              <a id="constructor" class="tsd-anchor"></a>
-              <h3 class="tsd-anchor-link">
+              <h3 class="tsd-anchor-link" id="constructor">
                 <span>constructor</span
                 ><a href="#constructor" aria-label="Permalink" class="tsd-anchor-icon"
-                  ><svg viewBox="0 0 24 24"><use href="../assets/icons.svg#icon-anchor"></use></svg
+                  ><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg
                 ></a>
               </h3>
               <ul class="tsd-signatures">
-                <li class="tsd-signature tsd-anchor-link">
-                  <a id="constructorfastertr" class="tsd-anchor"></a><span class="tsd-signature-keyword">new</span>
-                  <span class="tsd-kind-constructor-signature">FasterTR</span
-                  ><span class="tsd-signature-symbol">()</span><span class="tsd-signature-symbol">:</span>
-                  <a href="FasterTR.html" class="tsd-signature-type tsd-kind-class">FasterTR</a
-                  ><a href="#constructorfastertr" aria-label="Permalink" class="tsd-anchor-icon"
-                    ><svg viewBox="0 0 24 24"><use href="../assets/icons.svg#icon-anchor"></use></svg
-                  ></a>
-                </li>
-                <li class="tsd-description">
-                  <h4 class="tsd-returns-title">
-                    Returns <a href="FasterTR.html" class="tsd-signature-type tsd-kind-class">FasterTR</a>
-                  </h4>
-                  <aside class="tsd-sources">
-                    <p>
-                      Inherited from <a href="NumberIndicatorSeries.html">NumberIndicatorSeries</a>.<a
-                        href="NumberIndicatorSeries.html#constructor"
-                        >constructor</a
-                      >
-                    </p>
-                  </aside>
+                <li class="">
+                  <div class="tsd-signature tsd-anchor-link" id="constructorfastertr">
+                    <span class="tsd-signature-keyword">new</span>
+                    <span class="tsd-kind-constructor-signature">FasterTR</span
+                    ><span class="tsd-signature-symbol">()</span><span class="tsd-signature-symbol">:</span>
+                    <a href="" class="tsd-signature-type tsd-kind-class">FasterTR</a
+                    ><a href="#constructorfastertr" aria-label="Permalink" class="tsd-anchor-icon"
+                      ><svg viewBox="0 0 24 24" aria-hidden="true">
+                        <use href="../assets/icons.svg#icon-anchor"></use></svg
+                    ></a>
+                  </div>
+                  <div class="tsd-description">
+                    <h4 class="tsd-returns-title">
+                      Returns <a href="" class="tsd-signature-type tsd-kind-class">FasterTR</a>
+                    </h4>
+                    <aside class="tsd-sources">
+                      <p>
+                        Inherited from <a href="NumberIndicatorSeries.html">NumberIndicatorSeries</a>.<a
+                          href="NumberIndicatorSeries.html#constructor"
+                          >constructor</a
+                        >
+                      </p>
+                    </aside>
+                  </div>
                 </li>
               </ul>
             </section>
@@ -218,20 +220,17 @@
         </details>
         <details class="tsd-panel-group tsd-member-group tsd-accordion" open>
           <summary class="tsd-accordion-summary" data-key="section-Properties">
-            <h2>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                <use href="../assets/icons.svg#icon-chevronDown"></use>
-              </svg>
-              Properties
-            </h2>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <use href="../assets/icons.svg#icon-chevronDown"></use>
+            </svg>
+            <h2>Properties</h2>
           </summary>
           <section>
             <section class="tsd-panel tsd-member tsd-is-inherited">
-              <a id="highest" class="tsd-anchor"></a>
-              <h3 class="tsd-anchor-link">
+              <h3 class="tsd-anchor-link" id="highest">
                 <code class="tsd-tag">Optional</code><span>highest</span
                 ><a href="#highest" aria-label="Permalink" class="tsd-anchor-icon"
-                  ><svg viewBox="0 0 24 24"><use href="../assets/icons.svg#icon-anchor"></use></svg
+                  ><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg
                 ></a>
               </h3>
               <div class="tsd-signature">
@@ -249,7 +248,7 @@
                   <li>
                     Defined in
                     <a
-                      href="https://github.com/bennycode/trading-signals/blob/452f3d2a97224135126c0e998d5672522ddecb7c/src/Indicator.ts#L59"
+                      href="https://github.com/bennycode/trading-signals/blob/993eaa4b21ecb87fab89d5756c1d4a702daf3128/src/Indicator.ts#L59"
                       >Indicator.ts:59</a
                     >
                   </li>
@@ -257,11 +256,10 @@
               </aside>
             </section>
             <section class="tsd-panel tsd-member tsd-is-inherited">
-              <a id="lowest" class="tsd-anchor"></a>
-              <h3 class="tsd-anchor-link">
+              <h3 class="tsd-anchor-link" id="lowest">
                 <code class="tsd-tag">Optional</code><span>lowest</span
                 ><a href="#lowest" aria-label="Permalink" class="tsd-anchor-icon"
-                  ><svg viewBox="0 0 24 24"><use href="../assets/icons.svg#icon-anchor"></use></svg
+                  ><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg
                 ></a>
               </h3>
               <div class="tsd-signature">
@@ -279,7 +277,7 @@
                   <li>
                     Defined in
                     <a
-                      href="https://github.com/bennycode/trading-signals/blob/452f3d2a97224135126c0e998d5672522ddecb7c/src/Indicator.ts#L61"
+                      href="https://github.com/bennycode/trading-signals/blob/993eaa4b21ecb87fab89d5756c1d4a702daf3128/src/Indicator.ts#L61"
                       >Indicator.ts:61</a
                     >
                   </li>
@@ -290,42 +288,41 @@
         </details>
         <details class="tsd-panel-group tsd-member-group tsd-accordion" open>
           <summary class="tsd-accordion-summary" data-key="section-Accessors">
-            <h2>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                <use href="../assets/icons.svg#icon-chevronDown"></use>
-              </svg>
-              Accessors
-            </h2>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <use href="../assets/icons.svg#icon-chevronDown"></use>
+            </svg>
+            <h2>Accessors</h2>
           </summary>
           <section>
             <section class="tsd-panel tsd-member tsd-is-inherited">
-              <a id="isstable" class="tsd-anchor"></a>
-              <h3 class="tsd-anchor-link">
+              <h3 class="tsd-anchor-link" id="isstable">
                 <span>is<wbr />Stable</span
                 ><a href="#isstable" aria-label="Permalink" class="tsd-anchor-icon"
-                  ><svg viewBox="0 0 24 24"><use href="../assets/icons.svg#icon-anchor"></use></svg
+                  ><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg
                 ></a>
               </h3>
               <ul class="tsd-signatures tsd-is-inherited">
-                <li class="tsd-signature" id="isstable-1">
-                  <span class="tsd-signature-keyword">get</span> <span class="tsd-kind-get-signature">isStable</span
-                  ><span class="tsd-signature-symbol">()</span><span class="tsd-signature-symbol">:</span>
-                  <span class="tsd-signature-type">boolean</span>
-                </li>
-                <li class="tsd-description">
-                  <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">boolean</span></h4>
-                  <aside class="tsd-sources">
-                    <p>Inherited from NumberIndicatorSeries.isStable</p>
-                    <ul>
-                      <li>
-                        Defined in
-                        <a
-                          href="https://github.com/bennycode/trading-signals/blob/452f3d2a97224135126c0e998d5672522ddecb7c/src/Indicator.ts#L35"
-                          >Indicator.ts:35</a
-                        >
-                      </li>
-                    </ul>
-                  </aside>
+                <li>
+                  <div class="tsd-signature" id="isstableisstable">
+                    <span class="tsd-signature-keyword">get</span> <span class="tsd-kind-get-signature">isStable</span
+                    ><span class="tsd-signature-symbol">()</span><span class="tsd-signature-symbol">:</span>
+                    <span class="tsd-signature-type">boolean</span>
+                  </div>
+                  <div class="tsd-description">
+                    <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">boolean</span></h4>
+                    <aside class="tsd-sources">
+                      <p>Inherited from NumberIndicatorSeries.isStable</p>
+                      <ul>
+                        <li>
+                          Defined in
+                          <a
+                            href="https://github.com/bennycode/trading-signals/blob/993eaa4b21ecb87fab89d5756c1d4a702daf3128/src/Indicator.ts#L35"
+                            >Indicator.ts:35</a
+                          >
+                        </li>
+                      </ul>
+                    </aside>
+                  </div>
                 </li>
               </ul>
             </section>
@@ -333,351 +330,356 @@
         </details>
         <details class="tsd-panel-group tsd-member-group tsd-accordion" open>
           <summary class="tsd-accordion-summary" data-key="section-Methods">
-            <h2>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                <use href="../assets/icons.svg#icon-chevronDown"></use>
-              </svg>
-              Methods
-            </h2>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <use href="../assets/icons.svg#icon-chevronDown"></use>
+            </svg>
+            <h2>Methods</h2>
           </summary>
           <section>
             <section class="tsd-panel tsd-member tsd-is-inherited">
-              <a id="add" class="tsd-anchor"></a>
-              <h3 class="tsd-anchor-link">
+              <h3 class="tsd-anchor-link" id="add">
                 <span>add</span
                 ><a href="#add" aria-label="Permalink" class="tsd-anchor-icon"
-                  ><svg viewBox="0 0 24 24"><use href="../assets/icons.svg#icon-anchor"></use></svg
+                  ><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg
                 ></a>
               </h3>
               <ul class="tsd-signatures tsd-is-inherited">
-                <li class="tsd-signature tsd-anchor-link">
-                  <a id="add-1" class="tsd-anchor"></a><span class="tsd-kind-call-signature">add</span
-                  ><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">input</span
-                  ><span class="tsd-signature-symbol">:</span>
-                  <a href="../types/HighLowCloseNumber.html" class="tsd-signature-type tsd-kind-type-alias"
-                    >HighLowCloseNumber</a
-                  ><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span>
-                  <span class="tsd-signature-type">null</span> <span class="tsd-signature-symbol">|</span>
-                  <span class="tsd-signature-type">number</span
-                  ><a href="#add-1" aria-label="Permalink" class="tsd-anchor-icon"
-                    ><svg viewBox="0 0 24 24"><use href="../assets/icons.svg#icon-anchor"></use></svg
-                  ></a>
-                </li>
-                <li class="tsd-description">
-                  <div class="tsd-parameters">
-                    <h4 class="tsd-parameters-title">Parameters</h4>
-                    <ul class="tsd-parameter-list">
-                      <li>
-                        <span
-                          ><span class="tsd-kind-parameter">input</span>:
-                          <a href="../types/HighLowCloseNumber.html" class="tsd-signature-type tsd-kind-type-alias"
-                            >HighLowCloseNumber</a
-                          ></span
-                        >
-                      </li>
-                    </ul>
+                <li class="tsd-is-inherited">
+                  <div class="tsd-signature tsd-anchor-link" id="add-1">
+                    <span class="tsd-kind-call-signature">add</span><span class="tsd-signature-symbol">(</span
+                    ><span class="tsd-kind-parameter">input</span><span class="tsd-signature-symbol">:</span>
+                    <a href="../types/HighLowCloseNumber.html" class="tsd-signature-type tsd-kind-type-alias"
+                      >HighLowCloseNumber</a
+                    ><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span>
+                    <span class="tsd-signature-type">null</span> <span class="tsd-signature-symbol">|</span>
+                    <span class="tsd-signature-type">number</span
+                    ><a href="#add-1" aria-label="Permalink" class="tsd-anchor-icon"
+                      ><svg viewBox="0 0 24 24" aria-hidden="true">
+                        <use href="../assets/icons.svg#icon-anchor"></use></svg
+                    ></a>
                   </div>
-                  <h4 class="tsd-returns-title">
-                    Returns <span class="tsd-signature-type">null</span> <span class="tsd-signature-symbol">|</span>
-                    <span class="tsd-signature-type">number</span>
-                  </h4>
-                  <aside class="tsd-sources">
-                    <p>
-                      Inherited from <a href="NumberIndicatorSeries.html">NumberIndicatorSeries</a>.<a
-                        href="NumberIndicatorSeries.html#add"
-                        >add</a
-                      >
-                    </p>
-                    <ul>
-                      <li>
-                        Defined in
-                        <a
-                          href="https://github.com/bennycode/trading-signals/blob/452f3d2a97224135126c0e998d5672522ddecb7c/src/Indicator.ts#L39"
-                          >Indicator.ts:39</a
+                  <div class="tsd-description">
+                    <div class="tsd-parameters">
+                      <h4 class="tsd-parameters-title">Parameters</h4>
+                      <ul class="tsd-parameter-list">
+                        <li>
+                          <span
+                            ><span class="tsd-kind-parameter">input</span>:
+                            <a href="../types/HighLowCloseNumber.html" class="tsd-signature-type tsd-kind-type-alias"
+                              >HighLowCloseNumber</a
+                            ></span
+                          >
+                        </li>
+                      </ul>
+                    </div>
+                    <h4 class="tsd-returns-title">
+                      Returns <span class="tsd-signature-type">null</span> <span class="tsd-signature-symbol">|</span>
+                      <span class="tsd-signature-type">number</span>
+                    </h4>
+                    <aside class="tsd-sources">
+                      <p>
+                        Inherited from <a href="NumberIndicatorSeries.html">NumberIndicatorSeries</a>.<a
+                          href="NumberIndicatorSeries.html#add"
+                          >add</a
                         >
-                      </li>
-                    </ul>
-                  </aside>
+                      </p>
+                      <ul>
+                        <li>
+                          Defined in
+                          <a
+                            href="https://github.com/bennycode/trading-signals/blob/993eaa4b21ecb87fab89d5756c1d4a702daf3128/src/Indicator.ts#L39"
+                            >Indicator.ts:39</a
+                          >
+                        </li>
+                      </ul>
+                    </aside>
+                  </div>
                 </li>
               </ul>
             </section>
             <section class="tsd-panel tsd-member tsd-is-inherited">
-              <a id="getresult" class="tsd-anchor"></a>
-              <h3 class="tsd-anchor-link">
+              <h3 class="tsd-anchor-link" id="getresult">
                 <span>get<wbr />Result</span
                 ><a href="#getresult" aria-label="Permalink" class="tsd-anchor-icon"
-                  ><svg viewBox="0 0 24 24"><use href="../assets/icons.svg#icon-anchor"></use></svg
+                  ><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg
                 ></a>
               </h3>
               <ul class="tsd-signatures tsd-is-inherited">
-                <li class="tsd-signature tsd-anchor-link">
-                  <a id="getresult-1" class="tsd-anchor"></a><span class="tsd-kind-call-signature">getResult</span
-                  ><span class="tsd-signature-symbol">()</span><span class="tsd-signature-symbol">:</span>
-                  <span class="tsd-signature-type">null</span> <span class="tsd-signature-symbol">|</span>
-                  <span class="tsd-signature-type">number</span
-                  ><a href="#getresult-1" aria-label="Permalink" class="tsd-anchor-icon"
-                    ><svg viewBox="0 0 24 24"><use href="../assets/icons.svg#icon-anchor"></use></svg
-                  ></a>
-                </li>
-                <li class="tsd-description">
-                  <h4 class="tsd-returns-title">
-                    Returns <span class="tsd-signature-type">null</span> <span class="tsd-signature-symbol">|</span>
-                    <span class="tsd-signature-type">number</span>
-                  </h4>
-                  <aside class="tsd-sources">
-                    <p>
-                      Inherited from <a href="NumberIndicatorSeries.html">NumberIndicatorSeries</a>.<a
-                        href="NumberIndicatorSeries.html#getresult"
-                        >getResult</a
-                      >
-                    </p>
-                    <ul>
-                      <li>
-                        Defined in
-                        <a
-                          href="https://github.com/bennycode/trading-signals/blob/452f3d2a97224135126c0e998d5672522ddecb7c/src/Indicator.ts#L19"
-                          >Indicator.ts:19</a
+                <li class="tsd-is-inherited">
+                  <div class="tsd-signature tsd-anchor-link" id="getresult-1">
+                    <span class="tsd-kind-call-signature">getResult</span><span class="tsd-signature-symbol">()</span
+                    ><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">null</span>
+                    <span class="tsd-signature-symbol">|</span> <span class="tsd-signature-type">number</span
+                    ><a href="#getresult-1" aria-label="Permalink" class="tsd-anchor-icon"
+                      ><svg viewBox="0 0 24 24" aria-hidden="true">
+                        <use href="../assets/icons.svg#icon-anchor"></use></svg
+                    ></a>
+                  </div>
+                  <div class="tsd-description">
+                    <h4 class="tsd-returns-title">
+                      Returns <span class="tsd-signature-type">null</span> <span class="tsd-signature-symbol">|</span>
+                      <span class="tsd-signature-type">number</span>
+                    </h4>
+                    <aside class="tsd-sources">
+                      <p>
+                        Inherited from <a href="NumberIndicatorSeries.html">NumberIndicatorSeries</a>.<a
+                          href="NumberIndicatorSeries.html#getresult"
+                          >getResult</a
                         >
-                      </li>
-                    </ul>
-                  </aside>
+                      </p>
+                      <ul>
+                        <li>
+                          Defined in
+                          <a
+                            href="https://github.com/bennycode/trading-signals/blob/993eaa4b21ecb87fab89d5756c1d4a702daf3128/src/Indicator.ts#L19"
+                            >Indicator.ts:19</a
+                          >
+                        </li>
+                      </ul>
+                    </aside>
+                  </div>
                 </li>
               </ul>
             </section>
             <section class="tsd-panel tsd-member tsd-is-inherited">
-              <a id="getresultorthrow" class="tsd-anchor"></a>
-              <h3 class="tsd-anchor-link">
+              <h3 class="tsd-anchor-link" id="getresultorthrow">
                 <span>get<wbr />Result<wbr />Or<wbr />Throw</span
                 ><a href="#getresultorthrow" aria-label="Permalink" class="tsd-anchor-icon"
-                  ><svg viewBox="0 0 24 24"><use href="../assets/icons.svg#icon-anchor"></use></svg
+                  ><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg
                 ></a>
               </h3>
               <ul class="tsd-signatures tsd-is-inherited">
-                <li class="tsd-signature tsd-anchor-link">
-                  <a id="getresultorthrow-1" class="tsd-anchor"></a
-                  ><span class="tsd-kind-call-signature">getResultOrThrow</span
-                  ><span class="tsd-signature-symbol">()</span><span class="tsd-signature-symbol">:</span>
-                  <span class="tsd-signature-type">number</span
-                  ><a href="#getresultorthrow-1" aria-label="Permalink" class="tsd-anchor-icon"
-                    ><svg viewBox="0 0 24 24"><use href="../assets/icons.svg#icon-anchor"></use></svg
-                  ></a>
-                </li>
-                <li class="tsd-description">
-                  <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">number</span></h4>
-                  <aside class="tsd-sources">
-                    <p>
-                      Inherited from <a href="NumberIndicatorSeries.html">NumberIndicatorSeries</a>.<a
-                        href="NumberIndicatorSeries.html#getresultorthrow"
-                        >getResultOrThrow</a
-                      >
-                    </p>
-                    <ul>
-                      <li>
-                        Defined in
-                        <a
-                          href="https://github.com/bennycode/trading-signals/blob/452f3d2a97224135126c0e998d5672522ddecb7c/src/Indicator.ts#L27"
-                          >Indicator.ts:27</a
+                <li class="tsd-is-inherited">
+                  <div class="tsd-signature tsd-anchor-link" id="getresultorthrow-1">
+                    <span class="tsd-kind-call-signature">getResultOrThrow</span
+                    ><span class="tsd-signature-symbol">()</span><span class="tsd-signature-symbol">:</span>
+                    <span class="tsd-signature-type">number</span
+                    ><a href="#getresultorthrow-1" aria-label="Permalink" class="tsd-anchor-icon"
+                      ><svg viewBox="0 0 24 24" aria-hidden="true">
+                        <use href="../assets/icons.svg#icon-anchor"></use></svg
+                    ></a>
+                  </div>
+                  <div class="tsd-description">
+                    <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">number</span></h4>
+                    <aside class="tsd-sources">
+                      <p>
+                        Inherited from <a href="NumberIndicatorSeries.html">NumberIndicatorSeries</a>.<a
+                          href="NumberIndicatorSeries.html#getresultorthrow"
+                          >getResultOrThrow</a
                         >
-                      </li>
-                    </ul>
-                  </aside>
+                      </p>
+                      <ul>
+                        <li>
+                          Defined in
+                          <a
+                            href="https://github.com/bennycode/trading-signals/blob/993eaa4b21ecb87fab89d5756c1d4a702daf3128/src/Indicator.ts#L27"
+                            >Indicator.ts:27</a
+                          >
+                        </li>
+                      </ul>
+                    </aside>
+                  </div>
                 </li>
               </ul>
             </section>
             <section class="tsd-panel tsd-member tsd-is-inherited">
-              <a id="replace" class="tsd-anchor"></a>
-              <h3 class="tsd-anchor-link">
+              <h3 class="tsd-anchor-link" id="replace">
                 <span>replace</span
                 ><a href="#replace" aria-label="Permalink" class="tsd-anchor-icon"
-                  ><svg viewBox="0 0 24 24"><use href="../assets/icons.svg#icon-anchor"></use></svg
+                  ><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg
                 ></a>
               </h3>
               <ul class="tsd-signatures tsd-is-inherited">
-                <li class="tsd-signature tsd-anchor-link">
-                  <a id="replace-1" class="tsd-anchor"></a><span class="tsd-kind-call-signature">replace</span
-                  ><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">input</span
-                  ><span class="tsd-signature-symbol">:</span>
-                  <a href="../types/HighLowCloseNumber.html" class="tsd-signature-type tsd-kind-type-alias"
-                    >HighLowCloseNumber</a
-                  ><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span>
-                  <span class="tsd-signature-type">null</span> <span class="tsd-signature-symbol">|</span>
-                  <span class="tsd-signature-type">number</span
-                  ><a href="#replace-1" aria-label="Permalink" class="tsd-anchor-icon"
-                    ><svg viewBox="0 0 24 24"><use href="../assets/icons.svg#icon-anchor"></use></svg
-                  ></a>
-                </li>
-                <li class="tsd-description">
-                  <div class="tsd-parameters">
-                    <h4 class="tsd-parameters-title">Parameters</h4>
-                    <ul class="tsd-parameter-list">
-                      <li>
-                        <span
-                          ><span class="tsd-kind-parameter">input</span>:
-                          <a href="../types/HighLowCloseNumber.html" class="tsd-signature-type tsd-kind-type-alias"
-                            >HighLowCloseNumber</a
-                          ></span
-                        >
-                      </li>
-                    </ul>
+                <li class="tsd-is-inherited">
+                  <div class="tsd-signature tsd-anchor-link" id="replace-1">
+                    <span class="tsd-kind-call-signature">replace</span><span class="tsd-signature-symbol">(</span
+                    ><span class="tsd-kind-parameter">input</span><span class="tsd-signature-symbol">:</span>
+                    <a href="../types/HighLowCloseNumber.html" class="tsd-signature-type tsd-kind-type-alias"
+                      >HighLowCloseNumber</a
+                    ><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span>
+                    <span class="tsd-signature-type">null</span> <span class="tsd-signature-symbol">|</span>
+                    <span class="tsd-signature-type">number</span
+                    ><a href="#replace-1" aria-label="Permalink" class="tsd-anchor-icon"
+                      ><svg viewBox="0 0 24 24" aria-hidden="true">
+                        <use href="../assets/icons.svg#icon-anchor"></use></svg
+                    ></a>
                   </div>
-                  <h4 class="tsd-returns-title">
-                    Returns <span class="tsd-signature-type">null</span> <span class="tsd-signature-symbol">|</span>
-                    <span class="tsd-signature-type">number</span>
-                  </h4>
-                  <aside class="tsd-sources">
-                    <p>
-                      Inherited from <a href="NumberIndicatorSeries.html">NumberIndicatorSeries</a>.<a
-                        href="NumberIndicatorSeries.html#replace"
-                        >replace</a
-                      >
-                    </p>
-                    <ul>
-                      <li>
-                        Defined in
-                        <a
-                          href="https://github.com/bennycode/trading-signals/blob/452f3d2a97224135126c0e998d5672522ddecb7c/src/Indicator.ts#L43"
-                          >Indicator.ts:43</a
+                  <div class="tsd-description">
+                    <div class="tsd-parameters">
+                      <h4 class="tsd-parameters-title">Parameters</h4>
+                      <ul class="tsd-parameter-list">
+                        <li>
+                          <span
+                            ><span class="tsd-kind-parameter">input</span>:
+                            <a href="../types/HighLowCloseNumber.html" class="tsd-signature-type tsd-kind-type-alias"
+                              >HighLowCloseNumber</a
+                            ></span
+                          >
+                        </li>
+                      </ul>
+                    </div>
+                    <h4 class="tsd-returns-title">
+                      Returns <span class="tsd-signature-type">null</span> <span class="tsd-signature-symbol">|</span>
+                      <span class="tsd-signature-type">number</span>
+                    </h4>
+                    <aside class="tsd-sources">
+                      <p>
+                        Inherited from <a href="NumberIndicatorSeries.html">NumberIndicatorSeries</a>.<a
+                          href="NumberIndicatorSeries.html#replace"
+                          >replace</a
                         >
-                      </li>
-                    </ul>
-                  </aside>
+                      </p>
+                      <ul>
+                        <li>
+                          Defined in
+                          <a
+                            href="https://github.com/bennycode/trading-signals/blob/993eaa4b21ecb87fab89d5756c1d4a702daf3128/src/Indicator.ts#L43"
+                            >Indicator.ts:43</a
+                          >
+                        </li>
+                      </ul>
+                    </aside>
+                  </div>
                 </li>
               </ul>
             </section>
             <section class="tsd-panel tsd-member">
-              <a id="update" class="tsd-anchor"></a>
-              <h3 class="tsd-anchor-link">
+              <h3 class="tsd-anchor-link" id="update">
                 <span>update</span
                 ><a href="#update" aria-label="Permalink" class="tsd-anchor-icon"
-                  ><svg viewBox="0 0 24 24"><use href="../assets/icons.svg#icon-anchor"></use></svg
+                  ><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg
                 ></a>
               </h3>
               <ul class="tsd-signatures">
-                <li class="tsd-signature tsd-anchor-link">
-                  <a id="update-1" class="tsd-anchor"></a><span class="tsd-kind-call-signature">update</span
-                  ><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">candle</span
-                  ><span class="tsd-signature-symbol">:</span>
-                  <a href="../types/HighLowCloseNumber.html" class="tsd-signature-type tsd-kind-type-alias"
-                    >HighLowCloseNumber</a
-                  ><span class="tsd-signature-symbol">,</span> <span class="tsd-kind-parameter">replace</span
-                  ><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span
-                  ><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span>
-                  <span class="tsd-signature-type">number</span
-                  ><a href="#update-1" aria-label="Permalink" class="tsd-anchor-icon"
-                    ><svg viewBox="0 0 24 24"><use href="../assets/icons.svg#icon-anchor"></use></svg
-                  ></a>
-                </li>
-                <li class="tsd-description">
-                  <div class="tsd-parameters">
-                    <h4 class="tsd-parameters-title">Parameters</h4>
-                    <ul class="tsd-parameter-list">
-                      <li>
-                        <span
-                          ><span class="tsd-kind-parameter">candle</span>:
-                          <a href="../types/HighLowCloseNumber.html" class="tsd-signature-type tsd-kind-type-alias"
-                            >HighLowCloseNumber</a
-                          ></span
-                        >
-                      </li>
-                      <li>
-                        <span
-                          ><span class="tsd-kind-parameter">replace</span>:
-                          <span class="tsd-signature-type">boolean</span></span
-                        >
-                      </li>
-                    </ul>
+                <li class="">
+                  <div class="tsd-signature tsd-anchor-link" id="update-1">
+                    <span class="tsd-kind-call-signature">update</span><span class="tsd-signature-symbol">(</span
+                    ><span class="tsd-kind-parameter">candle</span><span class="tsd-signature-symbol">:</span>
+                    <a href="../types/HighLowCloseNumber.html" class="tsd-signature-type tsd-kind-type-alias"
+                      >HighLowCloseNumber</a
+                    ><span class="tsd-signature-symbol">,</span> <span class="tsd-kind-parameter">replace</span
+                    ><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span
+                    ><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span>
+                    <span class="tsd-signature-type">number</span
+                    ><a href="#update-1" aria-label="Permalink" class="tsd-anchor-icon"
+                      ><svg viewBox="0 0 24 24" aria-hidden="true">
+                        <use href="../assets/icons.svg#icon-anchor"></use></svg
+                    ></a>
                   </div>
-                  <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">number</span></h4>
-                  <aside class="tsd-sources">
-                    <p>
-                      Overrides <a href="NumberIndicatorSeries.html">NumberIndicatorSeries</a>.<a
-                        href="NumberIndicatorSeries.html#update"
-                        >update</a
-                      >
-                    </p>
-                    <ul>
-                      <li>
-                        Defined in
-                        <a
-                          href="https://github.com/bennycode/trading-signals/blob/452f3d2a97224135126c0e998d5672522ddecb7c/src/TR/TR.ts#L48"
-                          >TR/TR.ts:48</a
+                  <div class="tsd-description">
+                    <div class="tsd-parameters">
+                      <h4 class="tsd-parameters-title">Parameters</h4>
+                      <ul class="tsd-parameter-list">
+                        <li>
+                          <span
+                            ><span class="tsd-kind-parameter">candle</span>:
+                            <a href="../types/HighLowCloseNumber.html" class="tsd-signature-type tsd-kind-type-alias"
+                              >HighLowCloseNumber</a
+                            ></span
+                          >
+                        </li>
+                        <li>
+                          <span
+                            ><span class="tsd-kind-parameter">replace</span>:
+                            <span class="tsd-signature-type">boolean</span></span
+                          >
+                        </li>
+                      </ul>
+                    </div>
+                    <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">number</span></h4>
+                    <aside class="tsd-sources">
+                      <p>
+                        Overrides <a href="NumberIndicatorSeries.html">NumberIndicatorSeries</a>.<a
+                          href="NumberIndicatorSeries.html#update"
+                          >update</a
                         >
-                      </li>
-                    </ul>
-                  </aside>
+                      </p>
+                      <ul>
+                        <li>
+                          Defined in
+                          <a
+                            href="https://github.com/bennycode/trading-signals/blob/993eaa4b21ecb87fab89d5756c1d4a702daf3128/src/TR/TR.ts#L48"
+                            >TR/TR.ts:48</a
+                          >
+                        </li>
+                      </ul>
+                    </aside>
+                  </div>
                 </li>
               </ul>
             </section>
             <section class="tsd-panel tsd-member tsd-is-inherited">
-              <a id="updates" class="tsd-anchor"></a>
-              <h3 class="tsd-anchor-link">
+              <h3 class="tsd-anchor-link" id="updates">
                 <span>updates</span
                 ><a href="#updates" aria-label="Permalink" class="tsd-anchor-icon"
-                  ><svg viewBox="0 0 24 24"><use href="../assets/icons.svg#icon-anchor"></use></svg
+                  ><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg
                 ></a>
               </h3>
               <ul class="tsd-signatures tsd-is-inherited">
-                <li class="tsd-signature tsd-anchor-link">
-                  <a id="updates-1" class="tsd-anchor"></a><span class="tsd-kind-call-signature">updates</span
-                  ><span class="tsd-signature-symbol">(</span><br />    <span class="tsd-kind-parameter">inputs</span
-                  ><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-keyword">readonly</span>
-                  <a href="../types/HighLowCloseNumber.html" class="tsd-signature-type tsd-kind-type-alias"
-                    >HighLowCloseNumber</a
-                  ><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">,</span
-                  ><br />    <span class="tsd-kind-parameter">replace</span
-                  ><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">boolean</span
-                  ><span class="tsd-signature-symbol">,</span><br /><span class="tsd-signature-symbol">)</span
-                  ><span class="tsd-signature-symbol">:</span> (<span class="tsd-signature-type">null</span>
-                  <span class="tsd-signature-symbol">|</span> <span class="tsd-signature-type">number</span>)<span
-                    class="tsd-signature-symbol"
-                    >[]</span
-                  ><a href="#updates-1" aria-label="Permalink" class="tsd-anchor-icon"
-                    ><svg viewBox="0 0 24 24"><use href="../assets/icons.svg#icon-anchor"></use></svg
-                  ></a>
-                </li>
-                <li class="tsd-description">
-                  <div class="tsd-parameters">
-                    <h4 class="tsd-parameters-title">Parameters</h4>
-                    <ul class="tsd-parameter-list">
-                      <li>
-                        <span
-                          ><span class="tsd-kind-parameter">inputs</span>:
-                          <span class="tsd-signature-keyword">readonly</span>
-                          <a href="../types/HighLowCloseNumber.html" class="tsd-signature-type tsd-kind-type-alias"
-                            >HighLowCloseNumber</a
-                          ><span class="tsd-signature-symbol">[]</span></span
-                        >
-                      </li>
-                      <li>
-                        <span
-                          ><span class="tsd-kind-parameter">replace</span>:
-                          <span class="tsd-signature-type">boolean</span
-                          ><span class="tsd-signature-symbol"> = false</span></span
-                        >
-                      </li>
-                    </ul>
+                <li class="tsd-is-inherited">
+                  <div class="tsd-signature tsd-anchor-link" id="updates-1">
+                    <span class="tsd-kind-call-signature">updates</span><span class="tsd-signature-symbol">(</span
+                    ><br />    <span class="tsd-kind-parameter">inputs</span
+                    ><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-keyword">readonly</span>
+                    <a href="../types/HighLowCloseNumber.html" class="tsd-signature-type tsd-kind-type-alias"
+                      >HighLowCloseNumber</a
+                    ><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">,</span
+                    ><br />    <span class="tsd-kind-parameter">replace</span
+                    ><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">boolean</span
+                    ><span class="tsd-signature-symbol">,</span><br /><span class="tsd-signature-symbol">)</span
+                    ><span class="tsd-signature-symbol">:</span> (<span class="tsd-signature-type">null</span>
+                    <span class="tsd-signature-symbol">|</span> <span class="tsd-signature-type">number</span>)<span
+                      class="tsd-signature-symbol"
+                      >[]</span
+                    ><a href="#updates-1" aria-label="Permalink" class="tsd-anchor-icon"
+                      ><svg viewBox="0 0 24 24" aria-hidden="true">
+                        <use href="../assets/icons.svg#icon-anchor"></use></svg
+                    ></a>
                   </div>
-                  <h4 class="tsd-returns-title">
-                    Returns (<span class="tsd-signature-type">null</span> <span class="tsd-signature-symbol">|</span>
-                    <span class="tsd-signature-type">number</span>)<span class="tsd-signature-symbol">[]</span>
-                  </h4>
-                  <aside class="tsd-sources">
-                    <p>
-                      Inherited from <a href="NumberIndicatorSeries.html">NumberIndicatorSeries</a>.<a
-                        href="NumberIndicatorSeries.html#updates"
-                        >updates</a
-                      >
-                    </p>
-                    <ul>
-                      <li>
-                        Defined in
-                        <a
-                          href="https://github.com/bennycode/trading-signals/blob/452f3d2a97224135126c0e998d5672522ddecb7c/src/Indicator.ts#L49"
-                          >Indicator.ts:49</a
+                  <div class="tsd-description">
+                    <div class="tsd-parameters">
+                      <h4 class="tsd-parameters-title">Parameters</h4>
+                      <ul class="tsd-parameter-list">
+                        <li>
+                          <span
+                            ><span class="tsd-kind-parameter">inputs</span>:
+                            <span class="tsd-signature-keyword">readonly</span>
+                            <a href="../types/HighLowCloseNumber.html" class="tsd-signature-type tsd-kind-type-alias"
+                              >HighLowCloseNumber</a
+                            ><span class="tsd-signature-symbol">[]</span></span
+                          >
+                        </li>
+                        <li>
+                          <span
+                            ><span class="tsd-kind-parameter">replace</span>:
+                            <span class="tsd-signature-type">boolean</span
+                            ><span class="tsd-signature-symbol"> = false</span></span
+                          >
+                        </li>
+                      </ul>
+                    </div>
+                    <h4 class="tsd-returns-title">
+                      Returns (<span class="tsd-signature-type">null</span> <span class="tsd-signature-symbol">|</span>
+                      <span class="tsd-signature-type">number</span>)<span class="tsd-signature-symbol">[]</span>
+                    </h4>
+                    <aside class="tsd-sources">
+                      <p>
+                        Inherited from <a href="NumberIndicatorSeries.html">NumberIndicatorSeries</a>.<a
+                          href="NumberIndicatorSeries.html#updates"
+                          >updates</a
                         >
-                      </li>
-                    </ul>
-                  </aside>
+                      </p>
+                      <ul>
+                        <li>
+                          Defined in
+                          <a
+                            href="https://github.com/bennycode/trading-signals/blob/993eaa4b21ecb87fab89d5756c1d4a702daf3128/src/Indicator.ts#L49"
+                            >Indicator.ts:49</a
+                          >
+                        </li>
+                      </ul>
+                    </aside>
+                  </div>
                 </li>
               </ul>
             </section>
@@ -689,11 +691,10 @@
           <div class="tsd-navigation settings">
             <details class="tsd-accordion">
               <summary class="tsd-accordion-summary">
-                <h3>
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                    <use href="../assets/icons.svg#icon-chevronDown"></use></svg
-                  >Settings
-                </h3>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <use href="../assets/icons.svg#icon-chevronDown"></use>
+                </svg>
+                <h3>Settings</h3>
               </summary>
               <div class="tsd-accordion-details">
                 <div class="tsd-filter-visibility">
@@ -739,39 +740,39 @@
           </div>
           <details open class="tsd-accordion tsd-page-navigation">
             <summary class="tsd-accordion-summary">
-              <h3>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                  <use href="../assets/icons.svg#icon-chevronDown"></use></svg
-                >On This Page
-              </h3>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <use href="../assets/icons.svg#icon-chevronDown"></use>
+              </svg>
+              <h3>On This Page</h3>
             </summary>
             <div class="tsd-accordion-details">
               <details open class="tsd-accordion tsd-page-navigation-section">
                 <summary class="tsd-accordion-summary" data-key="section-Constructors">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                     <use href="../assets/icons.svg#icon-chevronDown"></use></svg
                   >Constructors
                 </summary>
                 <div>
-                  <a href="#constructor" class=""
-                    ><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="../assets/icons.svg#icon-512"></use></svg
+                  <a href="#constructor"
+                    ><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Constructor">
+                      <use href="../assets/icons.svg#icon-512"></use></svg
                     ><span>constructor</span></a
                   >
                 </div>
               </details>
               <details open class="tsd-accordion tsd-page-navigation-section">
                 <summary class="tsd-accordion-summary" data-key="section-Properties">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                     <use href="../assets/icons.svg#icon-chevronDown"></use></svg
                   >Properties
                 </summary>
                 <div>
                   <a href="#highest" class="tsd-is-inherited"
-                    ><svg class="tsd-kind-icon" viewBox="0 0 24 24">
+                    ><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Property">
                       <use href="../assets/icons.svg#icon-1024"></use></svg
                     ><span>highest</span></a
                   ><a href="#lowest" class="tsd-is-inherited"
-                    ><svg class="tsd-kind-icon" viewBox="0 0 24 24">
+                    ><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Property">
                       <use href="../assets/icons.svg#icon-1024"></use></svg
                     ><span>lowest</span></a
                   >
@@ -779,13 +780,13 @@
               </details>
               <details open class="tsd-accordion tsd-page-navigation-section">
                 <summary class="tsd-accordion-summary" data-key="section-Accessors">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                     <use href="../assets/icons.svg#icon-chevronDown"></use></svg
                   >Accessors
                 </summary>
                 <div>
                   <a href="#isstable" class="tsd-is-inherited"
-                    ><svg class="tsd-kind-icon" viewBox="0 0 24 24">
+                    ><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Accessor">
                       <use href="../assets/icons.svg#icon-262144"></use></svg
                     ><span>is<wbr />Stable</span></a
                   >
@@ -793,33 +794,33 @@
               </details>
               <details open class="tsd-accordion tsd-page-navigation-section">
                 <summary class="tsd-accordion-summary" data-key="section-Methods">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                     <use href="../assets/icons.svg#icon-chevronDown"></use></svg
                   >Methods
                 </summary>
                 <div>
                   <a href="#add" class="tsd-is-inherited"
-                    ><svg class="tsd-kind-icon" viewBox="0 0 24 24">
+                    ><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method">
                       <use href="../assets/icons.svg#icon-2048"></use></svg
                     ><span>add</span></a
                   ><a href="#getresult" class="tsd-is-inherited"
-                    ><svg class="tsd-kind-icon" viewBox="0 0 24 24">
+                    ><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method">
                       <use href="../assets/icons.svg#icon-2048"></use></svg
                     ><span>get<wbr />Result</span></a
                   ><a href="#getresultorthrow" class="tsd-is-inherited"
-                    ><svg class="tsd-kind-icon" viewBox="0 0 24 24">
+                    ><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method">
                       <use href="../assets/icons.svg#icon-2048"></use></svg
                     ><span>get<wbr />Result<wbr />Or<wbr />Throw</span></a
                   ><a href="#replace" class="tsd-is-inherited"
-                    ><svg class="tsd-kind-icon" viewBox="0 0 24 24">
+                    ><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method">
                       <use href="../assets/icons.svg#icon-2048"></use></svg
                     ><span>replace</span></a
-                  ><a href="#update" class=""
-                    ><svg class="tsd-kind-icon" viewBox="0 0 24 24">
+                  ><a href="#update"
+                    ><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method">
                       <use href="../assets/icons.svg#icon-2048"></use></svg
                     ><span>update</span></a
                   ><a href="#updates" class="tsd-is-inherited"
-                    ><svg class="tsd-kind-icon" viewBox="0 0 24 24">
+                    ><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method">
                       <use href="../assets/icons.svg#icon-2048"></use></svg
                     ><span>updates</span></a
                   >
