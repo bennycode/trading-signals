@@ -1,3 +1,9 @@
+### 6.3.0 (2025-04-23)
+
+##### New Features
+
+- **STOCH:** Add smoothing periods %K and %D ([#794](https://github.com/bennycode/trading-signals/pull/794)) ([8690a6a7](https://github.com/bennycode/trading-signals/commit/8690a6a7a70514192e19f891cc735dd85bb6a076))
+
 ### 6.2.0 (2025-02-25)
 
 ##### New Features
