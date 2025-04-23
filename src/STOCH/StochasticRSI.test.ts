@@ -1,5 +1,5 @@
-import {SMA} from '../SMA/SMA.js';
-import {WSMA} from '../WSMA/WSMA.js';
+import {FasterSMA, SMA} from '../SMA/SMA.js';
+import {FasterWSMA, WSMA} from '../WSMA/WSMA.js';
 import {FasterStochasticRSI, StochasticRSI} from './StochasticRSI.js';
 
 describe('StochasticRSI', () => {
@@ -88,17 +88,33 @@ describe('StochasticRSI', () => {
         k: new SMA(3),
       });
 
+      const fasterStochRSI = new FasterStochasticRSI(14, FasterWSMA, {
+        d: new FasterSMA(3),
+        k: new FasterSMA(3),
+      });
+
       prices.forEach((price, i) => {
         stochRSI.add(price);
-        if (stochRSI.smoothing.d.isStable) {
+        fasterStochRSI.add(price);
+
+        if (stochRSI.smoothing.d.isStable && fasterStochRSI.smoothing.d.isStable) {
           callCount();
+          const expectation = expectations[i - offset];
+
           const result = {
             d: stochRSI.smoothing.d.getResultOrThrow().mul(100).toFixed(2),
             k: stochRSI.smoothing.k.getResultOrThrow().mul(100).toFixed(2),
             stochRSI: stochRSI.getResultOrThrow().mul(100).toFixed(2),
           };
-          const expectation = expectations[i - offset];
           expect(result).toEqual(expectation);
+
+          const fasterResult = {
+            d: (fasterStochRSI.smoothing.d.getResultOrThrow() * 100).toFixed(2),
+            k: (fasterStochRSI.smoothing.k.getResultOrThrow() * 100).toFixed(2),
+            stochRSI: (fasterStochRSI.getResultOrThrow() * 100).toFixed(2),
+          };
+
+          expect(fasterResult).toEqual(expectation);
         }
       });
 
