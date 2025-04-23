@@ -48,8 +48,8 @@ describe('TR', () => {
         fasterTR.add(candle);
         if (tr.isStable && fasterTR.isStable) {
           const expected = expectations[i];
-          expect(tr.getResultOrThrow().toFixed(2)).toBe(expected!);
-          expect(fasterTR.getResultOrThrow().toFixed(2)).toBe(expected!);
+          expect(tr.getResultOrThrow().toFixed(2)).toBe(expected);
+          expect(fasterTR.getResultOrThrow().toFixed(2)).toBe(expected);
         }
       });
 

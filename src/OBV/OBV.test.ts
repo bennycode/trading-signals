@@ -33,8 +33,8 @@ describe('OBV', () => {
         fasterOBV.add(candle);
         if (obv.isStable && fasterOBV.isStable) {
           const expected = expectations.shift();
-          expect(obv.getResultOrThrow().toFixed(3)).toBe(expected!);
-          expect(fasterOBV.getResultOrThrow().toFixed(3)).toBe(expected!);
+          expect(obv.getResultOrThrow().toFixed(3)).toBe(expected);
+          expect(fasterOBV.getResultOrThrow().toFixed(3)).toBe(expected);
         }
       }
       expect(obv.isStable).toBe(true);

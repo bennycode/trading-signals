@@ -1,3 +1,5 @@
+import {FasterSMA, SMA} from '../SMA/SMA.js';
+import {FasterWSMA, WSMA} from '../WSMA/WSMA.js';
 import {FasterStochasticRSI, StochasticRSI} from './StochasticRSI.js';
 
 describe('StochasticRSI', () => {
@@ -31,8 +33,8 @@ describe('StochasticRSI', () => {
         const fasterResult = fasterStochRSI.add(price);
         if (result && fasterResult) {
           const expected = expectations.shift();
-          expect(result.toFixed(3)).toBe(expected!);
-          expect(fasterResult.toFixed(3)).toBe(expected!);
+          expect(result.toFixed(3)).toBe(expected);
+          expect(fasterResult.toFixed(3)).toBe(expected);
         }
       }
       expect(stochRSI.isStable).toBe(true);
@@ -41,11 +43,82 @@ describe('StochasticRSI', () => {
       expect(stochRSI.getResultOrThrow().valueOf()).toBe('0');
       expect(fasterStochRSI.getResultOrThrow()).toBe(0);
 
-      expect(stochRSI.highest!.valueOf()).toBe('1');
-      expect(fasterStochRSI.highest!.valueOf()).toBe(1);
+      expect(stochRSI.highest?.valueOf()).toBe('1');
+      expect(fasterStochRSI.highest?.valueOf()).toBe(1);
 
-      expect(stochRSI.lowest!.valueOf()).toBe('0');
-      expect(fasterStochRSI.lowest!.valueOf()).toBe(0);
+      expect(stochRSI.lowest?.valueOf()).toBe('0');
+      expect(fasterStochRSI.lowest?.valueOf()).toBe(0);
+    });
+
+    it('calculates smoothing %K and %D lines', () => {
+      // Test data based on:
+      // https://github.com/bennycode/trading-signals/issues/793#issuecomment-2820887096
+      const prices = [
+        87069.6, 86963.1, 87041.8, 87132.1, 87178.1, 87300, 87231, 87471.9, 87475.2, 87554.8, 87346.1, 87652, 87716.1,
+        88360, 88428.1, 88354, 88316, 88038.3, 87916.5, 88147.8, 87870.1, 88110.1, 88210, 88122.1, 88181.9, 88240.2,
+        88238.4, 88028, 87937.7, 88100.6, 88238.5, 88337.9, 88124, 88057.4, 88026, 88198.2, 88128, 88248, 88423.5,
+        88447.7, 88509.5, 88374.1, 88340.1, 88372.4, 88319.9, 88498, 88483.3, 88544, 88563, 88294.1,
+      ];
+      const expectations = [
+        {d: '25.52', k: '47.24', stochRSI: '70.55'},
+        {d: '39.27', k: '46.86', stochRSI: '15.66'},
+        {d: '40.94', k: '28.74', stochRSI: '0.00'},
+        {d: '26.94', k: '5.22', stochRSI: '0.00'},
+        {d: '15.67', k: '13.05', stochRSI: '39.14'},
+        {d: '12.59', k: '19.49', stochRSI: '19.33'},
+        {d: '22.62', k: '35.32', stochRSI: '47.49'},
+        {d: '35.12', k: '50.55', stochRSI: '84.84'},
+        {d: '53.36', k: '74.21', stochRSI: '90.30'},
+        {d: '72.16', k: '91.71', stochRSI: '100.00'},
+        {d: '82.27', k: '80.87', stochRSI: '52.31'},
+        {d: '78.97', k: '64.34', stochRSI: '40.71'},
+        {d: '64.17', k: '47.32', stochRSI: '48.93'},
+        {d: '50.45', k: '39.70', stochRSI: '29.47'},
+        {d: '46.10', k: '51.29', stochRSI: '75.48'},
+        {d: '49.74', k: '58.21', stochRSI: '69.69'},
+        {d: '62.09', k: '76.77', stochRSI: '85.14'},
+        {d: '71.94', k: '80.85', stochRSI: '87.73'},
+        {d: '71.75', k: '57.62', stochRSI: '0.00'},
+      ];
+      const callCount = vi.fn();
+      const offset = prices.length - expectations.length;
+
+      const stochRSI = new StochasticRSI(14, WSMA, {
+        d: new SMA(3),
+        k: new SMA(3),
+      });
+
+      const fasterStochRSI = new FasterStochasticRSI(14, FasterWSMA, {
+        d: new FasterSMA(3),
+        k: new FasterSMA(3),
+      });
+
+      prices.forEach((price, i) => {
+        stochRSI.add(price);
+        fasterStochRSI.add(price);
+
+        if (stochRSI.smoothing.d.isStable && fasterStochRSI.smoothing.d.isStable) {
+          callCount();
+          const expectation = expectations[i - offset];
+
+          const result = {
+            d: stochRSI.smoothing.d.getResultOrThrow().mul(100).toFixed(2),
+            k: stochRSI.smoothing.k.getResultOrThrow().mul(100).toFixed(2),
+            stochRSI: stochRSI.getResultOrThrow().mul(100).toFixed(2),
+          };
+          expect(result).toEqual(expectation);
+
+          const fasterResult = {
+            d: (fasterStochRSI.smoothing.d.getResultOrThrow() * 100).toFixed(2),
+            k: (fasterStochRSI.smoothing.k.getResultOrThrow() * 100).toFixed(2),
+            stochRSI: (fasterStochRSI.getResultOrThrow() * 100).toFixed(2),
+          };
+
+          expect(fasterResult).toEqual(expectation);
+        }
+      });
+
+      expect(callCount).toHaveBeenCalledTimes(expectations.length);
     });
 
     it('catches division by zero errors', () => {

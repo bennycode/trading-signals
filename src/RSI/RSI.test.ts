@@ -59,8 +59,8 @@ describe('RSI', () => {
         fasterRSI.add(price);
         if (rsi.isStable && fasterRSI.isStable) {
           const expected = expectations.shift();
-          expect(rsi.getResultOrThrow().toFixed(3)).toBe(expected!);
-          expect(fasterRSI.getResultOrThrow().toFixed(3)).toBe(expected!);
+          expect(rsi.getResultOrThrow().toFixed(3)).toBe(expected);
+          expect(fasterRSI.getResultOrThrow().toFixed(3)).toBe(expected);
         }
       }
       expect(rsi.isStable).toBe(true);

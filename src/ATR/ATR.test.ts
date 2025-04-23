@@ -70,8 +70,8 @@ describe('ATR', () => {
         fasterATR.add(candle);
         if (atr.isStable && fasterATR.isStable) {
           const expected = expectations[i - (interval - 1)];
-          expect(atr.getResultOrThrow().toFixed(2)).toBe(expected!);
-          expect(fasterATR.getResultOrThrow().toFixed(2)).toBe(expected!);
+          expect(atr.getResultOrThrow().toFixed(2)).toBe(expected);
+          expect(fasterATR.getResultOrThrow().toFixed(2)).toBe(expected);
         }
       }
 
