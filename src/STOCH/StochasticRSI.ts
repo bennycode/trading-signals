@@ -1,12 +1,12 @@
-import {BigIndicatorSeries, NumberIndicatorSeries} from '../Indicator.js';
-import {FasterRSI, RSI} from '../RSI/RSI.js';
-import {FasterPeriod, Period} from '../util/Period.js';
-import type {FasterMovingAverageTypes, MovingAverageTypes} from '../MA/MovingAverageTypes.js';
-import {FasterWSMA, WSMA} from '../WSMA/WSMA.js';
 import type {BigSource} from 'big.js';
 import Big from 'big.js';
-import {SMA} from '../SMA/SMA.js';
+import {BigIndicatorSeries, NumberIndicatorSeries} from '../Indicator.js';
 import type {MovingAverage} from '../MA/MovingAverage.js';
+import type {FasterMovingAverageTypes, MovingAverageTypes} from '../MA/MovingAverageTypes.js';
+import {FasterRSI, RSI} from '../RSI/RSI.js';
+import {SMA} from '../SMA/SMA.js';
+import {FasterPeriod, Period} from '../util/Period.js';
+import {FasterWSMA, WSMA} from '../WSMA/WSMA.js';
 
 /**
  * Stochastic RSI (STOCHRSI)
@@ -33,13 +33,18 @@ export class StochasticRSI extends BigIndicatorSeries {
 
   constructor(
     public readonly interval: number,
-    SmoothingIndicator: MovingAverageTypes = WSMA,
-    public readonly kSmoothing: MovingAverage = new SMA(3),
-    public readonly dSmoothing: MovingAverage = new SMA(3)
+    SmoothingRSI: MovingAverageTypes = WSMA,
+    public readonly smoothing: {
+      readonly k: MovingAverage;
+      readonly d: MovingAverage;
+    } = {
+      d: new SMA(3),
+      k: new SMA(3),
+    }
   ) {
     super();
     this.period = new Period(interval);
-    this.rsi = new RSI(interval, SmoothingIndicator);
+    this.rsi = new RSI(interval, SmoothingRSI);
   }
 
   update(price: BigSource, replace: boolean) {
@@ -56,9 +61,9 @@ export class StochasticRSI extends BigIndicatorSeries {
         }
         const numerator = rsiResult.minus(min);
         const stochRSI = numerator.div(denominator);
-        const k = this.kSmoothing.update(stochRSI, replace);
+        const k = this.smoothing.k.update(stochRSI, replace);
         if (k) {
-          this.dSmoothing.update(k, replace);
+          this.smoothing.d.update(k, replace);
         }
         return this.setResult(stochRSI, replace);
       }

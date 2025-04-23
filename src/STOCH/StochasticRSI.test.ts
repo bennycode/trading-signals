@@ -83,15 +83,18 @@ describe('StochasticRSI', () => {
       const callCount = vi.fn();
       const offset = prices.length - expectations.length;
 
-      const stochRSI = new StochasticRSI(14, WSMA, new SMA(3), new SMA(3));
+      const stochRSI = new StochasticRSI(14, WSMA, {
+        d: new SMA(3),
+        k: new SMA(3),
+      });
 
       prices.forEach((price, i) => {
         stochRSI.add(price);
-        if (stochRSI.dSmoothing.isStable) {
+        if (stochRSI.smoothing.d.isStable) {
           callCount();
           const result = {
-            d: stochRSI.dSmoothing.getResultOrThrow().mul(100).toFixed(2),
-            k: stochRSI.kSmoothing.getResultOrThrow().mul(100).toFixed(2),
+            d: stochRSI.smoothing.d.getResultOrThrow().mul(100).toFixed(2),
+            k: stochRSI.smoothing.k.getResultOrThrow().mul(100).toFixed(2),
             stochRSI: stochRSI.getResultOrThrow().mul(100).toFixed(2),
           };
           const expectation = expectations[i - offset];
