@@ -1,6 +1,6 @@
 import {BollingerBands, FasterBollingerBands} from './BollingerBands.js';
 import {Big} from '../index.js';
-import data from '../test/fixtures/BB/data.json' assert {type: 'json'};
+import data from '../test/fixtures/BB/data.json' with {type: 'json'};
 import {NotEnoughDataError} from '../error/index.js';
 
 describe('BollingerBands', () => {

@@ -1,5 +1,5 @@
 import Benchmark, {type Event} from 'benchmark';
-import candles from '../test/fixtures/candles/100-candles.json' assert {type: 'json'};
+import candles from '../test/fixtures/candles/100-candles.json' with {type: 'json'};
 import {
   AC,
   AccelerationBands,

@@ -1,4 +1,4 @@
-import twoDays from '../test/fixtures/DMA/LTC-USDT-1h-2d.json' assert {type: 'json'};
+import twoDays from '../test/fixtures/DMA/LTC-USDT-1h-2d.json' with {type: 'json'};
 import {DMA, FasterDMA} from './DMA.js';
 import {EMA, FasterSMA, SMA} from '../index.js';
 
