@@ -290,6 +290,18 @@ describe('PSAR (Big.js version)', () => {
     expect(result?.toNumber()).toBeLessThan(13);
   });
 
+  it('adjusts the SAR when the previous low is lower than the pre-previous low', () => {
+    const psar = new PSAR({accelerationMax: 0.2, accelerationStep: 0.02});
+    const prePreviousLow = 8;
+    const previousLow = 7;
+
+    psar.add({high: 10, low: 9});
+    psar.add({high: 11, low: prePreviousLow});
+    psar.add({high: 12, low: previousLow});
+
+    expect(psar.getResultOrThrow().toString()).toBe('12');
+  });
+
   it('should handle pre-previous candle edge cases properly', () => {
     const psar = new PSAR({accelerationMax: 0.2, accelerationStep: 0.02});
 
@@ -666,7 +678,7 @@ describe('FasterPSAR (Number version)', () => {
 
     // Now make a new low that will cause acceleration to exceed max
     // This specifically tests lines 308-310 where acceleration > max
-    let result = psar.update({high: 7, low: 6}, false);
+    const result = psar.update({high: 7, low: 6}, false);
 
     // Verify the update worked correctly
     expect(result).toBeGreaterThan(7);
@@ -680,18 +692,32 @@ describe('FasterPSAR (Number version)', () => {
     const psar = new PSAR({accelerationMax: 0.2, accelerationStep: 0.02});
 
     // Set up a scenario where we'll have a trend reversal with SAR >= low
-    psar.update({high: 10, low: 9}, false);
-    psar.update({high: 9, low: 8}, false); // Initial downtrend
+    psar.add({high: 10, low: 9});
+    psar.add({high: 9, low: 8}); // Initial downtrend
 
     // Force down trend with extreme low
-    psar.update({high: 7, low: 6}, false);
+    psar.add({high: 7, low: 6});
 
     // Now create a scenario where price reverses but SAR would be equal to low
     // This will test line 164-166 where SAR needs adjustment when sar >= low
-    const result = psar.update({high: 11, low: 6}, false);
+    psar.add({high: 11, low: 6});
 
     // The SAR should be adjusted to low - 0.01
-    expect(result?.toString()).toBe('5.99');
+    expect(psar.getResultOrThrow().toString()).toBe('5.99');
+  });
+
+  it('adjusts the SAR when the previous high is greater than the pre-previous high', () => {
+    const psar = new PSAR({accelerationMax: 0.2, accelerationStep: 0.02});
+    const prePreviousHigh = 10;
+    const previousHigh = 11;
+    const low = 6;
+
+    psar.add({high: 9, low: 8});
+    psar.add({high: prePreviousHigh, low});
+    psar.add({high: previousHigh, low});
+
+    // The SAR should be adjusted to low - 0.01
+    expect(psar.getResultOrThrow().toString()).toBe((low - 0.01).toString());
   });
 
   it('should test acceleration hitting max in Big.js version', () => {

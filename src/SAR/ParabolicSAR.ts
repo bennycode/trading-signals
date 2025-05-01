@@ -95,17 +95,18 @@ export class PSAR extends BigIndicatorSeries<HighLow> {
         const previousLow = new Big(this.previousCandle.low);
 
         // If pre-previous candle exists and current low is less than SAR
-        const hasPrevPrev = this.prePreviousCandle != null;
-        if (hasPrevPrev && low.lt(sar)) {
-          const prePreviousLow = new Big(this.prePreviousCandle!.low);
+        if (this.prePreviousCandle && low.lt(sar)) {
+          const prePreviousLow = new Big(this.prePreviousCandle.low);
 
           // Apply pre-previous low adjustment if needed
           if (prePreviousLow.lt(sar)) {
             sar = prePreviousLow;
           }
 
-          // Apply previous low adjustment - use a trick to avoid branching for code coverage
-          sar = previousLow.lt(sar) ? previousLow : sar;
+          // Apply previous low adjustment
+          if (previousLow.lt(sar)) {
+            sar = previousLow;
+          }
         }
         // No pre-previous candle, but check previous low
         else if (previousLow.lt(sar)) {
@@ -114,7 +115,7 @@ export class PSAR extends BigIndicatorSeries<HighLow> {
       }
 
       // Update acceleration factor and extreme point if price makes new high
-      if (high.gt(this.extreme!)) {
+      if (this.extreme && high.gt(this.extreme)) {
         this.extreme = high;
         if (this.acceleration.lt(this.accelerationMax)) {
           this.acceleration = this.acceleration.add(this.accelerationStep);
@@ -148,8 +149,10 @@ export class PSAR extends BigIndicatorSeries<HighLow> {
             sar = prePreviousHigh;
           }
 
-          // Apply previous high adjustment - use a trick to avoid branching for code coverage
-          sar = previousHigh.gt(sar) ? previousHigh : sar;
+          // Apply previous high adjustment
+          if (previousHigh.gt(sar)) {
+            sar = previousHigh;
+          }
         }
         // No pre-previous candle, but check previous high
         else if (previousHigh.gt(sar)) {
@@ -158,7 +161,7 @@ export class PSAR extends BigIndicatorSeries<HighLow> {
       }
 
       // Update acceleration factor and extreme point if price makes new low
-      if (low.lt(this.extreme!)) {
+      if (this.extreme && low.lt(this.extreme)) {
         this.extreme = low;
         if (this.acceleration.lt(this.accelerationMax)) {
           this.acceleration = this.acceleration.add(this.accelerationStep);
@@ -169,10 +172,10 @@ export class PSAR extends BigIndicatorSeries<HighLow> {
       }
 
       // Check if trend reverses (price rises above SAR)
-      if (high.gt(sar)) {
+      if (this.extreme && high.gt(sar)) {
         // Reverse to long
         this.isLong = true;
-        sar = this.extreme!; // Set SAR to the extreme point
+        sar = this.extreme; // Set SAR to the extreme point
         this.extreme = high; // Set new extreme to current high
         this.acceleration = this.accelerationStep; // Reset acceleration
 
@@ -281,7 +284,7 @@ export class FasterPSAR extends NumberIndicatorSeries<HighLowNumber> {
             sar = this.prePreviousCandle!.low;
           }
 
-          // Apply previous low adjustment - use a trick to avoid branching for code coverage
+          // Apply previous low adjustment
           sar = this.previousCandle.low < sar ? this.previousCandle.low : sar;
         }
         // No pre-previous candle, but check previous low
@@ -321,7 +324,7 @@ export class FasterPSAR extends NumberIndicatorSeries<HighLowNumber> {
             sar = this.prePreviousCandle!.high;
           }
 
-          // Apply previous high adjustment - use a trick to avoid branching for code coverage
+          // Apply previous high adjustment
           sar = this.previousCandle.high > sar ? this.previousCandle.high : sar;
         }
         // No pre-previous candle, but check previous high
