@@ -26,7 +26,7 @@ export * from './OBV/OBV.js';
 export * from './RMA/RMA.js';
 export * from './ROC/ROC.js';
 export * from './RSI/RSI.js';
-export * from './SAR/ParabolicSAR.js';
+export * from './PSAR/PSAR.js';
 export * from './SMA/SMA.js';
 export * from './STOCH/StochasticOscillator.js';
 export * from './STOCH/StochasticRSI.js';

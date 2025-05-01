@@ -1,4 +1,4 @@
-import {PSAR, FasterPSAR} from './ParabolicSAR.js';
+import {PSAR, FasterPSAR} from './PSAR.js';
 import {NotEnoughDataError} from '../error/index.js';
 import {expect} from 'vitest';
 import Big from 'big.js';
@@ -18,6 +18,9 @@ function exposePSARProperties(psar: PSAR) {
 }
 
 describe('PSAR (Big.js version)', () => {
+  // Test data verified with:
+  // https://tulipindicators.org/psar
+  // @see https://github.com/TulipCharts/tulipindicators/blob/v0.9.1/tests/untest.txt#L317
   const testData = [
     {date: '2005-11-01', high: 82.15, low: 81.29, psar: null},
     {date: '2005-11-02', high: 81.89, low: 80.64, psar: 82.15},

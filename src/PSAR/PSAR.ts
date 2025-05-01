@@ -3,8 +3,6 @@ import {BigIndicatorSeries, NumberIndicatorSeries} from '../Indicator.js';
 import type {HighLowNumber, HighLow} from '../util/HighLowClose.js';
 import {NotEnoughDataError} from '../error/index.js';
 
-// No helper functions - inline everything to avoid coverage issues
-
 export type PSARConfig = {
   /**
    * Acceleration factor step - how quickly the SAR accelerates towards the price
@@ -18,6 +16,9 @@ export type PSARConfig = {
   accelerationMax: number;
 };
 
+/**
+ * The Parabolic SAR (Stop and Reverse) is a technical indicator used in trading to determine the direction of an asset's price and potential points of trend reversal. It was developed by J. Welles Wilder Jr., who also created indicators like the RSI.
+ */
 export class PSAR extends BigIndicatorSeries<HighLow> {
   private readonly accelerationStep: Big;
   private readonly accelerationMax: Big;
