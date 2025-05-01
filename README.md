@@ -144,6 +144,7 @@ Most of the time, the minimum amount of data depends on the interval / time peri
 1. Simple Moving Average (SMA)
 1. Stochastic Oscillator (STOCH)
 1. Stochastic RSI (STOCHRSI)
+1. Tom Demark's Sequential Indicator (TDS)
 1. True Range (TR)
 1. Weighted Moving Average (WMA)
 1. Wilder's Smoothed Moving Average (WSMA / WWS / SMMA / MEMA)

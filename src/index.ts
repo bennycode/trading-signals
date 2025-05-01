@@ -30,6 +30,7 @@ export * from './PSAR/PSAR.js';
 export * from './SMA/SMA.js';
 export * from './STOCH/StochasticOscillator.js';
 export * from './STOCH/StochasticRSI.js';
+export * from './TDS/TDS.js';
 export * from './TR/TR.js';
 export * from './util/index.js';
 export * from './WMA/WMA.js';

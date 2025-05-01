@@ -1,3 +1,4 @@
+import type {BigSource} from 'big.js';
 import Big from 'big.js';
 import {BigIndicatorSeries, NumberIndicatorSeries} from '../Indicator.js';
 
@@ -16,12 +17,12 @@ import {BigIndicatorSeries, NumberIndicatorSeries} from '../Indicator.js';
  * @see https://hackernoon.com/how-to-buy-sell-cryptocurrency-with-number-indicator-td-sequential-5af46f0ebce1
  * @see https://practicaltechnicalanalysis.blogspot.com/2013/01/tom-demark-sequential.html
  */
-export class TDSequential extends BigIndicatorSeries<Big> {
+export class TDS extends BigIndicatorSeries<Big> {
   private readonly closes: Big[] = [];
   private setupCount: number = 0;
   private setupDirection: 'bullish' | 'bearish' | null = null;
 
-  update(close: Big | number | string, replace: boolean): Big | null {
+  update(close: BigSource, replace: boolean): Big | null {
     const closeBig = new Big(close);
     if (replace) {
       this.closes.pop();
@@ -64,7 +65,7 @@ export class TDSequential extends BigIndicatorSeries<Big> {
   }
 }
 
-export class FasterTDSequential extends NumberIndicatorSeries<number> {
+export class FasterTDS extends NumberIndicatorSeries<number> {
   private readonly closes: number[] = [];
   private setupCount: number = 0;
   private setupDirection: 'bullish' | 'bearish' | null = null;
