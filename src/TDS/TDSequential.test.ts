@@ -97,6 +97,28 @@ describe('TDSequential direction change from bearish to bullish', () => {
   });
 });
 
+describe('TDSequential direction change from bullish to bearish', () => {
+  it('should reset setupCount and setupDirection when direction changes from bullish to bearish (Big.js)', () => {
+    const td = new TDSequential();
+    // Seed with 4 values
+    for (let i = 0; i < 4; i++) {
+      td.update(new Big(10), false);
+    }
+    // 3 bullish closes
+    td.update(new Big(20), false);
+    td.update(new Big(21), false);
+    td.update(new Big(22), false);
+    // Now a bearish close (less than close 4 bars earlier)
+    const result = td.update(new Big(5), false);
+    // After direction change, setupCount should be 1 and setupDirection should be 'bearish'
+    // @ts-expect-error: accessing private property for test
+    expect(td.setupCount).toBe(1);
+    // @ts-expect-error: accessing private property for test
+    expect(td.setupDirection).toBe('bearish');
+    expect(result).toBeNull();
+  });
+});
+
 describe('FasterTDSequential', () => {
   it('should return null for less than 9 valid setups', () => {
     const td = new FasterTDSequential();
@@ -168,6 +190,24 @@ describe('FasterTDSequential direction change from bearish to bullish', () => {
     expect(td.setupCount).toBe(1);
     // @ts-expect-error: accessing private property for test
     expect(td.setupDirection).toBe('bullish');
+    expect(result).toBeNull();
+  });
+});
+
+describe('FasterTDSequential direction change from bullish to bearish', () => {
+  it('should reset setupCount and setupDirection when direction changes from bullish to bearish (number)', () => {
+    const td = new FasterTDSequential();
+    for (let i = 0; i < 4; i++) {
+      td.update(10, false);
+    }
+    td.update(20, false);
+    td.update(21, false);
+    td.update(22, false);
+    const result = td.update(5, false);
+    // @ts-expect-error: accessing private property for test
+    expect(td.setupCount).toBe(1);
+    // @ts-expect-error: accessing private property for test
+    expect(td.setupDirection).toBe('bearish');
     expect(result).toBeNull();
   });
 });

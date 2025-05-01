@@ -37,28 +37,24 @@ export class TDSequential extends BigIndicatorSeries<Big> {
     const index = this.closes.length - 1;
     const prev4 = this.closes[index - 4];
     if (closeBig.gt(prev4)) {
-      if (this.setupDirection === 'bullish' || this.setupDirection === null) {
-        this.setupCount++;
+      if (this.setupDirection === 'bearish') {
+        this.setupCount = 1;
         this.setupDirection = 'bullish';
       } else {
-        this.setupCount = 1;
+        this.setupCount++;
         this.setupDirection = 'bullish';
       }
     } else if (closeBig.lt(prev4)) {
-      if (this.setupDirection === 'bearish' || this.setupDirection === null) {
-        this.setupCount++;
-        this.setupDirection = 'bearish';
-      } else {
+      if (this.setupDirection === 'bullish') {
         this.setupCount = 1;
         this.setupDirection = 'bearish';
+      } else {
+        this.setupCount++;
+        this.setupDirection = 'bearish';
       }
-    } else {
-      this.setupCount = 0;
-      this.setupDirection = null;
     }
-    // Reset if direction changes or interrupted
+    // Setup completed
     if (this.setupCount >= 9) {
-      // Signal: setup completed
       const result = new Big(this.setupDirection === 'bullish' ? 1 : -1);
       this.setupCount = 0;
       this.setupDirection = null;
@@ -81,31 +77,30 @@ export class FasterTDSequential extends NumberIndicatorSeries<number> {
     if (this.closes.length < 5) {
       return null;
     }
+    // Only keep the last 13 closes for memory efficiency
     if (this.closes.length > 13) {
       this.closes.shift();
     }
     const index = this.closes.length - 1;
     const prev4 = this.closes[index - 4];
     if (close > prev4) {
-      if (this.setupDirection === 'bullish' || this.setupDirection === null) {
-        this.setupCount++;
+      if (this.setupDirection === 'bearish') {
+        this.setupCount = 1;
         this.setupDirection = 'bullish';
       } else {
-        this.setupCount = 1;
+        this.setupCount++;
         this.setupDirection = 'bullish';
       }
     } else if (close < prev4) {
-      if (this.setupDirection === 'bearish' || this.setupDirection === null) {
-        this.setupCount++;
-        this.setupDirection = 'bearish';
-      } else {
+      if (this.setupDirection === 'bullish') {
         this.setupCount = 1;
         this.setupDirection = 'bearish';
+      } else {
+        this.setupCount++;
+        this.setupDirection = 'bearish';
       }
-    } else {
-      this.setupCount = 0;
-      this.setupDirection = null;
     }
+    // Setup completed
     if (this.setupCount >= 9) {
       const result = this.setupDirection === 'bullish' ? 1 : -1;
       this.setupCount = 0;
