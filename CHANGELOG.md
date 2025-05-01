@@ -1,3 +1,14 @@
+### 6.4.0 (2025-05-01)
+
+##### New Features
+
+- **PSAR:** Add Parabolic Stop and Reverse ([#780](https://github.com/bennycode/trading-signals/pull/780)) ([ee8d1450](https://github.com/bennycode/trading-signals/commit/ee8d1450664ec8d79a6ace84b6c4996ac64cf129))
+
+##### Refactors
+
+- **PSAR:** Align naming ([78bbabf4](https://github.com/bennycode/trading-signals/commit/78bbabf436a0354f40f4889762914119cd53d36b))
+- Use import attributes ([8cf758f9](https://github.com/bennycode/trading-signals/commit/8cf758f905ad65c1d7652cfcb7ccb67648fb14d9))
+
 ### 6.3.0 (2025-04-23)
 
 ##### New Features
