@@ -4,7 +4,6 @@ import Big from 'big.js';
 describe('TDS', () => {
   it('should return null for less than 9 valid setups', () => {
     const td = new TDS();
-    // 8 closes, all increasing, but not enough for a signal
     for (let i = 0; i < 8; i++) {
       const result = td.update(new Big(10 + i), false);
       expect(result).toBeNull();
@@ -35,20 +34,6 @@ describe('TDS', () => {
       signal = td.update(new Big(19 - i), false);
     }
     expect(signal?.eq(-1)).toBe(true);
-  });
-});
-
-describe('TDS reference tests', () => {
-  it('should handle empty input (null/undefined/empty array) gracefully', () => {
-    // Since our implementation is streaming, we expect no output if nothing is fed
-    const td = new TDS();
-    expect(td.update).toBeDefined();
-  });
-
-  it('should handle a single input', () => {
-    const td = new TDS();
-    const result = td.update(new Big(9377.81), false);
-    expect(result).toBeNull();
   });
 });
 

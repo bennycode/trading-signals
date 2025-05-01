@@ -17,7 +17,7 @@ import {BigIndicatorSeries, NumberIndicatorSeries} from '../Indicator.js';
  * @see https://hackernoon.com/how-to-buy-sell-cryptocurrency-with-number-indicator-td-sequential-5af46f0ebce1
  * @see https://practicaltechnicalanalysis.blogspot.com/2013/01/tom-demark-sequential.html
  */
-export class TDS extends BigIndicatorSeries<Big> {
+export class TDS extends BigIndicatorSeries {
   private readonly closes: Big[] = [];
   private setupCount: number = 0;
   private setupDirection: 'bullish' | 'bearish' | null = null;
