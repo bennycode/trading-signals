@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta http-equiv="x-ua-compatible" content="IE=edge" />
-    <title>Streak | trading-signals</title>
+    <title>PSARConfig | trading-signals</title>
     <meta name="description" content="Documentation for trading-signals" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="stylesheet" href="../assets/style.css" />
@@ -53,19 +53,19 @@
       <div class="col-content">
         <div class="tsd-page-title">
           <ul class="tsd-breadcrumb" aria-label="Breadcrumb">
-            <li><a href="" aria-current="page">Streak</a></li>
+            <li><a href="" aria-current="page">PSARConfig</a></li>
           </ul>
-          <h1>Type Alias Streak</h1>
+          <h1>Type Alias PSARConfig</h1>
         </div>
         <div class="tsd-signature">
-          <span class="tsd-signature-keyword">type</span> <span class="tsd-kind-type-alias">Streak</span>
+          <span class="tsd-signature-keyword">type</span> <span class="tsd-kind-type-alias">PSARConfig</span>
           <span class="tsd-signature-symbol">=</span> <span class="tsd-signature-symbol">{</span><br />    <a
             class="tsd-kind-property"
-            href="#length"
-            >length</a
+            href="#accelerationmax"
+            >accelerationMax</a
           ><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span
-          ><span class="tsd-signature-symbol">;</span><br />    <a class="tsd-kind-property" href="#percentage"
-            >percentage</a
+          ><span class="tsd-signature-symbol">;</span><br />    <a class="tsd-kind-property" href="#accelerationstep"
+            >accelerationStep</a
           ><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span
           ><span class="tsd-signature-symbol">;</span><br /><span class="tsd-signature-symbol">}</span>
         </div>
@@ -74,8 +74,8 @@
             <li>
               Defined in
               <a
-                href="https://github.com/bennycode/trading-signals/blob/8b7b5ae5428660620020070d65cff9f94626f3a9/src/util/getStreaks.ts#L1"
-                >util/getStreaks.ts:1</a
+                href="https://github.com/bennycode/trading-signals/blob/8b7b5ae5428660620020070d65cff9f94626f3a9/src/PSAR/PSAR.ts#L6"
+                >PSAR/PSAR.ts:6</a
               >
             </li>
           </ul>
@@ -93,15 +93,15 @@
                 <section class="tsd-index-section">
                   <h3 class="tsd-index-heading">Properties</h3>
                   <div class="tsd-index-list">
-                    <a href="#length" class="tsd-index-link"
+                    <a href="#accelerationmax" class="tsd-index-link"
                       ><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Property">
                         <use href="../assets/icons.svg#icon-1024"></use></svg
-                      ><span>length</span></a
+                      ><span>acceleration<wbr />Max</span></a
                     >
-                    <a href="#percentage" class="tsd-index-link"
+                    <a href="#accelerationstep" class="tsd-index-link"
                       ><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Property">
                         <use href="../assets/icons.svg#icon-1024"></use></svg
-                      ><span>percentage</span></a
+                      ><span>acceleration<wbr />Step</span></a
                     >
                   </div>
                 </section>
@@ -118,50 +118,56 @@
           </summary>
           <section>
             <section class="tsd-panel tsd-member">
-              <h3 class="tsd-anchor-link" id="length">
-                <span>length</span
-                ><a href="#length" aria-label="Permalink" class="tsd-anchor-icon"
+              <h3 class="tsd-anchor-link" id="accelerationmax">
+                <span>acceleration<wbr />Max</span
+                ><a href="#accelerationmax" aria-label="Permalink" class="tsd-anchor-icon"
                   ><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg
                 ></a>
               </h3>
               <div class="tsd-signature">
-                <span class="tsd-kind-property">length</span><span class="tsd-signature-symbol">:</span>
+                <span class="tsd-kind-property">accelerationMax</span><span class="tsd-signature-symbol">:</span>
                 <span class="tsd-signature-type">number</span>
               </div>
-              <div class="tsd-comment tsd-typography"><p>Length of the streak</p></div>
+              <div class="tsd-comment tsd-typography">
+                <p>
+                  Maximum acceleration factor - the maximum value the acceleration factor can reach Typical value: 0.2
+                </p>
+              </div>
               <div class="tsd-comment tsd-typography"></div>
               <aside class="tsd-sources">
                 <ul>
                   <li>
                     Defined in
                     <a
-                      href="https://github.com/bennycode/trading-signals/blob/8b7b5ae5428660620020070d65cff9f94626f3a9/src/util/getStreaks.ts#L3"
-                      >util/getStreaks.ts:3</a
+                      href="https://github.com/bennycode/trading-signals/blob/8b7b5ae5428660620020070d65cff9f94626f3a9/src/PSAR/PSAR.ts#L16"
+                      >PSAR/PSAR.ts:16</a
                     >
                   </li>
                 </ul>
               </aside>
             </section>
             <section class="tsd-panel tsd-member">
-              <h3 class="tsd-anchor-link" id="percentage">
-                <span>percentage</span
-                ><a href="#percentage" aria-label="Permalink" class="tsd-anchor-icon"
+              <h3 class="tsd-anchor-link" id="accelerationstep">
+                <span>acceleration<wbr />Step</span
+                ><a href="#accelerationstep" aria-label="Permalink" class="tsd-anchor-icon"
                   ><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg
                 ></a>
               </h3>
               <div class="tsd-signature">
-                <span class="tsd-kind-property">percentage</span><span class="tsd-signature-symbol">:</span>
+                <span class="tsd-kind-property">accelerationStep</span><span class="tsd-signature-symbol">:</span>
                 <span class="tsd-signature-type">number</span>
               </div>
-              <div class="tsd-comment tsd-typography"><p>Price change percentage during the streak</p></div>
+              <div class="tsd-comment tsd-typography">
+                <p>Acceleration factor step - how quickly the SAR accelerates towards the price Typical value: 0.02</p>
+              </div>
               <div class="tsd-comment tsd-typography"></div>
               <aside class="tsd-sources">
                 <ul>
                   <li>
                     Defined in
                     <a
-                      href="https://github.com/bennycode/trading-signals/blob/8b7b5ae5428660620020070d65cff9f94626f3a9/src/util/getStreaks.ts#L5"
-                      >util/getStreaks.ts:5</a
+                      href="https://github.com/bennycode/trading-signals/blob/8b7b5ae5428660620020070d65cff9f94626f3a9/src/PSAR/PSAR.ts#L11"
+                      >PSAR/PSAR.ts:11</a
                     >
                   </li>
                 </ul>
@@ -237,14 +243,14 @@
                   >Properties
                 </summary>
                 <div>
-                  <a href="#length"
+                  <a href="#accelerationmax"
                     ><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Property">
                       <use href="../assets/icons.svg#icon-1024"></use></svg
-                    ><span>length</span></a
-                  ><a href="#percentage"
+                    ><span>acceleration<wbr />Max</span></a
+                  ><a href="#accelerationstep"
                     ><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Property">
                       <use href="../assets/icons.svg#icon-1024"></use></svg
-                    ><span>percentage</span></a
+                    ><span>acceleration<wbr />Step</span></a
                   >
                 </div>
               </details>
