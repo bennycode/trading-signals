@@ -1,3 +1,9 @@
+### 6.5.0 (2025-05-02)
+
+##### New Features
+
+- **TDS:** Add Tom Demark's Sequential Indicator ([#799](https://github.com/bennycode/trading-signals/pull/799)) ([6c65db46](https://github.com/bennycode/trading-signals/commit/6c65db46192e803394306450b0b0661629765cb3))
+
 ### 6.4.0 (2025-05-01)
 
 ##### New Features
