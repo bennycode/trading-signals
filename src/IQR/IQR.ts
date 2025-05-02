@@ -1,6 +1,7 @@
 import type {BigSource} from 'big.js';
 import Big from 'big.js';
 import {BigIndicatorSeries, NumberIndicatorSeries} from '../Indicator.js';
+import {getFasterMedian, getMedian} from '../util/getMedian.js';
 
 /**
  * Interquartile Range (IQR)
@@ -28,18 +29,18 @@ export class IQR extends BigIndicatorSeries<Big> {
       // Q1 calculation
       if (n % 2 === 0) {
         // Even number of items: the lower half is the first n/2 items
-        return medianOfBig(sorted.slice(0, medianIndex));
+        return getMedian(sorted.slice(0, medianIndex));
       }
       // Odd number of items: the lower half excludes the median
-      return medianOfBig(sorted.slice(0, medianIndex));
+      return getMedian(sorted.slice(0, medianIndex));
     } else if (quartile === 0.75) {
       // Q3 calculation
       if (n % 2 === 0) {
         // Even number of items: the upper half is the last n/2 items
-        return medianOfBig(sorted.slice(medianIndex));
+        return getMedian(sorted.slice(medianIndex));
       }
       // Odd number of items: the upper half excludes the median
-      return medianOfBig(sorted.slice(medianIndex + 1));
+      return getMedian(sorted.slice(medianIndex + 1));
     }
 
     // Fallback to standard quantile calculation for non-quartile values
@@ -78,25 +79,6 @@ export class IQR extends BigIndicatorSeries<Big> {
 
     return this.setResult(q3.minus(q1), replace);
   }
-}
-
-/**
- * Calculate the median of an array of Big values
- */
-function medianOfBig(values: Big[]): Big {
-  const n = values.length;
-
-  if (n === 0) {
-    throw new Error('Cannot calculate median of empty array');
-  }
-
-  // For even number of items, take the average of the two middle items
-  if (n % 2 === 0) {
-    return values[n / 2 - 1].plus(values[n / 2]).div(2);
-  }
-
-  // For odd number of items, return the middle item
-  return values[Math.floor(n / 2)];
 }
 
 export class FasterIQR extends NumberIndicatorSeries<number> {
@@ -143,18 +125,18 @@ function quartileNumberWikipedia(sorted: number[], q: number): number {
     // Q1 calculation
     if (n % 2 === 0) {
       // Even number of items: the lower half is the first n/2 items
-      return medianOfNumber(sorted.slice(0, medianIndex));
+      return getFasterMedian(sorted.slice(0, medianIndex));
     }
     // Odd number of items: the lower half excludes the median
-    return medianOfNumber(sorted.slice(0, medianIndex));
+    return getFasterMedian(sorted.slice(0, medianIndex));
   } else if (q === 0.75) {
     // Q3 calculation
     if (n % 2 === 0) {
       // Even number of items: the upper half is the last n/2 items
-      return medianOfNumber(sorted.slice(medianIndex));
+      return getFasterMedian(sorted.slice(medianIndex));
     }
     // Odd number of items: the upper half excludes the median
-    return medianOfNumber(sorted.slice(medianIndex + 1));
+    return getFasterMedian(sorted.slice(medianIndex + 1));
   }
 
   // Fallback to standard quantile calculation for non-quartile values
@@ -166,23 +148,4 @@ function quartileNumberWikipedia(sorted: number[], q: number): number {
     return sorted[base] + (sorted[base + 1] - sorted[base]) * rest;
   }
   return sorted[base];
-}
-
-/**
- * Calculate the median of an array of numbers
- */
-function medianOfNumber(values: number[]): number {
-  const n = values.length;
-
-  if (n === 0) {
-    throw new Error('Cannot calculate median of empty array');
-  }
-
-  // For even number of items, take the average of the two middle items
-  if (n % 2 === 0) {
-    return (values[n / 2 - 1] + values[n / 2]) / 2;
-  }
-
-  // For odd number of items, return the middle item
-  return values[Math.floor(n / 2)];
 }
