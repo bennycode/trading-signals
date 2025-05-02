@@ -2,66 +2,65 @@ import {TDS, FasterTDS} from './TDS.js';
 import Big from 'big.js';
 
 describe('TDS', () => {
-  it('should return null for less than 9 valid setups', () => {
+  describe('replace', () => {
+    it('replaces values', () => {
+      const td = new TDS();
+
+      for (let i = 0; i < 5; i++) {
+        td.add(new Big(10 + i));
+      }
+
+      const result = td.replace(new Big(20));
+      expect(result).toBeNull();
+    });
+  });
+
+  it('does not return a result for less than 9 prices', () => {
     const td = new TDS();
     for (let i = 0; i < 8; i++) {
-      const result = td.update(new Big(10 + i), false);
+      const result = td.add(i);
       expect(result).toBeNull();
     }
   });
 
-  it('should return 1 for a bullish setup after 9 consecutive closes > close 4 bars earlier', () => {
+  it('returns 1 for a bullish setup after 9 consecutive closes > close 4 bars earlier', () => {
     const td = new TDS();
     // Seed with 4 values
     for (let i = 0; i < 4; i++) {
-      td.update(new Big(10), false);
+      td.add(new Big(10));
     }
     // Now 9 closes, each greater than 4 bars earlier
     let signal: Big | null = null;
     for (let i = 0; i < 9; i++) {
-      signal = td.update(new Big(11 + i), false);
+      signal = td.add(new Big(11 + i));
     }
     expect(signal?.eq(1)).toBe(true);
   });
 
-  it('should return -1 for a bearish setup after 9 consecutive closes < close 4 bars earlier', () => {
+  it('returns -1 for a bearish setup after 9 consecutive closes < close 4 bars earlier', () => {
     const td = new TDS();
     for (let i = 0; i < 4; i++) {
-      td.update(new Big(20), false);
+      td.add(new Big(20));
     }
     let signal: Big | null = null;
     for (let i = 0; i < 9; i++) {
-      signal = td.update(new Big(19 - i), false);
+      signal = td.add(new Big(19 - i));
     }
     expect(signal?.eq(-1)).toBe(true);
   });
-});
 
-describe('TDS replace functionality', () => {
-  it('should handle replace logic for Big.js', () => {
+  it('keeps at most 13 closes in the buffer (Big.js)', () => {
     const td = new TDS();
-    for (let i = 0; i < 5; i++) {
-      td.update(new Big(10 + i), false);
-    }
-    // Now replace the last value
-    const result = td.update(new Big(20), true);
-    expect(result).toBeNull();
-  });
-});
 
-describe('TDS closes array length', () => {
-  it('should keep at most 13 closes in the buffer (Big.js)', () => {
-    const td = new TDS();
     for (let i = 0; i < 20; i++) {
       td.update(i, false);
     }
+
     // @ts-expect-error: accessing private property for test
     expect(td.closes.length).toBeLessThanOrEqual(13);
   });
-});
 
-describe('TDS direction change from bearish to bullish', () => {
-  it('should reset setupCount and setupDirection when direction changes from bearish to bullish (Big.js)', () => {
+  it('detects a direction change from bearish to bullish', () => {
     const td = new TDS();
     // Seed with 4 values
     for (let i = 0; i < 4; i++) {
@@ -80,10 +79,8 @@ describe('TDS direction change from bearish to bullish', () => {
     expect(td.setupDirection).toBe('bullish');
     expect(result).toBeNull();
   });
-});
 
-describe('TDS direction change from bullish to bearish', () => {
-  it('should reset setupCount and setupDirection when direction changes from bullish to bearish (Big.js)', () => {
+  it('detects a direction change from bullish to bearish (Big.js)', () => {
     const td = new TDS();
     // Seed with 4 values
     for (let i = 0; i < 4; i++) {
@@ -105,27 +102,32 @@ describe('TDS direction change from bullish to bearish', () => {
 });
 
 describe('FasterTDS', () => {
-  it('should return null for less than 9 valid setups', () => {
+  it('does not return a result for less than 9 prices', () => {
     const td = new FasterTDS();
+
     for (let i = 0; i < 8; i++) {
       const result = td.update(10 + i, false);
       expect(result).toBeNull();
     }
   });
 
-  it('should return 1 for a bullish setup after 9 consecutive closes > close 4 bars earlier', () => {
+  it('returns 1 for a bullish setup after 9 consecutive closes > close 4 bars earlier', () => {
     const td = new FasterTDS();
+
     for (let i = 0; i < 4; i++) {
       td.update(10, false);
     }
+
     let signal: number | null = null;
+
     for (let i = 0; i < 9; i++) {
       signal = td.update(11 + i, false);
     }
+
     expect(signal).toBe(1);
   });
 
-  it('should return -1 for a bearish setup after 9 consecutive closes < close 4 bars earlier', () => {
+  it('returns -1 for a bearish setup after 9 consecutive closes < close 4 bars earlier', () => {
     const td = new FasterTDS();
     for (let i = 0; i < 4; i++) {
       td.update(20, false);
@@ -136,22 +138,8 @@ describe('FasterTDS', () => {
     }
     expect(signal).toBe(-1);
   });
-});
 
-describe('FasterTDS replace functionality', () => {
-  it('should handle replace logic for number', () => {
-    const td = new FasterTDS();
-    for (let i = 0; i < 5; i++) {
-      td.update(10 + i, false);
-    }
-    // Now replace the last value
-    const result = td.update(20, true);
-    expect(result).toBeNull();
-  });
-});
-
-describe('FasterTDS closes array length', () => {
-  it('should keep at most 13 closes in the buffer (number)', () => {
+  it('keeps at most 13 closes in the buffer', () => {
     const td = new FasterTDS();
     for (let i = 0; i < 20; i++) {
       td.update(i, false);
@@ -159,10 +147,8 @@ describe('FasterTDS closes array length', () => {
     // @ts-expect-error: accessing private property for test
     expect(td.closes.length).toBeLessThanOrEqual(13);
   });
-});
 
-describe('FasterTDS direction change from bearish to bullish', () => {
-  it('should reset setupCount and setupDirection when direction changes from bearish to bullish (number)', () => {
+  it('detects a direction change from bearish to bullish', () => {
     const td = new FasterTDS();
     for (let i = 0; i < 4; i++) {
       td.update(10, false);
@@ -177,10 +163,8 @@ describe('FasterTDS direction change from bearish to bullish', () => {
     expect(td.setupDirection).toBe('bullish');
     expect(result).toBeNull();
   });
-});
 
-describe('FasterTDS direction change from bullish to bearish', () => {
-  it('should reset setupCount and setupDirection when direction changes from bullish to bearish (number)', () => {
+  it('detects a direction change from bullish to bearish', () => {
     const td = new FasterTDS();
     for (let i = 0; i < 4; i++) {
       td.update(10, false);
@@ -194,5 +178,17 @@ describe('FasterTDS direction change from bullish to bearish', () => {
     // @ts-expect-error: accessing private property for test
     expect(td.setupDirection).toBe('bearish');
     expect(result).toBeNull();
+  });
+
+  describe('replace', () => {
+    it('should handle replace logic for number', () => {
+      const td = new FasterTDS();
+      for (let i = 0; i < 5; i++) {
+        td.update(10 + i, false);
+      }
+      // Now replace the last value
+      const result = td.update(20, true);
+      expect(result).toBeNull();
+    });
   });
 });
