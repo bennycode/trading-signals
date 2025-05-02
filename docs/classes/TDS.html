@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta http-equiv="x-ua-compatible" content="IE=edge" />
-    <title>BigIndicatorSeries | trading-signals</title>
+    <title>TDS | trading-signals</title>
     <meta name="description" content="Documentation for trading-signals" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="stylesheet" href="../assets/style.css" />
@@ -53,101 +53,66 @@
       <div class="col-content">
         <div class="tsd-page-title">
           <ul class="tsd-breadcrumb" aria-label="Breadcrumb">
-            <li><a href="" aria-current="page">BigIndicatorSeries</a></li>
+            <li><a href="" aria-current="page">TDS</a></li>
           </ul>
-          <h1>Class BigIndicatorSeries&lt;Input&gt;<code class="tsd-tag">Abstract</code></h1>
+          <h1>Class TDS</h1>
         </div>
         <section class="tsd-panel tsd-comment">
           <div class="tsd-comment tsd-typography">
-            <p>Tracks results of an indicator over time and memorizes the highest &amp; lowest result.</p>
+            <p>Tom Demark's Sequential Indicator (TDS) Type: Trend, Momentum</p>
+            <p>
+              The TD Sequential indicator is used to identify potential turning points in the price of an asset. It
+              consists of two phases: TD Setup and TD Countdown. This implementation focuses on the TD Setup phase,
+              which is the most commonly used part for trend exhaustion signals.
+            </p>
+            <ul>
+              <li>
+                A bullish setup occurs when there are 9 consecutive closes greater than the close 4 bars earlier. A
+                possible sell opportunity is when the low of bars 6 and 7 in the count are exceeded by the low of bars 8
+                or 9.
+              </li>
+              <li>
+                A bearish setup occurs when there are 9 consecutive closes less than the close 4 bars earlier. A
+                possible buy opportunity is when the low of bars 6 and 7 in the count are exceeded by the low of bars 8
+                or 9.
+              </li>
+            </ul>
           </div>
-          <div class="tsd-comment tsd-typography"></div>
+          <div class="tsd-comment tsd-typography">
+            <div class="tsd-tag-see">
+              <h4 class="tsd-anchor-link" id="see">
+                See<a href="#see" aria-label="Permalink" class="tsd-anchor-icon"
+                  ><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg
+                ></a>
+              </h4>
+              <ul>
+                <li>
+                  <a href="https://github.com/bennycode/trading-signals/discussions/239"
+                    >https://github.com/bennycode/trading-signals/discussions/239</a
+                  >
+                </li>
+                <li>
+                  <a
+                    href="https://hackernoon.com/how-to-buy-sell-cryptocurrency-with-number-indicator-td-sequential-5af46f0ebce1"
+                    >https://hackernoon.com/how-to-buy-sell-cryptocurrency-with-number-indicator-td-sequential-5af46f0ebce1</a
+                  >
+                </li>
+                <li>
+                  <a href="https://practicaltechnicalanalysis.blogspot.com/2013/01/tom-demark-sequential.html"
+                    >https://practicaltechnicalanalysis.blogspot.com/2013/01/tom-demark-sequential.html</a
+                  >
+                </li>
+              </ul>
+            </div>
+          </div>
         </section>
-        <section class="tsd-panel">
-          <h4>Type Parameters</h4>
-          <ul class="tsd-type-parameter-list">
-            <li>
-              <span id="input"
-                ><span class="tsd-kind-type-parameter">Input</span> =
-                <span class="tsd-signature-type">BigSource</span></span
-              >
-            </li>
-          </ul>
-        </section>
-        <section class="tsd-panel tsd-hierarchy" data-refl="70">
-          <h4>Hierarchy (<a href="../hierarchy.html#BigIndicatorSeries">View Summary</a>)</h4>
+        <section class="tsd-panel tsd-hierarchy" data-refl="2160">
+          <h4>Hierarchy (<a href="../hierarchy.html#TDS">View Summary</a>)</h4>
           <ul class="tsd-hierarchy">
             <li class="tsd-hierarchy-item">
-              <a href="BaseIndicatorSeries.html" class="tsd-signature-type tsd-kind-class">BaseIndicatorSeries</a
-              ><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">Big</span
-              ><span class="tsd-signature-symbol">,</span>
-              <a class="tsd-signature-type tsd-kind-type-parameter" href="#constructorbigindicatorseriesinput">Input</a
-              ><span class="tsd-signature-symbol">&gt;</span>
+              <a href="BigIndicatorSeries.html" class="tsd-signature-type tsd-kind-class">BigIndicatorSeries</a>
               <ul class="tsd-hierarchy">
-                <li class="tsd-hierarchy-item">
-                  <span class="tsd-hierarchy-target">BigIndicatorSeries</span>
-                  <ul class="tsd-hierarchy">
-                    <li class="tsd-hierarchy-item">
-                      <a href="MovingAverage.html" class="tsd-signature-type tsd-kind-class">MovingAverage</a>
-                    </li>
-                    <li class="tsd-hierarchy-item">
-                      <a href="AC.html" class="tsd-signature-type tsd-kind-class">AC</a>
-                    </li>
-                    <li class="tsd-hierarchy-item">
-                      <a href="ADX.html" class="tsd-signature-type tsd-kind-class">ADX</a>
-                    </li>
-                    <li class="tsd-hierarchy-item">
-                      <a href="AO.html" class="tsd-signature-type tsd-kind-class">AO</a>
-                    </li>
-                    <li class="tsd-hierarchy-item">
-                      <a href="ATR.html" class="tsd-signature-type tsd-kind-class">ATR</a>
-                    </li>
-                    <li class="tsd-hierarchy-item">
-                      <a href="BollingerBandsWidth.html" class="tsd-signature-type tsd-kind-class"
-                        >BollingerBandsWidth</a
-                      >
-                    </li>
-                    <li class="tsd-hierarchy-item">
-                      <a href="CCI.html" class="tsd-signature-type tsd-kind-class">CCI</a>
-                    </li>
-                    <li class="tsd-hierarchy-item">
-                      <a href="CG.html" class="tsd-signature-type tsd-kind-class">CG</a>
-                    </li>
-                    <li class="tsd-hierarchy-item">
-                      <a href="DEMA.html" class="tsd-signature-type tsd-kind-class">DEMA</a>
-                    </li>
-                    <li class="tsd-hierarchy-item">
-                      <a href="DX.html" class="tsd-signature-type tsd-kind-class">DX</a>
-                    </li>
-                    <li class="tsd-hierarchy-item">
-                      <a href="MAD.html" class="tsd-signature-type tsd-kind-class">MAD</a>
-                    </li>
-                    <li class="tsd-hierarchy-item">
-                      <a href="MOM.html" class="tsd-signature-type tsd-kind-class">MOM</a>
-                    </li>
-                    <li class="tsd-hierarchy-item">
-                      <a href="OBV.html" class="tsd-signature-type tsd-kind-class">OBV</a>
-                    </li>
-                    <li class="tsd-hierarchy-item">
-                      <a href="ROC.html" class="tsd-signature-type tsd-kind-class">ROC</a>
-                    </li>
-                    <li class="tsd-hierarchy-item">
-                      <a href="RSI.html" class="tsd-signature-type tsd-kind-class">RSI</a>
-                    </li>
-                    <li class="tsd-hierarchy-item">
-                      <a href="PSAR.html" class="tsd-signature-type tsd-kind-class">PSAR</a>
-                    </li>
-                    <li class="tsd-hierarchy-item">
-                      <a href="StochasticRSI.html" class="tsd-signature-type tsd-kind-class">StochasticRSI</a>
-                    </li>
-                    <li class="tsd-hierarchy-item">
-                      <a href="TDS.html" class="tsd-signature-type tsd-kind-class">TDS</a>
-                    </li>
-                    <li class="tsd-hierarchy-item">
-                      <a href="TR.html" class="tsd-signature-type tsd-kind-class">TR</a>
-                    </li>
-                  </ul>
-                </li>
+                <li class="tsd-hierarchy-item"><span class="tsd-hierarchy-target">TDS</span></li>
               </ul>
             </li>
           </ul>
@@ -157,8 +122,8 @@
             <li>
               Defined in
               <a
-                href="https://github.com/bennycode/trading-signals/blob/9596765a81b7d639ed77cc443e99db5824d58ebc/src/Indicator.ts#L66"
-                >Indicator.ts:66</a
+                href="https://github.com/bennycode/trading-signals/blob/9596765a81b7d639ed77cc443e99db5824d58ebc/src/TDS/TDS.ts#L20"
+                >TDS/TDS.ts:20</a
               >
             </li>
           </ul>
@@ -231,7 +196,7 @@
                         <use href="../assets/icons.svg#icon-2048"></use></svg
                       ><span>replace</span></a
                     >
-                    <a href="#update" class="tsd-index-link tsd-is-inherited"
+                    <a href="#update" class="tsd-index-link"
                       ><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method">
                         <use href="../assets/icons.svg#icon-2048"></use></svg
                       ><span>update</span></a
@@ -264,49 +229,24 @@
               </h3>
               <ul class="tsd-signatures">
                 <li class="">
-                  <div class="tsd-signature tsd-anchor-link" id="constructorbigindicatorseries">
+                  <div class="tsd-signature tsd-anchor-link" id="constructortds">
                     <span class="tsd-signature-keyword">new</span>
-                    <span class="tsd-kind-constructor-signature">BigIndicatorSeries</span
-                    ><span class="tsd-signature-symbol">&lt;</span
-                    ><a class="tsd-signature-type tsd-kind-type-parameter" href="#constructorbigindicatorseriesinput"
-                      >Input</a
-                    >
-                    <span class="tsd-signature-symbol">=</span> <span class="tsd-signature-type">BigSource</span
-                    ><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">()</span
+                    <span class="tsd-kind-constructor-signature">TDS</span><span class="tsd-signature-symbol">()</span
                     ><span class="tsd-signature-symbol">:</span>
-                    <a href="" class="tsd-signature-type tsd-kind-class">BigIndicatorSeries</a
-                    ><span class="tsd-signature-symbol">&lt;</span
-                    ><a class="tsd-signature-type tsd-kind-type-parameter" href="#constructorbigindicatorseriesinput"
-                      >Input</a
-                    ><span class="tsd-signature-symbol">&gt;</span
-                    ><a href="#constructorbigindicatorseries" aria-label="Permalink" class="tsd-anchor-icon"
+                    <a href="" class="tsd-signature-type tsd-kind-class">TDS</a
+                    ><a href="#constructortds" aria-label="Permalink" class="tsd-anchor-icon"
                       ><svg viewBox="0 0 24 24" aria-hidden="true">
                         <use href="../assets/icons.svg#icon-anchor"></use></svg
                     ></a>
                   </div>
                   <div class="tsd-description">
-                    <section class="tsd-panel">
-                      <h4>Type Parameters</h4>
-                      <ul class="tsd-type-parameter-list">
-                        <li>
-                          <span id="constructorbigindicatorseriesinput"
-                            ><span class="tsd-kind-type-parameter">Input</span> =
-                            <span class="tsd-signature-type">BigSource</span></span
-                          >
-                        </li>
-                      </ul>
-                    </section>
                     <h4 class="tsd-returns-title">
-                      Returns <a href="" class="tsd-signature-type tsd-kind-class">BigIndicatorSeries</a
-                      ><span class="tsd-signature-symbol">&lt;</span
-                      ><a class="tsd-signature-type tsd-kind-type-parameter" href="#constructorbigindicatorseriesinput"
-                        >Input</a
-                      ><span class="tsd-signature-symbol">&gt;</span>
+                      Returns <a href="" class="tsd-signature-type tsd-kind-class">TDS</a>
                     </h4>
                     <aside class="tsd-sources">
                       <p>
-                        Inherited from <a href="BaseIndicatorSeries.html">BaseIndicatorSeries</a>.<a
-                          href="BaseIndicatorSeries.html#constructor"
+                        Inherited from <a href="BigIndicatorSeries.html">BigIndicatorSeries</a>.<a
+                          href="BigIndicatorSeries.html#constructor"
                           >constructor</a
                         >
                       </p>
@@ -338,8 +278,8 @@
               </div>
               <aside class="tsd-sources">
                 <p>
-                  Inherited from <a href="BaseIndicatorSeries.html">BaseIndicatorSeries</a>.<a
-                    href="BaseIndicatorSeries.html#highest"
+                  Inherited from <a href="BigIndicatorSeries.html">BigIndicatorSeries</a>.<a
+                    href="BigIndicatorSeries.html#highest"
                     >highest</a
                   >
                 </p>
@@ -367,8 +307,8 @@
               </div>
               <aside class="tsd-sources">
                 <p>
-                  Inherited from <a href="BaseIndicatorSeries.html">BaseIndicatorSeries</a>.<a
-                    href="BaseIndicatorSeries.html#lowest"
+                  Inherited from <a href="BigIndicatorSeries.html">BigIndicatorSeries</a>.<a
+                    href="BigIndicatorSeries.html#lowest"
                     >lowest</a
                   >
                 </p>
@@ -410,7 +350,7 @@
                   <div class="tsd-description">
                     <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">boolean</span></h4>
                     <aside class="tsd-sources">
-                      <p>Inherited from BaseIndicatorSeries.isStable</p>
+                      <p>Inherited from BigIndicatorSeries.isStable</p>
                       <ul>
                         <li>
                           Defined in
@@ -447,11 +387,9 @@
                   <div class="tsd-signature tsd-anchor-link" id="add-1">
                     <span class="tsd-kind-call-signature">add</span><span class="tsd-signature-symbol">(</span
                     ><span class="tsd-kind-parameter">input</span><span class="tsd-signature-symbol">:</span>
-                    <a class="tsd-signature-type tsd-kind-type-parameter" href="#constructorbigindicatorseriesinput"
-                      >Input</a
-                    ><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span>
-                    <span class="tsd-signature-type">null</span> <span class="tsd-signature-symbol">|</span>
-                    <span class="tsd-signature-type">Big</span
+                    <span class="tsd-signature-type">BigSource</span><span class="tsd-signature-symbol">)</span
+                    ><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">null</span>
+                    <span class="tsd-signature-symbol">|</span> <span class="tsd-signature-type">Big</span
                     ><a href="#add-1" aria-label="Permalink" class="tsd-anchor-icon"
                       ><svg viewBox="0 0 24 24" aria-hidden="true">
                         <use href="../assets/icons.svg#icon-anchor"></use></svg
@@ -464,11 +402,7 @@
                         <li>
                           <span
                             ><span class="tsd-kind-parameter">input</span>:
-                            <a
-                              class="tsd-signature-type tsd-kind-type-parameter"
-                              href="#constructorbigindicatorseriesinput"
-                              >Input</a
-                            ></span
+                            <span class="tsd-signature-type">BigSource</span></span
                           >
                         </li>
                       </ul>
@@ -479,8 +413,8 @@
                     </h4>
                     <aside class="tsd-sources">
                       <p>
-                        Inherited from <a href="BaseIndicatorSeries.html">BaseIndicatorSeries</a>.<a
-                          href="BaseIndicatorSeries.html#add"
+                        Inherited from <a href="BigIndicatorSeries.html">BigIndicatorSeries</a>.<a
+                          href="BigIndicatorSeries.html#add"
                           >add</a
                         >
                       </p>
@@ -523,8 +457,8 @@
                     </h4>
                     <aside class="tsd-sources">
                       <p>
-                        Inherited from <a href="BaseIndicatorSeries.html">BaseIndicatorSeries</a>.<a
-                          href="BaseIndicatorSeries.html#getresult"
+                        Inherited from <a href="BigIndicatorSeries.html">BigIndicatorSeries</a>.<a
+                          href="BigIndicatorSeries.html#getresult"
                           >getResult</a
                         >
                       </p>
@@ -564,8 +498,8 @@
                     <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Big</span></h4>
                     <aside class="tsd-sources">
                       <p>
-                        Inherited from <a href="BaseIndicatorSeries.html">BaseIndicatorSeries</a>.<a
-                          href="BaseIndicatorSeries.html#getresultorthrow"
+                        Inherited from <a href="BigIndicatorSeries.html">BigIndicatorSeries</a>.<a
+                          href="BigIndicatorSeries.html#getresultorthrow"
                           >getResultOrThrow</a
                         >
                       </p>
@@ -595,11 +529,9 @@
                   <div class="tsd-signature tsd-anchor-link" id="replace-1">
                     <span class="tsd-kind-call-signature">replace</span><span class="tsd-signature-symbol">(</span
                     ><span class="tsd-kind-parameter">input</span><span class="tsd-signature-symbol">:</span>
-                    <a class="tsd-signature-type tsd-kind-type-parameter" href="#constructorbigindicatorseriesinput"
-                      >Input</a
-                    ><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span>
-                    <span class="tsd-signature-type">null</span> <span class="tsd-signature-symbol">|</span>
-                    <span class="tsd-signature-type">Big</span
+                    <span class="tsd-signature-type">BigSource</span><span class="tsd-signature-symbol">)</span
+                    ><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">null</span>
+                    <span class="tsd-signature-symbol">|</span> <span class="tsd-signature-type">Big</span
                     ><a href="#replace-1" aria-label="Permalink" class="tsd-anchor-icon"
                       ><svg viewBox="0 0 24 24" aria-hidden="true">
                         <use href="../assets/icons.svg#icon-anchor"></use></svg
@@ -612,11 +544,7 @@
                         <li>
                           <span
                             ><span class="tsd-kind-parameter">input</span>:
-                            <a
-                              class="tsd-signature-type tsd-kind-type-parameter"
-                              href="#constructorbigindicatorseriesinput"
-                              >Input</a
-                            ></span
+                            <span class="tsd-signature-type">BigSource</span></span
                           >
                         </li>
                       </ul>
@@ -627,8 +555,8 @@
                     </h4>
                     <aside class="tsd-sources">
                       <p>
-                        Inherited from <a href="BaseIndicatorSeries.html">BaseIndicatorSeries</a>.<a
-                          href="BaseIndicatorSeries.html#replace"
+                        Inherited from <a href="BigIndicatorSeries.html">BigIndicatorSeries</a>.<a
+                          href="BigIndicatorSeries.html#replace"
                           >replace</a
                         >
                       </p>
@@ -646,25 +574,23 @@
                 </li>
               </ul>
             </section>
-            <section class="tsd-panel tsd-member tsd-is-inherited">
+            <section class="tsd-panel tsd-member">
               <h3 class="tsd-anchor-link" id="update">
-                <code class="tsd-tag">Abstract</code><span>update</span
+                <span>update</span
                 ><a href="#update" aria-label="Permalink" class="tsd-anchor-icon"
                   ><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg
                 ></a>
               </h3>
-              <ul class="tsd-signatures tsd-is-inherited">
-                <li class="tsd-is-inherited">
+              <ul class="tsd-signatures">
+                <li class="">
                   <div class="tsd-signature tsd-anchor-link" id="update-1">
                     <span class="tsd-kind-call-signature">update</span><span class="tsd-signature-symbol">(</span
-                    ><span class="tsd-kind-parameter">input</span><span class="tsd-signature-symbol">:</span>
-                    <a class="tsd-signature-type tsd-kind-type-parameter" href="#constructorbigindicatorseriesinput"
-                      >Input</a
-                    ><span class="tsd-signature-symbol">,</span> <span class="tsd-kind-parameter">replace</span
-                    ><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span
-                    ><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span>
-                    <span class="tsd-signature-type">null</span> <span class="tsd-signature-symbol">|</span>
-                    <span class="tsd-signature-type">Big</span
+                    ><span class="tsd-kind-parameter">close</span><span class="tsd-signature-symbol">:</span>
+                    <span class="tsd-signature-type">BigSource</span><span class="tsd-signature-symbol">,</span>
+                    <span class="tsd-kind-parameter">replace</span><span class="tsd-signature-symbol">:</span>
+                    <span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">)</span
+                    ><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">null</span>
+                    <span class="tsd-signature-symbol">|</span> <span class="tsd-signature-type">Big</span
                     ><a href="#update-1" aria-label="Permalink" class="tsd-anchor-icon"
                       ><svg viewBox="0 0 24 24" aria-hidden="true">
                         <use href="../assets/icons.svg#icon-anchor"></use></svg
@@ -676,12 +602,8 @@
                       <ul class="tsd-parameter-list">
                         <li>
                           <span
-                            ><span class="tsd-kind-parameter">input</span>:
-                            <a
-                              class="tsd-signature-type tsd-kind-type-parameter"
-                              href="#constructorbigindicatorseriesinput"
-                              >Input</a
-                            ></span
+                            ><span class="tsd-kind-parameter">close</span>:
+                            <span class="tsd-signature-type">BigSource</span></span
                           >
                         </li>
                         <li>
@@ -698,8 +620,8 @@
                     </h4>
                     <aside class="tsd-sources">
                       <p>
-                        Inherited from <a href="BaseIndicatorSeries.html">BaseIndicatorSeries</a>.<a
-                          href="BaseIndicatorSeries.html#update"
+                        Overrides <a href="BigIndicatorSeries.html">BigIndicatorSeries</a>.<a
+                          href="BigIndicatorSeries.html#update"
                           >update</a
                         >
                       </p>
@@ -707,8 +629,8 @@
                         <li>
                           Defined in
                           <a
-                            href="https://github.com/bennycode/trading-signals/blob/9596765a81b7d639ed77cc443e99db5824d58ebc/src/Indicator.ts#L47"
-                            >Indicator.ts:47</a
+                            href="https://github.com/bennycode/trading-signals/blob/9596765a81b7d639ed77cc443e99db5824d58ebc/src/TDS/TDS.ts#L25"
+                            >TDS/TDS.ts:25</a
                           >
                         </li>
                       </ul>
@@ -729,9 +651,7 @@
                   <div class="tsd-signature tsd-anchor-link" id="updates-1">
                     <span class="tsd-kind-call-signature">updates</span><span class="tsd-signature-symbol">(</span
                     ><span class="tsd-kind-parameter">inputs</span><span class="tsd-signature-symbol">:</span>
-                    <span class="tsd-signature-keyword">readonly</span>
-                    <a class="tsd-signature-type tsd-kind-type-parameter" href="#constructorbigindicatorseriesinput"
-                      >Input</a
+                    <span class="tsd-signature-keyword">readonly</span> <span class="tsd-signature-type">BigSource</span
                     ><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">,</span>
                     <span class="tsd-kind-parameter">replace</span><span class="tsd-signature-symbol">?:</span>
                     <span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">)</span
@@ -752,10 +672,7 @@
                           <span
                             ><span class="tsd-kind-parameter">inputs</span>:
                             <span class="tsd-signature-keyword">readonly</span>
-                            <a
-                              class="tsd-signature-type tsd-kind-type-parameter"
-                              href="#constructorbigindicatorseriesinput"
-                              >Input</a
+                            <span class="tsd-signature-type">BigSource</span
                             ><span class="tsd-signature-symbol">[]</span></span
                           >
                         </li>
@@ -774,8 +691,8 @@
                     </h4>
                     <aside class="tsd-sources">
                       <p>
-                        Inherited from <a href="BaseIndicatorSeries.html">BaseIndicatorSeries</a>.<a
-                          href="BaseIndicatorSeries.html#updates"
+                        Inherited from <a href="BigIndicatorSeries.html">BigIndicatorSeries</a>.<a
+                          href="BigIndicatorSeries.html#updates"
                           >updates</a
                         >
                       </p>
@@ -925,7 +842,7 @@
                     ><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method">
                       <use href="../assets/icons.svg#icon-2048"></use></svg
                     ><span>replace</span></a
-                  ><a href="#update" class="tsd-is-inherited"
+                  ><a href="#update"
                     ><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method">
                       <use href="../assets/icons.svg#icon-2048"></use></svg
                     ><span>update</span></a
