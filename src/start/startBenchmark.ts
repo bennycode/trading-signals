@@ -40,6 +40,7 @@ import {
   FasterSMA,
   FasterStochasticOscillator,
   FasterStochasticRSI,
+  FasterTDS,
   FasterTR,
   FasterWMA,
   FasterWSMA,
@@ -60,6 +61,7 @@ import {
   SMA,
   StochasticOscillator,
   StochasticRSI,
+  TDS,
   TR,
   WMA,
   WSMA,
@@ -400,6 +402,18 @@ new Benchmark.Suite('Technical Indicators')
     const fasterStochRSI = new FasterStochasticRSI(interval);
     for (const price of prices) {
       fasterStochRSI.add(price);
+    }
+  })
+  .add('TDS', () => {
+    const tds = new TDS();
+    for (const price of prices) {
+      tds.add(price);
+    }
+  })
+  .add('FasterTDS', () => {
+    const fasterTDS = new FasterTDS();
+    for (const price of prices) {
+      fasterTDS.add(price);
     }
   })
   .add('TR', () => {
