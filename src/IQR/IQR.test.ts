@@ -2,7 +2,7 @@ import {IQR, FasterIQR} from './IQR.js';
 import Big from 'big.js';
 
 describe('IQR', () => {
-  it('returns null until enough values are provided (Big.js)', () => {
+  it('returns null until enough values are provided', () => {
     const iqr = new IQR(5);
 
     for (let i = 0; i < 4; i++) {
@@ -11,7 +11,7 @@ describe('IQR', () => {
     }
   });
 
-  it('calculates the interquartile range for a window (Big.js)', () => {
+  it('calculates the interquartile range for a window', () => {
     const iqr = new IQR(5);
     const values = [1, 2, 3, 4, 100];
 
@@ -30,7 +30,7 @@ describe('IQR', () => {
     expect(result?.eq(50.5)).toBe(true);
   });
 
-  it('updates IQR as new values enter and old values leave the window (Big.js)', () => {
+  it('updates IQR as new values enter and old values leave the window', () => {
     const iqr = new IQR(3);
 
     iqr.update(new Big(1), false);
@@ -48,28 +48,24 @@ describe('IQR', () => {
     expect(result?.eq(2)).toBe(true);
   });
 
-  it('correctly calculates IQR for [7,7,31,31,47,75,87,115,116,119,119,155,177] (Big.js)', () => {
-    const iqr = new IQR(13);
-    const values = [7, 7, 31, 31, 47, 75, 87, 115, 116, 119, 119, 155, 177];
+  describe('getResultOrThrow', () => {
+    it('correctly calculates the IQR', () => {
+      // Test data verified with:
+      // https://en.wikipedia.org/wiki/Interquartile_range#Data_set_in_a_table
+      const values = [7, 7, 31, 31, 47, 75, 87, 115, 116, 119, 119, 155, 177];
+      const iqr = new IQR(13);
 
-    for (const v of values.slice(0, -1)) {
-      iqr.update(new Big(v), false);
-    }
+      for (const value of values) {
+        iqr.add(new Big(value));
+      }
 
-    // Using Wikipedia method:
-    // Sorted: [7,7,31,31,47,75,87,115,116,119,119,155,177]
-    // Median is 87
-    // Lower half: [7,7,31,31,47,75] → Q1 = 31
-    // Upper half: [115,116,119,119,155,177] → Q3 = 119
-    // IQR = 119 - 31 = 88
-    const result = iqr.update(new Big(values[values.length - 1]), false);
-
-    expect(result?.eq(88)).toBe(true);
+      expect(iqr.getResultOrThrow().valueOf()).toBe('88');
+    });
   });
 });
 
 describe('FasterIQR', () => {
-  it('returns null until enough values are provided (number)', () => {
+  it('returns null until enough values are provided', () => {
     const iqr = new FasterIQR(5);
 
     for (let i = 0; i < 4; i++) {
@@ -78,7 +74,7 @@ describe('FasterIQR', () => {
     }
   });
 
-  it('calculates the interquartile range for a window (number)', () => {
+  it('calculates the interquartile range for a window', () => {
     const iqr = new FasterIQR(5);
     const values = [1, 2, 3, 4, 100];
 
@@ -97,7 +93,7 @@ describe('FasterIQR', () => {
     expect(result).toBe(50.5);
   });
 
-  it('updates IQR as new values enter and old values leave the window (number)', () => {
+  it('updates IQR as new values enter and old values leave the window', () => {
     const iqr = new FasterIQR(3);
 
     iqr.update(1, false);
@@ -115,7 +111,7 @@ describe('FasterIQR', () => {
     expect(result).toBe(2);
   });
 
-  it('correctly calculates IQR for [7,7,31,31,47,75,87,115,116,119,119,155,177] (number)', () => {
+  it('correctly calculates IQR for [7,7,31,31,47,75,87,115,116,119,119,155,177]', () => {
     const iqr = new FasterIQR(13);
     const values = [7, 7, 31, 31, 47, 75, 87, 115, 116, 119, 119, 155, 177];
 
