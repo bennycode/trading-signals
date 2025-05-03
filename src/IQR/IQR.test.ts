@@ -36,6 +36,23 @@ describe('IQR', () => {
     });
   });
 
+  describe('replace', () => {
+    it('replaces the last value and recalculates the result', () => {
+      const iqr = new IQR(5);
+      const values = [1, 2, 3, 4, 5];
+
+      for (const value of values) {
+        iqr.add(new Big(value));
+      }
+
+      expect(iqr.getResultOrThrow().valueOf()).toBe('3');
+
+      const result = iqr.replace(new Big(10));
+
+      expect(result?.valueOf()).toBe('5.5');
+    });
+  });
+
   describe('getResultOrThrow', () => {
     it('calculates the interquartile range (#1)', () => {
       // Test data verified with:
@@ -110,6 +127,23 @@ describe('FasterIQR', () => {
       // Window now contains [3, 4, 5]
       // Q1 = 3, Q3 = 5, IQR = 2
       expect(iqr.getResultOrThrow().valueOf()).toBe(2);
+    });
+  });
+
+  describe('replace', () => {
+    it('replaces the last value and recalculates the result', () => {
+      const iqr = new FasterIQR(5);
+      const values = [1, 2, 3, 4, 5];
+
+      for (const value of values) {
+        iqr.add(value);
+      }
+
+      expect(iqr.getResultOrThrow().valueOf()).toBe(3);
+
+      const result = iqr.replace(10);
+
+      expect(result?.valueOf()).toBe(5.5);
     });
   });
 
