@@ -1,14 +1,39 @@
-import {IQR, FasterIQR} from './IQR.js';
 import Big from 'big.js';
+import {FasterIQR, IQR} from './IQR.js';
 
 describe('IQR', () => {
-  it('returns null until enough values are provided', () => {
-    const iqr = new IQR(5);
+  describe('add', () => {
+    it('returns null until enough values are provided', () => {
+      const iqr = new IQR(5);
 
-    for (let i = 0; i < 4; i++) {
-      const result = iqr.add(new Big(i));
-      expect(result).toBeNull();
-    }
+      for (let i = 0; i < 4; i++) {
+        const result = iqr.add(new Big(i));
+        expect(result).toBeNull();
+      }
+    });
+
+    it('keeps the interval length of values when adding more', () => {
+      const iqr = new IQR(3);
+
+      // Fill the buffer with initial values
+      iqr.add(new Big(1));
+      iqr.add(new Big(2));
+      iqr.add(new Big(3));
+
+      // When we add the 4th value, the 1st value should be removed
+      iqr.add(new Big(4));
+
+      // Window now contains [2, 3, 4]
+      // Q1 = 2, Q3 = 4, IQR = 2
+      expect(iqr.getResultOrThrow().valueOf()).toBe('2');
+
+      // When we add the 5th value, the 2nd value should be removed
+      iqr.add(new Big(5));
+
+      // Window now contains [3, 4, 5]
+      // Q1 = 3, Q3 = 5, IQR = 2
+      expect(iqr.getResultOrThrow().valueOf()).toBe('2');
+    });
   });
 
   describe('getResultOrThrow', () => {
@@ -54,13 +79,38 @@ describe('IQR', () => {
 });
 
 describe('FasterIQR', () => {
-  it('returns null until enough values are provided', () => {
-    const iqr = new FasterIQR(5);
+  describe('add', () => {
+    it('returns null until enough values are provided', () => {
+      const iqr = new FasterIQR(5);
 
-    for (let i = 0; i < 4; i++) {
-      const result = iqr.add(i);
-      expect(result).toBeNull();
-    }
+      for (let i = 0; i < 4; i++) {
+        const result = iqr.add(i);
+        expect(result).toBeNull();
+      }
+    });
+
+    it('keeps only the interval length of values when adding more', () => {
+      const iqr = new FasterIQR(3);
+
+      // Fill the buffer with initial values
+      iqr.add(1);
+      iqr.add(2);
+      iqr.add(3);
+
+      // When we add the 4th value, the 1st value should be removed
+      iqr.add(4);
+
+      // Window now contains [2, 3, 4]
+      // Q1 = 2, Q3 = 4, IQR = 2
+      expect(iqr.getResultOrThrow().valueOf()).toBe(2);
+
+      // When we add the 5th value, the 2nd value should be removed
+      iqr.add(5);
+
+      // Window now contains [3, 4, 5]
+      // Q1 = 3, Q3 = 5, IQR = 2
+      expect(iqr.getResultOrThrow().valueOf()).toBe(2);
+    });
   });
 
   describe('getResultOrThrow', () => {
