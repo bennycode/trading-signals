@@ -65,7 +65,7 @@ export class TDS extends BigIndicatorSeries {
   }
 }
 
-export class FasterTDS extends NumberIndicatorSeries<number> {
+export class FasterTDS extends NumberIndicatorSeries {
   private readonly closes: number[] = [];
   private setupCount: number = 0;
   private setupDirection: 'bullish' | 'bearish' | null = null;

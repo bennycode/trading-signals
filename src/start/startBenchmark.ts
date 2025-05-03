@@ -27,6 +27,7 @@ import {
   FasterDMA,
   FasterDX,
   FasterEMA,
+  FasterIQR,
   FasterLinearRegression,
   FasterMACD,
   FasterMAD,
@@ -48,6 +49,7 @@ import {
   getFasterAverage,
   getFasterStandardDeviation,
   getStandardDeviation,
+  IQR,
   LinearRegression,
   MACD,
   MAD,
@@ -235,6 +237,24 @@ new Benchmark.Suite('Technical Indicators')
     const fasterEMA = new FasterEMA(interval);
     for (const price of prices) {
       fasterEMA.add(price);
+    }
+  })
+  .add('IQR', () => {
+    const iqr = new IQR(interval);
+    for (const price of prices) {
+      iqr.add(price);
+    }
+  })
+  .add('FasterIQR', () => {
+    const iqr = new FasterIQR(interval);
+    for (const price of prices) {
+      iqr.add(price);
+    }
+  })
+  .add('LinearRegression', () => {
+    const linreg = new LinearRegression({period: interval});
+    for (const price of prices) {
+      linreg.add(price);
     }
   })
   .add('LinearRegression', () => {

@@ -79,3 +79,13 @@ it('returns null until enough values are provided', () => {
   }
 });
 ```
+
+Avoid explicitly specifying generic type parameters when a default is already provided:
+
+```ts
+// ❌ Bad: Redundant generic type argument
+export class IQR extends BigIndicatorSeries<BigSource> {}
+
+// ✅ Good: Rely on the default generic
+export class IQR extends BigIndicatorSeries {}
+```
