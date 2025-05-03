@@ -55,3 +55,27 @@ it('correctly calculates the IQR', () => {
   expect(iqr.getResultOrThrow().valueOf()).toBe('88');
 });
 ```
+
+In test cases, prefer using the convenience methods `add(new Big(i))` instead of `update(new Big(i), false)` and `replace(new Big(i))` instead of `update(new Big(i), true)`:
+
+```ts
+// ❌ Bad: Using `update` directly
+it('returns null until enough values are provided', () => {
+  const iqr = new IQR(5);
+
+  for (let i = 0; i < 4; i++) {
+    const result = iqr.update(new Big(i), false);
+    expect(result).toBeNull();
+  }
+});
+
+// ✅ Good: Using `add` for clarity and intent
+it('returns null until enough values are provided', () => {
+  const iqr = new IQR(5);
+
+  for (let i = 0; i < 4; i++) {
+    const result = iqr.add(new Big(i));
+    expect(result).toBeNull();
+  }
+});
+```

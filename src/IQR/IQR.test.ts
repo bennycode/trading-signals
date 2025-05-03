@@ -6,50 +6,13 @@ describe('IQR', () => {
     const iqr = new IQR(5);
 
     for (let i = 0; i < 4; i++) {
-      const result = iqr.update(new Big(i), false);
+      const result = iqr.add(new Big(i));
       expect(result).toBeNull();
     }
   });
 
-  it('calculates the interquartile range for a window', () => {
-    const iqr = new IQR(5);
-    const values = [1, 2, 3, 4, 100];
-
-    for (const v of values) {
-      iqr.update(new Big(v), false);
-    }
-
-    // Using Wikipedia method:
-    // Sorted array: [1, 2, 3, 4, 100]
-    // Median is 3
-    // Lower half: [1, 2] → Q1 = 1.5
-    // Upper half: [4, 100] → Q3 = 52
-    // IQR = 52 - 1.5 = 50.5
-    const result = iqr.update(new Big(100), true); // replace last value to keep window
-
-    expect(result?.eq(50.5)).toBe(true);
-  });
-
-  it('updates IQR as new values enter and old values leave the window', () => {
-    const iqr = new IQR(3);
-
-    iqr.update(new Big(1), false);
-    iqr.update(new Big(2), false);
-    iqr.update(new Big(3), false);
-
-    // Using Wikipedia method:
-    // Window is [2, 3, 4]
-    // Median is 3
-    // Lower half: [2] → Q1 = 2
-    // Upper half: [4] → Q3 = 4
-    // IQR = 4 - 2 = 2
-    const result = iqr.update(new Big(4), false);
-
-    expect(result?.eq(2)).toBe(true);
-  });
-
   describe('getResultOrThrow', () => {
-    it('correctly calculates the IQR', () => {
+    it('calculates the interquartile range (#1)', () => {
       // Test data verified with:
       // https://en.wikipedia.org/wiki/Interquartile_range#Data_set_in_a_table
       const values = [7, 7, 31, 31, 47, 75, 87, 115, 116, 119, 119, 155, 177];
@@ -61,6 +24,32 @@ describe('IQR', () => {
 
       expect(iqr.getResultOrThrow().valueOf()).toBe('88');
     });
+
+    it('calculates the interquartile range (#2)', () => {
+      // Test data verified with:
+      // https://www.khanacademy.org/math/cc-sixth-grade-math/cc-6th-data-statistics/cc-6th/v/calculating-interquartile-range-iqr
+      const values = [4, 4, 6, 7, 10, 11, 12, 14, 15];
+      const iqr = new IQR(9);
+
+      for (const value of values) {
+        iqr.add(new Big(value));
+      }
+
+      expect(iqr.getResultOrThrow().valueOf()).toBe('8');
+    });
+
+    it('calculates the interquartile range (#3)', () => {
+      // Test data verified with:
+      // https://www.khanacademy.org/math/cc-sixth-grade-math/cc-6th-data-statistics/cc-6th/v/calculating-interquartile-range-iqr
+      const values = [7, 9, 9, 10, 10, 10, 11, 12, 12, 14];
+      const iqr = new IQR(10);
+
+      for (const value of values) {
+        iqr.add(new Big(value));
+      }
+
+      expect(iqr.getResultOrThrow().valueOf()).toBe('3');
+    });
   });
 });
 
@@ -69,132 +58,49 @@ describe('FasterIQR', () => {
     const iqr = new FasterIQR(5);
 
     for (let i = 0; i < 4; i++) {
-      const result = iqr.update(i, false);
+      const result = iqr.add(i);
       expect(result).toBeNull();
     }
   });
 
-  it('calculates the interquartile range for a window', () => {
-    const iqr = new FasterIQR(5);
-    const values = [1, 2, 3, 4, 100];
+  describe('getResultOrThrow', () => {
+    it('calculates the interquartile range (#1)', () => {
+      // Test data verified with:
+      // https://en.wikipedia.org/wiki/Interquartile_range#Data_set_in_a_table
+      const values = [7, 7, 31, 31, 47, 75, 87, 115, 116, 119, 119, 155, 177];
+      const iqr = new FasterIQR(13);
 
-    for (const v of values) {
-      iqr.update(v, false);
-    }
+      for (const value of values) {
+        iqr.add(value);
+      }
 
-    // Using Wikipedia method:
-    // Sorted array: [1, 2, 3, 4, 100]
-    // Median is 3
-    // Lower half: [1, 2] → Q1 = 1.5
-    // Upper half: [4, 100] → Q3 = 52
-    // IQR = 52 - 1.5 = 50.5
-    const result = iqr.update(100, true);
+      expect(iqr.getResultOrThrow().valueOf()).toBe(88);
+    });
 
-    expect(result).toBe(50.5);
-  });
+    it('calculates the interquartile range (#2)', () => {
+      // Test data verified with:
+      // https://www.khanacademy.org/math/cc-sixth-grade-math/cc-6th-data-statistics/cc-6th/v/calculating-interquartile-range-iqr
+      const values = [4, 4, 6, 7, 10, 11, 12, 14, 15];
+      const iqr = new FasterIQR(9);
 
-  it('updates IQR as new values enter and old values leave the window', () => {
-    const iqr = new FasterIQR(3);
+      for (const value of values) {
+        iqr.add(value);
+      }
 
-    iqr.update(1, false);
-    iqr.update(2, false);
-    iqr.update(3, false);
+      expect(iqr.getResultOrThrow().valueOf()).toBe(8);
+    });
 
-    // Using Wikipedia method:
-    // Window is [2, 3, 4]
-    // Median is 3
-    // Lower half: [2] → Q1 = 2
-    // Upper half: [4] → Q3 = 4
-    // IQR = 4 - 2 = 2
-    const result = iqr.update(4, false);
+    it('calculates the interquartile range (#3)', () => {
+      // Test data verified with:
+      // https://www.khanacademy.org/math/cc-sixth-grade-math/cc-6th-data-statistics/cc-6th/v/calculating-interquartile-range-iqr
+      const values = [7, 9, 9, 10, 10, 10, 11, 12, 12, 14];
+      const iqr = new FasterIQR(10);
 
-    expect(result).toBe(2);
-  });
+      for (const value of values) {
+        iqr.add(value);
+      }
 
-  it('correctly calculates IQR for [7,7,31,31,47,75,87,115,116,119,119,155,177]', () => {
-    const iqr = new FasterIQR(13);
-    const values = [7, 7, 31, 31, 47, 75, 87, 115, 116, 119, 119, 155, 177];
-
-    for (const v of values.slice(0, -1)) {
-      iqr.update(v, false);
-    }
-
-    // Using Wikipedia method:
-    // Sorted: [7,7,31,31,47,75,87,115,116,119,119,155,177]
-    // Median is 87
-    // Lower half: [7,7,31,31,47,75] → Q1 = 31
-    // Upper half: [115,116,119,119,155,177] → Q3 = 119
-    // IQR = 119 - 31 = 88
-    const result = iqr.update(values[values.length - 1], false);
-
-    expect(result).toBe(88);
-  });
-});
-
-describe('IQR with specific dataset', () => {
-  it('calculates correct IQR=8 for [4,4,6,7,10,11,12,14,15] using Big.js', () => {
-    const iqr = new IQR(9);
-    const values = [4, 4, 6, 7, 10, 11, 12, 14, 15];
-
-    for (const value of values.slice(0, -1)) {
-      iqr.update(new Big(value), false);
-    }
-
-    const result = iqr.update(new Big(values[values.length - 1]), false);
-    // Using Wikipedia method:
-    // Sorted: [4, 4, 6, 7, 10, 11, 12, 14, 15]
-    // Median is 10
-    // Lower half: [4, 4, 6, 7] → Q1 = 5
-    // Upper half: [11, 12, 14, 15] → Q3 = 13
-    // IQR = 13 - 5 = 8
-
-    expect(result?.eq(8)).toBe(true);
-  });
-
-  it('calculates correct IQR=8 for [4,4,6,7,10,11,12,14,15] using numbers', () => {
-    const iqr = new FasterIQR(9);
-    const values = [4, 4, 6, 7, 10, 11, 12, 14, 15];
-
-    for (const value of values.slice(0, -1)) {
-      iqr.update(value, false);
-    }
-
-    const result = iqr.update(values[values.length - 1], false);
-
-    expect(result).toBe(8);
-  });
-});
-
-describe('IQR with dataset [7, 9, 9, 10, 10, 10, 11, 12, 12, 14]', () => {
-  it('calculates correct IQR=3 using Big.js', () => {
-    const iqr = new IQR(10);
-    const values = [7, 9, 9, 10, 10, 10, 11, 12, 12, 14];
-
-    for (const value of values.slice(0, -1)) {
-      iqr.update(new Big(value), false);
-    }
-
-    const result = iqr.update(new Big(values[values.length - 1]), false);
-    // Using Wikipedia method:
-    // Sorted: [7, 9, 9, 10, 10, 10, 11, 12, 12, 14]
-    // Median is 10 (average of 5th and 6th elements)
-    // Lower half: [7, 9, 9, 10, 10] → Q1 = 9 (median of lower half)
-    // Upper half: [10, 11, 12, 12, 14] → Q3 = 12 (median of upper half)
-    // IQR = 12 - 9 = 3
-
-    expect(result?.eq(3)).toBe(true);
-  });
-
-  it('calculates correct IQR=3 using numbers', () => {
-    const iqr = new FasterIQR(10);
-    const values = [7, 9, 9, 10, 10, 10, 11, 12, 12, 14];
-
-    for (const value of values.slice(0, -1)) {
-      iqr.update(value, false);
-    }
-
-    const result = iqr.update(values[values.length - 1], false);
-
-    expect(result).toBe(3);
+      expect(iqr.getResultOrThrow().valueOf()).toBe(3);
+    });
   });
 });

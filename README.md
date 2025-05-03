@@ -119,9 +119,9 @@ Most of the time, the minimum amount of data depends on the interval / time peri
 
 ## Supported Technical Indicators
 
-1. Acceleration Bands (ABANDS)
-1. Accelerator Oscillator (AC)
-1. Average Directional Index (ADX)
+1. [Acceleration Bands](./src/ABANDS/AccelerationBands.ts) (ABANDS)
+1. [Accelerator Oscillator](./src/AC/AC.ts) (AC)
+1. [Average Directional Index](./src/ADX/ADX.ts) (ADX)
 1. Average True Range (ATR)
 1. Awesome Oscillator (AO)
 1. Bollinger Bands (BBANDS)
@@ -132,6 +132,7 @@ Most of the time, the minimum amount of data depends on the interval / time peri
 1. Double Exponential Moving Average (DEMA)
 1. Dual Moving Average (DMA)
 1. Exponential Moving Average (EMA)
+1. Interquartile Range (IQR)
 1. Linear Regression (LINREG)
 1. Mean Absolute Deviation (MAD)
 1. Momentum (MOM / MTM)
@@ -151,9 +152,11 @@ Most of the time, the minimum amount of data depends on the interval / time peri
 
 Utility Methods:
 
-1. Average / Mean
-1. Standard Deviation
-1. Rolling Standard Deviation
+1. [Average / Mean](./src/util/getAverage.ts)
+1. [Median](./src/util/getMedian.ts)
+1. [Quartile](./src/util/getQuartile.ts)
+1. [Standard Deviation](./src/util/getStandardDeviation.ts)
+1. [Streaks](./src/util/getStreaks.ts)
 
 ## Performance
 
