@@ -14,6 +14,16 @@ describe('getQuartile', () => {
       expect(result.valueOf()).toBe('3');
     });
 
+    it('calculates the second quartile (Q2)', () => {
+      // Test data verified with:
+      // https://en.wikipedia.org/wiki/Quartile#Example_2
+      const values = [new Big(7), new Big(15), new Big(36), new Big(39), new Big(40), new Big(41)];
+
+      const result = getQuartile(values, 0.5);
+
+      expect(result.valueOf()).toBe('37.5');
+    });
+
     it('calculates the third quartile (Q3)', () => {
       const values = [new Big(1), new Big(3), new Big(5), new Big(7), new Big(9), new Big(11)];
 
@@ -102,6 +112,16 @@ describe('getFasterQuartile', () => {
       // Median index is 2, lower half is [1, 3]
       // Q1 is median of lower half: 2 -> (1 + 3) / 2
       expect(result).toBe(2);
+    });
+
+    it('calculates the second quartile (Q2)', () => {
+      // Test data verified with:
+      // https://en.wikipedia.org/wiki/Quartile#Example_2
+      const values = [7, 15, 36, 39, 40, 41];
+
+      const result = getFasterQuartile(values, 0.5);
+
+      expect(result.valueOf()).toBe(37.5);
     });
 
     it('calculates the third quartile (Q3)', () => {
