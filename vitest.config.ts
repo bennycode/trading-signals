@@ -9,7 +9,8 @@ export default defineConfig({
   test: {
     bail: 1,
     coverage: {
-      include: ['**/*.{ts,tsx}', '!**/*.d.ts', '!**/cli.ts', '!**/index.ts', '!**/start*.ts'],
+      exclude: ['src/start/**'],
+      include: ['src/**'],
       provider: 'v8',
       reporter: ['html', 'lcov', 'text'],
       thresholds: {
