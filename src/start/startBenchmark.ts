@@ -257,12 +257,6 @@ new Benchmark.Suite('Technical Indicators')
       linreg.add(price);
     }
   })
-  .add('LinearRegression', () => {
-    const linreg = new LinearRegression({period: interval});
-    for (const price of prices) {
-      linreg.add(price);
-    }
-  })
   .add('FasterLinearRegression', () => {
     const fasterLINREG = new FasterLinearRegression({period: interval});
     for (const price of prices) {
