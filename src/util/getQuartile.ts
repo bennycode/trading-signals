@@ -36,7 +36,7 @@ export function getQuartile(values: Big[], quartile: 0.25 | 0.75): Big {
   return sorted[base];
 }
 
-export function getFasterQuartile(values: number[], q: number): number {
+export function getFasterQuartile(values: number[], q: 0.25 | 0.75): number {
   const sorted = [...values].sort((a, b) => a - b);
   const n = sorted.length;
 
