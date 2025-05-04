@@ -1,3 +1,13 @@
+### 6.6.0 (2025-05-04)
+
+##### New Features
+
+- **IQR:** Add Interquartile Range (IQR) ([#800](https://github.com/bennycode/trading-signals/pull/800)) ([c6981f9f](https://github.com/bennycode/trading-signals/commit/c6981f9f89895cf4a9ac0b16ed5b2ff5092cd82c))
+
+##### Refactors
+
+- Update coverage pattern ([e5b46671](https://github.com/bennycode/trading-signals/commit/e5b46671fb90c73fd1022796df9907ff936623c1))
+
 ### 6.5.0 (2025-05-02)
 
 ##### New Features
