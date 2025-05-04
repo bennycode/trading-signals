@@ -7,11 +7,6 @@ export function getQuartile(values: Big[], quartile: 0.25 | 0.5 | 0.75): Big {
   const medianIndex = Math.floor(n / 2);
 
   if (quartile === 0.25) {
-    if (n % 2 === 0) {
-      // Even number of items: the lower half is the first n/2 items
-      return getMedian(sorted.slice(0, medianIndex));
-    }
-    // Odd number of items: the lower half excludes the median
     return getMedian(sorted.slice(0, medianIndex));
   } else if (quartile === 0.75) {
     if (n % 2 === 0) {
@@ -34,11 +29,6 @@ export function getFasterQuartile(values: number[], q: 0.25 | 0.5 | 0.75): numbe
   const medianIndex = Math.floor(n / 2);
 
   if (q === 0.25) {
-    if (n % 2 === 0) {
-      // Even number of items: the lower half is the first n/2 items
-      return getFasterMedian(sorted.slice(0, medianIndex));
-    }
-    // Odd number of items: the lower half excludes the median
     return getFasterMedian(sorted.slice(0, medianIndex));
   } else if (q === 0.75) {
     if (n % 2 === 0) {
