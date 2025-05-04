@@ -1,5 +1,8 @@
 import {getFasterMedian, getMedian} from './getMedian.js';
 
+/**
+ * @see https://en.wikipedia.org/wiki/Quartile
+ */
 export function getQuartile(values: Big[], quartile: 0.25 | 0.5 | 0.75): Big {
   const sorted = [...values].sort((a, b) => a.cmp(b));
   const n = sorted.length;
@@ -22,6 +25,9 @@ export function getQuartile(values: Big[], quartile: 0.25 | 0.5 | 0.75): Big {
   return sorted[base].plus(sorted[base + 1].minus(sorted[base]).times(rest));
 }
 
+/**
+ * @see https://en.wikipedia.org/wiki/Quartile
+ */
 export function getFasterQuartile(values: number[], q: 0.25 | 0.5 | 0.75): number {
   const sorted = [...values].sort((a, b) => a - b);
   const n = sorted.length;
