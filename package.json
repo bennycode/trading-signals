@@ -96,7 +96,7 @@
     "release:major": "generate-changelog -M -x \"chore,test\" && npm run changelog:commit && npm run docs:release && npm version major",
     "release:minor": "generate-changelog -m -x \"chore,test\" && npm run changelog:commit && npm run docs:release && npm version minor",
     "release:patch": "generate-changelog -p -x \"chore,test\" && npm run changelog:commit && npm run docs:release && npm version patch",
-    "start": "tsx ./src/demo.ts",
+    "start": "tsx ./src/start/demo.ts",
     "start:benchmark": "tsc --noEmit && tsx ./src/start/startBenchmark.ts",
     "test": "npm run test:types && npm run test:imports && npm run test:units -- --coverage",
     "test:exports": "attw --pack .",

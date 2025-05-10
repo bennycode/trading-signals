@@ -28,7 +28,7 @@ export async function* keyboardNumberStream() {
 
 const sma = new SMA(3);
 
-console.log('Type in some numbers and press Enter (Ctrl+C to exit):');
+console.log(`Type in some numbers and press Enter to calculate SMA (${sma.interval}).\nPress Ctrl+C to exit.`);
 
 for await (const value of keyboardNumberStream()) {
   sma.add(value);
@@ -36,6 +36,6 @@ for await (const value of keyboardNumberStream()) {
   if (sma.isStable) {
     console.log(`SMA (${sma.interval}): ${sma.getResultOrThrow().toFixed(2)}`);
   } else {
-    console.log(`Waiting for more data...`);
+    console.log(`Need more data...`);
   }
 }
