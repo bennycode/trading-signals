@@ -22,8 +22,8 @@
     "prettier": "^3.5.3",
     "pretty-quick": "^4.1.1",
     "rimraf": "^6.0.1",
-    "ts-node": "^10.9.2",
     "tsup": "^8.4.0",
+    "tsx": "^4.19.4",
     "typedoc": "^0.28.4",
     "typedoc-plugin-markdown": "^4.6.3",
     "typescript": "^5.8.3",
@@ -31,8 +31,8 @@
   },
   "exports": {
     ".": {
-      "import": "./dist/index.js",
-      "default": "./dist/index.cjs"
+      "default": "./dist/index.cjs",
+      "import": "./dist/index.js"
     },
     "./package.json": "./package.json"
   },
@@ -96,12 +96,13 @@
     "release:major": "generate-changelog -M -x \"chore,test\" && npm run changelog:commit && npm run docs:release && npm version major",
     "release:minor": "generate-changelog -m -x \"chore,test\" && npm run changelog:commit && npm run docs:release && npm version minor",
     "release:patch": "generate-changelog -p -x \"chore,test\" && npm run changelog:commit && npm run docs:release && npm version patch",
-    "start:benchmark": "tsc --noEmit && node --no-warnings=ExperimentalWarning --loader ts-node/esm/transpile-only  ./src/start/startBenchmark.ts",
+    "start": "tsx ./src/demo.ts",
+    "start:benchmark": "tsc --noEmit && tsx ./src/start/startBenchmark.ts",
     "test": "npm run test:types && npm run test:imports && npm run test:units -- --coverage",
-    "test:units": "vitest run --passWithNoTests",
     "test:exports": "attw --pack .",
     "test:imports": "depcruise src --include-only \"^src\"",
-    "test:types": "npm run lint:types"
+    "test:types": "npm run lint:types",
+    "test:units": "vitest run --passWithNoTests"
   },
   "type": "module",
   "version": "6.6.1"
