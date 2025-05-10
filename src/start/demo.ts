@@ -1,7 +1,7 @@
 import readline from 'node:readline';
 import {SMA} from '../index.js';
 
-export async function* keyboardNumberStream() {
+export async function* keyboardStream() {
   const KEY_CTRL_C = '\u0003';
 
   const rl = readline.createInterface({
@@ -28,9 +28,9 @@ export async function* keyboardNumberStream() {
 
 const sma = new SMA(3);
 
-console.log(`Type in some numbers and press Enter to calculate SMA (${sma.interval}).\nPress Ctrl+C to exit.`);
+console.log(`Type in some numbers and press "Enter" to calculate SMA (${sma.interval}).\nPress "Ctrl+C" to exit.`);
 
-for await (const value of keyboardNumberStream()) {
+for await (const value of keyboardStream()) {
   sma.add(value);
 
   if (sma.isStable) {
