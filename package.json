@@ -105,5 +105,5 @@
     "test:units": "vitest run --passWithNoTests"
   },
   "type": "module",
-  "version": "6.6.1"
+  "version": "6.6.2"
 }
