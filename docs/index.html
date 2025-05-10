@@ -80,9 +80,12 @@
             important.
           </p>
           <p>
-            All indicators can be updated over time by streaming data (prices or candles) to the
-            <code>update</code> method. Some indicators also provide <code>static</code> batch methods for further
-            performance improvements when providing data up-front during a backtest or historical data import.
+            All indicators can be updated over time by streaming data (prices or
+            <a href="https://en.wikipedia.org/wiki/Candlestick_chart">candles</a>) to the <code>add</code> method. Some
+            indicators also provide <code>static</code> batch methods for further performance improvements when
+            providing data up-front during a backtest or historical data import. You can try it out streaming input data
+            by running the provided <a href="media/demo.ts">demo script</a> with <code>npm start</code>, which uses a
+            keyboard input stream.
           </p>
           <h2 id="installation" class="tsd-anchor-link">
             Installation<a href="#installation" aria-label="Permalink" class="tsd-anchor-icon"
