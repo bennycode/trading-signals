@@ -10,7 +10,7 @@ The "trading-signals" library provides a TypeScript implementation for common te
 
 The main focus of this library is on the accuracy of calculations, but using the provided [faster implementations][2] you can also use it where performance is important.
 
-All indicators can be updated over time by streaming data (prices or candles) to the `update` method. Some indicators also provide `static` batch methods for further performance improvements when providing data up-front during a backtest or historical data import.
+All indicators can be updated over time by streaming data (prices or candles) to the `add` method. Some indicators also provide `static` batch methods for further performance improvements when providing data up-front during a backtest or historical data import. You can try it out streaming input data by running the provided [demo script](./src/start/demo.ts) with `npm start`, which uses a keyboard input stream.
 
 ## Installation
 
