@@ -1,3 +1,9 @@
+#### 6.6.2 (2025-05-10)
+
+##### Refactors
+
+- Use tsx ([#801](https://github.com/bennycode/trading-signals/pull/801)) ([cad5a8cc](https://github.com/bennycode/trading-signals/commit/cad5a8cc68d0db84f609fcb32b0534aa2a8277da))
+
 #### 6.6.1 (2025-05-04)
 
 ### 6.6.0 (2025-05-04)
