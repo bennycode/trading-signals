@@ -4,6 +4,8 @@ export type HighLow = {high: BigSource; low: BigSource};
 
 export type HighLowClose = HighLow & {close: BigSource};
 
+export type HighLowCloseVolume = HighLowClose & {volume: BigSource};
+
 export type OpenHighLowClose = HighLowClose & {open: BigSource};
 
 export type OpenHighLowCloseVolume = OpenHighLowClose & {volume: BigSource};
