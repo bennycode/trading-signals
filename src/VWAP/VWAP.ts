@@ -17,50 +17,17 @@ import type {HighLowCloseVolume, HighLowCloseNumber} from '../util/HighLowClose.
  * @see https://www.investopedia.com/terms/v/vwap.asp
  */
 export class VWAP extends BigIndicatorSeries<HighLowCloseVolume> {
-  private cumulativeTPV: Big = new Big(0); // Cumulative (Typical Price × Volume)
-  private cumulativeVolume: Big = new Big(0); // Cumulative Volume
+  private cumulativeTypicalPriveVolume: Big = new Big(0);
+  private cumulativeVolume: Big = new Big(0);
 
-  /**
-   * Creates a new VWAP instance.
-   */
   constructor() {
     super();
   }
 
-  /**
-   * Adds a new price and volume data point.
-   *
-   * @param price - The price component (typically the typical price (high + low + close) / 3)
-   * @param volume - The volume component
-   */
-  addPrice(price: BigSource, volume: BigSource): Big | null {
-    return this.updatePrice(price, volume, false);
-  }
-
-  /**
-   * Replaces the last price and volume data point.
-   *
-   * @param price - The price component (typically the typical price (high + low + close) / 3)
-   * @param volume - The volume component
-   */
-  replacePrice(price: BigSource, volume: BigSource): Big | null {
-    return this.updatePrice(price, volume, true);
-  }
-
-  /**
-   * Updates VWAP with a new or replacement price and volume data point.
-   *
-   * @param price - The price component (typically the typical price (high + low + close) / 3)
-   * @param volume - The volume component
-   * @param replace - Whether to replace the last data point or add a new one
-   */
-  updatePrice(price: BigSource, volume: BigSource, replace: boolean): Big | null {
-    // Convert inputs to Big if they're not already
-    const typicalPrice = new Big(price);
-    const volumeBig = new Big(volume);
-
-    // Calculate price * volume for this period
-    const typicalPriceVolume = typicalPrice.mul(volumeBig);
+  override update(data: HighLowCloseVolume, replace: boolean): Big | null {
+    const high = new Big(data.high);
+    const typicalPrice = high.plus(data.low).plus(data.close).div(3);
+    const typicalPriceVolume = typicalPrice.mul(data.volume);
 
     if (replace) {
       // Reset to previous state (not implemented for VWAP as it requires storing all price/volume pairs)
@@ -69,51 +36,17 @@ export class VWAP extends BigIndicatorSeries<HighLowCloseVolume> {
       throw new Error('Replace operation is not supported for VWAP. Please reset the indicator instead.');
     } else {
       // Add to cumulative values
-      this.cumulativeTPV = this.cumulativeTPV.plus(typicalPriceVolume);
-      this.cumulativeVolume = this.cumulativeVolume.plus(volumeBig);
+      this.cumulativeTypicalPriveVolume = this.cumulativeTypicalPriveVolume.plus(typicalPriceVolume);
+      this.cumulativeVolume = this.cumulativeVolume.plus(data.volume);
     }
 
     // Only calculate VWAP if we have volume data
     if (this.cumulativeVolume.gt(0)) {
-      const vwap = this.cumulativeTPV.div(this.cumulativeVolume);
+      const vwap = this.cumulativeTypicalPriveVolume.div(this.cumulativeVolume);
       return this.setResult(vwap, replace);
     }
 
     return null;
-  }
-
-  /**
-   * Calculates VWAP using high, low, close prices, and volume.
-   *
-   * @param data - Object containing high, low, close prices, and volume
-   * @param replace - Whether to replace the last data point or add a new one
-   */
-  override update(data: HighLowCloseVolume, replace: boolean): Big | null {
-    // Calculate typical price: (high + low + close) / 3
-    const high = new Big(data.high);
-    const low = new Big(data.low);
-    const close = new Big(data.close);
-    const typicalPrice = high.plus(low).plus(close).div(3);
-
-    return this.updatePrice(typicalPrice, data.volume, replace);
-  }
-
-  /**
-   * Adds a new candle data point with high, low, close prices, and volume.
-   *
-   * @param data - Object containing high, low, close prices, and volume
-   */
-  override add(data: HighLowCloseVolume): Big | null {
-    return this.update(data, false);
-  }
-
-  /**
-   * Replaces the last candle data point.
-   *
-   * @param data - Object containing high, low, close prices, and volume
-   */
-  override replace(data: HighLowCloseVolume): Big | null {
-    return this.update(data, true);
   }
 }
 
