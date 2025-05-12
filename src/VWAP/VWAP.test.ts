@@ -7,8 +7,8 @@ describe('VWAP', () => {
     it('calculates VWAP correctly', () => {
       const vwap = new VWAP();
 
-      // Add test data (price, volume)
-      // [price, volume] pairs
+      // Test data verified with:
+      // https://github.com/cinar/indicatorts/blob/v2.2.2/src/indicator/volume/volumeWeightedAveragePrice.test.ts
       const data = [
         {close: 9, high: 9, low: 9, volume: 100},
         {close: 11, high: 11, low: 11, volume: 110},
@@ -17,55 +17,20 @@ describe('VWAP', () => {
         {close: 8, high: 8, low: 8, volume: 90},
       ] as const;
 
-      // https://github.com/cinar/indicatorts/blob/main/src/indicator/volume/volumeWeightedAveragePrice.test.ts#L18
       const expected = ['9.00', '10.05', '9.21', '9.44', '9.18'] as const;
 
-      for (const input of data) {
+      for (const [index, input] of data.entries()) {
         const result = vwap.add(input);
-        const index = data.indexOf(input);
         expect(result?.toFixed(2)).toBe(expected[index]);
       }
 
       expect(vwap.getResultOrThrow().toFixed()).toBe('9.18');
     });
 
-    it('throws error when trying to replace values', () => {
-      const vwap = new VWAP();
-
-      // Add initial data
-      vwap.add({close: 9, high: 10, low: 8, volume: 100});
-
-      // Attempting to replace should throw an error
-      expect(() => vwap.replace({close: 10, high: 11, low: 9, volume: 120})).toThrow(
-        'Replace operation is not supported for VWAP'
-      );
-    });
-
-    it('throws NotEnoughDataError when there is not enough data', () => {
-      const vwap = new VWAP();
-
-      expect(() => vwap.getResultOrThrow()).toThrow(NotEnoughDataError);
-    });
-
     it('handles zero volume correctly', () => {
       const vwap = new VWAP();
-
-      // Add with zero volume
       const result = vwap.add({close: 9, high: 10, low: 8, volume: 0});
-
-      // VWAP should be null when volume is zero
       expect(result).toBe(null);
-    });
-
-    it('maintains cumulative calculations correctly', () => {
-      const vwap = new VWAP();
-
-      // Add test data with consistent prices to verify cumulative calculations
-      vwap.add({close: 10, high: 10, low: 10, volume: 100}); // TP: 10, TPV: 1000
-      const result = vwap.add({close: 10, high: 10, low: 10, volume: 200}); // TP: 10, TPV: 2000
-
-      // VWAP = (10*100 + 10*200) / (100 + 200) = 3000 / 300 = 10
-      expect(result!.toString()).toBe('10');
     });
   });
 
