@@ -1,7 +1,6 @@
-import type {BigSource} from 'big.js';
 import Big from 'big.js';
-import {BigIndicatorSeries, NumberIndicatorSeries} from '../Indicator.js';
-import type {HighLowCloseVolume, HighLowCloseNumber} from '../util/HighLowClose.js';
+import {BigIndicatorSeries} from '../Indicator.js';
+import type {HighLowCloseVolume} from '../util/HighLowClose.js';
 
 /**
  * Volume-Weighted Average Price (VWAP)
@@ -17,32 +16,38 @@ import type {HighLowCloseVolume, HighLowCloseNumber} from '../util/HighLowClose.
  * @see https://www.investopedia.com/terms/v/vwap.asp
  */
 export class VWAP extends BigIndicatorSeries<HighLowCloseVolume> {
-  private cumulativeTypicalPriveVolume: Big = new Big(0);
+  private cumulativeTypicalPriceVolume: Big = new Big(0);
   private cumulativeVolume: Big = new Big(0);
+  private lastCandle: HighLowCloseVolume | null = null;
 
   constructor() {
     super();
   }
 
-  override update(data: HighLowCloseVolume, replace: boolean): Big | null {
+  private calculateTypicalPriceVolume(data: HighLowCloseVolume) {
     const high = new Big(data.high);
     const typicalPrice = high.plus(data.low).plus(data.close).div(3);
-    const typicalPriceVolume = typicalPrice.mul(data.volume);
+    return typicalPrice.mul(data.volume);
+  }
 
-    if (replace) {
-      // Reset to previous state (not implemented for VWAP as it requires storing all price/volume pairs)
-      // For a proper implementation, we would need to store all historical data points
-      // Since VWAP is typically reset daily, this is an edge case
-      throw new Error('Replace operation is not supported for VWAP. Please reset the indicator instead.');
-    } else {
-      // Add to cumulative values
-      this.cumulativeTypicalPriveVolume = this.cumulativeTypicalPriveVolume.plus(typicalPriceVolume);
-      this.cumulativeVolume = this.cumulativeVolume.plus(data.volume);
+  override update(candle: HighLowCloseVolume, replace: boolean) {
+    if (replace && this.lastCandle !== null) {
+      const lastTypicalPriceVolume = this.calculateTypicalPriceVolume(this.lastCandle);
+      this.cumulativeTypicalPriceVolume = this.cumulativeTypicalPriceVolume.minus(lastTypicalPriceVolume);
+      this.cumulativeVolume = this.cumulativeVolume.minus(this.lastCandle.volume);
     }
+
+    // Cache the latest values for potential future replacement
+    this.lastCandle = candle;
+
+    // Add to cumulative values
+    const typicalPriceVolume = this.calculateTypicalPriceVolume(candle);
+    this.cumulativeTypicalPriceVolume = this.cumulativeTypicalPriceVolume.plus(typicalPriceVolume);
+    this.cumulativeVolume = this.cumulativeVolume.plus(candle.volume);
 
     // Only calculate VWAP if we have volume data
     if (this.cumulativeVolume.gt(0)) {
-      const vwap = this.cumulativeTypicalPriveVolume.div(this.cumulativeVolume);
+      const vwap = this.cumulativeTypicalPriceVolume.div(this.cumulativeVolume);
       return this.setResult(vwap, replace);
     }
 

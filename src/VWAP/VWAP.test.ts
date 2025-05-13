@@ -1,5 +1,4 @@
 import {VWAP} from './VWAP.js';
-import {NotEnoughDataError} from '../error/NotEnoughDataError.js';
 
 // @see https://github.com/cinar/indicatorts/blob/main/src/indicator/volume/volumeWeightedAveragePrice.test.ts
 describe('VWAP', () => {
