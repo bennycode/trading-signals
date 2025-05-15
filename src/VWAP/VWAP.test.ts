@@ -2,7 +2,37 @@ import {VWAP} from './VWAP.js';
 
 // @see https://github.com/cinar/indicatorts/blob/main/src/indicator/volume/volumeWeightedAveragePrice.test.ts
 describe('VWAP', () => {
-  describe('VWAP', () => {
+  describe('add', () => {
+    it('handles zero volume correctly', () => {
+      const vwap = new VWAP();
+      const result = vwap.add({close: 9, high: 10, low: 8, volume: 0});
+      expect(result).toBe(null);
+    });
+  });
+
+  describe('replace', () => {
+    it('replaces the most recently added value', () => {
+      const vwap = new VWAP();
+
+      const data = [
+        {close: 100, high: 100, low: 100, volume: 100},
+        {close: 200, high: 200, low: 200, volume: 200},
+        {close: 300, high: 300, low: 300, volume: 300},
+        {close: 400, high: 400, low: 400, volume: 400},
+      ] as const;
+
+      data.forEach(input => vwap.add(input));
+      expect(vwap.getResultOrThrow().toFixed()).toBe('300');
+
+      vwap.replace({close: 120, high: 120, low: 120, volume: 120});
+      expect(vwap.getResultOrThrow().toFixed(2)).toBe('214.44');
+
+      vwap.replace(data[data.length - 1]);
+      expect(vwap.getResultOrThrow().toFixed()).toBe('300');
+    });
+  });
+
+  describe('getResultOrThrow', () => {
     it('calculates VWAP correctly', () => {
       const vwap = new VWAP();
 
@@ -25,85 +55,5 @@ describe('VWAP', () => {
 
       expect(vwap.getResultOrThrow().toFixed()).toBe('9.18');
     });
-
-    it('handles zero volume correctly', () => {
-      const vwap = new VWAP();
-      const result = vwap.add({close: 9, high: 10, low: 8, volume: 0});
-      expect(result).toBe(null);
-    });
   });
-
-  // describe('FasterVWAP', () => {
-  //   it('calculates VWAP correctly', () => {
-  //     const vwap = new FasterVWAP();
-
-  //     // Add test data (price, volume)
-  //     const data = [
-  //       {high: 10, low: 8, close: 9, volume: 100}, // TP: 9, TPV: 900
-  //       {high: 12, low: 10, close: 11, volume: 200}, // TP: 11, TPV: 2200
-  //       {high: 13, low: 9, close: 10, volume: 150}, // TP: 10.67, TPV: 1600.5
-  //     ];
-
-  //     // First data point
-  //     let result = vwap.add(data[0]);
-  //     expect(result).toBeCloseTo(9);
-
-  //     // Second data point
-  //     result = vwap.add(data[1]);
-  //     // VWAP = (9*100 + 11*200) / (100 + 200) = 3100 / 300 = 10.33...
-  //     expect(result).toBeCloseTo(10.33333, 5);
-
-  //     // Third data point
-  //     result = vwap.add(data[2]);
-  //     // VWAP = (9*100 + 11*200 + 10.67*150) / (100 + 200 + 150) = 4700.5 / 450 = 10.445...
-  //     expect(result).toBeCloseTo(10.44556, 5);
-
-  //     // Test reset functionality
-  //     vwap.reset();
-  //     expect(vwap.getResult()).toBe(null);
-
-  //     // Test that adding new data works after reset
-  //     result = vwap.add(data[0]);
-  //     expect(result).toBeCloseTo(9);
-  //   });
-
-  //   it('throws error when trying to replace values', () => {
-  //     const vwap = new FasterVWAP();
-
-  //     // Add initial data
-  //     vwap.add({high: 10, low: 8, close: 9, volume: 100});
-
-  //     // Attempting to replace should throw an error
-  //     expect(() => vwap.replace({high: 11, low: 9, close: 10, volume: 120})).toThrow(
-  //       'Replace operation is not supported for VWAP'
-  //     );
-  //   });
-
-  //   it('throws NotEnoughDataError when there is not enough data', () => {
-  //     const vwap = new FasterVWAP();
-
-  //     expect(() => vwap.getResultOrThrow()).toThrow(NotEnoughDataError);
-  //   });
-
-  //   it('handles zero volume correctly', () => {
-  //     const vwap = new FasterVWAP();
-
-  //     // Add with zero volume
-  //     const result = vwap.add({high: 10, low: 8, close: 9, volume: 0});
-
-  //     // VWAP should be null when volume is zero
-  //     expect(result).toBe(null);
-  //   });
-
-  //   it('maintains cumulative calculations correctly', () => {
-  //     const vwap = new FasterVWAP();
-
-  //     // Add test data with consistent prices to verify cumulative calculations
-  //     vwap.add({high: 10, low: 10, close: 10, volume: 100}); // TP: 10, TPV: 1000
-  //     const result = vwap.add({high: 10, low: 10, close: 10, volume: 200}); // TP: 10, TPV: 2000
-
-  //     // VWAP = (10*100 + 10*200) / (100 + 200) = 3000 / 300 = 10
-  //     expect(result).toBe(10);
-  //   });
-  // });
 });

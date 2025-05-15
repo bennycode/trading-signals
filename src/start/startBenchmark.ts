@@ -65,6 +65,7 @@ import {
   StochasticRSI,
   TDS,
   TR,
+  VWAP,
   WMA,
   WSMA,
   type OpenHighLowCloseVolumeNumber,
@@ -440,6 +441,12 @@ new Benchmark.Suite('Technical Indicators')
     const fasterTR = new FasterTR();
     for (const candle of floatCandles) {
       fasterTR.add(candle);
+    }
+  })
+  .add('VWAP', () => {
+    const vwap = new VWAP();
+    for (const candle of floatCandles) {
+      vwap.add(candle);
     }
   })
   .add('WSMA', () => {
