@@ -1,5 +1,5 @@
 import Big from 'big.js';
-import {BigIndicatorSeries} from '../Indicator.js';
+import {BigIndicatorSeries, NumberIndicatorSeries} from '../Indicator.js';
 import type {HighLowCloseVolume} from '../util/HighLowClose.js';
 
 /**
@@ -46,6 +46,45 @@ export class VWAP extends BigIndicatorSeries<HighLowCloseVolume> {
     // Only calculate VWAP if we have volume data
     if (this.cumulativeVolume.gt(0)) {
       const vwap = this.cumulativeTypicalPriceVolume.div(this.cumulativeVolume);
+      return this.setResult(vwap, replace);
+    }
+
+    return null;
+  }
+}
+
+export class FasterVWAP extends NumberIndicatorSeries<HighLowCloseVolume<number>> {
+  private cumulativeTypicalPriceVolume: number = 0;
+  private cumulativeVolume: number = 0;
+  private lastCandle: HighLowCloseVolume<number> | null = null;
+
+  constructor() {
+    super();
+  }
+
+  private calculateTypicalPriceVolume(data: HighLowCloseVolume<number>) {
+    const typicalPrice = (data.high + data.low + data.close) / 3;
+    return typicalPrice * data.volume;
+  }
+
+  override update(candle: HighLowCloseVolume<number>, replace: boolean) {
+    if (replace && this.lastCandle !== null) {
+      const lastTypicalPriceVolume = this.calculateTypicalPriceVolume(this.lastCandle);
+      this.cumulativeTypicalPriceVolume = this.cumulativeTypicalPriceVolume - lastTypicalPriceVolume;
+      this.cumulativeVolume = this.cumulativeVolume - this.lastCandle.volume;
+    }
+
+    // Cache the latest values for potential future replacement
+    this.lastCandle = candle;
+
+    // Add to cumulative values
+    const typicalPriceVolume = this.calculateTypicalPriceVolume(candle);
+    this.cumulativeTypicalPriceVolume = this.cumulativeTypicalPriceVolume + typicalPriceVolume;
+    this.cumulativeVolume = this.cumulativeVolume + candle.volume;
+
+    // Only calculate VWAP if we have volume data
+    if (this.cumulativeVolume > 0) {
+      const vwap = this.cumulativeTypicalPriceVolume / this.cumulativeVolume;
       return this.setResult(vwap, replace);
     }
 

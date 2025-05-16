@@ -1,18 +1,24 @@
-import {VWAP} from './VWAP.js';
+import {FasterVWAP, VWAP} from './VWAP.js';
 
 // @see https://github.com/cinar/indicatorts/blob/main/src/indicator/volume/volumeWeightedAveragePrice.test.ts
 describe('VWAP', () => {
   describe('add', () => {
     it('handles zero volume correctly', () => {
       const vwap = new VWAP();
+      const fasterVWAP = new FasterVWAP();
+
       const result = vwap.add({close: 9, high: 10, low: 8, volume: 0});
+      const fasterResult = fasterVWAP.add({close: 9, high: 10, low: 8, volume: 0});
+
       expect(result).toBe(null);
+      expect(fasterResult).toBe(null);
     });
   });
 
   describe('replace', () => {
     it('replaces the most recently added value', () => {
       const vwap = new VWAP();
+      const fasterVWAP = new FasterVWAP();
 
       const data = [
         {close: 100, high: 100, low: 100, volume: 100},
@@ -21,20 +27,33 @@ describe('VWAP', () => {
         {close: 400, high: 400, low: 400, volume: 400},
       ] as const;
 
-      data.forEach(input => vwap.add(input));
-      expect(vwap.getResultOrThrow().toFixed()).toBe('300');
+      data.forEach(input => {
+        vwap.add(input);
+        fasterVWAP.add(input);
+      });
 
-      vwap.replace({close: 120, high: 120, low: 120, volume: 120});
+      expect(vwap.getResultOrThrow().toFixed()).toBe('300');
+      expect(fasterVWAP.getResultOrThrow().toFixed()).toBe('300');
+
+      const replaceValue = {close: 120, high: 120, low: 120, volume: 120};
+      vwap.replace(replaceValue);
+      fasterVWAP.replace(replaceValue);
+
       expect(vwap.getResultOrThrow().toFixed(2)).toBe('214.44');
+      expect(fasterVWAP.getResultOrThrow().toFixed(2)).toBe('214.44');
 
       vwap.replace(data[data.length - 1]);
+      fasterVWAP.replace(data[data.length - 1]);
+
       expect(vwap.getResultOrThrow().toFixed()).toBe('300');
+      expect(fasterVWAP.getResultOrThrow().toFixed()).toBe('300');
     });
   });
 
   describe('getResultOrThrow', () => {
     it('calculates VWAP correctly', () => {
       const vwap = new VWAP();
+      const fasterVWAP = new FasterVWAP();
 
       // Test data verified with:
       // https://github.com/cinar/indicatorts/blob/v2.2.2/src/indicator/volume/volumeWeightedAveragePrice.test.ts
@@ -50,10 +69,37 @@ describe('VWAP', () => {
 
       for (const [index, input] of data.entries()) {
         const result = vwap.add(input);
+        const fasterResult = fasterVWAP.add(input);
+
         expect(result?.toFixed(2)).toBe(expected[index]);
+        expect(fasterResult?.toFixed(2)).toBe(expected[index]);
       }
 
       expect(vwap.getResultOrThrow().toFixed()).toBe('9.18');
+      expect(fasterVWAP.getResultOrThrow().toFixed()).toBe('9.18');
+    });
+
+    it('tracks highest and lowest values correctly', () => {
+      const vwap = new VWAP();
+      const fasterVWAP = new FasterVWAP();
+
+      const data = [
+        {close: 10, high: 10, low: 10, volume: 100}, // VWAP: 10
+        {close: 20, high: 20, low: 20, volume: 100}, // VWAP: 15
+        {close: 5, high: 5, low: 5, volume: 100}, // VWAP: 11.67
+        {close: 30, high: 30, low: 30, volume: 300}, // VWAP: 18.33
+      ];
+
+      data.forEach(candle => {
+        vwap.add(candle);
+        fasterVWAP.add(candle);
+      });
+
+      expect(vwap.highest?.toFixed(2)).toBe('18.33');
+      expect(vwap.lowest?.toFixed(2)).toBe('10.00');
+
+      expect(fasterVWAP.highest?.toFixed(2)).toBe('18.33');
+      expect(fasterVWAP.lowest?.toFixed(2)).toBe('10.00');
     });
   });
 });
