@@ -13,15 +13,8 @@ export type OpenHighLowClose<T = BigSource> = HighLowClose<T> & {
   open: T;
 };
 
-export type HighLowCloseVolume<T = BigSource> = HighLowClose<T> & {
-  volume: T;
-};
-
 export type OpenHighLowCloseVolume<T = BigSource> = OpenHighLowClose<T> & {
   volume: T;
 };
 
-export type HighLowNumber = HighLow<number>;
-export type HighLowCloseNumber = HighLowClose<number>;
-export type OpenHighLowCloseNumber = OpenHighLowClose<number>;
-export type OpenHighLowCloseVolumeNumber = OpenHighLowCloseVolume<number>;
+export type HighLowCloseVolume<T = BigSource> = Omit<OpenHighLowCloseVolume<T>, 'open'>;

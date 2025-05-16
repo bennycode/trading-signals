@@ -1,6 +1,6 @@
 import {BigIndicatorSeries, NumberIndicatorSeries} from '../Indicator.js';
 import {FasterSMA, SMA} from '../SMA/SMA.js';
-import type {HighLow, HighLowNumber} from '../util/index.js';
+import type {HighLow} from '../util/index.js';
 import type {FasterMovingAverageTypes, MovingAverageTypes} from '../MA/MovingAverageTypes.js';
 import type {FasterMovingAverage, MovingAverage} from '../MA/MovingAverage.js';
 import Big from 'big.js';
@@ -48,7 +48,7 @@ export class AO extends BigIndicatorSeries<HighLow> {
   }
 }
 
-export class FasterAO extends NumberIndicatorSeries<HighLowNumber> {
+export class FasterAO extends NumberIndicatorSeries<HighLow<number>> {
   public readonly long: FasterMovingAverage;
   public readonly short: FasterMovingAverage;
 
@@ -62,7 +62,7 @@ export class FasterAO extends NumberIndicatorSeries<HighLowNumber> {
     this.long = new SmoothingIndicator(longInterval);
   }
 
-  update({low, high}: HighLowNumber, replace: boolean) {
+  update({low, high}: HighLow<number>, replace: boolean) {
     const medianPrice = (low + high) / 2;
 
     this.short.update(medianPrice, replace);

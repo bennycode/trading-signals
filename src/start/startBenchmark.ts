@@ -1,5 +1,4 @@
 import Benchmark, {type Event} from 'benchmark';
-import candles from '../test/fixtures/candles/100-candles.json' with {type: 'json'};
 import {
   AC,
   AccelerationBands,
@@ -56,10 +55,10 @@ import {
   MOM,
   OBV,
   Period,
+  PSAR,
   RMA,
   ROC,
   RSI,
-  PSAR,
   SMA,
   StochasticOscillator,
   StochasticRSI,
@@ -68,14 +67,14 @@ import {
   VWAP,
   WMA,
   WSMA,
-  type OpenHighLowCloseVolumeNumber,
 } from '../index.js';
+import candles from '../test/fixtures/candles/100-candles.json' with {type: 'json'};
 
 const shortInterval = 10;
 const interval = 20;
 const longInterval = 40;
 const prices: number[] = candles.map(candle => parseFloat(candle.close));
-const floatCandles: OpenHighLowCloseVolumeNumber[] = candles.map(candle => ({
+const floatCandles = candles.map(candle => ({
   close: parseFloat(candle.close),
   high: parseFloat(candle.high),
   low: parseFloat(candle.low),
