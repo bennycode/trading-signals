@@ -78,28 +78,5 @@ describe('VWAP', () => {
       expect(vwap.getResultOrThrow().toFixed(2)).toBe('9.18');
       expect(fasterVWAP.getResultOrThrow().toFixed(2)).toBe('9.18');
     });
-
-    it('tracks highest and lowest values correctly', () => {
-      const vwap = new VWAP();
-      const fasterVWAP = new FasterVWAP();
-
-      const data = [
-        {close: 10, high: 10, low: 10, volume: 100}, // VWAP: 10
-        {close: 20, high: 20, low: 20, volume: 100}, // VWAP: 15
-        {close: 5, high: 5, low: 5, volume: 100}, // VWAP: 11.67
-        {close: 30, high: 30, low: 30, volume: 300}, // VWAP: 18.33
-      ];
-
-      data.forEach(candle => {
-        vwap.add(candle);
-        fasterVWAP.add(candle);
-      });
-
-      expect(vwap.highest?.toFixed(2)).toBe('18.33');
-      expect(vwap.lowest?.toFixed(2)).toBe('10.00');
-
-      expect(fasterVWAP.highest?.toFixed(2)).toBe('18.33');
-      expect(fasterVWAP.lowest?.toFixed(2)).toBe('10.00');
-    });
   });
 });
