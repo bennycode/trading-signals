@@ -75,8 +75,8 @@ describe('VWAP', () => {
         expect(fasterResult?.toFixed(2)).toBe(expected[index]);
       }
 
-      expect(vwap.getResultOrThrow().toFixed()).toBe('9.18');
-      expect(fasterVWAP.getResultOrThrow().toFixed()).toBe('9.18');
+      expect(vwap.getResultOrThrow().toFixed(2)).toBe('9.18');
+      expect(fasterVWAP.getResultOrThrow().toFixed(2)).toBe('9.18');
     });
 
     it('tracks highest and lowest values correctly', () => {
