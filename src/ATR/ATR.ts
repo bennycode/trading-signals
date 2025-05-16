@@ -2,7 +2,7 @@ import {BigIndicatorSeries, NumberIndicatorSeries} from '../Indicator.js';
 import type {FasterMovingAverage, MovingAverage} from '../MA/MovingAverage.js';
 import type {FasterMovingAverageTypes, MovingAverageTypes} from '../MA/MovingAverageTypes.js';
 import {FasterTR, TR} from '../TR/TR.js';
-import type {HighLowClose, HighLowCloseNumber} from '../util/HighLowClose.js';
+import type {HighLowClose} from '../util/HighLowClose.js';
 import {FasterWSMA, WSMA} from '../WSMA/WSMA.js';
 
 /**
@@ -50,7 +50,7 @@ export class ATR extends BigIndicatorSeries<HighLowClose> {
   }
 }
 
-export class FasterATR extends NumberIndicatorSeries<HighLowCloseNumber> {
+export class FasterATR extends NumberIndicatorSeries<HighLowClose<number>> {
   private readonly tr: FasterTR;
   private readonly smoothing: FasterMovingAverage;
 
@@ -63,7 +63,7 @@ export class FasterATR extends NumberIndicatorSeries<HighLowCloseNumber> {
     this.smoothing = new SmoothingIndicator(interval);
   }
 
-  update(candle: HighLowCloseNumber, replace: boolean) {
+  update(candle: HighLowClose<number>, replace: boolean) {
     const trueRange = this.tr.update(candle, replace);
     this.smoothing.update(trueRange, replace);
     if (this.smoothing.isStable) {

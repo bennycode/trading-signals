@@ -3,7 +3,7 @@ import {TechnicalIndicator} from '../Indicator.js';
 import {FasterSMA, SMA} from '../SMA/SMA.js';
 import {getMaximum} from '../util/getMaximum.js';
 import {getMinimum} from '../util/getMinimum.js';
-import type {HighLowClose, HighLowCloseNumber} from '../util/HighLowClose.js';
+import type {HighLowClose} from '../util/HighLowClose.js';
 import {pushUpdate} from '../util/pushUpdate.js';
 
 export interface StochasticResult {
@@ -83,8 +83,8 @@ export class StochasticOscillator extends TechnicalIndicator<StochasticResult, H
   }
 }
 
-export class FasterStochasticOscillator extends TechnicalIndicator<FasterStochasticResult, HighLowCloseNumber> {
-  public readonly candles: HighLowCloseNumber[] = [];
+export class FasterStochasticOscillator extends TechnicalIndicator<FasterStochasticResult, HighLowClose<number>> {
+  public readonly candles: HighLowClose<number>[] = [];
   private readonly periodM: FasterSMA;
   private readonly periodP: FasterSMA;
 
@@ -103,7 +103,7 @@ export class FasterStochasticOscillator extends TechnicalIndicator<FasterStochas
     this.periodP = new FasterSMA(p);
   }
 
-  update(candle: HighLowCloseNumber, replace: boolean) {
+  update(candle: HighLowClose<number>, replace: boolean) {
     pushUpdate(this.candles, replace, candle, this.n);
 
     if (this.candles.length === this.n) {

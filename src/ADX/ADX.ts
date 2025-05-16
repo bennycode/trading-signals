@@ -2,7 +2,7 @@ import {DX, FasterDX} from '../DX/DX.js';
 import {BigIndicatorSeries, NumberIndicatorSeries} from '../Indicator.js';
 import type {FasterMovingAverage, MovingAverage} from '../MA/MovingAverage.js';
 import type {FasterMovingAverageTypes, MovingAverageTypes} from '../MA/MovingAverageTypes.js';
-import type {HighLowClose, HighLowCloseNumber} from '../util/HighLowClose.js';
+import type {HighLowClose} from '../util/HighLowClose.js';
 import {FasterWSMA, WSMA} from '../WSMA/WSMA.js';
 
 /**
@@ -72,7 +72,7 @@ export class ADX extends BigIndicatorSeries<HighLowClose> {
   }
 }
 
-export class FasterADX extends NumberIndicatorSeries<HighLowCloseNumber> {
+export class FasterADX extends NumberIndicatorSeries<HighLowClose<number>> {
   private readonly dx: FasterDX;
   private readonly smoothed: FasterMovingAverage;
 
@@ -93,7 +93,7 @@ export class FasterADX extends NumberIndicatorSeries<HighLowCloseNumber> {
     return this.dx.pdi;
   }
 
-  update(candle: HighLowCloseNumber, replace: boolean) {
+  update(candle: HighLowClose<number>, replace: boolean) {
     const result = this.dx.update(candle, replace);
 
     if (result !== null) {

@@ -2,7 +2,7 @@ import {AO, FasterAO} from '../AO/AO.js';
 import {BigIndicatorSeries, NumberIndicatorSeries} from '../Indicator.js';
 import {FasterMOM, MOM} from '../MOM/MOM.js';
 import {FasterSMA, SMA} from '../SMA/SMA.js';
-import type {HighLow, HighLowNumber} from '../util/index.js';
+import type {HighLow} from '../util/index.js';
 
 /**
  * Accelerator Oscillator (AC)
@@ -46,7 +46,7 @@ export class AC extends BigIndicatorSeries<HighLow> {
   }
 }
 
-export class FasterAC extends NumberIndicatorSeries<HighLowNumber> {
+export class FasterAC extends NumberIndicatorSeries<HighLow<number>> {
   public readonly ao: FasterAO;
   public readonly momentum: FasterMOM;
   public readonly signal: FasterSMA;
@@ -62,7 +62,7 @@ export class FasterAC extends NumberIndicatorSeries<HighLowNumber> {
     this.signal = new FasterSMA(signalInterval);
   }
 
-  update(input: HighLowNumber, replace: boolean) {
+  update(input: HighLow<number>, replace: boolean) {
     const ao = this.ao.update(input, replace);
     if (ao) {
       this.signal.update(ao, replace);

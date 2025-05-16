@@ -1,6 +1,5 @@
 import {AO, FasterAO} from './AO.js';
 import {NotEnoughDataError} from '../error/index.js';
-import type {HighLowNumber} from '../util/index.js';
 
 describe('AO', () => {
   // Test data verified with:
@@ -39,7 +38,7 @@ describe('AO', () => {
       const fasterAO = new FasterAO(shortInterval, longInterval);
 
       for (let i = 0; i < lows.length; i++) {
-        const candle: HighLowNumber = {
+        const candle = {
           high: highs[i],
           low: lows[i],
         };

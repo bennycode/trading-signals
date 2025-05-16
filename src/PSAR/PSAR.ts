@@ -1,6 +1,6 @@
 import Big from 'big.js';
 import {BigIndicatorSeries, NumberIndicatorSeries} from '../Indicator.js';
-import type {HighLowNumber, HighLow} from '../util/HighLowClose.js';
+import type {HighLow} from '../util/HighLowClose.js';
 import {NotEnoughDataError} from '../error/index.js';
 
 export type PSARConfig = {
@@ -204,15 +204,15 @@ export class PSAR extends BigIndicatorSeries<HighLow> {
   }
 }
 
-export class FasterPSAR extends NumberIndicatorSeries<HighLowNumber> {
+export class FasterPSAR extends NumberIndicatorSeries<HighLow<number>> {
   private readonly accelerationStep: number;
   private readonly accelerationMax: number;
   private acceleration: number = 0;
   private extreme: number | null = null;
   private lastSar: number | null = null;
   private isLong: boolean | null = null;
-  private previousCandle: HighLowNumber | null = null;
-  private prePreviousCandle: HighLowNumber | null = null;
+  private previousCandle: HighLow<number> | null = null;
+  private prePreviousCandle: HighLow<number> | null = null;
 
   constructor(config: PSARConfig) {
     super();
@@ -231,7 +231,7 @@ export class FasterPSAR extends NumberIndicatorSeries<HighLowNumber> {
     return this.lastSar !== null;
   }
 
-  update(candle: HighLowNumber, replace: boolean): number | null {
+  update(candle: HighLow<number>, replace: boolean): number | null {
     const {high, low} = candle;
 
     // If replacing the last candle and we haven't processed enough data yet

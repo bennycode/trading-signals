@@ -36,17 +36,18 @@ describe('MOM', () => {
       // https://github.com/TulipCharts/tulipindicators/blob/v0.8.0/tests/untest.txt#L286-L288
       const inputs = [
         81.59, 81.06, 82.87, 83.0, 83.61, 83.15, 82.84, 83.99, 84.55, 84.36, 85.53, 86.54, 86.89, 87.77, 87.29,
-      ];
-      const outputs = [1.56, 1.78, 1.12, 1.55, 0.75, 2.38, 3.7, 2.9, 3.22, 2.93];
-      const momentum = new MOM(5);
-      const fasterMomentum = new FasterMOM(5);
+      ] as const;
+      const outputs = [1.56, 1.78, 1.12, 1.55, 0.75, 2.38, 3.7, 2.9, 3.22, 2.93] as const;
+      const interval = 5;
+      const momentum = new MOM(interval);
+      const fasterMomentum = new FasterMOM(interval);
 
-      for (const input of inputs) {
+      for (const [index, input] of inputs.entries()) {
         momentum.add(input);
         fasterMomentum.add(input);
         if (momentum.isStable && fasterMomentum.isStable) {
           const actual = momentum.getResultOrThrow().toFixed(3);
-          const expected = outputs.shift()!;
+          const expected = outputs[index - interval];
           expect(parseFloat(actual)).toBe(expected);
           expect(fasterMomentum.getResultOrThrow().toFixed(2)).toBe(expected.toFixed(2));
         }
