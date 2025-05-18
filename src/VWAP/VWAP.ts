@@ -29,6 +29,11 @@ export class VWAP extends BigIndicatorSeries<HighLowCloseVolume> {
   }
 
   override update(candle: HighLowCloseVolume, replace: boolean) {
+    // Only calculate VWAP if we have volume data
+    if (candle.volume === 0) {
+      return null;
+    }
+
     if (replace && this.lastCandle !== null) {
       const lastTypicalPriceVolume = this.calculateTypicalPriceVolume(this.lastCandle);
       this.cumulativeTypicalPriceVolume = this.cumulativeTypicalPriceVolume.minus(lastTypicalPriceVolume);
@@ -38,12 +43,10 @@ export class VWAP extends BigIndicatorSeries<HighLowCloseVolume> {
     // Cache the latest values for potential future replacement
     this.lastCandle = candle;
 
-    // Add to cumulative values
     const typicalPriceVolume = this.calculateTypicalPriceVolume(candle);
     this.cumulativeTypicalPriceVolume = this.cumulativeTypicalPriceVolume.plus(typicalPriceVolume);
     this.cumulativeVolume = this.cumulativeVolume.plus(candle.volume);
 
-    // Only calculate VWAP if we have volume data
     if (this.cumulativeVolume.gt(0)) {
       const vwap = this.cumulativeTypicalPriceVolume.div(this.cumulativeVolume);
       return this.setResult(vwap, replace);
@@ -68,6 +71,11 @@ export class FasterVWAP extends NumberIndicatorSeries<HighLowCloseVolume<number>
   }
 
   override update(candle: HighLowCloseVolume<number>, replace: boolean) {
+    // Only calculate VWAP if we have volume data
+    if (candle.volume === 0) {
+      return null;
+    }
+
     if (replace && this.lastCandle !== null) {
       const lastTypicalPriceVolume = this.calculateTypicalPriceVolume(this.lastCandle);
       this.cumulativeTypicalPriceVolume = this.cumulativeTypicalPriceVolume - lastTypicalPriceVolume;
@@ -77,17 +85,11 @@ export class FasterVWAP extends NumberIndicatorSeries<HighLowCloseVolume<number>
     // Cache the latest values for potential future replacement
     this.lastCandle = candle;
 
-    // Add to cumulative values
     const typicalPriceVolume = this.calculateTypicalPriceVolume(candle);
     this.cumulativeTypicalPriceVolume = this.cumulativeTypicalPriceVolume + typicalPriceVolume;
     this.cumulativeVolume = this.cumulativeVolume + candle.volume;
 
-    // Only calculate VWAP if we have volume data
-    if (this.cumulativeVolume > 0) {
-      const vwap = this.cumulativeTypicalPriceVolume / this.cumulativeVolume;
-      return this.setResult(vwap, replace);
-    }
-
-    return null;
+    const vwap = this.cumulativeTypicalPriceVolume / this.cumulativeVolume;
+    return this.setResult(vwap, replace);
   }
 }
