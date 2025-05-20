@@ -4,7 +4,7 @@ import type {FasterMovingAverage, MovingAverage} from '../MA/MovingAverage.js';
 import type {FasterMovingAverageTypes, MovingAverageTypes} from '../MA/MovingAverageTypes.js';
 import {FasterSMA, SMA} from '../SMA/SMA.js';
 import type {BandsResult, FasterBandsResult} from '../util/BandsResult.js';
-import type {HighLowClose, HighLowCloseNumber} from '../util/index.js';
+import type {HighLowClose} from '../util/index.js';
 
 export class AccelerationBands extends TechnicalIndicator<BandsResult, HighLowClose> {
   private readonly lowerBand: MovingAverage;
@@ -69,7 +69,7 @@ export class AccelerationBands extends TechnicalIndicator<BandsResult, HighLowCl
   }
 }
 
-export class FasterAccelerationBands extends TechnicalIndicator<FasterBandsResult, HighLowCloseNumber> {
+export class FasterAccelerationBands extends TechnicalIndicator<FasterBandsResult, HighLowClose<number>> {
   private readonly lowerBand: FasterMovingAverage;
   private readonly middleBand: FasterMovingAverage;
   private readonly upperBand: FasterMovingAverage;
@@ -85,7 +85,7 @@ export class FasterAccelerationBands extends TechnicalIndicator<FasterBandsResul
     this.upperBand = new SmoothingIndicator(interval);
   }
 
-  update({high, low, close}: HighLowCloseNumber, replace: boolean) {
+  update({high, low, close}: HighLowClose<number>, replace: boolean) {
     const highPlusLow = high + low;
     const coefficient = highPlusLow === 0 ? 0 : ((high - low) / highPlusLow) * this.width;
 

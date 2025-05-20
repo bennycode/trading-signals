@@ -1,6 +1,6 @@
 import Big from 'big.js';
 import {BigIndicatorSeries, NumberIndicatorSeries} from '../Indicator.js';
-import type {OpenHighLowCloseVolume, OpenHighLowCloseVolumeNumber} from '../util/HighLowClose.js';
+import type {OpenHighLowCloseVolume} from '../util/HighLowClose.js';
 import {pushUpdate} from '../util/pushUpdate.js';
 
 /**
@@ -32,10 +32,10 @@ export class OBV extends BigIndicatorSeries<OpenHighLowCloseVolume> {
   }
 }
 
-export class FasterOBV extends NumberIndicatorSeries<OpenHighLowCloseVolumeNumber> {
-  public readonly candles: OpenHighLowCloseVolumeNumber[] = [];
+export class FasterOBV extends NumberIndicatorSeries<OpenHighLowCloseVolume<number>> {
+  public readonly candles: OpenHighLowCloseVolume<number>[] = [];
 
-  update(candle: OpenHighLowCloseVolumeNumber, replace: boolean) {
+  update(candle: OpenHighLowCloseVolume<number>, replace: boolean) {
     pushUpdate(this.candles, replace, candle, 2);
 
     if (this.candles.length === 1) {
