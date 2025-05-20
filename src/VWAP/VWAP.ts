@@ -24,8 +24,8 @@ export class VWAP extends BigIndicatorSeries<HighLowCloseVolume> {
 
   private calculateTypicalPriceVolume(data: HighLowCloseVolume) {
     const high = new Big(data.high);
-    const typicalPrice = high.plus(data.low).plus(data.close).div(3);
-    return typicalPrice.mul(data.volume);
+    const hlc3 = high.plus(data.low).plus(data.close).div(3);
+    return hlc3.mul(data.volume);
   }
 
   override update(candle: HighLowCloseVolume, replace: boolean) {
@@ -62,8 +62,8 @@ export class FasterVWAP extends NumberIndicatorSeries<HighLowCloseVolume<number>
   }
 
   private calculateTypicalPriceVolume(data: HighLowCloseVolume<number>) {
-    const typicalPrice = (data.high + data.low + data.close) / 3;
-    return typicalPrice * data.volume;
+    const hlc3 = (data.high + data.low + data.close) / 3;
+    return hlc3 * data.volume;
   }
 
   override update(candle: HighLowCloseVolume<number>, replace: boolean) {
