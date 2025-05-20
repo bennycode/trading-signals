@@ -1,3 +1,9 @@
+### 6.7.0 (2025-05-20)
+
+##### New Features
+
+- Add Volume Weighted Average Price (VWAP) ([#802](https://github.com/bennycode/trading-signals/pull/802)) ([2b5aa53b](https://github.com/bennycode/trading-signals/commit/2b5aa53b7d57c8a438a9c5e5f7515e4cb3c7b0f3))
+
 #### 6.6.2 (2025-05-10)
 
 ##### Refactors
