@@ -47,12 +47,8 @@ export class VWAP extends BigIndicatorSeries<HighLowCloseVolume> {
     this.cumulativeTypicalPriceVolume = this.cumulativeTypicalPriceVolume.plus(typicalPriceVolume);
     this.cumulativeVolume = this.cumulativeVolume.plus(candle.volume);
 
-    if (this.cumulativeVolume.gt(0)) {
-      const vwap = this.cumulativeTypicalPriceVolume.div(this.cumulativeVolume);
-      return this.setResult(vwap, replace);
-    }
-
-    return null;
+    const vwap = this.cumulativeTypicalPriceVolume.div(this.cumulativeVolume);
+    return this.setResult(vwap, replace);
   }
 }
 
