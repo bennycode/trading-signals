@@ -34,5 +34,6 @@ export * from './STOCH/StochasticRSI.js';
 export * from './TDS/TDS.js';
 export * from './TR/TR.js';
 export * from './util/index.js';
+export * from './VWAP/VWAP.js';
 export * from './WMA/WMA.js';
 export * from './WSMA/WSMA.js';

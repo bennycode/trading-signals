@@ -89,3 +89,13 @@ export class IQR extends BigIndicatorSeries<BigSource> {}
 // ✅ Good: Rely on the default generic
 export class IQR extends BigIndicatorSeries {}
 ```
+
+Prefer inferred return types over explicit return types to keep code cleaner and reduce duplication:
+
+```ts
+// ❌ Bad: Explicit return type
+override update(data: HighLowCloseVolume, replace: boolean): Big | null { }
+
+// ✅ Good: Let TypeScript infer the return type
+override update(data: HighLowCloseVolume, replace: boolean) { }
+```

@@ -147,6 +147,7 @@ Most of the time, the minimum amount of data depends on the interval / time peri
 1. [Stochastic RSI](./src/STOCH/StochasticRSI.ts) (STOCHRSI)
 1. [Tom Demark's Sequential Indicator](./src/TDS/TDS.ts) (TDS)
 1. [True Range](./src/TR/TR.ts) (TR)
+1. [Volume-Weighted Average Price](./src/VWAP/VWAP.ts) (VWAP)
 1. [Weighted Moving Average](./src/WMA/WMA.ts) (WMA)
 1. [Wilder's Smoothed Moving Average](./src/WSMA/WSMA.ts) (WSMA / WWS / SMMA / MEMA)
 

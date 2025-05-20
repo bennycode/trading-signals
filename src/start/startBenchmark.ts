@@ -1,5 +1,4 @@
 import Benchmark, {type Event} from 'benchmark';
-import candles from '../test/fixtures/candles/100-candles.json' with {type: 'json'};
 import {
   AC,
   AccelerationBands,
@@ -56,25 +55,26 @@ import {
   MOM,
   OBV,
   Period,
+  PSAR,
   RMA,
   ROC,
   RSI,
-  PSAR,
   SMA,
   StochasticOscillator,
   StochasticRSI,
   TDS,
   TR,
+  VWAP,
   WMA,
   WSMA,
-  type OpenHighLowCloseVolumeNumber,
 } from '../index.js';
+import candles from '../test/fixtures/candles/100-candles.json' with {type: 'json'};
 
 const shortInterval = 10;
 const interval = 20;
 const longInterval = 40;
 const prices: number[] = candles.map(candle => parseFloat(candle.close));
-const floatCandles: OpenHighLowCloseVolumeNumber[] = candles.map(candle => ({
+const floatCandles = candles.map(candle => ({
   close: parseFloat(candle.close),
   high: parseFloat(candle.high),
   low: parseFloat(candle.low),
@@ -440,6 +440,12 @@ new Benchmark.Suite('Technical Indicators')
     const fasterTR = new FasterTR();
     for (const candle of floatCandles) {
       fasterTR.add(candle);
+    }
+  })
+  .add('VWAP', () => {
+    const vwap = new VWAP();
+    for (const candle of floatCandles) {
+      vwap.add(candle);
     }
   })
   .add('WSMA', () => {

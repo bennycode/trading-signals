@@ -5,7 +5,7 @@ import {FasterWSMA, WSMA} from '../WSMA/WSMA.js';
 import {ATR, FasterATR} from '../ATR/ATR.js';
 import type {BigSource} from 'big.js';
 import Big from 'big.js';
-import type {HighLowClose, HighLowCloseNumber} from '../util/HighLowClose.js';
+import type {HighLowClose} from '../util/HighLowClose.js';
 
 /**
  * Directional Movement Index (DMI / DX)
@@ -103,11 +103,11 @@ export class DX extends BigIndicatorSeries<HighLowClose> {
   }
 }
 
-export class FasterDX extends NumberIndicatorSeries<HighLowCloseNumber> {
+export class FasterDX extends NumberIndicatorSeries<HighLowClose<number>> {
   private readonly movesUp: FasterMovingAverage;
   private readonly movesDown: FasterMovingAverage;
-  private previousCandle?: HighLowCloseNumber;
-  private secondLastCandle?: HighLowCloseNumber;
+  private previousCandle?: HighLowClose<number>;
+  private secondLastCandle?: HighLowClose<number>;
   private readonly atr: FasterATR;
   public mdi?: number;
   public pdi?: number;
@@ -122,7 +122,7 @@ export class FasterDX extends NumberIndicatorSeries<HighLowCloseNumber> {
     this.movesUp = new SmoothingIndicator(this.interval);
   }
 
-  private updateState(candle: HighLowCloseNumber, pdm: number, mdm: number, replace: boolean): void {
+  private updateState(candle: HighLowClose<number>, pdm: number, mdm: number, replace: boolean): void {
     this.atr.update(candle, replace);
     this.movesUp.update(pdm, replace);
     this.movesDown.update(mdm, replace);
@@ -132,7 +132,7 @@ export class FasterDX extends NumberIndicatorSeries<HighLowCloseNumber> {
     this.previousCandle = candle;
   }
 
-  update(candle: HighLowCloseNumber, replace: boolean) {
+  update(candle: HighLowClose<number>, replace: boolean) {
     if (!this.previousCandle) {
       this.updateState(candle, 0, 0, replace);
       return null;
