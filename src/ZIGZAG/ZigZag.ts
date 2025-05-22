@@ -1,0 +1,314 @@
+import Big from 'big.js';
+import {BigIndicatorSeries, NumberIndicatorSeries} from '../Indicator.js';
+import type {HighLow} from '../util/HighLowClose.js';
+import {NotEnoughDataError} from '../error/index.js';
+
+export type ZigZagConfig = {
+  /**
+   * The percentage change required to establish a new extreme point.
+   * Typical values range from 3 to 12 (representing 3% to 12%).
+   */
+  percentage: number;
+};
+
+/**
+ * The ZigZag indicator is a technical analysis tool used to identify price trends by
+ * filtering out smaller price movements. It works by identifying significant highs and lows
+ * in a price series and drawing lines between them. For a high or low to be considered
+ * significant, the price must reverse by at least a specified percentage from the last
+ * extreme point.
+ */
+export class ZigZag extends BigIndicatorSeries<HighLow> {
+  private readonly percentageThreshold: Big;
+  private lastExtreme: Big | null = null;
+  private lastExtremeType: 'high' | 'low' | null = null;
+  private currentExtreme: Big | null = null;
+  private currentExtremeType: 'high' | 'low' | null = null;
+
+  constructor(config: ZigZagConfig) {
+    super();
+
+    // Convert the percentage to a decimal (e.g., 5% becomes 0.05)
+    this.percentageThreshold = new Big(config.percentage).div(100);
+
+    if (this.percentageThreshold.lte(0)) {
+      throw new Error('Percentage threshold must be greater than 0');
+    }
+  }
+
+  override get isStable(): boolean {
+    return this.lastExtreme !== null;
+  }
+
+  update(candle: HighLow, replace: boolean): Big | null {
+    const high = new Big(candle.high);
+    const low = new Big(candle.low);
+
+    // If not enough previous data is available
+    if (!this.lastExtreme) {
+      // If this is our first candle, just record the high as the initial extreme point
+      if (!this.currentExtreme) {
+        this.currentExtreme = high;
+        this.currentExtremeType = 'high';
+        return null;
+      }
+
+      // If this is our second candle, determine the initial swing
+      if (high.gt(this.currentExtreme)) {
+        // New high, keep it as the current extreme
+        this.currentExtreme = high;
+        this.currentExtremeType = 'high';
+        return null;
+      } else if (low.lt(this.currentExtreme)) {
+        // The price made a lower low, potentially establish a new swing low
+        const percentChange = this.calculatePercentChange(this.currentExtreme, low);
+
+        if (percentChange.gte(this.percentageThreshold)) {
+          // Percentage change is significant, confirm the high as last extreme
+          this.lastExtreme = this.currentExtreme;
+          this.lastExtremeType = this.currentExtremeType;
+
+          // Start tracking a new potential low
+          this.currentExtreme = low;
+          this.currentExtremeType = 'low';
+
+          return this.setResult(this.lastExtreme, replace);
+        }
+      }
+
+      return null;
+    }
+
+    // Based on the last extreme type, process the new candle
+    if (this.lastExtremeType === 'high') {
+      // We're looking for a significant low
+      if (low.lt(this.currentExtreme!)) {
+        // New potential extreme low
+        this.currentExtreme = low;
+        this.currentExtremeType = 'low';
+      } else if (high.gt(this.lastExtreme)) {
+        // We've moved higher than the last high without confirming a low
+        // This invalidates our current swing, so adjust accordingly
+        this.currentExtreme = high;
+        this.currentExtremeType = 'high';
+        this.lastExtreme = this.currentExtreme;
+        this.lastExtremeType = this.currentExtremeType;
+
+        return this.setResult(this.lastExtreme, replace);
+      }
+
+      // Check if the swing from high to low is significant
+      const percentChange = this.calculatePercentChange(this.lastExtreme, this.currentExtreme!);
+
+      if (percentChange.gte(this.percentageThreshold)) {
+        // Confirm the current low as a significant point
+        const previousExtreme = this.lastExtreme;
+        this.lastExtreme = this.currentExtreme;
+        this.lastExtremeType = this.currentExtremeType;
+
+        // Start looking for a new high
+        this.currentExtreme = high;
+        this.currentExtremeType = 'high';
+
+        return this.setResult(previousExtreme, replace);
+      }
+    } else if (this.lastExtremeType === 'low') {
+      // We're looking for a significant high
+      if (high.gt(this.currentExtreme!)) {
+        // New potential extreme high
+        this.currentExtreme = high;
+        this.currentExtremeType = 'high';
+      } else if (low.lt(this.lastExtreme)) {
+        // We've moved lower than the last low without confirming a high
+        // This invalidates our current swing, so adjust accordingly
+        this.currentExtreme = low;
+        this.currentExtremeType = 'low';
+        this.lastExtreme = this.currentExtreme;
+        this.lastExtremeType = this.currentExtremeType;
+
+        return this.setResult(this.lastExtreme, replace);
+      }
+
+      // Check if the swing from low to high is significant
+      const percentChange = this.calculatePercentChange(this.lastExtreme, this.currentExtreme!);
+
+      if (percentChange.gte(this.percentageThreshold)) {
+        // Confirm the current high as a significant point
+        const previousExtreme = this.lastExtreme;
+        this.lastExtreme = this.currentExtreme;
+        this.lastExtremeType = this.currentExtremeType;
+
+        // Start looking for a new low
+        this.currentExtreme = low;
+        this.currentExtremeType = 'low';
+
+        return this.setResult(previousExtreme, replace);
+      }
+    }
+
+    // If we reach here, no significant change has occurred
+    return this.lastExtreme ? this.setResult(this.lastExtreme, replace) : null;
+  }
+
+  private calculatePercentChange(from: Big, to: Big): Big {
+    // Calculate absolute percentage change: |to - from| / from * 100
+    return from.eq(0) ? new Big(0) : to.minus(from).abs().div(from);
+  }
+
+  override getResultOrThrow(): Big {
+    if (this.lastExtreme === null) {
+      throw new NotEnoughDataError('ZigZag requires at least 2 candles with significant price change');
+    }
+
+    return super.getResultOrThrow();
+  }
+}
+
+/**
+ * Faster implementation of the ZigZag indicator using JavaScript numbers
+ * instead of Big.js for improved performance.
+ */
+export class FasterZigZag extends NumberIndicatorSeries<HighLow<number>> {
+  private readonly percentageThreshold: number;
+  private lastExtreme: number | null = null;
+  private lastExtremeType: 'high' | 'low' | null = null;
+  private currentExtreme: number | null = null;
+  private currentExtremeType: 'high' | 'low' | null = null;
+
+  constructor(config: ZigZagConfig) {
+    super();
+
+    // Convert the percentage to a decimal (e.g., 5% becomes 0.05)
+    this.percentageThreshold = config.percentage / 100;
+
+    if (this.percentageThreshold <= 0) {
+      throw new Error('Percentage threshold must be greater than 0');
+    }
+  }
+
+  override get isStable(): boolean {
+    return this.lastExtreme !== null;
+  }
+
+  update(candle: HighLow<number>, replace: boolean): number | null {
+    const {high, low} = candle;
+
+    // If not enough previous data is available
+    if (!this.lastExtreme) {
+      // If this is our first candle, just record the high as the initial extreme point
+      if (!this.currentExtreme) {
+        this.currentExtreme = high;
+        this.currentExtremeType = 'high';
+        return null;
+      }
+
+      // If this is our second candle, determine the initial swing
+      if (high > this.currentExtreme) {
+        // New high, keep it as the current extreme
+        this.currentExtreme = high;
+        this.currentExtremeType = 'high';
+        return null;
+      } else if (low < this.currentExtreme) {
+        // The price made a lower low, potentially establish a new swing low
+        const percentChange = this.calculatePercentChange(this.currentExtreme, low);
+
+        if (percentChange >= this.percentageThreshold) {
+          // Percentage change is significant, confirm the high as last extreme
+          this.lastExtreme = this.currentExtreme;
+          this.lastExtremeType = this.currentExtremeType;
+
+          // Start tracking a new potential low
+          this.currentExtreme = low;
+          this.currentExtremeType = 'low';
+
+          return this.setResult(this.lastExtreme, replace);
+        }
+      }
+
+      return null;
+    }
+
+    // Based on the last extreme type, process the new candle
+    if (this.lastExtremeType === 'high') {
+      // We're looking for a significant low
+      if (low < this.currentExtreme!) {
+        // New potential extreme low
+        this.currentExtreme = low;
+        this.currentExtremeType = 'low';
+      } else if (high > this.lastExtreme) {
+        // We've moved higher than the last high without confirming a low
+        // This invalidates our current swing, so adjust accordingly
+        this.currentExtreme = high;
+        this.currentExtremeType = 'high';
+        this.lastExtreme = this.currentExtreme;
+        this.lastExtremeType = this.currentExtremeType;
+
+        return this.setResult(this.lastExtreme, replace);
+      }
+
+      // Check if the swing from high to low is significant
+      const percentChange = this.calculatePercentChange(this.lastExtreme, this.currentExtreme!);
+
+      if (percentChange >= this.percentageThreshold) {
+        // Confirm the current low as a significant point
+        const previousExtreme = this.lastExtreme;
+        this.lastExtreme = this.currentExtreme;
+        this.lastExtremeType = this.currentExtremeType;
+
+        // Start looking for a new high
+        this.currentExtreme = high;
+        this.currentExtremeType = 'high';
+
+        return this.setResult(previousExtreme, replace);
+      }
+    } else if (this.lastExtremeType === 'low') {
+      // We're looking for a significant high
+      if (high > this.currentExtreme!) {
+        // New potential extreme high
+        this.currentExtreme = high;
+        this.currentExtremeType = 'high';
+      } else if (low < this.lastExtreme) {
+        // We've moved lower than the last low without confirming a high
+        // This invalidates our current swing, so adjust accordingly
+        this.currentExtreme = low;
+        this.currentExtremeType = 'low';
+        this.lastExtreme = this.currentExtreme;
+        this.lastExtremeType = this.currentExtremeType;
+
+        return this.setResult(this.lastExtreme, replace);
+      }
+
+      // Check if the swing from low to high is significant
+      const percentChange = this.calculatePercentChange(this.lastExtreme, this.currentExtreme!);
+
+      if (percentChange >= this.percentageThreshold) {
+        // Confirm the current high as a significant point
+        const previousExtreme = this.lastExtreme;
+        this.lastExtreme = this.currentExtreme;
+        this.lastExtremeType = this.currentExtremeType;
+
+        // Start looking for a new low
+        this.currentExtreme = low;
+        this.currentExtremeType = 'low';
+
+        return this.setResult(previousExtreme, replace);
+      }
+    }
+
+    // If we reach here, no significant change has occurred
+    return this.lastExtreme ? this.setResult(this.lastExtreme, replace) : null;
+  }
+
+  private calculatePercentChange(from: number, to: number): number {
+    // Calculate absolute percentage change: |to - from| / from
+    return from === 0 ? 0 : Math.abs(to - from) / from;
+  }
+
+  override getResultOrThrow(): number {
+    if (this.lastExtreme === null) {
+      throw new NotEnoughDataError('ZigZag requires at least 2 candles with significant price change');
+    }
+
+    return super.getResultOrThrow();
+  }
+}
