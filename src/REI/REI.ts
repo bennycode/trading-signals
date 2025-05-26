@@ -54,10 +54,8 @@ export class REI extends BigIndicatorSeries<HighLowClose> {
       sumOfPreviousRanges = sumOfPreviousRanges.plus(this.ranges[i]);
     }
 
-    // Calculate average of previous ranges
     const averagePreviousRange = sumOfPreviousRanges.div(this.interval);
 
-    // REI = (Current Range / Average Previous Range) * 100
     const rei = currentRange.div(averagePreviousRange).times(100);
 
     return this.setResult(rei, replace);
@@ -99,10 +97,8 @@ export class FasterREI extends NumberIndicatorSeries<HighLowClose<number>> {
       sumOfPreviousRanges += this.ranges[i];
     }
 
-    // Calculate average of previous ranges
     const averagePreviousRange = sumOfPreviousRanges / this.interval;
 
-    // REI = (Current Range / Average Previous Range) * 100
     const rei = (currentRange / averagePreviousRange) * 100;
 
     return this.setResult(rei, replace);
