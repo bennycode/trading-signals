@@ -143,6 +143,7 @@ Most of the time, the minimum amount of data depends on the interval / time peri
 1. [Relative Moving Average](./src/RMA/RMA.ts) (RMA)
 1. [Relative Strength Index](./src/RSI/RSI.ts) (RSI)
 1. [Simple Moving Average](./src/SMA/SMA.ts) (SMA)
+1. [Spencer's 15-Point Moving Average](./src/SMA15/SMA15.ts) (SMA15)
 1. [Stochastic Oscillator](./src/STOCH/StochasticOscillator.ts) (STOCH)
 1. [Stochastic RSI](./src/STOCH/StochasticRSI.ts) (STOCHRSI)
 1. [Tom Demark's Sequential Indicator](./src/TDS/TDS.ts) (TDS)
