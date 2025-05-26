@@ -1,5 +1,4 @@
 import {BigIndicatorSeries, NumberIndicatorSeries} from '../Indicator.js';
-import type {BigSource} from 'big.js';
 import Big from 'big.js';
 import type {HighLowClose} from '../util/HighLowClose.js';
 
