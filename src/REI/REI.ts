@@ -21,7 +21,6 @@ import type {HighLowClose} from '../util/HighLowClose.js';
  */
 export class REI extends BigIndicatorSeries<HighLowClose> {
   private readonly ranges: Big[] = [];
-  private readonly multiplier = new Big(100);
 
   constructor(public readonly interval: number) {
     super();
@@ -30,13 +29,11 @@ export class REI extends BigIndicatorSeries<HighLowClose> {
   update(candle: HighLowClose, replace: boolean) {
     const range = new Big(candle.high).minus(candle.low);
 
-    if (replace && this.ranges.length > 0) {
-      // Replace the latest range
-      this.ranges[this.ranges.length - 1] = range;
-    } else {
-      // Add new range
-      this.ranges.push(range);
+    if (replace) {
+      this.ranges.pop();
     }
+
+    this.ranges.push(range);
 
     // Keep only the most recent ranges needed for calculation (interval + 1)
     while (this.ranges.length > this.interval + 1) {
@@ -61,18 +58,14 @@ export class REI extends BigIndicatorSeries<HighLowClose> {
     const averagePreviousRange = sumOfPreviousRanges.div(this.interval);
 
     // REI = (Current Range / Average Previous Range) * 100
-    const rei = currentRange.div(averagePreviousRange).times(this.multiplier);
+    const rei = currentRange.div(averagePreviousRange).times(100);
 
     return this.setResult(rei, replace);
   }
 }
 
-/**
- * Faster implementation of the Range Expansion Index (REI) using primitive numbers
- */
 export class FasterREI extends NumberIndicatorSeries<HighLowClose<number>> {
   private readonly ranges: number[] = [];
-  private readonly multiplier = 100;
 
   constructor(public readonly interval: number) {
     super();
@@ -81,13 +74,11 @@ export class FasterREI extends NumberIndicatorSeries<HighLowClose<number>> {
   update(candle: HighLowClose<number>, replace: boolean) {
     const range = candle.high - candle.low;
 
-    if (replace && this.ranges.length > 0) {
-      // Replace the latest range
-      this.ranges[this.ranges.length - 1] = range;
-    } else {
-      // Add new range
-      this.ranges.push(range);
+    if (replace) {
+      this.ranges.pop();
     }
+
+    this.ranges.push(range);
 
     // Keep only the most recent ranges needed for calculation (interval + 1)
     while (this.ranges.length > this.interval + 1) {
@@ -112,7 +103,7 @@ export class FasterREI extends NumberIndicatorSeries<HighLowClose<number>> {
     const averagePreviousRange = sumOfPreviousRanges / this.interval;
 
     // REI = (Current Range / Average Previous Range) * 100
-    const rei = (currentRange / averagePreviousRange) * this.multiplier;
+    const rei = (currentRange / averagePreviousRange) * 100;
 
     return this.setResult(rei, replace);
   }
