@@ -9,7 +9,6 @@ describe('REI', () => {
     // First candle - not enough data
     let result = rei.update(
       {
-        close: 105,
         high: 110,
         low: 100,
       },
@@ -20,7 +19,6 @@ describe('REI', () => {
     // Second candle - not enough data
     result = rei.update(
       {
-        close: 115,
         high: 120,
         low: 105,
       },
@@ -35,7 +33,6 @@ describe('REI', () => {
     // REI = (10/12.5)*100 = 80
     result = rei.update(
       {
-        close: 120,
         high: 125,
         low: 115,
       },
@@ -50,7 +47,6 @@ describe('REI', () => {
     // REI = (30/12.5)*100 = 240
     result = rei.update(
       {
-        close: 140,
         high: 150,
         low: 120,
       },
@@ -103,15 +99,15 @@ describe('REI', () => {
     const rei = new REI(2);
 
     // Add enough candles to get REI values
-    rei.update({close: 105, high: 110, low: 100}, false);
-    rei.update({close: 115, high: 120, low: 105}, false);
-    rei.update({close: 120, high: 125, low: 115}, false);
+    rei.update({high: 110, low: 100}, false);
+    rei.update({high: 120, low: 105}, false);
+    rei.update({high: 125, low: 115}, false);
 
     // Add a candle that will generate a higher REI
-    rei.update({close: 140, high: 150, low: 120}, false);
+    rei.update({high: 150, low: 120}, false);
 
     // Add a candle that will generate a lower REI
-    rei.update({close: 122, high: 125, low: 120}, false);
+    rei.update({high: 125, low: 120}, false);
 
     expect(rei.highest?.toNumber()).toBeGreaterThan(80);
     expect(rei.lowest?.toNumber()).toBeLessThan(80);
@@ -126,7 +122,6 @@ describe('FasterREI', () => {
     // First candle - not enough data
     let result = rei.update(
       {
-        close: 105,
         high: 110,
         low: 100,
       },
@@ -137,7 +132,6 @@ describe('FasterREI', () => {
     // Second candle - not enough data
     result = rei.update(
       {
-        close: 115,
         high: 120,
         low: 105,
       },
@@ -152,7 +146,6 @@ describe('FasterREI', () => {
     // REI = (10/12.5)*100 = 80
     result = rei.update(
       {
-        close: 120,
         high: 125,
         low: 115,
       },
@@ -167,7 +160,6 @@ describe('FasterREI', () => {
     // REI = (30/12.5)*100 = 240
     result = rei.update(
       {
-        close: 140,
         high: 150,
         low: 120,
       },

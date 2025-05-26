@@ -1,6 +1,6 @@
-import {BigIndicatorSeries, NumberIndicatorSeries} from '../Indicator.js';
 import Big from 'big.js';
-import type {HighLowClose} from '../util/HighLowClose.js';
+import {BigIndicatorSeries, NumberIndicatorSeries} from '../Indicator.js';
+import type {HighLow} from '../util/HighLowClose.js';
 
 /**
  * Range Expansion Index (REI)
@@ -19,14 +19,14 @@ import type {HighLowClose} from '../util/HighLowClose.js';
  * @see https://en.wikipedia.org/wiki/Range_expansion_index
  * @see https://www.quantifiedstrategies.com/range-expansion-index/
  */
-export class REI extends BigIndicatorSeries<HighLowClose> {
+export class REI extends BigIndicatorSeries<HighLow> {
   private readonly ranges: Big[] = [];
 
   constructor(public readonly interval: number) {
     super();
   }
 
-  update(candle: HighLowClose, replace: boolean) {
+  update(candle: HighLow, replace: boolean) {
     const range = new Big(candle.high).minus(candle.low);
 
     if (replace) {
@@ -62,14 +62,14 @@ export class REI extends BigIndicatorSeries<HighLowClose> {
   }
 }
 
-export class FasterREI extends NumberIndicatorSeries<HighLowClose<number>> {
+export class FasterREI extends NumberIndicatorSeries<HighLow<number>> {
   private readonly ranges: number[] = [];
 
   constructor(public readonly interval: number) {
     super();
   }
 
-  update(candle: HighLowClose<number>, replace: boolean) {
+  update(candle: HighLow<number>, replace: boolean) {
     const range = candle.high - candle.low;
 
     if (replace) {
