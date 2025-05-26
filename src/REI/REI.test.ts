@@ -1,6 +1,5 @@
+import {describe, expect, it} from 'vitest';
 import {FasterREI, REI} from './REI.js';
-import {Big} from '../index.js';
-import {expect, it, describe} from 'vitest';
 
 describe('REI', () => {
   it('calculates the Range Expansion Index', () => {
@@ -62,21 +61,42 @@ describe('REI', () => {
 
   it('handles replace correctly', () => {
     const rei = new REI(2);
+    const fasterREI = new FasterREI(2);
+
+    const firstCandle = {close: 105, high: 110, low: 100};
+    const secondCandle = {close: 115, high: 120, low: 105};
+    const thirdCandle = {close: 120, high: 125, low: 115};
+    const replacement = {close: 125, high: 135, low: 115};
+
+    const initialExpectation = 80;
+    const replacedExpectation = 160;
 
     // Add 3 candles to get an initial REI value
-    rei.update({close: 105, high: 110, low: 100}, false);
-    rei.update({close: 115, high: 120, low: 105}, false);
-    const initial = rei.update({close: 120, high: 125, low: 115}, false);
+    rei.add(firstCandle);
+    rei.add(secondCandle);
+    const initial = rei.add(thirdCandle);
+
+    fasterREI.add(firstCandle);
+    fasterREI.add(secondCandle);
+    const fasterInitial = fasterREI.add(thirdCandle);
+
+    expect(initial?.toNumber()).toBe(initialExpectation);
+    expect(fasterInitial).toBe(initialExpectation);
 
     // Replace the last candle with different values
     // Original candle ranges: 10, 15, 10
     // First two ranges average: (10+15)/2 = 12.5
     // New current range: 20
     // REI = (20/12.5)*100 = 160
-    const replaced = rei.update({close: 125, high: 135, low: 115}, true);
+    const replaced = rei.replace(replacement);
+    const fasterReplaced = fasterREI.replace(replacement);
 
-    expect(initial?.toNumber()).toBe(80);
-    expect(replaced?.toNumber()).toBe(160);
+    expect(replaced?.toNumber()).toBe(replacedExpectation);
+    expect(fasterReplaced).toBe(replacedExpectation);
+
+    // Revert
+    expect(rei.replace(thirdCandle)?.toNumber()).toBe(initialExpectation);
+    expect(fasterREI.replace(thirdCandle)).toBe(initialExpectation);
   });
 
   it('maintains highest and lowest REI values', () => {
