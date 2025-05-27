@@ -36,7 +36,7 @@ export class REI extends BigIndicatorSeries<HighLow> {
     this.ranges.push(range);
 
     // Keep only the most recent ranges needed for calculation (interval + 1)
-    while (this.ranges.length > this.interval + 1) {
+    if (this.ranges.length > this.interval + 1) {
       this.ranges.shift();
     }
 
@@ -79,7 +79,7 @@ export class FasterREI extends NumberIndicatorSeries<HighLow<number>> {
     this.ranges.push(range);
 
     // Keep only the most recent ranges needed for calculation (interval + 1)
-    while (this.ranges.length > this.interval + 1) {
+    if (this.ranges.length > this.interval + 1) {
       this.ranges.shift();
     }
 

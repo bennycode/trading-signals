@@ -3,7 +3,6 @@ import {FasterREI, REI} from './REI.js';
 
 describe('REI', () => {
   it('calculates the Range Expansion Index', () => {
-    // Interval of 2
     const rei = new REI(2);
 
     // First candle - not enough data
@@ -116,7 +115,6 @@ describe('REI', () => {
 
 describe('FasterREI', () => {
   it('calculates the Range Expansion Index using primitive numbers', () => {
-    // Interval of 2
     const rei = new FasterREI(2);
 
     // First candle - not enough data
