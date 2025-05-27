@@ -4,17 +4,15 @@ import type {HighLow} from '../util/HighLowClose.js';
 
 /**
  * Range Expansion Index (REI)
- * Type: Volatility
+ * Type: Momentum
  *
- * The Range Expansion Index (REI) is a volatility indicator developed by Thomas DeMark that compares
- * the current day's range to the average range over a given period. It quantifies whether the current
- * price range represents a contraction or expansion compared to the average.
+ * The Range Expansion Index (REI) is a momentum oscillator, measuring the velocity and magnitude of directional price movements. Developed by Thomas DeMark, it compares the current day's range to the average range over a given period. It quantifies whether the current price range represents a contraction or expansion compared to the average. The REI is most typically used on an 8 day timeframe.
  *
- * - REI > 100: Above average volatility (range expansion)
- * - REI = 100: Average volatility
- * - REI < 100: Below average volatility (range contraction)
+ * - REI > +60: Overbought condition — strong upward momentum that may be unsustainable
+ * - REI between +60 and -60: Neutral zone — no extreme momentum detected
+ * - REI < -60: Oversold condition — strong downward momentum that may reverse
  *
- * High REI values often signal potential reversal points as they represent unsustainable volatility expansion.
+ * Extreme REI values often signal potential reversal points, as they reflect sharp directional moves that may not be sustainable.
  *
  * @see https://en.wikipedia.org/wiki/Range_expansion_index
  * @see https://www.quantifiedstrategies.com/range-expansion-index/
