@@ -113,9 +113,9 @@ Most of the time, the minimum amount of data depends on the interval / time peri
 ## Technical Indicator Types
 
 - Trend indicators: Measure the direction of a trend (uptrend, downtrend or sideways trend)
-- Volume indicators: Measure the strength of a trend (based on volume)
-- Volatility indicators: Measure how much disagreement there is in the market based on price (statistical measure of its dispersion)
-- Momentum indicators: Measure the strength of a trend (based on price / speed of price movement)
+- Volume indicators: Measure the strength of a trend based on volume
+- Volatility indicators: Measure the degree of variation in prices over time, regardless of direction
+- Momentum indicators: Measure the speed and strength of price movements in a particular direction
 
 ## Supported Technical Indicators
 
@@ -209,9 +209,9 @@ It is very important to do your own analysis before making any investment based 
 
 - [Cloud9Trader Indicators (JavaScript)](https://github.com/Cloud9Trader/TechnicalIndicators)
 - [Crypto Trading Hub Indicators (TypeScript)](https://github.com/anandanand84/technicalindicators)
-- [Indicator TS](https://github.com/cinar/indicatorts)
+- [Indicator TS (TypeScript)](https://github.com/cinar/indicatorts)
 - [Jesse Trading Bot Indicators (Python)](https://docs.jesse.trade/docs/indicators/reference.html)
-- [LEAN Indicators](https://github.com/QuantConnect/Lean/tree/master/Indicators)
+- [LEAN Indicators (C#)](https://github.com/QuantConnect/Lean/tree/master/Indicators)
 - [libindicators (C#)](https://github.com/mgfx/libindicators)
 - [Pandas TA (Python)](https://github.com/twopirllc/pandas-ta)
 - [ta4j (Java)](https://github.com/ta4j/ta4j)
