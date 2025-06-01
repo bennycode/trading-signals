@@ -8,7 +8,7 @@
   },
   "description": "Technical indicators to run technical analysis with JavaScript / TypeScript.",
   "devDependencies": {
-    "@arethetypeswrong/cli": "^0.17.4",
+    "@arethetypeswrong/cli": "^0.18.1",
     "@tstv/eslint-config": "^4.0.0",
     "@types/benchmark": "^2.1.5",
     "@types/node": "^18.19.87",
