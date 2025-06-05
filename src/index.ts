@@ -29,6 +29,7 @@ export * from './RMA/RMA.js';
 export * from './ROC/ROC.js';
 export * from './RSI/RSI.js';
 export * from './SMA/SMA.js';
+export * from './SMA15/SMA15.js';
 export * from './STOCH/StochasticOscillator.js';
 export * from './STOCH/StochasticRSI.js';
 export * from './TDS/TDS.js';
