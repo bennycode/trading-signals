@@ -1,104 +1,171 @@
 import Big from 'big.js';
 import {BigIndicatorSeries, NumberIndicatorSeries} from '../Indicator.js';
-import type {HighLow} from '../util/HighLowClose.js';
+import type {HighLowClose} from '../util/HighLowClose.js';
 
 /**
  * Range Expansion Index (REI)
  * Type: Momentum
  *
- * The Range Expansion Index (REI) is a momentum oscillator, measuring the velocity and magnitude of directional price movements. Developed by Thomas DeMark, it compares the current day's range to the average range over a given period. It quantifies whether the current price range represents a contraction or expansion compared to the average. The REI is most typically used on an 8 day timeframe.
+ * The Range Expansion Index (REI) is a momentum oscillator, measuring the velocity and magnitude of directional price movements. Developed by Thomas DeMark, it compares the current day's range to the average range over a given period. It quantifies whether the current price range represents a contraction or expansion compared to the average. The REI is most typically used on an 8 day timeframe. Extreme REI values often signal potential reversal points, as they reflect sharp directional moves that may not be sustainable.
+ *
+ * Interpretation:
+ * According to Thomas DeMark, potential shifts in momentum when the REI rises above +60 and then drops below (price weakness). Conversely, when it falls below -60 and then climbs back above, it may signal price strength.
  *
  * - REI > +60: Overbought condition — strong upward momentum that may be unsustainable
  * - REI between +60 and -60: Neutral zone — no extreme momentum detected
- * - REI < -60: Oversold condition — strong downward momentum that may reverse
- *
- * Extreme REI values often signal potential reversal points, as they reflect sharp directional moves that may not be sustainable.
+ * - REI < -60: Oversold condition — strong downward momentum that could reverse
  *
  * @see https://en.wikipedia.org/wiki/Range_expansion_index
  * @see https://www.quantifiedstrategies.com/range-expansion-index/
+ * @see https://www.prorealcode.com/prorealtime-indicators/range-expansion-index-rei/
+ * @see https://github.com/EarnForex/Range-Expansion-Index
  */
-export class REI extends BigIndicatorSeries<HighLow> {
-  private readonly ranges: Big[] = [];
+export class REI extends BigIndicatorSeries<HighLowClose> {
+  private readonly highs: Big[] = [];
+  private readonly lows: Big[] = [];
+  private readonly closes: Big[] = [];
 
-  constructor(public readonly interval: number) {
+  constructor(public readonly interval: number = 8) {
     super();
   }
 
-  update(candle: HighLow, replace: boolean) {
-    const range = new Big(candle.high).minus(candle.low);
-
+  override update(candle: HighLowClose, replace: boolean) {
     if (replace) {
-      this.ranges.pop();
+      this.highs.pop();
+      this.lows.pop();
+      this.closes.pop();
     }
 
-    this.ranges.push(range);
+    this.highs.push(new Big(candle.high));
+    this.lows.push(new Big(candle.low));
+    this.closes.push(new Big(candle.close));
 
-    // Keep only the most recent ranges needed for calculation (interval + 1)
-    if (this.ranges.length > this.interval + 1) {
-      this.ranges.shift();
-    }
-
-    // Need at least interval + 1 ranges to calculate REI
-    if (this.ranges.length <= this.interval) {
+    // We need at least interval + 8 candles for REI calculation
+    // REI uses data from prior periods for comparison
+    if (this.highs.length < this.interval + 8) {
       return null;
     }
 
-    // Current range is at the end of the array
-    const currentRange = this.ranges[this.ranges.length - 1];
+    // Calculate sum for the interval period
+    let subValueSum = new Big(0);
+    let absValueSum = new Big(0);
 
-    // Calculate sum of previous N ranges (excluding the current range)
-    let sumOfPreviousRanges = new Big(0);
+    // Current position
+    const currentIndex = this.highs.length - 1;
+
     for (let i = 0; i < this.interval; i++) {
-      sumOfPreviousRanges = sumOfPreviousRanges.plus(this.ranges[i]);
+      const pos = currentIndex - i;
+
+      // For each position in the interval, calculate formula components
+      const pos2Index = pos - 2;
+      const pos5Index = pos - 5;
+      const pos6Index = pos - 6;
+      const pos7Index = pos - 7;
+      const pos8Index = pos - 8;
+
+      const posDiff1 = this.highs[pos].minus(this.highs[pos2Index]);
+      const posDiff2 = this.lows[pos].minus(this.lows[pos2Index]);
+
+      const posNumzero1Condition1 =
+        this.highs[pos2Index].lt(this.closes[pos7Index]) && this.highs[pos2Index].lt(this.closes[pos8Index]);
+      const posNumzero1Condition2 =
+        this.highs[pos].lt(this.highs[pos5Index]) && this.highs[pos].lt(this.highs[pos6Index]);
+      const posNumzero1 = posNumzero1Condition1 && posNumzero1Condition2 ? new Big(0) : new Big(1);
+
+      const posNumzero2Condition1 =
+        this.lows[pos2Index].gt(this.closes[pos7Index]) && this.lows[pos2Index].gt(this.closes[pos8Index]);
+      const posNumzero2Condition2 = this.lows[pos].gt(this.lows[pos5Index]) && this.lows[pos].gt(this.lows[pos6Index]);
+      const posNumzero2 = posNumzero2Condition1 && posNumzero2Condition2 ? new Big(0) : new Big(1);
+
+      const posSubvalue = posNumzero1.times(posNumzero2).times(posDiff1.plus(posDiff2));
+      const posAbsValue = posDiff1.abs().plus(posDiff2.abs());
+
+      subValueSum = subValueSum.plus(posSubvalue);
+      absValueSum = absValueSum.plus(posAbsValue);
     }
 
-    const averagePreviousRange = sumOfPreviousRanges.div(this.interval);
+    // Calculate REI
+    let reiValue;
+    if (absValueSum.eq(0)) {
+      reiValue = new Big(0);
+    } else {
+      reiValue = subValueSum.div(absValueSum).times(100);
+    }
 
-    const rei = currentRange.div(averagePreviousRange).times(100);
-
-    return this.setResult(rei, replace);
+    return this.setResult(reiValue, replace);
   }
 }
 
-export class FasterREI extends NumberIndicatorSeries<HighLow<number>> {
-  private readonly ranges: number[] = [];
+export class FasterREI extends NumberIndicatorSeries<HighLowClose<number>> {
+  private readonly highs: number[] = [];
+  private readonly lows: number[] = [];
+  private readonly closes: number[] = [];
 
-  constructor(public readonly interval: number) {
+  constructor(public readonly interval: number = 8) {
     super();
   }
 
-  update(candle: HighLow<number>, replace: boolean) {
-    const range = candle.high - candle.low;
-
+  override update(candle: HighLowClose<number>, replace: boolean) {
     if (replace) {
-      this.ranges.pop();
+      this.highs.pop();
+      this.lows.pop();
+      this.closes.pop();
     }
 
-    this.ranges.push(range);
+    this.highs.push(candle.high);
+    this.lows.push(candle.low);
+    this.closes.push(candle.close);
 
-    // Keep only the most recent ranges needed for calculation (interval + 1)
-    if (this.ranges.length > this.interval + 1) {
-      this.ranges.shift();
-    }
-
-    // Need at least interval + 1 ranges to calculate REI
-    if (this.ranges.length <= this.interval) {
+    // We need at least interval + 8 candles for REI calculation
+    if (this.highs.length < this.interval + 8) {
       return null;
     }
 
-    // Current range is at the end of the array
-    const currentRange = this.ranges[this.ranges.length - 1];
+    // Calculate sum for the interval period
+    let subValueSum = 0;
+    let absValueSum = 0;
 
-    // Calculate sum of previous N ranges (excluding the current range)
-    let sumOfPreviousRanges = 0;
+    // Current position
+    const currentIndex = this.highs.length - 1;
+
     for (let i = 0; i < this.interval; i++) {
-      sumOfPreviousRanges += this.ranges[i];
+      const pos = currentIndex - i;
+
+      // For each position in the interval, calculate formula components
+      const pos2Index = pos - 2;
+      const pos5Index = pos - 5;
+      const pos6Index = pos - 6;
+      const pos7Index = pos - 7;
+      const pos8Index = pos - 8;
+
+      const posDiff1 = this.highs[pos] - this.highs[pos2Index];
+      const posDiff2 = this.lows[pos] - this.lows[pos2Index];
+
+      const posNumzero1Condition1 =
+        this.highs[pos2Index] < this.closes[pos7Index] && this.highs[pos2Index] < this.closes[pos8Index];
+      const posNumzero1Condition2 = this.highs[pos] < this.highs[pos5Index] && this.highs[pos] < this.highs[pos6Index];
+      const posNumzero1 = posNumzero1Condition1 && posNumzero1Condition2 ? 0 : 1;
+
+      const posNumzero2Condition1 =
+        this.lows[pos2Index] > this.closes[pos7Index] && this.lows[pos2Index] > this.closes[pos8Index];
+      const posNumzero2Condition2 = this.lows[pos] > this.lows[pos5Index] && this.lows[pos] > this.lows[pos6Index];
+      const posNumzero2 = posNumzero2Condition1 && posNumzero2Condition2 ? 0 : 1;
+
+      const posSubvalue = posNumzero1 * posNumzero2 * (posDiff1 + posDiff2);
+      const posAbsValue = Math.abs(posDiff1) + Math.abs(posDiff2);
+
+      subValueSum += posSubvalue;
+      absValueSum += posAbsValue;
     }
 
-    const averagePreviousRange = sumOfPreviousRanges / this.interval;
+    // Calculate REI
+    let reiValue;
+    if (absValueSum === 0) {
+      reiValue = 0;
+    } else {
+      reiValue = (subValueSum / absValueSum) * 100;
+    }
 
-    const rei = (currentRange / averagePreviousRange) * 100;
-
-    return this.setResult(rei, replace);
+    return this.setResult(reiValue, replace);
   }
 }
