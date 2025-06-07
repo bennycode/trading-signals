@@ -74,8 +74,9 @@ export class REI extends BigIndicatorSeries<HighLowClose> {
     let subValueSum = new Big(0);
     let absValueSum = new Big(0);
 
-    // Current position
-    for (let j = 0; j < this.interval; j++) {
+    const limitIndex = this.highs.length - 1;
+
+    for (let j = limitIndex; j > this.interval; j--) {
       const diff1 = this.highs[j].minus(this.highs[j - 2]);
       const diff2 = this.lows[j].minus(this.lows[j - 2]);
 
