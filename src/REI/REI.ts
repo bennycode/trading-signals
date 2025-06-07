@@ -29,6 +29,30 @@ export class REI extends BigIndicatorSeries<HighLowClose> {
     super();
   }
 
+  private calculateN(j: number) {
+    if (
+      this.highs[j - 2].lt(this.closes[j - 7]) &&
+      this.highs[j - 2].lt(this.closes[j - 8]) &&
+      this.highs[j].lt(this.highs[j - 5]) &&
+      this.highs[j].lt(this.highs[j - 6])
+    ) {
+      return new Big(0);
+    }
+    return new Big(1);
+  }
+
+  private calculateM(j: number) {
+    if (
+      this.lows[j - 2].gt(this.closes[j - 7]) &&
+      this.lows[j - 2].gt(this.closes[j - 8]) &&
+      this.lows[j].gt(this.lows[j - 5]) &&
+      this.lows[j].gt(this.lows[j - 6])
+    ) {
+      return new Big(0);
+    }
+    return new Big(1);
+  }
+
   override update(candle: HighLowClose, replace: boolean) {
     if (replace) {
       this.highs.pop();
@@ -51,48 +75,27 @@ export class REI extends BigIndicatorSeries<HighLowClose> {
     let absValueSum = new Big(0);
 
     // Current position
-    const currentIndex = this.highs.length - 1;
+    for (let j = 0; j < this.interval; j++) {
+      const diff1 = this.highs[j].minus(this.highs[j - 2]);
+      const diff2 = this.lows[j].minus(this.lows[j - 2]);
 
-    for (let i = 0; i < this.interval; i++) {
-      const pos = currentIndex - i;
+      const n = this.calculateN(j);
+      const m = this.calculateM(j);
+      const s = diff1.plus(diff2);
 
-      // For each position in the interval, calculate formula components
-      const pos2Index = pos - 2;
-      const pos5Index = pos - 5;
-      const pos6Index = pos - 6;
-      const pos7Index = pos - 7;
-      const pos8Index = pos - 8;
+      const subValue = n.times(m).times(s);
+      const absDailyValue = diff1.abs().plus(diff2.abs());
 
-      const posDiff1 = this.highs[pos].minus(this.highs[pos2Index]);
-      const posDiff2 = this.lows[pos].minus(this.lows[pos2Index]);
-
-      const posNumzero1Condition1 =
-        this.highs[pos2Index].lt(this.closes[pos7Index]) && this.highs[pos2Index].lt(this.closes[pos8Index]);
-      const posNumzero1Condition2 =
-        this.highs[pos].lt(this.highs[pos5Index]) && this.highs[pos].lt(this.highs[pos6Index]);
-      const posNumzero1 = posNumzero1Condition1 && posNumzero1Condition2 ? new Big(0) : new Big(1);
-
-      const posNumzero2Condition1 =
-        this.lows[pos2Index].gt(this.closes[pos7Index]) && this.lows[pos2Index].gt(this.closes[pos8Index]);
-      const posNumzero2Condition2 = this.lows[pos].gt(this.lows[pos5Index]) && this.lows[pos].gt(this.lows[pos6Index]);
-      const posNumzero2 = posNumzero2Condition1 && posNumzero2Condition2 ? new Big(0) : new Big(1);
-
-      const posSubvalue = posNumzero1.times(posNumzero2).times(posDiff1.plus(posDiff2));
-      const posAbsValue = posDiff1.abs().plus(posDiff2.abs());
-
-      subValueSum = subValueSum.plus(posSubvalue);
-      absValueSum = absValueSum.plus(posAbsValue);
+      subValueSum = subValueSum.plus(subValue);
+      absValueSum = absValueSum.plus(absDailyValue);
     }
 
-    // Calculate REI
-    let reiValue;
     if (absValueSum.eq(0)) {
-      reiValue = new Big(0);
-    } else {
-      reiValue = subValueSum.div(absValueSum).times(100);
+      // Prevent division by 0
+      return null;
     }
-
-    return this.setResult(reiValue, replace);
+    const rei = subValueSum.div(absValueSum).times(100);
+    return this.setResult(rei, replace);
   }
 }
 
