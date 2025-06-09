@@ -6,7 +6,7 @@ Technical indicators and overlays to run technical analysis with JavaScript / Ty
 
 ## Motivation
 
-The "trading-signals" library provides a TypeScript implementation for common technical indicators with arbitrary-precision decimal arithmetic.
+The "trading-signals" library provides a TypeScript implementation for common technical indicators with arbitrary-precision decimal arithmetic. It is well-suited for algorithmic trading, allowing developers to perform accurate and reliable signal computations for automated trading strategies.
 
 The main focus of this library is on the accuracy of calculations, but using the provided [faster implementations][2] you can also use it where performance is important.
 
