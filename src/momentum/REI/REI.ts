@@ -1,6 +1,6 @@
 import Big from 'big.js';
-import {BigIndicatorSeries, NumberIndicatorSeries} from '../Indicator.js';
-import type {HighLowClose} from '../util/HighLowClose.js';
+import {BigIndicatorSeries, NumberIndicatorSeries} from '../../Indicator.js';
+import type {HighLowClose} from '../../util/HighLowClose.js';
 
 /**
  * Range Expansion Index (REI)
@@ -98,6 +98,29 @@ export class REI extends BigIndicatorSeries<HighLowClose> {
     const rei = subValueSum.div(absValueSum).times(100);
     return this.setResult(rei, replace);
   }
+
+  /**
+   * Get trading signal based on REI value
+   * @returns 'overbought' when REI > +60, 'oversold' when REI < -60, 'neutral' otherwise
+   */
+  getSignal(): 'overbought' | 'oversold' | 'neutral' | null {
+    if (!this.isStable) {
+      return null;
+    }
+
+    const reiValue = this.getResult();
+    if (!reiValue) {
+      return null;
+    }
+    
+    if (reiValue.gt(60)) {
+      return 'overbought';
+    } else if (reiValue.lt(-60)) {
+      return 'oversold';
+    } else {
+      return 'neutral';
+    }
+  }
 }
 
 export class FasterREI extends NumberIndicatorSeries<HighLowClose<number>> {
@@ -171,5 +194,28 @@ export class FasterREI extends NumberIndicatorSeries<HighLowClose<number>> {
     }
 
     return this.setResult(reiValue, replace);
+  }
+
+  /**
+   * Get trading signal based on REI value
+   * @returns 'overbought' when REI > +60, 'oversold' when REI < -60, 'neutral' otherwise
+   */
+  getSignal(): 'overbought' | 'oversold' | 'neutral' | null {
+    if (!this.isStable) {
+      return null;
+    }
+
+    const reiValue = this.getResult();
+    if (reiValue === null) {
+      return null;
+    }
+    
+    if (reiValue > 60) {
+      return 'overbought';
+    } else if (reiValue < -60) {
+      return 'oversold';
+    } else {
+      return 'neutral';
+    }
   }
 }

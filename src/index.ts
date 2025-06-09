@@ -25,7 +25,7 @@ export * from './MAD/MAD.js';
 export * from './MOM/MOM.js';
 export * from './OBV/OBV.js';
 export * from './PSAR/PSAR.js';
-export * from './REI/REI.js';
+export * from './momentum/REI/REI.js';
 export * from './RMA/RMA.js';
 export * from './ROC/ROC.js';
 export * from './RSI/RSI.js';
