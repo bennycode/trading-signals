@@ -59,6 +59,10 @@ export class StochasticOscillator extends TechnicalIndicator<StochasticResult, H
     this.periodP = new SMA(p);
   }
 
+  override getRequiredInputs() {
+    return this.n;
+  }
+
   update(candle: HighLowClose, replace: boolean) {
     pushUpdate(this.candles, replace, candle, this.n);
 
@@ -101,6 +105,10 @@ export class FasterStochasticOscillator extends TechnicalIndicator<FasterStochas
     super();
     this.periodM = new FasterSMA(m);
     this.periodP = new FasterSMA(p);
+  }
+
+  override getRequiredInputs() {
+    return this.n;
   }
 
   update(candle: HighLowClose<number>, replace: boolean) {

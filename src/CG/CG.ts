@@ -34,6 +34,10 @@ export class CG extends BigIndicatorSeries {
     this.signal = new SMA(signalInterval);
   }
 
+  override getRequiredInputs() {
+    return this.signal.getRequiredInputs();
+  }
+
   update(price: BigSource, replace: boolean) {
     pushUpdate(this.prices, replace, new Big(price), this.interval);
 
@@ -73,6 +77,10 @@ export class FasterCG extends NumberIndicatorSeries {
   ) {
     super();
     this.signal = new FasterSMA(signalInterval);
+  }
+
+  override getRequiredInputs() {
+    return this.signal.getRequiredInputs();
   }
 
   update(price: number, replace: boolean) {

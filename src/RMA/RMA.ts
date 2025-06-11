@@ -21,6 +21,10 @@ export class RMA extends MovingAverage {
     this.weightFactor = 1 / this.interval;
   }
 
+  override getRequiredInputs() {
+    return this.interval;
+  }
+
   update(_price: BigSource, replace: boolean): Big {
     if (!replace) {
       this.pricesCounter++;
@@ -66,6 +70,10 @@ export class FasterRMA extends FasterMovingAverage {
   constructor(public override readonly interval: number) {
     super(interval);
     this.weightFactor = 1 / this.interval;
+  }
+
+  override getRequiredInputs() {
+    return this.interval;
   }
 
   update(price: number, replace: boolean): number {

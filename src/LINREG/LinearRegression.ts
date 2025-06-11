@@ -35,6 +35,10 @@ export class LinearRegression extends TechnicalIndicator<LinearRegressionResult,
     this.period = config.period;
   }
 
+  override getRequiredInputs() {
+    return this.period;
+  }
+
   private calculateRegression(prices: BigSource[]): LinearRegressionResult {
     const n = new Big(prices.length);
     const xValues = Array.from({length: prices.length}, (_, i) => new Big(i));
@@ -99,6 +103,10 @@ export class FasterLinearRegression extends TechnicalIndicator<FasterLinearRegre
   constructor(config: LinearRegressionConfig) {
     super();
     this.period = config.period;
+  }
+
+  override getRequiredInputs() {
+    return this.period;
   }
 
   private calculateRegression(prices: number[]): FasterLinearRegressionResult {

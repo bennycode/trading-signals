@@ -21,6 +21,10 @@ export class EMA extends MovingAverage {
     this.weightFactor = 2 / (this.interval + 1);
   }
 
+  override getRequiredInputs() {
+    return this.interval;
+  }
+
   update(_price: BigSource, replace: boolean): Big {
     if (!replace) {
       this.pricesCounter++;
@@ -66,6 +70,10 @@ export class FasterEMA extends FasterMovingAverage {
   constructor(public override readonly interval: number) {
     super(interval);
     this.weightFactor = 2 / (this.interval + 1);
+  }
+
+  override getRequiredInputs() {
+    return this.interval;
   }
 
   update(price: number, replace: boolean): number {

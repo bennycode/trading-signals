@@ -46,6 +46,10 @@ export class AccelerationBands extends TechnicalIndicator<BandsResult, HighLowCl
     return this.middleBand.isStable;
   }
 
+  override getRequiredInputs() {
+    return this.middleBand.getRequiredInputs();
+  }
+
   update({high, low, close}: HighLowClose, replace: boolean) {
     const highPlusLow = new Big(high).plus(low);
     const coefficient = highPlusLow.eq(0) ? new Big(0) : new Big(high).minus(low).div(highPlusLow).mul(this.width);
@@ -83,6 +87,10 @@ export class FasterAccelerationBands extends TechnicalIndicator<FasterBandsResul
     this.lowerBand = new SmoothingIndicator(interval);
     this.middleBand = new SmoothingIndicator(interval);
     this.upperBand = new SmoothingIndicator(interval);
+  }
+
+  override getRequiredInputs() {
+    return this.middleBand.getRequiredInputs();
   }
 
   update({high, low, close}: HighLowClose<number>, replace: boolean) {

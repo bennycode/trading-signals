@@ -22,6 +22,10 @@ export class TDS extends BigIndicatorSeries {
   private setupCount: number = 0;
   private setupDirection: 'bullish' | 'bearish' | null = null;
 
+  override getRequiredInputs() {
+    return 2;
+  }
+
   update(close: BigSource, replace: boolean): Big | null {
     const closeBig = new Big(close);
     if (replace) {
@@ -69,6 +73,10 @@ export class FasterTDS extends NumberIndicatorSeries {
   private readonly closes: number[] = [];
   private setupCount: number = 0;
   private setupDirection: 'bullish' | 'bearish' | null = null;
+
+  override getRequiredInputs() {
+    return 2;
+  }
 
   update(close: number, replace: boolean): number | null {
     if (replace) {

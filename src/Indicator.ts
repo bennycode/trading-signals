@@ -6,6 +6,7 @@ type Nullable<Result> = Result | null;
 interface Indicator<Result = Big, Input = BigSource> {
   isStable: boolean;
   add(input: Input): Nullable<Result>;
+  getRequiredInputs(): number;
   getResult(): Nullable<Result>;
   getResultOrThrow(): Result;
   replace(input: Input): Nullable<Result>;
@@ -15,6 +16,8 @@ interface Indicator<Result = Big, Input = BigSource> {
 
 export abstract class TechnicalIndicator<Result, Input> implements Indicator<Result, Input> {
   protected result: Result | undefined;
+
+  abstract getRequiredInputs(): number;
 
   getResult() {
     try {

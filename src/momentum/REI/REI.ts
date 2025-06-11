@@ -4,16 +4,16 @@ import type {HighLowClose} from '../../util/HighLowClose.js';
 
 /**
  * Range Expansion Index (REI)
- * Type: Momentum
+ * Type: Momentum Oscillator
  *
  * The Range Expansion Index (REI) is a momentum oscillator, measuring the velocity and magnitude of directional price movements. Developed by Thomas DeMark, it compares the current day's range to the average range over a given period. It quantifies whether the current price range represents a contraction or expansion compared to the average. The REI is most typically used on an 8 day timeframe. Extreme REI values often signal potential reversal points, as they reflect sharp directional moves that may not be sustainable.
  *
  * Interpretation:
  * According to Thomas DeMark, potential shifts in momentum when the REI rises above +60 and then drops below (price weakness). Conversely, when it falls below -60 and then climbs back above, it may signal price strength.
  *
- * - REI > +60: Overbought condition — strong upward momentum that may be unsustainable
+ * - REI > +60: Overbought condition — strong upward momentum that may be unsustainable (when crossed from above)
  * - REI between +60 and -60: Neutral zone — no extreme momentum detected
- * - REI < -60: Oversold condition — strong downward momentum that could reverse
+ * - REI < -60: Oversold condition — strong downward momentum that could reverse (when crossed from below)
  *
  * @see https://en.wikipedia.org/wiki/Range_expansion_index
  * @see https://www.quantifiedstrategies.com/range-expansion-index/
@@ -25,8 +25,12 @@ export class REI extends BigIndicatorSeries<HighLowClose> {
   private readonly lows: Big[] = [];
   private readonly closes: Big[] = [];
 
-  constructor(public readonly interval: number = 8) {
+  constructor(public readonly interval: number) {
     super();
+  }
+
+  override getRequiredInputs() {
+    return this.interval + 8;
   }
 
   private calculateN(j: number) {
@@ -66,7 +70,7 @@ export class REI extends BigIndicatorSeries<HighLowClose> {
 
     // We need at least interval + 8 candles for REI calculation
     // REI uses data from prior periods for comparison
-    if (this.highs.length < this.interval + 8) {
+    if (this.highs.length < this.getRequiredInputs()) {
       return null;
     }
 
@@ -130,6 +134,10 @@ export class FasterREI extends NumberIndicatorSeries<HighLowClose<number>> {
 
   constructor(public readonly interval: number = 8) {
     super();
+  }
+
+  override getRequiredInputs() {
+    return this.interval + 8;
   }
 
   override update(candle: HighLowClose<number>, replace: boolean) {

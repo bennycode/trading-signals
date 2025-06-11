@@ -6,6 +6,10 @@ describe('Indicator', () => {
   class IndicatorTestClass extends BigIndicatorSeries {
     public readonly inputs: Big[] = [];
 
+    override getRequiredInputs() {
+      return 2;
+    }
+
     update(input: BigSource, replace: boolean) {
       if (replace) {
         this.inputs.pop();
