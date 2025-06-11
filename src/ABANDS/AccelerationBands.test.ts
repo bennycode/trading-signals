@@ -58,6 +58,9 @@ describe('AccelerationBands', () => {
       expect(accBands.isStable).toBe(true);
       expect(fasterAccBands.isStable).toBe(true);
 
+      expect(accBands.getRequiredInputs()).toBe(20);
+      expect(fasterAccBands.getRequiredInputs()).toBe(20);
+
       expect(result.lower.toFixed(4)).toBe('187.6891');
       expect(fasterResult.lower.toFixed(4)).toBe('187.6891');
 

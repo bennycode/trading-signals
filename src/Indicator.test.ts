@@ -20,6 +20,13 @@ describe('Indicator', () => {
     }
   }
 
+  describe('getRequiredInputs', () => {
+    it('returns the amount of required data needed for a calculation', () => {
+      const itc = new IndicatorTestClass();
+      expect(itc.getRequiredInputs()).toBe(2);
+    });
+  });
+
   describe('isStable', () => {
     it('is unstable when no values are entered', () => {
       const itc = new IndicatorTestClass();
