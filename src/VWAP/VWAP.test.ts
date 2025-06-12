@@ -75,6 +75,9 @@ describe('VWAP', () => {
         expect(fasterResult?.toFixed(2)).toBe(expected[index]);
       }
 
+      expect(vwap.getRequiredInputs()).toBe(2);
+      expect(fasterVWAP.getRequiredInputs()).toBe(2);
+
       expect(vwap.getResultOrThrow().toFixed(2)).toBe('9.18');
       expect(fasterVWAP.getResultOrThrow().toFixed(2)).toBe('9.18');
     });

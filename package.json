@@ -45,6 +45,7 @@
   "homepage": "https://bennycode.com/trading-signals",
   "keywords": [
     "adx",
+    "algorithmic",
     "analysis",
     "atr",
     "average",
@@ -102,7 +103,8 @@
     "test:exports": "attw --pack .",
     "test:imports": "depcruise src --include-only \"^src\"",
     "test:types": "npm run lint:types",
-    "test:units": "vitest run --passWithNoTests"
+    "test:units": "vitest run --passWithNoTests",
+    "test:units:watch": "vitest --watch"
   },
   "type": "module",
   "version": "6.8.0"

@@ -4,10 +4,6 @@ import {TechnicalIndicator} from '../Indicator.js';
 import {pushUpdate} from '../util/pushUpdate.js';
 import {NotEnoughDataError} from '../error/index.js';
 
-export type LinearRegressionConfig = {
-  period: number;
-};
-
 export type LinearRegressionResult = {
   // The predicted value (equivalent to TulipCharts' linreg)
   prediction: Big;
@@ -28,11 +24,13 @@ export type FasterLinearRegressionResult = {
 
 export class LinearRegression extends TechnicalIndicator<LinearRegressionResult, BigSource> {
   public readonly prices: BigSource[] = [];
-  private readonly period: number;
 
-  constructor(config: LinearRegressionConfig) {
+  constructor(public readonly interval: number) {
     super();
-    this.period = config.period;
+  }
+
+  override getRequiredInputs() {
+    return this.interval;
   }
 
   private calculateRegression(prices: BigSource[]): LinearRegressionResult {
@@ -66,9 +64,9 @@ export class LinearRegression extends TechnicalIndicator<LinearRegressionResult,
   }
 
   update(price: BigSource, replace: boolean): LinearRegressionResult | null {
-    pushUpdate(this.prices, replace, price, this.period);
+    pushUpdate(this.prices, replace, price, this.interval);
 
-    if (this.prices.length < this.period) {
+    if (this.prices.length < this.interval) {
       return null;
     }
 
@@ -76,8 +74,8 @@ export class LinearRegression extends TechnicalIndicator<LinearRegressionResult,
   }
 
   override getResultOrThrow(): LinearRegressionResult {
-    if (this.prices.length < this.period) {
-      throw new NotEnoughDataError();
+    if (this.prices.length < this.interval) {
+      throw new NotEnoughDataError(this.getRequiredInputs());
     }
     return this.result!;
   }
@@ -94,11 +92,13 @@ export class LinearRegression extends TechnicalIndicator<LinearRegressionResult,
 
 export class FasterLinearRegression extends TechnicalIndicator<FasterLinearRegressionResult, number> {
   public readonly prices: number[] = [];
-  private readonly period: number;
 
-  constructor(config: LinearRegressionConfig) {
+  constructor(public readonly interval: number) {
     super();
-    this.period = config.period;
+  }
+
+  override getRequiredInputs() {
+    return this.interval;
   }
 
   private calculateRegression(prices: number[]): FasterLinearRegressionResult {
@@ -140,20 +140,13 @@ export class FasterLinearRegression extends TechnicalIndicator<FasterLinearRegre
   }
 
   update(price: number, replace: boolean): FasterLinearRegressionResult | null {
-    pushUpdate(this.prices, replace, price, this.period);
+    pushUpdate(this.prices, replace, price, this.interval);
 
-    if (this.prices.length < this.period) {
+    if (this.prices.length < this.interval) {
       return null;
     }
 
     return (this.result = this.calculateRegression(this.prices));
-  }
-
-  override getResultOrThrow(): FasterLinearRegressionResult {
-    if (!this.result) {
-      throw new NotEnoughDataError();
-    }
-    return this.result;
   }
 
   override get isStable(): boolean {

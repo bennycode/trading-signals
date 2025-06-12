@@ -19,6 +19,10 @@ export class ROC extends BigIndicatorSeries {
     super();
   }
 
+  override getRequiredInputs() {
+    return this.interval;
+  }
+
   update(price: BigSource, replace: boolean) {
     const comparePrice = pushUpdate(this.prices, replace, price, this.interval);
 
@@ -39,6 +43,10 @@ export class FasterROC extends NumberIndicatorSeries {
 
   constructor(public readonly interval: number) {
     super();
+  }
+
+  override getRequiredInputs() {
+    return this.interval;
   }
 
   update(price: number, replace: boolean) {

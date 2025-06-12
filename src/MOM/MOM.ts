@@ -22,6 +22,10 @@ export class MOM extends BigIndicatorSeries {
     this.history = [];
   }
 
+  override getRequiredInputs() {
+    return this.historyLength;
+  }
+
   update(value: BigSource, replace: boolean) {
     pushUpdate(this.history, replace, value, this.historyLength);
 
@@ -41,6 +45,10 @@ export class FasterMOM extends NumberIndicatorSeries {
     super();
     this.historyLength = interval + 1;
     this.history = [];
+  }
+
+  override getRequiredInputs() {
+    return this.historyLength;
   }
 
   update(value: number, replace: boolean) {

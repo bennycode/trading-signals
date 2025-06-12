@@ -25,10 +25,13 @@ describe('ROC', () => {
         fasterROC.add(price);
 
         if (roc.isStable) {
-          const expected = expectations.shift()!;
-          expect(roc.getResultOrThrow().toFixed(2)).toEqual(expected.toFixed(2));
+          const expected = expectations.shift();
+          expect(roc.getResultOrThrow().toFixed(2)).toEqual(expected?.toFixed(2));
         }
       }
+
+      expect(roc.getRequiredInputs()).toBe(interval);
+      expect(fasterROC.getRequiredInputs()).toBe(interval);
 
       expect(roc.lowest?.toFixed(2)).toBe('0.01');
       expect(fasterROC.lowest?.toFixed(2)).toBe('0.01');

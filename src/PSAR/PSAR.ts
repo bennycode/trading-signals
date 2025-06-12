@@ -42,6 +42,10 @@ export class PSAR extends BigIndicatorSeries<HighLow> {
     }
   }
 
+  override getRequiredInputs() {
+    return 2;
+  }
+
   override get isStable(): boolean {
     return this.lastSar !== null;
   }
@@ -197,7 +201,7 @@ export class PSAR extends BigIndicatorSeries<HighLow> {
 
   override getResultOrThrow(): Big {
     if (this.lastSar === null) {
-      throw new NotEnoughDataError('PSAR requires at least 2 candles');
+      throw new NotEnoughDataError(this.getRequiredInputs());
     }
 
     return super.getResultOrThrow();
@@ -229,6 +233,10 @@ export class FasterPSAR extends NumberIndicatorSeries<HighLow<number>> {
 
   override get isStable(): boolean {
     return this.lastSar !== null;
+  }
+
+  override getRequiredInputs() {
+    return 2;
   }
 
   update(candle: HighLow<number>, replace: boolean): number | null {
@@ -370,7 +378,7 @@ export class FasterPSAR extends NumberIndicatorSeries<HighLow<number>> {
 
   override getResultOrThrow(): number {
     if (this.lastSar === null) {
-      throw new NotEnoughDataError('PSAR requires at least 2 candles');
+      throw new NotEnoughDataError(this.getRequiredInputs());
     }
 
     return super.getResultOrThrow();

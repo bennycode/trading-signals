@@ -47,6 +47,10 @@ export class MACD extends TechnicalIndicator<MACDResult, BigSource> {
     this.signal = new config.indicator(config.signalInterval);
   }
 
+  override getRequiredInputs() {
+    return this.long.getRequiredInputs();
+  }
+
   update(_price: BigSource, replace: boolean) {
     const price = new Big(_price);
     pushUpdate(this.prices, replace, price, this.long.interval);
@@ -89,6 +93,10 @@ export class FasterMACD extends TechnicalIndicator<FasterMACDResult, number> {
     public readonly signal: FasterEMA | FasterDEMA
   ) {
     super();
+  }
+
+  override getRequiredInputs() {
+    return this.long.getRequiredInputs();
   }
 
   update(price: number, replace: boolean) {

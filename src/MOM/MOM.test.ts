@@ -56,6 +56,9 @@ describe('MOM', () => {
       expect(momentum.isStable).toBe(true);
       expect(fasterMomentum.isStable).toBe(true);
 
+      expect(momentum.getRequiredInputs()).toBe(6);
+      expect(fasterMomentum.getRequiredInputs()).toBe(6);
+
       expect(momentum.lowest?.toFixed(2)).toBe('0.75');
       expect(fasterMomentum.lowest?.toFixed(2)).toBe('0.75');
 

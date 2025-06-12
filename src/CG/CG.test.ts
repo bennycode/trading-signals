@@ -98,8 +98,9 @@ describe('CG', () => {
 
   describe('getResultOrThrow', () => {
     it('indicates a downtrend when the center of gravity falls below the signal line', () => {
-      const cg = new CG(5, 10);
-      const fasterCG = new FasterCG(5, 10);
+      const signalInterval = 10;
+      const cg = new CG(5, signalInterval);
+      const fasterCG = new FasterCG(5, signalInterval);
       const values = [100, 110, 120, 130, 140, 150, 160, 170, 180, 190, 200];
       for (const value of values) {
         cg.add(value);
@@ -115,6 +116,9 @@ describe('CG', () => {
 
       expect(cg.isStable).toBe(true);
       expect(fasterCG.isStable).toBe(true);
+
+      expect(cg.getRequiredInputs()).toBe(signalInterval);
+      expect(fasterCG.getRequiredInputs()).toBe(signalInterval);
 
       cgResult = cg.getResultOrThrow();
       signalResult = cg.signal.getResultOrThrow();

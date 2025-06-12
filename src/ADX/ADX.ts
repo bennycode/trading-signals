@@ -57,6 +57,10 @@ export class ADX extends BigIndicatorSeries<HighLowClose> {
     return this.dx.pdi;
   }
 
+  override getRequiredInputs() {
+    return this.smoothed.getRequiredInputs();
+  }
+
   update(candle: HighLowClose, replace: boolean) {
     const result = this.dx.update(candle, replace);
 
@@ -91,6 +95,10 @@ export class FasterADX extends NumberIndicatorSeries<HighLowClose<number>> {
 
   get pdi(): number | void {
     return this.dx.pdi;
+  }
+
+  override getRequiredInputs() {
+    return this.smoothed.getRequiredInputs();
   }
 
   update(candle: HighLowClose<number>, replace: boolean) {

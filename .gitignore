@@ -4,6 +4,7 @@
 .DS_Store
 .idea/
 .vscode/
+!.vscode/settings.json
 config.json
 coverage/
 dist/

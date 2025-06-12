@@ -19,6 +19,10 @@ export class WMA extends MovingAverage {
     super(interval);
   }
 
+  override getRequiredInputs() {
+    return this.interval;
+  }
+
   update(price: BigSource, replace: boolean) {
     pushUpdate(this.prices, replace, price, this.interval);
 
@@ -44,6 +48,10 @@ export class FasterWMA extends FasterMovingAverage {
 
   constructor(public override readonly interval: number) {
     super(interval);
+  }
+
+  override getRequiredInputs() {
+    return this.interval;
   }
 
   update(price: number, replace: boolean) {

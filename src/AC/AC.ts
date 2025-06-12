@@ -32,6 +32,10 @@ export class AC extends BigIndicatorSeries<HighLow> {
     this.signal = new SMA(signalInterval);
   }
 
+  override getRequiredInputs() {
+    return this.signal.getRequiredInputs();
+  }
+
   update(input: HighLow, replace: boolean) {
     const ao = this.ao.update(input, replace);
     if (ao) {
@@ -60,6 +64,10 @@ export class FasterAC extends NumberIndicatorSeries<HighLow<number>> {
     this.ao = new FasterAO(shortAO, longAO);
     this.momentum = new FasterMOM(1);
     this.signal = new FasterSMA(signalInterval);
+  }
+
+  override getRequiredInputs() {
+    return this.signal.getRequiredInputs();
   }
 
   update(input: HighLow<number>, replace: boolean) {

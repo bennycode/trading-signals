@@ -38,6 +38,10 @@ export class RSI extends BigIndicatorSeries {
     this.avgLoss = new SmoothingIndicator(this.interval);
   }
 
+  override getRequiredInputs() {
+    return this.avgGain.getRequiredInputs();
+  }
+
   update(price: BigSource, replace: boolean) {
     pushUpdate(this.previousPrices, replace, price, this.interval);
 
@@ -84,6 +88,10 @@ export class FasterRSI extends NumberIndicatorSeries {
     super();
     this.avgGain = new SmoothingIndicator(this.interval);
     this.avgLoss = new SmoothingIndicator(this.interval);
+  }
+
+  override getRequiredInputs() {
+    return this.avgGain.getRequiredInputs();
   }
 
   update(price: number, replace: boolean) {

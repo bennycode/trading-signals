@@ -20,6 +20,10 @@ export class IQR extends BigIndicatorSeries {
     super();
   }
 
+  override getRequiredInputs() {
+    return this.interval;
+  }
+
   update(value: BigSource, replace: boolean): Big | null {
     const bigValue = new Big(value);
 
@@ -49,6 +53,10 @@ export class FasterIQR extends NumberIndicatorSeries {
 
   constructor(public readonly interval: number) {
     super();
+  }
+
+  override getRequiredInputs() {
+    return this.interval;
   }
 
   update(value: number, replace: boolean): number | null {

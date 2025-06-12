@@ -28,6 +28,10 @@ export class VWAP extends BigIndicatorSeries<HighLowCloseVolume> {
     return hlc3.mul(data.volume);
   }
 
+  override getRequiredInputs() {
+    return 2;
+  }
+
   override update(candle: HighLowCloseVolume, replace: boolean) {
     // Only calculate VWAP if we have volume data
     if (candle.volume === 0) {
@@ -64,6 +68,10 @@ export class FasterVWAP extends NumberIndicatorSeries<HighLowCloseVolume<number>
   private calculateTypicalPriceVolume(data: HighLowCloseVolume<number>) {
     const hlc3 = (data.high + data.low + data.close) / 3;
     return hlc3 * data.volume;
+  }
+
+  override getRequiredInputs() {
+    return 2;
   }
 
   override update(candle: HighLowCloseVolume<number>, replace: boolean) {

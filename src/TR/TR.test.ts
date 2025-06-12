@@ -56,6 +56,9 @@ describe('TR', () => {
       expect(tr.isStable).toBe(true);
       expect(fasterTR.isStable).toBe(true);
 
+      expect(tr.getRequiredInputs()).toBe(2);
+      expect(fasterTR.getRequiredInputs()).toBe(2);
+
       expect(tr.getResultOrThrow().toFixed(2)).toBe('0.86');
       expect(fasterTR.getResultOrThrow().toFixed(2)).toBe('0.86');
 

@@ -65,6 +65,10 @@ describe('CCI', () => {
       const interval = 5;
       const cci = new CCI(interval);
       const fasterCCI = new FasterCCI(interval);
+
+      expect(cci.getRequiredInputs()).toBe(interval);
+      expect(fasterCCI.getRequiredInputs()).toBe(interval);
+
       for (const candle of candles) {
         cci.add(candle);
         fasterCCI.add(candle);
@@ -74,17 +78,21 @@ describe('CCI', () => {
           expect(fasterCCI.getResultOrThrow().toFixed(2)).toBe(expected);
         }
       }
+
       const actual = cci.getResultOrThrow().toFixed(2);
       expect(actual).toBe('71.93');
     });
 
     it("stores the highest and lowest result throughout the indicator's lifetime", () => {
-      const cci = new CCI(5);
-      const fasterCCI = new FasterCCI(5);
+      const interval = 5;
+      const cci = new CCI(interval);
+      const fasterCCI = new FasterCCI(interval);
+
       for (const candle of candles) {
         cci.add(candle);
         fasterCCI.add(candle);
       }
+
       expect(cci.highest?.toFixed(2)).toBe('166.67');
       expect(cci.lowest?.toFixed(2)).toBe('-29.63');
       expect(fasterCCI.highest?.toFixed(2)).toBe('166.67');

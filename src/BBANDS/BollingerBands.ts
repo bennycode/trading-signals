@@ -40,6 +40,10 @@ export class BollingerBands extends TechnicalIndicator<BandsResult, BigSource> {
     super();
   }
 
+  override getRequiredInputs() {
+    return this.interval;
+  }
+
   update(price: BigSource, replace: boolean) {
     const dropOut = pushUpdate(this.prices, replace, new Big(price), this.interval);
 
@@ -66,6 +70,10 @@ export class FasterBollingerBands extends TechnicalIndicator<FasterBandsResult, 
     public readonly deviationMultiplier: number = 2
   ) {
     super();
+  }
+
+  override getRequiredInputs() {
+    return this.interval;
   }
 
   update(price: number, replace: boolean) {

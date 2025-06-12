@@ -40,6 +40,9 @@ describe('StochasticRSI', () => {
       expect(stochRSI.isStable).toBe(true);
       expect(fasterStochRSI.isStable).toBe(true);
 
+      expect(stochRSI.getRequiredInputs()).toBe(10);
+      expect(fasterStochRSI.getRequiredInputs()).toBe(10);
+
       expect(stochRSI.getResultOrThrow().valueOf()).toBe('0');
       expect(fasterStochRSI.getResultOrThrow()).toBe(0);
 

@@ -4,6 +4,10 @@ class MyAverage extends FasterMovingAverage {
   iterations = 0;
   total = 0;
 
+  override getRequiredInputs() {
+    return this.interval;
+  }
+
   update(price: number) {
     if (this.result === undefined) {
       this.result = 0;

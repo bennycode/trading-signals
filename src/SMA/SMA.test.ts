@@ -148,6 +148,9 @@ describe('SMA', () => {
       expect(sma.isStable).toBe(true);
       expect(fasterSMA.isStable).toBe(true);
 
+      expect(sma.getRequiredInputs()).toBe(interval);
+      expect(fasterSMA.getRequiredInputs()).toBe(interval);
+
       expect(sma.getResultOrThrow().toFixed(3)).toBe('86.804');
       expect(fasterSMA.getResultOrThrow()).toBe(86.804);
 

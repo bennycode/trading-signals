@@ -14,6 +14,10 @@ export class BollingerBandsWidth extends BigIndicatorSeries {
     super();
   }
 
+  override getRequiredInputs() {
+    return this.bollingerBands.getRequiredInputs();
+  }
+
   update(price: BigSource, replace: boolean) {
     const result = this.bollingerBands.update(price, replace);
     if (result) {
@@ -27,6 +31,10 @@ export class BollingerBandsWidth extends BigIndicatorSeries {
 export class FasterBollingerBandsWidth extends NumberIndicatorSeries {
   constructor(public readonly bollingerBands: FasterBollingerBands) {
     super();
+  }
+
+  override getRequiredInputs() {
+    return this.bollingerBands.getRequiredInputs();
   }
 
   update(price: number, replace: boolean) {

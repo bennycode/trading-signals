@@ -35,6 +35,10 @@ export class Period extends TechnicalIndicator<PeriodResult, BigSource> {
     this.values = [];
   }
 
+  override getRequiredInputs() {
+    return this.interval;
+  }
+
   update(value: BigSource, replace: boolean) {
     pushUpdate(this.values, replace, new Big(value), this.interval);
 
@@ -69,6 +73,10 @@ export class FasterPeriod extends TechnicalIndicator<FasterPeriodResult, number>
   constructor(public readonly interval: number) {
     super();
     this.values = [];
+  }
+
+  override getRequiredInputs() {
+    return this.interval;
   }
 
   update(value: number, replace: boolean) {

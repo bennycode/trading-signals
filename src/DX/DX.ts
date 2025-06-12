@@ -51,6 +51,10 @@ export class DX extends BigIndicatorSeries<HighLowClose> {
     this.previousCandle = candle;
   }
 
+  override getRequiredInputs() {
+    return this.movesUp.getRequiredInputs();
+  }
+
   update(candle: HighLowClose, replace: boolean) {
     if (!this.previousCandle) {
       this.updateState(candle, 0, 0, replace);
@@ -130,6 +134,10 @@ export class FasterDX extends NumberIndicatorSeries<HighLowClose<number>> {
       this.secondLastCandle = this.previousCandle;
     }
     this.previousCandle = candle;
+  }
+
+  override getRequiredInputs() {
+    return this.movesUp.getRequiredInputs();
   }
 
   update(candle: HighLowClose<number>, replace: boolean) {

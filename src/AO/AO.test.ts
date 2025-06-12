@@ -54,6 +54,9 @@ describe('AO', () => {
         }
       }
 
+      expect(ao.getRequiredInputs()).toBe(longInterval);
+      expect(fasterAO.getRequiredInputs()).toBe(longInterval);
+
       expect(ao.lowest?.toFixed(2)).toBe('-11.50');
       expect(fasterAO.lowest?.toFixed(2)).toBe('-11.50');
 

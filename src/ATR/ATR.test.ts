@@ -78,6 +78,9 @@ describe('ATR', () => {
       expect(atr.isStable).toBe(true);
       expect(fasterATR.isStable).toBe(true);
 
+      expect(atr.getRequiredInputs()).toBe(interval);
+      expect(fasterATR.getRequiredInputs()).toBe(interval);
+
       expect(atr.getResultOrThrow().toFixed(2)).toBe('1.14');
       expect(atr.lowest?.toFixed(2)).toBe('1.01');
       expect(atr.highest?.toFixed(2)).toBe('1.24');
