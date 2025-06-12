@@ -23,7 +23,7 @@ export class TDS extends BigIndicatorSeries {
   private setupDirection: 'bullish' | 'bearish' | null = null;
 
   override getRequiredInputs() {
-    return 2;
+    return 9;
   }
 
   update(close: BigSource, replace: boolean): Big | null {
@@ -59,7 +59,7 @@ export class TDS extends BigIndicatorSeries {
       }
     }
     // Setup completed
-    if (this.setupCount >= 9) {
+    if (this.setupCount >= this.getRequiredInputs()) {
       const result = new Big(this.setupDirection === 'bullish' ? 1 : -1);
       this.setupCount = 0;
       this.setupDirection = null;
@@ -75,7 +75,7 @@ export class FasterTDS extends NumberIndicatorSeries {
   private setupDirection: 'bullish' | 'bearish' | null = null;
 
   override getRequiredInputs() {
-    return 2;
+    return 9;
   }
 
   update(close: number, replace: boolean): number | null {
@@ -110,7 +110,7 @@ export class FasterTDS extends NumberIndicatorSeries {
       }
     }
     // Setup completed
-    if (this.setupCount >= 9) {
+    if (this.setupCount >= this.getRequiredInputs()) {
       const result = this.setupDirection === 'bullish' ? 1 : -1;
       this.setupCount = 0;
       this.setupDirection = null;

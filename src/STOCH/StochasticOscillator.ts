@@ -36,6 +36,7 @@ export interface FasterStochasticResult {
  *
  * @see https://en.wikipedia.org/wiki/Stochastic_oscillator
  * @see https://www.investopedia.com/terms/s/stochasticoscillator.asp
+ * @see https://tulipindicators.org/stoch
  */
 export class StochasticOscillator extends TechnicalIndicator<StochasticResult, HighLowClose> {
   private readonly periodM: SMA;
@@ -60,7 +61,7 @@ export class StochasticOscillator extends TechnicalIndicator<StochasticResult, H
   }
 
   override getRequiredInputs() {
-    return this.n;
+    return this.n + this.p + 1;
   }
 
   update(candle: HighLowClose, replace: boolean) {
@@ -108,7 +109,7 @@ export class FasterStochasticOscillator extends TechnicalIndicator<FasterStochas
   }
 
   override getRequiredInputs() {
-    return this.n;
+    return this.n + this.p + 1;
   }
 
   update(candle: HighLowClose<number>, replace: boolean) {
