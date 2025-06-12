@@ -75,7 +75,7 @@ export class LinearRegression extends TechnicalIndicator<LinearRegressionResult,
 
   override getResultOrThrow(): LinearRegressionResult {
     if (this.prices.length < this.interval) {
-      throw new NotEnoughDataError();
+      throw new NotEnoughDataError(this.getRequiredInputs());
     }
     return this.result!;
   }
@@ -147,13 +147,6 @@ export class FasterLinearRegression extends TechnicalIndicator<FasterLinearRegre
     }
 
     return (this.result = this.calculateRegression(this.prices));
-  }
-
-  override getResultOrThrow(): FasterLinearRegressionResult {
-    if (!this.result) {
-      throw new NotEnoughDataError();
-    }
-    return this.result;
   }
 
   override get isStable(): boolean {

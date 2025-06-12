@@ -29,7 +29,7 @@ export abstract class TechnicalIndicator<Result, Input> implements Indicator<Res
 
   getResultOrThrow() {
     if (this.result === undefined) {
-      throw new NotEnoughDataError();
+      throw new NotEnoughDataError(this.getRequiredInputs());
     }
 
     return this.result;

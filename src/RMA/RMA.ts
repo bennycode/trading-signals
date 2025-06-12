@@ -47,7 +47,7 @@ export class RMA extends MovingAverage {
 
   override getResultOrThrow(): Big {
     if (this.pricesCounter < this.interval) {
-      throw new NotEnoughDataError();
+      throw new NotEnoughDataError(this.getRequiredInputs());
     }
 
     return this.result!;
@@ -94,7 +94,7 @@ export class FasterRMA extends FasterMovingAverage {
 
   override getResultOrThrow(): number {
     if (this.pricesCounter < this.interval) {
-      throw new NotEnoughDataError();
+      throw new NotEnoughDataError(this.getRequiredInputs());
     }
 
     return this.result!;
