@@ -139,7 +139,7 @@ Most of the time, the minimum amount of data depends on the interval / time peri
 1. [Moving Average Convergence Divergence](./src/MACD/MACD.ts) (MACD)
 1. [On-Balance Volume](./src/OBV/OBV.ts) (OBV)
 1. [Parabolic SAR](./src/PSAR/PSAR.ts) (PSAR)
-1. [Range Expansion Index](./src/REI/REI.ts) (REI)
+1. [Range Expansion Index](./src/momentum/REI/REI.ts) (REI)
 1. [Rate-of-Change](./src/ROC/ROC.ts) (ROC)
 1. [Relative Moving Average](./src/RMA/RMA.ts) (RMA)
 1. [Relative Strength Index](./src/RSI/RSI.ts) (RSI)
