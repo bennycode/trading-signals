@@ -1,5 +1,6 @@
 import {describe, expect, it} from 'vitest';
-import {FasterREI, REI} from './REI.js';
+import {REI} from './REI.js';
+import type {HighLowClose} from '../../util/HighLowClose.js';
 
 describe('REI', () => {
   const testData = [
@@ -139,6 +140,17 @@ describe('REI', () => {
     expect(rei.getResultOrThrow().toFixed(2)).toBe('-0.64');
   });
 
+  it('detects neutral momentum', () => {
+    const rei = new REI(8);
+    const inputs: HighLowClose[] = Array(rei.getRequiredInputs()).fill({
+      close: 180,
+      high: 180,
+      low: 180,
+    });
+    rei.updates(inputs);
+    expect(rei.getResultOrThrow().toString()).toBe('0');
+  });
+
   it('returns null until there are enough data points', () => {
     const rei = new REI(8); // Default interval is 8
 
@@ -234,23 +246,23 @@ describe('REI', () => {
 
   it('returns null signal when not stable', () => {
     const rei = new REI(8);
-    
+
     // Add insufficient data points
     for (let i = 0; i < 10; i++) {
       rei.add({close: 95 + i, high: 100 + i, low: 90 + i});
     }
-    
+
     expect(rei.getSignal()).toBeNull();
   });
 
   it('returns overbought signal when REI > 60', () => {
     const rei = new REI(8);
-    
+
     // Add enough data to make the indicator stable
     for (let i = 0; i < 16; i++) {
       rei.add({close: 95 + i, high: 100 + i, low: 90 + i});
     }
-    
+
     // Force an overbought condition by mocking the result
     // We'll create a scenario that should produce a high REI value
     const highVolatilityCandles = [
@@ -259,11 +271,11 @@ describe('REI', () => {
       {close: 300, high: 320, low: 280},
       {close: 350, high: 370, low: 330},
     ];
-    
+
     for (const candle of highVolatilityCandles) {
       rei.add(candle);
     }
-    
+
     // Check if we get overbought or just ensure the signal method works
     const signal = rei.getSignal();
     expect(['overbought', 'oversold', 'neutral']).toContain(signal);
@@ -271,12 +283,12 @@ describe('REI', () => {
 
   it('returns oversold signal when REI < -60', () => {
     const rei = new REI(8);
-    
+
     // Add enough data to make the indicator stable
     for (let i = 0; i < 16; i++) {
       rei.add({close: 95 + i, high: 100 + i, low: 90 + i});
     }
-    
+
     // Create a scenario that might produce a low REI value
     const lowVolatilityCandles = [
       {close: 100, high: 100.1, low: 99.9},
@@ -284,11 +296,11 @@ describe('REI', () => {
       {close: 99.95, high: 100.05, low: 99.85},
       {close: 100.02, high: 100.12, low: 99.92},
     ];
-    
+
     for (const candle of lowVolatilityCandles) {
       rei.add(candle);
     }
-    
+
     // Check if we get the expected signal
     const signal = rei.getSignal();
     expect(['overbought', 'oversold', 'neutral']).toContain(signal);
@@ -296,109 +308,14 @@ describe('REI', () => {
 
   it('returns neutral signal when REI is between -60 and 60', () => {
     const rei = new REI(8);
-    
+
     // Add enough data to make the indicator stable
     for (let i = 0; i < 16; i++) {
       rei.add({close: 95 + i, high: 100 + i, low: 90 + i});
     }
-    
+
     // Most normal market conditions should produce neutral signals
     const signal = rei.getSignal();
     expect(['overbought', 'oversold', 'neutral']).toContain(signal);
-  });
-});
-
-describe('FasterREI', () => {
-  it('returns null until there are enough data points', () => {
-    const rei = new FasterREI(8);
-
-    // We need interval + 8 candles for REI calculation
-    for (let i = 0; i < 15; i++) {
-      const result = rei.update({close: 95 + i, high: 100 + i, low: 90 + i}, false);
-      if (i < 15) {
-        expect(result).toBeNull();
-      }
-    }
-  });
-
-  it('calculates REI based on Thomas DeMark formula using number values', () => {
-    // Test case with 16 candles to have enough data points
-    const rei = new FasterREI(8);
-
-    // First set of candles - create a base pattern
-    for (let i = 0; i < 10; i++) {
-      rei.add({close: 95 + i, high: 100 + i, low: 90 + i});
-    }
-
-    // Create a pattern that will result in numzero1 = 0 (bullish signal)
-    rei.add({close: 105, high: 110, low: 100});
-    rei.add({close: 107, high: 112, low: 102});
-    rei.add({close: 109, high: 114, low: 104});
-    rei.add({close: 111, high: 116, low: 106});
-    rei.add({close: 113, high: 118, low: 108});
-    rei.add({close: 115, high: 120, low: 110});
-    rei.add({close: 110, high: 115, low: 105}); // lower high
-    rei.add({close: 116, high: 121, low: 111});
-    const result = rei.add({close: 109, high: 114, low: 104}); // lower high
-
-    // Should be non-null now as we have enough data
-    expect(result).not.toBeNull();
-  });
-
-  it('produces results equivalent to the Big.js version', () => {
-    const bigREI = new REI(8);
-    const fasterREI = new FasterREI(8);
-
-    // Generate 20 candles with the same pattern
-    for (let i = 0; i < 20; i++) {
-      const candle = {close: 95 + i, high: 100 + i, low: 90 + i};
-      bigREI.add(candle);
-      fasterREI.add(candle);
-    }
-
-    // The faster version should produce results within rounding error
-    // of the Big.js version
-    const bigResult = bigREI.getResultOrThrow().toNumber();
-    const fasterResult = fasterREI.getResultOrThrow();
-
-    expect(fasterResult).toBeCloseTo(bigResult, 10);
-  });
-
-  it('getSignal returns null when not stable', () => {
-    const rei = new FasterREI(8);
-    
-    // Add insufficient data points
-    for (let i = 0; i < 10; i++) {
-      rei.add({close: 95 + i, high: 100 + i, low: 90 + i});
-    }
-    
-    expect(rei.getSignal()).toBeNull();
-  });
-
-  it('getSignal returns appropriate signals when stable', () => {
-    const rei = new FasterREI(8);
-    
-    // Add enough data to make the indicator stable
-    for (let i = 0; i < 16; i++) {
-      rei.add({close: 95 + i, high: 100 + i, low: 90 + i});
-    }
-    
-    const signal = rei.getSignal();
-    expect(['overbought', 'oversold', 'neutral']).toContain(signal);
-  });
-
-  it('getSignal produces same results as Big.js version', () => {
-    const bigREI = new REI(8);
-    const fasterREI = new FasterREI(8);
-    
-    // Add the same data to both
-    for (let i = 0; i < 20; i++) {
-      const candle = {close: 95 + i, high: 100 + i, low: 90 + i};
-      bigREI.add(candle);
-      fasterREI.add(candle);
-    }
-    
-    // Both should return the same signal
-    expect(fasterREI.getSignal()).toBe(bigREI.getSignal());
   });
 });

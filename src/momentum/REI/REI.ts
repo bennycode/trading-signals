@@ -1,5 +1,5 @@
 import Big from 'big.js';
-import {BigIndicatorSeries, NumberIndicatorSeries} from '../../Indicator.js';
+import {BigIndicatorSeries} from '../../Indicator.js';
 import type {HighLowClose} from '../../util/HighLowClose.js';
 
 /**
@@ -12,7 +12,7 @@ import type {HighLowClose} from '../../util/HighLowClose.js';
  * According to Thomas DeMark, potential shifts in momentum when the REI rises above +60 and then drops below (price weakness). Conversely, when it falls below -60 and then climbs back above, it may signal price strength.
  *
  * - REI > +60: Overbought condition — strong upward momentum that may be unsustainable (when crossed from above)
- * - REI between +60 and -60: Neutral zone — no extreme momentum detected
+ * - REI between +60 and -60: Neutral zone — the market is neither gaining upward strength nor showing downside pressure
  * - REI < -60: Oversold condition — strong downward momentum that could reverse (when crossed from below)
  *
  * @see https://en.wikipedia.org/wiki/Range_expansion_index
@@ -95,9 +95,9 @@ export class REI extends BigIndicatorSeries<HighLowClose> {
       absValueSum = absValueSum.plus(absDailyValue);
     }
 
+    // Prevent division by 0
     if (absValueSum.eq(0)) {
-      // Prevent division by 0
-      return null;
+      return this.setResult(new Big(0), replace);
     }
     const rei = subValueSum.div(absValueSum).times(100);
     return this.setResult(rei, replace);
@@ -116,114 +116,12 @@ export class REI extends BigIndicatorSeries<HighLowClose> {
     if (!reiValue) {
       return null;
     }
-    
+
     if (reiValue.gt(60)) {
       return 'overbought';
     } else if (reiValue.lt(-60)) {
       return 'oversold';
-    } else {
-      return 'neutral';
     }
-  }
-}
-
-export class FasterREI extends NumberIndicatorSeries<HighLowClose<number>> {
-  private readonly highs: number[] = [];
-  private readonly lows: number[] = [];
-  private readonly closes: number[] = [];
-
-  constructor(public readonly interval: number = 8) {
-    super();
-  }
-
-  override getRequiredInputs() {
-    return this.interval + 8;
-  }
-
-  override update(candle: HighLowClose<number>, replace: boolean) {
-    if (replace) {
-      this.highs.pop();
-      this.lows.pop();
-      this.closes.pop();
-    }
-
-    this.highs.push(candle.high);
-    this.lows.push(candle.low);
-    this.closes.push(candle.close);
-
-    // We need at least interval + 8 candles for REI calculation
-    if (this.highs.length < this.interval + 8) {
-      return null;
-    }
-
-    // Calculate sum for the interval period
-    let subValueSum = 0;
-    let absValueSum = 0;
-
-    // Current position
-    const currentIndex = this.highs.length - 1;
-
-    for (let i = 0; i < this.interval; i++) {
-      const pos = currentIndex - i;
-
-      // For each position in the interval, calculate formula components
-      const pos2Index = pos - 2;
-      const pos5Index = pos - 5;
-      const pos6Index = pos - 6;
-      const pos7Index = pos - 7;
-      const pos8Index = pos - 8;
-
-      const posDiff1 = this.highs[pos] - this.highs[pos2Index];
-      const posDiff2 = this.lows[pos] - this.lows[pos2Index];
-
-      const posNumzero1Condition1 =
-        this.highs[pos2Index] < this.closes[pos7Index] && this.highs[pos2Index] < this.closes[pos8Index];
-      const posNumzero1Condition2 = this.highs[pos] < this.highs[pos5Index] && this.highs[pos] < this.highs[pos6Index];
-      const posNumzero1 = posNumzero1Condition1 && posNumzero1Condition2 ? 0 : 1;
-
-      const posNumzero2Condition1 =
-        this.lows[pos2Index] > this.closes[pos7Index] && this.lows[pos2Index] > this.closes[pos8Index];
-      const posNumzero2Condition2 = this.lows[pos] > this.lows[pos5Index] && this.lows[pos] > this.lows[pos6Index];
-      const posNumzero2 = posNumzero2Condition1 && posNumzero2Condition2 ? 0 : 1;
-
-      const posSubvalue = posNumzero1 * posNumzero2 * (posDiff1 + posDiff2);
-      const posAbsValue = Math.abs(posDiff1) + Math.abs(posDiff2);
-
-      subValueSum += posSubvalue;
-      absValueSum += posAbsValue;
-    }
-
-    // Calculate REI
-    let reiValue;
-    if (absValueSum === 0) {
-      reiValue = 0;
-    } else {
-      reiValue = (subValueSum / absValueSum) * 100;
-    }
-
-    return this.setResult(reiValue, replace);
-  }
-
-  /**
-   * Get trading signal based on REI value
-   * @returns 'overbought' when REI > +60, 'oversold' when REI < -60, 'neutral' otherwise
-   */
-  getSignal(): 'overbought' | 'oversold' | 'neutral' | null {
-    if (!this.isStable) {
-      return null;
-    }
-
-    const reiValue = this.getResult();
-    if (reiValue === null) {
-      return null;
-    }
-    
-    if (reiValue > 60) {
-      return 'overbought';
-    } else if (reiValue < -60) {
-      return 'oversold';
-    } else {
-      return 'neutral';
-    }
+    return 'neutral';
   }
 }
