@@ -19,6 +19,7 @@ import type {HighLowClose} from '../../util/HighLowClose.js';
  * @see https://www.quantifiedstrategies.com/range-expansion-index/
  * @see https://www.prorealcode.com/prorealtime-indicators/range-expansion-index-rei/
  * @see https://github.com/EarnForex/Range-Expansion-Index
+ * @see https://www.sierrachart.com/index.php?page=doc/StudiesReference.php&ID=448
  */
 export class REI extends BigIndicatorSeries<HighLowClose> {
   private readonly highs: Big[] = [];
@@ -101,27 +102,5 @@ export class REI extends BigIndicatorSeries<HighLowClose> {
     }
     const rei = subValueSum.div(absValueSum).times(100);
     return this.setResult(rei, replace);
-  }
-
-  /**
-   * Get trading signal based on REI value
-   * @returns 'overbought' when REI > +60, 'oversold' when REI < -60, 'neutral' otherwise
-   */
-  getSignal(): 'overbought' | 'oversold' | 'neutral' | null {
-    if (!this.isStable) {
-      return null;
-    }
-
-    const reiValue = this.getResult();
-    if (!reiValue) {
-      return null;
-    }
-
-    if (reiValue.gt(60)) {
-      return 'overbought';
-    } else if (reiValue.lt(-60)) {
-      return 'oversold';
-    }
-    return 'neutral';
   }
 }
