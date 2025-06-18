@@ -6,9 +6,12 @@ import {pushUpdate} from '../util/pushUpdate.js';
 
 /**
  * Center of Gravity (CG)
- * Type: Trend
+ * Type: Momentum
  *
- * Implementation of the Center of Gravity (CG) oscillator by John Ehlers.
+ * Implementation of the Center of Gravity (CG) oscillator by John Ehlers. The Center of Gravity (CG) aims to identify turning points in price action with minimal lag (leading indicator). Peaks and troughs in CG can precede actual price highs and lows. The CG is often paired with its own signal line for entry/exit triggers.
+ *
+ * Interpretation:
+ * Crossing the zero line may suggest a shift in trend.
  *
  * Note:
  * - According to the specification, the price inputs shall be calculated the following way:

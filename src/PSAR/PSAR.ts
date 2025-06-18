@@ -17,7 +17,17 @@ export type PSARConfig = {
 };
 
 /**
+ * Parabolic SAR
+ * Type: Trend
+ *
  * The Parabolic SAR (Stop and Reverse) is a technical indicator used in trading to determine the direction of an asset's price and potential points of trend reversal. It was developed by J. Welles Wilder Jr., who also created indicators like the RSI.
+ *
+ * Interpretation:
+ * The indicator places dots above or below the price. If the dots are below the price, it signals an uptrend. If the dots are above the price it signals a downtrend. It "stops and reverses" when the trend is likely to change, hence the name. Its logic says to stay in a trend as long as the dots stay on the same side of the price. Exit or reverse positions when the dots flip to the opposite side.
+ *
+ * Note:
+ * It's particularly useful in trending markets, but less reliable in sideways or choppy markets.
+ *
  */
 export class PSAR extends BigIndicatorSeries<HighLow> {
   private readonly accelerationStep: Big;

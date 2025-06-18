@@ -3,6 +3,9 @@ import type {BollingerBands, FasterBollingerBands} from '../BBANDS/BollingerBand
 import type {BigSource} from 'big.js';
 
 /**
+ * Bollinger Bands Width (BBW)
+ * Type: Volatility
+ *
  * The Bollinger Bands Width (BBW) indicator, developed by John A. Bollinger, merges the information of Bollinger Bands
  * into one definite number. It defines the narrowness of the underlying Bollinger Bands by representing the difference
  * between the Upper Band and the Lower Band.
