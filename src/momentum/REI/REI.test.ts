@@ -168,15 +168,36 @@ describe('REI', () => {
       rei.updates(inputs);
       expect(rei.getResultOrThrow().toString()).toBe('0');
     });
-  });
 
-  it('returns null until there are enough data points', () => {
-    const rei = new REI(8);
+    it('detects an oversold condition', () => {
+      const rei = new REI(8);
 
-    for (let i = 0; i < rei.getRequiredInputs() - 1; i++) {
-      rei.update({close: i, high: i, low: i}, false);
-    }
+      for (let i = 0; i < rei.getRequiredInputs(); i++) {
+        rei.add({close: 95 + i, high: 100 + i, low: 90 + i});
+      }
 
-    expect(rei.getResult()).toBeNull();
+      const lowVolatilityCandles = [
+        {close: 100, high: 100.1, low: 99.9},
+        {close: 100.05, high: 100.15, low: 99.95},
+        {close: 99.95, high: 100.05, low: 99.85},
+        {close: 100.02, high: 100.12, low: 99.92},
+      ];
+
+      for (const candle of lowVolatilityCandles) {
+        rei.add(candle);
+      }
+
+      expect(rei.getResultOrThrow().toFixed(2)).toBe('-14.99');
+    });
+
+    it('returns null until there are enough data points', () => {
+      const rei = new REI(8);
+
+      for (let i = 0; i < rei.getRequiredInputs() - 1; i++) {
+        rei.update({close: i, high: i, low: i}, false);
+      }
+
+      expect(rei.getResult()).toBeNull();
+    });
   });
 });
