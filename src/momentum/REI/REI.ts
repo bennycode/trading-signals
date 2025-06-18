@@ -1,5 +1,5 @@
 import Big from 'big.js';
-import {BigIndicatorSeries} from '../../Indicator.js';
+import {BigIndicatorSeries, NumberIndicatorSeries} from '../../Indicator.js';
 import type {HighLowClose} from '../../util/HighLowClose.js';
 
 /**
@@ -101,6 +101,91 @@ export class REI extends BigIndicatorSeries<HighLowClose> {
       return this.setResult(new Big(0), replace);
     }
     const rei = subValueSum.div(absValueSum).times(100);
+    return this.setResult(rei, replace);
+  }
+}
+
+export class FasterREI extends NumberIndicatorSeries<HighLowClose<number>> {
+  private readonly highs: number[] = [];
+  private readonly lows: number[] = [];
+  private readonly closes: number[] = [];
+
+  constructor(public readonly interval: number) {
+    super();
+  }
+
+  override getRequiredInputs() {
+    return this.interval + 8;
+  }
+
+  private calculateN(j: number) {
+    if (
+      this.highs[j - 2] < this.closes[j - 7] &&
+      this.highs[j - 2] < this.closes[j - 8] &&
+      this.highs[j] < this.highs[j - 5] &&
+      this.highs[j] < this.highs[j - 6]
+    ) {
+      return 0;
+    }
+    return 1;
+  }
+
+  private calculateM(j: number) {
+    if (
+      this.lows[j - 2] > this.closes[j - 7] &&
+      this.lows[j - 2] > this.closes[j - 8] &&
+      this.lows[j] > this.lows[j - 5] &&
+      this.lows[j] > this.lows[j - 6]
+    ) {
+      return 0;
+    }
+    return 1;
+  }
+
+  override update(candle: HighLowClose<number>, replace: boolean) {
+    if (replace) {
+      this.highs.pop();
+      this.lows.pop();
+      this.closes.pop();
+    }
+
+    this.highs.push(candle.high);
+    this.lows.push(candle.low);
+    this.closes.push(candle.close);
+
+    // We need at least interval + 8 candles for REI calculation
+    // REI uses data from prior periods for comparison
+    if (this.highs.length < this.getRequiredInputs()) {
+      return null;
+    }
+
+    // Calculate sum for the interval period
+    let subValueSum = 0;
+    let absValueSum = 0;
+
+    const limitIndex = this.highs.length - 1;
+
+    for (let j = limitIndex; j > this.interval; j--) {
+      const diff1 = this.highs[j] - this.highs[j - 2];
+      const diff2 = this.lows[j] - this.lows[j - 2];
+
+      const n = this.calculateN(j);
+      const m = this.calculateM(j);
+      const s = diff1 + diff2;
+
+      const subValue = n * m * s;
+      const absDailyValue = Math.abs(diff1) + Math.abs(diff2);
+
+      subValueSum += subValue;
+      absValueSum += absDailyValue;
+    }
+
+    // Prevent division by 0
+    if (absValueSum === 0) {
+      return this.setResult(0, replace);
+    }
+
+    const rei = (subValueSum / absValueSum) * 100;
     return this.setResult(rei, replace);
   }
 }

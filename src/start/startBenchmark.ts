@@ -57,6 +57,7 @@ import {
   Period,
   PSAR,
   REI,
+  FasterREI,
   RMA,
   ROC,
   RSI,
@@ -375,6 +376,12 @@ new Benchmark.Suite('Technical Indicators')
     const rei = new REI(interval);
     for (const candle of candles) {
       rei.add(candle);
+    }
+  })
+  .add('FasterREI', () => {
+    const fasterREI = new FasterREI(interval);
+    for (const candle of floatCandles) {
+      fasterREI.add(candle);
     }
   })
   .add('RSI', () => {
