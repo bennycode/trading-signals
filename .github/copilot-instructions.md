@@ -99,3 +99,51 @@ override update(data: HighLowCloseVolume, replace: boolean): Big | null { }
 // ✅ Good: Let TypeScript infer the return type
 override update(data: HighLowCloseVolume, replace: boolean) { }
 ```
+
+Include both Big.js and number-based implementations of the indicator in the same test case.
+
+```ts
+// ❌ Bad: REI and FasterREI have separate descriptions, leading to duplicated test scenarios.
+describe('REI', () => {
+  it('returns null until there are enough data points', () => {
+    const interval = 8;
+    const rei = new REI(interval);
+
+    for (let i = 0; i < 15; i++) {
+      rei.add({close: i, high: i, low: i});
+    }
+
+    expect(rei.getResult()).toBeNull();
+  });
+});
+
+describe('FasterREI', () => {
+  it('returns null until there are enough data points', () => {
+    const interval = 8;
+    const fasterRei = new FasterREI(interval);
+
+    for (let i = 0; i < 15; i++) {
+      fasterRei.add({close: i, high: i, low: i});
+    }
+
+    expect(fasterRei.getResult()).toBeNull();
+  });
+});
+
+// ✅ Good: REI and FasterREI are tested together within the same scenario.
+describe('getResult', () => {
+  it('returns null until there are enough data points', () => {
+    const interval = 8;
+    const rei = new REI(interval);
+    const fasterRei = new FasterREI(interval);
+
+    for (let i = 0; i < 15; i++) {
+      rei.add({close: i, high: i, low: i});
+      fasterRei.add({close: i, high: i, low: i});
+    }
+
+    expect(rei.getResult()).toBeNull();
+    expect(fasterRei.getResult()).toBeNull();
+  });
+});
+```
