@@ -1,6 +1,5 @@
 import {describe, expect, it} from 'vitest';
 import {FasterREI, REI} from './REI.js';
-import type {HighLowClose} from '../../util/HighLowClose.js';
 
 describe('REI', () => {
   const testData = [
@@ -165,27 +164,42 @@ describe('REI', () => {
 
   describe('getResultOrThrow', () => {
     it('creates a signal', () => {
-      const rei = new REI(8);
+      const interval = 8;
+      const rei = new REI(interval);
+      const fasterRei = new FasterREI(interval);
+
       rei.updates(testData);
+      fasterRei.updates(testData);
       expect(rei.getResultOrThrow().toFixed(2)).toBe('-0.64');
+      expect(fasterRei.getResultOrThrow().toFixed(2)).toBe('-0.64');
     });
 
     it('detects neutral momentum', () => {
-      const rei = new REI(8);
-      const inputs: HighLowClose[] = Array(rei.getRequiredInputs()).fill({
+      const interval = 8;
+      const rei = new REI(interval);
+      const fasterRei = new FasterREI(interval);
+
+      const inputs = Array(rei.getRequiredInputs()).fill({
         close: 180,
         high: 180,
         low: 180,
       });
+
       rei.updates(inputs);
+      fasterRei.updates(inputs);
+
       expect(rei.getResultOrThrow().toString()).toBe('0');
+      expect(fasterRei.getResultOrThrow()).toBe(0);
     });
 
     it('detects an oversold condition', () => {
-      const rei = new REI(8);
+      const interval = 8;
+      const rei = new REI(interval);
+      const fasterRei = new FasterREI(interval);
 
       for (let i = 0; i < rei.getRequiredInputs(); i++) {
         rei.add({close: 95 + i, high: 100 + i, low: 90 + i});
+        fasterRei.add({close: 95 + i, high: 100 + i, low: 90 + i});
       }
 
       const lowVolatilityCandles = [
@@ -197,9 +211,11 @@ describe('REI', () => {
 
       for (const candle of lowVolatilityCandles) {
         rei.add(candle);
+        fasterRei.add(candle);
       }
 
       expect(rei.getResultOrThrow().toFixed(2)).toBe('-14.99');
+      expect(fasterRei.getResultOrThrow().toFixed(2)).toBe('-14.99');
     });
 
     it('returns null until there are enough data points', () => {
