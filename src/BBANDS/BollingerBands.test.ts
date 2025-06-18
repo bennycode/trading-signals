@@ -122,7 +122,9 @@ describe('BollingerBands', () => {
         '88.32',
       ];
 
-      const bb = new BollingerBands(5, 2);
+      const interval = 5;
+      const bb = new BollingerBands(interval, 2);
+      expect(bb.getRequiredInputs()).toBe(interval);
 
       for (let i = 0; i < inputs.length; i++) {
         const price = inputs[i];
@@ -149,13 +151,15 @@ describe('FasterBollingerBands', () => {
       const prices = [
         81.59, 81.06, 82.87, 83.0, 83.61, 83.15, 82.84, 83.99, 84.55, 84.36, 85.53, 86.54, 86.89, 87.77, 87.29,
       ];
-      const fasterBB = new FasterBollingerBands(5, 2);
+      const interval = 5;
+      const fasterBB = new FasterBollingerBands(interval, 2);
       fasterBB.updates(prices, false);
       expect(fasterBB.isStable).toBe(true);
       const actual = fasterBB.getResultOrThrow();
       expect(actual.lower.toFixed(2)).toBe('85.29');
       expect(actual.middle.toFixed(2)).toBe('86.80');
       expect(actual.upper.toFixed(2)).toBe('88.32');
+      expect(fasterBB.getRequiredInputs()).toBe(interval);
     });
 
     it('throws an error when there is not enough input data', () => {

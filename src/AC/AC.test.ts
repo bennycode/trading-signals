@@ -291,6 +291,9 @@ describe('AC', () => {
       expect(ac.isStable).toBe(true);
       expect(fasterAC.isStable).toBe(true);
 
+      expect(ac.getRequiredInputs()).toBe(5);
+      expect(fasterAC.getRequiredInputs()).toBe(5);
+
       expect(ac.getResultOrThrow().toFixed(2)).toBe('-21.97');
       expect(fasterAC.getResultOrThrow().toFixed(2)).toBe('-21.97');
 

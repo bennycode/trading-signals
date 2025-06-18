@@ -93,6 +93,9 @@ describe('DX', () => {
       expect(dx.isStable).toBe(true);
       expect(fasterDX.isStable).toBe(true);
 
+      expect(dx.getRequiredInputs()).toBe(interval);
+      expect(fasterDX.getRequiredInputs()).toBe(interval);
+
       expect(dx.getResultOrThrow().toFixed(2)).toBe('75.61');
       expect(fasterDX.getResultOrThrow().toFixed(2)).toBe('75.61');
 

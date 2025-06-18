@@ -75,8 +75,9 @@ describe('DMA', () => {
 
   describe('getResultOrThrow', () => {
     it('detects uptrends', () => {
-      const dma = new DMA(3, 8);
-      const fasterDMA = new FasterDMA(3, 8);
+      const longInterval = 8;
+      const dma = new DMA(3, longInterval);
+      const fasterDMA = new FasterDMA(3, longInterval);
       const nineHours = twoDays.slice(0, 9);
 
       for (const oneHour of nineHours) {
@@ -86,10 +87,12 @@ describe('DMA', () => {
       }
 
       const {short, long} = dma.getResultOrThrow();
+      expect(dma.getRequiredInputs()).toBe(longInterval);
       expect(dma.isStable).toBe(true);
       expect(short.gt(long)).toBe(true);
 
       const fasterResult = fasterDMA.getResultOrThrow();
+      expect(fasterDMA.getRequiredInputs()).toBe(longInterval);
       expect(fasterDMA.isStable).toBe(true);
       expect(fasterResult.short > fasterResult.long).toBe(true);
     });

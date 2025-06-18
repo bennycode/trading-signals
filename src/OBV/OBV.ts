@@ -15,6 +15,10 @@ import {pushUpdate} from '../util/pushUpdate.js';
 export class OBV extends BigIndicatorSeries<OpenHighLowCloseVolume> {
   public readonly candles: OpenHighLowCloseVolume[] = [];
 
+  override getRequiredInputs() {
+    return 2;
+  }
+
   update(candle: OpenHighLowCloseVolume, replace: boolean) {
     pushUpdate(this.candles, replace, candle, 2);
 
@@ -34,6 +38,10 @@ export class OBV extends BigIndicatorSeries<OpenHighLowCloseVolume> {
 
 export class FasterOBV extends NumberIndicatorSeries<OpenHighLowCloseVolume<number>> {
   public readonly candles: OpenHighLowCloseVolume<number>[] = [];
+
+  override getRequiredInputs() {
+    return 2;
+  }
 
   update(candle: OpenHighLowCloseVolume<number>, replace: boolean) {
     pushUpdate(this.candles, replace, candle, 2);

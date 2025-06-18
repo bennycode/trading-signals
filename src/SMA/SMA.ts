@@ -15,6 +15,10 @@ import {pushUpdate} from '../util/pushUpdate.js';
 export class SMA extends MovingAverage {
   public readonly prices: BigSource[] = [];
 
+  override getRequiredInputs() {
+    return this.interval;
+  }
+
   update(price: BigSource, replace: boolean) {
     pushUpdate(this.prices, replace, price, this.interval);
 
@@ -28,6 +32,10 @@ export class SMA extends MovingAverage {
 
 export class FasterSMA extends FasterMovingAverage {
   public readonly prices: number[] = [];
+
+  override getRequiredInputs() {
+    return this.interval;
+  }
 
   update(price: number, replace: boolean) {
     pushUpdate(this.prices, replace, price, this.interval);

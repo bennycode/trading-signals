@@ -57,8 +57,10 @@ describe('IQR', () => {
     it('calculates the interquartile range (#1)', () => {
       // Test data verified with:
       // https://en.wikipedia.org/wiki/Interquartile_range#Data_set_in_a_table
-      const values = [7, 7, 31, 31, 47, 75, 87, 115, 116, 119, 119, 155, 177];
+      const values = [7, 7, 31, 31, 47, 75, 87, 115, 116, 119, 119, 155, 177] as const;
+      const interval = 13;
       const iqr = new IQR(13);
+      expect(iqr.getRequiredInputs()).toBe(interval);
 
       for (const value of values) {
         iqr.add(new Big(value));
@@ -151,8 +153,10 @@ describe('FasterIQR', () => {
     it('calculates the interquartile range (#1)', () => {
       // Test data verified with:
       // https://en.wikipedia.org/wiki/Interquartile_range#Data_set_in_a_table
-      const values = [7, 7, 31, 31, 47, 75, 87, 115, 116, 119, 119, 155, 177];
-      const iqr = new FasterIQR(13);
+      const values = [7, 7, 31, 31, 47, 75, 87, 115, 116, 119, 119, 155, 177] as const;
+      const interval = 13;
+      const iqr = new FasterIQR(interval);
+      expect(iqr.getRequiredInputs()).toBe(interval);
 
       for (const value of values) {
         iqr.add(value);

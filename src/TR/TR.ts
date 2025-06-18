@@ -18,6 +18,10 @@ export class TR extends BigIndicatorSeries<HighLowClose> {
   private previousCandle?: HighLowClose;
   private secondLastCandle?: HighLowClose;
 
+  override getRequiredInputs() {
+    return 2;
+  }
+
   update(candle: HighLowClose, replace: boolean): Big {
     const high = new Big(candle.high);
     const highLow = high.minus(candle.low);
@@ -44,6 +48,10 @@ export class TR extends BigIndicatorSeries<HighLowClose> {
 export class FasterTR extends NumberIndicatorSeries<HighLowClose<number>> {
   private previousCandle?: HighLowClose<number>;
   private twoPreviousCandle?: HighLowClose<number>;
+
+  override getRequiredInputs() {
+    return 2;
+  }
 
   update(candle: HighLowClose<number>, replace: boolean): number {
     const {high, low} = candle;

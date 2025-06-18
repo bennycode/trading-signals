@@ -40,6 +40,10 @@ export class ATR extends BigIndicatorSeries<HighLowClose> {
     this.smoothing = new SmoothingIndicator(interval);
   }
 
+  override getRequiredInputs() {
+    return this.smoothing.getRequiredInputs();
+  }
+
   update(candle: HighLowClose, replace: boolean) {
     const trueRange = this.tr.update(candle, replace);
     this.smoothing.update(trueRange, replace);
@@ -61,6 +65,10 @@ export class FasterATR extends NumberIndicatorSeries<HighLowClose<number>> {
     super();
     this.tr = new FasterTR();
     this.smoothing = new SmoothingIndicator(interval);
+  }
+
+  override getRequiredInputs() {
+    return this.smoothing.getRequiredInputs();
   }
 
   update(candle: HighLowClose<number>, replace: boolean) {
