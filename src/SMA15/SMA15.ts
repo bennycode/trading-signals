@@ -19,20 +19,23 @@ export class SMA15 extends MovingAverage {
   public readonly prices: BigSource[] = [];
   private static readonly WEIGHTS = [-3, -6, -5, 3, 21, 46, 67, 74, 67, 46, 21, 3, -5, -6, -3];
   private static readonly WEIGHT_SUM = 320;
-  public static readonly INTERVAL = 15;
 
-  constructor() {
-    super(SMA15.INTERVAL);
+  constructor(public override readonly interval: number) {
+    super(interval);
+  }
+
+  override getRequiredInputs() {
+    return SMA15.WEIGHTS.length;
   }
 
   update(price: BigSource, replace: boolean) {
-    pushUpdate(this.prices, replace, price, SMA15.INTERVAL);
+    pushUpdate(this.prices, replace, price, this.getRequiredInputs());
 
-    if (this.prices.length === SMA15.INTERVAL) {
+    if (this.prices.length === this.getRequiredInputs()) {
       let weightedPricesSum = new Big(0);
 
       // Apply weights to each price point
-      for (let i = 0; i < SMA15.INTERVAL; i++) {
+      for (let i = 0; i < this.getRequiredInputs(); i++) {
         const weightedPrice = new Big(this.prices[i]).mul(SMA15.WEIGHTS[i]);
         weightedPricesSum = weightedPricesSum.add(weightedPrice);
       }
@@ -49,20 +52,19 @@ export class FasterSMA15 extends FasterMovingAverage {
   public readonly prices: number[] = [];
   private static readonly WEIGHTS = [-3, -6, -5, 3, 21, 46, 67, 74, 67, 46, 21, 3, -5, -6, -3];
   private static readonly WEIGHT_SUM = 320;
-  public static readonly INTERVAL = 15;
 
-  constructor() {
-    super(FasterSMA15.INTERVAL);
+  override getRequiredInputs() {
+    return FasterSMA15.WEIGHTS.length;
   }
 
   update(price: number, replace: boolean) {
-    pushUpdate(this.prices, replace, price, FasterSMA15.INTERVAL);
+    pushUpdate(this.prices, replace, price, this.getRequiredInputs());
 
-    if (this.prices.length === FasterSMA15.INTERVAL) {
+    if (this.prices.length === this.getRequiredInputs()) {
       let weightedPricesSum = 0;
 
       // Apply weights to each price point
-      for (let i = 0; i < FasterSMA15.INTERVAL; i++) {
+      for (let i = 0; i < this.getRequiredInputs(); i++) {
         const weightedPrice = this.prices[i] * FasterSMA15.WEIGHTS[i];
         weightedPricesSum += weightedPrice;
       }
