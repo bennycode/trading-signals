@@ -6,6 +6,10 @@ describe('Indicator', () => {
   class IndicatorTestClass extends BigIndicatorSeries {
     public readonly inputs: Big[] = [];
 
+    override getRequiredInputs() {
+      return 2;
+    }
+
     update(input: BigSource, replace: boolean) {
       if (replace) {
         this.inputs.pop();
@@ -15,6 +19,13 @@ describe('Indicator', () => {
       return this.setResult(sum.div(this.inputs.length), replace);
     }
   }
+
+  describe('getRequiredInputs', () => {
+    it('returns the amount of required data needed for a calculation', () => {
+      const itc = new IndicatorTestClass();
+      expect(itc.getRequiredInputs()).toBe(2);
+    });
+  });
 
   describe('isStable', () => {
     it('is unstable when no values are entered', () => {

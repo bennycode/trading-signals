@@ -40,6 +40,9 @@ describe('OBV', () => {
       expect(obv.isStable).toBe(true);
       expect(fasterOBV.isStable).toBe(true);
 
+      expect(obv.getRequiredInputs()).toBe(2);
+      expect(fasterOBV.getRequiredInputs()).toBe(2);
+
       expect(obv.getResultOrThrow().toFixed(2)).toBe('72100.00');
       expect(fasterOBV.getResultOrThrow().toFixed(2)).toBe('72100.00');
 

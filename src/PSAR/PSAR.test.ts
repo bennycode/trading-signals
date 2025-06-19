@@ -416,12 +416,10 @@ describe('FasterPSAR (Number version)', () => {
     // Test the specific error message
     try {
       psar.getResultOrThrow();
+      expect.fail('Expected error to be an instance of Error');
     } catch (error) {
-      if (error instanceof Error) {
-        expect(error.message).toBe('PSAR requires at least 2 candles');
-      } else {
-        expect.fail('Expected error to be an instance of Error');
-      }
+      assert(error instanceof Error);
+      expect(error.message).toBe('Not enough data. A minimum of "2" inputs is required to perform the computation.');
     }
   });
 

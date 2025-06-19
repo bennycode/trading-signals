@@ -121,6 +121,10 @@ describe('EMA', () => {
       const interval = 5;
       const ema = new EMA(interval);
       const fasterEMA = new FasterEMA(interval);
+
+      expect(ema.getRequiredInputs()).toBe(interval);
+      expect(fasterEMA.getRequiredInputs()).toBe(interval);
+
       for (let i = 0; i < prices.length; i++) {
         const price = prices[i];
         ema.add(price);
@@ -131,6 +135,7 @@ describe('EMA', () => {
           expect(fasterEMA.getResultOrThrow().toFixed(2)).toBe(expected);
         }
       }
+
       expect(ema.getResultOrThrow().toFixed(2)).toBe('86.70');
       expect(fasterEMA.getResultOrThrow().toFixed(2)).toBe('86.70');
     });

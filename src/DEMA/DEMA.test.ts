@@ -15,8 +15,9 @@ const dema10results = [
 describe('DEMA', () => {
   describe('update', () => {
     it('can replace recently added values', () => {
-      const dema = new DEMA(10);
-      const fasterDEMA = new FasterDEMA(10);
+      const interval = 10;
+      const dema = new DEMA(interval);
+      const fasterDEMA = new FasterDEMA(interval);
       dema.add(81);
       fasterDEMA.add(81);
       dema.add(24);
@@ -54,9 +55,9 @@ describe('DEMA', () => {
         81, 24, 75, 21, 34, 25, 72, 92, 99, 2, 86, 80, 76, 8, 87, 75, 32, 65, 41, 9, 13, 26, 56, 28, 65, 58, 17, 90, 87,
         86, 99, 3, 70, 1, 27, 9, 92, 68, 9,
       ];
-
-      const dema = new DEMA(10);
-      const fasterDEMA = new FasterDEMA(10);
+      const interval = 10;
+      const dema = new DEMA(interval);
+      const fasterDEMA = new FasterDEMA(interval);
 
       prices.forEach((price, index) => {
         dema.add(price);
@@ -70,6 +71,9 @@ describe('DEMA', () => {
 
       expect(dema.isStable).toBe(true);
       expect(fasterDEMA.isStable).toBe(true);
+
+      expect(dema.getRequiredInputs()).toBe(interval);
+      expect(fasterDEMA.getRequiredInputs()).toBe(interval);
 
       expect(dema.lowest?.toFixed(2)).toBe('24.89');
       expect(fasterDEMA.lowest?.toFixed(2)).toBe('24.89');
