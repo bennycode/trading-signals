@@ -35,7 +35,6 @@ export class SMA15 extends MovingAverage {
     if (this.prices.length === this.getRequiredInputs()) {
       let weightedPricesSum = new Big(0);
 
-      // Apply weights to each price point
       for (let i = 0; i < this.getRequiredInputs(); i++) {
         const weightedPrice = new Big(this.prices[i]).mul(SMA15.WEIGHTS[i]);
         weightedPricesSum = weightedPricesSum.add(weightedPrice);
@@ -64,7 +63,6 @@ export class FasterSMA15 extends FasterMovingAverage {
     if (this.prices.length === this.getRequiredInputs()) {
       let weightedPricesSum = 0;
 
-      // Apply weights to each price point
       for (let i = 0; i < this.getRequiredInputs(); i++) {
         const weightedPrice = this.prices[i] * FasterSMA15.WEIGHTS[i];
         weightedPricesSum += weightedPrice;
