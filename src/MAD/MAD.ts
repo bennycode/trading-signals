@@ -19,6 +19,10 @@ export class MAD extends BigIndicatorSeries {
     super();
   }
 
+  override getRequiredInputs() {
+    return this.interval;
+  }
+
   update(price: BigSource, replace: boolean) {
     pushUpdate(this.prices, replace, price, this.interval);
 
@@ -45,6 +49,10 @@ export class FasterMAD extends NumberIndicatorSeries {
 
   constructor(public readonly interval: number) {
     super();
+  }
+
+  override getRequiredInputs() {
+    return this.interval;
   }
 
   update(price: number, replace: boolean) {

@@ -43,14 +43,18 @@ describe('BollingerBandsWidth', () => {
       // https://www.tradingview.com/support/solutions/43000501972/
       const expectations = ['0.19', '0.21', '0.21', '0.21', '0.20', '0.18', '0.15', '0.13', '0.11', '0.09', '0.09'];
 
-      const bbw = new BollingerBandsWidth(new BollingerBands(20, 2));
-      const fasterBBW = new FasterBollingerBandsWidth(new FasterBollingerBands(20, 2));
+      const interval = 20;
+      const bbw = new BollingerBandsWidth(new BollingerBands(interval, 2));
+      const fasterBBW = new FasterBollingerBandsWidth(new FasterBollingerBands(interval, 2));
+
+      expect(bbw.getRequiredInputs()).toBe(interval);
+      expect(fasterBBW.getRequiredInputs()).toBe(interval);
 
       for (const {close} of candles) {
         bbw.add(close);
         fasterBBW.add(close);
         if (bbw.isStable) {
-          const expected = expectations.shift()!;
+          const expected = expectations.shift();
           expect(bbw.getResultOrThrow().toFixed(2)).toBe(`${expected}`);
           expect(fasterBBW.getResultOrThrow().toFixed(2)).toBe(expected);
         }

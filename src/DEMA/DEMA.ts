@@ -22,6 +22,10 @@ export class DEMA extends BigIndicatorSeries {
     this.outer = new EMA(interval);
   }
 
+  override getRequiredInputs() {
+    return this.outer.getRequiredInputs();
+  }
+
   update(price: BigSource, replace: boolean): Big {
     const innerResult = this.inner.update(price, replace);
     const outerResult = this.outer.update(innerResult, replace);
@@ -41,6 +45,10 @@ export class FasterDEMA extends NumberIndicatorSeries {
     super();
     this.inner = new FasterEMA(interval);
     this.outer = new FasterEMA(interval);
+  }
+
+  override getRequiredInputs() {
+    return this.outer.getRequiredInputs();
   }
 
   update(price: number, replace: boolean): number {

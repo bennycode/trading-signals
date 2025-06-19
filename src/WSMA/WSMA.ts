@@ -29,6 +29,10 @@ export class WSMA extends MovingAverage {
     this.smoothingFactor = new Big(1).div(this.interval);
   }
 
+  override getRequiredInputs() {
+    return this.interval;
+  }
+
   update(price: BigSource, replace: boolean) {
     const sma = this.indicator.update(price, replace);
 
@@ -54,6 +58,10 @@ export class FasterWSMA extends NumberIndicatorSeries {
     super();
     this.indicator = new FasterSMA(interval);
     this.smoothingFactor = 1 / this.interval;
+  }
+
+  override getRequiredInputs() {
+    return this.interval;
   }
 
   update(price: number, replace: boolean) {

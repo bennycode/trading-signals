@@ -52,8 +52,9 @@ describe('RSI', () => {
         '91.483',
         '78.498',
       ];
-      const rsi = new RSI(5);
-      const fasterRSI = new FasterRSI(5);
+      const interval = 5;
+      const rsi = new RSI(interval);
+      const fasterRSI = new FasterRSI(interval);
       for (const price of prices) {
         rsi.add(price);
         fasterRSI.add(price);
@@ -65,6 +66,9 @@ describe('RSI', () => {
       }
       expect(rsi.isStable).toBe(true);
       expect(fasterRSI.isStable).toBe(true);
+
+      expect(rsi.getRequiredInputs()).toBe(interval);
+      expect(fasterRSI.getRequiredInputs()).toBe(interval);
 
       expect(rsi.getResultOrThrow().toFixed(2)).toBe('78.50');
       expect(fasterRSI.getResultOrThrow().toFixed(2)).toBe('78.50');

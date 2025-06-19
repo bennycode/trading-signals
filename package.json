@@ -8,7 +8,7 @@
   },
   "description": "Technical indicators to run technical analysis with JavaScript / TypeScript.",
   "devDependencies": {
-    "@arethetypeswrong/cli": "^0.17.4",
+    "@arethetypeswrong/cli": "^0.18.1",
     "@tstv/eslint-config": "^4.0.0",
     "@types/benchmark": "^2.1.5",
     "@types/node": "^18.19.87",
@@ -18,7 +18,7 @@
     "eslint": "^9.26.0",
     "generate-changelog": "^1.8.0",
     "husky": "^4.3.8",
-    "lint-staged": "^15.5.1",
+    "lint-staged": "^16.1.0",
     "prettier": "^3.5.3",
     "pretty-quick": "^4.1.1",
     "rimraf": "^6.0.1",
@@ -45,6 +45,7 @@
   "homepage": "https://bennycode.com/trading-signals",
   "keywords": [
     "adx",
+    "algorithmic",
     "analysis",
     "atr",
     "average",
@@ -102,7 +103,8 @@
     "test:exports": "attw --pack .",
     "test:imports": "depcruise src --include-only \"^src\"",
     "test:types": "npm run lint:types",
-    "test:units": "vitest run --passWithNoTests"
+    "test:units": "vitest run --passWithNoTests",
+    "test:units:watch": "vitest --watch"
   },
   "type": "module",
   "version": "6.8.0"

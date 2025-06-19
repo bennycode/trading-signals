@@ -47,6 +47,10 @@ export class StochasticRSI extends BigIndicatorSeries {
     this.rsi = new RSI(interval, SmoothingRSI);
   }
 
+  override getRequiredInputs() {
+    return this.rsi.getRequiredInputs() + this.period.getRequiredInputs();
+  }
+
   update(price: BigSource, replace: boolean) {
     const rsiResult = this.rsi.update(price, replace);
     if (rsiResult) {
@@ -91,6 +95,10 @@ export class FasterStochasticRSI extends NumberIndicatorSeries {
     super();
     this.period = new FasterPeriod(interval);
     this.rsi = new FasterRSI(interval, SmoothingRSI);
+  }
+
+  override getRequiredInputs() {
+    return this.rsi.getRequiredInputs() + this.period.getRequiredInputs();
   }
 
   update(price: number, replace: boolean) {

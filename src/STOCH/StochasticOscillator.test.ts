@@ -49,6 +49,9 @@ describe('StochasticOscillator', () => {
       expect(stoch.isStable).toBe(true);
       expect(fasterStoch.isStable).toBe(true);
 
+      expect(stoch.getRequiredInputs()).toBe(9);
+      expect(fasterStoch.getRequiredInputs()).toBe(9);
+
       expect(stoch.getResultOrThrow().stochK.toFixed(2)).toBe('91.09');
       expect(fasterStoch.getResultOrThrow().stochK.toFixed(2)).toBe('91.09');
     });

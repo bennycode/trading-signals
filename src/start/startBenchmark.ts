@@ -56,6 +56,8 @@ import {
   OBV,
   Period,
   PSAR,
+  REI,
+  FasterREI,
   RMA,
   ROC,
   RSI,
@@ -252,13 +254,13 @@ new Benchmark.Suite('Technical Indicators')
     }
   })
   .add('LinearRegression', () => {
-    const linreg = new LinearRegression({period: interval});
+    const linreg = new LinearRegression(interval);
     for (const price of prices) {
       linreg.add(price);
     }
   })
   .add('FasterLinearRegression', () => {
-    const fasterLINREG = new FasterLinearRegression({period: interval});
+    const fasterLINREG = new FasterLinearRegression(interval);
     for (const price of prices) {
       fasterLINREG.add(price);
     }
@@ -368,6 +370,18 @@ new Benchmark.Suite('Technical Indicators')
     const fasterROC = new FasterROC(interval);
     for (const price of prices) {
       fasterROC.add(price);
+    }
+  })
+  .add('REI', () => {
+    const rei = new REI(interval);
+    for (const candle of candles) {
+      rei.add(candle);
+    }
+  })
+  .add('FasterREI', () => {
+    const fasterREI = new FasterREI(interval);
+    for (const candle of floatCandles) {
+      fasterREI.add(candle);
     }
   })
   .add('RSI', () => {

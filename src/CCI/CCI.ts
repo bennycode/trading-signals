@@ -38,6 +38,10 @@ export class CCI extends BigIndicatorSeries<HighLowClose> {
     this.typicalPrices = [];
   }
 
+  override getRequiredInputs() {
+    return this.sma.getRequiredInputs();
+  }
+
   update(candle: HighLowClose, replace: boolean) {
     const typicalPrice = this.cacheTypicalPrice(candle, replace);
     this.sma.update(typicalPrice, replace);
@@ -69,6 +73,10 @@ export class FasterCCI extends NumberIndicatorSeries<HighLowClose<number>> {
     super();
     this.sma = new FasterSMA(this.interval);
     this.typicalPrices = [];
+  }
+
+  override getRequiredInputs() {
+    return this.sma.getRequiredInputs();
   }
 
   update(candle: HighLowClose<number>, replace: boolean) {

@@ -17,7 +17,17 @@ export type PSARConfig = {
 };
 
 /**
+ * Parabolic SAR
+ * Type: Trend
+ *
  * The Parabolic SAR (Stop and Reverse) is a technical indicator used in trading to determine the direction of an asset's price and potential points of trend reversal. It was developed by J. Welles Wilder Jr., who also created indicators like the RSI.
+ *
+ * Interpretation:
+ * The indicator places dots above or below the price. If the dots are below the price, it signals an uptrend. If the dots are above the price it signals a downtrend. It "stops and reverses" when the trend is likely to change, hence the name. Its logic says to stay in a trend as long as the dots stay on the same side of the price. Exit or reverse positions when the dots flip to the opposite side.
+ *
+ * Note:
+ * It's particularly useful in trending markets, but less reliable in sideways or choppy markets.
+ *
  */
 export class PSAR extends BigIndicatorSeries<HighLow> {
   private readonly accelerationStep: Big;
@@ -40,6 +50,10 @@ export class PSAR extends BigIndicatorSeries<HighLow> {
     if (this.accelerationMax.lte(this.accelerationStep)) {
       throw new Error('Acceleration max must be greater than acceleration step');
     }
+  }
+
+  override getRequiredInputs() {
+    return 2;
   }
 
   override get isStable(): boolean {
@@ -197,7 +211,7 @@ export class PSAR extends BigIndicatorSeries<HighLow> {
 
   override getResultOrThrow(): Big {
     if (this.lastSar === null) {
-      throw new NotEnoughDataError('PSAR requires at least 2 candles');
+      throw new NotEnoughDataError(this.getRequiredInputs());
     }
 
     return super.getResultOrThrow();
@@ -229,6 +243,10 @@ export class FasterPSAR extends NumberIndicatorSeries<HighLow<number>> {
 
   override get isStable(): boolean {
     return this.lastSar !== null;
+  }
+
+  override getRequiredInputs() {
+    return 2;
   }
 
   update(candle: HighLow<number>, replace: boolean): number | null {
@@ -370,7 +388,7 @@ export class FasterPSAR extends NumberIndicatorSeries<HighLow<number>> {
 
   override getResultOrThrow(): number {
     if (this.lastSar === null) {
-      throw new NotEnoughDataError('PSAR requires at least 2 candles');
+      throw new NotEnoughDataError(this.getRequiredInputs());
     }
 
     return super.getResultOrThrow();
