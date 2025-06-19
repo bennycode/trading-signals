@@ -36,6 +36,10 @@ export class ZigZag extends BigIndicatorSeries<HighLow> {
     }
   }
 
+  override getRequiredInputs(): number {
+    return 2;
+  }
+
   override get isStable(): boolean {
     return this.lastExtreme !== null;
   }
@@ -157,7 +161,7 @@ export class ZigZag extends BigIndicatorSeries<HighLow> {
 
   override getResultOrThrow(): Big {
     if (this.lastExtreme === null) {
-      throw new NotEnoughDataError('ZigZag requires at least 2 candles with significant price change');
+      throw new NotEnoughDataError(this.getRequiredInputs());
     }
 
     return super.getResultOrThrow();
@@ -184,6 +188,10 @@ export class FasterZigZag extends NumberIndicatorSeries<HighLow<number>> {
     if (this.percentageThreshold <= 0) {
       throw new Error('Percentage threshold must be greater than 0');
     }
+  }
+
+  override getRequiredInputs(): number {
+    return 2;
   }
 
   override get isStable(): boolean {
@@ -306,7 +314,7 @@ export class FasterZigZag extends NumberIndicatorSeries<HighLow<number>> {
 
   override getResultOrThrow(): number {
     if (this.lastExtreme === null) {
-      throw new NotEnoughDataError('ZigZag requires at least 2 candles with significant price change');
+      throw new NotEnoughDataError(this.getRequiredInputs());
     }
 
     return super.getResultOrThrow();
