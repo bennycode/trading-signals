@@ -8,15 +8,25 @@ export type ZigZagConfig = {
    * The percentage change required to establish a new extreme point.
    * Typical values range from 3 to 12 (representing 3% to 12%).
    */
-  percentage: number;
+  deviation: number;
 };
 
 /**
+ * ZigZag indicator (DEMA)
+ * Type: Trend
+ *
  * The ZigZag indicator is a technical analysis tool used to identify price trends by
  * filtering out smaller price movements. It works by identifying significant highs and lows
  * in a price series and drawing lines between them. For a high or low to be considered
  * significant, the price must reverse by at least a specified percentage from the last
  * extreme point.
+ *
+ * A momentum investor might rely on the ZigZag indicator to remain in a trade until the Zig Zag line signals a reversal. For instance, if holding a long position, the investor would wait to sell until the Zig Zag line shifts downward. The Zig Zag indicator is considered a lagging tool because its values are plotted only after each time period closes, and it only forms a permanent new line once the price has moved significantly.
+ *
+ * @see https://www.investopedia.com/ask/answers/030415/what-zig-zag-indicator-formula-and-how-it-calculated.asp
+ * @see https://www.investopedia.com/terms/z/zig_zag_indicator.asp
+ * @see https://capex.com/en/academy/zigzag
+ * @see https://corporatefinanceinstitute.com/resources/career-map/sell-side/capital-markets/zig-zag-indicator/
  */
 export class ZigZag extends BigIndicatorSeries<HighLow> {
   private readonly percentageThreshold: Big;
@@ -29,7 +39,7 @@ export class ZigZag extends BigIndicatorSeries<HighLow> {
     super();
 
     // Convert the percentage to a decimal (e.g., 5% becomes 0.05)
-    this.percentageThreshold = new Big(config.percentage).div(100);
+    this.percentageThreshold = new Big(config.deviation).div(100);
 
     if (this.percentageThreshold.lte(0)) {
       throw new Error('Percentage threshold must be greater than 0');
@@ -183,7 +193,7 @@ export class FasterZigZag extends NumberIndicatorSeries<HighLow<number>> {
     super();
 
     // Convert the percentage to a decimal (e.g., 5% becomes 0.05)
-    this.percentageThreshold = config.percentage / 100;
+    this.percentageThreshold = config.deviation / 100;
 
     if (this.percentageThreshold <= 0) {
       throw new Error('Percentage threshold must be greater than 0');

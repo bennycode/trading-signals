@@ -27,7 +27,7 @@ describe('ZigZag (Big.js version)', () => {
   ];
 
   it('calculates ZigZag points correctly with 5% threshold', () => {
-    const zigzag = new ZigZag({percentage: 5});
+    const zigzag = new ZigZag({deviation: 5});
     const results: (Big | null)[] = [];
 
     testData.forEach(candle => {
@@ -59,7 +59,7 @@ describe('ZigZag (Big.js version)', () => {
   });
 
   it('calculates ZigZag points correctly with 30% threshold (less sensitive)', () => {
-    const zigzag = new ZigZag({percentage: 30});
+    const zigzag = new ZigZag({deviation: 30});
     const results: (Big | null)[] = [];
 
     testData.forEach(candle => {
@@ -80,13 +80,13 @@ describe('ZigZag (Big.js version)', () => {
   });
 
   it('handles validation of percentage threshold', () => {
-    expect(() => new ZigZag({percentage: 0})).toThrow();
-    expect(() => new ZigZag({percentage: -5})).toThrow();
-    expect(() => new ZigZag({percentage: 5})).not.toThrow();
+    expect(() => new ZigZag({deviation: 0})).toThrow();
+    expect(() => new ZigZag({deviation: -5})).toThrow();
+    expect(() => new ZigZag({deviation: 5})).not.toThrow();
   });
 
   it('correctly returns null for not enough data', () => {
-    const zigzag = new ZigZag({percentage: 5});
+    const zigzag = new ZigZag({deviation: 5});
 
     // First candle
     const result1 = zigzag.update({high: 10, low: 9}, false);
@@ -102,7 +102,7 @@ describe('ZigZag (Big.js version)', () => {
   });
 
   it('throws NotEnoughDataError when not enough data', () => {
-    const zigzag = new ZigZag({percentage: 5});
+    const zigzag = new ZigZag({deviation: 5});
 
     expect(() => zigzag.getResultOrThrow()).toThrow(NotEnoughDataError);
 
@@ -112,7 +112,7 @@ describe('ZigZag (Big.js version)', () => {
   });
 
   it('correctly indicates stability when there is a confirmed extreme', () => {
-    const zigzag = new ZigZag({percentage: 5});
+    const zigzag = new ZigZag({deviation: 5});
 
     expect(zigzag.isStable).toBe(false);
 
@@ -130,7 +130,7 @@ describe('ZigZag (Big.js version)', () => {
   });
 
   it('handles replace flag correctly', () => {
-    const zigzag = new ZigZag({percentage: 5});
+    const zigzag = new ZigZag({deviation: 5});
 
     // Add some initial data
     zigzag.update({high: 10, low: 9}, false); // Initial (not stable)
@@ -143,7 +143,7 @@ describe('ZigZag (Big.js version)', () => {
   });
 
   it('handles cases where a new high invalidates the current low swing', () => {
-    const zigzag = new ZigZag({percentage: 5});
+    const zigzag = new ZigZag({deviation: 5});
 
     // Setup a high and a significant drop
     zigzag.update({high: 10, low: 9}, false); // Initial
@@ -165,7 +165,7 @@ describe('ZigZag (Big.js version)', () => {
   });
 
   it('handles cases where a new low invalidates the current high swing', () => {
-    const zigzag = new ZigZag({percentage: 5});
+    const zigzag = new ZigZag({deviation: 5});
 
     // Setup a high and a significant drop to establish a low
     zigzag.update({high: 10, low: 9}, false); // Initial
@@ -192,7 +192,7 @@ describe('ZigZag (Big.js version)', () => {
   });
 
   it('correctly handles zero values in percentage calculation', () => {
-    const zigzag = new ZigZag({percentage: 5});
+    const zigzag = new ZigZag({deviation: 5});
 
     // Access the private calculatePercentChange method
     const percentChange = (zigzag as any).calculatePercentChange(new Big(0), new Big(10));
@@ -225,7 +225,7 @@ describe('FasterZigZag (Number version)', () => {
   ];
 
   it('calculates FasterZigZag points correctly with 5% threshold', () => {
-    const zigzag = new FasterZigZag({percentage: 5});
+    const zigzag = new FasterZigZag({deviation: 5});
     const results: (number | null)[] = [];
 
     testData.forEach(candle => {
@@ -257,7 +257,7 @@ describe('FasterZigZag (Number version)', () => {
   });
 
   it('calculates FasterZigZag points correctly with 30% threshold (less sensitive)', () => {
-    const zigzag = new FasterZigZag({percentage: 30});
+    const zigzag = new FasterZigZag({deviation: 30});
     const results: (number | null)[] = [];
 
     testData.forEach(candle => {
@@ -278,13 +278,13 @@ describe('FasterZigZag (Number version)', () => {
   });
 
   it('handles validation of percentage threshold', () => {
-    expect(() => new FasterZigZag({percentage: 0})).toThrow();
-    expect(() => new FasterZigZag({percentage: -5})).toThrow();
-    expect(() => new FasterZigZag({percentage: 5})).not.toThrow();
+    expect(() => new FasterZigZag({deviation: 0})).toThrow();
+    expect(() => new FasterZigZag({deviation: -5})).toThrow();
+    expect(() => new FasterZigZag({deviation: 5})).not.toThrow();
   });
 
   it('correctly returns null for not enough data', () => {
-    const zigzag = new FasterZigZag({percentage: 5});
+    const zigzag = new FasterZigZag({deviation: 5});
 
     // First candle
     const result1 = zigzag.update({high: 10, low: 9}, false);
@@ -300,7 +300,7 @@ describe('FasterZigZag (Number version)', () => {
   });
 
   it('throws NotEnoughDataError when not enough data', () => {
-    const zigzag = new FasterZigZag({percentage: 5});
+    const zigzag = new FasterZigZag({deviation: 5});
 
     expect(() => zigzag.getResultOrThrow()).toThrow(NotEnoughDataError);
 
@@ -310,7 +310,7 @@ describe('FasterZigZag (Number version)', () => {
   });
 
   it('correctly indicates stability when there is a confirmed extreme', () => {
-    const zigzag = new FasterZigZag({percentage: 5});
+    const zigzag = new FasterZigZag({deviation: 5});
 
     expect(zigzag.isStable).toBe(false);
 
@@ -328,7 +328,7 @@ describe('FasterZigZag (Number version)', () => {
   });
 
   it('handles replace flag correctly', () => {
-    const zigzag = new FasterZigZag({percentage: 5});
+    const zigzag = new FasterZigZag({deviation: 5});
 
     // Add some initial data
     zigzag.update({high: 10, low: 9}, false); // Initial (not stable)
@@ -341,7 +341,7 @@ describe('FasterZigZag (Number version)', () => {
   });
 
   it('handles cases where a new high invalidates the current low swing', () => {
-    const zigzag = new FasterZigZag({percentage: 5});
+    const zigzag = new FasterZigZag({deviation: 5});
 
     // Setup a high and a significant drop
     zigzag.update({high: 10, low: 9}, false); // Initial
@@ -363,7 +363,7 @@ describe('FasterZigZag (Number version)', () => {
   });
 
   it('handles cases where a new low invalidates the current high swing', () => {
-    const zigzag = new FasterZigZag({percentage: 5});
+    const zigzag = new FasterZigZag({deviation: 5});
 
     // Setup a high and a significant drop to establish a low
     zigzag.update({high: 10, low: 9}, false); // Initial
@@ -390,7 +390,7 @@ describe('FasterZigZag (Number version)', () => {
   });
 
   it('correctly handles zero values in percentage calculation', () => {
-    const zigzag = new FasterZigZag({percentage: 5});
+    const zigzag = new FasterZigZag({deviation: 5});
 
     // Access the private calculatePercentChange method
     const percentChange = (zigzag as any).calculatePercentChange(0, 10);
