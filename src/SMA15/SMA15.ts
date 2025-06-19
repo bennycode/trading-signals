@@ -8,15 +8,16 @@ import {pushUpdate} from '../util/pushUpdate.js';
  * Type: Trend
  *
  * A specialized weighted moving average that uses 15 points with predefined weights
- * designed for optimal data smoothing while preserving trend characteristics.
+ * designed for optimal data smoothing. It’s a specific weighted moving average, designed to preserve the trend component in data while minimizing distortion from seasonal or irregular variations.
  *
  * The formula uses these specific weights:
  * [-3, -6, -5, 3, 21, 46, 67, 74, 67, 46, 21, 3, -5, -6, -3]
  *
  * @see https://www.stat.berkeley.edu/~aditya/Site/Statistics_153;_Spring_2012_files/Spring2012Statistics153LectureThree.pdf
+ * @see https://mathworld.wolfram.com/Spencers15-PointMovingAverage.html
  */
 export class SMA15 extends MovingAverage {
-  public readonly prices: BigSource[] = [];
+  private readonly prices: BigSource[] = [];
   private static readonly WEIGHTS = [-3, -6, -5, 3, 21, 46, 67, 74, 67, 46, 21, 3, -5, -6, -3];
   private static readonly WEIGHT_SUM = 320;
 
