@@ -198,6 +198,52 @@ describe('ZigZag (Big.js version)', () => {
     const percentChange = (zigzag as any).calculatePercentChange(new Big(0), new Big(10));
     expect(percentChange.toString()).toBe('0');
   });
+
+  it('successfully returns result with getResultOrThrow when lastExtreme is not null', () => {
+    const zigzag = new ZigZag({deviation: 5});
+    const zigzagProps = exposeZigZagProperties(zigzag);
+
+    // First, add enough candles to establish a confirmed ZigZag point
+    // Add first candle
+    zigzag.update({high: 100, low: 90}, false);
+
+    // Add second candle with higher high
+    zigzag.update({high: 110, low: 100}, false);
+
+    // Add third candle with significant drop (>5%) to confirm the high
+    const result = zigzag.update({high: 95, low: 85}, false);
+
+    // Verify the result is the confirmed high extreme
+    expect(result?.toNumber()).toBe(110);
+
+    // Verify internal state
+    expect(zigzagProps.lastExtreme?.toNumber()).toBe(110);
+    expect(zigzagProps.lastExtremeType).toBe('high');
+
+    // Now call getResultOrThrow which should hit line 177
+    const throwResult = zigzag.getResultOrThrow();
+
+    // Verify result matches the lastExtreme value
+    expect(throwResult.toNumber()).toBe(110);
+
+    // Add another candle with a more significant drop (> 20%)
+    // to ensure it's tracking a new potential low
+    zigzag.update({high: 70, low: 65}, false);
+
+    // Add another candle with a significant rise to confirm the low
+    const finalResult = zigzag.update({high: 100, low: 95}, false);
+
+    // Now we should have a new result (the low at 65)
+    expect(finalResult?.toNumber()).toBe(65);
+
+    // getResultOrThrow should now return the updated value
+    const updatedThrowResult = zigzag.getResultOrThrow();
+    expect(updatedThrowResult.toNumber()).toBe(65);
+
+    // Additional verification: Try getResult() which doesn't throw
+    const normalResult = zigzag.getResult();
+    expect(normalResult?.toNumber()).toBe(65);
+  });
 });
 
 // Helper function to expose private properties for FasterZigZag testing
