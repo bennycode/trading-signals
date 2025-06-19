@@ -396,4 +396,49 @@ describe('FasterZigZag (Number version)', () => {
     const percentChange = (zigzag as any).calculatePercentChange(0, 10);
     expect(percentChange).toBe(0);
   });
+
+  it('successfully returns result with getResultOrThrow when lastExtreme is not null', () => {
+    const zigzag = new FasterZigZag({deviation: 5});
+    const zigzagProps = exposeFasterZigZagProperties(zigzag);
+
+    // First, add enough candles to establish a confirmed ZigZag point
+    // Add first candle
+    zigzag.update({high: 100, low: 90}, false);
+
+    // Add second candle with higher high
+    zigzag.update({high: 110, low: 100}, false);
+
+    // Add third candle with significant drop (>5%) to confirm the high
+    const result = zigzag.update({high: 95, low: 85}, false);
+
+    // Verify the result is the confirmed high extreme
+    expect(result).toBe(110);
+
+    // Verify internal state
+    expect(zigzagProps.lastExtreme).toBe(110);
+    expect(zigzagProps.lastExtremeType).toBe('high');
+
+    // Now call getResultOrThrow which should hit line 330
+    const throwResult = zigzag.getResultOrThrow();
+
+    // Verify result matches the lastExtreme value
+    expect(throwResult).toBe(110);
+
+    // Add another candle with a more significant drop (> 20%)
+    // to ensure it creates another ZigZag point
+    const nextResult = zigzag.update({high: 70, low: 65}, false);
+
+    // Verify we have a result (should still be 110 as we're tracking the low)
+    expect(nextResult).toBe(110);
+
+    // Add another candle with a significant rise to confirm the low
+    const finalResult = zigzag.update({high: 100, low: 95}, false);
+
+    // Now we should have a new result (the low at 65)
+    expect(finalResult).toBe(65);
+
+    // getResultOrThrow should now return the updated value
+    const updatedThrowResult = zigzag.getResultOrThrow();
+    expect(updatedThrowResult).toBe(65);
+  });
 });
