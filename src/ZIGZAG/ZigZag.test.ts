@@ -244,6 +244,21 @@ describe('ZigZag (Big.js version)', () => {
     const normalResult = zigzag.getResult();
     expect(normalResult?.toNumber()).toBe(65);
   });
+
+  it('returns null for the second candle when neither a new high nor a new low occurs (explicitly covers lines 93-94)', () => {
+    const zigzag = new ZigZag({deviation: 5});
+    const fasterZigZag = new FasterZigZag({deviation: 5});
+
+    // First candle: sets currentExtreme
+    zigzag.add({high: 100, low: 100});
+    fasterZigZag.add({high: 100, low: 100});
+
+    // Second candle: neither high > currentExtreme nor low < currentExtreme
+    const result = zigzag.add({high: 100, low: 100});
+    const fasterResult = fasterZigZag.add({high: 100, low: 100});
+    expect(result).toBeNull();
+    expect(fasterResult).toBeNull();
+  });
 });
 
 // Helper function to expose private properties for FasterZigZag testing

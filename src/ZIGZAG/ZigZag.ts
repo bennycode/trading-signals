@@ -161,7 +161,7 @@ export class ZigZag extends BigIndicatorSeries<HighLow> {
     }
 
     // If we reach here, no significant change has occurred
-    return this.lastExtreme ? this.setResult(this.lastExtreme, replace) : null;
+    return this.setResult(this.lastExtreme, replace);
   }
 
   private calculatePercentChange(from: Big, to: Big): Big {
@@ -314,7 +314,7 @@ export class FasterZigZag extends NumberIndicatorSeries<HighLow<number>> {
     }
 
     // If we reach here, no significant change has occurred
-    return this.lastExtreme ? this.setResult(this.lastExtreme, replace) : null;
+    return this.setResult(this.lastExtreme, replace);
   }
 
   private calculatePercentChange(from: number, to: number): number {
