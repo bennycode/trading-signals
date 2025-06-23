@@ -12,16 +12,16 @@ export type ZigZagConfig = {
 };
 
 /**
- * ZigZag indicator (DEMA)
+ * ZigZag Indicator (ZigZag)
  * Type: Trend
  *
  * The ZigZag indicator is a technical analysis tool used to identify price trends by
  * filtering out smaller price movements. It works by identifying significant highs and lows
  * in a price series and drawing lines between them. For a high or low to be considered
  * significant, the price must reverse by at least a specified percentage from the last
- * extreme point.
+ * extreme point (deviation).
  *
- * A momentum investor might rely on the ZigZag indicator to remain in a trade until the Zig Zag line signals a reversal. For instance, if holding a long position, the investor would wait to sell until the Zig Zag line shifts downward. The Zig Zag indicator is considered a lagging tool because its values are plotted only after each time period closes, and it only forms a permanent new line once the price has moved significantly.
+ * A momentum investor might rely on the ZigZag indicator to remain in a trade until the Zig Zag line signals a reversal. For instance, if holding a long position, the investor would wait to sell until the Zig Zag line shifts downward. The Zig Zag indicator is considered a lagging indicator because its values are plotted only after each time period closes, and it only forms a permanent new line once the price has moved significantly.
  *
  * @see https://www.investopedia.com/ask/answers/030415/what-zig-zag-indicator-formula-and-how-it-calculated.asp
  * @see https://www.investopedia.com/terms/z/zig_zag_indicator.asp
@@ -30,9 +30,9 @@ export type ZigZagConfig = {
  */
 export class ZigZag extends BigIndicatorSeries<HighLow> {
   private readonly percentageThreshold: Big;
-  private lastExtreme: Big | null = null;
+  private lastExtremeValue: Big | null = null;
   private lastExtremeType: 'high' | 'low' | null = null;
-  private currentExtreme: Big | null = null;
+  private currentExtremeValue: Big | null = null;
   private currentExtremeType: 'high' | 'low' | null = null;
 
   constructor(config: ZigZagConfig) {
@@ -51,7 +51,7 @@ export class ZigZag extends BigIndicatorSeries<HighLow> {
   }
 
   override get isStable(): boolean {
-    return this.lastExtreme !== null;
+    return this.lastExtremeValue !== null;
   }
 
   update(candle: HighLow, replace: boolean): Big | null {
@@ -59,34 +59,34 @@ export class ZigZag extends BigIndicatorSeries<HighLow> {
     const low = new Big(candle.low);
 
     // If not enough previous data is available
-    if (!this.lastExtreme) {
+    if (!this.lastExtremeValue) {
       // If this is our first candle, just record the high as the initial extreme point
-      if (!this.currentExtreme) {
-        this.currentExtreme = high;
+      if (!this.currentExtremeValue) {
+        this.currentExtremeValue = high;
         this.currentExtremeType = 'high';
         return null;
       }
 
       // If this is our second candle, determine the initial swing
-      if (high.gt(this.currentExtreme)) {
+      if (high.gt(this.currentExtremeValue)) {
         // New high, keep it as the current extreme
-        this.currentExtreme = high;
+        this.currentExtremeValue = high;
         this.currentExtremeType = 'high';
         return null;
-      } else if (low.lt(this.currentExtreme)) {
+      } else if (low.lt(this.currentExtremeValue)) {
         // The price made a lower low, potentially establish a new swing low
-        const percentChange = this.calculatePercentChange(this.currentExtreme, low);
+        const percentChange = this.calculatePercentChange(this.currentExtremeValue, low);
 
         if (percentChange.gte(this.percentageThreshold)) {
           // Percentage change is significant, confirm the high as last extreme
-          this.lastExtreme = this.currentExtreme;
+          this.lastExtremeValue = this.currentExtremeValue;
           this.lastExtremeType = this.currentExtremeType;
 
           // Start tracking a new potential low
-          this.currentExtreme = low;
+          this.currentExtremeValue = low;
           this.currentExtremeType = 'low';
 
-          return this.setResult(this.lastExtreme, replace);
+          return this.setResult(this.lastExtremeValue, replace);
         }
       }
 
@@ -96,64 +96,64 @@ export class ZigZag extends BigIndicatorSeries<HighLow> {
     // Based on the last extreme type, process the new candle
     if (this.lastExtremeType === 'high') {
       // We're looking for a significant low
-      if (low.lt(this.currentExtreme!)) {
+      if (low.lt(this.currentExtremeValue!)) {
         // New potential extreme low
-        this.currentExtreme = low;
+        this.currentExtremeValue = low;
         this.currentExtremeType = 'low';
-      } else if (high.gt(this.lastExtreme)) {
+      } else if (high.gt(this.lastExtremeValue)) {
         // We've moved higher than the last high without confirming a low
         // This invalidates our current swing, so adjust accordingly
-        this.currentExtreme = high;
+        this.currentExtremeValue = high;
         this.currentExtremeType = 'high';
-        this.lastExtreme = this.currentExtreme;
+        this.lastExtremeValue = this.currentExtremeValue;
         this.lastExtremeType = this.currentExtremeType;
 
-        return this.setResult(this.lastExtreme, replace);
+        return this.setResult(this.lastExtremeValue, replace);
       }
 
       // Check if the swing from high to low is significant
-      const percentChange = this.calculatePercentChange(this.lastExtreme, this.currentExtreme!);
+      const percentChange = this.calculatePercentChange(this.lastExtremeValue, this.currentExtremeValue!);
 
       if (percentChange.gte(this.percentageThreshold)) {
         // Confirm the current low as a significant point
-        const previousExtreme = this.lastExtreme;
-        this.lastExtreme = this.currentExtreme;
+        const previousExtreme = this.lastExtremeValue;
+        this.lastExtremeValue = this.currentExtremeValue;
         this.lastExtremeType = this.currentExtremeType;
 
         // Start looking for a new high
-        this.currentExtreme = high;
+        this.currentExtremeValue = high;
         this.currentExtremeType = 'high';
 
         return this.setResult(previousExtreme, replace);
       }
     } else if (this.lastExtremeType === 'low') {
       // We're looking for a significant high
-      if (high.gt(this.currentExtreme!)) {
+      if (high.gt(this.currentExtremeValue!)) {
         // New potential extreme high
-        this.currentExtreme = high;
+        this.currentExtremeValue = high;
         this.currentExtremeType = 'high';
-      } else if (low.lt(this.lastExtreme)) {
+      } else if (low.lt(this.lastExtremeValue)) {
         // We've moved lower than the last low without confirming a high
         // This invalidates our current swing, so adjust accordingly
-        this.currentExtreme = low;
+        this.currentExtremeValue = low;
         this.currentExtremeType = 'low';
-        this.lastExtreme = this.currentExtreme;
+        this.lastExtremeValue = this.currentExtremeValue;
         this.lastExtremeType = this.currentExtremeType;
 
-        return this.setResult(this.lastExtreme, replace);
+        return this.setResult(this.lastExtremeValue, replace);
       }
 
       // Check if the swing from low to high is significant
-      const percentChange = this.calculatePercentChange(this.lastExtreme, this.currentExtreme!);
+      const percentChange = this.calculatePercentChange(this.lastExtremeValue, this.currentExtremeValue!);
 
       if (percentChange.gte(this.percentageThreshold)) {
         // Confirm the current high as a significant point
-        const previousExtreme = this.lastExtreme;
-        this.lastExtreme = this.currentExtreme;
+        const previousExtreme = this.lastExtremeValue;
+        this.lastExtremeValue = this.currentExtremeValue;
         this.lastExtremeType = this.currentExtremeType;
 
         // Start looking for a new low
-        this.currentExtreme = low;
+        this.currentExtremeValue = low;
         this.currentExtremeType = 'low';
 
         return this.setResult(previousExtreme, replace);
@@ -161,7 +161,7 @@ export class ZigZag extends BigIndicatorSeries<HighLow> {
     }
 
     // If we reach here, no significant change has occurred
-    return this.setResult(this.lastExtreme, replace);
+    return this.setResult(this.lastExtremeValue, replace);
   }
 
   private calculatePercentChange(from: Big, to: Big): Big {
@@ -170,7 +170,7 @@ export class ZigZag extends BigIndicatorSeries<HighLow> {
   }
 
   override getResultOrThrow(): Big {
-    if (this.lastExtreme === null) {
+    if (this.lastExtremeValue === null) {
       throw new NotEnoughDataError(this.getRequiredInputs());
     }
 

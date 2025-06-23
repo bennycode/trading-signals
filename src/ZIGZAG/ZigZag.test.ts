@@ -2,17 +2,6 @@ import {ZigZag, FasterZigZag} from './ZigZag.js';
 import {NotEnoughDataError} from '../error/index.js';
 import Big from 'big.js';
 
-// Helper function to expose private properties for testing
-function exposeZigZagProperties(zigzag: ZigZag) {
-  return zigzag as unknown as {
-    percentageThreshold: Big;
-    lastExtreme: Big | null;
-    lastExtremeType: 'high' | 'low' | null;
-    currentExtreme: Big | null;
-    currentExtremeType: 'high' | 'low' | null;
-  };
-}
-
 describe('ZigZag (Big.js version)', () => {
   const testData = [
     {high: 10, low: 9},
@@ -151,17 +140,16 @@ describe('ZigZag (Big.js version)', () => {
     zigzag.update({high: 9, low: 8}, false); // Significant drop, confirms 12 as high
 
     // Get internal state
-    const exposed = exposeZigZagProperties(zigzag);
-    expect(exposed.lastExtreme?.toString()).toBe('12');
-    expect(exposed.lastExtremeType).toBe('high');
+    expect(zigzag['lastExtremeValue']?.toString()).toBe('12');
+    expect(zigzag['lastExtremeType']).toBe('high');
 
     // Now we're finding a low, but introduce a new higher high that invalidates our search for a low
     const result = zigzag.update({high: 13, low: 11}, false);
 
     // This should confirm the new high and invalidate our search for a low
     expect(result?.toString()).toBe('13');
-    expect(exposed.lastExtreme?.toString()).toBe('13');
-    expect(exposed.lastExtremeType).toBe('high');
+    expect(zigzag['lastExtremeValue']?.toString()).toBe('13');
+    expect(zigzag['lastExtremeType']).toBe('high');
   });
 
   it('handles cases where a new low invalidates the current high swing', () => {
@@ -176,19 +164,18 @@ describe('ZigZag (Big.js version)', () => {
     zigzag.update({high: 10, low: 9}, false); // Starting to rise
 
     // Check internal state
-    const exposed = exposeZigZagProperties(zigzag);
-    expect(exposed.lastExtreme?.toString()).toBe('8');
-    expect(exposed.lastExtremeType).toBe('low');
-    expect(exposed.currentExtreme?.toString()).toBe('10');
-    expect(exposed.currentExtremeType).toBe('high');
+    expect(zigzag['lastExtremeValue']?.toString()).toBe('8');
+    expect(zigzag['lastExtremeType']).toBe('low');
+    expect(zigzag['currentExtremeValue']?.toString()).toBe('10');
+    expect(zigzag['currentExtremeType']).toBe('high');
 
     // Now introduce a new lower low that invalidates our current search for a high
     const result = zigzag.update({high: 8, low: 7}, false);
 
     // This should confirm the new low and invalidate our search for a high
     expect(result?.toString()).toBe('7');
-    expect(exposed.lastExtreme?.toString()).toBe('7');
-    expect(exposed.lastExtremeType).toBe('low');
+    expect(zigzag['lastExtremeValue']?.toString()).toBe('7');
+    expect(zigzag['lastExtremeType']).toBe('low');
   });
 
   it('correctly handles zero values in percentage calculation', () => {
@@ -201,7 +188,6 @@ describe('ZigZag (Big.js version)', () => {
 
   it('successfully returns result with getResultOrThrow when lastExtreme is not null', () => {
     const zigzag = new ZigZag({deviation: 5});
-    const zigzagProps = exposeZigZagProperties(zigzag);
 
     // First, add enough candles to establish a confirmed ZigZag point
     // Add first candle
@@ -217,8 +203,8 @@ describe('ZigZag (Big.js version)', () => {
     expect(result?.toNumber()).toBe(110);
 
     // Verify internal state
-    expect(zigzagProps.lastExtreme?.toNumber()).toBe(110);
-    expect(zigzagProps.lastExtremeType).toBe('high');
+    expect(zigzag['lastExtremeValue']?.toString()).toBe('110');
+    expect(zigzag['lastExtremeType']).toBe('high');
 
     // Now call getResultOrThrow which should hit line 177
     const throwResult = zigzag.getResultOrThrow();
@@ -260,17 +246,6 @@ describe('ZigZag (Big.js version)', () => {
     expect(fasterResult).toBeNull();
   });
 });
-
-// Helper function to expose private properties for FasterZigZag testing
-function exposeFasterZigZagProperties(zigzag: FasterZigZag) {
-  return zigzag as unknown as {
-    percentageThreshold: number;
-    lastExtreme: number | null;
-    lastExtremeType: 'high' | 'low' | null;
-    currentExtreme: number | null;
-    currentExtremeType: 'high' | 'low' | null;
-  };
-}
 
 describe('FasterZigZag (Number version)', () => {
   const testData = [
@@ -410,17 +385,16 @@ describe('FasterZigZag (Number version)', () => {
     zigzag.update({high: 9, low: 8}, false); // Significant drop, confirms 12 as high
 
     // Get internal state
-    const exposed = exposeFasterZigZagProperties(zigzag);
-    expect(exposed.lastExtreme).toBe(12);
-    expect(exposed.lastExtremeType).toBe('high');
+    expect(zigzag['lastExtreme']?.toString()).toBe('12');
+    expect(zigzag['lastExtremeType']).toBe('high');
 
     // Now we're finding a low, but introduce a new higher high that invalidates our search for a low
     const result = zigzag.update({high: 13, low: 11}, false);
 
     // This should confirm the new high and invalidate our search for a low
     expect(result).toBe(13);
-    expect(exposed.lastExtreme).toBe(13);
-    expect(exposed.lastExtremeType).toBe('high');
+    expect(zigzag['lastExtreme']?.toString()).toBe('13');
+    expect(zigzag['lastExtremeType']).toBe('high');
   });
 
   it('handles cases where a new low invalidates the current high swing', () => {
@@ -435,19 +409,18 @@ describe('FasterZigZag (Number version)', () => {
     zigzag.update({high: 10, low: 9}, false); // Starting to rise
 
     // Check internal state
-    const exposed = exposeFasterZigZagProperties(zigzag);
-    expect(exposed.lastExtreme).toBe(8);
-    expect(exposed.lastExtremeType).toBe('low');
-    expect(exposed.currentExtreme).toBe(10);
-    expect(exposed.currentExtremeType).toBe('high');
+    expect(zigzag['lastExtreme']).toBe(8);
+    expect(zigzag['lastExtremeType']).toBe('low');
+    expect(zigzag['currentExtreme']).toBe(10);
+    expect(zigzag['currentExtremeType']).toBe('high');
 
     // Now introduce a new lower low that invalidates our current search for a high
     const result = zigzag.update({high: 8, low: 7}, false);
 
     // This should confirm the new low and invalidate our search for a high
     expect(result).toBe(7);
-    expect(exposed.lastExtreme).toBe(7);
-    expect(exposed.lastExtremeType).toBe('low');
+    expect(zigzag['lastExtreme']).toBe(7);
+    expect(zigzag['lastExtremeType']).toBe('low');
   });
 
   it('correctly handles zero values in percentage calculation', () => {
@@ -460,7 +433,6 @@ describe('FasterZigZag (Number version)', () => {
 
   it('successfully returns result with getResultOrThrow when lastExtreme is not null', () => {
     const zigzag = new FasterZigZag({deviation: 5});
-    const zigzagProps = exposeFasterZigZagProperties(zigzag);
 
     // First, add enough candles to establish a confirmed ZigZag point
     // Add first candle
@@ -476,8 +448,8 @@ describe('FasterZigZag (Number version)', () => {
     expect(result).toBe(110);
 
     // Verify internal state
-    expect(zigzagProps.lastExtreme).toBe(110);
-    expect(zigzagProps.lastExtremeType).toBe('high');
+    expect(zigzag['lastExtreme']).toBe(110);
+    expect(zigzag['lastExtremeType']).toBe('high');
 
     // Now call getResultOrThrow which should hit line 330
     const throwResult = zigzag.getResultOrThrow();
