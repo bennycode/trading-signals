@@ -182,10 +182,6 @@ export class ZigZag extends BigIndicatorSeries<HighLow> {
   }
 }
 
-/**
- * Faster implementation of the ZigZag indicator using JavaScript numbers
- * instead of Big.js for improved performance.
- */
 export class FasterZigZag extends NumberIndicatorSeries<HighLow<number>> {
   private readonly percentageThreshold: number;
   private lastExtreme: number | null = null;

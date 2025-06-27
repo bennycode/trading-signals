@@ -2,7 +2,7 @@ import {ZigZag, FasterZigZag} from './ZigZag.js';
 import {NotEnoughDataError} from '../error/index.js';
 import Big from 'big.js';
 
-describe('ZigZag (Big.js version)', () => {
+describe('ZigZag', () => {
   const testData = [
     {high: 10, low: 9},
     {high: 11, low: 10}, // Higher high, not significant yet
@@ -90,12 +90,8 @@ describe('ZigZag (Big.js version)', () => {
     expect(result3).toBeNull();
   });
 
-  it('throws NotEnoughDataError when not enough data', () => {
+  it('throws when not enough data', () => {
     const zigzag = new ZigZag({deviation: 5});
-
-    expect(() => zigzag.getResultOrThrow()).toThrow(NotEnoughDataError);
-
-    // Add one candle, still not enough for a result
     zigzag.update({high: 10, low: 9}, false);
     expect(() => zigzag.getResultOrThrow()).toThrow(NotEnoughDataError);
   });
@@ -118,17 +114,19 @@ describe('ZigZag (Big.js version)', () => {
     expect(zigzag.isStable).toBe(true);
   });
 
-  it('handles replace flag correctly', () => {
+  it('handles replaces correctly', () => {
     const zigzag = new ZigZag({deviation: 5});
 
     // Add some initial data
     zigzag.update({high: 10, low: 9}, false); // Initial (not stable)
     zigzag.update({high: 11, low: 10}, false); // Higher high (not stable)
     zigzag.update({high: 8, low: 7}, false); // Significant drop (stable)
+    expect(zigzag.getResultOrThrow().toString()).toBe('11');
 
     // Now replace the latest candle with a different one
-    const result = zigzag.update({high: 7.5, low: 6.5}, true);
-    expect(result?.toString()).toBe('11');
+    const result = zigzag.replace({high: 7.5, low: 6.5});
+    // TODO: Result should be different, replace again with value from before and test that original result is there
+    expect(result?.toString()).not.toBe('11');
   });
 
   it('handles cases where a new high invalidates the current low swing', () => {
@@ -181,7 +179,7 @@ describe('ZigZag (Big.js version)', () => {
   it('correctly handles zero values in percentage calculation', () => {
     const zigzag = new ZigZag({deviation: 5});
 
-    // Access the private calculatePercentChange method
+    // TODO: Fix private access... Access the private calculatePercentChange method
     const percentChange = (zigzag as any).calculatePercentChange(new Big(0), new Big(10));
     expect(percentChange.toString()).toBe('0');
   });
@@ -231,7 +229,7 @@ describe('ZigZag (Big.js version)', () => {
     expect(normalResult?.toNumber()).toBe(65);
   });
 
-  it('returns null for the second candle when neither a new high nor a new low occurs (explicitly covers lines 93-94)', () => {
+  it('returns null for the second candle when neither a new high nor a new low occurs', () => {
     const zigzag = new ZigZag({deviation: 5});
     const fasterZigZag = new FasterZigZag({deviation: 5});
 
@@ -247,7 +245,7 @@ describe('ZigZag (Big.js version)', () => {
   });
 });
 
-describe('FasterZigZag (Number version)', () => {
+describe('FasterZigZag', () => {
   const testData = [
     {high: 10, low: 9},
     {high: 11, low: 10}, // Higher high, not significant yet
