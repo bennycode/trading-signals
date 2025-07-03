@@ -69,6 +69,8 @@ import {
   VWAP,
   WMA,
   WSMA,
+  ZigZag,
+  FasterZigZag,
 } from '../index.js';
 import candles from '../test/fixtures/candles/100-candles.json' with {type: 'json'};
 
@@ -484,6 +486,18 @@ new Benchmark.Suite('Technical Indicators')
     const fasterWMA = new FasterWMA(interval);
     for (const price of prices) {
       fasterWMA.add(price);
+    }
+  })
+  .add('ZigZag', () => {
+    const zigzag = new ZigZag({deviation: 5});
+    for (const candle of floatCandles) {
+      zigzag.add(candle);
+    }
+  })
+  .add('FasterZigZag', () => {
+    const fasterZigZag = new FasterZigZag({deviation: 5});
+    for (const candle of floatCandles) {
+      fasterZigZag.add(candle);
     }
   })
   .add('getAverage', () => {
