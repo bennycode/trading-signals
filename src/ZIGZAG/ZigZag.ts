@@ -89,6 +89,14 @@ export class ZigZag extends BigIndicatorSeries<HighLow> {
 
       // If this is our second candle, determine the initial swing
       if (high.gt(this.currentExtremeValue)) {
+        // Check if this is a replace operation with a significant change
+        if (replace) {
+          const percentChange = this.calculatePercentChange(this.currentExtremeValue, high);
+          if (percentChange.gte(this.percentageThreshold)) {
+            // Significant change during replace, treat new high as confirmed point
+            return this.setResult(high, replace);
+          }
+        }
         // New high, keep it as the current extreme
         this.currentExtremeValue = high;
         this.currentExtremeType = 'high';
@@ -262,6 +270,14 @@ export class FasterZigZag extends NumberIndicatorSeries<HighLow<number>> {
 
       // If this is our second candle, determine the initial swing
       if (high > this.currentExtreme) {
+        // Check if this is a replace operation with a significant change
+        if (replace) {
+          const percentChange = this.calculatePercentChange(this.currentExtreme, high);
+          if (percentChange >= this.percentageThreshold) {
+            // Significant change during replace, treat new high as confirmed point
+            return this.setResult(high, replace);
+          }
+        }
         // New high, keep it as the current extreme
         this.currentExtreme = high;
         this.currentExtremeType = 'high';
