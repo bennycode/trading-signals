@@ -114,19 +114,19 @@ describe('ZigZag', () => {
     expect(zigzag.isStable).toBe(true);
   });
 
-  it('handles replaces correctly', () => {
+  it('replaces the most recently added value', () => {
     const zigzag = new ZigZag({deviation: 5});
-
-    // Add some initial data
-    zigzag.update({high: 10, low: 9}, false); // Initial (not stable)
-    zigzag.update({high: 11, low: 10}, false); // Higher high (not stable)
-    zigzag.update({high: 8, low: 7}, false); // Significant drop (stable)
-    expect(zigzag.getResultOrThrow().toString()).toBe('11');
-
-    // Now replace the latest candle with a different one
-    const result = zigzag.replace({high: 7.5, low: 6.5});
-    // TODO: Result should be different, replace again with value from before and test that original result is there
-    expect(result?.toString()).not.toBe('11');
+    const candle = {high: 8, low: 7};
+    const replacementCandle = {high: 75, low: 65};
+    const expectedResult = '11';
+    zigzag.add({high: 10, low: 9});
+    zigzag.add({high: 11, low: 10});
+    zigzag.add(candle);
+    expect(zigzag.getResultOrThrow().toString()).toBe(expectedResult);
+    const replacedResult = zigzag.replace(replacementCandle);
+    expect(replacedResult?.toString()).toBe('75');
+    const originalResult = zigzag.replace(candle);
+    expect(originalResult?.toString()).toBe(expectedResult);
   });
 
   it('handles cases where a new high invalidates the current low swing', () => {
