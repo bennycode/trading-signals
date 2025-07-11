@@ -34,6 +34,12 @@ export class ZigZag extends BigIndicatorSeries<HighLow> {
   private lastExtremeType: 'high' | 'low' | null = null;
   private currentExtremeValue: Big | null = null;
   private currentExtremeType: 'high' | 'low' | null = null;
+  
+  // Cache for replace functionality
+  private previousLastExtremeValue: Big | null = null;
+  private previousLastExtremeType: 'high' | 'low' | null = null;
+  private previousCurrentExtremeValue: Big | null = null;
+  private previousCurrentExtremeType: 'high' | 'low' | null = null;
 
   constructor(config: ZigZagConfig) {
     super();
@@ -57,6 +63,20 @@ export class ZigZag extends BigIndicatorSeries<HighLow> {
   update(candle: HighLow, replace: boolean): Big | null {
     const high = new Big(candle.high);
     const low = new Big(candle.low);
+
+    // Handle replace flag - restore previous state if replacing
+    if (replace) {
+      this.lastExtremeValue = this.previousLastExtremeValue;
+      this.lastExtremeType = this.previousLastExtremeType;
+      this.currentExtremeValue = this.previousCurrentExtremeValue;
+      this.currentExtremeType = this.previousCurrentExtremeType;
+    } else {
+      // Cache current state for potential replacement
+      this.previousLastExtremeValue = this.lastExtremeValue;
+      this.previousLastExtremeType = this.lastExtremeType;
+      this.previousCurrentExtremeValue = this.currentExtremeValue;
+      this.previousCurrentExtremeType = this.currentExtremeType;
+    }
 
     // If not enough previous data is available
     if (!this.lastExtremeValue) {
@@ -188,6 +208,12 @@ export class FasterZigZag extends NumberIndicatorSeries<HighLow<number>> {
   private lastExtremeType: 'high' | 'low' | null = null;
   private currentExtreme: number | null = null;
   private currentExtremeType: 'high' | 'low' | null = null;
+  
+  // Cache for replace functionality
+  private previousLastExtreme: number | null = null;
+  private previousLastExtremeType: 'high' | 'low' | null = null;
+  private previousCurrentExtreme: number | null = null;
+  private previousCurrentExtremeType: 'high' | 'low' | null = null;
 
   constructor(config: ZigZagConfig) {
     super();
@@ -210,6 +236,20 @@ export class FasterZigZag extends NumberIndicatorSeries<HighLow<number>> {
 
   update(candle: HighLow<number>, replace: boolean): number | null {
     const {high, low} = candle;
+
+    // Handle replace flag - restore previous state if replacing
+    if (replace) {
+      this.lastExtreme = this.previousLastExtreme;
+      this.lastExtremeType = this.previousLastExtremeType;
+      this.currentExtreme = this.previousCurrentExtreme;
+      this.currentExtremeType = this.previousCurrentExtremeType;
+    } else {
+      // Cache current state for potential replacement
+      this.previousLastExtreme = this.lastExtreme;
+      this.previousLastExtremeType = this.lastExtremeType;
+      this.previousCurrentExtreme = this.currentExtreme;
+      this.previousCurrentExtremeType = this.currentExtremeType;
+    }
 
     // If not enough previous data is available
     if (!this.lastExtreme) {
