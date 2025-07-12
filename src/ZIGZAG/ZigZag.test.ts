@@ -23,10 +23,8 @@ describe('ZigZag', () => {
       results.push(zigzag.add({high: candle.high, low: candle.low}));
     });
 
-    // With 30% threshold, we expect fewer significant points:
-    // Using the actual values from the implementation
-    expect(results[0]).toBeNull();
-    expect(results[1]).toBeNull();
+    expect(results[0]).toBeNull(); // initial point
+    expect(results[1]).toBeNull(); // no significant change
     expect(results[2]?.toString()).toBe('11');
     expect(results[3]?.toString()).toBe('11');
     expect(results[4]?.toString()).toBe('7');

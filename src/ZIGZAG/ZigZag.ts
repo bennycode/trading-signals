@@ -24,10 +24,11 @@ export type ZigZagConfig = {
  * The indicator alternates between tracking highs and lows: after confirming a high, it searches for a
  * significant low, and after confirming a low, it searches for a significant high.
  *
- * A momentum investor might rely on the ZigZag indicator to remain in a trade until the Zig Zag line signals a reversal. For instance, if holding a long position, the investor would wait to sell until the Zig Zag line shifts downward. The Zig Zag indicator is considered a lagging indicator because its values are plotted only after each time period closes, and it only forms a permanent new line once the price has moved significantly.
+ * A momentum investor might rely on the ZigZag indicator to remain in a trade until the Zig Zag line signals a reversal. For instance, if holding a long position, the investor would wait to sell until the Zig Zag line shifts downward. The Zig Zag indicator is considered a lagging indicator because its values are plotted only after each time period closes, and it only forms a permanent new line once the price has moved significantly. While the Zig Zag indicator doesn't forecast future trends, it helps identify possible support and resistance levels between the plotted swing highs and lows.
  *
  * @see https://www.investopedia.com/ask/answers/030415/what-zig-zag-indicator-formula-and-how-it-calculated.asp
  * @see https://www.investopedia.com/terms/z/zig_zag_indicator.asp
+ * @see https://www.tradingview.com/u/?solution=43000591664
  * @see https://capex.com/en/academy/zigzag
  * @see https://corporatefinanceinstitute.com/resources/career-map/sell-side/capital-markets/zig-zag-indicator/
  */
