@@ -236,9 +236,9 @@ describe('FasterZigZag', () => {
 
     // With 30% threshold, we expect fewer significant points
     // Using the actual values from the implementation
-    expect(results[0]).toBeNull();
-    expect(results[1]).toBeNull();
-    expect(results[2]).toBe(11);
+    expect(results[0]).toBeNull(); // null (initial point)
+    expect(results[1]).toBeNull(); // null (no significant change)
+    expect(results[2]).toBe(11); // 11 (confirms the high at 11 as we move to significant low)
     expect(results[3]).toBe(11);
     expect(results[4]).toBe(7);
     expect(results[5]).toBe(12);
