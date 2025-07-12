@@ -34,7 +34,7 @@ export class ZigZag extends BigIndicatorSeries<HighLow> {
   private lastExtremeType: 'high' | 'low' | null = null;
   private currentExtremeValue: Big | null = null;
   private currentExtremeType: 'high' | 'low' | null = null;
-  
+
   // Cache for replace functionality
   private previousLastExtremeValue: Big | null = null;
   private previousLastExtremeType: 'high' | 'low' | null = null;
@@ -216,7 +216,7 @@ export class FasterZigZag extends NumberIndicatorSeries<HighLow<number>> {
   private lastExtremeType: 'high' | 'low' | null = null;
   private currentExtreme: number | null = null;
   private currentExtremeType: 'high' | 'low' | null = null;
-  
+
   // Cache for replace functionality
   private previousLastExtreme: number | null = null;
   private previousLastExtremeType: 'high' | 'low' | null = null;
@@ -270,14 +270,6 @@ export class FasterZigZag extends NumberIndicatorSeries<HighLow<number>> {
 
       // If this is our second candle, determine the initial swing
       if (high > this.currentExtreme) {
-        // Check if this is a replace operation with a significant change
-        if (replace) {
-          const percentChange = this.calculatePercentChange(this.currentExtreme, high);
-          if (percentChange >= this.percentageThreshold) {
-            // Significant change during replace, treat new high as confirmed point
-            return this.setResult(high, replace);
-          }
-        }
         // New high, keep it as the current extreme
         this.currentExtreme = high;
         this.currentExtremeType = 'high';
