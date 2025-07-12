@@ -5,14 +5,14 @@ import Big from 'big.js';
 describe('ZigZag', () => {
   const testData = [
     {high: 10, low: 9},
-    {high: 11, low: 10}, // Higher high, not significant yet
-    {high: 8, low: 7}, // Significant drop from 11 -> 7 (36.36%)
-    {high: 9, low: 8}, // Higher but not significant
-    {high: 12, low: 11}, // Significant rise from 7 -> 12 (71.43%)
-    {high: 9, low: 8}, // Significant drop from 12 -> 8 (33.33%)
-    {high: 14, low: 13}, // Significant rise from 8 -> 14 (75%)
-    {high: 13, low: 12}, // Drop but not significant
-    {high: 10, low: 9}, // Significant drop from 14 -> 9 (35.71%)
+    {high: 11, low: 10}, // Higher high [11], not significant yet
+    {high: 8, low: 7}, // Significant drop from 11 -> [7] (36.36%)
+    {high: 9, low: 8}, // Higher but not significant, [7] -> 9 (28.57%)
+    {high: 12, low: 11}, // Significant rise from 7 -> [12] (71.43%)
+    {high: 9, low: 8}, // Significant drop from 12 -> [8] (33.33%)
+    {high: 14, low: 13}, // Significant rise from 8 -> [14] (75%)
+    {high: 13, low: 12}, // Drop but not significant, [14] -> 12 (14.29%)
+    {high: 10, low: 9}, // Significant drop from 14 -> [9] (35.71%)
   ];
 
   it('calculates ZigZag points correctly with 30% threshold (less sensitive)', () => {
@@ -20,7 +20,7 @@ describe('ZigZag', () => {
     const results: (Big | null)[] = [];
 
     testData.forEach(candle => {
-      results.push(zigzag.update({high: candle.high, low: candle.low}, false));
+      results.push(zigzag.add({high: candle.high, low: candle.low}));
     });
 
     // With 30% threshold, we expect fewer significant points:

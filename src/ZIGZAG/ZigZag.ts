@@ -18,8 +18,11 @@ export type ZigZagConfig = {
  * The ZigZag indicator is a technical analysis tool used to identify price trends by
  * filtering out smaller price movements. It works by identifying significant highs and lows
  * in a price series and drawing lines between them. For a high or low to be considered
- * significant, the price must reverse by at least a specified percentage from the last
- * extreme point (deviation).
+ * significant, the price must reverse by at least a specified percentage (deviation) from the last
+ * extreme point.
+ *
+ * The indicator alternates between tracking highs and lows: after confirming a high, it searches for a
+ * significant low, and after confirming a low, it searches for a significant high.
  *
  * A momentum investor might rely on the ZigZag indicator to remain in a trade until the Zig Zag line signals a reversal. For instance, if holding a long position, the investor would wait to sell until the Zig Zag line shifts downward. The Zig Zag indicator is considered a lagging indicator because its values are plotted only after each time period closes, and it only forms a permanent new line once the price has moved significantly.
  *
