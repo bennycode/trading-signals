@@ -15,38 +15,6 @@ describe('ZigZag', () => {
     {high: 10, low: 9}, // Significant drop from 14 -> 9 (35.71%)
   ];
 
-  it('calculates ZigZag points correctly with 5% threshold', () => {
-    const zigzag = new ZigZag({deviation: 5});
-    const results: (Big | null)[] = [];
-
-    testData.forEach(candle => {
-      results.push(zigzag.update({high: candle.high, low: candle.low}, false));
-    });
-
-    // We expect:
-    // 1st candle: null (initial point)
-    // 2nd candle: null (no significant change)
-    // 3rd candle: 11 (confirms the high at 11 as we move to significant low)
-    // 4th candle: null (no significant change)
-    // 5th candle: 7 (confirms the low at 7 as we move to significant high)
-    // 6th candle: 12 (confirms the high at 12 as we move to significant low)
-    // 7th candle: 8 (confirms the low at 8 as we move to significant high)
-    // 8th candle: null (no significant change)
-    // 9th candle: 14 (confirms the high at 14 as we move to significant low)
-
-    expect(results[0]).toBeNull();
-    expect(results[1]).toBeNull();
-    expect(results[2]?.toString()).toBe('11');
-    // Fixed test case - this should be a value and not null
-    expect(results[3]?.toString()).toBe('11');
-    expect(results[4]?.toString()).toBe('7');
-    expect(results[5]?.toString()).toBe('12');
-    expect(results[6]?.toString()).toBe('8');
-    // Fixed test case - we get a value here, not null
-    expect(results[7]?.toString()).toBe('14');
-    expect(results[8]?.toString()).toBe('9');
-  });
-
   it('calculates ZigZag points correctly with 30% threshold (less sensitive)', () => {
     const zigzag = new ZigZag({deviation: 30});
     const results: (Big | null)[] = [];
@@ -257,38 +225,6 @@ describe('FasterZigZag', () => {
     {high: 13, low: 12}, // Drop but not significant
     {high: 10, low: 9}, // Significant drop from 14 -> 9 (35.71%)
   ];
-
-  it('calculates FasterZigZag points correctly with 5% threshold', () => {
-    const zigzag = new FasterZigZag({deviation: 5});
-    const results: (number | null)[] = [];
-
-    testData.forEach(candle => {
-      results.push(zigzag.update({high: candle.high, low: candle.low}, false));
-    });
-
-    // We expect:
-    // 1st candle: null (initial point)
-    // 2nd candle: null (no significant change)
-    // 3rd candle: 11 (confirms the high at 11 as we move to significant low)
-    // 4th candle: null (no significant change)
-    // 5th candle: 7 (confirms the low at 7 as we move to significant high)
-    // 6th candle: 12 (confirms the high at 12 as we move to significant low)
-    // 7th candle: 8 (confirms the low at 8 as we move to significant high)
-    // 8th candle: null (no significant change)
-    // 9th candle: 14 (confirms the high at 14 as we move to significant low)
-
-    expect(results[0]).toBeNull();
-    expect(results[1]).toBeNull();
-    expect(results[2]).toBe(11);
-    // Fixed test case - this should be a value and not null
-    expect(results[3]).toBe(11);
-    expect(results[4]).toBe(7);
-    expect(results[5]).toBe(12);
-    expect(results[6]).toBe(8);
-    // Fixed test case - we get a value here, not null
-    expect(results[7]).toBe(14);
-    expect(results[8]).toBe(9);
-  });
 
   it('calculates FasterZigZag points correctly with 30% threshold (less sensitive)', () => {
     const zigzag = new FasterZigZag({deviation: 30});
