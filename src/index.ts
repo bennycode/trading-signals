@@ -39,3 +39,4 @@ export * from './util/index.js';
 export * from './VWAP/VWAP.js';
 export * from './WMA/WMA.js';
 export * from './WSMA/WSMA.js';
+export * from './ZIGZAG/ZigZag.js';
