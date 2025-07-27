@@ -29,10 +29,10 @@ export type ZigZagConfig = {
  */
 export class ZigZag extends BigIndicatorSeries<HighLow> {
   private readonly deviationThreshold: Big;
-  private isLookingForHigh: boolean = true;
-  private lastExtreme: Big | null = null;
-  private pendingHigh: Big | null = null;
-  private pendingLow: Big | null = null;
+  private isLookingForHigh: boolean = false; // Start looking for low after first high
+  private lastConfirmedExtreme: Big | null = null;
+  private currentCandidateHigh: Big | null = null;
+  private currentCandidateLow: Big | null = null;
 
   constructor(config: ZigZagConfig) {
     super();
@@ -52,59 +52,53 @@ export class ZigZag extends BigIndicatorSeries<HighLow> {
     const low = new Big(candle.low);
 
     // Initialize on first candle
-    if (this.lastExtreme === null) {
-      this.lastExtreme = high;
-      this.pendingHigh = high;
-      this.pendingLow = low;
-      this.isLookingForHigh = true; // Start looking for higher highs
+    if (this.lastConfirmedExtreme === null) {
+      this.lastConfirmedExtreme = high;
+      this.currentCandidateLow = low;
+      this.isLookingForHigh = false; // Start looking for a significant low
       return this.setResult(high, replace);
     }
 
-    let newExtreme: Big | null = null;
-
     if (this.isLookingForHigh) {
-      // Update pending high if we have a higher high
-      if (this.pendingHigh === null || high.gt(this.pendingHigh)) {
-        this.pendingHigh = high;
+      // We're looking for a high after confirming a low
+      // Track the highest high since the last confirmed low
+      if (this.currentCandidateHigh === null || high.gt(this.currentCandidateHigh)) {
+        this.currentCandidateHigh = high;
       }
 
-      // Check if we have a significant low (reversal from current pending high)
-      if (this.pendingHigh !== null) {
-        const deviationFromHigh = this.pendingHigh.minus(low).div(this.pendingHigh);
-
-        if (deviationFromHigh.gte(this.deviationThreshold)) {
-          // Confirm the pending high as the new extreme
-          newExtreme = this.pendingHigh;
-          this.lastExtreme = this.pendingHigh;
+      // Check if we have a significant drop from the candidate high to trigger confirmation
+      if (this.currentCandidateHigh !== null) {
+        const deviationFromCandidateHigh = this.currentCandidateHigh.minus(low).div(this.currentCandidateHigh);
+        if (deviationFromCandidateHigh.gte(this.deviationThreshold)) {
+          // Confirm the candidate high as the new extreme
+          const confirmedHigh = this.currentCandidateHigh;
+          this.lastConfirmedExtreme = confirmedHigh;
+          this.currentCandidateLow = low;
+          this.currentCandidateHigh = null;
           this.isLookingForHigh = false;
-          this.pendingLow = low; // Start tracking from current low
-          this.pendingHigh = null;
+          return this.setResult(confirmedHigh, replace);
         }
       }
     } else {
-      // Looking for low
-      // Update pending low if we have a lower low
-      if (this.pendingLow === null || low.lt(this.pendingLow)) {
-        this.pendingLow = low;
+      // We're looking for a low after confirming a high
+      // Track the lowest low since the last confirmed high
+      if (this.currentCandidateLow === null || low.lt(this.currentCandidateLow)) {
+        this.currentCandidateLow = low;
       }
 
-      // Check if we have a significant high (reversal from current pending low)
-      if (this.pendingLow !== null) {
-        const deviationFromLow = high.minus(this.pendingLow).div(this.pendingLow);
-
-        if (deviationFromLow.gte(this.deviationThreshold)) {
-          // Confirm the pending low as the new extreme
-          newExtreme = this.pendingLow;
-          this.lastExtreme = this.pendingLow;
+      // Check if we have a significant rise from the candidate low to trigger confirmation
+      if (this.currentCandidateLow !== null) {
+        const deviationFromCandidateLow = high.minus(this.currentCandidateLow).div(this.currentCandidateLow);
+        if (deviationFromCandidateLow.gte(this.deviationThreshold)) {
+          // Confirm the candidate low as the new extreme
+          const confirmedLow = this.currentCandidateLow;
+          this.lastConfirmedExtreme = confirmedLow;
+          this.currentCandidateHigh = high;
+          this.currentCandidateLow = null;
           this.isLookingForHigh = true;
-          this.pendingHigh = high; // Start tracking from current high
-          this.pendingLow = null;
+          return this.setResult(confirmedLow, replace);
         }
       }
-    }
-
-    if (newExtreme !== null) {
-      return this.setResult(newExtreme, replace);
     }
 
     return null;
@@ -119,10 +113,10 @@ export class ZigZag extends BigIndicatorSeries<HighLow> {
  */
 export class FasterZigZag extends NumberIndicatorSeries<HighLow<number>> {
   private readonly deviationThreshold: number;
-  private isLookingForHigh: boolean = true;
-  private lastExtreme: number | null = null;
-  private pendingHigh: number | null = null;
-  private pendingLow: number | null = null;
+  private isLookingForHigh: boolean = false; // Start looking for low after first high
+  private lastConfirmedExtreme: number | null = null;
+  private currentCandidateHigh: number | null = null;
+  private currentCandidateLow: number | null = null;
 
   constructor(config: ZigZagConfig) {
     super();
@@ -141,59 +135,53 @@ export class FasterZigZag extends NumberIndicatorSeries<HighLow<number>> {
     const {high, low} = candle;
 
     // Initialize on first candle
-    if (this.lastExtreme === null) {
-      this.lastExtreme = high;
-      this.pendingHigh = high;
-      this.pendingLow = low;
-      this.isLookingForHigh = true; // Start looking for higher highs
+    if (this.lastConfirmedExtreme === null) {
+      this.lastConfirmedExtreme = high;
+      this.currentCandidateLow = low;
+      this.isLookingForHigh = false; // Start looking for a significant low
       return this.setResult(high, replace);
     }
 
-    let newExtreme: number | null = null;
-
     if (this.isLookingForHigh) {
-      // Update pending high if we have a higher high
-      if (this.pendingHigh === null || high > this.pendingHigh) {
-        this.pendingHigh = high;
+      // We're looking for a high after confirming a low
+      // Track the highest high since the last confirmed low
+      if (this.currentCandidateHigh === null || high > this.currentCandidateHigh) {
+        this.currentCandidateHigh = high;
       }
 
-      // Check if we have a significant low (reversal from current pending high)
-      if (this.pendingHigh !== null) {
-        const deviationFromHigh = (this.pendingHigh - low) / this.pendingHigh;
-
-        if (deviationFromHigh >= this.deviationThreshold) {
-          // Confirm the pending high as the new extreme
-          newExtreme = this.pendingHigh;
-          this.lastExtreme = this.pendingHigh;
+      // Check if we have a significant drop from the candidate high to trigger confirmation
+      if (this.currentCandidateHigh !== null) {
+        const deviationFromCandidateHigh = (this.currentCandidateHigh - low) / this.currentCandidateHigh;
+        if (deviationFromCandidateHigh >= this.deviationThreshold) {
+          // Confirm the candidate high as the new extreme
+          const confirmedHigh = this.currentCandidateHigh;
+          this.lastConfirmedExtreme = confirmedHigh;
+          this.currentCandidateLow = low;
+          this.currentCandidateHigh = null;
           this.isLookingForHigh = false;
-          this.pendingLow = low; // Start tracking from current low
-          this.pendingHigh = null;
+          return this.setResult(confirmedHigh, replace);
         }
       }
     } else {
-      // Looking for low
-      // Update pending low if we have a lower low
-      if (this.pendingLow === null || low < this.pendingLow) {
-        this.pendingLow = low;
+      // We're looking for a low after confirming a high
+      // Track the lowest low since the last confirmed high
+      if (this.currentCandidateLow === null || low < this.currentCandidateLow) {
+        this.currentCandidateLow = low;
       }
 
-      // Check if we have a significant high (reversal from current pending low)
-      if (this.pendingLow !== null) {
-        const deviationFromLow = (high - this.pendingLow) / this.pendingLow;
-
-        if (deviationFromLow >= this.deviationThreshold) {
-          // Confirm the pending low as the new extreme
-          newExtreme = this.pendingLow;
-          this.lastExtreme = this.pendingLow;
+      // Check if we have a significant rise from the candidate low to trigger confirmation
+      if (this.currentCandidateLow !== null) {
+        const deviationFromCandidateLow = (high - this.currentCandidateLow) / this.currentCandidateLow;
+        if (deviationFromCandidateLow >= this.deviationThreshold) {
+          // Confirm the candidate low as the new extreme
+          const confirmedLow = this.currentCandidateLow;
+          this.lastConfirmedExtreme = confirmedLow;
+          this.currentCandidateHigh = high;
+          this.currentCandidateLow = null;
           this.isLookingForHigh = true;
-          this.pendingHigh = high; // Start tracking from current high
-          this.pendingLow = null;
+          return this.setResult(confirmedLow, replace);
         }
       }
-    }
-
-    if (newExtreme !== null) {
-      return this.setResult(newExtreme, replace);
     }
 
     return null;
