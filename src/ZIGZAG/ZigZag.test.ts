@@ -1,6 +1,5 @@
-import {ZigZag, FasterZigZag} from './ZigZag.js';
 import {expect} from 'vitest';
-import Big from 'big.js';
+import {FasterZigZag, ZigZag} from './ZigZag.js';
 
 describe('ZigZag & FasterZigZag', () => {
   describe('constructor', () => {
@@ -131,13 +130,13 @@ describe('ZigZag & FasterZigZag', () => {
       const fasterZigzag = new FasterZigZag({deviation});
 
       const testData = [
-        {high: 100, low: 99, expectedResult: 100}, // Initial high
-        {high: 105, low: 102, expectedResult: null}, // Not enough rise from candidateLow 99 yet
-        {high: 110, low: 107, expectedResult: 99}, // 110 is 11.1% above 99, confirms low at 99, now looking for high
-        {high: 102, low: 95, expectedResult: 110}, // 95 is 13.6% below candidateHigh 110, confirms high at 110
-        {high: 98, low: 85, expectedResult: 85}, // 98 is 15.3% above candidateLow 85, confirms low at 85  
-        {high: 95, low: 80, expectedResult: 98}, // 80 is 18.4% below candidateHigh 98, confirms high at 98
-        {high: 100, low: 88, expectedResult: 80}, // 100 is 25% above candidateLow 80, confirms low at 80
+        {expectedResult: 100, high: 100, low: 99}, // Initial high
+        {expectedResult: null, high: 105, low: 102}, // Not enough rise from candidateLow 99 yet
+        {expectedResult: 99, high: 110, low: 107}, // 110 is 11.1% above 99, confirms low at 99, now looking for high
+        {expectedResult: 110, high: 102, low: 95}, // 95 is 13.6% below candidateHigh 110, confirms high at 110
+        {expectedResult: 85, high: 98, low: 85}, // 98 is 15.3% above candidateLow 85, confirms low at 85
+        {expectedResult: 98, high: 95, low: 80}, // 80 is 18.4% below candidateHigh 98, confirms high at 98
+        {expectedResult: 80, high: 100, low: 88}, // 100 is 25% above candidateLow 80, confirms low at 80
       ];
 
       const zigzagResults: (number | null)[] = [];
@@ -168,9 +167,6 @@ describe('ZigZag & FasterZigZag', () => {
 
       zigzag.add({high: 105, low: 102});
       fasterZigzag.add({high: 105, low: 102});
-
-      const result1 = zigzag.add({high: 98, low: 95});
-      const result2 = fasterZigzag.add({high: 98, low: 95});
 
       // Replace the last value
       const replacedResult1 = zigzag.replace({high: 97, low: 94});
