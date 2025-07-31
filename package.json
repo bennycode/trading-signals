@@ -4,14 +4,16 @@
   },
   "dependencies": {
     "@types/big.js": "^6.2.2",
-    "big.js": "^7.0.1"
+    "@types/papaparse": "^5.3.16",
+    "big.js": "^7.0.1",
+    "papaparse": "^5.5.3"
   },
   "description": "Technical indicators to run technical analysis with JavaScript / TypeScript.",
   "devDependencies": {
     "@arethetypeswrong/cli": "^0.18.1",
     "@tstv/eslint-config": "^4.0.0",
     "@types/benchmark": "^2.1.5",
-    "@types/node": "^18.19.87",
+    "@types/node": "^24.1.0",
     "@vitest/coverage-v8": "^3.1.2",
     "benchmark": "^2.1.4",
     "dependency-cruiser": "^16.10.1",
