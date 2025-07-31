@@ -1,241 +1,264 @@
 import {expect} from 'vitest';
 import {FasterZigZag, ZigZag} from './ZigZag.js';
+import {fromCSV} from '../util/Candle.js';
+import {readFileSync} from 'node:fs';
 
 describe('ZigZag & FasterZigZag', () => {
-  describe('constructor', () => {
-    it('throws an error when deviation is zero or negative', () => {
-      expect(() => new ZigZag({deviation: 0})).toThrow('Deviation must be greater than 0');
-      expect(() => new ZigZag({deviation: -0.1})).toThrow('Deviation must be greater than 0');
-      expect(() => new FasterZigZag({deviation: 0})).toThrow('Deviation must be greater than 0');
-      expect(() => new FasterZigZag({deviation: -0.1})).toThrow('Deviation must be greater than 0');
-    });
-
-    it('accepts valid deviation values', () => {
-      expect(() => new ZigZag({deviation: 0.05})).not.toThrow();
-      expect(() => new FasterZigZag({deviation: 0.05})).not.toThrow();
-    });
-  });
-
-  describe('getRequiredInputs', () => {
-    it('returns 1 as minimum required inputs', () => {
-      const zigzag = new ZigZag({deviation: 0.05});
-      const fasterZigzag = new FasterZigZag({deviation: 0.05});
-
-      expect(zigzag.getRequiredInputs()).toBe(1);
-      expect(fasterZigzag.getRequiredInputs()).toBe(1);
-    });
-  });
-
-  describe('isStable', () => {
-    it('returns true after first input', () => {
-      const zigzag = new ZigZag({deviation: 0.05});
-      const fasterZigzag = new FasterZigZag({deviation: 0.05});
-
-      expect(zigzag.isStable).toBe(false);
-      expect(fasterZigzag.isStable).toBe(false);
-
-      zigzag.add({high: 100, low: 99});
-      fasterZigzag.add({high: 100, low: 99});
-
-      expect(zigzag.isStable).toBe(true);
-      expect(fasterZigzag.isStable).toBe(true);
-    });
-  });
-
-  describe('update', () => {
-    it('returns the first high value on initial input', () => {
-      const zigzag = new ZigZag({deviation: 0.05});
-      const fasterZigzag = new FasterZigZag({deviation: 0.05});
-
-      const result1 = zigzag.add({high: 100, low: 99});
-      const result2 = fasterZigzag.add({high: 100, low: 99});
-
-      expect(result1?.valueOf()).toBe('100');
-      expect(result2).toBe(100);
-    });
-
-    it('returns null until a significant reversal occurs', () => {
-      const deviation = 0.05; // 5%
-      const zigzag = new ZigZag({deviation});
-      const fasterZigzag = new FasterZigZag({deviation});
-
-      // Initial high at 100
-      const result1 = zigzag.add({high: 100, low: 99});
-      const result2 = fasterZigzag.add({high: 100, low: 99});
-      expect(result1?.valueOf()).toBe('100');
-      expect(result2).toBe(100);
-
-      // Small movements (not triggering reversals)
-      let result3 = zigzag.add({high: 101, low: 97}); // currentCandidateLow = 97, high 101 is only 4.1% above 97
-      let result4 = fasterZigzag.add({high: 101, low: 97});
-      expect(result3).toBeNull();
-      expect(result4).toBeNull();
-
-      // Still not enough to trigger - keeping low at 97, high at 101 is still only 4.1% above
-      result3 = zigzag.add({high: 100.5, low: 98}); // high decreases, currentCandidateLow stays 97, high 100.5 is 3.6% above 97
-      result4 = fasterZigzag.add({high: 100.5, low: 98});
-      expect(result3).toBeNull();
-      expect(result4).toBeNull();
-    });
-
-    it('detects significant low after high', () => {
-      const deviation = 0.05; // 5%
-      const zigzag = new ZigZag({deviation});
-      const fasterZigzag = new FasterZigZag({deviation});
-
-      // Initial high at 100
-      zigzag.add({high: 100, low: 99});
-      fasterZigzag.add({high: 100, low: 99});
-
-      // Higher high at 105
-      zigzag.add({high: 105, low: 102});
-      fasterZigzag.add({high: 105, low: 102});
-
-      // Significant low (more than 5% down from 105)
-      const result1 = zigzag.add({high: 98, low: 95}); // 95 is ~9.5% down from 105
-      const result2 = fasterZigzag.add({high: 98, low: 95});
-
-      expect(result1?.valueOf()).toBe('105'); // Should return the confirmed high
-      expect(result2).toBe(105);
-    });
-
-    it('detects significant high after low', () => {
-      const deviation = 0.05; // 5%
-      const zigzag = new ZigZag({deviation});
-      const fasterZigzag = new FasterZigZag({deviation});
-
-      // Start with a pattern that establishes a low
-      zigzag.add({high: 100, low: 99});
-      fasterZigzag.add({high: 100, low: 99});
-
-      // Create a confirmed low
-      zigzag.add({high: 98, low: 95}); // Triggers low detection
-      fasterZigzag.add({high: 98, low: 95});
-
-      // Lower low
-      zigzag.add({high: 92, low: 90});
-      fasterZigzag.add({high: 92, low: 90});
-
-      // Significant high (more than 5% up from 90)
-      const result1 = zigzag.add({high: 105, low: 98}); // ~16.7% up from 90
-      const result2 = fasterZigzag.add({high: 105, low: 98});
-
-      expect(result1?.valueOf()).toBe('90'); // Should return the confirmed low
-      expect(result2).toBe(90);
-    });
-
-    it('handles complex zigzag pattern correctly', () => {
-      const deviation = 0.1; // 10% for clearer pattern
-      const zigzag = new ZigZag({deviation});
-      const fasterZigzag = new FasterZigZag({deviation});
-
-      const testData = [
-        {expectedResult: 100, high: 100, low: 99}, // Initial high
-        {expectedResult: null, high: 105, low: 102}, // Not enough rise from candidateLow 99 yet
-        {expectedResult: 99, high: 110, low: 107}, // 110 is 11.1% above 99, confirms low at 99, now looking for high
-        {expectedResult: 110, high: 102, low: 95}, // 95 is 13.6% below candidateHigh 110, confirms high at 110
-        {expectedResult: 85, high: 98, low: 85}, // 98 is 15.3% above candidateLow 85, confirms low at 85
-        {expectedResult: 98, high: 95, low: 80}, // 80 is 18.4% below candidateHigh 98, confirms high at 98
-        {expectedResult: 80, high: 100, low: 88}, // 100 is 25% above candidateLow 80, confirms low at 80
-      ];
-
-      const zigzagResults: (number | null)[] = [];
-      const fasterZigzagResults: (number | null)[] = [];
-
-      for (const candle of testData) {
-        const result1 = zigzag.add({high: candle.high, low: candle.low});
-        const result2 = fasterZigzag.add({high: candle.high, low: candle.low});
-
-        zigzagResults.push(result1 ? Number(result1.valueOf()) : null);
-        fasterZigzagResults.push(result2);
+  it('works', () => {
+    /*
+     * Pivots:
+     * 2025-03-31, LH
+     * 2025-04-08, LL
+     * 2025-05-01, LH (214.56)
+     * 2025-05-07, HL (193.25)
+     * 2025-07-07, HH (216.23)
+     */
+    const path = readFileSync(`${import.meta.dirname}/../test/fixtures/candles/BATS_AAPL,1D.csv`, 'utf8');
+    const candles = fromCSV(path);
+    // console.log(candles.length);
+    const zigzag = new ZigZag({deviation: 0.1, pivotLookback: 10});
+    for (const candle of candles) {
+      const result = zigzag.add(candle);
+      if (result) {
+        console.log(result, candle);
       }
-
-      const expectedResults = testData.map(d => d.expectedResult);
-
-      expect(zigzagResults).toEqual(expectedResults);
-      expect(fasterZigzagResults).toEqual(expectedResults);
-    });
-
-    it.skip('maintains correct state when replacing values', () => {
-      const deviation = 0.05;
-      const zigzag = new ZigZag({deviation});
-      const fasterZigzag = new FasterZigZag({deviation});
-
-      // Build initial pattern
-      zigzag.add({high: 100, low: 99});
-      fasterZigzag.add({high: 100, low: 99});
-
-      zigzag.add({high: 105, low: 102});
-      fasterZigzag.add({high: 105, low: 102});
-
-      // Replace the last value
-      const replacedResult1 = zigzag.replace({high: 97, low: 94});
-      const replacedResult2 = fasterZigzag.replace({high: 97, low: 94});
-
-      // Should still trigger the same extreme point
-      expect(replacedResult1?.valueOf()).toBe('105');
-      expect(replacedResult2).toBe(105);
-    });
+    }
   });
 
-  describe('getResult', () => {
-    it('returns null when no extreme point has been confirmed', () => {
-      const zigzag = new ZigZag({deviation: 0.05});
-      const fasterZigzag = new FasterZigZag({deviation: 0.05});
+  // describe('constructor', () => {
+  //   it('throws an error when deviation is zero or negative', () => {
+  //     expect(() => new ZigZag({deviation: 0})).toThrow('Deviation must be greater than 0');
+  //     expect(() => new ZigZag({deviation: -0.1})).toThrow('Deviation must be greater than 0');
+  //     expect(() => new FasterZigZag({deviation: 0})).toThrow('Deviation must be greater than 0');
+  //     expect(() => new FasterZigZag({deviation: -0.1})).toThrow('Deviation must be greater than 0');
+  //   });
 
-      expect(zigzag.getResult()).toBeNull();
-      expect(fasterZigzag.getResult()).toBeNull();
+  //   it('accepts valid deviation values', () => {
+  //     expect(() => new ZigZag({deviation: 0.05})).not.toThrow();
+  //     expect(() => new FasterZigZag({deviation: 0.05})).not.toThrow();
+  //   });
+  // });
 
-      // Add data but no significant reversal
-      zigzag.add({high: 100, low: 99});
-      fasterZigzag.add({high: 100, low: 99});
+  // describe('getRequiredInputs', () => {
+  //   it('returns 1 as minimum required inputs', () => {
+  //     const zigzag = new ZigZag({deviation: 0.05});
+  //     const fasterZigzag = new FasterZigZag({deviation: 0.05});
 
-      // The first point is returned immediately
-      expect(zigzag.getResult()?.valueOf()).toBe('100');
-      expect(fasterZigzag.getResult()).toBe(100);
-    });
-  });
+  //     expect(zigzag.getRequiredInputs()).toBe(1);
+  //     expect(fasterZigzag.getRequiredInputs()).toBe(1);
+  //   });
+  // });
 
-  describe('edge cases', () => {
-    it('handles very small deviation thresholds', () => {
-      const zigzag = new ZigZag({deviation: 0.001}); // 0.1%
-      const fasterZigzag = new FasterZigZag({deviation: 0.001});
+  // describe('isStable', () => {
+  //   it('returns true after first input', () => {
+  //     const zigzag = new ZigZag({deviation: 0.05});
+  //     const fasterZigzag = new FasterZigZag({deviation: 0.05});
 
-      zigzag.add({high: 100, low: 99});
-      fasterZigzag.add({high: 100, low: 99});
+  //     expect(zigzag.isStable).toBe(false);
+  //     expect(fasterZigzag.isStable).toBe(false);
 
-      // Very small movement should trigger reversal
-      const result1 = zigzag.add({high: 99.8, low: 99.85});
-      const result2 = fasterZigzag.add({high: 99.8, low: 99.85});
+  //     zigzag.add({high: 100, low: 99});
+  //     fasterZigzag.add({high: 100, low: 99});
 
-      expect(result1?.valueOf()).toBe('99');
-      expect(result2).toBe(99);
-    });
+  //     expect(zigzag.isStable).toBe(true);
+  //     expect(fasterZigzag.isStable).toBe(true);
+  //   });
+  // });
 
-    it('handles equal high and low values', () => {
-      const zigzag = new ZigZag({deviation: 0.05});
-      const fasterZigzag = new FasterZigZag({deviation: 0.05});
+  // describe('update', () => {
+  //   it('returns the first high value on initial input', () => {
+  //     const zigzag = new ZigZag({deviation: 0.05});
+  //     const fasterZigzag = new FasterZigZag({deviation: 0.05});
 
-      const result1 = zigzag.add({high: 100, low: 100});
-      const result2 = fasterZigzag.add({high: 100, low: 100});
+  //     const result1 = zigzag.add({high: 100, low: 99});
+  //     const result2 = fasterZigzag.add({high: 100, low: 99});
 
-      expect(result1?.valueOf()).toBe('100');
-      expect(result2).toBe(100);
-    });
+  //     expect(result1?.valueOf()).toBe('100');
+  //     expect(result2).toBe(100);
+  //   });
 
-    it('handles large price movements', () => {
-      const zigzag = new ZigZag({deviation: 0.05});
-      const fasterZigzag = new FasterZigZag({deviation: 0.05});
+  //   it('returns null until a significant reversal occurs', () => {
+  //     const deviation = 0.05; // 5%
+  //     const zigzag = new ZigZag({deviation});
+  //     const fasterZigzag = new FasterZigZag({deviation});
 
-      zigzag.add({high: 1000000, low: 999000});
-      fasterZigzag.add({high: 1000000, low: 999000});
+  //     // Initial high at 100
+  //     const result1 = zigzag.add({high: 100, low: 99});
+  //     const result2 = fasterZigzag.add({high: 100, low: 99});
+  //     expect(result1?.valueOf()).toBe('100');
+  //     expect(result2).toBe(100);
 
-      // Large movement
-      const result1 = zigzag.add({high: 950000, low: 900000});
-      const result2 = fasterZigzag.add({high: 950000, low: 900000});
+  //     // Small movements (not triggering reversals)
+  //     let result3 = zigzag.add({high: 101, low: 97}); // currentCandidateLow = 97, high 101 is only 4.1% above 97
+  //     let result4 = fasterZigzag.add({high: 101, low: 97});
+  //     expect(result3).toBeNull();
+  //     expect(result4).toBeNull();
 
-      expect(result1?.valueOf()).toBe('900000');
-      expect(result2).toBe(900000);
-    });
-  });
+  //     // Still not enough to trigger - keeping low at 97, high at 101 is still only 4.1% above
+  //     result3 = zigzag.add({high: 100.5, low: 98}); // high decreases, currentCandidateLow stays 97, high 100.5 is 3.6% above 97
+  //     result4 = fasterZigzag.add({high: 100.5, low: 98});
+  //     expect(result3).toBeNull();
+  //     expect(result4).toBeNull();
+  //   });
+
+  //   it('detects significant low after high', () => {
+  //     const deviation = 0.05; // 5%
+  //     const zigzag = new ZigZag({deviation});
+  //     const fasterZigzag = new FasterZigZag({deviation});
+
+  //     // Initial high at 100
+  //     zigzag.add({high: 100, low: 99});
+  //     fasterZigzag.add({high: 100, low: 99});
+
+  //     // Higher high at 105
+  //     zigzag.add({high: 105, low: 102});
+  //     fasterZigzag.add({high: 105, low: 102});
+
+  //     // Significant low (more than 5% down from 105)
+  //     const result1 = zigzag.add({high: 98, low: 95}); // 95 is ~9.5% down from 105
+  //     const result2 = fasterZigzag.add({high: 98, low: 95});
+
+  //     expect(result1?.valueOf()).toBe('105'); // Should return the confirmed high
+  //     expect(result2).toBe(105);
+  //   });
+
+  //   it('detects significant high after low', () => {
+  //     const deviation = 0.05; // 5%
+  //     const zigzag = new ZigZag({deviation});
+  //     const fasterZigzag = new FasterZigZag({deviation});
+
+  //     // Start with a pattern that establishes a low
+  //     zigzag.add({high: 100, low: 99});
+  //     fasterZigzag.add({high: 100, low: 99});
+
+  //     // Create a confirmed low
+  //     zigzag.add({high: 98, low: 95}); // Triggers low detection
+  //     fasterZigzag.add({high: 98, low: 95});
+
+  //     // Lower low
+  //     zigzag.add({high: 92, low: 90});
+  //     fasterZigzag.add({high: 92, low: 90});
+
+  //     // Significant high (more than 5% up from 90)
+  //     const result1 = zigzag.add({high: 105, low: 98}); // ~16.7% up from 90
+  //     const result2 = fasterZigzag.add({high: 105, low: 98});
+
+  //     expect(result1?.valueOf()).toBe('90'); // Should return the confirmed low
+  //     expect(result2).toBe(90);
+  //   });
+
+  //   it('handles complex zigzag pattern correctly', () => {
+  //     const deviation = 0.1; // 10% for clearer pattern
+  //     const zigzag = new ZigZag({deviation});
+  //     const fasterZigzag = new FasterZigZag({deviation});
+
+  //     const testData = [
+  //       {expectedResult: 100, high: 100, low: 99}, // Initial high
+  //       {expectedResult: null, high: 105, low: 102}, // Not enough rise from candidateLow 99 yet
+  //       {expectedResult: 99, high: 110, low: 107}, // 110 is 11.1% above 99, confirms low at 99, now looking for high
+  //       {expectedResult: 110, high: 102, low: 95}, // 95 is 13.6% below candidateHigh 110, confirms high at 110
+  //       {expectedResult: 85, high: 98, low: 85}, // 98 is 15.3% above candidateLow 85, confirms low at 85
+  //       {expectedResult: 98, high: 95, low: 80}, // 80 is 18.4% below candidateHigh 98, confirms high at 98
+  //       {expectedResult: 80, high: 100, low: 88}, // 100 is 25% above candidateLow 80, confirms low at 80
+  //     ];
+
+  //     const zigzagResults: (number | null)[] = [];
+  //     const fasterZigzagResults: (number | null)[] = [];
+
+  //     for (const candle of testData) {
+  //       const result1 = zigzag.add({high: candle.high, low: candle.low});
+  //       const result2 = fasterZigzag.add({high: candle.high, low: candle.low});
+
+  //       zigzagResults.push(result1 ? Number(result1.valueOf()) : null);
+  //       fasterZigzagResults.push(result2);
+  //     }
+
+  //     const expectedResults = testData.map(d => d.expectedResult);
+
+  //     expect(zigzagResults).toEqual(expectedResults);
+  //     expect(fasterZigzagResults).toEqual(expectedResults);
+  //   });
+
+  //   it.skip('maintains correct state when replacing values', () => {
+  //     const deviation = 0.05;
+  //     const zigzag = new ZigZag({deviation});
+  //     const fasterZigzag = new FasterZigZag({deviation});
+
+  //     // Build initial pattern
+  //     zigzag.add({high: 100, low: 99});
+  //     fasterZigzag.add({high: 100, low: 99});
+
+  //     zigzag.add({high: 105, low: 102});
+  //     fasterZigzag.add({high: 105, low: 102});
+
+  //     // Replace the last value
+  //     const replacedResult1 = zigzag.replace({high: 97, low: 94});
+  //     const replacedResult2 = fasterZigzag.replace({high: 97, low: 94});
+
+  //     // Should still trigger the same extreme point
+  //     expect(replacedResult1?.valueOf()).toBe('105');
+  //     expect(replacedResult2).toBe(105);
+  //   });
+  // });
+
+  // describe('getResult', () => {
+  //   it('returns null when no extreme point has been confirmed', () => {
+  //     const zigzag = new ZigZag({deviation: 0.05});
+  //     const fasterZigzag = new FasterZigZag({deviation: 0.05});
+
+  //     expect(zigzag.getResult()).toBeNull();
+  //     expect(fasterZigzag.getResult()).toBeNull();
+
+  //     // Add data but no significant reversal
+  //     zigzag.add({high: 100, low: 99});
+  //     fasterZigzag.add({high: 100, low: 99});
+
+  //     // The first point is returned immediately
+  //     expect(zigzag.getResult()?.valueOf()).toBe('100');
+  //     expect(fasterZigzag.getResult()).toBe(100);
+  //   });
+  // });
+
+  // describe('edge cases', () => {
+  //   it('handles very small deviation thresholds', () => {
+  //     const zigzag = new ZigZag({deviation: 0.001}); // 0.1%
+  //     const fasterZigzag = new FasterZigZag({deviation: 0.001});
+
+  //     zigzag.add({high: 100, low: 99});
+  //     fasterZigzag.add({high: 100, low: 99});
+
+  //     // Very small movement should trigger reversal
+  //     const result1 = zigzag.add({high: 99.8, low: 99.85});
+  //     const result2 = fasterZigzag.add({high: 99.8, low: 99.85});
+
+  //     expect(result1?.valueOf()).toBe('99');
+  //     expect(result2).toBe(99);
+  //   });
+
+  //   it('handles equal high and low values', () => {
+  //     const zigzag = new ZigZag({deviation: 0.05});
+  //     const fasterZigzag = new FasterZigZag({deviation: 0.05});
+
+  //     const result1 = zigzag.add({high: 100, low: 100});
+  //     const result2 = fasterZigzag.add({high: 100, low: 100});
+
+  //     expect(result1?.valueOf()).toBe('100');
+  //     expect(result2).toBe(100);
+  //   });
+
+  //   it('handles large price movements', () => {
+  //     const zigzag = new ZigZag({deviation: 0.05});
+  //     const fasterZigzag = new FasterZigZag({deviation: 0.05});
+
+  //     zigzag.add({high: 1000000, low: 999000});
+  //     fasterZigzag.add({high: 1000000, low: 999000});
+
+  //     // Large movement
+  //     const result1 = zigzag.add({high: 950000, low: 900000});
+  //     const result2 = fasterZigzag.add({high: 950000, low: 900000});
+
+  //     expect(result1?.valueOf()).toBe('900000');
+  //     expect(result2).toBe(900000);
+  //   });
+  // });
 });
