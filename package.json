@@ -14,7 +14,7 @@
     "@types/node": "^18.19.87",
     "@vitest/coverage-v8": "^3.1.2",
     "benchmark": "^2.1.4",
-    "dependency-cruiser": "^16.10.1",
+    "dependency-cruiser": "^17.0.0",
     "eslint": "^9.26.0",
     "generate-changelog": "^1.8.0",
     "husky": "^4.3.8",
