@@ -3,7 +3,7 @@ import {ADX, FasterADX} from './ADX.js';
 describe('ADX', () => {
   // Test data verified with:
   // https://tulipindicators.org/adx
-  // @see https://github.com/TulipCharts/tulipindicators/blob/v0.9.1/tests/untest.txt#L36-L37
+  // https://github.com/TulipCharts/tulipindicators/blob/v0.9.1/tests/untest.txt#L36-L37
   const candles = [
     {close: 81.59, high: 82.15, low: 81.29},
     {close: 81.06, high: 81.89, low: 80.64},
@@ -22,7 +22,7 @@ describe('ADX', () => {
     {close: 87.29, high: 87.87, low: 87.01},
   ];
 
-  // @see https://github.com/TulipCharts/tulipindicators/blob/v0.9.1/tests/untest.txt#L38
+  // https://github.com/TulipCharts/tulipindicators/blob/v0.9.1/tests/untest.txt#L38
   const expectations = [41.38, 44.29, 49.42, 54.92, 59.99, 65.29, 67.36];
 
   describe('replace', () => {

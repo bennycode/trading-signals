@@ -2,6 +2,9 @@ import {ZigZag} from './ZigZag.js';
 
 describe('ZigZag', () => {
   it('works', () => {
+    // Test data verified with:
+    // https://github.com/munrocket/ta-math/blob/abdba60394582fa5847f57e87969dcd2d22b6ce8/test/test.js#L304
+
     const zigzag = new ZigZag({
       deviation: 15,
     });
