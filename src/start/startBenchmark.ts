@@ -30,6 +30,7 @@ import {
   FasterLinearRegression,
   FasterMACD,
   FasterMAD,
+  FasterZigZag,
   FasterMOM,
   FasterOBV,
   FasterPeriod,
@@ -69,6 +70,7 @@ import {
   VWAP,
   WMA,
   WSMA,
+  ZigZag,
 } from '../index.js';
 import candles from '../test/fixtures/candles/100-candles.json' with {type: 'json'};
 
@@ -497,6 +499,22 @@ new Benchmark.Suite('Technical Indicators')
   })
   .add('getFasterStandardDeviation', () => {
     return getFasterStandardDeviation(prices);
+  })
+  .add('ZigZag', () => {
+    const zigzag = new ZigZag({
+      deviation: 15,
+    });
+    for (const candle of floatCandles) {
+      zigzag.add(candle);
+    }
+  })
+  .add('FasterZigZag', () => {
+    const fasterZigzag = new FasterZigZag({
+      deviation: 15,
+    });
+    for (const candle of floatCandles) {
+      fasterZigzag.add(candle);
+    }
   })
   .on('cycle', (event: Event) => {
     console.info(String(event.target));
