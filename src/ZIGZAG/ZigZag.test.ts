@@ -41,4 +41,13 @@ describe('ZigZag', () => {
       expect(results).toEqual(expectations);
     });
   });
+
+  describe('getRequiredInputs', () => {
+    it('returns the amount of required data needed for a calculation', () => {
+      const zigzag = new ZigZag({
+        deviation: 15,
+      });
+      expect(zigzag.getRequiredInputs()).toBe(1);
+    });
+  });
 });

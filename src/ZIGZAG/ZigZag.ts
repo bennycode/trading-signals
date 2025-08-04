@@ -1,5 +1,4 @@
 import Big from 'big.js';
-import {NotEnoughDataError} from '../error/index.js';
 import {BigIndicatorSeries} from '../Indicator.js';
 import type {HighLow} from '../util/HighLowClose.js';
 
@@ -15,14 +14,9 @@ export type ZigZagConfig = {
  * ZigZag Indicator (ZigZag)
  * Type: Trend
  *
- * The ZigZag indicator is a technical analysis tool used to identify price trends by
- * filtering out smaller price movements. It works by identifying significant highs and lows
- * in a price series and drawing lines between them. For a high or low to be considered
- * significant, the price must reverse by at least a specified percentage (deviation) from the last
- * extreme point.
+ * The ZigZag indicator is a technical analysis tool used to identify price trends by filtering out smaller price movements. It works by identifying significant highs and lows in a price series and drawing lines between them. For a high or low to be considered significant, the price must reverse by at least a specified percentage (deviation) from the last extreme point.
  *
- * The indicator alternates between tracking highs and lows: after confirming a high, it searches for a
- * significant low, and after confirming a low, it searches for a significant high.
+ * The indicator alternates between tracking highs and lows: after confirming a high, it searches for a significant low, and after confirming a low, it searches for a significant high.
  *
  * The Zig Zag indicator is considered to be a very lagging indicator because its values are plotted only after each time period closes, and it only forms a permanent new line once the price has moved significantly. Traders can use popular technical indicators like RSI, ADX, and the Stochastics oscillator to confirm the price of a security is overbought or oversold when the ZigZag line changes direction.
  *
@@ -83,13 +77,5 @@ export class ZigZag extends BigIndicatorSeries<HighLow> {
     }
 
     return null;
-  }
-
-  override getResultOrThrow(): Big {
-    if (!this.isStable) {
-      throw new NotEnoughDataError(this.getRequiredInputs());
-    }
-
-    return super.getResultOrThrow();
   }
 }
