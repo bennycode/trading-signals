@@ -1,3 +1,22 @@
+### 6.9.0 (2025-08-04)
+
+##### Documentation Changes
+
+- Add alternatives ([b5d5665d](https://github.com/bennycode/trading-signals/commit/b5d5665d632fd4b26f2f180a3ae0e74f546d5c9f))
+- Update indicator descriptions ([8427b997](https://github.com/bennycode/trading-signals/commit/8427b99703741f656a6b801711dd3af77a1b478d))
+
+##### New Features
+
+- Add ZigZag Indicator ([#840](https://github.com/bennycode/trading-signals/pull/840)) ([fefece2f](https://github.com/bennycode/trading-signals/commit/fefece2f2ac2dfd512faa962ba05acc128a32da8))
+- **SMA15:** Implement Spencer's 15-Point Moving Average ([#808](https://github.com/bennycode/trading-signals/pull/808)) ([1b81d805](https://github.com/bennycode/trading-signals/commit/1b81d805236333c36443df67875d4eb3ea94d90e))
+- **REI:**
+  - Add faster REI implementation ([#818](https://github.com/bennycode/trading-signals/pull/818)) ([35422d2e](https://github.com/bennycode/trading-signals/commit/35422d2ef14e7375f89ccadf794425d851b52829))
+  - Add Range Expansion Index (REI) indicator ([#806](https://github.com/bennycode/trading-signals/pull/806)) ([aef5cf5b](https://github.com/bennycode/trading-signals/commit/aef5cf5b6aae2298a627fe351bf3aaf56b4dbf13))
+
+##### Bug Fixes
+
+- **REI:** Update link from documentation ([e2245f74](https://github.com/bennycode/trading-signals/commit/e2245f740ea7c091fe13ac2b17cbad53299ad444))
+
 ### 6.8.0 (2025-05-20)
 
 ### 6.7.0 (2025-05-20)
