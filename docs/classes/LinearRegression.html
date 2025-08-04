@@ -57,7 +57,7 @@
           </ul>
           <h1>Class LinearRegression</h1>
         </div>
-        <section class="tsd-panel tsd-hierarchy" data-refl="1310">
+        <section class="tsd-panel tsd-hierarchy" data-refl="1375">
           <h4>Hierarchy (<a href="../hierarchy.html#LinearRegression">View Summary</a>)</h4>
           <ul class="tsd-hierarchy">
             <li class="tsd-hierarchy-item">
@@ -78,8 +78,8 @@
             <li>
               Defined in
               <a
-                href="https://github.com/bennycode/trading-signals/blob/ef8cd37a955e8a813468d23685264a3de71bd251/src/LINREG/LinearRegression.ts#L29"
-                >LINREG/LinearRegression.ts:29</a
+                href="https://github.com/bennycode/trading-signals/blob/1b60567f439ae1374888f28ffaac19cf34013220/src/LINREG/LinearRegression.ts#L25"
+                >LINREG/LinearRegression.ts:25</a
               >
             </li>
           </ul>
@@ -107,6 +107,11 @@
                 <section class="tsd-index-section">
                   <h3 class="tsd-index-heading">Properties</h3>
                   <div class="tsd-index-list">
+                    <a href="#interval" class="tsd-index-link"
+                      ><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Property">
+                        <use href="../assets/icons.svg#icon-1024"></use></svg
+                      ><span>interval</span></a
+                    >
                     <a href="#prices" class="tsd-index-link"
                       ><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Property">
                         <use href="../assets/icons.svg#icon-1024"></use></svg
@@ -131,6 +136,11 @@
                       ><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method">
                         <use href="../assets/icons.svg#icon-2048"></use></svg
                       ><span>add</span></a
+                    >
+                    <a href="#getrequiredinputs" class="tsd-index-link"
+                      ><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method">
+                        <use href="../assets/icons.svg#icon-2048"></use></svg
+                      ><span>get<wbr />Required<wbr />Inputs</span></a
                     >
                     <a href="#getresult" class="tsd-index-link tsd-is-inherited"
                       ><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method">
@@ -183,10 +193,8 @@
                   <div class="tsd-signature tsd-anchor-link" id="constructorlinearregression">
                     <span class="tsd-signature-keyword">new</span>
                     <span class="tsd-kind-constructor-signature">LinearRegression</span
-                    ><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">config</span
-                    ><span class="tsd-signature-symbol">:</span>
-                    <a href="../types/LinearRegressionConfig.html" class="tsd-signature-type tsd-kind-type-alias"
-                      >LinearRegressionConfig</a
+                    ><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">interval</span
+                    ><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span
                     ><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span>
                     <a href="" class="tsd-signature-type tsd-kind-class">LinearRegression</a
                     ><a href="#constructorlinearregression" aria-label="Permalink" class="tsd-anchor-icon"
@@ -200,12 +208,8 @@
                       <ul class="tsd-parameter-list">
                         <li>
                           <span
-                            ><span class="tsd-kind-parameter">config</span>:
-                            <a
-                              href="../types/LinearRegressionConfig.html"
-                              class="tsd-signature-type tsd-kind-type-alias"
-                              >LinearRegressionConfig</a
-                            ></span
+                            ><span class="tsd-kind-parameter">interval</span>:
+                            <span class="tsd-signature-type">number</span></span
                           >
                         </li>
                       </ul>
@@ -224,8 +228,8 @@
                         <li>
                           Defined in
                           <a
-                            href="https://github.com/bennycode/trading-signals/blob/ef8cd37a955e8a813468d23685264a3de71bd251/src/LINREG/LinearRegression.ts#L33"
-                            >LINREG/LinearRegression.ts:33</a
+                            href="https://github.com/bennycode/trading-signals/blob/1b60567f439ae1374888f28ffaac19cf34013220/src/LINREG/LinearRegression.ts#L28"
+                            >LINREG/LinearRegression.ts:28</a
                           >
                         </li>
                       </ul>
@@ -245,6 +249,29 @@
           </summary>
           <section>
             <section class="tsd-panel tsd-member">
+              <h3 class="tsd-anchor-link" id="interval">
+                <code class="tsd-tag">Readonly</code><span>interval</span
+                ><a href="#interval" aria-label="Permalink" class="tsd-anchor-icon"
+                  ><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg
+                ></a>
+              </h3>
+              <div class="tsd-signature">
+                <span class="tsd-kind-property">interval</span><span class="tsd-signature-symbol">:</span>
+                <span class="tsd-signature-type">number</span>
+              </div>
+              <aside class="tsd-sources">
+                <ul>
+                  <li>
+                    Defined in
+                    <a
+                      href="https://github.com/bennycode/trading-signals/blob/1b60567f439ae1374888f28ffaac19cf34013220/src/LINREG/LinearRegression.ts#L28"
+                      >LINREG/LinearRegression.ts:28</a
+                    >
+                  </li>
+                </ul>
+              </aside>
+            </section>
+            <section class="tsd-panel tsd-member">
               <h3 class="tsd-anchor-link" id="prices">
                 <code class="tsd-tag">Readonly</code><span>prices</span
                 ><a href="#prices" aria-label="Permalink" class="tsd-anchor-icon"
@@ -261,8 +288,8 @@
                   <li>
                     Defined in
                     <a
-                      href="https://github.com/bennycode/trading-signals/blob/ef8cd37a955e8a813468d23685264a3de71bd251/src/LINREG/LinearRegression.ts#L30"
-                      >LINREG/LinearRegression.ts:30</a
+                      href="https://github.com/bennycode/trading-signals/blob/1b60567f439ae1374888f28ffaac19cf34013220/src/LINREG/LinearRegression.ts#L26"
+                      >LINREG/LinearRegression.ts:26</a
                     >
                   </li>
                 </ul>
@@ -300,8 +327,8 @@
                         <li>
                           Defined in
                           <a
-                            href="https://github.com/bennycode/trading-signals/blob/ef8cd37a955e8a813468d23685264a3de71bd251/src/LINREG/LinearRegression.ts#L85"
-                            >LINREG/LinearRegression.ts:85</a
+                            href="https://github.com/bennycode/trading-signals/blob/1b60567f439ae1374888f28ffaac19cf34013220/src/LINREG/LinearRegression.ts#L83"
+                            >LINREG/LinearRegression.ts:83</a
                           >
                         </li>
                       </ul>
@@ -371,8 +398,49 @@
                         <li>
                           Defined in
                           <a
-                            href="https://github.com/bennycode/trading-signals/blob/ef8cd37a955e8a813468d23685264a3de71bd251/src/Indicator.ts#L39"
-                            >Indicator.ts:39</a
+                            href="https://github.com/bennycode/trading-signals/blob/1b60567f439ae1374888f28ffaac19cf34013220/src/Indicator.ts#L42"
+                            >Indicator.ts:42</a
+                          >
+                        </li>
+                      </ul>
+                    </aside>
+                  </div>
+                </li>
+              </ul>
+            </section>
+            <section class="tsd-panel tsd-member">
+              <h3 class="tsd-anchor-link" id="getrequiredinputs">
+                <span>get<wbr />Required<wbr />Inputs</span
+                ><a href="#getrequiredinputs" aria-label="Permalink" class="tsd-anchor-icon"
+                  ><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg
+                ></a>
+              </h3>
+              <ul class="tsd-signatures">
+                <li class="">
+                  <div class="tsd-signature tsd-anchor-link" id="getrequiredinputs-1">
+                    <span class="tsd-kind-call-signature">getRequiredInputs</span
+                    ><span class="tsd-signature-symbol">()</span><span class="tsd-signature-symbol">:</span>
+                    <span class="tsd-signature-type">number</span
+                    ><a href="#getrequiredinputs-1" aria-label="Permalink" class="tsd-anchor-icon"
+                      ><svg viewBox="0 0 24 24" aria-hidden="true">
+                        <use href="../assets/icons.svg#icon-anchor"></use></svg
+                    ></a>
+                  </div>
+                  <div class="tsd-description">
+                    <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">number</span></h4>
+                    <aside class="tsd-sources">
+                      <p>
+                        Overrides <a href="TechnicalIndicator.html">TechnicalIndicator</a>.<a
+                          href="TechnicalIndicator.html#getrequiredinputs"
+                          >getRequiredInputs</a
+                        >
+                      </p>
+                      <ul>
+                        <li>
+                          Defined in
+                          <a
+                            href="https://github.com/bennycode/trading-signals/blob/1b60567f439ae1374888f28ffaac19cf34013220/src/LINREG/LinearRegression.ts#L32"
+                            >LINREG/LinearRegression.ts:32</a
                           >
                         </li>
                       </ul>
@@ -419,8 +487,8 @@
                         <li>
                           Defined in
                           <a
-                            href="https://github.com/bennycode/trading-signals/blob/ef8cd37a955e8a813468d23685264a3de71bd251/src/Indicator.ts#L19"
-                            >Indicator.ts:19</a
+                            href="https://github.com/bennycode/trading-signals/blob/1b60567f439ae1374888f28ffaac19cf34013220/src/Indicator.ts#L22"
+                            >Indicator.ts:22</a
                           >
                         </li>
                       </ul>
@@ -466,8 +534,8 @@
                         <li>
                           Defined in
                           <a
-                            href="https://github.com/bennycode/trading-signals/blob/ef8cd37a955e8a813468d23685264a3de71bd251/src/LINREG/LinearRegression.ts#L78"
-                            >LINREG/LinearRegression.ts:78</a
+                            href="https://github.com/bennycode/trading-signals/blob/1b60567f439ae1374888f28ffaac19cf34013220/src/LINREG/LinearRegression.ts#L76"
+                            >LINREG/LinearRegression.ts:76</a
                           >
                         </li>
                       </ul>
@@ -527,8 +595,8 @@
                         <li>
                           Defined in
                           <a
-                            href="https://github.com/bennycode/trading-signals/blob/ef8cd37a955e8a813468d23685264a3de71bd251/src/Indicator.ts#L43"
-                            >Indicator.ts:43</a
+                            href="https://github.com/bennycode/trading-signals/blob/1b60567f439ae1374888f28ffaac19cf34013220/src/Indicator.ts#L46"
+                            >Indicator.ts:46</a
                           >
                         </li>
                       </ul>
@@ -596,8 +664,8 @@
                         <li>
                           Defined in
                           <a
-                            href="https://github.com/bennycode/trading-signals/blob/ef8cd37a955e8a813468d23685264a3de71bd251/src/LINREG/LinearRegression.ts#L68"
-                            >LINREG/LinearRegression.ts:68</a
+                            href="https://github.com/bennycode/trading-signals/blob/1b60567f439ae1374888f28ffaac19cf34013220/src/LINREG/LinearRegression.ts#L66"
+                            >LINREG/LinearRegression.ts:66</a
                           >
                         </li>
                       </ul>
@@ -671,8 +739,8 @@
                         <li>
                           Defined in
                           <a
-                            href="https://github.com/bennycode/trading-signals/blob/ef8cd37a955e8a813468d23685264a3de71bd251/src/Indicator.ts#L49"
-                            >Indicator.ts:49</a
+                            href="https://github.com/bennycode/trading-signals/blob/1b60567f439ae1374888f28ffaac19cf34013220/src/Indicator.ts#L52"
+                            >Indicator.ts:52</a
                           >
                         </li>
                       </ul>
@@ -765,7 +833,11 @@
                   >Properties
                 </summary>
                 <div>
-                  <a href="#prices"
+                  <a href="#interval"
+                    ><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Property">
+                      <use href="../assets/icons.svg#icon-1024"></use></svg
+                    ><span>interval</span></a
+                  ><a href="#prices"
                     ><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Property">
                       <use href="../assets/icons.svg#icon-1024"></use></svg
                     ><span>prices</span></a
@@ -797,6 +869,10 @@
                     ><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method">
                       <use href="../assets/icons.svg#icon-2048"></use></svg
                     ><span>add</span></a
+                  ><a href="#getrequiredinputs"
+                    ><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method">
+                      <use href="../assets/icons.svg#icon-2048"></use></svg
+                    ><span>get<wbr />Required<wbr />Inputs</span></a
                   ><a href="#getresult" class="tsd-is-inherited"
                     ><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method">
                       <use href="../assets/icons.svg#icon-2048"></use></svg

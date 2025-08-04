@@ -59,15 +59,24 @@
         </div>
         <section class="tsd-panel tsd-comment">
           <div class="tsd-comment tsd-typography">
+            <p>Parabolic SAR Type: Trend</p>
             <p>
               The Parabolic SAR (Stop and Reverse) is a technical indicator used in trading to determine the direction
               of an asset's price and potential points of trend reversal. It was developed by J. Welles Wilder Jr., who
               also created indicators like the RSI.
             </p>
+            <p>
+              Interpretation: The indicator places dots above or below the price. If the dots are below the price, it
+              signals an uptrend. If the dots are above the price it signals a downtrend. It &quot;stops and
+              reverses&quot; when the trend is likely to change, hence the name. Its logic says to stay in a trend as
+              long as the dots stay on the same side of the price. Exit or reverse positions when the dots flip to the
+              opposite side.
+            </p>
+            <p>Note: It's particularly useful in trending markets, but less reliable in sideways or choppy markets.</p>
           </div>
           <div class="tsd-comment tsd-typography"></div>
         </section>
-        <section class="tsd-panel tsd-hierarchy" data-refl="1680">
+        <section class="tsd-panel tsd-hierarchy" data-refl="1765">
           <h4>Hierarchy (<a href="../hierarchy.html#PSAR">View Summary</a>)</h4>
           <ul class="tsd-hierarchy">
             <li class="tsd-hierarchy-item">
@@ -86,8 +95,8 @@
             <li>
               Defined in
               <a
-                href="https://github.com/bennycode/trading-signals/blob/ef8cd37a955e8a813468d23685264a3de71bd251/src/PSAR/PSAR.ts#L22"
-                >PSAR/PSAR.ts:22</a
+                href="https://github.com/bennycode/trading-signals/blob/1b60567f439ae1374888f28ffaac19cf34013220/src/PSAR/PSAR.ts#L32"
+                >PSAR/PSAR.ts:32</a
               >
             </li>
           </ul>
@@ -144,6 +153,11 @@
                       ><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method">
                         <use href="../assets/icons.svg#icon-2048"></use></svg
                       ><span>add</span></a
+                    >
+                    <a href="#getrequiredinputs" class="tsd-index-link"
+                      ><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method">
+                        <use href="../assets/icons.svg#icon-2048"></use></svg
+                      ><span>get<wbr />Required<wbr />Inputs</span></a
                     >
                     <a href="#getresult" class="tsd-index-link tsd-is-inherited"
                       ><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method">
@@ -233,8 +247,8 @@
                         <li>
                           Defined in
                           <a
-                            href="https://github.com/bennycode/trading-signals/blob/ef8cd37a955e8a813468d23685264a3de71bd251/src/PSAR/PSAR.ts#L32"
-                            >PSAR/PSAR.ts:32</a
+                            href="https://github.com/bennycode/trading-signals/blob/1b60567f439ae1374888f28ffaac19cf34013220/src/PSAR/PSAR.ts#L42"
+                            >PSAR/PSAR.ts:42</a
                           >
                         </li>
                       </ul>
@@ -275,8 +289,8 @@
                   <li>
                     Defined in
                     <a
-                      href="https://github.com/bennycode/trading-signals/blob/ef8cd37a955e8a813468d23685264a3de71bd251/src/Indicator.ts#L59"
-                      >Indicator.ts:59</a
+                      href="https://github.com/bennycode/trading-signals/blob/1b60567f439ae1374888f28ffaac19cf34013220/src/Indicator.ts#L62"
+                      >Indicator.ts:62</a
                     >
                   </li>
                 </ul>
@@ -304,8 +318,8 @@
                   <li>
                     Defined in
                     <a
-                      href="https://github.com/bennycode/trading-signals/blob/ef8cd37a955e8a813468d23685264a3de71bd251/src/Indicator.ts#L61"
-                      >Indicator.ts:61</a
+                      href="https://github.com/bennycode/trading-signals/blob/1b60567f439ae1374888f28ffaac19cf34013220/src/Indicator.ts#L64"
+                      >Indicator.ts:64</a
                     >
                   </li>
                 </ul>
@@ -343,8 +357,8 @@
                         <li>
                           Defined in
                           <a
-                            href="https://github.com/bennycode/trading-signals/blob/ef8cd37a955e8a813468d23685264a3de71bd251/src/PSAR/PSAR.ts#L45"
-                            >PSAR/PSAR.ts:45</a
+                            href="https://github.com/bennycode/trading-signals/blob/1b60567f439ae1374888f28ffaac19cf34013220/src/PSAR/PSAR.ts#L59"
+                            >PSAR/PSAR.ts:59</a
                           >
                         </li>
                       </ul>
@@ -413,8 +427,49 @@
                         <li>
                           Defined in
                           <a
-                            href="https://github.com/bennycode/trading-signals/blob/ef8cd37a955e8a813468d23685264a3de71bd251/src/Indicator.ts#L39"
-                            >Indicator.ts:39</a
+                            href="https://github.com/bennycode/trading-signals/blob/1b60567f439ae1374888f28ffaac19cf34013220/src/Indicator.ts#L42"
+                            >Indicator.ts:42</a
+                          >
+                        </li>
+                      </ul>
+                    </aside>
+                  </div>
+                </li>
+              </ul>
+            </section>
+            <section class="tsd-panel tsd-member">
+              <h3 class="tsd-anchor-link" id="getrequiredinputs">
+                <span>get<wbr />Required<wbr />Inputs</span
+                ><a href="#getrequiredinputs" aria-label="Permalink" class="tsd-anchor-icon"
+                  ><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg
+                ></a>
+              </h3>
+              <ul class="tsd-signatures">
+                <li class="">
+                  <div class="tsd-signature tsd-anchor-link" id="getrequiredinputs-1">
+                    <span class="tsd-kind-call-signature">getRequiredInputs</span
+                    ><span class="tsd-signature-symbol">()</span><span class="tsd-signature-symbol">:</span>
+                    <span class="tsd-signature-type">number</span
+                    ><a href="#getrequiredinputs-1" aria-label="Permalink" class="tsd-anchor-icon"
+                      ><svg viewBox="0 0 24 24" aria-hidden="true">
+                        <use href="../assets/icons.svg#icon-anchor"></use></svg
+                    ></a>
+                  </div>
+                  <div class="tsd-description">
+                    <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">number</span></h4>
+                    <aside class="tsd-sources">
+                      <p>
+                        Overrides <a href="BigIndicatorSeries.html">BigIndicatorSeries</a>.<a
+                          href="BigIndicatorSeries.html#getrequiredinputs"
+                          >getRequiredInputs</a
+                        >
+                      </p>
+                      <ul>
+                        <li>
+                          Defined in
+                          <a
+                            href="https://github.com/bennycode/trading-signals/blob/1b60567f439ae1374888f28ffaac19cf34013220/src/PSAR/PSAR.ts#L55"
+                            >PSAR/PSAR.ts:55</a
                           >
                         </li>
                       </ul>
@@ -457,8 +512,8 @@
                         <li>
                           Defined in
                           <a
-                            href="https://github.com/bennycode/trading-signals/blob/ef8cd37a955e8a813468d23685264a3de71bd251/src/Indicator.ts#L19"
-                            >Indicator.ts:19</a
+                            href="https://github.com/bennycode/trading-signals/blob/1b60567f439ae1374888f28ffaac19cf34013220/src/Indicator.ts#L22"
+                            >Indicator.ts:22</a
                           >
                         </li>
                       </ul>
@@ -498,8 +553,8 @@
                         <li>
                           Defined in
                           <a
-                            href="https://github.com/bennycode/trading-signals/blob/ef8cd37a955e8a813468d23685264a3de71bd251/src/PSAR/PSAR.ts#L198"
-                            >PSAR/PSAR.ts:198</a
+                            href="https://github.com/bennycode/trading-signals/blob/1b60567f439ae1374888f28ffaac19cf34013220/src/PSAR/PSAR.ts#L212"
+                            >PSAR/PSAR.ts:212</a
                           >
                         </li>
                       </ul>
@@ -558,8 +613,8 @@
                         <li>
                           Defined in
                           <a
-                            href="https://github.com/bennycode/trading-signals/blob/ef8cd37a955e8a813468d23685264a3de71bd251/src/Indicator.ts#L43"
-                            >Indicator.ts:43</a
+                            href="https://github.com/bennycode/trading-signals/blob/1b60567f439ae1374888f28ffaac19cf34013220/src/Indicator.ts#L46"
+                            >Indicator.ts:46</a
                           >
                         </li>
                       </ul>
@@ -626,8 +681,8 @@
                         <li>
                           Defined in
                           <a
-                            href="https://github.com/bennycode/trading-signals/blob/ef8cd37a955e8a813468d23685264a3de71bd251/src/PSAR/PSAR.ts#L49"
-                            >PSAR/PSAR.ts:49</a
+                            href="https://github.com/bennycode/trading-signals/blob/1b60567f439ae1374888f28ffaac19cf34013220/src/PSAR/PSAR.ts#L63"
+                            >PSAR/PSAR.ts:63</a
                           >
                         </li>
                       </ul>
@@ -698,8 +753,8 @@
                         <li>
                           Defined in
                           <a
-                            href="https://github.com/bennycode/trading-signals/blob/ef8cd37a955e8a813468d23685264a3de71bd251/src/Indicator.ts#L49"
-                            >Indicator.ts:49</a
+                            href="https://github.com/bennycode/trading-signals/blob/1b60567f439ae1374888f28ffaac19cf34013220/src/Indicator.ts#L52"
+                            >Indicator.ts:52</a
                           >
                         </li>
                       </ul>
@@ -828,6 +883,10 @@
                     ><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method">
                       <use href="../assets/icons.svg#icon-2048"></use></svg
                     ><span>add</span></a
+                  ><a href="#getrequiredinputs"
+                    ><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method">
+                      <use href="../assets/icons.svg#icon-2048"></use></svg
+                    ><span>get<wbr />Required<wbr />Inputs</span></a
                   ><a href="#getresult" class="tsd-is-inherited"
                     ><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method">
                       <use href="../assets/icons.svg#icon-2048"></use></svg

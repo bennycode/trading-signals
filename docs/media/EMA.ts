@@ -21,6 +21,10 @@ export class EMA extends MovingAverage {
     this.weightFactor = 2 / (this.interval + 1);
   }
 
+  override getRequiredInputs() {
+    return this.interval;
+  }
+
   update(_price: BigSource, replace: boolean): Big {
     if (!replace) {
       this.pricesCounter++;
@@ -43,7 +47,7 @@ export class EMA extends MovingAverage {
 
   override getResultOrThrow(): Big {
     if (this.pricesCounter < this.interval) {
-      throw new NotEnoughDataError();
+      throw new NotEnoughDataError(this.getRequiredInputs());
     }
 
     return this.result!;
@@ -68,6 +72,10 @@ export class FasterEMA extends FasterMovingAverage {
     this.weightFactor = 2 / (this.interval + 1);
   }
 
+  override getRequiredInputs() {
+    return this.interval;
+  }
+
   update(price: number, replace: boolean): number {
     if (!replace) {
       this.pricesCounter++;
@@ -86,7 +94,7 @@ export class FasterEMA extends FasterMovingAverage {
 
   override getResultOrThrow(): number {
     if (this.pricesCounter < this.interval) {
-      throw new NotEnoughDataError();
+      throw new NotEnoughDataError(this.getRequiredInputs());
     }
 
     return this.result!;

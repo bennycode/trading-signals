@@ -33,6 +33,10 @@ export class AO extends BigIndicatorSeries<HighLow> {
     this.long = new SmoothingIndicator(longInterval);
   }
 
+  override getRequiredInputs() {
+    return this.long.getRequiredInputs();
+  }
+
   update({low, high}: HighLow, replace: boolean) {
     const candleSum = new Big(low).add(high);
     const medianPrice = candleSum.div(2);
@@ -60,6 +64,10 @@ export class FasterAO extends NumberIndicatorSeries<HighLow<number>> {
     super();
     this.short = new SmoothingIndicator(shortInterval);
     this.long = new SmoothingIndicator(longInterval);
+  }
+
+  override getRequiredInputs() {
+    return this.long.getRequiredInputs();
   }
 
   update({low, high}: HighLow<number>, replace: boolean) {

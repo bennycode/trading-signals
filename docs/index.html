@@ -72,7 +72,8 @@
           </h2>
           <p>
             The &quot;trading-signals&quot; library provides a TypeScript implementation for common technical indicators
-            with arbitrary-precision decimal arithmetic.
+            with arbitrary-precision decimal arithmetic. It is well-suited for algorithmic trading, allowing developers
+            to perform accurate and reliable signal computations for automated trading strategies.
           </p>
           <p>
             The main focus of this library is on the accuracy of calculations, but using the provided
@@ -147,12 +148,9 @@
           </h2>
           <ul>
             <li>Trend indicators: Measure the direction of a trend (uptrend, downtrend or sideways trend)</li>
-            <li>Volume indicators: Measure the strength of a trend (based on volume)</li>
-            <li>
-              Volatility indicators: Measure how much disagreement there is in the market based on price (statistical
-              measure of its dispersion)
-            </li>
-            <li>Momentum indicators: Measure the strength of a trend (based on price / speed of price movement)</li>
+            <li>Volume indicators: Measure the strength of a trend based on volume</li>
+            <li>Volatility indicators: Measure the degree of variation in prices over time, regardless of direction</li>
+            <li>Momentum indicators: Measure the speed and strength of price movements in a particular direction</li>
           </ul>
           <h2 id="supported-technical-indicators" class="tsd-anchor-link">
             Supported Technical Indicators<a
@@ -183,10 +181,12 @@
             <li><a href="media/MACD.ts">Moving Average Convergence Divergence</a> (MACD)</li>
             <li><a href="media/OBV.ts">On-Balance Volume</a> (OBV)</li>
             <li><a href="media/PSAR.ts">Parabolic SAR</a> (PSAR)</li>
+            <li><a href="media/REI.ts">Range Expansion Index</a> (REI)</li>
             <li><a href="media/ROC.ts">Rate-of-Change</a> (ROC)</li>
             <li><a href="media/RMA.ts">Relative Moving Average</a> (RMA)</li>
             <li><a href="media/RSI.ts">Relative Strength Index</a> (RSI)</li>
             <li><a href="media/SMA.ts">Simple Moving Average</a> (SMA)</li>
+            <li><a href="media/SMA15.ts">Spencer's 15-Point Moving Average</a> (SMA15)</li>
             <li><a href="media/StochasticOscillator.ts">Stochastic Oscillator</a> (STOCH)</li>
             <li><a href="media/StochasticRSI.ts">Stochastic RSI</a> (STOCHRSI)</li>
             <li><a href="media/TDS.ts">Tom Demark's Sequential Indicator</a> (TDS)</li>
@@ -194,6 +194,7 @@
             <li><a href="media/VWAP.ts">Volume-Weighted Average Price</a> (VWAP)</li>
             <li><a href="media/WMA.ts">Weighted Moving Average</a> (WMA)</li>
             <li><a href="media/WSMA.ts">Wilder's Smoothed Moving Average</a> (WSMA / WWS / SMMA / MEMA)</li>
+            <li><a href="media/ZigZag.ts">Zig Zag Indicator</a> (ZigZag)</li>
           </ol>
           <p>Utility Methods:</p>
           <ol>
@@ -294,15 +295,18 @@
                 >Crypto Trading Hub Indicators (TypeScript)</a
               >
             </li>
-            <li><a href="https://github.com/cinar/indicatorts">Indicator TS</a></li>
+            <li><a href="https://github.com/cinar/indicatorts">Indicator TS (TypeScript)</a></li>
             <li>
               <a href="https://docs.jesse.trade/docs/indicators/reference.html"
                 >Jesse Trading Bot Indicators (Python)</a
               >
             </li>
-            <li><a href="https://github.com/QuantConnect/Lean/tree/master/Indicators">LEAN Indicators</a></li>
+            <li><a href="https://github.com/QuantConnect/Lean/tree/master/Indicators">LEAN Indicators (C#)</a></li>
             <li><a href="https://github.com/mgfx/libindicators">libindicators (C#)</a></li>
             <li><a href="https://github.com/twopirllc/pandas-ta">Pandas TA (Python)</a></li>
+            <li><a href="https://github.com/DaveSkender/Stock.Indicators">Stock Indicators for .NET (C#)</a></li>
+            <li><a href="https://github.com/StockSharp/StockSharp">StockSharp (C#)</a></li>
+            <li><a href="https://github.com/munrocket/ta-math">ta-math</a></li>
             <li><a href="https://github.com/ta4j/ta4j">ta4j (Java)</a></li>
             <li><a href="https://github.com/greyblake/ta-rs">Technical Analysis for Rust (Rust)</a></li>
             <li>

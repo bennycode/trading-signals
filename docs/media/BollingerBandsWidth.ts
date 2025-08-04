@@ -3,6 +3,9 @@ import type {BollingerBands, FasterBollingerBands} from '../BBANDS/BollingerBand
 import type {BigSource} from 'big.js';
 
 /**
+ * Bollinger Bands Width (BBW)
+ * Type: Volatility
+ *
  * The Bollinger Bands Width (BBW) indicator, developed by John A. Bollinger, merges the information of Bollinger Bands
  * into one definite number. It defines the narrowness of the underlying Bollinger Bands by representing the difference
  * between the Upper Band and the Lower Band.
@@ -12,6 +15,10 @@ import type {BigSource} from 'big.js';
 export class BollingerBandsWidth extends BigIndicatorSeries {
   constructor(public readonly bollingerBands: BollingerBands) {
     super();
+  }
+
+  override getRequiredInputs() {
+    return this.bollingerBands.getRequiredInputs();
   }
 
   update(price: BigSource, replace: boolean) {
@@ -27,6 +34,10 @@ export class BollingerBandsWidth extends BigIndicatorSeries {
 export class FasterBollingerBandsWidth extends NumberIndicatorSeries {
   constructor(public readonly bollingerBands: FasterBollingerBands) {
     super();
+  }
+
+  override getRequiredInputs() {
+    return this.bollingerBands.getRequiredInputs();
   }
 
   update(price: number, replace: boolean) {

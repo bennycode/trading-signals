@@ -16,6 +16,7 @@ import {pushUpdate} from '../util/pushUpdate.js';
  *
  * The RSI is mostly useful in markets that alternate between bullish and bearish movements.
  *
+ * Interpretation:
  * A RSI value of 30 or below indicates an oversold condition (not a good time to sell because there is an oversupply).
  * A RSI value of 70 or above indicates an overbought condition (sell high opportunity because market may correct the
  * price in the near future).
@@ -36,6 +37,10 @@ export class RSI extends BigIndicatorSeries {
     super();
     this.avgGain = new SmoothingIndicator(this.interval);
     this.avgLoss = new SmoothingIndicator(this.interval);
+  }
+
+  override getRequiredInputs() {
+    return this.avgGain.getRequiredInputs();
   }
 
   update(price: BigSource, replace: boolean) {
@@ -84,6 +89,10 @@ export class FasterRSI extends NumberIndicatorSeries {
     super();
     this.avgGain = new SmoothingIndicator(this.interval);
     this.avgLoss = new SmoothingIndicator(this.interval);
+  }
+
+  override getRequiredInputs() {
+    return this.avgGain.getRequiredInputs();
   }
 
   update(price: number, replace: boolean) {
