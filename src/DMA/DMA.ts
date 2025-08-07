@@ -1,6 +1,6 @@
 import {TechnicalIndicator} from '../Indicator.js';
 import type {MovingAverage} from '../MA/MovingAverage.js';
-import type {MovingAverageTypes} from '../MA/MovingAverageTypes.js';
+import type {MovingAverageMovingAverageTypes} from '../MA/MovingAverageMovingAverageTypes.js';
 import {SMA} from '../SMA/SMA.js';
 
 export interface DMAResult {
@@ -24,7 +24,7 @@ export class DMA extends TechnicalIndicator<DMAResult, number> {
   public readonly short: MovingAverage;
   public readonly long: MovingAverage;
 
-  constructor(short: number, long: number, Indicator: MovingAverageTypes = SMA) {
+  constructor(short: number, long: number, Indicator: MovingAverageMovingAverageTypes = SMA) {
     super();
     this.short = new Indicator(short);
     this.long = new Indicator(long);

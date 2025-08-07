@@ -1,6 +1,6 @@
 import {TechnicalIndicator} from '../Indicator.js';
 import type {MovingAverage} from '../MA/MovingAverage.js';
-import type {MovingAverageTypes} from '../MA/MovingAverageTypes.js';
+import type {MovingAverageMovingAverageTypes} from '../MA/MovingAverageMovingAverageTypes.js';
 import {SMA} from '../SMA/SMA.js';
 import type {BandsResult} from '../util/BandsResult.js';
 import type {HighLowClose} from '../util/index.js';
@@ -33,7 +33,7 @@ export class AccelerationBands extends TechnicalIndicator<BandsResult, HighLowCl
   constructor(
     public readonly interval: number,
     public readonly width: number,
-    SmoothingIndicator: MovingAverageTypes = SMA
+    SmoothingIndicator: MovingAverageMovingAverageTypes = SMA
   ) {
     super();
     this.lowerBand = new SmoothingIndicator(interval);

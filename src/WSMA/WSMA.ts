@@ -1,6 +1,6 @@
 import {MovingAverage} from '../MA/MovingAverage.js';
-import {FasterSMA, SMA} from '../SMA/SMA.js';
-import {NumberIndicatorSeries} from '../Indicator.js';
+import {SMA} from '../SMA/SMA.js';
+import {IndicatorSeries} from '../Indicator.js';
 
 /**
  * Wilder's Smoothed Moving Average (WSMA)
@@ -17,7 +17,7 @@ import {NumberIndicatorSeries} from '../Indicator.js';
  *
  * @see https://tlc.thinkorswim.com/center/reference/Tech-Indicators/studies-library/V-Z/WildersSmoothing
  */
-export class WSMA extends NumberIndicatorSeries {
+export class WSMA extends IndicatorSeries {
   private readonly indicator: SMA;
   private readonly smoothingFactor: number;
 

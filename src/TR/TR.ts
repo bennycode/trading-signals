@@ -1,4 +1,4 @@
-import {IndicatorSeries, NumberIndicatorSeries} from '../Indicator.js';
+import {IndicatorSeries} from '../Indicator.js';
 import {getMaximum} from '../util/getMaximum.js';
 import type {HighLowClose} from '../util/HighLowClose.js';
 
@@ -13,7 +13,7 @@ import type {HighLowClose} from '../util/HighLowClose.js';
  *
  * @see https://www.linnsoft.com/techind/true-range-tr
  */
-export class TR extends NumberIndicatorSeries<HighLowClose<number>> {
+export class TR extends IndicatorSeries<HighLowClose<number>> {
   private previousCandle?: HighLowClose<number>;
   private twoPreviousCandle?: HighLowClose<number>;
 

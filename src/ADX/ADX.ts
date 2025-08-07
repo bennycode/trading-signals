@@ -1,9 +1,9 @@
-import {DX, FasterDX} from '../DX/DX.js';
-import {IndicatorSeries, NumberIndicatorSeries} from '../Indicator.js';
+import {DX} from '../DX/DX.js';
+import {IndicatorSeries} from '../Indicator.js';
 import type {MovingAverage} from '../MA/MovingAverage.js';
-import type {Types, MovingAverageTypes} from '../MA/MovingAverageTypes.js';
+import type {MovingAverageMovingAverageTypes} from '../MA/MovingAverageMovingAverageTypes.js';
 import type {HighLowClose} from '../util/HighLowClose.js';
-import {FasterWSMA, WSMA} from '../WSMA/WSMA.js';
+import {WSMA} from '../WSMA/WSMA.js';
 
 /**
  * Average Directional Index (ADX)
@@ -36,13 +36,13 @@ import {FasterWSMA, WSMA} from '../WSMA/WSMA.js';
  * @see https://learn.tradimo.com/technical-analysis-how-to-work-with-indicators/adx-determing-the-strength-of-price-movement
  * @see https://medium.com/codex/algorithmic-trading-with-average-directional-index-in-python-2b5a20ecf06a
  */
-export class ADX extends NumberIndicatorSeries<HighLowClose<number>> {
+export class ADX extends IndicatorSeries<HighLowClose<number>> {
   private readonly dx: DX;
   private readonly smoothed: MovingAverage;
 
   constructor(
     public readonly interval: number,
-    SmoothingIndicator: Types = WSMA
+    SmoothingIndicator: MovingAverageTypes = WSMA
   ) {
     super();
     this.smoothed = new SmoothingIndicator(this.interval);

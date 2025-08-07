@@ -1,4 +1,4 @@
-import {IndicatorSeries, NumberIndicatorSeries} from '../../Indicator.js';
+import {IndicatorSeries} from '../../Indicator.js';
 import type {HighLowClose} from '../../util/HighLowClose.js';
 
 /**
@@ -20,7 +20,7 @@ import type {HighLowClose} from '../../util/HighLowClose.js';
  * @see https://github.com/EarnForex/Range-Expansion-Index
  * @see https://www.sierrachart.com/index.php?page=doc/StudiesReference.php&ID=448
  */
-export class REI extends NumberIndicatorSeries<HighLowClose<number>> {
+export class REI extends IndicatorSeries<HighLowClose<number>> {
   private readonly highs: number[] = [];
   private readonly lows: number[] = [];
   private readonly closes: number[] = [];

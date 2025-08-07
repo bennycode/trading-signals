@@ -1,4 +1,4 @@
-import {IndicatorSeries, NumberIndicatorSeries} from '../Indicator.js';
+import {IndicatorSeries} from '../Indicator.js';
 import type {OpenHighLowCloseVolume} from '../util/HighLowClose.js';
 import {pushUpdate} from '../util/pushUpdate.js';
 
@@ -11,7 +11,7 @@ import {pushUpdate} from '../util/pushUpdate.js';
  *
  * @see https://www.investopedia.com/terms/o/onbalancevolume.asp
  */
-export class OBV extends NumberIndicatorSeries<OpenHighLowCloseVolume<number>> {
+export class OBV extends IndicatorSeries<OpenHighLowCloseVolume<number>> {
   public readonly candles: OpenHighLowCloseVolume<number>[] = [];
 
   override getRequiredInputs() {

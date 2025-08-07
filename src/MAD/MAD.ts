@@ -1,5 +1,5 @@
-import {IndicatorSeries, NumberIndicatorSeries} from '../Indicator.js';
-import {getAverage, getFasterAverage, pushUpdate} from '../util/index.js';
+import {IndicatorSeries} from '../Indicator.js';
+import {getAverage, getpushUpdate} from '../util/index.js';
 
 /**
  * Mean Absolute Deviation (MAD)
@@ -10,7 +10,7 @@ import {getAverage, getFasterAverage, pushUpdate} from '../util/index.js';
  *
  * @see https://en.wikipedia.org/wiki/Average_absolute_deviation
  */
-export class MAD extends NumberIndicatorSeries {
+export class MAD extends IndicatorSeries {
   public readonly prices: number[] = [];
 
   constructor(public readonly interval: number) {
@@ -25,7 +25,7 @@ export class MAD extends NumberIndicatorSeries {
     pushUpdate(this.prices, replace, price, this.interval);
 
     if (this.prices.length === this.interval) {
-      const mean = getFasterAverage(this.prices);
+      const mean = get(this.prices);
       let sum = 0;
       for (let i = 0; i < this.interval; i++) {
         const deviation = Math.abs(this.prices[i] - mean);
@@ -38,7 +38,7 @@ export class MAD extends NumberIndicatorSeries {
   }
 
   static getResultFromBatch(prices: number[], average?: number): number {
-    const mean = average || getFasterAverage(prices);
+    const mean = average || get(prices);
     let sum = 0;
     for (let i = 0; i < prices.length; i++) {
       const deviation = Math.abs(prices[i] - mean);

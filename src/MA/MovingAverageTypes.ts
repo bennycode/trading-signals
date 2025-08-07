@@ -4,4 +4,4 @@ import type {SMA} from '../SMA/SMA.js';
 import type {WMA} from '../WMA/WMA.js';
 import type {RMA} from '../RMA/RMA.js';
 
-export type MovingAverageTypes = typeof EMA | typeof RMA | typeof SMA | typeof WMA | typeof WSMA;
+export type MovingAverageMovingAverageTypes = typeof EMA | typeof RMA | typeof SMA | typeof WMA | typeof WSMA;

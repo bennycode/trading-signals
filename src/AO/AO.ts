@@ -1,7 +1,7 @@
-import {IndicatorSeries, NumberIndicatorSeries} from '../Indicator.js';
-import {FasterSMA, SMA} from '../SMA/SMA.js';
+import {IndicatorSeries} from '../Indicator.js';
+import {SMA} from '../SMA/SMA.js';
 import type {HighLow} from '../util/index.js';
-import type {Types, MovingAverageTypes} from '../MA/MovingAverageTypes.js';
+import type {MovingAverageMovingAverageTypes} from '../MA/MovingAverageMovingAverageTypes.js';
 import type {MovingAverage} from '../MA/MovingAverage.js';
 
 /**
@@ -25,7 +25,7 @@ export class AO extends IndicatorSeries<HighLow<number>> {
   constructor(
     public readonly shortInterval: number,
     public readonly longInterval: number,
-    SmoothingIndicator: MovingAverageTypes = SMA
+    SmoothingIndicator: MovingAverageMovingAverageTypes = SMA
   ) {
     super();
     this.short = new SmoothingIndicator(shortInterval);

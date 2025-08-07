@@ -13,41 +13,41 @@ import {
   DMA,
   DX,
   EMA,
-  FasterAC,
-  FasterAccelerationBands,
-  FasterADX,
-  FasterAO,
-  FasterATR,
-  FasterBollingerBands,
-  FasterBollingerBandsWidth,
-  FasterCCI,
-  FasterCG,
-  FasterDEMA,
-  FasterDMA,
-  FasterDX,
-  FasterEMA,
-  FasterIQR,
-  FasterLinearRegression,
-  FasterMACD,
-  FasterMAD,
-  FasterZigZag,
-  FasterMOM,
-  FasterOBV,
-  FasterPeriod,
-  FasterPSAR,
-  FasterRMA,
-  FasterROC,
-  FasterRSI,
-  FasterSMA,
-  FasterStochasticOscillator,
-  FasterStochasticRSI,
-  FasterTDS,
-  FasterTR,
-  FasterWMA,
-  FasterWSMA,
+  ,
+  ,
+  ,
+  ,
+  ,
+  ,
+  ,
+  ,
+  ,
+  ,
+  ,
+  ,
+  ,
+  ,
+  ,
+  ,
+  ,
+  ,
+  ,
+  ,
+  ,
+  ,
+  ,
+  ,
+  ,
+  ,
+  ,
+  ,
+  ,
+  ,
+  ,
+  ,
   getAverage,
-  getFasterAverage,
-  getFasterStandardDeviation,
+  get,
+  get,
   getStandardDeviation,
   IQR,
   LinearRegression,
@@ -58,7 +58,7 @@ import {
   Period,
   PSAR,
   REI,
-  FasterREI,
+  ,
   RMA,
   ROC,
   RSI,
@@ -93,8 +93,8 @@ new Benchmark.Suite('Technical Indicators')
       accBands.add(candle);
     }
   })
-  .add('FasterAccelerationBands', () => {
-    const fasterAccBands = new FasterAccelerationBands(interval, 4);
+  .add('', () => {
+    const fasterAccBands = new (interval, 4);
     for (const candle of floatCandles) {
       fasterAccBands.add(candle);
     }
@@ -105,8 +105,8 @@ new Benchmark.Suite('Technical Indicators')
       ac.add(candle);
     }
   })
-  .add('FasterAC', () => {
-    const fasterAC = new FasterAC(shortInterval, longInterval, interval);
+  .add('', () => {
+    const fasterAC = new (shortInterval, longInterval, interval);
     for (const candle of floatCandles) {
       fasterAC.add(candle);
     }
@@ -117,8 +117,8 @@ new Benchmark.Suite('Technical Indicators')
       adx.add(candle);
     }
   })
-  .add('FasterADX', () => {
-    const fasterADX = new FasterADX(interval);
+  .add('', () => {
+    const fasterADX = new (interval);
     for (const candle of floatCandles) {
       fasterADX.add(candle);
     }
@@ -129,8 +129,8 @@ new Benchmark.Suite('Technical Indicators')
       ao.add(candle);
     }
   })
-  .add('FasterAO', () => {
-    const fasterAO = new FasterAO(shortInterval, interval);
+  .add('', () => {
+    const fasterAO = new (shortInterval, interval);
     for (const candle of floatCandles) {
       fasterAO.add(candle);
     }
@@ -141,8 +141,8 @@ new Benchmark.Suite('Technical Indicators')
       atr.add(candle);
     }
   })
-  .add('FasterATR', () => {
-    const fasterATR = new FasterATR(interval);
+  .add('', () => {
+    const fasterATR = new (interval);
     for (const candle of floatCandles) {
       fasterATR.add(candle);
     }
@@ -153,8 +153,8 @@ new Benchmark.Suite('Technical Indicators')
       bb.add(price);
     }
   })
-  .add('FasterBollingerBands', () => {
-    const fasterBB = new FasterBollingerBands(interval, 2);
+  .add('', () => {
+    const fasterBB = new (interval, 2);
     for (const price of prices) {
       fasterBB.add(price);
     }
@@ -165,8 +165,8 @@ new Benchmark.Suite('Technical Indicators')
       bbw.add(price);
     }
   })
-  .add('FasterBollingerBandsWidth', () => {
-    const fasterBBW = new FasterBollingerBandsWidth(new FasterBollingerBands(interval, 2));
+  .add('', () => {
+    const fasterBBW = new (new (interval, 2));
     for (const price of prices) {
       fasterBBW.add(price);
     }
@@ -177,8 +177,8 @@ new Benchmark.Suite('Technical Indicators')
       cci.add(candle);
     }
   })
-  .add('FasterCCI', () => {
-    const fasterCCI = new FasterCCI(interval);
+  .add('', () => {
+    const fasterCCI = new (interval);
     for (const candle of floatCandles) {
       fasterCCI.add(candle);
     }
@@ -189,8 +189,8 @@ new Benchmark.Suite('Technical Indicators')
       cg.add(price);
     }
   })
-  .add('FasterCG', () => {
-    const fasterCG = new FasterCG(shortInterval, interval);
+  .add('', () => {
+    const fasterCG = new (shortInterval, interval);
     for (const price of prices) {
       fasterCG.add(price);
     }
@@ -201,8 +201,8 @@ new Benchmark.Suite('Technical Indicators')
       dema.add(price);
     }
   })
-  .add('FasterDEMA', () => {
-    const fasterDEMA = new FasterDEMA(interval);
+  .add('', () => {
+    const fasterDEMA = new (interval);
     for (const price of prices) {
       fasterDEMA.add(price);
     }
@@ -213,8 +213,8 @@ new Benchmark.Suite('Technical Indicators')
       dma.add(price);
     }
   })
-  .add('FasterDMA', () => {
-    const fasterDMA = new FasterDMA(3, 6);
+  .add('', () => {
+    const fasterDMA = new (3, 6);
     for (const price of prices) {
       fasterDMA.add(price);
     }
@@ -225,8 +225,8 @@ new Benchmark.Suite('Technical Indicators')
       dx.add(candle);
     }
   })
-  .add('FasterDX', () => {
-    const fasterDX = new FasterDX(interval);
+  .add('', () => {
+    const fasterDX = new (interval);
     for (const candle of floatCandles) {
       fasterDX.add(candle);
     }
@@ -237,8 +237,8 @@ new Benchmark.Suite('Technical Indicators')
       ema.add(price);
     }
   })
-  .add('FasterEMA', () => {
-    const fasterEMA = new FasterEMA(interval);
+  .add('', () => {
+    const fasterEMA = new (interval);
     for (const price of prices) {
       fasterEMA.add(price);
     }
@@ -249,8 +249,8 @@ new Benchmark.Suite('Technical Indicators')
       iqr.add(price);
     }
   })
-  .add('FasterIQR', () => {
-    const iqr = new FasterIQR(interval);
+  .add('', () => {
+    const iqr = new (interval);
     for (const price of prices) {
       iqr.add(price);
     }
@@ -261,8 +261,8 @@ new Benchmark.Suite('Technical Indicators')
       linreg.add(price);
     }
   })
-  .add('FasterLinearRegression', () => {
-    const fasterLINREG = new FasterLinearRegression(interval);
+  .add('', () => {
+    const fasterLINREG = new (interval);
     for (const price of prices) {
       fasterLINREG.add(price);
     }
@@ -273,8 +273,8 @@ new Benchmark.Suite('Technical Indicators')
       indicator.add(price);
     }
   })
-  .add('FasterRMA', () => {
-    const indicator = new FasterRMA(interval);
+  .add('', () => {
+    const indicator = new (interval);
     for (const price of prices) {
       indicator.add(price);
     }
@@ -290,8 +290,8 @@ new Benchmark.Suite('Technical Indicators')
       mad.add(price);
     }
   })
-  .add('FasterMACD', () => {
-    const fasterMACD = new FasterMACD(new FasterEMA(2), new FasterEMA(5), new FasterEMA(9));
+  .add('', () => {
+    const fasterMACD = new (new (2), new (5), new (9));
     for (const price of prices) {
       fasterMACD.add(price);
     }
@@ -302,8 +302,8 @@ new Benchmark.Suite('Technical Indicators')
       mad.add(price);
     }
   })
-  .add('FasterMAD', () => {
-    const fasterMad = new FasterMAD(interval);
+  .add('', () => {
+    const fasterMad = new (interval);
     for (const price of prices) {
       fasterMad.add(price);
     }
@@ -314,8 +314,8 @@ new Benchmark.Suite('Technical Indicators')
       mom.add(price);
     }
   })
-  .add('FasterMOM', () => {
-    const fasterMOM = new FasterMOM(interval);
+  .add('', () => {
+    const fasterMOM = new (interval);
     for (const price of prices) {
       fasterMOM.add(price);
     }
@@ -326,8 +326,8 @@ new Benchmark.Suite('Technical Indicators')
       obv.add(candle);
     }
   })
-  .add('FasterOBV', () => {
-    const fasterOBV = new FasterOBV();
+  .add('', () => {
+    const fasterOBV = new ();
     for (const candle of floatCandles) {
       fasterOBV.add(candle);
     }
@@ -338,8 +338,8 @@ new Benchmark.Suite('Technical Indicators')
       period.add(price);
     }
   })
-  .add('FasterPeriod', () => {
-    const fasterPeriod = new FasterPeriod(interval);
+  .add('', () => {
+    const fasterPeriod = new (interval);
     for (const price of prices) {
       fasterPeriod.add(price);
     }
@@ -353,8 +353,8 @@ new Benchmark.Suite('Technical Indicators')
       psar.add(candle);
     }
   })
-  .add('FasterPSAR', () => {
-    const fasterPSAR = new FasterPSAR({
+  .add('', () => {
+    const fasterPSAR = new ({
       accelerationMax: 0.2,
       accelerationStep: 0.02,
     });
@@ -368,8 +368,8 @@ new Benchmark.Suite('Technical Indicators')
       roc.add(price);
     }
   })
-  .add('FasterROC', () => {
-    const fasterROC = new FasterROC(interval);
+  .add('', () => {
+    const fasterROC = new (interval);
     for (const price of prices) {
       fasterROC.add(price);
     }
@@ -380,8 +380,8 @@ new Benchmark.Suite('Technical Indicators')
       rei.add(candle);
     }
   })
-  .add('FasterREI', () => {
-    const fasterREI = new FasterREI(interval);
+  .add('', () => {
+    const fasterREI = new (interval);
     for (const candle of floatCandles) {
       fasterREI.add(candle);
     }
@@ -392,8 +392,8 @@ new Benchmark.Suite('Technical Indicators')
       rsi.add(price);
     }
   })
-  .add('FasterRSI', () => {
-    const fasterRSI = new FasterRSI(interval);
+  .add('', () => {
+    const fasterRSI = new (interval);
     for (const price of prices) {
       fasterRSI.add(price);
     }
@@ -404,8 +404,8 @@ new Benchmark.Suite('Technical Indicators')
       sma.add(price);
     }
   })
-  .add('FasterSMA', () => {
-    const fasterSMA = new FasterSMA(interval);
+  .add('', () => {
+    const fasterSMA = new (interval);
     for (const price of prices) {
       fasterSMA.add(price);
     }
@@ -416,8 +416,8 @@ new Benchmark.Suite('Technical Indicators')
       stoch.add(candle);
     }
   })
-  .add('FasterStochasticOscillator', () => {
-    const fasterStoch = new FasterStochasticOscillator(shortInterval, interval, interval);
+  .add('', () => {
+    const fasterStoch = new (shortInterval, interval, interval);
     for (const candle of floatCandles) {
       fasterStoch.add(candle);
     }
@@ -428,8 +428,8 @@ new Benchmark.Suite('Technical Indicators')
       stochRSI.add(price);
     }
   })
-  .add('FasterStochasticRSI', () => {
-    const fasterStochRSI = new FasterStochasticRSI(interval);
+  .add('', () => {
+    const fasterStochRSI = new (interval);
     for (const price of prices) {
       fasterStochRSI.add(price);
     }
@@ -440,8 +440,8 @@ new Benchmark.Suite('Technical Indicators')
       tds.add(price);
     }
   })
-  .add('FasterTDS', () => {
-    const fasterTDS = new FasterTDS();
+  .add('', () => {
+    const fasterTDS = new ();
     for (const price of prices) {
       fasterTDS.add(price);
     }
@@ -452,8 +452,8 @@ new Benchmark.Suite('Technical Indicators')
       tr.add(candle);
     }
   })
-  .add('FasterTR', () => {
-    const fasterTR = new FasterTR();
+  .add('', () => {
+    const fasterTR = new ();
     for (const candle of floatCandles) {
       fasterTR.add(candle);
     }
@@ -470,8 +470,8 @@ new Benchmark.Suite('Technical Indicators')
       wsma.add(price);
     }
   })
-  .add('FasterWSMA', () => {
-    const fasterWSMA = new FasterWSMA(interval);
+  .add('', () => {
+    const fasterWSMA = new (interval);
     for (const price of prices) {
       fasterWSMA.add(price);
     }
@@ -482,8 +482,8 @@ new Benchmark.Suite('Technical Indicators')
       wma.add(price);
     }
   })
-  .add('FasterWMA', () => {
-    const fasterWMA = new FasterWMA(interval);
+  .add('', () => {
+    const fasterWMA = new (interval);
     for (const price of prices) {
       fasterWMA.add(price);
     }
@@ -491,14 +491,14 @@ new Benchmark.Suite('Technical Indicators')
   .add('getAverage', () => {
     return getAverage(prices);
   })
-  .add('getFasterAverage', () => {
-    return getFasterAverage(prices);
+  .add('get', () => {
+    return get(prices);
   })
   .add('getStandardDeviation', () => {
     return getStandardDeviation(prices);
   })
-  .add('getFasterStandardDeviation', () => {
-    return getFasterStandardDeviation(prices);
+  .add('get', () => {
+    return get(prices);
   })
   .add('ZigZag', () => {
     const zigzag = new ZigZag({
@@ -508,8 +508,8 @@ new Benchmark.Suite('Technical Indicators')
       zigzag.add(candle);
     }
   })
-  .add('FasterZigZag', () => {
-    const fasterZigzag = new FasterZigZag({
+  .add('', () => {
+    const fasterZigzag = new ({
       deviation: 15,
     });
     for (const candle of floatCandles) {

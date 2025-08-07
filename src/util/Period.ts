@@ -1,5 +1,3 @@
-import type {BigSource} from 'big.js';
-import Big from 'big.js';
 import {TechnicalIndicator} from '../Indicator.js';
 import {getMaximum} from './getMaximum.js';
 import {getMinimum} from './getMinimum.js';
@@ -10,7 +8,7 @@ export interface PeriodResult {
   lowest: Big;
 }
 
-export interface FasterPeriodResult {
+export interface  {
   highest: number;
   lowest: number;
 }
@@ -55,7 +53,7 @@ export class Period extends TechnicalIndicator<PeriodResult, BigSource> {
   }
 }
 
-export class FasterPeriod extends TechnicalIndicator<FasterPeriodResult, number> {
+export class  extends TechnicalIndicator<number> {
   public values: number[];
   /** Highest return value during the current period. */
   private _highest?: number;

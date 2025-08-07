@@ -1,7 +1,7 @@
-import {AO, FasterAO} from '../AO/AO.js';
-import {IndicatorSeries, NumberIndicatorSeries} from '../Indicator.js';
-import {FasterMOM, MOM} from '../MOM/MOM.js';
-import {FasterSMA, SMA} from '../SMA/SMA.js';
+import {AO} from '../AO/AO.js';
+import {IndicatorSeries} from '../Indicator.js';
+import {MOM} from '../MOM/MOM.js';
+import {SMA} from '../SMA/SMA.js';
 import type {HighLow} from '../util/index.js';
 
 /**
@@ -16,7 +16,7 @@ import type {HighLow} from '../util/index.js';
  *
  * @see https://www.thinkmarkets.com/en/indicators/bill-williams-accelerator/
  */
-export class AC extends NumberIndicatorSeries<HighLow<number>> {
+export class AC extends IndicatorSeries<HighLow<number>> {
   public readonly ao: AO;
   public readonly momentum: MOM;
   public readonly signal: SMA;

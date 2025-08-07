@@ -1,5 +1,5 @@
-import {IndicatorSeries, NumberIndicatorSeries} from '../Indicator.js';
-import {FasterSMA, SMA} from '../SMA/SMA.js';
+import {IndicatorSeries} from '../Indicator.js';
+import {SMA} from '../SMA/SMA.js';
 import {pushUpdate} from '../util/pushUpdate.js';
 
 /**
@@ -19,7 +19,7 @@ import {pushUpdate} from '../util/pushUpdate.js';
  *   profitable trading
  * @see http://www.mesasoftware.com/papers/TheCGOscillator.pdf
  */
-export class CG extends NumberIndicatorSeries {
+export class CG extends IndicatorSeries {
   public signal: SMA;
 
   public readonly prices: number[] = [];

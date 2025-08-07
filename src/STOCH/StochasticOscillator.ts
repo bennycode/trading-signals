@@ -1,6 +1,6 @@
 import Big from 'big.js';
 import {TechnicalIndicator} from '../Indicator.js';
-import {FasterSMA, SMA} from '../SMA/SMA.js';
+import {SMA} from '../SMA/SMA.js';
 import {getMaximum} from '../util/getMaximum.js';
 import {getMinimum} from '../util/getMinimum.js';
 import type {HighLowClose} from '../util/HighLowClose.js';
@@ -13,7 +13,7 @@ export interface StochasticResult {
   stochK: Big;
 }
 
-export interface FasterStochasticResult {
+export interface  {
   /** Slow stochastic indicator (%D) */
   stochD: number;
   /** Fast stochastic indicator (%K) */
@@ -88,10 +88,10 @@ export class StochasticOscillator extends TechnicalIndicator<StochasticResult, H
   }
 }
 
-export class FasterStochasticOscillator extends TechnicalIndicator<FasterStochasticResult, HighLowClose<number>> {
+export class  extends TechnicalIndicator<HighLowClose<number>> {
   public readonly candles: HighLowClose<number>[] = [];
-  private readonly periodM: FasterSMA;
-  private readonly periodP: FasterSMA;
+  private readonly periodM: ;
+  private readonly periodP: ;
 
   /**
    * @param n The %k period
@@ -104,8 +104,8 @@ export class FasterStochasticOscillator extends TechnicalIndicator<FasterStochas
     public p: number
   ) {
     super();
-    this.periodM = new FasterSMA(m);
-    this.periodP = new FasterSMA(p);
+    this.periodM = new (m);
+    this.periodP = new (p);
   }
 
   override getRequiredInputs() {

@@ -1,10 +1,10 @@
-import {IndicatorSeries, NumberIndicatorSeries} from '../Indicator.js';
+import {IndicatorSeries} from '../Indicator.js';
 import type {MovingAverage} from '../MA/MovingAverage.js';
-import type {Types, MovingAverageTypes} from '../MA/MovingAverageTypes.js';
-import {FasterRSI, RSI} from '../RSI/RSI.js';
-import {FasterSMA, SMA} from '../SMA/SMA.js';
-import {FasterPeriod, Period} from '../util/Period.js';
-import {FasterWSMA, WSMA} from '../WSMA/WSMA.js';
+import type {MovingAverageMovingAverageTypes} from '../MA/MovingAverageMovingAverageTypes.js';
+import {RSI} from '../RSI/RSI.js';
+import {SMA} from '../SMA/SMA.js';
+import {Period} from '../util/Period.js';
+import {WSMA} from '../WSMA/WSMA.js';
 
 /**
  * Stochastic RSI (STOCHRSI)
@@ -25,13 +25,13 @@ import {FasterWSMA, WSMA} from '../WSMA/WSMA.js';
  * @see https://lakshmishree.com/blog/stochastic-rsi-indicator/
  * @see https://alchemymarkets.com/education/indicators/stochastic-rsi/
  */
-export class StochasticRSI extends NumberIndicatorSeries {
+export class StochasticRSI extends IndicatorSeries {
   private readonly period: Period;
   private readonly rsi: RSI;
 
   constructor(
     public readonly interval: number,
-    SmoothingRSI: Types = WSMA,
+    SmoothingRSI: MovingAverageTypes = WSMA,
     public readonly smoothing: {
       readonly k: MovingAverage;
       readonly d: MovingAverage;

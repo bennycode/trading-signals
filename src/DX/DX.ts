@@ -1,8 +1,8 @@
-import {IndicatorSeries, NumberIndicatorSeries} from '../Indicator.js';
+import {IndicatorSeries} from '../Indicator.js';
 import type {MovingAverage} from '../MA/MovingAverage.js';
-import type {Types, MovingAverageTypes} from '../MA/MovingAverageTypes.js';
-import {FasterWSMA, WSMA} from '../WSMA/WSMA.js';
-import {ATR, FasterATR} from '../ATR/ATR.js';
+import type {MovingAverageMovingAverageTypes} from '../MA/MovingAverageMovingAverageTypes.js';
+import {WSMA} from '../WSMA/WSMA.js';
+import {ATR} from '../ATR/ATR.js';
 import type {HighLowClose} from '../util/HighLowClose.js';
 
 /**
@@ -18,7 +18,7 @@ import type {HighLowClose} from '../util/HighLowClose.js';
  *
  * @see https://www.fidelity.com/learning-center/trading-investing/technical-analysis/technical-indicator-guide/dmi
  */
-export class DX extends NumberIndicatorSeries<HighLowClose<number>> {
+export class DX extends IndicatorSeries<HighLowClose<number>> {
   private readonly movesUp: MovingAverage;
   private readonly movesDown: MovingAverage;
   private previousCandle?: HighLowClose<number>;
@@ -29,7 +29,7 @@ export class DX extends NumberIndicatorSeries<HighLowClose<number>> {
 
   constructor(
     public readonly interval: number,
-    SmoothingIndicator: Types = WSMA
+    SmoothingIndicator: MovingAverageTypes = WSMA
   ) {
     super();
     this.atr = new ATR(this.interval, SmoothingIndicator);
