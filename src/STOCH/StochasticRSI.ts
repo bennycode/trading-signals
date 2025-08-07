@@ -1,8 +1,6 @@
-import type {BigSource} from 'big.js';
-import Big from 'big.js';
-import {BigIndicatorSeries, NumberIndicatorSeries} from '../Indicator.js';
-import type {FasterMovingAverage, MovingAverage} from '../MA/MovingAverage.js';
-import type {FasterMovingAverageTypes, MovingAverageTypes} from '../MA/MovingAverageTypes.js';
+import {IndicatorSeries, NumberIndicatorSeries} from '../Indicator.js';
+import type {MovingAverage} from '../MA/MovingAverage.js';
+import type {Types, MovingAverageTypes} from '../MA/MovingAverageTypes.js';
 import {FasterRSI, RSI} from '../RSI/RSI.js';
 import {FasterSMA, SMA} from '../SMA/SMA.js';
 import {FasterPeriod, Period} from '../util/Period.js';
@@ -27,13 +25,13 @@ import {FasterWSMA, WSMA} from '../WSMA/WSMA.js';
  * @see https://lakshmishree.com/blog/stochastic-rsi-indicator/
  * @see https://alchemymarkets.com/education/indicators/stochastic-rsi/
  */
-export class StochasticRSI extends BigIndicatorSeries {
+export class StochasticRSI extends NumberIndicatorSeries {
   private readonly period: Period;
   private readonly rsi: RSI;
 
   constructor(
     public readonly interval: number,
-    SmoothingRSI: MovingAverageTypes = WSMA,
+    SmoothingRSI: Types = WSMA,
     public readonly smoothing: {
       readonly k: MovingAverage;
       readonly d: MovingAverage;
@@ -45,56 +43,6 @@ export class StochasticRSI extends BigIndicatorSeries {
     super();
     this.period = new Period(interval);
     this.rsi = new RSI(interval, SmoothingRSI);
-  }
-
-  override getRequiredInputs() {
-    return this.rsi.getRequiredInputs() + this.period.getRequiredInputs();
-  }
-
-  update(price: BigSource, replace: boolean) {
-    const rsiResult = this.rsi.update(price, replace);
-    if (rsiResult) {
-      const periodResult = this.period.update(rsiResult, replace);
-      if (periodResult) {
-        const min = periodResult.lowest;
-        const max = periodResult.highest;
-        const denominator = max.minus(min);
-        // Prevent division by zero: https://github.com/bennycode/trading-signals/issues/378
-        if (denominator.eq(0)) {
-          return this.setResult(new Big(100), replace);
-        }
-        const numerator = rsiResult.minus(min);
-        const stochRSI = numerator.div(denominator);
-        const k = this.smoothing.k.update(stochRSI, replace);
-        if (k) {
-          this.smoothing.d.update(k, replace);
-        }
-        return this.setResult(stochRSI, replace);
-      }
-    }
-
-    return null;
-  }
-}
-
-export class FasterStochasticRSI extends NumberIndicatorSeries {
-  private readonly period: FasterPeriod;
-  private readonly rsi: FasterRSI;
-
-  constructor(
-    public readonly interval: number,
-    SmoothingRSI: FasterMovingAverageTypes = FasterWSMA,
-    public readonly smoothing: {
-      readonly k: FasterMovingAverage;
-      readonly d: FasterMovingAverage;
-    } = {
-      d: new FasterSMA(3),
-      k: new FasterSMA(3),
-    }
-  ) {
-    super();
-    this.period = new FasterPeriod(interval);
-    this.rsi = new FasterRSI(interval, SmoothingRSI);
   }
 
   override getRequiredInputs() {

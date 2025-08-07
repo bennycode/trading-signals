@@ -1,9 +1,8 @@
-import Big from 'big.js';
 import {TechnicalIndicator} from '../Indicator.js';
-import type {FasterMovingAverage, MovingAverage} from '../MA/MovingAverage.js';
-import type {FasterMovingAverageTypes, MovingAverageTypes} from '../MA/MovingAverageTypes.js';
-import {FasterSMA, SMA} from '../SMA/SMA.js';
-import type {BandsResult, FasterBandsResult} from '../util/BandsResult.js';
+import type {MovingAverage} from '../MA/MovingAverage.js';
+import type {MovingAverageTypes} from '../MA/MovingAverageTypes.js';
+import {SMA} from '../SMA/SMA.js';
+import type {BandsResult} from '../util/BandsResult.js';
 import type {HighLowClose} from '../util/index.js';
 
 /**
@@ -51,54 +50,14 @@ export class AccelerationBands extends TechnicalIndicator<BandsResult, HighLowCl
   }
 
   update({high, low, close}: HighLowClose, replace: boolean) {
-    const highPlusLow = new Big(high).plus(low);
-    const coefficient = highPlusLow.eq(0) ? new Big(0) : new Big(high).minus(low).div(highPlusLow).mul(this.width);
+    const highPlusLow = high + low;
+    const coefficient = highPlusLow === 0 ? 0 : (high - low) / highPlusLow * this.width;
 
     // (Low * (1 - width * (High - Low)/ (High + Low)))
-    this.lowerBand.update(new Big(low).mul(new Big(1).minus(coefficient)), replace);
+    this.lowerBand.update(low * (1 - coefficient), replace);
     // (Close)
     this.middleBand.update(close, replace);
     // (High * ( 1 + width * (High - Low) / (High + Low)))
-    this.upperBand.update(new Big(high).mul(new Big(1).plus(coefficient)), replace);
-
-    if (this.isStable) {
-      return (this.result = {
-        lower: this.lowerBand.getResultOrThrow(),
-        middle: this.middleBand.getResultOrThrow(),
-        upper: this.upperBand.getResultOrThrow(),
-      });
-    }
-
-    return null;
-  }
-}
-
-export class FasterAccelerationBands extends TechnicalIndicator<FasterBandsResult, HighLowClose<number>> {
-  private readonly lowerBand: FasterMovingAverage;
-  private readonly middleBand: FasterMovingAverage;
-  private readonly upperBand: FasterMovingAverage;
-
-  constructor(
-    public readonly interval: number,
-    public readonly width: number,
-    SmoothingIndicator: FasterMovingAverageTypes = FasterSMA
-  ) {
-    super();
-    this.lowerBand = new SmoothingIndicator(interval);
-    this.middleBand = new SmoothingIndicator(interval);
-    this.upperBand = new SmoothingIndicator(interval);
-  }
-
-  override getRequiredInputs() {
-    return this.middleBand.getRequiredInputs();
-  }
-
-  update({high, low, close}: HighLowClose<number>, replace: boolean) {
-    const highPlusLow = high + low;
-    const coefficient = highPlusLow === 0 ? 0 : ((high - low) / highPlusLow) * this.width;
-
-    this.lowerBand.update(low * (1 - coefficient), replace);
-    this.middleBand.update(close, replace);
     this.upperBand.update(high * (1 + coefficient), replace);
 
     if (this.isStable) {
@@ -110,9 +69,5 @@ export class FasterAccelerationBands extends TechnicalIndicator<FasterBandsResul
     }
 
     return null;
-  }
-
-  override get isStable(): boolean {
-    return this.middleBand.isStable;
   }
 }

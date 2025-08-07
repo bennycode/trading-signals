@@ -1,6 +1,6 @@
-import {BigIndicatorSeries, NumberIndicatorSeries} from '../Indicator.js';
-import type {FasterMovingAverage, MovingAverage} from '../MA/MovingAverage.js';
-import type {FasterMovingAverageTypes, MovingAverageTypes} from '../MA/MovingAverageTypes.js';
+import {IndicatorSeries, NumberIndicatorSeries} from '../Indicator.js';
+import type {MovingAverage} from '../MA/MovingAverage.js';
+import type {Types, MovingAverageTypes} from '../MA/MovingAverageTypes.js';
 import {FasterTR, TR} from '../TR/TR.js';
 import type {HighLowClose} from '../util/HighLowClose.js';
 import {FasterWSMA, WSMA} from '../WSMA/WSMA.js';
@@ -27,43 +27,16 @@ import {FasterWSMA, WSMA} from '../WSMA/WSMA.js';
  *
  * @see https://www.investopedia.com/terms/a/atr.asp
  */
-export class ATR extends BigIndicatorSeries<HighLowClose> {
+export class ATR extends NumberIndicatorSeries<HighLowClose<number>> {
   private readonly tr: TR;
   private readonly smoothing: MovingAverage;
 
   constructor(
     public readonly interval: number,
-    SmoothingIndicator: MovingAverageTypes = WSMA
+    SmoothingIndicator: Types = WSMA
   ) {
     super();
     this.tr = new TR();
-    this.smoothing = new SmoothingIndicator(interval);
-  }
-
-  override getRequiredInputs() {
-    return this.smoothing.getRequiredInputs();
-  }
-
-  update(candle: HighLowClose, replace: boolean) {
-    const trueRange = this.tr.update(candle, replace);
-    this.smoothing.update(trueRange, replace);
-    if (this.smoothing.isStable) {
-      return this.setResult(this.smoothing.getResultOrThrow(), replace);
-    }
-    return null;
-  }
-}
-
-export class FasterATR extends NumberIndicatorSeries<HighLowClose<number>> {
-  private readonly tr: FasterTR;
-  private readonly smoothing: FasterMovingAverage;
-
-  constructor(
-    public readonly interval: number,
-    SmoothingIndicator: FasterMovingAverageTypes = FasterWSMA
-  ) {
-    super();
-    this.tr = new FasterTR();
     this.smoothing = new SmoothingIndicator(interval);
   }
 

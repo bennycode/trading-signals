@@ -1,7 +1,7 @@
 import {DX, FasterDX} from '../DX/DX.js';
-import {BigIndicatorSeries, NumberIndicatorSeries} from '../Indicator.js';
-import type {FasterMovingAverage, MovingAverage} from '../MA/MovingAverage.js';
-import type {FasterMovingAverageTypes, MovingAverageTypes} from '../MA/MovingAverageTypes.js';
+import {IndicatorSeries, NumberIndicatorSeries} from '../Indicator.js';
+import type {MovingAverage} from '../MA/MovingAverage.js';
+import type {Types, MovingAverageTypes} from '../MA/MovingAverageTypes.js';
 import type {HighLowClose} from '../util/HighLowClose.js';
 import {FasterWSMA, WSMA} from '../WSMA/WSMA.js';
 
@@ -36,57 +36,17 @@ import {FasterWSMA, WSMA} from '../WSMA/WSMA.js';
  * @see https://learn.tradimo.com/technical-analysis-how-to-work-with-indicators/adx-determing-the-strength-of-price-movement
  * @see https://medium.com/codex/algorithmic-trading-with-average-directional-index-in-python-2b5a20ecf06a
  */
-export class ADX extends BigIndicatorSeries<HighLowClose> {
+export class ADX extends NumberIndicatorSeries<HighLowClose<number>> {
   private readonly dx: DX;
   private readonly smoothed: MovingAverage;
 
   constructor(
     public readonly interval: number,
-    SmoothingIndicator: MovingAverageTypes = WSMA
+    SmoothingIndicator: Types = WSMA
   ) {
     super();
     this.smoothed = new SmoothingIndicator(this.interval);
-    this.dx = new DX(this.interval, SmoothingIndicator);
-  }
-
-  get mdi() {
-    return this.dx.mdi;
-  }
-
-  get pdi() {
-    return this.dx.pdi;
-  }
-
-  override getRequiredInputs() {
-    return this.smoothed.getRequiredInputs();
-  }
-
-  update(candle: HighLowClose, replace: boolean) {
-    const result = this.dx.update(candle, replace);
-
-    if (result !== null) {
-      this.smoothed.update(result, replace);
-    }
-
-    if (this.smoothed.isStable) {
-      return this.setResult(this.smoothed.getResultOrThrow(), replace);
-    }
-
-    return null;
-  }
-}
-
-export class FasterADX extends NumberIndicatorSeries<HighLowClose<number>> {
-  private readonly dx: FasterDX;
-  private readonly smoothed: FasterMovingAverage;
-
-  constructor(
-    public readonly interval: number,
-    SmoothingIndicator: FasterMovingAverageTypes = FasterWSMA
-  ) {
-    super();
-    this.smoothed = new SmoothingIndicator(this.interval);
-    this.dx = new FasterDX(interval, SmoothingIndicator);
+    this.dx = new DX(interval, SmoothingIndicator);
   }
 
   get mdi(): number | void {

@@ -1,6 +1,4 @@
-import type {BigSource} from 'big.js';
-import Big from 'big.js';
-import {BigIndicatorSeries, NumberIndicatorSeries} from '../Indicator.js';
+import {IndicatorSeries, NumberIndicatorSeries} from '../Indicator.js';
 
 /**
  * Tom Demark's Sequential Indicator (TDS)
@@ -17,59 +15,7 @@ import {BigIndicatorSeries, NumberIndicatorSeries} from '../Indicator.js';
  * @see https://hackernoon.com/how-to-buy-sell-cryptocurrency-with-number-indicator-td-sequential-5af46f0ebce1
  * @see https://practicaltechnicalanalysis.blogspot.com/2013/01/tom-demark-sequential.html
  */
-export class TDS extends BigIndicatorSeries {
-  private readonly closes: Big[] = [];
-  private setupCount: number = 0;
-  private setupDirection: 'bullish' | 'bearish' | null = null;
-
-  override getRequiredInputs() {
-    return 9;
-  }
-
-  update(close: BigSource, replace: boolean): Big | null {
-    const closeBig = new Big(close);
-    if (replace) {
-      this.closes.pop();
-    }
-    this.closes.push(closeBig);
-    if (this.closes.length < 5) {
-      return null;
-    }
-    // Only keep the last 13 closes for memory efficiency
-    if (this.closes.length > 13) {
-      this.closes.shift();
-    }
-    const index = this.closes.length - 1;
-    const prev4 = this.closes[index - 4];
-    if (closeBig.gt(prev4)) {
-      if (this.setupDirection === 'bearish') {
-        this.setupCount = 1;
-        this.setupDirection = 'bullish';
-      } else {
-        this.setupCount++;
-        this.setupDirection = 'bullish';
-      }
-    } else if (closeBig.lt(prev4)) {
-      if (this.setupDirection === 'bullish') {
-        this.setupCount = 1;
-        this.setupDirection = 'bearish';
-      } else {
-        this.setupCount++;
-        this.setupDirection = 'bearish';
-      }
-    }
-    // Setup completed
-    if (this.setupCount >= this.getRequiredInputs()) {
-      const result = new Big(this.setupDirection === 'bullish' ? 1 : -1);
-      this.setupCount = 0;
-      this.setupDirection = null;
-      return this.setResult(result, replace);
-    }
-    return null;
-  }
-}
-
-export class FasterTDS extends NumberIndicatorSeries {
+export class TDS extends NumberIndicatorSeries {
   private readonly closes: number[] = [];
   private setupCount: number = 0;
   private setupDirection: 'bullish' | 'bearish' | null = null;
