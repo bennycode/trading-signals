@@ -1,12 +1,8 @@
-import Big from 'big.js';
-import type {BigSource} from 'big.js';
 
-export function getMinimum(values: BigSource[]): Big {
-  let min = new Big(Number.MAX_SAFE_INTEGER);
-  for (const value of values) {
-    if (min.gt(value)) {
-      min = new Big(value);
-    }
-  }
-  return min;
+export function getMinimum(values: number[]): number {
+  return Math.min(...values);
+}
+
+export function getFasterMinimum(values: number[]): number {
+  return Math.min(...values);
 }

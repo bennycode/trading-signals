@@ -1,11 +1,11 @@
 import type {BigSource} from 'big.js';
 import Big from 'big.js';
 import {TechnicalIndicator} from '../Indicator.js';
-import type {BandsResult, FasterBandsResult} from '../util/BandsResult.js';
+import type {BandsResult} from '../util/BandsResult.js';
 import {
   getAverage,
-  getFasterAverage,
-  getFasterStandardDeviation,
+  get,
+  get,
   getStandardDeviation,
   pushUpdate,
 } from '../util/index.js';
@@ -62,7 +62,7 @@ export class BollingerBands extends TechnicalIndicator<BandsResult, BigSource> {
   }
 }
 
-export class FasterBollingerBands extends TechnicalIndicator<FasterBandsResult, BigSource> {
+export class  extends TechnicalIndicator<BigSource> {
   public readonly prices: number[] = [];
 
   constructor(
@@ -80,8 +80,8 @@ export class FasterBollingerBands extends TechnicalIndicator<FasterBandsResult, 
     const dropOut = pushUpdate(this.prices, replace, price, this.interval);
 
     if (dropOut) {
-      const middle = getFasterAverage(this.prices);
-      const standardDeviation = getFasterStandardDeviation(this.prices, middle);
+      const middle = get(this.prices);
+      const standardDeviation = get(this.prices, middle);
 
       return (this.result = {
         lower: middle - standardDeviation * this.deviationMultiplier,

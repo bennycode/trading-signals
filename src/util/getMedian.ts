@@ -14,7 +14,7 @@ export function getMedian(values: Big[]): Big {
   return values[Math.floor(n / 2)];
 }
 
-export function getFasterMedian(values: number[]): number {
+export function get(values: number[]): number {
   const n = values.length;
 
   if (n === 0) {

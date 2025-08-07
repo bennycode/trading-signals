@@ -1,4 +1,4 @@
-import {getFasterMedian, getMedian} from './getMedian.js';
+import {getgetMedian} from './getMedian.js';
 
 /**
  * @see https://en.wikipedia.org/wiki/Quartile
@@ -28,21 +28,21 @@ export function getQuartile(values: Big[], quartile: 0.25 | 0.5 | 0.75): Big {
 /**
  * @see https://en.wikipedia.org/wiki/Quartile
  */
-export function getFasterQuartile(values: number[], q: 0.25 | 0.5 | 0.75): number {
+export function get(values: number[], q: 0.25 | 0.5 | 0.75): number {
   const sorted = [...values].sort((a, b) => a - b);
   const n = sorted.length;
 
   const medianIndex = Math.floor(n / 2);
 
   if (q === 0.25) {
-    return getFasterMedian(sorted.slice(0, medianIndex));
+    return get(sorted.slice(0, medianIndex));
   } else if (q === 0.75) {
     if (n % 2 === 0) {
       // Even number of items: the upper half is the last n/2 items
-      return getFasterMedian(sorted.slice(medianIndex));
+      return get(sorted.slice(medianIndex));
     }
     // Odd number of items: the upper half excludes the median
-    return getFasterMedian(sorted.slice(medianIndex + 1));
+    return get(sorted.slice(medianIndex + 1));
   }
   const pos = (sorted.length - 1) * q;
   const base = Math.floor(pos);

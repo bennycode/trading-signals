@@ -1,7 +1,7 @@
 import type {BigSource} from 'big.js';
 import Big from 'big.js';
-import type {DEMA, FasterDEMA} from '../DEMA/DEMA.js';
-import type {EMA, FasterEMA} from '../EMA/EMA.js';
+import type {DEMA} from '../DEMA/DEMA.js';
+import type {EMA} from '../EMA/EMA.js';
 import {TechnicalIndicator} from '../Indicator.js';
 import {pushUpdate} from '../util/pushUpdate.js';
 
@@ -18,7 +18,7 @@ export type MACDResult = {
   signal: Big;
 };
 
-export type FasterMACDResult = {
+export type  = {
   histogram: number;
   macd: number;
   signal: number;
@@ -84,13 +84,13 @@ export class MACD extends TechnicalIndicator<MACDResult, BigSource> {
   }
 }
 
-export class FasterMACD extends TechnicalIndicator<FasterMACDResult, number> {
+export class  extends TechnicalIndicator<number> {
   public readonly prices: number[] = [];
 
   constructor(
-    public readonly short: FasterEMA | FasterDEMA,
-    public readonly long: FasterEMA | FasterDEMA,
-    public readonly signal: FasterEMA | FasterDEMA
+    public readonly short:  | ,
+    public readonly long:  | ,
+    public readonly signal:  | 
   ) {
     super();
   }

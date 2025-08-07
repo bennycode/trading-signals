@@ -1,20 +1,18 @@
-import type {BigSource} from 'big.js';
-
-export type HighLow<T = BigSource> = {
+export type HighLow<T = number> = {
   high: T;
   low: T;
 };
 
-export type HighLowClose<T = BigSource> = HighLow<T> & {
+export type HighLowClose<T = number> = HighLow<T> & {
   close: T;
 };
 
-export type OpenHighLowClose<T = BigSource> = HighLowClose<T> & {
+export type OpenHighLowClose<T = number> = HighLowClose<T> & {
   open: T;
 };
 
-export type OpenHighLowCloseVolume<T = BigSource> = OpenHighLowClose<T> & {
+export type OpenHighLowCloseVolume<T = number> = OpenHighLowClose<T> & {
   volume: T;
 };
 
-export type HighLowCloseVolume<T = BigSource> = Omit<OpenHighLowCloseVolume<T>, 'open'>;
+export type HighLowCloseVolume<T = number> = Omit<OpenHighLowCloseVolume<T>, 'open'>;
