@@ -1,7 +1,7 @@
 import {FasterAO as AO} from '../AO/AO.js';
 import {NumberIndicatorSeries} from '../Indicator.js';
-import {FasterMOM as MOM} from '../MOM/MOM.js';
-import {FasterSMA as SMA} from '../SMA/SMA.js';
+import {MOM} from '../MOM/MOM.js';
+import {SMA} from '../SMA/SMA.js';
 import type {HighLow} from '../util/index.js';
 
 /**
