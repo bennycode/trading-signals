@@ -1,4 +1,4 @@
-import {FasterAO as AO} from '../AO/AO.js';
+import {AO} from '../AO/AO.js';
 import {NumberIndicatorSeries} from '../Indicator.js';
 import {MOM} from '../MOM/MOM.js';
 import {SMA} from '../SMA/SMA.js';

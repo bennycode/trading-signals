@@ -1,9 +1,8 @@
-import {BigIndicatorSeries, NumberIndicatorSeries} from '../Indicator.js';
-import {FasterSMA, SMA} from '../SMA/SMA.js';
+import {NumberIndicatorSeries} from '../Indicator.js';
+import {SMA} from '../SMA/SMA.js';
 import type {HighLow} from '../util/index.js';
-import type {FasterMovingAverageTypes, MovingAverageTypes} from '../MA/MovingAverageTypes.js';
-import type {FasterMovingAverage, MovingAverage} from '../MA/MovingAverage.js';
-import Big from 'big.js';
+import type {MovingAverageTypes} from '../MA/MovingAverageTypes.js';
+import type {MovingAverage} from '../MA/MovingAverage.js';
 
 /**
  * Awesome Oscillator (AO)
@@ -19,7 +18,7 @@ import Big from 'big.js';
  * @see https://www.tradingview.com/support/solutions/43000501826-awesome-oscillator-ao/
  * @see https://tradingstrategyguides.com/bill-williams-awesome-oscillator-strategy/
  */
-export class AO extends BigIndicatorSeries<HighLow> {
+export class AO extends NumberIndicatorSeries<HighLow<number>> {
   public readonly long: MovingAverage;
   public readonly short: MovingAverage;
 
@@ -27,39 +26,6 @@ export class AO extends BigIndicatorSeries<HighLow> {
     public readonly shortInterval: number,
     public readonly longInterval: number,
     SmoothingIndicator: MovingAverageTypes = SMA
-  ) {
-    super();
-    this.short = new SmoothingIndicator(shortInterval);
-    this.long = new SmoothingIndicator(longInterval);
-  }
-
-  override getRequiredInputs() {
-    return this.long.getRequiredInputs();
-  }
-
-  update({low, high}: HighLow, replace: boolean) {
-    const candleSum = new Big(low).add(high);
-    const medianPrice = candleSum.div(2);
-
-    this.short.update(medianPrice, replace);
-    this.long.update(medianPrice, replace);
-
-    if (this.long.isStable) {
-      return this.setResult(this.short.getResultOrThrow().sub(this.long.getResultOrThrow()), replace);
-    }
-
-    return null;
-  }
-}
-
-export class FasterAO extends NumberIndicatorSeries<HighLow<number>> {
-  public readonly long: FasterMovingAverage;
-  public readonly short: FasterMovingAverage;
-
-  constructor(
-    public readonly shortInterval: number,
-    public readonly longInterval: number,
-    SmoothingIndicator: FasterMovingAverageTypes = FasterSMA
   ) {
     super();
     this.short = new SmoothingIndicator(shortInterval);
