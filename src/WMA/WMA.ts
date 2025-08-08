@@ -1,6 +1,4 @@
-import type {BigSource} from 'big.js';
-import Big from 'big.js';
-import {FasterMovingAverage, MovingAverage} from '../MA/MovingAverage.js';
+import {MovingAverage} from '../MA/MovingAverage.js';
 import {pushUpdate} from '../util/pushUpdate.js';
 
 /**
@@ -13,37 +11,6 @@ import {pushUpdate} from '../util/pushUpdate.js';
  * @see https://corporatefinanceinstitute.com/resources/career-map/sell-side/capital-markets/weighted-moving-average-wma/
  */
 export class WMA extends MovingAverage {
-  public readonly prices: BigSource[] = [];
-
-  constructor(public override readonly interval: number) {
-    super(interval);
-  }
-
-  override getRequiredInputs() {
-    return this.interval;
-  }
-
-  update(price: BigSource, replace: boolean) {
-    pushUpdate(this.prices, replace, price, this.interval);
-
-    if (this.prices.length === this.interval) {
-      const weightedPricesSum = this.prices.reduce((acc: Big, price: BigSource, index: number) => {
-        const weightedPrice = new Big(price).mul(index + 1);
-
-        return acc.add(weightedPrice);
-      }, new Big(0));
-
-      const weightBase = (this.interval * (this.interval + 1)) / 2; // the numerator will always be even and the value will be an int.
-      const weightedMa = weightedPricesSum.div(weightBase);
-
-      return this.setResult(weightedMa, replace);
-    }
-
-    return null;
-  }
-}
-
-export class FasterWMA extends FasterMovingAverage {
   public readonly prices: number[] = [];
 
   constructor(public override readonly interval: number) {
@@ -73,3 +40,5 @@ export class FasterWMA extends FasterMovingAverage {
     return null;
   }
 }
+
+
