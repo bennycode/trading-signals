@@ -1,7 +1,7 @@
 import type {BigSource} from 'big.js';
 import Big from 'big.js';
-import {BigIndicatorSeries, NumberIndicatorSeries} from '../Indicator.js';
-import {FasterSMA, SMA} from '../SMA/SMA.js';
+import {NumberIndicatorSeries} from '../Indicator.js';
+import {SMA} from '../SMA/SMA.js';
 import {pushUpdate} from '../util/pushUpdate.js';
 
 /**

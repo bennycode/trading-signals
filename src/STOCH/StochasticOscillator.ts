@@ -1,6 +1,6 @@
 import Big from 'big.js';
 import {TechnicalIndicator} from '../Indicator.js';
-import {FasterSMA, SMA} from '../SMA/SMA.js';
+import {SMA} from '../SMA/SMA.js';
 import {getMaximum} from '../util/getMaximum.js';
 import {getMinimum} from '../util/getMinimum.js';
 import type {HighLowClose} from '../util/HighLowClose.js';

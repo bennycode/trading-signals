@@ -1,5 +1,5 @@
 import Big from 'big.js';
-import {FasterIQR, IQR} from './IQR.js';
+import {IQR} from './IQR.js';
 
 describe('IQR', () => {
   describe('add', () => {

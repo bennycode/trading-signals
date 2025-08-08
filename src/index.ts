@@ -1,4 +1,3 @@
-export {default as Big, type BigSource} from 'big.js';
 // Abstractions
 export * from './Indicator.js';
 export * from './MA/MovingAverage.js';

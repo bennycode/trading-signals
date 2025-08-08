@@ -1,5 +1,5 @@
 import {Big, type BigSource} from 'big.js';
-import {BigIndicatorSeries} from './Indicator.js';
+import  from './Indicator.js';
 import {NotEnoughDataError} from './error/NotEnoughDataError.js';
 
 describe('Indicator', () => {

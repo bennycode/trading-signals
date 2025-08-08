@@ -1,4 +1,4 @@
-import {FasterTR, TR} from './TR.js';
+import {TR} from './TR.js';
 
 describe('TR', () => {
   // Test data verified with:

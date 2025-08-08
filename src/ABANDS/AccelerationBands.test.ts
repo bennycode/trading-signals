@@ -1,4 +1,4 @@
-import {AccelerationBands, FasterAccelerationBands} from './AccelerationBands.js';
+import {AccelerationBands} from './AccelerationBands.js';
 import {NotEnoughDataError} from '../error/index.js';
 import {SMA} from '../SMA/SMA.js';
 import {EMA} from '../EMA/EMA.js';

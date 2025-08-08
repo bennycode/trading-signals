@@ -1,4 +1,4 @@
-import {FasterMovingAverage} from './MovingAverage.js';
+import  from './MovingAverage.js';
 
 class MyAverage extends FasterMovingAverage {
   iterations = 0;

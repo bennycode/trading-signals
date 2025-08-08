@@ -1,6 +1,6 @@
 import type {BigSource} from 'big.js';
 import Big from 'big.js';
-import {BigIndicatorSeries, NumberIndicatorSeries} from '../Indicator.js';
+import {NumberIndicatorSeries} from '../Indicator.js';
 import {getAverage, getFasterAverage, pushUpdate} from '../util/index.js';
 
 /**

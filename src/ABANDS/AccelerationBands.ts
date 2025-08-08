@@ -1,8 +1,8 @@
 import Big from 'big.js';
 import {TechnicalIndicator} from '../Indicator.js';
-import type {FasterMovingAverage, MovingAverage} from '../MA/MovingAverage.js';
-import type {FasterMovingAverageTypes, MovingAverageTypes} from '../MA/MovingAverageTypes.js';
-import {FasterSMA, SMA} from '../SMA/SMA.js';
+import type {MovingAverage} from '../MA/MovingAverage.js';
+import type {MovingAverageTypes} from '../MA/MovingAverageTypes.js';
+import {SMA} from '../SMA/SMA.js';
 import type {BandsResult, FasterBandsResult} from '../util/BandsResult.js';
 import type {HighLowClose} from '../util/index.js';
 

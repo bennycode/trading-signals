@@ -1,6 +1,6 @@
 import type {BigSource} from 'big.js';
 import Big from 'big.js';
-import {FasterMovingAverage, MovingAverage} from '../MA/MovingAverage.js';
+import {MovingAverage} from '../MA/MovingAverage.js';
 import {pushUpdate} from '../util/pushUpdate.js';
 
 /**

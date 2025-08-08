@@ -1,4 +1,4 @@
-import {FasterMAD, MAD} from './MAD.js';
+import {MAD} from './MAD.js';
 import {NotEnoughDataError} from '../error/index.js';
 
 describe('MAD', () => {

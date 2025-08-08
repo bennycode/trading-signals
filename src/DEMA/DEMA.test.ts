@@ -1,5 +1,5 @@
 import {Big} from '../index.js';
-import {DEMA, FasterDEMA} from './DEMA.js';
+import {DEMA} from './DEMA.js';
 import {NotEnoughDataError} from '../error/index.js';
 
 const dema10results = [

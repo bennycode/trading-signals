@@ -1,4 +1,4 @@
-import {Big, FasterSMA, NotEnoughDataError, SMA} from '../index.js';
+import {Big, NotEnoughDataError, SMA} from '../index.js';
 import {describe} from 'vitest';
 
 describe('SMA', () => {

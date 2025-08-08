@@ -1,7 +1,7 @@
 import type {BigSource} from 'big.js';
 import Big from 'big.js';
-import type {DEMA, FasterDEMA} from '../DEMA/DEMA.js';
-import type {EMA, FasterEMA} from '../EMA/EMA.js';
+import type {DEMA} from '../DEMA/DEMA.js';
+import type {EMA} from '../EMA/EMA.js';
 import {TechnicalIndicator} from '../Indicator.js';
 import {pushUpdate} from '../util/pushUpdate.js';
 

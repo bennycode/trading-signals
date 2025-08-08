@@ -1,6 +1,6 @@
-import {FasterSMA, SMA} from '../SMA/SMA.js';
-import {FasterWSMA, WSMA} from '../WSMA/WSMA.js';
-import {FasterStochasticRSI, StochasticRSI} from './StochasticRSI.js';
+import {SMA} from '../SMA/SMA.js';
+import {WSMA} from '../WSMA/WSMA.js';
+import {StochasticRSI} from './StochasticRSI.js';
 
 describe('StochasticRSI', () => {
   describe('replace', () => {
@@ -91,7 +91,7 @@ describe('StochasticRSI', () => {
         k: new SMA(3),
       });
 
-      const fasterStochRSI = new FasterStochasticRSI(14, FasterWSMA, {
+      const fasterStochRSI = new FasterStochasticRSI(14, {
         d: new FasterSMA(3),
         k: new FasterSMA(3),
       });
