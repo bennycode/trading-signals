@@ -1,5 +1,5 @@
 import twoDays from '../test/fixtures/DMA/LTC-USDT-1h-2d.json' with {type: 'json'};
-import {DMA, FasterDMA} from './DMA.js';
+import {DMA} from './DMA.js';
 import {EMA, SMA} from '../index.js';
 
 describe('DMA', () => {

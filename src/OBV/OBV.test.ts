@@ -1,4 +1,4 @@
-import {FasterOBV, OBV} from './OBV.js';
+import {OBV} from './OBV.js';
 import {NotEnoughDataError} from '../error/index.js';
 
 describe('OBV', () => {

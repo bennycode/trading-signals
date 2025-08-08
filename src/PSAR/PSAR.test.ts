@@ -1,4 +1,4 @@
-import {PSAR, FasterPSAR} from './PSAR.js';
+import {PSAR} from './PSAR.js';
 import {NotEnoughDataError} from '../error/index.js';
 import {expect} from 'vitest';
 import Big from 'big.js';

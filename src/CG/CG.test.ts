@@ -1,5 +1,5 @@
 import {NotEnoughDataError} from '../error/index.js';
-import {CG, FasterCG} from './CG.js';
+import {CG} from './CG.js';
 
 describe('CG', () => {
   describe('prices', () => {

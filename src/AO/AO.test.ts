@@ -1,4 +1,4 @@
-import {AO, FasterAO} from './AO.js';
+import {AO} from './AO.js';
 import {NotEnoughDataError} from '../error/index.js';
 
 describe('AO', () => {

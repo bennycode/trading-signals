@@ -1,5 +1,5 @@
 import {NotEnoughDataError} from '../error/NotEnoughDataError.js';
-import {FasterPeriod, Period} from './Period.js';
+import {Period} from './Period.js';
 
 describe('Period', () => {
   describe('replace', () => {

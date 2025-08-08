@@ -1,4 +1,4 @@
-import {TDS, FasterTDS} from './TDS.js';
+import {TDS} from './TDS.js';
 import Big from 'big.js';
 
 describe('TDS', () => {

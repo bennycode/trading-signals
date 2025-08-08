@@ -1,4 +1,4 @@
-import {FasterZigZag, ZigZag} from './ZigZag.js';
+import {ZigZag} from './ZigZag.js';
 
 describe('ZigZag', () => {
   describe('add', () => {

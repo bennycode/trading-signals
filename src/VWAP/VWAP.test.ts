@@ -1,4 +1,4 @@
-import {FasterVWAP, VWAP} from './VWAP.js';
+import {VWAP} from './VWAP.js';
 
 // @see https://github.com/cinar/indicatorts/blob/main/src/indicator/volume/volumeWeightedAveragePrice.test.ts
 describe('VWAP', () => {

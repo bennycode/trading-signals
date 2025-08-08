@@ -1,4 +1,4 @@
-import {FasterMACD, MACD} from './MACD.js';
+import {MACD} from './MACD.js';
 import {Big, DEMA, EMA, NotEnoughDataError} from '../index.js';
 
 describe('MACD', () => {

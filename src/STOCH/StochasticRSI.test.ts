@@ -1,6 +1,6 @@
 import {SMA} from '../SMA/SMA.js';
 import {WSMA} from '../WSMA/WSMA.js';
-import {FasterStochasticRSI, StochasticRSI} from './StochasticRSI.js';
+import {StochasticRSI} from './StochasticRSI.js';
 
 describe('StochasticRSI', () => {
   describe('replace', () => {

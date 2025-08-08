@@ -1,5 +1,5 @@
 import {getAverage, getFasterAverage} from './getAverage.js';
-import {getFasterStandardDeviation, getStandardDeviation} from './getStandardDeviation.js';
+import {getgetStandardDeviation} from './getStandardDeviation.js';
 
 describe('getStandardDeviation', () => {
   it('returns the standard deviation', () => {

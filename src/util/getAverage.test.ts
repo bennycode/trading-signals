@@ -1,4 +1,4 @@
-import {getFasterAverage, getAverage} from './getAverage.js';
+import {getgetAverage} from './getAverage.js';
 
 describe('getAverage', () => {
   it('does not fail when entering an empty array', () => {

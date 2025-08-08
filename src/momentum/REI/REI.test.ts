@@ -1,5 +1,5 @@
 import {describe, expect, it} from 'vitest';
-import {FasterREI, REI} from './REI.js';
+import {REI} from './REI.js';
 
 describe('REI', () => {
   const testData = [

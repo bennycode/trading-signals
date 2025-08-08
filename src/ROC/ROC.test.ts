@@ -1,5 +1,5 @@
 import {Big} from '../index.js';
-import {FasterROC, ROC} from './ROC.js';
+import {ROC} from './ROC.js';
 import {NotEnoughDataError} from '../error/index.js';
 
 describe('ROC', () => {
