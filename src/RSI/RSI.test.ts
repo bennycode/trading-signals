@@ -1,4 +1,4 @@
-import {FasterRSI, RSI} from './RSI.js';
+import {RSI} from './RSI.js';
 import {NotEnoughDataError} from '../error/index.js';
 
 describe('RSI', () => {

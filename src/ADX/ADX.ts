@@ -1,9 +1,9 @@
 import {DX, FasterDX} from '../DX/DX.js';
-import {BigIndicatorSeries, NumberIndicatorSeries} from '../Indicator.js';
-import type {FasterMovingAverage, MovingAverage} from '../MA/MovingAverage.js';
-import type {FasterMovingAverageTypes, MovingAverageTypes} from '../MA/MovingAverageTypes.js';
+import {NumberIndicatorSeries} from '../Indicator.js';
+import type {MovingAverage} from '../MA/MovingAverage.js';
+import type {MovingAverageTypes} from '../MA/MovingAverageTypes.js';
 import type {HighLowClose} from '../util/HighLowClose.js';
-import {FasterWSMA, WSMA} from '../WSMA/WSMA.js';
+import {WSMA} from '../WSMA/WSMA.js';
 
 /**
  * Average Directional Index (ADX)

@@ -1,4 +1,4 @@
-import {BigIndicatorSeries, NumberIndicatorSeries} from '../Indicator.js';
+import {NumberIndicatorSeries} from '../Indicator.js';
 import type {BollingerBands, FasterBollingerBands} from '../BBANDS/BollingerBands.js';
 import type {BigSource} from 'big.js';
 

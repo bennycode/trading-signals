@@ -1,12 +1,12 @@
 import twoDays from '../test/fixtures/DMA/LTC-USDT-1h-2d.json' with {type: 'json'};
 import {DMA, FasterDMA} from './DMA.js';
-import {EMA, FasterSMA, SMA} from '../index.js';
+import {EMA, SMA} from '../index.js';
 
 describe('DMA', () => {
   describe('update', () => {
     it('can replace recently added values', () => {
       const dma = new DMA(3, 6, SMA);
-      const fasterDMA = new FasterDMA(3, 6, FasterSMA);
+      const fasterDMA = new FasterDMA(3, 6);
       dma.updates([41, 37, 20.9, 100, 30.71, 40], false);
       dma.update(30, true);
 

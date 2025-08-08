@@ -1,4 +1,4 @@
-import {EMA, FasterEMA, NotEnoughDataError} from '../index.js';
+import {EMA, NotEnoughDataError} from '../index.js';
 import {describe} from 'vitest';
 
 describe('EMA', () => {

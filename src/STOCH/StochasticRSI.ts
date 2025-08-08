@@ -1,12 +1,12 @@
 import type {BigSource} from 'big.js';
 import Big from 'big.js';
-import {BigIndicatorSeries, NumberIndicatorSeries} from '../Indicator.js';
-import type {FasterMovingAverage, MovingAverage} from '../MA/MovingAverage.js';
-import type {FasterMovingAverageTypes, MovingAverageTypes} from '../MA/MovingAverageTypes.js';
-import {FasterRSI, RSI} from '../RSI/RSI.js';
-import {FasterSMA, SMA} from '../SMA/SMA.js';
+import {NumberIndicatorSeries} from '../Indicator.js';
+import type {MovingAverage} from '../MA/MovingAverage.js';
+import type {MovingAverageTypes} from '../MA/MovingAverageTypes.js';
+import {RSI} from '../RSI/RSI.js';
+import {SMA} from '../SMA/SMA.js';
 import {FasterPeriod, Period} from '../util/Period.js';
-import {FasterWSMA, WSMA} from '../WSMA/WSMA.js';
+import {WSMA} from '../WSMA/WSMA.js';
 
 /**
  * Stochastic RSI (STOCHRSI)

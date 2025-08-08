@@ -1,7 +1,7 @@
 import Big from 'big.js';
-import {BigIndicatorSeries, NumberIndicatorSeries} from '../Indicator.js';
+import {NumberIndicatorSeries} from '../Indicator.js';
 import {FasterMAD, MAD} from '../MAD/MAD.js';
-import {FasterSMA, SMA} from '../SMA/SMA.js';
+import {SMA} from '../SMA/SMA.js';
 import {pushUpdate, type HighLowClose} from '../util/index.js';
 
 /**

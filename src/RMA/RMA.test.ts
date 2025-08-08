@@ -1,4 +1,4 @@
-import {RMA, FasterRMA, NotEnoughDataError} from '../index.js';
+import {RMA, NotEnoughDataError} from '../index.js';
 import {describe} from 'vitest';
 
 describe('RMA', () => {

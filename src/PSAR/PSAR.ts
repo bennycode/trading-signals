@@ -1,5 +1,5 @@
 import Big from 'big.js';
-import {BigIndicatorSeries, NumberIndicatorSeries} from '../Indicator.js';
+import {NumberIndicatorSeries} from '../Indicator.js';
 import type {HighLow} from '../util/HighLowClose.js';
 import {NotEnoughDataError} from '../error/index.js';
 
