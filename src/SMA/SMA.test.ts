@@ -1,10 +1,10 @@
-import {Big, FasterSMA, NotEnoughDataError, SMA} from '../index.js';
+import {FasterSMA, NotEnoughDataError} from '../index.js';
 import {describe} from 'vitest';
 
 describe('SMA', () => {
   describe('prices', () => {
     it('does not cache more prices than necessary to fill the interval', () => {
-      const sma = new SMA(3);
+      const sma = new FasterSMA(3);
       sma.add(1);
       sma.add(2);
       expect(sma.prices.length).toBe(2);
@@ -23,13 +23,9 @@ describe('SMA', () => {
     it('replaces recently added values', () => {
       const interval = 2;
 
-      const sma = new SMA(interval);
       const fasterSMA = new FasterSMA(interval);
 
-      sma.add(20);
       fasterSMA.add(20);
-
-      sma.add(30);
       fasterSMA.add(30);
 
       // Add the latest value
@@ -37,11 +33,6 @@ describe('SMA', () => {
       const latestResult = '35.00';
       const latestLow = '25.00';
       const latestHigh = '35.00';
-
-      sma.add(latestValue);
-      expect(sma.getResultOrThrow().toFixed(2)).toBe(latestResult);
-      expect(sma.lowest?.toFixed(2)).toBe(latestLow);
-      expect(sma.highest?.toFixed(2)).toBe(latestHigh);
 
       fasterSMA.add(latestValue);
       expect(fasterSMA.getResultOrThrow().toFixed(2)).toBe(latestResult);
@@ -54,22 +45,12 @@ describe('SMA', () => {
       const otherLow = '25.00';
       const otherHigh = '56.00';
 
-      sma.replace(someOtherValue);
-      expect(sma.getResultOrThrow().toFixed(2)).toBe(otherResult);
-      expect(sma.lowest?.toFixed(2)).toBe(otherLow);
-      expect(sma.highest?.toFixed(2)).toBe(otherHigh);
-
       fasterSMA.replace(someOtherValue);
       expect(fasterSMA.getResultOrThrow().toFixed(2)).toBe(otherResult);
       expect(fasterSMA.lowest?.toFixed(2)).toBe(otherLow);
       expect(fasterSMA.highest?.toFixed(2)).toBe(otherHigh);
 
       // Replace the other value with the latest value
-      sma.replace(latestValue);
-      expect(sma.getResultOrThrow().toFixed(2)).toBe(latestResult);
-      expect(sma.lowest?.toFixed(2)).toBe(latestLow);
-      expect(sma.highest?.toFixed(2)).toBe(latestHigh);
-
       fasterSMA.replace(latestValue);
       expect(fasterSMA.getResultOrThrow().toFixed(2)).toBe(latestResult);
       expect(fasterSMA.lowest?.toFixed(2)).toBe(latestLow);
@@ -94,14 +75,14 @@ describe('SMA', () => {
 
   describe('isStable', () => {
     it('knows when there is enough input data', () => {
-      const sma = new SMA(3);
+      const sma = new FasterSMA(3);
       sma.add(40);
       sma.add(30);
       expect(sma.isStable).toBe(false);
       sma.add(20);
       expect(sma.isStable).toBe(true);
-      sma.add('10');
-      sma.add(new Big(30));
+      sma.add(10);
+      sma.add(30);
       expect(sma.getResultOrThrow().valueOf()).toBe('20');
       expect(sma.lowest?.toFixed(2)).toBe('20.00');
       expect(sma.highest?.toFixed(2)).toBe('30.00');
