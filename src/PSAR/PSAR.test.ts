@@ -1,330 +1,6 @@
-import {PSAR, FasterPSAR} from './PSAR.js';
+import {FasterPSAR} from './PSAR.js';
 import {NotEnoughDataError} from '../error/index.js';
 import {expect} from 'vitest';
-import Big from 'big.js';
-
-// Helper to expose private properties for Big.js version
-function exposePSARProperties(psar: PSAR) {
-  return psar as unknown as {
-    accelerationStep: Big;
-    accelerationMax: Big;
-    acceleration: Big;
-    extreme: Big | null;
-    lastSar: Big | null;
-    isLong: boolean | null;
-    previousCandle: {high: number | string; low: number | string} | null;
-    prePreviousCandle: {high: number | string; low: number | string} | null;
-  };
-}
-
-describe('PSAR (Big.js version)', () => {
-  // Test data verified with:
-  // https://tulipindicators.org/psar
-  // @see https://github.com/TulipCharts/tulipindicators/blob/v0.9.1/tests/untest.txt#L317
-  const testData = [
-    {date: '2005-11-01', high: 82.15, low: 81.29, psar: null},
-    {date: '2005-11-02', high: 81.89, low: 80.64, psar: 82.15},
-    {date: '2005-11-03', high: 83.03, low: 81.31, psar: 80.64},
-    {date: '2005-11-04', high: 83.3, low: 82.65, psar: 80.64},
-    {date: '2005-11-07', high: 83.85, low: 83.07, psar: 81.31},
-    {date: '2005-11-08', high: 83.9, low: 83.11, psar: 82.65},
-    {date: '2005-11-09', high: 83.33, low: 82.49, psar: 83.9},
-    {date: '2005-11-10', high: 84.3, low: 82.3, psar: 82.3},
-    {date: '2005-11-11', high: 84.84, low: 84.15, psar: 82.3},
-    {date: '2005-11-14', high: 85.0, low: 84.11, psar: 82.3},
-    {date: '2005-11-15', high: 85.9, low: 84.03, psar: 83.92},
-    {date: '2005-11-16', high: 86.58, low: 85.39, psar: 84.03},
-    {date: '2005-11-17', high: 86.98, low: 85.76, psar: 84.03},
-    {date: '2005-11-18', high: 88.0, low: 87.17, psar: 85.39},
-    {date: '2005-11-21', high: 87.87, low: 87.01, psar: 85.76},
-  ];
-
-  it('should calculate PSAR correctly', () => {
-    const psar = new PSAR({accelerationMax: 0.2, accelerationStep: 0.02});
-
-    const results = testData.map(candle => {
-      const result = psar.update({high: candle.high, low: candle.low}, false);
-      return result ? result.toNumber() : null;
-    });
-
-    // Skip the first value which is null
-    for (let i = 1; i < testData.length; i++) {
-      // Different PSAR implementations may have slight variations in their calculations
-      // Use a wider tolerance to account for these differences
-      if (testData[i].psar === null) {
-        expect(results[i]).toBeNull();
-      } else {
-        // Allow up to 5% difference or 0.1 absolute difference, whichever is greater
-        const tolerance = Math.max(testData[i].psar! * 0.05, 0.1);
-        const diff = Math.abs(results[i]! - testData[i].psar!);
-        expect(diff).toBeLessThanOrEqual(tolerance);
-      }
-    }
-  });
-
-  it('should handle replace flag correctly', () => {
-    const psar = new PSAR({accelerationMax: 0.2, accelerationStep: 0.02});
-
-    // Add first two candles
-    psar.update({high: testData[0].high, low: testData[0].low}, false);
-    const initialResult = psar.update({high: testData[1].high, low: testData[1].low}, false);
-
-    // Replace the second candle
-    const replacedResult = psar.update({high: testData[1].high, low: testData[1].low}, true);
-
-    // Allow small differences due to floating point arithmetic
-    const initialValue = initialResult?.toNumber() || 0;
-    const replacedValue = replacedResult?.toNumber() || 0;
-    const diff = Math.abs(initialValue - replacedValue);
-    // Use a reasonable tolerance - 1% or 0.1 absolute
-    const tolerance = Math.max(initialValue * 0.01, 0.1);
-    expect(diff).toBeLessThanOrEqual(tolerance);
-  });
-
-  it('should throw NotEnoughDataError when not enough data', () => {
-    const psar = new PSAR({accelerationMax: 0.2, accelerationStep: 0.02});
-
-    expect(() => psar.getResultOrThrow()).toThrow(NotEnoughDataError);
-
-    // Add just one candle, still not enough
-    psar.update({high: testData[0].high, low: testData[0].low}, false);
-    expect(() => psar.getResultOrThrow()).toThrow(NotEnoughDataError);
-  });
-
-  it('should handle validation of constructor parameters', () => {
-    expect(() => new PSAR({accelerationMax: 0.2, accelerationStep: 0})).toThrow();
-    expect(() => new PSAR({accelerationMax: 0.2, accelerationStep: -0.01})).toThrow();
-    expect(() => new PSAR({accelerationMax: 0.1, accelerationStep: 0.2})).toThrow();
-    expect(() => new PSAR({accelerationMax: 0.2, accelerationStep: 0.2})).toThrow();
-  });
-
-  it('should test hitting the maximum acceleration in Big.js version', () => {
-    const psar = new PSAR({accelerationMax: 0.2, accelerationStep: 0.1});
-
-    // Initialize with downtrend
-    psar.update({high: 12, low: 11}, false);
-    psar.update({high: 11, low: 10}, false);
-
-    // Force downtrend
-    psar.update({high: 9, low: 8}, false);
-
-    // Expose and set internal state
-    const exposed = exposePSARProperties(psar);
-
-    // Clone the acceleration value and set it close to max
-    // Using string for Big.js compatibility
-    exposed.acceleration = exposed.accelerationMax.mul(0.95);
-    exposed.isLong = false;
-
-    // Make new low to trigger acceleration increase that should exceed max
-    psar.update({high: 7, low: 6}, false);
-
-    // Verify acceleration was capped at max
-    expect(exposed.acceleration.toString()).toBe(exposed.accelerationMax.toString());
-  });
-
-  it('should correctly indicate stability', () => {
-    const psar = new PSAR({accelerationMax: 0.2, accelerationStep: 0.02});
-
-    expect(psar.isStable).toBe(false);
-
-    // Add first candle
-    psar.update({high: testData[0].high, low: testData[0].low}, false);
-    expect(psar.isStable).toBe(false);
-
-    // Add second candle, now we should be stable
-    psar.update({high: testData[1].high, low: testData[1].low}, false);
-    expect(psar.isStable).toBe(true);
-  });
-
-  it('should handle trend changes correctly', () => {
-    const psar = new PSAR({accelerationMax: 0.2, accelerationStep: 0.02});
-
-    // Initialize with initial uptrend
-    psar.update({high: 10, low: 9}, false);
-    psar.update({high: 11, low: 10}, false);
-
-    // Continue uptrend
-    let result = psar.update({high: 12, low: 11}, false);
-    // Check that the SAR value is close to 9 (with some tolerance)
-    expect(parseFloat(result?.toString() || '0')).toBeCloseTo(9, 0);
-
-    // Force downtrend - price falls below SAR
-    result = psar.update({high: 9, low: 8}, false);
-    expect(parseFloat(result?.toString() || '0')).toBeGreaterThan(9); // SAR should be above price on reversal
-
-    // Continue downtrend
-    result = psar.update({high: 8.5, low: 7.5}, false);
-    expect(parseFloat(result?.toString() || '0')).toBeGreaterThan(8.5); // SAR should stay above price
-
-    // Force uptrend - price rises above SAR
-    result = psar.update({high: 14, low: 13}, false);
-    expect(parseFloat(result?.toString() || '0')).toBeLessThan(13); // SAR should be below price on reversal
-  });
-
-  it('should handle consecutive trend changes correctly', () => {
-    const psar = new PSAR({accelerationMax: 0.2, accelerationStep: 0.02});
-
-    // Initialize
-    psar.update({high: 10, low: 9}, false);
-    psar.update({high: 11, low: 10}, false);
-
-    // Start with uptrend
-    let result = psar.update({high: 12, low: 11}, false);
-    expect(result?.toNumber()).toBeLessThan(11); // SAR should be below price
-
-    // First reversal to downtrend
-    result = psar.update({high: 9, low: 8}, false);
-    expect(result?.toNumber()).toBeGreaterThan(9); // SAR should be above price
-
-    // Continue downtrend and check acceleration factor
-    result = psar.update({high: 7.5, low: 7}, false);
-    expect(result?.toNumber()).toBeGreaterThan(7.5);
-
-    // Check previous two candles influence in downtrend
-    result = psar.update({high: 9, low: 8.5}, false);
-    expect(result?.toNumber()).toBeGreaterThan(8.5);
-
-    // Force uptrend again
-    result = psar.update({high: 12, low: 11}, false);
-    expect(result?.toNumber()).toBeLessThan(11);
-
-    // Check previous two candles influence in uptrend
-    result = psar.update({high: 11.5, low: 10.5}, false);
-    expect(result?.toNumber()).toBeLessThan(10.5);
-  });
-
-  it('should reset acceleration factor on trend change', () => {
-    const psar = new PSAR({accelerationMax: 0.2, accelerationStep: 0.02});
-
-    // Initialize and establish uptrend
-    psar.update({high: 10, low: 9}, false);
-    psar.update({high: 11, low: 10}, false);
-
-    // Create several new highs to increase acceleration factor
-    psar.update({high: 12, low: 11}, false);
-    psar.update({high: 13, low: 12}, false);
-    psar.update({high: 14, low: 13}, false);
-
-    // Start the reversal with a strong down move
-    let result = psar.update({high: 11, low: 9}, false);
-
-    // Continue the downtrend to force the reversal
-    result = psar.update({high: 10, low: 8}, false);
-    expect(result?.toNumber()).toBeGreaterThan(10); // Should now be in downtrend
-
-    // Verify acceleration reset by checking SAR movement
-    result = psar.update({high: 9.5, low: 8.5}, false);
-    const firstMove = result?.toNumber();
-    result = psar.update({high: 9, low: 8}, false);
-    const secondMove = result?.toNumber();
-
-    // Both moves should be higher than the price (confirming downtrend)
-    expect(firstMove).toBeGreaterThan(9.5);
-    expect(secondMove).toBeGreaterThan(9);
-
-    // The difference should be small due to reset acceleration
-    expect(Math.abs((firstMove || 0) - (secondMove || 0))).toBeLessThan(1);
-  });
-
-  it('should properly handle acceleration factor hitting maximum', () => {
-    const psar = new PSAR({accelerationMax: 0.2, accelerationStep: 0.1});
-
-    // Initialize trend
-    psar.update({high: 10, low: 9}, false);
-    psar.update({high: 11, low: 10}, false);
-
-    // Make consecutive new highs to increase acceleration factor
-    let result = psar.update({high: 12, low: 11}, false);
-    expect(result?.toNumber()).toBeLessThan(11);
-
-    result = psar.update({high: 13, low: 12}, false); // Second increase
-    expect(result?.toNumber()).toBeLessThan(12);
-
-    result = psar.update({high: 14, low: 13}, false); // Should hit max
-    expect(result?.toNumber()).toBeLessThan(13);
-
-    // One more new high shouldn't increase acceleration anymore
-    result = psar.update({high: 15, low: 14}, false);
-    expect(result?.toNumber()).toBeLessThan(14);
-  });
-
-  it('should properly handle consecutive new extreme prices', () => {
-    const psar = new PSAR({accelerationMax: 0.2, accelerationStep: 0.02});
-
-    // Initialize trend
-    psar.update({high: 10, low: 9}, false);
-    psar.update({high: 11, low: 10}, false);
-
-    // Make new high
-    let result = psar.update({high: 12, low: 11}, false);
-    expect(result?.toNumber()).toBeLessThan(11);
-
-    // Make new low to reverse trend
-    result = psar.update({high: 9, low: 8}, false);
-    expect(result?.toNumber()).toBeGreaterThan(9);
-
-    // Make consecutive new lows in downtrend
-    result = psar.update({high: 8, low: 7}, false);
-    expect(result?.toNumber()).toBeGreaterThan(8);
-
-    result = psar.update({high: 7, low: 6}, false);
-    expect(result?.toNumber()).toBeGreaterThan(7);
-  });
-
-  it('should handle pre-previous candle influence in trend changes', () => {
-    const psar = new PSAR({accelerationMax: 0.2, accelerationStep: 0.02});
-
-    // Initialize uptrend
-    psar.update({high: 10, low: 9}, false);
-    psar.update({high: 11, low: 10}, false);
-    psar.update({high: 12, low: 11}, false);
-
-    // Create a candle that crosses SAR with pre-previous candle
-    let result = psar.update({high: 11.5, low: 8}, false);
-    expect(result?.toNumber()).toBeGreaterThan(8);
-
-    // Now test in downtrend
-    result = psar.update({high: 8, low: 7}, false);
-    expect(result?.toNumber()).toBeGreaterThan(8);
-
-    // Create a candle that crosses SAR with pre-previous candle
-    result = psar.update({high: 13, low: 7.5}, false);
-    expect(result?.toNumber()).toBeLessThan(13);
-  });
-
-  it('adjusts the SAR when the previous low is lower than the pre-previous low', () => {
-    const psar = new PSAR({accelerationMax: 0.2, accelerationStep: 0.02});
-    const prePreviousLow = 8;
-    const previousLow = 7;
-
-    psar.add({high: 10, low: 9});
-    psar.add({high: 11, low: prePreviousLow});
-    psar.add({high: 12, low: previousLow});
-
-    expect(psar.getResultOrThrow().toString()).toBe('12');
-  });
-
-  it('should handle pre-previous candle edge cases properly', () => {
-    const psar = new PSAR({accelerationMax: 0.2, accelerationStep: 0.02});
-
-    // Initialize trend
-    psar.update({high: 10, low: 9}, false);
-    psar.update({high: 11, low: 10}, false);
-    psar.update({high: 12, low: 11}, false);
-
-    // Create a scenario where only pre-previous low is lower than SAR
-    let result = psar.update({high: 13, low: 8}, false);
-    expect(result?.toNumber()).toBeLessThanOrEqual(13); // Changed to lessThanOrEqual for the edge case
-
-    // Create a scenario where only pre-previous high is higher than SAR
-    result = psar.update({high: 7, low: 6}, false);
-    expect(result?.toNumber()).toBeGreaterThan(7);
-
-    result = psar.update({high: 14, low: 6.5}, false);
-    expect(result?.toNumber()).toBeLessThan(14);
-  });
-});
 
 // Helper to expose private properties for testing
 function exposePrivateProperties(psar: FasterPSAR) {
@@ -340,7 +16,10 @@ function exposePrivateProperties(psar: FasterPSAR) {
   };
 }
 
-describe('FasterPSAR (Number version)', () => {
+describe('FasterPSAR', () => {
+  // Test data verified with:
+  // https://tulipindicators.org/psar
+  // @see https://github.com/TulipCharts/tulipindicators/blob/v0.9.1/tests/untest.txt#L317
   const testData = [
     {date: '2005-11-01', high: 82.15, low: 81.29, psar: null},
     {date: '2005-11-02', high: 81.89, low: 80.64, psar: 82.15},
@@ -690,7 +369,7 @@ describe('FasterPSAR (Number version)', () => {
 
   it('should test the SAR adjustment on trend reversal when SAR >= low', () => {
     // This tests lines 164-166 specifically
-    const psar = new PSAR({accelerationMax: 0.2, accelerationStep: 0.02});
+    const psar = new FasterPSAR({accelerationMax: 0.2, accelerationStep: 0.02});
 
     // Set up a scenario where we'll have a trend reversal with SAR >= low
     psar.add({high: 10, low: 9});
@@ -704,11 +383,11 @@ describe('FasterPSAR (Number version)', () => {
     psar.add({high: 11, low: 6});
 
     // The SAR should be adjusted to low - 0.01
-    expect(psar.getResultOrThrow().toString()).toBe('5.99');
+    expect(psar.getResultOrThrow()).toBe(5.99);
   });
 
   it('adjusts the SAR when the previous high is greater than the pre-previous high', () => {
-    const psar = new PSAR({accelerationMax: 0.2, accelerationStep: 0.02});
+    const psar = new FasterPSAR({accelerationMax: 0.2, accelerationStep: 0.02});
     const prePreviousHigh = 10;
     const previousHigh = 11;
     const low = 6;
@@ -718,11 +397,11 @@ describe('FasterPSAR (Number version)', () => {
     psar.add({high: previousHigh, low});
 
     // The SAR should be adjusted to low - 0.01
-    expect(psar.getResultOrThrow().toString()).toBe((low - 0.01).toString());
+    expect(psar.getResultOrThrow()).toBe(low - 0.01);
   });
 
-  it('should test acceleration hitting max in Big.js version', () => {
-    const psar = new PSAR({accelerationMax: 0.2, accelerationStep: 0.1});
+  it('tests acceleration hitting max', () => {
+    const psar = new FasterPSAR({accelerationMax: 0.2, accelerationStep: 0.1});
 
     // Initialize with uptrend (needs two candles)
     psar.update({high: 10, low: 9}, false);
@@ -737,33 +416,33 @@ describe('FasterPSAR (Number version)', () => {
     psar.update({high: 15, low: 14}, false);
 
     // Get the internal state after all those updates
-    const exposed = exposePSARProperties(psar);
+    const exposed = exposePrivateProperties(psar);
 
     // Verify acceleration has hit the max at some point
-    expect(exposed.acceleration.toString()).toBe(exposed.accelerationMax.toString());
+    expect(exposed.acceleration).toBe(exposed.accelerationMax);
   });
 
-  it('should test acceleration exceeding max and being capped in Big.js version uptrend', () => {
-    const psar = new PSAR({accelerationMax: 0.2, accelerationStep: 0.11});
+  it('tests acceleration exceeding max and being capped in uptrend', () => {
+    const psar = new FasterPSAR({accelerationMax: 0.2, accelerationStep: 0.11});
 
     // Initialize with uptrend (needs two candles)
     psar.update({high: 10, low: 9}, false);
     psar.update({high: 11, low: 10}, false);
 
     // Get access to internal properties
-    const exposed = exposePSARProperties(psar);
+    const exposed = exposePrivateProperties(psar);
 
     // Directly set acceleration to a specific value that will exceed max after one more step
-    exposed.acceleration = exposed.accelerationMax.mul(0.95);
+    exposed.acceleration = exposed.accelerationMax * 0.95;
     exposed.isLong = true;
-    exposed.extreme = new Big(11);
+    exposed.extreme = 11;
 
     // Make a new high that will cause acceleration to exceed max
     // This specifically tests the branch on lines 111-113
     psar.update({high: 12, low: 11}, false);
 
     // Verify acceleration was capped at max (not higher)
-    expect(exposed.acceleration.toString()).toBe(exposed.accelerationMax.toString());
+    expect(exposed.acceleration).toBe(exposed.accelerationMax);
   });
 
   it('should directly test previousHigh > sar branch in short position', () => {
@@ -839,7 +518,7 @@ describe('FasterPSAR (Number version)', () => {
   });
 
   it('should test super.getResultOrThrow for PSAR when stable', () => {
-    const psar = new PSAR({accelerationMax: 0.2, accelerationStep: 0.02});
+    const psar = new FasterPSAR({accelerationMax: 0.2, accelerationStep: 0.02});
 
     // Add first candle
     psar.update({high: 10, low: 9}, false);
@@ -938,20 +617,20 @@ describe('FasterPSAR (Number version)', () => {
     expect(result).toBe(7.5);
   });
 
-  it('should test both prePreviousCandle.low < sar and previousCandle.low < sar in Big.js version', () => {
-    const psar = new PSAR({accelerationMax: 0.2, accelerationStep: 0.02});
+  it('tests both prePreviousCandle.low < sar and previousCandle.low < sar', () => {
+    const psar = new FasterPSAR({accelerationMax: 0.2, accelerationStep: 0.02});
 
     // Initialize uptrend
     psar.update({high: 10, low: 9}, false);
     psar.update({high: 11, low: 10}, false);
 
     // Access internal state
-    const exposed = exposePSARProperties(psar);
+    const exposed = exposePrivateProperties(psar);
 
     // Set up a specific scenario to test line 99-101
     exposed.isLong = true;
-    exposed.lastSar = new Big(11); // Set SAR high
-    exposed.extreme = new Big(12);
+    exposed.lastSar = 11; // Set SAR high
+    exposed.extreme = 12;
     exposed.prePreviousCandle = {high: 12, low: 10.5}; // prePreviousCandle.low < sar
     exposed.previousCandle = {high: 12.5, low: 10.2}; // previousCandle.low < sar
 
@@ -960,7 +639,7 @@ describe('FasterPSAR (Number version)', () => {
     const result = psar.update({high: 13, low: 11.5}, false);
 
     // Should be adjusted to previousCandle.low
-    expect(result?.toNumber()).toBe(10.2);
+    expect(result).toBe(10.2);
   });
 
   it('should test the branch where previous high affects SAR calculation in downtrend with no pre-previous influence', () => {
@@ -981,8 +660,8 @@ describe('FasterPSAR (Number version)', () => {
     expect(result).toBeGreaterThan(7);
   });
 
-  it('should ensure previousHigh > sar branch in Big.js version gets tested', () => {
-    const psar = new PSAR({accelerationMax: 0.2, accelerationStep: 0.02});
+  it('ensures previousHigh > sar branch gets tested', () => {
+    const psar = new FasterPSAR({accelerationMax: 0.2, accelerationStep: 0.02});
 
     // Initialize downtrend (needs stable trend)
     psar.update({high: 10, low: 9}, false);
@@ -1003,20 +682,20 @@ describe('FasterPSAR (Number version)', () => {
     expect(finalResult).not.toBeNull();
   });
 
-  it('should test previousCandle.high > sar in Big.js version downtrend', () => {
-    const psar = new PSAR({accelerationMax: 0.2, accelerationStep: 0.02});
+  it('tests previousCandle.high > sar in downtrend', () => {
+    const psar = new FasterPSAR({accelerationMax: 0.2, accelerationStep: 0.02});
 
     // Initialize downtrend
     psar.update({high: 10, low: 9}, false);
     psar.update({high: 9, low: 8}, false); // First calculation
 
     // Access internal properties
-    const exposed = exposePSARProperties(psar);
+    const exposed = exposePrivateProperties(psar);
 
     // Set up a scenario where we're in a downtrend
     exposed.isLong = false;
-    exposed.lastSar = new Big(8);
-    exposed.extreme = new Big(7);
+    exposed.lastSar = 8;
+    exposed.extreme = 7;
 
     // Set up a previous candle with high > sar but no pre-previous candle
     exposed.prePreviousCandle = null;
@@ -1034,24 +713,24 @@ describe('FasterPSAR (Number version)', () => {
     const result = psar.update({high: 8.1, low: 7.1}, false);
 
     // Verify this hit the previousHigh branch (should be adjusted to previousCandle.high)
-    expect(result?.toNumber()).toBeGreaterThanOrEqual(8.1);
+    expect(result).toBeGreaterThanOrEqual(8.1);
   });
 
-  it('should test previousCandle low branch in Big.js uptrend with no prePreviousCandle', () => {
-    const psar = new PSAR({accelerationMax: 0.2, accelerationStep: 0.02});
+  it('tests previousCandle low branch in uptrend with no prePreviousCandle', () => {
+    const psar = new FasterPSAR({accelerationMax: 0.2, accelerationStep: 0.02});
 
     // Initialize uptrend
     psar.update({high: 10, low: 9}, false);
     psar.update({high: 11, low: 10}, false);
 
     // Access internal state
-    const exposed = exposePSARProperties(psar);
+    const exposed = exposePrivateProperties(psar);
 
     // Set up a specific scenario to test line 102-104
     exposed.isLong = true;
     exposed.prePreviousCandle = null; // Ensure no pre-previous influence
-    exposed.lastSar = new Big(9.5); // Set SAR above previous low
-    exposed.extreme = new Big(11);
+    exposed.lastSar = 9.5; // Set SAR above previous low
+    exposed.extreme = 11;
     exposed.previousCandle = {high: 11, low: 9}; // previousCandle.low < sar
 
     // This should trigger the branch in line 102-104 where previousCandle.low < sar
@@ -1059,14 +738,14 @@ describe('FasterPSAR (Number version)', () => {
     const result = psar.update({high: 12, low: 10}, false);
 
     // The SAR should be adjusted to previousCandle.low
-    expect(result?.toNumber()).toBe(9);
+    expect(result).toBe(9);
   });
 
   it('should test the exact conditions needed for full branch coverage', () => {
     // Skip existing tests for time being and focus on full branch coverage
-    const psar = new PSAR({accelerationMax: 0.2, accelerationStep: 0.1});
+    const psar = new FasterPSAR({accelerationMax: 0.2, accelerationStep: 0.1});
 
-    // Let's add a new approach to cover line 105-106 (previousLow.lt(sar) check)
+    // Let's add a new approach to cover line 105-106 (previousLow < sar check)
     // First initialize the indicator
     psar.update({high: 10, low: 9}, false);
     psar.update({high: 11, low: 10}, false);
@@ -1076,11 +755,11 @@ describe('FasterPSAR (Number version)', () => {
     psar.update({high: 12, low: 11}, false);
 
     // 2. This update will create a previousCandle, and SAR will be below low
-    const exposed = exposePSARProperties(psar);
-    exposed.lastSar = new Big(12.5); // Setting high to ensure lt conditions are met
+    const exposed = exposePrivateProperties(psar);
+    exposed.lastSar = 12.5; // Setting high to ensure lt conditions are met
     exposed.isLong = true;
 
-    // 3. Make low < sar, to trigger the branch where previousLow.lt(sar)
+    // 3. Make low < sar, to trigger the branch where previousLow < sar
     const testCandle = {high: 15, low: 10}; // Low is less than SAR
     const result = psar.update(testCandle, false);
 
@@ -1089,15 +768,15 @@ describe('FasterPSAR (Number version)', () => {
 
     // Now test the same for downtrend with high > sar
     // Re-initialize
-    const psar2 = new PSAR({accelerationMax: 0.2, accelerationStep: 0.1});
+    const psar2 = new FasterPSAR({accelerationMax: 0.2, accelerationStep: 0.1});
     psar2.update({high: 15, low: 14}, false);
     psar2.update({high: 14, low: 13}, false);
     psar2.update({high: 13, low: 12}, false); // Sets up prePreviousCandle
 
     // Set up specific state for hitting line 150-151
-    const exposed2 = exposePSARProperties(psar2);
+    const exposed2 = exposePrivateProperties(psar2);
     exposed2.isLong = false; // Downtrend
-    exposed2.lastSar = new Big(10); // Low SAR
+    exposed2.lastSar = 10; // Low SAR
 
     // Execute with high > sar to hit the branch
     const result2 = psar2.update({high: 15, low: 12}, false);
@@ -1106,20 +785,20 @@ describe('FasterPSAR (Number version)', () => {
     expect(result2).not.toBeNull();
   });
 
-  it('should test specific SAR adjustment in Big.js downtrend with prePrevious high > sar and previous high > sar', () => {
-    const psar = new PSAR({accelerationMax: 0.2, accelerationStep: 0.02});
+  it('tests specific SAR adjustment in downtrend with prePrevious high > sar and previous high > sar', () => {
+    const psar = new FasterPSAR({accelerationMax: 0.2, accelerationStep: 0.02});
 
     // Initialize with downtrend
     psar.update({high: 10, low: 9}, false);
     psar.update({high: 9, low: 8}, false);
 
     // Access internal state directly
-    const exposed = exposePSARProperties(psar);
+    const exposed = exposePrivateProperties(psar);
 
     // Set up a very specific scenario to target lines 137-138
     exposed.isLong = false;
-    exposed.lastSar = new Big(7);
-    exposed.extreme = new Big(6);
+    exposed.lastSar = 7;
+    exposed.extreme = 6;
 
     // Set both prePreviousCandle.high > sar and previousCandle.high > sar
     exposed.prePreviousCandle = {high: 8, low: 7.5}; // prePrevious.high > sar
@@ -1130,7 +809,7 @@ describe('FasterPSAR (Number version)', () => {
 
     // After both branches have been executed, SAR should be adjusted to one of the highs
     // Based on the code execution path, it will be set to the higher of the two (prePrevious.high)
-    expect(result?.toNumber()).toBe(8);
+    expect(result).toBe(8);
   });
 
   it('should directly test previousCandle high impact on SAR in downtrend', () => {
@@ -1186,14 +865,14 @@ describe('FasterPSAR (Number version)', () => {
 
   it('should specifically handle replace flag with notEnoughData', () => {
     // This test targets lines 51-54 which aren't being covered
-    const psar = new PSAR({accelerationMax: 0.2, accelerationStep: 0.02});
+    const psar = new FasterPSAR({accelerationMax: 0.2, accelerationStep: 0.02});
 
     // First test with no data (no previousCandle)
     const result1 = psar.update({high: 10, low: 9}, true);
     expect(result1).toBeNull();
 
     // Test replacing data when lastSar is null but previousCandle exists
-    const psar2 = new PSAR({accelerationMax: 0.2, accelerationStep: 0.02});
+    const psar2 = new FasterPSAR({accelerationMax: 0.2, accelerationStep: 0.02});
     psar2.update({high: 10, low: 9}, false); // Add first candle but lastSar is still null
 
     // Replace the first candle
@@ -1208,31 +887,31 @@ describe('FasterPSAR (Number version)', () => {
 
   // Test utility functions directly for code coverage by creating specific scenarios
   it('should test helper functions when previous value DOES meet condition', () => {
-    // Test the Big.js version for previous low < SAR
-    const psar = new PSAR({accelerationMax: 0.2, accelerationStep: 0.02});
+    // Test for previous low < SAR
+    const psar = new FasterPSAR({accelerationMax: 0.2, accelerationStep: 0.02});
 
     // Initialize indicator
     psar.update({high: 10, low: 9}, false);
     psar.update({high: 11, low: 10}, false);
 
     // Create a scenario where previousLow is less than SAR
-    const exposed = exposePSARProperties(psar);
-    exposed.lastSar = new Big(12); // SAR higher than previous low
+    const exposed = exposePrivateProperties(psar);
+    exposed.lastSar = 12; // SAR higher than previous low
     exposed.isLong = true;
 
     // This will call updateSARWithPreviousLow with previousLow < sar
     psar.update({high: 13, low: 11}, false);
 
     // Now create a scenario for previousHigh > SAR in downtrend
-    const psar2 = new PSAR({accelerationMax: 0.2, accelerationStep: 0.02});
+    const psar2 = new FasterPSAR({accelerationMax: 0.2, accelerationStep: 0.02});
 
     // Initialize downtrend
     psar2.update({high: 13, low: 12}, false);
     psar2.update({high: 12, low: 11}, false);
 
     // Set up conditions
-    const exposed2 = exposePSARProperties(psar2);
-    exposed2.lastSar = new Big(10); // SAR lower than previous high
+    const exposed2 = exposePrivateProperties(psar2);
+    exposed2.lastSar = 10; // SAR lower than previous high
     exposed2.isLong = false;
 
     // This will call updateSARWithPreviousHigh with previousHigh > sar
@@ -1266,35 +945,35 @@ describe('FasterPSAR (Number version)', () => {
   });
 
   it('should test negative branch conditions for ternary operators', () => {
-    // Test the Big.js version for previous low >= SAR
-    const psar = new PSAR({accelerationMax: 0.2, accelerationStep: 0.02});
+    // Test for previous low >= SAR
+    const psar = new FasterPSAR({accelerationMax: 0.2, accelerationStep: 0.02});
 
     // Initialize indicator
     psar.update({high: 10, low: 9}, false);
     psar.update({high: 11, low: 10}, false);
 
     // Use prePreviousCandle branch path but make sure previousLow is NOT < SAR
-    const exposed = exposePSARProperties(psar);
+    const exposed = exposePrivateProperties(psar);
 
     // Set state for an uptrend with pre-previous candle
-    exposed.lastSar = new Big(5); // SAR much lower than low price
+    exposed.lastSar = 5; // SAR much lower than low price
     exposed.prePreviousCandle = {high: 9, low: 8};
     exposed.previousCandle = {high: 9.5, low: 8.5};
     exposed.isLong = true;
 
-    // This should hit the ternary operator with previousLow.lt(sar) = false
+    // This should hit the ternary operator with previousLow < sar = false
     psar.update({high: 10, low: 9}, false);
 
     // Now test the downtrend case
-    const psar2 = new PSAR({accelerationMax: 0.2, accelerationStep: 0.02});
+    const psar2 = new FasterPSAR({accelerationMax: 0.2, accelerationStep: 0.02});
     psar2.update({high: 10, low: 9}, false);
     psar2.update({high: 9, low: 8}, false);
 
     // Use prePreviousCandle branch path but make sure previousHigh is NOT > SAR
-    const exposed2 = exposePSARProperties(psar2);
+    const exposed2 = exposePrivateProperties(psar2);
 
     // Set state for a downtrend with pre-previous candle
-    exposed2.lastSar = new Big(12); // SAR much higher than high price
+    exposed2.lastSar = 12; // SAR much higher than high price
     exposed2.prePreviousCandle = {high: 9, low: 8};
     exposed2.previousCandle = {high: 8.5, low: 7.5};
     exposed2.isLong = false;
