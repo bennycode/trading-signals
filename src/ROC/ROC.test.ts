@@ -1,5 +1,4 @@
-import {Big} from '../index.js';
-import {FasterROC, ROC} from './ROC.js';
+import {FasterROC} from './ROC.js';
 import {NotEnoughDataError} from '../error/index.js';
 
 describe('ROC', () => {
@@ -17,36 +16,29 @@ describe('ROC', () => {
       ];
 
       const interval = 5;
-      const roc = new ROC(interval);
       const fasterROC = new FasterROC(interval);
 
       for (const price of prices) {
-        roc.add(price);
         fasterROC.add(price);
 
-        if (roc.isStable) {
+        if (fasterROC.isStable) {
           const expected = expectations.shift();
-          expect(roc.getResultOrThrow().toFixed(2)).toEqual(expected?.toFixed(2));
+          expect(fasterROC.getResultOrThrow().toFixed(2)).toEqual(expected?.toFixed(2));
         }
       }
 
-      expect(roc.getRequiredInputs()).toBe(interval);
       expect(fasterROC.getRequiredInputs()).toBe(interval);
-
-      expect(roc.lowest?.toFixed(2)).toBe('0.01');
       expect(fasterROC.lowest?.toFixed(2)).toBe('0.01');
-
-      expect(roc.highest?.toFixed(2)).toBe('0.04');
       expect(fasterROC.highest?.toFixed(2)).toBe('0.04');
     });
 
     it('identifies a down-trending asset by a negative ROC', () => {
-      const roc = new ROC(5);
+      const roc = new FasterROC(5);
 
       const prices = [1000, 900, 800, 700, 600, 500, 400, 300, 200, 100];
 
       prices.forEach(price => {
-        roc.add(new Big(price));
+        roc.add(price);
       });
 
       expect(roc.lowest?.toFixed(2)).toBe('-0.83');
@@ -54,7 +46,7 @@ describe('ROC', () => {
     });
 
     it('throws an error when there is not enough input data', () => {
-      const roc = new ROC(6);
+      const roc = new FasterROC(6);
 
       try {
         roc.getResultOrThrow();
@@ -68,16 +60,9 @@ describe('ROC', () => {
   describe('isStable', () => {
     it('returns true when it can return reliable data', () => {
       const interval = 5;
-      const indicator = new ROC(interval);
+      const indicator = new FasterROC(interval);
 
-      const mockedPrices = [
-        new Big('0.00019040'),
-        new Big('0.00019071'),
-        new Big('0.00019198'),
-        new Big('0.00019220'),
-        new Big('0.00019214'),
-        new Big('0.00019205'),
-      ];
+      const mockedPrices = [0.0001904, 0.00019071, 0.00019198, 0.0001922, 0.00019214, 0.00019205];
 
       expect(mockedPrices.length).toBe(interval + 1);
       expect(indicator.isStable).toBe(false);

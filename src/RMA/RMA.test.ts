@@ -1,4 +1,4 @@
-import {RMA, FasterRMA, NotEnoughDataError} from '../index.js';
+import {FasterRMA, NotEnoughDataError} from '../index.js';
 import {describe} from 'vitest';
 
 describe('RMA', () => {
@@ -22,14 +22,14 @@ describe('RMA', () => {
   describe('replace', () => {
     it('replaces the most recently added value', () => {
       const interval = 5;
-      const rma = new RMA(interval);
-      const rmaWithReplace = new RMA(interval);
+      const rma = new FasterRMA(interval);
+      const rmaWithReplace = new FasterRMA(interval);
 
       const subset = [prices[0], prices[1], prices[2]];
 
       rma.updates([...subset, prices[3], prices[4]], false);
 
-      rmaWithReplace.updates([...subset, '8239239'], false);
+      rmaWithReplace.updates([...subset, 8239239], false);
       rmaWithReplace.replace(prices[3]);
       rmaWithReplace.add(prices[4]);
 
@@ -41,15 +41,10 @@ describe('RMA', () => {
 
     it('replaces recently added values', () => {
       const interval = 5;
-      const rma = new RMA(interval);
       const fasterRMA = new FasterRMA(interval);
-      rma.add('81.59');
       fasterRMA.add(81.59);
-      rma.add('81.06');
       fasterRMA.add(81.06);
-      rma.add('82.87');
       fasterRMA.add(82.87);
-      rma.add('83.0');
       fasterRMA.add(83.0);
 
       // Add the latest value
@@ -57,11 +52,6 @@ describe('RMA', () => {
       const latestResult = '83.61';
       const latestLow = '81.48';
       const latestHigh = '83.61';
-
-      rma.add(latestValue);
-      expect(rma.getResultOrThrow()?.toFixed(2)).toBe(latestResult);
-      expect(rma.lowest?.toFixed(2)).toBe(latestLow);
-      expect(rma.highest?.toFixed(2)).toBe(latestHigh);
 
       fasterRMA.add(latestValue);
       expect(fasterRMA.getResultOrThrow()?.toFixed(2)).toBe(latestResult);
@@ -74,22 +64,12 @@ describe('RMA', () => {
       const otherLow = '81.48';
       const otherHigh = '231.73';
 
-      rma.replace(someOtherValue);
-      expect(rma.getResultOrThrow()?.toFixed(2)).toBe(otherResult);
-      expect(rma.lowest?.toFixed(2)).toBe(otherLow);
-      expect(rma.highest?.toFixed(2)).toBe(otherHigh);
-
       fasterRMA.replace(someOtherValue);
       expect(fasterRMA.getResultOrThrow()?.toFixed(2)).toBe(otherResult);
       expect(fasterRMA.lowest?.toFixed(2)).toBe(otherLow);
       expect(fasterRMA.highest?.toFixed(2)).toBe(otherHigh);
 
       // Replace the other value with the latest value
-      rma.replace(latestValue);
-      expect(rma.getResultOrThrow()?.toFixed(2)).toBe(latestResult);
-      expect(rma.lowest?.toFixed(2)).toBe(latestLow);
-      expect(rma.highest?.toFixed(2)).toBe(latestHigh);
-
       fasterRMA.replace(latestValue);
       expect(fasterRMA.getResultOrThrow()?.toFixed(2)).toBe(latestResult);
       expect(fasterRMA.lowest?.toFixed(2)).toBe(latestLow);
@@ -97,7 +77,7 @@ describe('RMA', () => {
     });
 
     it('will simply add prices when there are no prices to replace', () => {
-      const rma = new RMA(5);
+      const rma = new FasterRMA(5);
       rma.update(prices[0], true);
       rma.add(prices[1]);
       rma.add(prices[2]);
@@ -117,24 +97,20 @@ describe('RMA', () => {
   describe('getResultOrThrow', () => {
     it('calculates the Exponential Moving Average over a period of 5', () => {
       const interval = 5;
-      const rma = new RMA(interval);
       const fasterRMA = new FasterRMA(interval);
       for (let i = 0; i < prices.length; i++) {
         const price = prices[i];
-        rma.add(price);
         fasterRMA.add(price);
-        if (rma.isStable && fasterRMA.isStable) {
+        if (fasterRMA.isStable) {
           const expected = expectations[i - (interval - 1)];
-          expect(rma.getResultOrThrow().toFixed(2)).toBe(expected);
           expect(fasterRMA.getResultOrThrow().toFixed(2)).toBe(expected);
         }
       }
-      expect(rma.getResultOrThrow().toFixed(2)).toBe('85.83');
       expect(fasterRMA.getResultOrThrow().toFixed(2)).toBe('85.83');
     });
 
     it('throws an error when there is not enough input data', () => {
-      const rma = new RMA(10);
+      const rma = new FasterRMA(10);
 
       try {
         rma.getResultOrThrow();
