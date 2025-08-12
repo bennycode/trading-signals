@@ -1,4 +1,3 @@
-import Big from 'big.js';
 import {FasterIQR, IQR} from './IQR.js';
 
 describe('IQR', () => {
@@ -7,7 +6,7 @@ describe('IQR', () => {
       const iqr = new IQR(5);
 
       for (let i = 0; i < 4; i++) {
-        const result = iqr.add(new Big(i));
+        const result = iqr.add(i);
         expect(result).toBeNull();
       }
     });
@@ -16,23 +15,23 @@ describe('IQR', () => {
       const iqr = new IQR(3);
 
       // Fill the buffer with initial values
-      iqr.add(new Big(1));
-      iqr.add(new Big(2));
-      iqr.add(new Big(3));
+      iqr.add(1);
+      iqr.add(2);
+      iqr.add(3);
 
       // When we add the 4th value, the 1st value should be removed
-      iqr.add(new Big(4));
+      iqr.add(4);
 
       // Window now contains [2, 3, 4]
       // Q1 = 2, Q3 = 4, IQR = 2
-      expect(iqr.getResultOrThrow().valueOf()).toBe('2');
+      expect(iqr.getResultOrThrow().valueOf()).toBe(2);
 
       // When we add the 5th value, the 2nd value should be removed
-      iqr.add(new Big(5));
+      iqr.add(5);
 
       // Window now contains [3, 4, 5]
       // Q1 = 3, Q3 = 5, IQR = 2
-      expect(iqr.getResultOrThrow().valueOf()).toBe('2');
+      expect(iqr.getResultOrThrow().valueOf()).toBe(2);
     });
   });
 
@@ -42,14 +41,14 @@ describe('IQR', () => {
       const values = [1, 2, 3, 4, 5];
 
       for (const value of values) {
-        iqr.add(new Big(value));
+        iqr.add(value);
       }
 
-      expect(iqr.getResultOrThrow().valueOf()).toBe('3');
+      expect(iqr.getResultOrThrow().valueOf()).toBe(3);
 
-      const result = iqr.replace(new Big(10));
+      const result = iqr.replace(10);
 
-      expect(result?.valueOf()).toBe('5.5');
+      expect(result?.valueOf()).toBe(5.5);
     });
   });
 
@@ -63,10 +62,10 @@ describe('IQR', () => {
       expect(iqr.getRequiredInputs()).toBe(interval);
 
       for (const value of values) {
-        iqr.add(new Big(value));
+        iqr.add(value);
       }
 
-      expect(iqr.getResultOrThrow().valueOf()).toBe('88');
+      expect(iqr.getResultOrThrow().valueOf()).toBe(88);
     });
 
     it('calculates the interquartile range (#2)', () => {
@@ -76,10 +75,10 @@ describe('IQR', () => {
       const iqr = new IQR(9);
 
       for (const value of values) {
-        iqr.add(new Big(value));
+        iqr.add(value);
       }
 
-      expect(iqr.getResultOrThrow().valueOf()).toBe('8');
+      expect(iqr.getResultOrThrow().valueOf()).toBe(8);
     });
 
     it('calculates the interquartile range (#3)', () => {
@@ -89,15 +88,13 @@ describe('IQR', () => {
       const iqr = new IQR(10);
 
       for (const value of values) {
-        iqr.add(new Big(value));
+        iqr.add(value);
       }
 
-      expect(iqr.getResultOrThrow().valueOf()).toBe('3');
+      expect(iqr.getResultOrThrow().valueOf()).toBe(3);
     });
   });
-});
 
-describe('FasterIQR', () => {
   describe('add', () => {
     it('returns null until enough values are provided', () => {
       const iqr = new FasterIQR(5);
