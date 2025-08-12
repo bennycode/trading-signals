@@ -1,5 +1,5 @@
 import {NotEnoughDataError} from '../error/index.js';
-import {AC, FasterAC} from './AC.js';
+import {FasterAC} from './AC.js';
 
 describe('AC', () => {
   // Test data verified with:
@@ -253,8 +253,8 @@ describe('AC', () => {
 
   describe('replace', () => {
     it('replaces the most recently added value', () => {
-      const ac = new AC(5, 34, 5);
-      const acWithReplace = new AC(5, 34, 5);
+      const ac = new FasterAC(5, 34, 5);
+      const acWithReplace = new FasterAC(5, 34, 5);
 
       ac.updates(mappedCandles, false);
       acWithReplace.updates(mappedCandles, false);
@@ -278,7 +278,7 @@ describe('AC', () => {
 
   describe('getResultOrThrow', () => {
     it('works with a signal line of SMA(5)', () => {
-      const ac = new AC(5, 34, 5);
+      const ac = new FasterAC(5, 34, 5);
       const fasterAC = new FasterAC(5, 34, 5);
 
       for (const candle of mappedCandles) {
@@ -308,7 +308,7 @@ describe('AC', () => {
     });
 
     it('throws an error when there is not enough input data', () => {
-      const ac = new AC(5, 34, 5);
+      const ac = new FasterAC(5, 34, 5);
 
       try {
         ac.getResultOrThrow();

@@ -1,4 +1,4 @@
-import {CCI, FasterCCI} from './CCI.js';
+import {FasterCCI} from './CCI.js';
 import {NotEnoughDataError} from '../error/index.js';
 
 describe('CCI', () => {
@@ -40,8 +40,8 @@ describe('CCI', () => {
   describe('replace', () => {
     it('replaces the most recently added value', () => {
       const interval = 5;
-      const cci = new CCI(interval);
-      const cciWithReplace = new CCI(interval);
+      const cci = new FasterCCI(interval);
+      const cciWithReplace = new FasterCCI(interval);
 
       const correct = {close: 87.0, high: 89.89, low: 87.0};
       const wrong = {close: 3_333, high: 5_555, low: 1_111};
@@ -63,7 +63,7 @@ describe('CCI', () => {
   describe('getResultOrThrow', () => {
     it('calculates the Commodity Channel Index (CCI)', () => {
       const interval = 5;
-      const cci = new CCI(interval);
+      const cci = new FasterCCI(interval);
       const fasterCCI = new FasterCCI(interval);
 
       expect(cci.getRequiredInputs()).toBe(interval);
@@ -85,7 +85,7 @@ describe('CCI', () => {
 
     it("stores the highest and lowest result throughout the indicator's lifetime", () => {
       const interval = 5;
-      const cci = new CCI(interval);
+      const cci = new FasterCCI(interval);
       const fasterCCI = new FasterCCI(interval);
 
       for (const candle of candles) {
@@ -100,7 +100,7 @@ describe('CCI', () => {
     });
 
     it('throws an error when there is not enough input data', () => {
-      const cci = new CCI(5);
+      const cci = new FasterCCI(5);
       try {
         cci.getResultOrThrow();
         throw new Error('Expected error');

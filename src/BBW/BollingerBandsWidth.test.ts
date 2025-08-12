@@ -1,5 +1,5 @@
-import {BollingerBands, FasterBollingerBands} from '../BBANDS/BollingerBands.js';
-import {BollingerBandsWidth, FasterBollingerBandsWidth} from './BollingerBandsWidth.js';
+import {FasterBollingerBands} from '../BBANDS/BollingerBands.js';
+import {FasterBollingerBandsWidth} from './BollingerBandsWidth.js';
 
 describe('BollingerBandsWidth', () => {
   describe('getResultOrThrow', () => {
@@ -44,7 +44,7 @@ describe('BollingerBandsWidth', () => {
       const expectations = ['0.19', '0.21', '0.21', '0.21', '0.20', '0.18', '0.15', '0.13', '0.11', '0.09', '0.09'];
 
       const interval = 20;
-      const bbw = new BollingerBandsWidth(new BollingerBands(interval, 2));
+      const bbw = new FasterBollingerBandsWidth(new FasterBollingerBands(interval, 2));
       const fasterBBW = new FasterBollingerBandsWidth(new FasterBollingerBands(interval, 2));
 
       expect(bbw.getRequiredInputs()).toBe(interval);

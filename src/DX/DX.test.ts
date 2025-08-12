@@ -1,4 +1,4 @@
-import {DX, FasterDX} from './DX.js';
+import {FasterDX} from './DX.js';
 
 describe('DX', () => {
   // Test data verified with:
@@ -44,10 +44,10 @@ describe('DX', () => {
       const correct = {close: 1_000, high: 1_000, low: 1_000};
       const wrong = {close: 9_000, high: 9_000, low: 9_000};
 
-      const dx = new DX(interval);
+      const dx = new FasterDX(interval);
       const fasterDX = new FasterDX(interval);
 
-      const dxWithReplace = new DX(interval);
+      const dxWithReplace = new FasterDX(interval);
       const fasterDXWithReplace = new FasterDX(interval);
 
       dx.updates(candles, false);
@@ -77,7 +77,7 @@ describe('DX', () => {
   describe('getResultOrThrow', () => {
     it('calculates the Directional Movement Index (DX)', () => {
       const interval = 5;
-      const dx = new DX(interval);
+      const dx = new FasterDX(interval);
       const fasterDX = new FasterDX(interval);
 
       for (const candle of candles) {
@@ -115,7 +115,7 @@ describe('DX', () => {
         {close: 95, high: 100, low: 90},
       ];
 
-      const dx = new DX(5);
+      const dx = new FasterDX(5);
       const fasterDX = new FasterDX(5);
 
       dx.updates(candles, false);

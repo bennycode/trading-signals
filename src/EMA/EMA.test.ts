@@ -1,4 +1,4 @@
-import {EMA, FasterEMA, NotEnoughDataError} from '../index.js';
+import {FasterEMA, NotEnoughDataError} from '../index.js';
 import {describe} from 'vitest';
 
 describe('EMA', () => {
@@ -24,14 +24,14 @@ describe('EMA', () => {
   describe('replace', () => {
     it('replaces the most recently added value', () => {
       const interval = 5;
-      const ema = new EMA(interval);
-      const emaWithReplace = new EMA(interval);
+      const ema = new FasterEMA(interval);
+      const emaWithReplace = new FasterEMA(interval);
 
       const subset = [prices[0], prices[1], prices[2]];
 
       ema.updates([...subset, prices[3], prices[4]], false);
 
-      emaWithReplace.updates([...subset, '8239239'], false);
+      emaWithReplace.updates([...subset, 8239239], false);
       emaWithReplace.replace(prices[3]);
       emaWithReplace.add(prices[4]);
 
@@ -43,15 +43,15 @@ describe('EMA', () => {
 
     it('replaces recently added values', () => {
       const interval = 5;
-      const ema = new EMA(interval);
+      const ema = new FasterEMA(interval);
       const fasterEMA = new FasterEMA(interval);
-      ema.add('81.59');
+      ema.add(81.59);
       fasterEMA.add(81.59);
-      ema.add('81.06');
+      ema.add(81.06);
       fasterEMA.add(81.06);
-      ema.add('82.87');
+      ema.add(82.87);
       fasterEMA.add(82.87);
-      ema.add('83.0');
+      ema.add(83.0);
       fasterEMA.add(83.0);
 
       // Add the latest value
@@ -99,7 +99,7 @@ describe('EMA', () => {
     });
 
     it('will simply add prices when there are no prices to replace', () => {
-      const ema = new EMA(5);
+      const ema = new FasterEMA(5);
       ema.update(prices[0], true);
       ema.add(prices[1]);
       ema.add(prices[2]);
@@ -119,7 +119,7 @@ describe('EMA', () => {
   describe('getResultOrThrow', () => {
     it('calculates the Exponential Moving Average over a period of 5', () => {
       const interval = 5;
-      const ema = new EMA(interval);
+      const ema = new FasterEMA(interval);
       const fasterEMA = new FasterEMA(interval);
 
       expect(ema.getRequiredInputs()).toBe(interval);
@@ -141,7 +141,7 @@ describe('EMA', () => {
     });
 
     it('throws an error when there is not enough input data', () => {
-      const ema = new EMA(10);
+      const ema = new FasterEMA(10);
 
       try {
         ema.getResultOrThrow();

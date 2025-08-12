@@ -1,10 +1,10 @@
 import {NotEnoughDataError} from '../error/index.js';
-import {CG, FasterCG} from './CG.js';
+import {FasterCG} from './CG.js';
 
 describe('CG', () => {
   describe('prices', () => {
     it('does not cache more prices than necessary to fill the interval', () => {
-      const cg = new CG(3, 6);
+      const cg = new FasterCG(3, 6);
       cg.add(1);
       cg.add(2);
       expect(cg.prices.length).toBe(2);
@@ -21,7 +21,7 @@ describe('CG', () => {
 
   describe('isStable', () => {
     it('is stable when the inputs can fill the signal interval', () => {
-      const cg = new CG(5, 6);
+      const cg = new FasterCG(5, 6);
       cg.add(10);
       cg.add(20);
       cg.add(30);
@@ -36,7 +36,7 @@ describe('CG', () => {
 
   describe('replace', () => {
     it('replaces recently added values', () => {
-      const cg = new CG(5, 10);
+      const cg = new FasterCG(5, 10);
       const fasterCG = new FasterCG(5, 10);
 
       const values = [100, 110, 120, 130, 140, 150, 160, 170, 180, 190, 200];
@@ -99,7 +99,7 @@ describe('CG', () => {
   describe('getResultOrThrow', () => {
     it('indicates a downtrend when the center of gravity falls below the signal line', () => {
       const signalInterval = 10;
-      const cg = new CG(5, signalInterval);
+      const cg = new FasterCG(5, signalInterval);
       const fasterCG = new FasterCG(5, signalInterval);
       const values = [100, 110, 120, 130, 140, 150, 160, 170, 180, 190, 200];
       for (const value of values) {
@@ -122,7 +122,7 @@ describe('CG', () => {
 
       cgResult = cg.getResultOrThrow();
       signalResult = cg.signal.getResultOrThrow();
-      expect(cgResult.gt(signalResult)).toBe(false);
+      expect(cgResult > signalResult).toBe(false);
 
       expect(cgResult.toFixed(4)).toBe('2.7059');
       expect(fasterCG.getResultOrThrow().toFixed(4)).toBe('2.7059');
@@ -135,7 +135,7 @@ describe('CG', () => {
     });
 
     it('throws an error when there is not enough input data', () => {
-      const cg = new CG(10, 20);
+      const cg = new FasterCG(10, 20);
 
       try {
         cg.getResultOrThrow();
@@ -146,7 +146,7 @@ describe('CG', () => {
     });
 
     it('is protected against division by zero errors', () => {
-      const cg = new CG(1, 1);
+      const cg = new FasterCG(1, 1);
       cg.add(0);
       expect(cg.getResultOrThrow().valueOf()).toBe('0');
 
