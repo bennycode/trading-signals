@@ -1,14 +1,14 @@
-import {AccelerationBands, FasterAccelerationBands} from './AccelerationBands.js';
+import {FasterEMA} from '../EMA/EMA.js';
 import {NotEnoughDataError} from '../error/index.js';
-import {SMA} from '../SMA/SMA.js';
-import {EMA} from '../EMA/EMA.js';
+import {FasterSMA} from '../SMA/SMA.js';
+import {FasterAccelerationBands} from './AccelerationBands.js';
 
-describe('AccelerationBands', () => {
+describe('FasterAccelerationBands', () => {
   describe('constructor', () => {
     it('works with different kinds of indicators', () => {
-      const accBandsWithSMA = new AccelerationBands(20, 2, SMA);
-      const accBandsWithEMA = new AccelerationBands(20, 2, EMA);
-      expect(accBandsWithSMA).toBeDefined();
+      const accBandsWithFasterSMA = new FasterAccelerationBands(20, 2, FasterSMA);
+      const accBandsWithEMA = new FasterAccelerationBands(20, 2, FasterEMA);
+      expect(accBandsWithFasterSMA).toBeDefined();
       expect(accBandsWithEMA).toBeDefined();
     });
   });
@@ -16,10 +16,10 @@ describe('AccelerationBands', () => {
   describe('getResultOrThrow', () => {
     it('returns upper, middle and lower bands', () => {
       const interval = 20;
-      const accBands = new AccelerationBands(interval, 4);
+      const accBands = new FasterAccelerationBands(interval, 4);
       expect(accBands.isStable).toBe(false);
 
-      const fasterAccBands = new FasterAccelerationBands(interval, 4);
+      const fasterAccBands = new FasterFasterAccelerationBands(interval, 4);
       expect(fasterAccBands.isStable).toBe(false);
 
       // Test data from: https://github.com/QuantConnect/Lean/blob/master/Tests/TestData/spy_acceleration_bands_20_4.txt
@@ -90,7 +90,7 @@ describe('AccelerationBands', () => {
     });
 
     it('throws an error when there is not enough input data', () => {
-      const accBands = new AccelerationBands(20, 2);
+      const accBands = new FasterAccelerationBands(20, 2);
       try {
         accBands.getResultOrThrow();
         throw new Error('Expected error');
@@ -98,7 +98,7 @@ describe('AccelerationBands', () => {
         expect(error).toBeInstanceOf(NotEnoughDataError);
       }
 
-      const fasterAccBands = new FasterAccelerationBands(20, 2);
+      const fasterAccBands = new FasterFasterAccelerationBands(20, 2);
       try {
         fasterAccBands.getResultOrThrow();
         throw new Error('Expected error');
@@ -110,7 +110,7 @@ describe('AccelerationBands', () => {
 
   describe('update', () => {
     it("doesn't crash when supplying zeroes", () => {
-      const accBands = new AccelerationBands(20, 2);
+      const accBands = new FasterAccelerationBands(20, 2);
       return accBands.updates(
         [
           {
@@ -123,20 +123,20 @@ describe('AccelerationBands', () => {
       );
     });
   });
-});
 
-describe('FaserAccelerationBands', () => {
-  it("doesn't crash when supplying zeroes", () => {
-    const accBands = new FasterAccelerationBands(20, 2);
-    return accBands.updates(
-      [
-        {
-          close: 0,
-          high: 0,
-          low: 0,
-        },
-      ],
-      false
-    );
+  describe('updates', () => {
+    it("doesn't crash when supplying zeroes", () => {
+      const accBands = new FasterAccelerationBands(20, 2);
+      return accBands.updates(
+        [
+          {
+            close: 0,
+            high: 0,
+            low: 0,
+          },
+        ],
+        false
+      );
+    });
   });
 });
