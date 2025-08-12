@@ -1,29 +1,19 @@
-import {FasterMACD, MACD} from './MACD.js';
-import {Big, DEMA, EMA, FasterEMA, NotEnoughDataError} from '../index.js';
+import {FasterMACD} from './MACD.js';
+import {FasterEMA} from '../EMA/EMA.js';
+import {NotEnoughDataError} from '../error/index.js';
 
 describe('MACD', () => {
   describe('replace', () => {
     it('replaces the most recently added value', () => {
-      const macd = new MACD({
-        indicator: EMA,
-        longInterval: 5,
-        shortInterval: 2,
-        signalInterval: 9,
-      });
-      const macdWithReplace = new MACD({
-        indicator: EMA,
-        longInterval: 5,
-        shortInterval: 2,
-        signalInterval: 9,
-      });
+      const macd = new FasterMACD(new FasterEMA(2), new FasterEMA(5), new FasterEMA(9));
+      const macdWithReplace = new FasterMACD(new FasterEMA(2), new FasterEMA(5), new FasterEMA(9));
+      const subset = [10, 20, 80, 81.59, 81.06, 82.87, 83.0];
 
-      const subset = ['10', '20', '80', '81.59', '81.06', '82.87', '83.0'];
+      macd.updates([...subset, 90, 83.61], false);
 
-      macd.updates([...subset, '90', '83.61'], false);
-
-      macdWithReplace.updates([...subset, '100'], false);
+      macdWithReplace.updates([...subset, 100], false);
       macdWithReplace.replace(90);
-      macdWithReplace.add('83.61');
+      macdWithReplace.add(83.61);
 
       expect(macdWithReplace.short.getResultOrThrow().toFixed(), 'short').toBe(macd.short.getResultOrThrow().toFixed());
       expect(macdWithReplace.long.getResultOrThrow().toFixed(), 'long').toBe(macd.long.getResultOrThrow().toFixed());
@@ -39,27 +29,15 @@ describe('MACD', () => {
 
   describe('update', () => {
     it('can replace recently added values', () => {
-      const macd = new MACD({
-        indicator: EMA,
-        longInterval: 5,
-        shortInterval: 2,
-        signalInterval: 9,
-      });
       const fasterMACD = new FasterMACD(new FasterEMA(2), new FasterEMA(5), new FasterEMA(9));
 
       const subset = [81.59, 81.06, 82.87, 83.0];
-      macd.updates(subset, false);
       fasterMACD.updates(subset, false);
 
-      macd.add('90'); // this value gets replaced with the next call
       fasterMACD.add(90); // this value gets replaced with the next call
-      macd.replace('83.61');
       fasterMACD.replace(83.61);
 
-      expect(macd.isStable).toBe(true);
       expect(fasterMACD.isStable).toBe(true);
-
-      expect(macd.getResultOrThrow().macd.toFixed(2)).toBe('0.62');
       expect(fasterMACD.getResultOrThrow().macd.toFixed(2)).toBe('0.62');
     });
   });
@@ -127,13 +105,7 @@ describe('MACD', () => {
         '-0.08',
       ];
 
-      const macd = new MACD({
-        indicator: EMA,
-        longInterval: 5,
-        shortInterval: 2,
-        signalInterval: 9,
-      });
-
+      const macd = new FasterMACD(new FasterEMA(2), new FasterEMA(5), new FasterEMA(9));
       const fasterMACD = new FasterMACD(new FasterEMA(2), new FasterEMA(5), new FasterEMA(9));
 
       for (const [index, input] of Object.entries(prices)) {
@@ -165,12 +137,7 @@ describe('MACD', () => {
     });
 
     it('throws an error when there is not enough input data', () => {
-      const macd = new MACD({
-        indicator: DEMA,
-        longInterval: 26,
-        shortInterval: 12,
-        signalInterval: 9,
-      });
+      const macd = new FasterMACD(new FasterEMA(12), new FasterEMA(26), new FasterEMA(9));
 
       try {
         macd.getResultOrThrow();
@@ -193,32 +160,11 @@ describe('MACD', () => {
   describe('isStable', () => {
     it('knows when it can return reliable data', () => {
       const longInterval = 18;
-      const macd = new MACD({
-        indicator: EMA,
-        longInterval,
-        shortInterval: 9,
-        signalInterval: 9,
-      });
+      const macd = new FasterMACD(new FasterEMA(9), new FasterEMA(longInterval), new FasterEMA(9));
 
       const mockedPrices = [
-        new Big('0.00019040'),
-        new Big('0.00019071'),
-        new Big('0.00019198'),
-        new Big('0.00019220'),
-        new Big('0.00019214'),
-        new Big('0.00019205'),
-        new Big('0.00019214'),
-        new Big('0.00019222'),
-        new Big('0.00019144'),
-        new Big('0.00019128'),
-        new Big('0.00019159'),
-        new Big('0.00019143'),
-        new Big('0.00019199'),
-        new Big('0.00019214'),
-        new Big('0.00019119'),
-        new Big('0.00019202'),
-        new Big('0.00019220'),
-        new Big('0.00019207'),
+        0.0001904, 0.00019071, 0.00019198, 0.0001922, 0.00019214, 0.00019205, 0.00019214, 0.00019222, 0.00019144,
+        0.00019128, 0.00019159, 0.00019143, 0.00019199, 0.00019214, 0.00019119, 0.00019202, 0.0001922, 0.00019207,
       ];
 
       expect(mockedPrices.length).toBe(longInterval);
