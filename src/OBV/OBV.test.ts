@@ -1,4 +1,4 @@
-import {FasterOBV, OBV} from './OBV.js';
+import {FasterOBV} from './OBV.js';
 import {NotEnoughDataError} from '../error/index.js';
 
 describe('OBV', () => {
@@ -26,35 +26,23 @@ describe('OBV', () => {
         '99600.000',
         '72100.000',
       ];
-      const obv = new OBV();
       const fasterOBV = new FasterOBV();
       for (const candle of candles) {
-        obv.add(candle);
         fasterOBV.add(candle);
-        if (obv.isStable && fasterOBV.isStable) {
+        if (fasterOBV.isStable) {
           const expected = expectations.shift();
-          expect(obv.getResultOrThrow().toFixed(3)).toBe(expected);
           expect(fasterOBV.getResultOrThrow().toFixed(3)).toBe(expected);
         }
       }
-      expect(obv.isStable).toBe(true);
       expect(fasterOBV.isStable).toBe(true);
-
-      expect(obv.getRequiredInputs()).toBe(2);
       expect(fasterOBV.getRequiredInputs()).toBe(2);
-
-      expect(obv.getResultOrThrow().toFixed(2)).toBe('72100.00');
       expect(fasterOBV.getResultOrThrow().toFixed(2)).toBe('72100.00');
-
-      expect(obv.lowest?.toFixed(2)).toBe('600.00');
       expect(fasterOBV.lowest?.toFixed(2)).toBe('600.00');
-
-      expect(obv.highest?.toFixed(2)).toBe('99600.00');
       expect(fasterOBV.highest?.toFixed(2)).toBe('99600.00');
     });
 
     it('throws an error when there is not enough input data', () => {
-      const obv = new OBV();
+      const obv = new FasterOBV();
       expect(obv.isStable).toBe(false);
       try {
         obv.getResultOrThrow();
