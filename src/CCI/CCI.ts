@@ -1,7 +1,6 @@
-import Big from 'big.js';
-import {BigIndicatorSeries, NumberIndicatorSeries} from '../Indicator.js';
-import {FasterMAD, MAD} from '../MAD/MAD.js';
-import {FasterSMA, SMA} from '../SMA/SMA.js';
+import {NumberIndicatorSeries} from '../Indicator.js';
+import {FasterMAD} from '../MAD/MAD.js';
+import {FasterSMA} from '../SMA/SMA.js';
 import {pushUpdate, type HighLowClose} from '../util/index.js';
 
 /**
@@ -28,43 +27,6 @@ import {pushUpdate, type HighLowClose} from '../util/index.js';
  *
  * @see https://en.wikipedia.org/wiki/Commodity_channel_index
  */
-export class CCI extends BigIndicatorSeries<HighLowClose> {
-  private readonly sma: SMA;
-  private readonly typicalPrices: Big[];
-
-  constructor(public readonly interval: number) {
-    super();
-    this.sma = new SMA(this.interval);
-    this.typicalPrices = [];
-  }
-
-  override getRequiredInputs() {
-    return this.sma.getRequiredInputs();
-  }
-
-  update(candle: HighLowClose, replace: boolean) {
-    const typicalPrice = this.cacheTypicalPrice(candle, replace);
-    this.sma.update(typicalPrice, replace);
-
-    if (this.sma.isStable) {
-      const mean = this.sma.getResultOrThrow();
-      const meanDeviation = MAD.getResultFromBatch(this.typicalPrices, mean);
-      const numerator = typicalPrice.minus(mean);
-      const denominator = new Big(0.015).mul(meanDeviation);
-      const result = numerator.div(denominator);
-      return this.setResult(result, replace);
-    }
-
-    return null;
-  }
-
-  private cacheTypicalPrice({high, low, close}: HighLowClose, replace: boolean) {
-    const typicalPrice = new Big(high).plus(low).plus(close).div(3);
-    pushUpdate(this.typicalPrices, replace, typicalPrice, this.interval);
-    return typicalPrice;
-  }
-}
-
 export class FasterCCI extends NumberIndicatorSeries<HighLowClose<number>> {
   private readonly sma: FasterSMA;
   private readonly typicalPrices: number[];

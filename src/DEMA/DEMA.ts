@@ -1,6 +1,5 @@
-import type {BigSource} from 'big.js';
-import {EMA, FasterEMA} from '../EMA/EMA.js';
-import {BigIndicatorSeries, NumberIndicatorSeries} from '../Indicator.js';
+import {FasterEMA} from '../EMA/EMA.js';
+import {NumberIndicatorSeries} from '../Indicator.js';
 
 /**
  * Double Exponential Moving Average (DEMA)
@@ -12,31 +11,6 @@ import {BigIndicatorSeries, NumberIndicatorSeries} from '../Indicator.js';
  *
  * @see https://www.investopedia.com/terms/d/double-exponential-moving-average.asp
  */
-export class DEMA extends BigIndicatorSeries {
-  private readonly inner: EMA;
-  private readonly outer: EMA;
-
-  constructor(public readonly interval: number) {
-    super();
-    this.inner = new EMA(interval);
-    this.outer = new EMA(interval);
-  }
-
-  override getRequiredInputs() {
-    return this.outer.getRequiredInputs();
-  }
-
-  update(price: BigSource, replace: boolean): Big {
-    const innerResult = this.inner.update(price, replace);
-    const outerResult = this.outer.update(innerResult, replace);
-    return this.setResult(innerResult.times(2).sub(outerResult), replace);
-  }
-
-  override get isStable(): boolean {
-    return this.outer.isStable;
-  }
-}
-
 export class FasterDEMA extends NumberIndicatorSeries {
   private readonly inner: FasterEMA;
   private readonly outer: FasterEMA;

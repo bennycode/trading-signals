@@ -1,6 +1,4 @@
-import Big from 'big.js';
-import {BigIndicatorSeries, NumberIndicatorSeries} from '../Indicator.js';
-import {getMaximum} from '../util/getMaximum.js';
+import {NumberIndicatorSeries} from '../Indicator.js';
 import type {HighLowClose} from '../util/HighLowClose.js';
 
 /**
@@ -14,37 +12,6 @@ import type {HighLowClose} from '../util/HighLowClose.js';
  *
  * @see https://www.linnsoft.com/techind/true-range-tr
  */
-export class TR extends BigIndicatorSeries<HighLowClose> {
-  private previousCandle?: HighLowClose;
-  private secondLastCandle?: HighLowClose;
-
-  override getRequiredInputs() {
-    return 2;
-  }
-
-  update(candle: HighLowClose, replace: boolean): Big {
-    const high = new Big(candle.high);
-    const highLow = high.minus(candle.low);
-
-    if (this.previousCandle && replace) {
-      this.previousCandle = this.secondLastCandle;
-    }
-
-    if (this.previousCandle) {
-      const highClose = high.minus(this.previousCandle.close).abs();
-      const lowClose = new Big(candle.low).minus(this.previousCandle.close).abs();
-      this.secondLastCandle = this.previousCandle;
-      this.previousCandle = candle;
-      return this.setResult(getMaximum([highLow, highClose, lowClose]), replace);
-    }
-
-    this.secondLastCandle = this.previousCandle;
-    this.previousCandle = candle;
-
-    return this.setResult(highLow, replace);
-  }
-}
-
 export class FasterTR extends NumberIndicatorSeries<HighLowClose<number>> {
   private previousCandle?: HighLowClose<number>;
   private twoPreviousCandle?: HighLowClose<number>;

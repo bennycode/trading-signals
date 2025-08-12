@@ -1,10 +1,7 @@
-import type {BigSource} from 'big.js';
 import {TechnicalIndicator} from '../Indicator.js';
-import type {FasterMovingAverage, MovingAverage} from '../MA/MovingAverage.js';
-import type {FasterMovingAverageTypes, MovingAverageTypes} from '../MA/MovingAverageTypes.js';
-import {FasterSMA, SMA} from '../SMA/SMA.js';
-
-export type DMAResult = {long: Big; short: Big};
+import type {FasterMovingAverage} from '../MA/MovingAverage.js';
+import type {FasterMovingAverageTypes} from '../MA/MovingAverageTypes.js';
+import {FasterSMA} from '../SMA/SMA.js';
 
 export interface FasterDMAResult {
   long: number;
@@ -23,39 +20,6 @@ export interface FasterDMAResult {
  *
  * @see https://faculty.fuqua.duke.edu/~charvey/Teaching/BA453_2002/CCAM/CCAM.htm#_Toc2634228
  */
-export class DMA extends TechnicalIndicator<DMAResult, BigSource> {
-  public readonly short: MovingAverage;
-  public readonly long: MovingAverage;
-
-  constructor(short: number, long: number, Indicator: MovingAverageTypes = SMA) {
-    super();
-    this.short = new Indicator(short);
-    this.long = new Indicator(long);
-  }
-
-  override get isStable(): boolean {
-    return this.long.isStable;
-  }
-
-  override getRequiredInputs() {
-    return this.long.getRequiredInputs();
-  }
-
-  update(price: BigSource, replace: boolean) {
-    this.short.update(price, replace);
-    this.long.update(price, replace);
-
-    if (this.isStable) {
-      return (this.result = {
-        long: this.long.getResultOrThrow(),
-        short: this.short.getResultOrThrow(),
-      });
-    }
-
-    return null;
-  }
-}
-
 export class FasterDMA extends TechnicalIndicator<FasterDMAResult, number> {
   public readonly short: FasterMovingAverage;
   public readonly long: FasterMovingAverage;

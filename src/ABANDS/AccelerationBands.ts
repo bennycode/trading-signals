@@ -1,9 +1,8 @@
-import Big from 'big.js';
 import {TechnicalIndicator} from '../Indicator.js';
-import type {FasterMovingAverage, MovingAverage} from '../MA/MovingAverage.js';
-import type {FasterMovingAverageTypes, MovingAverageTypes} from '../MA/MovingAverageTypes.js';
-import {FasterSMA, SMA} from '../SMA/SMA.js';
-import type {BandsResult, FasterBandsResult} from '../util/BandsResult.js';
+import type {FasterMovingAverage} from '../MA/MovingAverage.js';
+import type {FasterMovingAverageTypes} from '../MA/MovingAverageTypes.js';
+import {FasterSMA} from '../SMA/SMA.js';
+import type {FasterBandsResult} from '../util/BandsResult.js';
 import type {HighLowClose} from '../util/index.js';
 
 /**
@@ -26,53 +25,6 @@ import type {HighLowClose} from '../util/index.js';
  * @see https://github.com/QuantConnect/Lean/blob/master/Indicators/AccelerationBands.cs
  * @see https://github.com/twopirllc/pandas-ta/blob/master/pandas_ta/volatility/accbands.py
  */
-export class AccelerationBands extends TechnicalIndicator<BandsResult, HighLowClose> {
-  private readonly lowerBand: MovingAverage;
-  private readonly middleBand: MovingAverage;
-  private readonly upperBand: MovingAverage;
-
-  constructor(
-    public readonly interval: number,
-    public readonly width: number,
-    SmoothingIndicator: MovingAverageTypes = SMA
-  ) {
-    super();
-    this.lowerBand = new SmoothingIndicator(interval);
-    this.middleBand = new SmoothingIndicator(interval);
-    this.upperBand = new SmoothingIndicator(interval);
-  }
-
-  override get isStable(): boolean {
-    return this.middleBand.isStable;
-  }
-
-  override getRequiredInputs() {
-    return this.middleBand.getRequiredInputs();
-  }
-
-  update({high, low, close}: HighLowClose, replace: boolean) {
-    const highPlusLow = new Big(high).plus(low);
-    const coefficient = highPlusLow.eq(0) ? new Big(0) : new Big(high).minus(low).div(highPlusLow).mul(this.width);
-
-    // (Low * (1 - width * (High - Low)/ (High + Low)))
-    this.lowerBand.update(new Big(low).mul(new Big(1).minus(coefficient)), replace);
-    // (Close)
-    this.middleBand.update(close, replace);
-    // (High * ( 1 + width * (High - Low) / (High + Low)))
-    this.upperBand.update(new Big(high).mul(new Big(1).plus(coefficient)), replace);
-
-    if (this.isStable) {
-      return (this.result = {
-        lower: this.lowerBand.getResultOrThrow(),
-        middle: this.middleBand.getResultOrThrow(),
-        upper: this.upperBand.getResultOrThrow(),
-      });
-    }
-
-    return null;
-  }
-}
-
 export class FasterAccelerationBands extends TechnicalIndicator<FasterBandsResult, HighLowClose<number>> {
   private readonly lowerBand: FasterMovingAverage;
   private readonly middleBand: FasterMovingAverage;
