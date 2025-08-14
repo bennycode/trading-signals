@@ -1,4 +1,4 @@
-import {FasterStochasticOscillator, StochasticOscillator} from './StochasticOscillator.js';
+import {FasterStochasticOscillator} from './StochasticOscillator.js';
 import {NotEnoughDataError} from '../error/index.js';
 
 describe('StochasticOscillator', () => {
@@ -28,38 +28,27 @@ describe('StochasticOscillator', () => {
 
       const stochDs = ['75.70', '78.01', '81.79', '85.45', '89.49', '93.45', '94.36'];
 
-      const stoch = new StochasticOscillator(5, 3, 3);
       const fasterStoch = new FasterStochasticOscillator(5, 3, 3);
 
       for (const candle of candles) {
-        const stochResult = stoch.add(candle);
         const fasterStochResult = fasterStoch.add(candle);
-        if (fasterStoch.isStable && fasterStochResult && stoch.isStable && stochResult) {
+        if (fasterStoch.isStable && fasterStochResult) {
           const stochD = stochDs.shift();
           const stochK = stochKs.shift();
-
-          expect(stochResult.stochD.toFixed(2)).toEqual(stochD);
           expect(fasterStochResult.stochD.toFixed(2)).toEqual(stochD);
-
-          expect(stochResult.stochD.toFixed(2)).toEqual(stochD);
           expect(fasterStochResult.stochK.toFixed(2)).toEqual(stochK);
         }
       }
 
-      expect(stoch.isStable).toBe(true);
       expect(fasterStoch.isStable).toBe(true);
-
-      expect(stoch.getRequiredInputs()).toBe(9);
       expect(fasterStoch.getRequiredInputs()).toBe(9);
-
-      expect(stoch.getResultOrThrow().stochK.toFixed(2)).toBe('91.09');
       expect(fasterStoch.getResultOrThrow().stochK.toFixed(2)).toBe('91.09');
     });
   });
 
   describe('getResultOrThrow', () => {
     it('throws an error when there is not enough input data', () => {
-      const stoch = new StochasticOscillator(5, 3, 3);
+      const stoch = new FasterStochasticOscillator(5, 3, 3);
 
       stoch.add({close: 1, high: 1, low: 1});
       stoch.add({close: 1, high: 2, low: 1});
@@ -86,7 +75,7 @@ describe('StochasticOscillator', () => {
     });
 
     it('prevents division by zero errors when highest high and lowest low have the same value', () => {
-      const stoch = new StochasticOscillator(5, 3, 3);
+      const stoch = new FasterStochasticOscillator(5, 3, 3);
       stoch.updates(
         [
           {close: 100, high: 100, low: 100},

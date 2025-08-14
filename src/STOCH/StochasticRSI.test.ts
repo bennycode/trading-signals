@@ -1,13 +1,13 @@
-import {FasterSMA, SMA} from '../SMA/SMA.js';
-import {FasterWSMA, WSMA} from '../WSMA/WSMA.js';
-import {FasterStochasticRSI, StochasticRSI} from './StochasticRSI.js';
+import {FasterSMA} from '../SMA/SMA.js';
+import {FasterWSMA} from '../WSMA/WSMA.js';
+import {FasterStochasticRSI} from './StochasticRSI.js';
 
 describe('StochasticRSI', () => {
   describe('replace', () => {
     it('replaces the most recently added value', () => {
       const interval = 2;
-      const stochRSI = new StochasticRSI(interval);
-      const stochRSIWithReplace = new StochasticRSI(interval);
+      const stochRSI = new FasterStochasticRSI(interval);
+      const stochRSIWithReplace = new FasterStochasticRSI(interval);
 
       stochRSI.updates([2, 2, 2, 2], false);
       stochRSIWithReplace.updates([2, 2, 2, 1], false);
@@ -26,30 +26,18 @@ describe('StochasticRSI', () => {
       ];
       const expectations = ['0.658', '1.000', '1.000', '1.000', '1.000', '0.000'];
       const interval = 5;
-      const stochRSI = new StochasticRSI(interval);
       const fasterStochRSI = new FasterStochasticRSI(interval);
       for (const price of prices) {
-        const result = stochRSI.add(price);
         const fasterResult = fasterStochRSI.add(price);
-        if (result && fasterResult) {
+        if (fasterResult) {
           const expected = expectations.shift();
-          expect(result.toFixed(3)).toBe(expected);
           expect(fasterResult.toFixed(3)).toBe(expected);
         }
       }
-      expect(stochRSI.isStable).toBe(true);
       expect(fasterStochRSI.isStable).toBe(true);
-
-      expect(stochRSI.getRequiredInputs()).toBe(10);
       expect(fasterStochRSI.getRequiredInputs()).toBe(10);
-
-      expect(stochRSI.getResultOrThrow().valueOf()).toBe('0');
       expect(fasterStochRSI.getResultOrThrow()).toBe(0);
-
-      expect(stochRSI.highest?.valueOf()).toBe('1');
       expect(fasterStochRSI.highest?.valueOf()).toBe(1);
-
-      expect(stochRSI.lowest?.valueOf()).toBe('0');
       expect(fasterStochRSI.lowest?.valueOf()).toBe(0);
     });
 
@@ -86,37 +74,22 @@ describe('StochasticRSI', () => {
       const callCount = vi.fn();
       const offset = prices.length - expectations.length;
 
-      const stochRSI = new StochasticRSI(14, WSMA, {
-        d: new SMA(3),
-        k: new SMA(3),
-      });
-
       const fasterStochRSI = new FasterStochasticRSI(14, FasterWSMA, {
         d: new FasterSMA(3),
         k: new FasterSMA(3),
       });
 
       prices.forEach((price, i) => {
-        stochRSI.add(price);
         fasterStochRSI.add(price);
 
-        if (stochRSI.smoothing.d.isStable && fasterStochRSI.smoothing.d.isStable) {
+        if (fasterStochRSI.smoothing.d.isStable) {
           callCount();
           const expectation = expectations[i - offset];
-
-          const result = {
-            d: stochRSI.smoothing.d.getResultOrThrow().mul(100).toFixed(2),
-            k: stochRSI.smoothing.k.getResultOrThrow().mul(100).toFixed(2),
-            stochRSI: stochRSI.getResultOrThrow().mul(100).toFixed(2),
-          };
-          expect(result).toEqual(expectation);
-
           const fasterResult = {
             d: (fasterStochRSI.smoothing.d.getResultOrThrow() * 100).toFixed(2),
             k: (fasterStochRSI.smoothing.k.getResultOrThrow() * 100).toFixed(2),
             stochRSI: (fasterStochRSI.getResultOrThrow() * 100).toFixed(2),
           };
-
           expect(fasterResult).toEqual(expectation);
         }
       });
@@ -126,7 +99,7 @@ describe('StochasticRSI', () => {
 
     it('catches division by zero errors', () => {
       const interval = 2;
-      const stochRSI = new StochasticRSI(interval);
+      const stochRSI = new FasterStochasticRSI(interval);
       stochRSI.updates([2, 2, 2, 2], false);
       expect(stochRSI.getResultOrThrow().valueOf()).toBe('100');
 

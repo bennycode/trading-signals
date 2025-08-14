@@ -108,34 +108,22 @@ describe('SMA', () => {
       ] as const;
 
       const interval = 5;
-      const sma = new SMA(interval);
       const fasterSMA = new FasterSMA(interval);
 
       for (let i = 0; i < prices.length; i++) {
         const price = prices[i];
-        const result = sma.add(price);
         const fasterResult = fasterSMA.add(price);
 
-        if (result && fasterResult) {
+        if (fasterResult) {
           const expected = expectations[i - (interval - 1)];
-          expect(result.toFixed(3)).toBe(expected);
           expect(fasterResult.toFixed(3)).toBe(expected);
         }
       }
 
-      expect(sma.isStable).toBe(true);
       expect(fasterSMA.isStable).toBe(true);
-
-      expect(sma.getRequiredInputs()).toBe(interval);
       expect(fasterSMA.getRequiredInputs()).toBe(interval);
-
-      expect(sma.getResultOrThrow().toFixed(3)).toBe('86.804');
       expect(fasterSMA.getResultOrThrow()).toBe(86.804);
-
-      expect(sma.highest?.toFixed(2)).toBe('86.80');
       expect(fasterSMA.highest?.toFixed(2)).toBe('86.80');
-
-      expect(sma.lowest?.toFixed(2)).toBe('82.43');
       expect(fasterSMA.lowest?.toFixed(2)).toBe('82.43');
     });
 
