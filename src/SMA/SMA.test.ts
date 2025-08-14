@@ -63,12 +63,9 @@ describe('SMA', () => {
       const prices = [1, 2, 3, 4, 5];
       const interval = 5;
 
-      const sma = new SMA(interval);
       const fasterSMA = new FasterSMA(interval);
-      sma.updates(prices, false);
       fasterSMA.updates(prices, false);
 
-      expect(sma.getResultOrThrow().toFixed()).toBe('3');
       expect(fasterSMA.getResultOrThrow().toFixed()).toBe('3');
     });
   });
@@ -143,7 +140,7 @@ describe('SMA', () => {
     });
 
     it('throws an error when there is not enough input data', () => {
-      const sma = new SMA(26);
+      const sma = new FasterSMA(26);
 
       try {
         sma.getResultOrThrow();
