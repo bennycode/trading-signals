@@ -1,5 +1,4 @@
 import {Big, FasterWMA, NotEnoughDataError, WMA} from '../index.js';
-import {describe} from 'vitest';
 
 describe('WMA', () => {
   describe('prices', () => {

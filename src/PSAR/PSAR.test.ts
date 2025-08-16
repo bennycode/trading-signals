@@ -1,6 +1,5 @@
 import {FasterPSAR} from './PSAR.js';
 import {NotEnoughDataError} from '../error/index.js';
-import {expect} from 'vitest';
 
 // Helper to expose private properties for testing
 function exposePrivateProperties(psar: FasterPSAR) {

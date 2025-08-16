@@ -1,4 +1,3 @@
-import {describe} from 'vitest';
 import {FasterSMA15, NotEnoughDataError} from '../index.js';
 
 describe('SMA15', () => {

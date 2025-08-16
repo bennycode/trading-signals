@@ -1,5 +1,4 @@
 import {FasterSMA, NotEnoughDataError} from '../index.js';
-import {describe} from 'vitest';
 
 describe('SMA', () => {
   describe('prices', () => {

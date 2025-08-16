@@ -1,5 +1,4 @@
 import {FasterLinearRegression} from '../index.js';
-import {describe, expect, it} from 'vitest';
 import {NotEnoughDataError} from '../error/index.js';
 
 describe('LinearRegression', () => {

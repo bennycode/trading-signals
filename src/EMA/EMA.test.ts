@@ -1,5 +1,4 @@
 import {FasterEMA, NotEnoughDataError} from '../index.js';
-import {describe} from 'vitest';
 
 describe('EMA', () => {
   // Test data verified with:
