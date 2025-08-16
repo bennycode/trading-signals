@@ -1,4 +1,4 @@
-import {NumberIndicatorSeries} from '../Indicator.js';
+import {IndicatorSeries} from '../Indicator.js';
 import type {HighLowCloseVolume} from '../util/HighLowClose.js';
 
 /**
@@ -12,7 +12,7 @@ import type {HighLowCloseVolume} from '../util/HighLowClose.js';
  *
  * @see https://www.investopedia.com/terms/v/vwap.asp
  */
-export class FasterVWAP extends NumberIndicatorSeries<HighLowCloseVolume<number>> {
+export class FasterVWAP extends IndicatorSeries<HighLowCloseVolume<number>> {
   private cumulativeTypicalPriceVolume: number = 0;
   private cumulativeVolume: number = 0;
   private lastCandle: HighLowCloseVolume<number> | null = null;

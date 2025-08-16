@@ -83,7 +83,7 @@ describe('MAD', () => {
   describe('getResultFromBatch', () => {
     it("doesn't crash when the array is empty", () => {
       const result = FasterMAD.getResultFromBatch([]);
-      expect(result.valueOf()).toBe('0');
+      expect(result.valueOf()).toBe(0);
     });
 
     it('calculates the mean when no mean is given', () => {

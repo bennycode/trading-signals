@@ -1,5 +1,5 @@
 import {FasterDX} from '../DX/DX.js';
-import {NumberIndicatorSeries} from '../Indicator.js';
+import {IndicatorSeries} from '../Indicator.js';
 import type {FasterMovingAverage} from '../MA/MovingAverage.js';
 import type {FasterMovingAverageTypes} from '../MA/MovingAverageTypes.js';
 import type {HighLowClose} from '../util/HighLowClose.js';
@@ -36,7 +36,7 @@ import {FasterWSMA} from '../WSMA/WSMA.js';
  * @see https://learn.tradimo.com/technical-analysis-how-to-work-with-indicators/adx-determing-the-strength-of-price-movement
  * @see https://medium.com/codex/algorithmic-trading-with-average-directional-index-in-python-2b5a20ecf06a
  */
-export class FasterADX extends NumberIndicatorSeries<HighLowClose<number>> {
+export class FasterADX extends IndicatorSeries<HighLowClose<number>> {
   private readonly dx: FasterDX;
   private readonly smoothed: FasterMovingAverage;
 

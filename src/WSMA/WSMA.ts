@@ -1,4 +1,4 @@
-import {NumberIndicatorSeries} from '../Indicator.js';
+import {IndicatorSeries} from '../Indicator.js';
 import {FasterSMA} from '../SMA/SMA.js';
 
 /**
@@ -16,7 +16,7 @@ import {FasterSMA} from '../SMA/SMA.js';
  *
  * @see https://tlc.thinkorswim.com/center/reference/Tech-Indicators/studies-library/V-Z/WildersSmoothing
  */
-export class FasterWSMA extends NumberIndicatorSeries {
+export class FasterWSMA extends IndicatorSeries {
   private readonly indicator: FasterSMA;
   private readonly smoothingFactor: number;
 

@@ -1,5 +1,5 @@
 import {NotEnoughDataError} from '../error/index.js';
-import {NumberIndicatorSeries} from '../Indicator.js';
+import {IndicatorSeries} from '../Indicator.js';
 import type {HighLow} from '../util/HighLowClose.js';
 
 export type PSARConfig = {
@@ -28,7 +28,7 @@ export type PSARConfig = {
  * It's particularly useful in trending markets, but less reliable in sideways or choppy markets.
  *
  */
-export class FasterPSAR extends NumberIndicatorSeries<HighLow<number>> {
+export class FasterPSAR extends IndicatorSeries<HighLow<number>> {
   private readonly accelerationStep: number;
   private readonly accelerationMax: number;
   private acceleration: number = 0;

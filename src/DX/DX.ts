@@ -1,5 +1,5 @@
 import {FasterATR} from '../ATR/ATR.js';
-import {NumberIndicatorSeries} from '../Indicator.js';
+import {IndicatorSeries} from '../Indicator.js';
 import type {FasterMovingAverage} from '../MA/MovingAverage.js';
 import type {FasterMovingAverageTypes} from '../MA/MovingAverageTypes.js';
 import type {HighLowClose} from '../util/HighLowClose.js';
@@ -18,7 +18,7 @@ import {FasterWSMA} from '../WSMA/WSMA.js';
  *
  * @see https://www.fidelity.com/learning-center/trading-investing/technical-analysis/technical-indicator-guide/dmi
  */
-export class FasterDX extends NumberIndicatorSeries<HighLowClose<number>> {
+export class FasterDX extends IndicatorSeries<HighLowClose<number>> {
   private readonly movesUp: FasterMovingAverage;
   private readonly movesDown: FasterMovingAverage;
   private previousCandle?: HighLowClose<number>;

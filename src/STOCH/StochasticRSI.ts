@@ -1,4 +1,4 @@
-import {NumberIndicatorSeries} from '../Indicator.js';
+import {IndicatorSeries} from '../Indicator.js';
 import type {FasterMovingAverage} from '../MA/MovingAverage.js';
 import type {FasterMovingAverageTypes} from '../MA/MovingAverageTypes.js';
 import {FasterRSI} from '../RSI/RSI.js';
@@ -25,7 +25,7 @@ import {FasterWSMA} from '../WSMA/WSMA.js';
  * @see https://lakshmishree.com/blog/stochastic-rsi-indicator/
  * @see https://alchemymarkets.com/education/indicators/stochastic-rsi/
  */
-export class FasterStochasticRSI extends NumberIndicatorSeries {
+export class FasterStochasticRSI extends IndicatorSeries {
   private readonly period: FasterPeriod;
   private readonly rsi: FasterRSI;
 

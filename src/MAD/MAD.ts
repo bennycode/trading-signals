@@ -1,4 +1,4 @@
-import {NumberIndicatorSeries} from '../Indicator.js';
+import {IndicatorSeries} from '../Indicator.js';
 import {getFasterAverage, pushUpdate} from '../util/index.js';
 
 /**
@@ -10,7 +10,7 @@ import {getFasterAverage, pushUpdate} from '../util/index.js';
  *
  * @see https://en.wikipedia.org/wiki/Average_absolute_deviation
  */
-export class FasterMAD extends NumberIndicatorSeries {
+export class FasterMAD extends IndicatorSeries {
   public readonly prices: number[] = [];
 
   constructor(public readonly interval: number) {
@@ -38,6 +38,9 @@ export class FasterMAD extends NumberIndicatorSeries {
   }
 
   static getResultFromBatch(prices: number[], average?: number): number {
+    if (prices.length === 0) {
+      return 0;
+    }
     const mean = average || getFasterAverage(prices);
     let sum = 0;
     for (let i = 0; i < prices.length; i++) {

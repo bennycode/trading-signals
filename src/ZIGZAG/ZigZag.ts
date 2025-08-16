@@ -1,4 +1,4 @@
-import {NumberIndicatorSeries} from '../Indicator.js';
+import {IndicatorSeries} from '../Indicator.js';
 import type {HighLow} from '../util/HighLowClose.js';
 
 export type ZigZagConfig = {
@@ -24,7 +24,7 @@ export type ZigZagConfig = {
  * @see https://capex.com/en/academy/zigzag
  * @see https://corporatefinanceinstitute.com/resources/career-map/sell-side/capital-markets/zig-zag-indicator/
  */
-export class FasterZigZag extends NumberIndicatorSeries<HighLow> {
+export class FasterZigZag extends IndicatorSeries<HighLow> {
   private readonly deviation: number;
   private isUp: boolean = false;
   private highestExtreme: number | null = null;

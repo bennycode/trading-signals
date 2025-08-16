@@ -1,5 +1,5 @@
 import type {FasterBollingerBands} from '../BBANDS/BollingerBands.js';
-import {NumberIndicatorSeries} from '../Indicator.js';
+import {IndicatorSeries} from '../Indicator.js';
 
 /**
  * Bollinger Bands Width (BBW)
@@ -11,7 +11,7 @@ import {NumberIndicatorSeries} from '../Indicator.js';
  *
  * @see https://www.tradingview.com/support/solutions/43000501972-bollinger-bands-width-bbw/
  */
-export class FasterBollingerBandsWidth extends NumberIndicatorSeries {
+export class FasterBollingerBandsWidth extends IndicatorSeries {
   constructor(public readonly bollingerBands: FasterBollingerBands) {
     super();
   }

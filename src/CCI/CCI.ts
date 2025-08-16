@@ -1,4 +1,4 @@
-import {NumberIndicatorSeries} from '../Indicator.js';
+import {IndicatorSeries} from '../Indicator.js';
 import {FasterMAD} from '../MAD/MAD.js';
 import {FasterSMA} from '../SMA/SMA.js';
 import {pushUpdate, type HighLowClose} from '../util/index.js';
@@ -27,7 +27,7 @@ import {pushUpdate, type HighLowClose} from '../util/index.js';
  *
  * @see https://en.wikipedia.org/wiki/Commodity_channel_index
  */
-export class FasterCCI extends NumberIndicatorSeries<HighLowClose<number>> {
+export class FasterCCI extends IndicatorSeries<HighLowClose<number>> {
   private readonly sma: FasterSMA;
   private readonly typicalPrices: number[];
 

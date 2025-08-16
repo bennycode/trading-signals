@@ -1,4 +1,4 @@
-import {NumberIndicatorSeries} from '../Indicator.js';
+import {IndicatorSeries} from '../Indicator.js';
 import type {FasterMovingAverage} from '../MA/MovingAverage.js';
 import type {FasterMovingAverageTypes} from '../MA/MovingAverageTypes.js';
 import {pushUpdate} from '../util/pushUpdate.js';
@@ -22,7 +22,7 @@ import {FasterWSMA} from '../WSMA/WSMA.js';
  * @see https://en.wikipedia.org/wiki/Relative_strength_index
  * @see https://www.investopedia.com/terms/r/rsi.asp
  */
-export class FasterRSI extends NumberIndicatorSeries {
+export class FasterRSI extends IndicatorSeries {
   private readonly previousPrices: number[] = [];
   private readonly avgGain: FasterMovingAverage;
   private readonly avgLoss: FasterMovingAverage;

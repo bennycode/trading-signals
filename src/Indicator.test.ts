@@ -1,8 +1,8 @@
-import {NumberIndicatorSeries} from './Indicator.js';
+import {IndicatorSeries} from './Indicator.js';
 import {NotEnoughDataError} from './error/NotEnoughDataError.js';
 
 describe('Indicator', () => {
-  class IndicatorTestClass extends NumberIndicatorSeries {
+  class IndicatorTestClass extends IndicatorSeries {
     public readonly inputs: number[] = [];
 
     override getRequiredInputs() {

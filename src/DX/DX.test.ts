@@ -44,32 +44,17 @@ describe('DX', () => {
       const correct = {close: 1_000, high: 1_000, low: 1_000};
       const wrong = {close: 9_000, high: 9_000, low: 9_000};
 
-      const dx = new FasterDX(interval);
       const fasterDX = new FasterDX(interval);
-
-      const dxWithReplace = new FasterDX(interval);
       const fasterDXWithReplace = new FasterDX(interval);
 
-      dx.updates(candles, false);
       fasterDX.updates(candles, false);
-
-      dxWithReplace.updates(candles, false);
       fasterDXWithReplace.updates(candles, false);
-
-      dx.add(correct);
       fasterDX.add(correct);
-
-      dxWithReplace.add(wrong);
       fasterDXWithReplace.add(wrong);
 
       // We need to verify the four decimal places, as the results are otherwise too similar:
-      expect(dx.getResultOrThrow().toFixed(4)).not.toBe(dxWithReplace.getResultOrThrow().toFixed(4));
       expect(fasterDX.getResultOrThrow().toFixed(4)).not.toBe(fasterDXWithReplace.getResultOrThrow().toFixed(4));
-
-      dxWithReplace.replace(correct);
       fasterDXWithReplace.replace(correct);
-
-      expect(dx.getResultOrThrow().toFixed(4)).toBe(dxWithReplace.getResultOrThrow().toFixed(4));
       expect(fasterDX.getResultOrThrow().toFixed(4)).toBe(fasterDXWithReplace.getResultOrThrow().toFixed(4));
     });
   });
@@ -77,32 +62,20 @@ describe('DX', () => {
   describe('getResultOrThrow', () => {
     it('calculates the Directional Movement Index (DX)', () => {
       const interval = 5;
-      const dx = new FasterDX(interval);
       const fasterDX = new FasterDX(interval);
 
       for (const candle of candles) {
-        dx.add(candle);
         fasterDX.add(candle);
-        if (dx.isStable && fasterDX.isStable) {
+        if (fasterDX.isStable) {
           const expected = expectations.shift();
-          expect(dx.getResultOrThrow().toFixed(2)).toBe(expected);
           expect(fasterDX.getResultOrThrow().toFixed(2)).toBe(expected);
         }
       }
 
-      expect(dx.isStable).toBe(true);
       expect(fasterDX.isStable).toBe(true);
-
-      expect(dx.getRequiredInputs()).toBe(interval);
       expect(fasterDX.getRequiredInputs()).toBe(interval);
-
-      expect(dx.getResultOrThrow().toFixed(2)).toBe('75.61');
       expect(fasterDX.getResultOrThrow().toFixed(2)).toBe('75.61');
-
-      expect(dx.lowest?.toFixed(2)).toBe('11.09');
       expect(fasterDX.lowest?.toFixed(2)).toBe('11.09');
-
-      expect(dx.highest?.toFixed(2)).toBe('86.51');
       expect(fasterDX.highest?.toFixed(2)).toBe('86.51');
     });
 
@@ -115,16 +88,10 @@ describe('DX', () => {
         {close: 95, high: 100, low: 90},
       ];
 
-      const dx = new FasterDX(5);
       const fasterDX = new FasterDX(5);
-
-      dx.updates(candles, false);
       fasterDX.updates(candles, false);
 
-      expect(dx.isStable).toBe(true);
       expect(fasterDX.isStable).toBe(true);
-
-      expect(dx.getResultOrThrow().valueOf()).toBe('0');
       expect(fasterDX.getResultOrThrow().valueOf()).toBe(0);
     });
   });

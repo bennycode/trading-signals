@@ -1,4 +1,4 @@
-import {NumberIndicatorSeries} from '../Indicator.js';
+import {IndicatorSeries} from '../Indicator.js';
 import {pushUpdate} from '../util/pushUpdate.js';
 
 /**
@@ -10,7 +10,7 @@ import {pushUpdate} from '../util/pushUpdate.js';
  *
  * @see https://www.investopedia.com/terms/r/rateofchange.asp
  */
-export class FasterROC extends NumberIndicatorSeries {
+export class FasterROC extends IndicatorSeries {
   public readonly prices: number[] = [];
 
   constructor(public readonly interval: number) {

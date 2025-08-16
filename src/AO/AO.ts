@@ -1,4 +1,4 @@
-import {NumberIndicatorSeries} from '../Indicator.js';
+import {IndicatorSeries} from '../Indicator.js';
 import type {FasterMovingAverage} from '../MA/MovingAverage.js';
 import type {FasterMovingAverageTypes} from '../MA/MovingAverageTypes.js';
 import {FasterSMA} from '../SMA/SMA.js';
@@ -18,7 +18,7 @@ import type {HighLow} from '../util/index.js';
  * @see https://www.tradingview.com/support/solutions/43000501826-awesome-oscillator-ao/
  * @see https://tradingstrategyguides.com/bill-williams-awesome-oscillator-strategy/
  */
-export class FasterAO extends NumberIndicatorSeries<HighLow<number>> {
+export class FasterAO extends IndicatorSeries<HighLow<number>> {
   public readonly long: FasterMovingAverage;
   public readonly short: FasterMovingAverage;
 

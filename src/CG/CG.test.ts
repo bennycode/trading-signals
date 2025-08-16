@@ -84,15 +84,16 @@ describe('CG', () => {
       for (const value of values) {
         fasterCG.add(value);
       }
-      const cgResult = fasterCG.getResultOrThrow();
-      const signalResult = fasterCG.signal.getResultOrThrow();
-      expect(cgResult > signalResult).toBe(true);
+
       [150, 110, 90, 130].forEach(price => {
         fasterCG.add(price);
       });
 
       expect(fasterCG.isStable).toBe(true);
       expect(fasterCG.getRequiredInputs()).toBe(signalInterval);
+
+      const cgResult = fasterCG.getResultOrThrow();
+      const signalResult = fasterCG.signal.getResultOrThrow();
       expect(cgResult > signalResult).toBe(false);
       expect(cgResult.toFixed(4)).toBe('2.7059');
       expect(fasterCG.getResultOrThrow().toFixed(4)).toBe('2.7059');

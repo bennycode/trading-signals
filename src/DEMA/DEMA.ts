@@ -1,5 +1,5 @@
 import {FasterEMA} from '../EMA/EMA.js';
-import {NumberIndicatorSeries} from '../Indicator.js';
+import {IndicatorSeries} from '../Indicator.js';
 
 /**
  * Double Exponential Moving Average (DEMA)
@@ -11,7 +11,7 @@ import {NumberIndicatorSeries} from '../Indicator.js';
  *
  * @see https://www.investopedia.com/terms/d/double-exponential-moving-average.asp
  */
-export class FasterDEMA extends NumberIndicatorSeries {
+export class FasterDEMA extends IndicatorSeries {
   private readonly inner: FasterEMA;
   private readonly outer: FasterEMA;
 

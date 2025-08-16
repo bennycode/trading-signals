@@ -1,4 +1,4 @@
-import {NumberIndicatorSeries} from '../Indicator.js';
+import {IndicatorSeries} from '../Indicator.js';
 import type {FasterMovingAverage} from '../MA/MovingAverage.js';
 import type {FasterMovingAverageTypes} from '../MA/MovingAverageTypes.js';
 import {FasterTR} from '../TR/TR.js';
@@ -27,7 +27,7 @@ import {FasterWSMA} from '../WSMA/WSMA.js';
  *
  * @see https://www.investopedia.com/terms/a/atr.asp
  */
-export class FasterATR extends NumberIndicatorSeries<HighLowClose<number>> {
+export class FasterATR extends IndicatorSeries<HighLowClose<number>> {
   private readonly tr: FasterTR;
   private readonly smoothing: FasterMovingAverage;
 

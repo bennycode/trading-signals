@@ -1,4 +1,4 @@
-import {NumberIndicatorSeries} from '../Indicator.js';
+import {IndicatorSeries} from '../Indicator.js';
 import {getFasterQuartile} from '../util/getQuartile.js';
 
 /**
@@ -11,7 +11,7 @@ import {getFasterQuartile} from '../util/getQuartile.js';
  * @see https://github.com/bennycode/trading-signals/discussions/752
  * @see https://en.wikipedia.org/wiki/Interquartile_range
  */
-export class FasterIQR extends NumberIndicatorSeries {
+export class FasterIQR extends IndicatorSeries {
   private readonly values: number[] = [];
 
   constructor(public readonly interval: number) {
