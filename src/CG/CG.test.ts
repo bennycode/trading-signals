@@ -36,12 +36,10 @@ describe('CG', () => {
 
   describe('replace', () => {
     it('replaces recently added values', () => {
-      const cg = new FasterCG(5, 10);
       const fasterCG = new FasterCG(5, 10);
 
       const values = [100, 110, 120, 130, 140, 150, 160, 170, 180, 190, 200];
       for (const value of values) {
-        cg.add(value);
         fasterCG.add(value);
       }
 
@@ -50,12 +48,6 @@ describe('CG', () => {
       const latestResult = '3.0851';
       const latestLow = '3.0851';
       const latestHigh = '3.1176';
-
-      cg.add(latestValue);
-      expect(cg.prices.length).toBe(5);
-      expect(cg.getResultOrThrow().toFixed(4)).toBe(latestResult);
-      expect(cg.lowest?.toFixed(4)).toBe(latestLow);
-      expect(cg.highest?.toFixed(4)).toBe(latestHigh);
 
       fasterCG.add(latestValue);
       expect(fasterCG.prices.length).toBe(5);
@@ -69,12 +61,6 @@ describe('CG', () => {
       const otherLow = '3.1111';
       const otherHigh = '3.9024';
 
-      cg.replace(someOtherValue);
-      expect(cg.prices.length).toBe(5);
-      expect(cg.getResultOrThrow().toFixed(4)).toBe(otherResult);
-      expect(cg.lowest?.toFixed(4)).toBe(otherLow);
-      expect(cg.highest?.toFixed(4)).toBe(otherHigh);
-
       fasterCG.replace(someOtherValue);
       expect(fasterCG.prices.length).toBe(5);
       expect(fasterCG.getResultOrThrow().toFixed(4)).toBe(otherResult);
@@ -82,12 +68,6 @@ describe('CG', () => {
       expect(fasterCG.highest?.toFixed(4)).toBe(otherHigh);
 
       // Replace the other value with the latest value
-      cg.replace(latestValue);
-      expect(cg.prices.length).toBe(5);
-      expect(cg.getResultOrThrow().toFixed(4)).toBe(latestResult);
-      expect(cg.lowest?.toFixed(4)).toBe(latestLow);
-      expect(cg.highest?.toFixed(4)).toBe(latestHigh);
-
       fasterCG.replace(latestValue);
       expect(fasterCG.prices.length).toBe(5);
       expect(fasterCG.getResultOrThrow().toFixed(4)).toBe(latestResult);
@@ -99,38 +79,24 @@ describe('CG', () => {
   describe('getResultOrThrow', () => {
     it('indicates a downtrend when the center of gravity falls below the signal line', () => {
       const signalInterval = 10;
-      const cg = new FasterCG(5, signalInterval);
       const fasterCG = new FasterCG(5, signalInterval);
       const values = [100, 110, 120, 130, 140, 150, 160, 170, 180, 190, 200];
       for (const value of values) {
-        cg.add(value);
         fasterCG.add(value);
       }
-      let cgResult = cg.getResultOrThrow();
-      let signalResult = cg.signal.getResultOrThrow();
-      expect(cgResult.gt(signalResult)).toBe(true);
+      const cgResult = fasterCG.getResultOrThrow();
+      const signalResult = fasterCG.signal.getResultOrThrow();
+      expect(cgResult > signalResult).toBe(true);
       [150, 110, 90, 130].forEach(price => {
-        cg.add(price);
         fasterCG.add(price);
       });
 
-      expect(cg.isStable).toBe(true);
       expect(fasterCG.isStable).toBe(true);
-
-      expect(cg.getRequiredInputs()).toBe(signalInterval);
       expect(fasterCG.getRequiredInputs()).toBe(signalInterval);
-
-      cgResult = cg.getResultOrThrow();
-      signalResult = cg.signal.getResultOrThrow();
       expect(cgResult > signalResult).toBe(false);
-
       expect(cgResult.toFixed(4)).toBe('2.7059');
       expect(fasterCG.getResultOrThrow().toFixed(4)).toBe('2.7059');
-
-      expect(cg.lowest?.toFixed(4)).toBe('2.6081');
       expect(fasterCG.lowest?.toFixed(4)).toBe('2.6081');
-
-      expect(cg.highest?.toFixed(4)).toBe('3.1176');
       expect(fasterCG.highest?.toFixed(4)).toBe('3.1176');
     });
 
@@ -146,10 +112,6 @@ describe('CG', () => {
     });
 
     it('is protected against division by zero errors', () => {
-      const cg = new FasterCG(1, 1);
-      cg.add(0);
-      expect(cg.getResultOrThrow().valueOf()).toBe('0');
-
       const fasterCG = new FasterCG(1, 1);
       fasterCG.add(0);
       expect(fasterCG.getResultOrThrow().valueOf()).toBe(0);

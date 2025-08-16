@@ -1,23 +1,17 @@
-import {FasterVWAP, VWAP} from './VWAP.js';
+import {FasterVWAP} from './VWAP.js';
 
 // @see https://github.com/cinar/indicatorts/blob/main/src/indicator/volume/volumeWeightedAveragePrice.test.ts
 describe('VWAP', () => {
   describe('add', () => {
     it('handles zero volume correctly', () => {
-      const vwap = new VWAP();
       const fasterVWAP = new FasterVWAP();
-
-      const result = vwap.add({close: 9, high: 10, low: 8, volume: 0});
       const fasterResult = fasterVWAP.add({close: 9, high: 10, low: 8, volume: 0});
-
-      expect(result).toBe(null);
       expect(fasterResult).toBe(null);
     });
   });
 
   describe('replace', () => {
     it('replaces the most recently added value', () => {
-      const vwap = new VWAP();
       const fasterVWAP = new FasterVWAP();
 
       const data = [
@@ -28,31 +22,21 @@ describe('VWAP', () => {
       ] as const;
 
       data.forEach(input => {
-        vwap.add(input);
         fasterVWAP.add(input);
       });
-
-      expect(vwap.getResultOrThrow().toFixed()).toBe('300');
       expect(fasterVWAP.getResultOrThrow().toFixed()).toBe('300');
 
       const replaceValue = {close: 120, high: 120, low: 120, volume: 120};
-      vwap.replace(replaceValue);
       fasterVWAP.replace(replaceValue);
-
-      expect(vwap.getResultOrThrow().toFixed(2)).toBe('214.44');
       expect(fasterVWAP.getResultOrThrow().toFixed(2)).toBe('214.44');
 
-      vwap.replace(data[data.length - 1]);
       fasterVWAP.replace(data[data.length - 1]);
-
-      expect(vwap.getResultOrThrow().toFixed()).toBe('300');
       expect(fasterVWAP.getResultOrThrow().toFixed()).toBe('300');
     });
   });
 
   describe('getResultOrThrow', () => {
     it('calculates VWAP correctly', () => {
-      const vwap = new VWAP();
       const fasterVWAP = new FasterVWAP();
 
       // Test data verified with:
@@ -68,17 +52,11 @@ describe('VWAP', () => {
       const expected = ['9.00', '10.05', '9.21', '9.44', '9.18'] as const;
 
       for (const [index, input] of data.entries()) {
-        const result = vwap.add(input);
         const fasterResult = fasterVWAP.add(input);
-
-        expect(result?.toFixed(2)).toBe(expected[index]);
         expect(fasterResult?.toFixed(2)).toBe(expected[index]);
       }
 
-      expect(vwap.getRequiredInputs()).toBe(2);
       expect(fasterVWAP.getRequiredInputs()).toBe(2);
-
-      expect(vwap.getResultOrThrow().toFixed(2)).toBe('9.18');
       expect(fasterVWAP.getResultOrThrow().toFixed(2)).toBe('9.18');
     });
   });

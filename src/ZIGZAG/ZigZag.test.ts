@@ -1,4 +1,4 @@
-import {FasterZigZag, ZigZag} from './ZigZag.js';
+import {FasterZigZag} from './ZigZag.js';
 
 describe('ZigZag', () => {
   describe('add', () => {
@@ -20,7 +20,6 @@ describe('ZigZag', () => {
 
       const deviation = 15;
 
-      const zigzag = new ZigZag({deviation});
       const fasterZigzag = new FasterZigZag({deviation});
 
       const candles = highs.map((high, index) => {
@@ -30,23 +29,15 @@ describe('ZigZag', () => {
         };
       });
 
-      const results = [];
       const fasterResults = [];
 
       for (const candle of candles) {
-        const result = zigzag.add(candle);
         const fasterResult = fasterZigzag.add(candle);
-
-        if (result !== null) {
-          results.push(result.toNumber());
-        }
-
         if (fasterResult !== null) {
           fasterResults.push(fasterResult);
         }
       }
 
-      expect(results).toEqual(expected);
       expect(fasterResults).toEqual(expected);
     });
   });
@@ -54,11 +45,7 @@ describe('ZigZag', () => {
   describe('getRequiredInputs', () => {
     it('returns the amount of required data needed for a calculation', () => {
       const expected = 1;
-
-      const zigzag = new ZigZag({deviation: 15});
       const fasterZigzag = new FasterZigZag({deviation: 15});
-
-      expect(zigzag.getRequiredInputs()).toBe(expected);
       expect(fasterZigzag.getRequiredInputs()).toBe(expected);
     });
   });

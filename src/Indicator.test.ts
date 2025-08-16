@@ -1,22 +1,21 @@
-import {Big, type BigSource} from 'big.js';
-import {BigIndicatorSeries} from './Indicator.js';
+import {NumberIndicatorSeries} from './Indicator.js';
 import {NotEnoughDataError} from './error/NotEnoughDataError.js';
 
 describe('Indicator', () => {
-  class IndicatorTestClass extends BigIndicatorSeries {
-    public readonly inputs: Big[] = [];
+  class IndicatorTestClass extends NumberIndicatorSeries {
+    public readonly inputs: number[] = [];
 
     override getRequiredInputs() {
       return 2;
     }
 
-    update(input: BigSource, replace: boolean) {
+    update(input: number, replace: boolean) {
       if (replace) {
         this.inputs.pop();
       }
-      this.inputs.push(new Big(input));
-      const sum = this.inputs.reduce((acc, current) => acc.plus(current), new Big(0));
-      return this.setResult(sum.div(this.inputs.length), replace);
+      this.inputs.push(input);
+      const sum = this.inputs.reduce((acc, current) => acc + current, 0);
+      return this.setResult(sum / this.inputs.length, replace);
     }
   }
 
@@ -123,7 +122,7 @@ describe('Indicator', () => {
     it('returns all results from multiple updates', () => {
       const itc = new IndicatorTestClass();
       const results = itc.updates([100, 1_000, 10_000]);
-      expect(results.map(big => big?.toString())).toEqual(['100', '550', '3700']);
+      expect(results.map(number => number?.toString())).toEqual(['100', '550', '3700']);
     });
   });
 });

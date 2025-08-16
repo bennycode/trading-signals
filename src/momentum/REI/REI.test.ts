@@ -1,4 +1,4 @@
-import {FasterREI, REI} from './REI.js';
+import {FasterREI} from './REI.js';
 
 describe('REI', () => {
   const testData = [
@@ -140,23 +140,15 @@ describe('REI', () => {
       const replacementCandle = {close: 3_000, high: 4_000, low: 2_000};
 
       const interval = 8;
-      const rei = new REI(interval);
       const fasterRei = new FasterREI(interval);
 
-      rei.updates(testData);
       fasterRei.updates(testData);
-
-      expect(rei.getResultOrThrow().toFixed(2)).toBe(result);
       expect(fasterRei.getResultOrThrow().toFixed(2)).toBe(result);
 
-      rei.replace(replacementCandle);
       fasterRei.replace(replacementCandle);
-      expect(rei.getResultOrThrow().toFixed(2)).toBe(replacedResult);
       expect(fasterRei.getResultOrThrow().toFixed(2)).toBe(replacedResult);
 
-      rei.replace(lastCandle);
       fasterRei.replace(lastCandle);
-      expect(rei.getResultOrThrow().toFixed(2)).toBe(result);
       expect(fasterRei.getResultOrThrow().toFixed(2)).toBe(result);
     });
   });
@@ -164,40 +156,31 @@ describe('REI', () => {
   describe('getResultOrThrow', () => {
     it('creates a signal', () => {
       const interval = 8;
-      const rei = new REI(interval);
       const fasterRei = new FasterREI(interval);
-
-      rei.updates(testData);
       fasterRei.updates(testData);
-      expect(rei.getResultOrThrow().toFixed(2)).toBe('-0.64');
       expect(fasterRei.getResultOrThrow().toFixed(2)).toBe('-0.64');
     });
 
     it('detects neutral momentum', () => {
       const interval = 8;
-      const rei = new REI(interval);
       const fasterRei = new FasterREI(interval);
 
-      const inputs = Array(rei.getRequiredInputs()).fill({
+      const inputs = Array(fasterRei.getRequiredInputs()).fill({
         close: 180,
         high: 180,
         low: 180,
       });
 
-      rei.updates(inputs);
       fasterRei.updates(inputs);
 
-      expect(rei.getResultOrThrow().toString()).toBe('0');
       expect(fasterRei.getResultOrThrow()).toBe(0);
     });
 
     it('detects an oversold condition', () => {
       const interval = 8;
-      const rei = new REI(interval);
       const fasterRei = new FasterREI(interval);
 
-      for (let i = 0; i < rei.getRequiredInputs(); i++) {
-        rei.add({close: 95 + i, high: 100 + i, low: 90 + i});
+      for (let i = 0; i < fasterRei.getRequiredInputs(); i++) {
         fasterRei.add({close: 95 + i, high: 100 + i, low: 90 + i});
       }
 
@@ -209,25 +192,20 @@ describe('REI', () => {
       ];
 
       for (const candle of lowVolatilityCandles) {
-        rei.add(candle);
         fasterRei.add(candle);
       }
 
-      expect(rei.getResultOrThrow().toFixed(2)).toBe('-14.99');
       expect(fasterRei.getResultOrThrow().toFixed(2)).toBe('-14.99');
     });
 
     it('returns null until there are enough data points', () => {
       const interval = 8;
-      const rei = new REI(interval);
       const fasterRei = new FasterREI(interval);
 
       for (let i = 0; i < 15; i++) {
-        rei.add({close: i, high: i, low: i});
         fasterRei.add({close: i, high: i, low: i});
       }
 
-      expect(rei.getResult()).toBeNull();
       expect(fasterRei.getResult()).toBeNull();
     });
   });

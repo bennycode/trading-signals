@@ -1,5 +1,5 @@
 import {NotEnoughDataError} from '../error/NotEnoughDataError.js';
-import {FasterPeriod, Period} from './Period.js';
+import {FasterPeriod} from './Period.js';
 
 describe('Period', () => {
   describe('replace', () => {
@@ -8,8 +8,8 @@ describe('Period', () => {
       const expectedLow = '30';
       const expectedHigh = '70';
 
-      const period = new Period(interval);
-      const periodWithReplace = new Period(interval);
+      const period = new FasterPeriod(interval);
+      const periodWithReplace = new FasterPeriod(interval);
       const fasterPeriodWithReplace = new FasterPeriod(interval);
 
       const subset = [30, 40, 50, 60];
@@ -29,7 +29,7 @@ describe('Period', () => {
     it('returns the highest and lowest value of the current period', () => {
       const values = [72, 1337];
       const interval = 2;
-      const period = new Period(interval);
+      const period = new FasterPeriod(interval);
       period.updates(values, false);
       const {highest, lowest} = period.getResultOrThrow();
       expect(lowest.valueOf()).toBe('72');
@@ -46,7 +46,7 @@ describe('Period', () => {
     });
 
     it('throws an error when there is not enough input data', () => {
-      const period = new Period(2);
+      const period = new FasterPeriod(2);
       try {
         period.getResultOrThrow();
         throw new Error('Expected error');
@@ -77,7 +77,7 @@ describe('Period', () => {
         '85.53',
       ];
       const interval = 5;
-      const period = new Period(interval);
+      const period = new FasterPeriod(interval);
       const fasterPeriod = new FasterPeriod(interval);
       for (const price of prices) {
         period.add(price);

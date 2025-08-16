@@ -65,6 +65,7 @@ export abstract class BaseIndicatorSeries<Result, Input> extends TechnicalIndica
   protected abstract setResult(value: Result, replace: boolean): Result;
 }
 
+// TODO: Rename to "IndicatorSeries"
 export abstract class NumberIndicatorSeries<Input = number> extends BaseIndicatorSeries<number, Input> {
   protected setResult(value: number, replace: boolean): number {
     // Load cached values when replacing the latest value

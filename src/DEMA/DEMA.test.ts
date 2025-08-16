@@ -1,4 +1,3 @@
-import {Big} from '../index.js';
 import {FasterDEMA} from './DEMA.js';
 import {NotEnoughDataError} from '../error/index.js';
 
@@ -16,35 +15,21 @@ describe('DEMA', () => {
   describe('update', () => {
     it('can replace recently added values', () => {
       const interval = 10;
-      const dema = new FasterDEMA(interval);
       const fasterDEMA = new FasterDEMA(interval);
-      dema.add(81);
+
       fasterDEMA.add(81);
-      dema.add(24);
       fasterDEMA.add(24);
-      dema.add(75);
       fasterDEMA.add(75);
-      dema.add(21);
       fasterDEMA.add(21);
-      dema.add(34);
       fasterDEMA.add(34);
-      dema.add(25);
       fasterDEMA.add(25);
-      dema.add(72);
       fasterDEMA.add(72);
-      dema.add(92);
       fasterDEMA.add(92);
-      dema.add(100);
       fasterDEMA.add(100);
-      dema.update(99, true);
       fasterDEMA.update(99, true);
-      dema.add(2);
       fasterDEMA.add(2);
 
-      expect(dema.isStable).toBe(true);
       expect(fasterDEMA.isStable).toBe(true);
-
-      expect(dema.getResultOrThrow().toFixed(2)).toBe('48.96');
       expect(fasterDEMA.getResultOrThrow().toFixed(2)).toBe('48.96');
     });
   });
@@ -56,29 +41,19 @@ describe('DEMA', () => {
         86, 99, 3, 70, 1, 27, 9, 92, 68, 9,
       ];
       const interval = 10;
-      const dema = new FasterDEMA(interval);
       const fasterDEMA = new FasterDEMA(interval);
 
       prices.forEach((price, index) => {
-        dema.add(price);
         fasterDEMA.add(price);
-        if (dema.isStable) {
-          const result = new Big(dema10results[index]);
-          expect(dema.getResultOrThrow().toPrecision(12)).toEqual(result.toPrecision(12));
+        if (fasterDEMA.isStable) {
+          const result = dema10results[index];
           expect(fasterDEMA.getResultOrThrow().toPrecision(4)).toEqual(result.toPrecision(4));
         }
       });
 
-      expect(dema.isStable).toBe(true);
       expect(fasterDEMA.isStable).toBe(true);
-
-      expect(dema.getRequiredInputs()).toBe(interval);
       expect(fasterDEMA.getRequiredInputs()).toBe(interval);
-
-      expect(dema.lowest?.toFixed(2)).toBe('24.89');
       expect(fasterDEMA.lowest?.toFixed(2)).toBe('24.89');
-
-      expect(dema.highest?.toFixed(2)).toBe('83.22');
       expect(fasterDEMA.highest?.toFixed(2)).toBe('83.22');
     });
 

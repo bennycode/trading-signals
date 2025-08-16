@@ -51,42 +51,25 @@ describe('ADX', () => {
   describe('getResultOrThrow', () => {
     it('calculates the Average Directional Index (ADX)', () => {
       const interval = 5;
-      const adx = new FasterADX(interval);
       const fasterADX = new FasterADX(interval);
 
       for (const candle of candles) {
-        adx.add(candle);
         fasterADX.add(candle);
-        if (adx.isStable && fasterADX.isStable) {
+        if (fasterADX.isStable) {
           const expected = expectations.shift();
-          expect(adx.getResultOrThrow().toFixed(2)).toBe(`${expected}`);
           expect(fasterADX.getResultOrThrow().toFixed(2)).toBe(`${expected}`);
         }
       }
 
-      expect(adx.isStable).toBe(true);
       expect(fasterADX.isStable).toBe(true);
-
-      expect(adx.getRequiredInputs()).toBe(interval);
       expect(fasterADX.getRequiredInputs()).toBe(interval);
-
-      expect(adx.getResultOrThrow().toFixed(2)).toBe('67.36');
       expect(fasterADX.getResultOrThrow().toFixed(2)).toBe('67.36');
-
-      expect(adx.lowest?.toFixed(2)).toBe('41.38');
       expect(fasterADX.lowest?.toFixed(2)).toBe('41.38');
-
-      expect(adx.highest?.toFixed(2)).toBe('67.36');
       expect(fasterADX.highest?.toFixed(2)).toBe('67.36');
 
       // Verify uptrend detection (+DI > -DI):
-      expect(adx.pdi?.gt(adx.mdi!)).toBe(true);
       expect(fasterADX.pdi > fasterADX.mdi).toBe(true);
-
-      expect(adx.pdi?.toFixed(2)).toBe('0.42');
       expect(fasterADX.pdi?.toFixed(2)).toBe('0.42');
-
-      expect(adx.mdi?.toFixed(2)).toBe('0.06');
       expect(fasterADX.mdi?.toFixed(2)).toBe('0.06');
     });
   });
@@ -96,19 +79,14 @@ describe('ADX', () => {
       const interval = 5;
       const necessaryCandlesAmount = 2 * interval - 1;
       const initialCandles = candles.slice(0, necessaryCandlesAmount - 1);
-      const adx = new FasterADX(interval);
       const fasterADX = new FasterADX(interval);
 
       // Add necessary candles - 1
-      adx.updates(initialCandles);
       fasterADX.updates(initialCandles);
-      expect(adx.isStable).toBe(false);
       expect(fasterADX.isStable).toBe(false);
 
       // Add one more candle to make it stable
-      adx.add({close: 10, high: 11, low: 9});
       fasterADX.add({close: 10, high: 11, low: 9});
-      expect(adx.isStable).toBe(true);
       expect(fasterADX.isStable).toBe(true);
     });
   });

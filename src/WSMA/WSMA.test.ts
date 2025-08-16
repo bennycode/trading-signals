@@ -1,4 +1,4 @@
-import {FasterWSMA, WSMA} from './WSMA.js';
+import {FasterWSMA} from './WSMA.js';
 import {NotEnoughDataError} from '../error/index.js';
 
 describe('WSMA', () => {
@@ -6,8 +6,8 @@ describe('WSMA', () => {
     it('replaces the most recently added value', () => {
       const interval = 3;
 
-      const wsma = new WSMA(interval);
-      const wsmaWithReplace = new WSMA(interval);
+      const wsma = new FasterWSMA(interval);
+      const wsmaWithReplace = new FasterWSMA(interval);
 
       const subset = [11, 12, 13];
 
@@ -26,16 +26,11 @@ describe('WSMA', () => {
     it('replaces recently added values', () => {
       const interval = 3;
 
-      const wsma = new WSMA(interval);
       const fasterWSMA = new FasterWSMA(interval);
 
-      wsma.add(11);
       fasterWSMA.add(11);
-      wsma.add(12);
       fasterWSMA.add(12);
-      wsma.add(13);
       fasterWSMA.add(13);
-      wsma.add(14);
       fasterWSMA.add(14);
 
       // Add the latest value
@@ -43,11 +38,6 @@ describe('WSMA', () => {
       const latestResult = '13.44';
       const latestLow = '12.00';
       const latestHigh = '13.44';
-
-      wsma.add(latestValue);
-      expect(wsma.getResultOrThrow().toFixed(2)).toBe(latestResult);
-      expect(wsma.lowest?.toFixed(2)).toBe(latestLow);
-      expect(wsma.highest?.toFixed(2)).toBe(latestHigh);
 
       fasterWSMA.add(latestValue);
       expect(fasterWSMA.getResultOrThrow().toFixed(2)).toBe(latestResult);
@@ -60,22 +50,12 @@ describe('WSMA', () => {
       const otherLow = '12.00';
       const otherHigh = '341.78';
 
-      wsma.replace(someOtherValue);
-      expect(wsma.getResultOrThrow().toFixed(2)).toBe(otherResult);
-      expect(wsma.lowest?.toFixed(2)).toBe(otherLow);
-      expect(wsma.highest?.toFixed(2), 'new record high').toBe(otherHigh);
-
       fasterWSMA.replace(someOtherValue);
       expect(fasterWSMA.getResultOrThrow().toFixed(2)).toBe(otherResult);
       expect(fasterWSMA.lowest?.toFixed(2)).toBe(otherLow);
       expect(fasterWSMA.highest?.toFixed(2), 'new record high').toBe(otherHigh);
 
       // Replace the other value with the latest value
-      wsma.replace(latestValue);
-      expect(wsma.getResultOrThrow().toFixed(2)).toBe(latestResult);
-      expect(wsma.lowest?.toFixed(2), 'lowest reset').toBe(latestLow);
-      expect(wsma.highest?.toFixed(2), 'highest reset').toBe(latestHigh);
-
       fasterWSMA.replace(latestValue);
       expect(fasterWSMA.getResultOrThrow().toFixed(2)).toBe(latestResult);
       expect(fasterWSMA.lowest?.toFixed(2), 'lowest reset').toBe(latestLow);
@@ -89,7 +69,7 @@ describe('WSMA', () => {
       // https://runkit.com/anandaravindan/wema
       const prices = [11, 12, 13, 14, 15, 16, 18, 19, 22, 23, 23];
       const expectations = ['13.00', '13.60', '14.48', '15.38', '16.71', '17.97', '18.97'];
-      const wsma = new WSMA(5);
+      const wsma = new FasterWSMA(5);
 
       for (const price of prices) {
         wsma.add(price);
@@ -124,35 +104,25 @@ describe('WSMA', () => {
       ] as const;
 
       const interval = 5;
-      const wsma = new WSMA(interval);
       const fasterWSMA = new FasterWSMA(interval);
 
       for (let i = 0; i < prices.length; i++) {
         const price = prices[i];
-        wsma.add(price);
         fasterWSMA.add(price);
-        if (wsma.isStable && fasterWSMA.isStable) {
+        if (fasterWSMA.isStable) {
           const expected = expectations[i];
-          expect(wsma.getResultOrThrow().toFixed(4)).toBe(expected);
           expect(fasterWSMA.getResultOrThrow().toFixed(4)).toBe(expected);
         }
       }
 
-      expect(wsma.isStable).toBe(true);
       expect(fasterWSMA.isStable).toBe(true);
-
-      expect(wsma.getResultOrThrow().toFixed(4)).toBe('62.8540');
       expect(fasterWSMA.getResultOrThrow().toFixed(4)).toBe('62.8540');
-
-      expect(wsma.highest?.toFixed(4)).toBe('63.2739');
       expect(fasterWSMA.highest?.toFixed(4)).toBe('63.2739');
-
-      expect(wsma.lowest?.toFixed(4)).toBe('62.8540');
       expect(fasterWSMA.lowest?.toFixed(4)).toBe('62.8540');
     });
 
     it('throws an error when there is no input data', () => {
-      const wsma = new WSMA(3);
+      const wsma = new FasterWSMA(3);
 
       try {
         wsma.getResultOrThrow();
@@ -163,7 +133,7 @@ describe('WSMA', () => {
     });
 
     it('throws an error when there is not enough input data', () => {
-      const wsma = new WSMA(3);
+      const wsma = new FasterWSMA(3);
       wsma.add(1);
       wsma.add(2);
 
@@ -181,7 +151,7 @@ describe('WSMA', () => {
       const prices = [11, 12, 13, 14, 15, 16, 18, 19, 22, 23, 23];
 
       const interval = 5;
-      const wsma = new WSMA(interval);
+      const wsma = new FasterWSMA(interval);
       const fasterWSMA = new FasterWSMA(interval);
 
       wsma.updates(prices, false);
@@ -194,7 +164,7 @@ describe('WSMA', () => {
 
   describe('isStable', () => {
     it('is stable when the inputs can fill the signal interval', () => {
-      const wsma = new WSMA(3);
+      const wsma = new FasterWSMA(3);
       wsma.add(1);
       wsma.add(2);
       expect(wsma.isStable).toBe(false);
