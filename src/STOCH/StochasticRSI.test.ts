@@ -9,9 +9,9 @@ describe('StochasticRSI', () => {
       const stochRSI = new FasterStochasticRSI(interval);
       const stochRSIWithReplace = new FasterStochasticRSI(interval);
 
-      stochRSI.updates([2, 2, 2, 2], false);
-      stochRSIWithReplace.updates([2, 2, 2, 1], false);
-      stochRSIWithReplace.replace(2);
+      stochRSI.updates([1, 2, 3, 4], false);
+      stochRSIWithReplace.updates([1, 2, 3, 5], false);
+      stochRSIWithReplace.replace(4);
 
       expect(stochRSI.getResultOrThrow().valueOf()).toBe(stochRSIWithReplace.getResultOrThrow().valueOf());
     });
@@ -23,17 +23,18 @@ describe('StochasticRSI', () => {
       // https://github.com/TulipCharts/tulipindicators/blob/0bc8dfc46cfc89366bf8cef6dfad1fb6f81b3b7b/tests/untest.txt#L382-L384
       const prices = [
         81.59, 81.06, 82.87, 83.0, 83.61, 83.15, 82.84, 83.99, 84.55, 84.36, 85.53, 86.54, 86.89, 87.77, 87.29,
-      ];
-      const expectations = ['0.658', '1.000', '1.000', '1.000', '1.000', '0.000'];
+      ] as const;
+      const expectations = ['0.658', '1.000', '1.000', '1.000', '1.000', '0.000'] as const;
       const interval = 5;
       const fasterStochRSI = new FasterStochasticRSI(interval);
-      for (const price of prices) {
+      const offset = fasterStochRSI.getRequiredInputs() - 1;
+      prices.forEach((price, index) => {
         const fasterResult = fasterStochRSI.add(price);
         if (fasterResult) {
-          const expected = expectations.shift();
+          const expected = expectations[index - offset];
           expect(fasterResult.toFixed(3)).toBe(expected);
         }
-      }
+      });
       expect(fasterStochRSI.isStable).toBe(true);
       expect(fasterStochRSI.getRequiredInputs()).toBe(10);
       expect(fasterStochRSI.getResultOrThrow()).toBe(0);
@@ -101,7 +102,7 @@ describe('StochasticRSI', () => {
       const interval = 2;
       const stochRSI = new FasterStochasticRSI(interval);
       stochRSI.updates([2, 2, 2, 2], false);
-      expect(stochRSI.getResultOrThrow().valueOf()).toBe('100');
+      expect(stochRSI.getResultOrThrow().valueOf()).toBe(100);
 
       const fasterStochRSI = new FasterStochasticRSI(interval);
       fasterStochRSI.updates([2, 2, 2, 2], false);
