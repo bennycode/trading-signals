@@ -124,7 +124,7 @@ it('calculates the intercept values correctly', () => {
 
   const period = 5;
   const offset = period - 1;
-  const linreg = new FasterLinearRegression(period);
+  const linreg = new LinearRegression(period);
 
   for (let i = 0; i < prices.length; i++) {
     linreg.add(prices[i]);
@@ -156,7 +156,7 @@ it('calculates the intercept values correctly', () => {
 
   const period = 5;
   const offset = period - 1;
-  const linreg = new FasterLinearRegression(period);
+  const linreg = new LinearRegression(period);
 
   prices.forEach((price, index) => {
     linreg.add(price);
