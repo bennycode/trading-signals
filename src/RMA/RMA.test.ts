@@ -79,7 +79,7 @@ describe('RMA', () => {
     it('will simply add prices when there are no prices to replace', () => {
       const rma = new RMA(5);
 
-      rma.update(prices[0], true);
+      rma.replace(prices[0]);
       rma.add(prices[1]);
       rma.add(prices[2]);
       rma.add(prices[3]);

@@ -12,7 +12,7 @@ describe('MOM', () => {
       momentum.add(83.0);
       momentum.add(83.61);
       momentum.add(90);
-      momentum.update(83.15, true);
+      momentum.replace(83.15);
 
       expect(momentum.isStable).toBe(true);
       expect(momentum.getResultOrThrow().toFixed(2)).toBe('1.56');

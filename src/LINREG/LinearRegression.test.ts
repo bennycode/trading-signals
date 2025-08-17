@@ -44,7 +44,7 @@ describe('LinearRegression', () => {
       const prices = [10, 11, 12, 13, 14] as const;
       const linreg = new LinearRegression(prices.length);
 
-      prices.forEach(price => linreg.update(price, false));
+      prices.forEach(price => linreg.add(price));
       const result = linreg.getResultOrThrow();
 
       expect(result.slope).toBe(1);
@@ -56,7 +56,7 @@ describe('LinearRegression', () => {
       const prices = [10.5, 11.2, 10.3, 12.1, 11.2] as const;
       const linreg = new LinearRegression(prices.length);
 
-      prices.forEach(price => linreg.update(price, false));
+      prices.forEach(price => linreg.add(price));
       const result = linreg.getResultOrThrow();
 
       expect(result.prediction).toBeDefined();
@@ -104,7 +104,7 @@ describe('LinearRegression', () => {
 
     it('returns null when updating with insufficient data', () => {
       const linreg = new LinearRegression(5);
-      expect(linreg.update(10, false)).toBeNull();
+      expect(linreg.add(10)).toBeNull();
     });
   });
 });

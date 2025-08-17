@@ -79,7 +79,7 @@ describe('EMA', () => {
 
     it('will simply add prices when there are no prices to replace', () => {
       const ema = new EMA(5);
-      ema.update(prices[0], true);
+      ema.replace(prices[0]);
       ema.add(prices[1]);
       ema.add(prices[2]);
       ema.add(prices[3]);

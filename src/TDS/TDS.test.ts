@@ -6,7 +6,7 @@ describe('TDS', () => {
     expect(tds.getRequiredInputs()).toBe(9);
 
     for (let i = 0; i < 8; i++) {
-      const result = tds.update(10 + i, false);
+      const result = tds.add(10 + i);
       expect(result).toBeNull();
     }
   });
@@ -15,13 +15,13 @@ describe('TDS', () => {
     const tds = new TDS();
 
     for (let i = 0; i < 4; i++) {
-      tds.update(10, false);
+      tds.add(10);
     }
 
     let signal: number | null = null;
 
     for (let i = 0; i < 9; i++) {
-      signal = tds.update(11 + i, false);
+      signal = tds.add(11 + i);
     }
 
     expect(signal).toBe(1);
@@ -30,11 +30,11 @@ describe('TDS', () => {
   it('returns -1 for a bearish setup after 9 consecutive closes < close 4 bars earlier', () => {
     const tds = new TDS();
     for (let i = 0; i < 4; i++) {
-      tds.update(20, false);
+      tds.add(20);
     }
     let signal: number | null = null;
     for (let i = 0; i < 9; i++) {
-      signal = tds.update(19 - i, false);
+      signal = tds.add(19 - i);
     }
     expect(signal).toBe(-1);
   });
@@ -42,7 +42,7 @@ describe('TDS', () => {
   it('keeps at most 13 closes in the buffer', () => {
     const tds = new TDS();
     for (let i = 0; i < 20; i++) {
-      tds.update(i, false);
+      tds.add(i);
     }
     expect(tds['closes'].length).toBeLessThanOrEqual(13);
   });
@@ -50,12 +50,12 @@ describe('TDS', () => {
   it('detects a direction change from bearish to bullish', () => {
     const tds = new TDS();
     for (let i = 0; i < 4; i++) {
-      tds.update(10, false);
+      tds.add(10);
     }
-    tds.update(5, false);
-    tds.update(4, false);
-    tds.update(3, false);
-    const result = tds.update(20, false);
+    tds.add(5);
+    tds.add(4);
+    tds.add(3);
+    const result = tds.add(20);
     expect(tds['setupCount']).toBe(1);
     expect(tds['setupDirection']).toBe('bullish');
     expect(result).toBeNull();
@@ -64,12 +64,12 @@ describe('TDS', () => {
   it('detects a direction change from bullish to bearish', () => {
     const tds = new TDS();
     for (let i = 0; i < 4; i++) {
-      tds.update(10, false);
+      tds.add(10);
     }
-    tds.update(20, false);
-    tds.update(21, false);
-    tds.update(22, false);
-    const result = tds.update(5, false);
+    tds.add(20);
+    tds.add(21);
+    tds.add(22);
+    const result = tds.add(5);
     expect(tds['setupCount']).toBe(1);
     expect(tds['setupDirection']).toBe('bearish');
     expect(result).toBeNull();
@@ -79,10 +79,10 @@ describe('TDS', () => {
     it('replaces values', () => {
       const tds = new TDS();
       for (let i = 0; i < 5; i++) {
-        tds.update(10 + i, false);
+        tds.add(10 + i);
       }
       // Now replace the last value
-      const result = tds.update(20, true);
+      const result = tds.replace(20);
       expect(result).toBeNull();
     });
   });

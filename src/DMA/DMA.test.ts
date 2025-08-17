@@ -8,14 +8,14 @@ describe('DMA', () => {
       const dma = new DMA(3, 6, SMA);
       const dmaWithReplace = new DMA(3, 6, SMA);
       dma.updates([41, 37, 20.9, 100, 30.71, 40], false);
-      dma.update(30, true);
+      dma.replace(30);
 
       expect(dma.isStable).toBe(true);
       expect(dma.getResultOrThrow().short.toFixed(8)).toBe('53.57000000');
       expect(dma.getResultOrThrow().long.toFixed(8)).toBe('43.26833333');
 
       dmaWithReplace.updates([41, 37, 20.9, 100, 30.71, 40], false);
-      dmaWithReplace.update(30, true);
+      dmaWithReplace.replace(30);
 
       expect(dmaWithReplace.isStable).toBe(true);
       expect(dmaWithReplace.getResultOrThrow().short.toFixed(8)).toBe('53.57000000');

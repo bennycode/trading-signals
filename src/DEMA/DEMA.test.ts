@@ -26,7 +26,7 @@ describe('DEMA', () => {
       dema.add(72);
       dema.add(92);
       dema.add(100);
-      dema.update(99, true);
+      dema.replace(99);
       dema.add(2);
 
       expect(dema.isStable).toBe(true);

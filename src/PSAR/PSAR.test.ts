@@ -44,15 +44,15 @@ describe('PSAR', () => {
     });
   });
 
-  it('handles replace flag correctly', () => {
+  it('handles replace correctly', () => {
     const psar = new PSAR({accelerationMax: 0.2, accelerationStep: 0.02});
 
     // Add first two candles
-    psar.update({high: testData[0].high, low: testData[0].low}, false);
-    const initialResult = psar.update({high: testData[1].high, low: testData[1].low}, false);
+    psar.add({high: testData[0].high, low: testData[0].low});
+    const initialResult = psar.add({high: testData[1].high, low: testData[1].low});
 
     // Replace the second candle
-    const replacedResult = psar.update({high: testData[1].high, low: testData[1].low}, true);
+    const replacedResult = psar.replace({high: testData[1].high, low: testData[1].low});
 
     // Allow small differences due to floating point arithmetic
     const diff = Math.abs((initialResult || 0) - (replacedResult || 0));
@@ -65,7 +65,7 @@ describe('PSAR', () => {
     const psar = new PSAR({accelerationMax: 0.2, accelerationStep: 0.02});
 
     // Add just one candle with replace=true (should handle this case)
-    const result = psar.update({high: testData[0].high, low: testData[0].low}, true);
+    const result = psar.replace({high: testData[0].high, low: testData[0].low});
     expect(result).toBeNull();
   });
 
@@ -75,7 +75,7 @@ describe('PSAR', () => {
     expect(() => psar.getResultOrThrow()).toThrow(NotEnoughDataError);
 
     // Add just one candle, still not enough
-    psar.update({high: testData[0].high, low: testData[0].low}, false);
+    psar.add({high: testData[0].high, low: testData[0].low});
     expect(() => psar.getResultOrThrow()).toThrow(NotEnoughDataError);
 
     // Test the specific error message
@@ -88,10 +88,10 @@ describe('PSAR', () => {
     const psar = new PSAR({accelerationMax: 0.2, accelerationStep: 0.02});
 
     // Add first candle
-    psar.update({high: 10, low: 9}, false);
+    psar.add({high: 10, low: 9});
 
     // Add second candle to make the indicator stable
-    psar.update({high: 11, low: 10}, false);
+    psar.add({high: 11, low: 10});
 
     // Now getResultOrThrow should work without throwing
     const result = psar.getResultOrThrow();
@@ -112,11 +112,11 @@ describe('PSAR', () => {
     expect(psar.isStable).toBe(false);
 
     // Add first candle
-    psar.update({high: testData[0].high, low: testData[0].low}, false);
+    psar.add({high: testData[0].high, low: testData[0].low});
     expect(psar.isStable).toBe(false);
 
     // Add second candle, now we should be stable
-    psar.update({high: testData[1].high, low: testData[1].low}, false);
+    psar.add({high: testData[1].high, low: testData[1].low});
     expect(psar.isStable).toBe(true);
   });
 
@@ -124,24 +124,24 @@ describe('PSAR', () => {
     const psar = new PSAR({accelerationMax: 0.2, accelerationStep: 0.02});
 
     // Initialize with initial uptrend
-    psar.update({high: 10, low: 9}, false);
-    psar.update({high: 11, low: 10}, false);
+    psar.add({high: 10, low: 9});
+    psar.add({high: 11, low: 10});
 
     // Continue uptrend
-    let result = psar.update({high: 12, low: 11}, false);
+    let result = psar.add({high: 12, low: 11});
     // Check that the SAR value is close to 9 (with some tolerance)
     expect(result).toBeCloseTo(9, 0);
 
     // Force downtrend - price falls below SAR
-    result = psar.update({high: 9, low: 8}, false);
+    result = psar.add({high: 9, low: 8});
     expect(result).toBeGreaterThan(9); // SAR should be above price on reversal
 
     // Continue downtrend
-    result = psar.update({high: 8.5, low: 7.5}, false);
+    result = psar.add({high: 8.5, low: 7.5});
     expect(result).toBeGreaterThan(8.5); // SAR should stay above price
 
     // Force uptrend - price rises above SAR
-    result = psar.update({high: 14, low: 13}, false);
+    result = psar.add({high: 14, low: 13});
     expect(result).toBeLessThan(13); // SAR should be below price on reversal
   });
 
@@ -149,31 +149,31 @@ describe('PSAR', () => {
     const psar = new PSAR({accelerationMax: 0.2, accelerationStep: 0.02});
 
     // Initialize
-    psar.update({high: 10, low: 9}, false);
-    psar.update({high: 11, low: 10}, false);
+    psar.add({high: 10, low: 9});
+    psar.add({high: 11, low: 10});
 
     // Start with uptrend
-    let result = psar.update({high: 12, low: 11}, false);
+    let result = psar.add({high: 12, low: 11});
     expect(result).toBeLessThan(11); // SAR should be below price
 
     // First reversal to downtrend
-    result = psar.update({high: 9, low: 8}, false);
+    result = psar.add({high: 9, low: 8});
     expect(result).toBeGreaterThan(9); // SAR should be above price
 
     // Continue downtrend and check acceleration factor
-    result = psar.update({high: 7.5, low: 7}, false);
+    result = psar.add({high: 7.5, low: 7});
     expect(result).toBeGreaterThan(7.5);
 
     // Check previous two candles influence in downtrend
-    result = psar.update({high: 9, low: 8.5}, false);
+    result = psar.add({high: 9, low: 8.5});
     expect(result).toBeGreaterThan(8.5);
 
     // Force uptrend again
-    result = psar.update({high: 12, low: 11}, false);
+    result = psar.add({high: 12, low: 11});
     expect(result).toBeLessThan(11);
 
     // Check previous two candles influence in uptrend
-    result = psar.update({high: 11.5, low: 10.5}, false);
+    result = psar.add({high: 11.5, low: 10.5});
     expect(result).toBeLessThan(10.5);
   });
 
@@ -259,9 +259,9 @@ describe('PSAR', () => {
     const psar = new PSAR({accelerationMax: 0.2, accelerationStep: 0.02});
 
     // Initialize uptrend
-    psar.update({high: 10, low: 9}, false);
-    psar.update({high: 11, low: 10}, false);
-    psar.update({high: 12, low: 11}, false);
+    psar.add({high: 10, low: 9});
+    psar.add({high: 11, low: 10});
+    psar.add({high: 12, low: 11});
 
     // Create a candle that crosses SAR with pre-previous candle
     let result = psar.update({high: 11.5, low: 8}, false);
@@ -291,7 +291,7 @@ describe('PSAR', () => {
 
     // Create a candle where only the pre-previous high is higher than SAR
     // This tests line 292-293 where prePreviousHigh > sar but previousHigh < sar
-    const result = psar.update({high: 12, low: 7.5}, false);
+    const result = psar.add({high: 12, low: 7.5});
 
     // Should have adjusted the SAR to be below the high price
     expect(result).toBeLessThan(12);
@@ -301,24 +301,24 @@ describe('PSAR', () => {
     const psar = new PSAR({accelerationMax: 0.2, accelerationStep: 0.02});
 
     // Initialize downtrend where both prePrevious and previous are above SAR
-    psar.update({high: 12, low: 11}, false);
-    psar.update({high: 11, low: 10}, false); // Set initial trend
+    psar.add({high: 12, low: 11});
+    psar.add({high: 11, low: 10}); // Set initial trend
 
     // Continue downtrend
-    psar.update({high: 10, low: 9}, false);
+    psar.add({high: 10, low: 9});
 
     // Now create a scenario where the SAR is low and both previous and pre-previous high
     // are above it
-    let result = psar.update({high: 11, low: 7}, false);
+    let result = psar.add({high: 11, low: 7});
 
     // This next candle will create a scenario where high > sar and both prePrevious and previous are relevant
     // This tests both lines 292-293 AND 296-297
-    result = psar.update({high: 12, low: 6}, false);
+    result = psar.add({high: 12, low: 6});
     expect(result).toBeLessThan(12);
 
     // Add one more candle to test the case where prePreviousCandle exists but high is not greater than SAR
     // This should continue in uptrend but not trigger the prePrevious logic
-    result = psar.update({high: 13, low: 12}, false);
+    result = psar.add({high: 13, low: 12});
     expect(result).toBeLessThan(12);
   });
 
@@ -326,11 +326,11 @@ describe('PSAR', () => {
     const psar = new PSAR({accelerationMax: 0.2, accelerationStep: 0.1});
 
     // Initialize with downtrend
-    psar.update({high: 12, low: 11}, false);
-    psar.update({high: 11, low: 10}, false); // Initial SAR calculation
+    psar.add({high: 12, low: 11});
+    psar.add({high: 11, low: 10}); // Initial SAR calculation
 
     // Force downtrend and get extreme point
-    psar.update({high: 9, low: 8}, false);
+    psar.add({high: 9, low: 8});
 
     // Directly set the acceleration to just below max
     psar['acceleration'] = 0.19;
@@ -339,7 +339,7 @@ describe('PSAR', () => {
 
     // Now make a new low that will cause acceleration to exceed max
     // This specifically tests lines 308-310 where acceleration > max
-    const result = psar.update({high: 7, low: 6}, false);
+    const result = psar.add({high: 7, low: 6});
 
     // Verify the update worked correctly
     expect(result).toBeGreaterThan(7);
@@ -716,16 +716,16 @@ describe('PSAR', () => {
 
     // Test the same for downtrend with high > sar
     const psarDown = new PSAR({accelerationMax: 0.2, accelerationStep: 0.1});
-    psarDown.update({high: 15, low: 14}, false);
-    psarDown.update({high: 14, low: 13}, false);
-    psarDown.update({high: 13, low: 12}, false); // Sets up prePreviousCandle
+    psarDown.add({high: 15, low: 14});
+    psarDown.add({high: 14, low: 13});
+    psarDown.add({high: 13, low: 12}); // Sets up prePreviousCandle
 
     // Set up specific state for hitting line 150-151
     psarDown['isLong'] = false; // Downtrend
     psarDown['lastSar'] = 10; // Low SAR
 
     // Execute with high > sar to hit the branch
-    const downTrendResult = psarDown.update({high: 15, low: 12}, false);
+    const downTrendResult = psarDown.add({high: 15, low: 12});
     expect(downTrendResult).toBe(11.99);
   });
 
@@ -800,7 +800,7 @@ describe('PSAR', () => {
     psar.update({high: 11, low: 10}, false);
 
     // Then replace second candle (should work and return a value)
-    const result = psar.update({high: 11, low: 10}, true);
+    const result = psar.replace({high: 11, low: 10});
     expect(result).not.toBeNull();
   });
 
@@ -809,7 +809,7 @@ describe('PSAR', () => {
     const psar = new PSAR({accelerationMax: 0.2, accelerationStep: 0.02});
 
     // First test with no data (no previousCandle)
-    const result = psar.update({high: 10, low: 9}, true);
+    const result = psar.replace({high: 10, low: 9});
     expect(result).toBeNull();
 
     // Test replacing data when lastSar is null but previousCandle exists

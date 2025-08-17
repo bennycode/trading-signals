@@ -33,7 +33,7 @@ describe('MAD', () => {
       mad.add(83.15);
       mad.add(82.84);
       mad.add(90);
-      mad.update(83.99, true);
+      mad.replace(83.99);
 
       expect(mad.isStable).toBe(true);
       expect(mad.getResultOrThrow().toFixed(2)).toBe('0.39');
