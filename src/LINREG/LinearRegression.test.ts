@@ -29,11 +29,11 @@ describe('LinearRegression', () => {
 
       const offset = period - 1;
 
-      prices.forEach((price, index) => {
+    prices.forEach((price, index) => {
         linreg.add(price);
         if (index >= offset) {
           const result = linreg.getResultOrThrow();
-          expect(result.intercept.toFixed(3).valueOf()).toBe(expected[index - offset]);
+      expect(result.intercept.toFixed(3)).toBe(expected[index - offset]);
         }
       });
     });

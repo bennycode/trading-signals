@@ -35,11 +35,11 @@ it('correctly calculates the IQR', () => {
   const iqr = new IQR(13);
 
   for (const v of values.slice(0, -1)) {
-    iqr.update(new Big(v), false);
+    iqr.update(v, false);
   }
 
-  const result = iqr.update(new Big(values.at(-1)!), false);
-  expect(result?.eq(88)).toBe(true);
+  const result = iqr.update(values.at(-1)!, false);
+  expect(result).toBe(88);
 });
 
 // ✅ Good: All values are passed in clearly, and the expected IQR value is asserted directly,
@@ -49,14 +49,14 @@ it('correctly calculates the IQR', () => {
   const iqr = new IQR(13);
 
   for (const value of values) {
-    iqr.add(new Big(value));
+    iqr.add(value);
   }
 
-  expect(iqr.getResultOrThrow().valueOf()).toBe('88');
+  expect(iqr.getResultOrThrow()).toBe(88);
 });
 ```
 
-In test cases, prefer using the convenience methods `add(new Big(i))` instead of `update(new Big(i), false)` and `replace(new Big(i))` instead of `update(new Big(i), true)`:
+In test cases, prefer using the convenience methods `add(i)` instead of `update(i, false)` and `replace(i)` instead of `update(i, true)`:
 
 ```ts
 // ❌ Bad: Using `update` directly
@@ -64,7 +64,7 @@ it('returns null until enough values are provided', () => {
   const iqr = new IQR(5);
 
   for (let i = 0; i < 4; i++) {
-    const result = iqr.update(new Big(i), false);
+  const result = iqr.update(i, false);
     expect(result).toBeNull();
   }
 });
@@ -74,7 +74,7 @@ it('returns null until enough values are provided', () => {
   const iqr = new IQR(5);
 
   for (let i = 0; i < 4; i++) {
-    const result = iqr.add(new Big(i));
+    const result = iqr.add(i);
     expect(result).toBeNull();
   }
 });
@@ -94,7 +94,7 @@ Prefer inferred return types over explicit return types to keep code cleaner and
 
 ```ts
 // ❌ Bad: Explicit return type
-override update(data: HighLowCloseVolume, replace: boolean): Big | null { }
+override update(data: HighLowCloseVolume, replace: boolean) { }
 
 // ✅ Good: Let TypeScript infer the return type
 override update(data: HighLowCloseVolume, replace: boolean) { }
@@ -130,7 +130,7 @@ it('calculates the intercept values correctly', () => {
     linreg.add(prices[i]);
     if (i >= offset) {
       const result = linreg.getResultOrThrow();
-      expect(result.intercept.toFixed(3).valueOf()).toBe(expected.shift());
+  expect(result.intercept.toFixed(3)).toBe(expected.shift());
     }
   }
 });
@@ -162,7 +162,7 @@ it('calculates the intercept values correctly', () => {
     linreg.add(price);
     if (index >= offset) {
       const result = linreg.getResultOrThrow();
-      expect(result.intercept.toFixed(3).valueOf()).toBe(expected[index - offset]);
+  expect(result.intercept.toFixed(3)).toBe(expected[index - offset]);
     }
   });
 });

@@ -44,7 +44,7 @@ describe('getFasterQuartile', () => {
 
       const result = getFasterQuartile(values, 0.5);
 
-      expect(result.valueOf()).toBe(37.5);
+  expect(result).toBe(37.5);
     });
 
     it('calculates the third quartile (Q3)', () => {

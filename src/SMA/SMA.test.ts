@@ -79,9 +79,9 @@ describe('SMA', () => {
       expect(sma.isStable).toBe(true);
       sma.add(10);
       sma.add(30);
-      expect(sma.getResultOrThrow().valueOf()).toBe(20);
-      expect(sma.lowest?.toFixed(2).valueOf()).toBe('20.00');
-      expect(sma.highest?.toFixed(2).valueOf()).toBe('30.00');
+  expect(sma.getResultOrThrow()).toBe(20);
+  expect(sma.lowest?.toFixed(2)).toBe('20.00');
+  expect(sma.highest?.toFixed(2)).toBe('30.00');
     });
   });
 

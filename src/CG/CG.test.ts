@@ -113,9 +113,9 @@ describe('CG', () => {
     });
 
     it('is protected against division by zero errors', () => {
-      const fasterCG = new FasterCG(1, 1);
-      fasterCG.add(0);
-      expect(fasterCG.getResultOrThrow().valueOf()).toBe(0);
+  const fasterCG = new FasterCG(1, 1);
+  fasterCG.add(0);
+  expect(fasterCG.getResultOrThrow()).toBe(0);
     });
   });
 });
