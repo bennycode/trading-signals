@@ -51,7 +51,7 @@ describe('MAD', () => {
         mad.add(price);
       }
 
-      expect(mad.getResultOrThrow().valueOf()).toBe(3.6);
+      expect(mad.getResultOrThrow()).toBe(3.6);
     });
 
     it('is compatible with results from Tulip Indicators (TI)', () => {
@@ -92,14 +92,14 @@ describe('MAD', () => {
   describe('getResultFromBatch', () => {
     it("doesn't crash when the array is empty", () => {
       const result = MAD.getResultFromBatch([]);
-      expect(result.valueOf()).toBe(0);
+      expect(result).toBe(0);
     });
 
     it('calculates the mean when no mean is given', () => {
       // Test data verified with:
       // https://en.wikipedia.org/wiki/Average_absolute_deviation#Mean_absolute_deviation_around_a_central_point
       const prices = [2, 2, 3, 4, 14];
-      expect(MAD.getResultFromBatch(prices).valueOf()).toBe(3.6);
+      expect(MAD.getResultFromBatch(prices)).toBe(3.6);
     });
 
     it('accepts a supplied mean', () => {
@@ -107,7 +107,7 @@ describe('MAD', () => {
       // https://en.wikipedia.org/wiki/Average_absolute_deviation#Mean_absolute_deviation_around_a_central_point
       const prices = [2, 2, 3, 4, 14];
       const mean = 5;
-      expect(MAD.getResultFromBatch(prices, mean).valueOf()).toBe(3.6);
+      expect(MAD.getResultFromBatch(prices, mean)).toBe(3.6);
     });
   });
 });

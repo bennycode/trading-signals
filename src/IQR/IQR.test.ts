@@ -24,14 +24,14 @@ describe('IQR', () => {
 
       // Window now contains [2, 3, 4]
       // Q1 = 2, Q3 = 4, IQR = 2
-      expect(iqr.getResultOrThrow().valueOf()).toBe(2);
+      expect(iqr.getResultOrThrow()).toBe(2);
 
       // When we add the 5th value, the 2nd value should be removed
       iqr.add(5);
 
       // Window now contains [3, 4, 5]
       // Q1 = 3, Q3 = 5, IQR = 2
-      expect(iqr.getResultOrThrow().valueOf()).toBe(2);
+      expect(iqr.getResultOrThrow()).toBe(2);
     });
   });
 
@@ -44,11 +44,11 @@ describe('IQR', () => {
         iqr.add(value);
       }
 
-      expect(iqr.getResultOrThrow().valueOf()).toBe(3);
+      expect(iqr.getResultOrThrow()).toBe(3);
 
       const result = iqr.replace(10);
 
-      expect(result?.valueOf()).toBe(5.5);
+      expect(result).toBe(5.5);
     });
   });
 
@@ -65,7 +65,7 @@ describe('IQR', () => {
         iqr.add(value);
       }
 
-      expect(iqr.getResultOrThrow().valueOf()).toBe(88);
+      expect(iqr.getResultOrThrow()).toBe(88);
     });
 
     it('calculates the interquartile range (#2)', () => {
@@ -78,7 +78,7 @@ describe('IQR', () => {
         iqr.add(value);
       }
 
-      expect(iqr.getResultOrThrow().valueOf()).toBe(8);
+      expect(iqr.getResultOrThrow()).toBe(8);
     });
 
     it('calculates the interquartile range (#3)', () => {
@@ -91,7 +91,7 @@ describe('IQR', () => {
         iqr.add(value);
       }
 
-      expect(iqr.getResultOrThrow().valueOf()).toBe(3);
+      expect(iqr.getResultOrThrow()).toBe(3);
     });
   });
 });

@@ -691,7 +691,7 @@ describe('PSAR', () => {
     expect(result).toBe(9);
   });
 
-  it('should test the exact conditions needed for full branch coverage', () => {
+  it('tests the exact conditions needed for full branch coverage', () => {
     const psar = new PSAR({accelerationMax: 0.2, accelerationStep: 0.1});
 
     // Let's add a new approach to cover line 105-106 (previousLow < sar check)
@@ -753,7 +753,7 @@ describe('PSAR', () => {
     expect(result).toBe(8);
   });
 
-  it('should directly test previousCandle high impact on SAR in downtrend', () => {
+  it('directly tests previousCandle high impact on SAR in downtrend', () => {
     const psar = new PSAR({accelerationMax: 0.2, accelerationStep: 0.02});
 
     // Initialize
@@ -771,7 +771,7 @@ describe('PSAR', () => {
     expect(result).toBeGreaterThan(6.5);
   });
 
-  it('should handle edge case where SAR equals or exceeds the low price on reversal to uptrend', () => {
+  it('handles edge case where SAR equals or exceeds the low price on reversal to uptrend', () => {
     const psar = new PSAR({accelerationMax: 0.2, accelerationStep: 0.02});
 
     // Initialize downtrend
@@ -790,7 +790,7 @@ describe('PSAR', () => {
     expect(result).toBeCloseTo(6.99, 2); // Should be low - 0.01
   });
 
-  it('should handle replace flag for second candle', () => {
+  it('handles replace flag for second candle', () => {
     const psar = new PSAR({accelerationMax: 0.2, accelerationStep: 0.02});
 
     // Add first candle
@@ -804,7 +804,7 @@ describe('PSAR', () => {
     expect(result).not.toBeNull();
   });
 
-  it('should specifically handle replace flag with notEnoughData', () => {
+  it('handles replace flag with notEnoughData', () => {
     // This test targets lines 51-54 which aren't being covered
     const psar = new PSAR({accelerationMax: 0.2, accelerationStep: 0.02});
 
@@ -822,7 +822,7 @@ describe('PSAR', () => {
   });
 
   // Test utility functions directly for code coverage by creating specific scenarios
-  it('should test helper functions when previous value DOES meet condition', () => {
+  it('tests helper functions when previous value meets condition', () => {
     // Test for previous low < SAR
     const psar = new PSAR({accelerationMax: 0.2, accelerationStep: 0.02});
 
@@ -852,7 +852,7 @@ describe('PSAR', () => {
     psarDownTrend.update({high: 11, low: 10}, false);
   });
 
-  it('should test negative branch conditions for ternary operators', () => {
+  it('tests negative branch conditions for ternary operators', () => {
     // Test for previous low >= SAR
     const psar = new PSAR({accelerationMax: 0.2, accelerationStep: 0.02});
 
