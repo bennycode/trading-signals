@@ -72,11 +72,11 @@ describe('DX', () => {
         }
       }
 
-  expect(fasterDX.isStable).toBe(true);
-  expect(fasterDX.getRequiredInputs()).toBe(interval);
-  expect(fasterDX.getResultOrThrow().toFixed(2)).toBe('75.61');
-  expect(fasterDX.lowest?.toFixed(2)).toBe('11.09');
-  expect(fasterDX.highest?.toFixed(2)).toBe('86.51');
+      expect(fasterDX.isStable).toBe(true);
+      expect(fasterDX.getRequiredInputs()).toBe(interval);
+      expect(fasterDX.getResultOrThrow().toFixed(2)).toBe('75.61');
+      expect(fasterDX.lowest?.toFixed(2)).toBe('11.09');
+      expect(fasterDX.highest?.toFixed(2)).toBe('86.51');
     });
 
     it('returns zero when there is no trend', () => {
@@ -91,8 +91,8 @@ describe('DX', () => {
       const fasterDX = new FasterDX(5);
       fasterDX.updates(candles, false);
 
-  expect(fasterDX.isStable).toBe(true);
-  expect(fasterDX.getResultOrThrow()).toBe(0);
+      expect(fasterDX.isStable).toBe(true);
+      expect(fasterDX.getResultOrThrow()).toBe(0);
     });
   });
 });

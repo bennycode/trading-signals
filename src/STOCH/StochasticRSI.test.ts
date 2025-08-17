@@ -13,7 +13,7 @@ describe('StochasticRSI', () => {
       stochRSIWithReplace.updates([1, 2, 3, 5], false);
       stochRSIWithReplace.replace(4);
 
-  expect(stochRSI.getResultOrThrow()).toBe(stochRSIWithReplace.getResultOrThrow());
+      expect(stochRSI.getResultOrThrow()).toBe(stochRSIWithReplace.getResultOrThrow());
     });
   });
 
@@ -38,8 +38,8 @@ describe('StochasticRSI', () => {
       expect(fasterStochRSI.isStable).toBe(true);
       expect(fasterStochRSI.getRequiredInputs()).toBe(10);
       expect(fasterStochRSI.getResultOrThrow()).toBe(0);
-  expect(fasterStochRSI.highest).toBe(1);
-  expect(fasterStochRSI.lowest).toBe(0);
+      expect(fasterStochRSI.highest).toBe(1);
+      expect(fasterStochRSI.lowest).toBe(0);
     });
 
     it('calculates smoothing %K and %D lines', () => {
@@ -102,11 +102,11 @@ describe('StochasticRSI', () => {
       const interval = 2;
       const stochRSI = new FasterStochasticRSI(interval);
       stochRSI.updates([2, 2, 2, 2], false);
-  expect(stochRSI.getResultOrThrow()).toBe(100);
+      expect(stochRSI.getResultOrThrow()).toBe(100);
 
       const fasterStochRSI = new FasterStochasticRSI(interval);
       fasterStochRSI.updates([2, 2, 2, 2], false);
-  expect(fasterStochRSI.getResultOrThrow()).toBe(100);
+      expect(fasterStochRSI.getResultOrThrow()).toBe(100);
     });
   });
 });

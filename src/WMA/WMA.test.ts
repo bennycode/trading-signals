@@ -80,9 +80,9 @@ describe('WMA', () => {
       expect(wma.isStable).toBe(true);
       wma.add(120);
       wma.add(60);
-  expect(wma.getResultOrThrow()).toBe(85);
-  expect(wma.lowest?.toFixed(2)).toBe('70.00');
-  expect(wma.highest?.toFixed(2)).toBe('100.00');
+      expect(wma.getResultOrThrow()).toBe(85);
+      expect(wma.lowest?.toFixed(2)).toBe('70.00');
+      expect(wma.highest?.toFixed(2)).toBe('100.00');
     });
   });
 

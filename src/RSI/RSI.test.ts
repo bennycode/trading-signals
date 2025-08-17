@@ -59,7 +59,7 @@ describe('RSI', () => {
       const updates = [2, 2, 2];
       const fasterRSI = new FasterRSI(2);
       fasterRSI.updates(updates, false);
-  expect(fasterRSI.getResultOrThrow()).toBe(100);
+      expect(fasterRSI.getResultOrThrow()).toBe(100);
     });
 
     it('throws an error when there is not enough input data', () => {
