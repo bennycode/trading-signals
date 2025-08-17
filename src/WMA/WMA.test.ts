@@ -108,6 +108,7 @@ describe('WMA', () => {
     it('calculates the moving average based on the last 5 prices', () => {
       const prices = [91, 90, 89, 88, 90] as const;
       const expectations = ['89.33'] as const;
+
       const wma = new WMA(5);
       const offset = wma.getRequiredInputs() - 1;
 
