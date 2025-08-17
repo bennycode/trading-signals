@@ -88,20 +88,21 @@ describe('WMA', () => {
 
   describe('getResultOrThrow', () => {
     it('calculates the moving average based on the last 5 prices', () => {
-      const prices = [91, 90, 89, 88, 90];
-      const expectations = ['89.33'];
-      const fasterWMA = new WMA(5);
+      const prices = [91, 90, 89, 88, 90] as const;
+      const expectations = ['89.33'] as const;
+      const wma = new WMA(5);
+      const offset = wma.getRequiredInputs() - 1;
 
-      for (const price of prices) {
-        const fasterResult = fasterWMA.add(price);
+      prices.forEach((price, i) => {
+        const result = wma.add(price);
 
-        if (fasterResult) {
-          const expected = expectations.shift();
-          expect(fasterResult.toFixed(2)).toBe(expected);
+        if (result) {
+          const expected = expectations[i - offset];
+          expect(result.toFixed(2)).toBe(expected);
         }
-      }
+      });
 
-      expect(fasterWMA.isStable).toBe(true);
+      expect(wma.isStable).toBe(true);
     });
 
     it('calculates the moving average based on the last 5 prices', () => {
