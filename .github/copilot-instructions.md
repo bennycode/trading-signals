@@ -100,50 +100,70 @@ override update(data: HighLowCloseVolume, replace: boolean): Big | null { }
 override update(data: HighLowCloseVolume, replace: boolean) { }
 ```
 
-Include both Big.js and number-based implementations of the indicator in the same test case.
+Use `as const` for both test inputs and expected outputs. When looping, prefer `forEach` instead of manual index-based `for` loops:
 
 ```ts
-// ❌ Bad: REI and FasterREI have separate descriptions, leading to duplicated test scenarios.
-describe('REI', () => {
-  it('returns null until there are enough data points', () => {
-    const interval = 8;
-    const rei = new REI(interval);
+// ❌ Bad: Missing const assertions, so "expected" can be mutated (values shifted)
+it('calculates the intercept values correctly', () => {
+  const prices = [
+    81.59, 81.06, 82.87, 83.0, 83.61, 83.15, 82.84, 83.99, 84.55, 84.36, 85.53, 86.54, 86.89, 87.77, 87.29,
+  ];
+  const expected = [
+    '81.230',
+    '81.754',
+    '83.076',
+    '83.076',
+    '83.084',
+    '82.952',
+    '83.104',
+    '83.778',
+    '84.202',
+    '84.582',
+    '85.854',
+  ];
 
-    for (let i = 0; i < 15; i++) {
-      rei.add({close: i, high: i, low: i});
+  const period = 5;
+  const offset = period - 1;
+  const linreg = new FasterLinearRegression(period);
+
+  for (let i = 0; i < prices.length; i++) {
+    linreg.add(prices[i]);
+    if (i >= offset) {
+      const result = linreg.getResultOrThrow();
+      expect(result.intercept.toFixed(3).valueOf()).toBe(expected.shift());
     }
-
-    expect(rei.getResult()).toBeNull();
-  });
+  }
 });
 
-describe('FasterREI', () => {
-  it('returns null until there are enough data points', () => {
-    const interval = 8;
-    const fasterRei = new FasterREI(interval);
+// ✅ Good: Use readonly arrays and match results using an "offset"
+it('calculates the intercept values correctly', () => {
+  const prices = [
+    81.59, 81.06, 82.87, 83.0, 83.61, 83.15, 82.84, 83.99, 84.55, 84.36, 85.53, 86.54, 86.89, 87.77, 87.29,
+  ] as const;
+  const expected = [
+    '81.230',
+    '81.754',
+    '83.076',
+    '83.076',
+    '83.084',
+    '82.952',
+    '83.104',
+    '83.778',
+    '84.202',
+    '84.582',
+    '85.854',
+  ] as const;
 
-    for (let i = 0; i < 15; i++) {
-      fasterRei.add({close: i, high: i, low: i});
+  const period = 5;
+  const offset = period - 1;
+  const linreg = new FasterLinearRegression(period);
+
+  prices.forEach((price, index) => {
+    linreg.add(price);
+    if (index >= offset) {
+      const result = linreg.getResultOrThrow();
+      expect(result.intercept.toFixed(3).valueOf()).toBe(expected[index - offset]);
     }
-
-    expect(fasterRei.getResult()).toBeNull();
-  });
-});
-
-// ✅ Good: REI and FasterREI are tested together within the same scenario.
-describe('getResult', () => {
-  it('returns null until there are enough data points', () => {
-    const interval = 8;
-    const rei = new REI(interval);
-    const fasterRei = new FasterREI(interval);
-
-    for (let i = 0; i < 15; i++) {
-      rei.add({close: i, high: i, low: i});
-      fasterRei.add({close: i, high: i, low: i});
-    }
-
-    expect(rei.getResult()).toBeNull();
-    expect(fasterRei.getResult()).toBeNull();
   });
 });
 ```
