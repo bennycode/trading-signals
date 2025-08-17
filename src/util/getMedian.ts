@@ -1,4 +1,4 @@
-export function getFasterMedian(values: number[]): number {
+export function getMedian(values: number[]): number {
   const n = values.length;
 
   if (n === 0) {

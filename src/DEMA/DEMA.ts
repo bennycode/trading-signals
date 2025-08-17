@@ -1,4 +1,4 @@
-import {FasterEMA} from '../EMA/EMA.js';
+import {EMA} from '../EMA/EMA.js';
 import {IndicatorSeries} from '../Indicator.js';
 
 /**
@@ -11,14 +11,14 @@ import {IndicatorSeries} from '../Indicator.js';
  *
  * @see https://www.investopedia.com/terms/d/double-exponential-moving-average.asp
  */
-export class FasterDEMA extends IndicatorSeries {
-  private readonly inner: FasterEMA;
-  private readonly outer: FasterEMA;
+export class DEMA extends IndicatorSeries {
+  private readonly inner: EMA;
+  private readonly outer: EMA;
 
   constructor(public readonly interval: number) {
     super();
-    this.inner = new FasterEMA(interval);
-    this.outer = new FasterEMA(interval);
+    this.inner = new EMA(interval);
+    this.outer = new EMA(interval);
   }
 
   override getRequiredInputs() {

@@ -10,7 +10,7 @@ import {pushUpdate} from '../util/pushUpdate.js';
  *
  * @see https://www.investopedia.com/terms/r/rateofchange.asp
  */
-export class FasterROC extends IndicatorSeries {
+export class ROC extends IndicatorSeries {
   public readonly prices: number[] = [];
 
   constructor(public readonly interval: number) {

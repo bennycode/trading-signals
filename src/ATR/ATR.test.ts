@@ -1,5 +1,5 @@
 import {NotEnoughDataError} from '../index.js';
-import {FasterATR} from './ATR.js';
+import {ATR} from './ATR.js';
 
 describe('ATR', () => {
   // Test data verified with:
@@ -41,8 +41,8 @@ describe('ATR', () => {
       const correct = {close: 3, high: 4, low: 1};
       const wrong = {close: 1_111, high: 9_999, low: 0};
 
-      const atr = new FasterATR(interval);
-      const atrWithReplace = new FasterATR(interval);
+      const atr = new ATR(interval);
+      const atrWithReplace = new ATR(interval);
 
       atr.updates(candles, false);
       atrWithReplace.updates(candles, false);
@@ -61,8 +61,8 @@ describe('ATR', () => {
   describe('getResultOrThrow', () => {
     it('calculates the Average True Range (ATR)', () => {
       const interval = 5;
-      const atr = new FasterATR(interval);
-      const fasterATR = new FasterATR(interval);
+      const atr = new ATR(interval);
+      const fasterATR = new ATR(interval);
 
       for (let i = 0; i < candles.length; i++) {
         const candle = candles[i];
@@ -91,7 +91,7 @@ describe('ATR', () => {
     });
 
     it('throws an error when there is not enough input data', () => {
-      const atr = new FasterATR(14);
+      const atr = new ATR(14);
 
       try {
         atr.getResultOrThrow();
@@ -105,8 +105,8 @@ describe('ATR', () => {
   describe('replace', () => {
     it('replaces recently added values', () => {
       const interval = 5;
-      const atr = new FasterATR(interval);
-      const fasterATR = new FasterATR(interval);
+      const atr = new ATR(interval);
+      const fasterATR = new ATR(interval);
 
       for (const candle of candles) {
         atr.add(candle);

@@ -1,9 +1,9 @@
-import {FasterATR} from '../ATR/ATR.js';
+import {ATR} from '../ATR/ATR.js';
 import {IndicatorSeries} from '../Indicator.js';
-import type {FasterMovingAverage} from '../MA/MovingAverage.js';
-import type {FasterMovingAverageTypes} from '../MA/MovingAverageTypes.js';
+import type {MovingAverage} from '../MA/MovingAverage.js';
+import type {MovingAverageTypes} from '../MA/MovingAverageTypes.js';
 import type {HighLowClose} from '../util/HighLowClose.js';
-import {FasterWSMA} from '../WSMA/WSMA.js';
+import {WSMA} from '../WSMA/WSMA.js';
 
 /**
  * Directional Movement Index (DMI / DX)
@@ -18,21 +18,21 @@ import {FasterWSMA} from '../WSMA/WSMA.js';
  *
  * @see https://www.fidelity.com/learning-center/trading-investing/technical-analysis/technical-indicator-guide/dmi
  */
-export class FasterDX extends IndicatorSeries<HighLowClose<number>> {
-  private readonly movesUp: FasterMovingAverage;
-  private readonly movesDown: FasterMovingAverage;
+export class DX extends IndicatorSeries<HighLowClose<number>> {
+  private readonly movesUp: MovingAverage;
+  private readonly movesDown: MovingAverage;
   private previousCandle?: HighLowClose<number>;
   private secondLastCandle?: HighLowClose<number>;
-  private readonly atr: FasterATR;
+  private readonly atr: ATR;
   public mdi?: number;
   public pdi?: number;
 
   constructor(
     public readonly interval: number,
-    SmoothingIndicator: FasterMovingAverageTypes = FasterWSMA
+    SmoothingIndicator: MovingAverageTypes = WSMA
   ) {
     super();
-    this.atr = new FasterATR(this.interval, SmoothingIndicator);
+    this.atr = new ATR(this.interval, SmoothingIndicator);
     this.movesDown = new SmoothingIndicator(this.interval);
     this.movesUp = new SmoothingIndicator(this.interval);
   }
@@ -71,14 +71,14 @@ export class FasterDX extends IndicatorSeries<HighLowClose<number>> {
     const lowerLow = previousLow - currentLow;
 
     const noHigherHighs = higherHigh < 0;
-    const lowsRiseFaster = higherHigh < lowerLow;
+    const lowsRise = higherHigh < lowerLow;
 
-    const pdm = noHigherHighs || lowsRiseFaster ? 0 : higherHigh;
+    const pdm = noHigherHighs || lowsRise ? 0 : higherHigh;
 
     const noLowerLows = lowerLow < 0;
-    const highsRiseFaster = lowerLow < higherHigh;
+    const highsRise = lowerLow < higherHigh;
 
-    const mdm = noLowerLows || highsRiseFaster ? 0 : lowerLow;
+    const mdm = noLowerLows || highsRise ? 0 : lowerLow;
 
     this.updateState(candle, pdm, mdm, replace);
 

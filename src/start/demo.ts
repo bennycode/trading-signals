@@ -1,5 +1,5 @@
 import readline from 'node:readline';
-import {FasterSMA} from '../index.js';
+import {SMA} from '../index.js';
 
 export async function* keyboardStream() {
   const KEY_CTRL_C = '\u0003';
@@ -26,7 +26,7 @@ export async function* keyboardStream() {
   }
 }
 
-const sma = new FasterSMA(3);
+const sma = new SMA(3);
 
 console.log(`Type in some numbers and press "Enter" to calculate SMA (${sma.interval}).\nPress "Ctrl+C" to exit.`);
 

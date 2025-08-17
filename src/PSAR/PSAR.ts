@@ -28,7 +28,7 @@ export type PSARConfig = {
  * It's particularly useful in trending markets, but less reliable in sideways or choppy markets.
  *
  */
-export class FasterPSAR extends IndicatorSeries<HighLow<number>> {
+export class PSAR extends IndicatorSeries<HighLow<number>> {
   private readonly accelerationStep: number;
   private readonly accelerationMax: number;
   private acceleration: number = 0;

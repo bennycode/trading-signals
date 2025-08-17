@@ -1,4 +1,4 @@
-import {FasterMAD} from './MAD.js';
+import {MAD} from './MAD.js';
 import {NotEnoughDataError} from '../error/index.js';
 
 describe('MAD', () => {
@@ -11,7 +11,7 @@ describe('MAD', () => {
 
   describe('update', () => {
     it('can replace recently added values', () => {
-      const fasterMAD = new FasterMAD(5);
+      const fasterMAD = new MAD(5);
 
       fasterMAD.add(81.59);
       fasterMAD.add(81.06);
@@ -33,7 +33,7 @@ describe('MAD', () => {
       // Test data verified with:
       // https://en.wikipedia.org/wiki/Average_absolute_deviation#Mean_absolute_deviation_around_a_central_point
       const prices = [2, 2, 3, 4, 14];
-      const fasterMAD = new FasterMAD(5);
+      const fasterMAD = new MAD(5);
       for (const price of prices) {
         fasterMAD.add(price);
       }
@@ -41,7 +41,7 @@ describe('MAD', () => {
     });
 
     it('is compatible with results from Tulip Indicators (TI)', () => {
-      const fasterMAD = new FasterMAD(5);
+      const fasterMAD = new MAD(5);
       for (const price of prices) {
         fasterMAD.add(price);
         if (fasterMAD.isStable) {
@@ -53,7 +53,7 @@ describe('MAD', () => {
     });
 
     it("stores the highest and lowest result throughout the indicator's lifetime", () => {
-      const fasterMAD = new FasterMAD(5);
+      const fasterMAD = new MAD(5);
       for (const price of prices) {
         fasterMAD.add(price);
       }
@@ -62,7 +62,7 @@ describe('MAD', () => {
     });
 
     it('throws an error when there is not enough input data', () => {
-      const mad = new FasterMAD(5);
+      const mad = new MAD(5);
       try {
         mad.getResultOrThrow();
         throw new Error('Expected error');
@@ -70,7 +70,7 @@ describe('MAD', () => {
         expect(error).toBeInstanceOf(NotEnoughDataError);
       }
 
-      const fasterMAD = new FasterMAD(5);
+      const fasterMAD = new MAD(5);
       try {
         fasterMAD.getResultOrThrow();
         throw new Error('Expected error');
@@ -82,7 +82,7 @@ describe('MAD', () => {
 
   describe('getResultFromBatch', () => {
     it("doesn't crash when the array is empty", () => {
-      const result = FasterMAD.getResultFromBatch([]);
+      const result = MAD.getResultFromBatch([]);
       expect(result.valueOf()).toBe(0);
     });
 
@@ -90,7 +90,7 @@ describe('MAD', () => {
       // Test data verified with:
       // https://en.wikipedia.org/wiki/Average_absolute_deviation#Mean_absolute_deviation_around_a_central_point
       const prices = [2, 2, 3, 4, 14];
-      expect(FasterMAD.getResultFromBatch(prices).valueOf()).toBe(3.6);
+      expect(MAD.getResultFromBatch(prices).valueOf()).toBe(3.6);
     });
 
     it('accepts a supplied mean', () => {
@@ -98,7 +98,7 @@ describe('MAD', () => {
       // https://en.wikipedia.org/wiki/Average_absolute_deviation#Mean_absolute_deviation_around_a_central_point
       const prices = [2, 2, 3, 4, 14];
       const mean = 5;
-      expect(FasterMAD.getResultFromBatch(prices, mean).valueOf()).toBe(3.6);
+      expect(MAD.getResultFromBatch(prices, mean).valueOf()).toBe(3.6);
     });
   });
 });

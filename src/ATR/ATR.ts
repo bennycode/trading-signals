@@ -1,9 +1,9 @@
 import {IndicatorSeries} from '../Indicator.js';
-import type {FasterMovingAverage} from '../MA/MovingAverage.js';
-import type {FasterMovingAverageTypes} from '../MA/MovingAverageTypes.js';
-import {FasterTR} from '../TR/TR.js';
+import type {MovingAverage} from '../MA/MovingAverage.js';
+import type {MovingAverageTypes} from '../MA/MovingAverageTypes.js';
+import {TR} from '../TR/TR.js';
 import type {HighLowClose} from '../util/HighLowClose.js';
-import {FasterWSMA} from '../WSMA/WSMA.js';
+import {WSMA} from '../WSMA/WSMA.js';
 
 /**
  * Average True Range (ATR)
@@ -27,16 +27,16 @@ import {FasterWSMA} from '../WSMA/WSMA.js';
  *
  * @see https://www.investopedia.com/terms/a/atr.asp
  */
-export class FasterATR extends IndicatorSeries<HighLowClose<number>> {
-  private readonly tr: FasterTR;
-  private readonly smoothing: FasterMovingAverage;
+export class ATR extends IndicatorSeries<HighLowClose<number>> {
+  private readonly tr: TR;
+  private readonly smoothing: MovingAverage;
 
   constructor(
     public readonly interval: number,
-    SmoothingIndicator: FasterMovingAverageTypes = FasterWSMA
+    SmoothingIndicator: MovingAverageTypes = WSMA
   ) {
     super();
-    this.tr = new FasterTR();
+    this.tr = new TR();
     this.smoothing = new SmoothingIndicator(interval);
   }
 

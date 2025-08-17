@@ -1,6 +1,6 @@
 import {TechnicalIndicator} from '../Indicator.js';
-import type {FasterBandsResult} from '../util/BandsResult.js';
-import {getFasterAverage, getFasterStandardDeviation, pushUpdate} from '../util/index.js';
+import type {BandsResult} from '../util/BandsResult.js';
+import {getAverage, getStandardDeviation, pushUpdate} from '../util/index.js';
 
 /**
  * Bollinger Bands (BBANDS)
@@ -17,7 +17,7 @@ import {getFasterAverage, getFasterStandardDeviation, pushUpdate} from '../util/
  *
  * @see https://www.investopedia.com/terms/b/bollingerbands.asp
  */
-export class FasterBollingerBands extends TechnicalIndicator<FasterBandsResult, number> {
+export class BollingerBands extends TechnicalIndicator<BandsResult, number> {
   public readonly prices: number[] = [];
 
   constructor(
@@ -35,8 +35,8 @@ export class FasterBollingerBands extends TechnicalIndicator<FasterBandsResult, 
     const dropOut = pushUpdate(this.prices, replace, price, this.interval);
 
     if (dropOut) {
-      const middle = getFasterAverage(this.prices);
-      const standardDeviation = getFasterStandardDeviation(this.prices, middle);
+      const middle = getAverage(this.prices);
+      const standardDeviation = getStandardDeviation(this.prices, middle);
 
       return (this.result = {
         lower: middle - standardDeviation * this.deviationMultiplier,

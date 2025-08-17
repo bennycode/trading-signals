@@ -1,4 +1,4 @@
-import {FasterStochasticOscillator} from './StochasticOscillator.js';
+import {StochasticOscillator} from './StochasticOscillator.js';
 import {NotEnoughDataError} from '../error/index.js';
 
 describe('StochasticOscillator', () => {
@@ -28,7 +28,7 @@ describe('StochasticOscillator', () => {
 
       const stochDs = ['75.70', '78.01', '81.79', '85.45', '89.49', '93.45', '94.36'];
 
-      const fasterStoch = new FasterStochasticOscillator(5, 3, 3);
+      const fasterStoch = new StochasticOscillator(5, 3, 3);
 
       for (const candle of candles) {
         const fasterStochResult = fasterStoch.add(candle);
@@ -48,7 +48,7 @@ describe('StochasticOscillator', () => {
 
   describe('getResultOrThrow', () => {
     it('throws an error when there is not enough input data', () => {
-      const stoch = new FasterStochasticOscillator(5, 3, 3);
+      const stoch = new StochasticOscillator(5, 3, 3);
 
       stoch.add({close: 1, high: 1, low: 1});
       stoch.add({close: 1, high: 2, low: 1});
@@ -64,7 +64,7 @@ describe('StochasticOscillator', () => {
         expect(error).toBeInstanceOf(NotEnoughDataError);
       }
 
-      const fasterStoch = new FasterStochasticOscillator(5, 3, 3);
+      const fasterStoch = new StochasticOscillator(5, 3, 3);
 
       try {
         fasterStoch.getResultOrThrow();
@@ -75,7 +75,7 @@ describe('StochasticOscillator', () => {
     });
 
     it('prevents division by zero errors when highest high and lowest low have the same value', () => {
-      const stoch = new FasterStochasticOscillator(5, 3, 3);
+      const stoch = new StochasticOscillator(5, 3, 3);
       stoch.updates(
         [
           {close: 100, high: 100, low: 100},
@@ -93,7 +93,7 @@ describe('StochasticOscillator', () => {
       expect(result?.stochK.toFixed(2)).toBe('0.00');
       expect(result?.stochD.toFixed(2)).toBe('0.00');
 
-      const fasterStoch = new FasterStochasticOscillator(1, 2, 2);
+      const fasterStoch = new StochasticOscillator(1, 2, 2);
       fasterStoch.updates(
         [
           {close: 100, high: 100, low: 100},

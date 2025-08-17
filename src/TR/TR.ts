@@ -12,7 +12,7 @@ import type {HighLowClose} from '../util/HighLowClose.js';
  *
  * @see https://www.linnsoft.com/techind/true-range-tr
  */
-export class FasterTR extends IndicatorSeries<HighLowClose<number>> {
+export class TR extends IndicatorSeries<HighLowClose<number>> {
   private previousCandle?: HighLowClose<number>;
   private twoPreviousCandle?: HighLowClose<number>;
 

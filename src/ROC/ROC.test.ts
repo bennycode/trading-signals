@@ -1,4 +1,4 @@
-import {FasterROC} from './ROC.js';
+import {ROC} from './ROC.js';
 import {NotEnoughDataError} from '../error/index.js';
 
 describe('ROC', () => {
@@ -16,7 +16,7 @@ describe('ROC', () => {
       ];
 
       const interval = 5;
-      const fasterROC = new FasterROC(interval);
+      const fasterROC = new ROC(interval);
 
       for (const price of prices) {
         fasterROC.add(price);
@@ -33,7 +33,7 @@ describe('ROC', () => {
     });
 
     it('identifies a down-trending asset by a negative ROC', () => {
-      const roc = new FasterROC(5);
+      const roc = new ROC(5);
 
       const prices = [1000, 900, 800, 700, 600, 500, 400, 300, 200, 100];
 
@@ -46,7 +46,7 @@ describe('ROC', () => {
     });
 
     it('throws an error when there is not enough input data', () => {
-      const roc = new FasterROC(6);
+      const roc = new ROC(6);
 
       try {
         roc.getResultOrThrow();
@@ -60,7 +60,7 @@ describe('ROC', () => {
   describe('isStable', () => {
     it('returns true when it can return reliable data', () => {
       const interval = 5;
-      const indicator = new FasterROC(interval);
+      const indicator = new ROC(interval);
 
       const mockedPrices = [0.0001904, 0.00019071, 0.00019198, 0.0001922, 0.00019214, 0.00019205];
 

@@ -11,7 +11,7 @@ import {pushUpdate} from '../util/pushUpdate.js';
  *
  * @see https://www.investopedia.com/terms/o/onbalancevolume.asp
  */
-export class FasterOBV extends IndicatorSeries<OpenHighLowCloseVolume<number>> {
+export class OBV extends IndicatorSeries<OpenHighLowCloseVolume<number>> {
   public readonly candles: OpenHighLowCloseVolume<number>[] = [];
 
   override getRequiredInputs() {

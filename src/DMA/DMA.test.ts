@@ -1,12 +1,12 @@
-import {FasterEMA, FasterSMA} from '../index.js';
+import {EMA, SMA} from '../index.js';
 import twoDays from '../test/fixtures/DMA/LTC-USDT-1h-2d.json' with {type: 'json'};
-import {FasterDMA} from './DMA.js';
+import {DMA} from './DMA.js';
 
 describe('DMA', () => {
   describe('update', () => {
     it('can replace recently added values', () => {
-      const dma = new FasterDMA(3, 6, FasterSMA);
-      const fasterDMA = new FasterDMA(3, 6, FasterSMA);
+      const dma = new DMA(3, 6, SMA);
+      const fasterDMA = new DMA(3, 6, SMA);
       dma.updates([41, 37, 20.9, 100, 30.71, 40], false);
       dma.update(30, true);
 
@@ -25,7 +25,7 @@ describe('DMA', () => {
 
   describe('constructor', () => {
     it('can be used with simple moving averages', () => {
-      const dma = new FasterDMA(3, 6, FasterSMA);
+      const dma = new DMA(3, 6, SMA);
       dma.add(41);
       dma.add(37);
       dma.add(20.9);
@@ -37,7 +37,7 @@ describe('DMA', () => {
     });
 
     it('can be used with exponential moving averages', () => {
-      const dma = new FasterDMA(3, 6, FasterEMA);
+      const dma = new DMA(3, 6, EMA);
       dma.add(41);
       dma.add(37);
       dma.add(20.9);
@@ -51,7 +51,7 @@ describe('DMA', () => {
 
   describe('isStable', () => {
     it('is dependant on the long interval (SMA)', () => {
-      const dma = new FasterDMA(3, 5);
+      const dma = new DMA(3, 5);
       dma.add(40);
       dma.add(30);
       dma.add(20);
@@ -62,7 +62,7 @@ describe('DMA', () => {
     });
 
     it('is dependant on the long interval (EMA)', () => {
-      const dma = new FasterDMA(3, 5, FasterEMA);
+      const dma = new DMA(3, 5, EMA);
       dma.add(40);
       dma.add(30);
       dma.add(20);
@@ -76,8 +76,8 @@ describe('DMA', () => {
   describe('getResultOrThrow', () => {
     it('detects uptrends', () => {
       const longInterval = 8;
-      const dma = new FasterDMA(3, longInterval);
-      const fasterDMA = new FasterDMA(3, longInterval);
+      const dma = new DMA(3, longInterval);
+      const fasterDMA = new DMA(3, longInterval);
       const nineHours = twoDays.slice(0, 9);
 
       for (const oneHour of nineHours) {

@@ -1,8 +1,8 @@
 import {IndicatorSeries} from '../Indicator.js';
-import type {FasterMovingAverage} from '../MA/MovingAverage.js';
-import type {FasterMovingAverageTypes} from '../MA/MovingAverageTypes.js';
+import type {MovingAverage} from '../MA/MovingAverage.js';
+import type {MovingAverageTypes} from '../MA/MovingAverageTypes.js';
 import {pushUpdate} from '../util/pushUpdate.js';
-import {FasterWSMA} from '../WSMA/WSMA.js';
+import {WSMA} from '../WSMA/WSMA.js';
 
 /**
  * Relative Strength Index (RSI)
@@ -22,15 +22,15 @@ import {FasterWSMA} from '../WSMA/WSMA.js';
  * @see https://en.wikipedia.org/wiki/Relative_strength_index
  * @see https://www.investopedia.com/terms/r/rsi.asp
  */
-export class FasterRSI extends IndicatorSeries {
+export class RSI extends IndicatorSeries {
   private readonly previousPrices: number[] = [];
-  private readonly avgGain: FasterMovingAverage;
-  private readonly avgLoss: FasterMovingAverage;
+  private readonly avgGain: MovingAverage;
+  private readonly avgLoss: MovingAverage;
   private readonly maxValue = 100;
 
   constructor(
     public readonly interval: number,
-    SmoothingIndicator: FasterMovingAverageTypes = FasterWSMA
+    SmoothingIndicator: MovingAverageTypes = WSMA
   ) {
     super();
     this.avgGain = new SmoothingIndicator(this.interval);

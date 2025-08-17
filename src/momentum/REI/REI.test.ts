@@ -1,4 +1,4 @@
-import {FasterREI} from './REI.js';
+import {REI} from './REI.js';
 
 describe('REI', () => {
   const testData = [
@@ -140,7 +140,7 @@ describe('REI', () => {
       const replacementCandle = {close: 3_000, high: 4_000, low: 2_000};
 
       const interval = 8;
-      const fasterRei = new FasterREI(interval);
+      const fasterRei = new REI(interval);
 
       fasterRei.updates(testData);
       expect(fasterRei.getResultOrThrow().toFixed(2)).toBe(result);
@@ -156,14 +156,14 @@ describe('REI', () => {
   describe('getResultOrThrow', () => {
     it('creates a signal', () => {
       const interval = 8;
-      const fasterRei = new FasterREI(interval);
+      const fasterRei = new REI(interval);
       fasterRei.updates(testData);
       expect(fasterRei.getResultOrThrow().toFixed(2)).toBe('-0.64');
     });
 
     it('detects neutral momentum', () => {
       const interval = 8;
-      const fasterRei = new FasterREI(interval);
+      const fasterRei = new REI(interval);
 
       const inputs = Array(fasterRei.getRequiredInputs()).fill({
         close: 180,
@@ -178,7 +178,7 @@ describe('REI', () => {
 
     it('detects an oversold condition', () => {
       const interval = 8;
-      const fasterRei = new FasterREI(interval);
+      const fasterRei = new REI(interval);
 
       for (let i = 0; i < fasterRei.getRequiredInputs(); i++) {
         fasterRei.add({close: 95 + i, high: 100 + i, low: 90 + i});
@@ -200,7 +200,7 @@ describe('REI', () => {
 
     it('returns null until there are enough data points', () => {
       const interval = 8;
-      const fasterRei = new FasterREI(interval);
+      const fasterRei = new REI(interval);
 
       for (let i = 0; i < 15; i++) {
         fasterRei.add({close: i, high: i, low: i});

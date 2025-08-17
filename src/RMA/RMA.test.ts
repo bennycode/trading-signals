@@ -1,4 +1,4 @@
-import {FasterRMA, NotEnoughDataError} from '../index.js';
+import {RMA, NotEnoughDataError} from '../index.js';
 
 describe('RMA', () => {
   const prices = [
@@ -21,8 +21,8 @@ describe('RMA', () => {
   describe('replace', () => {
     it('replaces the most recently added value', () => {
       const interval = 5;
-      const rma = new FasterRMA(interval);
-      const rmaWithReplace = new FasterRMA(interval);
+      const rma = new RMA(interval);
+      const rmaWithReplace = new RMA(interval);
 
       const subset = [prices[0], prices[1], prices[2]];
 
@@ -40,7 +40,7 @@ describe('RMA', () => {
 
     it('replaces recently added values', () => {
       const interval = 5;
-      const fasterRMA = new FasterRMA(interval);
+      const fasterRMA = new RMA(interval);
       fasterRMA.add(81.59);
       fasterRMA.add(81.06);
       fasterRMA.add(82.87);
@@ -76,7 +76,7 @@ describe('RMA', () => {
     });
 
     it('will simply add prices when there are no prices to replace', () => {
-      const rma = new FasterRMA(5);
+      const rma = new RMA(5);
       rma.update(prices[0], true);
       rma.add(prices[1]);
       rma.add(prices[2]);
@@ -84,7 +84,7 @@ describe('RMA', () => {
       rma.add(prices[4]);
       expect(rma.getResultOrThrow().toFixed(2)).toBe('82.33');
 
-      const fasterRMA = new FasterRMA(5);
+      const fasterRMA = new RMA(5);
       fasterRMA.update(prices[0], true);
       fasterRMA.add(prices[1]);
       fasterRMA.add(prices[2]);
@@ -96,7 +96,7 @@ describe('RMA', () => {
   describe('getResultOrThrow', () => {
     it('calculates the Exponential Moving Average over a period of 5', () => {
       const interval = 5;
-      const fasterRMA = new FasterRMA(interval);
+      const fasterRMA = new RMA(interval);
       for (let i = 0; i < prices.length; i++) {
         const price = prices[i];
         fasterRMA.add(price);
@@ -109,7 +109,7 @@ describe('RMA', () => {
     });
 
     it('throws an error when there is not enough input data', () => {
-      const rma = new FasterRMA(10);
+      const rma = new RMA(10);
 
       try {
         rma.getResultOrThrow();
@@ -119,7 +119,7 @@ describe('RMA', () => {
         expect(rma.isStable).toBe(false);
       }
 
-      const fasterRMA = new FasterRMA(10);
+      const fasterRMA = new RMA(10);
 
       try {
         fasterRMA.getResultOrThrow();

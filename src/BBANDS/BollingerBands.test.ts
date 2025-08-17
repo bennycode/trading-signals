@@ -1,11 +1,11 @@
-import {FasterBollingerBands} from './BollingerBands.js';
+import {BollingerBands} from './BollingerBands.js';
 import data from '../test/fixtures/BB/data.json' with {type: 'json'};
 import {NotEnoughDataError} from '../error/index.js';
 
 describe('BollingerBands', () => {
   describe('prices', () => {
     it('does not cache more prices than necessary to fill the interval', () => {
-      const bb = new FasterBollingerBands(3);
+      const bb = new BollingerBands(3);
       bb.updates([1, 2], false);
       expect(bb.prices.length).toBe(2);
       bb.add(3);
@@ -21,7 +21,7 @@ describe('BollingerBands', () => {
 
   describe('getResultOrThrow', () => {
     it('calculates Bollinger Bands with interval 20', () => {
-      const bb = new FasterBollingerBands(20);
+      const bb = new BollingerBands(20);
 
       data.prices.forEach((price, index) => {
         bb.add(price);
@@ -43,13 +43,13 @@ describe('BollingerBands', () => {
     });
 
     it('has a default standard deviation multiplier configuration', () => {
-      const bb = new FasterBollingerBands(5);
+      const bb = new BollingerBands(5);
       expect(bb.interval).toBe(5);
       expect(bb.deviationMultiplier).toBe(2);
     });
 
     it('throws an error when there is not enough input data', () => {
-      const bb = new FasterBollingerBands(20);
+      const bb = new BollingerBands(20);
 
       try {
         bb.getResultOrThrow();
@@ -122,7 +122,7 @@ describe('BollingerBands', () => {
       ];
 
       const interval = 5;
-      const bb = new FasterBollingerBands(interval, 2);
+      const bb = new BollingerBands(interval, 2);
       expect(bb.getRequiredInputs()).toBe(interval);
 
       for (let i = 0; i < inputs.length; i++) {

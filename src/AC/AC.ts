@@ -1,7 +1,7 @@
-import {FasterAO} from '../AO/AO.js';
+import {AO} from '../AO/AO.js';
 import {IndicatorSeries} from '../Indicator.js';
-import {FasterMOM} from '../MOM/MOM.js';
-import {FasterSMA} from '../SMA/SMA.js';
+import {MOM} from '../MOM/MOM.js';
+import {SMA} from '../SMA/SMA.js';
 import type {HighLow} from '../util/index.js';
 
 /**
@@ -16,10 +16,10 @@ import type {HighLow} from '../util/index.js';
  *
  * @see https://www.thinkmarkets.com/en/indicators/bill-williams-accelerator/
  */
-export class FasterAC extends IndicatorSeries<HighLow<number>> {
-  public readonly ao: FasterAO;
-  public readonly momentum: FasterMOM;
-  public readonly signal: FasterSMA;
+export class AC extends IndicatorSeries<HighLow<number>> {
+  public readonly ao: AO;
+  public readonly momentum: MOM;
+  public readonly signal: SMA;
 
   constructor(
     public readonly shortAO: number,
@@ -27,9 +27,9 @@ export class FasterAC extends IndicatorSeries<HighLow<number>> {
     public readonly signalInterval: number
   ) {
     super();
-    this.ao = new FasterAO(shortAO, longAO);
-    this.momentum = new FasterMOM(1);
-    this.signal = new FasterSMA(signalInterval);
+    this.ao = new AO(shortAO, longAO);
+    this.momentum = new MOM(1);
+    this.signal = new SMA(signalInterval);
   }
 
   override getRequiredInputs() {

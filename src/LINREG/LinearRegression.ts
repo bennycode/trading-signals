@@ -1,7 +1,7 @@
 import {TechnicalIndicator} from '../Indicator.js';
 import {pushUpdate} from '../util/pushUpdate.js';
 
-export type FasterLinearRegressionResult = {
+export type LinearRegressionResult = {
   // The predicted value (equivalent to TulipCharts' linreg)
   prediction: number;
   // The slope (equivalent to TulipCharts' linregslope)
@@ -10,7 +10,7 @@ export type FasterLinearRegressionResult = {
   intercept: number;
 };
 
-export class FasterLinearRegression extends TechnicalIndicator<FasterLinearRegressionResult, number> {
+export class LinearRegression extends TechnicalIndicator<LinearRegressionResult, number> {
   public readonly prices: number[] = [];
 
   constructor(public readonly interval: number) {
@@ -21,7 +21,7 @@ export class FasterLinearRegression extends TechnicalIndicator<FasterLinearRegre
     return this.interval;
   }
 
-  private calculateRegression(prices: number[]): FasterLinearRegressionResult {
+  private calculateRegression(prices: number[]): LinearRegressionResult {
     const n = prices.length;
     const isPerfectLinearTrend = prices.every((price, i) => {
       if (i === 0) {
@@ -59,7 +59,7 @@ export class FasterLinearRegression extends TechnicalIndicator<FasterLinearRegre
     };
   }
 
-  update(price: number, replace: boolean): FasterLinearRegressionResult | null {
+  update(price: number, replace: boolean): LinearRegressionResult | null {
     pushUpdate(this.prices, replace, price, this.interval);
 
     if (this.prices.length < this.interval) {

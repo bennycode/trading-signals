@@ -1,6 +1,6 @@
-import {FasterMovingAverage} from './MovingAverage.js';
+import {MovingAverage} from './MovingAverage.js';
 
-class MyAverage extends FasterMovingAverage {
+class MyAverage extends MovingAverage {
   iterations = 0;
   total = 0;
 
@@ -18,7 +18,7 @@ class MyAverage extends FasterMovingAverage {
   }
 }
 
-describe('FasterMovingAverage', () => {
+describe('MovingAverage', () => {
   it('can be used to implement custom average calculations based on primitive numbers', () => {
     const average = new MyAverage(Infinity);
     expect(average.isStable).toBe(false);

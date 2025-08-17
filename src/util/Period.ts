@@ -1,12 +1,12 @@
 import {TechnicalIndicator} from '../Indicator.js';
 import {pushUpdate} from './pushUpdate.js';
 
-export interface FasterPeriodResult {
+export interface PeriodResult {
   highest: number;
   lowest: number;
 }
 
-export class FasterPeriod extends TechnicalIndicator<FasterPeriodResult, number> {
+export class Period extends TechnicalIndicator<PeriodResult, number> {
   public values: number[];
   /** Highest return value during the current period. */
   private _highest?: number;

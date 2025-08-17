@@ -1,4 +1,4 @@
-import {FasterMovingAverage} from '../MA/MovingAverage.js';
+import {MovingAverage} from '../MA/MovingAverage.js';
 import {NotEnoughDataError} from '../error/index.js';
 
 /**
@@ -10,7 +10,7 @@ import {NotEnoughDataError} from '../error/index.js';
  * @see https://www.tradingcode.net/tradingview/ema-versus-rma/
  * @see https://www.tradingcode.net/tradingview/relative-moving-average/#calculation-process
  */
-export class FasterRMA extends FasterMovingAverage {
+export class RMA extends MovingAverage {
   private pricesCounter = 0;
   private readonly weightFactor: number;
 

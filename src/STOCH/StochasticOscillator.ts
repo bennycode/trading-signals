@@ -1,9 +1,9 @@
 import {TechnicalIndicator} from '../Indicator.js';
-import {FasterSMA} from '../SMA/SMA.js';
+import {SMA} from '../SMA/SMA.js';
 import type {HighLowClose} from '../util/HighLowClose.js';
 import {pushUpdate} from '../util/pushUpdate.js';
 
-export interface FasterStochasticResult {
+export interface StochasticResult {
   /** Slow stochastic indicator (%D) */
   stochD: number;
   /** Fast stochastic indicator (%K) */
@@ -28,10 +28,10 @@ export interface FasterStochasticResult {
  * @see https://www.investopedia.com/terms/s/stochasticoscillator.asp
  * @see https://tulipindicators.org/stoch
  */
-export class FasterStochasticOscillator extends TechnicalIndicator<FasterStochasticResult, HighLowClose<number>> {
+export class StochasticOscillator extends TechnicalIndicator<StochasticResult, HighLowClose<number>> {
   public readonly candles: HighLowClose<number>[] = [];
-  private readonly periodM: FasterSMA;
-  private readonly periodP: FasterSMA;
+  private readonly periodM: SMA;
+  private readonly periodP: SMA;
 
   /**
    * @param n The %k period
@@ -44,8 +44,8 @@ export class FasterStochasticOscillator extends TechnicalIndicator<FasterStochas
     public p: number
   ) {
     super();
-    this.periodM = new FasterSMA(m);
-    this.periodP = new FasterSMA(p);
+    this.periodM = new SMA(m);
+    this.periodP = new SMA(p);
   }
 
   override getRequiredInputs() {

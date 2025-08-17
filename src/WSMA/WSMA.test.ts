@@ -1,4 +1,4 @@
-import {FasterWSMA} from './WSMA.js';
+import {WSMA} from './WSMA.js';
 import {NotEnoughDataError} from '../error/index.js';
 
 describe('WSMA', () => {
@@ -6,8 +6,8 @@ describe('WSMA', () => {
     it('replaces the most recently added value', () => {
       const interval = 3;
 
-      const wsma = new FasterWSMA(interval);
-      const wsmaWithReplace = new FasterWSMA(interval);
+      const wsma = new WSMA(interval);
+      const wsmaWithReplace = new WSMA(interval);
 
       const subset = [11, 12, 13];
 
@@ -26,7 +26,7 @@ describe('WSMA', () => {
     it('replaces recently added values', () => {
       const interval = 3;
 
-      const fasterWSMA = new FasterWSMA(interval);
+      const fasterWSMA = new WSMA(interval);
 
       fasterWSMA.add(11);
       fasterWSMA.add(12);
@@ -69,7 +69,7 @@ describe('WSMA', () => {
       // https://runkit.com/anandaravindan/wema
       const prices = [11, 12, 13, 14, 15, 16, 18, 19, 22, 23, 23];
       const expectations = ['13.00', '13.60', '14.48', '15.38', '16.71', '17.97', '18.97'];
-      const wsma = new FasterWSMA(5);
+      const wsma = new WSMA(5);
 
       for (const price of prices) {
         wsma.add(price);
@@ -104,7 +104,7 @@ describe('WSMA', () => {
       ] as const;
 
       const interval = 5;
-      const fasterWSMA = new FasterWSMA(interval);
+      const fasterWSMA = new WSMA(interval);
 
       for (let i = 0; i < prices.length; i++) {
         const price = prices[i];
@@ -122,7 +122,7 @@ describe('WSMA', () => {
     });
 
     it('throws an error when there is no input data', () => {
-      const wsma = new FasterWSMA(3);
+      const wsma = new WSMA(3);
 
       try {
         wsma.getResultOrThrow();
@@ -133,7 +133,7 @@ describe('WSMA', () => {
     });
 
     it('throws an error when there is not enough input data', () => {
-      const wsma = new FasterWSMA(3);
+      const wsma = new WSMA(3);
       wsma.add(1);
       wsma.add(2);
 
@@ -151,8 +151,8 @@ describe('WSMA', () => {
       const prices = [11, 12, 13, 14, 15, 16, 18, 19, 22, 23, 23];
 
       const interval = 5;
-      const wsma = new FasterWSMA(interval);
-      const fasterWSMA = new FasterWSMA(interval);
+      const wsma = new WSMA(interval);
+      const fasterWSMA = new WSMA(interval);
 
       wsma.updates(prices, false);
       fasterWSMA.updates(prices, false);
@@ -164,7 +164,7 @@ describe('WSMA', () => {
 
   describe('isStable', () => {
     it('is stable when the inputs can fill the signal interval', () => {
-      const wsma = new FasterWSMA(3);
+      const wsma = new WSMA(3);
       wsma.add(1);
       wsma.add(2);
       expect(wsma.isStable).toBe(false);

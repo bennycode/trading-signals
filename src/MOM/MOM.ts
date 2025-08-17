@@ -10,7 +10,7 @@ import {pushUpdate} from '../util/pushUpdate.js';
  * @see https://en.wikipedia.org/wiki/Momentum_(technical_analysis)
  * @see https://www.warriortrading.com/momentum-indicator/
  */
-export class FasterMOM extends IndicatorSeries {
+export class MOM extends IndicatorSeries {
   private readonly history: number[];
   private readonly historyLength: number;
 

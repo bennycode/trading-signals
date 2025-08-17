@@ -1,4 +1,4 @@
-import {FasterZigZag} from './ZigZag.js';
+import {ZigZag} from './ZigZag.js';
 
 describe('ZigZag', () => {
   describe('add', () => {
@@ -20,7 +20,7 @@ describe('ZigZag', () => {
 
       const deviation = 15;
 
-      const fasterZigzag = new FasterZigZag({deviation});
+      const fasterZigzag = new ZigZag({deviation});
 
       const candles = highs.map((high, index) => {
         return {
@@ -45,7 +45,7 @@ describe('ZigZag', () => {
   describe('getRequiredInputs', () => {
     it('returns the amount of required data needed for a calculation', () => {
       const expected = 1;
-      const fasterZigzag = new FasterZigZag({deviation: 15});
+      const fasterZigzag = new ZigZag({deviation: 15});
       expect(fasterZigzag.getRequiredInputs()).toBe(expected);
     });
   });

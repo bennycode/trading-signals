@@ -1,4 +1,4 @@
-import {FasterLinearRegression} from '../index.js';
+import {LinearRegression} from '../index.js';
 import {NotEnoughDataError} from '../error/index.js';
 
 describe('LinearRegression', () => {
@@ -24,7 +24,7 @@ describe('LinearRegression', () => {
         '85.854',
       ] as const;
 
-      const linreg = new FasterLinearRegression(period);
+      const linreg = new LinearRegression(period);
       expect(linreg.getRequiredInputs()).toBe(period);
 
       const offset = period - 1;
@@ -42,7 +42,7 @@ describe('LinearRegression', () => {
   describe('getResultOrThrow', () => {
     it('calculates regression values correctly', () => {
       const prices = [10, 11, 12, 13, 14] as const;
-      const linreg = new FasterLinearRegression(prices.length);
+      const linreg = new LinearRegression(prices.length);
 
       prices.forEach(price => linreg.update(price, false));
       const result = linreg.getResultOrThrow();
@@ -54,7 +54,7 @@ describe('LinearRegression', () => {
 
     it('handles non-perfect linear relationships', () => {
       const prices = [10.5, 11.2, 10.3, 12.1, 11.2] as const;
-      const linreg = new FasterLinearRegression(prices.length);
+      const linreg = new LinearRegression(prices.length);
 
       prices.forEach(price => linreg.update(price, false));
       const result = linreg.getResultOrThrow();
@@ -68,7 +68,7 @@ describe('LinearRegression', () => {
   describe('replace', () => {
     it('correctly replaces the last value', () => {
       const prices = [1, 2, 3, 4, 5] as const;
-      const linreg = new FasterLinearRegression(prices.length);
+      const linreg = new LinearRegression(prices.length);
 
       prices.forEach(price => linreg.add(price));
       const beforeReplace = linreg.getResultOrThrow();
@@ -82,7 +82,7 @@ describe('LinearRegression', () => {
 
   describe('isStable', () => {
     it('returns true only when enough data is available', () => {
-      const linreg = new FasterLinearRegression(5);
+      const linreg = new LinearRegression(5);
       expect(linreg.isStable).toEqual(false);
 
       linreg.add(1);
@@ -98,12 +98,12 @@ describe('LinearRegression', () => {
 
   describe('error handling', () => {
     it('throws NotEnoughDataError when getting result without enough data', () => {
-      const linreg = new FasterLinearRegression(5);
+      const linreg = new LinearRegression(5);
       expect(() => linreg.getResultOrThrow()).toThrow(NotEnoughDataError);
     });
 
     it('returns null when updating with insufficient data', () => {
-      const linreg = new FasterLinearRegression(5);
+      const linreg = new LinearRegression(5);
       expect(linreg.update(10, false)).toBeNull();
     });
   });

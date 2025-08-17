@@ -1,8 +1,8 @@
 import {TechnicalIndicator} from '../Indicator.js';
-import type {FasterMovingAverage} from '../MA/MovingAverage.js';
-import type {FasterMovingAverageTypes} from '../MA/MovingAverageTypes.js';
-import {FasterSMA} from '../SMA/SMA.js';
-import type {FasterBandsResult} from '../util/BandsResult.js';
+import type {MovingAverage} from '../MA/MovingAverage.js';
+import type {MovingAverageTypes} from '../MA/MovingAverageTypes.js';
+import {SMA} from '../SMA/SMA.js';
+import type {BandsResult} from '../util/BandsResult.js';
 import type {HighLowClose} from '../util/index.js';
 
 /**
@@ -25,15 +25,15 @@ import type {HighLowClose} from '../util/index.js';
  * @see https://github.com/QuantConnect/Lean/blob/master/Indicators/AccelerationBands.cs
  * @see https://github.com/twopirllc/pandas-ta/blob/master/pandas_ta/volatility/accbands.py
  */
-export class FasterAccelerationBands extends TechnicalIndicator<FasterBandsResult, HighLowClose<number>> {
-  private readonly lowerBand: FasterMovingAverage;
-  private readonly middleBand: FasterMovingAverage;
-  private readonly upperBand: FasterMovingAverage;
+export class AccelerationBands extends TechnicalIndicator<BandsResult, HighLowClose<number>> {
+  private readonly lowerBand: MovingAverage;
+  private readonly middleBand: MovingAverage;
+  private readonly upperBand: MovingAverage;
 
   constructor(
     public readonly interval: number,
     public readonly width: number,
-    SmoothingIndicator: FasterMovingAverageTypes = FasterSMA
+    SmoothingIndicator: MovingAverageTypes = SMA
   ) {
     super();
     this.lowerBand = new SmoothingIndicator(interval);

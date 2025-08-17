@@ -1,4 +1,4 @@
-import {FasterADX} from './ADX.js';
+import {ADX} from './ADX.js';
 
 describe('ADX', () => {
   // Test data verified with:
@@ -28,8 +28,8 @@ describe('ADX', () => {
   describe('replace', () => {
     it('replaces the most recently added value', () => {
       const interval = 5;
-      const adx = new FasterADX(interval);
-      const adxWithReplace = new FasterADX(interval);
+      const adx = new ADX(interval);
+      const adxWithReplace = new ADX(interval);
 
       adx.updates(candles, false);
       adxWithReplace.updates(candles, false);
@@ -51,7 +51,7 @@ describe('ADX', () => {
   describe('getResultOrThrow', () => {
     it('calculates the Average Directional Index (ADX)', () => {
       const interval = 5;
-      const fasterADX = new FasterADX(interval);
+      const fasterADX = new ADX(interval);
 
       for (const candle of candles) {
         fasterADX.add(candle);
@@ -79,7 +79,7 @@ describe('ADX', () => {
       const interval = 5;
       const necessaryCandlesAmount = 2 * interval - 1;
       const initialCandles = candles.slice(0, necessaryCandlesAmount - 1);
-      const fasterADX = new FasterADX(interval);
+      const fasterADX = new ADX(interval);
 
       // Add necessary candles - 1
       fasterADX.updates(initialCandles);

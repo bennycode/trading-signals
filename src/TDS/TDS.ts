@@ -15,7 +15,7 @@ import {IndicatorSeries} from '../Indicator.js';
  * @see https://hackernoon.com/how-to-buy-sell-cryptocurrency-with-number-indicator-td-sequential-5af46f0ebce1
  * @see https://practicaltechnicalanalysis.blogspot.com/2013/01/tom-demark-sequential.html
  */
-export class FasterTDS extends IndicatorSeries {
+export class TDS extends IndicatorSeries {
   private readonly closes: number[] = [];
   private setupCount: number = 0;
   private setupDirection: 'bullish' | 'bearish' | null = null;

@@ -1,11 +1,11 @@
-import {getFasterQuartile} from './getQuartile.js';
+import {getQuartile} from './getQuartile.js';
 
-describe('getFasterQuartile', () => {
+describe('getQuartile', () => {
   describe('even number of elements', () => {
     it('calculates the first quartile (Q1)', () => {
       const values = [1, 3, 5, 7, 9, 11];
 
-      const result = getFasterQuartile(values, 0.25);
+      const result = getQuartile(values, 0.25);
 
       // For even number of elements: [1, 3, 5, 7, 9, 11]
       // Median index is 3, lower half is [1, 3, 5]
@@ -16,7 +16,7 @@ describe('getFasterQuartile', () => {
     it('calculates the third quartile (Q3)', () => {
       const values = [1, 3, 5, 7, 9, 11];
 
-      const result = getFasterQuartile(values, 0.75);
+      const result = getQuartile(values, 0.75);
 
       // For even number of elements: [1, 3, 5, 7, 9, 11]
       // Median index is 3, upper half is [7, 9, 11]
@@ -29,7 +29,7 @@ describe('getFasterQuartile', () => {
     it('calculates the first quartile (Q1)', () => {
       const values = [1, 3, 5, 7, 9];
 
-      const result = getFasterQuartile(values, 0.25);
+      const result = getQuartile(values, 0.25);
 
       // For odd number of elements: [1, 3, 5, 7, 9]
       // Median index is 2, lower half is [1, 3]
@@ -42,7 +42,7 @@ describe('getFasterQuartile', () => {
       // https://en.wikipedia.org/wiki/Quartile#Example_2
       const values = [7, 15, 36, 39, 40, 41];
 
-      const result = getFasterQuartile(values, 0.5);
+      const result = getQuartile(values, 0.5);
 
       expect(result).toBe(37.5);
     });
@@ -50,7 +50,7 @@ describe('getFasterQuartile', () => {
     it('calculates the third quartile (Q3)', () => {
       const values = [1, 3, 5, 7, 9];
 
-      const result = getFasterQuartile(values, 0.75);
+      const result = getQuartile(values, 0.75);
 
       // For odd number of elements: [1, 3, 5, 7, 9]
       // Median index is 2, upper half is [7, 9]
@@ -62,8 +62,8 @@ describe('getFasterQuartile', () => {
   it('calculates quartiles for decimal values', () => {
     const values = [1.1, 2.2, 3.3, 4.4];
 
-    const q1 = getFasterQuartile(values, 0.25);
-    const q3 = getFasterQuartile(values, 0.75);
+    const q1 = getQuartile(values, 0.25);
+    const q3 = getQuartile(values, 0.75);
 
     // Type "number" has floating point issues!
     expect(q1).toBe(1.6500000000000001);
@@ -72,7 +72,7 @@ describe('getFasterQuartile', () => {
 
   it('throws error for empty arrays', () => {
     expect(() => {
-      getFasterQuartile([], 0.25);
+      getQuartile([], 0.25);
     }).toThrow('Cannot calculate median of empty array');
   });
 });

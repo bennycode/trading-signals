@@ -1,9 +1,9 @@
-import type {FasterDEMA} from '../DEMA/DEMA.js';
-import type {FasterEMA} from '../EMA/EMA.js';
+import type {DEMA} from '../DEMA/DEMA.js';
+import type {EMA} from '../EMA/EMA.js';
 import {TechnicalIndicator} from '../Indicator.js';
 import {pushUpdate} from '../util/pushUpdate.js';
 
-export type FasterMACDResult = {
+export type MACDResult = {
   histogram: number;
   macd: number;
   signal: number;
@@ -18,13 +18,13 @@ export type FasterMACDResult = {
  *
  * @see https://www.investopedia.com/terms/m/macd.asp
  */
-export class FasterMACD extends TechnicalIndicator<FasterMACDResult, number> {
+export class MACD extends TechnicalIndicator<MACDResult, number> {
   public readonly prices: number[] = [];
 
   constructor(
-    public readonly short: FasterEMA | FasterDEMA,
-    public readonly long: FasterEMA | FasterDEMA,
-    public readonly signal: FasterEMA | FasterDEMA
+    public readonly short: EMA | DEMA,
+    public readonly long: EMA | DEMA,
+    public readonly signal: EMA | DEMA
   ) {
     super();
   }

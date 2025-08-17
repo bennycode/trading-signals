@@ -1,9 +1,9 @@
-import {FasterIQR} from './IQR.js';
+import {IQR} from './IQR.js';
 
 describe('IQR', () => {
   describe('add', () => {
     it('returns null until enough values are provided', () => {
-      const iqr = new FasterIQR(5);
+      const iqr = new IQR(5);
 
       for (let i = 0; i < 4; i++) {
         const result = iqr.add(i);
@@ -12,7 +12,7 @@ describe('IQR', () => {
     });
 
     it('keeps the interval length of values when adding more', () => {
-      const iqr = new FasterIQR(3);
+      const iqr = new IQR(3);
 
       // Fill the buffer with initial values
       iqr.add(1);
@@ -37,7 +37,7 @@ describe('IQR', () => {
 
   describe('replace', () => {
     it('replaces the last value and recalculates the result', () => {
-      const iqr = new FasterIQR(5);
+      const iqr = new IQR(5);
       const values = [1, 2, 3, 4, 5];
 
       for (const value of values) {
@@ -58,7 +58,7 @@ describe('IQR', () => {
       // https://en.wikipedia.org/wiki/Interquartile_range#Data_set_in_a_table
       const values = [7, 7, 31, 31, 47, 75, 87, 115, 116, 119, 119, 155, 177] as const;
       const interval = 13;
-      const iqr = new FasterIQR(13);
+      const iqr = new IQR(13);
       expect(iqr.getRequiredInputs()).toBe(interval);
 
       for (const value of values) {
@@ -72,7 +72,7 @@ describe('IQR', () => {
       // Test data verified with:
       // https://www.khanacademy.org/math/cc-sixth-grade-math/cc-6th-data-statistics/cc-6th/v/calculating-interquartile-range-iqr
       const values = [4, 4, 6, 7, 10, 11, 12, 14, 15];
-      const iqr = new FasterIQR(9);
+      const iqr = new IQR(9);
 
       for (const value of values) {
         iqr.add(value);
@@ -85,7 +85,7 @@ describe('IQR', () => {
       // Test data verified with:
       // https://www.khanacademy.org/math/cc-sixth-grade-math/cc-6th-data-statistics/cc-6th/v/calculating-interquartile-range-iqr
       const values = [7, 9, 9, 10, 10, 10, 11, 12, 12, 14];
-      const iqr = new FasterIQR(10);
+      const iqr = new IQR(10);
 
       for (const value of values) {
         iqr.add(value);
@@ -97,7 +97,7 @@ describe('IQR', () => {
 
   describe('add', () => {
     it('returns null until enough values are provided', () => {
-      const iqr = new FasterIQR(5);
+      const iqr = new IQR(5);
 
       for (let i = 0; i < 4; i++) {
         const result = iqr.add(i);
@@ -106,7 +106,7 @@ describe('IQR', () => {
     });
 
     it('keeps only the interval length of values when adding more', () => {
-      const iqr = new FasterIQR(3);
+      const iqr = new IQR(3);
 
       // Fill the buffer with initial values
       iqr.add(1);
@@ -131,7 +131,7 @@ describe('IQR', () => {
 
   describe('replace', () => {
     it('replaces the last value and recalculates the result', () => {
-      const iqr = new FasterIQR(5);
+      const iqr = new IQR(5);
       const values = [1, 2, 3, 4, 5];
 
       for (const value of values) {
@@ -152,7 +152,7 @@ describe('IQR', () => {
       // https://en.wikipedia.org/wiki/Interquartile_range#Data_set_in_a_table
       const values = [7, 7, 31, 31, 47, 75, 87, 115, 116, 119, 119, 155, 177] as const;
       const interval = 13;
-      const iqr = new FasterIQR(interval);
+      const iqr = new IQR(interval);
       expect(iqr.getRequiredInputs()).toBe(interval);
 
       for (const value of values) {
@@ -166,7 +166,7 @@ describe('IQR', () => {
       // Test data verified with:
       // https://www.khanacademy.org/math/cc-sixth-grade-math/cc-6th-data-statistics/cc-6th/v/calculating-interquartile-range-iqr
       const values = [4, 4, 6, 7, 10, 11, 12, 14, 15];
-      const iqr = new FasterIQR(9);
+      const iqr = new IQR(9);
 
       for (const value of values) {
         iqr.add(value);
@@ -179,7 +179,7 @@ describe('IQR', () => {
       // Test data verified with:
       // https://www.khanacademy.org/math/cc-sixth-grade-math/cc-6th-data-statistics/cc-6th/v/calculating-interquartile-range-iqr
       const values = [7, 9, 9, 10, 10, 10, 11, 12, 12, 14];
-      const iqr = new FasterIQR(10);
+      const iqr = new IQR(10);
 
       for (const value of values) {
         iqr.add(value);

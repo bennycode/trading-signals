@@ -1,4 +1,4 @@
-import {FasterOBV} from './OBV.js';
+import {OBV} from './OBV.js';
 import {NotEnoughDataError} from '../error/index.js';
 
 describe('OBV', () => {
@@ -26,7 +26,7 @@ describe('OBV', () => {
         '99600.000',
         '72100.000',
       ];
-      const fasterOBV = new FasterOBV();
+      const fasterOBV = new OBV();
       for (const candle of candles) {
         fasterOBV.add(candle);
         if (fasterOBV.isStable) {
@@ -42,7 +42,7 @@ describe('OBV', () => {
     });
 
     it('throws an error when there is not enough input data', () => {
-      const obv = new FasterOBV();
+      const obv = new OBV();
       expect(obv.isStable).toBe(false);
       try {
         obv.getResultOrThrow();

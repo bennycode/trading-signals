@@ -1,4 +1,4 @@
-import {FasterDEMA} from './DEMA.js';
+import {DEMA} from './DEMA.js';
 import {NotEnoughDataError} from '../error/index.js';
 
 const dema10results = [
@@ -15,7 +15,7 @@ describe('DEMA', () => {
   describe('update', () => {
     it('can replace recently added values', () => {
       const interval = 10;
-      const fasterDEMA = new FasterDEMA(interval);
+      const fasterDEMA = new DEMA(interval);
 
       fasterDEMA.add(81);
       fasterDEMA.add(24);
@@ -41,7 +41,7 @@ describe('DEMA', () => {
         86, 99, 3, 70, 1, 27, 9, 92, 68, 9,
       ];
       const interval = 10;
-      const fasterDEMA = new FasterDEMA(interval);
+      const fasterDEMA = new DEMA(interval);
 
       prices.forEach((price, index) => {
         fasterDEMA.add(price);
@@ -58,7 +58,7 @@ describe('DEMA', () => {
     });
 
     it('throws an error when there is not enough input data', () => {
-      const dema = new FasterDEMA(10);
+      const dema = new DEMA(10);
 
       try {
         dema.getResultOrThrow();
@@ -71,7 +71,7 @@ describe('DEMA', () => {
 
   describe('isStable', () => {
     it('is stable when there are enough inputs to fill the interval', () => {
-      const dema = new FasterDEMA(2);
+      const dema = new DEMA(2);
       expect(dema.isStable).toBe(false);
       dema.add(1);
       dema.add(2);

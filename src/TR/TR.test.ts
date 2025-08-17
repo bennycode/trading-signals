@@ -1,4 +1,4 @@
-import {FasterTR} from './TR.js';
+import {TR} from './TR.js';
 
 describe('TR', () => {
   // Test data verified with:
@@ -40,7 +40,7 @@ describe('TR', () => {
 
   describe('getResultOrThrow', () => {
     it('calculates the True Range (TR)', () => {
-      const fasterTR = new FasterTR();
+      const fasterTR = new TR();
 
       candles.forEach((candle, i) => {
         fasterTR.add(candle);
@@ -60,7 +60,7 @@ describe('TR', () => {
 
   describe('replace', () => {
     it('replaces recently added values', () => {
-      const fasterTR = new FasterTR();
+      const fasterTR = new TR();
 
       // Update candles except last one.
       candles.slice(-1).forEach(candle => {

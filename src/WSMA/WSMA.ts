@@ -1,5 +1,5 @@
 import {IndicatorSeries} from '../Indicator.js';
-import {FasterSMA} from '../SMA/SMA.js';
+import {SMA} from '../SMA/SMA.js';
 
 /**
  * Wilder's Smoothed Moving Average (WSMA)
@@ -16,13 +16,13 @@ import {FasterSMA} from '../SMA/SMA.js';
  *
  * @see https://tlc.thinkorswim.com/center/reference/Tech-Indicators/studies-library/V-Z/WildersSmoothing
  */
-export class FasterWSMA extends IndicatorSeries {
-  private readonly indicator: FasterSMA;
+export class WSMA extends IndicatorSeries {
+  private readonly indicator: SMA;
   private readonly smoothingFactor: number;
 
   constructor(public readonly interval: number) {
     super();
-    this.indicator = new FasterSMA(interval);
+    this.indicator = new SMA(interval);
     this.smoothingFactor = 1 / this.interval;
   }
 

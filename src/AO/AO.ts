@@ -1,7 +1,7 @@
 import {IndicatorSeries} from '../Indicator.js';
-import type {FasterMovingAverage} from '../MA/MovingAverage.js';
-import type {FasterMovingAverageTypes} from '../MA/MovingAverageTypes.js';
-import {FasterSMA} from '../SMA/SMA.js';
+import type {MovingAverage} from '../MA/MovingAverage.js';
+import type {MovingAverageTypes} from '../MA/MovingAverageTypes.js';
+import {SMA} from '../SMA/SMA.js';
 import type {HighLow} from '../util/index.js';
 
 /**
@@ -18,14 +18,14 @@ import type {HighLow} from '../util/index.js';
  * @see https://www.tradingview.com/support/solutions/43000501826-awesome-oscillator-ao/
  * @see https://tradingstrategyguides.com/bill-williams-awesome-oscillator-strategy/
  */
-export class FasterAO extends IndicatorSeries<HighLow<number>> {
-  public readonly long: FasterMovingAverage;
-  public readonly short: FasterMovingAverage;
+export class AO extends IndicatorSeries<HighLow<number>> {
+  public readonly long: MovingAverage;
+  public readonly short: MovingAverage;
 
   constructor(
     public readonly shortInterval: number,
     public readonly longInterval: number,
-    SmoothingIndicator: FasterMovingAverageTypes = FasterSMA
+    SmoothingIndicator: MovingAverageTypes = SMA
   ) {
     super();
     this.short = new SmoothingIndicator(shortInterval);

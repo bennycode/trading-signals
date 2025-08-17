@@ -1,12 +1,12 @@
-import {FasterMACD} from './MACD.js';
-import {FasterEMA} from '../EMA/EMA.js';
+import {MACD} from './MACD.js';
+import {EMA} from '../EMA/EMA.js';
 import {NotEnoughDataError} from '../error/index.js';
 
 describe('MACD', () => {
   describe('replace', () => {
     it('replaces the most recently added value', () => {
-      const macd = new FasterMACD(new FasterEMA(2), new FasterEMA(5), new FasterEMA(9));
-      const macdWithReplace = new FasterMACD(new FasterEMA(2), new FasterEMA(5), new FasterEMA(9));
+      const macd = new MACD(new EMA(2), new EMA(5), new EMA(9));
+      const macdWithReplace = new MACD(new EMA(2), new EMA(5), new EMA(9));
       const subset = [10, 20, 80, 81.59, 81.06, 82.87, 83.0];
 
       macd.updates([...subset, 90, 83.61], false);
@@ -29,7 +29,7 @@ describe('MACD', () => {
 
   describe('update', () => {
     it('can replace recently added values', () => {
-      const fasterMACD = new FasterMACD(new FasterEMA(2), new FasterEMA(5), new FasterEMA(9));
+      const fasterMACD = new MACD(new EMA(2), new EMA(5), new EMA(9));
 
       const subset = [81.59, 81.06, 82.87, 83.0];
       fasterMACD.updates(subset, false);
@@ -105,8 +105,8 @@ describe('MACD', () => {
         '-0.08',
       ];
 
-      const macd = new FasterMACD(new FasterEMA(2), new FasterEMA(5), new FasterEMA(9));
-      const fasterMACD = new FasterMACD(new FasterEMA(2), new FasterEMA(5), new FasterEMA(9));
+      const macd = new MACD(new EMA(2), new EMA(5), new EMA(9));
+      const fasterMACD = new MACD(new EMA(2), new EMA(5), new EMA(9));
 
       for (const [index, input] of Object.entries(prices)) {
         macd.add(input);
@@ -137,7 +137,7 @@ describe('MACD', () => {
     });
 
     it('throws an error when there is not enough input data', () => {
-      const macd = new FasterMACD(new FasterEMA(12), new FasterEMA(26), new FasterEMA(9));
+      const macd = new MACD(new EMA(12), new EMA(26), new EMA(9));
 
       try {
         macd.getResultOrThrow();
@@ -146,7 +146,7 @@ describe('MACD', () => {
         expect(error).toBeInstanceOf(NotEnoughDataError);
       }
 
-      const fasterMACD = new FasterMACD(new FasterEMA(12), new FasterEMA(26), new FasterEMA(9));
+      const fasterMACD = new MACD(new EMA(12), new EMA(26), new EMA(9));
 
       try {
         fasterMACD.getResultOrThrow();
@@ -160,7 +160,7 @@ describe('MACD', () => {
   describe('isStable', () => {
     it('knows when it can return reliable data', () => {
       const longInterval = 18;
-      const macd = new FasterMACD(new FasterEMA(9), new FasterEMA(longInterval), new FasterEMA(9));
+      const macd = new MACD(new EMA(9), new EMA(longInterval), new EMA(9));
 
       const mockedPrices = [
         0.0001904, 0.00019071, 0.00019198, 0.0001922, 0.00019214, 0.00019205, 0.00019214, 0.00019222, 0.00019144,

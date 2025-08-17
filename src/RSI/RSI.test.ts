@@ -1,10 +1,10 @@
-import {FasterRSI} from './RSI.js';
+import {RSI} from './RSI.js';
 import {NotEnoughDataError} from '../error/index.js';
 
 describe('RSI', () => {
   describe('update', () => {
     it('can replace recently added values', () => {
-      const fasterRSI = new FasterRSI(5);
+      const fasterRSI = new RSI(5);
       fasterRSI.add(81.59);
       fasterRSI.add(81.06);
       fasterRSI.add(82.87);
@@ -40,7 +40,7 @@ describe('RSI', () => {
         '78.498',
       ];
       const interval = 5;
-      const fasterRSI = new FasterRSI(interval);
+      const fasterRSI = new RSI(interval);
       for (const price of prices) {
         fasterRSI.add(price);
         if (fasterRSI.isStable) {
@@ -57,13 +57,13 @@ describe('RSI', () => {
 
     it('catches division by zero errors', () => {
       const updates = [2, 2, 2];
-      const fasterRSI = new FasterRSI(2);
+      const fasterRSI = new RSI(2);
       fasterRSI.updates(updates, false);
       expect(fasterRSI.getResultOrThrow()).toBe(100);
     });
 
     it('throws an error when there is not enough input data', () => {
-      const rsi = new FasterRSI(2);
+      const rsi = new RSI(2);
       rsi.add(0);
       expect(rsi.isStable).toBe(false);
       try {

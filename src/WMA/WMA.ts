@@ -1,4 +1,4 @@
-import {FasterMovingAverage} from '../MA/MovingAverage.js';
+import {MovingAverage} from '../MA/MovingAverage.js';
 import {pushUpdate} from '../util/pushUpdate.js';
 
 /**
@@ -10,7 +10,7 @@ import {pushUpdate} from '../util/pushUpdate.js';
  *
  * @see https://corporatefinanceinstitute.com/resources/career-map/sell-side/capital-markets/weighted-moving-average-wma/
  */
-export class FasterWMA extends FasterMovingAverage {
+export class WMA extends MovingAverage {
   public readonly prices: number[] = [];
 
   constructor(public override readonly interval: number) {

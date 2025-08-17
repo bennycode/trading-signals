@@ -8,8 +8,6 @@ Technical indicators and overlays to run technical analysis with JavaScript / Ty
 
 The "trading-signals" library provides a TypeScript implementation for common technical indicators with arbitrary-precision decimal arithmetic. It is well-suited for algorithmic trading, allowing developers to perform accurate and reliable signal computations for automated trading strategies.
 
-The main focus of this library is on the accuracy of calculations, but using the provided [faster implementations][2] you can also use it where performance is important.
-
 All indicators can be updated over time by streaming data (prices or [candles](https://en.wikipedia.org/wiki/Candlestick_chart)) to the `add` method. Some indicators also provide `static` batch methods for further performance improvements when providing data up-front during a backtest or historical data import. You can try it out streaming input data by running the provided [demo script](./src/start/demo.ts) with `npm start`, which uses a keyboard input stream.
 
 ## Installation
@@ -172,31 +170,6 @@ JavaScript is very bad with numbers. When calculating `0.1 + 0.2` it shows you `
 
 As specified by the ECMAScript standard, all arithmetic in JavaScript uses [double-precision floating-point arithmetic](https://en.wikipedia.org/wiki/Double-precision_floating-point_format), which is only accurate until certain extent. To increase the accuracy and avoid miscalculations, the [trading-signals](https://github.com/bennycode/trading-signals) library uses [big.js][1] which offers arbitrary-precision decimal arithmetic. However, this arbitrary accuracy comes with a downside: Calculations with it are not as performant as with the primitive data type `number`.
 
-### Faster implementations
-
-To get the best of both worlds (high accuracy & high performance), you will find two implementations of each indicator (e.g. `SMA` & `FasterSMA`). The standard implementation uses [big.js][1] and the `Faster`-prefixed version uses common `number` types. Use the standard one when you need high accuracy and use the `Faster`-one when you need high performance:
-
-```ts
-import {FasterSMA} from './SMA/SMA';
-
-const fasterSMA = new FasterSMA(5);
-console.log(fasterSMA.updates([1, 2, 3, 4, 5]));
-```
-
-```ts
-import {FasterStochasticRSI, FasterSMA} from 'trading-signals';
-
-const fasterStochRSI = new FasterStochasticRSI(3, FasterSMA);
-fasterStochRSI.update(1);
-fasterStochRSI.update(2);
-fasterStochRSI.update(3);
-fasterStochRSI.update(4);
-fasterStochRSI.update(5);
-fasterStochRSI.update(6);
-
-console.log(fasterStochRSI.getResultOrThrow());
-```
-
 ## Disclaimer
 
 The information and publications of [trading-signals](https://github.com/bennycode/trading-signals) do not constitute financial advice, investment advice, trading advice or any other form of advice. All results from [trading-signals](https://github.com/bennycode/trading-signals) are intended for information purposes only.
@@ -232,7 +205,6 @@ This package was built by Benny Code. Checkout my [**TypeScript course**](https:
 [<img src="https://raw.githubusercontent.com/bennycode/trading-signals/main/tstv.png">](https://typescript.tv/)
 
 [1]: http://mikemcl.github.io/big.js/
-[2]: #faster-implementations
 [stack_exchange_bennycode_badge]: https://stackexchange.com/users/flair/203782.png?theme=default
 [stack_exchange_bennycode_url]: https://stackexchange.com/users/203782/benny-neugebauer?tab=accounts
 

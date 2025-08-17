@@ -1,10 +1,10 @@
-import {FasterMOM} from './MOM.js';
+import {MOM} from './MOM.js';
 import {NotEnoughDataError} from '../error/index.js';
 
 describe('MOM', () => {
   describe('update', () => {
     it('can replace recently added values', () => {
-      const fasterMomentum = new FasterMOM(5);
+      const fasterMomentum = new MOM(5);
 
       fasterMomentum.add(81.59);
       fasterMomentum.add(81.06);
@@ -28,7 +28,7 @@ describe('MOM', () => {
       ] as const;
       const outputs = [1.56, 1.78, 1.12, 1.55, 0.75, 2.38, 3.7, 2.9, 3.22, 2.93] as const;
       const interval = 5;
-      const fasterMomentum = new FasterMOM(interval);
+      const fasterMomentum = new MOM(interval);
 
       for (const [index, input] of inputs.entries()) {
         fasterMomentum.add(input);
@@ -45,7 +45,7 @@ describe('MOM', () => {
     });
 
     it('throws an error when there is not enough input data', () => {
-      const momentum = new FasterMOM(5);
+      const momentum = new MOM(5);
 
       try {
         momentum.getResultOrThrow();

@@ -1,5 +1,5 @@
-import {FasterMovingAverage} from '../MA/MovingAverage.js';
-import {getFasterAverage} from '../util/getAverage.js';
+import {MovingAverage} from '../MA/MovingAverage.js';
+import {getAverage} from '../util/getAverage.js';
 import {pushUpdate} from '../util/pushUpdate.js';
 
 /**
@@ -11,7 +11,7 @@ import {pushUpdate} from '../util/pushUpdate.js';
  *
  * @see https://www.investopedia.com/terms/s/sma.asp
  */
-export class FasterSMA extends FasterMovingAverage {
+export class SMA extends MovingAverage {
   public readonly prices: number[] = [];
 
   override getRequiredInputs() {
@@ -22,7 +22,7 @@ export class FasterSMA extends FasterMovingAverage {
     pushUpdate(this.prices, replace, price, this.interval);
 
     if (this.prices.length === this.interval) {
-      return this.setResult(getFasterAverage(this.prices), replace);
+      return this.setResult(getAverage(this.prices), replace);
     }
 
     return null;

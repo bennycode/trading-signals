@@ -1,5 +1,5 @@
 import {NotEnoughDataError} from '../error/index.js';
-import {FasterAO} from './AO.js';
+import {AO} from './AO.js';
 
 describe('AO', () => {
   // Test data verified with:
@@ -34,8 +34,8 @@ describe('AO', () => {
       const shortInterval = 5;
       const longInterval = 34;
 
-      const ao = new FasterAO(shortInterval, longInterval);
-      const fasterAO = new FasterAO(shortInterval, longInterval);
+      const ao = new AO(shortInterval, longInterval);
+      const fasterAO = new AO(shortInterval, longInterval);
 
       for (let i = 0; i < lows.length; i++) {
         const candle = {
@@ -65,7 +65,7 @@ describe('AO', () => {
     });
 
     it('throws an error when there is not enough input data', () => {
-      const ao = new FasterAO(5, 34);
+      const ao = new AO(5, 34);
 
       try {
         ao.getResultOrThrow();
@@ -81,8 +81,8 @@ describe('AO', () => {
       const shortInterval = 5;
       const longInterval = 34;
 
-      const ao = new FasterAO(shortInterval, longInterval);
-      const fasterAO = new FasterAO(shortInterval, longInterval);
+      const ao = new AO(shortInterval, longInterval);
+      const fasterAO = new AO(shortInterval, longInterval);
 
       lows.forEach((low, index) => {
         ao.add({

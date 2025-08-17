@@ -24,7 +24,7 @@ export type ZigZagConfig = {
  * @see https://capex.com/en/academy/zigzag
  * @see https://corporatefinanceinstitute.com/resources/career-map/sell-side/capital-markets/zig-zag-indicator/
  */
-export class FasterZigZag extends IndicatorSeries<HighLow> {
+export class ZigZag extends IndicatorSeries<HighLow> {
   private readonly deviation: number;
   private isUp: boolean = false;
   private highestExtreme: number | null = null;

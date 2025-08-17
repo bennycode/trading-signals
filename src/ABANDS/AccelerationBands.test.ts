@@ -1,14 +1,14 @@
-import {FasterEMA} from '../EMA/EMA.js';
+import {EMA} from '../EMA/EMA.js';
 import {NotEnoughDataError} from '../error/index.js';
-import {FasterSMA} from '../SMA/SMA.js';
-import {FasterAccelerationBands} from './AccelerationBands.js';
+import {SMA} from '../SMA/SMA.js';
+import {AccelerationBands} from './AccelerationBands.js';
 
-describe('FasterAccelerationBands', () => {
+describe('AccelerationBands', () => {
   describe('constructor', () => {
     it('works with different kinds of indicators', () => {
-      const accBandsWithFasterSMA = new FasterAccelerationBands(20, 2, FasterSMA);
-      const accBandsWithEMA = new FasterAccelerationBands(20, 2, FasterEMA);
-      expect(accBandsWithFasterSMA).toBeDefined();
+      const accBandsWithSMA = new AccelerationBands(20, 2, SMA);
+      const accBandsWithEMA = new AccelerationBands(20, 2, EMA);
+      expect(accBandsWithSMA).toBeDefined();
       expect(accBandsWithEMA).toBeDefined();
     });
   });
@@ -16,7 +16,7 @@ describe('FasterAccelerationBands', () => {
   describe('getResultOrThrow', () => {
     it('returns upper, middle and lower bands', () => {
       const interval = 20;
-      const fasterAccBands = new FasterAccelerationBands(interval, 4);
+      const fasterAccBands = new AccelerationBands(interval, 4);
       expect(fasterAccBands.isStable).toBe(false);
 
       // Test data from: https://github.com/QuantConnect/Lean/blob/master/Tests/TestData/spy_acceleration_bands_20_4.txt
@@ -67,7 +67,7 @@ describe('FasterAccelerationBands', () => {
     });
 
     it('throws an error when there is not enough input data', () => {
-      const fasterAccBands = new FasterAccelerationBands(20, 2);
+      const fasterAccBands = new AccelerationBands(20, 2);
       try {
         fasterAccBands.getResultOrThrow();
         throw new Error('Expected error');
@@ -79,7 +79,7 @@ describe('FasterAccelerationBands', () => {
 
   describe('update', () => {
     it("doesn't crash when supplying zeroes", () => {
-      const accBands = new FasterAccelerationBands(20, 2);
+      const accBands = new AccelerationBands(20, 2);
       return accBands.updates(
         [
           {
@@ -95,7 +95,7 @@ describe('FasterAccelerationBands', () => {
 
   describe('updates', () => {
     it("doesn't crash when supplying zeroes", () => {
-      const accBands = new FasterAccelerationBands(20, 2);
+      const accBands = new AccelerationBands(20, 2);
       return accBands.updates(
         [
           {

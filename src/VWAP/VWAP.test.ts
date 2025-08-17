@@ -1,10 +1,10 @@
-import {FasterVWAP} from './VWAP.js';
+import {VWAP} from './VWAP.js';
 
 // @see https://github.com/cinar/indicatorts/blob/main/src/indicator/volume/volumeWeightedAveragePrice.test.ts
 describe('VWAP', () => {
   describe('add', () => {
     it('handles zero volume correctly', () => {
-      const fasterVWAP = new FasterVWAP();
+      const fasterVWAP = new VWAP();
       const fasterResult = fasterVWAP.add({close: 9, high: 10, low: 8, volume: 0});
       expect(fasterResult).toBe(null);
     });
@@ -12,7 +12,7 @@ describe('VWAP', () => {
 
   describe('replace', () => {
     it('replaces the most recently added value', () => {
-      const fasterVWAP = new FasterVWAP();
+      const fasterVWAP = new VWAP();
 
       const data = [
         {close: 100, high: 100, low: 100, volume: 100},
@@ -37,7 +37,7 @@ describe('VWAP', () => {
 
   describe('getResultOrThrow', () => {
     it('calculates VWAP correctly', () => {
-      const fasterVWAP = new FasterVWAP();
+      const fasterVWAP = new VWAP();
 
       // Test data verified with:
       // https://github.com/cinar/indicatorts/blob/v2.2.2/src/indicator/volume/volumeWeightedAveragePrice.test.ts

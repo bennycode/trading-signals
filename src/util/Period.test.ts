@@ -1,5 +1,5 @@
 import {NotEnoughDataError} from '../error/NotEnoughDataError.js';
-import {FasterPeriod} from './Period.js';
+import {Period} from './Period.js';
 
 describe('Period', () => {
   describe('replace', () => {
@@ -8,9 +8,9 @@ describe('Period', () => {
       const expectedLow = '30';
       const expectedHigh = '70';
 
-      const period = new FasterPeriod(interval);
-      const periodWithReplace = new FasterPeriod(interval);
-      const fasterPeriodWithReplace = new FasterPeriod(interval);
+      const period = new Period(interval);
+      const periodWithReplace = new Period(interval);
+      const fasterPeriodWithReplace = new Period(interval);
 
       const subset = [30, 40, 50, 60];
       period.updates([...subset, 70], false);
@@ -29,7 +29,7 @@ describe('Period', () => {
     it('returns the highest and lowest value of the current period', () => {
       const values = [72, 1337];
       const interval = 2;
-      const period = new FasterPeriod(interval);
+      const period = new Period(interval);
       period.updates(values, false);
       const {highest, lowest} = period.getResultOrThrow();
       expect(lowest).toBe(72);
@@ -38,7 +38,7 @@ describe('Period', () => {
       expect(period.lowest).toBe(72);
       expect(period.highest).toBe(1337);
 
-      const fasterPeriod = new FasterPeriod(interval);
+      const fasterPeriod = new Period(interval);
       fasterPeriod.updates(values, false);
       const {highest: fastestHighest, lowest: fastestLowest} = fasterPeriod.getResultOrThrow();
       expect(fastestLowest).toBe(72);
@@ -46,7 +46,7 @@ describe('Period', () => {
     });
 
     it('throws an error when there is not enough input data', () => {
-      const period = new FasterPeriod(2);
+      const period = new Period(2);
       try {
         period.getResultOrThrow();
         throw new Error('Expected error');
@@ -77,8 +77,8 @@ describe('Period', () => {
         '85.53',
       ];
       const interval = 5;
-      const period = new FasterPeriod(interval);
-      const fasterPeriod = new FasterPeriod(interval);
+      const period = new Period(interval);
+      const fasterPeriod = new Period(interval);
       for (const price of prices) {
         period.add(price);
         fasterPeriod.add(price);

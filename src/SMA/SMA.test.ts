@@ -1,9 +1,9 @@
-import {FasterSMA, NotEnoughDataError} from '../index.js';
+import {SMA, NotEnoughDataError} from '../index.js';
 
 describe('SMA', () => {
   describe('prices', () => {
     it('does not cache more prices than necessary to fill the interval', () => {
-      const sma = new FasterSMA(3);
+      const sma = new SMA(3);
       sma.add(1);
       sma.add(2);
       expect(sma.prices.length).toBe(2);
@@ -21,8 +21,7 @@ describe('SMA', () => {
   describe('replace', () => {
     it('replaces recently added values', () => {
       const interval = 2;
-
-      const fasterSMA = new FasterSMA(interval);
+      const fasterSMA = new SMA(interval);
 
       fasterSMA.add(20);
       fasterSMA.add(30);
@@ -62,7 +61,7 @@ describe('SMA', () => {
       const prices = [1, 2, 3, 4, 5];
       const interval = 5;
 
-      const fasterSMA = new FasterSMA(interval);
+      const fasterSMA = new SMA(interval);
       fasterSMA.updates(prices, false);
 
       expect(fasterSMA.getResultOrThrow().toFixed()).toBe('3');
@@ -71,7 +70,7 @@ describe('SMA', () => {
 
   describe('isStable', () => {
     it('knows when there is enough input data', () => {
-      const sma = new FasterSMA(3);
+      const sma = new SMA(3);
       sma.add(40);
       sma.add(30);
       expect(sma.isStable).toBe(false);
@@ -107,7 +106,7 @@ describe('SMA', () => {
       ] as const;
 
       const interval = 5;
-      const fasterSMA = new FasterSMA(interval);
+      const fasterSMA = new SMA(interval);
 
       for (let i = 0; i < prices.length; i++) {
         const price = prices[i];
@@ -127,16 +126,7 @@ describe('SMA', () => {
     });
 
     it('throws an error when there is not enough input data', () => {
-      const sma = new FasterSMA(26);
-
-      try {
-        sma.getResultOrThrow();
-        throw new Error('Expected error');
-      } catch (error) {
-        expect(error).toBeInstanceOf(NotEnoughDataError);
-      }
-
-      const fasterSMA = new FasterSMA(5);
+      const fasterSMA = new SMA(5);
 
       try {
         fasterSMA.getResultOrThrow();

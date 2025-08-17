@@ -1,9 +1,9 @@
-import {FasterWMA, NotEnoughDataError} from '../index.js';
+import {WMA, NotEnoughDataError} from '../index.js';
 
 describe('WMA', () => {
   describe('prices', () => {
     it('does not cache more prices than necessary to fill the interval', () => {
-      const fasterWMA = new FasterWMA(3);
+      const fasterWMA = new WMA(3);
       fasterWMA.add(1);
       fasterWMA.add(2);
       expect(fasterWMA.prices.length).toBe(2);
@@ -22,7 +22,7 @@ describe('WMA', () => {
     it('replaces recently added values', () => {
       const interval = 3;
 
-      const fasterWMA = new FasterWMA(interval);
+      const fasterWMA = new WMA(interval);
 
       fasterWMA.add(11);
       fasterWMA.add(12);
@@ -64,7 +64,7 @@ describe('WMA', () => {
       const prices = [30, 60, 90, 60, 90];
       const interval = 5;
 
-      const fasterWMA = new FasterWMA(interval);
+      const fasterWMA = new WMA(interval);
       fasterWMA.updates(prices, false);
       expect(fasterWMA.getResultOrThrow().toFixed()).toBe('74');
     });
@@ -72,7 +72,7 @@ describe('WMA', () => {
 
   describe('isStable', () => {
     it('knows when there is enough input data', () => {
-      const wma = new FasterWMA(3);
+      const wma = new WMA(3);
       wma.add(30);
       wma.add(60);
       expect(wma.isStable).toBe(false);
@@ -90,7 +90,7 @@ describe('WMA', () => {
     it('calculates the moving average based on the last 5 prices', () => {
       const prices = [91, 90, 89, 88, 90];
       const expectations = ['89.33'];
-      const fasterWMA = new FasterWMA(5);
+      const fasterWMA = new WMA(5);
 
       for (const price of prices) {
         const fasterResult = fasterWMA.add(price);
@@ -105,7 +105,7 @@ describe('WMA', () => {
     });
 
     it('throws an error when there is not enough input data', () => {
-      const fasterWMA = new FasterWMA(5);
+      const fasterWMA = new WMA(5);
 
       try {
         fasterWMA.getResultOrThrow();

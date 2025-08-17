@@ -1,8 +1,8 @@
-import {FasterTDS} from './TDS.js';
+import {TDS} from './TDS.js';
 
-describe('FasterTDS', () => {
+describe('TDS', () => {
   it('does not return a result for less than 9 prices', () => {
-    const tds = new FasterTDS();
+    const tds = new TDS();
     expect(tds.getRequiredInputs()).toBe(9);
 
     for (let i = 0; i < 8; i++) {
@@ -12,7 +12,7 @@ describe('FasterTDS', () => {
   });
 
   it('returns 1 for a bullish setup after 9 consecutive closes > close 4 bars earlier', () => {
-    const tds = new FasterTDS();
+    const tds = new TDS();
 
     for (let i = 0; i < 4; i++) {
       tds.update(10, false);
@@ -28,7 +28,7 @@ describe('FasterTDS', () => {
   });
 
   it('returns -1 for a bearish setup after 9 consecutive closes < close 4 bars earlier', () => {
-    const tds = new FasterTDS();
+    const tds = new TDS();
     for (let i = 0; i < 4; i++) {
       tds.update(20, false);
     }
@@ -40,7 +40,7 @@ describe('FasterTDS', () => {
   });
 
   it('keeps at most 13 closes in the buffer', () => {
-    const tds = new FasterTDS();
+    const tds = new TDS();
     for (let i = 0; i < 20; i++) {
       tds.update(i, false);
     }
@@ -48,7 +48,7 @@ describe('FasterTDS', () => {
   });
 
   it('detects a direction change from bearish to bullish', () => {
-    const tds = new FasterTDS();
+    const tds = new TDS();
     for (let i = 0; i < 4; i++) {
       tds.update(10, false);
     }
@@ -62,7 +62,7 @@ describe('FasterTDS', () => {
   });
 
   it('detects a direction change from bullish to bearish', () => {
-    const tds = new FasterTDS();
+    const tds = new TDS();
     for (let i = 0; i < 4; i++) {
       tds.update(10, false);
     }
@@ -77,7 +77,7 @@ describe('FasterTDS', () => {
 
   describe('replace', () => {
     it('replaces values', () => {
-      const tds = new FasterTDS();
+      const tds = new TDS();
       for (let i = 0; i < 5; i++) {
         tds.update(10 + i, false);
       }

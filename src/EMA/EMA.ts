@@ -1,4 +1,4 @@
-import {FasterMovingAverage} from '../MA/MovingAverage.js';
+import {MovingAverage} from '../MA/MovingAverage.js';
 import {NotEnoughDataError} from '../error/index.js';
 
 /**
@@ -10,7 +10,7 @@ import {NotEnoughDataError} from '../error/index.js';
  *
  * @see https://www.investopedia.com/terms/e/ema.asp
  */
-export class FasterEMA extends FasterMovingAverage {
+export class EMA extends MovingAverage {
   private pricesCounter = 0;
   private readonly weightFactor: number;
 

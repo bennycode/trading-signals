@@ -1,6 +1,6 @@
 import {IndicatorSeries} from '../Indicator.js';
-import {FasterMAD} from '../MAD/MAD.js';
-import {FasterSMA} from '../SMA/SMA.js';
+import {MAD} from '../MAD/MAD.js';
+import {SMA} from '../SMA/SMA.js';
 import {pushUpdate, type HighLowClose} from '../util/index.js';
 
 /**
@@ -27,13 +27,13 @@ import {pushUpdate, type HighLowClose} from '../util/index.js';
  *
  * @see https://en.wikipedia.org/wiki/Commodity_channel_index
  */
-export class FasterCCI extends IndicatorSeries<HighLowClose<number>> {
-  private readonly sma: FasterSMA;
+export class CCI extends IndicatorSeries<HighLowClose<number>> {
+  private readonly sma: SMA;
   private readonly typicalPrices: number[];
 
   constructor(public readonly interval: number) {
     super();
-    this.sma = new FasterSMA(this.interval);
+    this.sma = new SMA(this.interval);
     this.typicalPrices = [];
   }
 
@@ -47,7 +47,7 @@ export class FasterCCI extends IndicatorSeries<HighLowClose<number>> {
 
     if (this.sma.isStable) {
       const mean = this.sma.getResultOrThrow();
-      const meanDeviation = FasterMAD.getResultFromBatch(this.typicalPrices, mean);
+      const meanDeviation = MAD.getResultFromBatch(this.typicalPrices, mean);
       const numerator = typicalPrice - mean;
       const denominator = 0.015 * meanDeviation;
       return this.setResult(numerator / denominator, replace);

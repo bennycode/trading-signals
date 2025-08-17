@@ -8,7 +8,7 @@ import {IndicatorSeries} from '../Indicator.js';
  *
  * @see https://www.investopedia.com/terms/m/movingaverage.asp
  */
-export abstract class FasterMovingAverage extends IndicatorSeries {
+export abstract class MovingAverage extends IndicatorSeries {
   constructor(public readonly interval: number) {
     super();
   }
