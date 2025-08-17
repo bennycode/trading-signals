@@ -5,7 +5,6 @@ describe('ZigZag', () => {
     it('returns the extreme values when the deviation threshold is met', () => {
       // Test data verified with:
       // https://github.com/munrocket/ta-math/blob/abdba60394582fa5847f57e87969dcd2d22b6ce8/test/test.js#L306-L308
-
       const highs = [
         -8, -4, -1, 9, 8, 7, 6, 5, 4, 3, 2, 1, 11, 22, 33, 44, 55, 66, 77, 88, 88, 71, 61, 51, 41, 51, 61, 71, 81, 91,
         11,

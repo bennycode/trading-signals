@@ -130,7 +130,7 @@ describe('REI', () => {
       open: 470.08,
       timestamp: '2025-06-06T00:00:00Z',
     },
-  ];
+  ] as const;
 
   describe('replace', () => {
     it('replaces the most recently added value', () => {

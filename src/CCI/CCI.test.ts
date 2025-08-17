@@ -51,11 +51,9 @@ describe('CCI', () => {
 
       cci.add(correct);
       cciWithReplace.add(wrong);
-
       expect(cci.getResultOrThrow().toFixed()).not.toBe(cciWithReplace.getResultOrThrow().toFixed());
 
       cciWithReplace.replace(correct);
-
       expect(cci.getResultOrThrow().toFixed()).toBe(cciWithReplace.getResultOrThrow().toFixed());
     });
   });

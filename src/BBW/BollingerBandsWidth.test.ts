@@ -37,24 +37,37 @@ describe('BollingerBandsWidth', () => {
         {close: 73.0, high: 74.09, low: 72.94, open: 73.83},
         {close: 72.56, high: 74.27, low: 72.48, open: 73.98},
         {close: 72.67, high: 73.13, low: 71.87, open: 72.96}, // 2021/09/13
-      ];
+      ] as const;
 
       // Test data verified with:
       // https://www.tradingview.com/support/solutions/43000501972/
-      const expectations = ['0.19', '0.21', '0.21', '0.21', '0.20', '0.18', '0.15', '0.13', '0.11', '0.09', '0.09'];
+      const expectations = [
+        '0.19',
+        '0.21',
+        '0.21',
+        '0.21',
+        '0.20',
+        '0.18',
+        '0.15',
+        '0.13',
+        '0.11',
+        '0.09',
+        '0.09',
+      ] as const;
 
       const interval = 20;
       const bbw = new BollingerBandsWidth(new BollingerBands(interval, 2));
+      const offset = bbw.getRequiredInputs();
 
       expect(bbw.getRequiredInputs()).toBe(interval);
 
-      for (const {close} of candles) {
+      candles.forEach(({close}, i) => {
         bbw.add(close);
         if (bbw.isStable) {
-          const expected = expectations.shift();
+          const expected = expectations[i - offset];
           expect(bbw.getResultOrThrow().toFixed(2)).toBe(`${expected}`);
         }
-      }
+      });
     });
   });
 });

@@ -6,7 +6,7 @@ describe('BollingerBands', () => {
   describe('prices', () => {
     it('does not cache more prices than necessary to fill the interval', () => {
       const bb = new BollingerBands(3);
-      bb.updates([1, 2], false);
+      bb.updates([1, 2]);
       expect(bb.prices.length).toBe(2);
       bb.add(3);
       expect(bb.prices.length).toBe(3);
@@ -83,7 +83,7 @@ describe('BollingerBands', () => {
         '83.54',
         '83.87',
         '85.29',
-      ];
+      ] as const;
 
       const expectedMids = [
         undefined,
@@ -101,7 +101,7 @@ describe('BollingerBands', () => {
         '85.57',
         '86.22',
         '86.80',
-      ];
+      ] as const;
 
       const expectedUps = [
         undefined,
@@ -119,7 +119,7 @@ describe('BollingerBands', () => {
         '87.61',
         '88.57',
         '88.32',
-      ];
+      ] as const;
 
       const interval = 5;
       const bb = new BollingerBands(interval, 2);
