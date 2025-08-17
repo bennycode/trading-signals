@@ -4,19 +4,20 @@ import {NotEnoughDataError} from '../error/index.js';
 describe('RSI', () => {
   describe('update', () => {
     it('can replace recently added values', () => {
-      const fasterRSI = new RSI(5);
-      fasterRSI.add(81.59);
-      fasterRSI.add(81.06);
-      fasterRSI.add(82.87);
-      fasterRSI.add(83.0);
-      fasterRSI.add(83.61);
-      fasterRSI.add(83.15);
-      fasterRSI.add(82.84);
-      fasterRSI.add(90); // this value gets replaced with the next call
-      fasterRSI.update(83.99, true);
+      const rsi = new RSI(5);
 
-      expect(fasterRSI.isStable).toBe(true);
-      expect(fasterRSI.getResultOrThrow().toFixed(2)).toBe('75.94');
+      rsi.add(81.59);
+      rsi.add(81.06);
+      rsi.add(82.87);
+      rsi.add(83.0);
+      rsi.add(83.61);
+      rsi.add(83.15);
+      rsi.add(82.84);
+      rsi.add(90); // this value gets replaced with the next call
+      rsi.replace(83.99);
+
+      expect(rsi.isStable).toBe(true);
+      expect(rsi.getResultOrThrow().toFixed(2)).toBe('75.94');
     });
   });
 
@@ -26,7 +27,7 @@ describe('RSI', () => {
       // https://github.com/TulipCharts/tulipindicators/blob/v0.8.0/tests/untest.txt#L347-L349
       const prices = [
         81.59, 81.06, 82.87, 83.0, 83.61, 83.15, 82.84, 83.99, 84.55, 84.36, 85.53, 86.54, 86.89, 87.77, 87.29,
-      ];
+      ] as const;
       const expectations = [
         '72.034',
         '64.927',
@@ -38,28 +39,32 @@ describe('RSI', () => {
         '88.755',
         '91.483',
         '78.498',
-      ];
+      ] as const;
+
       const interval = 5;
-      const fasterRSI = new RSI(interval);
-      for (const price of prices) {
-        fasterRSI.add(price);
-        if (fasterRSI.isStable) {
-          const expected = expectations.shift();
-          expect(fasterRSI.getResultOrThrow().toFixed(3)).toBe(expected);
+      const rsi = new RSI(interval);
+      const offset = rsi.getRequiredInputs();
+
+      prices.forEach((price, i) => {
+        rsi.add(price);
+        if (rsi.isStable) {
+          const expected = expectations[i - offset];
+          expect(rsi.getResultOrThrow().toFixed(3)).toBe(expected);
         }
-      }
-      expect(fasterRSI.isStable).toBe(true);
-      expect(fasterRSI.getRequiredInputs()).toBe(interval);
-      expect(fasterRSI.getResultOrThrow().toFixed(2)).toBe('78.50');
-      expect(fasterRSI.lowest?.toFixed(2)).toBe('64.93');
-      expect(fasterRSI.highest?.toFixed(2)).toBe('91.48');
+      });
+
+      expect(rsi.isStable).toBe(true);
+      expect(rsi.getRequiredInputs()).toBe(interval);
+      expect(rsi.getResultOrThrow().toFixed(2)).toBe('78.50');
+      expect(rsi.lowest?.toFixed(2)).toBe('64.93');
+      expect(rsi.highest?.toFixed(2)).toBe('91.48');
     });
 
     it('catches division by zero errors', () => {
       const updates = [2, 2, 2];
-      const fasterRSI = new RSI(2);
-      fasterRSI.updates(updates, false);
-      expect(fasterRSI.getResultOrThrow()).toBe(100);
+      const rsi = new RSI(2);
+      rsi.updates(updates, false);
+      expect(rsi.getResultOrThrow()).toBe(100);
     });
 
     it('throws an error when there is not enough input data', () => {
