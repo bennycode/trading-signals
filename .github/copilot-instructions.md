@@ -64,7 +64,7 @@ it('returns null until enough values are provided', () => {
   const iqr = new IQR(5);
 
   for (let i = 0; i < 4; i++) {
-  const result = iqr.update(i, false);
+    const result = iqr.update(i, false);
     expect(result).toBeNull();
   }
 });
@@ -84,10 +84,10 @@ Avoid explicitly specifying generic type parameters when a default is already pr
 
 ```ts
 // ❌ Bad: Redundant generic type argument
-export class IQR extends BigIndicatorSeries<BigSource> {}
+export class IQR extends IndicatorSeries<number> {}
 
 // ✅ Good: Rely on the default generic
-export class IQR extends BigIndicatorSeries {}
+export class IQR extends IndicatorSeries {}
 ```
 
 Prefer inferred return types over explicit return types to keep code cleaner and reduce duplication:
@@ -130,7 +130,7 @@ it('calculates the intercept values correctly', () => {
     linreg.add(prices[i]);
     if (i >= offset) {
       const result = linreg.getResultOrThrow();
-  expect(result.intercept.toFixed(3)).toBe(expected.shift());
+      expect(result.intercept.toFixed(3)).toBe(expected.shift());
     }
   }
 });
@@ -162,7 +162,7 @@ it('calculates the intercept values correctly', () => {
     linreg.add(price);
     if (index >= offset) {
       const result = linreg.getResultOrThrow();
-  expect(result.intercept.toFixed(3)).toBe(expected[index - offset]);
+      expect(result.intercept.toFixed(3)).toBe(expected[index - offset]);
     }
   });
 });
