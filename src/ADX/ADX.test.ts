@@ -20,10 +20,10 @@ describe('ADX', () => {
     {close: 86.89, high: 86.98, low: 85.76},
     {close: 87.77, high: 88.0, low: 87.17},
     {close: 87.29, high: 87.87, low: 87.01},
-  ];
+  ] as const;
 
   // https://github.com/TulipCharts/tulipindicators/blob/v0.9.1/tests/untest.txt#L38
-  const expectations = [41.38, 44.29, 49.42, 54.92, 59.99, 65.29, 67.36];
+  const expectations = [41.38, 44.29, 49.42, 54.92, 59.99, 65.29, 67.36] as const;
 
   describe('replace', () => {
     it('replaces the most recently added value', () => {
@@ -52,17 +52,18 @@ describe('ADX', () => {
     it('calculates the Average Directional Index (ADX)', () => {
       const interval = 5;
       const adx = new ADX(interval);
+      const offset = adx.getRequiredInputs() - 1;
 
-      for (const candle of candles) {
+      candles.forEach((candle, i) => {
         adx.add(candle);
         if (adx.isStable) {
-          const expected = expectations.shift();
+          const expected = expectations[i - offset];
           expect(adx.getResultOrThrow().toFixed(2)).toBe(`${expected}`);
         }
-      }
+      });
 
       expect(adx.isStable).toBe(true);
-      expect(adx.getRequiredInputs()).toBe(interval);
+      expect(adx.getRequiredInputs()).toBe(9);
       expect(adx.getResultOrThrow().toFixed(2)).toBe('67.36');
       expect(adx.lowest?.toFixed(2)).toBe('41.38');
       expect(adx.highest?.toFixed(2)).toBe('67.36');

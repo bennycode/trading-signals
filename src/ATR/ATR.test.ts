@@ -49,11 +49,9 @@ describe('ATR', () => {
 
       atr.add(correct);
       atrWithReplace.add(wrong);
-
       expect(atr.getResultOrThrow().toFixed()).not.toBe(atrWithReplace.getResultOrThrow().toFixed());
 
       atrWithReplace.replace(correct);
-
       expect(atr.getResultOrThrow().toFixed()).toBe(atrWithReplace.getResultOrThrow().toFixed());
     });
   });

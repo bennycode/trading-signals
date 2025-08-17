@@ -58,7 +58,7 @@ export class ADX extends IndicatorSeries<HighLowClose<number>> {
   }
 
   override getRequiredInputs() {
-    return this.smoothed.getRequiredInputs();
+    return this.interval * 2 - 1;
   }
 
   update(candle: HighLowClose<number>, replace: boolean) {
