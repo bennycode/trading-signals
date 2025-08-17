@@ -81,15 +81,15 @@ export class REI extends IndicatorSeries<HighLowClose<number>> {
     const limitIndex = this.highs.length - 1;
 
     for (let j = limitIndex; j > this.interval; j--) {
-      const diff1 = this.highs[j] - this.highs[j - 2];
-      const diff2 = this.lows[j] - this.lows[j - 2];
+      const diffHighs = this.highs[j] - this.highs[j - 2];
+      const diffLows = this.lows[j] - this.lows[j - 2];
 
       const n = this.calculateN(j);
       const m = this.calculateM(j);
-      const s = diff1 + diff2;
+      const s = diffHighs + diffLows;
 
       const subValue = n * m * s;
-      const absDailyValue = Math.abs(diff1) + Math.abs(diff2);
+      const absDailyValue = Math.abs(diffHighs) + Math.abs(diffLows);
 
       subValueSum += subValue;
       absValueSum += absDailyValue;

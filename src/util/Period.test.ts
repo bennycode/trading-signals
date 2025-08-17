@@ -10,39 +10,29 @@ describe('Period', () => {
 
       const period = new Period(interval);
       const periodWithReplace = new Period(interval);
-      const fasterPeriodWithReplace = new Period(interval);
 
       const subset = [30, 40, 50, 60];
       period.updates([...subset, 70], false);
       periodWithReplace.updates([...subset, 90], false);
       periodWithReplace.replace(70);
-      fasterPeriodWithReplace.updates([...subset, 90], false);
-      fasterPeriodWithReplace.replace(70);
-
       expect(periodWithReplace.lowest?.toFixed()).toBe(expectedLow);
       expect(periodWithReplace.highest?.toFixed()).toBe(expectedHigh);
-      expect(fasterPeriodWithReplace.highest?.toFixed()).toBe(expectedHigh);
     });
   });
 
   describe('getResultOrThrow', () => {
     it('returns the highest and lowest value of the current period', () => {
-      const values = [72, 1337];
+      const values = [72, 1337] as const;
       const interval = 2;
+
       const period = new Period(interval);
       period.updates(values, false);
       const {highest, lowest} = period.getResultOrThrow();
+
       expect(lowest).toBe(72);
       expect(highest).toBe(1337);
-
       expect(period.lowest).toBe(72);
       expect(period.highest).toBe(1337);
-
-      const fasterPeriod = new Period(interval);
-      fasterPeriod.updates(values, false);
-      const {highest: fastestHighest, lowest: fastestLowest} = fasterPeriod.getResultOrThrow();
-      expect(fastestLowest).toBe(72);
-      expect(fastestHighest).toBe(1337);
     });
 
     it('throws an error when there is not enough input data', () => {
@@ -62,7 +52,7 @@ describe('Period', () => {
       // https://tulipindicators.org/min
       const prices = [
         81.59, 81.06, 82.87, 83.0, 83.61, 83.15, 82.84, 83.99, 84.55, 84.36, 85.53, 86.54, 86.89, 87.77, 87.29,
-      ];
+      ] as const;
       const lowest = [
         '81.06',
         '81.06',
@@ -75,21 +65,20 @@ describe('Period', () => {
         '84.36',
         '84.36',
         '85.53',
-      ];
+      ] as const;
       const interval = 5;
       const period = new Period(interval);
-      const fasterPeriod = new Period(interval);
-      for (const price of prices) {
+      const offset = period.getRequiredInputs() - 1;
+
+      prices.forEach((price, i) => {
         period.add(price);
-        fasterPeriod.add(price);
         if (period.isStable) {
-          const expected = lowest.shift();
+          const expected = lowest[i - offset];
           expect(period.lowest?.toFixed(2)).toBe(expected);
-          expect(fasterPeriod.lowest?.toFixed(2)).toBe(expected);
         }
-      }
+      });
+
       expect(period.highest?.toFixed(2)).toBe('87.77');
-      expect(fasterPeriod.highest?.toFixed(2)).toBe('87.77');
     });
   });
 });

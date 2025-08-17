@@ -22,27 +22,28 @@ describe('StochasticOscillator', () => {
         {close: 86.89, high: 86.98, low: 85.76},
         {close: 87.77, high: 88.0, low: 87.17},
         {close: 87.29, high: 87.87, low: 87.01},
-      ];
+      ] as const;
 
-      const stochKs = ['77.39', '83.13', '84.87', '88.36', '95.25', '96.74', '91.09'];
+      const stochKs = ['77.39', '83.13', '84.87', '88.36', '95.25', '96.74', '91.09'] as const;
 
-      const stochDs = ['75.70', '78.01', '81.79', '85.45', '89.49', '93.45', '94.36'];
+      const stochDs = ['75.70', '78.01', '81.79', '85.45', '89.49', '93.45', '94.36'] as const;
 
-      const fasterStoch = new StochasticOscillator(5, 3, 3);
+      const stoch = new StochasticOscillator(5, 3, 3);
+      const offset = stoch.getRequiredInputs() - 1;
 
-      for (const candle of candles) {
-        const fasterStochResult = fasterStoch.add(candle);
-        if (fasterStoch.isStable && fasterStochResult) {
-          const stochD = stochDs.shift();
-          const stochK = stochKs.shift();
-          expect(fasterStochResult.stochD.toFixed(2)).toEqual(stochD);
-          expect(fasterStochResult.stochK.toFixed(2)).toEqual(stochK);
+      candles.forEach((candle, i) => {
+        const stochResult = stoch.add(candle);
+        if (stoch.isStable && stochResult) {
+          const stochD = stochDs[i - offset];
+          const stochK = stochKs[i - offset];
+          expect(stochResult.stochD.toFixed(2)).toEqual(stochD);
+          expect(stochResult.stochK.toFixed(2)).toEqual(stochK);
         }
-      }
+      });
 
-      expect(fasterStoch.isStable).toBe(true);
-      expect(fasterStoch.getRequiredInputs()).toBe(9);
-      expect(fasterStoch.getResultOrThrow().stochK.toFixed(2)).toBe('91.09');
+      expect(stoch.isStable).toBe(true);
+      expect(stoch.getRequiredInputs()).toBe(9);
+      expect(stoch.getResultOrThrow().stochK.toFixed(2)).toBe('91.09');
     });
   });
 
@@ -59,15 +60,6 @@ describe('StochasticOscillator', () => {
 
       try {
         stoch.getResultOrThrow();
-        throw new Error('Expected error');
-      } catch (error) {
-        expect(error).toBeInstanceOf(NotEnoughDataError);
-      }
-
-      const fasterStoch = new StochasticOscillator(5, 3, 3);
-
-      try {
-        fasterStoch.getResultOrThrow();
         throw new Error('Expected error');
       } catch (error) {
         expect(error).toBeInstanceOf(NotEnoughDataError);
@@ -92,18 +84,6 @@ describe('StochasticOscillator', () => {
       const result = stoch.add({close: 100, high: 100, low: 100});
       expect(result?.stochK.toFixed(2)).toBe('0.00');
       expect(result?.stochD.toFixed(2)).toBe('0.00');
-
-      const fasterStoch = new StochasticOscillator(1, 2, 2);
-      fasterStoch.updates(
-        [
-          {close: 100, high: 100, low: 100},
-          {close: 100, high: 100, low: 100},
-        ],
-        false
-      );
-      const {stochK, stochD} = fasterStoch.getResultOrThrow();
-      expect(stochK.toFixed(2)).toBe('0.00');
-      expect(stochD.toFixed(2)).toBe('0.00');
     });
   });
 });

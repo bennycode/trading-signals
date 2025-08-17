@@ -35,7 +35,6 @@ describe('AO', () => {
       const longInterval = 34;
 
       const ao = new AO(shortInterval, longInterval);
-      const fasterAO = new AO(shortInterval, longInterval);
 
       for (let i = 0; i < lows.length; i++) {
         const candle = {
@@ -43,25 +42,17 @@ describe('AO', () => {
           low: lows[i],
         };
         const result = ao.add(candle);
-        const fasterResult = fasterAO.add(candle);
-        if (ao.isStable && fasterAO.isStable) {
+        if (ao.isStable) {
           expect(result).not.toBeUndefined();
-          expect(fasterResult).not.toBeUndefined();
           const actual = ao.getResultOrThrow().toFixed(4);
           const expected = aos[i - (longInterval - 1)];
           expect(parseFloat(actual)).toBe(expected);
-          expect(fasterResult?.toFixed(4)).toBe(expected.toFixed(4));
         }
       }
 
       expect(ao.getRequiredInputs()).toBe(longInterval);
-      expect(fasterAO.getRequiredInputs()).toBe(longInterval);
-
       expect(ao.lowest?.toFixed(2)).toBe('-11.50');
-      expect(fasterAO.lowest?.toFixed(2)).toBe('-11.50');
-
       expect(ao.highest?.toFixed(2)).toBe('33.35');
-      expect(fasterAO.highest?.toFixed(2)).toBe('33.35');
     });
 
     it('throws an error when there is not enough input data', () => {
@@ -82,14 +73,9 @@ describe('AO', () => {
       const longInterval = 34;
 
       const ao = new AO(shortInterval, longInterval);
-      const fasterAO = new AO(shortInterval, longInterval);
 
       lows.forEach((low, index) => {
         ao.add({
-          high: highs[index],
-          low,
-        });
-        fasterAO.add({
           high: highs[index],
           low,
         });
@@ -97,9 +83,6 @@ describe('AO', () => {
 
       expect(ao.lowest?.toFixed(2)).toBe('-11.50');
       expect(ao.highest?.toFixed(2)).toBe('33.35');
-
-      expect(fasterAO.lowest?.toFixed(2)).toBe('-11.50');
-      expect(fasterAO.highest?.toFixed(2)).toBe('33.35');
 
       // Add the latest value
       const latestValue = {
@@ -115,11 +98,6 @@ describe('AO', () => {
       expect(ao.lowest?.toFixed(2)).toBe(latestLow);
       expect(ao.highest?.toFixed(2), 'new record high').toBe(latestHigh);
 
-      fasterAO.add(latestValue);
-      expect(fasterAO.getResultOrThrow()?.toFixed(2)).toBe(latestResult);
-      expect(fasterAO.lowest?.toFixed(2)).toBe(latestLow);
-      expect(fasterAO.highest?.toFixed(2), 'new record high').toBe(latestHigh);
-
       // Replace the latest value with some other value
       const someOtherValue = {
         high: 2000,
@@ -134,21 +112,11 @@ describe('AO', () => {
       expect(ao.lowest?.toFixed(2), 'new record low').toBe(otherLow);
       expect(ao.highest?.toFixed(2)).toBe(otherHigh);
 
-      fasterAO.replace(someOtherValue);
-      expect(fasterAO.getResultOrThrow()?.toFixed(2)).toBe(otherResult);
-      expect(fasterAO.lowest?.toFixed(2), 'new record low').toBe(otherLow);
-      expect(fasterAO.highest?.toFixed(2)).toBe(otherHigh);
-
       // Replace the other value with the latest value
       ao.replace(latestValue);
       expect(ao.getResultOrThrow()?.toFixed(2)).toBe(latestResult);
       expect(ao.lowest?.toFixed(2), 'lowest reset').toBe(latestLow);
       expect(ao.highest?.toFixed(2), 'highest reset').toBe(latestHigh);
-
-      fasterAO.replace(latestValue);
-      expect(fasterAO.getResultOrThrow()?.toFixed(2)).toBe(latestResult);
-      expect(fasterAO.lowest?.toFixed(2), 'lowest reset').toBe(latestLow);
-      expect(fasterAO.highest?.toFixed(2), 'highest reset').toBe(latestHigh);
     });
   });
 });

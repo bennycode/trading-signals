@@ -16,8 +16,8 @@ describe('AccelerationBands', () => {
   describe('getResultOrThrow', () => {
     it('returns upper, middle and lower bands', () => {
       const interval = 20;
-      const fasterAccBands = new AccelerationBands(interval, 4);
-      expect(fasterAccBands.isStable).toBe(false);
+      const accBands = new AccelerationBands(interval, 4);
+      expect(accBands.isStable).toBe(false);
 
       // Test data from: https://github.com/QuantConnect/Lean/blob/master/Tests/TestData/spy_acceleration_bands_20_4.txt
       const candles = [
@@ -45,31 +45,31 @@ describe('AccelerationBands', () => {
 
       for (const candle of candles) {
         const {close, high, low} = candle;
-        fasterAccBands.add({close, high, low});
+        accBands.add({close, high, low});
       }
 
-      let fasterResult = fasterAccBands.getResultOrThrow();
+      let result = accBands.getResultOrThrow();
 
       // See: https://github.com/QuantConnect/Lean/blob/master/Tests/TestData/spy_acceleration_bands_20_4.txt#L21
-      expect(fasterAccBands.isStable).toBe(true);
-      expect(fasterAccBands.getRequiredInputs()).toBe(interval);
-      expect(fasterResult.lower.toFixed(4)).toBe('187.6891');
-      expect(fasterResult.middle.toFixed(4)).toBe('194.6195');
-      expect(fasterResult.upper.toFixed(4)).toBe('201.8016');
+      expect(accBands.isStable).toBe(true);
+      expect(accBands.getRequiredInputs()).toBe(interval);
+      expect(result.lower.toFixed(4)).toBe('187.6891');
+      expect(result.middle.toFixed(4)).toBe('194.6195');
+      expect(result.upper.toFixed(4)).toBe('201.8016');
 
       // See: https://github.com/QuantConnect/Lean/blob/master/Tests/TestData/spy_acceleration_bands_20_4.txt#L22
       const candle = {close: 195, high: 195.03, low: 189.12};
-      fasterAccBands.add(candle);
-      fasterResult = fasterAccBands.getResultOrThrow();
-      expect(fasterResult.lower.toFixed(4)).toBe('187.1217');
-      expect(fasterResult.middle.toFixed(4)).toBe('194.5920');
-      expect(fasterResult.upper.toFixed(4)).toBe('201.9392');
+      accBands.add(candle);
+      result = accBands.getResultOrThrow();
+      expect(result.lower.toFixed(4)).toBe('187.1217');
+      expect(result.middle.toFixed(4)).toBe('194.5920');
+      expect(result.upper.toFixed(4)).toBe('201.9392');
     });
 
     it('throws an error when there is not enough input data', () => {
-      const fasterAccBands = new AccelerationBands(20, 2);
+      const accBands = new AccelerationBands(20, 2);
       try {
-        fasterAccBands.getResultOrThrow();
+        accBands.getResultOrThrow();
         throw new Error('Expected error');
       } catch (error) {
         expect(error).toBeInstanceOf(NotEnoughDataError);

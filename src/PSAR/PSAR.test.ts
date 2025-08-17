@@ -741,7 +741,6 @@ describe('PSAR', () => {
   });
 
   it('should test the exact conditions needed for full branch coverage', () => {
-    // Skip existing tests for time being and focus on full branch coverage
     const psar = new PSAR({accelerationMax: 0.2, accelerationStep: 0.1});
 
     // Let's add a new approach to cover line 105-106 (previousLow < sar check)
@@ -765,23 +764,20 @@ describe('PSAR', () => {
     // Verify it hit the right branch - if successful, branch at 105 executed
     expect(result).not.toBeNull();
 
-    // Now test the same for downtrend with high > sar
-    // Re-initialize
-    const psar2 = new PSAR({accelerationMax: 0.2, accelerationStep: 0.1});
-    psar2.update({high: 15, low: 14}, false);
-    psar2.update({high: 14, low: 13}, false);
-    psar2.update({high: 13, low: 12}, false); // Sets up prePreviousCandle
+    // Test the same for downtrend with high > sar
+    const psarDown = new PSAR({accelerationMax: 0.2, accelerationStep: 0.1});
+    psarDown.update({high: 15, low: 14}, false);
+    psarDown.update({high: 14, low: 13}, false);
+    psarDown.update({high: 13, low: 12}, false); // Sets up prePreviousCandle
 
     // Set up specific state for hitting line 150-151
-    const exposed2 = exposePrivateProperties(psar2);
-    exposed2.isLong = false; // Downtrend
-    exposed2.lastSar = 10; // Low SAR
+    const psarDownProps = exposePrivateProperties(psarDown);
+    psarDownProps.isLong = false; // Downtrend
+    psarDownProps.lastSar = 10; // Low SAR
 
     // Execute with high > sar to hit the branch
-    const result2 = psar2.update({high: 15, low: 12}, false);
-
-    // Verify we got a result
-    expect(result2).not.toBeNull();
+    const downTrendResult = psarDown.update({high: 15, low: 12}, false);
+    expect(downTrendResult).toBe(11.99);
   });
 
   it('tests specific SAR adjustment in downtrend with prePrevious high > sar and previous high > sar', () => {
@@ -867,21 +863,16 @@ describe('PSAR', () => {
     const psar = new PSAR({accelerationMax: 0.2, accelerationStep: 0.02});
 
     // First test with no data (no previousCandle)
-    const result1 = psar.update({high: 10, low: 9}, true);
-    expect(result1).toBeNull();
+    const result = psar.update({high: 10, low: 9}, true);
+    expect(result).toBeNull();
 
     // Test replacing data when lastSar is null but previousCandle exists
-    const psar2 = new PSAR({accelerationMax: 0.2, accelerationStep: 0.02});
-    psar2.update({high: 10, low: 9}, false); // Add first candle but lastSar is still null
+    const psarWithReplace = new PSAR({accelerationMax: 0.2, accelerationStep: 0.02});
+    psarWithReplace.update({high: 10, low: 9}, false); // Add first candle but lastSar is still null
 
     // Replace the first candle
-    const result2 = psar2.update({high: 11, low: 10}, true);
-    expect(result2).toBeNull();
-
-    // Same with faster version
-    const fpsar = new PSAR({accelerationMax: 0.2, accelerationStep: 0.02});
-    const fresult1 = fpsar.update({high: 10, low: 9}, true);
-    expect(fresult1).toBeNull();
+    const replacedResult = psarWithReplace.update({high: 11, low: 10}, true);
+    expect(replacedResult).toBeNull();
   });
 
   // Test utility functions directly for code coverage by creating specific scenarios

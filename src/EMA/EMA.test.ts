@@ -43,15 +43,10 @@ describe('EMA', () => {
     it('replaces recently added values', () => {
       const interval = 5;
       const ema = new EMA(interval);
-      const fasterEMA = new EMA(interval);
       ema.add(81.59);
-      fasterEMA.add(81.59);
       ema.add(81.06);
-      fasterEMA.add(81.06);
       ema.add(82.87);
-      fasterEMA.add(82.87);
       ema.add(83.0);
-      fasterEMA.add(83.0);
 
       // Add the latest value
       const latestValue = 90;
@@ -64,11 +59,6 @@ describe('EMA', () => {
       expect(ema.lowest?.toFixed(2)).toBe(latestLow);
       expect(ema.highest?.toFixed(2)).toBe(latestHigh);
 
-      fasterEMA.add(latestValue);
-      expect(fasterEMA.getResultOrThrow()?.toFixed(2)).toBe(latestResult);
-      expect(fasterEMA.lowest?.toFixed(2)).toBe(latestLow);
-      expect(fasterEMA.highest?.toFixed(2)).toBe(latestHigh);
-
       // Replace the latest value with some other value
       const someOtherValue = 830.61;
       const otherResult = '331.71';
@@ -80,21 +70,11 @@ describe('EMA', () => {
       expect(ema.lowest?.toFixed(2)).toBe(otherLow);
       expect(ema.highest?.toFixed(2)).toBe(otherHigh);
 
-      fasterEMA.replace(someOtherValue);
-      expect(fasterEMA.getResultOrThrow()?.toFixed(2)).toBe(otherResult);
-      expect(fasterEMA.lowest?.toFixed(2)).toBe(otherLow);
-      expect(fasterEMA.highest?.toFixed(2)).toBe(otherHigh);
-
       // Replace the other value with the latest value
       ema.replace(latestValue);
       expect(ema.getResultOrThrow()?.toFixed(2)).toBe(latestResult);
       expect(ema.lowest?.toFixed(2)).toBe(latestLow);
       expect(ema.highest?.toFixed(2)).toBe(latestHigh);
-
-      fasterEMA.replace(latestValue);
-      expect(fasterEMA.getResultOrThrow()?.toFixed(2)).toBe(latestResult);
-      expect(fasterEMA.lowest?.toFixed(2)).toBe(latestLow);
-      expect(fasterEMA.highest?.toFixed(2)).toBe(latestHigh);
     });
 
     it('will simply add prices when there are no prices to replace', () => {
@@ -105,13 +85,6 @@ describe('EMA', () => {
       ema.add(prices[3]);
       ema.add(prices[4]);
       expect(ema.getResultOrThrow().toFixed(2)).toBe('82.71');
-
-      const fasterEMA = new EMA(5);
-      fasterEMA.update(prices[0], true);
-      fasterEMA.add(prices[1]);
-      fasterEMA.add(prices[2]);
-      fasterEMA.add(prices[3]);
-      fasterEMA.add(prices[4]);
     });
   });
 
@@ -119,24 +92,19 @@ describe('EMA', () => {
     it('calculates the Exponential Moving Average over a period of 5', () => {
       const interval = 5;
       const ema = new EMA(interval);
-      const fasterEMA = new EMA(interval);
 
       expect(ema.getRequiredInputs()).toBe(interval);
-      expect(fasterEMA.getRequiredInputs()).toBe(interval);
 
       for (let i = 0; i < prices.length; i++) {
         const price = prices[i];
         ema.add(price);
-        fasterEMA.add(price);
-        if (ema.isStable && fasterEMA.isStable) {
+        if (ema.isStable) {
           const expected = expectations[i - (interval - 1)];
           expect(ema.getResultOrThrow().toFixed(2)).toBe(expected);
-          expect(fasterEMA.getResultOrThrow().toFixed(2)).toBe(expected);
         }
       }
 
       expect(ema.getResultOrThrow().toFixed(2)).toBe('86.70');
-      expect(fasterEMA.getResultOrThrow().toFixed(2)).toBe('86.70');
     });
 
     it('throws an error when there is not enough input data', () => {
@@ -148,16 +116,6 @@ describe('EMA', () => {
       } catch (error) {
         expect(error).toBeInstanceOf(NotEnoughDataError);
         expect(ema.isStable).toBe(false);
-      }
-
-      const fasterEMA = new EMA(10);
-
-      try {
-        fasterEMA.getResultOrThrow();
-        throw new Error('Expected error');
-      } catch (error) {
-        expect(error).toBeInstanceOf(NotEnoughDataError);
-        expect(fasterEMA.isStable).toBe(false);
       }
     });
   });

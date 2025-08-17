@@ -103,67 +103,40 @@ override update(data: HighLowCloseVolume, replace: boolean) { }
 Use `as const` for both test inputs and expected outputs. When looping, prefer `forEach` instead of manual index-based `for` loops:
 
 ```ts
-// ❌ Bad: Missing const assertions, so "expected" can be mutated (values shifted)
-it('calculates the intercept values correctly', () => {
-  const prices = [
-    81.59, 81.06, 82.87, 83.0, 83.61, 83.15, 82.84, 83.99, 84.55, 84.36, 85.53, 86.54, 86.89, 87.77, 87.29,
-  ];
-  const expected = [
-    '81.230',
-    '81.754',
-    '83.076',
-    '83.076',
-    '83.084',
-    '82.952',
-    '83.104',
-    '83.778',
-    '84.202',
-    '84.582',
-    '85.854',
-  ];
+// ❌ Bad: Missing const assertions, so "expectations" can be mutated (values shifted)
+it('calculates the moving average based on the last 5 prices', () => {
+  const prices = [91, 90, 89, 88, 90];
+  const expectations = ['89.33'];
+  const wma = new WMA(5);
 
-  const period = 5;
-  const offset = period - 1;
-  const linreg = new LinearRegression(period);
+  for (const price of prices) {
+    const result = wma.add(price);
 
-  for (let i = 0; i < prices.length; i++) {
-    linreg.add(prices[i]);
-    if (i >= offset) {
-      const result = linreg.getResultOrThrow();
-      expect(result.intercept.toFixed(3)).toBe(expected.shift());
+    if (result) {
+      const expected = expectations.shift();
+      expect(result.toFixed(2)).toBe(expected);
     }
   }
+
+  expect(wma.isStable).toBe(true);
 });
 
 // ✅ Good: Use readonly arrays and match results using an "offset"
-it('calculates the intercept values correctly', () => {
-  const prices = [
-    81.59, 81.06, 82.87, 83.0, 83.61, 83.15, 82.84, 83.99, 84.55, 84.36, 85.53, 86.54, 86.89, 87.77, 87.29,
-  ] as const;
-  const expected = [
-    '81.230',
-    '81.754',
-    '83.076',
-    '83.076',
-    '83.084',
-    '82.952',
-    '83.104',
-    '83.778',
-    '84.202',
-    '84.582',
-    '85.854',
-  ] as const;
+it('calculates the moving average based on the last 5 prices', () => {
+  const prices = [91, 90, 89, 88, 90] as const;
+  const expectations = ['89.33'] as const;
+  const wma = new WMA(5);
+  const offset = wma.getRequiredInputs() - 1;
 
-  const period = 5;
-  const offset = period - 1;
-  const linreg = new LinearRegression(period);
+  prices.forEach((price, i) => {
+    const result = wma.add(price);
 
-  prices.forEach((price, index) => {
-    linreg.add(price);
-    if (index >= offset) {
-      const result = linreg.getResultOrThrow();
-      expect(result.intercept.toFixed(3)).toBe(expected[index - offset]);
+    if (result) {
+      const expected = expectations[i - offset];
+      expect(result.toFixed(2)).toBe(expected);
     }
   });
+
+  expect(wma.isStable).toBe(true);
 });
 ```

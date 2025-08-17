@@ -62,32 +62,21 @@ describe('ATR', () => {
     it('calculates the Average True Range (ATR)', () => {
       const interval = 5;
       const atr = new ATR(interval);
-      const fasterATR = new ATR(interval);
 
       for (let i = 0; i < candles.length; i++) {
         const candle = candles[i];
         atr.add(candle);
-        fasterATR.add(candle);
-        if (atr.isStable && fasterATR.isStable) {
+        if (atr.isStable) {
           const expected = expectations[i - (interval - 1)];
           expect(atr.getResultOrThrow().toFixed(2)).toBe(expected);
-          expect(fasterATR.getResultOrThrow().toFixed(2)).toBe(expected);
         }
       }
 
       expect(atr.isStable).toBe(true);
-      expect(fasterATR.isStable).toBe(true);
-
       expect(atr.getRequiredInputs()).toBe(interval);
-      expect(fasterATR.getRequiredInputs()).toBe(interval);
-
       expect(atr.getResultOrThrow().toFixed(2)).toBe('1.14');
       expect(atr.lowest?.toFixed(2)).toBe('1.01');
       expect(atr.highest?.toFixed(2)).toBe('1.24');
-
-      expect(fasterATR.getResultOrThrow().toFixed(2)).toBe('1.14');
-      expect(fasterATR.lowest?.toFixed(2)).toBe('1.01');
-      expect(fasterATR.highest?.toFixed(2)).toBe('1.24');
     });
 
     it('throws an error when there is not enough input data', () => {
@@ -106,20 +95,14 @@ describe('ATR', () => {
     it('replaces recently added values', () => {
       const interval = 5;
       const atr = new ATR(interval);
-      const fasterATR = new ATR(interval);
 
       for (const candle of candles) {
         atr.add(candle);
-        fasterATR.add(candle);
       }
 
       expect(atr.getResultOrThrow().toFixed(2)).toBe('1.14');
       expect(atr.lowest?.toFixed(2)).toBe('1.01');
       expect(atr.highest?.toFixed(2)).toBe('1.24');
-
-      expect(fasterATR.getResultOrThrow().toFixed(2)).toBe('1.14');
-      expect(fasterATR.lowest?.toFixed(2)).toBe('1.01');
-      expect(fasterATR.highest?.toFixed(2)).toBe('1.24');
 
       // Add the latest value
       const latestValue = {close: 1337, high: 1337, low: 1337};
@@ -131,11 +114,6 @@ describe('ATR', () => {
       expect(atr.getResultOrThrow().toFixed(2)).toBe(latestResult);
       expect(atr.lowest?.toFixed(2)).toBe(latestLow);
       expect(atr.highest?.toFixed(2), 'new record high').toBe(latestHigh);
-
-      fasterATR.add(latestValue);
-      expect(fasterATR.getResultOrThrow().toFixed(2)).toBe(latestResult);
-      expect(fasterATR.lowest?.toFixed(2)).toBe(latestLow);
-      expect(fasterATR.highest?.toFixed(2), 'new record high').toBe(latestHigh);
 
       // Replace the latest value with some other value
       const someOtherValue = {
@@ -152,21 +130,11 @@ describe('ATR', () => {
       expect(atr.lowest?.toFixed(2)).toBe(otherLow);
       expect(atr.highest?.toFixed(2)).toBe(otherHigh);
 
-      fasterATR.replace(someOtherValue);
-      expect(fasterATR.getResultOrThrow().toFixed(2)).toBe(otherResult);
-      expect(fasterATR.lowest?.toFixed(2)).toBe(otherLow);
-      expect(fasterATR.highest?.toFixed(2)).toBe(otherHigh);
-
       // Replace the other value with the latest value
       atr.replace(latestValue);
       expect(atr.getResultOrThrow().toFixed(2)).toBe(latestResult);
       expect(atr.lowest?.toFixed(2), 'lowest reset').toBe(latestLow);
       expect(atr.highest?.toFixed(2), 'highest reset').toBe(latestHigh);
-
-      fasterATR.replace(latestValue);
-      expect(fasterATR.getResultOrThrow().toFixed(2)).toBe(latestResult);
-      expect(fasterATR.lowest?.toFixed(2), 'lowest reset').toBe(latestLow);
-      expect(fasterATR.highest?.toFixed(2), 'highest reset').toBe(latestHigh);
     });
   });
 });

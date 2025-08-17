@@ -15,22 +15,22 @@ describe('DEMA', () => {
   describe('update', () => {
     it('can replace recently added values', () => {
       const interval = 10;
-      const fasterDEMA = new DEMA(interval);
+      const dema = new DEMA(interval);
 
-      fasterDEMA.add(81);
-      fasterDEMA.add(24);
-      fasterDEMA.add(75);
-      fasterDEMA.add(21);
-      fasterDEMA.add(34);
-      fasterDEMA.add(25);
-      fasterDEMA.add(72);
-      fasterDEMA.add(92);
-      fasterDEMA.add(100);
-      fasterDEMA.update(99, true);
-      fasterDEMA.add(2);
+      dema.add(81);
+      dema.add(24);
+      dema.add(75);
+      dema.add(21);
+      dema.add(34);
+      dema.add(25);
+      dema.add(72);
+      dema.add(92);
+      dema.add(100);
+      dema.update(99, true);
+      dema.add(2);
 
-      expect(fasterDEMA.isStable).toBe(true);
-      expect(fasterDEMA.getResultOrThrow().toFixed(2)).toBe('48.96');
+      expect(dema.isStable).toBe(true);
+      expect(dema.getResultOrThrow().toFixed(2)).toBe('48.96');
     });
   });
 
@@ -41,20 +41,20 @@ describe('DEMA', () => {
         86, 99, 3, 70, 1, 27, 9, 92, 68, 9,
       ];
       const interval = 10;
-      const fasterDEMA = new DEMA(interval);
+      const dema = new DEMA(interval);
 
       prices.forEach((price, index) => {
-        fasterDEMA.add(price);
-        if (fasterDEMA.isStable) {
+        dema.add(price);
+        if (dema.isStable) {
           const result = dema10results[index];
-          expect(fasterDEMA.getResultOrThrow().toPrecision(4)).toEqual(result.toPrecision(4));
+          expect(dema.getResultOrThrow().toPrecision(4)).toEqual(result.toPrecision(4));
         }
       });
 
-      expect(fasterDEMA.isStable).toBe(true);
-      expect(fasterDEMA.getRequiredInputs()).toBe(interval);
-      expect(fasterDEMA.lowest?.toFixed(2)).toBe('24.89');
-      expect(fasterDEMA.highest?.toFixed(2)).toBe('83.22');
+      expect(dema.isStable).toBe(true);
+      expect(dema.getRequiredInputs()).toBe(interval);
+      expect(dema.lowest?.toFixed(2)).toBe('24.89');
+      expect(dema.highest?.toFixed(2)).toBe('83.22');
     });
 
     it('throws an error when there is not enough input data', () => {

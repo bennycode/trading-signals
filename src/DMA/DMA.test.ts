@@ -6,7 +6,7 @@ describe('DMA', () => {
   describe('update', () => {
     it('can replace recently added values', () => {
       const dma = new DMA(3, 6, SMA);
-      const fasterDMA = new DMA(3, 6, SMA);
+      const dmaWithReplace = new DMA(3, 6, SMA);
       dma.updates([41, 37, 20.9, 100, 30.71, 40], false);
       dma.update(30, true);
 
@@ -14,12 +14,12 @@ describe('DMA', () => {
       expect(dma.getResultOrThrow().short.toFixed(8)).toBe('53.57000000');
       expect(dma.getResultOrThrow().long.toFixed(8)).toBe('43.26833333');
 
-      fasterDMA.updates([41, 37, 20.9, 100, 30.71, 40], false);
-      fasterDMA.update(30, true);
+      dmaWithReplace.updates([41, 37, 20.9, 100, 30.71, 40], false);
+      dmaWithReplace.update(30, true);
 
-      expect(fasterDMA.isStable).toBe(true);
-      expect(fasterDMA.getResultOrThrow().short.toFixed(8)).toBe('53.57000000');
-      expect(fasterDMA.getResultOrThrow().long.toFixed(8)).toBe('43.26833333');
+      expect(dmaWithReplace.isStable).toBe(true);
+      expect(dmaWithReplace.getResultOrThrow().short.toFixed(8)).toBe('53.57000000');
+      expect(dmaWithReplace.getResultOrThrow().long.toFixed(8)).toBe('43.26833333');
     });
   });
 
@@ -77,24 +77,17 @@ describe('DMA', () => {
     it('detects uptrends', () => {
       const longInterval = 8;
       const dma = new DMA(3, longInterval);
-      const fasterDMA = new DMA(3, longInterval);
       const nineHours = twoDays.slice(0, 9);
 
       for (const oneHour of nineHours) {
         const price = oneHour.close;
         dma.add(Number(price));
-        fasterDMA.add(parseFloat(price));
       }
 
       const {short, long} = dma.getResultOrThrow();
       expect(dma.getRequiredInputs()).toBe(longInterval);
       expect(dma.isStable).toBe(true);
       expect(short > long).toBe(true);
-
-      const fasterResult = fasterDMA.getResultOrThrow();
-      expect(fasterDMA.getRequiredInputs()).toBe(longInterval);
-      expect(fasterDMA.isStable).toBe(true);
-      expect(fasterResult.short > fasterResult.long).toBe(true);
     });
   });
 });

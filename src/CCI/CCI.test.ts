@@ -21,7 +21,7 @@ describe('CCI', () => {
     {close: 86.89, high: 86.98, low: 85.76},
     {close: 87.77, high: 88.0, low: 87.17},
     {close: 87.29, high: 87.87, low: 87.01},
-  ];
+  ] as const;
   const expectations = [
     '105.01',
     '64.24',
@@ -35,7 +35,7 @@ describe('CCI', () => {
     '99.16',
     '116.34',
     '71.93',
-  ];
+  ] as const;
 
   describe('replace', () => {
     it('replaces the most recently added value', () => {
@@ -64,20 +64,17 @@ describe('CCI', () => {
     it('calculates the Commodity Channel Index (CCI)', () => {
       const interval = 5;
       const cci = new CCI(interval);
-      const fasterCCI = new CCI(interval);
-
+      const offset = cci.getRequiredInputs() - 1;
       expect(cci.getRequiredInputs()).toBe(interval);
-      expect(fasterCCI.getRequiredInputs()).toBe(interval);
 
-      for (const candle of candles) {
+      candles.forEach((candle, i) => {
         cci.add(candle);
-        fasterCCI.add(candle);
-        if (cci.isStable && fasterCCI.isStable) {
-          const expected = expectations.shift();
+
+        if (cci.isStable) {
+          const expected = expectations[i - offset];
           expect(cci.getResultOrThrow().toFixed(2)).toBe(expected);
-          expect(fasterCCI.getResultOrThrow().toFixed(2)).toBe(expected);
         }
-      }
+      });
 
       const actual = cci.getResultOrThrow().toFixed(2);
       expect(actual).toBe('71.93');
@@ -86,31 +83,19 @@ describe('CCI', () => {
     it("stores the highest and lowest result throughout the indicator's lifetime", () => {
       const interval = 5;
       const cci = new CCI(interval);
-      const fasterCCI = new CCI(interval);
 
       for (const candle of candles) {
         cci.add(candle);
-        fasterCCI.add(candle);
       }
 
       expect(cci.highest?.toFixed(2)).toBe('166.67');
       expect(cci.lowest?.toFixed(2)).toBe('-29.63');
-      expect(fasterCCI.highest?.toFixed(2)).toBe('166.67');
-      expect(fasterCCI.lowest?.toFixed(2)).toBe('-29.63');
     });
 
     it('throws an error when there is not enough input data', () => {
       const cci = new CCI(5);
       try {
         cci.getResultOrThrow();
-        throw new Error('Expected error');
-      } catch (error) {
-        expect(error).toBeInstanceOf(NotEnoughDataError);
-      }
-
-      const fasterCCI = new CCI(5);
-      try {
-        fasterCCI.getResultOrThrow();
         throw new Error('Expected error');
       } catch (error) {
         expect(error).toBeInstanceOf(NotEnoughDataError);

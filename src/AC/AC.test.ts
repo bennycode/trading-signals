@@ -279,32 +279,19 @@ describe('AC', () => {
   describe('getResultOrThrow', () => {
     it('works with a signal line of SMA(5)', () => {
       const ac = new AC(5, 34, 5);
-      const fasterAC = new AC(5, 34, 5);
 
       for (const candle of mappedCandles) {
         ac.add(candle);
-        fasterAC.add(candle);
       }
 
       // Result verified with:
       // https://github.com/jesse-ai/jesse/blob/53297462d48ebf43f9df46ab5005076d25073e5e/tests/test_indicators.py#L14
       expect(ac.isStable).toBe(true);
-      expect(fasterAC.isStable).toBe(true);
-
       expect(ac.getRequiredInputs()).toBe(5);
-      expect(fasterAC.getRequiredInputs()).toBe(5);
-
       expect(ac.getResultOrThrow().toFixed(2)).toBe('-21.97');
-      expect(fasterAC.getResultOrThrow().toFixed(2)).toBe('-21.97');
-
       expect(ac.momentum.getResultOrThrow().toFixed(2)).toBe('-9.22');
-      expect(fasterAC.momentum.getResultOrThrow().toFixed(2)).toBe('-9.22');
-
       expect(ac.lowest?.toFixed(2)).toBe('-21.97');
-      expect(fasterAC.lowest?.toFixed(2)).toBe('-21.97');
-
       expect(ac.highest?.toFixed(2)).toBe('11.65');
-      expect(fasterAC.highest?.toFixed(2)).toBe('11.65');
     });
 
     it('throws an error when there is not enough input data', () => {

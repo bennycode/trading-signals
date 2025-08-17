@@ -36,11 +36,11 @@ describe('CG', () => {
 
   describe('replace', () => {
     it('replaces recently added values', () => {
-      const fasterCG = new CG(5, 10);
+      const cg = new CG(5, 10);
 
       const values = [100, 110, 120, 130, 140, 150, 160, 170, 180, 190, 200];
       for (const value of values) {
-        fasterCG.add(value);
+        cg.add(value);
       }
 
       // Add the latest value
@@ -49,11 +49,11 @@ describe('CG', () => {
       const latestLow = '3.0851';
       const latestHigh = '3.1176';
 
-      fasterCG.add(latestValue);
-      expect(fasterCG.prices.length).toBe(5);
-      expect(fasterCG.getResultOrThrow().toFixed(4)).toBe(latestResult);
-      expect(fasterCG.lowest?.toFixed(4)).toBe(latestLow);
-      expect(fasterCG.highest?.toFixed(4)).toBe(latestHigh);
+      cg.add(latestValue);
+      expect(cg.prices.length).toBe(5);
+      expect(cg.getResultOrThrow().toFixed(4)).toBe(latestResult);
+      expect(cg.lowest?.toFixed(4)).toBe(latestLow);
+      expect(cg.highest?.toFixed(4)).toBe(latestHigh);
 
       // Replace the latest value with some other value
       const someOtherValue = 900;
@@ -61,44 +61,44 @@ describe('CG', () => {
       const otherLow = '3.1111';
       const otherHigh = '3.9024';
 
-      fasterCG.replace(someOtherValue);
-      expect(fasterCG.prices.length).toBe(5);
-      expect(fasterCG.getResultOrThrow().toFixed(4)).toBe(otherResult);
-      expect(fasterCG.lowest?.toFixed(4)).toBe(otherLow);
-      expect(fasterCG.highest?.toFixed(4)).toBe(otherHigh);
+      cg.replace(someOtherValue);
+      expect(cg.prices.length).toBe(5);
+      expect(cg.getResultOrThrow().toFixed(4)).toBe(otherResult);
+      expect(cg.lowest?.toFixed(4)).toBe(otherLow);
+      expect(cg.highest?.toFixed(4)).toBe(otherHigh);
 
       // Replace the other value with the latest value
-      fasterCG.replace(latestValue);
-      expect(fasterCG.prices.length).toBe(5);
-      expect(fasterCG.getResultOrThrow().toFixed(4)).toBe(latestResult);
-      expect(fasterCG.lowest?.toFixed(4)).toBe(latestLow);
-      expect(fasterCG.highest?.toFixed(4)).toBe(latestHigh);
+      cg.replace(latestValue);
+      expect(cg.prices.length).toBe(5);
+      expect(cg.getResultOrThrow().toFixed(4)).toBe(latestResult);
+      expect(cg.lowest?.toFixed(4)).toBe(latestLow);
+      expect(cg.highest?.toFixed(4)).toBe(latestHigh);
     });
   });
 
   describe('getResultOrThrow', () => {
     it('indicates a downtrend when the center of gravity falls below the signal line', () => {
       const signalInterval = 10;
-      const fasterCG = new CG(5, signalInterval);
+      const cg = new CG(5, signalInterval);
       const values = [100, 110, 120, 130, 140, 150, 160, 170, 180, 190, 200];
       for (const value of values) {
-        fasterCG.add(value);
+        cg.add(value);
       }
 
       [150, 110, 90, 130].forEach(price => {
-        fasterCG.add(price);
+        cg.add(price);
       });
 
-      expect(fasterCG.isStable).toBe(true);
-      expect(fasterCG.getRequiredInputs()).toBe(signalInterval);
+      expect(cg.isStable).toBe(true);
+      expect(cg.getRequiredInputs()).toBe(signalInterval);
 
-      const cgResult = fasterCG.getResultOrThrow();
-      const signalResult = fasterCG.signal.getResultOrThrow();
+      const cgResult = cg.getResultOrThrow();
+      const signalResult = cg.signal.getResultOrThrow();
       expect(cgResult > signalResult).toBe(false);
       expect(cgResult.toFixed(4)).toBe('2.7059');
-      expect(fasterCG.getResultOrThrow().toFixed(4)).toBe('2.7059');
-      expect(fasterCG.lowest?.toFixed(4)).toBe('2.6081');
-      expect(fasterCG.highest?.toFixed(4)).toBe('3.1176');
+      expect(cg.getResultOrThrow().toFixed(4)).toBe('2.7059');
+      expect(cg.lowest?.toFixed(4)).toBe('2.6081');
+      expect(cg.highest?.toFixed(4)).toBe('3.1176');
     });
 
     it('throws an error when there is not enough input data', () => {
@@ -113,9 +113,9 @@ describe('CG', () => {
     });
 
     it('is protected against division by zero errors', () => {
-      const fasterCG = new CG(1, 1);
-      fasterCG.add(0);
-      expect(fasterCG.getResultOrThrow()).toBe(0);
+      const cg = new CG(1, 1);
+      cg.add(0);
+      expect(cg.getResultOrThrow()).toBe(0);
     });
   });
 });

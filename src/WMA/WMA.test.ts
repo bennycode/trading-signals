@@ -3,18 +3,18 @@ import {WMA, NotEnoughDataError} from '../index.js';
 describe('WMA', () => {
   describe('prices', () => {
     it('does not cache more prices than necessary to fill the interval', () => {
-      const fasterWMA = new WMA(3);
-      fasterWMA.add(1);
-      fasterWMA.add(2);
-      expect(fasterWMA.prices.length).toBe(2);
-      fasterWMA.add(3);
-      expect(fasterWMA.prices.length).toBe(3);
-      fasterWMA.add(4);
-      expect(fasterWMA.prices.length).toBe(3);
-      fasterWMA.add(5);
-      expect(fasterWMA.prices.length).toBe(3);
-      fasterWMA.add(6);
-      expect(fasterWMA.prices.length).toBe(3);
+      const wma = new WMA(3);
+      wma.add(1);
+      wma.add(2);
+      expect(wma.prices.length).toBe(2);
+      wma.add(3);
+      expect(wma.prices.length).toBe(3);
+      wma.add(4);
+      expect(wma.prices.length).toBe(3);
+      wma.add(5);
+      expect(wma.prices.length).toBe(3);
+      wma.add(6);
+      expect(wma.prices.length).toBe(3);
     });
   });
 
@@ -22,12 +22,12 @@ describe('WMA', () => {
     it('replaces recently added values', () => {
       const interval = 3;
 
-      const fasterWMA = new WMA(interval);
+      const wma = new WMA(interval);
 
-      fasterWMA.add(11);
-      fasterWMA.add(12);
-      fasterWMA.add(13);
-      fasterWMA.add(14);
+      wma.add(11);
+      wma.add(12);
+      wma.add(13);
+      wma.add(14);
 
       // Add the latest value
       const latestValue = 15;
@@ -35,10 +35,10 @@ describe('WMA', () => {
       const latestLow = '12.33';
       const latestHigh = '14.33';
 
-      fasterWMA.add(latestValue);
-      expect(fasterWMA.getResultOrThrow().toFixed(2)).toBe(latestResult);
-      expect(fasterWMA.lowest?.toFixed(2)).toBe(latestLow);
-      expect(fasterWMA.highest?.toFixed(2)).toBe(latestHigh);
+      wma.add(latestValue);
+      expect(wma.getResultOrThrow().toFixed(2)).toBe(latestResult);
+      expect(wma.lowest?.toFixed(2)).toBe(latestLow);
+      expect(wma.highest?.toFixed(2)).toBe(latestHigh);
 
       // Replace the latest value with some other value
       const someOtherValue = 1000;
@@ -46,16 +46,16 @@ describe('WMA', () => {
       const otherLow = '12.33';
       const otherHigh = '506.83';
 
-      fasterWMA.replace(someOtherValue);
-      expect(fasterWMA.getResultOrThrow().toFixed(2)).toBe(otherResult);
-      expect(fasterWMA.lowest?.toFixed(2)).toBe(otherLow);
-      expect(fasterWMA.highest?.toFixed(2), 'new record high').toBe(otherHigh);
+      wma.replace(someOtherValue);
+      expect(wma.getResultOrThrow().toFixed(2)).toBe(otherResult);
+      expect(wma.lowest?.toFixed(2)).toBe(otherLow);
+      expect(wma.highest?.toFixed(2), 'new record high').toBe(otherHigh);
 
       // Replace the other value with the latest value
-      fasterWMA.replace(latestValue);
-      expect(fasterWMA.getResultOrThrow().toFixed(2)).toBe(latestResult);
-      expect(fasterWMA.lowest?.toFixed(2), 'lowest reset').toBe(latestLow);
-      expect(fasterWMA.highest?.toFixed(2), 'highest reset').toBe(latestHigh);
+      wma.replace(latestValue);
+      expect(wma.getResultOrThrow().toFixed(2)).toBe(latestResult);
+      expect(wma.lowest?.toFixed(2), 'lowest reset').toBe(latestLow);
+      expect(wma.highest?.toFixed(2), 'highest reset').toBe(latestHigh);
     });
   });
 
@@ -64,9 +64,9 @@ describe('WMA', () => {
       const prices = [30, 60, 90, 60, 90];
       const interval = 5;
 
-      const fasterWMA = new WMA(interval);
-      fasterWMA.updates(prices, false);
-      expect(fasterWMA.getResultOrThrow().toFixed()).toBe('74');
+      const wma = new WMA(interval);
+      wma.updates(prices, false);
+      expect(wma.getResultOrThrow().toFixed()).toBe('74');
     });
   });
 
@@ -96,7 +96,7 @@ describe('WMA', () => {
         const fasterResult = fasterWMA.add(price);
 
         if (fasterResult) {
-          const expected = expectations.shift()!;
+          const expected = expectations.shift();
           expect(fasterResult.toFixed(2)).toBe(expected);
         }
       }
@@ -104,11 +104,29 @@ describe('WMA', () => {
       expect(fasterWMA.isStable).toBe(true);
     });
 
+    it('calculates the moving average based on the last 5 prices', () => {
+      const prices = [91, 90, 89, 88, 90] as const;
+      const expectations = ['89.33'] as const;
+      const wma = new WMA(5);
+      const offset = wma.getRequiredInputs() - 1;
+
+      prices.forEach((price, i) => {
+        const result = wma.add(price);
+
+        if (result) {
+          const expected = expectations[i - offset];
+          expect(result.toFixed(2)).toBe(expected);
+        }
+      });
+
+      expect(wma.isStable).toBe(true);
+    });
+
     it('throws an error when there is not enough input data', () => {
-      const fasterWMA = new WMA(5);
+      const wma = new WMA(5);
 
       try {
-        fasterWMA.getResultOrThrow();
+        wma.getResultOrThrow();
         throw new Error('Expected error');
       } catch (error) {
         expect(error).toBeInstanceOf(NotEnoughDataError);

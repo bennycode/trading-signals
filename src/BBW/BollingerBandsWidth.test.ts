@@ -45,18 +45,14 @@ describe('BollingerBandsWidth', () => {
 
       const interval = 20;
       const bbw = new BollingerBandsWidth(new BollingerBands(interval, 2));
-      const fasterBBW = new BollingerBandsWidth(new BollingerBands(interval, 2));
 
       expect(bbw.getRequiredInputs()).toBe(interval);
-      expect(fasterBBW.getRequiredInputs()).toBe(interval);
 
       for (const {close} of candles) {
         bbw.add(close);
-        fasterBBW.add(close);
         if (bbw.isStable) {
           const expected = expectations.shift();
           expect(bbw.getResultOrThrow().toFixed(2)).toBe(`${expected}`);
-          expect(fasterBBW.getResultOrThrow().toFixed(2)).toBe(expected);
         }
       }
     });
