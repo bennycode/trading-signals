@@ -22,11 +22,11 @@ describe('Period', () => {
 
   describe('getResultOrThrow', () => {
     it('returns the highest and lowest value of the current period', () => {
-      const values = [72, 1337] as const;
+      const prices = [72, 1337] as const;
       const interval = 2;
 
       const period = new Period(interval);
-      period.updates(values, false);
+      period.updates(prices, false);
       const {highest, lowest} = period.getResultOrThrow();
 
       expect(lowest).toBe(72);

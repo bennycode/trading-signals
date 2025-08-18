@@ -38,9 +38,9 @@ describe('CG', () => {
     it('replaces recently added values', () => {
       const cg = new CG(5, 10);
 
-      const values = [100, 110, 120, 130, 140, 150, 160, 170, 180, 190, 200];
-      for (const value of values) {
-        cg.add(value);
+      const prices = [100, 110, 120, 130, 140, 150, 160, 170, 180, 190, 200];
+      for (const price of prices) {
+        cg.add(price);
       }
 
       // Add the latest value
@@ -80,9 +80,9 @@ describe('CG', () => {
     it('indicates a downtrend when the center of gravity falls below the signal line', () => {
       const signalInterval = 10;
       const cg = new CG(5, signalInterval);
-      const values = [100, 110, 120, 130, 140, 150, 160, 170, 180, 190, 200] as const;
-      for (const value of values) {
-        cg.add(value);
+      const prices = [100, 110, 120, 130, 140, 150, 160, 170, 180, 190, 200] as const;
+      for (const price of prices) {
+        cg.add(price);
       }
 
       [150, 110, 90, 130].forEach(price => {
