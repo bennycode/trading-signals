@@ -16,7 +16,7 @@ describe('Period', () => {
       periodWithReplace.updates([...subset, 90], false);
       periodWithReplace.replace(70);
       expect(periodWithReplace.lowest?.toFixed(0)).toBe(expectedLow);
-      expect(periodWithReplace.highest?.toFixed()).toBe(expectedHigh);
+      expect(periodWithReplace.highest?.toFixed(0)).toBe(expectedHigh);
     });
   });
 
