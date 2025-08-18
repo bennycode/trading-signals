@@ -1,7 +1,7 @@
-import {AccelerationBands, FasterAccelerationBands} from './AccelerationBands.js';
+import {EMA} from '../EMA/EMA.js';
 import {NotEnoughDataError} from '../error/index.js';
 import {SMA} from '../SMA/SMA.js';
-import {EMA} from '../EMA/EMA.js';
+import {AccelerationBands} from './AccelerationBands.js';
 
 describe('AccelerationBands', () => {
   describe('constructor', () => {
@@ -18,9 +18,6 @@ describe('AccelerationBands', () => {
       const interval = 20;
       const accBands = new AccelerationBands(interval, 4);
       expect(accBands.isStable).toBe(false);
-
-      const fasterAccBands = new FasterAccelerationBands(interval, 4);
-      expect(fasterAccBands.isStable).toBe(false);
 
       // Test data from: https://github.com/QuantConnect/Lean/blob/master/Tests/TestData/spy_acceleration_bands_20_4.txt
       const candles = [
@@ -49,58 +46,30 @@ describe('AccelerationBands', () => {
       for (const candle of candles) {
         const {close, high, low} = candle;
         accBands.add({close, high, low});
-        fasterAccBands.add({close, high, low});
       }
 
       let result = accBands.getResultOrThrow();
-      let fasterResult = fasterAccBands.getResultOrThrow();
 
       // See: https://github.com/QuantConnect/Lean/blob/master/Tests/TestData/spy_acceleration_bands_20_4.txt#L21
       expect(accBands.isStable).toBe(true);
-      expect(fasterAccBands.isStable).toBe(true);
-
       expect(accBands.getRequiredInputs()).toBe(interval);
-      expect(fasterAccBands.getRequiredInputs()).toBe(interval);
-
       expect(result.lower.toFixed(4)).toBe('187.6891');
-      expect(fasterResult.lower.toFixed(4)).toBe('187.6891');
-
       expect(result.middle.toFixed(4)).toBe('194.6195');
-      expect(fasterResult.middle.toFixed(4)).toBe('194.6195');
-
       expect(result.upper.toFixed(4)).toBe('201.8016');
-      expect(fasterResult.upper.toFixed(4)).toBe('201.8016');
 
       // See: https://github.com/QuantConnect/Lean/blob/master/Tests/TestData/spy_acceleration_bands_20_4.txt#L22
       const candle = {close: 195, high: 195.03, low: 189.12};
       accBands.add(candle);
-      fasterAccBands.add(candle);
-
       result = accBands.getResultOrThrow();
-      fasterResult = fasterAccBands.getResultOrThrow();
-
       expect(result.lower.toFixed(4)).toBe('187.1217');
-      expect(fasterResult.lower.toFixed(4)).toBe('187.1217');
-
       expect(result.middle.toFixed(4)).toBe('194.5920');
-      expect(fasterResult.middle.toFixed(4)).toBe('194.5920');
-
       expect(result.upper.toFixed(4)).toBe('201.9392');
-      expect(fasterResult.upper.toFixed(4)).toBe('201.9392');
     });
 
     it('throws an error when there is not enough input data', () => {
       const accBands = new AccelerationBands(20, 2);
       try {
         accBands.getResultOrThrow();
-        throw new Error('Expected error');
-      } catch (error) {
-        expect(error).toBeInstanceOf(NotEnoughDataError);
-      }
-
-      const fasterAccBands = new FasterAccelerationBands(20, 2);
-      try {
-        fasterAccBands.getResultOrThrow();
         throw new Error('Expected error');
       } catch (error) {
         expect(error).toBeInstanceOf(NotEnoughDataError);
@@ -123,20 +92,20 @@ describe('AccelerationBands', () => {
       );
     });
   });
-});
 
-describe('FaserAccelerationBands', () => {
-  it("doesn't crash when supplying zeroes", () => {
-    const accBands = new FasterAccelerationBands(20, 2);
-    return accBands.updates(
-      [
-        {
-          close: 0,
-          high: 0,
-          low: 0,
-        },
-      ],
-      false
-    );
+  describe('updates', () => {
+    it("doesn't crash when supplying zeroes", () => {
+      const accBands = new AccelerationBands(20, 2);
+      return accBands.updates(
+        [
+          {
+            close: 0,
+            high: 0,
+            low: 0,
+          },
+        ],
+        false
+      );
+    });
   });
 });

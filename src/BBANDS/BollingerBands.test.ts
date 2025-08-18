@@ -1,5 +1,4 @@
-import {BollingerBands, FasterBollingerBands} from './BollingerBands.js';
-import {Big} from '../index.js';
+import {BollingerBands} from './BollingerBands.js';
 import data from '../test/fixtures/BB/data.json' with {type: 'json'};
 import {NotEnoughDataError} from '../error/index.js';
 
@@ -7,7 +6,7 @@ describe('BollingerBands', () => {
   describe('prices', () => {
     it('does not cache more prices than necessary to fill the interval', () => {
       const bb = new BollingerBands(3);
-      bb.updates([1, 2], false);
+      bb.updates([1, 2]);
       expect(bb.prices.length).toBe(2);
       bb.add(3);
       expect(bb.prices.length).toBe(3);
@@ -25,15 +24,15 @@ describe('BollingerBands', () => {
       const bb = new BollingerBands(20);
 
       data.prices.forEach((price, index) => {
-        bb.add(new Big(price));
+        bb.add(price);
 
         if (!bb.isStable) {
           return;
         }
 
-        const resMiddle = new Big(Number(data.middle[index]));
-        const resLower = new Big(Number(data.lower[index]));
-        const resUpper = new Big(Number(data.upper[index]));
+        const resMiddle = Number(data.middle[index]);
+        const resLower = Number(data.lower[index]);
+        const resUpper = Number(data.upper[index]);
 
         const {middle, upper, lower} = bb.getResultOrThrow();
 
@@ -66,7 +65,7 @@ describe('BollingerBands', () => {
       // https://github.com/TulipCharts/tulipindicators/blob/v0.9.1/tests/untest.txt#L86
       const inputs = [
         81.59, 81.06, 82.87, 83.0, 83.61, 83.15, 82.84, 83.99, 84.55, 84.36, 85.53, 86.54, 86.89, 87.77, 87.29,
-      ];
+      ] as const;
 
       const expectedLows = [
         undefined,
@@ -84,7 +83,7 @@ describe('BollingerBands', () => {
         '83.54',
         '83.87',
         '85.29',
-      ];
+      ] as const;
 
       const expectedMids = [
         undefined,
@@ -102,7 +101,7 @@ describe('BollingerBands', () => {
         '85.57',
         '86.22',
         '86.80',
-      ];
+      ] as const;
 
       const expectedUps = [
         undefined,
@@ -120,7 +119,7 @@ describe('BollingerBands', () => {
         '87.61',
         '88.57',
         '88.32',
-      ];
+      ] as const;
 
       const interval = 5;
       const bb = new BollingerBands(interval, 2);
@@ -138,38 +137,6 @@ describe('BollingerBands', () => {
           expect(middle.toFixed(2)).toBe(`${expectedMid}`);
           expect(upper.toFixed(2)).toBe(`${expectedUp}`);
         }
-      }
-    });
-  });
-});
-
-describe('FasterBollingerBands', () => {
-  describe('getResultOrThrow', () => {
-    it('only works with plain numbers', () => {
-      // Test data verified with:
-      // https://tulipindicators.org/bbands
-      const prices = [
-        81.59, 81.06, 82.87, 83.0, 83.61, 83.15, 82.84, 83.99, 84.55, 84.36, 85.53, 86.54, 86.89, 87.77, 87.29,
-      ];
-      const interval = 5;
-      const fasterBB = new FasterBollingerBands(interval, 2);
-      fasterBB.updates(prices, false);
-      expect(fasterBB.isStable).toBe(true);
-      const actual = fasterBB.getResultOrThrow();
-      expect(actual.lower.toFixed(2)).toBe('85.29');
-      expect(actual.middle.toFixed(2)).toBe('86.80');
-      expect(actual.upper.toFixed(2)).toBe('88.32');
-      expect(fasterBB.getRequiredInputs()).toBe(interval);
-    });
-
-    it('throws an error when there is not enough input data', () => {
-      const fasterBB = new FasterBollingerBands(5);
-
-      try {
-        fasterBB.getResultOrThrow();
-        throw new Error('Expected error');
-      } catch (error) {
-        expect(error).toBeInstanceOf(NotEnoughDataError);
       }
     });
   });

@@ -1,14 +1,6 @@
-import type {BigSource} from 'big.js';
-import Big from 'big.js';
 import {TechnicalIndicator} from '../Indicator.js';
-import type {BandsResult, FasterBandsResult} from '../util/BandsResult.js';
-import {
-  getAverage,
-  getFasterAverage,
-  getFasterStandardDeviation,
-  getStandardDeviation,
-  pushUpdate,
-} from '../util/index.js';
+import type {BandsResult} from '../util/BandsResult.js';
+import {getAverage, getStandardDeviation, pushUpdate} from '../util/index.js';
 
 /**
  * Bollinger Bands (BBANDS)
@@ -25,44 +17,7 @@ import {
  *
  * @see https://www.investopedia.com/terms/b/bollingerbands.asp
  */
-export class BollingerBands extends TechnicalIndicator<BandsResult, BigSource> {
-  public readonly prices: Big[] = [];
-
-  /**
-   * @param interval - The time period to be used in calculating the Middle Band
-   * @param deviationMultiplier - The number of standard deviations away from the Middle Band that the Upper and Lower
-   *   Bands should be
-   */
-  constructor(
-    public readonly interval: number,
-    public readonly deviationMultiplier: number = 2
-  ) {
-    super();
-  }
-
-  override getRequiredInputs() {
-    return this.interval;
-  }
-
-  update(price: BigSource, replace: boolean) {
-    const dropOut = pushUpdate(this.prices, replace, new Big(price), this.interval);
-
-    if (dropOut) {
-      const middle = getAverage(this.prices);
-      const standardDeviation = getStandardDeviation(this.prices, middle);
-
-      return (this.result = {
-        lower: middle.sub(standardDeviation.times(this.deviationMultiplier)),
-        middle,
-        upper: middle.add(standardDeviation.times(this.deviationMultiplier)),
-      });
-    }
-
-    return null;
-  }
-}
-
-export class FasterBollingerBands extends TechnicalIndicator<FasterBandsResult, BigSource> {
+export class BollingerBands extends TechnicalIndicator<BandsResult, number> {
   public readonly prices: number[] = [];
 
   constructor(
@@ -80,8 +35,8 @@ export class FasterBollingerBands extends TechnicalIndicator<FasterBandsResult, 
     const dropOut = pushUpdate(this.prices, replace, price, this.interval);
 
     if (dropOut) {
-      const middle = getFasterAverage(this.prices);
-      const standardDeviation = getFasterStandardDeviation(this.prices, middle);
+      const middle = getAverage(this.prices);
+      const standardDeviation = getStandardDeviation(this.prices, middle);
 
       return (this.result = {
         lower: middle - standardDeviation * this.deviationMultiplier,

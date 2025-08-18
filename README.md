@@ -6,9 +6,7 @@ Technical indicators and overlays to run technical analysis with JavaScript / Ty
 
 ## Motivation
 
-The "trading-signals" library provides a TypeScript implementation for common technical indicators with arbitrary-precision decimal arithmetic. It is well-suited for algorithmic trading, allowing developers to perform accurate and reliable signal computations for automated trading strategies.
-
-The main focus of this library is on the accuracy of calculations, but using the provided [faster implementations][2] you can also use it where performance is important.
+The "trading-signals" library provides a TypeScript implementation for common technical indicators. It is well-suited for algorithmic trading, allowing developers to perform signal computations for automated trading strategies.
 
 All indicators can be updated over time by streaming data (prices or [candles](https://en.wikipedia.org/wiki/Candlestick_chart)) to the `add` method. Some indicators also provide `static` batch methods for further performance improvements when providing data up-front during a backtest or historical data import. You can try it out streaming input data by running the provided [demo script](./src/start/demo.ts) with `npm start`, which uses a keyboard input stream.
 
@@ -23,19 +21,19 @@ npm install trading-signals
 **CommonJS:**
 
 ```ts
-const {Big, SMA} = require('trading-signals');
+const {SMA} = require('trading-signals');
 ```
 
 **ESM:**
 
 ```ts
-import {Big, SMA} from 'trading-signals';
+import {SMA} from 'trading-signals';
 ```
 
 **Example:**
 
 ```typescript
-import {Big, SMA} from 'trading-signals';
+import {SMA} from 'trading-signals';
 
 const sma = new SMA(3);
 
@@ -47,23 +45,17 @@ sma.add(20);
 // You can add multiple values at once:
 sma.updates([20, 40, 80]);
 
-// You can add stringified values:
-sma.add('10');
-
 // You can replace a previous value (useful for live charting):
-sma.replace('40');
-
-// You can add arbitrary-precision decimals:
-sma.add(new Big(30.0009));
+sma.replace(40);
 
 // You can check if an indicator is stable:
 console.log(sma.isStable); // true
 
 // If an indicator is stable, you can get its result:
-console.log(sma.getResult()?.toFixed()); // "50.0003"
+console.log(sma.getResult()); // 50.0003
 
 // You can also get the result without optional chaining:
-console.log(sma.getResultOrThrow().toFixed()); // "50.0003"
+console.log(sma.getResultOrThrow()); // 50.0003
 
 // Various precisions are available too:
 console.log(sma.getResultOrThrow().toFixed(2)); // "50.00"
@@ -80,7 +72,7 @@ To input data, you need to call the indicator's `add` method. Depending on wheth
 
 ### When to use `getResultOrThrow()`?
 
-You can call `getResultOrThrow()` at any point in time, but it throws errors unless an indicator has received the minimum amount of data. If you call `getResultOrThrow()`, before an indicator has received the required amount of input values, a `NotEnoughDataError` will be thrown.
+You can call `getResultOrThrow()` at any point in time, but it throws errors unless an indicator has received the minimum amount of data. If you call `getResultOrThrow()` before an indicator has received the required amount of input values, a `NotEnoughDataError` will be thrown.
 
 **Example:**
 
@@ -91,8 +83,8 @@ import {SMA} from 'trading-signals';
 const sma = new SMA(3);
 
 // We supply 2 input values
-sma.update(10);
-sma.update(40);
+sma.add(10);
+sma.add(40);
 
 try {
   // We will get an error, because the minimum amount of inputs is 3
@@ -102,13 +94,13 @@ try {
 }
 
 // We will supply the 3rd input value
-sma.update(70);
+sma.add(70);
 
 // Now, we will receive a proper result
-console.log(sma.getResultOrThrow().valueOf()); // "40"
+console.log(sma.getResultOrThrow()); // 40
 ```
 
-Most of the time, the minimum amount of data depends on the interval / time period used.
+Most of the time, the minimum amount of data depends on the interval / time period used. If you’re not sure, take a look at the test files for the indicator to see examples of correct usage.
 
 ## Technical Indicator Types
 
@@ -164,42 +156,15 @@ Utility Methods:
 
 ## Performance
 
-### Arbitrary-precision decimal arithmetic
+### Floating-point arithmetic caveats
 
-JavaScript is very bad with numbers. When calculating `0.1 + 0.2` it shows you `0.30000000000000004`, but the truth is `0.3`.
+JavaScript uses double-precision floating-point arithmetic. For example, `0.1 + 0.2` yields `0.30000000000000004` due to binary floating-point representation.
 
 ![JavaScript arithmetic](https://raw.githubusercontent.com/bennycode/trading-signals/HEAD/js-arithmetic.png)
 
-As specified by the ECMAScript standard, all arithmetic in JavaScript uses [double-precision floating-point arithmetic](https://en.wikipedia.org/wiki/Double-precision_floating-point_format), which is only accurate until certain extent. To increase the accuracy and avoid miscalculations, the [trading-signals](https://github.com/bennycode/trading-signals) library uses [big.js][1] which offers arbitrary-precision decimal arithmetic. However, this arbitrary accuracy comes with a downside: Calculations with it are not as performant as with the primitive data type `number`.
+While this isn’t perfectly accurate, it usually doesn’t matter in practice since indicators often work with averages, which already smooth out precision. In test cases, you can control precision by using Vitest’s [toBeCloseTo](https://vitest.dev/api/expect.html#tobecloseto) assertion.
 
-### Faster implementations
-
-To get the best of both worlds (high accuracy & high performance), you will find two implementations of each indicator (e.g. `SMA` & `FasterSMA`). The standard implementation uses [big.js][1] and the `Faster`-prefixed version uses common `number` types. Use the standard one when you need high accuracy and use the `Faster`-one when you need high performance:
-
-```ts
-import {FasterSMA} from './SMA/SMA';
-
-const fasterSMA = new FasterSMA(5);
-console.log(fasterSMA.updates([1, 2, 3, 4, 5]));
-```
-
-```ts
-import {FasterStochasticRSI, FasterSMA} from 'trading-signals';
-
-const fasterStochRSI = new FasterStochasticRSI(3, FasterSMA);
-fasterStochRSI.update(1);
-fasterStochRSI.update(2);
-fasterStochRSI.update(3);
-fasterStochRSI.update(4);
-fasterStochRSI.update(5);
-fasterStochRSI.update(6);
-
-console.log(fasterStochRSI.getResultOrThrow());
-```
-
-### Benchmarks
-
-You can run `npm run start:benchmark` to see the runtime performance of each technical indicator on your machine. This will give you an understanding of which indicators can be calculated faster than others.
+Earlier versions of this library (up to version 6) used [big.js][1] for arbitrary-precision arithmetic, but that made calculations about 100x slower on average. For this reason, support for [big.js][1] was removed starting with version 7.
 
 ## Disclaimer
 
@@ -236,7 +201,6 @@ This package was built by Benny Code. Checkout my [**TypeScript course**](https:
 [<img src="https://raw.githubusercontent.com/bennycode/trading-signals/main/tstv.png">](https://typescript.tv/)
 
 [1]: http://mikemcl.github.io/big.js/
-[2]: #faster-implementations
 [stack_exchange_bennycode_badge]: https://stackexchange.com/users/flair/203782.png?theme=default
 [stack_exchange_bennycode_url]: https://stackexchange.com/users/203782/benny-neugebauer?tab=accounts
 

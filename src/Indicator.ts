@@ -1,9 +1,8 @@
-import type {BigSource} from 'big.js';
 import {NotEnoughDataError} from './error/NotEnoughDataError.js';
 
 type Nullable<Result> = Result | null;
 
-interface Indicator<Result = Big, Input = BigSource> {
+interface Indicator<Result = number, Input = number> {
   isStable: boolean;
   add(input: Input): Nullable<Result>;
   getRequiredInputs(): number;
@@ -66,43 +65,7 @@ export abstract class BaseIndicatorSeries<Result, Input> extends TechnicalIndica
   protected abstract setResult(value: Result, replace: boolean): Result;
 }
 
-export abstract class BigIndicatorSeries<Input = BigSource> extends BaseIndicatorSeries<Big, Input> {
-  protected setResult(value: Big, replace: boolean): Big {
-    // Load cached values when replacing the latest value
-    if (replace) {
-      this.highest = this.previousHighest;
-      this.lowest = this.previousLowest;
-      this.result = this.previousResult;
-    }
-
-    // Check if there is a new high
-    if (this.highest === undefined) {
-      this.highest = value;
-    } else if (value.gt(this.highest)) {
-      this.previousHighest = this.highest;
-      this.highest = value;
-    } else {
-      this.previousHighest = this.highest;
-    }
-
-    // Check if there is a new low
-    if (this.lowest === undefined) {
-      this.lowest = value;
-    } else if (value.lt(this.lowest)) {
-      this.previousLowest = this.lowest;
-      this.lowest = value;
-    } else {
-      this.previousLowest = this.lowest;
-    }
-
-    // Cache previous result
-    this.previousResult = this.result;
-    // Set new result
-    return (this.result = value);
-  }
-}
-
-export abstract class NumberIndicatorSeries<Input = number> extends BaseIndicatorSeries<number, Input> {
+export abstract class IndicatorSeries<Input = number> extends BaseIndicatorSeries<number, Input> {
   protected setResult(value: number, replace: boolean): number {
     // Load cached values when replacing the latest value
     if (replace) {

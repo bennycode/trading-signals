@@ -1,5 +1,4 @@
-import Big from 'big.js';
-import {BigIndicatorSeries, NumberIndicatorSeries} from '../Indicator.js';
+import {IndicatorSeries} from '../Indicator.js';
 import type {HighLow} from '../util/HighLowClose.js';
 
 export type ZigZagConfig = {
@@ -25,62 +24,7 @@ export type ZigZagConfig = {
  * @see https://capex.com/en/academy/zigzag
  * @see https://corporatefinanceinstitute.com/resources/career-map/sell-side/capital-markets/zig-zag-indicator/
  */
-export class ZigZag extends BigIndicatorSeries<HighLow> {
-  private readonly deviation: Big;
-  private isUp: boolean = false;
-  private highestExtreme: Big | null = null;
-  private lowestExtreme: Big | null = null;
-
-  constructor(config: ZigZagConfig) {
-    super();
-    this.deviation = new Big(config.deviation);
-  }
-
-  override getRequiredInputs(): number {
-    return 1;
-  }
-
-  update(candle: HighLow, replace: boolean): Big | null {
-    const low = new Big(candle.low);
-    const high = new Big(candle.high);
-
-    if (!this.lowestExtreme) {
-      this.lowestExtreme = low;
-    }
-
-    if (!this.highestExtreme) {
-      this.highestExtreme = high;
-    }
-
-    if (this.isUp) {
-      const uptrendReversal = this.lowestExtreme.plus(
-        this.highestExtreme.minus(this.lowestExtreme).times(Big(100).minus(this.deviation)).div(100)
-      );
-
-      if (high.gt(this.highestExtreme)) {
-        this.highestExtreme = high;
-      } else if (low.lt(uptrendReversal)) {
-        this.isUp = false;
-        this.lowestExtreme = low;
-        return this.setResult(this.highestExtreme, replace);
-      }
-    } else {
-      const downtrendReversal = low.plus(this.highestExtreme.minus(low).times(this.deviation).div(100));
-
-      if (low.lt(this.lowestExtreme)) {
-        this.lowestExtreme = low;
-      } else if (high.gt(downtrendReversal)) {
-        this.isUp = true;
-        this.highestExtreme = high;
-        return this.setResult(this.lowestExtreme, replace);
-      }
-    }
-
-    return null;
-  }
-}
-
-export class FasterZigZag extends NumberIndicatorSeries<HighLow> {
+export class ZigZag extends IndicatorSeries<HighLow> {
   private readonly deviation: number;
   private isUp: boolean = false;
   private highestExtreme: number | null = null;

@@ -2,18 +2,12 @@
   "bugs": {
     "url": "https://github.com/bennycode/trading-signals/issues"
   },
-  "dependencies": {
-    "@types/big.js": "^6.2.2",
-    "big.js": "^7.0.1"
-  },
   "description": "Technical indicators to run technical analysis with JavaScript / TypeScript.",
   "devDependencies": {
     "@arethetypeswrong/cli": "^0.18.1",
     "@tstv/eslint-config": "^4.0.0",
-    "@types/benchmark": "^2.1.5",
     "@types/node": "^18.19.87",
     "@vitest/coverage-v8": "^3.1.2",
-    "benchmark": "^2.1.4",
     "dependency-cruiser": "^17.0.0",
     "eslint": "^9.26.0",
     "generate-changelog": "^1.8.0",
@@ -98,7 +92,6 @@
     "release:minor": "generate-changelog -m -x \"chore,test\" && npm run changelog:commit && npm run docs:release && npm version minor",
     "release:patch": "generate-changelog -p -x \"chore,test\" && npm run changelog:commit && npm run docs:release && npm version patch",
     "start": "tsx ./src/start/demo.ts",
-    "start:benchmark": "tsc --noEmit && tsx ./src/start/startBenchmark.ts",
     "test": "npm run test:types && npm run test:imports && npm run test:units -- --coverage",
     "test:exports": "attw --pack .",
     "test:imports": "depcruise src --include-only \"^src\"",

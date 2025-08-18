@@ -1,11 +1,10 @@
-import {FasterZigZag, ZigZag} from './ZigZag.js';
+import {ZigZag} from './ZigZag.js';
 
 describe('ZigZag', () => {
   describe('add', () => {
     it('returns the extreme values when the deviation threshold is met', () => {
       // Test data verified with:
       // https://github.com/munrocket/ta-math/blob/abdba60394582fa5847f57e87969dcd2d22b6ce8/test/test.js#L306-L308
-
       const highs = [
         -8, -4, -1, 9, 8, 7, 6, 5, 4, 3, 2, 1, 11, 22, 33, 44, 55, 66, 77, 88, 88, 71, 61, 51, 41, 51, 61, 71, 81, 91,
         11,
@@ -21,7 +20,6 @@ describe('ZigZag', () => {
       const deviation = 15;
 
       const zigzag = new ZigZag({deviation});
-      const fasterZigzag = new FasterZigZag({deviation});
 
       const candles = highs.map((high, index) => {
         return {
@@ -31,35 +29,23 @@ describe('ZigZag', () => {
       });
 
       const results = [];
-      const fasterResults = [];
 
       for (const candle of candles) {
         const result = zigzag.add(candle);
-        const fasterResult = fasterZigzag.add(candle);
-
         if (result !== null) {
-          results.push(result.toNumber());
-        }
-
-        if (fasterResult !== null) {
-          fasterResults.push(fasterResult);
+          results.push(result);
         }
       }
 
       expect(results).toEqual(expected);
-      expect(fasterResults).toEqual(expected);
     });
   });
 
   describe('getRequiredInputs', () => {
     it('returns the amount of required data needed for a calculation', () => {
       const expected = 1;
-
       const zigzag = new ZigZag({deviation: 15});
-      const fasterZigzag = new FasterZigZag({deviation: 15});
-
       expect(zigzag.getRequiredInputs()).toBe(expected);
-      expect(fasterZigzag.getRequiredInputs()).toBe(expected);
     });
   });
 });

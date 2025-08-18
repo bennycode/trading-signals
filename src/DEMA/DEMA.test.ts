@@ -1,5 +1,4 @@
-import {Big} from '../index.js';
-import {DEMA, FasterDEMA} from './DEMA.js';
+import {DEMA} from './DEMA.js';
 import {NotEnoughDataError} from '../error/index.js';
 
 const dema10results = [
@@ -10,42 +9,28 @@ const dema10results = [
   40.330715478873344, 45.63811915119551, 36.045947422710505, 53.12735486322183, 64.78921092296176, 72.9995704035162,
   83.22304838955624, 58.85287916072168, 62.841348382387075, 42.93804766689409, 36.82301007497254, 26.454331684513562,
   46.374329400503385, 53.28360623846342, 38.891184741941984,
-];
+] as const;
 
 describe('DEMA', () => {
   describe('update', () => {
     it('can replace recently added values', () => {
       const interval = 10;
       const dema = new DEMA(interval);
-      const fasterDEMA = new FasterDEMA(interval);
+
       dema.add(81);
-      fasterDEMA.add(81);
       dema.add(24);
-      fasterDEMA.add(24);
       dema.add(75);
-      fasterDEMA.add(75);
       dema.add(21);
-      fasterDEMA.add(21);
       dema.add(34);
-      fasterDEMA.add(34);
       dema.add(25);
-      fasterDEMA.add(25);
       dema.add(72);
-      fasterDEMA.add(72);
       dema.add(92);
-      fasterDEMA.add(92);
       dema.add(100);
-      fasterDEMA.add(100);
-      dema.update(99, true);
-      fasterDEMA.update(99, true);
+      dema.replace(99);
       dema.add(2);
-      fasterDEMA.add(2);
 
       expect(dema.isStable).toBe(true);
-      expect(fasterDEMA.isStable).toBe(true);
-
       expect(dema.getResultOrThrow().toFixed(2)).toBe('48.96');
-      expect(fasterDEMA.getResultOrThrow().toFixed(2)).toBe('48.96');
     });
   });
 
@@ -54,32 +39,22 @@ describe('DEMA', () => {
       const prices = [
         81, 24, 75, 21, 34, 25, 72, 92, 99, 2, 86, 80, 76, 8, 87, 75, 32, 65, 41, 9, 13, 26, 56, 28, 65, 58, 17, 90, 87,
         86, 99, 3, 70, 1, 27, 9, 92, 68, 9,
-      ];
+      ] as const;
       const interval = 10;
       const dema = new DEMA(interval);
-      const fasterDEMA = new FasterDEMA(interval);
 
       prices.forEach((price, index) => {
         dema.add(price);
-        fasterDEMA.add(price);
         if (dema.isStable) {
-          const result = new Big(dema10results[index]);
-          expect(dema.getResultOrThrow().toPrecision(12)).toEqual(result.toPrecision(12));
-          expect(fasterDEMA.getResultOrThrow().toPrecision(4)).toEqual(result.toPrecision(4));
+          const result = dema10results[index];
+          expect(dema.getResultOrThrow().toPrecision(4)).toEqual(result.toPrecision(4));
         }
       });
 
       expect(dema.isStable).toBe(true);
-      expect(fasterDEMA.isStable).toBe(true);
-
       expect(dema.getRequiredInputs()).toBe(interval);
-      expect(fasterDEMA.getRequiredInputs()).toBe(interval);
-
       expect(dema.lowest?.toFixed(2)).toBe('24.89');
-      expect(fasterDEMA.lowest?.toFixed(2)).toBe('24.89');
-
       expect(dema.highest?.toFixed(2)).toBe('83.22');
-      expect(fasterDEMA.highest?.toFixed(2)).toBe('83.22');
     });
 
     it('throws an error when there is not enough input data', () => {

@@ -1,18 +1,13 @@
 <!--
 Thanks for your contribution!
-Please check the following to make sure your contribution follows our guideline when adding a new indicator.
 
-You can find a great example here:
-https://github.com/bennycode/trading-signals/commit/9c4a6d02bcecdde6dbe5b568c6ec547512164364
+Please check the following to make sure your contribution follows our guideline when adding a new indicator.
 -->
 
 ## Checklist for new indicators
 
-- [ ] Indicator is documented and implemented by extending `BigIndicatorSeries`
-- [ ] A "faster" version of this indicator is implemented by extending `NumberIndicatorSeries`
+- [ ] Indicator is documented and implemented by extending `IndicatorSeries`
 - [ ] Tests for `getResult` are present
-- [ ] Tests for highest and lowest result caching are present (if not already existent for base class)
-- [ ] Tests for error handling are present (if not already existent for base class)
-- [ ] Indicators (standard & faster version) are exposed in `src/index.ts`
-- [ ] Indicators (standard & faster version) are added to `startBenchmark.ts`
+- [ ] Tests for error handling are present
+- [ ] Indicator is exposed in `src/index.ts`
 - [ ] Indicator is listed in `README.md`

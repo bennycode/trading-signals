@@ -1,4 +1,4 @@
-import {DX, FasterDX} from './DX.js';
+import {DX} from './DX.js';
 
 describe('DX', () => {
   // Test data verified with:
@@ -20,7 +20,7 @@ describe('DX', () => {
     {close: 86.89, high: 86.98, low: 85.76},
     {close: 87.77, high: 88.0, low: 87.17},
     {close: 87.29, high: 87.87, low: 87.01},
-  ];
+  ] as const;
 
   // @see https://github.com/TulipCharts/tulipindicators/blob/v0.9.1/tests/untest.txt#L169
   const expectations = [
@@ -35,7 +35,7 @@ describe('DX', () => {
     '80.26',
     '86.51',
     '75.61',
-  ];
+  ] as const;
 
   describe('replace', () => {
     it('replaces the most recently added value', () => {
@@ -45,32 +45,17 @@ describe('DX', () => {
       const wrong = {close: 9_000, high: 9_000, low: 9_000};
 
       const dx = new DX(interval);
-      const fasterDX = new FasterDX(interval);
-
       const dxWithReplace = new DX(interval);
-      const fasterDXWithReplace = new FasterDX(interval);
 
       dx.updates(candles, false);
-      fasterDX.updates(candles, false);
-
       dxWithReplace.updates(candles, false);
-      fasterDXWithReplace.updates(candles, false);
-
       dx.add(correct);
-      fasterDX.add(correct);
-
       dxWithReplace.add(wrong);
-      fasterDXWithReplace.add(wrong);
 
       // We need to verify the four decimal places, as the results are otherwise too similar:
       expect(dx.getResultOrThrow().toFixed(4)).not.toBe(dxWithReplace.getResultOrThrow().toFixed(4));
-      expect(fasterDX.getResultOrThrow().toFixed(4)).not.toBe(fasterDXWithReplace.getResultOrThrow().toFixed(4));
-
       dxWithReplace.replace(correct);
-      fasterDXWithReplace.replace(correct);
-
       expect(dx.getResultOrThrow().toFixed(4)).toBe(dxWithReplace.getResultOrThrow().toFixed(4));
-      expect(fasterDX.getResultOrThrow().toFixed(4)).toBe(fasterDXWithReplace.getResultOrThrow().toFixed(4));
     });
   });
 
@@ -78,32 +63,21 @@ describe('DX', () => {
     it('calculates the Directional Movement Index (DX)', () => {
       const interval = 5;
       const dx = new DX(interval);
-      const fasterDX = new FasterDX(interval);
+      const offset = dx.getRequiredInputs() - 1;
 
-      for (const candle of candles) {
+      candles.forEach((candle, i) => {
         dx.add(candle);
-        fasterDX.add(candle);
-        if (dx.isStable && fasterDX.isStable) {
-          const expected = expectations.shift();
+        if (dx.isStable) {
+          const expected = expectations[i - offset];
           expect(dx.getResultOrThrow().toFixed(2)).toBe(expected);
-          expect(fasterDX.getResultOrThrow().toFixed(2)).toBe(expected);
         }
-      }
+      });
 
       expect(dx.isStable).toBe(true);
-      expect(fasterDX.isStable).toBe(true);
-
       expect(dx.getRequiredInputs()).toBe(interval);
-      expect(fasterDX.getRequiredInputs()).toBe(interval);
-
       expect(dx.getResultOrThrow().toFixed(2)).toBe('75.61');
-      expect(fasterDX.getResultOrThrow().toFixed(2)).toBe('75.61');
-
       expect(dx.lowest?.toFixed(2)).toBe('11.09');
-      expect(fasterDX.lowest?.toFixed(2)).toBe('11.09');
-
       expect(dx.highest?.toFixed(2)).toBe('86.51');
-      expect(fasterDX.highest?.toFixed(2)).toBe('86.51');
     });
 
     it('returns zero when there is no trend', () => {
@@ -116,16 +90,10 @@ describe('DX', () => {
       ];
 
       const dx = new DX(5);
-      const fasterDX = new FasterDX(5);
-
       dx.updates(candles, false);
-      fasterDX.updates(candles, false);
 
       expect(dx.isStable).toBe(true);
-      expect(fasterDX.isStable).toBe(true);
-
-      expect(dx.getResultOrThrow().valueOf()).toBe('0');
-      expect(fasterDX.getResultOrThrow().valueOf()).toBe(0);
+      expect(dx.getResultOrThrow()).toBe(0);
     });
   });
 });

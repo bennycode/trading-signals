@@ -1,11 +1,8 @@
-import Big from 'big.js';
-import type {BigSource} from 'big.js';
-
-export function getMaximum(values: BigSource[]): Big {
-  let max = new Big(Number.MIN_SAFE_INTEGER);
+export function getMaximum(values: number[]) {
+  let max = Number.MIN_SAFE_INTEGER;
   for (const value of values) {
-    if (max.lt(value)) {
-      max = new Big(value);
+    if (max < value) {
+      max = value;
     }
   }
   return max;

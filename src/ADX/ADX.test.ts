@@ -1,4 +1,4 @@
-import {ADX, FasterADX} from './ADX.js';
+import {ADX} from './ADX.js';
 
 describe('ADX', () => {
   // Test data verified with:
@@ -20,10 +20,10 @@ describe('ADX', () => {
     {close: 86.89, high: 86.98, low: 85.76},
     {close: 87.77, high: 88.0, low: 87.17},
     {close: 87.29, high: 87.87, low: 87.01},
-  ];
+  ] as const;
 
   // https://github.com/TulipCharts/tulipindicators/blob/v0.9.1/tests/untest.txt#L38
-  const expectations = [41.38, 44.29, 49.42, 54.92, 59.99, 65.29, 67.36];
+  const expectations = [41.38, 44.29, 49.42, 54.92, 59.99, 65.29, 67.36] as const;
 
   describe('replace', () => {
     it('replaces the most recently added value', () => {
@@ -52,42 +52,26 @@ describe('ADX', () => {
     it('calculates the Average Directional Index (ADX)', () => {
       const interval = 5;
       const adx = new ADX(interval);
-      const fasterADX = new FasterADX(interval);
+      const offset = adx.getRequiredInputs() - 1;
 
-      for (const candle of candles) {
+      candles.forEach((candle, i) => {
         adx.add(candle);
-        fasterADX.add(candle);
-        if (adx.isStable && fasterADX.isStable) {
-          const expected = expectations.shift();
+        if (adx.isStable) {
+          const expected = expectations[i - offset];
           expect(adx.getResultOrThrow().toFixed(2)).toBe(`${expected}`);
-          expect(fasterADX.getResultOrThrow().toFixed(2)).toBe(`${expected}`);
         }
-      }
+      });
 
       expect(adx.isStable).toBe(true);
-      expect(fasterADX.isStable).toBe(true);
-
-      expect(adx.getRequiredInputs()).toBe(interval);
-      expect(fasterADX.getRequiredInputs()).toBe(interval);
-
+      expect(adx.getRequiredInputs()).toBe(9);
       expect(adx.getResultOrThrow().toFixed(2)).toBe('67.36');
-      expect(fasterADX.getResultOrThrow().toFixed(2)).toBe('67.36');
-
       expect(adx.lowest?.toFixed(2)).toBe('41.38');
-      expect(fasterADX.lowest?.toFixed(2)).toBe('41.38');
-
       expect(adx.highest?.toFixed(2)).toBe('67.36');
-      expect(fasterADX.highest?.toFixed(2)).toBe('67.36');
 
       // Verify uptrend detection (+DI > -DI):
-      expect(adx.pdi?.gt(adx.mdi!)).toBe(true);
-      expect(fasterADX.pdi > fasterADX.mdi).toBe(true);
-
+      expect(adx.pdi > adx.mdi).toBe(true);
       expect(adx.pdi?.toFixed(2)).toBe('0.42');
-      expect(fasterADX.pdi?.toFixed(2)).toBe('0.42');
-
       expect(adx.mdi?.toFixed(2)).toBe('0.06');
-      expect(fasterADX.mdi?.toFixed(2)).toBe('0.06');
     });
   });
 
@@ -97,19 +81,14 @@ describe('ADX', () => {
       const necessaryCandlesAmount = 2 * interval - 1;
       const initialCandles = candles.slice(0, necessaryCandlesAmount - 1);
       const adx = new ADX(interval);
-      const fasterADX = new FasterADX(interval);
 
       // Add necessary candles - 1
       adx.updates(initialCandles);
-      fasterADX.updates(initialCandles);
       expect(adx.isStable).toBe(false);
-      expect(fasterADX.isStable).toBe(false);
 
       // Add one more candle to make it stable
       adx.add({close: 10, high: 11, low: 9});
-      fasterADX.add({close: 10, high: 11, low: 9});
       expect(adx.isStable).toBe(true);
-      expect(fasterADX.isStable).toBe(true);
     });
   });
 });

@@ -1,19 +1,9 @@
-import Big from 'big.js';
 import {TechnicalIndicator} from '../Indicator.js';
-import {FasterSMA, SMA} from '../SMA/SMA.js';
-import {getMaximum} from '../util/getMaximum.js';
-import {getMinimum} from '../util/getMinimum.js';
+import {SMA} from '../SMA/SMA.js';
 import type {HighLowClose} from '../util/HighLowClose.js';
 import {pushUpdate} from '../util/pushUpdate.js';
 
 export interface StochasticResult {
-  /** Slow stochastic indicator (%D) */
-  stochD: Big;
-  /** Fast stochastic indicator (%K) */
-  stochK: Big;
-}
-
-export interface FasterStochasticResult {
   /** Slow stochastic indicator (%D) */
   stochD: number;
   /** Fast stochastic indicator (%K) */
@@ -38,60 +28,10 @@ export interface FasterStochasticResult {
  * @see https://www.investopedia.com/terms/s/stochasticoscillator.asp
  * @see https://tulipindicators.org/stoch
  */
-export class StochasticOscillator extends TechnicalIndicator<StochasticResult, HighLowClose> {
+export class StochasticOscillator extends TechnicalIndicator<StochasticResult, HighLowClose<number>> {
+  public readonly candles: HighLowClose<number>[] = [];
   private readonly periodM: SMA;
   private readonly periodP: SMA;
-  private readonly candles: HighLowClose[] = [];
-
-  /**
-   * Constructs a Stochastic Oscillator.
-   *
-   * @param n The %k period
-   * @param m The %k slowing period
-   * @param p The %d period
-   */
-  constructor(
-    public readonly n: number,
-    public readonly m: number,
-    public readonly p: number
-  ) {
-    super();
-    this.periodM = new SMA(m);
-    this.periodP = new SMA(p);
-  }
-
-  override getRequiredInputs() {
-    return this.n + this.p + 1;
-  }
-
-  update(candle: HighLowClose, replace: boolean) {
-    pushUpdate(this.candles, replace, candle, this.n);
-
-    if (this.candles.length === this.n) {
-      const highest = getMaximum(this.candles.map(candle => candle.high));
-      const lowest = getMinimum(this.candles.map(candle => candle.low));
-      const divisor = new Big(highest).minus(lowest);
-      let fastK = new Big(100).mul(new Big(candle.close).minus(lowest));
-      // Prevent division by zero
-      fastK = fastK.div(divisor.eq(0) ? 1 : divisor);
-      const stochK = this.periodM.update(fastK, replace); // (stoch_k, %k)
-      const stochD = stochK && this.periodP.update(stochK, replace); // (stoch_d, %d)
-      if (stochK && stochD) {
-        return (this.result = {
-          stochD,
-          stochK,
-        });
-      }
-    }
-
-    return null;
-  }
-}
-
-export class FasterStochasticOscillator extends TechnicalIndicator<FasterStochasticResult, HighLowClose<number>> {
-  public readonly candles: HighLowClose<number>[] = [];
-  private readonly periodM: FasterSMA;
-  private readonly periodP: FasterSMA;
 
   /**
    * @param n The %k period
@@ -104,8 +44,8 @@ export class FasterStochasticOscillator extends TechnicalIndicator<FasterStochas
     public p: number
   ) {
     super();
-    this.periodM = new FasterSMA(m);
-    this.periodP = new FasterSMA(p);
+    this.periodM = new SMA(m);
+    this.periodP = new SMA(p);
   }
 
   override getRequiredInputs() {
