@@ -5,7 +5,7 @@ import {SMA} from '../SMA/SMA.js';
  * Wilder's Smoothed Moving Average (WSMA)
  * Type: Trend
  *
- * Developed by **John Welles Wilder, Jr.** to help identifying and spotting bullish and bearish trends. Similar to
+ * Developed by John Welles Wilder (Jr.) to help identifying and spotting bullish and bearish trends. Similar to
  * Exponential Moving Averages with the difference that a smoothing factor of 1/interval is being used, which makes it
  * respond more slowly to price changes.
  *

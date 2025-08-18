@@ -6,14 +6,9 @@ import {getAverage, getStandardDeviation, pushUpdate} from '../../util/index.js'
  * Bollinger Bands (BBANDS)
  * Type: Volatility
  *
- * Bollinger Bands (BBANDS), developed by John A. Bollinger, are set as an envelope around a moving average. Narrow
- * bands indicate a sideways trend (ranging markets). To determine a breakout direction, [Investopia.com
- * suggests](https://www.investopedia.com/articles/technical/04/030304.asp) to use the relative strength index (RSI)
- * along with one or two volume-based indicators such as the intraday intensity index (developed by David Bostian) or
- * the accumulation/distribution index (developed by Larry William).
+ * Bollinger Bands (BBANDS), developed by John A. Bollinger, are set as an envelope around a moving average. Narrow bands indicate a sideways trend (ranging markets). To determine a breakout direction, [Investopia.com suggests](https://www.investopedia.com/articles/technical/04/030304.asp) to use the relative strength index (RSI) along with one or two volume-based indicators such as the intraday intensity index (developed by David Bostian) or the accumulation/distribution index (developed by Larry William).
  *
- * When the upper and lower bands expand, there can be "M" and "W" formations. The "W" formation indicates a bullish
- * movement and the "M" formation indicates a bearish movement.
+ * When the upper and lower bands expand, there can be "M" and "W" formations. The "W" formation indicates a bullish movement and the "M" formation indicates a bearish movement.
  *
  * @see https://www.investopedia.com/terms/b/bollingerbands.asp
  */

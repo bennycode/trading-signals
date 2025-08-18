@@ -9,11 +9,9 @@ import type {HighLowClose} from '../../util/index.js';
  * Acceleration Bands (ABANDS)
  * Type: Volatility
  *
- * Acceleration bands created by Price Headley are set as an envelope around a moving average. The upper and lower
- * bands are of equal distance from the middle band.
+ * Acceleration bands created by Price Headley are set as an envelope around a moving average. The upper and lower bands are of equal distance from the middle band.
  *
- * Two consecutive closes outside Acceleration Bands suggest an entry point in the direction of the breakout (either
- * bullish or bearish). A long position is usually kept till the first close back inside the bands.
+ * Two consecutive closes outside Acceleration Bands suggest an entry point in the direction of the breakout (either bullish or bearish). A long position is usually kept till the first close back inside the bands.
  *
  * @param interval The interval that is being used for the three moving averages which create lower, middle and upper
  *   bands

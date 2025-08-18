@@ -9,7 +9,7 @@ import {WSMA} from '../WSMA/WSMA.js';
  * Directional Movement Index (DMI / DX)
  * Type: Trend (using +DI & -DI)
  *
- * The DX was developed by **John Welles Wilder, Jr.**. and may help traders assess the strength of a trend (momentum)
+ * The DX was developed by John Welles Wilder (Jr.). and may help traders assess the strength of a trend (momentum)
  * and direction of the trend.
  *
  * If there is no change in the trend, then the DX is `0`. The return value increases when there is a stronger trend

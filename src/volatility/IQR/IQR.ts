@@ -5,8 +5,7 @@ import {getQuartile} from '../../util/getQuartile.js';
  * Interquartile Range (IQR)
  * Type: Volatility
  *
- * The IQR is the difference between the 75th percentile (Q3) and the 25th percentile (Q1) of a data set.
- * It is a measure of statistical dispersion and is robust to outliers.
+ * The IQR is the difference between the 75th percentile (Q3) and the 25th percentile (Q1) of a data set. It is a measure of statistical dispersion and is robust to outliers.
  *
  * @see https://github.com/bennycode/trading-signals/discussions/752
  * @see https://en.wikipedia.org/wiki/Interquartile_range

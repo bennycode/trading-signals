@@ -5,8 +5,7 @@ import type {HighLowCloseVolume} from '../../types/HighLowClose.js';
  * Volume-Weighted Average Price (VWAP)
  * Type: Trend
  *
- * The Volume-Weighted Average Price (VWAP) represents the average price a security
- * has traded at throughout the day, weighted by both volume and price.
+ * The Volume-Weighted Average Price (VWAP) represents the average price a security has traded at throughout the day, weighted by both volume and price.
  *
  * Formula: VWAP = (Sum of (Price × Volume)) / Total Volume
  *

@@ -9,7 +9,7 @@ import {FasterWSMA, WSMA} from '../WSMA/WSMA.js';
  * Average Directional Index (ADX)
  * Type: Momentum, Trend (using +DI & -DI), Volatility
  *
- * The ADX was developed by **John Welles Wilder, Jr.**. It is a lagging indicator; that is, a
+ * The ADX was developed by John Welles Wilder, Jr.. It is a lagging indicator; that is, a
  * trend must have established itself before the ADX will generate a signal that a trend is under way.
  *
  * ADX will range between 0 and 100 which makes it an oscillator. It is a smoothed average of the Directional Movement

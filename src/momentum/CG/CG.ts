@@ -12,11 +12,9 @@ import {pushUpdate} from '../../util/pushUpdate.js';
  * Crossing the zero line may suggest a shift in trend.
  *
  * Note:
- * - According to the specification, the price inputs shall be calculated the following way:
- * ((High Price + Low Price) / 2)
+ * - According to the specification, the price inputs shall be calculated the following way: ((High Price + Low Price) / 2)
  * - The selected interval should be half the dominant cycle length (signal line)
- * - If the interval gets too short, the CG oscillator loses its smoothing and gets a little too nervous for
- *   profitable trading
+ * - If the interval gets too short, the CG oscillator loses its smoothing and gets a little too nervous for profitable trading
  * @see http://www.mesasoftware.com/papers/TheCGOscillator.pdf
  */
 export class CG extends IndicatorSeries {

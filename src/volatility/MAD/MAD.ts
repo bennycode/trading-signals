@@ -5,8 +5,7 @@ import {getAverage, pushUpdate} from '../../util/index.js';
  * Mean Absolute Deviation (MAD)
  * Type: Volatility
  *
- * The mean absolute deviation (MAD) is calculating the absolute deviation / difference from the mean over a period.
- * Large outliers will reflect in a higher MAD.
+ * The mean absolute deviation (MAD) is calculating the absolute deviation / difference from the mean over a period. Large outliers will reflect in a higher MAD.
  *
  * @see https://en.wikipedia.org/wiki/Average_absolute_deviation
  */

@@ -6,8 +6,7 @@ import {pushUpdate} from '../../util/pushUpdate.js';
  * On-Balance Volume (OBV)
  * Type: Momentum
  *
- * On-balance volume (OBV) is a technical trading momentum indicator that uses volume flow to predict changes in stock
- * price. Joseph Granville first developed the OBV metric in the 1963 book Granville's New Key to Stock Market Profits.
+ * On-balance volume (OBV) is a technical trading momentum indicator that uses volume flow to predict changes in stock price. Joseph Granville first developed the OBV metric in the 1963 book Granville's New Key to Stock Market Profits.
  *
  * @see https://www.investopedia.com/terms/o/onbalancevolume.asp
  */

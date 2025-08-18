@@ -8,16 +8,13 @@ import {WSMA} from '../../trend/WSMA/WSMA.js';
  * Relative Strength Index (RSI)
  * Type: Momentum
  *
- * The Relative Strength Index (RSI) is an oscillator that ranges between 0 and 100. The RSI can be used to find trend
- * reversals, i.e. when a downtrend doesn't generate a RSI below 30 and rallies above 70 it could mean that a trend
- * reversal to the upside is taking place. Trend lines and moving averages should be used to validate such statements.
+ * The Relative Strength Index (RSI) is an oscillator that ranges between 0 and 100. The RSI can be used to find trend reversals, i.e. when a downtrend doesn't generate a RSI below 30 and rallies above 70 it could mean that a trend reversal to the upside is taking place. Trend lines and moving averages should be used to validate such statements.
  *
  * The RSI is mostly useful in markets that alternate between bullish and bearish movements.
  *
  * Interpretation:
  * A RSI value of 30 or below indicates an oversold condition (not a good time to sell because there is an oversupply).
- * A RSI value of 70 or above indicates an overbought condition (sell high opportunity because market may correct the
- * price in the near future).
+ * A RSI value of 70 or above indicates an overbought condition (sell high opportunity because market may correct the price in the near future).
  *
  * @see https://en.wikipedia.org/wiki/Relative_strength_index
  * @see https://www.investopedia.com/terms/r/rsi.asp

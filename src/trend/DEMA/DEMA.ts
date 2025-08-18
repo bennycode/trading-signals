@@ -5,9 +5,7 @@ import {IndicatorSeries} from '../../types/Indicator.js';
  * Double Exponential Moving Average (DEMA)
  * Type: Trend
  *
- * The Double Exponential Moving Average (DEMA) was developed by Patrick G. Mulloy. It attempts to remove the lag
- * associated with Moving Averages by placing more weight on recent values. It has its name because the value of an EMA
- * is doubled which makes it responds more quickly to short-term price changes than a normal EMA.
+ * The Double Exponential Moving Average (DEMA) was developed by Patrick G. Mulloy. It attempts to remove the lag associated with Moving Averages by placing more weight on recent values. It has its name because the value of an EMA is doubled which makes it responds more quickly to short-term price changes than a normal EMA.
  *
  * @see https://www.investopedia.com/terms/d/double-exponential-moving-average.asp
  */

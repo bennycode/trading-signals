@@ -5,8 +5,7 @@ import {pushUpdate} from '../../util/pushUpdate.js';
  * Weighted Moving Average (WMA)
  * Type: Trend
  *
- * Compared to SMA, the WMA puts more emphasis on the recent prices to reduce lag. Due to its responsiveness to price
- * changes, it rises faster and falls faster than the SMA when the price is inclining or declining.
+ * Compared to SMA, the WMA puts more emphasis on the recent prices to reduce lag. Due to its responsiveness to price changes, it rises faster and falls faster than the SMA when the price is inclining or declining.
  *
  * @see https://corporatefinanceinstitute.com/resources/career-map/sell-side/capital-markets/weighted-moving-average-wma/
  */

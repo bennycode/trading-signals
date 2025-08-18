@@ -5,8 +5,7 @@ import type {HighLowClose} from '../../types/HighLowClose.js';
  * True Range (TR)
  * Type: Volatility
  *
- * The True Range (TR) was developed by **John Welles Wilder, Jr.**. The range (R) is a candle's highest price minus
- * it's lowest price. The true range extends it to yesterday's closing price if it was outside of the current range.
+ * The True Range (TR) was developed by John Welles Wilder (Jr.). The range (R) is a candle's highest price minus it's lowest price. The true range extends it to yesterday's closing price if it was outside of the current range.
  *
  * Low return values indicate a sideways trend with little volatility.
  *
