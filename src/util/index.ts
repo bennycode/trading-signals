@@ -1,4 +1,4 @@
-export * from './BandsResult.js';
+export * from '../types/BandsResult.js';
 export * from './getAverage.js';
 export * from './getMaximum.js';
 export * from './getMedian.js';
@@ -6,6 +6,6 @@ export * from './getMinimum.js';
 export * from './getQuartile.js';
 export * from './getStandardDeviation.js';
 export * from './getStreaks.js';
-export * from './HighLowClose.js';
-export * from './Period.js';
+export * from '../types/HighLowClose.js';
+export * from '../types/Period.js';
 export * from './pushUpdate.js';

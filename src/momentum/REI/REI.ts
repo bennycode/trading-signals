@@ -1,5 +1,5 @@
-import {IndicatorSeries} from '../../Indicator.js';
-import type {HighLowClose} from '../../util/HighLowClose.js';
+import {IndicatorSeries} from '../../types/Indicator.js';
+import type {HighLowClose} from '../../types/HighLowClose.js';
 
 /**
  * Range Expansion Index (REI)

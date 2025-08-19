@@ -104,55 +104,58 @@ Most of the time, the minimum amount of data depends on the interval / time peri
 
 ## Technical Indicator Types
 
-- Trend indicators: Measure the direction of a trend (uptrend, downtrend or sideways trend)
-- Volume indicators: Measure the strength of a trend based on volume
-- Volatility indicators: Measure the degree of variation in prices over time, regardless of direction
+- Exhaustion indicators: Identify trend exhaustion and potential reversal.
 - Momentum indicators: Measure the speed and strength of price movements in a particular direction
+- Trend indicators: Measure the direction of a trend (uptrend, downtrend or sideways trend)
+- Volatility indicators: Measure the degree of variation in prices over time, regardless of direction
+- Volume indicators: Measure the strength of a trend based on volume
 
 ## Supported Technical Indicators
 
-1. [Acceleration Bands](./src/ABANDS/AccelerationBands.ts) (ABANDS)
-1. [Accelerator Oscillator](./src/AC/AC.ts) (AC)
-1. [Average Directional Index](./src/ADX/ADX.ts) (ADX)
-1. [Average True Range](./src/ATR/ATR.ts) (ATR)
-1. [Awesome Oscillator](./src/AO/AO.ts) (AO)
-1. [Bollinger Bands](./src/BBANDS/BollingerBands.ts) (BBANDS)
-1. [Bollinger Bands Width](./src/BBW/BollingerBandsWidth.ts) (BBW)
-1. [Center of Gravity](./src/CG/CG.ts) (CG)
-1. [Commodity Channel Index](./src/CCI/CCI.ts) (CCI)
-1. [Directional Movement Index](./src/DX/DX.ts) (DMI / DX)
-1. [Double Exponential Moving Average](./src/DEMA/DEMA.ts) (DEMA)
-1. [Dual Moving Average](./src/DMA/DMA.ts) (DMA)
-1. [Exponential Moving Average](./src/EMA/EMA.ts) (EMA)
-1. [Interquartile Range](./src/IQR/IQR.ts) (IQR)
-1. [Linear Regression](./src/LINREG/LinearRegression.ts) (LINREG)
-1. [Mean Absolute Deviation](./src/MAD/MAD.ts) (MAD)
-1. [Momentum](./src/MOM/MOM.ts) (MOM / MTM)
-1. [Moving Average Convergence Divergence](./src/MACD/MACD.ts) (MACD)
-1. [On-Balance Volume](./src/OBV/OBV.ts) (OBV)
-1. [Parabolic SAR](./src/PSAR/PSAR.ts) (PSAR)
-1. [Range Expansion Index](./src/momentum/REI/REI.ts) (REI)
-1. [Rate-of-Change](./src/ROC/ROC.ts) (ROC)
-1. [Relative Moving Average](./src/RMA/RMA.ts) (RMA)
-1. [Relative Strength Index](./src/RSI/RSI.ts) (RSI)
-1. [Simple Moving Average](./src/SMA/SMA.ts) (SMA)
-1. [Spencer's 15-Point Moving Average](./src/SMA15/SMA15.ts) (SMA15)
-1. [Stochastic Oscillator](./src/STOCH/StochasticOscillator.ts) (STOCH)
-1. [Stochastic RSI](./src/STOCH/StochasticRSI.ts) (STOCHRSI)
-1. [Tom Demark's Sequential Indicator](./src/TDS/TDS.ts) (TDS)
-1. [True Range](./src/TR/TR.ts) (TR)
-1. [Volume-Weighted Average Price](./src/VWAP/VWAP.ts) (VWAP)
-1. [Weighted Moving Average](./src/WMA/WMA.ts) (WMA)
-1. [Wilder's Smoothed Moving Average](./src/WSMA/WSMA.ts) (WSMA / WWS / SMMA / MEMA)
-1. [Zig Zag Indicator](./src/ZIGZAG/ZigZag.ts) (ZigZag)
+1. Acceleration Bands (ABANDS)
+1. Accelerator Oscillator (AC)
+1. Average Directional Index (ADX)
+1. Average True Range (ATR)
+1. Awesome Oscillator (AO)
+1. Bollinger Bands (BBANDS)
+1. Bollinger Bands Width (BBW)
+1. Center of Gravity (CG)
+1. Commodity Channel Index (CCI)
+1. Directional Movement Index (DMI / DX)
+1. Double Exponential Moving Average (DEMA)
+1. Dual Moving Average (DMA)
+1. Exponential Moving Average (EMA)
+1. Interquartile Range (IQR)
+1. Linear Regression (LINREG)
+1. Mean Absolute Deviation (MAD)
+1. Momentum (MOM / MTM)
+1. Moving Average Convergence Divergence (MACD)
+1. On-Balance Volume (OBV)
+1. Parabolic SAR (PSAR)
+1. Range Expansion Index (REI)
+1. Rate-of-Change (ROC)
+1. Relative Moving Average (RMA)
+1. Relative Strength Index (RSI)
+1. Simple Moving Average (SMA)
+1. Spencer's 15-Point Moving Average (SMA15)
+1. Stochastic Oscillator (STOCH)
+1. Stochastic RSI (STOCHRSI)
+1. Tom Demark's Sequential Indicator (TDS)
+1. True Range (TR)
+1. Volume-Weighted Average Price (VWAP)
+1. Weighted Moving Average (WMA)
+1. Wilder's Smoothed Moving Average (WSMA / WWS / SMMA / MEMA)
+1. Zig Zag Indicator (ZigZag)
 
 Utility Methods:
 
-1. [Average / Mean](./src/util/getAverage.ts)
-1. [Median](./src/util/getMedian.ts)
-1. [Quartile](./src/util/getQuartile.ts)
-1. [Standard Deviation](./src/util/getStandardDeviation.ts)
-1. [Streaks](./src/util/getStreaks.ts)
+1. Average / Mean
+1. Maximum
+1. Median
+1. Minimum
+1. Quartile
+1. Standard Deviation
+1. Streaks
 
 ## Performance
 
