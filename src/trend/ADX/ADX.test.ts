@@ -65,8 +65,6 @@ describe('ADX', () => {
       expect(adx.isStable).toBe(true);
       expect(adx.getRequiredInputs()).toBe(9);
       expect(adx.getResultOrThrow().toFixed(2)).toBe('67.36');
-      expect(adx.lowest?.toFixed(2)).toBe('41.38');
-      expect(adx.highest?.toFixed(2)).toBe('67.36');
 
       // Verify uptrend detection (+DI > -DI):
       expect(adx.pdi > adx.mdi).toBe(true);

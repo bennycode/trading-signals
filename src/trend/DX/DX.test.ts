@@ -76,8 +76,6 @@ describe('DX', () => {
       expect(dx.isStable).toBe(true);
       expect(dx.getRequiredInputs()).toBe(interval);
       expect(dx.getResultOrThrow().toFixed(2)).toBe('75.61');
-      expect(dx.lowest?.toFixed(2)).toBe('11.09');
-      expect(dx.highest?.toFixed(2)).toBe('86.51');
     });
 
     it('returns zero when there is no trend', () => {

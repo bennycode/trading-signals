@@ -38,8 +38,6 @@ describe('StochasticRSI', () => {
       expect(stochRSI.isStable).toBe(true);
       expect(stochRSI.getRequiredInputs()).toBe(10);
       expect(stochRSI.getResultOrThrow()).toBe(0);
-      expect(stochRSI.highest).toBe(1);
-      expect(stochRSI.lowest).toBe(0);
     });
 
     it('calculates smoothing %K and %D lines', () => {

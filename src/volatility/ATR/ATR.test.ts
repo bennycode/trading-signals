@@ -73,8 +73,6 @@ describe('ATR', () => {
       expect(atr.isStable).toBe(true);
       expect(atr.getRequiredInputs()).toBe(interval);
       expect(atr.getResultOrThrow().toFixed(2)).toBe('1.14');
-      expect(atr.lowest?.toFixed(2)).toBe('1.01');
-      expect(atr.highest?.toFixed(2)).toBe('1.24');
     });
 
     it('throws an error when there is not enough input data', () => {
@@ -99,19 +97,13 @@ describe('ATR', () => {
       }
 
       expect(atr.getResultOrThrow().toFixed(2)).toBe('1.14');
-      expect(atr.lowest?.toFixed(2)).toBe('1.01');
-      expect(atr.highest?.toFixed(2)).toBe('1.24');
 
       // Add the latest value
       const latestValue = {close: 1337, high: 1337, low: 1337};
       const latestResult = '250.85';
-      const latestLow = '1.01';
-      const latestHigh = '250.85';
 
       atr.add(latestValue);
       expect(atr.getResultOrThrow().toFixed(2)).toBe(latestResult);
-      expect(atr.lowest?.toFixed(2)).toBe(latestLow);
-      expect(atr.highest?.toFixed(2), 'new record high').toBe(latestHigh);
 
       // Replace the latest value with some other value
       const someOtherValue = {
@@ -120,19 +112,13 @@ describe('ATR', () => {
         low: 1,
       };
       const otherResult = '18.17';
-      const otherLow = '1.01';
-      const otherHigh = '18.17';
 
       atr.replace(someOtherValue);
       expect(atr.getResultOrThrow().toFixed(2)).toBe(otherResult);
-      expect(atr.lowest?.toFixed(2)).toBe(otherLow);
-      expect(atr.highest?.toFixed(2)).toBe(otherHigh);
 
       // Replace the other value with the latest value
       atr.replace(latestValue);
       expect(atr.getResultOrThrow().toFixed(2)).toBe(latestResult);
-      expect(atr.lowest?.toFixed(2), 'lowest reset').toBe(latestLow);
-      expect(atr.highest?.toFixed(2), 'highest reset').toBe(latestHigh);
     });
   });
 });

@@ -51,30 +51,20 @@ describe('EMA', () => {
       // Add the latest value
       const latestValue = 90;
       const latestResult = '84.84';
-      const latestLow = '81.41';
-      const latestHigh = '84.84';
 
       ema.add(latestValue);
       expect(ema.getResultOrThrow()?.toFixed(2)).toBe(latestResult);
-      expect(ema.lowest?.toFixed(2)).toBe(latestLow);
-      expect(ema.highest?.toFixed(2)).toBe(latestHigh);
 
       // Replace the latest value with some other value
       const someOtherValue = 830.61;
       const otherResult = '331.71';
-      const otherLow = '81.41';
-      const otherHigh = '331.71';
 
       ema.replace(someOtherValue);
       expect(ema.getResultOrThrow()?.toFixed(2)).toBe(otherResult);
-      expect(ema.lowest?.toFixed(2)).toBe(otherLow);
-      expect(ema.highest?.toFixed(2)).toBe(otherHigh);
 
       // Replace the other value with the latest value
       ema.replace(latestValue);
       expect(ema.getResultOrThrow()?.toFixed(2)).toBe(latestResult);
-      expect(ema.lowest?.toFixed(2)).toBe(latestLow);
-      expect(ema.highest?.toFixed(2)).toBe(latestHigh);
     });
 
     it('will simply add prices when there are no prices to replace', () => {

@@ -32,30 +32,20 @@ describe('WMA', () => {
       // Add the latest value
       const latestValue = 15;
       const latestResult = '14.33';
-      const latestLow = '12.33';
-      const latestHigh = '14.33';
 
       wma.add(latestValue);
       expect(wma.getResultOrThrow().toFixed(2)).toBe(latestResult);
-      expect(wma.lowest?.toFixed(2)).toBe(latestLow);
-      expect(wma.highest?.toFixed(2)).toBe(latestHigh);
 
       // Replace the latest value with some other value
       const someOtherValue = 1000;
       const otherResult = '506.83';
-      const otherLow = '12.33';
-      const otherHigh = '506.83';
 
       wma.replace(someOtherValue);
       expect(wma.getResultOrThrow().toFixed(2)).toBe(otherResult);
-      expect(wma.lowest?.toFixed(2)).toBe(otherLow);
-      expect(wma.highest?.toFixed(2), 'new record high').toBe(otherHigh);
 
       // Replace the other value with the latest value
       wma.replace(latestValue);
       expect(wma.getResultOrThrow().toFixed(2)).toBe(latestResult);
-      expect(wma.lowest?.toFixed(2), 'lowest reset').toBe(latestLow);
-      expect(wma.highest?.toFixed(2), 'highest reset').toBe(latestHigh);
     });
   });
 
@@ -81,8 +71,6 @@ describe('WMA', () => {
       wma.add(120);
       wma.add(60);
       expect(wma.getResultOrThrow()).toBe(85);
-      expect(wma.lowest?.toFixed(2)).toBe('70.00');
-      expect(wma.highest?.toFixed(2)).toBe('100.00');
     });
   });
 

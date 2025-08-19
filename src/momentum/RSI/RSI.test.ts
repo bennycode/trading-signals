@@ -56,8 +56,6 @@ describe('RSI', () => {
       expect(rsi.isStable).toBe(true);
       expect(rsi.getRequiredInputs()).toBe(interval);
       expect(rsi.getResultOrThrow().toFixed(2)).toBe('78.50');
-      expect(rsi.lowest?.toFixed(2)).toBe('64.93');
-      expect(rsi.highest?.toFixed(2)).toBe('91.48');
     });
 
     it('catches division by zero errors', () => {

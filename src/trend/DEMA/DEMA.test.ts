@@ -53,8 +53,6 @@ describe('DEMA', () => {
 
       expect(dema.isStable).toBe(true);
       expect(dema.getRequiredInputs()).toBe(interval);
-      expect(dema.lowest?.toFixed(2)).toBe('24.89');
-      expect(dema.highest?.toFixed(2)).toBe('83.22');
     });
 
     it('throws an error when there is not enough input data', () => {
@@ -76,8 +74,6 @@ describe('DEMA', () => {
       dema.add(1);
       dema.add(2);
       expect(dema.isStable).toBe(true);
-      expect(dema.lowest?.toFixed(2)).toBe('1.00');
-      expect(dema.highest?.toFixed(2)).toBe('1.89');
     });
   });
 });

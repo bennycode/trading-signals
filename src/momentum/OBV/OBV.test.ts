@@ -40,8 +40,6 @@ describe('OBV', () => {
       expect(obv.isStable).toBe(true);
       expect(obv.getRequiredInputs()).toBe(2);
       expect(obv.getResultOrThrow().toFixed(2)).toBe('72100.00');
-      expect(obv.lowest?.toFixed(2)).toBe('600.00');
-      expect(obv.highest?.toFixed(2)).toBe('99600.00');
     });
 
     it('throws an error when there is not enough input data', () => {

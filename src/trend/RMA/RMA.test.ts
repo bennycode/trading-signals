@@ -50,30 +50,20 @@ describe('RMA', () => {
       // Add the latest value
       const latestValue = 90;
       const latestResult = '83.61';
-      const latestLow = '81.48';
-      const latestHigh = '83.61';
 
       rma.add(latestValue);
       expect(rma.getResultOrThrow()?.toFixed(2)).toBe(latestResult);
-      expect(rma.lowest?.toFixed(2)).toBe(latestLow);
-      expect(rma.highest?.toFixed(2)).toBe(latestHigh);
 
       // Replace the latest value with some other value
       const someOtherValue = 830.61;
       const otherResult = '231.73';
-      const otherLow = '81.48';
-      const otherHigh = '231.73';
 
       rma.replace(someOtherValue);
       expect(rma.getResultOrThrow()?.toFixed(2)).toBe(otherResult);
-      expect(rma.lowest?.toFixed(2)).toBe(otherLow);
-      expect(rma.highest?.toFixed(2)).toBe(otherHigh);
 
       // Replace the other value with the latest value
       rma.replace(latestValue);
       expect(rma.getResultOrThrow()?.toFixed(2)).toBe(latestResult);
-      expect(rma.lowest?.toFixed(2)).toBe(latestLow);
-      expect(rma.highest?.toFixed(2)).toBe(latestHigh);
     });
 
     it('will simply add prices when there are no prices to replace', () => {

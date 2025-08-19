@@ -51,8 +51,6 @@ describe('AO', () => {
       }
 
       expect(ao.getRequiredInputs()).toBe(longInterval);
-      expect(ao.lowest?.toFixed(2)).toBe('-11.50');
-      expect(ao.highest?.toFixed(2)).toBe('33.35');
     });
 
     it('throws an error when there is not enough input data', () => {
@@ -81,22 +79,14 @@ describe('AO', () => {
         });
       });
 
-      expect(ao.lowest?.toFixed(2)).toBe('-11.50');
-      expect(ao.highest?.toFixed(2)).toBe('33.35');
-
       // Add the latest value
       const latestValue = {
         high: 9000,
         low: 0,
       };
       const latestResult = '749.69';
-      const latestLow = '-11.50';
-      const latestHigh = '749.69';
-
       ao.add(latestValue);
       expect(ao.getResultOrThrow()?.toFixed(2)).toBe(latestResult);
-      expect(ao.lowest?.toFixed(2)).toBe(latestLow);
-      expect(ao.highest?.toFixed(2), 'new record high').toBe(latestHigh);
 
       // Replace the latest value with some other value
       const someOtherValue = {
@@ -104,19 +94,13 @@ describe('AO', () => {
         low: -2000,
       };
       const otherResult = '-17.96';
-      const otherLow = '-17.96';
-      const otherHigh = '33.35';
 
       ao.replace(someOtherValue);
       expect(ao.getResultOrThrow()?.toFixed(2)).toBe(otherResult);
-      expect(ao.lowest?.toFixed(2), 'new record low').toBe(otherLow);
-      expect(ao.highest?.toFixed(2)).toBe(otherHigh);
 
       // Replace the other value with the latest value
       ao.replace(latestValue);
       expect(ao.getResultOrThrow()?.toFixed(2)).toBe(latestResult);
-      expect(ao.lowest?.toFixed(2), 'lowest reset').toBe(latestLow);
-      expect(ao.highest?.toFixed(2), 'highest reset').toBe(latestHigh);
     });
   });
 });

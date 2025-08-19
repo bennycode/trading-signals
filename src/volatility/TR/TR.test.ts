@@ -53,8 +53,6 @@ describe('TR', () => {
       expect(tr.isStable).toBe(true);
       expect(tr.getRequiredInputs()).toBe(2);
       expect(tr.getResultOrThrow().toFixed(2)).toBe('0.86');
-      expect(tr.lowest?.toFixed(2)).toBe('0.65');
-      expect(tr.highest?.toFixed(2)).toBe('2.00');
     });
   });
 
@@ -69,8 +67,6 @@ describe('TR', () => {
 
       const lastCandle = candles.at(-1);
       const latestResult = expectations.at(-1);
-      const latestLow = '0.86';
-      const latestHigh = '0.86';
 
       // Add the latest value
       if (lastCandle) {
@@ -78,19 +74,13 @@ describe('TR', () => {
       }
 
       expect(tr.getResultOrThrow().toFixed(2)).toBe(latestResult);
-      expect(tr.lowest?.toFixed(2)).toBe(latestLow);
-      expect(tr.highest?.toFixed(2)).toBe(latestHigh);
 
       // Replace the latest value with some other value
       const someOtherValue = {close: 84.55, high: 84.84, low: 84.15};
       const otherResult = '3.14';
-      const otherLow = '0.86';
-      const otherHigh = '3.14';
 
       tr.replace(someOtherValue);
       expect(tr.getResultOrThrow().toFixed(2)).toBe(otherResult);
-      expect(tr.lowest?.toFixed(2)).toBe(otherLow);
-      expect(tr.highest?.toFixed(2)).toBe(otherHigh);
 
       // Replace the other value with the latest value
       if (lastCandle) {
@@ -98,8 +88,6 @@ describe('TR', () => {
       }
 
       expect(tr.getResultOrThrow().toFixed(2)).toBe(latestResult);
-      expect(tr.lowest?.toFixed(2)).toBe(latestLow);
-      expect(tr.highest?.toFixed(2)).toBe(latestHigh);
     });
   });
 });

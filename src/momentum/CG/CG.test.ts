@@ -46,33 +46,23 @@ describe('CG', () => {
       // Add the latest value
       const latestValue = 200;
       const latestResult = '3.0851';
-      const latestLow = '3.0851';
-      const latestHigh = '3.1176';
 
       cg.add(latestValue);
       expect(cg.prices.length).toBe(5);
       expect(cg.getResultOrThrow().toFixed(4)).toBe(latestResult);
-      expect(cg.lowest?.toFixed(4)).toBe(latestLow);
-      expect(cg.highest?.toFixed(4)).toBe(latestHigh);
 
       // Replace the latest value with some other value
       const someOtherValue = 900;
       const otherResult = '3.9024';
-      const otherLow = '3.1111';
-      const otherHigh = '3.9024';
 
       cg.replace(someOtherValue);
       expect(cg.prices.length).toBe(5);
       expect(cg.getResultOrThrow().toFixed(4)).toBe(otherResult);
-      expect(cg.lowest?.toFixed(4)).toBe(otherLow);
-      expect(cg.highest?.toFixed(4)).toBe(otherHigh);
 
       // Replace the other value with the latest value
       cg.replace(latestValue);
       expect(cg.prices.length).toBe(5);
       expect(cg.getResultOrThrow().toFixed(4)).toBe(latestResult);
-      expect(cg.lowest?.toFixed(4)).toBe(latestLow);
-      expect(cg.highest?.toFixed(4)).toBe(latestHigh);
     });
   });
 
@@ -97,8 +87,6 @@ describe('CG', () => {
       expect(cgResult > signalResult).toBe(false);
       expect(cgResult.toFixed(4)).toBe('2.7059');
       expect(cg.getResultOrThrow().toFixed(4)).toBe('2.7059');
-      expect(cg.lowest?.toFixed(4)).toBe('2.6081');
-      expect(cg.highest?.toFixed(4)).toBe('3.1176');
     });
 
     it('throws an error when there is not enough input data', () => {

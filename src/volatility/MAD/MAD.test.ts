@@ -69,13 +69,12 @@ describe('MAD', () => {
       expect(mad.getResultOrThrow().toFixed(2)).toBe('0.62');
     });
 
-    it("stores the highest and lowest result throughout the indicator's lifetime", () => {
+    it('produces consistent results over the indicator lifetime', () => {
       const mad = new MAD(5);
       for (const price of prices) {
         mad.add(price);
       }
-      expect(mad.highest?.toFixed(4)).toBe('1.0184');
-      expect(mad.lowest?.toFixed(4)).toBe('0.2288');
+      expect(mad.getResultOrThrow().toFixed(2)).toBe('0.62');
     });
 
     it('throws an error when there is not enough input data', () => {

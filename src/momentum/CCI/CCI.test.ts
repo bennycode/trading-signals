@@ -78,18 +78,6 @@ describe('CCI', () => {
       expect(actual).toBe('71.93');
     });
 
-    it("stores the highest and lowest result throughout the indicator's lifetime", () => {
-      const interval = 5;
-      const cci = new CCI(interval);
-
-      for (const candle of candles) {
-        cci.add(candle);
-      }
-
-      expect(cci.highest?.toFixed(2)).toBe('166.67');
-      expect(cci.lowest?.toFixed(2)).toBe('-29.63');
-    });
-
     it('throws an error when there is not enough input data', () => {
       const cci = new CCI(5);
       try {

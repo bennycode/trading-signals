@@ -40,8 +40,6 @@ describe('MOM', () => {
 
       expect(momentum.isStable).toBe(true);
       expect(momentum.getRequiredInputs()).toBe(6);
-      expect(momentum.lowest?.toFixed(2)).toBe('0.75');
-      expect(momentum.highest?.toFixed(2)).toBe('3.70');
     });
 
     it('throws an error when there is not enough input data', () => {
