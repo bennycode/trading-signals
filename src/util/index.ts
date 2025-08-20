@@ -6,6 +6,7 @@ export * from './getMinimum.js';
 export * from './getQuartile.js';
 export * from './getStandardDeviation.js';
 export * from './getStreaks.js';
+export * from './getWeekday.js';
 export * from '../types/HighLowClose.js';
 export * from '../types/Period.js';
 export * from './pushUpdate.js';
