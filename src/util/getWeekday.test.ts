@@ -14,17 +14,25 @@ describe('getWeekday', () => {
     // January 1, 2024 was a Monday
     const date = new Date('2024-01-01T12:00:00Z'); // UTC noon
 
-    expect(getWeekday(date, 'UTC')).toBe('Monday');
-    expect(getWeekday(date, 'America/New_York')).toBe('Monday'); // EST: 7 AM same day
-    expect(getWeekday(date, 'Europe/London')).toBe('Monday'); // GMT: 12 PM same day
+    expect(getWeekday('UTC', date)).toBe('Monday');
+    expect(getWeekday('America/New_York', date)).toBe('Monday'); // EST: 7 AM same day
+    expect(getWeekday('Europe/London', date)).toBe('Monday'); // GMT: 12 PM same day
   });
 
   it('handles timezone differences correctly', () => {
     // New Year's Eve 2023 at 11 PM in New York (which is Jan 1 4 AM UTC)
     const date = new Date('2024-01-01T04:00:00Z');
 
-    expect(getWeekday(date, 'UTC')).toBe('Monday'); // Jan 1 in UTC
-    expect(getWeekday(date, 'America/New_York')).toBe('Sunday'); // Dec 31 in EST
+    expect(getWeekday('UTC', date)).toBe('Monday'); // Jan 1 in UTC
+    expect(getWeekday('America/New_York', date)).toBe('Sunday'); // Dec 31 in EST
+  });
+
+  it('uses current date when date parameter is not provided', () => {
+    // This test will check that the function works with default date
+    // We can't test the exact value since it depends on when the test runs
+    const result = getWeekday('UTC');
+    expect(typeof result).toBe('string');
+    expect(['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']).toContain(result);
   });
 });
 
@@ -42,21 +50,28 @@ describe('weekday indicators', () => {
   testCases.forEach(({date, day, func}) => {
     describe(`is${day}`, () => {
       it(`returns true when the date is a ${day} in UTC`, () => {
-        expect(func(date, 'UTC')).toBe(true);
+        expect(func('UTC', date)).toBe(true);
       });
 
       it(`returns false when the date is not a ${day} in UTC`, () => {
         // Test with a date that's definitely not the target day
         const otherDate = new Date('2024-01-08T12:00:00Z'); // This is a Monday
         if (day !== 'Monday') {
-          expect(func(otherDate, 'UTC')).toBe(false);
+          expect(func('UTC', otherDate)).toBe(false);
         }
       });
 
       it(`handles different timezones correctly for ${day}`, () => {
-        expect(func(date, 'America/New_York')).toBe(true);
-        expect(func(date, 'Europe/London')).toBe(true);
-        expect(func(date, 'Asia/Tokyo')).toBe(true);
+        expect(func('America/New_York', date)).toBe(true);
+        expect(func('Europe/London', date)).toBe(true);
+        expect(func('Asia/Tokyo', date)).toBe(true);
+      });
+
+      it(`uses current date when date parameter is not provided for ${day}`, () => {
+        // This test checks that the function works with default date
+        // We can't assert the exact result since it depends on when the test runs
+        const result = func('UTC');
+        expect(typeof result).toBe('boolean');
       });
     });
   });
@@ -66,10 +81,10 @@ describe('weekday indicators', () => {
       // Test a date/time that crosses timezone boundaries
       const date = new Date('2024-01-01T05:00:00Z'); // 5 AM UTC on Monday
 
-      expect(isMonday(date, 'UTC')).toBe(true);
-      expect(isMonday(date, 'America/New_York')).toBe(true); // Still Monday at midnight EST
-      expect(isMonday(date, 'Europe/London')).toBe(true); // Still Monday at 5 AM GMT
-      expect(isMonday(date, 'Asia/Tokyo')).toBe(true); // Monday at 2 PM JST
+      expect(isMonday('UTC', date)).toBe(true);
+      expect(isMonday('America/New_York', date)).toBe(true); // Still Monday at midnight EST
+      expect(isMonday('Europe/London', date)).toBe(true); // Still Monday at 5 AM GMT
+      expect(isMonday('Asia/Tokyo', date)).toBe(true); // Monday at 2 PM JST
     });
 
     it('handles date line crossing', () => {
@@ -77,8 +92,8 @@ describe('weekday indicators', () => {
       // January 1, 2024 at 7 AM UTC = December 31, 2023 at 11 PM PST
       const date = new Date('2024-01-01T07:00:00Z'); // 7 AM UTC Monday
 
-      expect(isMonday(date, 'UTC')).toBe(true);
-      expect(isSunday(date, 'America/Los_Angeles')).toBe(true); // Still Sunday at 11 PM PST
+      expect(isMonday('UTC', date)).toBe(true);
+      expect(isSunday('America/Los_Angeles', date)).toBe(true); // Still Sunday at 11 PM PST
     });
   });
 
@@ -96,7 +111,7 @@ describe('weekday indicators', () => {
       ] as const;
 
       for (const {date, expected} of dates) {
-        expect(getWeekday(date, 'UTC')).toBe(expected);
+        expect(getWeekday('UTC', date)).toBe(expected);
       }
     });
   });
