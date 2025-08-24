@@ -150,6 +150,7 @@ Most of the time, the minimum amount of data depends on the interval / time peri
 Utility Methods:
 
 1. Average / Mean
+1. Grid Sizing (for [grid trading bots](https://b2broker.com/news/understanding-grid-trading-purpose-pros-cons/))
 1. Maximum
 1. Median
 1. Minimum
