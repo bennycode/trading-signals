@@ -180,7 +180,7 @@ It is very important to do your own analysis before making any investment based 
 
 - [Cloud9Trader Indicators (JavaScript)](https://github.com/Cloud9Trader/TechnicalIndicators)
 - [Crypto Trading Hub Indicators (TypeScript)](https://github.com/anandanand84/technicalindicators)
-- [Highcharts Indicators](https://github.com/highcharts/highcharts/tree/v12.3.0/ts/Stock/Indicators)
+- [Highcharts Indicators (TypeScript)](https://github.com/highcharts/highcharts/tree/v12.3.0/ts/Stock/Indicators)
 - [Indicator TS (TypeScript)](https://github.com/cinar/indicatorts)
 - [Jesse Trading Bot Indicators (Python)](https://docs.jesse.trade/docs/indicators/reference.html)
 - [LEAN Indicators (C#)](https://github.com/QuantConnect/Lean/tree/master/Indicators)
@@ -188,7 +188,8 @@ It is very important to do your own analysis before making any investment based 
 - [Pandas TA (Python)](https://github.com/twopirllc/pandas-ta)
 - [Stock Indicators for .NET (C#)](https://github.com/DaveSkender/Stock.Indicators)
 - [StockSharp (C#)](https://github.com/StockSharp/StockSharp)
-- [ta-math](https://github.com/munrocket/ta-math)
+- [ta-lib (C)](https://github.com/TA-Lib/ta-lib/tree/main/src/ta_func)
+- [ta-math (TypeScript)](https://github.com/munrocket/ta-math)
 - [ta4j (Java)](https://github.com/ta4j/ta4j)
 - [Technical Analysis for Rust (Rust)](https://github.com/greyblake/ta-rs)
 - [Technical Analysis Library using Pandas and Numpy (Python)](https://github.com/bukosabino/ta)
