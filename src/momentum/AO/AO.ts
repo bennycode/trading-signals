@@ -2,7 +2,7 @@ import {IndicatorSeries} from '../../types/Indicator.js';
 import type {MovingAverage} from '../../trend/MA/MovingAverage.js';
 import type {MovingAverageTypes} from '../../trend/MA/MovingAverageTypes.js';
 import {SMA} from '../../trend/SMA/SMA.js';
-import type {HighLow} from '../../util/index.js';
+import type {HighLow} from '../../types/HighLowClose.js';
 
 /**
  * Awesome Oscillator (AO)

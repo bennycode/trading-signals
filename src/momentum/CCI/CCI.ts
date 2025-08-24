@@ -1,7 +1,8 @@
 import {IndicatorSeries} from '../../types/Indicator.js';
 import {MAD} from '../../volatility/MAD/MAD.js';
 import {SMA} from '../../trend/SMA/SMA.js';
-import {pushUpdate, type HighLowClose} from '../../util/index.js';
+import {pushUpdate} from '../../util/index.js';
+import type {HighLowClose} from '../../types/HighLowClose.js';
 
 /**
  * Commodity Channel Index (CCI)

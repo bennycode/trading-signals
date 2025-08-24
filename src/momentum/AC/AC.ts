@@ -2,7 +2,7 @@ import {AO} from '../AO/AO.js';
 import {IndicatorSeries} from '../../types/Indicator.js';
 import {MOM} from '../MOM/MOM.js';
 import {SMA} from '../../trend/SMA/SMA.js';
-import type {HighLow} from '../../util/index.js';
+import type {HighLow} from '../../types/HighLowClose.js';
 
 /**
  * Accelerator Oscillator (AC)

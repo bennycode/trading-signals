@@ -3,7 +3,7 @@ import type {MovingAverage} from '../../trend/MA/MovingAverage.js';
 import type {MovingAverageTypes} from '../../trend/MA/MovingAverageTypes.js';
 import {SMA} from '../../trend/SMA/SMA.js';
 import type {BandsResult} from '../../types/BandsResult.js';
-import type {HighLowClose} from '../../util/index.js';
+import type {HighLowClose} from '../../types/HighLowClose.js';
 
 /**
  * Acceleration Bands (ABANDS)
