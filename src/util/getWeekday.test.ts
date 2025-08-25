@@ -1,40 +1,4 @@
-import {
-  getWeekday,
-  isMonday,
-  isTuesday,
-  isWednesday,
-  isThursday,
-  isFriday,
-  isSaturday,
-  isSunday,
-} from './getWeekday.js';
-
-describe('getWeekday', () => {
-  it('returns the correct weekday name for a given date and timezone', () => {
-    // January 1, 2024 was a Monday
-    const date = new Date('2024-01-01T12:00:00Z'); // UTC noon
-
-    expect(getWeekday('UTC', date)).toBe('Monday');
-    expect(getWeekday('America/New_York', date)).toBe('Monday'); // EST: 7 AM same day
-    expect(getWeekday('Europe/London', date)).toBe('Monday'); // GMT: 12 PM same day
-  });
-
-  it('handles timezone differences correctly', () => {
-    // New Year's Eve 2023 at 11 PM in New York (which is Jan 1 4 AM UTC)
-    const date = new Date('2024-01-01T04:00:00Z');
-
-    expect(getWeekday('UTC', date)).toBe('Monday'); // Jan 1 in UTC
-    expect(getWeekday('America/New_York', date)).toBe('Sunday'); // Dec 31 in EST
-  });
-
-  it('uses current date when date parameter is not provided', () => {
-    // This test will check that the function works with default date
-    // We can't test the exact value since it depends on when the test runs
-    const result = getWeekday('UTC');
-    expect(typeof result).toBe('string');
-    expect(['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']).toContain(result);
-  });
-});
+import {isMonday, isTuesday, isWednesday, isThursday, isFriday, isSaturday, isSunday} from './getWeekday.js';
 
 describe('weekday indicators', () => {
   const testCases = [
@@ -76,8 +40,8 @@ describe('weekday indicators', () => {
     });
   });
 
-  describe('timezone edge cases', () => {
-    it('handles timezone transitions correctly', () => {
+  describe('isMonday', () => {
+    it('handles different timezones correctly', () => {
       // Test a date/time that crosses timezone boundaries
       const date = new Date('2024-01-01T05:00:00Z'); // 5 AM UTC on Monday
 
@@ -91,28 +55,33 @@ describe('weekday indicators', () => {
       // Test with Pacific timezone where date differs from UTC
       // January 1, 2024 at 7 AM UTC = December 31, 2023 at 11 PM PST
       const date = new Date('2024-01-01T07:00:00Z'); // 7 AM UTC Monday
-
       expect(isMonday('UTC', date)).toBe(true);
       expect(isSunday('America/Los_Angeles', date)).toBe(true); // Still Sunday at 11 PM PST
     });
   });
 
-  describe('validates against known dates', () => {
-    it('correctly identifies known weekdays', () => {
-      // January 2024 calendar verification
-      const dates = [
-        {date: new Date('2024-01-01'), expected: 'Monday'},
-        {date: new Date('2024-01-02'), expected: 'Tuesday'},
-        {date: new Date('2024-01-03'), expected: 'Wednesday'},
-        {date: new Date('2024-01-04'), expected: 'Thursday'},
-        {date: new Date('2024-01-05'), expected: 'Friday'},
-        {date: new Date('2024-01-06'), expected: 'Saturday'},
-        {date: new Date('2024-01-07'), expected: 'Sunday'},
-      ] as const;
+  describe('isSunday', () => {
+    it('works with ISO 8601 formatted times', () => {
+      // 5 AM UTC on Monday (trailing Z meaning Zulu time, zero degrees longitude)
+      const iso8601UTC = '2025-08-24T17:04:29.174Z';
+      const date = new Date(iso8601UTC);
+      expect(isSunday('Europe/Berlin', date)).toBe(true);
+      expect(isMonday('Europe/Berlin', date)).toBe(false);
 
-      for (const {date, expected} of dates) {
-        expect(getWeekday('UTC', date)).toBe(expected);
-      }
+      // Kiritimati Island is on UTC+14 (the furthest ahead of UTC), where the given time would be already Monday
+      expect(isMonday('Pacific/Kiritimati', date)).toBe(true);
+
+      // During August, California is on PDT (UTC-7)
+      const august = '2025-08-24T10:04:29.174-07:00';
+      expect(isSunday('America/Los_Angeles', new Date(august))).toBe(true);
+    });
+
+    it('handles date line crossing', () => {
+      // Test with Pacific timezone where date differs from UTC
+      // January 1, 2024 at 7 AM UTC = December 31, 2023 at 11 PM PST
+      const date = new Date('2024-01-01T07:00:00Z'); // 7 AM UTC Monday
+      expect(isMonday('UTC', date)).toBe(true);
+      expect(isSunday('America/Los_Angeles', date)).toBe(true); // Still Sunday at 11 PM PST
     });
   });
 });
