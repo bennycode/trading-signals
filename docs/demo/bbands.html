@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Bollinger Bands (BBANDS) Demo | Trading Signals</title>
+    <meta name="description" content="Interactive demo of Bollinger Bands (BBANDS) with examples and visualization" />
+    <link rel="stylesheet" href="../assets/style.css" />
+    <script src="https://code.highcharts.com/stock/highstock.js"></script>
+    <script src="https://code.highcharts.com/stock/modules/exporting.js"></script>
+    <style>
+        .demo-container {
+            display: flex;
+            min-height: 100vh;
+        }
+        
+        .sidebar {
+            width: 280px;
+            background-color: var(--color-background-secondary);
+            border-right: 1px solid var(--color-separator);
+            padding: 20px;
+            overflow-y: auto;
+        }
+        
+        .sidebar h2 {
+            margin-top: 0;
+            margin-bottom: 20px;
+            color: var(--color-text);
+        }
+        
+        .category {
+            margin-bottom: 30px;
+        }
+        
+        .category h3 {
+            margin: 0 0 15px 0;
+            font-size: 14px;
+            font-weight: 600;
+            text-transform: uppercase;
+            color: var(--color-text-aside);
+            letter-spacing: 0.5px;
+        }
+        
+        .indicator-list {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+        
+        .indicator-list li {
+            margin-bottom: 8px;
+        }
+        
+        .indicator-link {
+            display: block;
+            padding: 8px 12px;
+            text-decoration: none;
+            color: var(--color-text);
+            border-radius: 4px;
+            transition: background-color 0.2s;
+            font-size: 14px;
+        }
+        
+        .indicator-link:hover {
+            background-color: var(--color-background);
+            color: var(--color-link);
+        }
+        
+        .indicator-link.active {
+            background-color: var(--color-accent);
+            color: white;
+        }
+        
+        .main-content {
+            flex: 1;
+            padding: 0;
+            overflow-y: auto;
+        }
+        
+        .demo-header {
+            background-color: var(--color-background);
+            border-bottom: 1px solid var(--color-separator);
+            padding: 20px 40px;
+        }
+        
+        .demo-header h1 {
+            margin: 0 0 10px 0;
+            font-size: 28px;
+        }
+        
+        .demo-header p {
+            margin: 0;
+            color: var(--color-text-aside);
+            max-width: 800px;
+            line-height: 1.5;
+        }
+        
+        .demo-content {
+            padding: 40px;
+        }
+        
+        .section {
+            margin-bottom: 40px;
+        }
+        
+        .section h2 {
+            margin: 0 0 20px 0;
+            font-size: 20px;
+            border-bottom: 1px solid var(--color-separator);
+            padding-bottom: 10px;
+        }
+        
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+        }
+        
+        .data-table th, .data-table td {
+            padding: 8px 12px;
+            text-align: right;
+            border: 1px solid var(--color-separator);
+        }
+        
+        .data-table th {
+            background-color: var(--color-background-secondary);
+            font-weight: 600;
+        }
+        
+        .data-table tr:nth-child(even) {
+            background-color: var(--color-background-secondary);
+        }
+        
+        .chart-container {
+            height: 500px;
+            margin: 20px 0;
+            border: 1px solid var(--color-separator);
+            border-radius: 4px;
+        }
+        
+        .back-link {
+            display: inline-block;
+            margin-bottom: 20px;
+            color: var(--color-link);
+            text-decoration: none;
+            font-size: 14px;
+        }
+        
+        .back-link:hover {
+            text-decoration: underline;
+        }
+        
+        .interpretation {
+            background-color: var(--color-background-secondary);
+            padding: 20px;
+            border-radius: 6px;
+            margin: 20px 0;
+        }
+        
+        .interpretation h3 {
+            margin: 0 0 15px 0;
+            font-size: 16px;
+        }
+        
+        .interpretation ul {
+            margin: 0;
+            padding-left: 20px;
+        }
+        
+        .interpretation li {
+            margin-bottom: 8px;
+            line-height: 1.5;
+        }
+    </style>
+</head>
+<body>
+    <div class="demo-container">
+        <aside class="sidebar">
+            <h2>Technical Indicators</h2>
+            
+            <div class="category">
+                <h3>Trend Indicators</h3>
+                <ul class="indicator-list" id="trend-indicators"></ul>
+            </div>
+            
+            <div class="category">
+                <h3>Momentum Indicators</h3>
+                <ul class="indicator-list" id="momentum-indicators"></ul>
+            </div>
+            
+            <div class="category">
+                <h3>Volatility Indicators</h3>
+                <ul class="indicator-list" id="volatility-indicators"></ul>
+            </div>
+            
+            <div class="category">
+                <h3>Exhaustion Indicators</h3>
+                <ul class="indicator-list" id="exhaustion-indicators"></ul>
+            </div>
+        </aside>
+        
+        <main class="main-content">
+            <header class="demo-header">
+                <h1>Bollinger Bands (BBANDS)</h1>
+                <p>Bollinger Bands, developed by John A. Bollinger, are set as an envelope around a moving average. Narrow bands indicate a sideways trend (ranging markets). When the upper and lower bands expand, there can be "M" and "W" formations. The "W" formation indicates a bullish movement and the "M" formation indicates a bearish movement.</p>
+            </header>
+            
+            <div class="demo-content">
+                <a href="index.html" class="back-link">← Back to Demo Home</a>
+                
+                <div class="interpretation">
+                    <h3>Interpretation Guidelines</h3>
+                    <ul>
+                        <li><strong>Upper Band:</strong> Middle Band + (2 × Standard Deviation) - potential resistance level</li>
+                        <li><strong>Middle Band:</strong> Simple Moving Average - the main trend line</li>
+                        <li><strong>Lower Band:</strong> Middle Band - (2 × Standard Deviation) - potential support level</li>
+                        <li><strong>Narrow bands:</strong> Indicate low volatility and ranging markets</li>
+                        <li><strong>Wide bands:</strong> Indicate high volatility and trending markets</li>
+                        <li><strong>Price touching upper band:</strong> May indicate overbought condition</li>
+                        <li><strong>Price touching lower band:</strong> May indicate oversold condition</li>
+                    </ul>
+                </div>
+                
+                <div class="section">
+                    <h2>Example Data Table</h2>
+                    <p>The table below shows the input price data and calculated Bollinger Bands values (Period: 20, Multiplier: 2):</p>
+                    <div id="data-table-container"></div>
+                </div>
+                
+                <div class="section">
+                    <h2>Chart Visualization</h2>
+                    <p>Interactive chart showing the price data with Bollinger Bands overlay:</p>
+                    <div id="chart-container" class="chart-container"></div>
+                </div>
+            </div>
+        </main>
+    </div>
+    
+    <script>
+        // Sample price data (from existing fixture)
+        const samplePrices = [81, 78, 75, 68, 57, 56, 72, 87, 99, 89, 86, 80, 76, 82, 87, 75, 73, 65, 58, 42, 48, 56, 51, 30, 28, 35, 57, 72, 87, 86, 99, 84, 70, 65, 57, 69, 92, 68, 75, 81, 89, 95, 102, 88, 94, 110, 125, 98, 105, 112];
+        
+        // Bollinger Bands calculation
+        function calculateBollingerBands(prices, period = 20, multiplier = 2) {
+            const bands = [];
+            
+            for (let i = 0; i < prices.length; i++) {
+                if (i < period - 1) {
+                    bands.push({ upper: null, middle: null, lower: null });
+                    continue;
+                }
+                
+                const slice = prices.slice(i - period + 1, i + 1);
+                const middle = slice.reduce((sum, price) => sum + price, 0) / period;
+                
+                const variance = slice.reduce((sum, price) => sum + Math.pow(price - middle, 2), 0) / period;
+                const stdDev = Math.sqrt(variance);
+                
+                const upper = middle + (stdDev * multiplier);
+                const lower = middle - (stdDev * multiplier);
+                
+                bands.push({
+                    upper: upper,
+                    middle: middle,
+                    lower: lower
+                });
+            }
+            
+            return bands;
+        }
+        
+        function generateDataTable() {
+            const period = 20;
+            const multiplier = 2;
+            const bandsResults = calculateBollingerBands(samplePrices, period, multiplier);
+            
+            let tableHtml = '<table class="data-table"><thead><tr><th>Index</th><th>Price</th><th>Upper Band</th><th>Middle Band (SMA)</th><th>Lower Band</th></tr></thead><tbody>';
+            
+            for (let i = 0; i < samplePrices.length; i++) {
+                const result = bandsResults[i];
+                const upperStr = result.upper !== null ? result.upper.toFixed(2) : 'null';
+                const middleStr = result.middle !== null ? result.middle.toFixed(2) : 'null';
+                const lowerStr = result.lower !== null ? result.lower.toFixed(2) : 'null';
+                
+                tableHtml += `<tr><td>${i + 1}</td><td>${samplePrices[i].toFixed(2)}</td><td>${upperStr}</td><td>${middleStr}</td><td>${lowerStr}</td></tr>`;
+            }
+            
+            tableHtml += '</tbody></table>';
+            document.getElementById('data-table-container').innerHTML = tableHtml;
+        }
+        
+        function createChart() {
+            const period = 20;
+            const multiplier = 2;
+            const bandsResults = calculateBollingerBands(samplePrices, period, multiplier);
+            
+            const priceData = samplePrices.map((price, i) => [i, price]);
+            const upperData = bandsResults.map((result, i) => result.upper !== null ? [i, result.upper] : null).filter(x => x !== null);
+            const middleData = bandsResults.map((result, i) => result.middle !== null ? [i, result.middle] : null).filter(x => x !== null);
+            const lowerData = bandsResults.map((result, i) => result.lower !== null ? [i, result.lower] : null).filter(x => x !== null);
+            
+            Highcharts.stockChart('chart-container', {
+                title: {
+                    text: 'Bollinger Bands (' + period + ', ' + multiplier + ') Example'
+                },
+                legend: {
+                    enabled: true
+                },
+                plotOptions: {
+                    series: {
+                        fillOpacity: 0.1
+                    }
+                },
+                series: [{
+                    name: 'Price',
+                    data: priceData,
+                    type: 'line',
+                    color: '#2563eb',
+                    lineWidth: 2,
+                    zIndex: 4
+                }, {
+                    name: 'Upper Band',
+                    data: upperData,
+                    type: 'line',
+                    color: '#dc2626',
+                    lineWidth: 1,
+                    dashStyle: 'Dash',
+                    zIndex: 2
+                }, {
+                    name: 'Middle Band (SMA)',
+                    data: middleData,
+                    type: 'line',
+                    color: '#7c3aed',
+                    lineWidth: 1,
+                    zIndex: 3
+                }, {
+                    name: 'Lower Band',
+                    data: lowerData,
+                    type: 'line',
+                    color: '#16a34a',
+                    lineWidth: 1,
+                    dashStyle: 'Dash',
+                    zIndex: 2
+                }, {
+                    name: 'Band Fill',
+                    data: upperData,
+                    type: 'arearange',
+                    linkedTo: ':previous',
+                    color: '#7c3aed',
+                    fillOpacity: 0.05,
+                    lineWidth: 0,
+                    zIndex: 1,
+                    showInLegend: false,
+                    enableMouseTracking: false
+                }],
+                xAxis: {
+                    title: {
+                        text: 'Data Point'
+                    }
+                },
+                yAxis: {
+                    title: {
+                        text: 'Value'
+                    }
+                }
+            });
+            
+            // Add the area fill manually
+            setTimeout(() => {
+                const chart = Highcharts.charts[Highcharts.charts.length - 1];
+                if (chart) {
+                    const upperSeries = chart.series[1];
+                    const lowerSeries = chart.series[3];
+                    
+                    if (upperSeries && lowerSeries) {
+                        const areaData = [];
+                        for (let i = 0; i < upperData.length; i++) {
+                            if (upperData[i] && lowerData[i]) {
+                                areaData.push([upperData[i][0], lowerData[i][1], upperData[i][1]]);
+                            }
+                        }
+                        
+                        chart.addSeries({
+                            name: 'Band Area',
+                            type: 'arearange',
+                            data: areaData,
+                            color: '#7c3aed',
+                            fillOpacity: 0.1,
+                            lineWidth: 0,
+                            zIndex: 0,
+                            showInLegend: false,
+                            enableMouseTracking: false
+                        });
+                    }
+                }
+            }, 100);
+        }
+        
+        // Populate sidebar
+        const indicatorData = {
+            "categories": {
+                "trend": "Trend Indicators",
+                "momentum": "Momentum Indicators",
+                "volatility": "Volatility Indicators",
+                "exhaustion": "Exhaustion Indicators"
+            },
+            "indicators": {
+                "trend": [
+                    {"className": "ADX", "fullName": "Average Directional Index (ADX)", "shortName": "ADX"},
+                    {"className": "DEMA", "fullName": "Double Exponential Moving Average (DEMA)", "shortName": "DEMA"},
+                    {"className": "DMA", "fullName": "Dual Moving Average (DMA)", "shortName": "DMA"},
+                    {"className": "DX", "fullName": "Directional Movement Index (DMI / DX)", "shortName": "DX"},
+                    {"className": "EMA", "fullName": "Exponential Moving Average (EMA)", "shortName": "EMA"},
+                    {"className": "LinearRegression", "fullName": "Linear Regression (LINREG)", "shortName": "LINREG"},
+                    {"className": "PSAR", "fullName": "Parabolic SAR (PSAR)", "shortName": "PSAR"},
+                    {"className": "RMA", "fullName": "Relative Moving Average (RMA)", "shortName": "RMA"},
+                    {"className": "SMA", "fullName": "Simple Moving Average (SMA)", "shortName": "SMA"},
+                    {"className": "SMA15", "fullName": "Spencer's 15-Point Moving Average", "shortName": "SMA15"},
+                    {"className": "VWAP", "fullName": "Volume-Weighted Average Price (VWAP)", "shortName": "VWAP"},
+                    {"className": "WMA", "fullName": "Weighted Moving Average (WMA)", "shortName": "WMA"},
+                    {"className": "WSMA", "fullName": "Wilder's Smoothed Moving Average (WSMA)", "shortName": "WSMA"},
+                    {"className": "ZigZag", "fullName": "ZigZag Indicator", "shortName": "ZIGZAG"}
+                ],
+                "momentum": [
+                    {"className": "AC", "fullName": "Accelerator Oscillator (AC)", "shortName": "AC"},
+                    {"className": "AO", "fullName": "Awesome Oscillator (AO)", "shortName": "AO"},
+                    {"className": "CCI", "fullName": "Commodity Channel Index (CCI)", "shortName": "CCI"},
+                    {"className": "CG", "fullName": "Center of Gravity (CG)", "shortName": "CG"},
+                    {"className": "MACD", "fullName": "Moving Average Convergence Divergence (MACD)", "shortName": "MACD"},
+                    {"className": "MOM", "fullName": "Momentum Indicator (MOM / MTM)", "shortName": "MOM"},
+                    {"className": "OBV", "fullName": "On-Balance Volume (OBV)", "shortName": "OBV"},
+                    {"className": "REI", "fullName": "Range Expansion Index (REI)", "shortName": "REI"},
+                    {"className": "ROC", "fullName": "Rate Of Change Indicator (ROC)", "shortName": "ROC"},
+                    {"className": "RSI", "fullName": "Relative Strength Index (RSI)", "shortName": "RSI"},
+                    {"className": "StochasticOscillator", "fullName": "Stochastic Oscillator (STOCH)", "shortName": "STOCH"},
+                    {"className": "StochasticRSI", "fullName": "Stochastic RSI (STOCHRSI)", "shortName": "STOCHRSI"}
+                ],
+                "volatility": [
+                    {"className": "AccelerationBands", "fullName": "Acceleration Bands (ABANDS)", "shortName": "ABANDS"},
+                    {"className": "ATR", "fullName": "Average True Range (ATR)", "shortName": "ATR"},
+                    {"className": "BollingerBands", "fullName": "Bollinger Bands (BBANDS)", "shortName": "BBANDS"},
+                    {"className": "BollingerBandsWidth", "fullName": "Bollinger Bands Width (BBW)", "shortName": "BBW"},
+                    {"className": "IQR", "fullName": "Interquartile Range (IQR)", "shortName": "IQR"},
+                    {"className": "MAD", "fullName": "Mean Absolute Deviation (MAD)", "shortName": "MAD"},
+                    {"className": "TR", "fullName": "True Range (TR)", "shortName": "TR"}
+                ],
+                "exhaustion": [
+                    {"className": "TDS", "fullName": "Tom Demark's Sequential Indicator (TDS)", "shortName": "TDS"}
+                ]
+            }
+        };
+        
+        function populateSidebar() {
+            for (const [category, indicators] of Object.entries(indicatorData.indicators)) {
+                const list = document.getElementById(`${category}-indicators`);
+                indicators.forEach(indicator => {
+                    const li = document.createElement('li');
+                    const a = document.createElement('a');
+                    a.href = `${indicator.shortName.toLowerCase()}.html`;
+                    a.className = 'indicator-link';
+                    a.textContent = `${indicator.shortName} - ${indicator.fullName.replace(/\s*\([^)]*\)/, '')}`;
+                    
+                    // Mark current indicator as active
+                    if (indicator.shortName === 'BBANDS') {
+                        a.classList.add('active');
+                    }
+                    
+                    li.appendChild(a);
+                    list.appendChild(li);
+                });
+            }
+        }
+        
+        // Initialize page
+        populateSidebar();
+        generateDataTable();
+        createChart();
+    </script>
+</body>
+</html>

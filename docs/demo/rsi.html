@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Relative Strength Index (RSI) Demo | Trading Signals</title>
+    <meta name="description" content="Interactive demo of Relative Strength Index (RSI) with examples and visualization" />
+    <link rel="stylesheet" href="../assets/style.css" />
+    <script src="https://code.highcharts.com/stock/highstock.js"></script>
+    <script src="https://code.highcharts.com/stock/modules/exporting.js"></script>
+    <style>
+        .demo-container {
+            display: flex;
+            min-height: 100vh;
+        }
+        
+        .sidebar {
+            width: 280px;
+            background-color: var(--color-background-secondary);
+            border-right: 1px solid var(--color-separator);
+            padding: 20px;
+            overflow-y: auto;
+        }
+        
+        .sidebar h2 {
+            margin-top: 0;
+            margin-bottom: 20px;
+            color: var(--color-text);
+        }
+        
+        .category {
+            margin-bottom: 30px;
+        }
+        
+        .category h3 {
+            margin: 0 0 15px 0;
+            font-size: 14px;
+            font-weight: 600;
+            text-transform: uppercase;
+            color: var(--color-text-aside);
+            letter-spacing: 0.5px;
+        }
+        
+        .indicator-list {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+        
+        .indicator-list li {
+            margin-bottom: 8px;
+        }
+        
+        .indicator-link {
+            display: block;
+            padding: 8px 12px;
+            text-decoration: none;
+            color: var(--color-text);
+            border-radius: 4px;
+            transition: background-color 0.2s;
+            font-size: 14px;
+        }
+        
+        .indicator-link:hover {
+            background-color: var(--color-background);
+            color: var(--color-link);
+        }
+        
+        .indicator-link.active {
+            background-color: var(--color-accent);
+            color: white;
+        }
+        
+        .main-content {
+            flex: 1;
+            padding: 0;
+            overflow-y: auto;
+        }
+        
+        .demo-header {
+            background-color: var(--color-background);
+            border-bottom: 1px solid var(--color-separator);
+            padding: 20px 40px;
+        }
+        
+        .demo-header h1 {
+            margin: 0 0 10px 0;
+            font-size: 28px;
+        }
+        
+        .demo-header p {
+            margin: 0;
+            color: var(--color-text-aside);
+            max-width: 800px;
+            line-height: 1.5;
+        }
+        
+        .demo-content {
+            padding: 40px;
+        }
+        
+        .section {
+            margin-bottom: 40px;
+        }
+        
+        .section h2 {
+            margin: 0 0 20px 0;
+            font-size: 20px;
+            border-bottom: 1px solid var(--color-separator);
+            padding-bottom: 10px;
+        }
+        
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+        }
+        
+        .data-table th, .data-table td {
+            padding: 8px 12px;
+            text-align: right;
+            border: 1px solid var(--color-separator);
+        }
+        
+        .data-table th {
+            background-color: var(--color-background-secondary);
+            font-weight: 600;
+        }
+        
+        .data-table tr:nth-child(even) {
+            background-color: var(--color-background-secondary);
+        }
+        
+        .data-table .overbought {
+            background-color: #fee2e2 !important;
+        }
+        
+        .data-table .oversold {
+            background-color: #dcfce7 !important;
+        }
+        
+        .chart-container {
+            height: 400px;
+            margin: 20px 0;
+            border: 1px solid var(--color-separator);
+            border-radius: 4px;
+        }
+        
+        .back-link {
+            display: inline-block;
+            margin-bottom: 20px;
+            color: var(--color-link);
+            text-decoration: none;
+            font-size: 14px;
+        }
+        
+        .back-link:hover {
+            text-decoration: underline;
+        }
+        
+        .interpretation {
+            background-color: var(--color-background-secondary);
+            padding: 20px;
+            border-radius: 6px;
+            margin: 20px 0;
+        }
+        
+        .interpretation h3 {
+            margin: 0 0 15px 0;
+            font-size: 16px;
+        }
+        
+        .interpretation ul {
+            margin: 0;
+            padding-left: 20px;
+        }
+        
+        .interpretation li {
+            margin-bottom: 8px;
+            line-height: 1.5;
+        }
+    </style>
+</head>
+<body>
+    <div class="demo-container">
+        <aside class="sidebar">
+            <h2>Technical Indicators</h2>
+            
+            <div class="category">
+                <h3>Trend Indicators</h3>
+                <ul class="indicator-list" id="trend-indicators"></ul>
+            </div>
+            
+            <div class="category">
+                <h3>Momentum Indicators</h3>
+                <ul class="indicator-list" id="momentum-indicators"></ul>
+            </div>
+            
+            <div class="category">
+                <h3>Volatility Indicators</h3>
+                <ul class="indicator-list" id="volatility-indicators"></ul>
+            </div>
+            
+            <div class="category">
+                <h3>Exhaustion Indicators</h3>
+                <ul class="indicator-list" id="exhaustion-indicators"></ul>
+            </div>
+        </aside>
+        
+        <main class="main-content">
+            <header class="demo-header">
+                <h1>Relative Strength Index (RSI)</h1>
+                <p>The Relative Strength Index (RSI) is an oscillator that ranges between 0 and 100. The RSI can be used to find trend reversals. A RSI value of 30 or below indicates an oversold condition (not a good time to sell because there is an oversupply). A RSI value of 70 or above indicates an overbought condition (sell high opportunity because market may correct the price in the near future).</p>
+            </header>
+            
+            <div class="demo-content">
+                <a href="index.html" class="back-link">← Back to Demo Home</a>
+                
+                <div class="interpretation">
+                    <h3>Interpretation Guidelines</h3>
+                    <ul>
+                        <li><strong>RSI > 70:</strong> Overbought condition - potential sell signal</li>
+                        <li><strong>RSI < 30:</strong> Oversold condition - potential buy signal</li>
+                        <li><strong>RSI 30-70:</strong> Neutral zone - no strong signal</li>
+                        <li><strong>Trend reversals:</strong> When a downtrend doesn't generate RSI below 30 and rallies above 70</li>
+                    </ul>
+                </div>
+                
+                <div class="section">
+                    <h2>Example Data Table</h2>
+                    <p>The table below shows the input price data and calculated RSI(14) values:</p>
+                    <div id="data-table-container"></div>
+                </div>
+                
+                <div class="section">
+                    <h2>Chart Visualization</h2>
+                    <p>Interactive chart showing the price data and RSI indicator with overbought/oversold levels:</p>
+                    <div id="chart-container" class="chart-container"></div>
+                </div>
+            </div>
+        </main>
+    </div>
+    
+    <script>
+        // Sample data
+        const samplePrices = [44.34, 44.09, 44.15, 43.61, 44.33, 44.83, 45.85, 46.08, 45.89, 46.03, 46.83, 47.69, 46.54, 46.99, 47.99, 47.05, 47.37, 48.15, 47.61, 47.25, 47.87, 48.70, 48.72, 48.90, 48.87, 49.05, 49.20, 49.35, 49.92, 50.19, 50.12, 49.66, 49.88, 50.19, 50.36, 50.57, 50.65, 50.43, 49.63, 50.33, 50.29, 50.17, 49.05, 49.20, 49.25, 48.66, 49.01, 49.25, 49.24, 47.93];
+        
+        // RSI calculation (simplified version)
+        function calculateRSI(prices, period = 14) {
+            if (prices.length <= period) return [];
+            
+            const changes = [];
+            for (let i = 1; i < prices.length; i++) {
+                changes.push(prices[i] - prices[i - 1]);
+            }
+            
+            const rsi = [];
+            
+            // Calculate initial averages
+            let avgGain = 0;
+            let avgLoss = 0;
+            
+            for (let i = 0; i < period; i++) {
+                if (changes[i] > 0) {
+                    avgGain += changes[i];
+                } else {
+                    avgLoss += Math.abs(changes[i]);
+                }
+            }
+            
+            avgGain /= period;
+            avgLoss /= period;
+            
+            // Calculate initial RSI
+            let rs = avgGain / avgLoss;
+            rsi.push(100 - (100 / (1 + rs)));
+            
+            // Calculate subsequent RSI values using smoothed averages
+            for (let i = period; i < changes.length; i++) {
+                const change = changes[i];
+                const gain = change > 0 ? change : 0;
+                const loss = change < 0 ? Math.abs(change) : 0;
+                
+                avgGain = ((avgGain * (period - 1)) + gain) / period;
+                avgLoss = ((avgLoss * (period - 1)) + loss) / period;
+                
+                rs = avgGain / avgLoss;
+                rsi.push(100 - (100 / (1 + rs)));
+            }
+            
+            // Pad with nulls for the initial period
+            const result = new Array(period).fill(null);
+            return result.concat(rsi);
+        }
+        
+        function generateDataTable() {
+            const period = 14;
+            const rsiResults = calculateRSI(samplePrices, period);
+            
+            let tableHtml = '<table class="data-table"><thead><tr><th>Index</th><th>Input Price</th><th>RSI(' + period + ')</th><th>Signal</th></tr></thead><tbody>';
+            
+            for (let i = 0; i < samplePrices.length; i++) {
+                const result = rsiResults[i];
+                const resultStr = result !== null ? result.toFixed(2) : 'null';
+                
+                let signal = 'Neutral';
+                let rowClass = '';
+                
+                if (result !== null) {
+                    if (result > 70) {
+                        signal = 'Overbought';
+                        rowClass = 'overbought';
+                    } else if (result < 30) {
+                        signal = 'Oversold';
+                        rowClass = 'oversold';
+                    }
+                }
+                
+                tableHtml += `<tr class="${rowClass}"><td>${i + 1}</td><td>${samplePrices[i].toFixed(2)}</td><td>${resultStr}</td><td>${signal}</td></tr>`;
+            }
+            
+            tableHtml += '</tbody></table>';
+            document.getElementById('data-table-container').innerHTML = tableHtml;
+        }
+        
+        function createChart() {
+            const period = 14;
+            const rsiResults = calculateRSI(samplePrices, period);
+            
+            const priceData = samplePrices.map((price, i) => [i, price]);
+            const rsiData = rsiResults.map((result, i) => result !== null ? [i, result] : null).filter(x => x !== null);
+            
+            Highcharts.stockChart('chart-container', {
+                chart: {
+                    height: 600
+                },
+                title: {
+                    text: 'Price and RSI(' + period + ') Example'
+                },
+                legend: {
+                    enabled: true
+                },
+                yAxis: [{
+                    title: {
+                        text: 'Price'
+                    },
+                    height: '60%',
+                    lineWidth: 2
+                }, {
+                    title: {
+                        text: 'RSI'
+                    },
+                    top: '65%',
+                    height: '35%',
+                    offset: 0,
+                    lineWidth: 2,
+                    plotLines: [{
+                        value: 70,
+                        color: '#dc2626',
+                        width: 1,
+                        dashStyle: 'Dash',
+                        label: {
+                            text: 'Overbought (70)',
+                            style: { color: '#dc2626' }
+                        }
+                    }, {
+                        value: 30,
+                        color: '#16a34a',
+                        width: 1,
+                        dashStyle: 'Dash',
+                        label: {
+                            text: 'Oversold (30)',
+                            style: { color: '#16a34a' }
+                        }
+                    }],
+                    min: 0,
+                    max: 100
+                }],
+                series: [{
+                    name: 'Price',
+                    data: priceData,
+                    type: 'line',
+                    color: '#2563eb',
+                    yAxis: 0
+                }, {
+                    name: 'RSI(' + period + ')',
+                    data: rsiData,
+                    type: 'line',
+                    color: '#7c3aed',
+                    yAxis: 1
+                }],
+                xAxis: {
+                    title: {
+                        text: 'Data Point'
+                    }
+                }
+            });
+        }
+        
+        // Populate sidebar
+        const indicatorData = {
+            "categories": {
+                "trend": "Trend Indicators",
+                "momentum": "Momentum Indicators",
+                "volatility": "Volatility Indicators",
+                "exhaustion": "Exhaustion Indicators"
+            },
+            "indicators": {
+                "trend": [
+                    {"className": "ADX", "fullName": "Average Directional Index (ADX)", "shortName": "ADX"},
+                    {"className": "DEMA", "fullName": "Double Exponential Moving Average (DEMA)", "shortName": "DEMA"},
+                    {"className": "DMA", "fullName": "Dual Moving Average (DMA)", "shortName": "DMA"},
+                    {"className": "DX", "fullName": "Directional Movement Index (DMI / DX)", "shortName": "DX"},
+                    {"className": "EMA", "fullName": "Exponential Moving Average (EMA)", "shortName": "EMA"},
+                    {"className": "LinearRegression", "fullName": "Linear Regression (LINREG)", "shortName": "LINREG"},
+                    {"className": "PSAR", "fullName": "Parabolic SAR (PSAR)", "shortName": "PSAR"},
+                    {"className": "RMA", "fullName": "Relative Moving Average (RMA)", "shortName": "RMA"},
+                    {"className": "SMA", "fullName": "Simple Moving Average (SMA)", "shortName": "SMA"},
+                    {"className": "SMA15", "fullName": "Spencer's 15-Point Moving Average", "shortName": "SMA15"},
+                    {"className": "VWAP", "fullName": "Volume-Weighted Average Price (VWAP)", "shortName": "VWAP"},
+                    {"className": "WMA", "fullName": "Weighted Moving Average (WMA)", "shortName": "WMA"},
+                    {"className": "WSMA", "fullName": "Wilder's Smoothed Moving Average (WSMA)", "shortName": "WSMA"},
+                    {"className": "ZigZag", "fullName": "ZigZag Indicator", "shortName": "ZIGZAG"}
+                ],
+                "momentum": [
+                    {"className": "AC", "fullName": "Accelerator Oscillator (AC)", "shortName": "AC"},
+                    {"className": "AO", "fullName": "Awesome Oscillator (AO)", "shortName": "AO"},
+                    {"className": "CCI", "fullName": "Commodity Channel Index (CCI)", "shortName": "CCI"},
+                    {"className": "CG", "fullName": "Center of Gravity (CG)", "shortName": "CG"},
+                    {"className": "MACD", "fullName": "Moving Average Convergence Divergence (MACD)", "shortName": "MACD"},
+                    {"className": "MOM", "fullName": "Momentum Indicator (MOM / MTM)", "shortName": "MOM"},
+                    {"className": "OBV", "fullName": "On-Balance Volume (OBV)", "shortName": "OBV"},
+                    {"className": "REI", "fullName": "Range Expansion Index (REI)", "shortName": "REI"},
+                    {"className": "ROC", "fullName": "Rate Of Change Indicator (ROC)", "shortName": "ROC"},
+                    {"className": "RSI", "fullName": "Relative Strength Index (RSI)", "shortName": "RSI"},
+                    {"className": "StochasticOscillator", "fullName": "Stochastic Oscillator (STOCH)", "shortName": "STOCH"},
+                    {"className": "StochasticRSI", "fullName": "Stochastic RSI (STOCHRSI)", "shortName": "STOCHRSI"}
+                ],
+                "volatility": [
+                    {"className": "AccelerationBands", "fullName": "Acceleration Bands (ABANDS)", "shortName": "ABANDS"},
+                    {"className": "ATR", "fullName": "Average True Range (ATR)", "shortName": "ATR"},
+                    {"className": "BollingerBands", "fullName": "Bollinger Bands (BBANDS)", "shortName": "BBANDS"},
+                    {"className": "BollingerBandsWidth", "fullName": "Bollinger Bands Width (BBW)", "shortName": "BBW"},
+                    {"className": "IQR", "fullName": "Interquartile Range (IQR)", "shortName": "IQR"},
+                    {"className": "MAD", "fullName": "Mean Absolute Deviation (MAD)", "shortName": "MAD"},
+                    {"className": "TR", "fullName": "True Range (TR)", "shortName": "TR"}
+                ],
+                "exhaustion": [
+                    {"className": "TDS", "fullName": "Tom Demark's Sequential Indicator (TDS)", "shortName": "TDS"}
+                ]
+            }
+        };
+        
+        function populateSidebar() {
+            for (const [category, indicators] of Object.entries(indicatorData.indicators)) {
+                const list = document.getElementById(`${category}-indicators`);
+                indicators.forEach(indicator => {
+                    const li = document.createElement('li');
+                    const a = document.createElement('a');
+                    a.href = `${indicator.shortName.toLowerCase()}.html`;
+                    a.className = 'indicator-link';
+                    a.textContent = `${indicator.shortName} - ${indicator.fullName.replace(/\s*\([^)]*\)/, '')}`;
+                    
+                    // Mark current indicator as active
+                    if (indicator.shortName === 'RSI') {
+                        a.classList.add('active');
+                    }
+                    
+                    li.appendChild(a);
+                    list.appendChild(li);
+                });
+            }
+        }
+        
+        // Initialize page
+        populateSidebar();
+        generateDataTable();
+        createChart();
+    </script>
+</body>
+</html>
