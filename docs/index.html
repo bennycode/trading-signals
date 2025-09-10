@@ -71,14 +71,9 @@
             ></a>
           </h2>
           <p>
-            The &quot;trading-signals&quot; library provides a TypeScript implementation for common technical indicators
-            with arbitrary-precision decimal arithmetic. It is well-suited for algorithmic trading, allowing developers
-            to perform accurate and reliable signal computations for automated trading strategies.
-          </p>
-          <p>
-            The main focus of this library is on the accuracy of calculations, but using the provided
-            <a href="#faster-implementations">faster implementations</a> you can also use it where performance is
-            important.
+            The &quot;trading-signals&quot; library provides a TypeScript implementation for common technical
+            indicators. It is well-suited for algorithmic trading, allowing developers to perform signal computations
+            for automated trading strategies.
           </p>
           <p>
             All indicators can be updated over time by streaming data (prices or
@@ -102,15 +97,15 @@
             ></a>
           </h2>
           <p><strong>CommonJS:</strong></p>
-          <pre><code class="ts"><span class="hl-3">const</span><span class="hl-1"> {</span><span class="hl-4">Big</span><span class="hl-1">, </span><span class="hl-4">SMA</span><span class="hl-1">} = </span><span class="hl-0">require</span><span class="hl-1">(</span><span class="hl-2">&#39;trading-signals&#39;</span><span class="hl-1">);</span>
+          <pre><code class="ts"><span class="hl-3">const</span><span class="hl-1"> {</span><span class="hl-4">SMA</span><span class="hl-1">} = </span><span class="hl-0">require</span><span class="hl-1">(</span><span class="hl-2">&#39;trading-signals&#39;</span><span class="hl-1">);</span>
 </code><button type="button">Copy</button></pre>
 
           <p><strong>ESM:</strong></p>
-          <pre><code class="ts"><span class="hl-5">import</span><span class="hl-1"> {</span><span class="hl-6">Big</span><span class="hl-1">, </span><span class="hl-6">SMA</span><span class="hl-1">} </span><span class="hl-5">from</span><span class="hl-1"> </span><span class="hl-2">&#39;trading-signals&#39;</span><span class="hl-1">;</span>
+          <pre><code class="ts"><span class="hl-5">import</span><span class="hl-1"> {</span><span class="hl-6">SMA</span><span class="hl-1">} </span><span class="hl-5">from</span><span class="hl-1"> </span><span class="hl-2">&#39;trading-signals&#39;</span><span class="hl-1">;</span>
 </code><button type="button">Copy</button></pre>
 
           <p><strong>Example:</strong></p>
-          <pre><code class="typescript"><span class="hl-5">import</span><span class="hl-1"> {</span><span class="hl-6">Big</span><span class="hl-1">, </span><span class="hl-6">SMA</span><span class="hl-1">} </span><span class="hl-5">from</span><span class="hl-1"> </span><span class="hl-2">&#39;trading-signals&#39;</span><span class="hl-1">;</span><br/><br/><span class="hl-3">const</span><span class="hl-1"> </span><span class="hl-4">sma</span><span class="hl-1"> = </span><span class="hl-3">new</span><span class="hl-1"> </span><span class="hl-0">SMA</span><span class="hl-1">(</span><span class="hl-7">3</span><span class="hl-1">);</span><br/><br/><span class="hl-8">// You can add values individually:</span><br/><span class="hl-6">sma</span><span class="hl-1">.</span><span class="hl-0">add</span><span class="hl-1">(</span><span class="hl-7">40</span><span class="hl-1">);</span><br/><span class="hl-6">sma</span><span class="hl-1">.</span><span class="hl-0">add</span><span class="hl-1">(</span><span class="hl-7">30</span><span class="hl-1">);</span><br/><span class="hl-6">sma</span><span class="hl-1">.</span><span class="hl-0">add</span><span class="hl-1">(</span><span class="hl-7">20</span><span class="hl-1">);</span><br/><br/><span class="hl-8">// You can add multiple values at once:</span><br/><span class="hl-6">sma</span><span class="hl-1">.</span><span class="hl-0">updates</span><span class="hl-1">([</span><span class="hl-7">20</span><span class="hl-1">, </span><span class="hl-7">40</span><span class="hl-1">, </span><span class="hl-7">80</span><span class="hl-1">]);</span><br/><br/><span class="hl-8">// You can add stringified values:</span><br/><span class="hl-6">sma</span><span class="hl-1">.</span><span class="hl-0">add</span><span class="hl-1">(</span><span class="hl-2">&#39;10&#39;</span><span class="hl-1">);</span><br/><br/><span class="hl-8">// You can replace a previous value (useful for live charting):</span><br/><span class="hl-6">sma</span><span class="hl-1">.</span><span class="hl-0">replace</span><span class="hl-1">(</span><span class="hl-2">&#39;40&#39;</span><span class="hl-1">);</span><br/><br/><span class="hl-8">// You can add arbitrary-precision decimals:</span><br/><span class="hl-6">sma</span><span class="hl-1">.</span><span class="hl-0">add</span><span class="hl-1">(</span><span class="hl-3">new</span><span class="hl-1"> </span><span class="hl-0">Big</span><span class="hl-1">(</span><span class="hl-7">30.0009</span><span class="hl-1">));</span><br/><br/><span class="hl-8">// You can check if an indicator is stable:</span><br/><span class="hl-6">console</span><span class="hl-1">.</span><span class="hl-0">log</span><span class="hl-1">(</span><span class="hl-6">sma</span><span class="hl-1">.</span><span class="hl-6">isStable</span><span class="hl-1">); </span><span class="hl-8">// true</span><br/><br/><span class="hl-8">// If an indicator is stable, you can get its result:</span><br/><span class="hl-6">console</span><span class="hl-1">.</span><span class="hl-0">log</span><span class="hl-1">(</span><span class="hl-6">sma</span><span class="hl-1">.</span><span class="hl-0">getResult</span><span class="hl-1">()?.</span><span class="hl-0">toFixed</span><span class="hl-1">()); </span><span class="hl-8">// &quot;50.0003&quot;</span><br/><br/><span class="hl-8">// You can also get the result without optional chaining:</span><br/><span class="hl-6">console</span><span class="hl-1">.</span><span class="hl-0">log</span><span class="hl-1">(</span><span class="hl-6">sma</span><span class="hl-1">.</span><span class="hl-0">getResultOrThrow</span><span class="hl-1">().</span><span class="hl-0">toFixed</span><span class="hl-1">()); </span><span class="hl-8">// &quot;50.0003&quot;</span><br/><br/><span class="hl-8">// Various precisions are available too:</span><br/><span class="hl-6">console</span><span class="hl-1">.</span><span class="hl-0">log</span><span class="hl-1">(</span><span class="hl-6">sma</span><span class="hl-1">.</span><span class="hl-0">getResultOrThrow</span><span class="hl-1">().</span><span class="hl-0">toFixed</span><span class="hl-1">(</span><span class="hl-7">2</span><span class="hl-1">)); </span><span class="hl-8">// &quot;50.00&quot;</span><br/><span class="hl-6">console</span><span class="hl-1">.</span><span class="hl-0">log</span><span class="hl-1">(</span><span class="hl-6">sma</span><span class="hl-1">.</span><span class="hl-0">getResultOrThrow</span><span class="hl-1">().</span><span class="hl-0">toFixed</span><span class="hl-1">(</span><span class="hl-7">4</span><span class="hl-1">)); </span><span class="hl-8">// &quot;50.0003&quot;</span><br/><br/><span class="hl-8">// Each indicator also includes convenient features such as &quot;lowest&quot; and &quot;highest&quot; lifetime values:</span><br/><span class="hl-6">console</span><span class="hl-1">.</span><span class="hl-0">log</span><span class="hl-1">(</span><span class="hl-6">sma</span><span class="hl-1">.</span><span class="hl-6">lowest</span><span class="hl-1">?.</span><span class="hl-0">toFixed</span><span class="hl-1">(</span><span class="hl-7">2</span><span class="hl-1">)); </span><span class="hl-8">// &quot;23.33&quot;</span><br/><span class="hl-6">console</span><span class="hl-1">.</span><span class="hl-0">log</span><span class="hl-1">(</span><span class="hl-6">sma</span><span class="hl-1">.</span><span class="hl-6">highest</span><span class="hl-1">?.</span><span class="hl-0">toFixed</span><span class="hl-1">(</span><span class="hl-7">2</span><span class="hl-1">)); </span><span class="hl-8">// &quot;53.33&quot;</span>
+          <pre><code class="typescript"><span class="hl-5">import</span><span class="hl-1"> {</span><span class="hl-6">SMA</span><span class="hl-1">} </span><span class="hl-5">from</span><span class="hl-1"> </span><span class="hl-2">&#39;trading-signals&#39;</span><span class="hl-1">;</span><br/><br/><span class="hl-3">const</span><span class="hl-1"> </span><span class="hl-4">sma</span><span class="hl-1"> = </span><span class="hl-3">new</span><span class="hl-1"> </span><span class="hl-0">SMA</span><span class="hl-1">(</span><span class="hl-7">3</span><span class="hl-1">);</span><br/><br/><span class="hl-8">// You can add values individually:</span><br/><span class="hl-6">sma</span><span class="hl-1">.</span><span class="hl-0">add</span><span class="hl-1">(</span><span class="hl-7">40</span><span class="hl-1">);</span><br/><span class="hl-6">sma</span><span class="hl-1">.</span><span class="hl-0">add</span><span class="hl-1">(</span><span class="hl-7">30</span><span class="hl-1">);</span><br/><span class="hl-6">sma</span><span class="hl-1">.</span><span class="hl-0">add</span><span class="hl-1">(</span><span class="hl-7">20</span><span class="hl-1">);</span><br/><br/><span class="hl-8">// You can add multiple values at once:</span><br/><span class="hl-6">sma</span><span class="hl-1">.</span><span class="hl-0">updates</span><span class="hl-1">([</span><span class="hl-7">20</span><span class="hl-1">, </span><span class="hl-7">40</span><span class="hl-1">, </span><span class="hl-7">80</span><span class="hl-1">]);</span><br/><br/><span class="hl-8">// You can replace a previous value (useful for live charting):</span><br/><span class="hl-6">sma</span><span class="hl-1">.</span><span class="hl-0">replace</span><span class="hl-1">(</span><span class="hl-7">40</span><span class="hl-1">);</span><br/><br/><span class="hl-8">// You can check if an indicator is stable:</span><br/><span class="hl-6">console</span><span class="hl-1">.</span><span class="hl-0">log</span><span class="hl-1">(</span><span class="hl-6">sma</span><span class="hl-1">.</span><span class="hl-6">isStable</span><span class="hl-1">); </span><span class="hl-8">// true</span><br/><br/><span class="hl-8">// If an indicator is stable, you can get its result:</span><br/><span class="hl-6">console</span><span class="hl-1">.</span><span class="hl-0">log</span><span class="hl-1">(</span><span class="hl-6">sma</span><span class="hl-1">.</span><span class="hl-0">getResult</span><span class="hl-1">()); </span><span class="hl-8">// 50.0003</span><br/><br/><span class="hl-8">// You can also get the result without optional chaining:</span><br/><span class="hl-6">console</span><span class="hl-1">.</span><span class="hl-0">log</span><span class="hl-1">(</span><span class="hl-6">sma</span><span class="hl-1">.</span><span class="hl-0">getResultOrThrow</span><span class="hl-1">()); </span><span class="hl-8">// 50.0003</span><br/><br/><span class="hl-8">// Various precisions are available too:</span><br/><span class="hl-6">console</span><span class="hl-1">.</span><span class="hl-0">log</span><span class="hl-1">(</span><span class="hl-6">sma</span><span class="hl-1">.</span><span class="hl-0">getResultOrThrow</span><span class="hl-1">().</span><span class="hl-0">toFixed</span><span class="hl-1">(</span><span class="hl-7">2</span><span class="hl-1">)); </span><span class="hl-8">// &quot;50.00&quot;</span><br/><span class="hl-6">console</span><span class="hl-1">.</span><span class="hl-0">log</span><span class="hl-1">(</span><span class="hl-6">sma</span><span class="hl-1">.</span><span class="hl-0">getResultOrThrow</span><span class="hl-1">().</span><span class="hl-0">toFixed</span><span class="hl-1">(</span><span class="hl-7">4</span><span class="hl-1">)); </span><span class="hl-8">// &quot;50.0003&quot;</span><br/><br/><span class="hl-8">// Each indicator also includes convenient features such as &quot;lowest&quot; and &quot;highest&quot; lifetime values:</span><br/><span class="hl-6">console</span><span class="hl-1">.</span><span class="hl-0">log</span><span class="hl-1">(</span><span class="hl-6">sma</span><span class="hl-1">.</span><span class="hl-6">lowest</span><span class="hl-1">?.</span><span class="hl-0">toFixed</span><span class="hl-1">(</span><span class="hl-7">2</span><span class="hl-1">)); </span><span class="hl-8">// &quot;23.33&quot;</span><br/><span class="hl-6">console</span><span class="hl-1">.</span><span class="hl-0">log</span><span class="hl-1">(</span><span class="hl-6">sma</span><span class="hl-1">.</span><span class="hl-6">highest</span><span class="hl-1">?.</span><span class="hl-0">toFixed</span><span class="hl-1">(</span><span class="hl-7">2</span><span class="hl-1">)); </span><span class="hl-8">// &quot;53.33&quot;</span>
 </code><button type="button">Copy</button></pre>
 
           <h3 id="when-to-use-add" class="tsd-anchor-link">
@@ -133,24 +128,28 @@
           </h3>
           <p>
             You can call <code>getResultOrThrow()</code> at any point in time, but it throws errors unless an indicator
-            has received the minimum amount of data. If you call <code>getResultOrThrow()</code>, before an indicator
-            has received the required amount of input values, a <code>NotEnoughDataError</code> will be thrown.
+            has received the minimum amount of data. If you call <code>getResultOrThrow()</code> before an indicator has
+            received the required amount of input values, a <code>NotEnoughDataError</code> will be thrown.
           </p>
           <p><strong>Example:</strong></p>
-          <pre><code class="ts"><span class="hl-5">import</span><span class="hl-1"> {</span><span class="hl-6">SMA</span><span class="hl-1">} </span><span class="hl-5">from</span><span class="hl-1"> </span><span class="hl-2">&#39;trading-signals&#39;</span><span class="hl-1">;</span><br/><br/><span class="hl-8">// Our interval is 3, so we need 3 input values</span><br/><span class="hl-3">const</span><span class="hl-1"> </span><span class="hl-4">sma</span><span class="hl-1"> = </span><span class="hl-3">new</span><span class="hl-1"> </span><span class="hl-0">SMA</span><span class="hl-1">(</span><span class="hl-7">3</span><span class="hl-1">);</span><br/><br/><span class="hl-8">// We supply 2 input values</span><br/><span class="hl-6">sma</span><span class="hl-1">.</span><span class="hl-0">update</span><span class="hl-1">(</span><span class="hl-7">10</span><span class="hl-1">);</span><br/><span class="hl-6">sma</span><span class="hl-1">.</span><span class="hl-0">update</span><span class="hl-1">(</span><span class="hl-7">40</span><span class="hl-1">);</span><br/><br/><span class="hl-5">try</span><span class="hl-1"> {</span><br/><span class="hl-1">  </span><span class="hl-8">// We will get an error, because the minimum amount of inputs is 3</span><br/><span class="hl-1">  </span><span class="hl-6">sma</span><span class="hl-1">.</span><span class="hl-0">getResultOrThrow</span><span class="hl-1">();</span><br/><span class="hl-1">} </span><span class="hl-5">catch</span><span class="hl-1"> (</span><span class="hl-6">error</span><span class="hl-1">) {</span><br/><span class="hl-1">  </span><span class="hl-6">console</span><span class="hl-1">.</span><span class="hl-0">log</span><span class="hl-1">(</span><span class="hl-6">error</span><span class="hl-1">.</span><span class="hl-6">constructor</span><span class="hl-1">.</span><span class="hl-6">name</span><span class="hl-1">); </span><span class="hl-8">// &quot;NotEnoughDataError&quot;</span><br/><span class="hl-1">}</span><br/><br/><span class="hl-8">// We will supply the 3rd input value</span><br/><span class="hl-6">sma</span><span class="hl-1">.</span><span class="hl-0">update</span><span class="hl-1">(</span><span class="hl-7">70</span><span class="hl-1">);</span><br/><br/><span class="hl-8">// Now, we will receive a proper result</span><br/><span class="hl-6">console</span><span class="hl-1">.</span><span class="hl-0">log</span><span class="hl-1">(</span><span class="hl-6">sma</span><span class="hl-1">.</span><span class="hl-0">getResultOrThrow</span><span class="hl-1">().</span><span class="hl-0">valueOf</span><span class="hl-1">()); </span><span class="hl-8">// &quot;40&quot;</span>
+          <pre><code class="ts"><span class="hl-5">import</span><span class="hl-1"> {</span><span class="hl-6">SMA</span><span class="hl-1">} </span><span class="hl-5">from</span><span class="hl-1"> </span><span class="hl-2">&#39;trading-signals&#39;</span><span class="hl-1">;</span><br/><br/><span class="hl-8">// Our interval is 3, so we need 3 input values</span><br/><span class="hl-3">const</span><span class="hl-1"> </span><span class="hl-4">sma</span><span class="hl-1"> = </span><span class="hl-3">new</span><span class="hl-1"> </span><span class="hl-0">SMA</span><span class="hl-1">(</span><span class="hl-7">3</span><span class="hl-1">);</span><br/><br/><span class="hl-8">// We supply 2 input values</span><br/><span class="hl-6">sma</span><span class="hl-1">.</span><span class="hl-0">add</span><span class="hl-1">(</span><span class="hl-7">10</span><span class="hl-1">);</span><br/><span class="hl-6">sma</span><span class="hl-1">.</span><span class="hl-0">add</span><span class="hl-1">(</span><span class="hl-7">40</span><span class="hl-1">);</span><br/><br/><span class="hl-5">try</span><span class="hl-1"> {</span><br/><span class="hl-1">  </span><span class="hl-8">// We will get an error, because the minimum amount of inputs is 3</span><br/><span class="hl-1">  </span><span class="hl-6">sma</span><span class="hl-1">.</span><span class="hl-0">getResultOrThrow</span><span class="hl-1">();</span><br/><span class="hl-1">} </span><span class="hl-5">catch</span><span class="hl-1"> (</span><span class="hl-6">error</span><span class="hl-1">) {</span><br/><span class="hl-1">  </span><span class="hl-6">console</span><span class="hl-1">.</span><span class="hl-0">log</span><span class="hl-1">(</span><span class="hl-6">error</span><span class="hl-1">.</span><span class="hl-6">constructor</span><span class="hl-1">.</span><span class="hl-6">name</span><span class="hl-1">); </span><span class="hl-8">// &quot;NotEnoughDataError&quot;</span><br/><span class="hl-1">}</span><br/><br/><span class="hl-8">// We will supply the 3rd input value</span><br/><span class="hl-6">sma</span><span class="hl-1">.</span><span class="hl-0">add</span><span class="hl-1">(</span><span class="hl-7">70</span><span class="hl-1">);</span><br/><br/><span class="hl-8">// Now, we will receive a proper result</span><br/><span class="hl-6">console</span><span class="hl-1">.</span><span class="hl-0">log</span><span class="hl-1">(</span><span class="hl-6">sma</span><span class="hl-1">.</span><span class="hl-0">getResultOrThrow</span><span class="hl-1">()); </span><span class="hl-8">// 40</span>
 </code><button type="button">Copy</button></pre>
 
-          <p>Most of the time, the minimum amount of data depends on the interval / time period used.</p>
+          <p>
+            Most of the time, the minimum amount of data depends on the interval / time period used. If you’re not sure,
+            take a look at the test files for the indicator to see examples of correct usage.
+          </p>
           <h2 id="technical-indicator-types" class="tsd-anchor-link">
             Technical Indicator Types<a href="#technical-indicator-types" aria-label="Permalink" class="tsd-anchor-icon"
               ><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg
             ></a>
           </h2>
           <ul>
-            <li>Trend indicators: Measure the direction of a trend (uptrend, downtrend or sideways trend)</li>
-            <li>Volume indicators: Measure the strength of a trend based on volume</li>
-            <li>Volatility indicators: Measure the degree of variation in prices over time, regardless of direction</li>
+            <li>Exhaustion indicators: Identify trend exhaustion and potential reversal.</li>
             <li>Momentum indicators: Measure the speed and strength of price movements in a particular direction</li>
+            <li>Trend indicators: Measure the direction of a trend (uptrend, downtrend or sideways trend)</li>
+            <li>Volatility indicators: Measure the degree of variation in prices over time, regardless of direction</li>
+            <li>Volume indicators: Measure the strength of a trend based on volume</li>
           </ul>
           <h2 id="supported-technical-indicators" class="tsd-anchor-link">
             Supported Technical Indicators<a
@@ -161,65 +160,72 @@
             ></a>
           </h2>
           <ol>
-            <li><a href="media/AccelerationBands.ts">Acceleration Bands</a> (ABANDS)</li>
-            <li><a href="media/AC.ts">Accelerator Oscillator</a> (AC)</li>
-            <li><a href="media/ADX.ts">Average Directional Index</a> (ADX)</li>
-            <li><a href="media/ATR.ts">Average True Range</a> (ATR)</li>
-            <li><a href="media/AO.ts">Awesome Oscillator</a> (AO)</li>
-            <li><a href="media/BollingerBands.ts">Bollinger Bands</a> (BBANDS)</li>
-            <li><a href="media/BollingerBandsWidth.ts">Bollinger Bands Width</a> (BBW)</li>
-            <li><a href="media/CG.ts">Center of Gravity</a> (CG)</li>
-            <li><a href="media/CCI.ts">Commodity Channel Index</a> (CCI)</li>
-            <li><a href="media/DX.ts">Directional Movement Index</a> (DMI / DX)</li>
-            <li><a href="media/DEMA.ts">Double Exponential Moving Average</a> (DEMA)</li>
-            <li><a href="media/DMA.ts">Dual Moving Average</a> (DMA)</li>
-            <li><a href="media/EMA.ts">Exponential Moving Average</a> (EMA)</li>
-            <li><a href="media/IQR.ts">Interquartile Range</a> (IQR)</li>
-            <li><a href="media/LinearRegression.ts">Linear Regression</a> (LINREG)</li>
-            <li><a href="media/MAD.ts">Mean Absolute Deviation</a> (MAD)</li>
-            <li><a href="media/MOM.ts">Momentum</a> (MOM / MTM)</li>
-            <li><a href="media/MACD.ts">Moving Average Convergence Divergence</a> (MACD)</li>
-            <li><a href="media/OBV.ts">On-Balance Volume</a> (OBV)</li>
-            <li><a href="media/PSAR.ts">Parabolic SAR</a> (PSAR)</li>
-            <li><a href="media/REI.ts">Range Expansion Index</a> (REI)</li>
-            <li><a href="media/ROC.ts">Rate-of-Change</a> (ROC)</li>
-            <li><a href="media/RMA.ts">Relative Moving Average</a> (RMA)</li>
-            <li><a href="media/RSI.ts">Relative Strength Index</a> (RSI)</li>
-            <li><a href="media/SMA.ts">Simple Moving Average</a> (SMA)</li>
-            <li><a href="media/SMA15.ts">Spencer's 15-Point Moving Average</a> (SMA15)</li>
-            <li><a href="media/StochasticOscillator.ts">Stochastic Oscillator</a> (STOCH)</li>
-            <li><a href="media/StochasticRSI.ts">Stochastic RSI</a> (STOCHRSI)</li>
-            <li><a href="media/TDS.ts">Tom Demark's Sequential Indicator</a> (TDS)</li>
-            <li><a href="media/TR.ts">True Range</a> (TR)</li>
-            <li><a href="media/VWAP.ts">Volume-Weighted Average Price</a> (VWAP)</li>
-            <li><a href="media/WMA.ts">Weighted Moving Average</a> (WMA)</li>
-            <li><a href="media/WSMA.ts">Wilder's Smoothed Moving Average</a> (WSMA / WWS / SMMA / MEMA)</li>
-            <li><a href="media/ZigZag.ts">Zig Zag Indicator</a> (ZigZag)</li>
+            <li>Acceleration Bands (ABANDS)</li>
+            <li>Accelerator Oscillator (AC)</li>
+            <li>Average Directional Index (ADX)</li>
+            <li>Average True Range (ATR)</li>
+            <li>Awesome Oscillator (AO)</li>
+            <li>Bollinger Bands (BBANDS)</li>
+            <li>Bollinger Bands Width (BBW)</li>
+            <li>Center of Gravity (CG)</li>
+            <li>Commodity Channel Index (CCI)</li>
+            <li>Directional Movement Index (DMI / DX)</li>
+            <li>Double Exponential Moving Average (DEMA)</li>
+            <li>Dual Moving Average (DMA)</li>
+            <li>Exponential Moving Average (EMA)</li>
+            <li>Interquartile Range (IQR)</li>
+            <li>Linear Regression (LINREG)</li>
+            <li>Mean Absolute Deviation (MAD)</li>
+            <li>Momentum (MOM / MTM)</li>
+            <li>Moving Average Convergence Divergence (MACD)</li>
+            <li>On-Balance Volume (OBV)</li>
+            <li>Parabolic SAR (PSAR)</li>
+            <li>Range Expansion Index (REI)</li>
+            <li>Rate-of-Change (ROC)</li>
+            <li>Relative Moving Average (RMA)</li>
+            <li>Relative Strength Index (RSI)</li>
+            <li>Simple Moving Average (SMA)</li>
+            <li>Spencer's 15-Point Moving Average (SMA15)</li>
+            <li>Stochastic Oscillator (STOCH)</li>
+            <li>Stochastic RSI (STOCHRSI)</li>
+            <li>Tom Demark's Sequential Indicator (TDS)</li>
+            <li>True Range (TR)</li>
+            <li>Volume-Weighted Average Price (VWAP)</li>
+            <li>Weighted Moving Average (WMA)</li>
+            <li>Wilder's Smoothed Moving Average (WSMA / WWS / SMMA / MEMA)</li>
+            <li>Zig Zag Indicator (ZigZag)</li>
           </ol>
           <p>Utility Methods:</p>
           <ol>
-            <li><a href="media/getAverage.ts">Average / Mean</a></li>
-            <li><a href="media/getMedian.ts">Median</a></li>
-            <li><a href="media/getQuartile.ts">Quartile</a></li>
-            <li><a href="media/getStandardDeviation.ts">Standard Deviation</a></li>
-            <li><a href="media/getStreaks.ts">Streaks</a></li>
+            <li>Average / Mean</li>
+            <li>
+              Grid Sizing (for
+              <a href="https://b2broker.com/news/understanding-grid-trading-purpose-pros-cons/">grid trading bots</a>)
+            </li>
+            <li>Maximum</li>
+            <li>Median</li>
+            <li>Minimum</li>
+            <li>Quartile</li>
+            <li>Standard Deviation</li>
+            <li>Streaks</li>
+            <li>Weekday</li>
           </ol>
           <h2 id="performance" class="tsd-anchor-link">
             Performance<a href="#performance" aria-label="Permalink" class="tsd-anchor-icon"
               ><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg
             ></a>
           </h2>
-          <h3 id="arbitrary-precision-decimal-arithmetic" class="tsd-anchor-link">
-            Arbitrary-precision decimal arithmetic<a
-              href="#arbitrary-precision-decimal-arithmetic"
+          <h3 id="floating-point-arithmetic-caveats" class="tsd-anchor-link">
+            Floating-point arithmetic caveats<a
+              href="#floating-point-arithmetic-caveats"
               aria-label="Permalink"
               class="tsd-anchor-icon"
               ><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg
             ></a>
           </h3>
           <p>
-            JavaScript is very bad with numbers. When calculating <code>0.1 + 0.2</code> it shows you
-            <code>0.30000000000000004</code>, but the truth is <code>0.3</code>.
+            JavaScript uses double-precision floating-point arithmetic. For example, <code>0.1 + 0.2</code> yields
+            <code>0.30000000000000004</code> due to binary floating-point representation.
           </p>
           <p>
             <img
@@ -227,42 +233,15 @@
               alt="JavaScript arithmetic" />
           </p>
           <p>
-            As specified by the ECMAScript standard, all arithmetic in JavaScript uses
-            <a href="https://en.wikipedia.org/wiki/Double-precision_floating-point_format"
-              >double-precision floating-point arithmetic</a
-            >, which is only accurate until certain extent. To increase the accuracy and avoid miscalculations, the
-            <a href="https://github.com/bennycode/trading-signals">trading-signals</a> library uses
-            <a href="http://mikemcl.github.io/big.js/">big.js</a> which offers arbitrary-precision decimal arithmetic.
-            However, this arbitrary accuracy comes with a downside: Calculations with it are not as performant as with
-            the primitive data type <code>number</code>.
+            While this isn’t perfectly accurate, it usually doesn’t matter in practice since indicators often work with
+            averages, which already smooth out precision. In test cases, you can control precision by using Vitest’s
+            <a href="https://vitest.dev/api/expect.html#tobecloseto">toBeCloseTo</a> assertion.
           </p>
-          <h3 id="faster-implementations" class="tsd-anchor-link">
-            Faster implementations<a href="#faster-implementations" aria-label="Permalink" class="tsd-anchor-icon"
-              ><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg
-            ></a>
-          </h3>
           <p>
-            To get the best of both worlds (high accuracy &amp; high performance), you will find two implementations of
-            each indicator (e.g. <code>SMA</code> &amp; <code>FasterSMA</code>). The standard implementation uses
-            <a href="http://mikemcl.github.io/big.js/">big.js</a> and the <code>Faster</code>-prefixed version uses
-            common <code>number</code> types. Use the standard one when you need high accuracy and use the
-            <code>Faster</code>-one when you need high performance:
-          </p>
-          <pre><code class="ts"><span class="hl-5">import</span><span class="hl-1"> {</span><span class="hl-6">FasterSMA</span><span class="hl-1">} </span><span class="hl-5">from</span><span class="hl-1"> </span><span class="hl-2">&#39;./SMA/SMA&#39;</span><span class="hl-1">;</span><br/><br/><span class="hl-3">const</span><span class="hl-1"> </span><span class="hl-4">fasterSMA</span><span class="hl-1"> = </span><span class="hl-3">new</span><span class="hl-1"> </span><span class="hl-0">FasterSMA</span><span class="hl-1">(</span><span class="hl-7">5</span><span class="hl-1">);</span><br/><span class="hl-6">console</span><span class="hl-1">.</span><span class="hl-0">log</span><span class="hl-1">(</span><span class="hl-6">fasterSMA</span><span class="hl-1">.</span><span class="hl-0">updates</span><span class="hl-1">([</span><span class="hl-7">1</span><span class="hl-1">, </span><span class="hl-7">2</span><span class="hl-1">, </span><span class="hl-7">3</span><span class="hl-1">, </span><span class="hl-7">4</span><span class="hl-1">, </span><span class="hl-7">5</span><span class="hl-1">]));</span>
-</code><button type="button">Copy</button></pre>
-
-          <pre><code class="ts"><span class="hl-5">import</span><span class="hl-1"> {</span><span class="hl-6">FasterStochasticRSI</span><span class="hl-1">, </span><span class="hl-6">FasterSMA</span><span class="hl-1">} </span><span class="hl-5">from</span><span class="hl-1"> </span><span class="hl-2">&#39;trading-signals&#39;</span><span class="hl-1">;</span><br/><br/><span class="hl-3">const</span><span class="hl-1"> </span><span class="hl-4">fasterStochRSI</span><span class="hl-1"> = </span><span class="hl-3">new</span><span class="hl-1"> </span><span class="hl-0">FasterStochasticRSI</span><span class="hl-1">(</span><span class="hl-7">3</span><span class="hl-1">, </span><span class="hl-6">FasterSMA</span><span class="hl-1">);</span><br/><span class="hl-6">fasterStochRSI</span><span class="hl-1">.</span><span class="hl-0">update</span><span class="hl-1">(</span><span class="hl-7">1</span><span class="hl-1">);</span><br/><span class="hl-6">fasterStochRSI</span><span class="hl-1">.</span><span class="hl-0">update</span><span class="hl-1">(</span><span class="hl-7">2</span><span class="hl-1">);</span><br/><span class="hl-6">fasterStochRSI</span><span class="hl-1">.</span><span class="hl-0">update</span><span class="hl-1">(</span><span class="hl-7">3</span><span class="hl-1">);</span><br/><span class="hl-6">fasterStochRSI</span><span class="hl-1">.</span><span class="hl-0">update</span><span class="hl-1">(</span><span class="hl-7">4</span><span class="hl-1">);</span><br/><span class="hl-6">fasterStochRSI</span><span class="hl-1">.</span><span class="hl-0">update</span><span class="hl-1">(</span><span class="hl-7">5</span><span class="hl-1">);</span><br/><span class="hl-6">fasterStochRSI</span><span class="hl-1">.</span><span class="hl-0">update</span><span class="hl-1">(</span><span class="hl-7">6</span><span class="hl-1">);</span><br/><br/><span class="hl-6">console</span><span class="hl-1">.</span><span class="hl-0">log</span><span class="hl-1">(</span><span class="hl-6">fasterStochRSI</span><span class="hl-1">.</span><span class="hl-0">getResultOrThrow</span><span class="hl-1">());</span>
-</code><button type="button">Copy</button></pre>
-
-          <h3 id="benchmarks" class="tsd-anchor-link">
-            Benchmarks<a href="#benchmarks" aria-label="Permalink" class="tsd-anchor-icon"
-              ><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg
-            ></a>
-          </h3>
-          <p>
-            You can run <code>npm run start:benchmark</code> to see the runtime performance of each technical indicator
-            on your machine. This will give you an understanding of which indicators can be calculated faster than
-            others.
+            Earlier versions of this library (up to version 6) used
+            <a href="http://mikemcl.github.io/big.js/">big.js</a> for arbitrary-precision arithmetic, but that made
+            calculations about 100x slower on average. For this reason, support for
+            <a href="http://mikemcl.github.io/big.js/">big.js</a> was removed starting with version 7.
           </p>
           <h2 id="disclaimer" class="tsd-anchor-link">
             Disclaimer<a href="#disclaimer" aria-label="Permalink" class="tsd-anchor-icon"
@@ -295,6 +274,11 @@
                 >Crypto Trading Hub Indicators (TypeScript)</a
               >
             </li>
+            <li>
+              <a href="https://github.com/highcharts/highcharts/tree/v12.3.0/ts/Stock/Indicators"
+                >Highcharts Indicators (TypeScript)</a
+              >
+            </li>
             <li><a href="https://github.com/cinar/indicatorts">Indicator TS (TypeScript)</a></li>
             <li>
               <a href="https://docs.jesse.trade/docs/indicators/reference.html"
@@ -306,7 +290,8 @@
             <li><a href="https://github.com/twopirllc/pandas-ta">Pandas TA (Python)</a></li>
             <li><a href="https://github.com/DaveSkender/Stock.Indicators">Stock Indicators for .NET (C#)</a></li>
             <li><a href="https://github.com/StockSharp/StockSharp">StockSharp (C#)</a></li>
-            <li><a href="https://github.com/munrocket/ta-math">ta-math</a></li>
+            <li><a href="https://github.com/TA-Lib/ta-lib/tree/main/src/ta_func">ta-lib (C)</a></li>
+            <li><a href="https://github.com/munrocket/ta-math">ta-math (TypeScript)</a></li>
             <li><a href="https://github.com/ta4j/ta4j">ta4j (Java)</a></li>
             <li><a href="https://github.com/greyblake/ta-rs">Technical Analysis for Rust (Rust)</a></li>
             <li>
@@ -452,15 +437,9 @@
                 <li>
                   <ul>
                     <li>
-                      <a href="#arbitrary-precision-decimal-arithmetic"
-                        ><span>Arbitrary-<wbr />precision decimal arithmetic</span></a
+                      <a href="#floating-point-arithmetic-caveats"
+                        ><span>Floating-<wbr />point arithmetic caveats</span></a
                       >
-                    </li>
-                    <li>
-                      <a href="#faster-implementations"><span>Faster implementations</span></a>
-                    </li>
-                    <li>
-                      <a href="#benchmarks"><span>Benchmarks</span></a>
                     </li>
                   </ul>
                 </li>

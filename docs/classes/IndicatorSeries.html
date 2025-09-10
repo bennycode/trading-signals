@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta http-equiv="x-ua-compatible" content="IE=edge" />
-    <title>BollingerBandsWidth | trading-signals</title>
+    <title>IndicatorSeries | trading-signals</title>
     <meta name="description" content="Documentation for trading-signals" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="stylesheet" href="../assets/style.css" />
@@ -53,41 +53,110 @@
       <div class="col-content">
         <div class="tsd-page-title">
           <ul class="tsd-breadcrumb" aria-label="Breadcrumb">
-            <li><a href="" aria-current="page">BollingerBandsWidth</a></li>
+            <li><a href="" aria-current="page">IndicatorSeries</a></li>
           </ul>
-          <h1>Class BollingerBandsWidth</h1>
+          <h1>Class IndicatorSeries&lt;Input&gt;<code class="tsd-tag">Abstract</code></h1>
         </div>
         <section class="tsd-panel tsd-comment">
-          <div class="tsd-comment tsd-typography">
-            <p>Bollinger Bands Width (BBW) Type: Volatility</p>
-            <p>
-              The Bollinger Bands Width (BBW) indicator, developed by John A. Bollinger, merges the information of
-              Bollinger Bands into one definite number. It defines the narrowness of the underlying Bollinger Bands by
-              representing the difference between the Upper Band and the Lower Band.
-            </p>
-          </div>
-          <div class="tsd-comment tsd-typography">
-            <div class="tsd-tag-see">
-              <h4 class="tsd-anchor-link" id="see">
-                See<a href="#see" aria-label="Permalink" class="tsd-anchor-icon"
-                  ><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg
-                ></a>
-              </h4>
-              <p>
-                <a href="https://www.tradingview.com/support/solutions/43000501972-bollinger-bands-width-bbw/"
-                  >https://www.tradingview.com/support/solutions/43000501972-bollinger-bands-width-bbw/</a
-                >
-              </p>
-            </div>
-          </div>
+          <div class="tsd-comment tsd-typography"><p>Tracks results of an indicator over time.</p></div>
         </section>
-        <section class="tsd-panel tsd-hierarchy" data-refl="1374">
-          <h4>Hierarchy (<a href="../hierarchy.html#BollingerBandsWidth">View Summary</a>)</h4>
+        <section class="tsd-panel">
+          <h4>Type Parameters</h4>
+          <ul class="tsd-type-parameter-list">
+            <li>
+              <span id="input"
+                ><span class="tsd-kind-type-parameter">Input</span> =
+                <span class="tsd-signature-type">number</span></span
+              >
+            </li>
+          </ul>
+        </section>
+        <section class="tsd-panel tsd-hierarchy" data-refl="1118">
+          <h4>Hierarchy (<a href="../hierarchy.html#IndicatorSeries">View Summary</a>)</h4>
           <ul class="tsd-hierarchy">
             <li class="tsd-hierarchy-item">
-              <a href="IndicatorSeries.html" class="tsd-signature-type tsd-kind-class">IndicatorSeries</a>
+              <a href="BaseIndicatorSeries.html" class="tsd-signature-type tsd-kind-class">BaseIndicatorSeries</a
+              ><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">number</span
+              ><span class="tsd-signature-symbol">,</span>
+              <a class="tsd-signature-type tsd-kind-type-parameter" href="#constructorindicatorseriesinput">Input</a
+              ><span class="tsd-signature-symbol">&gt;</span>
               <ul class="tsd-hierarchy">
-                <li class="tsd-hierarchy-item"><span class="tsd-hierarchy-target">BollingerBandsWidth</span></li>
+                <li class="tsd-hierarchy-item">
+                  <span class="tsd-hierarchy-target">IndicatorSeries</span>
+                  <ul class="tsd-hierarchy">
+                    <li class="tsd-hierarchy-item">
+                      <a href="TDS.html" class="tsd-signature-type tsd-kind-class">TDS</a>
+                    </li>
+                    <li class="tsd-hierarchy-item">
+                      <a href="AC.html" class="tsd-signature-type tsd-kind-class">AC</a>
+                    </li>
+                    <li class="tsd-hierarchy-item">
+                      <a href="AO.html" class="tsd-signature-type tsd-kind-class">AO</a>
+                    </li>
+                    <li class="tsd-hierarchy-item">
+                      <a href="CCI.html" class="tsd-signature-type tsd-kind-class">CCI</a>
+                    </li>
+                    <li class="tsd-hierarchy-item">
+                      <a href="CG.html" class="tsd-signature-type tsd-kind-class">CG</a>
+                    </li>
+                    <li class="tsd-hierarchy-item">
+                      <a href="MOM.html" class="tsd-signature-type tsd-kind-class">MOM</a>
+                    </li>
+                    <li class="tsd-hierarchy-item">
+                      <a href="OBV.html" class="tsd-signature-type tsd-kind-class">OBV</a>
+                    </li>
+                    <li class="tsd-hierarchy-item">
+                      <a href="REI.html" class="tsd-signature-type tsd-kind-class">REI</a>
+                    </li>
+                    <li class="tsd-hierarchy-item">
+                      <a href="ROC.html" class="tsd-signature-type tsd-kind-class">ROC</a>
+                    </li>
+                    <li class="tsd-hierarchy-item">
+                      <a href="RSI.html" class="tsd-signature-type tsd-kind-class">RSI</a>
+                    </li>
+                    <li class="tsd-hierarchy-item">
+                      <a href="StochasticRSI.html" class="tsd-signature-type tsd-kind-class">StochasticRSI</a>
+                    </li>
+                    <li class="tsd-hierarchy-item">
+                      <a href="ADX.html" class="tsd-signature-type tsd-kind-class">ADX</a>
+                    </li>
+                    <li class="tsd-hierarchy-item">
+                      <a href="DEMA.html" class="tsd-signature-type tsd-kind-class">DEMA</a>
+                    </li>
+                    <li class="tsd-hierarchy-item">
+                      <a href="DX.html" class="tsd-signature-type tsd-kind-class">DX</a>
+                    </li>
+                    <li class="tsd-hierarchy-item">
+                      <a href="PSAR.html" class="tsd-signature-type tsd-kind-class">PSAR</a>
+                    </li>
+                    <li class="tsd-hierarchy-item">
+                      <a href="VWAP.html" class="tsd-signature-type tsd-kind-class">VWAP</a>
+                    </li>
+                    <li class="tsd-hierarchy-item">
+                      <a href="WSMA.html" class="tsd-signature-type tsd-kind-class">WSMA</a>
+                    </li>
+                    <li class="tsd-hierarchy-item">
+                      <a href="ZigZag.html" class="tsd-signature-type tsd-kind-class">ZigZag</a>
+                    </li>
+                    <li class="tsd-hierarchy-item">
+                      <a href="ATR.html" class="tsd-signature-type tsd-kind-class">ATR</a>
+                    </li>
+                    <li class="tsd-hierarchy-item">
+                      <a href="BollingerBandsWidth.html" class="tsd-signature-type tsd-kind-class"
+                        >BollingerBandsWidth</a
+                      >
+                    </li>
+                    <li class="tsd-hierarchy-item">
+                      <a href="IQR.html" class="tsd-signature-type tsd-kind-class">IQR</a>
+                    </li>
+                    <li class="tsd-hierarchy-item">
+                      <a href="MAD.html" class="tsd-signature-type tsd-kind-class">MAD</a>
+                    </li>
+                    <li class="tsd-hierarchy-item">
+                      <a href="TR.html" class="tsd-signature-type tsd-kind-class">TR</a>
+                    </li>
+                  </ul>
+                </li>
               </ul>
             </li>
           </ul>
@@ -97,8 +166,8 @@
             <li>
               Defined in
               <a
-                href="https://github.com/bennycode/trading-signals/blob/64c4fe80687890b1798fd3d25c901ed909c43f1c/src/volatility/BBW/BollingerBandsWidth.ts#L12"
-                >volatility/BBW/BollingerBandsWidth.ts:12</a
+                href="https://github.com/bennycode/trading-signals/blob/64c4fe80687890b1798fd3d25c901ed909c43f1c/src/types/Indicator.ts#L64"
+                >types/Indicator.ts:64</a
               >
             </li>
           </ul>
@@ -124,16 +193,6 @@
                   </div>
                 </section>
                 <section class="tsd-index-section">
-                  <h3 class="tsd-index-heading">Properties</h3>
-                  <div class="tsd-index-list">
-                    <a href="#bollingerbands" class="tsd-index-link"
-                      ><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Property">
-                        <use href="../assets/icons.svg#icon-1024"></use></svg
-                      ><span>bollinger<wbr />Bands</span></a
-                    >
-                  </div>
-                </section>
-                <section class="tsd-index-section">
                   <h3 class="tsd-index-heading">Accessors</h3>
                   <div class="tsd-index-list">
                     <a href="#isstable" class="tsd-index-link tsd-is-inherited"
@@ -151,7 +210,7 @@
                         <use href="../assets/icons.svg#icon-2048"></use></svg
                       ><span>add</span></a
                     >
-                    <a href="#getrequiredinputs" class="tsd-index-link"
+                    <a href="#getrequiredinputs" class="tsd-index-link tsd-is-inherited"
                       ><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method">
                         <use href="../assets/icons.svg#icon-2048"></use></svg
                       ><span>get<wbr />Required<wbr />Inputs</span></a
@@ -171,7 +230,7 @@
                         <use href="../assets/icons.svg#icon-2048"></use></svg
                       ><span>replace</span></a
                     >
-                    <a href="#update" class="tsd-index-link"
+                    <a href="#update" class="tsd-index-link tsd-is-inherited"
                       ><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method">
                         <use href="../assets/icons.svg#icon-2048"></use></svg
                       ><span>update</span></a
@@ -204,89 +263,56 @@
               </h3>
               <ul class="tsd-signatures">
                 <li class="">
-                  <div class="tsd-signature tsd-anchor-link" id="constructorbollingerbandswidth">
+                  <div class="tsd-signature tsd-anchor-link" id="constructorindicatorseries">
                     <span class="tsd-signature-keyword">new</span>
-                    <span class="tsd-kind-constructor-signature">BollingerBandsWidth</span
-                    ><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">bollingerBands</span
+                    <span class="tsd-kind-constructor-signature">IndicatorSeries</span
+                    ><span class="tsd-signature-symbol">&lt;</span
+                    ><a class="tsd-signature-type tsd-kind-type-parameter" href="#constructorindicatorseriesinput"
+                      >Input</a
+                    >
+                    <span class="tsd-signature-symbol">=</span> <span class="tsd-signature-type">number</span
+                    ><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">()</span
                     ><span class="tsd-signature-symbol">:</span>
-                    <a href="BollingerBands.html" class="tsd-signature-type tsd-kind-class">BollingerBands</a
-                    ><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span>
-                    <a href="" class="tsd-signature-type tsd-kind-class">BollingerBandsWidth</a
-                    ><a href="#constructorbollingerbandswidth" aria-label="Permalink" class="tsd-anchor-icon"
+                    <a href="" class="tsd-signature-type tsd-kind-class">IndicatorSeries</a
+                    ><span class="tsd-signature-symbol">&lt;</span
+                    ><a class="tsd-signature-type tsd-kind-type-parameter" href="#constructorindicatorseriesinput"
+                      >Input</a
+                    ><span class="tsd-signature-symbol">&gt;</span
+                    ><a href="#constructorindicatorseries" aria-label="Permalink" class="tsd-anchor-icon"
                       ><svg viewBox="0 0 24 24" aria-hidden="true">
                         <use href="../assets/icons.svg#icon-anchor"></use></svg
                     ></a>
                   </div>
                   <div class="tsd-description">
-                    <div class="tsd-parameters">
-                      <h4 class="tsd-parameters-title">Parameters</h4>
-                      <ul class="tsd-parameter-list">
+                    <section class="tsd-panel">
+                      <h4>Type Parameters</h4>
+                      <ul class="tsd-type-parameter-list">
                         <li>
-                          <span
-                            ><span class="tsd-kind-parameter">bollingerBands</span>:
-                            <a href="BollingerBands.html" class="tsd-signature-type tsd-kind-class"
-                              >BollingerBands</a
-                            ></span
+                          <span id="constructorindicatorseriesinput"
+                            ><span class="tsd-kind-type-parameter">Input</span> =
+                            <span class="tsd-signature-type">number</span></span
                           >
                         </li>
                       </ul>
-                    </div>
+                    </section>
                     <h4 class="tsd-returns-title">
-                      Returns <a href="" class="tsd-signature-type tsd-kind-class">BollingerBandsWidth</a>
+                      Returns <a href="" class="tsd-signature-type tsd-kind-class">IndicatorSeries</a
+                      ><span class="tsd-signature-symbol">&lt;</span
+                      ><a class="tsd-signature-type tsd-kind-type-parameter" href="#constructorindicatorseriesinput"
+                        >Input</a
+                      ><span class="tsd-signature-symbol">&gt;</span>
                     </h4>
                     <aside class="tsd-sources">
                       <p>
-                        Overrides <a href="IndicatorSeries.html">IndicatorSeries</a>.<a
-                          href="IndicatorSeries.html#constructor"
+                        Inherited from <a href="BaseIndicatorSeries.html">BaseIndicatorSeries</a>.<a
+                          href="BaseIndicatorSeries.html#constructor"
                           >constructor</a
                         >
                       </p>
-                      <ul>
-                        <li>
-                          Defined in
-                          <a
-                            href="https://github.com/bennycode/trading-signals/blob/64c4fe80687890b1798fd3d25c901ed909c43f1c/src/volatility/BBW/BollingerBandsWidth.ts#L13"
-                            >volatility/BBW/BollingerBandsWidth.ts:13</a
-                          >
-                        </li>
-                      </ul>
                     </aside>
                   </div>
                 </li>
               </ul>
-            </section>
-          </section>
-        </details>
-        <details class="tsd-panel-group tsd-member-group tsd-accordion" open>
-          <summary class="tsd-accordion-summary" data-key="section-Properties">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-              <use href="../assets/icons.svg#icon-chevronDown"></use>
-            </svg>
-            <h2>Properties</h2>
-          </summary>
-          <section>
-            <section class="tsd-panel tsd-member">
-              <h3 class="tsd-anchor-link" id="bollingerbands">
-                <code class="tsd-tag">Readonly</code><span>bollinger<wbr />Bands</span
-                ><a href="#bollingerbands" aria-label="Permalink" class="tsd-anchor-icon"
-                  ><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg
-                ></a>
-              </h3>
-              <div class="tsd-signature">
-                <span class="tsd-kind-property">bollingerBands</span><span class="tsd-signature-symbol">:</span>
-                <a href="BollingerBands.html" class="tsd-signature-type tsd-kind-class">BollingerBands</a>
-              </div>
-              <aside class="tsd-sources">
-                <ul>
-                  <li>
-                    Defined in
-                    <a
-                      href="https://github.com/bennycode/trading-signals/blob/64c4fe80687890b1798fd3d25c901ed909c43f1c/src/volatility/BBW/BollingerBandsWidth.ts#L13"
-                      >volatility/BBW/BollingerBandsWidth.ts:13</a
-                    >
-                  </li>
-                </ul>
-              </aside>
             </section>
           </section>
         </details>
@@ -315,7 +341,7 @@
                   <div class="tsd-description">
                     <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">boolean</span></h4>
                     <aside class="tsd-sources">
-                      <p>Inherited from IndicatorSeries.isStable</p>
+                      <p>Inherited from BaseIndicatorSeries.isStable</p>
                       <ul>
                         <li>
                           Defined in
@@ -352,9 +378,11 @@
                   <div class="tsd-signature tsd-anchor-link" id="add-1">
                     <span class="tsd-kind-call-signature">add</span><span class="tsd-signature-symbol">(</span
                     ><span class="tsd-kind-parameter">input</span><span class="tsd-signature-symbol">:</span>
-                    <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">)</span
-                    ><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">null</span>
-                    <span class="tsd-signature-symbol">|</span> <span class="tsd-signature-type">number</span
+                    <a class="tsd-signature-type tsd-kind-type-parameter" href="#constructorindicatorseriesinput"
+                      >Input</a
+                    ><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span>
+                    <span class="tsd-signature-type">null</span> <span class="tsd-signature-symbol">|</span>
+                    <span class="tsd-signature-type">number</span
                     ><a href="#add-1" aria-label="Permalink" class="tsd-anchor-icon"
                       ><svg viewBox="0 0 24 24" aria-hidden="true">
                         <use href="../assets/icons.svg#icon-anchor"></use></svg
@@ -367,7 +395,11 @@
                         <li>
                           <span
                             ><span class="tsd-kind-parameter">input</span>:
-                            <span class="tsd-signature-type">number</span></span
+                            <a
+                              class="tsd-signature-type tsd-kind-type-parameter"
+                              href="#constructorindicatorseriesinput"
+                              >Input</a
+                            ></span
                           >
                         </li>
                       </ul>
@@ -378,8 +410,8 @@
                     </h4>
                     <aside class="tsd-sources">
                       <p>
-                        Inherited from <a href="IndicatorSeries.html">IndicatorSeries</a>.<a
-                          href="IndicatorSeries.html#add"
+                        Inherited from <a href="BaseIndicatorSeries.html">BaseIndicatorSeries</a>.<a
+                          href="BaseIndicatorSeries.html#add"
                           >add</a
                         >
                       </p>
@@ -397,15 +429,15 @@
                 </li>
               </ul>
             </section>
-            <section class="tsd-panel tsd-member">
+            <section class="tsd-panel tsd-member tsd-is-inherited">
               <h3 class="tsd-anchor-link" id="getrequiredinputs">
-                <span>get<wbr />Required<wbr />Inputs</span
+                <code class="tsd-tag">Abstract</code><span>get<wbr />Required<wbr />Inputs</span
                 ><a href="#getrequiredinputs" aria-label="Permalink" class="tsd-anchor-icon"
                   ><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg
                 ></a>
               </h3>
-              <ul class="tsd-signatures">
-                <li class="">
+              <ul class="tsd-signatures tsd-is-inherited">
+                <li class="tsd-is-inherited">
                   <div class="tsd-signature tsd-anchor-link" id="getrequiredinputs-1">
                     <span class="tsd-kind-call-signature">getRequiredInputs</span
                     ><span class="tsd-signature-symbol">()</span><span class="tsd-signature-symbol">:</span>
@@ -419,8 +451,8 @@
                     <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">number</span></h4>
                     <aside class="tsd-sources">
                       <p>
-                        Overrides <a href="IndicatorSeries.html">IndicatorSeries</a>.<a
-                          href="IndicatorSeries.html#getrequiredinputs"
+                        Inherited from <a href="BaseIndicatorSeries.html">BaseIndicatorSeries</a>.<a
+                          href="BaseIndicatorSeries.html#getrequiredinputs"
                           >getRequiredInputs</a
                         >
                       </p>
@@ -428,8 +460,8 @@
                         <li>
                           Defined in
                           <a
-                            href="https://github.com/bennycode/trading-signals/blob/64c4fe80687890b1798fd3d25c901ed909c43f1c/src/volatility/BBW/BollingerBandsWidth.ts#L17"
-                            >volatility/BBW/BollingerBandsWidth.ts:17</a
+                            href="https://github.com/bennycode/trading-signals/blob/64c4fe80687890b1798fd3d25c901ed909c43f1c/src/types/Indicator.ts#L19"
+                            >types/Indicator.ts:19</a
                           >
                         </li>
                       </ul>
@@ -463,8 +495,8 @@
                     </h4>
                     <aside class="tsd-sources">
                       <p>
-                        Inherited from <a href="IndicatorSeries.html">IndicatorSeries</a>.<a
-                          href="IndicatorSeries.html#getresult"
+                        Inherited from <a href="BaseIndicatorSeries.html">BaseIndicatorSeries</a>.<a
+                          href="BaseIndicatorSeries.html#getresult"
                           >getResult</a
                         >
                       </p>
@@ -504,8 +536,8 @@
                     <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">number</span></h4>
                     <aside class="tsd-sources">
                       <p>
-                        Inherited from <a href="IndicatorSeries.html">IndicatorSeries</a>.<a
-                          href="IndicatorSeries.html#getresultorthrow"
+                        Inherited from <a href="BaseIndicatorSeries.html">BaseIndicatorSeries</a>.<a
+                          href="BaseIndicatorSeries.html#getresultorthrow"
                           >getResultOrThrow</a
                         >
                       </p>
@@ -535,9 +567,11 @@
                   <div class="tsd-signature tsd-anchor-link" id="replace-1">
                     <span class="tsd-kind-call-signature">replace</span><span class="tsd-signature-symbol">(</span
                     ><span class="tsd-kind-parameter">input</span><span class="tsd-signature-symbol">:</span>
-                    <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">)</span
-                    ><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">null</span>
-                    <span class="tsd-signature-symbol">|</span> <span class="tsd-signature-type">number</span
+                    <a class="tsd-signature-type tsd-kind-type-parameter" href="#constructorindicatorseriesinput"
+                      >Input</a
+                    ><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span>
+                    <span class="tsd-signature-type">null</span> <span class="tsd-signature-symbol">|</span>
+                    <span class="tsd-signature-type">number</span
                     ><a href="#replace-1" aria-label="Permalink" class="tsd-anchor-icon"
                       ><svg viewBox="0 0 24 24" aria-hidden="true">
                         <use href="../assets/icons.svg#icon-anchor"></use></svg
@@ -550,7 +584,11 @@
                         <li>
                           <span
                             ><span class="tsd-kind-parameter">input</span>:
-                            <span class="tsd-signature-type">number</span></span
+                            <a
+                              class="tsd-signature-type tsd-kind-type-parameter"
+                              href="#constructorindicatorseriesinput"
+                              >Input</a
+                            ></span
                           >
                         </li>
                       </ul>
@@ -561,8 +599,8 @@
                     </h4>
                     <aside class="tsd-sources">
                       <p>
-                        Inherited from <a href="IndicatorSeries.html">IndicatorSeries</a>.<a
-                          href="IndicatorSeries.html#replace"
+                        Inherited from <a href="BaseIndicatorSeries.html">BaseIndicatorSeries</a>.<a
+                          href="BaseIndicatorSeries.html#replace"
                           >replace</a
                         >
                       </p>
@@ -580,23 +618,25 @@
                 </li>
               </ul>
             </section>
-            <section class="tsd-panel tsd-member">
+            <section class="tsd-panel tsd-member tsd-is-inherited">
               <h3 class="tsd-anchor-link" id="update">
-                <span>update</span
+                <code class="tsd-tag">Abstract</code><span>update</span
                 ><a href="#update" aria-label="Permalink" class="tsd-anchor-icon"
                   ><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg
                 ></a>
               </h3>
-              <ul class="tsd-signatures">
-                <li class="">
+              <ul class="tsd-signatures tsd-is-inherited">
+                <li class="tsd-is-inherited">
                   <div class="tsd-signature tsd-anchor-link" id="update-1">
                     <span class="tsd-kind-call-signature">update</span><span class="tsd-signature-symbol">(</span
-                    ><span class="tsd-kind-parameter">price</span><span class="tsd-signature-symbol">:</span>
-                    <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">,</span>
-                    <span class="tsd-kind-parameter">replace</span><span class="tsd-signature-symbol">:</span>
-                    <span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">)</span
-                    ><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">null</span>
-                    <span class="tsd-signature-symbol">|</span> <span class="tsd-signature-type">number</span
+                    ><span class="tsd-kind-parameter">input</span><span class="tsd-signature-symbol">:</span>
+                    <a class="tsd-signature-type tsd-kind-type-parameter" href="#constructorindicatorseriesinput"
+                      >Input</a
+                    ><span class="tsd-signature-symbol">,</span> <span class="tsd-kind-parameter">replace</span
+                    ><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span
+                    ><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span>
+                    <span class="tsd-signature-type">null</span> <span class="tsd-signature-symbol">|</span>
+                    <span class="tsd-signature-type">number</span
                     ><a href="#update-1" aria-label="Permalink" class="tsd-anchor-icon"
                       ><svg viewBox="0 0 24 24" aria-hidden="true">
                         <use href="../assets/icons.svg#icon-anchor"></use></svg
@@ -608,8 +648,12 @@
                       <ul class="tsd-parameter-list">
                         <li>
                           <span
-                            ><span class="tsd-kind-parameter">price</span>:
-                            <span class="tsd-signature-type">number</span></span
+                            ><span class="tsd-kind-parameter">input</span>:
+                            <a
+                              class="tsd-signature-type tsd-kind-type-parameter"
+                              href="#constructorindicatorseriesinput"
+                              >Input</a
+                            ></span
                           >
                         </li>
                         <li>
@@ -626,8 +670,8 @@
                     </h4>
                     <aside class="tsd-sources">
                       <p>
-                        Overrides <a href="IndicatorSeries.html">IndicatorSeries</a>.<a
-                          href="IndicatorSeries.html#update"
+                        Inherited from <a href="BaseIndicatorSeries.html">BaseIndicatorSeries</a>.<a
+                          href="BaseIndicatorSeries.html#update"
                           >update</a
                         >
                       </p>
@@ -635,8 +679,8 @@
                         <li>
                           Defined in
                           <a
-                            href="https://github.com/bennycode/trading-signals/blob/64c4fe80687890b1798fd3d25c901ed909c43f1c/src/volatility/BBW/BollingerBandsWidth.ts#L21"
-                            >volatility/BBW/BollingerBandsWidth.ts:21</a
+                            href="https://github.com/bennycode/trading-signals/blob/64c4fe80687890b1798fd3d25c901ed909c43f1c/src/types/Indicator.ts#L49"
+                            >types/Indicator.ts:49</a
                           >
                         </li>
                       </ul>
@@ -657,7 +701,9 @@
                   <div class="tsd-signature tsd-anchor-link" id="updates-1">
                     <span class="tsd-kind-call-signature">updates</span><span class="tsd-signature-symbol">(</span
                     ><span class="tsd-kind-parameter">inputs</span><span class="tsd-signature-symbol">:</span>
-                    <span class="tsd-signature-keyword">readonly</span> <span class="tsd-signature-type">number</span
+                    <span class="tsd-signature-keyword">readonly</span>
+                    <a class="tsd-signature-type tsd-kind-type-parameter" href="#constructorindicatorseriesinput"
+                      >Input</a
                     ><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">,</span>
                     <span class="tsd-kind-parameter">replace</span><span class="tsd-signature-symbol">?:</span>
                     <span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">)</span
@@ -678,7 +724,10 @@
                           <span
                             ><span class="tsd-kind-parameter">inputs</span>:
                             <span class="tsd-signature-keyword">readonly</span>
-                            <span class="tsd-signature-type">number</span
+                            <a
+                              class="tsd-signature-type tsd-kind-type-parameter"
+                              href="#constructorindicatorseriesinput"
+                              >Input</a
                             ><span class="tsd-signature-symbol">[]</span></span
                           >
                         </li>
@@ -697,8 +746,8 @@
                     </h4>
                     <aside class="tsd-sources">
                       <p>
-                        Inherited from <a href="IndicatorSeries.html">IndicatorSeries</a>.<a
-                          href="IndicatorSeries.html#updates"
+                        Inherited from <a href="BaseIndicatorSeries.html">BaseIndicatorSeries</a>.<a
+                          href="BaseIndicatorSeries.html#updates"
                           >updates</a
                         >
                       </p>
@@ -794,20 +843,6 @@
                 </div>
               </details>
               <details open class="tsd-accordion tsd-page-navigation-section">
-                <summary class="tsd-accordion-summary" data-key="section-Properties">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                    <use href="../assets/icons.svg#icon-chevronDown"></use></svg
-                  >Properties
-                </summary>
-                <div>
-                  <a href="#bollingerbands"
-                    ><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Property">
-                      <use href="../assets/icons.svg#icon-1024"></use></svg
-                    ><span>bollinger<wbr />Bands</span></a
-                  >
-                </div>
-              </details>
-              <details open class="tsd-accordion tsd-page-navigation-section">
                 <summary class="tsd-accordion-summary" data-key="section-Accessors">
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                     <use href="../assets/icons.svg#icon-chevronDown"></use></svg
@@ -832,7 +867,7 @@
                     ><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method">
                       <use href="../assets/icons.svg#icon-2048"></use></svg
                     ><span>add</span></a
-                  ><a href="#getrequiredinputs"
+                  ><a href="#getrequiredinputs" class="tsd-is-inherited"
                     ><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method">
                       <use href="../assets/icons.svg#icon-2048"></use></svg
                     ><span>get<wbr />Required<wbr />Inputs</span></a
@@ -848,7 +883,7 @@
                     ><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method">
                       <use href="../assets/icons.svg#icon-2048"></use></svg
                     ><span>replace</span></a
-                  ><a href="#update"
+                  ><a href="#update" class="tsd-is-inherited"
                     ><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method">
                       <use href="../assets/icons.svg#icon-2048"></use></svg
                     ><span>update</span></a

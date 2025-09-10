@@ -57,7 +57,17 @@
           </ul>
           <h1>Class LinearRegression</h1>
         </div>
-        <section class="tsd-panel tsd-hierarchy" data-refl="1375">
+        <section class="tsd-panel tsd-comment">
+          <div class="tsd-comment tsd-typography">
+            <p>Linear Regression (LINREG) Type: Trend</p>
+            <p>
+              It fits a straight line to price data over a chosen period using the least-squares method. The slope of
+              the line shows the trend direction and strength. It’s similar in use to moving averages but mathematically
+              more precise, since it minimizes the squared distance between price points and the fitted line.
+            </p>
+          </div>
+        </section>
+        <section class="tsd-panel tsd-hierarchy" data-refl="700">
           <h4>Hierarchy (<a href="../hierarchy.html#LinearRegression">View Summary</a>)</h4>
           <ul class="tsd-hierarchy">
             <li class="tsd-hierarchy-item">
@@ -65,7 +75,7 @@
               ><span class="tsd-signature-symbol">&lt;</span
               ><a href="../types/LinearRegressionResult.html" class="tsd-signature-type tsd-kind-type-alias"
                 >LinearRegressionResult</a
-              ><span class="tsd-signature-symbol">,</span> <span class="tsd-signature-type">BigSource</span
+              ><span class="tsd-signature-symbol">,</span> <span class="tsd-signature-type">number</span
               ><span class="tsd-signature-symbol">&gt;</span>
               <ul class="tsd-hierarchy">
                 <li class="tsd-hierarchy-item"><span class="tsd-hierarchy-target">LinearRegression</span></li>
@@ -78,8 +88,8 @@
             <li>
               Defined in
               <a
-                href="https://github.com/bennycode/trading-signals/blob/99736c02585926466aeb8b11a50b37de8474cb73/src/LINREG/LinearRegression.ts#L25"
-                >LINREG/LinearRegression.ts:25</a
+                href="https://github.com/bennycode/trading-signals/blob/64c4fe80687890b1798fd3d25c901ed909c43f1c/src/trend/LINREG/LinearRegression.ts#L19"
+                >trend/LINREG/LinearRegression.ts:19</a
               >
             </li>
           </ul>
@@ -147,7 +157,7 @@
                         <use href="../assets/icons.svg#icon-2048"></use></svg
                       ><span>get<wbr />Result</span></a
                     >
-                    <a href="#getresultorthrow" class="tsd-index-link"
+                    <a href="#getresultorthrow" class="tsd-index-link tsd-is-inherited"
                       ><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method">
                         <use href="../assets/icons.svg#icon-2048"></use></svg
                       ><span>get<wbr />Result<wbr />Or<wbr />Throw</span></a
@@ -228,8 +238,8 @@
                         <li>
                           Defined in
                           <a
-                            href="https://github.com/bennycode/trading-signals/blob/99736c02585926466aeb8b11a50b37de8474cb73/src/LINREG/LinearRegression.ts#L28"
-                            >LINREG/LinearRegression.ts:28</a
+                            href="https://github.com/bennycode/trading-signals/blob/64c4fe80687890b1798fd3d25c901ed909c43f1c/src/trend/LINREG/LinearRegression.ts#L22"
+                            >trend/LINREG/LinearRegression.ts:22</a
                           >
                         </li>
                       </ul>
@@ -264,8 +274,8 @@
                   <li>
                     Defined in
                     <a
-                      href="https://github.com/bennycode/trading-signals/blob/99736c02585926466aeb8b11a50b37de8474cb73/src/LINREG/LinearRegression.ts#L28"
-                      >LINREG/LinearRegression.ts:28</a
+                      href="https://github.com/bennycode/trading-signals/blob/64c4fe80687890b1798fd3d25c901ed909c43f1c/src/trend/LINREG/LinearRegression.ts#L22"
+                      >trend/LINREG/LinearRegression.ts:22</a
                     >
                   </li>
                 </ul>
@@ -280,7 +290,7 @@
               </h3>
               <div class="tsd-signature">
                 <span class="tsd-kind-property">prices</span><span class="tsd-signature-symbol">:</span>
-                <span class="tsd-signature-type">BigSource</span><span class="tsd-signature-symbol">[]</span
+                <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">[]</span
                 ><span class="tsd-signature-symbol"> = []</span>
               </div>
               <aside class="tsd-sources">
@@ -288,8 +298,8 @@
                   <li>
                     Defined in
                     <a
-                      href="https://github.com/bennycode/trading-signals/blob/99736c02585926466aeb8b11a50b37de8474cb73/src/LINREG/LinearRegression.ts#L26"
-                      >LINREG/LinearRegression.ts:26</a
+                      href="https://github.com/bennycode/trading-signals/blob/64c4fe80687890b1798fd3d25c901ed909c43f1c/src/trend/LINREG/LinearRegression.ts#L20"
+                      >trend/LINREG/LinearRegression.ts:20</a
                     >
                   </li>
                 </ul>
@@ -327,8 +337,8 @@
                         <li>
                           Defined in
                           <a
-                            href="https://github.com/bennycode/trading-signals/blob/99736c02585926466aeb8b11a50b37de8474cb73/src/LINREG/LinearRegression.ts#L83"
-                            >LINREG/LinearRegression.ts:83</a
+                            href="https://github.com/bennycode/trading-signals/blob/64c4fe80687890b1798fd3d25c901ed909c43f1c/src/trend/LINREG/LinearRegression.ts#L78"
+                            >trend/LINREG/LinearRegression.ts:78</a
                           >
                         </li>
                       </ul>
@@ -359,7 +369,7 @@
                   <div class="tsd-signature tsd-anchor-link" id="add-1">
                     <span class="tsd-kind-call-signature">add</span><span class="tsd-signature-symbol">(</span
                     ><span class="tsd-kind-parameter">input</span><span class="tsd-signature-symbol">:</span>
-                    <span class="tsd-signature-type">BigSource</span><span class="tsd-signature-symbol">)</span
+                    <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">)</span
                     ><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">null</span>
                     <span class="tsd-signature-symbol">|</span>
                     <a href="../types/LinearRegressionResult.html" class="tsd-signature-type tsd-kind-type-alias"
@@ -376,7 +386,7 @@
                         <li>
                           <span
                             ><span class="tsd-kind-parameter">input</span>:
-                            <span class="tsd-signature-type">BigSource</span></span
+                            <span class="tsd-signature-type">number</span></span
                           >
                         </li>
                       </ul>
@@ -398,8 +408,8 @@
                         <li>
                           Defined in
                           <a
-                            href="https://github.com/bennycode/trading-signals/blob/99736c02585926466aeb8b11a50b37de8474cb73/src/Indicator.ts#L42"
-                            >Indicator.ts:42</a
+                            href="https://github.com/bennycode/trading-signals/blob/64c4fe80687890b1798fd3d25c901ed909c43f1c/src/types/Indicator.ts#L41"
+                            >types/Indicator.ts:41</a
                           >
                         </li>
                       </ul>
@@ -439,8 +449,8 @@
                         <li>
                           Defined in
                           <a
-                            href="https://github.com/bennycode/trading-signals/blob/99736c02585926466aeb8b11a50b37de8474cb73/src/LINREG/LinearRegression.ts#L32"
-                            >LINREG/LinearRegression.ts:32</a
+                            href="https://github.com/bennycode/trading-signals/blob/64c4fe80687890b1798fd3d25c901ed909c43f1c/src/trend/LINREG/LinearRegression.ts#L26"
+                            >trend/LINREG/LinearRegression.ts:26</a
                           >
                         </li>
                       </ul>
@@ -487,8 +497,8 @@
                         <li>
                           Defined in
                           <a
-                            href="https://github.com/bennycode/trading-signals/blob/99736c02585926466aeb8b11a50b37de8474cb73/src/Indicator.ts#L22"
-                            >Indicator.ts:22</a
+                            href="https://github.com/bennycode/trading-signals/blob/64c4fe80687890b1798fd3d25c901ed909c43f1c/src/types/Indicator.ts#L21"
+                            >types/Indicator.ts:21</a
                           >
                         </li>
                       </ul>
@@ -497,15 +507,15 @@
                 </li>
               </ul>
             </section>
-            <section class="tsd-panel tsd-member">
+            <section class="tsd-panel tsd-member tsd-is-inherited">
               <h3 class="tsd-anchor-link" id="getresultorthrow">
                 <span>get<wbr />Result<wbr />Or<wbr />Throw</span
                 ><a href="#getresultorthrow" aria-label="Permalink" class="tsd-anchor-icon"
                   ><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg
                 ></a>
               </h3>
-              <ul class="tsd-signatures">
-                <li class="">
+              <ul class="tsd-signatures tsd-is-inherited">
+                <li class="tsd-is-inherited">
                   <div class="tsd-signature tsd-anchor-link" id="getresultorthrow-1">
                     <span class="tsd-kind-call-signature">getResultOrThrow</span
                     ><span class="tsd-signature-symbol">()</span><span class="tsd-signature-symbol">:</span>
@@ -525,7 +535,7 @@
                     </h4>
                     <aside class="tsd-sources">
                       <p>
-                        Overrides <a href="TechnicalIndicator.html">TechnicalIndicator</a>.<a
+                        Inherited from <a href="TechnicalIndicator.html">TechnicalIndicator</a>.<a
                           href="TechnicalIndicator.html#getresultorthrow"
                           >getResultOrThrow</a
                         >
@@ -534,8 +544,8 @@
                         <li>
                           Defined in
                           <a
-                            href="https://github.com/bennycode/trading-signals/blob/99736c02585926466aeb8b11a50b37de8474cb73/src/LINREG/LinearRegression.ts#L76"
-                            >LINREG/LinearRegression.ts:76</a
+                            href="https://github.com/bennycode/trading-signals/blob/64c4fe80687890b1798fd3d25c901ed909c43f1c/src/types/Indicator.ts#L29"
+                            >types/Indicator.ts:29</a
                           >
                         </li>
                       </ul>
@@ -556,7 +566,7 @@
                   <div class="tsd-signature tsd-anchor-link" id="replace-1">
                     <span class="tsd-kind-call-signature">replace</span><span class="tsd-signature-symbol">(</span
                     ><span class="tsd-kind-parameter">input</span><span class="tsd-signature-symbol">:</span>
-                    <span class="tsd-signature-type">BigSource</span><span class="tsd-signature-symbol">)</span
+                    <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">)</span
                     ><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">null</span>
                     <span class="tsd-signature-symbol">|</span>
                     <a href="../types/LinearRegressionResult.html" class="tsd-signature-type tsd-kind-type-alias"
@@ -573,7 +583,7 @@
                         <li>
                           <span
                             ><span class="tsd-kind-parameter">input</span>:
-                            <span class="tsd-signature-type">BigSource</span></span
+                            <span class="tsd-signature-type">number</span></span
                           >
                         </li>
                       </ul>
@@ -595,8 +605,8 @@
                         <li>
                           Defined in
                           <a
-                            href="https://github.com/bennycode/trading-signals/blob/99736c02585926466aeb8b11a50b37de8474cb73/src/Indicator.ts#L46"
-                            >Indicator.ts:46</a
+                            href="https://github.com/bennycode/trading-signals/blob/64c4fe80687890b1798fd3d25c901ed909c43f1c/src/types/Indicator.ts#L45"
+                            >types/Indicator.ts:45</a
                           >
                         </li>
                       </ul>
@@ -617,7 +627,7 @@
                   <div class="tsd-signature tsd-anchor-link" id="update-1">
                     <span class="tsd-kind-call-signature">update</span><span class="tsd-signature-symbol">(</span
                     ><span class="tsd-kind-parameter">price</span><span class="tsd-signature-symbol">:</span>
-                    <span class="tsd-signature-type">BigSource</span><span class="tsd-signature-symbol">,</span>
+                    <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">,</span>
                     <span class="tsd-kind-parameter">replace</span><span class="tsd-signature-symbol">:</span>
                     <span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">)</span
                     ><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">null</span>
@@ -636,7 +646,7 @@
                         <li>
                           <span
                             ><span class="tsd-kind-parameter">price</span>:
-                            <span class="tsd-signature-type">BigSource</span></span
+                            <span class="tsd-signature-type">number</span></span
                           >
                         </li>
                         <li>
@@ -664,8 +674,8 @@
                         <li>
                           Defined in
                           <a
-                            href="https://github.com/bennycode/trading-signals/blob/99736c02585926466aeb8b11a50b37de8474cb73/src/LINREG/LinearRegression.ts#L66"
-                            >LINREG/LinearRegression.ts:66</a
+                            href="https://github.com/bennycode/trading-signals/blob/64c4fe80687890b1798fd3d25c901ed909c43f1c/src/trend/LINREG/LinearRegression.ts#L68"
+                            >trend/LINREG/LinearRegression.ts:68</a
                           >
                         </li>
                       </ul>
@@ -687,7 +697,7 @@
                     <span class="tsd-kind-call-signature">updates</span><span class="tsd-signature-symbol">(</span
                     ><br />    <span class="tsd-kind-parameter">inputs</span
                     ><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-keyword">readonly</span>
-                    <span class="tsd-signature-type">BigSource</span><span class="tsd-signature-symbol">[]</span
+                    <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">[]</span
                     ><span class="tsd-signature-symbol">,</span><br />    <span class="tsd-kind-parameter">replace</span
                     ><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">boolean</span
                     ><span class="tsd-signature-symbol">,</span><br /><span class="tsd-signature-symbol">)</span
@@ -709,7 +719,7 @@
                           <span
                             ><span class="tsd-kind-parameter">inputs</span>:
                             <span class="tsd-signature-keyword">readonly</span>
-                            <span class="tsd-signature-type">BigSource</span
+                            <span class="tsd-signature-type">number</span
                             ><span class="tsd-signature-symbol">[]</span></span
                           >
                         </li>
@@ -739,8 +749,8 @@
                         <li>
                           Defined in
                           <a
-                            href="https://github.com/bennycode/trading-signals/blob/99736c02585926466aeb8b11a50b37de8474cb73/src/Indicator.ts#L52"
-                            >Indicator.ts:52</a
+                            href="https://github.com/bennycode/trading-signals/blob/64c4fe80687890b1798fd3d25c901ed909c43f1c/src/types/Indicator.ts#L51"
+                            >types/Indicator.ts:51</a
                           >
                         </li>
                       </ul>
@@ -877,7 +887,7 @@
                     ><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method">
                       <use href="../assets/icons.svg#icon-2048"></use></svg
                     ><span>get<wbr />Result</span></a
-                  ><a href="#getresultorthrow"
+                  ><a href="#getresultorthrow" class="tsd-is-inherited"
                     ><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method">
                       <use href="../assets/icons.svg#icon-2048"></use></svg
                     ><span>get<wbr />Result<wbr />Or<wbr />Throw</span></a

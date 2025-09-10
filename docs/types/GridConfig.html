@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta http-equiv="x-ua-compatible" content="IE=edge" />
-    <title>StochasticResult | trading-signals</title>
+    <title>GridConfig | trading-signals</title>
     <meta name="description" content="Documentation for trading-signals" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="stylesheet" href="../assets/style.css" />
@@ -53,15 +53,26 @@
       <div class="col-content">
         <div class="tsd-page-title">
           <ul class="tsd-breadcrumb" aria-label="Breadcrumb">
-            <li><a href="" aria-current="page">StochasticResult</a></li>
+            <li><a href="" aria-current="page">GridConfig</a></li>
           </ul>
-          <h1>Interface StochasticResult</h1>
+          <h1>Type Alias GridConfig</h1>
         </div>
         <div class="tsd-signature">
-          <span class="tsd-signature-keyword">interface</span> <span class="tsd-kind-interface">StochasticResult</span>
-          <span class="tsd-signature-symbol">{</span><br />    <a class="tsd-kind-property" href="#stochd">stochD</a
+          <span class="tsd-signature-keyword">type</span> <span class="tsd-kind-type-alias">GridConfig</span>
+          <span class="tsd-signature-symbol">=</span> <span class="tsd-signature-symbol">{</span><br />    <a
+            class="tsd-kind-property"
+            href="#levels"
+            >levels</a
           ><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span
-          ><span class="tsd-signature-symbol">;</span><br />    <a class="tsd-kind-property" href="#stochk">stochK</a
+          ><span class="tsd-signature-symbol">;</span><br />    <a class="tsd-kind-property" href="#lower">lower</a
+          ><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span
+          ><span class="tsd-signature-symbol">;</span><br />    <a class="tsd-kind-property" href="#spacing">spacing</a
+          ><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">&quot;arithmetic&quot;</span>
+          <span class="tsd-signature-symbol">|</span> <span class="tsd-signature-type">&quot;geometric&quot;</span
+          ><span class="tsd-signature-symbol">;</span><br />    <a class="tsd-kind-property" href="#ticksize"
+            >tickSize</a
+          ><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span
+          ><span class="tsd-signature-symbol">;</span><br />    <a class="tsd-kind-property" href="#upper">upper</a
           ><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span
           ><span class="tsd-signature-symbol">;</span><br /><span class="tsd-signature-symbol">}</span>
         </div>
@@ -70,8 +81,8 @@
             <li>
               Defined in
               <a
-                href="https://github.com/bennycode/trading-signals/blob/64c4fe80687890b1798fd3d25c901ed909c43f1c/src/momentum/STOCH/StochasticOscillator.ts#L6"
-                >momentum/STOCH/StochasticOscillator.ts:6</a
+                href="https://github.com/bennycode/trading-signals/blob/64c4fe80687890b1798fd3d25c901ed909c43f1c/src/util/getGrid.ts#L1"
+                >util/getGrid.ts:1</a
               >
             </li>
           </ul>
@@ -89,15 +100,30 @@
                 <section class="tsd-index-section">
                   <h3 class="tsd-index-heading">Properties</h3>
                   <div class="tsd-index-list">
-                    <a href="#stochd" class="tsd-index-link"
+                    <a href="#levels" class="tsd-index-link"
                       ><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Property">
                         <use href="../assets/icons.svg#icon-1024"></use></svg
-                      ><span>stoch<wbr />D</span></a
+                      ><span>levels</span></a
                     >
-                    <a href="#stochk" class="tsd-index-link"
+                    <a href="#lower" class="tsd-index-link"
                       ><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Property">
                         <use href="../assets/icons.svg#icon-1024"></use></svg
-                      ><span>stoch<wbr />K</span></a
+                      ><span>lower</span></a
+                    >
+                    <a href="#spacing" class="tsd-index-link"
+                      ><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Property">
+                        <use href="../assets/icons.svg#icon-1024"></use></svg
+                      ><span>spacing</span></a
+                    >
+                    <a href="#ticksize" class="tsd-index-link"
+                      ><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Property">
+                        <use href="../assets/icons.svg#icon-1024"></use></svg
+                      ><span>tick<wbr />Size?</span></a
+                    >
+                    <a href="#upper" class="tsd-index-link"
+                      ><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Property">
+                        <use href="../assets/icons.svg#icon-1024"></use></svg
+                      ><span>upper</span></a
                     >
                   </div>
                 </section>
@@ -114,48 +140,117 @@
           </summary>
           <section>
             <section class="tsd-panel tsd-member">
-              <h3 class="tsd-anchor-link" id="stochd">
-                <span>stoch<wbr />D</span
-                ><a href="#stochd" aria-label="Permalink" class="tsd-anchor-icon"
+              <h3 class="tsd-anchor-link" id="levels">
+                <span>levels</span
+                ><a href="#levels" aria-label="Permalink" class="tsd-anchor-icon"
                   ><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg
                 ></a>
               </h3>
               <div class="tsd-signature">
-                <span class="tsd-kind-property">stochD</span><span class="tsd-signature-symbol">:</span>
+                <span class="tsd-kind-property">levels</span><span class="tsd-signature-symbol">:</span>
                 <span class="tsd-signature-type">number</span>
               </div>
-              <div class="tsd-comment tsd-typography"><p>Slow stochastic indicator (%D)</p></div>
               <aside class="tsd-sources">
                 <ul>
                   <li>
                     Defined in
                     <a
-                      href="https://github.com/bennycode/trading-signals/blob/64c4fe80687890b1798fd3d25c901ed909c43f1c/src/momentum/STOCH/StochasticOscillator.ts#L8"
-                      >momentum/STOCH/StochasticOscillator.ts:8</a
+                      href="https://github.com/bennycode/trading-signals/blob/64c4fe80687890b1798fd3d25c901ed909c43f1c/src/util/getGrid.ts#L4"
+                      >util/getGrid.ts:4</a
                     >
                   </li>
                 </ul>
               </aside>
             </section>
             <section class="tsd-panel tsd-member">
-              <h3 class="tsd-anchor-link" id="stochk">
-                <span>stoch<wbr />K</span
-                ><a href="#stochk" aria-label="Permalink" class="tsd-anchor-icon"
+              <h3 class="tsd-anchor-link" id="lower">
+                <span>lower</span
+                ><a href="#lower" aria-label="Permalink" class="tsd-anchor-icon"
                   ><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg
                 ></a>
               </h3>
               <div class="tsd-signature">
-                <span class="tsd-kind-property">stochK</span><span class="tsd-signature-symbol">:</span>
+                <span class="tsd-kind-property">lower</span><span class="tsd-signature-symbol">:</span>
                 <span class="tsd-signature-type">number</span>
               </div>
-              <div class="tsd-comment tsd-typography"><p>Fast stochastic indicator (%K)</p></div>
               <aside class="tsd-sources">
                 <ul>
                   <li>
                     Defined in
                     <a
-                      href="https://github.com/bennycode/trading-signals/blob/64c4fe80687890b1798fd3d25c901ed909c43f1c/src/momentum/STOCH/StochasticOscillator.ts#L10"
-                      >momentum/STOCH/StochasticOscillator.ts:10</a
+                      href="https://github.com/bennycode/trading-signals/blob/64c4fe80687890b1798fd3d25c901ed909c43f1c/src/util/getGrid.ts#L2"
+                      >util/getGrid.ts:2</a
+                    >
+                  </li>
+                </ul>
+              </aside>
+            </section>
+            <section class="tsd-panel tsd-member">
+              <h3 class="tsd-anchor-link" id="spacing">
+                <span>spacing</span
+                ><a href="#spacing" aria-label="Permalink" class="tsd-anchor-icon"
+                  ><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg
+                ></a>
+              </h3>
+              <div class="tsd-signature">
+                <span class="tsd-kind-property">spacing</span><span class="tsd-signature-symbol">:</span>
+                <span class="tsd-signature-type">&quot;arithmetic&quot;</span>
+                <span class="tsd-signature-symbol">|</span>
+                <span class="tsd-signature-type">&quot;geometric&quot;</span>
+              </div>
+              <aside class="tsd-sources">
+                <ul>
+                  <li>
+                    Defined in
+                    <a
+                      href="https://github.com/bennycode/trading-signals/blob/64c4fe80687890b1798fd3d25c901ed909c43f1c/src/util/getGrid.ts#L5"
+                      >util/getGrid.ts:5</a
+                    >
+                  </li>
+                </ul>
+              </aside>
+            </section>
+            <section class="tsd-panel tsd-member">
+              <h3 class="tsd-anchor-link" id="ticksize">
+                <code class="tsd-tag">Optional</code><span>tick<wbr />Size</span
+                ><a href="#ticksize" aria-label="Permalink" class="tsd-anchor-icon"
+                  ><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg
+                ></a>
+              </h3>
+              <div class="tsd-signature">
+                <span class="tsd-kind-property">tickSize</span><span class="tsd-signature-symbol">?:</span>
+                <span class="tsd-signature-type">number</span>
+              </div>
+              <aside class="tsd-sources">
+                <ul>
+                  <li>
+                    Defined in
+                    <a
+                      href="https://github.com/bennycode/trading-signals/blob/64c4fe80687890b1798fd3d25c901ed909c43f1c/src/util/getGrid.ts#L6"
+                      >util/getGrid.ts:6</a
+                    >
+                  </li>
+                </ul>
+              </aside>
+            </section>
+            <section class="tsd-panel tsd-member">
+              <h3 class="tsd-anchor-link" id="upper">
+                <span>upper</span
+                ><a href="#upper" aria-label="Permalink" class="tsd-anchor-icon"
+                  ><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg
+                ></a>
+              </h3>
+              <div class="tsd-signature">
+                <span class="tsd-kind-property">upper</span><span class="tsd-signature-symbol">:</span>
+                <span class="tsd-signature-type">number</span>
+              </div>
+              <aside class="tsd-sources">
+                <ul>
+                  <li>
+                    Defined in
+                    <a
+                      href="https://github.com/bennycode/trading-signals/blob/64c4fe80687890b1798fd3d25c901ed909c43f1c/src/util/getGrid.ts#L3"
+                      >util/getGrid.ts:3</a
                     >
                   </li>
                 </ul>
@@ -231,14 +326,26 @@
                   >Properties
                 </summary>
                 <div>
-                  <a href="#stochd"
+                  <a href="#levels"
                     ><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Property">
                       <use href="../assets/icons.svg#icon-1024"></use></svg
-                    ><span>stoch<wbr />D</span></a
-                  ><a href="#stochk"
+                    ><span>levels</span></a
+                  ><a href="#lower"
                     ><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Property">
                       <use href="../assets/icons.svg#icon-1024"></use></svg
-                    ><span>stoch<wbr />K</span></a
+                    ><span>lower</span></a
+                  ><a href="#spacing"
+                    ><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Property">
+                      <use href="../assets/icons.svg#icon-1024"></use></svg
+                    ><span>spacing</span></a
+                  ><a href="#ticksize"
+                    ><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Property">
+                      <use href="../assets/icons.svg#icon-1024"></use></svg
+                    ><span>tick<wbr />Size</span></a
+                  ><a href="#upper"
+                    ><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Property">
+                      <use href="../assets/icons.svg#icon-1024"></use></svg
+                    ><span>upper</span></a
                   >
                 </div>
               </details>

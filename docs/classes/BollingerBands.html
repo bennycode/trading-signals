@@ -89,14 +89,14 @@
             </div>
           </div>
         </section>
-        <section class="tsd-panel tsd-hierarchy" data-refl="640">
+        <section class="tsd-panel tsd-hierarchy" data-refl="1339">
           <h4>Hierarchy (<a href="../hierarchy.html#BollingerBands">View Summary</a>)</h4>
           <ul class="tsd-hierarchy">
             <li class="tsd-hierarchy-item">
               <a href="TechnicalIndicator.html" class="tsd-signature-type tsd-kind-class">TechnicalIndicator</a
               ><span class="tsd-signature-symbol">&lt;</span
               ><a href="../interfaces/BandsResult.html" class="tsd-signature-type tsd-kind-interface">BandsResult</a
-              ><span class="tsd-signature-symbol">,</span> <span class="tsd-signature-type">BigSource</span
+              ><span class="tsd-signature-symbol">,</span> <span class="tsd-signature-type">number</span
               ><span class="tsd-signature-symbol">&gt;</span>
               <ul class="tsd-hierarchy">
                 <li class="tsd-hierarchy-item"><span class="tsd-hierarchy-target">BollingerBands</span></li>
@@ -109,8 +109,8 @@
             <li>
               Defined in
               <a
-                href="https://github.com/bennycode/trading-signals/blob/99736c02585926466aeb8b11a50b37de8474cb73/src/BBANDS/BollingerBands.ts#L28"
-                >BBANDS/BollingerBands.ts:28</a
+                href="https://github.com/bennycode/trading-signals/blob/64c4fe80687890b1798fd3d25c901ed909c43f1c/src/volatility/BBANDS/BollingerBands.ts#L15"
+                >volatility/BBANDS/BollingerBands.ts:15</a
               >
             </li>
           </ul>
@@ -252,10 +252,6 @@
                             ><span class="tsd-kind-parameter">interval</span>:
                             <span class="tsd-signature-type">number</span></span
                           >
-                          <div class="tsd-comment tsd-typography">
-                            <p>The time period to be used in calculating the Middle Band</p>
-                          </div>
-                          <div class="tsd-comment tsd-typography"></div>
                         </li>
                         <li>
                           <span
@@ -263,20 +259,12 @@
                             <span class="tsd-signature-type">number</span
                             ><span class="tsd-signature-symbol"> = 2</span></span
                           >
-                          <div class="tsd-comment tsd-typography">
-                            <p>
-                              The number of standard deviations away from the Middle Band that the Upper and Lower Bands
-                              should be
-                            </p>
-                          </div>
-                          <div class="tsd-comment tsd-typography"></div>
                         </li>
                       </ul>
                     </div>
                     <h4 class="tsd-returns-title">
                       Returns <a href="" class="tsd-signature-type tsd-kind-class">BollingerBands</a>
                     </h4>
-                    <div class="tsd-comment tsd-typography"></div>
                     <aside class="tsd-sources">
                       <p>
                         Overrides <a href="TechnicalIndicator.html">TechnicalIndicator</a>.<a
@@ -288,8 +276,8 @@
                         <li>
                           Defined in
                           <a
-                            href="https://github.com/bennycode/trading-signals/blob/99736c02585926466aeb8b11a50b37de8474cb73/src/BBANDS/BollingerBands.ts#L36"
-                            >BBANDS/BollingerBands.ts:36</a
+                            href="https://github.com/bennycode/trading-signals/blob/64c4fe80687890b1798fd3d25c901ed909c43f1c/src/volatility/BBANDS/BollingerBands.ts#L18"
+                            >volatility/BBANDS/BollingerBands.ts:18</a
                           >
                         </li>
                       </ul>
@@ -319,19 +307,13 @@
                 <span class="tsd-kind-property">deviationMultiplier</span><span class="tsd-signature-symbol">:</span>
                 <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol"> = 2</span>
               </div>
-              <div class="tsd-comment tsd-typography">
-                <p>
-                  The number of standard deviations away from the Middle Band that the Upper and Lower Bands should be
-                </p>
-              </div>
-              <div class="tsd-comment tsd-typography"></div>
               <aside class="tsd-sources">
                 <ul>
                   <li>
                     Defined in
                     <a
-                      href="https://github.com/bennycode/trading-signals/blob/99736c02585926466aeb8b11a50b37de8474cb73/src/BBANDS/BollingerBands.ts#L38"
-                      >BBANDS/BollingerBands.ts:38</a
+                      href="https://github.com/bennycode/trading-signals/blob/64c4fe80687890b1798fd3d25c901ed909c43f1c/src/volatility/BBANDS/BollingerBands.ts#L20"
+                      >volatility/BBANDS/BollingerBands.ts:20</a
                     >
                   </li>
                 </ul>
@@ -348,17 +330,13 @@
                 <span class="tsd-kind-property">interval</span><span class="tsd-signature-symbol">:</span>
                 <span class="tsd-signature-type">number</span>
               </div>
-              <div class="tsd-comment tsd-typography">
-                <p>The time period to be used in calculating the Middle Band</p>
-              </div>
-              <div class="tsd-comment tsd-typography"></div>
               <aside class="tsd-sources">
                 <ul>
                   <li>
                     Defined in
                     <a
-                      href="https://github.com/bennycode/trading-signals/blob/99736c02585926466aeb8b11a50b37de8474cb73/src/BBANDS/BollingerBands.ts#L37"
-                      >BBANDS/BollingerBands.ts:37</a
+                      href="https://github.com/bennycode/trading-signals/blob/64c4fe80687890b1798fd3d25c901ed909c43f1c/src/volatility/BBANDS/BollingerBands.ts#L19"
+                      >volatility/BBANDS/BollingerBands.ts:19</a
                     >
                   </li>
                 </ul>
@@ -373,7 +351,7 @@
               </h3>
               <div class="tsd-signature">
                 <span class="tsd-kind-property">prices</span><span class="tsd-signature-symbol">:</span>
-                <span class="tsd-signature-type">Big</span><span class="tsd-signature-symbol">[]</span
+                <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">[]</span
                 ><span class="tsd-signature-symbol"> = []</span>
               </div>
               <aside class="tsd-sources">
@@ -381,8 +359,8 @@
                   <li>
                     Defined in
                     <a
-                      href="https://github.com/bennycode/trading-signals/blob/99736c02585926466aeb8b11a50b37de8474cb73/src/BBANDS/BollingerBands.ts#L29"
-                      >BBANDS/BollingerBands.ts:29</a
+                      href="https://github.com/bennycode/trading-signals/blob/64c4fe80687890b1798fd3d25c901ed909c43f1c/src/volatility/BBANDS/BollingerBands.ts#L16"
+                      >volatility/BBANDS/BollingerBands.ts:16</a
                     >
                   </li>
                 </ul>
@@ -420,8 +398,8 @@
                         <li>
                           Defined in
                           <a
-                            href="https://github.com/bennycode/trading-signals/blob/99736c02585926466aeb8b11a50b37de8474cb73/src/Indicator.ts#L38"
-                            >Indicator.ts:38</a
+                            href="https://github.com/bennycode/trading-signals/blob/64c4fe80687890b1798fd3d25c901ed909c43f1c/src/types/Indicator.ts#L37"
+                            >types/Indicator.ts:37</a
                           >
                         </li>
                       </ul>
@@ -452,7 +430,7 @@
                   <div class="tsd-signature tsd-anchor-link" id="add-1">
                     <span class="tsd-kind-call-signature">add</span><span class="tsd-signature-symbol">(</span
                     ><span class="tsd-kind-parameter">input</span><span class="tsd-signature-symbol">:</span>
-                    <span class="tsd-signature-type">BigSource</span><span class="tsd-signature-symbol">)</span
+                    <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">)</span
                     ><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">null</span>
                     <span class="tsd-signature-symbol">|</span>
                     <a href="../interfaces/BandsResult.html" class="tsd-signature-type tsd-kind-interface"
@@ -469,7 +447,7 @@
                         <li>
                           <span
                             ><span class="tsd-kind-parameter">input</span>:
-                            <span class="tsd-signature-type">BigSource</span></span
+                            <span class="tsd-signature-type">number</span></span
                           >
                         </li>
                       </ul>
@@ -491,8 +469,8 @@
                         <li>
                           Defined in
                           <a
-                            href="https://github.com/bennycode/trading-signals/blob/99736c02585926466aeb8b11a50b37de8474cb73/src/Indicator.ts#L42"
-                            >Indicator.ts:42</a
+                            href="https://github.com/bennycode/trading-signals/blob/64c4fe80687890b1798fd3d25c901ed909c43f1c/src/types/Indicator.ts#L41"
+                            >types/Indicator.ts:41</a
                           >
                         </li>
                       </ul>
@@ -532,8 +510,8 @@
                         <li>
                           Defined in
                           <a
-                            href="https://github.com/bennycode/trading-signals/blob/99736c02585926466aeb8b11a50b37de8474cb73/src/BBANDS/BollingerBands.ts#L43"
-                            >BBANDS/BollingerBands.ts:43</a
+                            href="https://github.com/bennycode/trading-signals/blob/64c4fe80687890b1798fd3d25c901ed909c43f1c/src/volatility/BBANDS/BollingerBands.ts#L25"
+                            >volatility/BBANDS/BollingerBands.ts:25</a
                           >
                         </li>
                       </ul>
@@ -580,8 +558,8 @@
                         <li>
                           Defined in
                           <a
-                            href="https://github.com/bennycode/trading-signals/blob/99736c02585926466aeb8b11a50b37de8474cb73/src/Indicator.ts#L22"
-                            >Indicator.ts:22</a
+                            href="https://github.com/bennycode/trading-signals/blob/64c4fe80687890b1798fd3d25c901ed909c43f1c/src/types/Indicator.ts#L21"
+                            >types/Indicator.ts:21</a
                           >
                         </li>
                       </ul>
@@ -627,8 +605,8 @@
                         <li>
                           Defined in
                           <a
-                            href="https://github.com/bennycode/trading-signals/blob/99736c02585926466aeb8b11a50b37de8474cb73/src/Indicator.ts#L30"
-                            >Indicator.ts:30</a
+                            href="https://github.com/bennycode/trading-signals/blob/64c4fe80687890b1798fd3d25c901ed909c43f1c/src/types/Indicator.ts#L29"
+                            >types/Indicator.ts:29</a
                           >
                         </li>
                       </ul>
@@ -649,7 +627,7 @@
                   <div class="tsd-signature tsd-anchor-link" id="replace-1">
                     <span class="tsd-kind-call-signature">replace</span><span class="tsd-signature-symbol">(</span
                     ><span class="tsd-kind-parameter">input</span><span class="tsd-signature-symbol">:</span>
-                    <span class="tsd-signature-type">BigSource</span><span class="tsd-signature-symbol">)</span
+                    <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">)</span
                     ><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">null</span>
                     <span class="tsd-signature-symbol">|</span>
                     <a href="../interfaces/BandsResult.html" class="tsd-signature-type tsd-kind-interface"
@@ -666,7 +644,7 @@
                         <li>
                           <span
                             ><span class="tsd-kind-parameter">input</span>:
-                            <span class="tsd-signature-type">BigSource</span></span
+                            <span class="tsd-signature-type">number</span></span
                           >
                         </li>
                       </ul>
@@ -688,8 +666,8 @@
                         <li>
                           Defined in
                           <a
-                            href="https://github.com/bennycode/trading-signals/blob/99736c02585926466aeb8b11a50b37de8474cb73/src/Indicator.ts#L46"
-                            >Indicator.ts:46</a
+                            href="https://github.com/bennycode/trading-signals/blob/64c4fe80687890b1798fd3d25c901ed909c43f1c/src/types/Indicator.ts#L45"
+                            >types/Indicator.ts:45</a
                           >
                         </li>
                       </ul>
@@ -710,18 +688,18 @@
                   <div class="tsd-signature tsd-anchor-link" id="update-1">
                     <span class="tsd-kind-call-signature">update</span><span class="tsd-signature-symbol">(</span
                     ><br />    <span class="tsd-kind-parameter">price</span><span class="tsd-signature-symbol">:</span>
-                    <span class="tsd-signature-type">BigSource</span><span class="tsd-signature-symbol">,</span
+                    <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">,</span
                     ><br />    <span class="tsd-kind-parameter">replace</span
                     ><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span
                     ><span class="tsd-signature-symbol">,</span><br /><span class="tsd-signature-symbol">)</span
                     ><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">null</span>
                     <span class="tsd-signature-symbol">|</span> <span class="tsd-signature-symbol">{</span>
                     <span class="tsd-kind-property">lower</span><span class="tsd-signature-symbol">:</span>
-                    <span class="tsd-signature-type">Big</span><span class="tsd-signature-symbol">;</span>
+                    <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">;</span>
                     <span class="tsd-kind-property">middle</span><span class="tsd-signature-symbol">:</span>
-                    <span class="tsd-signature-type">Big</span><span class="tsd-signature-symbol">;</span>
+                    <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">;</span>
                     <span class="tsd-kind-property">upper</span><span class="tsd-signature-symbol">:</span>
-                    <span class="tsd-signature-type">Big</span> <span class="tsd-signature-symbol">}</span
+                    <span class="tsd-signature-type">number</span> <span class="tsd-signature-symbol">}</span
                     ><a href="#update-1" aria-label="Permalink" class="tsd-anchor-icon"
                       ><svg viewBox="0 0 24 24" aria-hidden="true">
                         <use href="../assets/icons.svg#icon-anchor"></use></svg
@@ -734,7 +712,7 @@
                         <li>
                           <span
                             ><span class="tsd-kind-parameter">price</span>:
-                            <span class="tsd-signature-type">BigSource</span></span
+                            <span class="tsd-signature-type">number</span></span
                           >
                         </li>
                         <li>
@@ -748,11 +726,11 @@
                     <h4 class="tsd-returns-title">
                       Returns <span class="tsd-signature-type">null</span> <span class="tsd-signature-symbol">|</span>
                       <span class="tsd-signature-symbol">{</span> <span class="tsd-kind-property">lower</span
-                      ><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">Big</span
+                      ><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span
                       ><span class="tsd-signature-symbol">;</span> <span class="tsd-kind-property">middle</span
-                      ><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">Big</span
+                      ><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span
                       ><span class="tsd-signature-symbol">;</span> <span class="tsd-kind-property">upper</span
-                      ><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">Big</span>
+                      ><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span>
                       <span class="tsd-signature-symbol">}</span>
                     </h4>
                     <aside class="tsd-sources">
@@ -766,8 +744,8 @@
                         <li>
                           Defined in
                           <a
-                            href="https://github.com/bennycode/trading-signals/blob/99736c02585926466aeb8b11a50b37de8474cb73/src/BBANDS/BollingerBands.ts#L47"
-                            >BBANDS/BollingerBands.ts:47</a
+                            href="https://github.com/bennycode/trading-signals/blob/64c4fe80687890b1798fd3d25c901ed909c43f1c/src/volatility/BBANDS/BollingerBands.ts#L29"
+                            >volatility/BBANDS/BollingerBands.ts:29</a
                           >
                         </li>
                       </ul>
@@ -788,7 +766,7 @@
                   <div class="tsd-signature tsd-anchor-link" id="updates-1">
                     <span class="tsd-kind-call-signature">updates</span><span class="tsd-signature-symbol">(</span
                     ><span class="tsd-kind-parameter">inputs</span><span class="tsd-signature-symbol">:</span>
-                    <span class="tsd-signature-keyword">readonly</span> <span class="tsd-signature-type">BigSource</span
+                    <span class="tsd-signature-keyword">readonly</span> <span class="tsd-signature-type">number</span
                     ><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">,</span>
                     <span class="tsd-kind-parameter">replace</span><span class="tsd-signature-symbol">?:</span>
                     <span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">)</span
@@ -810,7 +788,7 @@
                           <span
                             ><span class="tsd-kind-parameter">inputs</span>:
                             <span class="tsd-signature-keyword">readonly</span>
-                            <span class="tsd-signature-type">BigSource</span
+                            <span class="tsd-signature-type">number</span
                             ><span class="tsd-signature-symbol">[]</span></span
                           >
                         </li>
@@ -840,8 +818,8 @@
                         <li>
                           Defined in
                           <a
-                            href="https://github.com/bennycode/trading-signals/blob/99736c02585926466aeb8b11a50b37de8474cb73/src/Indicator.ts#L52"
-                            >Indicator.ts:52</a
+                            href="https://github.com/bennycode/trading-signals/blob/64c4fe80687890b1798fd3d25c901ed909c43f1c/src/types/Indicator.ts#L51"
+                            >types/Indicator.ts:51</a
                           >
                         </li>
                       </ul>

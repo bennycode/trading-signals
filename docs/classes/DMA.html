@@ -81,14 +81,14 @@
             </div>
           </div>
         </section>
-        <section class="tsd-panel tsd-hierarchy" data-refl="1037">
+        <section class="tsd-panel tsd-hierarchy" data-refl="579">
           <h4>Hierarchy (<a href="../hierarchy.html#DMA">View Summary</a>)</h4>
           <ul class="tsd-hierarchy">
             <li class="tsd-hierarchy-item">
               <a href="TechnicalIndicator.html" class="tsd-signature-type tsd-kind-class">TechnicalIndicator</a
               ><span class="tsd-signature-symbol">&lt;</span
-              ><a href="../types/DMAResult.html" class="tsd-signature-type tsd-kind-type-alias">DMAResult</a
-              ><span class="tsd-signature-symbol">,</span> <span class="tsd-signature-type">BigSource</span
+              ><a href="../interfaces/DMAResult.html" class="tsd-signature-type tsd-kind-interface">DMAResult</a
+              ><span class="tsd-signature-symbol">,</span> <span class="tsd-signature-type">number</span
               ><span class="tsd-signature-symbol">&gt;</span>
               <ul class="tsd-hierarchy">
                 <li class="tsd-hierarchy-item"><span class="tsd-hierarchy-target">DMA</span></li>
@@ -101,8 +101,8 @@
             <li>
               Defined in
               <a
-                href="https://github.com/bennycode/trading-signals/blob/99736c02585926466aeb8b11a50b37de8474cb73/src/DMA/DMA.ts#L26"
-                >DMA/DMA.ts:26</a
+                href="https://github.com/bennycode/trading-signals/blob/64c4fe80687890b1798fd3d25c901ed909c43f1c/src/trend/DMA/DMA.ts#L23"
+                >trend/DMA/DMA.ts:23</a
               >
             </li>
           </ul>
@@ -216,14 +216,14 @@
                   <div class="tsd-signature tsd-anchor-link" id="constructordma">
                     <span class="tsd-signature-keyword">new</span>
                     <span class="tsd-kind-constructor-signature">DMA</span><span class="tsd-signature-symbol">(</span
-                    ><span class="tsd-kind-parameter">short</span><span class="tsd-signature-symbol">:</span>
-                    <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">,</span>
-                    <span class="tsd-kind-parameter">long</span><span class="tsd-signature-symbol">:</span>
-                    <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">,</span>
-                    <span class="tsd-kind-parameter">Indicator</span><span class="tsd-signature-symbol">?:</span>
-                    <a href="../types/MovingAverageTypes.html" class="tsd-signature-type tsd-kind-type-alias"
-                      >MovingAverageTypes</a
-                    ><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span>
+                    ><br />    <span class="tsd-kind-parameter">short</span><span class="tsd-signature-symbol">:</span>
+                    <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">,</span
+                    ><br />    <span class="tsd-kind-parameter">long</span><span class="tsd-signature-symbol">:</span>
+                    <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">,</span
+                    ><br />    <span class="tsd-kind-parameter">SmoothingIndicator</span
+                    ><span class="tsd-signature-symbol">?:</span>
+                    <span class="tsd-signature-type">MovingAverageTypes</span><span class="tsd-signature-symbol">,</span
+                    ><br /><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span>
                     <a href="" class="tsd-signature-type tsd-kind-class">DMA</a
                     ><a href="#constructordma" aria-label="Permalink" class="tsd-anchor-icon"
                       ><svg viewBox="0 0 24 24" aria-hidden="true">
@@ -248,9 +248,8 @@
                         </li>
                         <li>
                           <span
-                            ><span class="tsd-kind-parameter">Indicator</span>:
-                            <a href="../types/MovingAverageTypes.html" class="tsd-signature-type tsd-kind-type-alias"
-                              >MovingAverageTypes</a
+                            ><span class="tsd-kind-parameter">SmoothingIndicator</span>:
+                            <span class="tsd-signature-type">MovingAverageTypes</span
                             ><span class="tsd-signature-symbol"> = SMA</span></span
                           >
                         </li>
@@ -270,8 +269,8 @@
                         <li>
                           Defined in
                           <a
-                            href="https://github.com/bennycode/trading-signals/blob/99736c02585926466aeb8b11a50b37de8474cb73/src/DMA/DMA.ts#L30"
-                            >DMA/DMA.ts:30</a
+                            href="https://github.com/bennycode/trading-signals/blob/64c4fe80687890b1798fd3d25c901ed909c43f1c/src/trend/DMA/DMA.ts#L27"
+                            >trend/DMA/DMA.ts:27</a
                           >
                         </li>
                       </ul>
@@ -299,15 +298,15 @@
               </h3>
               <div class="tsd-signature">
                 <span class="tsd-kind-property">long</span><span class="tsd-signature-symbol">:</span>
-                <a href="MovingAverage.html" class="tsd-signature-type tsd-kind-class">MovingAverage</a>
+                <span class="tsd-signature-type">MovingAverage</span>
               </div>
               <aside class="tsd-sources">
                 <ul>
                   <li>
                     Defined in
                     <a
-                      href="https://github.com/bennycode/trading-signals/blob/99736c02585926466aeb8b11a50b37de8474cb73/src/DMA/DMA.ts#L28"
-                      >DMA/DMA.ts:28</a
+                      href="https://github.com/bennycode/trading-signals/blob/64c4fe80687890b1798fd3d25c901ed909c43f1c/src/trend/DMA/DMA.ts#L25"
+                      >trend/DMA/DMA.ts:25</a
                     >
                   </li>
                 </ul>
@@ -322,15 +321,15 @@
               </h3>
               <div class="tsd-signature">
                 <span class="tsd-kind-property">short</span><span class="tsd-signature-symbol">:</span>
-                <a href="MovingAverage.html" class="tsd-signature-type tsd-kind-class">MovingAverage</a>
+                <span class="tsd-signature-type">MovingAverage</span>
               </div>
               <aside class="tsd-sources">
                 <ul>
                   <li>
                     Defined in
                     <a
-                      href="https://github.com/bennycode/trading-signals/blob/99736c02585926466aeb8b11a50b37de8474cb73/src/DMA/DMA.ts#L27"
-                      >DMA/DMA.ts:27</a
+                      href="https://github.com/bennycode/trading-signals/blob/64c4fe80687890b1798fd3d25c901ed909c43f1c/src/trend/DMA/DMA.ts#L24"
+                      >trend/DMA/DMA.ts:24</a
                     >
                   </li>
                 </ul>
@@ -368,8 +367,8 @@
                         <li>
                           Defined in
                           <a
-                            href="https://github.com/bennycode/trading-signals/blob/99736c02585926466aeb8b11a50b37de8474cb73/src/DMA/DMA.ts#L36"
-                            >DMA/DMA.ts:36</a
+                            href="https://github.com/bennycode/trading-signals/blob/64c4fe80687890b1798fd3d25c901ed909c43f1c/src/trend/DMA/DMA.ts#L33"
+                            >trend/DMA/DMA.ts:33</a
                           >
                         </li>
                       </ul>
@@ -400,10 +399,10 @@
                   <div class="tsd-signature tsd-anchor-link" id="add-1">
                     <span class="tsd-kind-call-signature">add</span><span class="tsd-signature-symbol">(</span
                     ><span class="tsd-kind-parameter">input</span><span class="tsd-signature-symbol">:</span>
-                    <span class="tsd-signature-type">BigSource</span><span class="tsd-signature-symbol">)</span
+                    <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">)</span
                     ><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">null</span>
                     <span class="tsd-signature-symbol">|</span>
-                    <a href="../types/DMAResult.html" class="tsd-signature-type tsd-kind-type-alias">DMAResult</a
+                    <a href="../interfaces/DMAResult.html" class="tsd-signature-type tsd-kind-interface">DMAResult</a
                     ><a href="#add-1" aria-label="Permalink" class="tsd-anchor-icon"
                       ><svg viewBox="0 0 24 24" aria-hidden="true">
                         <use href="../assets/icons.svg#icon-anchor"></use></svg
@@ -416,14 +415,14 @@
                         <li>
                           <span
                             ><span class="tsd-kind-parameter">input</span>:
-                            <span class="tsd-signature-type">BigSource</span></span
+                            <span class="tsd-signature-type">number</span></span
                           >
                         </li>
                       </ul>
                     </div>
                     <h4 class="tsd-returns-title">
                       Returns <span class="tsd-signature-type">null</span> <span class="tsd-signature-symbol">|</span>
-                      <a href="../types/DMAResult.html" class="tsd-signature-type tsd-kind-type-alias">DMAResult</a>
+                      <a href="../interfaces/DMAResult.html" class="tsd-signature-type tsd-kind-interface">DMAResult</a>
                     </h4>
                     <aside class="tsd-sources">
                       <p>
@@ -436,8 +435,8 @@
                         <li>
                           Defined in
                           <a
-                            href="https://github.com/bennycode/trading-signals/blob/99736c02585926466aeb8b11a50b37de8474cb73/src/Indicator.ts#L42"
-                            >Indicator.ts:42</a
+                            href="https://github.com/bennycode/trading-signals/blob/64c4fe80687890b1798fd3d25c901ed909c43f1c/src/types/Indicator.ts#L41"
+                            >types/Indicator.ts:41</a
                           >
                         </li>
                       </ul>
@@ -477,8 +476,8 @@
                         <li>
                           Defined in
                           <a
-                            href="https://github.com/bennycode/trading-signals/blob/99736c02585926466aeb8b11a50b37de8474cb73/src/DMA/DMA.ts#L40"
-                            >DMA/DMA.ts:40</a
+                            href="https://github.com/bennycode/trading-signals/blob/64c4fe80687890b1798fd3d25c901ed909c43f1c/src/trend/DMA/DMA.ts#L37"
+                            >trend/DMA/DMA.ts:37</a
                           >
                         </li>
                       </ul>
@@ -500,7 +499,7 @@
                     <span class="tsd-kind-call-signature">getResult</span><span class="tsd-signature-symbol">()</span
                     ><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">null</span>
                     <span class="tsd-signature-symbol">|</span>
-                    <a href="../types/DMAResult.html" class="tsd-signature-type tsd-kind-type-alias">DMAResult</a
+                    <a href="../interfaces/DMAResult.html" class="tsd-signature-type tsd-kind-interface">DMAResult</a
                     ><a href="#getresult-1" aria-label="Permalink" class="tsd-anchor-icon"
                       ><svg viewBox="0 0 24 24" aria-hidden="true">
                         <use href="../assets/icons.svg#icon-anchor"></use></svg
@@ -509,7 +508,7 @@
                   <div class="tsd-description">
                     <h4 class="tsd-returns-title">
                       Returns <span class="tsd-signature-type">null</span> <span class="tsd-signature-symbol">|</span>
-                      <a href="../types/DMAResult.html" class="tsd-signature-type tsd-kind-type-alias">DMAResult</a>
+                      <a href="../interfaces/DMAResult.html" class="tsd-signature-type tsd-kind-interface">DMAResult</a>
                     </h4>
                     <aside class="tsd-sources">
                       <p>
@@ -522,8 +521,8 @@
                         <li>
                           Defined in
                           <a
-                            href="https://github.com/bennycode/trading-signals/blob/99736c02585926466aeb8b11a50b37de8474cb73/src/Indicator.ts#L22"
-                            >Indicator.ts:22</a
+                            href="https://github.com/bennycode/trading-signals/blob/64c4fe80687890b1798fd3d25c901ed909c43f1c/src/types/Indicator.ts#L21"
+                            >types/Indicator.ts:21</a
                           >
                         </li>
                       </ul>
@@ -544,7 +543,7 @@
                   <div class="tsd-signature tsd-anchor-link" id="getresultorthrow-1">
                     <span class="tsd-kind-call-signature">getResultOrThrow</span
                     ><span class="tsd-signature-symbol">()</span><span class="tsd-signature-symbol">:</span>
-                    <a href="../types/DMAResult.html" class="tsd-signature-type tsd-kind-type-alias">DMAResult</a
+                    <a href="../interfaces/DMAResult.html" class="tsd-signature-type tsd-kind-interface">DMAResult</a
                     ><a href="#getresultorthrow-1" aria-label="Permalink" class="tsd-anchor-icon"
                       ><svg viewBox="0 0 24 24" aria-hidden="true">
                         <use href="../assets/icons.svg#icon-anchor"></use></svg
@@ -553,7 +552,7 @@
                   <div class="tsd-description">
                     <h4 class="tsd-returns-title">
                       Returns
-                      <a href="../types/DMAResult.html" class="tsd-signature-type tsd-kind-type-alias">DMAResult</a>
+                      <a href="../interfaces/DMAResult.html" class="tsd-signature-type tsd-kind-interface">DMAResult</a>
                     </h4>
                     <aside class="tsd-sources">
                       <p>
@@ -566,8 +565,8 @@
                         <li>
                           Defined in
                           <a
-                            href="https://github.com/bennycode/trading-signals/blob/99736c02585926466aeb8b11a50b37de8474cb73/src/Indicator.ts#L30"
-                            >Indicator.ts:30</a
+                            href="https://github.com/bennycode/trading-signals/blob/64c4fe80687890b1798fd3d25c901ed909c43f1c/src/types/Indicator.ts#L29"
+                            >types/Indicator.ts:29</a
                           >
                         </li>
                       </ul>
@@ -588,10 +587,10 @@
                   <div class="tsd-signature tsd-anchor-link" id="replace-1">
                     <span class="tsd-kind-call-signature">replace</span><span class="tsd-signature-symbol">(</span
                     ><span class="tsd-kind-parameter">input</span><span class="tsd-signature-symbol">:</span>
-                    <span class="tsd-signature-type">BigSource</span><span class="tsd-signature-symbol">)</span
+                    <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">)</span
                     ><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">null</span>
                     <span class="tsd-signature-symbol">|</span>
-                    <a href="../types/DMAResult.html" class="tsd-signature-type tsd-kind-type-alias">DMAResult</a
+                    <a href="../interfaces/DMAResult.html" class="tsd-signature-type tsd-kind-interface">DMAResult</a
                     ><a href="#replace-1" aria-label="Permalink" class="tsd-anchor-icon"
                       ><svg viewBox="0 0 24 24" aria-hidden="true">
                         <use href="../assets/icons.svg#icon-anchor"></use></svg
@@ -604,14 +603,14 @@
                         <li>
                           <span
                             ><span class="tsd-kind-parameter">input</span>:
-                            <span class="tsd-signature-type">BigSource</span></span
+                            <span class="tsd-signature-type">number</span></span
                           >
                         </li>
                       </ul>
                     </div>
                     <h4 class="tsd-returns-title">
                       Returns <span class="tsd-signature-type">null</span> <span class="tsd-signature-symbol">|</span>
-                      <a href="../types/DMAResult.html" class="tsd-signature-type tsd-kind-type-alias">DMAResult</a>
+                      <a href="../interfaces/DMAResult.html" class="tsd-signature-type tsd-kind-interface">DMAResult</a>
                     </h4>
                     <aside class="tsd-sources">
                       <p>
@@ -624,8 +623,8 @@
                         <li>
                           Defined in
                           <a
-                            href="https://github.com/bennycode/trading-signals/blob/99736c02585926466aeb8b11a50b37de8474cb73/src/Indicator.ts#L46"
-                            >Indicator.ts:46</a
+                            href="https://github.com/bennycode/trading-signals/blob/64c4fe80687890b1798fd3d25c901ed909c43f1c/src/types/Indicator.ts#L45"
+                            >types/Indicator.ts:45</a
                           >
                         </li>
                       </ul>
@@ -646,15 +645,15 @@
                   <div class="tsd-signature tsd-anchor-link" id="update-1">
                     <span class="tsd-kind-call-signature">update</span><span class="tsd-signature-symbol">(</span
                     ><span class="tsd-kind-parameter">price</span><span class="tsd-signature-symbol">:</span>
-                    <span class="tsd-signature-type">BigSource</span><span class="tsd-signature-symbol">,</span>
+                    <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">,</span>
                     <span class="tsd-kind-parameter">replace</span><span class="tsd-signature-symbol">:</span>
                     <span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">)</span
                     ><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">null</span>
                     <span class="tsd-signature-symbol">|</span> <span class="tsd-signature-symbol">{</span>
                     <span class="tsd-kind-property">long</span><span class="tsd-signature-symbol">:</span>
-                    <span class="tsd-signature-type">Big</span><span class="tsd-signature-symbol">;</span>
+                    <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">;</span>
                     <span class="tsd-kind-property">short</span><span class="tsd-signature-symbol">:</span>
-                    <span class="tsd-signature-type">Big</span> <span class="tsd-signature-symbol">}</span
+                    <span class="tsd-signature-type">number</span> <span class="tsd-signature-symbol">}</span
                     ><a href="#update-1" aria-label="Permalink" class="tsd-anchor-icon"
                       ><svg viewBox="0 0 24 24" aria-hidden="true">
                         <use href="../assets/icons.svg#icon-anchor"></use></svg
@@ -667,7 +666,7 @@
                         <li>
                           <span
                             ><span class="tsd-kind-parameter">price</span>:
-                            <span class="tsd-signature-type">BigSource</span></span
+                            <span class="tsd-signature-type">number</span></span
                           >
                         </li>
                         <li>
@@ -681,9 +680,9 @@
                     <h4 class="tsd-returns-title">
                       Returns <span class="tsd-signature-type">null</span> <span class="tsd-signature-symbol">|</span>
                       <span class="tsd-signature-symbol">{</span> <span class="tsd-kind-property">long</span
-                      ><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">Big</span
+                      ><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span
                       ><span class="tsd-signature-symbol">;</span> <span class="tsd-kind-property">short</span
-                      ><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">Big</span>
+                      ><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span>
                       <span class="tsd-signature-symbol">}</span>
                     </h4>
                     <aside class="tsd-sources">
@@ -697,8 +696,8 @@
                         <li>
                           Defined in
                           <a
-                            href="https://github.com/bennycode/trading-signals/blob/99736c02585926466aeb8b11a50b37de8474cb73/src/DMA/DMA.ts#L44"
-                            >DMA/DMA.ts:44</a
+                            href="https://github.com/bennycode/trading-signals/blob/64c4fe80687890b1798fd3d25c901ed909c43f1c/src/trend/DMA/DMA.ts#L41"
+                            >trend/DMA/DMA.ts:41</a
                           >
                         </li>
                       </ul>
@@ -719,15 +718,14 @@
                   <div class="tsd-signature tsd-anchor-link" id="updates-1">
                     <span class="tsd-kind-call-signature">updates</span><span class="tsd-signature-symbol">(</span
                     ><span class="tsd-kind-parameter">inputs</span><span class="tsd-signature-symbol">:</span>
-                    <span class="tsd-signature-keyword">readonly</span> <span class="tsd-signature-type">BigSource</span
+                    <span class="tsd-signature-keyword">readonly</span> <span class="tsd-signature-type">number</span
                     ><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">,</span>
                     <span class="tsd-kind-parameter">replace</span><span class="tsd-signature-symbol">?:</span>
                     <span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">)</span
                     ><span class="tsd-signature-symbol">:</span> (<span class="tsd-signature-type">null</span>
                     <span class="tsd-signature-symbol">|</span>
-                    <a href="../types/DMAResult.html" class="tsd-signature-type tsd-kind-type-alias">DMAResult</a>)<span
-                      class="tsd-signature-symbol"
-                      >[]</span
+                    <a href="../interfaces/DMAResult.html" class="tsd-signature-type tsd-kind-interface">DMAResult</a
+                    >)<span class="tsd-signature-symbol">[]</span
                     ><a href="#updates-1" aria-label="Permalink" class="tsd-anchor-icon"
                       ><svg viewBox="0 0 24 24" aria-hidden="true">
                         <use href="../assets/icons.svg#icon-anchor"></use></svg
@@ -741,7 +739,7 @@
                           <span
                             ><span class="tsd-kind-parameter">inputs</span>:
                             <span class="tsd-signature-keyword">readonly</span>
-                            <span class="tsd-signature-type">BigSource</span
+                            <span class="tsd-signature-type">number</span
                             ><span class="tsd-signature-symbol">[]</span></span
                           >
                         </li>
@@ -756,7 +754,7 @@
                     </div>
                     <h4 class="tsd-returns-title">
                       Returns (<span class="tsd-signature-type">null</span> <span class="tsd-signature-symbol">|</span>
-                      <a href="../types/DMAResult.html" class="tsd-signature-type tsd-kind-type-alias">DMAResult</a
+                      <a href="../interfaces/DMAResult.html" class="tsd-signature-type tsd-kind-interface">DMAResult</a
                       >)<span class="tsd-signature-symbol">[]</span>
                     </h4>
                     <aside class="tsd-sources">
@@ -770,8 +768,8 @@
                         <li>
                           Defined in
                           <a
-                            href="https://github.com/bennycode/trading-signals/blob/99736c02585926466aeb8b11a50b37de8474cb73/src/Indicator.ts#L52"
-                            >Indicator.ts:52</a
+                            href="https://github.com/bennycode/trading-signals/blob/64c4fe80687890b1798fd3d25c901ed909c43f1c/src/types/Indicator.ts#L51"
+                            >types/Indicator.ts:51</a
                           >
                         </li>
                       </ul>
