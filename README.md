@@ -157,6 +157,7 @@ Utility Methods:
 1. Quartile
 1. Standard Deviation
 1. Streaks
+1. Weekday
 
 ## Performance
 
