@@ -100,5 +100,5 @@
     "test:units:watch": "vitest --watch"
   },
   "type": "module",
-  "version": "6.9.1"
+  "version": "7.0.0"
 }
