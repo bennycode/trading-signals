@@ -1,3 +1,18 @@
+## 7.0.0 (2025-09-10)
+
+##### Documentation Changes
+
+- Link Highcharts Indicators ([be1eb547](https://github.com/bennycode/trading-signals/commit/be1eb547d8590e9b6eec08592e48802aba3b7011))
+
+##### New Features
+
+- Add weekday indicators ([#852](https://github.com/bennycode/trading-signals/pull/852)) ([31edaf39](https://github.com/bennycode/trading-signals/commit/31edaf39d43fc9f4aa34925a0c800d3eb0df091e))
+- **util:** Add Grid calculations ([#853](https://github.com/bennycode/trading-signals/pull/853)) ([3959ae01](https://github.com/bennycode/trading-signals/commit/3959ae01ae40ab84e0127e909e6b7dd024e64cfc))
+
+##### Refactors
+
+- Categorize indicators ([#850](https://github.com/bennycode/trading-signals/pull/850)) ([b3c0b156](https://github.com/bennycode/trading-signals/commit/b3c0b156856ef8554b10b5360bcbdbf24f687f30))
+
 #### 6.9.1 (2025-08-04)
 
 ### 6.9.0 (2025-08-04)
