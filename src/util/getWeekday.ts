@@ -2,9 +2,9 @@
  * Get the weekday name for a given date in a specific timezone.
  * Uses IANA timezone identifiers (e.g., 'America/New_York', 'Europe/London').
  */
-function getWeekday(ianaTimeZone: string, date: Date = new Date(Date.now())): string {
+function getWeekday(timezone: string, date: Date = new Date(Date.now())): string {
   return new Intl.DateTimeFormat('en-US', {
-    timeZone: ianaTimeZone,
+    timeZone: timezone,
     weekday: 'long',
   }).format(date);
 }

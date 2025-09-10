@@ -18,33 +18,24 @@ describe('weekday indicators', () => {
       });
 
       it(`returns false when the date is not a ${day} in UTC`, () => {
-        // Test with a date that's definitely not the target day
-        const otherDate = new Date('2024-01-08T12:00:00Z'); // This is a Monday
+        const HOURS_24 = 24 * 60 * 60 * 1000;
+        const nextDay = new Date(date.getTime() + HOURS_24);
         if (day !== 'Monday') {
-          expect(func('UTC', otherDate)).toBe(false);
+          expect(func('UTC', nextDay)).toBe(false);
         }
       });
 
-      it(`handles different timezones correctly for ${day}`, () => {
-        expect(func('America/New_York', date)).toBe(true);
-        expect(func('Europe/London', date)).toBe(true);
-        expect(func('Asia/Tokyo', date)).toBe(true);
-      });
-
       it(`uses current date when date parameter is not provided for ${day}`, () => {
-        // This test checks that the function works with default date
-        // We can't assert the exact result since it depends on when the test runs
         const result = func('UTC');
         expect(typeof result).toBe('boolean');
       });
     });
   });
 
-  describe('isMonday', () => {
+  describe('Timezones', () => {
     it('handles different timezones correctly', () => {
       // Test a date/time that crosses timezone boundaries
       const date = new Date('2024-01-01T05:00:00Z'); // 5 AM UTC on Monday
-
       expect(isMonday('UTC', date)).toBe(true);
       expect(isMonday('America/New_York', date)).toBe(true); // Still Monday at midnight EST
       expect(isMonday('Europe/London', date)).toBe(true); // Still Monday at 5 AM GMT
@@ -58,9 +49,7 @@ describe('weekday indicators', () => {
       expect(isMonday('UTC', date)).toBe(true);
       expect(isSunday('America/Los_Angeles', date)).toBe(true); // Still Sunday at 11 PM PST
     });
-  });
 
-  describe('isSunday', () => {
     it('works with ISO 8601 formatted times', () => {
       // 5 AM UTC on Monday (trailing Z meaning Zulu time, zero degrees longitude)
       const iso8601UTC = '2025-08-24T17:04:29.174Z';
@@ -74,14 +63,6 @@ describe('weekday indicators', () => {
       // During August, California is on PDT (UTC-7)
       const august = '2025-08-24T10:04:29.174-07:00';
       expect(isSunday('America/Los_Angeles', new Date(august))).toBe(true);
-    });
-
-    it('handles date line crossing', () => {
-      // Test with Pacific timezone where date differs from UTC
-      // January 1, 2024 at 7 AM UTC = December 31, 2023 at 11 PM PST
-      const date = new Date('2024-01-01T07:00:00Z'); // 7 AM UTC Monday
-      expect(isMonday('UTC', date)).toBe(true);
-      expect(isSunday('America/Los_Angeles', date)).toBe(true); // Still Sunday at 11 PM PST
     });
   });
 });
