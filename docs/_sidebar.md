@@ -1,2 +1,0 @@
-- [Home](/)
-- [API](/modules.md)
