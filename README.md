@@ -196,6 +196,20 @@ It is very important to do your own analysis before making any investment based 
 - [Technical Analysis Library using Pandas and Numpy (Python)](https://github.com/bukosabino/ta)
 - [Tulip Indicators (ANSI C)](https://github.com/TulipCharts/tulipindicators)
 
+## Documentation
+
+Build and run the documentation:
+
+```bash
+# build the library
+npm run dist
+
+# Start docs site
+cd packages/docs
+npm install
+npm run dev
+```
+
 ## Maintainers
 
 [![Benny Neugebauer on Stack Exchange][stack_exchange_bennycode_badge]][stack_exchange_bennycode_url]
