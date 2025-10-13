@@ -23,6 +23,50 @@ interface IndicatorConfig {
   color: string;
 }
 
+// AMD OHLCV data (latest 40 candles, oldest first for chronological order)
+const amdCandles = [
+  {date: '07/15/2025', open: 153.75, high: 158.68, low: 153.56, close: 155.61, volume: 93370078},
+  {date: '07/16/2025', open: 155.31, high: 160.36, low: 152.85, close: 160.08, volume: 59492762},
+  {date: '07/17/2025', open: 161.81, high: 161.96, low: 158.68, close: 160.41, volume: 50605121},
+  {date: '07/18/2025', open: 159.59, high: 160.83, low: 155.81, close: 156.99, volume: 48859840},
+  {date: '07/21/2025', open: 157.62, high: 160.34, low: 156.92, close: 157.0, volume: 39021129},
+  {date: '07/22/2025', open: 156.2, high: 156.23, low: 149.34, close: 154.72, volume: 49028020},
+  {date: '07/23/2025', open: 156.32, high: 159.45, low: 156.0, close: 158.65, volume: 41510898},
+  {date: '07/24/2025', open: 159.12, high: 163.93, low: 158.36, close: 162.12, volume: 48440113},
+  {date: '07/25/2025', open: 163.51, high: 167.18, low: 162.36, close: 166.47, volume: 53432262},
+  {date: '07/28/2025', open: 169.08, high: 174.7, low: 168.67, close: 173.66, volume: 68267844},
+  {date: '07/29/2025', open: 175.21, high: 182.31, low: 174.68, close: 177.44, volume: 108154797},
+  {date: '07/30/2025', open: 175.61, high: 180.37, low: 173.8, close: 179.51, volume: 64820289},
+  {date: '07/31/2025', open: 182.02, high: 182.5, low: 173.0, close: 176.31, volume: 71765289},
+  {date: '08/01/2025', open: 170.16, high: 174.4, low: 166.82, close: 171.7, volume: 75396125},
+  {date: '08/04/2025', open: 174.61, high: 177.86, low: 173.56, close: 176.78, volume: 52951039},
+  {date: '08/05/2025', open: 177.57, high: 177.99, low: 171.8, close: 174.31, volume: 88808523},
+  {date: '08/06/2025', open: 165.05, high: 166.18, low: 157.8, close: 163.12, volume: 133641797},
+  {date: '08/07/2025', open: 166.84, high: 175.75, low: 166.7, close: 172.4, volume: 95448312},
+  {date: '08/08/2025', open: 174.04, high: 176.48, low: 170.52, close: 172.76, volume: 68866688},
+  {date: '08/11/2025', open: 170.04, high: 178.82, low: 169.38, close: 172.28, volume: 70651031},
+  {date: '08/12/2025', open: 173.32, high: 175.16, low: 168.5, close: 174.95, volume: 52335754},
+  {date: '08/13/2025', open: 179.91, high: 186.65, low: 179.38, close: 184.42, volume: 108305102},
+  {date: '08/14/2025', open: 179.83, high: 185.44, low: 179.56, close: 180.95, volume: 66308820},
+  {date: '08/15/2025', open: 180.06, high: 180.14, low: 176.25, close: 177.51, volume: 51543141},
+  {date: '08/18/2025', open: 176.76, high: 178.8, low: 174.36, close: 176.14, volume: 35937527},
+  {date: '08/19/2025', open: 173.1, high: 173.17, low: 166.1, close: 166.55, volume: 64455008},
+  {date: '08/20/2025', open: 164.1, high: 166.65, low: 158.25, close: 165.2, volume: 60233230},
+  {date: '08/21/2025', open: 165.86, high: 165.88, low: 162.26, close: 163.71, volume: 37880461},
+  {date: '08/22/2025', open: 162.17, high: 168.53, low: 161.8, close: 167.76, volume: 43998609},
+  {date: '08/25/2025', open: 165.55, high: 165.59, low: 161.72, close: 163.36, volume: 36134680},
+  {date: '08/26/2025', open: 168.65, high: 169.77, low: 164.91, close: 166.62, volume: 52138559},
+  {date: '08/27/2025', open: 166.04, high: 167.68, low: 164.65, close: 167.13, volume: 37031039},
+  {date: '08/28/2025', open: 168.5, high: 170.99, low: 166.65, close: 168.58, volume: 36285191},
+  {date: '08/29/2025', open: 166.81, high: 168.57, low: 161.9, close: 162.63, volume: 37516820},
+  {date: '09/02/2025', open: 158.42, high: 162.39, low: 156.62, close: 162.32, volume: 38656129},
+  {date: '09/03/2025', open: 161.81, high: 164.75, low: 160.58, close: 162.13, volume: 30752789},
+  {date: '09/04/2025', open: 159.94, high: 162.05, low: 157.79, close: 161.79, volume: 32103500},
+  {date: '09/05/2025', open: 157.12, high: 157.14, low: 150.18, close: 151.14, volume: 78255953},
+  {date: '09/08/2025', open: 151.8, high: 152.64, low: 149.22, close: 151.41, volume: 41849000},
+  {date: '09/09/2025', open: 151.99, high: 156.66, low: 151.93, close: 155.82, volume: 42802473},
+].reverse(); // Reverse to get most recent first for display
+
 const indicators: IndicatorConfig[] = [
   {id: 'rsi', name: 'RSI', description: 'Relative Strength Index', color: '#8b5cf6'},
   {id: 'stoch', name: 'Stochastic', description: 'Stochastic Oscillator', color: '#ec4899'},
@@ -76,19 +120,19 @@ export default function MomentumIndicators() {
   };
 
   const renderRSI = (config: IndicatorConfig) => {
-    const prices = [44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63];
     const rsi = new RSI(14);
     const chartData: ChartDataPoint[] = [];
-    const sampleValues: Array<{period: number; price: number; result: string}> = [];
+    const sampleValues: Array<{period: number; date: string; close: number; result: string}> = [];
 
-    prices.forEach((price, idx) => {
-      rsi.add(price);
+    amdCandles.forEach((candle, idx) => {
+      rsi.add(candle.close);
       const result = rsi.isStable ? rsi.getResult() : null;
       chartData.push({x: idx + 1, y: result});
 
       sampleValues.push({
         period: idx + 1,
-        price,
+        date: candle.date,
+        close: candle.close,
         result: result !== null ? result.toFixed(2) : 'N/A',
       });
     });
@@ -113,7 +157,8 @@ export default function MomentumIndicators() {
               <thead>
                 <tr className="border-b border-slate-600">
                   <th className="text-left text-slate-300 py-2 px-3">Period</th>
-                  <th className="text-left text-slate-300 py-2 px-3">Price</th>
+                  <th className="text-left text-slate-300 py-2 px-3">Date</th>
+                  <th className="text-left text-slate-300 py-2 px-3">Close</th>
                   <th className="text-left text-slate-300 py-2 px-3">RSI</th>
                 </tr>
               </thead>
@@ -121,7 +166,8 @@ export default function MomentumIndicators() {
                 {sampleValues.map(row => (
                   <tr key={row.period} className="border-b border-slate-700/50">
                     <td className="text-slate-400 py-2 px-3">{row.period}</td>
-                    <td className="text-slate-300 py-2 px-3">{row.price.toFixed(2)}</td>
+                    <td className="text-slate-400 py-2 px-3">{row.date}</td>
+                    <td className="text-slate-300 py-2 px-3">${row.close.toFixed(2)}</td>
                     <td className="text-white font-mono py-2 px-3">{row.result}</td>
                   </tr>
                 ))}
@@ -153,21 +199,21 @@ if (rsi.isStable) {
   };
 
   const renderStochastic = (config: IndicatorConfig) => {
-    const prices = [45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62];
     const stoch = new StochasticOscillator(14, 3, 3);
     const chartDataK: ChartDataPoint[] = [];
     const chartDataD: ChartDataPoint[] = [];
-    const sampleValues: Array<{period: number; close: number; k: string; d: string}> = [];
+    const sampleValues: Array<{period: number; date: string; close: number; k: string; d: string}> = [];
 
-    prices.forEach((price, idx) => {
-      stoch.add({high: price + 5, low: price - 5, close: price});
+    amdCandles.forEach((candle, idx) => {
+      stoch.add({high: candle.high, low: candle.low, close: candle.close});
       const result = stoch.isStable ? stoch.getResult() : null;
       chartDataK.push({x: idx + 1, y: result?.stochK ?? null});
       chartDataD.push({x: idx + 1, y: result?.stochD ?? null});
 
       sampleValues.push({
         period: idx + 1,
-        close: price,
+        date: candle.date,
+        close: candle.close,
         k: result ? result.stochK.toFixed(2) : 'N/A',
         d: result ? result.stochD.toFixed(2) : 'N/A',
       });
@@ -193,6 +239,7 @@ if (rsi.isStable) {
               <thead>
                 <tr className="border-b border-slate-600">
                   <th className="text-left text-slate-300 py-2 px-3">Period</th>
+                  <th className="text-left text-slate-300 py-2 px-3">Date</th>
                   <th className="text-left text-slate-300 py-2 px-3">Close</th>
                   <th className="text-left text-slate-300 py-2 px-3">%K</th>
                   <th className="text-left text-slate-300 py-2 px-3">%D</th>
@@ -202,7 +249,8 @@ if (rsi.isStable) {
                 {sampleValues.map(row => (
                   <tr key={row.period} className="border-b border-slate-700/50">
                     <td className="text-slate-400 py-2 px-3">{row.period}</td>
-                    <td className="text-slate-300 py-2 px-3">{row.close.toFixed(2)}</td>
+                    <td className="text-slate-400 py-2 px-3">{row.date}</td>
+                    <td className="text-slate-300 py-2 px-3">${row.close.toFixed(2)}</td>
                     <td className="text-white font-mono py-2 px-3">{row.k}</td>
                     <td className="text-white font-mono py-2 px-3">{row.d}</td>
                   </tr>
@@ -237,19 +285,19 @@ if (stoch.isStable) {
   };
 
   const renderCCI = (config: IndicatorConfig) => {
-    const prices = [50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70];
     const cci = new CCI(20);
     const chartData: ChartDataPoint[] = [];
-    const sampleValues: Array<{period: number; close: number; result: string}> = [];
+    const sampleValues: Array<{period: number; date: string; close: number; result: string}> = [];
 
-    prices.forEach((price, idx) => {
-      cci.add({high: price + 2, low: price - 2, close: price});
+    amdCandles.forEach((candle, idx) => {
+      cci.add({high: candle.high, low: candle.low, close: candle.close});
       const result = cci.isStable ? cci.getResult() : null;
       chartData.push({x: idx + 1, y: result});
 
       sampleValues.push({
         period: idx + 1,
-        close: price,
+        date: candle.date,
+        close: candle.close,
         result: result !== null ? result.toFixed(2) : 'N/A',
       });
     });
@@ -317,16 +365,17 @@ if (cci.isStable) {
     const prices = [100, 102, 105, 107, 110, 108, 106, 109, 112, 115, 117, 119, 120];
     const roc = new ROC(9);
     const chartData: ChartDataPoint[] = [];
-    const sampleValues: Array<{period: number; price: number; result: string}> = [];
+    const sampleValues: Array<{period: number; date: string; close: number; result: string}> = [];
 
-    prices.forEach((price, idx) => {
-      roc.add(price);
+    amdCandles.forEach((candle, idx) => {
+      roc.add(candle.close);
       const result = roc.isStable ? roc.getResult() : null;
       chartData.push({x: idx + 1, y: result});
 
       sampleValues.push({
         period: idx + 1,
-        price,
+        date: candle.date,
+        close: candle.close,
         result: result !== null ? result.toFixed(2) : 'N/A',
       });
     });
@@ -351,7 +400,8 @@ if (cci.isStable) {
               <thead>
                 <tr className="border-b border-slate-600">
                   <th className="text-left text-slate-300 py-2 px-3">Period</th>
-                  <th className="text-left text-slate-300 py-2 px-3">Price</th>
+                  <th className="text-left text-slate-300 py-2 px-3">Date</th>
+                  <th className="text-left text-slate-300 py-2 px-3">Close</th>
                   <th className="text-left text-slate-300 py-2 px-3">ROC %</th>
                 </tr>
               </thead>
@@ -359,7 +409,8 @@ if (cci.isStable) {
                 {sampleValues.map(row => (
                   <tr key={row.period} className="border-b border-slate-700/50">
                     <td className="text-slate-400 py-2 px-3">{row.period}</td>
-                    <td className="text-slate-300 py-2 px-3">{row.price.toFixed(2)}</td>
+                    <td className="text-slate-300 py-2 px-3">{row.date}</td>
+                    <td className="text-slate-300 py-2 px-3">${row.close.toFixed(2)}</td>
                     <td className="text-white font-mono py-2 px-3">{row.result}</td>
                   </tr>
                 ))}
@@ -389,22 +440,19 @@ if (roc.isStable) {
   };
 
   const renderMACD = (config: IndicatorConfig) => {
-    const prices = [
-      12, 12.5, 13, 13.5, 14, 14.5, 15, 15.5, 16, 16.5, 17, 17.5, 18, 18.5, 19, 19.5, 20, 20.5, 21, 21.5, 22, 22.5, 23,
-      23.5, 24, 24.5, 25, 25.5, 26,
-    ];
     const macd = new MACD(new EMA(12), new EMA(26), new EMA(9));
     const chartData: ChartDataPoint[] = [];
-    const sampleValues: Array<{period: number; price: number; result: string}> = [];
+    const sampleValues: Array<{period: number; date: string; close: number; result: string}> = [];
 
-    prices.forEach((price, idx) => {
-      macd.add(price);
+    amdCandles.forEach((candle, idx) => {
+      macd.add(candle.close);
       const result = macd.isStable ? macd.getResult() : null;
       chartData.push({x: idx + 1, y: result?.macd ?? null});
 
       sampleValues.push({
         period: idx + 1,
-        price,
+        date: candle.date,
+        close: candle.close,
         result: result ? `${result.macd.toFixed(4)}` : 'N/A',
       });
     });
@@ -429,7 +477,8 @@ if (roc.isStable) {
               <thead>
                 <tr className="border-b border-slate-600">
                   <th className="text-left text-slate-300 py-2 px-3">Period</th>
-                  <th className="text-left text-slate-300 py-2 px-3">Price</th>
+                  <th className="text-left text-slate-300 py-2 px-3">Date</th>
+                  <th className="text-left text-slate-300 py-2 px-3">Close</th>
                   <th className="text-left text-slate-300 py-2 px-3">MACD</th>
                 </tr>
               </thead>
@@ -437,7 +486,8 @@ if (roc.isStable) {
                 {sampleValues.map(row => (
                   <tr key={row.period} className="border-b border-slate-700/50">
                     <td className="text-slate-400 py-2 px-3">{row.period}</td>
-                    <td className="text-slate-300 py-2 px-3">{row.price.toFixed(2)}</td>
+                    <td className="text-slate-300 py-2 px-3">{row.date}</td>
+                    <td className="text-slate-300 py-2 px-3">${row.close.toFixed(2)}</td>
                     <td className="text-white font-mono py-2 px-3">{row.result}</td>
                   </tr>
                 ))}
@@ -470,21 +520,18 @@ if (macd.isStable) {
   };
 
   const renderAO = (config: IndicatorConfig) => {
-    const candles = Array.from({length: 40}, (_, i) => ({
-      high: 100 + i * 2 + 5,
-      low: 100 + i * 2 - 5,
-    }));
     const ao = new AO(5, 34);
     const chartData: ChartDataPoint[] = [];
-    const sampleValues: Array<{period: number; high: number; low: number; result: string}> = [];
+    const sampleValues: Array<{period: number; date: string; high: number; low: number; result: string}> = [];
 
-    candles.forEach((candle, idx) => {
+    amdCandles.forEach((candle, idx) => {
       ao.add(candle);
       const result = ao.isStable ? ao.getResult() : null;
       chartData.push({x: idx + 1, y: result});
 
       sampleValues.push({
         period: idx + 1,
+        date: candle.date,
         high: candle.high,
         low: candle.low,
         result: result !== null ? result.toFixed(2) : 'N/A',
@@ -511,6 +558,7 @@ if (macd.isStable) {
               <thead>
                 <tr className="border-b border-slate-600">
                   <th className="text-left text-slate-300 py-2 px-3">Period</th>
+                  <th className="text-left text-slate-300 py-2 px-3">Date</th>
                   <th className="text-left text-slate-300 py-2 px-3">High</th>
                   <th className="text-left text-slate-300 py-2 px-3">Low</th>
                   <th className="text-left text-slate-300 py-2 px-3">AO</th>
@@ -520,8 +568,9 @@ if (macd.isStable) {
                 {sampleValues.map(row => (
                   <tr key={row.period} className="border-b border-slate-700/50">
                     <td className="text-slate-400 py-2 px-3">{row.period}</td>
-                    <td className="text-slate-300 py-2 px-3">{row.high.toFixed(2)}</td>
-                    <td className="text-slate-300 py-2 px-3">{row.low.toFixed(2)}</td>
+                    <td className="text-slate-300 py-2 px-3">{row.date}</td>
+                    <td className="text-slate-300 py-2 px-3">${row.high.toFixed(2)}</td>
+                    <td className="text-slate-300 py-2 px-3">${row.low.toFixed(2)}</td>
                     <td className="text-white font-mono py-2 px-3">{row.result}</td>
                   </tr>
                 ))}
@@ -550,21 +599,18 @@ if (ao.isStable) {
   };
 
   const renderAC = (config: IndicatorConfig) => {
-    const candles = Array.from({length: 40}, (_, i) => ({
-      high: 100 + i + 5,
-      low: 100 + i - 5,
-    }));
     const ac = new AC(5, 34, 5);
     const chartData: ChartDataPoint[] = [];
-    const sampleValues: Array<{period: number; high: number; low: number; result: string}> = [];
+    const sampleValues: Array<{period: number; date: string; high: number; low: number; result: string}> = [];
 
-    candles.forEach((candle, idx) => {
+    amdCandles.forEach((candle, idx) => {
       ac.add(candle);
       const result = ac.isStable ? ac.getResult() : null;
       chartData.push({x: idx + 1, y: result});
 
       sampleValues.push({
         period: idx + 1,
+        date: candle.date,
         high: candle.high,
         low: candle.low,
         result: result !== null ? result.toFixed(2) : 'N/A',
@@ -591,6 +637,7 @@ if (ao.isStable) {
               <thead>
                 <tr className="border-b border-slate-600">
                   <th className="text-left text-slate-300 py-2 px-3">Period</th>
+                  <th className="text-left text-slate-300 py-2 px-3">Date</th>
                   <th className="text-left text-slate-300 py-2 px-3">High</th>
                   <th className="text-left text-slate-300 py-2 px-3">Low</th>
                   <th className="text-left text-slate-300 py-2 px-3">AC</th>
@@ -600,8 +647,9 @@ if (ao.isStable) {
                 {sampleValues.map(row => (
                   <tr key={row.period} className="border-b border-slate-700/50">
                     <td className="text-slate-400 py-2 px-3">{row.period}</td>
-                    <td className="text-slate-300 py-2 px-3">{row.high.toFixed(2)}</td>
-                    <td className="text-slate-300 py-2 px-3">{row.low.toFixed(2)}</td>
+                    <td className="text-slate-300 py-2 px-3">{row.date}</td>
+                    <td className="text-slate-300 py-2 px-3">${row.high.toFixed(2)}</td>
+                    <td className="text-slate-300 py-2 px-3">${row.low.toFixed(2)}</td>
                     <td className="text-white font-mono py-2 px-3">{row.result}</td>
                   </tr>
                 ))}
@@ -630,19 +678,19 @@ if (ac.isStable) {
   };
 
   const renderCG = (config: IndicatorConfig) => {
-    const prices = [10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22];
     const cg = new CG(10, 10);
     const chartData: ChartDataPoint[] = [];
-    const sampleValues: Array<{period: number; price: number; result: string}> = [];
+    const sampleValues: Array<{period: number; date: string; close: number; result: string}> = [];
 
-    prices.forEach((price, idx) => {
-      cg.add(price);
+    amdCandles.forEach((candle, idx) => {
+      cg.add(candle.close);
       const result = cg.isStable ? cg.getResult() : null;
       chartData.push({x: idx + 1, y: result});
 
       sampleValues.push({
         period: idx + 1,
-        price,
+        date: candle.date,
+        close: candle.close,
         result: result !== null ? result.toFixed(2) : 'N/A',
       });
     });
@@ -666,7 +714,8 @@ if (ac.isStable) {
               <thead>
                 <tr className="border-b border-slate-600">
                   <th className="text-left text-slate-300 py-2 px-3">Period</th>
-                  <th className="text-left text-slate-300 py-2 px-3">Price</th>
+                  <th className="text-left text-slate-300 py-2 px-3">Date</th>
+                  <th className="text-left text-slate-300 py-2 px-3">Close</th>
                   <th className="text-left text-slate-300 py-2 px-3">CG</th>
                 </tr>
               </thead>
@@ -674,7 +723,8 @@ if (ac.isStable) {
                 {sampleValues.map(row => (
                   <tr key={row.period} className="border-b border-slate-700/50">
                     <td className="text-slate-400 py-2 px-3">{row.period}</td>
-                    <td className="text-slate-300 py-2 px-3">{row.price.toFixed(2)}</td>
+                    <td className="text-slate-300 py-2 px-3">{row.date}</td>
+                    <td className="text-slate-300 py-2 px-3">${row.close.toFixed(2)}</td>
                     <td className="text-white font-mono py-2 px-3">{row.result}</td>
                   </tr>
                 ))}
@@ -704,19 +754,19 @@ if (cg.isStable) {
   };
 
   const renderMOM = (config: IndicatorConfig) => {
-    const prices = [100, 102, 105, 107, 110, 108, 106, 109, 112, 115, 113, 111, 114];
     const mom = new MOM(5);
     const chartData: ChartDataPoint[] = [];
-    const sampleValues: Array<{period: number; price: number; result: string}> = [];
+    const sampleValues: Array<{period: number; date: string; close: number; result: string}> = [];
 
-    prices.forEach((price, idx) => {
-      mom.add(price);
+    amdCandles.forEach((candle, idx) => {
+      mom.add(candle.close);
       const result = mom.isStable ? mom.getResult() : null;
       chartData.push({x: idx + 1, y: result});
 
       sampleValues.push({
         period: idx + 1,
-        price,
+        date: candle.date,
+        close: candle.close,
         result: result !== null ? result.toFixed(2) : 'N/A',
       });
     });
@@ -740,7 +790,8 @@ if (cg.isStable) {
               <thead>
                 <tr className="border-b border-slate-600">
                   <th className="text-left text-slate-300 py-2 px-3">Period</th>
-                  <th className="text-left text-slate-300 py-2 px-3">Price</th>
+                  <th className="text-left text-slate-300 py-2 px-3">Date</th>
+                  <th className="text-left text-slate-300 py-2 px-3">Close</th>
                   <th className="text-left text-slate-300 py-2 px-3">MOM</th>
                 </tr>
               </thead>
@@ -748,7 +799,8 @@ if (cg.isStable) {
                 {sampleValues.map(row => (
                   <tr key={row.period} className="border-b border-slate-700/50">
                     <td className="text-slate-400 py-2 px-3">{row.period}</td>
-                    <td className="text-slate-300 py-2 px-3">{row.price.toFixed(2)}</td>
+                    <td className="text-slate-300 py-2 px-3">{row.date}</td>
+                    <td className="text-slate-300 py-2 px-3">${row.close.toFixed(2)}</td>
                     <td className="text-white font-mono py-2 px-3">{row.result}</td>
                   </tr>
                 ))}
@@ -778,27 +830,18 @@ if (mom.isStable) {
   };
 
   const renderOBV = (config: IndicatorConfig) => {
-    const candles = [
-      {open: 100, high: 101, low: 99, close: 100, volume: 1000},
-      {open: 100, high: 103, low: 100, close: 102, volume: 1200},
-      {open: 102, high: 102, low: 100, close: 101, volume: 900},
-      {open: 101, high: 106, low: 101, close: 105, volume: 1500},
-      {open: 105, high: 108, low: 105, close: 107, volume: 1300},
-      {open: 107, high: 107, low: 105, close: 106, volume: 1100},
-      {open: 106, high: 111, low: 106, close: 110, volume: 1800},
-      {open: 110, high: 113, low: 110, close: 112, volume: 1600},
-    ];
     const obv = new OBV();
     const chartData: ChartDataPoint[] = [];
-    const sampleValues: Array<{period: number; close: number; volume: number; result: string}> = [];
+    const sampleValues: Array<{period: number; date: string; close: number; volume: number; result: string}> = [];
 
-    candles.forEach((candle, idx) => {
+    amdCandles.forEach((candle, idx) => {
       obv.add(candle);
       const result = obv.getResult();
       chartData.push({x: idx + 1, y: result});
 
       sampleValues.push({
         period: idx + 1,
+        date: candle.date,
         close: candle.close,
         volume: candle.volume,
         result: result !== null ? result.toFixed(0) : 'N/A',
@@ -824,6 +867,7 @@ if (mom.isStable) {
               <thead>
                 <tr className="border-b border-slate-600">
                   <th className="text-left text-slate-300 py-2 px-3">Period</th>
+                  <th className="text-left text-slate-300 py-2 px-3">Date</th>
                   <th className="text-left text-slate-300 py-2 px-3">Close</th>
                   <th className="text-left text-slate-300 py-2 px-3">Volume</th>
                   <th className="text-left text-slate-300 py-2 px-3">OBV</th>
@@ -833,7 +877,8 @@ if (mom.isStable) {
                 {sampleValues.map(row => (
                   <tr key={row.period} className="border-b border-slate-700/50">
                     <td className="text-slate-400 py-2 px-3">{row.period}</td>
-                    <td className="text-slate-300 py-2 px-3">{row.close.toFixed(2)}</td>
+                    <td className="text-slate-300 py-2 px-3">{row.date}</td>
+                    <td className="text-slate-300 py-2 px-3">${row.close.toFixed(2)}</td>
                     <td className="text-slate-300 py-2 px-3">{row.volume}</td>
                     <td className="text-white font-mono py-2 px-3">{row.result}</td>
                   </tr>
@@ -864,22 +909,18 @@ if (result !== null) {
   };
 
   const renderREI = (config: IndicatorConfig) => {
-    const candles = Array.from({length: 15}, (_, i) => ({
-      high: 100 + i * 2 + Math.random() * 5,
-      low: 100 + i * 2 - Math.random() * 5,
-      close: 100 + i * 2,
-    }));
     const rei = new REI(5);
     const chartData: ChartDataPoint[] = [];
-    const sampleValues: Array<{period: number; close: number; result: string}> = [];
+    const sampleValues: Array<{period: number; date: string; close: number; result: string}> = [];
 
-    candles.forEach((candle, idx) => {
+    amdCandles.forEach((candle, idx) => {
       rei.add(candle);
       const result = rei.isStable ? rei.getResult() : null;
       chartData.push({x: idx + 1, y: result});
 
       sampleValues.push({
         period: idx + 1,
+        date: candle.date,
         close: candle.close,
         result: result !== null ? result.toFixed(2) : 'N/A',
       });
@@ -902,6 +943,7 @@ if (result !== null) {
               <thead>
                 <tr className="border-b border-slate-600">
                   <th className="text-left text-slate-300 py-2 px-3">Period</th>
+                  <th className="text-left text-slate-300 py-2 px-3">Date</th>
                   <th className="text-left text-slate-300 py-2 px-3">Close</th>
                   <th className="text-left text-slate-300 py-2 px-3">REI</th>
                 </tr>
@@ -910,7 +952,8 @@ if (result !== null) {
                 {sampleValues.map(row => (
                   <tr key={row.period} className="border-b border-slate-700/50">
                     <td className="text-slate-400 py-2 px-3">{row.period}</td>
-                    <td className="text-slate-300 py-2 px-3">{row.close.toFixed(2)}</td>
+                    <td className="text-slate-300 py-2 px-3">{row.date}</td>
+                    <td className="text-slate-300 py-2 px-3">${row.close.toFixed(2)}</td>
                     <td className="text-white font-mono py-2 px-3">{row.result}</td>
                   </tr>
                 ))}
@@ -939,19 +982,19 @@ if (rei.isStable) {
   };
 
   const renderStochRSI = (config: IndicatorConfig) => {
-    const prices = [44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63];
     const stochRsi = new StochasticRSI(14);
     const chartData: ChartDataPoint[] = [];
-    const sampleValues: Array<{period: number; price: number; result: string}> = [];
+    const sampleValues: Array<{period: number; date: string; close: number; result: string}> = [];
 
-    prices.forEach((price, idx) => {
-      stochRsi.add(price);
+    amdCandles.forEach((candle, idx) => {
+      stochRsi.add(candle.close);
       const result = stochRsi.isStable ? stochRsi.getResult() : null;
       chartData.push({x: idx + 1, y: result});
 
       sampleValues.push({
         period: idx + 1,
-        price,
+        date: candle.date,
+        close: candle.close,
         result: result !== null ? result.toFixed(2) : 'N/A',
       });
     });
@@ -975,7 +1018,8 @@ if (rei.isStable) {
               <thead>
                 <tr className="border-b border-slate-600">
                   <th className="text-left text-slate-300 py-2 px-3">Period</th>
-                  <th className="text-left text-slate-300 py-2 px-3">Price</th>
+                  <th className="text-left text-slate-300 py-2 px-3">Date</th>
+                  <th className="text-left text-slate-300 py-2 px-3">Close</th>
                   <th className="text-left text-slate-300 py-2 px-3">StochRSI</th>
                 </tr>
               </thead>
@@ -983,7 +1027,8 @@ if (rei.isStable) {
                 {sampleValues.map(row => (
                   <tr key={row.period} className="border-b border-slate-700/50">
                     <td className="text-slate-400 py-2 px-3">{row.period}</td>
-                    <td className="text-slate-300 py-2 px-3">{row.price.toFixed(2)}</td>
+                    <td className="text-slate-300 py-2 px-3">{row.date}</td>
+                    <td className="text-slate-300 py-2 px-3">${row.close.toFixed(2)}</td>
                     <td className="text-white font-mono py-2 px-3">{row.result}</td>
                   </tr>
                 ))}
