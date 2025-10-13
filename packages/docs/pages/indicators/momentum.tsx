@@ -86,13 +86,11 @@ export default function MomentumIndicators() {
       const result = rsi.isStable ? rsi.getResult() : null;
       chartData.push({x: idx + 1, y: result});
 
-      if (idx >= prices.length - 5) {
-        sampleValues.push({
-          period: idx + 1,
-          price,
-          result: result !== null ? result.toFixed(2) : 'N/A',
-        });
-      }
+      sampleValues.push({
+        period: idx + 1,
+        price,
+        result: result !== null ? result.toFixed(2) : 'N/A',
+      });
     });
 
     return (
@@ -109,7 +107,7 @@ export default function MomentumIndicators() {
         <Chart title="RSI (14-period)" data={chartData} yAxisLabel="RSI" color={config.color} />
 
         <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-4">
-          <h3 className="text-lg font-semibold text-white mb-3">Sample Values (Last 5 periods)</h3>
+          <h3 className="text-lg font-semibold text-white mb-3">All Sample Values</h3>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
@@ -167,14 +165,12 @@ if (rsi.isStable) {
       chartDataK.push({x: idx + 1, y: result?.stochK ?? null});
       chartDataD.push({x: idx + 1, y: result?.stochD ?? null});
 
-      if (idx >= prices.length - 5) {
-        sampleValues.push({
-          period: idx + 1,
-          close: price,
-          k: result ? result.stochK.toFixed(2) : 'N/A',
-          d: result ? result.stochD.toFixed(2) : 'N/A',
-        });
-      }
+      sampleValues.push({
+        period: idx + 1,
+        close: price,
+        k: result ? result.stochK.toFixed(2) : 'N/A',
+        d: result ? result.stochD.toFixed(2) : 'N/A',
+      });
     });
 
     return (
@@ -191,7 +187,7 @@ if (rsi.isStable) {
         <Chart title="Stochastic %D" data={chartDataD} yAxisLabel="%D" color="#f97316" />
 
         <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-4">
-          <h3 className="text-lg font-semibold text-white mb-3">Sample Values (Last 5 periods)</h3>
+          <h3 className="text-lg font-semibold text-white mb-3">All Sample Values</h3>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
@@ -251,13 +247,11 @@ if (stoch.isStable) {
       const result = cci.isStable ? cci.getResult() : null;
       chartData.push({x: idx + 1, y: result});
 
-      if (idx >= prices.length - 5) {
-        sampleValues.push({
-          period: idx + 1,
-          close: price,
-          result: result !== null ? result.toFixed(2) : 'N/A',
-        });
-      }
+      sampleValues.push({
+        period: idx + 1,
+        close: price,
+        result: result !== null ? result.toFixed(2) : 'N/A',
+      });
     });
 
     return (
@@ -274,7 +268,7 @@ if (stoch.isStable) {
         <Chart title="CCI (20-period)" data={chartData} yAxisLabel="CCI" color={config.color} />
 
         <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-4">
-          <h3 className="text-lg font-semibold text-white mb-3">Sample Values (Last 5 periods)</h3>
+          <h3 className="text-lg font-semibold text-white mb-3">All Sample Values</h3>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
@@ -330,13 +324,11 @@ if (cci.isStable) {
       const result = roc.isStable ? roc.getResult() : null;
       chartData.push({x: idx + 1, y: result});
 
-      if (idx >= prices.length - 5) {
-        sampleValues.push({
-          period: idx + 1,
-          price,
-          result: result !== null ? result.toFixed(2) : 'N/A',
-        });
-      }
+      sampleValues.push({
+        period: idx + 1,
+        price,
+        result: result !== null ? result.toFixed(2) : 'N/A',
+      });
     });
 
     return (
@@ -353,7 +345,7 @@ if (cci.isStable) {
         <Chart title="ROC (9-period)" data={chartData} yAxisLabel="ROC %" color={config.color} />
 
         <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-4">
-          <h3 className="text-lg font-semibold text-white mb-3">Sample Values (Last 5 periods)</h3>
+          <h3 className="text-lg font-semibold text-white mb-3">All Sample Values</h3>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
@@ -410,13 +402,11 @@ if (roc.isStable) {
       const result = macd.isStable ? macd.getResult() : null;
       chartData.push({x: idx + 1, y: result?.macd ?? null});
 
-      if (idx >= prices.length - 5) {
-        sampleValues.push({
-          period: idx + 1,
-          price,
-          result: result ? `${result.macd.toFixed(4)}` : 'N/A',
-        });
-      }
+      sampleValues.push({
+        period: idx + 1,
+        price,
+        result: result ? `${result.macd.toFixed(4)}` : 'N/A',
+      });
     });
 
     return (
@@ -433,7 +423,7 @@ if (roc.isStable) {
         <Chart title="MACD Line" data={chartData} yAxisLabel="MACD" color={config.color} />
 
         <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-4">
-          <h3 className="text-lg font-semibold text-white mb-3">Sample Values (Last 5 periods)</h3>
+          <h3 className="text-lg font-semibold text-white mb-3">All Sample Values</h3>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
@@ -493,14 +483,12 @@ if (macd.isStable) {
       const result = ao.isStable ? ao.getResult() : null;
       chartData.push({x: idx + 1, y: result});
 
-      if (idx >= candles.length - 5) {
-        sampleValues.push({
-          period: idx + 1,
-          high: candle.high,
-          low: candle.low,
-          result: result !== null ? result.toFixed(2) : 'N/A',
-        });
-      }
+      sampleValues.push({
+        period: idx + 1,
+        high: candle.high,
+        low: candle.low,
+        result: result !== null ? result.toFixed(2) : 'N/A',
+      });
     });
 
     return (
@@ -517,7 +505,7 @@ if (macd.isStable) {
         <Chart title="Awesome Oscillator" data={chartData} yAxisLabel="AO" color={config.color} />
 
         <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-4">
-          <h3 className="text-lg font-semibold text-white mb-3">Sample Values (Last 5 periods)</h3>
+          <h3 className="text-lg font-semibold text-white mb-3">All Sample Values</h3>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
@@ -575,14 +563,12 @@ if (ao.isStable) {
       const result = ac.isStable ? ac.getResult() : null;
       chartData.push({x: idx + 1, y: result});
 
-      if (idx >= candles.length - 5) {
-        sampleValues.push({
-          period: idx + 1,
-          high: candle.high,
-          low: candle.low,
-          result: result !== null ? result.toFixed(2) : 'N/A',
-        });
-      }
+      sampleValues.push({
+        period: idx + 1,
+        high: candle.high,
+        low: candle.low,
+        result: result !== null ? result.toFixed(2) : 'N/A',
+      });
     });
 
     return (
@@ -599,7 +585,7 @@ if (ao.isStable) {
         <Chart title="Accelerator Oscillator" data={chartData} yAxisLabel="AC" color={config.color} />
 
         <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-4">
-          <h3 className="text-lg font-semibold text-white mb-3">Sample Values (Last 5 periods)</h3>
+          <h3 className="text-lg font-semibold text-white mb-3">All Sample Values</h3>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
@@ -654,13 +640,11 @@ if (ac.isStable) {
       const result = cg.isStable ? cg.getResult() : null;
       chartData.push({x: idx + 1, y: result});
 
-      if (idx >= prices.length - 5) {
-        sampleValues.push({
-          period: idx + 1,
-          price,
-          result: result !== null ? result.toFixed(2) : 'N/A',
-        });
-      }
+      sampleValues.push({
+        period: idx + 1,
+        price,
+        result: result !== null ? result.toFixed(2) : 'N/A',
+      });
     });
 
     return (
@@ -676,7 +660,7 @@ if (ac.isStable) {
         <Chart title="Center of Gravity" data={chartData} yAxisLabel="CG" color={config.color} />
 
         <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-4">
-          <h3 className="text-lg font-semibold text-white mb-3">Sample Values (Last 5 periods)</h3>
+          <h3 className="text-lg font-semibold text-white mb-3">All Sample Values</h3>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
@@ -730,13 +714,11 @@ if (cg.isStable) {
       const result = mom.isStable ? mom.getResult() : null;
       chartData.push({x: idx + 1, y: result});
 
-      if (idx >= prices.length - 5) {
-        sampleValues.push({
-          period: idx + 1,
-          price,
-          result: result !== null ? result.toFixed(2) : 'N/A',
-        });
-      }
+      sampleValues.push({
+        period: idx + 1,
+        price,
+        result: result !== null ? result.toFixed(2) : 'N/A',
+      });
     });
 
     return (
@@ -752,7 +734,7 @@ if (cg.isStable) {
         <Chart title="Momentum (5-period)" data={chartData} yAxisLabel="MOM" color={config.color} />
 
         <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-4">
-          <h3 className="text-lg font-semibold text-white mb-3">Sample Values (Last 5 periods)</h3>
+          <h3 className="text-lg font-semibold text-white mb-3">All Sample Values</h3>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
@@ -815,14 +797,12 @@ if (mom.isStable) {
       const result = obv.getResult();
       chartData.push({x: idx + 1, y: result});
 
-      if (idx >= candles.length - 5) {
-        sampleValues.push({
-          period: idx + 1,
-          close: candle.close,
-          volume: candle.volume,
-          result: result !== null ? result.toFixed(0) : 'N/A',
-        });
-      }
+      sampleValues.push({
+        period: idx + 1,
+        close: candle.close,
+        volume: candle.volume,
+        result: result !== null ? result.toFixed(0) : 'N/A',
+      });
     });
 
     return (
@@ -838,7 +818,7 @@ if (mom.isStable) {
         <Chart title="On-Balance Volume" data={chartData} yAxisLabel="OBV" color={config.color} />
 
         <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-4">
-          <h3 className="text-lg font-semibold text-white mb-3">Sample Values (Last 5 periods)</h3>
+          <h3 className="text-lg font-semibold text-white mb-3">All Sample Values</h3>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
@@ -898,13 +878,11 @@ if (result !== null) {
       const result = rei.isStable ? rei.getResult() : null;
       chartData.push({x: idx + 1, y: result});
 
-      if (idx >= candles.length - 5) {
-        sampleValues.push({
-          period: idx + 1,
-          close: candle.close,
-          result: result !== null ? result.toFixed(2) : 'N/A',
-        });
-      }
+      sampleValues.push({
+        period: idx + 1,
+        close: candle.close,
+        result: result !== null ? result.toFixed(2) : 'N/A',
+      });
     });
 
     return (
@@ -918,7 +896,7 @@ if (result !== null) {
         <Chart title="Range Expansion Index" data={chartData} yAxisLabel="REI" color={config.color} />
 
         <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-4">
-          <h3 className="text-lg font-semibold text-white mb-3">Sample Values (Last 5 periods)</h3>
+          <h3 className="text-lg font-semibold text-white mb-3">All Sample Values</h3>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
@@ -971,13 +949,11 @@ if (rei.isStable) {
       const result = stochRsi.isStable ? stochRsi.getResult() : null;
       chartData.push({x: idx + 1, y: result});
 
-      if (idx >= prices.length - 5) {
-        sampleValues.push({
-          period: idx + 1,
-          price,
-          result: result !== null ? result.toFixed(2) : 'N/A',
-        });
-      }
+      sampleValues.push({
+        period: idx + 1,
+        price,
+        result: result !== null ? result.toFixed(2) : 'N/A',
+      });
     });
 
     return (
@@ -993,7 +969,7 @@ if (rei.isStable) {
         <Chart title="Stochastic RSI" data={chartData} yAxisLabel="StochRSI" color={config.color} />
 
         <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-4">
-          <h3 className="text-lg font-semibold text-white mb-3">Sample Values (Last 5 periods)</h3>
+          <h3 className="text-lg font-semibold text-white mb-3">All Sample Values</h3>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
