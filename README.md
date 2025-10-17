@@ -201,13 +201,7 @@ It is very important to do your own analysis before making any investment based 
 Build and run the documentation:
 
 ```bash
-# build the library
-npm run dist
-
-# Start docs site
-cd packages/docs
-npm install
-npm run dev
+npm run docs
 ```
 
 ## Maintainers
