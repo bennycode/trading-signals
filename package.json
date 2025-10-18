@@ -73,6 +73,7 @@
     "changelog:commit": "git add CHANGELOG.md && git commit -m \"docs: updated CHANGELOG.md\"",
     "clean": "rimraf coverage dist",
     "dist": "npm run clean && npm run build",
+    "docs": "npm run dist && cd packages/docs && npm install && npm run dev",
     "fix": "npm run fix:other && npm run fix:code",
     "fix:code": "npm run lint:code -- --fix",
     "fix:other": "npm run prettier -- --write",
