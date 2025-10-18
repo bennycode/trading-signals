@@ -210,7 +210,7 @@ npm run docs
 
 ## ⭐️ Become a TypeScript rockstar! ⭐️
 
-This package was built by Benny Code. Checkout my [**TypeScript course**](https://typescript.tv/) to become a coding rockstar!
+This package was built by Benny Neugebauer. Checkout my [**TypeScript course**](https://typescript.tv/) to become a coding rockstar!
 
 [<img src="https://raw.githubusercontent.com/bennycode/trading-signals/main/tstv.png">](https://typescript.tv/)
 

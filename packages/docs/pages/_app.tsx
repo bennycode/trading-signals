@@ -66,7 +66,7 @@ export default function App({Component, pageProps}: AppProps) {
           <p>
             Built with ❤️ by{' '}
             <a
-              href="https://github.com/bennycode"
+              href="https://github.com/sponsors/bennycode"
               target="_blank"
               rel="noopener noreferrer"
               className="text-blue-400 hover:text-blue-300">
