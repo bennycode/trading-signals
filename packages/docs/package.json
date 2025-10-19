@@ -1,0 +1,29 @@
+{
+  "name": "trading-signals-docs",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Documentation and showcase website for trading-signals library",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "highcharts": "^12.4.0",
+    "highcharts-react-official": "^3.2.3",
+    "next": "^14.2.0",
+    "react": "^18.3.0",
+    "react-dom": "^18.3.0",
+    "trading-signals": "file:../../"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "@types/react": "^18.3.0",
+    "@types/react-dom": "^18.3.0",
+    "autoprefixer": "^10.4.19",
+    "postcss": "^8.4.38",
+    "tailwindcss": "^3.4.3",
+    "typescript": "^5.4.0"
+  }
+}

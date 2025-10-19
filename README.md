@@ -196,13 +196,21 @@ It is very important to do your own analysis before making any investment based 
 - [Technical Analysis Library using Pandas and Numpy (Python)](https://github.com/bukosabino/ta)
 - [Tulip Indicators (ANSI C)](https://github.com/TulipCharts/tulipindicators)
 
+## Documentation
+
+Build and run the documentation:
+
+```bash
+npm run docs
+```
+
 ## Maintainers
 
 [![Benny Neugebauer on Stack Exchange][stack_exchange_bennycode_badge]][stack_exchange_bennycode_url]
 
 ## ⭐️ Become a TypeScript rockstar! ⭐️
 
-This package was built by Benny Code. Checkout my [**TypeScript course**](https://typescript.tv/) to become a coding rockstar!
+This package was built by Benny Neugebauer. Checkout my [**TypeScript course**](https://typescript.tv/) to become a coding rockstar!
 
 [<img src="https://raw.githubusercontent.com/bennycode/trading-signals/main/tstv.png">](https://typescript.tv/)
 
