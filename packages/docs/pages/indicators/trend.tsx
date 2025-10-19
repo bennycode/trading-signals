@@ -24,12 +24,12 @@ console.log(sma.getResult()); // 47`,
 
         for (const value of values) {
           sma.add(value);
-          const result = sma.isStable ? sma.getResult().toFixed(2) : null;
+          const result = sma.isStable ? sma.getResult()!.toFixed(2) : null;
           allResults.push({value, result});
         }
 
         return {
-          result: sma.isStable ? sma.getResult().toFixed(2) : null,
+          result: sma.isStable ? sma.getResult()!.toFixed(2) : null,
           allResults,
         };
       },
@@ -55,12 +55,12 @@ console.log(ema.getResult());`,
 
         for (const value of values) {
           ema.add(value);
-          const result = ema.isStable ? ema.getResult().toFixed(2) : null;
+          const result = ema.isStable ? ema.getResult()!.toFixed(2) : null;
           allResults.push({value, result});
         }
 
         return {
-          result: ema.isStable ? ema.getResult().toFixed(2) : null,
+          result: ema.isStable ? ema.getResult()!.toFixed(2) : null,
           allResults,
         };
       },
@@ -84,12 +84,12 @@ console.log(dema.getResult());`,
 
         for (const value of values) {
           dema.add(value);
-          const result = dema.isStable ? dema.getResult().toFixed(2) : null;
+          const result = dema.isStable ? dema.getResult()!.toFixed(2) : null;
           allResults.push({value, result});
         }
 
         return {
-          result: dema.isStable ? dema.getResult().toFixed(2) : null,
+          result: dema.isStable ? dema.getResult()!.toFixed(2) : null,
           allResults,
         };
       },
@@ -115,12 +115,12 @@ console.log(wma.getResult());`,
 
         for (const value of values) {
           wma.add(value);
-          const result = wma.isStable ? wma.getResult().toFixed(2) : null;
+          const result = wma.isStable ? wma.getResult()!.toFixed(2) : null;
           allResults.push({value, result});
         }
 
         return {
-          result: wma.isStable ? wma.getResult().toFixed(2) : null,
+          result: wma.isStable ? wma.getResult()!.toFixed(2) : null,
           allResults,
         };
       },
