@@ -1059,9 +1059,27 @@ if (stochRsi.isStable) {
   };
 
   return (
-    <div className="flex gap-6">
-      {/* Sidebar */}
-      <aside className="w-64 flex-shrink-0">
+    <div className="space-y-6 lg:space-y-0 lg:flex lg:gap-6">
+      {/* Mobile Dropdown Selector */}
+      <div className="lg:hidden">
+        <label htmlFor="indicator-select" className="block text-sm font-medium text-slate-300 mb-2">
+          Select Indicator:
+        </label>
+        <select
+          id="indicator-select"
+          value={selectedIndicator}
+          onChange={e => setSelectedIndicator(e.target.value)}
+          className="w-full bg-slate-800 border border-slate-700 text-white rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-purple-600">
+          {indicators.map(indicator => (
+            <option key={indicator.id} value={indicator.id}>
+              {indicator.name} - {indicator.description}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      {/* Desktop Sidebar */}
+      <aside className="hidden lg:block w-64 flex-shrink-0">
         <div className="sticky top-6 bg-slate-800/50 border border-slate-700 rounded-lg p-4">
           <h2 className="text-lg font-semibold text-white mb-4">Momentum Indicators</h2>
           <nav className="space-y-1">
