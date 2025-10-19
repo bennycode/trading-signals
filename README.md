@@ -10,6 +10,16 @@ The "trading-signals" library provides a TypeScript implementation for common te
 
 All indicators can be updated over time by streaming data (prices or [candles](https://en.wikipedia.org/wiki/Candlestick_chart)) to the `add` method. Some indicators also provide `static` batch methods for further performance improvements when providing data up-front during a backtest or historical data import. You can try it out streaming input data by running the provided [demo script](./src/start/demo.ts) with `npm start`, which uses a keyboard input stream.
 
+## Features
+
+- **Streaming Updates:** No need to reprocess historical data
+- **Replace Mode:** Efficient live chart updates
+- **Lazy Evaluation:** Indicators only calculate when stable
+- **Memory Efficiency:** Rolling windows, not full history storage
+- **Excellent Test Coverage:** 100% across all metrics
+- **Zero Runtime Dependencies:** Minimal bundle size
+- **Type Safety:** Full TypeScript with strict mode
+
 ## Installation
 
 ```bash
