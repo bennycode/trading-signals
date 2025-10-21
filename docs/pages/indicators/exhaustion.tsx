@@ -98,15 +98,6 @@ console.log(result);`,
           </ul>
         </div>
       </div>
-
-      <div className="bg-yellow-900/20 border border-yellow-800/50 rounded-lg p-6">
-        <h2 className="text-xl font-semibold text-yellow-400 mb-3">⚠️ Important Disclaimer</h2>
-        <p className="text-slate-300">
-          Exhaustion indicators signal potential trend reversals, but they are not guarantees. Always use proper risk
-          management, confirm signals with multiple indicators, and never rely on a single indicator for trading
-          decisions. This library is for educational purposes and does not constitute financial advice.
-        </p>
-      </div>
     </div>
   );
 }

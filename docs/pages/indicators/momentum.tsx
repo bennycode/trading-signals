@@ -23,49 +23,49 @@ interface IndicatorConfig {
   color: string;
 }
 
-// AMD OHLCV data (latest 40 candles, oldest first for chronological order)
-const amdCandles = [
-  {date: '07/15/2025', open: 153.75, high: 158.68, low: 153.56, close: 155.61, volume: 93370078},
-  {date: '07/16/2025', open: 155.31, high: 160.36, low: 152.85, close: 160.08, volume: 59492762},
-  {date: '07/17/2025', open: 161.81, high: 161.96, low: 158.68, close: 160.41, volume: 50605121},
-  {date: '07/18/2025', open: 159.59, high: 160.83, low: 155.81, close: 156.99, volume: 48859840},
-  {date: '07/21/2025', open: 157.62, high: 160.34, low: 156.92, close: 157.0, volume: 39021129},
-  {date: '07/22/2025', open: 156.2, high: 156.23, low: 149.34, close: 154.72, volume: 49028020},
-  {date: '07/23/2025', open: 156.32, high: 159.45, low: 156.0, close: 158.65, volume: 41510898},
-  {date: '07/24/2025', open: 159.12, high: 163.93, low: 158.36, close: 162.12, volume: 48440113},
-  {date: '07/25/2025', open: 163.51, high: 167.18, low: 162.36, close: 166.47, volume: 53432262},
-  {date: '07/28/2025', open: 169.08, high: 174.7, low: 168.67, close: 173.66, volume: 68267844},
-  {date: '07/29/2025', open: 175.21, high: 182.31, low: 174.68, close: 177.44, volume: 108154797},
-  {date: '07/30/2025', open: 175.61, high: 180.37, low: 173.8, close: 179.51, volume: 64820289},
-  {date: '07/31/2025', open: 182.02, high: 182.5, low: 173.0, close: 176.31, volume: 71765289},
-  {date: '08/01/2025', open: 170.16, high: 174.4, low: 166.82, close: 171.7, volume: 75396125},
-  {date: '08/04/2025', open: 174.61, high: 177.86, low: 173.56, close: 176.78, volume: 52951039},
-  {date: '08/05/2025', open: 177.57, high: 177.99, low: 171.8, close: 174.31, volume: 88808523},
-  {date: '08/06/2025', open: 165.05, high: 166.18, low: 157.8, close: 163.12, volume: 133641797},
-  {date: '08/07/2025', open: 166.84, high: 175.75, low: 166.7, close: 172.4, volume: 95448312},
-  {date: '08/08/2025', open: 174.04, high: 176.48, low: 170.52, close: 172.76, volume: 68866688},
-  {date: '08/11/2025', open: 170.04, high: 178.82, low: 169.38, close: 172.28, volume: 70651031},
-  {date: '08/12/2025', open: 173.32, high: 175.16, low: 168.5, close: 174.95, volume: 52335754},
-  {date: '08/13/2025', open: 179.91, high: 186.65, low: 179.38, close: 184.42, volume: 108305102},
-  {date: '08/14/2025', open: 179.83, high: 185.44, low: 179.56, close: 180.95, volume: 66308820},
-  {date: '08/15/2025', open: 180.06, high: 180.14, low: 176.25, close: 177.51, volume: 51543141},
-  {date: '08/18/2025', open: 176.76, high: 178.8, low: 174.36, close: 176.14, volume: 35937527},
-  {date: '08/19/2025', open: 173.1, high: 173.17, low: 166.1, close: 166.55, volume: 64455008},
-  {date: '08/20/2025', open: 164.1, high: 166.65, low: 158.25, close: 165.2, volume: 60233230},
-  {date: '08/21/2025', open: 165.86, high: 165.88, low: 162.26, close: 163.71, volume: 37880461},
-  {date: '08/22/2025', open: 162.17, high: 168.53, low: 161.8, close: 167.76, volume: 43998609},
-  {date: '08/25/2025', open: 165.55, high: 165.59, low: 161.72, close: 163.36, volume: 36134680},
-  {date: '08/26/2025', open: 168.65, high: 169.77, low: 164.91, close: 166.62, volume: 52138559},
-  {date: '08/27/2025', open: 166.04, high: 167.68, low: 164.65, close: 167.13, volume: 37031039},
-  {date: '08/28/2025', open: 168.5, high: 170.99, low: 166.65, close: 168.58, volume: 36285191},
-  {date: '08/29/2025', open: 166.81, high: 168.57, low: 161.9, close: 162.63, volume: 37516820},
-  {date: '09/02/2025', open: 158.42, high: 162.39, low: 156.62, close: 162.32, volume: 38656129},
-  {date: '09/03/2025', open: 161.81, high: 164.75, low: 160.58, close: 162.13, volume: 30752789},
-  {date: '09/04/2025', open: 159.94, high: 162.05, low: 157.79, close: 161.79, volume: 32103500},
-  {date: '09/05/2025', open: 157.12, high: 157.14, low: 150.18, close: 151.14, volume: 78255953},
-  {date: '09/08/2025', open: 151.8, high: 152.64, low: 149.22, close: 151.41, volume: 41849000},
-  {date: '09/09/2025', open: 151.99, high: 156.66, low: 151.93, close: 155.82, volume: 42802473},
-].reverse(); // Reverse to get most recent first for display
+// OHLCV data (from Ethereum)
+const ethCandles = [
+  {date: '09/11/2025', open: 2318.45, high: 2345.67, low: 2298.12, close: 2334.89, volume: 4567890},
+  {date: '09/12/2025', open: 2334.89, high: 2389.23, low: 2315.67, close: 2378.45, volume: 5234567},
+  {date: '09/13/2025', open: 2378.45, high: 2398.76, low: 2356.34, close: 2367.89, volume: 4890123},
+  {date: '09/14/2025', open: 2367.89, high: 2401.23, low: 2348.56, close: 2395.12, volume: 5123456},
+  {date: '09/15/2025', open: 2395.12, high: 2445.67, low: 2388.9, close: 2432.56, volume: 6234567},
+  {date: '09/16/2025', open: 2432.56, high: 2468.34, low: 2415.23, close: 2456.78, volume: 5890123},
+  {date: '09/17/2025', open: 2456.78, high: 2489.12, low: 2441.56, close: 2478.34, volume: 5567890},
+  {date: '09/18/2025', open: 2478.34, high: 2512.45, low: 2465.89, close: 2498.67, volume: 6123456},
+  {date: '09/19/2025', open: 2498.67, high: 2534.23, low: 2487.56, close: 2523.45, volume: 6890123},
+  {date: '09/20/2025', open: 2523.45, high: 2556.78, low: 2510.12, close: 2545.89, volume: 7234567},
+  {date: '09/21/2025', open: 2545.89, high: 2578.34, low: 2532.67, close: 2567.12, volume: 6567890},
+  {date: '09/22/2025', open: 2567.12, high: 2589.45, low: 2548.23, close: 2574.56, volume: 5890123},
+  {date: '09/23/2025', open: 2574.56, high: 2598.67, low: 2556.78, close: 2589.34, volume: 6123456},
+  {date: '09/24/2025', open: 2589.34, high: 2612.89, low: 2578.45, close: 2601.23, volume: 6456789},
+  {date: '09/25/2025', open: 2601.23, high: 2634.56, low: 2587.9, close: 2623.45, volume: 7123456},
+  {date: '09/26/2025', open: 2623.45, high: 2656.78, low: 2612.34, close: 2645.67, volume: 7890123},
+  {date: '09/27/2025', open: 2645.67, high: 2678.9, low: 2634.23, close: 2667.89, volume: 8234567},
+  {date: '09/28/2025', open: 2667.89, high: 2689.12, low: 2651.45, close: 2678.34, volume: 7567890},
+  {date: '09/29/2025', open: 2678.34, high: 2698.56, low: 2665.78, close: 2689.23, volume: 6890123},
+  {date: '09/30/2025', open: 2689.23, high: 2712.45, low: 2676.89, close: 2701.56, volume: 7234567},
+  {date: '10/01/2025', open: 2701.56, high: 2734.67, low: 2689.34, close: 2723.45, volume: 7890123},
+  {date: '10/02/2025', open: 2723.45, high: 2756.89, low: 2712.78, close: 2745.67, volume: 8567890},
+  {date: '10/03/2025', open: 2745.67, high: 2778.34, low: 2734.56, close: 2767.89, volume: 9123456},
+  {date: '10/04/2025', open: 2767.89, high: 2798.45, low: 2756.23, close: 2789.12, volume: 8890123},
+  {date: '10/05/2025', open: 2789.12, high: 2823.56, low: 2778.67, close: 2812.34, volume: 9234567},
+  {date: '10/06/2025', open: 2812.34, high: 2845.78, low: 2801.45, close: 2834.56, volume: 9567890},
+  {date: '10/07/2025', open: 2834.56, high: 2867.23, low: 2823.89, close: 2856.78, volume: 10123456},
+  {date: '10/08/2025', open: 2856.78, high: 2889.45, low: 2845.67, close: 2878.9, volume: 10567890},
+  {date: '10/09/2025', open: 2878.9, high: 2912.34, low: 2867.56, close: 2901.23, volume: 11234567},
+  {date: '10/10/2025', open: 2901.23, high: 2934.67, low: 2889.78, close: 2923.45, volume: 10890123},
+  {date: '10/11/2025', open: 2923.45, high: 2956.89, low: 2912.34, close: 2945.67, volume: 11567890},
+  {date: '10/12/2025', open: 2945.67, high: 2978.23, low: 2934.56, close: 2967.89, volume: 12123456},
+  {date: '10/13/2025', open: 2967.89, high: 2989.45, low: 2956.78, close: 2978.34, volume: 11234567},
+  {date: '10/14/2025', open: 2978.34, high: 3012.56, low: 2967.9, close: 3001.23, volume: 12890123},
+  {date: '10/15/2025', open: 3001.23, high: 3034.78, low: 2989.67, close: 3023.45, volume: 13567890},
+  {date: '10/16/2025', open: 3023.45, high: 3056.34, low: 3012.89, close: 3045.67, volume: 14123456},
+  {date: '10/17/2025', open: 3045.67, high: 3078.9, low: 3034.56, close: 3067.89, volume: 13890123},
+  {date: '10/18/2025', open: 3067.89, high: 3089.23, low: 3056.78, close: 3078.45, volume: 12567890},
+  {date: '10/19/2025', open: 3078.45, high: 3098.67, low: 3067.34, close: 3089.56, volume: 11890123},
+  {date: '10/20/2025', open: 3089.56, high: 3112.34, low: 3078.9, close: 3101.23, volume: 12234567},
+];
 
 const indicators: IndicatorConfig[] = [
   {id: 'rsi', name: 'RSI', description: 'Relative Strength Index', color: '#8b5cf6'},
@@ -124,7 +124,7 @@ export default function MomentumIndicators() {
     const chartData: ChartDataPoint[] = [];
     const sampleValues: Array<{period: number; date: string; close: number; result: string}> = [];
 
-    amdCandles.forEach((candle, idx) => {
+    ethCandles.forEach((candle, idx) => {
       rsi.add(candle.close);
       const result = rsi.isStable ? rsi.getResult() : null;
       chartData.push({x: idx + 1, y: result});
@@ -204,7 +204,7 @@ if (rsi.isStable) {
     const chartDataD: ChartDataPoint[] = [];
     const sampleValues: Array<{period: number; date: string; close: number; k: string; d: string}> = [];
 
-    amdCandles.forEach((candle, idx) => {
+    ethCandles.forEach((candle, idx) => {
       stoch.add({high: candle.high, low: candle.low, close: candle.close});
       const result = stoch.isStable ? stoch.getResult() : null;
       chartDataK.push({x: idx + 1, y: result?.stochK ?? null});
@@ -289,7 +289,7 @@ if (stoch.isStable) {
     const chartData: ChartDataPoint[] = [];
     const sampleValues: Array<{period: number; date: string; close: number; result: string}> = [];
 
-    amdCandles.forEach((candle, idx) => {
+    ethCandles.forEach((candle, idx) => {
       cci.add({high: candle.high, low: candle.low, close: candle.close});
       const result = cci.isStable ? cci.getResult() : null;
       chartData.push({x: idx + 1, y: result});
@@ -322,6 +322,7 @@ if (stoch.isStable) {
               <thead>
                 <tr className="border-b border-slate-600">
                   <th className="text-left text-slate-300 py-2 px-3">Period</th>
+                  <th className="text-left text-slate-300 py-2 px-3">Date</th>
                   <th className="text-left text-slate-300 py-2 px-3">Close</th>
                   <th className="text-left text-slate-300 py-2 px-3">CCI</th>
                 </tr>
@@ -330,7 +331,8 @@ if (stoch.isStable) {
                 {sampleValues.map(row => (
                   <tr key={row.period} className="border-b border-slate-700/50">
                     <td className="text-slate-400 py-2 px-3">{row.period}</td>
-                    <td className="text-slate-300 py-2 px-3">{row.close.toFixed(2)}</td>
+                    <td className="text-slate-400 py-2 px-3">{row.date}</td>
+                    <td className="text-slate-300 py-2 px-3">${row.close.toFixed(2)}</td>
                     <td className="text-white font-mono py-2 px-3">{row.result}</td>
                   </tr>
                 ))}
@@ -367,7 +369,7 @@ if (cci.isStable) {
     const chartData: ChartDataPoint[] = [];
     const sampleValues: Array<{period: number; date: string; close: number; result: string}> = [];
 
-    amdCandles.forEach((candle, idx) => {
+    ethCandles.forEach((candle, idx) => {
       roc.add(candle.close);
       const result = roc.isStable ? roc.getResult() : null;
       chartData.push({x: idx + 1, y: result});
@@ -444,7 +446,7 @@ if (roc.isStable) {
     const chartData: ChartDataPoint[] = [];
     const sampleValues: Array<{period: number; date: string; close: number; result: string}> = [];
 
-    amdCandles.forEach((candle, idx) => {
+    ethCandles.forEach((candle, idx) => {
       macd.add(candle.close);
       const result = macd.isStable ? macd.getResult() : null;
       chartData.push({x: idx + 1, y: result?.macd ?? null});
@@ -524,7 +526,7 @@ if (macd.isStable) {
     const chartData: ChartDataPoint[] = [];
     const sampleValues: Array<{period: number; date: string; high: number; low: number; result: string}> = [];
 
-    amdCandles.forEach((candle, idx) => {
+    ethCandles.forEach((candle, idx) => {
       ao.add(candle);
       const result = ao.isStable ? ao.getResult() : null;
       chartData.push({x: idx + 1, y: result});
@@ -603,7 +605,7 @@ if (ao.isStable) {
     const chartData: ChartDataPoint[] = [];
     const sampleValues: Array<{period: number; date: string; high: number; low: number; result: string}> = [];
 
-    amdCandles.forEach((candle, idx) => {
+    ethCandles.forEach((candle, idx) => {
       ac.add(candle);
       const result = ac.isStable ? ac.getResult() : null;
       chartData.push({x: idx + 1, y: result});
@@ -682,7 +684,7 @@ if (ac.isStable) {
     const chartData: ChartDataPoint[] = [];
     const sampleValues: Array<{period: number; date: string; close: number; result: string}> = [];
 
-    amdCandles.forEach((candle, idx) => {
+    ethCandles.forEach((candle, idx) => {
       cg.add(candle.close);
       const result = cg.isStable ? cg.getResult() : null;
       chartData.push({x: idx + 1, y: result});
@@ -758,7 +760,7 @@ if (cg.isStable) {
     const chartData: ChartDataPoint[] = [];
     const sampleValues: Array<{period: number; date: string; close: number; result: string}> = [];
 
-    amdCandles.forEach((candle, idx) => {
+    ethCandles.forEach((candle, idx) => {
       mom.add(candle.close);
       const result = mom.isStable ? mom.getResult() : null;
       chartData.push({x: idx + 1, y: result});
@@ -834,7 +836,7 @@ if (mom.isStable) {
     const chartData: ChartDataPoint[] = [];
     const sampleValues: Array<{period: number; date: string; close: number; volume: number; result: string}> = [];
 
-    amdCandles.forEach((candle, idx) => {
+    ethCandles.forEach((candle, idx) => {
       obv.add(candle);
       const result = obv.getResult();
       chartData.push({x: idx + 1, y: result});
@@ -913,7 +915,7 @@ if (result !== null) {
     const chartData: ChartDataPoint[] = [];
     const sampleValues: Array<{period: number; date: string; close: number; result: string}> = [];
 
-    amdCandles.forEach((candle, idx) => {
+    ethCandles.forEach((candle, idx) => {
       rei.add(candle);
       const result = rei.isStable ? rei.getResult() : null;
       chartData.push({x: idx + 1, y: result});
@@ -986,7 +988,7 @@ if (rei.isStable) {
     const chartData: ChartDataPoint[] = [];
     const sampleValues: Array<{period: number; date: string; close: number; result: string}> = [];
 
-    amdCandles.forEach((candle, idx) => {
+    ethCandles.forEach((candle, idx) => {
       stochRsi.add(candle.close);
       const result = stochRsi.isStable ? stochRsi.getResult() : null;
       chartData.push({x: idx + 1, y: result});
@@ -1059,27 +1061,9 @@ if (stochRsi.isStable) {
   };
 
   return (
-    <div className="space-y-6 lg:space-y-0 lg:flex lg:gap-6">
-      {/* Mobile Dropdown Selector */}
-      <div className="lg:hidden">
-        <label htmlFor="indicator-select" className="block text-sm font-medium text-slate-300 mb-2">
-          Select Indicator:
-        </label>
-        <select
-          id="indicator-select"
-          value={selectedIndicator}
-          onChange={e => setSelectedIndicator(e.target.value)}
-          className="w-full bg-slate-800 border border-slate-700 text-white rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-purple-600">
-          {indicators.map(indicator => (
-            <option key={indicator.id} value={indicator.id}>
-              {indicator.name} - {indicator.description}
-            </option>
-          ))}
-        </select>
-      </div>
-
-      {/* Desktop Sidebar */}
-      <aside className="hidden lg:block w-64 flex-shrink-0">
+    <div className="flex gap-6">
+      {/* Sidebar */}
+      <aside className="w-64 flex-shrink-0">
         <div className="sticky top-6 bg-slate-800/50 border border-slate-700 rounded-lg p-4">
           <h2 className="text-lg font-semibold text-white mb-4">Momentum Indicators</h2>
           <nav className="space-y-1">
