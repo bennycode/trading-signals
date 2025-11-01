@@ -75,6 +75,30 @@ describe('TDS', () => {
     expect(result).toBeNull();
   });
 
+  it('handles close equal to previous 4 without changing setup', () => {
+    const tds = new TDS();
+    const prev4 = 10;
+
+    for (let i = 0; i < 4; i++) {
+      tds.add(prev4);
+    }
+
+    tds.add(15);
+    tds.add(16);
+
+    // Current setup should be bullish with count 2
+    expect(tds['setupCount']).toBe(2);
+    expect(tds['setupDirection']).toBe('bullish');
+
+    // Add a close equal to "prev4" (10 === 10)
+    const result = tds.add(prev4);
+
+    // Setup count and direction should remain unchanged
+    expect(tds['setupCount']).toBe(2);
+    expect(tds['setupDirection']).toBe('bullish');
+    expect(result).toBeNull();
+  });
+
   describe('replace', () => {
     it('replaces values', () => {
       const tds = new TDS();
