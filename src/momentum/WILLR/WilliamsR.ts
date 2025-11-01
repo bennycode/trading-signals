@@ -32,12 +32,23 @@ export class WilliamsR extends TechnicalIndicator<number, HighLowClose<number>> 
     return this.period;
   }
 
-  update(candle: HighLowClose<number>, replace: boolean) {
+  override update(candle: HighLowClose<number>, replace: boolean) {
     pushUpdate(this.candles, replace, candle, this.period);
 
     if (this.candles.length === this.period) {
-      const highest = Math.max(...this.candles.map(candle => candle.high));
-      const lowest = Math.min(...this.candles.map(candle => candle.low));
+      let highest = this.candles[0].high;
+      let lowest = this.candles[0].low;
+
+      for (let i = 1; i < this.candles.length; i++) {
+        if (this.candles[i].high > highest) {
+          highest = this.candles[i].high;
+        }
+
+        if (this.candles[i].low < lowest) {
+          lowest = this.candles[i].low;
+        }
+      }
+
       const divisor = highest - lowest;
 
       // Prevent division by zero
