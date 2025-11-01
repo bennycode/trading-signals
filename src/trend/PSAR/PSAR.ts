@@ -1,6 +1,5 @@
-import {NotEnoughDataError} from '../../error/index.js';
-import {IndicatorSeries} from '../../types/Indicator.js';
 import type {HighLow} from '../../types/HighLowClose.js';
+import {IndicatorSeries} from '../../types/Indicator.js';
 
 export type PSARConfig = {
   /**
@@ -104,22 +103,20 @@ export class PSAR extends IndicatorSeries<HighLow<number>> {
     // Adjust SAR position if needed
     if (this.isLong) {
       // Adjust SAR based on previous lows
-      if (this.previousCandle) {
-        // If pre-previous candle exists and current low is less than SAR
-        const hasPrevPrev = this.prePreviousCandle != null;
-        if (hasPrevPrev && low < sar) {
-          // Apply pre-previous low adjustment if needed
-          if (this.prePreviousCandle!.low < sar) {
-            sar = this.prePreviousCandle!.low;
-          }
+      // If pre-previous candle exists and current low is less than SAR
+      const hasPrevPrev = this.prePreviousCandle != null;
+      if (hasPrevPrev && low < sar) {
+        // Apply pre-previous low adjustment if needed
+        if (this.prePreviousCandle!.low < sar) {
+          sar = this.prePreviousCandle!.low;
+        }
 
-          // Apply previous low adjustment
-          sar = this.previousCandle.low < sar ? this.previousCandle.low : sar;
-        }
-        // No pre-previous candle, but check previous low
-        else if (this.previousCandle.low < sar) {
-          sar = this.previousCandle.low;
-        }
+        // Apply previous low adjustment
+        sar = this.previousCandle.low < sar ? this.previousCandle.low : sar;
+      }
+      // No pre-previous candle, but check previous low
+      else if (this.previousCandle.low < sar) {
+        sar = this.previousCandle.low;
       }
 
       // Update acceleration factor and extreme point if price makes new high
@@ -144,22 +141,20 @@ export class PSAR extends IndicatorSeries<HighLow<number>> {
     } else {
       // Short position
       // Adjust SAR based on previous highs
-      if (this.previousCandle) {
-        // If pre-previous candle exists and current high is greater than SAR
-        const hasPrevPrev = this.prePreviousCandle != null;
-        if (hasPrevPrev && high > sar) {
-          // Apply pre-previous high adjustment if needed
-          if (this.prePreviousCandle!.high > sar) {
-            sar = this.prePreviousCandle!.high;
-          }
+      // If pre-previous candle exists and current high is greater than SAR
+      const hasPrevPrev = this.prePreviousCandle != null;
+      if (hasPrevPrev && high > sar) {
+        // Apply pre-previous high adjustment if needed
+        if (this.prePreviousCandle!.high > sar) {
+          sar = this.prePreviousCandle!.high;
+        }
 
-          // Apply previous high adjustment
-          sar = this.previousCandle.high > sar ? this.previousCandle.high : sar;
-        }
-        // No pre-previous candle, but check previous high
-        else if (this.previousCandle.high > sar) {
-          sar = this.previousCandle.high;
-        }
+        // Apply previous high adjustment
+        sar = this.previousCandle.high > sar ? this.previousCandle.high : sar;
+      }
+      // No pre-previous candle, but check previous high
+      else if (this.previousCandle.high > sar) {
+        sar = this.previousCandle.high;
       }
 
       // Update acceleration factor and extreme point if price makes new low
@@ -197,10 +192,6 @@ export class PSAR extends IndicatorSeries<HighLow<number>> {
   }
 
   override getResultOrThrow(): number {
-    if (this.lastSar === null) {
-      throw new NotEnoughDataError(this.getRequiredInputs());
-    }
-
     return super.getResultOrThrow();
   }
 }
