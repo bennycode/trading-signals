@@ -21,7 +21,7 @@
     "sourceMap": true,
     "strict": true,
     "target": "es2022",
-    "types": ["vitest/globals"]
+    "types": ["node", "vitest/globals"]
   },
   "exclude": ["dist", "docs", "node_modules", "tsup.config.ts", "vitest.config.ts"]
 }
