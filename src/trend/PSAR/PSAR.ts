@@ -160,11 +160,9 @@ export class PSAR extends IndicatorSeries<HighLow<number>> {
       // Update acceleration factor and extreme point if price makes new low
       if (low < this.extreme!) {
         this.extreme = low;
-        if (this.acceleration < this.accelerationMax) {
-          this.acceleration += this.accelerationStep;
-          if (this.acceleration > this.accelerationMax) {
-            this.acceleration = this.accelerationMax;
-          }
+        this.acceleration += this.accelerationStep;
+        if (this.acceleration > this.accelerationMax) {
+          this.acceleration = this.accelerationMax;
         }
       }
 
