@@ -1,3 +1,24 @@
+### 7.1.0 (2025-11-02)
+
+##### Documentation Changes
+
+- Update sample data ([c05ea370](https://github.com/bennycode/trading-signals/commit/c05ea37092a69f51bcb4bf882d49bee4736fcbcd))
+- Add mobile navigation ([e8154ee3](https://github.com/bennycode/trading-signals/commit/e8154ee3576e3c88510779300e8547a95c75e027))
+- Deploy site ([de2bb923](https://github.com/bennycode/trading-signals/commit/de2bb923deb76b55278967fed7f9884b4f168e3f))
+- List features ([61283665](https://github.com/bennycode/trading-signals/commit/6128366597515a51348822504a552b7d08eaacff))
+- Add GitHub Pages Action ([ba2697b8](https://github.com/bennycode/trading-signals/commit/ba2697b8cf8407a9fd08e6804eb8947b70558a15))
+- Add documentation site ([#872](https://github.com/bennycode/trading-signals/pull/872)) ([786290d5](https://github.com/bennycode/trading-signals/commit/786290d57b96f885f54b316d7d3cc9573c2a2b57))
+
+##### New Features
+
+- **WILLR:** Add Williams %R indicator ([3ab4afc3](https://github.com/bennycode/trading-signals/commit/3ab4afc370355a53efd19fec652d281a7b04a2a2))
+
+##### Refactors
+
+- Upgrade Vitest ([#879](https://github.com/bennycode/trading-signals/pull/879)) ([9209957e](https://github.com/bennycode/trading-signals/commit/9209957e5c840ad163f6eafef4c09c928e9666c9))
+- Move "docs" folder into root ([22bc2a29](https://github.com/bennycode/trading-signals/commit/22bc2a291bf3347a7cf53ecae89e293f55e70d21))
+- Remove TypeDoc ([#863](https://github.com/bennycode/trading-signals/pull/863)) ([8a3671e6](https://github.com/bennycode/trading-signals/commit/8a3671e67ed933d8e8d97a31c1bbeda390074c87))
+
 ## 7.0.0 (2025-09-10)
 
 ##### Documentation Changes
