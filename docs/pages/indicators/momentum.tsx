@@ -13,6 +13,7 @@ import {
   StochasticRSI,
   MACD,
   EMA,
+  WilliamsR,
 } from 'trading-signals';
 import Chart, {ChartDataPoint} from '../../components/Chart';
 
@@ -80,6 +81,7 @@ const indicators: IndicatorConfig[] = [
   {id: 'obv', name: 'OBV', description: 'On-Balance Volume', color: '#14b8a6'},
   {id: 'rei', name: 'REI', description: 'Range Expansion Index', color: '#a855f7'},
   {id: 'stochrsi', name: 'StochRSI', description: 'Stochastic RSI', color: '#ef4444'},
+  {id: 'willr', name: 'Williams %R', description: 'Williams Percent Range', color: '#22d3ee'},
 ];
 
 export default function MomentumIndicators() {
@@ -114,6 +116,8 @@ export default function MomentumIndicators() {
         return renderREI(config);
       case 'stochrsi':
         return renderStochRSI(config);
+      case 'willr':
+        return renderWilliamsR(config);
       default:
         return null;
     }
@@ -140,15 +144,15 @@ export default function MomentumIndicators() {
     return (
       <div className="space-y-6">
         <div>
-          <h2 className="text-2xl font-bold text-white mb-2">{config.name}</h2>
-          <p className="text-slate-300">{config.description}</p>
-          <p className="text-slate-400 text-sm mt-2">
+          <h2 className="text-2xl font-bold text-white mb-2 select-text">{config.name}</h2>
+          <p className="text-slate-300 select-text">{config.description}</p>
+          <p className="text-slate-400 text-sm mt-2 select-text">
             RSI measures the magnitude of recent price changes to evaluate overbought or oversold conditions. Values
             above 70 indicate overbought, below 30 indicate oversold.
           </p>
         </div>
 
-        <Chart title="RSI (14-period)" data={chartData} yAxisLabel="RSI" color={config.color} />
+        <Chart title="RSI (14)" data={chartData} yAxisLabel="RSI" color={config.color} />
 
         <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-4">
           <h3 className="text-lg font-semibold text-white mb-3">All Sample Values</h3>
@@ -222,15 +226,15 @@ if (rsi.isStable) {
     return (
       <div className="space-y-6">
         <div>
-          <h2 className="text-2xl font-bold text-white mb-2">{config.name}</h2>
-          <p className="text-slate-300">{config.description}</p>
-          <p className="text-slate-400 text-sm mt-2">
+          <h2 className="text-2xl font-bold text-white mb-2 select-text">{config.name}</h2>
+          <p className="text-slate-300 select-text">{config.description}</p>
+          <p className="text-slate-400 text-sm mt-2 select-text">
             Compares closing price to price range over a period. %K crossing above %D can signal a buying opportunity.
           </p>
         </div>
 
-        <Chart title="Stochastic %K" data={chartDataK} yAxisLabel="%K" color={config.color} />
-        <Chart title="Stochastic %D" data={chartDataD} yAxisLabel="%D" color="#f97316" />
+        <Chart title="Stochastic %K (14,3,3)" data={chartDataK} yAxisLabel="%K" color={config.color} />
+        <Chart title="Stochastic %D (14,3,3)" data={chartDataD} yAxisLabel="%D" color="#f97316" />
 
         <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-4">
           <h3 className="text-lg font-semibold text-white mb-3">All Sample Values</h3>
@@ -305,15 +309,15 @@ if (stoch.isStable) {
     return (
       <div className="space-y-6">
         <div>
-          <h2 className="text-2xl font-bold text-white mb-2">{config.name}</h2>
-          <p className="text-slate-300">{config.description}</p>
-          <p className="text-slate-400 text-sm mt-2">
+          <h2 className="text-2xl font-bold text-white mb-2 select-text">{config.name}</h2>
+          <p className="text-slate-300 select-text">{config.description}</p>
+          <p className="text-slate-400 text-sm mt-2 select-text">
             Measures deviation from the average price. Readings above +100 suggest overbought, below -100 suggest
             oversold.
           </p>
         </div>
 
-        <Chart title="CCI (20-period)" data={chartData} yAxisLabel="CCI" color={config.color} />
+        <Chart title="CCI (20)" data={chartData} yAxisLabel="CCI" color={config.color} />
 
         <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-4">
           <h3 className="text-lg font-semibold text-white mb-3">All Sample Values</h3>
@@ -385,15 +389,15 @@ if (cci.isStable) {
     return (
       <div className="space-y-6">
         <div>
-          <h2 className="text-2xl font-bold text-white mb-2">{config.name}</h2>
-          <p className="text-slate-300">{config.description}</p>
-          <p className="text-slate-400 text-sm mt-2">
+          <h2 className="text-2xl font-bold text-white mb-2 select-text">{config.name}</h2>
+          <p className="text-slate-300 select-text">{config.description}</p>
+          <p className="text-slate-400 text-sm mt-2 select-text">
             Measures the percentage change in price from n periods ago. Positive values indicate upward momentum,
             negative values indicate downward momentum.
           </p>
         </div>
 
-        <Chart title="ROC (9-period)" data={chartData} yAxisLabel="ROC %" color={config.color} />
+        <Chart title="ROC (9)" data={chartData} yAxisLabel="ROC %" color={config.color} />
 
         <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-4">
           <h3 className="text-lg font-semibold text-white mb-3">All Sample Values</h3>
@@ -462,15 +466,15 @@ if (roc.isStable) {
     return (
       <div className="space-y-6">
         <div>
-          <h2 className="text-2xl font-bold text-white mb-2">{config.name}</h2>
-          <p className="text-slate-300">{config.description}</p>
-          <p className="text-slate-400 text-sm mt-2">
+          <h2 className="text-2xl font-bold text-white mb-2 select-text">{config.name}</h2>
+          <p className="text-slate-300 select-text">{config.description}</p>
+          <p className="text-slate-400 text-sm mt-2 select-text">
             Shows relationship between two moving averages. Crossing above signal line = bullish, crossing below =
             bearish.
           </p>
         </div>
 
-        <Chart title="MACD Line" data={chartData} yAxisLabel="MACD" color={config.color} />
+        <Chart title="MACD (12,26,9)" data={chartData} yAxisLabel="MACD" color={config.color} />
 
         <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-4">
           <h3 className="text-lg font-semibold text-white mb-3">All Sample Values</h3>
@@ -543,15 +547,15 @@ if (macd.isStable) {
     return (
       <div className="space-y-6">
         <div>
-          <h2 className="text-2xl font-bold text-white mb-2">{config.name}</h2>
-          <p className="text-slate-300">{config.description}</p>
-          <p className="text-slate-400 text-sm mt-2">
+          <h2 className="text-2xl font-bold text-white mb-2 select-text">{config.name}</h2>
+          <p className="text-slate-300 select-text">{config.description}</p>
+          <p className="text-slate-400 text-sm mt-2 select-text">
             Measures market momentum using the difference between a 5-period and 34-period simple moving average of the
             bar's midpoints.
           </p>
         </div>
 
-        <Chart title="Awesome Oscillator" data={chartData} yAxisLabel="AO" color={config.color} />
+        <Chart title="Awesome Oscillator (5,34)" data={chartData} yAxisLabel="AO" color={config.color} />
 
         <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-4">
           <h3 className="text-lg font-semibold text-white mb-3">All Sample Values</h3>
@@ -622,15 +626,15 @@ if (ao.isStable) {
     return (
       <div className="space-y-6">
         <div>
-          <h2 className="text-2xl font-bold text-white mb-2">{config.name}</h2>
-          <p className="text-slate-300">{config.description}</p>
-          <p className="text-slate-400 text-sm mt-2">
+          <h2 className="text-2xl font-bold text-white mb-2 select-text">{config.name}</h2>
+          <p className="text-slate-300 select-text">{config.description}</p>
+          <p className="text-slate-400 text-sm mt-2 select-text">
             Shows acceleration or deceleration of the current driving force. Earlier signal of potential trend change
             than AO.
           </p>
         </div>
 
-        <Chart title="Accelerator Oscillator" data={chartData} yAxisLabel="AC" color={config.color} />
+        <Chart title="Accelerator Oscillator (5,34,5)" data={chartData} yAxisLabel="AC" color={config.color} />
 
         <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-4">
           <h3 className="text-lg font-semibold text-white mb-3">All Sample Values</h3>
@@ -700,14 +704,14 @@ if (ac.isStable) {
     return (
       <div className="space-y-6">
         <div>
-          <h2 className="text-2xl font-bold text-white mb-2">{config.name}</h2>
-          <p className="text-slate-300">{config.description}</p>
-          <p className="text-slate-400 text-sm mt-2">
+          <h2 className="text-2xl font-bold text-white mb-2 select-text">{config.name}</h2>
+          <p className="text-slate-300 select-text">{config.description}</p>
+          <p className="text-slate-400 text-sm mt-2 select-text">
             Identifies turning points with minimal lag. Oscillates around zero line.
           </p>
         </div>
 
-        <Chart title="Center of Gravity" data={chartData} yAxisLabel="CG" color={config.color} />
+        <Chart title="Center of Gravity (10,10)" data={chartData} yAxisLabel="CG" color={config.color} />
 
         <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-4">
           <h3 className="text-lg font-semibold text-white mb-3">All Sample Values</h3>
@@ -776,14 +780,14 @@ if (cg.isStable) {
     return (
       <div className="space-y-6">
         <div>
-          <h2 className="text-2xl font-bold text-white mb-2">{config.name}</h2>
-          <p className="text-slate-300">{config.description}</p>
-          <p className="text-slate-400 text-sm mt-2">
+          <h2 className="text-2xl font-bold text-white mb-2 select-text">{config.name}</h2>
+          <p className="text-slate-300 select-text">{config.description}</p>
+          <p className="text-slate-400 text-sm mt-2 select-text">
             Simple momentum calculation: current price minus price n periods ago.
           </p>
         </div>
 
-        <Chart title="Momentum (5-period)" data={chartData} yAxisLabel="MOM" color={config.color} />
+        <Chart title="Momentum (5)" data={chartData} yAxisLabel="MOM" color={config.color} />
 
         <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-4">
           <h3 className="text-lg font-semibold text-white mb-3">All Sample Values</h3>
@@ -853,9 +857,9 @@ if (mom.isStable) {
     return (
       <div className="space-y-6">
         <div>
-          <h2 className="text-2xl font-bold text-white mb-2">{config.name}</h2>
-          <p className="text-slate-300">{config.description}</p>
-          <p className="text-slate-400 text-sm mt-2">
+          <h2 className="text-2xl font-bold text-white mb-2 select-text">{config.name}</h2>
+          <p className="text-slate-300 select-text">{config.description}</p>
+          <p className="text-slate-400 text-sm mt-2 select-text">
             Cumulative volume-based indicator. Rising OBV with rising prices confirms uptrend.
           </p>
         </div>
@@ -931,12 +935,14 @@ if (result !== null) {
     return (
       <div className="space-y-6">
         <div>
-          <h2 className="text-2xl font-bold text-white mb-2">{config.name}</h2>
-          <p className="text-slate-300">{config.description}</p>
-          <p className="text-slate-400 text-sm mt-2">Measures range expansion to identify potential breakouts.</p>
+          <h2 className="text-2xl font-bold text-white mb-2 select-text">{config.name}</h2>
+          <p className="text-slate-300 select-text">{config.description}</p>
+          <p className="text-slate-400 text-sm mt-2 select-text">
+            Measures range expansion to identify potential breakouts.
+          </p>
         </div>
 
-        <Chart title="Range Expansion Index" data={chartData} yAxisLabel="REI" color={config.color} />
+        <Chart title="Range Expansion Index (5)" data={chartData} yAxisLabel="REI" color={config.color} />
 
         <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-4">
           <h3 className="text-lg font-semibold text-white mb-3">All Sample Values</h3>
@@ -1004,14 +1010,14 @@ if (rei.isStable) {
     return (
       <div className="space-y-6">
         <div>
-          <h2 className="text-2xl font-bold text-white mb-2">{config.name}</h2>
-          <p className="text-slate-300">{config.description}</p>
-          <p className="text-slate-400 text-sm mt-2">
+          <h2 className="text-2xl font-bold text-white mb-2 select-text">{config.name}</h2>
+          <p className="text-slate-300 select-text">{config.description}</p>
+          <p className="text-slate-400 text-sm mt-2 select-text">
             Applies Stochastic Oscillator to RSI values. More sensitive to overbought/oversold than standard RSI.
           </p>
         </div>
 
-        <Chart title="Stochastic RSI" data={chartData} yAxisLabel="StochRSI" color={config.color} />
+        <Chart title="Stochastic RSI (14)" data={chartData} yAxisLabel="StochRSI" color={config.color} />
 
         <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-4">
           <h3 className="text-lg font-semibold text-white mb-3">All Sample Values</h3>
@@ -1053,6 +1059,96 @@ stochRsi.add(46);
 if (stochRsi.isStable) {
   const result = stochRsi.getResultOrThrow();
   console.log('StochRSI:', result.toFixed(2));
+}`}</code>
+          </pre>
+        </div>
+      </div>
+    );
+  };
+
+  const renderWilliamsR = (config: IndicatorConfig) => {
+    const willr = new WilliamsR(14);
+    const chartData: ChartDataPoint[] = [];
+    const sampleValues: Array<{
+      period: number;
+      date: string;
+      high: number;
+      low: number;
+      close: number;
+      result: string;
+    }> = [];
+
+    ethCandles.forEach((candle, idx) => {
+      willr.add(candle);
+      const result = willr.isStable ? willr.getResult() : null;
+      chartData.push({x: idx + 1, y: result});
+
+      sampleValues.push({
+        period: idx + 1,
+        date: candle.date,
+        high: candle.high,
+        low: candle.low,
+        close: candle.close,
+        result: result !== null ? result.toFixed(2) : 'N/A',
+      });
+    });
+
+    return (
+      <div className="space-y-6">
+        <div>
+          <h2 className="text-2xl font-bold text-white mb-2 select-text">{config.name}</h2>
+          <p className="text-slate-300 select-text">{config.description}</p>
+          <p className="text-slate-400 text-sm mt-2 select-text">
+            Measures overbought and oversold levels on an inverted scale from 0 to -100. Values from 0 to -20 indicate
+            overbought conditions, while -80 to -100 indicate oversold conditions.
+          </p>
+        </div>
+
+        <Chart title="Williams %R (14)" data={chartData} yAxisLabel="Williams %R" color={config.color} />
+
+        <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-4">
+          <h3 className="text-lg font-semibold text-white mb-3">All Sample Values</h3>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-slate-600">
+                  <th className="text-left text-slate-300 py-2 px-3">Period</th>
+                  <th className="text-left text-slate-300 py-2 px-3">Date</th>
+                  <th className="text-left text-slate-300 py-2 px-3">High</th>
+                  <th className="text-left text-slate-300 py-2 px-3">Low</th>
+                  <th className="text-left text-slate-300 py-2 px-3">Close</th>
+                  <th className="text-left text-slate-300 py-2 px-3">Williams %R</th>
+                </tr>
+              </thead>
+              <tbody>
+                {sampleValues.map(row => (
+                  <tr key={row.period} className="border-b border-slate-700/50">
+                    <td className="text-slate-400 py-2 px-3">{row.period}</td>
+                    <td className="text-slate-300 py-2 px-3">{row.date}</td>
+                    <td className="text-slate-300 py-2 px-3">${row.high.toFixed(2)}</td>
+                    <td className="text-slate-300 py-2 px-3">${row.low.toFixed(2)}</td>
+                    <td className="text-slate-300 py-2 px-3">${row.close.toFixed(2)}</td>
+                    <td className="text-white font-mono py-2 px-3">{row.result}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div className="bg-purple-900/20 border border-purple-800/50 rounded-lg p-4">
+          <h3 className="text-lg font-semibold text-purple-400 mb-2">Code Example</h3>
+          <pre className="text-slate-300 text-sm overflow-x-auto">
+            <code>{`import { WilliamsR } from 'trading-signals';
+
+const willr = new WilliamsR(14);
+
+willr.add({ high: 107, low: 95, close: 102 });
+willr.add({ high: 110, low: 98, close: 108 });
+willr.add({ high: 112, low: 100, close: 105 });
+
+if (willr.isStable) {
+  console.log('Williams %R:', willr.getResultOrThrow().toFixed(2));
 }`}</code>
           </pre>
         </div>
