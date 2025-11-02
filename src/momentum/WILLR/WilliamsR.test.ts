@@ -72,19 +72,17 @@ describe('WilliamsR', () => {
         const stochResult = stoch.add(candle);
 
         if (willRResult !== null && stochResult !== null) {
-          const willRValue = willRResult;
-          const stochKValue = stochResult.stochK;
-          const difference = Math.abs(willRValue - (stochKValue - 100));
-          expect(difference).toBeLessThan(0.01);
+          const {stochK} = stochResult;
+          expect(willRResult.toFixed(2)).toBe((stochK - 100).toFixed(2));
         }
       });
 
       expect(willR.isStable).toBe(true);
       expect(stoch.isStable).toBe(true);
 
-      const willRValue = willR.getResultOrThrow();
-      const stochKValue = stoch.getResultOrThrow().stochK;
-      expect(willRValue.toFixed(2)).toBe((stochKValue - 100).toFixed(2));
+      const willRFinal = willR.getResultOrThrow();
+      const stochKFinal = stoch.getResultOrThrow().stochK;
+      expect(willRFinal.toFixed(2)).toBe((stochKFinal - 100).toFixed(2));
     });
 
     it('handles the replace parameter correctly', () => {
