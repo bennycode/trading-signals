@@ -1,29 +1,11 @@
 import {WilliamsR} from './WilliamsR.js';
 import {StochasticOscillator} from '../STOCH/StochasticOscillator.js';
 import {NotEnoughDataError} from '../../error/index.js';
+import candles from '../../fixtures/STOCH/candles.json' with {type: 'json'};
 
 describe('WilliamsR', () => {
   describe('update', () => {
     it('calculates the Williams %R indicator', () => {
-      // Test data using the same candles as StochasticOscillator tests
-      const candles = [
-        {close: 81.59, high: 82.15, low: 81.29},
-        {close: 81.06, high: 81.89, low: 80.64},
-        {close: 82.87, high: 83.03, low: 81.31},
-        {close: 83.0, high: 83.3, low: 82.65},
-        {close: 83.61, high: 83.85, low: 83.07},
-        {close: 83.15, high: 83.9, low: 83.11},
-        {close: 82.84, high: 83.33, low: 82.49},
-        {close: 83.99, high: 84.3, low: 82.3},
-        {close: 84.55, high: 84.84, low: 84.15},
-        {close: 84.36, high: 85.0, low: 84.11},
-        {close: 85.53, high: 85.9, low: 84.03},
-        {close: 86.54, high: 86.58, low: 85.39},
-        {close: 86.89, high: 86.98, low: 85.76},
-        {close: 87.77, high: 88.0, low: 87.17},
-        {close: 87.29, high: 87.87, low: 87.01},
-      ] as const;
-
       const expectations = [
         '-7.48',
         '-23.01',
@@ -55,25 +37,6 @@ describe('WilliamsR', () => {
       expect(willR.getResultOrThrow().toFixed(2)).toBe('-17.88');
     });
 
-    it('calculates Williams %R with a shorter period', () => {
-      const candles = [
-        {close: 81.59, high: 82.15, low: 81.29},
-        {close: 81.06, high: 81.89, low: 80.64},
-        {close: 82.87, high: 83.03, low: 81.31},
-        {close: 83.0, high: 83.3, low: 82.65},
-        {close: 83.61, high: 83.85, low: 83.07},
-      ] as const;
-
-      const willR = new WilliamsR(5);
-
-      for (const candle of candles) {
-        willR.add(candle);
-      }
-
-      expect(willR.isStable).toBe(true);
-      expect(willR.getResultOrThrow().toFixed(2)).toBe('-7.48');
-    });
-
     it('returns null until enough values are provided', () => {
       const willR = new WilliamsR(5);
 
@@ -101,20 +64,6 @@ describe('WilliamsR', () => {
       // Williams %R = -100 * (Highest High - Close) / (Highest High - Lowest Low)
       // Stochastic %K = 100 * (Close - Lowest Low) / (Highest High - Lowest Low)
       // Therefore: Williams %R = Stochastic %K - 100
-
-      const candles = [
-        {close: 81.59, high: 82.15, low: 81.29},
-        {close: 81.06, high: 81.89, low: 80.64},
-        {close: 82.87, high: 83.03, low: 81.31},
-        {close: 83.0, high: 83.3, low: 82.65},
-        {close: 83.61, high: 83.85, low: 83.07},
-        {close: 83.15, high: 83.9, low: 83.11},
-        {close: 82.84, high: 83.33, low: 82.49},
-        {close: 83.99, high: 84.3, low: 82.3},
-        {close: 84.55, high: 84.84, low: 84.15},
-        {close: 84.36, high: 85.0, low: 84.11},
-      ] as const;
-
       const willR = new WilliamsR(5);
       const stoch = new StochasticOscillator(5, 1, 1);
 
@@ -140,14 +89,19 @@ describe('WilliamsR', () => {
 
     it('handles the replace parameter correctly', () => {
       const willR = new WilliamsR(3);
+      const latestValue = {close: 12, high: 13, low: 11};
+      const someOtherValue = {close: 11.5, high: 12.5, low: 10.5};
 
       willR.add({close: 10, high: 11, low: 9});
       willR.add({close: 11, high: 12, low: 10});
-      const result1 = willR.add({close: 12, high: 13, low: 11});
+      const result = willR.add(latestValue);
 
-      const result2 = willR.replace({close: 11.5, high: 12.5, low: 10.5});
+      const replacedResult = willR.replace(someOtherValue);
+      expect(result).not.toBe(replacedResult);
+      expect(willR.candles.length).toBe(3);
 
-      expect(result1).not.toBe(result2);
+      const revertedResult = willR.replace(latestValue);
+      expect(result).toBe(revertedResult);
       expect(willR.candles.length).toBe(3);
     });
   });

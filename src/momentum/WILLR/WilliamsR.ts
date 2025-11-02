@@ -21,21 +21,18 @@ import {pushUpdate} from '../../util/pushUpdate.js';
 export class WilliamsR extends TechnicalIndicator<number, HighLowClose<number>> {
   public readonly candles: HighLowClose<number>[] = [];
 
-  /**
-   * @param period The lookback period (typically 14)
-   */
-  constructor(public readonly period: number) {
+  constructor(public readonly interval: number) {
     super();
   }
 
   override getRequiredInputs() {
-    return this.period;
+    return this.interval;
   }
 
   override update(candle: HighLowClose<number>, replace: boolean) {
-    pushUpdate(this.candles, replace, candle, this.period);
+    pushUpdate(this.candles, replace, candle, this.interval);
 
-    if (this.candles.length === this.period) {
+    if (this.candles.length === this.interval) {
       let highest = this.candles[0].high;
       let lowest = this.candles[0].low;
 
@@ -51,7 +48,6 @@ export class WilliamsR extends TechnicalIndicator<number, HighLowClose<number>> 
 
       const divisor = highest - lowest;
 
-      // Prevent division by zero
       if (divisor === 0) {
         return (this.result = -100);
       }
