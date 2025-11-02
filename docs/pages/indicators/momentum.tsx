@@ -1,4 +1,5 @@
-import {useState} from 'react';
+import {useState, useEffect} from 'react';
+import {useRouter} from 'next/router';
 import {
   RSI,
   StochasticOscillator,
@@ -85,7 +86,32 @@ const indicators: IndicatorConfig[] = [
 ];
 
 export default function MomentumIndicators() {
+  const router = useRouter();
   const [selectedIndicator, setSelectedIndicator] = useState<string>('rsi');
+
+  useEffect(() => {
+    const hash = window.location.hash.slice(1);
+    if (hash && indicators.some(ind => ind.id === hash)) {
+      setSelectedIndicator(hash);
+    }
+  }, []);
+
+  useEffect(() => {
+    const handleHashChange = () => {
+      const hash = window.location.hash.slice(1);
+      if (hash && indicators.some(ind => ind.id === hash)) {
+        setSelectedIndicator(hash);
+      }
+    };
+
+    window.addEventListener('hashchange', handleHashChange);
+    return () => window.removeEventListener('hashchange', handleHashChange);
+  }, []);
+
+  const handleIndicatorChange = (indicatorId: string) => {
+    setSelectedIndicator(indicatorId);
+    window.location.hash = indicatorId;
+  };
 
   const renderIndicatorContent = () => {
     const config = indicators.find(ind => ind.id === selectedIndicator);
@@ -1166,7 +1192,7 @@ if (willr.isStable) {
             {indicators.map(indicator => (
               <button
                 key={indicator.id}
-                onClick={() => setSelectedIndicator(indicator.id)}
+                onClick={() => handleIndicatorChange(indicator.id)}
                 className={`w-full text-left px-3 py-2 rounded-md text-sm transition-colors ${
                   selectedIndicator === indicator.id
                     ? 'bg-purple-600 text-white font-medium'
