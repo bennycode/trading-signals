@@ -155,6 +155,7 @@ Most of the time, the minimum amount of data depends on the interval / time peri
 1. Volume-Weighted Average Price (VWAP)
 1. Weighted Moving Average (WMA)
 1. Wilder's Smoothed Moving Average (WSMA / WWS / SMMA / MEMA)
+1. Williams %R (WILLR)
 1. Zig Zag Indicator (ZigZag)
 
 Utility Methods:
