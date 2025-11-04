@@ -13,6 +13,18 @@ interface Indicator<Result = number, Input = number> {
   updates(input: Input[], replace: boolean): Nullable<Result>[];
 }
 
+export const TradingSignal = {
+  BEARISH: 'BEARISH',
+  BULLISH: 'BULLISH',
+  NEUTRAL: 'NEUTRAL',
+} as const;
+
+export type TradingSignalType = (typeof TradingSignal)[keyof typeof TradingSignal];
+
+export interface TradingSignalProvider {
+  getSignal(): TradingSignalType;
+}
+
 export abstract class TechnicalIndicator<Result, Input> implements Indicator<Result, Input> {
   protected result: Result | undefined;
 
@@ -56,12 +68,9 @@ export abstract class TechnicalIndicator<Result, Input> implements Indicator<Res
 /**
  * Tracks results of an indicator over time.
  */
-export abstract class BaseIndicatorSeries<Result, Input> extends TechnicalIndicator<Result, Input> {
-  protected previousResult?: Result;
-  protected abstract setResult(value: Result, replace: boolean): Result;
-}
+export abstract class IndicatorSeries<Input = number> extends TechnicalIndicator<number, Input> {
+  protected previousResult?: number;
 
-export abstract class IndicatorSeries<Input = number> extends BaseIndicatorSeries<number, Input> {
   protected setResult(value: number, replace: boolean): number {
     // When replacing the latest value, restore previous result first
     if (replace) {

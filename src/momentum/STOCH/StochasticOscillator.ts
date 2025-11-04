@@ -1,4 +1,5 @@
-import {TechnicalIndicator} from '../../types/Indicator.js';
+import type {TradingSignalProvider} from '../../types/Indicator.js';
+import {TechnicalIndicator, TradingSignal} from '../../types/Indicator.js';
 import {SMA} from '../../trend/SMA/SMA.js';
 import type {HighLowClose} from '../../types/HighLowClose.js';
 import {pushUpdate} from '../../util/pushUpdate.js';
@@ -28,7 +29,10 @@ export interface StochasticResult {
  * @see https://www.investopedia.com/terms/s/stochasticoscillator.asp
  * @see https://tulipindicators.org/stoch
  */
-export class StochasticOscillator extends TechnicalIndicator<StochasticResult, HighLowClose<number>> {
+export class StochasticOscillator
+  extends TechnicalIndicator<StochasticResult, HighLowClose<number>>
+  implements TradingSignalProvider
+{
   public readonly candles: HighLowClose<number>[] = [];
   private readonly periodM: SMA;
   private readonly periodP: SMA;
@@ -74,5 +78,25 @@ export class StochasticOscillator extends TechnicalIndicator<StochasticResult, H
     }
 
     return null;
+  }
+
+  getSignal() {
+    const result = this.getResult();
+
+    if (result === null) {
+      return TradingSignal.NEUTRAL;
+    }
+
+    // Oversold condition
+    if (result.stochK <= 20) {
+      return TradingSignal.BULLISH;
+    }
+
+    // Overbought condition
+    if (result.stochK >= 80) {
+      return TradingSignal.BEARISH;
+    }
+
+    return TradingSignal.NEUTRAL;
   }
 }
