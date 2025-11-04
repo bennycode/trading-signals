@@ -1,5 +1,7 @@
 import {useRouter} from 'next/router';
 import {useEffect, useState} from 'react';
+import Highcharts from 'highcharts';
+import HighchartsReact from 'highcharts-react-official';
 import {
   AC,
   AO,
@@ -288,8 +290,100 @@ if (rsi.isStable) {
           </p>
         </div>
 
-        <Chart title="Stochastic %K (14,3,3)" data={chartDataK} yAxisLabel="%K" color={config.color} />
-        <Chart title="Stochastic %D (14,3,3)" data={chartDataD} yAxisLabel="%D" color="#f97316" />
+        <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-4">
+          <HighchartsReact
+            highcharts={Highcharts}
+            options={{
+              chart: {
+                type: 'line',
+                backgroundColor: 'transparent',
+                height: 300,
+              },
+              title: {
+                text: 'Stochastic Oscillator (14,3,3)',
+                style: {
+                  color: '#e2e8f0',
+                  fontSize: '16px',
+                  fontWeight: '600',
+                },
+              },
+              credits: {
+                enabled: false,
+              },
+              xAxis: {
+                title: {
+                  text: 'Period',
+                  style: {color: '#94a3b8'},
+                },
+                labels: {
+                  style: {color: '#94a3b8'},
+                },
+                gridLineColor: '#334155',
+              },
+              yAxis: {
+                title: {
+                  text: 'Value',
+                  style: {color: '#94a3b8'},
+                },
+                labels: {
+                  style: {color: '#94a3b8'},
+                },
+                gridLineColor: '#334155',
+              },
+              legend: {
+                enabled: true,
+                itemStyle: {
+                  color: '#e2e8f0',
+                },
+              },
+              plotOptions: {
+                line: {
+                  marker: {
+                    enabled: true,
+                    radius: 3,
+                  },
+                  lineWidth: 2,
+                },
+              },
+              series: [
+                {
+                  type: 'line',
+                  name: '%K',
+                  data: chartDataK.map(point => [point.x, point.y]),
+                  color: config.color,
+                  marker: {
+                    fillColor: config.color,
+                  },
+                },
+                {
+                  type: 'line',
+                  name: '%D',
+                  data: chartDataD.map(point => [point.x, point.y]),
+                  color: '#f97316',
+                  marker: {
+                    fillColor: '#f97316',
+                  },
+                },
+              ],
+              tooltip: {
+                backgroundColor: '#1e293b',
+                borderColor: '#475569',
+                style: {
+                  color: '#e2e8f0',
+                },
+                shared: true,
+                formatter: function (): string {
+                  let s: string = `<b>Period ${(this as any).x}</b><br/>`;
+                  ((this as any).points as any[])?.forEach((point: any) => {
+                    const yValue = typeof point.y === 'number' ? point.y.toFixed(2) : 'N/A';
+                    s += `${point.series.name}: ${yValue}<br/>`;
+                  });
+                  return s;
+                },
+              },
+            }}
+          />
+        </div>
 
         <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-4">
           <h3 className="text-lg font-semibold text-white mb-3">All Sample Values</h3>
