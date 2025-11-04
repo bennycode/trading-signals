@@ -1369,14 +1369,14 @@ if (willr.isStable) {
     }> = [];
 
     for (const [index, candle] of ethCandles.entries()) {
-      const result = tds.add(candle.close);
-      const signal = result !== null ? tds.getSignal() : null;
+      tds.add(candle.close);
+      const result = tds.getResult();
       results.push({
         period: index + 1,
         date: candle.date,
         close: candle.close,
         result: result !== null ? result.toString() : 'null',
-        signal: signal ?? 'N/A',
+        signal: tds.getSignal() ?? 'N/A',
       });
     }
 
