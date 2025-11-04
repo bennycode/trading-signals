@@ -68,7 +68,7 @@ export class CCI extends IndicatorSeries<HighLowClose<number>> implements Tradin
     const cci = this.getResult();
 
     if (cci === null) {
-      return TradingSignal.NEUTRAL;
+      return TradingSignal.UNKNOWN;
     }
 
     // Oversold condition

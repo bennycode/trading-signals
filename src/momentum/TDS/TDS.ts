@@ -1,8 +1,9 @@
-import {IndicatorSeries} from '../../types/Indicator.js';
+import type {TradingSignalProvider} from '../../types/Indicator.js';
+import {IndicatorSeries, TradingSignal} from '../../types/Indicator.js';
 
 /**
  * Tom Demark's Sequential Indicator (TDS)
- * Type: Exhaustion
+ * Type: Momentum
  *
  * The TD Sequential indicator is used to identify potential turning points in the price of an asset.
  * It consists of two phases: TD Setup and TD Countdown. This implementation focuses on the TD Setup phase,
@@ -15,7 +16,7 @@ import {IndicatorSeries} from '../../types/Indicator.js';
  * @see https://hackernoon.com/how-to-buy-sell-cryptocurrency-with-number-indicator-td-sequential-5af46f0ebce1
  * @see https://practicaltechnicalanalysis.blogspot.com/2013/01/tom-demark-sequential.html
  */
-export class TDS extends IndicatorSeries {
+export class TDS extends IndicatorSeries implements TradingSignalProvider {
   private readonly closes: number[] = [];
   private setupCount: number = 0;
   private setupDirection: 'bullish' | 'bearish' | null = null;
@@ -63,5 +64,25 @@ export class TDS extends IndicatorSeries {
       return this.setResult(result, replace);
     }
     return null;
+  }
+
+  getSignal() {
+    const result = this.getResult();
+
+    if (result === null) {
+      return TradingSignal.UNKNOWN;
+    }
+
+    // Bullish setup completed (1) - overbought condition, potential reversal down
+    if (result === 1) {
+      return TradingSignal.BEARISH;
+    }
+
+    // Bearish setup completed (-1) - oversold condition, potential reversal up
+    if (result === -1) {
+      return TradingSignal.BULLISH;
+    }
+
+    return TradingSignal.NEUTRAL;
   }
 }

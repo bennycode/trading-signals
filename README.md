@@ -114,7 +114,6 @@ Most of the time, the minimum amount of data depends on the interval / time peri
 
 ## Technical Indicator Types
 
-- Exhaustion indicators: Identify trend exhaustion and potential reversal.
 - Momentum indicators: Measure the speed and strength of price movements in a particular direction
 - Trend indicators: Measure the direction of a trend (uptrend, downtrend or sideways trend)
 - Volatility indicators: Measure the degree of variation in prices over time, regardless of direction

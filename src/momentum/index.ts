@@ -10,4 +10,5 @@ export * from './ROC/ROC.js';
 export * from './RSI/RSI.js';
 export * from './STOCH/StochasticOscillator.js';
 export * from './STOCHRSI/StochasticRSI.js';
+export * from './TDS/TDS.js';
 export * from './WILLR/WilliamsR.js';

@@ -12,6 +12,7 @@ import {
   OBV,
   REI,
   StochasticRSI,
+  TDS,
   MACD,
   EMA,
   WilliamsR,
@@ -82,6 +83,7 @@ const indicators: IndicatorConfig[] = [
   {id: 'obv', name: 'OBV', description: 'On-Balance Volume', color: '#14b8a6'},
   {id: 'rei', name: 'REI', description: 'Range Expansion Index', color: '#a855f7'},
   {id: 'stochrsi', name: 'StochRSI', description: 'Stochastic RSI', color: '#ef4444'},
+  {id: 'tds', name: 'TDS', description: 'Tom DeMark Sequential', color: '#ec4899'},
   {id: 'willr', name: 'Williams %R', description: 'Williams Percent Range', color: '#22d3ee'},
 ];
 
@@ -142,6 +144,8 @@ export default function MomentumIndicators() {
         return renderREI(config);
       case 'stochrsi':
         return renderStochRSI(config);
+      case 'tds':
+        return renderTDS(config);
       case 'willr':
         return renderWilliamsR(config);
       default:
@@ -211,7 +215,7 @@ export default function MomentumIndicators() {
                               ? 'bg-red-900/50 text-red-400 border border-red-800'
                               : 'bg-slate-900/50 text-slate-400 border border-slate-700'
                         }`}>
-                        {row.signal}
+                        {row.signal === 'UNKNOWN' ? 'N/A' : row.signal}
                       </span>
                     </td>
                   </tr>
@@ -310,7 +314,7 @@ if (rsi.isStable) {
                               ? 'bg-red-900/50 text-red-400 border border-red-800'
                               : 'bg-slate-900/50 text-slate-400 border border-slate-700'
                         }`}>
-                        {row.signal}
+                        {row.signal === 'UNKNOWN' ? 'N/A' : row.signal}
                       </span>
                     </td>
                   </tr>
@@ -406,7 +410,7 @@ if (stoch.isStable) {
                               ? 'bg-red-900/50 text-red-400 border border-red-800'
                               : 'bg-slate-900/50 text-slate-400 border border-slate-700'
                         }`}>
-                        {row.signal}
+                        {row.signal === 'UNKNOWN' ? 'N/A' : row.signal}
                       </span>
                     </td>
                   </tr>
@@ -501,7 +505,7 @@ if (cci.isStable) {
                               ? 'bg-red-900/50 text-red-400 border border-red-800'
                               : 'bg-slate-900/50 text-slate-400 border border-slate-700'
                         }`}>
-                        {row.signal}
+                        {row.signal === 'UNKNOWN' ? 'N/A' : row.signal}
                       </span>
                     </td>
                   </tr>
@@ -593,7 +597,7 @@ if (roc.isStable) {
                               ? 'bg-red-900/50 text-red-400 border border-red-800'
                               : 'bg-slate-900/50 text-slate-400 border border-slate-700'
                         }`}>
-                        {row.signal}
+                        {row.signal === 'UNKNOWN' ? 'N/A' : row.signal}
                       </span>
                     </td>
                   </tr>
@@ -698,7 +702,7 @@ if (macd.isStable) {
                               ? 'bg-red-900/50 text-red-400 border border-red-800'
                               : 'bg-slate-900/50 text-slate-400 border border-slate-700'
                         }`}>
-                        {row.signal}
+                        {row.signal === 'UNKNOWN' ? 'N/A' : row.signal}
                       </span>
                     </td>
                   </tr>
@@ -799,7 +803,7 @@ if (ao.isStable) {
                               ? 'bg-red-900/50 text-red-400 border border-red-800'
                               : 'bg-slate-900/50 text-slate-400 border border-slate-700'
                         }`}>
-                        {row.signal}
+                        {row.signal === 'UNKNOWN' ? 'N/A' : row.signal}
                       </span>
                     </td>
                   </tr>
@@ -1051,7 +1055,7 @@ if (mom.isStable) {
                               ? 'bg-red-900/50 text-red-400 border border-red-800'
                               : 'bg-slate-900/50 text-slate-400 border border-slate-700'
                         }`}>
-                        {row.signal}
+                        {row.signal === 'UNKNOWN' ? 'N/A' : row.signal}
                       </span>
                     </td>
                   </tr>
@@ -1217,7 +1221,7 @@ if (rei.isStable) {
                               ? 'bg-red-900/50 text-red-400 border border-red-800'
                               : 'bg-slate-900/50 text-slate-400 border border-slate-700'
                         }`}>
-                        {row.signal}
+                        {row.signal === 'UNKNOWN' ? 'N/A' : row.signal}
                       </span>
                     </td>
                   </tr>
@@ -1324,7 +1328,7 @@ if (stochRsi.isStable) {
                               ? 'bg-red-900/50 text-red-400 border border-red-800'
                               : 'bg-slate-900/50 text-slate-400 border border-slate-700'
                         }`}>
-                        {row.signal}
+                        {row.signal === 'UNKNOWN' ? 'N/A' : row.signal}
                       </span>
                     </td>
                   </tr>
@@ -1347,6 +1351,127 @@ willr.add({ high: 112, low: 100, close: 105 });
 
 if (willr.isStable) {
   console.log('Williams %R:', willr.getResultOrThrow().toFixed(2));
+}`}</code>
+          </pre>
+        </div>
+      </div>
+    );
+  };
+
+  const renderTDS = (config: IndicatorConfig) => {
+    const tds = new TDS();
+    const results: Array<{
+      period: number;
+      date: string;
+      close: number;
+      result: string;
+      signal: string;
+    }> = [];
+
+    for (const [index, candle] of ethCandles.entries()) {
+      const result = tds.add(candle.close);
+      const signal = result !== null ? tds.getSignal() : null;
+      results.push({
+        period: index + 1,
+        date: candle.date,
+        close: candle.close,
+        result: result !== null ? result.toString() : 'null',
+        signal: signal ?? 'N/A',
+      });
+    }
+
+    const sampleValues = results.slice(-10);
+
+    const chartData = results
+      .filter(r => r.result !== 'null')
+      .map(r => ({
+        period: r.period,
+        value: parseFloat(r.result),
+      }));
+
+    return (
+      <div className="space-y-6">
+        <div>
+          <h2 className="text-2xl font-bold text-white mb-2">{config.name}</h2>
+          <p className="text-slate-300">{config.description}</p>
+        </div>
+
+        <div className="bg-slate-800/30 border border-slate-700 rounded-lg p-6">
+          <h3 className="text-lg font-semibold text-white mb-4">Calculation</h3>
+          <div className="prose prose-invert max-w-none">
+            <p className="text-slate-300">TDS tracks consecutive closes compared to the close 4 bars earlier:</p>
+            <ul className="text-slate-300 space-y-2">
+              <li>
+                Bullish Setup: 9 consecutive closes greater than the close 4 bars earlier (returns 1, signals potential
+                reversal - BEARISH)
+              </li>
+              <li>
+                Bearish Setup: 9 consecutive closes less than the close 4 bars earlier (returns -1, signals potential
+                reversal - BULLISH)
+              </li>
+            </ul>
+            <p className="text-slate-300 mt-4">
+              TDS identifies potential turning points after extended price moves. The signal is inverted because it
+              detects overbought/oversold conditions.
+            </p>
+          </div>
+        </div>
+
+        <div className="bg-slate-800/30 border border-slate-700 rounded-lg p-6">
+          <h3 className="text-lg font-semibold text-white mb-4">Sample Calculations (Last 10 Periods)</h3>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-slate-600">
+                  <th className="text-left text-slate-300 py-2 px-3">Period</th>
+                  <th className="text-left text-slate-300 py-2 px-3">Date</th>
+                  <th className="text-left text-slate-300 py-2 px-3">Close</th>
+                  <th className="text-left text-slate-300 py-2 px-3">TDS</th>
+                  <th className="text-left text-slate-300 py-2 px-3">Signal</th>
+                </tr>
+              </thead>
+              <tbody>
+                {sampleValues.map(row => (
+                  <tr key={row.period} className="border-b border-slate-700/50">
+                    <td className="text-slate-400 py-2 px-3">{row.period}</td>
+                    <td className="text-slate-300 py-2 px-3">{row.date}</td>
+                    <td className="text-slate-300 py-2 px-3">${row.close.toFixed(2)}</td>
+                    <td className="text-white font-mono py-2 px-3">{row.result}</td>
+                    <td className="py-2 px-3">
+                      <span
+                        className={`inline-flex items-center px-2 py-1 rounded text-xs font-semibold ${
+                          row.signal === 'BULLISH'
+                            ? 'bg-green-900/50 text-green-400 border border-green-800'
+                            : row.signal === 'BEARISH'
+                              ? 'bg-red-900/50 text-red-400 border border-red-800'
+                              : 'bg-slate-900/50 text-slate-400 border border-slate-700'
+                        }`}>
+                        {row.signal === 'UNKNOWN' ? 'N/A' : row.signal}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div className="bg-purple-900/20 border border-purple-800/50 rounded-lg p-4">
+          <h3 className="text-lg font-semibold text-purple-400 mb-2">Code Example</h3>
+          <pre className="text-slate-300 text-sm overflow-x-auto">
+            <code>{`import { TDS } from 'trading-signals';
+
+const tds = new TDS();
+
+tds.add(100);
+tds.add(102);
+tds.add(105);
+// ... add more closes
+
+if (tds.isStable) {
+  const result = tds.getResultOrThrow();
+  console.log('TDS:', result); // 1 (bullish setup) or -1 (bearish setup)
+  console.log('Signal:', tds.getSignal()); // Inverted: 1 → BEARISH, -1 → BULLISH
 }`}</code>
           </pre>
         </div>
