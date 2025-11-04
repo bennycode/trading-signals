@@ -1,5 +1,5 @@
-import type {TradingSignalProvider} from '../../types/Indicator.js';
-import {IndicatorSeries, TradingSignal} from '../../types/Indicator.js';
+import type {MomentumIndicator} from '../../types/Indicator.js';
+import {IndicatorSeries, MomentumSignal} from '../../types/Indicator.js';
 import {MAD} from '../../volatility/MAD/MAD.js';
 import {SMA} from '../../trend/SMA/SMA.js';
 import {pushUpdate} from '../../util/index.js';
@@ -29,7 +29,7 @@ import type {HighLowClose} from '../../types/HighLowClose.js';
  *
  * @see https://en.wikipedia.org/wiki/Commodity_channel_index
  */
-export class CCI extends IndicatorSeries<HighLowClose<number>> implements TradingSignalProvider {
+export class CCI extends IndicatorSeries<HighLowClose<number>> implements MomentumIndicator {
   private readonly sma: SMA;
   private readonly typicalPrices: number[];
 
@@ -68,19 +68,19 @@ export class CCI extends IndicatorSeries<HighLowClose<number>> implements Tradin
     const cci = this.getResult();
 
     if (cci === null) {
-      return TradingSignal.UNKNOWN;
+      return MomentumSignal.UNKNOWN;
     }
 
     // Oversold condition
     if (cci <= -100) {
-      return TradingSignal.BULLISH;
+      return MomentumSignal.OVERSOLD;
     }
 
     // Overbought condition
     if (cci >= 100) {
-      return TradingSignal.BEARISH;
+      return MomentumSignal.OVERBOUGHT;
     }
 
-    return TradingSignal.NEUTRAL;
+    return MomentumSignal.NEUTRAL;
   }
 }

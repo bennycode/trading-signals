@@ -13,17 +13,15 @@ interface Indicator<Result = number, Input = number> {
   updates(input: Input[], replace: boolean): Nullable<Result>[];
 }
 
-export const TradingSignal = {
-  BEARISH: 'BEARISH',
-  BULLISH: 'BULLISH',
+export const MomentumSignal = {
   NEUTRAL: 'NEUTRAL',
+  OVERBOUGHT: 'OVERBOUGHT',
+  OVERSOLD: 'OVERSOLD',
   UNKNOWN: 'UNKNOWN',
 } as const;
 
-export type TradingSignalType = (typeof TradingSignal)[keyof typeof TradingSignal];
-
-export interface TradingSignalProvider {
-  getSignal(): TradingSignalType;
+export interface MomentumIndicator {
+  getSignal(): (typeof MomentumSignal)[keyof typeof MomentumSignal];
 }
 
 export abstract class TechnicalIndicator<Result, Input> implements Indicator<Result, Input> {

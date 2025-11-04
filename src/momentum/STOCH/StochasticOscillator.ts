@@ -1,5 +1,5 @@
-import type {TradingSignalProvider} from '../../types/Indicator.js';
-import {TechnicalIndicator, TradingSignal} from '../../types/Indicator.js';
+import type {MomentumIndicator} from '../../types/Indicator.js';
+import {TechnicalIndicator, MomentumSignal} from '../../types/Indicator.js';
 import {SMA} from '../../trend/SMA/SMA.js';
 import type {HighLowClose} from '../../types/HighLowClose.js';
 import {pushUpdate} from '../../util/pushUpdate.js';
@@ -31,7 +31,7 @@ export interface StochasticResult {
  */
 export class StochasticOscillator
   extends TechnicalIndicator<StochasticResult, HighLowClose<number>>
-  implements TradingSignalProvider
+  implements MomentumIndicator
 {
   public readonly candles: HighLowClose<number>[] = [];
   private readonly periodM: SMA;
@@ -84,19 +84,19 @@ export class StochasticOscillator
     const result = this.getResult();
 
     if (result === null) {
-      return TradingSignal.UNKNOWN;
+      return MomentumSignal.UNKNOWN;
     }
 
     // Oversold condition
     if (result.stochK <= 20) {
-      return TradingSignal.BULLISH;
+      return MomentumSignal.OVERSOLD;
     }
 
     // Overbought condition
     if (result.stochK >= 80) {
-      return TradingSignal.BEARISH;
+      return MomentumSignal.OVERBOUGHT;
     }
 
-    return TradingSignal.NEUTRAL;
+    return MomentumSignal.NEUTRAL;
   }
 }

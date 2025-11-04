@@ -1,5 +1,5 @@
-import type {TradingSignalProvider} from '../../types/Indicator.js';
-import {IndicatorSeries, TradingSignal} from '../../types/Indicator.js';
+import type {MomentumIndicator} from '../../types/Indicator.js';
+import {IndicatorSeries, MomentumSignal} from '../../types/Indicator.js';
 import type {MovingAverage} from '../../trend/MA/MovingAverage.js';
 import type {MovingAverageTypes} from '../../trend/MA/MovingAverageTypes.js';
 import {RSI} from '../RSI/RSI.js';
@@ -26,7 +26,7 @@ import {WSMA} from '../../trend/WSMA/WSMA.js';
  * @see https://lakshmishree.com/blog/stochastic-rsi-indicator/
  * @see https://alchemymarkets.com/education/indicators/stochastic-rsi/
  */
-export class StochasticRSI extends IndicatorSeries implements TradingSignalProvider {
+export class StochasticRSI extends IndicatorSeries implements MomentumIndicator {
   private readonly period: Period;
   private readonly rsi: RSI;
 
@@ -79,19 +79,19 @@ export class StochasticRSI extends IndicatorSeries implements TradingSignalProvi
     const result = this.getResult();
 
     if (result === null) {
-      return TradingSignal.UNKNOWN;
+      return MomentumSignal.UNKNOWN;
     }
 
     // Oversold condition
     if (result <= 0.2) {
-      return TradingSignal.BULLISH;
+      return MomentumSignal.OVERSOLD;
     }
 
     // Overbought condition
     if (result >= 0.8) {
-      return TradingSignal.BEARISH;
+      return MomentumSignal.OVERBOUGHT;
     }
 
-    return TradingSignal.NEUTRAL;
+    return MomentumSignal.NEUTRAL;
   }
 }

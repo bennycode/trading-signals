@@ -1,5 +1,5 @@
-import type {TradingSignalProvider} from '../../types/Indicator.js';
-import {IndicatorSeries, TradingSignal} from '../../types/Indicator.js';
+import type {MomentumIndicator} from '../../types/Indicator.js';
+import {IndicatorSeries, MomentumSignal} from '../../types/Indicator.js';
 import type {MovingAverage} from '../../trend/MA/MovingAverage.js';
 import type {MovingAverageTypes} from '../../trend/MA/MovingAverageTypes.js';
 import {pushUpdate} from '../../util/pushUpdate.js';
@@ -20,7 +20,7 @@ import {WSMA} from '../../trend/WSMA/WSMA.js';
  * @see https://en.wikipedia.org/wiki/Relative_strength_index
  * @see https://www.investopedia.com/terms/r/rsi.asp
  */
-export class RSI extends IndicatorSeries implements TradingSignalProvider {
+export class RSI extends IndicatorSeries implements MomentumIndicator {
   private readonly previousPrices: number[] = [];
   private readonly avgGain: MovingAverage;
   private readonly avgLoss: MovingAverage;
@@ -75,19 +75,19 @@ export class RSI extends IndicatorSeries implements TradingSignalProvider {
     const rsi = this.getResult();
 
     if (rsi === null) {
-      return TradingSignal.UNKNOWN;
+      return MomentumSignal.UNKNOWN;
     }
 
     // Oversold condition
     if (rsi <= 30) {
-      return TradingSignal.BULLISH;
+      return MomentumSignal.OVERSOLD;
     }
 
     // Overbought condition
     if (rsi >= 70) {
-      return TradingSignal.BEARISH;
+      return MomentumSignal.OVERBOUGHT;
     }
 
-    return TradingSignal.NEUTRAL;
+    return MomentumSignal.NEUTRAL;
   }
 }

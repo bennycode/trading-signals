@@ -1,5 +1,5 @@
-import type {TradingSignalProvider} from '../../types/Indicator.js';
-import {IndicatorSeries, TradingSignal} from '../../types/Indicator.js';
+import type {MomentumIndicator} from '../../types/Indicator.js';
+import {IndicatorSeries, MomentumSignal} from '../../types/Indicator.js';
 import type {OpenHighLowCloseVolume} from '../../types/HighLowClose.js';
 import {pushUpdate} from '../../util/pushUpdate.js';
 
@@ -11,7 +11,7 @@ import {pushUpdate} from '../../util/pushUpdate.js';
  *
  * @see https://www.investopedia.com/terms/o/onbalancevolume.asp
  */
-export class OBV extends IndicatorSeries<OpenHighLowCloseVolume<number>> implements TradingSignalProvider {
+export class OBV extends IndicatorSeries<OpenHighLowCloseVolume<number>> implements MomentumIndicator {
   public readonly candles: OpenHighLowCloseVolume<number>[] = [];
 
   override getRequiredInputs() {
@@ -38,19 +38,19 @@ export class OBV extends IndicatorSeries<OpenHighLowCloseVolume<number>> impleme
     const obv = this.getResult();
 
     if (obv === null || this.previousResult === undefined) {
-      return TradingSignal.UNKNOWN;
+      return MomentumSignal.UNKNOWN;
     }
 
     // Rising OBV - bullish (buying pressure)
     if (obv > this.previousResult) {
-      return TradingSignal.BULLISH;
+      return MomentumSignal.OVERSOLD;
     }
 
     // Falling OBV - bearish (selling pressure)
     if (obv < this.previousResult) {
-      return TradingSignal.BEARISH;
+      return MomentumSignal.OVERBOUGHT;
     }
 
-    return TradingSignal.NEUTRAL;
+    return MomentumSignal.NEUTRAL;
   }
 }

@@ -1,7 +1,7 @@
 import type {DEMA} from '../../trend/DEMA/DEMA.js';
 import type {EMA} from '../../trend/EMA/EMA.js';
-import type {TradingSignalProvider} from '../../types/Indicator.js';
-import {TechnicalIndicator, TradingSignal} from '../../types/Indicator.js';
+import type {MomentumIndicator} from '../../types/Indicator.js';
+import {TechnicalIndicator, MomentumSignal} from '../../types/Indicator.js';
 import {pushUpdate} from '../../util/pushUpdate.js';
 
 export type MACDResult = {
@@ -19,7 +19,7 @@ export type MACDResult = {
  *
  * @see https://www.investopedia.com/terms/m/macd.asp
  */
-export class MACD extends TechnicalIndicator<MACDResult, number> implements TradingSignalProvider {
+export class MACD extends TechnicalIndicator<MACDResult, number> implements MomentumIndicator {
   public readonly prices: number[] = [];
 
   constructor(
@@ -57,19 +57,19 @@ export class MACD extends TechnicalIndicator<MACDResult, number> implements Trad
     const result = this.getResult();
 
     if (result === null) {
-      return TradingSignal.UNKNOWN;
+      return MomentumSignal.UNKNOWN;
     }
 
     // MACD above signal line
     if (result.histogram > 0) {
-      return TradingSignal.BULLISH;
+      return MomentumSignal.OVERSOLD;
     }
 
     // MACD below signal line
     if (result.histogram < 0) {
-      return TradingSignal.BEARISH;
+      return MomentumSignal.OVERBOUGHT;
     }
 
-    return TradingSignal.NEUTRAL;
+    return MomentumSignal.NEUTRAL;
   }
 }

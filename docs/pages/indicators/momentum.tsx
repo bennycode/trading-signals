@@ -1,20 +1,20 @@
-import {useState, useEffect} from 'react';
 import {useRouter} from 'next/router';
+import {useEffect, useState} from 'react';
 import {
-  RSI,
-  StochasticOscillator,
-  CCI,
-  ROC,
-  AO,
   AC,
+  AO,
+  CCI,
   CG,
+  EMA,
+  MACD,
   MOM,
   OBV,
   REI,
+  ROC,
+  RSI,
+  StochasticOscillator,
   StochasticRSI,
   TDS,
-  MACD,
-  EMA,
   WilliamsR,
 } from 'trading-signals';
 import Chart, {ChartDataPoint} from '../../components/Chart';
@@ -25,6 +25,23 @@ interface IndicatorConfig {
   description: string;
   color: string;
 }
+
+// Reusable component for rendering signal badges
+const SignalBadge = ({signal}: {signal: string}) => {
+  const displayText = signal === 'UNKNOWN' ? 'N/A' : signal;
+  const colorClasses =
+    signal === 'BULLISH' || signal === 'OVERSOLD'
+      ? 'bg-green-900/50 text-green-400 border-green-800'
+      : signal === 'BEARISH' || signal === 'OVERBOUGHT'
+        ? 'bg-red-900/50 text-red-400 border-red-800'
+        : 'bg-slate-900/50 text-slate-400 border-slate-700';
+
+  return (
+    <span className={`inline-flex items-center px-2 py-1 rounded text-xs font-semibold border ${colorClasses}`}>
+      {displayText}
+    </span>
+  );
+};
 
 // OHLCV data (from Ethereum)
 const ethCandles = [
@@ -207,16 +224,7 @@ export default function MomentumIndicators() {
                     <td className="text-slate-300 py-2 px-3">${row.close.toFixed(2)}</td>
                     <td className="text-white font-mono py-2 px-3">{row.result}</td>
                     <td className="py-2 px-3">
-                      <span
-                        className={`inline-flex items-center px-2 py-1 rounded text-xs font-semibold ${
-                          row.signal === 'BULLISH'
-                            ? 'bg-green-900/50 text-green-400 border border-green-800'
-                            : row.signal === 'BEARISH'
-                              ? 'bg-red-900/50 text-red-400 border border-red-800'
-                              : 'bg-slate-900/50 text-slate-400 border border-slate-700'
-                        }`}>
-                        {row.signal === 'UNKNOWN' ? 'N/A' : row.signal}
-                      </span>
+                      <SignalBadge signal={row.signal} />
                     </td>
                   </tr>
                 ))}
@@ -306,16 +314,7 @@ if (rsi.isStable) {
                     <td className="text-white font-mono py-2 px-3">{row.k}</td>
                     <td className="text-white font-mono py-2 px-3">{row.d}</td>
                     <td className="py-2 px-3">
-                      <span
-                        className={`inline-flex items-center px-2 py-1 rounded text-xs font-semibold ${
-                          row.signal === 'BULLISH'
-                            ? 'bg-green-900/50 text-green-400 border border-green-800'
-                            : row.signal === 'BEARISH'
-                              ? 'bg-red-900/50 text-red-400 border border-red-800'
-                              : 'bg-slate-900/50 text-slate-400 border border-slate-700'
-                        }`}>
-                        {row.signal === 'UNKNOWN' ? 'N/A' : row.signal}
-                      </span>
+                      <SignalBadge signal={row.signal} />
                     </td>
                   </tr>
                 ))}
@@ -402,16 +401,7 @@ if (stoch.isStable) {
                     <td className="text-slate-300 py-2 px-3">${row.close.toFixed(2)}</td>
                     <td className="text-white font-mono py-2 px-3">{row.result}</td>
                     <td className="py-2 px-3">
-                      <span
-                        className={`inline-flex items-center px-2 py-1 rounded text-xs font-semibold ${
-                          row.signal === 'BULLISH'
-                            ? 'bg-green-900/50 text-green-400 border border-green-800'
-                            : row.signal === 'BEARISH'
-                              ? 'bg-red-900/50 text-red-400 border border-red-800'
-                              : 'bg-slate-900/50 text-slate-400 border border-slate-700'
-                        }`}>
-                        {row.signal === 'UNKNOWN' ? 'N/A' : row.signal}
-                      </span>
+                      <SignalBadge signal={row.signal} />
                     </td>
                   </tr>
                 ))}
@@ -497,16 +487,7 @@ if (cci.isStable) {
                     <td className="text-slate-300 py-2 px-3">${row.close.toFixed(2)}</td>
                     <td className="text-white font-mono py-2 px-3">{row.result}</td>
                     <td className="py-2 px-3">
-                      <span
-                        className={`inline-flex items-center px-2 py-1 rounded text-xs font-semibold ${
-                          row.signal === 'BULLISH'
-                            ? 'bg-green-900/50 text-green-400 border border-green-800'
-                            : row.signal === 'BEARISH'
-                              ? 'bg-red-900/50 text-red-400 border border-red-800'
-                              : 'bg-slate-900/50 text-slate-400 border border-slate-700'
-                        }`}>
-                        {row.signal === 'UNKNOWN' ? 'N/A' : row.signal}
-                      </span>
+                      <SignalBadge signal={row.signal} />
                     </td>
                   </tr>
                 ))}
@@ -589,16 +570,7 @@ if (roc.isStable) {
                     <td className="text-slate-300 py-2 px-3">${row.close.toFixed(2)}</td>
                     <td className="text-white font-mono py-2 px-3">{row.result}</td>
                     <td className="py-2 px-3">
-                      <span
-                        className={`inline-flex items-center px-2 py-1 rounded text-xs font-semibold ${
-                          row.signal === 'BULLISH'
-                            ? 'bg-green-900/50 text-green-400 border border-green-800'
-                            : row.signal === 'BEARISH'
-                              ? 'bg-red-900/50 text-red-400 border border-red-800'
-                              : 'bg-slate-900/50 text-slate-400 border border-slate-700'
-                        }`}>
-                        {row.signal === 'UNKNOWN' ? 'N/A' : row.signal}
-                      </span>
+                      <SignalBadge signal={row.signal} />
                     </td>
                   </tr>
                 ))}
@@ -694,16 +666,7 @@ if (macd.isStable) {
                     <td className="text-slate-300 py-2 px-3">${row.low.toFixed(2)}</td>
                     <td className="text-white font-mono py-2 px-3">{row.result}</td>
                     <td className="py-2 px-3">
-                      <span
-                        className={`inline-flex items-center px-2 py-1 rounded text-xs font-semibold ${
-                          row.signal === 'BULLISH'
-                            ? 'bg-green-900/50 text-green-400 border border-green-800'
-                            : row.signal === 'BEARISH'
-                              ? 'bg-red-900/50 text-red-400 border border-red-800'
-                              : 'bg-slate-900/50 text-slate-400 border border-slate-700'
-                        }`}>
-                        {row.signal === 'UNKNOWN' ? 'N/A' : row.signal}
-                      </span>
+                      <SignalBadge signal={row.signal} />
                     </td>
                   </tr>
                 ))}
@@ -795,16 +758,7 @@ if (ao.isStable) {
                     <td className="text-slate-300 py-2 px-3">${row.low.toFixed(2)}</td>
                     <td className="text-white font-mono py-2 px-3">{row.result}</td>
                     <td className="py-2 px-3">
-                      <span
-                        className={`inline-flex items-center px-2 py-1 rounded text-xs font-semibold ${
-                          row.signal === 'BULLISH'
-                            ? 'bg-green-900/50 text-green-400 border border-green-800'
-                            : row.signal === 'BEARISH'
-                              ? 'bg-red-900/50 text-red-400 border border-red-800'
-                              : 'bg-slate-900/50 text-slate-400 border border-slate-700'
-                        }`}>
-                        {row.signal === 'UNKNOWN' ? 'N/A' : row.signal}
-                      </span>
+                      <SignalBadge signal={row.signal} />
                     </td>
                   </tr>
                 ))}
@@ -1047,16 +1001,7 @@ if (mom.isStable) {
                     <td className="text-slate-300 py-2 px-3">{row.volume}</td>
                     <td className="text-white font-mono py-2 px-3">{row.result}</td>
                     <td className="py-2 px-3">
-                      <span
-                        className={`inline-flex items-center px-2 py-1 rounded text-xs font-semibold ${
-                          row.signal === 'BULLISH'
-                            ? 'bg-green-900/50 text-green-400 border border-green-800'
-                            : row.signal === 'BEARISH'
-                              ? 'bg-red-900/50 text-red-400 border border-red-800'
-                              : 'bg-slate-900/50 text-slate-400 border border-slate-700'
-                        }`}>
-                        {row.signal === 'UNKNOWN' ? 'N/A' : row.signal}
-                      </span>
+                      <SignalBadge signal={row.signal} />
                     </td>
                   </tr>
                 ))}
@@ -1213,16 +1158,7 @@ if (rei.isStable) {
                     <td className="text-slate-300 py-2 px-3">${row.close.toFixed(2)}</td>
                     <td className="text-white font-mono py-2 px-3">{row.result}</td>
                     <td className="py-2 px-3">
-                      <span
-                        className={`inline-flex items-center px-2 py-1 rounded text-xs font-semibold ${
-                          row.signal === 'BULLISH'
-                            ? 'bg-green-900/50 text-green-400 border border-green-800'
-                            : row.signal === 'BEARISH'
-                              ? 'bg-red-900/50 text-red-400 border border-red-800'
-                              : 'bg-slate-900/50 text-slate-400 border border-slate-700'
-                        }`}>
-                        {row.signal === 'UNKNOWN' ? 'N/A' : row.signal}
-                      </span>
+                      <SignalBadge signal={row.signal} />
                     </td>
                   </tr>
                 ))}
@@ -1320,16 +1256,7 @@ if (stochRsi.isStable) {
                     <td className="text-slate-300 py-2 px-3">${row.close.toFixed(2)}</td>
                     <td className="text-white font-mono py-2 px-3">{row.result}</td>
                     <td className="py-2 px-3">
-                      <span
-                        className={`inline-flex items-center px-2 py-1 rounded text-xs font-semibold ${
-                          row.signal === 'BULLISH'
-                            ? 'bg-green-900/50 text-green-400 border border-green-800'
-                            : row.signal === 'BEARISH'
-                              ? 'bg-red-900/50 text-red-400 border border-red-800'
-                              : 'bg-slate-900/50 text-slate-400 border border-slate-700'
-                        }`}>
-                        {row.signal === 'UNKNOWN' ? 'N/A' : row.signal}
-                      </span>
+                      <SignalBadge signal={row.signal} />
                     </td>
                   </tr>
                 ))}
@@ -1382,13 +1309,6 @@ if (willr.isStable) {
 
     const sampleValues = results.slice(-10);
 
-    const chartData = results
-      .filter(r => r.result !== 'null')
-      .map(r => ({
-        period: r.period,
-        value: parseFloat(r.result),
-      }));
-
     return (
       <div className="space-y-6">
         <div>
@@ -1438,16 +1358,7 @@ if (willr.isStable) {
                     <td className="text-slate-300 py-2 px-3">${row.close.toFixed(2)}</td>
                     <td className="text-white font-mono py-2 px-3">{row.result}</td>
                     <td className="py-2 px-3">
-                      <span
-                        className={`inline-flex items-center px-2 py-1 rounded text-xs font-semibold ${
-                          row.signal === 'BULLISH'
-                            ? 'bg-green-900/50 text-green-400 border border-green-800'
-                            : row.signal === 'BEARISH'
-                              ? 'bg-red-900/50 text-red-400 border border-red-800'
-                              : 'bg-slate-900/50 text-slate-400 border border-slate-700'
-                        }`}>
-                        {row.signal === 'UNKNOWN' ? 'N/A' : row.signal}
-                      </span>
+                      <SignalBadge signal={row.signal} />
                     </td>
                   </tr>
                 ))}

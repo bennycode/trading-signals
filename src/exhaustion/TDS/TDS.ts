@@ -3,7 +3,7 @@ import {IndicatorSeries, MomentumSignal} from '../../types/Indicator.js';
 
 /**
  * Tom Demark's Sequential Indicator (TDS)
- * Type: Momentum
+ * Type: Exhaustion
  *
  * The TD Sequential indicator is used to identify potential turning points in the price of an asset.
  * It consists of two phases: TD Setup and TD Countdown. This implementation focuses on the TD Setup phase,
@@ -67,19 +67,19 @@ export class TDS extends IndicatorSeries implements MomentumIndicator {
   }
 
   getSignal() {
-    const result = this.getResult();
+    const tds = this.getResult();
 
-    if (result === null) {
-      return MomentumSignal.UNKNOWN;
+    if (tds === null) {
+      return MomentumSignal.NEUTRAL;
     }
 
-    // Bullish setup completed (1) - overbought condition, potential reversal down
-    if (result === 1) {
+    // Bullish setup completed (1) - trend exhaustion, potential reversal down
+    if (tds === 1) {
       return MomentumSignal.OVERBOUGHT;
     }
 
-    // Bearish setup completed (-1) - oversold condition, potential reversal up
-    if (result === -1) {
+    // Bearish setup completed (-1) - trend exhaustion, potential reversal up
+    if (tds === -1) {
       return MomentumSignal.OVERSOLD;
     }
 

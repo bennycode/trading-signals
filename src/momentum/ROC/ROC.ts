@@ -1,5 +1,5 @@
-import type {TradingSignalProvider} from '../../types/Indicator.js';
-import {IndicatorSeries, TradingSignal} from '../../types/Indicator.js';
+import type {MomentumIndicator} from '../../types/Indicator.js';
+import {IndicatorSeries, MomentumSignal} from '../../types/Indicator.js';
 import {pushUpdate} from '../../util/pushUpdate.js';
 
 /**
@@ -11,7 +11,7 @@ import {pushUpdate} from '../../util/pushUpdate.js';
  *
  * @see https://www.investopedia.com/terms/r/rateofchange.asp
  */
-export class ROC extends IndicatorSeries implements TradingSignalProvider {
+export class ROC extends IndicatorSeries implements MomentumIndicator {
   public readonly prices: number[] = [];
 
   constructor(public readonly interval: number) {
@@ -36,19 +36,19 @@ export class ROC extends IndicatorSeries implements TradingSignalProvider {
     const roc = this.getResult();
 
     if (roc === null) {
-      return TradingSignal.UNKNOWN;
+      return MomentumSignal.UNKNOWN;
     }
 
     // Positive ROC - bullish momentum
     if (roc > 0) {
-      return TradingSignal.BULLISH;
+      return MomentumSignal.OVERSOLD;
     }
 
     // Negative ROC - bearish momentum
     if (roc < 0) {
-      return TradingSignal.BEARISH;
+      return MomentumSignal.OVERBOUGHT;
     }
 
-    return TradingSignal.NEUTRAL;
+    return MomentumSignal.NEUTRAL;
   }
 }
