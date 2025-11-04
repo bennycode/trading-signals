@@ -1,4 +1,5 @@
-import {TechnicalIndicator} from '../../types/Indicator.js';
+import type {TradingSignalProvider} from '../../types/Indicator.js';
+import {TechnicalIndicator, TradingSignal} from '../../types/Indicator.js';
 import type {HighLowClose} from '../../types/HighLowClose.js';
 import {pushUpdate} from '../../util/pushUpdate.js';
 
@@ -18,7 +19,7 @@ import {pushUpdate} from '../../util/pushUpdate.js';
  * @see https://en.wikipedia.org/wiki/Williams_%25R
  * @see https://www.investopedia.com/terms/w/williamsr.asp
  */
-export class WilliamsR extends TechnicalIndicator<number, HighLowClose<number>> {
+export class WilliamsR extends TechnicalIndicator<number, HighLowClose<number>> implements TradingSignalProvider {
   public readonly candles: HighLowClose<number>[] = [];
 
   constructor(public readonly interval: number) {
@@ -57,5 +58,25 @@ export class WilliamsR extends TechnicalIndicator<number, HighLowClose<number>> 
     }
 
     return null;
+  }
+
+  getSignal() {
+    const result = this.getResult();
+
+    if (result === null) {
+      return TradingSignal.UNKNOWN;
+    }
+
+    // Overbought condition
+    if (result >= -20) {
+      return TradingSignal.BEARISH;
+    }
+
+    // Oversold condition
+    if (result <= -80) {
+      return TradingSignal.BULLISH;
+    }
+
+    return TradingSignal.NEUTRAL;
   }
 }

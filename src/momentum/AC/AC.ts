@@ -1,5 +1,6 @@
 import {AO} from '../AO/AO.js';
-import {IndicatorSeries} from '../../types/Indicator.js';
+import type {TradingSignalProvider} from '../../types/Indicator.js';
+import {IndicatorSeries, TradingSignal} from '../../types/Indicator.js';
 import {MOM} from '../MOM/MOM.js';
 import {SMA} from '../../trend/SMA/SMA.js';
 import type {HighLow} from '../../types/HighLowClose.js';
@@ -12,7 +13,7 @@ import type {HighLow} from '../../types/HighLowClose.js';
  *
  * @see https://www.thinkmarkets.com/en/indicators/bill-williams-accelerator/
  */
-export class AC extends IndicatorSeries<HighLow<number>> {
+export class AC extends IndicatorSeries<HighLow<number>> implements TradingSignalProvider {
   public readonly ao: AO;
   public readonly momentum: MOM;
   public readonly signal: SMA;
@@ -43,5 +44,25 @@ export class AC extends IndicatorSeries<HighLow<number>> {
       }
     }
     return null;
+  }
+
+  getSignal() {
+    const result = this.getResult();
+
+    if (result === null) {
+      return TradingSignal.UNKNOWN;
+    }
+
+    // AC above zero - accelerating bullish momentum
+    if (result > 0) {
+      return TradingSignal.BULLISH;
+    }
+
+    // AC below zero - accelerating bearish momentum
+    if (result < 0) {
+      return TradingSignal.BEARISH;
+    }
+
+    return TradingSignal.NEUTRAL;
   }
 }

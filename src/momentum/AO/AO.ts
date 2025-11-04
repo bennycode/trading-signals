@@ -1,4 +1,5 @@
-import {IndicatorSeries} from '../../types/Indicator.js';
+import type {TradingSignalProvider} from '../../types/Indicator.js';
+import {IndicatorSeries, TradingSignal} from '../../types/Indicator.js';
 import type {MovingAverage} from '../../trend/MA/MovingAverage.js';
 import type {MovingAverageTypes} from '../../trend/MA/MovingAverageTypes.js';
 import {SMA} from '../../trend/SMA/SMA.js';
@@ -18,7 +19,7 @@ import type {HighLow} from '../../types/HighLowClose.js';
  * @see https://www.tradingview.com/support/solutions/43000501826-awesome-oscillator-ao/
  * @see https://tradingstrategyguides.com/bill-williams-awesome-oscillator-strategy/
  */
-export class AO extends IndicatorSeries<HighLow<number>> {
+export class AO extends IndicatorSeries<HighLow<number>> implements TradingSignalProvider {
   public readonly long: MovingAverage;
   public readonly short: MovingAverage;
 
@@ -47,5 +48,25 @@ export class AO extends IndicatorSeries<HighLow<number>> {
     }
 
     return null;
+  }
+
+  getSignal() {
+    const result = this.getResult();
+
+    if (result === null) {
+      return TradingSignal.UNKNOWN;
+    }
+
+    // AO above zero - bullish
+    if (result > 0) {
+      return TradingSignal.BULLISH;
+    }
+
+    // AO below zero - bearish
+    if (result < 0) {
+      return TradingSignal.BEARISH;
+    }
+
+    return TradingSignal.NEUTRAL;
   }
 }
