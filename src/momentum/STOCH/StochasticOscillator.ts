@@ -84,7 +84,7 @@ export class StochasticOscillator
     const result = this.getResult();
 
     if (result === null) {
-      return TradingSignal.NEUTRAL;
+      return TradingSignal.UNKNOWN;
     }
 
     // Oversold condition

@@ -17,6 +17,7 @@ export const TradingSignal = {
   BEARISH: 'BEARISH',
   BULLISH: 'BULLISH',
   NEUTRAL: 'NEUTRAL',
+  UNKNOWN: 'UNKNOWN',
 } as const;
 
 export type TradingSignalType = (typeof TradingSignal)[keyof typeof TradingSignal];

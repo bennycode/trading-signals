@@ -57,7 +57,7 @@ export class MACD extends TechnicalIndicator<MACDResult, number> implements Trad
     const result = this.getResult();
 
     if (result === null) {
-      return TradingSignal.NEUTRAL;
+      return TradingSignal.UNKNOWN;
     }
 
     // MACD above signal line

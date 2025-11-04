@@ -75,7 +75,7 @@ export class RSI extends IndicatorSeries implements TradingSignalProvider {
     const rsi = this.getResult();
 
     if (rsi === null) {
-      return TradingSignal.NEUTRAL;
+      return TradingSignal.UNKNOWN;
     }
 
     // Oversold condition
