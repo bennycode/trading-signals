@@ -39,7 +39,7 @@ export class OBV extends IndicatorSeries<OpenHighLowCloseVolume<number>> impleme
 
     if (result === null || this.previousResult === undefined) {
       return {
-        changed: false,
+        hasChanged: false,
         signal: TrendSignal.UNKNOWN,
       };
     }
@@ -47,7 +47,7 @@ export class OBV extends IndicatorSeries<OpenHighLowCloseVolume<number>> impleme
     // Rising OBV - bullish (buying pressure)
     if (result > this.previousResult) {
       return {
-        changed: false,
+        hasChanged: false,
         signal: TrendSignal.BULLISH,
       };
     }
@@ -55,13 +55,13 @@ export class OBV extends IndicatorSeries<OpenHighLowCloseVolume<number>> impleme
     // Falling OBV - bearish (selling pressure)
     if (result < this.previousResult) {
       return {
-        changed: false,
+        hasChanged: false,
         signal: TrendSignal.BEARISH,
       };
     }
 
     return {
-      changed: false,
+      hasChanged: false,
       signal: TrendSignal.SIDEWAYS,
     };
   }

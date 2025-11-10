@@ -1,7 +1,7 @@
 import type {DEMA} from '../../trend/DEMA/DEMA.js';
 import type {EMA} from '../../trend/EMA/EMA.js';
-import type {MomentumIndicator, TrendIndicator} from '../../types/Indicator.js';
-import {TechnicalIndicator, MomentumSignal, TrendSignal} from '../../types/Indicator.js';
+import type {TrendIndicator} from '../../types/Indicator.js';
+import {TechnicalIndicator, TrendSignal} from '../../types/Indicator.js';
 import {pushUpdate} from '../../util/pushUpdate.js';
 
 export type MACDResult = {
@@ -58,7 +58,7 @@ export class MACD extends TechnicalIndicator<MACDResult, number> implements Tren
 
     if (result === null) {
       return {
-        changed: false,
+        hasChanged: false,
         signal: TrendSignal.UNKNOWN,
       };
     }
@@ -66,7 +66,7 @@ export class MACD extends TechnicalIndicator<MACDResult, number> implements Tren
     // MACD above signal line
     if (result.histogram > 0) {
       return {
-        changed: false,
+        hasChanged: false,
         signal: TrendSignal.BULLISH,
       };
     }
@@ -74,13 +74,13 @@ export class MACD extends TechnicalIndicator<MACDResult, number> implements Tren
     // MACD below signal line
     if (result.histogram < 0) {
       return {
-        changed: false,
+        hasChanged: false,
         signal: TrendSignal.BEARISH,
       };
     }
 
     return {
-      changed: false,
+      hasChanged: false,
       signal: TrendSignal.SIDEWAYS,
     };
   }

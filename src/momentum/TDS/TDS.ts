@@ -71,7 +71,7 @@ export class TDS extends IndicatorSeries implements MomentumIndicator {
 
     if (result === null) {
       return {
-        changed: false,
+        hasChanged: false,
         signal: MomentumSignal.UNKNOWN,
       };
     }
@@ -79,7 +79,7 @@ export class TDS extends IndicatorSeries implements MomentumIndicator {
     // Bullish setup completed (1) - overbought condition, potential reversal down
     if (result === 1) {
       return {
-        changed: false,
+        hasChanged: false,
         signal: MomentumSignal.OVERBOUGHT,
       };
     }
@@ -87,13 +87,13 @@ export class TDS extends IndicatorSeries implements MomentumIndicator {
     // Bearish setup completed (-1) - oversold condition, potential reversal up
     if (result === -1) {
       return {
-        changed: false,
+        hasChanged: false,
         signal: MomentumSignal.OVERSOLD,
       };
     }
 
     return {
-      changed: false,
+      hasChanged: false,
       signal: MomentumSignal.NEUTRAL,
     };
   }

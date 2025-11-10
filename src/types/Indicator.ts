@@ -30,14 +30,14 @@ export const TrendSignal = {
 export interface MomentumIndicator {
   getSignal(): {
     signal: (typeof MomentumSignal)[keyof typeof MomentumSignal];
-    changed: boolean;
+    hasChanged: boolean;
   };
 }
 
 export interface TrendIndicator {
   getSignal(): {
     signal: (typeof TrendSignal)[keyof typeof TrendSignal];
-    changed: boolean;
+    hasChanged: boolean;
   };
 }
 

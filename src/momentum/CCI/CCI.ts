@@ -69,27 +69,27 @@ export class CCI extends IndicatorSeries<HighLowClose<number>> implements Moment
 
     if (result === null) {
       return {
-        changed: false,
+        hasChanged: false,
         signal: MomentumSignal.UNKNOWN,
       };
     }
 
     if (result <= -100) {
       return {
-        changed: false,
+        hasChanged: false,
         signal: MomentumSignal.OVERSOLD,
       };
     }
 
     if (result >= 100) {
       return {
-        changed: false,
+        hasChanged: false,
         signal: MomentumSignal.OVERBOUGHT,
       };
     }
 
     return {
-      changed: false,
+      hasChanged: false,
       signal: MomentumSignal.NEUTRAL,
     };
   }

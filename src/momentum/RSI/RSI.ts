@@ -76,27 +76,27 @@ export class RSI extends IndicatorSeries implements MomentumIndicator {
 
     if (result === null) {
       return {
-        changed: false,
+        hasChanged: false,
         signal: MomentumSignal.UNKNOWN,
       };
     }
 
     if (result <= 30) {
       return {
-        changed: false,
+        hasChanged: false,
         signal: MomentumSignal.OVERSOLD,
       };
     }
 
     if (result >= 70) {
       return {
-        changed: false,
+        hasChanged: false,
         signal: MomentumSignal.OVERBOUGHT,
       };
     }
 
     return {
-      changed: false,
+      hasChanged: false,
       signal: MomentumSignal.NEUTRAL,
     };
   }

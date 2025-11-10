@@ -37,19 +37,19 @@ export class ROC extends IndicatorSeries implements TrendIndicator {
 
     if (result === null) {
       return {
-        changed: false,
+        hasChanged: false,
         signal: TrendSignal.UNKNOWN,
       };
     }
 
     if (result < 0) {
       return {
-        changed: false,
+        hasChanged: false,
         signal: TrendSignal.BEARISH,
       };
     }
     return {
-      changed: false,
+      hasChanged: false,
       signal: TrendSignal.BULLISH,
     };
   }

@@ -85,27 +85,27 @@ export class StochasticOscillator
 
     if (result === null) {
       return {
-        changed: false,
+        hasChanged: false,
         signal: MomentumSignal.UNKNOWN,
       };
     }
 
     if (result.stochK <= 20) {
       return {
-        changed: false,
+        hasChanged: false,
         signal: MomentumSignal.OVERSOLD,
       };
     }
 
     if (result.stochK >= 80) {
       return {
-        changed: false,
+        hasChanged: false,
         signal: MomentumSignal.OVERBOUGHT,
       };
     }
 
     return {
-      changed: false,
+      hasChanged: false,
       signal: MomentumSignal.NEUTRAL,
     };
   }

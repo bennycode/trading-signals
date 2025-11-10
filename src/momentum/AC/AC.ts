@@ -47,35 +47,32 @@ export class AC extends IndicatorSeries<HighLow<number>> implements TrendIndicat
     return null;
   }
 
-  getSignal() {
-    const result = this.getResult();
-
-    if (result === null) {
-      return {
-        changed: false,
-        signal: TrendSignal.UNKNOWN,
-      };
+  #getTrendSignal(result: number | null | undefined) {
+    if (!result) {
+      return TrendSignal.UNKNOWN;
     }
 
     // AC above zero - bullish context (acceleration is positive / momentum is increasing)
     if (result > 0) {
-      return {
-        changed: false,
-        signal: TrendSignal.BULLISH,
-      };
+      return TrendSignal.BULLISH;
     }
 
     // AC below zero - bearish context (acceleration is negative / decelerating momentum)
     if (result < 0) {
-      return {
-        changed: false,
-        signal: TrendSignal.BEARISH,
-      };
+      return TrendSignal.BEARISH;
     }
 
+    return TrendSignal.SIDEWAYS;
+  }
+
+  getSignal() {
+    const previousSignal = this.#getTrendSignal(this.previousResult);
+    const signal = this.#getTrendSignal(this.getResult());
+    const hasChanged = previousSignal !== signal;
+
     return {
-      changed: false,
-      signal: TrendSignal.SIDEWAYS,
+      hasChanged,
+      signal,
     };
   }
 }

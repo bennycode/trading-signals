@@ -65,7 +65,7 @@ export class WilliamsR extends TechnicalIndicator<number, HighLowClose<number>> 
 
     if (result === null) {
       return {
-        changed: false,
+        hasChanged: false,
         signal: MomentumSignal.UNKNOWN,
       };
     }
@@ -73,7 +73,7 @@ export class WilliamsR extends TechnicalIndicator<number, HighLowClose<number>> 
     // Overbought condition
     if (result >= -20) {
       return {
-        changed: false,
+        hasChanged: false,
         signal: MomentumSignal.OVERBOUGHT,
       };
     }
@@ -81,13 +81,13 @@ export class WilliamsR extends TechnicalIndicator<number, HighLowClose<number>> 
     // Oversold condition
     if (result <= -80) {
       return {
-        changed: false,
+        hasChanged: false,
         signal: MomentumSignal.OVERSOLD,
       };
     }
 
     return {
-      changed: false,
+      hasChanged: false,
       signal: MomentumSignal.NEUTRAL,
     };
   }

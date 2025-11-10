@@ -57,27 +57,27 @@ export class AO extends IndicatorSeries<HighLow<number>> implements TrendIndicat
 
     if (result === null) {
       return {
-        changed: false,
+        hasChanged: false,
         signal: TrendSignal.UNKNOWN,
       };
     }
 
     if (result > 0) {
       return {
-        changed: false,
+        hasChanged: false,
         signal: TrendSignal.BULLISH,
       };
     }
 
     if (result < 0) {
       return {
-        changed: false,
+        hasChanged: false,
         signal: TrendSignal.BEARISH,
       };
     }
 
     return {
-      changed: false,
+      hasChanged: false,
       signal: TrendSignal.SIDEWAYS,
     };
   }

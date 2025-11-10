@@ -71,7 +71,7 @@ export class TDS extends IndicatorSeries implements TrendIndicator {
 
     if (tds === null) {
       return {
-        changed: false,
+        hasChanged: false,
         signal: TrendSignal.UNKNOWN,
       };
     }
@@ -79,7 +79,7 @@ export class TDS extends IndicatorSeries implements TrendIndicator {
     // Bullish setup completed (1) - trend exhaustion, potential reversal down
     if (tds === 1) {
       return {
-        changed: false,
+        hasChanged: false,
         signal: TrendSignal.BULLISH,
       };
     }
@@ -87,13 +87,13 @@ export class TDS extends IndicatorSeries implements TrendIndicator {
     // Bearish setup completed (-1) - trend exhaustion, potential reversal up
     if (tds === -1) {
       return {
-        changed: false,
+        hasChanged: false,
         signal: TrendSignal.BEARISH,
       };
     }
 
     return {
-      changed: false,
+      hasChanged: false,
       signal: TrendSignal.SIDEWAYS,
     };
   }
