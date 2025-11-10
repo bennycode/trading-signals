@@ -1,5 +1,5 @@
-import type {MomentumIndicator} from '../../types/Indicator.js';
-import {IndicatorSeries, MomentumSignal} from '../../types/Indicator.js';
+import type {TrendIndicator} from '../../types/Indicator.js';
+import {IndicatorSeries, TrendSignal} from '../../types/Indicator.js';
 
 /**
  * Tom Demark's Sequential Indicator (TDS)
@@ -16,7 +16,7 @@ import {IndicatorSeries, MomentumSignal} from '../../types/Indicator.js';
  * @see https://hackernoon.com/how-to-buy-sell-cryptocurrency-with-number-indicator-td-sequential-5af46f0ebce1
  * @see https://practicaltechnicalanalysis.blogspot.com/2013/01/tom-demark-sequential.html
  */
-export class TDS extends IndicatorSeries implements MomentumIndicator {
+export class TDS extends IndicatorSeries implements TrendIndicator {
   private readonly closes: number[] = [];
   private setupCount: number = 0;
   private setupDirection: 'bullish' | 'bearish' | null = null;
@@ -70,19 +70,31 @@ export class TDS extends IndicatorSeries implements MomentumIndicator {
     const tds = this.getResult();
 
     if (tds === null) {
-      return MomentumSignal.NEUTRAL;
+      return {
+        changed: false,
+        signal: TrendSignal.UNKNOWN,
+      };
     }
 
     // Bullish setup completed (1) - trend exhaustion, potential reversal down
     if (tds === 1) {
-      return MomentumSignal.OVERBOUGHT;
+      return {
+        changed: false,
+        signal: TrendSignal.BULLISH,
+      };
     }
 
     // Bearish setup completed (-1) - trend exhaustion, potential reversal up
     if (tds === -1) {
-      return MomentumSignal.OVERSOLD;
+      return {
+        changed: false,
+        signal: TrendSignal.BEARISH,
+      };
     }
 
-    return MomentumSignal.NEUTRAL;
+    return {
+      changed: false,
+      signal: TrendSignal.SIDEWAYS,
+    };
   }
 }
