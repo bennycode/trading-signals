@@ -72,22 +72,32 @@ export class RSI extends IndicatorSeries implements MomentumIndicator {
   }
 
   getSignal() {
-    const rsi = this.getResult();
+    const result = this.getResult();
 
-    if (rsi === null) {
-      return MomentumSignal.UNKNOWN;
+    if (result === null) {
+      return {
+        changed: false,
+        signal: MomentumSignal.UNKNOWN,
+      };
     }
 
-    // Oversold condition
-    if (rsi <= 30) {
-      return MomentumSignal.OVERSOLD;
+    if (result <= 30) {
+      return {
+        changed: false,
+        signal: MomentumSignal.OVERSOLD,
+      };
     }
 
-    // Overbought condition
-    if (rsi >= 70) {
-      return MomentumSignal.OVERBOUGHT;
+    if (result >= 70) {
+      return {
+        changed: false,
+        signal: MomentumSignal.OVERBOUGHT,
+      };
     }
 
-    return MomentumSignal.NEUTRAL;
+    return {
+      changed: false,
+      signal: MomentumSignal.NEUTRAL,
+    };
   }
 }

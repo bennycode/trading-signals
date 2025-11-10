@@ -65,22 +65,32 @@ export class CCI extends IndicatorSeries<HighLowClose<number>> implements Moment
   }
 
   getSignal() {
-    const cci = this.getResult();
+    const result = this.getResult();
 
-    if (cci === null) {
-      return MomentumSignal.UNKNOWN;
+    if (result === null) {
+      return {
+        changed: false,
+        signal: MomentumSignal.UNKNOWN,
+      };
     }
 
-    // Oversold condition
-    if (cci <= -100) {
-      return MomentumSignal.OVERSOLD;
+    if (result <= -100) {
+      return {
+        changed: false,
+        signal: MomentumSignal.OVERSOLD,
+      };
     }
 
-    // Overbought condition
-    if (cci >= 100) {
-      return MomentumSignal.OVERBOUGHT;
+    if (result >= 100) {
+      return {
+        changed: false,
+        signal: MomentumSignal.OVERBOUGHT,
+      };
     }
 
-    return MomentumSignal.NEUTRAL;
+    return {
+      changed: false,
+      signal: MomentumSignal.NEUTRAL,
+    };
   }
 }

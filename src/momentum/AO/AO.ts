@@ -1,9 +1,9 @@
-import type {MomentumIndicator} from '../../types/Indicator.js';
-import {IndicatorSeries, MomentumSignal} from '../../types/Indicator.js';
 import type {MovingAverage} from '../../trend/MA/MovingAverage.js';
 import type {MovingAverageTypes} from '../../trend/MA/MovingAverageTypes.js';
 import {SMA} from '../../trend/SMA/SMA.js';
 import type {HighLow} from '../../types/HighLowClose.js';
+import type {TrendIndicator} from '../../types/Indicator.js';
+import {IndicatorSeries, TrendSignal} from '../../types/Indicator.js';
 
 /**
  * Awesome Oscillator (AO)
@@ -13,13 +13,15 @@ import type {HighLow} from '../../types/HighLowClose.js';
  * It has been developed by the technical analyst and charting enthusiast Bill Williams.
  *
  * When AO crosses above Zero, short term momentum is rising faster than long term momentum which signals a bullish
- * buying opportunity. When AO crosses below Zero, short term momentum is falling faster then the long term momentum
+ * buying opportunity.
+ *
+ * When AO crosses below Zero, short term momentum is falling faster then the long term momentum
  * which signals a bearish selling opportunity.
  *
  * @see https://www.tradingview.com/support/solutions/43000501826-awesome-oscillator-ao/
  * @see https://tradingstrategyguides.com/bill-williams-awesome-oscillator-strategy/
  */
-export class AO extends IndicatorSeries<HighLow<number>> implements MomentumIndicator {
+export class AO extends IndicatorSeries<HighLow<number>> implements TrendIndicator {
   public readonly long: MovingAverage;
   public readonly short: MovingAverage;
 
@@ -54,19 +56,29 @@ export class AO extends IndicatorSeries<HighLow<number>> implements MomentumIndi
     const result = this.getResult();
 
     if (result === null) {
-      return MomentumSignal.UNKNOWN;
+      return {
+        changed: false,
+        signal: TrendSignal.UNKNOWN,
+      };
     }
 
-    // AO above zero - bullish
     if (result > 0) {
-      return MomentumSignal.OVERSOLD;
+      return {
+        changed: false,
+        signal: TrendSignal.BULLISH,
+      };
     }
 
-    // AO below zero - bearish
     if (result < 0) {
-      return MomentumSignal.OVERBOUGHT;
+      return {
+        changed: false,
+        signal: TrendSignal.BEARISH,
+      };
     }
 
-    return MomentumSignal.NEUTRAL;
+    return {
+      changed: false,
+      signal: TrendSignal.SIDEWAYS,
+    };
   }
 }

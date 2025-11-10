@@ -114,10 +114,29 @@ Most of the time, the minimum amount of data depends on the interval / time peri
 
 ## Technical Indicator Types
 
-- Momentum indicators: Measure the speed and strength of price movements in a particular direction
-- Trend indicators: Measure the direction of a trend (uptrend, downtrend or sideways trend)
+### Indicator Function
+
+- Momentum indicators: Measure the speed and strength (intensity) of price movements in a particular direction (overbought/oversold)
+- Trend indicators: Measure the direction of a trend (bullish/bearish)
 - Volatility indicators: Measure the degree of variation in prices over time, regardless of direction
 - Volume indicators: Measure the strength of a trend based on volume
+
+**Key readings:**
+
+- Bullish sentiment: expect prices to rise
+- Bearish sentiment: expect prices to fall
+- Overbought condition: price may have risen too much too fast, meaning it’s trending up, but traders expect a short-term dip before continuing higher
+- Oversold condition: price may have dropped too much too fast, meaning it’s trending down, but traders expect a short-term bounce before continuing lower or reversing upward
+
+### Indicator Timing
+
+- Leading Indicators: Predictive tools that try to signal future price movements before they happen (i.e. RSI, Stochastic Oscillator, Volume spikes)
+- Lagging Indicators: Confirmative tools that signal after a trend or move has already started (i.e. Moving Averages, MACD, ADX)
+
+### Indicator Scale
+
+- Indicators: Have no upper or lower limits
+- Oscillators: Move within a fixed range (e.g. 0-100, –1 to +1)
 
 ## Supported Technical Indicators
 

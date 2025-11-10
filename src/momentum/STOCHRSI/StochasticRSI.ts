@@ -79,19 +79,29 @@ export class StochasticRSI extends IndicatorSeries implements MomentumIndicator 
     const result = this.getResult();
 
     if (result === null) {
-      return MomentumSignal.UNKNOWN;
+      return {
+        changed: false,
+        signal: MomentumSignal.UNKNOWN,
+      };
     }
 
-    // Oversold condition
     if (result <= 0.2) {
-      return MomentumSignal.OVERSOLD;
+      return {
+        changed: false,
+        signal: MomentumSignal.OVERSOLD,
+      };
     }
 
-    // Overbought condition
     if (result >= 0.8) {
-      return MomentumSignal.OVERBOUGHT;
+      return {
+        changed: false,
+        signal: MomentumSignal.OVERBOUGHT,
+      };
     }
 
-    return MomentumSignal.NEUTRAL;
+    return {
+      changed: false,
+      signal: MomentumSignal.NEUTRAL,
+    };
   }
 }

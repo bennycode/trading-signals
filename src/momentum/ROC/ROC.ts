@@ -1,5 +1,5 @@
-import type {MomentumIndicator} from '../../types/Indicator.js';
-import {IndicatorSeries, MomentumSignal} from '../../types/Indicator.js';
+import type {TrendIndicator} from '../../types/Indicator.js';
+import {IndicatorSeries, TrendSignal} from '../../types/Indicator.js';
 import {pushUpdate} from '../../util/pushUpdate.js';
 
 /**
@@ -11,7 +11,7 @@ import {pushUpdate} from '../../util/pushUpdate.js';
  *
  * @see https://www.investopedia.com/terms/r/rateofchange.asp
  */
-export class ROC extends IndicatorSeries implements MomentumIndicator {
+export class ROC extends IndicatorSeries implements TrendIndicator {
   public readonly prices: number[] = [];
 
   constructor(public readonly interval: number) {
@@ -33,22 +33,24 @@ export class ROC extends IndicatorSeries implements MomentumIndicator {
   }
 
   getSignal() {
-    const roc = this.getResult();
+    const result = this.getResult();
 
-    if (roc === null) {
-      return MomentumSignal.UNKNOWN;
+    if (result === null) {
+      return {
+        changed: false,
+        signal: TrendSignal.UNKNOWN,
+      };
     }
 
-    // Positive ROC - bullish momentum
-    if (roc > 0) {
-      return MomentumSignal.OVERSOLD;
+    if (result < 0) {
+      return {
+        changed: false,
+        signal: TrendSignal.BEARISH,
+      };
     }
-
-    // Negative ROC - bearish momentum
-    if (roc < 0) {
-      return MomentumSignal.OVERBOUGHT;
-    }
-
-    return MomentumSignal.NEUTRAL;
+    return {
+      changed: false,
+      signal: TrendSignal.BULLISH,
+    };
   }
 }

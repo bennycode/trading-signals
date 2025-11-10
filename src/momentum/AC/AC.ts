@@ -1,9 +1,9 @@
-import {AO} from '../AO/AO.js';
-import type {MomentumIndicator} from '../../types/Indicator.js';
-import {IndicatorSeries, MomentumSignal} from '../../types/Indicator.js';
-import {MOM} from '../MOM/MOM.js';
 import {SMA} from '../../trend/SMA/SMA.js';
 import type {HighLow} from '../../types/HighLowClose.js';
+import type {TrendIndicator} from '../../types/Indicator.js';
+import {IndicatorSeries, TrendSignal} from '../../types/Indicator.js';
+import {AO} from '../AO/AO.js';
+import {MOM} from '../MOM/MOM.js';
 
 /**
  * Accelerator Oscillator (AC)
@@ -12,8 +12,9 @@ import type {HighLow} from '../../types/HighLowClose.js';
  * The Accelerator Oscillator (AC) is an indicator used to detect when a momentum changes. It has been developed by Bill Williams. If the momentum in an uptrend is starting to slow down, that could suggest that there is less interest in the asset. This typically leads to selling. In the inverse, momentum to the downside will start to slow down before buy orders come in. The Accelerator Oscillator also looks at whether there is an acceleration in the change of momentum.
  *
  * @see https://www.thinkmarkets.com/en/indicators/bill-williams-accelerator/
+ * @see https://help.quantower.com/quantower/analytics-panels/chart/technical-indicators/oscillators/accelerator-oscillator
  */
-export class AC extends IndicatorSeries<HighLow<number>> implements MomentumIndicator {
+export class AC extends IndicatorSeries<HighLow<number>> implements TrendIndicator {
   public readonly ao: AO;
   public readonly momentum: MOM;
   public readonly signal: SMA;
@@ -50,19 +51,31 @@ export class AC extends IndicatorSeries<HighLow<number>> implements MomentumIndi
     const result = this.getResult();
 
     if (result === null) {
-      return MomentumSignal.UNKNOWN;
+      return {
+        changed: false,
+        signal: TrendSignal.UNKNOWN,
+      };
     }
 
-    // AC above zero - accelerating bullish momentum
+    // AC above zero - bullish context (acceleration is positive / momentum is increasing)
     if (result > 0) {
-      return MomentumSignal.OVERSOLD;
+      return {
+        changed: false,
+        signal: TrendSignal.BULLISH,
+      };
     }
 
-    // AC below zero - accelerating bearish momentum
+    // AC below zero - bearish context (acceleration is negative / decelerating momentum)
     if (result < 0) {
-      return MomentumSignal.OVERBOUGHT;
+      return {
+        changed: false,
+        signal: TrendSignal.BEARISH,
+      };
     }
 
-    return MomentumSignal.NEUTRAL;
+    return {
+      changed: false,
+      signal: TrendSignal.SIDEWAYS,
+    };
   }
 }

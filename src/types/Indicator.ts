@@ -20,8 +20,25 @@ export const MomentumSignal = {
   UNKNOWN: 'UNKNOWN',
 } as const;
 
+export const TrendSignal = {
+  BEARISH: 'BEARISH',
+  BULLISH: 'BULLISH',
+  SIDEWAYS: 'SIDEWAYS',
+  UNKNOWN: 'UNKNOWN',
+} as const;
+
 export interface MomentumIndicator {
-  getSignal(): (typeof MomentumSignal)[keyof typeof MomentumSignal];
+  getSignal(): {
+    signal: (typeof MomentumSignal)[keyof typeof MomentumSignal];
+    changed: boolean;
+  };
+}
+
+export interface TrendIndicator {
+  getSignal(): {
+    signal: (typeof TrendSignal)[keyof typeof TrendSignal];
+    changed: boolean;
+  };
 }
 
 export abstract class TechnicalIndicator<Result, Input> implements Indicator<Result, Input> {
