@@ -27,19 +27,9 @@ export const TrendSignal = {
   UNKNOWN: 'UNKNOWN',
 } as const;
 
-export interface MomentumIndicator {
-  getSignal(): {
-    signal: (typeof MomentumSignal)[keyof typeof MomentumSignal];
-    hasChanged: boolean;
-  };
-}
+export type MomentumSignals = (typeof MomentumSignal)[keyof typeof MomentumSignal];
 
-export interface TrendIndicator {
-  getSignal(): {
-    signal: (typeof TrendSignal)[keyof typeof TrendSignal];
-    hasChanged: boolean;
-  };
-}
+export type TrendSignals = (typeof TrendSignal)[keyof typeof TrendSignal];
 
 export abstract class TechnicalIndicator<Result, Input> implements Indicator<Result, Input> {
   protected result: Result | undefined;
@@ -100,3 +90,26 @@ export abstract class IndicatorSeries<Input = number> extends TechnicalIndicator
     return (this.result = value);
   }
 }
+
+export abstract class TrendIndicatorSeries<Input = number, Signal = TrendSignals> extends IndicatorSeries<Input> {
+  protected abstract calculateSignal(result?: number | null | undefined): Signal;
+
+  getSignal(): {
+    signal: Signal;
+    hasChanged: boolean;
+  } {
+    const previousSignal = this.calculateSignal(this.previousResult);
+    const signal = this.calculateSignal(this.getResult());
+    const hasChanged = previousSignal !== signal;
+
+    return {
+      hasChanged,
+      signal,
+    };
+  }
+}
+
+export abstract class MomentumIndicatorSeries<Input = number, Signal = MomentumSignals> extends TrendIndicatorSeries<
+  Input,
+  Signal
+> {}

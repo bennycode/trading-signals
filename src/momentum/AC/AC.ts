@@ -1,7 +1,6 @@
 import {SMA} from '../../trend/SMA/SMA.js';
 import type {HighLow} from '../../types/HighLowClose.js';
-import type {TrendIndicator} from '../../types/Indicator.js';
-import {IndicatorSeries, TrendSignal} from '../../types/Indicator.js';
+import {TrendIndicatorSeries, TrendSignal} from '../../types/Indicator.js';
 import {AO} from '../AO/AO.js';
 import {MOM} from '../MOM/MOM.js';
 
@@ -14,7 +13,7 @@ import {MOM} from '../MOM/MOM.js';
  * @see https://www.thinkmarkets.com/en/indicators/bill-williams-accelerator/
  * @see https://help.quantower.com/quantower/analytics-panels/chart/technical-indicators/oscillators/accelerator-oscillator
  */
-export class AC extends IndicatorSeries<HighLow<number>> implements TrendIndicator {
+export class AC extends TrendIndicatorSeries<HighLow<number>> {
   public readonly ao: AO;
   public readonly momentum: MOM;
   public readonly signal: SMA;
@@ -47,7 +46,7 @@ export class AC extends IndicatorSeries<HighLow<number>> implements TrendIndicat
     return null;
   }
 
-  #getTrendSignal(result: number | null | undefined) {
+  protected calculateSignal(result: number | null | undefined) {
     if (!result) {
       return TrendSignal.UNKNOWN;
     }
@@ -63,16 +62,5 @@ export class AC extends IndicatorSeries<HighLow<number>> implements TrendIndicat
     }
 
     return TrendSignal.SIDEWAYS;
-  }
-
-  getSignal() {
-    const previousSignal = this.#getTrendSignal(this.previousResult);
-    const signal = this.#getTrendSignal(this.getResult());
-    const hasChanged = previousSignal !== signal;
-
-    return {
-      hasChanged,
-      signal,
-    };
   }
 }
