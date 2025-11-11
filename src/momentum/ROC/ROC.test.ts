@@ -1,5 +1,6 @@
 import {ROC} from './ROC.js';
 import {NotEnoughDataError} from '../../error/index.js';
+import {TrendSignal} from '../../types/Indicator.js';
 
 describe('ROC', () => {
   describe('getResultOrThrow', () => {
@@ -39,6 +40,10 @@ describe('ROC', () => {
       prices.forEach(price => {
         roc.add(price);
       });
+
+      expect(roc.getResultOrThrow().toFixed(2)).toBe('-0.83');
+      expect(roc.getSignal().signal).toBe(TrendSignal.BEARISH);
+      expect(roc.getSignal().hasChanged).toBe(false);
     });
 
     it('throws an error when there is not enough input data', () => {
