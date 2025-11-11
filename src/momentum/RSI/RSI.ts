@@ -1,5 +1,4 @@
-import type {MomentumIndicator} from '../../types/Indicator.js';
-import {IndicatorSeries, MomentumSignal} from '../../types/Indicator.js';
+import {MomentumIndicatorSeries, MomentumSignal} from '../../types/Indicator.js';
 import type {MovingAverage} from '../../trend/MA/MovingAverage.js';
 import type {MovingAverageTypes} from '../../trend/MA/MovingAverageTypes.js';
 import {pushUpdate} from '../../util/pushUpdate.js';
@@ -20,7 +19,7 @@ import {WSMA} from '../../trend/WSMA/WSMA.js';
  * @see https://en.wikipedia.org/wiki/Relative_strength_index
  * @see https://www.investopedia.com/terms/r/rsi.asp
  */
-export class RSI extends IndicatorSeries implements MomentumIndicator {
+export class RSI extends MomentumIndicatorSeries {
   private readonly previousPrices: number[] = [];
   private readonly avgGain: MovingAverage;
   private readonly avgLoss: MovingAverage;
@@ -71,33 +70,19 @@ export class RSI extends IndicatorSeries implements MomentumIndicator {
     return null;
   }
 
-  getSignal() {
-    const result = this.getResult();
-
-    if (result === null) {
-      return {
-        hasChanged: false,
-        signal: MomentumSignal.UNKNOWN,
-      };
+  protected calculateSignal(result: number | null | undefined) {
+    if (!result) {
+      return MomentumSignal.UNKNOWN;
     }
 
     if (result <= 30) {
-      return {
-        hasChanged: false,
-        signal: MomentumSignal.OVERSOLD,
-      };
+      return MomentumSignal.OVERSOLD;
     }
 
     if (result >= 70) {
-      return {
-        hasChanged: false,
-        signal: MomentumSignal.OVERBOUGHT,
-      };
+      return MomentumSignal.OVERBOUGHT;
     }
 
-    return {
-      hasChanged: false,
-      signal: MomentumSignal.NEUTRAL,
-    };
+    return MomentumSignal.NEUTRAL;
   }
 }

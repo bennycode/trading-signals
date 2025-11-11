@@ -1,5 +1,4 @@
-import type {TrendIndicator} from '../../types/Indicator.js';
-import {IndicatorSeries, TrendSignal} from '../../types/Indicator.js';
+import {TrendIndicatorSeries, TrendSignal} from '../../types/Indicator.js';
 import {pushUpdate} from '../../util/pushUpdate.js';
 
 /**
@@ -11,7 +10,7 @@ import {pushUpdate} from '../../util/pushUpdate.js';
  *
  * @see https://www.investopedia.com/terms/r/rateofchange.asp
  */
-export class ROC extends IndicatorSeries implements TrendIndicator {
+export class ROC extends TrendIndicatorSeries {
   public readonly prices: number[] = [];
 
   constructor(public readonly interval: number) {
@@ -32,25 +31,15 @@ export class ROC extends IndicatorSeries implements TrendIndicator {
     return null;
   }
 
-  getSignal() {
-    const result = this.getResult();
-
-    if (result === null) {
-      return {
-        hasChanged: false,
-        signal: TrendSignal.UNKNOWN,
-      };
+  protected calculateSignal(result: number | null | undefined) {
+    if (!result) {
+      return TrendSignal.UNKNOWN;
     }
 
     if (result < 0) {
-      return {
-        hasChanged: false,
-        signal: TrendSignal.BEARISH,
-      };
+      return TrendSignal.BEARISH;
     }
-    return {
-      hasChanged: false,
-      signal: TrendSignal.BULLISH,
-    };
+
+    return TrendSignal.BULLISH;
   }
 }

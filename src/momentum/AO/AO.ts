@@ -2,8 +2,7 @@ import type {MovingAverage} from '../../trend/MA/MovingAverage.js';
 import type {MovingAverageTypes} from '../../trend/MA/MovingAverageTypes.js';
 import {SMA} from '../../trend/SMA/SMA.js';
 import type {HighLow} from '../../types/HighLowClose.js';
-import type {TrendIndicator} from '../../types/Indicator.js';
-import {IndicatorSeries, TrendSignal} from '../../types/Indicator.js';
+import {TrendIndicatorSeries, TrendSignal} from '../../types/Indicator.js';
 
 /**
  * Awesome Oscillator (AO)
@@ -21,7 +20,7 @@ import {IndicatorSeries, TrendSignal} from '../../types/Indicator.js';
  * @see https://www.tradingview.com/support/solutions/43000501826-awesome-oscillator-ao/
  * @see https://tradingstrategyguides.com/bill-williams-awesome-oscillator-strategy/
  */
-export class AO extends IndicatorSeries<HighLow<number>> implements TrendIndicator {
+export class AO extends TrendIndicatorSeries<HighLow<number>> {
   public readonly long: MovingAverage;
   public readonly short: MovingAverage;
 
@@ -52,33 +51,19 @@ export class AO extends IndicatorSeries<HighLow<number>> implements TrendIndicat
     return null;
   }
 
-  getSignal() {
-    const result = this.getResult();
-
-    if (result === null) {
-      return {
-        hasChanged: false,
-        signal: TrendSignal.UNKNOWN,
-      };
+  protected calculateSignal(result: number | null | undefined) {
+    if (!result) {
+      return TrendSignal.UNKNOWN;
     }
 
     if (result > 0) {
-      return {
-        hasChanged: false,
-        signal: TrendSignal.BULLISH,
-      };
+      return TrendSignal.BULLISH;
     }
 
     if (result < 0) {
-      return {
-        hasChanged: false,
-        signal: TrendSignal.BEARISH,
-      };
+      return TrendSignal.BEARISH;
     }
 
-    return {
-      hasChanged: false,
-      signal: TrendSignal.SIDEWAYS,
-    };
+    return TrendSignal.SIDEWAYS;
   }
 }

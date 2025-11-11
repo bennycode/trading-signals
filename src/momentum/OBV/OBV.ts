@@ -1,6 +1,5 @@
 import type {OpenHighLowCloseVolume} from '../../types/HighLowClose.js';
-import type {TrendIndicator} from '../../types/Indicator.js';
-import {IndicatorSeries, TrendSignal} from '../../types/Indicator.js';
+import {TrendIndicatorSeries, TrendSignal} from '../../types/Indicator.js';
 import {pushUpdate} from '../../util/pushUpdate.js';
 
 /**
@@ -11,7 +10,7 @@ import {pushUpdate} from '../../util/pushUpdate.js';
  *
  * @see https://www.investopedia.com/terms/o/onbalancevolume.asp
  */
-export class OBV extends IndicatorSeries<OpenHighLowCloseVolume<number>> implements TrendIndicator {
+export class OBV extends TrendIndicatorSeries<OpenHighLowCloseVolume<number>> {
   public readonly candles: OpenHighLowCloseVolume<number>[] = [];
 
   override getRequiredInputs() {
@@ -34,35 +33,21 @@ export class OBV extends IndicatorSeries<OpenHighLowCloseVolume<number>> impleme
     return this.setResult(prevResult + nextResult, false);
   }
 
-  getSignal() {
-    const result = this.getResult();
-
-    if (result === null || this.previousResult === undefined) {
-      return {
-        hasChanged: false,
-        signal: TrendSignal.UNKNOWN,
-      };
+  protected calculateSignal(result: number | null | undefined) {
+    if (!result || this.previousResult === undefined) {
+      return TrendSignal.UNKNOWN;
     }
 
     // Rising OBV - bullish (buying pressure)
     if (result > this.previousResult) {
-      return {
-        hasChanged: false,
-        signal: TrendSignal.BULLISH,
-      };
+      return TrendSignal.BULLISH;
     }
 
     // Falling OBV - bearish (selling pressure)
     if (result < this.previousResult) {
-      return {
-        hasChanged: false,
-        signal: TrendSignal.BEARISH,
-      };
+      return TrendSignal.BEARISH;
     }
 
-    return {
-      hasChanged: false,
-      signal: TrendSignal.SIDEWAYS,
-    };
+    return TrendSignal.SIDEWAYS;
   }
 }

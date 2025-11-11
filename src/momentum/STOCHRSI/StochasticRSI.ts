@@ -1,5 +1,4 @@
-import type {MomentumIndicator} from '../../types/Indicator.js';
-import {IndicatorSeries, MomentumSignal} from '../../types/Indicator.js';
+import {MomentumIndicatorSeries, MomentumSignal, type MomentumSignals} from '../../types/Indicator.js';
 import type {MovingAverage} from '../../trend/MA/MovingAverage.js';
 import type {MovingAverageTypes} from '../../trend/MA/MovingAverageTypes.js';
 import {RSI} from '../RSI/RSI.js';
@@ -26,7 +25,7 @@ import {WSMA} from '../../trend/WSMA/WSMA.js';
  * @see https://lakshmishree.com/blog/stochastic-rsi-indicator/
  * @see https://alchemymarkets.com/education/indicators/stochastic-rsi/
  */
-export class StochasticRSI extends IndicatorSeries implements MomentumIndicator {
+export class StochasticRSI extends MomentumIndicatorSeries {
   private readonly period: Period;
   private readonly rsi: RSI;
 
@@ -75,33 +74,19 @@ export class StochasticRSI extends IndicatorSeries implements MomentumIndicator 
     return null;
   }
 
-  getSignal() {
-    const result = this.getResult();
-
-    if (result === null) {
-      return {
-        hasChanged: false,
-        signal: MomentumSignal.UNKNOWN,
-      };
+  protected calculateSignal(result?: number | null | undefined): MomentumSignals {
+    if (result === null || result === undefined) {
+      return MomentumSignal.UNKNOWN;
     }
 
     if (result <= 0.2) {
-      return {
-        hasChanged: false,
-        signal: MomentumSignal.OVERSOLD,
-      };
+      return MomentumSignal.OVERSOLD;
     }
 
     if (result >= 0.8) {
-      return {
-        hasChanged: false,
-        signal: MomentumSignal.OVERBOUGHT,
-      };
+      return MomentumSignal.OVERBOUGHT;
     }
 
-    return {
-      hasChanged: false,
-      signal: MomentumSignal.NEUTRAL,
-    };
+    return MomentumSignal.NEUTRAL;
   }
 }

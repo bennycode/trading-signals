@@ -1,5 +1,4 @@
-import type {MomentumIndicator} from '../../types/Indicator.js';
-import {IndicatorSeries, MomentumSignal} from '../../types/Indicator.js';
+import {MomentumIndicatorSeries, MomentumSignal, type MomentumSignals} from '../../types/Indicator.js';
 import type {HighLowClose} from '../../types/HighLowClose.js';
 
 /**
@@ -21,7 +20,7 @@ import type {HighLowClose} from '../../types/HighLowClose.js';
  * @see https://github.com/EarnForex/Range-Expansion-Index
  * @see https://www.sierrachart.com/index.php?page=doc/StudiesReference.php&ID=448
  */
-export class REI extends IndicatorSeries<HighLowClose<number>> implements MomentumIndicator {
+export class REI extends MomentumIndicatorSeries<HighLowClose<number>> {
   private readonly highs: number[] = [];
   private readonly lows: number[] = [];
   private readonly closes: number[] = [];
@@ -30,34 +29,20 @@ export class REI extends IndicatorSeries<HighLowClose<number>> implements Moment
     super();
   }
 
-  getSignal() {
-    const result = this.getResult();
-
-    if (result === null) {
-      return {
-        hasChanged: false,
-        signal: MomentumSignal.UNKNOWN,
-      };
+  protected calculateSignal(result?: number | null | undefined): MomentumSignals {
+    if (result === null || result === undefined) {
+      return MomentumSignal.UNKNOWN;
     }
 
     if (result > 60) {
-      return {
-        hasChanged: false,
-        signal: MomentumSignal.OVERBOUGHT,
-      };
+      return MomentumSignal.OVERBOUGHT;
     }
 
     if (result < -60) {
-      return {
-        hasChanged: false,
-        signal: MomentumSignal.OVERSOLD,
-      };
+      return MomentumSignal.OVERSOLD;
     }
 
-    return {
-      hasChanged: false,
-      signal: MomentumSignal.NEUTRAL,
-    };
+    return MomentumSignal.NEUTRAL;
   }
 
   override getRequiredInputs() {

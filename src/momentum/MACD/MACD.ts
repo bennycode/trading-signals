@@ -1,6 +1,5 @@
 import type {DEMA} from '../../trend/DEMA/DEMA.js';
 import type {EMA} from '../../trend/EMA/EMA.js';
-import type {TrendIndicator} from '../../types/Indicator.js';
 import {TechnicalIndicator, TrendSignal} from '../../types/Indicator.js';
 import {pushUpdate} from '../../util/pushUpdate.js';
 
@@ -19,7 +18,7 @@ export type MACDResult = {
  *
  * @see https://www.investopedia.com/terms/m/macd.asp
  */
-export class MACD extends TechnicalIndicator<MACDResult, number> implements TrendIndicator {
+export class MACD extends TechnicalIndicator<MACDResult, number> {
   public readonly prices: number[] = [];
 
   constructor(
@@ -53,35 +52,21 @@ export class MACD extends TechnicalIndicator<MACDResult, number> implements Tren
     return null;
   }
 
-  getSignal() {
-    const result = this.getResult();
-
-    if (result === null) {
-      return {
-        hasChanged: false,
-        signal: TrendSignal.UNKNOWN,
-      };
+  protected calculateSignal(result?: MACDResult | null | undefined) {
+    if (result === null || result === undefined) {
+      return TrendSignal.UNKNOWN;
     }
 
     // MACD above signal line
     if (result.histogram > 0) {
-      return {
-        hasChanged: false,
-        signal: TrendSignal.BULLISH,
-      };
+      return TrendSignal.BULLISH;
     }
 
     // MACD below signal line
     if (result.histogram < 0) {
-      return {
-        hasChanged: false,
-        signal: TrendSignal.BEARISH,
-      };
+      return TrendSignal.BEARISH;
     }
 
-    return {
-      hasChanged: false,
-      signal: TrendSignal.SIDEWAYS,
-    };
+    return TrendSignal.SIDEWAYS;
   }
 }

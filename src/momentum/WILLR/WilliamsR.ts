@@ -1,4 +1,3 @@
-import type {MomentumIndicator} from '../../types/Indicator.js';
 import {TechnicalIndicator, MomentumSignal} from '../../types/Indicator.js';
 import type {HighLowClose} from '../../types/HighLowClose.js';
 import {pushUpdate} from '../../util/pushUpdate.js';
@@ -19,7 +18,7 @@ import {pushUpdate} from '../../util/pushUpdate.js';
  * @see https://en.wikipedia.org/wiki/Williams_%25R
  * @see https://www.investopedia.com/terms/w/williamsr.asp
  */
-export class WilliamsR extends TechnicalIndicator<number, HighLowClose<number>> implements MomentumIndicator {
+export class WilliamsR extends TechnicalIndicator<number, HighLowClose<number>> {
   public readonly candles: HighLowClose<number>[] = [];
 
   constructor(public readonly interval: number) {
@@ -60,35 +59,21 @@ export class WilliamsR extends TechnicalIndicator<number, HighLowClose<number>> 
     return null;
   }
 
-  getSignal() {
-    const result = this.getResult();
-
-    if (result === null) {
-      return {
-        hasChanged: false,
-        signal: MomentumSignal.UNKNOWN,
-      };
+  protected calculateSignal(result?: number | null | undefined) {
+    if (result === null || result === undefined) {
+      return MomentumSignal.UNKNOWN;
     }
 
     // Overbought condition
     if (result >= -20) {
-      return {
-        hasChanged: false,
-        signal: MomentumSignal.OVERBOUGHT,
-      };
+      return MomentumSignal.OVERBOUGHT;
     }
 
     // Oversold condition
     if (result <= -80) {
-      return {
-        hasChanged: false,
-        signal: MomentumSignal.OVERSOLD,
-      };
+      return MomentumSignal.OVERSOLD;
     }
 
-    return {
-      hasChanged: false,
-      signal: MomentumSignal.NEUTRAL,
-    };
+    return MomentumSignal.NEUTRAL;
   }
 }

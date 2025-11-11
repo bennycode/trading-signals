@@ -1,7 +1,6 @@
-import type {MomentumIndicator} from '../../types/Indicator.js';
-import {TechnicalIndicator, MomentumSignal} from '../../types/Indicator.js';
 import {SMA} from '../../trend/SMA/SMA.js';
 import type {HighLowClose} from '../../types/HighLowClose.js';
+import {MomentumSignal, TechnicalIndicator} from '../../types/Indicator.js';
 import {pushUpdate} from '../../util/pushUpdate.js';
 
 export interface StochasticResult {
@@ -29,10 +28,7 @@ export interface StochasticResult {
  * @see https://www.investopedia.com/terms/s/stochasticoscillator.asp
  * @see https://tulipindicators.org/stoch
  */
-export class StochasticOscillator
-  extends TechnicalIndicator<StochasticResult, HighLowClose<number>>
-  implements MomentumIndicator
-{
+export class StochasticOscillator extends TechnicalIndicator<StochasticResult, HighLowClose<number>> {
   public readonly candles: HighLowClose<number>[] = [];
   private readonly periodM: SMA;
   private readonly periodP: SMA;
@@ -80,33 +76,19 @@ export class StochasticOscillator
     return null;
   }
 
-  getSignal() {
-    const result = this.getResult();
-
-    if (result === null) {
-      return {
-        hasChanged: false,
-        signal: MomentumSignal.UNKNOWN,
-      };
+  protected calculateSignal(result?: StochasticResult | null | undefined) {
+    if (result === null || result === undefined) {
+      return MomentumSignal.UNKNOWN;
     }
 
     if (result.stochK <= 20) {
-      return {
-        hasChanged: false,
-        signal: MomentumSignal.OVERSOLD,
-      };
+      return MomentumSignal.OVERSOLD;
     }
 
     if (result.stochK >= 80) {
-      return {
-        hasChanged: false,
-        signal: MomentumSignal.OVERBOUGHT,
-      };
+      return MomentumSignal.OVERBOUGHT;
     }
 
-    return {
-      hasChanged: false,
-      signal: MomentumSignal.NEUTRAL,
-    };
+    return MomentumSignal.NEUTRAL;
   }
 }

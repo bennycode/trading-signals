@@ -1,9 +1,8 @@
-import type {MomentumIndicator} from '../../types/Indicator.js';
-import {IndicatorSeries, MomentumSignal} from '../../types/Indicator.js';
-import {MAD} from '../../volatility/MAD/MAD.js';
 import {SMA} from '../../trend/SMA/SMA.js';
-import {pushUpdate} from '../../util/index.js';
 import type {HighLowClose} from '../../types/HighLowClose.js';
+import {MomentumIndicatorSeries, MomentumSignal} from '../../types/Indicator.js';
+import {pushUpdate} from '../../util/index.js';
+import {MAD} from '../../volatility/MAD/MAD.js';
 
 /**
  * Commodity Channel Index (CCI)
@@ -29,7 +28,7 @@ import type {HighLowClose} from '../../types/HighLowClose.js';
  *
  * @see https://en.wikipedia.org/wiki/Commodity_channel_index
  */
-export class CCI extends IndicatorSeries<HighLowClose<number>> implements MomentumIndicator {
+export class CCI extends MomentumIndicatorSeries<HighLowClose<number>> {
   private readonly sma: SMA;
   private readonly typicalPrices: number[];
 
@@ -64,33 +63,19 @@ export class CCI extends IndicatorSeries<HighLowClose<number>> implements Moment
     return typicalPrice;
   }
 
-  getSignal() {
-    const result = this.getResult();
-
-    if (result === null) {
-      return {
-        hasChanged: false,
-        signal: MomentumSignal.UNKNOWN,
-      };
+  protected calculateSignal(result?: number | null | undefined) {
+    if (result === null || result === undefined) {
+      return MomentumSignal.UNKNOWN;
     }
 
     if (result <= -100) {
-      return {
-        hasChanged: false,
-        signal: MomentumSignal.OVERSOLD,
-      };
+      return MomentumSignal.OVERSOLD;
     }
 
     if (result >= 100) {
-      return {
-        hasChanged: false,
-        signal: MomentumSignal.OVERBOUGHT,
-      };
+      return MomentumSignal.OVERBOUGHT;
     }
 
-    return {
-      hasChanged: false,
-      signal: MomentumSignal.NEUTRAL,
-    };
+    return MomentumSignal.NEUTRAL;
   }
 }
