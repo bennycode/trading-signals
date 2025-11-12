@@ -125,29 +125,29 @@ describe('WilliamsR', () => {
   describe('getSignal', () => {
     it('returns UNKNOWN when there is no result', () => {
       const willR = new WilliamsR(14);
-      const calculateSignal = willR['calculateSignal'].bind(willR);
-      const signal = calculateSignal(null);
+      const calculateSignalState = willR['calculateSignalState'].bind(willR);
+      const signal = calculateSignalState(null);
       expect(signal).toBe(MomentumSignal.UNKNOWN);
     });
 
     it('returns OVERBOUGHT when Williams %R >= -20', () => {
       const willR = new WilliamsR(14);
-      const calculateSignal = willR['calculateSignal'].bind(willR);
-      const signal = calculateSignal(-20);
+      const calculateSignalState = willR['calculateSignalState'].bind(willR);
+      const signal = calculateSignalState(-20);
       expect(signal).toBe(MomentumSignal.OVERBOUGHT);
     });
 
     it('returns OVERSOLD when Williams %R <= -80', () => {
       const willR = new WilliamsR(14);
-      const calculateSignal = willR['calculateSignal'].bind(willR);
-      const signal = calculateSignal(-80);
+      const calculateSignalState = willR['calculateSignalState'].bind(willR);
+      const signal = calculateSignalState(-80);
       expect(signal).toBe(MomentumSignal.OVERSOLD);
     });
 
     it('returns UNKNOWN when Williams %R is between -80 and -20', () => {
       const willR = new WilliamsR(14);
-      const calculateSignal = willR['calculateSignal'].bind(willR);
-      const signal = calculateSignal(-50);
+      const calculateSignalState = willR['calculateSignalState'].bind(willR);
+      const signal = calculateSignalState(-50);
       expect(signal).toBe(MomentumSignal.NEUTRAL);
     });
   });

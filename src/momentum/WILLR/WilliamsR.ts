@@ -1,4 +1,4 @@
-import {TechnicalIndicator, MomentumSignal} from '../../types/Indicator.js';
+import {MomentumIndicatorSeries, MomentumSignal} from '../../types/Indicator.js';
 import type {HighLowClose} from '../../types/HighLowClose.js';
 import {pushUpdate} from '../../util/pushUpdate.js';
 
@@ -18,7 +18,7 @@ import {pushUpdate} from '../../util/pushUpdate.js';
  * @see https://en.wikipedia.org/wiki/Williams_%25R
  * @see https://www.investopedia.com/terms/w/williamsr.asp
  */
-export class WilliamsR extends TechnicalIndicator<number, HighLowClose<number>> {
+export class WilliamsR extends MomentumIndicatorSeries<HighLowClose<number>> {
   public readonly candles: HighLowClose<number>[] = [];
 
   constructor(public readonly interval: number) {
@@ -59,7 +59,7 @@ export class WilliamsR extends TechnicalIndicator<number, HighLowClose<number>> 
     return null;
   }
 
-  protected calculateSignal(result?: number | null | undefined) {
+  protected calculateSignalState(result?: number | null | undefined) {
     const hasResult = result !== null && result !== undefined;
     const isOverbought = hasResult && result >= -20;
     const isOversold = hasResult && result <= -80;
@@ -75,6 +75,4 @@ export class WilliamsR extends TechnicalIndicator<number, HighLowClose<number>> 
         return MomentumSignal.NEUTRAL;
     }
   }
-
-  // TODO: Add getSignal here as well
 }

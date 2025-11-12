@@ -259,7 +259,7 @@ export default function MomentumIndicators() {
     ethCandles.forEach((candle, idx) => {
       rsi.add(candle.close);
       const result = rsi.isStable ? rsi.getResult() : null;
-      const signal = rsi.isStable ? rsi.getSignal() : null;
+      const signal = rsi.getSignal();
       chartData.push({x: idx + 1, y: result});
 
       sampleValues.push({
@@ -267,7 +267,7 @@ export default function MomentumIndicators() {
         date: candle.date,
         close: candle.close,
         result: result !== null ? result.toFixed(2) : 'N/A',
-        signal: signal?.state ?? 'N/A',
+        signal: signal.state,
       });
     });
 
@@ -347,6 +347,7 @@ if (rsi.isStable) {
     ethCandles.forEach((candle, idx) => {
       stoch.add({high: candle.high, low: candle.low, close: candle.close});
       const result = stoch.isStable ? stoch.getResult() : null;
+      const signal = stoch.getSignal();
       chartDataK.push({x: idx + 1, y: result?.stochK ?? null});
       chartDataD.push({x: idx + 1, y: result?.stochD ?? null});
 
@@ -356,7 +357,7 @@ if (rsi.isStable) {
         close: candle.close,
         k: result ? result.stochK.toFixed(2) : 'N/A',
         d: result ? result.stochD.toFixed(2) : 'N/A',
-        signal: 'N/A',
+        signal: signal.state,
       });
     });
 
@@ -531,7 +532,7 @@ if (stoch.isStable) {
     ethCandles.forEach((candle, idx) => {
       cci.add({high: candle.high, low: candle.low, close: candle.close});
       const result = cci.isStable ? cci.getResult() : null;
-      const signal = cci.isStable ? cci.getSignal() : null;
+      const signal = cci.getSignal();
       chartData.push({x: idx + 1, y: result});
 
       sampleValues.push({
@@ -539,7 +540,7 @@ if (stoch.isStable) {
         date: candle.date,
         close: candle.close,
         result: result !== null ? result.toFixed(2) : 'N/A',
-        signal: signal?.state ?? 'N/A',
+        signal: signal.state,
       });
     });
 
@@ -619,7 +620,7 @@ if (cci.isStable) {
     ethCandles.forEach((candle, idx) => {
       roc.add(candle.close);
       const result = roc.isStable ? roc.getResult() : null;
-      const signal = roc.isStable ? roc.getSignal() : null;
+      const signal = roc.getSignal();
       chartData.push({x: idx + 1, y: result});
 
       sampleValues.push({
@@ -627,7 +628,7 @@ if (cci.isStable) {
         date: candle.date,
         close: candle.close,
         result: result !== null ? result.toFixed(2) : 'N/A',
-        signal: signal?.state ?? 'N/A',
+        signal: signal.state,
       });
     });
 
@@ -798,7 +799,7 @@ if (macd.isStable) {
     ethCandles.forEach((candle, idx) => {
       ao.add(candle);
       const result = ao.isStable ? ao.getResult() : null;
-      const signal = ao.isStable ? ao.getSignal() : null;
+      const signal = ao.getSignal();
       chartData.push({x: idx + 1, y: result});
 
       sampleValues.push({
@@ -807,7 +808,7 @@ if (macd.isStable) {
         high: candle.high,
         low: candle.low,
         result: result !== null ? result.toFixed(2) : 'N/A',
-        signal: signal?.state ?? 'N/A',
+        signal: signal.state,
       });
     });
 
@@ -892,7 +893,7 @@ if (ao.isStable) {
     ethCandles.forEach((candle, idx) => {
       ac.add(candle);
       const result = ac.isStable ? ac.getResult() : null;
-      const signal = ac.isStable ? ac.getSignal() : null;
+      const signal = ac.getSignal();
       chartData.push({x: idx + 1, y: result});
 
       sampleValues.push({
@@ -901,7 +902,7 @@ if (ao.isStable) {
         high: candle.high,
         low: candle.low,
         result: result !== null ? result.toFixed(2) : 'N/A',
-        signal: signal?.state ?? 'N/A',
+        signal: signal.state,
       });
     });
 
@@ -1142,7 +1143,7 @@ if (mom.isStable) {
     ethCandles.forEach((candle, idx) => {
       obv.add(candle);
       const result = obv.getResult();
-      const signal = obv.isStable ? obv.getSignal() : null;
+      const signal = obv.getSignal();
       chartData.push({x: idx + 1, y: result});
 
       sampleValues.push({
@@ -1151,7 +1152,7 @@ if (mom.isStable) {
         close: candle.close,
         volume: candle.volume,
         result: result !== null ? result.toFixed(0) : 'N/A',
-        signal: signal?.state ?? 'N/A',
+        signal: signal.state,
       });
     });
 
@@ -1306,7 +1307,7 @@ if (rei.isStable) {
     ethCandles.forEach((candle, idx) => {
       stochRsi.add(candle.close);
       const result = stochRsi.isStable ? stochRsi.getResult() : null;
-      const signal = stochRsi.isStable ? stochRsi.getSignal() : null;
+      const signal = stochRsi.getSignal();
       chartData.push({x: idx + 1, y: result});
 
       sampleValues.push({
@@ -1314,7 +1315,7 @@ if (rei.isStable) {
         date: candle.date,
         close: candle.close,
         result: result !== null ? result.toFixed(2) : 'N/A',
-        signal: signal?.state ?? 'N/A',
+        signal: signal.state,
       });
     });
 
@@ -1399,6 +1400,7 @@ if (stochRsi.isStable) {
     ethCandles.forEach((candle, idx) => {
       willr.add(candle);
       const result = willr.isStable ? willr.getResult() : null;
+      const signal = willr.getSignal();
       chartData.push({x: idx + 1, y: result});
 
       sampleValues.push({
@@ -1408,7 +1410,7 @@ if (stochRsi.isStable) {
         low: candle.low,
         close: candle.close,
         result: result !== null ? result.toFixed(2) : 'N/A',
-        signal: 'N/A',
+        signal: signal.state,
       });
     });
 
@@ -1501,7 +1503,7 @@ if (willr.isStable) {
         date: candle.date,
         close: candle.close,
         result: result !== null ? result.toString() : 'null',
-        signal: tds.getSignal()?.state ?? 'N/A',
+        signal: tds.getSignal().state,
       });
     }
 
