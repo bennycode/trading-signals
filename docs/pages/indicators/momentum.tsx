@@ -26,6 +26,7 @@ interface IndicatorConfig {
   name: string;
   description: string;
   color: string;
+  requiredInputs: number;
 }
 
 // Reusable component for rendering signal badges
@@ -90,20 +91,98 @@ const ethCandles = [
 ];
 
 const indicators: IndicatorConfig[] = [
-  {id: 'rsi', name: 'RSI', description: 'Relative Strength Index', color: '#8b5cf6'},
-  {id: 'stoch', name: 'Stochastic', description: 'Stochastic Oscillator', color: '#ec4899'},
-  {id: 'cci', name: 'CCI', description: 'Commodity Channel Index', color: '#f59e0b'},
-  {id: 'roc', name: 'ROC', description: 'Rate of Change', color: '#10b981'},
-  {id: 'macd', name: 'MACD', description: 'Moving Average Convergence Divergence', color: '#3b82f6'},
-  {id: 'ao', name: 'AO', description: 'Awesome Oscillator', color: '#06b6d4'},
-  {id: 'ac', name: 'AC', description: 'Accelerator Oscillator', color: '#6366f1'},
-  {id: 'cg', name: 'CG', description: 'Center of Gravity', color: '#f97316'},
-  {id: 'mom', name: 'MOM', description: 'Momentum', color: '#84cc16'},
-  {id: 'obv', name: 'OBV', description: 'On-Balance Volume', color: '#14b8a6'},
-  {id: 'rei', name: 'REI', description: 'Range Expansion Index', color: '#a855f7'},
-  {id: 'stochrsi', name: 'StochRSI', description: 'Stochastic RSI', color: '#ef4444'},
-  {id: 'tds', name: 'TDS', description: 'Tom DeMark Sequential', color: '#ec4899'},
-  {id: 'willr', name: 'Williams %R', description: 'Williams Percent Range', color: '#22d3ee'},
+  {
+    id: 'rsi',
+    name: 'RSI',
+    description: 'Relative Strength Index',
+    color: '#8b5cf6',
+    requiredInputs: new RSI(14).getRequiredInputs(),
+  },
+  {
+    id: 'stoch',
+    name: 'Stochastic',
+    description: 'Stochastic Oscillator',
+    color: '#ec4899',
+    requiredInputs: new StochasticOscillator(14, 3, 3).getRequiredInputs(),
+  },
+  {
+    id: 'cci',
+    name: 'CCI',
+    description: 'Commodity Channel Index',
+    color: '#f59e0b',
+    requiredInputs: new CCI(20).getRequiredInputs(),
+  },
+  {
+    id: 'roc',
+    name: 'ROC',
+    description: 'Rate of Change',
+    color: '#10b981',
+    requiredInputs: new ROC(9).getRequiredInputs(),
+  },
+  {
+    id: 'macd',
+    name: 'MACD',
+    description: 'Moving Average Convergence Divergence',
+    color: '#3b82f6',
+    requiredInputs: new MACD(new EMA(12), new EMA(26), new EMA(9)).getRequiredInputs(),
+  },
+  {
+    id: 'ao',
+    name: 'AO',
+    description: 'Awesome Oscillator',
+    color: '#06b6d4',
+    requiredInputs: new AO(5, 34).getRequiredInputs(),
+  },
+  {
+    id: 'ac',
+    name: 'AC',
+    description: 'Accelerator Oscillator',
+    color: '#6366f1',
+    requiredInputs: new AC(5, 34, 5).getRequiredInputs(),
+  },
+  {
+    id: 'cg',
+    name: 'CG',
+    description: 'Center of Gravity',
+    color: '#f97316',
+    requiredInputs: new CG(10, 10).getRequiredInputs(),
+  },
+  {id: 'mom', name: 'MOM', description: 'Momentum', color: '#84cc16', requiredInputs: new MOM(5).getRequiredInputs()},
+  {
+    id: 'obv',
+    name: 'OBV',
+    description: 'On-Balance Volume',
+    color: '#14b8a6',
+    requiredInputs: new OBV(5).getRequiredInputs(),
+  },
+  {
+    id: 'rei',
+    name: 'REI',
+    description: 'Range Expansion Index',
+    color: '#a855f7',
+    requiredInputs: new REI(5).getRequiredInputs(),
+  },
+  {
+    id: 'stochrsi',
+    name: 'StochRSI',
+    description: 'Stochastic RSI',
+    color: '#ef4444',
+    requiredInputs: new StochasticRSI(14).getRequiredInputs(),
+  },
+  {
+    id: 'tds',
+    name: 'TDS',
+    description: 'Tom DeMark Sequential',
+    color: '#ec4899',
+    requiredInputs: new TDS().getRequiredInputs(),
+  },
+  {
+    id: 'willr',
+    name: 'Williams %R',
+    description: 'Williams Percent Range',
+    color: '#22d3ee',
+    requiredInputs: new WilliamsR(14).getRequiredInputs(),
+  },
 ];
 
 export default function MomentumIndicators() {
@@ -195,7 +274,9 @@ export default function MomentumIndicators() {
     return (
       <div className="space-y-6">
         <div>
-          <h2 className="text-2xl font-bold text-white mb-2 select-text">{config.name}</h2>
+          <h2 className="text-2xl font-bold text-white mb-2 select-text">
+            RSI(14) / Required Inputs: {rsi.getRequiredInputs()}
+          </h2>
           <p className="text-slate-300 select-text">{config.description}</p>
           <p className="text-slate-400 text-sm mt-2 select-text">
             RSI measures the magnitude of recent price changes to evaluate overbought or oversold conditions. Values
@@ -282,7 +363,9 @@ if (rsi.isStable) {
     return (
       <div className="space-y-6">
         <div>
-          <h2 className="text-2xl font-bold text-white mb-2 select-text">{config.name}</h2>
+          <h2 className="text-2xl font-bold text-white mb-2 select-text">
+            StochasticOscillator(14, 3, 3) / Required Inputs: {stoch.getRequiredInputs()}
+          </h2>
           <p className="text-slate-300 select-text">{config.description}</p>
           <p className="text-slate-400 text-sm mt-2 select-text">
             Compares closing price to price range over a period. %K crossing above %D can signal a buying opportunity.
@@ -463,7 +546,9 @@ if (stoch.isStable) {
     return (
       <div className="space-y-6">
         <div>
-          <h2 className="text-2xl font-bold text-white mb-2 select-text">{config.name}</h2>
+          <h2 className="text-2xl font-bold text-white mb-2 select-text">
+            CCI(20) / Required Inputs: {cci.getRequiredInputs()}
+          </h2>
           <p className="text-slate-300 select-text">{config.description}</p>
           <p className="text-slate-400 text-sm mt-2 select-text">
             Measures deviation from the average price. Readings above +100 suggest overbought, below -100 suggest
@@ -549,7 +634,9 @@ if (cci.isStable) {
     return (
       <div className="space-y-6">
         <div>
-          <h2 className="text-2xl font-bold text-white mb-2 select-text">{config.name}</h2>
+          <h2 className="text-2xl font-bold text-white mb-2 select-text">
+            ROC(9) / Required Inputs: {roc.getRequiredInputs()}
+          </h2>
           <p className="text-slate-300 select-text">{config.description}</p>
           <p className="text-slate-400 text-sm mt-2 select-text">
             Measures the percentage change in price from n periods ago. Positive values indicate upward momentum,
@@ -631,7 +718,9 @@ if (roc.isStable) {
     return (
       <div className="space-y-6">
         <div>
-          <h2 className="text-2xl font-bold text-white mb-2 select-text">{config.name}</h2>
+          <h2 className="text-2xl font-bold text-white mb-2 select-text">
+            MACD(12, 26, 9) / Required Inputs: {macd.getRequiredInputs()}
+          </h2>
           <p className="text-slate-300 select-text">{config.description}</p>
           <p className="text-slate-400 text-sm mt-2 select-text">
             Shows relationship between two moving averages. Crossing above signal line = bullish, crossing below =
@@ -725,7 +814,9 @@ if (macd.isStable) {
     return (
       <div className="space-y-6">
         <div>
-          <h2 className="text-2xl font-bold text-white mb-2 select-text">{config.name}</h2>
+          <h2 className="text-2xl font-bold text-white mb-2 select-text">
+            AO(5, 34) / Required Inputs: {ao.getRequiredInputs()}
+          </h2>
           <p className="text-slate-300 select-text">{config.description}</p>
           <p className="text-slate-400 text-sm mt-2 select-text">
             Measures market momentum using the difference between a 5-period and 34-period simple moving average of the
@@ -817,7 +908,9 @@ if (ao.isStable) {
     return (
       <div className="space-y-6">
         <div>
-          <h2 className="text-2xl font-bold text-white mb-2 select-text">{config.name}</h2>
+          <h2 className="text-2xl font-bold text-white mb-2 select-text">
+            AC(5, 34, 5) / Required Inputs: {ac.getRequiredInputs()}
+          </h2>
           <p className="text-slate-300 select-text">{config.description}</p>
           <p className="text-slate-400 text-sm mt-2 select-text">
             Shows acceleration or deceleration of the current driving force. Earlier signal of potential trend change
@@ -899,7 +992,9 @@ if (ac.isStable) {
     return (
       <div className="space-y-6">
         <div>
-          <h2 className="text-2xl font-bold text-white mb-2 select-text">{config.name}</h2>
+          <h2 className="text-2xl font-bold text-white mb-2 select-text">
+            CG(10, 10) / Required Inputs: {cg.getRequiredInputs()}
+          </h2>
           <p className="text-slate-300 select-text">{config.description}</p>
           <p className="text-slate-400 text-sm mt-2 select-text">
             Identifies turning points with minimal lag. Oscillates around zero line.
@@ -975,7 +1070,9 @@ if (cg.isStable) {
     return (
       <div className="space-y-6">
         <div>
-          <h2 className="text-2xl font-bold text-white mb-2 select-text">{config.name}</h2>
+          <h2 className="text-2xl font-bold text-white mb-2 select-text">
+            MOM(5) / Required Inputs: {mom.getRequiredInputs()}
+          </h2>
           <p className="text-slate-300 select-text">{config.description}</p>
           <p className="text-slate-400 text-sm mt-2 select-text">
             Simple momentum calculation: current price minus price n periods ago.
@@ -1061,7 +1158,9 @@ if (mom.isStable) {
     return (
       <div className="space-y-6">
         <div>
-          <h2 className="text-2xl font-bold text-white mb-2 select-text">{config.name}</h2>
+          <h2 className="text-2xl font-bold text-white mb-2 select-text">
+            OBV(5) / Required Inputs: {obv.getRequiredInputs()}
+          </h2>
           <p className="text-slate-300 select-text">{config.description}</p>
           <p className="text-slate-400 text-sm mt-2 select-text">
             Cumulative volume-based indicator. Rising OBV with rising prices confirms uptrend.
@@ -1143,7 +1242,9 @@ if (result !== null) {
     return (
       <div className="space-y-6">
         <div>
-          <h2 className="text-2xl font-bold text-white mb-2 select-text">{config.name}</h2>
+          <h2 className="text-2xl font-bold text-white mb-2 select-text">
+            REI(5) / Required Inputs: {rei.getRequiredInputs()}
+          </h2>
           <p className="text-slate-300 select-text">{config.description}</p>
           <p className="text-slate-400 text-sm mt-2 select-text">
             Measures range expansion to identify potential breakouts.
@@ -1220,7 +1321,9 @@ if (rei.isStable) {
     return (
       <div className="space-y-6">
         <div>
-          <h2 className="text-2xl font-bold text-white mb-2 select-text">{config.name}</h2>
+          <h2 className="text-2xl font-bold text-white mb-2 select-text">
+            StochasticRSI(14) / Required Inputs: {stochRsi.getRequiredInputs()}
+          </h2>
           <p className="text-slate-300 select-text">{config.description}</p>
           <p className="text-slate-400 text-sm mt-2 select-text">
             Applies Stochastic Oscillator to RSI values. More sensitive to overbought/oversold than standard RSI.
@@ -1312,7 +1415,9 @@ if (stochRsi.isStable) {
     return (
       <div className="space-y-6">
         <div>
-          <h2 className="text-2xl font-bold text-white mb-2 select-text">{config.name}</h2>
+          <h2 className="text-2xl font-bold text-white mb-2 select-text">
+            WilliamsR(14) / Required Inputs: {willr.getRequiredInputs()}
+          </h2>
           <p className="text-slate-300 select-text">{config.description}</p>
           <p className="text-slate-400 text-sm mt-2 select-text">
             Measures overbought and oversold levels on an inverted scale from 0 to -100. Values from 0 to -20 indicate
@@ -1403,7 +1508,7 @@ if (willr.isStable) {
     return (
       <div className="space-y-6">
         <div>
-          <h2 className="text-2xl font-bold text-white mb-2">{config.name}</h2>
+          <h2 className="text-2xl font-bold text-white mb-2">TDS() / Required Inputs: {tds.getRequiredInputs()}</h2>
           <p className="text-slate-300">{config.description}</p>
         </div>
 
