@@ -30,6 +30,10 @@ describe('ROC', () => {
       });
 
       expect(roc.getRequiredInputs()).toBe(interval);
+      expect(roc.getSignal()).toEqual({
+        hasChanged: false,
+        signal: TrendSignal.BULLISH,
+      });
     });
 
     it('identifies a down-trending asset by a negative ROC', () => {
