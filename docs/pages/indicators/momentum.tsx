@@ -707,6 +707,7 @@ if (roc.isStable) {
     ethCandles.forEach((candle, idx) => {
       macd.add(candle.close);
       const result = macd.isStable ? macd.getResult() : null;
+      const trendSignal = macd.getSignal();
       chartDataMACD.push({x: idx + 1, y: result?.macd ?? null});
       chartDataSignal.push({x: idx + 1, y: result?.signal ?? null});
       chartDataHistogram.push({x: idx + 1, y: result?.histogram ?? null});
@@ -716,7 +717,7 @@ if (roc.isStable) {
         date: candle.date,
         close: candle.close,
         result: result ? `${result.macd.toFixed(4)}` : 'N/A',
-        signal: 'N/A',
+        signal: trendSignal.state,
       });
     });
 
