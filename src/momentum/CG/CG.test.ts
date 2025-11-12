@@ -1,4 +1,5 @@
 import {NotEnoughDataError} from '../../error/index.js';
+import {MomentumSignal} from '../../types/index.js';
 import {CG} from './CG.js';
 
 describe('CG', () => {
@@ -104,6 +105,52 @@ describe('CG', () => {
       const cg = new CG(1, 1);
       cg.add(0);
       expect(cg.getResultOrThrow()).toBe(0);
+    });
+  });
+
+  describe('getSignal', () => {
+    it('returns UNKNOWN when there is no result', () => {
+      const cg = new CG(5, 10);
+      const signal = cg.getSignal();
+      expect(signal.state).toBe(MomentumSignal.UNKNOWN);
+    });
+
+    it('returns OVERBOUGHT when CG is above its signal line', () => {
+      const cg = new CG(5, 10);
+      const prices = [100, 110, 120, 130, 140, 150, 160, 170, 180, 190, 200];
+      for (const price of prices) {
+        cg.add(price);
+      }
+      const signal = cg.getSignal();
+      expect(signal.state).toBe(MomentumSignal.OVERBOUGHT);
+      expect(cg.getResultOrThrow()).toBeGreaterThan(cg.signal.getResultOrThrow());
+    });
+
+    it('returns OVERSOLD when CG is below its signal line', () => {
+      const cg = new CG(5, 10);
+      const prices = [100, 110, 120, 130, 140, 150, 160, 170, 180, 190, 200];
+      for (const price of prices) {
+        cg.add(price);
+      }
+      // Now add declining prices to push CG below its signal line
+      [150, 110, 90, 70, 50].forEach(price => {
+        cg.add(price);
+      });
+
+      const signal = cg.getSignal();
+      const cgValue = cg.getResultOrThrow();
+      const signalValue = cg.signal.getResultOrThrow();
+
+      expect(signal.state).toBe(MomentumSignal.OVERSOLD);
+      expect(cgValue).toBeLessThan(signalValue);
+    });
+
+    it('returns NEUTRAL when CG equals its signal line', () => {
+      const cg = new CG(1, 1);
+      cg.add(100);
+      const signal = cg.getSignal();
+      expect(signal.state).toBe(MomentumSignal.NEUTRAL);
+      expect(cg.getResultOrThrow()).toBe(cg.signal.getResultOrThrow());
     });
   });
 });

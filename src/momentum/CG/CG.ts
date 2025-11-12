@@ -1,4 +1,4 @@
-import {IndicatorSeries} from '../../types/Indicator.js';
+import {MomentumIndicatorSeries, MomentumSignal} from '../../types/Indicator.js';
 import {SMA} from '../../trend/SMA/SMA.js';
 import {pushUpdate} from '../../util/pushUpdate.js';
 
@@ -17,7 +17,7 @@ import {pushUpdate} from '../../util/pushUpdate.js';
  * - If the interval gets too short, the CG oscillator loses its smoothing and gets a little too nervous for profitable trading
  * @see http://www.mesasoftware.com/papers/TheCGOscillator.pdf
  */
-export class CG extends IndicatorSeries {
+export class CG extends MomentumIndicatorSeries {
   public signal: SMA;
 
   public readonly prices: number[] = [];
@@ -36,6 +36,25 @@ export class CG extends IndicatorSeries {
 
   override getRequiredInputs() {
     return this.signal.getRequiredInputs();
+  }
+
+  protected calculateSignalState(result?: number | null | undefined) {
+    const hasResult = result !== null && result !== undefined;
+    const signalValue = this.signal.getResult();
+    const hasSignal = signalValue !== null;
+    const isAboveSignal = hasResult && hasSignal && result > signalValue;
+    const isBelowSignal = hasResult && hasSignal && result < signalValue;
+
+    switch (true) {
+      case !hasResult || !hasSignal:
+        return MomentumSignal.UNKNOWN;
+      case isAboveSignal:
+        return MomentumSignal.OVERBOUGHT;
+      case isBelowSignal:
+        return MomentumSignal.OVERSOLD;
+      default:
+        return MomentumSignal.NEUTRAL;
+    }
   }
 
   update(price: number, replace: boolean) {
