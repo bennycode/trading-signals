@@ -1225,11 +1225,12 @@ if (result !== null) {
   const renderREI = (config: IndicatorConfig) => {
     const rei = new REI(5);
     const chartData: ChartDataPoint[] = [];
-    const sampleValues: Array<{period: number; date: string; close: number; result: string}> = [];
+    const sampleValues: Array<{period: number; date: string; close: number; result: string; signal: string}> = [];
 
     ethCandles.forEach((candle, idx) => {
       rei.add(candle);
       const result = rei.isStable ? rei.getResult() : null;
+      const signal = rei.getSignal();
       chartData.push({x: idx + 1, y: result});
 
       sampleValues.push({
@@ -1237,6 +1238,7 @@ if (result !== null) {
         date: candle.date,
         close: candle.close,
         result: result !== null ? result.toFixed(2) : 'N/A',
+        signal: signal.state,
       });
     });
 
@@ -1264,6 +1266,7 @@ if (result !== null) {
                   <th className="text-left text-slate-300 py-2 px-3">Date</th>
                   <th className="text-left text-slate-300 py-2 px-3">Close</th>
                   <th className="text-left text-slate-300 py-2 px-3">REI</th>
+                  <th className="text-left text-slate-300 py-2 px-3">Signal</th>
                 </tr>
               </thead>
               <tbody>
@@ -1273,6 +1276,9 @@ if (result !== null) {
                     <td className="text-slate-300 py-2 px-3">{row.date}</td>
                     <td className="text-slate-300 py-2 px-3">${row.close.toFixed(2)}</td>
                     <td className="text-white font-mono py-2 px-3">{row.result}</td>
+                    <td className="py-2 px-3">
+                      <SignalBadge signal={row.signal} />
+                    </td>
                   </tr>
                 ))}
               </tbody>

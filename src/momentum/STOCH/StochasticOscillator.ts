@@ -32,6 +32,7 @@ export class StochasticOscillator extends TechnicalIndicator<StochasticResult, H
   public readonly candles: HighLowClose<number>[] = [];
   private readonly periodM: SMA;
   private readonly periodP: SMA;
+  private previousResult?: StochasticResult;
 
   /**
    * @param n The %k period
@@ -66,6 +67,13 @@ export class StochasticOscillator extends TechnicalIndicator<StochasticResult, H
       const stochD = stochK && this.periodP.update(stochK, replace); // (stoch_d, %d)
 
       if (stochK !== null && stochD !== null) {
+        // When replacing, restore previous result first
+        if (replace) {
+          this.result = this.previousResult;
+        }
+        // Cache previous result
+        this.previousResult = this.result;
+        // Set new result
         return (this.result = {
           stochD,
           stochK,
@@ -91,5 +99,19 @@ export class StochasticOscillator extends TechnicalIndicator<StochasticResult, H
       default:
         return MomentumSignal.NEUTRAL;
     }
+  }
+
+  getSignal(): {
+    state: (typeof MomentumSignal)[keyof typeof MomentumSignal];
+    hasChanged: boolean;
+  } {
+    const previousState = this.calculateSignal(this.previousResult);
+    const state = this.calculateSignal(this.getResult());
+    const hasChanged = previousState !== state;
+
+    return {
+      hasChanged,
+      state,
+    };
   }
 }
