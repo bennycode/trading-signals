@@ -73,4 +73,6 @@ export class WilliamsR extends TechnicalIndicator<number, HighLowClose<number>> 
         return MomentumSignal.UNKNOWN;
     }
   }
+
+  // TODO: Add getSignal here as well
 }

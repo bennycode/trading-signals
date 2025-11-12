@@ -188,7 +188,7 @@ export default function MomentumIndicators() {
         date: candle.date,
         close: candle.close,
         result: result !== null ? result.toFixed(2) : 'N/A',
-        signal: signal ?? 'N/A',
+        signal: signal?.state ?? 'N/A',
       });
     });
 
@@ -266,7 +266,6 @@ if (rsi.isStable) {
     ethCandles.forEach((candle, idx) => {
       stoch.add({high: candle.high, low: candle.low, close: candle.close});
       const result = stoch.isStable ? stoch.getResult() : null;
-      const signal = stoch.isStable ? stoch.getSignal() : null;
       chartDataK.push({x: idx + 1, y: result?.stochK ?? null});
       chartDataD.push({x: idx + 1, y: result?.stochD ?? null});
 
@@ -276,7 +275,7 @@ if (rsi.isStable) {
         close: candle.close,
         k: result ? result.stochK.toFixed(2) : 'N/A',
         d: result ? result.stochD.toFixed(2) : 'N/A',
-        signal: signal ?? 'N/A',
+        signal: 'N/A',
       });
     });
 
@@ -457,7 +456,7 @@ if (stoch.isStable) {
         date: candle.date,
         close: candle.close,
         result: result !== null ? result.toFixed(2) : 'N/A',
-        signal: signal ?? 'N/A',
+        signal: signal?.state ?? 'N/A',
       });
     });
 
@@ -543,7 +542,7 @@ if (cci.isStable) {
         date: candle.date,
         close: candle.close,
         result: result !== null ? result.toFixed(2) : 'N/A',
-        signal: signal ?? 'N/A',
+        signal: signal?.state ?? 'N/A',
       });
     });
 
@@ -618,7 +617,6 @@ if (roc.isStable) {
     ethCandles.forEach((candle, idx) => {
       macd.add(candle.close);
       const result = macd.isStable ? macd.getResult() : null;
-      const signal = macd.isStable ? macd.getSignal() : null;
       chartData.push({x: idx + 1, y: result?.macd ?? null});
 
       sampleValues.push({
@@ -626,7 +624,7 @@ if (roc.isStable) {
         date: candle.date,
         close: candle.close,
         result: result ? `${result.macd.toFixed(4)}` : 'N/A',
-        signal: signal ?? 'N/A',
+        signal: 'N/A',
       });
     });
 
@@ -720,7 +718,7 @@ if (macd.isStable) {
         high: candle.high,
         low: candle.low,
         result: result !== null ? result.toFixed(2) : 'N/A',
-        signal: signal ?? 'N/A',
+        signal: signal?.state ?? 'N/A',
       });
     });
 
@@ -812,7 +810,7 @@ if (ao.isStable) {
         high: candle.high,
         low: candle.low,
         result: result !== null ? result.toFixed(2) : 'N/A',
-        signal: signal ?? 'N/A',
+        signal: signal?.state ?? 'N/A',
       });
     });
 
@@ -1056,7 +1054,7 @@ if (mom.isStable) {
         close: candle.close,
         volume: candle.volume,
         result: result !== null ? result.toFixed(0) : 'N/A',
-        signal: signal ?? 'N/A',
+        signal: signal?.state ?? 'N/A',
       });
     });
 
@@ -1215,7 +1213,7 @@ if (rei.isStable) {
         date: candle.date,
         close: candle.close,
         result: result !== null ? result.toFixed(2) : 'N/A',
-        signal: signal ?? 'N/A',
+        signal: signal?.state ?? 'N/A',
       });
     });
 
@@ -1298,7 +1296,6 @@ if (stochRsi.isStable) {
     ethCandles.forEach((candle, idx) => {
       willr.add(candle);
       const result = willr.isStable ? willr.getResult() : null;
-      const signal = willr.isStable ? willr.getSignal() : null;
       chartData.push({x: idx + 1, y: result});
 
       sampleValues.push({
@@ -1308,7 +1305,7 @@ if (stochRsi.isStable) {
         low: candle.low,
         close: candle.close,
         result: result !== null ? result.toFixed(2) : 'N/A',
-        signal: signal ?? 'N/A',
+        signal: 'N/A',
       });
     });
 
@@ -1397,7 +1394,7 @@ if (willr.isStable) {
         date: candle.date,
         close: candle.close,
         result: result !== null ? result.toString() : 'null',
-        signal: tds.getSignal() ?? 'N/A',
+        signal: tds.getSignal()?.state ?? 'N/A',
       });
     }
 
@@ -1476,7 +1473,7 @@ tds.add(105);
 if (tds.isStable) {
   const result = tds.getResultOrThrow();
   console.log('TDS:', result); // 1 (bullish setup) or -1 (bearish setup)
-  console.log('Signal:', tds.getSignal()); // Inverted: 1 → BEARISH, -1 → BULLISH
+  console.log('Signal:', tds.getSignal().state); // Inverted: 1 → BEARISH, -1 → BULLISH
 }`}</code>
           </pre>
         </div>
