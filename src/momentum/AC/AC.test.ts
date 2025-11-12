@@ -1,10 +1,12 @@
 import {NotEnoughDataError} from '../../error/index.js';
 import {AC} from './AC.js';
 
+type Candle = readonly [timestamp: number, open: number, close: number, high: number, low: number, volume: number];
+
 describe('AC', () => {
   // Test data verified with:
   // https://github.com/jesse-ai/jesse/blob/8e502d070c24bed29db80e1d0938781d8cdb1046/tests/data/test_candles_indicators.py#L4351
-  const candles = [
+  const candles: readonly Candle[] = [
     [1563408000000, 210.8, 225.73, 229.65, 205.71, 609081.49094],
     [1563494400000, 225.75, 220.73, 226.23, 212.52, 371622.21865],
     [1563580800000, 220.84, 228.2, 235.09, 219.78, 325393.97225],
@@ -244,7 +246,7 @@ describe('AC', () => {
     [1583798400000, 202.79, 200.7, 206.2, 195.54, 1020260.107],
     [1583884800000, 200.74, 194.61, 203.18, 181.73, 1079824.90167],
     [1583971200000, 194.61, 107.82, 195.55, 101.2, 3814533.14046],
-  ] as const;
+  ];
 
   const mappedCandles = candles.map(c => ({
     high: c[3],
