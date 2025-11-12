@@ -1483,6 +1483,7 @@ if (willr.isStable) {
 
   const renderTDS = (config: IndicatorConfig) => {
     const tds = new TDS();
+    const chartData: ChartDataPoint[] = [];
     const results: Array<{
       period: number;
       date: string;
@@ -1494,6 +1495,7 @@ if (willr.isStable) {
     for (const [index, candle] of ethCandles.entries()) {
       tds.add(candle.close);
       const result = tds.getResult();
+      chartData.push({x: index + 1, y: result});
       results.push({
         period: index + 1,
         date: candle.date,
@@ -1511,6 +1513,8 @@ if (willr.isStable) {
           <h2 className="text-2xl font-bold text-white mb-2">TDS() / Required Inputs: {tds.getRequiredInputs()}</h2>
           <p className="text-slate-300">{config.description}</p>
         </div>
+
+        <Chart title="Tom DeMark Sequential" data={chartData} yAxisLabel="TDS" color={config.color} />
 
         <div className="bg-slate-800/30 border border-slate-700 rounded-lg p-6">
           <h3 className="text-lg font-semibold text-white mb-4">Calculation</h3>
