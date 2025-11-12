@@ -30,7 +30,7 @@ export class AC extends TrendIndicatorSeries<HighLow<number>> {
   }
 
   override getRequiredInputs() {
-    return this.signal.getRequiredInputs();
+    return this.ao.getRequiredInputs() + this.signal.getRequiredInputs();
   }
 
   update(input: HighLow<number>, replace: boolean) {
@@ -47,20 +47,17 @@ export class AC extends TrendIndicatorSeries<HighLow<number>> {
   }
 
   protected calculateSignal(result: number | null | undefined) {
-    if (!result) {
-      return TrendSignal.UNKNOWN;
-    }
+    const hasResult = result !== null && result !== undefined;
+    const isPositive = hasResult && result > 0;
+    const isNegative = hasResult && result <= 0;
 
-    // AC above zero - bullish context (acceleration is positive / momentum is increasing)
-    if (result > 0) {
-      return TrendSignal.BULLISH;
+    switch (true) {
+      case isPositive:
+        return TrendSignal.BULLISH;
+      case isNegative:
+        return TrendSignal.BEARISH;
+      default:
+        return TrendSignal.UNKNOWN;
     }
-
-    // AC below zero - bearish context (acceleration is negative / decelerating momentum)
-    if (result < 0) {
-      return TrendSignal.BEARISH;
-    }
-
-    return TrendSignal.SIDEWAYS;
   }
 }

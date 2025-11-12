@@ -60,20 +60,17 @@ export class WilliamsR extends TechnicalIndicator<number, HighLowClose<number>> 
   }
 
   protected calculateSignal(result?: number | null | undefined) {
-    if (result === null || result === undefined) {
-      return MomentumSignal.UNKNOWN;
-    }
+    const hasResult = result !== null && result !== undefined;
+    const isOverbought = hasResult && result >= -20;
+    const isOversold = hasResult && result <= -80;
 
-    // Overbought condition
-    if (result >= -20) {
-      return MomentumSignal.OVERBOUGHT;
+    switch (true) {
+      case isOverbought:
+        return MomentumSignal.OVERBOUGHT;
+      case isOversold:
+        return MomentumSignal.OVERSOLD;
+      default:
+        return MomentumSignal.UNKNOWN;
     }
-
-    // Oversold condition
-    if (result <= -80) {
-      return MomentumSignal.OVERSOLD;
-    }
-
-    return MomentumSignal.NEUTRAL;
   }
 }

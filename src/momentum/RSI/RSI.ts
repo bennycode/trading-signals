@@ -71,18 +71,17 @@ export class RSI extends MomentumIndicatorSeries {
   }
 
   protected calculateSignal(result: number | null | undefined) {
-    if (!result) {
-      return MomentumSignal.UNKNOWN;
-    }
+    const hasResult = result !== null && result !== undefined;
+    const isOversold = hasResult && result <= 30;
+    const isOverbought = hasResult && result >= 70;
 
-    if (result <= 30) {
-      return MomentumSignal.OVERSOLD;
+    switch (true) {
+      case isOversold:
+        return MomentumSignal.OVERSOLD;
+      case isOverbought:
+        return MomentumSignal.OVERBOUGHT;
+      default:
+        return MomentumSignal.UNKNOWN;
     }
-
-    if (result >= 70) {
-      return MomentumSignal.OVERBOUGHT;
-    }
-
-    return MomentumSignal.NEUTRAL;
   }
 }

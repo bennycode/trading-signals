@@ -53,20 +53,17 @@ export class MACD extends TechnicalIndicator<MACDResult, number> {
   }
 
   protected calculateSignal(result?: MACDResult | null | undefined) {
-    if (result === null || result === undefined) {
-      return TrendSignal.UNKNOWN;
-    }
+    const hasResult = result !== null && result !== undefined;
+    const isBullish = hasResult && result.histogram > 0; // MACD above signal line
+    const isBearish = hasResult && result.histogram < 0; // MACD below signal line
 
-    // MACD above signal line
-    if (result.histogram > 0) {
-      return TrendSignal.BULLISH;
+    switch (true) {
+      case isBullish:
+        return TrendSignal.BULLISH;
+      case isBearish:
+        return TrendSignal.BEARISH;
+      default:
+        return TrendSignal.UNKNOWN;
     }
-
-    // MACD below signal line
-    if (result.histogram < 0) {
-      return TrendSignal.BEARISH;
-    }
-
-    return TrendSignal.SIDEWAYS;
   }
 }

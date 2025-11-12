@@ -30,19 +30,18 @@ export class REI extends MomentumIndicatorSeries<HighLowClose<number>> {
   }
 
   protected calculateSignal(result?: number | null | undefined): MomentumSignals {
-    if (result === null || result === undefined) {
-      return MomentumSignal.UNKNOWN;
-    }
+    const hasResult = result !== null && result !== undefined;
+    const isOverbought = hasResult && result > 60;
+    const isOversold = hasResult && result < -60;
 
-    if (result > 60) {
-      return MomentumSignal.OVERBOUGHT;
+    switch (true) {
+      case isOverbought:
+        return MomentumSignal.OVERBOUGHT;
+      case isOversold:
+        return MomentumSignal.OVERSOLD;
+      default:
+        return MomentumSignal.UNKNOWN;
     }
-
-    if (result < -60) {
-      return MomentumSignal.OVERSOLD;
-    }
-
-    return MomentumSignal.NEUTRAL;
   }
 
   override getRequiredInputs() {

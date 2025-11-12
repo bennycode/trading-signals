@@ -64,18 +64,17 @@ export class CCI extends MomentumIndicatorSeries<HighLowClose<number>> {
   }
 
   protected calculateSignal(result?: number | null | undefined) {
-    if (result === null || result === undefined) {
-      return MomentumSignal.UNKNOWN;
-    }
+    const hasResult = result !== null && result !== undefined;
+    const isOversold = hasResult && result <= -100;
+    const isOverbought = hasResult && result >= 100;
 
-    if (result <= -100) {
-      return MomentumSignal.OVERSOLD;
+    switch (true) {
+      case isOversold:
+        return MomentumSignal.OVERSOLD;
+      case isOverbought:
+        return MomentumSignal.OVERBOUGHT;
+      default:
+        return MomentumSignal.UNKNOWN;
     }
-
-    if (result >= 100) {
-      return MomentumSignal.OVERBOUGHT;
-    }
-
-    return MomentumSignal.NEUTRAL;
   }
 }

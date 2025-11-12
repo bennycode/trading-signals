@@ -290,13 +290,9 @@ describe('AC', () => {
       // Result verified with:
       // https://github.com/jesse-ai/jesse/blob/53297462d48ebf43f9df46ab5005076d25073e5e/tests/test_indicators.py#L14
       expect(ac.isStable).toBe(true);
-      expect(ac.getRequiredInputs()).toBe(5);
+      expect(ac.getRequiredInputs()).toBe(39);
       expect(ac.getResultOrThrow().toFixed(2)).toBe('-21.97');
       expect(ac.momentum.getResultOrThrow().toFixed(2)).toBe('-9.22');
-      expect(ac.getSignal()).toEqual({
-        hasChanged: false,
-        signal: TrendSignal.BEARISH,
-      });
     });
 
     it('throws an error when there is not enough input data', () => {
@@ -308,6 +304,81 @@ describe('AC', () => {
       } catch (error) {
         expect(error).toBeInstanceOf(NotEnoughDataError);
       }
+    });
+  });
+
+  describe('getSignal', () => {
+    it('returns UNKNOWN signal when there is no result', () => {
+      const ac = new AC(5, 34, 5);
+
+      const signal = ac.getSignal();
+
+      expect(signal.signal).toBe(TrendSignal.UNKNOWN);
+      expect(signal.hasChanged).toBe(false);
+    });
+
+    it('returns BULLISH signal when AC is positive', () => {
+      const prices = [
+        {high: 101, low: 99},
+        {high: 103, low: 101},
+        {high: 106, low: 104},
+        {high: 109, low: 107},
+        {high: 113, low: 111},
+        {high: 117, low: 115},
+        {high: 121, low: 119},
+        {high: 126, low: 124},
+        {high: 131, low: 129},
+        {high: 136, low: 134},
+        {high: 141, low: 139},
+        {high: 146, low: 144},
+        {high: 151, low: 149},
+        {high: 156, low: 154},
+        {high: 161, low: 159},
+      ];
+
+      const ac = new AC(5, 10, 5);
+
+      for (const price of prices) {
+        ac.add(price);
+      }
+
+      const signal = ac.getSignal();
+
+      expect(ac.getResultOrThrow()).toBeGreaterThan(0);
+      expect(signal.signal).toBe(TrendSignal.BULLISH);
+      expect(signal.hasChanged).toBe(false);
+    });
+
+    it('returns BEARISH signal when AC is negative', () => {
+      const prices = [
+        {high: 161, low: 159},
+        {high: 156, low: 154},
+        {high: 151, low: 149},
+        {high: 146, low: 144},
+        {high: 141, low: 139},
+        {high: 136, low: 134},
+        {high: 131, low: 129},
+        {high: 126, low: 124},
+        {high: 121, low: 119},
+        {high: 116, low: 114},
+        {high: 111, low: 109},
+        {high: 106, low: 104},
+        {high: 101, low: 99},
+        {high: 96, low: 94},
+        {high: 91, low: 89},
+      ];
+
+      const ac = new AC(5, 10, 5);
+
+      for (const price of prices) {
+        ac.add(price);
+      }
+
+      const signal = ac.getSignal();
+
+      expect(ac.getResultOrThrow()).toBe(0);
+      expect(signal.signal).toBe(TrendSignal.BEARISH);
+      expect(signal.hasChanged).toBe(false);
     });
   });
 });

@@ -14,7 +14,6 @@ interface Indicator<Result = number, Input = number> {
 }
 
 export const MomentumSignal = {
-  NEUTRAL: 'NEUTRAL',
   OVERBOUGHT: 'OVERBOUGHT',
   OVERSOLD: 'OVERSOLD',
   UNKNOWN: 'UNKNOWN',
@@ -23,7 +22,6 @@ export const MomentumSignal = {
 export const TrendSignal = {
   BEARISH: 'BEARISH',
   BULLISH: 'BULLISH',
-  SIDEWAYS: 'SIDEWAYS',
   UNKNOWN: 'UNKNOWN',
 } as const;
 

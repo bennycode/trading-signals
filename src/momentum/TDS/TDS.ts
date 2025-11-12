@@ -66,20 +66,17 @@ export class TDS extends MomentumIndicatorSeries {
   }
 
   protected calculateSignal(result?: number | null | undefined) {
-    if (result === null || result === undefined) {
-      return MomentumSignal.UNKNOWN;
-    }
+    const hasResult = result !== null && result !== undefined;
+    const isOverbought = hasResult && result === 1; // Bullish setup completed - potential reversal down
+    const isOversold = hasResult && result === -1; // Bearish setup completed - potential reversal up
 
-    // Bullish setup completed (1) - overbought condition, potential reversal down
-    if (result === 1) {
-      return MomentumSignal.OVERBOUGHT;
+    switch (true) {
+      case isOverbought:
+        return MomentumSignal.OVERBOUGHT;
+      case isOversold:
+        return MomentumSignal.OVERSOLD;
+      default:
+        return MomentumSignal.UNKNOWN;
     }
-
-    // Bearish setup completed (-1) - oversold condition, potential reversal up
-    if (result === -1) {
-      return MomentumSignal.OVERSOLD;
-    }
-
-    return MomentumSignal.NEUTRAL;
   }
 }

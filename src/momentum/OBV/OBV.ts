@@ -34,20 +34,19 @@ export class OBV extends TrendIndicatorSeries<OpenHighLowCloseVolume<number>> {
   }
 
   protected calculateSignal(result: number | null | undefined) {
-    if (!result || this.previousResult === undefined) {
-      return TrendSignal.UNKNOWN;
-    }
+    const hasResult = result !== null && result !== undefined;
+    const previousResult = this.previousResult;
+    const hasPreviousResult = previousResult !== undefined;
+    const isBullish = hasResult && hasPreviousResult && result > previousResult;
+    const isBearish = hasResult && hasPreviousResult && result < previousResult;
 
-    // Rising OBV - bullish (buying pressure)
-    if (result > this.previousResult) {
-      return TrendSignal.BULLISH;
+    switch (true) {
+      case isBullish:
+        return TrendSignal.BULLISH;
+      case isBearish:
+        return TrendSignal.BEARISH;
+      default:
+        return TrendSignal.UNKNOWN;
     }
-
-    // Falling OBV - bearish (selling pressure)
-    if (result < this.previousResult) {
-      return TrendSignal.BEARISH;
-    }
-
-    return TrendSignal.SIDEWAYS;
   }
 }

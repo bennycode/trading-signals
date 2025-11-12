@@ -52,18 +52,17 @@ export class AO extends TrendIndicatorSeries<HighLow<number>> {
   }
 
   protected calculateSignal(result: number | null | undefined) {
-    if (!result) {
-      return TrendSignal.UNKNOWN;
-    }
+    const hasResult = result !== null && result !== undefined;
+    const isBullish = hasResult && result > 0;
+    const isBearish = hasResult && result < 0;
 
-    if (result > 0) {
-      return TrendSignal.BULLISH;
+    switch (true) {
+      case isBullish:
+        return TrendSignal.BULLISH;
+      case isBearish:
+        return TrendSignal.BEARISH;
+      default:
+        return TrendSignal.UNKNOWN;
     }
-
-    if (result < 0) {
-      return TrendSignal.BEARISH;
-    }
-
-    return TrendSignal.SIDEWAYS;
   }
 }

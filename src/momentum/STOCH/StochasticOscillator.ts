@@ -77,18 +77,17 @@ export class StochasticOscillator extends TechnicalIndicator<StochasticResult, H
   }
 
   protected calculateSignal(result?: StochasticResult | null | undefined) {
-    if (result === null || result === undefined) {
-      return MomentumSignal.UNKNOWN;
-    }
+    const hasResult = result !== null && result !== undefined;
+    const isOversold = hasResult && result.stochK <= 20;
+    const isOverbought = hasResult && result.stochK >= 80;
 
-    if (result.stochK <= 20) {
-      return MomentumSignal.OVERSOLD;
+    switch (true) {
+      case isOversold:
+        return MomentumSignal.OVERSOLD;
+      case isOverbought:
+        return MomentumSignal.OVERBOUGHT;
+      default:
+        return MomentumSignal.UNKNOWN;
     }
-
-    if (result.stochK >= 80) {
-      return MomentumSignal.OVERBOUGHT;
-    }
-
-    return MomentumSignal.NEUTRAL;
   }
 }

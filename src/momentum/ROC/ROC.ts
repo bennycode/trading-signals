@@ -32,14 +32,17 @@ export class ROC extends TrendIndicatorSeries {
   }
 
   protected calculateSignal(result: number | null | undefined) {
-    if (!result) {
-      return TrendSignal.UNKNOWN;
-    }
+    const hasResult = result !== null && result !== undefined;
+    const isBearish = hasResult && result < 0;
+    const isBullish = hasResult && result >= 0;
 
-    if (result < 0) {
-      return TrendSignal.BEARISH;
+    switch (true) {
+      case isBearish:
+        return TrendSignal.BEARISH;
+      case isBullish:
+        return TrendSignal.BULLISH;
+      default:
+        return TrendSignal.UNKNOWN;
     }
-
-    return TrendSignal.BULLISH;
   }
 }
