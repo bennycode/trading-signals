@@ -32,7 +32,7 @@ describe('ROC', () => {
       expect(roc.getRequiredInputs()).toBe(interval);
       expect(roc.getSignal()).toEqual({
         hasChanged: false,
-        signal: TrendSignal.BULLISH,
+        state: TrendSignal.BULLISH,
       });
     });
 
@@ -48,7 +48,7 @@ describe('ROC', () => {
       expect(roc.getResultOrThrow().toFixed(2)).toBe('-0.83');
       expect(roc.getSignal()).toEqual({
         hasChanged: false,
-        signal: TrendSignal.BEARISH,
+        state: TrendSignal.BEARISH,
       });
     });
 

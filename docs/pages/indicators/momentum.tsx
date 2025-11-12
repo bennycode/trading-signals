@@ -1031,7 +1031,7 @@ if (mom.isStable) {
   };
 
   const renderOBV = (config: IndicatorConfig) => {
-    const obv = new OBV();
+    const obv = new OBV(5);
     const chartData: ChartDataPoint[] = [];
     const sampleValues: Array<{
       period: number;
@@ -1068,7 +1068,7 @@ if (mom.isStable) {
           </p>
         </div>
 
-        <Chart title="On-Balance Volume" data={chartData} yAxisLabel="OBV" color={config.color} />
+        <Chart title="On-Balance Volume (5)" data={chartData} yAxisLabel="OBV" color={config.color} />
 
         <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-4">
           <h3 className="text-lg font-semibold text-white mb-3">All Sample Values</h3>
@@ -1107,7 +1107,7 @@ if (mom.isStable) {
           <pre className="text-slate-300 text-sm overflow-x-auto">
             <code>{`import { OBV } from 'trading-signals';
 
-const obv = new OBV();
+const obv = new OBV(5);
 
 obv.add({ open: 100, high: 101, low: 99, close: 100, volume: 1000 });
 obv.add({ open: 100, high: 103, low: 100, close: 102, volume: 1200 });

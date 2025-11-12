@@ -54,7 +54,7 @@ describe('AO', () => {
       expect(ao.getRequiredInputs()).toBe(longInterval);
       expect(ao.getSignal()).toEqual({
         hasChanged: false,
-        signal: TrendSignal.BEARISH,
+        state: TrendSignal.BEARISH,
       });
     });
 

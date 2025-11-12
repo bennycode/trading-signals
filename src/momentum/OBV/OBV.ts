@@ -13,15 +13,18 @@ import {pushUpdate} from '../../util/pushUpdate.js';
 export class OBV extends TrendIndicatorSeries<OpenHighLowCloseVolume<number>> {
   public readonly candles: OpenHighLowCloseVolume<number>[] = [];
 
-  // TODO: Add an interval to OBV so it gives a signal only after being stable
+  constructor(public readonly interval: number) {
+    super();
+  }
+
   override getRequiredInputs() {
-    return 2;
+    return this.interval;
   }
 
   update(candle: OpenHighLowCloseVolume<number>, replace: boolean) {
-    pushUpdate(this.candles, replace, candle, 2);
+    pushUpdate(this.candles, replace, candle, this.getRequiredInputs());
 
-    if (this.candles.length === 1) {
+    if (this.candles.length < this.getRequiredInputs()) {
       return null;
     }
 
