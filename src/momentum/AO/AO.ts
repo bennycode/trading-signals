@@ -57,6 +57,8 @@ export class AO extends TrendIndicatorSeries<HighLow<number>> {
     const isBearish = hasResult && result < 0;
 
     switch (true) {
+      case !hasResult:
+        return TrendSignal.NA;
       case isBullish:
         return TrendSignal.BULLISH;
       case isBearish:

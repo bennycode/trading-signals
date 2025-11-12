@@ -109,7 +109,7 @@ describe('StochasticRSI', () => {
     it('returns UNKNOWN when there is no result', () => {
       const stochRSI = new StochasticRSI(5);
       const signal = stochRSI.getSignal();
-      expect(signal.state).toBe(MomentumSignal.UNKNOWN);
+      expect(signal.state).toBe(MomentumSignal.NA);
     });
 
     it('returns OVERSOLD when Stochastic RSI <= 0.2', () => {

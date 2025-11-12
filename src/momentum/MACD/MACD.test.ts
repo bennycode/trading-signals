@@ -162,7 +162,7 @@ describe('MACD', () => {
       const macd = new MACD(new EMA(12), new EMA(26), new EMA(9));
       const calculateSignal = macd['calculateSignal'].bind(macd);
       const signal = calculateSignal(null);
-      expect(signal).toBe(TrendSignal.UNKNOWN);
+      expect(signal).toBe(TrendSignal.NA);
     });
 
     it('returns BULLISH when histogram > 0', () => {

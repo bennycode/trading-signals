@@ -37,6 +37,8 @@ export class ROC extends TrendIndicatorSeries {
     const isBullish = hasResult && result >= 0;
 
     switch (true) {
+      case !hasResult:
+        return TrendSignal.NA;
       case isBearish:
         return TrendSignal.BEARISH;
       case isBullish:

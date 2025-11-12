@@ -82,6 +82,8 @@ export class StochasticOscillator extends TechnicalIndicator<StochasticResult, H
     const isOverbought = hasResult && result.stochK >= 80;
 
     switch (true) {
+      case !hasResult:
+        return MomentumSignal.NA;
       case isOversold:
         return MomentumSignal.OVERSOLD;
       case isOverbought:

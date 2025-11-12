@@ -58,6 +58,8 @@ export class MACD extends TechnicalIndicator<MACDResult, number> {
     const isBearish = hasResult && result.histogram < 0; // MACD below signal line
 
     switch (true) {
+      case !hasResult:
+        return TrendSignal.NA;
       case isBullish:
         return TrendSignal.BULLISH;
       case isBearish:

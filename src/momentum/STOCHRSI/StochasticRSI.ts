@@ -1,10 +1,10 @@
-import {MomentumIndicatorSeries, MomentumSignal, type MomentumSignals} from '../../types/Indicator.js';
 import type {MovingAverage} from '../../trend/MA/MovingAverage.js';
 import type {MovingAverageTypes} from '../../trend/MA/MovingAverageTypes.js';
-import {RSI} from '../RSI/RSI.js';
 import {SMA} from '../../trend/SMA/SMA.js';
-import {Period} from '../../types/Period.js';
 import {WSMA} from '../../trend/WSMA/WSMA.js';
+import {MomentumIndicatorSeries, MomentumSignal} from '../../types/Indicator.js';
+import {Period} from '../../types/Period.js';
+import {RSI} from '../RSI/RSI.js';
 
 /**
  * Stochastic RSI (STOCHRSI)
@@ -74,12 +74,14 @@ export class StochasticRSI extends MomentumIndicatorSeries {
     return null;
   }
 
-  protected calculateSignalState(result?: number | null | undefined): MomentumSignals {
+  protected calculateSignalState(result?: number | null | undefined) {
     const hasResult = result !== null && result !== undefined;
     const isOversold = hasResult && result <= 0.2;
     const isOverbought = hasResult && result >= 0.8;
 
     switch (true) {
+      case !hasResult:
+        return MomentumSignal.NA;
       case isOversold:
         return MomentumSignal.OVERSOLD;
       case isOverbought:

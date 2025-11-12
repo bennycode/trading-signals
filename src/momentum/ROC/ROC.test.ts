@@ -80,7 +80,7 @@ describe('ROC', () => {
     it('returns UNKNOWN when there is no result', () => {
       const roc = new ROC(5);
       const signal = roc.getSignal();
-      expect(signal.state).toBe(TrendSignal.UNKNOWN);
+      expect(signal.state).toBe(TrendSignal.NA);
     });
 
     it('returns BULLISH when ROC >= 0', () => {

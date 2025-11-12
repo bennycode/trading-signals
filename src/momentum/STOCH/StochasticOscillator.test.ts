@@ -75,7 +75,7 @@ describe('StochasticOscillator', () => {
       const stoch = new StochasticOscillator(5, 3, 3);
       const calculateSignal = stoch['calculateSignal'].bind(stoch);
       const signal = calculateSignal(null);
-      expect(signal).toBe(MomentumSignal.UNKNOWN);
+      expect(signal).toBe(MomentumSignal.NA);
     });
 
     it('returns OVERSOLD when stochK <= 20', () => {

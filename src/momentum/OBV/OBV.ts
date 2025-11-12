@@ -45,6 +45,8 @@ export class OBV extends TrendIndicatorSeries<OpenHighLowCloseVolume<number>> {
     const isBearish = hasResult && hasPreviousResult && result < previousResult;
 
     switch (true) {
+      case !hasResult:
+        return TrendSignal.NA;
       case isBullish:
         return TrendSignal.BULLISH;
       case isBearish:

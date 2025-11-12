@@ -116,7 +116,7 @@ describe('TDS', () => {
     it('returns UNKNOWN when there is no result', () => {
       const tds = new TDS();
       const signal = tds.getSignal();
-      expect(signal.state).toBe(MomentumSignal.UNKNOWN);
+      expect(signal.state).toBe(MomentumSignal.NA);
     });
 
     it('returns OVERBOUGHT when TDS = 1 (bullish setup completed)', () => {

@@ -84,7 +84,7 @@ describe('RSI', () => {
     it('returns UNKNOWN when there is no result', () => {
       const rsi = new RSI(5);
       const signal = rsi.getSignal();
-      expect(signal.state).toBe(MomentumSignal.UNKNOWN);
+      expect(signal.state).toBe(MomentumSignal.NA);
     });
 
     it('returns OVERSOLD when RSI <= 30', () => {

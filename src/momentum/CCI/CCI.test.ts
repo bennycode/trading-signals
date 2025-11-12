@@ -94,7 +94,7 @@ describe('CCI', () => {
     it('returns UNKNOWN when there is no result', () => {
       const cci = new CCI(5);
       const signal = cci.getSignal();
-      expect(signal.state).toBe(MomentumSignal.UNKNOWN);
+      expect(signal.state).toBe(MomentumSignal.NA);
     });
 
     it('returns OVERSOLD when CCI <= -100', () => {

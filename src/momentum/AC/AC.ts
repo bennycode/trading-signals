@@ -52,6 +52,8 @@ export class AC extends TrendIndicatorSeries<HighLow<number>> {
     const isNegative = hasResult && result <= 0;
 
     switch (true) {
+      case !hasResult:
+        return TrendSignal.NA;
       case isPositive:
         return TrendSignal.BULLISH;
       case isNegative:

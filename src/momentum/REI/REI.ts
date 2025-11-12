@@ -1,5 +1,5 @@
-import {MomentumIndicatorSeries, MomentumSignal, type MomentumSignals} from '../../types/Indicator.js';
 import type {HighLowClose} from '../../types/HighLowClose.js';
+import {MomentumIndicatorSeries, MomentumSignal} from '../../types/Indicator.js';
 
 /**
  * Range Expansion Index (REI)
@@ -29,12 +29,14 @@ export class REI extends MomentumIndicatorSeries<HighLowClose<number>> {
     super();
   }
 
-  protected calculateSignalState(result?: number | null | undefined): MomentumSignals {
+  protected calculateSignalState(result?: number | null | undefined) {
     const hasResult = result !== null && result !== undefined;
     const isOverbought = hasResult && result > 60;
     const isOversold = hasResult && result < -60;
 
     switch (true) {
+      case !hasResult:
+        return MomentumSignal.NA;
       case isOverbought:
         return MomentumSignal.OVERBOUGHT;
       case isOversold:

@@ -310,11 +310,8 @@ describe('AC', () => {
   describe('getSignal', () => {
     it('returns UNKNOWN signal when there is no result', () => {
       const ac = new AC(5, 34, 5);
-
       const signal = ac.getSignal();
-
-      expect(signal.state).toBe(TrendSignal.UNKNOWN);
-      expect(signal.hasChanged).toBe(false);
+      expect(signal.state).toBe(TrendSignal.NA);
     });
 
     it('returns BULLISH signal when AC is positive', () => {

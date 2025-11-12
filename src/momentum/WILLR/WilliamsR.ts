@@ -65,6 +65,8 @@ export class WilliamsR extends TechnicalIndicator<number, HighLowClose<number>> 
     const isOversold = hasResult && result <= -80;
 
     switch (true) {
+      case !hasResult:
+        return MomentumSignal.NA;
       case isOverbought:
         return MomentumSignal.OVERBOUGHT;
       case isOversold:

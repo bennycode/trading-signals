@@ -76,6 +76,8 @@ export class RSI extends MomentumIndicatorSeries {
     const isOverbought = hasResult && result >= 70;
 
     switch (true) {
+      case !hasResult:
+        return MomentumSignal.NA;
       case isOversold:
         return MomentumSignal.OVERSOLD;
       case isOverbought:

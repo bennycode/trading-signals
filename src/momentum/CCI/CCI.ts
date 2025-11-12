@@ -69,6 +69,8 @@ export class CCI extends MomentumIndicatorSeries<HighLowClose<number>> {
     const isOverbought = hasResult && result >= 100;
 
     switch (true) {
+      case !hasResult:
+        return MomentumSignal.NA;
       case isOversold:
         return MomentumSignal.OVERSOLD;
       case isOverbought:

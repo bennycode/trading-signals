@@ -215,7 +215,7 @@ describe('REI', () => {
     it('returns UNKNOWN when there is no result', () => {
       const rei = new REI(8);
       const signal = rei.getSignal();
-      expect(signal.state).toBe(MomentumSignal.UNKNOWN);
+      expect(signal.state).toBe(MomentumSignal.NA);
     });
 
     it('returns OVERBOUGHT when REI > 60', () => {
