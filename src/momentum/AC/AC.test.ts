@@ -1,4 +1,5 @@
 import {NotEnoughDataError} from '../../error/index.js';
+import {TrendSignal} from '../../types/Indicator.js';
 import {AC} from './AC.js';
 
 type Candle = readonly [timestamp: number, open: number, close: number, high: number, low: number, volume: number];
@@ -292,6 +293,10 @@ describe('AC', () => {
       expect(ac.getRequiredInputs()).toBe(5);
       expect(ac.getResultOrThrow().toFixed(2)).toBe('-21.97');
       expect(ac.momentum.getResultOrThrow().toFixed(2)).toBe('-9.22');
+      expect(ac.getSignal()).toEqual({
+        hasChanged: false,
+        signal: TrendSignal.BEARISH,
+      });
     });
 
     it('throws an error when there is not enough input data', () => {

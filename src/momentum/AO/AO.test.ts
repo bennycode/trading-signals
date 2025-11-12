@@ -1,4 +1,5 @@
 import {NotEnoughDataError} from '../../error/index.js';
+import {TrendSignal} from '../../types/Indicator.js';
 import {AO} from './AO.js';
 
 describe('AO', () => {
@@ -51,6 +52,10 @@ describe('AO', () => {
       }
 
       expect(ao.getRequiredInputs()).toBe(longInterval);
+      expect(ao.getSignal()).toEqual({
+        hasChanged: false,
+        signal: TrendSignal.BEARISH,
+      });
     });
 
     it('throws an error when there is not enough input data', () => {

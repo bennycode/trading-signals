@@ -1,5 +1,6 @@
-import {CCI} from './CCI.js';
 import {NotEnoughDataError} from '../../error/index.js';
+import {MomentumSignal} from '../../types/Indicator.js';
+import {CCI} from './CCI.js';
 
 describe('CCI', () => {
   // Test data verified with:
@@ -76,6 +77,10 @@ describe('CCI', () => {
 
       const actual = cci.getResultOrThrow().toFixed(2);
       expect(actual).toBe('71.93');
+      expect(cci.getSignal()).toEqual({
+        hasChanged: true,
+        signal: MomentumSignal.NEUTRAL,
+      });
     });
 
     it('throws an error when there is not enough input data', () => {
