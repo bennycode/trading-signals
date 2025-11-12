@@ -109,7 +109,24 @@ describe('StochasticRSI', () => {
     it('returns UNKNOWN when there is no result', () => {
       const stochRSI = new StochasticRSI(5);
       const signal = stochRSI.getSignal();
-      expect(signal.state).toBe(MomentumSignal.NA);
+      expect(signal.state).toBe(MomentumSignal.UNKNOWN);
+    });
+
+    it('returns UNKNOWN when StochRSI is in mid-range (between 0.2 and 0.8)', () => {
+      const stochRSI = new StochasticRSI(5);
+      // Sideways movement to produce mid-range RSI and StochRSI
+      const prices = [50, 51, 50.5, 51.5, 50.2, 51.8, 50.7, 51.2, 50.9, 51.1, 50.6, 51.4, 50.4, 51.6, 50.8] as const;
+
+      for (const price of prices) {
+        stochRSI.add(price);
+      }
+
+      const result = stochRSI.getResultOrThrow();
+      expect(result).toBeGreaterThan(0.2);
+      expect(result).toBeLessThan(0.8);
+
+      const signal = stochRSI.getSignal();
+      expect(signal.state).toBe(MomentumSignal.NEUTRAL);
     });
 
     it('returns OVERSOLD when Stochastic RSI <= 0.2', () => {

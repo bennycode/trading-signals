@@ -46,13 +46,13 @@ export class OBV extends TrendIndicatorSeries<OpenHighLowCloseVolume<number>> {
 
     switch (true) {
       case !hasResult:
-        return TrendSignal.NA;
+        return TrendSignal.UNKNOWN;
       case isBullish:
         return TrendSignal.BULLISH;
       case isBearish:
         return TrendSignal.BEARISH;
       default:
-        return TrendSignal.UNKNOWN;
+        return TrendSignal.SIDEWAYS;
     }
   }
 }

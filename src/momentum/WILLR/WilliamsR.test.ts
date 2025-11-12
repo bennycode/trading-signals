@@ -127,7 +127,7 @@ describe('WilliamsR', () => {
       const willR = new WilliamsR(14);
       const calculateSignal = willR['calculateSignal'].bind(willR);
       const signal = calculateSignal(null);
-      expect(signal).toBe(MomentumSignal.NA);
+      expect(signal).toBe(MomentumSignal.UNKNOWN);
     });
 
     it('returns OVERBOUGHT when Williams %R >= -20', () => {
@@ -148,7 +148,7 @@ describe('WilliamsR', () => {
       const willR = new WilliamsR(14);
       const calculateSignal = willR['calculateSignal'].bind(willR);
       const signal = calculateSignal(-50);
-      expect(signal).toBe(MomentumSignal.UNKNOWN);
+      expect(signal).toBe(MomentumSignal.NEUTRAL);
     });
   });
 });

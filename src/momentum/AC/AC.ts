@@ -49,17 +49,14 @@ export class AC extends TrendIndicatorSeries<HighLow<number>> {
   protected calculateSignalState(result: number | null | undefined) {
     const hasResult = result !== null && result !== undefined;
     const isPositive = hasResult && result > 0;
-    const isNegative = hasResult && result <= 0;
 
     switch (true) {
       case !hasResult:
-        return TrendSignal.NA;
+        return TrendSignal.UNKNOWN;
       case isPositive:
         return TrendSignal.BULLISH;
-      case isNegative:
-        return TrendSignal.BEARISH;
       default:
-        return TrendSignal.UNKNOWN;
+        return TrendSignal.BEARISH;
     }
   }
 }

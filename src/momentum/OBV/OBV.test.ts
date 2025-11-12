@@ -60,7 +60,7 @@ describe('OBV', () => {
     it('returns UNKNOWN when there is no result', () => {
       const obv = new OBV(2);
       const signal = obv.getSignal();
-      expect(signal.state).toBe(TrendSignal.NA);
+      expect(signal.state).toBe(TrendSignal.UNKNOWN);
     });
 
     it('returns BULLISH when OBV is increasing', () => {
@@ -111,7 +111,7 @@ describe('OBV', () => {
 
       const signal = obv.getSignal();
 
-      expect(signal.state).toBe(TrendSignal.UNKNOWN);
+      expect(signal.state).toBe(TrendSignal.SIDEWAYS);
     });
   });
 });

@@ -113,7 +113,7 @@ describe('AO', () => {
     it('returns UNKNOWN when there is no result', () => {
       const ao = new AO(5, 34);
       const signal = ao.getSignal();
-      expect(signal.state).toBe(TrendSignal.NA);
+      expect(signal.state).toBe(TrendSignal.UNKNOWN);
     });
 
     it('returns BULLISH when AO > 0', () => {
@@ -152,7 +152,7 @@ describe('AO', () => {
       const signal = ao.getSignal();
 
       expect(ao.getResultOrThrow()).toBe(0);
-      expect(signal.state).toBe(TrendSignal.UNKNOWN);
+      expect(signal.state).toBe(TrendSignal.SIDEWAYS);
     });
   });
 });

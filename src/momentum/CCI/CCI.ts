@@ -70,13 +70,13 @@ export class CCI extends MomentumIndicatorSeries<HighLowClose<number>> {
 
     switch (true) {
       case !hasResult:
-        return MomentumSignal.NA;
+        return MomentumSignal.UNKNOWN;
       case isOversold:
         return MomentumSignal.OVERSOLD;
       case isOverbought:
         return MomentumSignal.OVERBOUGHT;
       default:
-        return MomentumSignal.UNKNOWN;
+        return MomentumSignal.NEUTRAL;
     }
   }
 }
