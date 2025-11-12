@@ -29,7 +29,7 @@ export class REI extends MomentumIndicatorSeries<HighLowClose<number>> {
     super();
   }
 
-  protected calculateSignal(result?: number | null | undefined): MomentumSignals {
+  protected calculateSignalState(result?: number | null | undefined): MomentumSignals {
     const hasResult = result !== null && result !== undefined;
     const isOverbought = hasResult && result > 60;
     const isOversold = hasResult && result < -60;

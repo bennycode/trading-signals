@@ -94,7 +94,7 @@ describe('CCI', () => {
     it('returns UNKNOWN when there is no result', () => {
       const cci = new CCI(5);
       const signal = cci.getSignal();
-      expect(signal.signal).toBe(MomentumSignal.UNKNOWN);
+      expect(signal.state).toBe(MomentumSignal.UNKNOWN);
     });
 
     it('returns OVERSOLD when CCI <= -100', () => {
@@ -115,7 +115,7 @@ describe('CCI', () => {
       const signal = cci.getSignal();
 
       expect(cci.getResultOrThrow()).toBeLessThanOrEqual(-100);
-      expect(signal.signal).toBe(MomentumSignal.OVERSOLD);
+      expect(signal.state).toBe(MomentumSignal.OVERSOLD);
     });
 
     it('returns OVERBOUGHT when CCI >= 100', () => {
@@ -136,7 +136,7 @@ describe('CCI', () => {
       const signal = cci.getSignal();
 
       expect(cci.getResultOrThrow()).toBeGreaterThanOrEqual(100);
-      expect(signal.signal).toBe(MomentumSignal.OVERBOUGHT);
+      expect(signal.state).toBe(MomentumSignal.OVERBOUGHT);
     });
 
     it('returns UNKNOWN when CCI is between -100 and 100', () => {
@@ -159,7 +159,7 @@ describe('CCI', () => {
 
       expect(result).toBeGreaterThan(-100);
       expect(result).toBeLessThan(100);
-      expect(signal.signal).toBe(MomentumSignal.UNKNOWN);
+      expect(signal.state).toBe(MomentumSignal.UNKNOWN);
     });
   });
 });

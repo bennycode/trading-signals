@@ -80,7 +80,7 @@ describe('ROC', () => {
     it('returns UNKNOWN when there is no result', () => {
       const roc = new ROC(5);
       const signal = roc.getSignal();
-      expect(signal.signal).toBe(TrendSignal.UNKNOWN);
+      expect(signal.state).toBe(TrendSignal.UNKNOWN);
     });
 
     it('returns BULLISH when ROC >= 0', () => {
@@ -94,7 +94,7 @@ describe('ROC', () => {
       const signal = roc.getSignal();
 
       expect(roc.getResultOrThrow()).toBeGreaterThanOrEqual(0);
-      expect(signal.signal).toBe(TrendSignal.BULLISH);
+      expect(signal.state).toBe(TrendSignal.BULLISH);
     });
 
     it('returns BEARISH when ROC < 0', () => {
@@ -108,7 +108,7 @@ describe('ROC', () => {
       const signal = roc.getSignal();
 
       expect(roc.getResultOrThrow()).toBeLessThan(0);
-      expect(signal.signal).toBe(TrendSignal.BEARISH);
+      expect(signal.state).toBe(TrendSignal.BEARISH);
     });
 
     it('returns BULLISH when ROC = 0', () => {
@@ -122,7 +122,7 @@ describe('ROC', () => {
       const signal = roc.getSignal();
 
       expect(roc.getResultOrThrow()).toBe(0);
-      expect(signal.signal).toBe(TrendSignal.BULLISH);
+      expect(signal.state).toBe(TrendSignal.BULLISH);
     });
   });
 });

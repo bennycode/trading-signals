@@ -116,7 +116,7 @@ describe('TDS', () => {
     it('returns UNKNOWN when there is no result', () => {
       const tds = new TDS();
       const signal = tds.getSignal();
-      expect(signal.signal).toBe(MomentumSignal.UNKNOWN);
+      expect(signal.state).toBe(MomentumSignal.UNKNOWN);
     });
 
     it('returns OVERBOUGHT when TDS = 1 (bullish setup completed)', () => {
@@ -133,7 +133,7 @@ describe('TDS', () => {
       const signal = tds.getSignal();
 
       expect(tds.getResultOrThrow()).toBe(1);
-      expect(signal.signal).toBe(MomentumSignal.OVERBOUGHT);
+      expect(signal.state).toBe(MomentumSignal.OVERBOUGHT);
     });
 
     it('returns OVERSOLD when TDS = -1 (bearish setup completed)', () => {
@@ -150,7 +150,7 @@ describe('TDS', () => {
       const signal = tds.getSignal();
 
       expect(tds.getResultOrThrow()).toBe(-1);
-      expect(signal.signal).toBe(MomentumSignal.OVERSOLD);
+      expect(signal.state).toBe(MomentumSignal.OVERSOLD);
     });
   });
 });

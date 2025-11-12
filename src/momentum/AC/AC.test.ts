@@ -313,7 +313,7 @@ describe('AC', () => {
 
       const signal = ac.getSignal();
 
-      expect(signal.signal).toBe(TrendSignal.UNKNOWN);
+      expect(signal.state).toBe(TrendSignal.UNKNOWN);
       expect(signal.hasChanged).toBe(false);
     });
 
@@ -345,7 +345,7 @@ describe('AC', () => {
       const signal = ac.getSignal();
 
       expect(ac.getResultOrThrow()).toBeGreaterThan(0);
-      expect(signal.signal).toBe(TrendSignal.BULLISH);
+      expect(signal.state).toBe(TrendSignal.BULLISH);
       expect(signal.hasChanged).toBe(false);
     });
 
@@ -377,7 +377,7 @@ describe('AC', () => {
       const signal = ac.getSignal();
 
       expect(ac.getResultOrThrow()).toBe(0);
-      expect(signal.signal).toBe(TrendSignal.BEARISH);
+      expect(signal.state).toBe(TrendSignal.BEARISH);
       expect(signal.hasChanged).toBe(false);
     });
   });

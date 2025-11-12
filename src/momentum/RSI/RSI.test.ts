@@ -84,7 +84,7 @@ describe('RSI', () => {
     it('returns UNKNOWN when there is no result', () => {
       const rsi = new RSI(5);
       const signal = rsi.getSignal();
-      expect(signal.signal).toBe(MomentumSignal.UNKNOWN);
+      expect(signal.state).toBe(MomentumSignal.UNKNOWN);
     });
 
     it('returns OVERSOLD when RSI <= 30', () => {
@@ -98,7 +98,7 @@ describe('RSI', () => {
       const signal = rsi.getSignal();
 
       expect(rsi.getResultOrThrow()).toBeLessThanOrEqual(30);
-      expect(signal.signal).toBe(MomentumSignal.OVERSOLD);
+      expect(signal.state).toBe(MomentumSignal.OVERSOLD);
     });
 
     it('returns OVERBOUGHT when RSI >= 70', () => {
@@ -112,7 +112,7 @@ describe('RSI', () => {
       const signal = rsi.getSignal();
 
       expect(rsi.getResultOrThrow()).toBeGreaterThanOrEqual(70);
-      expect(signal.signal).toBe(MomentumSignal.OVERBOUGHT);
+      expect(signal.state).toBe(MomentumSignal.OVERBOUGHT);
     });
 
     it('returns UNKNOWN when RSI is between 30 and 70', () => {
@@ -128,7 +128,7 @@ describe('RSI', () => {
 
       expect(result).toBeGreaterThan(30);
       expect(result).toBeLessThan(70);
-      expect(signal.signal).toBe(MomentumSignal.UNKNOWN);
+      expect(signal.state).toBe(MomentumSignal.UNKNOWN);
     });
   });
 });

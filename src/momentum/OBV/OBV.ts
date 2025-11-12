@@ -33,7 +33,7 @@ export class OBV extends TrendIndicatorSeries<OpenHighLowCloseVolume<number>> {
     return this.setResult(prevResult + nextResult, false);
   }
 
-  protected calculateSignal(result: number | null | undefined) {
+  protected calculateSignalState(result: number | null | undefined) {
     const hasResult = result !== null && result !== undefined;
     const previousResult = this.previousResult;
     const hasPreviousResult = previousResult !== undefined;

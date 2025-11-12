@@ -109,7 +109,7 @@ describe('StochasticRSI', () => {
     it('returns UNKNOWN when there is no result', () => {
       const stochRSI = new StochasticRSI(5);
       const signal = stochRSI.getSignal();
-      expect(signal.signal).toBe(MomentumSignal.UNKNOWN);
+      expect(signal.state).toBe(MomentumSignal.UNKNOWN);
     });
 
     it('returns OVERSOLD when Stochastic RSI <= 0.2', () => {
@@ -127,7 +127,7 @@ describe('StochasticRSI', () => {
       const signal = stochRSI.getSignal();
 
       expect(result).toBeLessThanOrEqual(0.2);
-      expect(signal.signal).toBe(MomentumSignal.OVERSOLD);
+      expect(signal.state).toBe(MomentumSignal.OVERSOLD);
     });
 
     it('returns OVERBOUGHT when Stochastic RSI >= 0.8', () => {
@@ -143,7 +143,7 @@ describe('StochasticRSI', () => {
       const signal = stochRSI.getSignal();
 
       expect(result).toBeGreaterThanOrEqual(0.8);
-      expect(signal.signal).toBe(MomentumSignal.OVERBOUGHT);
+      expect(signal.state).toBe(MomentumSignal.OVERBOUGHT);
     });
   });
 });

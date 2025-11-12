@@ -70,7 +70,7 @@ export class RSI extends MomentumIndicatorSeries {
     return null;
   }
 
-  protected calculateSignal(result: number | null | undefined) {
+  protected calculateSignalState(result: number | null | undefined) {
     const hasResult = result !== null && result !== undefined;
     const isOversold = hasResult && result <= 30;
     const isOverbought = hasResult && result >= 70;

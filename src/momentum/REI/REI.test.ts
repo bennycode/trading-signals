@@ -215,19 +215,19 @@ describe('REI', () => {
     it('returns UNKNOWN when there is no result', () => {
       const rei = new REI(8);
       const signal = rei.getSignal();
-      expect(signal.signal).toBe(MomentumSignal.UNKNOWN);
+      expect(signal.state).toBe(MomentumSignal.UNKNOWN);
     });
 
     it('returns OVERBOUGHT when REI > 60', () => {
       const rei = new REI(8);
-      const calculateSignal = rei['calculateSignal'].bind(rei);
+      const calculateSignal = rei['calculateSignalState'].bind(rei);
       const signal = calculateSignal(61);
       expect(signal).toBe(MomentumSignal.OVERBOUGHT);
     });
 
     it('returns OVERSOLD when REI < -60', () => {
       const rei = new REI(8);
-      const calculateSignal = rei['calculateSignal'].bind(rei);
+      const calculateSignal = rei['calculateSignalState'].bind(rei);
       const signal = calculateSignal(-61);
       expect(signal).toBe(MomentumSignal.OVERSOLD);
     });
@@ -241,7 +241,7 @@ describe('REI', () => {
       const result = rei.getResultOrThrow();
       expect(result).toBeGreaterThan(-60);
       expect(result).toBeLessThan(60);
-      expect(signal.signal).toBe(MomentumSignal.UNKNOWN);
+      expect(signal.state).toBe(MomentumSignal.UNKNOWN);
     });
   });
 });

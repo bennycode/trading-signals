@@ -113,7 +113,7 @@ describe('AO', () => {
     it('returns UNKNOWN when there is no result', () => {
       const ao = new AO(5, 34);
       const signal = ao.getSignal();
-      expect(signal.signal).toBe(TrendSignal.UNKNOWN);
+      expect(signal.state).toBe(TrendSignal.UNKNOWN);
     });
 
     it('returns BULLISH when AO > 0', () => {
@@ -126,7 +126,7 @@ describe('AO', () => {
       const signal = ao.getSignal();
 
       expect(ao.getResultOrThrow()).toBeGreaterThan(0);
-      expect(signal.signal).toBe(TrendSignal.BULLISH);
+      expect(signal.state).toBe(TrendSignal.BULLISH);
     });
 
     it('returns BEARISH when AO < 0', () => {
@@ -139,7 +139,7 @@ describe('AO', () => {
       const signal = ao.getSignal();
 
       expect(ao.getResultOrThrow()).toBeLessThan(0);
-      expect(signal.signal).toBe(TrendSignal.BEARISH);
+      expect(signal.state).toBe(TrendSignal.BEARISH);
     });
 
     it('returns UNKNOWN when AO = 0', () => {
@@ -152,7 +152,7 @@ describe('AO', () => {
       const signal = ao.getSignal();
 
       expect(ao.getResultOrThrow()).toBe(0);
-      expect(signal.signal).toBe(TrendSignal.UNKNOWN);
+      expect(signal.state).toBe(TrendSignal.UNKNOWN);
     });
   });
 });

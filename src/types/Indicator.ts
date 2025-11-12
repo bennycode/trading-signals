@@ -89,20 +89,20 @@ export abstract class IndicatorSeries<Input = number> extends TechnicalIndicator
   }
 }
 
-export abstract class TrendIndicatorSeries<Input = number, Signal = TrendSignals> extends IndicatorSeries<Input> {
-  protected abstract calculateSignal(result?: number | null | undefined): Signal;
+export abstract class TrendIndicatorSeries<Input = number, SignalState = TrendSignals> extends IndicatorSeries<Input> {
+  protected abstract calculateSignalState(result?: number | null | undefined): SignalState;
 
   getSignal(): {
-    signal: Signal;
+    state: SignalState;
     hasChanged: boolean;
   } {
-    const previousSignal = this.calculateSignal(this.previousResult);
-    const signal = this.calculateSignal(this.getResult());
-    const hasChanged = previousSignal !== signal;
+    const previousState = this.calculateSignalState(this.previousResult);
+    const state = this.calculateSignalState(this.getResult());
+    const hasChanged = previousState !== state;
 
     return {
       hasChanged,
-      signal,
+      state,
     };
   }
 }

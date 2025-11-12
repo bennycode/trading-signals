@@ -74,7 +74,7 @@ export class StochasticRSI extends MomentumIndicatorSeries {
     return null;
   }
 
-  protected calculateSignal(result?: number | null | undefined): MomentumSignals {
+  protected calculateSignalState(result?: number | null | undefined): MomentumSignals {
     const hasResult = result !== null && result !== undefined;
     const isOversold = hasResult && result <= 0.2;
     const isOverbought = hasResult && result >= 0.8;
