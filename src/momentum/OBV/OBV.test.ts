@@ -1,5 +1,6 @@
 import {OBV} from './OBV.js';
 import {NotEnoughDataError} from '../../error/index.js';
+import {TrendSignal} from '../../types/index.js';
 
 describe('OBV', () => {
   describe('getResultOrThrow', () => {
@@ -52,6 +53,65 @@ describe('OBV', () => {
         expect(obv.isStable).toBe(false);
         expect(error).toBeInstanceOf(NotEnoughDataError);
       }
+    });
+  });
+
+  describe('getSignal', () => {
+    it('returns UNKNOWN when there is no result', () => {
+      const obv = new OBV();
+      const signal = obv.getSignal();
+      expect(signal.signal).toBe(TrendSignal.UNKNOWN);
+    });
+
+    it('returns BULLISH when OBV is increasing', () => {
+      const obv = new OBV();
+      const candles = [
+        {close: 100, high: 100, low: 100, open: 100, volume: 1000},
+        {close: 101, high: 101, low: 101, open: 101, volume: 1500},
+        {close: 102, high: 102, low: 102, open: 102, volume: 2000},
+      ] as const;
+
+      for (const candle of candles) {
+        obv.add(candle);
+      }
+
+      const signal = obv.getSignal();
+
+      expect(signal.signal).toBe(TrendSignal.BULLISH);
+    });
+
+    it('returns BEARISH when OBV is decreasing', () => {
+      const obv = new OBV();
+      const candles = [
+        {close: 102, high: 102, low: 102, open: 102, volume: 2000},
+        {close: 101, high: 101, low: 101, open: 101, volume: 1500},
+        {close: 100, high: 100, low: 100, open: 100, volume: 1000},
+      ] as const;
+
+      for (const candle of candles) {
+        obv.add(candle);
+      }
+
+      const signal = obv.getSignal();
+
+      expect(signal.signal).toBe(TrendSignal.BEARISH);
+    });
+
+    it('returns UNKNOWN when OBV has not changed', () => {
+      const obv = new OBV();
+      const candles = [
+        {close: 100, high: 100, low: 100, open: 100, volume: 1000},
+        {close: 100, high: 100, low: 100, open: 100, volume: 1000},
+        {close: 100, high: 100, low: 100, open: 100, volume: 1000},
+      ] as const;
+
+      for (const candle of candles) {
+        obv.add(candle);
+      }
+
+      const signal = obv.getSignal();
+
+      expect(signal.signal).toBe(TrendSignal.UNKNOWN);
     });
   });
 });

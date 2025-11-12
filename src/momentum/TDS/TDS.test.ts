@@ -1,4 +1,5 @@
 import {TDS} from './TDS.js';
+import {MomentumSignal} from '../../types/index.js';
 
 describe('TDS', () => {
   it('does not return a result for less than 9 prices', () => {
@@ -108,6 +109,48 @@ describe('TDS', () => {
       // Now replace the last value
       const result = tds.replace(20);
       expect(result).toBeNull();
+    });
+  });
+
+  describe('getSignal', () => {
+    it('returns UNKNOWN when there is no result', () => {
+      const tds = new TDS();
+      const signal = tds.getSignal();
+      expect(signal.signal).toBe(MomentumSignal.UNKNOWN);
+    });
+
+    it('returns OVERBOUGHT when TDS = 1 (bullish setup completed)', () => {
+      const tds = new TDS();
+
+      for (let i = 0; i < 4; i++) {
+        tds.add(10);
+      }
+
+      for (let i = 0; i < 9; i++) {
+        tds.add(11 + i);
+      }
+
+      const signal = tds.getSignal();
+
+      expect(tds.getResultOrThrow()).toBe(1);
+      expect(signal.signal).toBe(MomentumSignal.OVERBOUGHT);
+    });
+
+    it('returns OVERSOLD when TDS = -1 (bearish setup completed)', () => {
+      const tds = new TDS();
+
+      for (let i = 0; i < 4; i++) {
+        tds.add(20);
+      }
+
+      for (let i = 0; i < 9; i++) {
+        tds.add(19 - i);
+      }
+
+      const signal = tds.getSignal();
+
+      expect(tds.getResultOrThrow()).toBe(-1);
+      expect(signal.signal).toBe(MomentumSignal.OVERSOLD);
     });
   });
 });

@@ -1,6 +1,7 @@
 import {WilliamsR} from './WilliamsR.js';
 import {StochasticOscillator} from '../STOCH/StochasticOscillator.js';
 import {NotEnoughDataError} from '../../error/index.js';
+import {MomentumSignal} from '../../types/index.js';
 import candles from '../../fixtures/STOCH/candles.json' with {type: 'json'};
 
 describe('WilliamsR', () => {
@@ -118,6 +119,36 @@ describe('WilliamsR', () => {
       } catch (error) {
         expect(error).toBeInstanceOf(NotEnoughDataError);
       }
+    });
+  });
+
+  describe('getSignal', () => {
+    it('returns UNKNOWN when there is no result', () => {
+      const willR = new WilliamsR(14);
+      const calculateSignal = willR['calculateSignal'].bind(willR);
+      const signal = calculateSignal(null);
+      expect(signal).toBe(MomentumSignal.UNKNOWN);
+    });
+
+    it('returns OVERBOUGHT when Williams %R >= -20', () => {
+      const willR = new WilliamsR(14);
+      const calculateSignal = willR['calculateSignal'].bind(willR);
+      const signal = calculateSignal(-20);
+      expect(signal).toBe(MomentumSignal.OVERBOUGHT);
+    });
+
+    it('returns OVERSOLD when Williams %R <= -80', () => {
+      const willR = new WilliamsR(14);
+      const calculateSignal = willR['calculateSignal'].bind(willR);
+      const signal = calculateSignal(-80);
+      expect(signal).toBe(MomentumSignal.OVERSOLD);
+    });
+
+    it('returns UNKNOWN when Williams %R is between -80 and -20', () => {
+      const willR = new WilliamsR(14);
+      const calculateSignal = willR['calculateSignal'].bind(willR);
+      const signal = calculateSignal(-50);
+      expect(signal).toBe(MomentumSignal.UNKNOWN);
     });
   });
 });

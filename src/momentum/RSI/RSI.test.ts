@@ -1,5 +1,6 @@
 import {RSI} from './RSI.js';
 import {NotEnoughDataError} from '../../error/index.js';
+import {MomentumSignal} from '../../types/index.js';
 
 describe('RSI', () => {
   describe('update', () => {
@@ -76,6 +77,58 @@ describe('RSI', () => {
         expect(rsi.isStable).toBe(false);
         expect(error).toBeInstanceOf(NotEnoughDataError);
       }
+    });
+  });
+
+  describe('getSignal', () => {
+    it('returns UNKNOWN when there is no result', () => {
+      const rsi = new RSI(5);
+      const signal = rsi.getSignal();
+      expect(signal.signal).toBe(MomentumSignal.UNKNOWN);
+    });
+
+    it('returns OVERSOLD when RSI <= 30', () => {
+      const rsi = new RSI(5);
+      const prices = [100, 99, 98, 97, 96, 95] as const;
+
+      for (const price of prices) {
+        rsi.add(price);
+      }
+
+      const signal = rsi.getSignal();
+
+      expect(rsi.getResultOrThrow()).toBeLessThanOrEqual(30);
+      expect(signal.signal).toBe(MomentumSignal.OVERSOLD);
+    });
+
+    it('returns OVERBOUGHT when RSI >= 70', () => {
+      const rsi = new RSI(5);
+      const prices = [95, 96, 97, 98, 99, 100] as const;
+
+      for (const price of prices) {
+        rsi.add(price);
+      }
+
+      const signal = rsi.getSignal();
+
+      expect(rsi.getResultOrThrow()).toBeGreaterThanOrEqual(70);
+      expect(signal.signal).toBe(MomentumSignal.OVERBOUGHT);
+    });
+
+    it('returns UNKNOWN when RSI is between 30 and 70', () => {
+      const rsi = new RSI(5);
+      const prices = [100, 100.5, 100, 99.5, 100, 100.5] as const;
+
+      for (const price of prices) {
+        rsi.add(price);
+      }
+
+      const signal = rsi.getSignal();
+      const result = rsi.getResultOrThrow();
+
+      expect(result).toBeGreaterThan(30);
+      expect(result).toBeLessThan(70);
+      expect(signal.signal).toBe(MomentumSignal.UNKNOWN);
     });
   });
 });

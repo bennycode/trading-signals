@@ -1,6 +1,7 @@
 import {MACD} from './MACD.js';
 import {EMA} from '../../trend/EMA/EMA.js';
 import {NotEnoughDataError} from '../../error/index.js';
+import {TrendSignal} from '../../types/index.js';
 
 describe('MACD', () => {
   describe('replace', () => {
@@ -153,6 +154,36 @@ describe('MACD', () => {
 
       macd.updates(mockedPrices, false);
       expect(macd.isStable).toBe(true);
+    });
+  });
+
+  describe('getSignal', () => {
+    it('returns UNKNOWN when there is no result', () => {
+      const macd = new MACD(new EMA(12), new EMA(26), new EMA(9));
+      const calculateSignal = macd['calculateSignal'].bind(macd);
+      const signal = calculateSignal(null);
+      expect(signal).toBe(TrendSignal.UNKNOWN);
+    });
+
+    it('returns BULLISH when histogram > 0', () => {
+      const macd = new MACD(new EMA(2), new EMA(5), new EMA(9));
+      const calculateSignal = macd['calculateSignal'].bind(macd);
+      const signal = calculateSignal({histogram: 0.5, macd: 1, signal: 0.5});
+      expect(signal).toBe(TrendSignal.BULLISH);
+    });
+
+    it('returns BEARISH when histogram < 0', () => {
+      const macd = new MACD(new EMA(2), new EMA(5), new EMA(9));
+      const calculateSignal = macd['calculateSignal'].bind(macd);
+      const signal = calculateSignal({histogram: -0.5, macd: 0.5, signal: 1});
+      expect(signal).toBe(TrendSignal.BEARISH);
+    });
+
+    it('returns UNKNOWN when histogram is 0', () => {
+      const macd = new MACD(new EMA(2), new EMA(5), new EMA(9));
+      const calculateSignal = macd['calculateSignal'].bind(macd);
+      const signal = calculateSignal({histogram: 0, macd: 1, signal: 1});
+      expect(signal).toBe(TrendSignal.UNKNOWN);
     });
   });
 });

@@ -1,5 +1,6 @@
 import {StochasticOscillator} from './StochasticOscillator.js';
 import {NotEnoughDataError} from '../../error/index.js';
+import {MomentumSignal} from '../../types/index.js';
 import candles from '../../fixtures/STOCH/candles.json' with {type: 'json'};
 
 describe('StochasticOscillator', () => {
@@ -66,6 +67,36 @@ describe('StochasticOscillator', () => {
       const result = stoch.add({close: 100, high: 100, low: 100});
       expect(result?.stochK.toFixed(2)).toBe('0.00');
       expect(result?.stochD.toFixed(2)).toBe('0.00');
+    });
+  });
+
+  describe('getSignal', () => {
+    it('returns UNKNOWN when there is no result', () => {
+      const stoch = new StochasticOscillator(5, 3, 3);
+      const calculateSignal = stoch['calculateSignal'].bind(stoch);
+      const signal = calculateSignal(null);
+      expect(signal).toBe(MomentumSignal.UNKNOWN);
+    });
+
+    it('returns OVERSOLD when stochK <= 20', () => {
+      const stoch = new StochasticOscillator(5, 3, 3);
+      const calculateSignal = stoch['calculateSignal'].bind(stoch);
+      const signal = calculateSignal({stochD: 20, stochK: 20});
+      expect(signal).toBe(MomentumSignal.OVERSOLD);
+    });
+
+    it('returns OVERBOUGHT when stochK >= 80', () => {
+      const stoch = new StochasticOscillator(5, 3, 3);
+      const calculateSignal = stoch['calculateSignal'].bind(stoch);
+      const signal = calculateSignal({stochD: 50, stochK: 80});
+      expect(signal).toBe(MomentumSignal.OVERBOUGHT);
+    });
+
+    it('returns UNKNOWN when stochK is between 20 and 80', () => {
+      const stoch = new StochasticOscillator(5, 3, 3);
+      const calculateSignal = stoch['calculateSignal'].bind(stoch);
+      const signal = calculateSignal({stochD: 50, stochK: 50});
+      expect(signal).toBe(MomentumSignal.UNKNOWN);
     });
   });
 });

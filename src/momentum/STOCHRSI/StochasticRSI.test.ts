@@ -1,6 +1,7 @@
 import {SMA} from '../../trend/SMA/SMA.js';
 import {WSMA} from '../../trend/WSMA/WSMA.js';
 import {StochasticRSI} from './StochasticRSI.js';
+import {MomentumSignal} from '../../types/index.js';
 
 describe('StochasticRSI', () => {
   describe('replace', () => {
@@ -101,6 +102,48 @@ describe('StochasticRSI', () => {
       const stochRSI = new StochasticRSI(interval);
       stochRSI.updates([2, 2, 2, 2], false);
       expect(stochRSI.getResultOrThrow()).toBe(100);
+    });
+  });
+
+  describe('getSignal', () => {
+    it('returns UNKNOWN when there is no result', () => {
+      const stochRSI = new StochasticRSI(5);
+      const signal = stochRSI.getSignal();
+      expect(signal.signal).toBe(MomentumSignal.UNKNOWN);
+    });
+
+    it('returns OVERSOLD when Stochastic RSI <= 0.2', () => {
+      const stochRSI = new StochasticRSI(5);
+      // Use known test data that produces oversold condition
+      const prices = [
+        81.59, 81.06, 82.87, 83.0, 83.61, 83.15, 82.84, 83.99, 84.55, 84.36, 85.53, 86.54, 86.89, 87.77, 87.29,
+      ] as const;
+
+      for (const price of prices) {
+        stochRSI.add(price);
+      }
+
+      const result = stochRSI.getResultOrThrow();
+      const signal = stochRSI.getSignal();
+
+      expect(result).toBeLessThanOrEqual(0.2);
+      expect(signal.signal).toBe(MomentumSignal.OVERSOLD);
+    });
+
+    it('returns OVERBOUGHT when Stochastic RSI >= 0.8', () => {
+      const stochRSI = new StochasticRSI(5);
+      // Strong uptrend to produce overbought
+      const prices = [70, 72, 74, 76, 78, 80, 82, 84, 86, 88, 90, 92, 94, 96, 98] as const;
+
+      for (const price of prices) {
+        stochRSI.add(price);
+      }
+
+      const result = stochRSI.getResultOrThrow();
+      const signal = stochRSI.getSignal();
+
+      expect(result).toBeGreaterThanOrEqual(0.8);
+      expect(signal.signal).toBe(MomentumSignal.OVERBOUGHT);
     });
   });
 });

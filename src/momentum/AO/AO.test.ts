@@ -108,4 +108,51 @@ describe('AO', () => {
       expect(ao.getResultOrThrow()?.toFixed(2)).toBe(latestResult);
     });
   });
+
+  describe('getSignal', () => {
+    it('returns UNKNOWN when there is no result', () => {
+      const ao = new AO(5, 34);
+      const signal = ao.getSignal();
+      expect(signal.signal).toBe(TrendSignal.UNKNOWN);
+    });
+
+    it('returns BULLISH when AO > 0', () => {
+      const ao = new AO(5, 34);
+
+      for (let i = 0; i < 34; i++) {
+        ao.add({high: 100 + i, low: 90 + i});
+      }
+
+      const signal = ao.getSignal();
+
+      expect(ao.getResultOrThrow()).toBeGreaterThan(0);
+      expect(signal.signal).toBe(TrendSignal.BULLISH);
+    });
+
+    it('returns BEARISH when AO < 0', () => {
+      const ao = new AO(5, 34);
+
+      for (let i = 0; i < 34; i++) {
+        ao.add({high: 100 - i, low: 90 - i});
+      }
+
+      const signal = ao.getSignal();
+
+      expect(ao.getResultOrThrow()).toBeLessThan(0);
+      expect(signal.signal).toBe(TrendSignal.BEARISH);
+    });
+
+    it('returns UNKNOWN when AO = 0', () => {
+      const ao = new AO(5, 34);
+
+      for (let i = 0; i < 34; i++) {
+        ao.add({high: 100, low: 90});
+      }
+
+      const signal = ao.getSignal();
+
+      expect(ao.getResultOrThrow()).toBe(0);
+      expect(signal.signal).toBe(TrendSignal.UNKNOWN);
+    });
+  });
 });

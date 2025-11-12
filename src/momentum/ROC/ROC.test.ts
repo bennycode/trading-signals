@@ -75,4 +75,54 @@ describe('ROC', () => {
       expect(indicator.isStable).toBe(true);
     });
   });
+
+  describe('getSignal', () => {
+    it('returns UNKNOWN when there is no result', () => {
+      const roc = new ROC(5);
+      const signal = roc.getSignal();
+      expect(signal.signal).toBe(TrendSignal.UNKNOWN);
+    });
+
+    it('returns BULLISH when ROC >= 0', () => {
+      const roc = new ROC(5);
+      const prices = [100, 101, 102, 103, 104, 105] as const;
+
+      for (const price of prices) {
+        roc.add(price);
+      }
+
+      const signal = roc.getSignal();
+
+      expect(roc.getResultOrThrow()).toBeGreaterThanOrEqual(0);
+      expect(signal.signal).toBe(TrendSignal.BULLISH);
+    });
+
+    it('returns BEARISH when ROC < 0', () => {
+      const roc = new ROC(5);
+      const prices = [105, 104, 103, 102, 101, 100] as const;
+
+      for (const price of prices) {
+        roc.add(price);
+      }
+
+      const signal = roc.getSignal();
+
+      expect(roc.getResultOrThrow()).toBeLessThan(0);
+      expect(signal.signal).toBe(TrendSignal.BEARISH);
+    });
+
+    it('returns BULLISH when ROC = 0', () => {
+      const roc = new ROC(5);
+      const prices = [100, 100, 100, 100, 100, 100] as const;
+
+      for (const price of prices) {
+        roc.add(price);
+      }
+
+      const signal = roc.getSignal();
+
+      expect(roc.getResultOrThrow()).toBe(0);
+      expect(signal.signal).toBe(TrendSignal.BULLISH);
+    });
+  });
 });
