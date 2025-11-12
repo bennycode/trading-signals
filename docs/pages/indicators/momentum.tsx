@@ -699,13 +699,17 @@ if (roc.isStable) {
 
   const renderMACD = (config: IndicatorConfig) => {
     const macd = new MACD(new EMA(12), new EMA(26), new EMA(9));
-    const chartData: ChartDataPoint[] = [];
+    const chartDataMACD: ChartDataPoint[] = [];
+    const chartDataSignal: ChartDataPoint[] = [];
+    const chartDataHistogram: ChartDataPoint[] = [];
     const sampleValues: Array<{period: number; date: string; close: number; result: string; signal: string}> = [];
 
     ethCandles.forEach((candle, idx) => {
       macd.add(candle.close);
       const result = macd.isStable ? macd.getResult() : null;
-      chartData.push({x: idx + 1, y: result?.macd ?? null});
+      chartDataMACD.push({x: idx + 1, y: result?.macd ?? null});
+      chartDataSignal.push({x: idx + 1, y: result?.signal ?? null});
+      chartDataHistogram.push({x: idx + 1, y: result?.histogram ?? null});
 
       sampleValues.push({
         period: idx + 1,
@@ -729,7 +733,110 @@ if (roc.isStable) {
           </p>
         </div>
 
-        <Chart title="MACD (12,26,9)" data={chartData} yAxisLabel="MACD" color={config.color} />
+        <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-4">
+          <HighchartsReact
+            highcharts={Highcharts}
+            options={{
+              chart: {
+                type: 'line',
+                backgroundColor: 'transparent',
+                height: 300,
+              },
+              title: {
+                text: 'MACD (12,26,9)',
+                style: {
+                  color: '#e2e8f0',
+                  fontSize: '16px',
+                  fontWeight: '600',
+                },
+              },
+              credits: {
+                enabled: false,
+              },
+              xAxis: {
+                title: {
+                  text: 'Period',
+                  style: {color: '#94a3b8'},
+                },
+                labels: {
+                  style: {color: '#94a3b8'},
+                },
+                gridLineColor: '#334155',
+              },
+              yAxis: {
+                title: {
+                  text: 'Value',
+                  style: {color: '#94a3b8'},
+                },
+                labels: {
+                  style: {color: '#94a3b8'},
+                },
+                gridLineColor: '#334155',
+              },
+              legend: {
+                enabled: true,
+                itemStyle: {
+                  color: '#e2e8f0',
+                },
+              },
+              plotOptions: {
+                line: {
+                  marker: {
+                    enabled: true,
+                    radius: 3,
+                  },
+                  lineWidth: 2,
+                },
+                column: {
+                  borderWidth: 0,
+                },
+              },
+              series: [
+                {
+                  type: 'line',
+                  name: 'MACD',
+                  data: chartDataMACD.map(point => [point.x, point.y]),
+                  color: config.color,
+                  marker: {
+                    fillColor: config.color,
+                  },
+                },
+                {
+                  type: 'line',
+                  name: 'Signal',
+                  data: chartDataSignal.map(point => [point.x, point.y]),
+                  color: '#f97316',
+                  marker: {
+                    fillColor: '#f97316',
+                  },
+                },
+                {
+                  type: 'column',
+                  name: 'Histogram',
+                  data: chartDataHistogram.map(point => [point.x, point.y]),
+                  color: '#6366f1',
+                  opacity: 0.5,
+                },
+              ],
+              tooltip: {
+                backgroundColor: '#1e293b',
+                borderColor: '#475569',
+                style: {
+                  color: '#e2e8f0',
+                },
+                shared: true,
+                formatter: function (): string {
+                  let s: string = `<b>Period ${(this as any).x}</b><br/>`;
+                  ((this as any).points as any[])?.forEach((point: any) => {
+                    const yValue = typeof point.y === 'number' ? point.y.toFixed(4) : 'N/A';
+                    s += `${point.series.name}: ${yValue}<br/>`;
+                  });
+                  return s;
+                },
+              },
+            }}
+          />
+        </div>
 
         <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-4">
           <h3 className="text-lg font-semibold text-white mb-3">All Sample Values</h3>
