@@ -42,8 +42,10 @@ describe('ROC', () => {
       });
 
       expect(roc.getResultOrThrow().toFixed(2)).toBe('-0.83');
-      expect(roc.getSignal().signal).toBe(TrendSignal.BEARISH);
-      expect(roc.getSignal().hasChanged).toBe(false);
+      expect(roc.getSignal()).toEqual({
+        hasChanged: false,
+        signal: TrendSignal.BEARISH,
+      });
     });
 
     it('throws an error when there is not enough input data', () => {
