@@ -1503,7 +1503,7 @@ if (willr.isStable) {
       });
     }
 
-    const sampleValues = results.slice(-10);
+    const sampleValues = results;
 
     return (
       <div className="space-y-6">
@@ -1534,7 +1534,7 @@ if (willr.isStable) {
         </div>
 
         <div className="bg-slate-800/30 border border-slate-700 rounded-lg p-6">
-          <h3 className="text-lg font-semibold text-white mb-4">Sample Calculations (Last 10 Periods)</h3>
+          <h3 className="text-lg font-semibold text-white mb-4">All Sample Values</h3>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
