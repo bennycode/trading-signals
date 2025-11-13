@@ -73,30 +73,43 @@ describe('StochasticOscillator', () => {
   describe('getSignal', () => {
     it('returns UNKNOWN when there is no result', () => {
       const stoch = new StochasticOscillator(5, 3, 3);
-      const calculateSignal = stoch['calculateSignal'].bind(stoch);
-      const signal = calculateSignal(null);
-      expect(signal).toBe(MomentumSignal.UNKNOWN);
+      const signal = stoch.getSignal();
+      expect(signal.state).toBe(MomentumSignal.UNKNOWN);
     });
 
     it('returns OVERSOLD when stochK <= 20', () => {
       const stoch = new StochasticOscillator(5, 3, 3);
-      const calculateSignal = stoch['calculateSignal'].bind(stoch);
-      const signal = calculateSignal({stochD: 20, stochK: 20});
-      expect(signal).toBe(MomentumSignal.OVERSOLD);
+      // Build data that creates oversold condition
+      for (let i = 0; i < 9; i++) {
+        stoch.add({close: 20, high: 100, low: 10});
+      }
+      const signal = stoch.getSignal();
+      expect(signal.state).toBe(MomentumSignal.OVERSOLD);
+      expect(stoch.getResultOrThrow().stochK).toBeLessThanOrEqual(20);
     });
 
     it('returns OVERBOUGHT when stochK >= 80', () => {
       const stoch = new StochasticOscillator(5, 3, 3);
-      const calculateSignal = stoch['calculateSignal'].bind(stoch);
-      const signal = calculateSignal({stochD: 50, stochK: 80});
-      expect(signal).toBe(MomentumSignal.OVERBOUGHT);
+      // Build data that creates overbought condition
+      for (let i = 0; i < 9; i++) {
+        stoch.add({close: 95, high: 100, low: 10});
+      }
+      const signal = stoch.getSignal();
+      expect(signal.state).toBe(MomentumSignal.OVERBOUGHT);
+      expect(stoch.getResultOrThrow().stochK).toBeGreaterThanOrEqual(80);
     });
 
-    it('returns UNKNOWN when stochK is between 20 and 80', () => {
+    it('returns NEUTRAL when stochK is between 20 and 80', () => {
       const stoch = new StochasticOscillator(5, 3, 3);
-      const calculateSignal = stoch['calculateSignal'].bind(stoch);
-      const signal = calculateSignal({stochD: 50, stochK: 50});
-      expect(signal).toBe(MomentumSignal.NEUTRAL);
+      // Build data that creates neutral condition
+      for (let i = 0; i < 9; i++) {
+        stoch.add({close: 50, high: 100, low: 10});
+      }
+      const signal = stoch.getSignal();
+      expect(signal.state).toBe(MomentumSignal.NEUTRAL);
+      const result = stoch.getResultOrThrow();
+      expect(result.stochK).toBeGreaterThan(20);
+      expect(result.stochK).toBeLessThan(80);
     });
   });
 });

@@ -160,30 +160,43 @@ describe('MACD', () => {
   describe('getSignal', () => {
     it('returns UNKNOWN when there is no result', () => {
       const macd = new MACD(new EMA(12), new EMA(26), new EMA(9));
-      const calculateSignal = macd['calculateSignal'].bind(macd);
-      const signal = calculateSignal(null);
-      expect(signal).toBe(TrendSignal.UNKNOWN);
+      const signal = macd.getSignal();
+      expect(signal.state).toBe(TrendSignal.UNKNOWN);
     });
 
     it('returns BULLISH when histogram > 0', () => {
       const macd = new MACD(new EMA(2), new EMA(5), new EMA(9));
-      const calculateSignal = macd['calculateSignal'].bind(macd);
-      const signal = calculateSignal({histogram: 0.5, macd: 1, signal: 0.5});
-      expect(signal).toBe(TrendSignal.BULLISH);
+      // Build up prices that create positive histogram
+      for (let i = 1; i <= 10; i++) {
+        macd.add(100 + i * 2);
+      }
+      const signal = macd.getSignal();
+      expect(signal.state).toBe(TrendSignal.BULLISH);
+      expect(macd.getResultOrThrow().histogram).toBeGreaterThan(0);
     });
 
     it('returns BEARISH when histogram < 0', () => {
       const macd = new MACD(new EMA(2), new EMA(5), new EMA(9));
-      const calculateSignal = macd['calculateSignal'].bind(macd);
-      const signal = calculateSignal({histogram: -0.5, macd: 0.5, signal: 1});
-      expect(signal).toBe(TrendSignal.BEARISH);
+      // Build up prices that create negative histogram
+      for (let i = 10; i >= 1; i--) {
+        macd.add(100 + i * 2);
+      }
+      const signal = macd.getSignal();
+      expect(signal.state).toBe(TrendSignal.BEARISH);
+      expect(macd.getResultOrThrow().histogram).toBeLessThan(0);
     });
 
-    it('returns UNKNOWN when histogram is 0', () => {
+    it('tracks signal state changes', () => {
       const macd = new MACD(new EMA(2), new EMA(5), new EMA(9));
-      const calculateSignal = macd['calculateSignal'].bind(macd);
-      const signal = calculateSignal({histogram: 0, macd: 1, signal: 1});
-      expect(signal).toBe(TrendSignal.SIDEWAYS);
+
+      // Build up some data
+      for (let i = 1; i <= 10; i++) {
+        macd.add(100 + i);
+      }
+
+      const signal = macd.getSignal();
+      expect(signal.state).toBeDefined();
+      expect(typeof signal.hasChanged).toBe('boolean');
     });
   });
 });

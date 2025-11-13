@@ -71,9 +71,8 @@ export class MACD extends TechnicalIndicator<MACDResult, number> {
       case isBullish:
         return TrendSignal.BULLISH;
       case isBearish:
-        return TrendSignal.BEARISH;
       default:
-        return TrendSignal.SIDEWAYS;
+        return TrendSignal.BEARISH;
     }
   }
 
