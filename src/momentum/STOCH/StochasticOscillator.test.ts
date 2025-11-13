@@ -30,6 +30,34 @@ describe('StochasticOscillator', () => {
     });
   });
 
+  describe('replace', () => {
+    it('replaces the most recently added value', () => {
+      const stoch = new StochasticOscillator(5, 3, 3);
+
+      // Add enough data to make it stable
+      for (let i = 0; i < 9; i++) {
+        stoch.add({close: 50 + i, high: 100, low: 10});
+      }
+
+      const originalValue = {close: 80, high: 100, low: 10} as const;
+      const replacedValue = {close: 30, high: 100, low: 10} as const;
+
+      // Add a value
+      const originalResult = stoch.add(originalValue);
+
+      // Replace it with a different value
+      const replacedResult = stoch.replace(replacedValue);
+
+      // Results should be different since we replaced with a different value
+      expect(replacedResult?.stochK).not.toBe(originalResult?.stochK);
+
+      // Test restoration
+      const restoredResult = stoch.replace(originalValue);
+
+      expect(restoredResult?.stochK).toBe(originalResult?.stochK);
+    });
+  });
+
   describe('getResultOrThrow', () => {
     it('throws an error when there is not enough input data', () => {
       const stoch = new StochasticOscillator(5, 3, 3);
