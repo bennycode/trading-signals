@@ -254,6 +254,7 @@ export default function MomentumIndicators() {
   const renderRSI = (config: IndicatorConfig) => {
     const rsi = new RSI(14);
     const chartData: ChartDataPoint[] = [];
+    const flags: Array<{x: number; title: string; text: string}> = [];
     const sampleValues: Array<{period: number; date: string; close: number; result: string; signal: string}> = [];
 
     ethCandles.forEach((candle, idx) => {
@@ -261,6 +262,14 @@ export default function MomentumIndicators() {
       const result = rsi.isStable ? rsi.getResult() : null;
       const signal = rsi.getSignal();
       chartData.push({x: idx + 1, y: result});
+
+      if (signal.hasChanged && rsi.isStable) {
+        flags.push({
+          x: idx + 1,
+          title: signal.state,
+          text: `Signal: ${signal.state}`,
+        });
+      }
 
       sampleValues.push({
         period: idx + 1,
@@ -284,7 +293,7 @@ export default function MomentumIndicators() {
           </p>
         </div>
 
-        <Chart title="RSI (14)" data={chartData} yAxisLabel="RSI" color={config.color} />
+        <Chart title="RSI (14)" data={chartData} yAxisLabel="RSI" color={config.color} flags={flags} />
 
         <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-4">
           <h3 className="text-lg font-semibold text-white mb-3">All Sample Values</h3>
@@ -342,6 +351,7 @@ if (rsi.isStable) {
     const stoch = new StochasticOscillator(14, 3, 3);
     const chartDataK: ChartDataPoint[] = [];
     const chartDataD: ChartDataPoint[] = [];
+    const flags: Array<{x: number; title: string; text: string}> = [];
     const sampleValues: Array<{period: number; date: string; close: number; k: string; d: string; signal: string}> = [];
 
     ethCandles.forEach((candle, idx) => {
@@ -350,6 +360,14 @@ if (rsi.isStable) {
       const signal = stoch.getSignal();
       chartDataK.push({x: idx + 1, y: result?.stochK ?? null});
       chartDataD.push({x: idx + 1, y: result?.stochD ?? null});
+
+      if (signal.hasChanged && stoch.isStable) {
+        flags.push({
+          x: idx + 1,
+          title: signal.state,
+          text: `Signal: ${signal.state}`,
+        });
+      }
 
       sampleValues.push({
         period: idx + 1,
@@ -447,6 +465,38 @@ if (rsi.isStable) {
                     fillColor: '#f97316',
                   },
                 },
+                ...(flags.length > 0
+                  ? [
+                      {
+                        type: 'flags' as const,
+                        name: 'Signals',
+                        data: flags.map(flag => ({
+                          x: flag.x,
+                          title: flag.title,
+                          text: flag.text,
+                        })),
+                        onSeries: 'series-0',
+                        shape: 'squarepin',
+                        width: 80,
+                        y: -20,
+                        color: '#fbbf24',
+                        fillColor: '#fbbf24',
+                        style: {
+                          color: '#000',
+                          fontSize: '11px',
+                          fontWeight: 'bold',
+                        },
+                        states: {
+                          hover: {
+                            fillColor: '#f59e0b',
+                          },
+                        },
+                        showInLegend: false,
+                        grouping: false,
+                        useHTML: true,
+                      },
+                    ]
+                  : []),
               ],
               tooltip: {
                 backgroundColor: '#1e293b',
@@ -527,6 +577,7 @@ if (stoch.isStable) {
   const renderCCI = (config: IndicatorConfig) => {
     const cci = new CCI(20);
     const chartData: ChartDataPoint[] = [];
+    const flags: Array<{x: number; title: string; text: string}> = [];
     const sampleValues: Array<{period: number; date: string; close: number; result: string; signal: string}> = [];
 
     ethCandles.forEach((candle, idx) => {
@@ -534,6 +585,14 @@ if (stoch.isStable) {
       const result = cci.isStable ? cci.getResult() : null;
       const signal = cci.getSignal();
       chartData.push({x: idx + 1, y: result});
+
+      if (signal.hasChanged && cci.isStable) {
+        flags.push({
+          x: idx + 1,
+          title: signal.state,
+          text: `Signal: ${signal.state}`,
+        });
+      }
 
       sampleValues.push({
         period: idx + 1,
@@ -557,7 +616,7 @@ if (stoch.isStable) {
           </p>
         </div>
 
-        <Chart title="CCI (20)" data={chartData} yAxisLabel="CCI" color={config.color} />
+        <Chart title="CCI (20)" data={chartData} yAxisLabel="CCI" color={config.color} flags={flags} />
 
         <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-4">
           <h3 className="text-lg font-semibold text-white mb-3">All Sample Values</h3>
@@ -615,6 +674,7 @@ if (cci.isStable) {
     const prices = [100, 102, 105, 107, 110, 108, 106, 109, 112, 115, 117, 119, 120];
     const roc = new ROC(9);
     const chartData: ChartDataPoint[] = [];
+    const flags: Array<{x: number; title: string; text: string}> = [];
     const sampleValues: Array<{period: number; date: string; close: number; result: string; signal: string}> = [];
 
     ethCandles.forEach((candle, idx) => {
@@ -622,6 +682,14 @@ if (cci.isStable) {
       const result = roc.isStable ? roc.getResult() : null;
       const signal = roc.getSignal();
       chartData.push({x: idx + 1, y: result});
+
+      if (signal.hasChanged && roc.isStable) {
+        flags.push({
+          x: idx + 1,
+          title: signal.state,
+          text: `Signal: ${signal.state}`,
+        });
+      }
 
       sampleValues.push({
         period: idx + 1,
@@ -645,7 +713,7 @@ if (cci.isStable) {
           </p>
         </div>
 
-        <Chart title="ROC (9)" data={chartData} yAxisLabel="ROC %" color={config.color} />
+        <Chart title="ROC (9)" data={chartData} yAxisLabel="ROC %" color={config.color} flags={flags} />
 
         <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-4">
           <h3 className="text-lg font-semibold text-white mb-3">All Sample Values</h3>
@@ -702,6 +770,7 @@ if (roc.isStable) {
     const chartDataMACD: ChartDataPoint[] = [];
     const chartDataSignal: ChartDataPoint[] = [];
     const chartDataHistogram: ChartDataPoint[] = [];
+    const flags: Array<{x: number; title: string; text: string}> = [];
     const sampleValues: Array<{period: number; date: string; close: number; result: string; signal: string}> = [];
 
     ethCandles.forEach((candle, idx) => {
@@ -711,6 +780,14 @@ if (roc.isStable) {
       chartDataMACD.push({x: idx + 1, y: result?.macd ?? null});
       chartDataSignal.push({x: idx + 1, y: result?.signal ?? null});
       chartDataHistogram.push({x: idx + 1, y: result?.histogram ?? null});
+
+      if (trendSignal.hasChanged && macd.isStable) {
+        flags.push({
+          x: idx + 1,
+          title: trendSignal.state,
+          text: `Signal: ${trendSignal.state}`,
+        });
+      }
 
       sampleValues.push({
         period: idx + 1,
@@ -818,6 +895,38 @@ if (roc.isStable) {
                   color: '#6366f1',
                   opacity: 0.5,
                 },
+                ...(flags.length > 0
+                  ? [
+                      {
+                        type: 'flags' as const,
+                        name: 'Signals',
+                        data: flags.map(flag => ({
+                          x: flag.x,
+                          title: flag.title,
+                          text: flag.text,
+                        })),
+                        onSeries: 'series-0',
+                        shape: 'squarepin',
+                        width: 80,
+                        y: -20,
+                        color: '#fbbf24',
+                        fillColor: '#fbbf24',
+                        style: {
+                          color: '#000',
+                          fontSize: '11px',
+                          fontWeight: 'bold',
+                        },
+                        states: {
+                          hover: {
+                            fillColor: '#f59e0b',
+                          },
+                        },
+                        showInLegend: false,
+                        grouping: false,
+                        useHTML: true,
+                      },
+                    ]
+                  : []),
               ],
               tooltip: {
                 backgroundColor: '#1e293b',
@@ -895,6 +1004,7 @@ if (macd.isStable) {
   const renderAO = (config: IndicatorConfig) => {
     const ao = new AO(5, 34);
     const chartData: ChartDataPoint[] = [];
+    const flags: Array<{x: number; title: string; text: string}> = [];
     const sampleValues: Array<{
       period: number;
       date: string;
@@ -909,6 +1019,14 @@ if (macd.isStable) {
       const result = ao.isStable ? ao.getResult() : null;
       const signal = ao.getSignal();
       chartData.push({x: idx + 1, y: result});
+
+      if (signal.hasChanged && ao.isStable) {
+        flags.push({
+          x: idx + 1,
+          title: signal.state,
+          text: `Signal: ${signal.state}`,
+        });
+      }
 
       sampleValues.push({
         period: idx + 1,
@@ -933,7 +1051,7 @@ if (macd.isStable) {
           </p>
         </div>
 
-        <Chart title="Awesome Oscillator (5,34)" data={chartData} yAxisLabel="AO" color={config.color} />
+        <Chart title="Awesome Oscillator (5,34)" data={chartData} yAxisLabel="AO" color={config.color} flags={flags} />
 
         <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-4">
           <h3 className="text-lg font-semibold text-white mb-3">All Sample Values</h3>
@@ -989,6 +1107,7 @@ if (ao.isStable) {
   const renderAC = (config: IndicatorConfig) => {
     const ac = new AC(5, 34, 5);
     const chartData: ChartDataPoint[] = [];
+    const flags: Array<{x: number; title: string; text: string}> = [];
     const sampleValues: Array<{
       period: number;
       date: string;
@@ -1003,6 +1122,14 @@ if (ao.isStable) {
       const result = ac.isStable ? ac.getResult() : null;
       const signal = ac.getSignal();
       chartData.push({x: idx + 1, y: result});
+
+      if (signal.hasChanged && ac.isStable) {
+        flags.push({
+          x: idx + 1,
+          title: signal.state,
+          text: `Signal: ${signal.state}`,
+        });
+      }
 
       sampleValues.push({
         period: idx + 1,
@@ -1027,7 +1154,13 @@ if (ao.isStable) {
           </p>
         </div>
 
-        <Chart title="Accelerator Oscillator (5,34,5)" data={chartData} yAxisLabel="AC" color={config.color} />
+        <Chart
+          title="Accelerator Oscillator (5,34,5)"
+          data={chartData}
+          yAxisLabel="AC"
+          color={config.color}
+          flags={flags}
+        />
 
         <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-4">
           <h3 className="text-lg font-semibold text-white mb-3">All Sample Values</h3>
@@ -1083,18 +1216,29 @@ if (ac.isStable) {
   const renderCG = (config: IndicatorConfig) => {
     const cg = new CG(10, 10);
     const chartData: ChartDataPoint[] = [];
-    const sampleValues: Array<{period: number; date: string; close: number; result: string}> = [];
+    const flags: Array<{x: number; title: string; text: string}> = [];
+    const sampleValues: Array<{period: number; date: string; close: number; result: string; signal: string}> = [];
 
     ethCandles.forEach((candle, idx) => {
       cg.add(candle.close);
       const result = cg.isStable ? cg.getResult() : null;
+      const signal = cg.getSignal();
       chartData.push({x: idx + 1, y: result});
+
+      if (signal.hasChanged && cg.isStable) {
+        flags.push({
+          x: idx + 1,
+          title: signal.state,
+          text: `Signal: ${signal.state}`,
+        });
+      }
 
       sampleValues.push({
         period: idx + 1,
         date: candle.date,
         close: candle.close,
         result: result !== null ? result.toFixed(2) : 'N/A',
+        signal: signal.state,
       });
     });
 
@@ -1110,7 +1254,7 @@ if (ac.isStable) {
           </p>
         </div>
 
-        <Chart title="Center of Gravity (10,10)" data={chartData} yAxisLabel="CG" color={config.color} />
+        <Chart title="Center of Gravity (10,10)" data={chartData} yAxisLabel="CG" color={config.color} flags={flags} />
 
         <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-4">
           <h3 className="text-lg font-semibold text-white mb-3">All Sample Values</h3>
@@ -1122,6 +1266,7 @@ if (ac.isStable) {
                   <th className="text-left text-slate-300 py-2 px-3">Date</th>
                   <th className="text-left text-slate-300 py-2 px-3">Close</th>
                   <th className="text-left text-slate-300 py-2 px-3">CG</th>
+                  <th className="text-left text-slate-300 py-2 px-3">Signal</th>
                 </tr>
               </thead>
               <tbody>
@@ -1131,6 +1276,9 @@ if (ac.isStable) {
                     <td className="text-slate-300 py-2 px-3">{row.date}</td>
                     <td className="text-slate-300 py-2 px-3">${row.close.toFixed(2)}</td>
                     <td className="text-white font-mono py-2 px-3">{row.result}</td>
+                    <td className="py-2 px-3">
+                      <SignalBadge signal={row.signal} />
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -1333,6 +1481,7 @@ if (result !== null) {
   const renderREI = (config: IndicatorConfig) => {
     const rei = new REI(5);
     const chartData: ChartDataPoint[] = [];
+    const flags: Array<{x: number; title: string; text: string}> = [];
     const sampleValues: Array<{period: number; date: string; close: number; result: string; signal: string}> = [];
 
     ethCandles.forEach((candle, idx) => {
@@ -1340,6 +1489,14 @@ if (result !== null) {
       const result = rei.isStable ? rei.getResult() : null;
       const signal = rei.getSignal();
       chartData.push({x: idx + 1, y: result});
+
+      if (signal.hasChanged && rei.isStable) {
+        flags.push({
+          x: idx + 1,
+          title: signal.state,
+          text: `Signal: ${signal.state}`,
+        });
+      }
 
       sampleValues.push({
         period: idx + 1,
@@ -1362,7 +1519,7 @@ if (result !== null) {
           </p>
         </div>
 
-        <Chart title="Range Expansion Index (5)" data={chartData} yAxisLabel="REI" color={config.color} />
+        <Chart title="Range Expansion Index (5)" data={chartData} yAxisLabel="REI" color={config.color} flags={flags} />
 
         <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-4">
           <h3 className="text-lg font-semibold text-white mb-3">All Sample Values</h3>
@@ -1416,6 +1573,7 @@ if (rei.isStable) {
   const renderStochRSI = (config: IndicatorConfig) => {
     const stochRsi = new StochasticRSI(14);
     const chartData: ChartDataPoint[] = [];
+    const flags: Array<{x: number; title: string; text: string}> = [];
     const sampleValues: Array<{period: number; date: string; close: number; result: string; signal: string}> = [];
 
     ethCandles.forEach((candle, idx) => {
@@ -1423,6 +1581,14 @@ if (rei.isStable) {
       const result = stochRsi.isStable ? stochRsi.getResult() : null;
       const signal = stochRsi.getSignal();
       chartData.push({x: idx + 1, y: result});
+
+      if (signal.hasChanged && stochRsi.isStable) {
+        flags.push({
+          x: idx + 1,
+          title: signal.state,
+          text: `Signal: ${signal.state}`,
+        });
+      }
 
       sampleValues.push({
         period: idx + 1,
@@ -1445,7 +1611,7 @@ if (rei.isStable) {
           </p>
         </div>
 
-        <Chart title="Stochastic RSI (14)" data={chartData} yAxisLabel="StochRSI" color={config.color} />
+        <Chart title="Stochastic RSI (14)" data={chartData} yAxisLabel="StochRSI" color={config.color} flags={flags} />
 
         <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-4">
           <h3 className="text-lg font-semibold text-white mb-3">All Sample Values</h3>
@@ -1501,6 +1667,7 @@ if (stochRsi.isStable) {
   const renderWilliamsR = (config: IndicatorConfig) => {
     const willr = new WilliamsR(14);
     const chartData: ChartDataPoint[] = [];
+    const flags: Array<{x: number; title: string; text: string}> = [];
     const sampleValues: Array<{
       period: number;
       date: string;
@@ -1516,6 +1683,14 @@ if (stochRsi.isStable) {
       const result = willr.isStable ? willr.getResult() : null;
       const signal = willr.getSignal();
       chartData.push({x: idx + 1, y: result});
+
+      if (signal.hasChanged && willr.isStable) {
+        flags.push({
+          x: idx + 1,
+          title: signal.state,
+          text: `Signal: ${signal.state}`,
+        });
+      }
 
       sampleValues.push({
         period: idx + 1,
@@ -1541,7 +1716,7 @@ if (stochRsi.isStable) {
           </p>
         </div>
 
-        <Chart title="Williams %R (14)" data={chartData} yAxisLabel="Williams %R" color={config.color} />
+        <Chart title="Williams %R (14)" data={chartData} yAxisLabel="Williams %R" color={config.color} flags={flags} />
 
         <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-4">
           <h3 className="text-lg font-semibold text-white mb-3">All Sample Values</h3>
@@ -1600,6 +1775,7 @@ if (willr.isStable) {
   const renderTDS = (config: IndicatorConfig) => {
     const tds = new TDS();
     const chartData: ChartDataPoint[] = [];
+    const flags: Array<{x: number; title: string; text: string}> = [];
     const results: Array<{
       period: number;
       date: string;
@@ -1611,13 +1787,23 @@ if (willr.isStable) {
     for (const [index, candle] of ethCandles.entries()) {
       tds.add(candle.close);
       const result = tds.getResult();
+      const signal = tds.getSignal();
       chartData.push({x: index + 1, y: result});
+
+      if (signal.hasChanged && result !== null) {
+        flags.push({
+          x: index + 1,
+          title: signal.state,
+          text: `Signal: ${signal.state}`,
+        });
+      }
+
       results.push({
         period: index + 1,
         date: candle.date,
         close: candle.close,
         result: result !== null ? result.toString() : 'null',
-        signal: tds.getSignal().state,
+        signal: signal.state,
       });
     }
 
@@ -1630,7 +1816,7 @@ if (willr.isStable) {
           <p className="text-slate-300">{config.description}</p>
         </div>
 
-        <Chart title="Tom DeMark Sequential" data={chartData} yAxisLabel="TDS" color={config.color} />
+        <Chart title="Tom DeMark Sequential" data={chartData} yAxisLabel="TDS" color={config.color} flags={flags} />
 
         <div className="bg-slate-800/30 border border-slate-700 rounded-lg p-6">
           <h3 className="text-lg font-semibold text-white mb-4">Calculation</h3>
