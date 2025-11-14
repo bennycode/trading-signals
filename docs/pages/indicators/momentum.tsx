@@ -1,6 +1,6 @@
 import {useRouter} from 'next/router';
 import {useEffect, useState} from 'react';
-import Highcharts from 'highcharts';
+import Highcharts from 'highcharts/highstock';
 import HighchartsReact from 'highcharts-react-official';
 import {
   AC,
