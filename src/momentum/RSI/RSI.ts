@@ -1,4 +1,4 @@
-import {IndicatorSeries} from '../../types/Indicator.js';
+import {TradingSignal, TrendIndicatorSeries} from '../../types/Indicator.js';
 import type {MovingAverage} from '../../trend/MA/MovingAverage.js';
 import type {MovingAverageTypes} from '../../trend/MA/MovingAverageTypes.js';
 import {pushUpdate} from '../../util/pushUpdate.js';
@@ -19,7 +19,7 @@ import {WSMA} from '../../trend/WSMA/WSMA.js';
  * @see https://en.wikipedia.org/wiki/Relative_strength_index
  * @see https://www.investopedia.com/terms/r/rsi.asp
  */
-export class RSI extends IndicatorSeries {
+export class RSI extends TrendIndicatorSeries {
   private readonly previousPrices: number[] = [];
   private readonly avgGain: MovingAverage;
   private readonly avgLoss: MovingAverage;
@@ -68,5 +68,22 @@ export class RSI extends IndicatorSeries {
     }
 
     return null;
+  }
+
+  protected calculateSignalState(result: number | null | undefined) {
+    const hasResult = result !== null && result !== undefined;
+    const isOversold = hasResult && result <= 30;
+    const isOverbought = hasResult && result >= 70;
+
+    switch (true) {
+      case !hasResult:
+        return TradingSignal.UNKNOWN;
+      case isOversold:
+        return TradingSignal.BEARISH;
+      case isOverbought:
+        return TradingSignal.BULLISH;
+      default:
+        return TradingSignal.SIDEWAYS;
+    }
   }
 }

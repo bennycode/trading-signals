@@ -1,5 +1,6 @@
 import {ROC} from './ROC.js';
 import {NotEnoughDataError} from '../../error/index.js';
+import {TradingSignal} from '../../types/Indicator.js';
 
 describe('ROC', () => {
   describe('getResultOrThrow', () => {
@@ -29,6 +30,10 @@ describe('ROC', () => {
       });
 
       expect(roc.getRequiredInputs()).toBe(interval);
+      expect(roc.getSignal()).toEqual({
+        hasChanged: false,
+        state: TradingSignal.BULLISH,
+      });
     });
 
     it('identifies a down-trending asset by a negative ROC', () => {
@@ -38,6 +43,12 @@ describe('ROC', () => {
 
       prices.forEach(price => {
         roc.add(price);
+      });
+
+      expect(roc.getResultOrThrow().toFixed(2)).toBe('-0.83');
+      expect(roc.getSignal()).toEqual({
+        hasChanged: false,
+        state: TradingSignal.BEARISH,
       });
     });
 
@@ -62,6 +73,56 @@ describe('ROC', () => {
       const mockedPrices = [0.0001904, 0.00019071, 0.00019198, 0.0001922, 0.00019214, 0.00019205];
       mockedPrices.forEach(price => indicator.add(price));
       expect(indicator.isStable).toBe(true);
+    });
+  });
+
+  describe('getSignal', () => {
+    it('returns UNKNOWN when there is no result', () => {
+      const roc = new ROC(5);
+      const signal = roc.getSignal();
+      expect(signal.state).toBe(TradingSignal.UNKNOWN);
+    });
+
+    it('returns BULLISH when ROC >= 0', () => {
+      const roc = new ROC(5);
+      const prices = [100, 101, 102, 103, 104, 105] as const;
+
+      for (const price of prices) {
+        roc.add(price);
+      }
+
+      const signal = roc.getSignal();
+
+      expect(roc.getResultOrThrow()).toBeGreaterThanOrEqual(0);
+      expect(signal.state).toBe(TradingSignal.BULLISH);
+    });
+
+    it('returns BEARISH when ROC < 0', () => {
+      const roc = new ROC(5);
+      const prices = [105, 104, 103, 102, 101, 100] as const;
+
+      for (const price of prices) {
+        roc.add(price);
+      }
+
+      const signal = roc.getSignal();
+
+      expect(roc.getResultOrThrow()).toBeLessThan(0);
+      expect(signal.state).toBe(TradingSignal.BEARISH);
+    });
+
+    it('returns BULLISH when ROC = 0', () => {
+      const roc = new ROC(5);
+      const prices = [100, 100, 100, 100, 100, 100] as const;
+
+      for (const price of prices) {
+        roc.add(price);
+      }
+
+      const signal = roc.getSignal();
+
+      expect(roc.getResultOrThrow()).toBe(0);
+      expect(signal.state).toBe(TradingSignal.BULLISH);
     });
   });
 });

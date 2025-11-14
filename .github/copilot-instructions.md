@@ -140,3 +140,46 @@ it('calculates the moving average based on the last 5 prices', () => {
   expect(wma.isStable).toBe(true);
 });
 ```
+
+When testing the `replace()` method, verify bidirectional replacement by testing original vs replaced values and then restoring back to the original:
+
+```ts
+// ❌ Bad: Only tests that replace changes the value
+it('can replace recently added values', () => {
+  const stoch = new StochasticOscillator(5, 3, 3);
+
+  for (let i = 0; i < 9; i++) {
+    stoch.add({close: 50 + i, high: 100, low: 10});
+  }
+
+  const resultBefore = stoch.getResultOrThrow();
+
+  stoch.add({close: 80, high: 100, low: 10});
+  stoch.replace({close: 30, high: 100, low: 10});
+
+  const resultAfter = stoch.getResultOrThrow();
+
+  expect(resultAfter.stochK).not.toBe(resultBefore.stochK);
+});
+
+// ✅ Good: Tests replacement and restoration to verify replace functionality
+it('replaces the most recently added value', () => {
+  const stoch = new StochasticOscillator(5, 3, 3);
+
+  for (let i = 0; i < 9; i++) {
+    stoch.add({close: 50 + i, high: 100, low: 10});
+  }
+
+  const originalValue = {close: 80, high: 100, low: 10} as const;
+  const replacedValue = {close: 30, high: 100, low: 10} as const;
+
+  const originalResult = stoch.add(originalValue);
+  const replacedResult = stoch.replace(replacedValue);
+
+  expect(replacedResult?.stochK).not.toBe(originalResult?.stochK);
+
+  const restoredResult = stoch.replace(originalValue);
+
+  expect(restoredResult?.stochK).toBe(originalResult?.stochK);
+});
+```

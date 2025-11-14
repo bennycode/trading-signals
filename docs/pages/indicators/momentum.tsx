@@ -1,19 +1,22 @@
-import {useState, useEffect} from 'react';
 import {useRouter} from 'next/router';
+import {useEffect, useState} from 'react';
+import Highcharts from 'highcharts/highstock';
+import HighchartsReact from 'highcharts-react-official';
 import {
-  RSI,
-  StochasticOscillator,
-  CCI,
-  ROC,
-  AO,
   AC,
+  AO,
+  CCI,
   CG,
+  EMA,
+  MACD,
   MOM,
   OBV,
   REI,
+  ROC,
+  RSI,
+  StochasticOscillator,
   StochasticRSI,
-  MACD,
-  EMA,
+  TDS,
   WilliamsR,
 } from 'trading-signals';
 import Chart, {ChartDataPoint} from '../../components/Chart';
@@ -23,7 +26,27 @@ interface IndicatorConfig {
   name: string;
   description: string;
   color: string;
+  requiredInputs: number;
 }
+
+// Reusable component for rendering signal badges
+const SignalBadge = ({signal}: {signal: string}) => {
+  const displayText = signal === 'UNKNOWN' ? 'N/A' : signal;
+  const colorClasses =
+    signal === 'BULLISH'
+      ? 'bg-green-900/50 text-green-400 border-green-800'
+      : signal === 'BEARISH'
+        ? 'bg-red-900/50 text-red-400 border-red-800'
+        : signal === 'SIDEWAYS'
+          ? 'bg-blue-900/50 text-blue-400 border-blue-800'
+          : 'bg-slate-900/50 text-slate-400 border-slate-700';
+
+  return (
+    <span className={`inline-flex items-center px-2 py-1 rounded text-xs font-semibold border ${colorClasses}`}>
+      {displayText}
+    </span>
+  );
+};
 
 // OHLCV data (from Ethereum)
 const ethCandles = [
@@ -70,19 +93,98 @@ const ethCandles = [
 ];
 
 const indicators: IndicatorConfig[] = [
-  {id: 'rsi', name: 'RSI', description: 'Relative Strength Index', color: '#8b5cf6'},
-  {id: 'stoch', name: 'Stochastic', description: 'Stochastic Oscillator', color: '#ec4899'},
-  {id: 'cci', name: 'CCI', description: 'Commodity Channel Index', color: '#f59e0b'},
-  {id: 'roc', name: 'ROC', description: 'Rate of Change', color: '#10b981'},
-  {id: 'macd', name: 'MACD', description: 'Moving Average Convergence Divergence', color: '#3b82f6'},
-  {id: 'ao', name: 'AO', description: 'Awesome Oscillator', color: '#06b6d4'},
-  {id: 'ac', name: 'AC', description: 'Accelerator Oscillator', color: '#6366f1'},
-  {id: 'cg', name: 'CG', description: 'Center of Gravity', color: '#f97316'},
-  {id: 'mom', name: 'MOM', description: 'Momentum', color: '#84cc16'},
-  {id: 'obv', name: 'OBV', description: 'On-Balance Volume', color: '#14b8a6'},
-  {id: 'rei', name: 'REI', description: 'Range Expansion Index', color: '#a855f7'},
-  {id: 'stochrsi', name: 'StochRSI', description: 'Stochastic RSI', color: '#ef4444'},
-  {id: 'willr', name: 'Williams %R', description: 'Williams Percent Range', color: '#22d3ee'},
+  {
+    id: 'rsi',
+    name: 'RSI',
+    description: 'Relative Strength Index',
+    color: '#8b5cf6',
+    requiredInputs: new RSI(14).getRequiredInputs(),
+  },
+  {
+    id: 'stoch',
+    name: 'Stochastic',
+    description: 'Stochastic Oscillator',
+    color: '#ec4899',
+    requiredInputs: new StochasticOscillator(14, 3, 3).getRequiredInputs(),
+  },
+  {
+    id: 'cci',
+    name: 'CCI',
+    description: 'Commodity Channel Index',
+    color: '#f59e0b',
+    requiredInputs: new CCI(20).getRequiredInputs(),
+  },
+  {
+    id: 'roc',
+    name: 'ROC',
+    description: 'Rate of Change',
+    color: '#10b981',
+    requiredInputs: new ROC(9).getRequiredInputs(),
+  },
+  {
+    id: 'macd',
+    name: 'MACD',
+    description: 'Moving Average Convergence Divergence',
+    color: '#3b82f6',
+    requiredInputs: new MACD(new EMA(12), new EMA(26), new EMA(9)).getRequiredInputs(),
+  },
+  {
+    id: 'ao',
+    name: 'AO',
+    description: 'Awesome Oscillator',
+    color: '#06b6d4',
+    requiredInputs: new AO(5, 34).getRequiredInputs(),
+  },
+  {
+    id: 'ac',
+    name: 'AC',
+    description: 'Accelerator Oscillator',
+    color: '#6366f1',
+    requiredInputs: new AC(5, 34, 5).getRequiredInputs(),
+  },
+  {
+    id: 'cg',
+    name: 'CG',
+    description: 'Center of Gravity',
+    color: '#f97316',
+    requiredInputs: new CG(10, 10).getRequiredInputs(),
+  },
+  {id: 'mom', name: 'MOM', description: 'Momentum', color: '#84cc16', requiredInputs: new MOM(5).getRequiredInputs()},
+  {
+    id: 'obv',
+    name: 'OBV',
+    description: 'On-Balance Volume',
+    color: '#14b8a6',
+    requiredInputs: new OBV(5).getRequiredInputs(),
+  },
+  {
+    id: 'rei',
+    name: 'REI',
+    description: 'Range Expansion Index',
+    color: '#a855f7',
+    requiredInputs: new REI(5).getRequiredInputs(),
+  },
+  {
+    id: 'stochrsi',
+    name: 'StochRSI',
+    description: 'Stochastic RSI',
+    color: '#ef4444',
+    requiredInputs: new StochasticRSI(14).getRequiredInputs(),
+  },
+  {
+    id: 'tds',
+    name: 'TDS',
+    description: 'Tom DeMark Sequential',
+    color: '#ec4899',
+    requiredInputs: new TDS().getRequiredInputs(),
+  },
+  {
+    id: 'willr',
+    name: 'Williams %R',
+    description: 'Williams Percent Range',
+    color: '#22d3ee',
+    requiredInputs: new WilliamsR(14).getRequiredInputs(),
+  },
 ];
 
 export default function MomentumIndicators() {
@@ -142,6 +244,8 @@ export default function MomentumIndicators() {
         return renderREI(config);
       case 'stochrsi':
         return renderStochRSI(config);
+      case 'tds':
+        return renderTDS(config);
       case 'willr':
         return renderWilliamsR(config);
       default:
@@ -152,25 +256,38 @@ export default function MomentumIndicators() {
   const renderRSI = (config: IndicatorConfig) => {
     const rsi = new RSI(14);
     const chartData: ChartDataPoint[] = [];
-    const sampleValues: Array<{period: number; date: string; close: number; result: string}> = [];
+    const flags: Array<{x: number; title: string; text: string}> = [];
+    const sampleValues: Array<{period: number; date: string; close: number; result: string; signal: string}> = [];
 
     ethCandles.forEach((candle, idx) => {
       rsi.add(candle.close);
       const result = rsi.isStable ? rsi.getResult() : null;
+      const signal = rsi.getSignal();
       chartData.push({x: idx + 1, y: result});
+
+      if (signal.hasChanged && rsi.isStable) {
+        flags.push({
+          x: idx + 1,
+          title: signal.state,
+          text: `Signal: ${signal.state}`,
+        });
+      }
 
       sampleValues.push({
         period: idx + 1,
         date: candle.date,
         close: candle.close,
         result: result !== null ? result.toFixed(2) : 'N/A',
+        signal: signal.state,
       });
     });
 
     return (
       <div className="space-y-6">
         <div>
-          <h2 className="text-2xl font-bold text-white mb-2 select-text">{config.name}</h2>
+          <h2 className="text-2xl font-bold text-white mb-2 select-text">
+            RSI(14) / Required Inputs: {rsi.getRequiredInputs()}
+          </h2>
           <p className="text-slate-300 select-text">{config.description}</p>
           <p className="text-slate-400 text-sm mt-2 select-text">
             RSI measures the magnitude of recent price changes to evaluate overbought or oversold conditions. Values
@@ -178,7 +295,7 @@ export default function MomentumIndicators() {
           </p>
         </div>
 
-        <Chart title="RSI (14)" data={chartData} yAxisLabel="RSI" color={config.color} />
+        <Chart title="RSI (14)" data={chartData} yAxisLabel="RSI" color={config.color} flags={flags} />
 
         <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-4">
           <h3 className="text-lg font-semibold text-white mb-3">All Sample Values</h3>
@@ -190,6 +307,7 @@ export default function MomentumIndicators() {
                   <th className="text-left text-slate-300 py-2 px-3">Date</th>
                   <th className="text-left text-slate-300 py-2 px-3">Close</th>
                   <th className="text-left text-slate-300 py-2 px-3">RSI</th>
+                  <th className="text-left text-slate-300 py-2 px-3">Signal</th>
                 </tr>
               </thead>
               <tbody>
@@ -199,6 +317,9 @@ export default function MomentumIndicators() {
                     <td className="text-slate-400 py-2 px-3">{row.date}</td>
                     <td className="text-slate-300 py-2 px-3">${row.close.toFixed(2)}</td>
                     <td className="text-white font-mono py-2 px-3">{row.result}</td>
+                    <td className="py-2 px-3">
+                      <SignalBadge signal={row.signal} />
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -232,13 +353,23 @@ if (rsi.isStable) {
     const stoch = new StochasticOscillator(14, 3, 3);
     const chartDataK: ChartDataPoint[] = [];
     const chartDataD: ChartDataPoint[] = [];
-    const sampleValues: Array<{period: number; date: string; close: number; k: string; d: string}> = [];
+    const flags: Array<{x: number; title: string; text: string}> = [];
+    const sampleValues: Array<{period: number; date: string; close: number; k: string; d: string; signal: string}> = [];
 
     ethCandles.forEach((candle, idx) => {
       stoch.add({high: candle.high, low: candle.low, close: candle.close});
       const result = stoch.isStable ? stoch.getResult() : null;
+      const signal = stoch.getSignal();
       chartDataK.push({x: idx + 1, y: result?.stochK ?? null});
       chartDataD.push({x: idx + 1, y: result?.stochD ?? null});
+
+      if (signal.hasChanged && stoch.isStable) {
+        flags.push({
+          x: idx + 1,
+          title: signal.state,
+          text: `Signal: ${signal.state}`,
+        });
+      }
 
       sampleValues.push({
         period: idx + 1,
@@ -246,21 +377,148 @@ if (rsi.isStable) {
         close: candle.close,
         k: result ? result.stochK.toFixed(2) : 'N/A',
         d: result ? result.stochD.toFixed(2) : 'N/A',
+        signal: signal.state,
       });
     });
 
     return (
       <div className="space-y-6">
         <div>
-          <h2 className="text-2xl font-bold text-white mb-2 select-text">{config.name}</h2>
+          <h2 className="text-2xl font-bold text-white mb-2 select-text">
+            StochasticOscillator(14, 3, 3) / Required Inputs: {stoch.getRequiredInputs()}
+          </h2>
           <p className="text-slate-300 select-text">{config.description}</p>
           <p className="text-slate-400 text-sm mt-2 select-text">
             Compares closing price to price range over a period. %K crossing above %D can signal a buying opportunity.
           </p>
         </div>
 
-        <Chart title="Stochastic %K (14,3,3)" data={chartDataK} yAxisLabel="%K" color={config.color} />
-        <Chart title="Stochastic %D (14,3,3)" data={chartDataD} yAxisLabel="%D" color="#f97316" />
+        <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-4">
+          <HighchartsReact
+            highcharts={Highcharts}
+            options={{
+              chart: {
+                type: 'line',
+                backgroundColor: 'transparent',
+                height: 300,
+              },
+              title: {
+                text: 'Stochastic Oscillator (14,3,3)',
+                style: {
+                  color: '#e2e8f0',
+                  fontSize: '16px',
+                  fontWeight: '600',
+                },
+              },
+              credits: {
+                enabled: false,
+              },
+              xAxis: {
+                title: {
+                  text: 'Period',
+                  style: {color: '#94a3b8'},
+                },
+                labels: {
+                  style: {color: '#94a3b8'},
+                },
+                gridLineColor: '#334155',
+              },
+              yAxis: {
+                title: {
+                  text: 'Value',
+                  style: {color: '#94a3b8'},
+                },
+                labels: {
+                  style: {color: '#94a3b8'},
+                },
+                gridLineColor: '#334155',
+              },
+              legend: {
+                enabled: true,
+                itemStyle: {
+                  color: '#e2e8f0',
+                },
+              },
+              plotOptions: {
+                line: {
+                  marker: {
+                    enabled: true,
+                    radius: 3,
+                  },
+                  lineWidth: 2,
+                },
+              },
+              series: [
+                {
+                  type: 'line',
+                  name: '%K',
+                  data: chartDataK.map(point => [point.x, point.y]),
+                  color: config.color,
+                  marker: {
+                    fillColor: config.color,
+                  },
+                },
+                {
+                  type: 'line',
+                  name: '%D',
+                  data: chartDataD.map(point => [point.x, point.y]),
+                  color: '#f97316',
+                  marker: {
+                    fillColor: '#f97316',
+                  },
+                },
+                ...(flags.length > 0
+                  ? [
+                      {
+                        type: 'flags' as const,
+                        name: 'Signals',
+                        data: flags.map(flag => ({
+                          x: flag.x,
+                          title: flag.title,
+                          text: flag.text,
+                        })),
+                        onSeries: 'series-0',
+                        shape: 'squarepin',
+                        width: 80,
+                        y: -20,
+                        color: '#fbbf24',
+                        fillColor: '#fbbf24',
+                        style: {
+                          color: '#000',
+                          fontSize: '11px',
+                          fontWeight: 'bold',
+                        },
+                        states: {
+                          hover: {
+                            fillColor: '#f59e0b',
+                          },
+                        },
+                        showInLegend: false,
+                        grouping: false,
+                        useHTML: true,
+                      },
+                    ]
+                  : []),
+              ],
+              tooltip: {
+                backgroundColor: '#1e293b',
+                borderColor: '#475569',
+                style: {
+                  color: '#e2e8f0',
+                },
+                shared: true,
+                formatter: function (): string {
+                  let s: string = `<b>Period ${(this as any).x}</b><br/>`;
+                  ((this as any).points as any[])?.forEach((point: any) => {
+                    const yValue = typeof point.y === 'number' ? point.y.toFixed(2) : 'N/A';
+                    s += `${point.series.name}: ${yValue}<br/>`;
+                  });
+                  return s;
+                },
+              },
+            }}
+          />
+        </div>
 
         <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-4">
           <h3 className="text-lg font-semibold text-white mb-3">All Sample Values</h3>
@@ -273,6 +531,7 @@ if (rsi.isStable) {
                   <th className="text-left text-slate-300 py-2 px-3">Close</th>
                   <th className="text-left text-slate-300 py-2 px-3">%K</th>
                   <th className="text-left text-slate-300 py-2 px-3">%D</th>
+                  <th className="text-left text-slate-300 py-2 px-3">Signal</th>
                 </tr>
               </thead>
               <tbody>
@@ -283,6 +542,9 @@ if (rsi.isStable) {
                     <td className="text-slate-300 py-2 px-3">${row.close.toFixed(2)}</td>
                     <td className="text-white font-mono py-2 px-3">{row.k}</td>
                     <td className="text-white font-mono py-2 px-3">{row.d}</td>
+                    <td className="py-2 px-3">
+                      <SignalBadge signal={row.signal} />
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -317,25 +579,38 @@ if (stoch.isStable) {
   const renderCCI = (config: IndicatorConfig) => {
     const cci = new CCI(20);
     const chartData: ChartDataPoint[] = [];
-    const sampleValues: Array<{period: number; date: string; close: number; result: string}> = [];
+    const flags: Array<{x: number; title: string; text: string}> = [];
+    const sampleValues: Array<{period: number; date: string; close: number; result: string; signal: string}> = [];
 
     ethCandles.forEach((candle, idx) => {
       cci.add({high: candle.high, low: candle.low, close: candle.close});
       const result = cci.isStable ? cci.getResult() : null;
+      const signal = cci.getSignal();
       chartData.push({x: idx + 1, y: result});
+
+      if (signal.hasChanged && cci.isStable) {
+        flags.push({
+          x: idx + 1,
+          title: signal.state,
+          text: `Signal: ${signal.state}`,
+        });
+      }
 
       sampleValues.push({
         period: idx + 1,
         date: candle.date,
         close: candle.close,
         result: result !== null ? result.toFixed(2) : 'N/A',
+        signal: signal.state,
       });
     });
 
     return (
       <div className="space-y-6">
         <div>
-          <h2 className="text-2xl font-bold text-white mb-2 select-text">{config.name}</h2>
+          <h2 className="text-2xl font-bold text-white mb-2 select-text">
+            CCI(20) / Required Inputs: {cci.getRequiredInputs()}
+          </h2>
           <p className="text-slate-300 select-text">{config.description}</p>
           <p className="text-slate-400 text-sm mt-2 select-text">
             Measures deviation from the average price. Readings above +100 suggest overbought, below -100 suggest
@@ -343,7 +618,7 @@ if (stoch.isStable) {
           </p>
         </div>
 
-        <Chart title="CCI (20)" data={chartData} yAxisLabel="CCI" color={config.color} />
+        <Chart title="CCI (20)" data={chartData} yAxisLabel="CCI" color={config.color} flags={flags} />
 
         <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-4">
           <h3 className="text-lg font-semibold text-white mb-3">All Sample Values</h3>
@@ -355,6 +630,7 @@ if (stoch.isStable) {
                   <th className="text-left text-slate-300 py-2 px-3">Date</th>
                   <th className="text-left text-slate-300 py-2 px-3">Close</th>
                   <th className="text-left text-slate-300 py-2 px-3">CCI</th>
+                  <th className="text-left text-slate-300 py-2 px-3">Signal</th>
                 </tr>
               </thead>
               <tbody>
@@ -364,6 +640,9 @@ if (stoch.isStable) {
                     <td className="text-slate-400 py-2 px-3">{row.date}</td>
                     <td className="text-slate-300 py-2 px-3">${row.close.toFixed(2)}</td>
                     <td className="text-white font-mono py-2 px-3">{row.result}</td>
+                    <td className="py-2 px-3">
+                      <SignalBadge signal={row.signal} />
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -397,25 +676,38 @@ if (cci.isStable) {
     const prices = [100, 102, 105, 107, 110, 108, 106, 109, 112, 115, 117, 119, 120];
     const roc = new ROC(9);
     const chartData: ChartDataPoint[] = [];
-    const sampleValues: Array<{period: number; date: string; close: number; result: string}> = [];
+    const flags: Array<{x: number; title: string; text: string}> = [];
+    const sampleValues: Array<{period: number; date: string; close: number; result: string; signal: string}> = [];
 
     ethCandles.forEach((candle, idx) => {
       roc.add(candle.close);
       const result = roc.isStable ? roc.getResult() : null;
+      const signal = roc.getSignal();
       chartData.push({x: idx + 1, y: result});
+
+      if (signal.hasChanged && roc.isStable) {
+        flags.push({
+          x: idx + 1,
+          title: signal.state,
+          text: `Signal: ${signal.state}`,
+        });
+      }
 
       sampleValues.push({
         period: idx + 1,
         date: candle.date,
         close: candle.close,
         result: result !== null ? result.toFixed(2) : 'N/A',
+        signal: signal.state,
       });
     });
 
     return (
       <div className="space-y-6">
         <div>
-          <h2 className="text-2xl font-bold text-white mb-2 select-text">{config.name}</h2>
+          <h2 className="text-2xl font-bold text-white mb-2 select-text">
+            ROC(9) / Required Inputs: {roc.getRequiredInputs()}
+          </h2>
           <p className="text-slate-300 select-text">{config.description}</p>
           <p className="text-slate-400 text-sm mt-2 select-text">
             Measures the percentage change in price from n periods ago. Positive values indicate upward momentum,
@@ -423,7 +715,7 @@ if (cci.isStable) {
           </p>
         </div>
 
-        <Chart title="ROC (9)" data={chartData} yAxisLabel="ROC %" color={config.color} />
+        <Chart title="ROC (9)" data={chartData} yAxisLabel="ROC %" color={config.color} flags={flags} />
 
         <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-4">
           <h3 className="text-lg font-semibold text-white mb-3">All Sample Values</h3>
@@ -435,6 +727,7 @@ if (cci.isStable) {
                   <th className="text-left text-slate-300 py-2 px-3">Date</th>
                   <th className="text-left text-slate-300 py-2 px-3">Close</th>
                   <th className="text-left text-slate-300 py-2 px-3">ROC %</th>
+                  <th className="text-left text-slate-300 py-2 px-3">Signal</th>
                 </tr>
               </thead>
               <tbody>
@@ -444,6 +737,9 @@ if (cci.isStable) {
                     <td className="text-slate-300 py-2 px-3">{row.date}</td>
                     <td className="text-slate-300 py-2 px-3">${row.close.toFixed(2)}</td>
                     <td className="text-white font-mono py-2 px-3">{row.result}</td>
+                    <td className="py-2 px-3">
+                      <SignalBadge signal={row.signal} />
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -473,26 +769,43 @@ if (roc.isStable) {
 
   const renderMACD = (config: IndicatorConfig) => {
     const macd = new MACD(new EMA(12), new EMA(26), new EMA(9));
-    const chartData: ChartDataPoint[] = [];
-    const sampleValues: Array<{period: number; date: string; close: number; result: string}> = [];
+    const chartDataMACD: ChartDataPoint[] = [];
+    const chartDataSignal: ChartDataPoint[] = [];
+    const chartDataHistogram: ChartDataPoint[] = [];
+    const flags: Array<{x: number; title: string; text: string}> = [];
+    const sampleValues: Array<{period: number; date: string; close: number; result: string; signal: string}> = [];
 
     ethCandles.forEach((candle, idx) => {
       macd.add(candle.close);
       const result = macd.isStable ? macd.getResult() : null;
-      chartData.push({x: idx + 1, y: result?.macd ?? null});
+      const trendSignal = macd.getSignal();
+      chartDataMACD.push({x: idx + 1, y: result?.macd ?? null});
+      chartDataSignal.push({x: idx + 1, y: result?.signal ?? null});
+      chartDataHistogram.push({x: idx + 1, y: result?.histogram ?? null});
+
+      if (trendSignal.hasChanged && macd.isStable) {
+        flags.push({
+          x: idx + 1,
+          title: trendSignal.state,
+          text: `Signal: ${trendSignal.state}`,
+        });
+      }
 
       sampleValues.push({
         period: idx + 1,
         date: candle.date,
         close: candle.close,
         result: result ? `${result.macd.toFixed(4)}` : 'N/A',
+        signal: trendSignal.state,
       });
     });
 
     return (
       <div className="space-y-6">
         <div>
-          <h2 className="text-2xl font-bold text-white mb-2 select-text">{config.name}</h2>
+          <h2 className="text-2xl font-bold text-white mb-2 select-text">
+            MACD(12, 26, 9) / Required Inputs: {macd.getRequiredInputs()}
+          </h2>
           <p className="text-slate-300 select-text">{config.description}</p>
           <p className="text-slate-400 text-sm mt-2 select-text">
             Shows relationship between two moving averages. Crossing above signal line = bullish, crossing below =
@@ -500,7 +813,142 @@ if (roc.isStable) {
           </p>
         </div>
 
-        <Chart title="MACD (12,26,9)" data={chartData} yAxisLabel="MACD" color={config.color} />
+        <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-4">
+          <HighchartsReact
+            highcharts={Highcharts}
+            options={{
+              chart: {
+                type: 'line',
+                backgroundColor: 'transparent',
+                height: 300,
+              },
+              title: {
+                text: 'MACD (12,26,9)',
+                style: {
+                  color: '#e2e8f0',
+                  fontSize: '16px',
+                  fontWeight: '600',
+                },
+              },
+              credits: {
+                enabled: false,
+              },
+              xAxis: {
+                title: {
+                  text: 'Period',
+                  style: {color: '#94a3b8'},
+                },
+                labels: {
+                  style: {color: '#94a3b8'},
+                },
+                gridLineColor: '#334155',
+              },
+              yAxis: {
+                title: {
+                  text: 'Value',
+                  style: {color: '#94a3b8'},
+                },
+                labels: {
+                  style: {color: '#94a3b8'},
+                },
+                gridLineColor: '#334155',
+              },
+              legend: {
+                enabled: true,
+                itemStyle: {
+                  color: '#e2e8f0',
+                },
+              },
+              plotOptions: {
+                line: {
+                  marker: {
+                    enabled: true,
+                    radius: 3,
+                  },
+                  lineWidth: 2,
+                },
+                column: {
+                  borderWidth: 0,
+                },
+              },
+              series: [
+                {
+                  type: 'line',
+                  name: 'MACD',
+                  data: chartDataMACD.map(point => [point.x, point.y]),
+                  color: config.color,
+                  marker: {
+                    fillColor: config.color,
+                  },
+                },
+                {
+                  type: 'line',
+                  name: 'Signal',
+                  data: chartDataSignal.map(point => [point.x, point.y]),
+                  color: '#f97316',
+                  marker: {
+                    fillColor: '#f97316',
+                  },
+                },
+                {
+                  type: 'column',
+                  name: 'Histogram',
+                  data: chartDataHistogram.map(point => [point.x, point.y]),
+                  color: '#6366f1',
+                  opacity: 0.5,
+                },
+                ...(flags.length > 0
+                  ? [
+                      {
+                        type: 'flags' as const,
+                        name: 'Signals',
+                        data: flags.map(flag => ({
+                          x: flag.x,
+                          title: flag.title,
+                          text: flag.text,
+                        })),
+                        onSeries: 'series-0',
+                        shape: 'squarepin',
+                        width: 80,
+                        y: -20,
+                        color: '#fbbf24',
+                        fillColor: '#fbbf24',
+                        style: {
+                          color: '#000',
+                          fontSize: '11px',
+                          fontWeight: 'bold',
+                        },
+                        states: {
+                          hover: {
+                            fillColor: '#f59e0b',
+                          },
+                        },
+                        showInLegend: false,
+                        grouping: false,
+                        useHTML: true,
+                      },
+                    ]
+                  : []),
+              ],
+              tooltip: {
+                backgroundColor: '#1e293b',
+                borderColor: '#475569',
+                style: {
+                  color: '#e2e8f0',
+                },
+                shared: true,
+                formatter: function (): string {
+                  let s: string = `<b>Period ${(this as any).x}</b><br/>`;
+                  ((this as any).points as any[])?.forEach((point: any) => {
+                    const yValue = typeof point.y === 'number' ? point.y.toFixed(4) : 'N/A';
+                    s += `${point.series.name}: ${yValue}<br/>`;
+                  });
+                  return s;
+                },
+              },
+            }}
+          />
+        </div>
 
         <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-4">
           <h3 className="text-lg font-semibold text-white mb-3">All Sample Values</h3>
@@ -512,6 +960,7 @@ if (roc.isStable) {
                   <th className="text-left text-slate-300 py-2 px-3">Date</th>
                   <th className="text-left text-slate-300 py-2 px-3">Close</th>
                   <th className="text-left text-slate-300 py-2 px-3">MACD</th>
+                  <th className="text-left text-slate-300 py-2 px-3">Signal</th>
                 </tr>
               </thead>
               <tbody>
@@ -521,6 +970,9 @@ if (roc.isStable) {
                     <td className="text-slate-300 py-2 px-3">{row.date}</td>
                     <td className="text-slate-300 py-2 px-3">${row.close.toFixed(2)}</td>
                     <td className="text-white font-mono py-2 px-3">{row.result}</td>
+                    <td className="py-2 px-3">
+                      <SignalBadge signal={row.signal} />
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -554,12 +1006,29 @@ if (macd.isStable) {
   const renderAO = (config: IndicatorConfig) => {
     const ao = new AO(5, 34);
     const chartData: ChartDataPoint[] = [];
-    const sampleValues: Array<{period: number; date: string; high: number; low: number; result: string}> = [];
+    const flags: Array<{x: number; title: string; text: string}> = [];
+    const sampleValues: Array<{
+      period: number;
+      date: string;
+      high: number;
+      low: number;
+      result: string;
+      signal: string;
+    }> = [];
 
     ethCandles.forEach((candle, idx) => {
       ao.add(candle);
       const result = ao.isStable ? ao.getResult() : null;
+      const signal = ao.getSignal();
       chartData.push({x: idx + 1, y: result});
+
+      if (signal.hasChanged && ao.isStable) {
+        flags.push({
+          x: idx + 1,
+          title: signal.state,
+          text: `Signal: ${signal.state}`,
+        });
+      }
 
       sampleValues.push({
         period: idx + 1,
@@ -567,13 +1036,16 @@ if (macd.isStable) {
         high: candle.high,
         low: candle.low,
         result: result !== null ? result.toFixed(2) : 'N/A',
+        signal: signal.state,
       });
     });
 
     return (
       <div className="space-y-6">
         <div>
-          <h2 className="text-2xl font-bold text-white mb-2 select-text">{config.name}</h2>
+          <h2 className="text-2xl font-bold text-white mb-2 select-text">
+            AO(5, 34) / Required Inputs: {ao.getRequiredInputs()}
+          </h2>
           <p className="text-slate-300 select-text">{config.description}</p>
           <p className="text-slate-400 text-sm mt-2 select-text">
             Measures market momentum using the difference between a 5-period and 34-period simple moving average of the
@@ -581,7 +1053,7 @@ if (macd.isStable) {
           </p>
         </div>
 
-        <Chart title="Awesome Oscillator (5,34)" data={chartData} yAxisLabel="AO" color={config.color} />
+        <Chart title="Awesome Oscillator (5,34)" data={chartData} yAxisLabel="AO" color={config.color} flags={flags} />
 
         <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-4">
           <h3 className="text-lg font-semibold text-white mb-3">All Sample Values</h3>
@@ -594,6 +1066,7 @@ if (macd.isStable) {
                   <th className="text-left text-slate-300 py-2 px-3">High</th>
                   <th className="text-left text-slate-300 py-2 px-3">Low</th>
                   <th className="text-left text-slate-300 py-2 px-3">AO</th>
+                  <th className="text-left text-slate-300 py-2 px-3">Signal</th>
                 </tr>
               </thead>
               <tbody>
@@ -604,6 +1077,9 @@ if (macd.isStable) {
                     <td className="text-slate-300 py-2 px-3">${row.high.toFixed(2)}</td>
                     <td className="text-slate-300 py-2 px-3">${row.low.toFixed(2)}</td>
                     <td className="text-white font-mono py-2 px-3">{row.result}</td>
+                    <td className="py-2 px-3">
+                      <SignalBadge signal={row.signal} />
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -633,12 +1109,29 @@ if (ao.isStable) {
   const renderAC = (config: IndicatorConfig) => {
     const ac = new AC(5, 34, 5);
     const chartData: ChartDataPoint[] = [];
-    const sampleValues: Array<{period: number; date: string; high: number; low: number; result: string}> = [];
+    const flags: Array<{x: number; title: string; text: string}> = [];
+    const sampleValues: Array<{
+      period: number;
+      date: string;
+      high: number;
+      low: number;
+      result: string;
+      signal: string;
+    }> = [];
 
     ethCandles.forEach((candle, idx) => {
       ac.add(candle);
       const result = ac.isStable ? ac.getResult() : null;
+      const signal = ac.getSignal();
       chartData.push({x: idx + 1, y: result});
+
+      if (signal.hasChanged && ac.isStable) {
+        flags.push({
+          x: idx + 1,
+          title: signal.state,
+          text: `Signal: ${signal.state}`,
+        });
+      }
 
       sampleValues.push({
         period: idx + 1,
@@ -646,13 +1139,16 @@ if (ao.isStable) {
         high: candle.high,
         low: candle.low,
         result: result !== null ? result.toFixed(2) : 'N/A',
+        signal: signal.state,
       });
     });
 
     return (
       <div className="space-y-6">
         <div>
-          <h2 className="text-2xl font-bold text-white mb-2 select-text">{config.name}</h2>
+          <h2 className="text-2xl font-bold text-white mb-2 select-text">
+            AC(5, 34, 5) / Required Inputs: {ac.getRequiredInputs()}
+          </h2>
           <p className="text-slate-300 select-text">{config.description}</p>
           <p className="text-slate-400 text-sm mt-2 select-text">
             Shows acceleration or deceleration of the current driving force. Earlier signal of potential trend change
@@ -660,7 +1156,13 @@ if (ao.isStable) {
           </p>
         </div>
 
-        <Chart title="Accelerator Oscillator (5,34,5)" data={chartData} yAxisLabel="AC" color={config.color} />
+        <Chart
+          title="Accelerator Oscillator (5,34,5)"
+          data={chartData}
+          yAxisLabel="AC"
+          color={config.color}
+          flags={flags}
+        />
 
         <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-4">
           <h3 className="text-lg font-semibold text-white mb-3">All Sample Values</h3>
@@ -673,6 +1175,7 @@ if (ao.isStable) {
                   <th className="text-left text-slate-300 py-2 px-3">High</th>
                   <th className="text-left text-slate-300 py-2 px-3">Low</th>
                   <th className="text-left text-slate-300 py-2 px-3">AC</th>
+                  <th className="text-left text-slate-300 py-2 px-3">Signal</th>
                 </tr>
               </thead>
               <tbody>
@@ -683,6 +1186,9 @@ if (ao.isStable) {
                     <td className="text-slate-300 py-2 px-3">${row.high.toFixed(2)}</td>
                     <td className="text-slate-300 py-2 px-3">${row.low.toFixed(2)}</td>
                     <td className="text-white font-mono py-2 px-3">{row.result}</td>
+                    <td className="py-2 px-3">
+                      <SignalBadge signal={row.signal} />
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -712,32 +1218,45 @@ if (ac.isStable) {
   const renderCG = (config: IndicatorConfig) => {
     const cg = new CG(10, 10);
     const chartData: ChartDataPoint[] = [];
-    const sampleValues: Array<{period: number; date: string; close: number; result: string}> = [];
+    const flags: Array<{x: number; title: string; text: string}> = [];
+    const sampleValues: Array<{period: number; date: string; close: number; result: string; signal: string}> = [];
 
     ethCandles.forEach((candle, idx) => {
       cg.add(candle.close);
       const result = cg.isStable ? cg.getResult() : null;
+      const signal = cg.getSignal();
       chartData.push({x: idx + 1, y: result});
+
+      if (signal.hasChanged && cg.isStable) {
+        flags.push({
+          x: idx + 1,
+          title: signal.state,
+          text: `Signal: ${signal.state}`,
+        });
+      }
 
       sampleValues.push({
         period: idx + 1,
         date: candle.date,
         close: candle.close,
         result: result !== null ? result.toFixed(2) : 'N/A',
+        signal: signal.state,
       });
     });
 
     return (
       <div className="space-y-6">
         <div>
-          <h2 className="text-2xl font-bold text-white mb-2 select-text">{config.name}</h2>
+          <h2 className="text-2xl font-bold text-white mb-2 select-text">
+            CG(10, 10) / Required Inputs: {cg.getRequiredInputs()}
+          </h2>
           <p className="text-slate-300 select-text">{config.description}</p>
           <p className="text-slate-400 text-sm mt-2 select-text">
             Identifies turning points with minimal lag. Oscillates around zero line.
           </p>
         </div>
 
-        <Chart title="Center of Gravity (10,10)" data={chartData} yAxisLabel="CG" color={config.color} />
+        <Chart title="Center of Gravity (10,10)" data={chartData} yAxisLabel="CG" color={config.color} flags={flags} />
 
         <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-4">
           <h3 className="text-lg font-semibold text-white mb-3">All Sample Values</h3>
@@ -749,6 +1268,7 @@ if (ac.isStable) {
                   <th className="text-left text-slate-300 py-2 px-3">Date</th>
                   <th className="text-left text-slate-300 py-2 px-3">Close</th>
                   <th className="text-left text-slate-300 py-2 px-3">CG</th>
+                  <th className="text-left text-slate-300 py-2 px-3">Signal</th>
                 </tr>
               </thead>
               <tbody>
@@ -758,6 +1278,9 @@ if (ac.isStable) {
                     <td className="text-slate-300 py-2 px-3">{row.date}</td>
                     <td className="text-slate-300 py-2 px-3">${row.close.toFixed(2)}</td>
                     <td className="text-white font-mono py-2 px-3">{row.result}</td>
+                    <td className="py-2 px-3">
+                      <SignalBadge signal={row.signal} />
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -806,7 +1329,9 @@ if (cg.isStable) {
     return (
       <div className="space-y-6">
         <div>
-          <h2 className="text-2xl font-bold text-white mb-2 select-text">{config.name}</h2>
+          <h2 className="text-2xl font-bold text-white mb-2 select-text">
+            MOM(5) / Required Inputs: {mom.getRequiredInputs()}
+          </h2>
           <p className="text-slate-300 select-text">{config.description}</p>
           <p className="text-slate-400 text-sm mt-2 select-text">
             Simple momentum calculation: current price minus price n periods ago.
@@ -862,13 +1387,21 @@ if (mom.isStable) {
   };
 
   const renderOBV = (config: IndicatorConfig) => {
-    const obv = new OBV();
+    const obv = new OBV(5);
     const chartData: ChartDataPoint[] = [];
-    const sampleValues: Array<{period: number; date: string; close: number; volume: number; result: string}> = [];
+    const sampleValues: Array<{
+      period: number;
+      date: string;
+      close: number;
+      volume: number;
+      result: string;
+      signal: string;
+    }> = [];
 
     ethCandles.forEach((candle, idx) => {
       obv.add(candle);
       const result = obv.getResult();
+      const signal = obv.getSignal();
       chartData.push({x: idx + 1, y: result});
 
       sampleValues.push({
@@ -877,20 +1410,23 @@ if (mom.isStable) {
         close: candle.close,
         volume: candle.volume,
         result: result !== null ? result.toFixed(0) : 'N/A',
+        signal: signal.state,
       });
     });
 
     return (
       <div className="space-y-6">
         <div>
-          <h2 className="text-2xl font-bold text-white mb-2 select-text">{config.name}</h2>
+          <h2 className="text-2xl font-bold text-white mb-2 select-text">
+            OBV(5) / Required Inputs: {obv.getRequiredInputs()}
+          </h2>
           <p className="text-slate-300 select-text">{config.description}</p>
           <p className="text-slate-400 text-sm mt-2 select-text">
             Cumulative volume-based indicator. Rising OBV with rising prices confirms uptrend.
           </p>
         </div>
 
-        <Chart title="On-Balance Volume" data={chartData} yAxisLabel="OBV" color={config.color} />
+        <Chart title="On-Balance Volume (5)" data={chartData} yAxisLabel="OBV" color={config.color} />
 
         <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-4">
           <h3 className="text-lg font-semibold text-white mb-3">All Sample Values</h3>
@@ -903,6 +1439,7 @@ if (mom.isStable) {
                   <th className="text-left text-slate-300 py-2 px-3">Close</th>
                   <th className="text-left text-slate-300 py-2 px-3">Volume</th>
                   <th className="text-left text-slate-300 py-2 px-3">OBV</th>
+                  <th className="text-left text-slate-300 py-2 px-3">Signal</th>
                 </tr>
               </thead>
               <tbody>
@@ -913,6 +1450,9 @@ if (mom.isStable) {
                     <td className="text-slate-300 py-2 px-3">${row.close.toFixed(2)}</td>
                     <td className="text-slate-300 py-2 px-3">{row.volume}</td>
                     <td className="text-white font-mono py-2 px-3">{row.result}</td>
+                    <td className="py-2 px-3">
+                      <SignalBadge signal={row.signal} />
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -925,7 +1465,7 @@ if (mom.isStable) {
           <pre className="text-slate-300 text-sm overflow-x-auto">
             <code>{`import { OBV } from 'trading-signals';
 
-const obv = new OBV();
+const obv = new OBV(5);
 
 obv.add({ open: 100, high: 101, low: 99, close: 100, volume: 1000 });
 obv.add({ open: 100, high: 103, low: 100, close: 102, volume: 1200 });
@@ -943,32 +1483,45 @@ if (result !== null) {
   const renderREI = (config: IndicatorConfig) => {
     const rei = new REI(5);
     const chartData: ChartDataPoint[] = [];
-    const sampleValues: Array<{period: number; date: string; close: number; result: string}> = [];
+    const flags: Array<{x: number; title: string; text: string}> = [];
+    const sampleValues: Array<{period: number; date: string; close: number; result: string; signal: string}> = [];
 
     ethCandles.forEach((candle, idx) => {
       rei.add(candle);
       const result = rei.isStable ? rei.getResult() : null;
+      const signal = rei.getSignal();
       chartData.push({x: idx + 1, y: result});
+
+      if (signal.hasChanged && rei.isStable) {
+        flags.push({
+          x: idx + 1,
+          title: signal.state,
+          text: `Signal: ${signal.state}`,
+        });
+      }
 
       sampleValues.push({
         period: idx + 1,
         date: candle.date,
         close: candle.close,
         result: result !== null ? result.toFixed(2) : 'N/A',
+        signal: signal.state,
       });
     });
 
     return (
       <div className="space-y-6">
         <div>
-          <h2 className="text-2xl font-bold text-white mb-2 select-text">{config.name}</h2>
+          <h2 className="text-2xl font-bold text-white mb-2 select-text">
+            REI(5) / Required Inputs: {rei.getRequiredInputs()}
+          </h2>
           <p className="text-slate-300 select-text">{config.description}</p>
           <p className="text-slate-400 text-sm mt-2 select-text">
             Measures range expansion to identify potential breakouts.
           </p>
         </div>
 
-        <Chart title="Range Expansion Index (5)" data={chartData} yAxisLabel="REI" color={config.color} />
+        <Chart title="Range Expansion Index (5)" data={chartData} yAxisLabel="REI" color={config.color} flags={flags} />
 
         <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-4">
           <h3 className="text-lg font-semibold text-white mb-3">All Sample Values</h3>
@@ -980,6 +1533,7 @@ if (result !== null) {
                   <th className="text-left text-slate-300 py-2 px-3">Date</th>
                   <th className="text-left text-slate-300 py-2 px-3">Close</th>
                   <th className="text-left text-slate-300 py-2 px-3">REI</th>
+                  <th className="text-left text-slate-300 py-2 px-3">Signal</th>
                 </tr>
               </thead>
               <tbody>
@@ -989,6 +1543,9 @@ if (result !== null) {
                     <td className="text-slate-300 py-2 px-3">{row.date}</td>
                     <td className="text-slate-300 py-2 px-3">${row.close.toFixed(2)}</td>
                     <td className="text-white font-mono py-2 px-3">{row.result}</td>
+                    <td className="py-2 px-3">
+                      <SignalBadge signal={row.signal} />
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -1018,32 +1575,45 @@ if (rei.isStable) {
   const renderStochRSI = (config: IndicatorConfig) => {
     const stochRsi = new StochasticRSI(14);
     const chartData: ChartDataPoint[] = [];
-    const sampleValues: Array<{period: number; date: string; close: number; result: string}> = [];
+    const flags: Array<{x: number; title: string; text: string}> = [];
+    const sampleValues: Array<{period: number; date: string; close: number; result: string; signal: string}> = [];
 
     ethCandles.forEach((candle, idx) => {
       stochRsi.add(candle.close);
       const result = stochRsi.isStable ? stochRsi.getResult() : null;
+      const signal = stochRsi.getSignal();
       chartData.push({x: idx + 1, y: result});
+
+      if (signal.hasChanged && stochRsi.isStable) {
+        flags.push({
+          x: idx + 1,
+          title: signal.state,
+          text: `Signal: ${signal.state}`,
+        });
+      }
 
       sampleValues.push({
         period: idx + 1,
         date: candle.date,
         close: candle.close,
         result: result !== null ? result.toFixed(2) : 'N/A',
+        signal: signal.state,
       });
     });
 
     return (
       <div className="space-y-6">
         <div>
-          <h2 className="text-2xl font-bold text-white mb-2 select-text">{config.name}</h2>
+          <h2 className="text-2xl font-bold text-white mb-2 select-text">
+            StochasticRSI(14) / Required Inputs: {stochRsi.getRequiredInputs()}
+          </h2>
           <p className="text-slate-300 select-text">{config.description}</p>
           <p className="text-slate-400 text-sm mt-2 select-text">
             Applies Stochastic Oscillator to RSI values. More sensitive to overbought/oversold than standard RSI.
           </p>
         </div>
 
-        <Chart title="Stochastic RSI (14)" data={chartData} yAxisLabel="StochRSI" color={config.color} />
+        <Chart title="Stochastic RSI (14)" data={chartData} yAxisLabel="StochRSI" color={config.color} flags={flags} />
 
         <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-4">
           <h3 className="text-lg font-semibold text-white mb-3">All Sample Values</h3>
@@ -1055,6 +1625,7 @@ if (rei.isStable) {
                   <th className="text-left text-slate-300 py-2 px-3">Date</th>
                   <th className="text-left text-slate-300 py-2 px-3">Close</th>
                   <th className="text-left text-slate-300 py-2 px-3">StochRSI</th>
+                  <th className="text-left text-slate-300 py-2 px-3">Signal</th>
                 </tr>
               </thead>
               <tbody>
@@ -1064,6 +1635,9 @@ if (rei.isStable) {
                     <td className="text-slate-300 py-2 px-3">{row.date}</td>
                     <td className="text-slate-300 py-2 px-3">${row.close.toFixed(2)}</td>
                     <td className="text-white font-mono py-2 px-3">{row.result}</td>
+                    <td className="py-2 px-3">
+                      <SignalBadge signal={row.signal} />
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -1095,6 +1669,7 @@ if (stochRsi.isStable) {
   const renderWilliamsR = (config: IndicatorConfig) => {
     const willr = new WilliamsR(14);
     const chartData: ChartDataPoint[] = [];
+    const flags: Array<{x: number; title: string; text: string}> = [];
     const sampleValues: Array<{
       period: number;
       date: string;
@@ -1102,12 +1677,22 @@ if (stochRsi.isStable) {
       low: number;
       close: number;
       result: string;
+      signal: string;
     }> = [];
 
     ethCandles.forEach((candle, idx) => {
       willr.add(candle);
       const result = willr.isStable ? willr.getResult() : null;
+      const signal = willr.getSignal();
       chartData.push({x: idx + 1, y: result});
+
+      if (signal.hasChanged && willr.isStable) {
+        flags.push({
+          x: idx + 1,
+          title: signal.state,
+          text: `Signal: ${signal.state}`,
+        });
+      }
 
       sampleValues.push({
         period: idx + 1,
@@ -1116,13 +1701,16 @@ if (stochRsi.isStable) {
         low: candle.low,
         close: candle.close,
         result: result !== null ? result.toFixed(2) : 'N/A',
+        signal: signal.state,
       });
     });
 
     return (
       <div className="space-y-6">
         <div>
-          <h2 className="text-2xl font-bold text-white mb-2 select-text">{config.name}</h2>
+          <h2 className="text-2xl font-bold text-white mb-2 select-text">
+            WilliamsR(14) / Required Inputs: {willr.getRequiredInputs()}
+          </h2>
           <p className="text-slate-300 select-text">{config.description}</p>
           <p className="text-slate-400 text-sm mt-2 select-text">
             Measures overbought and oversold levels on an inverted scale from 0 to -100. Values from 0 to -20 indicate
@@ -1130,7 +1718,7 @@ if (stochRsi.isStable) {
           </p>
         </div>
 
-        <Chart title="Williams %R (14)" data={chartData} yAxisLabel="Williams %R" color={config.color} />
+        <Chart title="Williams %R (14)" data={chartData} yAxisLabel="Williams %R" color={config.color} flags={flags} />
 
         <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-4">
           <h3 className="text-lg font-semibold text-white mb-3">All Sample Values</h3>
@@ -1144,6 +1732,7 @@ if (stochRsi.isStable) {
                   <th className="text-left text-slate-300 py-2 px-3">Low</th>
                   <th className="text-left text-slate-300 py-2 px-3">Close</th>
                   <th className="text-left text-slate-300 py-2 px-3">Williams %R</th>
+                  <th className="text-left text-slate-300 py-2 px-3">Signal</th>
                 </tr>
               </thead>
               <tbody>
@@ -1155,6 +1744,9 @@ if (stochRsi.isStable) {
                     <td className="text-slate-300 py-2 px-3">${row.low.toFixed(2)}</td>
                     <td className="text-slate-300 py-2 px-3">${row.close.toFixed(2)}</td>
                     <td className="text-white font-mono py-2 px-3">{row.result}</td>
+                    <td className="py-2 px-3">
+                      <SignalBadge signal={row.signal} />
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -1175,6 +1767,126 @@ willr.add({ high: 112, low: 100, close: 105 });
 
 if (willr.isStable) {
   console.log('Williams %R:', willr.getResultOrThrow().toFixed(2));
+}`}</code>
+          </pre>
+        </div>
+      </div>
+    );
+  };
+
+  const renderTDS = (config: IndicatorConfig) => {
+    const tds = new TDS();
+    const chartData: ChartDataPoint[] = [];
+    const flags: Array<{x: number; title: string; text: string}> = [];
+    const results: Array<{
+      period: number;
+      date: string;
+      close: number;
+      result: string;
+      signal: string;
+    }> = [];
+
+    for (const [index, candle] of ethCandles.entries()) {
+      tds.add(candle.close);
+      const result = tds.getResult();
+      const signal = tds.getSignal();
+      chartData.push({x: index + 1, y: result});
+
+      if (signal.hasChanged && result !== null) {
+        flags.push({
+          x: index + 1,
+          title: signal.state,
+          text: `Signal: ${signal.state}`,
+        });
+      }
+
+      results.push({
+        period: index + 1,
+        date: candle.date,
+        close: candle.close,
+        result: result !== null ? result.toString() : 'null',
+        signal: signal.state,
+      });
+    }
+
+    const sampleValues = results;
+
+    return (
+      <div className="space-y-6">
+        <div>
+          <h2 className="text-2xl font-bold text-white mb-2">TDS() / Required Inputs: {tds.getRequiredInputs()}</h2>
+          <p className="text-slate-300">{config.description}</p>
+        </div>
+
+        <Chart title="Tom DeMark Sequential" data={chartData} yAxisLabel="TDS" color={config.color} flags={flags} />
+
+        <div className="bg-slate-800/30 border border-slate-700 rounded-lg p-6">
+          <h3 className="text-lg font-semibold text-white mb-4">Calculation</h3>
+          <div className="prose prose-invert max-w-none">
+            <p className="text-slate-300">TDS tracks consecutive closes compared to the close 4 bars earlier:</p>
+            <ul className="text-slate-300 space-y-2">
+              <li>
+                Bullish Setup: 9 consecutive closes greater than the close 4 bars earlier (returns 1, signals potential
+                reversal - BEARISH)
+              </li>
+              <li>
+                Bearish Setup: 9 consecutive closes less than the close 4 bars earlier (returns -1, signals potential
+                reversal - BULLISH)
+              </li>
+            </ul>
+            <p className="text-slate-300 mt-4">
+              TDS identifies potential turning points after extended price moves. The signal is inverted because it
+              detects overbought/oversold conditions.
+            </p>
+          </div>
+        </div>
+
+        <div className="bg-slate-800/30 border border-slate-700 rounded-lg p-6">
+          <h3 className="text-lg font-semibold text-white mb-4">All Sample Values</h3>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-slate-600">
+                  <th className="text-left text-slate-300 py-2 px-3">Period</th>
+                  <th className="text-left text-slate-300 py-2 px-3">Date</th>
+                  <th className="text-left text-slate-300 py-2 px-3">Close</th>
+                  <th className="text-left text-slate-300 py-2 px-3">TDS</th>
+                  <th className="text-left text-slate-300 py-2 px-3">Signal</th>
+                </tr>
+              </thead>
+              <tbody>
+                {sampleValues.map(row => (
+                  <tr key={row.period} className="border-b border-slate-700/50">
+                    <td className="text-slate-400 py-2 px-3">{row.period}</td>
+                    <td className="text-slate-300 py-2 px-3">{row.date}</td>
+                    <td className="text-slate-300 py-2 px-3">${row.close.toFixed(2)}</td>
+                    <td className="text-white font-mono py-2 px-3">{row.result}</td>
+                    <td className="py-2 px-3">
+                      <SignalBadge signal={row.signal} />
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div className="bg-purple-900/20 border border-purple-800/50 rounded-lg p-4">
+          <h3 className="text-lg font-semibold text-purple-400 mb-2">Code Example</h3>
+          <pre className="text-slate-300 text-sm overflow-x-auto">
+            <code>{`import { TDS } from 'trading-signals';
+
+const tds = new TDS();
+
+tds.add(100);
+tds.add(102);
+tds.add(105);
+// ... add more closes
+
+if (tds.isStable) {
+  const result = tds.getResultOrThrow();
+  console.log('TDS:', result); // 1 (bullish setup) or -1 (bearish setup)
+  console.log('Signal:', tds.getSignal().state); // Inverted: 1 → BEARISH, -1 → BULLISH
 }`}</code>
           </pre>
         </div>

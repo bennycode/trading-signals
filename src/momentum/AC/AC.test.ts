@@ -1,10 +1,13 @@
 import {NotEnoughDataError} from '../../error/index.js';
+import {TradingSignal} from '../../types/Indicator.js';
 import {AC} from './AC.js';
+
+type Candle = readonly [timestamp: number, open: number, close: number, high: number, low: number, volume: number];
 
 describe('AC', () => {
   // Test data verified with:
   // https://github.com/jesse-ai/jesse/blob/8e502d070c24bed29db80e1d0938781d8cdb1046/tests/data/test_candles_indicators.py#L4351
-  const candles = [
+  const candles: readonly Candle[] = [
     [1563408000000, 210.8, 225.73, 229.65, 205.71, 609081.49094],
     [1563494400000, 225.75, 220.73, 226.23, 212.52, 371622.21865],
     [1563580800000, 220.84, 228.2, 235.09, 219.78, 325393.97225],
@@ -244,7 +247,7 @@ describe('AC', () => {
     [1583798400000, 202.79, 200.7, 206.2, 195.54, 1020260.107],
     [1583884800000, 200.74, 194.61, 203.18, 181.73, 1079824.90167],
     [1583971200000, 194.61, 107.82, 195.55, 101.2, 3814533.14046],
-  ] as const;
+  ];
 
   const mappedCandles = candles.map(c => ({
     high: c[3],
@@ -287,7 +290,7 @@ describe('AC', () => {
       // Result verified with:
       // https://github.com/jesse-ai/jesse/blob/53297462d48ebf43f9df46ab5005076d25073e5e/tests/test_indicators.py#L14
       expect(ac.isStable).toBe(true);
-      expect(ac.getRequiredInputs()).toBe(5);
+      expect(ac.getRequiredInputs()).toBe(39);
       expect(ac.getResultOrThrow().toFixed(2)).toBe('-21.97');
       expect(ac.momentum.getResultOrThrow().toFixed(2)).toBe('-9.22');
     });
@@ -301,6 +304,78 @@ describe('AC', () => {
       } catch (error) {
         expect(error).toBeInstanceOf(NotEnoughDataError);
       }
+    });
+  });
+
+  describe('getSignal', () => {
+    it('returns UNKNOWN signal when there is no result', () => {
+      const ac = new AC(5, 34, 5);
+      const signal = ac.getSignal();
+      expect(signal.state).toBe(TradingSignal.UNKNOWN);
+    });
+
+    it('returns BULLISH signal when AC is positive', () => {
+      const prices = [
+        {high: 101, low: 99},
+        {high: 103, low: 101},
+        {high: 106, low: 104},
+        {high: 109, low: 107},
+        {high: 113, low: 111},
+        {high: 117, low: 115},
+        {high: 121, low: 119},
+        {high: 126, low: 124},
+        {high: 131, low: 129},
+        {high: 136, low: 134},
+        {high: 141, low: 139},
+        {high: 146, low: 144},
+        {high: 151, low: 149},
+        {high: 156, low: 154},
+        {high: 161, low: 159},
+      ];
+
+      const ac = new AC(5, 10, 5);
+
+      for (const price of prices) {
+        ac.add(price);
+      }
+
+      const signal = ac.getSignal();
+
+      expect(ac.getResultOrThrow()).toBeGreaterThan(0);
+      expect(signal.state).toBe(TradingSignal.BULLISH);
+      expect(signal.hasChanged).toBe(false);
+    });
+
+    it('returns BEARISH signal when AC is negative', () => {
+      const prices = [
+        {high: 161, low: 159},
+        {high: 156, low: 154},
+        {high: 151, low: 149},
+        {high: 146, low: 144},
+        {high: 141, low: 139},
+        {high: 136, low: 134},
+        {high: 131, low: 129},
+        {high: 126, low: 124},
+        {high: 121, low: 119},
+        {high: 116, low: 114},
+        {high: 111, low: 109},
+        {high: 106, low: 104},
+        {high: 101, low: 99},
+        {high: 96, low: 94},
+        {high: 91, low: 89},
+      ];
+
+      const ac = new AC(5, 10, 5);
+
+      for (const price of prices) {
+        ac.add(price);
+      }
+
+      const signal = ac.getSignal();
+
+      expect(ac.getResultOrThrow()).toBe(0);
+      expect(signal.state).toBe(TradingSignal.BEARISH);
+      expect(signal.hasChanged).toBe(false);
     });
   });
 });

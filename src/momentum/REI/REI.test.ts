@@ -1,4 +1,5 @@
 import {REI} from './REI.js';
+import {TradingSignal} from '../../types/index.js';
 
 describe('REI', () => {
   const testData = [
@@ -207,6 +208,40 @@ describe('REI', () => {
       }
 
       expect(rei.getResult()).toBeNull();
+    });
+  });
+
+  describe('getSignal', () => {
+    it('returns UNKNOWN when there is no result', () => {
+      const rei = new REI(8);
+      const signal = rei.getSignal();
+      expect(signal.state).toBe(TradingSignal.UNKNOWN);
+    });
+
+    it('returns OVERBOUGHT when REI > 60', () => {
+      const rei = new REI(8);
+      const calculateSignal = rei['calculateSignalState'].bind(rei);
+      const signal = calculateSignal(61);
+      expect(signal).toBe(TradingSignal.BULLISH);
+    });
+
+    it('returns OVERSOLD when REI < -60', () => {
+      const rei = new REI(8);
+      const calculateSignal = rei['calculateSignalState'].bind(rei);
+      const signal = calculateSignal(-61);
+      expect(signal).toBe(TradingSignal.BEARISH);
+    });
+
+    it('returns UNKNOWN when REI is between -60 and 60', () => {
+      const rei = new REI(8);
+      rei.updates(testData);
+
+      const signal = rei.getSignal();
+
+      const result = rei.getResultOrThrow();
+      expect(result).toBeGreaterThan(-60);
+      expect(result).toBeLessThan(60);
+      expect(signal.state).toBe(TradingSignal.SIDEWAYS);
     });
   });
 });
