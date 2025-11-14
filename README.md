@@ -110,7 +110,22 @@ sma.add(70);
 console.log(sma.getResultOrThrow()); // 40
 ```
 
-Most of the time, the minimum amount of data depends on the interval / time period used. If you’re not sure, take a look at the test files for the indicator to see examples of correct usage.
+Most of the time, the minimum amount of data depends on the interval / time period used. If you're not sure, take a look at the test files for the indicator to see examples of correct usage.
+
+### When to use `getRequiredInputs()`?
+
+Every indicator provides a `getRequiredInputs()` method that returns the minimum number of input values needed before the indicator becomes stable and can produce results. This is useful for validation and understanding when an indicator will start producing return values.
+
+**Example:**
+
+```ts
+import {SMA, EMA, RSI} from 'trading-signals';
+
+const sma = new SMA(5);
+console.log(sma.getRequiredInputs()); // 5
+```
+
+The required inputs often depend on the indicator's configuration (like interval/period) and its internal calculation requirements. Some indicators like **MACD** or **Stochastic Oscillator** may require more inputs than their primary period because they use multiple moving averages or lookback periods internally.
 
 ### When to use `getSignal()`?
 
