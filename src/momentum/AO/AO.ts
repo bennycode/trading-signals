@@ -2,7 +2,7 @@ import type {MovingAverage} from '../../trend/MA/MovingAverage.js';
 import type {MovingAverageTypes} from '../../trend/MA/MovingAverageTypes.js';
 import {SMA} from '../../trend/SMA/SMA.js';
 import type {HighLow} from '../../types/HighLowClose.js';
-import {TrendIndicatorSeries, TrendSignal} from '../../types/Indicator.js';
+import {TrendIndicatorSeries, TradingSignal} from '../../types/Indicator.js';
 
 /**
  * Awesome Oscillator (AO)
@@ -58,13 +58,13 @@ export class AO extends TrendIndicatorSeries<HighLow<number>> {
 
     switch (true) {
       case !hasResult:
-        return TrendSignal.UNKNOWN;
+        return TradingSignal.UNKNOWN;
       case isBullish:
-        return TrendSignal.BULLISH;
+        return TradingSignal.BULLISH;
       case isBearish:
-        return TrendSignal.BEARISH;
+        return TradingSignal.BEARISH;
       default:
-        return TrendSignal.SIDEWAYS;
+        return TradingSignal.SIDEWAYS;
     }
   }
 }

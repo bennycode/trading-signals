@@ -1,5 +1,5 @@
 import type {HighLowClose} from '../../types/HighLowClose.js';
-import {MomentumIndicatorSeries, MomentumSignal} from '../../types/Indicator.js';
+import {TradingSignal, TrendIndicatorSeries} from '../../types/Indicator.js';
 
 /**
  * Range Expansion Index (REI)
@@ -20,7 +20,7 @@ import {MomentumIndicatorSeries, MomentumSignal} from '../../types/Indicator.js'
  * @see https://github.com/EarnForex/Range-Expansion-Index
  * @see https://www.sierrachart.com/index.php?page=doc/StudiesReference.php&ID=448
  */
-export class REI extends MomentumIndicatorSeries<HighLowClose<number>> {
+export class REI extends TrendIndicatorSeries<HighLowClose<number>> {
   private readonly highs: number[] = [];
   private readonly lows: number[] = [];
   private readonly closes: number[] = [];
@@ -36,13 +36,13 @@ export class REI extends MomentumIndicatorSeries<HighLowClose<number>> {
 
     switch (true) {
       case !hasResult:
-        return MomentumSignal.UNKNOWN;
+        return TradingSignal.UNKNOWN;
       case isOverbought:
-        return MomentumSignal.OVERBOUGHT;
+        return TradingSignal.BULLISH;
       case isOversold:
-        return MomentumSignal.OVERSOLD;
+        return TradingSignal.BEARISH;
       default:
-        return MomentumSignal.NEUTRAL;
+        return TradingSignal.SIDEWAYS;
     }
   }
 

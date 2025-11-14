@@ -1,6 +1,6 @@
 import type {DEMA} from '../../trend/DEMA/DEMA.js';
 import type {EMA} from '../../trend/EMA/EMA.js';
-import {TechnicalIndicator, TrendSignal} from '../../types/Indicator.js';
+import {TechnicalIndicator, TradingSignal} from '../../types/Indicator.js';
 import {pushUpdate} from '../../util/pushUpdate.js';
 
 export type MACDResult = {
@@ -67,17 +67,17 @@ export class MACD extends TechnicalIndicator<MACDResult, number> {
 
     switch (true) {
       case !hasResult:
-        return TrendSignal.UNKNOWN;
+        return TradingSignal.UNKNOWN;
       case isBullish:
-        return TrendSignal.BULLISH;
+        return TradingSignal.BULLISH;
       case isBearish:
       default:
-        return TrendSignal.BEARISH;
+        return TradingSignal.BEARISH;
     }
   }
 
   getSignal(): {
-    state: (typeof TrendSignal)[keyof typeof TrendSignal];
+    state: (typeof TradingSignal)[keyof typeof TradingSignal];
     hasChanged: boolean;
   } {
     const previousState = this.calculateSignal(this.previousResult);

@@ -1,5 +1,5 @@
 import {NotEnoughDataError} from '../../error/index.js';
-import {MomentumSignal} from '../../types/index.js';
+import {TradingSignal} from '../../types/Indicator.js';
 import {CG} from './CG.js';
 
 describe('CG', () => {
@@ -112,7 +112,7 @@ describe('CG', () => {
     it('returns UNKNOWN when there is no result', () => {
       const cg = new CG(5, 10);
       const signal = cg.getSignal();
-      expect(signal.state).toBe(MomentumSignal.UNKNOWN);
+      expect(signal.state).toBe(TradingSignal.UNKNOWN);
     });
 
     it('returns OVERBOUGHT when CG is above its signal line', () => {
@@ -122,7 +122,7 @@ describe('CG', () => {
         cg.add(price);
       }
       const signal = cg.getSignal();
-      expect(signal.state).toBe(MomentumSignal.OVERBOUGHT);
+      expect(signal.state).toBe(TradingSignal.BULLISH);
       expect(cg.getResultOrThrow()).toBeGreaterThan(cg.signal.getResultOrThrow());
     });
 
@@ -141,7 +141,7 @@ describe('CG', () => {
       const cgValue = cg.getResultOrThrow();
       const signalValue = cg.signal.getResultOrThrow();
 
-      expect(signal.state).toBe(MomentumSignal.OVERSOLD);
+      expect(signal.state).toBe(TradingSignal.BEARISH);
       expect(cgValue).toBeLessThan(signalValue);
     });
 
@@ -149,7 +149,7 @@ describe('CG', () => {
       const cg = new CG(1, 1);
       cg.add(100);
       const signal = cg.getSignal();
-      expect(signal.state).toBe(MomentumSignal.NEUTRAL);
+      expect(signal.state).toBe(TradingSignal.SIDEWAYS);
       expect(cg.getResultOrThrow()).toBe(cg.signal.getResultOrThrow());
     });
   });

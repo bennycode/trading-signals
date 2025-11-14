@@ -1,5 +1,5 @@
 import {NotEnoughDataError} from '../../error/index.js';
-import {MomentumSignal} from '../../types/Indicator.js';
+import {TradingSignal} from '../../types/Indicator.js';
 import {CCI} from './CCI.js';
 
 describe('CCI', () => {
@@ -94,7 +94,7 @@ describe('CCI', () => {
     it('returns UNKNOWN when there is no result', () => {
       const cci = new CCI(5);
       const signal = cci.getSignal();
-      expect(signal.state).toBe(MomentumSignal.UNKNOWN);
+      expect(signal.state).toBe(TradingSignal.UNKNOWN);
     });
 
     it('returns OVERSOLD when CCI <= -100', () => {
@@ -115,7 +115,7 @@ describe('CCI', () => {
       const signal = cci.getSignal();
 
       expect(cci.getResultOrThrow()).toBeLessThanOrEqual(-100);
-      expect(signal.state).toBe(MomentumSignal.OVERSOLD);
+      expect(signal.state).toBe(TradingSignal.BEARISH);
     });
 
     it('returns OVERBOUGHT when CCI >= 100', () => {
@@ -136,7 +136,7 @@ describe('CCI', () => {
       const signal = cci.getSignal();
 
       expect(cci.getResultOrThrow()).toBeGreaterThanOrEqual(100);
-      expect(signal.state).toBe(MomentumSignal.OVERBOUGHT);
+      expect(signal.state).toBe(TradingSignal.BULLISH);
     });
 
     it('returns UNKNOWN when CCI is between -100 and 100', () => {
@@ -159,7 +159,7 @@ describe('CCI', () => {
 
       expect(result).toBeGreaterThan(-100);
       expect(result).toBeLessThan(100);
-      expect(signal.state).toBe(MomentumSignal.NEUTRAL);
+      expect(signal.state).toBe(TradingSignal.SIDEWAYS);
     });
   });
 });

@@ -2,7 +2,7 @@ import type {MovingAverage} from '../../trend/MA/MovingAverage.js';
 import type {MovingAverageTypes} from '../../trend/MA/MovingAverageTypes.js';
 import {SMA} from '../../trend/SMA/SMA.js';
 import {WSMA} from '../../trend/WSMA/WSMA.js';
-import {MomentumIndicatorSeries, MomentumSignal} from '../../types/Indicator.js';
+import {TradingSignal, TrendIndicatorSeries} from '../../types/Indicator.js';
 import {Period} from '../../types/Period.js';
 import {RSI} from '../RSI/RSI.js';
 
@@ -25,7 +25,7 @@ import {RSI} from '../RSI/RSI.js';
  * @see https://lakshmishree.com/blog/stochastic-rsi-indicator/
  * @see https://alchemymarkets.com/education/indicators/stochastic-rsi/
  */
-export class StochasticRSI extends MomentumIndicatorSeries {
+export class StochasticRSI extends TrendIndicatorSeries {
   private readonly period: Period;
   private readonly rsi: RSI;
 
@@ -81,13 +81,13 @@ export class StochasticRSI extends MomentumIndicatorSeries {
 
     switch (true) {
       case !hasResult:
-        return MomentumSignal.UNKNOWN;
+        return TradingSignal.UNKNOWN;
       case isOversold:
-        return MomentumSignal.OVERSOLD;
+        return TradingSignal.BEARISH;
       case isOverbought:
-        return MomentumSignal.OVERBOUGHT;
+        return TradingSignal.BULLISH;
       default:
-        return MomentumSignal.NEUTRAL;
+        return TradingSignal.SIDEWAYS;
     }
   }
 }

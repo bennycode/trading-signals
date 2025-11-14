@@ -1,6 +1,6 @@
 import {SMA} from '../../trend/SMA/SMA.js';
 import type {HighLowClose} from '../../types/HighLowClose.js';
-import {MomentumSignal, TechnicalIndicator} from '../../types/Indicator.js';
+import {TechnicalIndicator, TradingSignal} from '../../types/Indicator.js';
 import {pushUpdate} from '../../util/pushUpdate.js';
 
 export interface StochasticResult {
@@ -91,18 +91,18 @@ export class StochasticOscillator extends TechnicalIndicator<StochasticResult, H
 
     switch (true) {
       case !hasResult:
-        return MomentumSignal.UNKNOWN;
+        return TradingSignal.UNKNOWN;
       case isOversold:
-        return MomentumSignal.OVERSOLD;
+        return TradingSignal.BEARISH;
       case isOverbought:
-        return MomentumSignal.OVERBOUGHT;
+        return TradingSignal.BULLISH;
       default:
-        return MomentumSignal.NEUTRAL;
+        return TradingSignal.SIDEWAYS;
     }
   }
 
   getSignal(): {
-    state: (typeof MomentumSignal)[keyof typeof MomentumSignal];
+    state: (typeof TradingSignal)[keyof typeof TradingSignal];
     hasChanged: boolean;
   } {
     const previousState = this.calculateSignal(this.previousResult);

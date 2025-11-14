@@ -1,4 +1,4 @@
-import {TrendIndicatorSeries, TrendSignal} from '../../types/Indicator.js';
+import {TrendIndicatorSeries, TradingSignal} from '../../types/Indicator.js';
 import {pushUpdate} from '../../util/pushUpdate.js';
 
 /**
@@ -37,11 +37,11 @@ export class ROC extends TrendIndicatorSeries {
 
     switch (true) {
       case !hasResult:
-        return TrendSignal.UNKNOWN;
+        return TradingSignal.UNKNOWN;
       case isBearish:
-        return TrendSignal.BEARISH;
+        return TradingSignal.BEARISH;
       default:
-        return TrendSignal.BULLISH;
+        return TradingSignal.BULLISH;
     }
   }
 }

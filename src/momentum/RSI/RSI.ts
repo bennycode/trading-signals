@@ -1,4 +1,4 @@
-import {MomentumIndicatorSeries, MomentumSignal} from '../../types/Indicator.js';
+import {TradingSignal, TrendIndicatorSeries} from '../../types/Indicator.js';
 import type {MovingAverage} from '../../trend/MA/MovingAverage.js';
 import type {MovingAverageTypes} from '../../trend/MA/MovingAverageTypes.js';
 import {pushUpdate} from '../../util/pushUpdate.js';
@@ -19,7 +19,7 @@ import {WSMA} from '../../trend/WSMA/WSMA.js';
  * @see https://en.wikipedia.org/wiki/Relative_strength_index
  * @see https://www.investopedia.com/terms/r/rsi.asp
  */
-export class RSI extends MomentumIndicatorSeries {
+export class RSI extends TrendIndicatorSeries {
   private readonly previousPrices: number[] = [];
   private readonly avgGain: MovingAverage;
   private readonly avgLoss: MovingAverage;
@@ -77,13 +77,13 @@ export class RSI extends MomentumIndicatorSeries {
 
     switch (true) {
       case !hasResult:
-        return MomentumSignal.UNKNOWN;
+        return TradingSignal.UNKNOWN;
       case isOversold:
-        return MomentumSignal.OVERSOLD;
+        return TradingSignal.BEARISH;
       case isOverbought:
-        return MomentumSignal.OVERBOUGHT;
+        return TradingSignal.BULLISH;
       default:
-        return MomentumSignal.NEUTRAL;
+        return TradingSignal.SIDEWAYS;
     }
   }
 }

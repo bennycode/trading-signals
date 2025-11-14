@@ -1,7 +1,7 @@
 import {WilliamsR} from './WilliamsR.js';
 import {StochasticOscillator} from '../STOCH/StochasticOscillator.js';
 import {NotEnoughDataError} from '../../error/index.js';
-import {MomentumSignal} from '../../types/index.js';
+import {TradingSignal} from '../../types/index.js';
 import candles from '../../fixtures/STOCH/candles.json' with {type: 'json'};
 
 describe('WilliamsR', () => {
@@ -127,28 +127,28 @@ describe('WilliamsR', () => {
       const willR = new WilliamsR(14);
       const calculateSignalState = willR['calculateSignalState'].bind(willR);
       const signal = calculateSignalState(null);
-      expect(signal).toBe(MomentumSignal.UNKNOWN);
+      expect(signal).toBe(TradingSignal.UNKNOWN);
     });
 
     it('returns OVERBOUGHT when Williams %R >= -20', () => {
       const willR = new WilliamsR(14);
       const calculateSignalState = willR['calculateSignalState'].bind(willR);
       const signal = calculateSignalState(-20);
-      expect(signal).toBe(MomentumSignal.OVERBOUGHT);
+      expect(signal).toBe(TradingSignal.BULLISH);
     });
 
     it('returns OVERSOLD when Williams %R <= -80', () => {
       const willR = new WilliamsR(14);
       const calculateSignalState = willR['calculateSignalState'].bind(willR);
       const signal = calculateSignalState(-80);
-      expect(signal).toBe(MomentumSignal.OVERSOLD);
+      expect(signal).toBe(TradingSignal.BEARISH);
     });
 
     it('returns UNKNOWN when Williams %R is between -80 and -20', () => {
       const willR = new WilliamsR(14);
       const calculateSignalState = willR['calculateSignalState'].bind(willR);
       const signal = calculateSignalState(-50);
-      expect(signal).toBe(MomentumSignal.NEUTRAL);
+      expect(signal).toBe(TradingSignal.SIDEWAYS);
     });
   });
 });

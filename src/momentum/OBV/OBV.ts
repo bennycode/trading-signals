@@ -1,5 +1,5 @@
 import type {OpenHighLowCloseVolume} from '../../types/HighLowClose.js';
-import {TrendIndicatorSeries, TrendSignal} from '../../types/Indicator.js';
+import {TrendIndicatorSeries, TradingSignal} from '../../types/Indicator.js';
 import {pushUpdate} from '../../util/pushUpdate.js';
 
 /**
@@ -46,13 +46,13 @@ export class OBV extends TrendIndicatorSeries<OpenHighLowCloseVolume<number>> {
 
     switch (true) {
       case !hasResult:
-        return TrendSignal.UNKNOWN;
+        return TradingSignal.UNKNOWN;
       case isBullish:
-        return TrendSignal.BULLISH;
+        return TradingSignal.BULLISH;
       case isBearish:
-        return TrendSignal.BEARISH;
+        return TradingSignal.BEARISH;
       default:
-        return TrendSignal.SIDEWAYS;
+        return TradingSignal.SIDEWAYS;
     }
   }
 }

@@ -1,6 +1,6 @@
 import {SMA} from '../../trend/SMA/SMA.js';
 import type {HighLow} from '../../types/HighLowClose.js';
-import {TrendIndicatorSeries, TrendSignal} from '../../types/Indicator.js';
+import {TrendIndicatorSeries, TradingSignal} from '../../types/Indicator.js';
 import {AO} from '../AO/AO.js';
 import {MOM} from '../MOM/MOM.js';
 
@@ -52,11 +52,11 @@ export class AC extends TrendIndicatorSeries<HighLow<number>> {
 
     switch (true) {
       case !hasResult:
-        return TrendSignal.UNKNOWN;
+        return TradingSignal.UNKNOWN;
       case isPositive:
-        return TrendSignal.BULLISH;
+        return TradingSignal.BULLISH;
       default:
-        return TrendSignal.BEARISH;
+        return TradingSignal.BEARISH;
     }
   }
 }

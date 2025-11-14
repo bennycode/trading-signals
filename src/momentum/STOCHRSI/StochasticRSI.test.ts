@@ -1,7 +1,7 @@
 import {SMA} from '../../trend/SMA/SMA.js';
 import {WSMA} from '../../trend/WSMA/WSMA.js';
 import {StochasticRSI} from './StochasticRSI.js';
-import {MomentumSignal} from '../../types/index.js';
+import {TradingSignal} from '../../types/index.js';
 
 describe('StochasticRSI', () => {
   describe('replace', () => {
@@ -109,7 +109,7 @@ describe('StochasticRSI', () => {
     it('returns UNKNOWN when there is no result', () => {
       const stochRSI = new StochasticRSI(5);
       const signal = stochRSI.getSignal();
-      expect(signal.state).toBe(MomentumSignal.UNKNOWN);
+      expect(signal.state).toBe(TradingSignal.UNKNOWN);
     });
 
     it('returns UNKNOWN when StochRSI is in mid-range (between 0.2 and 0.8)', () => {
@@ -126,7 +126,7 @@ describe('StochasticRSI', () => {
       expect(result).toBeLessThan(0.8);
 
       const signal = stochRSI.getSignal();
-      expect(signal.state).toBe(MomentumSignal.NEUTRAL);
+      expect(signal.state).toBe(TradingSignal.SIDEWAYS);
     });
 
     it('returns OVERSOLD when Stochastic RSI <= 0.2', () => {
@@ -144,7 +144,7 @@ describe('StochasticRSI', () => {
       const signal = stochRSI.getSignal();
 
       expect(result).toBeLessThanOrEqual(0.2);
-      expect(signal.state).toBe(MomentumSignal.OVERSOLD);
+      expect(signal.state).toBe(TradingSignal.BEARISH);
     });
 
     it('returns OVERBOUGHT when Stochastic RSI >= 0.8', () => {
@@ -160,7 +160,7 @@ describe('StochasticRSI', () => {
       const signal = stochRSI.getSignal();
 
       expect(result).toBeGreaterThanOrEqual(0.8);
-      expect(signal.state).toBe(MomentumSignal.OVERBOUGHT);
+      expect(signal.state).toBe(TradingSignal.BULLISH);
     });
   });
 });

@@ -1,6 +1,6 @@
 import {OBV} from './OBV.js';
 import {NotEnoughDataError} from '../../error/index.js';
-import {TrendSignal} from '../../types/index.js';
+import {TradingSignal} from '../../types/index.js';
 
 describe('OBV', () => {
   describe('getResultOrThrow', () => {
@@ -60,7 +60,7 @@ describe('OBV', () => {
     it('returns UNKNOWN when there is no result', () => {
       const obv = new OBV(2);
       const signal = obv.getSignal();
-      expect(signal.state).toBe(TrendSignal.UNKNOWN);
+      expect(signal.state).toBe(TradingSignal.UNKNOWN);
     });
 
     it('returns BULLISH when OBV is increasing', () => {
@@ -77,7 +77,7 @@ describe('OBV', () => {
 
       const signal = obv.getSignal();
 
-      expect(signal.state).toBe(TrendSignal.BULLISH);
+      expect(signal.state).toBe(TradingSignal.BULLISH);
     });
 
     it('returns BEARISH when OBV is decreasing', () => {
@@ -94,7 +94,7 @@ describe('OBV', () => {
 
       const signal = obv.getSignal();
 
-      expect(signal.state).toBe(TrendSignal.BEARISH);
+      expect(signal.state).toBe(TradingSignal.BEARISH);
     });
 
     it('returns UNKNOWN when OBV has not changed', () => {
@@ -111,7 +111,7 @@ describe('OBV', () => {
 
       const signal = obv.getSignal();
 
-      expect(signal.state).toBe(TrendSignal.SIDEWAYS);
+      expect(signal.state).toBe(TradingSignal.SIDEWAYS);
     });
   });
 });

@@ -13,23 +13,14 @@ interface Indicator<Result = number, Input = number> {
   updates(input: Input[], replace: boolean): Nullable<Result>[];
 }
 
-export const MomentumSignal = {
-  NEUTRAL: 'NEUTRAL',
-  OVERBOUGHT: 'OVERBOUGHT',
-  OVERSOLD: 'OVERSOLD',
-  UNKNOWN: 'UNKNOWN',
-} as const;
-
-export const TrendSignal = {
+export const TradingSignal = {
   BEARISH: 'BEARISH',
   BULLISH: 'BULLISH',
   SIDEWAYS: 'SIDEWAYS',
   UNKNOWN: 'UNKNOWN',
 } as const;
 
-export type MomentumSignals = (typeof MomentumSignal)[keyof typeof MomentumSignal];
-
-export type TrendSignals = (typeof TrendSignal)[keyof typeof TrendSignal];
+export type TradingSignals = (typeof TradingSignal)[keyof typeof TradingSignal];
 
 export abstract class TechnicalIndicator<Result, Input> implements Indicator<Result, Input> {
   protected result: Result | undefined;
@@ -91,7 +82,10 @@ export abstract class IndicatorSeries<Input = number> extends TechnicalIndicator
   }
 }
 
-export abstract class TrendIndicatorSeries<Input = number, SignalState = TrendSignals> extends IndicatorSeries<Input> {
+export abstract class TrendIndicatorSeries<
+  Input = number,
+  SignalState = TradingSignals,
+> extends IndicatorSeries<Input> {
   protected abstract calculateSignalState(result?: number | null | undefined): SignalState;
 
   getSignal(): {
@@ -108,8 +102,3 @@ export abstract class TrendIndicatorSeries<Input = number, SignalState = TrendSi
     };
   }
 }
-
-export abstract class MomentumIndicatorSeries<Input = number, Signal = MomentumSignals> extends TrendIndicatorSeries<
-  Input,
-  Signal
-> {}

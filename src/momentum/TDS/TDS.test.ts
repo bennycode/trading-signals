@@ -1,5 +1,5 @@
 import {TDS} from './TDS.js';
-import {MomentumSignal} from '../../types/index.js';
+import {TradingSignal} from '../../types/index.js';
 
 describe('TDS', () => {
   it('does not return a result for less than 9 prices', () => {
@@ -116,7 +116,7 @@ describe('TDS', () => {
     it('returns UNKNOWN when there is no result', () => {
       const tds = new TDS();
       const signal = tds.getSignal();
-      expect(signal.state).toBe(MomentumSignal.UNKNOWN);
+      expect(signal.state).toBe(TradingSignal.UNKNOWN);
     });
 
     it('returns OVERBOUGHT when TDS = 1 (bullish setup completed)', () => {
@@ -133,7 +133,7 @@ describe('TDS', () => {
       const signal = tds.getSignal();
 
       expect(tds.getResultOrThrow()).toBe(1);
-      expect(signal.state).toBe(MomentumSignal.OVERBOUGHT);
+      expect(signal.state).toBe(TradingSignal.BULLISH);
     });
 
     it('returns OVERSOLD when TDS = -1 (bearish setup completed)', () => {
@@ -150,7 +150,7 @@ describe('TDS', () => {
       const signal = tds.getSignal();
 
       expect(tds.getResultOrThrow()).toBe(-1);
-      expect(signal.state).toBe(MomentumSignal.OVERSOLD);
+      expect(signal.state).toBe(TradingSignal.BEARISH);
     });
   });
 });

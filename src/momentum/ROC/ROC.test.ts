@@ -1,6 +1,6 @@
 import {ROC} from './ROC.js';
 import {NotEnoughDataError} from '../../error/index.js';
-import {TrendSignal} from '../../types/Indicator.js';
+import {TradingSignal} from '../../types/Indicator.js';
 
 describe('ROC', () => {
   describe('getResultOrThrow', () => {
@@ -32,7 +32,7 @@ describe('ROC', () => {
       expect(roc.getRequiredInputs()).toBe(interval);
       expect(roc.getSignal()).toEqual({
         hasChanged: false,
-        state: TrendSignal.BULLISH,
+        state: TradingSignal.BULLISH,
       });
     });
 
@@ -48,7 +48,7 @@ describe('ROC', () => {
       expect(roc.getResultOrThrow().toFixed(2)).toBe('-0.83');
       expect(roc.getSignal()).toEqual({
         hasChanged: false,
-        state: TrendSignal.BEARISH,
+        state: TradingSignal.BEARISH,
       });
     });
 
@@ -80,7 +80,7 @@ describe('ROC', () => {
     it('returns UNKNOWN when there is no result', () => {
       const roc = new ROC(5);
       const signal = roc.getSignal();
-      expect(signal.state).toBe(TrendSignal.UNKNOWN);
+      expect(signal.state).toBe(TradingSignal.UNKNOWN);
     });
 
     it('returns BULLISH when ROC >= 0', () => {
@@ -94,7 +94,7 @@ describe('ROC', () => {
       const signal = roc.getSignal();
 
       expect(roc.getResultOrThrow()).toBeGreaterThanOrEqual(0);
-      expect(signal.state).toBe(TrendSignal.BULLISH);
+      expect(signal.state).toBe(TradingSignal.BULLISH);
     });
 
     it('returns BEARISH when ROC < 0', () => {
@@ -108,7 +108,7 @@ describe('ROC', () => {
       const signal = roc.getSignal();
 
       expect(roc.getResultOrThrow()).toBeLessThan(0);
-      expect(signal.state).toBe(TrendSignal.BEARISH);
+      expect(signal.state).toBe(TradingSignal.BEARISH);
     });
 
     it('returns BULLISH when ROC = 0', () => {
@@ -122,7 +122,7 @@ describe('ROC', () => {
       const signal = roc.getSignal();
 
       expect(roc.getResultOrThrow()).toBe(0);
-      expect(signal.state).toBe(TrendSignal.BULLISH);
+      expect(signal.state).toBe(TradingSignal.BULLISH);
     });
   });
 });

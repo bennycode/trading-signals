@@ -1,6 +1,6 @@
 import {StochasticOscillator} from './StochasticOscillator.js';
 import {NotEnoughDataError} from '../../error/index.js';
-import {MomentumSignal} from '../../types/index.js';
+import {TradingSignal} from '../../types/index.js';
 import candles from '../../fixtures/STOCH/candles.json' with {type: 'json'};
 
 describe('StochasticOscillator', () => {
@@ -102,7 +102,7 @@ describe('StochasticOscillator', () => {
     it('returns UNKNOWN when there is no result', () => {
       const stoch = new StochasticOscillator(5, 3, 3);
       const signal = stoch.getSignal();
-      expect(signal.state).toBe(MomentumSignal.UNKNOWN);
+      expect(signal.state).toBe(TradingSignal.UNKNOWN);
     });
 
     it('returns OVERSOLD when stochK <= 20', () => {
@@ -112,7 +112,7 @@ describe('StochasticOscillator', () => {
         stoch.add({close: 20, high: 100, low: 10});
       }
       const signal = stoch.getSignal();
-      expect(signal.state).toBe(MomentumSignal.OVERSOLD);
+      expect(signal.state).toBe(TradingSignal.BEARISH);
       expect(stoch.getResultOrThrow().stochK).toBeLessThanOrEqual(20);
     });
 
@@ -123,7 +123,7 @@ describe('StochasticOscillator', () => {
         stoch.add({close: 95, high: 100, low: 10});
       }
       const signal = stoch.getSignal();
-      expect(signal.state).toBe(MomentumSignal.OVERBOUGHT);
+      expect(signal.state).toBe(TradingSignal.BULLISH);
       expect(stoch.getResultOrThrow().stochK).toBeGreaterThanOrEqual(80);
     });
 
@@ -134,7 +134,7 @@ describe('StochasticOscillator', () => {
         stoch.add({close: 50, high: 100, low: 10});
       }
       const signal = stoch.getSignal();
-      expect(signal.state).toBe(MomentumSignal.NEUTRAL);
+      expect(signal.state).toBe(TradingSignal.SIDEWAYS);
       const result = stoch.getResultOrThrow();
       expect(result.stochK).toBeGreaterThan(20);
       expect(result.stochK).toBeLessThan(80);

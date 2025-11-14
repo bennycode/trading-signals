@@ -1,5 +1,5 @@
 import {NotEnoughDataError} from '../../error/index.js';
-import {TrendSignal} from '../../types/Indicator.js';
+import {TradingSignal} from '../../types/Indicator.js';
 import {AC} from './AC.js';
 
 type Candle = readonly [timestamp: number, open: number, close: number, high: number, low: number, volume: number];
@@ -311,7 +311,7 @@ describe('AC', () => {
     it('returns UNKNOWN signal when there is no result', () => {
       const ac = new AC(5, 34, 5);
       const signal = ac.getSignal();
-      expect(signal.state).toBe(TrendSignal.UNKNOWN);
+      expect(signal.state).toBe(TradingSignal.UNKNOWN);
     });
 
     it('returns BULLISH signal when AC is positive', () => {
@@ -342,7 +342,7 @@ describe('AC', () => {
       const signal = ac.getSignal();
 
       expect(ac.getResultOrThrow()).toBeGreaterThan(0);
-      expect(signal.state).toBe(TrendSignal.BULLISH);
+      expect(signal.state).toBe(TradingSignal.BULLISH);
       expect(signal.hasChanged).toBe(false);
     });
 
@@ -374,7 +374,7 @@ describe('AC', () => {
       const signal = ac.getSignal();
 
       expect(ac.getResultOrThrow()).toBe(0);
-      expect(signal.state).toBe(TrendSignal.BEARISH);
+      expect(signal.state).toBe(TradingSignal.BEARISH);
       expect(signal.hasChanged).toBe(false);
     });
   });

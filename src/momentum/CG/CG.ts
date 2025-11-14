@@ -1,5 +1,5 @@
-import {MomentumIndicatorSeries, MomentumSignal} from '../../types/Indicator.js';
 import {SMA} from '../../trend/SMA/SMA.js';
+import {TradingSignal, TrendIndicatorSeries} from '../../types/Indicator.js';
 import {pushUpdate} from '../../util/pushUpdate.js';
 
 /**
@@ -17,7 +17,7 @@ import {pushUpdate} from '../../util/pushUpdate.js';
  * - If the interval gets too short, the CG oscillator loses its smoothing and gets a little too nervous for profitable trading
  * @see http://www.mesasoftware.com/papers/TheCGOscillator.pdf
  */
-export class CG extends MomentumIndicatorSeries {
+export class CG extends TrendIndicatorSeries {
   public signal: SMA;
 
   public readonly prices: number[] = [];
@@ -47,13 +47,13 @@ export class CG extends MomentumIndicatorSeries {
 
     switch (true) {
       case !hasResult || !hasSignal:
-        return MomentumSignal.UNKNOWN;
+        return TradingSignal.UNKNOWN;
       case isAboveSignal:
-        return MomentumSignal.OVERBOUGHT;
+        return TradingSignal.BULLISH;
       case isBelowSignal:
-        return MomentumSignal.OVERSOLD;
+        return TradingSignal.BEARISH;
       default:
-        return MomentumSignal.NEUTRAL;
+        return TradingSignal.SIDEWAYS;
     }
   }
 

@@ -1,5 +1,5 @@
 import {NotEnoughDataError} from '../../error/index.js';
-import {TrendSignal} from '../../types/Indicator.js';
+import {TradingSignal} from '../../types/Indicator.js';
 import {AO} from './AO.js';
 
 describe('AO', () => {
@@ -54,7 +54,7 @@ describe('AO', () => {
       expect(ao.getRequiredInputs()).toBe(longInterval);
       expect(ao.getSignal()).toEqual({
         hasChanged: false,
-        state: TrendSignal.BEARISH,
+        state: TradingSignal.BEARISH,
       });
     });
 
@@ -113,7 +113,7 @@ describe('AO', () => {
     it('returns UNKNOWN when there is no result', () => {
       const ao = new AO(5, 34);
       const signal = ao.getSignal();
-      expect(signal.state).toBe(TrendSignal.UNKNOWN);
+      expect(signal.state).toBe(TradingSignal.UNKNOWN);
     });
 
     it('returns BULLISH when AO > 0', () => {
@@ -126,7 +126,7 @@ describe('AO', () => {
       const signal = ao.getSignal();
 
       expect(ao.getResultOrThrow()).toBeGreaterThan(0);
-      expect(signal.state).toBe(TrendSignal.BULLISH);
+      expect(signal.state).toBe(TradingSignal.BULLISH);
     });
 
     it('returns BEARISH when AO < 0', () => {
@@ -139,7 +139,7 @@ describe('AO', () => {
       const signal = ao.getSignal();
 
       expect(ao.getResultOrThrow()).toBeLessThan(0);
-      expect(signal.state).toBe(TrendSignal.BEARISH);
+      expect(signal.state).toBe(TradingSignal.BEARISH);
     });
 
     it('returns UNKNOWN when AO = 0', () => {
@@ -152,7 +152,7 @@ describe('AO', () => {
       const signal = ao.getSignal();
 
       expect(ao.getResultOrThrow()).toBe(0);
-      expect(signal.state).toBe(TrendSignal.SIDEWAYS);
+      expect(signal.state).toBe(TradingSignal.SIDEWAYS);
     });
   });
 });
