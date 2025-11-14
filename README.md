@@ -112,6 +112,26 @@ console.log(sma.getResultOrThrow()); // 40
 
 Most of the time, the minimum amount of data depends on the interval / time period used. If you’re not sure, take a look at the test files for the indicator to see examples of correct usage.
 
+### When to use `getSignal()`?
+
+Many momentum and trend indicators provide a `getSignal()` method that returns the current trading signal state along with change detection. This is useful for identifying potential trading opportunities.
+
+**Example:**
+
+```ts
+import {RSI} from 'trading-signals';
+
+const rsi = new RSI(14);
+
+// Add price data
+// ...
+
+// Get the trading signal
+const signal = rsi.getSignal();
+console.log(signal.state); // "BEARISH", "BULLISH", "SIDEWAYS", or "UNKNOWN"
+console.log(signal.hasChanged); // true if the signal state changed from the previous value
+```
+
 ## Technical Indicator Types
 
 ### Indicator Function
