@@ -1,5 +1,5 @@
 import {useEffect, useRef} from 'react';
-import Highcharts from 'highcharts';
+import Highcharts from 'highcharts/highstock';
 import HighchartsReact from 'highcharts-react-official';
 
 export interface ChartDataPoint {
@@ -7,15 +7,56 @@ export interface ChartDataPoint {
   y: number | null;
 }
 
+export interface FlagPoint {
+  x: number;
+  title: string;
+  text: string;
+}
+
 export interface ChartProps {
   title: string;
   data: ChartDataPoint[];
   yAxisLabel?: string;
   color?: string;
+  flags?: FlagPoint[];
 }
 
-export default function Chart({title, data, yAxisLabel = 'Value', color = '#3b82f6'}: ChartProps) {
+export default function Chart({title, data, yAxisLabel = 'Value', color = '#3b82f6', flags = []}: ChartProps) {
   const chartRef = useRef<HighchartsReact.RefObject>(null);
+
+  const series: Highcharts.SeriesOptionsType[] = [
+    {
+      type: 'line',
+      name: yAxisLabel,
+      id: 'main-series',
+      data: data.map(point => [point.x, point.y]),
+      color: color,
+      marker: {
+        fillColor: color,
+      },
+    },
+  ];
+
+  if (flags.length > 0) {
+    series.push({
+      type: 'flags',
+      name: 'Signal Changes',
+      data: flags,
+      onSeries: 'main-series',
+      shape: 'squarepin',
+      width: 80,
+      useHTML: true,
+      y: -20,
+      grouping: false,
+      color: '#fbbf24',
+      fillColor: '#fbbf24',
+      style: {
+        color: '#1e293b',
+        fontSize: '11px',
+        fontWeight: 'bold',
+      },
+    } as Highcharts.SeriesFlagsOptions);
+  }
 
   const options: Highcharts.Options = {
     chart: {
@@ -65,18 +106,13 @@ export default function Chart({title, data, yAxisLabel = 'Value', color = '#3b82
         },
         lineWidth: 2,
       },
-    },
-    series: [
-      {
-        type: 'line',
-        name: yAxisLabel,
-        data: data.map(point => [point.x, point.y]),
-        color: color,
-        marker: {
-          fillColor: color,
+      flags: {
+        accessibility: {
+          exposeAsGroupOnly: true,
         },
       },
-    ],
+    },
+    series: series,
     tooltip: {
       backgroundColor: '#1e293b',
       borderColor: '#475569',

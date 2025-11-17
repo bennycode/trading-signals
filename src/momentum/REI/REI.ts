@@ -1,5 +1,5 @@
-import {IndicatorSeries} from '../../types/Indicator.js';
 import type {HighLowClose} from '../../types/HighLowClose.js';
+import {TradingSignal, TrendIndicatorSeries} from '../../types/Indicator.js';
 
 /**
  * Range Expansion Index (REI)
@@ -20,13 +20,30 @@ import type {HighLowClose} from '../../types/HighLowClose.js';
  * @see https://github.com/EarnForex/Range-Expansion-Index
  * @see https://www.sierrachart.com/index.php?page=doc/StudiesReference.php&ID=448
  */
-export class REI extends IndicatorSeries<HighLowClose<number>> {
+export class REI extends TrendIndicatorSeries<HighLowClose<number>> {
   private readonly highs: number[] = [];
   private readonly lows: number[] = [];
   private readonly closes: number[] = [];
 
   constructor(public readonly interval: number) {
     super();
+  }
+
+  protected calculateSignalState(result?: number | null | undefined) {
+    const hasResult = result !== null && result !== undefined;
+    const isOverbought = hasResult && result > 60;
+    const isOversold = hasResult && result < -60;
+
+    switch (true) {
+      case !hasResult:
+        return TradingSignal.UNKNOWN;
+      case isOverbought:
+        return TradingSignal.BULLISH;
+      case isOversold:
+        return TradingSignal.BEARISH;
+      default:
+        return TradingSignal.SIDEWAYS;
+    }
   }
 
   override getRequiredInputs() {

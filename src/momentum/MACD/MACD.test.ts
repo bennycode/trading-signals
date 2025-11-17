@@ -1,6 +1,7 @@
 import {MACD} from './MACD.js';
 import {EMA} from '../../trend/EMA/EMA.js';
 import {NotEnoughDataError} from '../../error/index.js';
+import {TradingSignal} from '../../types/index.js';
 
 describe('MACD', () => {
   describe('replace', () => {
@@ -153,6 +154,49 @@ describe('MACD', () => {
 
       macd.updates(mockedPrices, false);
       expect(macd.isStable).toBe(true);
+    });
+  });
+
+  describe('getSignal', () => {
+    it('returns UNKNOWN when there is no result', () => {
+      const macd = new MACD(new EMA(12), new EMA(26), new EMA(9));
+      const signal = macd.getSignal();
+      expect(signal.state).toBe(TradingSignal.UNKNOWN);
+    });
+
+    it('returns BULLISH when histogram > 0', () => {
+      const macd = new MACD(new EMA(2), new EMA(5), new EMA(9));
+      // Build up prices that create positive histogram
+      for (let i = 1; i <= 10; i++) {
+        macd.add(100 + i * 2);
+      }
+      const signal = macd.getSignal();
+      expect(signal.state).toBe(TradingSignal.BULLISH);
+      expect(macd.getResultOrThrow().histogram).toBeGreaterThan(0);
+    });
+
+    it('returns BEARISH when histogram < 0', () => {
+      const macd = new MACD(new EMA(2), new EMA(5), new EMA(9));
+      // Build up prices that create negative histogram
+      for (let i = 10; i >= 1; i--) {
+        macd.add(100 + i * 2);
+      }
+      const signal = macd.getSignal();
+      expect(signal.state).toBe(TradingSignal.BEARISH);
+      expect(macd.getResultOrThrow().histogram).toBeLessThan(0);
+    });
+
+    it('tracks signal state changes', () => {
+      const macd = new MACD(new EMA(2), new EMA(5), new EMA(9));
+
+      // Build up some data
+      for (let i = 1; i <= 10; i++) {
+        macd.add(100 + i);
+      }
+
+      const signal = macd.getSignal();
+      expect(signal.state).toBeDefined();
+      expect(typeof signal.hasChanged).toBe('boolean');
     });
   });
 });

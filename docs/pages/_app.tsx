@@ -11,7 +11,6 @@ export default function App({Component, pageProps}: AppProps) {
     {name: 'Trend', href: '/indicators/trend'},
     {name: 'Momentum', href: '/indicators/momentum'},
     {name: 'Volatility', href: '/indicators/volatility'},
-    {name: 'Exhaustion', href: '/indicators/exhaustion'},
     {name: 'Utilities', href: '/indicators/utilities'},
   ];
 

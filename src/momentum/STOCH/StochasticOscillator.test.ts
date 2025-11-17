@@ -1,5 +1,6 @@
 import {StochasticOscillator} from './StochasticOscillator.js';
 import {NotEnoughDataError} from '../../error/index.js';
+import {TradingSignal} from '../../types/index.js';
 import candles from '../../fixtures/STOCH/candles.json' with {type: 'json'};
 
 describe('StochasticOscillator', () => {
@@ -26,6 +27,34 @@ describe('StochasticOscillator', () => {
       expect(stoch.isStable).toBe(true);
       expect(stoch.getRequiredInputs()).toBe(9);
       expect(stoch.getResultOrThrow().stochK.toFixed(2)).toBe('91.09');
+    });
+  });
+
+  describe('replace', () => {
+    it('replaces the most recently added value', () => {
+      const stoch = new StochasticOscillator(5, 3, 3);
+
+      // Add enough data to make it stable
+      for (let i = 0; i < 9; i++) {
+        stoch.add({close: 50 + i, high: 100, low: 10});
+      }
+
+      const originalValue = {close: 80, high: 100, low: 10} as const;
+      const replacedValue = {close: 30, high: 100, low: 10} as const;
+
+      // Add a value
+      const originalResult = stoch.add(originalValue);
+
+      // Replace it with a different value
+      const replacedResult = stoch.replace(replacedValue);
+
+      // Results should be different since we replaced with a different value
+      expect(replacedResult?.stochK).not.toBe(originalResult?.stochK);
+
+      // Test restoration
+      const restoredResult = stoch.replace(originalValue);
+
+      expect(restoredResult?.stochK).toBe(originalResult?.stochK);
     });
   });
 
@@ -66,6 +95,49 @@ describe('StochasticOscillator', () => {
       const result = stoch.add({close: 100, high: 100, low: 100});
       expect(result?.stochK.toFixed(2)).toBe('0.00');
       expect(result?.stochD.toFixed(2)).toBe('0.00');
+    });
+  });
+
+  describe('getSignal', () => {
+    it('returns UNKNOWN when there is no result', () => {
+      const stoch = new StochasticOscillator(5, 3, 3);
+      const signal = stoch.getSignal();
+      expect(signal.state).toBe(TradingSignal.UNKNOWN);
+    });
+
+    it('returns OVERSOLD when stochK <= 20', () => {
+      const stoch = new StochasticOscillator(5, 3, 3);
+      // Build data that creates oversold condition
+      for (let i = 0; i < 9; i++) {
+        stoch.add({close: 20, high: 100, low: 10});
+      }
+      const signal = stoch.getSignal();
+      expect(signal.state).toBe(TradingSignal.BEARISH);
+      expect(stoch.getResultOrThrow().stochK).toBeLessThanOrEqual(20);
+    });
+
+    it('returns OVERBOUGHT when stochK >= 80', () => {
+      const stoch = new StochasticOscillator(5, 3, 3);
+      // Build data that creates overbought condition
+      for (let i = 0; i < 9; i++) {
+        stoch.add({close: 95, high: 100, low: 10});
+      }
+      const signal = stoch.getSignal();
+      expect(signal.state).toBe(TradingSignal.BULLISH);
+      expect(stoch.getResultOrThrow().stochK).toBeGreaterThanOrEqual(80);
+    });
+
+    it('returns NEUTRAL when stochK is between 20 and 80', () => {
+      const stoch = new StochasticOscillator(5, 3, 3);
+      // Build data that creates neutral condition
+      for (let i = 0; i < 9; i++) {
+        stoch.add({close: 50, high: 100, low: 10});
+      }
+      const signal = stoch.getSignal();
+      expect(signal.state).toBe(TradingSignal.SIDEWAYS);
+      const result = stoch.getResultOrThrow();
+      expect(result.stochK).toBeGreaterThan(20);
+      expect(result.stochK).toBeLessThan(80);
     });
   });
 });
