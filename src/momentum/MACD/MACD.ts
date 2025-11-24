@@ -44,13 +44,12 @@ export class MACD extends TechnicalIndicator<MACDResult, number> {
       const macd = short - long;
       const signal = this.signal.update(macd, replace);
 
-      // When replacing, restore previous result first
       if (replace) {
         this.result = this.previousResult;
       }
-      // Cache previous result
+      
       this.previousResult = this.result;
-      // Set new result
+  
       return (this.result = {
         histogram: macd - signal,
         macd,
