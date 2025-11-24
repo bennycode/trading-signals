@@ -67,13 +67,12 @@ export class StochasticOscillator extends TechnicalIndicator<StochasticResult, H
       const stochD = stochK && this.periodP.update(stochK, replace); // (stoch_d, %d)
 
       if (stochK !== null && stochD !== null) {
-        // When replacing, restore previous result first
         if (replace) {
           this.result = this.previousResult;
         }
-        // Cache previous result
+        
         this.previousResult = this.result;
-        // Set new result
+
         return (this.result = {
           stochD,
           stochK,
