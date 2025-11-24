@@ -110,15 +110,68 @@ sma.add(70);
 console.log(sma.getResultOrThrow()); // 40
 ```
 
-Most of the time, the minimum amount of data depends on the interval / time period used. If you’re not sure, take a look at the test files for the indicator to see examples of correct usage.
+Most of the time, the minimum amount of data depends on the interval / time period used. If you're not sure, take a look at the test files for the indicator to see examples of correct usage.
+
+### When to use `getRequiredInputs()`?
+
+Every indicator provides a `getRequiredInputs()` method that returns the minimum number of input values needed before the indicator becomes stable and can produce results. This is useful for validation and understanding when an indicator will start producing return values.
+
+**Example:**
+
+```ts
+import {SMA, EMA, RSI} from 'trading-signals';
+
+const sma = new SMA(5);
+console.log(sma.getRequiredInputs()); // 5
+```
+
+The required inputs often depend on the indicator's configuration (like interval/period) and its internal calculation requirements. Some indicators like **MACD** or **Stochastic Oscillator** may require more inputs than their primary period because they use multiple moving averages or lookback periods internally.
+
+### When to use `getSignal()`?
+
+Many momentum and trend indicators provide a `getSignal()` method that returns the current trading signal state along with change detection. This is useful for identifying potential trading opportunities.
+
+**Example:**
+
+```ts
+import {RSI} from 'trading-signals';
+
+const rsi = new RSI(14);
+
+// Add price data
+// ...
+
+// Get the trading signal
+const signal = rsi.getSignal();
+console.log(signal.state); // "BEARISH", "BULLISH", "SIDEWAYS", or "UNKNOWN"
+console.log(signal.hasChanged); // true if the signal state changed from the previous value
+```
 
 ## Technical Indicator Types
 
-- Exhaustion indicators: Identify trend exhaustion and potential reversal.
-- Momentum indicators: Measure the speed and strength of price movements in a particular direction
-- Trend indicators: Measure the direction of a trend (uptrend, downtrend or sideways trend)
+### Indicator Function
+
+- Momentum indicators: Measure the speed and strength (intensity) of price movements in a particular direction (overbought/oversold)
+- Trend indicators: Measure the direction of a trend (bullish/bearish)
 - Volatility indicators: Measure the degree of variation in prices over time, regardless of direction
 - Volume indicators: Measure the strength of a trend based on volume
+
+**Key readings:**
+
+- Bullish sentiment: expect prices to rise
+- Bearish sentiment: expect prices to fall
+- Overbought condition: price may have risen too much too fast, meaning it’s trending up, but traders expect a short-term dip before continuing higher
+- Oversold condition: price may have dropped too much too fast, meaning it’s trending down, but traders expect a short-term bounce before continuing lower or reversing upward
+
+### Indicator Timing
+
+- Leading Indicators: Predictive tools that try to signal future price movements before they happen (i.e. RSI, Stochastic Oscillator, Volume spikes)
+- Lagging Indicators: Confirmative tools that signal after a trend or move has already started (i.e. Moving Averages, MACD, ADX)
+
+### Indicator Scale
+
+- Indicators: Have no upper or lower limits
+- Oscillators: Move within a fixed range (e.g. 0-100, –1 to +1)
 
 ## Supported Technical Indicators
 

@@ -1,10 +1,10 @@
-import {IndicatorSeries} from '../../types/Indicator.js';
 import type {MovingAverage} from '../../trend/MA/MovingAverage.js';
 import type {MovingAverageTypes} from '../../trend/MA/MovingAverageTypes.js';
-import {RSI} from '../RSI/RSI.js';
 import {SMA} from '../../trend/SMA/SMA.js';
-import {Period} from '../../types/Period.js';
 import {WSMA} from '../../trend/WSMA/WSMA.js';
+import {TradingSignal, TrendIndicatorSeries} from '../../types/Indicator.js';
+import {Period} from '../../types/Period.js';
+import {RSI} from '../RSI/RSI.js';
 
 /**
  * Stochastic RSI (STOCHRSI)
@@ -25,7 +25,7 @@ import {WSMA} from '../../trend/WSMA/WSMA.js';
  * @see https://lakshmishree.com/blog/stochastic-rsi-indicator/
  * @see https://alchemymarkets.com/education/indicators/stochastic-rsi/
  */
-export class StochasticRSI extends IndicatorSeries {
+export class StochasticRSI extends TrendIndicatorSeries {
   private readonly period: Period;
   private readonly rsi: RSI;
 
@@ -72,5 +72,22 @@ export class StochasticRSI extends IndicatorSeries {
     }
 
     return null;
+  }
+
+  protected calculateSignalState(result?: number | null | undefined) {
+    const hasResult = result !== null && result !== undefined;
+    const isOversold = hasResult && result <= 0.2;
+    const isOverbought = hasResult && result >= 0.8;
+
+    switch (true) {
+      case !hasResult:
+        return TradingSignal.UNKNOWN;
+      case isOversold:
+        return TradingSignal.BEARISH;
+      case isOverbought:
+        return TradingSignal.BULLISH;
+      default:
+        return TradingSignal.SIDEWAYS;
+    }
   }
 }

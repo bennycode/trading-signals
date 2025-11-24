@@ -1,5 +1,5 @@
-import {IndicatorSeries} from '../../types/Indicator.js';
 import type {OpenHighLowCloseVolume} from '../../types/HighLowClose.js';
+import {TrendIndicatorSeries, TradingSignal} from '../../types/Indicator.js';
 import {pushUpdate} from '../../util/pushUpdate.js';
 
 /**
@@ -10,17 +10,21 @@ import {pushUpdate} from '../../util/pushUpdate.js';
  *
  * @see https://www.investopedia.com/terms/o/onbalancevolume.asp
  */
-export class OBV extends IndicatorSeries<OpenHighLowCloseVolume<number>> {
+export class OBV extends TrendIndicatorSeries<OpenHighLowCloseVolume<number>> {
   public readonly candles: OpenHighLowCloseVolume<number>[] = [];
 
+  constructor(public readonly interval: number) {
+    super();
+  }
+
   override getRequiredInputs() {
-    return 2;
+    return this.interval;
   }
 
   update(candle: OpenHighLowCloseVolume<number>, replace: boolean) {
-    pushUpdate(this.candles, replace, candle, 2);
+    pushUpdate(this.candles, replace, candle, this.getRequiredInputs());
 
-    if (this.candles.length === 1) {
+    if (this.candles.length < this.getRequiredInputs()) {
       return null;
     }
 
@@ -31,5 +35,24 @@ export class OBV extends IndicatorSeries<OpenHighLowCloseVolume<number>> {
     const nextResult = currentPrice > prevPrice ? candle.volume : currentPrice < prevPrice ? -candle.volume : 0;
 
     return this.setResult(prevResult + nextResult, false);
+  }
+
+  protected calculateSignalState(result: number | null | undefined) {
+    const hasResult = result !== null && result !== undefined;
+    const previousResult = this.previousResult;
+    const hasPreviousResult = previousResult !== undefined;
+    const isBullish = hasResult && hasPreviousResult && result > previousResult;
+    const isBearish = hasResult && hasPreviousResult && result < previousResult;
+
+    switch (true) {
+      case !hasResult:
+        return TradingSignal.UNKNOWN;
+      case isBullish:
+        return TradingSignal.BULLISH;
+      case isBearish:
+        return TradingSignal.BEARISH;
+      default:
+        return TradingSignal.SIDEWAYS;
+    }
   }
 }

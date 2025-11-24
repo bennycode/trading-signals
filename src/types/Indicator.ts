@@ -13,6 +13,15 @@ interface Indicator<Result = number, Input = number> {
   updates(input: Input[], replace: boolean): Nullable<Result>[];
 }
 
+export const TradingSignal = {
+  BEARISH: 'BEARISH',
+  BULLISH: 'BULLISH',
+  SIDEWAYS: 'SIDEWAYS',
+  UNKNOWN: 'UNKNOWN',
+} as const;
+
+export type TradingSignals = (typeof TradingSignal)[keyof typeof TradingSignal];
+
 export abstract class TechnicalIndicator<Result, Input> implements Indicator<Result, Input> {
   protected result: Result | undefined;
 
@@ -56,12 +65,9 @@ export abstract class TechnicalIndicator<Result, Input> implements Indicator<Res
 /**
  * Tracks results of an indicator over time.
  */
-export abstract class BaseIndicatorSeries<Result, Input> extends TechnicalIndicator<Result, Input> {
-  protected previousResult?: Result;
-  protected abstract setResult(value: Result, replace: boolean): Result;
-}
+export abstract class IndicatorSeries<Input = number> extends TechnicalIndicator<number, Input> {
+  protected previousResult?: number;
 
-export abstract class IndicatorSeries<Input = number> extends BaseIndicatorSeries<number, Input> {
   protected setResult(value: number, replace: boolean): number {
     // When replacing the latest value, restore previous result first
     if (replace) {
@@ -73,5 +79,26 @@ export abstract class IndicatorSeries<Input = number> extends BaseIndicatorSerie
 
     // Set new result
     return (this.result = value);
+  }
+}
+
+export abstract class TrendIndicatorSeries<
+  Input = number,
+  SignalState = TradingSignals,
+> extends IndicatorSeries<Input> {
+  protected abstract calculateSignalState(result?: number | null | undefined): SignalState;
+
+  getSignal(): {
+    state: SignalState;
+    hasChanged: boolean;
+  } {
+    const previousState = this.calculateSignalState(this.previousResult);
+    const state = this.calculateSignalState(this.getResult());
+    const hasChanged = previousState !== state;
+
+    return {
+      hasChanged,
+      state,
+    };
   }
 }

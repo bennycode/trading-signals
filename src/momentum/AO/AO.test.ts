@@ -1,4 +1,5 @@
 import {NotEnoughDataError} from '../../error/index.js';
+import {TradingSignal} from '../../types/Indicator.js';
 import {AO} from './AO.js';
 
 describe('AO', () => {
@@ -51,6 +52,10 @@ describe('AO', () => {
       }
 
       expect(ao.getRequiredInputs()).toBe(longInterval);
+      expect(ao.getSignal()).toEqual({
+        hasChanged: false,
+        state: TradingSignal.BEARISH,
+      });
     });
 
     it('throws an error when there is not enough input data', () => {
@@ -101,6 +106,53 @@ describe('AO', () => {
       // Replace the other value with the latest value
       ao.replace(latestValue);
       expect(ao.getResultOrThrow()?.toFixed(2)).toBe(latestResult);
+    });
+  });
+
+  describe('getSignal', () => {
+    it('returns UNKNOWN when there is no result', () => {
+      const ao = new AO(5, 34);
+      const signal = ao.getSignal();
+      expect(signal.state).toBe(TradingSignal.UNKNOWN);
+    });
+
+    it('returns BULLISH when AO > 0', () => {
+      const ao = new AO(5, 34);
+
+      for (let i = 0; i < 34; i++) {
+        ao.add({high: 100 + i, low: 90 + i});
+      }
+
+      const signal = ao.getSignal();
+
+      expect(ao.getResultOrThrow()).toBeGreaterThan(0);
+      expect(signal.state).toBe(TradingSignal.BULLISH);
+    });
+
+    it('returns BEARISH when AO < 0', () => {
+      const ao = new AO(5, 34);
+
+      for (let i = 0; i < 34; i++) {
+        ao.add({high: 100 - i, low: 90 - i});
+      }
+
+      const signal = ao.getSignal();
+
+      expect(ao.getResultOrThrow()).toBeLessThan(0);
+      expect(signal.state).toBe(TradingSignal.BEARISH);
+    });
+
+    it('returns UNKNOWN when AO = 0', () => {
+      const ao = new AO(5, 34);
+
+      for (let i = 0; i < 34; i++) {
+        ao.add({high: 100, low: 90});
+      }
+
+      const signal = ao.getSignal();
+
+      expect(ao.getResultOrThrow()).toBe(0);
+      expect(signal.state).toBe(TradingSignal.SIDEWAYS);
     });
   });
 });

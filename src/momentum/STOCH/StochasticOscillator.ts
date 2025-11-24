@@ -1,6 +1,6 @@
-import {TechnicalIndicator} from '../../types/Indicator.js';
 import {SMA} from '../../trend/SMA/SMA.js';
 import type {HighLowClose} from '../../types/HighLowClose.js';
+import {TechnicalIndicator, TradingSignal} from '../../types/Indicator.js';
 import {pushUpdate} from '../../util/pushUpdate.js';
 
 export interface StochasticResult {
@@ -32,6 +32,7 @@ export class StochasticOscillator extends TechnicalIndicator<StochasticResult, H
   public readonly candles: HighLowClose<number>[] = [];
   private readonly periodM: SMA;
   private readonly periodP: SMA;
+  private previousResult?: StochasticResult;
 
   /**
    * @param n The %k period
@@ -66,6 +67,12 @@ export class StochasticOscillator extends TechnicalIndicator<StochasticResult, H
       const stochD = stochK && this.periodP.update(stochK, replace); // (stoch_d, %d)
 
       if (stochK !== null && stochD !== null) {
+        if (replace) {
+          this.result = this.previousResult;
+        }
+
+        this.previousResult = this.result;
+
         return (this.result = {
           stochD,
           stochK,
@@ -74,5 +81,36 @@ export class StochasticOscillator extends TechnicalIndicator<StochasticResult, H
     }
 
     return null;
+  }
+
+  protected calculateSignal(result?: StochasticResult | null | undefined) {
+    const hasResult = result !== null && result !== undefined;
+    const isOversold = hasResult && result.stochK <= 20;
+    const isOverbought = hasResult && result.stochK >= 80;
+
+    switch (true) {
+      case !hasResult:
+        return TradingSignal.UNKNOWN;
+      case isOversold:
+        return TradingSignal.BEARISH;
+      case isOverbought:
+        return TradingSignal.BULLISH;
+      default:
+        return TradingSignal.SIDEWAYS;
+    }
+  }
+
+  getSignal(): {
+    state: (typeof TradingSignal)[keyof typeof TradingSignal];
+    hasChanged: boolean;
+  } {
+    const previousState = this.calculateSignal(this.previousResult);
+    const state = this.calculateSignal(this.getResult());
+    const hasChanged = previousState !== state;
+
+    return {
+      hasChanged,
+      state,
+    };
   }
 }

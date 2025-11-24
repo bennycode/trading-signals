@@ -1,6 +1,6 @@
 import type {DEMA} from '../../trend/DEMA/DEMA.js';
 import type {EMA} from '../../trend/EMA/EMA.js';
-import {TechnicalIndicator} from '../../types/Indicator.js';
+import {TechnicalIndicator, TradingSignal} from '../../types/Indicator.js';
 import {pushUpdate} from '../../util/pushUpdate.js';
 
 export type MACDResult = {
@@ -20,6 +20,7 @@ export type MACDResult = {
  */
 export class MACD extends TechnicalIndicator<MACDResult, number> {
   public readonly prices: number[] = [];
+  private previousResult?: MACDResult;
 
   constructor(
     public readonly short: EMA | DEMA,
@@ -43,6 +44,12 @@ export class MACD extends TechnicalIndicator<MACDResult, number> {
       const macd = short - long;
       const signal = this.signal.update(macd, replace);
 
+      if (replace) {
+        this.result = this.previousResult;
+      }
+
+      this.previousResult = this.result;
+
       return (this.result = {
         histogram: macd - signal,
         macd,
@@ -50,5 +57,35 @@ export class MACD extends TechnicalIndicator<MACDResult, number> {
       });
     }
     return null;
+  }
+
+  protected calculateSignal(result?: MACDResult | null | undefined) {
+    const hasResult = result !== null && result !== undefined;
+    const isBullish = hasResult && result.histogram > 0; // MACD above signal line
+    const isBearish = hasResult && result.histogram < 0; // MACD below signal line
+
+    switch (true) {
+      case !hasResult:
+        return TradingSignal.UNKNOWN;
+      case isBullish:
+        return TradingSignal.BULLISH;
+      case isBearish:
+      default:
+        return TradingSignal.BEARISH;
+    }
+  }
+
+  getSignal(): {
+    state: (typeof TradingSignal)[keyof typeof TradingSignal];
+    hasChanged: boolean;
+  } {
+    const previousState = this.calculateSignal(this.previousResult);
+    const state = this.calculateSignal(this.getResult());
+    const hasChanged = previousState !== state;
+
+    return {
+      hasChanged,
+      state,
+    };
   }
 }

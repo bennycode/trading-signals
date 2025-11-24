@@ -1,8 +1,8 @@
-import {IndicatorSeries} from '../../types/Indicator.js';
-import {MAD} from '../../volatility/MAD/MAD.js';
 import {SMA} from '../../trend/SMA/SMA.js';
-import {pushUpdate} from '../../util/index.js';
 import type {HighLowClose} from '../../types/HighLowClose.js';
+import {TradingSignal, TrendIndicatorSeries} from '../../types/Indicator.js';
+import {pushUpdate} from '../../util/index.js';
+import {MAD} from '../../volatility/MAD/MAD.js';
 
 /**
  * Commodity Channel Index (CCI)
@@ -24,11 +24,11 @@ import type {HighLowClose} from '../../types/HighLowClose.js';
  * Values near 0 often signal a lack of clear momentum.
  *
  * Note: Traders often combine CCI with other indicators to confirm trends or signals, as using it alone can lead to false signals.
- * It’s particularly useful in volatile markets or when identifying shorter-term trading opportunities.
+ * It's particularly useful in volatile markets or when identifying shorter-term trading opportunities.
  *
  * @see https://en.wikipedia.org/wiki/Commodity_channel_index
  */
-export class CCI extends IndicatorSeries<HighLowClose<number>> {
+export class CCI extends TrendIndicatorSeries<HighLowClose<number>> {
   private readonly sma: SMA;
   private readonly typicalPrices: number[];
 
@@ -61,5 +61,22 @@ export class CCI extends IndicatorSeries<HighLowClose<number>> {
     const typicalPrice = (high + low + close) / 3;
     pushUpdate(this.typicalPrices, replace, typicalPrice, this.interval);
     return typicalPrice;
+  }
+
+  protected calculateSignalState(result?: number | null | undefined) {
+    const hasResult = result !== null && result !== undefined;
+    const isOversold = hasResult && result <= -100;
+    const isOverbought = hasResult && result >= 100;
+
+    switch (true) {
+      case !hasResult:
+        return TradingSignal.UNKNOWN;
+      case isOversold:
+        return TradingSignal.BEARISH;
+      case isOverbought:
+        return TradingSignal.BULLISH;
+      default:
+        return TradingSignal.SIDEWAYS;
+    }
   }
 }

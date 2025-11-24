@@ -1,5 +1,6 @@
-import {CCI} from './CCI.js';
 import {NotEnoughDataError} from '../../error/index.js';
+import {TradingSignal} from '../../types/Indicator.js';
+import {CCI} from './CCI.js';
 
 describe('CCI', () => {
   // Test data verified with:
@@ -86,6 +87,79 @@ describe('CCI', () => {
       } catch (error) {
         expect(error).toBeInstanceOf(NotEnoughDataError);
       }
+    });
+  });
+
+  describe('getSignal', () => {
+    it('returns UNKNOWN when there is no result', () => {
+      const cci = new CCI(5);
+      const signal = cci.getSignal();
+      expect(signal.state).toBe(TradingSignal.UNKNOWN);
+    });
+
+    it('returns OVERSOLD when CCI <= -100', () => {
+      const cci = new CCI(5);
+
+      const candles = [
+        {close: 100, high: 101, low: 99},
+        {close: 90, high: 91, low: 89},
+        {close: 80, high: 81, low: 79},
+        {close: 70, high: 71, low: 69},
+        {close: 60, high: 61, low: 59},
+      ] as const;
+
+      for (const candle of candles) {
+        cci.add(candle);
+      }
+
+      const signal = cci.getSignal();
+
+      expect(cci.getResultOrThrow()).toBeLessThanOrEqual(-100);
+      expect(signal.state).toBe(TradingSignal.BEARISH);
+    });
+
+    it('returns OVERBOUGHT when CCI >= 100', () => {
+      const cci = new CCI(5);
+
+      const candles = [
+        {close: 60, high: 61, low: 59},
+        {close: 70, high: 71, low: 69},
+        {close: 80, high: 81, low: 79},
+        {close: 90, high: 91, low: 89},
+        {close: 100, high: 101, low: 99},
+      ] as const;
+
+      for (const candle of candles) {
+        cci.add(candle);
+      }
+
+      const signal = cci.getSignal();
+
+      expect(cci.getResultOrThrow()).toBeGreaterThanOrEqual(100);
+      expect(signal.state).toBe(TradingSignal.BULLISH);
+    });
+
+    it('returns UNKNOWN when CCI is between -100 and 100', () => {
+      const cci = new CCI(5);
+
+      const candles = [
+        {close: 100, high: 101, low: 99},
+        {close: 100.5, high: 101.5, low: 99.5},
+        {close: 100, high: 101, low: 99},
+        {close: 99.5, high: 100.5, low: 98.5},
+        {close: 100, high: 101, low: 99},
+      ] as const;
+
+      for (const candle of candles) {
+        cci.add(candle);
+      }
+
+      const signal = cci.getSignal();
+      const result = cci.getResultOrThrow();
+
+      expect(result).toBeGreaterThan(-100);
+      expect(result).toBeLessThan(100);
+      expect(signal.state).toBe(TradingSignal.SIDEWAYS);
     });
   });
 });

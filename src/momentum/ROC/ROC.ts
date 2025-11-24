@@ -1,4 +1,4 @@
-import {IndicatorSeries} from '../../types/Indicator.js';
+import {TrendIndicatorSeries, TradingSignal} from '../../types/Indicator.js';
 import {pushUpdate} from '../../util/pushUpdate.js';
 
 /**
@@ -10,7 +10,7 @@ import {pushUpdate} from '../../util/pushUpdate.js';
  *
  * @see https://www.investopedia.com/terms/r/rateofchange.asp
  */
-export class ROC extends IndicatorSeries {
+export class ROC extends TrendIndicatorSeries {
   public readonly prices: number[] = [];
 
   constructor(public readonly interval: number) {
@@ -29,5 +29,19 @@ export class ROC extends IndicatorSeries {
     }
 
     return null;
+  }
+
+  protected calculateSignalState(result: number | null | undefined) {
+    const hasResult = result !== null && result !== undefined;
+    const isBearish = hasResult && result < 0;
+
+    switch (true) {
+      case !hasResult:
+        return TradingSignal.UNKNOWN;
+      case isBearish:
+        return TradingSignal.BEARISH;
+      default:
+        return TradingSignal.BULLISH;
+    }
   }
 }
