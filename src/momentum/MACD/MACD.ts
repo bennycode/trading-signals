@@ -47,9 +47,9 @@ export class MACD extends TechnicalIndicator<MACDResult, number> {
       if (replace) {
         this.result = this.previousResult;
       }
-      
+
       this.previousResult = this.result;
-  
+
       return (this.result = {
         histogram: macd - signal,
         macd,

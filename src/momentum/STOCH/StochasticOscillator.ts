@@ -70,7 +70,7 @@ export class StochasticOscillator extends TechnicalIndicator<StochasticResult, H
         if (replace) {
           this.result = this.previousResult;
         }
-        
+
         this.previousResult = this.result;
 
         return (this.result = {
