@@ -183,3 +183,19 @@ it('replaces the most recently added value', () => {
   expect(restoredResult?.stochK).toBe(originalResult?.stochK);
 });
 ```
+
+Always use `setResult()` to update indicator results in inherited classes. Never assign directly to `this.result`:
+
+```ts
+// ❌ Bad: Direct assignment breaks signal tracking
+override update(candle: HighLowClose<number>, replace: boolean) {
+  // ... calculation logic ...
+  return (this.result = calculatedValue);
+}
+
+// ✅ Good: Using setResult() properly maintains previousResult for signal tracking
+override update(candle: HighLowClose<number>, replace: boolean) {
+  // ... calculation logic ...
+  return this.setResult(calculatedValue, replace);
+}
+```
