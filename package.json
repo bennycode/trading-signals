@@ -16,6 +16,7 @@
   "scripts": {
     "clean": "lerna run clean --parallel",
     "dist": "lerna run dist",
+    "docs": "npm run dist --workspace trading-signals && npm run dev --workspace trading-signals-docs",
     "fix": "lerna run fix --parallel",
     "graph": "nx graph",
     "lint": "lerna run lint --parallel",
