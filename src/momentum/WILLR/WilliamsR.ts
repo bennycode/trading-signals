@@ -49,11 +49,11 @@ export class WilliamsR extends TrendIndicatorSeries<HighLowClose<number>> {
       const divisor = highest - lowest;
 
       if (divisor === 0) {
-        return (this.result = -100);
+        return this.setResult(-100, replace);
       }
 
       const willR = ((highest - candle.close) / divisor) * -100;
-      return (this.result = willR);
+      return this.setResult(willR, replace);
     }
 
     return null;
