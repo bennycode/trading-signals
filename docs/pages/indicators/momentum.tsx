@@ -286,7 +286,7 @@ export default function MomentumIndicators() {
       <div className="space-y-6">
         <div>
           <h2 className="text-2xl font-bold text-white mb-2 select-text">
-            RSI(14) / Required Inputs: {rsi.getRequiredInputs()}
+            RSI({rsi.interval}) / Required Inputs: {rsi.getRequiredInputs()}
           </h2>
           <p className="text-slate-300 select-text">{config.description}</p>
           <p className="text-slate-400 text-sm mt-2 select-text">
@@ -385,7 +385,7 @@ if (rsi.isStable) {
       <div className="space-y-6">
         <div>
           <h2 className="text-2xl font-bold text-white mb-2 select-text">
-            StochasticOscillator(14, 3, 3) / Required Inputs: {stoch.getRequiredInputs()}
+            StochasticOscillator({stoch.n}, {stoch.m}, {stoch.p}) / Required Inputs: {stoch.getRequiredInputs()}
           </h2>
           <p className="text-slate-300 select-text">{config.description}</p>
           <p className="text-slate-400 text-sm mt-2 select-text">
@@ -609,7 +609,7 @@ if (stoch.isStable) {
       <div className="space-y-6">
         <div>
           <h2 className="text-2xl font-bold text-white mb-2 select-text">
-            CCI(20) / Required Inputs: {cci.getRequiredInputs()}
+            CCI({cci.interval}) / Required Inputs: {cci.getRequiredInputs()}
           </h2>
           <p className="text-slate-300 select-text">{config.description}</p>
           <p className="text-slate-400 text-sm mt-2 select-text">
@@ -706,7 +706,7 @@ if (cci.isStable) {
       <div className="space-y-6">
         <div>
           <h2 className="text-2xl font-bold text-white mb-2 select-text">
-            ROC(9) / Required Inputs: {roc.getRequiredInputs()}
+            ROC({roc.interval}) / Required Inputs: {roc.getRequiredInputs()}
           </h2>
           <p className="text-slate-300 select-text">{config.description}</p>
           <p className="text-slate-400 text-sm mt-2 select-text">
@@ -1044,7 +1044,7 @@ if (macd.isStable) {
       <div className="space-y-6">
         <div>
           <h2 className="text-2xl font-bold text-white mb-2 select-text">
-            AO(5, 34) / Required Inputs: {ao.getRequiredInputs()}
+            AO({ao.shortInterval}, {ao.longInterval}) / Required Inputs: {ao.getRequiredInputs()}
           </h2>
           <p className="text-slate-300 select-text">{config.description}</p>
           <p className="text-slate-400 text-sm mt-2 select-text">
@@ -1147,7 +1147,7 @@ if (ao.isStable) {
       <div className="space-y-6">
         <div>
           <h2 className="text-2xl font-bold text-white mb-2 select-text">
-            AC(5, 34, 5) / Required Inputs: {ac.getRequiredInputs()}
+            AC({ac.shortAO}, {ac.longAO}, {ac.signalInterval}) / Required Inputs: {ac.getRequiredInputs()}
           </h2>
           <p className="text-slate-300 select-text">{config.description}</p>
           <p className="text-slate-400 text-sm mt-2 select-text">
@@ -1418,7 +1418,7 @@ if (mom.isStable) {
       <div className="space-y-6">
         <div>
           <h2 className="text-2xl font-bold text-white mb-2 select-text">
-            OBV(5) / Required Inputs: {obv.getRequiredInputs()}
+            OBV({obv.interval}) / Required Inputs: {obv.getRequiredInputs()}
           </h2>
           <p className="text-slate-300 select-text">{config.description}</p>
           <p className="text-slate-400 text-sm mt-2 select-text">
@@ -1513,7 +1513,7 @@ if (result !== null) {
       <div className="space-y-6">
         <div>
           <h2 className="text-2xl font-bold text-white mb-2 select-text">
-            REI(5) / Required Inputs: {rei.getRequiredInputs()}
+            REI({rei.interval}) / Required Inputs: {rei.getRequiredInputs()}
           </h2>
           <p className="text-slate-300 select-text">{config.description}</p>
           <p className="text-slate-400 text-sm mt-2 select-text">
@@ -1605,7 +1605,7 @@ if (rei.isStable) {
       <div className="space-y-6">
         <div>
           <h2 className="text-2xl font-bold text-white mb-2 select-text">
-            StochasticRSI(14) / Required Inputs: {stochRsi.getRequiredInputs()}
+            StochasticRSI({stochRsi.interval}) / Required Inputs: {stochRsi.getRequiredInputs()}
           </h2>
           <p className="text-slate-300 select-text">{config.description}</p>
           <p className="text-slate-400 text-sm mt-2 select-text">
@@ -1709,7 +1709,7 @@ if (stochRsi.isStable) {
       <div className="space-y-6">
         <div>
           <h2 className="text-2xl font-bold text-white mb-2 select-text">
-            WilliamsR(14) / Required Inputs: {willr.getRequiredInputs()}
+            WilliamsR({willr.interval}) / Required Inputs: {willr.getRequiredInputs()}
           </h2>
           <p className="text-slate-300 select-text">{config.description}</p>
           <p className="text-slate-400 text-sm mt-2 select-text">
@@ -1814,8 +1814,10 @@ if (willr.isStable) {
     return (
       <div className="space-y-6">
         <div>
-          <h2 className="text-2xl font-bold text-white mb-2">TDS() / Required Inputs: {tds.getRequiredInputs()}</h2>
-          <p className="text-slate-300">{config.description}</p>
+          <h2 className="text-2xl font-bold text-white mb-2 select-text">
+            TDS({tds.getRequiredInputs()}) / Required Inputs: {tds.getRequiredInputs()}
+          </h2>
+          <p className="text-slate-300 select-text">{config.description}</p>
         </div>
 
         <Chart title="Tom DeMark Sequential" data={chartData} yAxisLabel="TDS" color={config.color} flags={flags} />
