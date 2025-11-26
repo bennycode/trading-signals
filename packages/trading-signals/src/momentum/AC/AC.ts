@@ -13,7 +13,7 @@ import {MOM} from '../MOM/MOM.js';
  * @see https://www.thinkmarkets.com/en/indicators/bill-williams-accelerator/
  * @see https://help.quantower.com/quantower/analytics-panels/chart/technical-indicators/oscillators/accelerator-oscillator
  */
-export class AC extends       TrendIndicatorSeries<HighLow<number>> {
+export class AC extends          TrendIndicatorSeries<HighLow<number>> {
   public readonly ao: AO;
   public readonly momentum: MOM;
   public readonly signal: SMA;
