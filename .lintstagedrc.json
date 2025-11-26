@@ -1,3 +1,0 @@
-{
-  "packages/trading-signals/**/*.{js,jsx,ts,tsx}": ["bash -c 'cd packages/trading-signals && eslint --fix'"]
-}
