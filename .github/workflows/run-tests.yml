@@ -1,4 +1,4 @@
-name: 'Run Tests'
+name: "Run Tests"
 
 on:
   push:
@@ -14,6 +14,14 @@ concurrency:
 
 jobs:
   test-coverage:
-    uses: bennycode/actions/.github/workflows/test-coverage.yml@main
-    secrets:
-      CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v6
+        with:
+          node-version-file: ".nvmrc"
+      - name: "Run tests on clean install"
+        run: |
+          npm ci
+          npm run lint
+          npm test

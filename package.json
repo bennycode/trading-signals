@@ -1,100 +1,31 @@
 {
-  "bugs": {
-    "url": "https://github.com/bennycode/trading-signals/issues"
-  },
-  "description": "Technical indicators to run technical analysis with JavaScript / TypeScript.",
   "devDependencies": {
-    "@arethetypeswrong/cli": "^0.18.2",
-    "@tstv/eslint-config": "^4.0.0",
-    "@types/node": "^24.9.2",
-    "@vitest/coverage-v8": "^4.0.6",
-    "dependency-cruiser": "^17.0.1",
-    "eslint": "^9.35.0",
-    "generate-changelog": "^1.8.0",
-    "husky": "^4.3.8",
-    "lint-staged": "^16.1.6",
-    "prettier": "^3.6.2",
-    "pretty-quick": "^4.2.2",
-    "rimraf": "^6.0.1",
-    "tsup": "^8.5.0",
-    "tsx": "^4.20.5",
-    "typescript": "^5.9.2",
-    "vitest": "^4.0.6"
+    "@tstv/eslint-config": "^4.1.1",
+    "cross-env": "^10.1.0",
+    "eslint": "^9.39.1",
+    "lefthook": "^2.0.4",
+    "lerna": "^9.0.1",
+    "rimraf": "^6.1.2",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3"
   },
-  "exports": {
-    ".": {
-      "import": "./dist/index.js",
-      "default": "./dist/index.cjs"
-    },
-    "./package.json": "./package.json"
-  },
-  "files": [
-    "dist",
-    "!dist/start",
-    "!dist/test",
-    "!dist/**/*.test.*"
-  ],
-  "homepage": "https://bennycode.com/trading-signals",
-  "keywords": [
-    "adx",
-    "algorithmic",
-    "analysis",
-    "atr",
-    "average",
-    "bollinger",
-    "dema",
-    "dma",
-    "ema",
-    "exponential-moving-average",
-    "indicator",
-    "macd",
-    "math",
-    "moving-average",
-    "roc",
-    "rsi",
-    "signals",
-    "simple-moving-average",
-    "sma",
-    "smma",
-    "technical",
-    "technical-indicators",
-    "technical-overlays",
-    "trading"
-  ],
-  "license": "MIT",
-  "main": "dist/index.js",
-  "name": "trading-signals",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/bennycode/trading-signals.git"
-  },
+  "name": "typedtrader",
+  "private": true,
   "scripts": {
-    "build": "tsup",
-    "changelog:commit": "git add CHANGELOG.md && git commit -m \"docs: updated CHANGELOG.md\"",
-    "clean": "rimraf coverage dist",
-    "dist": "npm run clean && npm run build",
-    "docs": "npm run dist && cd docs && npm install && npm run dev",
-    "fix": "npm run fix:other && npm run fix:code",
-    "fix:code": "npm run lint:code -- --fix",
-    "fix:other": "npm run prettier -- --write",
-    "lint": "npm run lint:types && npm run lint:code && npm run lint:other",
-    "lint:code": "eslint .",
-    "lint:other": "npm run prettier -- --list-different",
-    "lint:types": "tsc --noEmit",
-    "postversion": "git push origin && git push origin --tags && npm publish && git restore .",
-    "prettier": "prettier --ignore-path .gitignore --log-level error \"**/*.{json,scss,yml}\"",
-    "preversion": "git checkout main && git pull && npm install && npm run test && npm run dist && npm run test:exports",
-    "release:major": "generate-changelog -M -x \"chore,test\" && npm run changelog:commit && npm version major",
-    "release:minor": "generate-changelog -m -x \"chore,test\" && npm run changelog:commit && npm version minor",
-    "release:patch": "generate-changelog -p -x \"chore,test\" && npm run changelog:commit && npm version patch",
-    "start": "tsx ./src/start/demo.ts",
-    "test": "npm run test:types && npm run test:imports && npm run test:units -- --coverage",
-    "test:exports": "attw --pack .",
-    "test:imports": "depcruise src --include-only \"^src\"",
-    "test:types": "npm run lint:types",
-    "test:units": "vitest run --passWithNoTests",
-    "test:units:watch": "vitest --watch"
+    "clean": "lerna run clean --parallel",
+    "dist": "lerna run dist",
+    "docs": "npm run dist --workspace trading-signals && npm run dev --workspace trading-signals-docs",
+    "fix": "lerna run fix --parallel",
+    "graph": "nx graph",
+    "lint": "lerna run lint --parallel",
+    "release": "npm install && npm run dist && lerna publish && npm run clean",
+    "test": "lerna run --no-sort --concurrency 8 test",
+    "test:types": "lerna run --no-sort --concurrency 8 test:types"
   },
-  "type": "module",
-  "version": "7.1.0"
+  "version": "0.0.0",
+  "workspaces": {
+    "packages": [
+      "packages/*"
+    ]
+  }
 }

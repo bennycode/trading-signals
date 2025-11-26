@@ -1,0 +1,14 @@
+{
+  "command": {
+    "publish": {
+      "allowBranch": "main",
+      "conventionalCommits": true,
+      "message": "[skip ci] chore: Publish"
+    }
+  },
+  "exact": true,
+  "loglevel": "verbose",
+  "registry": "https://registry.npmjs.org/",
+  "version": "independent",
+  "yes": true
+}

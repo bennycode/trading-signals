@@ -1,0 +1,10 @@
+# https://lefthook.dev/configuration/
+pre-commit:
+  parallel: true
+  commands:
+    format:
+      glob: '*.{css,html,json,less,md,scss,yml}'
+      run: npx -c "cross-env NODE_OPTIONS=--max_old_space_size=4096 prettier --write --log-level error {staged_files}"
+    lint:
+      glob: 'packages/trading-signals/**/*.{js,jsx,ts,tsx}'
+      run: npx eslint --config packages/trading-signals/eslint.config.mjs {staged_files} --fix

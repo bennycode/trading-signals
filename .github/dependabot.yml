@@ -18,13 +18,6 @@ updates:
       separator: '-'
     open-pull-requests-limit: 99
     target-branch: main
-    ignore:
-      - dependency-name: 'husky'
-        versions:
-          - '>= 5'
-      - dependency-name: '@types/node'
-        versions:
-          - '>= 20'
     commit-message:
       prefix: chore
       include: scope
