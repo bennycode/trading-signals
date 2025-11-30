@@ -27,14 +27,6 @@ export default function Home() {
       color: 'from-orange-500 to-red-500',
     },
     {
-      name: 'Exhaustion Indicators',
-      description: 'Identify trend exhaustion and potential reversal points',
-      href: '/indicators/exhaustion',
-      icon: '🎯',
-      indicators: ['TDS (Tom Demark Sequential)'],
-      color: 'from-green-500 to-emerald-500',
-    },
-    {
       name: 'Utility Functions',
       description: 'Mathematical utilities for technical analysis',
       href: '/indicators/utilities',
@@ -74,16 +66,16 @@ export default function Home() {
       <div className="grid md:grid-cols-3 gap-6 mb-12">
         <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-6">
           <div className="text-3xl mb-3">🚀</div>
-          <h3 className="text-lg font-semibold text-white mb-2">High Performance</h3>
+          <h3 className="text-lg font-semibold text-white mb-2">Streaming Updates</h3>
           <p className="text-slate-400">
-            Native JavaScript numbers for ~100x faster calculations compared to arbitrary precision libraries
+            Update indicators incrementally as new prices arrive - no need to reprocess historical data
           </p>
         </div>
         <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-6">
           <div className="text-3xl mb-3">📊</div>
-          <h3 className="text-lg font-semibold text-white mb-2">Streaming Data</h3>
+          <h3 className="text-lg font-semibold text-white mb-2">Replace Mode</h3>
           <p className="text-slate-400">
-            Update indicators incrementally as new prices arrive - perfect for real-time trading
+            Efficiently update live charts by replacing the most recent value without full recalculation
           </p>
         </div>
         <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-6">
@@ -91,6 +83,25 @@ export default function Home() {
           <h3 className="text-lg font-semibold text-white mb-2">Type Safe</h3>
           <p className="text-slate-400">
             Full TypeScript implementation with complete type definitions and IDE support
+          </p>
+        </div>
+        <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-6">
+          <div className="text-3xl mb-3">⚡</div>
+          <h3 className="text-lg font-semibold text-white mb-2">Lazy Evaluation</h3>
+          <p className="text-slate-400">
+            Indicators only calculate when stable - check readiness with built-in stability flags
+          </p>
+        </div>
+        <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-6">
+          <div className="text-3xl mb-3">💾</div>
+          <h3 className="text-lg font-semibold text-white mb-2">Memory Efficient</h3>
+          <p className="text-slate-400">Rolling windows instead of full history storage - minimal memory footprint</p>
+        </div>
+        <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-6">
+          <div className="text-3xl mb-3">📦</div>
+          <h3 className="text-lg font-semibold text-white mb-2">Zero Dependencies</h3>
+          <p className="text-slate-400">
+            No runtime dependencies and minimal bundle size - perfect for web and Node.js
           </p>
         </div>
       </div>
