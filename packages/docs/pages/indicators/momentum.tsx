@@ -1864,7 +1864,7 @@ tds.add(105);
 if (tds.isStable) {
   const result = tds.getResultOrThrow();
   console.log('TDS:', result); // 1 (bullish setup) or -1 (bearish setup)
-  console.log('Signal:', tds.getSignal().state); // Inverted: 1 → BEARISH, -1 → BULLISH
+  console.log('Signal:', tds.getSignal().state);
 }`}</code>
           </pre>
         </div>
