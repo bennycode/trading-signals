@@ -251,7 +251,7 @@ export default function MomentumIndicators() {
       const signal = rsi.getSignal();
       chartData.push({x: idx + 1, y: result});
 
-      if (signal.hasChanged && rsi.isStable) {
+      if (signal.hasChanged) {
         flags.push({
           x: idx + 1,
           title: signal.state,
@@ -330,7 +330,7 @@ if (rsi.isStable) {
       chartDataK.push({x: idx + 1, y: result?.stochK ?? null});
       chartDataD.push({x: idx + 1, y: result?.stochD ?? null});
 
-      if (signal.hasChanged && stoch.isStable) {
+      if (signal.hasChanged) {
         flags.push({
           x: idx + 1,
           title: signal.state,
@@ -555,7 +555,7 @@ if (stoch.isStable) {
       const signal = cci.getSignal();
       chartData.push({x: idx + 1, y: result});
 
-      if (signal.hasChanged && cci.isStable) {
+      if (signal.hasChanged) {
         flags.push({
           x: idx + 1,
           title: signal.state,
@@ -652,7 +652,7 @@ if (cci.isStable) {
       const signal = roc.getSignal();
       chartData.push({x: idx + 1, y: result});
 
-      if (signal.hasChanged && roc.isStable) {
+      if (signal.hasChanged) {
         flags.push({
           x: idx + 1,
           title: signal.state,
@@ -750,7 +750,7 @@ if (roc.isStable) {
       chartDataSignal.push({x: idx + 1, y: result?.signal ?? null});
       chartDataHistogram.push({x: idx + 1, y: result?.histogram ?? null});
 
-      if (trendSignal.hasChanged && macd.isStable) {
+      if (trendSignal.hasChanged) {
         flags.push({
           x: idx + 1,
           title: trendSignal.state,
@@ -989,7 +989,7 @@ if (macd.isStable) {
       const signal = ao.getSignal();
       chartData.push({x: idx + 1, y: result});
 
-      if (signal.hasChanged && ao.isStable) {
+      if (signal.hasChanged) {
         flags.push({
           x: idx + 1,
           title: signal.state,
@@ -1092,7 +1092,7 @@ if (ao.isStable) {
       const signal = ac.getSignal();
       chartData.push({x: idx + 1, y: result});
 
-      if (signal.hasChanged && ac.isStable) {
+      if (signal.hasChanged) {
         flags.push({
           x: idx + 1,
           title: signal.state,
@@ -1194,7 +1194,7 @@ if (ac.isStable) {
       const signal = cg.getSignal();
       chartData.push({x: idx + 1, y: result});
 
-      if (signal.hasChanged && cg.isStable) {
+      if (signal.hasChanged) {
         flags.push({
           x: idx + 1,
           title: signal.state,
@@ -1372,7 +1372,7 @@ if (mom.isStable) {
       const signal = obv.getSignal();
       chartData.push({x: idx + 1, y: result});
 
-      if (signal.hasChanged && obv.isStable) {
+      if (signal.hasChanged) {
         flags.push({
           x: idx + 1,
           title: signal.state,
@@ -1468,7 +1468,7 @@ if (result !== null) {
       const signal = rei.getSignal();
       chartData.push({x: idx + 1, y: result});
 
-      if (signal.hasChanged && rei.isStable) {
+      if (signal.hasChanged) {
         flags.push({
           x: idx + 1,
           title: signal.state,
@@ -1560,7 +1560,7 @@ if (rei.isStable) {
       const signal = stochRsi.getSignal();
       chartData.push({x: idx + 1, y: result});
 
-      if (signal.hasChanged && stochRsi.isStable) {
+      if (signal.hasChanged) {
         flags.push({
           x: idx + 1,
           title: signal.state,
@@ -1662,7 +1662,7 @@ if (stochRsi.isStable) {
       const signal = willr.getSignal();
       chartData.push({x: idx + 1, y: result});
 
-      if (signal.hasChanged && willr.isStable) {
+      if (signal.hasChanged) {
         flags.push({
           x: idx + 1,
           title: signal.state,
@@ -1768,7 +1768,7 @@ if (willr.isStable) {
       const signal = tds.getSignal();
       chartData.push({x: index + 1, y: result});
 
-      if (signal.hasChanged && result !== null) {
+      if (signal.hasChanged) {
         flags.push({
           x: index + 1,
           title: signal.state,
