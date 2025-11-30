@@ -1,4 +1,8 @@
 import Link from 'next/link';
+import {CategoryCard} from '../components/CategoryCard';
+import {FeatureCard} from '../components/FeatureCard';
+import {Hero} from '../components/Hero';
+import {QuickStart} from '../components/QuickStart';
 
 export default function Home() {
   const categories = [
@@ -36,74 +40,53 @@ export default function Home() {
     },
   ];
 
+  const features = [
+    {
+      icon: '🚀',
+      title: 'Streaming Updates',
+      description: 'Update indicators incrementally as new prices arrive - no need to reprocess historical data',
+    },
+    {
+      icon: '📊',
+      title: 'Replace Mode',
+      description: 'Efficiently update live charts by replacing the most recent value without full recalculation',
+    },
+    {
+      icon: '🔒',
+      title: 'Type Safe',
+      description: 'Full TypeScript implementation with complete type definitions and IDE support',
+    },
+    {
+      icon: '⚡',
+      title: 'Lazy Evaluation',
+      description: 'Indicators only calculate when stable - check readiness with built-in stability flags',
+    },
+    {
+      icon: '💾',
+      title: 'Memory Efficient',
+      description: 'Rolling windows instead of full history storage - minimal memory footprint',
+    },
+    {
+      icon: '📦',
+      title: 'Zero Dependencies',
+      description: 'No runtime dependencies and minimal bundle size - perfect for web and Node.js',
+    },
+  ];
+
   return (
     <div className="space-y-12">
-      {/* Hero Section */}
-      <div className="text-center space-y-4 py-12">
-        <h1 className="text-5xl font-bold text-white">Trading Signals</h1>
-        <p className="text-xl text-slate-300 max-w-2xl mx-auto">
-          Technical indicators and overlays to run technical analysis with JavaScript / TypeScript
-        </p>
-        <div className="flex justify-center gap-4 mt-8">
-          <a
-            href="https://www.npmjs.com/package/trading-signals"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium">
-            View on NPM
-          </a>
-          <a
-            href="https://github.com/bennycode/trading-signals"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="px-6 py-3 bg-slate-700 text-white rounded-lg hover:bg-slate-600 transition-colors font-medium">
-            View on GitHub
-          </a>
-        </div>
-      </div>
+      <Hero
+        title="Trading Signals"
+        description="Technical indicators and overlays to run technical analysis with JavaScript / TypeScript"
+        npmUrl="https://www.npmjs.com/package/trading-signals"
+        githubUrl="https://github.com/bennycode/trading-signals"
+      />
 
       {/* Features */}
       <div className="grid md:grid-cols-3 gap-6 mb-12">
-        <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-6">
-          <div className="text-3xl mb-3">🚀</div>
-          <h3 className="text-lg font-semibold text-white mb-2">Streaming Updates</h3>
-          <p className="text-slate-400">
-            Update indicators incrementally as new prices arrive - no need to reprocess historical data
-          </p>
-        </div>
-        <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-6">
-          <div className="text-3xl mb-3">📊</div>
-          <h3 className="text-lg font-semibold text-white mb-2">Replace Mode</h3>
-          <p className="text-slate-400">
-            Efficiently update live charts by replacing the most recent value without full recalculation
-          </p>
-        </div>
-        <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-6">
-          <div className="text-3xl mb-3">🔒</div>
-          <h3 className="text-lg font-semibold text-white mb-2">Type Safe</h3>
-          <p className="text-slate-400">
-            Full TypeScript implementation with complete type definitions and IDE support
-          </p>
-        </div>
-        <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-6">
-          <div className="text-3xl mb-3">⚡</div>
-          <h3 className="text-lg font-semibold text-white mb-2">Lazy Evaluation</h3>
-          <p className="text-slate-400">
-            Indicators only calculate when stable - check readiness with built-in stability flags
-          </p>
-        </div>
-        <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-6">
-          <div className="text-3xl mb-3">💾</div>
-          <h3 className="text-lg font-semibold text-white mb-2">Memory Efficient</h3>
-          <p className="text-slate-400">Rolling windows instead of full history storage - minimal memory footprint</p>
-        </div>
-        <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-6">
-          <div className="text-3xl mb-3">📦</div>
-          <h3 className="text-lg font-semibold text-white mb-2">Zero Dependencies</h3>
-          <p className="text-slate-400">
-            No runtime dependencies and minimal bundle size - perfect for web and Node.js
-          </p>
-        </div>
+        {features.map(feature => (
+          <FeatureCard key={feature.title} icon={feature.icon} title={feature.title} description={feature.description} />
+        ))}
       </div>
 
       {/* Indicator Categories */}
@@ -111,63 +94,19 @@ export default function Home() {
         <h2 className="text-3xl font-bold text-white mb-6">Indicator Categories</h2>
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           {categories.map(category => (
-            <Link
+            <CategoryCard
               key={category.href}
+              name={category.name}
+              description={category.description}
               href={category.href}
-              className="group block bg-slate-800/50 border border-slate-700 rounded-lg p-6 hover:border-slate-500 transition-all hover:shadow-lg hover:shadow-slate-700/50">
-              <div className="flex items-center gap-3 mb-3">
-                <span className="text-3xl">{category.icon}</span>
-                <h3 className="text-xl font-semibold text-white group-hover:text-blue-400 transition-colors">
-                  {category.name}
-                </h3>
-              </div>
-              <p className="text-slate-400 text-sm mb-4">{category.description}</p>
-              <div className="flex flex-wrap gap-2">
-                {category.indicators.slice(0, 4).map(indicator => (
-                  <span key={indicator} className="px-2 py-1 bg-slate-700/50 text-slate-300 text-xs rounded font-mono">
-                    {indicator}
-                  </span>
-                ))}
-                {category.indicators.length > 4 && (
-                  <span className="px-2 py-1 text-slate-400 text-xs">+{category.indicators.length - 4} more</span>
-                )}
-              </div>
-              <div className="mt-4 text-blue-400 text-sm font-medium group-hover:underline">View indicators →</div>
-            </Link>
+              icon={category.icon}
+              indicators={category.indicators}
+            />
           ))}
         </div>
       </div>
 
-      {/* Quick Start */}
-      <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-8">
-        <h2 className="text-2xl font-bold text-white mb-4">Quick Start</h2>
-        <div className="space-y-4">
-          <div>
-            <p className="text-slate-400 mb-2">Install the package:</p>
-            <pre className="bg-slate-900 border border-slate-700 rounded p-4 overflow-x-auto">
-              <code className="text-green-400">npm install trading-signals</code>
-            </pre>
-          </div>
-          <div>
-            <p className="text-slate-400 mb-2">Use it in your code:</p>
-            <pre className="bg-slate-900 border border-slate-700 rounded p-4 overflow-x-auto text-sm">
-              <code className="text-slate-300">
-                {`import { SMA } from 'trading-signals';
-
-const sma = new SMA(5);
-
-sma.add(81);
-sma.add(24);
-sma.add(75);
-sma.add(21);
-sma.add(34);
-
-console.log(sma.getResult()); // 47`}
-              </code>
-            </pre>
-          </div>
-        </div>
-      </div>
+      <QuickStart />
     </div>
   );
 }
