@@ -20,6 +20,11 @@ import {
   WilliamsR,
 } from 'trading-signals';
 import Chart, {ChartDataPoint} from '../../components/Chart';
+import {CodeExample} from '../../components/CodeExample';
+import {DataTable} from '../../components/DataTable';
+import {IndicatorHeader} from '../../components/IndicatorHeader';
+import {IndicatorSelector} from '../../components/IndicatorSelector';
+import {SignalBadge} from '../../components/SignalBadge';
 
 interface IndicatorConfig {
   id: string;
@@ -28,25 +33,6 @@ interface IndicatorConfig {
   color: string;
   requiredInputs: number;
 }
-
-// Reusable component for rendering signal badges
-const SignalBadge = ({signal}: {signal: string}) => {
-  const displayText = signal === 'UNKNOWN' ? 'N/A' : signal;
-  const colorClasses =
-    signal === 'BULLISH'
-      ? 'bg-green-900/50 text-green-400 border-green-800'
-      : signal === 'BEARISH'
-        ? 'bg-red-900/50 text-red-400 border-red-800'
-        : signal === 'SIDEWAYS'
-          ? 'bg-blue-900/50 text-blue-400 border-blue-800'
-          : 'bg-slate-900/50 text-slate-400 border-slate-700';
-
-  return (
-    <span className={`inline-flex items-center px-2 py-1 rounded text-xs font-semibold border ${colorClasses}`}>
-      {displayText}
-    </span>
-  );
-};
 
 // OHLCV data (from Ethereum)
 const ethCandles = [
@@ -265,7 +251,7 @@ export default function MomentumIndicators() {
       const signal = rsi.getSignal();
       chartData.push({x: idx + 1, y: result});
 
-      if (signal.hasChanged && rsi.isStable) {
+      if (signal.hasChanged) {
         flags.push({
           x: idx + 1,
           title: signal.state,
@@ -282,55 +268,7 @@ export default function MomentumIndicators() {
       });
     });
 
-    return (
-      <div className="space-y-6">
-        <div>
-          <h2 className="text-2xl font-bold text-white mb-2 select-text">
-            RSI({rsi.interval}) / Required Inputs: {rsi.getRequiredInputs()}
-          </h2>
-          <p className="text-slate-300 select-text">{config.description}</p>
-          <p className="text-slate-400 text-sm mt-2 select-text">
-            RSI measures the magnitude of recent price changes to evaluate overbought or oversold conditions. Values
-            above 70 indicate overbought, below 30 indicate oversold.
-          </p>
-        </div>
-
-        <Chart title="RSI (14)" data={chartData} yAxisLabel="RSI" color={config.color} flags={flags} />
-
-        <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-4">
-          <h3 className="text-lg font-semibold text-white mb-3">All Sample Values</h3>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-slate-600">
-                  <th className="text-left text-slate-300 py-2 px-3">Period</th>
-                  <th className="text-left text-slate-300 py-2 px-3">Date</th>
-                  <th className="text-left text-slate-300 py-2 px-3">Close</th>
-                  <th className="text-left text-slate-300 py-2 px-3">RSI</th>
-                  <th className="text-left text-slate-300 py-2 px-3">Signal</th>
-                </tr>
-              </thead>
-              <tbody>
-                {sampleValues.map(row => (
-                  <tr key={row.period} className="border-b border-slate-700/50">
-                    <td className="text-slate-400 py-2 px-3">{row.period}</td>
-                    <td className="text-slate-400 py-2 px-3">{row.date}</td>
-                    <td className="text-slate-300 py-2 px-3">${row.close.toFixed(2)}</td>
-                    <td className="text-white font-mono py-2 px-3">{row.result}</td>
-                    <td className="py-2 px-3">
-                      <SignalBadge signal={row.signal} />
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        <div className="bg-purple-900/20 border border-purple-800/50 rounded-lg p-4">
-          <h3 className="text-lg font-semibold text-purple-400 mb-2">Code Example</h3>
-          <pre className="text-slate-300 text-sm overflow-x-auto">
-            <code>{`import { RSI } from 'trading-signals';
+    const rsiCode = `import { RSI } from 'trading-signals';
 
 const rsi = new RSI(14);
 
@@ -342,9 +280,38 @@ rsi.add(46);
 
 if (rsi.isStable) {
   console.log('RSI:', rsi.getResultOrThrow().toFixed(2));
-}`}</code>
-          </pre>
-        </div>
+}`;
+
+    return (
+      <div className="space-y-6">
+        <IndicatorHeader
+          name="RSI"
+          parameters={`${rsi.interval}`}
+          requiredInputs={rsi.getRequiredInputs()}
+          description={config.description}
+          details="RSI measures the magnitude of recent price changes to evaluate overbought or oversold conditions. Values above 70 indicate overbought, below 30 indicate oversold."
+        />
+
+        <Chart title="RSI (14)" data={chartData} yAxisLabel="RSI" color={config.color} flags={flags} />
+
+        <DataTable
+          title="All Sample Values"
+          columns={[
+            {header: 'Period', key: 'period'},
+            {header: 'Date', key: 'date'},
+            {header: 'Close', key: 'close', render: val => `$${val.toFixed(2)}`, className: 'text-slate-300 py-2 px-3'},
+            {header: 'RSI', key: 'result', className: 'text-white font-mono py-2 px-3'},
+            {
+              header: 'Signal',
+              key: 'signal',
+              render: val => <SignalBadge signal={val} />,
+              className: 'py-2 px-3',
+            },
+          ]}
+          data={sampleValues}
+        />
+
+        <CodeExample code={rsiCode} />
       </div>
     );
   };
@@ -363,7 +330,7 @@ if (rsi.isStable) {
       chartDataK.push({x: idx + 1, y: result?.stochK ?? null});
       chartDataD.push({x: idx + 1, y: result?.stochD ?? null});
 
-      if (signal.hasChanged && stoch.isStable) {
+      if (signal.hasChanged) {
         flags.push({
           x: idx + 1,
           title: signal.state,
@@ -588,7 +555,7 @@ if (stoch.isStable) {
       const signal = cci.getSignal();
       chartData.push({x: idx + 1, y: result});
 
-      if (signal.hasChanged && cci.isStable) {
+      if (signal.hasChanged) {
         flags.push({
           x: idx + 1,
           title: signal.state,
@@ -685,7 +652,7 @@ if (cci.isStable) {
       const signal = roc.getSignal();
       chartData.push({x: idx + 1, y: result});
 
-      if (signal.hasChanged && roc.isStable) {
+      if (signal.hasChanged) {
         flags.push({
           x: idx + 1,
           title: signal.state,
@@ -783,7 +750,7 @@ if (roc.isStable) {
       chartDataSignal.push({x: idx + 1, y: result?.signal ?? null});
       chartDataHistogram.push({x: idx + 1, y: result?.histogram ?? null});
 
-      if (trendSignal.hasChanged && macd.isStable) {
+      if (trendSignal.hasChanged) {
         flags.push({
           x: idx + 1,
           title: trendSignal.state,
@@ -1022,7 +989,7 @@ if (macd.isStable) {
       const signal = ao.getSignal();
       chartData.push({x: idx + 1, y: result});
 
-      if (signal.hasChanged && ao.isStable) {
+      if (signal.hasChanged) {
         flags.push({
           x: idx + 1,
           title: signal.state,
@@ -1125,7 +1092,7 @@ if (ao.isStable) {
       const signal = ac.getSignal();
       chartData.push({x: idx + 1, y: result});
 
-      if (signal.hasChanged && ac.isStable) {
+      if (signal.hasChanged) {
         flags.push({
           x: idx + 1,
           title: signal.state,
@@ -1227,7 +1194,7 @@ if (ac.isStable) {
       const signal = cg.getSignal();
       chartData.push({x: idx + 1, y: result});
 
-      if (signal.hasChanged && cg.isStable) {
+      if (signal.hasChanged) {
         flags.push({
           x: idx + 1,
           title: signal.state,
@@ -1389,6 +1356,7 @@ if (mom.isStable) {
   const renderOBV = (config: IndicatorConfig) => {
     const obv = new OBV(5);
     const chartData: ChartDataPoint[] = [];
+    const flags: Array<{x: number; title: string; text: string}> = [];
     const sampleValues: Array<{
       period: number;
       date: string;
@@ -1403,6 +1371,14 @@ if (mom.isStable) {
       const result = obv.getResult();
       const signal = obv.getSignal();
       chartData.push({x: idx + 1, y: result});
+
+      if (signal.hasChanged) {
+        flags.push({
+          x: idx + 1,
+          title: signal.state,
+          text: `Signal: ${signal.state}`,
+        });
+      }
 
       sampleValues.push({
         period: idx + 1,
@@ -1426,7 +1402,7 @@ if (mom.isStable) {
           </p>
         </div>
 
-        <Chart title="On-Balance Volume (5)" data={chartData} yAxisLabel="OBV" color={config.color} />
+        <Chart title="On-Balance Volume (5)" data={chartData} yAxisLabel="OBV" color={config.color} flags={flags} />
 
         <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-4">
           <h3 className="text-lg font-semibold text-white mb-3">All Sample Values</h3>
@@ -1492,7 +1468,7 @@ if (result !== null) {
       const signal = rei.getSignal();
       chartData.push({x: idx + 1, y: result});
 
-      if (signal.hasChanged && rei.isStable) {
+      if (signal.hasChanged) {
         flags.push({
           x: idx + 1,
           title: signal.state,
@@ -1584,7 +1560,7 @@ if (rei.isStable) {
       const signal = stochRsi.getSignal();
       chartData.push({x: idx + 1, y: result});
 
-      if (signal.hasChanged && stochRsi.isStable) {
+      if (signal.hasChanged) {
         flags.push({
           x: idx + 1,
           title: signal.state,
@@ -1686,7 +1662,7 @@ if (stochRsi.isStable) {
       const signal = willr.getSignal();
       chartData.push({x: idx + 1, y: result});
 
-      if (signal.hasChanged && willr.isStable) {
+      if (signal.hasChanged) {
         flags.push({
           x: idx + 1,
           title: signal.state,
@@ -1792,7 +1768,7 @@ if (willr.isStable) {
       const signal = tds.getSignal();
       chartData.push({x: index + 1, y: result});
 
-      if (signal.hasChanged && result !== null) {
+      if (signal.hasChanged) {
         flags.push({
           x: index + 1,
           title: signal.state,
@@ -1888,7 +1864,7 @@ tds.add(105);
 if (tds.isStable) {
   const result = tds.getResultOrThrow();
   console.log('TDS:', result); // 1 (bullish setup) or -1 (bearish setup)
-  console.log('Signal:', tds.getSignal().state); // Inverted: 1 → BEARISH, -1 → BULLISH
+  console.log('Signal:', tds.getSignal().state);
 }`}</code>
           </pre>
         </div>

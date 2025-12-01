@@ -2,7 +2,7 @@ name: Deploy Documentation
 
 on:
   push:
-    branches: ['main']
+    branches: ["main"]
   workflow_dispatch:
 
 permissions:
@@ -11,12 +11,8 @@ permissions:
   id-token: write
 
 concurrency:
-  group: 'pages'
+  group: "pages"
   cancel-in-progress: true
-
-defaults:
-  run:
-    working-directory: ./docs
 
 jobs:
   build:
@@ -27,7 +23,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v6
         with:
-          node-version-file: '.nvmrc'
+          node-version-file: ".nvmrc"
       - name: Setup Pages
         uses: actions/configure-pages@v5
         with:
@@ -36,7 +32,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: |
-            .next/cache
+            packages/docs/.next/cache
           # Generate a new cache whenever packages or source files change.
           key: ${{ runner.os }}-nextjs-${{ hashFiles('**/package-lock.json', '**/yarn.lock') }}-${{ hashFiles('**.[jt]s', '**.[jt]sx') }}
           # If source files changed but packages didn't, rebuild from a prior cache.
@@ -46,13 +42,13 @@ jobs:
         run: npm install
       - name: Build library and docs
         run: |
-          cd .. && npm install && npm run dist
-          cd docs
+          npm install && npm run dist --workspace trading-signals
+          cd packages/docs
           npm run build
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v4
         with:
-          path: docs/out
+          path: packages/docs/out
   deploy:
     environment:
       name: github-pages
