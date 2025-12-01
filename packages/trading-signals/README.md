@@ -229,7 +229,7 @@ Utility Methods:
 
 JavaScript uses double-precision floating-point arithmetic. For example, `0.1 + 0.2` yields `0.30000000000000004` due to binary floating-point representation.
 
-![JavaScript arithmetic](https://raw.githubusercontent.com/bennycode/trading-signals/HEAD/js-arithmetic.png)
+![JavaScript arithmetic](https://raw.githubusercontent.com/bennycode/trading-signals/main/packages/trading-signals/js-arithmetic.png)
 
 While this isn’t perfectly accurate, it usually doesn’t matter in practice since indicators often work with averages, which already smooth out precision. In test cases, you can control precision by using Vitest’s [toBeCloseTo](https://vitest.dev/api/expect.html#tobecloseto) assertion.
 
@@ -276,7 +276,7 @@ npm run docs
 
 This package was built by Benny Neugebauer. Checkout my [**TypeScript course**](https://typescript.tv/) to become a coding rockstar!
 
-[<img src="https://raw.githubusercontent.com/bennycode/trading-signals/main/tstv.png">](https://typescript.tv/)
+[<img src="https://raw.githubusercontent.com/bennycode/trading-signals/main/packages/trading-signals/tstv.png">](https://typescript.tv/)
 
 [1]: http://mikemcl.github.io/big.js/
 [stack_exchange_bennycode_badge]: https://stackexchange.com/users/flair/203782.png?theme=default
