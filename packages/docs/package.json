@@ -2,9 +2,9 @@
   "dependencies": {
     "highcharts": "^12.4.0",
     "highcharts-react-official": "^3.2.3",
-    "next": "^14.2.33",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1",
+    "next": "^16.0.6",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
     "trading-signals": "file:../trading-signals"
   },
   "description": "Documentation and showcase website for trading-signals library",
@@ -19,7 +19,7 @@
     "happy-dom": "^20.0.11",
     "jsdom": "^27.2.0",
     "postcss": "^8.5.6",
-    "tailwindcss": "^3.4.18",
+    "tailwindcss": "^4.1.17",
     "typescript": "^5.9.3",
     "vitest": "^4.0.14"
   },
