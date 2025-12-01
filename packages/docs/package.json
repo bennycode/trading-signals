@@ -4,14 +4,14 @@
     "highcharts-react-official": "^3.2.3",
     "next": "^16.0.6",
     "react": "^18.3.1",
-    "react-dom": "^18.3.1",
+    "react-dom": "^19.2.0",
     "trading-signals": "file:../trading-signals"
   },
   "description": "Documentation and showcase website for trading-signals library",
   "devDependencies": {
     "@types/node": "^24.10.1",
     "@types/react": "^18.3.27",
-    "@types/react-dom": "^18.3.7",
+    "@types/react-dom": "^19.2.3",
     "autoprefixer": "^10.4.22",
     "postcss": "^8.5.6",
     "tailwindcss": "^3.4.18",
