@@ -1,19 +1,19 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import 'tailwindcss';
 
 @layer base {
   * {
-    @apply box-border;
+    box-sizing: border-box;
   }
 
   html,
   body {
-    @apply max-w-full overflow-x-hidden;
+    max-width: 100%;
+    overflow-x: hidden;
   }
 
   body {
-    @apply antialiased;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
     font-family:
       -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans',
       'Droid Sans', 'Helvetica Neue', sans-serif;
@@ -24,7 +24,7 @@
   }
 
   a {
-    @apply no-underline;
+    text-decoration: none;
     color: inherit;
   }
 }

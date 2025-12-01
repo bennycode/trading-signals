@@ -1,6 +1,6 @@
-import {useEffect, useRef} from 'react';
-import Highcharts from 'highcharts/highstock';
 import HighchartsReact from 'highcharts-react-official';
+import Highcharts from 'highcharts/highstock';
+import { useRef } from 'react';
 
 export interface ChartDataPoint {
   x: number;

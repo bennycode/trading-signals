@@ -1,7 +1,6 @@
-import {useRouter} from 'next/router';
-import {useEffect, useState} from 'react';
-import Highcharts from 'highcharts/highstock';
 import HighchartsReact from 'highcharts-react-official';
+import Highcharts from 'highcharts/highstock';
+import {useEffect, useState} from 'react';
 import {
   AC,
   AO,
@@ -23,7 +22,6 @@ import Chart, {ChartDataPoint} from '../../components/Chart';
 import {CodeExample} from '../../components/CodeExample';
 import {DataTable} from '../../components/DataTable';
 import {IndicatorHeader} from '../../components/IndicatorHeader';
-import {IndicatorSelector} from '../../components/IndicatorSelector';
 import {SignalBadge} from '../../components/SignalBadge';
 
 interface IndicatorConfig {
@@ -174,7 +172,6 @@ const indicators: IndicatorConfig[] = [
 ];
 
 export default function MomentumIndicators() {
-  const router = useRouter();
   const [selectedIndicator, setSelectedIndicator] = useState<string>('rsi');
 
   useEffect(() => {
@@ -640,7 +637,6 @@ if (cci.isStable) {
   };
 
   const renderROC = (config: IndicatorConfig) => {
-    const prices = [100, 102, 105, 107, 110, 108, 106, 109, 112, 115, 117, 119, 120];
     const roc = new ROC(9);
     const chartData: ChartDataPoint[] = [];
     const flags: Array<{x: number; title: string; text: string}> = [];

@@ -1,8 +1,7 @@
-import Link from 'next/link';
-import {CategoryCard} from '../components/CategoryCard';
-import {FeatureCard} from '../components/FeatureCard';
-import {Hero} from '../components/Hero';
-import {QuickStart} from '../components/QuickStart';
+import { CategoryCard } from '../components/CategoryCard';
+import { FeatureCard } from '../components/FeatureCard';
+import { Hero } from '../components/Hero';
+import { QuickStart } from '../components/QuickStart';
 
 export default function Home() {
   const categories = [

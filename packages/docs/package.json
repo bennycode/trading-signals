@@ -1,10 +1,11 @@
 {
   "dependencies": {
+    "@tailwindcss/postcss": "^4.1.17",
     "highcharts": "^12.4.0",
     "highcharts-react-official": "^3.2.3",
     "next": "^16.0.6",
-    "react": "^19.2.0",
-    "react-dom": "^19.2.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
     "trading-signals": "file:../trading-signals"
   },
   "description": "Documentation and showcase website for trading-signals library",
@@ -12,8 +13,8 @@
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.0",
     "@types/node": "^24.10.1",
-    "@types/react": "^19.2.7",
-    "@types/react-dom": "^19.2.3",
+    "@types/react": "^18.3.27",
+    "@types/react-dom": "^18.3.7",
     "@vitejs/plugin-react": "^5.1.1",
     "autoprefixer": "^10.4.22",
     "happy-dom": "^20.0.11",
@@ -30,7 +31,9 @@
     "dev": "next dev",
     "lint": "exit 0",
     "start": "next start",
-    "test": "vitest run",
+    "test": "npm run test:types && npm run test:units",
+    "test:units": "vitest run",
+    "test:types": "tsc --noEmit",
     "test:watch": "vitest"
   },
   "version": "1.0.0"
