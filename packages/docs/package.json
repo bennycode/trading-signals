@@ -29,11 +29,12 @@
   "scripts": {
     "build": "next build",
     "dev": "next dev",
+    "dist": "npm run build",
     "lint": "exit 0",
     "start": "next start",
     "test": "npm run dist --workspace trading-signals && npm run test:types && npm run test:units",
-    "test:units": "vitest run",
     "test:types": "tsc --noEmit",
+    "test:units": "vitest run",
     "test:watch": "vitest"
   },
   "version": "1.0.0"
