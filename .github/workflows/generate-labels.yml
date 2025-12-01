@@ -1,4 +1,4 @@
-name: 'Generate Labels'
+name: "Generate Labels"
 
 on:
   pull_request:
@@ -6,7 +6,7 @@ on:
 
 jobs:
   label:
-    name: 'Label PR based on title'
+    name: "Label PR based on title"
     runs-on: ubuntu-latest
     steps:
       - uses: srvaroa/labeler@v1.11

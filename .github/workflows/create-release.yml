@@ -1,15 +1,15 @@
-name: 'Create Release'
+name: "Create Release"
 
 on:
   push:
     tags:
-      - 'v*.*.*'
+      - "v*.*.*"
 
 jobs:
   release:
     runs-on: ubuntu-latest
     steps:
-      - name: 'Create Release'
+      - name: "Create Release"
         uses: softprops/action-gh-release@v2
         with:
           generate_release_notes: true
