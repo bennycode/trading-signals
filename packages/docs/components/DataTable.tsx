@@ -1,4 +1,4 @@
-import {SignalBadge} from './SignalBadge';
+import React from 'react';
 
 interface TableColumn<T> {
   header: string;

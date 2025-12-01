@@ -1,4 +1,5 @@
 *.env
+*.tsbuildinfo
 *hot-update.js*
 .cache
 .DS_Store
