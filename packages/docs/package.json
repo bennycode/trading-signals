@@ -31,7 +31,7 @@
     "dev": "next dev",
     "lint": "exit 0",
     "start": "next start",
-    "test": "npm run test:types && npm run test:units",
+    "test": "npm run dist --workspace trading-signals && npm run test:types && npm run test:units",
     "test:units": "vitest run",
     "test:types": "tsc --noEmit",
     "test:watch": "vitest"
