@@ -2,7 +2,7 @@
   "dependencies": {
     "highcharts": "^12.4.0",
     "highcharts-react-official": "^3.2.3",
-    "next": "^14.2.33",
+    "next": "^16.0.6",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "trading-signals": "file:../trading-signals"
