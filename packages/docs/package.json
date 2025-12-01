@@ -9,7 +9,7 @@
   },
   "description": "Documentation and showcase website for trading-signals library",
   "devDependencies": {
-    "@types/node": "^20.11.0",
+    "@types/node": "^24.10.1",
     "@types/react": "^18.3.27",
     "@types/react-dom": "^18.3.7",
     "autoprefixer": "^10.4.22",
