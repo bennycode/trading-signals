@@ -1,6 +1,6 @@
 import {render, screen} from '@testing-library/react';
 import {describe, expect, it} from 'vitest';
-import Home from './index';
+import Home from '../pages/index';
 
 describe('Home Page', () => {
   it('renders all category cards', () => {
