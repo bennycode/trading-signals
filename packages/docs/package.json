@@ -9,13 +9,19 @@
   },
   "description": "Documentation and showcase website for trading-signals library",
   "devDependencies": {
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.0",
     "@types/node": "^20.11.0",
     "@types/react": "^18.3.27",
     "@types/react-dom": "^18.3.7",
+    "@vitejs/plugin-react": "^5.1.1",
     "autoprefixer": "^10.4.22",
+    "happy-dom": "^20.0.11",
+    "jsdom": "^27.2.0",
     "postcss": "^8.5.6",
     "tailwindcss": "^3.4.18",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.14"
   },
   "name": "trading-signals-docs",
   "private": true,
@@ -23,7 +29,9 @@
     "build": "next build",
     "dev": "next dev",
     "lint": "exit 0",
-    "start": "next start"
+    "start": "next start",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "version": "1.0.0"
 }
