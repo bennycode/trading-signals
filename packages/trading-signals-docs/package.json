@@ -1,8 +1,8 @@
 {
   "dependencies": {
+    "@highcharts/react": "^4.1.0",
     "@tailwindcss/postcss": "^4.1.17",
     "highcharts": "^12.4.0",
-    "highcharts-react-official": "^3.2.3",
     "next": "^16.0.6",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",

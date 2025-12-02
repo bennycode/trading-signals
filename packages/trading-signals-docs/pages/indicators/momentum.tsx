@@ -1,6 +1,5 @@
-import HighchartsReact from 'highcharts-react-official';
-import Highcharts from 'highcharts/highstock';
 import {useEffect, useState} from 'react';
+import {Chart as HighchartsChart} from '@highcharts/react';
 import {
   AC,
   AO,
@@ -358,8 +357,7 @@ if (rsi.isStable) {
         </div>
 
         <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-4">
-          <HighchartsReact
-            highcharts={Highcharts}
+          <HighchartsChart
             options={{
               chart: {
                 type: 'line',
@@ -431,38 +429,6 @@ if (rsi.isStable) {
                     fillColor: '#f97316',
                   },
                 },
-                ...(flags.length > 0
-                  ? [
-                      {
-                        type: 'flags' as const,
-                        name: 'Signals',
-                        data: flags.map(flag => ({
-                          x: flag.x,
-                          title: flag.title,
-                          text: flag.text,
-                        })),
-                        onSeries: 'series-0',
-                        shape: 'squarepin',
-                        width: 80,
-                        y: -20,
-                        color: '#fbbf24',
-                        fillColor: '#fbbf24',
-                        style: {
-                          color: '#000',
-                          fontSize: '11px',
-                          fontWeight: 'bold',
-                        },
-                        states: {
-                          hover: {
-                            fillColor: '#f59e0b',
-                          },
-                        },
-                        showInLegend: false,
-                        grouping: false,
-                        useHTML: true,
-                      },
-                    ]
-                  : []),
               ],
               tooltip: {
                 backgroundColor: '#1e293b',
@@ -777,8 +743,7 @@ if (roc.isStable) {
         </div>
 
         <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-4">
-          <HighchartsReact
-            highcharts={Highcharts}
+          <HighchartsChart
             options={{
               chart: {
                 type: 'line',
@@ -860,38 +825,6 @@ if (roc.isStable) {
                   color: '#6366f1',
                   opacity: 0.5,
                 },
-                ...(flags.length > 0
-                  ? [
-                      {
-                        type: 'flags' as const,
-                        name: 'Signals',
-                        data: flags.map(flag => ({
-                          x: flag.x,
-                          title: flag.title,
-                          text: flag.text,
-                        })),
-                        onSeries: 'series-0',
-                        shape: 'squarepin',
-                        width: 80,
-                        y: -20,
-                        color: '#fbbf24',
-                        fillColor: '#fbbf24',
-                        style: {
-                          color: '#000',
-                          fontSize: '11px',
-                          fontWeight: 'bold',
-                        },
-                        states: {
-                          hover: {
-                            fillColor: '#f59e0b',
-                          },
-                        },
-                        showInLegend: false,
-                        grouping: false,
-                        useHTML: true,
-                      },
-                    ]
-                  : []),
               ],
               tooltip: {
                 backgroundColor: '#1e293b',

@@ -1,6 +1,6 @@
-import HighchartsReact from 'highcharts-react-official';
-import Highcharts from 'highcharts/highstock';
-import { useRef } from 'react';
+import {Chart as HighchartsChart, HighchartsReactRefObject} from '@highcharts/react';
+import {Options} from 'highcharts/highcharts.src';
+import {useRef} from 'react';
 
 export interface ChartDataPoint {
   x: number;
@@ -22,43 +22,9 @@ export interface ChartProps {
 }
 
 export default function Chart({title, data, yAxisLabel = 'Value', color = '#3b82f6', flags = []}: ChartProps) {
-  const chartRef = useRef<HighchartsReact.RefObject>(null);
+  const chartRef = useRef<HighchartsReactRefObject>(null);
 
-  const series: Highcharts.SeriesOptionsType[] = [
-    {
-      type: 'line',
-      name: yAxisLabel,
-      id: 'main-series',
-      data: data.map(point => [point.x, point.y]),
-      color: color,
-      marker: {
-        fillColor: color,
-      },
-    },
-  ];
-
-  if (flags.length > 0) {
-    series.push({
-      type: 'flags',
-      name: 'Signal Changes',
-      data: flags,
-      onSeries: 'main-series',
-      shape: 'squarepin',
-      width: 80,
-      useHTML: true,
-      y: -20,
-      grouping: false,
-      color: '#fbbf24',
-      fillColor: '#fbbf24',
-      style: {
-        color: '#1e293b',
-        fontSize: '11px',
-        fontWeight: 'bold',
-      },
-    } as Highcharts.SeriesFlagsOptions);
-  }
-
-  const options: Highcharts.Options = {
+  const options: Options = {
     chart: {
       type: 'line',
       backgroundColor: 'transparent',
@@ -106,13 +72,19 @@ export default function Chart({title, data, yAxisLabel = 'Value', color = '#3b82
         },
         lineWidth: 2,
       },
-      flags: {
-        accessibility: {
-          exposeAsGroupOnly: true,
+    },
+    series: [
+      {
+        type: 'line',
+        name: yAxisLabel,
+        id: 'main-series',
+        data: data.map(point => [point.x, point.y]),
+        color: color,
+        marker: {
+          fillColor: color,
         },
       },
-    },
-    series: series,
+    ],
     tooltip: {
       backgroundColor: '#1e293b',
       borderColor: '#475569',
@@ -128,7 +100,7 @@ export default function Chart({title, data, yAxisLabel = 'Value', color = '#3b82
 
   return (
     <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-4">
-      <HighchartsReact highcharts={Highcharts} options={options} ref={chartRef} />
+      <HighchartsChart options={options} ref={chartRef} />
     </div>
   );
 }
