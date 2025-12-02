@@ -22,16 +22,43 @@ import {DataTable} from '../../components/DataTable';
 import {IndicatorHeader} from '../../components/IndicatorHeader';
 import {SignalBadge} from '../../components/SignalBadge';
 
-interface IndicatorConfig {
+type IndicatorType = 'single' | 'dual' | 'triple' | 'custom';
+
+interface ColumnDef {
+  header: string;
+  key: string;
+  render?: (val: any, row?: any) => any;
+  className?: string;
+}
+
+interface Candle {
+  date: string;
+  open: number;
+  high: number;
+  low: number;
+  close: number;
+  volume: number;
+}
+
+interface IndicatorConfig<TIndicator = any, TResult = any> {
   id: string;
   name: string;
   description: string;
   color: string;
   requiredInputs: number;
+  type: IndicatorType;
+  details?: string;
+  createIndicator: () => TIndicator;
+  processData: (indicator: TIndicator, candle: Candle, idx: number) => TResult;
+  getChartData: (result: TResult) => ChartDataPoint | ChartDataPoint[];
+  getTableColumns: () => ColumnDef[];
+  chartTitle?: string;
+  yAxisLabel?: string;
+  customRender?: (config: IndicatorConfig<TIndicator, TResult>) => React.ReactElement;
 }
 
 // OHLCV data (from Ethereum)
-const ethCandles = [
+const ethCandles: Candle[] = [
   {date: '09/11/2025', open: 2318.45, high: 2345.67, low: 2298.12, close: 2334.89, volume: 4567890},
   {date: '09/12/2025', open: 2334.89, high: 2389.23, low: 2315.67, close: 2378.45, volume: 5234567},
   {date: '09/13/2025', open: 2378.45, high: 2398.76, low: 2356.34, close: 2367.89, volume: 4890123},
@@ -80,94 +107,390 @@ const indicators: IndicatorConfig[] = [
     name: 'RSI',
     description: 'Relative Strength Index',
     color: '#8b5cf6',
-    requiredInputs: new RSI(14).getRequiredInputs(),
+    type: 'single',
+    requiredInputs: 14,
+    details:
+      'RSI measures the magnitude of recent price changes to evaluate overbought or oversold conditions. Values above 70 indicate overbought, below 30 indicate oversold.',
+    createIndicator: () => new RSI(14),
+    processData: (indicator, candle) => {
+      indicator.add(candle.close);
+      const result = indicator.isStable ? indicator.getResult() : null;
+      const signal = indicator.getSignal();
+      return {result, signal, close: candle.close};
+    },
+    getChartData: result => ({x: 0, y: result.result}),
+    getTableColumns: () => [
+      {header: 'Period', key: 'period'},
+      {header: 'Date', key: 'date'},
+      {header: 'Close', key: 'close', render: val => `$${val.toFixed(2)}`, className: 'text-slate-300 py-2 px-3'},
+      {header: 'RSI', key: 'result', className: 'text-white font-mono py-2 px-3'},
+      {header: 'Signal', key: 'signal', render: val => <SignalBadge signal={val} />, className: 'py-2 px-3'},
+    ],
+    chartTitle: 'RSI (14)',
+    yAxisLabel: 'RSI',
   },
   {
     id: 'stoch',
     name: 'Stochastic',
     description: 'Stochastic Oscillator',
     color: '#ec4899',
-    requiredInputs: new StochasticOscillator(14, 3, 3).getRequiredInputs(),
+    type: 'custom',
+    requiredInputs: 17,
+    createIndicator: () => new StochasticOscillator(14, 3, 3),
+    processData: () => ({}),
+    getChartData: () => ({x: 0, y: null}),
+    getTableColumns: () => [],
   },
   {
     id: 'cci',
     name: 'CCI',
     description: 'Commodity Channel Index',
     color: '#f59e0b',
-    requiredInputs: new CCI(20).getRequiredInputs(),
+    type: 'single',
+    requiredInputs: 20,
+    details:
+      'Measures deviation from the average price. Readings above +100 suggest overbought, below -100 suggest oversold.',
+    createIndicator: () => new CCI(20),
+    processData: (indicator, candle) => {
+      indicator.add({high: candle.high, low: candle.low, close: candle.close});
+      const result = indicator.isStable ? indicator.getResult() : null;
+      const signal = indicator.getSignal();
+      return {result, signal, close: candle.close};
+    },
+    getChartData: result => ({x: 0, y: result.result}),
+    getTableColumns: () => [
+      {header: 'Period', key: 'period'},
+      {header: 'Date', key: 'date'},
+      {header: 'Close', key: 'close', render: val => `$${val.toFixed(2)}`, className: 'text-slate-300 py-2 px-3'},
+      {header: 'CCI', key: 'result', className: 'text-white font-mono py-2 px-3'},
+      {header: 'Signal', key: 'signal', render: val => <SignalBadge signal={val} />, className: 'py-2 px-3'},
+    ],
+    chartTitle: 'CCI (20)',
+    yAxisLabel: 'CCI',
   },
   {
     id: 'roc',
     name: 'ROC',
     description: 'Rate of Change',
     color: '#10b981',
-    requiredInputs: new ROC(9).getRequiredInputs(),
+    type: 'single',
+    requiredInputs: 9,
+    details:
+      'Measures the percentage change in price from n periods ago. Positive values indicate upward momentum, negative values indicate downward momentum.',
+    createIndicator: () => new ROC(9),
+    processData: (indicator, candle) => {
+      indicator.add(candle.close);
+      const result = indicator.isStable ? indicator.getResult() : null;
+      const signal = indicator.getSignal();
+      return {result, signal, close: candle.close};
+    },
+    getChartData: result => ({x: 0, y: result.result}),
+    getTableColumns: () => [
+      {header: 'Period', key: 'period'},
+      {header: 'Date', key: 'date'},
+      {header: 'Close', key: 'close', render: val => `$${val.toFixed(2)}`, className: 'text-slate-300 py-2 px-3'},
+      {header: 'ROC %', key: 'result', className: 'text-white font-mono py-2 px-3'},
+      {header: 'Signal', key: 'signal', render: val => <SignalBadge signal={val} />, className: 'py-2 px-3'},
+    ],
+    chartTitle: 'ROC (9)',
+    yAxisLabel: 'ROC %',
   },
   {
     id: 'macd',
     name: 'MACD',
     description: 'Moving Average Convergence Divergence',
     color: '#3b82f6',
-    requiredInputs: new MACD(new EMA(12), new EMA(26), new EMA(9)).getRequiredInputs(),
+    type: 'custom',
+    requiredInputs: 33,
+    createIndicator: () => new MACD(new EMA(12), new EMA(26), new EMA(9)),
+    processData: () => ({}),
+    getChartData: () => ({x: 0, y: null}),
+    getTableColumns: () => [],
   },
   {
     id: 'ao',
     name: 'AO',
     description: 'Awesome Oscillator',
     color: '#06b6d4',
-    requiredInputs: new AO(5, 34).getRequiredInputs(),
+    type: 'single',
+    requiredInputs: 34,
+    details:
+      "Measures market momentum using the difference between a 5-period and 34-period simple moving average of the bar's midpoints.",
+    createIndicator: () => new AO(5, 34),
+    processData: (indicator, candle) => {
+      indicator.add(candle);
+      const result = indicator.isStable ? indicator.getResult() : null;
+      const signal = indicator.getSignal();
+      return {result, signal, high: candle.high, low: candle.low};
+    },
+    getChartData: result => ({x: 0, y: result.result}),
+    getTableColumns: () => [
+      {header: 'Period', key: 'period'},
+      {header: 'Date', key: 'date'},
+      {header: 'High', key: 'high', render: val => `$${val.toFixed(2)}`, className: 'text-slate-300 py-2 px-3'},
+      {header: 'Low', key: 'low', render: val => `$${val.toFixed(2)}`, className: 'text-slate-300 py-2 px-3'},
+      {header: 'AO', key: 'result', className: 'text-white font-mono py-2 px-3'},
+      {header: 'Signal', key: 'signal', render: val => <SignalBadge signal={val} />, className: 'py-2 px-3'},
+    ],
+    chartTitle: 'Awesome Oscillator (5,34)',
+    yAxisLabel: 'AO',
   },
   {
     id: 'ac',
     name: 'AC',
     description: 'Accelerator Oscillator',
     color: '#6366f1',
-    requiredInputs: new AC(5, 34, 5).getRequiredInputs(),
+    type: 'single',
+    requiredInputs: 39,
+    details:
+      'Shows acceleration or deceleration of the current driving force. Earlier signal of potential trend change than AO.',
+    createIndicator: () => new AC(5, 34, 5),
+    processData: (indicator, candle) => {
+      indicator.add(candle);
+      const result = indicator.isStable ? indicator.getResult() : null;
+      const signal = indicator.getSignal();
+      return {result, signal, high: candle.high, low: candle.low};
+    },
+    getChartData: result => ({x: 0, y: result.result}),
+    getTableColumns: () => [
+      {header: 'Period', key: 'period'},
+      {header: 'Date', key: 'date'},
+      {header: 'High', key: 'high', render: val => `$${val.toFixed(2)}`, className: 'text-slate-300 py-2 px-3'},
+      {header: 'Low', key: 'low', render: val => `$${val.toFixed(2)}`, className: 'text-slate-300 py-2 px-3'},
+      {header: 'AC', key: 'result', className: 'text-white font-mono py-2 px-3'},
+      {header: 'Signal', key: 'signal', render: val => <SignalBadge signal={val} />, className: 'py-2 px-3'},
+    ],
+    chartTitle: 'Accelerator Oscillator (5,34,5)',
+    yAxisLabel: 'AC',
   },
   {
     id: 'cg',
     name: 'CG',
     description: 'Center of Gravity',
     color: '#f97316',
-    requiredInputs: new CG(10, 10).getRequiredInputs(),
+    type: 'single',
+    requiredInputs: 10,
+    details: 'Identifies turning points with minimal lag. Oscillates around zero line.',
+    createIndicator: () => new CG(10, 10),
+    processData: (indicator, candle) => {
+      indicator.add(candle.close);
+      const result = indicator.isStable ? indicator.getResult() : null;
+      const signal = indicator.getSignal();
+      return {result, signal, close: candle.close};
+    },
+    getChartData: result => ({x: 0, y: result.result}),
+    getTableColumns: () => [
+      {header: 'Period', key: 'period'},
+      {header: 'Date', key: 'date'},
+      {header: 'Close', key: 'close', render: val => `$${val.toFixed(2)}`, className: 'text-slate-300 py-2 px-3'},
+      {header: 'CG', key: 'result', className: 'text-white font-mono py-2 px-3'},
+      {header: 'Signal', key: 'signal', render: val => <SignalBadge signal={val} />, className: 'py-2 px-3'},
+    ],
+    chartTitle: 'Center of Gravity (10,10)',
+    yAxisLabel: 'CG',
   },
-  {id: 'mom', name: 'MOM', description: 'Momentum', color: '#84cc16', requiredInputs: new MOM(5).getRequiredInputs()},
+  {
+    id: 'mom',
+    name: 'MOM',
+    description: 'Momentum',
+    color: '#84cc16',
+    type: 'single',
+    requiredInputs: 5,
+    details: 'Simple momentum calculation: current price minus price n periods ago.',
+    createIndicator: () => new MOM(5),
+    processData: (indicator, candle) => {
+      indicator.add(candle.close);
+      const result = indicator.isStable ? indicator.getResult() : null;
+      return {result, close: candle.close};
+    },
+    getChartData: result => ({x: 0, y: result.result}),
+    getTableColumns: () => [
+      {header: 'Period', key: 'period'},
+      {header: 'Date', key: 'date'},
+      {header: 'Close', key: 'close', render: val => `$${val.toFixed(2)}`, className: 'text-slate-300 py-2 px-3'},
+      {header: 'MOM', key: 'result', className: 'text-white font-mono py-2 px-3'},
+    ],
+    chartTitle: 'Momentum (5)',
+    yAxisLabel: 'MOM',
+  },
   {
     id: 'obv',
     name: 'OBV',
     description: 'On-Balance Volume',
     color: '#14b8a6',
-    requiredInputs: new OBV(5).getRequiredInputs(),
+    type: 'single',
+    requiredInputs: 1,
+    details: 'Cumulative volume-based indicator. Rising OBV with rising prices confirms uptrend.',
+    createIndicator: () => new OBV(5),
+    processData: (indicator, candle) => {
+      indicator.add(candle);
+      const result = indicator.getResult();
+      const signal = indicator.getSignal();
+      return {result, signal, close: candle.close, volume: candle.volume};
+    },
+    getChartData: result => ({x: 0, y: result.result}),
+    getTableColumns: () => [
+      {header: 'Period', key: 'period'},
+      {header: 'Date', key: 'date'},
+      {header: 'Close', key: 'close', render: val => `$${val.toFixed(2)}`, className: 'text-slate-300 py-2 px-3'},
+      {header: 'Volume', key: 'volume', className: 'text-slate-300 py-2 px-3'},
+      {header: 'OBV', key: 'result', className: 'text-white font-mono py-2 px-3'},
+      {header: 'Signal', key: 'signal', render: val => <SignalBadge signal={val} />, className: 'py-2 px-3'},
+    ],
+    chartTitle: 'On-Balance Volume (5)',
+    yAxisLabel: 'OBV',
   },
   {
     id: 'rei',
     name: 'REI',
     description: 'Range Expansion Index',
     color: '#a855f7',
-    requiredInputs: new REI(5).getRequiredInputs(),
+    type: 'single',
+    requiredInputs: 5,
+    details: 'Measures range expansion to identify potential breakouts.',
+    createIndicator: () => new REI(5),
+    processData: (indicator, candle) => {
+      indicator.add(candle);
+      const result = indicator.isStable ? indicator.getResult() : null;
+      const signal = indicator.getSignal();
+      return {result, signal, close: candle.close};
+    },
+    getChartData: result => ({x: 0, y: result.result}),
+    getTableColumns: () => [
+      {header: 'Period', key: 'period'},
+      {header: 'Date', key: 'date'},
+      {header: 'Close', key: 'close', render: val => `$${val.toFixed(2)}`, className: 'text-slate-300 py-2 px-3'},
+      {header: 'REI', key: 'result', className: 'text-white font-mono py-2 px-3'},
+      {header: 'Signal', key: 'signal', render: val => <SignalBadge signal={val} />, className: 'py-2 px-3'},
+    ],
+    chartTitle: 'Range Expansion Index (5)',
+    yAxisLabel: 'REI',
   },
   {
     id: 'stochrsi',
     name: 'StochRSI',
     description: 'Stochastic RSI',
     color: '#ef4444',
-    requiredInputs: new StochasticRSI(14).getRequiredInputs(),
+    type: 'single',
+    requiredInputs: 14,
+    details: 'Applies Stochastic Oscillator to RSI values. More sensitive to overbought/oversold than standard RSI.',
+    createIndicator: () => new StochasticRSI(14),
+    processData: (indicator, candle) => {
+      indicator.add(candle.close);
+      const result = indicator.isStable ? indicator.getResult() : null;
+      const signal = indicator.getSignal();
+      return {result, signal, close: candle.close};
+    },
+    getChartData: result => ({x: 0, y: result.result}),
+    getTableColumns: () => [
+      {header: 'Period', key: 'period'},
+      {header: 'Date', key: 'date'},
+      {header: 'Close', key: 'close', render: val => `$${val.toFixed(2)}`, className: 'text-slate-300 py-2 px-3'},
+      {header: 'StochRSI', key: 'result', className: 'text-white font-mono py-2 px-3'},
+      {header: 'Signal', key: 'signal', render: val => <SignalBadge signal={val} />, className: 'py-2 px-3'},
+    ],
+    chartTitle: 'Stochastic RSI (14)',
+    yAxisLabel: 'StochRSI',
   },
   {
     id: 'tds',
     name: 'TDS',
     description: 'Tom DeMark Sequential',
     color: '#ec4899',
-    requiredInputs: new TDS().getRequiredInputs(),
+    type: 'single',
+    requiredInputs: 1,
+    details:
+      'TDS tracks consecutive closes compared to the close 4 bars earlier. Bullish Setup: 9 consecutive closes greater than the close 4 bars earlier (returns 1, signals potential reversal - BEARISH). Bearish Setup: 9 consecutive closes less than the close 4 bars earlier (returns -1, signals potential reversal - BULLISH).',
+    createIndicator: () => new TDS(),
+    processData: (indicator, candle) => {
+      indicator.add(candle.close);
+      const result = indicator.getResult();
+      const signal = indicator.getSignal();
+      return {result, signal, close: candle.close};
+    },
+    getChartData: result => ({x: 0, y: result.result}),
+    getTableColumns: () => [
+      {header: 'Period', key: 'period'},
+      {header: 'Date', key: 'date'},
+      {header: 'Close', key: 'close', render: val => `$${val.toFixed(2)}`, className: 'text-slate-300 py-2 px-3'},
+      {header: 'TDS', key: 'result', className: 'text-white font-mono py-2 px-3'},
+      {header: 'Signal', key: 'signal', render: val => <SignalBadge signal={val} />, className: 'py-2 px-3'},
+    ],
+    chartTitle: 'Tom DeMark Sequential',
+    yAxisLabel: 'TDS',
   },
   {
     id: 'willr',
     name: 'Williams %R',
     description: 'Williams Percent Range',
     color: '#22d3ee',
-    requiredInputs: new WilliamsR(14).getRequiredInputs(),
+    type: 'single',
+    requiredInputs: 14,
+    details:
+      'Measures overbought and oversold levels on an inverted scale from 0 to -100. Values from 0 to -20 indicate overbought conditions, while -80 to -100 indicate oversold conditions.',
+    createIndicator: () => new WilliamsR(14),
+    processData: (indicator, candle) => {
+      indicator.add(candle);
+      const result = indicator.isStable ? indicator.getResult() : null;
+      const signal = indicator.getSignal();
+      return {result, signal, high: candle.high, low: candle.low, close: candle.close};
+    },
+    getChartData: result => ({x: 0, y: result.result}),
+    getTableColumns: () => [
+      {header: 'Period', key: 'period'},
+      {header: 'Date', key: 'date'},
+      {header: 'High', key: 'high', render: val => `$${val.toFixed(2)}`, className: 'text-slate-300 py-2 px-3'},
+      {header: 'Low', key: 'low', render: val => `$${val.toFixed(2)}`, className: 'text-slate-300 py-2 px-3'},
+      {header: 'Close', key: 'close', render: val => `$${val.toFixed(2)}`, className: 'text-slate-300 py-2 px-3'},
+      {header: 'Williams %R', key: 'result', className: 'text-white font-mono py-2 px-3'},
+      {header: 'Signal', key: 'signal', render: val => <SignalBadge signal={val} />, className: 'py-2 px-3'},
+    ],
+    chartTitle: 'Williams %R (14)',
+    yAxisLabel: 'Williams %R',
   },
 ];
+
+const renderSingleIndicator = (config: IndicatorConfig) => {
+  const indicator = config.createIndicator!();
+  const chartData: ChartDataPoint[] = [];
+  const sampleValues: any[] = [];
+
+  ethCandles.forEach((candle, idx) => {
+    const processedData = config.processData!(indicator, candle, idx);
+    const chartPoint = config.getChartData!(processedData);
+
+    if (Array.isArray(chartPoint)) {
+      chartData.push(...chartPoint);
+    } else {
+      chartData.push({x: idx + 1, y: chartPoint.y});
+    }
+
+    sampleValues.push({
+      period: idx + 1,
+      date: candle.date,
+      ...processedData,
+      result:
+        processedData.result !== null && processedData.result !== undefined ? processedData.result.toFixed(2) : 'N/A',
+      signal: processedData.signal?.state,
+    });
+  });
+
+  return (
+    <div className="space-y-6">
+      <IndicatorHeader
+        name={config.name}
+        parameters={`${indicator.interval || config.requiredInputs}`}
+        requiredInputs={config.requiredInputs}
+        description={config.description}
+        details={config.details}
+      />
+
+      <Chart title={config.chartTitle!} data={chartData} yAxisLabel={config.yAxisLabel!} color={config.color} />
+
+      <DataTable title="All Sample Values" columns={config.getTableColumns!()} data={sampleValues} />
+    </div>
+  );
+};
 
 export default function MomentumIndicators() {
   const [selectedIndicator, setSelectedIndicator] = useState<string>('rsi');
@@ -200,90 +523,20 @@ export default function MomentumIndicators() {
     const config = indicators.find(ind => ind.id === selectedIndicator);
     if (!config) return null;
 
+    if (config.type === 'single') {
+      return renderSingleIndicator(config);
+    }
+
     switch (selectedIndicator) {
-      case 'rsi':
-        return renderRSI(config);
       case 'stoch':
+        // Stochastic needs 2 series (%K and %D)
         return renderStochastic(config);
-      case 'cci':
-        return renderCCI(config);
-      case 'roc':
-        return renderROC(config);
       case 'macd':
+        // MACD needs 3 series (MACD line, Signal line, Histogram with different chart type)
         return renderMACD(config);
-      case 'ao':
-        return renderAO(config);
-      case 'ac':
-        return renderAC(config);
-      case 'cg':
-        return renderCG(config);
-      case 'mom':
-        return renderMOM(config);
-      case 'obv':
-        return renderOBV(config);
-      case 'rei':
-        return renderREI(config);
-      case 'stochrsi':
-        return renderStochRSI(config);
-      case 'tds':
-        return renderTDS(config);
-      case 'willr':
-        return renderWilliamsR(config);
       default:
         return null;
     }
-  };
-
-  const renderRSI = (config: IndicatorConfig) => {
-    const rsi = new RSI(14);
-    const chartData: ChartDataPoint[] = [];
-    const sampleValues: Array<{period: number; date: string; close: number; result: string; signal: string}> = [];
-
-    ethCandles.forEach((candle, idx) => {
-      rsi.add(candle.close);
-      const result = rsi.isStable ? rsi.getResult() : null;
-      const signal = rsi.getSignal();
-      chartData.push({x: idx + 1, y: result});
-
-      sampleValues.push({
-        period: idx + 1,
-        date: candle.date,
-        close: candle.close,
-        result: result !== null ? result.toFixed(2) : 'N/A',
-        signal: signal.state,
-      });
-    });
-
-    return (
-      <div className="space-y-6">
-        <IndicatorHeader
-          name="RSI"
-          parameters={`${rsi.interval}`}
-          requiredInputs={rsi.getRequiredInputs()}
-          description={config.description}
-          details="RSI measures the magnitude of recent price changes to evaluate overbought or oversold conditions. Values above 70 indicate overbought, below 30 indicate oversold."
-        />
-
-        <Chart title="RSI (14)" data={chartData} yAxisLabel="RSI" color={config.color} />
-
-        <DataTable
-          title="All Sample Values"
-          columns={[
-            {header: 'Period', key: 'period'},
-            {header: 'Date', key: 'date'},
-            {header: 'Close', key: 'close', render: val => `$${val.toFixed(2)}`, className: 'text-slate-300 py-2 px-3'},
-            {header: 'RSI', key: 'result', className: 'text-white font-mono py-2 px-3'},
-            {
-              header: 'Signal',
-              key: 'signal',
-              render: val => <SignalBadge signal={val} />,
-              className: 'py-2 px-3',
-            },
-          ]}
-          data={sampleValues}
-        />
-      </div>
-    );
   };
 
   const renderStochastic = (config: IndicatorConfig) => {
@@ -437,142 +690,6 @@ export default function MomentumIndicators() {
                     <td className="text-slate-300 py-2 px-3">${row.close.toFixed(2)}</td>
                     <td className="text-white font-mono py-2 px-3">{row.k}</td>
                     <td className="text-white font-mono py-2 px-3">{row.d}</td>
-                    <td className="py-2 px-3">
-                      <SignalBadge signal={row.signal} />
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-    );
-  };
-
-  const renderCCI = (config: IndicatorConfig) => {
-    const cci = new CCI(20);
-    const chartData: ChartDataPoint[] = [];
-    const sampleValues: Array<{period: number; date: string; close: number; result: string; signal: string}> = [];
-
-    ethCandles.forEach((candle, idx) => {
-      cci.add({high: candle.high, low: candle.low, close: candle.close});
-      const result = cci.isStable ? cci.getResult() : null;
-      const signal = cci.getSignal();
-      chartData.push({x: idx + 1, y: result});
-
-      sampleValues.push({
-        period: idx + 1,
-        date: candle.date,
-        close: candle.close,
-        result: result !== null ? result.toFixed(2) : 'N/A',
-        signal: signal.state,
-      });
-    });
-
-    return (
-      <div className="space-y-6">
-        <div>
-          <h2 className="text-2xl font-bold text-white mb-2 select-text">
-            CCI({cci.interval}) / Required Inputs: {cci.getRequiredInputs()}
-          </h2>
-          <p className="text-slate-300 select-text">{config.description}</p>
-          <p className="text-slate-400 text-sm mt-2 select-text">
-            Measures deviation from the average price. Readings above +100 suggest overbought, below -100 suggest
-            oversold.
-          </p>
-        </div>
-
-        <Chart title="CCI (20)" data={chartData} yAxisLabel="CCI" color={config.color} />
-
-        <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-4">
-          <h3 className="text-lg font-semibold text-white mb-3">All Sample Values</h3>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-slate-600">
-                  <th className="text-left text-slate-300 py-2 px-3">Period</th>
-                  <th className="text-left text-slate-300 py-2 px-3">Date</th>
-                  <th className="text-left text-slate-300 py-2 px-3">Close</th>
-                  <th className="text-left text-slate-300 py-2 px-3">CCI</th>
-                  <th className="text-left text-slate-300 py-2 px-3">Signal</th>
-                </tr>
-              </thead>
-              <tbody>
-                {sampleValues.map(row => (
-                  <tr key={row.period} className="border-b border-slate-700/50">
-                    <td className="text-slate-400 py-2 px-3">{row.period}</td>
-                    <td className="text-slate-400 py-2 px-3">{row.date}</td>
-                    <td className="text-slate-300 py-2 px-3">${row.close.toFixed(2)}</td>
-                    <td className="text-white font-mono py-2 px-3">{row.result}</td>
-                    <td className="py-2 px-3">
-                      <SignalBadge signal={row.signal} />
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-    );
-  };
-
-  const renderROC = (config: IndicatorConfig) => {
-    const roc = new ROC(9);
-    const chartData: ChartDataPoint[] = [];
-    const sampleValues: Array<{period: number; date: string; close: number; result: string; signal: string}> = [];
-
-    ethCandles.forEach((candle, idx) => {
-      roc.add(candle.close);
-      const result = roc.isStable ? roc.getResult() : null;
-      const signal = roc.getSignal();
-      chartData.push({x: idx + 1, y: result});
-
-      sampleValues.push({
-        period: idx + 1,
-        date: candle.date,
-        close: candle.close,
-        result: result !== null ? result.toFixed(2) : 'N/A',
-        signal: signal.state,
-      });
-    });
-
-    return (
-      <div className="space-y-6">
-        <div>
-          <h2 className="text-2xl font-bold text-white mb-2 select-text">
-            ROC({roc.interval}) / Required Inputs: {roc.getRequiredInputs()}
-          </h2>
-          <p className="text-slate-300 select-text">{config.description}</p>
-          <p className="text-slate-400 text-sm mt-2 select-text">
-            Measures the percentage change in price from n periods ago. Positive values indicate upward momentum,
-            negative values indicate downward momentum.
-          </p>
-        </div>
-
-        <Chart title="ROC (9)" data={chartData} yAxisLabel="ROC %" color={config.color} />
-
-        <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-4">
-          <h3 className="text-lg font-semibold text-white mb-3">All Sample Values</h3>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-slate-600">
-                  <th className="text-left text-slate-300 py-2 px-3">Period</th>
-                  <th className="text-left text-slate-300 py-2 px-3">Date</th>
-                  <th className="text-left text-slate-300 py-2 px-3">Close</th>
-                  <th className="text-left text-slate-300 py-2 px-3">ROC %</th>
-                  <th className="text-left text-slate-300 py-2 px-3">Signal</th>
-                </tr>
-              </thead>
-              <tbody>
-                {sampleValues.map(row => (
-                  <tr key={row.period} className="border-b border-slate-700/50">
-                    <td className="text-slate-400 py-2 px-3">{row.period}</td>
-                    <td className="text-slate-300 py-2 px-3">{row.date}</td>
-                    <td className="text-slate-300 py-2 px-3">${row.close.toFixed(2)}</td>
-                    <td className="text-white font-mono py-2 px-3">{row.result}</td>
                     <td className="py-2 px-3">
                       <SignalBadge signal={row.signal} />
                     </td>
@@ -760,680 +877,10 @@ export default function MomentumIndicators() {
     );
   };
 
-  const renderAO = (config: IndicatorConfig) => {
-    const ao = new AO(5, 34);
-    const chartData: ChartDataPoint[] = [];
-    const sampleValues: Array<{
-      period: number;
-      date: string;
-      high: number;
-      low: number;
-      result: string;
-      signal: string;
-    }> = [];
-
-    ethCandles.forEach((candle, idx) => {
-      ao.add(candle);
-      const result = ao.isStable ? ao.getResult() : null;
-      const signal = ao.getSignal();
-      chartData.push({x: idx + 1, y: result});
-
-      sampleValues.push({
-        period: idx + 1,
-        date: candle.date,
-        high: candle.high,
-        low: candle.low,
-        result: result !== null ? result.toFixed(2) : 'N/A',
-        signal: signal.state,
-      });
-    });
-
-    return (
-      <div className="space-y-6">
-        <div>
-          <h2 className="text-2xl font-bold text-white mb-2 select-text">
-            AO({ao.shortInterval}, {ao.longInterval}) / Required Inputs: {ao.getRequiredInputs()}
-          </h2>
-          <p className="text-slate-300 select-text">{config.description}</p>
-          <p className="text-slate-400 text-sm mt-2 select-text">
-            Measures market momentum using the difference between a 5-period and 34-period simple moving average of the
-            bar's midpoints.
-          </p>
-        </div>
-
-        <Chart title="Awesome Oscillator (5,34)" data={chartData} yAxisLabel="AO" color={config.color} />
-
-        <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-4">
-          <h3 className="text-lg font-semibold text-white mb-3">All Sample Values</h3>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-slate-600">
-                  <th className="text-left text-slate-300 py-2 px-3">Period</th>
-                  <th className="text-left text-slate-300 py-2 px-3">Date</th>
-                  <th className="text-left text-slate-300 py-2 px-3">High</th>
-                  <th className="text-left text-slate-300 py-2 px-3">Low</th>
-                  <th className="text-left text-slate-300 py-2 px-3">AO</th>
-                  <th className="text-left text-slate-300 py-2 px-3">Signal</th>
-                </tr>
-              </thead>
-              <tbody>
-                {sampleValues.map(row => (
-                  <tr key={row.period} className="border-b border-slate-700/50">
-                    <td className="text-slate-400 py-2 px-3">{row.period}</td>
-                    <td className="text-slate-300 py-2 px-3">{row.date}</td>
-                    <td className="text-slate-300 py-2 px-3">${row.high.toFixed(2)}</td>
-                    <td className="text-slate-300 py-2 px-3">${row.low.toFixed(2)}</td>
-                    <td className="text-white font-mono py-2 px-3">{row.result}</td>
-                    <td className="py-2 px-3">
-                      <SignalBadge signal={row.signal} />
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-    );
-  };
-
-  const renderAC = (config: IndicatorConfig) => {
-    const ac = new AC(5, 34, 5);
-    const chartData: ChartDataPoint[] = [];
-    const sampleValues: Array<{
-      period: number;
-      date: string;
-      high: number;
-      low: number;
-      result: string;
-      signal: string;
-    }> = [];
-
-    ethCandles.forEach((candle, idx) => {
-      ac.add(candle);
-      const result = ac.isStable ? ac.getResult() : null;
-      const signal = ac.getSignal();
-      chartData.push({x: idx + 1, y: result});
-
-      sampleValues.push({
-        period: idx + 1,
-        date: candle.date,
-        high: candle.high,
-        low: candle.low,
-        result: result !== null ? result.toFixed(2) : 'N/A',
-        signal: signal.state,
-      });
-    });
-
-    return (
-      <div className="space-y-6">
-        <div>
-          <h2 className="text-2xl font-bold text-white mb-2 select-text">
-            AC({ac.shortAO}, {ac.longAO}, {ac.signalInterval}) / Required Inputs: {ac.getRequiredInputs()}
-          </h2>
-          <p className="text-slate-300 select-text">{config.description}</p>
-          <p className="text-slate-400 text-sm mt-2 select-text">
-            Shows acceleration or deceleration of the current driving force. Earlier signal of potential trend change
-            than AO.
-          </p>
-        </div>
-
-        <Chart title="Accelerator Oscillator (5,34,5)" data={chartData} yAxisLabel="AC" color={config.color} />
-
-        <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-4">
-          <h3 className="text-lg font-semibold text-white mb-3">All Sample Values</h3>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-slate-600">
-                  <th className="text-left text-slate-300 py-2 px-3">Period</th>
-                  <th className="text-left text-slate-300 py-2 px-3">Date</th>
-                  <th className="text-left text-slate-300 py-2 px-3">High</th>
-                  <th className="text-left text-slate-300 py-2 px-3">Low</th>
-                  <th className="text-left text-slate-300 py-2 px-3">AC</th>
-                  <th className="text-left text-slate-300 py-2 px-3">Signal</th>
-                </tr>
-              </thead>
-              <tbody>
-                {sampleValues.map(row => (
-                  <tr key={row.period} className="border-b border-slate-700/50">
-                    <td className="text-slate-400 py-2 px-3">{row.period}</td>
-                    <td className="text-slate-300 py-2 px-3">{row.date}</td>
-                    <td className="text-slate-300 py-2 px-3">${row.high.toFixed(2)}</td>
-                    <td className="text-slate-300 py-2 px-3">${row.low.toFixed(2)}</td>
-                    <td className="text-white font-mono py-2 px-3">{row.result}</td>
-                    <td className="py-2 px-3">
-                      <SignalBadge signal={row.signal} />
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-    );
-  };
-
-  const renderCG = (config: IndicatorConfig) => {
-    const cg = new CG(10, 10);
-    const chartData: ChartDataPoint[] = [];
-    const sampleValues: Array<{period: number; date: string; close: number; result: string; signal: string}> = [];
-
-    ethCandles.forEach((candle, idx) => {
-      cg.add(candle.close);
-      const result = cg.isStable ? cg.getResult() : null;
-      const signal = cg.getSignal();
-      chartData.push({x: idx + 1, y: result});
-
-      sampleValues.push({
-        period: idx + 1,
-        date: candle.date,
-        close: candle.close,
-        result: result !== null ? result.toFixed(2) : 'N/A',
-        signal: signal.state,
-      });
-    });
-
-    return (
-      <div className="space-y-6">
-        <div>
-          <h2 className="text-2xl font-bold text-white mb-2 select-text">
-            CG(10, 10) / Required Inputs: {cg.getRequiredInputs()}
-          </h2>
-          <p className="text-slate-300 select-text">{config.description}</p>
-          <p className="text-slate-400 text-sm mt-2 select-text">
-            Identifies turning points with minimal lag. Oscillates around zero line.
-          </p>
-        </div>
-
-        <Chart title="Center of Gravity (10,10)" data={chartData} yAxisLabel="CG" color={config.color} />
-
-        <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-4">
-          <h3 className="text-lg font-semibold text-white mb-3">All Sample Values</h3>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-slate-600">
-                  <th className="text-left text-slate-300 py-2 px-3">Period</th>
-                  <th className="text-left text-slate-300 py-2 px-3">Date</th>
-                  <th className="text-left text-slate-300 py-2 px-3">Close</th>
-                  <th className="text-left text-slate-300 py-2 px-3">CG</th>
-                  <th className="text-left text-slate-300 py-2 px-3">Signal</th>
-                </tr>
-              </thead>
-              <tbody>
-                {sampleValues.map(row => (
-                  <tr key={row.period} className="border-b border-slate-700/50">
-                    <td className="text-slate-400 py-2 px-3">{row.period}</td>
-                    <td className="text-slate-300 py-2 px-3">{row.date}</td>
-                    <td className="text-slate-300 py-2 px-3">${row.close.toFixed(2)}</td>
-                    <td className="text-white font-mono py-2 px-3">{row.result}</td>
-                    <td className="py-2 px-3">
-                      <SignalBadge signal={row.signal} />
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-    );
-  };
-
-  const renderMOM = (config: IndicatorConfig) => {
-    const mom = new MOM(5);
-    const chartData: ChartDataPoint[] = [];
-    const sampleValues: Array<{period: number; date: string; close: number; result: string}> = [];
-
-    ethCandles.forEach((candle, idx) => {
-      mom.add(candle.close);
-      const result = mom.isStable ? mom.getResult() : null;
-      chartData.push({x: idx + 1, y: result});
-
-      sampleValues.push({
-        period: idx + 1,
-        date: candle.date,
-        close: candle.close,
-        result: result !== null ? result.toFixed(2) : 'N/A',
-      });
-    });
-
-    return (
-      <div className="space-y-6">
-        <div>
-          <h2 className="text-2xl font-bold text-white mb-2 select-text">
-            MOM(5) / Required Inputs: {mom.getRequiredInputs()}
-          </h2>
-          <p className="text-slate-300 select-text">{config.description}</p>
-          <p className="text-slate-400 text-sm mt-2 select-text">
-            Simple momentum calculation: current price minus price n periods ago.
-          </p>
-        </div>
-
-        <Chart title="Momentum (5)" data={chartData} yAxisLabel="MOM" color={config.color} />
-
-        <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-4">
-          <h3 className="text-lg font-semibold text-white mb-3">All Sample Values</h3>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-slate-600">
-                  <th className="text-left text-slate-300 py-2 px-3">Period</th>
-                  <th className="text-left text-slate-300 py-2 px-3">Date</th>
-                  <th className="text-left text-slate-300 py-2 px-3">Close</th>
-                  <th className="text-left text-slate-300 py-2 px-3">MOM</th>
-                </tr>
-              </thead>
-              <tbody>
-                {sampleValues.map(row => (
-                  <tr key={row.period} className="border-b border-slate-700/50">
-                    <td className="text-slate-400 py-2 px-3">{row.period}</td>
-                    <td className="text-slate-300 py-2 px-3">{row.date}</td>
-                    <td className="text-slate-300 py-2 px-3">${row.close.toFixed(2)}</td>
-                    <td className="text-white font-mono py-2 px-3">{row.result}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-    );
-  };
-
-  const renderOBV = (config: IndicatorConfig) => {
-    const obv = new OBV(5);
-    const chartData: ChartDataPoint[] = [];
-    const sampleValues: Array<{
-      period: number;
-      date: string;
-      close: number;
-      volume: number;
-      result: string;
-      signal: string;
-    }> = [];
-
-    ethCandles.forEach((candle, idx) => {
-      obv.add(candle);
-      const result = obv.getResult();
-      const signal = obv.getSignal();
-      chartData.push({x: idx + 1, y: result});
-
-      sampleValues.push({
-        period: idx + 1,
-        date: candle.date,
-        close: candle.close,
-        volume: candle.volume,
-        result: result !== null ? result.toFixed(0) : 'N/A',
-        signal: signal.state,
-      });
-    });
-
-    return (
-      <div className="space-y-6">
-        <div>
-          <h2 className="text-2xl font-bold text-white mb-2 select-text">
-            OBV({obv.interval}) / Required Inputs: {obv.getRequiredInputs()}
-          </h2>
-          <p className="text-slate-300 select-text">{config.description}</p>
-          <p className="text-slate-400 text-sm mt-2 select-text">
-            Cumulative volume-based indicator. Rising OBV with rising prices confirms uptrend.
-          </p>
-        </div>
-
-        <Chart title="On-Balance Volume (5)" data={chartData} yAxisLabel="OBV" color={config.color} />
-
-        <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-4">
-          <h3 className="text-lg font-semibold text-white mb-3">All Sample Values</h3>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-slate-600">
-                  <th className="text-left text-slate-300 py-2 px-3">Period</th>
-                  <th className="text-left text-slate-300 py-2 px-3">Date</th>
-                  <th className="text-left text-slate-300 py-2 px-3">Close</th>
-                  <th className="text-left text-slate-300 py-2 px-3">Volume</th>
-                  <th className="text-left text-slate-300 py-2 px-3">OBV</th>
-                  <th className="text-left text-slate-300 py-2 px-3">Signal</th>
-                </tr>
-              </thead>
-              <tbody>
-                {sampleValues.map(row => (
-                  <tr key={row.period} className="border-b border-slate-700/50">
-                    <td className="text-slate-400 py-2 px-3">{row.period}</td>
-                    <td className="text-slate-300 py-2 px-3">{row.date}</td>
-                    <td className="text-slate-300 py-2 px-3">${row.close.toFixed(2)}</td>
-                    <td className="text-slate-300 py-2 px-3">{row.volume}</td>
-                    <td className="text-white font-mono py-2 px-3">{row.result}</td>
-                    <td className="py-2 px-3">
-                      <SignalBadge signal={row.signal} />
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-    );
-  };
-
-  const renderREI = (config: IndicatorConfig) => {
-    const rei = new REI(5);
-    const chartData: ChartDataPoint[] = [];
-    const sampleValues: Array<{period: number; date: string; close: number; result: string; signal: string}> = [];
-
-    ethCandles.forEach((candle, idx) => {
-      rei.add(candle);
-      const result = rei.isStable ? rei.getResult() : null;
-      const signal = rei.getSignal();
-      chartData.push({x: idx + 1, y: result});
-
-      sampleValues.push({
-        period: idx + 1,
-        date: candle.date,
-        close: candle.close,
-        result: result !== null ? result.toFixed(2) : 'N/A',
-        signal: signal.state,
-      });
-    });
-
-    return (
-      <div className="space-y-6">
-        <div>
-          <h2 className="text-2xl font-bold text-white mb-2 select-text">
-            REI({rei.interval}) / Required Inputs: {rei.getRequiredInputs()}
-          </h2>
-          <p className="text-slate-300 select-text">{config.description}</p>
-          <p className="text-slate-400 text-sm mt-2 select-text">
-            Measures range expansion to identify potential breakouts.
-          </p>
-        </div>
-
-        <Chart title="Range Expansion Index (5)" data={chartData} yAxisLabel="REI" color={config.color} />
-
-        <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-4">
-          <h3 className="text-lg font-semibold text-white mb-3">All Sample Values</h3>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-slate-600">
-                  <th className="text-left text-slate-300 py-2 px-3">Period</th>
-                  <th className="text-left text-slate-300 py-2 px-3">Date</th>
-                  <th className="text-left text-slate-300 py-2 px-3">Close</th>
-                  <th className="text-left text-slate-300 py-2 px-3">REI</th>
-                  <th className="text-left text-slate-300 py-2 px-3">Signal</th>
-                </tr>
-              </thead>
-              <tbody>
-                {sampleValues.map(row => (
-                  <tr key={row.period} className="border-b border-slate-700/50">
-                    <td className="text-slate-400 py-2 px-3">{row.period}</td>
-                    <td className="text-slate-300 py-2 px-3">{row.date}</td>
-                    <td className="text-slate-300 py-2 px-3">${row.close.toFixed(2)}</td>
-                    <td className="text-white font-mono py-2 px-3">{row.result}</td>
-                    <td className="py-2 px-3">
-                      <SignalBadge signal={row.signal} />
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-    );
-  };
-
-  const renderStochRSI = (config: IndicatorConfig) => {
-    const stochRsi = new StochasticRSI(14);
-    const chartData: ChartDataPoint[] = [];
-    const sampleValues: Array<{period: number; date: string; close: number; result: string; signal: string}> = [];
-
-    ethCandles.forEach((candle, idx) => {
-      stochRsi.add(candle.close);
-      const result = stochRsi.isStable ? stochRsi.getResult() : null;
-      const signal = stochRsi.getSignal();
-      chartData.push({x: idx + 1, y: result});
-
-      sampleValues.push({
-        period: idx + 1,
-        date: candle.date,
-        close: candle.close,
-        result: result !== null ? result.toFixed(2) : 'N/A',
-        signal: signal.state,
-      });
-    });
-
-    return (
-      <div className="space-y-6">
-        <div>
-          <h2 className="text-2xl font-bold text-white mb-2 select-text">
-            StochasticRSI({stochRsi.interval}) / Required Inputs: {stochRsi.getRequiredInputs()}
-          </h2>
-          <p className="text-slate-300 select-text">{config.description}</p>
-          <p className="text-slate-400 text-sm mt-2 select-text">
-            Applies Stochastic Oscillator to RSI values. More sensitive to overbought/oversold than standard RSI.
-          </p>
-        </div>
-
-        <Chart title="Stochastic RSI (14)" data={chartData} yAxisLabel="StochRSI" color={config.color} />
-
-        <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-4">
-          <h3 className="text-lg font-semibold text-white mb-3">All Sample Values</h3>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-slate-600">
-                  <th className="text-left text-slate-300 py-2 px-3">Period</th>
-                  <th className="text-left text-slate-300 py-2 px-3">Date</th>
-                  <th className="text-left text-slate-300 py-2 px-3">Close</th>
-                  <th className="text-left text-slate-300 py-2 px-3">StochRSI</th>
-                  <th className="text-left text-slate-300 py-2 px-3">Signal</th>
-                </tr>
-              </thead>
-              <tbody>
-                {sampleValues.map(row => (
-                  <tr key={row.period} className="border-b border-slate-700/50">
-                    <td className="text-slate-400 py-2 px-3">{row.period}</td>
-                    <td className="text-slate-300 py-2 px-3">{row.date}</td>
-                    <td className="text-slate-300 py-2 px-3">${row.close.toFixed(2)}</td>
-                    <td className="text-white font-mono py-2 px-3">{row.result}</td>
-                    <td className="py-2 px-3">
-                      <SignalBadge signal={row.signal} />
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-    );
-  };
-
-  const renderWilliamsR = (config: IndicatorConfig) => {
-    const willr = new WilliamsR(14);
-    const chartData: ChartDataPoint[] = [];
-    const sampleValues: Array<{
-      period: number;
-      date: string;
-      high: number;
-      low: number;
-      close: number;
-      result: string;
-      signal: string;
-    }> = [];
-
-    ethCandles.forEach((candle, idx) => {
-      willr.add(candle);
-      const result = willr.isStable ? willr.getResult() : null;
-      const signal = willr.getSignal();
-      chartData.push({x: idx + 1, y: result});
-
-      sampleValues.push({
-        period: idx + 1,
-        date: candle.date,
-        high: candle.high,
-        low: candle.low,
-        close: candle.close,
-        result: result !== null ? result.toFixed(2) : 'N/A',
-        signal: signal.state,
-      });
-    });
-
-    return (
-      <div className="space-y-6">
-        <div>
-          <h2 className="text-2xl font-bold text-white mb-2 select-text">
-            WilliamsR({willr.interval}) / Required Inputs: {willr.getRequiredInputs()}
-          </h2>
-          <p className="text-slate-300 select-text">{config.description}</p>
-          <p className="text-slate-400 text-sm mt-2 select-text">
-            Measures overbought and oversold levels on an inverted scale from 0 to -100. Values from 0 to -20 indicate
-            overbought conditions, while -80 to -100 indicate oversold conditions.
-          </p>
-        </div>
-
-        <Chart title="Williams %R (14)" data={chartData} yAxisLabel="Williams %R" color={config.color} />
-
-        <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-4">
-          <h3 className="text-lg font-semibold text-white mb-3">All Sample Values</h3>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-slate-600">
-                  <th className="text-left text-slate-300 py-2 px-3">Period</th>
-                  <th className="text-left text-slate-300 py-2 px-3">Date</th>
-                  <th className="text-left text-slate-300 py-2 px-3">High</th>
-                  <th className="text-left text-slate-300 py-2 px-3">Low</th>
-                  <th className="text-left text-slate-300 py-2 px-3">Close</th>
-                  <th className="text-left text-slate-300 py-2 px-3">Williams %R</th>
-                  <th className="text-left text-slate-300 py-2 px-3">Signal</th>
-                </tr>
-              </thead>
-              <tbody>
-                {sampleValues.map(row => (
-                  <tr key={row.period} className="border-b border-slate-700/50">
-                    <td className="text-slate-400 py-2 px-3">{row.period}</td>
-                    <td className="text-slate-300 py-2 px-3">{row.date}</td>
-                    <td className="text-slate-300 py-2 px-3">${row.high.toFixed(2)}</td>
-                    <td className="text-slate-300 py-2 px-3">${row.low.toFixed(2)}</td>
-                    <td className="text-slate-300 py-2 px-3">${row.close.toFixed(2)}</td>
-                    <td className="text-white font-mono py-2 px-3">{row.result}</td>
-                    <td className="py-2 px-3">
-                      <SignalBadge signal={row.signal} />
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-    );
-  };
-
-  const renderTDS = (config: IndicatorConfig) => {
-    const tds = new TDS();
-    const chartData: ChartDataPoint[] = [];
-    const results: Array<{
-      period: number;
-      date: string;
-      close: number;
-      result: string;
-      signal: string;
-    }> = [];
-
-    for (const [index, candle] of ethCandles.entries()) {
-      tds.add(candle.close);
-      const result = tds.getResult();
-      const signal = tds.getSignal();
-      chartData.push({x: index + 1, y: result});
-
-      results.push({
-        period: index + 1,
-        date: candle.date,
-        close: candle.close,
-        result: result !== null ? result.toString() : 'null',
-        signal: signal.state,
-      });
-    }
-
-    const sampleValues = results;
-
-    return (
-      <div className="space-y-6">
-        <div>
-          <h2 className="text-2xl font-bold text-white mb-2 select-text">
-            TDS({tds.getRequiredInputs()}) / Required Inputs: {tds.getRequiredInputs()}
-          </h2>
-          <p className="text-slate-300 select-text">{config.description}</p>
-        </div>
-
-        <Chart title="Tom DeMark Sequential" data={chartData} yAxisLabel="TDS" color={config.color} />
-
-        <div className="bg-slate-800/30 border border-slate-700 rounded-lg p-6">
-          <h3 className="text-lg font-semibold text-white mb-4">Calculation</h3>
-          <div className="prose prose-invert max-w-none">
-            <p className="text-slate-300">TDS tracks consecutive closes compared to the close 4 bars earlier:</p>
-            <ul className="text-slate-300 space-y-2">
-              <li>
-                Bullish Setup: 9 consecutive closes greater than the close 4 bars earlier (returns 1, signals potential
-                reversal - BEARISH)
-              </li>
-              <li>
-                Bearish Setup: 9 consecutive closes less than the close 4 bars earlier (returns -1, signals potential
-                reversal - BULLISH)
-              </li>
-            </ul>
-            <p className="text-slate-300 mt-4">
-              TDS identifies potential turning points after extended price moves. The signal is inverted because it
-              detects overbought/oversold conditions.
-            </p>
-          </div>
-        </div>
-
-        <div className="bg-slate-800/30 border border-slate-700 rounded-lg p-6">
-          <h3 className="text-lg font-semibold text-white mb-4">All Sample Values</h3>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-slate-600">
-                  <th className="text-left text-slate-300 py-2 px-3">Period</th>
-                  <th className="text-left text-slate-300 py-2 px-3">Date</th>
-                  <th className="text-left text-slate-300 py-2 px-3">Close</th>
-                  <th className="text-left text-slate-300 py-2 px-3">TDS</th>
-                  <th className="text-left text-slate-300 py-2 px-3">Signal</th>
-                </tr>
-              </thead>
-              <tbody>
-                {sampleValues.map(row => (
-                  <tr key={row.period} className="border-b border-slate-700/50">
-                    <td className="text-slate-400 py-2 px-3">{row.period}</td>
-                    <td className="text-slate-300 py-2 px-3">{row.date}</td>
-                    <td className="text-slate-300 py-2 px-3">${row.close.toFixed(2)}</td>
-                    <td className="text-white font-mono py-2 px-3">{row.result}</td>
-                    <td className="py-2 px-3">
-                      <SignalBadge signal={row.signal} />
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-    );
-  };
-
   return (
     <div className="flex gap-6">
       {/* Sidebar */}
-      <aside className="w-64 flex-shrink-0">
+      <aside className="w-64 shrink-0">
         <div className="sticky top-6 bg-slate-800/50 border border-slate-700 rounded-lg p-4">
           <h2 className="text-lg font-semibold text-white mb-4">Momentum Indicators</h2>
           <nav className="space-y-1">
