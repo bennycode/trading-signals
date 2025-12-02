@@ -85,5 +85,5 @@
     "test:units:watch": "vitest --watch"
   },
   "type": "module",
-  "version": "7.1.0"
+  "version": "7.1.1"
 }

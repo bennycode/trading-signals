@@ -1,3 +1,19 @@
+# Change Log
+
+All notable changes to this project will be documented in this file.
+See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
+
+## 7.1.1 (2025-12-02)
+
+
+### Bug Fixes
+
+* **trading-signals:** Repair broken image links ([801fec7](https://github.com/bennycode/trading-signals/commit/801fec7819d9196ee10db905a5816ee05056894a))
+
+
+
+
+
 ### 7.1.0 (2025-11-02)
 
 ##### Documentation Changes
