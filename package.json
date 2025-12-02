@@ -1,13 +1,15 @@
 {
   "devDependencies": {
     "@tstv/eslint-config": "^4.1.1",
+    "@types/node": "^24.10.1",
     "cross-env": "^10.1.0",
     "eslint": "^9.39.1",
     "lefthook": "^2.0.4",
     "lerna": "^9.0.1",
     "rimraf": "^6.1.2",
     "ts-node": "^10.9.2",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.14"
   },
   "name": "typedtrader",
   "private": true,
