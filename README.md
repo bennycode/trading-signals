@@ -17,7 +17,7 @@ The core library providing technical indicators for algorithmic trading.
 - **Bundle:** Zero runtime dependencies
 - **Type Safety:** Full TypeScript with strict mode
 
-### [docs](./packages/docs)
+### [trading-signals-docs](./packages/trading-signals-docs)
 
 Documentation and showcase website built with Next.js, featuring interactive demos and examples of all indicators.
 
