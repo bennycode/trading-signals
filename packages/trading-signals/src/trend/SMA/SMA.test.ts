@@ -124,7 +124,7 @@ describe('SMA', () => {
   });
 
   describe('getRequiredInputs', () => {
-    it('needs a certain amount of inputs', () => {
+    it('returns a result after enough inputs have been added', () => {
       const interval = 3;
       const expected = 20;
 

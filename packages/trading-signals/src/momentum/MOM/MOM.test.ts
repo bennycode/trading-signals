@@ -53,4 +53,21 @@ describe('MOM', () => {
       }
     });
   });
+
+  describe('getRequiredInputs', () => {
+    it('returns a result after enough inputs have been added', () => {
+      const interval = 5;
+      const momentum = new MOM(interval);
+
+      expect(momentum.getRequiredInputs()).toBe(6);
+      expect(momentum.isStable).toBe(false);
+
+      for (let i = 0; i < momentum.getRequiredInputs(); i++) {
+        momentum.add((i + 1) * 10);
+      }
+
+      expect(momentum.isStable).toBe(true);
+      expect(momentum.getResult()).toBe(50);
+    });
+  });
 });
