@@ -1,3 +1,4 @@
+*.bak
 *.env
 *.tsbuildinfo
 *hot-update.js*
