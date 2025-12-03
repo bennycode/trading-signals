@@ -122,4 +122,23 @@ describe('SMA', () => {
       }
     });
   });
+
+  describe('getRequiredInputs', () => {
+    it('needs a certain amount of inputs', () => {
+      const interval = 3;
+      const expected = 20;
+
+      const sma = new SMA(interval);
+
+      expect(sma.getRequiredInputs()).toBe(interval);
+      expect(sma.isStable).toBe(false);
+
+      for (let i = 0; i < sma.getRequiredInputs(); i++) {
+        sma.add((i + 1) * 10);
+      }
+
+      expect(sma.isStable).toBe(true);
+      expect(sma.getResult()).toBe(expected);
+    });
+  });
 });

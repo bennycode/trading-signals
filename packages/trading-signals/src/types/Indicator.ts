@@ -22,6 +22,9 @@ export const TradingSignal = {
 
 export type TradingSignals = (typeof TradingSignal)[keyof typeof TradingSignal];
 
+/**
+ * Implements common update behaviour among indicators.
+ */
 export abstract class TechnicalIndicator<Result, Input> implements Indicator<Result, Input> {
   protected result: Result | undefined;
 
@@ -82,6 +85,9 @@ export abstract class IndicatorSeries<Input = number> extends TechnicalIndicator
   }
 }
 
+/**
+ * Calculates a signal for an indicator.
+ */
 export abstract class TrendIndicatorSeries<
   Input = number,
   SignalState = TradingSignals,
