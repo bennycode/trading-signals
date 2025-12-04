@@ -71,8 +71,7 @@ export default function App({Component, pageProps}: AppProps) {
       <footer className="border-t border-slate-700 mt-16 py-8">
         <div className="container mx-auto px-4 text-center text-slate-400">
           <p>
-            Built with ❤️ by{' '}
-            <a
+            Built with ❤️ by <a
               href="https://github.com/sponsors/bennycode"
               target="_blank"
               rel="noopener noreferrer"
