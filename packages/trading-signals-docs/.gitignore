@@ -1,5 +1,8 @@
+# Directories
 .next/
 out/
 node_modules/
+# Files
 *.log
 .DS_Store
+next-env.d.ts

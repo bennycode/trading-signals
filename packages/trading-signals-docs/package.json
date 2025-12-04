@@ -6,7 +6,7 @@
     "next": "^16.0.6",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "trading-signals": "file:../trading-signals"
+    "trading-signals": "*"
   },
   "description": "Documentation and showcase website for trading-signals library",
   "devDependencies": {
@@ -28,7 +28,7 @@
     "dist": "npm run build",
     "lint": "exit 0",
     "start": "next start",
-    "test": "npm run dist --workspace trading-signals && npm run test:types && npm run test:units",
+    "test": "npm run test:types && npm run test:units",
     "test:types": "tsc --noEmit",
     "test:units": "vitest run",
     "test:watch": "vitest"

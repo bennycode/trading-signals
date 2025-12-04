@@ -1,10 +1,14 @@
-/** @type {import('next').NextConfig} */
 const isCI = process.env.CI === 'true';
 // GitHub Pages will serve from https://<user>.github.io/<repo>
 // This docs site lives under the repo "trading-signals"
 const repoName = 'trading-signals';
 
+/** @type {import('next').NextConfig} */
 const nextConfig = {
+  // Allow importing/transpiling workspace packages outside this directory
+  experimental: {
+    externalDir: true,
+  },
   reactStrictMode: true,
   transpilePackages: ['trading-signals'],
   output: 'export',

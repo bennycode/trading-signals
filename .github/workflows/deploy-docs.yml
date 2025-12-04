@@ -1,8 +1,8 @@
-name: 'Deploy Documentation'
+name: "Deploy Documentation"
 
 on:
   push:
-    branches: ['main']
+    branches: ["main"]
   workflow_dispatch:
 
 permissions:
@@ -11,7 +11,7 @@ permissions:
   id-token: write
 
 concurrency:
-  group: 'pages'
+  group: "pages"
   cancel-in-progress: true
 
 jobs:
@@ -23,7 +23,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v6
         with:
-          node-version-file: '.nvmrc'
+          node-version-file: ".nvmrc"
       - name: Setup Pages
         uses: actions/configure-pages@v5
         with:
@@ -43,7 +43,6 @@ jobs:
       - name: Build library and docs
         run: |
           npm install
-          npm run dist --workspace trading-signals
           npm run dist --workspace trading-signals-docs
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v4

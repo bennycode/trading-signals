@@ -12,6 +12,7 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './'),
+      'trading-signals': path.resolve(__dirname, '../trading-signals/src'),
     },
   },
 });
