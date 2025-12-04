@@ -1,10 +1,12 @@
+import type {NextConfig} from 'next';
+
 const isCI = process.env.CI === 'true';
 // GitHub Pages will serve from https://<user>.github.io/<repo>
 // This docs site lives under the repo "trading-signals"
 const repoName = 'trading-signals';
 
 /** @type {import('next').NextConfig} */
-const nextConfig = {
+const nextConfig: NextConfig = {
   // Allow importing/transpiling workspace packages outside this directory
   experimental: {
     externalDir: true,
@@ -25,4 +27,4 @@ const nextConfig = {
   },
 };
 
-module.exports = nextConfig;
+export default nextConfig;
