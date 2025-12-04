@@ -296,12 +296,14 @@ const indicators: IndicatorConfig[] = [
     color: '#84cc16',
     type: 'single',
     requiredInputs: 5,
-    details: 'Simple momentum calculation: current price minus price n periods ago.',
+    details:
+      'Momentum measures the change in price over n periods. Bullish when momentum is positive (price rising), bearish when momentum is negative (price falling).',
     createIndicator: () => new MOM(5),
     processData: (indicator, candle) => {
       indicator.add(candle.close);
       const result = indicator.isStable ? indicator.getResult() : null;
-      return {result, close: candle.close};
+      const signal = indicator.getSignal();
+      return {result, signal, close: candle.close};
     },
     getChartData: result => ({x: 0, y: result.result}),
     getTableColumns: () => [
@@ -309,6 +311,7 @@ const indicators: IndicatorConfig[] = [
       {header: 'Date', key: 'date'},
       {header: 'Close', key: 'close', render: val => `$${val.toFixed(2)}`, className: 'text-slate-300 py-2 px-3'},
       {header: 'MOM', key: 'result', className: 'text-white font-mono py-2 px-3'},
+      {header: 'Signal', key: 'signal', render: val => <SignalBadge signal={val} />, className: 'py-2 px-3'},
     ],
     chartTitle: 'Momentum (5)',
     yAxisLabel: 'MOM',

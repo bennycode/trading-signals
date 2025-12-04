@@ -1,5 +1,6 @@
 import {MOM} from './MOM.js';
 import {NotEnoughDataError} from '../../error/index.js';
+import {TradingSignal} from '../../types/Indicator.js';
 
 describe('MOM', () => {
   describe('update', () => {
@@ -51,6 +52,64 @@ describe('MOM', () => {
       } catch (error) {
         expect(error).toBeInstanceOf(NotEnoughDataError);
       }
+    });
+  });
+
+  describe('getRequiredInputs', () => {
+    it('returns a result after enough inputs have been added', () => {
+      const interval = 5;
+      const momentum = new MOM(interval);
+
+      expect(momentum.getRequiredInputs()).toBe(6);
+      expect(momentum.isStable).toBe(false);
+
+      for (let i = 0; i < momentum.getRequiredInputs(); i++) {
+        momentum.add((i + 1) * 10);
+      }
+
+      expect(momentum.isStable).toBe(true);
+      expect(momentum.getResult()).toBe(50);
+    });
+  });
+
+  describe('getSignal', () => {
+    it('returns BULLISH signal when momentum is positive', () => {
+      const prices = [10, 20, 30, 40, 50, 70] as const;
+      const mom = new MOM(5);
+
+      for (let i = 0; i < 6; i++) {
+        mom.add(prices[i]);
+      }
+
+      const signal = mom.getSignal();
+
+      expect(signal.state).toBe(TradingSignal.BULLISH);
+    });
+
+    it('returns BEARISH signal when momentum is negative', () => {
+      const prices = [50, 45, 40, 35, 30, 20] as const;
+      const mom = new MOM(5);
+
+      for (let i = 0; i < 6; i++) {
+        mom.add(prices[i]);
+      }
+
+      const signal = mom.getSignal();
+
+      expect(signal.state).toBe(TradingSignal.BEARISH);
+    });
+
+    it('returns SIDEWAYS signal when momentum is zero', () => {
+      const prices = [50, 45, 40, 35, 30, 50] as const;
+      const mom = new MOM(5);
+
+      for (let i = 0; i < 6; i++) {
+        mom.add(prices[i]);
+      }
+
+      const signal = mom.getSignal();
+
+      expect(signal.state).toBe(TradingSignal.SIDEWAYS);
     });
   });
 });
