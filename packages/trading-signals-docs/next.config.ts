@@ -1,10 +1,12 @@
-/** @type {import('next').NextConfig} */
+import type {NextConfig} from 'next';
+
 const isCI = process.env.CI === 'true';
 // GitHub Pages will serve from https://<user>.github.io/<repo>
 // This docs site lives under the repo "trading-signals"
 const repoName = 'trading-signals';
 
-const nextConfig = {
+/** @type {import('next').NextConfig} */
+const nextConfig: NextConfig = {
   reactStrictMode: true,
   transpilePackages: ['trading-signals'],
   output: 'export',
@@ -21,4 +23,4 @@ const nextConfig = {
   },
 };
 
-module.exports = nextConfig;
+export default nextConfig;
