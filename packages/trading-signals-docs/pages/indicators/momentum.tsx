@@ -297,7 +297,7 @@ const indicators: IndicatorConfig[] = [
     type: 'single',
     requiredInputs: 5,
     details:
-      'Momentum measures the change in price over n periods. Bullish when momentum increases (accelerating), bearish when momentum decreases (decelerating).',
+      'Momentum measures the change in price over n periods. Bullish when momentum is positive (price rising), bearish when momentum is negative (price falling).',
     createIndicator: () => new MOM(5),
     processData: (indicator, candle) => {
       indicator.add(candle.close);

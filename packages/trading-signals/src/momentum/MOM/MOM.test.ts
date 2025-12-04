@@ -73,11 +73,11 @@ describe('MOM', () => {
   });
 
   describe('getSignal', () => {
-    it('returns BULLISH signal when momentum increases', () => {
-      const prices = [10, 20, 30, 40, 50, 70, 100] as const;
+    it('returns BULLISH signal when momentum is positive', () => {
+      const prices = [10, 20, 30, 40, 50, 70] as const;
       const mom = new MOM(5);
 
-      for (let i = 0; i < 7; i++) {
+      for (let i = 0; i < 6; i++) {
         mom.add(prices[i]);
       }
 
@@ -86,11 +86,11 @@ describe('MOM', () => {
       expect(signal.state).toBe(TradingSignal.BULLISH);
     });
 
-    it('returns BEARISH signal when momentum decreases', () => {
-      const prices = [10, 20, 30, 40, 50, 45, 35] as const;
+    it('returns BEARISH signal when momentum is negative', () => {
+      const prices = [50, 45, 40, 35, 30, 20] as const;
       const mom = new MOM(5);
 
-      for (let i = 0; i < 7; i++) {
+      for (let i = 0; i < 6; i++) {
         mom.add(prices[i]);
       }
 
@@ -99,11 +99,11 @@ describe('MOM', () => {
       expect(signal.state).toBe(TradingSignal.BEARISH);
     });
 
-    it('returns SIDEWAYS signal when momentum remains constant', () => {
-      const prices = [10, 20, 30, 40, 50, 55, 65] as const;
+    it('returns SIDEWAYS signal when momentum is zero', () => {
+      const prices = [50, 45, 40, 35, 30, 50] as const;
       const mom = new MOM(5);
 
-      for (let i = 0; i < 7; i++) {
+      for (let i = 0; i < 6; i++) {
         mom.add(prices[i]);
       }
 

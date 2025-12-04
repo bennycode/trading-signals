@@ -37,17 +37,15 @@ export class MOM extends TrendIndicatorSeries {
   protected calculateSignalState(result?: number | null | undefined) {
     const hasResult = result !== null && result !== undefined;
 
-    if (!hasResult || !this.previousResult) {
+    if (!hasResult) {
       return TradingSignal.UNKNOWN;
     }
 
-    const prevResult = this.previousResult!;
-
-    if (result > prevResult) {
+    if (result > 0) {
       return TradingSignal.BULLISH;
     }
 
-    if (result < prevResult) {
+    if (result < 0) {
       return TradingSignal.BEARISH;
     }
 
