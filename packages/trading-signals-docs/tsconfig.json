@@ -12,7 +12,8 @@
     "noEmit": true,
     "noUnusedLocals": true,
     "paths": {
-      "@/*": ["./*"]
+      "@/*": ["./*"],
+      "trading-signals": ["../trading-signals/src"]
     },
     "resolveJsonModule": true,
     "skipLibCheck": true,

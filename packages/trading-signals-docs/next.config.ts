@@ -7,6 +7,10 @@ const repoName = 'trading-signals';
 
 /** @type {import('next').NextConfig} */
 const nextConfig: NextConfig = {
+  // Allow importing/transpiling workspace packages outside this directory
+  experimental: {
+    externalDir: true,
+  },
   reactStrictMode: true,
   transpilePackages: ['trading-signals'],
   output: 'export',
