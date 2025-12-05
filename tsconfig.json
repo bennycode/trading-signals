@@ -1,0 +1,10 @@
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "trading-signals": [
+        "packages/trading-signals/src"
+      ]
+    }
+  },
+}
