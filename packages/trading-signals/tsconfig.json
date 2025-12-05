@@ -5,9 +5,7 @@
     "emitDecoratorMetadata": false,
     "experimentalDecorators": true,
     "forceConsistentCasingInFileNames": true,
-    "lib": [
-      "es2023"
-    ],
+    "lib": ["es2023"],
     "module": "nodenext",
     "moduleResolution": "nodenext",
     "newLine": "lf",
@@ -24,16 +22,7 @@
     "sourceMap": true,
     "strict": true,
     "target": "es2022",
-    "types": [
-      "node",
-      "vitest/globals"
-    ]
+    "types": ["node", "vitest/globals"]
   },
-  "exclude": [
-    "dist",
-    "docs",
-    "node_modules",
-    "tsup.config.ts",
-    "vitest.config.ts"
-  ]
+  "exclude": ["dist", "docs", "node_modules", "tsup.config.ts", "vitest.config.ts"]
 }
