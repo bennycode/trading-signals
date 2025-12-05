@@ -4,7 +4,7 @@
     "@types/node": "^24.10.1",
     "cross-env": "^10.1.0",
     "eslint": "^9.39.1",
-    "lefthook": "^2.0.7",
+    "lefthook": "^2.0.8",
     "lerna": "^9.0.3",
     "rimraf": "^6.1.2",
     "ts-node": "^10.9.2",

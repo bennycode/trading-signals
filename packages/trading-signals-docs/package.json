@@ -2,17 +2,17 @@
   "dependencies": {
     "@highcharts/react": "^4.1.0",
     "@tailwindcss/postcss": "^4.1.17",
-    "next": "16.0.7",
-    "react": "19.2.1",
-    "react-dom": "19.2.1",
+    "next": "^16.0.7",
+    "react": "^19.2.1",
+    "react-dom": "^19.2.1",
     "trading-signals": "file:../trading-signals"
   },
   "description": "Documentation and showcase website for trading-signals library",
   "devDependencies": {
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.0",
-    "@types/react": "19.2.7",
-    "@types/react-dom": "19.2.3",
+    "@types/react": "^19.2.7",
+    "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^5.1.1",
     "autoprefixer": "^10.4.22",
     "jsdom": "^27.2.0",
