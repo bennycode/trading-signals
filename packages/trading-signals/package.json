@@ -13,6 +13,7 @@
   },
   "exports": {
     ".": {
+      "development": "./src/index.ts",
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
     },
