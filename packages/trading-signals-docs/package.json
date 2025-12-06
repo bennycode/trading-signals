@@ -5,7 +5,7 @@
     "next": "^16.0.7",
     "react": "^19.2.1",
     "react-dom": "^19.2.1",
-    "trading-signals": "file:../trading-signals"
+    "trading-signals": "7.1.1"
   },
   "description": "Documentation and showcase website for trading-signals library",
   "devDependencies": {
