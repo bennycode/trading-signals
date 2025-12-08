@@ -1,0 +1,48 @@
+{
+  "bugs": {
+    "url": "https://github.com/bennycode/trading-signals/issues"
+  },
+  "dependencies": {
+    "trading-signals": "7.1.1"
+  },
+  "description": "Trading strategies to run trading bots with JavaScript / TypeScript.",
+  "devDependencies": {
+    "@types/big.js": "^6.2.2",
+    "big.js": "^7.0.1",
+    "dependency-cruiser": "^17.3.2",
+    "generate-changelog": "^1.8.0",
+    "tsup": "^8.5.1",
+    "tsx": "^4.21.0"
+  },
+  "exports": {
+    ".": {
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "!dist/start",
+    "!dist/test",
+    "!dist/**/*.test.*"
+  ],
+  "homepage": "https://bennycode.com/trading-signals",
+  "keywords": [
+    "trading"
+  ],
+  "license": "MIT",
+  "main": "src/index.js",
+  "name": "trading-strategies",
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsc",
+    "clean": "rimraf --glob src/**/*{.js,.js.map,.d.ts}",
+    "dist": "npm run clean && npm run build",
+    "start": "npm run test:types && tsx src/start.ts",
+    "test": "npm run test:types",
+    "test:types": "tsc --noEmit"
+  },
+  "type": "module",
+  "version": "0.0.0"
+}

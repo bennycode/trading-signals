@@ -5,11 +5,9 @@
   "description": "Technical indicators to run technical analysis with JavaScript / TypeScript.",
   "devDependencies": {
     "@arethetypeswrong/cli": "^0.18.2",
-    "@vitest/coverage-v8": "^4.0.15",
     "dependency-cruiser": "^17.3.2",
     "generate-changelog": "^1.8.0",
-    "tsup": "^8.5.1",
-    "tsx": "^4.21.0"
+    "tsup": "^8.5.1"
   },
   "exports": {
     ".": {
