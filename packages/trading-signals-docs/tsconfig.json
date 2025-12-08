@@ -7,13 +7,14 @@
     "isolatedModules": true,
     "jsx": "react-jsx",
     "lib": ["dom", "dom.iterable", "esnext"],
+    "baseUrl": ".",
     "module": "esnext",
     "moduleResolution": "bundler",
     "noEmit": true,
     "noUnusedLocals": true,
     "paths": {
       "@/*": ["./*"],
-      "trading-signals": ["../packages/trading-signals/src"]
+      "trading-signals": ["../trading-signals/src"]
     },
     "resolveJsonModule": true,
     "skipLibCheck": true,
