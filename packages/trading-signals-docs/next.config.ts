@@ -5,8 +5,10 @@ const isCI = process.env.CI === 'true';
 // This docs site lives under the repo "trading-signals"
 const repoName = 'trading-signals';
 
-/** @type {import('next').NextConfig} */
 const nextConfig: NextConfig = {
+  experimental: {
+    externalDir: true,
+  },
   reactStrictMode: true,
   transpilePackages: ['trading-signals'],
   output: 'export',
