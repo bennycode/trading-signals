@@ -2,12 +2,14 @@
   "devDependencies": {
     "@tstv/eslint-config": "^4.1.1",
     "@types/node": "^24.10.1",
+    "@vitest/coverage-v8": "^4.0.15",
     "cross-env": "^10.1.0",
     "eslint": "^9.39.1",
-    "lefthook": "^2.0.8",
+    "lefthook": "^2.0.9",
     "lerna": "^9.0.3",
     "rimraf": "^6.1.2",
     "ts-node": "^10.9.2",
+    "tsx": "^4.21.0",
     "typescript": "^5.9.3",
     "vitest": "^4.0.14"
   },
@@ -16,7 +18,7 @@
   "scripts": {
     "clean": "lerna run clean --parallel",
     "dist": "lerna run dist",
-    "docs": "npm run dist --workspace trading-signals && npm run dev --workspace trading-signals-docs",
+    "docs": "lerna run dist --scope trading-signals && lerna run dev --scope trading-signals-docs",
     "fix": "lerna run fix --parallel",
     "graph": "nx graph",
     "lint": "lerna run lint --parallel",

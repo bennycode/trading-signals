@@ -43,8 +43,8 @@ jobs:
       - name: Build library and docs
         run: |
           npm install
-          npm run dist --workspace trading-signals
-          npm run dist --workspace trading-signals-docs
+          npx lerna run dist --scope trading-signals
+          npx lerna run dist --scope trading-signals-docs
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v4
         with:

@@ -46,3 +46,12 @@ Documentation and showcase website built with Next.js, featuring interactive dem
 - **Visualization:** [Highcharts](https://www.highcharts.com/)
 - **Styling:** [Tailwind CSS](https://tailwindcss.com/)
 - **Framework:** [Next.js](https://nextjs.org/)
+
+### [trading-strategies](./packages/trading-strategies)
+
+Trading strategy implementations that combine technical indicators into actionable trading signals.
+
+- **Interface:** Consistent strategy interface for building custom strategies
+- **Baseline:** Includes baseline strategies for benchmark comparisons
+- **Integration:** Designed to work seamlessly with `trading-signals`
+- **Type Safety:** Full TypeScript with strict mode

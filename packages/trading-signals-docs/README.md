@@ -9,43 +9,12 @@ Interactive showcase website for the trading-signals library, featuring live exa
 - **Modify layout**: Edit `pages/_app.tsx` for navigation/footer changes
 - **Styling**: Customize `styles/globals.css`
 
+## Using `trading-signals`
+
+The docs site uses the local `trading-signals` package from the monorepo. After making changes to the library, rebuild it with `lerna run dist --scope trading-signals` (or `npm run dist` from the `trading-signals` package directory). You can do this while the Next.js dev server is running. Just refresh the browser afterwards to see your changes in the docs.
+
 ## Adding New Indicators
 
 1. Import the indicator from `trading-signals`
-2. Create an `IndicatorExample` object with:
-   - `name`: Display name
-   - `description`: Brief explanation
-   - `code`: Example code snippet
-   - `inputValues`: Default values to demonstrate
-   - `calculate`: Function that runs the indicator
+2. Create an `IndicatorExample` object
 3. Add it to the appropriate category page
-
-Example:
-
-```typescript
-const example: IndicatorExample = {
-  name: 'My Indicator',
-  description: 'What it does',
-  code: `import { MyIndicator } from 'trading-signals';
-const indicator = new MyIndicator(14);
-indicator.add(100);`,
-  inputValues: [100, 101, 102],
-  calculate: values => {
-    const indicator = new MyIndicator(14);
-    const allResults = [];
-
-    for (const value of values) {
-      indicator.add(value);
-      allResults.push({
-        value,
-        result: indicator.isStable ? indicator.getResult().toFixed(2) : null,
-      });
-    }
-
-    return {
-      result: indicator.isStable ? indicator.getResult().toFixed(2) : null,
-      allResults,
-    };
-  },
-};
-```
