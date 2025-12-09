@@ -9,9 +9,6 @@
   "devDependencies": {
     "@types/big.js": "^6.2.2",
     "big.js": "^7.0.1",
-    "dependency-cruiser": "^17.3.2",
-    "generate-changelog": "^1.8.0",
-    "tsup": "^8.5.1",
     "tsx": "^4.21.0"
   },
   "exports": {
