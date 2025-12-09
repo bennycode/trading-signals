@@ -6,11 +6,7 @@ const isCI = process.env.CI === 'true';
 const repoName = 'trading-signals';
 
 const nextConfig: NextConfig = {
-  experimental: {
-    externalDir: true,
-  },
   reactStrictMode: true,
-  transpilePackages: ['trading-signals'],
   output: 'export',
   trailingSlash: true,
   // Configure basePath and assetPrefix only in CI (GitHub Pages) to keep local dev URLs clean
