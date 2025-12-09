@@ -11,23 +11,23 @@ export type StrategyAdviceBase = {
 
 export interface StrategyAdviceLimitSellOrder extends StrategyAdviceBase {
   price: Big;
-  signal: StrategySignal.SELL_LIMIT;
+  signal: typeof StrategySignal.SELL_LIMIT;
 }
 
 export interface StrategyAdviceLimitBuyOrder extends StrategyAdviceBase {
   price: Big;
-  signal: StrategySignal.BUY_LIMIT;
+  signal: typeof StrategySignal.BUY_LIMIT;
 }
 
 export interface StrategyAdviceMarketSellOrder extends StrategyAdviceBase {
   price: null;
-  signal: StrategySignal.SELL_MARKET;
+  signal: typeof StrategySignal.SELL_MARKET;
 }
 
 export interface StrategyAdviceMarketBuyOrder extends StrategyAdviceBase {
   amountInCounter: boolean;
   price: null;
-  signal: StrategySignal.BUY_MARKET;
+  signal: typeof StrategySignal.BUY_MARKET;
 }
 
 export type StrategyAdviceLimitOrder = StrategyAdviceLimitSellOrder | StrategyAdviceLimitBuyOrder;
