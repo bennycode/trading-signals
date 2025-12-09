@@ -1,7 +1,7 @@
 import {StrategySignal} from './StrategySignal.js';
 
 export type StrategyAdviceBase = {
-  /** The amount for you want to buy (quantity of an asset, i.e. number of stocks) or spend (fiat you want to invest). */
+  /** The amount to buy (quantity of an asset, e.g., number of stocks) or spend (fiat currency to invest). */
   amount?: Big;
   price?: Big;
   signal: StrategySignal;
@@ -24,6 +24,11 @@ export interface StrategyAdviceMarketSellOrder extends StrategyAdviceBase {
   signal: typeof StrategySignal.SELL_MARKET;
 }
 
+/**
+ * Enables the following scenarios:
+ * - Buy a fixed asset quantity at the current market price
+ * - Spend a fixed counter amount to buy at the current market price
+ */
 export interface StrategyAdviceMarketBuyOrder extends StrategyAdviceBase {
   amountInCounter: boolean;
   price: null;

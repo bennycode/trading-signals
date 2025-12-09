@@ -16,5 +16,5 @@ The docs site uses the local `trading-signals` package from the monorepo. After 
 ## Adding New Indicators
 
 1. Import the indicator from `trading-signals`
-2. Create an `IndicatorExample` object with
+2. Create an `IndicatorExample` object
 3. Add it to the appropriate category page
