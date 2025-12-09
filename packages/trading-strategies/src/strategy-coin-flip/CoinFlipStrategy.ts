@@ -1,4 +1,5 @@
 import {randomInt} from 'node:crypto';
+import Big from 'big.js';
 import {
   StrategyAdvice,
   StrategyAdviceMarketBuyOrder,
@@ -9,12 +10,15 @@ import {StrategySignal} from '../strategy/StrategySignal.js';
 export class CoinFlipStrategy {
   async processCandle(): Promise<StrategyAdvice | void> {
     const buyMarket: StrategyAdviceMarketBuyOrder = {
-      amountInCounter: false,
+      amount: null,
+      amountType: 'base',
       price: null,
       signal: StrategySignal.BUY_MARKET,
     };
 
     const sellMarket: StrategyAdviceMarketSellOrder = {
+      amount: null,
+      amountType: 'base',
       price: null,
       signal: StrategySignal.SELL_MARKET,
     };

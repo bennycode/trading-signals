@@ -1,39 +1,55 @@
+import type {Big} from 'big.js';
 import {StrategySignal} from './StrategySignal.js';
 
-export type StrategyAdviceBase = {
-  /** The amount to buy (quantity of an asset, e.g., number of stocks) or spend (fiat currency to invest). */
-  amount?: Big;
-  price?: Big;
+type StrategyAdviceBase = {
   signal: StrategySignal;
   /** A user-defined reason why this advice was made. */
   reason?: string;
 };
 
-export interface StrategyAdviceLimitSellOrder extends StrategyAdviceBase {
-  price: Big;
-  signal: typeof StrategySignal.SELL_LIMIT;
-}
+type BaseAmount = {
+  /** Quantity of the base asset (e.g., BTC in a BTC/USD pair). Use null to take as much as possible. */
+  amount: Big | null;
+  amountType: 'base';
+};
 
-export interface StrategyAdviceLimitBuyOrder extends StrategyAdviceBase {
-  price: Big;
-  signal: typeof StrategySignal.BUY_LIMIT;
-}
+type CounterAmount = {
+  /** Quantity of the counter asset to spend/receive (e.g., USD in a BTC/USD pair). Use null to spend/receive as much as possible. */
+  amount: Big | null;
+  amountType: 'counter';
+};
 
-export interface StrategyAdviceMarketSellOrder extends StrategyAdviceBase {
-  price: null;
-  signal: typeof StrategySignal.SELL_MARKET;
-}
+type LimitPrice = {price: Big};
+type MarketPrice = {price: null};
+
+export type StrategyAdviceLimitSellOrder = StrategyAdviceBase &
+  BaseAmount &
+  LimitPrice & {
+    signal: typeof StrategySignal.SELL_LIMIT;
+  };
+
+export type StrategyAdviceLimitBuyOrder = StrategyAdviceBase &
+  LimitPrice &
+  (BaseAmount | CounterAmount) & {
+    signal: typeof StrategySignal.BUY_LIMIT;
+  };
+
+export type StrategyAdviceMarketSellOrder = StrategyAdviceBase &
+  BaseAmount &
+  MarketPrice & {
+    signal: typeof StrategySignal.SELL_MARKET;
+  };
 
 /**
  * Enables the following scenarios:
  * - Buy a fixed asset quantity at the current market price
  * - Spend a fixed counter amount to buy at the current market price
  */
-export interface StrategyAdviceMarketBuyOrder extends StrategyAdviceBase {
-  amountInCounter: boolean;
-  price: null;
-  signal: typeof StrategySignal.BUY_MARKET;
-}
+export type StrategyAdviceMarketBuyOrder = StrategyAdviceBase &
+  MarketPrice &
+  (BaseAmount | CounterAmount) & {
+    signal: typeof StrategySignal.BUY_MARKET;
+  };
 
 export type StrategyAdviceLimitOrder = StrategyAdviceLimitSellOrder | StrategyAdviceLimitBuyOrder;
 
