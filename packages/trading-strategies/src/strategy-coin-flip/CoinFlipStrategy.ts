@@ -1,5 +1,4 @@
 import {randomInt} from 'node:crypto';
-import Big from 'big.js';
 import {
   StrategyAdvice,
   StrategyAdviceMarketBuyOrder,
