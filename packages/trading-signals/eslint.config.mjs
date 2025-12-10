@@ -9,7 +9,7 @@ export default defineConfig({
     '**/coverage/**',
     '**/dist/**',
     '**/docs/**',
-    '**/tsup.config.ts',
+    '**/tsdown.config.ts',
     '**/vitest.config.ts',
     'eslint.config.mjs',
   ],
