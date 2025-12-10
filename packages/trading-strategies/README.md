@@ -18,6 +18,30 @@ npm install trading-strategies
 import {StrategySignal, StrategyAdvice} from 'trading-strategies';
 ```
 
+## Domain Knowledge
+
+- An **exchange** (such as the [NYSE](https://en.wikipedia.org/wiki/New_York_Stock_Exchange)) is a marketplace where buyers and sellers trade assets, it matches orders by price and time, and it operates only during **specific opening hours**.
+
+- A **broker** (such as [Alpaca](https://alpaca.markets/) or [Interactive Brokers](https://www.interactivebrokers.com/)) is a service that gives traders access to the exchange and executes trades, acting as the middle layer between the trader and the market.
+
+- **Backtesting** is the process of evaluating a trading strategy by running it on historical market data to see how it would have performed.
+
+- **Paper trading** is the process of evaluating a trading strategy in real time using simulated money to mimic live trading without financial risk.
+
+- An **order book** is a real-time list of all the buy and sell orders for an asset, organized by price, showing where traders are willing to **buy (bids)** and **sell (asks)** and how much liquidity (trading volume) is available at each level.
+
+- A **long position** is when a trader buys an asset because they expect its price to rise, and they plan to sell it later for a profit.
+
+- A **short position** is when a trader sells an asset they do not own by borrowing it because they expect its price to fall, and they plan to buy it back later at a lower price.
+
+- A **market order** tells the broker to buy or sell immediately at the best available current price.
+
+- A **limit order** tells the broker to buy or sell only at a specific price, so it won’t execute unless the market reaches that price.
+
+- A **market maker** adds liquidity by placing orders that sit on the order book and wait for someone to trade against them. This usually affects broker fees because brokers often reward makers with lower trading fees when placing their orders. **Limit orders** are usually market maker orders when they rest on the order book and wait to be filled.
+
+- A **market taker** removes liquidity by placing orders that execute immediately against those resting orders on the order book. This usually leads to higher trading fees because brokers often charge more for taking liquidity from the order book. **Market orders** are usually market taker orders because they execute immediately against orders already on the book.
+
 ## Strategy Signals
 
 - `BUY_MARKET`: Buy at current market price
