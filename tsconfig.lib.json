@@ -1,0 +1,39 @@
+{
+  "compilerOptions": {
+    "declaration": true,
+    "emitDecoratorMetadata": false,
+    "experimentalDecorators": true,
+    "forceConsistentCasingInFileNames": true,
+    "lib": [
+      "es2023"
+    ],
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
+    "newLine": "lf",
+    "noEmitOnError": true,
+    "noImplicitOverride": true,
+    "noImplicitReturns": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "outDir": "${configDir}/dist",
+    "removeComments": true,
+    "resolveJsonModule": true,
+    "rootDir": "${configDir}/src",
+    "skipLibCheck": true,
+    "sourceMap": true,
+    "strict": true,
+    "target": "es2022",
+    "types": [
+      "node",
+      "vitest/globals"
+    ]
+  },
+  "exclude": [
+    "${configDir}/dist",
+    "${configDir}/docs",
+    "${configDir}/node_modules",
+    "${configDir}/tsup.config.ts",
+    "${configDir}/vitest.config.ts"
+  ],
+  "extends": "./tsconfig.base.json"
+}

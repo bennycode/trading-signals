@@ -1,0 +1,49 @@
+{
+  "bugs": {
+    "url": "https://github.com/bennycode/trading-signals/issues"
+  },
+  "dependencies": {
+    "@types/jsonabc": "^2.3.3",
+    "@types/ms": "^0.7.34",
+    "jsonabc": "^2.3.1",
+    "ms": "^2.1.3",
+    "zod": "^4.1.13"
+  },
+  "description": "Trading strategies to run trading bots with JavaScript / TypeScript.",
+  "exports": {
+    ".": {
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "!dist/start",
+    "!dist/test",
+    "!dist/**/*.test.*"
+  ],
+  "homepage": "https://bennycode.com/trading-signals",
+  "keywords": [
+    "trading"
+  ],
+  "license": "MIT",
+  "main": "src/index.js",
+  "name": "@typedtrader/exchange",
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsc",
+    "clean": "rimraf --glob src/**/*{.js,.js.map,.d.ts}",
+    "dist": "npm run clean && npm run build",
+    "lint:types": "tsc --noEmit",
+    "start": "npm run test:types && tsx src/start.ts",
+    "test": "npm run test:types && npm run test:imports && npm run test:units -- --coverage",
+    "test:exports": "attw --pack .",
+    "test:imports": "depcruise -c ../../.dependency-cruiser.cjs src --include-only \"^src\"",
+    "test:types": "npm run lint:types",
+    "test:units": "vitest run --passWithNoTests",
+    "test:units:watch": "vitest --watch"
+  },
+  "type": "module",
+  "version": "0.0.0"
+}

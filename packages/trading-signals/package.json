@@ -77,7 +77,7 @@
     "start": "tsx ./src/start/demo.ts",
     "test": "npm run test:types && npm run test:imports && npm run test:units -- --coverage",
     "test:exports": "attw --pack .",
-    "test:imports": "depcruise src --include-only \"^src\"",
+    "test:imports": "depcruise -c ../../.dependency-cruiser.cjs src --include-only \"^src\"",
     "test:types": "npm run lint:types",
     "test:units": "vitest run --passWithNoTests",
     "test:units:watch": "vitest --watch"
