@@ -7,7 +7,7 @@
     "@arethetypeswrong/cli": "^0.18.2",
     "dependency-cruiser": "^17.3.2",
     "generate-changelog": "^1.8.0",
-    "tsup": "^8.5.1"
+    "tsdown": "^0.17.2"
   },
   "exports": {
     ".": {
@@ -57,7 +57,7 @@
     "url": "git+https://github.com/bennycode/trading-signals.git"
   },
   "scripts": {
-    "build": "tsup",
+    "build": "tsdown",
     "changelog:commit": "git add CHANGELOG.md && git commit -m \"docs: updated CHANGELOG.md\"",
     "clean": "rimraf coverage dist",
     "dist": "npm run clean && npm run build",
