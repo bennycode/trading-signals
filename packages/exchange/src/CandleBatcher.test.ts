@@ -182,16 +182,16 @@ describe('CandleBatcher', () => {
         },
       ];
 
-      cb.addToBatch(candles[0]!);
+      cb.addToBatch(candles[0]);
       expect(cb['batch'].length).toBe(1);
 
-      cb.addToBatch(candles[1]!);
+      cb.addToBatch(candles[1]);
       expect(cb['batch'].length).toBe(2);
 
       // Add duplicate
-      cb.addToBatch(candles[1]!);
+      cb.addToBatch(candles[1]);
 
-      const batch = cb.addToBatch(candles[2]!);
+      const batch = cb.addToBatch(candles[2]);
       // Candle duplicates are filtered
       expect(batch?.volume.toString()).toBe('8481.612');
     });
