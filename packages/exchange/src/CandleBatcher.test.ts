@@ -24,7 +24,7 @@ describe('CandleBatcher', () => {
 
   describe('addToBatch', () => {
     it('returns a batched candle if enough candles have been added', () => {
-      const expected = hours[0]!;
+      const expected = hours[0];
       let actual: BatchedCandle | undefined = undefined;
 
       const cb = new CandleBatcher(ms('1h'));

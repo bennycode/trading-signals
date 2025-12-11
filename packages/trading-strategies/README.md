@@ -6,6 +6,10 @@ Trading strategies to run trading bots with JavaScript / TypeScript.
 
 The "trading-strategies" library provides a TypeScript implementation for common trading strategies. It is designed to work seamlessly with the [trading-signals](https://www.npmjs.com/package/trading-signals) library, allowing developers to combine technical indicators into complete automated trading strategies.
 
+> [!CAUTION]
+>
+> No strategy works all the time, so build in strict loss caps, a realistic positive price target, and the discipline to accept occasional losses. Managing risk matters more than heroically “holding a falling knife,” so focus on winning more often than you lose.
+
 ## Installation
 
 ```bash
