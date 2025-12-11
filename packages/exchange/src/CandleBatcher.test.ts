@@ -25,28 +25,30 @@ describe('CandleBatcher', () => {
   describe('addToBatch', () => {
     it('returns a batched candle if enough candles have been added', () => {
       const expected = hours[0];
-      let actual: BatchedCandle | undefined = undefined;
-
       const cb = new CandleBatcher(ms('1h'));
-      minutes.forEach(candle => {
+      let actual: BatchedCandle | undefined;
+
+      for (const candle of minutes) {
         actual = cb.addToBatch(candle);
-      });
+      }
+
+      assert(actual !== undefined);
 
       // Pair
-      expect(expected.base).toBe(actual!.base);
-      expect(expected.counter).toBe(actual!.counter);
+      expect(expected.base).toBe(actual.base);
+      expect(expected.counter).toBe(actual.counter);
 
       // Open-high-low-close chart
-      expect(new Big(expected.open).eq(actual!.open)).toBe(true);
-      expect(new Big(expected.high).eq(actual!.high)).toBe(true);
-      expect(new Big(expected.low).eq(actual!.low)).toBe(true);
-      expect(new Big(expected.close).eq(actual!.close)).toBe(true);
+      expect(new Big(expected.open).eq(actual.open)).toBe(true);
+      expect(new Big(expected.high).eq(actual.high)).toBe(true);
+      expect(new Big(expected.low).eq(actual.low)).toBe(true);
+      expect(new Big(expected.close).eq(actual.close)).toBe(true);
 
       // Meta
-      expect(expected.openTimeInISO).toBe(actual!.openTimeInISO);
-      expect(expected.openTimeInMillis).toBe(actual!.openTimeInMillis);
-      expect(expected.sizeInMillis).toBe(actual!.sizeInMillis);
-      expect(new Big(expected.volume).eq(actual!.volume)).toBe(true);
+      expect(expected.openTimeInISO).toBe(actual.openTimeInISO);
+      expect(expected.openTimeInMillis).toBe(actual.openTimeInMillis);
+      expect(expected.sizeInMillis).toBe(actual.sizeInMillis);
+      expect(new Big(expected.volume).eq(actual.volume)).toBe(true);
     });
 
     it('batches a day of candles from minutes to hours', () => {
@@ -205,13 +207,13 @@ describe('CandleBatcher', () => {
         }
       });
 
-      expect(batchedCandles[0]!.openTimeInISO).toBe('2021-05-25T08:00:00.000Z');
-      expect(batchedCandles[0]!.openTimeInMillis).toBe(1621929600000);
+      expect(batchedCandles[0].openTimeInISO).toBe('2021-05-25T08:00:00.000Z');
+      expect(batchedCandles[0].openTimeInMillis).toBe(1621929600000);
       // First batch consists only of 2 candles (08:03 & 08:04)
-      expect(batchedCandles[0]!.medianPrice.valueOf()).toBe('610.85');
+      expect(batchedCandles[0].medianPrice.valueOf()).toBe('610.85');
 
-      expect(batchedCandles[1]!.openTimeInISO).toBe('2021-05-25T08:05:00.000Z');
-      expect(batchedCandles[1]!.openTimeInMillis).toBe(1621929900000);
+      expect(batchedCandles[1].openTimeInISO).toBe('2021-05-25T08:05:00.000Z');
+      expect(batchedCandles[1].openTimeInMillis).toBe(1621929900000);
     });
 
     it('closes a 5-minute interval when 5 minutes are over and last candle is missing', () => {
@@ -225,11 +227,11 @@ describe('CandleBatcher', () => {
         }
       });
 
-      expect(batchedCandles[0]!.openTimeInISO).toBe('2021-05-25T08:00:00.000Z');
+      expect(batchedCandles[0].openTimeInISO).toBe('2021-05-25T08:00:00.000Z');
       // Candle from 08:04 is missing
-      expect(batchedCandles[0]!.close.valueOf()).toBe('611.5');
+      expect(batchedCandles[0].close.valueOf()).toBe('611.5');
 
-      expect(batchedCandles[1]!.openTimeInISO).toBe('2021-05-25T08:05:00.000Z');
+      expect(batchedCandles[1].openTimeInISO).toBe('2021-05-25T08:05:00.000Z');
     });
 
     it('emits events for batched candles', () => {
@@ -264,12 +266,12 @@ describe('CandleBatcher', () => {
       expect(TenMinutesInTenCandles.length).toBe(10);
       expect(batchedCandles.length).toBe(2);
 
-      expect(batchedCandles[0]!.openTimeInISO).toBe('2021-05-25T08:00:00.000Z');
-      expect(batchedCandles[0]!.openTimeInMillis).toBe(1621929600000);
-      expect(batchedCandles[0]!.medianPrice.valueOf()).toBe('611.165');
+      expect(batchedCandles[0].openTimeInISO).toBe('2021-05-25T08:00:00.000Z');
+      expect(batchedCandles[0].openTimeInMillis).toBe(1621929600000);
+      expect(batchedCandles[0].medianPrice.valueOf()).toBe('611.165');
 
-      expect(batchedCandles[1]!.openTimeInISO).toBe('2021-05-25T08:05:00.000Z');
-      expect(batchedCandles[1]!.openTimeInMillis).toBe(1621929900000);
+      expect(batchedCandles[1].openTimeInISO).toBe('2021-05-25T08:05:00.000Z');
+      expect(batchedCandles[1].openTimeInMillis).toBe(1621929900000);
     });
 
     it('closes a 5-minute interval when 5 minutes are over and a candle is missing in-between', () => {
@@ -277,13 +279,13 @@ describe('CandleBatcher', () => {
       expect(TenMinutesInEightCandles.length).toBe(8);
       expect(batchedCandles.length).toBe(2);
 
-      expect(batchedCandles[0]!.openTimeInISO).toBe('2021-05-25T08:00:00.000Z');
-      expect(batchedCandles[0]!.openTimeInMillis).toBe(1621929600000);
+      expect(batchedCandles[0].openTimeInISO).toBe('2021-05-25T08:00:00.000Z');
+      expect(batchedCandles[0].openTimeInMillis).toBe(1621929600000);
       // Candles from 08:02 & 08:03 are missing
-      expect(batchedCandles[0]!.medianPrice.valueOf()).toBe('610.785');
+      expect(batchedCandles[0].medianPrice.valueOf()).toBe('610.785');
 
-      expect(batchedCandles[1]!.openTimeInISO).toBe('2021-05-25T08:05:00.000Z');
-      expect(batchedCandles[1]!.openTimeInMillis).toBe(1621929900000);
+      expect(batchedCandles[1].openTimeInISO).toBe('2021-05-25T08:05:00.000Z');
+      expect(batchedCandles[1].openTimeInMillis).toBe(1621929900000);
     });
 
     it('closes a 5-minute interval when 5 minutes are over and candles are missing in the start', () => {
@@ -291,13 +293,13 @@ describe('CandleBatcher', () => {
       expect(TenMinutesMissingStart.length).toBe(7);
       expect(batchedCandles.length).toBe(2);
 
-      expect(batchedCandles[0]!.openTimeInISO).toBe('2021-05-25T08:00:00.000Z');
-      expect(batchedCandles[0]!.openTimeInMillis).toBe(1621929600000);
+      expect(batchedCandles[0].openTimeInISO).toBe('2021-05-25T08:00:00.000Z');
+      expect(batchedCandles[0].openTimeInMillis).toBe(1621929600000);
       // First batch consists only of 2 candles (08:03 & 08:04)
-      expect(batchedCandles[0]!.medianPrice.valueOf()).toBe('610.85');
+      expect(batchedCandles[0].medianPrice.valueOf()).toBe('610.85');
 
-      expect(batchedCandles[1]!.openTimeInISO).toBe('2021-05-25T08:05:00.000Z');
-      expect(batchedCandles[1]!.openTimeInMillis).toBe(1621929900000);
+      expect(batchedCandles[1].openTimeInISO).toBe('2021-05-25T08:05:00.000Z');
+      expect(batchedCandles[1].openTimeInMillis).toBe(1621929900000);
     });
   });
 
@@ -329,7 +331,7 @@ describe('CandleBatcher', () => {
         },
       ];
 
-      const candle = CandleBatcher.createBatchedCandle(candles, candles[0]!.sizeInMillis);
+      const candle = CandleBatcher.createBatchedCandle(candles, candles[0].sizeInMillis);
       expect(candle.change.toFixed(2)).toBe('0.47');
     });
   });
