@@ -2,6 +2,8 @@
 
 This monorepo contains multiple packages for building automated trading bots, including the famous [`trading-signals`](https://www.npmjs.com/package/trading-signals) library and [its documentation website](https://bennycode.com/trading-signals/). These packages provide TypeScript implementations of technical indicators, trading strategies, and data transformation utilities for algorithmic trading and technical analysis, with core libraries distributed for general use.
 
+The `trading-signals` library is battle-tested in production and trusted by [hundreds of projects](https://github.com/bennycode/trading-signals/network/dependents) worldwide.
+
 ## 📦 Packages
 
 This project uses [Lerna](https://lerna.js.org/) for managing the [monorepo](https://monorepo.tools/) with independent versioning. Execute `npm test` to run tests across all packages. Launch an interactive demo with `npm run docs`.

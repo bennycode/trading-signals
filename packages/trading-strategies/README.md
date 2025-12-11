@@ -62,9 +62,11 @@ Always backtest your strategies with historical data before deploying them in li
 
 1. **Beat Buy-and-Hold:** Outperform simply holding the asset
 2. **Beat Random Chance:** Outperform the `CoinFlipStrategy` baseline
-3. **Work in All Markets:** Perform well in bullish, bearish, and sideways markets
-4. **Manage Risk:** Include stop-loss limits and realistic profit targets
-5. **Handle Losses:** Accept that no strategy wins 100% of the time
+3. **Beat Broad Benchmarks:** Outperform the MSCI World or S&P 500 (after costs)
+4. **Work in All Markets:** Perform well in bullish, bearish, and sideways markets
+5. **Avoid Overfitting:** Perform well on historic data and real-world data
+6. **Manage Risk:** Include stop-loss limits and realistic profit targets
+7. **Handle Losses:** Accept that no strategy wins 100% of the time
 
 ## Disclaimer
 
