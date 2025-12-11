@@ -1,6 +1,6 @@
 # Trading Strategies
 
-Trading strategies to run trading bots with JavaScript / TypeScript.
+Trading strategy implementations that combine technical indicators into actionable trading signals. Ideally designed for creating custom strategies and operating automated trading bots.
 
 ## Motivation
 

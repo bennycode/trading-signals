@@ -23,7 +23,8 @@
   ],
   "homepage": "https://bennycode.com/trading-signals",
   "keywords": [
-    "trading"
+    "trading",
+    "typedtrader"
   ],
   "license": "MIT",
   "main": "src/index.js",
