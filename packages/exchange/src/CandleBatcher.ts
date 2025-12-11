@@ -35,7 +35,7 @@ export class CandleBatcher extends EventEmitter<EventMap> {
     const openTimesArray = batch.map(candle => candle.openTimeInMillis);
     batch = batch.filter((candle, index) => index === openTimesArray.indexOf(candle.openTimeInMillis));
     const firstCandle: ExchangeCandle = batch[0]!;
-    const lastCandle: ExchangeCandle = batch[batch.length - 1]!;
+    const lastCandle: ExchangeCandle = batch[batch.length - 1];
     const isPositive = new Big(lastCandle.close).gt(firstCandle.open);
 
     const accumulator: BatchedCandle = {
@@ -186,9 +186,9 @@ export class CandleBatcher extends EventEmitter<EventMap> {
     } else {
       const firstCandle = currentBatchArray[0];
       const isNextInterval =
-        candle.openTimeInMillis + candle.sizeInMillis - firstCandle!.openTimeInMillis > desiredIntervalInMillis;
+        candle.openTimeInMillis + candle.sizeInMillis - firstCandle.openTimeInMillis > desiredIntervalInMillis;
       const isEndOfCurrentInterval =
-        candle.openTimeInMillis + candle.sizeInMillis - firstCandle!.openTimeInMillis === desiredIntervalInMillis;
+        candle.openTimeInMillis + candle.sizeInMillis - firstCandle.openTimeInMillis === desiredIntervalInMillis;
       if (isNextInterval || isEndOfCurrentInterval) {
         if (isEndOfCurrentInterval) {
           currentBatchArray.push(candle);
@@ -214,22 +214,18 @@ export class CandleBatcher extends EventEmitter<EventMap> {
     };
   }
 
-  /** Simple mapping, no batching! */
   static toBatchedCandles(candles: ExchangeCandle[]): BatchedCandle[] {
-    return CandleBatcher.batchMany(candles, candles[0]!.sizeInMillis);
+    return CandleBatcher.batchMany(candles, candles[0].sizeInMillis);
   }
 
-  /** Simple mapping, no batching! */
   static toBatchedCandle(candle: ExchangeCandle): BatchedCandle {
     return CandleBatcher.batchMany([candle], candle.sizeInMillis)[0]!;
   }
 
-  /** Simple mapping, no batching! */
   static toExchangeCandles(candles: BatchedCandle[]): ExchangeCandle[] {
     return candles.map(CandleBatcher.toExchangeCandle);
   }
 
-  /** Simple mapping, no batching! */
   static toExchangeCandle(candle: BatchedCandle): ExchangeCandle {
     return {
       base: candle.base,
@@ -278,8 +274,8 @@ export class CandleBatcher extends EventEmitter<EventMap> {
     const [firstCandle] = candles;
 
     return candles.reduce(reducer, {
-      high: new Big(firstCandle!.high),
-      low: new Big(firstCandle!.low),
+      high: new Big(firstCandle.high),
+      low: new Big(firstCandle.low),
     });
   }
 }
