@@ -30,6 +30,8 @@ import {StrategySignal, StrategyAdvice} from 'trading-strategies';
 
 - An **order book** is a real-time list of all the buy and sell orders for an asset, organized by price, showing where traders are willing to **buy (bids)** and **sell (asks)** and how much liquidity (trading volume) is available at each level.
 
+- The **spread** is the difference between the **bid price** buyers offer and the **ask price** sellers accept. A wide spread often signals low liquidity or higher uncertainty in the market, while a tighter spread suggests the opposite.
+
 - A **long position** is when a trader buys an asset because they expect its price to rise, and they plan to sell it later for a profit.
 
 - A **short position** is when a trader sells an asset they do not own by borrowing it because they expect its price to fall, and they plan to buy it back later at a lower price.
