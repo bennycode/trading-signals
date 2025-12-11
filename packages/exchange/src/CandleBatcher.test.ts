@@ -32,7 +32,7 @@ describe('CandleBatcher', () => {
         actual = cb.addToBatch(candle);
       }
 
-      assert(actual !== undefined);
+      assert.exists(actual);
 
       // Pair
       expect(expected.base).toBe(actual.base);
