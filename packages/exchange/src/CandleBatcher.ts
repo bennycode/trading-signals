@@ -1,17 +1,21 @@
 import {Big} from 'big.js';
+import {EventEmitter} from 'node:events';
 import ms from 'ms';
 import jsonabc from 'jsonabc';
 import {BatchedCandle, ExchangeCandle} from './BatchedCandle.js';
 
-export type CandleBatcherCallback = (candle: BatchedCandle) => void;
+type EventMap = {
+  batchedCandle: [candle: BatchedCandle];
+};
 
-export class CandleBatcher {
+export class CandleBatcher extends EventEmitter<EventMap> {
   private batch: ExchangeCandle[] = [];
+  private readonly desiredIntervalInMillis: number;
 
-  constructor(
-    private readonly desiredIntervalInMillis: number,
-    private readonly onBatchedCandle?: CandleBatcherCallback
-  ) {}
+  constructor(desiredIntervalInMillis: number) {
+    super();
+    this.desiredIntervalInMillis = desiredIntervalInMillis;
+  }
 
   get present(): number {
     return this.batch.length;
@@ -117,9 +121,11 @@ export class CandleBatcher {
     const exchangeCandle = CandleBatcher.isBatchedCandle(candle) ? CandleBatcher.toExchangeCandle(candle) : candle;
     const {currentBatchArray, newBatch} = CandleBatcher.add(exchangeCandle, this.batch, this.desiredIntervalInMillis);
     this.batch = currentBatchArray;
-    if (newBatch && this.onBatchedCandle) {
-      this.onBatchedCandle(newBatch);
+
+    if (newBatch) {
+      this.emit('batchedCandle', newBatch);
     }
+
     return newBatch;
   }
 
@@ -239,7 +245,7 @@ export class CandleBatcher {
     };
   }
 
-  static toString(candle: BatchedCandle): string {
+  static override toString(candle: BatchedCandle): string {
     return JSON.stringify(
       jsonabc.sortObj({
         base: candle.base,
