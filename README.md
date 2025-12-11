@@ -4,8 +4,6 @@
 
 This monorepo contains the [**Trading Signals library**](https://www.npmjs.com/package/trading-signals) and [its documentation website](https://bennycode.com/trading-signals/). Trading Signals provides TypeScript implementations of technical indicators and overlays for algorithmic trading and technical analysis.
 
-
-
 ## 📦 Packages
 
 This project uses [Lerna](https://lerna.js.org/) for managing the [monorepo](https://monorepo.tools/) with independent versioning. Execute `npm test` to run tests across all packages. Launch an interactive demo with `npm run docs`.
