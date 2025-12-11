@@ -34,7 +34,7 @@ export class CandleBatcher extends EventEmitter<EventMap> {
   static createBatchedCandle(batch: ExchangeCandle[], desiredIntervalInMillis: number): BatchedCandle {
     const openTimesArray = batch.map(candle => candle.openTimeInMillis);
     batch = batch.filter((candle, index) => index === openTimesArray.indexOf(candle.openTimeInMillis));
-    const firstCandle: ExchangeCandle = batch[0]!;
+    const firstCandle: ExchangeCandle = batch[0];
     const lastCandle: ExchangeCandle = batch[batch.length - 1];
     const isPositive = new Big(lastCandle.close).gt(firstCandle.open);
 
@@ -219,7 +219,7 @@ export class CandleBatcher extends EventEmitter<EventMap> {
   }
 
   static toBatchedCandle(candle: ExchangeCandle): BatchedCandle {
-    return CandleBatcher.batchMany([candle], candle.sizeInMillis)[0]!;
+    return CandleBatcher.batchMany([candle], candle.sizeInMillis)[0];
   }
 
   static toExchangeCandles(candles: BatchedCandle[]): ExchangeCandle[] {
