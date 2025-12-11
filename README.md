@@ -14,3 +14,7 @@ This project uses [Lerna](https://lerna.js.org/) for managing the [monorepo](htt
 | [**trading-signals**](./packages/trading-signals) | Technical indicators for algorithmic trading with streaming updates, replace mode, lazy evaluation, and memory efficiency |
 | [**trading-signals-docs**](./packages/trading-signals-docs) | Documentation and showcase website built with Next.js, featuring interactive demos and examples of all indicators |
 | [**trading-strategies**](./packages/trading-strategies) | Trading strategy implementations that combine technical indicators into actionable trading signals |
+
+## Stargazers
+
+[![Stargazers](https://reporoster.com/stars/bennycode/trading-signals)](https://github.com/bennycode/trading-signals/stargazers)
