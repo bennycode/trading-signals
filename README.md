@@ -10,10 +10,10 @@ This project uses [Lerna](https://lerna.js.org/) for managing the [monorepo](htt
 
 | Package | Description |
 | --- | --- |
-| [**@typedtrader/exchange**](./packages/exchange) | Data transformation utilities for handling exchange candle data with proper type safety and aggregation |
-| [**trading-signals**](./packages/trading-signals) | Technical indicators for algorithmic trading with streaming updates, replace mode, lazy evaluation, and memory efficiency |
-| [**trading-signals-docs**](./packages/trading-signals-docs) | Documentation and showcase website built with Next.js, featuring interactive demos and examples of all indicators |
-| [**trading-strategies**](./packages/trading-strategies) | Trading strategy implementations that combine technical indicators into actionable trading signals |
+| [**@typedtrader/exchange**](./packages/exchange) | Data transformation utilities for handling exchange candle data with proper type safety and aggregation. Helps with integrating new exchanges and brokers. |
+| [**trading-signals**](./packages/trading-signals) | Technical indicators (SMA, EMA, RSI, MACD, ...) for algorithmic trading with streaming updates, replace mode, lazy evaluation, and memory efficiency. Can be added to your own trading apps or strategies. |
+| [**trading-signals-docs**](./packages/trading-signals-docs) | Documentation and showcase website built with Next.js, featuring interactive demos and examples of all indicators. See every indicator in action before you code. |
+| [**trading-strategies**](./packages/trading-strategies) | Trading strategy implementations that combine technical indicators into actionable advices. Can be used to build your own strategies for backtesting and real-time trading. |
 
 ## ⭐ Supporters
 
