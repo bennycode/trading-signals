@@ -7,7 +7,7 @@
     "@arethetypeswrong/cli": "^0.18.2",
     "dependency-cruiser": "^17.3.2",
     "generate-changelog": "^1.8.0",
-    "tsdown": "^0.17.2"
+    "tsdown": "^0.17.3"
   },
   "exports": {
     ".": {

@@ -1,10 +1,10 @@
 {
   "dependencies": {
     "@highcharts/react": "^4.1.0",
-    "@tailwindcss/postcss": "^4.1.17",
-    "next": "^16.0.8",
-    "react": "^19.2.1",
-    "react-dom": "^19.2.1",
+    "@tailwindcss/postcss": "^4.1.18",
+    "next": "^16.0.10",
+    "react": "^19.2.3",
+    "react-dom": "^19.2.3",
     "trading-signals": "7.2.0"
   },
   "description": "Documentation and showcase website for trading-signals library",

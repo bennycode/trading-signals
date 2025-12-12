@@ -1,11 +1,11 @@
 {
   "devDependencies": {
     "@tstv/eslint-config": "^4.1.1",
-    "@types/node": "^24.10.2",
+    "@types/node": "^24.10.3",
     "@vitest/coverage-v8": "^4.0.15",
     "cross-env": "^10.1.0",
-    "eslint": "^9.39.1",
-    "lefthook": "^2.0.9",
+    "eslint": "^9.39.2",
+    "lefthook": "^2.0.11",
     "lerna": "^9.0.3",
     "rimraf": "^6.1.2",
     "ts-node": "^10.9.2",
