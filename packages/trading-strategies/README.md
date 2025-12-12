@@ -1,10 +1,14 @@
 # Trading Strategies
 
-Trading strategies to run trading bots with JavaScript / TypeScript.
+Trading strategy implementations that combine technical indicators into actionable trading signals. Ideally designed for creating custom strategies and operating automated trading bots.
 
 ## Motivation
 
 The "trading-strategies" library provides a TypeScript implementation for common trading strategies. It is designed to work seamlessly with the [trading-signals](https://www.npmjs.com/package/trading-signals) library, allowing developers to combine technical indicators into complete automated trading strategies.
+
+> [!CAUTION]
+>
+> No strategy works all the time, so build in strict loss caps, a realistic positive price target, and the discipline to accept occasional losses. Managing risk matters more than heroically “holding a falling knife,” so focus on winning more often than you lose.
 
 ## Installation
 
@@ -29,6 +33,8 @@ import {StrategySignal, StrategyAdvice} from 'trading-strategies';
 - **Paper trading** is the process of evaluating a trading strategy in real time using simulated money to mimic live trading without financial risk.
 
 - An **order book** is a real-time list of all the buy and sell orders for an asset, organized by price, showing where traders are willing to **buy (bids)** and **sell (asks)** and how much liquidity (trading volume) is available at each level.
+
+- The **spread** is the difference between the **bid price** buyers offer and the **ask price** sellers accept. A wide spread often signals low liquidity or higher uncertainty in the market, while a tighter spread suggests the opposite.
 
 - A **long position** is when a trader buys an asset because they expect its price to rise, and they plan to sell it later for a profit.
 
@@ -56,9 +62,11 @@ Always backtest your strategies with historical data before deploying them in li
 
 1. **Beat Buy-and-Hold:** Outperform simply holding the asset
 2. **Beat Random Chance:** Outperform the `CoinFlipStrategy` baseline
-3. **Work in All Markets:** Perform well in bullish, bearish, and sideways markets
-4. **Manage Risk:** Include stop-loss limits and realistic profit targets
-5. **Handle Losses:** Accept that no strategy wins 100% of the time
+3. **Beat Broad Benchmarks:** Outperform the MSCI World or S&P 500 (after costs)
+4. **Work in All Markets:** Perform well in bullish, bearish, and sideways markets
+5. **Avoid Overfitting:** Perform well on historic data and real-world data
+6. **Manage Risk:** Include stop-loss limits and realistic profit targets
+7. **Handle Losses:** Accept that no strategy wins 100% of the time
 
 ## Disclaimer
 

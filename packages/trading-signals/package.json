@@ -7,12 +7,18 @@
     "@arethetypeswrong/cli": "^0.18.2",
     "dependency-cruiser": "^17.3.2",
     "generate-changelog": "^1.8.0",
-    "tsup": "^8.5.1"
+    "tsdown": "^0.17.2"
   },
   "exports": {
     ".": {
-      "import": "./dist/index.js",
-      "require": "./dist/index.cjs"
+      "import": {
+        "types": "./dist/index.d.mts",
+        "default": "./dist/index.mjs"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
     },
     "./package.json": "./package.json"
   },
@@ -57,7 +63,7 @@
     "url": "git+https://github.com/bennycode/trading-signals.git"
   },
   "scripts": {
-    "build": "tsup",
+    "build": "tsdown",
     "changelog:commit": "git add CHANGELOG.md && git commit -m \"docs: updated CHANGELOG.md\"",
     "clean": "rimraf coverage dist",
     "dist": "npm run clean && npm run build",
@@ -77,7 +83,7 @@
     "start": "tsx ./src/start/demo.ts",
     "test": "npm run test:types && npm run test:imports && npm run test:units -- --coverage",
     "test:exports": "attw --pack .",
-    "test:imports": "depcruise src --include-only \"^src\"",
+    "test:imports": "depcruise -c ../../.dependency-cruiser.cjs src --include-only \"^src\"",
     "test:types": "npm run lint:types",
     "test:units": "vitest run --passWithNoTests",
     "test:units:watch": "vitest --watch"
