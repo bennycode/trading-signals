@@ -14,7 +14,3 @@ This project uses [Lerna](https://lerna.js.org/) for managing the [monorepo](htt
 | [**trading-signals**](./packages/trading-signals) | Technical indicators (SMA, EMA, RSI, MACD, ...) for algorithmic trading with streaming updates, replace mode, lazy evaluation, and memory efficiency. Can be added to your own trading apps or strategies. |
 | [**trading-signals-docs**](./packages/trading-signals-docs) | Documentation and showcase website built with Next.js, featuring interactive demos and examples of all indicators. See every indicator in action before you code. |
 | [**trading-strategies**](./packages/trading-strategies) | Trading strategy implementations that combine technical indicators into actionable advices. Can be used to build your own strategies for backtesting and real-time trading. |
-
-## ⭐ Supporters
-
-[![Stargazers](https://reporoster.com/stars/bennycode/trading-signals)](https://github.com/bennycode/trading-signals/stargazers)
