@@ -61,7 +61,7 @@
     "url": "git+https://github.com/bennycode/trading-signals.git"
   },
   "scripts": {
-    "build": "tsdown",
+    "build": "tsdown --dts --format esm --format cjs",
     "changelog:commit": "git add CHANGELOG.md && git commit -m \"docs: updated CHANGELOG.md\"",
     "clean": "rimraf coverage dist",
     "dist": "npm run clean && npm run build && npm run test:exports",

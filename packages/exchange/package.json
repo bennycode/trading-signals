@@ -12,8 +12,16 @@
   "description": "Trading strategies to run trading bots with JavaScript / TypeScript.",
   "exports": {
     ".": {
-      "default": "./dist/index.js"
-    }
+      "import": {
+        "types": "./dist/index.d.mts",
+        "default": "./dist/index.mjs"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    },
+    "./package.json": "./package.json"
   },
   "files": [
     "dist",
@@ -33,7 +41,7 @@
     "access": "public"
   },
   "scripts": {
-    "build": "tsc",
+    "build": "tsdown --dts --format esm --format cjs",
     "clean": "rimraf --glob src/**/*{.js,.js.map,.d.ts}",
     "dist": "npm run clean && npm run build && npm run test:exports",
     "lint:types": "tsc --noEmit",
