@@ -35,11 +35,11 @@
   "scripts": {
     "build": "tsc",
     "clean": "rimraf --glob src/**/*{.js,.js.map,.d.ts}",
-    "dist": "npm run clean && npm run build",
+    "dist": "npm run clean && npm run build && npm run test:exports",
     "lint:types": "tsc --noEmit",
     "start": "npm run test:types && tsx src/start.ts",
     "test": "npm run test:types && npm run test:imports && npm run test:units -- --coverage",
-    "test:exports": "attw --pack .",
+    "test:exports": "attw --pack . --profile node16",
     "test:imports": "depcruise -c ../../.dependency-cruiser.cjs src --include-only \"^src\"",
     "test:types": "npm run lint:types",
     "test:units": "vitest run --passWithNoTests",

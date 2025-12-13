@@ -1,9 +1,11 @@
 {
   "devDependencies": {
+    "@arethetypeswrong/cli": "^0.18.2",
     "@tstv/eslint-config": "^4.1.1",
     "@types/node": "^24.10.3",
     "@vitest/coverage-v8": "^4.0.15",
     "cross-env": "^10.1.0",
+    "dependency-cruiser": "^17.3.2",
     "eslint": "^9.39.2",
     "lefthook": "^2.0.11",
     "lerna": "^9.0.3",
