@@ -22,27 +22,27 @@ import {WSMA} from '../../trend/WSMA/WSMA.js';
  * @see https://www.investopedia.com/terms/a/atr.asp
  */
 export class ATR extends IndicatorSeries<HighLowClose<number>> {
-  private readonly tr: TR;
-  private readonly smoothing: MovingAverage;
+  readonly #tr: TR;
+  readonly #smoothing: MovingAverage;
 
   constructor(
     public readonly interval: number,
     SmoothingIndicator: MovingAverageTypes = WSMA
   ) {
     super();
-    this.tr = new TR();
-    this.smoothing = new SmoothingIndicator(interval);
+    this.#tr = new TR();
+    this.#smoothing = new SmoothingIndicator(interval);
   }
 
   override getRequiredInputs() {
-    return this.smoothing.getRequiredInputs();
+    return this.#smoothing.getRequiredInputs();
   }
 
   update(candle: HighLowClose<number>, replace: boolean) {
-    const trueRange = this.tr.update(candle, replace);
-    this.smoothing.update(trueRange, replace);
-    if (this.smoothing.isStable) {
-      return this.setResult(this.smoothing.getResultOrThrow(), replace);
+    const trueRange = this.#tr.update(candle, replace);
+    this.#smoothing.update(trueRange, replace);
+    if (this.#smoothing.isStable) {
+      return this.setResult(this.#smoothing.getResultOrThrow(), replace);
     }
 
     return null;

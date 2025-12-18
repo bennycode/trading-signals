@@ -16,11 +16,11 @@ import {pushUpdate} from '../../util/pushUpdate.js';
  */
 export class SMA15 extends MovingAverage {
   public readonly prices: number[] = [];
-  private static readonly WEIGHTS = [-3, -6, -5, 3, 21, 46, 67, 74, 67, 46, 21, 3, -5, -6, -3];
-  private static readonly WEIGHT_SUM = 320;
+  static readonly #WEIGHTS = [-3, -6, -5, 3, 21, 46, 67, 74, 67, 46, 21, 3, -5, -6, -3];
+  static readonly #WEIGHT_SUM = 320;
 
   override getRequiredInputs() {
-    return SMA15.WEIGHTS.length;
+    return SMA15.#WEIGHTS.length;
   }
 
   update(price: number, replace: boolean) {
@@ -30,11 +30,11 @@ export class SMA15 extends MovingAverage {
       let weightedPricesSum = 0;
 
       for (let i = 0; i < this.getRequiredInputs(); i++) {
-        const weightedPrice = this.prices[i] * SMA15.WEIGHTS[i];
+        const weightedPrice = this.prices[i] * SMA15.#WEIGHTS[i];
         weightedPricesSum += weightedPrice;
       }
 
-      const weightedAverage = weightedPricesSum / SMA15.WEIGHT_SUM;
+      const weightedAverage = weightedPricesSum / SMA15.#WEIGHT_SUM;
       return this.setResult(weightedAverage, replace);
     }
 

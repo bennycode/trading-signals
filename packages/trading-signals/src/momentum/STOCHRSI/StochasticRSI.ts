@@ -26,8 +26,8 @@ import {RSI} from '../RSI/RSI.js';
  * @see https://alchemymarkets.com/education/indicators/stochastic-rsi/
  */
 export class StochasticRSI extends TrendIndicatorSeries {
-  private readonly period: Period;
-  private readonly rsi: RSI;
+  readonly #period: Period;
+  readonly #rsi: RSI;
 
   constructor(
     public readonly interval: number,
@@ -41,18 +41,18 @@ export class StochasticRSI extends TrendIndicatorSeries {
     }
   ) {
     super();
-    this.period = new Period(interval);
-    this.rsi = new RSI(interval, SmoothingRSI);
+    this.#period = new Period(interval);
+    this.#rsi = new RSI(interval, SmoothingRSI);
   }
 
   override getRequiredInputs() {
-    return this.rsi.getRequiredInputs() + this.period.getRequiredInputs();
+    return this.#rsi.getRequiredInputs() + this.#period.getRequiredInputs();
   }
 
   update(price: number, replace: boolean) {
-    const rsiResult = this.rsi.update(price, replace);
+    const rsiResult = this.#rsi.update(price, replace);
     if (rsiResult) {
-      const periodResult = this.period.update(rsiResult, replace);
+      const periodResult = this.#period.update(rsiResult, replace);
       if (periodResult) {
         const min = periodResult.lowest;
         const max = periodResult.highest;

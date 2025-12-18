@@ -24,9 +24,9 @@ import type {HighLowClose} from '../../types/HighLowClose.js';
  * @see https://github.com/twopirllc/pandas-ta/blob/master/pandas_ta/volatility/accbands.py
  */
 export class AccelerationBands extends TechnicalIndicator<BandsResult, HighLowClose<number>> {
-  private readonly lowerBand: MovingAverage;
-  private readonly middleBand: MovingAverage;
-  private readonly upperBand: MovingAverage;
+  readonly #lowerBand: MovingAverage;
+  readonly #middleBand: MovingAverage;
+  readonly #upperBand: MovingAverage;
 
   constructor(
     public readonly interval: number,
@@ -34,28 +34,28 @@ export class AccelerationBands extends TechnicalIndicator<BandsResult, HighLowCl
     SmoothingIndicator: MovingAverageTypes = SMA
   ) {
     super();
-    this.lowerBand = new SmoothingIndicator(interval);
-    this.middleBand = new SmoothingIndicator(interval);
-    this.upperBand = new SmoothingIndicator(interval);
+    this.#lowerBand = new SmoothingIndicator(interval);
+    this.#middleBand = new SmoothingIndicator(interval);
+    this.#upperBand = new SmoothingIndicator(interval);
   }
 
   override getRequiredInputs() {
-    return this.middleBand.getRequiredInputs();
+    return this.#middleBand.getRequiredInputs();
   }
 
   update({high, low, close}: HighLowClose<number>, replace: boolean) {
     const highPlusLow = high + low;
     const coefficient = highPlusLow === 0 ? 0 : ((high - low) / highPlusLow) * this.width;
 
-    this.lowerBand.update(low * (1 - coefficient), replace);
-    this.middleBand.update(close, replace);
-    this.upperBand.update(high * (1 + coefficient), replace);
+    this.#lowerBand.update(low * (1 - coefficient), replace);
+    this.#middleBand.update(close, replace);
+    this.#upperBand.update(high * (1 + coefficient), replace);
 
     if (this.isStable) {
       return (this.result = {
-        lower: this.lowerBand.getResultOrThrow(),
-        middle: this.middleBand.getResultOrThrow(),
-        upper: this.upperBand.getResultOrThrow(),
+        lower: this.#lowerBand.getResultOrThrow(),
+        middle: this.#middleBand.getResultOrThrow(),
+        upper: this.#upperBand.getResultOrThrow(),
       });
     }
 
@@ -63,6 +63,6 @@ export class AccelerationBands extends TechnicalIndicator<BandsResult, HighLowCl
   }
 
   override get isStable(): boolean {
-    return this.middleBand.isStable;
+    return this.#middleBand.isStable;
   }
 }

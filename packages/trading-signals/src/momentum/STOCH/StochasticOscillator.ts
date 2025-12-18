@@ -30,9 +30,9 @@ export interface StochasticResult {
  */
 export class StochasticOscillator extends TechnicalIndicator<StochasticResult, HighLowClose<number>> {
   public readonly candles: HighLowClose<number>[] = [];
-  private readonly periodM: SMA;
-  private readonly periodP: SMA;
-  private previousResult?: StochasticResult;
+  readonly #periodM: SMA;
+  readonly #periodP: SMA;
+  #previousResult?: StochasticResult;
 
   /**
    * @param n The %k period
@@ -45,8 +45,8 @@ export class StochasticOscillator extends TechnicalIndicator<StochasticResult, H
     public p: number
   ) {
     super();
-    this.periodM = new SMA(m);
-    this.periodP = new SMA(p);
+    this.#periodM = new SMA(m);
+    this.#periodP = new SMA(p);
   }
 
   override getRequiredInputs() {
@@ -63,15 +63,15 @@ export class StochasticOscillator extends TechnicalIndicator<StochasticResult, H
       let fastK = (candle.close - lowest) * 100;
       // Prevent division by zero
       fastK = fastK / (divisor === 0 ? 1 : divisor);
-      const stochK = this.periodM.update(fastK, replace); // (stoch_k, %k)
-      const stochD = stochK && this.periodP.update(stochK, replace); // (stoch_d, %d)
+      const stochK = this.#periodM.update(fastK, replace); // (stoch_k, %k)
+      const stochD = stochK && this.#periodP.update(stochK, replace); // (stoch_d, %d)
 
       if (stochK !== null && stochD !== null) {
         if (replace) {
-          this.result = this.previousResult;
+          this.result = this.#previousResult;
         }
 
-        this.previousResult = this.result;
+        this.#previousResult = this.result;
 
         return (this.result = {
           stochD,
@@ -104,7 +104,7 @@ export class StochasticOscillator extends TechnicalIndicator<StochasticResult, H
     state: (typeof TradingSignal)[keyof typeof TradingSignal];
     hasChanged: boolean;
   } {
-    const previousState = this.calculateSignal(this.previousResult);
+    const previousState = this.calculateSignal(this.#previousResult);
     const state = this.calculateSignal(this.getResult());
     const hasChanged = previousState !== state;
 

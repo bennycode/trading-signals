@@ -17,13 +17,13 @@ import {SMA} from '../SMA/SMA.js';
  * @see https://tlc.thinkorswim.com/center/reference/Tech-Indicators/studies-library/V-Z/WildersSmoothing
  */
 export class WSMA extends IndicatorSeries {
-  private readonly indicator: SMA;
-  private readonly smoothingFactor: number;
+  readonly #indicator: SMA;
+  readonly #smoothingFactor: number;
 
   constructor(public readonly interval: number) {
     super();
-    this.indicator = new SMA(interval);
-    this.smoothingFactor = 1 / this.interval;
+    this.#indicator = new SMA(interval);
+    this.#smoothingFactor = 1 / this.interval;
   }
 
   override getRequiredInputs() {
@@ -31,12 +31,12 @@ export class WSMA extends IndicatorSeries {
   }
 
   update(price: number, replace: boolean) {
-    const sma = this.indicator.update(price, replace);
+    const sma = this.#indicator.update(price, replace);
     if (replace && this.previousResult !== undefined) {
-      const smoothed = (price - this.previousResult) * this.smoothingFactor;
+      const smoothed = (price - this.previousResult) * this.#smoothingFactor;
       return this.setResult(smoothed + this.previousResult, replace);
     } else if (!replace && this.result !== undefined) {
-      const smoothed = (price - this.result) * this.smoothingFactor;
+      const smoothed = (price - this.result) * this.#smoothingFactor;
       return this.setResult(smoothed + this.result, replace);
     } else if (this.result === undefined && sma !== null) {
       return this.setResult(sma, replace);

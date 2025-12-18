@@ -19,11 +19,11 @@ import {WSMA} from '../WSMA/WSMA.js';
  * @see https://www.fidelity.com/learning-center/trading-investing/technical-analysis/technical-indicator-guide/dmi
  */
 export class DX extends IndicatorSeries<HighLowClose<number>> {
-  private readonly movesUp: MovingAverage;
-  private readonly movesDown: MovingAverage;
-  private previousCandle?: HighLowClose<number>;
-  private secondLastCandle?: HighLowClose<number>;
-  private readonly atr: ATR;
+  readonly #movesUp: MovingAverage;
+  readonly #movesDown: MovingAverage;
+  #previousCandle?: HighLowClose<number>;
+  #secondLastCandle?: HighLowClose<number>;
+  readonly #atr: ATR;
   public mdi?: number;
   public pdi?: number;
 
@@ -32,40 +32,40 @@ export class DX extends IndicatorSeries<HighLowClose<number>> {
     SmoothingIndicator: MovingAverageTypes = WSMA
   ) {
     super();
-    this.atr = new ATR(this.interval, SmoothingIndicator);
-    this.movesDown = new SmoothingIndicator(this.interval);
-    this.movesUp = new SmoothingIndicator(this.interval);
+    this.#atr = new ATR(this.interval, SmoothingIndicator);
+    this.#movesDown = new SmoothingIndicator(this.interval);
+    this.#movesUp = new SmoothingIndicator(this.interval);
   }
 
-  private updateState(candle: HighLowClose<number>, pdm: number, mdm: number, replace: boolean): void {
-    this.atr.update(candle, replace);
-    this.movesUp.update(pdm, replace);
-    this.movesDown.update(mdm, replace);
-    if (this.previousCandle) {
-      this.secondLastCandle = this.previousCandle;
+  #updateState(candle: HighLowClose<number>, pdm: number, mdm: number, replace: boolean): void {
+    this.#atr.update(candle, replace);
+    this.#movesUp.update(pdm, replace);
+    this.#movesDown.update(mdm, replace);
+    if (this.#previousCandle) {
+      this.#secondLastCandle = this.#previousCandle;
     }
-    this.previousCandle = candle;
+    this.#previousCandle = candle;
   }
 
   override getRequiredInputs() {
-    return this.movesUp.getRequiredInputs();
+    return this.#movesUp.getRequiredInputs();
   }
 
   update(candle: HighLowClose<number>, replace: boolean) {
-    if (!this.previousCandle) {
-      this.updateState(candle, 0, 0, replace);
+    if (!this.#previousCandle) {
+      this.#updateState(candle, 0, 0, replace);
       return null;
     }
 
-    if (this.secondLastCandle && replace) {
-      this.previousCandle = this.secondLastCandle;
+    if (this.#secondLastCandle && replace) {
+      this.#previousCandle = this.#secondLastCandle;
     }
 
     const currentHigh = candle.high;
-    const previousHigh = this.previousCandle.high;
+    const previousHigh = this.#previousCandle.high;
 
     const currentLow = candle.low;
-    const previousLow = this.previousCandle.low;
+    const previousLow = this.#previousCandle.low;
 
     const higherHigh = currentHigh - previousHigh;
     const lowerLow = previousLow - currentLow;
@@ -80,11 +80,11 @@ export class DX extends IndicatorSeries<HighLowClose<number>> {
 
     const mdm = noLowerLows || highsRise ? 0 : lowerLow;
 
-    this.updateState(candle, pdm, mdm, replace);
+    this.#updateState(candle, pdm, mdm, replace);
 
-    if (this.movesUp.isStable) {
-      this.pdi = this.movesUp.getResultOrThrow() / this.atr.getResultOrThrow();
-      this.mdi = this.movesDown.getResultOrThrow() / this.atr.getResultOrThrow();
+    if (this.#movesUp.isStable) {
+      this.pdi = this.#movesUp.getResultOrThrow() / this.#atr.getResultOrThrow();
+      this.mdi = this.#movesDown.getResultOrThrow() / this.#atr.getResultOrThrow();
 
       const dmDiff = Math.abs(this.pdi - this.mdi);
       const dmSum = this.pdi + this.mdi;

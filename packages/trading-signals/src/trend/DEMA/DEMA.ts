@@ -10,26 +10,26 @@ import {IndicatorSeries} from '../../types/Indicator.js';
  * @see https://www.investopedia.com/terms/d/double-exponential-moving-average.asp
  */
 export class DEMA extends IndicatorSeries {
-  private readonly inner: EMA;
-  private readonly outer: EMA;
+  readonly #inner: EMA;
+  readonly #outer: EMA;
 
   constructor(public readonly interval: number) {
     super();
-    this.inner = new EMA(interval);
-    this.outer = new EMA(interval);
+    this.#inner = new EMA(interval);
+    this.#outer = new EMA(interval);
   }
 
   override getRequiredInputs() {
-    return this.outer.getRequiredInputs();
+    return this.#outer.getRequiredInputs();
   }
 
   update(price: number, replace: boolean): number {
-    const innerResult = this.inner.update(price, replace);
-    const outerResult = this.outer.update(innerResult, replace);
+    const innerResult = this.#inner.update(price, replace);
+    const outerResult = this.#outer.update(innerResult, replace);
     return this.setResult(innerResult * 2 - outerResult, replace);
   }
 
   override get isStable(): boolean {
-    return this.outer.isStable;
+    return this.#outer.isStable;
   }
 }

@@ -29,26 +29,26 @@ import {MAD} from '../../volatility/MAD/MAD.js';
  * @see https://en.wikipedia.org/wiki/Commodity_channel_index
  */
 export class CCI extends TrendIndicatorSeries<HighLowClose<number>> {
-  private readonly sma: SMA;
-  private readonly typicalPrices: number[];
+  readonly #sma: SMA;
+  readonly #typicalPrices: number[];
 
   constructor(public readonly interval: number) {
     super();
-    this.sma = new SMA(this.interval);
-    this.typicalPrices = [];
+    this.#sma = new SMA(this.interval);
+    this.#typicalPrices = [];
   }
 
   override getRequiredInputs() {
-    return this.sma.getRequiredInputs();
+    return this.#sma.getRequiredInputs();
   }
 
   update(candle: HighLowClose<number>, replace: boolean) {
-    const typicalPrice = this.cacheTypicalPrice(candle, replace);
-    this.sma.update(typicalPrice, replace);
+    const typicalPrice = this.#cacheTypicalPrice(candle, replace);
+    this.#sma.update(typicalPrice, replace);
 
-    if (this.sma.isStable) {
-      const mean = this.sma.getResultOrThrow();
-      const meanDeviation = MAD.getResultFromBatch(this.typicalPrices, mean);
+    if (this.#sma.isStable) {
+      const mean = this.#sma.getResultOrThrow();
+      const meanDeviation = MAD.getResultFromBatch(this.#typicalPrices, mean);
       const numerator = typicalPrice - mean;
       const denominator = 0.015 * meanDeviation;
       return this.setResult(numerator / denominator, replace);
@@ -57,9 +57,9 @@ export class CCI extends TrendIndicatorSeries<HighLowClose<number>> {
     return null;
   }
 
-  private cacheTypicalPrice({high, low, close}: HighLowClose<number>, replace: boolean) {
+  #cacheTypicalPrice({high, low, close}: HighLowClose<number>, replace: boolean) {
     const typicalPrice = (high + low + close) / 3;
-    pushUpdate(this.typicalPrices, replace, typicalPrice, this.interval);
+    pushUpdate(this.#typicalPrices, replace, typicalPrice, this.interval);
     return typicalPrice;
   }
 

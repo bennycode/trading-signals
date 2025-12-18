@@ -20,51 +20,51 @@ import {WSMA} from '../../trend/WSMA/WSMA.js';
  * @see https://www.investopedia.com/terms/r/rsi.asp
  */
 export class RSI extends TrendIndicatorSeries {
-  private readonly previousPrices: number[] = [];
-  private readonly avgGain: MovingAverage;
-  private readonly avgLoss: MovingAverage;
-  private readonly maxValue = 100;
+  readonly #previousPrices: number[] = [];
+  readonly #avgGain: MovingAverage;
+  readonly #avgLoss: MovingAverage;
+  readonly #maxValue = 100;
 
   constructor(
     public readonly interval: number,
     SmoothingIndicator: MovingAverageTypes = WSMA
   ) {
     super();
-    this.avgGain = new SmoothingIndicator(this.interval);
-    this.avgLoss = new SmoothingIndicator(this.interval);
+    this.#avgGain = new SmoothingIndicator(this.interval);
+    this.#avgLoss = new SmoothingIndicator(this.interval);
   }
 
   override getRequiredInputs() {
-    return this.avgGain.getRequiredInputs();
+    return this.#avgGain.getRequiredInputs();
   }
 
   update(price: number, replace: boolean) {
-    pushUpdate(this.previousPrices, replace, price, this.interval);
+    pushUpdate(this.#previousPrices, replace, price, this.interval);
 
     // Ensure at least 2 prices are available for calculation
-    if (this.previousPrices.length < 2) {
+    if (this.#previousPrices.length < 2) {
       return null;
     }
 
     const currentPrice = price;
-    const previousPrice = this.previousPrices[this.previousPrices.length - 2];
+    const previousPrice = this.#previousPrices[this.#previousPrices.length - 2];
 
     if (currentPrice > previousPrice) {
-      this.avgLoss.update(0, replace);
-      this.avgGain.update(price - previousPrice, replace);
+      this.#avgLoss.update(0, replace);
+      this.#avgGain.update(price - previousPrice, replace);
     } else {
-      this.avgLoss.update(previousPrice - currentPrice, replace);
-      this.avgGain.update(0, replace);
+      this.#avgLoss.update(previousPrice - currentPrice, replace);
+      this.#avgGain.update(0, replace);
     }
 
-    if (this.avgGain.isStable) {
-      const avgLoss = this.avgLoss.getResultOrThrow();
+    if (this.#avgGain.isStable) {
+      const avgLoss = this.#avgLoss.getResultOrThrow();
       // Prevent division by zero: https://github.com/bennycode/trading-signals/issues/378
       if (avgLoss === 0) {
         return this.setResult(100, replace);
       }
-      const relativeStrength = this.avgGain.getResultOrThrow() / avgLoss;
-      return this.setResult(this.maxValue - this.maxValue / (relativeStrength + 1), replace);
+      const relativeStrength = this.#avgGain.getResultOrThrow() / avgLoss;
+      return this.setResult(this.#maxValue - this.#maxValue / (relativeStrength + 1), replace);
     }
 
     return null;

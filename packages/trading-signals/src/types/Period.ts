@@ -9,16 +9,16 @@ export interface PeriodResult {
 export class Period extends TechnicalIndicator<PeriodResult, number> {
   public values: number[];
   /** Highest return value during the current period. */
-  private _highest?: number;
+  #highest?: number;
   /** Lowest return value during the current period. */
-  private _lowest?: number;
+  #lowest?: number;
 
   get highest() {
-    return this._highest;
+    return this.#highest;
   }
 
   get lowest() {
-    return this._lowest;
+    return this.#lowest;
   }
 
   constructor(public readonly interval: number) {
@@ -34,11 +34,11 @@ export class Period extends TechnicalIndicator<PeriodResult, number> {
     pushUpdate(this.values, replace, value, this.interval);
 
     if (this.values.length === this.interval) {
-      this._lowest = Math.min(...this.values);
-      this._highest = Math.max(...this.values);
+      this.#lowest = Math.min(...this.values);
+      this.#highest = Math.max(...this.values);
       return (this.result = {
-        highest: this._highest,
-        lowest: this._lowest,
+        highest: this.#highest,
+        lowest: this.#lowest,
       });
     }
 
