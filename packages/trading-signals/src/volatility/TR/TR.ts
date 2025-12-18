@@ -12,8 +12,8 @@ import type {HighLowClose} from '../../types/HighLowClose.js';
  * @see https://www.linnsoft.com/techind/true-range-tr
  */
 export class TR extends IndicatorSeries<HighLowClose<number>> {
-  private previousCandle?: HighLowClose<number>;
-  private twoPreviousCandle?: HighLowClose<number>;
+  #previousCandle?: HighLowClose<number>;
+  #twoPreviousCandle?: HighLowClose<number>;
 
   override getRequiredInputs() {
     return 2;
@@ -23,19 +23,19 @@ export class TR extends IndicatorSeries<HighLowClose<number>> {
     const {high, low} = candle;
     const highLow = high - low;
 
-    if (this.previousCandle && replace) {
-      this.previousCandle = this.twoPreviousCandle;
+    if (this.#previousCandle && replace) {
+      this.#previousCandle = this.#twoPreviousCandle;
     }
 
-    if (this.previousCandle) {
-      const highClose = Math.abs(high - this.previousCandle.close);
-      const lowClose = Math.abs(low - this.previousCandle.close);
-      this.twoPreviousCandle = this.previousCandle;
-      this.previousCandle = candle;
+    if (this.#previousCandle) {
+      const highClose = Math.abs(high - this.#previousCandle.close);
+      const lowClose = Math.abs(low - this.#previousCandle.close);
+      this.#twoPreviousCandle = this.#previousCandle;
+      this.#previousCandle = candle;
       return this.setResult(Math.max(highLow, highClose, lowClose), replace);
     }
-    this.twoPreviousCandle = this.previousCandle;
-    this.previousCandle = candle;
+    this.#twoPreviousCandle = this.#previousCandle;
+    this.#previousCandle = candle;
     return this.setResult(highLow, replace);
   }
 }

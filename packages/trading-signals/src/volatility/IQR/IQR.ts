@@ -11,7 +11,7 @@ import {getQuartile} from '../../util/getQuartile.js';
  * @see https://en.wikipedia.org/wiki/Interquartile_range
  */
 export class IQR extends IndicatorSeries {
-  private readonly values: number[] = [];
+  readonly #values: number[] = [];
 
   constructor(public readonly interval: number) {
     super();
@@ -23,21 +23,21 @@ export class IQR extends IndicatorSeries {
 
   update(value: number, replace: boolean): number | null {
     if (replace) {
-      this.values.pop();
+      this.#values.pop();
     }
 
-    this.values.push(value);
+    this.#values.push(value);
 
-    if (this.values.length > this.interval) {
-      this.values.shift();
+    if (this.#values.length > this.interval) {
+      this.#values.shift();
     }
 
-    if (this.values.length < this.interval) {
+    if (this.#values.length < this.interval) {
       return null;
     }
 
-    const q1 = getQuartile(this.values, 0.25);
-    const q3 = getQuartile(this.values, 0.75);
+    const q1 = getQuartile(this.#values, 0.25);
+    const q3 = getQuartile(this.#values, 0.75);
 
     return this.setResult(q3 - q1, replace);
   }

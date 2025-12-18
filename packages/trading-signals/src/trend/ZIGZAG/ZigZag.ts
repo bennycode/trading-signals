@@ -25,14 +25,14 @@ export type ZigZagConfig = {
  * @see https://corporatefinanceinstitute.com/resources/career-map/sell-side/capital-markets/zig-zag-indicator/
  */
 export class ZigZag extends IndicatorSeries<HighLow> {
-  private readonly deviation: number;
-  private isUp: boolean = false;
-  private highestExtreme: number | null = null;
-  private lowestExtreme: number | null = null;
+  readonly #deviation: number;
+  #isUp: boolean = false;
+  #highestExtreme: number | null = null;
+  #lowestExtreme: number | null = null;
 
   constructor(config: ZigZagConfig) {
     super();
-    this.deviation = config.deviation;
+    this.#deviation = config.deviation;
   }
 
   override getRequiredInputs(): number {
@@ -43,34 +43,34 @@ export class ZigZag extends IndicatorSeries<HighLow> {
     const low = candle.low;
     const high = candle.high;
 
-    if (this.lowestExtreme === null) {
-      this.lowestExtreme = low;
+    if (this.#lowestExtreme === null) {
+      this.#lowestExtreme = low;
     }
 
-    if (this.highestExtreme === null) {
-      this.highestExtreme = high;
+    if (this.#highestExtreme === null) {
+      this.#highestExtreme = high;
     }
 
-    if (this.isUp) {
+    if (this.#isUp) {
       const uptrendReversal =
-        this.lowestExtreme + ((this.highestExtreme - this.lowestExtreme) * (100 - this.deviation)) / 100;
+        this.#lowestExtreme + ((this.#highestExtreme - this.#lowestExtreme) * (100 - this.#deviation)) / 100;
 
-      if (high > this.highestExtreme) {
-        this.highestExtreme = high;
+      if (high > this.#highestExtreme) {
+        this.#highestExtreme = high;
       } else if (low < uptrendReversal) {
-        this.isUp = false;
-        this.lowestExtreme = low;
-        return this.setResult(this.highestExtreme, replace);
+        this.#isUp = false;
+        this.#lowestExtreme = low;
+        return this.setResult(this.#highestExtreme, replace);
       }
     } else {
-      const downtrendReversal = low + ((this.highestExtreme - low) * this.deviation) / 100;
+      const downtrendReversal = low + ((this.#highestExtreme - low) * this.#deviation) / 100;
 
-      if (low < this.lowestExtreme) {
-        this.lowestExtreme = low;
+      if (low < this.#lowestExtreme) {
+        this.#lowestExtreme = low;
       } else if (high > downtrendReversal) {
-        this.isUp = true;
-        this.highestExtreme = high;
-        return this.setResult(this.lowestExtreme, replace);
+        this.#isUp = true;
+        this.#highestExtreme = high;
+        return this.setResult(this.#lowestExtreme, replace);
       }
     }
 

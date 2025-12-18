@@ -37,24 +37,24 @@ import {WSMA} from '../WSMA/WSMA.js';
  * @see https://medium.com/codex/algorithmic-trading-with-average-directional-index-in-python-2b5a20ecf06a
  */
 export class ADX extends IndicatorSeries<HighLowClose<number>> {
-  private readonly dx: DX;
-  private readonly smoothed: MovingAverage;
+  readonly #dx: DX;
+  readonly #smoothed: MovingAverage;
 
   constructor(
     public readonly interval: number,
     SmoothingIndicator: MovingAverageTypes = WSMA
   ) {
     super();
-    this.smoothed = new SmoothingIndicator(this.interval);
-    this.dx = new DX(interval, SmoothingIndicator);
+    this.#smoothed = new SmoothingIndicator(this.interval);
+    this.#dx = new DX(interval, SmoothingIndicator);
   }
 
   get mdi(): number | void {
-    return this.dx.mdi;
+    return this.#dx.mdi;
   }
 
   get pdi(): number | void {
-    return this.dx.pdi;
+    return this.#dx.pdi;
   }
 
   override getRequiredInputs() {
@@ -62,14 +62,14 @@ export class ADX extends IndicatorSeries<HighLowClose<number>> {
   }
 
   update(candle: HighLowClose<number>, replace: boolean) {
-    const result = this.dx.update(candle, replace);
+    const result = this.#dx.update(candle, replace);
 
     if (result !== null) {
-      this.smoothed.update(result, replace);
+      this.#smoothed.update(result, replace);
     }
 
-    if (this.smoothed.isStable) {
-      return this.setResult(this.smoothed.getResultOrThrow(), replace);
+    if (this.#smoothed.isStable) {
+      return this.setResult(this.#smoothed.getResultOrThrow(), replace);
     }
 
     return null;

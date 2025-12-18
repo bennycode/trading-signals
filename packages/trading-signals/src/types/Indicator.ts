@@ -93,15 +93,15 @@ export abstract class TrendIndicatorSeries<
   SignalState = TradingSignals,
 > extends IndicatorSeries<Input> {
   protected abstract calculateSignalState(result?: number | null | undefined): SignalState;
-  private previousSignalState?: SignalState;
+  #previousSignalState?: SignalState;
 
   protected override setResult(value: number, replace: boolean): number {
     // When replacing, restore the previous signal state
     if (replace && this.previousResult !== undefined) {
-      this.previousSignalState = this.calculateSignalState(this.previousResult);
+      this.#previousSignalState = this.calculateSignalState(this.previousResult);
     } else if (!replace) {
       // Cache the previous signal state before updating
-      this.previousSignalState = this.calculateSignalState(this.result);
+      this.#previousSignalState = this.calculateSignalState(this.result);
     }
 
     return super.setResult(value, replace);
@@ -112,7 +112,7 @@ export abstract class TrendIndicatorSeries<
     hasChanged: boolean;
   } {
     const currentState = this.calculateSignalState(this.getResult());
-    const hasChanged = this.previousSignalState !== undefined && this.previousSignalState !== currentState;
+    const hasChanged = this.#previousSignalState !== undefined && this.#previousSignalState !== currentState;
 
     return {
       hasChanged,

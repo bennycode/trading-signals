@@ -21,9 +21,9 @@ import {TradingSignal, TrendIndicatorSeries} from '../../types/Indicator.js';
  * @see https://www.sierrachart.com/index.php?page=doc/StudiesReference.php&ID=448
  */
 export class REI extends TrendIndicatorSeries<HighLowClose<number>> {
-  private readonly highs: number[] = [];
-  private readonly lows: number[] = [];
-  private readonly closes: number[] = [];
+  readonly #highs: number[] = [];
+  readonly #lows: number[] = [];
+  readonly #closes: number[] = [];
 
   constructor(public readonly interval: number) {
     super();
@@ -50,24 +50,24 @@ export class REI extends TrendIndicatorSeries<HighLowClose<number>> {
     return this.interval + 8;
   }
 
-  private calculateN(j: number) {
+  #calculateN(j: number) {
     if (
-      this.highs[j - 2] < this.closes[j - 7] &&
-      this.highs[j - 2] < this.closes[j - 8] &&
-      this.highs[j] < this.highs[j - 5] &&
-      this.highs[j] < this.highs[j - 6]
+      this.#highs[j - 2] < this.#closes[j - 7] &&
+      this.#highs[j - 2] < this.#closes[j - 8] &&
+      this.#highs[j] < this.#highs[j - 5] &&
+      this.#highs[j] < this.#highs[j - 6]
     ) {
       return 0;
     }
     return 1;
   }
 
-  private calculateM(j: number) {
+  #calculateM(j: number) {
     if (
-      this.lows[j - 2] > this.closes[j - 7] &&
-      this.lows[j - 2] > this.closes[j - 8] &&
-      this.lows[j] > this.lows[j - 5] &&
-      this.lows[j] > this.lows[j - 6]
+      this.#lows[j - 2] > this.#closes[j - 7] &&
+      this.#lows[j - 2] > this.#closes[j - 8] &&
+      this.#lows[j] > this.#lows[j - 5] &&
+      this.#lows[j] > this.#lows[j - 6]
     ) {
       return 0;
     }
@@ -76,18 +76,18 @@ export class REI extends TrendIndicatorSeries<HighLowClose<number>> {
 
   override update(candle: HighLowClose<number>, replace: boolean) {
     if (replace) {
-      this.highs.pop();
-      this.lows.pop();
-      this.closes.pop();
+      this.#highs.pop();
+      this.#lows.pop();
+      this.#closes.pop();
     }
 
-    this.highs.push(candle.high);
-    this.lows.push(candle.low);
-    this.closes.push(candle.close);
+    this.#highs.push(candle.high);
+    this.#lows.push(candle.low);
+    this.#closes.push(candle.close);
 
     // We need at least interval + 8 candles for REI calculation
     // REI uses data from prior periods for comparison
-    if (this.highs.length < this.getRequiredInputs()) {
+    if (this.#highs.length < this.getRequiredInputs()) {
       return null;
     }
 
@@ -95,14 +95,14 @@ export class REI extends TrendIndicatorSeries<HighLowClose<number>> {
     let subValueSum = 0;
     let absValueSum = 0;
 
-    const limitIndex = this.highs.length - 1;
+    const limitIndex = this.#highs.length - 1;
 
     for (let j = limitIndex; j > this.interval; j--) {
-      const diffHighs = this.highs[j] - this.highs[j - 2];
-      const diffLows = this.lows[j] - this.lows[j - 2];
+      const diffHighs = this.#highs[j] - this.#highs[j - 2];
+      const diffLows = this.#lows[j] - this.#lows[j - 2];
 
-      const n = this.calculateN(j);
-      const m = this.calculateM(j);
+      const n = this.#calculateN(j);
+      const m = this.#calculateM(j);
       const s = diffHighs + diffLows;
 
       const subValue = n * m * s;

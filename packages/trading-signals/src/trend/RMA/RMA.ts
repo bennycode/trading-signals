@@ -11,12 +11,12 @@ import {NotEnoughDataError} from '../../error/index.js';
  * @see https://www.tradingcode.net/tradingview/relative-moving-average/#calculation-process
  */
 export class RMA extends MovingAverage {
-  private pricesCounter = 0;
-  private readonly weightFactor: number;
+  #pricesCounter = 0;
+  readonly #weightFactor: number;
 
   constructor(public override readonly interval: number) {
     super(interval);
-    this.weightFactor = 1 / this.interval;
+    this.#weightFactor = 1 / this.interval;
   }
 
   override getRequiredInputs() {
@@ -25,22 +25,22 @@ export class RMA extends MovingAverage {
 
   update(price: number, replace: boolean): number {
     if (!replace) {
-      this.pricesCounter++;
-    } else if (replace && this.pricesCounter === 0) {
-      this.pricesCounter++;
+      this.#pricesCounter++;
+    } else if (replace && this.#pricesCounter === 0) {
+      this.#pricesCounter++;
     }
 
     if (replace && this.previousResult !== undefined) {
-      return this.setResult(price * this.weightFactor + this.previousResult * (1 - this.weightFactor), replace);
+      return this.setResult(price * this.#weightFactor + this.previousResult * (1 - this.#weightFactor), replace);
     }
     return this.setResult(
-      price * this.weightFactor + (this.result !== undefined ? this.result : price) * (1 - this.weightFactor),
+      price * this.#weightFactor + (this.result !== undefined ? this.result : price) * (1 - this.#weightFactor),
       replace
     );
   }
 
   override getResultOrThrow(): number {
-    if (this.pricesCounter < this.interval) {
+    if (this.#pricesCounter < this.interval) {
       throw new NotEnoughDataError(this.getRequiredInputs());
     }
 

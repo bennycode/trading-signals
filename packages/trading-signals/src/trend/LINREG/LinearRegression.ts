@@ -27,7 +27,7 @@ export class LinearRegression extends TechnicalIndicator<LinearRegressionResult,
     return this.interval;
   }
 
-  private calculateRegression(prices: number[]): LinearRegressionResult {
+  #calculateRegression(prices: number[]): LinearRegressionResult {
     const n = prices.length;
     const isPerfectLinearTrend = prices.every((price, i) => {
       if (i === 0) {
@@ -72,7 +72,7 @@ export class LinearRegression extends TechnicalIndicator<LinearRegressionResult,
       return null;
     }
 
-    return (this.result = this.calculateRegression(this.prices));
+    return (this.result = this.#calculateRegression(this.prices));
   }
 
   override get isStable(): boolean {

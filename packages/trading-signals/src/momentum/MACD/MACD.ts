@@ -20,7 +20,7 @@ export type MACDResult = {
  */
 export class MACD extends TechnicalIndicator<MACDResult, number> {
   public readonly prices: number[] = [];
-  private previousResult?: MACDResult;
+  #previousResult?: MACDResult;
 
   constructor(
     public readonly short: EMA | DEMA,
@@ -45,10 +45,10 @@ export class MACD extends TechnicalIndicator<MACDResult, number> {
       const signal = this.signal.update(macd, replace);
 
       if (replace) {
-        this.result = this.previousResult;
+        this.result = this.#previousResult;
       }
 
-      this.previousResult = this.result;
+      this.#previousResult = this.result;
 
       return (this.result = {
         histogram: macd - signal,
@@ -79,7 +79,7 @@ export class MACD extends TechnicalIndicator<MACDResult, number> {
     state: (typeof TradingSignal)[keyof typeof TradingSignal];
     hasChanged: boolean;
   } {
-    const previousState = this.calculateSignal(this.previousResult);
+    const previousState = this.calculateSignal(this.#previousResult);
     const state = this.calculateSignal(this.getResult());
     const hasChanged = previousState !== state;
 
