@@ -3,6 +3,11 @@ import {retry, RetryConfig} from 'ts-retry-promise';
 import {AlpacaExchangeMapper} from './AlpacaExchangeMapper.js';
 import {Exchange, ExchangeCandle, ExchangeCandleImportRequest} from './Exchange.js';
 import {CurrencyPair} from './CurrencyPair.js';
+import {
+  AlpacaStream,
+  // Alpaca has so many API issues, that we have to use their legacy & beta API concurrently
+  // @ts-ignore:next-line
+} from 'alpaca-legacy';
 
 const ms = (timeString: string): number => {
   const units: Record<string, number> = {
@@ -23,6 +28,7 @@ export const hasErrorStatus = (error: unknown): error is {status: number} => {
 };
 
 export class AlpacaExchange extends Exchange {
+  private readonly stream: AlpacaStream | undefined = undefined;
   readonly client: Client;
   private readonly SUBSCRIPTION_PLAN = 'iex' as const;
   private readonly retryConfig: Partial<RetryConfig> = {
@@ -157,5 +163,18 @@ export class AlpacaExchange extends Exchange {
 
   getName(): string {
     return AlpacaExchange.NAME;
+  }
+
+  /**
+   * Original time format from Alpaca is "RFC 3339" (i.e. "2023-08-08T18:58:27.26720022-04:00"),
+   * we convert it to "ISO 8601 UTC" (i.e. "2023-08-08T22:58:27.267Z").
+   */
+  async getTime(): Promise<string> {
+    const clock = await retry(() => this.client.v2.getClock(), this.retryConfig);
+    return new Date(clock.timestamp!).toISOString();
+  }
+
+  disconnect(): void {
+    this.stream?.getConnection().close();
   }
 }

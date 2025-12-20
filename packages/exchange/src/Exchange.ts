@@ -141,4 +141,10 @@ export abstract class Exchange {
    * Returns an identifiable name for the exchange.
    */
   abstract getName(): string;
+
+  /**
+   * Get the exchange's time in ISO 8601 format. The timezone is always zero UTC offset, as denoted by the suffix "Z",
+   * i.e. "2020-09-11T14:04:33.769Z".
+   */
+  abstract getTime(): Promise<string>;
 }
