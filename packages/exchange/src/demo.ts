@@ -4,8 +4,12 @@ import {CurrencyPair} from './CurrencyPair.js';
 import ms from 'ms';
 
 const usePaperTrading = process.env.ALPACA_USE_PAPER === 'true';
-const apiKey = usePaperTrading ? `${process.env.ALPACA_PAPER_API_KEY}` : `${process.env.ALPACA_LIVE_API_KEY}`;
-const apiSecret = usePaperTrading ? `${process.env.ALPACA_PAPER_API_SECRET}` : `${process.env.ALPACA_LIVE_API_SECRET}`;
+const apiKey = usePaperTrading
+  ? process.env.ALPACA_PAPER_API_KEY ?? ''
+  : process.env.ALPACA_LIVE_API_KEY ?? '';
+const apiSecret = usePaperTrading
+  ? process.env.ALPACA_PAPER_API_SECRET ?? ''
+  : process.env.ALPACA_LIVE_API_SECRET ?? '';
 
 const client = getAlpacaClient({
   apiKey,
