@@ -15,15 +15,21 @@ interface ExchangeOrderBase {
 export const ExchangeCandleBaseSchema = z.object({
   /** ID of base asset */
   base: z.string(),
+
   /** ID of quote asset */
   counter: z.string(),
+
+  /** True, if this candle is the latest / current candle from the exchange. This flag is good to know if a candle comes from a history import or not. */
+  isLatest: z.boolean().optional(),
   /** Bucket start time in simplified extended ISO 8601 format */
   openTimeInISO: z.string(),
-  /** Bucket start time converted to milliseconds */
+  /** Bucket start time converted to milliseconds (note: Coinbase Pro actually uses seconds) */
   openTimeInMillis: z.number(),
   /** Candle size in milliseconds */
   sizeInMillis: z.number(),
 });
+
+export type ExchangeCandleBase = z.infer<typeof ExchangeCandleBaseSchema>;
 
 export enum ExchangeOrderType {
   /** Maker */

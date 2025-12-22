@@ -11,8 +11,9 @@ import hours from '../fixtures/candles/batch/1h-in-1h.json' with {type: 'json'};
 import minutes from '../fixtures/candles/batch/1h-in-1m.json' with {type: 'json'};
 import one_day_in_minutes from '../fixtures/candles/candle-batcher/one_day_in_minutes.json' with {type: 'json'};
 import one_hour_in_minutes from '../fixtures/candles/candle-batcher/one_hour_in_minutes.json' with {type: 'json'};
-import {BatchedCandle, ExchangeCandle} from './BatchedCandle.js';
+import {BatchedCandle} from './BatchedCandle.js';
 import {CandleBatcher} from './CandleBatcher.js';
+import { ExchangeCandle } from './Exchange.js';
 
 describe('CandleBatcher', () => {
   describe('amountOfCandles', () => {
