@@ -27,7 +27,7 @@ export class AlpacaExchangeMapper {
     pair: CurrencyPair,
     sizeInMillis: number
   ): ExchangeCandle {
-    // Converting "RFC-3339" time to "ISO 8601 UTC" time
+    // Converting "RFC 3339" time to "ISO 8601 UTC" time
     const date = new Date(candle.t);
     return {
       base: pair.base,

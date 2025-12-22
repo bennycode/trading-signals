@@ -177,7 +177,7 @@ export type MinuteBarMessage = {
   S: string;
   /** Message type */
   T: "b";
-  /** Timestamp in RFC-3339 format with nanosecond precision */
+  /** Timestamp in RFC 3339 format with nanosecond precision */
   t: string;
   /** Bar volume */
   v: number;
