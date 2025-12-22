@@ -23,31 +23,6 @@ export const BasicCandlePrice = z.union([z.literal('open'), z.literal('high'), z
 
 export type BasicCandlePriceProperty = z.infer<typeof BasicCandlePrice>;
 
-export const ExchangeCandleSchema = z
-  .object({
-    /** Closing price (last trade) during the candle interval */
-    close: z.string(),
-    /** Represents the minimum price that a seller was willing to take at the end of the candle */
-    closeAsk: z.string().optional(),
-    /** Highest price during the candle interval */
-    high: z.string(),
-    /** Represents the minimum price that a seller was willing to take at the peak of the candle */
-    highAsk: z.string().optional(),
-    /** Lowest price during the candle interval */
-    low: z.string(),
-    /** Represents the minimum price that a seller was willing to take at the bottom of the candle */
-    lowAsk: z.string().optional(),
-    /** Opening price (first trade) during the candle interval */
-    open: z.string(),
-    /** Represents the minimum price that a seller was willing to take at the beginning of the candle */
-    openAsk: z.string().optional(),
-    /** Amount of traded base currency during the candle interval */
-    volume: z.string(),
-  })
-  .merge(ExchangeCandleBaseSchema);
-
-export type ExchangeCandle = z.infer<typeof ExchangeCandleSchema>;
-
 export interface BatchedCandle extends ExchangeCandleBase {
   // Prices
   close: Big;
