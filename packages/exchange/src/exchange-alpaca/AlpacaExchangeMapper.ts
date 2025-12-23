@@ -1,53 +1,50 @@
-
-import { Bar, Order, OrderStatus } from "@master-chief/alpaca-ts";
-import { PendingNewOrders } from "./typings.js";
-import ms from "ms";
-import { CurrencyPair } from "../core/CurrencyPair.js";
-import { ExchangeCandle, ExchangeFill, ExchangeOrderOptions, ExchangeOrderPosition, ExchangeOrderSide, ExchangeOrderType, ExchangePendingLimitOrder, ExchangePendingMarketOrder } from "../core/Exchange.js";
+import {Bar, Order, OrderStatus} from '@master-chief/alpaca-ts';
+import {PendingNewOrders} from './typings.js';
+import ms from 'ms';
+import {CurrencyPair} from '../core/CurrencyPair.js';
+import {
+  ExchangeCandle,
+  ExchangeFill,
+  ExchangeOrderOptions,
+  ExchangeOrderPosition,
+  ExchangeOrderSide,
+  ExchangeOrderType,
+  ExchangePendingLimitOrder,
+  ExchangePendingMarketOrder,
+} from '../core/Exchange.js';
 
 export class AlpacaExchangeMapper {
   static mapInterval(intervalInMillis: number): string {
-    if (intervalInMillis < ms("1m")) {
+    if (intervalInMillis < ms('1m')) {
       throw new Error(`Timeframes below 1 minute are not supported.`);
     }
 
-    if (intervalInMillis > ms("1d")) {
+    if (intervalInMillis > ms('1d')) {
       throw new Error(`Timeframes above 1 day are not supported.`);
     }
 
-    return ms(intervalInMillis)
-      .replace("m", "Min")
-      .replace("h", "Hour")
-      .replace("d", "Day");
+    return ms(intervalInMillis).replace('m', 'Min').replace('h', 'Hour').replace('d', 'Day');
   }
 
-  static toExchangeCandle(
-    candle: Bar,
-    pair: CurrencyPair,
-    sizeInMillis: number
-  ): ExchangeCandle {
+  static toExchangeCandle(candle: Bar, pair: CurrencyPair, sizeInMillis: number): ExchangeCandle {
     // Converting "RFC 3339" time to "ISO 8601 UTC" time
     const date = new Date(candle.t);
     return {
       base: pair.base,
-      close: candle.c + "",
+      close: candle.c + '',
       counter: pair.counter,
-      high: candle.h + "",
-      low: candle.l + "",
-      open: candle.o + "",
+      high: candle.h + '',
+      low: candle.l + '',
+      open: candle.o + '',
       openTimeInISO: date.toISOString(),
       openTimeInMillis: date.getTime(),
       sizeInMillis: sizeInMillis,
-      volume: candle.v + "",
+      volume: candle.v + '',
     };
   }
 
-  static toExchangePendingOrder(
-    order: PendingNewOrders,
-    pair: CurrencyPair,
-    options: ExchangeOrderOptions
-  ) {
-    if (order.type === "market") {
+  static toExchangePendingOrder(order: PendingNewOrders, pair: CurrencyPair, options: ExchangeOrderOptions) {
+    if (order.type === 'market') {
       const pendingOrder: ExchangePendingMarketOrder = {
         id: order.id,
         pair,
@@ -76,15 +73,14 @@ export class AlpacaExchangeMapper {
     return {
       created_at: `${order.created_at}`,
       /** Alpaca does not charge a commission (except for crypto) for trades: https://files.alpaca.markets/disclosures/library/BrokFeeSched.pdf */
-      fee: "0",
+      fee: '0',
       feeAsset: pair.counter,
       order_id: `${order.id}`,
       pair,
       /** @see https://forum.alpaca.markets/t/13480 */
       position: ExchangeOrderPosition.LONG,
       price: `${order.filled_avg_price}`,
-      side:
-        order.side === "buy" ? ExchangeOrderSide.BUY : ExchangeOrderSide.SELL,
+      side: order.side === 'buy' ? ExchangeOrderSide.BUY : ExchangeOrderSide.SELL,
       size: `${order.filled_qty}`,
     };
   }
