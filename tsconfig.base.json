@@ -2,12 +2,8 @@
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
-      "@typedtrader/*": [
-        "packages/*/src"
-      ],
-      "trading-signals": [
-        "packages/trading-signals/src"
-      ]
+      "@typedtrader/*": ["packages/*/src"],
+      "trading-signals": ["packages/trading-signals/src"]
     }
   }
 }
