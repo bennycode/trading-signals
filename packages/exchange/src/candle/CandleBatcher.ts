@@ -3,7 +3,7 @@ import {EventEmitter} from 'node:events';
 import ms from 'ms';
 import jsonabc from 'jsonabc';
 import {BatchedCandle} from './BatchedCandle.js';
-import { ExchangeCandle } from './Exchange.js';
+import { ExchangeCandle } from '../core/Exchange.js';
 
 type EventMap = {
   batchedCandle: [candle: BatchedCandle];

@@ -1,8 +1,8 @@
 import 'dotenv-defaults/config.js';
-import {getAlpacaClient} from './getAlpacaClient.js';
-import {CurrencyPair} from './CurrencyPair.js';
+import {getAlpacaClient} from './exchange-alpaca/getAlpacaClient.js';
+import {CurrencyPair} from './core/CurrencyPair.js';
 import ms from 'ms';
-import {ExchangeCandle} from './Exchange.js';
+import {ExchangeCandle} from './core/Exchange.js';
 
 const usePaperTrading = process.env.ALPACA_USE_PAPER === 'true';
 const apiKey = usePaperTrading ? (process.env.ALPACA_PAPER_API_KEY ?? '') : (process.env.ALPACA_LIVE_API_KEY ?? '');

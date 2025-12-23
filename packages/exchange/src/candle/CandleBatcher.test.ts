@@ -1,19 +1,19 @@
 import {Big} from 'big.js';
 import ms from 'ms';
 import {describe, expect, it, vi} from 'vitest';
-import LTC_USDT_2d_1m_1606066988989 from '../fixtures/StopLossStrategy/LTC_USDT_2d_1m_1606066988989.json' with {type: 'json'};
-import OneWeekInMinutes from '../fixtures/candles/OneWeekInMinutes.json' with {type: 'json'};
-import TenMinutesInEightCandles from '../fixtures/candles/TenMinutesInEightCandles.json' with {type: 'json'};
-import TenMinutesInTenCandles from '../fixtures/candles/TenMinutesInTenCandles.json' with {type: 'json'};
-import TenMinutesMissingEnd from '../fixtures/candles/TenMinutesMissingEnd.json' with {type: 'json'};
-import TenMinutesMissingStart from '../fixtures/candles/TenMinutesMissingStart.json' with {type: 'json'};
-import hours from '../fixtures/candles/batch/1h-in-1h.json' with {type: 'json'};
-import minutes from '../fixtures/candles/batch/1h-in-1m.json' with {type: 'json'};
-import one_day_in_minutes from '../fixtures/candles/candle-batcher/one_day_in_minutes.json' with {type: 'json'};
-import one_hour_in_minutes from '../fixtures/candles/candle-batcher/one_hour_in_minutes.json' with {type: 'json'};
+import LTC_USDT_2d_1m_1606066988989 from '../../fixtures/StopLossStrategy/LTC_USDT_2d_1m_1606066988989.json' with {type: 'json'};
+import OneWeekInMinutes from '../../fixtures/candles/OneWeekInMinutes.json' with {type: 'json'};
+import TenMinutesInEightCandles from '../../fixtures/candles/TenMinutesInEightCandles.json' with {type: 'json'};
+import TenMinutesInTenCandles from '../../fixtures/candles/TenMinutesInTenCandles.json' with {type: 'json'};
+import TenMinutesMissingEnd from '../../fixtures/candles/TenMinutesMissingEnd.json' with {type: 'json'};
+import TenMinutesMissingStart from '../../fixtures/candles/TenMinutesMissingStart.json' with {type: 'json'};
+import hours from '../../fixtures/candles/batch/1h-in-1h.json' with {type: 'json'};
+import minutes from '../../fixtures/candles/batch/1h-in-1m.json' with {type: 'json'};
+import one_day_in_minutes from '../../fixtures/candles/candle-batcher/one_day_in_minutes.json' with {type: 'json'};
+import one_hour_in_minutes from '../../fixtures/candles/candle-batcher/one_hour_in_minutes.json' with {type: 'json'};
 import {BatchedCandle} from './BatchedCandle.js';
 import {CandleBatcher} from './CandleBatcher.js';
-import { ExchangeCandle } from './Exchange.js';
+import { ExchangeCandle } from '../core/Exchange.js';
 
 describe('CandleBatcher', () => {
   describe('amountOfCandles', () => {

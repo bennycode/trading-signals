@@ -1,8 +1,8 @@
 import {ApiError, Client} from '@master-chief/alpaca-ts';
 import {retry, RetryConfig} from 'ts-retry-promise';
 import {AlpacaExchangeMapper} from './AlpacaExchangeMapper.js';
-import {Exchange, ExchangeCandle, ExchangeCandleImportRequest} from './Exchange.js';
-import {CurrencyPair} from './CurrencyPair.js';
+import {Exchange, ExchangeCandle, ExchangeCandleImportRequest} from '../core/Exchange.js';
+import {CurrencyPair} from '../core/CurrencyPair.js';
 import {
   AlpacaStream,
   // Alpaca has so many API issues, that we have to use their legacy & beta API concurrently

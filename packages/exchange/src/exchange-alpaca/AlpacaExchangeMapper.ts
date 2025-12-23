@@ -2,8 +2,8 @@
 import { Bar, Order, OrderStatus } from "@master-chief/alpaca-ts";
 import { PendingNewOrders } from "./typings.js";
 import ms from "ms";
-import { CurrencyPair } from "./CurrencyPair.js";
-import { ExchangeCandle, ExchangeFill, ExchangeOrderOptions, ExchangeOrderPosition, ExchangeOrderSide, ExchangeOrderType, ExchangePendingLimitOrder, ExchangePendingMarketOrder } from "./Exchange.js";
+import { CurrencyPair } from "../core/CurrencyPair.js";
+import { ExchangeCandle, ExchangeFill, ExchangeOrderOptions, ExchangeOrderPosition, ExchangeOrderSide, ExchangeOrderType, ExchangePendingLimitOrder, ExchangePendingMarketOrder } from "../core/Exchange.js";
 
 export class AlpacaExchangeMapper {
   static mapInterval(intervalInMillis: number): string {
