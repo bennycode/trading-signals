@@ -5,9 +5,12 @@ import {
   StrategyAdviceMarketSellOrder,
 } from '../strategy/StrategyAdvice.js';
 import {StrategySignal} from '../strategy/StrategySignal.js';
+import {Strategy} from '../strategy/Strategy.js';
 
-export class CoinFlipStrategy {
-  async processCandle(): Promise<StrategyAdvice | void> {
+export class CoinFlipStrategy extends Strategy {
+  static override NAME = '@typedtrader/strategy-coin-flip';
+
+  protected override async processCandle(): Promise<StrategyAdvice | void> {
     const buyMarket: StrategyAdviceMarketBuyOrder = {
       amount: null,
       amountType: 'base',

@@ -48,6 +48,14 @@ import {StrategySignal, StrategyAdvice} from 'trading-strategies';
 
 - A **market taker** removes liquidity by placing orders that execute immediately against those resting orders on the order book. This usually leads to higher trading fees because brokers often charge more for taking liquidity from the order book. **Market orders** are usually market taker orders because they execute immediately against orders already on the book.
 
+- **Spot trading** is when a trader buys or sells an asset with immediate settlement, meaning ownership of the asset is transferred right away.
+
+- **Futures trading** is when a trader buys or sells a contract that represents an agreement to trade an asset at a later date.
+
+- **Fungible assets** are assets where each unit is interchangeable with another unit of the same type, meaning they have identical value and properties and can be exchanged one for one without loss. Stocks are fungible assets because one share of a company’s common stock is interchangeable with any other share of the same class, carrying the same rights, value, and economic exposure regardless of who owns it.
+
+- **Non-fungible assets** are assets where each unit is unique and not directly interchangeable with another, meaning their value depends on specific characteristics such as rarity, condition, history, or ownership rather than a standard market price. A Pokémon trading card is a non-fungible asset because each card can differ in edition, rarity, condition, and even print run, so one card is not perfectly interchangeable with another, even if they feature the same Pokémon.
+
 ## Strategy Signals
 
 - `BUY_MARKET`: Buy at current market price

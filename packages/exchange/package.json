@@ -3,10 +3,14 @@
     "url": "https://github.com/bennycode/trading-signals/issues"
   },
   "dependencies": {
+    "@master-chief/alpaca-ts": "^7.0.15-alpha",
     "@types/jsonabc": "^2.3.3",
     "@types/ms": "^0.7.34",
+    "alpaca-legacy": "npm:@master-chief/alpaca@^6.3.20",
+    "dotenv-defaults": "^5.0.2",
     "jsonabc": "^2.3.1",
     "ms": "^2.1.3",
+    "ts-retry-promise": "^0.8.1",
     "zod": "^4.1.13"
   },
   "description": "Trading strategies to run trading bots with JavaScript / TypeScript.",
@@ -43,6 +47,7 @@
   "scripts": {
     "build": "tsdown --dts --format esm --format cjs",
     "clean": "rimraf --glob src/**/*{.js,.js.map,.d.ts}",
+    "demo": "tsx src/demo.ts",
     "dist": "npm run clean && npm run build && npm run test:exports",
     "lint:types": "tsc --noEmit",
     "start": "npm run test:types && tsx src/start.ts",
