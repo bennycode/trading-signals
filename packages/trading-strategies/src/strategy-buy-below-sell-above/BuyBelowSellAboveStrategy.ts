@@ -2,16 +2,21 @@ import type {BatchedCandle} from '@typedtrader/exchange';
 import {StrategyAdvice, StrategyAdviceLimitBuyOrder, StrategyAdviceLimitSellOrder} from '../strategy/StrategyAdvice.js';
 import {StrategySignal} from '../strategy/StrategySignal.js';
 import Big from 'big.js';
+import {Strategy} from '../strategy/Strategy.js';
 
 export interface BuyBelowSellAboveConfig {
   buyBelow?: string;
   sellAbove?: string;
 }
 
-export class BuyBelowSellAboveStrategy {
-  constructor(private readonly config: BuyBelowSellAboveConfig = {}) {}
+export class BuyBelowSellAboveStrategy extends Strategy {
+  static override NAME = '@typedtrader/strategy-buy-below-sell-above';
 
-  async processCandle(candle: BatchedCandle): Promise<StrategyAdvice | void> {
+  constructor(private readonly config: BuyBelowSellAboveConfig = {}) {
+    super();
+  }
+
+  override async processCandle(candle: BatchedCandle): Promise<StrategyAdvice | void> {
     const closePrice = candle.close;
 
     if (this.config.buyBelow !== undefined) {
