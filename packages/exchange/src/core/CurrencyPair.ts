@@ -39,7 +39,7 @@ export class CurrencyPair implements CurrencyPairJSON {
       return new CurrencyPair(base, counter);
     }
     throw new Error(
-      `Symbol "${symbol}" cannot be split with delimeter "${delimiter}".`
+      `Symbol "${symbol}" cannot be split with delimiter "${delimiter}".`
     );
   }
 }
