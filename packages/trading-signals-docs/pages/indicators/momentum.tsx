@@ -21,6 +21,7 @@ import Chart, {ChartDataPoint} from '../../components/Chart';
 import {DataTable} from '../../components/DataTable';
 import {IndicatorHeader} from '../../components/IndicatorHeader';
 import {SignalBadge} from '../../components/SignalBadge';
+import PriceChart, {PriceData} from '../../components/PriceChart';
 
 type IndicatorType = 'single' | 'dual' | 'triple' | 'custom';
 
@@ -453,9 +454,18 @@ const indicators: IndicatorConfig[] = [
   },
 ];
 
+const collectPriceData = (candle: Candle, idx: number): PriceData => ({
+  x: idx + 1,
+  open: candle.open,
+  high: candle.high,
+  low: candle.low,
+  close: candle.close,
+});
+
 const renderSingleIndicator = (config: IndicatorConfig) => {
   const indicator = config.createIndicator!();
   const chartData: ChartDataPoint[] = [];
+  const priceData: PriceData[] = [];
   const sampleValues: any[] = [];
 
   ethCandles.forEach((candle, idx) => {
@@ -467,6 +477,8 @@ const renderSingleIndicator = (config: IndicatorConfig) => {
     } else {
       chartData.push({x: idx + 1, y: chartPoint.y});
     }
+
+    priceData.push(collectPriceData(candle, idx));
 
     sampleValues.push({
       period: idx + 1,
@@ -489,6 +501,8 @@ const renderSingleIndicator = (config: IndicatorConfig) => {
       />
 
       <Chart title={config.chartTitle!} data={chartData} yAxisLabel={config.yAxisLabel!} color={config.color} />
+
+      <PriceChart title="Input Prices" data={priceData} />
 
       <DataTable title="All Sample Values" columns={config.getTableColumns!()} data={sampleValues} />
     </div>
@@ -546,6 +560,7 @@ export default function MomentumIndicators() {
     const stoch = new StochasticOscillator(14, 3, 3);
     const chartDataK: ChartDataPoint[] = [];
     const chartDataD: ChartDataPoint[] = [];
+    const priceData: PriceData[] = [];
     const sampleValues: Array<{period: number; date: string; close: number; k: string; d: string; signal: string}> = [];
 
     ethCandles.forEach((candle, idx) => {
@@ -554,6 +569,8 @@ export default function MomentumIndicators() {
       const signal = stoch.getSignal();
       chartDataK.push({x: idx + 1, y: result?.stochK ?? null});
       chartDataD.push({x: idx + 1, y: result?.stochD ?? null});
+
+      priceData.push(collectPriceData(candle, idx));
 
       sampleValues.push({
         period: idx + 1,
@@ -671,6 +688,8 @@ export default function MomentumIndicators() {
           />
         </div>
 
+        <PriceChart title="Input Prices" data={priceData} />
+
         <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-4">
           <h3 className="text-lg font-semibold text-white mb-3">All Sample Values</h3>
           <div className="overflow-x-auto">
@@ -711,6 +730,7 @@ export default function MomentumIndicators() {
     const chartDataMACD: ChartDataPoint[] = [];
     const chartDataSignal: ChartDataPoint[] = [];
     const chartDataHistogram: ChartDataPoint[] = [];
+    const priceData: PriceData[] = [];
     const sampleValues: Array<{period: number; date: string; close: number; result: string; signal: string}> = [];
 
     ethCandles.forEach((candle, idx) => {
@@ -720,6 +740,8 @@ export default function MomentumIndicators() {
       chartDataMACD.push({x: idx + 1, y: result?.macd ?? null});
       chartDataSignal.push({x: idx + 1, y: result?.signal ?? null});
       chartDataHistogram.push({x: idx + 1, y: result?.histogram ?? null});
+
+      priceData.push(collectPriceData(candle, idx));
 
       sampleValues.push({
         period: idx + 1,
@@ -846,6 +868,8 @@ export default function MomentumIndicators() {
             }}
           />
         </div>
+
+        <PriceChart title="Input Prices" data={priceData} />
 
         <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-4">
           <h3 className="text-lg font-semibold text-white mb-3">All Sample Values</h3>
