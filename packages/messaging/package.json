@@ -3,13 +3,14 @@
     "url": "https://github.com/bennycode/trading-signals/issues"
   },
   "dependencies": {
-    "@typedtrader/exchange": "0.0.0",
-    "trading-signals": "7.2.0"
+    "@types/moment-duration-format": "2.2.7",
+    "@xmtp/agent-sdk": "^1.2.3",
+    "moment": "^2.30.1",
+    "moment-duration-format": "^2.3.2",
+    "moment-timezone": "^0.6.0"
   },
-  "description": "Trading strategies to run trading bots with JavaScript / TypeScript.",
+  "description": "Trading bot via messaging service.",
   "devDependencies": {
-    "@types/big.js": "^6.2.2",
-    "big.js": "^7.0.1",
     "tsx": "^4.21.0"
   },
   "exports": {
@@ -25,11 +26,13 @@
   ],
   "homepage": "https://bennycode.com/trading-signals",
   "keywords": [
-    "trading"
+    "messenger",
+    "trading",
+    "xmtp"
   ],
   "license": "MIT",
   "main": "src/index.js",
-  "name": "trading-strategies",
+  "name": "@typedtrader/messaging",
   "publishConfig": {
     "access": "public"
   },
