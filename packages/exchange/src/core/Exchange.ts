@@ -152,6 +152,32 @@ export abstract class Exchange {
   abstract getCandles(pair: CurrencyPair, request: ExchangeCandleImportRequest): Promise<ExchangeCandle[]>;
 
   /**
+   * Get the most recent candle with data by searching backwards in time.
+   * Useful when markets are closed or data hasn't been published yet for the latest interval.
+   */
+  async getLatestAvailableCandle(pair: CurrencyPair, intervalInMillis: number): Promise<ExchangeCandle> {
+    let endTime = Math.floor(Date.now() / intervalInMillis) * intervalInMillis;
+    let startTime = endTime - intervalInMillis;
+    let candles = await this.getCandles(pair, {
+      intervalInMillis,
+      startTimeFirstCandle: new Date(startTime).toISOString(),
+      startTimeLastCandle: new Date(endTime).toISOString(),
+    });
+
+    while (candles.length === 0) {
+      endTime = startTime;
+      startTime -= intervalInMillis;
+      candles = await this.getCandles(pair, {
+        intervalInMillis,
+        startTimeFirstCandle: new Date(startTime).toISOString(),
+        startTimeLastCandle: new Date(endTime).toISOString(),
+      });
+    }
+
+    return candles[0];
+  }
+
+  /**
    * Returns an identifiable name for the exchange.
    */
   abstract getName(): string;

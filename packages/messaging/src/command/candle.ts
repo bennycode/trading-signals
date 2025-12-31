@@ -25,23 +25,7 @@ export default async (request: string) => {
     usePaperTrading: false,
   });
 
-  let endTime = Math.floor(Date.now() / intervalInMillis) * intervalInMillis;
-  let startTime = endTime - intervalInMillis;
-  let candle = await client.getCandles(pair, {
-    intervalInMillis,
-    startTimeFirstCandle: new Date(startTime).toISOString(),
-    startTimeLastCandle: new Date(endTime).toISOString(),
-  });
+  const candle = await client.getLatestAvailableCandle(pair, intervalInMillis);
 
-  while (candle.length === 0) {
-    endTime = startTime;
-    startTime -= intervalInMillis;
-    candle = await client.getCandles(pair, {
-      intervalInMillis,
-      startTimeFirstCandle: new Date(startTime).toISOString(),
-      startTimeLastCandle: new Date(endTime).toISOString(),
-    });
-  }
-
-  return JSON.stringify(candle[0]);
+  return JSON.stringify(candle);
 };
