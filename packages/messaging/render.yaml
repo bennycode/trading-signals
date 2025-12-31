@@ -1,0 +1,34 @@
+services:
+  - type: worker
+    runtime: node
+    name: typedtrader
+    repo: https://github.com/bennycode/trading-signals
+    numInstances: 1
+    region: frankfurt
+    plan: starter
+    branch: main
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: ALPACA_USE_PAPER
+        value: 'false'
+      - key: ALPACA_LIVE_API_KEY
+        sync: false
+      - key: ALPACA_LIVE_API_SECRET
+        sync: false
+      - key: XMTP_WALLET_KEY
+        sync: false
+      - key: XMTP_DB_ENCRYPTION_KEY
+        sync: false
+      - key: XMTP_DB_DIRECTORY
+        value: '/var/data'
+      - key: XMTP_ENV
+        value: 'production'
+      - key: XMTP_FORCE_DEBUG_LEVEL
+        value: 'error'
+      - key: XMTP_FORCE_DEBUG
+        value: 'true'
+    disk:
+      name: data
+      mountPath: /var/data
+      sizeGB: 1
