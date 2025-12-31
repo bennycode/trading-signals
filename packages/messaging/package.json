@@ -35,9 +35,7 @@
   "license": "MIT",
   "main": "src/index.js",
   "name": "@typedtrader/messaging",
-  "publishConfig": {
-    "access": "public"
-  },
+  "private": true,
   "scripts": {
     "build": "tsc",
     "clean": "rimraf --glob src/**/*{.js,.js.map,.d.ts}",
