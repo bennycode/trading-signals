@@ -15,3 +15,9 @@ This project uses [Lerna](https://lerna.js.org/) for managing the [monorepo](htt
 | [**trading-signals**](./packages/trading-signals) | [Technical indicators](https://en.wikipedia.org/wiki/Technical_indicator) (SMA, EMA, RSI, MACD, ...) for algorithmic trading with streaming updates, replace mode, lazy evaluation, and memory efficiency. Can be added to your own trading apps or strategies. |
 | [**trading-signals-docs**](./packages/trading-signals-docs) | Documentation and [showcase website](https://bennycode.com/trading-signals/) built with Next.js, featuring interactive demos and examples of all indicators. See every indicator in action before you code. |
 | [**trading-strategies**](./packages/trading-strategies) | [Trading strategy](https://en.wikipedia.org/wiki/Trading_strategy) implementations that combine technical indicators into actionable advices. Can be used to build your own strategies for backtesting and real-time trading. |
+
+### Deploy to Render
+
+Deploy the `@typedtrader/messaging` package as a background worker to [Render](https://render.com/). The configuration includes persistent disk storage for the XMTP database and secure environment variable management:
+
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/bennycode/trading-signals)
