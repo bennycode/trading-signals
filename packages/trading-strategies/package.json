@@ -3,6 +3,7 @@
     "url": "https://github.com/bennycode/trading-signals/issues"
   },
   "dependencies": {
+    "@typedtrader/exchange": "0.0.0",
     "trading-signals": "7.2.0"
   },
   "description": "Trading strategies to run trading bots with JavaScript / TypeScript.",
@@ -36,7 +37,7 @@
     "build": "tsc",
     "clean": "rimraf --glob src/**/*{.js,.js.map,.d.ts}",
     "dist": "npm run clean && npm run build",
-    "start": "npm run test:types && tsx src/start.ts",
+    "start": "npm run test:types && tsx watch src/start.ts",
     "test": "npm run test:types",
     "test:types": "tsc --noEmit"
   },

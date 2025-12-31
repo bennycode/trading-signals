@@ -1,0 +1,54 @@
+{
+  "bugs": {
+    "url": "https://github.com/bennycode/trading-signals/issues"
+  },
+  "dependencies": {
+    "@typedtrader/exchange": "0.0.0",
+    "@types/moment-duration-format": "2.2.7",
+    "@types/node": "^24.10.3",
+    "@xmtp/agent-sdk": "^1.2.3",
+    "moment": "^2.30.1",
+    "moment-duration-format": "^2.3.2",
+    "moment-timezone": "^0.6.0"
+  },
+  "description": "Trading bot via messaging service.",
+  "devDependencies": {
+    "tsx": "^4.21.0"
+  },
+  "exports": {
+    ".": {
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "!dist/start",
+    "!dist/test",
+    "!dist/**/*.test.*"
+  ],
+  "homepage": "https://bennycode.com/trading-signals",
+  "keywords": [
+    "messenger",
+    "trading",
+    "xmtp"
+  ],
+  "license": "MIT",
+  "main": "src/index.js",
+  "name": "@typedtrader/messaging",
+  "private": true,
+  "scripts": {
+    "lint:types": "tsc --noEmit",
+    "build": "tsc",
+    "clean": "rimraf --glob src/**/*{.js,.js.map,.d.ts}",
+    "dist": "npm run clean && npm run build",
+    "start": "npm run test:types && tsx watch src/start.ts",
+    "test": "npm run test:types && npm run test:imports && npm run test:units -- --coverage",
+    "test:exports": "attw --pack . --profile node16",
+    "test:imports": "depcruise -c ../../.dependency-cruiser.cjs src --include-only \"^src\"",
+    "test:types": "npm run lint:types",
+    "test:units": "vitest run --passWithNoTests",
+    "test:units:watch": "vitest --watch"
+  },
+  "type": "module",
+  "version": "0.1.0"
+}
