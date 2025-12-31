@@ -1,6 +1,18 @@
 # Change Log
 
-All notable changes to this project will be documented in this file. See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
+All notable changes to this project will be documented in this file.
+See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
+
+## [1.3.3](https://github.com/bennycode/trading-signals/compare/trading-signals-docs@1.3.2...trading-signals-docs@1.3.3) (2025-12-31)
+
+
+### Bug Fixes
+
+* Sync publication flow ([e5d27e9](https://github.com/bennycode/trading-signals/commit/e5d27e97f79cc677fb14caaad3e9352f61132374))
+
+
+
+
 
 ## [1.3.2](https://github.com/bennycode/trading-signals/compare/trading-signals-docs@1.3.1...trading-signals-docs@1.3.2) (2025-12-31)
 
