@@ -20,11 +20,12 @@
   "scripts": {
     "clean": "lerna run clean --parallel",
     "dist": "lerna run dist",
-    "docs": "lerna run dist --scope trading-signals && lerna run dev --scope trading-signals-docs",
     "fix": "lerna run fix --parallel",
     "graph": "nx graph",
     "lint": "lerna run lint --parallel",
     "release": "npm install && npm run dist && lerna publish && git commit -am \"chore: update CHANGELOGs\" && git push && npm run clean",
+    "start:bot": "lerna run dist && lerna run start --scope @typedtrader/messaging",
+    "start:docs": "lerna run dist --scope trading-signals && lerna run dev --scope trading-signals-docs",
     "test": "lerna run --no-sort --concurrency 8 test",
     "test:types": "lerna run --no-sort --concurrency 8 test:types"
   },

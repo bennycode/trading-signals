@@ -7,8 +7,8 @@ services:
     region: frankfurt
     plan: starter
     branch: main
-    buildCommand: npm install && npx lerna run dist
-    startCommand: npx lerna run start --scope @typedtrader/messaging
+    buildCommand: npm install
+    startCommand: npm run start:bot
     envVars:
       - key: ALPACA_USE_PAPER
         value: 'false'
