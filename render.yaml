@@ -3,13 +3,12 @@ services:
     runtime: node
     name: typedtrader
     repo: https://github.com/bennycode/trading-signals
-    rootDir: packages/messaging
     numInstances: 1
     region: frankfurt
     plan: starter
     branch: main
-    buildCommand: npm install
-    startCommand: npm start
+    buildCommand: npm install && npx lerna run dist
+    startCommand: npx lerna run start --scope @typedtrader/messaging
     envVars:
       - key: ALPACA_USE_PAPER
         value: 'false'
