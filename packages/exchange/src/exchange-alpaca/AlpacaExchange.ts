@@ -63,8 +63,10 @@ export class AlpacaExchange extends Exchange {
 
   static NAME = 'Alpaca';
 
-  private createSymbol(pair: CurrencyPair, isCrypto: boolean = pair.counter !== 'USD'): string {
-    if (isCrypto) {
+  private createSymbol(pair: CurrencyPair, isCrypto?: boolean): string {
+    const effectiveIsCrypto = isCrypto ?? pair.counter !== 'USD';
+
+    if (effectiveIsCrypto) {
       return `${pair.base}/${pair.counter}`;
     }
     return pair.base;
@@ -114,7 +116,7 @@ export class AlpacaExchange extends Exchange {
   private fetchStockBars(pair: CurrencyPair, request: ExchangeCandleImportRequest, pageToken: string | undefined) {
     if (pair.counter !== 'USD') {
       throw new Error(
-        `Cannot use "${pair.counter}". Stock "${pair.base}" can only be traded in USD on ${this.getName()}.`
+        `Cannot use "${pair.counter}". Stock "${pair.base}" can only be traded in USD on ${AlpacaExchange.NAME}.`
       );
     }
 
