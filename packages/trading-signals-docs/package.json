@@ -5,7 +5,7 @@
     "next": "^16.1.1",
     "react": "^19.2.3",
     "react-dom": "^19.2.3",
-    "trading-signals": "7.2.0"
+    "trading-signals": "7.3.0"
   },
   "description": "Documentation and showcase website for trading-signals library",
   "devDependencies": {
@@ -33,5 +33,5 @@
     "test:watch": "vitest"
   },
   "type": "module",
-  "version": "1.1.0"
+  "version": "1.2.0"
 }
