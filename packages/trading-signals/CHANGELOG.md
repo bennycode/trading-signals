@@ -1,6 +1,15 @@
 # Change Log
 
-All notable changes to this project will be documented in this file. See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
+All notable changes to this project will be documented in this file.
+See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
+
+## [7.4.2](https://github.com/bennycode/trading-signals/compare/trading-signals@7.4.1...trading-signals@7.4.2) (2025-12-31)
+
+**Note:** Version bump only for package trading-signals
+
+
+
+
 
 ## [7.4.1](https://github.com/bennycode/trading-signals/compare/trading-signals@7.4.0...trading-signals@7.4.1) (2025-12-31)
 
