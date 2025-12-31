@@ -3,6 +3,7 @@ services:
     runtime: node
     name: typedtrader
     repo: https://github.com/bennycode/trading-signals
+    rootDir: packages/messaging
     numInstances: 1
     region: frankfurt
     plan: starter
