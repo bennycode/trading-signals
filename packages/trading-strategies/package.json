@@ -3,8 +3,8 @@
     "url": "https://github.com/bennycode/trading-signals/issues"
   },
   "dependencies": {
-    "@typedtrader/exchange": "0.2.0",
-    "trading-signals": "7.4.0"
+    "@typedtrader/exchange": "0.2.1",
+    "trading-signals": "7.4.1"
   },
   "description": "Trading strategies to run trading bots with JavaScript / TypeScript.",
   "devDependencies": {
@@ -42,5 +42,5 @@
     "test:types": "tsc --noEmit"
   },
   "type": "module",
-  "version": "0.3.0"
+  "version": "0.3.1"
 }
