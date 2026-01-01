@@ -5,7 +5,7 @@
   "dependencies": {
     "@master-chief/alpaca-ts": "^7.0.15-alpha",
     "@types/jsonabc": "^2.3.3",
-    "@types/ms": "^0.7.34",
+    "@types/ms": "^2.1.0",
     "alpaca-legacy": "npm:@master-chief/alpaca@^6.3.20",
     "dotenv-defaults": "^5.0.2",
     "jsonabc": "^2.3.1",
