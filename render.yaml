@@ -7,7 +7,7 @@ services:
     region: frankfurt
     plan: starter
     branch: main
-    buildCommand: npm install
+    buildCommand: npm install && npx lerna run dist
     startCommand: npm run start:bot
     envVars:
       - key: ALPACA_USE_PAPER

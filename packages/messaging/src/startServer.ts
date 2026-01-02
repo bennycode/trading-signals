@@ -31,6 +31,5 @@ export async function startServer() {
     agent.use(isFromOwner);
   }
   agent.use(router.middleware());
-  await agent.client.revokeAllOtherInstallations();
   await agent.start();
 }
