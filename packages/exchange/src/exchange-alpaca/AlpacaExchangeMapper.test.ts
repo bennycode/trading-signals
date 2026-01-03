@@ -71,7 +71,7 @@ describe('AlpacaExchangeMapper', () => {
         time_in_force: TimeInForce.DAY,
         type: OrderType.MARKET,
         updated_at: '2023-08-21T15:57:26.842893Z',
-      };
+      } as const;
 
       const pair = new CurrencyPair('SHOP', 'USD');
 
@@ -117,7 +117,7 @@ describe('AlpacaExchangeMapper', () => {
         time_in_force: TimeInForce.DAY,
         type: OrderType.LIMIT,
         updated_at: '2023-08-21T20:04:27.627297Z',
-      };
+      } as const;
 
       const pair = new CurrencyPair('SHOP', 'USD');
 
