@@ -1,6 +1,6 @@
 import {Big} from 'big.js';
 import {EventEmitter} from 'node:events';
-import ms from 'ms';
+import {ms, StringValue} from 'ms';
 import jsonabc from 'jsonabc';
 import {BatchedCandle} from './BatchedCandle.js';
 import {ExchangeCandle} from '../core/Exchange.js';
@@ -22,7 +22,7 @@ export class CandleBatcher extends EventEmitter<EventMap> {
     return this.batch.length;
   }
 
-  static amountOfCandles(intervalInMillis: number | string, timespanInMillis: number | string) {
+  static amountOfCandles(intervalInMillis: number | StringValue, timespanInMillis: number | StringValue) {
     const interval: number = typeof intervalInMillis === 'number' ? intervalInMillis : ms(intervalInMillis);
     const timespan: number = typeof timespanInMillis === 'number' ? timespanInMillis : ms(timespanInMillis);
     return timespan / interval;

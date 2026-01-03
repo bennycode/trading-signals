@@ -1,4 +1,4 @@
-import {ms, CurrencyPair, getAlpacaClient} from '@typedtrader/exchange';
+import {CurrencyPair, getAlpacaClient, ms} from '@typedtrader/exchange';
 
 // Request Example: "SHOP,USD 1h"
 export default async (request: string) => {
