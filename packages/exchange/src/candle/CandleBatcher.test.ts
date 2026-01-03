@@ -1,5 +1,5 @@
 import {Big} from 'big.js';
-import ms from 'ms';
+import {ms} from 'ms';
 import {describe, expect, it, vi} from 'vitest';
 import LTC_USDT_2d_1m_1606066988989 from '../../fixtures/StopLossStrategy/LTC_USDT_2d_1m_1606066988989.json' with {type: 'json'};
 import OneWeekInMinutes from '../../fixtures/candles/OneWeekInMinutes.json' with {type: 'json'};
@@ -17,7 +17,7 @@ import {ExchangeCandle} from '../core/Exchange.js';
 
 describe('CandleBatcher', () => {
   describe('amountOfCandles', () => {
-    it('knows how many candles build up a timespan', () => {
+    it('knows how many candles are required to build up a timespan', () => {
       const amount = CandleBatcher.amountOfCandles('1h', '1d');
       expect(amount).toBe(24);
     });

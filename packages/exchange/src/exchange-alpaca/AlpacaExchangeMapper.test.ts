@@ -2,7 +2,7 @@ import {describe, expect, it, vi} from 'vitest';
 import {AlpacaExchangeMapper} from './AlpacaExchangeMapper.js';
 import minutes5 from '../../fixtures/alpaca/bars/minutes-5.json' with {type: 'json'};
 import {AssetClass, Order, OrderSide, OrderStatus, OrderType, TimeInForce} from '@master-chief/alpaca-ts';
-import ms from 'ms';
+import {ms} from 'ms';
 import {BatchedCandle} from '../candle/BatchedCandle.js';
 import {CandleBatcher} from '../candle/CandleBatcher.js';
 import {CurrencyPair} from '../core/CurrencyPair.js';
