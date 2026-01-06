@@ -8,6 +8,9 @@ jobs:
   label:
     name: 'Label PR based on title'
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
     steps:
       - uses: srvaroa/labeler@v1.11
         env:
