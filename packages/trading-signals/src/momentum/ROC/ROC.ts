@@ -22,9 +22,10 @@ export class ROC extends TrendIndicatorSeries {
   }
 
   update(price: number, replace: boolean) {
-    const comparePrice = pushUpdate(this.prices, replace, price, this.interval);
+    const comparePrice = this.prices.length === this.interval ? this.prices[0] : null;
+    pushUpdate(this.prices, replace, price, this.interval);
 
-    if (comparePrice) {
+    if (comparePrice !== null) {
       return this.setResult((price - comparePrice) / comparePrice, replace);
     }
 
