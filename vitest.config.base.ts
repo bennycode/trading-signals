@@ -15,5 +15,9 @@ export default defineConfig({
     },
     environment: 'node',
     globals: true,
+    sequence: {
+      concurrent: true,
+      shuffle: true,
+    },
   },
 });
