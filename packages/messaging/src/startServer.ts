@@ -8,15 +8,34 @@ export async function startServer() {
   const router = new CommandRouter();
 
   router.command('/candle', async ctx => {
-    await ctx.conversation.send(await candle(ctx.message.content));
+    const candleJson = await candle(ctx.message.content);
+    if (candleJson) {
+      await ctx.sendText(candleJson);
+    }
+  });
+
+  router.command('/help', async ctx => {
+    const commandCodeBlocks = router.commandList.map(cmd => `\`${cmd}\``);
+    const answer = `I am supporting the following commands: ${commandCodeBlocks.join(', ')}`;
+    await ctx.sendMarkdown(answer);
   });
 
   router.command('/time', async ctx => {
-    await ctx.conversation.send(await time());
+    await ctx.sendText(await time());
   });
 
   router.command('/uptime', async ctx => {
-    await ctx.conversation.send(await uptime());
+    await ctx.sendText(await uptime());
+  });
+
+  router.command('/myaddress', async ctx => {
+    const yourAddress = await ctx.getSenderAddress();
+    await ctx.sendText(`Your address is: ${yourAddress}`);
+  });
+
+  router.command('/youraddress', async ctx => {
+    const myAddress = await ctx.getClientAddress();
+    await ctx.sendText(`My address is: ${myAddress}`);
   });
 
   const agent = await Agent.createFromEnv({

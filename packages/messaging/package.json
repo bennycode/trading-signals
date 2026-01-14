@@ -6,7 +6,7 @@
     "@typedtrader/exchange": "0.2.4",
     "@types/moment-duration-format": "2.2.7",
     "@types/node": "^25.0.3",
-    "@xmtp/agent-sdk": "^1.2.3",
+    "@xmtp/agent-sdk": "^1.2.4",
     "moment": "^2.30.1",
     "moment-duration-format": "^2.3.2",
     "moment-timezone": "^0.6.0"
