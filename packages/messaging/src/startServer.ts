@@ -38,6 +38,11 @@ export async function startServer() {
     await ctx.sendText(`My address is: ${myAddress}`);
   });
 
+  router.command('/version', async ctx => {
+    const libXmtpVersion = ctx.client.libxmtpVersion;
+    await ctx.sendText(`My libXMTP version is: ${libXmtpVersion}`);
+  });
+
   const agent = await Agent.createFromEnv({
     appVersion: '@typedtrader/messaging',
   });
