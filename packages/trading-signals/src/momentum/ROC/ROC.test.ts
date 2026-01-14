@@ -127,9 +127,7 @@ describe('ROC', () => {
   });
 
   describe('update', () => {
-    it('returns a valid result when update with replace==true', () => {
-      // Test data verified with:
-      // https://tulipindicators.org/roc
+    it('returns a valid result when replacing values', () => {
       const prices = [81.59, 81.06, 82.87, 83.0, 83.61] as const;
       const updatePrice = 82.84;
       const expectation = 0.01911999019;
@@ -137,15 +135,10 @@ describe('ROC', () => {
       const interval = 5;
       const roc = new ROC(interval);
 
-      // add values until stable:
-      prices.forEach(price => {
-        roc.add(price);
-      });
+      prices.forEach(price => roc.add(price));
 
-      // update the last value:
-      roc.update(updatePrice, true);
+      roc.replace(updatePrice);
 
-      // validate the result:
       expect(roc.getResultOrThrow().toFixed(2)).toEqual(expectation.toFixed(2));
     });
   });
