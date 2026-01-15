@@ -65,7 +65,6 @@ interface CandleDataset {
   candles: Candle[];
 }
 
-// OHLCV data - Uptrend (Ethereum example)
 const uptrendCandles: Candle[] = [
   {date: '09/11/2025', open: 2318.45, high: 2345.67, low: 2298.12, close: 2334.89, volume: 4567890},
   {date: '09/12/2025', open: 2334.89, high: 2389.23, low: 2315.67, close: 2378.45, volume: 5234567},
@@ -109,7 +108,6 @@ const uptrendCandles: Candle[] = [
   {date: '10/20/2025', open: 3089.56, high: 3112.34, low: 3078.9, close: 3101.23, volume: 12234567},
 ];
 
-// OHLCV data - Downtrend
 const downtrendCandles: Candle[] = [
   {date: '09/11/2025', open: 3101.23, high: 3112.34, low: 3078.9, close: 3089.56, volume: 12234567},
   {date: '09/12/2025', open: 3089.56, high: 3098.67, low: 3045.23, close: 3067.89, volume: 11890123},
@@ -153,7 +151,6 @@ const downtrendCandles: Candle[] = [
   {date: '10/20/2025', open: 2334.89, high: 2367.23, low: 2234.56, close: 2318.45, volume: 4234567},
 ];
 
-// OHLCV data - Sideways/Ranging
 const sidewaysCandles: Candle[] = [
   {date: '09/11/2025', open: 2500.34, high: 2534.67, low: 2478.23, close: 2512.45, volume: 5567890},
   {date: '09/12/2025', open: 2512.45, high: 2545.89, low: 2489.12, close: 2523.67, volume: 5890123},
