@@ -19,9 +19,14 @@ import {
 } from 'trading-signals';
 import Chart, {ChartDataPoint} from '../../components/Chart';
 import {DataTable} from '../../components/DataTable';
+import {DatasetSelector} from '../../components/DatasetSelector';
 import {IndicatorHeader} from '../../components/IndicatorHeader';
+import {IndicatorList} from '../../components/IndicatorList';
 import {SignalBadge} from '../../components/SignalBadge';
 import PriceChart, {PriceData} from '../../components/PriceChart';
+import uptrendCandles from './candles/uptrend.json' with {type: 'json'};
+import downtrendCandles from './candles/downtrend.json' with {type: 'json'};
+import sidewaysCandles from './candles/sideways.json' with {type: 'json'};
 
 type IndicatorType = 'single' | 'dual' | 'triple' | 'custom';
 
@@ -64,135 +69,6 @@ interface CandleDataset {
   description: string;
   candles: Candle[];
 }
-
-const uptrendCandles: Candle[] = [
-  {date: '09/11/2025', open: 2318.45, high: 2345.67, low: 2298.12, close: 2334.89, volume: 4567890},
-  {date: '09/12/2025', open: 2334.89, high: 2389.23, low: 2315.67, close: 2378.45, volume: 5234567},
-  {date: '09/13/2025', open: 2378.45, high: 2398.76, low: 2356.34, close: 2367.89, volume: 4890123},
-  {date: '09/14/2025', open: 2367.89, high: 2401.23, low: 2348.56, close: 2395.12, volume: 5123456},
-  {date: '09/15/2025', open: 2395.12, high: 2445.67, low: 2388.9, close: 2432.56, volume: 6234567},
-  {date: '09/16/2025', open: 2432.56, high: 2468.34, low: 2415.23, close: 2456.78, volume: 5890123},
-  {date: '09/17/2025', open: 2456.78, high: 2489.12, low: 2441.56, close: 2478.34, volume: 5567890},
-  {date: '09/18/2025', open: 2478.34, high: 2512.45, low: 2465.89, close: 2498.67, volume: 6123456},
-  {date: '09/19/2025', open: 2498.67, high: 2534.23, low: 2487.56, close: 2523.45, volume: 6890123},
-  {date: '09/20/2025', open: 2523.45, high: 2556.78, low: 2510.12, close: 2545.89, volume: 7234567},
-  {date: '09/21/2025', open: 2545.89, high: 2578.34, low: 2532.67, close: 2567.12, volume: 6567890},
-  {date: '09/22/2025', open: 2567.12, high: 2589.45, low: 2548.23, close: 2574.56, volume: 5890123},
-  {date: '09/23/2025', open: 2574.56, high: 2598.67, low: 2556.78, close: 2589.34, volume: 6123456},
-  {date: '09/24/2025', open: 2589.34, high: 2612.89, low: 2578.45, close: 2601.23, volume: 6456789},
-  {date: '09/25/2025', open: 2601.23, high: 2634.56, low: 2587.9, close: 2623.45, volume: 7123456},
-  {date: '09/26/2025', open: 2623.45, high: 2656.78, low: 2612.34, close: 2645.67, volume: 7890123},
-  {date: '09/27/2025', open: 2645.67, high: 2678.9, low: 2634.23, close: 2667.89, volume: 8234567},
-  {date: '09/28/2025', open: 2667.89, high: 2689.12, low: 2651.45, close: 2678.34, volume: 7567890},
-  {date: '09/29/2025', open: 2678.34, high: 2698.56, low: 2665.78, close: 2689.23, volume: 6890123},
-  {date: '09/30/2025', open: 2689.23, high: 2712.45, low: 2676.89, close: 2701.56, volume: 7234567},
-  {date: '10/01/2025', open: 2701.56, high: 2734.67, low: 2689.34, close: 2723.45, volume: 7890123},
-  {date: '10/02/2025', open: 2723.45, high: 2756.89, low: 2712.78, close: 2745.67, volume: 8567890},
-  {date: '10/03/2025', open: 2745.67, high: 2778.34, low: 2734.56, close: 2767.89, volume: 9123456},
-  {date: '10/04/2025', open: 2767.89, high: 2798.45, low: 2756.23, close: 2789.12, volume: 8890123},
-  {date: '10/05/2025', open: 2789.12, high: 2823.56, low: 2778.67, close: 2812.34, volume: 9234567},
-  {date: '10/06/2025', open: 2812.34, high: 2845.78, low: 2801.45, close: 2834.56, volume: 9567890},
-  {date: '10/07/2025', open: 2834.56, high: 2867.23, low: 2823.89, close: 2856.78, volume: 10123456},
-  {date: '10/08/2025', open: 2856.78, high: 2889.45, low: 2845.67, close: 2878.9, volume: 10567890},
-  {date: '10/09/2025', open: 2878.9, high: 2912.34, low: 2867.56, close: 2901.23, volume: 11234567},
-  {date: '10/10/2025', open: 2901.23, high: 2934.67, low: 2889.78, close: 2923.45, volume: 10890123},
-  {date: '10/11/2025', open: 2923.45, high: 2956.89, low: 2912.34, close: 2945.67, volume: 11567890},
-  {date: '10/12/2025', open: 2945.67, high: 2978.23, low: 2934.56, close: 2967.89, volume: 12123456},
-  {date: '10/13/2025', open: 2967.89, high: 2989.45, low: 2956.78, close: 2978.34, volume: 11234567},
-  {date: '10/14/2025', open: 2978.34, high: 3012.56, low: 2967.9, close: 3001.23, volume: 12890123},
-  {date: '10/15/2025', open: 3001.23, high: 3034.78, low: 2989.67, close: 3023.45, volume: 13567890},
-  {date: '10/16/2025', open: 3023.45, high: 3056.34, low: 3012.89, close: 3045.67, volume: 14123456},
-  {date: '10/17/2025', open: 3045.67, high: 3078.9, low: 3034.56, close: 3067.89, volume: 13890123},
-  {date: '10/18/2025', open: 3067.89, high: 3089.23, low: 3056.78, close: 3078.45, volume: 12567890},
-  {date: '10/19/2025', open: 3078.45, high: 3098.67, low: 3067.34, close: 3089.56, volume: 11890123},
-  {date: '10/20/2025', open: 3089.56, high: 3112.34, low: 3078.9, close: 3101.23, volume: 12234567},
-];
-
-const downtrendCandles: Candle[] = [
-  {date: '09/11/2025', open: 3101.23, high: 3112.34, low: 3078.9, close: 3089.56, volume: 12234567},
-  {date: '09/12/2025', open: 3089.56, high: 3098.67, low: 3045.23, close: 3067.89, volume: 11890123},
-  {date: '09/13/2025', open: 3067.89, high: 3089.23, low: 3034.56, close: 3056.78, volume: 12567890},
-  {date: '09/14/2025', open: 3056.78, high: 3078.45, low: 3012.34, close: 3045.67, volume: 11234567},
-  {date: '09/15/2025', open: 3045.67, high: 3067.89, low: 2989.45, close: 3023.45, volume: 10890123},
-  {date: '09/16/2025', open: 3023.45, high: 3045.23, low: 2967.56, close: 3001.23, volume: 12890123},
-  {date: '09/17/2025', open: 3001.23, high: 3023.34, low: 2945.78, close: 2978.34, volume: 11234567},
-  {date: '09/18/2025', open: 2978.34, high: 3001.56, low: 2934.67, close: 2967.89, volume: 12123456},
-  {date: '09/19/2025', open: 2967.89, high: 2989.23, low: 2912.45, close: 2945.67, volume: 11567890},
-  {date: '09/20/2025', open: 2945.67, high: 2967.34, low: 2889.56, close: 2923.45, volume: 10890123},
-  {date: '09/21/2025', open: 2923.45, high: 2945.78, low: 2867.23, close: 2901.23, volume: 11234567},
-  {date: '09/22/2025', open: 2901.23, high: 2923.56, low: 2845.67, close: 2878.9, volume: 10567890},
-  {date: '09/23/2025', open: 2878.9, high: 2901.45, low: 2823.34, close: 2856.78, volume: 10123456},
-  {date: '09/24/2025', open: 2856.78, high: 2878.23, low: 2801.56, close: 2834.56, volume: 9567890},
-  {date: '09/25/2025', open: 2834.56, high: 2856.89, low: 2778.45, close: 2812.34, volume: 9234567},
-  {date: '09/26/2025', open: 2812.34, high: 2834.67, low: 2756.78, close: 2789.12, volume: 8890123},
-  {date: '09/27/2025', open: 2789.12, high: 2812.45, low: 2734.23, close: 2767.89, volume: 9123456},
-  {date: '09/28/2025', open: 2767.89, high: 2789.34, low: 2712.56, close: 2745.67, volume: 8567890},
-  {date: '09/29/2025', open: 2745.67, high: 2767.23, low: 2689.78, close: 2723.45, volume: 7890123},
-  {date: '09/30/2025', open: 2723.45, high: 2745.56, low: 2667.34, close: 2701.56, volume: 7234567},
-  {date: '10/01/2025', open: 2701.56, high: 2723.89, low: 2645.23, close: 2689.23, volume: 6890123},
-  {date: '10/02/2025', open: 2689.23, high: 2712.34, low: 2634.56, close: 2678.34, volume: 7567890},
-  {date: '10/03/2025', open: 2678.34, high: 2701.45, low: 2612.78, close: 2667.89, volume: 8234567},
-  {date: '10/04/2025', open: 2667.89, high: 2689.67, low: 2589.34, close: 2645.67, volume: 7890123},
-  {date: '10/05/2025', open: 2645.67, high: 2667.23, low: 2567.45, close: 2623.45, volume: 7123456},
-  {date: '10/06/2025', open: 2623.45, high: 2645.78, low: 2545.56, close: 2601.23, volume: 6456789},
-  {date: '10/07/2025', open: 2601.23, high: 2623.89, low: 2523.34, close: 2589.34, volume: 6123456},
-  {date: '10/08/2025', open: 2589.34, high: 2612.45, low: 2501.67, close: 2574.56, volume: 5890123},
-  {date: '10/09/2025', open: 2574.56, high: 2598.23, low: 2478.89, close: 2567.12, volume: 6567890},
-  {date: '10/10/2025', open: 2567.12, high: 2589.56, low: 2456.34, close: 2545.89, volume: 7234567},
-  {date: '10/11/2025', open: 2545.89, high: 2567.78, low: 2434.23, close: 2523.45, volume: 6890123},
-  {date: '10/12/2025', open: 2523.45, high: 2545.34, low: 2412.56, close: 2498.67, volume: 6123456},
-  {date: '10/13/2025', open: 2498.67, high: 2523.67, low: 2389.45, close: 2478.34, volume: 5567890},
-  {date: '10/14/2025', open: 2478.34, high: 2501.89, low: 2367.23, close: 2456.78, volume: 5890123},
-  {date: '10/15/2025', open: 2456.78, high: 2478.45, low: 2345.67, close: 2432.56, volume: 6234567},
-  {date: '10/16/2025', open: 2432.56, high: 2456.34, low: 2323.89, close: 2395.12, volume: 5123456},
-  {date: '10/17/2025', open: 2395.12, high: 2434.23, low: 2301.45, close: 2367.89, volume: 4890123},
-  {date: '10/18/2025', open: 2367.89, high: 2401.56, low: 2278.67, close: 2378.45, volume: 5234567},
-  {date: '10/19/2025', open: 2378.45, high: 2389.34, low: 2256.78, close: 2334.89, volume: 4567890},
-  {date: '10/20/2025', open: 2334.89, high: 2367.23, low: 2234.56, close: 2318.45, volume: 4234567},
-];
-
-const sidewaysCandles: Candle[] = [
-  {date: '09/11/2025', open: 2500.34, high: 2534.67, low: 2478.23, close: 2512.45, volume: 5567890},
-  {date: '09/12/2025', open: 2512.45, high: 2545.89, low: 2489.12, close: 2523.67, volume: 5890123},
-  {date: '09/13/2025', open: 2523.67, high: 2556.34, low: 2498.45, close: 2534.89, volume: 6123456},
-  {date: '09/14/2025', open: 2534.89, high: 2567.23, low: 2507.56, close: 2545.12, volume: 6234567},
-  {date: '09/15/2025', open: 2545.12, high: 2578.45, low: 2518.78, close: 2556.34, volume: 6456789},
-  {date: '09/16/2025', open: 2556.34, high: 2567.89, low: 2523.45, close: 2545.67, volume: 5890123},
-  {date: '09/17/2025', open: 2545.67, high: 2556.23, low: 2512.34, close: 2534.56, volume: 5567890},
-  {date: '09/18/2025', open: 2534.56, high: 2545.78, low: 2501.23, close: 2523.45, volume: 5234567},
-  {date: '09/19/2025', open: 2523.45, high: 2534.89, low: 2489.56, close: 2512.34, volume: 4890123},
-  {date: '09/20/2025', open: 2512.34, high: 2523.67, low: 2478.45, close: 2501.23, volume: 4567890},
-  {date: '09/21/2025', open: 2501.23, high: 2512.89, low: 2467.34, close: 2489.56, volume: 4234567},
-  {date: '09/22/2025', open: 2489.56, high: 2523.45, low: 2478.12, close: 2512.34, volume: 5123456},
-  {date: '09/23/2025', open: 2512.34, high: 2534.67, low: 2489.23, close: 2523.45, volume: 5567890},
-  {date: '09/24/2025', open: 2523.45, high: 2545.89, low: 2500.12, close: 2534.56, volume: 5890123},
-  {date: '09/25/2025', open: 2534.56, high: 2556.34, low: 2511.23, close: 2545.67, volume: 6123456},
-  {date: '09/26/2025', open: 2545.67, high: 2567.89, low: 2522.34, close: 2556.78, volume: 6234567},
-  {date: '09/27/2025', open: 2556.78, high: 2578.23, low: 2533.45, close: 2567.89, volume: 6456789},
-  {date: '09/28/2025', open: 2567.89, high: 2578.45, low: 2534.56, close: 2556.34, volume: 5890123},
-  {date: '09/29/2025', open: 2556.34, high: 2567.23, low: 2523.45, close: 2545.67, volume: 5567890},
-  {date: '09/30/2025', open: 2545.67, high: 2556.78, low: 2512.34, close: 2534.56, volume: 5234567},
-  {date: '10/01/2025', open: 2534.56, high: 2545.89, low: 2501.23, close: 2523.45, volume: 4890123},
-  {date: '10/02/2025', open: 2523.45, high: 2534.67, low: 2489.56, close: 2512.34, volume: 4567890},
-  {date: '10/03/2025', open: 2512.34, high: 2523.89, low: 2478.45, close: 2501.23, volume: 4234567},
-  {date: '10/04/2025', open: 2501.23, high: 2534.56, low: 2489.34, close: 2523.45, volume: 5123456},
-  {date: '10/05/2025', open: 2523.45, high: 2545.67, low: 2500.12, close: 2534.56, volume: 5567890},
-  {date: '10/06/2025', open: 2534.56, high: 2556.89, low: 2511.23, close: 2545.67, volume: 5890123},
-  {date: '10/07/2025', open: 2545.67, high: 2567.34, low: 2522.45, close: 2556.78, volume: 6123456},
-  {date: '10/08/2025', open: 2556.78, high: 2578.56, low: 2533.67, close: 2567.89, volume: 6234567},
-  {date: '10/09/2025', open: 2567.89, high: 2589.23, low: 2544.56, close: 2578.34, volume: 6456789},
-  {date: '10/10/2025', open: 2578.34, high: 2589.45, low: 2545.67, close: 2567.89, volume: 5890123},
-  {date: '10/11/2025', open: 2567.89, high: 2578.23, low: 2534.56, close: 2556.78, volume: 5567890},
-  {date: '10/12/2025', open: 2556.78, high: 2567.45, low: 2523.45, close: 2545.67, volume: 5234567},
-  {date: '10/13/2025', open: 2545.67, high: 2556.89, low: 2512.34, close: 2534.56, volume: 4890123},
-  {date: '10/14/2025', open: 2534.56, high: 2545.23, low: 2501.23, close: 2523.45, volume: 4567890},
-  {date: '10/15/2025', open: 2523.45, high: 2534.78, low: 2489.56, close: 2512.34, volume: 4234567},
-  {date: '10/16/2025', open: 2512.34, high: 2545.67, low: 2500.12, close: 2534.56, volume: 5123456},
-  {date: '10/17/2025', open: 2534.56, high: 2556.89, low: 2511.23, close: 2545.67, volume: 5567890},
-  {date: '10/18/2025', open: 2545.67, high: 2567.34, low: 2522.45, close: 2556.78, volume: 5890123},
-  {date: '10/19/2025', open: 2556.78, high: 2578.56, low: 2533.67, close: 2567.89, volume: 6123456},
-  {date: '10/20/2025', open: 2567.89, high: 2578.23, low: 2534.56, close: 2556.78, volume: 5890123},
-];
 
 const datasets: CandleDataset[] = [
   {
@@ -1024,41 +900,12 @@ export default function MomentumIndicators() {
       {/* Sidebar */}
       <aside className="w-64 shrink-0">
         <div className="sticky top-6 space-y-4">
-          {/* Dataset Selector */}
-          <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-4">
-            <h3 className="text-sm font-semibold text-white mb-3">Market Condition</h3>
-            <select
-              value={selectedDataset}
-              onChange={e => setSelectedDataset(e.target.value)}
-              className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-md text-white text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent">
-              {datasets.map(dataset => (
-                <option key={dataset.id} value={dataset.id}>
-                  {dataset.name}
-                </option>
-              ))}
-            </select>
-            <p className="mt-2 text-xs text-slate-400">{datasets.find(ds => ds.id === selectedDataset)?.description}</p>
-          </div>
-
-          {/* Indicators List */}
-          <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-4">
-            <h2 className="text-lg font-semibold text-white mb-4">Momentum Indicators</h2>
-            <nav className="space-y-1">
-              {indicators.map(indicator => (
-                <button
-                  key={indicator.id}
-                  onClick={() => handleIndicatorChange(indicator.id)}
-                  className={`w-full text-left px-3 py-2 rounded-md text-sm transition-colors ${
-                    selectedIndicator === indicator.id
-                      ? 'bg-purple-600 text-white font-medium'
-                      : 'text-slate-300 hover:bg-slate-700/50 hover:text-white'
-                  }`}>
-                  <div className="font-medium">{indicator.name}</div>
-                  <div className="text-xs opacity-75">{indicator.description}</div>
-                </button>
-              ))}
-            </nav>
-          </div>
+          <DatasetSelector datasets={datasets} selectedDataset={selectedDataset} onDatasetChange={setSelectedDataset} />
+          <IndicatorList
+            indicators={indicators}
+            selectedIndicator={selectedIndicator}
+            onIndicatorChange={handleIndicatorChange}
+          />
         </div>
       </aside>
 
