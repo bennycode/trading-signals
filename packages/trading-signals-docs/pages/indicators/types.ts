@@ -1,4 +1,4 @@
-import type React from 'react';
+import type {ReactElement} from 'react';
 import type {ChartDataPoint} from '../../components/Chart';
 
 export type IndicatorType = 'single' | 'dual' | 'triple' | 'custom';
@@ -33,7 +33,7 @@ export interface IndicatorConfig<TIndicator = any, TResult = any> {
   getTableColumns: () => ColumnDef[];
   chartTitle?: string;
   yAxisLabel?: string;
-  customRender?: (config: IndicatorConfig<TIndicator, TResult>) => React.ReactElement;
+  customRender?: (config: IndicatorConfig<TIndicator, TResult>) => ReactElement;
 }
 
 export interface CandleDataset {
