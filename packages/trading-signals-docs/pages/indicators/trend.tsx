@@ -5,7 +5,7 @@ import {ChartDataPoint} from '../../components/Chart';
 import {DatasetSelector} from '../../components/DatasetSelector';
 import {IndicatorList} from '../../components/IndicatorList';
 import {SignalBadge} from '../../components/SignalBadge';
-import PriceChart from '../../components/PriceChart';
+import PriceChart, {PriceData} from '../../components/PriceChart';
 import type {Candle, IndicatorConfig} from './types';
 import {datasets} from './datasets';
 import {collectPriceData, renderSingleIndicator} from './renderUtils';
@@ -294,6 +294,8 @@ const indicators: IndicatorConfig[] = [
     color: '#22d3ee',
     type: 'custom',
     requiredInputs: 9,
+    details:
+      'Compares two moving averages. When the short MA crosses above the long MA, it signals a potential buy opportunity.',
     createIndicator: () => new DMA(5, 9, SMA),
     processData: () => ({}),
     getChartData: () => ({x: 0, y: null}),
@@ -318,7 +320,10 @@ const renderDMA = (config: IndicatorConfig, selectedCandles: Candle[]) => {
   selectedCandles.forEach((candle, idx) => {
     dma.add(candle.close);
     const result = dma.isStable ? dma.getResult() : null;
-    const signal = 'getSignal' in dma ? dma.getSignal() : {state: 'UNKNOWN', hasChanged: false};
+    const signal =
+      'getSignal' in dma
+        ? (dma.getSignal as () => {state: string; hasChanged: boolean})()
+        : {state: 'UNKNOWN', hasChanged: false};
     chartDataShort.push({x: idx + 1, y: result?.short ?? null});
     chartDataLong.push({x: idx + 1, y: result?.long ?? null});
 
@@ -341,10 +346,7 @@ const renderDMA = (config: IndicatorConfig, selectedCandles: Candle[]) => {
           DMA(5, 9) / Required Inputs: {dma.getRequiredInputs()}
         </h2>
         <p className="text-slate-300 select-text">{config.description}</p>
-        <p className="text-slate-400 text-sm mt-2 select-text">
-          Compares two moving averages. When the short MA crosses above the long MA, it signals a potential buy
-          opportunity.
-        </p>
+        {config.details && <p className="text-slate-400 text-sm mt-2 select-text">{config.details}</p>}
       </div>
 
       <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-4">
