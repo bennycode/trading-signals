@@ -321,7 +321,9 @@ const renderDMA = (config: IndicatorConfig, selectedCandles: Candle[]) => {
     dma.add(candle.close);
     const result = dma.isStable ? dma.getResult() : null;
     const signal =
-      'getSignal' in dma ? (dma.getSignal as () => any)() : {state: 'UNKNOWN', hasChanged: false};
+      'getSignal' in dma
+        ? (dma.getSignal as () => {state: string; hasChanged: boolean})()
+        : {state: 'UNKNOWN', hasChanged: false};
     chartDataShort.push({x: idx + 1, y: result?.short ?? null});
     chartDataLong.push({x: idx + 1, y: result?.long ?? null});
 
