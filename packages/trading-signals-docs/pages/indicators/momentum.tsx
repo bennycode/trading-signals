@@ -21,7 +21,7 @@ import {ChartDataPoint} from '../../components/Chart';
 import {DatasetSelector} from '../../components/DatasetSelector';
 import {IndicatorList} from '../../components/IndicatorList';
 import {SignalBadge} from '../../components/SignalBadge';
-import PriceChart from '../../components/PriceChart';
+import PriceChart, {PriceData} from '../../components/PriceChart';
 import type {Candle, IndicatorConfig} from './types';
 import {datasets} from './datasets';
 import {collectPriceData, renderSingleIndicator} from './renderUtils';
