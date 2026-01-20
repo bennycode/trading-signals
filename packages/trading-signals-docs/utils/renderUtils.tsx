@@ -18,7 +18,13 @@ export const renderSingleIndicator = (config: IndicatorConfig, selectedCandles: 
   const indicator = config.createIndicator!();
   const chartData: ChartDataPoint[] = [];
   const priceData: PriceData[] = [];
-  const sampleValues: any[] = [];
+  const sampleValues: Array<{
+    period: number;
+    date: string;
+    result: string;
+    signal?: string;
+    [key: string]: any;
+  }> = [];
 
   selectedCandles.forEach((candle, idx) => {
     const processedData = config.processData!(indicator, candle, idx);
