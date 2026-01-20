@@ -22,9 +22,9 @@ import {DatasetSelector} from '../../components/DatasetSelector';
 import {IndicatorList} from '../../components/IndicatorList';
 import {SignalBadge} from '../../components/SignalBadge';
 import PriceChart, {PriceData} from '../../components/PriceChart';
-import type {Candle, IndicatorConfig} from './types';
-import {datasets} from './datasets';
-import {collectPriceData, renderSingleIndicator} from './renderUtils';
+import type {Candle, IndicatorConfig} from '../../utils/types';
+import {datasets} from '../../utils/datasets';
+import {collectPriceData, renderSingleIndicator} from '../../utils/renderUtils';
 
 const indicators: IndicatorConfig[] = [
   {

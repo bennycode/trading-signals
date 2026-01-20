@@ -1,10 +1,10 @@
 import type {Candle, IndicatorConfig} from './types';
-import type {PriceData} from '../../components/PriceChart';
-import type {ChartDataPoint} from '../../components/Chart';
-import Chart from '../../components/Chart';
-import PriceChart from '../../components/PriceChart';
-import {DataTable} from '../../components/DataTable';
-import {IndicatorHeader} from '../../components/IndicatorHeader';
+import type {PriceData} from '../components/PriceChart';
+import type {ChartDataPoint} from '../components/Chart';
+import Chart from '../components/Chart';
+import PriceChart from '../components/PriceChart';
+import {DataTable} from '../components/DataTable';
+import {IndicatorHeader} from '../components/IndicatorHeader';
 
 export const collectPriceData = (candle: Candle, idx: number): PriceData => ({
   x: idx + 1,

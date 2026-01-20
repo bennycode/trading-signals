@@ -1,7 +1,7 @@
 import type {CandleDataset} from './types';
-import uptrendCandles from './candles/uptrend.json' with {type: 'json'};
-import downtrendCandles from './candles/downtrend.json' with {type: 'json'};
-import sidewaysCandles from './candles/sideways.json' with {type: 'json'};
+import uptrendCandles from '../pages/indicators/candles/uptrend.json' with {type: 'json'};
+import downtrendCandles from '../pages/indicators/candles/downtrend.json' with {type: 'json'};
+import sidewaysCandles from '../pages/indicators/candles/sideways.json' with {type: 'json'};
 
 export const datasets: CandleDataset[] = [
   {

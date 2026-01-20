@@ -1,5 +1,5 @@
 import type React from 'react';
-import type {ChartDataPoint} from '../../components/Chart';
+import type {ChartDataPoint} from '../components/Chart';
 
 export type IndicatorType = 'single' | 'dual' | 'triple' | 'custom';
 
