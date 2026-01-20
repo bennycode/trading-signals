@@ -1,226 +1,546 @@
-import {SMA, EMA, DEMA, WMA, MACD} from 'trading-signals';
-import IndicatorDemo, {IndicatorExample} from '../../components/IndicatorDemo';
+import {useEffect, useState} from 'react';
+import {Chart as HighchartsChart} from '@highcharts/react';
+import {ADX, DEMA, DMA, DX, EMA, PSAR, RMA, SMA, VWAP, WMA, WSMA} from 'trading-signals';
+import {ChartDataPoint} from '../../components/Chart';
+import {DatasetSelector} from '../../components/DatasetSelector';
+import {IndicatorList} from '../../components/IndicatorList';
+import {SignalBadge} from '../../components/SignalBadge';
+import PriceChart, {PriceData} from '../../components/PriceChart';
+import type {Candle, IndicatorConfig} from '../../utils/types';
+import {datasets} from '../../utils/datasets';
+import {collectPriceData, renderSingleIndicator} from '../../utils/renderUtils';
 
-export default function TrendIndicators() {
-  const examples: IndicatorExample[] = [
-    {
-      name: 'Simple Moving Average (SMA)',
-      description: 'Calculates the average of a specified number of prices',
-      code: `import { SMA } from 'trading-signals';
-
-const sma = new SMA(5);
-
-sma.add(81);
-sma.add(24);
-sma.add(75);
-sma.add(21);
-sma.add(34);
-
-console.log(sma.getResult()); // 47`,
-      inputValues: [81, 24, 75, 21, 34],
-      calculate: values => {
-        const sma = new SMA(5);
-        const allResults: Array<{value: number; result: string | null}> = [];
-
-        for (const value of values) {
-          sma.add(value);
-          const result = sma.isStable ? sma.getResult()!.toFixed(2) : null;
-          allResults.push({value, result});
-        }
-
-        return {
-          result: sma.isStable ? sma.getResult()!.toFixed(2) : null,
-          allResults,
-        };
-      },
+const indicators: IndicatorConfig[] = [
+  {
+    id: 'sma',
+    name: 'SMA',
+    description: 'Simple Moving Average',
+    color: '#3b82f6',
+    type: 'single',
+    requiredInputs: 5,
+    details:
+      'Calculates the arithmetic mean of prices over a specified period. Smooths out price fluctuations to identify the trend direction.',
+    createIndicator: () => new SMA(5),
+    processData: (indicator, candle) => {
+      indicator.add(candle.close);
+      const result = indicator.isStable ? indicator.getResult() : null;
+      const signal = 'getSignal' in indicator ? indicator.getSignal() : {state: 'UNKNOWN', hasChanged: false};
+      return {result, signal, close: candle.close};
     },
-    {
-      name: 'Exponential Moving Average (EMA)',
-      description: 'Gives more weight to recent prices, reacting faster to price changes',
-      code: `import { EMA } from 'trading-signals';
-
-const ema = new EMA(5);
-
-ema.add(81);
-ema.add(24);
-ema.add(75);
-ema.add(21);
-ema.add(34);
-
-console.log(ema.getResult());`,
-      inputValues: [81, 24, 75, 21, 34, 53, 44],
-      calculate: values => {
-        const ema = new EMA(5);
-        const allResults: Array<{value: number; result: string | null}> = [];
-
-        for (const value of values) {
-          ema.add(value);
-          const result = ema.isStable ? ema.getResult()!.toFixed(2) : null;
-          allResults.push({value, result});
-        }
-
-        return {
-          result: ema.isStable ? ema.getResult()!.toFixed(2) : null,
-          allResults,
-        };
-      },
+    getChartData: result => ({x: 0, y: result.result}),
+    getTableColumns: () => [
+      {header: 'Period', key: 'period'},
+      {header: 'Date', key: 'date'},
+      {header: 'Close', key: 'close', render: val => `$${val.toFixed(2)}`, className: 'text-slate-300 py-2 px-3'},
+      {header: 'SMA', key: 'result', className: 'text-white font-mono py-2 px-3'},
+      {header: 'Signal', key: 'signal', render: val => <SignalBadge signal={val} />, className: 'py-2 px-3'},
+    ],
+    chartTitle: 'SMA (5)',
+    yAxisLabel: 'Price',
+  },
+  {
+    id: 'ema',
+    name: 'EMA',
+    description: 'Exponential Moving Average',
+    color: '#8b5cf6',
+    type: 'single',
+    requiredInputs: 5,
+    details:
+      'Gives more weight to recent prices, reacting faster to price changes than SMA. Popular for identifying short-term trends.',
+    createIndicator: () => new EMA(5),
+    processData: (indicator, candle) => {
+      indicator.add(candle.close);
+      const result = indicator.isStable ? indicator.getResult() : null;
+      const signal = 'getSignal' in indicator ? indicator.getSignal() : {state: 'UNKNOWN', hasChanged: false};
+      return {result, signal, close: candle.close};
     },
-    {
-      name: 'Double Exponential Moving Average (DEMA)',
-      description: 'Reduces lag by applying EMA twice, providing faster signals',
-      code: `import { DEMA } from 'trading-signals';
-
-const dema = new DEMA(5);
-
-for (const price of prices) {
-  dema.add(price);
-}
-
-console.log(dema.getResult());`,
-      inputValues: [81, 24, 75, 21, 34, 53, 44, 66, 89, 101],
-      calculate: values => {
-        const dema = new DEMA(5);
-        const allResults: Array<{value: number; result: string | null}> = [];
-
-        for (const value of values) {
-          dema.add(value);
-          const result = dema.isStable ? dema.getResult()!.toFixed(2) : null;
-          allResults.push({value, result});
-        }
-
-        return {
-          result: dema.isStable ? dema.getResult()!.toFixed(2) : null,
-          allResults,
-        };
-      },
+    getChartData: result => ({x: 0, y: result.result}),
+    getTableColumns: () => [
+      {header: 'Period', key: 'period'},
+      {header: 'Date', key: 'date'},
+      {header: 'Close', key: 'close', render: val => `$${val.toFixed(2)}`, className: 'text-slate-300 py-2 px-3'},
+      {header: 'EMA', key: 'result', className: 'text-white font-mono py-2 px-3'},
+      {header: 'Signal', key: 'signal', render: val => <SignalBadge signal={val} />, className: 'py-2 px-3'},
+    ],
+    chartTitle: 'EMA (5)',
+    yAxisLabel: 'Price',
+  },
+  {
+    id: 'dema',
+    name: 'DEMA',
+    description: 'Double Exponential Moving Average',
+    color: '#ec4899',
+    type: 'single',
+    requiredInputs: 9,
+    details:
+      'Reduces lag by applying EMA twice, providing faster signals than standard EMA while maintaining smoothness.',
+    createIndicator: () => new DEMA(5),
+    processData: (indicator, candle) => {
+      indicator.add(candle.close);
+      const result = indicator.isStable ? indicator.getResult() : null;
+      const signal = 'getSignal' in indicator ? indicator.getSignal() : {state: 'UNKNOWN', hasChanged: false};
+      return {result, signal, close: candle.close};
     },
-    {
-      name: 'Weighted Moving Average (WMA)',
-      description: 'Assigns higher weights to recent data points',
-      code: `import { WMA } from 'trading-signals';
-
-const wma = new WMA(5);
-
-wma.add(91);
-wma.add(90);
-wma.add(89);
-wma.add(88);
-wma.add(90);
-
-console.log(wma.getResult());`,
-      inputValues: [91, 90, 89, 88, 90],
-      calculate: values => {
-        const wma = new WMA(5);
-        const allResults: Array<{value: number; result: string | null}> = [];
-
-        for (const value of values) {
-          wma.add(value);
-          const result = wma.isStable ? wma.getResult()!.toFixed(2) : null;
-          allResults.push({value, result});
-        }
-
-        return {
-          result: wma.isStable ? wma.getResult()!.toFixed(2) : null,
-          allResults,
-        };
-      },
+    getChartData: result => ({x: 0, y: result.result}),
+    getTableColumns: () => [
+      {header: 'Period', key: 'period'},
+      {header: 'Date', key: 'date'},
+      {header: 'Close', key: 'close', render: val => `$${val.toFixed(2)}`, className: 'text-slate-300 py-2 px-3'},
+      {header: 'DEMA', key: 'result', className: 'text-white font-mono py-2 px-3'},
+      {header: 'Signal', key: 'signal', render: val => <SignalBadge signal={val} />, className: 'py-2 px-3'},
+    ],
+    chartTitle: 'DEMA (5)',
+    yAxisLabel: 'Price',
+  },
+  {
+    id: 'wma',
+    name: 'WMA',
+    description: 'Weighted Moving Average',
+    color: '#10b981',
+    type: 'single',
+    requiredInputs: 5,
+    details: 'Assigns linearly increasing weights to recent data points. The most recent price has the highest weight.',
+    createIndicator: () => new WMA(5),
+    processData: (indicator, candle) => {
+      indicator.add(candle.close);
+      const result = indicator.isStable ? indicator.getResult() : null;
+      const signal = 'getSignal' in indicator ? indicator.getSignal() : {state: 'UNKNOWN', hasChanged: false};
+      return {result, signal, close: candle.close};
     },
-    {
-      name: 'MACD (Moving Average Convergence Divergence)',
-      description: 'Shows the relationship between two moving averages',
-      code: `import { EMA, MACD } from 'trading-signals';
-
-// MACD expects indicator instances, not numbers
-const macd = new MACD(
-  new EMA(12), // short
-  new EMA(26), // long
-  new EMA(9)   // signal
-);
-
-for (const price of prices) {
-  macd.add(price);
-}
-
-const result = macd.getResult();
-console.log('MACD:', result?.macd);
-console.log('Signal:', result?.signal);
-console.log('Histogram:', result?.histogram);`,
-      inputValues: [
-        20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45,
-      ],
-      calculate: values => {
-        const macd = new MACD(new EMA(12), new EMA(26), new EMA(9));
-        const allResults: Array<{value: number; result: string | null}> = [];
-
-        for (const value of values) {
-          macd.add(value);
-          let result = null;
-          if (macd.isStable) {
-            const res = macd.getResultOrThrow();
-            result = `MACD: ${res.macd.toFixed(2)}, Signal: ${res.signal.toFixed(2)}`;
-          }
-          allResults.push({value, result});
-        }
-
-        const finalResult = macd.isStable ? macd.getResultOrThrow() : null;
-        return {
-          result: finalResult
-            ? `MACD: ${finalResult.macd.toFixed(2)}, Signal: ${finalResult.signal.toFixed(2)}, Hist: ${finalResult.histogram.toFixed(2)}`
-            : null,
-          allResults,
-        };
-      },
+    getChartData: result => ({x: 0, y: result.result}),
+    getTableColumns: () => [
+      {header: 'Period', key: 'period'},
+      {header: 'Date', key: 'date'},
+      {header: 'Close', key: 'close', render: val => `$${val.toFixed(2)}`, className: 'text-slate-300 py-2 px-3'},
+      {header: 'WMA', key: 'result', className: 'text-white font-mono py-2 px-3'},
+      {header: 'Signal', key: 'signal', render: val => <SignalBadge signal={val} />, className: 'py-2 px-3'},
+    ],
+    chartTitle: 'WMA (5)',
+    yAxisLabel: 'Price',
+  },
+  {
+    id: 'rma',
+    name: 'RMA',
+    description: "Relative Moving Average (Wilder's MA)",
+    color: '#f59e0b',
+    type: 'single',
+    requiredInputs: 5,
+    details:
+      'Developed by J. Welles Wilder Jr., this smoothed moving average gives more weight to historical data, resulting in a smoother line.',
+    createIndicator: () => new RMA(5),
+    processData: (indicator, candle) => {
+      indicator.add(candle.close);
+      const result = indicator.isStable ? indicator.getResult() : null;
+      const signal = 'getSignal' in indicator ? indicator.getSignal() : {state: 'UNKNOWN', hasChanged: false};
+      return {result, signal, close: candle.close};
     },
-  ];
+    getChartData: result => ({x: 0, y: result.result}),
+    getTableColumns: () => [
+      {header: 'Period', key: 'period'},
+      {header: 'Date', key: 'date'},
+      {header: 'Close', key: 'close', render: val => `$${val.toFixed(2)}`, className: 'text-slate-300 py-2 px-3'},
+      {header: 'RMA', key: 'result', className: 'text-white font-mono py-2 px-3'},
+      {header: 'Signal', key: 'signal', render: val => <SignalBadge signal={val} />, className: 'py-2 px-3'},
+    ],
+    chartTitle: 'RMA (5)',
+    yAxisLabel: 'Price',
+  },
+  {
+    id: 'wsma',
+    name: 'WSMA',
+    description: "Wilder's Smoothed Moving Average",
+    color: '#06b6d4',
+    type: 'single',
+    requiredInputs: 5,
+    details:
+      'Similar to RMA, this is a smoothed moving average that reduces noise and provides a clearer view of the trend.',
+    createIndicator: () => new WSMA(5),
+    processData: (indicator, candle) => {
+      indicator.add(candle.close);
+      const result = indicator.isStable ? indicator.getResult() : null;
+      const signal = 'getSignal' in indicator ? indicator.getSignal() : {state: 'UNKNOWN', hasChanged: false};
+      return {result, signal, close: candle.close};
+    },
+    getChartData: result => ({x: 0, y: result.result}),
+    getTableColumns: () => [
+      {header: 'Period', key: 'period'},
+      {header: 'Date', key: 'date'},
+      {header: 'Close', key: 'close', render: val => `$${val.toFixed(2)}`, className: 'text-slate-300 py-2 px-3'},
+      {header: 'WSMA', key: 'result', className: 'text-white font-mono py-2 px-3'},
+      {header: 'Signal', key: 'signal', render: val => <SignalBadge signal={val} />, className: 'py-2 px-3'},
+    ],
+    chartTitle: 'WSMA (5)',
+    yAxisLabel: 'Price',
+  },
+  {
+    id: 'vwap',
+    name: 'VWAP',
+    description: 'Volume Weighted Average Price',
+    color: '#ef4444',
+    type: 'single',
+    requiredInputs: 1,
+    details:
+      'Calculates the average price weighted by volume. Used to assess whether trades are being executed at favorable prices.',
+    createIndicator: () => new VWAP(),
+    processData: (indicator, candle) => {
+      indicator.add(candle);
+      const result = indicator.getResult();
+      const signal = 'getSignal' in indicator ? indicator.getSignal() : {state: 'UNKNOWN', hasChanged: false};
+      return {result, signal, close: candle.close, volume: candle.volume};
+    },
+    getChartData: result => ({x: 0, y: result.result}),
+    getTableColumns: () => [
+      {header: 'Period', key: 'period'},
+      {header: 'Date', key: 'date'},
+      {header: 'Close', key: 'close', render: val => `$${val.toFixed(2)}`, className: 'text-slate-300 py-2 px-3'},
+      {header: 'Volume', key: 'volume', className: 'text-slate-300 py-2 px-3'},
+      {header: 'VWAP', key: 'result', className: 'text-white font-mono py-2 px-3'},
+      {header: 'Signal', key: 'signal', render: val => <SignalBadge signal={val} />, className: 'py-2 px-3'},
+    ],
+    chartTitle: 'VWAP',
+    yAxisLabel: 'Price',
+  },
+  {
+    id: 'adx',
+    name: 'ADX',
+    description: 'Average Directional Index',
+    color: '#a855f7',
+    type: 'single',
+    requiredInputs: 14,
+    details:
+      'Measures trend strength regardless of direction. Values above 25 indicate a strong trend, below 20 suggest a weak trend.',
+    createIndicator: () => new ADX(14),
+    processData: (indicator, candle) => {
+      indicator.add(candle);
+      const result = indicator.isStable ? indicator.getResult() : null;
+      const signal = 'getSignal' in indicator ? indicator.getSignal() : {state: 'UNKNOWN', hasChanged: false};
+      return {result, signal, high: candle.high, low: candle.low, close: candle.close};
+    },
+    getChartData: result => ({x: 0, y: result.result}),
+    getTableColumns: () => [
+      {header: 'Period', key: 'period'},
+      {header: 'Date', key: 'date'},
+      {header: 'High', key: 'high', render: val => `$${val.toFixed(2)}`, className: 'text-slate-300 py-2 px-3'},
+      {header: 'Low', key: 'low', render: val => `$${val.toFixed(2)}`, className: 'text-slate-300 py-2 px-3'},
+      {header: 'Close', key: 'close', render: val => `$${val.toFixed(2)}`, className: 'text-slate-300 py-2 px-3'},
+      {header: 'ADX', key: 'result', className: 'text-white font-mono py-2 px-3'},
+      {header: 'Signal', key: 'signal', render: val => <SignalBadge signal={val} />, className: 'py-2 px-3'},
+    ],
+    chartTitle: 'ADX (14)',
+    yAxisLabel: 'ADX',
+  },
+  {
+    id: 'dx',
+    name: 'DX',
+    description: 'Directional Movement Index',
+    color: '#84cc16',
+    type: 'single',
+    requiredInputs: 14,
+    details:
+      'Measures the strength of directional movement. The ADX is derived from smoothing the DX values over time.',
+    createIndicator: () => new DX(14),
+    processData: (indicator, candle) => {
+      indicator.add(candle);
+      const result = indicator.isStable ? indicator.getResult() : null;
+      const signal = 'getSignal' in indicator ? indicator.getSignal() : {state: 'UNKNOWN', hasChanged: false};
+      return {result, signal, high: candle.high, low: candle.low, close: candle.close};
+    },
+    getChartData: result => ({x: 0, y: result.result}),
+    getTableColumns: () => [
+      {header: 'Period', key: 'period'},
+      {header: 'Date', key: 'date'},
+      {header: 'High', key: 'high', render: val => `$${val.toFixed(2)}`, className: 'text-slate-300 py-2 px-3'},
+      {header: 'Low', key: 'low', render: val => `$${val.toFixed(2)}`, className: 'text-slate-300 py-2 px-3'},
+      {header: 'Close', key: 'close', render: val => `$${val.toFixed(2)}`, className: 'text-slate-300 py-2 px-3'},
+      {header: 'DX', key: 'result', className: 'text-white font-mono py-2 px-3'},
+      {header: 'Signal', key: 'signal', render: val => <SignalBadge signal={val} />, className: 'py-2 px-3'},
+    ],
+    chartTitle: 'DX (14)',
+    yAxisLabel: 'DX',
+  },
+  {
+    id: 'psar',
+    name: 'PSAR',
+    description: 'Parabolic SAR',
+    color: '#f97316',
+    type: 'single',
+    requiredInputs: 2,
+    details:
+      'Identifies potential reversal points by placing dots above or below price. Dots below = uptrend, dots above = downtrend.',
+    createIndicator: () => new PSAR({accelerationStep: 0.02, accelerationMax: 0.2}),
+    processData: (indicator, candle) => {
+      indicator.add(candle);
+      const result = indicator.isStable ? indicator.getResult() : null;
+      const signal = 'getSignal' in indicator ? indicator.getSignal() : {state: 'UNKNOWN', hasChanged: false};
+      return {result, signal, high: candle.high, low: candle.low, close: candle.close};
+    },
+    getChartData: result => ({x: 0, y: result.result}),
+    getTableColumns: () => [
+      {header: 'Period', key: 'period'},
+      {header: 'Date', key: 'date'},
+      {header: 'High', key: 'high', render: val => `$${val.toFixed(2)}`, className: 'text-slate-300 py-2 px-3'},
+      {header: 'Low', key: 'low', render: val => `$${val.toFixed(2)}`, className: 'text-slate-300 py-2 px-3'},
+      {header: 'Close', key: 'close', render: val => `$${val.toFixed(2)}`, className: 'text-slate-300 py-2 px-3'},
+      {header: 'PSAR', key: 'result', className: 'text-white font-mono py-2 px-3'},
+      {header: 'Signal', key: 'signal', render: val => <SignalBadge signal={val} />, className: 'py-2 px-3'},
+    ],
+    chartTitle: 'Parabolic SAR',
+    yAxisLabel: 'Price',
+  },
+  {
+    id: 'dma',
+    name: 'DMA',
+    description: 'Dual Moving Average',
+    color: '#22d3ee',
+    type: 'custom',
+    requiredInputs: 9,
+    details:
+      'Compares two moving averages. When the short MA crosses above the long MA, it signals a potential buy opportunity.',
+    createIndicator: () => new DMA(5, 9, SMA),
+    processData: () => ({}),
+    getChartData: () => ({x: 0, y: null}),
+    getTableColumns: () => [],
+  },
+];
+
+const renderDMA = (config: IndicatorConfig, selectedCandles: Candle[]) => {
+  const dma = new DMA(5, 9, SMA);
+  const chartDataShort: ChartDataPoint[] = [];
+  const chartDataLong: ChartDataPoint[] = [];
+  const priceData: PriceData[] = [];
+  const sampleValues: Array<{
+    period: number;
+    date: string;
+    close: number;
+    short: string;
+    long: string;
+    signal: string;
+  }> = [];
+
+  selectedCandles.forEach((candle, idx) => {
+    dma.add(candle.close);
+    const result = dma.isStable ? dma.getResult() : null;
+    const signal =
+      'getSignal' in dma
+        ? (dma.getSignal as () => {state: string; hasChanged: boolean})()
+        : {state: 'UNKNOWN', hasChanged: false};
+    chartDataShort.push({x: idx + 1, y: result?.short ?? null});
+    chartDataLong.push({x: idx + 1, y: result?.long ?? null});
+
+    priceData.push(collectPriceData(candle, idx));
+
+    sampleValues.push({
+      period: idx + 1,
+      date: candle.date,
+      close: candle.close,
+      short: result ? result.short.toFixed(2) : 'N/A',
+      long: result ? result.long.toFixed(2) : 'N/A',
+      signal: signal.state,
+    });
+  });
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       <div>
-        <h1 className="text-4xl font-bold text-white mb-4">Trend Indicators</h1>
-        <p className="text-slate-300 text-lg">
-          Trend indicators help identify the direction of price movements - whether the market is in an uptrend,
-          downtrend, or moving sideways. These indicators smooth out price data to help traders spot the overall trend.
-        </p>
+        <h2 className="text-2xl font-bold text-white mb-2 select-text">
+          DMA(5, 9) / Required Inputs: {dma.getRequiredInputs()}
+        </h2>
+        <p className="text-slate-300 select-text">{config.description}</p>
+        {config.details && <p className="text-slate-400 text-sm mt-2 select-text">{config.details}</p>}
       </div>
 
-      <div className="bg-blue-900/20 border border-blue-800/50 rounded-lg p-6">
-        <h2 className="text-xl font-semibold text-blue-400 mb-3">💡 How to use these examples</h2>
-        <ul className="text-slate-300 space-y-2 list-disc list-inside">
-          <li>Each example shows real code you can copy and use</li>
-          <li>Try the interactive demo by adding your own values to see how the indicator responds</li>
-          <li>Values marked with "—" indicate not enough data has been provided yet (indicator not stable)</li>
-          <li>Click "Reset" to restore the default example values</li>
-        </ul>
-      </div>
-
-      <div className="space-y-6">
-        {examples.map((example, idx) => (
-          <IndicatorDemo key={idx} example={example} />
-        ))}
-      </div>
-
-      <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-6">
-        <h2 className="text-2xl font-semibold text-white mb-4">Other Trend Indicators</h2>
-        <div className="grid md:grid-cols-2 gap-4">
-          {[
-            {name: 'ADX', desc: 'Average Directional Index - measures trend strength'},
-            {name: 'PSAR', desc: 'Parabolic SAR - identifies potential reversal points'},
-            {name: 'VWAP', desc: 'Volume Weighted Average Price - average price weighted by volume'},
-            {name: 'DMA', desc: 'Dual Moving Average - compares two moving averages'},
-            {
-              name: 'RMA',
-              desc: "Relative Moving Average - smoothed moving average (Wilder's method)",
+      <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-4">
+        <HighchartsChart
+          options={{
+            chart: {
+              type: 'line',
+              backgroundColor: 'transparent',
+              height: 300,
             },
-            {name: 'WSMA', desc: "Wilder's Smoothed Moving Average"},
-            {name: 'DX', desc: 'Directional Movement Index'},
-          ].map(indicator => (
-            <div key={indicator.name} className="bg-slate-900/50 rounded p-4">
-              <code className="text-blue-400 font-mono font-semibold">{indicator.name}</code>
-              <p className="text-slate-400 text-sm mt-1">{indicator.desc}</p>
-            </div>
-          ))}
+            title: {
+              text: 'Dual Moving Average (5,9)',
+              style: {
+                color: '#e2e8f0',
+                fontSize: '16px',
+                fontWeight: '600',
+              },
+            },
+            credits: {
+              enabled: false,
+            },
+            xAxis: {
+              title: {
+                text: 'Period',
+                style: {color: '#94a3b8'},
+              },
+              labels: {
+                style: {color: '#94a3b8'},
+              },
+              gridLineColor: '#334155',
+            },
+            yAxis: {
+              title: {
+                text: 'Price',
+                style: {color: '#94a3b8'},
+              },
+              labels: {
+                style: {color: '#94a3b8'},
+              },
+              gridLineColor: '#334155',
+            },
+            legend: {
+              enabled: true,
+              itemStyle: {
+                color: '#e2e8f0',
+              },
+            },
+            plotOptions: {
+              line: {
+                marker: {
+                  enabled: true,
+                  radius: 3,
+                },
+                lineWidth: 2,
+              },
+            },
+            series: [
+              {
+                type: 'line',
+                name: 'Short MA (5)',
+                data: chartDataShort.map(point => [point.x, point.y]),
+                color: config.color,
+                marker: {
+                  fillColor: config.color,
+                },
+              },
+              {
+                type: 'line',
+                name: 'Long MA (9)',
+                data: chartDataLong.map(point => [point.x, point.y]),
+                color: '#f97316',
+                marker: {
+                  fillColor: '#f97316',
+                },
+              },
+            ],
+            tooltip: {
+              backgroundColor: '#1e293b',
+              borderColor: '#475569',
+              style: {
+                color: '#e2e8f0',
+              },
+              shared: true,
+              formatter: function (): string {
+                let s: string = `<b>Period ${(this as any).x}</b><br/>`;
+                ((this as any).points as any[])?.forEach((point: any) => {
+                  const yValue = typeof point.y === 'number' ? point.y.toFixed(2) : 'N/A';
+                  s += `${point.series.name}: ${yValue}<br/>`;
+                });
+                return s;
+              },
+            },
+          }}
+        />
+      </div>
+
+      <PriceChart title="Input Prices" data={priceData} />
+
+      <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-4">
+        <h3 className="text-lg font-semibold text-white mb-3">All Sample Values</h3>
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-slate-600">
+                <th className="text-left py-2 px-3 text-slate-400 font-medium">Period</th>
+                <th className="text-left py-2 px-3 text-slate-400 font-medium">Date</th>
+                <th className="text-left py-2 px-3 text-slate-400 font-medium">Close</th>
+                <th className="text-left py-2 px-3 text-slate-400 font-medium">Short MA</th>
+                <th className="text-left py-2 px-3 text-slate-400 font-medium">Long MA</th>
+                <th className="text-left py-2 px-3 text-slate-400 font-medium">Signal</th>
+              </tr>
+            </thead>
+            <tbody>
+              {sampleValues.map((row, idx) => (
+                <tr key={idx} className="border-b border-slate-700/50">
+                  <td className="py-2 px-3 text-white font-mono">{row.period}</td>
+                  <td className="py-2 px-3 text-slate-300">{row.date}</td>
+                  <td className="py-2 px-3 text-slate-300">${row.close.toFixed(2)}</td>
+                  <td className="py-2 px-3 text-white font-mono">{row.short}</td>
+                  <td className="py-2 px-3 text-white font-mono">{row.long}</td>
+                  <td className="py-2 px-3">
+                    <SignalBadge signal={row.signal} />
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       </div>
+    </div>
+  );
+};
+
+export default function TrendIndicators() {
+  const [selectedIndicator, setSelectedIndicator] = useState<string>('sma');
+  const [selectedDataset, setSelectedDataset] = useState<string>('uptrend');
+
+  useEffect(() => {
+    const hash = window.location.hash.slice(1);
+    if (hash && indicators.some(ind => ind.id === hash)) {
+      setSelectedIndicator(hash);
+    }
+  }, []);
+
+  useEffect(() => {
+    const handleHashChange = () => {
+      const hash = window.location.hash.slice(1);
+      if (hash && indicators.some(ind => ind.id === hash)) {
+        setSelectedIndicator(hash);
+      }
+    };
+
+    window.addEventListener('hashchange', handleHashChange);
+    return () => window.removeEventListener('hashchange', handleHashChange);
+  }, []);
+
+  const handleIndicatorChange = (indicatorId: string) => {
+    setSelectedIndicator(indicatorId);
+    window.location.hash = indicatorId;
+  };
+
+  const renderIndicatorContent = () => {
+    const config = indicators.find(ind => ind.id === selectedIndicator);
+    const dataset = datasets.find(ds => ds.id === selectedDataset);
+    if (!config || !dataset) return null;
+
+    if (config.type === 'single') {
+      return renderSingleIndicator(config, dataset.candles);
+    }
+
+    switch (selectedIndicator) {
+      case 'dma':
+        return renderDMA(config, dataset.candles);
+      default:
+        return null;
+    }
+  };
+
+  return (
+    <div className="flex gap-6">
+      {/* Sidebar */}
+      <aside className="w-64 shrink-0">
+        <div className="sticky top-6 space-y-4">
+          <DatasetSelector datasets={datasets} selectedDataset={selectedDataset} onDatasetChange={setSelectedDataset} />
+          <IndicatorList
+            indicators={indicators}
+            selectedIndicator={selectedIndicator}
+            onIndicatorChange={handleIndicatorChange}
+          />
+        </div>
+      </aside>
+
+      {/* Main Content */}
+      <main className="flex-1 min-w-0">{renderIndicatorContent()}</main>
     </div>
   );
 }

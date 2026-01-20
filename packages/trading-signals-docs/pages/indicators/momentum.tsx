@@ -17,79 +17,14 @@ import {
   TDS,
   WilliamsR,
 } from 'trading-signals';
-import Chart, {ChartDataPoint} from '../../components/Chart';
-import {DataTable} from '../../components/DataTable';
+import {ChartDataPoint} from '../../components/Chart';
 import {DatasetSelector} from '../../components/DatasetSelector';
-import {IndicatorHeader} from '../../components/IndicatorHeader';
 import {IndicatorList} from '../../components/IndicatorList';
 import {SignalBadge} from '../../components/SignalBadge';
 import PriceChart, {PriceData} from '../../components/PriceChart';
-import uptrendCandles from './candles/uptrend.json' with {type: 'json'};
-import downtrendCandles from './candles/downtrend.json' with {type: 'json'};
-import sidewaysCandles from './candles/sideways.json' with {type: 'json'};
-
-type IndicatorType = 'single' | 'dual' | 'triple' | 'custom';
-
-interface ColumnDef {
-  header: string;
-  key: string;
-  render?: (val: any, row?: any) => any;
-  className?: string;
-}
-
-interface Candle {
-  date: string;
-  open: number;
-  high: number;
-  low: number;
-  close: number;
-  volume: number;
-}
-
-interface IndicatorConfig<TIndicator = any, TResult = any> {
-  id: string;
-  name: string;
-  description: string;
-  color: string;
-  requiredInputs: number;
-  type: IndicatorType;
-  details?: string;
-  createIndicator: () => TIndicator;
-  processData: (indicator: TIndicator, candle: Candle, idx: number) => TResult;
-  getChartData: (result: TResult) => ChartDataPoint | ChartDataPoint[];
-  getTableColumns: () => ColumnDef[];
-  chartTitle?: string;
-  yAxisLabel?: string;
-  customRender?: (config: IndicatorConfig<TIndicator, TResult>) => React.ReactElement;
-}
-
-interface CandleDataset {
-  id: string;
-  name: string;
-  description: string;
-  candles: Candle[];
-}
-
-const datasets: CandleDataset[] = [
-  {
-    id: 'uptrend',
-    name: 'Uptrend',
-    description: 'Rising market - prices trending upward',
-    candles: uptrendCandles,
-  },
-  {
-    id: 'downtrend',
-    name: 'Downtrend',
-    description: 'Falling market - prices trending downward',
-    candles: downtrendCandles,
-  },
-  {
-    id: 'sideways',
-    name: 'Sideways',
-    description: 'Ranging market - prices moving horizontally',
-    candles: sidewaysCandles,
-  },
-];
+import type {Candle, IndicatorConfig} from '../../utils/types';
+import {datasets} from '../../utils/datasets';
+import {collectPriceData, renderSingleIndicator} from '../../utils/renderUtils';
 
 const indicators: IndicatorConfig[] = [
   {
@@ -442,61 +377,6 @@ const indicators: IndicatorConfig[] = [
     yAxisLabel: 'Williams %R',
   },
 ];
-
-const collectPriceData = (candle: Candle, idx: number): PriceData => ({
-  x: idx + 1,
-  open: candle.open,
-  high: candle.high,
-  low: candle.low,
-  close: candle.close,
-});
-
-const renderSingleIndicator = (config: IndicatorConfig, selectedCandles: Candle[]) => {
-  const indicator = config.createIndicator!();
-  const chartData: ChartDataPoint[] = [];
-  const priceData: PriceData[] = [];
-  const sampleValues: any[] = [];
-
-  selectedCandles.forEach((candle, idx) => {
-    const processedData = config.processData!(indicator, candle, idx);
-    const chartPoint = config.getChartData!(processedData);
-
-    if (Array.isArray(chartPoint)) {
-      chartData.push(...chartPoint);
-    } else {
-      chartData.push({x: idx + 1, y: chartPoint.y});
-    }
-
-    priceData.push(collectPriceData(candle, idx));
-
-    sampleValues.push({
-      period: idx + 1,
-      date: candle.date,
-      ...processedData,
-      result:
-        processedData.result !== null && processedData.result !== undefined ? processedData.result.toFixed(2) : 'N/A',
-      signal: processedData.signal?.state,
-    });
-  });
-
-  return (
-    <div className="space-y-6">
-      <IndicatorHeader
-        name={config.name}
-        parameters={`${indicator.interval || config.requiredInputs}`}
-        requiredInputs={config.requiredInputs}
-        description={config.description}
-        details={config.details}
-      />
-
-      <Chart title={config.chartTitle!} data={chartData} yAxisLabel={config.yAxisLabel!} color={config.color} />
-
-      <PriceChart title="Input Prices" data={priceData} />
-
-      <DataTable title="All Sample Values" columns={config.getTableColumns!()} data={sampleValues} />
-    </div>
-  );
-};
 
 export default function MomentumIndicators() {
   const [selectedIndicator, setSelectedIndicator] = useState<string>('rsi');
