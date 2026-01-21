@@ -1,6 +1,19 @@
 # Change Log
 
-All notable changes to this project will be documented in this file. See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
+All notable changes to this project will be documented in this file.
+See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
+
+# [1.4.0](https://github.com/bennycode/trading-signals/compare/trading-signals-docs@1.3.4...trading-signals-docs@1.4.0) (2026-01-21)
+
+
+### Features
+
+* **trading-signals-docs:** Add selector for market condition ([#927](https://github.com/bennycode/trading-signals/issues/927)) ([47d48fb](https://github.com/bennycode/trading-signals/commit/47d48fbce07df7d762e0f80be4ae91b43b191981))
+* **trading-signals-docs:** Update design for Trend indicators ([#928](https://github.com/bennycode/trading-signals/issues/928)) ([d2aee29](https://github.com/bennycode/trading-signals/commit/d2aee292a3b939cc436d563d3e295d9c26b52560))
+
+
+
+
 
 ## [1.3.4](https://github.com/bennycode/trading-signals/compare/trading-signals-docs@1.3.3...trading-signals-docs@1.3.4) (2025-12-31)
 

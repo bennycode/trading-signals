@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [7.4.3](https://github.com/bennycode/trading-signals/compare/trading-signals@7.4.2...trading-signals@7.4.3) (2026-01-21)
+
+
+### Bug Fixes
+
+* **trading-signals:** Repair replace functionality for ROC ([#925](https://github.com/bennycode/trading-signals/issues/925)) ([1ee7b7c](https://github.com/bennycode/trading-signals/commit/1ee7b7cd8f830da20bc5b64bad48601ff72d0345))
+
+
+
+
+
 ## [7.4.2](https://github.com/bennycode/trading-signals/compare/trading-signals@7.4.1...trading-signals@7.4.2) (2025-12-31)
 
 **Note:** Version bump only for package trading-signals

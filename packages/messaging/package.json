@@ -3,7 +3,7 @@
     "url": "https://github.com/bennycode/trading-signals/issues"
   },
   "dependencies": {
-    "@typedtrader/exchange": "0.2.4",
+    "@typedtrader/exchange": "0.2.5",
     "@types/moment-duration-format": "2.2.7",
     "@types/node": "^25.0.9",
     "@xmtp/agent-sdk": "^1.2.4",
@@ -50,5 +50,5 @@
     "test:units:watch": "vitest --watch"
   },
   "type": "module",
-  "version": "0.3.4"
+  "version": "0.4.0"
 }
