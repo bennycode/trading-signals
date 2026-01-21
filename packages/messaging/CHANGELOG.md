@@ -1,18 +1,12 @@
 # Change Log
 
-All notable changes to this project will be documented in this file.
-See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
+All notable changes to this project will be documented in this file. See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
 # [0.4.0](https://github.com/bennycode/trading-signals/compare/@typedtrader/messaging@0.3.4...@typedtrader/messaging@0.4.0) (2026-01-21)
 
-
 ### Features
 
-* **messaging:** Add /help command ([#926](https://github.com/bennycode/trading-signals/issues/926)) ([3041d22](https://github.com/bennycode/trading-signals/commit/3041d224afa611ffcad56ba11bb5f937af30b614))
-
-
-
-
+- **messaging:** Add /help command ([#926](https://github.com/bennycode/trading-signals/issues/926)) ([3041d22](https://github.com/bennycode/trading-signals/commit/3041d224afa611ffcad56ba11bb5f937af30b614))
 
 ## [0.3.4](https://github.com/bennycode/trading-signals/compare/@typedtrader/messaging@0.3.3...@typedtrader/messaging@0.3.4) (2025-12-31)
 
