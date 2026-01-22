@@ -1,4 +1,4 @@
-import {Agent} from '@xmtp/agent-sdk';
+import {Agent, AgentMessageHandler} from '@xmtp/agent-sdk';
 import {getTestUrl} from '@xmtp/agent-sdk/debug';
 import {CommandRouter} from '@xmtp/agent-sdk/middleware';
 import {isFromOwner} from './middleware/isFromOwner.js';
@@ -7,40 +7,42 @@ import {candle, time, uptime} from './command/index.js';
 export async function startServer() {
   const router = new CommandRouter();
 
+  const help: AgentMessageHandler<string> = async ctx => {
+    const commandCodeBlocks = router.commandList.map(cmd => `\`${cmd}\``);
+    const answer = `I am supporting the following commands: ${commandCodeBlocks.join(', ')}`;
+    await ctx.conversation.sendMarkdown(answer);
+  };
+
   router.command('/candle', async ctx => {
     const candleJson = await candle(ctx.message.content);
     if (candleJson) {
-      await ctx.sendText(candleJson);
+      await ctx.conversation.sendText(candleJson);
     }
   });
 
-  router.command('/help', async ctx => {
-    const commandCodeBlocks = router.commandList.map(cmd => `\`${cmd}\``);
-    const answer = `I am supporting the following commands: ${commandCodeBlocks.join(', ')}`;
-    await ctx.sendMarkdown(answer);
-  });
+  router.command('/help', help);
 
   router.command('/time', async ctx => {
-    await ctx.sendText(await time());
+    await ctx.conversation.sendText(await time());
   });
 
   router.command('/uptime', async ctx => {
-    await ctx.sendText(await uptime());
+    await ctx.conversation.sendText(await uptime());
   });
 
   router.command('/myaddress', async ctx => {
     const yourAddress = await ctx.getSenderAddress();
-    await ctx.sendText(`Your address is: ${yourAddress}`);
+    await ctx.conversation.sendText(`Your address is: ${yourAddress}`);
   });
 
   router.command('/youraddress', async ctx => {
     const myAddress = await ctx.getClientAddress();
-    await ctx.sendText(`My address is: ${myAddress}`);
+    await ctx.conversation.sendText(`My address is: ${myAddress}`);
   });
 
   router.command('/version', async ctx => {
     const libXmtpVersion = ctx.client.libxmtpVersion;
-    await ctx.sendText(`My libXMTP version is: ${libXmtpVersion}`);
+    await ctx.conversation.sendText(`My libXMTP version is: ${libXmtpVersion}`);
   });
 
   const agent = await Agent.createFromEnv({
