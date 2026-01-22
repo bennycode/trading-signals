@@ -22,12 +22,12 @@ export async function startServer() {
 
   router.command('/help', help);
 
-  router.command('/time', async ({conversation}) => {
-    await conversation.sendText(await time());
+  router.command('/time', async ctx => {
+    await ctx.conversation.sendText(await time());
   });
 
-  router.command('/uptime', async ({conversation}) => {
-    await conversation.sendText(await uptime());
+  router.command('/uptime', async ctx => {
+    await ctx.conversation.sendText(await uptime());
   });
 
   router.command('/myaddress', async ctx => {
@@ -40,9 +40,9 @@ export async function startServer() {
     await ctx.conversation.sendText(`My address is: ${myAddress}`);
   });
 
-  router.command('/version', async ({client, conversation}) => {
-    const libXmtpVersion = client.libxmtpVersion;
-    await conversation.sendText(`My libXMTP version is: ${libXmtpVersion}`);
+  router.command('/version', async ctx => {
+    const libXmtpVersion = ctx.client.libxmtpVersion;
+    await ctx.conversation.sendText(`My libXMTP version is: ${libXmtpVersion}`);
   });
 
   const agent = await Agent.createFromEnv({
