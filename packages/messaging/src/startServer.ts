@@ -10,37 +10,37 @@ export async function startServer() {
   router.command('/candle', async ctx => {
     const candleJson = await candle(ctx.message.content);
     if (candleJson) {
-      await ctx.sendText(candleJson);
+      await ctx.conversation.sendText(candleJson);
     }
   });
 
-  router.command('/help', async ctx => {
+  router.command('/help', async ({conversation}) => {
     const commandCodeBlocks = router.commandList.map(cmd => `\`${cmd}\``);
     const answer = `I am supporting the following commands: ${commandCodeBlocks.join(', ')}`;
-    await ctx.sendMarkdown(answer);
+    await conversation.sendMarkdown(answer);
   });
 
-  router.command('/time', async ctx => {
-    await ctx.sendText(await time());
+  router.command('/time', async ({conversation}) => {
+    await conversation.sendText(await time());
   });
 
-  router.command('/uptime', async ctx => {
-    await ctx.sendText(await uptime());
+  router.command('/uptime', async ({conversation}) => {
+    await conversation.sendText(await uptime());
   });
 
   router.command('/myaddress', async ctx => {
     const yourAddress = await ctx.getSenderAddress();
-    await ctx.sendText(`Your address is: ${yourAddress}`);
+    await ctx.conversation.sendText(`Your address is: ${yourAddress}`);
   });
 
   router.command('/youraddress', async ctx => {
     const myAddress = await ctx.getClientAddress();
-    await ctx.sendText(`My address is: ${myAddress}`);
+    await ctx.conversation.sendText(`My address is: ${myAddress}`);
   });
 
-  router.command('/version', async ctx => {
-    const libXmtpVersion = ctx.client.libxmtpVersion;
-    await ctx.sendText(`My libXMTP version is: ${libXmtpVersion}`);
+  router.command('/version', async ({client, conversation}) => {
+    const libXmtpVersion = client.libxmtpVersion;
+    await conversation.sendText(`My libXMTP version is: ${libXmtpVersion}`);
   });
 
   const agent = await Agent.createFromEnv({
