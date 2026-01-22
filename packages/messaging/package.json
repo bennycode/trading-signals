@@ -6,13 +6,16 @@
     "@typedtrader/exchange": "0.2.5",
     "@types/moment-duration-format": "2.2.7",
     "@types/node": "^25.0.9",
-    "@xmtp/agent-sdk": "2.0.0-rc2",
+    "@vscode/sqlite3": "^5.1.12-vscode",
+    "@xmtp/agent-sdk": "2.0.0-rc3",
+    "better-sqlite3": "^12.6.2",
     "moment": "^2.30.1",
     "moment-duration-format": "^2.3.2",
     "moment-timezone": "^0.6.0"
   },
   "description": "Trading bot via messaging service.",
   "devDependencies": {
+    "@types/better-sqlite3": "^7.6.13",
     "tsx": "^4.21.0"
   },
   "exports": {
