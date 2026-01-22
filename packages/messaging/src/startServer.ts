@@ -1,4 +1,4 @@
-import {Agent} from '@xmtp/agent-sdk';
+import {Agent, AgentMessageHandler} from '@xmtp/agent-sdk';
 import {getTestUrl} from '@xmtp/agent-sdk/debug';
 import {CommandRouter} from '@xmtp/agent-sdk/middleware';
 import {isFromOwner} from './middleware/isFromOwner.js';
@@ -7,6 +7,12 @@ import {candle, time, uptime} from './command/index.js';
 export async function startServer() {
   const router = new CommandRouter();
 
+  const help: AgentMessageHandler<string> = async ctx => {
+    const commandCodeBlocks = router.commandList.map(cmd => `\`${cmd}\``);
+    const answer = `I am supporting the following commands: ${commandCodeBlocks.join(', ')}`;
+    await ctx.conversation.sendMarkdown(answer);
+  };
+
   router.command('/candle', async ctx => {
     const candleJson = await candle(ctx.message.content);
     if (candleJson) {
@@ -14,11 +20,7 @@ export async function startServer() {
     }
   });
 
-  router.command('/help', async ({conversation}) => {
-    const commandCodeBlocks = router.commandList.map(cmd => `\`${cmd}\``);
-    const answer = `I am supporting the following commands: ${commandCodeBlocks.join(', ')}`;
-    await conversation.sendMarkdown(answer);
-  });
+  router.command('/help', help);
 
   router.command('/time', async ({conversation}) => {
     await conversation.sendText(await time());
