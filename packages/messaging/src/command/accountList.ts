@@ -2,10 +2,7 @@ import {Account} from '../database/models/Account.js';
 
 export default async () => {
   try {
-    const accounts = Account.findAll({
-      attributes: ['id', 'name', 'exchange', 'isPaper', 'isDefault'],
-      order: [['id', 'ASC']],
-    });
+    const accounts = Account.findAllOrderedById();
 
     if (accounts.length === 0) {
       return 'No accounts found';

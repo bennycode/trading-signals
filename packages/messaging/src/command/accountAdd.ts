@@ -16,7 +16,7 @@ export default async (request: string) => {
 
   try {
     if (isDefault) {
-      Account.update({isDefault: false}, {isDefault: true});
+      Account.clearDefault();
     }
 
     const account = Account.create({

@@ -1,5 +1,8 @@
 import Database from 'better-sqlite3';
+import {drizzle, BetterSQLite3Database} from 'drizzle-orm/better-sqlite3';
+import {sql} from 'drizzle-orm';
 import path from 'node:path';
+import * as schema from './schema.js';
 
 if (!process.env.XMTP_DB_ENCRYPTION_KEY) {
   throw new Error('XMTP_DB_ENCRYPTION_KEY environment variable is required');
@@ -7,19 +10,20 @@ if (!process.env.XMTP_DB_ENCRYPTION_KEY) {
 
 const dbPath = path.join(process.cwd(), '.database', 'accounts.db');
 
-export const db: Database.Database = new Database(dbPath);
+const sqlite = new Database(dbPath);
 
 // Enable SQLCipher encryption
-db.pragma(`key = '${process.env.XMTP_DB_ENCRYPTION_KEY}'`);
-db.pragma('cipher_page_size = 4096');
-db.pragma('kdf_iter = 256000');
-db.pragma('cipher_hmac_algorithm = HMAC_SHA512');
-db.pragma('cipher_kdf_algorithm = PBKDF2_HMAC_SHA512');
+sqlite.pragma(`key = '${process.env.XMTP_DB_ENCRYPTION_KEY}'`);
+sqlite.pragma('cipher_page_size = 4096');
+sqlite.pragma('kdf_iter = 256000');
+sqlite.pragma('cipher_hmac_algorithm = HMAC_SHA512');
+sqlite.pragma('cipher_kdf_algorithm = PBKDF2_HMAC_SHA512');
+
+export const db: BetterSQLite3Database<typeof schema> = drizzle(sqlite, {schema});
 
 export async function initializeDatabase() {
   try {
-    // Create accounts table
-    db.exec(`
+    db.run(sql`
       CREATE TABLE IF NOT EXISTS accounts (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         name TEXT NOT NULL UNIQUE,
