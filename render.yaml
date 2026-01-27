@@ -16,6 +16,8 @@ services:
         sync: false
       - key: ALPACA_LIVE_API_SECRET
         sync: false
+      - key: TYPEDTRADER_DB_DIRECTORY
+        value: '/var/data'
       - key: XMTP_WALLET_KEY
         sync: false
       - key: XMTP_DB_ENCRYPTION_KEY
