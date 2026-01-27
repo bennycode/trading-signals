@@ -8,16 +8,13 @@ if (!process.env.XMTP_DB_ENCRYPTION_KEY) {
   throw new Error('XMTP_DB_ENCRYPTION_KEY environment variable is required');
 }
 
-const dbPath = path.join(process.cwd(), '.database', 'accounts.db');
+if (!process.env.TYPEDTRADER_DB_DIRECTORY) {
+  throw new Error('TYPEDTRADER_DB_DIRECTORY environment variable is required');
+}
+
+const dbPath = path.join(process.env.TYPEDTRADER_DB_DIRECTORY, 'accounts.db');
 
 const sqlite = new Database(dbPath);
-
-// Enable SQLCipher encryption
-sqlite.pragma(`key = '${process.env.XMTP_DB_ENCRYPTION_KEY}'`);
-sqlite.pragma('cipher_page_size = 4096');
-sqlite.pragma('kdf_iter = 256000');
-sqlite.pragma('cipher_hmac_algorithm = HMAC_SHA512');
-sqlite.pragma('cipher_kdf_algorithm = PBKDF2_HMAC_SHA512');
 
 export const db: BetterSQLite3Database<typeof schema> = drizzle(sqlite, {schema});
 
