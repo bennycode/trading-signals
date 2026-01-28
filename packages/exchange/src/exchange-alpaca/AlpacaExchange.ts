@@ -167,6 +167,10 @@ export class AlpacaExchange extends Exchange {
     return AlpacaExchange.NAME;
   }
 
+  getSmallestInterval(): number {
+    return ms('1m');
+  }
+
   /**
    * Original time format from Alpaca is "RFC 3339" (i.e. "2023-08-08T18:58:27.26720022-04:00"),
    * we convert it to "ISO 8601 UTC" (i.e. "2023-08-08T22:58:27.267Z").
