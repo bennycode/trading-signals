@@ -20,13 +20,15 @@ const dbPath = path.join(process.env.TYPEDTRADER_DB_DIRECTORY, 'typedtrader.db')
 
 const sqlite = new Database(dbPath);
 const encryptionKey = process.env.TYPEDTRADER_DB_ENCRYPTION_KEY!;
-const escapedEncryptionKey = encryptionKey.replace(/'/g, "''");
-sqlite.pragma(`key='${escapedEncryptionKey}'`);
-
-export const db: BetterSQLite3Database<typeof schema> = drizzle(sqlite, {schema});
+export let db: BetterSQLite3Database<typeof schema>;
 
 export async function initializeDatabase() {
   try {
+    const sqlite = new Database(dbPath);
+
+    sqlite.pragma(`key='${process.env.TYPEDTRADER_DB_ENCRYPTION_KEY}'`);
+
+    db = drizzle(sqlite, {schema});
     db.run(sql`
       CREATE TABLE IF NOT EXISTS accounts (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
