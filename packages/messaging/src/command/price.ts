@@ -1,16 +1,16 @@
-import {CurrencyPair, getExchangeClient, ms} from '@typedtrader/exchange';
+import {CurrencyPair, getExchangeClient} from '@typedtrader/exchange';
 import {Account} from '../database/models/Account.js';
 
-// Request Example: "1 SHOP,USD 1h"
-// Format: "<accountId> <pair> <interval>"
+// Request Example: "1 SHOP,USD"
+// Format: "<accountId> <pair>"
 export default async (request: string) => {
   const parts = request.trim().split(' ');
 
-  if (parts.length !== 3) {
-    return 'Invalid format. Usage: /candle <accountId> <pair> <interval>';
+  if (parts.length !== 2) {
+    return 'Invalid format. Usage: /price <accountId> <pair>';
   }
 
-  const [accountIdStr, pairPart, interval] = parts;
+  const [accountIdStr, pairPart] = parts;
   const accountId = parseInt(accountIdStr, 10);
 
   if (isNaN(accountId)) {
@@ -33,7 +33,6 @@ export default async (request: string) => {
     const base = pairPart.slice(0, commaIndex);
     const counter = pairPart.slice(commaIndex + 1);
     const pair = new CurrencyPair(base, counter);
-    const intervalInMillis = ms(interval);
 
     const client = getExchangeClient({
       exchangeId: account.exchange,
@@ -41,13 +40,15 @@ export default async (request: string) => {
       apiSecret: account.apiSecret,
       isPaper: account.isPaper,
     });
-    const candle = await client.getLatestCandle(pair, intervalInMillis);
 
-    return JSON.stringify(candle);
+    const smallestInterval = client.getSmallestInterval();
+    const candle = await client.getLatestCandle(pair, smallestInterval);
+
+    return `Closing price of "${pair.base}": ${candle.close} ${pair.counter} (${candle.openTimeInISO})`;
   } catch (error) {
     if (error instanceof Error) {
-      return `Error fetching candle: ${error.message}`;
+      return `Error fetching price: ${error.message}`;
     }
-    return 'Error fetching candle';
+    return 'Error fetching price';
   }
 };
