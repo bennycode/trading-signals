@@ -36,8 +36,8 @@ export async function initializeDatabase() {
         apiKey TEXT NOT NULL,
         apiSecret TEXT NOT NULL,
         isDefault INTEGER NOT NULL DEFAULT 0,
-        createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
-        updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP
+        createdAt TEXT DEFAULT CURRENT_TIMESTAMP,
+        updatedAt TEXT DEFAULT CURRENT_TIMESTAMP
       )
     `);
 
