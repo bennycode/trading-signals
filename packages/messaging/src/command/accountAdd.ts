@@ -11,6 +11,19 @@ export default async (request: string) => {
 
   const [name, exchange, isPaperStr, apiKey, apiSecret, isDefaultStr] = parts;
 
+  // Validate required fields are not empty or whitespace-only
+  if (!name.trim()) {
+    return 'Invalid format. Name cannot be empty or whitespace';
+  }
+
+  if (!apiKey.trim()) {
+    return 'Invalid format. API key cannot be empty or whitespace';
+  }
+
+  if (!apiSecret.trim()) {
+    return 'Invalid format. API secret cannot be empty or whitespace';
+  }
+
   const isPaper = isPaperStr.toLowerCase() === 'true';
   const isDefault = isDefaultStr.toLowerCase() === 'true';
 
