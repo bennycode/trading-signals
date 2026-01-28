@@ -9,10 +9,7 @@ export default async () => {
     }
 
     const accountList = accounts
-      .map(
-        acc =>
-          `ID: ${acc.id} | ${acc.name} | ${acc.exchange} | ${acc.isPaper ? 'Paper' : 'Live'} ${acc.isDefault ? '(Default)' : ''}`
-      )
+      .map(acc => `ID: ${acc.id} | ${acc.name} | ${acc.exchange} | ${acc.isPaper ? 'Paper' : 'Live'}`)
       .join('\n');
 
     return `Accounts:\n${accountList}`;

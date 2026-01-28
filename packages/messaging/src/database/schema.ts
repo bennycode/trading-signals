@@ -7,7 +7,6 @@ export const accounts = sqliteTable('accounts', {
   isPaper: integer('isPaper', {mode: 'boolean'}).notNull().default(true),
   apiKey: text('apiKey').notNull(),
   apiSecret: text('apiSecret').notNull(),
-  isDefault: integer('isDefault', {mode: 'boolean'}).notNull().default(false),
   createdAt: text('createdAt').default('CURRENT_TIMESTAMP'),
   updatedAt: text('updatedAt').default('CURRENT_TIMESTAMP'),
 });

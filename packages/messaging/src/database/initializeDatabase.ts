@@ -37,7 +37,6 @@ export async function initializeDatabase() {
         isPaper INTEGER NOT NULL DEFAULT 1,
         apiKey TEXT NOT NULL,
         apiSecret TEXT NOT NULL,
-        isDefault INTEGER NOT NULL DEFAULT 0,
         createdAt TEXT DEFAULT CURRENT_TIMESTAMP,
         updatedAt TEXT DEFAULT CURRENT_TIMESTAMP
       )

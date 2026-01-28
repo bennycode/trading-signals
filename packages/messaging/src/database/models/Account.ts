@@ -18,10 +18,6 @@ export class Account {
     return db.select().from(accounts).orderBy(asc(accounts.id)).all();
   }
 
-  static clearDefault(): void {
-    db.update(accounts).set({isDefault: false}).where(eq(accounts.isDefault, true)).run();
-  }
-
   static destroy(id: number): void {
     db.delete(accounts).where(eq(accounts.id, id)).run();
   }
