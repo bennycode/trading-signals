@@ -14,7 +14,7 @@ export default async (request: string) => {
     const account = Account.findByPk(accountId);
 
     if (!account) {
-      return `Account with ID ${accountId} not found`;
+      return `Account with ID "${accountId}" not found`;
     }
 
     const client = getExchangeClient({

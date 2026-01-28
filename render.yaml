@@ -10,14 +10,10 @@ services:
     buildCommand: npm install && npx lerna run dist
     startCommand: npm run start:bot
     envVars:
-      - key: ALPACA_USE_PAPER
-        value: 'false'
-      - key: ALPACA_LIVE_API_KEY
-        sync: false
-      - key: ALPACA_LIVE_API_SECRET
-        sync: false
       - key: TYPEDTRADER_DB_DIRECTORY
         value: '/var/data'
+      - key: TYPEDTRADER_DB_ENCRYPTION_KEY
+        sync: false
       - key: XMTP_WALLET_KEY
         sync: false
       - key: XMTP_DB_ENCRYPTION_KEY
@@ -26,10 +22,6 @@ services:
         value: '/var/data'
       - key: XMTP_ENV
         value: 'production'
-      - key: XMTP_FORCE_DEBUG_LEVEL
-        value: 'error'
-      - key: XMTP_FORCE_DEBUG
-        value: 'true'
     disk:
       name: data
       mountPath: /var/data

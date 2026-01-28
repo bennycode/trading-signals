@@ -1,4 +1,4 @@
-import Database from 'better-sqlite3';
+import Database from 'better-sqlite3-multiple-ciphers';
 import {drizzle, BetterSQLite3Database} from 'drizzle-orm/better-sqlite3';
 import {sql} from 'drizzle-orm';
 import path from 'node:path';
@@ -12,9 +12,14 @@ if (!process.env.TYPEDTRADER_DB_DIRECTORY) {
   throw new Error('TYPEDTRADER_DB_DIRECTORY environment variable is required');
 }
 
-const dbPath = path.join(process.env.TYPEDTRADER_DB_DIRECTORY, 'accounts.db');
+if (!process.env.TYPEDTRADER_DB_ENCRYPTION_KEY) {
+  throw new Error('TYPEDTRADER_DB_ENCRYPTION_KEY environment variable is required');
+}
+
+const dbPath = path.join(process.env.TYPEDTRADER_DB_DIRECTORY, 'typedtrader.db');
 
 const sqlite = new Database(dbPath);
+sqlite.pragma(`key='${process.env.TYPEDTRADER_DB_ENCRYPTION_KEY}'`);
 
 export const db: BetterSQLite3Database<typeof schema> = drizzle(sqlite, {schema});
 

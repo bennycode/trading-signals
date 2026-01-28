@@ -12,13 +12,13 @@ export default async (request: string) => {
     const account = Account.findByPk(accountId);
 
     if (!account) {
-      return `Account with ID ${accountId} not found`;
+      return `Account with ID "${accountId}" not found`;
     }
 
     const accountName = account.name;
     Account.destroy(accountId);
 
-    return `Account "${accountName}" (ID: ${accountId}) removed successfully`;
+    return `Account "${accountName}" (ID: "${accountId}") removed successfully`;
   } catch (error) {
     if (error instanceof Error) {
       return `Error removing account: ${error.message}`;
