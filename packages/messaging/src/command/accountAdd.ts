@@ -1,8 +1,5 @@
 import {Account} from '../database/models/Account.js';
-import {AlpacaExchange} from '@typedtrader/exchange';
-
-// Supported exchanges
-const SUPPORTED_EXCHANGES = [AlpacaExchange.NAME];
+import {getExchangeClient} from '@typedtrader/exchange';
 
 // Request Example: "MyAlpaca Alpaca false API_KEY API_SECRET true"
 // Format: "<name> <exchange> <isPaper> <apiKey> <apiSecret> <isDefault>"
@@ -13,16 +10,26 @@ export default async (request: string) => {
     return 'Invalid format. Usage: /accountAdd <name> <exchange> <isPaper> <apiKey> <apiSecret> <isDefault>';
   }
 
-  const [name, exchangeInput, isPaperStr, apiKey, apiSecret, isDefaultStr] = parts;
+  const [name, exchange, isPaperStr, apiKey, apiSecret, isDefaultStr] = parts;
 
   const isPaper = isPaperStr.toLowerCase() === 'true';
   const isDefault = isDefaultStr.toLowerCase() === 'true';
 
-  // Validate exchange (case-insensitive)
-  const exchange = SUPPORTED_EXCHANGES.find(ex => ex.toLowerCase() === exchangeInput.toLowerCase());
+  // Validate exchange by attempting to connect
+  try {
+    const client = getExchangeClient({
+      exchangeId: exchange,
+      apiKey,
+      apiSecret,
+      isPaper,
+    });
 
-  if (!exchange) {
-    return `Invalid exchange "${exchangeInput}". Supported exchanges: ${SUPPORTED_EXCHANGES.join(', ')}`;
+    await client.getTime();
+  } catch (error) {
+    if (error instanceof Error) {
+      return `Failed to connect to exchange "${exchange}": ${error.message}`;
+    }
+    return `Failed to connect to exchange "${exchange}"`;
   }
 
   try {
