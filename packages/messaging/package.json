@@ -15,7 +15,6 @@
   },
   "description": "Trading bot via messaging service.",
   "devDependencies": {
-    "@types/better-sqlite3": "^7.6.13",
     "tsx": "^4.21.0"
   },
   "exports": {
