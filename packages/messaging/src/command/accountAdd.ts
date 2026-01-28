@@ -1,4 +1,8 @@
 import {Account} from '../database/models/Account.js';
+import {AlpacaExchange} from '@typedtrader/exchange';
+
+// Supported exchanges
+const SUPPORTED_EXCHANGES = [AlpacaExchange.NAME];
 
 // Request Example: "MyAlpaca alpaca false API_KEY API_SECRET true"
 // Format: "<name> <exchange> <isPaper> <apiKey> <apiSecret> <isDefault>"
@@ -13,6 +17,11 @@ export default async (request: string) => {
 
   const isPaper = isPaperStr.toLowerCase() === 'true';
   const isDefault = isDefaultStr.toLowerCase() === 'true';
+
+  // Validate exchange
+  if (!SUPPORTED_EXCHANGES.includes(exchange)) {
+    return `Invalid exchange "${exchange}". Supported exchanges: ${SUPPORTED_EXCHANGES.join(', ')}`;
+  }
 
   try {
     if (isDefault) {
