@@ -13,14 +13,16 @@ export default async (request: string) => {
     return 'Invalid format. Usage: /accountAdd <name> <exchange> <isPaper> <apiKey> <apiSecret> <isDefault>';
   }
 
-  const [name, exchange, isPaperStr, apiKey, apiSecret, isDefaultStr] = parts;
+  const [name, exchangeInput, isPaperStr, apiKey, apiSecret, isDefaultStr] = parts;
 
   const isPaper = isPaperStr.toLowerCase() === 'true';
   const isDefault = isDefaultStr.toLowerCase() === 'true';
 
-  // Validate exchange
-  if (!SUPPORTED_EXCHANGES.includes(exchange)) {
-    return `Invalid exchange "${exchange}". Supported exchanges: ${SUPPORTED_EXCHANGES.join(', ')}`;
+  // Validate exchange (case-insensitive)
+  const exchange = SUPPORTED_EXCHANGES.find(ex => ex.toLowerCase() === exchangeInput.toLowerCase());
+
+  if (!exchange) {
+    return `Invalid exchange "${exchangeInput}". Supported exchanges: ${SUPPORTED_EXCHANGES.join(', ')}`;
   }
 
   try {
