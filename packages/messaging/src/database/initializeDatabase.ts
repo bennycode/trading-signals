@@ -19,7 +19,9 @@ if (!process.env.TYPEDTRADER_DB_ENCRYPTION_KEY) {
 const dbPath = path.join(process.env.TYPEDTRADER_DB_DIRECTORY, 'typedtrader.db');
 
 const sqlite = new Database(dbPath);
-sqlite.pragma(`key='${process.env.TYPEDTRADER_DB_ENCRYPTION_KEY}'`);
+const encryptionKey = process.env.TYPEDTRADER_DB_ENCRYPTION_KEY!;
+const escapedEncryptionKey = encryptionKey.replace(/'/g, "''");
+sqlite.pragma(`key='${escapedEncryptionKey}'`);
 
 export const db: BetterSQLite3Database<typeof schema> = drizzle(sqlite, {schema});
 
