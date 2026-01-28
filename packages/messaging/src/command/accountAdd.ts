@@ -25,17 +25,18 @@ export default async (request: string) => {
     });
 
     // Test connection with a timeout to avoid long waits
+    let timeoutId: NodeJS.Timeout;
     const timeoutPromise = new Promise<never>((_, reject) => {
-      setTimeout(() => reject(new Error('Connection timeout after 30 seconds')), 30000);
+      timeoutId = setTimeout(() => reject(new Error('Connection timeout after 30 seconds')), 30000);
     });
 
-    await Promise.race([client.getTime(), timeoutPromise]);
+    try {
+      await Promise.race([client.getTime(), timeoutPromise]);
+    } finally {
+      clearTimeout(timeoutId!);
+    }
   } catch (error) {
     if (error instanceof Error) {
-      // Check if it's an unsupported exchange error
-      if (error.message.includes('is not supported yet')) {
-        return `Unsupported exchange: ${error.message}`;
-      }
       return `Failed to connect to exchange "${exchange}": ${error.message}`;
     }
     return `Failed to connect to exchange "${exchange}"`;
