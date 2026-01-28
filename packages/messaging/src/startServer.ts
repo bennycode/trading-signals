@@ -2,9 +2,12 @@ import {Agent, AgentMessageHandler} from '@xmtp/agent-sdk';
 import {getTestUrl} from '@xmtp/agent-sdk/debug';
 import {CommandRouter} from '@xmtp/agent-sdk/middleware';
 import {isFromOwner} from './middleware/isFromOwner.js';
-import {candle, time, uptime} from './command/index.js';
+import {accountAdd, accountList, accountRemove, accountTime, candle, time, uptime} from './command/index.js';
+import {initializeDatabase} from './database/initializeDatabase.js';
 
 export async function startServer() {
+  await initializeDatabase();
+
   const router = new CommandRouter();
 
   const help: AgentMessageHandler<string> = async ctx => {
@@ -12,6 +15,31 @@ export async function startServer() {
     const answer = `I am supporting the following commands: ${commandCodeBlocks.join(', ')}`;
     await ctx.conversation.sendMarkdown(answer);
   };
+
+  router.command('/accountAdd', async ctx => {
+    const result = await accountAdd(ctx.message.content);
+    if (result) {
+      await ctx.conversation.sendText(result);
+    }
+  });
+
+  router.command('/accountList', async ctx => {
+    await ctx.conversation.sendText(await accountList());
+  });
+
+  router.command('/accountRemove', async ctx => {
+    const result = await accountRemove(ctx.message.content);
+    if (result) {
+      await ctx.conversation.sendText(result);
+    }
+  });
+
+  router.command('/accountTime', async ctx => {
+    const result = await accountTime(ctx.message.content);
+    if (result) {
+      await ctx.conversation.sendText(result);
+    }
+  });
 
   router.command('/candle', async ctx => {
     const candleJson = await candle(ctx.message.content);

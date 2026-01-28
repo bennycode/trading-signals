@@ -6,7 +6,9 @@
     "@typedtrader/exchange": "0.2.5",
     "@types/moment-duration-format": "2.2.7",
     "@types/node": "^25.0.9",
-    "@xmtp/agent-sdk": "2.0.0-rc2",
+    "@xmtp/agent-sdk": "2.0.0-rc3",
+    "better-sqlite3-multiple-ciphers": "^12.6.2",
+    "drizzle-orm": "^0.45.1",
     "moment": "^2.30.1",
     "moment-duration-format": "^2.3.2",
     "moment-timezone": "^0.6.0"
@@ -37,10 +39,10 @@
   "name": "@typedtrader/messaging",
   "private": true,
   "scripts": {
-    "lint:types": "tsc --noEmit",
     "build": "tsc",
     "clean": "rimraf --glob src/**/*{.js,.js.map,.d.ts}",
     "dist": "npm run clean && npm run build",
+    "lint:types": "tsc --noEmit",
     "start": "npm run test:types && tsx watch src/start.ts",
     "test": "npm run test:types && npm run test:imports && npm run test:units -- --coverage",
     "test:exports": "attw --pack . --profile node16",
