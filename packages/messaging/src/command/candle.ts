@@ -1,4 +1,4 @@
-import {AlpacaExchange, CurrencyPair, getAlpacaClient, ms} from '@typedtrader/exchange';
+import {CurrencyPair, getExchangeClient, ms} from '@typedtrader/exchange';
 import {Account} from '../database/models/Account.js';
 
 // Request Example: "1 SHOP,USD 1h"
@@ -24,10 +24,6 @@ export default async (request: string) => {
       return `Account with ID ${accountId} not found`;
     }
 
-    if (account.exchange !== AlpacaExchange.NAME) {
-      return `Exchange "${account.exchange}" is not supported yet`;
-    }
-
     const commaIndex = pairPart.indexOf(',');
 
     if (commaIndex === -1) {
@@ -39,12 +35,12 @@ export default async (request: string) => {
     const pair = new CurrencyPair(base, counter);
     const intervalInMillis = ms(interval);
 
-    const client = getAlpacaClient({
+    const client = getExchangeClient({
+      exchangeId: account.exchange,
       apiKey: account.apiKey,
       apiSecret: account.apiSecret,
-      usePaperTrading: account.isPaper,
+      isPaper: account.isPaper,
     });
-
     const candle = await client.getLatestAvailableCandle(pair, intervalInMillis);
 
     return JSON.stringify(candle);

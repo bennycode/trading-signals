@@ -6,7 +6,6 @@
     "@typedtrader/exchange": "0.2.5",
     "@types/moment-duration-format": "2.2.7",
     "@types/node": "^25.0.9",
-    "@vscode/sqlite3": "^5.1.12-vscode",
     "@xmtp/agent-sdk": "2.0.0-rc3",
     "better-sqlite3": "^12.6.2",
     "drizzle-orm": "^0.45.1",

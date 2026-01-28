@@ -2,7 +2,7 @@ import {Agent, AgentMessageHandler} from '@xmtp/agent-sdk';
 import {getTestUrl} from '@xmtp/agent-sdk/debug';
 import {CommandRouter} from '@xmtp/agent-sdk/middleware';
 import {isFromOwner} from './middleware/isFromOwner.js';
-import {accountAdd, accountList, accountRemove, candle, time, uptime} from './command/index.js';
+import {accountAdd, accountList, accountRemove, accountTime, candle, time, uptime} from './command/index.js';
 import {initializeDatabase} from './database/initializeDatabase.js';
 
 export async function startServer() {
@@ -29,6 +29,13 @@ export async function startServer() {
 
   router.command('/accountRemove', async ctx => {
     const result = await accountRemove(ctx.message.content);
+    if (result) {
+      await ctx.conversation.sendText(result);
+    }
+  });
+
+  router.command('/accountTime', async ctx => {
+    const result = await accountTime(ctx.message.content);
     if (result) {
       await ctx.conversation.sendText(result);
     }
