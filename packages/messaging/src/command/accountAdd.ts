@@ -13,19 +13,19 @@ export default async (request: string) => {
 
   // Validate required fields are not empty or whitespace-only
   if (!name.trim()) {
-    return 'Invalid format. Name cannot be empty or whitespace';
+    return 'Invalid input. Name cannot be empty or whitespace';
   }
 
   if (!exchange.trim()) {
-    return 'Invalid format. Exchange cannot be empty or whitespace';
+    return 'Invalid input. Exchange cannot be empty or whitespace';
   }
 
   if (!apiKey.trim()) {
-    return 'Invalid format. API key cannot be empty or whitespace';
+    return 'Invalid input. API key cannot be empty or whitespace';
   }
 
   if (!apiSecret.trim()) {
-    return 'Invalid format. API secret cannot be empty or whitespace';
+    return 'Invalid input. API secret cannot be empty or whitespace';
   }
 
   const isPaper = isPaperStr.toLowerCase() === 'true';
