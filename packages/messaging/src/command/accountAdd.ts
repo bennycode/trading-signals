@@ -4,7 +4,7 @@ import {AlpacaExchange} from '@typedtrader/exchange';
 // Supported exchanges
 const SUPPORTED_EXCHANGES = [AlpacaExchange.NAME];
 
-// Request Example: "MyAlpaca alpaca false API_KEY API_SECRET true"
+// Request Example: "MyAlpaca Alpaca false API_KEY API_SECRET true"
 // Format: "<name> <exchange> <isPaper> <apiKey> <apiSecret> <isDefault>"
 export default async (request: string) => {
   const parts = request.trim().split(' ');
