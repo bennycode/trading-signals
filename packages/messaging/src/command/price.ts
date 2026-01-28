@@ -42,9 +42,9 @@ export default async (request: string) => {
     });
 
     const smallestInterval = client.getSmallestInterval();
-    const candle = await client.getLatestAvailableCandle(pair, smallestInterval);
+    const candle = await client.getLatestCandle(pair, smallestInterval);
 
-    return `${pair.base}/${pair.counter}: ${candle.close}`;
+    return `Closing price of "${pair.base}": ${candle.close} ${pair.counter} (${candle.openTimeInISO})`;
   } catch (error) {
     if (error instanceof Error) {
       return `Error fetching price: ${error.message}`;

@@ -41,7 +41,7 @@ export default async (request: string) => {
       apiSecret: account.apiSecret,
       isPaper: account.isPaper,
     });
-    const candle = await client.getLatestAvailableCandle(pair, intervalInMillis);
+    const candle = await client.getLatestCandle(pair, intervalInMillis);
 
     return JSON.stringify(candle);
   } catch (error) {

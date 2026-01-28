@@ -72,6 +72,34 @@ export class AlpacaExchange extends Exchange {
     return pair.base;
   }
 
+  async getLatestCandle(pair: CurrencyPair, intervalInMillis: number): Promise<ExchangeCandle> {
+    const isCrypto = await this.isCryptoSymbol(pair);
+    const symbol = this.createSymbol(pair, isCrypto);
+    const fetchMethod = isCrypto ? this.fetchLatestCryptoBars.bind(this) : this.fetchLatestStockBars.bind(this);
+    const {bars} = await fetchMethod(pair);
+    // Alpaca only provides minute-bars data, which means we need to determine the time frame and retrieve all candles
+    // within that range to construct a complete candle with the specified interval.
+    const startTimeLastCandle = new Date(bars[symbol].t).getTime();
+    const startTimeFirstCandle = startTimeLastCandle - intervalInMillis + ms('1m');
+    const candles = await this.getCandles(pair, {
+      intervalInMillis,
+      startTimeFirstCandle: new Date(startTimeFirstCandle).toISOString(),
+      startTimeLastCandle: new Date(startTimeLastCandle).toISOString(),
+    });
+    return candles[0]!;
+  }
+
+  private async fetchLatestStockBars(pair: CurrencyPair) {
+    return retry(
+      () =>
+        this.client.v2.getStockBarsLatest({
+          feed: this.SUBSCRIPTION_PLAN,
+          symbols: this.createSymbol(pair, false),
+        }),
+      this.retryConfig
+    );
+  }
+
   private async fetchLatestCryptoBars(pair: CurrencyPair) {
     return retry(
       () =>
