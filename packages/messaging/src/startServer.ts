@@ -59,7 +59,7 @@ export async function startServer() {
   });
 
   router.command('/myaddress', async ctx => {
-    const yourAddress = await ctx.getSenderAddress();    
+    const yourAddress = await ctx.getSenderAddress();
     await ctx.conversation.sendText(`Your address is: ${yourAddress}`);
   });
 
