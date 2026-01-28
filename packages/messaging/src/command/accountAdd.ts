@@ -1,4 +1,17 @@
+import {getExchangeClient} from '@typedtrader/exchange';
 import {Account} from '../database/models/Account.js';
+
+interface ValidateClientConfig {
+  exchangeId: string;
+  apiKey: string;
+  apiSecret: string;
+  isPaper: boolean;
+}
+
+async function validateClient(config: ValidateClientConfig) {
+  const client = getExchangeClient(config);
+  await client.getTime();
+}
 
 // Request Example: "MyAlpaca alpaca false API_KEY API_SECRET"
 // Format: "<name> <exchange> <isPaper> <apiKey> <apiSecret>"
@@ -14,6 +27,8 @@ export default async (request: string) => {
   const isPaper = isPaperStr.toLowerCase() === 'true';
 
   try {
+    await validateClient({exchangeId: exchange, apiKey, apiSecret, isPaper});
+
     const account = Account.create({
       name,
       exchange,
