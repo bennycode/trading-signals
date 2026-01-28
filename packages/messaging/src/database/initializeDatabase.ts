@@ -1,6 +1,6 @@
 import Database from 'better-sqlite3-multiple-ciphers';
-import {drizzle, BetterSQLite3Database} from 'drizzle-orm/better-sqlite3';
 import {sql} from 'drizzle-orm';
+import {BetterSQLite3Database, drizzle} from 'drizzle-orm/better-sqlite3';
 import path from 'node:path';
 import * as schema from './schema.js';
 
@@ -12,21 +12,23 @@ if (!process.env.TYPEDTRADER_DB_DIRECTORY) {
   throw new Error('TYPEDTRADER_DB_DIRECTORY environment variable is required');
 }
 
-if (!process.env.TYPEDTRADER_DB_ENCRYPTION_KEY) {
-  throw new Error('TYPEDTRADER_DB_ENCRYPTION_KEY environment variable is required');
-}
-
 const dbPath = path.join(process.env.TYPEDTRADER_DB_DIRECTORY, 'typedtrader.db');
 
-const sqlite = new Database(dbPath);
-const encryptionKey = process.env.TYPEDTRADER_DB_ENCRYPTION_KEY!;
 export let db: BetterSQLite3Database<typeof schema>;
 
 export async function initializeDatabase() {
+  if (!process.env.TYPEDTRADER_DB_ENCRYPTION_KEY) {
+    throw new Error('TYPEDTRADER_DB_ENCRYPTION_KEY environment variable is required');
+  }
+
   try {
     const sqlite = new Database(dbPath);
 
-    sqlite.pragma(`key='${process.env.TYPEDTRADER_DB_ENCRYPTION_KEY}'`);
+    const encryptionKey = process.env.TYPEDTRADER_DB_ENCRYPTION_KEY;
+
+    const escapedEncryptionKey = encryptionKey.replace(/'/g, "''");
+
+    sqlite.pragma(`key='${escapedEncryptionKey}'`);
 
     db = drizzle(sqlite, {schema});
     db.run(sql`
@@ -44,7 +46,6 @@ export async function initializeDatabase() {
 
     console.log('Database initialized successfully');
   } catch (error) {
-    console.error('Unable to initialize database:', error);
     throw error;
   }
 }
