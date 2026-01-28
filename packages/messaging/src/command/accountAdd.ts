@@ -16,6 +16,10 @@ export default async (request: string) => {
     return 'Invalid format. Name cannot be empty or whitespace';
   }
 
+  if (!exchange.trim()) {
+    return 'Invalid format. Exchange cannot be empty or whitespace';
+  }
+
   if (!apiKey.trim()) {
     return 'Invalid format. API key cannot be empty or whitespace';
   }
