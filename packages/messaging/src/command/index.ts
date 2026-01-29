@@ -6,3 +6,6 @@ export {default as candle} from './candle.js';
 export {default as price} from './price.js';
 export {default as time} from './time.js';
 export {default as uptime} from './uptime.js';
+export {default as watch} from './watch.js';
+export {default as watchList} from './watchList.js';
+export {default as watchRemove} from './watchRemove.js';

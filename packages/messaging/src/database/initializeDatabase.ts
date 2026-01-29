@@ -1,6 +1,6 @@
 import Database from 'better-sqlite3-multiple-ciphers';
-import {sql} from 'drizzle-orm';
 import {BetterSQLite3Database, drizzle} from 'drizzle-orm/better-sqlite3';
+import {migrate} from 'drizzle-orm/better-sqlite3/migrator';
 import path from 'node:path';
 import * as schema from './schema.js';
 
@@ -18,28 +18,15 @@ export async function initializeDatabase() {
     throw new Error('TYPEDTRADER_DB_ENCRYPTION_KEY environment variable is required');
   }
 
-  try {
-    const dbPath = path.join(dbDirectory, 'typedtrader.db');
-    const sqlite = new Database(dbPath);
-    const escapedEncryptionKey = encryptionKey.replace(/'/g, "''");
-    sqlite.pragma(`key='${escapedEncryptionKey}'`);
+  const dbPath = path.join(dbDirectory, 'typedtrader.db');
+  const sqlite = new Database(dbPath);
+  const escapedEncryptionKey = encryptionKey.replace(/'/g, "''");
+  sqlite.pragma(`key='${escapedEncryptionKey}'`);
 
-    db = drizzle(sqlite, {schema});
-    db.run(sql`
-      CREATE TABLE IF NOT EXISTS accounts (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name TEXT NOT NULL UNIQUE,
-        exchange TEXT NOT NULL,
-        isPaper INTEGER NOT NULL DEFAULT 1,
-        apiKey TEXT NOT NULL,
-        apiSecret TEXT NOT NULL,
-        createdAt TEXT DEFAULT CURRENT_TIMESTAMP,
-        updatedAt TEXT DEFAULT CURRENT_TIMESTAMP
-      )
-    `);
+  db = drizzle(sqlite, {schema});
 
-    console.log(`TypedTrader database initialized successfully in "${dbPath}".`);
-  } catch (error) {
-    throw error;
-  }
+  // Run migrations
+  migrate(db, {migrationsFolder: path.join(import.meta.dirname, '../../migrations')});
+
+  console.log(`TypedTrader database initialized successfully in "${dbPath}".`);
 }

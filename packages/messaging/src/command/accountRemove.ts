@@ -1,7 +1,7 @@
 import {Account} from '../database/models/Account.js';
 
 // Request Example: "1"
-export default async (request: string) => {
+export default async (request: string, ownerAddress: string) => {
   const accountId = parseInt(request.trim(), 10);
 
   if (isNaN(accountId)) {
@@ -9,10 +9,10 @@ export default async (request: string) => {
   }
 
   try {
-    const account = Account.findByPk(accountId);
+    const account = Account.findByOwnerAddressAndId(ownerAddress, accountId);
 
     if (!account) {
-      return `Account with ID "${accountId}" not found`;
+      return `Account with ID "${accountId}" not found or does not belong to you`;
     }
 
     const accountName = account.name;

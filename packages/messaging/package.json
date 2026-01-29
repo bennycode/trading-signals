@@ -16,6 +16,7 @@
   },
   "description": "Trading bot via messaging service.",
   "devDependencies": {
+    "drizzle-kit": "^0.31.8",
     "tsx": "^4.21.0"
   },
   "exports": {
@@ -42,6 +43,9 @@
   "scripts": {
     "build": "tsc",
     "clean": "rimraf --glob src/**/*{.js,.js.map,.d.ts}",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "tsx src/database/migrate.ts",
+    "db:studio": "drizzle-kit studio",
     "dist": "npm run clean && npm run build",
     "lint:types": "tsc --noEmit",
     "start": "npm run test:types && tsx watch src/start.ts",

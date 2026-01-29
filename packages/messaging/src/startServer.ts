@@ -2,8 +2,21 @@ import {Agent, AgentMessageHandler} from '@xmtp/agent-sdk';
 import {getTestUrl} from '@xmtp/agent-sdk/debug';
 import {CommandRouter} from '@xmtp/agent-sdk/middleware';
 import {isFromOwner} from './middleware/isFromOwner.js';
-import {accountAdd, accountList, accountRemove, accountTime, candle, price, time, uptime} from './command/index.js';
+import {
+  accountAdd,
+  accountList,
+  accountRemove,
+  accountTime,
+  candle,
+  price,
+  time,
+  uptime,
+  watch,
+  watchList,
+  watchRemove,
+} from './command/index.js';
 import {initializeDatabase} from './database/initializeDatabase.js';
+import {WatchMonitor} from './service/WatchMonitor.js';
 
 export async function startServer() {
   await initializeDatabase();
@@ -17,32 +30,57 @@ export async function startServer() {
   };
 
   router.command('/accountAdd', async ctx => {
-    const result = await accountAdd(ctx.message.content);
+    const ownerAddress = await ctx.getSenderAddress();
+    if (!ownerAddress) {
+      await ctx.conversation.sendText('Unable to determine sender address');
+      return;
+    }
+    const result = await accountAdd(ctx.message.content, ownerAddress);
     if (result) {
       await ctx.conversation.sendText(result);
     }
   });
 
   router.command('/accountList', async ctx => {
-    await ctx.conversation.sendText(await accountList());
+    const ownerAddress = await ctx.getSenderAddress();
+    if (!ownerAddress) {
+      await ctx.conversation.sendText('Unable to determine sender address');
+      return;
+    }
+    await ctx.conversation.sendText(await accountList(ownerAddress));
   });
 
   router.command('/accountRemove', async ctx => {
-    const result = await accountRemove(ctx.message.content);
+    const ownerAddress = await ctx.getSenderAddress();
+    if (!ownerAddress) {
+      await ctx.conversation.sendText('Unable to determine sender address');
+      return;
+    }
+    const result = await accountRemove(ctx.message.content, ownerAddress);
     if (result) {
       await ctx.conversation.sendText(result);
     }
   });
 
   router.command('/accountTime', async ctx => {
-    const result = await accountTime(ctx.message.content);
+    const ownerAddress = await ctx.getSenderAddress();
+    if (!ownerAddress) {
+      await ctx.conversation.sendText('Unable to determine sender address');
+      return;
+    }
+    const result = await accountTime(ctx.message.content, ownerAddress);
     if (result) {
       await ctx.conversation.sendText(result);
     }
   });
 
   router.command('/candle', async ctx => {
-    const candleJson = await candle(ctx.message.content);
+    const ownerAddress = await ctx.getSenderAddress();
+    if (!ownerAddress) {
+      await ctx.conversation.sendText('Unable to determine sender address');
+      return;
+    }
+    const candleJson = await candle(ctx.message.content, ownerAddress);
     if (candleJson) {
       await ctx.conversation.sendText(candleJson);
     }
@@ -51,7 +89,12 @@ export async function startServer() {
   router.command('/help', help);
 
   router.command('/price', async ctx => {
-    await ctx.conversation.sendText(await price(ctx.message.content));
+    const ownerAddress = await ctx.getSenderAddress();
+    if (!ownerAddress) {
+      await ctx.conversation.sendText('Unable to determine sender address');
+      return;
+    }
+    await ctx.conversation.sendText(await price(ctx.message.content, ownerAddress));
   });
 
   router.command('/time', async ctx => {
@@ -60,6 +103,39 @@ export async function startServer() {
 
   router.command('/uptime', async ctx => {
     await ctx.conversation.sendText(await uptime());
+  });
+
+  router.command('/watch', async ctx => {
+    const userAddress = await ctx.getSenderAddress();
+    if (!userAddress) {
+      await ctx.conversation.sendText('Unable to determine sender address');
+      return;
+    }
+    const result = await watch(ctx.message.content, userAddress);
+    if (result) {
+      await ctx.conversation.sendText(result);
+    }
+  });
+
+  router.command('/watchList', async ctx => {
+    const userAddress = await ctx.getSenderAddress();
+    if (!userAddress) {
+      await ctx.conversation.sendText('Unable to determine sender address');
+      return;
+    }
+    await ctx.conversation.sendText(await watchList(userAddress));
+  });
+
+  router.command('/watchRemove', async ctx => {
+    const userAddress = await ctx.getSenderAddress();
+    if (!userAddress) {
+      await ctx.conversation.sendText('Unable to determine sender address');
+      return;
+    }
+    const result = await watchRemove(ctx.message.content, userAddress);
+    if (result) {
+      await ctx.conversation.sendText(result);
+    }
   });
 
   router.command('/myaddress', async ctx => {
@@ -81,8 +157,23 @@ export async function startServer() {
     appVersion: '@typedtrader/messaging',
   });
 
+  // Initialize the watch monitor
+  const watchMonitor = new WatchMonitor(agent);
+
   agent.on('start', ctx => {
     console.log(`Message me: ${getTestUrl(ctx.client)}`);
+    watchMonitor.start();
+  });
+
+  // Handle graceful shutdown
+  process.on('SIGINT', () => {
+    watchMonitor.stop();
+    process.exit(0);
+  });
+
+  process.on('SIGTERM', () => {
+    watchMonitor.stop();
+    process.exit(0);
   });
 
   if (process.env.XMTP_OWNER_ADDRESS) {
