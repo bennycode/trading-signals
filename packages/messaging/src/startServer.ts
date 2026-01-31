@@ -21,6 +21,13 @@ import {WatchMonitor} from './service/WatchMonitor.js';
 export async function startServer() {
   await initializeDatabase();
 
+  const agent = await Agent.createFromEnv({
+    appVersion: '@typedtrader/messaging',
+  });
+
+  // Initialize the watch monitor
+  const watchMonitor = new WatchMonitor(agent);
+
   const router = new CommandRouter();
 
   const help: AgentMessageHandler<string> = async ctx => {
@@ -114,6 +121,8 @@ export async function startServer() {
     const result = await watch(ctx.message.content, userAddress);
     if (result) {
       await ctx.conversation.sendText(result);
+      // Check watches immediately after adding a new one
+      watchMonitor.checkWatches();
     }
   });
 
@@ -153,26 +162,17 @@ export async function startServer() {
     await ctx.conversation.sendText(`My libXMTP version is: ${libXmtpVersion}`);
   });
 
-  const agent = await Agent.createFromEnv({
-    appVersion: '@typedtrader/messaging',
-  });
-
-  // Initialize the watch monitor
-  const watchMonitor = new WatchMonitor(agent);
-
   agent.on('start', ctx => {
     console.log(`Message me: ${getTestUrl(ctx.client)}`);
-    watchMonitor.start();
+    watchMonitor.checkWatches();
   });
 
   // Handle graceful shutdown
   process.on('SIGINT', () => {
-    watchMonitor.stop();
     process.exit(0);
   });
 
   process.on('SIGTERM', () => {
-    watchMonitor.stop();
     process.exit(0);
   });
 
