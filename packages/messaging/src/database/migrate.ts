@@ -22,7 +22,7 @@ sqlite.pragma(`key='${escapedEncryptionKey}'`);
 const db = drizzle(sqlite);
 
 // Run migrations
-migrate(db, {migrationsFolder: path.join(import.meta.dirname, '../../drizzle')});
+migrate(db, {migrationsFolder: path.join(import.meta.dirname, '../../migrations')});
 
 console.log('Migrations completed successfully');
 sqlite.close();
