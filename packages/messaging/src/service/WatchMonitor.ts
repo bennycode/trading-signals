@@ -9,28 +9,13 @@ interface WatchCheckState {
 
 export class WatchMonitor {
   private agent: Agent;
-  private intervalId: ReturnType<typeof setInterval> | null = null;
   private watchStates: Map<number, WatchCheckState> = new Map();
-  private readonly checkIntervalMs = 10000; // Check every 10 seconds
 
   constructor(agent: Agent) {
     this.agent = agent;
   }
 
-  start(): void {
-    console.log('WatchMonitor started');
-    this.intervalId = setInterval(() => this.checkWatches(), this.checkIntervalMs);
-  }
-
-  stop(): void {
-    if (this.intervalId) {
-      clearInterval(this.intervalId);
-      this.intervalId = null;
-    }
-    console.log('WatchMonitor stopped');
-  }
-
-  private async checkWatches(): Promise<void> {
+  async checkWatches(): Promise<void> {
     const watches = Watch.findAllOrderedById();
     const now = Date.now();
 
