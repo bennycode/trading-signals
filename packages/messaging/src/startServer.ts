@@ -122,7 +122,9 @@ export async function startServer() {
     if (result) {
       await ctx.conversation.sendText(result);
       // Check watches immediately after adding a new one
-      watchMonitor.checkWatches();
+      watchMonitor.checkWatches().catch(error => {
+        console.error('Error checking watches after adding new watch:', error);
+      });
     }
   });
 
@@ -164,7 +166,9 @@ export async function startServer() {
 
   agent.on('start', ctx => {
     console.log(`Message me: ${getTestUrl(ctx.client)}`);
-    watchMonitor.checkWatches();
+    watchMonitor.checkWatches().catch(error => {
+      console.error('Error checking watches on startup:', error);
+    });
   });
 
   // Handle graceful shutdown
