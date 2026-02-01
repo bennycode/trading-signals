@@ -1,7 +1,7 @@
 import moment from 'moment';
 import 'moment-timezone';
 
-export default async () => {
+export const time = async () => {
   const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
   const currentTime = moment().tz(timeZone);
   const reply = [

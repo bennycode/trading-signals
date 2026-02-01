@@ -5,7 +5,7 @@ import {parseThreshold} from '../util/parseThreshold.js';
 
 // Request Example: "/watch SHOP,USD 1 1m +5%"
 // Format: "<pair> <accountId> <interval> <threshold>"
-export default async (request: string, ownerAddress: string) => {
+export const watch = async (request: string, ownerAddress: string) => {
   const parts = request.trim().split(' ');
 
   if (parts.length !== 4) {

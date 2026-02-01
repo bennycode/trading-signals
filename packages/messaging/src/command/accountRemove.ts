@@ -1,7 +1,7 @@
 import {Account} from '../database/models/Account.js';
 
 // Request Example: "1"
-export default async (request: string, ownerAddress: string) => {
+export const accountRemove = async (request: string, ownerAddress: string) => {
   const accountId = parseInt(request.trim(), 10);
 
   if (isNaN(accountId)) {

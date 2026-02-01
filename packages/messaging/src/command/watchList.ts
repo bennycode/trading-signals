@@ -1,7 +1,7 @@
 import {Account} from '../database/models/Account.js';
 import {Watch} from '../database/models/Watch.js';
 
-export default async (ownerAddress: string) => {
+export const watchList = async (ownerAddress: string) => {
   try {
     const accounts = Account.findByOwnerAddress(ownerAddress);
     const accountIds = accounts.map(a => a.id);

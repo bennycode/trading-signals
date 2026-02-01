@@ -2,7 +2,7 @@ import {Account} from '../database/models/Account.js';
 import {Watch} from '../database/models/Watch.js';
 
 // Request Example: "5"
-export default async (request: string, ownerAddress: string) => {
+export const watchRemove = async (request: string, ownerAddress: string) => {
   const watchId = parseInt(request.trim(), 10);
 
   if (isNaN(watchId)) {

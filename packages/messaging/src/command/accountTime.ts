@@ -3,7 +3,7 @@ import {Account} from '../database/models/Account.js';
 
 // Request Example: "1"
 // Format: "<accountId>"
-export default async (request: string, ownerAddress: string) => {
+export const accountTime = async (request: string, ownerAddress: string) => {
   const accountId = parseInt(request.trim(), 10);
 
   if (isNaN(accountId)) {

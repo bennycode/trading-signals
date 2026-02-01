@@ -16,6 +16,13 @@ The "@typedtrader/messaging" library provides a secure way to interact with your
 
 Traditional web dashboards need public websites, databases, and login systems - all targets for hackers. This messaging approach is different: messages are encrypted end-to-end, there's no public endpoint to attack, and only your wallet can decrypt the commands.
 
+## Security
+
+The SQLite database of the messaging bot uses [SQLCipher](https://www.zetetic.net/sqlcipher/) encryption:
+
+- Encryption key stored in `TYPEDTRADER_DB_ENCRYPTION_KEY` environment variable
+- Protects data at rest (disk theft, backup leaks)
+
 > [!CAUTION]
 >
 > Always verify that you're communicating with your bot through the correct wallet address. Keep your wallet keys secure and never share them. This system is designed for personal use and should not be exposed to untrusted users.

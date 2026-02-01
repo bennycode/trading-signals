@@ -3,7 +3,7 @@ import {Account} from '../database/models/Account.js';
 
 // Request Example: "1 SHOP,USD 1h"
 // Format: "<accountId> <pair> <interval>"
-export default async (request: string, ownerAddress: string) => {
+export const candle = async (request: string, ownerAddress: string) => {
   const parts = request.trim().split(' ');
 
   if (parts.length !== 3) {

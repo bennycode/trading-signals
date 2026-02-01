@@ -1,6 +1,6 @@
 import {Account} from '../database/models/Account.js';
 
-export default async (ownerAddress: string) => {
+export const accountList = async (ownerAddress: string) => {
   try {
     const accounts = Account.findByOwnerAddress(ownerAddress);
 

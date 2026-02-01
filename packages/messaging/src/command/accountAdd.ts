@@ -15,7 +15,7 @@ async function validateClient(config: ValidateClientConfig) {
 
 // Request Example: "MyAlpaca alpaca false API_KEY API_SECRET"
 // Format: "<name> <exchange> <isPaper> <apiKey> <apiSecret>"
-export default async (request: string, ownerAddress: string) => {
+export async function accountAdd(request: string, ownerAddress: string) {
   const parts = request.trim().split(' ');
 
   if (parts.length !== 5) {
@@ -45,4 +45,4 @@ export default async (request: string, ownerAddress: string) => {
     }
     return 'Error creating account';
   }
-};
+}
