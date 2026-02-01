@@ -1,7 +1,7 @@
 import {CurrencyPair, getExchangeClient, ms} from '@typedtrader/exchange';
 import {Account} from '../database/models/Account.js';
 import {Watch} from '../database/models/Watch.js';
-import {parseThreshold} from '../util/parseThreshold.js';
+import { parseThreshold } from '../validation/parseThreshold.js';
 
 // Request Example: "/watch SHOP,USD 1 1m +5%"
 // Format: "<pair> <accountId> <interval> <threshold>"
