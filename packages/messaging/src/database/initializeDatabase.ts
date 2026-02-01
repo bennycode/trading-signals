@@ -22,6 +22,7 @@ export async function initializeDatabase() {
   const sqlite = new Database(dbPath);
   const escapedEncryptionKey = encryptionKey.replace(/'/g, "''");
   sqlite.pragma(`key='${escapedEncryptionKey}'`);
+  sqlite.pragma('foreign_keys = ON');
 
   db = drizzle(sqlite, {schema});
 

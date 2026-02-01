@@ -18,6 +18,7 @@ const dbPath = path.join(dbDirectory, 'typedtrader.db');
 const sqlite = new Database(dbPath);
 const escapedEncryptionKey = encryptionKey.replace(/'/g, "''");
 sqlite.pragma(`key='${escapedEncryptionKey}'`);
+sqlite.pragma('foreign_keys = ON');
 
 const db = drizzle(sqlite);
 

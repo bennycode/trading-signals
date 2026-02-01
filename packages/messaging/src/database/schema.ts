@@ -17,7 +17,9 @@ export type NewAccount = typeof accounts.$inferInsert;
 
 export const watches = sqliteTable('watches', {
   id: integer('id').primaryKey({autoIncrement: true}),
-  accountId: integer('accountId').notNull(),
+  accountId: integer('accountId')
+    .notNull()
+    .references(() => accounts.id, {onDelete: 'cascade'}),
   pair: text('pair').notNull(),
   intervalMs: integer('intervalMs').notNull(),
   thresholdType: text('thresholdType', {enum: ['percent', 'absolute']}).notNull(),
