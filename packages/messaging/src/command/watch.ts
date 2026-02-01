@@ -36,8 +36,12 @@ export const watch = async (request: string, ownerAddress: string) => {
       return 'Invalid pair format. Use: BASE,COUNTER (e.g., SHOP,USD)';
     }
 
-    const base = pairPart.slice(0, commaIndex);
-    const counter = pairPart.slice(commaIndex + 1);
+    const base = pairPart.slice(0, commaIndex).trim();
+    const counter = pairPart.slice(commaIndex + 1).trim();
+
+    if (!base || !counter) {
+      return 'Invalid pair format. Use: BASE,COUNTER (e.g., SHOP,USD)';
+    }
     const pair = new CurrencyPair(base, counter);
 
     // Parse interval
