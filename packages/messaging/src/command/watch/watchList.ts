@@ -1,5 +1,5 @@
-import {Account} from '../database/models/Account.js';
-import {Watch} from '../database/models/Watch.js';
+import {Account} from '../../database/models/Account.js';
+import {Watch} from '../../database/models/Watch.js';
 
 export const watchList = async (ownerAddress: string) => {
   try {

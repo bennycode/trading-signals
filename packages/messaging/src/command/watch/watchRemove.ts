@@ -1,5 +1,5 @@
-import {Account} from '../database/models/Account.js';
-import {Watch} from '../database/models/Watch.js';
+import {Watch} from '../../database/models/Watch.js';
+import {getAccountOrError} from '../../validation/getAccountOrError.js';
 
 // Request Example: "5"
 export const watchRemove = async (request: string, ownerAddress: string) => {
@@ -17,10 +17,7 @@ export const watchRemove = async (request: string, ownerAddress: string) => {
     }
 
     // Security: verify the watch's account belongs to the user
-    const account = Account.findByOwnerAddressAndId(ownerAddress, watch.accountId);
-    if (!account) {
-      return `Watch with ID "${watchId}" does not belong to you`;
-    }
+    getAccountOrError(ownerAddress, watch.accountId);
 
     Watch.destroy(watchId);
 

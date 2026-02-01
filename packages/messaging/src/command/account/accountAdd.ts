@@ -1,5 +1,5 @@
 import {getExchangeClient} from '@typedtrader/exchange';
-import {Account} from '../database/models/Account.js';
+import {Account} from '../../database/models/Account.js';
 
 interface ValidateClientConfig {
   exchangeId: string;

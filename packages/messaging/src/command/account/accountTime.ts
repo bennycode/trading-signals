@@ -1,5 +1,5 @@
 import {getExchangeClient} from '@typedtrader/exchange';
-import {Account} from '../database/models/Account.js';
+import {getAccountOrError} from '../../validation/getAccountOrError.js';
 
 // Request Example: "1"
 // Format: "<accountId>"
@@ -11,11 +11,7 @@ export const accountTime = async (request: string, ownerAddress: string) => {
   }
 
   try {
-    const account = Account.findByOwnerAddressAndId(ownerAddress, accountId);
-
-    if (!account) {
-      return `Account with ID "${accountId}" not found or does not belong to you`;
-    }
+    const account = getAccountOrError(ownerAddress, accountId);
 
     const client = getExchangeClient({
       exchangeId: account.exchange,

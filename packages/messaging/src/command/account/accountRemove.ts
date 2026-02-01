@@ -1,4 +1,5 @@
-import {Account} from '../database/models/Account.js';
+import {Account} from '../../database/models/Account.js';
+import {getAccountOrError} from '../../validation/getAccountOrError.js';
 
 // Request Example: "1"
 export const accountRemove = async (request: string, ownerAddress: string) => {
@@ -9,16 +10,10 @@ export const accountRemove = async (request: string, ownerAddress: string) => {
   }
 
   try {
-    const account = Account.findByOwnerAddressAndId(ownerAddress, accountId);
-
-    if (!account) {
-      return `Account with ID "${accountId}" not found or does not belong to you`;
-    }
-
-    const accountName = account.name;
+    const account = getAccountOrError(ownerAddress, accountId);
     Account.destroy(accountId);
 
-    return `Account "${accountName}" (ID: "${accountId}") removed successfully`;
+    return `Account "${account.name}" (ID: ${accountId}) removed successfully`;
   } catch (error) {
     if (error instanceof Error) {
       return `Error removing account: ${error.message}`;

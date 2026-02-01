@@ -1,7 +1,8 @@
 import type {Agent, HexString} from '@xmtp/agent-sdk';
-import {CurrencyPair, getExchangeClient} from '@typedtrader/exchange';
+import {getExchangeClient} from '@typedtrader/exchange';
 import {Watch, WatchAttributes} from '../database/models/Watch.js';
 import {Account} from '../database/models/Account.js';
+import {parsePair} from '../validation/parsePair.js';
 
 interface WatchCheckState {
   lastChecked: number;
@@ -51,11 +52,11 @@ export class WatchMonitor {
       return false;
     }
 
-    // Parse pair
-    const commaIndex = watch.pair.indexOf(',');
-    const base = watch.pair.slice(0, commaIndex);
-    const counter = watch.pair.slice(commaIndex + 1);
-    const pair = new CurrencyPair(base, counter);
+    const pair = parsePair(watch.pair);
+    if (!pair) {
+      console.warn(`Invalid pair format for watch ${watch.id}: ${watch.pair}`);
+      return false;
+    }
 
     const client = getExchangeClient({
       exchangeId: account.exchange,
@@ -105,15 +106,12 @@ export class WatchMonitor {
   }
 
   private async sendAlert(watch: WatchAttributes): Promise<void> {
-    const commaIndex = watch.pair.indexOf(',');
-    const counter = watch.pair.slice(commaIndex + 1);
+    const pair = parsePair(watch.pair);
+    if (!pair) return;
+    const {counter} = pair;
 
     const account = Account.findByPk(watch.accountId);
     if (!account) return;
-
-    // Fetch current price for the alert message
-    const base = watch.pair.slice(0, commaIndex);
-    const pair = new CurrencyPair(base, counter);
 
     const client = getExchangeClient({
       exchangeId: account.exchange,

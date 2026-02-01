@@ -1,4 +1,4 @@
-import {Account} from '../database/models/Account.js';
+import {Account} from '../../database/models/Account.js';
 
 export const accountList = async (ownerAddress: string) => {
   try {
