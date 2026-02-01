@@ -20,5 +20,6 @@ CREATE TABLE `watches` (
 	`thresholdDirection` text NOT NULL,
 	`thresholdValue` text NOT NULL,
 	`baselinePrice` text NOT NULL,
-	`createdAt` text DEFAULT 'CURRENT_TIMESTAMP'
+	`createdAt` text DEFAULT 'CURRENT_TIMESTAMP',
+	FOREIGN KEY (`accountId`) REFERENCES `accounts`(`id`) ON UPDATE no action ON DELETE cascade
 );
