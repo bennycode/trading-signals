@@ -31,7 +31,7 @@ class AlpacaWebSocket {
       // Usual errors:
       // {"T":"error","code":406,"msg":"connection limit exceeded"}
       // Unexpected server response: 429
-      console.error('AlpacaWebSocket error:', error);
+      console.error(`AlpacaWebSocket error: ${error}`);
       if (hasErrorCode(error) && error.code === 409) {
         // Insufficient subscription, you will have to upgrade your Alpaca plan (from "iex" to "sip")
         return false;
@@ -90,7 +90,7 @@ class AlpacaWebSocket {
   subscribeToBars(connectionId: string, symbol: string, cb: (bar: MinuteBarMessage) => void) {
     const connection = this.#connections.get(connectionId);
     if (!connection) {
-      console.warn(`No connection found for "${connectionId}"`);
+      console.warn(`No connection found for "${connectionId}".`);
       return;
     }
 
