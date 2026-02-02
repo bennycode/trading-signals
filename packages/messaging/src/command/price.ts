@@ -1,6 +1,5 @@
-import {getExchangeClient} from '@typedtrader/exchange';
+import {CurrencyPair, getExchangeClient} from '@typedtrader/exchange';
 import {getAccountOrError} from '../validation/getAccountOrError.js';
-import {parsePair} from '../validation/parsePair.js';
 
 // Request Example: "1 SHOP,USD"
 // Format: "<accountId> <pair>"
@@ -21,11 +20,7 @@ export const price = async (request: string, ownerAddress: string) => {
   try {
     const account = getAccountOrError(ownerAddress, accountId);
 
-    const pair = parsePair(pairPart);
-    if (!pair) {
-      return 'Invalid pair format. Use: BASE,COUNTER (e.g., SHOP,USD)';
-    }
-
+    const pair = CurrencyPair.fromString(pairPart, ',');
     const client = getExchangeClient({
       exchangeId: account.exchange,
       apiKey: account.apiKey,

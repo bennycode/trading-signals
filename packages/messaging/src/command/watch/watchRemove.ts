@@ -1,19 +1,24 @@
 import {Watch} from '../../database/models/Watch.js';
 import {getAccountOrError} from '../../validation/getAccountOrError.js';
 
+export interface WatchRemoveResult {
+  message: string;
+  watchId?: number;
+}
+
 // Request Example: "5"
-export const watchRemove = async (request: string, ownerAddress: string) => {
+export const watchRemove = async (request: string, ownerAddress: string): Promise<WatchRemoveResult> => {
   const watchId = parseInt(request.trim(), 10);
 
   if (isNaN(watchId)) {
-    return 'Invalid watch ID. Usage: /watchRemove <id>';
+    return {message: 'Invalid watch ID. Usage: /watchRemove <id>'};
   }
 
   try {
     const watch = Watch.findByPk(watchId);
 
     if (!watch) {
-      return `Watch with ID "${watchId}" not found`;
+      return {message: `Watch with ID "${watchId}" not found`};
     }
 
     // Security: verify the watch's account belongs to the user
@@ -21,11 +26,14 @@ export const watchRemove = async (request: string, ownerAddress: string) => {
 
     Watch.destroy(watchId);
 
-    return `Watch "${watchId}" for ${watch.pair} removed successfully`;
+    return {
+      message: `Watch "${watchId}" for ${watch.pair} removed successfully`,
+      watchId,
+    };
   } catch (error) {
     if (error instanceof Error) {
-      return `Error removing watch: ${error.message}`;
+      return {message: `Error removing watch: ${error.message}`};
     }
-    return 'Error removing watch';
+    return {message: 'Error removing watch'};
   }
 };

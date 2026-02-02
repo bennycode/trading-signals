@@ -119,12 +119,14 @@ export async function startServer() {
       return;
     }
     const result = await watch(ctx.message.content, userAddress);
-    if (result) {
-      await ctx.conversation.sendText(result);
-      // Check watches immediately after adding a new one
-      watchMonitor.checkWatches().catch(error => {
-        console.error('Error checking watches after adding new watch:', error);
-      });
+    await ctx.conversation.sendText(result.message);
+    // Subscribe to the new watch via WebSocket
+    if (result.watch) {
+      try {
+        await watchMonitor.subscribeToWatch(result.watch);
+      } catch (error) {
+        console.error(`Error subscribing to new watch: ${error}`);
+      }
     }
   });
 
@@ -144,8 +146,10 @@ export async function startServer() {
       return;
     }
     const result = await watchRemove(ctx.message.content, userAddress);
-    if (result) {
-      await ctx.conversation.sendText(result);
+    await ctx.conversation.sendText(result.message);
+    // Unsubscribe from the watch WebSocket
+    if (result.watchId) {
+      watchMonitor.unsubscribeFromWatch(result.watchId);
     }
   });
 
@@ -164,19 +168,24 @@ export async function startServer() {
     await ctx.conversation.sendText(`My libXMTP version is: ${libXmtpVersion}`);
   });
 
-  agent.on('start', ctx => {
+  agent.on('start', async ctx => {
     console.log(`Message me: ${getTestUrl(ctx.client)}`);
-    watchMonitor.checkWatches().catch(error => {
-      console.error('Error checking watches on startup:', error);
-    });
+    // Start WebSocket subscriptions for all existing watches
+    try {
+      await watchMonitor.start();
+    } catch (error) {
+      console.error('Error starting watch monitor:', error);
+    }
   });
 
   // Handle graceful shutdown
   process.on('SIGINT', () => {
+    watchMonitor.stop();
     process.exit(0);
   });
 
   process.on('SIGTERM', () => {
+    watchMonitor.stop();
     process.exit(0);
   });
 

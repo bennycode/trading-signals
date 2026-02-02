@@ -12,15 +12,18 @@ export interface BuyBelowSellAboveConfig {
 export class BuyBelowSellAboveStrategy extends Strategy {
   static override NAME = '@typedtrader/strategy-buy-below-sell-above';
 
-  constructor(private readonly config: BuyBelowSellAboveConfig = {}) {
+  readonly #config: BuyBelowSellAboveConfig;
+
+  constructor(config: BuyBelowSellAboveConfig = {}) {
     super();
+    this.#config = config;
   }
 
   override async processCandle(candle: BatchedCandle): Promise<StrategyAdvice | void> {
     const closePrice = candle.close;
 
-    if (this.config.buyBelow !== undefined) {
-      const buyBelowPrice = new Big(this.config.buyBelow);
+    if (this.#config.buyBelow !== undefined) {
+      const buyBelowPrice = new Big(this.#config.buyBelow);
 
       if (closePrice.lt(buyBelowPrice)) {
         const buyLimit: StrategyAdviceLimitBuyOrder = {
@@ -34,8 +37,8 @@ export class BuyBelowSellAboveStrategy extends Strategy {
       }
     }
 
-    if (this.config.sellAbove !== undefined) {
-      const sellAbovePrice = new Big(this.config.sellAbove);
+    if (this.#config.sellAbove !== undefined) {
+      const sellAbovePrice = new Big(this.#config.sellAbove);
 
       if (closePrice.gt(sellAbovePrice)) {
         const sellLimit: StrategyAdviceLimitSellOrder = {
