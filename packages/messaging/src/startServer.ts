@@ -25,7 +25,6 @@ export async function startServer() {
     appVersion: '@typedtrader/messaging',
   });
 
-  // Initialize the watch monitor
   const watchMonitor = new WatchMonitor(agent);
 
   const router = new CommandRouter();
