@@ -61,16 +61,16 @@ class AlpacaWebSocket {
       });
 
       stream.on('error', (error: Message) => {
-        console.error(`WebSocket streaming failed for "${connectionId}".`, error);
+        console.error(`WebSocket streaming failed for ID "${connectionId}".`, error);
         reject(error);
       });
 
       stream.on('subscription', (message: Message) => {
-        console.log(`WebSocket streaming is subscribed for "${connectionId}":`, JSON.stringify(message));
+        console.log(`WebSocket streaming is subscribed with ID "${connectionId}":`, JSON.stringify(message));
       });
 
       stream.on('authenticated', () => {
-        console.log(`WebSocket streaming is authenticated for "${connectionId}".`);
+        console.log(`WebSocket streaming is authenticated with ID "${connectionId}".`);
         const connection = {connectionId, stream};
         this.#connections.set(connectionId, connection);
         this.#credentialToConnectionId.set(credentials.key, connectionId);

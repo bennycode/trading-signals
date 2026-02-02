@@ -38,7 +38,7 @@ export async function accountAdd(request: string, ownerAddress: string) {
       apiSecret,
     });
 
-    return `Account created successfully with ID: ${account.id}`;
+    return `Account created successfully with ID "${account.id}". Connection test passed.`;
   } catch (error) {
     if (error instanceof Error) {
       return `Error creating account: ${error.message}`;
