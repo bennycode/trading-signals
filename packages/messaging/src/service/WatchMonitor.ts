@@ -97,7 +97,7 @@ export class WatchMonitor {
       exchange,
     });
 
-    console.log(`Subscribed to watch ${watch.id} for ${watch.pair}`);
+    console.log(`Subscribed to watch "${watch.id}" for "${watch.pair}".`);
   }
 
   /**
@@ -109,7 +109,7 @@ export class WatchMonitor {
       subscription.exchange.unwatchCandles(subscription.topicId);
       subscription.exchange.removeAllListeners(subscription.topicId);
       this.#subscriptions.delete(watchId);
-      console.log(`Unsubscribed from watch ${watchId}`);
+      console.log(`Unsubscribed from watch "${watchId}".`);
     }
   }
 
