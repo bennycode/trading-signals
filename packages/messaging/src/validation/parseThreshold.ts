@@ -13,19 +13,33 @@ export function parseThreshold(thresholdStr: string): ParsedThreshold | null {
 
   if (percentMatch) {
     const [, sign, valueStr] = percentMatch;
+    const value = parseFloat(valueStr);
+
+    // Validate that the value is a positive number greater than zero
+    if (!Number.isFinite(value) || value <= 0) {
+      return null;
+    }
+
     return {
       type: 'percent',
       direction: sign === '+' ? 'up' : 'down',
-      value: parseFloat(valueStr),
+      value,
     };
   }
 
   if (absoluteMatch) {
     const [, sign, valueStr] = absoluteMatch;
+    const value = parseFloat(valueStr);
+
+    // Validate that the value is a positive number greater than zero
+    if (!Number.isFinite(value) || value <= 0) {
+      return null;
+    }
+
     return {
       type: 'absolute',
       direction: sign === '+' ? 'up' : 'down',
-      value: parseFloat(valueStr),
+      value,
     };
   }
 
