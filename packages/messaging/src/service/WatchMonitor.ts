@@ -145,7 +145,7 @@ export class WatchMonitor {
 
     if (!account) {
       console.warn(
-        `Account ${watch.accountId} not found when sending alert for watch ${watch.id}. Alert was not delivered.`
+        `Account "${watch.accountId}" not found when sending alert for watch "${watch.id}". Alert was not delivered.`
       );
       return;
     }
