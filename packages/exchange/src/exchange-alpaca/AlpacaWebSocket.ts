@@ -9,14 +9,21 @@ import {retry, RetryConfig} from 'ts-retry-promise';
 import {hasErrorCode} from './AlpacaExchange.js';
 import type {MinuteBarMessage, StreamMessage} from './typings.js';
 
+export interface AlpacaConnection {
+  connectionId: string;
+  stream: AlpacaStream;
+}
+
 /**
  * Alpaca only allows 1 WebSocket connection per API key. This class manages
  * WebSocket connections as singletons to avoid the following error:
  * {"T":"error","code":406,"msg":"connection limit exceeded"}
  */
 class AlpacaWebSocket {
-  #streams: {[apiKey: string]: AlpacaStream} = {};
-  #symbols: {[apiKey: string]: Set<string>} = {};
+  #connections: Map<string, AlpacaConnection> = new Map();
+  #symbols: Map<string, Set<string>> = new Map();
+  #credentialToConnectionId: Map<string, string> = new Map();
+
   readonly #retryConfig: Partial<RetryConfig> = {
     delay: ms('30s'),
     retries: 'INFINITELY',
@@ -34,106 +41,88 @@ class AlpacaWebSocket {
     timeout: 'INFINITELY',
   } as const;
 
-  async #establishConnection(credentials: DefaultCredentials): Promise<AlpacaStream> {
-    const id = credentials.key;
-    return new Promise<AlpacaStream>((resolve, reject) => {
-      // This check is a safeguard for cases where "establishConnection" is executed multiple times without being
-      // awaited. In this scenario the Promise can resolve if it detects that another running Promise has established
-      // already a connection.
-      const stream = this.#getStream(credentials.key);
-
-      if (stream) {
-        resolve(stream);
+  async #establishConnection(credentials: DefaultCredentials): Promise<AlpacaConnection> {
+    // Check if we already have a connection for these credentials
+    const existingConnectionId = this.#credentialToConnectionId.get(credentials.key);
+    if (existingConnectionId) {
+      const existing = this.#connections.get(existingConnectionId);
+      if (existing) {
+        return existing;
       }
+    }
 
-      const connection = new AlpacaStream({
+    const connectionId = crypto.randomUUID();
+
+    return new Promise<AlpacaConnection>((resolve, reject) => {
+      const stream = new AlpacaStream({
         credentials,
         source: 'iex',
         type: 'market_data',
       });
 
-      connection.on('error', (error: Message) => {
-        console.error(`WebSocket streaming failed for "${id}".`, error);
+      stream.on('error', (error: Message) => {
+        console.error(`WebSocket streaming failed for "${connectionId}".`, error);
         reject(error);
       });
 
-      connection.on('subscription', (message: Message) => {
-        console.log(`WebSocket streaming is subscribed for "${id}":`, JSON.stringify(message));
+      stream.on('subscription', (message: Message) => {
+        console.log(`WebSocket streaming is subscribed for "${connectionId}":`, JSON.stringify(message));
       });
 
-      connection.on('authenticated', () => {
-        console.log(`WebSocket streaming is authenticated for "${id}".`);
-        this.#addStream(credentials.key, connection);
+      stream.on('authenticated', () => {
+        console.log(`WebSocket streaming is authenticated for "${connectionId}".`);
+        const connection = {connectionId, stream};
+        this.#connections.set(connectionId, connection);
+        this.#credentialToConnectionId.set(credentials.key, connectionId);
         resolve(connection);
       });
     });
   }
 
-  async connect(credentials: DefaultCredentials): Promise<AlpacaStream> {
+  async connect(credentials: DefaultCredentials): Promise<AlpacaConnection> {
     return retry(() => this.#establishConnection(credentials), this.#retryConfig);
-  }
-
-  #addStream(apiKey: string, stream: AlpacaStream) {
-    this.#streams[apiKey] = stream;
-  }
-
-  #getStream(apiKey: string): AlpacaStream | null {
-    if (this.#streams[apiKey]) {
-      return this.#streams[apiKey];
-    }
-    return null;
-  }
-
-  #addSymbol(apiKey: string, symbol: string): void {
-    const symbols = this.#symbols[apiKey];
-
-    if (symbols) {
-      symbols.add(symbol);
-    } else {
-      const set = new Set<string>();
-      set.add(symbol);
-      this.#symbols[apiKey] = set;
-    }
-  }
-
-  #removeSymbol(apiKey: string, symbol: string) {
-    const symbols = this.#symbols[apiKey];
-    symbols?.delete(symbol);
-  }
-
-  #getSymbols(apiKey: string): string[] | null {
-    const symbols = this.#symbols[apiKey];
-    if (symbols) {
-      return Array.from(symbols);
-    }
-    return null;
   }
 
   /**
    * Bars from Alpaca come in minutes:
    * https://docs.alpaca.markets/docs/real-time-stock-pricing-data#minute-bars-bars
    */
-  subscribeToBars(apiKey: string, stream: AlpacaStream, symbol: string, cb: (bar: MinuteBarMessage) => void) {
-    this.#addSymbol(apiKey, symbol);
-    const symbols = this.#getSymbols(apiKey);
-    if (symbols) {
-      stream.on('message', (message: StreamMessage) => {
-        if (message.T === 'b' && message.S === symbol) {
-          cb(message);
-        }
-      });
-
-      stream.unsubscribe('bars', symbols);
-      stream.subscribe('bars', symbols);
+  subscribeToBars(connectionId: string, symbol: string, cb: (bar: MinuteBarMessage) => void) {
+    const connection = this.#connections.get(connectionId);
+    if (!connection) {
+      console.warn(`No connection found for "${connectionId}"`);
+      return;
     }
+
+    // Track symbols per connection
+    let symbols = this.#symbols.get(connectionId);
+    if (!symbols) {
+      symbols = new Set();
+      this.#symbols.set(connectionId, symbols);
+    }
+    symbols.add(symbol);
+
+    connection.stream.on('message', (message: StreamMessage) => {
+      if (message.T === 'b' && message.S === symbol) {
+        cb(message);
+      }
+    });
+
+    const allSymbols = Array.from(symbols);
+    connection.stream.unsubscribe('bars', allSymbols);
+    connection.stream.subscribe('bars', allSymbols);
   }
 
-  unsubscribeFromBars(apiKey: string, symbol: string) {
-    this.#removeSymbol(apiKey, symbol);
-    const stream = this.#getStream(apiKey);
-    if (stream) {
-      stream.unsubscribe('bars', [symbol]);
+  unsubscribeFromBars(connectionId: string, symbol: string) {
+    const connection = this.#connections.get(connectionId);
+    if (!connection) {
+      return;
     }
+
+    const symbols = this.#symbols.get(connectionId);
+    symbols?.delete(symbol);
+
+    connection.stream.unsubscribe('bars', [symbol]);
   }
 }
 

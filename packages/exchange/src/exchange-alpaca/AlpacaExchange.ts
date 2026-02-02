@@ -9,7 +9,7 @@ import {
   // Alpaca has so many API issues, that we have to use their legacy & beta API concurrently
   // @ts-ignore:next-line
 } from 'alpaca-legacy';
-import {alpacaWebSocket} from './AlpacaWebSocket.js';
+import {alpacaWebSocket, AlpacaConnection} from './AlpacaWebSocket.js';
 import {CandleBatcher} from '../candle/CandleBatcher.js';
 import type {MinuteBarMessage} from './typings.js';
 
@@ -25,9 +25,8 @@ export class AlpacaExchange extends Exchange {
   readonly #stream: AlpacaStream | undefined = undefined;
   readonly client: Client;
   readonly #SUBSCRIPTION_PLAN = 'iex' as const;
-  readonly #apiKey: string;
-  #candleTopics: {[topicId: string]: string} = {};
-  readonly #connectStream: () => Promise<AlpacaStream>;
+  #candleTopics: Map<string, {symbol: string; connectionId: string}> = new Map();
+  readonly #connectStream: () => Promise<AlpacaConnection>;
   readonly #retryConfig: Partial<RetryConfig> = {
     delay: ms('10s'),
     retries: 'INFINITELY',
@@ -52,15 +51,13 @@ export class AlpacaExchange extends Exchange {
   constructor(options: {apiKey: string; apiSecret: string; usePaperTrading: boolean}) {
     super(AlpacaExchange.NAME);
 
-    this.#apiKey = options.apiKey;
-
     this.client = new Client({
       credentials: {key: options.apiKey, secret: options.apiSecret},
       paper: options.usePaperTrading,
     });
 
     // Wrap Stream connection, so that nothing async happens when the "constructor" of this class is being called
-    this.#connectStream = async (): Promise<AlpacaStream> => {
+    this.#connectStream = async (): Promise<AlpacaConnection> => {
       return alpacaWebSocket.connect({
         key: options.apiKey,
         paper: options.usePaperTrading,
@@ -214,9 +211,10 @@ export class AlpacaExchange extends Exchange {
 
   unwatchCandles(topicId: string): void {
     this.removeAllListeners(topicId);
-    const symbol = this.#candleTopics[topicId];
-    if (symbol) {
-      alpacaWebSocket.unsubscribeFromBars(this.#apiKey, symbol);
+    const topic = this.#candleTopics.get(topicId);
+    if (topic) {
+      alpacaWebSocket.unsubscribeFromBars(topic.connectionId, topic.symbol);
+      this.#candleTopics.delete(topicId);
     }
   }
 
@@ -234,8 +232,8 @@ export class AlpacaExchange extends Exchange {
     const topicId = crypto.randomUUID();
     const symbol = this.#createSymbol(pair);
     const cb = new CandleBatcher(intervalInMillis);
-    const stream = await this.#connectStream();
-    alpacaWebSocket.subscribeToBars(this.#apiKey, stream, symbol, (message: MinuteBarMessage) => {
+    const connection = await this.#connectStream();
+    alpacaWebSocket.subscribeToBars(connection.connectionId, symbol, (message: MinuteBarMessage) => {
       const isNewer = new Date(message.t).getTime() > new Date(openTimeInISO).getTime();
       if (isNewer) {
         // Bars from Alpaca always come in minutes:
@@ -250,7 +248,7 @@ export class AlpacaExchange extends Exchange {
       }
     });
 
-    this.#candleTopics[topicId] = symbol;
+    this.#candleTopics.set(topicId, {symbol, connectionId: connection.connectionId});
     return topicId;
   }
 
