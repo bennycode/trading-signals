@@ -142,8 +142,13 @@ export class WatchMonitor {
     const {counter} = CurrencyPair.fromString(watch.pair, ',');
 
     const account = Account.findByPk(watch.accountId);
-    if (!account) return;
 
+    if (!account) {
+      console.warn(
+        `Account ${watch.accountId} not found when sending alert for watch ${watch.id}. Alert was not delivered.`
+      );
+      return;
+    }
     const dirSymbol = watch.thresholdDirection === 'up' ? '+' : '-';
     const thresholdDisplay =
       watch.thresholdType === 'percent'
