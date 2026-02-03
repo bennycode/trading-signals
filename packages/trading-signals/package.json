@@ -5,7 +5,7 @@
   "description": "Technical indicators to run technical analysis with JavaScript / TypeScript.",
   "devDependencies": {
     "generate-changelog": "^1.8.0",
-    "tsdown": "^0.18.4"
+    "tsdown": "^0.20.1"
   },
   "exports": {
     ".": {

@@ -4,12 +4,12 @@
   },
   "dependencies": {
     "@typedtrader/exchange": "0.2.5",
+    "@types/big.js": "^6.2.2",
+    "big.js": "^7.0.1",
     "trading-signals": "7.4.3"
   },
   "description": "Trading strategies to run trading bots with JavaScript / TypeScript.",
   "devDependencies": {
-    "@types/big.js": "^6.2.2",
-    "big.js": "^7.0.1",
     "tsx": "^4.21.0"
   },
   "exports": {
