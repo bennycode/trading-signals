@@ -1,9 +1,9 @@
 import {CurrencyPair, getExchangeClient} from '@typedtrader/exchange';
-import {Account} from '../database/models/Account.js';
+import {getAccountOrError} from '../validation/getAccountOrError.js';
 
 // Request Example: "1 SHOP,USD"
 // Format: "<accountId> <pair>"
-export default async (request: string) => {
+export const price = async (request: string, ownerAddress: string) => {
   const parts = request.trim().split(' ');
 
   if (parts.length !== 2) {
@@ -18,22 +18,9 @@ export default async (request: string) => {
   }
 
   try {
-    const account = Account.findByPk(accountId);
+    const account = getAccountOrError(ownerAddress, accountId);
 
-    if (!account) {
-      return `Account with ID "${accountId}" not found`;
-    }
-
-    const commaIndex = pairPart.indexOf(',');
-
-    if (commaIndex === -1) {
-      return 'Invalid pair format. Use: BASE,COUNTER (e.g., SHOP,USD)';
-    }
-
-    const base = pairPart.slice(0, commaIndex);
-    const counter = pairPart.slice(commaIndex + 1);
-    const pair = new CurrencyPair(base, counter);
-
+    const pair = CurrencyPair.fromString(pairPart, ',');
     const client = getExchangeClient({
       exchangeId: account.exchange,
       apiKey: account.apiKey,

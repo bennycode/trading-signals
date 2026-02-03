@@ -1,3 +1,13 @@
+Wrap variables in quotes for log clarity.
+
+```ts
+// ❌ Bad: Interpolated values blend into the message
+console.log(`Account with ID ${accountId} not found`);
+
+// ✅ Good: Quotes make variable values stand out
+console.log(`Account with ID "${accountId}" not found`);
+```
+
 Avoid using "should" in test descriptions, as its constant repetition makes them tedious to read. Instead, write the description as a clear statement of what the code does.
 
 ```ts

@@ -1,4 +1,5 @@
 import {ApiError, Client} from '@master-chief/alpaca-ts';
+import {ms} from 'ms';
 import {retry, RetryConfig} from 'ts-retry-promise';
 import {AlpacaExchangeMapper} from './AlpacaExchangeMapper.js';
 import {Exchange, ExchangeCandle, ExchangeCandleImportRequest} from '../core/Exchange.js';
@@ -8,16 +9,9 @@ import {
   // Alpaca has so many API issues, that we have to use their legacy & beta API concurrently
   // @ts-ignore:next-line
 } from 'alpaca-legacy';
-
-const ms = (timeString: string): number => {
-  const units: Record<string, number> = {
-    s: 1000,
-    m: 60000,
-  };
-  const match = timeString.match(/^(\d+)([sm])$/);
-  if (!match) throw new Error(`Invalid time string: ${timeString}`);
-  return parseInt(match[1]) * units[match[2]];
-};
+import {alpacaWebSocket, AlpacaConnection} from './AlpacaWebSocket.js';
+import {CandleBatcher} from '../candle/CandleBatcher.js';
+import type {MinuteBarMessage} from './typings.js';
 
 export const hasErrorCode = (error: unknown): error is {code: string | number} => {
   return !!error && typeof error === 'object' && 'code' in error;
@@ -28,10 +22,12 @@ export const hasErrorStatus = (error: unknown): error is {status: number} => {
 };
 
 export class AlpacaExchange extends Exchange {
-  private readonly stream: AlpacaStream | undefined = undefined;
+  readonly #stream: AlpacaStream | undefined = undefined;
   readonly client: Client;
-  private readonly SUBSCRIPTION_PLAN = 'iex' as const;
-  private readonly retryConfig: Partial<RetryConfig> = {
+  readonly #SUBSCRIPTION_PLAN = 'iex' as const;
+  #candleTopics: Map<string, {symbol: string; connectionId: string}> = new Map();
+  readonly #connectStream: () => Promise<AlpacaConnection>;
+  readonly #retryConfig: Partial<RetryConfig> = {
     delay: ms('10s'),
     retries: 'INFINITELY',
     retryIf: (error: unknown) => {
@@ -59,11 +55,20 @@ export class AlpacaExchange extends Exchange {
       credentials: {key: options.apiKey, secret: options.apiSecret},
       paper: options.usePaperTrading,
     });
+
+    // Wrap Stream connection, so that nothing async happens when the "constructor" of this class is being called
+    this.#connectStream = async (): Promise<AlpacaConnection> => {
+      return alpacaWebSocket.connect({
+        key: options.apiKey,
+        paper: options.usePaperTrading,
+        secret: options.apiSecret,
+      });
+    };
   }
 
   static NAME = 'Alpaca';
 
-  private createSymbol(pair: CurrencyPair, isCrypto?: boolean): string {
+  #createSymbol(pair: CurrencyPair, isCrypto?: boolean): string {
     const effectiveIsCrypto = isCrypto ?? pair.counter !== 'USD';
 
     if (effectiveIsCrypto) {
@@ -73,9 +78,9 @@ export class AlpacaExchange extends Exchange {
   }
 
   async getLatestCandle(pair: CurrencyPair, intervalInMillis: number): Promise<ExchangeCandle> {
-    const isCrypto = await this.isCryptoSymbol(pair);
-    const symbol = this.createSymbol(pair, isCrypto);
-    const fetchMethod = isCrypto ? this.fetchLatestCryptoBars.bind(this) : this.fetchLatestStockBars.bind(this);
+    const isCrypto = await this.#isCryptoSymbol(pair);
+    const symbol = this.#createSymbol(pair, isCrypto);
+    const fetchMethod = isCrypto ? this.#fetchLatestCryptoBars.bind(this) : this.#fetchLatestStockBars.bind(this);
     const {bars} = await fetchMethod(pair);
     // Alpaca only provides minute-bars data, which means we need to determine the time frame and retrieve all candles
     // within that range to construct a complete candle with the specified interval.
@@ -89,30 +94,30 @@ export class AlpacaExchange extends Exchange {
     return candles[0]!;
   }
 
-  private async fetchLatestStockBars(pair: CurrencyPair) {
+  async #fetchLatestStockBars(pair: CurrencyPair) {
     return retry(
       () =>
         this.client.v2.getStockBarsLatest({
-          feed: this.SUBSCRIPTION_PLAN,
-          symbols: this.createSymbol(pair, false),
+          feed: this.#SUBSCRIPTION_PLAN,
+          symbols: this.#createSymbol(pair, false),
         }),
-      this.retryConfig
+      this.#retryConfig
     );
   }
 
-  private async fetchLatestCryptoBars(pair: CurrencyPair) {
+  async #fetchLatestCryptoBars(pair: CurrencyPair) {
     return retry(
       () =>
         this.client.v1beta3.getCryptoBarsLatest({
-          symbols: this.createSymbol(pair, true),
+          symbols: this.#createSymbol(pair, true),
         }),
-      this.retryConfig
+      this.#retryConfig
     );
   }
 
-  private async isCryptoSymbol(pair: CurrencyPair) {
+  async #isCryptoSymbol(pair: CurrencyPair) {
     try {
-      const response = await this.fetchLatestCryptoBars(pair);
+      const response = await this.#fetchLatestCryptoBars(pair);
       return Object.keys(response.bars).length > 0;
     } catch (error) {
       if (error instanceof ApiError && error.status === 400) {
@@ -122,11 +127,7 @@ export class AlpacaExchange extends Exchange {
     }
   }
 
-  private async fetchCryptoBars(
-    pair: CurrencyPair,
-    request: ExchangeCandleImportRequest,
-    pageToken: string | undefined
-  ) {
+  async #fetchCryptoBars(pair: CurrencyPair, request: ExchangeCandleImportRequest, pageToken: string | undefined) {
     return retry(
       () =>
         this.client.v1beta3.getCryptoBars({
@@ -134,14 +135,14 @@ export class AlpacaExchange extends Exchange {
           limit: 10_000,
           pageToken: pageToken,
           start: request.startTimeFirstCandle,
-          symbols: this.createSymbol(pair, true),
+          symbols: this.#createSymbol(pair, true),
           timeframe: AlpacaExchangeMapper.mapInterval(request.intervalInMillis),
         }),
-      this.retryConfig
+      this.#retryConfig
     );
   }
 
-  private fetchStockBars(pair: CurrencyPair, request: ExchangeCandleImportRequest, pageToken: string | undefined) {
+  #fetchStockBars(pair: CurrencyPair, request: ExchangeCandleImportRequest, pageToken: string | undefined) {
     if (pair.counter !== 'USD') {
       throw new Error(
         `Cannot use "${pair.counter}". Stock "${pair.base}" can only be traded in USD on ${AlpacaExchange.NAME}.`
@@ -152,14 +153,14 @@ export class AlpacaExchange extends Exchange {
       () =>
         this.client.v2.getStockBars({
           end: request.startTimeLastCandle,
-          feed: this.SUBSCRIPTION_PLAN,
+          feed: this.#SUBSCRIPTION_PLAN,
           limit: 10_000,
           pageToken: pageToken,
           start: request.startTimeFirstCandle,
-          symbols: this.createSymbol(pair, false),
+          symbols: this.#createSymbol(pair, false),
           timeframe: AlpacaExchangeMapper.mapInterval(request.intervalInMillis),
         }),
-      this.retryConfig
+      this.#retryConfig
     );
   }
 
@@ -167,9 +168,9 @@ export class AlpacaExchange extends Exchange {
     const candles: ExchangeCandle[] = [];
     let pageToken: string | null | undefined = undefined;
 
-    const isCrypto = await this.isCryptoSymbol(pair);
+    const isCrypto = await this.#isCryptoSymbol(pair);
 
-    const fetchBars = isCrypto ? this.fetchCryptoBars.bind(this) : this.fetchStockBars.bind(this);
+    const fetchBars = isCrypto ? this.#fetchCryptoBars.bind(this) : this.#fetchStockBars.bind(this);
 
     do {
       // Make request
@@ -204,11 +205,54 @@ export class AlpacaExchange extends Exchange {
    * we convert it to "ISO 8601 UTC" (i.e. "2023-08-08T22:58:27.267Z").
    */
   async getTime(): Promise<string> {
-    const clock = await retry(() => this.client.v2.getClock(), this.retryConfig);
+    const clock = await retry(() => this.client.v2.getClock(), this.#retryConfig);
     return new Date(clock.timestamp!).toISOString();
   }
 
+  unwatchCandles(topicId: string): void {
+    this.removeAllListeners(topicId);
+    const topic = this.#candleTopics.get(topicId);
+    if (topic) {
+      alpacaWebSocket.unsubscribeFromBars(topic.connectionId, topic.symbol);
+      this.#candleTopics.delete(topicId);
+    }
+  }
+
+  /**
+   * Alpaca emits candles during Stock Exchange opening times. Candles are always in minutes.
+   * Crypto candles cannot be fetched with Alpaca's SDK:
+   * https://github.com/alpacahq/alpaca-ts/issues/93#issuecomment-1692414770
+   *
+   * @note: You will only receive candles when the exchange is actually open (working hours)!
+   *
+   * @see https://docs.alpaca.markets/docs/real-time-stock-pricing-data#daily-bars-dailybars
+   * @see https://docs.alpaca.markets/docs/real-time-crypto-pricing-data
+   */
+  async watchCandles(pair: CurrencyPair, intervalInMillis: number, openTimeInISO: string): Promise<string> {
+    const topicId = crypto.randomUUID();
+    const symbol = this.#createSymbol(pair);
+    const cb = new CandleBatcher(intervalInMillis);
+    const connection = await this.#connectStream();
+    alpacaWebSocket.subscribeToBars(connection.connectionId, symbol, (message: MinuteBarMessage) => {
+      const isNewer = new Date(message.t).getTime() > new Date(openTimeInISO).getTime();
+      if (isNewer) {
+        // Bars from Alpaca always come in minutes:
+        // https://docs.alpaca.markets/docs/real-time-stock-pricing-data#minute-bars-bars
+        const candle = AlpacaExchangeMapper.toExchangeCandle(message, pair, ms('1m'));
+
+        // Emit batched candle (which will match the desired interval)
+        const batchedCandle = cb.addToBatch(candle);
+        if (batchedCandle) {
+          this.emit(topicId, candle);
+        }
+      }
+    });
+
+    this.#candleTopics.set(topicId, {symbol, connectionId: connection.connectionId});
+    return topicId;
+  }
+
   disconnect(): void {
-    this.stream?.getConnection().close();
+    this.#stream?.getConnection().close();
   }
 }

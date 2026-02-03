@@ -1,7 +1,8 @@
-import {Account} from '../database/models/Account.js';
+import {Account} from '../../database/models/Account.js';
+import {getAccountOrError} from '../../validation/getAccountOrError.js';
 
 // Request Example: "1"
-export default async (request: string) => {
+export const accountRemove = async (request: string, ownerAddress: string) => {
   const accountId = parseInt(request.trim(), 10);
 
   if (isNaN(accountId)) {
@@ -9,16 +10,10 @@ export default async (request: string) => {
   }
 
   try {
-    const account = Account.findByPk(accountId);
-
-    if (!account) {
-      return `Account with ID "${accountId}" not found`;
-    }
-
-    const accountName = account.name;
+    const account = getAccountOrError(ownerAddress, accountId);
     Account.destroy(accountId);
 
-    return `Account "${accountName}" (ID: "${accountId}") removed successfully`;
+    return `Account "${account.name}" (ID: ${accountId}) removed successfully`;
   } catch (error) {
     if (error instanceof Error) {
       return `Error removing account: ${error.message}`;

@@ -1,3 +1,4 @@
+import {EventEmitter} from 'node:events';
 import type {CurrencyPair} from './CurrencyPair.js';
 import {z} from 'zod';
 
@@ -143,8 +144,10 @@ export interface ExchangeLimitOrderOptions extends ExchangeOrderBase {
 }
 
 export type ExchangeOrderOptions = ExchangeMarketOrderOptions | ExchangeLimitOrderOptions;
-export abstract class Exchange {
-  constructor(public loggerName: string) {}
+export abstract class Exchange extends EventEmitter {
+  constructor(public loggerName: string) {
+    super();
+  }
 
   /**
    * Get candles within a specified time period.
@@ -172,4 +175,22 @@ export abstract class Exchange {
    * i.e. "2020-09-11T14:04:33.769Z".
    */
   abstract getTime(): Promise<string>;
+
+  /**
+   * Subscribe to real-time candle updates via WebSocket.
+   * Emits candles via EventEmitter with the returned topicId as the event name.
+   *
+   * @param pair - The currency pair to watch
+   * @param intervalInMillis - Candle interval in milliseconds
+   * @param openTimeInISO - Only emit candles newer than this time
+   * @returns The generated topicId (UUID) for this subscription
+   */
+  abstract watchCandles(pair: CurrencyPair, intervalInMillis: number, openTimeInISO: string): Promise<string>;
+
+  /**
+   * Unsubscribe from real-time candle updates.
+   *
+   * @param topicId - The subscription identifier to unsubscribe
+   */
+  abstract unwatchCandles(topicId: string): void;
 }

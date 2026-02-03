@@ -10,6 +10,6 @@ const getUptime = () => {
   });
 };
 
-export default async () => {
+export const uptime = async () => {
   return `Running since: ${getUptime()}`;
 };

@@ -137,8 +137,8 @@ describe('CandleBatcher', () => {
       });
 
       expect(batchedCandles.length).toBe(0);
-      expect(cb['batch'].length).toBe(2);
-      expect(cb['batch'].every(c => c.volume !== '0')).toBe(true);
+      // Zero-volume candles are filtered out, so only 2 candles remain in the batch
+      expect(cb.present).toBe(2);
     });
 
     it('does not batch candles which are already part of the batch', () => {
@@ -184,10 +184,10 @@ describe('CandleBatcher', () => {
       ];
 
       cb.addToBatch(candles[0]);
-      expect(cb['batch'].length).toBe(1);
+      expect(cb.present).toBe(1);
 
       cb.addToBatch(candles[1]);
-      expect(cb['batch'].length).toBe(2);
+      expect(cb.present).toBe(2);
 
       // Add duplicate
       cb.addToBatch(candles[1]);

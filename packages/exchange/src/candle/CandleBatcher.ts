@@ -10,16 +10,16 @@ type EventMap = {
 };
 
 export class CandleBatcher extends EventEmitter<EventMap> {
-  private batch: ExchangeCandle[] = [];
-  private readonly desiredIntervalInMillis: number;
+  #batch: ExchangeCandle[] = [];
+  readonly #desiredIntervalInMillis: number;
 
   constructor(desiredIntervalInMillis: number) {
     super();
-    this.desiredIntervalInMillis = desiredIntervalInMillis;
+    this.#desiredIntervalInMillis = desiredIntervalInMillis;
   }
 
   get present(): number {
-    return this.batch.length;
+    return this.#batch.length;
   }
 
   static amountOfCandles(intervalInMillis: number | StringValue, timespanInMillis: number | StringValue) {
@@ -120,8 +120,8 @@ export class CandleBatcher extends EventEmitter<EventMap> {
    */
   addToBatch(candle: ExchangeCandle | BatchedCandle): BatchedCandle | undefined {
     const exchangeCandle = CandleBatcher.isBatchedCandle(candle) ? CandleBatcher.toExchangeCandle(candle) : candle;
-    const {currentBatchArray, newBatch} = CandleBatcher.add(exchangeCandle, this.batch, this.desiredIntervalInMillis);
-    this.batch = currentBatchArray;
+    const {currentBatchArray, newBatch} = CandleBatcher.add(exchangeCandle, this.#batch, this.#desiredIntervalInMillis);
+    this.#batch = currentBatchArray;
 
     if (newBatch) {
       this.emit('batchedCandle', newBatch);

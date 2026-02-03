@@ -1,9 +1,9 @@
 import {getExchangeClient} from '@typedtrader/exchange';
-import {Account} from '../database/models/Account.js';
+import {getAccountOrError} from '../../validation/getAccountOrError.js';
 
 // Request Example: "1"
 // Format: "<accountId>"
-export default async (request: string) => {
+export const accountTime = async (request: string, ownerAddress: string) => {
   const accountId = parseInt(request.trim(), 10);
 
   if (isNaN(accountId)) {
@@ -11,11 +11,7 @@ export default async (request: string) => {
   }
 
   try {
-    const account = Account.findByPk(accountId);
-
-    if (!account) {
-      return `Account with ID "${accountId}" not found`;
-    }
+    const account = getAccountOrError(ownerAddress, accountId);
 
     const client = getExchangeClient({
       exchangeId: account.exchange,
