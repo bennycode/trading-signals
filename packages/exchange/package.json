@@ -6,6 +6,7 @@
     "@master-chief/alpaca-ts": "^7.0.15-alpha",
     "@types/jsonabc": "^2.3.3",
     "alpaca-legacy": "npm:@master-chief/alpaca@^6.3.20",
+    "big.js": "^7.0.1",
     "dotenv-defaults": "^5.0.2",
     "jsonabc": "^2.3.1",
     "ms": "4.0.0-nightly.202508271359",
@@ -13,6 +14,10 @@
     "zod": "^4.3.5"
   },
   "description": "Trading strategies to run trading bots with JavaScript / TypeScript.",
+  "devDependencies": {
+    "@types/big.js": "^6.2.2",
+    "tsdown": "^0.20.1"
+  },
   "exports": {
     ".": {
       "import": {
