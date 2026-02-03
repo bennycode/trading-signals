@@ -77,9 +77,7 @@
       "indexes": {
         "accounts_name_unique": {
           "name": "accounts_name_unique",
-          "columns": [
-            "name"
-          ],
+          "columns": ["name"],
           "isUnique": true
         }
       },
