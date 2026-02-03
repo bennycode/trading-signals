@@ -76,5 +76,33 @@ describe('parseThreshold', () => {
     it('returns null for empty string', () => {
       expect(parseThreshold('')).toBeNull();
     });
+
+    it('returns null for zero percent', () => {
+      expect(parseThreshold('+0%')).toBeNull();
+    });
+
+    it('returns null for zero absolute', () => {
+      expect(parseThreshold('-0')).toBeNull();
+    });
+
+    it('returns null for negative value with plus sign', () => {
+      expect(parseThreshold('+-5%')).toBeNull();
+    });
+
+    it('returns null for positive value with minus sign', () => {
+      expect(parseThreshold('-+5%')).toBeNull();
+    });
+
+    it('returns null for NaN percent', () => {
+      expect(parseThreshold('+NaN%')).toBeNull();
+    });
+
+    it('returns null for Infinity percent', () => {
+      expect(parseThreshold('+Infinity%')).toBeNull();
+    });
+
+    it('returns null for Infinity absolute', () => {
+      expect(parseThreshold('-Infinity')).toBeNull();
+    });
   });
 });
