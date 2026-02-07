@@ -1,8 +1,5 @@
 import {z} from 'zod';
 
-export type MinuteBarMessage = z.infer<typeof MinuteBarMessageSchema>;
-export type StreamMessage = z.infer<typeof StreamMessageSchema>;
-
 /** @see https://docs.alpaca.markets/docs/real-time-stock-pricing-data#bars */
 export const MinuteBarMessageSchema = z.looseObject({
   /** Closing price */
@@ -48,3 +45,6 @@ export const StreamMessageSchema = z.union([
   SubscriptionMessageSchema,
   MinuteBarMessageSchema,
 ]);
+
+export type MinuteBarMessage = z.infer<typeof MinuteBarMessageSchema>;
+export type StreamMessage = z.infer<typeof StreamMessageSchema>;

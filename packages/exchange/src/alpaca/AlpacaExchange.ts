@@ -79,7 +79,8 @@ export class AlpacaExchange extends Exchange {
       const response = await this.#fetchLatestCryptoBars(pair);
       return Object.keys(response.bars).length > 0;
     } catch (error) {
-      if (axios.isAxiosError(error) && error.response?.status === 400) {
+      const status = axios.isAxiosError(error) ? error.response?.status : undefined;
+      if (status && status >= 400 && status < 500) {
         return false;
       }
       throw error;
