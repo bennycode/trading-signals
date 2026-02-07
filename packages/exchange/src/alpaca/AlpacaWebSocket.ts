@@ -1,13 +1,11 @@
-import {
-  AlpacaStream,
-  type DefaultCredentials,
-  type Message,
-  // @ts-ignore:next-line
-} from 'alpaca-legacy';
 import {ms} from 'ms';
 import {retry, RetryConfig} from 'ts-retry-promise';
-import {hasErrorCode} from './AlpacaExchange.js';
-import type {MinuteBarMessage, StreamMessage} from './typings.js';
+import {AlpacaStream, type AlpacaStreamCredentials} from './api/AlpacaStream.js';
+import type {MinuteBarMessage, StreamMessage} from './api/schema/StreamSchema.js';
+
+const hasErrorCode = (error: unknown): error is {code: string | number} => {
+  return !!error && typeof error === 'object' && 'code' in error;
+};
 
 export interface AlpacaConnection {
   connectionId: string;
@@ -41,7 +39,7 @@ class AlpacaWebSocket {
     timeout: 'INFINITELY',
   } as const;
 
-  async #establishConnection(credentials: DefaultCredentials): Promise<AlpacaConnection> {
+  async #establishConnection(credentials: AlpacaStreamCredentials): Promise<AlpacaConnection> {
     // Check if we already have a connection for these credentials
     const existingConnectionId = this.#credentialToConnectionId.get(credentials.key);
     if (existingConnectionId) {
@@ -54,18 +52,14 @@ class AlpacaWebSocket {
     const connectionId = crypto.randomUUID();
 
     return new Promise<AlpacaConnection>((resolve, reject) => {
-      const stream = new AlpacaStream({
-        credentials,
-        source: 'iex',
-        type: 'market_data',
-      });
+      const stream = new AlpacaStream(credentials, 'iex');
 
-      stream.on('error', (error: Message) => {
+      stream.on('error', (error: unknown) => {
         console.error(`WebSocket streaming failed for ID "${connectionId}".`, error);
         reject(error);
       });
 
-      stream.on('subscription', (message: Message) => {
+      stream.on('subscription', (message: unknown) => {
         console.log(`WebSocket streaming is subscribed with ID "${connectionId}":`, JSON.stringify(message));
       });
 
@@ -79,7 +73,7 @@ class AlpacaWebSocket {
     });
   }
 
-  async connect(credentials: DefaultCredentials): Promise<AlpacaConnection> {
+  async connect(credentials: AlpacaStreamCredentials): Promise<AlpacaConnection> {
     return retry(() => this.#establishConnection(credentials), this.#retryConfig);
   }
 

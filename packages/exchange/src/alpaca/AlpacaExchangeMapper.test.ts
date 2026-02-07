@@ -1,7 +1,7 @@
 import {describe, expect, it, vi} from 'vitest';
 import {AlpacaExchangeMapper} from './AlpacaExchangeMapper.js';
 import minutes5 from '../../fixtures/alpaca/bars/minutes-5.json' with {type: 'json'};
-import {AssetClass, Order, OrderSide, OrderStatus, OrderType, TimeInForce} from '@master-chief/alpaca-ts';
+import {AssetClass, OrderSide, OrderStatus, OrderType, TimeInForce} from './api/schema/OrderSchema.js';
 import {ms} from 'ms';
 import {BatchedCandle} from '../candle/BatchedCandle.js';
 import {CandleBatcher} from '../candle/CandleBatcher.js';
@@ -43,7 +43,7 @@ describe('AlpacaExchangeMapper', () => {
 
   describe('toFilledOrder', () => {
     it('maps a filled BUY order', () => {
-      const order: Order = {
+      const order = {
         asset_class: AssetClass.US_EQUITY,
         asset_id: '78856c3d-67c8-43bc-8cd4-e95b686cf741',
         canceled_at: null,
@@ -89,7 +89,7 @@ describe('AlpacaExchangeMapper', () => {
     });
 
     it('does not map a canceled SELL order', () => {
-      const order: Order = {
+      const order = {
         asset_class: AssetClass.US_EQUITY,
         asset_id: '78856c3d-67c8-43bc-8cd4-e95b686cf741',
         canceled_at: '2023-08-21T20:04:27.624502Z',
