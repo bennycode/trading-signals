@@ -12,7 +12,7 @@
     "jsonabc": "^2.3.1",
     "ms": "4.0.0-nightly.202508271359",
     "ts-retry-promise": "^0.8.1",
-    "zod": "^4.3.5"
+    "zod": "^4.3.6"
   },
   "description": "Trading strategies to run trading bots with JavaScript / TypeScript.",
   "exports": {
