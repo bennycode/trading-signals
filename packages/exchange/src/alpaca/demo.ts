@@ -1,7 +1,7 @@
 import 'dotenv-defaults/config.js';
 import {ms, format} from 'ms';
-import {getAlpacaClient} from './alpaca/getAlpacaClient.js';
-import {CurrencyPair} from './core/CurrencyPair.js';
+import {getAlpacaClient} from './getAlpacaClient.js';
+import {CurrencyPair} from '../core/CurrencyPair.js';
 
 const exchange = getAlpacaClient({
   apiKey: process.env.ALPACA_PAPER_API_KEY ?? '',
