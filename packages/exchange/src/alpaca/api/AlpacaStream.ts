@@ -1,9 +1,9 @@
 import {EventEmitter} from 'node:events';
 
 export interface AlpacaStreamCredentials {
-  key: string;
-  paper?: boolean;
-  secret: string;
+  apiKey: string;
+  apiSecret: string;
+  usePaperTrading: boolean;
 }
 
 /**
@@ -18,15 +18,19 @@ export class AlpacaStream extends EventEmitter {
   constructor(credentials: AlpacaStreamCredentials, source: string) {
     super();
 
-    const url = `wss://stream.data.alpaca.markets/${source}`;
+    /** @see https://docs.alpaca.markets/docs/streaming-market-data#connection */
+    const host = credentials.usePaperTrading ? 'stream.data.sandbox.alpaca.markets' : 'stream.data.alpaca.markets';
+    const url = `wss://${host}/${source}`;
     this.#connection = new WebSocket(url);
 
     this.#connection.addEventListener('open', () => {
-      this.#connection.send(JSON.stringify({
-        action: 'auth',
-        key: credentials.key,
-        secret: credentials.secret,
-      }));
+      this.#connection.send(
+        JSON.stringify({
+          action: 'auth',
+          key: credentials.apiKey,
+          secret: credentials.apiSecret,
+        })
+      );
     });
 
     this.#connection.addEventListener('message', event => {

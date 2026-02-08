@@ -41,7 +41,7 @@ class AlpacaWebSocket {
 
   async #establishConnection(credentials: AlpacaStreamCredentials, source: string): Promise<AlpacaConnection> {
     // Check if we already have a connection for these credentials + source
-    const singletonKey = `${credentials.key}:${source}`;
+    const singletonKey = `${credentials.apiKey}:${source}`;
     const existingConnectionId = this.#credentialToConnectionId.get(singletonKey);
     if (existingConnectionId) {
       const existing = this.#connections.get(existingConnectionId);

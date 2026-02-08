@@ -38,6 +38,8 @@ export class AlpacaAPI {
     });
     axiosRetry(this.#tradingClient, retryConfig);
 
+    // Market data is read-only — paper trading keys authenticate against the production data endpoint.
+    // The sandbox data endpoint (data.sandbox.alpaca.markets) requires separate sandbox-specific credentials.
     this.#marketDataClient = axios.create({
       baseURL: 'https://data.alpaca.markets',
       headers,

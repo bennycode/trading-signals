@@ -28,23 +28,14 @@ export class AlpacaExchange extends Exchange {
 
     // Wrap Stream connection, so that nothing async happens when the "constructor" of this class is being called
     this.#connectStream = async (source: string): Promise<AlpacaConnection> => {
-      return alpacaWebSocket.connect(
-        {
-          key: options.apiKey,
-          paper: options.usePaperTrading,
-          secret: options.apiSecret,
-        },
-        source
-      );
+      return alpacaWebSocket.connect(options, source);
     };
   }
 
   static NAME = 'Alpaca';
 
-  #createSymbol(pair: CurrencyPair, isCrypto?: boolean): string {
-    const effectiveIsCrypto = isCrypto ?? pair.counter !== 'USD';
-
-    if (effectiveIsCrypto) {
+  #createSymbol(pair: CurrencyPair, isCrypto: boolean): string {
+    if (isCrypto) {
       return `${pair.base}/${pair.counter}`;
     }
     return pair.base;
