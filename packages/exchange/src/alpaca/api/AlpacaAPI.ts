@@ -45,21 +45,25 @@ export class AlpacaAPI {
     axiosRetry(this.#marketDataClient, retryConfig);
   }
 
+  /** @see https://docs.alpaca.markets/reference/get-v2-clock */
   async getClock() {
     const response = await this.#tradingClient.get('/v2/clock');
     return ClockSchema.parse(response.data);
   }
 
+  /** @see https://docs.alpaca.markets/reference/stocklatestbars */
   async getStockBarsLatest(params: {feed: string; symbols: string}) {
     const response = await this.#marketDataClient.get('/v2/stocks/bars/latest', {params});
     return LatestBarsResponseSchema.parse(response.data);
   }
 
+  /** @see https://docs.alpaca.markets/reference/cryptolatestbars */
   async getCryptoBarsLatest(params: {symbols: string}) {
     const response = await this.#marketDataClient.get('/v1beta3/crypto/us/latest/bars', {params});
     return LatestBarsResponseSchema.parse(response.data);
   }
 
+  /** @see https://docs.alpaca.markets/reference/stockbars */
   async getStockBars(params: {
     end: string;
     feed: string;
@@ -73,6 +77,7 @@ export class AlpacaAPI {
     return BarsResponseSchema.parse(response.data);
   }
 
+  /** @see https://docs.alpaca.markets/reference/cryptobars-1 */
   async getCryptoBars(params: {
     end: string;
     limit: number;

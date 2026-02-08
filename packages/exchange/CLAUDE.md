@@ -35,6 +35,10 @@ When implementing an exchange integration, follow these patterns:
 
 - Use Node.js native `WebSocket` (stable since v22.4.0)
 
+### Documentation
+
+- Always add a `@see` JSDoc comment with the API reference URL to every API method (e.g., `/** @see https://docs.alpaca.markets/reference/stockbars */`)
+
 ### Structure
 
 - Exchange integrations live under `src/<exchange>/` (e.g., `src/alpaca/`)
