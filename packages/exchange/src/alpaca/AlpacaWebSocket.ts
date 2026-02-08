@@ -39,9 +39,10 @@ class AlpacaWebSocket {
     timeout: 'INFINITELY',
   } as const;
 
-  async #establishConnection(credentials: AlpacaStreamCredentials): Promise<AlpacaConnection> {
-    // Check if we already have a connection for these credentials
-    const existingConnectionId = this.#credentialToConnectionId.get(credentials.key);
+  async #establishConnection(credentials: AlpacaStreamCredentials, source: string): Promise<AlpacaConnection> {
+    // Check if we already have a connection for these credentials + source
+    const singletonKey = `${credentials.key}:${source}`;
+    const existingConnectionId = this.#credentialToConnectionId.get(singletonKey);
     if (existingConnectionId) {
       const existing = this.#connections.get(existingConnectionId);
       if (existing) {
@@ -52,7 +53,7 @@ class AlpacaWebSocket {
     const connectionId = crypto.randomUUID();
 
     return new Promise<AlpacaConnection>((resolve, reject) => {
-      const stream = new AlpacaStream(credentials, 'iex');
+      const stream = new AlpacaStream(credentials, source);
 
       stream.on('error', (error: unknown) => {
         console.error(`WebSocket streaming failed for ID "${connectionId}".`, error);
@@ -67,14 +68,14 @@ class AlpacaWebSocket {
         console.log(`WebSocket streaming is authenticated with ID "${connectionId}".`);
         const connection = {connectionId, stream};
         this.#connections.set(connectionId, connection);
-        this.#credentialToConnectionId.set(credentials.key, connectionId);
+        this.#credentialToConnectionId.set(singletonKey, connectionId);
         resolve(connection);
       });
     });
   }
 
-  async connect(credentials: AlpacaStreamCredentials): Promise<AlpacaConnection> {
-    return retry(() => this.#establishConnection(credentials), this.#retryConfig);
+  async connect(credentials: AlpacaStreamCredentials, source: string): Promise<AlpacaConnection> {
+    return retry(() => this.#establishConnection(credentials, source), this.#retryConfig);
   }
 
   /**

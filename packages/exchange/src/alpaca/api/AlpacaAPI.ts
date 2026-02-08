@@ -56,7 +56,7 @@ export class AlpacaAPI {
   }
 
   async getCryptoBarsLatest(params: {symbols: string}) {
-    const response = await this.#marketDataClient.get('/v1beta3/crypto/us/bars/latest', {params});
+    const response = await this.#marketDataClient.get('/v1beta3/crypto/us/latest/bars', {params});
     return LatestBarsResponseSchema.parse(response.data);
   }
 

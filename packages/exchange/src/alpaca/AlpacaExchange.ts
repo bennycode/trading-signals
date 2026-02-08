@@ -11,8 +11,11 @@ import {AlpacaAPI} from './api/AlpacaAPI.js';
 export class AlpacaExchange extends Exchange {
   readonly #alpacaAPI: AlpacaAPI;
   readonly #SUBSCRIPTION_PLAN = 'iex' as const;
+  static readonly STOCK_STREAM_SOURCE = `v2/iex`;
+  static readonly CRYPTO_STREAM_SOURCE = `v1beta3/crypto/us`;
+
   #candleTopics: Map<string, {symbol: string; connectionId: string}> = new Map();
-  readonly #connectStream: () => Promise<AlpacaConnection>;
+  readonly #connectStream: (source: string) => Promise<AlpacaConnection>;
 
   constructor(options: {apiKey: string; apiSecret: string; usePaperTrading: boolean}) {
     super(AlpacaExchange.NAME);
@@ -24,12 +27,15 @@ export class AlpacaExchange extends Exchange {
     });
 
     // Wrap Stream connection, so that nothing async happens when the "constructor" of this class is being called
-    this.#connectStream = async (): Promise<AlpacaConnection> => {
-      return alpacaWebSocket.connect({
-        key: options.apiKey,
-        paper: options.usePaperTrading,
-        secret: options.apiSecret,
-      });
+    this.#connectStream = async (source: string): Promise<AlpacaConnection> => {
+      return alpacaWebSocket.connect(
+        {
+          key: options.apiKey,
+          paper: options.usePaperTrading,
+          secret: options.apiSecret,
+        },
+        source
+      );
     };
   }
 
@@ -182,20 +188,28 @@ export class AlpacaExchange extends Exchange {
    */
   async watchCandles(pair: CurrencyPair, intervalInMillis: number, openTimeInISO: string): Promise<string> {
     const topicId = crypto.randomUUID();
-    const symbol = this.#createSymbol(pair);
+    const isCrypto = await this.#isCryptoSymbol(pair);
+    const symbol = this.#createSymbol(pair, isCrypto);
+    const source = isCrypto ? AlpacaExchange.CRYPTO_STREAM_SOURCE : AlpacaExchange.STOCK_STREAM_SOURCE;
     const cb = new CandleBatcher(intervalInMillis);
-    const connection = await this.#connectStream();
+    const connection = await this.#connectStream(source);
+    const smallestInterval = this.getSmallestInterval();
     alpacaWebSocket.subscribeToBars(connection.connectionId, symbol, (message: MinuteBarMessage) => {
       const isNewer = new Date(message.t).getTime() > new Date(openTimeInISO).getTime();
       if (isNewer) {
         // Bars from Alpaca always come in minutes:
         // https://docs.alpaca.markets/docs/real-time-stock-pricing-data#minute-bars-bars
-        const candle = AlpacaExchangeMapper.toExchangeCandle(message, pair, ms('1m'));
+        const candle = AlpacaExchangeMapper.toExchangeCandle(message, pair, smallestInterval);
 
-        // Emit batched candle (which will match the desired interval)
-        const batchedCandle = cb.addToBatch(candle);
-        if (batchedCandle) {
+        if (intervalInMillis === smallestInterval) {
+          // No batching needed — each minute bar is already the desired interval
           this.emit(topicId, candle);
+        } else {
+          // Emit batched candle (which will match the desired interval)
+          const batchedCandle = cb.addToBatch(candle);
+          if (batchedCandle) {
+            this.emit(topicId, batchedCandle);
+          }
         }
       }
     });

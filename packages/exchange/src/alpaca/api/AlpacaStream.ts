@@ -18,7 +18,7 @@ export class AlpacaStream extends EventEmitter {
   constructor(credentials: AlpacaStreamCredentials, source: string) {
     super();
 
-    const url = `wss://stream.data.alpaca.markets/v2/${source}`;
+    const url = `wss://stream.data.alpaca.markets/${source}`;
     this.#connection = new WebSocket(url);
 
     this.#connection.addEventListener('open', () => {
