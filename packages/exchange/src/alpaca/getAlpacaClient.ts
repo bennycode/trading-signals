@@ -9,7 +9,7 @@ export function getAlpacaClient(options: {apiKey: string; apiSecret: string; use
     process.exit(0);
   });
 
-  console.log(options);
+  console.log('Initializing Alpaca client', {usePaperTrading: options.usePaperTrading});
 
   const exchange = new AlpacaExchange(options);
 
