@@ -1,13 +1,11 @@
-import {
-  AlpacaStream,
-  type DefaultCredentials,
-  type Message,
-  // @ts-ignore:next-line
-} from 'alpaca-legacy';
 import {ms} from 'ms';
 import {retry, RetryConfig} from 'ts-retry-promise';
-import {hasErrorCode} from './AlpacaExchange.js';
-import type {MinuteBarMessage, StreamMessage} from './typings.js';
+import {AlpacaStream, type AlpacaStreamCredentials} from './api/AlpacaStream.js';
+import type {MinuteBarMessage, StreamMessage} from './api/schema/StreamSchema.js';
+
+const hasErrorCode = (error: unknown): error is {code: string | number} => {
+  return !!error && typeof error === 'object' && 'code' in error;
+};
 
 export interface AlpacaConnection {
   connectionId: string;
@@ -41,9 +39,10 @@ class AlpacaWebSocket {
     timeout: 'INFINITELY',
   } as const;
 
-  async #establishConnection(credentials: DefaultCredentials): Promise<AlpacaConnection> {
-    // Check if we already have a connection for these credentials
-    const existingConnectionId = this.#credentialToConnectionId.get(credentials.key);
+  async #establishConnection(credentials: AlpacaStreamCredentials, source: string): Promise<AlpacaConnection> {
+    // Check if we already have a connection for these credentials + source
+    const singletonKey = `${credentials.apiKey}:${source}`;
+    const existingConnectionId = this.#credentialToConnectionId.get(singletonKey);
     if (existingConnectionId) {
       const existing = this.#connections.get(existingConnectionId);
       if (existing) {
@@ -54,18 +53,14 @@ class AlpacaWebSocket {
     const connectionId = crypto.randomUUID();
 
     return new Promise<AlpacaConnection>((resolve, reject) => {
-      const stream = new AlpacaStream({
-        credentials,
-        source: 'iex',
-        type: 'market_data',
-      });
+      const stream = new AlpacaStream(credentials, source);
 
-      stream.on('error', (error: Message) => {
+      stream.on('error', (error: unknown) => {
         console.error(`WebSocket streaming failed for ID "${connectionId}".`, error);
         reject(error);
       });
 
-      stream.on('subscription', (message: Message) => {
+      stream.on('subscription', (message: unknown) => {
         console.log(`WebSocket streaming is subscribed with ID "${connectionId}":`, JSON.stringify(message));
       });
 
@@ -73,14 +68,14 @@ class AlpacaWebSocket {
         console.log(`WebSocket streaming is authenticated with ID "${connectionId}".`);
         const connection = {connectionId, stream};
         this.#connections.set(connectionId, connection);
-        this.#credentialToConnectionId.set(credentials.key, connectionId);
+        this.#credentialToConnectionId.set(singletonKey, connectionId);
         resolve(connection);
       });
     });
   }
 
-  async connect(credentials: DefaultCredentials): Promise<AlpacaConnection> {
-    return retry(() => this.#establishConnection(credentials), this.#retryConfig);
+  async connect(credentials: AlpacaStreamCredentials, source: string): Promise<AlpacaConnection> {
+    return retry(() => this.#establishConnection(credentials, source), this.#retryConfig);
   }
 
   /**

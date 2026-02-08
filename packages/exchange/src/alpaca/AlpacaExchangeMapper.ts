@@ -1,5 +1,5 @@
-import {Bar, Order, OrderStatus} from '@master-chief/alpaca-ts';
-import {PendingNewOrders} from './typings.js';
+import type {Bar} from './api/schema/BarSchema.js';
+import {type Order, OrderStatus} from './api/schema/OrderSchema.js';
 import {ms} from 'ms';
 import {CurrencyPair} from '../core/CurrencyPair.js';
 import {
@@ -43,7 +43,7 @@ export class AlpacaExchangeMapper {
     };
   }
 
-  static toExchangePendingOrder(order: PendingNewOrders, pair: CurrencyPair, options: ExchangeOrderOptions) {
+  static toExchangePendingOrder(order: Order, pair: CurrencyPair, options: ExchangeOrderOptions) {
     if (order.type === 'market') {
       const pendingOrder: ExchangePendingMarketOrder = {
         id: order.id,
