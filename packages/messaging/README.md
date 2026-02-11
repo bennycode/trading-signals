@@ -23,9 +23,9 @@ This package starts an XMTP chatbot that you can message from any XMTP-compatibl
 | `/accountList`   | List all trading accounts                                |
 | `/accountRemove` | Remove a trading account                                 |
 | `/accountTime`   | Show the current server time from an account's exchange  |
-| `/candle`        | Fetch OHLC candle data for a trading pair               |
+| `/candle`        | Fetch OHLC candle data for a trading pair                |
 | `/myaddress`     | Show your XMTP wallet address                            |
-| `/price`         | Get the latest closing price for a trading pair         |
+| `/price`         | Get the latest closing price for a trading pair          |
 | `/time`          | Display the current system time                          |
 | `/uptime`        | Show how long the bot has been running                   |
 | `/version`       | Display the libXMTP version                              |
