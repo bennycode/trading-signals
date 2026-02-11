@@ -2,7 +2,7 @@ import axios from 'axios';
 import {ms} from 'ms';
 import {AlpacaExchangeMapper} from './AlpacaExchangeMapper.js';
 import {Exchange, ExchangeCandle, ExchangeCandleImportRequest} from '../core/Exchange.js';
-import {CurrencyPair} from '../core/CurrencyPair.js';
+import {TradingPair} from '../core/TradingPair.js';
 import {alpacaWebSocket, AlpacaConnection} from './AlpacaWebSocket.js';
 import {CandleBatcher} from '../candle/CandleBatcher.js';
 import type {MinuteBarMessage} from './api/schema/StreamSchema.js';
@@ -34,14 +34,14 @@ export class AlpacaExchange extends Exchange {
 
   static NAME = 'Alpaca';
 
-  #createSymbol(pair: CurrencyPair, isCrypto: boolean): string {
+  #createSymbol(pair: TradingPair, isCrypto: boolean): string {
     if (isCrypto) {
       return `${pair.base}/${pair.counter}`;
     }
     return pair.base;
   }
 
-  async getLatestCandle(pair: CurrencyPair, intervalInMillis: number): Promise<ExchangeCandle> {
+  async getLatestCandle(pair: TradingPair, intervalInMillis: number): Promise<ExchangeCandle> {
     const isCrypto = await this.#isCryptoSymbol(pair);
     const symbol = this.#createSymbol(pair, isCrypto);
     const fetchMethod = isCrypto ? this.#fetchLatestCryptoBars.bind(this) : this.#fetchLatestStockBars.bind(this);
@@ -58,20 +58,20 @@ export class AlpacaExchange extends Exchange {
     return candles[0]!;
   }
 
-  async #fetchLatestStockBars(pair: CurrencyPair) {
+  async #fetchLatestStockBars(pair: TradingPair) {
     return this.#alpacaAPI.getStockBarsLatest({
       feed: this.#SUBSCRIPTION_PLAN,
       symbols: this.#createSymbol(pair, false),
     });
   }
 
-  async #fetchLatestCryptoBars(pair: CurrencyPair) {
+  async #fetchLatestCryptoBars(pair: TradingPair) {
     return this.#alpacaAPI.getCryptoBarsLatest({
       symbols: this.#createSymbol(pair, true),
     });
   }
 
-  async #isCryptoSymbol(pair: CurrencyPair) {
+  async #isCryptoSymbol(pair: TradingPair) {
     try {
       const response = await this.#fetchLatestCryptoBars(pair);
       return Object.keys(response.bars).length > 0;
@@ -84,7 +84,7 @@ export class AlpacaExchange extends Exchange {
     }
   }
 
-  async #fetchCryptoBars(pair: CurrencyPair, request: ExchangeCandleImportRequest, pageToken: string | undefined) {
+  async #fetchCryptoBars(pair: TradingPair, request: ExchangeCandleImportRequest, pageToken: string | undefined) {
     return this.#alpacaAPI.getCryptoBars({
       end: request.startTimeLastCandle,
       limit: 10_000,
@@ -95,7 +95,7 @@ export class AlpacaExchange extends Exchange {
     });
   }
 
-  #fetchStockBars(pair: CurrencyPair, request: ExchangeCandleImportRequest, pageToken: string | undefined) {
+  #fetchStockBars(pair: TradingPair, request: ExchangeCandleImportRequest, pageToken: string | undefined) {
     if (pair.counter !== 'USD') {
       throw new Error(
         `Cannot use "${pair.counter}". Stock "${pair.base}" can only be traded in USD on ${AlpacaExchange.NAME}.`
@@ -113,7 +113,7 @@ export class AlpacaExchange extends Exchange {
     });
   }
 
-  async getCandles(pair: CurrencyPair, request: ExchangeCandleImportRequest): Promise<ExchangeCandle[]> {
+  async getCandles(pair: TradingPair, request: ExchangeCandleImportRequest): Promise<ExchangeCandle[]> {
     const candles: ExchangeCandle[] = [];
     let pageToken: string | null | undefined = undefined;
 
@@ -177,7 +177,7 @@ export class AlpacaExchange extends Exchange {
    * @see https://docs.alpaca.markets/docs/real-time-stock-pricing-data#daily-bars-dailybars
    * @see https://docs.alpaca.markets/docs/real-time-crypto-pricing-data
    */
-  async watchCandles(pair: CurrencyPair, intervalInMillis: number, openTimeInISO: string): Promise<string> {
+  async watchCandles(pair: TradingPair, intervalInMillis: number, openTimeInISO: string): Promise<string> {
     const topicId = crypto.randomUUID();
     const isCrypto = await this.#isCryptoSymbol(pair);
     const symbol = this.#createSymbol(pair, isCrypto);

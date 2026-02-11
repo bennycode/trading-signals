@@ -1,7 +1,7 @@
 import type {Bar} from './api/schema/BarSchema.js';
 import {type Order, OrderStatus} from './api/schema/OrderSchema.js';
 import {ms} from 'ms';
-import {CurrencyPair} from '../core/CurrencyPair.js';
+import {TradingPair} from '../core/TradingPair.js';
 import {
   ExchangeCandle,
   ExchangeFill,
@@ -26,7 +26,7 @@ export class AlpacaExchangeMapper {
     return ms(intervalInMillis).replace('m', 'Min').replace('h', 'Hour').replace('d', 'Day');
   }
 
-  static toExchangeCandle(candle: Bar, pair: CurrencyPair, sizeInMillis: number): ExchangeCandle {
+  static toExchangeCandle(candle: Bar, pair: TradingPair, sizeInMillis: number): ExchangeCandle {
     // Converting "RFC 3339" time to "ISO 8601 UTC" time
     const date = new Date(candle.t);
     return {
@@ -43,7 +43,7 @@ export class AlpacaExchangeMapper {
     };
   }
 
-  static toExchangePendingOrder(order: Order, pair: CurrencyPair, options: ExchangeOrderOptions) {
+  static toExchangePendingOrder(order: Order, pair: TradingPair, options: ExchangeOrderOptions) {
     if (order.type === 'market') {
       const pendingOrder: ExchangePendingMarketOrder = {
         id: order.id,
@@ -65,7 +65,7 @@ export class AlpacaExchangeMapper {
     return pendingOrder;
   }
 
-  static toFilledOrder(order: Order, pair: CurrencyPair): ExchangeFill {
+  static toFilledOrder(order: Order, pair: TradingPair): ExchangeFill {
     if (order.status !== OrderStatus.FILLED) {
       throw new Error(`Order ID "${order.id}" is not filled.`);
     }

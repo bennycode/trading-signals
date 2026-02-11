@@ -5,7 +5,7 @@ import {AssetClass, OrderSide, OrderStatus, OrderType, TimeInForce} from './api/
 import {ms} from 'ms';
 import {BatchedCandle} from '../candle/BatchedCandle.js';
 import {CandleBatcher} from '../candle/CandleBatcher.js';
-import {CurrencyPair} from '../core/CurrencyPair.js';
+import {TradingPair} from '../core/TradingPair.js';
 import {ExchangeOrderPosition, ExchangeOrderSide} from '../core/Exchange.js';
 
 describe('AlpacaExchangeMapper', () => {
@@ -34,7 +34,7 @@ describe('AlpacaExchangeMapper', () => {
       const cb = new CandleBatcher(candleSize);
       cb.on('batchedCandle', onBatchedCandle);
 
-      const pair = new CurrencyPair('AAPL', 'USD');
+      const pair = new TradingPair('AAPL', 'USD');
       const candles = minutes5.map(bar => AlpacaExchangeMapper.toExchangeCandle(bar, pair, ms('1m')));
       candles.forEach(candle => cb.addToBatch(candle));
       expect(onBatchedCandle).toBeCalledTimes(1);
@@ -73,7 +73,7 @@ describe('AlpacaExchangeMapper', () => {
         updated_at: '2023-08-21T15:57:26.842893Z',
       } as const;
 
-      const pair = new CurrencyPair('SHOP', 'USD');
+      const pair = new TradingPair('SHOP', 'USD');
 
       const filledOrder = AlpacaExchangeMapper.toFilledOrder(order, pair);
 
@@ -119,7 +119,7 @@ describe('AlpacaExchangeMapper', () => {
         updated_at: '2023-08-21T20:04:27.627297Z',
       } as const;
 
-      const pair = new CurrencyPair('SHOP', 'USD');
+      const pair = new TradingPair('SHOP', 'USD');
 
       expect(() => AlpacaExchangeMapper.toFilledOrder(order, pair)).toThrowError();
     });

@@ -1,4 +1,4 @@
-import {CurrencyPair, Exchange, ExchangeCandle, getExchangeClient} from '@typedtrader/exchange';
+import {TradingPair, Exchange, ExchangeCandle, getExchangeClient} from '@typedtrader/exchange';
 import {validHex, type Agent} from '@xmtp/agent-sdk';
 import {Account} from '../database/models/Account.js';
 import {Watch, WatchAttributes} from '../database/models/Watch.js';
@@ -53,7 +53,7 @@ export class WatchMonitor {
       return;
     }
 
-    const pair = CurrencyPair.fromString(watch.pair, ',');
+    const pair = TradingPair.fromString(watch.pair, ',');
 
     const exchange = getExchangeClient({
       exchangeId: account.exchange,
@@ -139,7 +139,7 @@ export class WatchMonitor {
   }
 
   async #sendAlert(watch: WatchAttributes, currentPrice: number): Promise<void> {
-    const {counter} = CurrencyPair.fromString(watch.pair, ',');
+    const {counter} = TradingPair.fromString(watch.pair, ',');
 
     const account = Account.findByPk(watch.accountId);
 

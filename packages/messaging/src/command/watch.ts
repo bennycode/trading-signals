@@ -1,4 +1,4 @@
-import {CurrencyPair, getExchangeClient, ms} from '@typedtrader/exchange';
+import {TradingPair, getExchangeClient, ms} from '@typedtrader/exchange';
 import {Account} from '../database/models/Account.js';
 import {Watch} from '../database/models/Watch.js';
 import { parseThreshold } from '../validation/parseThreshold.js';
@@ -42,7 +42,7 @@ export const watch = async (request: string, ownerAddress: string) => {
     if (!base || !counter) {
       return 'Invalid pair format. Use: BASE,COUNTER (e.g., SHOP,USD)';
     }
-    const pair = new CurrencyPair(base, counter);
+    const pair = new TradingPair(base, counter);
 
     // Parse interval
     const intervalMs = ms(interval);

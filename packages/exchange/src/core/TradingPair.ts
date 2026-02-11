@@ -1,21 +1,21 @@
 /**
- * Serialized version of a currency pair.
+ * Serialized version of a trading pair.
  */
-export type CurrencyPairJSON = {
+export type TradingPairJSON = {
   base: string;
   counter: string;
 };
 
 /**
- * A currency pair symbolizes an asset and the currency that you are trading the asset with.
+ * A trading pair symbolizes an asset and the currency that you are trading the asset with.
  *
  * Examples:
  * Base: TSLA, Counter: EUR
  * Base: BTC, Counter: USDT
  */
-export class CurrencyPair implements CurrencyPairJSON {
+export class TradingPair implements TradingPairJSON {
   /**
-   * Constructs a currency pair.
+   * Constructs a trading pair.
    *
    * @param base - Symbol of the base asset (i.e. TSLA)
    * @param counter - Symbol of the counter asset (i.e. EUR)
@@ -25,7 +25,7 @@ export class CurrencyPair implements CurrencyPairJSON {
     public readonly counter: string
   ) {}
 
-  isEqual(other: CurrencyPair): boolean {
+  isEqual(other: TradingPair): boolean {
     return this.base === other.base && this.counter === other.counter;
   }
 
@@ -33,10 +33,10 @@ export class CurrencyPair implements CurrencyPairJSON {
     return `${this.base}${delimiter}${this.counter}`;
   }
 
-  static fromString(symbol: string, delimiter: string): CurrencyPair {
+  static fromString(symbol: string, delimiter: string): TradingPair {
     const [base, counter] = symbol.split(delimiter);
     if (base && counter) {
-      return new CurrencyPair(base, counter);
+      return new TradingPair(base, counter);
     }
     throw new Error(
       `Symbol "${symbol}" cannot be split with delimiter "${delimiter}".`

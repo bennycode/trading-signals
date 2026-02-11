@@ -1,4 +1,4 @@
-import {CurrencyPair, getExchangeClient, ms} from '@typedtrader/exchange';
+import {TradingPair, getExchangeClient, ms} from '@typedtrader/exchange';
 import {Watch, WatchAttributes} from '../../database/models/Watch.js';
 import {parseThreshold} from '../../validation/parseThreshold.js';
 import {getAccountOrError} from '../../validation/getAccountOrError.js';
@@ -32,7 +32,7 @@ export const watch = async (request: string, ownerAddress: string): Promise<Watc
   try {
     const account = getAccountOrError(ownerAddress, accountId);
 
-    const pair = CurrencyPair.fromString(pairPart, ',');
+    const pair = TradingPair.fromString(pairPart, ',');
     const {counter} = pair;
 
     // Parse interval
