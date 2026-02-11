@@ -16,6 +16,31 @@ This project uses [Lerna](https://lerna.js.org/) for managing the [monorepo](htt
 | [**trading-signals-docs**](./packages/trading-signals-docs) | Documentation and [showcase website](https://bennycode.com/trading-signals/) built with Next.js, featuring interactive demos and examples of all indicators. See every indicator in action before you code. |
 | [**trading-strategies**](./packages/trading-strategies) | [Trading strategy](https://en.wikipedia.org/wiki/Trading_strategy) implementations that combine technical indicators into actionable advices. Can be used to build your own strategies for backtesting and real-time trading. |
 
+## Relationships
+
+At the foundation, **trading-signals** provides technical indicators like SMA, EMA, RSI, and Bollinger Bands. The **trading-strategies** package builds on top of these indicators to form actionable trading advice. **@typedtrader/exchange** abstracts away broker differences behind a unified interface, so strategies can run against any supported exchange. Finally, **@typedtrader/messaging** ties it all together into a chatbot that lets you control your trading bot remotely through encrypted messages.
+
+```mermaid
+graph TD
+    messaging["@typedtrader/messaging (Chatbot)"]
+
+    messaging --> strategies["trading-strategies"]
+    messaging --> exchange["@typedtrader/exchange"]
+
+    strategies --> signals["trading-signals"]
+
+    signals --> SMA
+    signals --> EMA
+    signals --> RSI
+    signals --> BBANDS["Bollinger Bands"]
+    signals --> MACD
+    signals --> more["..."]
+
+    exchange --> Alpaca
+    exchange --> IB["Interactive Brokers"]
+    exchange --> more-exchanges["..."]
+```
+
 ### Deploy to Render
 
 Deploy the `@typedtrader/messaging` package as a background worker to [Render](https://render.com/). The configuration includes persistent disk storage for the XMTP database and secure environment variable management:

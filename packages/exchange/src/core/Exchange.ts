@@ -1,5 +1,5 @@
 import {EventEmitter} from 'node:events';
-import type {CurrencyPair} from './CurrencyPair.js';
+import type {TradingPair} from './TradingPair.js';
 import {z} from 'zod';
 
 export enum ExchangeOrderSide {
@@ -97,7 +97,7 @@ export interface ExchangeFill {
   fee: string;
   feeAsset: string;
   order_id: string;
-  pair: CurrencyPair;
+  pair: TradingPair;
   position: ExchangeOrderPosition;
   price: string;
   side: ExchangeOrderSide;
@@ -107,7 +107,7 @@ export interface ExchangeFill {
 
 export interface ExchangePendingOrderBase {
   id: string;
-  pair: CurrencyPair;
+  pair: TradingPair;
   side: ExchangeOrderSide;
   size: string;
   type: ExchangeOrderType;
@@ -152,13 +152,13 @@ export abstract class Exchange extends EventEmitter {
   /**
    * Get candles within a specified time period.
    */
-  abstract getCandles(pair: CurrencyPair, request: ExchangeCandleImportRequest): Promise<ExchangeCandle[]>;
+  abstract getCandles(pair: TradingPair, request: ExchangeCandleImportRequest): Promise<ExchangeCandle[]>;
 
   /**
    * Get the latest candle for a given pair and interval.
    * Uses the exchange's dedicated "latest" endpoint for efficiency.
    */
-  abstract getLatestCandle(pair: CurrencyPair, intervalInMillis: number): Promise<ExchangeCandle>;
+  abstract getLatestCandle(pair: TradingPair, intervalInMillis: number): Promise<ExchangeCandle>;
 
   /**
    * Returns an identifiable name for the exchange.
@@ -180,12 +180,12 @@ export abstract class Exchange extends EventEmitter {
    * Subscribe to real-time candle updates via WebSocket.
    * Emits candles via EventEmitter with the returned topicId as the event name.
    *
-   * @param pair - The currency pair to watch
+   * @param pair - The trading pair to watch
    * @param intervalInMillis - Candle interval in milliseconds
    * @param openTimeInISO - Only emit candles newer than this time
    * @returns The generated topicId (UUID) for this subscription
    */
-  abstract watchCandles(pair: CurrencyPair, intervalInMillis: number, openTimeInISO: string): Promise<string>;
+  abstract watchCandles(pair: TradingPair, intervalInMillis: number, openTimeInISO: string): Promise<string>;
 
   /**
    * Unsubscribe from real-time candle updates.

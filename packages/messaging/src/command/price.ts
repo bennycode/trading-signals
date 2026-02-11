@@ -1,4 +1,4 @@
-import {CurrencyPair, getExchangeClient} from '@typedtrader/exchange';
+import {TradingPair, getExchangeClient} from '@typedtrader/exchange';
 import {getAccountOrError} from '../validation/getAccountOrError.js';
 
 // Request Example: "1 SHOP,USD"
@@ -20,7 +20,7 @@ export const price = async (request: string, ownerAddress: string) => {
   try {
     const account = getAccountOrError(ownerAddress, accountId);
 
-    const pair = CurrencyPair.fromString(pairPart, ',');
+    const pair = TradingPair.fromString(pairPart, ',');
     const client = getExchangeClient({
       exchangeId: account.exchange,
       apiKey: account.apiKey,
