@@ -1,6 +1,7 @@
 import { CategoryCard } from '../components/CategoryCard';
 import { FeatureCard } from '../components/FeatureCard';
 import { Hero } from '../components/Hero';
+import { MarketClock } from '../components/MarketClock';
 import { QuickStart } from '../components/QuickStart';
 
 export default function Home() {
@@ -74,12 +75,15 @@ export default function Home() {
 
   return (
     <div className="space-y-12">
-      <Hero
-        title="Trading Signals"
-        description="Technical indicators and overlays to run technical analysis with JavaScript / TypeScript"
-        npmUrl="https://www.npmjs.com/package/trading-signals"
-        githubUrl="https://github.com/bennycode/trading-signals"
-      />
+      <div>
+        <Hero
+          title="Trading Signals"
+          description="Technical indicators and overlays to run technical analysis with JavaScript / TypeScript"
+          npmUrl="https://www.npmjs.com/package/trading-signals"
+          githubUrl="https://github.com/bennycode/trading-signals"
+        />
+        <MarketClock />
+      </div>
 
       {/* Features */}
       <div className="grid md:grid-cols-3 gap-6 mb-12">
