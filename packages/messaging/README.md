@@ -10,6 +10,30 @@ End-to-end encrypted messaging interface for controlling personal trading bots r
 - **Owner Authentication:** Built-in middleware to verify message sender
 - **Remote Control:** Manage your trading bot from anywhere securely
 
+## Usage
+
+This package starts an XMTP chatbot that you can message from any XMTP-compatible wallet. Once connected, you control your trading bot by sending slash commands directly in the chat.
+
+### Commands
+
+| Command          | Description                                              |
+| ---------------- | -------------------------------------------------------- |
+| `/help`          | List all available commands                              |
+| `/accountAdd`    | Add a new trading account with exchange credentials      |
+| `/accountList`   | List all trading accounts                                |
+| `/accountRemove` | Remove a trading account                                 |
+| `/accountTime`   | Show the current server time from an account's exchange  |
+| `/candle`        | Fetch OHLC candle data for a currency pair               |
+| `/myaddress`     | Show your XMTP wallet address                            |
+| `/price`         | Get the latest closing price for a currency pair         |
+| `/time`          | Display the current system time                          |
+| `/uptime`        | Show how long the bot has been running                   |
+| `/version`       | Display the libXMTP version                              |
+| `/watch`         | Create a price alert that monitors a pair at an interval |
+| `/watchList`     | List all active price watches                            |
+| `/watchRemove`   | Remove an active price watch                             |
+| `/youraddress`   | Show the bot's XMTP wallet address                       |
+
 ## Motivation
 
 The "@typedtrader/messaging" library provides a secure way to interact with your trading bots through encrypted messaging. It's designed for traders who want to monitor and control their automated trading systems remotely without exposing public APIs.
