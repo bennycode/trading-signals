@@ -10,9 +10,9 @@ Utilities for handling trading exchange data with proper type safety and aggrega
 - **Event-Driven:** Built-in EventEmitter for streaming candle updates
 - **Flexible Intervals:** Timeframes using human-readable strings (e.g., "1h", "5m")
 
-## Alpaca Implementation
+## Alpaca
 
-This package includes a first-class `AlpacaExchange` implementation. It uses Alpaca's REST API for historical bars and the legacy streaming API for real-time minute bars, then batches those minute candles into larger intervals as needed.
+This package includes a first-class [Alpaca](https://alpaca.markets/) implementation.
 
 ```ts
 import {getAlpacaClient} from '@typedtrader/exchange';
