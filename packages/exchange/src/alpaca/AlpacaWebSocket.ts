@@ -22,16 +22,28 @@ class AlpacaWebSocket {
   #symbols: Map<string, Set<string>> = new Map();
   #credentialToConnectionId: Map<string, string> = new Map();
 
+  /**
+   * @see https://docs.alpaca.markets/docs/streaming-market-data#connection
+   *
+   * Retryable errors (transient):
+   * - 406: connection limit exceeded (previous connection may time out)
+   * - 407: slow client
+   * - 500: internal error
+   *
+   * Non-retryable errors (permanent):
+   * - 402: auth failed (invalid credentials)
+   * - 404: auth timeout
+   * - 405: symbol limit exceeded
+   * - 409: insufficient subscription (plan upgrade required)
+   */
+  static readonly #NON_RETRYABLE_CODES = new Set([402, 404, 405, 409]);
+
   readonly #retryConfig: Partial<RetryConfig> = {
     delay: ms('30s'),
     retries: 'INFINITELY',
     retryIf: (error: unknown) => {
-      // Usual errors:
-      // {"T":"error","code":406,"msg":"connection limit exceeded"}
-      // Unexpected server response: 429
       console.error(`AlpacaWebSocket error: ${error}`);
-      if (hasErrorCode(error) && error.code === 409) {
-        // Insufficient subscription, you will have to upgrade your Alpaca plan (from "iex" to "sip")
+      if (hasErrorCode(error) && AlpacaWebSocket.#NON_RETRYABLE_CODES.has(Number(error.code))) {
         return false;
       }
       return true;
