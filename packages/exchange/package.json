@@ -5,7 +5,7 @@
   "dependencies": {
     "@types/big.js": "^6.2.2",
     "@types/jsonabc": "^2.3.3",
-    "axios": "^1.13.4",
+    "axios": "^1.13.5",
     "axios-retry": "^4.5.0",
     "big.js": "^7.0.1",
     "dotenv-defaults": "^5.0.2",

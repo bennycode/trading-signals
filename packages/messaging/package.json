@@ -5,7 +5,7 @@
   "dependencies": {
     "@typedtrader/exchange": "0.2.5",
     "@types/moment-duration-format": "2.2.7",
-    "@types/node": "^25.2.1",
+    "@types/node": "^25.2.3",
     "@xmtp/agent-sdk": "^2.1.0",
     "better-sqlite3": "^12.6.2",
     "better-sqlite3-multiple-ciphers": "^12.6.2",
@@ -16,7 +16,7 @@
   },
   "description": "Trading bot via messaging service.",
   "devDependencies": {
-    "drizzle-kit": "^0.31.8",
+    "drizzle-kit": "^0.31.9",
     "tsx": "^4.21.0"
   },
   "exports": {
