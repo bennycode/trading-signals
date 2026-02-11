@@ -1,4 +1,4 @@
-import {TechnicalIndicator} from '../../types/Indicator.js';
+import {TechnicalIndicator, TradingSignal} from '../../types/Indicator.js';
 import type {MovingAverage} from '../../trend/MA/MovingAverage.js';
 import type {MovingAverageTypes} from '../../trend/MA/MovingAverageTypes.js';
 import {SMA} from '../../trend/SMA/SMA.js';
@@ -27,6 +27,10 @@ export class AccelerationBands extends TechnicalIndicator<BandsResult, HighLowCl
   readonly #lowerBand: MovingAverage;
   readonly #middleBand: MovingAverage;
   readonly #upperBand: MovingAverage;
+  #previousResult?: BandsResult;
+  #twoPreviousResult?: BandsResult;
+  #lastClose?: number;
+  #previousClose?: number;
 
   constructor(
     public readonly interval: number,
@@ -51,6 +55,17 @@ export class AccelerationBands extends TechnicalIndicator<BandsResult, HighLowCl
     this.#middleBand.update(close, replace);
     this.#upperBand.update(high * (1 + coefficient), replace);
 
+    if (replace) {
+      this.result = this.#previousResult;
+      this.#previousResult = this.#twoPreviousResult;
+      this.#lastClose = this.#previousClose;
+    }
+
+    this.#twoPreviousResult = this.#previousResult;
+    this.#previousResult = this.result;
+    this.#previousClose = this.#lastClose;
+    this.#lastClose = close;
+
     if (this.isStable) {
       return (this.result = {
         lower: this.#lowerBand.getResultOrThrow(),
@@ -64,5 +79,32 @@ export class AccelerationBands extends TechnicalIndicator<BandsResult, HighLowCl
 
   override get isStable(): boolean {
     return this.#middleBand.isStable;
+  }
+
+  protected calculateSignal(result?: BandsResult | null, close?: number) {
+    if (!result || close === undefined) {
+      return TradingSignal.UNKNOWN;
+    }
+    if (close > result.upper) {
+      return TradingSignal.BULLISH;
+    }
+    if (close < result.lower) {
+      return TradingSignal.BEARISH;
+    }
+    return TradingSignal.SIDEWAYS;
+  }
+
+  getSignal(): {
+    state: (typeof TradingSignal)[keyof typeof TradingSignal];
+    hasChanged: boolean;
+  } {
+    const previousState = this.calculateSignal(this.#twoPreviousResult, this.#previousClose);
+    const state = this.calculateSignal(this.#previousResult, this.#lastClose);
+    const hasChanged = previousState !== state;
+
+    return {
+      hasChanged,
+      state,
+    };
   }
 }

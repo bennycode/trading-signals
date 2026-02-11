@@ -1,4 +1,4 @@
-import {TechnicalIndicator} from '../../types/Indicator.js';
+import {TechnicalIndicator, TradingSignal} from '../../types/Indicator.js';
 import type {BandsResult} from '../../types/BandsResult.js';
 import {getAverage, getStandardDeviation, pushUpdate} from '../../util/index.js';
 
@@ -14,6 +14,10 @@ import {getAverage, getStandardDeviation, pushUpdate} from '../../util/index.js'
  */
 export class BollingerBands extends TechnicalIndicator<BandsResult, number> {
   public readonly prices: number[] = [];
+  #previousResult?: BandsResult;
+  #twoPreviousResult?: BandsResult;
+  #lastPrice?: number;
+  #previousPrice?: number;
 
   constructor(
     public readonly interval: number,
@@ -29,6 +33,17 @@ export class BollingerBands extends TechnicalIndicator<BandsResult, number> {
   update(price: number, replace: boolean) {
     const dropOut = pushUpdate(this.prices, replace, price, this.interval);
 
+    if (replace) {
+      this.result = this.#previousResult;
+      this.#previousResult = this.#twoPreviousResult;
+      this.#lastPrice = this.#previousPrice;
+    }
+
+    this.#twoPreviousResult = this.#previousResult;
+    this.#previousResult = this.result;
+    this.#previousPrice = this.#lastPrice;
+    this.#lastPrice = price;
+
     if (dropOut) {
       const middle = getAverage(this.prices);
       const standardDeviation = getStandardDeviation(this.prices, middle);
@@ -41,5 +56,32 @@ export class BollingerBands extends TechnicalIndicator<BandsResult, number> {
     }
 
     return null;
+  }
+
+  protected calculateSignal(result?: BandsResult | null, price?: number) {
+    if (!result || price === undefined) {
+      return TradingSignal.UNKNOWN;
+    }
+    if (price > result.upper) {
+      return TradingSignal.BULLISH;
+    }
+    if (price < result.lower) {
+      return TradingSignal.BEARISH;
+    }
+    return TradingSignal.SIDEWAYS;
+  }
+
+  getSignal(): {
+    state: (typeof TradingSignal)[keyof typeof TradingSignal];
+    hasChanged: boolean;
+  } {
+    const previousState = this.calculateSignal(this.#twoPreviousResult, this.#previousPrice);
+    const state = this.calculateSignal(this.#previousResult, this.#lastPrice);
+    const hasChanged = previousState !== state;
+
+    return {
+      hasChanged,
+      state,
+    };
   }
 }

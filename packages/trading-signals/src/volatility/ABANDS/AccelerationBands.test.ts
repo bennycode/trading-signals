@@ -1,6 +1,7 @@
 import {EMA} from '../../trend/EMA/EMA.js';
 import {NotEnoughDataError} from '../../error/index.js';
 import {SMA} from '../../trend/SMA/SMA.js';
+import {TradingSignal} from '../../types/Indicator.js';
 import {AccelerationBands} from './AccelerationBands.js';
 
 describe('AccelerationBands', () => {
@@ -106,6 +107,75 @@ describe('AccelerationBands', () => {
         ],
         false
       );
+    });
+  });
+
+  describe('getSignal', () => {
+    it('returns UNKNOWN when there is no result', () => {
+      const accBands = new AccelerationBands(5, 4);
+      const signal = accBands.getSignal();
+      expect(signal.state).toBe(TradingSignal.UNKNOWN);
+    });
+
+    it('returns BULLISH when close breaks above the previous upper band', () => {
+      const accBands = new AccelerationBands(5, 4);
+      // 5 stable candles for first result, then spike: signal compares against previous bands
+      for (let i = 0; i < 5; i++) {
+        accBands.add({close: 50, high: 51, low: 49});
+      }
+      accBands.add({close: 80, high: 81, low: 79});
+      const signal = accBands.getSignal();
+      expect(signal.state).toBe(TradingSignal.BULLISH);
+    });
+
+    it('returns BEARISH when close breaks below the previous lower band', () => {
+      const accBands = new AccelerationBands(5, 4);
+      for (let i = 0; i < 5; i++) {
+        accBands.add({close: 50, high: 51, low: 49});
+      }
+      accBands.add({close: 20, high: 21, low: 19});
+      const signal = accBands.getSignal();
+      expect(signal.state).toBe(TradingSignal.BEARISH);
+    });
+
+    it('returns SIDEWAYS when close is between the previous bands', () => {
+      const accBands = new AccelerationBands(5, 4);
+      for (let i = 0; i < 5; i++) {
+        accBands.add({close: 50, high: 51, low: 49});
+      }
+      accBands.add({close: 50, high: 51, low: 49});
+      const signal = accBands.getSignal();
+      expect(signal.state).toBe(TradingSignal.SIDEWAYS);
+    });
+
+    it('tracks signal state changes', () => {
+      const accBands = new AccelerationBands(5, 4);
+      // 6 stable candles: need previous result to exist for non-UNKNOWN signal
+      for (let i = 0; i < 6; i++) {
+        accBands.add({close: 50, high: 51, low: 49});
+      }
+      expect(accBands.getSignal().state).toBe(TradingSignal.SIDEWAYS);
+
+      // Spike above previous upper band (BULLISH)
+      accBands.add({close: 80, high: 81, low: 79});
+      const signal = accBands.getSignal();
+      expect(signal.state).toBe(TradingSignal.BULLISH);
+      expect(signal.hasChanged).toBe(true);
+    });
+
+    it('restores previous signal state on replace', () => {
+      const accBands = new AccelerationBands(5, 4);
+      for (let i = 0; i < 6; i++) {
+        accBands.add({close: 50, high: 51, low: 49});
+      }
+      expect(accBands.getSignal().state).toBe(TradingSignal.SIDEWAYS);
+
+      // Add a spike, then replace it with a normal value
+      accBands.add({close: 80, high: 81, low: 79});
+      expect(accBands.getSignal().state).toBe(TradingSignal.BULLISH);
+
+      accBands.replace({close: 50, high: 51, low: 49});
+      expect(accBands.getSignal().state).toBe(TradingSignal.SIDEWAYS);
     });
   });
 });
