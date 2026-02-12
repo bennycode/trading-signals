@@ -1,11 +1,30 @@
+import Big from 'big.js';
 import axios from 'axios';
 import {ms} from 'ms';
 import {AlpacaExchangeMapper} from './AlpacaExchangeMapper.js';
-import {Exchange, ExchangeCandle, ExchangeCandleImportRequest} from '../core/Exchange.js';
+import {
+  Exchange,
+  type ExchangeBalance,
+  type ExchangeCandle,
+  type ExchangeCandleImportRequest,
+  type ExchangeFeeRate,
+  type ExchangeFill,
+  type ExchangeLimitOrderOptions,
+  type ExchangeMarketOrderOptions,
+  type ExchangeOrderOptions,
+  ExchangeOrderPosition,
+  ExchangeOrderSide,
+  ExchangeOrderType,
+  type ExchangePendingLimitOrder,
+  type ExchangePendingMarketOrder,
+  type ExchangePendingOrder,
+  type ExchangeTradingRules,
+} from '../core/Exchange.js';
 import {TradingPair} from '../core/TradingPair.js';
 import {alpacaWebSocket, AlpacaConnection} from './AlpacaWebSocket.js';
 import {CandleBatcher} from '../candle/CandleBatcher.js';
 import type {MinuteBarMessage} from './api/schema/StreamSchema.js';
+import {OrderStatus} from './api/schema/OrderSchema.js';
 import {AlpacaAPI} from './api/AlpacaAPI.js';
 
 export class AlpacaExchange extends Exchange {
@@ -214,5 +233,201 @@ export class AlpacaExchange extends Exchange {
       alpacaWebSocket.unsubscribeFromBars(topic.connectionId, topic.symbol);
     }
     this.#candleTopics.clear();
+  }
+
+  async #createReliableSymbol(pair: TradingPair): Promise<string> {
+    const isCrypto = await this.#isCryptoSymbol(pair);
+    return this.#createSymbol(pair, isCrypto);
+  }
+
+  /**
+   * Note: The quantity of a position is negative (i.e. -100) if it is a SHORT position.
+   *
+   * @see https://docs.alpaca.markets/reference/getallopenpositions
+   */
+  async listBalances(): Promise<ExchangeBalance[]> {
+    const balances: ExchangeBalance[] = [];
+
+    const positions = await this.#alpacaAPI.getPositions();
+
+    for (const position of positions) {
+      const cashSymbol = 'USD';
+      // A USDT/USD symbol is returned as "USDTUSD" on Alpaca, so we have to adjust this
+      const needsTrimming = position.asset_class === 'crypto' && position.symbol.endsWith(cashSymbol);
+      const currency = needsTrimming ? position.symbol.replace(/USD$/, '') : position.symbol;
+      const side = position.side === 'long' ? ExchangeOrderPosition.LONG : ExchangeOrderPosition.SHORT;
+
+      balances.push({
+        // We are using absolute values here to have positive quantity for SHORT positions
+        available: new Big(position.qty).abs().toFixed(),
+        currency,
+        hold: '0',
+        position: side,
+      });
+    }
+
+    // The Alpaca exchange handles available portfolio cash within the "Account API"
+    // @see https://alpaca.markets/docs/api-references/trading-api/account/
+    const account = await this.#alpacaAPI.getAccount();
+
+    // @see https://docs.alpaca.markets/docs/user-protection#pattern-day-trader-pdt-protection-at-alpaca
+    if (parseFloat(account.last_equity || '0') < 25_000) {
+      console.warn(
+        `Your account isn't entitled for Pattern Day Trader (PDT). Your equity ("${account.last_equity} USD") as of previous trading day at 16:00:00 ET is too low. Read more: https://docs.alpaca.markets/docs/user-protection#pattern-day-trader-pdt-protection-at-alpaca`
+      );
+    }
+
+    balances.push({
+      available: new Big(account.cash).toFixed(),
+      currency: account.currency,
+      hold: '0',
+      position: ExchangeOrderPosition.LONG,
+    });
+
+    return balances;
+  }
+
+  async cancelOpenOrders(pair: TradingPair): Promise<string[]> {
+    const canceledOrders: string[] = [];
+    const symbol = await this.#createReliableSymbol(pair);
+    const openOrders = await this.#alpacaAPI.getOrders({status: 'open', symbols: symbol});
+    const deleteOrders = openOrders.map(openOrder => {
+      canceledOrders.push(openOrder.id);
+      return this.cancelOrderById(pair, openOrder.id);
+    });
+    await Promise.all(deleteOrders);
+    return canceledOrders;
+  }
+
+  async cancelOrderById(_pair: TradingPair, orderId: string): Promise<void> {
+    await this.#alpacaAPI.deleteOrder(orderId);
+  }
+
+  /**
+   * @see https://docs.alpaca.markets/reference/getallorders
+   */
+  async getFills(pair: TradingPair): Promise<ExchangeFill[]> {
+    const symbol = await this.#createReliableSymbol(pair);
+    const orders = await this.#alpacaAPI.getOrders({status: 'closed', symbols: symbol});
+    const filledOrders = orders.filter(order => order.status === OrderStatus.FILLED);
+    return filledOrders.map(order => AlpacaExchangeMapper.toFilledOrder(order, pair));
+  }
+
+  async getFillByOrderId(pair: TradingPair, orderId: string): Promise<ExchangeFill | undefined> {
+    const fills = await this.getFills(pair);
+    return fills.find(fill => fill.order_id === orderId);
+  }
+
+  /**
+   * Notes:
+   * - For "USD" pairs, the minimum order size calculation is: 1/USD asset price.
+   * - You can now buy as little as $1 worth of shares for over 2,000 US equities.
+   *
+   * @see https://docs.alpaca.markets/docs/fractional-trading
+   * @see https://docs.alpaca.markets/docs/crypto-trading-1#minimum-order-size
+   */
+  async getTradingRules(pair: TradingPair): Promise<ExchangeTradingRules> {
+    const isCrypto = await this.#isCryptoSymbol(pair);
+    const symbol = this.#createSymbol(pair, isCrypto);
+    const assetClass = isCrypto ? 'crypto' : 'us_equity';
+    const assets = await this.#alpacaAPI.getAssets({asset_class: assetClass});
+    const asset = assets.find(a => a.symbol === symbol);
+
+    if (asset) {
+      if (asset.class === 'crypto' && asset.min_order_size && asset.min_trade_increment && asset.price_increment) {
+        return {
+          base_increment: asset.min_trade_increment,
+          base_max_size: Number.MAX_SAFE_INTEGER.toString(),
+          base_min_size: asset.min_order_size,
+          counter_increment: asset.price_increment,
+          counter_min_size: pair.counter === 'USD' ? '1' : '0',
+          pair,
+        };
+      }
+      return {
+        base_increment: '0.00000001',
+        base_max_size: Number.MAX_SAFE_INTEGER.toString(),
+        base_min_size: '0',
+        counter_increment: '0.01',
+        counter_min_size: '1',
+        pair,
+      };
+    }
+
+    throw new Error(`Could not find trading rules for symbol "${symbol}" of asset class "${assetClass}".`);
+  }
+
+  /**
+   * The crypto fee will be charged on the credited crypto asset/fiat (what you receive) per trade.
+   *
+   * @see https://docs.alpaca.markets/docs/crypto-fees
+   * @see https://files.alpaca.markets/disclosures/library/BrokFeeSched.pdf
+   */
+  async getFeeRates(_pair: TradingPair): Promise<ExchangeFeeRate> {
+    // TODO: Refine according to "30-Day Crypto Volume (USD)" and make fee rate dependant on crypto or stocks
+    return {
+      [ExchangeOrderType.MARKET]: new Big(0.0025),
+      [ExchangeOrderType.LIMIT]: new Big(0.0015),
+    };
+  }
+
+  /**
+   * Note: Alpaca supports SHORT orders but does not support holding a LONG & SHORT order simultaneously.
+   *
+   * @see https://docs.alpaca.markets/docs/working-with-orders#place-new-orders
+   */
+  async placeOrder(pair: TradingPair, options: ExchangeLimitOrderOptions): Promise<ExchangePendingLimitOrder>;
+  async placeOrder(pair: TradingPair, options: ExchangeMarketOrderOptions): Promise<ExchangePendingMarketOrder>;
+  async placeOrder(pair: TradingPair, options: ExchangeOrderOptions): Promise<ExchangePendingOrder> {
+    const isCrypto = await this.#isCryptoSymbol(pair);
+    const symbol = this.#createSymbol(pair, isCrypto);
+    // Cannot use 'gtc' for stocks because fractional orders must be 'day' orders (error code: 42210000)
+    // On the other hand, crypto orders cannot use 'day' and must be placed with 'gtc' (error code: 42210000)
+    const time_in_force = isCrypto ? 'gtc' : 'day';
+    const side = options.side === ExchangeOrderSide.BUY ? 'buy' : 'sell';
+    const type = options.type === ExchangeOrderType.MARKET ? 'market' : 'limit';
+
+    const config: {
+      extended_hours?: boolean;
+      limit_price?: string;
+      notional?: string;
+      qty?: string;
+      side: string;
+      symbol: string;
+      time_in_force: string;
+      type: string;
+    } = {
+      side,
+      symbol,
+      time_in_force,
+      type,
+    };
+
+    if (options.sizeInCounter) {
+      config.notional = options.size;
+    } else {
+      config.qty = options.size;
+    }
+
+    if (options.type === ExchangeOrderType.LIMIT) {
+      config.limit_price = options.price;
+    }
+
+    // @see https://docs.alpaca.markets/docs/orders-at-alpaca#submitting-an-extended-hours-eligible-order
+    const isEligibleForExtendedHours = type === 'limit' && time_in_force === 'day';
+    if (isEligibleForExtendedHours) {
+      config.extended_hours = true;
+    }
+
+    const order = await this.#alpacaAPI.postOrder(config);
+    return AlpacaExchangeMapper.toExchangePendingOrder(order, pair, options);
+  }
+
+  getMarkdownLink(): string {
+    return '[Alpaca](https://alpaca.markets/)';
+  }
+
+  getTradingLink(pair: TradingPair): string {
+    return `https://app.alpaca.markets/trade/${pair.base}`;
   }
 }
