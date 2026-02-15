@@ -1,3 +1,4 @@
+import Big from 'big.js';
 import {EventEmitter} from 'node:events';
 import type {TradingPair} from './TradingPair.js';
 import {z} from 'zod';
@@ -144,15 +145,101 @@ export interface ExchangeLimitOrderOptions extends ExchangeOrderBase {
 }
 
 export type ExchangeOrderOptions = ExchangeMarketOrderOptions | ExchangeLimitOrderOptions;
+
+export type ExchangePendingOrder = ExchangePendingLimitOrder | ExchangePendingMarketOrder;
+
+export interface ExchangeBalance {
+  /** How much of the position is available */
+  available: string;
+  /** Asset/Symbol, Examples: "BTC", "EUR" or "TSLA" */
+  currency: string;
+  /** How much of the position is in transit (i.e. part of an order that has to be filled) */
+  hold: string;
+  /** Is it a long or short position? */
+  position: ExchangeOrderPosition;
+}
+
+export interface ExchangeAvailableBalance {
+  base: Big;
+  counter: Big;
+}
+
+export interface ExchangeTradingRules {
+  /** Steps in which the quantity can be incremented */
+  base_increment: string;
+  /** Maximum quantity that can be bought */
+  base_max_size: string;
+  /** Minimum quantity that can be bought */
+  base_min_size: string;
+  /** Steps in which the price can be incremented */
+  counter_increment: string;
+  /** Minimum total price */
+  counter_min_size: string;
+  pair: TradingPair;
+}
+
 export abstract class Exchange extends EventEmitter {
   constructor(public loggerName: string) {
     super();
   }
 
   /**
+   * If there are no recently filled orders, this function can be used to assume if you have recently bought or sold an
+   * asset by checking your account balance and current market price.
+   *
+   * @param baseBalance - Asset (i.e. "TSLA")
+   * @param counterBalance - Balance that you used to buy the asset (i.e. "USD")
+   * @param priceInCounter - Price of the asset
+   */
+  static toExchangeOrderSide(
+    baseBalance: Big.BigSource,
+    counterBalance: Big.BigSource,
+    priceInCounter: Big.BigSource
+  ): ExchangeOrderSide {
+    const currentBaseWorthInCounter = new Big(baseBalance).mul(priceInCounter);
+    const currentCounterWorthInCounter = new Big(counterBalance);
+    if (currentBaseWorthInCounter.gt(currentCounterWorthInCounter)) {
+      return ExchangeOrderSide.BUY;
+    }
+    return ExchangeOrderSide.SELL;
+  }
+
+  /**
+   * Lists all positions on your account.
+   *
+   * Example:
+   * [{ available: '548.20', currency: 'EUR', hold: '0.00000000' }]
+   */
+  abstract listBalances(): Promise<ExchangeBalance[]>;
+
+  /**
+   * Cancel pending orders.
+   *
+   * @param pair - Trading pair
+   * @returns The IDs of all canceled orders
+   */
+  abstract cancelOpenOrders(pair: TradingPair): Promise<string[]>;
+
+  abstract cancelOrderById(pair: TradingPair, orderId: string): Promise<void>;
+
+  /**
    * Get candles within a specified time period.
    */
   abstract getCandles(pair: TradingPair, request: ExchangeCandleImportRequest): Promise<ExchangeCandle[]>;
+
+  /**
+   * Find the last filled order for a pair/symbol.
+   */
+  async getLatestFill(pair: TradingPair, side: ExchangeOrderSide): Promise<ExchangeFill | undefined> {
+    const fills = await this.getFills(pair);
+    const fill = fills.find(fill => fill.side === side);
+
+    if (fill) {
+      return fill;
+    }
+
+    return undefined;
+  }
 
   /**
    * Get the latest candle for a given pair and interval.
@@ -161,20 +248,20 @@ export abstract class Exchange extends EventEmitter {
   abstract getLatestCandle(pair: TradingPair, intervalInMillis: number): Promise<ExchangeCandle>;
 
   /**
-   * Returns an identifiable name for the exchange.
+   * Get all fills. Most recent being the first item in the returned array.
+   *
+   * @param pair - Trading pair
    */
-  abstract getName(): string;
+  abstract getFills(pair: TradingPair): Promise<ExchangeFill[]>;
 
   /**
-   * Get the smallest supported candle interval in milliseconds.
+   * Returns a filled order (merged when an order got split into several fills) and `undefined` if the order is not yet
+   * filled.
+   *
+   * @param pair - Trading pair
+   * @param orderId - Order ID to look up
    */
-  abstract getSmallestInterval(): number;
-
-  /**
-   * Get the exchange's time in ISO 8601 format. The timezone is always zero UTC offset, as denoted by the suffix "Z",
-   * i.e. "2020-09-11T14:04:33.769Z".
-   */
-  abstract getTime(): Promise<string>;
+  abstract getFillByOrderId(pair: TradingPair, orderId: string): Promise<ExchangeFill | undefined>;
 
   /**
    * Subscribe to real-time candle updates via WebSocket.
@@ -193,4 +280,129 @@ export abstract class Exchange extends EventEmitter {
    * @param topicId - The subscription identifier to unsubscribe
    */
   abstract unwatchCandles(topicId: string): void;
+
+  abstract getTradingRules(pair: TradingPair): Promise<ExchangeTradingRules>;
+
+  /**
+   * Returns the trading fees for a specific pair/symbol.
+   *
+   * @see https://www.investopedia.com/articles/active-trading/042414/what-makertaker-fees-mean-you.asp
+   */
+  abstract getFeeRates(pair: TradingPair): Promise<ExchangeFeeRate>;
+
+  /**
+   * Returns the fee for a specific type of order.
+   */
+  async getFeeRate(pair: TradingPair, orderType: ExchangeOrderType): Promise<Big> {
+    const feeRate = await this.getFeeRates(pair);
+    return feeRate[orderType];
+  }
+
+  /**
+   * Returns the positions that your account is holding on the exchange.
+   */
+  async getAvailableBalances(pair: TradingPair): Promise<ExchangeAvailableBalance> {
+    const balances = await this.listBalances();
+
+    let baseBalance = balances.find(balance => balance.currency === pair.base);
+    let counterBalance = balances.find(balance => balance.currency === pair.counter);
+
+    if (!baseBalance) {
+      baseBalance = {
+        available: '0',
+        currency: pair.base,
+        hold: '0',
+        position: ExchangeOrderPosition.LONG,
+      };
+    }
+
+    if (!counterBalance) {
+      counterBalance = {
+        available: '0',
+        currency: pair.counter,
+        hold: '0',
+        position: ExchangeOrderPosition.LONG,
+      };
+    }
+
+    return {
+      base: new Big(baseBalance.available),
+      counter: new Big(counterBalance.available),
+    };
+  }
+
+  /**
+   * Get the exchange's time in ISO 8601 format. The timezone is always zero UTC offset, as denoted by the suffix "Z",
+   * i.e. "2020-09-11T14:04:33.769Z".
+   */
+  abstract getTime(): Promise<string>;
+
+  /**
+   * Generic function to place an order.
+   * @protected Please use `placeLimitOrder` or `placeMarketOrder`.
+   */
+  protected abstract placeOrder(
+    pair: TradingPair,
+    options: ExchangeLimitOrderOptions
+  ): Promise<ExchangePendingLimitOrder>;
+  protected abstract placeOrder(
+    pair: TradingPair,
+    options: ExchangeMarketOrderOptions
+  ): Promise<ExchangePendingMarketOrder>;
+  protected abstract placeOrder(pair: TradingPair, options: ExchangeOrderOptions): Promise<ExchangePendingOrder>;
+
+  /**
+   * Places a LIMIT order.
+   * @see https://www.investopedia.com/terms/l/limitorder.asp
+   */
+  placeLimitOrder(
+    pair: TradingPair,
+    options: Omit<ExchangeLimitOrderOptions, 'type' | 'sizeInCounter'>
+  ): Promise<ExchangePendingLimitOrder> {
+    return this.placeOrder(pair, {
+      price: options.price,
+      side: options.side,
+      size: options.size,
+      sizeInCounter: false,
+      type: ExchangeOrderType.LIMIT,
+    });
+  }
+
+  /**
+   * Places a MARKET order.
+   * @see https://www.investopedia.com/terms/m/marketorder.asp
+   */
+  placeMarketOrder(
+    pair: TradingPair,
+    options: Omit<ExchangeMarketOrderOptions, 'type'>
+  ): Promise<ExchangePendingMarketOrder> {
+    return this.placeOrder(pair, {
+      side: options.side,
+      size: options.size,
+      sizeInCounter: options.sizeInCounter,
+      type: ExchangeOrderType.MARKET,
+    });
+  }
+
+  /**
+   * Disconnects the client from any pending connection with the exchange (mostly open WebSockets).
+   */
+  abstract disconnect(): void;
+
+  abstract getTradingLink(pair: TradingPair): string;
+
+  /**
+   * Returns a link to the exchange rendered with Markdown syntax.
+   */
+  abstract getMarkdownLink(): string;
+
+  /**
+   * Returns an identifiable name for the exchange.
+   */
+  abstract getName(): string;
+
+  /**
+   * Get the smallest supported candle interval in milliseconds.
+   */
+  abstract getSmallestInterval(): number;
 }
