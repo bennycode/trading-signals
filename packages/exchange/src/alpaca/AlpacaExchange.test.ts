@@ -3,6 +3,7 @@ import {describe, expect, it, vi, beforeEach} from 'vitest';
 import {TradingPair} from '../core/TradingPair.js';
 import {ExchangeOrderPosition, ExchangeOrderSide, ExchangeOrderType} from '../core/Exchange.js';
 import {AssetClass, OrderSide, OrderStatus, OrderType} from './api/schema/OrderSchema.js';
+import {PositionSide} from './api/schema/PositionSchema.js';
 
 // Shared mock references
 const mockMethods = {
@@ -82,7 +83,7 @@ describe.sequential('AlpacaExchange', () => {
   describe('listBalances', () => {
     it('returns positions and account cash', async () => {
       mockMethods.getPositions.mockResolvedValue([
-        {asset_class: 'us_equity', qty: '3', side: 'long', symbol: 'SHOP'},
+        {asset_class: 'us_equity', qty: '3', side: PositionSide.LONG, symbol: 'SHOP'},
       ]);
       mockMethods.getAccount.mockResolvedValue({cash: '500.50', currency: 'USD', last_equity: '30000'});
 
@@ -100,7 +101,7 @@ describe.sequential('AlpacaExchange', () => {
 
     it('trims crypto USD suffix from symbol', async () => {
       mockMethods.getPositions.mockResolvedValue([
-        {asset_class: 'crypto', qty: '100', side: 'long', symbol: 'USDTUSD'},
+        {asset_class: 'crypto', qty: '100', side: PositionSide.LONG, symbol: 'USDTUSD'},
       ]);
       mockMethods.getAccount.mockResolvedValue({cash: '0', currency: 'USD', last_equity: '30000'});
 
@@ -110,7 +111,7 @@ describe.sequential('AlpacaExchange', () => {
 
     it('uses absolute values for SHORT positions', async () => {
       mockMethods.getPositions.mockResolvedValue([
-        {asset_class: 'us_equity', qty: '-3', side: 'short', symbol: 'TSLA'},
+        {asset_class: 'us_equity', qty: '-3', side: PositionSide.SHORT, symbol: 'TSLA'},
       ]);
       mockMethods.getAccount.mockResolvedValue({cash: '0', currency: 'USD', last_equity: '30000'});
 
@@ -121,6 +122,15 @@ describe.sequential('AlpacaExchange', () => {
         hold: '0',
         position: ExchangeOrderPosition.SHORT,
       });
+    });
+
+    it('throws an error when Alpaca returns an unknown position side', async () => {
+      mockMethods.getPositions.mockResolvedValue([
+        {asset_class: 'us_equity', qty: '3', side: 'unknown', symbol: 'SHOP'},
+      ]);
+      mockMethods.getAccount.mockResolvedValue({cash: '0', currency: 'USD', last_equity: '30000'});
+
+      await expect(exchange.listBalances()).rejects.toThrow();
     });
   });
 
