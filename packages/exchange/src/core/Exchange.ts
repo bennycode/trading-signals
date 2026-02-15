@@ -230,12 +230,15 @@ export abstract class Exchange extends EventEmitter {
   /**
    * Find the last filled order for a pair/symbol.
    */
-  async getLatestFill(pair: TradingPair, side: ExchangeOrderSide): Promise<ExchangeFill | void> {
+  async getLatestFill(pair: TradingPair, side: ExchangeOrderSide): Promise<ExchangeFill | undefined> {
     const fills = await this.getFills(pair);
     const fill = fills.find(fill => fill.side === side);
+
     if (fill) {
-      return this.getFillByOrderId(pair, fill.order_id);
+      return fill;
     }
+
+    return undefined;
   }
 
   /**
