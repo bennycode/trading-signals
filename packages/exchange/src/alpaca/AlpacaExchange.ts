@@ -376,9 +376,9 @@ export class AlpacaExchange extends Exchange {
    *
    * @see https://docs.alpaca.markets/docs/working-with-orders#place-new-orders
    */
-  async placeOrder(pair: TradingPair, options: ExchangeLimitOrderOptions): Promise<ExchangePendingLimitOrder>;
-  async placeOrder(pair: TradingPair, options: ExchangeMarketOrderOptions): Promise<ExchangePendingMarketOrder>;
-  async placeOrder(pair: TradingPair, options: ExchangeOrderOptions): Promise<ExchangePendingOrder> {
+  protected override async placeOrder(pair: TradingPair, options: ExchangeLimitOrderOptions): Promise<ExchangePendingLimitOrder>;
+  protected override async placeOrder(pair: TradingPair, options: ExchangeMarketOrderOptions): Promise<ExchangePendingMarketOrder>;
+  protected override async placeOrder(pair: TradingPair, options: ExchangeOrderOptions): Promise<ExchangePendingOrder> {
     const isCrypto = await this.#isCryptoSymbol(pair);
     const symbol = this.#createSymbol(pair, isCrypto);
     // Cannot use 'gtc' for stocks because fractional orders must be 'day' orders (error code: 42210000)
