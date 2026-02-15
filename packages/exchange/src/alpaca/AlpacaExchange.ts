@@ -270,13 +270,6 @@ export class AlpacaExchange extends Exchange {
     // @see https://alpaca.markets/docs/api-references/trading-api/account/
     const account = await this.#alpacaAPI.getAccount();
 
-    // @see https://docs.alpaca.markets/docs/user-protection#pattern-day-trader-pdt-protection-at-alpaca
-    if (parseFloat(account.last_equity || '0') < 25_000) {
-      console.warn(
-        `Your account isn't entitled for Pattern Day Trader (PDT). Your equity ("${account.last_equity} USD") as of previous trading day at 16:00:00 ET is too low. Read more: https://docs.alpaca.markets/docs/user-protection#pattern-day-trader-pdt-protection-at-alpaca`
-      );
-    }
-
     balances.push({
       available: new Big(account.cash).toFixed(),
       currency: account.currency,
