@@ -26,6 +26,7 @@ import {CandleBatcher} from '../candle/CandleBatcher.js';
 import type {MinuteBarMessage} from './api/schema/StreamSchema.js';
 import {OrderStatus} from './api/schema/OrderSchema.js';
 import {AlpacaAPI} from './api/AlpacaAPI.js';
+import {PositionSide} from './api/schema/PositionSchema.js';
 
 export class AlpacaExchange extends Exchange {
   readonly #alpacaAPI: AlpacaAPI;
@@ -255,7 +256,16 @@ export class AlpacaExchange extends Exchange {
       // A USDT/USD symbol is returned as "USDTUSD" on Alpaca, so we have to adjust this
       const needsTrimming = position.asset_class === 'crypto' && position.symbol.endsWith(cashSymbol);
       const currency = needsTrimming ? position.symbol.replace(/USD$/, '') : position.symbol;
-      const side = position.side === 'long' ? ExchangeOrderPosition.LONG : ExchangeOrderPosition.SHORT;
+
+      let side: ExchangeOrderPosition;
+
+      if (position.side === PositionSide.LONG) {
+        side = ExchangeOrderPosition.LONG;
+      } else if (position.side === PositionSide.SHORT) {
+        side = ExchangeOrderPosition.SHORT;
+      } else {
+        throw new Error(`Unknown position side "${position.side}" for symbol "${position.symbol}"`);
+      }
 
       balances.push({
         // We are using absolute values here to have positive quantity for SHORT positions
