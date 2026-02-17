@@ -9,6 +9,7 @@ export default defineConfig({
   test: {
     bail: 1,
     coverage: {
+      exclude: ['src/start/**'],
       include: ['src/**'],
       provider: 'v8',
       reporter: ['html', 'lcov', 'text'],

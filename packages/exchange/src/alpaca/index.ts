@@ -1,6 +1,7 @@
 export * from './AlpacaExchange.js';
 export * from './AlpacaExchangeMapper.js';
 export * from './getAlpacaClient.js';
+export * from './getAlpacaRules.js';
 export * from './api/schema/AccountSchema.js';
 export * from './api/schema/AssetSchema.js';
 export * from './api/schema/BarSchema.js';
