@@ -27,6 +27,8 @@ import type {MinuteBarMessage} from './api/schema/StreamSchema.js';
 import {OrderStatus} from './api/schema/OrderSchema.js';
 import {AlpacaAPI} from './api/AlpacaAPI.js';
 import {PositionSide} from './api/schema/PositionSchema.js';
+import {alpacaTradingWebSocket, type AlpacaTradingConnection} from './AlpacaTradingWebSocket.js';
+import {TradeUpdateEvent, type TradeUpdateMessage} from './api/schema/TradingStreamSchema.js';
 
 export class AlpacaExchange extends Exchange {
   readonly #alpacaAPI: AlpacaAPI;
@@ -35,7 +37,10 @@ export class AlpacaExchange extends Exchange {
   static readonly CRYPTO_STREAM_SOURCE = `v1beta3/crypto/us`;
 
   #candleTopics: Map<string, {symbol: string; connectionId: string}> = new Map();
+  #orderTopics: Map<string, (message: TradeUpdateMessage) => void> = new Map();
+  #tradingConnectionId: string | null = null;
   readonly #connectStream: (source: string) => Promise<AlpacaConnection>;
+  readonly #connectTradingStream: () => Promise<AlpacaTradingConnection>;
 
   constructor(options: {apiKey: string; apiSecret: string; usePaperTrading: boolean}) {
     super(AlpacaExchange.NAME);
@@ -49,6 +54,10 @@ export class AlpacaExchange extends Exchange {
     // Wrap Stream connection, so that nothing async happens when the "constructor" of this class is being called
     this.#connectStream = async (source: string): Promise<AlpacaConnection> => {
       return alpacaWebSocket.connect(options, source);
+    };
+
+    this.#connectTradingStream = async (): Promise<AlpacaTradingConnection> => {
+      return alpacaTradingWebSocket.connect(options);
     };
   }
 
@@ -229,11 +238,54 @@ export class AlpacaExchange extends Exchange {
     return topicId;
   }
 
+  /**
+   * Subscribe to real-time order fill updates via Alpaca's trading WebSocket stream.
+   * The stream is account-wide and delivers events for all orders.
+   * Only `fill` events are emitted as ExchangeFill objects.
+   *
+   * @see https://docs.alpaca.markets/docs/websocket-streaming
+   */
+  async watchOrders(): Promise<string> {
+    const topicId = crypto.randomUUID();
+
+    if (!this.#tradingConnectionId) {
+      const connection = await this.#connectTradingStream();
+      this.#tradingConnectionId = connection.connectionId;
+    }
+
+    const cb = (message: TradeUpdateMessage) => {
+      if (message.event === TradeUpdateEvent.FILL) {
+        const pair = AlpacaExchangeMapper.symbolToPair(message.order.symbol, message.order.asset_class);
+        const fill = AlpacaExchangeMapper.toFilledOrder(message.order, pair);
+        this.emit(topicId, fill);
+      }
+    };
+
+    alpacaTradingWebSocket.onTradeUpdate(this.#tradingConnectionId, cb);
+    this.#orderTopics.set(topicId, cb);
+    return topicId;
+  }
+
+  unwatchOrders(topicId: string): void {
+    this.removeAllListeners(topicId);
+    const cb = this.#orderTopics.get(topicId);
+    if (cb && this.#tradingConnectionId) {
+      alpacaTradingWebSocket.offTradeUpdate(this.#tradingConnectionId, cb);
+      this.#orderTopics.delete(topicId);
+    }
+  }
+
   disconnect(): void {
     for (const topic of this.#candleTopics.values()) {
       alpacaWebSocket.unsubscribeFromBars(topic.connectionId, topic.symbol);
     }
     this.#candleTopics.clear();
+
+    if (this.#tradingConnectionId) {
+      alpacaTradingWebSocket.disconnect(this.#tradingConnectionId);
+      this.#tradingConnectionId = null;
+    }
+    this.#orderTopics.clear();
   }
 
   async #createReliableSymbol(pair: TradingPair): Promise<string> {

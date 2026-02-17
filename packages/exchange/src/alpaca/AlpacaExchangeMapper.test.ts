@@ -41,6 +41,20 @@ describe('AlpacaExchangeMapper', () => {
     });
   });
 
+  describe('symbolToPair', () => {
+    it('maps a stock symbol to a TradingPair with USD counter', () => {
+      const pair = AlpacaExchangeMapper.symbolToPair('AAPL', 'us_equity');
+      expect(pair.base).toBe('AAPL');
+      expect(pair.counter).toBe('USD');
+    });
+
+    it('maps a crypto symbol to a TradingPair by splitting on /', () => {
+      const pair = AlpacaExchangeMapper.symbolToPair('BTC/USD', 'crypto');
+      expect(pair.base).toBe('BTC');
+      expect(pair.counter).toBe('USD');
+    });
+  });
+
   describe('toFilledOrder', () => {
     it('maps a filled BUY order', () => {
       const order = {

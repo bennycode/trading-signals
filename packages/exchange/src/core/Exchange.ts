@@ -281,6 +281,21 @@ export abstract class Exchange extends EventEmitter {
    */
   abstract unwatchCandles(topicId: string): void;
 
+  /**
+   * Subscribe to real-time order fill updates via WebSocket.
+   * Emits ExchangeFill objects via EventEmitter with the returned topicId as the event name.
+   *
+   * @returns The generated topicId (UUID) for this subscription
+   */
+  abstract watchOrders(): Promise<string>;
+
+  /**
+   * Unsubscribe from real-time order fill updates.
+   *
+   * @param topicId - The subscription identifier to unsubscribe
+   */
+  abstract unwatchOrders(topicId: string): void;
+
   abstract getTradingRules(pair: TradingPair): Promise<ExchangeTradingRules>;
 
   /**

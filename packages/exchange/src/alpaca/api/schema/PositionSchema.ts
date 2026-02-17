@@ -1,4 +1,5 @@
 import {z} from 'zod';
+import type {AssetClassValue} from './OrderSchema.js';
 
 export type Position = z.infer<typeof PositionSchema>;
 
@@ -10,7 +11,7 @@ export enum PositionSide {
 
 /** @see https://docs.alpaca.markets/reference/getallopenpositions */
 export const PositionSchema = z.looseObject({
-  asset_class: z.string(),
+  asset_class: z.string() as z.ZodType<AssetClassValue>,
   asset_id: z.string(),
   avg_entry_price: z.string(),
   change_today: z.string(),

@@ -4,6 +4,7 @@ import {TradingPair} from '../core/TradingPair.js';
 import {ExchangeOrderPosition, ExchangeOrderSide, ExchangeOrderType} from '../core/Exchange.js';
 import {AssetClass, OrderSide, OrderStatus, OrderType} from './api/schema/OrderSchema.js';
 import {PositionSide} from './api/schema/PositionSchema.js';
+import {TradeUpdateEvent} from './api/schema/TradingStreamSchema.js';
 
 // Shared mock references
 const mockMethods = {
@@ -42,6 +43,17 @@ vi.mock('./AlpacaWebSocket.js', () => ({
     subscribeToBars: vi.fn(),
     unsubscribeFromBars: vi.fn(),
   },
+}));
+
+const mockTradingWebSocket = {
+  connect: vi.fn().mockResolvedValue({connectionId: 'trading-conn', stream: {}}),
+  disconnect: vi.fn(),
+  offTradeUpdate: vi.fn(),
+  onTradeUpdate: vi.fn(),
+};
+
+vi.mock('./AlpacaTradingWebSocket.js', () => ({
+  alpacaTradingWebSocket: mockTradingWebSocket,
 }));
 
 // Import after mocking
@@ -350,6 +362,140 @@ describe.sequential('AlpacaExchange', () => {
       expect(mockMethods.deleteOrder).toHaveBeenCalledTimes(2);
       expect(mockMethods.deleteOrder).toHaveBeenCalledWith('open-1');
       expect(mockMethods.deleteOrder).toHaveBeenCalledWith('open-2');
+    });
+  });
+
+  describe('watchOrders', () => {
+    it('returns a topic ID and establishes a trading stream connection', async () => {
+      const topicId = await exchange.watchOrders();
+
+      expect(topicId).toBeDefined();
+      expect(mockTradingWebSocket.connect).toHaveBeenCalledTimes(1);
+      expect(mockTradingWebSocket.onTradeUpdate).toHaveBeenCalledWith('trading-conn', expect.any(Function));
+    });
+
+    it('reuses the existing connection on subsequent calls', async () => {
+      await exchange.watchOrders();
+      await exchange.watchOrders();
+
+      expect(mockTradingWebSocket.connect).toHaveBeenCalledTimes(1);
+      expect(mockTradingWebSocket.onTradeUpdate).toHaveBeenCalledTimes(2);
+    });
+
+    it('emits ExchangeFill on fill events', async () => {
+      const topicId = await exchange.watchOrders();
+
+      const fillHandler = vi.fn();
+      exchange.on(topicId, fillHandler);
+
+      // Get the registered callback and simulate a fill event
+      const registeredCb = mockTradingWebSocket.onTradeUpdate.mock.calls[0]![1];
+      registeredCb({
+        event: TradeUpdateEvent.FILL,
+        order: {
+          asset_class: AssetClass.US_EQUITY,
+          asset_id: 'test-asset',
+          canceled_at: null,
+          client_order_id: 'test-client',
+          created_at: '2025-01-15T14:30:00.000Z',
+          expired_at: null,
+          extended_hours: false,
+          failed_at: null,
+          filled_at: '2025-01-15T14:30:01.123Z',
+          filled_avg_price: '150.25',
+          filled_qty: '10',
+          id: 'order-fill-1',
+          legs: null,
+          limit_price: null,
+          notional: null,
+          qty: '10',
+          replaced_at: null,
+          replaced_by: null,
+          replaces: null,
+          side: OrderSide.BUY,
+          status: OrderStatus.FILLED,
+          stop_price: null,
+          submitted_at: '2025-01-15T14:30:00.001Z',
+          symbol: 'AAPL',
+          time_in_force: 'day',
+          type: OrderType.MARKET,
+          updated_at: '2025-01-15T14:30:01.123Z',
+        },
+        price: '150.25',
+        qty: '10',
+        timestamp: '2025-01-15T14:30:01.123Z',
+      });
+
+      expect(fillHandler).toHaveBeenCalledTimes(1);
+      expect(fillHandler).toHaveBeenCalledWith(
+        expect.objectContaining({
+          order_id: 'order-fill-1',
+          price: '150.25',
+          side: ExchangeOrderSide.BUY,
+          size: '10',
+        })
+      );
+    });
+
+    it('does not emit on non-fill events', async () => {
+      const topicId = await exchange.watchOrders();
+
+      const fillHandler = vi.fn();
+      exchange.on(topicId, fillHandler);
+
+      const registeredCb = mockTradingWebSocket.onTradeUpdate.mock.calls[0]![1];
+      registeredCb({
+        event: TradeUpdateEvent.NEW,
+        order: {
+          asset_class: AssetClass.US_EQUITY,
+          asset_id: 'test-asset',
+          canceled_at: null,
+          client_order_id: 'test-client',
+          created_at: '2025-01-15T14:30:00.000Z',
+          expired_at: null,
+          extended_hours: false,
+          failed_at: null,
+          filled_at: null,
+          filled_avg_price: null,
+          filled_qty: '0',
+          id: 'order-new-1',
+          legs: null,
+          limit_price: '150',
+          notional: null,
+          qty: '10',
+          replaced_at: null,
+          replaced_by: null,
+          replaces: null,
+          side: OrderSide.BUY,
+          status: 'new',
+          stop_price: null,
+          submitted_at: '2025-01-15T14:30:00.001Z',
+          symbol: 'AAPL',
+          time_in_force: 'day',
+          type: OrderType.LIMIT,
+          updated_at: '2025-01-15T14:30:00.001Z',
+        },
+      });
+
+      expect(fillHandler).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('unwatchOrders', () => {
+    it('removes the listener and cleans up', async () => {
+      const topicId = await exchange.watchOrders();
+      exchange.unwatchOrders(topicId);
+
+      expect(mockTradingWebSocket.offTradeUpdate).toHaveBeenCalledWith('trading-conn', expect.any(Function));
+    });
+  });
+
+  describe('disconnect', () => {
+    it('cleans up trading stream connection', async () => {
+      await exchange.watchOrders();
+      exchange.disconnect();
+
+      expect(mockTradingWebSocket.disconnect).toHaveBeenCalledWith('trading-conn');
     });
   });
 });
