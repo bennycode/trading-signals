@@ -250,7 +250,7 @@ describe.sequential('AlpacaExchange', () => {
       });
     });
 
-    it('places a stock LIMIT SELL order with extended hours', async () => {
+    it('places a stock LIMIT SELL order with gtc for whole shares', async () => {
       mockMethods.postOrder.mockResolvedValue({
         id: 'order-456',
         limit_price: '100',
@@ -270,9 +270,38 @@ describe.sequential('AlpacaExchange', () => {
       expect(order.type).toBe(ExchangeOrderType.LIMIT);
       expect(order.id).toBe('order-456');
       expect(mockMethods.postOrder).toHaveBeenCalledWith({
-        extended_hours: true,
         limit_price: '100',
         qty: '5',
+        side: 'sell',
+        symbol: 'SHOP',
+        time_in_force: 'gtc',
+        type: 'limit',
+      });
+    });
+
+    it('places a stock LIMIT SELL order with day and extended hours for fractional shares', async () => {
+      mockMethods.postOrder.mockResolvedValue({
+        id: 'order-frac',
+        limit_price: '100',
+        notional: null,
+        qty: '5.5',
+        side: OrderSide.SELL,
+        type: OrderType.LIMIT,
+      });
+
+      const pair = new TradingPair('SHOP', 'USD');
+      const order = await exchange.placeLimitOrder(pair, {
+        side: ExchangeOrderSide.SELL,
+        size: '5.5',
+        price: '100',
+      });
+
+      expect(order.type).toBe(ExchangeOrderType.LIMIT);
+      expect(order.id).toBe('order-frac');
+      expect(mockMethods.postOrder).toHaveBeenCalledWith({
+        extended_hours: true,
+        limit_price: '100',
+        qty: '5.5',
         side: 'sell',
         symbol: 'SHOP',
         time_in_force: 'day',

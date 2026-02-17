@@ -391,9 +391,11 @@ export class AlpacaExchange extends Exchange {
   protected override async placeOrder(pair: TradingPair, options: ExchangeOrderOptions): Promise<ExchangePendingOrder> {
     const isCrypto = await this.#isCryptoSymbol(pair);
     const symbol = this.#createSymbol(pair, isCrypto);
-    // Cannot use 'gtc' for stocks because fractional orders must be 'day' orders (error code: 42210000)
-    // On the other hand, crypto orders cannot use 'day' and must be placed with 'gtc' (error code: 42210000)
-    const time_in_force = isCrypto ? 'gtc' : 'day';
+    // Crypto orders cannot use 'day' and must be placed with 'gtc' (error code: 42210000)
+    // Stock fractional and notional orders must use 'day' (error code: 42210000), whole share orders can use 'gtc'
+    // @see https://docs.alpaca.markets/docs/fractional-trading
+    const isFractional = options.sizeInCounter || options.size.includes('.');
+    const time_in_force = isCrypto || !isFractional ? 'gtc' : 'day';
     const side = options.side === ExchangeOrderSide.BUY ? 'buy' : 'sell';
     const type = options.type === ExchangeOrderType.MARKET ? 'market' : 'limit';
 
