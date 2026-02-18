@@ -352,9 +352,9 @@ export class BacktestExecutor {
 
   /**
    * Rounds a value down to the nearest multiple of the given increment.
-   * For example, roundDown(0.123456, 0.0001) returns 0.1234.
+   * For example, roundDownToIncrement(0.123456, 0.0001) returns 0.1234.
    */
-  #roundDown(value: Big, increment: Big): Big {
+  #roundDownToIncrement(value: Big, increment: Big): Big {
     return value.div(increment).round(0, Big.roundDown).mul(increment);
   }
 
@@ -369,14 +369,14 @@ export class BacktestExecutor {
     const counterIncrement = new Big(rules.counter_increment);
 
     // Round size down to the nearest base increment
-    size = this.#roundDown(size, baseIncrement);
+    size = this.#roundDownToIncrement(size, baseIncrement);
 
     if (size.lt(baseMinSize)) {
       return null;
     }
 
     // Round price to the nearest counter increment
-    price = this.#roundDown(price, counterIncrement);
+    price = this.#roundDownToIncrement(price, counterIncrement);
 
     // Check minimum notional value (size × price must be ≥ counter_min_size)
     const notional = size.mul(price);
