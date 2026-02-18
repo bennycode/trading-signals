@@ -157,12 +157,12 @@ export class TradingSession extends EventEmitter<TradingSessionEventMap> {
 
     if (advice.amountInCounter) {
       if (size.lt(counter_min_size)) {
-        this.emit('error', new Error(`Order size ${size} is below minimum counter size ${counter_min_size}`));
+        this.emit('error', new Error(`Order size "${size}" is below minimum counter size "${counter_min_size}"`));
         return;
       }
     } else {
       if (size.lt(base_min_size)) {
-        this.emit('error', new Error(`Order size ${size} is below minimum base size ${base_min_size}`));
+        this.emit('error', new Error(`Order size "${size}" is below minimum base size "${base_min_size}"`));
         return;
       }
     }
