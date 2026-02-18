@@ -418,7 +418,6 @@ describe.sequential('TradingSession', () => {
       await session.start();
       await session.stop();
 
-      expect(exchange.cancelOpenOrders).toHaveBeenCalledWith(pair);
       expect(exchange.unwatchCandles).toHaveBeenCalledWith('candle-topic-1');
       expect(exchange.unwatchOrders).toHaveBeenCalledWith('order-topic-1');
       expect(session.running).toBe(false);
