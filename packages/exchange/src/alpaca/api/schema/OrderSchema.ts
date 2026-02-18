@@ -49,8 +49,10 @@ export const AssetClass = {
   US_OPTION: 'us_option',
 } as const;
 
+export type AssetClassValue = (typeof AssetClass)[keyof typeof AssetClass];
+
 export const OrderSchema = z.looseObject({
-  asset_class: z.string(),
+  asset_class: z.enum(['crypto', 'us_equity', 'us_option']),
   asset_id: z.string(),
   canceled_at: z.string().nullable(),
   client_order_id: z.string(),

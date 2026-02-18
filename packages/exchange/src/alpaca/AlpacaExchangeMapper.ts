@@ -1,5 +1,5 @@
 import type {Bar} from './api/schema/BarSchema.js';
-import {type Order, OrderStatus} from './api/schema/OrderSchema.js';
+import {type Order, OrderStatus, type AssetClassValue} from './api/schema/OrderSchema.js';
 import {ms} from 'ms';
 import {TradingPair} from '../core/TradingPair.js';
 import {
@@ -11,6 +11,7 @@ import {
   ExchangeOrderType,
   ExchangePendingLimitOrder,
   ExchangePendingMarketOrder,
+  ExchangePendingOrder,
 } from '../core/Exchange.js';
 
 export class AlpacaExchangeMapper {
@@ -59,6 +60,42 @@ export class AlpacaExchangeMapper {
       pair,
       price: `${order.limit_price}`,
       side: options.side,
+      size: `${order.qty}`,
+      type: ExchangeOrderType.LIMIT,
+    };
+    return pendingOrder;
+  }
+
+  /**
+   * Converts an Alpaca symbol and asset class back into a TradingPair.
+   * Crypto symbols use "/" delimiter (e.g., "BTC/USD"), stocks are just the ticker (e.g., "AAPL").
+   */
+  static symbolToPair(symbol: string, assetClass: AssetClassValue): TradingPair {
+    if (assetClass === 'crypto') {
+      return TradingPair.fromString(symbol, '/');
+    }
+    return new TradingPair(symbol, 'USD');
+  }
+
+  static toOpenOrder(order: Order, pair: TradingPair): ExchangePendingOrder {
+    const side = order.side === 'buy' ? ExchangeOrderSide.BUY : ExchangeOrderSide.SELL;
+
+    if (order.type === 'market') {
+      const pendingOrder: ExchangePendingMarketOrder = {
+        id: order.id,
+        pair,
+        side,
+        size: order.notional ? `${order.notional}` : `${order.qty}`,
+        type: ExchangeOrderType.MARKET,
+      };
+      return pendingOrder;
+    }
+
+    const pendingOrder: ExchangePendingLimitOrder = {
+      id: order.id,
+      pair,
+      price: `${order.limit_price}`,
+      side,
       size: `${order.qty}`,
       type: ExchangeOrderType.LIMIT,
     };
