@@ -16,6 +16,7 @@ export class TradingSession extends EventEmitter<TradingSessionEventMap> {
   readonly #pair;
   readonly #strategy;
   readonly #candleInterval;
+  readonly #cancelOrdersOnStop;
 
   #state: TradingSessionState | null = null;
   #pendingOrders = new Map<string, ExchangePendingOrder>();
@@ -29,6 +30,7 @@ export class TradingSession extends EventEmitter<TradingSessionEventMap> {
     this.#pair = options.pair;
     this.#strategy = options.strategy;
     this.#candleInterval = options.candleInterval;
+    this.#cancelOrdersOnStop = options.cancelOrdersOnStop ?? false;
   }
 
   get running(): boolean {
@@ -77,7 +79,9 @@ export class TradingSession extends EventEmitter<TradingSessionEventMap> {
   }
 
   async stop(): Promise<void> {
-    await this.#exchange.cancelOpenOrders(this.#pair);
+    if (this.#cancelOrdersOnStop) {
+      await this.#exchange.cancelOpenOrders(this.#pair);
+    }
 
     if (this.#candleTopicId) {
       this.#exchange.unwatchCandles(this.#candleTopicId);

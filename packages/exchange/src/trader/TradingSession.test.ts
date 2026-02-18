@@ -411,6 +411,49 @@ describe.sequential('TradingSession', () => {
   });
 
   describe('stop', () => {
+    it('does not cancel open orders by default', async () => {
+      const onStopped = vi.fn();
+      session.on('stopped', onStopped);
+
+      await session.start();
+
+      const cancelCallsAfterStart = exchange.cancelOpenOrders.mock.calls.length;
+
+      await session.stop();
+
+      expect(exchange.cancelOpenOrders.mock.calls.length).toBe(cancelCallsAfterStart);
+      expect(exchange.unwatchCandles).toHaveBeenCalledWith('candle-topic-1');
+      expect(exchange.unwatchOrders).toHaveBeenCalledWith('order-topic-1');
+      expect(session.running).toBe(false);
+      expect(onStopped).toHaveBeenCalledTimes(1);
+    });
+
+    it('cancels open orders when cancelOrdersOnStop is true', async () => {
+      const sessionWithCancel = new TradingSession({
+        exchange: exchange as any,
+        pair,
+        strategy,
+        candleInterval,
+        cancelOrdersOnStop: true,
+      });
+
+      const onStopped = vi.fn();
+      sessionWithCancel.on('stopped', onStopped);
+
+      await sessionWithCancel.start();
+
+      const cancelCallsAfterStart = exchange.cancelOpenOrders.mock.calls.length;
+
+      await sessionWithCancel.stop();
+
+      expect(exchange.cancelOpenOrders.mock.calls.length).toBeGreaterThan(cancelCallsAfterStart);
+      expect(exchange.cancelOpenOrders).toHaveBeenCalledWith(pair);
+      expect(exchange.unwatchCandles).toHaveBeenCalledWith('candle-topic-1');
+      expect(exchange.unwatchOrders).toHaveBeenCalledWith('order-topic-1');
+      expect(sessionWithCancel.running).toBe(false);
+      expect(onStopped).toHaveBeenCalledTimes(1);
+    });
+
     it('cleans up subscriptions and emits stopped', async () => {
       const onStopped = vi.fn();
       session.on('stopped', onStopped);
@@ -418,7 +461,6 @@ describe.sequential('TradingSession', () => {
       await session.start();
       await session.stop();
 
-      expect(exchange.cancelOpenOrders).toHaveBeenCalledWith(pair);
       expect(exchange.unwatchCandles).toHaveBeenCalledWith('candle-topic-1');
       expect(exchange.unwatchOrders).toHaveBeenCalledWith('order-topic-1');
       expect(session.running).toBe(false);

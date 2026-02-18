@@ -42,6 +42,8 @@ export interface TradingSessionOptions {
   strategy: TradingSessionStrategy;
   /** Candle interval in milliseconds */
   candleInterval: number;
+  /** Cancel open orders when stop() is called. Default: false */
+  cancelOrdersOnStop?: boolean;
 }
 
 export type TradingSessionEventMap = {
