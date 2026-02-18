@@ -365,6 +365,13 @@ export class AlpacaExchange extends Exchange {
     await this.#alpacaAPI.deleteOrder(orderId);
   }
 
+  /** @see https://docs.alpaca.markets/reference/getallorders */
+  async getOpenOrders(pair: TradingPair): Promise<ExchangePendingOrder[]> {
+    const symbol = await this.#createReliableSymbol(pair);
+    const orders = await this.#alpacaAPI.getOrders({status: 'open', symbols: symbol});
+    return orders.map(order => AlpacaExchangeMapper.toOpenOrder(order, pair));
+  }
+
   /**
    * @see https://docs.alpaca.markets/reference/getallorders
    */

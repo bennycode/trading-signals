@@ -223,6 +223,11 @@ export abstract class Exchange extends EventEmitter {
   abstract cancelOrderById(pair: TradingPair, orderId: string): Promise<void>;
 
   /**
+   * Get all open (unfilled) orders for a pair.
+   */
+  abstract getOpenOrders(pair: TradingPair): Promise<ExchangePendingOrder[]>;
+
+  /**
    * Get candles within a specified time period.
    */
   abstract getCandles(pair: TradingPair, request: ExchangeCandleImportRequest): Promise<ExchangeCandle[]>;

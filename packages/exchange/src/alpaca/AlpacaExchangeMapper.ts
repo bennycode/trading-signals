@@ -11,6 +11,7 @@ import {
   ExchangeOrderType,
   ExchangePendingLimitOrder,
   ExchangePendingMarketOrder,
+  ExchangePendingOrder,
 } from '../core/Exchange.js';
 
 export class AlpacaExchangeMapper {
@@ -74,6 +75,31 @@ export class AlpacaExchangeMapper {
       return TradingPair.fromString(symbol, '/');
     }
     return new TradingPair(symbol, 'USD');
+  }
+
+  static toOpenOrder(order: Order, pair: TradingPair): ExchangePendingOrder {
+    const side = order.side === 'buy' ? ExchangeOrderSide.BUY : ExchangeOrderSide.SELL;
+
+    if (order.type === 'market') {
+      const pendingOrder: ExchangePendingMarketOrder = {
+        id: order.id,
+        pair,
+        side,
+        size: order.notional ? `${order.notional}` : `${order.qty}`,
+        type: ExchangeOrderType.MARKET,
+      };
+      return pendingOrder;
+    }
+
+    const pendingOrder: ExchangePendingLimitOrder = {
+      id: order.id,
+      pair,
+      price: `${order.limit_price}`,
+      side,
+      size: `${order.qty}`,
+      type: ExchangeOrderType.LIMIT,
+    };
+    return pendingOrder;
   }
 
   static toFilledOrder(order: Order, pair: TradingPair): ExchangeFill {
