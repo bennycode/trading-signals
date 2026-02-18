@@ -76,8 +76,10 @@ export class TradingSession extends EventEmitter<TradingSessionEventMap> {
     this.emit('started');
   }
 
-  async stop(): Promise<void> {
-    await this.#exchange.cancelOpenOrders(this.#pair);
+  async stop(options?: {cancelOpenOrders: boolean}): Promise<void> {
+    if (options?.cancelOpenOrders) {
+      await this.#exchange.cancelOpenOrders(this.#pair);
+    }
 
     if (this.#candleTopicId) {
       this.#exchange.unwatchCandles(this.#candleTopicId);
@@ -216,7 +218,10 @@ export class TradingSession extends EventEmitter<TradingSessionEventMap> {
     }
 
     // BUY + not in counter + MARKET → can't determine size
-    this.emit('error', new Error('Cannot resolve order size for MARKET BUY without amountInCounter or explicit amount'));
+    this.emit(
+      'error',
+      new Error('Cannot resolve order size for MARKET BUY without amountInCounter or explicit amount')
+    );
     return null;
   }
 
