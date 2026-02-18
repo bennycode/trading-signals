@@ -1,7 +1,7 @@
 import Big from 'big.js';
 import {describe, expect, it} from 'vitest';
-import {AlpacaExchange, ExchangeOrderType} from '@typedtrader/exchange';
-import type {ExchangeCandle, ExchangeFeeRate, ExchangeTradingRules} from '@typedtrader/exchange';
+import {AlpacaExchange} from '@typedtrader/exchange';
+import type {ExchangeCandle, ExchangeTradingRules} from '@typedtrader/exchange';
 import {TradingPair} from '@typedtrader/exchange';
 import {BacktestExecutor} from './BacktestExecutor.js';
 import {BuyBelowSellAboveStrategy} from '../strategy-buy-below-sell-above/BuyBelowSellAboveStrategy.js';
