@@ -79,19 +79,6 @@ describe.sequential('AlpacaExchange', () => {
     });
   });
 
-  describe('getMarkdownLink', () => {
-    it('returns a markdown link to Alpaca', () => {
-      expect(exchange.getMarkdownLink()).toBe('[Alpaca](https://alpaca.markets/)');
-    });
-  });
-
-  describe('getTradingLink', () => {
-    it('returns a link to the Alpaca trading page', () => {
-      const pair = new TradingPair('SHOP', 'USD');
-      expect(exchange.getTradingLink(pair)).toBe('https://app.alpaca.markets/trade/SHOP');
-    });
-  });
-
   describe('listBalances', () => {
     it('returns positions and account cash', async () => {
       mockMethods.getPositions.mockResolvedValue([

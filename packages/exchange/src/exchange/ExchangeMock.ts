@@ -40,9 +40,6 @@ export abstract class ExchangeMock extends Exchange {
   abstract override getTradingRules(pair: TradingPair): Promise<ExchangeTradingRules>;
   abstract override getName(): string;
   abstract override getSmallestInterval(): number;
-  abstract override getTradingLink(pair: TradingPair): string;
-  abstract override getMarkdownLink(): string;
-
   /**
    * Matches pending orders against the given candle's price range and returns new fills.
    * Orders placed on candle N are not matched until candle N+1 (realistic 1-candle delay).

@@ -409,13 +409,6 @@ export abstract class Exchange extends EventEmitter {
    */
   abstract disconnect(): void;
 
-  abstract getTradingLink(pair: TradingPair): string;
-
-  /**
-   * Returns a link to the exchange rendered with Markdown syntax.
-   */
-  abstract getMarkdownLink(): string;
-
   /**
    * Returns an identifiable name for the exchange.
    */

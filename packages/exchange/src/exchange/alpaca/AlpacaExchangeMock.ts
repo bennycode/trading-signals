@@ -38,11 +38,4 @@ export class AlpacaExchangeMock extends ExchangeMock {
     return ms('1m');
   }
 
-  getTradingLink(pair: TradingPair): string {
-    return `https://app.alpaca.markets/trade/${pair.base}`;
-  }
-
-  getMarkdownLink(): string {
-    return '[Alpaca](https://alpaca.markets/)';
-  }
 }

@@ -522,11 +522,4 @@ export class AlpacaExchange extends Exchange {
     return AlpacaExchangeMapper.toExchangePendingOrder(order, pair, options);
   }
 
-  getMarkdownLink(): string {
-    return '[Alpaca](https://alpaca.markets/)';
-  }
-
-  getTradingLink(pair: TradingPair): string {
-    return `https://app.alpaca.markets/trade/${pair.base}`;
-  }
 }

@@ -45,13 +45,6 @@ class TestExchangeMock extends ExchangeMock {
     return 60000;
   }
 
-  getTradingLink(pair: TradingPair): string {
-    return `https://test.exchange/trade/${pair.base}`;
-  }
-
-  getMarkdownLink(): string {
-    return '[TestExchange](https://test.exchange/)';
-  }
 }
 
 const pair = new TradingPair('BTC', 'USD');
