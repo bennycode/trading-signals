@@ -356,6 +356,12 @@ export abstract class ExchangeMock extends Exchange {
     return this.#currentCandle?.openTimeInISO ?? new Date().toISOString();
   }
 
+  async getOpenOrders(pair: TradingPair): Promise<ExchangePendingOrder[]> {
+    return this.#pendingOrders.filter(
+      o => o.pair.base === pair.base && o.pair.counter === pair.counter
+    );
+  }
+
   async getCandles(_pair: TradingPair, _request: ExchangeCandleImportRequest): Promise<ExchangeCandle[]> {
     throw new Error('getCandles() is not supported in mock exchange');
   }
@@ -366,6 +372,14 @@ export abstract class ExchangeMock extends Exchange {
 
   unwatchCandles(_topicId: string): void {
     throw new Error('unwatchCandles() is not supported in mock exchange');
+  }
+
+  async watchOrders(): Promise<string> {
+    throw new Error('watchOrders() is not supported in mock exchange');
+  }
+
+  unwatchOrders(_topicId: string): void {
+    throw new Error('unwatchOrders() is not supported in mock exchange');
   }
 
   disconnect(): void {
