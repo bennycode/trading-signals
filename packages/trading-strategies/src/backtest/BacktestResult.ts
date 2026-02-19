@@ -1,3 +1,4 @@
+import type {ExchangeOrderSide} from '@typedtrader/exchange';
 import type Big from 'big.js';
 import type {StrategyAdvice} from '../strategy/StrategyAdvice.js';
 
@@ -10,15 +11,23 @@ export interface BacktestTrade {
   openTimeInISO: string;
   /** The price at which the trade was executed (in counter currency per unit of base). */
   price: Big;
+  /** Whether this was a buy or sell order. */
+  side: ExchangeOrderSide;
   /** The quantity of the base asset traded. */
   size: Big;
 }
 
 export interface BacktestPerformanceSummary {
+  /** What you'd earn just holding from first to last candle, as a percentage. */
+  buyAndHoldReturnPercentage: Big;
   /** Final portfolio value in counter currency (base * lastClose + counter). */
   finalPortfolioValue: Big;
   /** Initial portfolio value in counter currency (base * lastClose + counter). */
   initialPortfolioValue: Big;
+  /** Longest consecutive losing streak (round-trip cycles). */
+  maxLossStreak: number;
+  /** Longest consecutive winning streak (round-trip cycles). */
+  maxWinStreak: number;
   /** Return on investment as a percentage (e.g. "12.5" means 12.5%). */
   returnPercentage: Big;
   /** Total number of trades (buys + sells). */

@@ -1,4 +1,4 @@
-import {getAlpacaRules, TradingPair} from '@typedtrader/exchange';
+import {AlpacaExchangeMock, TradingPair} from '@typedtrader/exchange';
 import Big from 'big.js';
 import {BacktestExecutor} from '../backtest/BacktestExecutor.js';
 import candleData from '../backtest/candles/BNB_USDT_2021_02_19_1_week.json' with {type: 'json'};
@@ -15,16 +15,18 @@ async function run() {
   console.log(`Last close: ${lastCandle.close}`);
   console.log('---');
 
-  const {feeRates, tradingRules} = await getAlpacaRules(tradingPair);
+  const exchange = new AlpacaExchangeMock({
+    balances: new Map([
+      [tradingPair.base, {available: new Big(0), hold: new Big(0)}],
+      [tradingPair.counter, {available: new Big(10000), hold: new Big(0)}],
+    ]),
+  });
 
   const result = await new BacktestExecutor({
     candles: candleData,
-    feeRates,
-    initialBaseBalance: new Big(0),
-    initialCounterBalance: new Big(10000),
+    exchange,
     strategy: new BuyOnceStrategy({buyAt: '50000'}),
     tradingPair,
-    tradingRules,
   }).execute();
 
   const {performance} = result;
@@ -37,6 +39,9 @@ async function run() {
   console.log(`Trades: ${performance.totalTrades}`);
   console.log(`Win Rate: ${performance.winRate.toFixed(2)}%`);
   console.log(`Return: ${performance.returnPercentage.toFixed(2)}%`);
+  console.log(`Buy & Hold: ${performance.buyAndHoldReturnPercentage.toFixed(2)}%`);
+  console.log(`Max Win Streak: ${performance.maxWinStreak}`);
+  console.log(`Max Loss Streak: ${performance.maxLossStreak}`);
   console.log(`P&L: ${result.profitOrLoss.toFixed(2)} ${tradingPair.counter}`);
   console.log(`Fees: ${result.totalFees.toFixed(2)} ${tradingPair.counter}`);
   console.log(

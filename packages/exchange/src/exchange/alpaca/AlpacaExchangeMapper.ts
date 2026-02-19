@@ -1,7 +1,7 @@
 import type {Bar} from './api/schema/BarSchema.js';
 import {type Order, OrderStatus} from './api/schema/OrderSchema.js';
 import {ms} from 'ms';
-import {TradingPair} from '../core/TradingPair.js';
+import {TradingPair} from '../TradingPair.js';
 import {
   ExchangeCandle,
   ExchangeFill,
@@ -11,7 +11,7 @@ import {
   ExchangeOrderType,
   ExchangePendingLimitOrder,
   ExchangePendingMarketOrder,
-} from '../core/Exchange.js';
+} from '../Exchange.js';
 
 export class AlpacaExchangeMapper {
   static mapInterval(intervalInMillis: number): string {

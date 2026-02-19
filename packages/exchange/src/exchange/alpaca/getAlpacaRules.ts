@@ -1,7 +1,7 @@
-import type { ExchangeFeeRate, ExchangeTradingRules } from '../core/Exchange.js';
-import type { TradingPair } from '../core/TradingPair.js';
-import { AlpacaExchange } from './AlpacaExchange.js';
-import { getAlpacaClient } from './getAlpacaClient.js';
+import type {ExchangeFeeRate, ExchangeTradingRules} from '../Exchange.js';
+import type {TradingPair} from '../TradingPair.js';
+import {AlpacaExchange} from './AlpacaExchange.js';
+import {getAlpacaClient} from './getAlpacaClient.js';
 
 export interface AlpacaRules {
   feeRates: ExchangeFeeRate;

@@ -19,10 +19,10 @@ import {
   type ExchangePendingMarketOrder,
   type ExchangePendingOrder,
   type ExchangeTradingRules,
-} from '../core/Exchange.js';
-import {TradingPair} from '../core/TradingPair.js';
+} from '../Exchange.js';
+import {TradingPair} from '../TradingPair.js';
 import {alpacaWebSocket, AlpacaConnection} from './AlpacaWebSocket.js';
-import {CandleBatcher} from '../candle/CandleBatcher.js';
+import {CandleBatcher} from '../../candle/CandleBatcher.js';
 import type {MinuteBarMessage} from './api/schema/StreamSchema.js';
 import {OrderStatus} from './api/schema/OrderSchema.js';
 import {AlpacaAPI} from './api/AlpacaAPI.js';

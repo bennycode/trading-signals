@@ -1,7 +1,7 @@
 import Big from 'big.js';
 import {describe, expect, it, vi, beforeEach} from 'vitest';
-import {TradingPair} from '../core/TradingPair.js';
-import {ExchangeOrderPosition, ExchangeOrderSide, ExchangeOrderType} from '../core/Exchange.js';
+import {TradingPair} from '../TradingPair.js';
+import {ExchangeOrderPosition, ExchangeOrderSide, ExchangeOrderType} from '../Exchange.js';
 import {AssetClass, OrderSide, OrderStatus, OrderType} from './api/schema/OrderSchema.js';
 import {PositionSide} from './api/schema/PositionSchema.js';
 

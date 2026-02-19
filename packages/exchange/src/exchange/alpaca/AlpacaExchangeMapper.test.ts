@@ -1,12 +1,12 @@
 import {describe, expect, it, vi} from 'vitest';
 import {AlpacaExchangeMapper} from './AlpacaExchangeMapper.js';
-import minutes5 from '../../fixtures/alpaca/bars/minutes-5.json' with {type: 'json'};
+import minutes5 from '../../../fixtures/alpaca/bars/minutes-5.json' with {type: 'json'};
 import {AssetClass, OrderSide, OrderStatus, OrderType, TimeInForce} from './api/schema/OrderSchema.js';
 import {ms} from 'ms';
-import {BatchedCandle} from '../candle/BatchedCandle.js';
-import {CandleBatcher} from '../candle/CandleBatcher.js';
-import {TradingPair} from '../core/TradingPair.js';
-import {ExchangeOrderPosition, ExchangeOrderSide} from '../core/Exchange.js';
+import {BatchedCandle} from '../../candle/BatchedCandle.js';
+import {CandleBatcher} from '../../candle/CandleBatcher.js';
+import {TradingPair} from '../TradingPair.js';
+import {ExchangeOrderPosition, ExchangeOrderSide} from '../Exchange.js';
 
 describe('AlpacaExchangeMapper', () => {
   describe('mapInterval', () => {
