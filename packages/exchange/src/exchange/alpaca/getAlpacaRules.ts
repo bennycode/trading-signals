@@ -11,7 +11,7 @@ export interface AlpacaRules {
 /**
  * Returns Alpaca fee rates and trading rules for a given trading pair.
  *
- * Uses live values when env params are set, otherwise uses a default.
+ * Uses live values when `options` (API credentials) are provided, otherwise uses default values.
  */
 export async function getAlpacaRules(
   pair: TradingPair,
