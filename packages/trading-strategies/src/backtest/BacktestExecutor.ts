@@ -101,6 +101,14 @@ export class BacktestExecutor {
       switch (signal) {
         case StrategySignal.BUY_LIMIT: {
           const balances = await exchange.getAvailableBalances(pair);
+          // Apply trading-rule rounding to the price before any size calculations,
+          // so size and reachability checks are consistent with the actual fill price.
+          const price = await this.#roundLimitPrice(advice.price, pair);
+
+          if (price.lte(0)) {
+            return;
+          }
+
           let size: Big;
 
           if (advice.amountType === 'counter') {
@@ -112,7 +120,7 @@ export class BacktestExecutor {
             // Estimate fee so we don't over-commit
             const feeRate = (await exchange.getFeeRates(pair))[ExchangeOrderType.LIMIT];
             const netSpend = actualSpend.div(new Big(1).plus(feeRate));
-            size = netSpend.div(advice.price);
+            size = netSpend.div(price);
           } else {
             if (advice.amount) {
               size = advice.amount;
@@ -120,7 +128,7 @@ export class BacktestExecutor {
               // Buy as much as possible: account for fees in size calculation
               const feeRate = (await exchange.getFeeRates(pair))[ExchangeOrderType.LIMIT];
               const netSpend = balances.counter.div(new Big(1).plus(feeRate));
-              size = netSpend.div(advice.price);
+              size = netSpend.div(price);
             }
           }
 
@@ -129,7 +137,7 @@ export class BacktestExecutor {
           }
 
           const order = await exchange.placeLimitOrder(pair, {
-            price: advice.price.toFixed(),
+            price: price.toFixed(),
             side: ExchangeOrderSide.BUY,
             size: size.toFixed(),
           });
@@ -185,6 +193,14 @@ export class BacktestExecutor {
 
         case StrategySignal.SELL_LIMIT: {
           const balances = await exchange.getAvailableBalances(pair);
+          // Apply trading-rule rounding to the price before placing the order,
+          // so the order price is consistent with what the exchange will use for fills.
+          const price = await this.#roundLimitPrice(advice.price, pair);
+
+          if (price.lte(0)) {
+            return;
+          }
+
           const size = advice.amount ?? balances.base;
           if (size.lte(0) || balances.base.lte(0)) {
             return;
@@ -192,7 +208,7 @@ export class BacktestExecutor {
           const actualSize = size.gt(balances.base) ? balances.base : size;
 
           const order = await exchange.placeLimitOrder(pair, {
-            price: advice.price.toFixed(),
+            price: price.toFixed(),
             side: ExchangeOrderSide.SELL,
             size: actualSize.toFixed(),
           });
@@ -220,6 +236,14 @@ export class BacktestExecutor {
     } catch {
       // Order rejected (insufficient balance, trading rules, etc.) - skip
     }
+  }
+
+  /** Rounds a limit-order price down to the exchange's counter_increment. */
+  async #roundLimitPrice(rawPrice: Big, pair: import('@typedtrader/exchange').TradingPair): Promise<Big> {
+    const {exchange} = this.#config;
+    const tradingRules = await exchange.getTradingRules(pair);
+    const counterIncrement = new Big(tradingRules.counter_increment);
+    return rawPrice.div(counterIncrement).round(0, Big.roundDown).mul(counterIncrement);
   }
 
   #buildPerformanceSummary(

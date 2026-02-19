@@ -614,5 +614,61 @@ describe('BacktestExecutor', () => {
       expect(result.trades).toHaveLength(2);
       expect(result.profitOrLoss.gt(0)).toBe(true);
     });
+
+    it('does not fill a limit order when the rounded price falls outside the candle range', async () => {
+      // counter_increment = 0.50, so a price of 100.10 rounds down to 100.00.
+      // The candle's low is 100.10, so the rounded order price (100.00) is below the low
+      // and the order must NOT fill.
+      const COARSE_RULES: Omit<ExchangeTradingRules, 'pair'> = {
+        base_increment: '0.0001',
+        base_max_size: '100',
+        base_min_size: '0.0001',
+        counter_increment: '0.50',
+        counter_min_size: '1',
+      };
+
+      class BuyAtPrice extends Strategy {
+        static override NAME = 'BuyAtPrice';
+        #advised = false;
+
+        protected override async processCandle(candle: BatchedCandle): Promise<StrategyAdvice | void> {
+          if (this.#advised) {
+            return undefined;
+          }
+          this.#advised = true;
+          return {
+            amount: null,
+            amountType: 'counter',
+            price: candle.close,
+            signal: StrategySignal.BUY_LIMIT,
+          };
+        }
+      }
+
+      const balances = new Map([
+        ['BTC', {available: new Big(0), hold: new Big(0)}],
+        ['USD', {available: new Big(1000), hold: new Big(0)}],
+      ]);
+      const exchange = new AlpacaExchangeMock({balances, tradingRules: COARSE_RULES});
+
+      // Candle 1: close=100.10 → advice to BUY_LIMIT at 100.10, which rounds to 100.00
+      // Candle 2: low=100.10 → rounded price (100.00) < low (100.10), so order must NOT fill
+      const candles = [
+        createCandle({open: '100.10', close: '100.10', low: '100.10', high: '105.00', openTimeInISO: '2025-01-01T00:00:00.000Z'}),
+        createCandle({open: '101.00', close: '102.00', low: '100.10', high: '105.00', openTimeInISO: '2025-01-01T00:01:00.000Z'}),
+      ];
+
+      const config: BacktestConfig = {
+        candles,
+        exchange,
+        strategy: new BuyAtPrice(),
+        tradingPair,
+      };
+
+      const result = await new BacktestExecutor(config).execute();
+
+      // The rounded price (100.00) is below the candle's low (100.10) — no fill should occur
+      expect(result.trades).toHaveLength(0);
+    });
   });
 });
