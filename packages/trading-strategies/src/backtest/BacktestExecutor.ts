@@ -1,5 +1,5 @@
 import Big from 'big.js';
-import {CandleBatcher, ExchangeOrderSide, ExchangeOrderType} from '@typedtrader/exchange';
+import {CandleBatcher, ExchangeCandle, ExchangeOrderSide, ExchangeOrderType} from '@typedtrader/exchange';
 import type {BacktestConfig} from './BacktestConfig.js';
 import type {BacktestPerformanceSummary, BacktestResult, BacktestTrade} from './BacktestResult.js';
 import {StrategySignal} from '../strategy/StrategySignal.js';
@@ -224,7 +224,7 @@ export class BacktestExecutor {
 
   #buildPerformanceSummary(
     trades: BacktestTrade[],
-    candles: import('@typedtrader/exchange').ExchangeCandle[],
+    candles: ExchangeCandle[],
     initialPortfolioValue: Big,
     finalPortfolioValue: Big
   ): BacktestPerformanceSummary {
