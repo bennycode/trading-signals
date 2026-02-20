@@ -31,11 +31,10 @@ export class AlpacaExchangeMock extends ExchangeMock {
   }
 
   getName(): string {
-    return AlpacaExchange.NAME;
+    return `${AlpacaExchange.NAME}Mock`;
   }
 
   getSmallestInterval(): number {
     return ms('1m');
   }
-
 }
