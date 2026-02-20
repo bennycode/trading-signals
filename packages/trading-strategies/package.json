@@ -38,8 +38,10 @@
     "clean": "rimraf --glob src/**/*{.js,.js.map,.d.ts}",
     "dist": "npm run clean && npm run build",
     "start": "npm run test:types && tsx watch src/start.ts",
-    "test": "npm run test:types",
-    "test:types": "tsc --noEmit"
+    "test": "npm run test:types && npm run test:units",
+    "test:types": "tsc --noEmit",
+    "test:units": "vitest run --passWithNoTests",
+    "test:units:watch": "vitest --watch"
   },
   "type": "module",
   "version": "0.3.5"
