@@ -9,6 +9,7 @@ import {
   type ExchangeTradingRules,
 } from './Exchange.js';
 import {TradingPair} from './TradingPair.js';
+import {ms} from 'ms';
 
 class TestExchangeMock extends ExchangeMock {
   static readonly TEST_FEE_RATES: ExchangeFeeRate = {
@@ -42,9 +43,8 @@ class TestExchangeMock extends ExchangeMock {
   }
 
   getSmallestInterval(): number {
-    return 60000;
+    return ms('1m');
   }
-
 }
 
 const pair = new TradingPair('BTC', 'USD');
