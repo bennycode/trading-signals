@@ -1,5 +1,4 @@
-import {Chart as HighchartsChart, HighchartsReactRefObject} from '@highcharts/react';
-import {Options} from 'highcharts';
+import {Chart as HighchartsChart, HighchartsOptionsType, HighchartsReactRefObject} from '@highcharts/react';
 import {useRef} from 'react';
 
 export interface ChartDataPoint {
@@ -24,7 +23,7 @@ export interface ChartProps {
 export default function Chart({title, data, yAxisLabel = 'Value', color = '#3b82f6'}: ChartProps) {
   const chartRef = useRef<HighchartsReactRefObject>(null);
 
-  const options: Options = {
+  const options: HighchartsOptionsType = {
     chart: {
       type: 'line',
       backgroundColor: 'transparent',
@@ -91,7 +90,7 @@ export default function Chart({title, data, yAxisLabel = 'Value', color = '#3b82
       style: {
         color: '#e2e8f0',
       },
-      formatter: function (this: {x?: number; y?: number | null}): string {
+      formatter: function () {
         const yValue = typeof this.y === 'number' ? this.y.toFixed(2) : 'N/A';
         return `<b>Period ${this.x}</b><br/>${yAxisLabel}: ${yValue}`;
       },
