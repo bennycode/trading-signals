@@ -46,9 +46,10 @@
     "access": "public"
   },
   "scripts": {
+    "alpaca:demo": "tsx src/exchange/alpaca/demo.ts",
+    "alpaca:fetchCandles": "tsx src/exchange/alpaca/fetchCandles.ts",
     "build": "tsdown --dts --format esm --format cjs",
     "clean": "rimraf --glob src/**/*{.js,.js.map,.d.ts}",
-    "demo:alpaca": "tsx src/alpaca/demo.ts",
     "dist": "npm run clean && npm run build && npm run test:exports",
     "lint:types": "tsc --noEmit",
     "start": "exit 0",

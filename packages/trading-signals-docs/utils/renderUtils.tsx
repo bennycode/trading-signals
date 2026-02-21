@@ -1,4 +1,5 @@
-import type {Candle, IndicatorConfig} from './types';
+import type {ExchangeCandle} from '@typedtrader/exchange';
+import type {IndicatorConfig} from './types';
 import type {PriceData} from '../components/PriceChart';
 import type {ChartDataPoint} from '../components/Chart';
 import Chart from '../components/Chart';
@@ -6,15 +7,15 @@ import PriceChart from '../components/PriceChart';
 import {DataTable} from '../components/DataTable';
 import {IndicatorHeader} from '../components/IndicatorHeader';
 
-export const collectPriceData = (candle: Candle, idx: number): PriceData => ({
+export const collectPriceData = (candle: ExchangeCandle, idx: number): PriceData => ({
   x: idx + 1,
-  open: candle.open,
-  high: candle.high,
-  low: candle.low,
-  close: candle.close,
+  open: Number(candle.open),
+  high: Number(candle.high),
+  low: Number(candle.low),
+  close: Number(candle.close),
 });
 
-export const renderSingleIndicator = (config: IndicatorConfig, selectedCandles: Candle[]) => {
+export const renderSingleIndicator = (config: IndicatorConfig, selectedCandles: ExchangeCandle[]) => {
   const indicator = config.createIndicator!();
   const chartData: ChartDataPoint[] = [];
   const priceData: PriceData[] = [];
@@ -40,7 +41,7 @@ export const renderSingleIndicator = (config: IndicatorConfig, selectedCandles: 
 
     sampleValues.push({
       period: idx + 1,
-      date: candle.date,
+      date: candle.openTimeInISO,
       ...processedData,
       result:
         processedData.result !== null && processedData.result !== undefined ? processedData.result.toFixed(2) : 'N/A',

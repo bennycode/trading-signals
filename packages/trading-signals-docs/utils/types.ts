@@ -1,5 +1,6 @@
 import type React from 'react';
 import type {ChartDataPoint} from '../components/Chart';
+import type {ExchangeCandle} from '@typedtrader/exchange';
 
 export type IndicatorType = 'single' | 'dual' | 'triple' | 'custom';
 
@@ -8,15 +9,6 @@ export interface ColumnDef {
   key: string;
   render?: (val: any, row?: any) => any;
   className?: string;
-}
-
-export interface Candle {
-  date: string;
-  open: number;
-  high: number;
-  low: number;
-  close: number;
-  volume: number;
 }
 
 export interface IndicatorConfig<TIndicator = any, TResult = any> {
@@ -28,7 +20,7 @@ export interface IndicatorConfig<TIndicator = any, TResult = any> {
   type: IndicatorType;
   details?: string;
   createIndicator: () => TIndicator;
-  processData: (indicator: TIndicator, candle: Candle, idx: number) => TResult;
+  processData: (indicator: TIndicator, candle: ExchangeCandle, idx: number) => TResult;
   getChartData: (result: TResult) => ChartDataPoint | ChartDataPoint[];
   getTableColumns: () => ColumnDef[];
   chartTitle?: string;
@@ -40,5 +32,5 @@ export interface CandleDataset {
   id: string;
   name: string;
   description: string;
-  candles: Candle[];
+  candles: ExchangeCandle[];
 }

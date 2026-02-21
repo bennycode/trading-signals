@@ -22,7 +22,8 @@ import {DatasetSelector} from '../../components/DatasetSelector';
 import {IndicatorList} from '../../components/IndicatorList';
 import {SignalBadge} from '../../components/SignalBadge';
 import PriceChart, {PriceData} from '../../components/PriceChart';
-import type {Candle, IndicatorConfig} from '../../utils/types';
+import type {ExchangeCandle} from '@typedtrader/exchange';
+import type {IndicatorConfig} from '../../utils/types';
 import {datasets} from '../../utils/datasets';
 import {collectPriceData, renderSingleIndicator} from '../../utils/renderUtils';
 
@@ -38,10 +39,10 @@ const indicators: IndicatorConfig[] = [
       'RSI measures the magnitude of recent price changes to evaluate overbought or oversold conditions. Values above 70 indicate overbought, below 30 indicate oversold.',
     createIndicator: () => new RSI(14),
     processData: (indicator, candle) => {
-      indicator.add(candle.close);
+      indicator.add(Number(candle.close));
       const result = indicator.isStable ? indicator.getResult() : null;
       const signal = indicator.getSignal();
-      return {result, signal, close: candle.close};
+      return {result, signal, close: Number(candle.close)};
     },
     getChartData: result => ({x: 0, y: result.result}),
     getTableColumns: () => [
@@ -77,10 +78,10 @@ const indicators: IndicatorConfig[] = [
       'Measures deviation from the average price. Readings above +100 suggest overbought, below -100 suggest oversold.',
     createIndicator: () => new CCI(20),
     processData: (indicator, candle) => {
-      indicator.add({high: candle.high, low: candle.low, close: candle.close});
+      indicator.add({high: Number(candle.high), low: Number(candle.low), close: Number(candle.close)});
       const result = indicator.isStable ? indicator.getResult() : null;
       const signal = indicator.getSignal();
-      return {result, signal, close: candle.close};
+      return {result, signal, close: Number(candle.close)};
     },
     getChartData: result => ({x: 0, y: result.result}),
     getTableColumns: () => [
@@ -104,10 +105,10 @@ const indicators: IndicatorConfig[] = [
       'Measures the percentage change in price from n periods ago. Positive values indicate upward momentum, negative values indicate downward momentum.',
     createIndicator: () => new ROC(9),
     processData: (indicator, candle) => {
-      indicator.add(candle.close);
+      indicator.add(Number(candle.close));
       const result = indicator.isStable ? indicator.getResult() : null;
       const signal = indicator.getSignal();
-      return {result, signal, close: candle.close};
+      return {result, signal, close: Number(candle.close)};
     },
     getChartData: result => ({x: 0, y: result.result}),
     getTableColumns: () => [
@@ -143,10 +144,10 @@ const indicators: IndicatorConfig[] = [
       "Measures market momentum using the difference between a 5-period and 34-period simple moving average of the bar's midpoints.",
     createIndicator: () => new AO(5, 34),
     processData: (indicator, candle) => {
-      indicator.add(candle);
+      indicator.add({high: Number(candle.high), low: Number(candle.low)});
       const result = indicator.isStable ? indicator.getResult() : null;
       const signal = indicator.getSignal();
-      return {result, signal, high: candle.high, low: candle.low};
+      return {result, signal, high: Number(candle.high), low: Number(candle.low)};
     },
     getChartData: result => ({x: 0, y: result.result}),
     getTableColumns: () => [
@@ -171,10 +172,10 @@ const indicators: IndicatorConfig[] = [
       'Shows acceleration or deceleration of the current driving force. Earlier signal of potential trend change than AO.',
     createIndicator: () => new AC(5, 34, 5),
     processData: (indicator, candle) => {
-      indicator.add(candle);
+      indicator.add({high: Number(candle.high), low: Number(candle.low)});
       const result = indicator.isStable ? indicator.getResult() : null;
       const signal = indicator.getSignal();
-      return {result, signal, high: candle.high, low: candle.low};
+      return {result, signal, high: Number(candle.high), low: Number(candle.low)};
     },
     getChartData: result => ({x: 0, y: result.result}),
     getTableColumns: () => [
@@ -198,10 +199,10 @@ const indicators: IndicatorConfig[] = [
     details: 'Identifies turning points with minimal lag. Oscillates around zero line.',
     createIndicator: () => new CG(10, 10),
     processData: (indicator, candle) => {
-      indicator.add(candle.close);
+      indicator.add(Number(candle.close));
       const result = indicator.isStable ? indicator.getResult() : null;
       const signal = indicator.getSignal();
-      return {result, signal, close: candle.close};
+      return {result, signal, close: Number(candle.close)};
     },
     getChartData: result => ({x: 0, y: result.result}),
     getTableColumns: () => [
@@ -225,10 +226,10 @@ const indicators: IndicatorConfig[] = [
       'Momentum measures the change in price over n periods. Bullish when momentum is positive (price rising), bearish when momentum is negative (price falling).',
     createIndicator: () => new MOM(5),
     processData: (indicator, candle) => {
-      indicator.add(candle.close);
+      indicator.add(Number(candle.close));
       const result = indicator.isStable ? indicator.getResult() : null;
       const signal = indicator.getSignal();
-      return {result, signal, close: candle.close};
+      return {result, signal, close: Number(candle.close)};
     },
     getChartData: result => ({x: 0, y: result.result}),
     getTableColumns: () => [
@@ -251,10 +252,10 @@ const indicators: IndicatorConfig[] = [
     details: 'Cumulative volume-based indicator. Rising OBV with rising prices confirms uptrend.',
     createIndicator: () => new OBV(5),
     processData: (indicator, candle) => {
-      indicator.add(candle);
+      indicator.add({close: Number(candle.close), volume: Number(candle.volume)});
       const result = indicator.getResult();
       const signal = indicator.getSignal();
-      return {result, signal, close: candle.close, volume: candle.volume};
+      return {result, signal, close: Number(candle.close), volume: Number(candle.volume)};
     },
     getChartData: result => ({x: 0, y: result.result}),
     getTableColumns: () => [
@@ -278,10 +279,10 @@ const indicators: IndicatorConfig[] = [
     details: 'Measures range expansion to identify potential breakouts.',
     createIndicator: () => new REI(5),
     processData: (indicator, candle) => {
-      indicator.add(candle);
+      indicator.add({high: Number(candle.high), low: Number(candle.low), close: Number(candle.close), open: Number(candle.open)});
       const result = indicator.isStable ? indicator.getResult() : null;
       const signal = indicator.getSignal();
-      return {result, signal, close: candle.close};
+      return {result, signal, close: Number(candle.close)};
     },
     getChartData: result => ({x: 0, y: result.result}),
     getTableColumns: () => [
@@ -304,10 +305,10 @@ const indicators: IndicatorConfig[] = [
     details: 'Applies Stochastic Oscillator to RSI values. More sensitive to overbought/oversold than standard RSI.',
     createIndicator: () => new StochasticRSI(14),
     processData: (indicator, candle) => {
-      indicator.add(candle.close);
+      indicator.add(Number(candle.close));
       const result = indicator.isStable ? indicator.getResult() : null;
       const signal = indicator.getSignal();
-      return {result, signal, close: candle.close};
+      return {result, signal, close: Number(candle.close)};
     },
     getChartData: result => ({x: 0, y: result.result}),
     getTableColumns: () => [
@@ -331,10 +332,10 @@ const indicators: IndicatorConfig[] = [
       'TDS tracks consecutive closes compared to the close 4 bars earlier. Bullish Setup: 9 consecutive closes greater than the close 4 bars earlier (returns 1, signals potential reversal - BEARISH). Bearish Setup: 9 consecutive closes less than the close 4 bars earlier (returns -1, signals potential reversal - BULLISH).',
     createIndicator: () => new TDS(),
     processData: (indicator, candle) => {
-      indicator.add(candle.close);
+      indicator.add(Number(candle.close));
       const result = indicator.getResult();
       const signal = indicator.getSignal();
-      return {result, signal, close: candle.close};
+      return {result, signal, close: Number(candle.close)};
     },
     getChartData: result => ({x: 0, y: result.result}),
     getTableColumns: () => [
@@ -358,10 +359,10 @@ const indicators: IndicatorConfig[] = [
       'Measures overbought and oversold levels on an inverted scale from 0 to -100. Values from 0 to -20 indicate overbought conditions, while -80 to -100 indicate oversold conditions.',
     createIndicator: () => new WilliamsR(14),
     processData: (indicator, candle) => {
-      indicator.add(candle);
+      indicator.add({high: Number(candle.high), low: Number(candle.low), close: Number(candle.close)});
       const result = indicator.isStable ? indicator.getResult() : null;
       const signal = indicator.getSignal();
-      return {result, signal, high: candle.high, low: candle.low, close: candle.close};
+      return {result, signal, high: Number(candle.high), low: Number(candle.low), close: Number(candle.close)};
     },
     getChartData: result => ({x: 0, y: result.result}),
     getTableColumns: () => [
@@ -427,7 +428,7 @@ export default function MomentumIndicators() {
     }
   };
 
-  const renderStochastic = (config: IndicatorConfig, selectedCandles: Candle[]) => {
+  const renderStochastic = (config: IndicatorConfig, selectedCandles: ExchangeCandle[]) => {
     const stoch = new StochasticOscillator(14, 3, 3);
     const chartDataK: ChartDataPoint[] = [];
     const chartDataD: ChartDataPoint[] = [];
@@ -435,7 +436,7 @@ export default function MomentumIndicators() {
     const sampleValues: Array<{period: number; date: string; close: number; k: string; d: string; signal: string}> = [];
 
     selectedCandles.forEach((candle, idx) => {
-      stoch.add({high: candle.high, low: candle.low, close: candle.close});
+      stoch.add({high: Number(candle.high), low: Number(candle.low), close: Number(candle.close)});
       const result = stoch.isStable ? stoch.getResult() : null;
       const signal = stoch.getSignal();
       chartDataK.push({x: idx + 1, y: result?.stochK ?? null});
@@ -445,8 +446,8 @@ export default function MomentumIndicators() {
 
       sampleValues.push({
         period: idx + 1,
-        date: candle.date,
-        close: candle.close,
+        date: candle.openTimeInISO,
+        close: Number(candle.close),
         k: result ? result.stochK.toFixed(2) : 'N/A',
         d: result ? result.stochD.toFixed(2) : 'N/A',
         signal: signal.state,
@@ -596,7 +597,7 @@ export default function MomentumIndicators() {
     );
   };
 
-  const renderMACD = (config: IndicatorConfig, selectedCandles: Candle[]) => {
+  const renderMACD = (config: IndicatorConfig, selectedCandles: ExchangeCandle[]) => {
     const macd = new MACD(new EMA(12), new EMA(26), new EMA(9));
     const chartDataMACD: ChartDataPoint[] = [];
     const chartDataSignal: ChartDataPoint[] = [];
@@ -605,7 +606,7 @@ export default function MomentumIndicators() {
     const sampleValues: Array<{period: number; date: string; close: number; result: string; signal: string}> = [];
 
     selectedCandles.forEach((candle, idx) => {
-      macd.add(candle.close);
+      macd.add(Number(candle.close));
       const result = macd.isStable ? macd.getResult() : null;
       const trendSignal = macd.getSignal();
       chartDataMACD.push({x: idx + 1, y: result?.macd ?? null});
@@ -616,8 +617,8 @@ export default function MomentumIndicators() {
 
       sampleValues.push({
         period: idx + 1,
-        date: candle.date,
-        close: candle.close,
+        date: candle.openTimeInISO,
+        close: Number(candle.close),
         result: result ? `${result.macd.toFixed(4)}` : 'N/A',
         signal: trendSignal.state,
       });

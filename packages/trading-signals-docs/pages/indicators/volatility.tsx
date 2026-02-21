@@ -6,7 +6,8 @@ import {DatasetSelector} from '../../components/DatasetSelector';
 import {IndicatorList} from '../../components/IndicatorList';
 import {SignalBadge} from '../../components/SignalBadge';
 import PriceChart, {PriceData} from '../../components/PriceChart';
-import type {Candle, IndicatorConfig} from '../../utils/types';
+import type {ExchangeCandle} from '@typedtrader/exchange';
+import type {IndicatorConfig} from '../../utils/types';
 import {datasets} from '../../utils/datasets';
 import {collectPriceData, renderSingleIndicator} from '../../utils/renderUtils';
 
@@ -46,10 +47,10 @@ const indicators: IndicatorConfig[] = [
       'Measures market volatility by analyzing the range of price movements. Higher values indicate higher volatility; useful for setting stop-loss levels.',
     createIndicator: () => new ATR(14),
     processData: (indicator, candle) => {
-      indicator.add({high: candle.high, low: candle.low, close: candle.close});
+      indicator.add({high: Number(candle.high), low: Number(candle.low), close: Number(candle.close)});
       const result = indicator.isStable ? indicator.getResult() : null;
       const signal = 'getSignal' in indicator ? indicator.getSignal() : {state: 'UNKNOWN', hasChanged: false};
-      return {result, signal, close: candle.close};
+      return {result, signal, close: Number(candle.close)};
     },
     getChartData: result => ({x: 0, y: result.result}),
     getTableColumns: () => [
@@ -73,10 +74,10 @@ const indicators: IndicatorConfig[] = [
       'Measures the greatest of: current high minus current low, absolute value of current high minus previous close, or absolute value of current low minus previous close. Low values indicate a sideways trend with little volatility.',
     createIndicator: () => new TR(),
     processData: (indicator, candle) => {
-      indicator.add({high: candle.high, low: candle.low, close: candle.close});
+      indicator.add({high: Number(candle.high), low: Number(candle.low), close: Number(candle.close)});
       const result = indicator.isStable ? indicator.getResult() : null;
       const signal = 'getSignal' in indicator ? indicator.getSignal() : {state: 'UNKNOWN', hasChanged: false};
-      return {result, signal, close: candle.close};
+      return {result, signal, close: Number(candle.close)};
     },
     getChartData: result => ({x: 0, y: result.result}),
     getTableColumns: () => [
@@ -100,10 +101,10 @@ const indicators: IndicatorConfig[] = [
       'Measures the width between the upper and lower Bollinger Bands relative to the middle band. Useful for identifying squeezes and potential breakouts.',
     createIndicator: () => new BollingerBandsWidth(new BollingerBands(20, 2)),
     processData: (indicator, candle) => {
-      indicator.add(candle.close);
+      indicator.add(Number(candle.close));
       const result = indicator.isStable ? indicator.getResult() : null;
       const signal = 'getSignal' in indicator ? indicator.getSignal() : {state: 'UNKNOWN', hasChanged: false};
-      return {result, signal, close: candle.close};
+      return {result, signal, close: Number(candle.close)};
     },
     getChartData: result => ({x: 0, y: result.result}),
     getTableColumns: () => [
@@ -127,10 +128,10 @@ const indicators: IndicatorConfig[] = [
       'Statistical measure of variability showing the middle 50% of data. Robust measure of spread that is less sensitive to outliers than standard deviation.',
     createIndicator: () => new IQR(13),
     processData: (indicator, candle) => {
-      indicator.add(candle.close);
+      indicator.add(Number(candle.close));
       const result = indicator.isStable ? indicator.getResult() : null;
       const signal = 'getSignal' in indicator ? indicator.getSignal() : {state: 'UNKNOWN', hasChanged: false};
-      return {result, signal, close: candle.close};
+      return {result, signal, close: Number(candle.close)};
     },
     getChartData: result => ({x: 0, y: result.result}),
     getTableColumns: () => [
@@ -154,10 +155,10 @@ const indicators: IndicatorConfig[] = [
       'Average absolute deviation from the mean. Measures the average distance between each data point and the mean of the dataset.',
     createIndicator: () => new MAD(10),
     processData: (indicator, candle) => {
-      indicator.add(candle.close);
+      indicator.add(Number(candle.close));
       const result = indicator.isStable ? indicator.getResult() : null;
       const signal = 'getSignal' in indicator ? indicator.getSignal() : {state: 'UNKNOWN', hasChanged: false};
-      return {result, signal, close: candle.close};
+      return {result, signal, close: Number(candle.close)};
     },
     getChartData: result => ({x: 0, y: result.result}),
     getTableColumns: () => [
@@ -174,12 +175,12 @@ const indicators: IndicatorConfig[] = [
 
 const renderBands = (
   config: IndicatorConfig,
-  selectedCandles: Candle[],
+  selectedCandles: ExchangeCandle[],
   options: {
     label: string;
     paramString: string;
     createIndicator: () => any;
-    addCandle: (indicator: any, candle: Candle) => void;
+    addCandle: (indicator: any, candle: ExchangeCandle) => void;
     details: string;
   }
 ) => {
@@ -214,8 +215,8 @@ const renderBands = (
 
     sampleValues.push({
       period: idx + 1,
-      date: candle.date,
-      close: candle.close,
+      date: candle.openTimeInISO,
+      close: Number(candle.close),
       upper: result ? result.upper.toFixed(2) : 'N/A',
       middle: result ? result.middle.toFixed(2) : 'N/A',
       lower: result ? result.lower.toFixed(2) : 'N/A',
@@ -418,7 +419,7 @@ export default function VolatilityIndicators() {
           label: 'BollingerBands',
           paramString: '20, 2',
           createIndicator: () => new BollingerBands(20, 2),
-          addCandle: (indicator, candle) => indicator.add(candle.close),
+          addCandle: (indicator, candle) => indicator.add(Number(candle.close)),
           details:
             'Shows price volatility using standard deviations from a moving average. Price touching the upper band may indicate overbought, touching lower band may indicate oversold.',
         });
@@ -427,7 +428,7 @@ export default function VolatilityIndicators() {
           label: 'AccelerationBands',
           paramString: '20, 4',
           createIndicator: () => new AccelerationBands(20, 4),
-          addCandle: (indicator, candle) => indicator.add({high: candle.high, low: candle.low, close: candle.close}),
+          addCandle: (indicator, candle) => indicator.add({high: Number(candle.high), low: Number(candle.low), close: Number(candle.close)}),
           details:
             'Volatility bands based on price momentum. Two consecutive closes outside Acceleration Bands suggest an entry point in the direction of the breakout.',
         });
