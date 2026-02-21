@@ -6,7 +6,8 @@ import {DatasetSelector} from '../../components/DatasetSelector';
 import {IndicatorList} from '../../components/IndicatorList';
 import {SignalBadge} from '../../components/SignalBadge';
 import PriceChart, {PriceData} from '../../components/PriceChart';
-import type {Candle, IndicatorConfig} from '../../utils/types';
+import type {ExchangeCandle} from '@typedtrader/exchange';
+import type {IndicatorConfig} from '../../utils/types';
 import {datasets} from '../../utils/datasets';
 import {collectPriceData, renderSingleIndicator} from '../../utils/renderUtils';
 
@@ -22,10 +23,10 @@ const indicators: IndicatorConfig[] = [
       'Calculates the arithmetic mean of prices over a specified period. Smooths out price fluctuations to identify the trend direction.',
     createIndicator: () => new SMA(5),
     processData: (indicator, candle) => {
-      indicator.add(candle.close);
+      indicator.add(Number(candle.close));
       const result = indicator.isStable ? indicator.getResult() : null;
       const signal = 'getSignal' in indicator ? indicator.getSignal() : {state: 'UNKNOWN', hasChanged: false};
-      return {result, signal, close: candle.close};
+      return {result, signal, close: Number(candle.close)};
     },
     getChartData: result => ({x: 0, y: result.result}),
     getTableColumns: () => [
@@ -49,10 +50,10 @@ const indicators: IndicatorConfig[] = [
       'Gives more weight to recent prices, reacting faster to price changes than SMA. Popular for identifying short-term trends.',
     createIndicator: () => new EMA(5),
     processData: (indicator, candle) => {
-      indicator.add(candle.close);
+      indicator.add(Number(candle.close));
       const result = indicator.isStable ? indicator.getResult() : null;
       const signal = 'getSignal' in indicator ? indicator.getSignal() : {state: 'UNKNOWN', hasChanged: false};
-      return {result, signal, close: candle.close};
+      return {result, signal, close: Number(candle.close)};
     },
     getChartData: result => ({x: 0, y: result.result}),
     getTableColumns: () => [
@@ -76,10 +77,10 @@ const indicators: IndicatorConfig[] = [
       'Reduces lag by applying EMA twice, providing faster signals than standard EMA while maintaining smoothness.',
     createIndicator: () => new DEMA(5),
     processData: (indicator, candle) => {
-      indicator.add(candle.close);
+      indicator.add(Number(candle.close));
       const result = indicator.isStable ? indicator.getResult() : null;
       const signal = 'getSignal' in indicator ? indicator.getSignal() : {state: 'UNKNOWN', hasChanged: false};
-      return {result, signal, close: candle.close};
+      return {result, signal, close: Number(candle.close)};
     },
     getChartData: result => ({x: 0, y: result.result}),
     getTableColumns: () => [
@@ -102,10 +103,10 @@ const indicators: IndicatorConfig[] = [
     details: 'Assigns linearly increasing weights to recent data points. The most recent price has the highest weight.',
     createIndicator: () => new WMA(5),
     processData: (indicator, candle) => {
-      indicator.add(candle.close);
+      indicator.add(Number(candle.close));
       const result = indicator.isStable ? indicator.getResult() : null;
       const signal = 'getSignal' in indicator ? indicator.getSignal() : {state: 'UNKNOWN', hasChanged: false};
-      return {result, signal, close: candle.close};
+      return {result, signal, close: Number(candle.close)};
     },
     getChartData: result => ({x: 0, y: result.result}),
     getTableColumns: () => [
@@ -129,10 +130,10 @@ const indicators: IndicatorConfig[] = [
       'Developed by J. Welles Wilder Jr., this smoothed moving average gives more weight to historical data, resulting in a smoother line.',
     createIndicator: () => new RMA(5),
     processData: (indicator, candle) => {
-      indicator.add(candle.close);
+      indicator.add(Number(candle.close));
       const result = indicator.isStable ? indicator.getResult() : null;
       const signal = 'getSignal' in indicator ? indicator.getSignal() : {state: 'UNKNOWN', hasChanged: false};
-      return {result, signal, close: candle.close};
+      return {result, signal, close: Number(candle.close)};
     },
     getChartData: result => ({x: 0, y: result.result}),
     getTableColumns: () => [
@@ -156,10 +157,10 @@ const indicators: IndicatorConfig[] = [
       'Similar to RMA, this is a smoothed moving average that reduces noise and provides a clearer view of the trend.',
     createIndicator: () => new WSMA(5),
     processData: (indicator, candle) => {
-      indicator.add(candle.close);
+      indicator.add(Number(candle.close));
       const result = indicator.isStable ? indicator.getResult() : null;
       const signal = 'getSignal' in indicator ? indicator.getSignal() : {state: 'UNKNOWN', hasChanged: false};
-      return {result, signal, close: candle.close};
+      return {result, signal, close: Number(candle.close)};
     },
     getChartData: result => ({x: 0, y: result.result}),
     getTableColumns: () => [
@@ -183,10 +184,10 @@ const indicators: IndicatorConfig[] = [
       'Calculates the average price weighted by volume. Used to assess whether trades are being executed at favorable prices.',
     createIndicator: () => new VWAP(),
     processData: (indicator, candle) => {
-      indicator.add(candle);
+      indicator.add({high: Number(candle.high), low: Number(candle.low), close: Number(candle.close), volume: Number(candle.volume)});
       const result = indicator.getResult();
       const signal = 'getSignal' in indicator ? indicator.getSignal() : {state: 'UNKNOWN', hasChanged: false};
-      return {result, signal, close: candle.close, volume: candle.volume};
+      return {result, signal, close: Number(candle.close), volume: Number(candle.volume)};
     },
     getChartData: result => ({x: 0, y: result.result}),
     getTableColumns: () => [
@@ -211,10 +212,10 @@ const indicators: IndicatorConfig[] = [
       'Measures trend strength regardless of direction. Values above 25 indicate a strong trend, below 20 suggest a weak trend.',
     createIndicator: () => new ADX(14),
     processData: (indicator, candle) => {
-      indicator.add(candle);
+      indicator.add({high: Number(candle.high), low: Number(candle.low), close: Number(candle.close)});
       const result = indicator.isStable ? indicator.getResult() : null;
       const signal = 'getSignal' in indicator ? indicator.getSignal() : {state: 'UNKNOWN', hasChanged: false};
-      return {result, signal, high: candle.high, low: candle.low, close: candle.close};
+      return {result, signal, high: Number(candle.high), low: Number(candle.low), close: Number(candle.close)};
     },
     getChartData: result => ({x: 0, y: result.result}),
     getTableColumns: () => [
@@ -240,10 +241,10 @@ const indicators: IndicatorConfig[] = [
       'Measures the strength of directional movement. The ADX is derived from smoothing the DX values over time.',
     createIndicator: () => new DX(14),
     processData: (indicator, candle) => {
-      indicator.add(candle);
+      indicator.add({high: Number(candle.high), low: Number(candle.low), close: Number(candle.close)});
       const result = indicator.isStable ? indicator.getResult() : null;
       const signal = 'getSignal' in indicator ? indicator.getSignal() : {state: 'UNKNOWN', hasChanged: false};
-      return {result, signal, high: candle.high, low: candle.low, close: candle.close};
+      return {result, signal, high: Number(candle.high), low: Number(candle.low), close: Number(candle.close)};
     },
     getChartData: result => ({x: 0, y: result.result}),
     getTableColumns: () => [
@@ -269,10 +270,10 @@ const indicators: IndicatorConfig[] = [
       'Identifies potential reversal points by placing dots above or below price. Dots below = uptrend, dots above = downtrend.',
     createIndicator: () => new PSAR({accelerationStep: 0.02, accelerationMax: 0.2}),
     processData: (indicator, candle) => {
-      indicator.add(candle);
+      indicator.add({high: Number(candle.high), low: Number(candle.low), close: Number(candle.close)});
       const result = indicator.isStable ? indicator.getResult() : null;
       const signal = 'getSignal' in indicator ? indicator.getSignal() : {state: 'UNKNOWN', hasChanged: false};
-      return {result, signal, high: candle.high, low: candle.low, close: candle.close};
+      return {result, signal, high: Number(candle.high), low: Number(candle.low), close: Number(candle.close)};
     },
     getChartData: result => ({x: 0, y: result.result}),
     getTableColumns: () => [
@@ -303,7 +304,7 @@ const indicators: IndicatorConfig[] = [
   },
 ];
 
-const renderDMA = (config: IndicatorConfig, selectedCandles: Candle[]) => {
+const renderDMA = (config: IndicatorConfig, selectedCandles: ExchangeCandle[]) => {
   const dma = new DMA(5, 9, SMA);
   const chartDataShort: ChartDataPoint[] = [];
   const chartDataLong: ChartDataPoint[] = [];
@@ -318,7 +319,7 @@ const renderDMA = (config: IndicatorConfig, selectedCandles: Candle[]) => {
   }> = [];
 
   selectedCandles.forEach((candle, idx) => {
-    dma.add(candle.close);
+    dma.add(Number(candle.close));
     const result = dma.isStable ? dma.getResult() : null;
     const signal =
       'getSignal' in dma
@@ -331,8 +332,8 @@ const renderDMA = (config: IndicatorConfig, selectedCandles: Candle[]) => {
 
     sampleValues.push({
       period: idx + 1,
-      date: candle.date,
-      close: candle.close,
+      date: candle.openTimeInISO,
+      close: Number(candle.close),
       short: result ? result.short.toFixed(2) : 'N/A',
       long: result ? result.long.toFixed(2) : 'N/A',
       signal: signal.state,

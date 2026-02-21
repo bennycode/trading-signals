@@ -6,19 +6,19 @@ import sidewaysCandles from '../pages/indicators/candles/sideways.json' with {ty
 export const datasets: CandleDataset[] = [
   {
     id: 'uptrend',
-    name: 'Uptrend',
+    name: 'Strong Uptrend',
     description: 'Rising market - prices trending upward',
     candles: uptrendCandles,
   },
   {
     id: 'downtrend',
-    name: 'Downtrend',
+    name: 'Strong Downtrend',
     description: 'Falling market - prices trending downward',
     candles: downtrendCandles,
   },
   {
     id: 'sideways',
-    name: 'Sideways',
+    name: 'Synthetic Sideways',
     description: 'Ranging market - prices moving horizontally',
     candles: sidewaysCandles,
   },
