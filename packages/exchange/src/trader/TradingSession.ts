@@ -2,8 +2,8 @@ import Big from 'big.js';
 import {EventEmitter} from 'node:events';
 import {CandleBatcher} from '../candle/CandleBatcher.js';
 import type {BatchedCandle} from '../candle/BatchedCandle.js';
-import type {ExchangeCandle, ExchangeFill, ExchangePendingOrder} from '../core/Exchange.js';
-import {ExchangeOrderSide, ExchangeOrderType} from '../core/Exchange.js';
+import type {ExchangeCandle, ExchangeFill, ExchangePendingOrder} from '../exchange/Exchange.js';
+import {ExchangeOrderSide, ExchangeOrderType} from '../exchange/Exchange.js';
 import type {
   OrderAdvice,
   TradingSessionEventMap,

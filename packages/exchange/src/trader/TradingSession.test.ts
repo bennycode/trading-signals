@@ -1,7 +1,7 @@
 import Big from 'big.js';
 import {EventEmitter} from 'node:events';
 import {TradingSession} from './TradingSession.js';
-import {TradingPair} from '../core/TradingPair.js';
+import {TradingPair} from '../exchange/TradingPair.js';
 import {
   ExchangeOrderPosition,
   ExchangeOrderSide,
@@ -12,7 +12,7 @@ import {
   type ExchangePendingLimitOrder,
   type ExchangePendingMarketOrder,
   type ExchangeTradingRules,
-} from '../core/Exchange.js';
+} from '../exchange/Exchange.js';
 import type {OrderAdvice, TradingSessionStrategy} from './TradingSessionTypes.js';
 
 const pair = new TradingPair('TSLA', 'USD');

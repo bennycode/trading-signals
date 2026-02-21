@@ -6,7 +6,7 @@ export default mergeConfig(
   defineConfig({
     test: {
       coverage: {
-        exclude: ['src/start/**', 'fixtures/**'],
+        exclude: ['fixtures/**'],
       },
     },
   })

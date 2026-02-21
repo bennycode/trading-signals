@@ -19,10 +19,10 @@ import {
   type ExchangePendingMarketOrder,
   type ExchangePendingOrder,
   type ExchangeTradingRules,
-} from '../core/Exchange.js';
-import {TradingPair} from '../core/TradingPair.js';
+} from '../Exchange.js';
+import {TradingPair} from '../TradingPair.js';
 import {alpacaWebSocket, AlpacaConnection} from './AlpacaWebSocket.js';
-import {CandleBatcher} from '../candle/CandleBatcher.js';
+import {CandleBatcher} from '../../candle/CandleBatcher.js';
 import type {MinuteBarMessage} from './api/schema/StreamSchema.js';
 import {OrderStatus} from './api/schema/OrderSchema.js';
 import {AlpacaAPI} from './api/AlpacaAPI.js';
@@ -62,6 +62,31 @@ export class AlpacaExchange extends Exchange {
   }
 
   static NAME = 'Alpaca';
+
+  /**
+   * Default Alpaca fee rates.
+   *
+   * @see https://docs.alpaca.markets/docs/crypto-fees
+   * @see https://files.alpaca.markets/disclosures/library/BrokFeeSched.pdf
+   */
+  static DEFAULT_FEE_RATES: ExchangeFeeRate = {
+    [ExchangeOrderType.MARKET]: new Big(0.0025),
+    [ExchangeOrderType.LIMIT]: new Big(0.0015),
+  };
+
+  /**
+   * Default trading rules for crypto pairs on Alpaca.
+   * Use `getTradingRules()` with a live connection for pair-specific values.
+   *
+   * @see https://docs.alpaca.markets/docs/crypto-trading-1#minimum-order-size
+   */
+  static DEFAULT_CRYPTO_TRADING_RULES = {
+    base_increment: '0.0001',
+    base_max_size: Number.MAX_SAFE_INTEGER.toString(),
+    base_min_size: '0.0001',
+    counter_increment: '0.01',
+    counter_min_size: '1',
+  };
 
   #createSymbol(pair: TradingPair, isCrypto: boolean): string {
     if (isCrypto) {
@@ -434,10 +459,7 @@ export class AlpacaExchange extends Exchange {
    */
   async getFeeRates(_pair: TradingPair): Promise<ExchangeFeeRate> {
     // TODO: Refine according to "30-Day Crypto Volume (USD)" and make fee rate dependant on crypto or stocks
-    return {
-      [ExchangeOrderType.MARKET]: new Big(0.0025),
-      [ExchangeOrderType.LIMIT]: new Big(0.0015),
-    };
+    return AlpacaExchange.DEFAULT_FEE_RATES;
   }
 
   /**
@@ -445,8 +467,14 @@ export class AlpacaExchange extends Exchange {
    *
    * @see https://docs.alpaca.markets/docs/working-with-orders#place-new-orders
    */
-  protected override async placeOrder(pair: TradingPair, options: ExchangeLimitOrderOptions): Promise<ExchangePendingLimitOrder>;
-  protected override async placeOrder(pair: TradingPair, options: ExchangeMarketOrderOptions): Promise<ExchangePendingMarketOrder>;
+  protected override async placeOrder(
+    pair: TradingPair,
+    options: ExchangeLimitOrderOptions
+  ): Promise<ExchangePendingLimitOrder>;
+  protected override async placeOrder(
+    pair: TradingPair,
+    options: ExchangeMarketOrderOptions
+  ): Promise<ExchangePendingMarketOrder>;
   protected override async placeOrder(pair: TradingPair, options: ExchangeOrderOptions): Promise<ExchangePendingOrder> {
     const isCrypto = await this.#isCryptoSymbol(pair);
     const symbol = this.#createSymbol(pair, isCrypto);
@@ -494,11 +522,4 @@ export class AlpacaExchange extends Exchange {
     return AlpacaExchangeMapper.toExchangePendingOrder(order, pair, options);
   }
 
-  getMarkdownLink(): string {
-    return '[Alpaca](https://alpaca.markets/)';
-  }
-
-  getTradingLink(pair: TradingPair): string {
-    return `https://app.alpaca.markets/trade/${pair.base}`;
-  }
 }

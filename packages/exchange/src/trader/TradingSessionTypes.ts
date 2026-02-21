@@ -8,9 +8,9 @@ import type {
   ExchangeOrderType,
   ExchangePendingOrder,
   ExchangeTradingRules,
-} from '../core/Exchange.js';
-import type {Exchange} from '../core/Exchange.js';
-import type {TradingPair} from '../core/TradingPair.js';
+} from '../exchange/Exchange.js';
+import type {Exchange} from '../exchange/Exchange.js';
+import type {TradingPair} from '../exchange/TradingPair.js';
 
 export interface TradingSessionStrategy {
   onCandle(candle: BatchedCandle, state: TradingSessionState): Promise<OrderAdvice | void>;

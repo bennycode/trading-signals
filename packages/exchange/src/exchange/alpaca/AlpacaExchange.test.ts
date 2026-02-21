@@ -1,7 +1,7 @@
 import Big from 'big.js';
 import {describe, expect, it, vi, beforeEach} from 'vitest';
-import {TradingPair} from '../core/TradingPair.js';
-import {ExchangeOrderPosition, ExchangeOrderSide, ExchangeOrderType} from '../core/Exchange.js';
+import {TradingPair} from '../TradingPair.js';
+import {ExchangeOrderPosition, ExchangeOrderSide, ExchangeOrderType} from '../Exchange.js';
 import {AssetClass, OrderSide, OrderStatus, OrderType} from './api/schema/OrderSchema.js';
 import {PositionSide} from './api/schema/PositionSchema.js';
 import {TradeUpdateEvent} from './api/schema/TradingStreamSchema.js';
@@ -76,19 +76,6 @@ describe.sequential('AlpacaExchange', () => {
 
       expect(fees[ExchangeOrderType.MARKET]).toEqual(new Big(0.0025));
       expect(fees[ExchangeOrderType.LIMIT]).toEqual(new Big(0.0015));
-    });
-  });
-
-  describe('getMarkdownLink', () => {
-    it('returns a markdown link to Alpaca', () => {
-      expect(exchange.getMarkdownLink()).toBe('[Alpaca](https://alpaca.markets/)');
-    });
-  });
-
-  describe('getTradingLink', () => {
-    it('returns a link to the Alpaca trading page', () => {
-      const pair = new TradingPair('SHOP', 'USD');
-      expect(exchange.getTradingLink(pair)).toBe('https://app.alpaca.markets/trade/SHOP');
     });
   });
 

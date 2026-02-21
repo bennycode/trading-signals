@@ -6,7 +6,6 @@ export default mergeConfig(
   defineConfig({
     test: {
       coverage: {
-        exclude: ['src/start/**'],
         thresholds: {
           branches: 100,
           functions: 100,
