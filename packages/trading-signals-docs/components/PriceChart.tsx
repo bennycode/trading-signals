@@ -1,4 +1,5 @@
 import { Chart as HighchartsChart, HighchartsReactRefObject } from '@highcharts/react';
+import { Options } from 'highcharts';
 import { useRef } from 'react';
 
 export interface PriceData {
@@ -17,7 +18,7 @@ export interface PriceChartProps {
 export default function PriceChart({title, data}: PriceChartProps) {
   const chartRef = useRef<HighchartsReactRefObject>(null);
 
-  const options = {
+  const options: Options = {
     chart: {
       type: 'line',
       backgroundColor: 'transparent',
