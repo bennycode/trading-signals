@@ -16,6 +16,7 @@ const nextConfig: NextConfig = {
         assetPrefix: `/${repoName}/`,
       }
     : {}),
+  transpilePackages: ['trading-strategies', '@typedtrader/exchange'],
   images: {
     unoptimized: true,
   },

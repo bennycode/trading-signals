@@ -10,6 +10,7 @@ import type {ExchangeCandle} from '@typedtrader/exchange';
 import type {IndicatorConfig} from '../../utils/types';
 import {datasets} from '../../utils/datasets';
 import {collectPriceData, renderSingleIndicator} from '../../utils/renderUtils';
+import {formatDate} from '../../utils/formatDate';
 
 const indicators: IndicatorConfig[] = [
   {
@@ -332,7 +333,7 @@ const renderDMA = (config: IndicatorConfig, selectedCandles: ExchangeCandle[]) =
 
     sampleValues.push({
       period: idx + 1,
-      date: candle.openTimeInISO,
+      date: formatDate(candle.openTimeInISO),
       close: Number(candle.close),
       short: result ? result.short.toFixed(2) : 'N/A',
       long: result ? result.long.toFixed(2) : 'N/A',
