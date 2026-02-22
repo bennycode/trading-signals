@@ -29,12 +29,26 @@ function createStrategy(strategyId: StrategyId, config: Record<string, unknown>)
   }
 }
 
+function parseInitialAmount(value: string, label: string): Big {
+  const trimmed = value.trim();
+
+  if (trimmed === '') {
+    return new Big(0);
+  }
+
+  if (!/^\d+(\.\d+)?$/.test(trimmed)) {
+    throw new Error(`Invalid ${label} amount: "${value}". Please enter a non-negative numeric value.`);
+  }
+
+  return new Big(trimmed);
+}
+
 function createExchange(candles: ExchangeCandle[], initialBase: string, initialCounter: string) {
   const base = candles[0]?.base ?? 'BTC';
   const counter = candles[0]?.counter ?? 'USD';
   const balances = new Map([
-    [base, {available: new Big(initialBase || '0'), hold: new Big(0)}],
-    [counter, {available: new Big(initialCounter || '0'), hold: new Big(0)}],
+    [base, {available: parseInitialAmount(initialBase, 'base'), hold: new Big(0)}],
+    [counter, {available: parseInitialAmount(initialCounter, 'counter'), hold: new Big(0)}],
   ]);
   return new AlpacaExchangeMock({balances});
 }
@@ -51,7 +65,7 @@ export default function BacktestPage() {
   const [initialBase, setInitialBase] = useState('0');
   const [initialCounter, setInitialCounter] = useState('10000');
   const [toast, setToast] = useState<string | null>(null);
-  const toastTimer = useRef<ReturnType<typeof setTimeout>>(null);
+  const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const showToast = useCallback((message: string) => {
     if (toastTimer.current) {
@@ -64,12 +78,12 @@ export default function BacktestPage() {
   const currentDataset = selectedDataset === 'custom' ? customDataset : datasets.find(d => d.id === selectedDataset)!;
   const candles = (currentDataset?.candles ?? []) as ExchangeCandle[];
 
-  // Recompute defaults when dataset changes
+  // Recompute defaults when dataset or strategy changes (including custom dataset uploads)
   useEffect(() => {
     const def = strategyDefinitions.find(s => s.id === selectedStrategy)!;
     const defaults = def.getDefaultConfig(candles);
     setConfigJson(JSON.stringify(defaults, null, 2));
-  }, [selectedDataset]);
+  }, [selectedDataset, selectedStrategy, customDataset]);
 
   // Validate JSON on every change
   useEffect(() => {

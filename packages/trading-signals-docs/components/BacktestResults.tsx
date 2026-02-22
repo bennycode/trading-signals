@@ -28,7 +28,7 @@ function PerformanceCards({result, candles}: BacktestResultsProps) {
   const cards = [
     {label: 'Strategy ROI', value: `${returnPct >= 0 ? '+' : ''}${returnPct}%`, positive: returnPct >= 0},
     {label: 'Buy & Hold Baseline', value: `${bAndHPct >= 0 ? '+' : ''}${bAndHPct}%`, positive: bAndHPct >= 0},
-    {label: 'Profit & Loss', value: `${pnl >= 0 ? '+' : ''}$${formatBig(result.profitOrLoss)}`, positive: pnl >= 0},
+    {label: 'Profit & Loss', value: `${pnl >= 0 ? '+' : '-'}$${formatBig(result.profitOrLoss.abs())}`, positive: pnl >= 0},
     {label: 'Total Fees', value: `$${formatBig(result.totalFees)}`, positive: null},
     {label: 'Total Trades', value: String(performance.totalTrades), positive: null},
     {label: 'Win Rate', value: `${winRate}%`, positive: winRate >= 50},
@@ -68,19 +68,21 @@ function PriceChartWithTrades({result, candles}: BacktestResultsProps) {
     time: formatDate(c.openTimeInISO),
   }));
 
+  const candleIndexByTime = new Map(candles.map((c, i) => [c.openTimeInISO, i + 1]));
+
   const buyMarkers = result.trades
     .filter(t => t.side === ExchangeOrderSide.BUY)
     .map(t => {
-      const idx = candles.findIndex(c => c.openTimeInISO === t.openTimeInISO);
-      return {x: idx >= 0 ? idx + 1 : 0, y: Number(t.price.toFixed(2)), name: `BUY @ $${t.price.toFixed(2)}`};
+      const x = candleIndexByTime.get(t.openTimeInISO) ?? 0;
+      return {x, y: Number(t.price.toFixed(2)), name: `BUY @ $${t.price.toFixed(2)}`};
     })
     .filter(m => m.x > 0);
 
   const sellMarkers = result.trades
     .filter(t => t.side === ExchangeOrderSide.SELL)
     .map(t => {
-      const idx = candles.findIndex(c => c.openTimeInISO === t.openTimeInISO);
-      return {x: idx >= 0 ? idx + 1 : 0, y: Number(t.price.toFixed(2)), name: `SELL @ $${t.price.toFixed(2)}`};
+      const x = candleIndexByTime.get(t.openTimeInISO) ?? 0;
+      return {x, y: Number(t.price.toFixed(2)), name: `SELL @ $${t.price.toFixed(2)}`};
     })
     .filter(m => m.x > 0);
 
