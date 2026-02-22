@@ -22,7 +22,7 @@ export interface BacktestPerformanceSummary {
   buyAndHoldReturnPercentage: Big;
   /** Final portfolio value in counter currency (base * lastClose + counter). */
   finalPortfolioValue: Big;
-  /** Initial portfolio value in counter currency (base * lastClose + counter). */
+  /** Initial portfolio value in counter currency (base * firstOpen + counter). */
   initialPortfolioValue: Big;
   /** Longest consecutive losing streak (round-trip cycles). */
   maxLossStreak: number;

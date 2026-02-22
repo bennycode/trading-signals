@@ -468,7 +468,7 @@ describe('BacktestExecutor', () => {
 
       expect(performance.totalTrades).toBe(1);
 
-      // Initial portfolio: 0 base * 150 (last close) + 1000 counter = 1000
+      // Initial portfolio: 0 base * 100 (first open) + 1000 counter = 1000
       expect(performance.initialPortfolioValue.toFixed(2)).toBe('1000.00');
 
       // Bought BTC at 100, now worth more at 150
