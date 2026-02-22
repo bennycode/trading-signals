@@ -1,7 +1,5 @@
 import {useRef, useState} from 'react';
 import type {ChangeEvent} from 'react';
-import {z} from 'zod';
-import {ExchangeCandleSchema} from '@typedtrader/exchange';
 import type {ExchangeCandle} from '@typedtrader/exchange';
 
 interface Dataset {
@@ -30,9 +28,11 @@ export function DatasetSelector({datasets, selectedDataset, onDatasetChange, onC
 
     setUploadError(null);
     const reader = new FileReader();
-    reader.onload = () => {
+    reader.onload = async () => {
       try {
         const json = JSON.parse(reader.result as string);
+        const {z} = await import('zod');
+        const {ExchangeCandleSchema} = await import('@typedtrader/exchange');
         const result = z.array(ExchangeCandleSchema).safeParse(json);
         if (!result.success) {
           const issues = result.error.issues.slice(0, 3);
