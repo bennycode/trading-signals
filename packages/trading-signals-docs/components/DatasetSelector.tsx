@@ -1,4 +1,5 @@
 import {useRef, useState} from 'react';
+import type {ChangeEvent} from 'react';
 import {z} from 'zod';
 import {ExchangeCandleSchema} from '@typedtrader/exchange';
 import type {ExchangeCandle} from '@typedtrader/exchange';
@@ -21,7 +22,7 @@ export function DatasetSelector({datasets, selectedDataset, onDatasetChange, onC
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploadError, setUploadError] = useState<string | null>(null);
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) {
       return;
@@ -72,11 +73,12 @@ export function DatasetSelector({datasets, selectedDataset, onDatasetChange, onC
       <p className="mt-2 text-xs text-slate-400">{datasets.find(ds => ds.id === selectedDataset)?.description}</p>
 
       <input ref={fileInputRef} type="file" accept=".json" onChange={handleFileChange} className="hidden" />
-      <label
+      <button
+        type="button"
         onClick={() => fileInputRef.current?.click()}
         className="mt-3 flex items-center justify-center w-full py-2 px-3 bg-slate-700 hover:bg-slate-600 border border-slate-600 rounded-md text-slate-300 text-xs font-medium cursor-pointer transition-colors">
         Upload Candle JSON
-      </label>
+      </button>
 
       {uploadError && <p className="mt-2 text-xs text-red-400">{uploadError}</p>}
 

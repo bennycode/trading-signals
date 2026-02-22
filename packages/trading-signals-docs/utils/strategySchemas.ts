@@ -31,12 +31,21 @@ function getPriceStats(candles: ExchangeCandle[]): {firstClose: number; minClose
   if (candles.length === 0) {
     return {firstClose: 100, minClose: 90, maxClose: 110};
   }
-  const closes = candles.map(c => parseFloat(c.close));
-  return {
-    firstClose: closes[0],
-    minClose: Math.min(...closes),
-    maxClose: Math.max(...closes),
-  };
+  const firstClose = parseFloat(candles[0].close);
+  let minClose = firstClose;
+  let maxClose = firstClose;
+
+  for (let i = 1; i < candles.length; i++) {
+    const close = parseFloat(candles[i].close);
+    if (close < minClose) {
+      minClose = close;
+    }
+    if (close > maxClose) {
+      maxClose = close;
+    }
+  }
+
+  return {firstClose, minClose, maxClose};
 }
 
 export const strategyDefinitions: StrategyDefinition[] = [
