@@ -55,9 +55,10 @@ export class BacktestExecutor {
     // using the last candle (they would fill on the next candle in real trading)
 
     const finalBalances = await exchange.getAvailableBalances(tradingPair);
+    const firstOpenPrice = candles.length > 0 ? new Big(candles[0].open) : new Big(0);
     const lastClosePrice = candles.length > 0 ? new Big(candles[candles.length - 1].close) : new Big(0);
 
-    const initialPortfolioValue = initialBaseBalance.mul(lastClosePrice).plus(initialCounterBalance);
+    const initialPortfolioValue = initialBaseBalance.mul(firstOpenPrice).plus(initialCounterBalance);
     const finalPortfolioValue = finalBalances.base.mul(lastClosePrice).plus(finalBalances.counter);
     const profitOrLoss = finalPortfolioValue.minus(initialPortfolioValue);
 

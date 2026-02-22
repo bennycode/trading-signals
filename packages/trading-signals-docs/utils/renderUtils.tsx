@@ -1,4 +1,5 @@
 import type {ExchangeCandle} from '@typedtrader/exchange';
+import {formatDate} from './formatDate';
 import type {IndicatorConfig} from './types';
 import type {PriceData} from '../components/PriceChart';
 import type {ChartDataPoint} from '../components/Chart';
@@ -41,7 +42,7 @@ export const renderSingleIndicator = (config: IndicatorConfig, selectedCandles: 
 
     sampleValues.push({
       period: idx + 1,
-      date: candle.openTimeInISO,
+      date: formatDate(candle.openTimeInISO),
       ...processedData,
       result:
         processedData.result !== null && processedData.result !== undefined ? processedData.result.toFixed(2) : 'N/A',

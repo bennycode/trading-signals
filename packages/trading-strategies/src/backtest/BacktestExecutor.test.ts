@@ -468,12 +468,45 @@ describe('BacktestExecutor', () => {
 
       expect(performance.totalTrades).toBe(1);
 
-      // Initial portfolio: 0 base * 150 (last close) + 1000 counter = 1000
+      // Initial portfolio: 0 base * 100 (first open) + 1000 counter = 1000
       expect(performance.initialPortfolioValue.toFixed(2)).toBe('1000.00');
 
       // Bought BTC at 100, now worth more at 150
       expect(performance.finalPortfolioValue.gt(new Big(1400))).toBe(true);
       expect(performance.returnPercentage.gt(new Big(40))).toBe(true);
+    });
+
+    it('uses first candle open (not last close) for initial portfolio valuation when base balance > 0', async () => {
+      class NoOpStrategy extends Strategy {
+        static override NAME = 'NoOp';
+
+        protected override async processCandle(): Promise<StrategyAdvice | void> {
+          return undefined;
+        }
+      }
+
+      // firstOpen=50, lastClose=200 — they differ so the test distinguishes which is used
+      const candles = [
+        createCandle({open: '50', close: '80', low: '48', high: '82', openTimeInISO: '2025-01-01T00:00:00.000Z'}),
+        createCandle({open: '120', close: '200', low: '115', high: '205', openTimeInISO: '2025-01-02T00:00:00.000Z'}),
+      ];
+
+      const config: BacktestConfig = {
+        candles,
+        // 2 BTC initial base balance so the open price matters for valuation
+        exchange: createMockExchange({baseBalance: '2', counterBalance: '0'}),
+        strategy: new NoOpStrategy(),
+        tradingPair,
+      };
+
+      const result = await new BacktestExecutor(config).execute();
+      const {performance} = result;
+
+      // initialPortfolioValue = 2 BTC * firstOpen(50) + 0 counter = 100
+      expect(performance.initialPortfolioValue.toFixed(2)).toBe('100.00');
+
+      // If lastClose(200) were used it would be 400, so this assertion distinguishes the two
+      expect(performance.initialPortfolioValue.toFixed(2)).not.toBe('400.00');
     });
 
     it('provides a complete performance summary for zero-trade runs', async () => {

@@ -26,6 +26,7 @@ import type {ExchangeCandle} from '@typedtrader/exchange';
 import type {IndicatorConfig} from '../../utils/types';
 import {datasets} from '../../utils/datasets';
 import {collectPriceData, renderSingleIndicator} from '../../utils/renderUtils';
+import {formatDate} from '../../utils/formatDate';
 
 const indicators: IndicatorConfig[] = [
   {
@@ -446,7 +447,7 @@ export default function MomentumIndicators() {
 
       sampleValues.push({
         period: idx + 1,
-        date: candle.openTimeInISO,
+        date: formatDate(candle.openTimeInISO),
         close: Number(candle.close),
         k: result ? result.stochK.toFixed(2) : 'N/A',
         d: result ? result.stochD.toFixed(2) : 'N/A',
@@ -617,7 +618,7 @@ export default function MomentumIndicators() {
 
       sampleValues.push({
         period: idx + 1,
-        date: candle.openTimeInISO,
+        date: formatDate(candle.openTimeInISO),
         close: Number(candle.close),
         result: result ? `${result.macd.toFixed(4)}` : 'N/A',
         signal: trendSignal.state,
