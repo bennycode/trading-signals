@@ -56,6 +56,8 @@ import {StrategySignal, StrategyAdvice} from 'trading-strategies';
 
 - **Non-fungible assets** are assets where each unit is unique and not directly interchangeable with another, meaning their value depends on specific characteristics such as rarity, condition, history, or ownership rather than a standard market price. A Pokémon trading card is a non-fungible asset because each card can differ in edition, rarity, condition, and even print run, so one card is not perfectly interchangeable with another, even if they feature the same Pokémon.
 
+- **Trading filters** constrain exchange orders to valid values. The **tick size** is the smallest allowed price increment: with a tick size of `0.01`, a price of `2500.01` is valid but `2500.015` is not. The **step size** (or lot size) works the same way for quantities: with a step size of `0.0001`, a quantity of `0.0002` is valid but `0.00025` is not. Exchanges also set a **minimum notional value**, which is the minimum total order value (price × quantity). If the minimum notional is `5 USDT`, buying `0.001 BTC` at `2500 USDT` would be rejected because `0.001 × 2500 = 2.5 USDT` falls below the limit. Traders need to query the exchange's trading rules (e.g., [Binance's Spot Trading Rules](https://www.binance.com/en/academy/articles/binance-spot-trading-rules-a-comprehensive-guide)) and round their values before submitting orders.
+
 ## Strategy Signals
 
 - `BUY_MARKET`: Buy at current market price

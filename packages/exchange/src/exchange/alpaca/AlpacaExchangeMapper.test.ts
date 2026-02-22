@@ -1,12 +1,12 @@
 import {describe, expect, it, vi} from 'vitest';
 import {AlpacaExchangeMapper} from './AlpacaExchangeMapper.js';
-import minutes5 from '../../fixtures/alpaca/bars/minutes-5.json' with {type: 'json'};
+import minutes5 from '../../../fixtures/alpaca/bars/minutes-5.json' with {type: 'json'};
 import {AssetClass, OrderSide, OrderStatus, OrderType, TimeInForce} from './api/schema/OrderSchema.js';
 import {ms} from 'ms';
-import {BatchedCandle} from '../candle/BatchedCandle.js';
-import {CandleBatcher} from '../candle/CandleBatcher.js';
-import {TradingPair} from '../core/TradingPair.js';
-import {ExchangeOrderPosition, ExchangeOrderSide} from '../core/Exchange.js';
+import {BatchedCandle} from '../../candle/BatchedCandle.js';
+import {CandleBatcher} from '../../candle/CandleBatcher.js';
+import {TradingPair} from '../TradingPair.js';
+import {ExchangeOrderPosition, ExchangeOrderSide} from '../Exchange.js';
 
 describe('AlpacaExchangeMapper', () => {
   describe('mapInterval', () => {
@@ -38,6 +38,20 @@ describe('AlpacaExchangeMapper', () => {
       const candles = minutes5.map(bar => AlpacaExchangeMapper.toExchangeCandle(bar, pair, ms('1m')));
       candles.forEach(candle => cb.addToBatch(candle));
       expect(onBatchedCandle).toBeCalledTimes(1);
+    });
+  });
+
+  describe('symbolToPair', () => {
+    it('maps a stock symbol to a TradingPair with USD counter', () => {
+      const pair = AlpacaExchangeMapper.symbolToPair('AAPL', 'us_equity');
+      expect(pair.base).toBe('AAPL');
+      expect(pair.counter).toBe('USD');
+    });
+
+    it('maps a crypto symbol to a TradingPair by splitting on /', () => {
+      const pair = AlpacaExchangeMapper.symbolToPair('BTC/USD', 'crypto');
+      expect(pair.base).toBe('BTC');
+      expect(pair.counter).toBe('USD');
     });
   });
 

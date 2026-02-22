@@ -18,12 +18,12 @@
   "exports": {
     ".": {
       "import": {
-        "default": "./dist/index.mjs",
-        "types": "./dist/index.d.mts"
+        "types": "./dist/index.d.mts",
+        "default": "./dist/index.mjs"
       },
       "require": {
-        "default": "./dist/index.cjs",
-        "types": "./dist/index.d.cts"
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
       }
     },
     "./package.json": "./package.json"
@@ -46,9 +46,10 @@
     "access": "public"
   },
   "scripts": {
+    "alpaca:demo": "tsx src/exchange/alpaca/demo.ts",
+    "alpaca:fetchCandles": "tsx src/exchange/alpaca/fetchCandles.ts",
     "build": "tsdown --dts --format esm --format cjs",
     "clean": "rimraf --glob src/**/*{.js,.js.map,.d.ts}",
-    "demo:alpaca": "tsx src/alpaca/demo.ts",
     "dist": "npm run clean && npm run build && npm run test:exports",
     "lint:types": "tsc --noEmit",
     "start": "exit 0",

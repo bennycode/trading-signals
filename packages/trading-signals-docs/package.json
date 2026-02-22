@@ -1,11 +1,16 @@
 {
   "dependencies": {
-    "@highcharts/react": "^4.1.0",
-    "@tailwindcss/postcss": "^4.1.18",
+    "@highcharts/react": "^4.2.1",
+    "@tailwindcss/postcss": "^4.2.0",
+    "@testing-library/dom": "^10.4.1",
+    "@typedtrader/exchange": "0.2.5",
+    "highcharts": "^12.5.0",
     "next": "^16.1.6",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
-    "trading-signals": "7.4.3"
+    "trading-signals": "7.4.3",
+    "trading-strategies": "0.3.5",
+    "zod": "^4.3.6"
   },
   "description": "Documentation and showcase website for trading-signals library",
   "devDependencies": {

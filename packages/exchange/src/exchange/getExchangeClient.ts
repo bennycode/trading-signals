@@ -1,5 +1,5 @@
-import {AlpacaExchange} from '../alpaca/AlpacaExchange.js';
-import {getAlpacaClient} from '../alpaca/getAlpacaClient.js';
+import {AlpacaExchange} from './alpaca/AlpacaExchange.js';
+import {getAlpacaClient} from './alpaca/getAlpacaClient.js';
 import {Exchange} from './Exchange.js';
 
 export function getExchangeClient(account: {
