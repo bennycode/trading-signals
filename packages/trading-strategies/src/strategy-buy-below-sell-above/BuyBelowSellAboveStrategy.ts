@@ -4,11 +4,7 @@ import Big from 'big.js';
 import {StrategyAdvice, StrategyAdviceLimitBuyOrder, StrategyAdviceLimitSellOrder} from '../strategy/StrategyAdvice.js';
 import {StrategySignal} from '../strategy/StrategySignal.js';
 import {Strategy} from '../strategy/Strategy.js';
-
-const positiveNumberString = z
-  .string()
-  .regex(/^\d+(\.\d+)?$/, 'Must be a positive number')
-  .refine(val => parseFloat(val) > 0, 'Must be greater than 0');
+import {positiveNumberString} from '../util/validators.js';
 
 export const BuyBelowSellAboveSchema = z.object({
   buyBelow: positiveNumberString.optional(),
