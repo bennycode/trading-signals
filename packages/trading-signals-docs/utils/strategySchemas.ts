@@ -1,23 +1,10 @@
 import {z} from 'zod';
 import type {ExchangeCandle} from '@typedtrader/exchange';
+import {BuyAndHoldSchema, BuyOnceSchema, BuyBelowSellAboveSchema, CoinFlipSchema, MultiIndicatorConfluenceSchema} from 'trading-strategies';
 
-const positiveNumberString = z
-  .string()
-  .regex(/^\d+(\.\d+)?$/, 'Must be a positive number')
-  .refine(val => parseFloat(val) > 0, 'Must be greater than 0');
+export {BuyAndHoldSchema, BuyOnceSchema, BuyBelowSellAboveSchema, CoinFlipSchema, MultiIndicatorConfluenceSchema};
 
-export const BuyAndHoldSchema = z.object({});
-
-export const BuyOnceSchema = z.object({
-  buyAt: positiveNumberString,
-});
-
-export const BuyBelowSellAboveSchema = z.object({
-  buyBelow: positiveNumberString.optional(),
-  sellAbove: positiveNumberString.optional(),
-});
-
-export type StrategyId = 'buy-and-hold' | 'buy-once' | 'buy-below-sell-above';
+export type StrategyId = 'buy-and-hold' | 'buy-once' | 'buy-below-sell-above' | 'coin-flip' | 'multi-indicator-confluence';
 
 export interface StrategyDefinition {
   id: StrategyId;
@@ -69,6 +56,13 @@ export const strategyDefinitions: StrategyDefinition[] = [
     },
   },
   {
+    id: 'coin-flip',
+    name: 'Coin Flip',
+    description: 'Randomly buys or sells on every candle with 50/50 probability. Useful as a baseline to confirm any strategy beats pure chance.',
+    schema: CoinFlipSchema,
+    getDefaultConfig: () => ({}),
+  },
+  {
     id: 'buy-below-sell-above',
     name: 'Buy Below / Sell Above',
     description:
@@ -82,5 +76,24 @@ export const strategyDefinitions: StrategyDefinition[] = [
         sellAbove: (maxClose - range * 0.3).toFixed(2),
       };
     },
+  },
+  {
+    id: 'multi-indicator-confluence',
+    name: 'Multi-Indicator Confluence',
+    description:
+      'Combines EMA trend, MACD momentum, Bollinger Bands mean-reversion, and RSI filters. Buys on bullish confluence at the lower band; sells on bearish confluence at the upper band.',
+    schema: MultiIndicatorConfluenceSchema,
+    getDefaultConfig: () => ({
+      emaShortPeriod: 9,
+      emaLongPeriod: 15,
+      macdShortPeriod: 5,
+      macdLongPeriod: 7,
+      macdSignalPeriod: 9,
+      bollingerPeriod: 5,
+      bollingerDeviationMultiplier: 0.5,
+      rsiPeriod: 14,
+      rsiOverbought: 65,
+      rsiOversold: 45,
+    }),
   },
 ];

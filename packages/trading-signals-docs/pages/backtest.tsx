@@ -7,9 +7,12 @@ import {
   BuyAndHoldStrategy,
   BuyOnceStrategy,
   BuyBelowSellAboveStrategy,
+  CoinFlipStrategy,
+  MultiIndicatorConfluenceStrategy,
   type BacktestResult,
   BuyOnceConfig,
   BuyBelowSellAboveConfig,
+  type MultiIndicatorConfluenceConfig,
 } from 'trading-strategies';
 import {DatasetSelector} from '../components/DatasetSelector';
 import {StrategyConfigurator} from '../components/StrategyConfigurator';
@@ -22,10 +25,14 @@ function createStrategy(strategyId: StrategyId, config: Record<string, unknown>)
   switch (strategyId) {
     case 'buy-and-hold':
       return new BuyAndHoldStrategy();
+    case 'coin-flip':
+      return new CoinFlipStrategy();
     case 'buy-once':
       return new BuyOnceStrategy(config as unknown as BuyOnceConfig);
     case 'buy-below-sell-above':
       return new BuyBelowSellAboveStrategy(config as BuyBelowSellAboveConfig);
+    case 'multi-indicator-confluence':
+      return new MultiIndicatorConfluenceStrategy(config as unknown as MultiIndicatorConfluenceConfig);
   }
 }
 

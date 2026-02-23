@@ -9,13 +9,13 @@ import uptrendSlvCandles from '../pages/indicators/candles/uptrend-slv.json' wit
 export const datasets: CandleDataset[] = [
   {
     id: 'uptrend',
-    name: 'Strong Uptrend',
+    name: 'Synthetic Uptrend',
     description: 'Rising market - prices trending upward (1d)',
     candles: uptrendCandles,
   },
   {
     id: 'downtrend',
-    name: 'Strong Downtrend',
+    name: 'Synthetic Downtrend',
     description: 'Falling market - prices trending downward (1d)',
     candles: downtrendCandles,
   },

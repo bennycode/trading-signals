@@ -1,3 +1,4 @@
+import {z} from 'zod';
 import {randomInt} from 'node:crypto';
 import {
   StrategyAdvice,
@@ -7,13 +8,15 @@ import {
 import {StrategySignal} from '../strategy/StrategySignal.js';
 import {Strategy} from '../strategy/Strategy.js';
 
+export const CoinFlipSchema = z.object({});
+
 export class CoinFlipStrategy extends Strategy {
   static override NAME = '@typedtrader/strategy-coin-flip';
 
   protected override async processCandle(): Promise<StrategyAdvice | void> {
     const buyMarket: StrategyAdviceMarketBuyOrder = {
       amount: null,
-      amountType: 'base',
+      amountType: 'counter',
       price: null,
       signal: StrategySignal.BUY_MARKET,
     };

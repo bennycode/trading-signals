@@ -1,47 +1,38 @@
+import {z} from 'zod';
 import type {BatchedCandle} from '@typedtrader/exchange';
 import {BollingerBands, EMA, MACD, RSI} from 'trading-signals';
-import type {StrategyAdvice, StrategyAdviceMarketBuyOrder, StrategyAdviceMarketSellOrder} from '../strategy/StrategyAdvice.js';
+import type {
+  StrategyAdvice,
+  StrategyAdviceMarketBuyOrder,
+  StrategyAdviceMarketSellOrder,
+} from '../strategy/StrategyAdvice.js';
 import {StrategySignal} from '../strategy/StrategySignal.js';
 import {Strategy} from '../strategy/Strategy.js';
 
-export interface MultiIndicatorConfluenceConfig {
+export const MultiIndicatorConfluenceSchema = z.object({
   /** EMA short period for trend detection. */
-  emaShortPeriod: number;
+  emaShortPeriod: z.number().int().positive(),
   /** EMA long period for trend detection. */
-  emaLongPeriod: number;
+  emaLongPeriod: z.number().int().positive(),
   /** MACD short EMA period. */
-  macdShortPeriod: number;
+  macdShortPeriod: z.number().int().positive(),
   /** MACD long EMA period. */
-  macdLongPeriod: number;
+  macdLongPeriod: z.number().int().positive(),
   /** MACD signal EMA period. */
-  macdSignalPeriod: number;
+  macdSignalPeriod: z.number().int().positive(),
   /** Bollinger Bands period. */
-  bollingerPeriod: number;
+  bollingerPeriod: z.number().int().positive(),
   /** Bollinger Bands standard deviation multiplier. */
-  bollingerDeviationMultiplier: number;
+  bollingerDeviationMultiplier: z.number().positive(),
   /** RSI period. */
-  rsiPeriod: number;
+  rsiPeriod: z.number().int().positive(),
   /** RSI overbought threshold (veto BUY above this). */
-  rsiOverbought: number;
+  rsiOverbought: z.number().positive(),
   /** RSI oversold threshold (veto SELL below this). */
-  rsiOversold: number;
-}
+  rsiOversold: z.number().positive(),
+});
 
-const DEFAULT_CONFIG: MultiIndicatorConfluenceConfig = {
-  emaShortPeriod: 12,
-  emaLongPeriod: 26,
-  macdShortPeriod: 12,
-  macdLongPeriod: 26,
-  macdSignalPeriod: 9,
-  bollingerPeriod: 20,
-  bollingerDeviationMultiplier: 2,
-  rsiPeriod: 14,
-  rsiOverbought: 70,
-  rsiOversold: 30,
-};
-
-/** Recommended candle interval: 1 day in milliseconds. */
-export const RECOMMENDED_INTERVAL_IN_MILLIS = 86_400_000;
+export type MultiIndicatorConfluenceConfig = z.infer<typeof MultiIndicatorConfluenceSchema>;
 
 export class MultiIndicatorConfluenceStrategy extends Strategy {
   static override NAME = '@typedtrader/strategy-multi-indicator-confluence';
@@ -54,16 +45,16 @@ export class MultiIndicatorConfluenceStrategy extends Strategy {
   readonly #rsi: RSI;
   #candlesProcessed = 0;
 
-  constructor(config: Partial<MultiIndicatorConfluenceConfig> = {}) {
+  constructor(config: MultiIndicatorConfluenceConfig) {
     super();
-    this.#config = {...DEFAULT_CONFIG, ...config};
+    this.#config = config;
 
     this.#emaShort = new EMA(this.#config.emaShortPeriod);
     this.#emaLong = new EMA(this.#config.emaLongPeriod);
     this.#macd = new MACD(
       new EMA(this.#config.macdShortPeriod),
       new EMA(this.#config.macdLongPeriod),
-      new EMA(this.#config.macdSignalPeriod),
+      new EMA(this.#config.macdSignalPeriod)
     );
     this.#bollingerBands = new BollingerBands(this.#config.bollingerPeriod, this.#config.bollingerDeviationMultiplier);
     this.#rsi = new RSI(this.#config.rsiPeriod);
@@ -75,7 +66,7 @@ export class MultiIndicatorConfluenceStrategy extends Strategy {
       this.#config.emaLongPeriod,
       this.#config.bollingerPeriod,
       this.#config.macdLongPeriod + this.#config.macdSignalPeriod,
-      this.#config.rsiPeriod + 1,
+      this.#config.rsiPeriod + 1
     );
   }
 
@@ -135,7 +126,7 @@ export class MultiIndicatorConfluenceStrategy extends Strategy {
 
       const buyMarket: StrategyAdviceMarketBuyOrder = {
         amount: null,
-        amountType: 'base',
+        amountType: 'counter',
         price: null,
         signal: StrategySignal.BUY_MARKET,
         reason,

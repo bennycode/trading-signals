@@ -1,13 +1,21 @@
+import {z} from 'zod';
 import type {BatchedCandle} from '@typedtrader/exchange';
+import Big from 'big.js';
 import {StrategyAdvice, StrategyAdviceLimitBuyOrder, StrategyAdviceLimitSellOrder} from '../strategy/StrategyAdvice.js';
 import {StrategySignal} from '../strategy/StrategySignal.js';
-import Big from 'big.js';
 import {Strategy} from '../strategy/Strategy.js';
 
-export interface BuyBelowSellAboveConfig {
-  buyBelow?: string;
-  sellAbove?: string;
-}
+const positiveNumberString = z
+  .string()
+  .regex(/^\d+(\.\d+)?$/, 'Must be a positive number')
+  .refine(val => parseFloat(val) > 0, 'Must be greater than 0');
+
+export const BuyBelowSellAboveSchema = z.object({
+  buyBelow: positiveNumberString.optional(),
+  sellAbove: positiveNumberString.optional(),
+});
+
+export type BuyBelowSellAboveConfig = z.infer<typeof BuyBelowSellAboveSchema>;
 
 export class BuyBelowSellAboveStrategy extends Strategy {
   static override NAME = '@typedtrader/strategy-buy-below-sell-above';
