@@ -30,6 +30,10 @@ export class AlpacaAPI {
         if (hasResponseCode(error) && error.response?.data.code === 40310100) {
           return false;
         }
+        // account is not allowed to short
+        if (hasResponseCode(error) && error.response?.data.code === 40310000) {
+          return false;
+        }
         return axiosRetry.isNetworkError(error) || error.response?.status === 429;
       },
       retryDelay: retryCount => {
