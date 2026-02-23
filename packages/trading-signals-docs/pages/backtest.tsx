@@ -28,11 +28,11 @@ function createStrategy(strategyId: StrategyId, config: Record<string, unknown>)
     case 'coin-flip':
       return new CoinFlipStrategy();
     case 'buy-once':
-      return new BuyOnceStrategy(config as unknown as BuyOnceConfig);
+      return new BuyOnceStrategy(config as BuyOnceConfig);
     case 'buy-below-sell-above':
       return new BuyBelowSellAboveStrategy(config as BuyBelowSellAboveConfig);
     case 'multi-indicator-confluence':
-      return new MultiIndicatorConfluenceStrategy(config as unknown as MultiIndicatorConfluenceConfig);
+      return new MultiIndicatorConfluenceStrategy(config as MultiIndicatorConfluenceConfig);
   }
 }
 
@@ -66,6 +66,7 @@ export default function BacktestPage() {
   const [configJson, setConfigJson] = useState('{}');
   const [validationError, setValidationError] = useState<string | null>(null);
   const [result, setResult] = useState<BacktestResult | null>(null);
+  const [baselineResult, setBaselineResult] = useState<BacktestResult | null>(null);
   const [running, setRunning] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [customDataset, setCustomDataset] = useState<CandleDataset | null>(null);
@@ -126,18 +127,27 @@ export default function BacktestPage() {
       const base = candles[0]?.base ?? 'BTC';
       const counter = candles[0]?.counter ?? 'USD';
       const tradingPair = new TradingPair(base, counter);
-      const exchange = createExchange(candles, initialBase, initialCounter);
 
-      const executor = new BacktestExecutor({
-        candles,
-        exchange,
-        strategy,
-        tradingPair,
-      });
+      const [backtestResult, baseline] = await Promise.all([
+        new BacktestExecutor({
+          candles,
+          exchange: createExchange(candles, initialBase, initialCounter),
+          strategy,
+          tradingPair,
+        }).execute(),
+        new BacktestExecutor({
+          candles,
+          exchange: createExchange(candles, initialBase, initialCounter),
+          strategy: new BuyAndHoldStrategy(),
+          tradingPair,
+        }).execute(),
+      ]);
 
-      const backtestResult = await executor.execute();
       setResult(backtestResult);
-      showToast(`Backtest complete — ${backtestResult.trades.length} trade${backtestResult.trades.length === 1 ? '' : 's'} simulated`);
+      setBaselineResult(baseline);
+      showToast(
+        `Backtest complete — ${backtestResult.trades.length} trade${backtestResult.trades.length === 1 ? '' : 's'} simulated`
+      );
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Backtest failed');
     } finally {
@@ -148,17 +158,20 @@ export default function BacktestPage() {
   const handleStrategyChange = (id: StrategyId) => {
     setSelectedStrategy(id);
     setResult(null);
+    setBaselineResult(null);
   };
 
   const handleDatasetChange = (id: string) => {
     setSelectedDataset(id);
     setResult(null);
+    setBaselineResult(null);
   };
 
   const handleCustomDataset = (candles: ExchangeCandle[], name: string) => {
     setCustomDataset({id: 'custom', name, description: `Custom upload: ${name} (${candles.length} candles)`, candles});
     setSelectedDataset('custom');
     setResult(null);
+    setBaselineResult(null);
   };
 
   return (
@@ -230,13 +243,13 @@ export default function BacktestPage() {
       {/* Main content */}
       <div className="flex-1 min-w-0">
         {result ? (
-          <BacktestResults result={result} candles={candles} />
+          <BacktestResults result={result} baselineResult={baselineResult} candles={candles} />
         ) : (
           <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-12 text-center">
             <h2 className="text-xl font-semibold text-white mb-3">Visual Backtester</h2>
             <p className="text-slate-400 max-w-md mx-auto">
-              Select a dataset and strategy from the sidebar, configure parameters, then click
-              &ldquo;Run Backtest&rdquo; to see the results.
+              Select a dataset and strategy from the sidebar, configure parameters, then click &ldquo;Run
+              Backtest&rdquo; to see the results.
             </p>
             <div className="mt-6 grid grid-cols-3 gap-4 max-w-lg mx-auto text-left">
               <div className="bg-slate-700/50 rounded-lg p-3">
