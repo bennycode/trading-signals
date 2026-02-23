@@ -1,5 +1,4 @@
 import {z} from 'zod';
-import {randomInt} from 'node:crypto';
 import {
   StrategyAdvice,
   StrategyAdviceMarketBuyOrder,
@@ -28,7 +27,7 @@ export class CoinFlipStrategy extends Strategy {
       signal: StrategySignal.SELL_MARKET,
     };
 
-    const result = randomInt(0, 100);
+    const result = globalThis.crypto.getRandomValues(new Uint8Array(1))[0] % 100;
 
     return result < 50 ? buyMarket : sellMarket;
   }

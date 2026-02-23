@@ -51,8 +51,10 @@ export class BacktestExecutor {
       await this.#placeOrderFromAdvice(advice, tradingPair);
     }
 
-    // Process one final "empty" candle pass to match any remaining pending orders
-    // using the last candle (they would fill on the next candle in real trading)
+    // Cancel any orders placed on the last candle that were never filled.
+    // This releases their held balances back to available so the final stats
+    // correctly reflect what the portfolio actually holds.
+    await exchange.cancelOpenOrders(tradingPair);
 
     const finalBalances = await exchange.getAvailableBalances(tradingPair);
     const firstOpenPrice = candles.length > 0 ? new Big(candles[0].open) : new Big(0);
