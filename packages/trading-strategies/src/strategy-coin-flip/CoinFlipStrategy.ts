@@ -1,4 +1,4 @@
-import {randomInt} from 'node:crypto';
+import {z} from 'zod';
 import {
   StrategyAdvice,
   StrategyAdviceMarketBuyOrder,
@@ -7,13 +7,15 @@ import {
 import {StrategySignal} from '../strategy/StrategySignal.js';
 import {Strategy} from '../strategy/Strategy.js';
 
+export const CoinFlipSchema = z.object({});
+
 export class CoinFlipStrategy extends Strategy {
   static override NAME = '@typedtrader/strategy-coin-flip';
 
   protected override async processCandle(): Promise<StrategyAdvice | void> {
     const buyMarket: StrategyAdviceMarketBuyOrder = {
       amount: null,
-      amountType: 'base',
+      amountType: 'counter',
       price: null,
       signal: StrategySignal.BUY_MARKET,
     };
@@ -25,8 +27,10 @@ export class CoinFlipStrategy extends Strategy {
       signal: StrategySignal.SELL_MARKET,
     };
 
-    const result = randomInt(0, 100);
+    // Using bitwise AND instead of modulo to avoid modulo bias
+    // (a Uint8 ranges 0–255, which is not evenly divisible by 100)
+    const result = globalThis.crypto.getRandomValues(new Uint8Array(1))[0] & 1;
 
-    return result < 50 ? buyMarket : sellMarket;
+    return result === 0 ? buyMarket : sellMarket;
   }
 }

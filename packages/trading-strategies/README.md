@@ -22,6 +22,83 @@ npm install trading-strategies
 import {StrategySignal, StrategyAdvice} from 'trading-strategies';
 ```
 
+## Available Strategies
+
+### Buy & Hold (`BuyAndHoldStrategy`)
+
+Buys once at the first candle and holds for the entire period. Use as the simplest baseline — any active strategy should beat it.
+
+```ts
+import {BuyAndHoldStrategy} from 'trading-strategies';
+
+const strategy = new BuyAndHoldStrategy();
+```
+
+### Buy Once (`BuyOnceStrategy`)
+
+Places a single limit buy when the close price drops to or below a predefined price. After the buy triggers, the strategy stays silent.
+
+```ts
+import {BuyOnceStrategy} from 'trading-strategies';
+
+const strategy = new BuyOnceStrategy({buyAt: '150.00'});
+```
+
+### Buy Below / Sell Above (`BuyBelowSellAboveStrategy`)
+
+Buys when the close price drops below a threshold and sells when it rises above another. Repeats on every qualifying candle.
+
+```ts
+import {BuyBelowSellAboveStrategy} from 'trading-strategies';
+
+const strategy = new BuyBelowSellAboveStrategy({buyBelow: '140.00', sellAbove: '160.00'});
+```
+
+### Coin Flip (`CoinFlipStrategy`)
+
+Randomly buys or sells on every candle with 50/50 probability. Useful as a baseline to confirm that any strategy beats pure chance.
+
+```ts
+import {CoinFlipStrategy} from 'trading-strategies';
+
+const strategy = new CoinFlipStrategy();
+```
+
+### Multi-Indicator Confluence (`MultiIndicatorConfluenceStrategy`)
+
+Combines EMA trend, MACD momentum, Bollinger Bands mean-reversion, and RSI filters. Buys on bullish confluence at the lower Bollinger Band; sells on bearish confluence at the upper band.
+
+```ts
+import {MultiIndicatorConfluenceStrategy} from 'trading-strategies';
+
+const strategy = new MultiIndicatorConfluenceStrategy({
+  emaShortPeriod: 9,
+  emaLongPeriod: 15,
+  macdShortPeriod: 5,
+  macdLongPeriod: 7,
+  macdSignalPeriod: 9,
+  bollingerPeriod: 5,
+  bollingerDeviationMultiplier: 0.5,
+  rsiPeriod: 14,
+  rsiOverbought: 65,
+  rsiOversold: 45,
+});
+```
+
+## Zod Schemas
+
+Every strategy exports a Zod schema for configuration validation and type inference:
+
+```ts
+import {MultiIndicatorConfluenceSchema, type MultiIndicatorConfluenceConfig} from 'trading-strategies';
+
+// Validate user input at runtime
+const result = MultiIndicatorConfluenceSchema.safeParse(userInput);
+
+// Type is inferred automatically from the schema
+type Config = MultiIndicatorConfluenceConfig; // z.infer<typeof MultiIndicatorConfluenceSchema>
+```
+
 ## Domain Knowledge
 
 - An **exchange** (such as the [NYSE](https://en.wikipedia.org/wiki/New_York_Stock_Exchange)) is a marketplace where buyers and sellers trade assets, it matches orders by price and time, and it operates only during **specific opening hours**.
@@ -57,6 +134,8 @@ import {StrategySignal, StrategyAdvice} from 'trading-strategies';
 - **Non-fungible assets** are assets where each unit is unique and not directly interchangeable with another, meaning their value depends on specific characteristics such as rarity, condition, history, or ownership rather than a standard market price. A Pokémon trading card is a non-fungible asset because each card can differ in edition, rarity, condition, and even print run, so one card is not perfectly interchangeable with another, even if they feature the same Pokémon.
 
 - **Trading filters** constrain exchange orders to valid values. The **tick size** is the smallest allowed price increment: with a tick size of `0.01`, a price of `2500.01` is valid but `2500.015` is not. The **step size** (or lot size) works the same way for quantities: with a step size of `0.0001`, a quantity of `0.0002` is valid but `0.00025` is not. Exchanges also set a **minimum notional value**, which is the minimum total order value (price × quantity). If the minimum notional is `5 USDT`, buying `0.001 BTC` at `2500 USDT` would be rejected because `0.001 × 2500 = 2.5 USDT` falls below the limit. Traders need to query the exchange's trading rules (e.g., [Binance's Spot Trading Rules](https://www.binance.com/en/academy/articles/binance-spot-trading-rules-a-comprehensive-guide)) and round their values before submitting orders.
+
+- **Asset identifiers** differ by market and licensing. A **ticker symbol** (e.g., `AAPL` for [Apple Inc.](https://en.wikipedia.org/wiki/Apple_Inc.)) is an exchange-specific code and not globally unique. An **ISIN** (`US0378331005`) is a 12-character global identifier under ISO 6166, while a **CUSIP** (`037833100`) is a 9-character code used mainly in the U.S. and Canada. Both ISIN and CUSIP databases are maintained by commercial organizations and require paid licenses for redistribution, which is why many open-source projects and free APIs rely on ticker symbols instead ([source](https://forum.alpaca.markets/t/is-there-a-list-for-all-etfs/9117/4)).
 
 ## Strategy Signals
 

@@ -1,13 +1,17 @@
+import {z} from 'zod';
 import type {BatchedCandle} from '@typedtrader/exchange';
 import Big from 'big.js';
 import type {StrategyAdvice, StrategyAdviceLimitBuyOrder} from '../strategy/StrategyAdvice.js';
 import {StrategySignal} from '../strategy/StrategySignal.js';
 import {Strategy} from '../strategy/Strategy.js';
+import {positiveNumberString} from '../util/validators.js';
 
-export interface BuyOnceConfig {
+export const BuyOnceSchema = z.object({
   /** The price at which to place the buy order. */
-  buyAt: string;
-}
+  buyAt: positiveNumberString,
+});
+
+export type BuyOnceConfig = z.infer<typeof BuyOnceSchema>;
 
 /**
  * Signals a single limit buy when the candle's close price drops to or below the predefined price.

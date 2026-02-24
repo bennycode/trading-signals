@@ -1,7 +1,10 @@
+import {z} from 'zod';
 import type {BatchedCandle} from '@typedtrader/exchange';
 import type {StrategyAdvice, StrategyAdviceMarketBuyOrder} from '../strategy/StrategyAdvice.js';
 import {StrategySignal} from '../strategy/StrategySignal.js';
 import {Strategy} from '../strategy/Strategy.js';
+
+export const BuyAndHoldSchema = z.object({});
 
 /**
  * Buys once at the first candle and holds for the entire period.

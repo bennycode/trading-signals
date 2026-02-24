@@ -5,17 +5,19 @@ import sidewaysCandles from '../pages/indicators/candles/sideways.json' with {ty
 import sidewaysPgCandles from '../pages/indicators/candles/sideways-pg.json' with {type: 'json'};
 import downtrendMsftCandles from '../pages/indicators/candles/downtrend-msft.json' with {type: 'json'};
 import uptrendSlvCandles from '../pages/indicators/candles/uptrend-slv.json' with {type: 'json'};
+import urth2024Candles from '../pages/indicators/candles/urth-2024-1h.json' with {type: 'json'};
+import urth2025Candles from '../pages/indicators/candles/urth-2025-1h.json' with {type: 'json'};
 
 export const datasets: CandleDataset[] = [
   {
     id: 'uptrend',
-    name: 'Strong Uptrend',
+    name: 'Synthetic Uptrend',
     description: 'Rising market - prices trending upward (1d)',
     candles: uptrendCandles,
   },
   {
     id: 'downtrend',
-    name: 'Strong Downtrend',
+    name: 'Synthetic Downtrend',
     description: 'Falling market - prices trending downward (1d)',
     candles: downtrendCandles,
   },
@@ -42,5 +44,17 @@ export const datasets: CandleDataset[] = [
     name: 'Uptrend (SLV)',
     description: 'iShares Silver Trust rally - Jan 2026 (1h)',
     candles: uptrendSlvCandles,
+  },
+  {
+    id: 'urth-2024',
+    name: 'MSCI World ETF (2024)',
+    description: 'iShares MSCI World ETF (URTH) - full year 2024 (1h)',
+    candles: urth2024Candles,
+  },
+  {
+    id: 'urth-2025',
+    name: 'MSCI World ETF (2025)',
+    description: 'iShares MSCI World ETF (URTH) - full year 2025 (1h)',
+    candles: urth2025Candles,
   },
 ];

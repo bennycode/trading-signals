@@ -4,9 +4,13 @@ import type {ExchangeCandle} from '@typedtrader/exchange';
 import type {BacktestResult} from 'trading-strategies';
 import {formatDate} from '../utils/formatDate';
 
-interface BacktestResultsProps {
+interface ResultProps {
   result: BacktestResult;
   candles: ExchangeCandle[];
+}
+
+interface BacktestResultsProps extends ResultProps {
+  baselineResult: BacktestResult | null;
 }
 
 function formatBig(val: import('big.js').Big, decimals = 2): string {
@@ -16,35 +20,45 @@ function formatBig(val: import('big.js').Big, decimals = 2): string {
   });
 }
 
-function PerformanceCards({result, candles}: BacktestResultsProps) {
+function PerformanceCards({result, candles}: ResultProps) {
   const {performance} = result;
   const returnPct = Number(performance.returnPercentage.toFixed(2));
-  const bAndHPct = Number(performance.buyAndHoldReturnPercentage.toFixed(2));
   const winRate = Number(performance.winRate.toFixed(1));
+  const hasCycles = result.trades.some(t => t.side === ExchangeOrderSide.SELL);
+  const lossRate = hasCycles ? (100 - winRate).toFixed(1) : null;
   const pnl = Number(result.profitOrLoss.toFixed(2));
   const base = candles[0]?.base ?? 'Base';
   const counter = candles[0]?.counter ?? 'Counter';
 
   const cards = [
-    {label: 'Strategy ROI', value: `${returnPct >= 0 ? '+' : ''}${returnPct}%`, positive: returnPct >= 0},
-    {label: 'Buy & Hold Baseline', value: `${bAndHPct >= 0 ? '+' : ''}${bAndHPct}%`, positive: bAndHPct >= 0},
-    {label: 'Profit & Loss', value: `${pnl >= 0 ? '+' : '-'}$${formatBig(result.profitOrLoss.abs())}`, positive: pnl >= 0},
-    {label: 'Total Fees', value: `$${formatBig(result.totalFees)}`, positive: null},
-    {label: 'Total Trades', value: String(performance.totalTrades), positive: null},
-    {label: 'Win Rate', value: `${winRate}%`, positive: winRate >= 50},
-    {label: 'Max Win Streak', value: String(performance.maxWinStreak), positive: null},
-    {label: 'Max Loss Streak', value: String(performance.maxLossStreak), positive: null},
-    {label: 'Start Value', value: `$${formatBig(performance.initialPortfolioValue)}`, positive: null},
-    {label: 'Final Value', value: `$${formatBig(performance.finalPortfolioValue)}`, positive: null},
-    {label: `Final Base (${base})`, value: formatBig(result.finalBaseBalance, 6), positive: null},
-    {label: `Final Counter (${counter})`, value: `$${formatBig(result.finalCounterBalance)}`, positive: null},
+    {label: 'ROI', value: `${returnPct >= 0 ? '+' : ''}${returnPct}%`, positive: returnPct >= 0, info: 'Return on investment: percentage change in total portfolio value from start to end.'},
+    {label: 'Profit & Loss', value: `${pnl >= 0 ? '+' : '-'}$${formatBig(result.profitOrLoss.abs())}`, positive: pnl >= 0, info: 'Absolute gain or loss in counter currency compared to the starting portfolio value.'},
+    {label: 'Total Fees', value: `$${formatBig(result.totalFees)}`, positive: null, info: 'Total trading fees paid across all executed orders.'},
+    {label: 'Total Trades', value: String(performance.totalTrades), positive: null, info: 'Number of individual orders executed (buys + sells).'},
+    {label: 'Win Rate', value: hasCycles ? `${winRate}%` : 'N/A', positive: hasCycles ? winRate >= 50 : null, info: 'Percentage of completed buy→sell cycles that closed at a profit.'},
+    {label: 'Loss Rate', value: lossRate !== null ? `${lossRate}%` : 'N/A', positive: lossRate !== null ? Number(lossRate) < 50 : null, info: 'Percentage of completed buy→sell cycles that closed at a loss. Shown in green when below 50%.'},
+    {label: 'Max Win Streak', value: String(performance.maxWinStreak), positive: null, info: 'Longest consecutive sequence of profitable buy→sell cycles.'},
+    {label: 'Max Loss Streak', value: String(performance.maxLossStreak), positive: null, info: 'Longest consecutive sequence of losing buy→sell cycles.'},
+    {label: 'Start Value', value: `$${formatBig(performance.initialPortfolioValue)}`, positive: null, info: 'Initial portfolio value in counter currency (base × first open price + counter balance).'},
+    {label: 'Final Value', value: `$${formatBig(performance.finalPortfolioValue)}`, positive: null, info: 'Final portfolio value in counter currency (base × last close price + counter balance).'},
+    {label: `Final Base (${base})`, value: formatBig(result.finalBaseBalance, 6), positive: null, info: `Remaining ${base} balance at the end of the backtest.`},
+    {label: `Final Counter (${counter})`, value: `$${formatBig(result.finalCounterBalance)}`, positive: null, info: `Remaining ${counter} cash balance at the end of the backtest.`},
   ];
 
   return (
     <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
       {cards.map(card => (
         <div key={card.label} className="bg-slate-800/50 border border-slate-700 rounded-lg p-3">
-          <div className="text-xs text-slate-400">{card.label}</div>
+          <div className="flex items-center gap-1">
+            <div className="text-xs text-slate-400">{card.label}</div>
+            <div className="relative group">
+              <div className="text-slate-600 hover:text-slate-400 cursor-default text-xs leading-none">ⓘ</div>
+              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 w-48 bg-slate-900 border border-slate-600 rounded px-2.5 py-1.5 text-xs text-slate-300 hidden group-hover:block z-10 shadow-lg">
+                {card.info}
+                <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-slate-600" />
+              </div>
+            </div>
+          </div>
           <div
             className={`text-lg font-bold mt-1 ${
               card.positive === null ? 'text-white' : card.positive ? 'text-green-400' : 'text-red-400'
@@ -57,7 +71,7 @@ function PerformanceCards({result, candles}: BacktestResultsProps) {
   );
 }
 
-function PriceChartWithTrades({result, candles}: BacktestResultsProps) {
+function PriceChartWithTrades({result, candles}: ResultProps) {
   const priceData = candles.map((c, i) => ({
     x: i + 1,
     y: Number(c.close),
@@ -215,10 +229,35 @@ function TradeHistoryTable({result}: {result: BacktestResult}) {
   );
 }
 
-export function BacktestResults({result, candles}: BacktestResultsProps) {
+function WinnerBadge() {
+  return (
+    <span className="ml-2 inline-block bg-yellow-400/20 text-yellow-300 border border-yellow-400/30 text-xs font-semibold px-2 py-0.5 rounded-full">
+      Winner
+    </span>
+  );
+}
+
+export function BacktestResults({result, baselineResult, candles}: BacktestResultsProps) {
+  const strategyWins = baselineResult
+    ? result.performance.returnPercentage.gte(baselineResult.performance.returnPercentage)
+    : null;
+
   return (
     <div className="space-y-6">
-      <PerformanceCards result={result} candles={candles} />
+      <div>
+        <h3 className="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-3">
+          Selected Strategy{strategyWins === true && <WinnerBadge />}
+        </h3>
+        <PerformanceCards result={result} candles={candles} />
+      </div>
+      {baselineResult && (
+        <div>
+          <h3 className="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-3">
+            Buy &amp; Hold Baseline{strategyWins === false && <WinnerBadge />}
+          </h3>
+          <PerformanceCards result={baselineResult} candles={candles} />
+        </div>
+      )}
       <PriceChartWithTrades result={result} candles={candles} />
       <TradeHistoryTable result={result} />
     </div>
