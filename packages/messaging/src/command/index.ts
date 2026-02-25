@@ -6,6 +6,6 @@ export {candle} from './candle.js';
 export {price} from './price.js';
 export {time} from './time.js';
 export {uptime} from './uptime.js';
-export {watch} from './watch/watch.js';
+export {watchAdd} from './watch/watchAdd.js';
 export {watchList} from './watch/watchList.js';
 export {watchRemove} from './watch/watchRemove.js';

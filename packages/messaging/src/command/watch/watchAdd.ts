@@ -10,15 +10,15 @@ export interface WatchResult {
   watch?: WatchAttributes;
 }
 
-// Request Example: "/watch SHOP,USD 1 1m +5%"
+// Request Example: "/watchAdd SHOP,USD 1 1m +5%"
 // Format: "<pair> <accountId> <interval> <threshold>"
-export const watch = async (request: string, ownerAddress: string): Promise<WatchResult> => {
+export const watchAdd = async (request: string, ownerAddress: string): Promise<WatchResult> => {
   const parts = request.trim().split(' ');
 
   if (parts.length !== 4) {
     return {
       message:
-        'Invalid format. Usage: /watch <pair> <accountId> <interval> <threshold>\nExample: /watch SHOP,USD 1 1m +5%',
+        'Invalid format. Usage: /watchAdd <pair> <accountId> <interval> <threshold>\nExample: /watchAdd SHOP,USD 1 1m +5%',
     };
   }
 

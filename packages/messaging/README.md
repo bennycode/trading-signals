@@ -29,7 +29,7 @@ This package starts an XMTP chatbot that you can message from any XMTP-compatibl
 | `/time`          | Display the current system time                          |
 | `/uptime`        | Show how long the bot has been running                   |
 | `/version`       | Display the libXMTP version                              |
-| `/watch`         | Create a price alert that monitors a pair at an interval |
+| `/watchAdd`      | Create a price alert that monitors a pair at an interval |
 | `/watchList`     | List all active price watches                            |
 | `/watchRemove`   | Remove an active price watch                             |
 | `/youraddress`   | Show the bot's XMTP wallet address                       |

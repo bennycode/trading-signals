@@ -111,7 +111,7 @@ export async function startServer() {
     await ctx.conversation.sendText(await uptime());
   });
 
-  router.command('/watch', async ctx => {
+  router.command('/watchAdd', async ctx => {
     const userAddress = await ctx.getSenderAddress();
     if (!userAddress) {
       await ctx.conversation.sendText('Unable to determine sender address');
