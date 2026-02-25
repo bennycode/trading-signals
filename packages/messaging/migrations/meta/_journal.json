@@ -15,6 +15,13 @@
       "when": 1772041388415,
       "tag": "0001_fair_carnage",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1772045892290,
+      "tag": "0002_moaning_kingpin",
+      "breakpoints": true
     }
   ]
 }
