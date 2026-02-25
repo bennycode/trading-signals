@@ -1,3 +1,4 @@
+import Big from 'big.js';
 import {TradingPair, getExchangeClient, ms} from '@typedtrader/exchange';
 import {Watch, WatchAttributes} from '../../database/models/Watch.js';
 import {parseThreshold} from '../../validation/parseThreshold.js';
@@ -14,7 +15,10 @@ export const watch = async (request: string, ownerAddress: string): Promise<Watc
   const parts = request.trim().split(' ');
 
   if (parts.length !== 4) {
-    return {message: 'Invalid format. Usage: /watch <pair> <accountId> <interval> <threshold>\nExample: /watch SHOP,USD 1 1m +5%'};
+    return {
+      message:
+        'Invalid format. Usage: /watch <pair> <accountId> <interval> <threshold>\nExample: /watch SHOP,USD 1 1m +5%',
+    };
   }
 
   const [pairPart, accountIdStr, interval, thresholdStr] = parts;
@@ -53,6 +57,19 @@ export const watch = async (request: string, ownerAddress: string): Promise<Watc
     const candle = await client.getLatestCandle(pair, smallestInterval);
     const baselinePrice = candle.close;
 
+    const directionSymbol = threshold.direction === 'up' ? '+' : '-';
+    const thresholdDisplay =
+      threshold.type === 'percent'
+        ? `${directionSymbol}${threshold.value}%`
+        : `${directionSymbol}${threshold.value} ${counter}`;
+
+    const alertPrice =
+      threshold.type === 'percent'
+        ? new Big(baselinePrice).times(
+            new Big(1).plus(new Big(threshold.direction === 'up' ? 1 : -1).times(threshold.value).div(100))
+          )
+        : new Big(baselinePrice).plus(new Big(threshold.direction === 'up' ? 1 : -1).times(threshold.value));
+
     // Create watch
     const createdWatch = Watch.create({
       accountId,
@@ -62,16 +79,11 @@ export const watch = async (request: string, ownerAddress: string): Promise<Watc
       thresholdDirection: threshold.direction,
       thresholdValue: threshold.value.toString(),
       baselinePrice: baselinePrice.toString(),
+      alertPrice: alertPrice.toString(),
     });
 
-    const directionSymbol = threshold.direction === 'up' ? '+' : '-';
-    const thresholdDisplay =
-      threshold.type === 'percent'
-        ? `${directionSymbol}${threshold.value}%`
-        : `${directionSymbol}${threshold.value} ${counter}`;
-
     return {
-      message: `Watch created (ID: ${createdWatch.id})\nPair: ${pairPart}\nBaseline: ${baselinePrice} ${counter}\nAlert when: ${thresholdDisplay}\nCheck interval: ${interval}`,
+      message: `Watch created (ID: ${createdWatch.id})\nPair: ${pairPart}\nBaseline: ${baselinePrice} ${counter} (latest ${smallestInterval} candle close)\nAlert when: ${thresholdDisplay} (${alertPrice} ${counter})\nCheck interval: ${interval}`,
       watch: createdWatch,
     };
   } catch (error) {

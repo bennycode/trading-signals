@@ -26,6 +26,7 @@ export const watches = sqliteTable('watches', {
   thresholdDirection: text('thresholdDirection', {enum: ['up', 'down']}).notNull(),
   thresholdValue: text('thresholdValue').notNull(),
   baselinePrice: text('baselinePrice').notNull(),
+  alertPrice: text('alertPrice').notNull(),
   createdAt: text('createdAt').default('CURRENT_TIMESTAMP'),
 });
 
