@@ -17,7 +17,7 @@ export const watchList = async (ownerAddress: string) => {
         const thresholdDisplay =
           w.thresholdType === 'percent' ? `${dirSymbol}${w.thresholdValue}%` : `${dirSymbol}${w.thresholdValue}`;
         const intervalMin = Math.round(w.intervalMs / 60000);
-        return `ID: ${w.id} | ${w.pair} | Baseline: ${w.baselinePrice} | Alert: ${thresholdDisplay} | Every ${intervalMin}m`;
+        return `ID: ${w.id} | ${w.pair} | Baseline: ${w.baselinePrice} | Alert: ${thresholdDisplay} (${w.alertPrice}) | Every ${intervalMin}m`;
       })
       .join('\n');
 

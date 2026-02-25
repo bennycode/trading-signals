@@ -70,16 +70,9 @@ export class WatchMonitor {
     exchange.on(topicId, async (candle: ExchangeCandle) => {
       try {
         const currentPrice = parseFloat(candle.close);
-        const baselinePrice = parseFloat(watch.baselinePrice);
-        const thresholdValue = parseFloat(watch.thresholdValue);
+        const alertPrice = parseFloat(watch.alertPrice);
 
-        const triggered = this.#isThresholdTriggered(
-          baselinePrice,
-          currentPrice,
-          watch.thresholdType,
-          watch.thresholdDirection,
-          thresholdValue
-        );
+        const triggered = watch.thresholdDirection === 'up' ? currentPrice >= alertPrice : currentPrice <= alertPrice;
 
         if (triggered) {
           await this.#sendAlert(watch, currentPrice);
@@ -113,31 +106,6 @@ export class WatchMonitor {
     }
   }
 
-  #isThresholdTriggered(
-    baseline: number,
-    current: number,
-    type: 'percent' | 'absolute',
-    direction: 'up' | 'down',
-    threshold: number
-  ): boolean {
-    if (type === 'percent') {
-      const percentChange = ((current - baseline) / baseline) * 100;
-      if (direction === 'up') {
-        return percentChange >= threshold;
-      } else {
-        return percentChange <= -threshold;
-      }
-    } else {
-      // absolute
-      const absoluteChange = current - baseline;
-      if (direction === 'up') {
-        return absoluteChange >= threshold;
-      } else {
-        return absoluteChange <= -threshold;
-      }
-    }
-  }
-
   async #sendAlert(watch: WatchAttributes, currentPrice: number): Promise<void> {
     const {counter} = TradingPair.fromString(watch.pair, ',');
 
@@ -155,7 +123,7 @@ export class WatchMonitor {
         ? `${dirSymbol}${watch.thresholdValue}%`
         : `${dirSymbol}${watch.thresholdValue} ${counter}`;
 
-    const message = `Price Alert Triggered!\n\nPair: ${watch.pair}\nBaseline: ${watch.baselinePrice} ${counter}\nCurrent: ${currentPrice} ${counter}\nThreshold: ${thresholdDisplay}\n\nThis watch has been automatically removed.`;
+    const message = `Price Alert Triggered!\n\nPair: ${watch.pair}\nBaseline: ${watch.baselinePrice} ${counter}\nAlert price: ${watch.alertPrice} ${counter}\nCurrent: ${currentPrice} ${counter}\nThreshold: ${thresholdDisplay}\n\nThis watch has been automatically removed.`;
 
     // Send proactive DM using XMTP agent SDK
     const dm = await this.#agent.createDmWithAddress(validHex(account.ownerAddress));
