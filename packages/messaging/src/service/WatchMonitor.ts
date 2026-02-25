@@ -125,7 +125,12 @@ export class WatchMonitor {
         ? `${dirSymbol}${watch.thresholdValue}%`
         : `${dirSymbol}${watch.thresholdValue} ${counter}`;
 
-    const message = `Price Alert Triggered!\n\nPair: ${watch.pair}\nBaseline: ${watch.baselinePrice} ${counter}\nAlert price: ${watch.alertPrice} ${counter}\nCurrent: ${currentPrice} ${counter}\nThreshold: ${thresholdDisplay}\n\nThis watch has been automatically removed.`;
+    const baselinePrice = parseFloat(watch.baselinePrice);
+    const diff = currentPrice - baselinePrice;
+    const diffPercent = ((diff / baselinePrice) * 100).toFixed(2);
+    const diffDisplay = `${diff >= 0 ? '+' : ''}${diff.toFixed(2)} ${counter} (${diff >= 0 ? '+' : ''}${diffPercent}%)`;
+
+    const message = `Price Alert Triggered!\n\nPair: ${watch.pair}\nBaseline: ${watch.baselinePrice} ${counter}\nAlert price: ${watch.alertPrice} ${counter}\nCurrent: ${currentPrice} ${counter}\nDiff: ${diffDisplay}\nThreshold: ${thresholdDisplay}\n\nThis watch has been automatically removed.`;
 
     // Send proactive DM using XMTP agent SDK
     const dm = await this.#agent.createDmWithAddress(validHex(account.ownerAddress));
