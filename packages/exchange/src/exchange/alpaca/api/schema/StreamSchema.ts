@@ -37,6 +37,25 @@ export const AuthenticatedMessageSchema = z.looseObject({
 export const SubscriptionMessageSchema = z.looseObject({
   T: z.literal('subscription'),
   bars: z.array(z.string()),
+  quotes: z.array(z.string()).optional(),
+});
+
+/** @see https://docs.alpaca.markets/docs/real-time-stock-pricing-data#quotes */
+export const QuoteMessageSchema = z.looseObject({
+  /** Ask price */
+  ap: z.number(),
+  /** Ask size */
+  as: z.number(),
+  /** Bid price */
+  bp: z.number(),
+  /** Bid size */
+  bs: z.number(),
+  /** Symbol */
+  S: z.string(),
+  /** Message type */
+  T: z.literal('q'),
+  /** Timestamp in RFC 3339 format */
+  t: z.string(),
 });
 
 export const StreamMessageSchema = z.union([
@@ -44,7 +63,9 @@ export const StreamMessageSchema = z.union([
   AuthenticatedMessageSchema,
   SubscriptionMessageSchema,
   MinuteBarMessageSchema,
+  QuoteMessageSchema,
 ]);
 
 export type MinuteBarMessage = z.infer<typeof MinuteBarMessageSchema>;
+export type QuoteMessage = z.infer<typeof QuoteMessageSchema>;
 export type StreamMessage = z.infer<typeof StreamMessageSchema>;

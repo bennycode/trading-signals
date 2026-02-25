@@ -1,7 +1,7 @@
 import {ms} from 'ms';
 import {retry, RetryConfig} from 'ts-retry-promise';
 import {AlpacaStream, type AlpacaStreamCredentials} from './api/AlpacaStream.js';
-import type {MinuteBarMessage, StreamMessage} from './api/schema/StreamSchema.js';
+import type {MinuteBarMessage, QuoteMessage, StreamMessage} from './api/schema/StreamSchema.js';
 
 const hasErrorCode = (error: unknown): error is {code: string | number} => {
   return !!error && typeof error === 'object' && 'code' in error;
@@ -20,6 +20,7 @@ export interface AlpacaConnection {
 class AlpacaWebSocket {
   #connections: Map<string, AlpacaConnection> = new Map();
   #symbols: Map<string, Set<string>> = new Map();
+  #quoteSymbols: Map<string, Set<string>> = new Map();
   #credentialToConnectionId: Map<string, string> = new Map();
 
   /**
@@ -130,6 +131,47 @@ class AlpacaWebSocket {
     symbols?.delete(symbol);
 
     connection.stream.unsubscribe('bars', [symbol]);
+  }
+
+  /**
+   * Quotes from Alpaca provide real-time NBBO bid/ask data:
+   * https://docs.alpaca.markets/docs/real-time-stock-pricing-data#quotes
+   */
+  subscribeToQuotes(connectionId: string, symbol: string, cb: (quote: QuoteMessage) => void) {
+    const connection = this.#connections.get(connectionId);
+    if (!connection) {
+      console.warn(`No connection found for "${connectionId}".`);
+      return;
+    }
+
+    let symbols = this.#quoteSymbols.get(connectionId);
+    if (!symbols) {
+      symbols = new Set();
+      this.#quoteSymbols.set(connectionId, symbols);
+    }
+    symbols.add(symbol);
+
+    connection.stream.on('message', (message: StreamMessage) => {
+      if (message.T === 'q' && message.S === symbol) {
+        cb(message);
+      }
+    });
+
+    const allSymbols = Array.from(symbols);
+    connection.stream.unsubscribe('quotes', allSymbols);
+    connection.stream.subscribe('quotes', allSymbols);
+  }
+
+  unsubscribeFromQuotes(connectionId: string, symbol: string) {
+    const connection = this.#connections.get(connectionId);
+    if (!connection) {
+      return;
+    }
+
+    const symbols = this.#quoteSymbols.get(connectionId);
+    symbols?.delete(symbol);
+
+    connection.stream.unsubscribe('quotes', [symbol]);
   }
 }
 
