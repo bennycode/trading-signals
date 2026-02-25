@@ -1,4 +1,5 @@
 import {sqliteTable, integer, text} from 'drizzle-orm/sqlite-core';
+import {sql} from 'drizzle-orm';
 
 export const accounts = sqliteTable('accounts', {
   id: integer('id').primaryKey({autoIncrement: true}),
@@ -27,7 +28,7 @@ export const watches = sqliteTable('watches', {
   thresholdValue: text('thresholdValue').notNull(),
   baselinePrice: text('baselinePrice').notNull(),
   alertPrice: text('alertPrice').notNull(),
-  createdAt: text('createdAt').default('CURRENT_TIMESTAMP'),
+  createdAt: text('createdAt').default(sql`(CURRENT_TIMESTAMP)`),
 });
 
 export type Watch = typeof watches.$inferSelect;

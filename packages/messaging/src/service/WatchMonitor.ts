@@ -63,7 +63,9 @@ export class WatchMonitor {
     });
 
     // Subscribe to candle updates and get the topicId
-    const openTimeInISO = watch.createdAt || new Date().toISOString();
+    const createdAtDate = watch.createdAt ? new Date(watch.createdAt) : null;
+    const openTimeInISO =
+      createdAtDate && !isNaN(createdAtDate.getTime()) ? createdAtDate.toISOString() : new Date().toISOString();
     const topicId = await exchange.watchCandles(pair, watch.intervalMs, openTimeInISO);
 
     // Set up listener for candle events
