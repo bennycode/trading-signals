@@ -188,8 +188,13 @@ export async function startServer() {
     process.exit(0);
   });
 
-  if (process.env.XMTP_OWNER_ADDRESS) {
-    agent.use(isFromOwner);
+  if (process.env.XMTP_OWNER_ADDRESSES) {
+    console.log(`Only admin wallet addresses (${process.env.XMTP_OWNER_ADDRESSES}) can message the bot.`);
+    agent.use(isFromOwner(process.env.XMTP_OWNER_ADDRESSES));
+  } else {
+    console.warn(
+      'Warning: XMTP_OWNER_ADDRESSES is not set. Everyone can message the bot, which may not be intentional.'
+    );
   }
   agent.use(router.middleware());
   await agent.start();

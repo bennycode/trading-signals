@@ -14,6 +14,8 @@ services:
         value: '/var/data'
       - key: TYPEDTRADER_DB_ENCRYPTION_KEY
         sync: false
+      - key: XMTP_OWNER_ADDRESSES
+        sync: false
       - key: XMTP_WALLET_KEY
         sync: false
       - key: XMTP_DB_ENCRYPTION_KEY
