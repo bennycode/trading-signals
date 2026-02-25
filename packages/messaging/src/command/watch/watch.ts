@@ -1,8 +1,9 @@
 import Big from 'big.js';
-import {TradingPair, getExchangeClient, ms} from '@typedtrader/exchange';
+import {TradingPair, getExchangeClient} from '@typedtrader/exchange';
 import {Watch, WatchAttributes} from '../../database/models/Watch.js';
 import {parseThreshold} from '../../validation/parseThreshold.js';
 import {getAccountOrError} from '../../validation/getAccountOrError.js';
+import {ms} from 'ms';
 
 export interface WatchResult {
   message: string;
@@ -83,7 +84,7 @@ export const watch = async (request: string, ownerAddress: string): Promise<Watc
     });
 
     return {
-      message: `Watch created (ID: ${createdWatch.id})\nPair: ${pairPart}\nBaseline: ${baselinePrice} ${counter} (latest ${smallestInterval} candle close)\nAlert when: ${thresholdDisplay} (${alertPrice} ${counter})\nCheck interval: ${interval}`,
+      message: `Watch created (ID: ${createdWatch.id})\nPair: ${pairPart}\nBaseline: ${baselinePrice} ${counter} (latest ${ms(smallestInterval, {long: true})} candle close)\nAlert when: ${thresholdDisplay} (${alertPrice} ${counter})\nCheck interval: ${interval}`,
       watch: createdWatch,
     };
   } catch (error) {
