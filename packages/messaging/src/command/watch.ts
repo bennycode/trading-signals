@@ -1,7 +1,8 @@
+import Big from 'big.js';
 import {TradingPair, getExchangeClient, ms} from '@typedtrader/exchange';
 import {Account} from '../database/models/Account.js';
 import {Watch} from '../database/models/Watch.js';
-import { parseThreshold } from '../validation/parseThreshold.js';
+import {parseThreshold} from '../validation/parseThreshold.js';
 
 // Request Example: "/watch SHOP,USD 1 1m +5%"
 // Format: "<pair> <accountId> <interval> <threshold>"
@@ -62,6 +63,19 @@ export const watch = async (request: string, ownerAddress: string) => {
     const candle = await client.getLatestCandle(pair, smallestInterval);
     const baselinePrice = candle.close;
 
+    const directionSymbol = threshold.direction === 'up' ? '+' : '-';
+    const thresholdDisplay =
+      threshold.type === 'percent'
+        ? `${directionSymbol}${threshold.value}%`
+        : `${directionSymbol}${threshold.value} ${counter}`;
+
+    const alertPrice =
+      threshold.type === 'percent'
+        ? new Big(baselinePrice).times(
+            new Big(1).plus(new Big(threshold.direction === 'up' ? 1 : -1).times(threshold.value).div(100))
+          )
+        : new Big(baselinePrice).plus(new Big(threshold.direction === 'up' ? 1 : -1).times(threshold.value));
+
     // Create watch
     const watch = Watch.create({
       accountId,
@@ -71,15 +85,10 @@ export const watch = async (request: string, ownerAddress: string) => {
       thresholdDirection: threshold.direction,
       thresholdValue: threshold.value.toString(),
       baselinePrice: baselinePrice.toString(),
+      alertPrice: alertPrice.toString(),
     });
 
-    const directionSymbol = threshold.direction === 'up' ? '+' : '-';
-    const thresholdDisplay =
-      threshold.type === 'percent'
-        ? `${directionSymbol}${threshold.value}%`
-        : `${directionSymbol}${threshold.value} ${counter}`;
-
-    return `Watch created (ID: ${watch.id})\nPair: ${pairPart}\nBaseline: ${baselinePrice} ${counter}\nAlert when: ${thresholdDisplay}\nCheck interval: ${interval}`;
+    return `Watch created (ID: ${watch.id})\nPair: ${pairPart}\nBaseline: ${baselinePrice} ${counter} (latest ${smallestInterval} candle close)\nAlert when: ${thresholdDisplay} (${alertPrice} ${counter})\nCheck interval: ${interval}`;
   } catch (error) {
     if (error instanceof Error) {
       return `Error creating watch: ${error.message}`;
