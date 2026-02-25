@@ -3,7 +3,7 @@ import {TradingPair, getExchangeClient} from '@typedtrader/exchange';
 import {Watch, WatchAttributes} from '../../database/models/Watch.js';
 import {parseThreshold} from '../../validation/parseThreshold.js';
 import {getAccountOrError} from '../../validation/getAccountOrError.js';
-import {ms} from 'ms';
+import {ms, parse} from 'ms';
 
 export interface WatchResult {
   message: string;
@@ -41,7 +41,7 @@ export const watch = async (request: string, ownerAddress: string): Promise<Watc
     const {counter} = pair;
 
     // Parse interval
-    const intervalMs = ms(interval);
+    const intervalMs = parse(interval);
     if (!intervalMs || intervalMs < 60000) {
       return {message: 'Invalid interval. Minimum is 1m (1 minute). Examples: 1m, 5m, 1h'};
     }

@@ -1,8 +1,9 @@
 import Big from 'big.js';
-import {TradingPair, getExchangeClient, ms} from '@typedtrader/exchange';
+import {TradingPair, getExchangeClient} from '@typedtrader/exchange';
 import {Account} from '../database/models/Account.js';
 import {Watch} from '../database/models/Watch.js';
 import {parseThreshold} from '../validation/parseThreshold.js';
+import {parse} from 'ms';
 
 // Request Example: "/watch SHOP,USD 1 1m +5%"
 // Format: "<pair> <accountId> <interval> <threshold>"
@@ -46,7 +47,7 @@ export const watch = async (request: string, ownerAddress: string) => {
     const pair = new TradingPair(base, counter);
 
     // Parse interval
-    const intervalMs = ms(interval);
+    const intervalMs = parse(interval);
     if (!intervalMs || intervalMs < 60000) {
       return 'Invalid interval. Minimum is 1m (1 minute). Examples: 1m, 5m, 1h';
     }

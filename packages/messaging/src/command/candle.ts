@@ -1,5 +1,6 @@
-import {TradingPair, getExchangeClient, ms} from '@typedtrader/exchange';
+import {TradingPair, getExchangeClient} from '@typedtrader/exchange';
 import {getAccountOrError} from '../validation/getAccountOrError.js';
+import {parse} from 'ms';
 
 // Request Example: "1 SHOP,USD 1h"
 // Format: "<accountId> <pair> <interval>"
@@ -21,7 +22,7 @@ export const candle = async (request: string, ownerAddress: string) => {
     const account = getAccountOrError(ownerAddress, accountId);
 
     const pair = TradingPair.fromString(pairPart, ',');
-    const intervalInMillis = ms(interval);
+    const intervalInMillis = parse(interval);
 
     const client = getExchangeClient({
       exchangeId: account.exchange,
