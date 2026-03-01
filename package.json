@@ -6,7 +6,7 @@
     "@vitest/coverage-v8": "^4.0.18",
     "cross-env": "^10.1.0",
     "dependency-cruiser": "^17.3.8",
-    "eslint": "^9.39.3",
+    "eslint": "^10.0.2",
     "lefthook": "^2.1.1",
     "lerna": "^9.0.4",
     "rimraf": "^6.1.3",
