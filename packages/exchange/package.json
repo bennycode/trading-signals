@@ -8,7 +8,7 @@
     "axios": "^1.13.5",
     "axios-retry": "^4.5.0",
     "big.js": "^7.0.1",
-    "dotenv-defaults": "^5.0.2",
+    "dotenv-defaults": "^6.0.0",
     "jsonabc": "^2.3.1",
     "ms": "4.0.0-nightly.202508271359",
     "ts-retry-promise": "^0.8.1",
