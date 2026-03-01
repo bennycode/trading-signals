@@ -11,7 +11,7 @@ import {
   price,
   time,
   uptime,
-  watch,
+  watchAdd,
   watchList,
   watchRemove,
 } from './command/index.js';
@@ -117,7 +117,7 @@ export async function startServer() {
       await ctx.conversation.sendText('Unable to determine sender address');
       return;
     }
-    const result = await watch(ctx.message.content, userAddress);
+    const result = await watchAdd(ctx.message.content, userAddress);
     await ctx.conversation.sendText(result.message);
     // Subscribe to the new watch via WebSocket
     if (result.watch) {
