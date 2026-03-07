@@ -20,6 +20,7 @@ export class BuyAndHoldStrategy extends Strategy {
     }
 
     this.#bought = true;
+    this.state = {bought: true};
 
     return {
       side: ExchangeOrderSide.BUY,

@@ -54,7 +54,7 @@ export class BacktestExecutor {
       }
 
       // Step 3: Translate advice into exchange orders
-      await this.#placeOrderFromAdvice(advice, tradingPair);
+      await this.#placeOrderFromAdvice(advice, tradingPair, tradingRules, feeRates);
     }
 
     // Cancel any orders placed on the last candle that were never filled.
@@ -120,13 +120,18 @@ export class BacktestExecutor {
     };
   }
 
-  async #placeOrderFromAdvice(advice: OrderAdvice, pair: import('@typedtrader/exchange').TradingPair): Promise<void> {
+  async #placeOrderFromAdvice(
+    advice: OrderAdvice,
+    pair: import('@typedtrader/exchange').TradingPair,
+    tradingRules: ExchangeTradingRules,
+    feeRates: ExchangeFeeRate
+  ): Promise<void> {
     const {exchange} = this.#config;
 
     try {
       if (advice.type === ExchangeOrderType.LIMIT) {
         const rawPrice = new Big(advice.price!);
-        const price = await this.#roundLimitPrice(rawPrice, pair);
+        const price = this.#roundLimitPrice(rawPrice, tradingRules);
 
         if (price.lte(0)) {
           return;
@@ -142,14 +147,14 @@ export class BacktestExecutor {
               return;
             }
             const actualSpend = spendAmount.gt(balances.counter) ? balances.counter : spendAmount;
-            const feeRate = (await exchange.getFeeRates(pair))[ExchangeOrderType.LIMIT];
+            const feeRate = feeRates[ExchangeOrderType.LIMIT];
             const netSpend = actualSpend.div(new Big(1).plus(feeRate));
             size = netSpend.div(price);
           } else {
             if (advice.amount !== null) {
               size = new Big(advice.amount);
             } else {
-              const feeRate = (await exchange.getFeeRates(pair))[ExchangeOrderType.LIMIT];
+              const feeRate = feeRates[ExchangeOrderType.LIMIT];
               const netSpend = balances.counter.div(new Big(1).plus(feeRate));
               size = netSpend.div(price);
             }
@@ -189,7 +194,7 @@ export class BacktestExecutor {
             if (estimatedPrice.eq(0)) {
               return;
             }
-            const feeRate = (await exchange.getFeeRates(pair))[ExchangeOrderType.MARKET];
+            const feeRate = feeRates[ExchangeOrderType.MARKET];
             const netSpend = actualSpend.div(new Big(1).plus(feeRate));
             const size = netSpend.div(estimatedPrice);
 
@@ -204,20 +209,11 @@ export class BacktestExecutor {
             });
             this.#orderAdviceMap.set(order.id, advice);
           } else {
-            let size: Big;
-            if (advice.amount !== null) {
-              size = new Big(advice.amount);
-            } else {
-              // Convert counter balance to base units using current price
-              const latestCandle = await exchange.getLatestCandle(pair, 0);
-              const estimatedPrice = new Big(latestCandle.close);
-              if (estimatedPrice.eq(0)) {
-                return;
-              }
-              const feeRate = (await exchange.getFeeRates(pair))[ExchangeOrderType.MARKET];
-              const netSpend = balances.counter.div(new Big(1).plus(feeRate));
-              size = netSpend.div(estimatedPrice);
+            if (advice.amount === null) {
+              // Cannot resolve base-denomination size without an explicit amount or amountInCounter
+              return;
             }
+            const size = new Big(advice.amount);
             if (size.lte(0)) {
               return;
             }
@@ -251,9 +247,7 @@ export class BacktestExecutor {
   }
 
   /** Rounds a limit-order price down to the exchange's counter_increment. */
-  async #roundLimitPrice(rawPrice: Big, pair: import('@typedtrader/exchange').TradingPair): Promise<Big> {
-    const {exchange} = this.#config;
-    const tradingRules = await exchange.getTradingRules(pair);
+  #roundLimitPrice(rawPrice: Big, tradingRules: ExchangeTradingRules): Big {
     const counterIncrement = new Big(tradingRules.counter_increment);
     return rawPrice.div(counterIncrement).round(0, Big.roundDown).mul(counterIncrement);
   }
