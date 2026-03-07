@@ -22,7 +22,7 @@ export class BuyBelowSellAboveStrategy extends Strategy {
     this.#config = config;
   }
 
-  override async processCandle(candle: BatchedCandle, _state: TradingSessionState): Promise<OrderAdvice | void> {
+  protected override async processCandle(candle: BatchedCandle, _state: TradingSessionState): Promise<OrderAdvice | void> {
     const closePrice = candle.close;
 
     if (this.#config.buyBelow !== undefined) {

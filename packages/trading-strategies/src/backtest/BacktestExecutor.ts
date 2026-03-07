@@ -1,6 +1,6 @@
 import Big from 'big.js';
 import {CandleBatcher, ExchangeOrderSide, ExchangeOrderType} from '@typedtrader/exchange';
-import type {ExchangeCandle, OrderAdvice, TradingSessionState} from '@typedtrader/exchange';
+import type {ExchangeCandle, ExchangeFeeRate, ExchangeTradingRules, OrderAdvice, TradingSessionState} from '@typedtrader/exchange';
 import type {BacktestConfig} from './BacktestConfig.js';
 import type {BacktestPerformanceSummary, BacktestResult, BacktestTrade} from './BacktestResult.js';
 import {PerformanceCalculator} from './PerformanceCalculator.js';
@@ -18,6 +18,12 @@ export class BacktestExecutor {
     const initialBalances = await exchange.getAvailableBalances(tradingPair);
     const initialBaseBalance = initialBalances.base;
     const initialCounterBalance = initialBalances.counter;
+
+    // Fetch static values once before the loop
+    const [tradingRules, feeRates] = await Promise.all([
+      exchange.getTradingRules(tradingPair),
+      exchange.getFeeRates(tradingPair),
+    ]);
 
     const trades: BacktestTrade[] = [];
     let totalFees = new Big(0);
@@ -40,7 +46,7 @@ export class BacktestExecutor {
 
       // Step 2: Run strategy to get advice
       const batchedCandle = CandleBatcher.createBatchedCandle([candle], candle.sizeInMillis);
-      const state = await this.#buildState(tradingPair);
+      const state = await this.#buildState(tradingPair, tradingRules, feeRates);
       const advice = await strategy.onCandle(batchedCandle, state);
 
       if (!advice) {
@@ -96,14 +102,13 @@ export class BacktestExecutor {
     return advice;
   }
 
-  async #buildState(pair: import('@typedtrader/exchange').TradingPair): Promise<TradingSessionState> {
+  async #buildState(
+    pair: import('@typedtrader/exchange').TradingPair,
+    tradingRules: ExchangeTradingRules,
+    feeRates: ExchangeFeeRate
+  ): Promise<TradingSessionState> {
     const {exchange} = this.#config;
-    const [balances, tradingRules, feeRates, fills] = await Promise.all([
-      exchange.getAvailableBalances(pair),
-      exchange.getTradingRules(pair),
-      exchange.getFeeRates(pair),
-      exchange.getFills(pair),
-    ]);
+    const [balances, fills] = await Promise.all([exchange.getAvailableBalances(pair), exchange.getFills(pair)]);
     const lastOrderSide = fills.length > 0 ? fills[0].side : undefined;
 
     return {
@@ -199,7 +204,20 @@ export class BacktestExecutor {
             });
             this.#orderAdviceMap.set(order.id, advice);
           } else {
-            const size = advice.amount !== null ? new Big(advice.amount) : balances.counter;
+            let size: Big;
+            if (advice.amount !== null) {
+              size = new Big(advice.amount);
+            } else {
+              // Convert counter balance to base units using current price
+              const latestCandle = await exchange.getLatestCandle(pair, 0);
+              const estimatedPrice = new Big(latestCandle.close);
+              if (estimatedPrice.eq(0)) {
+                return;
+              }
+              const feeRate = (await exchange.getFeeRates(pair))[ExchangeOrderType.MARKET];
+              const netSpend = balances.counter.div(new Big(1).plus(feeRate));
+              size = netSpend.div(estimatedPrice);
+            }
             if (size.lte(0)) {
               return;
             }
