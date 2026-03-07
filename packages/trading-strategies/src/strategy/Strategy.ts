@@ -1,18 +1,22 @@
-import {BatchedCandle} from '@typedtrader/exchange';
-import {StrategyAdvice} from './StrategyAdvice.js';
+import type {BatchedCandle, OrderAdvice, TradingSessionState, TradingSessionStrategy} from '@typedtrader/exchange';
 
-export abstract class Strategy {
+export abstract class Strategy implements TradingSessionStrategy {
   static NAME: string;
 
-  latestAdvice: StrategyAdvice | undefined = undefined;
+  latestAdvice: OrderAdvice | undefined = undefined;
   lastBatchedCandle: BatchedCandle | undefined = undefined;
+  state: Record<string, unknown> | null = null;
 
-  async processBatchedCandle(batchedCandle: BatchedCandle): Promise<StrategyAdvice | void> {
-    this.lastBatchedCandle = batchedCandle;
-    const advice = await this.processCandle(batchedCandle);
+  async onCandle(candle: BatchedCandle, state: TradingSessionState): Promise<OrderAdvice | void> {
+    this.lastBatchedCandle = candle;
+    const advice = await this.processCandle(candle, state);
     this.latestAdvice = advice ? advice : undefined;
     return advice;
   }
 
-  protected abstract processCandle(batchedCandle: BatchedCandle): Promise<StrategyAdvice | void>;
+  restoreState(persisted: Record<string, unknown>): void {
+    this.state = persisted;
+  }
+
+  protected abstract processCandle(candle: BatchedCandle, state: TradingSessionState): Promise<OrderAdvice | void>;
 }

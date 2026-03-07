@@ -1,9 +1,8 @@
 import Big from 'big.js';
-import {CandleBatcher, ExchangeCandle, ExchangeOrderSide, ExchangeOrderType} from '@typedtrader/exchange';
+import {CandleBatcher, ExchangeOrderSide, ExchangeOrderType} from '@typedtrader/exchange';
+import type {ExchangeCandle, OrderAdvice, TradingSessionState} from '@typedtrader/exchange';
 import type {BacktestConfig} from './BacktestConfig.js';
 import type {BacktestPerformanceSummary, BacktestResult, BacktestTrade} from './BacktestResult.js';
-import {StrategySignal} from '../strategy/StrategySignal.js';
-import type {StrategyAdvice} from '../strategy/StrategyAdvice.js';
 import {PerformanceCalculator} from './PerformanceCalculator.js';
 
 export class BacktestExecutor {
@@ -41,7 +40,8 @@ export class BacktestExecutor {
 
       // Step 2: Run strategy to get advice
       const batchedCandle = CandleBatcher.createBatchedCandle([candle], candle.sizeInMillis);
-      const advice = await strategy.processBatchedCandle(batchedCandle);
+      const state = await this.#buildState(tradingPair);
+      const advice = await strategy.onCandle(batchedCandle, state);
 
       if (!advice) {
         continue;
@@ -80,85 +80,105 @@ export class BacktestExecutor {
   }
 
   /** Map to track which order_id corresponds to which advice */
-  readonly #orderAdviceMap = new Map<string, StrategyAdvice>();
+  readonly #orderAdviceMap = new Map<string, OrderAdvice>();
 
-  #findAdviceForFill(orderId: string, _trades: BacktestTrade[]): StrategyAdvice {
+  #findAdviceForFill(orderId: string, _trades: BacktestTrade[]): OrderAdvice {
     const advice = this.#orderAdviceMap.get(orderId);
     if (!advice) {
       // Fallback: shouldn't happen in normal flow
       return {
+        side: ExchangeOrderSide.BUY,
+        type: ExchangeOrderType.MARKET,
         amount: null,
-        amountType: 'base',
-        price: null,
-        signal: StrategySignal.BUY_MARKET,
+        amountInCounter: false,
       };
     }
     return advice;
   }
 
-  async #placeOrderFromAdvice(advice: StrategyAdvice, pair: import('@typedtrader/exchange').TradingPair): Promise<void> {
+  async #buildState(pair: import('@typedtrader/exchange').TradingPair): Promise<TradingSessionState> {
     const {exchange} = this.#config;
-    const signal = advice.signal;
+    const [balances, tradingRules, feeRates, fills] = await Promise.all([
+      exchange.getAvailableBalances(pair),
+      exchange.getTradingRules(pair),
+      exchange.getFeeRates(pair),
+      exchange.getFills(pair),
+    ]);
+    const lastOrderSide = fills.length > 0 ? fills[0].side : undefined;
+
+    return {
+      baseBalance: balances.base,
+      counterBalance: balances.counter,
+      tradingRules,
+      feeRates,
+      lastOrderSide,
+    };
+  }
+
+  async #placeOrderFromAdvice(advice: OrderAdvice, pair: import('@typedtrader/exchange').TradingPair): Promise<void> {
+    const {exchange} = this.#config;
 
     try {
-      switch (signal) {
-        case StrategySignal.BUY_LIMIT: {
-          const balances = await exchange.getAvailableBalances(pair);
-          // Apply trading-rule rounding to the price before any size calculations,
-          // so size and reachability checks are consistent with the actual fill price.
-          const price = await this.#roundLimitPrice(advice.price, pair);
+      if (advice.type === ExchangeOrderType.LIMIT) {
+        const rawPrice = new Big(advice.price!);
+        const price = await this.#roundLimitPrice(rawPrice, pair);
 
-          if (price.lte(0)) {
-            return;
-          }
+        if (price.lte(0)) {
+          return;
+        }
 
-          let size: Big;
+        const balances = await exchange.getAvailableBalances(pair);
 
-          if (advice.amountType === 'counter') {
-            const spendAmount = advice.amount ?? balances.counter;
+        let size: Big;
+        if (advice.side === ExchangeOrderSide.BUY) {
+          if (advice.amountInCounter) {
+            const spendAmount = advice.amount !== null ? new Big(advice.amount) : balances.counter;
             if (spendAmount.lte(0) || balances.counter.lte(0)) {
               return;
             }
             const actualSpend = spendAmount.gt(balances.counter) ? balances.counter : spendAmount;
-            // Estimate fee so we don't over-commit
             const feeRate = (await exchange.getFeeRates(pair))[ExchangeOrderType.LIMIT];
             const netSpend = actualSpend.div(new Big(1).plus(feeRate));
             size = netSpend.div(price);
           } else {
-            if (advice.amount) {
-              size = advice.amount;
+            if (advice.amount !== null) {
+              size = new Big(advice.amount);
             } else {
-              // Buy as much as possible: account for fees in size calculation
               const feeRate = (await exchange.getFeeRates(pair))[ExchangeOrderType.LIMIT];
               const netSpend = balances.counter.div(new Big(1).plus(feeRate));
               size = netSpend.div(price);
             }
           }
-
-          if (size.lte(0)) {
+        } else {
+          // SELL
+          const amount = advice.amount !== null ? new Big(advice.amount) : balances.base;
+          if (amount.lte(0) || balances.base.lte(0)) {
             return;
           }
-
-          const order = await exchange.placeLimitOrder(pair, {
-            price: price.toFixed(),
-            side: ExchangeOrderSide.BUY,
-            size: size.toFixed(),
-          });
-          this.#orderAdviceMap.set(order.id, advice);
-          break;
+          size = amount.gt(balances.base) ? balances.base : amount;
         }
 
-        case StrategySignal.BUY_MARKET: {
-          const balances = await exchange.getAvailableBalances(pair);
+        if (size.lte(0)) {
+          return;
+        }
 
-          if (advice.amountType === 'counter') {
-            const spendAmount = advice.amount ?? balances.counter;
+        const order = await exchange.placeLimitOrder(pair, {
+          price: price.toFixed(),
+          side: advice.side,
+          size: size.toFixed(),
+        });
+        this.#orderAdviceMap.set(order.id, advice);
+      } else {
+        // MARKET order
+        const balances = await exchange.getAvailableBalances(pair);
+
+        if (advice.side === ExchangeOrderSide.BUY) {
+          if (advice.amountInCounter) {
+            const spendAmount = advice.amount !== null ? new Big(advice.amount) : balances.counter;
             if (spendAmount.lte(0) || balances.counter.lte(0)) {
               return;
             }
             const actualSpend = spendAmount.gt(balances.counter) ? balances.counter : spendAmount;
-            // For market orders with counter amount, we need to estimate the size
-            // using the current candle price
             const latestCandle = await exchange.getLatestCandle(pair, 0);
             const estimatedPrice = new Big(latestCandle.close);
             if (estimatedPrice.eq(0)) {
@@ -179,7 +199,7 @@ export class BacktestExecutor {
             });
             this.#orderAdviceMap.set(order.id, advice);
           } else {
-            const size = advice.amount ?? balances.counter;
+            const size = advice.amount !== null ? new Big(advice.amount) : balances.counter;
             if (size.lte(0)) {
               return;
             }
@@ -191,41 +211,13 @@ export class BacktestExecutor {
             });
             this.#orderAdviceMap.set(order.id, advice);
           }
-          break;
-        }
-
-        case StrategySignal.SELL_LIMIT: {
-          const balances = await exchange.getAvailableBalances(pair);
-          // Apply trading-rule rounding to the price before placing the order,
-          // so the order price is consistent with what the exchange will use for fills.
-          const price = await this.#roundLimitPrice(advice.price, pair);
-
-          if (price.lte(0)) {
+        } else {
+          // SELL MARKET
+          const amount = advice.amount !== null ? new Big(advice.amount) : balances.base;
+          if (amount.lte(0) || balances.base.lte(0)) {
             return;
           }
-
-          const size = advice.amount ?? balances.base;
-          if (size.lte(0) || balances.base.lte(0)) {
-            return;
-          }
-          const actualSize = size.gt(balances.base) ? balances.base : size;
-
-          const order = await exchange.placeLimitOrder(pair, {
-            price: price.toFixed(),
-            side: ExchangeOrderSide.SELL,
-            size: actualSize.toFixed(),
-          });
-          this.#orderAdviceMap.set(order.id, advice);
-          break;
-        }
-
-        case StrategySignal.SELL_MARKET: {
-          const balances = await exchange.getAvailableBalances(pair);
-          const size = advice.amount ?? balances.base;
-          if (size.lte(0) || balances.base.lte(0)) {
-            return;
-          }
-          const actualSize = size.gt(balances.base) ? balances.base : size;
+          const actualSize = amount.gt(balances.base) ? balances.base : amount;
 
           const order = await exchange.placeMarketOrder(pair, {
             side: ExchangeOrderSide.SELL,
@@ -233,7 +225,6 @@ export class BacktestExecutor {
             sizeInCounter: false,
           });
           this.#orderAdviceMap.set(order.id, advice);
-          break;
         }
       }
     } catch {

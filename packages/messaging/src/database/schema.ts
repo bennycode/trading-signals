@@ -33,3 +33,19 @@ export const watches = sqliteTable('watches', {
 
 export type Watch = typeof watches.$inferSelect;
 export type NewWatch = typeof watches.$inferInsert;
+
+export const strategies = sqliteTable('strategies', {
+  id: integer('id').primaryKey({autoIncrement: true}),
+  accountId: integer('accountId')
+    .notNull()
+    .references(() => accounts.id, {onDelete: 'cascade'}),
+  strategyName: text('strategyName').notNull(),
+  config: text('config').notNull(),
+  pair: text('pair').notNull(),
+  intervalMs: integer('intervalMs').notNull(),
+  state: text('state'),
+  createdAt: text('createdAt').default(sql`(CURRENT_TIMESTAMP)`),
+});
+
+export type StrategyRow = typeof strategies.$inferSelect;
+export type NewStrategyRow = typeof strategies.$inferInsert;

@@ -1,11 +1,10 @@
 import Big from 'big.js';
 import {describe, expect, it} from 'vitest';
-import {AlpacaExchangeMock} from '@typedtrader/exchange';
+import {AlpacaExchangeMock, ExchangeOrderSide, ExchangeOrderType} from '@typedtrader/exchange';
 import type {ExchangeCandle} from '@typedtrader/exchange';
 import {TradingPair} from '@typedtrader/exchange';
 import {BacktestExecutor} from '../backtest/BacktestExecutor.js';
 import {BuyOnceStrategy} from './BuyOnceStrategy.js';
-import {StrategySignal} from '../strategy/StrategySignal.js';
 import type {BacktestConfig} from '../backtest/BacktestConfig.js';
 
 function createCandle(overrides: Partial<ExchangeCandle> & {close: string; open: string}): ExchangeCandle {
@@ -58,7 +57,8 @@ describe('BuyOnceStrategy', () => {
     const result = await new BacktestExecutor(config).execute();
 
     expect(result.trades).toHaveLength(1);
-    expect(result.trades[0].advice.signal).toBe(StrategySignal.BUY_LIMIT);
+    expect(result.trades[0].advice.side).toBe(ExchangeOrderSide.BUY);
+    expect(result.trades[0].advice.type).toBe(ExchangeOrderType.LIMIT);
     expect(result.finalBaseBalance.gt(0)).toBe(true);
   });
 

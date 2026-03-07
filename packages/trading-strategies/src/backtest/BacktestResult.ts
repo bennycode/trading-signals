@@ -1,10 +1,9 @@
-import type {ExchangeOrderSide} from '@typedtrader/exchange';
+import type {ExchangeOrderSide, OrderAdvice} from '@typedtrader/exchange';
 import type Big from 'big.js';
-import type {StrategyAdvice} from '../strategy/StrategyAdvice.js';
 
 export interface BacktestTrade {
   /** The advice that triggered this trade. */
-  advice: StrategyAdvice;
+  advice: OrderAdvice;
   /** The fee paid for this trade (in counter currency). */
   fee: Big;
   /** The ISO timestamp of the candle that triggered this trade. */

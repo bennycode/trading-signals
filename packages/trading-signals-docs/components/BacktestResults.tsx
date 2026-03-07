@@ -214,7 +214,7 @@ function TradeHistoryTable({result}: {result: BacktestResult}) {
                       ? 'bg-green-900/50 text-green-400'
                       : 'bg-red-900/50 text-red-400'
                   }`}>
-                  {trade.advice.signal}
+                  {trade.advice.side} {trade.advice.type}
                 </span>
               </td>
               <td className="py-2 px-3 text-right text-white font-mono">${formatBig(trade.price)}</td>

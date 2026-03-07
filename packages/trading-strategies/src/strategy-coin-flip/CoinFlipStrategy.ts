@@ -1,10 +1,6 @@
 import {z} from 'zod';
-import {
-  StrategyAdvice,
-  StrategyAdviceMarketBuyOrder,
-  StrategyAdviceMarketSellOrder,
-} from '../strategy/StrategyAdvice.js';
-import {StrategySignal} from '../strategy/StrategySignal.js';
+import {ExchangeOrderSide, ExchangeOrderType} from '@typedtrader/exchange';
+import type {OrderAdvice, TradingSessionState, BatchedCandle} from '@typedtrader/exchange';
 import {Strategy} from '../strategy/Strategy.js';
 
 export const CoinFlipSchema = z.object({});
@@ -12,19 +8,19 @@ export const CoinFlipSchema = z.object({});
 export class CoinFlipStrategy extends Strategy {
   static override NAME = '@typedtrader/strategy-coin-flip';
 
-  protected override async processCandle(): Promise<StrategyAdvice | void> {
-    const buyMarket: StrategyAdviceMarketBuyOrder = {
+  protected override async processCandle(_candle: BatchedCandle, _state: TradingSessionState): Promise<OrderAdvice | void> {
+    const buyMarket: OrderAdvice = {
+      side: ExchangeOrderSide.BUY,
+      type: ExchangeOrderType.MARKET,
       amount: null,
-      amountType: 'counter',
-      price: null,
-      signal: StrategySignal.BUY_MARKET,
+      amountInCounter: true,
     };
 
-    const sellMarket: StrategyAdviceMarketSellOrder = {
+    const sellMarket: OrderAdvice = {
+      side: ExchangeOrderSide.SELL,
+      type: ExchangeOrderType.MARKET,
       amount: null,
-      amountType: 'base',
-      price: null,
-      signal: StrategySignal.SELL_MARKET,
+      amountInCounter: false,
     };
 
     // Using bitwise AND instead of modulo to avoid modulo bias

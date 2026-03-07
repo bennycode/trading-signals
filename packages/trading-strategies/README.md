@@ -19,7 +19,9 @@ npm install trading-strategies
 ## Usage
 
 ```ts
-import {StrategySignal, StrategyAdvice} from 'trading-strategies';
+import {Strategy} from 'trading-strategies';
+import {ExchangeOrderSide, ExchangeOrderType} from '@typedtrader/exchange';
+import type {OrderAdvice} from '@typedtrader/exchange';
 ```
 
 ## Available Strategies
