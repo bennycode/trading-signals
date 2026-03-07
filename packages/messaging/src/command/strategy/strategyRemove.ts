@@ -1,4 +1,5 @@
 import {Strategy} from '../../database/models/Strategy.js';
+import {assertId} from '../../validation/assertId.js';
 import {getAccountOrError} from '../../validation/getAccountOrError.js';
 
 export interface StrategyRemoveResult {
@@ -8,13 +9,8 @@ export interface StrategyRemoveResult {
 
 // Request Example: "5"
 export const strategyRemove = async (request: string, ownerAddress: string): Promise<StrategyRemoveResult> => {
-  const strategyId = parseInt(request.trim(), 10);
-
-  if (isNaN(strategyId)) {
-    return {message: 'Invalid strategy ID. Usage: /strategyRemove <id>'};
-  }
-
   try {
+    const strategyId = assertId(request);
     const row = Strategy.findByPk(strategyId);
 
     if (!row) {

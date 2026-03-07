@@ -1,7 +1,10 @@
+import {getExchangeClient} from '@typedtrader/exchange';
+import {ms} from 'ms';
 import {getStrategyNames, createStrategy} from 'trading-strategies';
-import {getAccountOrError} from '../../validation/getAccountOrError.js';
 import {Strategy, type StrategyAttributes} from '../../database/models/Strategy.js';
-import {parse} from 'ms';
+import {assertId} from '../../validation/assertId.js';
+import {assertInterval} from '../../validation/assertInterval.js';
+import {getAccountOrError} from '../../validation/getAccountOrError.js';
 
 export interface StrategyAddResult {
   message: string;
@@ -21,16 +24,8 @@ export const strategyAdd = async (request: string, ownerAddress: string): Promis
   }
 
   const [strategyName, accountIdStr, pair, interval, ...configParts] = parts;
-  const accountId = parseInt(accountIdStr, 10);
-
-  if (isNaN(accountId)) {
-    return {message: 'Invalid account ID'};
-  }
-
-  const intervalMs = parse(interval);
-  if (!intervalMs || intervalMs < 60000) {
-    return {message: 'Invalid interval. Minimum is 1m (1 minute). Examples: 1m, 5m, 1h'};
-  }
+  const accountId = assertId(accountIdStr);
+  const intervalMs = assertInterval(interval);
 
   const configJson = configParts.length > 0 ? configParts.join(' ') : '{}';
   let config: unknown;
@@ -42,6 +37,18 @@ export const strategyAdd = async (request: string, ownerAddress: string): Promis
 
   try {
     const account = getAccountOrError(ownerAddress, accountId);
+
+    const client = getExchangeClient({
+      exchangeId: account.exchange,
+      apiKey: account.apiKey,
+      apiSecret: account.apiSecret,
+      isPaper: account.isPaper,
+    });
+
+    const smallestInterval = client.getSmallestInterval();
+    if (intervalMs < smallestInterval) {
+      return {message: `Invalid interval. Minimum for ${account.exchange} is ${ms(smallestInterval, {long: true})}.`};
+    }
 
     // Validate strategy name and config by attempting to create it
     createStrategy(strategyName, config);

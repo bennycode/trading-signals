@@ -1,15 +1,11 @@
 import {Account} from '../../database/models/Account.js';
+import {assertId} from '../../validation/assertId.js';
 import {getAccountOrError} from '../../validation/getAccountOrError.js';
 
 // Request Example: "1"
 export const accountRemove = async (request: string, ownerAddress: string) => {
-  const accountId = parseInt(request.trim(), 10);
-
-  if (isNaN(accountId)) {
-    return 'Invalid account ID. Usage: /accountRemove <id>';
-  }
-
   try {
+    const accountId = assertId(request);
     const account = getAccountOrError(ownerAddress, accountId);
     Account.destroy(accountId);
 

@@ -1,9 +1,11 @@
 import Big from 'big.js';
 import {TradingPair, getExchangeClient} from '@typedtrader/exchange';
 import {Watch, WatchAttributes} from '../../database/models/Watch.js';
-import {parseThreshold} from '../../validation/parseThreshold.js';
+import {ms} from 'ms';
+import {assertId} from '../../validation/assertId.js';
+import {assertInterval} from '../../validation/assertInterval.js';
 import {getAccountOrError} from '../../validation/getAccountOrError.js';
-import {ms, parse} from 'ms';
+import {parseThreshold} from '../../validation/parseThreshold.js';
 
 export interface WatchResult {
   message: string;
@@ -23,11 +25,6 @@ export const watchAdd = async (request: string, ownerAddress: string): Promise<W
   }
 
   const [pairPart, accountIdStr, interval, thresholdStr] = parts;
-  const accountId = parseInt(accountIdStr, 10);
-
-  if (isNaN(accountId)) {
-    return {message: 'Invalid account ID'};
-  }
 
   const threshold = parseThreshold(thresholdStr);
   if (!threshold) {
@@ -35,16 +32,13 @@ export const watchAdd = async (request: string, ownerAddress: string): Promise<W
   }
 
   try {
+    const accountId = assertId(accountIdStr);
     const account = getAccountOrError(ownerAddress, accountId);
 
     const pair = TradingPair.fromString(pairPart, ',');
     const {counter} = pair;
 
-    // Parse interval
-    const intervalMs = parse(interval);
-    if (!intervalMs || intervalMs < 60000) {
-      return {message: 'Invalid interval. Minimum is 1m (1 minute). Examples: 1m, 5m, 1h'};
-    }
+    const intervalMs = assertInterval(interval);
 
     // Fetch current price as baseline
     const client = getExchangeClient({
@@ -55,6 +49,10 @@ export const watchAdd = async (request: string, ownerAddress: string): Promise<W
     });
 
     const smallestInterval = client.getSmallestInterval();
+    if (intervalMs < smallestInterval) {
+      return {message: `Invalid interval. Minimum for ${account.exchange} is ${ms(smallestInterval, {long: true})}. Examples: 1m, 5m, 1h`};
+    }
+
     const candle = await client.getLatestCandle(pair, smallestInterval);
     const baselinePrice = candle.close;
 
