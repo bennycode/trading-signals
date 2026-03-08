@@ -24,8 +24,6 @@ export const strategyAdd = async (request: string, ownerAddress: string): Promis
   }
 
   const [strategyName, accountIdStr, pair, interval, ...configParts] = parts;
-  const accountId = assertId(accountIdStr);
-  const intervalMs = assertInterval(interval);
 
   const configJson = configParts.length > 0 ? configParts.join(' ') : '{}';
   let config: unknown;
@@ -36,6 +34,8 @@ export const strategyAdd = async (request: string, ownerAddress: string): Promis
   }
 
   try {
+    const accountId = assertId(accountIdStr);
+    const intervalMs = assertInterval(interval);
     const account = getAccountOrError(ownerAddress, accountId);
 
     const client = getExchangeClient({

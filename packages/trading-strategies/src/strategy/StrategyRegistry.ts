@@ -11,7 +11,7 @@ import {ScalpStrategy, ScalpSchema} from '../strategy-scalp/ScalpStrategy.js';
 import type {Strategy} from './Strategy.js';
 
 interface StrategyEntry {
-  create: (config: any) => Strategy;
+  create: (config: unknown) => Strategy;
   schema: z.ZodType;
 }
 
