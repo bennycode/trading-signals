@@ -102,9 +102,9 @@ export class StrategyMonitor {
       console.error(`Strategy ${row.id} (${row.strategyName}) error:`, error.message);
     });
 
-    this.#sessions.set(row.id, {strategyId: row.id, session, strategy});
-
     await session.start();
+
+    this.#sessions.set(row.id, {strategyId: row.id, session, strategy});
     console.log(`Started strategy "${row.id}" (${row.strategyName}) for "${row.pair}".`);
   }
 
