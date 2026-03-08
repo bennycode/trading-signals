@@ -43,7 +43,7 @@ export class BuyOnceStrategy extends Strategy {
       side: ExchangeOrderSide.BUY,
       type: ExchangeOrderType.LIMIT,
       amount: null,
-      amountInCounter: true,
+      amountIn: 'base',
       price: this.#buyAtPrice,
     };
   }

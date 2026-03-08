@@ -180,7 +180,7 @@ describe('BacktestExecutor', () => {
             side: ExchangeOrderSide.BUY,
             type: ExchangeOrderType.MARKET,
             amount: null,
-            amountInCounter: true,
+            amountIn: 'counter',
           };
         }
       }
@@ -306,7 +306,7 @@ describe('BacktestExecutor', () => {
             side: ExchangeOrderSide.SELL,
             type: ExchangeOrderType.LIMIT,
             amount: new Big(100),
-            amountInCounter: false,
+            amountIn: 'base',
             price: candle.close,
           };
         }
@@ -445,7 +445,7 @@ describe('BacktestExecutor', () => {
             side: ExchangeOrderSide.BUY,
             type: ExchangeOrderType.MARKET,
             amount: null,
-            amountInCounter: true,
+            amountIn: 'counter',
           };
         }
       }
@@ -566,7 +566,7 @@ describe('BacktestExecutor', () => {
             side: ExchangeOrderSide.BUY,
             type: ExchangeOrderType.MARKET,
             amount: null,
-            amountInCounter: true,
+            amountIn: 'counter',
           };
         }
       }
@@ -599,7 +599,7 @@ describe('BacktestExecutor', () => {
             side: ExchangeOrderSide.SELL,
             type: ExchangeOrderType.MARKET,
             amount: null,
-            amountInCounter: false,
+            amountIn: 'base',
           };
         }
       }
@@ -674,7 +674,7 @@ describe('BacktestExecutor', () => {
             side: ExchangeOrderSide.BUY,
             type: ExchangeOrderType.LIMIT,
             amount: null,
-            amountInCounter: true,
+            amountIn: 'base',
             price: candle.close,
           };
         }

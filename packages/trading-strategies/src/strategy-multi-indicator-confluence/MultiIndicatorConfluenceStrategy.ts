@@ -136,7 +136,7 @@ export class MultiIndicatorConfluenceStrategy extends Strategy {
         side: ExchangeOrderSide.BUY,
         type: ExchangeOrderType.MARKET,
         amount: null,
-        amountInCounter: true,
+        amountIn: 'counter',
         reason,
       };
     }
@@ -154,7 +154,7 @@ export class MultiIndicatorConfluenceStrategy extends Strategy {
         side: ExchangeOrderSide.SELL,
         type: ExchangeOrderType.MARKET,
         amount: null,
-        amountInCounter: false,
+        amountIn: 'base',
         reason,
       };
     }

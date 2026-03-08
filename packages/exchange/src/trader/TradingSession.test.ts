@@ -198,7 +198,7 @@ describe.sequential('TradingSession', () => {
         side: ExchangeOrderSide.BUY,
         type: ExchangeOrderType.MARKET,
         amount: null,
-        amountInCounter: true,
+        amountIn: 'counter',
       };
       strategy.onCandle.mockResolvedValue(advice);
 
@@ -219,7 +219,7 @@ describe.sequential('TradingSession', () => {
         side: ExchangeOrderSide.SELL,
         type: ExchangeOrderType.LIMIT,
         amount: '5.5678',
-        amountInCounter: false,
+        amountIn: 'base',
         price: '253.456',
       };
       strategy.onCandle.mockResolvedValue(advice);
@@ -243,7 +243,7 @@ describe.sequential('TradingSession', () => {
         side: ExchangeOrderSide.SELL,
         type: ExchangeOrderType.MARKET,
         amount: null,
-        amountInCounter: false,
+        amountIn: 'base',
       };
       strategy.onCandle.mockResolvedValue(advice);
 
@@ -265,7 +265,7 @@ describe.sequential('TradingSession', () => {
         side: ExchangeOrderSide.BUY,
         type: ExchangeOrderType.LIMIT,
         amount: null,
-        amountInCounter: false,
+        amountIn: 'base',
         price: '250',
       };
       strategy.onCandle.mockResolvedValue(advice);
@@ -288,7 +288,7 @@ describe.sequential('TradingSession', () => {
         side: ExchangeOrderSide.BUY,
         type: ExchangeOrderType.MARKET,
         amount: '100',
-        amountInCounter: true,
+        amountIn: 'counter',
       };
       strategy.onCandle.mockResolvedValue(advice);
 
@@ -316,7 +316,7 @@ describe.sequential('TradingSession', () => {
         side: ExchangeOrderSide.BUY,
         type: ExchangeOrderType.MARKET,
         amount: '100',
-        amountInCounter: true,
+        amountIn: 'counter',
       };
       strategy.onCandle.mockResolvedValue(advice);
 
@@ -349,7 +349,7 @@ describe.sequential('TradingSession', () => {
         side: ExchangeOrderSide.BUY,
         type: ExchangeOrderType.MARKET,
         amount: '100',
-        amountInCounter: true,
+        amountIn: 'counter',
       };
       strategy.onCandle.mockResolvedValue(advice);
 
@@ -379,7 +379,7 @@ describe.sequential('TradingSession', () => {
         side: ExchangeOrderSide.SELL,
         type: ExchangeOrderType.MARKET,
         amount: null,
-        amountInCounter: false,
+        amountIn: 'base',
       };
       strategy.onCandle.mockResolvedValue(advice);
 

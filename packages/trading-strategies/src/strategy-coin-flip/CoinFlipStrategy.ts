@@ -13,14 +13,14 @@ export class CoinFlipStrategy extends Strategy {
       side: ExchangeOrderSide.BUY,
       type: ExchangeOrderType.MARKET,
       amount: null,
-      amountInCounter: true,
+      amountIn: 'counter',
     };
 
     const sellMarket: OrderAdvice = {
       side: ExchangeOrderSide.SELL,
       type: ExchangeOrderType.MARKET,
       amount: null,
-      amountInCounter: false,
+      amountIn: 'base',
     };
 
     // Using bitwise AND instead of modulo to avoid modulo bias

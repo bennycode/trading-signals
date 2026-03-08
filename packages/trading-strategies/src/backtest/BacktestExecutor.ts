@@ -96,7 +96,7 @@ export class BacktestExecutor {
         side: ExchangeOrderSide.BUY,
         type: ExchangeOrderType.MARKET,
         amount: null,
-        amountInCounter: false,
+        amountIn: 'counter',
       };
     }
     return advice;
@@ -130,7 +130,7 @@ export class BacktestExecutor {
 
     try {
       if (advice.type === ExchangeOrderType.LIMIT) {
-        const rawPrice = new Big(advice.price!);
+        const rawPrice = new Big(advice.price);
         const price = this.#roundLimitPrice(rawPrice, tradingRules);
 
         if (price.lte(0)) {
@@ -141,23 +141,12 @@ export class BacktestExecutor {
 
         let size: Big;
         if (advice.side === ExchangeOrderSide.BUY) {
-          if (advice.amountInCounter) {
-            const spendAmount = advice.amount !== null ? new Big(advice.amount) : balances.counter;
-            if (spendAmount.lte(0) || balances.counter.lte(0)) {
-              return;
-            }
-            const actualSpend = spendAmount.gt(balances.counter) ? balances.counter : spendAmount;
-            const feeRate = feeRates[ExchangeOrderType.LIMIT];
-            const netSpend = actualSpend.div(new Big(1).plus(feeRate));
-            size = netSpend.div(price);
+          if (advice.amount !== null) {
+            size = new Big(advice.amount);
           } else {
-            if (advice.amount !== null) {
-              size = new Big(advice.amount);
-            } else {
-              const feeRate = feeRates[ExchangeOrderType.LIMIT];
-              const netSpend = balances.counter.div(new Big(1).plus(feeRate));
-              size = netSpend.div(price);
-            }
+            const feeRate = feeRates[ExchangeOrderType.LIMIT];
+            const netSpend = balances.counter.div(new Big(1).plus(feeRate));
+            size = netSpend.div(price);
           }
         } else {
           // SELL
@@ -183,7 +172,7 @@ export class BacktestExecutor {
         const balances = await exchange.getAvailableBalances(pair);
 
         if (advice.side === ExchangeOrderSide.BUY) {
-          if (advice.amountInCounter) {
+          if (advice.amountIn === 'counter') {
             const spendAmount = advice.amount !== null ? new Big(advice.amount) : balances.counter;
             if (spendAmount.lte(0) || balances.counter.lte(0)) {
               return;
@@ -209,10 +198,7 @@ export class BacktestExecutor {
             });
             this.#orderAdviceMap.set(order.id, advice);
           } else {
-            if (advice.amount === null) {
-              // Cannot resolve base-denomination size without an explicit amount or amountInCounter
-              return;
-            }
+            // amountIn: 'base' — amount is always explicit (enforced by MarketBuyBaseAdvice)
             const size = new Big(advice.amount);
             if (size.lte(0)) {
               return;

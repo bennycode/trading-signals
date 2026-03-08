@@ -26,7 +26,7 @@ export class BuyAndHoldStrategy extends Strategy {
       side: ExchangeOrderSide.BUY,
       type: ExchangeOrderType.MARKET,
       amount: null,
-      amountInCounter: true,
+      amountIn: 'counter',
     };
   }
 

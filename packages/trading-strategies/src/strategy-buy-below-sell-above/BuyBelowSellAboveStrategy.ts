@@ -33,7 +33,7 @@ export class BuyBelowSellAboveStrategy extends Strategy {
           side: ExchangeOrderSide.BUY,
           type: ExchangeOrderType.LIMIT,
           amount: null,
-          amountInCounter: false,
+          amountIn: 'base',
           price: closePrice,
         };
       }
@@ -47,7 +47,7 @@ export class BuyBelowSellAboveStrategy extends Strategy {
           side: ExchangeOrderSide.SELL,
           type: ExchangeOrderType.LIMIT,
           amount: null,
-          amountInCounter: false,
+          amountIn: 'base',
           price: closePrice,
         };
       }

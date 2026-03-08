@@ -157,7 +157,7 @@ export class TradingSession extends EventEmitter<TradingSessionEventMap> {
 
     const {base_min_size, counter_min_size} = this.#state!.tradingRules;
 
-    if (advice.amountInCounter) {
+    if (advice.amountIn === 'counter') {
       if (size.lt(counter_min_size)) {
         this.emit('error', new Error(`Order size "${size}" is below minimum counter size "${counter_min_size}"`));
         return;
@@ -172,7 +172,7 @@ export class TradingSession extends EventEmitter<TradingSessionEventMap> {
     let order: ExchangePendingOrder;
 
     if (advice.type === ExchangeOrderType.LIMIT) {
-      const price = this.#applyPrecision(new Big(advice.price!), this.#state!.tradingRules.counter_increment);
+      const price = this.#applyPrecision(new Big(advice.price), this.#state!.tradingRules.counter_increment);
       order = await this.#exchange.placeLimitOrder(this.#pair, {
         side: advice.side,
         size: size.toFixed(),
@@ -182,7 +182,7 @@ export class TradingSession extends EventEmitter<TradingSessionEventMap> {
       order = await this.#exchange.placeMarketOrder(this.#pair, {
         side: advice.side,
         size: size.toFixed(),
-        sizeInCounter: advice.amountInCounter,
+        sizeInCounter: advice.amountIn === 'counter',
       });
     }
 
@@ -195,7 +195,7 @@ export class TradingSession extends EventEmitter<TradingSessionEventMap> {
 
     if (advice.amount !== null) {
       const amount = new Big(advice.amount);
-      if (advice.amountInCounter) {
+      if (advice.amountIn === 'counter') {
         return this.#applyPrecision(amount, tradingRules.counter_increment);
       }
       return this.#applyPrecision(amount, tradingRules.base_increment);
@@ -207,21 +207,17 @@ export class TradingSession extends EventEmitter<TradingSessionEventMap> {
     }
 
     // BUY
-    if (advice.amountInCounter) {
+    if (advice.amountIn === 'counter') {
       return this.#applyPrecision(this.#state!.counterBalance, tradingRules.counter_increment);
     }
 
-    // BUY + not in counter + LIMIT → derive from counter balance / price
-    if (advice.type === ExchangeOrderType.LIMIT && advice.price) {
+    // BUY + base amount + LIMIT → derive from counter balance / price
+    if (advice.type === ExchangeOrderType.LIMIT) {
       const baseAmount = this.#state!.counterBalance.div(new Big(advice.price));
       return this.#applyPrecision(baseAmount, tradingRules.base_increment);
     }
 
-    // BUY + not in counter + MARKET → can't determine size
-    this.emit(
-      'error',
-      new Error('Cannot resolve order size for MARKET BUY without amountInCounter or explicit amount')
-    );
+    // Unreachable: MarketBuyBaseAdvice requires a non-null amount, handled above
     return null;
   }
 

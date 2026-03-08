@@ -191,7 +191,7 @@ describe('MultiIndicatorConfluenceStrategy', () => {
     expect(buyAdvice).toBeDefined();
     expect(buyAdvice?.side).toBe(ExchangeOrderSide.BUY);
     expect(buyAdvice?.type).toBe(ExchangeOrderType.MARKET);
-    expect(buyAdvice?.amountInCounter).toBe(true);
+    expect(buyAdvice?.amountIn).toBe('counter');
   });
 
   it('generates a SELL signal when EMA downtrend, bearish MACD, and price at upper band', async () => {
@@ -210,7 +210,7 @@ describe('MultiIndicatorConfluenceStrategy', () => {
     expect(sellAdvice).toBeDefined();
     expect(sellAdvice?.side).toBe(ExchangeOrderSide.SELL);
     expect(sellAdvice?.type).toBe(ExchangeOrderType.MARKET);
-    expect(sellAdvice?.amountInCounter).toBe(false);
+    expect(sellAdvice?.amountIn).toBe('base');
   });
 
   it('includes indicator values in BUY signal reason', async () => {
