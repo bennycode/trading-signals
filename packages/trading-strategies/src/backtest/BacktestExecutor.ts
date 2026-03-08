@@ -42,6 +42,12 @@ export class BacktestExecutor {
           size: new Big(fill.size),
         });
         totalFees = totalFees.plus(fill.fee);
+
+        // Notify strategy of fill so it can update internal state
+        if (strategy.onFill) {
+          const fillState = await this.#buildState(tradingPair, tradingRules, feeRates);
+          await strategy.onFill(fill, fillState);
+        }
       }
 
       // Step 2: Run strategy to get advice

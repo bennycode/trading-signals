@@ -1,10 +1,10 @@
 import {z} from 'zod';
 import type {ExchangeCandle} from '@typedtrader/exchange';
-import {BuyAndHoldSchema, BuyOnceSchema, BuyBelowSellAboveSchema, CoinFlipSchema, MultiIndicatorConfluenceSchema} from 'trading-strategies';
+import {BuyAndHoldSchema, BuyOnceSchema, BuyBelowSellAboveSchema, CoinFlipSchema, MultiIndicatorConfluenceSchema, ScalpSchema, suggestScalpOffset} from 'trading-strategies';
 
-export {BuyAndHoldSchema, BuyOnceSchema, BuyBelowSellAboveSchema, CoinFlipSchema, MultiIndicatorConfluenceSchema};
+export {BuyAndHoldSchema, BuyOnceSchema, BuyBelowSellAboveSchema, CoinFlipSchema, MultiIndicatorConfluenceSchema, ScalpSchema};
 
-export type StrategyId = 'buy-and-hold' | 'buy-once' | 'buy-below-sell-above' | 'coin-flip' | 'multi-indicator-confluence';
+export type StrategyId = 'buy-and-hold' | 'buy-once' | 'buy-below-sell-above' | 'coin-flip' | 'multi-indicator-confluence' | 'scalp';
 
 export interface StrategyDefinition {
   id: StrategyId;
@@ -95,5 +95,23 @@ export const strategyDefinitions: StrategyDefinition[] = [
       rsiOverbought: 65,
       rsiOversold: 45,
     }),
+  },
+  {
+    id: 'scalp',
+    name: 'Scalp',
+    description:
+      'Waits for price to cross above EMA, then market buys. Sells at fill + offset, re-buys at fill - offset, and repeats. Offset can be auto-tuned from ATR.',
+    schema: ScalpSchema,
+    getDefaultConfig: candles => {
+      let offset = '0.10';
+
+      try {
+        offset = suggestScalpOffset(candles).toFixed(2);
+      } catch {
+        // Not enough candles for ATR — use fallback
+      }
+
+      return {offset, emaPeriod: 5};
+    },
   },
 ];

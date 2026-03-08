@@ -7,6 +7,7 @@ import {
   MultiIndicatorConfluenceStrategy,
   MultiIndicatorConfluenceSchema,
 } from '../strategy-multi-indicator-confluence/MultiIndicatorConfluenceStrategy.js';
+import {ScalpStrategy, ScalpSchema} from '../strategy-scalp/ScalpStrategy.js';
 import type {Strategy} from './Strategy.js';
 
 interface StrategyEntry {
@@ -35,6 +36,10 @@ const registry: Record<string, StrategyEntry> = {
     create: (config: unknown) =>
       new MultiIndicatorConfluenceStrategy(MultiIndicatorConfluenceSchema.parse(config)),
     schema: MultiIndicatorConfluenceSchema,
+  },
+  [ScalpStrategy.NAME]: {
+    create: (config: unknown) => new ScalpStrategy(ScalpSchema.parse(config)),
+    schema: ScalpSchema,
   },
 };
 
