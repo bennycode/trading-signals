@@ -1,14 +1,12 @@
 import Big from 'big.js';
 import {describe, expect, it} from 'vitest';
-import {AlpacaExchangeMock} from '@typedtrader/exchange';
-import type {ExchangeCandle, ExchangeTradingRules} from '@typedtrader/exchange';
+import {AlpacaExchangeMock, ExchangeOrderSide, ExchangeOrderType} from '@typedtrader/exchange';
+import type {ExchangeCandle, ExchangeTradingRules, OrderAdvice, TradingSessionState} from '@typedtrader/exchange';
 import {TradingPair} from '@typedtrader/exchange';
 import {BacktestExecutor} from './BacktestExecutor.js';
 import {BuyBelowSellAboveStrategy} from '../strategy-buy-below-sell-above/BuyBelowSellAboveStrategy.js';
-import {StrategySignal} from '../strategy/StrategySignal.js';
 import type {BacktestConfig} from './BacktestConfig.js';
 import {Strategy} from '../strategy/Strategy.js';
-import type {StrategyAdvice} from '../strategy/StrategyAdvice.js';
 import type {BatchedCandle} from '@typedtrader/exchange';
 
 function createCandle(overrides: Partial<ExchangeCandle> & {close: string; open: string}): ExchangeCandle {
@@ -45,7 +43,7 @@ describe('BacktestExecutor', () => {
       class NoOpStrategy extends Strategy {
         static override NAME = 'NoOp';
 
-        protected override async processCandle(): Promise<StrategyAdvice | void> {
+        protected override async processCandle(_candle: BatchedCandle, _state: TradingSessionState): Promise<OrderAdvice | void> {
           return undefined;
         }
       }
@@ -106,7 +104,8 @@ describe('BacktestExecutor', () => {
 
       // Order placed on candle 1, fills on candle 2
       expect(result.trades).toHaveLength(1);
-      expect(result.trades[0].advice.signal).toBe(StrategySignal.BUY_LIMIT);
+      expect(result.trades[0].advice.side).toBe(ExchangeOrderSide.BUY);
+      expect(result.trades[0].advice.type).toBe(ExchangeOrderType.LIMIT);
       expect(result.finalCounterBalance.lt(new Big(1000))).toBe(true);
       expect(result.finalBaseBalance.gt(new Big(0))).toBe(true);
     });
@@ -131,7 +130,8 @@ describe('BacktestExecutor', () => {
       const result = await new BacktestExecutor(config).execute();
 
       expect(result.trades).toHaveLength(1);
-      expect(result.trades[0].advice.signal).toBe(StrategySignal.SELL_LIMIT);
+      expect(result.trades[0].advice.side).toBe(ExchangeOrderSide.SELL);
+      expect(result.trades[0].advice.type).toBe(ExchangeOrderType.LIMIT);
       expect(result.finalBaseBalance.toFixed(2)).toBe('0.00');
       expect(result.finalCounterBalance.gt(new Big(0))).toBe(true);
     });
@@ -169,7 +169,7 @@ describe('BacktestExecutor', () => {
         static override NAME = 'AlwaysBuyMarket';
         #bought = false;
 
-        protected override async processCandle(_candle: BatchedCandle): Promise<StrategyAdvice | void> {
+        protected override async processCandle(_candle: BatchedCandle, _state: TradingSessionState): Promise<OrderAdvice | void> {
           if (this.#bought) {
             return undefined;
           }
@@ -177,10 +177,10 @@ describe('BacktestExecutor', () => {
           this.#bought = true;
 
           return {
+            side: ExchangeOrderSide.BUY,
+            type: ExchangeOrderType.MARKET,
             amount: null,
-            amountType: 'counter',
-            price: null,
-            signal: StrategySignal.BUY_MARKET,
+            amountInCounter: true,
           };
         }
       }
@@ -297,16 +297,17 @@ describe('BacktestExecutor', () => {
         static override NAME = 'SellTooMuch';
         #sold = false;
 
-        protected override async processCandle(candle: BatchedCandle): Promise<StrategyAdvice | void> {
+        protected override async processCandle(candle: BatchedCandle, _state: TradingSessionState): Promise<OrderAdvice | void> {
           if (this.#sold) {
             return undefined;
           }
           this.#sold = true;
           return {
+            side: ExchangeOrderSide.SELL,
+            type: ExchangeOrderType.LIMIT,
             amount: new Big(100),
-            amountType: 'base',
+            amountInCounter: false,
             price: candle.close,
-            signal: StrategySignal.SELL_LIMIT,
           };
         }
       }
@@ -433,7 +434,7 @@ describe('BacktestExecutor', () => {
         static override NAME = 'BuyOnce';
         #bought = false;
 
-        protected override async processCandle(): Promise<StrategyAdvice | void> {
+        protected override async processCandle(_candle: BatchedCandle, _state: TradingSessionState): Promise<OrderAdvice | void> {
           if (this.#bought) {
             return undefined;
           }
@@ -441,10 +442,10 @@ describe('BacktestExecutor', () => {
           this.#bought = true;
 
           return {
+            side: ExchangeOrderSide.BUY,
+            type: ExchangeOrderType.MARKET,
             amount: null,
-            amountType: 'counter',
-            price: null,
-            signal: StrategySignal.BUY_MARKET,
+            amountInCounter: true,
           };
         }
       }
@@ -480,7 +481,7 @@ describe('BacktestExecutor', () => {
       class NoOpStrategy extends Strategy {
         static override NAME = 'NoOp';
 
-        protected override async processCandle(): Promise<StrategyAdvice | void> {
+        protected override async processCandle(_candle: BatchedCandle, _state: TradingSessionState): Promise<OrderAdvice | void> {
           return undefined;
         }
       }
@@ -513,7 +514,7 @@ describe('BacktestExecutor', () => {
       class NoOpStrategy extends Strategy {
         static override NAME = 'NoOp';
 
-        protected override async processCandle(): Promise<StrategyAdvice | void> {
+        protected override async processCandle(_candle: BatchedCandle, _state: TradingSessionState): Promise<OrderAdvice | void> {
           return undefined;
         }
       }
@@ -560,12 +561,12 @@ describe('BacktestExecutor', () => {
       class AlwaysBuyMarket extends Strategy {
         static override NAME = 'AlwaysBuyMarket';
 
-        protected override async processCandle(): Promise<StrategyAdvice | void> {
+        protected override async processCandle(_candle: BatchedCandle, _state: TradingSessionState): Promise<OrderAdvice | void> {
           return {
+            side: ExchangeOrderSide.BUY,
+            type: ExchangeOrderType.MARKET,
             amount: null,
-            amountType: 'counter',
-            price: null,
-            signal: StrategySignal.BUY_MARKET,
+            amountInCounter: true,
           };
         }
       }
@@ -593,12 +594,12 @@ describe('BacktestExecutor', () => {
       class AlwaysSellMarket extends Strategy {
         static override NAME = 'AlwaysSellMarket';
 
-        protected override async processCandle(): Promise<StrategyAdvice | void> {
+        protected override async processCandle(_candle: BatchedCandle, _state: TradingSessionState): Promise<OrderAdvice | void> {
           return {
+            side: ExchangeOrderSide.SELL,
+            type: ExchangeOrderType.MARKET,
             amount: null,
-            amountType: 'base',
-            price: null,
-            signal: StrategySignal.SELL_MARKET,
+            amountInCounter: false,
           };
         }
       }
@@ -664,16 +665,17 @@ describe('BacktestExecutor', () => {
         static override NAME = 'BuyAtPrice';
         #advised = false;
 
-        protected override async processCandle(candle: BatchedCandle): Promise<StrategyAdvice | void> {
+        protected override async processCandle(candle: BatchedCandle, _state: TradingSessionState): Promise<OrderAdvice | void> {
           if (this.#advised) {
             return undefined;
           }
           this.#advised = true;
           return {
+            side: ExchangeOrderSide.BUY,
+            type: ExchangeOrderType.LIMIT,
             amount: null,
-            amountType: 'counter',
+            amountInCounter: true,
             price: candle.close,
-            signal: StrategySignal.BUY_LIMIT,
           };
         }
       }

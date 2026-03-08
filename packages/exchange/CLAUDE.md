@@ -39,6 +39,11 @@ When implementing an exchange integration, follow these patterns:
 
 - Always add a `@see` JSDoc comment with the API reference URL to every API method (e.g., `/** @see https://docs.alpaca.markets/reference/stockbars */`)
 
+### Testing Credentials
+
+- Always test exchange logins by using the library's own API classes (e.g., `AlpacaAPI`) with credentials from `.env`
+- Do not use raw `curl` or `fetch` calls — use the existing exchange client code to verify connectivity
+
 ### Structure
 
 - Exchange integrations live under `src/<exchange>/` (e.g., `src/alpaca/`)

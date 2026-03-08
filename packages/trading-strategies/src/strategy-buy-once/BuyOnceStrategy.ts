@@ -1,8 +1,7 @@
 import {z} from 'zod';
-import type {BatchedCandle} from '@typedtrader/exchange';
+import {ExchangeOrderSide, ExchangeOrderType} from '@typedtrader/exchange';
+import type {BatchedCandle, OrderAdvice, TradingSessionState} from '@typedtrader/exchange';
 import Big from 'big.js';
-import type {StrategyAdvice, StrategyAdviceLimitBuyOrder} from '../strategy/StrategyAdvice.js';
-import {StrategySignal} from '../strategy/StrategySignal.js';
 import {Strategy} from '../strategy/Strategy.js';
 import {positiveNumberString} from '../util/validators.js';
 
@@ -28,7 +27,7 @@ export class BuyOnceStrategy extends Strategy {
     this.#buyAtPrice = new Big(config.buyAt);
   }
 
-  protected override async processCandle(candle: BatchedCandle): Promise<StrategyAdvice | void> {
+  protected override async processCandle(candle: BatchedCandle, _state: TradingSessionState): Promise<OrderAdvice | void> {
     if (this.#bought) {
       return undefined;
     }
@@ -38,14 +37,21 @@ export class BuyOnceStrategy extends Strategy {
     }
 
     this.#bought = true;
+    this.state = {bought: true};
 
-    const buyLimit: StrategyAdviceLimitBuyOrder = {
+    return {
+      side: ExchangeOrderSide.BUY,
+      type: ExchangeOrderType.LIMIT,
       amount: null,
-      amountType: 'counter',
+      amountInCounter: true,
       price: this.#buyAtPrice,
-      signal: StrategySignal.BUY_LIMIT,
     };
+  }
 
-    return buyLimit;
+  override restoreState(persisted: Record<string, unknown>): void {
+    super.restoreState(persisted);
+    if (typeof persisted.bought === 'boolean') {
+      this.#bought = persisted.bought;
+    }
   }
 }

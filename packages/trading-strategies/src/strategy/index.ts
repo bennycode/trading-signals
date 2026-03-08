@@ -1,2 +1,2 @@
-export * from './StrategyAdvice.js';
-export * from './StrategySignal.js';
+export * from './Strategy.js';
+export * from './StrategyRegistry.js';

@@ -1,4 +1,5 @@
 import {TradingPair, getExchangeClient} from '@typedtrader/exchange';
+import {assertId} from '../validation/assertId.js';
 import {getAccountOrError} from '../validation/getAccountOrError.js';
 
 // Request Example: "1 SHOP,USD"
@@ -11,13 +12,9 @@ export const price = async (request: string, ownerAddress: string) => {
   }
 
   const [accountIdStr, pairPart] = parts;
-  const accountId = parseInt(accountIdStr, 10);
-
-  if (isNaN(accountId)) {
-    return 'Invalid account ID';
-  }
 
   try {
+    const accountId = assertId(accountIdStr);
     const account = getAccountOrError(ownerAddress, accountId);
 
     const pair = TradingPair.fromString(pairPart, ',');
