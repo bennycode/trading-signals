@@ -193,7 +193,7 @@ function TradeHistoryTable({result}: {result: BacktestResult}) {
           <tr className="border-b border-slate-700">
             <th className="text-left text-slate-400 py-2 px-3">#</th>
             <th className="text-left text-slate-400 py-2 px-3">Date</th>
-            <th className="text-left text-slate-400 py-2 px-3">Signal</th>
+            <th className="text-left text-slate-400 py-2 px-3">Order</th>
             <th className="text-right text-slate-400 py-2 px-3">Price</th>
             <th className="text-right text-slate-400 py-2 px-3">Size</th>
             <th className="text-right text-slate-400 py-2 px-3">Total</th>
