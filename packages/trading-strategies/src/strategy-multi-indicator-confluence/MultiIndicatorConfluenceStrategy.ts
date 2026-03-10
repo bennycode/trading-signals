@@ -45,7 +45,6 @@ export type MultiIndicatorConfluenceConfig = z.infer<typeof MultiIndicatorConflu
 export class MultiIndicatorConfluenceStrategy extends Strategy {
   static override NAME = '@typedtrader/strategy-multi-indicator-confluence';
 
-  readonly #config: MultiIndicatorConfluenceConfig;
   readonly #emaShort: EMA;
   readonly #emaLong: EMA;
   readonly #macd: MACD;
@@ -54,8 +53,7 @@ export class MultiIndicatorConfluenceStrategy extends Strategy {
   #candlesProcessed = 0;
 
   constructor(config: MultiIndicatorConfluenceConfig) {
-    super();
-    this.#config = config;
+    super({config});
 
     this.#emaShort = new EMA(this.#config.emaShortPeriod);
     this.#emaLong = new EMA(this.#config.emaLongPeriod);
@@ -66,6 +64,10 @@ export class MultiIndicatorConfluenceStrategy extends Strategy {
     );
     this.#bollingerBands = new BollingerBands(this.#config.bollingerPeriod, this.#config.bollingerDeviationMultiplier);
     this.#rsi = new RSI(this.#config.rsiPeriod);
+  }
+
+  get #config(): MultiIndicatorConfluenceConfig {
+    return this.getProxiedConfig<MultiIndicatorConfluenceConfig>();
   }
 
   /** Number of candles required before the strategy can produce signals. */

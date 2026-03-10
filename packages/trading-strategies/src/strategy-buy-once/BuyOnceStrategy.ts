@@ -12,6 +12,10 @@ export const BuyOnceSchema = z.object({
 
 export type BuyOnceConfig = z.infer<typeof BuyOnceSchema>;
 
+type BuyOnceState = {
+  bought: boolean;
+};
+
 /**
  * Signals a single limit buy when the candle's close price drops to or below the predefined price.
  * After the buy is triggered, the strategy stays silent for all remaining candles.
@@ -19,39 +23,44 @@ export type BuyOnceConfig = z.infer<typeof BuyOnceSchema>;
 export class BuyOnceStrategy extends Strategy {
   static override NAME = '@typedtrader/strategy-buy-once';
 
-  readonly #buyAtPrice: Big;
-  #bought = false;
-
   constructor(config: BuyOnceConfig) {
-    super();
-    this.#buyAtPrice = new Big(config.buyAt);
+    super({config, state: {bought: false}});
+  }
+
+  get #config(): BuyOnceConfig {
+    return this.getProxiedConfig<BuyOnceConfig>();
+  }
+
+  get #state(): BuyOnceState {
+    return this.getProxiedState<BuyOnceState>();
   }
 
   protected override async processCandle(candle: BatchedCandle, _state: TradingSessionState): Promise<OrderAdvice | void> {
-    if (this.#bought) {
+    if (this.#state.bought) {
       return undefined;
     }
 
-    if (candle.close.gt(this.#buyAtPrice)) {
+    const buyAtPrice = new Big(this.#config.buyAt);
+
+    if (candle.close.gt(buyAtPrice)) {
       return undefined;
     }
 
-    this.#bought = true;
-    this.state = {bought: true};
+    this.#state.bought = true;
 
     return {
       side: ExchangeOrderSide.BUY,
       type: ExchangeOrderType.LIMIT,
       amount: null,
       amountIn: 'base',
-      price: this.#buyAtPrice,
+      price: buyAtPrice,
     };
   }
 
   override restoreState(persisted: Record<string, unknown>): void {
     super.restoreState(persisted);
     if (typeof persisted.bought === 'boolean') {
-      this.#bought = persisted.bought;
+      this.#state.bought = persisted.bought;
     }
   }
 }

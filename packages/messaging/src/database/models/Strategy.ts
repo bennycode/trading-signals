@@ -34,6 +34,10 @@ export class Strategy {
     db.update(strategies).set({state}).where(eq(strategies.id, id)).run();
   }
 
+  static updateConfig(id: number, config: string): void {
+    db.update(strategies).set({config}).where(eq(strategies.id, id)).run();
+  }
+
   static destroy(id: number): void {
     db.delete(strategies).where(eq(strategies.id, id)).run();
   }

@@ -17,20 +17,31 @@ export type ScalpConfig = z.infer<typeof ScalpSchema>;
 
 type Phase = 'entry' | 'pendingAdvice' | 'waitingForFill';
 
+type ScalpState = {
+  phase: Phase;
+  lastFillPrice: string | null;
+  lastFillSide: ExchangeOrderSide | null;
+};
+
 export class ScalpStrategy extends Strategy {
   static override NAME = '@typedtrader/strategy-scalp';
 
-  readonly #offset: Big;
   readonly #ema: EMA;
 
-  #phase: Phase = 'entry';
-  #lastFillPrice: Big | null = null;
-  #lastFillSide: ExchangeOrderSide | null = null;
-
   constructor(config: ScalpConfig) {
-    super();
-    this.#offset = new Big(config.offset);
-    this.#ema = new EMA(config.emaPeriod);
+    super({
+      config,
+      state: {phase: 'entry', lastFillPrice: null, lastFillSide: null},
+    });
+    this.#ema = new EMA(this.#config.emaPeriod);
+  }
+
+  get #config(): ScalpConfig {
+    return this.getProxiedConfig<ScalpConfig>();
+  }
+
+  get #state(): ScalpState {
+    return this.getProxiedState<ScalpState>();
   }
 
   /**
@@ -43,38 +54,33 @@ export class ScalpStrategy extends Strategy {
   }
 
   async onFill(fill: ExchangeFill, _state: TradingSessionState): Promise<void> {
-    this.#lastFillPrice = new Big(fill.price);
-    this.#lastFillSide = fill.side;
-    this.#phase = 'pendingAdvice';
-    this.state = {
-      lastFillPrice: fill.price,
-      lastFillSide: fill.side,
-      phase: 'pendingAdvice',
-    };
+    this.#state.lastFillPrice = fill.price;
+    this.#state.lastFillSide = fill.side;
+    this.#state.phase = 'pendingAdvice';
   }
 
   override restoreState(persisted: Record<string, unknown>): void {
     super.restoreState(persisted);
 
     if (typeof persisted.lastFillPrice === 'string') {
-      this.#lastFillPrice = new Big(persisted.lastFillPrice);
+      this.#state.lastFillPrice = persisted.lastFillPrice;
     }
 
     if (typeof persisted.lastFillSide === 'string') {
-      this.#lastFillSide = persisted.lastFillSide as ExchangeOrderSide;
+      this.#state.lastFillSide = persisted.lastFillSide as ExchangeOrderSide;
     }
 
     if (typeof persisted.phase === 'string') {
-      this.#phase = persisted.phase as Phase;
+      this.#state.phase = persisted.phase as Phase;
     }
   }
 
   protected override async processCandle(candle: BatchedCandle, _state: TradingSessionState): Promise<OrderAdvice | void> {
-    if (this.#phase === 'entry') {
+    if (this.#state.phase === 'entry') {
       return this.#handleEntry(candle);
     }
 
-    if (this.#phase === 'pendingAdvice') {
+    if (this.#state.phase === 'pendingAdvice') {
       return this.#handlePendingAdvice();
     }
 
@@ -96,7 +102,7 @@ export class ScalpStrategy extends Strategy {
     }
 
     // Price is above EMA — enter position
-    this.#phase = 'waitingForFill';
+    this.#state.phase = 'waitingForFill';
 
     return {
       side: ExchangeOrderSide.BUY,
@@ -108,15 +114,17 @@ export class ScalpStrategy extends Strategy {
   }
 
   #handlePendingAdvice(): OrderAdvice | void {
-    if (!this.#lastFillPrice || !this.#lastFillSide) {
+    if (!this.#state.lastFillPrice || !this.#state.lastFillSide) {
       return;
     }
 
-    this.#phase = 'waitingForFill';
+    this.#state.phase = 'waitingForFill';
+    const offset = new Big(this.#config.offset);
+    const lastFillPrice = new Big(this.#state.lastFillPrice);
 
-    if (this.#lastFillSide === ExchangeOrderSide.BUY) {
+    if (this.#state.lastFillSide === ExchangeOrderSide.BUY) {
       // Just bought — sell at fill + offset
-      const sellPrice = this.#lastFillPrice.plus(this.#offset);
+      const sellPrice = lastFillPrice.plus(offset);
 
       return {
         side: ExchangeOrderSide.SELL,
@@ -124,12 +132,12 @@ export class ScalpStrategy extends Strategy {
         amount: null,
         amountIn: 'base',
         price: sellPrice,
-        reason: `Scalp sell: fill ${this.#lastFillPrice.toFixed(2)} + offset ${this.#offset.toFixed(2)}`,
+        reason: `Scalp sell: fill ${lastFillPrice.toFixed(2)} + offset ${offset.toFixed(2)}`,
       };
     }
 
     // Just sold — re-buy at fill - offset
-    const buyPrice = this.#lastFillPrice.minus(this.#offset);
+    const buyPrice = lastFillPrice.minus(offset);
 
     return {
       side: ExchangeOrderSide.BUY,
@@ -137,7 +145,7 @@ export class ScalpStrategy extends Strategy {
       amount: null,
       amountIn: 'base',
       price: buyPrice,
-      reason: `Scalp buy: fill ${this.#lastFillPrice.toFixed(2)} - offset ${this.#offset.toFixed(2)}`,
+      reason: `Scalp buy: fill ${lastFillPrice.toFixed(2)} - offset ${offset.toFixed(2)}`,
     };
   }
 }

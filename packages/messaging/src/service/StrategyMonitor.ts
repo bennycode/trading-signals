@@ -83,22 +83,29 @@ export class StrategyMonitor {
       candleInterval: row.intervalMs,
     });
 
-    session.on('fill', async (fill: ExchangeFill) => {
-      try {
-        // Persist strategy state after fill
+    // Wire up auto-persistence via onSave (after restore, before start)
+    let pendingSave = false;
+    strategy.onSave = () => {
+      if (pendingSave) {
+        return;
+      }
+      pendingSave = true;
+      queueMicrotask(() => {
+        pendingSave = false;
         if (strategy.state) {
           Strategy.updateState(row.id, JSON.stringify(strategy.state));
         }
+        if (strategy.config) {
+          Strategy.updateConfig(row.id, JSON.stringify(strategy.config));
+        }
+      });
+    };
+
+    session.on('fill', async (fill: ExchangeFill) => {
+      try {
         await this.#sendFillNotification(row, fill);
       } catch (error) {
         console.error(`Error handling fill for strategy ${row.id}:`, error);
-      }
-    });
-
-    session.on('advice', () => {
-      // Persist strategy state after advice (state may have changed)
-      if (strategy.state) {
-        Strategy.updateState(row.id, JSON.stringify(strategy.state));
       }
     });
 

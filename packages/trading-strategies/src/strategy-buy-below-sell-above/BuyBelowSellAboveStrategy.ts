@@ -15,11 +15,12 @@ export type BuyBelowSellAboveConfig = z.infer<typeof BuyBelowSellAboveSchema>;
 export class BuyBelowSellAboveStrategy extends Strategy {
   static override NAME = '@typedtrader/strategy-buy-below-sell-above';
 
-  readonly #config: BuyBelowSellAboveConfig;
-
   constructor(config: BuyBelowSellAboveConfig = {}) {
-    super();
-    this.#config = config;
+    super({config});
+  }
+
+  get #config(): BuyBelowSellAboveConfig {
+    return this.getProxiedConfig<BuyBelowSellAboveConfig>();
   }
 
   protected override async processCandle(candle: BatchedCandle, _state: TradingSessionState): Promise<OrderAdvice | void> {

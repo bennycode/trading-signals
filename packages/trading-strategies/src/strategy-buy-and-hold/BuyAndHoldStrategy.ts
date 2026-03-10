@@ -5,6 +5,10 @@ import {Strategy} from '../strategy/Strategy.js';
 
 export const BuyAndHoldSchema = z.object({});
 
+type BuyAndHoldState = {
+  bought: boolean;
+};
+
 /**
  * Buys once at the first candle and holds for the entire period.
  * This is the simplest baseline strategy to compare other strategies against.
@@ -12,15 +16,20 @@ export const BuyAndHoldSchema = z.object({});
 export class BuyAndHoldStrategy extends Strategy {
   static override NAME = '@typedtrader/strategy-buy-and-hold';
 
-  #bought = false;
+  constructor() {
+    super({state: {bought: false}});
+  }
+
+  get #state(): BuyAndHoldState {
+    return this.getProxiedState<BuyAndHoldState>();
+  }
 
   protected override async processCandle(_candle: BatchedCandle, _state: TradingSessionState): Promise<OrderAdvice | void> {
-    if (this.#bought) {
+    if (this.#state.bought) {
       return undefined;
     }
 
-    this.#bought = true;
-    this.state = {bought: true};
+    this.#state.bought = true;
 
     return {
       side: ExchangeOrderSide.BUY,
@@ -33,7 +42,7 @@ export class BuyAndHoldStrategy extends Strategy {
   override restoreState(persisted: Record<string, unknown>): void {
     super.restoreState(persisted);
     if (typeof persisted.bought === 'boolean') {
-      this.#bought = persisted.bought;
+      this.#state.bought = persisted.bought;
     }
   }
 }
