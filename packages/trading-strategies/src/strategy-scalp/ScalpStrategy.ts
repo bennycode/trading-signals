@@ -49,7 +49,7 @@ export class ScalpStrategy extends Strategy {
     this.state = {
       lastFillPrice: fill.price,
       lastFillSide: fill.side,
-      phase: 'pendingAdvice' as Phase,
+      phase: 'pendingAdvice',
     };
   }
 
@@ -89,7 +89,7 @@ export class ScalpStrategy extends Strategy {
       return;
     }
 
-    const emaValue = this.#ema.getResult()!;
+    const emaValue = this.#ema.getResultOrThrow();
 
     if (closePrice <= emaValue) {
       return;

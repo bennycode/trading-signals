@@ -26,7 +26,11 @@ export class StrategyMonitor {
   async start(): Promise<void> {
     const rows = Strategy.findAllOrderedById();
     for (const row of rows) {
-      await this.subscribeToStrategy(row);
+      try {
+        await this.subscribeToStrategy(row);
+      } catch (error) {
+        console.error(`Failed to start strategy ${row.id} (${row.strategyName}):`, error);
+      }
     }
   }
 

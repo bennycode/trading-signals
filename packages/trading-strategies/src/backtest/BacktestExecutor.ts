@@ -32,21 +32,23 @@ export class BacktestExecutor {
       // Step 1: Match pending orders from previous iteration against this candle
       const fills = exchange.processCandle(candle);
 
-      for (const fill of fills) {
-        trades.push({
-          advice: this.#findAdviceForFill(fill.order_id, trades),
-          fee: new Big(fill.fee),
-          openTimeInISO: fill.created_at,
-          price: new Big(fill.price),
-          side: fill.side,
-          size: new Big(fill.size),
-        });
-        totalFees = totalFees.plus(fill.fee);
+      if (fills.length > 0) {
+        for (const fill of fills) {
+          trades.push({
+            advice: this.#findAdviceForFill(fill.order_id, trades),
+            fee: new Big(fill.fee),
+            openTimeInISO: fill.created_at,
+            price: new Big(fill.price),
+            side: fill.side,
+            size: new Big(fill.size),
+          });
+          totalFees = totalFees.plus(fill.fee);
 
-        // Notify strategy of fill so it can update internal state
-        if (strategy.onFill) {
-          const fillState = await this.#buildState(tradingPair, tradingRules, feeRates);
-          await strategy.onFill(fill, fillState);
+          // Notify strategy of fill so it can update internal state
+          if (strategy.onFill) {
+            const fillState = await this.#buildState(tradingPair, tradingRules, feeRates);
+            await strategy.onFill(fill, fillState);
+          }
         }
       }
 

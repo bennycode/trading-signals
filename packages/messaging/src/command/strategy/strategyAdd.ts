@@ -1,4 +1,4 @@
-import {getExchangeClient} from '@typedtrader/exchange';
+import {TradingPair, getExchangeClient} from '@typedtrader/exchange';
 import {ms} from 'ms';
 import {getStrategyNames, createStrategy} from 'trading-strategies';
 import {Strategy, type StrategyAttributes} from '../../database/models/Strategy.js';
@@ -23,7 +23,15 @@ export const strategyAdd = async (request: string, ownerAddress: string): Promis
     };
   }
 
-  const [strategyName, accountIdStr, pair, interval, ...configParts] = parts;
+  const [strategyName, accountIdStr, pairStr, interval, ...configParts] = parts;
+
+  // Validate pair format early
+  let pair: TradingPair;
+  try {
+    pair = TradingPair.fromString(pairStr, ',');
+  } catch {
+    return {message: 'Invalid pair format. Use BASE,COUNTER (e.g., SHOP,USD).'};
+  }
 
   const configJson = configParts.length > 0 ? configParts.join(' ') : '{}';
   let config: unknown;
@@ -53,16 +61,17 @@ export const strategyAdd = async (request: string, ownerAddress: string): Promis
     // Validate strategy name and config by attempting to create it
     createStrategy(strategyName, config);
 
+    const pairString = pair.asString(',');
     const row = Strategy.create({
       accountId: account.id,
       strategyName,
       config: configJson,
-      pair,
+      pair: pairString,
       intervalMs,
     });
 
     return {
-      message: `Strategy created (ID: ${row.id})\nStrategy: ${strategyName}\nPair: ${pair}\nInterval: ${interval}\nAccount: ${account.name}`,
+      message: `Strategy created (ID: ${row.id})\nStrategy: ${strategyName}\nPair: ${pairString}\nInterval: ${interval}\nAccount: ${account.name}`,
       strategy: row,
     };
   } catch (error) {

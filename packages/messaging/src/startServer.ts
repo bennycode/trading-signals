@@ -231,17 +231,19 @@ export async function startServer() {
   });
 
   // Handle graceful shutdown
-  process.on('SIGINT', async () => {
-    watchMonitor.stop();
-    await strategyMonitor.stop();
-    process.exit(0);
-  });
+  const shutdown = async () => {
+    try {
+      watchMonitor.stop();
+      await strategyMonitor.stop();
+    } catch (error) {
+      console.error('Error during shutdown:', error);
+    } finally {
+      process.exit(0);
+    }
+  };
 
-  process.on('SIGTERM', async () => {
-    watchMonitor.stop();
-    await strategyMonitor.stop();
-    process.exit(0);
-  });
+  process.on('SIGINT', shutdown);
+  process.on('SIGTERM', shutdown);
 
   if (process.env.XMTP_OWNER_ADDRESSES) {
     console.log(`Only admin wallet addresses (${process.env.XMTP_OWNER_ADDRESSES}) can message the bot.`);
