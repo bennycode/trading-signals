@@ -97,6 +97,7 @@ export class ScalpStrategy extends Strategy {
 
     // Price is above EMA — enter position
     this.#phase = 'waitingForFill';
+    this.state = {phase: 'waitingForFill'};
 
     return {
       side: ExchangeOrderSide.BUY,
@@ -113,6 +114,7 @@ export class ScalpStrategy extends Strategy {
     }
 
     this.#phase = 'waitingForFill';
+    this.state = {lastFillPrice: this.#lastFillPrice.toFixed(), lastFillSide: this.#lastFillSide, phase: 'waitingForFill'};
 
     if (this.#lastFillSide === ExchangeOrderSide.BUY) {
       // Just bought — sell at fill + offset

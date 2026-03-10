@@ -248,6 +248,37 @@ describe('ScalpStrategy', () => {
     expect(new Big((advice as LimitOrderAdvice).price).toFixed(2)).toBe('103.50');
   });
 
+  it('persists waitingForFill phase in state after entry advice', async () => {
+    const strategy = new ScalpStrategy({offset: '0.10', emaPeriod: 3});
+
+    for (let i = 0; i < 4; i++) {
+      const advice = await strategy.onCandle(toBatched(makeCandle(100 + i, i)), mockState);
+
+      if (advice) {
+        break;
+      }
+    }
+
+    expect(strategy.state).toEqual({phase: 'waitingForFill'});
+  });
+
+  it('persists waitingForFill phase in state after pendingAdvice produces a limit order', async () => {
+    const strategy = new ScalpStrategy({offset: '0.50', emaPeriod: 3});
+
+    for (let i = 0; i < 4; i++) {
+      const advice = await strategy.onCandle(toBatched(makeCandle(100 + i, i)), mockState);
+
+      if (advice) {
+        break;
+      }
+    }
+
+    await strategy.onFill(makeFill('103', ExchangeOrderSide.BUY), mockState);
+    await strategy.onCandle(toBatched(makeCandle(103, 10)), mockState);
+
+    expect(strategy.state).toMatchObject({phase: 'waitingForFill', lastFillPrice: '103', lastFillSide: ExchangeOrderSide.BUY});
+  });
+
   it('has the correct strategy name', () => {
     expect(ScalpStrategy.NAME).toBe('@typedtrader/strategy-scalp');
   });
