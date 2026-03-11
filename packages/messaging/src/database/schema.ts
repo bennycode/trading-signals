@@ -3,7 +3,7 @@ import {sql} from 'drizzle-orm';
 
 export const accounts = sqliteTable('accounts', {
   id: integer('id').primaryKey({autoIncrement: true}),
-  ownerAddress: text('ownerAddress').notNull(),
+  userId: text('userId').notNull(),
   name: text('name').notNull().unique(),
   exchange: text('exchange').notNull(),
   isPaper: integer('isPaper', {mode: 'boolean'}).notNull().default(true),
