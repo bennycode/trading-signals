@@ -9,6 +9,29 @@ interface ActiveSubscription {
   exchange: Exchange;
 }
 
+/**
+ * Resolve the platform for a given `userId` and send a message to that user.
+ * Exported to allow unit-testing of the alert-routing code path without a
+ * live exchange connection or database.
+ */
+export async function dispatchAlertToUser(
+  platforms: Map<string, MessagingPlatform>,
+  userId: string,
+  watchId: number,
+  message: string
+): Promise<void> {
+  const platformPrefix = userId.split(':')[0];
+  const platform = platforms.get(platformPrefix);
+
+  if (!platform) {
+    console.warn(`No platform found for prefix "${platformPrefix}" when sending alert for watch "${watchId}".`);
+    return;
+  }
+
+  await platform.sendMessage(userId, message);
+  console.log(`Alert sent to ${userId} for watch ${watchId}`);
+}
+
 export class WatchMonitor {
   #platforms: Map<string, MessagingPlatform>;
   #subscriptions: Map<number, ActiveSubscription> = new Map();
@@ -132,16 +155,6 @@ export class WatchMonitor {
 
     const message = `Price Alert Triggered!\n\nPair: ${watch.pair}\nBaseline: ${watch.baselinePrice} ${counter}\nAlert price: ${watch.alertPrice} ${counter}\nCurrent: ${currentPrice} ${counter}\nDiff: ${diffDisplay}\nThreshold: ${thresholdDisplay}\n\nThis watch has been automatically removed.`;
 
-    const platformPrefix = account.userId.split(':')[0];
-    const platform = this.#platforms.get(platformPrefix);
-
-    if (!platform) {
-      console.warn(`No platform found for prefix "${platformPrefix}" when sending alert for watch "${watch.id}".`);
-      return;
-    }
-
-    await platform.sendMessage(account.userId, message);
-
-    console.log(`Alert sent to ${account.userId} for watch ${watch.id}`);
+    await dispatchAlertToUser(this.#platforms, account.userId, watch.id, message);
   }
 }
