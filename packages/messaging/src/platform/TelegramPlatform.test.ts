@@ -67,7 +67,7 @@ describe('TelegramPlatform', () => {
 
       await platform.sendMessage('telegram:123456', 'Hello!');
 
-      expect(mockSendMessage).toHaveBeenCalledWith('123456', 'Hello!', {parse_mode: 'Markdown'});
+      expect(mockSendMessage).toHaveBeenCalledWith('123456', 'Hello!', {parse_mode: 'HTML'});
     });
 
     it('passes the raw chat ID when no prefix is present', async () => {
@@ -75,7 +75,7 @@ describe('TelegramPlatform', () => {
 
       await platform.sendMessage('789', 'Hello!');
 
-      expect(mockSendMessage).toHaveBeenCalledWith('789', 'Hello!', {parse_mode: 'Markdown'});
+      expect(mockSendMessage).toHaveBeenCalledWith('789', 'Hello!', {parse_mode: 'HTML'});
     });
   });
 

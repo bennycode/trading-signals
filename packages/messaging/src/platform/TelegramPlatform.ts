@@ -3,6 +3,22 @@ import type {CommandHandler, MessageContext, MessagingPlatform, PlatformInfo} fr
 
 const PLATFORM_PREFIX = 'telegram:';
 
+function mdToHtml(text: string): string {
+  return (
+    text
+      // Code blocks (triple backticks)
+      .replace(/```([\s\S]*?)```/g, '<pre>$1</pre>')
+      // Inline code (single backticks)
+      .replace(/`([^`]+)`/g, '<code>$1</code>')
+      // Bold (**text** or __text__)
+      .replace(/\*\*(.+?)\*\*/g, '<b>$1</b>')
+      .replace(/__(.+?)__/g, '<b>$1</b>')
+      // Italic (*text* or _text_)
+      .replace(/\*(.+?)\*/g, '<i>$1</i>')
+      .replace(/_(.+?)_/g, '<i>$1</i>')
+  );
+}
+
 export class TelegramPlatform implements MessagingPlatform {
   #bot: Telegraf;
   #ownerIds: string[];
@@ -42,7 +58,8 @@ export class TelegramPlatform implements MessagingPlatform {
         platformId: 'telegram',
         content,
         reply: async (replyText: string) => {
-          await ctx.reply(replyText, {parse_mode: 'Markdown'});
+          const html = mdToHtml(replyText);
+          await ctx.reply(html, {parse_mode: 'HTML'});
         },
       };
 
@@ -74,7 +91,8 @@ export class TelegramPlatform implements MessagingPlatform {
 
   async sendMessage(userId: string, text: string): Promise<void> {
     const chatId = userId.replace(PLATFORM_PREFIX, '');
-    await this.#bot.telegram.sendMessage(chatId, text, {parse_mode: 'Markdown'});
+    const html = mdToHtml(text);
+    await this.#bot.telegram.sendMessage(chatId, html, {parse_mode: 'HTML'});
   }
 
   get commandList(): string[] {
