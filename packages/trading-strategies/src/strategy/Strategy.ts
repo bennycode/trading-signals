@@ -1,18 +1,87 @@
-import {BatchedCandle} from '@typedtrader/exchange';
-import {StrategyAdvice} from './StrategyAdvice.js';
+import type {BatchedCandle, OrderAdvice, TradingSessionState, TradingSessionStrategy} from '@typedtrader/exchange';
 
-export abstract class Strategy {
+export abstract class Strategy implements TradingSessionStrategy {
   static NAME: string;
 
-  latestAdvice: StrategyAdvice | undefined = undefined;
+  latestAdvice: OrderAdvice | undefined = undefined;
   lastBatchedCandle: BatchedCandle | undefined = undefined;
 
-  async processBatchedCandle(batchedCandle: BatchedCandle): Promise<StrategyAdvice | void> {
-    this.lastBatchedCandle = batchedCandle;
-    const advice = await this.processCandle(batchedCandle);
+  /** Called automatically whenever `state` or `config` changes. Set by the runtime (e.g., StrategyMonitor). */
+  onSave?: () => void;
+
+  #_state: Record<string, unknown> | null = null;
+  get state(): Record<string, unknown> | null {
+    return this.#_state;
+  }
+  set state(value: Record<string, unknown> | null) {
+    this.#_state = value;
+    this.onSave?.();
+  }
+
+  #_config: Record<string, unknown> | null = null;
+  get config(): Record<string, unknown> | null {
+    return this.#_config;
+  }
+  set config(value: Record<string, unknown> | null) {
+    this.#_config = value;
+    this.onSave?.();
+  }
+
+  #proxiedState: Record<string, unknown> | null = null;
+  #proxiedConfig: Record<string, unknown> | null = null;
+
+  constructor(options?: {state?: Record<string, unknown>; config?: Record<string, unknown>}) {
+    if (options?.state) {
+      this.#proxiedState = this.#createProxy(options.state, snapshot => {
+        this.state = snapshot;
+      });
+      this.state = {...options.state};
+    }
+    if (options?.config) {
+      this.#proxiedConfig = this.#createProxy(options.config, snapshot => {
+        this.config = snapshot;
+      });
+      this.config = {...options.config};
+    }
+  }
+
+  async onCandle(candle: BatchedCandle, state: TradingSessionState): Promise<OrderAdvice | void> {
+    this.lastBatchedCandle = candle;
+    const advice = await this.processCandle(candle, state);
     this.latestAdvice = advice ? advice : undefined;
     return advice;
   }
 
-  protected abstract processCandle(batchedCandle: BatchedCandle): Promise<StrategyAdvice | void>;
+  restoreState(persisted: Record<string, unknown>): void {
+    this.#_state = persisted;
+  }
+
+  protected getProxiedState<T extends Record<string, unknown>>(): T {
+    if (!this.#proxiedState) {
+      throw new Error('No state was provided to super(). Pass { state: ... } to the Strategy constructor.');
+    }
+    return this.#proxiedState as T;
+  }
+
+  protected getProxiedConfig<T extends Record<string, unknown>>(): T {
+    if (!this.#proxiedConfig) {
+      throw new Error('No config was provided to super(). Pass { config: ... } to the Strategy constructor.');
+    }
+    return this.#proxiedConfig as T;
+  }
+
+  #createProxy(
+    target: Record<string, unknown>,
+    persist: (snapshot: Record<string, unknown>) => void
+  ): Record<string, unknown> {
+    return new Proxy(target, {
+      set: (t, property, value, receiver) => {
+        Reflect.set(t, property, value, receiver);
+        persist({...t});
+        return true;
+      },
+    });
+  }
+
+  protected abstract processCandle(candle: BatchedCandle, state: TradingSessionState): Promise<OrderAdvice | void>;
 }

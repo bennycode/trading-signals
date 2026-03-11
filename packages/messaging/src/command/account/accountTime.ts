@@ -1,16 +1,12 @@
 import {getExchangeClient} from '@typedtrader/exchange';
+import {assertId} from '../../validation/assertId.js';
 import {getAccountOrError} from '../../validation/getAccountOrError.js';
 
 // Request Example: "1"
 // Format: "<accountId>"
 export const accountTime = async (request: string, ownerAddress: string) => {
-  const accountId = parseInt(request.trim(), 10);
-
-  if (isNaN(accountId)) {
-    return 'Invalid account ID';
-  }
-
   try {
+    const accountId = assertId(request);
     const account = getAccountOrError(ownerAddress, accountId);
 
     const client = getExchangeClient({

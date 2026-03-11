@@ -1,8 +1,7 @@
 import {z} from 'zod';
-import type {BatchedCandle} from '@typedtrader/exchange';
+import {ExchangeOrderSide, ExchangeOrderType} from '@typedtrader/exchange';
+import type {BatchedCandle, OrderAdvice, TradingSessionState} from '@typedtrader/exchange';
 import Big from 'big.js';
-import type {StrategyAdvice, StrategyAdviceLimitBuyOrder} from '../strategy/StrategyAdvice.js';
-import {StrategySignal} from '../strategy/StrategySignal.js';
 import {Strategy} from '../strategy/Strategy.js';
 import {positiveNumberString} from '../util/validators.js';
 
@@ -13,6 +12,10 @@ export const BuyOnceSchema = z.object({
 
 export type BuyOnceConfig = z.infer<typeof BuyOnceSchema>;
 
+type BuyOnceState = {
+  bought: boolean;
+};
+
 /**
  * Signals a single limit buy when the candle's close price drops to or below the predefined price.
  * After the buy is triggered, the strategy stays silent for all remaining candles.
@@ -20,32 +23,44 @@ export type BuyOnceConfig = z.infer<typeof BuyOnceSchema>;
 export class BuyOnceStrategy extends Strategy {
   static override NAME = '@typedtrader/strategy-buy-once';
 
-  readonly #buyAtPrice: Big;
-  #bought = false;
-
   constructor(config: BuyOnceConfig) {
-    super();
-    this.#buyAtPrice = new Big(config.buyAt);
+    super({config, state: {bought: false}});
   }
 
-  protected override async processCandle(candle: BatchedCandle): Promise<StrategyAdvice | void> {
-    if (this.#bought) {
+  get #config(): BuyOnceConfig {
+    return this.getProxiedConfig<BuyOnceConfig>();
+  }
+
+  get #state(): BuyOnceState {
+    return this.getProxiedState<BuyOnceState>();
+  }
+
+  protected override async processCandle(candle: BatchedCandle, _state: TradingSessionState): Promise<OrderAdvice | void> {
+    if (this.#state.bought) {
       return undefined;
     }
 
-    if (candle.close.gt(this.#buyAtPrice)) {
+    const buyAtPrice = new Big(this.#config.buyAt);
+
+    if (candle.close.gt(buyAtPrice)) {
       return undefined;
     }
 
-    this.#bought = true;
+    this.#state.bought = true;
 
-    const buyLimit: StrategyAdviceLimitBuyOrder = {
+    return {
+      side: ExchangeOrderSide.BUY,
+      type: ExchangeOrderType.LIMIT,
       amount: null,
-      amountType: 'counter',
-      price: this.#buyAtPrice,
-      signal: StrategySignal.BUY_LIMIT,
+      amountIn: 'base',
+      price: buyAtPrice,
     };
+  }
 
-    return buyLimit;
+  override restoreState(persisted: Record<string, unknown>): void {
+    super.restoreState(persisted);
+    if (typeof persisted.bought === 'boolean') {
+      this.#state.bought = persisted.bought;
+    }
   }
 }

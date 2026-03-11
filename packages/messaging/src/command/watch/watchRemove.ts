@@ -1,4 +1,5 @@
 import {Watch} from '../../database/models/Watch.js';
+import {assertId} from '../../validation/assertId.js';
 import {getAccountOrError} from '../../validation/getAccountOrError.js';
 
 export interface WatchRemoveResult {
@@ -8,13 +9,8 @@ export interface WatchRemoveResult {
 
 // Request Example: "5"
 export const watchRemove = async (request: string, ownerAddress: string): Promise<WatchRemoveResult> => {
-  const watchId = parseInt(request.trim(), 10);
-
-  if (isNaN(watchId)) {
-    return {message: 'Invalid watch ID. Usage: /watchRemove <id>'};
-  }
-
   try {
+    const watchId = assertId(request);
     const watch = Watch.findByPk(watchId);
 
     if (!watch) {

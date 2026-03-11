@@ -1,10 +1,13 @@
 import {z} from 'zod';
-import type {BatchedCandle} from '@typedtrader/exchange';
-import type {StrategyAdvice, StrategyAdviceMarketBuyOrder} from '../strategy/StrategyAdvice.js';
-import {StrategySignal} from '../strategy/StrategySignal.js';
+import {ExchangeOrderSide, ExchangeOrderType} from '@typedtrader/exchange';
+import type {BatchedCandle, OrderAdvice, TradingSessionState} from '@typedtrader/exchange';
 import {Strategy} from '../strategy/Strategy.js';
 
 export const BuyAndHoldSchema = z.object({});
+
+type BuyAndHoldState = {
+  bought: boolean;
+};
 
 /**
  * Buys once at the first candle and holds for the entire period.
@@ -13,22 +16,33 @@ export const BuyAndHoldSchema = z.object({});
 export class BuyAndHoldStrategy extends Strategy {
   static override NAME = '@typedtrader/strategy-buy-and-hold';
 
-  #bought = false;
+  constructor() {
+    super({state: {bought: false}});
+  }
 
-  protected override async processCandle(_candle: BatchedCandle): Promise<StrategyAdvice | void> {
-    if (this.#bought) {
+  get #state(): BuyAndHoldState {
+    return this.getProxiedState<BuyAndHoldState>();
+  }
+
+  protected override async processCandle(_candle: BatchedCandle, _state: TradingSessionState): Promise<OrderAdvice | void> {
+    if (this.#state.bought) {
       return undefined;
     }
 
-    this.#bought = true;
+    this.#state.bought = true;
 
-    const buyMarket: StrategyAdviceMarketBuyOrder = {
+    return {
+      side: ExchangeOrderSide.BUY,
+      type: ExchangeOrderType.MARKET,
       amount: null,
-      amountType: 'counter',
-      price: null,
-      signal: StrategySignal.BUY_MARKET,
+      amountIn: 'counter',
     };
+  }
 
-    return buyMarket;
+  override restoreState(persisted: Record<string, unknown>): void {
+    super.restoreState(persisted);
+    if (typeof persisted.bought === 'boolean') {
+      this.#state.bought = persisted.bought;
+    }
   }
 }

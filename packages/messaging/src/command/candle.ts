@@ -1,6 +1,7 @@
 import {TradingPair, getExchangeClient} from '@typedtrader/exchange';
+import {assertId} from '../validation/assertId.js';
+import {assertInterval} from '../validation/assertInterval.js';
 import {getAccountOrError} from '../validation/getAccountOrError.js';
-import {parse} from 'ms';
 
 // Request Example: "1 SHOP,USD 1h"
 // Format: "<accountId> <pair> <interval>"
@@ -12,17 +13,13 @@ export const candle = async (request: string, ownerAddress: string) => {
   }
 
   const [accountIdStr, pairPart, interval] = parts;
-  const accountId = parseInt(accountIdStr, 10);
-
-  if (isNaN(accountId)) {
-    return 'Invalid account ID';
-  }
 
   try {
+    const accountId = assertId(accountIdStr);
     const account = getAccountOrError(ownerAddress, accountId);
 
     const pair = TradingPair.fromString(pairPart, ',');
-    const intervalInMillis = parse(interval);
+    const intervalInMillis = assertInterval(interval);
 
     const client = getExchangeClient({
       exchangeId: account.exchange,

@@ -1,12 +1,7 @@
 import {z} from 'zod';
-import type {BatchedCandle} from '@typedtrader/exchange';
+import {ExchangeOrderSide, ExchangeOrderType} from '@typedtrader/exchange';
+import type {BatchedCandle, OrderAdvice, TradingSessionState} from '@typedtrader/exchange';
 import {BollingerBands, EMA, MACD, RSI} from 'trading-signals';
-import type {
-  StrategyAdvice,
-  StrategyAdviceMarketBuyOrder,
-  StrategyAdviceMarketSellOrder,
-} from '../strategy/StrategyAdvice.js';
-import {StrategySignal} from '../strategy/StrategySignal.js';
 import {Strategy} from '../strategy/Strategy.js';
 
 export const MultiIndicatorConfluenceSchema = z
@@ -50,7 +45,6 @@ export type MultiIndicatorConfluenceConfig = z.infer<typeof MultiIndicatorConflu
 export class MultiIndicatorConfluenceStrategy extends Strategy {
   static override NAME = '@typedtrader/strategy-multi-indicator-confluence';
 
-  readonly #config: MultiIndicatorConfluenceConfig;
   readonly #emaShort: EMA;
   readonly #emaLong: EMA;
   readonly #macd: MACD;
@@ -59,8 +53,7 @@ export class MultiIndicatorConfluenceStrategy extends Strategy {
   #candlesProcessed = 0;
 
   constructor(config: MultiIndicatorConfluenceConfig) {
-    super();
-    this.#config = config;
+    super({config});
 
     this.#emaShort = new EMA(this.#config.emaShortPeriod);
     this.#emaLong = new EMA(this.#config.emaLongPeriod);
@@ -71,6 +64,10 @@ export class MultiIndicatorConfluenceStrategy extends Strategy {
     );
     this.#bollingerBands = new BollingerBands(this.#config.bollingerPeriod, this.#config.bollingerDeviationMultiplier);
     this.#rsi = new RSI(this.#config.rsiPeriod);
+  }
+
+  get #config(): MultiIndicatorConfluenceConfig {
+    return this.getProxiedConfig<MultiIndicatorConfluenceConfig>();
   }
 
   /** Number of candles required before the strategy can produce signals. */
@@ -99,7 +96,7 @@ export class MultiIndicatorConfluenceStrategy extends Strategy {
     return this.#candlesProcessed;
   }
 
-  protected override async processCandle(candle: BatchedCandle): Promise<StrategyAdvice | void> {
+  protected override async processCandle(candle: BatchedCandle, _state: TradingSessionState): Promise<OrderAdvice | void> {
     const closePrice = candle.close.toNumber();
 
     this.#emaShort.add(closePrice);
@@ -137,15 +134,13 @@ export class MultiIndicatorConfluenceStrategy extends Strategy {
         `RSI ${rsiValue.toFixed(2)} not overbought (< ${this.#config.rsiOverbought})`,
       ].join('; ');
 
-      const buyMarket: StrategyAdviceMarketBuyOrder = {
+      return {
+        side: ExchangeOrderSide.BUY,
+        type: ExchangeOrderType.MARKET,
         amount: null,
-        amountType: 'counter',
-        price: null,
-        signal: StrategySignal.BUY_MARKET,
+        amountIn: 'counter',
         reason,
       };
-
-      return buyMarket;
     }
 
     // SELL: Downtrend + bearish momentum + bounce to upper band + RSI not oversold
@@ -157,15 +152,13 @@ export class MultiIndicatorConfluenceStrategy extends Strategy {
         `RSI ${rsiValue.toFixed(2)} not oversold (> ${this.#config.rsiOversold})`,
       ].join('; ');
 
-      const sellMarket: StrategyAdviceMarketSellOrder = {
+      return {
+        side: ExchangeOrderSide.SELL,
+        type: ExchangeOrderType.MARKET,
         amount: null,
-        amountType: 'base',
-        price: null,
-        signal: StrategySignal.SELL_MARKET,
+        amountIn: 'base',
         reason,
       };
-
-      return sellMarket;
     }
   }
 }

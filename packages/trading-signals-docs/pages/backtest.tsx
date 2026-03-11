@@ -9,10 +9,12 @@ import {
   BuyBelowSellAboveStrategy,
   CoinFlipStrategy,
   MultiIndicatorConfluenceStrategy,
+  ScalpStrategy,
   type BacktestResult,
   BuyOnceConfig,
   BuyBelowSellAboveConfig,
   type MultiIndicatorConfluenceConfig,
+  type ScalpConfig,
 } from 'trading-strategies';
 import {DatasetSelector} from '../components/DatasetSelector';
 import {StrategyConfigurator} from '../components/StrategyConfigurator';
@@ -33,6 +35,8 @@ function createStrategy(strategyId: StrategyId, config: Record<string, unknown>)
       return new BuyBelowSellAboveStrategy(config as BuyBelowSellAboveConfig);
     case 'multi-indicator-confluence':
       return new MultiIndicatorConfluenceStrategy(config as MultiIndicatorConfluenceConfig);
+    case 'scalp':
+      return new ScalpStrategy(config as ScalpConfig);
   }
 }
 

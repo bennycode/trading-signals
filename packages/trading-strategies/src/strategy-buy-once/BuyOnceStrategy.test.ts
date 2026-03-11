@@ -1,11 +1,10 @@
 import Big from 'big.js';
 import {describe, expect, it} from 'vitest';
-import {AlpacaExchangeMock} from '@typedtrader/exchange';
-import type {ExchangeCandle} from '@typedtrader/exchange';
+import {AlpacaExchangeMock, CandleBatcher, ExchangeOrderSide, ExchangeOrderType} from '@typedtrader/exchange';
+import type {ExchangeCandle, TradingSessionState} from '@typedtrader/exchange';
 import {TradingPair} from '@typedtrader/exchange';
 import {BacktestExecutor} from '../backtest/BacktestExecutor.js';
 import {BuyOnceStrategy} from './BuyOnceStrategy.js';
-import {StrategySignal} from '../strategy/StrategySignal.js';
 import type {BacktestConfig} from '../backtest/BacktestConfig.js';
 
 function createCandle(overrides: Partial<ExchangeCandle> & {close: string; open: string}): ExchangeCandle {
@@ -58,7 +57,8 @@ describe('BuyOnceStrategy', () => {
     const result = await new BacktestExecutor(config).execute();
 
     expect(result.trades).toHaveLength(1);
-    expect(result.trades[0].advice.signal).toBe(StrategySignal.BUY_LIMIT);
+    expect(result.trades[0].advice.side).toBe(ExchangeOrderSide.BUY);
+    expect(result.trades[0].advice.type).toBe(ExchangeOrderType.LIMIT);
     expect(result.finalBaseBalance.gt(0)).toBe(true);
   });
 
@@ -154,5 +154,33 @@ describe('BuyOnceStrategy', () => {
     expect(result.trades).toHaveLength(1);
     // With price improvement, fills at the better open price of 92
     expect(parseFloat(result.trades[0].price.toFixed(0))).toBeLessThanOrEqual(95);
+  });
+
+  it('does not re-buy after restoreState({bought: true})', async () => {
+    const mockState: TradingSessionState = {
+      baseBalance: new Big(0),
+      counterBalance: new Big(1000),
+      tradingRules: {
+        base_increment: '0.01',
+        base_max_size: '10000',
+        base_min_size: '0.01',
+        counter_increment: '0.01',
+        counter_min_size: '1',
+        pair: tradingPair,
+      },
+      feeRates: {
+        [ExchangeOrderType.LIMIT]: new Big('0.001'),
+        [ExchangeOrderType.MARKET]: new Big('0.002'),
+      },
+    };
+
+    const strategy = new BuyOnceStrategy({buyAt: '100'});
+    strategy.restoreState({bought: true});
+
+    // Close price is below buyAt — would normally trigger a buy, but state is restored as already bought
+    const candle = createCandle({open: '80', close: '80', openTimeInISO: '2025-01-01T00:00:00.000Z'});
+    const advice = await strategy.onCandle(CandleBatcher.toBatchedCandle(candle), mockState);
+
+    expect(advice).toBeUndefined();
   });
 });

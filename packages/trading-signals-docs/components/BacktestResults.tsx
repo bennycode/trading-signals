@@ -193,7 +193,7 @@ function TradeHistoryTable({result}: {result: BacktestResult}) {
           <tr className="border-b border-slate-700">
             <th className="text-left text-slate-400 py-2 px-3">#</th>
             <th className="text-left text-slate-400 py-2 px-3">Date</th>
-            <th className="text-left text-slate-400 py-2 px-3">Signal</th>
+            <th className="text-left text-slate-400 py-2 px-3">Order</th>
             <th className="text-right text-slate-400 py-2 px-3">Price</th>
             <th className="text-right text-slate-400 py-2 px-3">Size</th>
             <th className="text-right text-slate-400 py-2 px-3">Total</th>
@@ -214,7 +214,7 @@ function TradeHistoryTable({result}: {result: BacktestResult}) {
                       ? 'bg-green-900/50 text-green-400'
                       : 'bg-red-900/50 text-red-400'
                   }`}>
-                  {trade.advice.signal}
+                  {trade.advice.side} {trade.advice.type}
                 </span>
               </td>
               <td className="py-2 px-3 text-right text-white font-mono">${formatBig(trade.price)}</td>
