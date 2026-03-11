@@ -31,6 +31,13 @@
     "test:types": "lerna run --no-sort --concurrency 8 test:types"
   },
   "version": "0.0.0",
+  "overrides": {
+    "esbuild": ">=0.25.0",
+    "tar": ">=7.5.11",
+    "@esbuild-kit/core-utils": {
+      "esbuild": ">=0.25.0"
+    }
+  },
   "workspaces": {
     "packages": [
       "packages/*"
