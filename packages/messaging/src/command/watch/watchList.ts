@@ -1,9 +1,9 @@
 import {Account} from '../../database/models/Account.js';
 import {Watch} from '../../database/models/Watch.js';
 
-export const watchList = async (ownerAddress: string) => {
+export const watchList = async (userId: string) => {
   try {
-    const accounts = Account.findByOwnerAddress(ownerAddress);
+    const accounts = Account.findByUserId(userId);
     const accountIds = accounts.map(a => a.id);
     const watches = Watch.findByAccountIds(accountIds);
 

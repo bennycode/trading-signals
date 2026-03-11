@@ -15,7 +15,7 @@ async function validateClient(config: ValidateClientConfig) {
 
 // Request Example: "MyAlpaca alpaca false API_KEY API_SECRET"
 // Format: "<name> <exchange> <isPaper> <apiKey> <apiSecret>"
-export async function accountAdd(request: string, ownerAddress: string) {
+export async function accountAdd(request: string, userId: string) {
   const parts = request.trim().split(' ');
 
   if (parts.length !== 5) {
@@ -30,7 +30,7 @@ export async function accountAdd(request: string, ownerAddress: string) {
     await validateClient({exchangeId: exchange, apiKey, apiSecret, isPaper});
 
     const account = Account.create({
-      ownerAddress,
+      userId,
       name,
       exchange,
       isPaper,

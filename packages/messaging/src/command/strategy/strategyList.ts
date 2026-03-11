@@ -2,9 +2,9 @@ import {ms} from 'ms';
 import {Account} from '../../database/models/Account.js';
 import {Strategy} from '../../database/models/Strategy.js';
 
-export const strategyList = async (ownerAddress: string) => {
+export const strategyList = async (userId: string) => {
   try {
-    const accounts = Account.findByOwnerAddress(ownerAddress);
+    const accounts = Account.findByUserId(userId);
     const accountIds = accounts.map(a => a.id);
     const strategies = Strategy.findByAccountIds(accountIds);
 

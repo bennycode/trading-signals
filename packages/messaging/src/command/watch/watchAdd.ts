@@ -14,7 +14,7 @@ export interface WatchResult {
 
 // Request Example: "/watchAdd SHOP,USD 1 1m +5%"
 // Format: "<pair> <accountId> <interval> <threshold>"
-export const watchAdd = async (request: string, ownerAddress: string): Promise<WatchResult> => {
+export const watchAdd = async (request: string, userId: string): Promise<WatchResult> => {
   const parts = request.trim().split(' ');
 
   if (parts.length !== 4) {
@@ -33,7 +33,7 @@ export const watchAdd = async (request: string, ownerAddress: string): Promise<W
 
   try {
     const accountId = assertId(accountIdStr);
-    const account = getAccountOrError(ownerAddress, accountId);
+    const account = getAccountOrError(userId, accountId);
 
     const pair = TradingPair.fromString(pairPart, ',');
     const {counter} = pair;

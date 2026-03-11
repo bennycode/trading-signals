@@ -4,10 +4,10 @@ import {getAccountOrError} from '../../validation/getAccountOrError.js';
 
 // Request Example: "1"
 // Format: "<accountId>"
-export const accountTime = async (request: string, ownerAddress: string) => {
+export const accountTime = async (request: string, userId: string) => {
   try {
     const accountId = assertId(request);
-    const account = getAccountOrError(ownerAddress, accountId);
+    const account = getAccountOrError(userId, accountId);
 
     const client = getExchangeClient({
       exchangeId: account.exchange,
