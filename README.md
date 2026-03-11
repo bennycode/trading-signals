@@ -11,14 +11,14 @@ This project uses [Lerna](https://lerna.js.org/) for managing the [monorepo](htt
 | Package | Description |
 | --- | --- |
 | [**@typedtrader/exchange**](./packages/exchange) | Unified exchange interface providing interoperability across different brokers (e.g., [Alpaca](https://alpaca.markets/)). Offers type-safe data transformation utilities and a streamlined API for integrating multiple exchanges and brokers into your trading applications. |
-| [**@typedtrader/messaging**](./packages/messaging) | End-to-end encrypted messaging interface for controlling personal trading bots remotely via [XMTP protocol](https://xmtp.org/). Enables secure command execution and real-time trading bot interaction. |
+| [**@typedtrader/messaging**](./packages/messaging) | Messaging interface for controlling personal trading bots remotely via [XMTP](https://xmtp.org/) and [Telegram](https://core.telegram.org/bots). Both platforms can run simultaneously. |
 | [**trading-signals**](./packages/trading-signals) | [Technical indicators](https://en.wikipedia.org/wiki/Technical_indicator) (SMA, EMA, RSI, MACD, ...) for algorithmic trading with streaming updates, replace mode, lazy evaluation, and memory efficiency. Can be added to your own trading apps or strategies. |
 | [**trading-signals-docs**](./packages/trading-signals-docs) | Documentation and [showcase website](https://bennycode.com/trading-signals/) built with Next.js, featuring interactive demos and examples of all indicators. See every indicator in action before you code. |
 | [**trading-strategies**](./packages/trading-strategies) | [Trading strategy](https://en.wikipedia.org/wiki/Trading_strategy) implementations that combine technical indicators into actionable advices. Can be used to build your own strategies for backtesting and real-time trading. |
 
 ## Relationships
 
-At the foundation, **trading-signals** provides technical indicators like SMA, EMA, RSI, and Bollinger Bands. The **trading-strategies** package builds on top of these indicators to form actionable trading advice. **@typedtrader/exchange** abstracts away broker differences behind a unified interface, so strategies can run against any supported exchange. Finally, **@typedtrader/messaging** ties it all together into a chatbot that lets you control your trading bot remotely through encrypted messages.
+At the foundation, **trading-signals** provides technical indicators like SMA, EMA, RSI, and Bollinger Bands. The **trading-strategies** package builds on top of these indicators to form actionable trading advice. **@typedtrader/exchange** abstracts away broker differences behind a unified interface, so strategies can run against any supported exchange. Finally, **@typedtrader/messaging** ties it all together into a chatbot that lets you control your trading bot remotely through XMTP (encrypted) or Telegram.
 
 ```mermaid
 graph TD
@@ -43,6 +43,6 @@ graph TD
 
 ### Deploy to Render
 
-Deploy the `@typedtrader/messaging` package as a background worker to [Render](https://render.com/). The configuration includes persistent disk storage for the XMTP database and secure environment variable management:
+Deploy the `@typedtrader/messaging` package as a background worker to [Render](https://render.com/). The configuration includes persistent disk storage for the database and secure environment variable management:
 
 [![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/bennycode/trading-signals)

@@ -1,18 +1,26 @@
 # @typedtrader/messaging
 
-End-to-end encrypted messaging interface for controlling personal trading bots remotely via the [XMTP protocol](https://xmtp.org/). Enables secure command execution and real-time trading bot interaction.
+Messaging interface for controlling personal trading bots remotely via [XMTP](https://xmtp.org/) and [Telegram](https://core.telegram.org/bots) (using [Telegraf](https://telegraf.js.org/)). Both platforms can run simultaneously in a single process.
 
 ## Features
 
-- **End-to-End Encryption:** Secure communication using XMTP protocol
+- **Multi-Platform:** Supports XMTP (end-to-end encrypted) and Telegram bots
 - **Command Interface:** Execute trading bot commands via messaging
 - **Real-Time Updates:** Get live candle data, time, and bot status
-- **Owner Authentication:** Built-in middleware to verify message sender
+- **Owner Authentication:** Per-platform access control (wallet addresses for XMTP, user IDs for Telegram)
 - **Remote Control:** Manage your trading bot from anywhere securely
 
 ## Usage
 
-This package starts an XMTP chatbot that you can message from any XMTP-compatible wallet. Once connected, you control your trading bot by sending slash commands directly in the chat.
+This package starts a chatbot on one or both platforms based on environment variables. Control your trading bot by sending slash commands directly in the chat.
+
+### XMTP
+
+Set `XMTP_ENV` to enable. Message the bot from any XMTP-compatible wallet.
+
+### Telegram
+
+Set `TELEGRAM_BOT_TOKEN` to enable. Message the bot from Telegram. Create a bot token via [@BotFather](https://t.me/BotFather).
 
 ### Commands
 
@@ -24,21 +32,21 @@ This package starts an XMTP chatbot that you can message from any XMTP-compatibl
 | `/accountRemove` | Remove a trading account                                 |
 | `/accountTime`   | Show the current server time from an account's exchange  |
 | `/candle`        | Fetch OHLC candle data for a trading pair                |
-| `/myaddress`     | Show your XMTP wallet address                            |
+| `/myaddress`     | Show your address/ID on the current platform             |
 | `/price`         | Get the latest closing price for a trading pair          |
 | `/time`          | Display the current system time                          |
 | `/uptime`        | Show how long the bot has been running                   |
-| `/version`       | Display the libXMTP version                              |
+| `/version`       | Display the platform SDK version                         |
 | `/watchAdd`      | Create a price alert that monitors a pair at an interval |
 | `/watchList`     | List all active price watches                            |
 | `/watchRemove`   | Remove an active price watch                             |
-| `/youraddress`   | Show the bot's XMTP wallet address                       |
+| `/youraddress`   | Show the bot's address on the current platform           |
 
 ## Motivation
 
-The "@typedtrader/messaging" library provides a secure way to interact with your trading bots through encrypted messaging. It's designed for traders who want to monitor and control their automated trading systems remotely without exposing public APIs.
+The "@typedtrader/messaging" library provides a way to interact with your trading bots through messaging platforms. It's designed for traders who want to monitor and control their automated trading systems remotely without exposing public APIs.
 
-Traditional web dashboards need public websites, databases, and login systems - all targets for hackers. This messaging approach is different: messages are encrypted end-to-end, there's no public endpoint to attack, and only your wallet can decrypt the commands.
+With XMTP, messages are encrypted end-to-end — there's no public endpoint to attack and only your wallet can decrypt the commands. With Telegram, you get a familiar chat interface with user ID-based access control.
 
 ## Security
 
