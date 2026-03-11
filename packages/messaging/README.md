@@ -1,6 +1,6 @@
 # @typedtrader/messaging
 
-Messaging interface for controlling personal trading bots remotely via [XMTP](https://xmtp.org/) and [Telegram](https://core.telegram.org/bots) (using [Telegraf](https://telegraf.js.org/)). Both platforms can run simultaneously in a single process.
+Messaging interface for controlling personal trading bots remotely via [XMTP](https://xmtp.org/) (end-to-end encrypted) and [Telegram](https://core.telegram.org/bots) (using [Telegraf](https://telegraf.js.org/)). Both platforms can run simultaneously in a single process.
 
 ## Features
 
