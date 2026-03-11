@@ -8,7 +8,7 @@ export interface StrategyRemoveResult {
 }
 
 // Request Example: "5"
-export const strategyRemove = async (request: string, ownerAddress: string): Promise<StrategyRemoveResult> => {
+export const strategyRemove = async (request: string, userId: string): Promise<StrategyRemoveResult> => {
   try {
     const strategyId = assertId(request);
     const row = Strategy.findByPk(strategyId);
@@ -18,7 +18,7 @@ export const strategyRemove = async (request: string, ownerAddress: string): Pro
     }
 
     // Security: verify the strategy's account belongs to the user
-    getAccountOrError(ownerAddress, row.accountId);
+    getAccountOrError(userId, row.accountId);
 
     Strategy.destroy(strategyId);
 

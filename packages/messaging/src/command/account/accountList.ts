@@ -1,8 +1,8 @@
 import {Account} from '../../database/models/Account.js';
 
-export const accountList = async (ownerAddress: string) => {
+export const accountList = async (userId: string) => {
   try {
-    const accounts = Account.findByOwnerAddress(ownerAddress);
+    const accounts = Account.findByUserId(userId);
 
     if (accounts.length === 0) {
       return 'No accounts found';

@@ -1,7 +1,3 @@
-import {Agent, AgentMessageHandler} from '@xmtp/agent-sdk';
-import {getTestUrl} from '@xmtp/agent-sdk/debug';
-import {CommandRouter} from '@xmtp/agent-sdk/middleware';
-import {isFromOwner} from './middleware/isFromOwner.js';
 import {
   accountAdd,
   accountList,
@@ -19,222 +15,194 @@ import {
   watchRemove,
 } from './command/index.js';
 import {initializeDatabase} from './database/initializeDatabase.js';
-import {StrategyMonitor} from './service/StrategyMonitor.js';
-import {WatchMonitor} from './service/WatchMonitor.js';
+import type {MessagingPlatform} from './platform/index.js';
+import {XmtpPlatform, TelegramPlatform} from './platform/index.js';
+import {WatchMonitor, StrategyMonitor} from './service/index.js';
 
-export async function startServer() {
-  await initializeDatabase();
+interface Monitors {
+  watchMonitor: WatchMonitor;
+  strategyMonitor: StrategyMonitor;
+}
 
-  const agent = await Agent.createFromEnv({
-    appVersion: '@typedtrader/messaging',
-  });
-
-  const strategyMonitor = new StrategyMonitor(agent);
-  const watchMonitor = new WatchMonitor(agent);
-
-  const router = new CommandRouter();
-
-  const help: AgentMessageHandler<string> = async ctx => {
-    const commandCodeBlocks = router.commandList.map(cmd => `\`${cmd}\``);
+function registerCommands(platform: MessagingPlatform, monitors: Monitors): void {
+  platform.registerCommand('help', async ctx => {
+    const commandCodeBlocks = platform.commandList.map(cmd => `\`${cmd}\``);
     const answer = `I am supporting the following commands: ${commandCodeBlocks.join(', ')}`;
-    await ctx.conversation.sendMarkdown(answer);
-  };
+    await ctx.reply(answer);
+  });
 
-  router.command('/accountAdd', async ctx => {
-    const ownerAddress = await ctx.getSenderAddress();
-    if (!ownerAddress) {
-      await ctx.conversation.sendText('Unable to determine sender address');
-      return;
-    }
-    const result = await accountAdd(ctx.message.content, ownerAddress);
+  platform.registerCommand('accountAdd', async ctx => {
+    const result = await accountAdd(ctx.content, ctx.senderId);
+
     if (result) {
-      await ctx.conversation.sendText(result);
+      await ctx.reply(result);
     }
   });
 
-  router.command('/accountList', async ctx => {
-    const ownerAddress = await ctx.getSenderAddress();
-    if (!ownerAddress) {
-      await ctx.conversation.sendText('Unable to determine sender address');
-      return;
-    }
-    await ctx.conversation.sendText(await accountList(ownerAddress));
+  platform.registerCommand('accountList', async ctx => {
+    await ctx.reply(await accountList(ctx.senderId));
   });
 
-  router.command('/accountRemove', async ctx => {
-    const ownerAddress = await ctx.getSenderAddress();
-    if (!ownerAddress) {
-      await ctx.conversation.sendText('Unable to determine sender address');
-      return;
-    }
-    const result = await accountRemove(ctx.message.content, ownerAddress);
+  platform.registerCommand('accountRemove', async ctx => {
+    const result = await accountRemove(ctx.content, ctx.senderId);
+
     if (result) {
-      await ctx.conversation.sendText(result);
+      await ctx.reply(result);
     }
   });
 
-  router.command('/accountTime', async ctx => {
-    const ownerAddress = await ctx.getSenderAddress();
-    if (!ownerAddress) {
-      await ctx.conversation.sendText('Unable to determine sender address');
-      return;
-    }
-    const result = await accountTime(ctx.message.content, ownerAddress);
+  platform.registerCommand('accountTime', async ctx => {
+    const result = await accountTime(ctx.content, ctx.senderId);
+
     if (result) {
-      await ctx.conversation.sendText(result);
+      await ctx.reply(result);
     }
   });
 
-  router.command('/candle', async ctx => {
-    const ownerAddress = await ctx.getSenderAddress();
-    if (!ownerAddress) {
-      await ctx.conversation.sendText('Unable to determine sender address');
-      return;
-    }
-    const candleJson = await candle(ctx.message.content, ownerAddress);
+  platform.registerCommand('candle', async ctx => {
+    const candleJson = await candle(ctx.content, ctx.senderId);
+
     if (candleJson) {
-      await ctx.conversation.sendText(candleJson);
+      await ctx.reply(candleJson);
     }
   });
 
-  router.command('/help', help);
-
-  router.command('/price', async ctx => {
-    const ownerAddress = await ctx.getSenderAddress();
-    if (!ownerAddress) {
-      await ctx.conversation.sendText('Unable to determine sender address');
-      return;
-    }
-    await ctx.conversation.sendText(await price(ctx.message.content, ownerAddress));
+  platform.registerCommand('price', async ctx => {
+    await ctx.reply(await price(ctx.content, ctx.senderId));
   });
 
-  router.command('/time', async ctx => {
-    await ctx.conversation.sendText(await time());
+  platform.registerCommand('time', async ctx => {
+    await ctx.reply(await time());
   });
 
-  router.command('/uptime', async ctx => {
-    await ctx.conversation.sendText(await uptime());
+  platform.registerCommand('uptime', async ctx => {
+    await ctx.reply(await uptime());
   });
 
-  router.command('/watchAdd', async ctx => {
-    const userAddress = await ctx.getSenderAddress();
-    if (!userAddress) {
-      await ctx.conversation.sendText('Unable to determine sender address');
-      return;
-    }
-    const result = await watchAdd(ctx.message.content, userAddress);
-    await ctx.conversation.sendText(result.message);
-    // Subscribe to the new watch via WebSocket
+  platform.registerCommand('watchAdd', async ctx => {
+    const result = await watchAdd(ctx.content, ctx.senderId);
+    await ctx.reply(result.message);
+
     if (result.watch) {
       try {
-        await watchMonitor.subscribeToWatch(result.watch);
+        await monitors.watchMonitor.subscribeToWatch(result.watch);
       } catch (error) {
         console.error(`Error subscribing to new watch: ${error}`);
       }
     }
   });
 
-  router.command('/watchList', async ctx => {
-    const userAddress = await ctx.getSenderAddress();
-    if (!userAddress) {
-      await ctx.conversation.sendText('Unable to determine sender address');
-      return;
-    }
-    await ctx.conversation.sendText(await watchList(userAddress));
+  platform.registerCommand('watchList', async ctx => {
+    await ctx.reply(await watchList(ctx.senderId));
   });
 
-  router.command('/watchRemove', async ctx => {
-    const userAddress = await ctx.getSenderAddress();
-    if (!userAddress) {
-      await ctx.conversation.sendText('Unable to determine sender address');
-      return;
-    }
-    const result = await watchRemove(ctx.message.content, userAddress);
-    await ctx.conversation.sendText(result.message);
-    // Unsubscribe from the watch WebSocket
+  platform.registerCommand('watchRemove', async ctx => {
+    const result = await watchRemove(ctx.content, ctx.senderId);
+    await ctx.reply(result.message);
+
     if (result.watchId) {
-      watchMonitor.unsubscribeFromWatch(result.watchId);
+      monitors.watchMonitor.unsubscribeFromWatch(result.watchId);
     }
   });
 
-  router.command('/strategyAdd', async ctx => {
-    const userAddress = await ctx.getSenderAddress();
-    if (!userAddress) {
-      await ctx.conversation.sendText('Unable to determine sender address');
-      return;
-    }
-    const result = await strategyAdd(ctx.message.content, userAddress);
-    await ctx.conversation.sendText(result.message);
+  platform.registerCommand('strategyAdd', async ctx => {
+    const result = await strategyAdd(ctx.content, ctx.senderId);
+    await ctx.reply(result.message);
+
     if (result.strategy) {
       try {
-        await strategyMonitor.subscribeToStrategy(result.strategy);
+        await monitors.strategyMonitor.subscribeToStrategy(result.strategy);
       } catch (error) {
         console.error(`Error starting strategy: ${error}`);
       }
     }
   });
 
-  router.command('/strategyList', async ctx => {
-    const userAddress = await ctx.getSenderAddress();
-    if (!userAddress) {
-      await ctx.conversation.sendText('Unable to determine sender address');
-      return;
-    }
-    await ctx.conversation.sendText(await strategyList(userAddress));
+  platform.registerCommand('strategyList', async ctx => {
+    await ctx.reply(await strategyList(ctx.senderId));
   });
 
-  router.command('/strategyRemove', async ctx => {
-    const userAddress = await ctx.getSenderAddress();
-    if (!userAddress) {
-      await ctx.conversation.sendText('Unable to determine sender address');
-      return;
-    }
-    const result = await strategyRemove(ctx.message.content, userAddress);
-    await ctx.conversation.sendText(result.message);
+  platform.registerCommand('strategyRemove', async ctx => {
+    const result = await strategyRemove(ctx.content, ctx.senderId);
+    await ctx.reply(result.message);
+
     if (result.strategyId) {
       try {
-        await strategyMonitor.unsubscribeFromStrategy(result.strategyId);
+        await monitors.strategyMonitor.unsubscribeFromStrategy(result.strategyId);
       } catch (error) {
         console.error(`Error stopping strategy: ${error}`);
       }
     }
   });
 
-  router.command('/myaddress', async ctx => {
-    const yourAddress = await ctx.getSenderAddress();
-    await ctx.conversation.sendText(`Your address is: ${yourAddress}`);
+  platform.registerCommand('myaddress', async ctx => {
+    await ctx.reply(`Your address is: ${ctx.senderId.split(':').slice(1).join(':')}`);
   });
 
-  router.command('/youraddress', async ctx => {
-    const myAddress = await ctx.getClientAddress();
-    await ctx.conversation.sendText(`My address is: ${myAddress}`);
+  platform.registerCommand('youraddress', async ctx => {
+    await ctx.reply(`My address is: ${platform.platformInfo.botAddress}`);
   });
 
-  router.command('/version', async ctx => {
-    const libXmtpVersion = ctx.client.libxmtpVersion;
-    await ctx.conversation.sendText(`My libXMTP version is: ${libXmtpVersion}`);
+  platform.registerCommand('version', async ctx => {
+    await ctx.reply(`My version is: ${platform.platformInfo.sdkVersion}`);
   });
+}
 
-  agent.on('start', async ctx => {
-    console.log(`Message me: ${getTestUrl(ctx.client)}`);
-    // Start WebSocket subscriptions for all existing watches and strategies
-    try {
-      await watchMonitor.start();
-    } catch (error) {
-      console.error('Error starting watch monitor:', error);
-    }
-    try {
-      await strategyMonitor.start();
-    } catch (error) {
-      console.error('Error starting strategy monitor:', error);
-    }
-  });
+export async function startServer() {
+  await initializeDatabase();
 
-  // Handle graceful shutdown
+  const platforms = new Map<string, MessagingPlatform>();
+
+  if (process.env.XMTP_ENV) {
+    const xmtpPlatform = new XmtpPlatform(process.env.XMTP_OWNER_ADDRESSES);
+    platforms.set('xmtp', xmtpPlatform);
+  }
+
+  if (process.env.TELEGRAM_BOT_TOKEN) {
+    const telegramPlatform = new TelegramPlatform(process.env.TELEGRAM_BOT_TOKEN, process.env.TELEGRAM_OWNER_IDS);
+    platforms.set('telegram', telegramPlatform);
+  }
+
+  if (platforms.size === 0) {
+    console.warn('Warning: No messaging platforms configured. Set XMTP_ENV or TELEGRAM_BOT_TOKEN to enable platforms.');
+  }
+
+  const monitors: Monitors = {
+    watchMonitor: new WatchMonitor(platforms),
+    strategyMonitor: new StrategyMonitor(platforms),
+  };
+
+  for (const platform of platforms.values()) {
+    registerCommands(platform, monitors);
+  }
+
+  // Start monitors
+  try {
+    await monitors.watchMonitor.start();
+  } catch (error) {
+    console.error('Error starting watch monitor:', error);
+  }
+
+  try {
+    await monitors.strategyMonitor.start();
+  } catch (error) {
+    console.error('Error starting strategy monitor:', error);
+  }
+
+  // Start all platforms
+  for (const platform of platforms.values()) {
+    await platform.start();
+  }
+
+  // Graceful shutdown
   const shutdown = async () => {
     try {
-      watchMonitor.stop();
-      await strategyMonitor.stop();
+      monitors.watchMonitor.stop();
+      await monitors.strategyMonitor.stop();
+
+      for (const platform of platforms.values()) {
+        await platform.stop();
+      }
     } catch (error) {
       console.error('Error during shutdown:', error);
     } finally {
@@ -244,15 +212,4 @@ export async function startServer() {
 
   process.on('SIGINT', shutdown);
   process.on('SIGTERM', shutdown);
-
-  if (process.env.XMTP_OWNER_ADDRESSES) {
-    console.log(`Only admin wallet addresses (${process.env.XMTP_OWNER_ADDRESSES}) can message the bot.`);
-    agent.use(isFromOwner(process.env.XMTP_OWNER_ADDRESSES));
-  } else {
-    console.warn(
-      'Warning: XMTP_OWNER_ADDRESSES is not set. Everyone can message the bot, which may not be intentional.'
-    );
-  }
-  agent.use(router.middleware());
-  await agent.start();
 }

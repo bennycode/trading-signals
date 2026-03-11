@@ -8,7 +8,7 @@ export interface WatchRemoveResult {
 }
 
 // Request Example: "5"
-export const watchRemove = async (request: string, ownerAddress: string): Promise<WatchRemoveResult> => {
+export const watchRemove = async (request: string, userId: string): Promise<WatchRemoveResult> => {
   try {
     const watchId = assertId(request);
     const watch = Watch.findByPk(watchId);
@@ -18,7 +18,7 @@ export const watchRemove = async (request: string, ownerAddress: string): Promis
     }
 
     // Security: verify the watch's account belongs to the user
-    getAccountOrError(ownerAddress, watch.accountId);
+    getAccountOrError(userId, watch.accountId);
 
     Watch.destroy(watchId);
 

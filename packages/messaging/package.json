@@ -4,17 +4,19 @@
   },
   "dependencies": {
     "@typedtrader/exchange": "0.2.5",
-    "trading-strategies": "0.3.5",
     "@types/moment-duration-format": "2.2.7",
     "@types/node": "^25.3.0",
     "@xmtp/agent-sdk": "^2.2.0",
     "better-sqlite3": "^12.6.2",
     "better-sqlite3-multiple-ciphers": "^12.6.2",
     "drizzle-orm": "^0.45.1",
+    "marked": "^9.1.6",
     "moment": "^2.30.1",
     "moment-duration-format": "^2.3.2",
     "moment-timezone": "^0.6.0",
-    "ms": "4.0.0-nightly.202508271359"
+    "ms": "4.0.0-nightly.202508271359",
+    "telegraf": "^4.16.3",
+    "trading-strategies": "0.3.5"
   },
   "description": "Trading bot via messaging service.",
   "devDependencies": {

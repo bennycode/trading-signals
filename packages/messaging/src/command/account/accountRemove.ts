@@ -3,10 +3,10 @@ import {assertId} from '../../validation/assertId.js';
 import {getAccountOrError} from '../../validation/getAccountOrError.js';
 
 // Request Example: "1"
-export const accountRemove = async (request: string, ownerAddress: string) => {
+export const accountRemove = async (request: string, userId: string) => {
   try {
     const accountId = assertId(request);
-    const account = getAccountOrError(ownerAddress, accountId);
+    const account = getAccountOrError(userId, accountId);
     Account.destroy(accountId);
 
     return `Account "${account.name}" (ID: ${accountId}) removed successfully`;

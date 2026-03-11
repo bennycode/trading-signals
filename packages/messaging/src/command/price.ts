@@ -4,7 +4,7 @@ import {getAccountOrError} from '../validation/getAccountOrError.js';
 
 // Request Example: "1 SHOP,USD"
 // Format: "<accountId> <pair>"
-export const price = async (request: string, ownerAddress: string) => {
+export const price = async (request: string, userId: string) => {
   const parts = request.trim().split(' ');
 
   if (parts.length !== 2) {
@@ -15,7 +15,7 @@ export const price = async (request: string, ownerAddress: string) => {
 
   try {
     const accountId = assertId(accountIdStr);
-    const account = getAccountOrError(ownerAddress, accountId);
+    const account = getAccountOrError(userId, accountId);
 
     const pair = TradingPair.fromString(pairPart, ',');
     const client = getExchangeClient({

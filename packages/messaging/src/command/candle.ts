@@ -5,7 +5,7 @@ import {getAccountOrError} from '../validation/getAccountOrError.js';
 
 // Request Example: "1 SHOP,USD 1h"
 // Format: "<accountId> <pair> <interval>"
-export const candle = async (request: string, ownerAddress: string) => {
+export const candle = async (request: string, userId: string) => {
   const parts = request.trim().split(' ');
 
   if (parts.length !== 3) {
@@ -16,7 +16,7 @@ export const candle = async (request: string, ownerAddress: string) => {
 
   try {
     const accountId = assertId(accountIdStr);
-    const account = getAccountOrError(ownerAddress, accountId);
+    const account = getAccountOrError(userId, accountId);
 
     const pair = TradingPair.fromString(pairPart, ',');
     const intervalInMillis = assertInterval(interval);

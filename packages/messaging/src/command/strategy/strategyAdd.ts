@@ -14,7 +14,7 @@ export interface StrategyAddResult {
 // Request Example: "/strategyAdd @typedtrader/strategy-buy-and-hold 1 SHOP,USD 1m"
 // Request Example: "/strategyAdd @typedtrader/strategy-buy-once 1 SHOP,USD 1m {"buyAt":"150"}"
 // Format: "<strategyName> <accountId> <pair> <interval> [configJSON]"
-export const strategyAdd = async (request: string, ownerAddress: string): Promise<StrategyAddResult> => {
+export const strategyAdd = async (request: string, userId: string): Promise<StrategyAddResult> => {
   const parts = request.trim().split(' ');
 
   if (parts.length < 4) {
@@ -44,7 +44,7 @@ export const strategyAdd = async (request: string, ownerAddress: string): Promis
   try {
     const accountId = assertId(accountIdStr);
     const intervalMs = assertInterval(interval);
-    const account = getAccountOrError(ownerAddress, accountId);
+    const account = getAccountOrError(userId, accountId);
 
     const client = getExchangeClient({
       exchangeId: account.exchange,

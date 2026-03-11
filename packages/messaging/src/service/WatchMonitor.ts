@@ -1,5 +1,5 @@
 import {TradingPair, Exchange, ExchangeCandle, getExchangeClient} from '@typedtrader/exchange';
-import {validHex, type Agent} from '@xmtp/agent-sdk';
+import type {MessagingPlatform} from '../platform/MessagingPlatform.js';
 import {Account} from '../database/models/Account.js';
 import {Watch, WatchAttributes} from '../database/models/Watch.js';
 
@@ -10,11 +10,11 @@ interface ActiveSubscription {
 }
 
 export class WatchMonitor {
-  #agent: Agent;
+  #platforms: Map<string, MessagingPlatform>;
   #subscriptions: Map<number, ActiveSubscription> = new Map();
 
-  constructor(agent: Agent) {
-    this.#agent = agent;
+  constructor(platforms: Map<string, MessagingPlatform>) {
+    this.#platforms = platforms;
   }
 
   /**
@@ -132,10 +132,16 @@ export class WatchMonitor {
 
     const message = `Price Alert Triggered!\n\nPair: ${watch.pair}\nBaseline: ${watch.baselinePrice} ${counter}\nAlert price: ${watch.alertPrice} ${counter}\nCurrent: ${currentPrice} ${counter}\nDiff: ${diffDisplay}\nThreshold: ${thresholdDisplay}\n\nThis watch has been automatically removed.`;
 
-    // Send proactive DM using XMTP agent SDK
-    const dm = await this.#agent.createDmWithAddress(validHex(account.ownerAddress));
-    await dm.sendText(message);
+    const platformPrefix = account.userId.split(':')[0];
+    const platform = this.#platforms.get(platformPrefix);
 
-    console.log(`Alert sent to ${account.ownerAddress} for watch ${watch.id}`);
+    if (!platform) {
+      console.warn(`No platform found for prefix "${platformPrefix}" when sending alert for watch "${watch.id}".`);
+      return;
+    }
+
+    await platform.sendMessage(account.userId, message);
+
+    console.log(`Alert sent to ${account.userId} for watch ${watch.id}`);
   }
 }
