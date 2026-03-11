@@ -1,4 +1,5 @@
 import {Telegraf} from 'telegraf';
+import {TelegramBot} from './TelegramBot.js';
 import type {CommandHandler, MessageContext, MessagingPlatform, PlatformInfo} from './MessagingPlatform.js';
 
 const PLATFORM_PREFIX = 'telegram:';
@@ -42,7 +43,8 @@ export class TelegramPlatform implements MessagingPlatform {
         platformId: 'telegram',
         content,
         reply: async (replyText: string) => {
-          await ctx.reply(replyText, {parse_mode: 'Markdown'});
+          const html = TelegramBot.mdToHtml(replyText);
+          await ctx.reply(html, {parse_mode: 'HTML'});
         },
       };
 
@@ -74,7 +76,8 @@ export class TelegramPlatform implements MessagingPlatform {
 
   async sendMessage(userId: string, text: string): Promise<void> {
     const chatId = userId.replace(PLATFORM_PREFIX, '');
-    await this.#bot.telegram.sendMessage(chatId, text, {parse_mode: 'Markdown'});
+    const html = TelegramBot.mdToHtml(text);
+    return void this.#bot.telegram.sendMessage(chatId, html, {parse_mode: 'HTML'});
   }
 
   get commandList(): string[] {
