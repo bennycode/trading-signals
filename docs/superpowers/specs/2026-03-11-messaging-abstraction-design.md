@@ -24,15 +24,11 @@ interface MessagingPlatform {
   registerCommand(name: string, handler: CommandHandler): void;
 }
 
-interface ReplyOptions {
-  markdown?: boolean;
-}
-
 interface MessageContext {
   senderId: string; // Platform-prefixed, e.g. "xmtp:0x..." or "telegram:123"
   platformId: string; // "xmtp" or "telegram"
   content: string; // Message text after command name
-  reply(text: string, options?: ReplyOptions): Promise<void>;
+  reply(text: string): Promise<void>; // Always sends as Markdown
 }
 
 type CommandHandler = (ctx: MessageContext) => Promise<void>;
@@ -42,11 +38,11 @@ type CommandHandler = (ctx: MessageContext) => Promise<void>;
 
 Most commands are shared across platforms. Three commands have platform-specific behavior:
 
-| Command | XMTP | Telegram |
-| --- | --- | --- |
-| `/myaddress` | Sender's wallet address | Sender's Telegram user ID |
-| `/youraddress` | Bot's wallet address | Bot's username |
-| `/version` | libXMTP version | Telegraf version |
+| Command        | XMTP                    | Telegram                  |
+| -------------- | ----------------------- | ------------------------- |
+| `/myaddress`   | Sender's wallet address | Sender's Telegram user ID |
+| `/youraddress` | Bot's wallet address    | Bot's username            |
+| `/version`     | libXMTP version         | Telegraf version          |
 
 These commands are registered on all platforms but their handlers receive `ctx.platformId` to return platform-appropriate responses.
 
@@ -59,8 +55,7 @@ Wraps `@xmtp/agent-sdk` Agent and CommandRouter.
 - `senderId` = `"xmtp:" + ctx.getSenderAddress()`
 - `platformId` = `"xmtp"`
 - `content` = `ctx.message.content` after command name
-- `reply(text)` = `ctx.conversation.sendText(text)`
-- `reply(text, {markdown: true})` = `ctx.conversation.sendMarkdown(text)`
+- `reply(text)` = `ctx.conversation.sendMarkdown(text)`
 - `sendMessage(userId, text)` = strip `"xmtp:"` prefix, call `agent.createDmWithAddress(validHex(address))` then send
 - Configured via existing env vars: `XMTP_ENV`, `XMTP_OWNER_ADDRESSES`
 - Auth middleware: checks sender wallet against `XMTP_OWNER_ADDRESSES`, applied internally during `start()`
@@ -72,8 +67,7 @@ Wraps Telegraf `Bot`.
 - `senderId` = `"telegram:" + ctx.from.id`
 - `platformId` = `"telegram"`
 - `content` = message text after command name
-- `reply(text)` = `ctx.reply(text)`
-- `reply(text, {markdown: true})` = `ctx.reply(text, {parse_mode: 'Markdown'})`
+- `reply(text)` = `ctx.reply(text, {parse_mode: 'Markdown'})`
 - `sendMessage(userId, text)` = strip `"telegram:"` prefix, call `bot.telegram.sendMessage(numericId, text)`
 - Configured via `TELEGRAM_BOT_TOKEN`, `TELEGRAM_OWNER_IDS`
 - Auth middleware: checks sender user ID against `TELEGRAM_OWNER_IDS`, applied internally during `start()`
@@ -90,7 +84,7 @@ Wraps Telegraf `Bot`.
 ```
 src/
   platform/
-    MessagingPlatform.ts      # Interface + MessageContext + ReplyOptions types
+    MessagingPlatform.ts      # Interface + MessageContext types
     XmtpPlatform.ts           # XMTP implementation
     TelegramPlatform.ts       # Telegram implementation
     index.ts                  # Exports
