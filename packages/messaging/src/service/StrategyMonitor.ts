@@ -2,7 +2,7 @@ import {TradingPair, TradingSession, getExchangeClient} from '@typedtrader/excha
 import type {ExchangeFill} from '@typedtrader/exchange';
 import {createStrategy} from 'trading-strategies';
 import type {Strategy as TradingStrategy} from 'trading-strategies';
-import {validHex, type Agent} from '@xmtp/agent-sdk';
+import type {MessagingPlatform} from '../platform/MessagingPlatform.js';
 import {Account} from '../database/models/Account.js';
 import {Strategy, type StrategyAttributes} from '../database/models/Strategy.js';
 
@@ -13,11 +13,11 @@ interface ActiveSession {
 }
 
 export class StrategyMonitor {
-  #agent: Agent;
+  #platforms: Map<string, MessagingPlatform>;
   #sessions: Map<number, ActiveSession> = new Map();
 
-  constructor(agent: Agent) {
-    this.#agent = agent;
+  constructor(platforms: Map<string, MessagingPlatform>) {
+    this.#platforms = platforms;
   }
 
   /**
@@ -140,9 +140,18 @@ export class StrategyMonitor {
 
     const message = `Order Filled!\n\nStrategy: ${row.strategyName}\nPair: ${row.pair}\nSide: ${fill.side}\nPrice: ${fill.price}\nSize: ${fill.size}\nFee: ${fill.fee} ${fill.feeAsset}`;
 
-    const dm = await this.#agent.createDmWithAddress(validHex(account.ownerAddress));
-    await dm.sendText(message);
+    const platformPrefix = account.userId.split(':')[0];
+    const platform = this.#platforms.get(platformPrefix);
 
-    console.log(`Fill notification sent to ${account.ownerAddress} for strategy ${row.id}`);
+    if (!platform) {
+      console.warn(
+        `No platform found for prefix "${platformPrefix}" when sending fill notification for strategy "${row.id}".`
+      );
+      return;
+    }
+
+    await platform.sendMessage(account.userId, message);
+
+    console.log(`Fill notification sent to ${account.userId} for strategy ${row.id}`);
   }
 }
