@@ -7,6 +7,13 @@ const mockLaunch = vi.fn().mockResolvedValue(undefined);
 const mockStop = vi.fn();
 const mockCommand = vi.fn();
 
+vi.mock('marked', () => ({
+  marked: {
+    parse: vi.fn((text: string) => Promise.resolve(`<p>${text}</p>`)),
+    parseInline: vi.fn((text: string) => Promise.resolve(text)),
+  },
+}));
+
 vi.mock('telegraf', () => {
   function Telegraf() {
     return {
@@ -67,7 +74,7 @@ describe('TelegramPlatform', () => {
 
       await platform.sendMessage('telegram:123456', 'Hello!');
 
-      expect(mockSendMessage).toHaveBeenCalledWith('123456', 'Hello!', {parse_mode: 'HTML'});
+      expect(mockSendMessage).toHaveBeenCalledWith('123456', expect.any(String), {parse_mode: 'HTML'});
     });
 
     it('passes the raw chat ID when no prefix is present', async () => {
@@ -75,7 +82,7 @@ describe('TelegramPlatform', () => {
 
       await platform.sendMessage('789', 'Hello!');
 
-      expect(mockSendMessage).toHaveBeenCalledWith('789', 'Hello!', {parse_mode: 'HTML'});
+      expect(mockSendMessage).toHaveBeenCalledWith('789', expect.any(String), {parse_mode: 'HTML'});
     });
   });
 

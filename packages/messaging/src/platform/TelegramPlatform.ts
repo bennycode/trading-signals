@@ -1,22 +1,20 @@
+import {marked} from 'marked';
 import {Telegraf} from 'telegraf';
 import type {CommandHandler, MessageContext, MessagingPlatform, PlatformInfo} from './MessagingPlatform.js';
 
 const PLATFORM_PREFIX = 'telegram:';
 
-function mdToHtml(text: string): string {
-  return (
-    text
-      // Code blocks (triple backticks)
-      .replace(/```([\s\S]*?)```/g, '<pre>$1</pre>')
-      // Inline code (single backticks)
-      .replace(/`([^`]+)`/g, '<code>$1</code>')
-      // Bold (**text** or __text__)
-      .replace(/\*\*(.+?)\*\*/g, '<b>$1</b>')
-      .replace(/__(.+?)__/g, '<b>$1</b>')
-      // Italic (*text* or _text_)
-      .replace(/\*(.+?)\*/g, '<i>$1</i>')
-      .replace(/_(.+?)_/g, '<i>$1</i>')
-  );
+async function mdToHtml(text: string): Promise<string> {
+  const html = await marked.parse(text);
+
+  if (html.startsWith('<pre>')) {
+    // Returns code fences in proper format
+    return html;
+  }
+
+  // Returns paragraphs as inline-parsed tags to prevent the following error:
+  // Bad Request: can't parse entities: Unsupported start tag "p" at byte offset 0
+  return marked.parseInline(text);
 }
 
 export class TelegramPlatform implements MessagingPlatform {
@@ -58,7 +56,7 @@ export class TelegramPlatform implements MessagingPlatform {
         platformId: 'telegram',
         content,
         reply: async (replyText: string) => {
-          const html = mdToHtml(replyText);
+          const html = await mdToHtml(replyText);
           await ctx.reply(html, {parse_mode: 'HTML'});
         },
       };
@@ -91,7 +89,7 @@ export class TelegramPlatform implements MessagingPlatform {
 
   async sendMessage(userId: string, text: string): Promise<void> {
     const chatId = userId.replace(PLATFORM_PREFIX, '');
-    const html = mdToHtml(text);
+    const html = await mdToHtml(text);
     await this.#bot.telegram.sendMessage(chatId, html, {parse_mode: 'HTML'});
   }
 
