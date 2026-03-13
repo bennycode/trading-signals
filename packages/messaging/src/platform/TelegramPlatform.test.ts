@@ -86,6 +86,29 @@ describe('TelegramPlatform', () => {
     });
   });
 
+  describe('start', () => {
+    it('populates platformInfo before launching the bot', async () => {
+      const platform = new TelegramPlatform('bot-token');
+
+      const callOrder: string[] = [];
+      mockGetMe.mockImplementation(async () => {
+        callOrder.push('getMe');
+        return {username: 'testbot'};
+      });
+      mockLaunch.mockImplementation(async () => {
+        callOrder.push('launch');
+      });
+
+      await platform.start();
+
+      expect(callOrder).toEqual(['getMe', 'launch']);
+      expect(platform.platformInfo).toEqual({
+        botAddress: '@testbot',
+        sdkVersion: 'Telegraf',
+      });
+    });
+  });
+
   describe('auth middleware', () => {
     it('blocks unauthorized senders when ownerIds is set', async () => {
       const platform = new TelegramPlatform('bot-token', '111,222');

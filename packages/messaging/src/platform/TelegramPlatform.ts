@@ -72,13 +72,13 @@ export class TelegramPlatform implements MessagingPlatform {
       console.warn('Warning: TELEGRAM_OWNER_IDS is not set. Everyone can message the bot via Telegram.');
     }
 
-    await this.#bot.launch();
-
     const botInfo = await this.#bot.telegram.getMe();
     this.#platformInfo = {
       botAddress: `@${botInfo.username}`,
       sdkVersion: 'Telegraf',
     };
+
+    await this.#bot.launch();
 
     console.log(`Telegram bot started as ${this.#platformInfo.botAddress}.`);
   }
