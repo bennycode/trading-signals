@@ -15,11 +15,13 @@
     "moment-duration-format": "^2.3.2",
     "moment-timezone": "^0.6.0",
     "ms": "4.0.0-nightly.202508271359",
+    "node-cron": "^4.2.1",
     "telegraf": "^4.16.3",
     "trading-strategies": "0.3.5"
   },
   "description": "Trading bot via messaging service.",
   "devDependencies": {
+    "@types/node-cron": "^3.0.11",
     "drizzle-kit": "^0.31.9",
     "tsx": "^4.21.0"
   },
