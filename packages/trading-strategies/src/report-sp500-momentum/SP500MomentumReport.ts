@@ -47,7 +47,7 @@ export class SP500MomentumReport extends Report {
     const twelveMonthsAgo = new Date(now);
     twelveMonthsAgo.setFullYear(twelveMonthsAgo.getFullYear() - 1);
 
-    const recentDate = findLastTradingDay(new Date(now.getTime() - 86_400_000));
+    const recentDate = findLastTradingDay(new Date(now.getTime() - 2 * 86_400_000));
     const pastDate = findLastTradingDay(twelveMonthsAgo);
 
     const toDate = getDateString(recentDate);
