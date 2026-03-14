@@ -1,4 +1,5 @@
 // packages/messaging/src/command/report/reportAdd.ts
+import nodeCron from 'node-cron';
 import {getReportNames, createReport} from 'trading-strategies';
 import {Report} from '../../database/models/Report.js';
 import type {ReportAttributes} from '../../database/models/Report.js';
@@ -49,6 +50,10 @@ export const reportAdd = async (request: string, userId: string): Promise<Report
     config = JSON.parse(configJson);
   } catch {
     return {message: 'Invalid config JSON. Provide valid JSON or omit for default config.'};
+  }
+
+  if (cron && !nodeCron.validate(cron)) {
+    return {message: 'Invalid cron expression.'};
   }
 
   try {

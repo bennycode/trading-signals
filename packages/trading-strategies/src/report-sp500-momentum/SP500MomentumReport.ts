@@ -26,10 +26,11 @@ function getDateString(date: Date): string {
 }
 
 function findLastTradingDay(date: Date): Date {
-  const day = date.getDay();
-  if (day === 0) date.setDate(date.getDate() - 2);
-  if (day === 6) date.setDate(date.getDate() - 1);
-  return date;
+  const d = new Date(date);
+  const day = d.getDay();
+  if (day === 0) d.setDate(d.getDate() - 2);
+  else if (day === 6) d.setDate(d.getDate() - 1);
+  return d;
 }
 
 export class SP500MomentumReport extends Report {
