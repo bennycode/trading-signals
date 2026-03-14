@@ -64,7 +64,7 @@ describe('TelegramPlatform', () => {
       platform.registerCommand('help', handler);
 
       expect(platform.commandList).toContain('/help');
-      expect(mockCommand).toHaveBeenCalledWith('help', expect.any(Function));
+      expect(mockCommand).toHaveBeenCalledWith(['help'], expect.any(Function));
     });
   });
 

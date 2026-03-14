@@ -14,8 +14,10 @@ export class XmtpPlatform implements MessagingPlatform {
     this.#ownerAddresses = ownerAddresses;
   }
 
-  registerCommand(name: string, handler: CommandHandler): void {
-    this.#router.command(`/${name}`, async ctx => {
+  registerCommand(name: string | string[], handler: CommandHandler): void {
+    const names = Array.isArray(name) ? name : [name];
+    for (const n of names) {
+      this.#router.command(`/${n}`, async ctx => {
       const senderAddress = await ctx.getSenderAddress();
 
       if (!senderAddress) {
@@ -34,6 +36,7 @@ export class XmtpPlatform implements MessagingPlatform {
 
       await handler(messageCtx);
     });
+    }
   }
 
   async start(): Promise<void> {

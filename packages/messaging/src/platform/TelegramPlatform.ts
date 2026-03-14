@@ -28,10 +28,13 @@ export class TelegramPlatform implements MessagingPlatform {
     this.#ownerIds = ownerIds ? ownerIds.split(',').map(id => id.trim()) : [];
   }
 
-  registerCommand(name: string, handler: CommandHandler): void {
-    this.#commands.set(name, handler);
+  registerCommand(name: string | string[], handler: CommandHandler): void {
+    const names = Array.isArray(name) ? name : [name];
+    for (const n of names) {
+      this.#commands.set(n, handler);
+    }
 
-    this.#bot.command(name, async ctx => {
+    this.#bot.command(names, async ctx => {
       const senderId = ctx.from?.id?.toString();
 
       if (!senderId) {
