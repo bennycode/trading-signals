@@ -5,6 +5,10 @@ import {
   accountTime,
   candle,
   price,
+  reportAdd,
+  reportList,
+  reportRemove,
+  reportRun,
   strategyAdd,
   strategyList,
   strategyRemove,
@@ -17,11 +21,12 @@ import {
 import {initializeDatabase} from './database/initializeDatabase.js';
 import type {MessagingPlatform} from './platform/index.js';
 import {XmtpPlatform, TelegramPlatform} from './platform/index.js';
-import {WatchMonitor, StrategyMonitor} from './service/index.js';
+import {WatchMonitor, StrategyMonitor, ReportScheduler} from './service/index.js';
 
 interface Monitors {
   watchMonitor: WatchMonitor;
   strategyMonitor: StrategyMonitor;
+  reportScheduler: ReportScheduler;
 }
 
 function registerCommands(platform: MessagingPlatform, monitors: Monitors): void {
@@ -135,6 +140,38 @@ function registerCommands(platform: MessagingPlatform, monitors: Monitors): void
     }
   });
 
+  platform.registerCommand('reportAdd', async ctx => {
+    const result = await reportAdd(ctx.content, ctx.senderId);
+    await ctx.reply(result.message);
+
+    if (result.report?.cron) {
+      try {
+        monitors.reportScheduler.scheduleReport(result.report);
+      } catch (error) {
+        console.error(`Error scheduling report: ${error}`);
+      }
+    }
+  });
+
+  platform.registerCommand('reportList', async ctx => {
+    await ctx.reply(await reportList(ctx.senderId));
+  });
+
+  platform.registerCommand('reportRemove', async ctx => {
+    const result = await reportRemove(ctx.content, ctx.senderId);
+    await ctx.reply(result.message);
+
+    if (result.reportId) {
+      monitors.reportScheduler.unscheduleReport(result.reportId);
+    }
+  });
+
+  platform.registerCommand('reportRun', async ctx => {
+    await ctx.reply('Running report...');
+    const result = await reportRun(ctx.content, ctx.senderId);
+    await ctx.reply(result);
+  });
+
   platform.registerCommand('myaddress', async ctx => {
     await ctx.reply(`Your address is: ${ctx.senderId.split(':').slice(1).join(':')}`);
   });
@@ -170,6 +207,7 @@ export async function startServer() {
   const monitors: Monitors = {
     watchMonitor: new WatchMonitor(platforms),
     strategyMonitor: new StrategyMonitor(platforms),
+    reportScheduler: new ReportScheduler(platforms),
   };
 
   for (const platform of platforms.values()) {
@@ -189,6 +227,12 @@ export async function startServer() {
     console.error('Error starting strategy monitor:', error);
   }
 
+  try {
+    await monitors.reportScheduler.start();
+  } catch (error) {
+    console.error('Error starting report scheduler:', error);
+  }
+
   // Start all platforms
   for (const platform of platforms.values()) {
     await platform.start();
@@ -199,6 +243,7 @@ export async function startServer() {
     try {
       monitors.watchMonitor.stop();
       await monitors.strategyMonitor.stop();
+      monitors.reportScheduler.stop();
 
       for (const platform of platforms.values()) {
         await platform.stop();
