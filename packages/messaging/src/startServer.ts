@@ -8,7 +8,6 @@ import {
   reportAdd,
   reportList,
   reportRemove,
-  reportRun,
   strategyAdd,
   strategyList,
   strategyRemove,
@@ -30,7 +29,7 @@ interface Monitors {
 }
 
 function registerCommands(platform: MessagingPlatform, monitors: Monitors): void {
-  platform.registerCommand('help', async ctx => {
+  platform.registerCommand(['help', '?'], async ctx => {
     const commandCodeBlocks = platform.commandList.map(cmd => `\`${cmd}\``);
     const answer = `I am supporting the following commands: ${commandCodeBlocks.join(', ')}`;
     await ctx.reply(answer);
@@ -164,12 +163,6 @@ function registerCommands(platform: MessagingPlatform, monitors: Monitors): void
     if (result.reportId) {
       monitors.reportScheduler.unscheduleReport(result.reportId);
     }
-  });
-
-  platform.registerCommand('reportRun', async ctx => {
-    await ctx.reply('Running report...');
-    const result = await reportRun(ctx.content, ctx.senderId);
-    await ctx.reply(result);
   });
 
   platform.registerCommand('myaddress', async ctx => {

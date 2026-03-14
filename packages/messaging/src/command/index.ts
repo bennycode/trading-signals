@@ -15,4 +15,3 @@ export {watchRemove} from './watch/watchRemove.js';
 export {reportAdd} from './report/reportAdd.js';
 export {reportList} from './report/reportList.js';
 export {reportRemove} from './report/reportRemove.js';
-export {reportRun} from './report/reportRun.js';

@@ -10,6 +10,8 @@ export interface ReportAddResult {
 }
 
 // Format: "<reportName> [configJSON] [--every <interval>]"
+// Without --every: runs the report immediately and returns the output
+// With --every: saves to DB and schedules recurring execution
 // Example: "/reportAdd @typedtrader/report-sp500-momentum {"apiKey":"abc123"}"
 // Example: "/reportAdd @typedtrader/report-sp500-momentum {"apiKey":"abc123"} --every 1d"
 export const reportAdd = async (request: string, userId: string): Promise<ReportAddResult> => {
@@ -58,9 +60,15 @@ export const reportAdd = async (request: string, userId: string): Promise<Report
   }
 
   try {
-    // Validate report name and config by attempting to create it
-    createReport(reportName, config);
+    const report = createReport(reportName, config);
 
+    // One-shot: run immediately and return results
+    if (!intervalMs) {
+      const result = await report.run();
+      return {message: result};
+    }
+
+    // Scheduled: save to DB
     const row = Report.create({
       userId,
       reportName,
@@ -68,18 +76,14 @@ export const reportAdd = async (request: string, userId: string): Promise<Report
       intervalMs,
     });
 
-    let message = `Report created (ID: ${row.id})\nReport: ${reportName}`;
-    if (intervalMs) {
-      message += `\nSchedule: Every ${ms(intervalMs, {long: true})}`;
-    } else {
-      message += `\nSchedule: one-shot (use /reportRun ${row.id} to execute)`;
-    }
-
-    return {message, report: row};
+    return {
+      message: `Report scheduled (ID: ${row.id})\nReport: ${reportName}\nInterval: Every ${ms(intervalMs, {long: true})}`,
+      report: row,
+    };
   } catch (error) {
     if (error instanceof Error) {
-      return {message: `Error creating report: ${error.message}`};
+      return {message: `Error: ${error.message}`};
     }
-    return {message: 'Error creating report'};
+    return {message: 'Error running report'};
   }
 };
