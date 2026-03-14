@@ -1,4 +1,4 @@
-// packages/messaging/src/command/report/reportList.ts
+import {ms} from 'ms';
 import {Report} from '../../database/models/Report.js';
 
 export const reportList = async (userId: string): Promise<string> => {
@@ -11,7 +11,7 @@ export const reportList = async (userId: string): Promise<string> => {
 
     const list = reports
       .map(r => {
-        const schedule = r.cron ? `cron: ${r.cron}` : 'one-shot';
+        const schedule = r.intervalMs ? `every ${ms(r.intervalMs, {long: true})}` : 'one-shot';
         return `ID: ${r.id} | ${r.reportName} | ${schedule}`;
       })
       .join('\n');

@@ -55,7 +55,7 @@ export const reports = sqliteTable('reports', {
   userId: text('userId').notNull(),
   reportName: text('reportName').notNull(),
   config: text('config').notNull(),
-  cron: text('cron'),
+  intervalMs: integer('intervalMs'),
   createdAt: text('createdAt').default(sql`(CURRENT_TIMESTAMP)`),
 });
 

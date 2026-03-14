@@ -3,6 +3,6 @@ CREATE TABLE `reports` (
 	`userId` text NOT NULL,
 	`reportName` text NOT NULL,
 	`config` text NOT NULL,
-	`cron` text,
+	`intervalMs` integer,
 	`createdAt` text DEFAULT (CURRENT_TIMESTAMP)
 );

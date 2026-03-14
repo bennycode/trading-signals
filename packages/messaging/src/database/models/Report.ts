@@ -24,11 +24,11 @@ export class Report {
       .all();
   }
 
-  static findAllWithCron(): ReportRow[] {
+  static findAllWithInterval(): ReportRow[] {
     return db
       .select()
       .from(reports)
-      .where(isNotNull(reports.cron))
+      .where(isNotNull(reports.intervalMs))
       .orderBy(asc(reports.id))
       .all();
   }

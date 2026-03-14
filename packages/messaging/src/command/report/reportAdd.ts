@@ -1,27 +1,32 @@
-// packages/messaging/src/command/report/reportAdd.ts
-import nodeCron from 'node-cron';
+import {ms} from 'ms';
 import {getReportNames, createReport} from 'trading-strategies';
 import {Report} from '../../database/models/Report.js';
 import type {ReportAttributes} from '../../database/models/Report.js';
+import {assertInterval} from '../../validation/assertInterval.js';
 
 export interface ReportAddResult {
   message: string;
   report?: ReportAttributes;
 }
 
-// Format: "<reportName> [configJSON] [--cron <expression>]"
+// Format: "<reportName> [configJSON] [--every <interval>]"
 // Example: "/reportAdd @typedtrader/report-sp500-momentum {"apiKey":"abc123"}"
-// Example: "/reportAdd @typedtrader/report-sp500-momentum {"apiKey":"abc123"} --cron 0 9 * * 1"
+// Example: "/reportAdd @typedtrader/report-sp500-momentum {"apiKey":"abc123"} --every 1d"
 export const reportAdd = async (request: string, userId: string): Promise<ReportAddResult> => {
-  const cronFlagIndex = request.indexOf(' --cron ');
+  const everyFlagIndex = request.indexOf(' --every ');
   let mainPart: string;
-  let cron: string | null = null;
+  let intervalMs: number | null = null;
 
-  if (cronFlagIndex !== -1) {
-    mainPart = request.slice(0, cronFlagIndex).trim();
-    cron = request.slice(cronFlagIndex + ' --cron '.length).trim();
-    if (!cron) {
-      return {message: 'Missing cron expression after --cron flag.'};
+  if (everyFlagIndex !== -1) {
+    mainPart = request.slice(0, everyFlagIndex).trim();
+    const intervalStr = request.slice(everyFlagIndex + ' --every '.length).trim();
+    if (!intervalStr) {
+      return {message: 'Missing interval after --every flag. Examples: 1m, 1h, 1d, 1w'};
+    }
+    try {
+      intervalMs = assertInterval(intervalStr);
+    } catch {
+      return {message: 'Invalid interval. Examples: 1m, 1h, 1d, 1w'};
     }
   } else {
     mainPart = request.trim();
@@ -41,7 +46,7 @@ export const reportAdd = async (request: string, userId: string): Promise<Report
 
   if (!reportName) {
     return {
-      message: `Invalid format. Usage: /reportAdd <reportName> [configJSON] [--cron <expression>]\nAvailable reports: ${getReportNames().join(', ')}`,
+      message: `Invalid format. Usage: /reportAdd <reportName> [configJSON] [--every <interval>]\nAvailable reports: ${getReportNames().join(', ')}`,
     };
   }
 
@@ -52,10 +57,6 @@ export const reportAdd = async (request: string, userId: string): Promise<Report
     return {message: 'Invalid config JSON. Provide valid JSON or omit for default config.'};
   }
 
-  if (cron && !nodeCron.validate(cron)) {
-    return {message: 'Invalid cron expression.'};
-  }
-
   try {
     // Validate report name and config by attempting to create it
     createReport(reportName, config);
@@ -64,12 +65,12 @@ export const reportAdd = async (request: string, userId: string): Promise<Report
       userId,
       reportName,
       config: configJson,
-      cron,
+      intervalMs,
     });
 
     let message = `Report created (ID: ${row.id})\nReport: ${reportName}`;
-    if (cron) {
-      message += `\nSchedule: ${cron}`;
+    if (intervalMs) {
+      message += `\nSchedule: Every ${ms(intervalMs, {long: true})}`;
     } else {
       message += `\nSchedule: one-shot (use /reportRun ${row.id} to execute)`;
     }

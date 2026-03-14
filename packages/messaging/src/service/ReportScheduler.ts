@@ -1,12 +1,11 @@
-// packages/messaging/src/service/ReportScheduler.ts
-import cron from 'node-cron';
+import {ms} from 'ms';
 import {createReport} from 'trading-strategies';
 import type {MessagingPlatform} from '../platform/MessagingPlatform.js';
 import {Report, type ReportAttributes} from '../database/models/Report.js';
 
 interface ScheduledReport {
   reportId: number;
-  task: cron.ScheduledTask;
+  timer: ReturnType<typeof setInterval>;
 }
 
 export class ReportScheduler {
@@ -18,7 +17,7 @@ export class ReportScheduler {
   }
 
   async start(): Promise<void> {
-    const rows = Report.findAllWithCron();
+    const rows = Report.findAllWithInterval();
     for (const row of rows) {
       try {
         this.scheduleReport(row);
@@ -30,13 +29,13 @@ export class ReportScheduler {
 
   stop(): void {
     for (const scheduled of this.#scheduled.values()) {
-      scheduled.task.stop();
+      clearInterval(scheduled.timer);
     }
     this.#scheduled.clear();
   }
 
   scheduleReport(row: ReportAttributes): void {
-    if (!row.cron) {
+    if (!row.intervalMs) {
       return;
     }
 
@@ -44,22 +43,22 @@ export class ReportScheduler {
       return;
     }
 
-    const task = cron.schedule(row.cron, async () => {
+    const timer = setInterval(async () => {
       try {
         await this.#runAndNotify(row);
       } catch (error) {
         console.error(`Scheduled report ${row.id} (${row.reportName}) failed:`, error);
       }
-    });
+    }, row.intervalMs);
 
-    this.#scheduled.set(row.id, {reportId: row.id, task});
-    console.log(`Scheduled report "${row.id}" (${row.reportName}) with cron: ${row.cron}`);
+    this.#scheduled.set(row.id, {reportId: row.id, timer});
+    console.log(`Scheduled report "${row.id}" (${row.reportName}) every ${ms(row.intervalMs, {long: true})}`);
   }
 
   unscheduleReport(reportId: number): void {
     const scheduled = this.#scheduled.get(reportId);
     if (scheduled) {
-      scheduled.task.stop();
+      clearInterval(scheduled.timer);
       this.#scheduled.delete(reportId);
       console.log(`Unscheduled report "${reportId}".`);
     }

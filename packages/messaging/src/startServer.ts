@@ -144,7 +144,7 @@ function registerCommands(platform: MessagingPlatform, monitors: Monitors): void
     const result = await reportAdd(ctx.content, ctx.senderId);
     await ctx.reply(result.message);
 
-    if (result.report?.cron) {
+    if (result.report?.intervalMs) {
       try {
         monitors.reportScheduler.scheduleReport(result.report);
       } catch (error) {

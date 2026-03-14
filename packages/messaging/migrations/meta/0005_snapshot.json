@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "336d61c4-4de0-4fd5-b9e1-438755d5a4af",
+  "id": "e1ae3001-16d5-46bb-9f24-40ed2394d491",
   "prevId": "f09a1713-981d-49b2-89c7-8a48e33953bd",
   "tables": {
     "accounts": {
@@ -119,9 +119,9 @@
           "notNull": true,
           "autoincrement": false
         },
-        "cron": {
-          "name": "cron",
-          "type": "text",
+        "intervalMs": {
+          "name": "intervalMs",
+          "type": "integer",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
