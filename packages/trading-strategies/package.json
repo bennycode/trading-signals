@@ -3,6 +3,7 @@
     "url": "https://github.com/bennycode/trading-signals/issues"
   },
   "dependencies": {
+    "@massive.com/client-js": "^10.5.0",
     "@typedtrader/exchange": "0.2.5",
     "@types/big.js": "^6.2.2",
     "big.js": "^7.0.1",

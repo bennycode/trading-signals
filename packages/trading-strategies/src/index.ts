@@ -7,3 +7,9 @@ export {CoinFlipStrategy, CoinFlipSchema} from './strategy-coin-flip/CoinFlipStr
 export {MultiIndicatorConfluenceStrategy, MultiIndicatorConfluenceSchema, type MultiIndicatorConfluenceConfig} from './strategy-multi-indicator-confluence/MultiIndicatorConfluenceStrategy.js';
 export {ScalpStrategy, ScalpSchema, type ScalpConfig} from './strategy-scalp/ScalpStrategy.js';
 export {suggestScalpOffset} from './strategy-scalp/suggestScalpOffset.js';
+export * from './report/index.js';
+export {
+  SP500MomentumReport,
+  SP500MomentumSchema,
+  type SP500MomentumConfig,
+} from './report-sp500-momentum/SP500MomentumReport.js';

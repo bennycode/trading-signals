@@ -12,3 +12,6 @@ export {strategyRemove} from './strategy/strategyRemove.js';
 export {watchAdd} from './watch/watchAdd.js';
 export {watchList} from './watch/watchList.js';
 export {watchRemove} from './watch/watchRemove.js';
+export {reportAdd} from './report/reportAdd.js';
+export {reportList} from './report/reportList.js';
+export {reportRemove} from './report/reportRemove.js';
