@@ -19,7 +19,7 @@ import {
 } from './command/index.js';
 import {initializeDatabase} from './database/initializeDatabase.js';
 import type {MessagingPlatform} from './platform/index.js';
-import {XmtpPlatform, TelegramPlatform} from './platform/index.js';
+import {TelegramPlatform} from './platform/TelegramPlatform.js';
 import {WatchMonitor, StrategyMonitor, ReportScheduler} from './service/index.js';
 
 interface Monitors {
@@ -29,7 +29,7 @@ interface Monitors {
 }
 
 function registerCommands(platform: MessagingPlatform, monitors: Monitors): void {
-  platform.registerCommand(['help', '?'], async ctx => {
+  platform.registerCommand('help', async ctx => {
     const commandCodeBlocks = platform.commandList.map(cmd => `\`${cmd}\``);
     const answer = `I am supporting the following commands: ${commandCodeBlocks.join(', ')}`;
     await ctx.reply(answer);
@@ -184,6 +184,7 @@ export async function startServer() {
   const platforms = new Map<string, MessagingPlatform>();
 
   if (process.env.XMTP_ENV) {
+    const {XmtpPlatform} = await import('./platform/XmtpPlatform.js');
     const xmtpPlatform = new XmtpPlatform(process.env.XMTP_OWNER_ADDRESSES);
     platforms.set('xmtp', xmtpPlatform);
   }
@@ -203,8 +204,11 @@ export async function startServer() {
     reportScheduler: new ReportScheduler(platforms),
   };
 
-  for (const platform of platforms.values()) {
+  for (const [, platform] of platforms) {
     registerCommands(platform, monitors);
+    if ('setReportScheduler' in platform) {
+      (platform as {setReportScheduler: (s: ReportScheduler) => void}).setReportScheduler(monitors.reportScheduler);
+    }
   }
 
   // Start monitors

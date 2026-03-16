@@ -1,5 +1,6 @@
 import {z} from 'zod';
 import {restClient} from '@massive.com/client-js';
+import {retry} from 'ts-retry-promise';
 import {Report} from '../report/Report.js';
 import {SP500_TICKERS} from './sp500Tickers.js';
 
@@ -79,7 +80,12 @@ export class SP500MomentumReport extends Report {
   }
 
   async #getClosingPrices(rest: ReturnType<typeof restClient>, date: string): Promise<Map<string, number>> {
-    const response = await rest.getGroupedStocksAggregates({date});
+    const response = await retry(() => rest.getGroupedStocksAggregates({date}), {
+      backoff: 'EXPONENTIAL',
+      delay: 10_000,
+      maxBackOff: 30_000,
+      retries: 30,
+    });
     const bars: Bar[] = response.results ?? [];
     const prices = new Map<string, number>();
     for (const bar of bars) {

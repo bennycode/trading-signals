@@ -6,18 +6,21 @@ const mockGetMe = vi.fn().mockResolvedValue({username: 'testbot'});
 const mockLaunch = vi.fn().mockResolvedValue(undefined);
 const mockStop = vi.fn();
 const mockCommand = vi.fn();
+const mockAction = vi.fn();
 
-vi.mock('marked', () => ({
-  marked: {
-    parse: vi.fn((text: string) => Promise.resolve(`<p>${text}</p>`)),
-    parseInline: vi.fn((text: string) => Promise.resolve(text)),
-  },
+vi.mock('trading-strategies', () => ({
+  getAvailableReportNames: vi.fn().mockReturnValue([]),
+}));
+
+vi.mock('../command/report/reportAdd.js', () => ({
+  reportAdd: vi.fn(),
 }));
 
 vi.mock('telegraf', () => {
   function Telegraf() {
     return {
       command: mockCommand,
+      action: mockAction,
       launch: mockLaunch,
       stop: mockStop,
       telegram: {
@@ -27,7 +30,15 @@ vi.mock('telegraf', () => {
     };
   }
 
-  return {Telegraf};
+  return {
+    Telegraf,
+    Markup: {
+      inlineKeyboard: vi.fn().mockReturnValue({}),
+      button: {
+        callback: vi.fn().mockReturnValue({}),
+      },
+    },
+  };
 });
 
 describe('TelegramPlatform', () => {
@@ -48,6 +59,14 @@ describe('TelegramPlatform', () => {
       expect(platform.commandList).toEqual(['/help', '/price']);
     });
 
+    it('includes reportadd when registered', () => {
+      const platform = new TelegramPlatform('bot-token');
+
+      platform.registerCommand('reportadd', vi.fn());
+
+      expect(platform.commandList).toContain('/reportadd');
+    });
+
     it('returns empty array when no commands are registered', () => {
       const platform = new TelegramPlatform('bot-token');
 
@@ -66,15 +85,37 @@ describe('TelegramPlatform', () => {
       expect(platform.commandList).toContain('/help');
       expect(mockCommand).toHaveBeenCalledWith(['help'], expect.any(Function));
     });
+
+    it('registers reportadd with inline keyboard buttons instead of regular command', () => {
+      const platform = new TelegramPlatform('bot-token');
+
+      platform.registerCommand('reportadd', vi.fn());
+
+      // reportadd uses bot.command and bot.action, not the generic handler path
+      expect(mockCommand).toHaveBeenCalledWith('reportadd', expect.any(Function));
+      expect(mockAction).toHaveBeenCalledWith(expect.any(RegExp), expect.any(Function));
+    });
   });
 
   describe('sendMessage', () => {
-    it('strips the telegram: prefix and passes the numeric ID to Telegraf', async () => {
+    it('strips the telegram: prefix and sends with MarkdownV2', async () => {
       const platform = new TelegramPlatform('bot-token');
 
       await platform.sendMessage('telegram:123456', 'Hello!');
 
-      expect(mockSendMessage).toHaveBeenCalledWith('123456', expect.any(String), {parse_mode: 'HTML'});
+      expect(mockSendMessage).toHaveBeenCalledWith('123456', 'Hello!', {parse_mode: 'MarkdownV2'});
+    });
+
+    it('falls back to plain text when MarkdownV2 fails', async () => {
+      const platform = new TelegramPlatform('bot-token');
+
+      mockSendMessage.mockRejectedValueOnce(new Error('Bad Request: can\'t parse entities'));
+
+      await platform.sendMessage('telegram:123456', 'Hello <world>!');
+
+      expect(mockSendMessage).toHaveBeenCalledTimes(2);
+      expect(mockSendMessage).toHaveBeenNthCalledWith(1, '123456', 'Hello <world>!', {parse_mode: 'MarkdownV2'});
+      expect(mockSendMessage).toHaveBeenNthCalledWith(2, '123456', 'Hello <world>!');
     });
 
     it('passes the raw chat ID when no prefix is present', async () => {
@@ -82,7 +123,7 @@ describe('TelegramPlatform', () => {
 
       await platform.sendMessage('789', 'Hello!');
 
-      expect(mockSendMessage).toHaveBeenCalledWith('789', expect.any(String), {parse_mode: 'HTML'});
+      expect(mockSendMessage).toHaveBeenCalledWith('789', 'Hello!', {parse_mode: 'MarkdownV2'});
     });
   });
 

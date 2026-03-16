@@ -1,20 +1,21 @@
-import {marked} from 'marked';
-import {Telegraf} from 'telegraf';
+import {Markup, Telegraf} from 'telegraf';
+import type {Context} from 'telegraf';
+import {getAvailableReportNames} from 'trading-strategies';
 import type {CommandHandler, MessageContext, MessagingPlatform, PlatformInfo} from './MessagingPlatform.js';
+import {reportAdd} from '../command/report/reportAdd.js';
+import type {ReportScheduler} from '../service/ReportScheduler.js';
 
 const PLATFORM_PREFIX = 'telegram:';
+const REPORT_CALLBACK_PREFIX = 'report:';
+const MODE_CALLBACK_PREFIX = 'reportmode:';
+const INTERVAL_CALLBACK_PREFIX = 'reportinterval:';
 
-async function mdToHtml(text: string): Promise<string> {
-  const html = await marked.parse(text);
-
-  if (html.startsWith('<pre>')) {
-    // Returns code fences in proper format
-    return html;
+async function replyWithMarkdown(ctx: Context, text: string): Promise<void> {
+  try {
+    await ctx.reply(text, {parse_mode: 'MarkdownV2'});
+  } catch {
+    await ctx.reply(text);
   }
-
-  // Returns paragraphs as inline-parsed tags to prevent the following error:
-  // Bad Request: can't parse entities: Unsupported start tag "p" at byte offset 0
-  return marked.parseInline(text);
 }
 
 export class TelegramPlatform implements MessagingPlatform {
@@ -22,16 +23,27 @@ export class TelegramPlatform implements MessagingPlatform {
   #ownerIds: string[];
   #commands: Map<string, CommandHandler> = new Map();
   #platformInfo: PlatformInfo = {botAddress: '', sdkVersion: ''};
+  #reportScheduler?: ReportScheduler;
 
   constructor(botToken: string, ownerIds?: string) {
     this.#bot = new Telegraf(botToken);
     this.#ownerIds = ownerIds ? ownerIds.split(',').map(id => id.trim()) : [];
   }
 
+  setReportScheduler(scheduler: ReportScheduler): void {
+    this.#reportScheduler = scheduler;
+  }
+
   registerCommand(name: string | string[], handler: CommandHandler): void {
     const names = Array.isArray(name) ? name : [name];
     for (const n of names) {
       this.#commands.set(n, handler);
+    }
+
+    // reportadd is handled via inline keyboard buttons
+    if (names.includes('reportadd')) {
+      this.#registerReportAddCommand();
+      return;
     }
 
     this.#bot.command(names, async ctx => {
@@ -59,12 +71,111 @@ export class TelegramPlatform implements MessagingPlatform {
         platformId: 'telegram',
         content,
         reply: async (replyText: string) => {
-          const html = await mdToHtml(replyText);
-          await ctx.reply(html, {parse_mode: 'HTML'});
+          await replyWithMarkdown(ctx, replyText);
         },
       };
 
       await handler(messageCtx);
+    });
+  }
+
+  #registerReportAddCommand(): void {
+    this.#bot.command('reportadd', async ctx => {
+      const senderId = ctx.from?.id?.toString();
+
+      if (!senderId) {
+        await ctx.reply('Unable to determine sender');
+        return;
+      }
+
+      if (this.#ownerIds.length > 0 && !this.#ownerIds.includes(senderId)) {
+        return;
+      }
+
+      const available = getAvailableReportNames();
+      if (available.length === 0) {
+        await ctx.reply('No reports available. Check that the required environment variables are set.');
+        return;
+      }
+
+      const buttons = available.map(name => [Markup.button.callback(name, `${REPORT_CALLBACK_PREFIX}${name}`)]);
+
+      await ctx.reply('Select a report to run:', Markup.inlineKeyboard(buttons));
+    });
+
+    // Step 2: User selected a report — ask run once or schedule
+    this.#bot.action(new RegExp(`^${REPORT_CALLBACK_PREFIX}(.+)$`), async ctx => {
+      await ctx.answerCbQuery();
+
+      const reportName = ctx.match[1];
+
+      await ctx.editMessageText(
+        `Report: ${reportName}\nRun once or schedule recurring?`,
+        Markup.inlineKeyboard([
+          [Markup.button.callback('Run once', `${MODE_CALLBACK_PREFIX}once:${reportName}`)],
+          [Markup.button.callback('Schedule recurring', `${MODE_CALLBACK_PREFIX}schedule:${reportName}`)],
+        ])
+      );
+    });
+
+    // Step 3a: Run once
+    this.#bot.action(new RegExp(`^${MODE_CALLBACK_PREFIX}once:(.+)$`), async ctx => {
+      await ctx.answerCbQuery();
+
+      const reportName = ctx.match[1];
+      const senderId = ctx.from?.id?.toString();
+      if (!senderId) return;
+
+      await ctx.editMessageText(`Running report: ${reportName}...`);
+
+      const userId = `${PLATFORM_PREFIX}${senderId}`;
+      const result = await reportAdd(reportName, userId);
+
+      await replyWithMarkdown(ctx, result.message);
+    });
+
+    // Step 3b: Schedule — ask for interval
+    this.#bot.action(new RegExp(`^${MODE_CALLBACK_PREFIX}schedule:(.+)$`), async ctx => {
+      await ctx.answerCbQuery();
+
+      const reportName = ctx.match[1];
+
+      await ctx.editMessageText(
+        `Report: ${reportName}\nSelect interval:`,
+        Markup.inlineKeyboard([
+          [
+            Markup.button.callback('1m', `${INTERVAL_CALLBACK_PREFIX}1m:${reportName}`),
+            Markup.button.callback('1h', `${INTERVAL_CALLBACK_PREFIX}1h:${reportName}`),
+            Markup.button.callback('6h', `${INTERVAL_CALLBACK_PREFIX}6h:${reportName}`),
+          ],
+          [
+            Markup.button.callback('12h', `${INTERVAL_CALLBACK_PREFIX}12h:${reportName}`),
+            Markup.button.callback('1d', `${INTERVAL_CALLBACK_PREFIX}1d:${reportName}`),
+            Markup.button.callback('1w', `${INTERVAL_CALLBACK_PREFIX}1w:${reportName}`),
+          ],
+        ])
+      );
+    });
+
+    // Step 4: Schedule with chosen interval
+    this.#bot.action(new RegExp(`^${INTERVAL_CALLBACK_PREFIX}([^:]+):(.+)$`), async ctx => {
+      await ctx.answerCbQuery();
+
+      const interval = ctx.match[1];
+      const reportName = ctx.match[2];
+      const senderId = ctx.from?.id?.toString();
+      if (!senderId) return;
+
+      await ctx.editMessageText(`Scheduling report: ${reportName} every ${interval}...`);
+
+      const userId = `${PLATFORM_PREFIX}${senderId}`;
+      const result = await reportAdd(`${reportName} --every ${interval}`, userId);
+
+      await replyWithMarkdown(ctx, result.message);
+
+      if (result.report?.intervalMs && this.#reportScheduler) {
+        this.#reportScheduler.scheduleReport(result.report);
+      }
     });
   }
 
@@ -92,8 +203,11 @@ export class TelegramPlatform implements MessagingPlatform {
 
   async sendMessage(userId: string, text: string): Promise<void> {
     const chatId = userId.replace(PLATFORM_PREFIX, '');
-    const html = await mdToHtml(text);
-    await this.#bot.telegram.sendMessage(chatId, html, {parse_mode: 'HTML'});
+    try {
+      await this.#bot.telegram.sendMessage(chatId, text, {parse_mode: 'MarkdownV2'});
+    } catch {
+      await this.#bot.telegram.sendMessage(chatId, text);
+    }
   }
 
   get commandList(): string[] {
