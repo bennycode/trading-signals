@@ -2,6 +2,7 @@ import {z} from 'zod';
 import {restClient} from '@massive.com/client-js';
 import {retry} from 'ts-retry-promise';
 import {Report} from '../report/Report.js';
+import {findFirstTradingDay, getDateString} from '../util/TimeUtil.js';
 import {SP500_TICKERS} from './sp500Tickers.js';
 
 export const SP500MomentumSchema = z.object({
@@ -22,19 +23,7 @@ interface Bar {
   c?: number;
 }
 
-function getDateString(date: Date): string {
-  return date.toISOString().split('T')[0];
-}
-
-function findLastTradingDay(date: Date): Date {
-  const d = new Date(date);
-  const day = d.getDay();
-  if (day === 0) d.setDate(d.getDate() - 2);
-  else if (day === 6) d.setDate(d.getDate() - 1);
-  return d;
-}
-
-export class SP500MomentumReport extends Report {
+export class SP500MomentumReport extends Report<SP500MomentumConfig> {
   static override NAME = '@typedtrader/report-sp500-momentum';
 
   constructor(config: SP500MomentumConfig) {
@@ -42,14 +31,16 @@ export class SP500MomentumReport extends Report {
   }
 
   async run(): Promise<string> {
-    const rest = restClient(this.config.apiKey as string);
+    const rest = restClient(this.config.apiKey);
 
     const now = new Date();
-    const twelveMonthsAgo = new Date(now);
-    twelveMonthsAgo.setFullYear(twelveMonthsAgo.getFullYear() - 1);
 
-    const recentDate = findLastTradingDay(new Date(now.getTime() - 2 * 86_400_000));
-    const pastDate = findLastTradingDay(twelveMonthsAgo);
+    // 12-1 momentum: skip the most recent month, look back 12 months from there
+    const recentMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    const pastMonth = new Date(recentMonth.getFullYear() - 1, recentMonth.getMonth(), 1);
+
+    const recentDate = findFirstTradingDay(recentMonth);
+    const pastDate = findFirstTradingDay(pastMonth);
 
     const toDate = getDateString(recentDate);
     const fromDate = getDateString(pastDate);

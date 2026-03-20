@@ -1,9 +1,9 @@
-export abstract class Report {
+export abstract class Report<T extends Record<string, unknown> = Record<string, unknown>> {
   static NAME: string;
 
-  readonly config: Record<string, unknown>;
+  readonly config: T;
 
-  constructor(config: Record<string, unknown>) {
+  constructor(config: T) {
     this.config = config;
   }
 
