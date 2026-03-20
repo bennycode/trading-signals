@@ -206,9 +206,7 @@ export async function startServer() {
 
   for (const [, platform] of platforms) {
     registerCommands(platform, monitors);
-    if ('setReportScheduler' in platform) {
-      (platform as {setReportScheduler: (s: ReportScheduler) => void}).setReportScheduler(monitors.reportScheduler);
-    }
+    platform.setReportScheduler?.(monitors.reportScheduler);
   }
 
   // Start monitors
