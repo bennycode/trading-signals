@@ -24,8 +24,8 @@
     "graph": "nx graph",
     "lint": "lerna run lint --parallel",
     "release": "npm install && npm run dist && lerna publish && git commit -am \"chore: update CHANGELOGs\" && git push && npm run clean",
-    "start:bot": "lerna run start --scope @typedtrader/messaging",
-    "start:docs": "lerna run dist && lerna run dev --scope trading-signals-docs",
+    "start:bot": "lerna run dist --scope @typedtrader/messaging --include-dependencies && lerna run start --scope @typedtrader/messaging",
+    "start:docs": "lerna run dist --scope trading-signals-docs --include-dependencies && lerna run dev --scope trading-signals-docs",
     "pretest": "lerna run dist",
     "test": "lerna run --no-sort --concurrency 8 test",
     "test:types": "lerna run --no-sort --concurrency 8 test:types"

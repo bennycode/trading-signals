@@ -7,7 +7,7 @@ services:
     region: frankfurt
     plan: starter
     branch: main
-    buildCommand: npm install && npx lerna run dist
+    buildCommand: npm install && npx lerna run dist --scope @typedtrader/messaging --include-dependencies
     startCommand: npm run start:bot
     envVars:
       - key: TYPEDTRADER_DB_DIRECTORY

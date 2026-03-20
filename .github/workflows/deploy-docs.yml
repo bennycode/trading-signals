@@ -43,7 +43,7 @@ jobs:
       - name: Build library and docs
         run: |
           npm install
-          npx lerna run dist
+          npx lerna run dist --scope trading-signals-docs --include-dependencies
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v4
         with:
