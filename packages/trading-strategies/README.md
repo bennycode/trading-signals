@@ -87,6 +87,10 @@ const strategy = new MultiIndicatorConfluenceStrategy({
 });
 ```
 
+## Reports
+
+In addition to strategies, the library includes reports that analyze market data and return formatted results. Reports implement the `Report` base class and can be run on-demand or scheduled at recurring intervals.
+
 ## Zod Schemas
 
 Every strategy exports a Zod schema for configuration validation and type inference:
