@@ -1,7 +1,7 @@
 export interface MessageContext {
-  /** Platform-prefixed sender ID, e.g. "xmtp:0x..." or "telegram:123" */
+  /** Platform-prefixed sender ID, e.g. "telegram:123" */
   senderId: string;
-  /** Platform identifier: "xmtp" or "telegram" */
+  /** Platform identifier, e.g. "telegram" */
   platformId: string;
   /** Message text after command name */
   content: string;
