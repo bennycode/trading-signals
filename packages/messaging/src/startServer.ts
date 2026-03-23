@@ -5,6 +5,9 @@ import {
   accountTime,
   candle,
   price,
+  reportAdd,
+  reportList,
+  reportRemove,
   strategyAdd,
   strategyList,
   strategyRemove,
@@ -16,12 +19,13 @@ import {
 } from './command/index.js';
 import {initializeDatabase} from './database/initializeDatabase.js';
 import type {MessagingPlatform} from './platform/index.js';
-import {XmtpPlatform, TelegramPlatform} from './platform/index.js';
-import {WatchMonitor, StrategyMonitor} from './service/index.js';
+import {TelegramPlatform} from './platform/TelegramPlatform.js';
+import {WatchMonitor, StrategyMonitor, ReportScheduler} from './service/index.js';
 
 interface Monitors {
   watchMonitor: WatchMonitor;
   strategyMonitor: StrategyMonitor;
+  reportScheduler: ReportScheduler;
 }
 
 function registerCommands(platform: MessagingPlatform, monitors: Monitors): void {
@@ -31,7 +35,7 @@ function registerCommands(platform: MessagingPlatform, monitors: Monitors): void
     await ctx.reply(answer);
   });
 
-  platform.registerCommand('accountAdd', async ctx => {
+  platform.registerCommand('accountadd', async ctx => {
     const result = await accountAdd(ctx.content, ctx.senderId);
 
     if (result) {
@@ -39,11 +43,11 @@ function registerCommands(platform: MessagingPlatform, monitors: Monitors): void
     }
   });
 
-  platform.registerCommand('accountList', async ctx => {
+  platform.registerCommand('accountlist', async ctx => {
     await ctx.reply(await accountList(ctx.senderId));
   });
 
-  platform.registerCommand('accountRemove', async ctx => {
+  platform.registerCommand('accountremove', async ctx => {
     const result = await accountRemove(ctx.content, ctx.senderId);
 
     if (result) {
@@ -51,7 +55,7 @@ function registerCommands(platform: MessagingPlatform, monitors: Monitors): void
     }
   });
 
-  platform.registerCommand('accountTime', async ctx => {
+  platform.registerCommand('accounttime', async ctx => {
     const result = await accountTime(ctx.content, ctx.senderId);
 
     if (result) {
@@ -79,7 +83,7 @@ function registerCommands(platform: MessagingPlatform, monitors: Monitors): void
     await ctx.reply(await uptime());
   });
 
-  platform.registerCommand('watchAdd', async ctx => {
+  platform.registerCommand('watchadd', async ctx => {
     const result = await watchAdd(ctx.content, ctx.senderId);
     await ctx.reply(result.message);
 
@@ -92,11 +96,11 @@ function registerCommands(platform: MessagingPlatform, monitors: Monitors): void
     }
   });
 
-  platform.registerCommand('watchList', async ctx => {
+  platform.registerCommand('watchlist', async ctx => {
     await ctx.reply(await watchList(ctx.senderId));
   });
 
-  platform.registerCommand('watchRemove', async ctx => {
+  platform.registerCommand('watchremove', async ctx => {
     const result = await watchRemove(ctx.content, ctx.senderId);
     await ctx.reply(result.message);
 
@@ -105,7 +109,7 @@ function registerCommands(platform: MessagingPlatform, monitors: Monitors): void
     }
   });
 
-  platform.registerCommand('strategyAdd', async ctx => {
+  platform.registerCommand('strategyadd', async ctx => {
     const result = await strategyAdd(ctx.content, ctx.senderId);
     await ctx.reply(result.message);
 
@@ -118,11 +122,11 @@ function registerCommands(platform: MessagingPlatform, monitors: Monitors): void
     }
   });
 
-  platform.registerCommand('strategyList', async ctx => {
+  platform.registerCommand('strategylist', async ctx => {
     await ctx.reply(await strategyList(ctx.senderId));
   });
 
-  platform.registerCommand('strategyRemove', async ctx => {
+  platform.registerCommand('strategyremove', async ctx => {
     const result = await strategyRemove(ctx.content, ctx.senderId);
     await ctx.reply(result.message);
 
@@ -132,6 +136,32 @@ function registerCommands(platform: MessagingPlatform, monitors: Monitors): void
       } catch (error) {
         console.error(`Error stopping strategy: ${error}`);
       }
+    }
+  });
+
+  platform.registerCommand('reportadd', async ctx => {
+    const result = await reportAdd(ctx.content, ctx.senderId);
+    await ctx.reply(result.message);
+
+    if (result.report?.intervalMs) {
+      try {
+        monitors.reportScheduler.scheduleReport(result.report);
+      } catch (error) {
+        console.error(`Error scheduling report: ${error}`);
+      }
+    }
+  });
+
+  platform.registerCommand('reportlist', async ctx => {
+    await ctx.reply(await reportList(ctx.senderId));
+  });
+
+  platform.registerCommand('reportremove', async ctx => {
+    const result = await reportRemove(ctx.content, ctx.senderId);
+    await ctx.reply(result.message);
+
+    if (result.reportId) {
+      monitors.reportScheduler.unscheduleReport(result.reportId);
     }
   });
 
@@ -154,6 +184,7 @@ export async function startServer() {
   const platforms = new Map<string, MessagingPlatform>();
 
   if (process.env.XMTP_ENV) {
+    const {XmtpPlatform} = await import('./platform/XmtpPlatform.js');
     const xmtpPlatform = new XmtpPlatform(process.env.XMTP_OWNER_ADDRESSES);
     platforms.set('xmtp', xmtpPlatform);
   }
@@ -170,10 +201,12 @@ export async function startServer() {
   const monitors: Monitors = {
     watchMonitor: new WatchMonitor(platforms),
     strategyMonitor: new StrategyMonitor(platforms),
+    reportScheduler: new ReportScheduler(platforms),
   };
 
-  for (const platform of platforms.values()) {
+  for (const [, platform] of platforms) {
     registerCommands(platform, monitors);
+    platform.setReportScheduler?.(monitors.reportScheduler);
   }
 
   // Start monitors
@@ -189,6 +222,12 @@ export async function startServer() {
     console.error('Error starting strategy monitor:', error);
   }
 
+  try {
+    await monitors.reportScheduler.start();
+  } catch (error) {
+    console.error('Error starting report scheduler:', error);
+  }
+
   // Start all platforms
   for (const platform of platforms.values()) {
     await platform.start();
@@ -199,6 +238,7 @@ export async function startServer() {
     try {
       monitors.watchMonitor.stop();
       await monitors.strategyMonitor.stop();
+      monitors.reportScheduler.stop();
 
       for (const platform of platforms.values()) {
         await platform.stop();

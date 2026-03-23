@@ -22,7 +22,8 @@ export interface MessagingPlatform {
   start(): Promise<void>;
   stop(): Promise<void>;
   sendMessage(userId: string, text: string): Promise<void>;
-  registerCommand(name: string, handler: CommandHandler): void;
+  registerCommand(name: string | string[], handler: CommandHandler): void;
+  setReportScheduler?(scheduler: unknown): void;
   /** List of registered command names (e.g., ["/help", "/price"]) */
   readonly commandList: string[];
   /** Platform-specific metadata for info commands */

@@ -45,6 +45,13 @@ const mocks = vi.hoisted(() => {
       createFromEnv: vi.fn().mockResolvedValue(mockAgentInstance),
     },
     validHex: vi.fn((v: string) => v),
+    ActionWizard: vi.fn().mockImplementation(() => ({
+      select: vi.fn().mockReturnThis(),
+      text: vi.fn().mockReturnThis(),
+      onComplete: vi.fn().mockReturnThis(),
+      onCancel: vi.fn().mockReturnThis(),
+      middleware: vi.fn().mockReturnValue(vi.fn()),
+    })),
   };
 });
 
@@ -52,7 +59,16 @@ const mocks = vi.hoisted(() => {
 // underlying dist/index.js, so we mock both consistently.
 vi.mock('@xmtp/agent-sdk', () => ({
   Agent: mocks.Agent,
+  ActionWizard: mocks.ActionWizard,
   validHex: mocks.validHex,
+}));
+
+vi.mock('trading-strategies', () => ({
+  getAvailableReportNames: vi.fn().mockReturnValue([]),
+}));
+
+vi.mock('../command/report/reportAdd.js', () => ({
+  reportAdd: vi.fn(),
 }));
 
 vi.mock('@xmtp/agent-sdk/middleware', () => ({
@@ -77,7 +93,7 @@ describe('XmtpPlatform', () => {
     it('delegates to the router commandList', () => {
       const platform = new XmtpPlatform();
 
-      expect(platform.commandList).toEqual(mocks.mockCommandList);
+      expect(platform.commandList).toEqual([...mocks.mockCommandList, '/reportadd']);
     });
   });
 

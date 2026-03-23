@@ -49,3 +49,15 @@ export const strategies = sqliteTable('strategies', {
 
 export type StrategyRow = typeof strategies.$inferSelect;
 export type NewStrategyRow = typeof strategies.$inferInsert;
+
+export const reports = sqliteTable('reports', {
+  id: integer('id').primaryKey({autoIncrement: true}),
+  userId: text('userId').notNull(),
+  reportName: text('reportName').notNull(),
+  config: text('config').notNull(),
+  intervalMs: integer('intervalMs'),
+  createdAt: text('createdAt').default(sql`(CURRENT_TIMESTAMP)`),
+});
+
+export type ReportRow = typeof reports.$inferSelect;
+export type NewReportRow = typeof reports.$inferInsert;
