@@ -183,19 +183,13 @@ export async function startServer() {
 
   const platforms = new Map<string, MessagingPlatform>();
 
-  if (process.env.XMTP_ENV) {
-    const {XmtpPlatform} = await import('./platform/XmtpPlatform.js');
-    const xmtpPlatform = new XmtpPlatform(process.env.XMTP_OWNER_ADDRESSES);
-    platforms.set('xmtp', xmtpPlatform);
-  }
-
   if (process.env.TELEGRAM_BOT_TOKEN) {
     const telegramPlatform = new TelegramPlatform(process.env.TELEGRAM_BOT_TOKEN, process.env.TELEGRAM_OWNER_IDS);
     platforms.set('telegram', telegramPlatform);
   }
 
   if (platforms.size === 0) {
-    console.warn('Warning: No messaging platforms configured. Set XMTP_ENV or TELEGRAM_BOT_TOKEN to enable platforms.');
+    console.warn('Warning: No messaging platforms configured. Set TELEGRAM_BOT_TOKEN to enable a platform.');
   }
 
   const monitors: Monitors = {

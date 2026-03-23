@@ -1,22 +1,18 @@
 # @typedtrader/messaging
 
-Messaging interface for controlling personal trading bots remotely via [XMTP](https://xmtp.org/) (end-to-end encrypted) and [Telegram](https://core.telegram.org/bots) (using [Telegraf](https://telegraf.js.org/)). Both platforms can run simultaneously in a single process.
+Messaging interface for controlling personal trading bots remotely via [Telegram](https://core.telegram.org/bots) (using [Telegraf](https://telegraf.js.org/)).
 
 ## Features
 
-- **Multi-Platform:** Supports XMTP (end-to-end encrypted) and Telegram bots
+- **Multi-Platform:** Flexible `MessagingPlatform` interface for adding new platforms
 - **Command Interface:** Execute trading bot commands via messaging
 - **Real-Time Updates:** Get live candle data, time, and bot status
-- **Owner Authentication:** Per-platform access control (wallet addresses for XMTP, user IDs for Telegram)
+- **Owner Authentication:** Access control via Telegram user IDs
 - **Remote Control:** Manage your trading bot from anywhere securely
 
 ## Usage
 
-This package starts a chatbot on one or both platforms based on environment variables. Control your trading bot by sending slash commands directly in the chat.
-
-### XMTP
-
-Set `XMTP_ENV` to enable. Message the bot from any XMTP-compatible wallet.
+This package starts a chatbot based on environment variables. Control your trading bot by sending slash commands directly in the chat.
 
 ### Telegram
 
@@ -46,8 +42,6 @@ Set `TELEGRAM_BOT_TOKEN` to enable. Message the bot from Telegram. Create a bot 
 
 The "@typedtrader/messaging" library provides a way to interact with your trading bots through messaging platforms. It's designed for traders who want to monitor and control their automated trading systems remotely without exposing public APIs.
 
-With XMTP, messages are encrypted end-to-end — there's no public endpoint to attack and only your wallet can decrypt the commands. With Telegram, you get a familiar chat interface with user ID-based access control.
-
 ## Security
 
 The SQLite database of the messaging bot uses [SQLCipher](https://www.zetetic.net/sqlcipher/) encryption:
@@ -57,4 +51,4 @@ The SQLite database of the messaging bot uses [SQLCipher](https://www.zetetic.ne
 
 > [!CAUTION]
 >
-> Always verify that you're communicating with your bot through the correct wallet address. Keep your wallet keys secure and never share them. This system is designed for personal use and should not be exposed to untrusted users.
+> Always verify that you're communicating with your bot. Keep your credentials secure and never share them. This system is designed for personal use and should not be exposed to untrusted users.
