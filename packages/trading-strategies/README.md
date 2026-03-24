@@ -10,6 +10,12 @@ The "trading-strategies" library provides a TypeScript implementation for common
 >
 > No strategy works all the time, so build in strict loss caps, a realistic positive price target, and the discipline to accept occasional losses. Managing risk matters more than heroically “holding a falling knife,” so focus on winning more often than you lose.
 
+**A good strategy should have:**
+
+- A clearly defined scenario for when it applies
+- A stop-loss rule to cap downside risk
+- A profit target to lock in gains
+
 ## Installation
 
 ```bash
@@ -22,69 +28,6 @@ npm install trading-strategies
 import {Strategy} from 'trading-strategies';
 import {ExchangeOrderSide, ExchangeOrderType} from '@typedtrader/exchange';
 import type {OrderAdvice} from '@typedtrader/exchange';
-```
-
-## Available Strategies
-
-### Buy & Hold (`BuyAndHoldStrategy`)
-
-Buys once at the first candle and holds for the entire period. Use as the simplest baseline — any active strategy should beat it.
-
-```ts
-import {BuyAndHoldStrategy} from 'trading-strategies';
-
-const strategy = new BuyAndHoldStrategy();
-```
-
-### Buy Once (`BuyOnceStrategy`)
-
-Places a single limit buy when the close price drops to or below a predefined price. After the buy triggers, the strategy stays silent.
-
-```ts
-import {BuyOnceStrategy} from 'trading-strategies';
-
-const strategy = new BuyOnceStrategy({buyAt: '150.00'});
-```
-
-### Buy Below / Sell Above (`BuyBelowSellAboveStrategy`)
-
-Buys when the close price drops below a threshold and sells when it rises above another. Repeats on every qualifying candle.
-
-```ts
-import {BuyBelowSellAboveStrategy} from 'trading-strategies';
-
-const strategy = new BuyBelowSellAboveStrategy({buyBelow: '140.00', sellAbove: '160.00'});
-```
-
-### Coin Flip (`CoinFlipStrategy`)
-
-Randomly buys or sells on every candle with 50/50 probability. Useful as a baseline to confirm that any strategy beats pure chance.
-
-```ts
-import {CoinFlipStrategy} from 'trading-strategies';
-
-const strategy = new CoinFlipStrategy();
-```
-
-### Multi-Indicator Confluence (`MultiIndicatorConfluenceStrategy`)
-
-Combines EMA trend, MACD momentum, Bollinger Bands mean-reversion, and RSI filters. Buys on bullish confluence at the lower Bollinger Band; sells on bearish confluence at the upper band.
-
-```ts
-import {MultiIndicatorConfluenceStrategy} from 'trading-strategies';
-
-const strategy = new MultiIndicatorConfluenceStrategy({
-  emaShortPeriod: 9,
-  emaLongPeriod: 15,
-  macdShortPeriod: 5,
-  macdLongPeriod: 7,
-  macdSignalPeriod: 9,
-  bollingerPeriod: 5,
-  bollingerDeviationMultiplier: 0.5,
-  rsiPeriod: 14,
-  rsiOverbought: 65,
-  rsiOversold: 45,
-});
 ```
 
 ## Reports
