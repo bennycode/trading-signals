@@ -192,7 +192,7 @@ export class TelegramPlatform implements MessagingPlatform {
       sdkVersion: 'Telegraf',
     };
 
-    await this.#bot.launch();
+    await this.#bot.launch({dropPendingUpdates: true});
 
     console.log(`Telegram bot started as ${this.#platformInfo.botAddress}.`);
   }
