@@ -7,7 +7,7 @@ import {BacktestExecutor} from './BacktestExecutor.js';
 import {BuyBelowSellAboveStrategy} from '../strategy-buy-below-sell-above/BuyBelowSellAboveStrategy.js';
 import type {BacktestConfig} from './BacktestConfig.js';
 import {Strategy} from '../strategy/Strategy.js';
-import type {BatchedCandle} from '@typedtrader/exchange';
+import type {OneMinuteBatchedCandle} from '@typedtrader/exchange';
 
 function createCandle(overrides: Partial<ExchangeCandle> & {close: string; open: string}): ExchangeCandle {
   const openNum = parseFloat(overrides.open);
@@ -43,7 +43,7 @@ describe('BacktestExecutor', () => {
       class NoOpStrategy extends Strategy {
         static override NAME = 'NoOp';
 
-        protected override async processCandle(_candle: BatchedCandle, _state: TradingSessionState): Promise<OrderAdvice | void> {
+        protected override async processCandle(_candle: OneMinuteBatchedCandle, _state: TradingSessionState): Promise<OrderAdvice | void> {
           return undefined;
         }
       }
@@ -169,7 +169,7 @@ describe('BacktestExecutor', () => {
         static override NAME = 'AlwaysBuyMarket';
         #bought = false;
 
-        protected override async processCandle(_candle: BatchedCandle, _state: TradingSessionState): Promise<OrderAdvice | void> {
+        protected override async processCandle(_candle: OneMinuteBatchedCandle, _state: TradingSessionState): Promise<OrderAdvice | void> {
           if (this.#bought) {
             return undefined;
           }
@@ -297,7 +297,7 @@ describe('BacktestExecutor', () => {
         static override NAME = 'SellTooMuch';
         #sold = false;
 
-        protected override async processCandle(candle: BatchedCandle, _state: TradingSessionState): Promise<OrderAdvice | void> {
+        protected override async processCandle(candle: OneMinuteBatchedCandle, _state: TradingSessionState): Promise<OrderAdvice | void> {
           if (this.#sold) {
             return undefined;
           }
@@ -434,7 +434,7 @@ describe('BacktestExecutor', () => {
         static override NAME = 'BuyOnce';
         #bought = false;
 
-        protected override async processCandle(_candle: BatchedCandle, _state: TradingSessionState): Promise<OrderAdvice | void> {
+        protected override async processCandle(_candle: OneMinuteBatchedCandle, _state: TradingSessionState): Promise<OrderAdvice | void> {
           if (this.#bought) {
             return undefined;
           }
@@ -481,7 +481,7 @@ describe('BacktestExecutor', () => {
       class NoOpStrategy extends Strategy {
         static override NAME = 'NoOp';
 
-        protected override async processCandle(_candle: BatchedCandle, _state: TradingSessionState): Promise<OrderAdvice | void> {
+        protected override async processCandle(_candle: OneMinuteBatchedCandle, _state: TradingSessionState): Promise<OrderAdvice | void> {
           return undefined;
         }
       }
@@ -514,7 +514,7 @@ describe('BacktestExecutor', () => {
       class NoOpStrategy extends Strategy {
         static override NAME = 'NoOp';
 
-        protected override async processCandle(_candle: BatchedCandle, _state: TradingSessionState): Promise<OrderAdvice | void> {
+        protected override async processCandle(_candle: OneMinuteBatchedCandle, _state: TradingSessionState): Promise<OrderAdvice | void> {
           return undefined;
         }
       }
@@ -561,7 +561,7 @@ describe('BacktestExecutor', () => {
       class AlwaysBuyMarket extends Strategy {
         static override NAME = 'AlwaysBuyMarket';
 
-        protected override async processCandle(_candle: BatchedCandle, _state: TradingSessionState): Promise<OrderAdvice | void> {
+        protected override async processCandle(_candle: OneMinuteBatchedCandle, _state: TradingSessionState): Promise<OrderAdvice | void> {
           return {
             side: ExchangeOrderSide.BUY,
             type: ExchangeOrderType.MARKET,
@@ -594,7 +594,7 @@ describe('BacktestExecutor', () => {
       class AlwaysSellMarket extends Strategy {
         static override NAME = 'AlwaysSellMarket';
 
-        protected override async processCandle(_candle: BatchedCandle, _state: TradingSessionState): Promise<OrderAdvice | void> {
+        protected override async processCandle(_candle: OneMinuteBatchedCandle, _state: TradingSessionState): Promise<OrderAdvice | void> {
           return {
             side: ExchangeOrderSide.SELL,
             type: ExchangeOrderType.MARKET,
@@ -665,7 +665,7 @@ describe('BacktestExecutor', () => {
         static override NAME = 'BuyAtPrice';
         #advised = false;
 
-        protected override async processCandle(candle: BatchedCandle, _state: TradingSessionState): Promise<OrderAdvice | void> {
+        protected override async processCandle(candle: OneMinuteBatchedCandle, _state: TradingSessionState): Promise<OrderAdvice | void> {
           if (this.#advised) {
             return undefined;
           }

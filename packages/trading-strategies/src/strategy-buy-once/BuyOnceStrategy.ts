@@ -1,6 +1,6 @@
 import {z} from 'zod';
 import {ExchangeOrderSide, ExchangeOrderType} from '@typedtrader/exchange';
-import type {BatchedCandle, OrderAdvice, TradingSessionState} from '@typedtrader/exchange';
+import type {OneMinuteBatchedCandle, OrderAdvice, TradingSessionState} from '@typedtrader/exchange';
 import Big from 'big.js';
 import {Strategy} from '../strategy/Strategy.js';
 import {positiveNumberString} from '../util/validators.js';
@@ -35,7 +35,7 @@ export class BuyOnceStrategy extends Strategy {
     return this.getProxiedState<BuyOnceState>();
   }
 
-  protected override async processCandle(candle: BatchedCandle, _state: TradingSessionState): Promise<OrderAdvice | void> {
+  protected override async processCandle(candle: OneMinuteBatchedCandle, _state: TradingSessionState): Promise<OrderAdvice | void> {
     if (this.#state.bought) {
       return undefined;
     }

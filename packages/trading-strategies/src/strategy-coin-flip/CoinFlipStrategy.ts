@@ -1,6 +1,6 @@
 import {z} from 'zod';
 import {ExchangeOrderSide, ExchangeOrderType} from '@typedtrader/exchange';
-import type {OrderAdvice, TradingSessionState, BatchedCandle} from '@typedtrader/exchange';
+import type {OneMinuteBatchedCandle, OrderAdvice, TradingSessionState} from '@typedtrader/exchange';
 import {Strategy} from '../strategy/Strategy.js';
 
 export const CoinFlipSchema = z.object({});
@@ -8,7 +8,7 @@ export const CoinFlipSchema = z.object({});
 export class CoinFlipStrategy extends Strategy {
   static override NAME = '@typedtrader/strategy-coin-flip';
 
-  protected override async processCandle(_candle: BatchedCandle, _state: TradingSessionState): Promise<OrderAdvice | void> {
+  protected override async processCandle(_candle: OneMinuteBatchedCandle, _state: TradingSessionState): Promise<OrderAdvice | void> {
     const buyMarket: OrderAdvice = {
       side: ExchangeOrderSide.BUY,
       type: ExchangeOrderType.MARKET,

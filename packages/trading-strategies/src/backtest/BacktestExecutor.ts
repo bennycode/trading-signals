@@ -52,8 +52,8 @@ export class BacktestExecutor {
         }
       }
 
-      // Step 2: Run strategy to get advice
-      const batchedCandle = CandleBatcher.createBatchedCandle([candle], candle.sizeInMillis);
+      // Step 2: Run strategy to get advice (strategies always receive 1-minute candles)
+      const batchedCandle = CandleBatcher.createOneMinuteBatchedCandle([candle]);
       const state = await this.#buildState(tradingPair, tradingRules, feeRates);
       const advice = await strategy.onCandle(batchedCandle, state);
 

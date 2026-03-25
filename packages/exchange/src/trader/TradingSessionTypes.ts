@@ -1,6 +1,6 @@
 import type Big from 'big.js';
 import type {BigSource} from 'big.js';
-import type {BatchedCandle} from '../candle/BatchedCandle.js';
+import type {BatchedCandle, OneMinuteBatchedCandle} from '../candle/BatchedCandle.js';
 import {
   type ExchangeFeeRate,
   type ExchangeFill,
@@ -13,7 +13,7 @@ import type {Exchange} from '../exchange/Exchange.js';
 import type {TradingPair} from '../exchange/TradingPair.js';
 
 export interface TradingSessionStrategy {
-  onCandle(candle: BatchedCandle, state: TradingSessionState): Promise<OrderAdvice | void>;
+  onCandle(candle: OneMinuteBatchedCandle, state: TradingSessionState): Promise<OrderAdvice | void>;
   onFill?(fill: ExchangeFill, state: TradingSessionState): Promise<void>;
 }
 

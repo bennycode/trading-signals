@@ -1,10 +1,10 @@
-import type {BatchedCandle, OrderAdvice, TradingSessionState, TradingSessionStrategy} from '@typedtrader/exchange';
+import type {OneMinuteBatchedCandle, OrderAdvice, TradingSessionState, TradingSessionStrategy} from '@typedtrader/exchange';
 
 export abstract class Strategy implements TradingSessionStrategy {
   static NAME: string;
 
   latestAdvice: OrderAdvice | undefined = undefined;
-  lastBatchedCandle: BatchedCandle | undefined = undefined;
+  lastBatchedCandle: OneMinuteBatchedCandle | undefined = undefined;
 
   /** Called automatically whenever `state` or `config` changes. Set by the runtime (e.g., StrategyMonitor). */
   onSave?: () => void;
@@ -45,7 +45,7 @@ export abstract class Strategy implements TradingSessionStrategy {
     }
   }
 
-  async onCandle(candle: BatchedCandle, state: TradingSessionState): Promise<OrderAdvice | void> {
+  async onCandle(candle: OneMinuteBatchedCandle, state: TradingSessionState): Promise<OrderAdvice | void> {
     this.lastBatchedCandle = candle;
     const advice = await this.processCandle(candle, state);
     this.latestAdvice = advice ? advice : undefined;
@@ -83,5 +83,5 @@ export abstract class Strategy implements TradingSessionStrategy {
     });
   }
 
-  protected abstract processCandle(candle: BatchedCandle, state: TradingSessionState): Promise<OrderAdvice | void>;
+  protected abstract processCandle(candle: OneMinuteBatchedCandle, state: TradingSessionState): Promise<OrderAdvice | void>;
 }

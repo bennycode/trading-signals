@@ -41,7 +41,7 @@ function makeCandle(close: number, index: number): ExchangeCandle {
 }
 
 function toBatched(candle: ExchangeCandle) {
-  return CandleBatcher.toBatchedCandle(candle);
+  return CandleBatcher.createOneMinuteBatchedCandle([candle]);
 }
 
 function makeFill(price: string, side: ExchangeOrderSide): ExchangeFill {

@@ -1,7 +1,7 @@
 import {z} from 'zod';
 import Big from 'big.js';
 import {ExchangeOrderSide, ExchangeOrderType} from '@typedtrader/exchange';
-import type {BatchedCandle, ExchangeFill, OrderAdvice, TradingSessionState} from '@typedtrader/exchange';
+import type {ExchangeFill, OneMinuteBatchedCandle, OrderAdvice, TradingSessionState} from '@typedtrader/exchange';
 import {EMA} from 'trading-signals';
 import {Strategy} from '../strategy/Strategy.js';
 import {positiveNumberString} from '../util/validators.js';
@@ -47,7 +47,7 @@ export class ScalpStrategy extends Strategy {
   /**
    * Pre-seed the EMA with historical candles to skip the live warmup period.
    */
-  init(candles: BatchedCandle[]): void {
+  init(candles: OneMinuteBatchedCandle[]): void {
     for (const candle of candles) {
       this.#ema.add(candle.close.toNumber());
     }
@@ -75,7 +75,7 @@ export class ScalpStrategy extends Strategy {
     }
   }
 
-  protected override async processCandle(candle: BatchedCandle, _state: TradingSessionState): Promise<OrderAdvice | void> {
+  protected override async processCandle(candle: OneMinuteBatchedCandle, _state: TradingSessionState): Promise<OrderAdvice | void> {
     if (this.#state.phase === 'entry') {
       return this.#handleEntry(candle);
     }
@@ -87,7 +87,7 @@ export class ScalpStrategy extends Strategy {
     // waitingForFill — do nothing, limit order is sitting on the exchange
   }
 
-  #handleEntry(candle: BatchedCandle): OrderAdvice | void {
+  #handleEntry(candle: OneMinuteBatchedCandle): OrderAdvice | void {
     const closePrice = candle.close.toNumber();
     this.#ema.add(closePrice);
 

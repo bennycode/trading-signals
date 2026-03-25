@@ -2,6 +2,7 @@ import Big from 'big.js';
 import {EventEmitter} from 'node:events';
 import {CandleBatcher} from '../candle/CandleBatcher.js';
 import type {BatchedCandle} from '../candle/BatchedCandle.js';
+import {ONE_MINUTE_IN_MS} from '../candle/BatchedCandle.js';
 import type {ExchangeCandle, ExchangeFill, ExchangePendingOrder} from '../exchange/Exchange.js';
 import {ExchangeOrderSide, ExchangeOrderType} from '../exchange/Exchange.js';
 import type {
@@ -25,6 +26,11 @@ export class TradingSession extends EventEmitter<TradingSessionEventMap> {
 
   constructor(options: TradingSessionOptions) {
     super();
+    if (options.candleInterval !== ONE_MINUTE_IN_MS) {
+      throw new Error(
+        `TradingSession requires a 1-minute candle interval (${ONE_MINUTE_IN_MS}ms) but received ${options.candleInterval}ms`
+      );
+    }
     this.#exchange = options.exchange;
     this.#pair = options.pair;
     this.#strategy = options.strategy;
@@ -100,6 +106,12 @@ export class TradingSession extends EventEmitter<TradingSessionEventMap> {
   #onCandle = async (candle: ExchangeCandle | BatchedCandle): Promise<void> => {
     try {
       const batchedCandle = CandleBatcher.isBatchedCandle(candle) ? candle : CandleBatcher.toBatchedCandle(candle);
+      if (!CandleBatcher.isOneMinuteCandle(batchedCandle)) {
+        throw new Error(
+          `Strategies require 1-minute candles but received ${batchedCandle.sizeInMillis}ms. ` +
+            `Use CandleBatcher to aggregate candles inside your strategy if you need a larger timeframe.`
+        );
+      }
       this.emit('candle', batchedCandle);
 
       const advice = await this.#strategy.onCandle(batchedCandle, this.#state!);
