@@ -16,7 +16,6 @@ export class TradingSession extends EventEmitter<TradingSessionEventMap> {
   readonly #exchange;
   readonly #pair;
   readonly #strategy;
-  readonly #candleInterval;
 
   #state: TradingSessionState | null = null;
   #pendingOrders = new Map<string, ExchangePendingOrder>();
@@ -26,15 +25,9 @@ export class TradingSession extends EventEmitter<TradingSessionEventMap> {
 
   constructor(options: TradingSessionOptions) {
     super();
-    if (options.candleInterval !== ONE_MINUTE_IN_MS) {
-      throw new Error(
-        `TradingSession requires a 1-minute candle interval (${ONE_MINUTE_IN_MS}ms) but received ${options.candleInterval}ms`
-      );
-    }
     this.#exchange = options.exchange;
     this.#pair = options.pair;
     this.#strategy = options.strategy;
-    this.#candleInterval = options.candleInterval;
   }
 
   get running(): boolean {
@@ -75,7 +68,7 @@ export class TradingSession extends EventEmitter<TradingSessionEventMap> {
 
     // Subscribe to candles only after state is ready
     const openTimeInISO = new Date().toISOString();
-    this.#candleTopicId = await this.#exchange.watchCandles(this.#pair, this.#candleInterval, openTimeInISO);
+    this.#candleTopicId = await this.#exchange.watchCandles(this.#pair, ONE_MINUTE_IN_MS, openTimeInISO);
     this.#exchange.on(this.#candleTopicId, this.#onCandle);
 
     this.#running = true;

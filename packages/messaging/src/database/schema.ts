@@ -42,7 +42,6 @@ export const strategies = sqliteTable('strategies', {
   strategyName: text('strategyName').notNull(),
   config: text('config').notNull(),
   pair: text('pair').notNull(),
-  intervalMs: integer('intervalMs').notNull(),
   state: text('state'),
   createdAt: text('createdAt').default(sql`(CURRENT_TIMESTAMP)`),
 });

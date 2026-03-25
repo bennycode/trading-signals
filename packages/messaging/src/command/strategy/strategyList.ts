@@ -1,4 +1,3 @@
-import {ms} from 'ms';
 import {Account} from '../../database/models/Account.js';
 import {Strategy} from '../../database/models/Strategy.js';
 
@@ -13,10 +12,7 @@ export const strategyList = async (userId: string) => {
     }
 
     const list = strategies
-      .map(s => {
-        const intervalDisplay = ms(s.intervalMs, {long: true});
-        return `ID: ${s.id} | ${s.strategyName} | ${s.pair} | Every ${intervalDisplay}`;
-      })
+      .map(s => `ID: ${s.id} | ${s.strategyName} | ${s.pair}`)
       .join('\n');
 
     return `Active strategies:\n${list}`;

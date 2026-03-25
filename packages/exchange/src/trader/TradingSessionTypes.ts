@@ -70,8 +70,6 @@ export interface TradingSessionOptions {
   exchange: Exchange;
   pair: TradingPair;
   strategy: TradingSessionStrategy;
-  /** Candle interval in milliseconds */
-  candleInterval: number;
 }
 
 export type TradingSessionEventMap = {

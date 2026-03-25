@@ -37,11 +37,10 @@ export class CandleBatcher extends EventEmitter<EventMap> {
   }
 
   static createOneMinuteBatchedCandle(batch: ExchangeCandle[]): OneMinuteBatchedCandle {
-    const candle = CandleBatcher.createBatchedCandle(batch, ONE_MINUTE_IN_MS);
-    if (!CandleBatcher.isOneMinuteCandle(candle)) {
-      throw new Error(`Expected 1-minute candle but got ${candle.sizeInMillis}ms`);
-    }
-    return candle;
+    return {
+      ...CandleBatcher.createBatchedCandle(batch, ONE_MINUTE_IN_MS),
+      sizeInMillis: ONE_MINUTE_IN_MS,
+    };
   }
 
   static createBatchedCandle(batch: ExchangeCandle[], desiredIntervalInMillis: number): BatchedCandle {

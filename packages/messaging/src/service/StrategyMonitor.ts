@@ -80,7 +80,6 @@ export class StrategyMonitor {
       exchange,
       pair,
       strategy,
-      candleInterval: row.intervalMs,
     });
 
     // Wire up auto-persistence via onSave (after restore, before start)

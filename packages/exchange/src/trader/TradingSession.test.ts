@@ -16,7 +16,6 @@ import {
 import type {OrderAdvice, TradingSessionStrategy} from './TradingSessionTypes.js';
 
 const pair = new TradingPair('TSLA', 'USD');
-const candleInterval = 60_000;
 
 const tradingRules: ExchangeTradingRules = {
   base_increment: '0.001',
@@ -119,7 +118,7 @@ describe.sequential('TradingSession', () => {
     exchange = createMockExchange();
     strategy = createMockStrategy();
     // Cast needed because mock exchange doesn't have all abstract methods
-    session = new TradingSession({exchange: exchange as any, pair, strategy, candleInterval});
+    session = new TradingSession({exchange: exchange as any, pair, strategy});
   });
 
   describe('start', () => {
@@ -134,7 +133,7 @@ describe.sequential('TradingSession', () => {
       expect(exchange.getOpenOrders).toHaveBeenCalledWith(pair);
       expect(exchange.getAvailableBalances).toHaveBeenCalledWith(pair);
       expect(exchange.getFills).toHaveBeenCalledWith(pair);
-      expect(exchange.watchCandles).toHaveBeenCalledWith(pair, candleInterval, expect.any(String));
+      expect(exchange.watchCandles).toHaveBeenCalledWith(pair, 60_000, expect.any(String));
       expect(exchange.watchOrders).toHaveBeenCalled();
       expect(session.running).toBe(true);
       expect(onStarted).toHaveBeenCalledTimes(1);
