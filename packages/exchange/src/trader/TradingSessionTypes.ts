@@ -1,15 +1,20 @@
 import type Big from 'big.js';
 import type {BigSource} from 'big.js';
+import type {EventEmitter} from 'node:events';
 import type {BatchedCandle, OneMinuteBatchedCandle} from '../candle/BatchedCandle.js';
 import {
+  type ExchangeAvailableBalance,
   type ExchangeFeeRate,
   type ExchangeFill,
+  type ExchangeLimitOrderOptions,
+  type ExchangeMarketOrderOptions,
   ExchangeOrderSide,
   ExchangeOrderType,
+  type ExchangePendingLimitOrder,
+  type ExchangePendingMarketOrder,
   type ExchangePendingOrder,
   type ExchangeTradingRules,
 } from '../exchange/Exchange.js';
-import type {Exchange} from '../exchange/Exchange.js';
 import type {TradingPair} from '../exchange/TradingPair.js';
 
 export interface TradingSessionStrategy {
@@ -66,8 +71,23 @@ export interface TradingSessionState {
   readonly feeRates: ExchangeFeeRate;
 }
 
+export interface TradingSessionExchange extends Pick<EventEmitter, 'on'> {
+  cancelOpenOrders(pair: TradingPair): Promise<string[]>;
+  getAvailableBalances(pair: TradingPair): Promise<ExchangeAvailableBalance>;
+  getFeeRates(pair: TradingPair): Promise<ExchangeFeeRate>;
+  getFills(pair: TradingPair): Promise<ExchangeFill[]>;
+  getOpenOrders(pair: TradingPair): Promise<ExchangePendingOrder[]>;
+  getTradingRules(pair: TradingPair): Promise<ExchangeTradingRules>;
+  placeLimitOrder(pair: TradingPair, options: Omit<ExchangeLimitOrderOptions, 'type' | 'sizeInCounter'>): Promise<ExchangePendingLimitOrder>;
+  placeMarketOrder(pair: TradingPair, options: Omit<ExchangeMarketOrderOptions, 'type'>): Promise<ExchangePendingMarketOrder>;
+  unwatchCandles(topicId: string): void;
+  unwatchOrders(topicId: string): void;
+  watchCandles(pair: TradingPair, intervalInMillis: number, openTimeInISO: string): Promise<string>;
+  watchOrders(): Promise<string>;
+}
+
 export interface TradingSessionOptions {
-  exchange: Exchange;
+  exchange: TradingSessionExchange;
   pair: TradingPair;
   strategy: TradingSessionStrategy;
 }
