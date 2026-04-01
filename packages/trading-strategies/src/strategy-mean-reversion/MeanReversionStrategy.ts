@@ -1,6 +1,6 @@
 import {z} from 'zod';
 import {CandleBatcher, ExchangeOrderSide, ExchangeOrderType} from '@typedtrader/exchange';
-import type {OneMinuteBatchedCandle, OrderAdvice, TradingSessionState} from '@typedtrader/exchange';
+import type {ExchangeCandle, OneMinuteBatchedCandle, OrderAdvice, TradingSessionState} from '@typedtrader/exchange';
 import {BollingerBands} from 'trading-signals';
 import {Strategy} from '../strategy/Strategy.js';
 
@@ -18,24 +18,48 @@ type MeanReversionState = {
   phase: Phase;
 };
 
+export type CandleFetcher = () => Promise<ExchangeCandle[]>;
+
 export class MeanReversionStrategy extends Strategy {
   static override NAME = '@typedtrader/strategy-mean-reversion';
 
   readonly #bbands = new BollingerBands(PERIOD, DEVIATION_MULTIPLIER);
   readonly #batcher = new CandleBatcher(ONE_HOUR_IN_MS);
+  readonly #fetchCandles?: CandleFetcher;
+  #warmedUp = false;
 
-  constructor(config: MeanReversionConfig = {}) {
+  constructor(options?: {fetchCandles?: CandleFetcher}) {
     super({
-      config,
+      config: {},
       state: {phase: 'watching'},
     });
+    this.#fetchCandles = options?.fetchCandles;
   }
 
   get #state(): MeanReversionState {
     return this.getProxiedState<MeanReversionState>();
   }
 
+  async #warmUp(): Promise<void> {
+    this.#warmedUp = true;
+
+    if (!this.#fetchCandles) {
+      return;
+    }
+
+    const candles = await this.#fetchCandles();
+    const hourlyCandles = CandleBatcher.batchMany(candles, ONE_HOUR_IN_MS);
+
+    for (const candle of hourlyCandles) {
+      this.#bbands.update(candle.close.toNumber(), false);
+    }
+  }
+
   protected override async processCandle(candle: OneMinuteBatchedCandle, _state: TradingSessionState): Promise<OrderAdvice | void> {
+    if (!this.#warmedUp) {
+      await this.#warmUp();
+    }
+
     const hourlyCandle = this.#batcher.addToBatch(candle);
 
     if (!hourlyCandle) {
