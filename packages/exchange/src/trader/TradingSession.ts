@@ -2,6 +2,7 @@ import Big from 'big.js';
 import {EventEmitter} from 'node:events';
 import {CandleBatcher} from '../candle/CandleBatcher.js';
 import type {BatchedCandle} from '../candle/BatchedCandle.js';
+import {ONE_MINUTE_IN_MS} from '../candle/BatchedCandle.js';
 import type {ExchangeCandle, ExchangeFill, ExchangePendingOrder} from '../exchange/Exchange.js';
 import {ExchangeOrderSide, ExchangeOrderType} from '../exchange/Exchange.js';
 import type {
@@ -15,7 +16,6 @@ export class TradingSession extends EventEmitter<TradingSessionEventMap> {
   readonly #exchange;
   readonly #pair;
   readonly #strategy;
-  readonly #candleInterval;
 
   #state: TradingSessionState | null = null;
   #pendingOrders = new Map<string, ExchangePendingOrder>();
@@ -28,7 +28,6 @@ export class TradingSession extends EventEmitter<TradingSessionEventMap> {
     this.#exchange = options.exchange;
     this.#pair = options.pair;
     this.#strategy = options.strategy;
-    this.#candleInterval = options.candleInterval;
   }
 
   get running(): boolean {
@@ -69,7 +68,7 @@ export class TradingSession extends EventEmitter<TradingSessionEventMap> {
 
     // Subscribe to candles only after state is ready
     const openTimeInISO = new Date().toISOString();
-    this.#candleTopicId = await this.#exchange.watchCandles(this.#pair, this.#candleInterval, openTimeInISO);
+    this.#candleTopicId = await this.#exchange.watchCandles(this.#pair, ONE_MINUTE_IN_MS, openTimeInISO);
     this.#exchange.on(this.#candleTopicId, this.#onCandle);
 
     this.#running = true;
@@ -100,6 +99,12 @@ export class TradingSession extends EventEmitter<TradingSessionEventMap> {
   #onCandle = async (candle: ExchangeCandle | BatchedCandle): Promise<void> => {
     try {
       const batchedCandle = CandleBatcher.isBatchedCandle(candle) ? candle : CandleBatcher.toBatchedCandle(candle);
+      if (!CandleBatcher.isOneMinuteCandle(batchedCandle)) {
+        throw new Error(
+          `Strategies require 1-minute candles but received ${batchedCandle.sizeInMillis}ms. ` +
+            `Use CandleBatcher to aggregate candles inside your strategy if you need a larger timeframe.`
+        );
+      }
       this.emit('candle', batchedCandle);
 
       const advice = await this.#strategy.onCandle(batchedCandle, this.#state!);

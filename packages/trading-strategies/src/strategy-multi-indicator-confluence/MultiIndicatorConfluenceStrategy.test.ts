@@ -71,7 +71,7 @@ function makeExchangeCandle(close: number, index: number): ExchangeCandle {
 }
 
 function makeBatchedCandle(close: number, index: number) {
-  return CandleBatcher.toBatchedCandle(makeExchangeCandle(close, index));
+  return CandleBatcher.createOneMinuteBatchedCandle([makeExchangeCandle(close, index)]);
 }
 
 /** Rising zigzag (+10/-5) that produces BUY signals with signalConfig */

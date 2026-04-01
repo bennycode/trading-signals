@@ -2,7 +2,7 @@ import {Big} from 'big.js';
 import {EventEmitter} from 'node:events';
 import {ms, StringValue} from 'ms';
 import jsonabc from 'jsonabc';
-import {BatchedCandle} from './BatchedCandle.js';
+import {BatchedCandle, ONE_MINUTE_IN_MS, OneMinuteBatchedCandle} from './BatchedCandle.js';
 import {ExchangeCandle} from '../exchange/Exchange.js';
 
 type EventMap = {
@@ -30,6 +30,17 @@ export class CandleBatcher extends EventEmitter<EventMap> {
 
   static isBatchedCandle(candle: ExchangeCandle | BatchedCandle): candle is BatchedCandle {
     return typeof candle.open !== 'string';
+  }
+
+  static isOneMinuteCandle(candle: BatchedCandle): candle is OneMinuteBatchedCandle {
+    return candle.sizeInMillis === ONE_MINUTE_IN_MS;
+  }
+
+  static createOneMinuteBatchedCandle(batch: ExchangeCandle[]): OneMinuteBatchedCandle {
+    return {
+      ...CandleBatcher.createBatchedCandle(batch, ONE_MINUTE_IN_MS),
+      sizeInMillis: ONE_MINUTE_IN_MS,
+    };
   }
 
   static createBatchedCandle(batch: ExchangeCandle[], desiredIntervalInMillis: number): BatchedCandle {

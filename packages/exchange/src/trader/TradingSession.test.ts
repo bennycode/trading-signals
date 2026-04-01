@@ -16,7 +16,6 @@ import {
 import type {OrderAdvice, TradingSessionStrategy} from './TradingSessionTypes.js';
 
 const pair = new TradingPair('TSLA', 'USD');
-const candleInterval = 60_000;
 
 const tradingRules: ExchangeTradingRules = {
   base_increment: '0.001',
@@ -58,48 +57,33 @@ const sampleCandle: ExchangeCandle = {
 };
 
 function createMockExchange() {
-  const exchange = new EventEmitter() as EventEmitter & {
-    getTradingRules: ReturnType<typeof vi.fn>;
-    getFeeRates: ReturnType<typeof vi.fn>;
-    cancelOpenOrders: ReturnType<typeof vi.fn>;
-    getOpenOrders: ReturnType<typeof vi.fn>;
-    getAvailableBalances: ReturnType<typeof vi.fn>;
-    getFills: ReturnType<typeof vi.fn>;
-    watchCandles: ReturnType<typeof vi.fn>;
-    watchOrders: ReturnType<typeof vi.fn>;
-    unwatchCandles: ReturnType<typeof vi.fn>;
-    unwatchOrders: ReturnType<typeof vi.fn>;
-    placeLimitOrder: ReturnType<typeof vi.fn>;
-    placeMarketOrder: ReturnType<typeof vi.fn>;
-  };
-
-  exchange.getTradingRules = vi.fn().mockResolvedValue(tradingRules);
-  exchange.getFeeRates = vi.fn().mockResolvedValue(feeRates);
-  exchange.cancelOpenOrders = vi.fn().mockResolvedValue([]);
-  exchange.getOpenOrders = vi.fn().mockResolvedValue([]);
-  exchange.getAvailableBalances = vi.fn().mockResolvedValue({base: new Big('10'), counter: new Big('5000')});
-  exchange.getFills = vi.fn().mockResolvedValue([sampleFill]);
-  exchange.watchCandles = vi.fn().mockResolvedValue('candle-topic-1');
-  exchange.watchOrders = vi.fn().mockResolvedValue('order-topic-1');
-  exchange.unwatchCandles = vi.fn();
-  exchange.unwatchOrders = vi.fn();
-  exchange.placeLimitOrder = vi.fn().mockResolvedValue({
-    id: 'order-1',
-    pair,
-    side: ExchangeOrderSide.SELL,
-    size: '10',
-    type: ExchangeOrderType.LIMIT,
-    price: '253.00',
-  } satisfies ExchangePendingLimitOrder);
-  exchange.placeMarketOrder = vi.fn().mockResolvedValue({
-    id: 'order-2',
-    pair,
-    side: ExchangeOrderSide.BUY,
-    size: '5000',
-    type: ExchangeOrderType.MARKET,
-  } satisfies ExchangePendingMarketOrder);
-
-  return exchange;
+  return Object.assign(new EventEmitter(), {
+    cancelOpenOrders: vi.fn().mockResolvedValue([]),
+    getAvailableBalances: vi.fn().mockResolvedValue({base: new Big('10'), counter: new Big('5000')}),
+    getFeeRates: vi.fn().mockResolvedValue(feeRates),
+    getFills: vi.fn().mockResolvedValue([sampleFill]),
+    getOpenOrders: vi.fn().mockResolvedValue([]),
+    getTradingRules: vi.fn().mockResolvedValue(tradingRules),
+    placeLimitOrder: vi.fn().mockResolvedValue({
+      id: 'order-1',
+      pair,
+      side: ExchangeOrderSide.SELL,
+      size: '10',
+      type: ExchangeOrderType.LIMIT,
+      price: '253.00',
+    } satisfies ExchangePendingLimitOrder),
+    placeMarketOrder: vi.fn().mockResolvedValue({
+      id: 'order-2',
+      pair,
+      side: ExchangeOrderSide.BUY,
+      size: '5000',
+      type: ExchangeOrderType.MARKET,
+    } satisfies ExchangePendingMarketOrder),
+    unwatchCandles: vi.fn(),
+    unwatchOrders: vi.fn(),
+    watchCandles: vi.fn().mockResolvedValue('candle-topic-1'),
+    watchOrders: vi.fn().mockResolvedValue('order-topic-1'),
+  });
 }
 
 function createMockStrategy(): TradingSessionStrategy & {onCandle: ReturnType<typeof vi.fn>; onFill: ReturnType<typeof vi.fn>} {
@@ -118,8 +102,7 @@ describe.sequential('TradingSession', () => {
     vi.clearAllMocks();
     exchange = createMockExchange();
     strategy = createMockStrategy();
-    // Cast needed because mock exchange doesn't have all abstract methods
-    session = new TradingSession({exchange: exchange as any, pair, strategy, candleInterval});
+    session = new TradingSession({exchange, pair, strategy});
   });
 
   describe('start', () => {
@@ -134,7 +117,7 @@ describe.sequential('TradingSession', () => {
       expect(exchange.getOpenOrders).toHaveBeenCalledWith(pair);
       expect(exchange.getAvailableBalances).toHaveBeenCalledWith(pair);
       expect(exchange.getFills).toHaveBeenCalledWith(pair);
-      expect(exchange.watchCandles).toHaveBeenCalledWith(pair, candleInterval, expect.any(String));
+      expect(exchange.watchCandles).toHaveBeenCalledWith(pair, 60_000, expect.any(String));
       expect(exchange.watchOrders).toHaveBeenCalled();
       expect(session.running).toBe(true);
       expect(onStarted).toHaveBeenCalledTimes(1);

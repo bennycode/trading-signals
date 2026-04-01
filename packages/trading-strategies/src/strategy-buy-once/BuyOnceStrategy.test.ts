@@ -179,7 +179,7 @@ describe('BuyOnceStrategy', () => {
 
     // Close price is below buyAt — would normally trigger a buy, but state is restored as already bought
     const candle = createCandle({open: '80', close: '80', openTimeInISO: '2025-01-01T00:00:00.000Z'});
-    const advice = await strategy.onCandle(CandleBatcher.toBatchedCandle(candle), mockState);
+    const advice = await strategy.onCandle(CandleBatcher.createOneMinuteBatchedCandle([candle]), mockState);
 
     expect(advice).toBeUndefined();
   });
