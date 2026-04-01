@@ -1,3 +1,4 @@
+// @ts-ignore No type declarations available for dotenv-defaults
 import 'dotenv-defaults/config.js';
 import {ms, StringValue} from 'ms';
 import {parseArgs} from 'node:util';
