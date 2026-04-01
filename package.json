@@ -34,6 +34,7 @@
   },
   "version": "0.0.0",
   "overrides": {
+    "axios": ">=1.14.0",
     "esbuild": ">=0.25.0",
     "tar": ">=7.5.11",
     "@esbuild-kit/core-utils": {
