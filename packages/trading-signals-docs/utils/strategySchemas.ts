@@ -1,10 +1,10 @@
 import {z} from 'zod';
 import type {ExchangeCandle} from '@typedtrader/exchange';
-import {BuyAndHoldSchema, BuyOnceSchema, BuyBelowSellAboveSchema, CoinFlipSchema, MultiIndicatorConfluenceSchema, ScalpSchema, suggestScalpOffset} from 'trading-strategies';
+import {BuyAndHoldSchema, BuyOnceSchema, BuyBelowSellAboveSchema, CoinFlipSchema, MultiIndicatorConfluenceSchema, ScalpSchema, MeanReversionSchema, suggestScalpOffset} from 'trading-strategies';
 
-export {BuyAndHoldSchema, BuyOnceSchema, BuyBelowSellAboveSchema, CoinFlipSchema, MultiIndicatorConfluenceSchema, ScalpSchema};
+export {BuyAndHoldSchema, BuyOnceSchema, BuyBelowSellAboveSchema, CoinFlipSchema, MultiIndicatorConfluenceSchema, ScalpSchema, MeanReversionSchema};
 
-export type StrategyId = 'buy-and-hold' | 'buy-once' | 'buy-below-sell-above' | 'coin-flip' | 'multi-indicator-confluence' | 'scalp';
+export type StrategyId = 'buy-and-hold' | 'buy-once' | 'buy-below-sell-above' | 'coin-flip' | 'multi-indicator-confluence' | 'scalp' | 'mean-reversion';
 
 export interface StrategyDefinition {
   id: StrategyId;
@@ -113,5 +113,13 @@ export const strategyDefinitions: StrategyDefinition[] = [
 
       return {offset, emaPeriod: 5};
     },
+  },
+  {
+    id: 'mean-reversion',
+    name: 'Mean Reversion',
+    description:
+      'Batches 1-minute candles into 1-hour bars and applies Bollinger Bands (20, 2.5). Sells when price breaks above the upper band; rebuys when it returns to the middle band.',
+    schema: MeanReversionSchema,
+    getDefaultConfig: () => ({}),
   },
 ];

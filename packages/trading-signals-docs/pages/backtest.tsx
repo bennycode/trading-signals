@@ -10,6 +10,7 @@ import {
   CoinFlipStrategy,
   MultiIndicatorConfluenceStrategy,
   ScalpStrategy,
+  MeanReversionStrategy,
   type BacktestResult,
   BuyOnceConfig,
   BuyBelowSellAboveConfig,
@@ -37,6 +38,8 @@ function createStrategy(strategyId: StrategyId, config: Record<string, unknown>)
       return new MultiIndicatorConfluenceStrategy(config as MultiIndicatorConfluenceConfig);
     case 'scalp':
       return new ScalpStrategy(config as ScalpConfig);
+    case 'mean-reversion':
+      return new MeanReversionStrategy();
   }
 }
 
