@@ -7,6 +7,7 @@ import {
   MultiIndicatorConfluenceStrategy,
   MultiIndicatorConfluenceSchema,
 } from '../strategy-multi-indicator-confluence/MultiIndicatorConfluenceStrategy.js';
+import {MeanReversionStrategy, MeanReversionSchema} from '../strategy-mean-reversion/MeanReversionStrategy.js';
 import {ScalpStrategy, ScalpSchema} from '../strategy-scalp/ScalpStrategy.js';
 import type {Strategy} from './Strategy.js';
 
@@ -40,6 +41,10 @@ const registry: Record<string, StrategyEntry> = {
   [ScalpStrategy.NAME]: {
     create: (config: unknown) => new ScalpStrategy(ScalpSchema.parse(config)),
     schema: ScalpSchema,
+  },
+  [MeanReversionStrategy.NAME]: {
+    create: () => new MeanReversionStrategy(),
+    schema: MeanReversionSchema,
   },
 };
 

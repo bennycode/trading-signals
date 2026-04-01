@@ -6,6 +6,7 @@ export {BuyBelowSellAboveStrategy, BuyBelowSellAboveSchema, type BuyBelowSellAbo
 export {CoinFlipStrategy, CoinFlipSchema} from './strategy-coin-flip/CoinFlipStrategy.js';
 export {MultiIndicatorConfluenceStrategy, MultiIndicatorConfluenceSchema, type MultiIndicatorConfluenceConfig} from './strategy-multi-indicator-confluence/MultiIndicatorConfluenceStrategy.js';
 export {ScalpStrategy, ScalpSchema, type ScalpConfig} from './strategy-scalp/ScalpStrategy.js';
+export {MeanReversionStrategy, MeanReversionSchema} from './strategy-mean-reversion/MeanReversionStrategy.js';
 export {suggestScalpOffset} from './strategy-scalp/suggestScalpOffset.js';
 export * from './report/index.js';
 export {
