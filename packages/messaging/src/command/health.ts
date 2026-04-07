@@ -28,7 +28,7 @@ export const health = async () => {
   return lines.join('\n');
 };
 
-function formatBytes(bytes: number): string {
+function formatBytes(bytes: number) {
   const mb = bytes / 1024 / 1024;
   if (mb >= 1024) {
     return `${(mb / 1024).toFixed(1)} GB`;
