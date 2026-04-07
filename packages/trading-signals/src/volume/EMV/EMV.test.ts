@@ -8,11 +8,11 @@ describe('EMV', () => {
       const candles = [
         {close: 62.15, high: 62.34, low: 61.37, volume: 7849},
         {close: 60.81, high: 62.05, low: 60.69, volume: 11692},
-        {close: 60.45, high: 62.27, low: 60.10, volume: 10575},
+        {close: 60.45, high: 62.27, low: 60.1, volume: 10575},
         {close: 59.18, high: 60.79, low: 58.61, volume: 13059},
         {close: 59.24, high: 59.93, low: 58.71, volume: 20734},
-        {close: 60.20, high: 61.75, low: 59.86, volume: 29630},
-        {close: 58.48, high: 60.00, low: 57.97, volume: 17705},
+        {close: 60.2, high: 61.75, low: 59.86, volume: 29630},
+        {close: 58.48, high: 60.0, low: 57.97, volume: 17705},
       ] as const;
 
       const emv = new EMV(5);
