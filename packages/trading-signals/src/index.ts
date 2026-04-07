@@ -4,3 +4,4 @@ export * from './trend/index.js';
 export * from './types/index.js';
 export * from './util/index.js';
 export * from './volatility/index.js';
+export * from './volume/index.js';

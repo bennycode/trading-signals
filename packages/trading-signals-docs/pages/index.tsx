@@ -31,6 +31,14 @@ export default function Home() {
       color: 'from-orange-500 to-red-500',
     },
     {
+      name: 'Volume Indicators',
+      description: 'Analyze trading volume to confirm trends and identify reversals',
+      href: '/indicators/volume',
+      icon: '📊',
+      indicators: ['AD', 'CMF', 'PVT', 'EMV', 'VROC', 'VWMA'],
+      color: 'from-emerald-500 to-teal-500',
+    },
+    {
       name: 'Utility Functions',
       description: 'Mathematical utilities for technical analysis',
       href: '/indicators/utilities',
