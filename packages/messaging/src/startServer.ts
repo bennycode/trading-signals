@@ -4,6 +4,7 @@ import {
   accountRemove,
   accountTime,
   candle,
+  health,
   price,
   reportAdd,
   reportList,
@@ -77,6 +78,10 @@ function registerCommands(platform: MessagingPlatform, monitors: Monitors): void
 
   platform.registerCommand('time', async ctx => {
     await ctx.reply(await time());
+  });
+
+  platform.registerCommand('health', async ctx => {
+    await ctx.reply(await health());
   });
 
   platform.registerCommand('uptime', async ctx => {
