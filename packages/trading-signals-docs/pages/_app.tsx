@@ -13,6 +13,7 @@ export default function App({Component, pageProps}: AppProps) {
     {name: 'Trend', href: '/indicators/trend'},
     {name: 'Momentum', href: '/indicators/momentum'},
     {name: 'Volatility', href: '/indicators/volatility'},
+    {name: 'Volume', href: '/indicators/volume'},
     {name: 'Utilities', href: '/indicators/utilities'},
     {name: 'Backtest', href: '/backtest'},
   ];

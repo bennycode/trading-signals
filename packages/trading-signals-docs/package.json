@@ -21,6 +21,7 @@
     "@vitejs/plugin-react": "^6.0.1",
     "autoprefixer": "^10.4.24",
     "jsdom": "^29.0.1",
+    "portless": "^0.9.6",
     "postcss": "^8.5.6",
     "tailwindcss": "^4.2.2"
   },
@@ -28,7 +29,7 @@
   "private": true,
   "scripts": {
     "build": "next build",
-    "dev": "next dev",
+    "dev": "portless trading-signals-docs next dev",
     "dist": "npm run build",
     "lint": "exit 0",
     "start": "next start",
