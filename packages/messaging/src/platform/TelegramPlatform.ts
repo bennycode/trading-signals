@@ -1,12 +1,14 @@
 import {Markup, Telegraf} from 'telegraf';
 import type {Context} from 'telegraf';
-import {getAvailableReportNames} from 'trading-strategies';
+import {getAvailableReportNames, reportRequiresAccount} from 'trading-strategies';
 import type {CommandHandler, MessageContext, MessagingPlatform, PlatformInfo} from './MessagingPlatform.js';
 import {reportAdd} from '../command/report/reportAdd.js';
+import {Account} from '../database/models/Account.js';
 import type {ReportScheduler} from '../service/ReportScheduler.js';
 
 const PLATFORM_PREFIX = 'telegram:';
 const REPORT_CALLBACK_PREFIX = 'report:';
+const ACCOUNT_CALLBACK_PREFIX = 'reportaccount:';
 const MODE_CALLBACK_PREFIX = 'reportmode:';
 const INTERVAL_CALLBACK_PREFIX = 'reportinterval:';
 
@@ -103,11 +105,33 @@ export class TelegramPlatform implements MessagingPlatform {
       await ctx.reply('Select a report to run:', Markup.inlineKeyboard(buttons));
     });
 
-    // Step 2: User selected a report — ask run once or schedule
+    // Step 2: User selected a report — if it needs an account, ask for one; otherwise ask run mode
     this.#bot.action(new RegExp(`^${REPORT_CALLBACK_PREFIX}(.+)$`), async ctx => {
       await ctx.answerCbQuery();
 
       const reportName = ctx.match[1];
+      const senderId = ctx.from?.id?.toString();
+      if (!senderId) return;
+
+      if (reportRequiresAccount(reportName)) {
+        const userId = `${PLATFORM_PREFIX}${senderId}`;
+        const userAccounts = Account.findByUserId(userId);
+
+        if (userAccounts.length === 0) {
+          await ctx.editMessageText(`Report "${reportName}" requires an exchange account.\nUse /accountadd to add one first.`);
+          return;
+        }
+
+        const buttons = userAccounts.map(acc => [
+          Markup.button.callback(
+            `${acc.name} (${acc.exchange}${acc.isPaper ? ' paper' : ''})`,
+            `${ACCOUNT_CALLBACK_PREFIX}${acc.id}:${reportName}`
+          ),
+        ]);
+
+        await ctx.editMessageText(`Report: ${reportName}\nSelect an account:`, Markup.inlineKeyboard(buttons));
+        return;
+      }
 
       await ctx.editMessageText(
         `Report: ${reportName}\nRun once or schedule recurring?`,
@@ -118,18 +142,37 @@ export class TelegramPlatform implements MessagingPlatform {
       );
     });
 
+    // Step 2b: User selected an account — ask run mode
+    this.#bot.action(new RegExp(`^${ACCOUNT_CALLBACK_PREFIX}(\\d+):(.+)$`), async ctx => {
+      await ctx.answerCbQuery();
+
+      const accountId = ctx.match[1];
+      const reportName = ctx.match[2];
+
+      // Carry accountId through by appending it to the reportName in the callback data
+      const reportWithAccount = `${reportName} ${accountId}`;
+
+      await ctx.editMessageText(
+        `Report: ${reportName} (account ${accountId})\nRun once or schedule recurring?`,
+        Markup.inlineKeyboard([
+          [Markup.button.callback('Run once', `${MODE_CALLBACK_PREFIX}once:${reportWithAccount}`)],
+          [Markup.button.callback('Schedule recurring', `${MODE_CALLBACK_PREFIX}schedule:${reportWithAccount}`)],
+        ])
+      );
+    });
+
     // Step 3a: Run once
     this.#bot.action(new RegExp(`^${MODE_CALLBACK_PREFIX}once:(.+)$`), async ctx => {
       await ctx.answerCbQuery();
 
-      const reportName = ctx.match[1];
+      const reportInput = ctx.match[1];
       const senderId = ctx.from?.id?.toString();
       if (!senderId) return;
 
-      await ctx.editMessageText(`Running report: ${reportName}...`);
+      await ctx.editMessageText(`Running report: ${reportInput.split(' ')[0]}...`);
 
       const userId = `${PLATFORM_PREFIX}${senderId}`;
-      const result = await reportAdd(reportName, userId);
+      const result = await reportAdd(reportInput, userId);
 
       await replyWithMarkdown(ctx, result.message);
     });
@@ -138,20 +181,21 @@ export class TelegramPlatform implements MessagingPlatform {
     this.#bot.action(new RegExp(`^${MODE_CALLBACK_PREFIX}schedule:(.+)$`), async ctx => {
       await ctx.answerCbQuery();
 
-      const reportName = ctx.match[1];
+      const reportInput = ctx.match[1];
+      const reportName = reportInput.split(' ')[0];
 
       await ctx.editMessageText(
         `Report: ${reportName}\nSelect interval:`,
         Markup.inlineKeyboard([
           [
-            Markup.button.callback('1m', `${INTERVAL_CALLBACK_PREFIX}1m:${reportName}`),
-            Markup.button.callback('1h', `${INTERVAL_CALLBACK_PREFIX}1h:${reportName}`),
-            Markup.button.callback('6h', `${INTERVAL_CALLBACK_PREFIX}6h:${reportName}`),
+            Markup.button.callback('1m', `${INTERVAL_CALLBACK_PREFIX}1m:${reportInput}`),
+            Markup.button.callback('1h', `${INTERVAL_CALLBACK_PREFIX}1h:${reportInput}`),
+            Markup.button.callback('6h', `${INTERVAL_CALLBACK_PREFIX}6h:${reportInput}`),
           ],
           [
-            Markup.button.callback('12h', `${INTERVAL_CALLBACK_PREFIX}12h:${reportName}`),
-            Markup.button.callback('1d', `${INTERVAL_CALLBACK_PREFIX}1d:${reportName}`),
-            Markup.button.callback('1w', `${INTERVAL_CALLBACK_PREFIX}1w:${reportName}`),
+            Markup.button.callback('12h', `${INTERVAL_CALLBACK_PREFIX}12h:${reportInput}`),
+            Markup.button.callback('1d', `${INTERVAL_CALLBACK_PREFIX}1d:${reportInput}`),
+            Markup.button.callback('1w', `${INTERVAL_CALLBACK_PREFIX}1w:${reportInput}`),
           ],
         ])
       );
@@ -162,14 +206,14 @@ export class TelegramPlatform implements MessagingPlatform {
       await ctx.answerCbQuery();
 
       const interval = ctx.match[1];
-      const reportName = ctx.match[2];
+      const reportInput = ctx.match[2];
       const senderId = ctx.from?.id?.toString();
       if (!senderId) return;
 
-      await ctx.editMessageText(`Scheduling report: ${reportName} every ${interval}...`);
+      await ctx.editMessageText(`Scheduling report: ${reportInput.split(' ')[0]} every ${interval}...`);
 
       const userId = `${PLATFORM_PREFIX}${senderId}`;
-      const result = await reportAdd(`${reportName} --every ${interval}`, userId);
+      const result = await reportAdd(`${reportInput} --every ${interval}`, userId);
 
       await replyWithMarkdown(ctx, result.message);
 

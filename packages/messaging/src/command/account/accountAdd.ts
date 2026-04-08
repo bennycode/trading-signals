@@ -19,7 +19,7 @@ export async function accountAdd(request: string, userId: string) {
   const parts = request.trim().split(' ');
 
   if (parts.length !== 5) {
-    return 'Invalid format. Usage: /accountAdd <name> <exchange> <isPaper> <apiKey> <apiSecret>';
+    return 'Invalid format. Usage: /accountadd <name> <exchange> <isPaper> <apiKey> <apiSecret>';
   }
 
   const [name, exchange, isPaperStr, apiKey, apiSecret] = parts;

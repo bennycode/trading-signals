@@ -14,3 +14,8 @@ export {
   SP500MomentumSchema,
   type SP500MomentumConfig,
 } from './report-sp500-momentum/SP500MomentumReport.js';
+export {
+  ScalpScannerReport,
+  ScalpScannerSchema,
+  type ScalpScannerConfig,
+} from './report-scalp-scanner/ScalpScannerReport.js';

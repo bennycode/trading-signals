@@ -8,7 +8,7 @@ describe('ReportRegistry', () => {
   });
 
   it('creates a report by name with config', () => {
-    const report = createReport('@typedtrader/report-sp500-momentum', {apiKey: 'test-key'});
+    const report = createReport('@typedtrader/report-sp500-momentum', {apiKey: 'test-key', apiSecret: 'test-secret'});
     expect(report).toBeDefined();
     expect(report.config.apiKey).toBe('test-key');
   });

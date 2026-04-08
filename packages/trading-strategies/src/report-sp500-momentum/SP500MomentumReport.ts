@@ -1,12 +1,11 @@
 import {z} from 'zod';
-import {restClient} from '@massive.com/client-js';
-import {retry} from 'ts-retry-promise';
 import {Report} from '../report/Report.js';
 import {findFirstTradingDay, getDateString} from '../util/TimeUtil.js';
 import {SP500_TICKERS} from './sp500Tickers.js';
 
 export const SP500MomentumSchema = z.object({
   apiKey: z.string().min(1),
+  apiSecret: z.string().min(1),
 });
 
 export type SP500MomentumConfig = z.infer<typeof SP500MomentumSchema>;
@@ -18,10 +17,16 @@ interface MomentumResult {
   returnPct: number;
 }
 
-interface Bar {
-  T?: string;
-  c?: number;
+interface AlpacaBar {
+  c: number;
+  h: number;
+  l: number;
+  o: number;
+  t: string;
+  v: number;
 }
+
+const BATCH_SIZE = 50;
 
 export class SP500MomentumReport extends Report<SP500MomentumConfig> {
   static override NAME = '@typedtrader/report-sp500-momentum';
@@ -31,8 +36,6 @@ export class SP500MomentumReport extends Report<SP500MomentumConfig> {
   }
 
   async run(): Promise<string> {
-    const rest = restClient(this.config.apiKey);
-
     const now = new Date();
 
     // 12-1 momentum: skip the most recent month, look back 12 months from there
@@ -46,8 +49,8 @@ export class SP500MomentumReport extends Report<SP500MomentumConfig> {
     const fromDate = getDateString(pastDate);
 
     const [currentPrices, pastPrices] = await Promise.all([
-      this.#getClosingPrices(rest, toDate),
-      this.#getClosingPrices(rest, fromDate),
+      this.#getClosingPrices(SP500_TICKERS, recentDate),
+      this.#getClosingPrices(SP500_TICKERS, pastDate),
     ]);
 
     const results: MomentumResult[] = [];
@@ -70,28 +73,67 @@ export class SP500MomentumReport extends Report<SP500MomentumConfig> {
     return this.#formatResults(results, fromDate, toDate);
   }
 
-  async #getClosingPrices(rest: ReturnType<typeof restClient>, date: string): Promise<Map<string, number>> {
-    const response = await retry(() => rest.getGroupedStocksAggregates({date}), {
-      backoff: 'EXPONENTIAL',
-      delay: 10_000,
-      maxBackOff: 30_000,
-      retries: 30,
-    });
-    const bars: Bar[] = response.results ?? [];
+  async #getClosingPrices(symbols: string[], targetDate: Date): Promise<Map<string, number>> {
     const prices = new Map<string, number>();
-    for (const bar of bars) {
-      if (bar.T && bar.c != null) {
-        prices.set(bar.T, bar.c);
+
+    // Fetch a 5-day window around the target date to account for holidays
+    const start = new Date(targetDate);
+    const end = new Date(targetDate);
+    end.setDate(end.getDate() + 5);
+
+    for (let i = 0; i < symbols.length; i += BATCH_SIZE) {
+      const batch = symbols.slice(i, i + BATCH_SIZE);
+      const batchPrices = await this.#fetchClosingPricesForBatch(batch, start, end);
+
+      for (const [symbol, price] of batchPrices) {
+        prices.set(symbol, price);
       }
     }
+
     return prices;
+  }
+
+  async #fetchClosingPricesForBatch(symbols: string[], start: Date, end: Date): Promise<Map<string, number>> {
+    const result = new Map<string, number>();
+
+    const params = new URLSearchParams({
+      symbols: symbols.join(','),
+      timeframe: '1Day',
+      start: start.toISOString(),
+      end: end.toISOString(),
+      feed: 'iex',
+      limit: '10000',
+    });
+
+    const resp = await fetch('https://data.alpaca.markets/v2/stocks/bars?' + params, {
+      headers: {
+        'APCA-API-KEY-ID': this.config.apiKey,
+        'APCA-API-SECRET-KEY': this.config.apiSecret,
+      },
+    });
+
+    if (!resp.ok) {
+      throw new Error(`Alpaca API error: ${resp.status} ${await resp.text()}`);
+    }
+
+    const data = (await resp.json()) as {bars?: Record<string, AlpacaBar[]>};
+    const bars = data.bars ?? {};
+
+    for (const [symbol, symbolBars] of Object.entries(bars)) {
+      if (symbolBars.length > 0) {
+        // Use the first available bar's close as the price near the target date
+        result.set(symbol, symbolBars[0].c);
+      }
+    }
+
+    return result;
   }
 
   #formatResults(results: MomentumResult[], fromDate: string, toDate: string): string {
     const top = 20;
     const lines: string[] = [];
 
-    lines.push(`S&P 500 Momentum: ${fromDate} → ${toDate}`);
+    lines.push(`**S&P 500 Momentum: ${fromDate} → ${toDate}**`);
     lines.push('');
     lines.push(`**Top ${top} Winners (12m return)**`);
     lines.push('```');
@@ -123,6 +165,28 @@ export class SP500MomentumReport extends Report<SP500MomentumConfig> {
 
     lines.push('');
     lines.push(`Stocks ranked: ${results.length} / ${SP500_TICKERS.length}`);
+
+    // Recommendation
+    const winners = results.slice(0, top);
+    const losers = results.slice(-top).reverse();
+    lines.push('');
+    lines.push('**Recommendation (based on 12-1 momentum, 3-month hold):**');
+    lines.push(`Buy: ${winners.map(r => r.ticker).join(', ')}`);
+    lines.push(`Avoid: ${losers.map(r => r.ticker).join(', ')}`);
+    lines.push('Hold for 3 months, then re-evaluate.');
+
+    // Disclaimer
+    lines.push('');
+    lines.push(
+      'This report implements the 12-1 cross-sectional momentum strategy as described by Jegadeesh & Titman (1993). ' +
+        'Their research found that buying past winners and selling past losers yields significant positive returns, ' +
+        'a finding replicated across 40+ countries and 200+ years of data. ' +
+        'The 12-month formation / 3-month holding combination produced the highest average monthly return of 1.01% ' +
+        'in the original study (Wiest, 2023, doi:10.1007/s11408-022-00417-8). ' +
+        'However, momentum strategies are subject to sharp drawdowns (especially during market reversals), ' +
+        'and past performance does not guarantee future results. ' +
+        'Always do your own research and make informed decisions before trading.'
+    );
 
     return lines.join('\n');
   }

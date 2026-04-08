@@ -9,15 +9,15 @@ export interface StrategyAddResult {
   strategy?: StrategyAttributes;
 }
 
-// Request Example: "/strategyAdd @typedtrader/strategy-buy-and-hold 1 SHOP,USD"
-// Request Example: "/strategyAdd @typedtrader/strategy-buy-once 1 SHOP,USD {"buyAt":"150"}"
+// Request Example: "/strategyadd @typedtrader/strategy-buy-and-hold 1 SHOP,USD"
+// Request Example: "/strategyadd @typedtrader/strategy-buy-once 1 SHOP,USD {"buyAt":"150"}"
 // Format: "<strategyName> <accountId> <pair> [configJSON]"
 export const strategyAdd = async (request: string, userId: string): Promise<StrategyAddResult> => {
   const parts = request.trim().split(' ');
 
   if (parts.length < 3) {
     return {
-      message: `Invalid format. Usage: /strategyAdd <strategyName> <accountId> <pair> [configJSON]\nExample: /strategyAdd @typedtrader/strategy-buy-and-hold 1 SHOP,USD\nAvailable strategies: ${getStrategyNames().join(', ')}`,
+      message: `Invalid format. Usage: /strategyadd <strategyName> <accountId> <pair> [configJSON]\nExample: /strategyadd @typedtrader/strategy-buy-and-hold 1 SHOP,USD\nAvailable strategies: ${getStrategyNames().join(', ')}`,
     };
   }
 
