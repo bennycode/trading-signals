@@ -4,11 +4,11 @@ A scalping strategy that enters on short-term EMA momentum and then ping-pongs l
 
 ## How it works
 
-| Phase | Action |
-| --- | --- |
-| **entry** | Feeds 1-minute candles into a short EMA. When price closes above the EMA, fires a market BUY. |
-| **pendingAdvice** | After a fill, places a limit order on the opposite side at `fill_price +/- offset`. |
-| **waitingForFill** | Sits idle until the limit order fills, then loops back to pendingAdvice. |
+| Phase              | Action                                                                                        |
+| ------------------ | --------------------------------------------------------------------------------------------- |
+| **entry**          | Feeds 1-minute candles into a short EMA. When price closes above the EMA, fires a market BUY. |
+| **pendingAdvice**  | After a fill, places a limit order on the opposite side at `fill_price +/- offset`.           |
+| **waitingForFill** | Sits idle until the limit order fills, then loops back to pendingAdvice.                      |
 
 ## Configuration
 
@@ -59,14 +59,14 @@ AMD exhibited textbook choppy behavior over Q1 2026:
 
 ### Backtest results ($10,000 starting capital, commission-free)
 
-| Offset | Source | Trades | Win Rate | Return | P&L |
-| --- | --- | --- | --- | --- | --- |
-| **$2.04** | **Auto (ATR)** | **30** | **100%** | **+17.1%** | **+$1,713** |
-| $1.00 | Manual | 42 | 100% | +13.6% | +$1,361 |
-| $2.00 | Manual | 30 | 100% | +16.9% | +$1,693 |
-| $3.00 | Manual | 20 | 100% | +16.9% | +$1,690 |
-| $5.00 | Manual | 14 | 100% | +15.6% | +$1,561 |
-| _Buy & hold_ | _Baseline_ | _1_ | - | _+5.5%_ | _+$552_ |
+| Offset       | Source         | Trades | Win Rate | Return     | P&L         |
+| ------------ | -------------- | ------ | -------- | ---------- | ----------- |
+| **$2.04**    | **Auto (ATR)** | **30** | **100%** | **+17.1%** | **+$1,713** |
+| $1.00        | Manual         | 42     | 100%     | +13.6%     | +$1,361     |
+| $2.00        | Manual         | 30     | 100%     | +16.9%     | +$1,693     |
+| $3.00        | Manual         | 20     | 100%     | +16.9%     | +$1,690     |
+| $5.00        | Manual         | 14     | 100%     | +15.6%     | +$1,561     |
+| _Buy & hold_ | _Baseline_     | _1_    | -        | _+5.5%_    | _+$552_     |
 
 The auto-computed offset ($2.04, from daily ATR x 0.2) landed at the optimal point and beat every manually-tuned value.
 
@@ -88,13 +88,13 @@ INTC over the same Q1 2026 period shows why stock characteristics matter. While 
 
 ### Backtest comparison ($10,000 starting capital, commission-free)
 
-| Metric | INTC | AMD |
-| --- | --- | --- |
-| Auto offset | $0.58 | $2.04 |
-| Trades | 8 | 30 |
-| Scalp return | +5.8% | +17.1% |
-| Buy & hold | +30.9% | +5.5% |
-| **Winner** | **Buy & hold** | **Scalp** |
+| Metric       | INTC           | AMD       |
+| ------------ | -------------- | --------- |
+| Auto offset  | $0.58          | $2.04     |
+| Trades       | 8              | 30        |
+| Scalp return | +5.8%          | +17.1%    |
+| Buy & hold   | +30.9%         | +5.5%     |
+| **Winner**   | **Buy & hold** | **Scalp** |
 
 The strategy kept selling into the uptrend and re-buying slightly lower, capturing only small oscillations while missing the bulk of the 31% rally. A simple buy-and-hold returned 5x more on INTC.
 
