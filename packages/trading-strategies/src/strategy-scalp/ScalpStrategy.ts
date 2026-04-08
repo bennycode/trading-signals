@@ -1,14 +1,16 @@
 import {z} from 'zod';
 import Big from 'big.js';
-import {ExchangeOrderSide, ExchangeOrderType} from '@typedtrader/exchange';
+import {CandleBatcher, ExchangeOrderSide, ExchangeOrderType} from '@typedtrader/exchange';
 import type {ExchangeFill, OneMinuteBatchedCandle, OrderAdvice, TradingSessionState} from '@typedtrader/exchange';
-import {EMA} from 'trading-signals';
+import {EMA, ER} from 'trading-signals';
 import {Strategy} from '../strategy/Strategy.js';
 import {positiveNumberString} from '../util/validators.js';
+import {suggestScalpOffset} from './suggestScalpOffset.js';
 
 export const ScalpSchema = z.object({
-  /** Nominal price offset for each leg of the scalp (e.g., "0.10" means sell at fill+0.10, re-buy at fill-0.10). */
-  offset: positiveNumberString,
+  /** Nominal price offset for each leg of the scalp (e.g., "0.10" means sell at fill+0.10, re-buy at fill-0.10).
+   *  When omitted, the offset is auto-computed from historical candles passed to `init()`. */
+  offset: positiveNumberString.optional(),
   /** EMA period used for the initial entry filter. Default: 5. */
   emaPeriod: z.number().int().positive().optional().default(5),
 });
@@ -25,8 +27,10 @@ type ScalpState = {
 
 export class ScalpStrategy extends Strategy {
   static override NAME = '@typedtrader/strategy-scalp';
+  static readonly ER_THRESHOLD = 0.4;
 
   readonly #ema: EMA;
+  #scalpFriendly = true;
 
   constructor(config: ScalpConfig) {
     super({
@@ -46,11 +50,81 @@ export class ScalpStrategy extends Strategy {
 
   /**
    * Pre-seed the EMA with historical candles to skip the live warmup period.
+   * When no offset is configured, it is auto-computed from these candles using
+   * daily ATR (takes <5ms even on 20k+ candles).
+   *
+   * Also evaluates Range Efficiency (ER) to determine if the stock is
+   * scalp-friendly. Trending stocks (ER >= 0.4) are flagged as unsuitable.
    */
   init(candles: OneMinuteBatchedCandle[]): void {
+    if (candles.length > 0) {
+      const exchangeCandles = CandleBatcher.toExchangeCandles(candles);
+
+      if (!this.#config.offset) {
+        const offset = suggestScalpOffset(exchangeCandles);
+        this.#config.offset = offset.toFixed(2);
+      }
+
+      this.#scalpFriendly = this.#computeRangeEfficiency(exchangeCandles);
+    }
+
     for (const candle of candles) {
       this.#ema.add(candle.close.toNumber());
     }
+  }
+
+  get scalpFriendly(): boolean {
+    return this.#scalpFriendly;
+  }
+
+  #computeRangeEfficiency(candles: import('@typedtrader/exchange').ExchangeCandle[]): boolean {
+    const ONE_DAY_IN_MS = 86_400_000;
+    const isSubDaily = candles[0].sizeInMillis < ONE_DAY_IN_MS;
+
+    // Aggregate to daily bars if needed
+    const dailyCandles: {close: number; high: number; low: number}[] = [];
+
+    if (isSubDaily) {
+      const dayMap = new Map<string, {high: number; low: number; close: number}>();
+
+      for (const c of candles) {
+        const day = c.openTimeInISO.slice(0, 10);
+        let b = dayMap.get(day);
+
+        if (!b) {
+          b = {high: -Infinity, low: Infinity, close: 0};
+          dayMap.set(day, b);
+        }
+
+        const h = parseFloat(c.high);
+        const l = parseFloat(c.low);
+
+        if (h > b.high) b.high = h;
+        if (l < b.low) b.low = l;
+
+        b.close = parseFloat(c.close);
+      }
+
+      for (const bar of dayMap.values()) {
+        dailyCandles.push(bar);
+      }
+    } else {
+      for (const c of candles) {
+        dailyCandles.push({close: parseFloat(c.close), high: parseFloat(c.high), low: parseFloat(c.low)});
+      }
+    }
+
+    if (dailyCandles.length < 14) {
+      return true;
+    }
+
+    const er = new ER(dailyCandles.length);
+
+    for (const bar of dailyCandles) {
+      er.add(bar);
+    }
+
+    return er.getResultOrThrow() < ScalpStrategy.ER_THRESHOLD;
   }
 
   async onFill(fill: ExchangeFill, _state: TradingSessionState): Promise<void> {
@@ -91,6 +165,10 @@ export class ScalpStrategy extends Strategy {
     const closePrice = candle.close.toNumber();
     this.#ema.add(closePrice);
 
+    if (!this.#scalpFriendly) {
+      return;
+    }
+
     if (!this.#ema.isStable) {
       return;
     }
@@ -114,7 +192,7 @@ export class ScalpStrategy extends Strategy {
   }
 
   #handlePendingAdvice(): OrderAdvice | void {
-    if (!this.#state.lastFillPrice || !this.#state.lastFillSide) {
+    if (!this.#state.lastFillPrice || !this.#state.lastFillSide || !this.#config.offset) {
       return;
     }
 

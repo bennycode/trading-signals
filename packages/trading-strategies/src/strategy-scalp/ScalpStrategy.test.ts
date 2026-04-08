@@ -251,4 +251,39 @@ describe('ScalpStrategy', () => {
   it('has the correct strategy name', () => {
     expect(ScalpStrategy.NAME).toBe('@typedtrader/strategy-scalp');
   });
+
+  it('accepts config without offset', () => {
+    expect(() => ScalpSchema.parse({})).not.toThrow();
+    expect(() => ScalpSchema.parse({emaPeriod: 10})).not.toThrow();
+  });
+
+  it('auto-computes offset from init() candles when not configured', () => {
+    const strategy = new ScalpStrategy({emaPeriod: 3});
+
+    // Build 20 "trading days" worth of 1-min candles spread across different dates
+    const candles: ExchangeCandle[] = [];
+    const dayMs = 86_400_000;
+    for (let day = 0; day < 20; day++) {
+      for (let min = 0; min < 7; min++) {
+        const base = 100 + (day % 5) * 3;
+        const closeStr = String(base);
+        const ts = 1735689600000 + day * dayMs + min * 60000;
+        candles.push({
+          base: 'AAPL',
+          close: closeStr,
+          counter: 'USD',
+          high: String(base + 2),
+          low: String(base - 2),
+          open: closeStr,
+          openTimeInISO: new Date(ts).toISOString(),
+          openTimeInMillis: ts,
+          sizeInMillis: 60000,
+          volume: '1000',
+        });
+      }
+    }
+
+    // Should not throw — offset is auto-computed from the candles
+    strategy.init(candles.map(toBatched));
+  });
 });

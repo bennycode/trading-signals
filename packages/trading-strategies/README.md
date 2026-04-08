@@ -12,7 +12,7 @@ The "trading-strategies" library provides a TypeScript implementation for common
 
 **A good strategy should have:**
 
-- A clearly defined scenario for when it applies
+- A clearly defined scenario for when it applies (a choppy, range-bound stock requires a different approach than a trending one)
 - A stop-loss rule to cap downside risk
 - A profit target to lock in gains
 
