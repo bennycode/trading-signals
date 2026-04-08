@@ -1,7 +1,6 @@
 import {z} from 'zod';
 import {ER} from 'trading-signals';
 import {Report} from '../report/Report.js';
-import {SP500_SECTORS} from '../report-sp500-momentum/sp500Sectors.js';
 import {SP500_TICKERS} from '../report-sp500-momentum/sp500Tickers.js';
 import {ScalpStrategy} from '../strategy-scalp/ScalpStrategy.js';
 import {suggestScalpOffset} from '../strategy-scalp/suggestScalpOffset.js';
@@ -224,14 +223,13 @@ export class ScalpScannerReport extends Report<ScalpScannerConfig> {
     // Scalp-friendly table
     lines.push(`**Top ${Math.min(top, scalpFriendly.length)} Scalp-Friendly Stocks (lowest ER = most choppy)**`);
     lines.push('```');
-    lines.push('Rank  Ticker     Sector       ER      ATR%    Offset    Net Chg');
-    lines.push('----  ------     ------       ----    ----    ------    -------');
+    lines.push('Rank  Ticker     ER      ATR%    Offset    Net Chg    Price');
+    lines.push('----  ------     ----    ----    ------    -------    -----');
 
     for (let i = 0; i < Math.min(top, scalpFriendly.length); i++) {
       const r = scalpFriendly[i];
-      const sector = (SP500_SECTORS[r.symbol] ?? '').padEnd(12);
       lines.push(
-        `${String(i + 1).padStart(4)}  ${r.symbol.padEnd(10)} ${sector} ${r.er.toFixed(2).padStart(5)}   ${r.atrPct.toFixed(1).padStart(5)}%   ${r.suggestedOffset.padStart(6)}   ${(r.netChangePct >= 0 ? '+' : '') + r.netChangePct.toFixed(1).padStart(5)}%`
+        `${String(i + 1).padStart(4)}  ${r.symbol.padEnd(10)} ${r.er.toFixed(2).padStart(5)}   ${r.atrPct.toFixed(1).padStart(5)}%   ${r.suggestedOffset.padStart(6)}   ${(r.netChangePct >= 0 ? '+' : '') + r.netChangePct.toFixed(1).padStart(5)}%   $${r.priceEnd.toFixed(2)}`
       );
     }
     lines.push('```');
@@ -240,14 +238,13 @@ export class ScalpScannerReport extends Report<ScalpScannerConfig> {
     lines.push('');
     lines.push(`**Top ${Math.min(top, trending.length)} Trending Stocks (highest ER = most directional)**`);
     lines.push('```');
-    lines.push('Rank  Ticker     Sector       ER      ATR%    Net Chg');
-    lines.push('----  ------     ------       ----    ----    -------');
+    lines.push('Rank  Ticker     ER      ATR%    Net Chg    Price');
+    lines.push('----  ------     ----    ----    -------    -----');
 
     for (let i = 0; i < Math.min(top, trending.length); i++) {
       const r = trending[i];
-      const sector = (SP500_SECTORS[r.symbol] ?? '').padEnd(12);
       lines.push(
-        `${String(i + 1).padStart(4)}  ${r.symbol.padEnd(10)} ${sector} ${r.er.toFixed(2).padStart(5)}   ${r.atrPct.toFixed(1).padStart(5)}%   ${(r.netChangePct >= 0 ? '+' : '') + r.netChangePct.toFixed(1).padStart(5)}%`
+        `${String(i + 1).padStart(4)}  ${r.symbol.padEnd(10)} ${r.er.toFixed(2).padStart(5)}   ${r.atrPct.toFixed(1).padStart(5)}%   ${(r.netChangePct >= 0 ? '+' : '') + r.netChangePct.toFixed(1).padStart(5)}%   $${r.priceEnd.toFixed(2)}`
       );
     }
     lines.push('```');
@@ -259,8 +256,7 @@ export class ScalpScannerReport extends Report<ScalpScannerConfig> {
     if (picks.length > 0) {
       lines.push(`**Top Picks for Scalping (low ER + ATR >= 2%):**`);
       for (const r of picks) {
-        const sector = SP500_SECTORS[r.symbol] ?? '?';
-        lines.push(`- ${r.symbol} [${sector}] (ER: ${r.er.toFixed(2)}, ATR: ${r.atrPct.toFixed(1)}%, offset: ${r.suggestedOffset}, price: $${r.priceEnd.toFixed(2)})`);
+        lines.push(`- ${r.symbol} (ER: ${r.er.toFixed(2)}, ATR: ${r.atrPct.toFixed(1)}%, offset: ${r.suggestedOffset}, price: $${r.priceEnd.toFixed(2)})`);
       }
     } else {
       lines.push(`No strong scalp candidates found (need low ER + ATR >= 2%).`);
