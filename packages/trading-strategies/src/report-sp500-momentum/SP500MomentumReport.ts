@@ -1,6 +1,7 @@
 import {z} from 'zod';
 import {Report} from '../report/Report.js';
 import {findFirstTradingDay, getDateString} from '../util/TimeUtil.js';
+import {SP500_SECTORS} from './sp500Sectors.js';
 import {SP500_TICKERS} from './sp500Tickers.js';
 
 export const SP500MomentumSchema = z.object({
@@ -137,13 +138,14 @@ export class SP500MomentumReport extends Report<SP500MomentumConfig> {
     lines.push('');
     lines.push(`**Top ${top} Winners (12m return)**`);
     lines.push('```');
-    lines.push('Rank  Ticker     12m Return    Price Now    Price 12m Ago');
-    lines.push('----  ------     ----------    ---------    -------------');
+    lines.push('Rank  Ticker     Sector       12m Return    Price Now');
+    lines.push('----  ------     ------       ----------    ---------');
 
     for (let i = 0; i < Math.min(top, results.length); i++) {
       const r = results[i];
+      const sector = (SP500_SECTORS[r.ticker] ?? '').padEnd(12);
       lines.push(
-        `${String(i + 1).padStart(4)}  ${r.ticker.padEnd(10)} ${r.returnPct.toFixed(2).padStart(9)}%    $${r.priceNow.toFixed(2).padStart(8)}    $${r.price12MonthsAgo.toFixed(2).padStart(8)}`
+        `${String(i + 1).padStart(4)}  ${r.ticker.padEnd(10)} ${sector} ${r.returnPct.toFixed(2).padStart(9)}%    $${r.priceNow.toFixed(2).padStart(8)}`
       );
     }
     lines.push('```');
@@ -151,14 +153,15 @@ export class SP500MomentumReport extends Report<SP500MomentumConfig> {
     lines.push('');
     lines.push(`**Bottom ${top} Losers (12m return)**`);
     lines.push('```');
-    lines.push('Rank  Ticker     12m Return    Price Now    Price 12m Ago');
-    lines.push('----  ------     ----------    ---------    -------------');
+    lines.push('Rank  Ticker     Sector       12m Return    Price Now');
+    lines.push('----  ------     ------       ----------    ---------');
 
     const bottom = results.slice(-top).reverse();
     for (let i = 0; i < bottom.length; i++) {
       const r = bottom[i];
+      const sector = (SP500_SECTORS[r.ticker] ?? '').padEnd(12);
       lines.push(
-        `${String(i + 1).padStart(4)}  ${r.ticker.padEnd(10)} ${r.returnPct.toFixed(2).padStart(9)}%    $${r.priceNow.toFixed(2).padStart(8)}    $${r.price12MonthsAgo.toFixed(2).padStart(8)}`
+        `${String(i + 1).padStart(4)}  ${r.ticker.padEnd(10)} ${sector} ${r.returnPct.toFixed(2).padStart(9)}%    $${r.priceNow.toFixed(2).padStart(8)}`
       );
     }
     lines.push('```');
@@ -171,8 +174,8 @@ export class SP500MomentumReport extends Report<SP500MomentumConfig> {
     const losers = results.slice(-top).reverse();
     lines.push('');
     lines.push('**Recommendation (based on 12-1 momentum, 3-month hold):**');
-    lines.push(`Buy: ${winners.map(r => r.ticker).join(', ')}`);
-    lines.push(`Avoid: ${losers.map(r => r.ticker).join(', ')}`);
+    lines.push(`Buy: ${winners.map(r => `${r.ticker} (${SP500_SECTORS[r.ticker] ?? '?'})`).join(', ')}`);
+    lines.push(`Avoid: ${losers.map(r => `${r.ticker} (${SP500_SECTORS[r.ticker] ?? '?'})`).join(', ')}`);
     lines.push('Hold for 3 months, then re-evaluate.');
 
     // Disclaimer
