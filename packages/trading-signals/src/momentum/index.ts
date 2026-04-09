@@ -2,6 +2,7 @@ export * from './AC/AC.js';
 export * from './AO/AO.js';
 export * from './CCI/CCI.js';
 export * from './CG/CG.js';
+export * from './ER/ER.js';
 export * from './MACD/MACD.js';
 export * from './MOM/MOM.js';
 export * from './OBV/OBV.js';

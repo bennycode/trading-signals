@@ -7,17 +7,23 @@ describe('SP500MomentumReport', () => {
   });
 
   it('validates config with Zod schema', () => {
-    const parsed = SP500MomentumSchema.parse({apiKey: 'test-key'});
+    const parsed = SP500MomentumSchema.parse({apiKey: 'test-key', apiSecret: 'test-secret'});
     expect(parsed.apiKey).toBe('test-key');
+    expect(parsed.apiSecret).toBe('test-secret');
   });
 
   it('rejects config without apiKey', () => {
-    expect(() => SP500MomentumSchema.parse({})).toThrow();
+    expect(() => SP500MomentumSchema.parse({apiSecret: 'test'})).toThrow();
+  });
+
+  it('rejects config without apiSecret', () => {
+    expect(() => SP500MomentumSchema.parse({apiKey: 'test'})).toThrow();
   });
 
   it('stores config from constructor', () => {
-    const config = SP500MomentumSchema.parse({apiKey: 'my-key'});
+    const config = SP500MomentumSchema.parse({apiKey: 'my-key', apiSecret: 'my-secret'});
     const report = new SP500MomentumReport(config);
     expect(report.config.apiKey).toBe('my-key');
+    expect(report.config.apiSecret).toBe('my-secret');
   });
 });
