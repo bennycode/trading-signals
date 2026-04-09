@@ -28,9 +28,6 @@ interface ScanResult {
   er: number;
   atrPct: number;
   suggestedOffset: string;
-  priceStart: number;
-  priceEnd: number;
-  netChangePct: number;
 }
 
 interface DailyBar {
@@ -87,9 +84,6 @@ export class ScalpScannerReport extends Report<ScalpScannerConfig> {
       }
 
       const erValue = er.getResultOrThrow();
-      const firstClose = daily[0].close;
-      const lastClose = daily[daily.length - 1].close;
-      const netChangePct = ((lastClose / firstClose) - 1) * 100;
 
       // Compute ATR% for context
       const exchangeCandles = daily.map((bar, i) => ({
@@ -123,9 +117,6 @@ export class ScalpScannerReport extends Report<ScalpScannerConfig> {
         er: erValue,
         atrPct,
         suggestedOffset: offsetStr,
-        priceStart: firstClose,
-        priceEnd: lastClose,
-        netChangePct,
       });
     }
 
@@ -216,21 +207,19 @@ export class ScalpScannerReport extends Report<ScalpScannerConfig> {
       ...trendingTop.map(r => formatSymbolWithName(r.symbol, names, tableNameMax).length)
     );
 
-    const formatNet = (pct: number): string => (pct >= 0 ? '+' : '') + pct.toFixed(1) + '%';
-
     // Message 1: header + top scalp-friendly table
     lines.push(`**Scalp Scanner: ${total} stocks analyzed**`);
     lines.push(`Lookback: ${this.config.lookbackDays} trading days | ER threshold: ${this.config.erThreshold}`);
     lines.push('');
     lines.push(`**Top ${scalpFriendlyTop.length} Scalp-Friendly Stocks (lowest ER = most choppy)**`);
     lines.push('```');
-    lines.push(`Rank  ${'Stock'.padEnd(stockColWidth)}  ER     ATR%    Offset   Net      Price`);
-    lines.push(`----  ${'-'.repeat(stockColWidth)}  -----  ------  -------  -------  --------`);
+    lines.push(`Rank  ${'Stock'.padEnd(stockColWidth)}  ER     ATR%    Offset`);
+    lines.push(`----  ${'-'.repeat(stockColWidth)}  -----  ------  -------`);
     for (let i = 0; i < scalpFriendlyTop.length; i++) {
       const r = scalpFriendlyTop[i];
       const stock = formatSymbolWithName(r.symbol, names, tableNameMax).padEnd(stockColWidth);
       lines.push(
-        `${String(i + 1).padStart(4)}  ${stock}  ${r.er.toFixed(2).padStart(5)}  ${(r.atrPct.toFixed(1) + '%').padStart(6)}  ${r.suggestedOffset.padStart(7)}  ${formatNet(r.netChangePct).padStart(7)}  ${('$' + r.priceEnd.toFixed(2)).padStart(8)}`
+        `${String(i + 1).padStart(4)}  ${stock}  ${r.er.toFixed(2).padStart(5)}  ${(r.atrPct.toFixed(1) + '%').padStart(6)}  ${r.suggestedOffset.padStart(7)}`
       );
     }
     lines.push('```');
@@ -239,13 +228,13 @@ export class ScalpScannerReport extends Report<ScalpScannerConfig> {
     lines.push(MESSAGE_BREAK);
     lines.push(`**Top ${trendingTop.length} Trending Stocks (highest ER = most directional)**`);
     lines.push('```');
-    lines.push(`Rank  ${'Stock'.padEnd(stockColWidth)}  ER     ATR%    Net      Price`);
-    lines.push(`----  ${'-'.repeat(stockColWidth)}  -----  ------  -------  --------`);
+    lines.push(`Rank  ${'Stock'.padEnd(stockColWidth)}  ER     ATR%`);
+    lines.push(`----  ${'-'.repeat(stockColWidth)}  -----  ------`);
     for (let i = 0; i < trendingTop.length; i++) {
       const r = trendingTop[i];
       const stock = formatSymbolWithName(r.symbol, names, tableNameMax).padEnd(stockColWidth);
       lines.push(
-        `${String(i + 1).padStart(4)}  ${stock}  ${r.er.toFixed(2).padStart(5)}  ${(r.atrPct.toFixed(1) + '%').padStart(6)}  ${formatNet(r.netChangePct).padStart(7)}  ${('$' + r.priceEnd.toFixed(2)).padStart(8)}`
+        `${String(i + 1).padStart(4)}  ${stock}  ${r.er.toFixed(2).padStart(5)}  ${(r.atrPct.toFixed(1) + '%').padStart(6)}`
       );
     }
     lines.push('```');
@@ -257,7 +246,7 @@ export class ScalpScannerReport extends Report<ScalpScannerConfig> {
     if (picks.length > 0) {
       lines.push(`**Top Picks for Scalping (low ER + ATR >= 2%):**`);
       for (const r of picks) {
-        lines.push(`- ${formatSymbolWithName(r.symbol, names)} (ER: ${r.er.toFixed(2)}, ATR: ${r.atrPct.toFixed(1)}%, offset: ${r.suggestedOffset}, price: $${r.priceEnd.toFixed(2)})`);
+        lines.push(`- ${formatSymbolWithName(r.symbol, names)} (ER: ${r.er.toFixed(2)}, ATR: ${r.atrPct.toFixed(1)}%, offset: ${r.suggestedOffset})`);
       }
     } else {
       lines.push(`No strong scalp candidates found (need low ER + ATR >= 2%).`);
