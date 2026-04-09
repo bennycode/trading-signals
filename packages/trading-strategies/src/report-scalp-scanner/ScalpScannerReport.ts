@@ -200,7 +200,7 @@ export class ScalpScannerReport extends Report<ScalpScannerConfig> {
     const scalpFriendlyTop = scalpFriendly.slice(0, top);
     const trendingTop = trending.slice(0, top);
 
-    const tableNameMax = 22;
+    const tableNameMax = 12;
     const stockColWidth = Math.max(
       'Stock'.length,
       ...scalpFriendlyTop.map(r => formatSymbolWithName(r.symbol, names, tableNameMax).length),
