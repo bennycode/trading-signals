@@ -1,4 +1,5 @@
 import {z} from 'zod';
+import {AlpacaAPI} from '@typedtrader/exchange';
 import {Report} from '../report/Report.js';
 import {findFirstTradingDay, getDateString} from '../util/TimeUtil.js';
 import {SP500_TICKERS} from './sp500Tickers.js';
@@ -17,22 +18,20 @@ interface MomentumResult {
   returnPct: number;
 }
 
-interface AlpacaBar {
-  c: number;
-  h: number;
-  l: number;
-  o: number;
-  t: string;
-  v: number;
-}
-
 const BATCH_SIZE = 50;
 
 export class SP500MomentumReport extends Report<SP500MomentumConfig> {
   static override NAME = '@typedtrader/report-sp500-momentum';
 
+  readonly #api: AlpacaAPI;
+
   constructor(config: SP500MomentumConfig) {
     super(config);
+    this.#api = new AlpacaAPI({
+      apiKey: config.apiKey,
+      apiSecret: config.apiSecret,
+      usePaperTrading: false,
+    });
   }
 
   async run(): Promise<string> {
@@ -96,30 +95,16 @@ export class SP500MomentumReport extends Report<SP500MomentumConfig> {
   async #fetchClosingPricesForBatch(symbols: string[], start: Date, end: Date): Promise<Map<string, number>> {
     const result = new Map<string, number>();
 
-    const params = new URLSearchParams({
+    const response = await this.#api.getStockBars({
       symbols: symbols.join(','),
       timeframe: '1Day',
       start: start.toISOString(),
       end: end.toISOString(),
       feed: 'iex',
-      limit: '10000',
+      limit: 10_000,
     });
 
-    const resp = await fetch('https://data.alpaca.markets/v2/stocks/bars?' + params, {
-      headers: {
-        'APCA-API-KEY-ID': this.config.apiKey,
-        'APCA-API-SECRET-KEY': this.config.apiSecret,
-      },
-    });
-
-    if (!resp.ok) {
-      throw new Error(`Alpaca API error: ${resp.status} ${await resp.text()}`);
-    }
-
-    const data = (await resp.json()) as {bars?: Record<string, AlpacaBar[]>};
-    const bars = data.bars ?? {};
-
-    for (const [symbol, symbolBars] of Object.entries(bars)) {
+    for (const [symbol, symbolBars] of Object.entries(response.bars)) {
       if (symbolBars.length > 0) {
         // Use the first available bar's close as the price near the target date
         result.set(symbol, symbolBars[0].c);

@@ -32,21 +32,44 @@ if (!values.data || !values.strategy) {
 }
 
 // 1. Load candle data
-const raw = await readFile(values.data, 'utf8');
-const candles: ExchangeCandle[] = JSON.parse(raw);
+let raw: string;
+try {
+  raw = await readFile(values.data, 'utf8');
+} catch (error) {
+  console.error(`Failed to read candle file "${values.data}": ${error instanceof Error ? error.message : String(error)}`);
+  process.exit(1);
+}
+
+let candles: ExchangeCandle[];
+try {
+  const parsed = JSON.parse(raw);
+  if (!Array.isArray(parsed)) {
+    throw new Error('Candle file must contain a JSON array');
+  }
+  candles = parsed;
+} catch (error) {
+  console.error(`Invalid candle file "${values.data}": ${error instanceof Error ? error.message : String(error)}`);
+  process.exit(1);
+}
+
+if (candles.length === 0) {
+  console.error(`Candle file "${values.data}" is empty. Need at least one candle to run a backtest.`);
+  process.exit(1);
+}
 
 const firstCandle = candles[0];
 const lastCandle = candles[candles.length - 1];
 const tradingPair = new TradingPair(firstCandle.base, firstCandle.counter);
 const startingBalance = new Big(values.balance!);
+const counter = tradingPair.counter;
 
 console.log(`Candles:   ${candles.length} from ${values.data}`);
 console.log(`Period:    ${firstCandle.openTimeInISO.slice(0, 10)} → ${lastCandle.openTimeInISO.slice(0, 10)}`);
 console.log(`Pair:      ${tradingPair.asString('/')}`);
-console.log(`Open:      $${firstCandle.open}  Close: $${lastCandle.close}`);
+console.log(`Open:      ${firstCandle.open} ${counter}  Close: ${lastCandle.close} ${counter}`);
 console.log(`Strategy:  ${values.strategy}`);
 console.log(`Config:    ${values.config}`);
-console.log(`Balance:   $${startingBalance.toFixed(2)}`);
+console.log(`Balance:   ${startingBalance.toFixed(2)} ${counter}`);
 console.log('---');
 
 // 2. Create strategy from registry
@@ -72,7 +95,7 @@ if ('init' in strategy && typeof strategy.init === 'function') {
   strategy.init(batchedCandles);
 
   if (strategy.config?.offset) {
-    console.log(`Auto-computed offset: $${strategy.config.offset}`);
+    console.log(`Auto-computed offset: ${strategy.config.offset} ${counter}`);
   }
 
   if ('scalpFriendly' in strategy) {
@@ -104,8 +127,8 @@ console.log(`Trades:          ${performance.totalTrades}`);
 console.log(`Win Rate:        ${performance.winRate.toFixed(1)}%`);
 console.log(`Return:          ${performance.returnPercentage.toFixed(2)}%`);
 console.log(`Buy & Hold:      ${performance.buyAndHoldReturnPercentage.toFixed(2)}%`);
-console.log(`P&L:             $${result.profitOrLoss.toFixed(2)}`);
-console.log(`Fees:            $${result.totalFees.toFixed(2)}`);
+console.log(`P&L:             ${result.profitOrLoss.toFixed(2)} ${counter}`);
+console.log(`Fees:            ${result.totalFees.toFixed(2)} ${counter}`);
 console.log(`Max Win Streak:  ${performance.maxWinStreak}`);
 console.log(`Max Loss Streak: ${performance.maxLossStreak}`);
-console.log(`Portfolio:       $${performance.initialPortfolioValue.toFixed(2)} → $${performance.finalPortfolioValue.toFixed(2)}`);
+console.log(`Portfolio:       ${performance.initialPortfolioValue.toFixed(2)} → ${performance.finalPortfolioValue.toFixed(2)} ${counter}`);

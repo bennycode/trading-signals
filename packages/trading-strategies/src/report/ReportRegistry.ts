@@ -6,7 +6,14 @@ import {ScalpScannerReport, ScalpScannerSchema} from '../report-scalp-scanner/Sc
 interface ReportEntry {
   create: (config: unknown) => Report;
   schema: z.ZodType;
-  /** Returns the config from environment variables, or undefined if not configured */
+  /**
+   * Returns the base config resolved from environment variables, or `undefined` when the report
+   * cannot be run because its required environment variables are missing.
+   *
+   * Reports that expect their credentials to come from an exchange account at runtime
+   * (see `requiresAccount`) should return `{}` here — the account credentials are merged
+   * into this object by the caller before invoking `create()`.
+   */
   resolveConfig: () => Record<string, unknown> | undefined;
   /** When true, this report requires an exchange account (apiKey/apiSecret) passed at runtime */
   requiresAccount?: boolean;
@@ -40,14 +47,26 @@ export function getReportNames(): string[] {
   return Object.keys(registry);
 }
 
-/** Returns names of reports whose env-based config is available */
+/**
+ * Returns names of reports that can currently be run.
+ *
+ * A report is available when `resolveConfig()` returns a non-undefined value. Reports that
+ * require an exchange account at runtime return `{}` here, so they are always listed —
+ * the calling command is expected to inject the account credentials before calling `createReport`.
+ */
 export function getAvailableReportNames(): string[] {
   return Object.entries(registry)
     .filter(([, entry]) => entry.resolveConfig() !== undefined)
     .map(([name]) => name);
 }
 
-/** Resolves config from environment for a given report, or undefined if not configured */
+/**
+ * Resolves the base config for a report.
+ *
+ * Returns `undefined` when the report cannot be run (missing environment variables).
+ * For account-required reports this returns an empty object `{}` — the caller must merge
+ * the account credentials (`apiKey`/`apiSecret`) before passing the result to `createReport`.
+ */
 export function resolveReportConfig(name: string): Record<string, unknown> | undefined {
   const entry = registry[name];
   return entry?.resolveConfig();

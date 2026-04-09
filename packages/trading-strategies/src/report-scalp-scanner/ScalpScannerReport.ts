@@ -1,4 +1,6 @@
 import {z} from 'zod';
+import {AlpacaAPI} from '@typedtrader/exchange';
+import type {Bar} from '@typedtrader/exchange';
 import {ER} from 'trading-signals';
 import {Report} from '../report/Report.js';
 import {SP500_TICKERS} from '../report-sp500-momentum/sp500Tickers.js';
@@ -36,22 +38,20 @@ interface DailyBar {
   low: number;
 }
 
-interface AlpacaBar {
-  c: number;
-  h: number;
-  l: number;
-  o: number;
-  t: string;
-  v: number;
-}
-
 const BATCH_SIZE = 50;
 
 export class ScalpScannerReport extends Report<ScalpScannerConfig> {
   static override NAME = '@typedtrader/report-scalp-scanner';
 
+  readonly #api: AlpacaAPI;
+
   constructor(config: ScalpScannerConfig) {
     super(config);
+    this.#api = new AlpacaAPI({
+      apiKey: config.apiKey,
+      apiSecret: config.apiSecret,
+      usePaperTrading: false,
+    });
   }
 
   async run(): Promise<string> {
@@ -69,7 +69,10 @@ export class ScalpScannerReport extends Report<ScalpScannerConfig> {
         continue;
       }
 
-      const daily = this.#aggregateToDailyBars(bars);
+      // Trim to the most recent `lookbackDays` trading days so the analysis window
+      // matches the documented behavior regardless of weekends/holidays.
+      const allDaily = this.#aggregateToDailyBars(bars);
+      const daily = allDaily.slice(-this.config.lookbackDays);
       if (daily.length < 14) {
         continue;
       }
@@ -133,8 +136,8 @@ export class ScalpScannerReport extends Report<ScalpScannerConfig> {
     return this.#formatResults(scalpFriendly, trending, results.length);
   }
 
-  async #fetchAllBars(symbols: string[], start: Date, end: Date): Promise<Map<string, AlpacaBar[]>> {
-    const allBars = new Map<string, AlpacaBar[]>();
+  async #fetchAllBars(symbols: string[], start: Date, end: Date): Promise<Map<string, Bar[]>> {
+    const allBars = new Map<string, Bar[]>();
 
     // Batch symbols to avoid URL length limits
     for (let i = 0; i < symbols.length; i += BATCH_SIZE) {
@@ -149,51 +152,34 @@ export class ScalpScannerReport extends Report<ScalpScannerConfig> {
     return allBars;
   }
 
-  async #fetchBarsForSymbols(symbols: string[], start: Date, end: Date): Promise<Map<string, AlpacaBar[]>> {
-    const result = new Map<string, AlpacaBar[]>();
+  async #fetchBarsForSymbols(symbols: string[], start: Date, end: Date): Promise<Map<string, Bar[]>> {
+    const result = new Map<string, Bar[]>();
     let pageToken: string | undefined;
 
     do {
-      const params = new URLSearchParams({
+      const response = await this.#api.getStockBars({
         symbols: symbols.join(','),
         timeframe: '1Day',
         start: start.toISOString(),
         end: end.toISOString(),
         feed: 'iex',
-        limit: '10000',
+        limit: 10_000,
+        page_token: pageToken,
       });
 
-      if (pageToken) {
-        params.set('page_token', pageToken);
-      }
-
-      const resp = await fetch('https://data.alpaca.markets/v2/stocks/bars?' + params, {
-        headers: {
-          'APCA-API-KEY-ID': this.config.apiKey,
-          'APCA-API-SECRET-KEY': this.config.apiSecret,
-        },
-      });
-
-      if (!resp.ok) {
-        throw new Error(`Alpaca API error: ${resp.status} ${await resp.text()}`);
-      }
-
-      const data = (await resp.json()) as {bars?: Record<string, AlpacaBar[]>; next_page_token?: string | null};
-      const bars = data.bars ?? {};
-
-      for (const [symbol, symbolBars] of Object.entries(bars)) {
+      for (const [symbol, symbolBars] of Object.entries(response.bars)) {
         const existing = result.get(symbol) ?? [];
         existing.push(...symbolBars);
         result.set(symbol, existing);
       }
 
-      pageToken = data.next_page_token ?? undefined;
+      pageToken = response.next_page_token ?? undefined;
     } while (pageToken);
 
     return result;
   }
 
-  #aggregateToDailyBars(bars: AlpacaBar[]): DailyBar[] {
+  #aggregateToDailyBars(bars: Bar[]): DailyBar[] {
     const dayMap = new Map<string, DailyBar>();
 
     for (const bar of bars) {

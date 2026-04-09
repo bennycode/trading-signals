@@ -169,6 +169,12 @@ export class ScalpStrategy extends Strategy {
       return;
     }
 
+    // Refuse to open a position without a configured exit offset — otherwise
+    // the strategy would get stuck in pendingAdvice after the fill.
+    if (!this.#config.offset) {
+      return;
+    }
+
     if (!this.#ema.isStable) {
       return;
     }
@@ -193,6 +199,7 @@ export class ScalpStrategy extends Strategy {
 
   #handlePendingAdvice(): OrderAdvice | void {
     if (!this.#state.lastFillPrice || !this.#state.lastFillSide || !this.#config.offset) {
+      // offset missing here would indicate a programming error — #handleEntry guards against this.
       return;
     }
 

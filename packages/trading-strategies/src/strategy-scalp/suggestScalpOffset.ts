@@ -7,6 +7,10 @@ const ONE_DAY_IN_MS = 86_400_000;
 /**
  * Aggregates sub-daily candles into daily OHLCV bars so that ATR reflects
  * the full trading-day range rather than individual minute/hour ranges.
+ *
+ * The input does not need to be chronologically ordered — each day's bars
+ * are sorted by `openTimeInMillis` before deriving open/close, and the
+ * returned daily candles are ordered from oldest to newest.
  */
 function aggregateToDailyCandles(candles: ExchangeCandle[]): ExchangeCandle[] {
   const dayMap = new Map<string, ExchangeCandle[]>();
@@ -21,16 +25,19 @@ function aggregateToDailyCandles(candles: ExchangeCandle[]): ExchangeCandle[] {
     bucket.push(candle);
   }
 
+  const sortedDayEntries = Array.from(dayMap.entries()).sort(([dayA], [dayB]) => dayA.localeCompare(dayB));
+
   const daily: ExchangeCandle[] = [];
 
-  for (const [, bars] of dayMap) {
-    const first = bars[0];
-    const last = bars[bars.length - 1];
+  for (const [, bars] of sortedDayEntries) {
+    const sortedBars = [...bars].sort((a, b) => a.openTimeInMillis - b.openTimeInMillis);
+    const first = sortedBars[0];
+    const last = sortedBars[sortedBars.length - 1];
     let high = parseFloat(first.high);
     let low = parseFloat(first.low);
     let volume = 0;
 
-    for (const bar of bars) {
+    for (const bar of sortedBars) {
       const h = parseFloat(bar.high);
       const l = parseFloat(bar.low);
       if (h > high) high = h;
