@@ -209,29 +209,46 @@ export class ScalpScannerReport extends Report<ScalpScannerConfig> {
     const scalpFriendlyTop = scalpFriendly.slice(0, top);
     const trendingTop = trending.slice(0, top);
 
-    // Message 1: header + top scalp-friendly
+    const tableNameMax = 22;
+    const stockColWidth = Math.max(
+      'Stock'.length,
+      ...scalpFriendlyTop.map(r => formatSymbolWithName(r.symbol, names, tableNameMax).length),
+      ...trendingTop.map(r => formatSymbolWithName(r.symbol, names, tableNameMax).length)
+    );
+
+    const formatNet = (pct: number): string => (pct >= 0 ? '+' : '') + pct.toFixed(1) + '%';
+
+    // Message 1: header + top scalp-friendly table
     lines.push(`**Scalp Scanner: ${total} stocks analyzed**`);
     lines.push(`Lookback: ${this.config.lookbackDays} trading days | ER threshold: ${this.config.erThreshold}`);
     lines.push('');
     lines.push(`**Top ${scalpFriendlyTop.length} Scalp-Friendly Stocks (lowest ER = most choppy)**`);
+    lines.push('```');
+    lines.push(`Rank  ${'Stock'.padEnd(stockColWidth)}  ER     ATR%    Offset   Net      Price`);
+    lines.push(`----  ${'-'.repeat(stockColWidth)}  -----  ------  -------  -------  --------`);
     for (let i = 0; i < scalpFriendlyTop.length; i++) {
       const r = scalpFriendlyTop[i];
-      const netChange = (r.netChangePct >= 0 ? '+' : '') + r.netChangePct.toFixed(1);
+      const stock = formatSymbolWithName(r.symbol, names, tableNameMax).padEnd(stockColWidth);
       lines.push(
-        `${i + 1}. ${formatSymbolWithName(r.symbol, names)} — ER: ${r.er.toFixed(2)}, ATR: ${r.atrPct.toFixed(1)}%, offset: ${r.suggestedOffset}, net: ${netChange}%, price: $${r.priceEnd.toFixed(2)}`
+        `${String(i + 1).padStart(4)}  ${stock}  ${r.er.toFixed(2).padStart(5)}  ${(r.atrPct.toFixed(1) + '%').padStart(6)}  ${r.suggestedOffset.padStart(7)}  ${formatNet(r.netChangePct).padStart(7)}  ${('$' + r.priceEnd.toFixed(2)).padStart(8)}`
       );
     }
+    lines.push('```');
 
-    // Message 2: top trending
+    // Message 2: top trending table
     lines.push(MESSAGE_BREAK);
     lines.push(`**Top ${trendingTop.length} Trending Stocks (highest ER = most directional)**`);
+    lines.push('```');
+    lines.push(`Rank  ${'Stock'.padEnd(stockColWidth)}  ER     ATR%    Net      Price`);
+    lines.push(`----  ${'-'.repeat(stockColWidth)}  -----  ------  -------  --------`);
     for (let i = 0; i < trendingTop.length; i++) {
       const r = trendingTop[i];
-      const netChange = (r.netChangePct >= 0 ? '+' : '') + r.netChangePct.toFixed(1);
+      const stock = formatSymbolWithName(r.symbol, names, tableNameMax).padEnd(stockColWidth);
       lines.push(
-        `${i + 1}. ${formatSymbolWithName(r.symbol, names)} — ER: ${r.er.toFixed(2)}, ATR: ${r.atrPct.toFixed(1)}%, net: ${netChange}%, price: $${r.priceEnd.toFixed(2)}`
+        `${String(i + 1).padStart(4)}  ${stock}  ${r.er.toFixed(2).padStart(5)}  ${(r.atrPct.toFixed(1) + '%').padStart(6)}  ${formatNet(r.netChangePct).padStart(7)}  ${('$' + r.priceEnd.toFixed(2)).padStart(8)}`
       );
     }
+    lines.push('```');
 
     // Message 3: top picks + summary + disclaimer
     lines.push(MESSAGE_BREAK);

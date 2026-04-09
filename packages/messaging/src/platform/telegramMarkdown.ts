@@ -6,13 +6,43 @@ const HTML_ESCAPES: Record<string, string> = {
   '>': '&gt;',
 };
 
+function escapeHtml(text: string): string {
+  return text.replace(/[&<>]/g, ch => HTML_ESCAPES[ch]);
+}
+
+function convertOutsideCode(text: string): string {
+  return escapeHtml(text).replace(/\*\*(.+?)\*\*/g, '<b>$1</b>');
+}
+
 /**
  * Convert the minimal markdown used by reports into Telegram HTML parse mode:
- * `**bold**` becomes `<b>bold</b>`, and `&`, `<`, `>` are escaped to entities.
- * Everything else passes through as plain text.
+ *
+ * - `**bold**` → `<b>bold</b>`
+ * - fenced code blocks (```` ``` ````) → `<pre>...</pre>` (monospace, preserves whitespace)
+ * - `&`, `<`, `>` escaped to entities
+ *
+ * Other markdown is passed through as plain text.
  */
 export function markdownToTelegramHtml(markdown: string): string {
-  return markdown.replace(/[&<>]/g, ch => HTML_ESCAPES[ch]).replace(/\*\*(.+?)\*\*/g, '<b>$1</b>');
+  const parts: string[] = [];
+  const codeBlockRegex = /```(?:\w*\n)?([\s\S]*?)```/g;
+  let lastIndex = 0;
+  let match: RegExpExecArray | null;
+
+  while ((match = codeBlockRegex.exec(markdown)) !== null) {
+    if (match.index > lastIndex) {
+      parts.push(convertOutsideCode(markdown.slice(lastIndex, match.index)));
+    }
+    const code = match[1].replace(/^\n+|\n+$/g, '');
+    parts.push(`<pre>${escapeHtml(code)}</pre>`);
+    lastIndex = match.index + match[0].length;
+  }
+
+  if (lastIndex < markdown.length) {
+    parts.push(convertOutsideCode(markdown.slice(lastIndex)));
+  }
+
+  return parts.join('');
 }
 
 /**

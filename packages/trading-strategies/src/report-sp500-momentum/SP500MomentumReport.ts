@@ -1,6 +1,6 @@
 import {z} from 'zod';
 import {AlpacaAPI} from '@typedtrader/exchange';
-import {Report} from '../report/Report.js';
+import {MESSAGE_BREAK, Report} from '../report/Report.js';
 import {fetchUsEquityNames, formatSymbolWithName} from '../util/formatSymbolWithName.js';
 import {findFirstTradingDay, getDateString} from '../util/TimeUtil.js';
 import {SP500_TICKERS} from './sp500Tickers.js';
@@ -126,22 +126,36 @@ export class SP500MomentumReport extends Report<SP500MomentumConfig> {
     const winners = results.slice(0, top);
     const losers = results.slice(-top).reverse();
 
-    lines.push(`**Top ${winners.length} Winners (12m return)**`);
-    for (let i = 0; i < winners.length; i++) {
-      const r = winners[i];
-      lines.push(
-        `${i + 1}. ${formatSymbolWithName(r.ticker, names)} — ${r.returnPct.toFixed(2)}%, now $${r.priceNow.toFixed(2)}, 12m ago $${r.price12MonthsAgo.toFixed(2)}`
-      );
-    }
+    const tableNameMax = 22;
+    const stockColWidth = Math.max(
+      'Stock'.length,
+      ...winners.map(r => formatSymbolWithName(r.ticker, names, tableNameMax).length),
+      ...losers.map(r => formatSymbolWithName(r.ticker, names, tableNameMax).length)
+    );
 
-    lines.push('');
-    lines.push(`**Bottom ${losers.length} Losers (12m return)**`);
-    for (let i = 0; i < losers.length; i++) {
-      const r = losers[i];
-      lines.push(
-        `${i + 1}. ${formatSymbolWithName(r.ticker, names)} — ${r.returnPct.toFixed(2)}%, now $${r.priceNow.toFixed(2)}, 12m ago $${r.price12MonthsAgo.toFixed(2)}`
-      );
+    const renderRow = (index: number, r: MomentumResult): string => {
+      const stock = formatSymbolWithName(r.ticker, names, tableNameMax).padEnd(stockColWidth);
+      return `${String(index).padStart(4)}  ${stock}  ${(r.returnPct.toFixed(2) + '%').padStart(9)}  ${('$' + r.priceNow.toFixed(2)).padStart(9)}  ${('$' + r.price12MonthsAgo.toFixed(2)).padStart(9)}`;
+    };
+
+    lines.push(`**Top ${winners.length} Winners (12m return)**`);
+    lines.push('```');
+    lines.push(`Rank  ${'Stock'.padEnd(stockColWidth)}  12m Ret    Now        12m Ago`);
+    lines.push(`----  ${'-'.repeat(stockColWidth)}  ---------  ---------  ---------`);
+    for (let i = 0; i < winners.length; i++) {
+      lines.push(renderRow(i + 1, winners[i]));
     }
+    lines.push('```');
+
+    lines.push(MESSAGE_BREAK);
+    lines.push(`**Bottom ${losers.length} Losers (12m return)**`);
+    lines.push('```');
+    lines.push(`Rank  ${'Stock'.padEnd(stockColWidth)}  12m Ret    Now        12m Ago`);
+    lines.push(`----  ${'-'.repeat(stockColWidth)}  ---------  ---------  ---------`);
+    for (let i = 0; i < losers.length; i++) {
+      lines.push(renderRow(i + 1, losers[i]));
+    }
+    lines.push('```');
 
     lines.push('');
     lines.push(`Stocks ranked: ${results.length} / ${SP500_TICKERS.length}`);

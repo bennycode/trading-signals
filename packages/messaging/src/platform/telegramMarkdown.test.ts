@@ -18,6 +18,23 @@ describe('markdownToTelegramHtml', () => {
   it('leaves plain text untouched', () => {
     expect(markdownToTelegramHtml('no formatting here')).toBe('no formatting here');
   });
+
+  it('wraps fenced code blocks in <pre>', () => {
+    const input = 'Header\n```\nRank  Stock\n  1  AAPL\n```\nFooter';
+    expect(markdownToTelegramHtml(input)).toBe('Header\n<pre>Rank  Stock\n  1  AAPL</pre>\nFooter');
+  });
+
+  it('escapes HTML entities inside code blocks', () => {
+    expect(markdownToTelegramHtml('```\nA & <B>\n```')).toBe('<pre>A &amp; &lt;B&gt;</pre>');
+  });
+
+  it('does not apply **bold** conversion inside code blocks', () => {
+    expect(markdownToTelegramHtml('```\n**not bold**\n```')).toBe('<pre>**not bold**</pre>');
+  });
+
+  it('ignores an optional language tag on the opening fence', () => {
+    expect(markdownToTelegramHtml('```js\nconst x = 1;\n```')).toBe('<pre>const x = 1;</pre>');
+  });
 });
 
 describe('splitForTelegram', () => {
