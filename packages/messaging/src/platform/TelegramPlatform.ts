@@ -1,7 +1,8 @@
-import {Markup, Telegraf} from 'telegraf';
-import type {Context} from 'telegraf';
+import {Bot} from 'grammy';
+import type {Context} from 'grammy';
 import {getAvailableReportNames, reportRequiresAccount} from 'trading-strategies';
 import type {CommandHandler, MessageContext, MessagingPlatform, PlatformInfo} from './MessagingPlatform.js';
+import {markdownToTelegramHtml, splitForTelegram} from './telegramMarkdown.js';
 import {reportAdd} from '../command/report/reportAdd.js';
 import {Account} from '../database/models/Account.js';
 import type {ReportScheduler} from '../service/ReportScheduler.js';
@@ -12,23 +13,34 @@ const ACCOUNT_CALLBACK_PREFIX = 'reportaccount:';
 const MODE_CALLBACK_PREFIX = 'reportmode:';
 const INTERVAL_CALLBACK_PREFIX = 'reportinterval:';
 
+interface InlineButton {
+  text: string;
+  callback_data: string;
+}
+
+function inlineKeyboard(rows: InlineButton[][]) {
+  return {reply_markup: {inline_keyboard: rows}};
+}
+
 async function replyWithMarkdown(ctx: Context, text: string): Promise<void> {
-  try {
-    await ctx.reply(text, {parse_mode: 'MarkdownV2'});
-  } catch {
-    await ctx.reply(text);
+  for (const chunk of splitForTelegram(text)) {
+    try {
+      await ctx.reply(markdownToTelegramHtml(chunk), {parse_mode: 'HTML'});
+    } catch {
+      await ctx.reply(chunk);
+    }
   }
 }
 
 export class TelegramPlatform implements MessagingPlatform {
-  #bot: Telegraf;
+  #bot: Bot;
   #ownerIds: string[];
   #commands: Map<string, CommandHandler> = new Map();
   #platformInfo: PlatformInfo = {botAddress: '', sdkVersion: ''};
   #reportScheduler?: ReportScheduler;
 
   constructor(botToken: string, ownerIds?: string) {
-    this.#bot = new Telegraf(botToken);
+    this.#bot = new Bot(botToken);
     this.#ownerIds = ownerIds ? ownerIds.split(',').map(id => id.trim()) : [];
   }
 
@@ -64,7 +76,7 @@ export class TelegramPlatform implements MessagingPlatform {
       }
 
       // Extract text after the /command
-      const text = ctx.message.text;
+      const text = ctx.message?.text ?? '';
       const commandEnd = text.indexOf(' ');
       const content = commandEnd === -1 ? '' : text.slice(commandEnd + 1);
 
@@ -100,14 +112,16 @@ export class TelegramPlatform implements MessagingPlatform {
         return;
       }
 
-      const buttons = available.map(name => [Markup.button.callback(name, `${REPORT_CALLBACK_PREFIX}${name}`)]);
+      const rows: InlineButton[][] = available.map(name => [
+        {text: name, callback_data: `${REPORT_CALLBACK_PREFIX}${name}`},
+      ]);
 
-      await ctx.reply('Select a report to run:', Markup.inlineKeyboard(buttons));
+      await ctx.reply('Select a report to run:', inlineKeyboard(rows));
     });
 
     // Step 2: User selected a report — if it needs an account, ask for one; otherwise ask run mode
-    this.#bot.action(new RegExp(`^${REPORT_CALLBACK_PREFIX}(.+)$`), async ctx => {
-      await ctx.answerCbQuery();
+    this.#bot.callbackQuery(new RegExp(`^${REPORT_CALLBACK_PREFIX}(.+)$`), async ctx => {
+      await ctx.answerCallbackQuery();
 
       const reportName = ctx.match[1];
       const senderId = ctx.from?.id?.toString();
@@ -122,29 +136,29 @@ export class TelegramPlatform implements MessagingPlatform {
           return;
         }
 
-        const buttons = userAccounts.map(acc => [
-          Markup.button.callback(
-            `${acc.name} (${acc.exchange}${acc.isPaper ? ' paper' : ''})`,
-            `${ACCOUNT_CALLBACK_PREFIX}${acc.id}:${reportName}`
-          ),
+        const rows: InlineButton[][] = userAccounts.map(acc => [
+          {
+            text: `${acc.name} (${acc.exchange}${acc.isPaper ? ' paper' : ''})`,
+            callback_data: `${ACCOUNT_CALLBACK_PREFIX}${acc.id}:${reportName}`,
+          },
         ]);
 
-        await ctx.editMessageText(`Report: ${reportName}\nSelect an account:`, Markup.inlineKeyboard(buttons));
+        await ctx.editMessageText(`Report: ${reportName}\nSelect an account:`, inlineKeyboard(rows));
         return;
       }
 
       await ctx.editMessageText(
         `Report: ${reportName}\nRun once or schedule recurring?`,
-        Markup.inlineKeyboard([
-          [Markup.button.callback('Run once', `${MODE_CALLBACK_PREFIX}once:${reportName}`)],
-          [Markup.button.callback('Schedule recurring', `${MODE_CALLBACK_PREFIX}schedule:${reportName}`)],
+        inlineKeyboard([
+          [{text: 'Run once', callback_data: `${MODE_CALLBACK_PREFIX}once:${reportName}`}],
+          [{text: 'Schedule recurring', callback_data: `${MODE_CALLBACK_PREFIX}schedule:${reportName}`}],
         ])
       );
     });
 
     // Step 2b: User selected an account — ask run mode
-    this.#bot.action(new RegExp(`^${ACCOUNT_CALLBACK_PREFIX}(\\d+):(.+)$`), async ctx => {
-      await ctx.answerCbQuery();
+    this.#bot.callbackQuery(new RegExp(`^${ACCOUNT_CALLBACK_PREFIX}(\\d+):(.+)$`), async ctx => {
+      await ctx.answerCallbackQuery();
 
       const accountId = ctx.match[1];
       const reportName = ctx.match[2];
@@ -154,16 +168,16 @@ export class TelegramPlatform implements MessagingPlatform {
 
       await ctx.editMessageText(
         `Report: ${reportName} (account ${accountId})\nRun once or schedule recurring?`,
-        Markup.inlineKeyboard([
-          [Markup.button.callback('Run once', `${MODE_CALLBACK_PREFIX}once:${reportWithAccount}`)],
-          [Markup.button.callback('Schedule recurring', `${MODE_CALLBACK_PREFIX}schedule:${reportWithAccount}`)],
+        inlineKeyboard([
+          [{text: 'Run once', callback_data: `${MODE_CALLBACK_PREFIX}once:${reportWithAccount}`}],
+          [{text: 'Schedule recurring', callback_data: `${MODE_CALLBACK_PREFIX}schedule:${reportWithAccount}`}],
         ])
       );
     });
 
     // Step 3a: Run once
-    this.#bot.action(new RegExp(`^${MODE_CALLBACK_PREFIX}once:(.+)$`), async ctx => {
-      await ctx.answerCbQuery();
+    this.#bot.callbackQuery(new RegExp(`^${MODE_CALLBACK_PREFIX}once:(.+)$`), async ctx => {
+      await ctx.answerCallbackQuery();
 
       const reportInput = ctx.match[1];
       const senderId = ctx.from?.id?.toString();
@@ -178,32 +192,32 @@ export class TelegramPlatform implements MessagingPlatform {
     });
 
     // Step 3b: Schedule — ask for interval
-    this.#bot.action(new RegExp(`^${MODE_CALLBACK_PREFIX}schedule:(.+)$`), async ctx => {
-      await ctx.answerCbQuery();
+    this.#bot.callbackQuery(new RegExp(`^${MODE_CALLBACK_PREFIX}schedule:(.+)$`), async ctx => {
+      await ctx.answerCallbackQuery();
 
       const reportInput = ctx.match[1];
       const reportName = reportInput.split(' ')[0];
 
       await ctx.editMessageText(
         `Report: ${reportName}\nSelect interval:`,
-        Markup.inlineKeyboard([
+        inlineKeyboard([
           [
-            Markup.button.callback('1m', `${INTERVAL_CALLBACK_PREFIX}1m:${reportInput}`),
-            Markup.button.callback('1h', `${INTERVAL_CALLBACK_PREFIX}1h:${reportInput}`),
-            Markup.button.callback('6h', `${INTERVAL_CALLBACK_PREFIX}6h:${reportInput}`),
+            {text: '1m', callback_data: `${INTERVAL_CALLBACK_PREFIX}1m:${reportInput}`},
+            {text: '1h', callback_data: `${INTERVAL_CALLBACK_PREFIX}1h:${reportInput}`},
+            {text: '6h', callback_data: `${INTERVAL_CALLBACK_PREFIX}6h:${reportInput}`},
           ],
           [
-            Markup.button.callback('12h', `${INTERVAL_CALLBACK_PREFIX}12h:${reportInput}`),
-            Markup.button.callback('1d', `${INTERVAL_CALLBACK_PREFIX}1d:${reportInput}`),
-            Markup.button.callback('1w', `${INTERVAL_CALLBACK_PREFIX}1w:${reportInput}`),
+            {text: '12h', callback_data: `${INTERVAL_CALLBACK_PREFIX}12h:${reportInput}`},
+            {text: '1d', callback_data: `${INTERVAL_CALLBACK_PREFIX}1d:${reportInput}`},
+            {text: '1w', callback_data: `${INTERVAL_CALLBACK_PREFIX}1w:${reportInput}`},
           ],
         ])
       );
     });
 
     // Step 4: Schedule with chosen interval
-    this.#bot.action(new RegExp(`^${INTERVAL_CALLBACK_PREFIX}([^:]+):(.+)$`), async ctx => {
-      await ctx.answerCbQuery();
+    this.#bot.callbackQuery(new RegExp(`^${INTERVAL_CALLBACK_PREFIX}([^:]+):(.+)$`), async ctx => {
+      await ctx.answerCallbackQuery();
 
       const interval = ctx.match[1];
       const reportInput = ctx.match[2];
@@ -230,27 +244,33 @@ export class TelegramPlatform implements MessagingPlatform {
       console.warn('Warning: TELEGRAM_OWNER_IDS is not set. Everyone can message the bot via Telegram.');
     }
 
-    const botInfo = await this.#bot.telegram.getMe();
+    await this.#bot.init();
     this.#platformInfo = {
-      botAddress: `@${botInfo.username}`,
-      sdkVersion: 'Telegraf',
+      botAddress: `@${this.#bot.botInfo.username}`,
+      sdkVersion: 'grammY',
     };
 
-    await this.#bot.launch({dropPendingUpdates: true});
+    // bot.start() resolves only when the bot is stopped, so we don't await it —
+    // we want start() to return to the caller once polling is running.
+    this.#bot.start({drop_pending_updates: true}).catch((err: unknown) => {
+      console.error('Telegram bot polling error:', err);
+    });
 
     console.log(`Telegram bot started as ${this.#platformInfo.botAddress}.`);
   }
 
   async stop(): Promise<void> {
-    this.#bot.stop();
+    await this.#bot.stop();
   }
 
   async sendMessage(userId: string, text: string): Promise<void> {
     const chatId = userId.replace(PLATFORM_PREFIX, '');
-    try {
-      await this.#bot.telegram.sendMessage(chatId, text, {parse_mode: 'MarkdownV2'});
-    } catch {
-      await this.#bot.telegram.sendMessage(chatId, text);
+    for (const chunk of splitForTelegram(text)) {
+      try {
+        await this.#bot.api.sendMessage(chatId, markdownToTelegramHtml(chunk), {parse_mode: 'HTML'});
+      } catch {
+        await this.#bot.api.sendMessage(chatId, chunk);
+      }
     }
   }
 
