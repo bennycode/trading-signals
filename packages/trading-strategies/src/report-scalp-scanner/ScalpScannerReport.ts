@@ -244,10 +244,22 @@ export class ScalpScannerReport extends Report<ScalpScannerConfig> {
     const pickCount = 5;
     const picks = scalpFriendly.filter(r => r.atrPct >= 2.0).slice(0, pickCount);
     if (picks.length > 0) {
-      lines.push(`**Top Picks for Scalping (low ER + ATR >= 2%):**`);
-      for (const r of picks) {
-        lines.push(`- ${formatSymbolWithName(r.symbol, names)} (ER: ${r.er.toFixed(2)}, ATR: ${r.atrPct.toFixed(1)}%, offset: ${r.suggestedOffset})`);
+      const pickColWidth = Math.max(
+        'Stock'.length,
+        ...picks.map(r => formatSymbolWithName(r.symbol, names, tableNameMax).length)
+      );
+      lines.push(`**Top Picks for Scalping (low ER + ATR >= 2%)**`);
+      lines.push('```');
+      lines.push(`Rank  ${'Stock'.padEnd(pickColWidth)}  ER     ATR%    Offset`);
+      lines.push(`----  ${'-'.repeat(pickColWidth)}  -----  ------  -------`);
+      for (let i = 0; i < picks.length; i++) {
+        const r = picks[i];
+        const stock = formatSymbolWithName(r.symbol, names, tableNameMax).padEnd(pickColWidth);
+        lines.push(
+          `${String(i + 1).padStart(4)}  ${stock}  ${r.er.toFixed(2).padStart(5)}  ${(r.atrPct.toFixed(1) + '%').padStart(6)}  ${r.suggestedOffset.padStart(7)}`
+        );
       }
+      lines.push('```');
     } else {
       lines.push(`No strong scalp candidates found (need low ER + ATR >= 2%).`);
     }
