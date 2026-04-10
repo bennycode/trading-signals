@@ -1,6 +1,7 @@
 import {z} from 'zod';
 import {AlpacaAPI} from '@typedtrader/exchange';
-import {Report} from '../report/Report.js';
+import {MESSAGE_BREAK, Report} from '../report/Report.js';
+import {fetchUsEquityNames, formatSymbolWithName} from '../util/formatSymbolWithName.js';
 import {findFirstTradingDay, getDateString} from '../util/TimeUtil.js';
 import {SP500_TICKERS} from './sp500Tickers.js';
 
@@ -47,9 +48,10 @@ export class SP500MomentumReport extends Report<SP500MomentumConfig> {
     const toDate = getDateString(recentDate);
     const fromDate = getDateString(pastDate);
 
-    const [currentPrices, pastPrices] = await Promise.all([
+    const [currentPrices, pastPrices, names] = await Promise.all([
       this.#getClosingPrices(SP500_TICKERS, recentDate),
       this.#getClosingPrices(SP500_TICKERS, pastDate),
+      fetchUsEquityNames(this.#api),
     ]);
 
     const results: MomentumResult[] = [];
@@ -69,7 +71,7 @@ export class SP500MomentumReport extends Report<SP500MomentumConfig> {
 
     results.sort((a, b) => b.returnPct - a.returnPct);
 
-    return this.#formatResults(results, fromDate, toDate);
+    return this.#formatResults(results, fromDate, toDate, names);
   }
 
   async #getClosingPrices(symbols: string[], targetDate: Date): Promise<Map<string, number>> {
@@ -114,51 +116,52 @@ export class SP500MomentumReport extends Report<SP500MomentumConfig> {
     return result;
   }
 
-  #formatResults(results: MomentumResult[], fromDate: string, toDate: string): string {
+  #formatResults(results: MomentumResult[], fromDate: string, toDate: string, names: Map<string, string>): string {
     const top = 20;
     const lines: string[] = [];
 
     lines.push(`**S&P 500 Momentum: ${fromDate} → ${toDate}**`);
     lines.push('');
-    lines.push(`**Top ${top} Winners (12m return)**`);
-    lines.push('```');
-    lines.push('Rank  Ticker     12m Return    Price Now    Price 12m Ago');
-    lines.push('----  ------     ----------    ---------    -------------');
 
-    for (let i = 0; i < Math.min(top, results.length); i++) {
-      const r = results[i];
-      lines.push(
-        `${String(i + 1).padStart(4)}  ${r.ticker.padEnd(10)} ${r.returnPct.toFixed(2).padStart(9)}%    $${r.priceNow.toFixed(2).padStart(8)}    $${r.price12MonthsAgo.toFixed(2).padStart(8)}`
-      );
+    const winners = results.slice(0, top);
+    const losers = results.slice(-top).reverse();
+
+    const tableNameMax = 22;
+    const stockColWidth = Math.max(
+      'Stock'.length,
+      ...winners.map(r => formatSymbolWithName(r.ticker, names, tableNameMax).length),
+      ...losers.map(r => formatSymbolWithName(r.ticker, names, tableNameMax).length)
+    );
+
+    const renderRow = (index: number, r: MomentumResult): string => {
+      const stock = formatSymbolWithName(r.ticker, names, tableNameMax).padEnd(stockColWidth);
+      return `${String(index).padStart(4)}  ${stock}  ${(r.returnPct.toFixed(2) + '%').padStart(9)}  ${('$' + r.priceNow.toFixed(2)).padStart(9)}  ${('$' + r.price12MonthsAgo.toFixed(2)).padStart(9)}`;
+    };
+
+    lines.push(`**Top ${winners.length} Winners (12m return)**`);
+    lines.push('```');
+    lines.push(`Rank  ${'Stock'.padEnd(stockColWidth)}  12m Ret    Now        12m Ago`);
+    lines.push(`----  ${'-'.repeat(stockColWidth)}  ---------  ---------  ---------`);
+    for (let i = 0; i < winners.length; i++) {
+      lines.push(renderRow(i + 1, winners[i]));
     }
     lines.push('```');
 
-    lines.push('');
-    lines.push(`**Bottom ${top} Losers (12m return)**`);
+    lines.push(MESSAGE_BREAK);
+    lines.push(`**Bottom ${losers.length} Losers (12m return)**`);
     lines.push('```');
-    lines.push('Rank  Ticker     12m Return    Price Now    Price 12m Ago');
-    lines.push('----  ------     ----------    ---------    -------------');
-
-    const bottom = results.slice(-top).reverse();
-    for (let i = 0; i < bottom.length; i++) {
-      const r = bottom[i];
-      lines.push(
-        `${String(i + 1).padStart(4)}  ${r.ticker.padEnd(10)} ${r.returnPct.toFixed(2).padStart(9)}%    $${r.priceNow.toFixed(2).padStart(8)}    $${r.price12MonthsAgo.toFixed(2).padStart(8)}`
-      );
+    lines.push(`Rank  ${'Stock'.padEnd(stockColWidth)}  12m Ret    Now        12m Ago`);
+    lines.push(`----  ${'-'.repeat(stockColWidth)}  ---------  ---------  ---------`);
+    for (let i = 0; i < losers.length; i++) {
+      lines.push(renderRow(i + 1, losers[i]));
     }
     lines.push('```');
 
     lines.push('');
     lines.push(`Stocks ranked: ${results.length} / ${SP500_TICKERS.length}`);
 
-    // Recommendation
-    const winners = results.slice(0, top);
-    const losers = results.slice(-top).reverse();
     lines.push('');
-    lines.push('**Recommendation (based on 12-1 momentum, 3-month hold):**');
-    lines.push(`Buy: ${winners.map(r => r.ticker).join(', ')}`);
-    lines.push(`Avoid: ${losers.map(r => r.ticker).join(', ')}`);
-    lines.push('Hold for 3 months, then re-evaluate.');
+    lines.push('**Recommendation (based on 12-1 momentum, 3-month hold):** Hold the top winners for 3 months, then re-evaluate.');
 
     // Disclaimer
     lines.push('');

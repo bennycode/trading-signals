@@ -2,10 +2,11 @@ import {z} from 'zod';
 import {AlpacaAPI} from '@typedtrader/exchange';
 import type {Bar} from '@typedtrader/exchange';
 import {ER} from 'trading-signals';
-import {Report} from '../report/Report.js';
+import {MESSAGE_BREAK, Report} from '../report/Report.js';
 import {SP500_TICKERS} from '../report-sp500-momentum/sp500Tickers.js';
 import {ScalpStrategy} from '../strategy-scalp/ScalpStrategy.js';
 import {suggestScalpOffset} from '../strategy-scalp/suggestScalpOffset.js';
+import {fetchUsEquityNames, formatSymbolWithName} from '../util/formatSymbolWithName.js';
 
 export const ScalpScannerSchema = z.object({
   /** Alpaca API key */
@@ -27,9 +28,6 @@ interface ScanResult {
   er: number;
   atrPct: number;
   suggestedOffset: string;
-  priceStart: number;
-  priceEnd: number;
-  netChangePct: number;
 }
 
 interface DailyBar {
@@ -60,7 +58,10 @@ export class ScalpScannerReport extends Report<ScalpScannerConfig> {
     // Fetch extra calendar days to account for weekends/holidays
     const start = new Date(end.getTime() - this.config.lookbackDays * 1.5 * 86_400_000);
 
-    const allBars = await this.#fetchAllBars(symbols, start, end);
+    const [allBars, names] = await Promise.all([
+      this.#fetchAllBars(symbols, start, end),
+      fetchUsEquityNames(this.#api),
+    ]);
     const results: ScanResult[] = [];
 
     for (const symbol of symbols) {
@@ -83,9 +84,6 @@ export class ScalpScannerReport extends Report<ScalpScannerConfig> {
       }
 
       const erValue = er.getResultOrThrow();
-      const firstClose = daily[0].close;
-      const lastClose = daily[daily.length - 1].close;
-      const netChangePct = ((lastClose / firstClose) - 1) * 100;
 
       // Compute ATR% for context
       const exchangeCandles = daily.map((bar, i) => ({
@@ -119,9 +117,6 @@ export class ScalpScannerReport extends Report<ScalpScannerConfig> {
         er: erValue,
         atrPct,
         suggestedOffset: offsetStr,
-        priceStart: firstClose,
-        priceEnd: lastClose,
-        netChangePct,
       });
     }
 
@@ -133,7 +128,7 @@ export class ScalpScannerReport extends Report<ScalpScannerConfig> {
       .filter(r => r.er >= this.config.erThreshold)
       .sort((a, b) => b.er - a.er);
 
-    return this.#formatResults(scalpFriendly, trending, results.length);
+    return this.#formatResults(scalpFriendly, trending, results.length, names);
   }
 
   async #fetchAllBars(symbols: string[], start: Date, end: Date): Promise<Map<string, Bar[]>> {
@@ -198,51 +193,60 @@ export class ScalpScannerReport extends Report<ScalpScannerConfig> {
     return [...dayMap.values()];
   }
 
-  #formatResults(scalpFriendly: ScanResult[], trending: ScanResult[], total: number): string {
+  #formatResults(scalpFriendly: ScanResult[], trending: ScanResult[], total: number, names: Map<string, string>): string {
     const lines: string[] = [];
     const top = 20;
 
+    const scalpFriendlyTop = scalpFriendly.slice(0, top);
+    const trendingTop = trending.slice(0, top);
+
+    const tableNameMax = 12;
+    const stockColWidth = Math.max(
+      'Stock'.length,
+      ...scalpFriendlyTop.map(r => formatSymbolWithName(r.symbol, names, tableNameMax).length),
+      ...trendingTop.map(r => formatSymbolWithName(r.symbol, names, tableNameMax).length)
+    );
+
+    // Message 1: header + top scalp-friendly table
     lines.push(`**Scalp Scanner: ${total} stocks analyzed**`);
     lines.push(`Lookback: ${this.config.lookbackDays} trading days | ER threshold: ${this.config.erThreshold}`);
     lines.push('');
-
-    // Scalp-friendly table
-    lines.push(`**Top ${Math.min(top, scalpFriendly.length)} Scalp-Friendly Stocks (lowest ER = most choppy)**`);
+    lines.push(`**Top ${scalpFriendlyTop.length} Scalp-Friendly Stocks (lowest ER = most choppy)**`);
     lines.push('```');
-    lines.push('Rank  Ticker     ER      ATR%    Offset    Net Chg    Price');
-    lines.push('----  ------     ----    ----    ------    -------    -----');
-
-    for (let i = 0; i < Math.min(top, scalpFriendly.length); i++) {
-      const r = scalpFriendly[i];
+    lines.push(`Rank  ${'Stock'.padEnd(stockColWidth)}  ER     ATR%    Offset`);
+    lines.push(`----  ${'-'.repeat(stockColWidth)}  -----  ------  -------`);
+    for (let i = 0; i < scalpFriendlyTop.length; i++) {
+      const r = scalpFriendlyTop[i];
+      const stock = formatSymbolWithName(r.symbol, names, tableNameMax).padEnd(stockColWidth);
       lines.push(
-        `${String(i + 1).padStart(4)}  ${r.symbol.padEnd(10)} ${r.er.toFixed(2).padStart(5)}   ${r.atrPct.toFixed(1).padStart(5)}%   ${r.suggestedOffset.padStart(6)}   ${(r.netChangePct >= 0 ? '+' : '') + r.netChangePct.toFixed(1).padStart(5)}%   $${r.priceEnd.toFixed(2)}`
+        `${String(i + 1).padStart(4)}  ${stock}  ${r.er.toFixed(2).padStart(5)}  ${(r.atrPct.toFixed(1) + '%').padStart(6)}  ${r.suggestedOffset.padStart(7)}`
       );
     }
     lines.push('```');
 
-    // Trending table
-    lines.push('');
-    lines.push(`**Top ${Math.min(top, trending.length)} Trending Stocks (highest ER = most directional)**`);
+    // Message 2: top trending table
+    lines.push(MESSAGE_BREAK);
+    lines.push(`**Top ${trendingTop.length} Trending Stocks (highest ER = most directional)**`);
     lines.push('```');
-    lines.push('Rank  Ticker     ER      ATR%    Net Chg    Price');
-    lines.push('----  ------     ----    ----    -------    -----');
-
-    for (let i = 0; i < Math.min(top, trending.length); i++) {
-      const r = trending[i];
+    lines.push(`Rank  ${'Stock'.padEnd(stockColWidth)}  ER     ATR%`);
+    lines.push(`----  ${'-'.repeat(stockColWidth)}  -----  ------`);
+    for (let i = 0; i < trendingTop.length; i++) {
+      const r = trendingTop[i];
+      const stock = formatSymbolWithName(r.symbol, names, tableNameMax).padEnd(stockColWidth);
       lines.push(
-        `${String(i + 1).padStart(4)}  ${r.symbol.padEnd(10)} ${r.er.toFixed(2).padStart(5)}   ${r.atrPct.toFixed(1).padStart(5)}%   ${(r.netChangePct >= 0 ? '+' : '') + r.netChangePct.toFixed(1).padStart(5)}%   $${r.priceEnd.toFixed(2)}`
+        `${String(i + 1).padStart(4)}  ${stock}  ${r.er.toFixed(2).padStart(5)}  ${(r.atrPct.toFixed(1) + '%').padStart(6)}`
       );
     }
     lines.push('```');
 
-    // Top picks summary
-    lines.push('');
+    // Message 3: top picks + summary + disclaimer
+    lines.push(MESSAGE_BREAK);
     const pickCount = 5;
     const picks = scalpFriendly.filter(r => r.atrPct >= 2.0).slice(0, pickCount);
     if (picks.length > 0) {
       lines.push(`**Top Picks for Scalping (low ER + ATR >= 2%):**`);
       for (const r of picks) {
-        lines.push(`- ${r.symbol} (ER: ${r.er.toFixed(2)}, ATR: ${r.atrPct.toFixed(1)}%, offset: ${r.suggestedOffset}, price: $${r.priceEnd.toFixed(2)})`);
+        lines.push(`- ${formatSymbolWithName(r.symbol, names)} (ER: ${r.er.toFixed(2)}, ATR: ${r.atrPct.toFixed(1)}%, offset: ${r.suggestedOffset})`);
       }
     } else {
       lines.push(`No strong scalp candidates found (need low ER + ATR >= 2%).`);

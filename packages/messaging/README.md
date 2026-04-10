@@ -1,6 +1,6 @@
 # @typedtrader/messaging
 
-Messaging interface for controlling personal trading bots remotely via [Telegram](https://core.telegram.org/bots) (using [Telegraf](https://telegraf.js.org/)).
+Messaging interface for controlling personal trading bots remotely via [Telegram](https://core.telegram.org/bots) (using [grammY](https://grammy.dev/)).
 
 ## Features
 

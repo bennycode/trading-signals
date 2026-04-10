@@ -94,6 +94,30 @@ type Config = MultiIndicatorConfluenceConfig; // z.infer<typeof MultiIndicatorCo
 - `SELL_LIMIT`: Sell when price reaches specified limit
 - `NONE`: No action recommended
 
+## Market Regimes
+
+No strategy works in every market. Classifying the current market state — the **regime** — helps decide which strategy is actually applicable right now. A useful model crosses **direction** (is price going up, down, or nowhere?) with **volatility** (how much is it moving?):
+
+|                  | Low volatility                                   | High volatility                                 |
+| ---------------- | ------------------------------------------------ | ----------------------------------------------- |
+| **Uptrending**   | **Smooth uptrend** — trend-following longs       | **Volatile uptrend** — breakout longs, wide stops |
+| **Downtrending** | **Smooth downtrend** — trend-following shorts    | **Volatile downtrend** — breakout shorts        |
+| **Ranging**      | **Tight range** — wait / accumulate              | **Wide range** — mean reversion, scalping       |
+
+Splitting direction into *up* / *down* / *ranging* (instead of a single *directional* axis) matters because long-only strategies only apply to uptrends, short strategies only to downtrends, and mean reversion works very differently in a sideways range than inside a trend.
+
+In practice this maps cleanly onto measurements that are cheap to compute from daily candles:
+
+- **Direction strength:** the [Efficiency Ratio](https://www.investopedia.com/articles/trading/07/kama.asp) (ER) — close to `1` means a clean directional move, close to `0` means pure noise. Pair it with the sign of the long-window slope (or a moving-average crossover) to decide *up* vs. *down*.
+- **Volatility:** average daily range relative to price (ATR%).
+
+A seventh bucket worth naming is **noise** — price movement with neither direction nor meaningful range. No strategy has an edge there; the right move is to stay out.
+
+Two distinct things use this concept:
+
+1. **Strategies** declare which regime(s) they target as static metadata, so you can answer *"given today's market for AAPL, which of my strategies are applicable?"*.
+2. **Stocks** get a *dynamic* regime label computed from recent price action, so the same stock can be classified differently across time windows.
+
 ## Backtesting
 
 Always backtest your strategies with historical data before deploying them in live trading. A good strategy should:
