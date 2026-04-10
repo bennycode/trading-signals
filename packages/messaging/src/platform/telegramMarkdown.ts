@@ -10,6 +10,14 @@ function escapeHtml(text: string): string {
   return text.replace(/[&<>]/g, ch => HTML_ESCAPES[ch]);
 }
 
+function trimNewlines(text: string): string {
+  let start = 0;
+  let end = text.length;
+  while (start < end && text[start] === '\n') start++;
+  while (end > start && text[end - 1] === '\n') end--;
+  return text.slice(start, end);
+}
+
 function convertOutsideCode(text: string): string {
   return escapeHtml(text).replace(/\*\*(.+?)\*\*/g, '<b>$1</b>');
 }
@@ -33,7 +41,7 @@ export function markdownToTelegramHtml(markdown: string): string {
     if (match.index > lastIndex) {
       parts.push(convertOutsideCode(markdown.slice(lastIndex, match.index)));
     }
-    const code = match[1].replace(/^\n+|\n+$/g, '');
+    const code = trimNewlines(match[1]);
     parts.push(`<pre>${escapeHtml(code)}</pre>`);
     lastIndex = match.index + match[0].length;
   }
@@ -63,7 +71,7 @@ export function splitForTelegram(markdown: string, maxLength = TELEGRAM_MAX_CHUN
   // up around the marker after line-join so each section starts cleanly.
   const sections = markdown
     .split(MESSAGE_BREAK)
-    .map(section => section.replace(/^\n+|\n+$/g, ''))
+    .map(trimNewlines)
     .filter(section => section.length > 0);
 
   if (sections.length > 1) {
