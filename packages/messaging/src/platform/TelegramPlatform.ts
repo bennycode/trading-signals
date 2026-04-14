@@ -192,7 +192,6 @@ async function tradeWizard(
   const confirmation = await conversation.external(() =>
     buildTradeConfirmation(userId, args, pair, accountId)
   );
-  );
   await accountSelection.answerCallbackQuery();
   await accountSelection.editMessageText(confirmation.text, confirmation.keyboard);
 
