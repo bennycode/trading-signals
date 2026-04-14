@@ -67,10 +67,10 @@ type TradeContext = ConversationFlavor<Context>;
 type TradeConversation = Conversation<TradeContext, TradeContext>;
 
 /** A string that parses as a finite positive decimal number (e.g. "1", "1.5", "0.001"). */
-const positiveNumberString = z
-  .string()
-  .regex(/^\d+(\.\d+)?$/, 'Must be a positive number')
-  .refine(value => Number.parseFloat(value) > 0, 'Must be greater than 0');
+const positiveNumberString = z.string().refine(value => {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) && parsed > 0;
+}, 'Must be a positive number');
 
 interface TradeArgs {
   cmd: TradeCommandName;
