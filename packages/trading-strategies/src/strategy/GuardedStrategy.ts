@@ -1,14 +1,14 @@
 import Big from 'big.js';
 import {z} from 'zod';
 import {ExchangeOrderSide, ExchangeOrderType} from '@typedtrader/exchange';
-import type {ExchangeFill, OneMinuteBatchedCandle, OrderAdvice, TradingSessionState} from '@typedtrader/exchange';
+import type {ExchangeFill, LimitOrderAdvice, OneMinuteBatchedCandle, OrderAdvice, TradingSessionState} from '@typedtrader/exchange';
 import {Strategy} from './Strategy.js';
 import {positiveNumberString} from '../util/validators.js';
 
 export const GuardedStrategySchema = z.object({
-  /** Stop-loss threshold as percentage, e.g. "5" = market-sell everything at -5% unrealized loss. Omit to disable. */
+  /** Stop-loss threshold as percentage, e.g. "5" = limit-sell everything at the -5% price (avgEntry * 0.95). Omit to disable. */
   stopLossPct: positiveNumberString.optional(),
-  /** Take-profit threshold as percentage, e.g. "10" = market-sell everything at +10% unrealized gain. Omit to disable. */
+  /** Take-profit threshold as percentage, e.g. "10" = limit-sell everything at the +10% price (avgEntry * 1.10). Omit to disable. */
   takeProfitPct: positiveNumberString.optional(),
 });
 
@@ -17,6 +17,8 @@ export type GuardedStrategyConfig = z.infer<typeof GuardedStrategySchema>;
 export type GuardedStrategyState = {
   killed: boolean;
   killedReason: string | null;
+  /** Limit price of the kill-switch sell order, as a Big string. `null` until a guard fires. */
+  killedLimitPrice: string | null;
   /** Cumulative cost basis across all BUY fills: sum of (price * size). Stored as a Big string. */
   totalCostBasis: string;
   /** Net base quantity held (BUYs minus SELLs). Stored as a Big string. */
@@ -28,6 +30,7 @@ const GUARD_STATE_KEY = '__guard';
 const defaultGuardState = (): GuardedStrategyState => ({
   killed: false,
   killedReason: null,
+  killedLimitPrice: null,
   totalCostBasis: '0',
   totalPositionSize: '0',
 });
@@ -38,13 +41,18 @@ type GuardContainerState = {[GUARD_STATE_KEY]: GuardedStrategyState};
  * A `Strategy` subclass that provides composable kill-switch behavior (stop-loss,
  * take-profit). Concrete strategies extend this class and call `super.processCandle()`
  * at the top of their own `processCandle`. If a guard fires, `super.processCandle()`
- * returns a market-sell-all advice and the subclass should return immediately.
+ * returns a limit-sell-all advice at the nominal target price and the subclass
+ * should return immediately.
+ *
+ * The limit price is the nominal threshold price (`avgEntry * (1 ± threshold/100)`),
+ * not the current market price — so the kill switch always exits at exactly the
+ * configured percentage regardless of how far the market has already moved.
  *
  * Position tracking uses cost-basis averaging from `onFill` events, so it handles
  * multiple buys and partial sells correctly. Once a guard fires, the subclass is
- * never called again for this session; the strategy keeps emitting the sell-all
+ * never called again for this session; the strategy keeps emitting the limit-sell
  * advice on every candle until `onFill` confirms the position is fully exited —
- * so a rejected or delayed market order is automatically retried.
+ * so a rejected or delayed placement is automatically retried.
  *
  * Usage:
  *
@@ -105,8 +113,9 @@ export abstract class GuardedStrategy extends Strategy {
   /**
    * Once a guard has fired, the subclass is never called again. If the position
    * is still non-zero (the sell order was rejected or hasn't filled yet), this
-   * keeps re-emitting the sell-all advice until `onFill` brings the position to
-   * zero. Only then does `onCandle` return `void`.
+   * keeps re-emitting the limit-sell advice at the stored nominal target price
+   * until `onFill` brings the position to zero. Only then does `onCandle` return
+   * `void`.
    */
   override async onCandle(
     candle: OneMinuteBatchedCandle,
@@ -117,8 +126,11 @@ export abstract class GuardedStrategy extends Strategy {
     const guardState = this.#guardState;
     if (guardState.killed) {
       const positionSize = new Big(guardState.totalPositionSize);
-      if (positionSize.gt(0)) {
-        const advice = this.#marketSellAll(guardState.killedReason ?? 'kill switch');
+      if (positionSize.gt(0) && guardState.killedLimitPrice) {
+        const advice = this.#killSwitchAdvice(
+          guardState.killedReason ?? 'kill switch',
+          new Big(guardState.killedLimitPrice)
+        );
         this.latestAdvice = advice;
         return advice;
       }
@@ -150,15 +162,17 @@ export abstract class GuardedStrategy extends Strategy {
     const pctChange = currentPrice.minus(avgEntry).div(avgEntry).mul(100);
 
     if (this.#stopLossPct && pctChange.lte(this.#stopLossPct.neg())) {
-      const reason = `Stop-loss: ${pctChange.toFixed(2)}% <= -${this.#stopLossPct.toFixed(2)}%`;
-      this.#setGuardState({killed: true, killedReason: reason});
-      return this.#marketSellAll(reason);
+      const limitPrice = avgEntry.mul(new Big(1).minus(this.#stopLossPct.div(100)));
+      const reason = `Stop-loss: ${pctChange.toFixed(2)}% <= -${this.#stopLossPct.toFixed(2)}% (limit ${limitPrice.toFixed()})`;
+      this.#setGuardState({killed: true, killedReason: reason, killedLimitPrice: limitPrice.toFixed()});
+      return this.#killSwitchAdvice(reason, limitPrice);
     }
 
     if (this.#takeProfitPct && pctChange.gte(this.#takeProfitPct)) {
-      const reason = `Take-profit: +${pctChange.toFixed(2)}% >= +${this.#takeProfitPct.toFixed(2)}%`;
-      this.#setGuardState({killed: true, killedReason: reason});
-      return this.#marketSellAll(reason);
+      const limitPrice = avgEntry.mul(new Big(1).plus(this.#takeProfitPct.div(100)));
+      const reason = `Take-profit: +${pctChange.toFixed(2)}% >= +${this.#takeProfitPct.toFixed(2)}% (limit ${limitPrice.toFixed()})`;
+      this.#setGuardState({killed: true, killedReason: reason, killedLimitPrice: limitPrice.toFixed()});
+      return this.#killSwitchAdvice(reason, limitPrice);
     }
   }
 
@@ -212,12 +226,13 @@ export abstract class GuardedStrategy extends Strategy {
     this.#setGuardState(restoredGuard);
   }
 
-  #marketSellAll(reason: string): OrderAdvice {
+  #killSwitchAdvice(reason: string, limitPrice: Big): LimitOrderAdvice {
     return {
       side: ExchangeOrderSide.SELL,
-      type: ExchangeOrderType.MARKET,
+      type: ExchangeOrderType.LIMIT,
       amount: null,
       amountIn: 'base',
+      price: limitPrice,
       reason: `[KILL SWITCH] ${reason}`,
     };
   }
@@ -231,6 +246,7 @@ function isGuardedState(value: unknown): value is GuardedStrategyState {
   return (
     typeof candidate.killed === 'boolean' &&
     (candidate.killedReason === null || typeof candidate.killedReason === 'string') &&
+    (candidate.killedLimitPrice === null || typeof candidate.killedLimitPrice === 'string') &&
     typeof candidate.totalCostBasis === 'string' &&
     typeof candidate.totalPositionSize === 'string'
   );

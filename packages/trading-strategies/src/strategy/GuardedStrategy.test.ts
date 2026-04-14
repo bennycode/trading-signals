@@ -9,8 +9,21 @@ import {
   ExchangeOrderType,
   TradingPair,
 } from '@typedtrader/exchange';
-import type {ExchangeCandle, ExchangeFill, OneMinuteBatchedCandle, OrderAdvice, TradingSessionState} from '@typedtrader/exchange';
+import type {
+  ExchangeCandle,
+  ExchangeFill,
+  LimitOrderAdvice,
+  OneMinuteBatchedCandle,
+  OrderAdvice,
+  TradingSessionState,
+} from '@typedtrader/exchange';
 import {GuardedStrategy, GuardedStrategySchema} from './GuardedStrategy.js';
+
+function assertLimitSell(advice: OrderAdvice | void): asserts advice is LimitOrderAdvice {
+  if (!advice || advice.type !== ExchangeOrderType.LIMIT || advice.side !== ExchangeOrderSide.SELL) {
+    throw new Error(`Expected a LIMIT SELL advice but received ${JSON.stringify(advice)}`);
+  }
+}
 
 const pair = new TradingPair('AAPL', 'USD');
 
@@ -126,20 +139,31 @@ describe('GuardedStrategySchema', () => {
 
 describe('GuardedStrategy', () => {
   describe('stop-loss', () => {
-    it('fires when unrealized loss reaches the threshold', async () => {
+    it('fires a LIMIT sell at the nominal target price when unrealized loss reaches the threshold', async () => {
       const strategy = new TestGuardedStrategy({stopLossPct: '5'});
       await strategy.onFill(makeFill('100', '10', ExchangeOrderSide.BUY), mockState);
 
       // Price drops 5% — stop-loss should fire
       const advice = await strategy.onCandle(makeCandle(95), mockState);
 
-      expect(advice).toBeDefined();
-      expect(advice!.side).toBe(ExchangeOrderSide.SELL);
-      expect(advice!.type).toBe(ExchangeOrderType.MARKET);
-      expect(advice!.amount).toBeNull();
-      expect(advice!.amountIn).toBe('base');
-      expect(advice!.reason).toContain('[KILL SWITCH]');
-      expect(advice!.reason).toContain('Stop-loss');
+      assertLimitSell(advice);
+      expect(advice.amount).toBeNull();
+      expect(advice.amountIn).toBe('base');
+      expect(new Big(advice.price).toFixed(2)).toBe('95.00');
+      expect(advice.reason).toContain('[KILL SWITCH]');
+      expect(advice.reason).toContain('Stop-loss');
+      expect(strategy.guardState.killedLimitPrice).toBe('95');
+    });
+
+    it('places the limit at the nominal target even when the market has gapped below', async () => {
+      const strategy = new TestGuardedStrategy({stopLossPct: '5'});
+      await strategy.onFill(makeFill('100', '10', ExchangeOrderSide.BUY), mockState);
+
+      // Market gaps to 90 (-10%), far past the -5% threshold — limit still sits at 95
+      const advice = await strategy.onCandle(makeCandle(90), mockState);
+
+      assertLimitSell(advice);
+      expect(new Big(advice.price).toFixed(2)).toBe('95.00');
     });
 
     it('does not fire while within threshold', async () => {
@@ -155,17 +179,17 @@ describe('GuardedStrategy', () => {
   });
 
   describe('take-profit', () => {
-    it('fires when unrealized gain reaches the threshold', async () => {
+    it('fires a LIMIT sell at the nominal target price when unrealized gain reaches the threshold', async () => {
       const strategy = new TestGuardedStrategy({takeProfitPct: '10'});
       await strategy.onFill(makeFill('100', '10', ExchangeOrderSide.BUY), mockState);
 
       const advice = await strategy.onCandle(makeCandle(110), mockState);
 
-      expect(advice).toBeDefined();
-      expect(advice!.side).toBe(ExchangeOrderSide.SELL);
-      expect(advice!.type).toBe(ExchangeOrderType.MARKET);
-      expect(advice!.reason).toContain('[KILL SWITCH]');
-      expect(advice!.reason).toContain('Take-profit');
+      assertLimitSell(advice);
+      expect(new Big(advice.price).toFixed(2)).toBe('110.00');
+      expect(advice.reason).toContain('[KILL SWITCH]');
+      expect(advice.reason).toContain('Take-profit');
+      expect(strategy.guardState.killedLimitPrice).toBe('110');
     });
 
     it('does not fire while within threshold', async () => {
@@ -192,21 +216,22 @@ describe('GuardedStrategy', () => {
   });
 
   describe('killed state', () => {
-    it('keeps re-emitting sell-all while the position has not yet been exited', async () => {
+    it('keeps re-emitting the same limit-sell advice while the position has not yet been exited', async () => {
       const strategy = new TestGuardedStrategy({stopLossPct: '5', signalAdvice: true});
       await strategy.onFill(makeFill('100', '10', ExchangeOrderSide.BUY), mockState);
 
       // Trigger stop-loss — position is still 10 because no sell fill has arrived yet
       const killAdvice = await strategy.onCandle(makeCandle(94), mockState);
-      expect(killAdvice!.reason).toContain('[KILL SWITCH]');
+      assertLimitSell(killAdvice);
+      expect(new Big(killAdvice.price).toFixed(2)).toBe('95.00');
       expect(strategy.guardState.killed).toBe(true);
 
-      // Simulate exchange rejecting/delaying the fill: next candle must retry
+      // Simulate exchange rejecting/delaying the fill: next candle must retry with
+      // the same nominal limit price, regardless of where the market is now.
       const retryAdvice = await strategy.onCandle(makeCandle(120), mockState);
-      expect(retryAdvice).toBeDefined();
-      expect(retryAdvice!.side).toBe(ExchangeOrderSide.SELL);
-      expect(retryAdvice!.type).toBe(ExchangeOrderType.MARKET);
-      expect(retryAdvice!.reason).toContain('[KILL SWITCH]');
+      assertLimitSell(retryAdvice);
+      expect(new Big(retryAdvice.price).toFixed(2)).toBe('95.00');
+      expect(retryAdvice.reason).toContain('[KILL SWITCH]');
 
       // Subclass logic must never run while killed, even during retries
       expect(strategy.ownLogicCallCount).toBe(0);
@@ -231,36 +256,34 @@ describe('GuardedStrategy', () => {
   });
 
   describe('position tracking', () => {
-    it('uses cost-basis averaging across multiple buys', async () => {
+    it('uses cost-basis averaging across multiple buys to compute the limit price', async () => {
       const strategy = new TestGuardedStrategy({stopLossPct: '5'});
 
       // Buy 10 @ 100, then 10 @ 120 → avg = 110
       await strategy.onFill(makeFill('100', '10', ExchangeOrderSide.BUY), mockState);
       await strategy.onFill(makeFill('120', '10', ExchangeOrderSide.BUY), mockState);
 
-      // -5% of 110 = 104.5. At 105, no fire. At 104.5, fires.
+      // -5% of 110 = 104.5. At 105, no fire. At 104, fires.
       const notYet = await strategy.onCandle(makeCandle(105), mockState);
       expect(notYet).toBeUndefined();
 
       const fires = await strategy.onCandle(makeCandle(104), mockState);
-      expect(fires).toBeDefined();
-      expect(fires!.reason).toContain('Stop-loss');
+      assertLimitSell(fires);
+      // Nominal limit price is 110 * 0.95 = 104.5 (NOT the candle close of 104)
+      expect(new Big(fires.price).toFixed(2)).toBe('104.50');
     });
 
-    it('continues monitoring the remaining position after a partial sell', async () => {
+    it('uses the current average entry price after a partial sell', async () => {
       const strategy = new TestGuardedStrategy({stopLossPct: '5'});
 
-      // Buy 20 @ 100, then sell 10 (partial exit)
+      // Buy 20 @ 100, then sell 10 (partial exit). Avg entry stays at 100.
       await strategy.onFill(makeFill('100', '20', ExchangeOrderSide.BUY), mockState);
       await strategy.onFill(makeFill('110', '10', ExchangeOrderSide.SELL), mockState);
 
-      // Avg entry stays at 100 after partial sell; -5% → fires at 95
       const fires = await strategy.onCandle(makeCandle(95), mockState);
-      expect(fires).toBeDefined();
-      expect(fires!.reason).toContain('Stop-loss');
-
-      // The remaining position is 10 (not zero), proving the guard tracked it
-      // correctly — killed=true means we still held something when it fired.
+      assertLimitSell(fires);
+      // Limit is nominal 5% below the preserved avg entry of 100 → 95
+      expect(new Big(fires.price).toFixed(2)).toBe('95.00');
     });
 
     it('resets position tracking to zero on a full exit', async () => {
@@ -306,8 +329,27 @@ describe('GuardedStrategy', () => {
 
       // The restored strategy should know about the position and fire at -5%
       const advice = await restored.onCandle(makeCandle(95), mockState);
-      expect(advice).toBeDefined();
-      expect(advice!.reason).toContain('Stop-loss');
+      assertLimitSell(advice);
+      expect(new Big(advice.price).toFixed(2)).toBe('95.00');
+    });
+
+    it('restores the killedLimitPrice after a guard has already fired', async () => {
+      const strategy = new TestGuardedStrategy({stopLossPct: '5'});
+      await strategy.onFill(makeFill('100', '10', ExchangeOrderSide.BUY), mockState);
+      await strategy.onCandle(makeCandle(95), mockState); // fire the guard
+      expect(strategy.guardState.killed).toBe(true);
+
+      const snapshot = strategy.state;
+
+      const restored = new TestGuardedStrategy({stopLossPct: '5'});
+      restored.restoreState(snapshot!);
+      expect(restored.guardState.killed).toBe(true);
+      expect(restored.guardState.killedLimitPrice).toBe('95');
+
+      // Retry on the restored instance should re-emit the same limit advice
+      const advice = await restored.onCandle(makeCandle(50), mockState);
+      assertLimitSell(advice);
+      expect(new Big(advice.price).toFixed(2)).toBe('95.00');
     });
 
     it('applies default guard state when restoring legacy state without __guard', async () => {
@@ -365,8 +407,8 @@ describe('GuardedStrategy', () => {
 
       const advice = await strategy.onCandle(makeCandle(90), mockState);
 
-      expect(advice!.side).toBe(ExchangeOrderSide.SELL);
-      expect(advice!.reason).toContain('Stop-loss');
+      assertLimitSell(advice);
+      expect(advice.reason).toContain('Stop-loss');
       expect(strategy.ownLogicCallCount).toBe(0);
     });
 
@@ -375,7 +417,8 @@ describe('GuardedStrategy', () => {
       await strategy.onFill(makeFill('100', '10', ExchangeOrderSide.BUY), mockState);
 
       const advice = await strategy.onCandle(makeCandle(94), mockState);
-      expect(advice!.reason).toContain('Stop-loss');
+      assertLimitSell(advice);
+      expect(advice.reason).toContain('Stop-loss');
     });
   });
 });
