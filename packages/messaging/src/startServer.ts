@@ -176,10 +176,10 @@ function registerCommands(platform: MessagingPlatform, monitors: Monitors): void
   const tradeFallback: CommandHandler = async ctx => {
     await ctx.reply('Trade commands are only supported on Telegram right now.');
   };
-  platform.registerCommand('buyMarket', tradeFallback);
-  platform.registerCommand('sellMarket', tradeFallback);
-  platform.registerCommand('buyLimit', tradeFallback);
-  platform.registerCommand('sellLimit', tradeFallback);
+  platform.registerCommand('buymarket', tradeFallback);
+  platform.registerCommand('sellmarket', tradeFallback);
+  platform.registerCommand('buylimit', tradeFallback);
+  platform.registerCommand('selllimit', tradeFallback);
 
   platform.registerCommand('myaddress', async ctx => {
     await ctx.reply(`Your address is: ${ctx.senderId.split(':').slice(1).join(':')}`);
