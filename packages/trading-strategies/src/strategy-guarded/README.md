@@ -17,7 +17,20 @@ The kill switch is one-way: once tripped, the subclass never runs again. `Guarde
 
 ## Configuration
 
-Stop-loss and take-profit are independent — you can configure both, either, or neither. Within each direction the three **trigger** variants are mutually exclusive (setting more than one throws at construction); the **order type** selects how the kill switch executes the exit.
+All kill-switch settings live under a single nested `guarded` key on the strategy config so they can't collide with subclass-specific fields:
+
+```json
+{
+  "guarded": {
+    "stopLossPct": "5",
+    "stopLossOrder": "market",
+    "takeProfitNominal": "10"
+  },
+  "mySubclassField": "whatever your strategy needs"
+}
+```
+
+Stop-loss and take-profit are independent — you can configure both, either, or neither. Within each direction the three **trigger** variants are mutually exclusive (setting more than one throws at construction); the **order type** selects how the kill switch executes the exit. Omitting the `guarded` key entirely disables both guards.
 
 ### Stop-loss trigger (pick at most one)
 
@@ -45,7 +58,7 @@ Stop-loss and take-profit are independent — you can configure both, either, or
 - **`"limit"`** (default) places a `LIMIT SELL` at the nominal target price. Guaranteed exit price, but may not fill if the market gaps past the target (especially for stop-loss). See the trade-off section below.
 - **`"market"`** places a `MARKET SELL` on the candle where the trigger fires. Guaranteed fill (near-immediate on live exchanges), but the exit price depends on wherever the market is at that moment — potentially worse than the target.
 
-Cross-direction mixing is allowed for both the trigger and the order type, e.g. `{ stopLossPct: "5", stopLossOrder: "market", takeProfitNominal: "10" }` uses a market stop-loss with a limit take-profit.
+Cross-direction mixing is allowed for both the trigger and the order type, e.g. `{ guarded: { stopLossPct: "5", stopLossOrder: "market", takeProfitNominal: "10" } }` uses a market stop-loss with a limit take-profit.
 
 ## Usage
 
@@ -127,9 +140,9 @@ When `stopLossOrder` / `takeProfitOrder` is `"limit"` (the default), the target 
 
 ## State persistence
 
-Guard state is stored under a reserved `__guard` key inside the strategy's proxied state, alongside any subclass-specific fields. Updates go through a private helper that reassigns `state.__guard` as a new object on every change, triggering the base `Strategy` Proxy's `set` trap, which fires `onSave`, which `StrategyMonitor` persists to the database.
+Kill-switch state is stored under a reserved `guarded` key inside the strategy's proxied state, alongside any subclass-specific fields — matching the `guarded` namespace used for config. Updates go through a private helper that reassigns `state.guarded` as a new object on every change, triggering the base `Strategy` Proxy's `set` trap, which fires `onSave`, which `StrategyMonitor` persists to the database.
 
-Persisted guard state:
+Persisted guarded state:
 
 ```typescript
 {
@@ -142,4 +155,4 @@ Persisted guard state:
 }
 ```
 
-`restoreState` is override-safe — if legacy state is restored without a `__guard` key, the guard is reset to defaults rather than crashing.
+`restoreState` is override-safe — if legacy state is restored without a `guarded` key, the kill-switch state is reset to defaults rather than crashing.

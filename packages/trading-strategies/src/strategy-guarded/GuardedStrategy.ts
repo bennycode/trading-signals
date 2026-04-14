@@ -5,7 +5,11 @@ import type {ExchangeFill, LimitOrderAdvice, OneMinuteBatchedCandle, OrderAdvice
 import {Strategy} from '../strategy/Strategy.js';
 import {positiveNumberString} from '../util/validators.js';
 
-export const GuardedStrategySchema = z.object({
+/**
+ * All kill-switch settings live under a single nested `guarded` key so they can't
+ * collide with the subclass's own config fields.
+ */
+export const GuardedConfigSchema = z.object({
   /**
    * Stop-loss as a percentage of avg entry. "5" = sell everything at avgEntry * 0.95.
    * Mutually exclusive with `stopLossNominal` and `stopLossPrice`. Omit all three to
@@ -56,6 +60,12 @@ export const GuardedStrategySchema = z.object({
   takeProfitOrder: z.enum(['limit', 'market']).default('limit'),
 });
 
+/** All of the kill-switch settings, nested under a single namespaced `guarded` key. */
+export const GuardedStrategySchema = z.object({
+  guarded: GuardedConfigSchema.optional(),
+});
+
+export type GuardedConfig = z.infer<typeof GuardedConfigSchema>;
 export type GuardedStrategyConfig = z.infer<typeof GuardedStrategySchema>;
 
 type GuardOrderType = 'limit' | 'market';
@@ -79,9 +89,9 @@ export type GuardedStrategyState = {
   totalPositionSize: string;
 };
 
-const GUARD_STATE_KEY = '__guard';
+const GUARDED_STATE_KEY = 'guarded';
 
-const defaultGuardState = (): GuardedStrategyState => ({
+const defaultGuardedState = (): GuardedStrategyState => ({
   killed: false,
   killedReason: null,
   killedOrderType: null,
@@ -90,7 +100,7 @@ const defaultGuardState = (): GuardedStrategyState => ({
   totalPositionSize: '0',
 });
 
-type GuardContainerState = {[GUARD_STATE_KEY]: GuardedStrategyState};
+type GuardedContainerState = {[GUARDED_STATE_KEY]: GuardedStrategyState};
 
 /**
  * A `Strategy` subclass that provides composable kill-switch behavior (stop-loss,
@@ -134,26 +144,20 @@ export abstract class GuardedStrategy extends Strategy {
       config: options.config,
       state: {
         ...options.state,
-        [GUARD_STATE_KEY]: defaultGuardState(),
+        [GUARDED_STATE_KEY]: defaultGuardedState(),
       },
     });
 
-    const guardConfig = GuardedStrategySchema.parse({
-      stopLossPct: options.config.stopLossPct,
-      stopLossNominal: options.config.stopLossNominal,
-      stopLossPrice: options.config.stopLossPrice,
-      takeProfitPct: options.config.takeProfitPct,
-      takeProfitNominal: options.config.takeProfitNominal,
-      takeProfitPrice: options.config.takeProfitPrice,
-      stopLossOrder: options.config.stopLossOrder,
-      takeProfitOrder: options.config.takeProfitOrder,
-    });
+    // Parse only the nested `guarded` sub-object — the subclass owns the rest of the config.
+    const guardedConfig = GuardedConfigSchema.parse(options.config[GUARDED_STATE_KEY] ?? {});
 
     // Zod's `.refine()` would turn the schema into `ZodEffects`, which cannot
     // be `.extend()`-ed by subclasses. Mutual exclusion is validated here instead.
-    const stopLossFields = [guardConfig.stopLossPct, guardConfig.stopLossNominal, guardConfig.stopLossPrice].filter(
-      (value): value is string => value !== undefined
-    );
+    const stopLossFields = [
+      guardedConfig.stopLossPct,
+      guardedConfig.stopLossNominal,
+      guardedConfig.stopLossPrice,
+    ].filter((value): value is string => value !== undefined);
     if (stopLossFields.length > 1) {
       throw new Error(
         'GuardedStrategy: stopLossPct, stopLossNominal, and stopLossPrice are mutually exclusive — set at most one'
@@ -161,9 +165,9 @@ export abstract class GuardedStrategy extends Strategy {
     }
 
     const takeProfitFields = [
-      guardConfig.takeProfitPct,
-      guardConfig.takeProfitNominal,
-      guardConfig.takeProfitPrice,
+      guardedConfig.takeProfitPct,
+      guardedConfig.takeProfitNominal,
+      guardedConfig.takeProfitPrice,
     ].filter((value): value is string => value !== undefined);
     if (takeProfitFields.length > 1) {
       throw new Error(
@@ -171,44 +175,44 @@ export abstract class GuardedStrategy extends Strategy {
       );
     }
 
-    this.#stopLoss = guardConfig.stopLossPct
-      ? {kind: 'pct', pct: new Big(guardConfig.stopLossPct)}
-      : guardConfig.stopLossNominal
-        ? {kind: 'nominal', nominal: new Big(guardConfig.stopLossNominal)}
-        : guardConfig.stopLossPrice
-          ? {kind: 'price', price: new Big(guardConfig.stopLossPrice)}
+    this.#stopLoss = guardedConfig.stopLossPct
+      ? {kind: 'pct', pct: new Big(guardedConfig.stopLossPct)}
+      : guardedConfig.stopLossNominal
+        ? {kind: 'nominal', nominal: new Big(guardedConfig.stopLossNominal)}
+        : guardedConfig.stopLossPrice
+          ? {kind: 'price', price: new Big(guardedConfig.stopLossPrice)}
           : null;
 
-    this.#takeProfit = guardConfig.takeProfitPct
-      ? {kind: 'pct', pct: new Big(guardConfig.takeProfitPct)}
-      : guardConfig.takeProfitNominal
-        ? {kind: 'nominal', nominal: new Big(guardConfig.takeProfitNominal)}
-        : guardConfig.takeProfitPrice
-          ? {kind: 'price', price: new Big(guardConfig.takeProfitPrice)}
+    this.#takeProfit = guardedConfig.takeProfitPct
+      ? {kind: 'pct', pct: new Big(guardedConfig.takeProfitPct)}
+      : guardedConfig.takeProfitNominal
+        ? {kind: 'nominal', nominal: new Big(guardedConfig.takeProfitNominal)}
+        : guardedConfig.takeProfitPrice
+          ? {kind: 'price', price: new Big(guardedConfig.takeProfitPrice)}
           : null;
 
-    this.#stopLossOrder = guardConfig.stopLossOrder;
-    this.#takeProfitOrder = guardConfig.takeProfitOrder;
+    this.#stopLossOrder = guardedConfig.stopLossOrder;
+    this.#takeProfitOrder = guardedConfig.takeProfitOrder;
   }
 
-  get #guardState(): GuardedStrategyState {
-    return this.getProxiedState<GuardContainerState>()[GUARD_STATE_KEY];
+  get #guardedState(): GuardedStrategyState {
+    return this.getProxiedState<GuardedContainerState>()[GUARDED_STATE_KEY];
   }
 
   /**
-   * Reassigns the top-level `__guard` key on the proxied state with a merged
+   * Reassigns the top-level `guarded` key on the proxied state with a merged
    * snapshot. The top-level write triggers the base `Strategy` Proxy's `set`
    * trap, which in turn fires `onSave` so `StrategyMonitor` persists to the DB.
    * Nested property mutations would silently bypass persistence.
    */
-  #setGuardState(patch: Partial<GuardedStrategyState>): void {
-    const proxied = this.getProxiedState<GuardContainerState>();
-    proxied[GUARD_STATE_KEY] = {...proxied[GUARD_STATE_KEY], ...patch};
+  #setGuardedState(patch: Partial<GuardedStrategyState>): void {
+    const proxied = this.getProxiedState<GuardedContainerState>();
+    proxied[GUARDED_STATE_KEY] = {...proxied[GUARDED_STATE_KEY], ...patch};
   }
 
-  /** Read-only snapshot of the current guard state. Useful for tests and diagnostics. */
-  get guardState(): Readonly<GuardedStrategyState> {
-    return {...this.#guardState};
+  /** Read-only snapshot of the current guarded state. Useful for tests and diagnostics. */
+  get guardedState(): Readonly<GuardedStrategyState> {
+    return {...this.#guardedState};
   }
 
   /**
@@ -224,14 +228,14 @@ export abstract class GuardedStrategy extends Strategy {
   ): Promise<OrderAdvice | void> {
     this.lastBatchedCandle = candle;
 
-    const guardState = this.#guardState;
-    if (guardState.killed) {
-      const positionSize = new Big(guardState.totalPositionSize);
-      if (positionSize.gt(0) && guardState.killedOrderType) {
-        const limitPrice = guardState.killedLimitPrice ? new Big(guardState.killedLimitPrice) : null;
+    const guardedState = this.#guardedState;
+    if (guardedState.killed) {
+      const positionSize = new Big(guardedState.totalPositionSize);
+      if (positionSize.gt(0) && guardedState.killedOrderType) {
+        const limitPrice = guardedState.killedLimitPrice ? new Big(guardedState.killedLimitPrice) : null;
         const advice = this.#killSwitchAdvice(
-          guardState.killedReason ?? 'kill switch',
-          guardState.killedOrderType,
+          guardedState.killedReason ?? 'kill switch',
+          guardedState.killedOrderType,
           limitPrice
         );
         this.latestAdvice = advice;
@@ -254,13 +258,13 @@ export abstract class GuardedStrategy extends Strategy {
       return;
     }
 
-    const guardState = this.#guardState;
-    const positionSize = new Big(guardState.totalPositionSize);
+    const guardedState = this.#guardedState;
+    const positionSize = new Big(guardedState.totalPositionSize);
     if (positionSize.lte(0)) {
       return;
     }
 
-    const avgEntry = new Big(guardState.totalCostBasis).div(positionSize);
+    const avgEntry = new Big(guardedState.totalCostBasis).div(positionSize);
     const currentPrice = candle.close;
 
     if (this.#stopLoss) {
@@ -268,7 +272,7 @@ export abstract class GuardedStrategy extends Strategy {
       if (currentPrice.lte(targetPrice)) {
         const orderType = this.#stopLossOrder;
         const reason = this.#stopLossReason(avgEntry, currentPrice, positionSize, targetPrice, orderType);
-        this.#setGuardState({
+        this.#setGuardedState({
           killed: true,
           killedReason: reason,
           killedOrderType: orderType,
@@ -283,7 +287,7 @@ export abstract class GuardedStrategy extends Strategy {
       if (currentPrice.gte(targetPrice)) {
         const orderType = this.#takeProfitOrder;
         const reason = this.#takeProfitReason(avgEntry, currentPrice, positionSize, targetPrice, orderType);
-        this.#setGuardState({
+        this.#setGuardedState({
           killed: true,
           killedReason: reason,
           killedOrderType: orderType,
@@ -373,14 +377,14 @@ export abstract class GuardedStrategy extends Strategy {
   }
 
   async onFill(fill: ExchangeFill, _state: TradingSessionState): Promise<void> {
-    const guardState = this.#guardState;
+    const guardedState = this.#guardedState;
     const fillPrice = new Big(fill.price);
     const fillSize = new Big(fill.size);
 
     if (fill.side === ExchangeOrderSide.BUY) {
-      const newCostBasis = new Big(guardState.totalCostBasis).plus(fillPrice.mul(fillSize));
-      const newPositionSize = new Big(guardState.totalPositionSize).plus(fillSize);
-      this.#setGuardState({
+      const newCostBasis = new Big(guardedState.totalCostBasis).plus(fillPrice.mul(fillSize));
+      const newPositionSize = new Big(guardedState.totalPositionSize).plus(fillSize);
+      this.#setGuardedState({
         totalCostBasis: newCostBasis.toFixed(),
         totalPositionSize: newPositionSize.toFixed(),
       });
@@ -388,38 +392,38 @@ export abstract class GuardedStrategy extends Strategy {
     }
 
     // SELL: reduce position proportionally using the current average entry price.
-    const currentPositionSize = new Big(guardState.totalPositionSize);
+    const currentPositionSize = new Big(guardedState.totalPositionSize);
     if (currentPositionSize.lte(0)) {
       return;
     }
 
-    const avgEntry = new Big(guardState.totalCostBasis).div(currentPositionSize);
+    const avgEntry = new Big(guardedState.totalCostBasis).div(currentPositionSize);
     const newPositionSize = currentPositionSize.minus(fillSize);
 
     if (newPositionSize.lte(0)) {
-      this.#setGuardState({totalCostBasis: '0', totalPositionSize: '0'});
+      this.#setGuardedState({totalCostBasis: '0', totalPositionSize: '0'});
       return;
     }
 
-    this.#setGuardState({
+    this.#setGuardedState({
       totalCostBasis: avgEntry.mul(newPositionSize).toFixed(),
       totalPositionSize: newPositionSize.toFixed(),
     });
   }
 
   override restoreState(persisted: Record<string, unknown>): void {
-    const existing = persisted[GUARD_STATE_KEY];
-    const restoredGuard: GuardedStrategyState = isGuardedState(existing) ? existing : defaultGuardState();
+    const existing = persisted[GUARDED_STATE_KEY];
+    const restoredGuarded: GuardedStrategyState = isGuardedStrategyState(existing) ? existing : defaultGuardedState();
 
     super.restoreState({
       ...persisted,
-      [GUARD_STATE_KEY]: restoredGuard,
+      [GUARDED_STATE_KEY]: restoredGuarded,
     });
 
     // The base class only updates `#_state`; the proxied state still points at
-    // the original object from the constructor. Reassigning `__guard` through
+    // the original object from the constructor. Reassigning `guarded` through
     // the proxy propagates restored values into the proxied state.
-    this.#setGuardState(restoredGuard);
+    this.#setGuardedState(restoredGuarded);
   }
 
   #killSwitchAdvice(reason: string, orderType: GuardOrderType, limitPrice: Big | null): OrderAdvice {
@@ -447,7 +451,7 @@ export abstract class GuardedStrategy extends Strategy {
   }
 }
 
-function isGuardedState(value: unknown): value is GuardedStrategyState {
+function isGuardedStrategyState(value: unknown): value is GuardedStrategyState {
   if (!value || typeof value !== 'object') {
     return false;
   }
