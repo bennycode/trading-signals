@@ -66,8 +66,17 @@ function buildTradeActionLabel(
 type TradeContext = ConversationFlavor<Context>;
 type TradeConversation = Conversation<TradeContext, TradeContext>;
 
-/** A string that parses as a finite positive decimal number (e.g. "1", "1.5", "0.001"). */
+/**
+ * A string that parses as a finite positive decimal number (e.g. "1", "1.5",
+ * "0.001"). Only digits and an optional decimal point are allowed — scientific
+ * notation (`1e5`), hex / octal / binary literals (`0x10`, `0o17`, `0b10`),
+ * whitespace, and signs are all rejected before `Number()` would silently
+ * coerce them.
+ */
 const positiveNumberString = z.string().refine(value => {
+  for (const char of value) {
+    if (char !== '.' && (char < '0' || char > '9')) return false;
+  }
   const parsed = Number(value);
   return Number.isFinite(parsed) && parsed > 0;
 }, 'Must be a positive number');
