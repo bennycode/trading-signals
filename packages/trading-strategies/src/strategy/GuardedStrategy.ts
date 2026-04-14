@@ -6,13 +6,33 @@ import {Strategy} from './Strategy.js';
 import {positiveNumberString} from '../util/validators.js';
 
 export const GuardedStrategySchema = z.object({
-  /** Stop-loss threshold as percentage, e.g. "5" = limit-sell everything at the -5% price (avgEntry * 0.95). Omit to disable. */
+  /**
+   * Stop-loss as a percentage of avg entry. "5" = sell everything at avgEntry * 0.95.
+   * Mutually exclusive with `stopLossNominal`. Omit both to disable the stop-loss guard.
+   */
   stopLossPct: positiveNumberString.optional(),
-  /** Take-profit threshold as percentage, e.g. "10" = limit-sell everything at the +10% price (avgEntry * 1.10). Omit to disable. */
+  /**
+   * Stop-loss as an absolute unrealized loss in counter currency. "10" on a 10-share
+   * position bought at $100 → fires at $99 (unrealized loss = $10). Mutually exclusive
+   * with `stopLossPct`.
+   */
+  stopLossNominal: positiveNumberString.optional(),
+  /**
+   * Take-profit as a percentage of avg entry. "10" = sell everything at avgEntry * 1.10.
+   * Mutually exclusive with `takeProfitNominal`. Omit both to disable the take-profit guard.
+   */
   takeProfitPct: positiveNumberString.optional(),
+  /**
+   * Take-profit as an absolute unrealized gain in counter currency. "10" on a 10-share
+   * position bought at $100 → fires at $101 (unrealized gain = $10). Mutually exclusive
+   * with `takeProfitPct`.
+   */
+  takeProfitNominal: positiveNumberString.optional(),
 });
 
 export type GuardedStrategyConfig = z.infer<typeof GuardedStrategySchema>;
+
+type GuardMode = {kind: 'pct'; pct: Big} | {kind: 'nominal'; nominal: Big} | null;
 
 export type GuardedStrategyState = {
   killed: boolean;
@@ -69,8 +89,8 @@ type GuardContainerState = {[GUARD_STATE_KEY]: GuardedStrategyState};
  *     }
  */
 export abstract class GuardedStrategy extends Strategy {
-  readonly #stopLossPct: Big | null;
-  readonly #takeProfitPct: Big | null;
+  readonly #stopLoss: GuardMode;
+  readonly #takeProfit: GuardMode;
 
   constructor(options: {config: Record<string, unknown>; state?: Record<string, unknown>}) {
     super({
@@ -83,11 +103,31 @@ export abstract class GuardedStrategy extends Strategy {
 
     const guardConfig = GuardedStrategySchema.parse({
       stopLossPct: options.config.stopLossPct,
+      stopLossNominal: options.config.stopLossNominal,
       takeProfitPct: options.config.takeProfitPct,
+      takeProfitNominal: options.config.takeProfitNominal,
     });
 
-    this.#stopLossPct = guardConfig.stopLossPct ? new Big(guardConfig.stopLossPct) : null;
-    this.#takeProfitPct = guardConfig.takeProfitPct ? new Big(guardConfig.takeProfitPct) : null;
+    // Zod's `.refine()` would turn the schema into `ZodEffects`, which cannot
+    // be `.extend()`-ed by subclasses. Mutual exclusion is validated here instead.
+    if (guardConfig.stopLossPct && guardConfig.stopLossNominal) {
+      throw new Error('GuardedStrategy: stopLossPct and stopLossNominal are mutually exclusive — set only one');
+    }
+    if (guardConfig.takeProfitPct && guardConfig.takeProfitNominal) {
+      throw new Error('GuardedStrategy: takeProfitPct and takeProfitNominal are mutually exclusive — set only one');
+    }
+
+    this.#stopLoss = guardConfig.stopLossPct
+      ? {kind: 'pct', pct: new Big(guardConfig.stopLossPct)}
+      : guardConfig.stopLossNominal
+        ? {kind: 'nominal', nominal: new Big(guardConfig.stopLossNominal)}
+        : null;
+
+    this.#takeProfit = guardConfig.takeProfitPct
+      ? {kind: 'pct', pct: new Big(guardConfig.takeProfitPct)}
+      : guardConfig.takeProfitNominal
+        ? {kind: 'nominal', nominal: new Big(guardConfig.takeProfitNominal)}
+        : null;
   }
 
   get #guardState(): GuardedStrategyState {
@@ -147,7 +187,7 @@ export abstract class GuardedStrategy extends Strategy {
     candle: OneMinuteBatchedCandle,
     _state: TradingSessionState
   ): Promise<OrderAdvice | void> {
-    if (!this.#stopLossPct && !this.#takeProfitPct) {
+    if (!this.#stopLoss && !this.#takeProfit) {
       return;
     }
 
@@ -159,21 +199,64 @@ export abstract class GuardedStrategy extends Strategy {
 
     const avgEntry = new Big(guardState.totalCostBasis).div(positionSize);
     const currentPrice = candle.close;
-    const pctChange = currentPrice.minus(avgEntry).div(avgEntry).mul(100);
 
-    if (this.#stopLossPct && pctChange.lte(this.#stopLossPct.neg())) {
-      const limitPrice = avgEntry.mul(new Big(1).minus(this.#stopLossPct.div(100)));
-      const reason = `Stop-loss: ${pctChange.toFixed(2)}% <= -${this.#stopLossPct.toFixed(2)}% (limit ${limitPrice.toFixed()})`;
-      this.#setGuardState({killed: true, killedReason: reason, killedLimitPrice: limitPrice.toFixed()});
-      return this.#killSwitchAdvice(reason, limitPrice);
+    if (this.#stopLoss) {
+      const limitPrice = this.#resolveStopLossLimit(avgEntry, positionSize);
+      if (currentPrice.lte(limitPrice)) {
+        const reason = this.#stopLossReason(avgEntry, currentPrice, positionSize, limitPrice);
+        this.#setGuardState({killed: true, killedReason: reason, killedLimitPrice: limitPrice.toFixed()});
+        return this.#killSwitchAdvice(reason, limitPrice);
+      }
     }
 
-    if (this.#takeProfitPct && pctChange.gte(this.#takeProfitPct)) {
-      const limitPrice = avgEntry.mul(new Big(1).plus(this.#takeProfitPct.div(100)));
-      const reason = `Take-profit: +${pctChange.toFixed(2)}% >= +${this.#takeProfitPct.toFixed(2)}% (limit ${limitPrice.toFixed()})`;
-      this.#setGuardState({killed: true, killedReason: reason, killedLimitPrice: limitPrice.toFixed()});
-      return this.#killSwitchAdvice(reason, limitPrice);
+    if (this.#takeProfit) {
+      const limitPrice = this.#resolveTakeProfitLimit(avgEntry, positionSize);
+      if (currentPrice.gte(limitPrice)) {
+        const reason = this.#takeProfitReason(avgEntry, currentPrice, positionSize, limitPrice);
+        this.#setGuardState({killed: true, killedReason: reason, killedLimitPrice: limitPrice.toFixed()});
+        return this.#killSwitchAdvice(reason, limitPrice);
+      }
     }
+  }
+
+  #resolveStopLossLimit(avgEntry: Big, positionSize: Big): Big {
+    if (!this.#stopLoss) {
+      throw new Error('unreachable: stop-loss is not configured');
+    }
+    if (this.#stopLoss.kind === 'pct') {
+      return avgEntry.mul(new Big(1).minus(this.#stopLoss.pct.div(100)));
+    }
+    return avgEntry.minus(this.#stopLoss.nominal.div(positionSize));
+  }
+
+  #resolveTakeProfitLimit(avgEntry: Big, positionSize: Big): Big {
+    if (!this.#takeProfit) {
+      throw new Error('unreachable: take-profit is not configured');
+    }
+    if (this.#takeProfit.kind === 'pct') {
+      return avgEntry.mul(new Big(1).plus(this.#takeProfit.pct.div(100)));
+    }
+    return avgEntry.plus(this.#takeProfit.nominal.div(positionSize));
+  }
+
+  #stopLossReason(avgEntry: Big, currentPrice: Big, positionSize: Big, limitPrice: Big): string {
+    if (this.#stopLoss?.kind === 'pct') {
+      const pctChange = currentPrice.minus(avgEntry).div(avgEntry).mul(100);
+      return `Stop-loss: ${pctChange.toFixed(2)}% <= -${this.#stopLoss.pct.toFixed(2)}% (limit ${limitPrice.toFixed()})`;
+    }
+    const unrealized = currentPrice.minus(avgEntry).mul(positionSize);
+    const nominal = this.#stopLoss?.kind === 'nominal' ? this.#stopLoss.nominal : new Big(0);
+    return `Stop-loss: unrealized ${unrealized.toFixed(2)} <= -${nominal.toFixed(2)} (limit ${limitPrice.toFixed()})`;
+  }
+
+  #takeProfitReason(avgEntry: Big, currentPrice: Big, positionSize: Big, limitPrice: Big): string {
+    if (this.#takeProfit?.kind === 'pct') {
+      const pctChange = currentPrice.minus(avgEntry).div(avgEntry).mul(100);
+      return `Take-profit: +${pctChange.toFixed(2)}% >= +${this.#takeProfit.pct.toFixed(2)}% (limit ${limitPrice.toFixed()})`;
+    }
+    const unrealized = currentPrice.minus(avgEntry).mul(positionSize);
+    const nominal = this.#takeProfit?.kind === 'nominal' ? this.#takeProfit.nominal : new Big(0);
+    return `Take-profit: unrealized +${unrealized.toFixed(2)} >= +${nominal.toFixed(2)} (limit ${limitPrice.toFixed()})`;
   }
 
   async onFill(fill: ExchangeFill, _state: TradingSessionState): Promise<void> {

@@ -176,6 +176,22 @@ describe('GuardedStrategy', () => {
       expect(advice).toBeUndefined();
       expect(strategy.ownLogicCallCount).toBe(1);
     });
+
+    it('fires a LIMIT sell at the nominal USD loss target when stopLossNominal is reached', async () => {
+      // 10 shares @ 100 = $1000 invested. stopLossNominal=10 → exit when unrealized loss
+      // is $10, i.e. price of 99 (each share only needs to drop $1).
+      const strategy = new TestGuardedStrategy({stopLossNominal: '10'});
+      await strategy.onFill(makeFill('100', '10', ExchangeOrderSide.BUY), mockState);
+
+      const notYet = await strategy.onCandle(makeCandle(99.5), mockState);
+      expect(notYet).toBeUndefined();
+
+      const advice = await strategy.onCandle(makeCandle(99), mockState);
+      assertLimitSell(advice);
+      expect(new Big(advice.price).toFixed(2)).toBe('99.00');
+      expect(advice.reason).toContain('Stop-loss');
+      expect(advice.reason).toContain('unrealized');
+    });
   });
 
   describe('take-profit', () => {
@@ -190,6 +206,22 @@ describe('GuardedStrategy', () => {
       expect(advice.reason).toContain('[KILL SWITCH]');
       expect(advice.reason).toContain('Take-profit');
       expect(strategy.guardState.killedLimitPrice).toBe('110');
+    });
+
+    it('fires a LIMIT sell at the nominal USD target when takeProfitNominal is reached', async () => {
+      // 10 shares @ 100 = $1000 invested. takeProfitNominal=10 → exit when portfolio hits $1010,
+      // i.e. price of 101 (each share only needs to gain $1).
+      const strategy = new TestGuardedStrategy({takeProfitNominal: '10'});
+      await strategy.onFill(makeFill('100', '10', ExchangeOrderSide.BUY), mockState);
+
+      const notYet = await strategy.onCandle(makeCandle(100.5), mockState);
+      expect(notYet).toBeUndefined();
+
+      const advice = await strategy.onCandle(makeCandle(101), mockState);
+      assertLimitSell(advice);
+      expect(new Big(advice.price).toFixed(2)).toBe('101.00');
+      expect(advice.reason).toContain('Take-profit');
+      expect(advice.reason).toContain('unrealized');
     });
 
     it('does not fire while within threshold', async () => {
@@ -312,6 +344,63 @@ describe('GuardedStrategy', () => {
       expect(advice).toBeDefined();
       expect(advice!.side).toBe(ExchangeOrderSide.BUY);
       expect(strategy.ownLogicCallCount).toBe(1);
+    });
+  });
+
+  describe('mutual exclusion', () => {
+    it('rejects setting both stopLossPct and stopLossNominal', () => {
+      expect(() => new TestGuardedStrategy({stopLossPct: '5', stopLossNominal: '10'})).toThrow(
+        /stopLossPct and stopLossNominal are mutually exclusive/
+      );
+    });
+
+    it('rejects setting both takeProfitPct and takeProfitNominal', () => {
+      expect(() => new TestGuardedStrategy({takeProfitPct: '10', takeProfitNominal: '5'})).toThrow(
+        /takeProfitPct and takeProfitNominal are mutually exclusive/
+      );
+    });
+
+    it('allows mixing pct on one direction with nominal on the other', async () => {
+      // stopLossPct 5 + takeProfitNominal 10 on 10 @ 100
+      //   → stop-loss target: 100 * 0.95 = 95
+      //   → take-profit target: 100 + 10/10 = 101
+      const strategy = new TestGuardedStrategy({stopLossPct: '5', takeProfitNominal: '10'});
+      await strategy.onFill(makeFill('100', '10', ExchangeOrderSide.BUY), mockState);
+
+      // Hits take-profit first at 101
+      const advice = await strategy.onCandle(makeCandle(101), mockState);
+      assertLimitSell(advice);
+      expect(new Big(advice.price).toFixed(2)).toBe('101.00');
+      expect(advice.reason).toContain('Take-profit');
+    });
+
+    it('allows mixing nominal stop-loss with pct take-profit', async () => {
+      const strategy = new TestGuardedStrategy({stopLossNominal: '10', takeProfitPct: '10'});
+      await strategy.onFill(makeFill('100', '10', ExchangeOrderSide.BUY), mockState);
+
+      // -$10 at 10 shares → price 99
+      const advice = await strategy.onCandle(makeCandle(99), mockState);
+      assertLimitSell(advice);
+      expect(new Big(advice.price).toFixed(2)).toBe('99.00');
+      expect(advice.reason).toContain('Stop-loss');
+    });
+  });
+
+  describe('nominal across multiple buys', () => {
+    it('uses the current cost-basis / positionSize when computing the nominal target', async () => {
+      const strategy = new TestGuardedStrategy({takeProfitNominal: '20'});
+
+      // Buy 10 @ 100, then 10 @ 120 → positionSize 20, costBasis 2200, avgEntry 110
+      await strategy.onFill(makeFill('100', '10', ExchangeOrderSide.BUY), mockState);
+      await strategy.onFill(makeFill('120', '10', ExchangeOrderSide.BUY), mockState);
+
+      // +$20 target at 20 shares → each share needs to gain $1 from avg → target 111
+      const notYet = await strategy.onCandle(makeCandle(110.5), mockState);
+      expect(notYet).toBeUndefined();
+
+      const advice = await strategy.onCandle(makeCandle(111), mockState);
+      assertLimitSell(advice);
+      expect(new Big(advice.price).toFixed(2)).toBe('111.00');
     });
   });
 
