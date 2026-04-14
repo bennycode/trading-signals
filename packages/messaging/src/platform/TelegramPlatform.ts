@@ -23,7 +23,10 @@ const MODE_CALLBACK_PREFIX = 'reportmode:';
 const INTERVAL_CALLBACK_PREFIX = 'reportinterval:';
 
 const TRADE_CONVERSATION_ID = 'trade';
-const TRADE_COMMAND_NAMES = ['buyMarket', 'sellMarket', 'buyLimit', 'sellLimit'] as const;
+// Telegram requires command names to be lowercase [a-z0-9_] — uppercase
+// letters are silently ignored during command matching. Keep these names
+// in sync with the entries registered in startServer.ts.
+const TRADE_COMMAND_NAMES = ['buymarket', 'sellmarket', 'buylimit', 'selllimit'] as const;
 type TradeCommandName = (typeof TRADE_COMMAND_NAMES)[number];
 
 function isTradeCommandName(name: string): name is TradeCommandName {
@@ -37,13 +40,13 @@ interface TradeCommandShape {
 
 function tradeCommandShape(name: TradeCommandName): TradeCommandShape {
   switch (name) {
-    case 'buyMarket':
+    case 'buymarket':
       return {side: ExchangeOrderSide.BUY, isLimit: false};
-    case 'sellMarket':
+    case 'sellmarket':
       return {side: ExchangeOrderSide.SELL, isLimit: false};
-    case 'buyLimit':
+    case 'buylimit':
       return {side: ExchangeOrderSide.BUY, isLimit: true};
-    case 'sellLimit':
+    case 'selllimit':
       return {side: ExchangeOrderSide.SELL, isLimit: true};
   }
 }
@@ -77,7 +80,7 @@ interface TradeArgs {
 }
 
 /**
- * Parses the raw text following a /buyMarket / /sellMarket / /buyLimit / /sellLimit
+ * Parses the raw text following a /buymarket / /sellmarket / /buylimit / /selllimit
  * command into validated args. Returns `null` and replies with the usage error if
  * anything is off — the caller can just return early.
  */
