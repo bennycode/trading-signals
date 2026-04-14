@@ -6,6 +6,7 @@ import {
   conversations,
   createConversation,
 } from '@grammyjs/conversations';
+import {z} from 'zod';
 import {ExchangeOrderSide, TradingPair, getExchangeClient} from '@typedtrader/exchange';
 import {getAvailableReportNames, reportRequiresAccount} from 'trading-strategies';
 import type {CommandHandler, MessageContext, MessagingPlatform, PlatformInfo} from './MessagingPlatform.js';
@@ -65,6 +66,12 @@ function buildTradeActionLabel(
 type TradeContext = ConversationFlavor<Context>;
 type TradeConversation = Conversation<TradeContext, TradeContext>;
 
+/** A string that parses as a finite positive decimal number (e.g. "1", "1.5", "0.001"). */
+const positiveNumberString = z
+  .string()
+  .regex(/^\d+(\.\d+)?$/, 'Must be a positive number')
+  .refine(value => Number.parseFloat(value) > 0, 'Must be greater than 0');
+
 interface TradeArgs {
   cmd: TradeCommandName;
   pairStr: string;
@@ -107,13 +114,15 @@ async function parseTradeCommandInput(
     return null;
   }
 
-  if (!/^\d+(\.\d+)?$/.test(quantity) || Number.parseFloat(quantity) <= 0) {
+  const quantityCheck = positiveNumberString.safeParse(quantity);
+  if (!quantityCheck.success) {
     await ctx.reply(`Invalid quantity "${quantity}". Must be a positive number.`);
     return null;
   }
 
   if (isLimit) {
-    if (!/^\d+(\.\d+)?$/.test(priceInput) || Number.parseFloat(priceInput) <= 0) {
+    const priceCheck = positiveNumberString.safeParse(priceInput);
+    if (!priceCheck.success) {
       await ctx.reply(`Invalid price "${priceInput}". Must be a positive number.`);
       return null;
     }

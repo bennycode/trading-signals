@@ -15,7 +15,8 @@
     "@grammyjs/conversations": "^2.1.1",
     "grammy": "^1.42.0",
     "ms": "4.0.0-nightly.202508271359",
-    "trading-strategies": "0.3.5"
+    "trading-strategies": "0.3.5",
+    "zod": "^4.3.6"
   },
   "description": "Trading bot via messaging service.",
   "devDependencies": {
