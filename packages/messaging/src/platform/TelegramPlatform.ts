@@ -196,6 +196,7 @@ async function tradeWizard(
 
   // Step 3: wait for Yes / No
   const decision = await conversation.waitForCallbackQuery(['trade:cnf:y', 'trade:cnf:n']);
+  await decision.answerCallbackQuery();
   if (decision.match === 'trade:cnf:n') {
     await decision.editMessageText('Cancelled.');
     return;
