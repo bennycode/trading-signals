@@ -544,6 +544,97 @@ describe('GuardedStrategy', () => {
       expect(strategy.guardedState.totalPositionSize).toBe('0');
       expect(strategy.guardedState.totalCostBasis).toBe('0');
     });
+
+    it('falls back to defaults when restored state has killed=true but no killedOrderType', async () => {
+      const strategy = new TestGuardedStrategy({guarded: {stopLossPct: '5'}});
+
+      // Inconsistent persisted state: marked killed but missing the order type
+      // needed for the retry path. Must not silently accept.
+      strategy.restoreState({
+        guarded: {
+          killed: true,
+          killedReason: 'stale',
+          killedOrderType: null,
+          killedLimitPrice: null,
+          totalCostBasis: '1000',
+          totalPositionSize: '10',
+        },
+      });
+
+      expect(strategy.guardedState.killed).toBe(false);
+      expect(strategy.guardedState.totalPositionSize).toBe('0');
+    });
+
+    it('falls back to defaults when killedOrderType="limit" but killedLimitPrice is null', async () => {
+      const strategy = new TestGuardedStrategy({guarded: {stopLossPct: '5'}});
+
+      strategy.restoreState({
+        guarded: {
+          killed: true,
+          killedReason: 'stale',
+          killedOrderType: 'limit',
+          killedLimitPrice: null,
+          totalCostBasis: '1000',
+          totalPositionSize: '10',
+        },
+      });
+
+      expect(strategy.guardedState.killed).toBe(false);
+    });
+
+    it('accepts killed=true with killedOrderType="market" and no limit price', async () => {
+      const strategy = new TestGuardedStrategy({guarded: {stopLossPct: '5'}});
+
+      strategy.restoreState({
+        guarded: {
+          killed: true,
+          killedReason: 'Stop-loss fired',
+          killedOrderType: 'market',
+          killedLimitPrice: null,
+          totalCostBasis: '1000',
+          totalPositionSize: '10',
+        },
+      });
+
+      expect(strategy.guardedState.killed).toBe(true);
+      expect(strategy.guardedState.killedOrderType).toBe('market');
+      expect(strategy.guardedState.totalPositionSize).toBe('10');
+    });
+
+    it('falls back to defaults when totalCostBasis is not a valid numeric string', async () => {
+      const strategy = new TestGuardedStrategy({guarded: {stopLossPct: '5'}});
+
+      strategy.restoreState({
+        guarded: {
+          killed: false,
+          killedReason: null,
+          killedOrderType: null,
+          killedLimitPrice: null,
+          totalCostBasis: 'not-a-number',
+          totalPositionSize: '10',
+        },
+      });
+
+      expect(strategy.guardedState.totalCostBasis).toBe('0');
+      expect(strategy.guardedState.totalPositionSize).toBe('0');
+    });
+
+    it('falls back to defaults when killedLimitPrice is not a valid numeric string', async () => {
+      const strategy = new TestGuardedStrategy({guarded: {stopLossPct: '5'}});
+
+      strategy.restoreState({
+        guarded: {
+          killed: true,
+          killedReason: null,
+          killedOrderType: 'limit',
+          killedLimitPrice: 'garbage',
+          totalCostBasis: '1000',
+          totalPositionSize: '10',
+        },
+      });
+
+      expect(strategy.guardedState.killed).toBe(false);
+    });
   });
 
   describe('persistence (onSave)', () => {

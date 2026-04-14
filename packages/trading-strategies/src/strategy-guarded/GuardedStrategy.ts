@@ -106,18 +106,25 @@ type GuardedContainerState = {[GUARDED_STATE_KEY]: GuardedStrategyState};
  * A `Strategy` subclass that provides composable kill-switch behavior (stop-loss,
  * take-profit). Concrete strategies extend this class and call `super.processCandle()`
  * at the top of their own `processCandle`. If a guard fires, `super.processCandle()`
- * returns a limit-sell-all advice at the nominal target price and the subclass
- * should return immediately.
+ * returns a sell-all advice using the configured kill-switch order type, and the
+ * subclass should return immediately.
  *
- * The limit price is the nominal threshold price (`avgEntry * (1 ± threshold/100)`),
- * not the current market price — so the kill switch always exits at exactly the
- * configured percentage regardless of how far the market has already moved.
+ * Kill-switch orders can be configured as either `limit` (default) or `market` per
+ * direction via `stopLossOrder` / `takeProfitOrder`. For `limit` orders, the advice
+ * uses the nominal threshold price (for example, `avgEntry * (1 ± threshold/100)`
+ * for percentage-based guards) rather than the current market price — the kill
+ * switch exits at exactly the configured percentage regardless of how far the
+ * market has already moved, at the cost of possibly not filling in a gap scenario.
+ * For `market` orders, there is no nominal limit price and the exit price is
+ * whatever the prevailing market offers at the firing candle — guaranteed fill,
+ * unpredictable price.
  *
  * Position tracking uses cost-basis averaging from `onFill` events, so it handles
  * multiple buys and partial sells correctly. Once a guard fires, the subclass is
- * never called again for this session; the strategy keeps emitting the limit-sell
- * advice on every candle until `onFill` confirms the position is fully exited —
- * so a rejected or delayed placement is automatically retried.
+ * never called again for this session; the strategy keeps emitting the same
+ * sell-all advice (limit with the stored target price, or market) on every candle
+ * until `onFill` confirms the position is fully exited — so a rejected or delayed
+ * placement is automatically retried.
  *
  * Usage:
  *
@@ -451,21 +458,59 @@ export abstract class GuardedStrategy extends Strategy {
   }
 }
 
+/**
+ * Validates that a persisted object is a well-formed `GuardedStrategyState`.
+ *
+ * Beyond shape checks, this also enforces cross-field invariants that
+ * `restoreState` relies on to produce a safe runtime state:
+ *
+ * - If `killed === true`, `killedOrderType` must be set so the retry path in
+ *   `onCandle` can re-emit the correct advice kind. A `killed=true` state with
+ *   `killedOrderType=null` would leave an open position with no further exit.
+ * - If `killedOrderType === 'limit'`, `killedLimitPrice` must be set so the
+ *   retry can re-build the limit advice.
+ * - Numeric string fields (`totalCostBasis`, `totalPositionSize`,
+ *   `killedLimitPrice`) must be parseable by `Big` — otherwise the next
+ *   `onCandle` would throw inside `new Big(...)`.
+ *
+ * Returning `false` from here causes `restoreState` to fall back to the
+ * default state, re-arming the guards on the next candle.
+ */
 function isGuardedStrategyState(value: unknown): value is GuardedStrategyState {
   if (!value || typeof value !== 'object') {
     return false;
   }
   const candidate = value as Record<string, unknown>;
-  const validOrderType =
-    candidate.killedOrderType === null ||
-    candidate.killedOrderType === 'limit' ||
-    candidate.killedOrderType === 'market';
-  return (
-    typeof candidate.killed === 'boolean' &&
-    (candidate.killedReason === null || typeof candidate.killedReason === 'string') &&
-    validOrderType &&
-    (candidate.killedLimitPrice === null || typeof candidate.killedLimitPrice === 'string') &&
-    typeof candidate.totalCostBasis === 'string' &&
-    typeof candidate.totalPositionSize === 'string'
-  );
+
+  if (typeof candidate.killed !== 'boolean') return false;
+  if (candidate.killedReason !== null && typeof candidate.killedReason !== 'string') return false;
+  if (
+    candidate.killedOrderType !== null &&
+    candidate.killedOrderType !== 'limit' &&
+    candidate.killedOrderType !== 'market'
+  ) {
+    return false;
+  }
+  if (candidate.killedLimitPrice !== null && typeof candidate.killedLimitPrice !== 'string') return false;
+  if (typeof candidate.totalCostBasis !== 'string' || !isValidBigString(candidate.totalCostBasis)) return false;
+  if (typeof candidate.totalPositionSize !== 'string' || !isValidBigString(candidate.totalPositionSize)) return false;
+  if (typeof candidate.killedLimitPrice === 'string' && !isValidBigString(candidate.killedLimitPrice)) return false;
+
+  // Cross-field invariants: a killed state must be fully specified so that
+  // the retry path in onCandle has everything it needs to build fresh advice.
+  if (candidate.killed === true) {
+    if (candidate.killedOrderType === null) return false;
+    if (candidate.killedOrderType === 'limit' && candidate.killedLimitPrice === null) return false;
+  }
+
+  return true;
+}
+
+function isValidBigString(value: string): boolean {
+  try {
+    new Big(value);
+    return true;
+  } catch {
+    return false;
+  }
 }
