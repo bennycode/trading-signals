@@ -152,8 +152,16 @@ async function tradeWizard(
 
   // Account lookup touches the database — wrap it in `external` so the
   // conversations engine records the value in the replay log instead of
-  // re-executing the query on every resume.
-  const accounts = await conversation.external(() => Account.findByUserId(userId));
+  // re-executing the query on every resume. Only return the fields needed
+  // for the picker so sensitive credentials are not persisted in replay state.
+  const accounts = await conversation.external(async () =>
+    (await Account.findByUserId(userId)).map(acc => ({
+      id: acc.id,
+      name: acc.name,
+      exchange: acc.exchange,
+      isPaper: acc.isPaper,
+    }))
+  );
 
   if (accounts.length === 0) {
     await ctx.reply('No exchange account found. Use /accountadd to add one first.');
