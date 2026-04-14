@@ -139,7 +139,7 @@ export class SP500MomentumReport extends Report<SP500MomentumConfig> {
 
     lines.push(`**Top ${winners.length} Winners (12m return)**`);
     lines.push('```');
-    lines.push(`Rank  ${'Stock'.padEnd(stockColWidth)}  12m Ret    Now`);
+    lines.push(`Rank  ${'Stock'.padEnd(stockColWidth)}  12m Ret    Price`);
     lines.push(`----  ${'-'.repeat(stockColWidth)}  ---------  ---------`);
     for (let i = 0; i < winners.length; i++) {
       lines.push(renderRow(i + 1, winners[i]));
@@ -149,7 +149,7 @@ export class SP500MomentumReport extends Report<SP500MomentumConfig> {
     lines.push(MESSAGE_BREAK);
     lines.push(`**Bottom ${losers.length} Losers (12m return)**`);
     lines.push('```');
-    lines.push(`Rank  ${'Stock'.padEnd(stockColWidth)}  12m Ret    Now`);
+    lines.push(`Rank  ${'Stock'.padEnd(stockColWidth)}  12m Ret    Price`);
     lines.push(`----  ${'-'.repeat(stockColWidth)}  ---------  ---------`);
     for (let i = 0; i < losers.length; i++) {
       lines.push(renderRow(i + 1, losers[i]));
