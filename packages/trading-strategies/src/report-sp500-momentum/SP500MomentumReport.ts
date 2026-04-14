@@ -134,13 +134,13 @@ export class SP500MomentumReport extends Report<SP500MomentumConfig> {
 
     const renderRow = (index: number, r: MomentumResult): string => {
       const stock = formatSymbolWithName(r.ticker, names, TELEGRAM_TABLE_NAME_MAX).padEnd(stockColWidth);
-      return `${String(index).padStart(4)}  ${stock}  ${(r.returnPct.toFixed(2) + '%').padStart(9)}  ${('$' + r.priceNow.toFixed(2)).padStart(9)}  ${('$' + r.price12MonthsAgo.toFixed(2)).padStart(9)}`;
+      return `${String(index).padStart(4)}  ${stock}  ${(r.returnPct.toFixed(2) + '%').padStart(9)}  ${('$' + r.priceNow.toFixed(2)).padStart(9)}`;
     };
 
     lines.push(`**Top ${winners.length} Winners (12m return)**`);
     lines.push('```');
-    lines.push(`Rank  ${'Stock'.padEnd(stockColWidth)}  12m Ret    Now        12m Ago`);
-    lines.push(`----  ${'-'.repeat(stockColWidth)}  ---------  ---------  ---------`);
+    lines.push(`Rank  ${'Stock'.padEnd(stockColWidth)}  12m Ret    Now`);
+    lines.push(`----  ${'-'.repeat(stockColWidth)}  ---------  ---------`);
     for (let i = 0; i < winners.length; i++) {
       lines.push(renderRow(i + 1, winners[i]));
     }
@@ -149,8 +149,8 @@ export class SP500MomentumReport extends Report<SP500MomentumConfig> {
     lines.push(MESSAGE_BREAK);
     lines.push(`**Bottom ${losers.length} Losers (12m return)**`);
     lines.push('```');
-    lines.push(`Rank  ${'Stock'.padEnd(stockColWidth)}  12m Ret    Now        12m Ago`);
-    lines.push(`----  ${'-'.repeat(stockColWidth)}  ---------  ---------  ---------`);
+    lines.push(`Rank  ${'Stock'.padEnd(stockColWidth)}  12m Ret    Now`);
+    lines.push(`----  ${'-'.repeat(stockColWidth)}  ---------  ---------`);
     for (let i = 0; i < losers.length; i++) {
       lines.push(renderRow(i + 1, losers[i]));
     }
