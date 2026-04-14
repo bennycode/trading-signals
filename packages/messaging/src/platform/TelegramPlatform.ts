@@ -17,14 +17,6 @@ const INTERVAL_CALLBACK_PREFIX = 'reportinterval:';
 const TRADE_ACCOUNT_PREFIX = 't:a|';
 const TRADE_CONFIRM_PREFIX = 't:c|';
 
-/** Escapes regex metacharacters so a string constant can be safely embedded in a dynamic RegExp. */
-function escapeRegex(value: string): string {
-  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-}
-
-const TRADE_ACCOUNT_CALLBACK_PATTERN = new RegExp(`^${escapeRegex(TRADE_ACCOUNT_PREFIX)}(.+)$`);
-const TRADE_CONFIRM_CALLBACK_PATTERN = new RegExp(`^${escapeRegex(TRADE_CONFIRM_PREFIX)}(.+)$`);
-
 const TRADE_COMMAND_NAMES = ['buyMarket', 'sellMarket', 'buyLimit', 'sellLimit'] as const;
 type TradeCommandName = (typeof TRADE_COMMAND_NAMES)[number];
 
@@ -424,67 +416,85 @@ export class TelegramPlatform implements MessagingPlatform {
   }
 
   #registerTradeCallbacks(): void {
-    // Step 1: User selected an account → show confirmation
-    this.#bot.callbackQuery(TRADE_ACCOUNT_CALLBACK_PATTERN, async ctx => {
-      await ctx.answerCallbackQuery();
+    // A single catch-all callback_query:data handler that dispatches by prefix.
+    // Using plain `.startsWith` avoids building a RegExp from the constants,
+    // which would require escaping the `|` delimiter (CodeQL caught the partial
+    // escape in an earlier iteration). The filter only fires when data is
+    // present, and non-trade prefixes are ignored so other handlers are
+    // unaffected.
+    this.#bot.on('callback_query:data', async ctx => {
+      const data = ctx.callbackQuery.data;
 
-      const senderId = ctx.from?.id?.toString();
-      if (!senderId) return;
-
-      const fields = decodeTradeFields(ctx.match[1]);
-      if (!fields) {
-        await ctx.editMessageText('Invalid trade session. Please run the command again.');
+      if (data.startsWith(TRADE_ACCOUNT_PREFIX)) {
+        await this.#handleTradeAccountSelected(ctx, data.slice(TRADE_ACCOUNT_PREFIX.length));
         return;
       }
 
-      const userId = `${PLATFORM_PREFIX}${senderId}`;
-      const {text, keyboard} = await this.#buildTradeConfirmation(userId, fields);
-      await ctx.editMessageText(text, keyboard);
+      if (data.startsWith(TRADE_CONFIRM_PREFIX)) {
+        await this.#handleTradeConfirmation(ctx, data.slice(TRADE_CONFIRM_PREFIX.length));
+        return;
+      }
+    });
+  }
+
+  async #handleTradeAccountSelected(ctx: Context, payload: string): Promise<void> {
+    await ctx.answerCallbackQuery();
+
+    const senderId = ctx.from?.id?.toString();
+    if (!senderId) return;
+
+    const fields = decodeTradeFields(payload);
+    if (!fields) {
+      await ctx.editMessageText('Invalid trade session. Please run the command again.');
+      return;
+    }
+
+    const userId = `${PLATFORM_PREFIX}${senderId}`;
+    const {text, keyboard} = await this.#buildTradeConfirmation(userId, fields);
+    await ctx.editMessageText(text, keyboard);
+  }
+
+  async #handleTradeConfirmation(ctx: Context, payload: string): Promise<void> {
+    await ctx.answerCallbackQuery();
+
+    const senderId = ctx.from?.id?.toString();
+    if (!senderId) return;
+
+    const fields = decodeTradeFields(payload);
+    if (!fields || fields.decision === undefined) {
+      await ctx.editMessageText('Invalid trade session. Please run the command again.');
+      return;
+    }
+
+    if (fields.decision === 'n') {
+      await ctx.editMessageText('Cancelled.');
+      return;
+    }
+
+    const userId = `${PLATFORM_PREFIX}${senderId}`;
+    let pair: TradingPair;
+    try {
+      pair = TradingPair.fromString(fields.pairStr, ',');
+    } catch (error) {
+      await ctx.editMessageText(error instanceof Error ? error.message : 'Invalid pair.');
+      return;
+    }
+
+    const {side, isLimit} = tradeCommandShape(fields.cmd);
+    const limitPrice = isLimit && fields.priceField !== '-' ? fields.priceField : undefined;
+
+    await ctx.editMessageText('Placing order…');
+
+    const result = await placeOrder({
+      userId,
+      accountId: fields.accountId,
+      pair,
+      side,
+      quantity: fields.quantity,
+      limitPrice,
     });
 
-    // Step 2: User confirmed (Yes) or cancelled (No) → execute or abort
-    this.#bot.callbackQuery(TRADE_CONFIRM_CALLBACK_PATTERN, async ctx => {
-      await ctx.answerCallbackQuery();
-
-      const senderId = ctx.from?.id?.toString();
-      if (!senderId) return;
-
-      const fields = decodeTradeFields(ctx.match[1]);
-      if (!fields || fields.decision === undefined) {
-        await ctx.editMessageText('Invalid trade session. Please run the command again.');
-        return;
-      }
-
-      if (fields.decision === 'n') {
-        await ctx.editMessageText('Cancelled.');
-        return;
-      }
-
-      const userId = `${PLATFORM_PREFIX}${senderId}`;
-      let pair: TradingPair;
-      try {
-        pair = TradingPair.fromString(fields.pairStr, ',');
-      } catch (error) {
-        await ctx.editMessageText(error instanceof Error ? error.message : 'Invalid pair.');
-        return;
-      }
-
-      const {side, isLimit} = tradeCommandShape(fields.cmd);
-      const limitPrice = isLimit && fields.priceField !== '-' ? fields.priceField : undefined;
-
-      await ctx.editMessageText('Placing order…');
-
-      const result = await placeOrder({
-        userId,
-        accountId: fields.accountId,
-        pair,
-        side,
-        quantity: fields.quantity,
-        limitPrice,
-      });
-
-      await ctx.editMessageText(result);
-    });
+    await ctx.editMessageText(result);
   }
 
   async #buildTradeConfirmation(
