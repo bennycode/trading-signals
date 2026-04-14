@@ -6,7 +6,7 @@ import {MESSAGE_BREAK, Report} from '../report/Report.js';
 import {SP500_TICKERS} from '../report-sp500-momentum/sp500Tickers.js';
 import {ScalpStrategy} from '../strategy-scalp/ScalpStrategy.js';
 import {suggestScalpOffset} from '../strategy-scalp/suggestScalpOffset.js';
-import {fetchUsEquityNames, formatSymbolWithName} from '../util/formatSymbolWithName.js';
+import {fetchUsEquityNames, formatSymbolWithName, TELEGRAM_TABLE_NAME_MAX} from '../util/formatSymbolWithName.js';
 
 export const ScalpScannerSchema = z.object({
   /** Alpaca API key */
@@ -200,11 +200,10 @@ export class ScalpScannerReport extends Report<ScalpScannerConfig> {
     const scalpFriendlyTop = scalpFriendly.slice(0, top);
     const trendingTop = trending.slice(0, top);
 
-    const tableNameMax = 12;
     const stockColWidth = Math.max(
       'Stock'.length,
-      ...scalpFriendlyTop.map(r => formatSymbolWithName(r.symbol, names, tableNameMax).length),
-      ...trendingTop.map(r => formatSymbolWithName(r.symbol, names, tableNameMax).length)
+      ...scalpFriendlyTop.map(r => formatSymbolWithName(r.symbol, names, TELEGRAM_TABLE_NAME_MAX).length),
+      ...trendingTop.map(r => formatSymbolWithName(r.symbol, names, TELEGRAM_TABLE_NAME_MAX).length)
     );
 
     // Message 1: header + top scalp-friendly table
@@ -217,7 +216,7 @@ export class ScalpScannerReport extends Report<ScalpScannerConfig> {
     lines.push(`----  ${'-'.repeat(stockColWidth)}  -----  ------  -------`);
     for (let i = 0; i < scalpFriendlyTop.length; i++) {
       const r = scalpFriendlyTop[i];
-      const stock = formatSymbolWithName(r.symbol, names, tableNameMax).padEnd(stockColWidth);
+      const stock = formatSymbolWithName(r.symbol, names, TELEGRAM_TABLE_NAME_MAX).padEnd(stockColWidth);
       lines.push(
         `${String(i + 1).padStart(4)}  ${stock}  ${r.er.toFixed(2).padStart(5)}  ${(r.atrPct.toFixed(1) + '%').padStart(6)}  ${r.suggestedOffset.padStart(7)}`
       );
@@ -232,7 +231,7 @@ export class ScalpScannerReport extends Report<ScalpScannerConfig> {
     lines.push(`----  ${'-'.repeat(stockColWidth)}  -----  ------`);
     for (let i = 0; i < trendingTop.length; i++) {
       const r = trendingTop[i];
-      const stock = formatSymbolWithName(r.symbol, names, tableNameMax).padEnd(stockColWidth);
+      const stock = formatSymbolWithName(r.symbol, names, TELEGRAM_TABLE_NAME_MAX).padEnd(stockColWidth);
       lines.push(
         `${String(i + 1).padStart(4)}  ${stock}  ${r.er.toFixed(2).padStart(5)}  ${(r.atrPct.toFixed(1) + '%').padStart(6)}`
       );
@@ -246,7 +245,7 @@ export class ScalpScannerReport extends Report<ScalpScannerConfig> {
     if (picks.length > 0) {
       const pickColWidth = Math.max(
         'Stock'.length,
-        ...picks.map(r => formatSymbolWithName(r.symbol, names, tableNameMax).length)
+        ...picks.map(r => formatSymbolWithName(r.symbol, names, TELEGRAM_TABLE_NAME_MAX).length)
       );
       lines.push(`**Top Picks for Scalping (low ER + ATR >= 2%)**`);
       lines.push('```');
@@ -254,7 +253,7 @@ export class ScalpScannerReport extends Report<ScalpScannerConfig> {
       lines.push(`----  ${'-'.repeat(pickColWidth)}  -----  ------  -------`);
       for (let i = 0; i < picks.length; i++) {
         const r = picks[i];
-        const stock = formatSymbolWithName(r.symbol, names, tableNameMax).padEnd(pickColWidth);
+        const stock = formatSymbolWithName(r.symbol, names, TELEGRAM_TABLE_NAME_MAX).padEnd(pickColWidth);
         lines.push(
           `${String(i + 1).padStart(4)}  ${stock}  ${r.er.toFixed(2).padStart(5)}  ${(r.atrPct.toFixed(1) + '%').padStart(6)}  ${r.suggestedOffset.padStart(7)}`
         );
