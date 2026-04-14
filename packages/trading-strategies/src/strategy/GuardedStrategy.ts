@@ -41,8 +41,10 @@ type GuardContainerState = {[GUARD_STATE_KEY]: GuardedStrategyState};
  * returns a market-sell-all advice and the subclass should return immediately.
  *
  * Position tracking uses cost-basis averaging from `onFill` events, so it handles
- * multiple buys and partial sells correctly. Once a guard fires, the strategy is
- * permanently killed for this session and all subsequent candles return `void`.
+ * multiple buys and partial sells correctly. Once a guard fires, the subclass is
+ * never called again for this session; the strategy keeps emitting the sell-all
+ * advice on every candle until `onFill` confirms the position is fully exited —
+ * so a rejected or delayed market order is automatically retried.
  *
  * Usage:
  *
@@ -84,14 +86,27 @@ export abstract class GuardedStrategy extends Strategy {
     return this.getProxiedState<GuardContainerState>()[GUARD_STATE_KEY];
   }
 
+  /**
+   * Reassigns the top-level `__guard` key on the proxied state with a merged
+   * snapshot. The top-level write triggers the base `Strategy` Proxy's `set`
+   * trap, which in turn fires `onSave` so `StrategyMonitor` persists to the DB.
+   * Nested property mutations would silently bypass persistence.
+   */
+  #setGuardState(patch: Partial<GuardedStrategyState>): void {
+    const proxied = this.getProxiedState<GuardContainerState>();
+    proxied[GUARD_STATE_KEY] = {...proxied[GUARD_STATE_KEY], ...patch};
+  }
+
   /** Read-only snapshot of the current guard state. Useful for tests and diagnostics. */
   get guardState(): Readonly<GuardedStrategyState> {
     return {...this.#guardState};
   }
 
   /**
-   * Short-circuits to `undefined` once a guard has fired. Subclasses are never
-   * called again for this session — the kill switch is terminal.
+   * Once a guard has fired, the subclass is never called again. If the position
+   * is still non-zero (the sell order was rejected or hasn't filled yet), this
+   * keeps re-emitting the sell-all advice until `onFill` brings the position to
+   * zero. Only then does `onCandle` return `void`.
    */
   override async onCandle(
     candle: OneMinuteBatchedCandle,
@@ -99,7 +114,14 @@ export abstract class GuardedStrategy extends Strategy {
   ): Promise<OrderAdvice | void> {
     this.lastBatchedCandle = candle;
 
-    if (this.#guardState.killed) {
+    const guardState = this.#guardState;
+    if (guardState.killed) {
+      const positionSize = new Big(guardState.totalPositionSize);
+      if (positionSize.gt(0)) {
+        const advice = this.#marketSellAll(guardState.killedReason ?? 'kill switch');
+        this.latestAdvice = advice;
+        return advice;
+      }
       this.latestAdvice = undefined;
       return;
     }
@@ -113,14 +135,13 @@ export abstract class GuardedStrategy extends Strategy {
     candle: OneMinuteBatchedCandle,
     _state: TradingSessionState
   ): Promise<OrderAdvice | void> {
-    const guardState = this.#guardState;
-
-    const positionSize = new Big(guardState.totalPositionSize);
-    if (positionSize.lte(0)) {
+    if (!this.#stopLossPct && !this.#takeProfitPct) {
       return;
     }
 
-    if (!this.#stopLossPct && !this.#takeProfitPct) {
+    const guardState = this.#guardState;
+    const positionSize = new Big(guardState.totalPositionSize);
+    if (positionSize.lte(0)) {
       return;
     }
 
@@ -130,15 +151,13 @@ export abstract class GuardedStrategy extends Strategy {
 
     if (this.#stopLossPct && pctChange.lte(this.#stopLossPct.neg())) {
       const reason = `Stop-loss: ${pctChange.toFixed(2)}% <= -${this.#stopLossPct.toFixed(2)}%`;
-      guardState.killed = true;
-      guardState.killedReason = reason;
+      this.#setGuardState({killed: true, killedReason: reason});
       return this.#marketSellAll(reason);
     }
 
     if (this.#takeProfitPct && pctChange.gte(this.#takeProfitPct)) {
       const reason = `Take-profit: +${pctChange.toFixed(2)}% >= +${this.#takeProfitPct.toFixed(2)}%`;
-      guardState.killed = true;
-      guardState.killedReason = reason;
+      this.#setGuardState({killed: true, killedReason: reason});
       return this.#marketSellAll(reason);
     }
   }
@@ -149,10 +168,12 @@ export abstract class GuardedStrategy extends Strategy {
     const fillSize = new Big(fill.size);
 
     if (fill.side === ExchangeOrderSide.BUY) {
-      const currentCostBasis = new Big(guardState.totalCostBasis);
-      const currentPositionSize = new Big(guardState.totalPositionSize);
-      guardState.totalCostBasis = currentCostBasis.plus(fillPrice.mul(fillSize)).toFixed();
-      guardState.totalPositionSize = currentPositionSize.plus(fillSize).toFixed();
+      const newCostBasis = new Big(guardState.totalCostBasis).plus(fillPrice.mul(fillSize));
+      const newPositionSize = new Big(guardState.totalPositionSize).plus(fillSize);
+      this.#setGuardState({
+        totalCostBasis: newCostBasis.toFixed(),
+        totalPositionSize: newPositionSize.toFixed(),
+      });
       return;
     }
 
@@ -166,13 +187,14 @@ export abstract class GuardedStrategy extends Strategy {
     const newPositionSize = currentPositionSize.minus(fillSize);
 
     if (newPositionSize.lte(0)) {
-      guardState.totalCostBasis = '0';
-      guardState.totalPositionSize = '0';
+      this.#setGuardState({totalCostBasis: '0', totalPositionSize: '0'});
       return;
     }
 
-    guardState.totalCostBasis = avgEntry.mul(newPositionSize).toFixed();
-    guardState.totalPositionSize = newPositionSize.toFixed();
+    this.#setGuardState({
+      totalCostBasis: avgEntry.mul(newPositionSize).toFixed(),
+      totalPositionSize: newPositionSize.toFixed(),
+    });
   }
 
   override restoreState(persisted: Record<string, unknown>): void {
@@ -185,13 +207,9 @@ export abstract class GuardedStrategy extends Strategy {
     });
 
     // The base class only updates `#_state`; the proxied state still points at
-    // the original object from the constructor. Copy restored values into the
-    // proxy so subsequent reads via `getProxiedState()` see them.
-    const proxiedGuard = this.#guardState;
-    proxiedGuard.killed = restoredGuard.killed;
-    proxiedGuard.killedReason = restoredGuard.killedReason;
-    proxiedGuard.totalCostBasis = restoredGuard.totalCostBasis;
-    proxiedGuard.totalPositionSize = restoredGuard.totalPositionSize;
+    // the original object from the constructor. Reassigning `__guard` through
+    // the proxy propagates restored values into the proxied state.
+    this.#setGuardState(restoredGuard);
   }
 
   #marketSellAll(reason: string): OrderAdvice {

@@ -1,6 +1,6 @@
 import Big from 'big.js';
 import {ms} from 'ms';
-import {describe, expect, it} from 'vitest';
+import {describe, expect, it, vi} from 'vitest';
 import {z} from 'zod';
 import {
   CandleBatcher,
@@ -192,20 +192,41 @@ describe('GuardedStrategy', () => {
   });
 
   describe('killed state', () => {
-    it('is permanent — no further candles are processed after a guard fires', async () => {
+    it('keeps re-emitting sell-all while the position has not yet been exited', async () => {
       const strategy = new TestGuardedStrategy({stopLossPct: '5', signalAdvice: true});
       await strategy.onFill(makeFill('100', '10', ExchangeOrderSide.BUY), mockState);
 
-      // Trigger stop-loss
+      // Trigger stop-loss — position is still 10 because no sell fill has arrived yet
       const killAdvice = await strategy.onCandle(makeCandle(94), mockState);
       expect(killAdvice!.reason).toContain('[KILL SWITCH]');
-
-      // Subsequent candles return nothing — even if price recovers and subclass wants to buy
-      const nextAdvice = await strategy.onCandle(makeCandle(120), mockState);
-      expect(nextAdvice).toBeUndefined();
-      expect(strategy.ownLogicCallCount).toBe(0);
-
       expect(strategy.guardState.killed).toBe(true);
+
+      // Simulate exchange rejecting/delaying the fill: next candle must retry
+      const retryAdvice = await strategy.onCandle(makeCandle(120), mockState);
+      expect(retryAdvice).toBeDefined();
+      expect(retryAdvice!.side).toBe(ExchangeOrderSide.SELL);
+      expect(retryAdvice!.type).toBe(ExchangeOrderType.MARKET);
+      expect(retryAdvice!.reason).toContain('[KILL SWITCH]');
+
+      // Subclass logic must never run while killed, even during retries
+      expect(strategy.ownLogicCallCount).toBe(0);
+    });
+
+    it('goes silent once the position is fully exited via onFill', async () => {
+      const strategy = new TestGuardedStrategy({stopLossPct: '5', signalAdvice: true});
+      await strategy.onFill(makeFill('100', '10', ExchangeOrderSide.BUY), mockState);
+
+      await strategy.onCandle(makeCandle(94), mockState);
+      expect(strategy.guardState.killed).toBe(true);
+
+      // The sell advice finally fills — position goes to zero
+      await strategy.onFill(makeFill('94', '10', ExchangeOrderSide.SELL), mockState);
+      expect(strategy.guardState.totalPositionSize).toBe('0');
+
+      // Now subsequent candles return undefined — truly terminal
+      const advice = await strategy.onCandle(makeCandle(120), mockState);
+      expect(advice).toBeUndefined();
+      expect(strategy.ownLogicCallCount).toBe(0);
     });
   });
 
@@ -298,6 +319,42 @@ describe('GuardedStrategy', () => {
       expect(strategy.guardState.killed).toBe(false);
       expect(strategy.guardState.totalPositionSize).toBe('0');
       expect(strategy.guardState.totalCostBasis).toBe('0');
+    });
+  });
+
+  describe('persistence (onSave)', () => {
+    it('fires onSave when onFill accumulates a BUY', async () => {
+      const strategy = new TestGuardedStrategy({stopLossPct: '5'});
+      const onSave = vi.fn();
+      strategy.onSave = onSave;
+
+      await strategy.onFill(makeFill('100', '10', ExchangeOrderSide.BUY), mockState);
+
+      expect(onSave).toHaveBeenCalled();
+    });
+
+    it('fires onSave when onFill reduces the position on a SELL', async () => {
+      const strategy = new TestGuardedStrategy({stopLossPct: '5'});
+      await strategy.onFill(makeFill('100', '10', ExchangeOrderSide.BUY), mockState);
+
+      const onSave = vi.fn();
+      strategy.onSave = onSave;
+
+      await strategy.onFill(makeFill('110', '5', ExchangeOrderSide.SELL), mockState);
+
+      expect(onSave).toHaveBeenCalled();
+    });
+
+    it('fires onSave when a guard fires during processCandle', async () => {
+      const strategy = new TestGuardedStrategy({stopLossPct: '5'});
+      await strategy.onFill(makeFill('100', '10', ExchangeOrderSide.BUY), mockState);
+
+      const onSave = vi.fn();
+      strategy.onSave = onSave;
+
+      await strategy.onCandle(makeCandle(94), mockState);
+
+      expect(onSave).toHaveBeenCalled();
     });
   });
 
