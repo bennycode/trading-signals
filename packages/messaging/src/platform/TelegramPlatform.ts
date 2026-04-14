@@ -66,20 +66,7 @@ function buildTradeActionLabel(
 type TradeContext = ConversationFlavor<Context>;
 type TradeConversation = Conversation<TradeContext, TradeContext>;
 
-/**
- * A string that parses as a finite positive decimal number (e.g. "1", "1.5",
- * "0.001"). Only digits and an optional decimal point are allowed — scientific
- * notation (`1e5`), hex / octal / binary literals (`0x10`, `0o17`, `0b10`),
- * whitespace, and signs are all rejected before `Number()` would silently
- * coerce them.
- */
-const positiveNumberString = z.string().refine(value => {
-  for (const char of value) {
-    if (char !== '.' && (char < '0' || char > '9')) return false;
-  }
-  const parsed = Number(value);
-  return Number.isFinite(parsed) && parsed > 0;
-}, 'Must be a positive number');
+const positiveNumber = z.coerce.number().positive().finite();
 
 interface TradeArgs {
   cmd: TradeCommandName;
@@ -123,21 +110,26 @@ async function parseTradeCommandInput(
     return null;
   }
 
-  const quantityCheck = positiveNumberString.safeParse(quantity);
+  const quantityCheck = positiveNumber.safeParse(quantity);
   if (!quantityCheck.success) {
     await ctx.reply(`Invalid quantity "${quantity}". Must be a positive number.`);
     return null;
   }
 
   if (isLimit) {
-    const priceCheck = positiveNumberString.safeParse(priceInput);
+    const priceCheck = positiveNumber.safeParse(priceInput);
     if (!priceCheck.success) {
       await ctx.reply(`Invalid price "${priceInput}". Must be a positive number.`);
       return null;
     }
   }
 
-  return {cmd, pairStr, quantity, limitPrice: isLimit ? priceInput : undefined};
+  return {
+    cmd,
+    pairStr,
+    quantity: String(quantityCheck.data),
+    limitPrice: isLimit ? String(positiveNumber.parse(priceInput)) : undefined,
+  };
 }
 
 /**
