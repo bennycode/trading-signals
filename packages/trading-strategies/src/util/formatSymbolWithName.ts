@@ -3,6 +3,18 @@ import {AlpacaAPI, AssetClass} from '@typedtrader/exchange';
 const DEFAULT_MAX_NAME_LENGTH = 30;
 
 /**
+ * Max name length for symbol-with-name columns inside monospace tables sent
+ * over Telegram. Tuned so a row like `Apple Inc.… (AAPL)` plus a handful of
+ * data columns fits on one line on a typical mobile client (~55-60 chars
+ * before wrapping).
+ *
+ * Reports that render monospace tables should reuse this value via
+ * `formatSymbolWithName(symbol, names, TELEGRAM_TABLE_NAME_MAX)` so all
+ * tables stay visually consistent and fit in one line.
+ */
+export const TELEGRAM_TABLE_NAME_MAX = 12;
+
+/**
  * Format a ticker symbol as `Name (SYMBOL)` using the given asset name map.
  * Falls back to the bare symbol if no name is known. Long names are truncated
  * with an ellipsis so tables remain readable.

@@ -1,7 +1,7 @@
 import {z} from 'zod';
 import {AlpacaAPI} from '@typedtrader/exchange';
 import {MESSAGE_BREAK, Report} from '../report/Report.js';
-import {fetchUsEquityNames, formatSymbolWithName} from '../util/formatSymbolWithName.js';
+import {fetchUsEquityNames, formatSymbolWithName, TELEGRAM_TABLE_NAME_MAX} from '../util/formatSymbolWithName.js';
 import {findFirstTradingDay, getDateString} from '../util/TimeUtil.js';
 import {SP500_TICKERS} from './sp500Tickers.js';
 
@@ -126,15 +126,14 @@ export class SP500MomentumReport extends Report<SP500MomentumConfig> {
     const winners = results.slice(0, top);
     const losers = results.slice(-top).reverse();
 
-    const tableNameMax = 22;
     const stockColWidth = Math.max(
       'Stock'.length,
-      ...winners.map(r => formatSymbolWithName(r.ticker, names, tableNameMax).length),
-      ...losers.map(r => formatSymbolWithName(r.ticker, names, tableNameMax).length)
+      ...winners.map(r => formatSymbolWithName(r.ticker, names, TELEGRAM_TABLE_NAME_MAX).length),
+      ...losers.map(r => formatSymbolWithName(r.ticker, names, TELEGRAM_TABLE_NAME_MAX).length)
     );
 
     const renderRow = (index: number, r: MomentumResult): string => {
-      const stock = formatSymbolWithName(r.ticker, names, tableNameMax).padEnd(stockColWidth);
+      const stock = formatSymbolWithName(r.ticker, names, TELEGRAM_TABLE_NAME_MAX).padEnd(stockColWidth);
       return `${String(index).padStart(4)}  ${stock}  ${(r.returnPct.toFixed(2) + '%').padStart(9)}  ${('$' + r.priceNow.toFixed(2)).padStart(9)}  ${('$' + r.price12MonthsAgo.toFixed(2)).padStart(9)}`;
     };
 
