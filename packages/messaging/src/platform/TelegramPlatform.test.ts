@@ -7,6 +7,7 @@ const mockStart = vi.fn().mockReturnValue(new Promise(() => {}));
 const mockStop = vi.fn();
 const mockCommand = vi.fn();
 const mockCallbackQuery = vi.fn();
+const mockUse = vi.fn();
 const botInfo = {username: 'testbot'};
 
 vi.mock('trading-strategies', () => ({
@@ -18,11 +19,17 @@ vi.mock('../command/report/reportAdd.js', () => ({
   reportAdd: vi.fn(),
 }));
 
+vi.mock('@grammyjs/conversations', () => ({
+  conversations: vi.fn(() => 'conversations-middleware'),
+  createConversation: vi.fn(() => 'create-conversation-middleware'),
+}));
+
 vi.mock('grammy', () => {
   function Bot() {
     return {
       command: mockCommand,
       callbackQuery: mockCallbackQuery,
+      use: mockUse,
       init: mockInit,
       start: mockStart,
       stop: mockStop,
