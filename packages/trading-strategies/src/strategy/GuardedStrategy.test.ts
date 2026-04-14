@@ -192,6 +192,35 @@ describe('GuardedStrategy', () => {
       expect(advice.reason).toContain('Stop-loss');
       expect(advice.reason).toContain('unrealized');
     });
+
+    it('fires a LIMIT sell at the exact configured price when stopLossPrice is reached', async () => {
+      // stopLossPrice=92 → limit sell at exactly 92 as soon as price drops to 92 or below
+      const strategy = new TestGuardedStrategy({stopLossPrice: '92'});
+      await strategy.onFill(makeFill('100', '10', ExchangeOrderSide.BUY), mockState);
+
+      const notYet = await strategy.onCandle(makeCandle(93), mockState);
+      expect(notYet).toBeUndefined();
+
+      const advice = await strategy.onCandle(makeCandle(92), mockState);
+      assertLimitSell(advice);
+      expect(new Big(advice.price).toFixed(2)).toBe('92.00');
+      expect(advice.reason).toContain('Stop-loss');
+      expect(advice.reason).toContain('target 92');
+    });
+
+    it('fires at the configured price regardless of avg entry', async () => {
+      // Buy at 50 — far below the 92 stopLossPrice. Guard still arms and fires at 92.
+      const strategy = new TestGuardedStrategy({stopLossPrice: '92'});
+      await strategy.onFill(makeFill('50', '10', ExchangeOrderSide.BUY), mockState);
+
+      // Price above the stop target — no fire even though we're above entry
+      const notYet = await strategy.onCandle(makeCandle(100), mockState);
+      expect(notYet).toBeUndefined();
+
+      const advice = await strategy.onCandle(makeCandle(92), mockState);
+      assertLimitSell(advice);
+      expect(new Big(advice.price).toFixed(2)).toBe('92.00');
+    });
   });
 
   describe('take-profit', () => {
@@ -222,6 +251,21 @@ describe('GuardedStrategy', () => {
       expect(new Big(advice.price).toFixed(2)).toBe('101.00');
       expect(advice.reason).toContain('Take-profit');
       expect(advice.reason).toContain('unrealized');
+    });
+
+    it('fires a LIMIT sell at the exact configured price when takeProfitPrice is reached', async () => {
+      // takeProfitPrice=108 → limit sell at exactly 108 as soon as price rises to 108 or above
+      const strategy = new TestGuardedStrategy({takeProfitPrice: '108'});
+      await strategy.onFill(makeFill('100', '10', ExchangeOrderSide.BUY), mockState);
+
+      const notYet = await strategy.onCandle(makeCandle(107), mockState);
+      expect(notYet).toBeUndefined();
+
+      const advice = await strategy.onCandle(makeCandle(108), mockState);
+      assertLimitSell(advice);
+      expect(new Big(advice.price).toFixed(2)).toBe('108.00');
+      expect(advice.reason).toContain('Take-profit');
+      expect(advice.reason).toContain('target 108');
     });
 
     it('does not fire while within threshold', async () => {
@@ -350,14 +394,44 @@ describe('GuardedStrategy', () => {
   describe('mutual exclusion', () => {
     it('rejects setting both stopLossPct and stopLossNominal', () => {
       expect(() => new TestGuardedStrategy({stopLossPct: '5', stopLossNominal: '10'})).toThrow(
-        /stopLossPct and stopLossNominal are mutually exclusive/
+        /stopLossPct, stopLossNominal, and stopLossPrice are mutually exclusive/
       );
     });
 
     it('rejects setting both takeProfitPct and takeProfitNominal', () => {
       expect(() => new TestGuardedStrategy({takeProfitPct: '10', takeProfitNominal: '5'})).toThrow(
-        /takeProfitPct and takeProfitNominal are mutually exclusive/
+        /takeProfitPct, takeProfitNominal, and takeProfitPrice are mutually exclusive/
       );
+    });
+
+    it('rejects setting both stopLossPct and stopLossPrice', () => {
+      expect(() => new TestGuardedStrategy({stopLossPct: '5', stopLossPrice: '95'})).toThrow(
+        /stopLossPct, stopLossNominal, and stopLossPrice are mutually exclusive/
+      );
+    });
+
+    it('rejects setting both stopLossNominal and stopLossPrice', () => {
+      expect(() => new TestGuardedStrategy({stopLossNominal: '10', stopLossPrice: '95'})).toThrow(
+        /stopLossPct, stopLossNominal, and stopLossPrice are mutually exclusive/
+      );
+    });
+
+    it('rejects setting both takeProfitPct and takeProfitPrice', () => {
+      expect(() => new TestGuardedStrategy({takeProfitPct: '10', takeProfitPrice: '110'})).toThrow(
+        /takeProfitPct, takeProfitNominal, and takeProfitPrice are mutually exclusive/
+      );
+    });
+
+    it('rejects setting both takeProfitNominal and takeProfitPrice', () => {
+      expect(() => new TestGuardedStrategy({takeProfitNominal: '10', takeProfitPrice: '110'})).toThrow(
+        /takeProfitPct, takeProfitNominal, and takeProfitPrice are mutually exclusive/
+      );
+    });
+
+    it('rejects setting all three stop-loss variants', () => {
+      expect(
+        () => new TestGuardedStrategy({stopLossPct: '5', stopLossNominal: '10', stopLossPrice: '95'})
+      ).toThrow(/stopLossPct, stopLossNominal, and stopLossPrice are mutually exclusive/);
     });
 
     it('allows mixing pct on one direction with nominal on the other', async () => {

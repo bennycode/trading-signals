@@ -8,31 +8,49 @@ import {positiveNumberString} from '../util/validators.js';
 export const GuardedStrategySchema = z.object({
   /**
    * Stop-loss as a percentage of avg entry. "5" = sell everything at avgEntry * 0.95.
-   * Mutually exclusive with `stopLossNominal`. Omit both to disable the stop-loss guard.
+   * Mutually exclusive with `stopLossNominal` and `stopLossPrice`. Omit all three to
+   * disable the stop-loss guard.
    */
   stopLossPct: positiveNumberString.optional(),
   /**
    * Stop-loss as an absolute unrealized loss in counter currency. "10" on a 10-share
    * position bought at $100 → fires at $99 (unrealized loss = $10). Mutually exclusive
-   * with `stopLossPct`.
+   * with `stopLossPct` and `stopLossPrice`.
    */
   stopLossNominal: positiveNumberString.optional(),
   /**
+   * Stop-loss as an absolute price target. "95" → fires as soon as the candle close
+   * drops to $95 or below, placing a limit sell at $95. Mutually exclusive with
+   * `stopLossPct` and `stopLossNominal`.
+   */
+  stopLossPrice: positiveNumberString.optional(),
+  /**
    * Take-profit as a percentage of avg entry. "10" = sell everything at avgEntry * 1.10.
-   * Mutually exclusive with `takeProfitNominal`. Omit both to disable the take-profit guard.
+   * Mutually exclusive with `takeProfitNominal` and `takeProfitPrice`. Omit all three to
+   * disable the take-profit guard.
    */
   takeProfitPct: positiveNumberString.optional(),
   /**
    * Take-profit as an absolute unrealized gain in counter currency. "10" on a 10-share
    * position bought at $100 → fires at $101 (unrealized gain = $10). Mutually exclusive
-   * with `takeProfitPct`.
+   * with `takeProfitPct` and `takeProfitPrice`.
    */
   takeProfitNominal: positiveNumberString.optional(),
+  /**
+   * Take-profit as an absolute price target. "105" → fires as soon as the candle close
+   * reaches $105 or above, placing a limit sell at $105. Mutually exclusive with
+   * `takeProfitPct` and `takeProfitNominal`.
+   */
+  takeProfitPrice: positiveNumberString.optional(),
 });
 
 export type GuardedStrategyConfig = z.infer<typeof GuardedStrategySchema>;
 
-type GuardMode = {kind: 'pct'; pct: Big} | {kind: 'nominal'; nominal: Big} | null;
+type GuardMode =
+  | {kind: 'pct'; pct: Big}
+  | {kind: 'nominal'; nominal: Big}
+  | {kind: 'price'; price: Big}
+  | null;
 
 export type GuardedStrategyState = {
   killed: boolean;
@@ -104,30 +122,49 @@ export abstract class GuardedStrategy extends Strategy {
     const guardConfig = GuardedStrategySchema.parse({
       stopLossPct: options.config.stopLossPct,
       stopLossNominal: options.config.stopLossNominal,
+      stopLossPrice: options.config.stopLossPrice,
       takeProfitPct: options.config.takeProfitPct,
       takeProfitNominal: options.config.takeProfitNominal,
+      takeProfitPrice: options.config.takeProfitPrice,
     });
 
     // Zod's `.refine()` would turn the schema into `ZodEffects`, which cannot
     // be `.extend()`-ed by subclasses. Mutual exclusion is validated here instead.
-    if (guardConfig.stopLossPct && guardConfig.stopLossNominal) {
-      throw new Error('GuardedStrategy: stopLossPct and stopLossNominal are mutually exclusive — set only one');
+    const stopLossFields = [guardConfig.stopLossPct, guardConfig.stopLossNominal, guardConfig.stopLossPrice].filter(
+      (value): value is string => value !== undefined
+    );
+    if (stopLossFields.length > 1) {
+      throw new Error(
+        'GuardedStrategy: stopLossPct, stopLossNominal, and stopLossPrice are mutually exclusive — set at most one'
+      );
     }
-    if (guardConfig.takeProfitPct && guardConfig.takeProfitNominal) {
-      throw new Error('GuardedStrategy: takeProfitPct and takeProfitNominal are mutually exclusive — set only one');
+
+    const takeProfitFields = [
+      guardConfig.takeProfitPct,
+      guardConfig.takeProfitNominal,
+      guardConfig.takeProfitPrice,
+    ].filter((value): value is string => value !== undefined);
+    if (takeProfitFields.length > 1) {
+      throw new Error(
+        'GuardedStrategy: takeProfitPct, takeProfitNominal, and takeProfitPrice are mutually exclusive — set at most one'
+      );
     }
 
     this.#stopLoss = guardConfig.stopLossPct
       ? {kind: 'pct', pct: new Big(guardConfig.stopLossPct)}
       : guardConfig.stopLossNominal
         ? {kind: 'nominal', nominal: new Big(guardConfig.stopLossNominal)}
-        : null;
+        : guardConfig.stopLossPrice
+          ? {kind: 'price', price: new Big(guardConfig.stopLossPrice)}
+          : null;
 
     this.#takeProfit = guardConfig.takeProfitPct
       ? {kind: 'pct', pct: new Big(guardConfig.takeProfitPct)}
       : guardConfig.takeProfitNominal
         ? {kind: 'nominal', nominal: new Big(guardConfig.takeProfitNominal)}
-        : null;
+        : guardConfig.takeProfitPrice
+          ? {kind: 'price', price: new Big(guardConfig.takeProfitPrice)}
+          : null;
   }
 
   get #guardState(): GuardedStrategyState {
@@ -223,40 +260,64 @@ export abstract class GuardedStrategy extends Strategy {
     if (!this.#stopLoss) {
       throw new Error('unreachable: stop-loss is not configured');
     }
-    if (this.#stopLoss.kind === 'pct') {
-      return avgEntry.mul(new Big(1).minus(this.#stopLoss.pct.div(100)));
+    switch (this.#stopLoss.kind) {
+      case 'pct':
+        return avgEntry.mul(new Big(1).minus(this.#stopLoss.pct.div(100)));
+      case 'nominal':
+        return avgEntry.minus(this.#stopLoss.nominal.div(positionSize));
+      case 'price':
+        return this.#stopLoss.price;
     }
-    return avgEntry.minus(this.#stopLoss.nominal.div(positionSize));
   }
 
   #resolveTakeProfitLimit(avgEntry: Big, positionSize: Big): Big {
     if (!this.#takeProfit) {
       throw new Error('unreachable: take-profit is not configured');
     }
-    if (this.#takeProfit.kind === 'pct') {
-      return avgEntry.mul(new Big(1).plus(this.#takeProfit.pct.div(100)));
+    switch (this.#takeProfit.kind) {
+      case 'pct':
+        return avgEntry.mul(new Big(1).plus(this.#takeProfit.pct.div(100)));
+      case 'nominal':
+        return avgEntry.plus(this.#takeProfit.nominal.div(positionSize));
+      case 'price':
+        return this.#takeProfit.price;
     }
-    return avgEntry.plus(this.#takeProfit.nominal.div(positionSize));
   }
 
   #stopLossReason(avgEntry: Big, currentPrice: Big, positionSize: Big, limitPrice: Big): string {
-    if (this.#stopLoss?.kind === 'pct') {
-      const pctChange = currentPrice.minus(avgEntry).div(avgEntry).mul(100);
-      return `Stop-loss: ${pctChange.toFixed(2)}% <= -${this.#stopLoss.pct.toFixed(2)}% (limit ${limitPrice.toFixed()})`;
+    if (!this.#stopLoss) {
+      return '';
     }
-    const unrealized = currentPrice.minus(avgEntry).mul(positionSize);
-    const nominal = this.#stopLoss?.kind === 'nominal' ? this.#stopLoss.nominal : new Big(0);
-    return `Stop-loss: unrealized ${unrealized.toFixed(2)} <= -${nominal.toFixed(2)} (limit ${limitPrice.toFixed()})`;
+    switch (this.#stopLoss.kind) {
+      case 'pct': {
+        const pctChange = currentPrice.minus(avgEntry).div(avgEntry).mul(100);
+        return `Stop-loss: ${pctChange.toFixed(2)}% <= -${this.#stopLoss.pct.toFixed(2)}% (limit ${limitPrice.toFixed()})`;
+      }
+      case 'nominal': {
+        const unrealized = currentPrice.minus(avgEntry).mul(positionSize);
+        return `Stop-loss: unrealized ${unrealized.toFixed(2)} <= -${this.#stopLoss.nominal.toFixed(2)} (limit ${limitPrice.toFixed()})`;
+      }
+      case 'price':
+        return `Stop-loss: price ${currentPrice.toFixed()} <= target ${this.#stopLoss.price.toFixed()} (limit ${limitPrice.toFixed()})`;
+    }
   }
 
   #takeProfitReason(avgEntry: Big, currentPrice: Big, positionSize: Big, limitPrice: Big): string {
-    if (this.#takeProfit?.kind === 'pct') {
-      const pctChange = currentPrice.minus(avgEntry).div(avgEntry).mul(100);
-      return `Take-profit: +${pctChange.toFixed(2)}% >= +${this.#takeProfit.pct.toFixed(2)}% (limit ${limitPrice.toFixed()})`;
+    if (!this.#takeProfit) {
+      return '';
     }
-    const unrealized = currentPrice.minus(avgEntry).mul(positionSize);
-    const nominal = this.#takeProfit?.kind === 'nominal' ? this.#takeProfit.nominal : new Big(0);
-    return `Take-profit: unrealized +${unrealized.toFixed(2)} >= +${nominal.toFixed(2)} (limit ${limitPrice.toFixed()})`;
+    switch (this.#takeProfit.kind) {
+      case 'pct': {
+        const pctChange = currentPrice.minus(avgEntry).div(avgEntry).mul(100);
+        return `Take-profit: +${pctChange.toFixed(2)}% >= +${this.#takeProfit.pct.toFixed(2)}% (limit ${limitPrice.toFixed()})`;
+      }
+      case 'nominal': {
+        const unrealized = currentPrice.minus(avgEntry).mul(positionSize);
+        return `Take-profit: unrealized +${unrealized.toFixed(2)} >= +${this.#takeProfit.nominal.toFixed(2)} (limit ${limitPrice.toFixed()})`;
+      }
+      case 'price':
+        return `Take-profit: price ${currentPrice.toFixed()} >= target ${this.#takeProfit.price.toFixed()} (limit ${limitPrice.toFixed()})`;
+    }
   }
 
   async onFill(fill: ExchangeFill, _state: TradingSessionState): Promise<void> {
