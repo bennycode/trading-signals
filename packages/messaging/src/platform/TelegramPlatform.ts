@@ -1,8 +1,10 @@
 import {Bot} from 'grammy';
 import type {Context} from 'grammy';
+import {ExchangeOrderSide, TradingPair, getExchangeClient} from '@typedtrader/exchange';
 import {getAvailableReportNames, reportRequiresAccount} from 'trading-strategies';
 import type {CommandHandler, MessageContext, MessagingPlatform, PlatformInfo} from './MessagingPlatform.js';
 import {markdownToTelegramHtml, splitForTelegram} from './telegramMarkdown.js';
+import {placeOrder} from '../command/placeOrder.js';
 import {reportAdd} from '../command/report/reportAdd.js';
 import {Account} from '../database/models/Account.js';
 import type {ReportScheduler} from '../service/ReportScheduler.js';
@@ -12,6 +14,91 @@ const REPORT_CALLBACK_PREFIX = 'report:';
 const ACCOUNT_CALLBACK_PREFIX = 'reportaccount:';
 const MODE_CALLBACK_PREFIX = 'reportmode:';
 const INTERVAL_CALLBACK_PREFIX = 'reportinterval:';
+const TRADE_ACCOUNT_PREFIX = 't:a|';
+const TRADE_CONFIRM_PREFIX = 't:c|';
+
+const TRADE_COMMAND_NAMES = ['buyMarket', 'sellMarket', 'buyLimit', 'sellLimit'] as const;
+type TradeCommandName = (typeof TRADE_COMMAND_NAMES)[number];
+
+function isTradeCommandName(name: string): name is TradeCommandName {
+  return (TRADE_COMMAND_NAMES as readonly string[]).includes(name);
+}
+
+const TRADE_CODE_TO_COMMAND: Record<string, TradeCommandName> = {
+  bm: 'buyMarket',
+  sm: 'sellMarket',
+  bl: 'buyLimit',
+  sl: 'sellLimit',
+};
+
+const TRADE_COMMAND_TO_CODE: Record<TradeCommandName, string> = {
+  buyMarket: 'bm',
+  sellMarket: 'sm',
+  buyLimit: 'bl',
+  sellLimit: 'sl',
+};
+
+interface TradeCommandShape {
+  side: ExchangeOrderSide;
+  isLimit: boolean;
+}
+
+function tradeCommandShape(name: TradeCommandName): TradeCommandShape {
+  switch (name) {
+    case 'buyMarket':
+      return {side: ExchangeOrderSide.BUY, isLimit: false};
+    case 'sellMarket':
+      return {side: ExchangeOrderSide.SELL, isLimit: false};
+    case 'buyLimit':
+      return {side: ExchangeOrderSide.BUY, isLimit: true};
+    case 'sellLimit':
+      return {side: ExchangeOrderSide.SELL, isLimit: true};
+  }
+}
+
+function buildTradeActionLabel(
+  cmd: TradeCommandName,
+  pair: TradingPair,
+  quantity: string,
+  limitPrice: string | null
+): string {
+  const {side, isLimit} = tradeCommandShape(cmd);
+  const sideLabel = side === ExchangeOrderSide.BUY ? 'BUY' : 'SELL';
+  const kindLabel = isLimit ? 'LIMIT' : 'MARKET';
+  if (isLimit && limitPrice !== null) {
+    return `${kindLabel} ${sideLabel} ${quantity} ${pair.base} @ ${limitPrice} ${pair.counter}`;
+  }
+  return `${kindLabel} ${sideLabel} ${quantity} ${pair.base}`;
+}
+
+interface TradeFields {
+  cmd: TradeCommandName;
+  pairStr: string;
+  quantity: string;
+  /** `'-'` for market orders, a positive-number string for limit orders. */
+  priceField: string;
+  accountId: number;
+}
+
+function encodeTradeFields(prefix: string, fields: TradeFields, decision?: 'y' | 'n'): string {
+  const code = TRADE_COMMAND_TO_CODE[fields.cmd];
+  const base = `${prefix}${code}|${fields.pairStr}|${fields.quantity}|${fields.priceField}|${fields.accountId}`;
+  return decision ? `${base}|${decision}` : base;
+}
+
+function decodeTradeFields(payload: string): (TradeFields & {decision?: 'y' | 'n'}) | null {
+  const parts = payload.split('|');
+  if (parts.length < 5 || parts.length > 6) {
+    return null;
+  }
+  const [code, pairStr, quantity, priceField, accountIdStr, decision] = parts;
+  const cmd = TRADE_CODE_TO_COMMAND[code];
+  if (!cmd) return null;
+  const accountId = Number.parseInt(accountIdStr, 10);
+  if (!Number.isFinite(accountId)) return null;
+  if (decision !== undefined && decision !== 'y' && decision !== 'n') return null;
+  return {cmd, pairStr, quantity, priceField, accountId, decision};
+}
 
 interface InlineButton {
   text: string;
@@ -38,6 +125,7 @@ export class TelegramPlatform implements MessagingPlatform {
   #commands: Map<string, CommandHandler> = new Map();
   #platformInfo: PlatformInfo = {botAddress: '', sdkVersion: ''};
   #reportScheduler?: ReportScheduler;
+  #tradeCallbacksRegistered = false;
 
   constructor(botToken: string, ownerIds?: string) {
     this.#bot = new Bot(botToken);
@@ -57,6 +145,19 @@ export class TelegramPlatform implements MessagingPlatform {
     // reportadd is handled via inline keyboard buttons
     if (names.includes('reportadd')) {
       this.#registerReportAddCommand();
+      return;
+    }
+
+    // Trade commands have their own wizard (account picker → confirmation → execute)
+    const tradeNames = names.filter(isTradeCommandName);
+    if (tradeNames.length > 0) {
+      for (const tradeName of tradeNames) {
+        this.#registerTradeCommand(tradeName);
+      }
+      if (!this.#tradeCallbacksRegistered) {
+        this.#tradeCallbacksRegistered = true;
+        this.#registerTradeCallbacks();
+      }
       return;
     }
 
@@ -235,6 +336,211 @@ export class TelegramPlatform implements MessagingPlatform {
         this.#reportScheduler.scheduleReport(result.report);
       }
     });
+  }
+
+  #registerTradeCommand(name: TradeCommandName): void {
+    const {isLimit} = tradeCommandShape(name);
+
+    this.#bot.command(name, async ctx => {
+      const senderId = ctx.from?.id?.toString();
+      if (!senderId) {
+        await ctx.reply('Unable to determine sender');
+        return;
+      }
+
+      if (this.#ownerIds.length > 0 && !this.#ownerIds.includes(senderId)) {
+        return;
+      }
+
+      const text = ctx.message?.text ?? '';
+      const firstSpace = text.indexOf(' ');
+      const content = firstSpace === -1 ? '' : text.slice(firstSpace + 1).trim();
+      const parts = content.length > 0 ? content.split(/\s+/) : [];
+      const expected = isLimit ? 3 : 2;
+
+      if (parts.length !== expected) {
+        const usage = isLimit
+          ? `Usage: /${name} <PAIR> <QTY> <PRICE>\nExample: /${name} AAPL,USD 100 150`
+          : `Usage: /${name} <PAIR> <QTY>\nExample: /${name} AAPL,USD 100`;
+        await ctx.reply(`Invalid format.\n${usage}`);
+        return;
+      }
+
+      const [pairStr, quantity, priceInput] = parts;
+
+      let pair: TradingPair;
+      try {
+        pair = TradingPair.fromString(pairStr, ',');
+      } catch {
+        await ctx.reply(`Invalid pair "${pairStr}". Use format: BASE,COUNTER (e.g. AAPL,USD)`);
+        return;
+      }
+
+      if (!/^\d+(\.\d+)?$/.test(quantity) || Number.parseFloat(quantity) <= 0) {
+        await ctx.reply(`Invalid quantity "${quantity}". Must be a positive number.`);
+        return;
+      }
+
+      if (isLimit) {
+        if (!/^\d+(\.\d+)?$/.test(priceInput) || Number.parseFloat(priceInput) <= 0) {
+          await ctx.reply(`Invalid price "${priceInput}". Must be a positive number.`);
+          return;
+        }
+      }
+
+      const priceField = isLimit ? priceInput : '-';
+      const userId = `${PLATFORM_PREFIX}${senderId}`;
+      const accounts = Account.findByUserId(userId);
+
+      if (accounts.length === 0) {
+        await ctx.reply('No exchange account found. Use /accountadd to add one first.');
+        return;
+      }
+
+      const actionLabel = buildTradeActionLabel(name, pair, quantity, isLimit ? priceInput : null);
+      const rows: InlineButton[][] = accounts.map(acc => [
+        {
+          text: `${acc.name} (${acc.exchange}${acc.isPaper ? ' paper' : ''})`,
+          callback_data: encodeTradeFields(TRADE_ACCOUNT_PREFIX, {
+            cmd: name,
+            pairStr,
+            quantity,
+            priceField,
+            accountId: acc.id,
+          }),
+        },
+      ]);
+
+      await ctx.reply(`${actionLabel}\nSelect an account:`, inlineKeyboard(rows));
+    });
+  }
+
+  #registerTradeCallbacks(): void {
+    // Step 1: User selected an account → show confirmation
+    this.#bot.callbackQuery(new RegExp(`^${TRADE_ACCOUNT_PREFIX.replace('|', '\\|')}(.+)$`), async ctx => {
+      await ctx.answerCallbackQuery();
+
+      const senderId = ctx.from?.id?.toString();
+      if (!senderId) return;
+
+      const fields = decodeTradeFields(ctx.match[1]);
+      if (!fields) {
+        await ctx.editMessageText('Invalid trade session. Please run the command again.');
+        return;
+      }
+
+      const userId = `${PLATFORM_PREFIX}${senderId}`;
+      const {text, keyboard} = await this.#buildTradeConfirmation(userId, fields);
+      await ctx.editMessageText(text, keyboard);
+    });
+
+    // Step 2: User confirmed (Yes) or cancelled (No) → execute or abort
+    this.#bot.callbackQuery(new RegExp(`^${TRADE_CONFIRM_PREFIX.replace('|', '\\|')}(.+)$`), async ctx => {
+      await ctx.answerCallbackQuery();
+
+      const senderId = ctx.from?.id?.toString();
+      if (!senderId) return;
+
+      const fields = decodeTradeFields(ctx.match[1]);
+      if (!fields || fields.decision === undefined) {
+        await ctx.editMessageText('Invalid trade session. Please run the command again.');
+        return;
+      }
+
+      if (fields.decision === 'n') {
+        await ctx.editMessageText('Cancelled.');
+        return;
+      }
+
+      const userId = `${PLATFORM_PREFIX}${senderId}`;
+      let pair: TradingPair;
+      try {
+        pair = TradingPair.fromString(fields.pairStr, ',');
+      } catch (error) {
+        await ctx.editMessageText(error instanceof Error ? error.message : 'Invalid pair.');
+        return;
+      }
+
+      const {side, isLimit} = tradeCommandShape(fields.cmd);
+      const limitPrice = isLimit && fields.priceField !== '-' ? fields.priceField : undefined;
+
+      await ctx.editMessageText('Placing order…');
+
+      const result = await placeOrder({
+        userId,
+        accountId: fields.accountId,
+        pair,
+        side,
+        quantity: fields.quantity,
+        limitPrice,
+      });
+
+      await ctx.editMessageText(result);
+    });
+  }
+
+  async #buildTradeConfirmation(
+    userId: string,
+    fields: TradeFields
+  ): Promise<{text: string; keyboard: ReturnType<typeof inlineKeyboard>}> {
+    const account = Account.findByUserIdAndId(userId, fields.accountId);
+    if (!account) {
+      return {
+        text: `Account "${fields.accountId}" not found. Run the command again.`,
+        keyboard: inlineKeyboard([]),
+      };
+    }
+
+    let pair: TradingPair;
+    try {
+      pair = TradingPair.fromString(fields.pairStr, ',');
+    } catch (error) {
+      return {
+        text: error instanceof Error ? error.message : 'Invalid pair.',
+        keyboard: inlineKeyboard([]),
+      };
+    }
+
+    const limitPriceLabel = fields.priceField === '-' ? null : fields.priceField;
+    const actionLabel = buildTradeActionLabel(fields.cmd, pair, fields.quantity, limitPriceLabel);
+
+    // Fetch current price as confirmation context. Failure is non-fatal —
+    // the user still sees the action and can confirm without the price hint.
+    let priceContext = '';
+    try {
+      const client = getExchangeClient({
+        exchangeId: account.exchange,
+        apiKey: account.apiKey,
+        apiSecret: account.apiSecret,
+        isPaper: account.isPaper,
+      });
+      const smallestInterval = client.getSmallestInterval();
+      const candle = await client.getLatestCandle(pair, smallestInterval);
+      const currentPrice = Number.parseFloat(candle.close);
+      const qty = Number.parseFloat(fields.quantity);
+      if (Number.isFinite(currentPrice) && Number.isFinite(qty)) {
+        const estimated = (currentPrice * qty).toFixed(2);
+        priceContext = `\nCurrent ~${candle.close} ${pair.counter} · Estimated ~${estimated} ${pair.counter}`;
+      }
+    } catch {
+      // Ignore — price context is best-effort.
+    }
+
+    const text = `${actionLabel}\nAccount: ${account.name}${priceContext}\n\nProceed?`;
+    const keyboard = inlineKeyboard([
+      [
+        {
+          text: '✓ Yes, place order',
+          callback_data: encodeTradeFields(TRADE_CONFIRM_PREFIX, fields, 'y'),
+        },
+        {
+          text: '✗ Cancel',
+          callback_data: encodeTradeFields(TRADE_CONFIRM_PREFIX, fields, 'n'),
+        },
+      ],
+    ]);
+
+    return {text, keyboard};
   }
 
   async start(): Promise<void> {
