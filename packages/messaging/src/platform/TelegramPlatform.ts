@@ -192,17 +192,20 @@ async function tradeWizard(
   const confirmation = await conversation.external(() =>
     buildTradeConfirmation(userId, args, pair, accountId)
   );
+  );
+  await accountSelection.answerCallbackQuery();
   await accountSelection.editMessageText(confirmation.text, confirmation.keyboard);
 
   // Step 3: wait for Yes / No
   const decision = await conversation.waitForCallbackQuery(['trade:cnf:y', 'trade:cnf:n']);
-  await decision.answerCallbackQuery();
   if (decision.match === 'trade:cnf:n') {
+    await decision.answerCallbackQuery();
     await decision.editMessageText('Cancelled.');
     return;
   }
 
   // Step 4: execute
+  await decision.answerCallbackQuery();
   await decision.editMessageText('Placing order…');
   const result = await conversation.external(() =>
     placeOrder({
