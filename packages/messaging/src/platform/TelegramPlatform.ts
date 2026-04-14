@@ -17,6 +17,14 @@ const INTERVAL_CALLBACK_PREFIX = 'reportinterval:';
 const TRADE_ACCOUNT_PREFIX = 't:a|';
 const TRADE_CONFIRM_PREFIX = 't:c|';
 
+/** Escapes regex metacharacters so a string constant can be safely embedded in a dynamic RegExp. */
+function escapeRegex(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+const TRADE_ACCOUNT_CALLBACK_PATTERN = new RegExp(`^${escapeRegex(TRADE_ACCOUNT_PREFIX)}(.+)$`);
+const TRADE_CONFIRM_CALLBACK_PATTERN = new RegExp(`^${escapeRegex(TRADE_CONFIRM_PREFIX)}(.+)$`);
+
 const TRADE_COMMAND_NAMES = ['buyMarket', 'sellMarket', 'buyLimit', 'sellLimit'] as const;
 type TradeCommandName = (typeof TRADE_COMMAND_NAMES)[number];
 
@@ -417,7 +425,7 @@ export class TelegramPlatform implements MessagingPlatform {
 
   #registerTradeCallbacks(): void {
     // Step 1: User selected an account → show confirmation
-    this.#bot.callbackQuery(new RegExp(`^${TRADE_ACCOUNT_PREFIX.replace('|', '\\|')}(.+)$`), async ctx => {
+    this.#bot.callbackQuery(TRADE_ACCOUNT_CALLBACK_PATTERN, async ctx => {
       await ctx.answerCallbackQuery();
 
       const senderId = ctx.from?.id?.toString();
@@ -435,7 +443,7 @@ export class TelegramPlatform implements MessagingPlatform {
     });
 
     // Step 2: User confirmed (Yes) or cancelled (No) → execute or abort
-    this.#bot.callbackQuery(new RegExp(`^${TRADE_CONFIRM_PREFIX.replace('|', '\\|')}(.+)$`), async ctx => {
+    this.#bot.callbackQuery(TRADE_CONFIRM_CALLBACK_PATTERN, async ctx => {
       await ctx.answerCallbackQuery();
 
       const senderId = ctx.from?.id?.toString();
