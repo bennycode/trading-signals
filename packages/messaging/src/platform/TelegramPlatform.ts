@@ -226,12 +226,7 @@ async function buildTradeConfirmation(
     });
     const smallestInterval = client.getSmallestInterval();
     const candle = await client.getLatestCandle(pair, smallestInterval);
-    const currentPrice = Number.parseFloat(candle.close);
-    const qty = Number.parseFloat(args.quantity);
-    if (Number.isFinite(currentPrice) && Number.isFinite(qty)) {
-      const estimated = (currentPrice * qty).toFixed(2);
-      priceContext = `\nCurrent ~${candle.close} ${pair.counter} · Estimated ~${estimated} ${pair.counter}`;
-    }
+    priceContext = `\nCurrent ~${candle.close} ${pair.counter}`;
   } catch {
     // Ignore — price context is best-effort.
   }
