@@ -11,6 +11,7 @@
   },
   "description": "Trading strategies to run trading bots with JavaScript / TypeScript.",
   "devDependencies": {
+    "ms": "4.0.0-nightly.202508271359",
     "tsx": "^4.21.0"
   },
   "exports": {
