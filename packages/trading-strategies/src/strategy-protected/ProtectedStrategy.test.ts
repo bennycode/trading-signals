@@ -18,7 +18,7 @@ import type {
   OrderAdvice,
   TradingSessionState,
 } from '@typedtrader/exchange';
-import {GuardedStrategy, GuardedStrategySchema} from './GuardedStrategy.js';
+import {ProtectedStrategy, ProtectedStrategySchema} from './ProtectedStrategy.js';
 
 function assertLimitSell(advice: OrderAdvice | void): asserts advice is LimitOrderAdvice {
   if (!advice || advice.type !== ExchangeOrderType.LIMIT || advice.side !== ExchangeOrderSide.SELL) {
@@ -84,16 +84,16 @@ function makeFill(price: string, size: string, side: ExchangeOrderSide): Exchang
   };
 }
 
-const TestSchema = GuardedStrategySchema.extend({
+const TestSchema = ProtectedStrategySchema.extend({
   signalAdvice: z.boolean().optional(),
 });
 
 /**
- * Minimal GuardedStrategy subclass that records whether its own logic ran
+ * Minimal ProtectedStrategy subclass that records whether its own logic ran
  * and optionally returns a dummy BUY advice so we can assert that guards
  * take priority over subclass logic.
  */
-class TestGuardedStrategy extends GuardedStrategy {
+class TestProtectedStrategy extends ProtectedStrategy {
   ownLogicCallCount = 0;
 
   constructor(config: z.input<typeof TestSchema>) {
@@ -125,41 +125,41 @@ class TestGuardedStrategy extends GuardedStrategy {
   }
 }
 
-describe('GuardedStrategySchema', () => {
-  it('accepts valid thresholds inside the guarded sub-object', () => {
-    expect(() => GuardedStrategySchema.parse({guarded: {stopLossPct: '5', takeProfitPct: '10'}})).not.toThrow();
+describe('ProtectedStrategySchema', () => {
+  it('accepts valid thresholds inside the protected sub-object', () => {
+    expect(() => ProtectedStrategySchema.parse({protected: {stopLossPct: '5', takeProfitPct: '10'}})).not.toThrow();
   });
 
-  it('accepts empty config (no guarded key at all)', () => {
-    expect(() => GuardedStrategySchema.parse({})).not.toThrow();
+  it('accepts empty config (no protected key at all)', () => {
+    expect(() => ProtectedStrategySchema.parse({})).not.toThrow();
   });
 
-  it('accepts empty guarded object', () => {
-    expect(() => GuardedStrategySchema.parse({guarded: {}})).not.toThrow();
+  it('accepts empty protected object', () => {
+    expect(() => ProtectedStrategySchema.parse({protected: {}})).not.toThrow();
   });
 
   it('rejects non-positive thresholds', () => {
-    expect(() => GuardedStrategySchema.parse({guarded: {stopLossPct: '0'}})).toThrow();
-    expect(() => GuardedStrategySchema.parse({guarded: {stopLossPct: '-1'}})).toThrow();
-    expect(() => GuardedStrategySchema.parse({guarded: {takeProfitPct: '-0.5'}})).toThrow();
+    expect(() => ProtectedStrategySchema.parse({protected: {stopLossPct: '0'}})).toThrow();
+    expect(() => ProtectedStrategySchema.parse({protected: {stopLossPct: '-1'}})).toThrow();
+    expect(() => ProtectedStrategySchema.parse({protected: {takeProfitPct: '-0.5'}})).toThrow();
   });
 
   it('rejects non-numeric strings', () => {
-    expect(() => GuardedStrategySchema.parse({guarded: {stopLossPct: 'abc'}})).toThrow();
+    expect(() => ProtectedStrategySchema.parse({protected: {stopLossPct: 'abc'}})).toThrow();
   });
 
   it('applies default order types when omitted', () => {
-    const parsed = GuardedStrategySchema.parse({guarded: {stopLossPct: '5'}});
-    expect(parsed.guarded).toBeDefined();
-    expect(parsed.guarded?.stopLossOrder).toBe('limit');
-    expect(parsed.guarded?.takeProfitOrder).toBe('limit');
+    const parsed = ProtectedStrategySchema.parse({protected: {stopLossPct: '5'}});
+    expect(parsed.protected).toBeDefined();
+    expect(parsed.protected?.stopLossOrder).toBe('limit');
+    expect(parsed.protected?.takeProfitOrder).toBe('limit');
   });
 });
 
-describe('GuardedStrategy', () => {
+describe('ProtectedStrategy', () => {
   describe('stop-loss', () => {
     it('fires a LIMIT sell at the nominal target price when unrealized loss reaches the threshold', async () => {
-      const strategy = new TestGuardedStrategy({guarded: {stopLossPct: '5'}});
+      const strategy = new TestProtectedStrategy({protected: {stopLossPct: '5'}});
       await strategy.onFill(makeFill('100', '10', ExchangeOrderSide.BUY), mockState);
 
       // Price drops 5% — stop-loss should fire
@@ -171,11 +171,11 @@ describe('GuardedStrategy', () => {
       expect(new Big(advice.price).toFixed(2)).toBe('95.00');
       expect(advice.reason).toContain('[KILL SWITCH]');
       expect(advice.reason).toContain('Stop-loss');
-      expect(strategy.guardedState.killedLimitPrice).toBe('95');
+      expect(strategy.protectedState.killedLimitPrice).toBe('95');
     });
 
     it('places the limit at the nominal target even when the market has gapped below', async () => {
-      const strategy = new TestGuardedStrategy({guarded: {stopLossPct: '5'}});
+      const strategy = new TestProtectedStrategy({protected: {stopLossPct: '5'}});
       await strategy.onFill(makeFill('100', '10', ExchangeOrderSide.BUY), mockState);
 
       // Market gaps to 90 (-10%), far past the -5% threshold — limit still sits at 95
@@ -186,7 +186,7 @@ describe('GuardedStrategy', () => {
     });
 
     it('does not fire while within threshold', async () => {
-      const strategy = new TestGuardedStrategy({guarded: {stopLossPct: '5'}});
+      const strategy = new TestProtectedStrategy({protected: {stopLossPct: '5'}});
       await strategy.onFill(makeFill('100', '10', ExchangeOrderSide.BUY), mockState);
 
       // Price drops only 3% — guard should pass, subclass runs
@@ -199,7 +199,7 @@ describe('GuardedStrategy', () => {
     it('fires a LIMIT sell at the nominal USD loss target when stopLossNominal is reached', async () => {
       // 10 shares @ 100 = $1000 invested. stopLossNominal=10 → exit when unrealized loss
       // is $10, i.e. price of 99 (each share only needs to drop $1).
-      const strategy = new TestGuardedStrategy({guarded: {stopLossNominal: '10'}});
+      const strategy = new TestProtectedStrategy({protected: {stopLossNominal: '10'}});
       await strategy.onFill(makeFill('100', '10', ExchangeOrderSide.BUY), mockState);
 
       const notYet = await strategy.onCandle(makeCandle(99.5), mockState);
@@ -214,7 +214,7 @@ describe('GuardedStrategy', () => {
 
     it('fires a LIMIT sell at the exact configured price when stopLossPrice is reached', async () => {
       // stopLossPrice=92 → limit sell at exactly 92 as soon as price drops to 92 or below
-      const strategy = new TestGuardedStrategy({guarded: {stopLossPrice: '92'}});
+      const strategy = new TestProtectedStrategy({protected: {stopLossPrice: '92'}});
       await strategy.onFill(makeFill('100', '10', ExchangeOrderSide.BUY), mockState);
 
       const notYet = await strategy.onCandle(makeCandle(93), mockState);
@@ -229,7 +229,7 @@ describe('GuardedStrategy', () => {
 
     it('fires at the configured price regardless of avg entry', async () => {
       // Buy at 50 — far below the 92 stopLossPrice. Guard still arms and fires at 92.
-      const strategy = new TestGuardedStrategy({guarded: {stopLossPrice: '92'}});
+      const strategy = new TestProtectedStrategy({protected: {stopLossPrice: '92'}});
       await strategy.onFill(makeFill('50', '10', ExchangeOrderSide.BUY), mockState);
 
       // Price above the stop target — no fire even though we're above entry
@@ -244,7 +244,7 @@ describe('GuardedStrategy', () => {
 
   describe('take-profit', () => {
     it('fires a LIMIT sell at the nominal target price when unrealized gain reaches the threshold', async () => {
-      const strategy = new TestGuardedStrategy({guarded: {takeProfitPct: '10'}});
+      const strategy = new TestProtectedStrategy({protected: {takeProfitPct: '10'}});
       await strategy.onFill(makeFill('100', '10', ExchangeOrderSide.BUY), mockState);
 
       const advice = await strategy.onCandle(makeCandle(110), mockState);
@@ -253,13 +253,13 @@ describe('GuardedStrategy', () => {
       expect(new Big(advice.price).toFixed(2)).toBe('110.00');
       expect(advice.reason).toContain('[KILL SWITCH]');
       expect(advice.reason).toContain('Take-profit');
-      expect(strategy.guardedState.killedLimitPrice).toBe('110');
+      expect(strategy.protectedState.killedLimitPrice).toBe('110');
     });
 
     it('fires a LIMIT sell at the nominal USD target when takeProfitNominal is reached', async () => {
       // 10 shares @ 100 = $1000 invested. takeProfitNominal=10 → exit when portfolio hits $1010,
       // i.e. price of 101 (each share only needs to gain $1).
-      const strategy = new TestGuardedStrategy({guarded: {takeProfitNominal: '10'}});
+      const strategy = new TestProtectedStrategy({protected: {takeProfitNominal: '10'}});
       await strategy.onFill(makeFill('100', '10', ExchangeOrderSide.BUY), mockState);
 
       const notYet = await strategy.onCandle(makeCandle(100.5), mockState);
@@ -274,7 +274,7 @@ describe('GuardedStrategy', () => {
 
     it('fires a LIMIT sell at the exact configured price when takeProfitPrice is reached', async () => {
       // takeProfitPrice=108 → limit sell at exactly 108 as soon as price rises to 108 or above
-      const strategy = new TestGuardedStrategy({guarded: {takeProfitPrice: '108'}});
+      const strategy = new TestProtectedStrategy({protected: {takeProfitPrice: '108'}});
       await strategy.onFill(makeFill('100', '10', ExchangeOrderSide.BUY), mockState);
 
       const notYet = await strategy.onCandle(makeCandle(107), mockState);
@@ -288,7 +288,7 @@ describe('GuardedStrategy', () => {
     });
 
     it('does not fire while within threshold', async () => {
-      const strategy = new TestGuardedStrategy({guarded: {takeProfitPct: '10'}});
+      const strategy = new TestProtectedStrategy({protected: {takeProfitPct: '10'}});
       await strategy.onFill(makeFill('100', '10', ExchangeOrderSide.BUY), mockState);
 
       const advice = await strategy.onCandle(makeCandle(105), mockState);
@@ -300,7 +300,7 @@ describe('GuardedStrategy', () => {
 
   describe('no position', () => {
     it('skips guard checks when nothing has been bought', async () => {
-      const strategy = new TestGuardedStrategy({guarded: {stopLossPct: '1', takeProfitPct: '1'}, signalAdvice: true});
+      const strategy = new TestProtectedStrategy({protected: {stopLossPct: '1', takeProfitPct: '1'}, signalAdvice: true});
 
       const advice = await strategy.onCandle(makeCandle(100), mockState);
 
@@ -312,14 +312,14 @@ describe('GuardedStrategy', () => {
 
   describe('killed state', () => {
     it('keeps re-emitting the same limit-sell advice while the position has not yet been exited', async () => {
-      const strategy = new TestGuardedStrategy({guarded: {stopLossPct: '5'}, signalAdvice: true});
+      const strategy = new TestProtectedStrategy({protected: {stopLossPct: '5'}, signalAdvice: true});
       await strategy.onFill(makeFill('100', '10', ExchangeOrderSide.BUY), mockState);
 
       // Trigger stop-loss — position is still 10 because no sell fill has arrived yet
       const killAdvice = await strategy.onCandle(makeCandle(94), mockState);
       assertLimitSell(killAdvice);
       expect(new Big(killAdvice.price).toFixed(2)).toBe('95.00');
-      expect(strategy.guardedState.killed).toBe(true);
+      expect(strategy.protectedState.killed).toBe(true);
 
       // Simulate exchange rejecting/delaying the fill: next candle must retry with
       // the same nominal limit price, regardless of where the market is now.
@@ -333,15 +333,15 @@ describe('GuardedStrategy', () => {
     });
 
     it('goes silent once the position is fully exited via onFill', async () => {
-      const strategy = new TestGuardedStrategy({guarded: {stopLossPct: '5'}, signalAdvice: true});
+      const strategy = new TestProtectedStrategy({protected: {stopLossPct: '5'}, signalAdvice: true});
       await strategy.onFill(makeFill('100', '10', ExchangeOrderSide.BUY), mockState);
 
       await strategy.onCandle(makeCandle(94), mockState);
-      expect(strategy.guardedState.killed).toBe(true);
+      expect(strategy.protectedState.killed).toBe(true);
 
       // The sell advice finally fills — position goes to zero
       await strategy.onFill(makeFill('94', '10', ExchangeOrderSide.SELL), mockState);
-      expect(strategy.guardedState.totalPositionSize).toBe('0');
+      expect(strategy.protectedState.totalPositionSize).toBe('0');
 
       // Now subsequent candles return undefined — truly terminal
       const advice = await strategy.onCandle(makeCandle(120), mockState);
@@ -352,7 +352,7 @@ describe('GuardedStrategy', () => {
 
   describe('position tracking', () => {
     it('uses cost-basis averaging across multiple buys to compute the limit price', async () => {
-      const strategy = new TestGuardedStrategy({guarded: {stopLossPct: '5'}});
+      const strategy = new TestProtectedStrategy({protected: {stopLossPct: '5'}});
 
       // Buy 10 @ 100, then 10 @ 120 → avg = 110
       await strategy.onFill(makeFill('100', '10', ExchangeOrderSide.BUY), mockState);
@@ -369,7 +369,7 @@ describe('GuardedStrategy', () => {
     });
 
     it('uses the current average entry price after a partial sell', async () => {
-      const strategy = new TestGuardedStrategy({guarded: {stopLossPct: '5'}});
+      const strategy = new TestProtectedStrategy({protected: {stopLossPct: '5'}});
 
       // Buy 20 @ 100, then sell 10 (partial exit). Avg entry stays at 100.
       await strategy.onFill(makeFill('100', '20', ExchangeOrderSide.BUY), mockState);
@@ -382,13 +382,13 @@ describe('GuardedStrategy', () => {
     });
 
     it('resets position tracking to zero on a full exit', async () => {
-      const strategy = new TestGuardedStrategy({guarded: {stopLossPct: '5'}});
+      const strategy = new TestProtectedStrategy({protected: {stopLossPct: '5'}});
 
       await strategy.onFill(makeFill('100', '10', ExchangeOrderSide.BUY), mockState);
       await strategy.onFill(makeFill('110', '10', ExchangeOrderSide.SELL), mockState);
 
-      expect(strategy.guardedState.totalPositionSize).toBe('0');
-      expect(strategy.guardedState.totalCostBasis).toBe('0');
+      expect(strategy.protectedState.totalPositionSize).toBe('0');
+      expect(strategy.protectedState.totalCostBasis).toBe('0');
 
       // After a full exit, the guard should not fire on any price move — no position
       const advice = await strategy.onCandle(makeCandle(1), mockState);
@@ -398,7 +398,7 @@ describe('GuardedStrategy', () => {
 
   describe('no guards configured', () => {
     it('always passes through to the subclass', async () => {
-      const strategy = new TestGuardedStrategy({signalAdvice: true});
+      const strategy = new TestProtectedStrategy({signalAdvice: true});
       await strategy.onFill(makeFill('100', '10', ExchangeOrderSide.BUY), mockState);
 
       // Price crashes 99% — guard still does nothing because no thresholds set
@@ -412,44 +412,44 @@ describe('GuardedStrategy', () => {
 
   describe('mutual exclusion', () => {
     it('rejects setting both stopLossPct and stopLossNominal', () => {
-      expect(() => new TestGuardedStrategy({guarded: {stopLossPct: '5', stopLossNominal: '10'}})).toThrow(
+      expect(() => new TestProtectedStrategy({protected: {stopLossPct: '5', stopLossNominal: '10'}})).toThrow(
         /stopLossPct, stopLossNominal, and stopLossPrice are mutually exclusive/
       );
     });
 
     it('rejects setting both takeProfitPct and takeProfitNominal', () => {
-      expect(() => new TestGuardedStrategy({guarded: {takeProfitPct: '10', takeProfitNominal: '5'}})).toThrow(
+      expect(() => new TestProtectedStrategy({protected: {takeProfitPct: '10', takeProfitNominal: '5'}})).toThrow(
         /takeProfitPct, takeProfitNominal, and takeProfitPrice are mutually exclusive/
       );
     });
 
     it('rejects setting both stopLossPct and stopLossPrice', () => {
-      expect(() => new TestGuardedStrategy({guarded: {stopLossPct: '5', stopLossPrice: '95'}})).toThrow(
+      expect(() => new TestProtectedStrategy({protected: {stopLossPct: '5', stopLossPrice: '95'}})).toThrow(
         /stopLossPct, stopLossNominal, and stopLossPrice are mutually exclusive/
       );
     });
 
     it('rejects setting both stopLossNominal and stopLossPrice', () => {
-      expect(() => new TestGuardedStrategy({guarded: {stopLossNominal: '10', stopLossPrice: '95'}})).toThrow(
+      expect(() => new TestProtectedStrategy({protected: {stopLossNominal: '10', stopLossPrice: '95'}})).toThrow(
         /stopLossPct, stopLossNominal, and stopLossPrice are mutually exclusive/
       );
     });
 
     it('rejects setting both takeProfitPct and takeProfitPrice', () => {
-      expect(() => new TestGuardedStrategy({guarded: {takeProfitPct: '10', takeProfitPrice: '110'}})).toThrow(
+      expect(() => new TestProtectedStrategy({protected: {takeProfitPct: '10', takeProfitPrice: '110'}})).toThrow(
         /takeProfitPct, takeProfitNominal, and takeProfitPrice are mutually exclusive/
       );
     });
 
     it('rejects setting both takeProfitNominal and takeProfitPrice', () => {
-      expect(() => new TestGuardedStrategy({guarded: {takeProfitNominal: '10', takeProfitPrice: '110'}})).toThrow(
+      expect(() => new TestProtectedStrategy({protected: {takeProfitNominal: '10', takeProfitPrice: '110'}})).toThrow(
         /takeProfitPct, takeProfitNominal, and takeProfitPrice are mutually exclusive/
       );
     });
 
     it('rejects setting all three stop-loss variants', () => {
       expect(
-        () => new TestGuardedStrategy({guarded: {stopLossPct: '5', stopLossNominal: '10', stopLossPrice: '95'}})
+        () => new TestProtectedStrategy({protected: {stopLossPct: '5', stopLossNominal: '10', stopLossPrice: '95'}})
       ).toThrow(/stopLossPct, stopLossNominal, and stopLossPrice are mutually exclusive/);
     });
 
@@ -457,7 +457,7 @@ describe('GuardedStrategy', () => {
       // stopLossPct 5 + takeProfitNominal 10 on 10 @ 100
       //   → stop-loss target: 100 * 0.95 = 95
       //   → take-profit target: 100 + 10/10 = 101
-      const strategy = new TestGuardedStrategy({guarded: {stopLossPct: '5', takeProfitNominal: '10'}});
+      const strategy = new TestProtectedStrategy({protected: {stopLossPct: '5', takeProfitNominal: '10'}});
       await strategy.onFill(makeFill('100', '10', ExchangeOrderSide.BUY), mockState);
 
       // Hits take-profit first at 101
@@ -468,7 +468,7 @@ describe('GuardedStrategy', () => {
     });
 
     it('allows mixing nominal stop-loss with pct take-profit', async () => {
-      const strategy = new TestGuardedStrategy({guarded: {stopLossNominal: '10', takeProfitPct: '10'}});
+      const strategy = new TestProtectedStrategy({protected: {stopLossNominal: '10', takeProfitPct: '10'}});
       await strategy.onFill(makeFill('100', '10', ExchangeOrderSide.BUY), mockState);
 
       // -$10 at 10 shares → price 99
@@ -481,7 +481,7 @@ describe('GuardedStrategy', () => {
 
   describe('nominal across multiple buys', () => {
     it('uses the current cost-basis / positionSize when computing the nominal target', async () => {
-      const strategy = new TestGuardedStrategy({guarded: {takeProfitNominal: '20'}});
+      const strategy = new TestProtectedStrategy({protected: {takeProfitNominal: '20'}});
 
       // Buy 10 @ 100, then 10 @ 120 → positionSize 20, costBasis 2200, avgEntry 110
       await strategy.onFill(makeFill('100', '10', ExchangeOrderSide.BUY), mockState);
@@ -499,14 +499,14 @@ describe('GuardedStrategy', () => {
 
   describe('state persistence', () => {
     it('restores guard state through restoreState', async () => {
-      const strategy = new TestGuardedStrategy({guarded: {stopLossPct: '5'}});
+      const strategy = new TestProtectedStrategy({protected: {stopLossPct: '5'}});
       await strategy.onFill(makeFill('100', '10', ExchangeOrderSide.BUY), mockState);
 
       const snapshot = strategy.state;
       expect(snapshot).not.toBeNull();
 
       // New instance, restore state
-      const restored = new TestGuardedStrategy({guarded: {stopLossPct: '5'}});
+      const restored = new TestProtectedStrategy({protected: {stopLossPct: '5'}});
       restored.restoreState(snapshot!);
 
       // The restored strategy should know about the position and fire at -5%
@@ -516,17 +516,17 @@ describe('GuardedStrategy', () => {
     });
 
     it('restores the killedLimitPrice after a guard has already fired', async () => {
-      const strategy = new TestGuardedStrategy({guarded: {stopLossPct: '5'}});
+      const strategy = new TestProtectedStrategy({protected: {stopLossPct: '5'}});
       await strategy.onFill(makeFill('100', '10', ExchangeOrderSide.BUY), mockState);
       await strategy.onCandle(makeCandle(95), mockState); // fire the guard
-      expect(strategy.guardedState.killed).toBe(true);
+      expect(strategy.protectedState.killed).toBe(true);
 
       const snapshot = strategy.state;
 
-      const restored = new TestGuardedStrategy({guarded: {stopLossPct: '5'}});
+      const restored = new TestProtectedStrategy({protected: {stopLossPct: '5'}});
       restored.restoreState(snapshot!);
-      expect(restored.guardedState.killed).toBe(true);
-      expect(restored.guardedState.killedLimitPrice).toBe('95');
+      expect(restored.protectedState.killed).toBe(true);
+      expect(restored.protectedState.killedLimitPrice).toBe('95');
 
       // Retry on the restored instance should re-emit the same limit advice
       const advice = await restored.onCandle(makeCandle(50), mockState);
@@ -534,24 +534,24 @@ describe('GuardedStrategy', () => {
       expect(new Big(advice.price).toFixed(2)).toBe('95.00');
     });
 
-    it('applies default guard state when restoring legacy state without a guarded key', async () => {
-      const strategy = new TestGuardedStrategy({guarded: {stopLossPct: '5'}});
+    it('applies default guard state when restoring legacy state without a protected key', async () => {
+      const strategy = new TestProtectedStrategy({protected: {stopLossPct: '5'}});
 
-      // Simulate state persisted before guards existed — no `guarded` key
+      // Simulate state persisted before guards existed — no `protected` key
       strategy.restoreState({ownField: 42});
 
-      expect(strategy.guardedState.killed).toBe(false);
-      expect(strategy.guardedState.totalPositionSize).toBe('0');
-      expect(strategy.guardedState.totalCostBasis).toBe('0');
+      expect(strategy.protectedState.killed).toBe(false);
+      expect(strategy.protectedState.totalPositionSize).toBe('0');
+      expect(strategy.protectedState.totalCostBasis).toBe('0');
     });
 
     it('falls back to defaults when restored state has killed=true but no killedOrderType', async () => {
-      const strategy = new TestGuardedStrategy({guarded: {stopLossPct: '5'}});
+      const strategy = new TestProtectedStrategy({protected: {stopLossPct: '5'}});
 
       // Inconsistent persisted state: marked killed but missing the order type
       // needed for the retry path. Must not silently accept.
       strategy.restoreState({
-        guarded: {
+        protected: {
           killed: true,
           killedReason: 'stale',
           killedOrderType: null,
@@ -561,15 +561,15 @@ describe('GuardedStrategy', () => {
         },
       });
 
-      expect(strategy.guardedState.killed).toBe(false);
-      expect(strategy.guardedState.totalPositionSize).toBe('0');
+      expect(strategy.protectedState.killed).toBe(false);
+      expect(strategy.protectedState.totalPositionSize).toBe('0');
     });
 
     it('falls back to defaults when killedOrderType="limit" but killedLimitPrice is null', async () => {
-      const strategy = new TestGuardedStrategy({guarded: {stopLossPct: '5'}});
+      const strategy = new TestProtectedStrategy({protected: {stopLossPct: '5'}});
 
       strategy.restoreState({
-        guarded: {
+        protected: {
           killed: true,
           killedReason: 'stale',
           killedOrderType: 'limit',
@@ -579,14 +579,14 @@ describe('GuardedStrategy', () => {
         },
       });
 
-      expect(strategy.guardedState.killed).toBe(false);
+      expect(strategy.protectedState.killed).toBe(false);
     });
 
     it('accepts killed=true with killedOrderType="market" and no limit price', async () => {
-      const strategy = new TestGuardedStrategy({guarded: {stopLossPct: '5'}});
+      const strategy = new TestProtectedStrategy({protected: {stopLossPct: '5'}});
 
       strategy.restoreState({
-        guarded: {
+        protected: {
           killed: true,
           killedReason: 'Stop-loss fired',
           killedOrderType: 'market',
@@ -596,16 +596,16 @@ describe('GuardedStrategy', () => {
         },
       });
 
-      expect(strategy.guardedState.killed).toBe(true);
-      expect(strategy.guardedState.killedOrderType).toBe('market');
-      expect(strategy.guardedState.totalPositionSize).toBe('10');
+      expect(strategy.protectedState.killed).toBe(true);
+      expect(strategy.protectedState.killedOrderType).toBe('market');
+      expect(strategy.protectedState.totalPositionSize).toBe('10');
     });
 
     it('falls back to defaults when totalCostBasis is not a valid numeric string', async () => {
-      const strategy = new TestGuardedStrategy({guarded: {stopLossPct: '5'}});
+      const strategy = new TestProtectedStrategy({protected: {stopLossPct: '5'}});
 
       strategy.restoreState({
-        guarded: {
+        protected: {
           killed: false,
           killedReason: null,
           killedOrderType: null,
@@ -615,15 +615,15 @@ describe('GuardedStrategy', () => {
         },
       });
 
-      expect(strategy.guardedState.totalCostBasis).toBe('0');
-      expect(strategy.guardedState.totalPositionSize).toBe('0');
+      expect(strategy.protectedState.totalCostBasis).toBe('0');
+      expect(strategy.protectedState.totalPositionSize).toBe('0');
     });
 
     it('falls back to defaults when killedLimitPrice is not a valid numeric string', async () => {
-      const strategy = new TestGuardedStrategy({guarded: {stopLossPct: '5'}});
+      const strategy = new TestProtectedStrategy({protected: {stopLossPct: '5'}});
 
       strategy.restoreState({
-        guarded: {
+        protected: {
           killed: true,
           killedReason: null,
           killedOrderType: 'limit',
@@ -633,13 +633,13 @@ describe('GuardedStrategy', () => {
         },
       });
 
-      expect(strategy.guardedState.killed).toBe(false);
+      expect(strategy.protectedState.killed).toBe(false);
     });
   });
 
   describe('persistence (onSave)', () => {
     it('fires onSave when onFill accumulates a BUY', async () => {
-      const strategy = new TestGuardedStrategy({guarded: {stopLossPct: '5'}});
+      const strategy = new TestProtectedStrategy({protected: {stopLossPct: '5'}});
       const onSave = vi.fn();
       strategy.onSave = onSave;
 
@@ -649,7 +649,7 @@ describe('GuardedStrategy', () => {
     });
 
     it('fires onSave when onFill reduces the position on a SELL', async () => {
-      const strategy = new TestGuardedStrategy({guarded: {stopLossPct: '5'}});
+      const strategy = new TestProtectedStrategy({protected: {stopLossPct: '5'}});
       await strategy.onFill(makeFill('100', '10', ExchangeOrderSide.BUY), mockState);
 
       const onSave = vi.fn();
@@ -661,7 +661,7 @@ describe('GuardedStrategy', () => {
     });
 
     it('fires onSave when a guard fires during processCandle', async () => {
-      const strategy = new TestGuardedStrategy({guarded: {stopLossPct: '5'}});
+      const strategy = new TestProtectedStrategy({protected: {stopLossPct: '5'}});
       await strategy.onFill(makeFill('100', '10', ExchangeOrderSide.BUY), mockState);
 
       const onSave = vi.fn();
@@ -675,7 +675,7 @@ describe('GuardedStrategy', () => {
 
   describe('guard priority', () => {
     it('stop-loss takes priority — subclass logic does not run when fired', async () => {
-      const strategy = new TestGuardedStrategy({guarded: {stopLossPct: '5'}, signalAdvice: true});
+      const strategy = new TestProtectedStrategy({protected: {stopLossPct: '5'}, signalAdvice: true});
       await strategy.onFill(makeFill('100', '10', ExchangeOrderSide.BUY), mockState);
 
       const advice = await strategy.onCandle(makeCandle(90), mockState);
@@ -686,7 +686,7 @@ describe('GuardedStrategy', () => {
     });
 
     it('stop-loss fires before take-profit when both configured and loss is hit first', async () => {
-      const strategy = new TestGuardedStrategy({guarded: {stopLossPct: '5', takeProfitPct: '10'}});
+      const strategy = new TestProtectedStrategy({protected: {stopLossPct: '5', takeProfitPct: '10'}});
       await strategy.onFill(makeFill('100', '10', ExchangeOrderSide.BUY), mockState);
 
       const advice = await strategy.onCandle(makeCandle(94), mockState);
@@ -697,25 +697,25 @@ describe('GuardedStrategy', () => {
 
   describe('order type (stopLossOrder / takeProfitOrder)', () => {
     it('defaults stopLossOrder to "limit" when not configured', async () => {
-      const strategy = new TestGuardedStrategy({guarded: {stopLossPct: '5'}});
+      const strategy = new TestProtectedStrategy({protected: {stopLossPct: '5'}});
       await strategy.onFill(makeFill('100', '10', ExchangeOrderSide.BUY), mockState);
 
       const advice = await strategy.onCandle(makeCandle(95), mockState);
       assertLimitSell(advice);
-      expect(strategy.guardedState.killedOrderType).toBe('limit');
+      expect(strategy.protectedState.killedOrderType).toBe('limit');
     });
 
     it('defaults takeProfitOrder to "limit" when not configured', async () => {
-      const strategy = new TestGuardedStrategy({guarded: {takeProfitPct: '10'}});
+      const strategy = new TestProtectedStrategy({protected: {takeProfitPct: '10'}});
       await strategy.onFill(makeFill('100', '10', ExchangeOrderSide.BUY), mockState);
 
       const advice = await strategy.onCandle(makeCandle(110), mockState);
       assertLimitSell(advice);
-      expect(strategy.guardedState.killedOrderType).toBe('limit');
+      expect(strategy.protectedState.killedOrderType).toBe('limit');
     });
 
     it('fires a MARKET sell when stopLossOrder is "market"', async () => {
-      const strategy = new TestGuardedStrategy({guarded: {stopLossPct: '5', stopLossOrder: 'market'}});
+      const strategy = new TestProtectedStrategy({protected: {stopLossPct: '5', stopLossOrder: 'market'}});
       await strategy.onFill(makeFill('100', '10', ExchangeOrderSide.BUY), mockState);
 
       const advice = await strategy.onCandle(makeCandle(95), mockState);
@@ -725,26 +725,26 @@ describe('GuardedStrategy', () => {
       expect(advice.reason).toContain('[KILL SWITCH]');
       expect(advice.reason).toContain('Stop-loss');
       expect(advice.reason).toContain('(market)');
-      expect(strategy.guardedState.killedOrderType).toBe('market');
+      expect(strategy.protectedState.killedOrderType).toBe('market');
       // No limit price stored for market orders
-      expect(strategy.guardedState.killedLimitPrice).toBeNull();
+      expect(strategy.protectedState.killedLimitPrice).toBeNull();
     });
 
     it('fires a MARKET sell when takeProfitOrder is "market"', async () => {
-      const strategy = new TestGuardedStrategy({guarded: {takeProfitPct: '10', takeProfitOrder: 'market'}});
+      const strategy = new TestProtectedStrategy({protected: {takeProfitPct: '10', takeProfitOrder: 'market'}});
       await strategy.onFill(makeFill('100', '10', ExchangeOrderSide.BUY), mockState);
 
       const advice = await strategy.onCandle(makeCandle(110), mockState);
       assertMarketSell(advice);
       expect(advice.reason).toContain('Take-profit');
       expect(advice.reason).toContain('(market)');
-      expect(strategy.guardedState.killedOrderType).toBe('market');
-      expect(strategy.guardedState.killedLimitPrice).toBeNull();
+      expect(strategy.protectedState.killedOrderType).toBe('market');
+      expect(strategy.protectedState.killedLimitPrice).toBeNull();
     });
 
     it('can mix a market stop-loss with a limit take-profit', async () => {
-      const strategy = new TestGuardedStrategy({
-        guarded: {
+      const strategy = new TestProtectedStrategy({
+        protected: {
           stopLossPct: '5',
           stopLossOrder: 'market',
           takeProfitPct: '10',
@@ -758,8 +758,8 @@ describe('GuardedStrategy', () => {
     });
 
     it('can mix a limit stop-loss with a market take-profit', async () => {
-      const strategy = new TestGuardedStrategy({
-        guarded: {
+      const strategy = new TestProtectedStrategy({
+        protected: {
           stopLossPct: '5',
           takeProfitPct: '10',
           takeProfitOrder: 'market',
@@ -772,7 +772,7 @@ describe('GuardedStrategy', () => {
     });
 
     it('retries market advice on subsequent candles while the position is not exited', async () => {
-      const strategy = new TestGuardedStrategy({guarded: {stopLossPct: '5', stopLossOrder: 'market'}, signalAdvice: true});
+      const strategy = new TestProtectedStrategy({protected: {stopLossPct: '5', stopLossOrder: 'market'}, signalAdvice: true});
       await strategy.onFill(makeFill('100', '10', ExchangeOrderSide.BUY), mockState);
 
       // Fire
@@ -786,16 +786,16 @@ describe('GuardedStrategy', () => {
     });
 
     it('persists killedOrderType across restoreState', async () => {
-      const strategy = new TestGuardedStrategy({guarded: {stopLossPct: '5', stopLossOrder: 'market'}});
+      const strategy = new TestProtectedStrategy({protected: {stopLossPct: '5', stopLossOrder: 'market'}});
       await strategy.onFill(makeFill('100', '10', ExchangeOrderSide.BUY), mockState);
       await strategy.onCandle(makeCandle(95), mockState); // fire
 
       const snapshot = strategy.state;
 
-      const restored = new TestGuardedStrategy({guarded: {stopLossPct: '5', stopLossOrder: 'market'}});
+      const restored = new TestProtectedStrategy({protected: {stopLossPct: '5', stopLossOrder: 'market'}});
       restored.restoreState(snapshot!);
-      expect(restored.guardedState.killedOrderType).toBe('market');
-      expect(restored.guardedState.killedLimitPrice).toBeNull();
+      expect(restored.protectedState.killedOrderType).toBe('market');
+      expect(restored.protectedState.killedLimitPrice).toBeNull();
 
       // Retry on restored instance should still be MARKET, not LIMIT
       const advice = await restored.onCandle(makeCandle(50), mockState);

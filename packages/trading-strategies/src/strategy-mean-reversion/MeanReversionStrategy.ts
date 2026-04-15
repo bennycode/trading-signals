@@ -2,15 +2,15 @@ import {z} from 'zod';
 import {CandleBatcher, ExchangeOrderSide, ExchangeOrderType} from '@typedtrader/exchange';
 import type {ExchangeCandle, OneMinuteBatchedCandle, OrderAdvice, TradingSessionState} from '@typedtrader/exchange';
 import {BollingerBands} from 'trading-signals';
-import {Strategy} from '../strategy/Strategy.js';
+import {ProtectedStrategy, ProtectedStrategySchema} from '../strategy-protected/ProtectedStrategy.js';
 
 const ONE_HOUR_IN_MS = 3_600_000;
 const PERIOD = 20;
 const DEVIATION_MULTIPLIER = 2.5;
 
-export const MeanReversionSchema = z.object({});
+export const MeanReversionSchema = ProtectedStrategySchema.extend({});
 
-export type MeanReversionConfig = z.infer<typeof MeanReversionSchema>;
+export type MeanReversionConfig = z.input<typeof MeanReversionSchema>;
 
 type Phase = 'watching' | 'waitingForRebuy';
 
@@ -20,7 +20,7 @@ type MeanReversionState = {
 
 export type CandleFetcher = () => Promise<ExchangeCandle[]>;
 
-export class MeanReversionStrategy extends Strategy {
+export class MeanReversionStrategy extends ProtectedStrategy {
   static override NAME = '@typedtrader/strategy-mean-reversion';
 
   readonly #bbands = new BollingerBands(PERIOD, DEVIATION_MULTIPLIER);
@@ -28,9 +28,9 @@ export class MeanReversionStrategy extends Strategy {
   readonly #fetchCandles?: CandleFetcher;
   #warmedUp = false;
 
-  constructor(options?: {fetchCandles?: CandleFetcher}) {
+  constructor(options?: {fetchCandles?: CandleFetcher; config?: MeanReversionConfig}) {
     super({
-      config: {},
+      config: options?.config ?? {},
       state: {phase: 'watching'},
     });
     this.#fetchCandles = options?.fetchCandles;
@@ -55,7 +55,12 @@ export class MeanReversionStrategy extends Strategy {
     }
   }
 
-  protected override async processCandle(candle: OneMinuteBatchedCandle, _state: TradingSessionState): Promise<OrderAdvice | void> {
+  protected override async processCandle(candle: OneMinuteBatchedCandle, state: TradingSessionState): Promise<OrderAdvice | void> {
+    const guardAdvice = await super.processCandle(candle, state);
+    if (guardAdvice) {
+      return guardAdvice;
+    }
+
     if (!this.#warmedUp) {
       await this.#warmUp();
     }

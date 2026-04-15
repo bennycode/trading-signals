@@ -18,7 +18,7 @@ interface StrategyEntry {
 
 const registry: Record<string, StrategyEntry> = {
   [BuyAndHoldStrategy.NAME]: {
-    create: () => new BuyAndHoldStrategy(),
+    create: (config: unknown) => new BuyAndHoldStrategy(BuyAndHoldSchema.parse(config ?? {})),
     schema: BuyAndHoldSchema,
   },
   [BuyOnceStrategy.NAME]: {
@@ -30,7 +30,7 @@ const registry: Record<string, StrategyEntry> = {
     schema: BuyBelowSellAboveSchema,
   },
   [CoinFlipStrategy.NAME]: {
-    create: () => new CoinFlipStrategy(),
+    create: (config: unknown) => new CoinFlipStrategy(CoinFlipSchema.parse(config ?? {})),
     schema: CoinFlipSchema,
   },
   [MultiIndicatorConfluenceStrategy.NAME]: {
@@ -43,7 +43,7 @@ const registry: Record<string, StrategyEntry> = {
     schema: ScalpSchema,
   },
   [MeanReversionStrategy.NAME]: {
-    create: () => new MeanReversionStrategy(),
+    create: (config: unknown) => new MeanReversionStrategy({config: MeanReversionSchema.parse(config ?? {})}),
     schema: MeanReversionSchema,
   },
 };

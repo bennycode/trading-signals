@@ -3,16 +3,20 @@ export * from './strategy/index.js';
 export {BuyAndHoldStrategy, BuyAndHoldSchema} from './strategy-buy-and-hold/BuyAndHoldStrategy.js';
 export {BuyOnceStrategy, BuyOnceSchema, type BuyOnceConfig} from './strategy-buy-once/BuyOnceStrategy.js';
 export {BuyBelowSellAboveStrategy, BuyBelowSellAboveSchema, type BuyBelowSellAboveConfig} from './strategy-buy-below-sell-above/BuyBelowSellAboveStrategy.js';
-export {CoinFlipStrategy, CoinFlipSchema} from './strategy-coin-flip/CoinFlipStrategy.js';
+export {CoinFlipStrategy, CoinFlipSchema, type CoinFlipConfig} from './strategy-coin-flip/CoinFlipStrategy.js';
 export {MultiIndicatorConfluenceStrategy, MultiIndicatorConfluenceSchema, type MultiIndicatorConfluenceConfig} from './strategy-multi-indicator-confluence/MultiIndicatorConfluenceStrategy.js';
 export {ScalpStrategy, ScalpSchema, type ScalpConfig} from './strategy-scalp/ScalpStrategy.js';
-export {MeanReversionStrategy, MeanReversionSchema} from './strategy-mean-reversion/MeanReversionStrategy.js';
 export {
-  GuardedStrategy,
-  GuardedStrategySchema,
-  type GuardedStrategyConfig,
-  type GuardedStrategyState,
-} from './strategy-guarded/GuardedStrategy.js';
+  MeanReversionStrategy,
+  MeanReversionSchema,
+  type MeanReversionConfig,
+} from './strategy-mean-reversion/MeanReversionStrategy.js';
+export {
+  ProtectedStrategy,
+  ProtectedStrategySchema,
+  type ProtectedStrategyConfig,
+  type ProtectedStrategyState,
+} from './strategy-protected/ProtectedStrategy.js';
 export {suggestScalpOffset} from './strategy-scalp/suggestScalpOffset.js';
 export * from './report/index.js';
 export {

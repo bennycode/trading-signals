@@ -20,6 +20,7 @@ import {
 import {DatasetSelector} from '../components/DatasetSelector';
 import {StrategyConfigurator} from '../components/StrategyConfigurator';
 import {BacktestResults} from '../components/BacktestResults';
+import {ProtectionModal} from '../components/ProtectionModal';
 import {datasets} from '../utils/datasets';
 import type {CandleDataset} from '../utils/types';
 import {strategyDefinitions, type StrategyId} from '../utils/strategySchemas';
@@ -27,9 +28,9 @@ import {strategyDefinitions, type StrategyId} from '../utils/strategySchemas';
 function createStrategy(strategyId: StrategyId, config: Record<string, unknown>) {
   switch (strategyId) {
     case 'buy-and-hold':
-      return new BuyAndHoldStrategy();
+      return new BuyAndHoldStrategy(config);
     case 'coin-flip':
-      return new CoinFlipStrategy();
+      return new CoinFlipStrategy(config);
     case 'buy-once':
       return new BuyOnceStrategy(config as BuyOnceConfig);
     case 'buy-below-sell-above':
@@ -39,7 +40,7 @@ function createStrategy(strategyId: StrategyId, config: Record<string, unknown>)
     case 'scalp':
       return new ScalpStrategy(config as ScalpConfig);
     case 'mean-reversion':
-      return new MeanReversionStrategy();
+      return new MeanReversionStrategy({config});
   }
 }
 
@@ -79,6 +80,7 @@ export default function BacktestPage() {
   const [customDataset, setCustomDataset] = useState<CandleDataset | null>(null);
   const [initialBase, setInitialBase] = useState('0');
   const [initialCounter, setInitialCounter] = useState('10000');
+  const [protectionModalOpen, setProtectionModalOpen] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -116,6 +118,37 @@ export default function BacktestPage() {
       setValidationError('Invalid JSON');
     }
   }, [configJson, selectedStrategy]);
+
+  const currentProtected: Record<string, unknown> | undefined = (() => {
+    try {
+      const parsed = JSON.parse(configJson);
+      if (parsed && typeof parsed === 'object' && parsed.protected && typeof parsed.protected === 'object') {
+        return parsed.protected;
+      }
+    } catch {
+      // invalid JSON — user is mid-edit, treat as no protection
+    }
+    return undefined;
+  })();
+
+  const handleProtectionSave = useCallback(
+    (nextProtected: Record<string, unknown> | undefined) => {
+      try {
+        const parsed = JSON.parse(configJson);
+        const base = parsed && typeof parsed === 'object' ? parsed : {};
+        const next = {...base};
+        if (nextProtected === undefined) {
+          delete next.protected;
+        } else {
+          next.protected = nextProtected;
+        }
+        setConfigJson(JSON.stringify(next, null, 2));
+      } catch {
+        showToast('Cannot update protection: config JSON is invalid');
+      }
+    },
+    [configJson, showToast]
+  );
 
   const copyConfig = useCallback(async () => {
     try {
@@ -235,6 +268,14 @@ export default function BacktestPage() {
           candles={candles}
         />
         <button
+          onClick={() => setProtectionModalOpen(true)}
+          className="w-full py-2.5 px-4 rounded-lg text-sm font-medium transition-colors bg-slate-700 hover:bg-slate-600 text-white cursor-pointer flex items-center justify-center gap-2">
+          <span>{currentProtected ? 'Edit Protection' : 'Add Protection'}</span>
+          {currentProtected && (
+            <span className="text-xs bg-purple-600/30 text-purple-200 px-2 py-0.5 rounded-full">active</span>
+          )}
+        </button>
+        <button
           onClick={copyConfig}
           disabled={!!validationError}
           className={`w-full py-2.5 px-4 rounded-lg text-sm font-medium transition-colors ${
@@ -260,6 +301,13 @@ export default function BacktestPage() {
           </div>
         )}
       </div>
+
+      <ProtectionModal
+        open={protectionModalOpen}
+        initialProtected={currentProtected}
+        onSave={handleProtectionSave}
+        onClose={() => setProtectionModalOpen(false)}
+      />
 
       {/* Toast notification */}
       {toast && (

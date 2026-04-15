@@ -1,14 +1,25 @@
 import {z} from 'zod';
 import {ExchangeOrderSide, ExchangeOrderType} from '@typedtrader/exchange';
 import type {OneMinuteBatchedCandle, OrderAdvice, TradingSessionState} from '@typedtrader/exchange';
-import {Strategy} from '../strategy/Strategy.js';
+import {ProtectedStrategy, ProtectedStrategySchema} from '../strategy-protected/ProtectedStrategy.js';
 
-export const CoinFlipSchema = z.object({});
+export const CoinFlipSchema = ProtectedStrategySchema.extend({});
 
-export class CoinFlipStrategy extends Strategy {
+export type CoinFlipConfig = z.input<typeof CoinFlipSchema>;
+
+export class CoinFlipStrategy extends ProtectedStrategy {
   static override NAME = '@typedtrader/strategy-coin-flip';
 
-  protected override async processCandle(_candle: OneMinuteBatchedCandle, _state: TradingSessionState): Promise<OrderAdvice | void> {
+  constructor(config: CoinFlipConfig = {}) {
+    super({config});
+  }
+
+  protected override async processCandle(candle: OneMinuteBatchedCandle, state: TradingSessionState): Promise<OrderAdvice | void> {
+    const guardAdvice = await super.processCandle(candle, state);
+    if (guardAdvice) {
+      return guardAdvice;
+    }
+
     const buyMarket: OrderAdvice = {
       side: ExchangeOrderSide.BUY,
       type: ExchangeOrderType.MARKET,

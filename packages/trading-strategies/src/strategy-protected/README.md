@@ -1,8 +1,8 @@
-# GuardedStrategy
+# ProtectedStrategy
 
-An abstract base class that adds composable **kill-switch** behaviour (stop-loss and take-profit) to any trading strategy. New strategies opt in by extending `GuardedStrategy` instead of `Strategy` and calling `super.processCandle()` at the top of their own `processCandle` — if a guard fires, the subclass returns immediately; otherwise it runs its own logic.
+An abstract base class that adds composable **kill-switch** behaviour (stop-loss and take-profit) to any trading strategy. New strategies opt in by extending `ProtectedStrategy` instead of `Strategy` and calling `super.processCandle()` at the top of their own `processCandle` — if a guard fires, the subclass returns immediately; otherwise it runs its own logic.
 
-`GuardedStrategy` does not decide what to trade. It only enforces exit conditions on positions built by a subclass.
+`ProtectedStrategy` does not decide what to trade. It only enforces exit conditions on positions built by a subclass.
 
 ## How it works
 
@@ -13,15 +13,15 @@ An abstract base class that adds composable **kill-switch** behaviour (stop-loss
 | **retrying** | Still tripped, position not yet fully exited. Keeps re-emitting the same advice on every candle until `onFill` clears it. |
 | **closed** | Position fully exited via `onFill`. `onCandle` returns `void` for the rest of the session. Truly terminal. |
 
-The kill switch is one-way: once tripped, the subclass never runs again. `GuardedStrategy` does not re-arm.
+The kill switch is one-way: once tripped, the subclass never runs again. `ProtectedStrategy` does not re-arm.
 
 ## Configuration
 
-All kill-switch settings live under a single nested `guarded` key on the strategy config so they can't collide with subclass-specific fields:
+All kill-switch settings live under a single nested `protected` key on the strategy config so they can't collide with subclass-specific fields:
 
 ```json
 {
-  "guarded": {
+  "protected": {
     "stopLossPct": "5",
     "stopLossOrder": "market",
     "takeProfitNominal": "10"
@@ -30,7 +30,7 @@ All kill-switch settings live under a single nested `guarded` key on the strateg
 }
 ```
 
-Stop-loss and take-profit are independent — you can configure both, either, or neither. Within each direction the three **trigger** variants are mutually exclusive (setting more than one throws at construction); the **order type** selects how the kill switch executes the exit. Omitting the `guarded` key entirely disables both guards.
+Stop-loss and take-profit are independent — you can configure both, either, or neither. Within each direction the three **trigger** variants are mutually exclusive (setting more than one throws at construction); the **order type** selects how the kill switch executes the exit. Omitting the `protected` key entirely disables both guards.
 
 ### Stop-loss trigger (pick at most one)
 
@@ -58,23 +58,23 @@ Stop-loss and take-profit are independent — you can configure both, either, or
 - **`"limit"`** (default) places a `LIMIT SELL` at the nominal target price. Guaranteed exit price, but may not fill if the market gaps past the target (especially for stop-loss). See the trade-off section below.
 - **`"market"`** places a `MARKET SELL` on the candle where the trigger fires. Guaranteed fill (near-immediate on live exchanges), but the exit price depends on wherever the market is at that moment — potentially worse than the target.
 
-Cross-direction mixing is allowed for both the trigger and the order type, e.g. `{ guarded: { stopLossPct: "5", stopLossOrder: "market", takeProfitNominal: "10" } }` uses a market stop-loss with a limit take-profit.
+Cross-direction mixing is allowed for both the trigger and the order type, e.g. `{ protected: { stopLossPct: "5", stopLossOrder: "market", takeProfitNominal: "10" } }` uses a market stop-loss with a limit take-profit.
 
 ## Usage
 
-Extend the base class and merge `GuardedStrategySchema` with your own config schema:
+Extend the base class and merge `ProtectedStrategySchema` with your own config schema:
 
 ```typescript
 import {z} from 'zod';
-import {GuardedStrategy, GuardedStrategySchema} from '@typedtrader/trading-strategies';
+import {ProtectedStrategy, ProtectedStrategySchema} from '@typedtrader/trading-strategies';
 
-const MyStrategySchema = GuardedStrategySchema.extend({
+const MyStrategySchema = ProtectedStrategySchema.extend({
   mySetting: z.string(),
 });
 
 type MyStrategyConfig = z.infer<typeof MyStrategySchema>;
 
-export class MyStrategy extends GuardedStrategy {
+export class MyStrategy extends ProtectedStrategy {
   static override NAME = '@typedtrader/strategy-my-strategy';
 
   constructor(config: MyStrategyConfig) {
@@ -140,9 +140,9 @@ When `stopLossOrder` / `takeProfitOrder` is `"limit"` (the default), the target 
 
 ## State persistence
 
-Kill-switch state is stored under a reserved `guarded` key inside the strategy's proxied state, alongside any subclass-specific fields — matching the `guarded` namespace used for config. Updates go through a private helper that reassigns `state.guarded` as a new object on every change, triggering the base `Strategy` Proxy's `set` trap, which fires `onSave`, which `StrategyMonitor` persists to the database.
+Kill-switch state is stored under a reserved `protected` key inside the strategy's proxied state, alongside any subclass-specific fields — matching the `protected` namespace used for config. Updates go through a private helper that reassigns `state.protected` as a new object on every change, triggering the base `Strategy` Proxy's `set` trap, which fires `onSave`, which `StrategyMonitor` persists to the database.
 
-Persisted guarded state:
+Persisted protected state:
 
 ```typescript
 {
@@ -155,4 +155,4 @@ Persisted guarded state:
 }
 ```
 
-`restoreState` is override-safe — if legacy state is restored without a `guarded` key, the kill-switch state is reset to defaults rather than crashing.
+`restoreState` is override-safe — if legacy state is restored without a `protected` key, the kill-switch state is reset to defaults rather than crashing.

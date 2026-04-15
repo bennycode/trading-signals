@@ -2,15 +2,15 @@ import {z} from 'zod';
 import {ExchangeOrderSide, ExchangeOrderType} from '@typedtrader/exchange';
 import type {OneMinuteBatchedCandle, OrderAdvice, TradingSessionState} from '@typedtrader/exchange';
 import Big from 'big.js';
-import {Strategy} from '../strategy/Strategy.js';
+import {ProtectedStrategy, ProtectedStrategySchema} from '../strategy-protected/ProtectedStrategy.js';
 import {positiveNumberString} from '../util/validators.js';
 
-export const BuyOnceSchema = z.object({
+export const BuyOnceSchema = ProtectedStrategySchema.extend({
   /** The price at which to place the buy order. */
   buyAt: positiveNumberString,
 });
 
-export type BuyOnceConfig = z.infer<typeof BuyOnceSchema>;
+export type BuyOnceConfig = z.input<typeof BuyOnceSchema>;
 
 type BuyOnceState = {
   bought: boolean;
@@ -20,7 +20,7 @@ type BuyOnceState = {
  * Signals a single limit buy when the candle's close price drops to or below the predefined price.
  * After the buy is triggered, the strategy stays silent for all remaining candles.
  */
-export class BuyOnceStrategy extends Strategy {
+export class BuyOnceStrategy extends ProtectedStrategy {
   static override NAME = '@typedtrader/strategy-buy-once';
 
   constructor(config: BuyOnceConfig) {
@@ -35,7 +35,12 @@ export class BuyOnceStrategy extends Strategy {
     return this.getProxiedState<BuyOnceState>();
   }
 
-  protected override async processCandle(candle: OneMinuteBatchedCandle, _state: TradingSessionState): Promise<OrderAdvice | void> {
+  protected override async processCandle(candle: OneMinuteBatchedCandle, state: TradingSessionState): Promise<OrderAdvice | void> {
+    const guardAdvice = await super.processCandle(candle, state);
+    if (guardAdvice) {
+      return guardAdvice;
+    }
+
     if (this.#state.bought) {
       return undefined;
     }
