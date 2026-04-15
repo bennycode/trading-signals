@@ -10,12 +10,6 @@ export interface ReportAddResult {
   report?: ReportAttributes;
 }
 
-// Format: "<reportName> [<accountId>] [--every <interval>]"
-// Without --every: runs the report immediately and returns the output
-// With --every: saves to DB and schedules recurring execution
-// Example: "/reportadd @typedtrader/report-sp500-momentum"
-// Example: "/reportadd @typedtrader/report-scalp-scanner 3"
-// Example: "/reportadd @typedtrader/report-scalp-scanner 3 --every 1d"
 export const reportAdd = async (request: string, userId: string): Promise<ReportAddResult> => {
   const everyFlagIndex = request.indexOf(' --every ');
   let mainPart: string;
