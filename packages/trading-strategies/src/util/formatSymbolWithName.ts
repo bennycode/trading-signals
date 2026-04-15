@@ -17,7 +17,9 @@ export const TELEGRAM_TABLE_NAME_MAX = 12;
 /**
  * Format a ticker symbol as `Name (SYMBOL)` using the given asset name map.
  * Falls back to the bare symbol if no name is known. Long names are truncated
- * with an ellipsis so tables remain readable.
+ * with an ellipsis so tables remain readable. The name portion is right-padded
+ * to `maxNameLength` so the opening `(` of the symbol column lines up across
+ * rows regardless of whether a name was truncated.
  */
 export function formatSymbolWithName(
   symbol: string,
@@ -29,7 +31,7 @@ export function formatSymbolWithName(
     return symbol;
   }
   const truncated = name.length > maxNameLength ? name.slice(0, maxNameLength - 1) + '…' : name;
-  return `${truncated} (${symbol})`;
+  return `${truncated.padEnd(maxNameLength)} (${symbol})`;
 }
 
 /**

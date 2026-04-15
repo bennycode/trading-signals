@@ -326,12 +326,16 @@ describe('TelegramPlatform', () => {
       });
     });
 
-    it('throws when TELEGRAM_OWNER_IDS is not set (fail-closed)', async () => {
+    it('starts in open mode with an empty owner list and warns about it', async () => {
+      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
       const platform = new TelegramPlatform('bot-token');
 
-      await expect(platform.start()).rejects.toThrow(/TELEGRAM_OWNER_IDS is not set/);
-      expect(mockInit).not.toHaveBeenCalled();
-      expect(mockStart).not.toHaveBeenCalled();
+      await platform.start();
+
+      expect(mockInit).toHaveBeenCalled();
+      expect(mockStart).toHaveBeenCalledWith({drop_pending_updates: true});
+      expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('TELEGRAM_OWNER_IDS is empty'));
+      warnSpy.mockRestore();
     });
   });
 
@@ -389,7 +393,7 @@ describe('TelegramPlatform', () => {
       expect(handler).toHaveBeenCalledOnce();
     });
 
-    it('rejects every sender when ownerIds is not set (fail-closed)', async () => {
+    it('accepts every sender when ownerIds is not set (open mode)', async () => {
       const platform = new TelegramPlatform('bot-token');
 
       const handler = vi.fn().mockResolvedValue(undefined);
@@ -406,8 +410,7 @@ describe('TelegramPlatform', () => {
 
       await registeredCallback(ctxAnySender);
 
-      expect(handler).not.toHaveBeenCalled();
-      expect(ctxAnySender.reply).not.toHaveBeenCalled();
+      expect(handler).toHaveBeenCalledOnce();
     });
 
     it('silently drops updates with no sender', async () => {

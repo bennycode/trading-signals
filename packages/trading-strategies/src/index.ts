@@ -20,6 +20,11 @@ export {
 export {suggestScalpOffset} from './strategy-scalp/suggestScalpOffset.js';
 export * from './report/index.js';
 export {
+  SP500HeatmapReport,
+  SP500HeatmapSchema,
+  type SP500HeatmapConfig,
+} from './report-sp500-heatmap/SP500HeatmapReport.js';
+export {
   SP500MomentumReport,
   SP500MomentumSchema,
   type SP500MomentumConfig,
