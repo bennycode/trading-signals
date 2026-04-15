@@ -1,8 +1,17 @@
 import {Bot} from 'grammy';
 import type {Context} from 'grammy';
+import {
+  type Conversation,
+  type ConversationFlavor,
+  conversations,
+  createConversation,
+} from '@grammyjs/conversations';
+import {z} from 'zod';
+import {ExchangeOrderSide, TradingPair, getExchangeClient} from '@typedtrader/exchange';
 import {getAvailableReportNames, reportRequiresAccount} from 'trading-strategies';
 import type {CommandHandler, MessageContext, MessagingPlatform, PlatformInfo} from './MessagingPlatform.js';
 import {markdownToTelegramHtml, splitForTelegram} from './telegramMarkdown.js';
+import {placeOrder} from '../command/placeOrder.js';
 import {reportAdd} from '../command/report/reportAdd.js';
 import {Account} from '../database/models/Account.js';
 import type {ReportScheduler} from '../service/ReportScheduler.js';
@@ -12,6 +21,246 @@ const REPORT_CALLBACK_PREFIX = 'report:';
 const ACCOUNT_CALLBACK_PREFIX = 'reportaccount:';
 const MODE_CALLBACK_PREFIX = 'reportmode:';
 const INTERVAL_CALLBACK_PREFIX = 'reportinterval:';
+
+const TRADE_CONVERSATION_ID = 'trade';
+// Telegram requires command names to be lowercase [a-z0-9_] — uppercase
+// letters are silently ignored during command matching. Keep these names
+// in sync with the entries registered in startServer.ts.
+const TRADE_COMMAND_NAMES = ['buymarket', 'sellmarket', 'buylimit', 'selllimit'] as const;
+type TradeCommandName = (typeof TRADE_COMMAND_NAMES)[number];
+
+interface TradeCommandShape {
+  side: ExchangeOrderSide;
+  isLimit: boolean;
+}
+
+function tradeCommandShape(name: TradeCommandName): TradeCommandShape {
+  switch (name) {
+    case 'buymarket':
+      return {side: ExchangeOrderSide.BUY, isLimit: false};
+    case 'sellmarket':
+      return {side: ExchangeOrderSide.SELL, isLimit: false};
+    case 'buylimit':
+      return {side: ExchangeOrderSide.BUY, isLimit: true};
+    case 'selllimit':
+      return {side: ExchangeOrderSide.SELL, isLimit: true};
+  }
+}
+
+function buildTradeActionLabel(
+  cmd: TradeCommandName,
+  pair: TradingPair,
+  quantity: string,
+  limitPrice: string | null
+): string {
+  const {side, isLimit} = tradeCommandShape(cmd);
+  const sideLabel = side === ExchangeOrderSide.BUY ? 'BUY' : 'SELL';
+  const kindLabel = isLimit ? 'LIMIT' : 'MARKET';
+  if (isLimit && limitPrice !== null) {
+    return `${kindLabel} ${sideLabel} ${quantity} ${pair.base} @ ${limitPrice} ${pair.counter}`;
+  }
+  return `${kindLabel} ${sideLabel} ${quantity} ${pair.base}`;
+}
+
+type TradeContext = ConversationFlavor<Context>;
+type TradeConversation = Conversation<TradeContext, TradeContext>;
+
+const positiveNumber = z.coerce.number().positive().finite();
+
+interface TradeArgs {
+  cmd: TradeCommandName;
+  pairStr: string;
+  quantity: string;
+  /** Undefined for market orders, positive-number string for limit orders. */
+  limitPrice?: string;
+}
+
+/**
+ * Parses the raw text following a /buymarket / /sellmarket / /buylimit / /selllimit
+ * command into validated args. Returns `null` and replies with the usage error if
+ * anything is off — the caller can just return early.
+ */
+async function parseTradeCommandInput(
+  ctx: Context,
+  cmd: TradeCommandName
+): Promise<TradeArgs | null> {
+  const {isLimit} = tradeCommandShape(cmd);
+
+  const text = ctx.message?.text ?? '';
+  const firstSpace = text.indexOf(' ');
+  const content = firstSpace === -1 ? '' : text.slice(firstSpace + 1).trim();
+  const parts = content.length > 0 ? content.split(/\s+/) : [];
+  const expected = isLimit ? 3 : 2;
+
+  if (parts.length !== expected) {
+    const usage = isLimit
+      ? `Usage: /${cmd} <PAIR> <QTY> <PRICE>\nExample: /${cmd} AAPL,USD 100 150`
+      : `Usage: /${cmd} <PAIR> <QTY>\nExample: /${cmd} AAPL,USD 100`;
+    await ctx.reply(`Invalid format.\n${usage}`);
+    return null;
+  }
+
+  const [pairStr, quantity, priceInput] = parts;
+
+  try {
+    TradingPair.fromString(pairStr, ',');
+  } catch {
+    await ctx.reply(`Invalid pair "${pairStr}". Use format: BASE,COUNTER (e.g. AAPL,USD)`);
+    return null;
+  }
+
+  const quantityCheck = positiveNumber.safeParse(quantity);
+  if (!quantityCheck.success) {
+    await ctx.reply(`Invalid quantity "${quantity}". Must be a positive number.`);
+    return null;
+  }
+
+  if (isLimit) {
+    const priceCheck = positiveNumber.safeParse(priceInput);
+    if (!priceCheck.success) {
+      await ctx.reply(`Invalid price "${priceInput}". Must be a positive number.`);
+      return null;
+    }
+  }
+
+  return {
+    cmd,
+    pairStr,
+    quantity: String(quantityCheck.data),
+    limitPrice: isLimit ? String(positiveNumber.parse(priceInput)) : undefined,
+  };
+}
+
+/**
+ * The full trade wizard, expressed as a linear async function. Each `await`
+ * detaches and resumes when the user clicks the next button — the plugin
+ * handles state and routing for us. No `callback_data` encoding, no manual
+ * dispatcher, no step-state machine.
+ */
+async function tradeWizard(
+  conversation: TradeConversation,
+  ctx: TradeContext,
+  args: TradeArgs
+): Promise<void> {
+  const senderId = ctx.from?.id?.toString();
+  if (!senderId) {
+    await ctx.reply('Unable to determine sender');
+    return;
+  }
+  const userId = `${PLATFORM_PREFIX}${senderId}`;
+
+  // Account lookup touches the database — wrap it in `external` so the
+  // conversations engine records the value in the replay log instead of
+  // re-executing the query on every resume. Only return the fields needed
+  // for the picker so sensitive credentials are not persisted in replay state.
+  const accounts = await conversation.external(() =>
+    Account.findByUserId(userId).map(acc => ({
+      id: acc.id,
+      name: acc.name,
+      exchange: acc.exchange,
+      isPaper: acc.isPaper,
+    }))
+  );
+
+  if (accounts.length === 0) {
+    await ctx.reply('No exchange account found. Use /accountadd to add one first.');
+    return;
+  }
+
+  const pair = TradingPair.fromString(args.pairStr, ',');
+  const actionLabel = buildTradeActionLabel(args.cmd, pair, args.quantity, args.limitPrice ?? null);
+
+  // Step 1: account picker
+  const accountButtons: InlineButton[][] = accounts.map(acc => [
+    {
+      text: `${acc.name} (${acc.exchange}${acc.isPaper ? ' paper' : ''})`,
+      callback_data: `trade:acc:${acc.id}`,
+    },
+  ]);
+  await ctx.reply(`${actionLabel}\nSelect an account:`, inlineKeyboard(accountButtons));
+
+  const accountSelection = await conversation.waitForCallbackQuery(
+    accounts.map(acc => `trade:acc:${acc.id}`)
+  );
+  // `match` is `string | RegExpMatchArray` in the type system, but since we
+  // only pass literal strings as triggers it's always a string at runtime.
+  const selectedData = typeof accountSelection.match === 'string' ? accountSelection.match : '';
+  const accountId = Number.parseInt(selectedData.split(':')[2] ?? '', 10);
+
+  // Step 2: fetch price context + show confirmation
+  const confirmation = await conversation.external(() =>
+    buildTradeConfirmation(userId, args, pair, accountId)
+  );
+  await accountSelection.answerCallbackQuery();
+  await accountSelection.editMessageText(confirmation.text, confirmation.keyboard);
+
+  // Step 3: wait for Yes / No
+  const decision = await conversation.waitForCallbackQuery(['trade:cnf:y', 'trade:cnf:n']);
+  if (decision.match === 'trade:cnf:n') {
+    await decision.answerCallbackQuery();
+    await decision.editMessageText('Cancelled.');
+    return;
+  }
+
+  // Step 4: execute
+  await decision.answerCallbackQuery();
+  await decision.editMessageText('Placing order…');
+  const result = await conversation.external(() =>
+    placeOrder({
+      userId,
+      accountId,
+      pair,
+      side: tradeCommandShape(args.cmd).side,
+      quantity: args.quantity,
+      limitPrice: args.limitPrice,
+    })
+  );
+  await decision.editMessageText(result);
+}
+
+async function buildTradeConfirmation(
+  userId: string,
+  args: TradeArgs,
+  pair: TradingPair,
+  accountId: number
+): Promise<{text: string; keyboard: ReturnType<typeof inlineKeyboard>}> {
+  const account = Account.findByUserIdAndId(userId, accountId);
+  if (!account) {
+    return {
+      text: `Account "${accountId}" not found. Run the command again.`,
+      keyboard: inlineKeyboard([]),
+    };
+  }
+
+  const actionLabel = buildTradeActionLabel(args.cmd, pair, args.quantity, args.limitPrice ?? null);
+
+  // Fetch current price as confirmation context. Failure is non-fatal —
+  // the user still sees the action and can confirm without the price hint.
+  let priceContext = '';
+  try {
+    const client = getExchangeClient({
+      exchangeId: account.exchange,
+      apiKey: account.apiKey,
+      apiSecret: account.apiSecret,
+      isPaper: account.isPaper,
+    });
+    const smallestInterval = client.getSmallestInterval();
+    const candle = await client.getLatestCandle(pair, smallestInterval);
+    priceContext = `\nCurrent ~${candle.close} ${pair.counter}`;
+  } catch {
+    // Ignore — price context is best-effort.
+  }
+
+  const text = `${actionLabel}\nAccount: ${account.name}${priceContext}\n\nProceed?`;
+  const keyboard = inlineKeyboard([
+    [
+      {text: '✓ Yes, place order', callback_data: 'trade:cnf:y'},
+      {text: '✗ Cancel', callback_data: 'trade:cnf:n'},
+    ],
+  ]);
+
+  return {text, keyboard};
+}
 
 interface InlineButton {
   text: string;
@@ -33,15 +282,30 @@ async function replyWithMarkdown(ctx: Context, text: string): Promise<void> {
 }
 
 export class TelegramPlatform implements MessagingPlatform {
-  #bot: Bot;
+  #bot: Bot<TradeContext>;
   #ownerIds: string[];
   #commands: Map<string, CommandHandler> = new Map();
   #platformInfo: PlatformInfo = {botAddress: '', sdkVersion: ''};
   #reportScheduler?: ReportScheduler;
 
   constructor(botToken: string, ownerIds?: string) {
-    this.#bot = new Bot(botToken);
+    this.#bot = new Bot<TradeContext>(botToken);
     this.#ownerIds = ownerIds ? ownerIds.split(',').map(id => id.trim()) : [];
+
+    // Install @grammyjs/conversations plugin BEFORE any command handlers are
+    // registered. The `conversations()` middleware must run for every update
+    // so it can resume active sessions on subsequent callback_query updates,
+    // and `createConversation(...)` has to be visible to the command handler
+    // that calls `ctx.conversation.enter(...)`.
+    this.#bot.use(conversations());
+    this.#bot.use(createConversation(tradeWizard, TRADE_CONVERSATION_ID));
+
+    // Trade commands are Telegram-specific: they need inline keyboards and
+    // the conversations plugin, so they register themselves directly here
+    // instead of going through the cross-platform `registerCommand` interface.
+    for (const name of TRADE_COMMAND_NAMES) {
+      this.#registerTradeCommand(name);
+    }
   }
 
   setReportScheduler(scheduler: ReportScheduler): void {
@@ -234,6 +498,31 @@ export class TelegramPlatform implements MessagingPlatform {
       if (result.report?.intervalMs && this.#reportScheduler) {
         this.#reportScheduler.scheduleReport(result.report);
       }
+    });
+  }
+
+  #registerTradeCommand(name: TradeCommandName): void {
+    // Record the command name so it appears in `/help`. The handler stored
+    // here is never invoked directly — the real wizard runs via the
+    // `bot.command(...)` handler installed below — but `commandList` reads
+    // from `#commands`.
+    this.#commands.set(name, async () => {});
+
+    this.#bot.command(name, async ctx => {
+      const senderId = ctx.from?.id?.toString();
+      if (!senderId) {
+        await ctx.reply('Unable to determine sender');
+        return;
+      }
+
+      if (this.#ownerIds.length > 0 && !this.#ownerIds.includes(senderId)) {
+        return;
+      }
+
+      const args = await parseTradeCommandInput(ctx, name);
+      if (!args) return; // parseTradeCommandInput already replied with the usage error
+
+      await ctx.conversation.enter(TRADE_CONVERSATION_ID, args);
     });
   }
 

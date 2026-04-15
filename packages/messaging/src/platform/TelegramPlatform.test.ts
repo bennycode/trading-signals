@@ -7,6 +7,7 @@ const mockStart = vi.fn().mockReturnValue(new Promise(() => {}));
 const mockStop = vi.fn();
 const mockCommand = vi.fn();
 const mockCallbackQuery = vi.fn();
+const mockUse = vi.fn();
 const botInfo = {username: 'testbot'};
 
 vi.mock('trading-strategies', () => ({
@@ -18,11 +19,17 @@ vi.mock('../command/report/reportAdd.js', () => ({
   reportAdd: vi.fn(),
 }));
 
+vi.mock('@grammyjs/conversations', () => ({
+  conversations: vi.fn(() => 'conversations-middleware'),
+  createConversation: vi.fn(() => 'create-conversation-middleware'),
+}));
+
 vi.mock('grammy', () => {
   function Bot() {
     return {
       command: mockCommand,
       callbackQuery: mockCallbackQuery,
+      use: mockUse,
       init: mockInit,
       start: mockStart,
       stop: mockStop,
@@ -53,7 +60,8 @@ describe('TelegramPlatform', () => {
       platform.registerCommand('help', handler);
       platform.registerCommand('price', handler);
 
-      expect(platform.commandList).toEqual(['/help', '/price']);
+      expect(platform.commandList).toContain('/help');
+      expect(platform.commandList).toContain('/price');
     });
 
     it('includes reportadd when registered', () => {
@@ -64,10 +72,14 @@ describe('TelegramPlatform', () => {
       expect(platform.commandList).toContain('/reportadd');
     });
 
-    it('returns empty array when no commands are registered', () => {
+    it('includes the self-registered trade commands even before registerCommand is called', () => {
       const platform = new TelegramPlatform('bot-token');
 
-      expect(platform.commandList).toEqual([]);
+      // Trade commands register themselves in the TelegramPlatform constructor
+      // because their wizards depend on grammy + the conversations plugin.
+      expect(platform.commandList).toEqual(
+        expect.arrayContaining(['/buymarket', '/sellmarket', '/buylimit', '/selllimit'])
+      );
     });
   });
 
@@ -157,6 +169,19 @@ describe('TelegramPlatform', () => {
   });
 
   describe('auth middleware', () => {
+    // `bot.command(name, handler)` is called both by the constructor (for
+    // self-registered trade commands) and by each `registerCommand` call, so
+    // `mockCommand.mock.calls[0]` is no longer the command under test.
+    // Look up the callback by matching the first argument instead.
+    const findRegisteredCallback = (commandName: string) => {
+      const call = mockCommand.mock.calls.find(([names]) => {
+        if (Array.isArray(names)) return names.includes(commandName);
+        return names === commandName;
+      });
+      if (!call) throw new Error(`bot.command was never called with "${commandName}"`);
+      return call[1];
+    };
+
     it('blocks unauthorized senders when ownerIds is set', async () => {
       const platform = new TelegramPlatform('bot-token', '111,222');
 
@@ -164,8 +189,7 @@ describe('TelegramPlatform', () => {
 
       platform.registerCommand('help', handler);
 
-      // Retrieve the grammY command callback registered during registerCommand
-      const registeredCallback = mockCommand.mock.calls[0][1];
+      const registeredCallback = findRegisteredCallback('help');
 
       const ctxUnauthorized = {
         from: {id: 999},
@@ -185,7 +209,7 @@ describe('TelegramPlatform', () => {
 
       platform.registerCommand('help', handler);
 
-      const registeredCallback = mockCommand.mock.calls[0][1];
+      const registeredCallback = findRegisteredCallback('help');
 
       const ctxAuthorized = {
         from: {id: 111},
@@ -205,7 +229,7 @@ describe('TelegramPlatform', () => {
 
       platform.registerCommand('help', handler);
 
-      const registeredCallback = mockCommand.mock.calls[0][1];
+      const registeredCallback = findRegisteredCallback('help');
 
       const ctxAnySender = {
         from: {id: 999},
@@ -225,7 +249,7 @@ describe('TelegramPlatform', () => {
 
       platform.registerCommand('help', handler);
 
-      const registeredCallback = mockCommand.mock.calls[0][1];
+      const registeredCallback = findRegisteredCallback('help');
 
       const ctxNoFrom = {
         from: undefined,

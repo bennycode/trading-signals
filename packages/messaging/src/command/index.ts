@@ -4,6 +4,7 @@ export {accountRemove} from './account/accountRemove.js';
 export {accountTime} from './account/accountTime.js';
 export {candle} from './candle.js';
 export {health} from './health.js';
+export {placeOrder} from './placeOrder.js';
 export {price} from './price.js';
 export {time} from './time.js';
 export {uptime} from './uptime.js';
