@@ -1,5 +1,7 @@
 import {describe, it, expect, vi, beforeEach} from 'vitest';
-import {TelegramPlatform} from './TelegramPlatform.js';
+import type {Context} from 'grammy';
+import {TelegramPlatform, lowercaseCommandMiddleware} from './TelegramPlatform.js';
+import {reportAdd} from '../command/report/reportAdd.js';
 
 const mockSendMessage = vi.fn();
 const mockInit = vi.fn();
@@ -9,6 +11,7 @@ const mockCommand = vi.fn();
 const mockCallbackQuery = vi.fn();
 const mockUse = vi.fn();
 const botInfo = {username: 'testbot'};
+const mockedReportAdd = vi.mocked(reportAdd);
 
 vi.mock('trading-strategies', () => ({
   MESSAGE_BREAK: '\f',
@@ -17,6 +20,15 @@ vi.mock('trading-strategies', () => ({
 
 vi.mock('../command/report/reportAdd.js', () => ({
   reportAdd: vi.fn(),
+}));
+
+const mockFindByUserId = vi.fn().mockReturnValue([]);
+const mockFindByUserIdAndId = vi.fn().mockReturnValue(undefined);
+vi.mock('../database/models/Account.js', () => ({
+  Account: {
+    findByUserId: (...args: unknown[]) => mockFindByUserId(...args),
+    findByUserIdAndId: (...args: unknown[]) => mockFindByUserIdAndId(...args),
+  },
 }));
 
 vi.mock('@grammyjs/conversations', () => ({
@@ -64,12 +76,12 @@ describe('TelegramPlatform', () => {
       expect(platform.commandList).toContain('/price');
     });
 
-    it('includes reportadd when registered', () => {
+    it('includes reportAdd when registered', () => {
       const platform = new TelegramPlatform('bot-token');
 
-      platform.registerCommand('reportadd', vi.fn());
+      platform.registerCommand('reportAdd', vi.fn());
 
-      expect(platform.commandList).toContain('/reportadd');
+      expect(platform.commandList).toContain('/reportAdd');
     });
 
     it('includes the self-registered trade commands even before registerCommand is called', () => {
@@ -78,12 +90,18 @@ describe('TelegramPlatform', () => {
       // Trade commands register themselves in the TelegramPlatform constructor
       // because their wizards depend on grammy + the conversations plugin.
       expect(platform.commandList).toEqual(
-        expect.arrayContaining(['/buymarket', '/sellmarket', '/buylimit', '/selllimit'])
+        expect.arrayContaining(['/buyMarket', '/sellMarket', '/buyLimit', '/sellLimit'])
       );
     });
   });
 
   describe('registerCommand', () => {
+    const findRegisteredCallbackQuery = (pattern: string) => {
+      const call = mockCallbackQuery.mock.calls.find(([regex]) => regex instanceof RegExp && regex.source.includes(pattern));
+      if (!call) throw new Error(`bot.callbackQuery was never called with pattern "${pattern}"`);
+      return call[1];
+    };
+
     it('stores the command handler and registers it with the bot', () => {
       const platform = new TelegramPlatform('bot-token');
 
@@ -95,14 +113,155 @@ describe('TelegramPlatform', () => {
       expect(mockCommand).toHaveBeenCalledWith(['help'], expect.any(Function));
     });
 
-    it('registers reportadd with inline keyboard buttons instead of regular command', () => {
+    it('registers reportAdd with inline keyboard buttons instead of regular command', () => {
       const platform = new TelegramPlatform('bot-token');
 
-      platform.registerCommand('reportadd', vi.fn());
+      platform.registerCommand('reportAdd', vi.fn());
 
-      // reportadd uses bot.command and bot.callbackQuery, not the generic handler path
+      // reportAdd uses bot.command and bot.callbackQuery, not the generic handler path.
+      // grammY only accepts lowercase command names, so the registration uses 'reportadd'
+      // while the display name stays camelCase.
       expect(mockCommand).toHaveBeenCalledWith('reportadd', expect.any(Function));
       expect(mockCallbackQuery).toHaveBeenCalledWith(expect.any(RegExp), expect.any(Function));
+    });
+
+    it('handles malformed schedule interval callback payloads without throwing', async () => {
+      const platform = new TelegramPlatform('bot-token', '123');
+
+      const {getAvailableReportNames} = await import('trading-strategies');
+      vi.mocked(getAvailableReportNames).mockReturnValue(['rsi']);
+
+      platform.registerCommand('reportAdd', vi.fn());
+
+      const callback = findRegisteredCallbackQuery('reportinterval');
+      const ctx = {
+        answerCallbackQuery: vi.fn().mockResolvedValue(undefined),
+        editMessageText: vi.fn().mockResolvedValue(undefined),
+        from: {id: 123},
+        match: ['', 'not-an-interval', 'rsi'],
+      };
+
+      await callback(ctx as never);
+
+      expect(ctx.editMessageText).toHaveBeenCalledWith(
+        'Invalid interval "not-an-interval". Please select one of: 1m, 1h, 6h, 12h, 1d, 1w.'
+      );
+      expect(mockedReportAdd).not.toHaveBeenCalled();
+    });
+
+    describe('report wizard callback auth', () => {
+      const buildCtx = (senderId: number, match: string[]) => ({
+        answerCallbackQuery: vi.fn().mockResolvedValue(undefined),
+        editMessageText: vi.fn().mockResolvedValue(undefined),
+        from: {id: senderId},
+        match,
+      });
+
+      it('drops the report-pick callback when the sender is not an owner', async () => {
+        const platform = new TelegramPlatform('bot-token', '111');
+        platform.registerCommand('reportAdd', vi.fn());
+
+        const callback = findRegisteredCallbackQuery('report:');
+        const ctx = buildCtx(999, ['', 'rsi']);
+
+        await callback(ctx as never);
+
+        expect(ctx.editMessageText).not.toHaveBeenCalled();
+        expect(mockFindByUserId).not.toHaveBeenCalled();
+      });
+
+      it('drops the account-pick callback when the sender is not an owner', async () => {
+        const platform = new TelegramPlatform('bot-token', '111');
+        platform.registerCommand('reportAdd', vi.fn());
+
+        const callback = findRegisteredCallbackQuery('reportaccount:');
+        const ctx = buildCtx(999, ['', '42', 'rsi']);
+
+        await callback(ctx as never);
+
+        expect(ctx.editMessageText).not.toHaveBeenCalled();
+        expect(mockFindByUserIdAndId).not.toHaveBeenCalled();
+      });
+
+      it('drops the run-once callback when the sender is not an owner', async () => {
+        const platform = new TelegramPlatform('bot-token', '111');
+        platform.registerCommand('reportAdd', vi.fn());
+
+        const callback = findRegisteredCallbackQuery('reportmode:');
+        const ctx = buildCtx(999, ['', 'rsi']);
+
+        await callback(ctx as never);
+
+        expect(mockedReportAdd).not.toHaveBeenCalled();
+      });
+
+      it('rejects report names not in the whitelist', async () => {
+        const platform = new TelegramPlatform('bot-token', '111');
+        const {getAvailableReportNames} = await import('trading-strategies');
+        vi.mocked(getAvailableReportNames).mockReturnValue(['rsi']);
+
+        platform.registerCommand('reportAdd', vi.fn());
+
+        const callback = findRegisteredCallbackQuery('report:');
+        const ctx = buildCtx(111, ['', '../../etc/passwd']);
+
+        await callback(ctx as never);
+
+        expect(ctx.editMessageText).toHaveBeenCalledWith('Unknown report "../../etc/passwd".');
+        expect(mockFindByUserId).not.toHaveBeenCalled();
+      });
+
+      it('rejects account IDs that do not belong to the sender', async () => {
+        const platform = new TelegramPlatform('bot-token', '111');
+        const {getAvailableReportNames} = await import('trading-strategies');
+        vi.mocked(getAvailableReportNames).mockReturnValue(['rsi']);
+        // Sender 111 → no account 42 for them.
+        mockFindByUserIdAndId.mockReturnValue(undefined);
+
+        platform.registerCommand('reportAdd', vi.fn());
+
+        const callback = findRegisteredCallbackQuery('reportaccount:');
+        const ctx = buildCtx(111, ['', '42', 'rsi']);
+
+        await callback(ctx as never);
+
+        expect(mockFindByUserIdAndId).toHaveBeenCalledWith('telegram:111', 42);
+        expect(ctx.editMessageText).toHaveBeenCalledWith('Account not found.');
+      });
+
+      it('rejects run-once payloads that carry an unknown report name', async () => {
+        const platform = new TelegramPlatform('bot-token', '111');
+        const {getAvailableReportNames} = await import('trading-strategies');
+        vi.mocked(getAvailableReportNames).mockReturnValue(['rsi']);
+
+        platform.registerCommand('reportAdd', vi.fn());
+
+        const callback = findRegisteredCallbackQuery('reportmode:');
+        const ctx = buildCtx(111, ['', 'bogus-report']);
+
+        await callback(ctx as never);
+
+        expect(ctx.editMessageText).toHaveBeenCalledWith('Unknown report "bogus-report".');
+        expect(mockedReportAdd).not.toHaveBeenCalled();
+      });
+
+      it('rejects run-once payloads that carry an account not owned by the sender', async () => {
+        const platform = new TelegramPlatform('bot-token', '111');
+        const {getAvailableReportNames} = await import('trading-strategies');
+        vi.mocked(getAvailableReportNames).mockReturnValue(['rsi']);
+        mockFindByUserIdAndId.mockReturnValue(undefined);
+
+        platform.registerCommand('reportAdd', vi.fn());
+
+        const callback = findRegisteredCallbackQuery('reportmode:');
+        const ctx = buildCtx(111, ['', 'rsi 999']);
+
+        await callback(ctx as never);
+
+        expect(mockFindByUserIdAndId).toHaveBeenCalledWith('telegram:111', 999);
+        expect(ctx.editMessageText).toHaveBeenCalledWith('Account not found.');
+        expect(mockedReportAdd).not.toHaveBeenCalled();
+      });
     });
   });
 
@@ -146,7 +305,7 @@ describe('TelegramPlatform', () => {
 
   describe('start', () => {
     it('initializes the bot and populates platformInfo before starting polling', async () => {
-      const platform = new TelegramPlatform('bot-token');
+      const platform = new TelegramPlatform('bot-token', '111');
 
       const callOrder: string[] = [];
       mockInit.mockImplementation(async () => {
@@ -165,6 +324,14 @@ describe('TelegramPlatform', () => {
         botAddress: '@testbot',
         sdkVersion: 'grammY',
       });
+    });
+
+    it('throws when TELEGRAM_OWNER_IDS is not set (fail-closed)', async () => {
+      const platform = new TelegramPlatform('bot-token');
+
+      await expect(platform.start()).rejects.toThrow(/TELEGRAM_OWNER_IDS is not set/);
+      expect(mockInit).not.toHaveBeenCalled();
+      expect(mockStart).not.toHaveBeenCalled();
     });
   });
 
@@ -222,7 +389,7 @@ describe('TelegramPlatform', () => {
       expect(handler).toHaveBeenCalledOnce();
     });
 
-    it('allows all senders when ownerIds is not set', async () => {
+    it('rejects every sender when ownerIds is not set (fail-closed)', async () => {
       const platform = new TelegramPlatform('bot-token');
 
       const handler = vi.fn().mockResolvedValue(undefined);
@@ -239,11 +406,12 @@ describe('TelegramPlatform', () => {
 
       await registeredCallback(ctxAnySender);
 
-      expect(handler).toHaveBeenCalledOnce();
+      expect(handler).not.toHaveBeenCalled();
+      expect(ctxAnySender.reply).not.toHaveBeenCalled();
     });
 
-    it('replies when sender ID cannot be determined', async () => {
-      const platform = new TelegramPlatform('bot-token');
+    it('silently drops updates with no sender', async () => {
+      const platform = new TelegramPlatform('bot-token', '111');
 
       const handler = vi.fn();
 
@@ -259,8 +427,62 @@ describe('TelegramPlatform', () => {
 
       await registeredCallback(ctxNoFrom);
 
-      expect(ctxNoFrom.reply).toHaveBeenCalledWith('Unable to determine sender');
       expect(handler).not.toHaveBeenCalled();
+      expect(ctxNoFrom.reply).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('lowercaseCommandMiddleware', () => {
+    function buildCtx(text: string): Context {
+      return {
+        message: {
+          text,
+          entities: [{type: 'bot_command', offset: 0, length: text.split(' ')[0].length}],
+        },
+      } as unknown as Context;
+    }
+
+    it('lowercases a mixed-case command', async () => {
+      const ctx = buildCtx('/ReportAdd');
+      await lowercaseCommandMiddleware(ctx, async () => {});
+      expect(ctx.message?.text).toBe('/reportadd');
+    });
+
+    it('lowercases an all-caps command', async () => {
+      const ctx = buildCtx('/REPORTADD');
+      await lowercaseCommandMiddleware(ctx, async () => {});
+      expect(ctx.message?.text).toBe('/reportadd');
+    });
+
+    it('lowercases a chaotic casing', async () => {
+      const ctx = buildCtx('/repOrTADd');
+      await lowercaseCommandMiddleware(ctx, async () => {});
+      expect(ctx.message?.text).toBe('/reportadd');
+    });
+
+    it('preserves the @botname suffix verbatim', async () => {
+      const ctx = buildCtx('/ReportAdd@MyBot');
+      await lowercaseCommandMiddleware(ctx, async () => {});
+      expect(ctx.message?.text).toBe('/reportadd@MyBot');
+    });
+
+    it('preserves arguments after the command', async () => {
+      const ctx = buildCtx('/BuyMarket AAPL,USD 100');
+      await lowercaseCommandMiddleware(ctx, async () => {});
+      expect(ctx.message?.text).toBe('/buymarket AAPL,USD 100');
+    });
+
+    it('is a no-op when no bot_command entity is present', async () => {
+      const ctx = {message: {text: 'hello world', entities: []}} as unknown as Context;
+      await lowercaseCommandMiddleware(ctx, async () => {});
+      expect(ctx.message?.text).toBe('hello world');
+    });
+
+    it('calls next exactly once', async () => {
+      const ctx = buildCtx('/help');
+      const next = vi.fn().mockResolvedValue(undefined);
+      await lowercaseCommandMiddleware(ctx, next);
+      expect(next).toHaveBeenCalledOnce();
     });
   });
 });

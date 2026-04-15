@@ -117,6 +117,17 @@ export default function BacktestPage() {
     }
   }, [configJson, selectedStrategy]);
 
+  const copyConfig = useCallback(async () => {
+    try {
+      // Compact to a single line so it drops cleanly onto a /strategyAdd line in the messenger.
+      const compact = JSON.stringify(JSON.parse(configJson));
+      await navigator.clipboard.writeText(compact);
+      showToast('Strategy config copied to clipboard');
+    } catch {
+      showToast('Failed to copy config');
+    }
+  }, [configJson, showToast]);
+
   const runBacktest = useCallback(async () => {
     setRunning(true);
     setError(null);
@@ -223,6 +234,16 @@ export default function BacktestPage() {
           validationError={validationError}
           candles={candles}
         />
+        <button
+          onClick={copyConfig}
+          disabled={!!validationError}
+          className={`w-full py-2.5 px-4 rounded-lg text-sm font-medium transition-colors ${
+            validationError
+              ? 'bg-slate-700 text-slate-500 cursor-not-allowed'
+              : 'bg-slate-700 hover:bg-slate-600 text-white cursor-pointer'
+          }`}>
+          Copy Config
+        </button>
         <button
           onClick={runBacktest}
           disabled={!!validationError || running}

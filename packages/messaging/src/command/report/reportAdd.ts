@@ -3,41 +3,26 @@ import {createReport, getAvailableReportNames, reportRequiresAccount, resolveRep
 import {Account} from '../../database/models/Account.js';
 import {Report} from '../../database/models/Report.js';
 import type {ReportAttributes} from '../../database/models/Report.js';
-import {assertInterval} from '../../validation/assertInterval.js';
 
 export interface ReportAddResult {
   message: string;
   report?: ReportAttributes;
 }
 
-// Format: "<reportName> [<accountId>] [--every <interval>]"
-// Without --every: runs the report immediately and returns the output
-// With --every: saves to DB and schedules recurring execution
-// Example: "/reportadd @typedtrader/report-sp500-momentum"
-// Example: "/reportadd @typedtrader/report-scalp-scanner 3"
-// Example: "/reportadd @typedtrader/report-scalp-scanner 3 --every 1d"
-export const reportAdd = async (request: string, userId: string): Promise<ReportAddResult> => {
-  const everyFlagIndex = request.indexOf(' --every ');
-  let mainPart: string;
-  let intervalMs: number | null = null;
+export interface ReportAddOptions {
+  /** When set, the report is saved to the DB and scheduled instead of run once. */
+  intervalMs?: number;
+}
 
-  if (everyFlagIndex !== -1) {
-    mainPart = request.slice(0, everyFlagIndex).trim();
-    const intervalStr = request.slice(everyFlagIndex + ' --every '.length).trim();
-    if (!intervalStr) {
-      return {message: 'Missing interval after --every flag. Examples: 1m, 1h, 1d, 1w'};
-    }
-    try {
-      intervalMs = assertInterval(intervalStr);
-    } catch {
-      return {message: 'Invalid interval. Examples: 1m, 1h, 1d, 1w'};
-    }
-  } else {
-    mainPart = request.trim();
-  }
+export const reportAdd = async (
+  request: string,
+  userId: string,
+  options: ReportAddOptions = {}
+): Promise<ReportAddResult> => {
+  const {intervalMs} = options;
 
   // Parse "<reportName> [<accountId>]"
-  const parts = mainPart.split(/\s+/);
+  const parts = request.trim().split(/\s+/);
   const reportName = parts[0] ?? '';
   const accountIdStr = parts[1];
 
@@ -45,7 +30,7 @@ export const reportAdd = async (request: string, userId: string): Promise<Report
 
   if (!reportName) {
     return {
-      message: `Invalid format. Usage: /reportadd <reportName> [<accountId>] [--every <interval>]\nAvailable reports: ${available.join(', ') || 'none (check environment variables)'}`,
+      message: `Invalid format. Usage: /reportAdd <reportName> [<accountId>]\nAvailable reports: ${available.join(', ') || 'none (check environment variables)'}`,
     };
   }
 
@@ -58,7 +43,7 @@ export const reportAdd = async (request: string, userId: string): Promise<Report
   // If report requires an account, resolve credentials from the account database
   if (reportRequiresAccount(reportName)) {
     if (!accountIdStr) {
-      return {message: `Report "${reportName}" requires an exchange account.\nUsage: /reportadd ${reportName} <accountId> [--every <interval>]`};
+      return {message: `Report "${reportName}" requires an exchange account.\nUsage: /reportAdd ${reportName} <accountId>`};
     }
 
     const accountId = parseInt(accountIdStr, 10);
@@ -69,7 +54,7 @@ export const reportAdd = async (request: string, userId: string): Promise<Report
 
     const account = Account.findByUserIdAndId(userId, accountId);
     if (!account) {
-      return {message: `Account ${accountId} not found. Use /accountlist to see your accounts.`};
+      return {message: `Account ${accountId} not found. Use /accountList to see your accounts.`};
     }
 
     config.apiKey = account.apiKey;
