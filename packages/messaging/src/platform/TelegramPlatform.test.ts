@@ -22,6 +22,15 @@ vi.mock('../command/report/reportAdd.js', () => ({
   reportAdd: vi.fn(),
 }));
 
+const mockFindByUserId = vi.fn().mockReturnValue([]);
+const mockFindByUserIdAndId = vi.fn().mockReturnValue(undefined);
+vi.mock('../database/models/Account.js', () => ({
+  Account: {
+    findByUserId: (...args: unknown[]) => mockFindByUserId(...args),
+    findByUserIdAndId: (...args: unknown[]) => mockFindByUserIdAndId(...args),
+  },
+}));
+
 vi.mock('@grammyjs/conversations', () => ({
   conversations: vi.fn(() => 'conversations-middleware'),
   createConversation: vi.fn(() => 'create-conversation-middleware'),
@@ -117,7 +126,10 @@ describe('TelegramPlatform', () => {
     });
 
     it('handles malformed schedule interval callback payloads without throwing', async () => {
-      const platform = new TelegramPlatform('bot-token');
+      const platform = new TelegramPlatform('bot-token', '123');
+
+      const {getAvailableReportNames} = await import('trading-strategies');
+      vi.mocked(getAvailableReportNames).mockReturnValue(['rsi']);
 
       platform.registerCommand('reportAdd', vi.fn());
 
@@ -135,6 +147,121 @@ describe('TelegramPlatform', () => {
         'Invalid interval "not-an-interval". Please select one of: 1m, 1h, 6h, 12h, 1d, 1w.'
       );
       expect(mockedReportAdd).not.toHaveBeenCalled();
+    });
+
+    describe('report wizard callback auth', () => {
+      const buildCtx = (senderId: number, match: string[]) => ({
+        answerCallbackQuery: vi.fn().mockResolvedValue(undefined),
+        editMessageText: vi.fn().mockResolvedValue(undefined),
+        from: {id: senderId},
+        match,
+      });
+
+      it('drops the report-pick callback when the sender is not an owner', async () => {
+        const platform = new TelegramPlatform('bot-token', '111');
+        platform.registerCommand('reportAdd', vi.fn());
+
+        const callback = findRegisteredCallbackQuery('report:');
+        const ctx = buildCtx(999, ['', 'rsi']);
+
+        await callback(ctx as never);
+
+        expect(ctx.editMessageText).not.toHaveBeenCalled();
+        expect(mockFindByUserId).not.toHaveBeenCalled();
+      });
+
+      it('drops the account-pick callback when the sender is not an owner', async () => {
+        const platform = new TelegramPlatform('bot-token', '111');
+        platform.registerCommand('reportAdd', vi.fn());
+
+        const callback = findRegisteredCallbackQuery('reportaccount:');
+        const ctx = buildCtx(999, ['', '42', 'rsi']);
+
+        await callback(ctx as never);
+
+        expect(ctx.editMessageText).not.toHaveBeenCalled();
+        expect(mockFindByUserIdAndId).not.toHaveBeenCalled();
+      });
+
+      it('drops the run-once callback when the sender is not an owner', async () => {
+        const platform = new TelegramPlatform('bot-token', '111');
+        platform.registerCommand('reportAdd', vi.fn());
+
+        const callback = findRegisteredCallbackQuery('reportmode:');
+        const ctx = buildCtx(999, ['', 'rsi']);
+
+        await callback(ctx as never);
+
+        expect(mockedReportAdd).not.toHaveBeenCalled();
+      });
+
+      it('rejects report names not in the whitelist', async () => {
+        const platform = new TelegramPlatform('bot-token', '111');
+        const {getAvailableReportNames} = await import('trading-strategies');
+        vi.mocked(getAvailableReportNames).mockReturnValue(['rsi']);
+
+        platform.registerCommand('reportAdd', vi.fn());
+
+        const callback = findRegisteredCallbackQuery('report:');
+        const ctx = buildCtx(111, ['', '../../etc/passwd']);
+
+        await callback(ctx as never);
+
+        expect(ctx.editMessageText).toHaveBeenCalledWith('Unknown report "../../etc/passwd".');
+        expect(mockFindByUserId).not.toHaveBeenCalled();
+      });
+
+      it('rejects account IDs that do not belong to the sender', async () => {
+        const platform = new TelegramPlatform('bot-token', '111');
+        const {getAvailableReportNames} = await import('trading-strategies');
+        vi.mocked(getAvailableReportNames).mockReturnValue(['rsi']);
+        // Sender 111 → no account 42 for them.
+        mockFindByUserIdAndId.mockReturnValue(undefined);
+
+        platform.registerCommand('reportAdd', vi.fn());
+
+        const callback = findRegisteredCallbackQuery('reportaccount:');
+        const ctx = buildCtx(111, ['', '42', 'rsi']);
+
+        await callback(ctx as never);
+
+        expect(mockFindByUserIdAndId).toHaveBeenCalledWith('telegram:111', 42);
+        expect(ctx.editMessageText).toHaveBeenCalledWith('Account not found.');
+      });
+
+      it('rejects run-once payloads that carry an unknown report name', async () => {
+        const platform = new TelegramPlatform('bot-token', '111');
+        const {getAvailableReportNames} = await import('trading-strategies');
+        vi.mocked(getAvailableReportNames).mockReturnValue(['rsi']);
+
+        platform.registerCommand('reportAdd', vi.fn());
+
+        const callback = findRegisteredCallbackQuery('reportmode:');
+        const ctx = buildCtx(111, ['', 'bogus-report']);
+
+        await callback(ctx as never);
+
+        expect(ctx.editMessageText).toHaveBeenCalledWith('Unknown report "bogus-report".');
+        expect(mockedReportAdd).not.toHaveBeenCalled();
+      });
+
+      it('rejects run-once payloads that carry an account not owned by the sender', async () => {
+        const platform = new TelegramPlatform('bot-token', '111');
+        const {getAvailableReportNames} = await import('trading-strategies');
+        vi.mocked(getAvailableReportNames).mockReturnValue(['rsi']);
+        mockFindByUserIdAndId.mockReturnValue(undefined);
+
+        platform.registerCommand('reportAdd', vi.fn());
+
+        const callback = findRegisteredCallbackQuery('reportmode:');
+        const ctx = buildCtx(111, ['', 'rsi 999']);
+
+        await callback(ctx as never);
+
+        expect(mockFindByUserIdAndId).toHaveBeenCalledWith('telegram:111', 999);
+        expect(ctx.editMessageText).toHaveBeenCalledWith('Account not found.');
+        expect(mockedReportAdd).not.toHaveBeenCalled();
+      });
     });
   });
 
@@ -254,7 +381,7 @@ describe('TelegramPlatform', () => {
       expect(handler).toHaveBeenCalledOnce();
     });
 
-    it('allows all senders when ownerIds is not set', async () => {
+    it('rejects every sender when ownerIds is not set (fail-closed)', async () => {
       const platform = new TelegramPlatform('bot-token');
 
       const handler = vi.fn().mockResolvedValue(undefined);
@@ -271,11 +398,12 @@ describe('TelegramPlatform', () => {
 
       await registeredCallback(ctxAnySender);
 
-      expect(handler).toHaveBeenCalledOnce();
+      expect(handler).not.toHaveBeenCalled();
+      expect(ctxAnySender.reply).not.toHaveBeenCalled();
     });
 
-    it('replies when sender ID cannot be determined', async () => {
-      const platform = new TelegramPlatform('bot-token');
+    it('silently drops updates with no sender', async () => {
+      const platform = new TelegramPlatform('bot-token', '111');
 
       const handler = vi.fn();
 
@@ -291,8 +419,8 @@ describe('TelegramPlatform', () => {
 
       await registeredCallback(ctxNoFrom);
 
-      expect(ctxNoFrom.reply).toHaveBeenCalledWith('Unable to determine sender');
       expect(handler).not.toHaveBeenCalled();
+      expect(ctxNoFrom.reply).not.toHaveBeenCalled();
     });
   });
 

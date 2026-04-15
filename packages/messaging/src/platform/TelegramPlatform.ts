@@ -303,7 +303,10 @@ async function replyWithMarkdown(ctx: Context, text: string): Promise<void> {
   for (const chunk of splitForTelegram(text)) {
     try {
       await ctx.reply(markdownToTelegramHtml(chunk), {parse_mode: 'HTML'});
-    } catch {
+    } catch (error) {
+      // Log the escaper failure instead of silently swallowing it — a silent
+      // fallback would hide a real escaper bug (and any XSS it enables).
+      console.warn('Falling back to plaintext after markdown→HTML render failure:', error);
       await ctx.reply(chunk);
     }
   }
@@ -359,19 +362,8 @@ export class TelegramPlatform implements MessagingPlatform {
     }
 
     this.#bot.command(lowerNames, async ctx => {
-      const senderId = ctx.from?.id?.toString();
-
-      if (!senderId) {
-        await ctx.reply('Unable to determine sender');
-        return;
-      }
-
-      if (this.#ownerIds.length > 0 && !this.#ownerIds.includes(senderId)) {
-        console.warn(
-          `Ignoring Telegram message from "${senderId}" - only messages from owners [${this.#ownerIds.join(', ')}] are processed.`
-        );
-        return;
-      }
+      const userId = this.#authorizedUserId(ctx);
+      if (!userId) return;
 
       // Extract text after the /command
       const text = ctx.message?.text ?? '';
@@ -379,7 +371,7 @@ export class TelegramPlatform implements MessagingPlatform {
       const content = commandEnd === -1 ? '' : text.slice(commandEnd + 1);
 
       const messageCtx: MessageContext = {
-        senderId: `${PLATFORM_PREFIX}${senderId}`,
+        senderId: userId,
         platformId: 'telegram',
         content,
         reply: async (replyText: string) => {
@@ -391,18 +383,35 @@ export class TelegramPlatform implements MessagingPlatform {
     });
   }
 
+  /**
+   * Returns the platform-prefixed userId if the sender is authorized, or
+   * `null` otherwise. **Fail-closed**: an unset/empty `TELEGRAM_OWNER_IDS`
+   * list rejects every sender. Callers should return early on `null`.
+   *
+   * Every update-handling code path (commands, callback queries, conversation
+   * resumes) MUST go through this helper — it's the only gate between an
+   * inbound Telegram update and the bot's command machinery.
+   */
+  #authorizedUserId(ctx: Context): string | null {
+    const senderId = ctx.from?.id?.toString();
+    if (!senderId) return null;
+    if (this.#ownerIds.length === 0) {
+      console.warn('Ignoring Telegram update: TELEGRAM_OWNER_IDS is not set, so the bot rejects every message.');
+      return null;
+    }
+    if (!this.#ownerIds.includes(senderId)) {
+      console.warn(
+        `Ignoring Telegram update from "${senderId}" — only owners [${this.#ownerIds.join(', ')}] are authorized.`
+      );
+      return null;
+    }
+    return `${PLATFORM_PREFIX}${senderId}`;
+  }
+
   #registerReportAddCommand(): void {
     this.#bot.command('reportadd', async ctx => {
-      const senderId = ctx.from?.id?.toString();
-
-      if (!senderId) {
-        await ctx.reply('Unable to determine sender');
-        return;
-      }
-
-      if (this.#ownerIds.length > 0 && !this.#ownerIds.includes(senderId)) {
-        return;
-      }
+      const userId = this.#authorizedUserId(ctx);
+      if (!userId) return;
 
       const available = getAvailableReportNames();
       if (available.length === 0) {
@@ -421,12 +430,16 @@ export class TelegramPlatform implements MessagingPlatform {
     this.#bot.callbackQuery(new RegExp(`^${REPORT_CALLBACK_PREFIX}(.+)$`), async ctx => {
       await ctx.answerCallbackQuery();
 
+      const userId = this.#authorizedUserId(ctx);
+      if (!userId) return;
+
       const reportName = ctx.match[1];
-      const senderId = ctx.from?.id?.toString();
-      if (!senderId) return;
+      if (!this.#isKnownReport(reportName)) {
+        await ctx.editMessageText(`Unknown report "${reportName}".`);
+        return;
+      }
 
       if (reportRequiresAccount(reportName)) {
-        const userId = `${PLATFORM_PREFIX}${senderId}`;
         const userAccounts = Account.findByUserId(userId);
 
         if (userAccounts.length === 0) {
@@ -458,8 +471,24 @@ export class TelegramPlatform implements MessagingPlatform {
     this.#bot.callbackQuery(new RegExp(`^${ACCOUNT_CALLBACK_PREFIX}(\\d+):(.+)$`), async ctx => {
       await ctx.answerCallbackQuery();
 
-      const accountId = ctx.match[1];
+      const userId = this.#authorizedUserId(ctx);
+      if (!userId) return;
+
+      const accountIdStr = ctx.match[1];
       const reportName = ctx.match[2];
+
+      if (!this.#isKnownReport(reportName)) {
+        await ctx.editMessageText(`Unknown report "${reportName}".`);
+        return;
+      }
+
+      const accountId = Number.parseInt(accountIdStr, 10);
+      if (!Number.isFinite(accountId) || !Account.findByUserIdAndId(userId, accountId)) {
+        // Either the callback_data was crafted or the account belongs to
+        // someone else. Either way: refuse and leave no useful error detail.
+        await ctx.editMessageText('Account not found.');
+        return;
+      }
 
       // Carry accountId through by appending it to the reportName in the callback data
       const reportWithAccount = `${reportName} ${accountId}`;
@@ -477,13 +506,18 @@ export class TelegramPlatform implements MessagingPlatform {
     this.#bot.callbackQuery(new RegExp(`^${MODE_CALLBACK_PREFIX}once:(.+)$`), async ctx => {
       await ctx.answerCallbackQuery();
 
+      const userId = this.#authorizedUserId(ctx);
+      if (!userId) return;
+
       const reportInput = ctx.match[1];
-      const senderId = ctx.from?.id?.toString();
-      if (!senderId) return;
+      const validation = this.#validateReportInput(userId, reportInput);
+      if (!validation.ok) {
+        await ctx.editMessageText(validation.message);
+        return;
+      }
 
-      await ctx.editMessageText(`Running report: ${reportInput.split(' ')[0]}...`);
+      await ctx.editMessageText(`Running report: ${validation.reportName}...`);
 
-      const userId = `${PLATFORM_PREFIX}${senderId}`;
       const result = await reportAdd(reportInput, userId);
 
       await replyWithMarkdown(ctx, result.message);
@@ -493,11 +527,18 @@ export class TelegramPlatform implements MessagingPlatform {
     this.#bot.callbackQuery(new RegExp(`^${MODE_CALLBACK_PREFIX}schedule:(.+)$`), async ctx => {
       await ctx.answerCallbackQuery();
 
+      const userId = this.#authorizedUserId(ctx);
+      if (!userId) return;
+
       const reportInput = ctx.match[1];
-      const reportName = reportInput.split(' ')[0];
+      const validation = this.#validateReportInput(userId, reportInput);
+      if (!validation.ok) {
+        await ctx.editMessageText(validation.message);
+        return;
+      }
 
       await ctx.editMessageText(
-        `Report: ${reportName}\nSelect interval:`,
+        `Report: ${validation.reportName}\nSelect interval:`,
         inlineKeyboard([
           [
             {text: '1m', callback_data: `${INTERVAL_CALLBACK_PREFIX}1m:${reportInput}`},
@@ -517,12 +558,17 @@ export class TelegramPlatform implements MessagingPlatform {
     this.#bot.callbackQuery(new RegExp(`^${INTERVAL_CALLBACK_PREFIX}([^:]+):(.+)$`), async ctx => {
       await ctx.answerCallbackQuery();
 
+      const userId = this.#authorizedUserId(ctx);
+      if (!userId) return;
+
       const interval = ctx.match[1];
       const reportInput = ctx.match[2];
-      const senderId = ctx.from?.id?.toString();
-      if (!senderId) return;
+      const validation = this.#validateReportInput(userId, reportInput);
+      if (!validation.ok) {
+        await ctx.editMessageText(validation.message);
+        return;
+      }
 
-      const userId = `${PLATFORM_PREFIX}${senderId}`;
       let intervalMs: number;
       try {
         intervalMs = assertInterval(interval);
@@ -531,7 +577,7 @@ export class TelegramPlatform implements MessagingPlatform {
         return;
       }
 
-      await ctx.editMessageText(`Scheduling report: ${reportInput.split(' ')[0]} every ${interval}...`);
+      await ctx.editMessageText(`Scheduling report: ${validation.reportName} every ${interval}...`);
       const result = await reportAdd(reportInput, userId, {intervalMs});
 
       await replyWithMarkdown(ctx, result.message);
@@ -542,6 +588,40 @@ export class TelegramPlatform implements MessagingPlatform {
     });
   }
 
+  #isKnownReport(reportName: string): boolean {
+    return getAvailableReportNames().includes(reportName);
+  }
+
+  /**
+   * Parses a `reportInput` string (`"<reportName>"` or `"<reportName> <accountId>"`)
+   * extracted from a callback payload and verifies both the report name and, if
+   * present, that the account belongs to the sender. Defense-in-depth against a
+   * tampered callback_data that tries to run a report against someone else's
+   * account or a report the bot does not expose.
+   */
+  #validateReportInput(
+    userId: string,
+    reportInput: string
+  ): {ok: true; reportName: string; accountId?: number} | {ok: false; message: string} {
+    const parts = reportInput.split(/\s+/);
+    const reportName = parts[0] ?? '';
+    const accountIdStr = parts[1];
+
+    if (!this.#isKnownReport(reportName)) {
+      return {ok: false, message: `Unknown report "${reportName}".`};
+    }
+
+    if (accountIdStr !== undefined) {
+      const accountId = Number.parseInt(accountIdStr, 10);
+      if (!Number.isFinite(accountId) || !Account.findByUserIdAndId(userId, accountId)) {
+        return {ok: false, message: 'Account not found.'};
+      }
+      return {ok: true, reportName, accountId};
+    }
+
+    return {ok: true, reportName};
+  }
+
   #registerTradeCommand(name: TradeCommandName): void {
     // Record the camelCase name so it appears in `/help`. The handler stored
     // here is never invoked directly — the real wizard runs via the
@@ -550,15 +630,8 @@ export class TelegramPlatform implements MessagingPlatform {
     this.#commands.set(name, async () => {});
 
     this.#bot.command(name.toLowerCase(), async ctx => {
-      const senderId = ctx.from?.id?.toString();
-      if (!senderId) {
-        await ctx.reply('Unable to determine sender');
-        return;
-      }
-
-      if (this.#ownerIds.length > 0 && !this.#ownerIds.includes(senderId)) {
-        return;
-      }
+      const userId = this.#authorizedUserId(ctx);
+      if (!userId) return;
 
       const args = await parseTradeCommandInput(ctx, name);
       if (!args) return; // parseTradeCommandInput already replied with the usage error
@@ -571,7 +644,10 @@ export class TelegramPlatform implements MessagingPlatform {
     if (this.#ownerIds.length > 0) {
       console.log(`Only Telegram user IDs (${this.#ownerIds.join(', ')}) can message the bot.`);
     } else {
-      console.warn('Warning: TELEGRAM_OWNER_IDS is not set. Everyone can message the bot via Telegram.');
+      console.error(
+        'Error: TELEGRAM_OWNER_IDS is not set. The bot will reject every incoming message. ' +
+          'Set TELEGRAM_OWNER_IDS to a comma-separated list of Telegram user IDs.'
+      );
     }
 
     await this.#bot.init();
@@ -598,7 +674,8 @@ export class TelegramPlatform implements MessagingPlatform {
     for (const chunk of splitForTelegram(text)) {
       try {
         await this.#bot.api.sendMessage(chatId, markdownToTelegramHtml(chunk), {parse_mode: 'HTML'});
-      } catch {
+      } catch (error) {
+        console.warn('Falling back to plaintext after markdown→HTML render failure:', error);
         await this.#bot.api.sendMessage(chatId, chunk);
       }
     }
