@@ -334,7 +334,7 @@ describe('TelegramPlatform', () => {
 
       expect(mockInit).toHaveBeenCalled();
       expect(mockStart).toHaveBeenCalledWith({drop_pending_updates: true});
-      expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('TELEGRAM_OWNER_IDS is empty'));
+      expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('TELEGRAM_OWNER_IDS is unset or empty'));
       warnSpy.mockRestore();
     });
   });
@@ -412,6 +412,29 @@ describe('TelegramPlatform', () => {
 
       expect(handler).toHaveBeenCalledOnce();
     });
+
+    it.each([' ', ',', ' , , '])(
+      'collapses whitespace/comma-only ownerIds (%j) to open mode instead of rejecting every sender',
+      async ownerIds => {
+        const platform = new TelegramPlatform('bot-token', ownerIds);
+
+        const handler = vi.fn().mockResolvedValue(undefined);
+
+        platform.registerCommand('help', handler);
+
+        const registeredCallback = findRegisteredCallback('help');
+
+        const ctxAnySender = {
+          from: {id: 999},
+          message: {text: '/help'},
+          reply: vi.fn(),
+        };
+
+        await registeredCallback(ctxAnySender);
+
+        expect(handler).toHaveBeenCalledOnce();
+      }
+    );
 
     it('silently drops updates with no sender', async () => {
       const platform = new TelegramPlatform('bot-token', '111');

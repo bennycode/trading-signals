@@ -321,7 +321,14 @@ export class TelegramPlatform implements MessagingPlatform {
 
   constructor(botToken: string, ownerIds?: string) {
     this.#bot = new Bot<TradeContext>(botToken);
-    this.#ownerIds = ownerIds ? ownerIds.split(',').map(id => id.trim()) : [];
+    // Filter out empty entries so whitespace- or comma-only inputs (e.g. " " or ",")
+    // collapse to an empty list and are treated as open mode, not as a list of empty IDs.
+    this.#ownerIds = ownerIds
+      ? ownerIds
+          .split(',')
+          .map(id => id.trim())
+          .filter(id => id.length > 0)
+      : [];
 
     // Normalize incoming /Commands to lowercase so grammY's case-sensitive
     // command matching accepts any casing (/reportAdd, /REPORTADD, /repOrTADd).
@@ -651,7 +658,7 @@ export class TelegramPlatform implements MessagingPlatform {
 
   async start(): Promise<void> {
     if (this.#ownerIds.length === 0) {
-      console.warn('TELEGRAM_OWNER_IDS is empty — the bot is running in open mode and will accept messages from anyone.');
+      console.warn('TELEGRAM_OWNER_IDS is unset or empty — the bot is running in open mode and will accept messages from anyone.');
     } else {
       console.log(`Only Telegram user IDs (${this.#ownerIds.join(', ')}) can message the bot.`);
     }
