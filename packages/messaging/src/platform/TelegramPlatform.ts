@@ -328,6 +328,15 @@ export class TelegramPlatform implements MessagingPlatform {
     // Must run before the command handlers installed below.
     this.#bot.use(lowercaseCommandMiddleware);
 
+    // Drop unauthorized updates before they reach the conversations plugin or
+    // any command / callback handler. This is the global gate — individual
+    // handlers still call `#authorizedUserId` to obtain the prefixed userId,
+    // but they can trust the middleware has already turned away non-owners.
+    this.#bot.use(async (ctx, next) => {
+      if (this.#authorizedUserId(ctx) === null) return;
+      await next();
+    });
+
     // Install @grammyjs/conversations plugin BEFORE any command handlers are
     // registered. The `conversations()` middleware must run for every update
     // so it can resume active sessions on subsequent callback_query updates,
@@ -384,21 +393,22 @@ export class TelegramPlatform implements MessagingPlatform {
   }
 
   /**
-   * Returns the platform-prefixed userId if the sender is authorized, or
-   * `null` otherwise. **Fail-closed**: an unset/empty `TELEGRAM_OWNER_IDS`
-   * list rejects every sender. Callers should return early on `null`.
+   * Returns the platform-prefixed userId for an authorized sender, or `null`
+   * otherwise. A global middleware installed in the constructor runs this on
+   * every inbound update and drops the update when it returns `null`, so by
+   * the time a command/callback handler fires the sender is guaranteed to be
+   * authorized. Handlers still call this helper to obtain the prefixed userId
+   * for downstream queries — the double-check is defense-in-depth against a
+   * future handler that bypasses the middleware.
    *
-   * Every update-handling code path (commands, callback queries, conversation
-   * resumes) MUST go through this helper — it's the only gate between an
-   * inbound Telegram update and the bot's command machinery.
+   * The empty-owner-list case cannot reach this helper at runtime: `start()`
+   * throws when `TELEGRAM_OWNER_IDS` is unset, so the bot refuses to boot
+   * instead of silently dropping every message.
    */
   #authorizedUserId(ctx: Context): string | null {
     const senderId = ctx.from?.id?.toString();
     if (!senderId) return null;
-    if (this.#ownerIds.length === 0) {
-      console.warn('Ignoring Telegram update: TELEGRAM_OWNER_IDS is not set, so the bot rejects every message.');
-      return null;
-    }
+    if (this.#ownerIds.length === 0) return null;
     if (!this.#ownerIds.includes(senderId)) {
       console.warn(
         `Ignoring Telegram update from "${senderId}" — only owners [${this.#ownerIds.join(', ')}] are authorized.`
@@ -641,14 +651,14 @@ export class TelegramPlatform implements MessagingPlatform {
   }
 
   async start(): Promise<void> {
-    if (this.#ownerIds.length > 0) {
-      console.log(`Only Telegram user IDs (${this.#ownerIds.join(', ')}) can message the bot.`);
-    } else {
-      console.error(
-        'Error: TELEGRAM_OWNER_IDS is not set. The bot will reject every incoming message. ' +
-          'Set TELEGRAM_OWNER_IDS to a comma-separated list of Telegram user IDs.'
+    if (this.#ownerIds.length === 0) {
+      throw new Error(
+        'TELEGRAM_OWNER_IDS is not set. Refusing to start the Telegram bot — without an ' +
+          'owner list the bot would accept messages from anyone. Set TELEGRAM_OWNER_IDS ' +
+          'to a comma-separated list of Telegram user IDs.'
       );
     }
+    console.log(`Only Telegram user IDs (${this.#ownerIds.join(', ')}) can message the bot.`);
 
     await this.#bot.init();
     this.#platformInfo = {

@@ -305,7 +305,7 @@ describe('TelegramPlatform', () => {
 
   describe('start', () => {
     it('initializes the bot and populates platformInfo before starting polling', async () => {
-      const platform = new TelegramPlatform('bot-token');
+      const platform = new TelegramPlatform('bot-token', '111');
 
       const callOrder: string[] = [];
       mockInit.mockImplementation(async () => {
@@ -324,6 +324,14 @@ describe('TelegramPlatform', () => {
         botAddress: '@testbot',
         sdkVersion: 'grammY',
       });
+    });
+
+    it('throws when TELEGRAM_OWNER_IDS is not set (fail-closed)', async () => {
+      const platform = new TelegramPlatform('bot-token');
+
+      await expect(platform.start()).rejects.toThrow(/TELEGRAM_OWNER_IDS is not set/);
+      expect(mockInit).not.toHaveBeenCalled();
+      expect(mockStart).not.toHaveBeenCalled();
     });
   });
 

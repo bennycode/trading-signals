@@ -18,6 +18,8 @@ This package starts a chatbot based on environment variables. Control your tradi
 
 Set `TELEGRAM_BOT_TOKEN` to enable. Message the bot from Telegram. Create a bot token via [@BotFather](https://t.me/BotFather).
 
+You must also set `TELEGRAM_OWNER_IDS` to a comma-separated list of Telegram user IDs (e.g. `TELEGRAM_OWNER_IDS=111111,222222`). The bot is **fail-closed**: if no owner IDs are configured, it refuses to start instead of accepting messages from anyone. Look up your numeric user ID via [@userinfobot](https://t.me/userinfobot).
+
 ### Commands
 
 Command names are case-insensitive — `/reportAdd`, `/reportadd`, and `/REPORTADD` all work. The camelCase form is just for readability.
