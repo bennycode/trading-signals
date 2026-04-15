@@ -40,9 +40,3 @@ graph TD
     exchange --> IB["Interactive Brokers"]
     exchange --> more-exchanges["..."]
 ```
-
-### Deploy to Render
-
-Deploy the `@typedtrader/messaging` package as a background worker to [Render](https://render.com/). The configuration includes persistent disk storage for the database and secure environment variable management:
-
-[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/bennycode/trading-signals)
