@@ -1,5 +1,6 @@
 import {describe, it, expect, vi, beforeEach} from 'vitest';
-import {TelegramPlatform} from './TelegramPlatform.js';
+import type {Context} from 'grammy';
+import {TelegramPlatform, lowercaseCommandMiddleware} from './TelegramPlatform.js';
 
 const mockSendMessage = vi.fn();
 const mockInit = vi.fn();
@@ -64,12 +65,12 @@ describe('TelegramPlatform', () => {
       expect(platform.commandList).toContain('/price');
     });
 
-    it('includes reportadd when registered', () => {
+    it('includes reportAdd when registered', () => {
       const platform = new TelegramPlatform('bot-token');
 
-      platform.registerCommand('reportadd', vi.fn());
+      platform.registerCommand('reportAdd', vi.fn());
 
-      expect(platform.commandList).toContain('/reportadd');
+      expect(platform.commandList).toContain('/reportAdd');
     });
 
     it('includes the self-registered trade commands even before registerCommand is called', () => {
@@ -78,7 +79,7 @@ describe('TelegramPlatform', () => {
       // Trade commands register themselves in the TelegramPlatform constructor
       // because their wizards depend on grammy + the conversations plugin.
       expect(platform.commandList).toEqual(
-        expect.arrayContaining(['/buymarket', '/sellmarket', '/buylimit', '/selllimit'])
+        expect.arrayContaining(['/buyMarket', '/sellMarket', '/buyLimit', '/sellLimit'])
       );
     });
   });
@@ -95,12 +96,14 @@ describe('TelegramPlatform', () => {
       expect(mockCommand).toHaveBeenCalledWith(['help'], expect.any(Function));
     });
 
-    it('registers reportadd with inline keyboard buttons instead of regular command', () => {
+    it('registers reportAdd with inline keyboard buttons instead of regular command', () => {
       const platform = new TelegramPlatform('bot-token');
 
-      platform.registerCommand('reportadd', vi.fn());
+      platform.registerCommand('reportAdd', vi.fn());
 
-      // reportadd uses bot.command and bot.callbackQuery, not the generic handler path
+      // reportAdd uses bot.command and bot.callbackQuery, not the generic handler path.
+      // grammY only accepts lowercase command names, so the registration uses 'reportadd'
+      // while the display name stays camelCase.
       expect(mockCommand).toHaveBeenCalledWith('reportadd', expect.any(Function));
       expect(mockCallbackQuery).toHaveBeenCalledWith(expect.any(RegExp), expect.any(Function));
     });
@@ -261,6 +264,60 @@ describe('TelegramPlatform', () => {
 
       expect(ctxNoFrom.reply).toHaveBeenCalledWith('Unable to determine sender');
       expect(handler).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('lowercaseCommandMiddleware', () => {
+    function buildCtx(text: string): Context {
+      return {
+        message: {
+          text,
+          entities: [{type: 'bot_command', offset: 0, length: text.split(' ')[0].length}],
+        },
+      } as unknown as Context;
+    }
+
+    it('lowercases a mixed-case command', async () => {
+      const ctx = buildCtx('/ReportAdd');
+      await lowercaseCommandMiddleware(ctx, async () => {});
+      expect(ctx.message?.text).toBe('/reportadd');
+    });
+
+    it('lowercases an all-caps command', async () => {
+      const ctx = buildCtx('/REPORTADD');
+      await lowercaseCommandMiddleware(ctx, async () => {});
+      expect(ctx.message?.text).toBe('/reportadd');
+    });
+
+    it('lowercases a chaotic casing', async () => {
+      const ctx = buildCtx('/repOrTADd');
+      await lowercaseCommandMiddleware(ctx, async () => {});
+      expect(ctx.message?.text).toBe('/reportadd');
+    });
+
+    it('preserves the @botname suffix verbatim', async () => {
+      const ctx = buildCtx('/ReportAdd@MyBot');
+      await lowercaseCommandMiddleware(ctx, async () => {});
+      expect(ctx.message?.text).toBe('/reportadd@MyBot');
+    });
+
+    it('preserves arguments after the command', async () => {
+      const ctx = buildCtx('/BuyMarket AAPL,USD 100');
+      await lowercaseCommandMiddleware(ctx, async () => {});
+      expect(ctx.message?.text).toBe('/buymarket AAPL,USD 100');
+    });
+
+    it('is a no-op when no bot_command entity is present', async () => {
+      const ctx = {message: {text: 'hello world', entities: []}} as unknown as Context;
+      await lowercaseCommandMiddleware(ctx, async () => {});
+      expect(ctx.message?.text).toBe('hello world');
+    });
+
+    it('calls next exactly once', async () => {
+      const ctx = buildCtx('/help');
+      const next = vi.fn().mockResolvedValue(undefined);
+      await lowercaseCommandMiddleware(ctx, next);
+      expect(next).toHaveBeenCalledOnce();
     });
   });
 });

@@ -36,7 +36,7 @@ function registerCommands(platform: MessagingPlatform, monitors: Monitors): void
     await ctx.reply(answer);
   });
 
-  platform.registerCommand('accountadd', async ctx => {
+  platform.registerCommand('accountAdd', async ctx => {
     const result = await accountAdd(ctx.content, ctx.senderId);
 
     if (result) {
@@ -44,11 +44,11 @@ function registerCommands(platform: MessagingPlatform, monitors: Monitors): void
     }
   });
 
-  platform.registerCommand('accountlist', async ctx => {
+  platform.registerCommand('accountList', async ctx => {
     await ctx.reply(await accountList(ctx.senderId));
   });
 
-  platform.registerCommand('accountremove', async ctx => {
+  platform.registerCommand('accountRemove', async ctx => {
     const result = await accountRemove(ctx.content, ctx.senderId);
 
     if (result) {
@@ -56,7 +56,7 @@ function registerCommands(platform: MessagingPlatform, monitors: Monitors): void
     }
   });
 
-  platform.registerCommand('accounttime', async ctx => {
+  platform.registerCommand('accountTime', async ctx => {
     const result = await accountTime(ctx.content, ctx.senderId);
 
     if (result) {
@@ -88,7 +88,7 @@ function registerCommands(platform: MessagingPlatform, monitors: Monitors): void
     await ctx.reply(await uptime());
   });
 
-  platform.registerCommand('watchadd', async ctx => {
+  platform.registerCommand('watchAdd', async ctx => {
     const result = await watchAdd(ctx.content, ctx.senderId);
     await ctx.reply(result.message);
 
@@ -101,11 +101,11 @@ function registerCommands(platform: MessagingPlatform, monitors: Monitors): void
     }
   });
 
-  platform.registerCommand('watchlist', async ctx => {
+  platform.registerCommand('watchList', async ctx => {
     await ctx.reply(await watchList(ctx.senderId));
   });
 
-  platform.registerCommand('watchremove', async ctx => {
+  platform.registerCommand('watchRemove', async ctx => {
     const result = await watchRemove(ctx.content, ctx.senderId);
     await ctx.reply(result.message);
 
@@ -114,7 +114,7 @@ function registerCommands(platform: MessagingPlatform, monitors: Monitors): void
     }
   });
 
-  platform.registerCommand('strategyadd', async ctx => {
+  platform.registerCommand('strategyAdd', async ctx => {
     const result = await strategyAdd(ctx.content, ctx.senderId);
     await ctx.reply(result.message);
 
@@ -127,11 +127,11 @@ function registerCommands(platform: MessagingPlatform, monitors: Monitors): void
     }
   });
 
-  platform.registerCommand('strategylist', async ctx => {
+  platform.registerCommand('strategyList', async ctx => {
     await ctx.reply(await strategyList(ctx.senderId));
   });
 
-  platform.registerCommand('strategyremove', async ctx => {
+  platform.registerCommand('strategyRemove', async ctx => {
     const result = await strategyRemove(ctx.content, ctx.senderId);
     await ctx.reply(result.message);
 
@@ -144,7 +144,7 @@ function registerCommands(platform: MessagingPlatform, monitors: Monitors): void
     }
   });
 
-  platform.registerCommand('reportadd', async ctx => {
+  platform.registerCommand('reportAdd', async ctx => {
     const result = await reportAdd(ctx.content, ctx.senderId);
     await ctx.reply(result.message);
 
@@ -157,11 +157,11 @@ function registerCommands(platform: MessagingPlatform, monitors: Monitors): void
     }
   });
 
-  platform.registerCommand('reportlist', async ctx => {
+  platform.registerCommand('reportList', async ctx => {
     await ctx.reply(await reportList(ctx.senderId));
   });
 
-  platform.registerCommand('reportremove', async ctx => {
+  platform.registerCommand('reportRemove', async ctx => {
     const result = await reportRemove(ctx.content, ctx.senderId);
     await ctx.reply(result.message);
 
@@ -170,11 +170,11 @@ function registerCommands(platform: MessagingPlatform, monitors: Monitors): void
     }
   });
 
-  platform.registerCommand('myaddress', async ctx => {
+  platform.registerCommand('myAddress', async ctx => {
     await ctx.reply(`Your address is: ${ctx.senderId.split(':').slice(1).join(':')}`);
   });
 
-  platform.registerCommand('youraddress', async ctx => {
+  platform.registerCommand('yourAddress', async ctx => {
     await ctx.reply(`My address is: ${platform.platformInfo.botAddress}`);
   });
 

@@ -23,10 +23,10 @@ const MODE_CALLBACK_PREFIX = 'reportmode:';
 const INTERVAL_CALLBACK_PREFIX = 'reportinterval:';
 
 const TRADE_CONVERSATION_ID = 'trade';
-// Telegram requires command names to be lowercase [a-z0-9_] — uppercase
-// letters are silently ignored during command matching. Keep these names
-// in sync with the entries registered in startServer.ts.
-const TRADE_COMMAND_NAMES = ['buymarket', 'sellmarket', 'buylimit', 'selllimit'] as const;
+// Display (camelCase) names shown in `/help` and usage errors. grammY
+// registration uses the lowercased form so command matching stays
+// case-insensitive via the middleware installed in the constructor.
+const TRADE_COMMAND_NAMES = ['buyMarket', 'sellMarket', 'buyLimit', 'sellLimit'] as const;
 type TradeCommandName = (typeof TRADE_COMMAND_NAMES)[number];
 
 interface TradeCommandShape {
@@ -36,13 +36,13 @@ interface TradeCommandShape {
 
 function tradeCommandShape(name: TradeCommandName): TradeCommandShape {
   switch (name) {
-    case 'buymarket':
+    case 'buyMarket':
       return {side: ExchangeOrderSide.BUY, isLimit: false};
-    case 'sellmarket':
+    case 'sellMarket':
       return {side: ExchangeOrderSide.SELL, isLimit: false};
-    case 'buylimit':
+    case 'buyLimit':
       return {side: ExchangeOrderSide.BUY, isLimit: true};
-    case 'selllimit':
+    case 'sellLimit':
       return {side: ExchangeOrderSide.SELL, isLimit: true};
   }
 }
@@ -163,7 +163,7 @@ async function tradeWizard(
   );
 
   if (accounts.length === 0) {
-    await ctx.reply('No exchange account found. Use /accountadd to add one first.');
+    await ctx.reply('No exchange account found. Use /accountAdd to add one first.');
     return;
   }
 
@@ -271,6 +271,33 @@ function inlineKeyboard(rows: InlineButton[][]) {
   return {reply_markup: {inline_keyboard: rows}};
 }
 
+/**
+ * Rewrites the bot_command entity at offset 0 to lowercase so grammY's
+ * case-sensitive command matching accepts any casing from the user. Only
+ * the command name is lowercased — the optional `@botname` suffix and any
+ * arguments after the command are left untouched.
+ *
+ * Exported for unit tests.
+ */
+export async function lowercaseCommandMiddleware(ctx: Context, next: () => Promise<void>): Promise<void> {
+  const message = ctx.message ?? ctx.channelPost;
+  const text = message?.text;
+  const entities = message?.entities;
+  if (text && entities) {
+    const entity = entities.find(e => e.type === 'bot_command' && e.offset === 0);
+    if (entity) {
+      const rawCommand = text.slice(0, entity.length);
+      const atIndex = rawCommand.indexOf('@');
+      const nameEnd = atIndex === -1 ? rawCommand.length : atIndex;
+      const normalized = rawCommand.slice(0, nameEnd).toLowerCase() + rawCommand.slice(nameEnd);
+      if (normalized !== rawCommand) {
+        (message as {text: string}).text = normalized + text.slice(entity.length);
+      }
+    }
+  }
+  await next();
+}
+
 async function replyWithMarkdown(ctx: Context, text: string): Promise<void> {
   for (const chunk of splitForTelegram(text)) {
     try {
@@ -291,6 +318,11 @@ export class TelegramPlatform implements MessagingPlatform {
   constructor(botToken: string, ownerIds?: string) {
     this.#bot = new Bot<TradeContext>(botToken);
     this.#ownerIds = ownerIds ? ownerIds.split(',').map(id => id.trim()) : [];
+
+    // Normalize incoming /Commands to lowercase so grammY's case-sensitive
+    // command matching accepts any casing (/reportAdd, /REPORTADD, /repOrTADd).
+    // Must run before the command handlers installed below.
+    this.#bot.use(lowercaseCommandMiddleware);
 
     // Install @grammyjs/conversations plugin BEFORE any command handlers are
     // registered. The `conversations()` middleware must run for every update
@@ -317,14 +349,15 @@ export class TelegramPlatform implements MessagingPlatform {
     for (const n of names) {
       this.#commands.set(n, handler);
     }
+    const lowerNames = names.map(n => n.toLowerCase());
 
     // reportadd is handled via inline keyboard buttons
-    if (names.includes('reportadd')) {
+    if (lowerNames.includes('reportadd')) {
       this.#registerReportAddCommand();
       return;
     }
 
-    this.#bot.command(names, async ctx => {
+    this.#bot.command(lowerNames, async ctx => {
       const senderId = ctx.from?.id?.toString();
 
       if (!senderId) {
@@ -396,7 +429,7 @@ export class TelegramPlatform implements MessagingPlatform {
         const userAccounts = Account.findByUserId(userId);
 
         if (userAccounts.length === 0) {
-          await ctx.editMessageText(`Report "${reportName}" requires an exchange account.\nUse /accountadd to add one first.`);
+          await ctx.editMessageText(`Report "${reportName}" requires an exchange account.\nUse /accountAdd to add one first.`);
           return;
         }
 
@@ -502,13 +535,13 @@ export class TelegramPlatform implements MessagingPlatform {
   }
 
   #registerTradeCommand(name: TradeCommandName): void {
-    // Record the command name so it appears in `/help`. The handler stored
+    // Record the camelCase name so it appears in `/help`. The handler stored
     // here is never invoked directly — the real wizard runs via the
     // `bot.command(...)` handler installed below — but `commandList` reads
     // from `#commands`.
     this.#commands.set(name, async () => {});
 
-    this.#bot.command(name, async ctx => {
+    this.#bot.command(name.toLowerCase(), async ctx => {
       const senderId = ctx.from?.id?.toString();
       if (!senderId) {
         await ctx.reply('Unable to determine sender');

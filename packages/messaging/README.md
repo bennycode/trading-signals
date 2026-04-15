@@ -20,6 +20,8 @@ Set `TELEGRAM_BOT_TOKEN` to enable. Message the bot from Telegram. Create a bot 
 
 ### Commands
 
+Command names are case-insensitive — `/reportAdd`, `/reportadd`, and `/REPORTADD` all work. The camelCase form is just for readability.
+
 | Command          | Description                                              |
 | ---------------- | -------------------------------------------------------- |
 | `/help`          | List all available commands                              |
@@ -28,7 +30,7 @@ Set `TELEGRAM_BOT_TOKEN` to enable. Message the bot from Telegram. Create a bot 
 | `/accountRemove` | Remove a trading account                                 |
 | `/accountTime`   | Show the current server time from an account's exchange  |
 | `/candle`        | Fetch OHLC candle data for a trading pair                |
-| `/myaddress`     | Show your address/ID on the current platform             |
+| `/myAddress`     | Show your address/ID on the current platform             |
 | `/price`         | Get the latest closing price for a trading pair          |
 | `/time`          | Display the current system time                          |
 | `/uptime`        | Show how long the bot has been running                   |
@@ -36,7 +38,7 @@ Set `TELEGRAM_BOT_TOKEN` to enable. Message the bot from Telegram. Create a bot 
 | `/watchAdd`      | Create a price alert that monitors a pair at an interval |
 | `/watchList`     | List all active price watches                            |
 | `/watchRemove`   | Remove an active price watch                             |
-| `/youraddress`   | Show the bot's address on the current platform           |
+| `/yourAddress`   | Show the bot's address on the current platform           |
 
 ## Motivation
 
