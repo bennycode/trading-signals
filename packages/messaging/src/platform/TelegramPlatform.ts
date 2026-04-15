@@ -13,6 +13,7 @@ import type {CommandHandler, MessageContext, MessagingPlatform, PlatformInfo} fr
 import {markdownToTelegramHtml, splitForTelegram} from './telegramMarkdown.js';
 import {placeOrder} from '../command/placeOrder.js';
 import {reportAdd} from '../command/report/reportAdd.js';
+import {assertInterval} from '../validation/assertInterval.js';
 import {Account} from '../database/models/Account.js';
 import type {ReportScheduler} from '../service/ReportScheduler.js';
 
@@ -524,7 +525,8 @@ export class TelegramPlatform implements MessagingPlatform {
       await ctx.editMessageText(`Scheduling report: ${reportInput.split(' ')[0]} every ${interval}...`);
 
       const userId = `${PLATFORM_PREFIX}${senderId}`;
-      const result = await reportAdd(`${reportInput} --every ${interval}`, userId);
+      const intervalMs = assertInterval(interval);
+      const result = await reportAdd(reportInput, userId, {intervalMs});
 
       await replyWithMarkdown(ctx, result.message);
 
