@@ -150,7 +150,7 @@ function registerCommands(platform: MessagingPlatform, monitors: Monitors): void
 
     if (result.report?.intervalMs) {
       try {
-        monitors.reportScheduler.scheduleReport(result.report);
+        monitors.reportScheduler.scheduleReport(result.report, {runImmediately: true});
       } catch (error) {
         console.error(`Error scheduling report: ${error}`);
       }

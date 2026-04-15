@@ -34,7 +34,7 @@ export class ReportScheduler {
     this.#scheduled.clear();
   }
 
-  scheduleReport(row: ReportAttributes): void {
+  scheduleReport(row: ReportAttributes, options: {runImmediately?: boolean} = {}): void {
     if (!row.intervalMs) {
       return;
     }
@@ -53,6 +53,12 @@ export class ReportScheduler {
 
     this.#scheduled.set(row.id, {reportId: row.id, timer});
     console.log(`Scheduled report "${row.id}" (${row.reportName}) every ${ms(row.intervalMs, {long: true})}`);
+
+    if (options.runImmediately) {
+      this.#runAndNotify(row).catch(error => {
+        console.error(`Initial run of scheduled report ${row.id} (${row.reportName}) failed:`, error);
+      });
+    }
   }
 
   unscheduleReport(reportId: number): void {

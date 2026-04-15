@@ -593,7 +593,7 @@ export class TelegramPlatform implements MessagingPlatform {
       await replyWithMarkdown(ctx, result.message);
 
       if (result.report?.intervalMs && this.#reportScheduler) {
-        this.#reportScheduler.scheduleReport(result.report);
+        this.#reportScheduler.scheduleReport(result.report, {runImmediately: true});
       }
     });
   }
