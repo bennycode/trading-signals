@@ -6,6 +6,7 @@ import {BarsResponseSchema, LatestBarsResponseSchema} from './schema/BarSchema.j
 import {ClockSchema} from './schema/ClockSchema.js';
 import {OrderSchema, type AssetClassValue} from './schema/OrderSchema.js';
 import {PositionSchema} from './schema/PositionSchema.js';
+import {SnapshotsResponseSchema} from './schema/SnapshotSchema.js';
 import {z} from 'zod';
 
 function hasResponseCode(error: AxiosError): error is AxiosError<{code: number}> {
@@ -86,6 +87,12 @@ export class AlpacaAPI {
   }) {
     const response = await this.#marketDataClient.get('/v2/stocks/bars', {params});
     return BarsResponseSchema.parse(response.data);
+  }
+
+  /** @see https://docs.alpaca.markets/reference/stocksnapshots-1 */
+  async getStockSnapshots(params: {feed: string; symbols: string}) {
+    const response = await this.#marketDataClient.get('/v2/stocks/snapshots', {params});
+    return SnapshotsResponseSchema.parse(response.data);
   }
 
   /** @see https://docs.alpaca.markets/reference/cryptobars-1 */

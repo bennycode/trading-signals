@@ -3,7 +3,7 @@ import {AlpacaAPI} from '@typedtrader/exchange';
 import type {Bar} from '@typedtrader/exchange';
 import {ER} from 'trading-signals';
 import {MESSAGE_BREAK, Report} from '../report/Report.js';
-import {SP500_TICKERS} from '../report-sp500-momentum/sp500Tickers.js';
+import {SP500_TICKERS} from '../util/sp500Tickers.js';
 import {ScalpStrategy} from '../strategy-scalp/ScalpStrategy.js';
 import {suggestScalpOffset} from '../strategy-scalp/suggestScalpOffset.js';
 import {fetchUsEquityNames, formatSymbolWithName, TELEGRAM_TABLE_NAME_MAX} from '../util/formatSymbolWithName.js';
@@ -36,7 +36,7 @@ interface DailyBar {
   low: number;
 }
 
-const BATCH_SIZE = 50;
+const BATCH_SIZE = 1000;
 
 export class ScalpScannerReport extends Report<ScalpScannerConfig> {
   static override NAME = '@typedtrader/report-scalp-scanner';

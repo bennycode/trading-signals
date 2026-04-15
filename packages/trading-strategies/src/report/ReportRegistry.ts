@@ -1,5 +1,6 @@
 import type {z} from 'zod';
 import type {Report} from './Report.js';
+import {SP500HeatmapReport, SP500HeatmapSchema} from '../report-sp500-heatmap/SP500HeatmapReport.js';
 import {SP500MomentumReport, SP500MomentumSchema} from '../report-sp500-momentum/SP500MomentumReport.js';
 import {ScalpScannerReport, ScalpScannerSchema} from '../report-scalp-scanner/ScalpScannerReport.js';
 
@@ -20,6 +21,12 @@ interface ReportEntry {
 }
 
 const registry: Record<string, ReportEntry> = {
+  [SP500HeatmapReport.NAME]: {
+    create: (config: unknown) => new SP500HeatmapReport(SP500HeatmapSchema.parse(config)),
+    schema: SP500HeatmapSchema,
+    requiresAccount: true,
+    resolveConfig: () => ({}),
+  },
   [SP500MomentumReport.NAME]: {
     create: (config: unknown) => new SP500MomentumReport(SP500MomentumSchema.parse(config)),
     schema: SP500MomentumSchema,

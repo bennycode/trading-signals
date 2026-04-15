@@ -10,5 +10,6 @@ export * from './api/schema/BarSchema.js';
 export * from './api/schema/ClockSchema.js';
 export * from './api/schema/OrderSchema.js';
 export * from './api/schema/PositionSchema.js';
+export * from './api/schema/SnapshotSchema.js';
 export * from './api/schema/StreamSchema.js';
 export * from './api/schema/TradingStreamSchema.js';

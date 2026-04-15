@@ -321,7 +321,14 @@ export class TelegramPlatform implements MessagingPlatform {
 
   constructor(botToken: string, ownerIds?: string) {
     this.#bot = new Bot<TradeContext>(botToken);
-    this.#ownerIds = ownerIds ? ownerIds.split(',').map(id => id.trim()) : [];
+    // Filter out empty entries so whitespace- or comma-only inputs (e.g. " " or ",")
+    // collapse to an empty list and are treated as open mode, not as a list of empty IDs.
+    this.#ownerIds = ownerIds
+      ? ownerIds
+          .split(',')
+          .map(id => id.trim())
+          .filter(id => id.length > 0)
+      : [];
 
     // Normalize incoming /Commands to lowercase so grammY's case-sensitive
     // command matching accepts any casing (/reportAdd, /REPORTADD, /repOrTADd).
@@ -401,14 +408,13 @@ export class TelegramPlatform implements MessagingPlatform {
    * for downstream queries — the double-check is defense-in-depth against a
    * future handler that bypasses the middleware.
    *
-   * The empty-owner-list case cannot reach this helper at runtime: `start()`
-   * throws when `TELEGRAM_OWNER_IDS` is unset, so the bot refuses to boot
-   * instead of silently dropping every message.
+   * When `TELEGRAM_OWNER_IDS` is empty, the bot runs in open mode and accepts
+   * messages from anyone. `start()` logs a warning in this case.
    */
   #authorizedUserId(ctx: Context): string | null {
     const senderId = ctx.from?.id?.toString();
     if (!senderId) return null;
-    if (this.#ownerIds.length === 0) return null;
+    if (this.#ownerIds.length === 0) return `${PLATFORM_PREFIX}${senderId}`;
     if (!this.#ownerIds.includes(senderId)) {
       console.warn(
         `Ignoring Telegram update from "${senderId}" — only owners [${this.#ownerIds.join(', ')}] are authorized.`
@@ -652,13 +658,10 @@ export class TelegramPlatform implements MessagingPlatform {
 
   async start(): Promise<void> {
     if (this.#ownerIds.length === 0) {
-      throw new Error(
-        'TELEGRAM_OWNER_IDS is not set. Refusing to start the Telegram bot — without an ' +
-          'owner list the bot would accept messages from anyone. Set TELEGRAM_OWNER_IDS ' +
-          'to a comma-separated list of Telegram user IDs.'
-      );
+      console.warn('TELEGRAM_OWNER_IDS is unset or empty — the bot is running in open mode and will accept messages from anyone.');
+    } else {
+      console.log(`Only Telegram user IDs (${this.#ownerIds.join(', ')}) can message the bot.`);
     }
-    console.log(`Only Telegram user IDs (${this.#ownerIds.join(', ')}) can message the bot.`);
 
     await this.#bot.init();
     this.#platformInfo = {

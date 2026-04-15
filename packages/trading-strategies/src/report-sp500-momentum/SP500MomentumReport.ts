@@ -3,7 +3,7 @@ import {AlpacaAPI} from '@typedtrader/exchange';
 import {MESSAGE_BREAK, Report} from '../report/Report.js';
 import {fetchUsEquityNames, formatSymbolWithName, TELEGRAM_TABLE_NAME_MAX} from '../util/formatSymbolWithName.js';
 import {findFirstTradingDay, getDateString} from '../util/TimeUtil.js';
-import {SP500_TICKERS} from './sp500Tickers.js';
+import {SP500_TICKERS} from '../util/sp500Tickers.js';
 
 export const SP500MomentumSchema = z.object({
   apiKey: z.string().min(1),
@@ -19,7 +19,7 @@ interface MomentumResult {
   returnPct: number;
 }
 
-const BATCH_SIZE = 50;
+const BATCH_SIZE = 1000;
 
 export class SP500MomentumReport extends Report<SP500MomentumConfig> {
   static override NAME = '@typedtrader/report-sp500-momentum';
