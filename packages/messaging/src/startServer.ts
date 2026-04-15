@@ -19,7 +19,7 @@ import {
   watchRemove,
 } from './command/index.js';
 import {initializeDatabase} from './database/initializeDatabase.js';
-import type {CommandHandler, MessagingPlatform} from './platform/index.js';
+import type {MessagingPlatform} from './platform/index.js';
 import {TelegramPlatform} from './platform/TelegramPlatform.js';
 import {WatchMonitor, StrategyMonitor, ReportScheduler} from './service/index.js';
 
@@ -169,17 +169,6 @@ function registerCommands(platform: MessagingPlatform, monitors: Monitors): void
       monitors.reportScheduler.unscheduleReport(result.reportId);
     }
   });
-
-  // Trade commands run as interactive wizards on Telegram (account picker +
-  // Yes/No confirmation). The fallback handler below only runs on platforms
-  // that don't install a wizard override — currently none do.
-  const tradeFallback: CommandHandler = async ctx => {
-    await ctx.reply('Trade commands are only supported on Telegram right now.');
-  };
-  platform.registerCommand('buymarket', tradeFallback);
-  platform.registerCommand('sellmarket', tradeFallback);
-  platform.registerCommand('buylimit', tradeFallback);
-  platform.registerCommand('selllimit', tradeFallback);
 
   platform.registerCommand('myaddress', async ctx => {
     await ctx.reply(`Your address is: ${ctx.senderId.split(':').slice(1).join(':')}`);

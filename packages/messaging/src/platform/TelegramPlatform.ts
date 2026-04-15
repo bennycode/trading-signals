@@ -29,10 +29,6 @@ const TRADE_CONVERSATION_ID = 'trade';
 const TRADE_COMMAND_NAMES = ['buymarket', 'sellmarket', 'buylimit', 'selllimit'] as const;
 type TradeCommandName = (typeof TRADE_COMMAND_NAMES)[number];
 
-function isTradeCommandName(name: string): name is TradeCommandName {
-  return (TRADE_COMMAND_NAMES as readonly string[]).includes(name);
-}
-
 interface TradeCommandShape {
   side: ExchangeOrderSide;
   isLimit: boolean;
@@ -157,8 +153,8 @@ async function tradeWizard(
   // conversations engine records the value in the replay log instead of
   // re-executing the query on every resume. Only return the fields needed
   // for the picker so sensitive credentials are not persisted in replay state.
-  const accounts = await conversation.external(async () =>
-    (await Account.findByUserId(userId)).map(acc => ({
+  const accounts = await conversation.external(() =>
+    Account.findByUserId(userId).map(acc => ({
       id: acc.id,
       name: acc.name,
       exchange: acc.exchange,
@@ -303,6 +299,13 @@ export class TelegramPlatform implements MessagingPlatform {
     // that calls `ctx.conversation.enter(...)`.
     this.#bot.use(conversations());
     this.#bot.use(createConversation(tradeWizard, TRADE_CONVERSATION_ID));
+
+    // Trade commands are Telegram-specific: they need inline keyboards and
+    // the conversations plugin, so they register themselves directly here
+    // instead of going through the cross-platform `registerCommand` interface.
+    for (const name of TRADE_COMMAND_NAMES) {
+      this.#registerTradeCommand(name);
+    }
   }
 
   setReportScheduler(scheduler: ReportScheduler): void {
@@ -318,16 +321,6 @@ export class TelegramPlatform implements MessagingPlatform {
     // reportadd is handled via inline keyboard buttons
     if (names.includes('reportadd')) {
       this.#registerReportAddCommand();
-      return;
-    }
-
-    // Trade commands enter the shared `tradeWizard` conversation registered
-    // in the constructor. Each command just parses its args and hands off.
-    const tradeNames = names.filter(isTradeCommandName);
-    if (tradeNames.length > 0) {
-      for (const tradeName of tradeNames) {
-        this.#registerTradeCommand(tradeName);
-      }
       return;
     }
 
@@ -509,6 +502,12 @@ export class TelegramPlatform implements MessagingPlatform {
   }
 
   #registerTradeCommand(name: TradeCommandName): void {
+    // Record the command name so it appears in `/help`. The handler stored
+    // here is never invoked directly — the real wizard runs via the
+    // `bot.command(...)` handler installed below — but `commandList` reads
+    // from `#commands`.
+    this.#commands.set(name, async () => {});
+
     this.#bot.command(name, async ctx => {
       const senderId = ctx.from?.id?.toString();
       if (!senderId) {
