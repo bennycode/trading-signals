@@ -3,11 +3,11 @@ import Big from 'big.js';
 import {CandleBatcher, ExchangeOrderSide, ExchangeOrderType} from '@typedtrader/exchange';
 import type {ExchangeFill, OneMinuteBatchedCandle, OrderAdvice, TradingSessionState} from '@typedtrader/exchange';
 import {EMA, ER} from 'trading-signals';
-import {Strategy} from '../strategy/Strategy.js';
+import {ProtectedStrategy, ProtectedStrategySchema} from '../strategy-protected/ProtectedStrategy.js';
 import {positiveNumberString} from '../util/validators.js';
 import {suggestScalpOffset} from './suggestScalpOffset.js';
 
-export const ScalpSchema = z.object({
+export const ScalpSchema = ProtectedStrategySchema.extend({
   /** Nominal price offset for each leg of the scalp (e.g., "0.10" means sell at fill+0.10, re-buy at fill-0.10).
    *  When omitted, the offset is auto-computed from historical candles passed to `init()`. */
   offset: positiveNumberString.optional(),
@@ -25,7 +25,7 @@ type ScalpState = {
   lastFillSide: ExchangeOrderSide | null;
 };
 
-export class ScalpStrategy extends Strategy {
+export class ScalpStrategy extends ProtectedStrategy {
   static override NAME = '@typedtrader/strategy-scalp';
   static readonly ER_THRESHOLD = 0.4;
 
@@ -127,7 +127,8 @@ export class ScalpStrategy extends Strategy {
     return er.getResultOrThrow() < ScalpStrategy.ER_THRESHOLD;
   }
 
-  async onFill(fill: ExchangeFill, _state: TradingSessionState): Promise<void> {
+  override async onFill(fill: ExchangeFill, state: TradingSessionState): Promise<void> {
+    await super.onFill(fill, state);
     this.#state.lastFillPrice = fill.price;
     this.#state.lastFillSide = fill.side;
     this.#state.phase = 'pendingAdvice';
@@ -149,7 +150,12 @@ export class ScalpStrategy extends Strategy {
     }
   }
 
-  protected override async processCandle(candle: OneMinuteBatchedCandle, _state: TradingSessionState): Promise<OrderAdvice | void> {
+  protected override async processCandle(candle: OneMinuteBatchedCandle, state: TradingSessionState): Promise<OrderAdvice | void> {
+    const guardAdvice = await super.processCandle(candle, state);
+    if (guardAdvice) {
+      return guardAdvice;
+    }
+
     if (this.#state.phase === 'entry') {
       return this.#handleEntry(candle);
     }

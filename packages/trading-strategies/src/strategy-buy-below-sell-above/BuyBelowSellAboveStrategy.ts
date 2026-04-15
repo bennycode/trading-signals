@@ -2,17 +2,17 @@ import {z} from 'zod';
 import {ExchangeOrderSide, ExchangeOrderType} from '@typedtrader/exchange';
 import type {OneMinuteBatchedCandle, OrderAdvice, TradingSessionState} from '@typedtrader/exchange';
 import Big from 'big.js';
-import {Strategy} from '../strategy/Strategy.js';
+import {ProtectedStrategy, ProtectedStrategySchema} from '../strategy-protected/ProtectedStrategy.js';
 import {positiveNumberString} from '../util/validators.js';
 
-export const BuyBelowSellAboveSchema = z.object({
+export const BuyBelowSellAboveSchema = ProtectedStrategySchema.extend({
   buyBelow: positiveNumberString.optional(),
   sellAbove: positiveNumberString.optional(),
 });
 
-export type BuyBelowSellAboveConfig = z.infer<typeof BuyBelowSellAboveSchema>;
+export type BuyBelowSellAboveConfig = z.input<typeof BuyBelowSellAboveSchema>;
 
-export class BuyBelowSellAboveStrategy extends Strategy {
+export class BuyBelowSellAboveStrategy extends ProtectedStrategy {
   static override NAME = '@typedtrader/strategy-buy-below-sell-above';
 
   constructor(config: BuyBelowSellAboveConfig = {}) {
@@ -23,7 +23,12 @@ export class BuyBelowSellAboveStrategy extends Strategy {
     return this.getProxiedConfig<BuyBelowSellAboveConfig>();
   }
 
-  protected override async processCandle(candle: OneMinuteBatchedCandle, _state: TradingSessionState): Promise<OrderAdvice | void> {
+  protected override async processCandle(candle: OneMinuteBatchedCandle, state: TradingSessionState): Promise<OrderAdvice | void> {
+    const guardAdvice = await super.processCandle(candle, state);
+    if (guardAdvice) {
+      return guardAdvice;
+    }
+
     const closePrice = candle.close;
 
     if (this.#config.buyBelow !== undefined) {

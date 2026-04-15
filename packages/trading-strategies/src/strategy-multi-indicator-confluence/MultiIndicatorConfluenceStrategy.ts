@@ -2,31 +2,30 @@ import {z} from 'zod';
 import {ExchangeOrderSide, ExchangeOrderType} from '@typedtrader/exchange';
 import type {OneMinuteBatchedCandle, OrderAdvice, TradingSessionState} from '@typedtrader/exchange';
 import {BollingerBands, EMA, MACD, RSI} from 'trading-signals';
-import {Strategy} from '../strategy/Strategy.js';
+import {ProtectedStrategy, ProtectedStrategySchema} from '../strategy-protected/ProtectedStrategy.js';
 
-export const MultiIndicatorConfluenceSchema = z
-  .object({
-    /** EMA short period for trend detection. */
-    emaShortPeriod: z.number().int().positive(),
-    /** EMA long period for trend detection. */
-    emaLongPeriod: z.number().int().positive(),
-    /** MACD short EMA period. */
-    macdShortPeriod: z.number().int().positive(),
-    /** MACD long EMA period. */
-    macdLongPeriod: z.number().int().positive(),
-    /** MACD signal EMA period. */
-    macdSignalPeriod: z.number().int().positive(),
-    /** Bollinger Bands period. */
-    bollingerPeriod: z.number().int().positive(),
-    /** Bollinger Bands standard deviation multiplier. */
-    bollingerDeviationMultiplier: z.number().positive(),
-    /** RSI period. */
-    rsiPeriod: z.number().int().positive(),
-    /** RSI overbought threshold (veto BUY above this). */
-    rsiOverbought: z.number().positive().max(100),
-    /** RSI oversold threshold (veto SELL below this). */
-    rsiOversold: z.number().positive().max(100),
-  })
+export const MultiIndicatorConfluenceSchema = ProtectedStrategySchema.extend({
+  /** EMA short period for trend detection. */
+  emaShortPeriod: z.number().int().positive(),
+  /** EMA long period for trend detection. */
+  emaLongPeriod: z.number().int().positive(),
+  /** MACD short EMA period. */
+  macdShortPeriod: z.number().int().positive(),
+  /** MACD long EMA period. */
+  macdLongPeriod: z.number().int().positive(),
+  /** MACD signal EMA period. */
+  macdSignalPeriod: z.number().int().positive(),
+  /** Bollinger Bands period. */
+  bollingerPeriod: z.number().int().positive(),
+  /** Bollinger Bands standard deviation multiplier. */
+  bollingerDeviationMultiplier: z.number().positive(),
+  /** RSI period. */
+  rsiPeriod: z.number().int().positive(),
+  /** RSI overbought threshold (veto BUY above this). */
+  rsiOverbought: z.number().positive().max(100),
+  /** RSI oversold threshold (veto SELL below this). */
+  rsiOversold: z.number().positive().max(100),
+})
   .refine(data => data.emaShortPeriod < data.emaLongPeriod, {
     message: 'emaShortPeriod must be less than emaLongPeriod',
     path: ['emaShortPeriod'],
@@ -40,9 +39,9 @@ export const MultiIndicatorConfluenceSchema = z
     path: ['rsiOversold'],
   });
 
-export type MultiIndicatorConfluenceConfig = z.infer<typeof MultiIndicatorConfluenceSchema>;
+export type MultiIndicatorConfluenceConfig = z.input<typeof MultiIndicatorConfluenceSchema>;
 
-export class MultiIndicatorConfluenceStrategy extends Strategy {
+export class MultiIndicatorConfluenceStrategy extends ProtectedStrategy {
   static override NAME = '@typedtrader/strategy-multi-indicator-confluence';
 
   readonly #emaShort: EMA;
@@ -96,7 +95,12 @@ export class MultiIndicatorConfluenceStrategy extends Strategy {
     return this.#candlesProcessed;
   }
 
-  protected override async processCandle(candle: OneMinuteBatchedCandle, _state: TradingSessionState): Promise<OrderAdvice | void> {
+  protected override async processCandle(candle: OneMinuteBatchedCandle, state: TradingSessionState): Promise<OrderAdvice | void> {
+    const guardAdvice = await super.processCandle(candle, state);
+    if (guardAdvice) {
+      return guardAdvice;
+    }
+
     const closePrice = candle.close.toNumber();
 
     this.#emaShort.add(closePrice);
