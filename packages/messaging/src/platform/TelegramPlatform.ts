@@ -522,10 +522,16 @@ export class TelegramPlatform implements MessagingPlatform {
       const senderId = ctx.from?.id?.toString();
       if (!senderId) return;
 
-      await ctx.editMessageText(`Scheduling report: ${reportInput.split(' ')[0]} every ${interval}...`);
-
       const userId = `${PLATFORM_PREFIX}${senderId}`;
-      const intervalMs = assertInterval(interval);
+      let intervalMs: number;
+      try {
+        intervalMs = assertInterval(interval);
+      } catch {
+        await ctx.editMessageText(`Invalid interval "${interval}". Please select one of: 1m, 1h, 6h, 12h, 1d, 1w.`);
+        return;
+      }
+
+      await ctx.editMessageText(`Scheduling report: ${reportInput.split(' ')[0]} every ${interval}...`);
       const result = await reportAdd(reportInput, userId, {intervalMs});
 
       await replyWithMarkdown(ctx, result.message);

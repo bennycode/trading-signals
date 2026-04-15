@@ -1,6 +1,7 @@
 import {describe, it, expect, vi, beforeEach} from 'vitest';
 import type {Context} from 'grammy';
 import {TelegramPlatform, lowercaseCommandMiddleware} from './TelegramPlatform.js';
+import {reportAdd} from '../command/report/reportAdd.js';
 
 const mockSendMessage = vi.fn();
 const mockInit = vi.fn();
@@ -10,6 +11,7 @@ const mockCommand = vi.fn();
 const mockCallbackQuery = vi.fn();
 const mockUse = vi.fn();
 const botInfo = {username: 'testbot'};
+const mockedReportAdd = vi.mocked(reportAdd);
 
 vi.mock('trading-strategies', () => ({
   MESSAGE_BREAK: '\f',
@@ -85,6 +87,12 @@ describe('TelegramPlatform', () => {
   });
 
   describe('registerCommand', () => {
+    const findRegisteredCallbackQuery = (pattern: string) => {
+      const call = mockCallbackQuery.mock.calls.find(([regex]) => regex instanceof RegExp && regex.source.includes(pattern));
+      if (!call) throw new Error(`bot.callbackQuery was never called with pattern "${pattern}"`);
+      return call[1];
+    };
+
     it('stores the command handler and registers it with the bot', () => {
       const platform = new TelegramPlatform('bot-token');
 
@@ -106,6 +114,27 @@ describe('TelegramPlatform', () => {
       // while the display name stays camelCase.
       expect(mockCommand).toHaveBeenCalledWith('reportadd', expect.any(Function));
       expect(mockCallbackQuery).toHaveBeenCalledWith(expect.any(RegExp), expect.any(Function));
+    });
+
+    it('handles malformed schedule interval callback payloads without throwing', async () => {
+      const platform = new TelegramPlatform('bot-token');
+
+      platform.registerCommand('reportAdd', vi.fn());
+
+      const callback = findRegisteredCallbackQuery('reportinterval');
+      const ctx = {
+        answerCallbackQuery: vi.fn().mockResolvedValue(undefined),
+        editMessageText: vi.fn().mockResolvedValue(undefined),
+        from: {id: 123},
+        match: ['', 'not-an-interval', 'rsi'],
+      };
+
+      await callback(ctx as never);
+
+      expect(ctx.editMessageText).toHaveBeenCalledWith(
+        'Invalid interval "not-an-interval". Please select one of: 1m, 1h, 6h, 12h, 1d, 1w.'
+      );
+      expect(mockedReportAdd).not.toHaveBeenCalled();
     });
   });
 
