@@ -110,7 +110,7 @@ export class StrategyMonitor {
     });
 
     session.on('error', (error: Error) => {
-      logger.error({strategyId: row.id, strategyName: row.strategyName, errorMessage: error.message}, 'Strategy error');
+      logger.error({err: error, strategyId: row.id, strategyName: row.strategyName}, 'Strategy error');
     });
 
     await session.start();
