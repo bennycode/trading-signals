@@ -1,5 +1,6 @@
 import type {ExchangeCandle} from '@typedtrader/exchange';
 import {strategyDefinitions, type StrategyId} from '../utils/strategySchemas';
+import {SchemaReference} from './SchemaReference';
 
 interface StrategyConfiguratorProps {
   selectedStrategy: StrategyId;
@@ -54,6 +55,7 @@ export function StrategyConfigurator({
         }`}
       />
       {validationError && <p className="mt-1 text-xs text-red-400">{validationError}</p>}
+      <SchemaReference schema={definition.schema} />
     </div>
   );
 }

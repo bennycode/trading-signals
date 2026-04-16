@@ -2,6 +2,7 @@ import Database from 'better-sqlite3-multiple-ciphers';
 import {drizzle} from 'drizzle-orm/better-sqlite3';
 import {migrate} from 'drizzle-orm/better-sqlite3/migrator';
 import path from 'node:path';
+import {logger} from '../logger.js';
 
 const dbDirectory = process.env.TYPEDTRADER_DB_DIRECTORY;
 const encryptionKey = process.env.TYPEDTRADER_DB_ENCRYPTION_KEY;
@@ -25,5 +26,5 @@ const db = drizzle(sqlite);
 // Run migrations
 migrate(db, {migrationsFolder: path.join(import.meta.dirname, '../../migrations')});
 
-console.log('Migrations completed successfully');
+logger.info('Migrations completed successfully');
 sqlite.close();

@@ -4,13 +4,13 @@ import {AlpacaExchangeMock, TradingPair} from '@typedtrader/exchange';
 import type {ExchangeCandle} from '@typedtrader/exchange';
 import {
   BacktestExecutor,
-  BuyAndHoldStrategy,
   BuyOnceStrategy,
   BuyBelowSellAboveStrategy,
   CoinFlipStrategy,
   MultiIndicatorConfluenceStrategy,
   ScalpStrategy,
   MeanReversionStrategy,
+  ProtectedStrategy,
   type BacktestResult,
   BuyOnceConfig,
   BuyBelowSellAboveConfig,
@@ -28,7 +28,7 @@ import {strategyDefinitions, type StrategyId} from '../utils/strategySchemas';
 function createStrategy(strategyId: StrategyId, config: Record<string, unknown>) {
   switch (strategyId) {
     case 'buy-and-hold':
-      return new BuyAndHoldStrategy(config);
+      return new BuyOnceStrategy(config as BuyOnceConfig);
     case 'coin-flip':
       return new CoinFlipStrategy(config);
     case 'buy-once':
@@ -41,6 +41,8 @@ function createStrategy(strategyId: StrategyId, config: Record<string, unknown>)
       return new ScalpStrategy(config as ScalpConfig);
     case 'mean-reversion':
       return new MeanReversionStrategy({config});
+    case 'protection-only':
+      return new ProtectedStrategy({config});
   }
 }
 
@@ -189,7 +191,7 @@ export default function BacktestPage() {
         new BacktestExecutor({
           candles,
           exchange: createExchange(candles, initialBase, initialCounter),
-          strategy: new BuyAndHoldStrategy(),
+          strategy: new BuyOnceStrategy(),
           tradingPair,
         }).execute(),
       ]);

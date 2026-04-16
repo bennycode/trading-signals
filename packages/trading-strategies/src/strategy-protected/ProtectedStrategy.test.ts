@@ -3,6 +3,7 @@ import {ms} from 'ms';
 import {describe, expect, it, vi} from 'vitest';
 import {z} from 'zod';
 import {
+  ALL_AVAILABLE_AMOUNT,
   CandleBatcher,
   ExchangeOrderPosition,
   ExchangeOrderSide,
@@ -117,7 +118,7 @@ class TestProtectedStrategy extends ProtectedStrategy {
       return {
         side: ExchangeOrderSide.BUY,
         type: ExchangeOrderType.MARKET,
-        amount: null,
+        amount: ALL_AVAILABLE_AMOUNT,
         amountIn: 'counter',
         reason: 'test buy',
       };
@@ -166,7 +167,7 @@ describe('ProtectedStrategy', () => {
       const advice = await strategy.onCandle(makeCandle(95), mockState);
 
       assertLimitSell(advice);
-      expect(advice.amount).toBeNull();
+      expect(advice.amount).toBe(ALL_AVAILABLE_AMOUNT);
       expect(advice.amountIn).toBe('base');
       expect(new Big(advice.price).toFixed(2)).toBe('95.00');
       expect(advice.reason).toContain('[KILL SWITCH]');
@@ -307,6 +308,97 @@ describe('ProtectedStrategy', () => {
       expect(advice).toBeDefined();
       expect(advice!.side).toBe(ExchangeOrderSide.BUY);
       expect(strategy.ownLogicCallCount).toBe(1);
+    });
+  });
+
+  describe('seedFromBalance', () => {
+    const stateWithPosition: TradingSessionState = {
+      ...mockState,
+      baseBalance: new Big(10),
+    };
+
+    it('seeds position from account balance and first candle close', async () => {
+      const strategy = new TestProtectedStrategy({protected: {stopLossPct: '5', seedFromBalance: true}});
+
+      // First candle at 100 with 10 shares in account → seeds avgEntry=100, size=10
+      await strategy.onCandle(makeCandle(100), stateWithPosition);
+
+      expect(strategy.protectedState.totalPositionSize).toBe('10');
+      expect(strategy.protectedState.totalCostBasis).toBe('1000');
+    });
+
+    it('fires stop-loss relative to the seeded baseline price', async () => {
+      const strategy = new TestProtectedStrategy({protected: {stopLossPct: '5', seedFromBalance: true}});
+
+      // Seed at 100
+      await strategy.onCandle(makeCandle(100), stateWithPosition);
+
+      // Price drops 5% → should fire
+      const advice = await strategy.onCandle(makeCandle(95), stateWithPosition);
+      assertLimitSell(advice);
+      expect(new Big(advice.price).toFixed(2)).toBe('95.00');
+    });
+
+    it('fires take-profit relative to the seeded baseline price', async () => {
+      const strategy = new TestProtectedStrategy({protected: {takeProfitPct: '10', seedFromBalance: true}});
+
+      // Seed at 100
+      await strategy.onCandle(makeCandle(100), stateWithPosition);
+
+      // Price rises 10% → should fire
+      const advice = await strategy.onCandle(makeCandle(110), stateWithPosition);
+      assertLimitSell(advice);
+      expect(new Big(advice.price).toFixed(2)).toBe('110.00');
+    });
+
+    it('does not seed when baseBalance is zero', async () => {
+      const strategy = new TestProtectedStrategy({protected: {stopLossPct: '5', seedFromBalance: true}, signalAdvice: true});
+
+      const advice = await strategy.onCandle(makeCandle(100), mockState);
+
+      expect(strategy.protectedState.totalPositionSize).toBe('0');
+      expect(advice).toBeDefined();
+      expect(advice!.side).toBe(ExchangeOrderSide.BUY);
+    });
+
+    it('does not seed when seedFromBalance is false (default)', async () => {
+      const strategy = new TestProtectedStrategy({protected: {stopLossPct: '5'}, signalAdvice: true});
+
+      const advice = await strategy.onCandle(makeCandle(100), stateWithPosition);
+
+      expect(strategy.protectedState.totalPositionSize).toBe('0');
+      expect(advice).toBeDefined();
+      expect(advice!.side).toBe(ExchangeOrderSide.BUY);
+    });
+
+    it('does not re-seed after position was already tracked via onFill', async () => {
+      const strategy = new TestProtectedStrategy({protected: {stopLossPct: '5', seedFromBalance: true}});
+
+      // Position tracked via fill at 80
+      await strategy.onFill(makeFill('80', '10', ExchangeOrderSide.BUY), mockState);
+
+      // Candle at 100 should NOT overwrite the fill-based tracking
+      await strategy.onCandle(makeCandle(100), stateWithPosition);
+
+      expect(strategy.protectedState.totalCostBasis).toBe('800');
+      expect(strategy.protectedState.totalPositionSize).toBe('10');
+    });
+
+    it('persists seeded state through restoreState', async () => {
+      const strategy = new TestProtectedStrategy({protected: {stopLossPct: '5', seedFromBalance: true}});
+      await strategy.onCandle(makeCandle(100), stateWithPosition);
+
+      const snapshot = strategy.state;
+
+      const restored = new TestProtectedStrategy({protected: {stopLossPct: '5', seedFromBalance: true}});
+      restored.restoreState(snapshot!);
+
+      expect(restored.protectedState.totalPositionSize).toBe('10');
+      expect(restored.protectedState.totalCostBasis).toBe('1000');
+
+      // Guard should fire on restored instance
+      const advice = await restored.onCandle(makeCandle(95), stateWithPosition);
+      assertLimitSell(advice);
     });
   });
 
@@ -720,7 +812,7 @@ describe('ProtectedStrategy', () => {
 
       const advice = await strategy.onCandle(makeCandle(95), mockState);
       assertMarketSell(advice);
-      expect(advice.amount).toBeNull();
+      expect(advice.amount).toBe(ALL_AVAILABLE_AMOUNT);
       expect(advice.amountIn).toBe('base');
       expect(advice.reason).toContain('[KILL SWITCH]');
       expect(advice.reason).toContain('Stop-loss');

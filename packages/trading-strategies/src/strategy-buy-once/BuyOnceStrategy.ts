@@ -1,14 +1,14 @@
 import {z} from 'zod';
-import {ExchangeOrderSide, ExchangeOrderType} from '@typedtrader/exchange';
+import {ALL_AVAILABLE_AMOUNT, ExchangeOrderSide, ExchangeOrderType} from '@typedtrader/exchange';
 import type {OneMinuteBatchedCandle, OrderAdvice, TradingSessionState} from '@typedtrader/exchange';
 import Big from 'big.js';
 import {ProtectedStrategy, ProtectedStrategySchema} from '../strategy-protected/ProtectedStrategy.js';
-import {positiveNumberString} from '../util/validators.js';
+import {BuyAmountSchema, positiveNumberString} from '../util/validators.js';
 
 export const BuyOnceSchema = ProtectedStrategySchema.extend({
-  /** The price at which to place the buy order. */
-  buyAt: positiveNumberString,
-});
+  /** The limit price at which to place the buy order. When omitted, buys immediately at market price. */
+  buyAt: positiveNumberString.optional(),
+}).and(BuyAmountSchema);
 
 export type BuyOnceConfig = z.input<typeof BuyOnceSchema>;
 
@@ -17,13 +17,14 @@ type BuyOnceState = {
 };
 
 /**
- * Signals a single limit buy when the candle's close price drops to or below the predefined price.
- * After the buy is triggered, the strategy stays silent for all remaining candles.
+ * Buys once and then stays silent. When `buyAt` is set, waits for the close
+ * price to drop to that level and places a limit order. When `buyAt` is
+ * omitted, buys immediately on the first candle with a market order.
  */
 export class BuyOnceStrategy extends ProtectedStrategy {
   static override NAME = '@typedtrader/strategy-buy-once';
 
-  constructor(config: BuyOnceConfig) {
+  constructor(config: BuyOnceConfig = {}) {
     super({config, state: {bought: false}});
   }
 
@@ -45,7 +46,27 @@ export class BuyOnceStrategy extends ProtectedStrategy {
       return undefined;
     }
 
-    const buyAtPrice = new Big(this.#config.buyAt);
+    const {buyAt, quantity, spend} = this.#config;
+
+    if (!buyAt) {
+      this.#state.bought = true;
+      if (quantity) {
+        return {
+          side: ExchangeOrderSide.BUY,
+          type: ExchangeOrderType.MARKET,
+          amount: quantity,
+          amountIn: 'base',
+        };
+      }
+      return {
+        side: ExchangeOrderSide.BUY,
+        type: ExchangeOrderType.MARKET,
+        amount: spend ?? ALL_AVAILABLE_AMOUNT,
+        amountIn: 'counter',
+      };
+    }
+
+    const buyAtPrice = new Big(buyAt);
 
     if (candle.close.gt(buyAtPrice)) {
       return undefined;
@@ -53,10 +74,17 @@ export class BuyOnceStrategy extends ProtectedStrategy {
 
     this.#state.bought = true;
 
+    let amount: string | typeof ALL_AVAILABLE_AMOUNT = ALL_AVAILABLE_AMOUNT;
+    if (quantity) {
+      amount = quantity;
+    } else if (spend) {
+      amount = new Big(spend).div(buyAtPrice).toFixed();
+    }
+
     return {
       side: ExchangeOrderSide.BUY,
       type: ExchangeOrderType.LIMIT,
-      amount: null,
+      amount,
       amountIn: 'base',
       price: buyAtPrice,
     };

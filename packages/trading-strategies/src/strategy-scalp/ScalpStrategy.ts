@@ -1,6 +1,6 @@
 import {z} from 'zod';
 import Big from 'big.js';
-import {CandleBatcher, ExchangeOrderSide, ExchangeOrderType} from '@typedtrader/exchange';
+import {ALL_AVAILABLE_AMOUNT, CandleBatcher, ExchangeOrderSide, ExchangeOrderType} from '@typedtrader/exchange';
 import type {ExchangeFill, OneMinuteBatchedCandle, OrderAdvice, TradingSessionState} from '@typedtrader/exchange';
 import {EMA, ER} from 'trading-signals';
 import {ProtectedStrategy, ProtectedStrategySchema} from '../strategy-protected/ProtectedStrategy.js';
@@ -197,7 +197,7 @@ export class ScalpStrategy extends ProtectedStrategy {
     return {
       side: ExchangeOrderSide.BUY,
       type: ExchangeOrderType.MARKET,
-      amount: null,
+      amount: ALL_AVAILABLE_AMOUNT,
       amountIn: 'counter',
       reason: `Entry: price ${closePrice.toFixed(2)} above EMA(${this.#ema.interval}) ${emaValue.toFixed(2)}`,
     };
@@ -220,7 +220,7 @@ export class ScalpStrategy extends ProtectedStrategy {
       return {
         side: ExchangeOrderSide.SELL,
         type: ExchangeOrderType.LIMIT,
-        amount: null,
+        amount: ALL_AVAILABLE_AMOUNT,
         amountIn: 'base',
         price: sellPrice,
         reason: `Scalp sell: fill ${lastFillPrice.toFixed(2)} + offset ${offset.toFixed(2)}`,
@@ -233,7 +233,7 @@ export class ScalpStrategy extends ProtectedStrategy {
     return {
       side: ExchangeOrderSide.BUY,
       type: ExchangeOrderType.LIMIT,
-      amount: null,
+      amount: ALL_AVAILABLE_AMOUNT,
       amountIn: 'base',
       price: buyPrice,
       reason: `Scalp buy: fill ${lastFillPrice.toFixed(2)} - offset ${offset.toFixed(2)}`,

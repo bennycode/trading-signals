@@ -2,6 +2,7 @@ import {describe, it, expect, vi, beforeEach} from 'vitest';
 import type {Context} from 'grammy';
 import {TelegramPlatform, lowercaseCommandMiddleware} from './TelegramPlatform.js';
 import {reportAdd} from '../command/report/reportAdd.js';
+import {logger} from '../logger.js';
 
 const mockSendMessage = vi.fn();
 const mockInit = vi.fn();
@@ -327,7 +328,7 @@ describe('TelegramPlatform', () => {
     });
 
     it('starts in open mode with an empty owner list and warns about it', async () => {
-      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+      const warnSpy = vi.spyOn(logger, 'warn');
       const platform = new TelegramPlatform('bot-token');
 
       await platform.start();

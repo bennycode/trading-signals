@@ -3,6 +3,7 @@ import {BetterSQLite3Database, drizzle} from 'drizzle-orm/better-sqlite3';
 import {migrate} from 'drizzle-orm/better-sqlite3/migrator';
 import path from 'node:path';
 import * as schema from './schema.js';
+import {logger} from '../logger.js';
 
 export let db: BetterSQLite3Database<typeof schema>;
 
@@ -29,5 +30,5 @@ export async function initializeDatabase() {
   // Run migrations
   migrate(db, {migrationsFolder: path.join(import.meta.dirname, '../../migrations')});
 
-  console.log(`TypedTrader database initialized successfully in "${dbPath}".`);
+  logger.info({dbPath}, 'TypedTrader database initialized successfully');
 }

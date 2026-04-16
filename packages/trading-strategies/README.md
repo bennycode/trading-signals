@@ -86,6 +86,54 @@ type Config = MultiIndicatorConfluenceConfig; // z.infer<typeof MultiIndicatorCo
 
 - **Asset identifiers** differ by market and licensing. A **ticker symbol** (e.g., `AAPL` for [Apple Inc.](https://en.wikipedia.org/wiki/Apple_Inc.)) is an exchange-specific code and not globally unique. An **ISIN** (`US0378331005`) is a 12-character global identifier under ISO 6166, while a **CUSIP** (`037833100`) is a 9-character code used mainly in the U.S. and Canada. Both ISIN and CUSIP databases are maintained by commercial organizations and require paid licenses for redistribution, which is why many open-source projects and free APIs rely on ticker symbols instead ([source](https://forum.alpaca.markets/t/is-there-a-list-for-all-etfs/9117/4)).
 
+## Strategies
+
+### BuyOnce
+
+Buys once and then stays silent. Supports two modes depending on whether `buyAt` is set:
+
+| Config | Behavior | Order type |
+| --- | --- | --- |
+| No `buyAt` | Buys immediately on the first candle | Market |
+| `buyAt: "95"` | Waits for the close price to drop to 95, then buys | Limit |
+
+**Sizing** is controlled with `quantity` or `spend` (mutually exclusive, enforced at the type level):
+
+| Config | Meaning |
+| --- | --- |
+| _(neither)_ | Spend all available counter balance |
+| `quantity: "10"` | Buy exactly 10 units of the base asset |
+| `spend: "500"` | Spend exactly 500 units of counter currency |
+
+All strategies extend `ProtectedStrategy`, so stop-loss and take-profit guards can be added via the `protected` key:
+
+```json
+{
+  "buyAt": "95",
+  "spend": "500",
+  "protected": {
+    "stopLossPct": "5",
+    "takeProfitPct": "10"
+  }
+}
+```
+
+### ProtectionOnly
+
+Never opens a position. Use with `seedFromBalance: true` to attach guards to an existing position:
+
+```json
+{
+  "protected": {
+    "stopLossPct": "5",
+    "takeProfitPct": "10",
+    "seedFromBalance": true
+  }
+}
+```
+
+The strategy seeds its position tracking from the account's base balance and the first candle's close price. Guards fire relative to that baseline.
+
 ## Strategy Signals
 
 - `BUY_MARKET`: Buy at current market price

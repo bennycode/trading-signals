@@ -16,6 +16,7 @@ import {reportAdd} from '../command/report/reportAdd.js';
 import {assertInterval} from '../validation/assertInterval.js';
 import {Account} from '../database/models/Account.js';
 import type {ReportScheduler} from '../service/ReportScheduler.js';
+import {logger} from '../logger.js';
 
 const PLATFORM_PREFIX = 'telegram:';
 const REPORT_CALLBACK_PREFIX = 'report:';
@@ -306,7 +307,7 @@ async function replyWithMarkdown(ctx: Context, text: string): Promise<void> {
     } catch (error) {
       // Log the escaper failure instead of silently swallowing it — a silent
       // fallback would hide a real escaper bug (and any XSS it enables).
-      console.warn('Falling back to plaintext after markdown→HTML render failure:', error);
+      logger.warn({err: error}, 'Falling back to plaintext after markdown-to-HTML render failure');
       await ctx.reply(chunk);
     }
   }
@@ -416,9 +417,7 @@ export class TelegramPlatform implements MessagingPlatform {
     if (!senderId) return null;
     if (this.#ownerIds.length === 0) return `${PLATFORM_PREFIX}${senderId}`;
     if (!this.#ownerIds.includes(senderId)) {
-      console.warn(
-        `Ignoring Telegram update from "${senderId}" — only owners [${this.#ownerIds.join(', ')}] are authorized.`
-      );
+      logger.warn({senderId, ownerIds: this.#ownerIds}, 'Ignoring unauthorized Telegram update');
       return null;
     }
     return `${PLATFORM_PREFIX}${senderId}`;
@@ -658,9 +657,9 @@ export class TelegramPlatform implements MessagingPlatform {
 
   async start(): Promise<void> {
     if (this.#ownerIds.length === 0) {
-      console.warn('TELEGRAM_OWNER_IDS is unset or empty — the bot is running in open mode and will accept messages from anyone.');
+      logger.warn('TELEGRAM_OWNER_IDS is unset or empty — bot running in open mode');
     } else {
-      console.log(`Only Telegram user IDs (${this.#ownerIds.join(', ')}) can message the bot.`);
+      logger.info({ownerIds: this.#ownerIds}, 'Telegram bot owner restriction active');
     }
 
     await this.#bot.init();
@@ -672,10 +671,10 @@ export class TelegramPlatform implements MessagingPlatform {
     // bot.start() resolves only when the bot is stopped, so we don't await it —
     // we want start() to return to the caller once polling is running.
     this.#bot.start({drop_pending_updates: true}).catch((err: unknown) => {
-      console.error('Telegram bot polling error:', err);
+      logger.error({err}, 'Telegram bot polling error');
     });
 
-    console.log(`Telegram bot started as ${this.#platformInfo.botAddress}.`);
+    logger.info({botAddress: this.#platformInfo.botAddress}, 'Telegram bot started');
   }
 
   async stop(): Promise<void> {
@@ -688,7 +687,7 @@ export class TelegramPlatform implements MessagingPlatform {
       try {
         await this.#bot.api.sendMessage(chatId, markdownToTelegramHtml(chunk), {parse_mode: 'HTML'});
       } catch (error) {
-        console.warn('Falling back to plaintext after markdown→HTML render failure:', error);
+        logger.warn({err: error}, 'Falling back to plaintext after markdown-to-HTML render failure');
         await this.#bot.api.sendMessage(chatId, chunk);
       }
     }

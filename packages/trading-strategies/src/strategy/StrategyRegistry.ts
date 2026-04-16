@@ -1,5 +1,4 @@
 import type {z} from 'zod';
-import {BuyAndHoldStrategy, BuyAndHoldSchema} from '../strategy-buy-and-hold/BuyAndHoldStrategy.js';
 import {BuyOnceStrategy, BuyOnceSchema} from '../strategy-buy-once/BuyOnceStrategy.js';
 import {BuyBelowSellAboveStrategy, BuyBelowSellAboveSchema} from '../strategy-buy-below-sell-above/BuyBelowSellAboveStrategy.js';
 import {CoinFlipStrategy, CoinFlipSchema} from '../strategy-coin-flip/CoinFlipStrategy.js';
@@ -9,6 +8,7 @@ import {
 } from '../strategy-multi-indicator-confluence/MultiIndicatorConfluenceStrategy.js';
 import {MeanReversionStrategy, MeanReversionSchema} from '../strategy-mean-reversion/MeanReversionStrategy.js';
 import {ScalpStrategy, ScalpSchema} from '../strategy-scalp/ScalpStrategy.js';
+import {ProtectedStrategy, ProtectedStrategySchema} from '../strategy-protected/ProtectedStrategy.js';
 import type {Strategy} from './Strategy.js';
 
 interface StrategyEntry {
@@ -17,12 +17,8 @@ interface StrategyEntry {
 }
 
 const registry: Record<string, StrategyEntry> = {
-  [BuyAndHoldStrategy.NAME]: {
-    create: (config: unknown) => new BuyAndHoldStrategy(BuyAndHoldSchema.parse(config ?? {})),
-    schema: BuyAndHoldSchema,
-  },
   [BuyOnceStrategy.NAME]: {
-    create: (config: unknown) => new BuyOnceStrategy(BuyOnceSchema.parse(config)),
+    create: (config: unknown) => new BuyOnceStrategy(BuyOnceSchema.parse(config ?? {})),
     schema: BuyOnceSchema,
   },
   [BuyBelowSellAboveStrategy.NAME]: {
@@ -45,6 +41,10 @@ const registry: Record<string, StrategyEntry> = {
   [MeanReversionStrategy.NAME]: {
     create: (config: unknown) => new MeanReversionStrategy({config: MeanReversionSchema.parse(config ?? {})}),
     schema: MeanReversionSchema,
+  },
+  [ProtectedStrategy.NAME]: {
+    create: (config: unknown) => new ProtectedStrategy({config: ProtectedStrategySchema.parse(config ?? {})}),
+    schema: ProtectedStrategySchema,
   },
 };
 
