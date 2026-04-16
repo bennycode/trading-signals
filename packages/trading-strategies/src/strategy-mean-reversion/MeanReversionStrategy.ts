@@ -1,5 +1,5 @@
 import {z} from 'zod';
-import {ALL_AVAILABLE, CandleBatcher, ExchangeOrderSide, ExchangeOrderType} from '@typedtrader/exchange';
+import {ALL_AVAILABLE_AMOUNT, CandleBatcher, ExchangeOrderSide, ExchangeOrderType} from '@typedtrader/exchange';
 import type {ExchangeCandle, OneMinuteBatchedCandle, OrderAdvice, TradingSessionState} from '@typedtrader/exchange';
 import {BollingerBands} from 'trading-signals';
 import {ProtectedStrategy, ProtectedStrategySchema} from '../strategy-protected/ProtectedStrategy.js';
@@ -86,7 +86,7 @@ export class MeanReversionStrategy extends ProtectedStrategy {
         return {
           side: ExchangeOrderSide.SELL,
           type: ExchangeOrderType.MARKET,
-          amount: ALL_AVAILABLE,
+          amount: ALL_AVAILABLE_AMOUNT,
           amountIn: 'base',
           reason: `Price ${closePrice.toFixed(2)} broke above upper band ${upper.toFixed(2)}`,
         };
@@ -99,7 +99,7 @@ export class MeanReversionStrategy extends ProtectedStrategy {
         return {
           side: ExchangeOrderSide.BUY,
           type: ExchangeOrderType.MARKET,
-          amount: ALL_AVAILABLE,
+          amount: ALL_AVAILABLE_AMOUNT,
           amountIn: 'counter',
           reason: `Price ${closePrice.toFixed(2)} returned to middle band ${middle.toFixed(2)}`,
         };

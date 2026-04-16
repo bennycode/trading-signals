@@ -1,5 +1,5 @@
 import {z} from 'zod';
-import {ALL_AVAILABLE, ExchangeOrderSide, ExchangeOrderType} from '@typedtrader/exchange';
+import {ALL_AVAILABLE_AMOUNT, ExchangeOrderSide, ExchangeOrderType} from '@typedtrader/exchange';
 import type {OneMinuteBatchedCandle, OrderAdvice, TradingSessionState} from '@typedtrader/exchange';
 import Big from 'big.js';
 import {ProtectedStrategy, ProtectedStrategySchema} from '../strategy-protected/ProtectedStrategy.js';
@@ -38,7 +38,7 @@ export class BuyBelowSellAboveStrategy extends ProtectedStrategy {
         return {
           side: ExchangeOrderSide.BUY,
           type: ExchangeOrderType.LIMIT,
-          amount: ALL_AVAILABLE,
+          amount: ALL_AVAILABLE_AMOUNT,
           amountIn: 'base',
           price: closePrice,
         };
@@ -52,7 +52,7 @@ export class BuyBelowSellAboveStrategy extends ProtectedStrategy {
         return {
           side: ExchangeOrderSide.SELL,
           type: ExchangeOrderType.LIMIT,
-          amount: ALL_AVAILABLE,
+          amount: ALL_AVAILABLE_AMOUNT,
           amountIn: 'base',
           price: closePrice,
         };

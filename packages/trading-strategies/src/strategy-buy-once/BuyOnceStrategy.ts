@@ -1,5 +1,5 @@
 import {z} from 'zod';
-import {ALL_AVAILABLE, ExchangeOrderSide, ExchangeOrderType} from '@typedtrader/exchange';
+import {ALL_AVAILABLE_AMOUNT, ExchangeOrderSide, ExchangeOrderType} from '@typedtrader/exchange';
 import type {OneMinuteBatchedCandle, OrderAdvice, TradingSessionState} from '@typedtrader/exchange';
 import Big from 'big.js';
 import {ProtectedStrategy, ProtectedStrategySchema} from '../strategy-protected/ProtectedStrategy.js';
@@ -61,7 +61,7 @@ export class BuyOnceStrategy extends ProtectedStrategy {
       return {
         side: ExchangeOrderSide.BUY,
         type: ExchangeOrderType.MARKET,
-        amount: spend ?? ALL_AVAILABLE,
+        amount: spend ?? ALL_AVAILABLE_AMOUNT,
         amountIn: 'counter',
       };
     }
@@ -74,7 +74,7 @@ export class BuyOnceStrategy extends ProtectedStrategy {
 
     this.#state.bought = true;
 
-    let amount: string | typeof ALL_AVAILABLE = ALL_AVAILABLE;
+    let amount: string | typeof ALL_AVAILABLE_AMOUNT = ALL_AVAILABLE_AMOUNT;
     if (quantity) {
       amount = quantity;
     } else if (spend) {
