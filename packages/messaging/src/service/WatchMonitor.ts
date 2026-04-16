@@ -2,6 +2,7 @@ import {TradingPair, Exchange, ExchangeCandle, getExchangeClient} from '@typedtr
 import type {MessagingPlatform} from '../platform/MessagingPlatform.js';
 import {Account} from '../database/models/Account.js';
 import {Watch, WatchAttributes} from '../database/models/Watch.js';
+import {logger} from '../logger.js';
 
 interface ActiveSubscription {
   watchId: number;
@@ -49,7 +50,7 @@ export class WatchMonitor {
 
     const account = Account.findByPk(watch.accountId);
     if (!account) {
-      console.warn(`Account "${watch.accountId}" not found for watch "${watch.id}"`);
+      logger.warn({accountId: watch.accountId, watchId: watch.id}, 'Account not found for watch');
       return;
     }
 
@@ -82,7 +83,7 @@ export class WatchMonitor {
           Watch.destroy(watch.id);
         }
       } catch (error) {
-        console.error(`Error processing candle for watch ${watch.id}:`, error);
+        logger.error({err: error, watchId: watch.id}, 'Error processing candle');
       }
     });
 
@@ -92,7 +93,7 @@ export class WatchMonitor {
       exchange,
     });
 
-    console.log(`Subscribed to watch "${watch.id}" for "${watch.pair}".`);
+    logger.info({watchId: watch.id, pair: watch.pair}, 'Subscribed to watch');
   }
 
   /**
@@ -104,7 +105,7 @@ export class WatchMonitor {
       subscription.exchange.unwatchCandles(subscription.topicId);
       subscription.exchange.removeAllListeners(subscription.topicId);
       this.#subscriptions.delete(watchId);
-      console.log(`Unsubscribed from watch "${watchId}".`);
+      logger.info({watchId}, 'Unsubscribed from watch');
     }
   }
 
@@ -114,9 +115,7 @@ export class WatchMonitor {
     const account = Account.findByPk(watch.accountId);
 
     if (!account) {
-      console.warn(
-        `Account "${watch.accountId}" not found when sending alert for watch "${watch.id}". Alert was not delivered.`
-      );
+      logger.warn({accountId: watch.accountId, watchId: watch.id}, 'Account not found when sending alert');
       return;
     }
     const dirSymbol = watch.thresholdDirection === 'up' ? '+' : '-';
@@ -136,12 +135,12 @@ export class WatchMonitor {
     const platform = this.#platforms.get(platformPrefix);
 
     if (!platform) {
-      console.warn(`No platform found for prefix "${platformPrefix}" when sending alert for watch "${watch.id}".`);
+      logger.warn({platformPrefix, watchId: watch.id}, 'No platform found for alert');
       return;
     }
 
     await platform.sendMessage(account.userId, message);
 
-    console.log(`Alert sent to ${account.userId} for watch ${watch.id}`);
+    logger.info({userId: account.userId, watchId: watch.id}, 'Alert sent');
   }
 }

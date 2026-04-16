@@ -19,6 +19,7 @@ import {
   watchRemove,
 } from './command/index.js';
 import {initializeDatabase} from './database/initializeDatabase.js';
+import {logger} from './logger.js';
 import type {MessagingPlatform} from './platform/index.js';
 import {TelegramPlatform} from './platform/TelegramPlatform.js';
 import {WatchMonitor, StrategyMonitor, ReportScheduler} from './service/index.js';
@@ -96,7 +97,7 @@ function registerCommands(platform: MessagingPlatform, monitors: Monitors): void
       try {
         await monitors.watchMonitor.subscribeToWatch(result.watch);
       } catch (error) {
-        console.error(`Error subscribing to new watch: ${error}`);
+        logger.error({err: error}, 'Error subscribing to new watch');
       }
     }
   });
@@ -122,7 +123,7 @@ function registerCommands(platform: MessagingPlatform, monitors: Monitors): void
       try {
         await monitors.strategyMonitor.subscribeToStrategy(result.strategy);
       } catch (error) {
-        console.error(`Error starting strategy: ${error}`);
+        logger.error({err: error}, 'Error starting strategy');
       }
     }
   });
@@ -139,7 +140,7 @@ function registerCommands(platform: MessagingPlatform, monitors: Monitors): void
       try {
         await monitors.strategyMonitor.unsubscribeFromStrategy(result.strategyId);
       } catch (error) {
-        console.error(`Error stopping strategy: ${error}`);
+        logger.error({err: error}, 'Error stopping strategy');
       }
     }
   });
@@ -152,7 +153,7 @@ function registerCommands(platform: MessagingPlatform, monitors: Monitors): void
       try {
         monitors.reportScheduler.scheduleReport(result.report, {runImmediately: true});
       } catch (error) {
-        console.error(`Error scheduling report: ${error}`);
+        logger.error({err: error}, 'Error scheduling report');
       }
     }
   });
@@ -194,7 +195,7 @@ export async function startServer() {
   }
 
   if (platforms.size === 0) {
-    console.warn('Warning: No messaging platforms configured. Set TELEGRAM_BOT_TOKEN to enable a platform.');
+    logger.warn('No messaging platforms configured. Set TELEGRAM_BOT_TOKEN to enable a platform.');
   }
 
   const monitors: Monitors = {
@@ -212,19 +213,19 @@ export async function startServer() {
   try {
     await monitors.watchMonitor.start();
   } catch (error) {
-    console.error('Error starting watch monitor:', error);
+    logger.error({err: error}, 'Error starting watch monitor');
   }
 
   try {
     await monitors.strategyMonitor.start();
   } catch (error) {
-    console.error('Error starting strategy monitor:', error);
+    logger.error({err: error}, 'Error starting strategy monitor');
   }
 
   try {
     await monitors.reportScheduler.start();
   } catch (error) {
-    console.error('Error starting report scheduler:', error);
+    logger.error({err: error}, 'Error starting report scheduler');
   }
 
   // Start all platforms
@@ -243,8 +244,9 @@ export async function startServer() {
         await platform.stop();
       }
     } catch (error) {
-      console.error('Error during shutdown:', error);
+      logger.error({err: error}, 'Error during shutdown');
     } finally {
+      logger.flush();
       process.exit(0);
     }
   };

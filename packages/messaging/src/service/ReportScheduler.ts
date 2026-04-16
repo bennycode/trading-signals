@@ -1,7 +1,7 @@
-import {ms} from 'ms';
 import {createReport, resolveReportConfig} from 'trading-strategies';
 import type {MessagingPlatform} from '../platform/MessagingPlatform.js';
 import {Report, type ReportAttributes} from '../database/models/Report.js';
+import {logger} from '../logger.js';
 
 interface ScheduledReport {
   reportId: number;
@@ -22,7 +22,7 @@ export class ReportScheduler {
       try {
         this.scheduleReport(row);
       } catch (error) {
-        console.error(`Failed to schedule report ${row.id} (${row.reportName}):`, error);
+        logger.error({err: error, reportId: row.id, reportName: row.reportName}, 'Failed to schedule report');
       }
     }
   }
@@ -47,16 +47,16 @@ export class ReportScheduler {
       try {
         await this.#runAndNotify(row);
       } catch (error) {
-        console.error(`Scheduled report ${row.id} (${row.reportName}) failed:`, error);
+        logger.error({err: error, reportId: row.id, reportName: row.reportName}, 'Scheduled report failed');
       }
     }, row.intervalMs);
 
     this.#scheduled.set(row.id, {reportId: row.id, timer});
-    console.log(`Scheduled report "${row.id}" (${row.reportName}) every ${ms(row.intervalMs, {long: true})}`);
+    logger.info({reportId: row.id, reportName: row.reportName, intervalMs: row.intervalMs}, 'Scheduled report');
 
     if (options.runImmediately) {
       this.#runAndNotify(row).catch(error => {
-        console.error(`Initial run of scheduled report ${row.id} (${row.reportName}) failed:`, error);
+        logger.error({err: error, reportId: row.id, reportName: row.reportName}, 'Initial run of scheduled report failed');
       });
     }
   }
@@ -66,7 +66,7 @@ export class ReportScheduler {
     if (scheduled) {
       clearInterval(scheduled.timer);
       this.#scheduled.delete(reportId);
-      console.log(`Unscheduled report "${reportId}".`);
+      logger.info({reportId}, 'Unscheduled report');
     }
   }
 
@@ -79,11 +79,11 @@ export class ReportScheduler {
     const platform = this.#platforms.get(platformPrefix);
 
     if (!platform) {
-      console.warn(`No platform found for prefix "${platformPrefix}" when sending report ${row.id}`);
+      logger.warn({platformPrefix, reportId: row.id}, 'No platform found for report');
       return;
     }
 
     await platform.sendMessage(row.userId, result);
-    console.log(`Report ${row.id} result sent to ${row.userId}`);
+    logger.info({reportId: row.id, userId: row.userId}, 'Report result sent');
   }
 }

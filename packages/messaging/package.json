@@ -3,18 +3,19 @@
     "url": "https://github.com/bennycode/trading-signals/issues"
   },
   "dependencies": {
+    "@grammyjs/conversations": "^2.1.1",
     "@typedtrader/exchange": "0.2.5",
     "@types/moment-duration-format": "2.2.7",
     "@types/node": "^25.3.0",
     "better-sqlite3": "^12.8.0",
     "better-sqlite3-multiple-ciphers": "^12.8.0",
     "drizzle-orm": "^0.45.2",
+    "grammy": "^1.42.0",
     "moment": "^2.30.1",
     "moment-duration-format": "^2.3.2",
     "moment-timezone": "^0.6.1",
-    "@grammyjs/conversations": "^2.1.1",
-    "grammy": "^1.42.0",
     "ms": "4.0.0-nightly.202508271359",
+    "pino": "^10.3.1",
     "trading-strategies": "0.3.5",
     "zod": "^4.3.6"
   },

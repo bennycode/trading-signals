@@ -5,6 +5,7 @@ import type {Strategy as TradingStrategy} from 'trading-strategies';
 import type {MessagingPlatform} from '../platform/MessagingPlatform.js';
 import {Account} from '../database/models/Account.js';
 import {Strategy, type StrategyAttributes} from '../database/models/Strategy.js';
+import {logger} from '../logger.js';
 
 interface ActiveSession {
   strategyId: number;
@@ -29,7 +30,7 @@ export class StrategyMonitor {
       try {
         await this.subscribeToStrategy(row);
       } catch (error) {
-        console.error(`Failed to start strategy ${row.id} (${row.strategyName}):`, error);
+        logger.error({err: error, strategyId: row.id, strategyName: row.strategyName}, 'Failed to start strategy');
       }
     }
   }
@@ -54,7 +55,7 @@ export class StrategyMonitor {
 
     const account = Account.findByPk(row.accountId);
     if (!account) {
-      console.warn(`Account "${row.accountId}" not found for strategy "${row.id}"`);
+      logger.warn({accountId: row.accountId, strategyId: row.id}, 'Account not found for strategy');
       return;
     }
 
@@ -104,18 +105,18 @@ export class StrategyMonitor {
       try {
         await this.#sendFillNotification(row, fill);
       } catch (error) {
-        console.error(`Error handling fill for strategy ${row.id}:`, error);
+        logger.error({err: error, strategyId: row.id}, 'Error handling fill');
       }
     });
 
     session.on('error', (error: Error) => {
-      console.error(`Strategy ${row.id} (${row.strategyName}) error:`, error.message);
+      logger.error({strategyId: row.id, strategyName: row.strategyName, errorMessage: error.message}, 'Strategy error');
     });
 
     await session.start();
 
     this.#sessions.set(row.id, {strategyId: row.id, session, strategy});
-    console.log(`Started strategy "${row.id}" (${row.strategyName}) for "${row.pair}".`);
+    logger.info({strategyId: row.id, strategyName: row.strategyName, pair: row.pair}, 'Started strategy');
   }
 
   /**
@@ -126,14 +127,14 @@ export class StrategyMonitor {
     if (active) {
       await active.session.stop({cancelOpenOrders: true});
       this.#sessions.delete(strategyId);
-      console.log(`Stopped strategy "${strategyId}".`);
+      logger.info({strategyId}, 'Stopped strategy');
     }
   }
 
   async #sendFillNotification(row: StrategyAttributes, fill: ExchangeFill): Promise<void> {
     const account = Account.findByPk(row.accountId);
     if (!account) {
-      console.warn(`Account "${row.accountId}" not found for fill notification on strategy "${row.id}".`);
+      logger.warn({accountId: row.accountId, strategyId: row.id}, 'Account not found for fill notification');
       return;
     }
 
@@ -143,14 +144,12 @@ export class StrategyMonitor {
     const platform = this.#platforms.get(platformPrefix);
 
     if (!platform) {
-      console.warn(
-        `No platform found for prefix "${platformPrefix}" when sending fill notification for strategy "${row.id}".`
-      );
+      logger.warn({platformPrefix, strategyId: row.id}, 'No platform found for fill notification');
       return;
     }
 
     await platform.sendMessage(account.userId, message);
 
-    console.log(`Fill notification sent to ${account.userId} for strategy ${row.id}`);
+    logger.info({userId: account.userId, strategyId: row.id}, 'Fill notification sent');
   }
 }
