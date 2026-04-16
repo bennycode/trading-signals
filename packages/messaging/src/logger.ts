@@ -17,7 +17,7 @@ if (logDirectory) {
     options: {
       file: path.join(logDirectory, 'typedtrader.log'),
       size: '10m',
-      limit: {count: 5},
+      limit: {count: 10},
       mkdir: true,
     },
     level: 'debug',
