@@ -16,7 +16,7 @@ import type {
   OrderAdvice,
   TradingSessionState,
 } from '@typedtrader/exchange';
-import {BuyAndHoldStrategy} from './BuyAndHoldStrategy.js';
+import {BuyOnceStrategy} from '../strategy-buy-once/BuyOnceStrategy.js';
 
 function assertMarketBuy(advice: OrderAdvice | void): asserts advice is MarketOrderAdvice {
   if (!advice || advice.type !== ExchangeOrderType.MARKET || advice.side !== ExchangeOrderSide.BUY) {
@@ -82,10 +82,10 @@ function makeFill(price: string, size: string, side: ExchangeOrderSide): Exchang
   };
 }
 
-describe('BuyAndHoldStrategy', () => {
+describe('BuyOnceStrategy (buy-and-hold mode, no buyAt)', () => {
   describe('unprotected', () => {
     it('issues a market buy on the first candle and then stays silent', async () => {
-      const strategy = new BuyAndHoldStrategy();
+      const strategy = new BuyOnceStrategy();
 
       const first = await strategy.onCandle(makeCandle(100), mockState);
       assertMarketBuy(first);
@@ -101,19 +101,16 @@ describe('BuyAndHoldStrategy', () => {
 
   describe('with stop-loss', () => {
     it('buys first, then fires a kill-switch limit sell when the stop-loss threshold is hit', async () => {
-      const strategy = new BuyAndHoldStrategy({protected: {stopLossPct: '5'}});
+      const strategy = new BuyOnceStrategy({protected: {stopLossPct: '5'}});
 
       const buy = await strategy.onCandle(makeCandle(100), mockState);
       assertMarketBuy(buy);
 
-      // Simulate the exchange filling the market buy
       await strategy.onFill(makeFill('100', '10', ExchangeOrderSide.BUY), mockState);
 
-      // Price drifts harmlessly — no guard fire
       const hold = await strategy.onCandle(makeCandle(97, 1), mockState);
       expect(hold).toBeUndefined();
 
-      // Price drops 5% — stop-loss fires
       const exit = await strategy.onCandle(makeCandle(95, 2), mockState);
       assertLimitSell(exit);
       expect(new Big(exit.price).toFixed(2)).toBe('95.00');
@@ -124,7 +121,7 @@ describe('BuyAndHoldStrategy', () => {
 
   describe('with take-profit', () => {
     it('buys first, then fires a kill-switch limit sell when the take-profit threshold is hit', async () => {
-      const strategy = new BuyAndHoldStrategy({protected: {takeProfitPct: '10'}});
+      const strategy = new BuyOnceStrategy({protected: {takeProfitPct: '10'}});
 
       const buy = await strategy.onCandle(makeCandle(100), mockState);
       assertMarketBuy(buy);
@@ -141,20 +138,17 @@ describe('BuyAndHoldStrategy', () => {
   });
 
   describe('with both guards', () => {
-    it('does not re-enter after a stop-loss exit — buy-and-hold is a one-shot entry', async () => {
-      const strategy = new BuyAndHoldStrategy({protected: {stopLossPct: '5', takeProfitPct: '10'}});
+    it('does not re-enter after a stop-loss exit — buy-once is a one-shot entry', async () => {
+      const strategy = new BuyOnceStrategy({protected: {stopLossPct: '5', takeProfitPct: '10'}});
 
       await strategy.onCandle(makeCandle(100), mockState);
       await strategy.onFill(makeFill('100', '10', ExchangeOrderSide.BUY), mockState);
 
-      // Fire stop-loss
       const exit = await strategy.onCandle(makeCandle(95, 1), mockState);
       assertLimitSell(exit);
 
-      // Sell fills — position closed
       await strategy.onFill(makeFill('95', '10', ExchangeOrderSide.SELL), mockState);
 
-      // Even if the price recovers, nothing re-enters
       const silent = await strategy.onCandle(makeCandle(120, 2), mockState);
       expect(silent).toBeUndefined();
     });
@@ -162,21 +156,19 @@ describe('BuyAndHoldStrategy', () => {
 
   describe('state persistence', () => {
     it('restores the bought flag and protected position through restoreState', async () => {
-      const original = new BuyAndHoldStrategy({protected: {stopLossPct: '5'}});
+      const original = new BuyOnceStrategy({protected: {stopLossPct: '5'}});
       await original.onCandle(makeCandle(100), mockState);
       await original.onFill(makeFill('100', '10', ExchangeOrderSide.BUY), mockState);
 
       const snapshot = original.state;
       expect(snapshot).not.toBeNull();
 
-      const restored = new BuyAndHoldStrategy({protected: {stopLossPct: '5'}});
+      const restored = new BuyOnceStrategy({protected: {stopLossPct: '5'}});
       restored.restoreState(snapshot!);
 
-      // Restored instance must not re-buy on the next candle
       const shouldHold = await restored.onCandle(makeCandle(98, 1), mockState);
       expect(shouldHold).toBeUndefined();
 
-      // And the guard must still fire at the original avg-entry-based threshold
       const exit = await restored.onCandle(makeCandle(95, 2), mockState);
       assertLimitSell(exit);
       expect(new Big(exit.price).toFixed(2)).toBe('95.00');

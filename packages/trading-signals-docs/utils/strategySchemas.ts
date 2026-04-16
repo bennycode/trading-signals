@@ -1,8 +1,8 @@
 import {z} from 'zod';
 import type {ExchangeCandle} from '@typedtrader/exchange';
-import {BuyAndHoldSchema, BuyOnceSchema, BuyBelowSellAboveSchema, CoinFlipSchema, MultiIndicatorConfluenceSchema, ScalpSchema, MeanReversionSchema, ProtectionOnlySchema, suggestScalpOffset} from 'trading-strategies';
+import {BuyOnceSchema, BuyBelowSellAboveSchema, CoinFlipSchema, MultiIndicatorConfluenceSchema, ScalpSchema, MeanReversionSchema, ProtectedStrategySchema, suggestScalpOffset} from 'trading-strategies';
 
-export {BuyAndHoldSchema, BuyOnceSchema, BuyBelowSellAboveSchema, CoinFlipSchema, MultiIndicatorConfluenceSchema, ScalpSchema, MeanReversionSchema, ProtectionOnlySchema};
+export {BuyOnceSchema, BuyBelowSellAboveSchema, CoinFlipSchema, MultiIndicatorConfluenceSchema, ScalpSchema, MeanReversionSchema, ProtectedStrategySchema};
 
 export type StrategyId = 'buy-and-hold' | 'buy-once' | 'buy-below-sell-above' | 'coin-flip' | 'multi-indicator-confluence' | 'scalp' | 'mean-reversion' | 'protection-only';
 
@@ -40,7 +40,7 @@ export const strategyDefinitions: StrategyDefinition[] = [
     id: 'buy-and-hold',
     name: 'Buy & Hold',
     description: 'Buys once at the first candle and holds for the entire period. Simplest baseline strategy.',
-    schema: BuyAndHoldSchema,
+    schema: BuyOnceSchema,
     getDefaultConfig: () => ({}),
   },
   {
@@ -127,7 +127,7 @@ export const strategyDefinitions: StrategyDefinition[] = [
     name: 'Protection Only',
     description:
       'Never opens a position. Use with seedFromBalance to attach stop-loss / take-profit guards to an existing position opened manually or by another strategy.',
-    schema: ProtectionOnlySchema,
+    schema: ProtectedStrategySchema,
     getDefaultConfig: () => ({
       protected: {
         stopLossPct: '5',

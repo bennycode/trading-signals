@@ -147,14 +147,15 @@ type ProtectedContainerState = {[PROTECTED_STATE_KEY]: ProtectedStrategyState};
  *       }
  *     }
  */
-export abstract class ProtectedStrategy extends Strategy {
+export class ProtectedStrategy extends Strategy {
+  static override NAME = '@typedtrader/strategy-protected';
   readonly #stopLoss: GuardMode;
   readonly #takeProfit: GuardMode;
   readonly #stopLossOrder: GuardOrderType;
   readonly #takeProfitOrder: GuardOrderType;
   readonly #seedFromBalance: boolean;
 
-  constructor(options: {config: Record<string, unknown>; state?: Record<string, unknown>}) {
+  constructor(options: {config: Record<string, unknown>; state?: Record<string, unknown>} = {config: {}}) {
     super({
       config: options.config,
       state: {

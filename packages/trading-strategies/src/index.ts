@@ -1,6 +1,5 @@
 export * from './backtest/index.js';
 export * from './strategy/index.js';
-export {BuyAndHoldStrategy, BuyAndHoldSchema} from './strategy-buy-and-hold/BuyAndHoldStrategy.js';
 export {BuyOnceStrategy, BuyOnceSchema, type BuyOnceConfig} from './strategy-buy-once/BuyOnceStrategy.js';
 export {BuyBelowSellAboveStrategy, BuyBelowSellAboveSchema, type BuyBelowSellAboveConfig} from './strategy-buy-below-sell-above/BuyBelowSellAboveStrategy.js';
 export {CoinFlipStrategy, CoinFlipSchema, type CoinFlipConfig} from './strategy-coin-flip/CoinFlipStrategy.js';
@@ -17,11 +16,6 @@ export {
   type ProtectedStrategyConfig,
   type ProtectedStrategyState,
 } from './strategy-protected/ProtectedStrategy.js';
-export {
-  ProtectionOnlyStrategy,
-  ProtectionOnlySchema,
-  type ProtectionOnlyConfig,
-} from './strategy-protection-only/ProtectionOnlyStrategy.js';
 export {suggestScalpOffset} from './strategy-scalp/suggestScalpOffset.js';
 export * from './report/index.js';
 export {
