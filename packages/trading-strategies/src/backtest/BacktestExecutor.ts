@@ -1,5 +1,5 @@
 import Big from 'big.js';
-import {CandleBatcher, ExchangeOrderSide, ExchangeOrderType} from '@typedtrader/exchange';
+import {ALL_AVAILABLE, CandleBatcher, ExchangeOrderSide, ExchangeOrderType} from '@typedtrader/exchange';
 import type {ExchangeCandle, ExchangeFeeRate, ExchangeTradingRules, OrderAdvice, TradingSessionState} from '@typedtrader/exchange';
 import type {BacktestConfig} from './BacktestConfig.js';
 import type {BacktestPerformanceSummary, BacktestResult, BacktestTrade} from './BacktestResult.js';
@@ -103,7 +103,7 @@ export class BacktestExecutor {
       return {
         side: ExchangeOrderSide.BUY,
         type: ExchangeOrderType.MARKET,
-        amount: null,
+        amount: ALL_AVAILABLE,
         amountIn: 'counter',
       };
     }
@@ -149,7 +149,7 @@ export class BacktestExecutor {
 
         let size: Big;
         if (advice.side === ExchangeOrderSide.BUY) {
-          if (advice.amount !== null) {
+          if (advice.amount !== ALL_AVAILABLE) {
             size = new Big(advice.amount);
           } else {
             const feeRate = feeRates[ExchangeOrderType.LIMIT];
@@ -158,7 +158,7 @@ export class BacktestExecutor {
           }
         } else {
           // SELL
-          const amount = advice.amount !== null ? new Big(advice.amount) : balances.base;
+          const amount = advice.amount !== ALL_AVAILABLE ? new Big(advice.amount) : balances.base;
           if (amount.lte(0) || balances.base.lte(0)) {
             return;
           }
@@ -181,7 +181,7 @@ export class BacktestExecutor {
 
         if (advice.side === ExchangeOrderSide.BUY) {
           if (advice.amountIn === 'counter') {
-            const spendAmount = advice.amount !== null ? new Big(advice.amount) : balances.counter;
+            const spendAmount = advice.amount !== ALL_AVAILABLE ? new Big(advice.amount) : balances.counter;
             if (spendAmount.lte(0) || balances.counter.lte(0)) {
               return;
             }
@@ -221,7 +221,7 @@ export class BacktestExecutor {
           }
         } else {
           // SELL MARKET
-          const amount = advice.amount !== null ? new Big(advice.amount) : balances.base;
+          const amount = advice.amount !== ALL_AVAILABLE ? new Big(advice.amount) : balances.base;
           if (amount.lte(0) || balances.base.lte(0)) {
             return;
           }

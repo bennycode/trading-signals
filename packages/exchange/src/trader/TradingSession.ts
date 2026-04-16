@@ -5,6 +5,7 @@ import type {BatchedCandle} from '../candle/BatchedCandle.js';
 import {ONE_MINUTE_IN_MS} from '../candle/BatchedCandle.js';
 import type {ExchangeCandle, ExchangeFill, ExchangePendingOrder} from '../exchange/Exchange.js';
 import {ExchangeOrderSide, ExchangeOrderType} from '../exchange/Exchange.js';
+import {ALL_AVAILABLE_AMOUNT} from './TradingSessionTypes.js';
 import type {
   OrderAdvice,
   TradingSessionEventMap,
@@ -198,7 +199,7 @@ export class TradingSession extends EventEmitter<TradingSessionEventMap> {
   #resolveOrderSize(advice: OrderAdvice): Big | null {
     const {tradingRules} = this.#state!;
 
-    if (advice.amount !== null) {
+    if (advice.amount !== ALL_AVAILABLE_AMOUNT) {
       const amount = new Big(advice.amount);
       if (advice.amountIn === 'counter') {
         return this.#applyPrecision(amount, tradingRules.counter_increment);
@@ -206,7 +207,6 @@ export class TradingSession extends EventEmitter<TradingSessionEventMap> {
       return this.#applyPrecision(amount, tradingRules.base_increment);
     }
 
-    // null amount = use full available balance
     if (advice.side === ExchangeOrderSide.SELL) {
       return this.#applyPrecision(this.#state!.baseBalance, tradingRules.base_increment);
     }

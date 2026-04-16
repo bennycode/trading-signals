@@ -1,6 +1,6 @@
 import Big from 'big.js';
 import {describe, expect, it} from 'vitest';
-import {AlpacaExchangeMock, ExchangeOrderSide, ExchangeOrderType} from '@typedtrader/exchange';
+import {ALL_AVAILABLE, AlpacaExchangeMock, ExchangeOrderSide, ExchangeOrderType} from '@typedtrader/exchange';
 import type {ExchangeCandle, ExchangeTradingRules, OrderAdvice, TradingSessionState} from '@typedtrader/exchange';
 import {TradingPair} from '@typedtrader/exchange';
 import {BacktestExecutor} from './BacktestExecutor.js';
@@ -179,7 +179,7 @@ describe('BacktestExecutor', () => {
           return {
             side: ExchangeOrderSide.BUY,
             type: ExchangeOrderType.MARKET,
-            amount: null,
+            amount: ALL_AVAILABLE,
             amountIn: 'counter',
           };
         }
@@ -444,7 +444,7 @@ describe('BacktestExecutor', () => {
           return {
             side: ExchangeOrderSide.BUY,
             type: ExchangeOrderType.MARKET,
-            amount: null,
+            amount: ALL_AVAILABLE,
             amountIn: 'counter',
           };
         }
@@ -565,7 +565,7 @@ describe('BacktestExecutor', () => {
           return {
             side: ExchangeOrderSide.BUY,
             type: ExchangeOrderType.MARKET,
-            amount: null,
+            amount: ALL_AVAILABLE,
             amountIn: 'counter',
           };
         }
@@ -598,7 +598,7 @@ describe('BacktestExecutor', () => {
           return {
             side: ExchangeOrderSide.SELL,
             type: ExchangeOrderType.MARKET,
-            amount: null,
+            amount: ALL_AVAILABLE,
             amountIn: 'base',
           };
         }
@@ -673,7 +673,7 @@ describe('BacktestExecutor', () => {
           return {
             side: ExchangeOrderSide.BUY,
             type: ExchangeOrderType.LIMIT,
-            amount: null,
+            amount: ALL_AVAILABLE,
             amountIn: 'base',
             price: candle.close,
           };

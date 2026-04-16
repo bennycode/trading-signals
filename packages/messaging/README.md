@@ -24,23 +24,43 @@ You must also set `TELEGRAM_OWNER_IDS` to a comma-separated list of Telegram use
 
 Command names are case-insensitive — `/reportAdd`, `/reportadd`, and `/REPORTADD` all work. The camelCase form is just for readability.
 
-| Command          | Description                                              |
-| ---------------- | -------------------------------------------------------- |
-| `/help`          | List all available commands                              |
-| `/accountAdd`    | Add a new trading account with exchange credentials      |
-| `/accountList`   | List all trading accounts                                |
-| `/accountRemove` | Remove a trading account                                 |
-| `/accountTime`   | Show the current server time from an account's exchange  |
-| `/candle`        | Fetch OHLC candle data for a trading pair                |
-| `/myAddress`     | Show your address/ID on the current platform             |
-| `/price`         | Get the latest closing price for a trading pair          |
-| `/time`          | Display the current system time                          |
-| `/uptime`        | Show how long the bot has been running                   |
-| `/version`       | Display the platform SDK version                         |
-| `/watchAdd`      | Create a price alert that monitors a pair at an interval |
-| `/watchList`     | List all active price watches                            |
-| `/watchRemove`   | Remove an active price watch                             |
-| `/yourAddress`   | Show the bot's address on the current platform           |
+| Command           | Description                                              |
+| ----------------- | -------------------------------------------------------- |
+| `/help`           | List all available commands                              |
+| `/accountAdd`     | Add a new trading account with exchange credentials      |
+| `/accountList`    | List all trading accounts                                |
+| `/accountRemove`  | Remove a trading account                                 |
+| `/accountTime`    | Show the current server time from an account's exchange  |
+| `/candle`         | Fetch OHLC candle data for a trading pair                |
+| `/myAddress`      | Show your address/ID on the current platform             |
+| `/price`          | Get the latest closing price for a trading pair          |
+| `/time`           | Display the current system time                          |
+| `/uptime`         | Show how long the bot has been running                   |
+| `/version`        | Display the platform SDK version                         |
+| `/watchAdd`       | Create a price alert that monitors a pair at an interval |
+| `/watchList`      | List all active price watches                            |
+| `/watchRemove`    | Remove an active price watch                             |
+| `/strategyAdd`    | Start a trading strategy on an account                   |
+| `/strategyList`   | List all running strategies                              |
+| `/strategyRemove` | Stop and remove a running strategy                       |
+| `/reportAdd`      | Create a report (one-time or scheduled)                  |
+| `/reportList`     | List all scheduled reports                               |
+| `/reportRemove`   | Remove a scheduled report                                |
+| `/yourAddress`    | Show the bot's address on the current platform           |
+
+### Starting a Strategy
+
+Use `/strategyAdd` to attach a trading strategy to an account. The format is:
+
+```
+/strategyAdd <accountId> <PAIR> <configJSON>
+```
+
+For example, to protect an existing AAPL position with a 5% stop-loss and 10% take-profit:
+
+```
+/strategyAdd 1 AAPL,USD {"protected":{"stopLossPct":"5","takeProfitPct":"10","seedFromBalance":true}}
+```
 
 ## Motivation
 

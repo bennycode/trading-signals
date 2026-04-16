@@ -11,6 +11,7 @@ import {
   MultiIndicatorConfluenceStrategy,
   ScalpStrategy,
   MeanReversionStrategy,
+  ProtectionOnlyStrategy,
   type BacktestResult,
   BuyOnceConfig,
   BuyBelowSellAboveConfig,
@@ -41,6 +42,8 @@ function createStrategy(strategyId: StrategyId, config: Record<string, unknown>)
       return new ScalpStrategy(config as ScalpConfig);
     case 'mean-reversion':
       return new MeanReversionStrategy({config});
+    case 'protection-only':
+      return new ProtectionOnlyStrategy(config);
   }
 }
 

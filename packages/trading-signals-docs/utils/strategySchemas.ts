@@ -1,10 +1,10 @@
 import {z} from 'zod';
 import type {ExchangeCandle} from '@typedtrader/exchange';
-import {BuyAndHoldSchema, BuyOnceSchema, BuyBelowSellAboveSchema, CoinFlipSchema, MultiIndicatorConfluenceSchema, ScalpSchema, MeanReversionSchema, suggestScalpOffset} from 'trading-strategies';
+import {BuyAndHoldSchema, BuyOnceSchema, BuyBelowSellAboveSchema, CoinFlipSchema, MultiIndicatorConfluenceSchema, ScalpSchema, MeanReversionSchema, ProtectionOnlySchema, suggestScalpOffset} from 'trading-strategies';
 
-export {BuyAndHoldSchema, BuyOnceSchema, BuyBelowSellAboveSchema, CoinFlipSchema, MultiIndicatorConfluenceSchema, ScalpSchema, MeanReversionSchema};
+export {BuyAndHoldSchema, BuyOnceSchema, BuyBelowSellAboveSchema, CoinFlipSchema, MultiIndicatorConfluenceSchema, ScalpSchema, MeanReversionSchema, ProtectionOnlySchema};
 
-export type StrategyId = 'buy-and-hold' | 'buy-once' | 'buy-below-sell-above' | 'coin-flip' | 'multi-indicator-confluence' | 'scalp' | 'mean-reversion';
+export type StrategyId = 'buy-and-hold' | 'buy-once' | 'buy-below-sell-above' | 'coin-flip' | 'multi-indicator-confluence' | 'scalp' | 'mean-reversion' | 'protection-only';
 
 export interface StrategyDefinition {
   id: StrategyId;
@@ -121,5 +121,19 @@ export const strategyDefinitions: StrategyDefinition[] = [
       'Batches 1-minute candles into 1-hour bars and applies Bollinger Bands (20, 2.5). Sells when price breaks above the upper band; rebuys when it returns to the middle band.',
     schema: MeanReversionSchema,
     getDefaultConfig: () => ({}),
+  },
+  {
+    id: 'protection-only',
+    name: 'Protection Only',
+    description:
+      'Never opens a position. Use with seedFromBalance to attach stop-loss / take-profit guards to an existing position opened manually or by another strategy.',
+    schema: ProtectionOnlySchema,
+    getDefaultConfig: () => ({
+      protected: {
+        stopLossPct: '5',
+        takeProfitPct: '10',
+        seedFromBalance: true,
+      },
+    }),
   },
 ];

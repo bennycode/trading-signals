@@ -1,5 +1,5 @@
 import {z} from 'zod';
-import {ExchangeOrderSide, ExchangeOrderType} from '@typedtrader/exchange';
+import {ALL_AVAILABLE, ExchangeOrderSide, ExchangeOrderType} from '@typedtrader/exchange';
 import type {OneMinuteBatchedCandle, OrderAdvice, TradingSessionState} from '@typedtrader/exchange';
 import {ProtectedStrategy, ProtectedStrategySchema} from '../strategy-protected/ProtectedStrategy.js';
 
@@ -49,7 +49,7 @@ export class BuyAndHoldStrategy extends ProtectedStrategy {
     return {
       side: ExchangeOrderSide.BUY,
       type: ExchangeOrderType.MARKET,
-      amount: null,
+      amount: ALL_AVAILABLE,
       amountIn: 'counter',
     };
   }

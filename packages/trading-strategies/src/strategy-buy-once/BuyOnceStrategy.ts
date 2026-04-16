@@ -1,5 +1,5 @@
 import {z} from 'zod';
-import {ExchangeOrderSide, ExchangeOrderType} from '@typedtrader/exchange';
+import {ALL_AVAILABLE, ExchangeOrderSide, ExchangeOrderType} from '@typedtrader/exchange';
 import type {OneMinuteBatchedCandle, OrderAdvice, TradingSessionState} from '@typedtrader/exchange';
 import Big from 'big.js';
 import {ProtectedStrategy, ProtectedStrategySchema} from '../strategy-protected/ProtectedStrategy.js';
@@ -56,7 +56,7 @@ export class BuyOnceStrategy extends ProtectedStrategy {
     return {
       side: ExchangeOrderSide.BUY,
       type: ExchangeOrderType.LIMIT,
-      amount: null,
+      amount: ALL_AVAILABLE,
       amountIn: 'base',
       price: buyAtPrice,
     };

@@ -22,6 +22,10 @@ export interface TradingSessionStrategy {
   onFill?(fill: ExchangeFill, state: TradingSessionState): Promise<void>;
 }
 
+/** Use as `amount` in an `OrderAdvice` to use the full available balance. */
+export const ALL_AVAILABLE_AMOUNT = 'ALL_AVAILABLE_AMOUNT' as const;
+type AllAvailableAmount = typeof ALL_AVAILABLE_AMOUNT;
+
 type OrderAdviceBase = {
   reason?: string;
 };
@@ -38,16 +42,14 @@ type MarketBuyCounterAdvice = OrderAdviceBase & {
   type: ExchangeOrderType.MARKET;
   side: ExchangeOrderSide.BUY;
   amountIn: 'counter';
-  /** null = use all available counter balance */
-  amount: BigSource | null;
+  amount: BigSource | AllAvailableAmount;
 };
 
 type MarketSellAdvice = OrderAdviceBase & {
   type: ExchangeOrderType.MARKET;
   side: ExchangeOrderSide.SELL;
   amountIn: 'base' | 'counter';
-  /** null = sell all available base */
-  amount: BigSource | null;
+  amount: BigSource | typeof ALL_AVAILABLE_AMOUNT;
 };
 
 export type MarketOrderAdvice = MarketBuyBaseAdvice | MarketBuyCounterAdvice | MarketSellAdvice;
@@ -56,8 +58,7 @@ export type LimitOrderAdvice = OrderAdviceBase & {
   type: ExchangeOrderType.LIMIT;
   side: ExchangeOrderSide;
   amountIn: 'base';
-  /** null = use all available balance */
-  amount: BigSource | null;
+  amount: BigSource | AllAvailableAmount;
   price: BigSource;
 };
 
@@ -78,8 +79,14 @@ export interface TradingSessionExchange extends Pick<EventEmitter, 'on'> {
   getFills(pair: TradingPair): Promise<ExchangeFill[]>;
   getOpenOrders(pair: TradingPair): Promise<ExchangePendingOrder[]>;
   getTradingRules(pair: TradingPair): Promise<ExchangeTradingRules>;
-  placeLimitOrder(pair: TradingPair, options: Omit<ExchangeLimitOrderOptions, 'type' | 'sizeInCounter'>): Promise<ExchangePendingLimitOrder>;
-  placeMarketOrder(pair: TradingPair, options: Omit<ExchangeMarketOrderOptions, 'type'>): Promise<ExchangePendingMarketOrder>;
+  placeLimitOrder(
+    pair: TradingPair,
+    options: Omit<ExchangeLimitOrderOptions, 'type' | 'sizeInCounter'>
+  ): Promise<ExchangePendingLimitOrder>;
+  placeMarketOrder(
+    pair: TradingPair,
+    options: Omit<ExchangeMarketOrderOptions, 'type'>
+  ): Promise<ExchangePendingMarketOrder>;
   unwatchCandles(topicId: string): void;
   unwatchOrders(topicId: string): void;
   watchCandles(pair: TradingPair, intervalInMillis: number, openTimeInISO: string): Promise<string>;

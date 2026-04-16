@@ -17,6 +17,11 @@ export {
   type ProtectedStrategyConfig,
   type ProtectedStrategyState,
 } from './strategy-protected/ProtectedStrategy.js';
+export {
+  ProtectionOnlyStrategy,
+  ProtectionOnlySchema,
+  type ProtectionOnlyConfig,
+} from './strategy-protection-only/ProtectionOnlyStrategy.js';
 export {suggestScalpOffset} from './strategy-scalp/suggestScalpOffset.js';
 export * from './report/index.js';
 export {

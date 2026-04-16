@@ -1,6 +1,6 @@
 import Big from 'big.js';
 import {z} from 'zod';
-import {ExchangeOrderSide, ExchangeOrderType} from '@typedtrader/exchange';
+import {ALL_AVAILABLE, ExchangeOrderSide, ExchangeOrderType} from '@typedtrader/exchange';
 import type {ExchangeFill, LimitOrderAdvice, OneMinuteBatchedCandle, OrderAdvice, TradingSessionState} from '@typedtrader/exchange';
 import {Strategy} from '../strategy/Strategy.js';
 import {positiveNumberString} from '../util/validators.js';
@@ -58,6 +58,13 @@ export const ProtectedConfigSchema = z.object({
    * trade-off between `"limit"` (default) and `"market"`.
    */
   takeProfitOrder: z.enum(['limit', 'market']).default('limit'),
+  /**
+   * When `true`, the strategy seeds its position tracking from the account's existing
+   * base balance and the first candle's close price. This allows attaching guard
+   * protection to a position that was opened externally (manual trade, another strategy).
+   * Percentage and nominal guards will be relative to the price at attach time.
+   */
+  seedFromBalance: z.boolean().default(false),
 });
 
 /** All of the kill-switch settings, nested under a single namespaced `protected` key. */
@@ -145,6 +152,7 @@ export abstract class ProtectedStrategy extends Strategy {
   readonly #takeProfit: GuardMode;
   readonly #stopLossOrder: GuardOrderType;
   readonly #takeProfitOrder: GuardOrderType;
+  readonly #seedFromBalance: boolean;
 
   constructor(options: {config: Record<string, unknown>; state?: Record<string, unknown>}) {
     super({
@@ -200,6 +208,7 @@ export abstract class ProtectedStrategy extends Strategy {
 
     this.#stopLossOrder = protectedConfig.stopLossOrder;
     this.#takeProfitOrder = protectedConfig.takeProfitOrder;
+    this.#seedFromBalance = protectedConfig.seedFromBalance;
   }
 
   get #protectedState(): ProtectedStrategyState {
@@ -259,19 +268,29 @@ export abstract class ProtectedStrategy extends Strategy {
 
   protected override async processCandle(
     candle: OneMinuteBatchedCandle,
-    _state: TradingSessionState
+    state: TradingSessionState
   ): Promise<OrderAdvice | void> {
     if (!this.#stopLoss && !this.#takeProfit) {
       return;
     }
 
-    const protectedState = this.#protectedState;
-    const positionSize = new Big(protectedState.totalPositionSize);
+    let positionSize = new Big(this.#protectedState.totalPositionSize);
+
+    if (positionSize.lte(0) && this.#seedFromBalance && state.baseBalance.gt(0)) {
+      const seedSize = state.baseBalance;
+      const seedCost = candle.close.mul(seedSize);
+      this.#setProtectedState({
+        totalCostBasis: seedCost.toFixed(),
+        totalPositionSize: seedSize.toFixed(),
+      });
+      positionSize = seedSize;
+    }
+
     if (positionSize.lte(0)) {
       return;
     }
 
-    const avgEntry = new Big(protectedState.totalCostBasis).div(positionSize);
+    const avgEntry = new Big(this.#protectedState.totalCostBasis).div(positionSize);
     const currentPrice = candle.close;
 
     if (this.#stopLoss) {
@@ -440,7 +459,7 @@ export abstract class ProtectedStrategy extends Strategy {
       return {
         side: ExchangeOrderSide.SELL,
         type: ExchangeOrderType.MARKET,
-        amount: null,
+        amount: ALL_AVAILABLE,
         amountIn: 'base',
         reason: `[KILL SWITCH] ${reason}`,
       };
@@ -451,7 +470,7 @@ export abstract class ProtectedStrategy extends Strategy {
     const advice: LimitOrderAdvice = {
       side: ExchangeOrderSide.SELL,
       type: ExchangeOrderType.LIMIT,
-      amount: null,
+      amount: ALL_AVAILABLE,
       amountIn: 'base',
       price: limitPrice,
       reason: `[KILL SWITCH] ${reason}`,
