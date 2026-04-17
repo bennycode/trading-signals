@@ -13,9 +13,11 @@ const targets: pino.TransportTargetOptions[] = [
 
 if (logDirectory) {
   targets.push({
-    target: 'pino/file',
+    target: 'pino-roll',
     options: {
-      destination: path.join(logDirectory, 'typedtrader.log'),
+      file: path.join(logDirectory, 'typedtrader.log'),
+      size: '10m',
+      limit: {count: 10},
       mkdir: true,
     },
     level: 'debug',
