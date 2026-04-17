@@ -33,6 +33,10 @@ export class Report {
       .all();
   }
 
+  static updateLastRunAt(id: number, lastRunAt: number): void {
+    db.update(reports).set({lastRunAt}).where(eq(reports.id, id)).run();
+  }
+
   static destroy(id: number): void {
     db.delete(reports).where(eq(reports.id, id)).run();
   }

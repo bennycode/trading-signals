@@ -5,7 +5,7 @@ import {logger} from '../logger.js';
 
 interface ScheduledReport {
   reportId: number;
-  timer: ReturnType<typeof setInterval>;
+  timer: ReturnType<typeof setTimeout>;
 }
 
 export class ReportScheduler {
@@ -29,7 +29,7 @@ export class ReportScheduler {
 
   stop(): void {
     for (const scheduled of this.#scheduled.values()) {
-      clearInterval(scheduled.timer);
+      clearTimeout(scheduled.timer);
     }
     this.#scheduled.clear();
   }
@@ -43,28 +43,35 @@ export class ReportScheduler {
       return;
     }
 
-    const timer = setInterval(async () => {
+    const intervalMs = row.intervalMs;
+    const now = Date.now();
+    const elapsed = row.lastRunAt ? now - row.lastRunAt : Infinity;
+    const initialDelay = options.runImmediately || elapsed >= intervalMs ? 0 : intervalMs - elapsed;
+
+    const tick = async (): Promise<void> => {
+      Report.updateLastRunAt(row.id, Date.now());
       try {
         await this.#runAndNotify(row);
       } catch (error) {
         logger.error({err: error, reportId: row.id, reportName: row.reportName}, 'Scheduled report failed');
       }
-    }, row.intervalMs);
+      const current = this.#scheduled.get(row.id);
+      if (current) {
+        current.timer = setTimeout(tick, intervalMs);
+      }
+    };
 
-    this.#scheduled.set(row.id, {reportId: row.id, timer});
-    logger.info({reportId: row.id, reportName: row.reportName, intervalMs: row.intervalMs}, 'Scheduled report');
-
-    if (options.runImmediately) {
-      this.#runAndNotify(row).catch(error => {
-        logger.error({err: error, reportId: row.id, reportName: row.reportName}, 'Initial run of scheduled report failed');
-      });
-    }
+    this.#scheduled.set(row.id, {reportId: row.id, timer: setTimeout(tick, initialDelay)});
+    logger.info(
+      {reportId: row.id, reportName: row.reportName, intervalMs, initialDelay, lastRunAt: row.lastRunAt},
+      'Scheduled report',
+    );
   }
 
   unscheduleReport(reportId: number): void {
     const scheduled = this.#scheduled.get(reportId);
     if (scheduled) {
-      clearInterval(scheduled.timer);
+      clearTimeout(scheduled.timer);
       this.#scheduled.delete(reportId);
       logger.info({reportId}, 'Unscheduled report');
     }

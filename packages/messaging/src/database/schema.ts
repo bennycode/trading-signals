@@ -55,6 +55,7 @@ export const reports = sqliteTable('reports', {
   reportName: text('reportName').notNull(),
   config: text('config').notNull(),
   intervalMs: integer('intervalMs'),
+  lastRunAt: integer('lastRunAt'),
   createdAt: text('createdAt').default(sql`(CURRENT_TIMESTAMP)`),
 });
 
