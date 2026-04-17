@@ -1,4 +1,4 @@
-import {createReport, resolveReportConfig} from 'trading-strategies';
+import {createReport} from 'trading-strategies';
 import type {MessagingPlatform} from '../platform/MessagingPlatform.js';
 import {Report, type ReportAttributes} from '../database/models/Report.js';
 import {logger} from '../logger.js';
@@ -78,7 +78,7 @@ export class ReportScheduler {
   }
 
   async #runAndNotify(row: ReportAttributes): Promise<void> {
-    const config = resolveReportConfig(row.reportName) ?? JSON.parse(row.config);
+    const config = JSON.parse(row.config);
     const report = createReport(row.reportName, config);
     const result = await report.run();
 
