@@ -52,11 +52,11 @@ export class BreakoutBarLow extends IndicatorSeries<HighLow> {
       return null;
     }
 
-    const currentHigh = this.#highs[this.#highs.length - 1]!;
-    let maxPriorHigh = this.#highs[0]!;
+    const currentHigh = this.#highs[this.#highs.length - 1];
+    let maxPriorHigh = this.#highs[0];
 
     for (let i = 1; i < this.#highs.length - 1; i++) {
-      if (this.#highs[i]! > maxPriorHigh) {
+      if (this.#highs[i] > maxPriorHigh) {
         maxPriorHigh = this.#highs[i]!;
       }
     }

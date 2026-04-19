@@ -62,10 +62,10 @@ export class HigherLowTrail extends IndicatorSeries<HighLow> {
       this.#window.shift();
     }
 
-    const pivot = this.#window[0]!;
+    const pivot = this.#window[0];
 
     for (let i = 1; i < this.#window.length; i++) {
-      if (this.#window[i]! <= pivot) {
+      if (this.#window[i] <= pivot) {
         return null;
       }
     }

@@ -7,7 +7,7 @@ describe('BreakoutBarLow', () => {
       const highs = [10, 12, 11, 15] as const;
       const lows = [8, 10, 9, 11] as const;
       const breakout = new BreakoutBarLow({lookback: 3});
-      const results: Array<number | null> = [];
+      const results: (number | null)[] = [];
 
       highs.forEach((high, i) => {
         results.push(breakout.add({high, low: lows[i]}));

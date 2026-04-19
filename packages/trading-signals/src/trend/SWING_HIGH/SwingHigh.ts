@@ -52,14 +52,14 @@ export class SwingHigh extends IndicatorSeries<HighLow> {
       this.#window.shift();
     }
 
-    const pivot = this.#window[this.#lookback]!;
+    const pivot = this.#window[this.#lookback];
 
     for (let i = 0; i < this.#window.length; i++) {
       if (i === this.#lookback) {
         continue;
       }
 
-      if (this.#window[i]! >= pivot) {
+      if (this.#window[i] >= pivot) {
         return null;
       }
     }
