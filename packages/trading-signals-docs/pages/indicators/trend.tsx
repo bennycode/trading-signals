@@ -1,6 +1,26 @@
 import {useEffect, useState} from 'react';
 import {Chart as HighchartsChart} from '@highcharts/react';
-import {ADX, DEMA, DMA, DX, EMA, PSAR, RMA, SMA, VWAP, WMA, WSMA} from 'trading-signals';
+import {
+  ADX,
+  BreakoutBarLow,
+  DEMA,
+  DMA,
+  DX,
+  EMA,
+  HigherLowTrail,
+  LinearRegression,
+  PSAR,
+  RMA,
+  SMA,
+  SMA15,
+  SwingHigh,
+  SwingLookback,
+  SwingLow,
+  VWAP,
+  WMA,
+  WSMA,
+  ZigZag,
+} from 'trading-signals';
 import {ChartDataPoint} from '../../components/Chart';
 import {DatasetSelector} from '../../components/DatasetSelector';
 import {IndicatorList} from '../../components/IndicatorList';
@@ -302,6 +322,196 @@ const indicators: IndicatorConfig[] = [
     processData: () => ({}),
     getChartData: () => ({x: 0, y: null}),
     getTableColumns: () => [],
+  },
+  {
+    id: 'linreg',
+    name: 'LINREG',
+    description: 'Linear Regression',
+    color: '#ec4899',
+    type: 'single',
+    requiredInputs: 14,
+    details:
+      'Fits a straight line to recent prices using least-squares. The prediction is the point on the line at the latest bar; the slope indicates trend direction and strength.',
+    createIndicator: () => new LinearRegression(14),
+    processData: (indicator, candle) => {
+      indicator.add(Number(candle.close));
+      const full = indicator.isStable ? indicator.getResult() : null;
+      return {
+        result: full?.prediction ?? null,
+        slope: full?.slope ?? null,
+        close: Number(candle.close),
+      };
+    },
+    getChartData: result => ({x: 0, y: result.result}),
+    getTableColumns: () => [
+      {header: 'Period', key: 'period'},
+      {header: 'Date', key: 'date'},
+      {header: 'Close', key: 'close', render: val => `$${val.toFixed(2)}`, className: 'text-slate-300 py-2 px-3'},
+      {header: 'Prediction', key: 'result', className: 'text-white font-mono py-2 px-3'},
+      {
+        header: 'Slope',
+        key: 'slope',
+        render: val => (val === null || val === undefined ? 'N/A' : val.toFixed(4)),
+        className: 'text-slate-300 font-mono py-2 px-3',
+      },
+    ],
+    chartTitle: 'Linear Regression (14)',
+    yAxisLabel: 'Price',
+  },
+  {
+    id: 'sma15',
+    name: 'SMA15',
+    description: "Spencer's 15-Point Moving Average",
+    color: '#14b8a6',
+    type: 'single',
+    requiredInputs: 15,
+    details:
+      'A specialized 15-point weighted moving average using Spencer’s fixed weights, designed to preserve trend while filtering seasonal and irregular variations.',
+    createIndicator: () => new SMA15(15),
+    processData: (indicator, candle) => {
+      indicator.add(Number(candle.close));
+      const result = indicator.isStable ? indicator.getResult() : null;
+      return {result, close: Number(candle.close)};
+    },
+    getChartData: result => ({x: 0, y: result.result}),
+    getTableColumns: () => [
+      {header: 'Period', key: 'period'},
+      {header: 'Date', key: 'date'},
+      {header: 'Close', key: 'close', render: val => `$${val.toFixed(2)}`, className: 'text-slate-300 py-2 px-3'},
+      {header: 'SMA15', key: 'result', className: 'text-white font-mono py-2 px-3'},
+    ],
+    chartTitle: "Spencer's 15-Point MA",
+    yAxisLabel: 'Price',
+  },
+  {
+    id: 'zigzag',
+    name: 'ZigZag',
+    description: 'ZigZag Indicator',
+    color: '#f43f5e',
+    type: 'single',
+    requiredInputs: 1,
+    details:
+      'Filters out minor price movements by connecting significant pivot highs and lows. A new pivot is only confirmed once price reverses by at least the configured percentage (deviation).',
+    createIndicator: () => new ZigZag({deviation: 5}),
+    processData: (indicator, candle) => {
+      indicator.add({high: Number(candle.high), low: Number(candle.low)});
+      const result = indicator.isStable ? indicator.getResult() : null;
+      return {result, high: Number(candle.high), low: Number(candle.low), close: Number(candle.close)};
+    },
+    getChartData: result => ({x: 0, y: result.result}),
+    getTableColumns: () => [
+      {header: 'Period', key: 'period'},
+      {header: 'Date', key: 'date'},
+      {header: 'High', key: 'high', render: val => `$${val.toFixed(2)}`, className: 'text-slate-300 py-2 px-3'},
+      {header: 'Low', key: 'low', render: val => `$${val.toFixed(2)}`, className: 'text-slate-300 py-2 px-3'},
+      {header: 'Last Pivot', key: 'result', className: 'text-white font-mono py-2 px-3'},
+    ],
+    chartTitle: 'ZigZag (5% deviation)',
+    yAxisLabel: 'Price',
+  },
+  {
+    id: 'swing-low',
+    name: 'SwingLow',
+    description: 'Swing Low Detector',
+    color: '#10b981',
+    type: 'single',
+    requiredInputs: 5,
+    details:
+      'Detects symmetric pullback lows (fractal pivots). A candle is confirmed as a swing low once the configured number of candles on each side print strictly higher lows. Commonly used to mark support levels and structural stop-loss references.',
+    createIndicator: () => new SwingLow({lookback: SwingLookback.BILL_WILLIAMS}),
+    processData: (indicator, candle) => {
+      indicator.add({high: Number(candle.high), low: Number(candle.low)});
+      const result = indicator.isStable ? indicator.getResult() : null;
+      return {result, high: Number(candle.high), low: Number(candle.low), close: Number(candle.close)};
+    },
+    getChartData: result => ({x: 0, y: result.result}),
+    getTableColumns: () => [
+      {header: 'Period', key: 'period'},
+      {header: 'Date', key: 'date'},
+      {header: 'Low', key: 'low', render: val => `$${val.toFixed(2)}`, className: 'text-slate-300 py-2 px-3'},
+      {header: 'Close', key: 'close', render: val => `$${val.toFixed(2)}`, className: 'text-slate-300 py-2 px-3'},
+      {header: 'Last Swing Low', key: 'result', className: 'text-white font-mono py-2 px-3'},
+    ],
+    chartTitle: 'Swing Low (lookback 2)',
+    yAxisLabel: 'Price',
+  },
+  {
+    id: 'swing-high',
+    name: 'SwingHigh',
+    description: 'Swing High Detector',
+    color: '#ef4444',
+    type: 'single',
+    requiredInputs: 5,
+    details:
+      'Detects symmetric pivot highs (fractal pivots). A candle is confirmed as a swing high once the configured number of candles on each side print strictly lower highs. Commonly used to mark resistance and breakout targets.',
+    createIndicator: () => new SwingHigh({lookback: SwingLookback.BILL_WILLIAMS}),
+    processData: (indicator, candle) => {
+      indicator.add({high: Number(candle.high), low: Number(candle.low)});
+      const result = indicator.isStable ? indicator.getResult() : null;
+      return {result, high: Number(candle.high), low: Number(candle.low), close: Number(candle.close)};
+    },
+    getChartData: result => ({x: 0, y: result.result}),
+    getTableColumns: () => [
+      {header: 'Period', key: 'period'},
+      {header: 'Date', key: 'date'},
+      {header: 'High', key: 'high', render: val => `$${val.toFixed(2)}`, className: 'text-slate-300 py-2 px-3'},
+      {header: 'Close', key: 'close', render: val => `$${val.toFixed(2)}`, className: 'text-slate-300 py-2 px-3'},
+      {header: 'Last Swing High', key: 'result', className: 'text-white font-mono py-2 px-3'},
+    ],
+    chartTitle: 'Swing High (lookback 2)',
+    yAxisLabel: 'Price',
+  },
+  {
+    id: 'higher-low-trail',
+    name: 'HigherLowTrail',
+    description: 'Higher-Low Trailing Stop',
+    color: '#84cc16',
+    type: 'single',
+    requiredInputs: 2,
+    details:
+      'Tracks a progressively rising stop-loss level by detecting one-sided pullback lows. Unlike a symmetric swing low, only right-side confirmation is required, so the trail responds faster. In monotonic mode (the default), the emitted level only ever rises.',
+    createIndicator: () => new HigherLowTrail({lookback: 1}),
+    processData: (indicator, candle) => {
+      indicator.add({high: Number(candle.high), low: Number(candle.low)});
+      const result = indicator.isStable ? indicator.getResult() : null;
+      return {result, high: Number(candle.high), low: Number(candle.low), close: Number(candle.close)};
+    },
+    getChartData: result => ({x: 0, y: result.result}),
+    getTableColumns: () => [
+      {header: 'Period', key: 'period'},
+      {header: 'Date', key: 'date'},
+      {header: 'Low', key: 'low', render: val => `$${val.toFixed(2)}`, className: 'text-slate-300 py-2 px-3'},
+      {header: 'Close', key: 'close', render: val => `$${val.toFixed(2)}`, className: 'text-slate-300 py-2 px-3'},
+      {header: 'Trail', key: 'result', className: 'text-white font-mono py-2 px-3'},
+    ],
+    chartTitle: 'Higher-Low Trail (lookback 1)',
+    yAxisLabel: 'Price',
+  },
+  {
+    id: 'breakout-bar-low',
+    name: 'BreakoutBarLow',
+    description: 'Breakout-Bar Low',
+    color: '#f59e0b',
+    type: 'single',
+    requiredInputs: 21,
+    details:
+      'Emits the low of any candle whose high strictly exceeds the highest high of the prior N candles — a breakout bar. The breakout-bar low is commonly used as a momentum-based stop: if price trades back below it, the breakout has failed.',
+    createIndicator: () => new BreakoutBarLow({lookback: 20}),
+    processData: (indicator, candle) => {
+      indicator.add({high: Number(candle.high), low: Number(candle.low)});
+      const result = indicator.isStable ? indicator.getResult() : null;
+      return {result, high: Number(candle.high), low: Number(candle.low), close: Number(candle.close)};
+    },
+    getChartData: result => ({x: 0, y: result.result}),
+    getTableColumns: () => [
+      {header: 'Period', key: 'period'},
+      {header: 'Date', key: 'date'},
+      {header: 'High', key: 'high', render: val => `$${val.toFixed(2)}`, className: 'text-slate-300 py-2 px-3'},
+      {header: 'Low', key: 'low', render: val => `$${val.toFixed(2)}`, className: 'text-slate-300 py-2 px-3'},
+      {header: 'Last Breakout Low', key: 'result', className: 'text-white font-mono py-2 px-3'},
+    ],
+    chartTitle: 'Breakout-Bar Low (20)',
+    yAxisLabel: 'Price',
   },
 ];
 
