@@ -18,6 +18,11 @@ export {
   type ProtectedStrategyConfig,
   type ProtectedStrategyState,
 } from './strategy-protected/ProtectedStrategy.js';
+export {
+  TrailingHigherLowStrategy,
+  TrailingHigherLowSchema,
+  type TrailingHigherLowConfig,
+} from './strategy-trailing-higher-low/TrailingHigherLowStrategy.js';
 export {suggestScalpOffset} from './strategy-scalp/suggestScalpOffset.js';
 export * from './report/index.js';
 export {
