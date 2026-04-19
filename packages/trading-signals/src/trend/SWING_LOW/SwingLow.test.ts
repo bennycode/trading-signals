@@ -5,13 +5,18 @@ import {SwingLow} from './SwingLow.js';
 describe('SwingLow', () => {
   describe('add', () => {
     it('confirms a swing low once lookback candles on each side show higher lows', () => {
-      const highs = [11, 9, 6, 8, 10] as const;
-      const lows = [10, 8, 5, 7, 9] as const;
+      const candles = [
+        {high: 11, low: 10},
+        {high: 9, low: 8},
+        {high: 6, low: 5},
+        {high: 8, low: 7},
+        {high: 10, low: 9},
+      ] as const;
       const expectations = [null, null, null, null, 5] as const;
       const swingLow = new SwingLow({lookback: SwingLookback.BILL_WILLIAMS});
 
-      lows.forEach((low, i) => {
-        const result = swingLow.add({high: highs[i], low});
+      candles.forEach((candle, i) => {
+        const result = swingLow.add(candle);
         expect(result).toBe(expectations[i]);
       });
 
@@ -20,13 +25,23 @@ describe('SwingLow', () => {
     });
 
     it('detects multiple swing lows across a longer series', () => {
-      const lows = [10, 8, 5, 7, 9, 11, 6, 4, 7, 8] as const;
-      const highs = lows.map(low => low + 2);
+      const candles = [
+        {high: 12, low: 10},
+        {high: 10, low: 8},
+        {high: 7, low: 5},
+        {high: 9, low: 7},
+        {high: 11, low: 9},
+        {high: 13, low: 11},
+        {high: 8, low: 6},
+        {high: 6, low: 4},
+        {high: 9, low: 7},
+        {high: 10, low: 8},
+      ] as const;
       const swingLow = new SwingLow({lookback: SwingLookback.BILL_WILLIAMS});
       const detected: number[] = [];
 
-      lows.forEach((low, i) => {
-        const result = swingLow.add({high: highs[i], low});
+      candles.forEach(candle => {
+        const result = swingLow.add(candle);
 
         if (result !== null) {
           detected.push(result);
@@ -37,25 +52,41 @@ describe('SwingLow', () => {
     });
 
     it('ignores candidates when neighbors have an equal low (strict comparison)', () => {
-      const lows = [10, 8, 5, 5, 9] as const;
-      const highs = [11, 9, 6, 6, 10] as const;
+      const candles = [
+        {high: 11, low: 10},
+        {high: 9, low: 8},
+        {high: 6, low: 5},
+        {high: 6, low: 5},
+        {high: 10, low: 9},
+      ] as const;
       const swingLow = new SwingLow({lookback: SwingLookback.BILL_WILLIAMS});
 
-      lows.forEach((low, i) => {
-        swingLow.add({high: highs[i], low});
+      candles.forEach(candle => {
+        swingLow.add(candle);
       });
 
       expect(swingLow.getResult()).toBeNull();
     });
 
     it('works with the chartist lookback of 5 candles per side', () => {
-      const lows = [20, 19, 18, 17, 16, 10, 17, 18, 19, 20, 21] as const;
-      const highs = lows.map(low => low + 2);
+      const candles = [
+        {high: 22, low: 20},
+        {high: 21, low: 19},
+        {high: 20, low: 18},
+        {high: 19, low: 17},
+        {high: 18, low: 16},
+        {high: 12, low: 10},
+        {high: 19, low: 17},
+        {high: 20, low: 18},
+        {high: 21, low: 19},
+        {high: 22, low: 20},
+        {high: 23, low: 21},
+      ] as const;
       const swingLow = new SwingLow({lookback: SwingLookback.CHARTISTS});
       const detected: number[] = [];
 
-      lows.forEach((low, i) => {
-        const result = swingLow.add({high: highs[i], low});
+      candles.forEach(candle => {
+        const result = swingLow.add(candle);
 
         if (result !== null) {
           detected.push(result);

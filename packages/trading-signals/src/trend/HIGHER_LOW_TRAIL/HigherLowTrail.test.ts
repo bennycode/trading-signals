@@ -4,13 +4,16 @@ import {HigherLowTrail} from './HigherLowTrail.js';
 describe('HigherLowTrail', () => {
   describe('add', () => {
     it('emits a pullback low after one bar of higher-low confirmation', () => {
-      const lows = [10, 8, 12] as const;
-      const highs = lows.map(low => low + 2);
+      const candles = [
+        {high: 12, low: 10},
+        {high: 10, low: 8},
+        {high: 14, low: 12},
+      ] as const;
       const trail = new HigherLowTrail({lookback: 1});
       const detected: number[] = [];
 
-      lows.forEach((low, i) => {
-        const result = trail.add({high: highs[i], low});
+      candles.forEach(candle => {
+        const result = trail.add(candle);
 
         if (result !== null) {
           detected.push(result);
@@ -22,13 +25,22 @@ describe('HigherLowTrail', () => {
     });
 
     it('raises the trail through progressively higher pullback lows', () => {
-      const lows = [10, 8, 12, 9, 11, 7, 15, 13, 20] as const;
-      const highs = lows.map(low => low + 2);
+      const candles = [
+        {high: 12, low: 10},
+        {high: 10, low: 8},
+        {high: 14, low: 12},
+        {high: 11, low: 9},
+        {high: 13, low: 11},
+        {high: 9, low: 7},
+        {high: 17, low: 15},
+        {high: 15, low: 13},
+        {high: 22, low: 20},
+      ] as const;
       const trail = new HigherLowTrail({lookback: 1});
       const detected: number[] = [];
 
-      lows.forEach((low, i) => {
-        const result = trail.add({high: highs[i], low});
+      candles.forEach(candle => {
+        const result = trail.add(candle);
 
         if (result !== null) {
           detected.push(result);
@@ -39,13 +51,22 @@ describe('HigherLowTrail', () => {
     });
 
     it('emits every pullback low when monotonic is disabled', () => {
-      const lows = [10, 8, 12, 9, 11, 7, 15, 13, 20] as const;
-      const highs = lows.map(low => low + 2);
+      const candles = [
+        {high: 12, low: 10},
+        {high: 10, low: 8},
+        {high: 14, low: 12},
+        {high: 11, low: 9},
+        {high: 13, low: 11},
+        {high: 9, low: 7},
+        {high: 17, low: 15},
+        {high: 15, low: 13},
+        {high: 22, low: 20},
+      ] as const;
       const trail = new HigherLowTrail({lookback: 1, monotonic: false});
       const detected: number[] = [];
 
-      lows.forEach((low, i) => {
-        const result = trail.add({high: highs[i], low});
+      candles.forEach(candle => {
+        const result = trail.add(candle);
 
         if (result !== null) {
           detected.push(result);
@@ -56,13 +77,20 @@ describe('HigherLowTrail', () => {
     });
 
     it('requires two strictly-higher-low bars when lookback is 2', () => {
-      const lows = [10, 5, 6, 7, 4, 8, 9] as const;
-      const highs = lows.map(low => low + 2);
+      const candles = [
+        {high: 12, low: 10},
+        {high: 7, low: 5},
+        {high: 8, low: 6},
+        {high: 9, low: 7},
+        {high: 6, low: 4},
+        {high: 10, low: 8},
+        {high: 11, low: 9},
+      ] as const;
       const trail = new HigherLowTrail({lookback: 2});
       const detected: number[] = [];
 
-      lows.forEach((low, i) => {
-        const result = trail.add({high: highs[i], low});
+      candles.forEach(candle => {
+        const result = trail.add(candle);
 
         if (result !== null) {
           detected.push(result);

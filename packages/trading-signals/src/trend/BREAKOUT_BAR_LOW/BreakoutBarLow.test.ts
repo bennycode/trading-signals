@@ -4,13 +4,17 @@ import {BreakoutBarLow} from './BreakoutBarLow.js';
 describe('BreakoutBarLow', () => {
   describe('add', () => {
     it('emits the low of a candle whose high exceeds all prior highs in the lookback window', () => {
-      const highs = [10, 12, 11, 15] as const;
-      const lows = [8, 10, 9, 11] as const;
+      const candles = [
+        {high: 10, low: 8},
+        {high: 12, low: 10},
+        {high: 11, low: 9},
+        {high: 15, low: 11},
+      ] as const;
       const breakout = new BreakoutBarLow({lookback: 3});
       const results: (number | null)[] = [];
 
-      highs.forEach((high, i) => {
-        results.push(breakout.add({high, low: lows[i]}));
+      candles.forEach(candle => {
+        results.push(breakout.add(candle));
       });
 
       expect(results).toEqual([null, null, null, 11]);
@@ -18,13 +22,21 @@ describe('BreakoutBarLow', () => {
     });
 
     it('detects successive breakout bars as new highs are made', () => {
-      const highs = [10, 12, 11, 15, 13, 16, 14, 20] as const;
-      const lows = [8, 10, 9, 11, 10, 12, 11, 15] as const;
+      const candles = [
+        {high: 10, low: 8},
+        {high: 12, low: 10},
+        {high: 11, low: 9},
+        {high: 15, low: 11},
+        {high: 13, low: 10},
+        {high: 16, low: 12},
+        {high: 14, low: 11},
+        {high: 20, low: 15},
+      ] as const;
       const breakout = new BreakoutBarLow({lookback: 3});
       const detected: number[] = [];
 
-      highs.forEach((high, i) => {
-        const result = breakout.add({high, low: lows[i]});
+      candles.forEach(candle => {
+        const result = breakout.add(candle);
 
         if (result !== null) {
           detected.push(result);
@@ -35,12 +47,16 @@ describe('BreakoutBarLow', () => {
     });
 
     it('returns null when the current high ties the prior max (strict comparison)', () => {
-      const highs = [10, 12, 11, 12] as const;
-      const lows = [8, 10, 9, 10] as const;
+      const candles = [
+        {high: 10, low: 8},
+        {high: 12, low: 10},
+        {high: 11, low: 9},
+        {high: 12, low: 10},
+      ] as const;
       const breakout = new BreakoutBarLow({lookback: 3});
 
-      highs.forEach((high, i) => {
-        breakout.add({high, low: lows[i]});
+      candles.forEach(candle => {
+        breakout.add(candle);
       });
 
       expect(breakout.getResult()).toBeNull();
