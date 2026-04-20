@@ -1,5 +1,6 @@
 import {IndicatorSeries} from '../../types/Indicator.js';
 import type {HighLow} from '../../types/HighLowClose.js';
+import {pushUpdate} from '../../util/pushUpdate.js';
 
 export type HigherLowTrailConfig = {
   /**
@@ -34,6 +35,7 @@ export class HigherLowTrail extends IndicatorSeries<HighLow> {
   readonly #lookback: number;
   readonly #monotonic: boolean;
   readonly #window: number[] = [];
+  #lastEmitted = false;
 
   constructor(config: HigherLowTrailConfig) {
     super();
@@ -46,20 +48,18 @@ export class HigherLowTrail extends IndicatorSeries<HighLow> {
   }
 
   update(candle: HighLow<number>, replace: boolean) {
-    if (replace && this.#window.length > 0) {
-      this.#window[this.#window.length - 1] = candle.low;
-    } else {
-      this.#window.push(candle.low);
+    // If the bar being replaced produced the last emission, unwind it up-front so the
+    // monotonic check compares against the correct baseline trail — not whatever stale
+    // `previousResult` happens to hold.
+    if (replace && this.#lastEmitted) {
+      this.rollbackLastResult();
     }
+    this.#lastEmitted = false;
 
-    const required = this.getRequiredInputs();
+    pushUpdate(this.#window, replace, candle.low, this.getRequiredInputs());
 
-    if (this.#window.length < required) {
+    if (this.#window.length < this.getRequiredInputs()) {
       return null;
-    }
-
-    while (this.#window.length > required) {
-      this.#window.shift();
     }
 
     const pivot = this.#window[0];
@@ -70,12 +70,11 @@ export class HigherLowTrail extends IndicatorSeries<HighLow> {
       }
     }
 
-    const currentTrail = replace ? this.previousResult : this.result;
-
-    if (this.#monotonic && currentTrail !== undefined && pivot <= currentTrail) {
+    if (this.#monotonic && this.result !== undefined && pivot <= this.result) {
       return null;
     }
 
-    return this.setResult(pivot, replace);
+    this.#lastEmitted = true;
+    return this.setResult(pivot, false);
   }
 }

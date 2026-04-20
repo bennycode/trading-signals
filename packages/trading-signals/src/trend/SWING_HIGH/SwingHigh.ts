@@ -1,5 +1,6 @@
 import {IndicatorSeries} from '../../types/Indicator.js';
 import type {HighLow} from '../../types/HighLowClose.js';
+import {pushUpdate} from '../../util/pushUpdate.js';
 
 export type SwingHighConfig = {
   /**
@@ -25,6 +26,7 @@ export type SwingHighConfig = {
 export class SwingHigh extends IndicatorSeries<HighLow> {
   readonly #lookback: number;
   readonly #window: number[] = [];
+  #lastEmitted = false;
 
   constructor(config: SwingHighConfig) {
     super();
@@ -36,20 +38,15 @@ export class SwingHigh extends IndicatorSeries<HighLow> {
   }
 
   update(candle: HighLow<number>, replace: boolean) {
-    if (replace && this.#window.length > 0) {
-      this.#window[this.#window.length - 1] = candle.high;
-    } else {
-      this.#window.push(candle.high);
+    if (replace && this.#lastEmitted) {
+      this.rollbackLastResult();
     }
+    this.#lastEmitted = false;
 
-    const required = this.getRequiredInputs();
+    pushUpdate(this.#window, replace, candle.high, this.getRequiredInputs());
 
-    if (this.#window.length < required) {
+    if (this.#window.length < this.getRequiredInputs()) {
       return null;
-    }
-
-    while (this.#window.length > required) {
-      this.#window.shift();
     }
 
     const pivot = this.#window[this.#lookback];
@@ -64,6 +61,7 @@ export class SwingHigh extends IndicatorSeries<HighLow> {
       }
     }
 
-    return this.setResult(pivot, replace);
+    this.#lastEmitted = true;
+    return this.setResult(pivot, false);
   }
 }

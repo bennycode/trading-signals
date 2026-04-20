@@ -1,5 +1,6 @@
 import {IndicatorSeries} from '../../types/Indicator.js';
 import type {HighLow} from '../../types/HighLowClose.js';
+import {pushUpdate} from '../../util/pushUpdate.js';
 
 export type SwingLowConfig = {
   /**
@@ -25,6 +26,7 @@ export type SwingLowConfig = {
 export class SwingLow extends IndicatorSeries<HighLow> {
   readonly #lookback: number;
   readonly #window: number[] = [];
+  #lastEmitted = false;
 
   constructor(config: SwingLowConfig) {
     super();
@@ -36,20 +38,18 @@ export class SwingLow extends IndicatorSeries<HighLow> {
   }
 
   update(candle: HighLow<number>, replace: boolean) {
-    if (replace && this.#window.length > 0) {
-      this.#window[this.#window.length - 1] = candle.low;
-    } else {
-      this.#window.push(candle.low);
+    // If the bar we're replacing caused the last emission, unwind it up-front so the
+    // pivot check evaluates against fresh state and `getResult()` doesn't keep a stale
+    // pivot when the replacement no longer qualifies.
+    if (replace && this.#lastEmitted) {
+      this.rollbackLastResult();
     }
+    this.#lastEmitted = false;
 
-    const required = this.getRequiredInputs();
+    pushUpdate(this.#window, replace, candle.low, this.getRequiredInputs());
 
-    if (this.#window.length < required) {
+    if (this.#window.length < this.getRequiredInputs()) {
       return null;
-    }
-
-    while (this.#window.length > required) {
-      this.#window.shift();
     }
 
     const pivot = this.#window[this.#lookback];
@@ -64,6 +64,7 @@ export class SwingLow extends IndicatorSeries<HighLow> {
       }
     }
 
-    return this.setResult(pivot, replace);
+    this.#lastEmitted = true;
+    return this.setResult(pivot, false);
   }
 }

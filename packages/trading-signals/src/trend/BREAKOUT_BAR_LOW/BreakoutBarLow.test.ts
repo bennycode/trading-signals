@@ -74,7 +74,7 @@ describe('BreakoutBarLow', () => {
   });
 
   describe('replace', () => {
-    it('replaces the most recently added value', () => {
+    it('rolls back the stored breakout low when a replacement no longer qualifies as a breakout', () => {
       const breakout = new BreakoutBarLow({lookback: 3});
 
       breakout.add({high: 10, low: 8});
@@ -85,14 +85,22 @@ describe('BreakoutBarLow', () => {
       const replacedValue = {high: 11, low: 9} as const;
 
       const originalResult = breakout.add(originalValue);
-      const replacedResult = breakout.replace(replacedValue);
 
       expect(originalResult).toBe(11);
+      expect(breakout.getResult()).toBe(11);
+      expect(breakout.isStable).toBe(true);
+
+      const replacedResult = breakout.replace(replacedValue);
+
       expect(replacedResult).toBeNull();
+      expect(breakout.getResult()).toBeNull();
+      expect(breakout.isStable).toBe(false);
 
       const restoredResult = breakout.replace(originalValue);
 
       expect(restoredResult).toBe(11);
+      expect(breakout.getResult()).toBe(11);
+      expect(breakout.isStable).toBe(true);
     });
   });
 

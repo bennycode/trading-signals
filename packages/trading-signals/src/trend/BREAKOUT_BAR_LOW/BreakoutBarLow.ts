@@ -1,5 +1,6 @@
 import {IndicatorSeries} from '../../types/Indicator.js';
 import type {HighLow} from '../../types/HighLowClose.js';
+import {pushUpdate} from '../../util/pushUpdate.js';
 
 export type BreakoutBarLowConfig = {
   /**
@@ -25,6 +26,7 @@ export type BreakoutBarLowConfig = {
 export class BreakoutBarLow extends IndicatorSeries<HighLow> {
   readonly #lookback: number;
   readonly #highs: number[] = [];
+  #lastEmitted = false;
 
   constructor(config: BreakoutBarLowConfig) {
     super();
@@ -36,19 +38,17 @@ export class BreakoutBarLow extends IndicatorSeries<HighLow> {
   }
 
   update(candle: HighLow<number>, replace: boolean) {
-    if (replace && this.#highs.length > 0) {
-      this.#highs[this.#highs.length - 1] = candle.high;
-    } else {
-      this.#highs.push(candle.high);
+    // If the bar being replaced produced the last emission, unwind it up-front so
+    // `getResult()` doesn't keep a stale breakout low when the replacement no longer
+    // qualifies as a breakout.
+    if (replace && this.#lastEmitted) {
+      this.rollbackLastResult();
     }
+    this.#lastEmitted = false;
 
-    const required = this.getRequiredInputs();
+    pushUpdate(this.#highs, replace, candle.high, this.getRequiredInputs());
 
-    while (this.#highs.length > required) {
-      this.#highs.shift();
-    }
-
-    if (this.#highs.length < required) {
+    if (this.#highs.length < this.getRequiredInputs()) {
       return null;
     }
 
@@ -57,12 +57,13 @@ export class BreakoutBarLow extends IndicatorSeries<HighLow> {
 
     for (let i = 1; i < this.#highs.length - 1; i++) {
       if (this.#highs[i] > maxPriorHigh) {
-        maxPriorHigh = this.#highs[i]!;
+        maxPriorHigh = this.#highs[i];
       }
     }
 
     if (currentHigh > maxPriorHigh) {
-      return this.setResult(candle.low, replace);
+      this.#lastEmitted = true;
+      return this.setResult(candle.low, false);
     }
 
     return null;

@@ -108,7 +108,7 @@ describe('SwingLow', () => {
   });
 
   describe('replace', () => {
-    it('replaces the most recently added value', () => {
+    it('rolls back the stored pivot when a replacement invalidates the last emission', () => {
       const swingLow = new SwingLow({lookback: SwingLookback.BILL_WILLIAMS});
 
       swingLow.add({high: 11, low: 10});
@@ -120,14 +120,22 @@ describe('SwingLow', () => {
       const replacedValue = {high: 6, low: 4} as const;
 
       const originalResult = swingLow.add(originalValue);
-      const replacedResult = swingLow.replace(replacedValue);
 
       expect(originalResult).toBe(5);
+      expect(swingLow.getResult()).toBe(5);
+      expect(swingLow.isStable).toBe(true);
+
+      const replacedResult = swingLow.replace(replacedValue);
+
       expect(replacedResult).toBeNull();
+      expect(swingLow.getResult()).toBeNull();
+      expect(swingLow.isStable).toBe(false);
 
       const restoredResult = swingLow.replace(originalValue);
 
       expect(restoredResult).toBe(5);
+      expect(swingLow.getResult()).toBe(5);
+      expect(swingLow.isStable).toBe(true);
     });
   });
 

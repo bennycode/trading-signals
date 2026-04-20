@@ -111,7 +111,7 @@ describe('HigherLowTrail', () => {
   });
 
   describe('replace', () => {
-    it('replaces the most recently added value', () => {
+    it('rolls back the stored trail when a replacement invalidates the last emission', () => {
       const trail = new HigherLowTrail({lookback: 1});
 
       trail.add({high: 12, low: 10});
@@ -121,14 +121,49 @@ describe('HigherLowTrail', () => {
       const replacedValue = {high: 9, low: 7} as const;
 
       const originalResult = trail.add(originalValue);
-      const replacedResult = trail.replace(replacedValue);
 
       expect(originalResult).toBe(8);
+      expect(trail.getResult()).toBe(8);
+      expect(trail.isStable).toBe(true);
+
+      const replacedResult = trail.replace(replacedValue);
+
       expect(replacedResult).toBeNull();
+      expect(trail.getResult()).toBeNull();
+      expect(trail.isStable).toBe(false);
 
       const restoredResult = trail.replace(originalValue);
 
       expect(restoredResult).toBe(8);
+      expect(trail.getResult()).toBe(8);
+      expect(trail.isStable).toBe(true);
+    });
+
+    it('preserves the monotonic trail when replacing a non-emitting bar that would otherwise form a lower pivot', () => {
+      // Regression test: earlier implementations compared against `previousResult` on replace,
+      // which was `undefined` after a non-emitting bar, so the monotonic guard silently let
+      // the trail collapse downward on the replacement.
+      const trail = new HigherLowTrail({lookback: 2});
+
+      const setup = [
+        {high: 22, low: 20},
+        {high: 27, low: 25},
+        {high: 32, low: 30}, // emits trail = 20
+        {high: 7, low: 5}, // window slides; no pivot confirmed
+        {high: 12, low: 10}, // still no pivot confirmed
+        {high: 17, low: 15}, // would emit pivot 5 but monotonic guard blocks it
+      ] as const;
+
+      setup.forEach(candle => trail.add(candle));
+
+      expect(trail.getResult()).toBe(20);
+
+      // Replace the last (non-emitting) bar. The replacement also forms a pivot 5, which
+      // must stay blocked by the monotonic guard because the current trail is 20.
+      const replaced = trail.replace({high: 22, low: 20});
+
+      expect(replaced).toBeNull();
+      expect(trail.getResult()).toBe(20);
     });
   });
 
