@@ -22,8 +22,8 @@ export interface TradingSessionStrategy {
 }
 
 /** Use as `amount` in an `OrderAdvice` to use the full available balance. */
-export const ALL_AVAILABLE_AMOUNT = 'ALL_AVAILABLE_AMOUNT' as const;
-type AllAvailableAmount = typeof ALL_AVAILABLE_AMOUNT;
+export const AllAvailableAmount = 'ALL_AVAILABLE_AMOUNT' as const;
+type AllAvailableAmount = typeof AllAvailableAmount;
 
 type OrderAdviceBase = {
   reason?: string;

@@ -3,7 +3,7 @@ import {ms} from 'ms';
 import {describe, expect, it, vi} from 'vitest';
 import {z} from 'zod';
 import {
-  ALL_AVAILABLE_AMOUNT,
+  AllAvailableAmount,
   CandleBatcher,
   ExchangeOrderPosition,
   ExchangeOrderSide,
@@ -118,7 +118,7 @@ class TestProtectedStrategy extends ProtectedStrategy {
       return {
         side: ExchangeOrderSide.BUY,
         type: ExchangeOrderType.MARKET,
-        amount: ALL_AVAILABLE_AMOUNT,
+        amount: AllAvailableAmount,
         amountIn: 'counter',
         reason: 'test buy',
       };
@@ -167,7 +167,7 @@ describe('ProtectedStrategy', () => {
       const advice = await strategy.onCandle(makeCandle(95), mockState);
 
       assertLimitSell(advice);
-      expect(advice.amount).toBe(ALL_AVAILABLE_AMOUNT);
+      expect(advice.amount).toBe(AllAvailableAmount);
       expect(advice.amountIn).toBe('base');
       expect(new Big(advice.price).toFixed(2)).toBe('95.00');
       expect(advice.reason).toContain('[KILL SWITCH]');
@@ -812,7 +812,7 @@ describe('ProtectedStrategy', () => {
 
       const advice = await strategy.onCandle(makeCandle(95), mockState);
       assertMarketSell(advice);
-      expect(advice.amount).toBe(ALL_AVAILABLE_AMOUNT);
+      expect(advice.amount).toBe(AllAvailableAmount);
       expect(advice.amountIn).toBe('base');
       expect(advice.reason).toContain('[KILL SWITCH]');
       expect(advice.reason).toContain('Stop-loss');

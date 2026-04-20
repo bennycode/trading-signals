@@ -13,7 +13,7 @@ import {
   type ExchangePendingMarketOrder,
   type ExchangeTradingRules,
 } from '../exchange/Exchange.js';
-import {ALL_AVAILABLE_AMOUNT} from './TradingSessionTypes.js';
+import {AllAvailableAmount} from './TradingSessionTypes.js';
 import type {OrderAdvice, TradingSessionStrategy} from './TradingSessionTypes.js';
 
 const pair = new TradingPair('TSLA', 'USD');
@@ -198,7 +198,7 @@ describe.sequential('TradingSession', () => {
       const advice: OrderAdvice = {
         side: ExchangeOrderSide.BUY,
         type: ExchangeOrderType.MARKET,
-        amount: ALL_AVAILABLE_AMOUNT,
+        amount: AllAvailableAmount,
         amountIn: 'counter',
       };
       strategy.onCandle.mockResolvedValue(advice);
@@ -243,7 +243,7 @@ describe.sequential('TradingSession', () => {
       const advice: OrderAdvice = {
         side: ExchangeOrderSide.SELL,
         type: ExchangeOrderType.MARKET,
-        amount: ALL_AVAILABLE_AMOUNT,
+        amount: AllAvailableAmount,
         amountIn: 'base',
       };
       strategy.onCandle.mockResolvedValue(advice);
@@ -265,7 +265,7 @@ describe.sequential('TradingSession', () => {
       const advice: OrderAdvice = {
         side: ExchangeOrderSide.BUY,
         type: ExchangeOrderType.LIMIT,
-        amount: ALL_AVAILABLE_AMOUNT,
+        amount: AllAvailableAmount,
         amountIn: 'base',
         price: '250',
       };
@@ -382,7 +382,7 @@ describe.sequential('TradingSession', () => {
       const advice: OrderAdvice = {
         side: ExchangeOrderSide.SELL,
         type: ExchangeOrderType.MARKET,
-        amount: ALL_AVAILABLE_AMOUNT,
+        amount: AllAvailableAmount,
         amountIn: 'base',
       };
       strategy.onCandle.mockResolvedValue(advice);
