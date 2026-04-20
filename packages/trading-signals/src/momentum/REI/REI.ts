@@ -25,8 +25,11 @@ export class REI extends TrendIndicatorSeries<HighLowClose<number>> {
   readonly #lows: number[] = [];
   readonly #closes: number[] = [];
 
-  constructor(public readonly interval: number) {
+  public readonly interval: number;
+
+  constructor(interval: number) {
     super();
+    this.interval = interval;
   }
 
   protected calculateSignalState(result?: number | null | undefined) {

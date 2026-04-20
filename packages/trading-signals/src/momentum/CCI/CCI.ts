@@ -31,9 +31,11 @@ import {MAD} from '../../volatility/MAD/MAD.js';
 export class CCI extends TrendIndicatorSeries<HighLowClose<number>> {
   readonly #sma: SMA;
   readonly #typicalPrices: number[];
+  public readonly interval: number;
 
-  constructor(public readonly interval: number) {
+  constructor(interval: number) {
     super();
+    this.interval = interval;
     this.#sma = new SMA(this.interval);
     this.#typicalPrices = [];
   }

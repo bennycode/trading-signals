@@ -1,12 +1,11 @@
 {
   "compilerOptions": {
     "allowJs": true,
-    "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "incremental": true,
     "isolatedModules": true,
     "jsx": "react-jsx",
-    "lib": ["dom", "dom.iterable", "esnext"],
+    "lib": ["dom", "esnext"],
     "module": "esnext",
     "moduleResolution": "bundler",
     "noEmit": true,

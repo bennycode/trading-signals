@@ -17,13 +17,15 @@ export class AC extends TrendIndicatorSeries<HighLow<number>> {
   public readonly ao: AO;
   public readonly momentum: MOM;
   public readonly signal: SMA;
+  public readonly shortAO: number;
+  public readonly longAO: number;
+  public readonly signalInterval: number;
 
-  constructor(
-    public readonly shortAO: number,
-    public readonly longAO: number,
-    public readonly signalInterval: number
-  ) {
+  constructor(shortAO: number, longAO: number, signalInterval: number) {
     super();
+    this.shortAO = shortAO;
+    this.longAO = longAO;
+    this.signalInterval = signalInterval;
     this.ao = new AO(shortAO, longAO);
     this.momentum = new MOM(1);
     this.signal = new SMA(signalInterval);

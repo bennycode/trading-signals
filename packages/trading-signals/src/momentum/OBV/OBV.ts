@@ -13,8 +13,11 @@ import {pushUpdate} from '../../util/pushUpdate.js';
 export class OBV extends TrendIndicatorSeries<OpenHighLowCloseVolume<number>> {
   public readonly candles: OpenHighLowCloseVolume<number>[] = [];
 
-  constructor(public readonly interval: number) {
+  public readonly interval: number;
+
+  constructor(interval: number) {
     super();
+    this.interval = interval;
   }
 
   override getRequiredInputs() {

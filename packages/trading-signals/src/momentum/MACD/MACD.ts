@@ -22,12 +22,15 @@ export class MACD extends TechnicalIndicator<MACDResult, number> {
   public readonly prices: number[] = [];
   #previousResult?: MACDResult;
 
-  constructor(
-    public readonly short: EMA | DEMA,
-    public readonly long: EMA | DEMA,
-    public readonly signal: EMA | DEMA
-  ) {
+  public readonly short: EMA | DEMA;
+  public readonly long: EMA | DEMA;
+  public readonly signal: EMA | DEMA;
+
+  constructor(short: EMA | DEMA, long: EMA | DEMA, signal: EMA | DEMA) {
     super();
+    this.short = short;
+    this.long = long;
+    this.signal = signal;
   }
 
   override getRequiredInputs() {

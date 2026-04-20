@@ -39,12 +39,15 @@ export class StochasticOscillator extends TechnicalIndicator<StochasticResult, H
    * @param m The %k slowing period
    * @param p The %d period
    */
-  constructor(
-    public n: number,
-    public m: number,
-    public p: number
-  ) {
+  public n: number;
+  public m: number;
+  public p: number;
+
+  constructor(n: number, m: number, p: number) {
     super();
+    this.n = n;
+    this.m = m;
+    this.p = p;
     this.#periodM = new SMA(m);
     this.#periodP = new SMA(p);
   }

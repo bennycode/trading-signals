@@ -9,7 +9,6 @@ import {
   type ExchangeLimitOrderOptions,
   type ExchangeMarketOrderOptions,
   ExchangeOrderSide,
-  ExchangeOrderType,
   type ExchangePendingLimitOrder,
   type ExchangePendingMarketOrder,
   type ExchangePendingOrder,
@@ -31,23 +30,23 @@ type OrderAdviceBase = {
 };
 
 type MarketBuyBaseAdvice = OrderAdviceBase & {
-  type: ExchangeOrderType.MARKET;
-  side: ExchangeOrderSide.BUY;
+  type: 'MARKET';
+  side: 'BUY';
   amountIn: 'base';
   /** Must be explicit — cannot derive base quantity from null without a price */
   amount: BigSource;
 };
 
 type MarketBuyCounterAdvice = OrderAdviceBase & {
-  type: ExchangeOrderType.MARKET;
-  side: ExchangeOrderSide.BUY;
+  type: 'MARKET';
+  side: 'BUY';
   amountIn: 'counter';
   amount: BigSource | AllAvailableAmount;
 };
 
 type MarketSellAdvice = OrderAdviceBase & {
-  type: ExchangeOrderType.MARKET;
-  side: ExchangeOrderSide.SELL;
+  type: 'MARKET';
+  side: 'SELL';
   amountIn: 'base' | 'counter';
   amount: BigSource | typeof ALL_AVAILABLE_AMOUNT;
 };
@@ -55,7 +54,7 @@ type MarketSellAdvice = OrderAdviceBase & {
 export type MarketOrderAdvice = MarketBuyBaseAdvice | MarketBuyCounterAdvice | MarketSellAdvice;
 
 export type LimitOrderAdvice = OrderAdviceBase & {
-  type: ExchangeOrderType.LIMIT;
+  type: 'LIMIT';
   side: ExchangeOrderSide;
   amountIn: 'base';
   amount: BigSource | AllAvailableAmount;

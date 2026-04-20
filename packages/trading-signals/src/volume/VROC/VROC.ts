@@ -18,8 +18,11 @@ export class VROC extends TrendIndicatorSeries {
   readonly #volumes: number[] = [];
   readonly #historyLength: number;
 
-  constructor(public readonly interval: number) {
+  public readonly interval: number;
+
+  constructor(interval: number) {
     super();
+    this.interval = interval;
     this.#historyLength = interval + 1;
   }
 

@@ -25,11 +25,11 @@ export class RSI extends TrendIndicatorSeries {
   readonly #avgLoss: MovingAverage;
   readonly #maxValue = 100;
 
-  constructor(
-    public readonly interval: number,
-    SmoothingIndicator: MovingAverageTypes = WSMA
-  ) {
+  public readonly interval: number;
+
+  constructor(interval: number, SmoothingIndicator: MovingAverageTypes = WSMA) {
     super();
+    this.interval = interval;
     this.#avgGain = new SmoothingIndicator(this.interval);
     this.#avgLoss = new SmoothingIndicator(this.interval);
   }

@@ -13,9 +13,11 @@ import {NotEnoughDataError} from '../../error/index.js';
 export class RMA extends MovingAverage {
   #pricesCounter = 0;
   readonly #weightFactor: number;
+  override readonly interval: number;
 
-  constructor(public override readonly interval: number) {
+  constructor(interval: number) {
     super(interval);
+    this.interval = interval;
     this.#weightFactor = 1 / this.interval;
   }
 

@@ -26,11 +26,13 @@ export class CG extends TrendIndicatorSeries {
     return this.signal.isStable;
   }
 
-  constructor(
-    public readonly interval: number,
-    public readonly signalInterval: number
-  ) {
+  public readonly interval: number;
+  public readonly signalInterval: number;
+
+  constructor(interval: number, signalInterval: number) {
     super();
+    this.interval = interval;
+    this.signalInterval = signalInterval;
     this.signal = new SMA(signalInterval);
   }
 

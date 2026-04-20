@@ -20,8 +20,11 @@ export class WSMA extends IndicatorSeries {
   readonly #indicator: SMA;
   readonly #smoothingFactor: number;
 
-  constructor(public readonly interval: number) {
+  public readonly interval: number;
+
+  constructor(interval: number) {
     super();
+    this.interval = interval;
     this.#indicator = new SMA(interval);
     this.#smoothingFactor = 1 / this.interval;
   }

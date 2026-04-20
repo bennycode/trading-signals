@@ -25,11 +25,11 @@ export class ATR extends IndicatorSeries<HighLowClose<number>> {
   readonly #tr: TR;
   readonly #smoothing: MovingAverage;
 
-  constructor(
-    public readonly interval: number,
-    SmoothingIndicator: MovingAverageTypes = WSMA
-  ) {
+  public readonly interval: number;
+
+  constructor(interval: number, SmoothingIndicator: MovingAverageTypes = WSMA) {
     super();
+    this.interval = interval;
     this.#tr = new TR();
     this.#smoothing = new SmoothingIndicator(interval);
   }

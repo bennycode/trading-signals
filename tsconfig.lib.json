@@ -2,11 +2,11 @@
   "compilerOptions": {
     "declaration": true,
     "emitDecoratorMetadata": false,
+    "erasableSyntaxOnly": true,
     "experimentalDecorators": true,
     "forceConsistentCasingInFileNames": true,
     "lib": ["es2023"],
-    "module": "nodenext",
-    "moduleResolution": "nodenext",
+    "module": "node20",
     "newLine": "lf",
     "noEmitOnError": true,
     "noImplicitOverride": true,

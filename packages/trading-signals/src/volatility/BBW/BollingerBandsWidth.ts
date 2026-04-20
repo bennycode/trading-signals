@@ -10,8 +10,11 @@ import {IndicatorSeries} from '../../types/Indicator.js';
  * @see https://www.tradingview.com/support/solutions/43000501972-bollinger-bands-width-bbw/
  */
 export class BollingerBandsWidth extends IndicatorSeries {
-  constructor(public readonly bollingerBands: BollingerBands) {
+  public readonly bollingerBands: BollingerBands;
+
+  constructor(bollingerBands: BollingerBands) {
     super();
+    this.bollingerBands = bollingerBands;
   }
 
   override getRequiredInputs() {

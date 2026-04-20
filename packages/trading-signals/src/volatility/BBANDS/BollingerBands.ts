@@ -19,11 +19,13 @@ export class BollingerBands extends TechnicalIndicator<BandsResult, number> {
   #lastPrice?: number;
   #previousPrice?: number;
 
-  constructor(
-    public readonly interval: number,
-    public readonly deviationMultiplier: number = 2
-  ) {
+  public readonly interval: number;
+  public readonly deviationMultiplier: number;
+
+  constructor(interval: number, deviationMultiplier: number = 2) {
     super();
+    this.interval = interval;
+    this.deviationMultiplier = deviationMultiplier;
   }
 
   override getRequiredInputs() {
