@@ -154,6 +154,10 @@ console.log(getMinimum(values)); // 25`,
               name: 'getWeekday',
               desc: 'Extracts weekday information from timestamps',
             },
+            {
+              name: 'pushUpdate',
+              desc: 'Pushes or replaces the latest value in a bounded ring buffer — used when implementing custom indicators',
+            },
           ].map(func => (
             <div key={func.name} className="bg-slate-900/50 rounded p-4">
               <code className="text-slate-400 font-mono font-semibold">{func.name}</code>

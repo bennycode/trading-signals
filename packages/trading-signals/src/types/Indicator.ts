@@ -83,6 +83,16 @@ export abstract class IndicatorSeries<Input = number> extends TechnicalIndicator
     // Set new result
     return (this.result = value);
   }
+
+  /**
+   * Restores `result` to the previously committed state. Useful for sparse indicators
+   * (e.g. swing-point or breakout detectors) whose `replace()` can invalidate a prior
+   * emission without producing a new one — in that case the indicator must unwind its
+   * last `setResult()` call rather than silently keep a stale value.
+   */
+  protected rollbackLastResult(): void {
+    this.result = this.previousResult;
+  }
 }
 
 /**

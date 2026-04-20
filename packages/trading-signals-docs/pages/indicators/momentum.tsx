@@ -6,6 +6,7 @@ import {
   CCI,
   CG,
   EMA,
+  ER,
   MACD,
   MOM,
   OBV,
@@ -377,6 +378,33 @@ const indicators: IndicatorConfig[] = [
     ],
     chartTitle: 'Williams %R (14)',
     yAxisLabel: 'Williams %R',
+  },
+  {
+    id: 'er',
+    name: 'ER',
+    description: 'Range Efficiency',
+    color: '#f59e0b',
+    type: 'single',
+    requiredInputs: 14,
+    details:
+      'Measures how much of the price range was directional movement versus noise. Returns a value between 0 and 1 — near 0 means choppy/range-bound, near 1 means strongly trending. Formula: |close_now − close_N_ago| / (highest_high − lowest_low).',
+    createIndicator: () => new ER(14),
+    processData: (indicator, candle) => {
+      indicator.add({high: Number(candle.high), low: Number(candle.low), close: Number(candle.close)});
+      const result = indicator.isStable ? indicator.getResult() : null;
+      const signal = indicator.getSignal();
+      return {result, signal, high: Number(candle.high), low: Number(candle.low), close: Number(candle.close)};
+    },
+    getChartData: result => ({x: 0, y: result.result}),
+    getTableColumns: () => [
+      {header: 'Period', key: 'period'},
+      {header: 'Date', key: 'date'},
+      {header: 'Close', key: 'close', render: val => `$${val.toFixed(2)}`, className: 'text-slate-300 py-2 px-3'},
+      {header: 'ER', key: 'result', className: 'text-white font-mono py-2 px-3'},
+      {header: 'Signal', key: 'signal', render: val => <SignalBadge signal={val} />, className: 'py-2 px-3'},
+    ],
+    chartTitle: 'Range Efficiency (14)',
+    yAxisLabel: 'ER',
   },
 ];
 
