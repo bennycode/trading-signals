@@ -20,7 +20,7 @@ export const PositionSchema = z.looseObject({
   lastday_price: z.string(),
   market_value: z.string(),
   qty: z.string(),
-  side: z.enum(['long', 'short']),
+  side: z.enum([PositionSide.LONG, PositionSide.SHORT]),
   symbol: z.string(),
   unrealized_intraday_pl: z.string(),
   unrealized_intraday_plpc: z.string(),

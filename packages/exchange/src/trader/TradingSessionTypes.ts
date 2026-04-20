@@ -48,7 +48,7 @@ type MarketSellAdvice = OrderAdviceBase & {
   type: 'MARKET';
   side: 'SELL';
   amountIn: 'base' | 'counter';
-  amount: BigSource | typeof ALL_AVAILABLE_AMOUNT;
+  amount: BigSource | AllAvailableAmount;
 };
 
 export type MarketOrderAdvice = MarketBuyBaseAdvice | MarketBuyCounterAdvice | MarketSellAdvice;
