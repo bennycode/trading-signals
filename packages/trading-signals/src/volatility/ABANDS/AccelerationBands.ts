@@ -32,12 +32,13 @@ export class AccelerationBands extends TechnicalIndicator<BandsResult, HighLowCl
   #lastClose?: number;
   #previousClose?: number;
 
-  constructor(
-    public readonly interval: number,
-    public readonly width: number,
-    SmoothingIndicator: MovingAverageTypes = SMA
-  ) {
+  public readonly interval: number;
+  public readonly width: number;
+
+  constructor(interval: number, width: number, SmoothingIndicator: MovingAverageTypes = SMA) {
     super();
+    this.interval = interval;
+    this.width = width;
     this.#lowerBand = new SmoothingIndicator(interval);
     this.#middleBand = new SmoothingIndicator(interval);
     this.#upperBand = new SmoothingIndicator(interval);

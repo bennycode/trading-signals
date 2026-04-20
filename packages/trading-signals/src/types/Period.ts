@@ -21,8 +21,11 @@ export class Period extends TechnicalIndicator<PeriodResult, number> {
     return this.#lowest;
   }
 
-  constructor(public readonly interval: number) {
+  public readonly interval: number;
+
+  constructor(interval: number) {
     super();
+    this.interval = interval;
     this.values = [];
   }
 

@@ -23,13 +23,13 @@ import {TrendIndicatorSeries, TradingSignal} from '../../types/Indicator.js';
 export class AO extends TrendIndicatorSeries<HighLow<number>> {
   public readonly long: MovingAverage;
   public readonly short: MovingAverage;
+  public readonly shortInterval: number;
+  public readonly longInterval: number;
 
-  constructor(
-    public readonly shortInterval: number,
-    public readonly longInterval: number,
-    SmoothingIndicator: MovingAverageTypes = SMA
-  ) {
+  constructor(shortInterval: number, longInterval: number, SmoothingIndicator: MovingAverageTypes = SMA) {
     super();
+    this.shortInterval = shortInterval;
+    this.longInterval = longInterval;
     this.short = new SmoothingIndicator(shortInterval);
     this.long = new SmoothingIndicator(longInterval);
   }

@@ -9,7 +9,6 @@ import {
   type ExchangeLimitOrderOptions,
   type ExchangeMarketOrderOptions,
   ExchangeOrderSide,
-  ExchangeOrderType,
   type ExchangePendingLimitOrder,
   type ExchangePendingMarketOrder,
   type ExchangePendingOrder,
@@ -23,39 +22,39 @@ export interface TradingSessionStrategy {
 }
 
 /** Use as `amount` in an `OrderAdvice` to use the full available balance. */
-export const ALL_AVAILABLE_AMOUNT = 'ALL_AVAILABLE_AMOUNT' as const;
-type AllAvailableAmount = typeof ALL_AVAILABLE_AMOUNT;
+export const AllAvailableAmount = 'ALL_AVAILABLE_AMOUNT' as const;
+type AllAvailableAmount = typeof AllAvailableAmount;
 
 type OrderAdviceBase = {
   reason?: string;
 };
 
 type MarketBuyBaseAdvice = OrderAdviceBase & {
-  type: ExchangeOrderType.MARKET;
-  side: ExchangeOrderSide.BUY;
+  type: 'MARKET';
+  side: 'BUY';
   amountIn: 'base';
   /** Must be explicit — cannot derive base quantity from null without a price */
   amount: BigSource;
 };
 
 type MarketBuyCounterAdvice = OrderAdviceBase & {
-  type: ExchangeOrderType.MARKET;
-  side: ExchangeOrderSide.BUY;
+  type: 'MARKET';
+  side: 'BUY';
   amountIn: 'counter';
   amount: BigSource | AllAvailableAmount;
 };
 
 type MarketSellAdvice = OrderAdviceBase & {
-  type: ExchangeOrderType.MARKET;
-  side: ExchangeOrderSide.SELL;
+  type: 'MARKET';
+  side: 'SELL';
   amountIn: 'base' | 'counter';
-  amount: BigSource | typeof ALL_AVAILABLE_AMOUNT;
+  amount: BigSource | AllAvailableAmount;
 };
 
 export type MarketOrderAdvice = MarketBuyBaseAdvice | MarketBuyCounterAdvice | MarketSellAdvice;
 
 export type LimitOrderAdvice = OrderAdviceBase & {
-  type: ExchangeOrderType.LIMIT;
+  type: 'LIMIT';
   side: ExchangeOrderSide;
   amountIn: 'base';
   amount: BigSource | AllAvailableAmount;

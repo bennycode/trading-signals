@@ -13,8 +13,11 @@ export class DEMA extends IndicatorSeries {
   readonly #inner: EMA;
   readonly #outer: EMA;
 
-  constructor(public readonly interval: number) {
+  public readonly interval: number;
+
+  constructor(interval: number) {
     super();
+    this.interval = interval;
     this.#inner = new EMA(interval);
     this.#outer = new EMA(interval);
   }

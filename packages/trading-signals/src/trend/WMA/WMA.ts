@@ -11,9 +11,11 @@ import {pushUpdate} from '../../util/pushUpdate.js';
  */
 export class WMA extends MovingAverage {
   public readonly prices: number[] = [];
+  override readonly interval: number;
 
-  constructor(public override readonly interval: number) {
+  constructor(interval: number) {
     super(interval);
+    this.interval = interval;
   }
 
   override getRequiredInputs() {

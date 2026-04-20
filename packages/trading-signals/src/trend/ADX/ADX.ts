@@ -40,11 +40,11 @@ export class ADX extends IndicatorSeries<HighLowClose<number>> {
   readonly #dx: DX;
   readonly #smoothed: MovingAverage;
 
-  constructor(
-    public readonly interval: number,
-    SmoothingIndicator: MovingAverageTypes = WSMA
-  ) {
+  public readonly interval: number;
+
+  constructor(interval: number, SmoothingIndicator: MovingAverageTypes = WSMA) {
     super();
+    this.interval = interval;
     this.#smoothed = new SmoothingIndicator(this.interval);
     this.#dx = new DX(interval, SmoothingIndicator);
   }

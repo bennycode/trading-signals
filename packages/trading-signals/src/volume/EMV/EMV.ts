@@ -24,11 +24,11 @@ export class EMV extends TrendIndicatorSeries<HighLowCloseVolume> {
   readonly #sma: SMA;
   readonly #scale: number;
 
-  constructor(
-    public readonly interval: number,
-    scale: number = 100_000_000
-  ) {
+  public readonly interval: number;
+
+  constructor(interval: number, scale: number = 100_000_000) {
     super();
+    this.interval = interval;
     this.#sma = new SMA(interval);
     this.#scale = scale;
   }

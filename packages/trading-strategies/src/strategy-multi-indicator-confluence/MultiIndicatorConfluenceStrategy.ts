@@ -1,5 +1,5 @@
 import {z} from 'zod';
-import {ALL_AVAILABLE_AMOUNT, ExchangeOrderSide, ExchangeOrderType} from '@typedtrader/exchange';
+import {AllAvailableAmount, ExchangeOrderSide, ExchangeOrderType} from '@typedtrader/exchange';
 import type {OneMinuteBatchedCandle, OrderAdvice, TradingSessionState} from '@typedtrader/exchange';
 import {BollingerBands, EMA, MACD, RSI} from 'trading-signals';
 import {ProtectedStrategy, ProtectedStrategySchema} from '../strategy-protected/ProtectedStrategy.js';
@@ -141,7 +141,7 @@ export class MultiIndicatorConfluenceStrategy extends ProtectedStrategy {
       return {
         side: ExchangeOrderSide.BUY,
         type: ExchangeOrderType.MARKET,
-        amount: ALL_AVAILABLE_AMOUNT,
+        amount: AllAvailableAmount,
         amountIn: 'counter',
         reason,
       };
@@ -159,7 +159,7 @@ export class MultiIndicatorConfluenceStrategy extends ProtectedStrategy {
       return {
         side: ExchangeOrderSide.SELL,
         type: ExchangeOrderType.MARKET,
-        amount: ALL_AVAILABLE_AMOUNT,
+        amount: AllAvailableAmount,
         amountIn: 'base',
         reason,
       };

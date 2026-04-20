@@ -14,16 +14,19 @@ export type TradingPairJSON = {
  * Base: BTC, Counter: USDT
  */
 export class TradingPair implements TradingPairJSON {
+  readonly base: string;
+  readonly counter: string;
+
   /**
    * Constructs a trading pair.
    *
    * @param base - Symbol of the base asset (i.e. TSLA)
    * @param counter - Symbol of the counter asset (i.e. EUR)
    */
-  constructor(
-    public readonly base: string,
-    public readonly counter: string
-  ) {}
+  constructor(base: string, counter: string) {
+    this.base = base;
+    this.counter = counter;
+  }
 
   isEqual(other: TradingPair): boolean {
     return this.base === other.base && this.counter === other.counter;

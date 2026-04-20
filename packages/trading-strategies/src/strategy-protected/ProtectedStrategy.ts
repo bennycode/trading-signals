@@ -1,6 +1,6 @@
 import Big from 'big.js';
 import {z} from 'zod';
-import {ALL_AVAILABLE_AMOUNT, ExchangeOrderSide, ExchangeOrderType} from '@typedtrader/exchange';
+import {AllAvailableAmount, ExchangeOrderSide, ExchangeOrderType} from '@typedtrader/exchange';
 import type {ExchangeFill, LimitOrderAdvice, OneMinuteBatchedCandle, OrderAdvice, TradingSessionState} from '@typedtrader/exchange';
 import {Strategy} from '../strategy/Strategy.js';
 import {positiveNumberString} from '../util/validators.js';
@@ -460,7 +460,7 @@ export class ProtectedStrategy extends Strategy {
       return {
         side: ExchangeOrderSide.SELL,
         type: ExchangeOrderType.MARKET,
-        amount: ALL_AVAILABLE_AMOUNT,
+        amount: AllAvailableAmount,
         amountIn: 'base',
         reason: `[KILL SWITCH] ${reason}`,
       };
@@ -471,7 +471,7 @@ export class ProtectedStrategy extends Strategy {
     const advice: LimitOrderAdvice = {
       side: ExchangeOrderSide.SELL,
       type: ExchangeOrderType.LIMIT,
-      amount: ALL_AVAILABLE_AMOUNT,
+      amount: AllAvailableAmount,
       amountIn: 'base',
       price: limitPrice,
       reason: `[KILL SWITCH] ${reason}`,

@@ -13,8 +13,11 @@ import {getQuartile} from '../../util/getQuartile.js';
 export class IQR extends IndicatorSeries {
   readonly #values: number[] = [];
 
-  constructor(public readonly interval: number) {
+  public readonly interval: number;
+
+  constructor(interval: number) {
     super();
+    this.interval = interval;
   }
 
   override getRequiredInputs() {

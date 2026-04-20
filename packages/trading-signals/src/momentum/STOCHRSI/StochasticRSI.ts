@@ -29,10 +29,16 @@ export class StochasticRSI extends TrendIndicatorSeries {
   readonly #period: Period;
   readonly #rsi: RSI;
 
+  public readonly interval: number;
+  public readonly smoothing: {
+    readonly k: MovingAverage;
+    readonly d: MovingAverage;
+  };
+
   constructor(
-    public readonly interval: number,
+    interval: number,
     SmoothingRSI: MovingAverageTypes = WSMA,
-    public readonly smoothing: {
+    smoothing: {
       readonly k: MovingAverage;
       readonly d: MovingAverage;
     } = {
@@ -41,6 +47,8 @@ export class StochasticRSI extends TrendIndicatorSeries {
     }
   ) {
     super();
+    this.interval = interval;
+    this.smoothing = smoothing;
     this.#period = new Period(interval);
     this.#rsi = new RSI(interval, SmoothingRSI);
   }

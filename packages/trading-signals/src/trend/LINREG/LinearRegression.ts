@@ -19,8 +19,11 @@ export type LinearRegressionResult = {
 export class LinearRegression extends TechnicalIndicator<LinearRegressionResult, number> {
   public readonly prices: number[] = [];
 
-  constructor(public readonly interval: number) {
+  public readonly interval: number;
+
+  constructor(interval: number) {
     super();
+    this.interval = interval;
   }
 
   override getRequiredInputs() {

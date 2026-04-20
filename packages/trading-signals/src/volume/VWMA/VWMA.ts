@@ -25,12 +25,11 @@ export class VWMA extends TrendIndicatorSeries<HighLowCloseVolume> {
   readonly #candles: HighLowCloseVolume[] = [];
   readonly #signalLine: MovingAverage;
 
-  constructor(
-    public readonly interval: number,
-    SignalIndicator: MovingAverageTypes = SMA,
-    signalInterval: number = interval
-  ) {
+  public readonly interval: number;
+
+  constructor(interval: number, SignalIndicator: MovingAverageTypes = SMA, signalInterval: number = interval) {
     super();
+    this.interval = interval;
     this.#signalLine = new SignalIndicator(signalInterval);
   }
 

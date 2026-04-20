@@ -27,11 +27,11 @@ export class DX extends IndicatorSeries<HighLowClose<number>> {
   public mdi?: number;
   public pdi?: number;
 
-  constructor(
-    public readonly interval: number,
-    SmoothingIndicator: MovingAverageTypes = WSMA
-  ) {
+  public readonly interval: number;
+
+  constructor(interval: number, SmoothingIndicator: MovingAverageTypes = WSMA) {
     super();
+    this.interval = interval;
     this.#atr = new ATR(this.interval, SmoothingIndicator);
     this.#movesDown = new SmoothingIndicator(this.interval);
     this.#movesUp = new SmoothingIndicator(this.interval);

@@ -9,7 +9,10 @@ import {IndicatorSeries} from '../../types/Indicator.js';
  * @see https://www.investopedia.com/terms/m/movingaverage.asp
  */
 export abstract class MovingAverage extends IndicatorSeries {
-  constructor(public readonly interval: number) {
+  public readonly interval: number;
+
+  constructor(interval: number) {
     super();
+    this.interval = interval;
   }
 }

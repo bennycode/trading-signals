@@ -3,10 +3,11 @@ import {EventEmitter} from 'node:events';
 import type {TradingPair} from './TradingPair.js';
 import {z} from 'zod';
 
-export enum ExchangeOrderSide {
-  BUY = 'BUY',
-  SELL = 'SELL',
-}
+export const ExchangeOrderSide = {
+  BUY: 'BUY',
+  SELL: 'SELL',
+} as const;
+export type ExchangeOrderSide = (typeof ExchangeOrderSide)[keyof typeof ExchangeOrderSide];
 
 interface ExchangeOrderBase {
   side: ExchangeOrderSide;
@@ -33,12 +34,13 @@ export const ExchangeCandleBaseSchema = z.object({
 
 export type ExchangeCandleBase = z.infer<typeof ExchangeCandleBaseSchema>;
 
-export enum ExchangeOrderType {
+export const ExchangeOrderType = {
   /** Maker */
-  LIMIT = 'LIMIT',
+  LIMIT: 'LIMIT',
   /** Taker */
-  MARKET = 'MARKET',
-}
+  MARKET: 'MARKET',
+} as const;
+export type ExchangeOrderType = (typeof ExchangeOrderType)[keyof typeof ExchangeOrderType];
 
 export const ExchangeCandleSchema = z
   .object({
@@ -81,15 +83,16 @@ export interface ExchangeCandleImportRequest {
  */
 export interface ExchangeFeeRate {
   /** The maker commission: When you put in a limit order on an exchange that doesn't fill immediately, it adds to the available orders for that stock. To attract more traders, the exchange may offer a lower fee when adding to the order book. */
-  [ExchangeOrderType.LIMIT]: Big;
+  LIMIT: Big;
   /** The taker commission: Market orders are usually filled immediately, but they reduce available liquidity on an order book, which isn't good for exchanges. To prevent this, exchanges usually have higher taker fees than maker fees. */
-  [ExchangeOrderType.MARKET]: Big;
+  MARKET: Big;
 }
 
-export enum ExchangeOrderPosition {
-  LONG = 'LONG',
-  SHORT = 'SHORT',
-}
+export const ExchangeOrderPosition = {
+  LONG: 'LONG',
+  SHORT: 'SHORT',
+} as const;
+export type ExchangeOrderPosition = (typeof ExchangeOrderPosition)[keyof typeof ExchangeOrderPosition];
 
 export interface ExchangeFill {
   /** Date in ISO 8601 format */
@@ -116,12 +119,12 @@ export interface ExchangePendingOrderBase {
 
 export interface ExchangePendingLimitOrder extends ExchangePendingOrderBase {
   price: string;
-  type: ExchangeOrderType.LIMIT;
+  type: 'LIMIT';
 }
 
 export interface ExchangePendingMarketOrder extends ExchangePendingOrderBase {
   /** Market orders don't have a price. */
-  type: ExchangeOrderType.MARKET;
+  type: 'MARKET';
 }
 
 /**
@@ -134,14 +137,14 @@ export interface ExchangePendingMarketOrder extends ExchangePendingOrderBase {
 export interface ExchangeMarketOrderOptions extends ExchangeOrderBase {
   sizeInCounter: boolean;
 
-  type: ExchangeOrderType.MARKET;
+  type: 'MARKET';
 }
 
 export interface ExchangeLimitOrderOptions extends ExchangeOrderBase {
   price: string;
 
   sizeInCounter: false;
-  type: ExchangeOrderType.LIMIT;
+  type: 'LIMIT';
 }
 
 export type ExchangeOrderOptions = ExchangeMarketOrderOptions | ExchangeLimitOrderOptions;
@@ -179,8 +182,11 @@ export interface ExchangeTradingRules {
 }
 
 export abstract class Exchange extends EventEmitter {
-  constructor(public loggerName: string) {
+  loggerName: string;
+
+  constructor(loggerName: string) {
     super();
+    this.loggerName = loggerName;
   }
 
   /**
