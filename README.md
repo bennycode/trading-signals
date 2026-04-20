@@ -18,7 +18,7 @@ This project uses [Lerna](https://lerna.js.org/) for managing the [monorepo](htt
 
 ## Relationships
 
-At the foundation, **trading-signals** provides technical indicators like SMA, EMA, RSI, and Bollinger Bands. The **trading-strategies** package builds on top of these indicators to form actionable trading advice. **@typedtrader/exchange** abstracts away broker differences behind a unified interface, so strategies can run against any supported exchange. Finally, **@typedtrader/messaging** ties it all together into a chatbot that lets you control your trading bot remotely through XMTP (encrypted) or Telegram.
+At the foundation, **trading-signals** provides technical indicators like SMA, EMA, RSI, and Bollinger Bands. The **trading-strategies** package builds on top of these indicators to form actionable trading advice. **@typedtrader/exchange** abstracts away broker differences behind a unified interface, so strategies can run against any supported exchange. Finally, **@typedtrader/messaging** ties it all together into a chatbot that lets you control your trading bot remotely through Telegram.
 
 ```mermaid
 graph TD
