@@ -400,12 +400,7 @@ const indicators: IndicatorConfig[] = [
       {header: 'Period', key: 'period'},
       {header: 'Date', key: 'date'},
       {header: 'Close', key: 'close', render: val => `$${val.toFixed(2)}`, className: 'text-slate-300 py-2 px-3'},
-      {
-        header: 'ER',
-        key: 'result',
-        render: val => (val === null ? 'N/A' : val.toFixed(4)),
-        className: 'text-white font-mono py-2 px-3',
-      },
+      {header: 'ER', key: 'result', className: 'text-white font-mono py-2 px-3'},
       {header: 'Signal', key: 'signal', render: val => <SignalBadge signal={val} />, className: 'py-2 px-3'},
     ],
     chartTitle: 'Range Efficiency (14)',
