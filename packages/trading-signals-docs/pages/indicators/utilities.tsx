@@ -1,5 +1,4 @@
 import {getAverage, getMedian, getStandardDeviation, getMaximum, getMinimum} from 'trading-signals';
-import {CodeExample} from '../../components/CodeExample';
 import IndicatorDemo, {IndicatorExample} from '../../components/IndicatorDemo';
 
 export default function UtilityFunctions() {
@@ -166,38 +165,6 @@ console.log(getMinimum(values)); // 25`,
             </div>
           ))}
         </div>
-      </div>
-
-      <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-6">
-        <h2 className="text-2xl font-semibold text-white mb-4">Exchange Utilities</h2>
-        <p className="text-slate-300 mb-4">
-          Helpers from <code className="text-slate-200">@typedtrader/exchange</code> that pull live data. Useful when a
-          strategy needs to react to real-world events outside the candle stream.
-        </p>
-        <div className="bg-slate-900/50 rounded p-4 mb-4">
-          <div className="flex items-baseline gap-3 mb-2 flex-wrap">
-            <code className="text-slate-200 font-mono font-semibold">isEarningsDay</code>
-            <span className="text-slate-500 text-xs">requires a Finnhub API key</span>
-          </div>
-          <p className="text-slate-400 text-sm">
-            Returns <code>true</code> when the given symbol is reporting quarterly earnings on the provided UTC date.
-            Handy for strategies that want to close or skip entries before earnings-driven gap risk.
-          </p>
-        </div>
-        <CodeExample
-          title="Usage"
-          code={`import { isEarningsDay } from '@typedtrader/exchange';
-
-const earnings = await isEarningsDay({
-  apiKey: process.env.FINNHUB_API_KEY!,
-  date: new Date(),
-  symbol: 'AAPL',
-});
-
-if (earnings) {
-  // step aside — avoid post-earnings gap risk
-}`}
-        />
       </div>
     </div>
   );
