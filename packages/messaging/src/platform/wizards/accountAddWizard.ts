@@ -1,7 +1,7 @@
 import {AlpacaExchange, getExchangeClient} from '@typedtrader/exchange';
 import {Account} from '../../database/models/Account.js';
 import {logger} from '../../logger.js';
-import {inlineKeyboard, type InlineButton, type WizardContext, type WizardConversation} from './shared.js';
+import {inlineKeyboard, waitForTextOrCancel, type InlineButton, type WizardContext, type WizardConversation} from './shared.js';
 
 export interface AccountAddWizardArgs {
   userId: string;
@@ -39,8 +39,9 @@ export function makeAccountAddWizard() {
     const isPaper = modeCb.match === 'accountadd:mode:paper';
 
     await modeCb.editMessageText(`Exchange: ${exchange}\nMode: ${isPaper ? 'Paper' : 'Live'}\n\nSend a name for this account:`);
-    const nameCtx = await conversation.waitFor('message:text');
-    const name = nameCtx.msg.text.trim();
+    const nameResp = await waitForTextOrCancel(conversation, ctx);
+    if (nameResp.cancelled) return;
+    const name = nameResp.text;
     if (!name) {
       await ctx.reply('Account name cannot be empty. Aborted.');
       return;
@@ -51,12 +52,22 @@ export function makeAccountAddWizard() {
     const apiKey = apiKeyCtx.msg.text.trim();
     const apiKeyChatId = apiKeyCtx.msg.chat.id;
     const apiKeyMessageId = apiKeyCtx.msg.message_id;
+    if (apiKey.startsWith('/')) {
+      await ctx.api.deleteMessage(apiKeyChatId, apiKeyMessageId).catch(() => {});
+      await ctx.reply('Wizard cancelled. Resend your command to start fresh.');
+      return;
+    }
 
     await ctx.reply('Send the API secret (the message will be deleted after receipt):');
     const apiSecretCtx = await conversation.waitFor('message:text');
     const apiSecret = apiSecretCtx.msg.text.trim();
     const apiSecretChatId = apiSecretCtx.msg.chat.id;
     const apiSecretMessageId = apiSecretCtx.msg.message_id;
+    if (apiSecret.startsWith('/')) {
+      await ctx.api.deleteMessage(apiSecretChatId, apiSecretMessageId).catch(() => {});
+      await ctx.reply('Wizard cancelled. Resend your command to start fresh.');
+      return;
+    }
 
     // Delete both secret-bearing messages. Use primitive ids + ctx.api so the
     // external callback doesn't depend on the waitFor context objects, which
@@ -98,8 +109,11 @@ export function makeAccountAddWizard() {
         });
         return {ok: true as const, id: account.id};
       } catch (error) {
-        logger.error({err: error}, 'accountAdd wizard failed');
-        return {ok: false as const, error: error instanceof Error ? error.message : 'Unknown error'};
+        // Log ONLY the message — the raw axios error carries the API key
+        // and secret in its request.headers / config.headers fields.
+        const message = error instanceof Error ? error.message : 'Unknown error';
+        logger.error({message}, 'accountAdd wizard failed');
+        return {ok: false as const, error: message};
       }
     });
 

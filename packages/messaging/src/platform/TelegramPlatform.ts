@@ -361,19 +361,23 @@ export class TelegramPlatform implements MessagingPlatform {
     // and `createConversation(...)` has to be visible to the command handler
     // that calls `ctx.conversation.enter(...)`.
     this.#bot.use(conversations());
-    this.#bot.use(createConversation(tradeWizard, TRADE_CONVERSATION_ID));
-    this.#bot.use(createConversation(makeAccountAddWizard(), ACCOUNT_ADD_WIZARD_ID));
+    // parallel: true lets non-matching updates fall through to downstream
+    // middleware (our command handlers). Without it, typing /watchAdd during
+    // an active /accountAdd exchange-picker would be dropped, and the global
+    // /cancel command could never fire while any wizard was active.
+    this.#bot.use(createConversation(tradeWizard, {id: TRADE_CONVERSATION_ID, parallel: true}));
+    this.#bot.use(createConversation(makeAccountAddWizard(), {id: ACCOUNT_ADD_WIZARD_ID, parallel: true}));
     this.#bot.use(
-      createConversation(
-        makeWatchAddWizard({watchMonitor: () => this.#watchMonitor}),
-        WATCH_ADD_WIZARD_ID
-      )
+      createConversation(makeWatchAddWizard({watchMonitor: () => this.#watchMonitor}), {
+        id: WATCH_ADD_WIZARD_ID,
+        parallel: true,
+      })
     );
     this.#bot.use(
-      createConversation(
-        makeStrategyAddWizard({strategyMonitor: () => this.#strategyMonitor}),
-        STRATEGY_ADD_WIZARD_ID
-      )
+      createConversation(makeStrategyAddWizard({strategyMonitor: () => this.#strategyMonitor}), {
+        id: STRATEGY_ADD_WIZARD_ID,
+        parallel: true,
+      })
     );
 
     // Trade commands are Telegram-specific: they need inline keyboards and
@@ -382,6 +386,25 @@ export class TelegramPlatform implements MessagingPlatform {
     for (const name of TRADE_COMMAND_NAMES) {
       this.#registerTradeCommand(name);
     }
+
+    // /cancel fires when no active wait consumes it — i.e. when nothing is
+    // active, or when the active wait is callback-only (non-text updates
+    // fall through). During a text-wait, each wizard detects /command input
+    // internally and cancels itself.
+    this.#commands.set('cancel', async () => {});
+    this.#bot.command('cancel', async ctx => {
+      if (this.#authorizedUserId(ctx) === null) return;
+      const active = ctx.conversation.active();
+      const names = Object.keys(active);
+      if (names.length === 0) {
+        await ctx.reply('Nothing to cancel.');
+        return;
+      }
+      for (const name of names) {
+        await ctx.conversation.exit(name);
+      }
+      await ctx.reply('Cancelled.');
+    });
   }
 
   setReportScheduler(scheduler: ReportScheduler): void {
@@ -686,10 +709,20 @@ export class TelegramPlatform implements MessagingPlatform {
     this.#bot.command(commandName, async ctx => {
       const userId = this.#authorizedUserId(ctx);
       if (!userId) return;
+      const activeBefore = Object.keys(ctx.conversation.active());
+      logger.info({commandName, conversationId, activeBefore}, 'wizard command invoked');
       try {
+        // Auto-cancel any wizard already in progress for this user. Only
+        // reachable when the existing wait was callback-only (non-text falls
+        // through to this handler) — text waits consume the new /command
+        // text first and cancel themselves via waitForTextOrCancel.
+        for (const name of activeBefore) {
+          await ctx.conversation.exit(name);
+        }
         await ctx.conversation.enter(conversationId, {userId});
       } catch (error) {
-        logger.error({err: error, conversationId}, 'wizard entry failed');
+        const message = error instanceof Error ? error.message : 'Unknown error';
+        logger.error({message, conversationId}, 'wizard entry failed');
         await ctx.reply('Could not start the wizard — please try again in a moment.');
       }
     });

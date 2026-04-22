@@ -4,7 +4,7 @@ import {Account} from '../../database/models/Account.js';
 import {Strategy} from '../../database/models/Strategy.js';
 import {logger} from '../../logger.js';
 import type {StrategyMonitor} from '../../service/index.js';
-import {inlineKeyboard, type InlineButton, type WizardContext, type WizardConversation} from './shared.js';
+import {inlineKeyboard, waitForTextOrCancel, type InlineButton, type WizardContext, type WizardConversation} from './shared.js';
 
 export interface StrategyAddWizardArgs {
   userId: string;
@@ -53,8 +53,9 @@ export function makeStrategyAddWizard(deps: {strategyMonitor: () => StrategyMoni
     await accountCb.editMessageText(
       `Strategy: ${strategyName}\nAccount: ${accountLabel}\n\nSend a trading pair (e.g. SHOP,USD):`
     );
-    const pairCtx = await conversation.waitFor('message:text');
-    const pairStr = pairCtx.msg.text.trim();
+    const pairResp = await waitForTextOrCancel(conversation, ctx);
+    if (pairResp.cancelled) return;
+    const pairStr = pairResp.text;
     try {
       TradingPair.fromString(pairStr, ',');
     } catch {
@@ -63,8 +64,9 @@ export function makeStrategyAddWizard(deps: {strategyMonitor: () => StrategyMoni
     }
 
     await ctx.reply('Send config as JSON (or "{}" for defaults):');
-    const cfgCtx = await conversation.waitFor('message:text');
-    const configJson = cfgCtx.msg.text.trim() || '{}';
+    const cfgResp = await waitForTextOrCancel(conversation, ctx);
+    if (cfgResp.cancelled) return;
+    const configJson = cfgResp.text || '{}';
 
     let config: unknown;
     try {
@@ -89,8 +91,9 @@ export function makeStrategyAddWizard(deps: {strategyMonitor: () => StrategyMoni
         });
         return {ok: true as const, strategy: row, accountName: account.name};
       } catch (error) {
-        logger.error({err: error}, 'strategyAdd wizard failed');
-        return {ok: false as const, error: error instanceof Error ? error.message : 'Unknown error'};
+        const message = error instanceof Error ? error.message : 'Unknown error';
+        logger.error({message}, 'strategyAdd wizard failed');
+        return {ok: false as const, error: message};
       }
     });
 

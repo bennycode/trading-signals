@@ -7,7 +7,7 @@ import {assertInterval} from '../../validation/assertInterval.js';
 import {parseThreshold} from '../../validation/parseThreshold.js';
 import {logger} from '../../logger.js';
 import type {WatchMonitor} from '../../service/index.js';
-import {inlineKeyboard, type InlineButton, type WizardContext, type WizardConversation} from './shared.js';
+import {inlineKeyboard, waitForTextOrCancel, type InlineButton, type WizardContext, type WizardConversation} from './shared.js';
 
 export interface WatchAddWizardArgs {
   userId: string;
@@ -39,8 +39,9 @@ export function makeWatchAddWizard(deps: {watchMonitor: () => WatchMonitor | und
     const accountId = Number.parseInt(typeof accountCb.match === 'string' ? accountCb.match.split(':')[2] : '', 10);
 
     await accountCb.editMessageText('Send a trading pair (e.g. SHOP,USD):');
-    const pairCtx = await conversation.waitFor('message:text');
-    const pairStr = pairCtx.msg.text.trim();
+    const pairResp = await waitForTextOrCancel(conversation, ctx);
+    if (pairResp.cancelled) return;
+    const pairStr = pairResp.text;
     let pair: TradingPair;
     try {
       pair = TradingPair.fromString(pairStr, ',');
@@ -89,8 +90,9 @@ export function makeWatchAddWizard(deps: {watchMonitor: () => WatchMonitor | und
     await typeCb.editMessageText(
       `Pair: ${pairStr}\nInterval: ${interval}\nDirection: ${direction}\nType: ${thresholdType}\n\nSend the threshold value (e.g. 5 for 5%):`
     );
-    const valueCtx = await conversation.waitFor('message:text');
-    const valueStr = valueCtx.msg.text.trim();
+    const valueResp = await waitForTextOrCancel(conversation, ctx);
+    if (valueResp.cancelled) return;
+    const valueStr = valueResp.text;
     const thresholdInput = `${direction === 'up' ? '+' : '-'}${valueStr}${thresholdType === 'percent' ? '%' : ''}`;
     const threshold = parseThreshold(thresholdInput);
     if (!threshold) {
@@ -139,8 +141,11 @@ export function makeWatchAddWizard(deps: {watchMonitor: () => WatchMonitor | und
         });
         return {ok: true as const, watch, baselinePrice, alertPrice: alertPrice.toString(), counter: pair.counter};
       } catch (error) {
-        logger.error({err: error}, 'watchAdd wizard failed');
-        return {ok: false as const, error: error instanceof Error ? error.message : 'Unknown error'};
+        // Log ONLY the message — axios errors carry the API key and secret
+        // in their headers.
+        const message = error instanceof Error ? error.message : 'Unknown error';
+        logger.error({message}, 'watchAdd wizard failed');
+        return {ok: false as const, error: message};
       }
     });
 
