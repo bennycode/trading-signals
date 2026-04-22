@@ -12,6 +12,7 @@ export {
   MeanReversionSchema,
   type MeanReversionConfig,
 } from './strategy-mean-reversion/MeanReversionStrategy.js';
+export {NoopStrategy, NoopSchema, type NoopConfig} from './strategy-noop/NoopStrategy.js';
 export {
   ProtectedStrategy,
   ProtectedStrategySchema,

@@ -8,7 +8,7 @@ export interface ReportRemoveResult {
 }
 
 // Format: "<reportId>"
-// Example: "/reportremove 3"
+// Example: "/reportRemove 3"
 export const reportRemove = async (request: string, userId: string): Promise<ReportRemoveResult> => {
   try {
     const reportId = assertId(request);

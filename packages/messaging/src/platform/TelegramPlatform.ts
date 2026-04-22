@@ -15,8 +15,16 @@ import {placeOrder} from '../command/placeOrder.js';
 import {reportAdd} from '../command/report/reportAdd.js';
 import {assertInterval} from '../validation/assertInterval.js';
 import {Account} from '../database/models/Account.js';
-import type {ReportScheduler} from '../service/ReportScheduler.js';
+import type {ReportScheduler, StrategyMonitor, WatchMonitor} from '../service/index.js';
 import {logger} from '../logger.js';
+import {
+  ACCOUNT_ADD_WIZARD_ID,
+  STRATEGY_ADD_WIZARD_ID,
+  WATCH_ADD_WIZARD_ID,
+} from './wizards/shared.js';
+import {makeAccountAddWizard} from './wizards/accountAddWizard.js';
+import {makeWatchAddWizard} from './wizards/watchAddWizard.js';
+import {makeStrategyAddWizard} from './wizards/strategyAddWizard.js';
 
 const PLATFORM_PREFIX = 'telegram:';
 const REPORT_CALLBACK_PREFIX = 'report:';
@@ -319,6 +327,8 @@ export class TelegramPlatform implements MessagingPlatform {
   #commands: Map<string, CommandHandler> = new Map();
   #platformInfo: PlatformInfo = {botAddress: '', sdkVersion: ''};
   #reportScheduler?: ReportScheduler;
+  #watchMonitor?: WatchMonitor;
+  #strategyMonitor?: StrategyMonitor;
 
   constructor(botToken: string, ownerIds?: string) {
     this.#bot = new Bot<TradeContext>(botToken);
@@ -352,6 +362,19 @@ export class TelegramPlatform implements MessagingPlatform {
     // that calls `ctx.conversation.enter(...)`.
     this.#bot.use(conversations());
     this.#bot.use(createConversation(tradeWizard, TRADE_CONVERSATION_ID));
+    this.#bot.use(createConversation(makeAccountAddWizard(), ACCOUNT_ADD_WIZARD_ID));
+    this.#bot.use(
+      createConversation(
+        makeWatchAddWizard({watchMonitor: () => this.#watchMonitor}),
+        WATCH_ADD_WIZARD_ID
+      )
+    );
+    this.#bot.use(
+      createConversation(
+        makeStrategyAddWizard({strategyMonitor: () => this.#strategyMonitor}),
+        STRATEGY_ADD_WIZARD_ID
+      )
+    );
 
     // Trade commands are Telegram-specific: they need inline keyboards and
     // the conversations plugin, so they register themselves directly here
@@ -365,6 +388,14 @@ export class TelegramPlatform implements MessagingPlatform {
     this.#reportScheduler = scheduler;
   }
 
+  setWatchMonitor(monitor: WatchMonitor): void {
+    this.#watchMonitor = monitor;
+  }
+
+  setStrategyMonitor(monitor: StrategyMonitor): void {
+    this.#strategyMonitor = monitor;
+  }
+
   registerCommand(name: string | string[], handler: CommandHandler): void {
     const names = Array.isArray(name) ? name : [name];
     for (const n of names) {
@@ -375,6 +406,20 @@ export class TelegramPlatform implements MessagingPlatform {
     // reportadd is handled via inline keyboard buttons
     if (lowerNames.includes('reportadd')) {
       this.#registerReportAddCommand();
+      return;
+    }
+
+    // account/watch/strategy adds use conversations-based wizards
+    if (lowerNames.includes('accountadd')) {
+      this.#registerWizardCommand('accountadd', ACCOUNT_ADD_WIZARD_ID);
+      return;
+    }
+    if (lowerNames.includes('watchadd')) {
+      this.#registerWizardCommand('watchadd', WATCH_ADD_WIZARD_ID);
+      return;
+    }
+    if (lowerNames.includes('strategyadd')) {
+      this.#registerWizardCommand('strategyadd', STRATEGY_ADD_WIZARD_ID);
       return;
     }
 
@@ -635,6 +680,19 @@ export class TelegramPlatform implements MessagingPlatform {
     }
 
     return {ok: true, reportName};
+  }
+
+  #registerWizardCommand(commandName: string, conversationId: string): void {
+    this.#bot.command(commandName, async ctx => {
+      const userId = this.#authorizedUserId(ctx);
+      if (!userId) return;
+      try {
+        await ctx.conversation.enter(conversationId, {userId});
+      } catch (error) {
+        logger.error({err: error, conversationId}, 'wizard entry failed');
+        await ctx.reply('Could not start the wizard — please try again in a moment.');
+      }
+    });
   }
 
   #registerTradeCommand(name: TradeCommandName): void {

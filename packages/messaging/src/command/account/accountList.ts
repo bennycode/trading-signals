@@ -1,4 +1,5 @@
 import {Account} from '../../database/models/Account.js';
+import {formatTelegramTable} from '../formatTable.js';
 
 export const accountList = async (userId: string) => {
   try {
@@ -8,11 +9,12 @@ export const accountList = async (userId: string) => {
       return 'No accounts found';
     }
 
-    const accountList = accounts
-      .map(acc => `ID: ${acc.id} | ${acc.name} | ${acc.exchange} | ${acc.isPaper ? 'Paper' : 'Live'}`)
-      .join('\n');
-
-    return `Accounts:\n${accountList}`;
+    return formatTelegramTable(`Accounts: ${accounts.length}`, accounts, [
+      {header: 'ID', align: 'right', value: acc => String(acc.id)},
+      {header: 'Name', value: acc => acc.name},
+      {header: 'Exchange', value: acc => acc.exchange},
+      {header: 'Mode', value: acc => (acc.isPaper ? 'Paper' : 'Live')},
+    ]);
   } catch (error) {
     if (error instanceof Error) {
       return `Error listing accounts: ${error.message}`;

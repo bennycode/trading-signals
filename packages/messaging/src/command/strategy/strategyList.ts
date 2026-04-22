@@ -1,5 +1,6 @@
 import {Account} from '../../database/models/Account.js';
 import {Strategy} from '../../database/models/Strategy.js';
+import {formatTelegramTable} from '../formatTable.js';
 
 export const strategyList = async (userId: string) => {
   try {
@@ -11,11 +12,11 @@ export const strategyList = async (userId: string) => {
       return 'No active strategies';
     }
 
-    const list = strategies
-      .map(s => `ID: ${s.id} | ${s.strategyName} | ${s.pair}`)
-      .join('\n');
-
-    return `Active strategies:\n${list}`;
+    return formatTelegramTable(`Active strategies: ${strategies.length}`, strategies, [
+      {header: 'ID', align: 'right', value: s => String(s.id)},
+      {header: 'Strategy', value: s => s.strategyName},
+      {header: 'Pair', value: s => s.pair},
+    ]);
   } catch (error) {
     if (error instanceof Error) {
       return `Error listing strategies: ${error.message}`;

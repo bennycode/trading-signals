@@ -1,5 +1,6 @@
 import {Account} from '../../database/models/Account.js';
 import {Watch} from '../../database/models/Watch.js';
+import {formatTelegramTable} from '../formatTable.js';
 
 export const watchList = async (userId: string) => {
   try {
@@ -11,17 +12,20 @@ export const watchList = async (userId: string) => {
       return 'No active watches';
     }
 
-    const watchList = watches
-      .map(w => {
-        const dirSymbol = w.thresholdDirection === 'up' ? '+' : '-';
-        const thresholdDisplay =
-          w.thresholdType === 'percent' ? `${dirSymbol}${w.thresholdValue}%` : `${dirSymbol}${w.thresholdValue}`;
-        const intervalMin = Math.round(w.intervalMs / 60000);
-        return `ID: ${w.id} | ${w.pair} | Baseline: ${w.baselinePrice} | Alert: ${thresholdDisplay} (${w.alertPrice}) | Every ${intervalMin}m`;
-      })
-      .join('\n');
-
-    return `Active watches:\n${watchList}`;
+    return formatTelegramTable(`Active watches: ${watches.length}`, watches, [
+      {header: 'ID', align: 'right', value: w => String(w.id)},
+      {header: 'Pair', value: w => w.pair},
+      {header: 'Baseline', value: w => w.baselinePrice},
+      {
+        header: 'Alert',
+        value: w => {
+          const dirSymbol = w.thresholdDirection === 'up' ? '+' : '-';
+          const suffix = w.thresholdType === 'percent' ? '%' : '';
+          return `${dirSymbol}${w.thresholdValue}${suffix} (${w.alertPrice})`;
+        },
+      },
+      {header: 'Every', value: w => `${Math.round(w.intervalMs / 60000)}m`},
+    ]);
   } catch (error) {
     if (error instanceof Error) {
       return `Error listing watches: ${error.message}`;

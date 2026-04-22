@@ -12,7 +12,7 @@ export interface WatchResult {
   watch?: WatchAttributes;
 }
 
-// Request Example: "/watchadd SHOP,USD 1 1m +5%"
+// Request Example: "/watchAdd SHOP,USD 1 1m +5%"
 // Format: "<pair> <accountId> <interval> <threshold>"
 export const watchAdd = async (request: string, userId: string): Promise<WatchResult> => {
   const parts = request.trim().split(' ');
@@ -20,7 +20,7 @@ export const watchAdd = async (request: string, userId: string): Promise<WatchRe
   if (parts.length !== 4) {
     return {
       message:
-        'Invalid format. Usage: /watchadd <pair> <accountId> <interval> <threshold>\nExample: /watchadd SHOP,USD 1 1m +5%',
+        'Invalid format. Usage: /watchAdd <pair> <accountId> <interval> <threshold>\nExample: /watchAdd SHOP,USD 1 1m +5%',
     };
   }
 

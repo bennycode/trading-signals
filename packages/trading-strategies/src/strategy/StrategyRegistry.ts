@@ -7,6 +7,7 @@ import {
   MultiIndicatorConfluenceSchema,
 } from '../strategy-multi-indicator-confluence/MultiIndicatorConfluenceStrategy.js';
 import {MeanReversionStrategy, MeanReversionSchema} from '../strategy-mean-reversion/MeanReversionStrategy.js';
+import {NoopStrategy, NoopSchema} from '../strategy-noop/NoopStrategy.js';
 import {ScalpStrategy, ScalpSchema} from '../strategy-scalp/ScalpStrategy.js';
 import {ProtectedStrategy, ProtectedStrategySchema} from '../strategy-protected/ProtectedStrategy.js';
 import type {Strategy} from './Strategy.js';
@@ -41,6 +42,10 @@ const registry: Record<string, StrategyEntry> = {
   [MeanReversionStrategy.NAME]: {
     create: (config: unknown) => new MeanReversionStrategy({config: MeanReversionSchema.parse(config ?? {})}),
     schema: MeanReversionSchema,
+  },
+  [NoopStrategy.NAME]: {
+    create: (config: unknown) => new NoopStrategy(NoopSchema.parse(config ?? {})),
+    schema: NoopSchema,
   },
   [ProtectedStrategy.NAME]: {
     create: (config: unknown) => new ProtectedStrategy({config: ProtectedStrategySchema.parse(config ?? {})}),

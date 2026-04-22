@@ -1,5 +1,6 @@
 import {ms} from 'ms';
 import {Report} from '../../database/models/Report.js';
+import {formatTelegramTable} from '../formatTable.js';
 
 export const reportList = async (userId: string): Promise<string> => {
   try {
@@ -9,14 +10,11 @@ export const reportList = async (userId: string): Promise<string> => {
       return 'No reports configured';
     }
 
-    const list = reports
-      .map(r => {
-        const schedule = r.intervalMs ? `every ${ms(r.intervalMs, {long: true})}` : 'one-shot';
-        return `ID: ${r.id} | ${r.reportName} | ${schedule}`;
-      })
-      .join('\n');
-
-    return `Your reports:\n${list}`;
+    return formatTelegramTable(`Your reports: ${reports.length}`, reports, [
+      {header: 'ID', align: 'right', value: r => String(r.id)},
+      {header: 'Report', value: r => r.reportName},
+      {header: 'Schedule', value: r => (r.intervalMs ? `every ${ms(r.intervalMs, {long: true})}` : 'one-shot')},
+    ]);
   } catch (error) {
     if (error instanceof Error) {
       return `Error listing reports: ${error.message}`;

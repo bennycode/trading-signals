@@ -32,8 +32,8 @@ interface Monitors {
 
 function registerCommands(platform: MessagingPlatform, monitors: Monitors): void {
   platform.registerCommand('help', async ctx => {
-    const commandCodeBlocks = platform.commandList.map(cmd => `\`${cmd}\``);
-    const answer = `I am supporting the following commands: ${commandCodeBlocks.join(', ')}`;
+    const lines = platform.commandList.map((cmd, index) => `${index + 1}. ${cmd}`);
+    const answer = `I am supporting the following commands:\n${lines.join('\n')}`;
     await ctx.reply(answer);
   });
 
@@ -207,31 +207,31 @@ export async function startServer() {
   for (const [, platform] of platforms) {
     registerCommands(platform, monitors);
     platform.setReportScheduler?.(monitors.reportScheduler);
+    platform.setWatchMonitor?.(monitors.watchMonitor);
+    platform.setStrategyMonitor?.(monitors.strategyMonitor);
   }
 
-  // Start monitors
-  try {
-    await monitors.watchMonitor.start();
-  } catch (error) {
-    logger.error({err: error}, 'Error starting watch monitor');
-  }
-
-  try {
-    await monitors.strategyMonitor.start();
-  } catch (error) {
-    logger.error({err: error}, 'Error starting strategy monitor');
-  }
-
-  try {
-    await monitors.reportScheduler.start();
-  } catch (error) {
-    logger.error({err: error}, 'Error starting report scheduler');
-  }
-
-  // Start all platforms
+  // Start platforms first so the bot stays responsive for commands like
+  // /strategyList even if a monitor's startup stalls (e.g. a stuck
+  // exchange WebSocket during strategy subscription).
   for (const platform of platforms.values()) {
     await platform.start();
   }
+
+  // Start monitors in the background — do not await, so that a hang in one
+  // (e.g. an Alpaca "connection limit exceeded" retry loop) cannot block
+  // the others or the command surface.
+  monitors.watchMonitor.start().catch((error: unknown) => {
+    logger.error({err: error}, 'Error starting watch monitor');
+  });
+
+  monitors.strategyMonitor.start().catch((error: unknown) => {
+    logger.error({err: error}, 'Error starting strategy monitor');
+  });
+
+  monitors.reportScheduler.start().catch((error: unknown) => {
+    logger.error({err: error}, 'Error starting report scheduler');
+  });
 
   // Graceful shutdown
   const shutdown = async () => {
