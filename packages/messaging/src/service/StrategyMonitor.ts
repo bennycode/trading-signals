@@ -101,12 +101,12 @@ export class StrategyMonitor {
       });
     };
 
-    // Auto-remove when the strategy signals it is terminally done (e.g. kill-switch
-    // sell has fully filled). No need to cancel open orders — by this point the
-    // kill-switch sell has already filled, otherwise the position would not be zero.
+    // Auto-remove when the strategy signals it is terminally done (e.g. the kill-switch
+    // sell has fully filled). Cancel any still-open orders on the way out so we don't
+    // leave stray limit orders (e.g. a retried kill-switch order) behind on the exchange.
     strategy.onFinish = async () => {
       try {
-        await session.stop({cancelOpenOrders: false});
+        await session.stop({cancelOpenOrders: true});
         this.#sessions.delete(row.id);
         Strategy.destroy(row.id);
         await this.#sendFinishNotification(row);
