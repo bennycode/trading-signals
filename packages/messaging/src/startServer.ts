@@ -10,8 +10,10 @@ import {
   reportList,
   reportRemove,
   strategyAdd,
+  strategyConfig,
   strategyList,
   strategyRemove,
+  strategyState,
   time,
   uptime,
   watchAdd,
@@ -130,6 +132,14 @@ function registerCommands(platform: MessagingPlatform, monitors: Monitors): void
 
   platform.registerCommand('strategyList', async ctx => {
     await ctx.reply(await strategyList(ctx.senderId));
+  });
+
+  platform.registerCommand('strategyConfig', async ctx => {
+    await ctx.reply(await strategyConfig(ctx.content, ctx.senderId));
+  });
+
+  platform.registerCommand('strategyState', async ctx => {
+    await ctx.reply(await strategyState(ctx.content, ctx.senderId));
   });
 
   platform.registerCommand('strategyRemove', async ctx => {

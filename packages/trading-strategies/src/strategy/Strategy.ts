@@ -9,6 +9,14 @@ export abstract class Strategy implements TradingSessionStrategy {
   /** Called automatically whenever `state` or `config` changes. Set by the runtime (e.g., StrategyMonitor). */
   onSave?: () => void;
 
+  /**
+   * Called when the strategy signals it is terminally done (e.g. after a kill-switch
+   * has fully exited the position). Set by the runtime (e.g., StrategyMonitor) to trigger
+   * session teardown and persistence cleanup. May be an async function — the return
+   * value is intentionally fire-and-forget at every current call site.
+   */
+  onFinish?: () => void | Promise<void>;
+
   #_state: Record<string, unknown> | null = null;
   get state(): Record<string, unknown> | null {
     return this.#_state;

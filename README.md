@@ -1,24 +1,50 @@
 # Trading Signals Monorepo
 
-This monorepo contains multiple packages for building automated trading bots, including the famous [`trading-signals`](https://www.npmjs.com/package/trading-signals) library and [its documentation website](https://bennycode.com/trading-signals/). These packages provide TypeScript implementations of technical indicators, trading strategies, and data transformation utilities for algorithmic trading.
+**A fully-typed, modular toolkit for building algorithmic trading bots in TypeScript — from technical indicators up to a Telegram-controlled live bot.**
 
-The `trading-signals` library is tested in production and trusted by [hundreds of projects](https://github.com/bennycode/trading-signals/network/dependents) worldwide.
+This monorepo is home to the popular [`trading-signals`](https://www.npmjs.com/package/trading-signals) library (tested in production and trusted by [hundreds of projects](https://github.com/bennycode/trading-signals/network/dependents) worldwide) along with everything you need to turn those signals into a running trading bot: strategies, an exchange abstraction, and a chatbot front-end.
+
+Every piece is independently usable. Pick a package, drop it into your app, or run the whole stack and command your bot from your phone.
+
+## Highlights
+
+- **Streaming-first indicators** — SMA, EMA, RSI, MACD, Bollinger Bands, and many more, with replace-mode and lazy evaluation for backtests and live use.
+- **Composable strategies** — a tiny `Strategy` interface (return an `OrderAdvice` per candle) lets you focus on signal logic while the framework owns session state, order placement, fills, and broker quirks. Ships with ready-to-use building blocks and a `ProtectedStrategy` base that adds self-cleaning stop-loss / take-profit kill switches.
+- **Visual backtesting in your browser** — try any strategy against historical candles with interactive charts, trade markers, and P&L stats at **[typedtrader.com/backtest](https://typedtrader.com/backtest/)**. Tune parameters, see the results instantly, no setup required.
+- **Broker-agnostic execution** — a unified exchange interface with type-safe schemas (Zod), WebSocket streaming, and paper-trading support. Ships with [Alpaca Trading](https://alpaca.markets/) out of the box but is designed for any additional broker or exchange to plug in.
+- **Control your bot from Telegram** — add accounts, spin up strategies via conversational wizards, watch prices, schedule recurring reports, and inspect live strategy state and config, all from a chat.
+- **Modern TypeScript stack** — Latest TypeScript version, ESM-native, Node LTS, Lerna-managed workspaces, Vitest-covered, drizzle-backed persistence.
+
+## Quickstart
+
+```bash
+npm install
+
+# Run the full test matrix across all packages
+npm test
+
+# Launch the indicator showcase (Next.js)
+npm run start:docs
+
+# Start the Telegram bot (requires TELEGRAM_BOT_TOKEN in your env)
+npm run start:bot
+```
 
 ## 📦 Packages
 
-This project uses [Lerna](https://lerna.js.org/) for managing the [monorepo](https://monorepo.tools/) with independent versioning. Execute `npm test` to run tests across all packages. Launch an interactive demo with `npm run docs`.
+This project uses [Lerna](https://lerna.js.org/) to manage a [monorepo](https://monorepo.tools/) with independent versioning.
 
 | Package | Description |
 | --- | --- |
-| [**@typedtrader/exchange**](./packages/exchange) | Unified exchange interface providing interoperability across different brokers (e.g., [Alpaca](https://alpaca.markets/)). Offers type-safe data transformation utilities and a streamlined API for integrating multiple exchanges and brokers into your trading applications. |
-| [**@typedtrader/messaging**](./packages/messaging) | Messaging interface for controlling personal trading bots remotely via [Telegram](https://core.telegram.org/bots). |
-| [**trading-signals**](./packages/trading-signals) | [Technical indicators](https://en.wikipedia.org/wiki/Technical_indicator) (SMA, EMA, RSI, MACD, ...) for algorithmic trading with streaming updates, replace mode, lazy evaluation, and memory efficiency. Can be added to your own trading apps or strategies. |
-| [**trading-signals-docs**](./packages/trading-signals-docs) | Documentation and [showcase website](https://bennycode.com/trading-signals/) built with Next.js, featuring interactive demos and examples of all indicators. See every indicator in action before you code. |
-| [**trading-strategies**](./packages/trading-strategies) | [Trading strategy](https://en.wikipedia.org/wiki/Trading_strategy) implementations that combine technical indicators into actionable advices. Can be used to build your own strategies for backtesting and real-time trading. |
+| [**trading-signals**](./packages/trading-signals) | [Technical indicators](https://en.wikipedia.org/wiki/Technical_indicator) (SMA, EMA, RSI, MACD, Bollinger Bands, ...) for algorithmic trading with streaming updates, replace mode, lazy evaluation, and memory efficiency. Battle-tested in production. |
+| [**trading-strategies**](./packages/trading-strategies) | [Trading strategies](https://en.wikipedia.org/wiki/Trading_strategy) that combine indicators into actionable advice. Ships with a library of ready-to-use strategies and a `ProtectedStrategy` base that wires stop-loss and take-profit kill switches into any subclass. |
+| [**@typedtrader/exchange**](./packages/exchange) | Unified exchange interface for different brokers (currently [Alpaca](https://alpaca.markets/)). Type-safe data transformation, WebSocket candles and order updates, paper- and live-trading environments behind a single API. |
+| [**@typedtrader/messaging**](./packages/messaging) | Remote-control layer for your personal trading bot via [Telegram](https://core.telegram.org/bots). Add accounts, run strategies, watch prices, schedule reports, and inspect live strategy state — all from chat. Persistence via SQLite + Drizzle ORM. |
+| [**trading-signals-docs**](./packages/trading-signals-docs) | [Interactive showcase and visual backtester](https://typedtrader.com/) built with Next.js. Explore every indicator in action, then [backtest strategies](https://typedtrader.com/backtest/) against real historical candles with charts, trade markers, and P&L stats. |
 
-## Relationships
+## How it fits together
 
-At the foundation, **trading-signals** provides technical indicators like SMA, EMA, RSI, and Bollinger Bands. The **trading-strategies** package builds on top of these indicators to form actionable trading advice. **@typedtrader/exchange** abstracts away broker differences behind a unified interface, so strategies can run against any supported exchange. Finally, **@typedtrader/messaging** ties it all together into a chatbot that lets you control your trading bot remotely through Telegram.
+At the foundation, **trading-signals** provides technical indicators like SMA, EMA, RSI, and Bollinger Bands. **trading-strategies** builds on top of them to produce actionable trading advice and ships kill-switch protection out of the box. **@typedtrader/exchange** abstracts away broker differences so strategies can run against any supported exchange. Finally, **@typedtrader/messaging** ties it all together into a chatbot that lets you operate your bot remotely.
 
 ```mermaid
 graph TD

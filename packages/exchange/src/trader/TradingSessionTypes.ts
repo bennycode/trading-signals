@@ -19,6 +19,13 @@ import type {TradingPair} from '../exchange/TradingPair.js';
 export interface TradingSessionStrategy {
   onCandle(candle: OneMinuteBatchedCandle, state: TradingSessionState): Promise<OrderAdvice | void>;
   onFill?(fill: ExchangeFill, state: TradingSessionState): Promise<void>;
+  /**
+   * Called after `onFill` once the session determines that one of the strategy's
+   * own orders is fully filled. The strategy receives the pending order the session
+   * placed on its behalf, which it can compare by reference or side without having
+   * to match raw exchange order ids from the fill.
+   */
+  onOrderFilled?(order: ExchangePendingOrder, state: TradingSessionState): Promise<void>;
 }
 
 /** Use as `amount` in an `OrderAdvice` to use the full available balance. */
@@ -104,6 +111,7 @@ export type TradingSessionEventMap = {
   error: [Error];
   fill: [ExchangeFill];
   order: [ExchangePendingOrder];
+  orderFilled: [ExchangePendingOrder];
   started: [];
   stopped: [];
 };

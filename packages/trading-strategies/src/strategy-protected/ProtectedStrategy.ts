@@ -1,7 +1,7 @@
 import Big from 'big.js';
 import {z} from 'zod';
 import {AllAvailableAmount, ExchangeOrderSide, ExchangeOrderType} from '@typedtrader/exchange';
-import type {ExchangeFill, LimitOrderAdvice, OneMinuteBatchedCandle, OrderAdvice, TradingSessionState} from '@typedtrader/exchange';
+import type {ExchangeFill, ExchangePendingOrder, LimitOrderAdvice, OneMinuteBatchedCandle, OrderAdvice, TradingSessionState} from '@typedtrader/exchange';
 import {Strategy} from '../strategy/Strategy.js';
 import {positiveNumberString} from '../util/validators.js';
 
@@ -436,6 +436,17 @@ export class ProtectedStrategy extends Strategy {
       totalCostBasis: avgEntry.mul(newPositionSize).toFixed(),
       totalPositionSize: newPositionSize.toFixed(),
     });
+  }
+
+  /**
+   * Fires `onFinish` when the session reports that a SELL order of ours has fully filled
+   * while the kill switch is active. While `killed === true` the subclass cannot place
+   * new orders, so any SELL the session has in flight is necessarily the kill-switch sell.
+   */
+  async onOrderFilled(order: ExchangePendingOrder, _state: TradingSessionState): Promise<void> {
+    if (this.#protectedState.killed && order.side === ExchangeOrderSide.SELL) {
+      this.onFinish?.();
+    }
   }
 
   override restoreState(persisted: Record<string, unknown>): void {

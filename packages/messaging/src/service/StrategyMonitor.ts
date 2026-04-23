@@ -101,6 +101,20 @@ export class StrategyMonitor {
       });
     };
 
+    // Auto-remove when the strategy signals it is terminally done (e.g. the kill-switch
+    // sell has fully filled). Cancel any still-open orders on the way out so we don't
+    // leave stray limit orders (e.g. a retried kill-switch order) behind on the exchange.
+    strategy.onFinish = async () => {
+      try {
+        await session.stop({cancelOpenOrders: true});
+        this.#sessions.delete(row.id);
+        Strategy.destroy(row.id);
+        await this.#sendFinishNotification(row);
+      } catch (error) {
+        logger.error({err: error, strategyId: row.id}, 'Error auto-removing finished strategy');
+      }
+    };
+
     session.on('fill', async (fill: ExchangeFill) => {
       try {
         await this.#sendFillNotification(row, fill);
@@ -151,5 +165,27 @@ export class StrategyMonitor {
     await platform.sendMessage(account.userId, message);
 
     logger.info({userId: account.userId, strategyId: row.id}, 'Fill notification sent');
+  }
+
+  async #sendFinishNotification(row: StrategyAttributes): Promise<void> {
+    const account = Account.findByPk(row.accountId);
+    if (!account) {
+      logger.warn({accountId: row.accountId, strategyId: row.id}, 'Account not found for finish notification');
+      return;
+    }
+
+    const message = `Strategy finished and removed.\n\nID: ${row.id}\nStrategy: ${row.strategyName}\nPair: ${row.pair}`;
+
+    const platformPrefix = account.userId.split(':')[0];
+    const platform = this.#platforms.get(platformPrefix);
+
+    if (!platform) {
+      logger.warn({platformPrefix, strategyId: row.id}, 'No platform found for finish notification');
+      return;
+    }
+
+    await platform.sendMessage(account.userId, message);
+
+    logger.info({userId: account.userId, strategyId: row.id}, 'Finish notification sent');
   }
 }
