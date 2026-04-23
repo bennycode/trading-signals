@@ -1,5 +1,4 @@
 import { CategoryCard } from '../components/CategoryCard';
-import { FeatureCard } from '../components/FeatureCard';
 import { Hero } from '../components/Hero';
 import { MarketClock } from '../components/MarketClock';
 import { QuickStart } from '../components/QuickStart';
@@ -48,39 +47,6 @@ export default function Home() {
     },
   ];
 
-  const features = [
-    {
-      icon: '🚀',
-      title: 'Streaming Updates',
-      description: 'Update indicators incrementally as new prices arrive - no need to reprocess historical data',
-    },
-    {
-      icon: '📊',
-      title: 'Replace Mode',
-      description: 'Efficiently update live charts by replacing the most recent value without full recalculation',
-    },
-    {
-      icon: '🔒',
-      title: 'Type Safe',
-      description: 'Full TypeScript implementation with complete type definitions and IDE support',
-    },
-    {
-      icon: '⚡',
-      title: 'Lazy Evaluation',
-      description: 'Indicators only calculate when stable - check readiness with built-in stability flags',
-    },
-    {
-      icon: '💾',
-      title: 'Memory Efficient',
-      description: 'Rolling windows instead of full history storage - minimal memory footprint',
-    },
-    {
-      icon: '📦',
-      title: 'Zero Dependencies',
-      description: 'No runtime dependencies and minimal bundle size - perfect for web and Node.js',
-    },
-  ];
-
   return (
     <div className="space-y-12">
       <div>
@@ -91,13 +57,6 @@ export default function Home() {
           githubUrl="https://github.com/bennycode/trading-signals"
         />
         <MarketClock />
-      </div>
-
-      {/* Features */}
-      <div className="grid md:grid-cols-3 gap-6 mb-12">
-        {features.map(feature => (
-          <FeatureCard key={feature.title} icon={feature.icon} title={feature.title} description={feature.description} />
-        ))}
       </div>
 
       {/* Indicator Categories */}
