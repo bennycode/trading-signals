@@ -10,6 +10,7 @@ Every piece is independently usable. Pick a package, drop it into your app, or r
 
 - **Streaming-first indicators** — SMA, EMA, RSI, MACD, Bollinger Bands, and many more, with replace-mode and lazy evaluation for backtests and live use.
 - **Composable strategies** — a tiny `Strategy` interface (return an `OrderAdvice` per candle) lets you focus on signal logic while the framework owns session state, order placement, fills, and broker quirks. Ships with ready-to-use building blocks and a `ProtectedStrategy` base that adds self-cleaning stop-loss / take-profit kill switches.
+- **Visual backtesting in your browser** — try any strategy against historical candles with interactive charts, trade markers, and P&L stats at **[typedtrader.com/backtest](https://typedtrader.com/backtest/)**. Tune parameters, see the results instantly, no setup required.
 - **Broker-agnostic execution** — a unified exchange interface with type-safe schemas (Zod), WebSocket streaming, and paper-trading support. Ships with [Alpaca Trading](https://alpaca.markets/) out of the box but is designed for any additional broker or exchange to plug in.
 - **Control your bot from Telegram** — add accounts, spin up strategies via conversational wizards, watch prices, schedule recurring reports, and inspect live strategy state and config, all from a chat.
 - **Modern TypeScript stack** — Latest TypeScript version, ESM-native, Node LTS, Lerna-managed workspaces, Vitest-covered, drizzle-backed persistence.
@@ -39,7 +40,7 @@ This project uses [Lerna](https://lerna.js.org/) to manage a [monorepo](https://
 | [**trading-strategies**](./packages/trading-strategies) | [Trading strategies](https://en.wikipedia.org/wiki/Trading_strategy) that combine indicators into actionable advice. Ships with a library of ready-to-use strategies and a `ProtectedStrategy` base that wires stop-loss and take-profit kill switches into any subclass. |
 | [**@typedtrader/exchange**](./packages/exchange) | Unified exchange interface for different brokers (currently [Alpaca](https://alpaca.markets/)). Type-safe data transformation, WebSocket candles and order updates, paper- and live-trading environments behind a single API. |
 | [**@typedtrader/messaging**](./packages/messaging) | Remote-control layer for your personal trading bot via [Telegram](https://core.telegram.org/bots). Add accounts, run strategies, watch prices, schedule reports, and inspect live strategy state — all from chat. Persistence via SQLite + Drizzle ORM. |
-| [**trading-signals-docs**](./packages/trading-signals-docs) | [Interactive showcase website](https://bennycode.com/trading-signals/) built with Next.js. See every indicator in action before you code. |
+| [**trading-signals-docs**](./packages/trading-signals-docs) | [Interactive showcase and visual backtester](https://typedtrader.com/) built with Next.js. Explore every indicator in action, then [backtest strategies](https://typedtrader.com/backtest/) against real historical candles with charts, trade markers, and P&L stats. |
 
 ## How it fits together
 
