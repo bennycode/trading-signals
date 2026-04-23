@@ -13,6 +13,7 @@ import {
 import type {
   ExchangeCandle,
   ExchangeFill,
+  ExchangePendingOrder,
   LimitOrderAdvice,
   MarketOrderAdvice,
   OneMinuteBatchedCandle,
@@ -83,6 +84,13 @@ function makeFill(price: string, size: string, side: ExchangeOrderSide): Exchang
     side,
     size,
   };
+}
+
+function makeOrder(side: ExchangeOrderSide, type: ExchangeOrderType = ExchangeOrderType.LIMIT): ExchangePendingOrder {
+  if (type === ExchangeOrderType.LIMIT) {
+    return {id: 'order-1', pair, side, size: '10', price: '100', type: ExchangeOrderType.LIMIT};
+  }
+  return {id: 'order-1', pair, side, size: '10', type: ExchangeOrderType.MARKET};
 }
 
 const TestSchema = ProtectedStrategySchema.extend({
@@ -439,6 +447,49 @@ describe('ProtectedStrategy', () => {
       const advice = await strategy.onCandle(makeCandle(120), mockState);
       expect(advice).toBeUndefined();
       expect(strategy.ownLogicCallCount).toBe(0);
+    });
+
+    it('fires onFinish when the session reports the killed sell order fully filled', async () => {
+      const strategy = new TestProtectedStrategy({protected: {stopLossPct: '5'}});
+      const onFinish = vi.fn();
+      strategy.onFinish = onFinish;
+
+      await strategy.onFill(makeFill('100', '10', ExchangeOrderSide.BUY), mockState);
+      await strategy.onCandle(makeCandle(94), mockState);
+      expect(strategy.protectedState.killed).toBe(true);
+      expect(onFinish).not.toHaveBeenCalled();
+
+      // Kill-switch sell actually fills → session reports order done
+      await strategy.onFill(makeFill('94', '10', ExchangeOrderSide.SELL), mockState);
+      await strategy.onOrderFilled(makeOrder(ExchangeOrderSide.SELL), mockState);
+      expect(onFinish).toHaveBeenCalledTimes(1);
+    });
+
+    it('does not fire onFinish when a sell order fills while un-killed', async () => {
+      const strategy = new TestProtectedStrategy({protected: {stopLossPct: '5'}});
+      const onFinish = vi.fn();
+      strategy.onFinish = onFinish;
+
+      await strategy.onFill(makeFill('100', '10', ExchangeOrderSide.BUY), mockState);
+      await strategy.onFill(makeFill('110', '10', ExchangeOrderSide.SELL), mockState);
+      await strategy.onOrderFilled(makeOrder(ExchangeOrderSide.SELL), mockState);
+
+      expect(strategy.protectedState.killed).toBe(false);
+      expect(onFinish).not.toHaveBeenCalled();
+    });
+
+    it('does not fire onFinish when a BUY order fills while killed', async () => {
+      const strategy = new TestProtectedStrategy({protected: {stopLossPct: '5'}});
+      const onFinish = vi.fn();
+      strategy.onFinish = onFinish;
+
+      await strategy.onFill(makeFill('100', '10', ExchangeOrderSide.BUY), mockState);
+      await strategy.onCandle(makeCandle(94), mockState);
+      expect(strategy.protectedState.killed).toBe(true);
+
+      // A BUY order completing (shouldn't happen in practice once killed, but guard anyway)
+      await strategy.onOrderFilled(makeOrder(ExchangeOrderSide.BUY), mockState);
+      expect(onFinish).not.toHaveBeenCalled();
     });
   });
 

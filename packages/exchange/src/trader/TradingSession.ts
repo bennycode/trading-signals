@@ -120,7 +120,8 @@ export class TradingSession extends EventEmitter<TradingSessionEventMap> {
 
   #onFill = async (fill: ExchangeFill): Promise<void> => {
     try {
-      if (!this.#state || !this.#pendingOrders.has(fill.order_id)) {
+      const pending = this.#pendingOrders.get(fill.order_id);
+      if (!this.#state || !pending) {
         return;
       }
 
@@ -137,6 +138,11 @@ export class TradingSession extends EventEmitter<TradingSessionEventMap> {
 
       if (this.#strategy.onFill) {
         await this.#strategy.onFill(fill, this.#state);
+      }
+
+      this.emit('orderFilled', pending);
+      if (this.#strategy.onOrderFilled) {
+        await this.#strategy.onOrderFilled(pending, this.#state);
       }
     } catch (error) {
       this.emit('error', error instanceof Error ? error : new Error(String(error)));
