@@ -22,14 +22,19 @@ export function makeStrategyAddWizard(deps: {strategyMonitor: () => StrategyMoni
       return;
     }
 
-    const strategyButtons: InlineButton[][] = strategies.map(name => [
-      {text: name, callback_data: `strategyadd:strat:${name}`},
+    // Encode the index rather than the strategy name: Telegram caps
+    // callback_data at 64 bytes, and names like
+    // "@typedtrader/strategy-multi-indicator-confluence" blow past that
+    // once prefixed.
+    const strategyButtons: InlineButton[][] = strategies.map((name, idx) => [
+      {text: name, callback_data: `strategyadd:strat:${idx}`},
     ]);
     await ctx.reply('Pick a strategy:', inlineKeyboard(strategyButtons));
 
-    const stratCb = await conversation.waitForCallbackQuery(strategies.map(n => `strategyadd:strat:${n}`));
+    const stratCb = await conversation.waitForCallbackQuery(strategies.map((_, idx) => `strategyadd:strat:${idx}`));
     await stratCb.answerCallbackQuery();
-    const strategyName = typeof stratCb.match === 'string' ? stratCb.match.replace('strategyadd:strat:', '') : '';
+    const stratIdx = Number.parseInt(typeof stratCb.match === 'string' ? stratCb.match.split(':')[2] ?? '' : '', 10);
+    const strategyName = strategies[stratIdx] ?? '';
 
     const accounts = await conversation.external(() =>
       Account.findByUserId(args.userId).map(a => ({id: a.id, name: a.name, exchange: a.exchange, isPaper: a.isPaper}))
