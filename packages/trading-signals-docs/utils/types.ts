@@ -20,12 +20,12 @@ export interface IndicatorConfig<TIndicator = any, TResult = any> {
   type: IndicatorType;
   details?: string;
   createIndicator: () => TIndicator;
-  processData: (indicator: TIndicator, candle: ExchangeCandle, idx: number) => TResult;
-  getChartData: (result: TResult) => ChartDataPoint | ChartDataPoint[];
-  getTableColumns: () => ColumnDef[];
+  processData?: (indicator: TIndicator, candle: ExchangeCandle, idx: number) => TResult;
+  getChartData?: (result: TResult) => ChartDataPoint | ChartDataPoint[];
+  getTableColumns?: () => ColumnDef[];
   chartTitle?: string;
   yAxisLabel?: string;
-  customRender?: (config: IndicatorConfig<TIndicator, TResult>) => React.ReactElement;
+  customRender?: (config: IndicatorConfig<TIndicator, TResult>, selectedCandles: ExchangeCandle[]) => React.ReactElement;
 }
 
 export interface CandleDataset {

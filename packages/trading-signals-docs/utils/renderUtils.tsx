@@ -1,3 +1,4 @@
+import type {ReactNode} from 'react';
 import type {ExchangeCandle} from '@typedtrader/exchange';
 import {formatDate} from './formatDate';
 import type {IndicatorConfig} from './types';
@@ -7,6 +8,7 @@ import Chart from '../components/Chart';
 import PriceChart from '../components/PriceChart';
 import {DataTable} from '../components/DataTable';
 import {IndicatorHeader} from '../components/IndicatorHeader';
+import {NotAvailable} from '../components/NotAvailable';
 
 export const collectPriceData = (candle: ExchangeCandle, idx: number): PriceData => ({
   x: idx + 1,
@@ -23,14 +25,16 @@ export const renderSingleIndicator = (config: IndicatorConfig, selectedCandles: 
   const sampleValues: Array<{
     period: number;
     date: string;
-    result: string;
+    result: ReactNode;
     signal?: string;
     [key: string]: any;
   }> = [];
 
   selectedCandles.forEach((candle, idx) => {
     const processedData = config.processData!(indicator, candle, idx);
-    const chartPoint = config.getChartData!(processedData);
+    const chartPoint = config.getChartData
+      ? config.getChartData(processedData)
+      : {x: idx + 1, y: (processedData.result as number | null) ?? null};
 
     if (Array.isArray(chartPoint)) {
       chartData.push(...chartPoint);
@@ -45,7 +49,7 @@ export const renderSingleIndicator = (config: IndicatorConfig, selectedCandles: 
       date: formatDate(candle.openTimeInISO),
       ...processedData,
       result:
-        processedData.result !== null && processedData.result !== undefined ? processedData.result.toFixed(2) : 'N/A',
+        processedData.result !== null && processedData.result !== undefined ? processedData.result.toFixed(2) : <NotAvailable />,
       signal: processedData.signal?.state,
     });
   });
@@ -64,7 +68,7 @@ export const renderSingleIndicator = (config: IndicatorConfig, selectedCandles: 
 
       <PriceChart title="Input Prices" data={priceData} />
 
-      <DataTable title="All Sample Values" columns={config.getTableColumns!()} data={sampleValues} />
+      <DataTable title="All Sample Values" columns={config.getTableColumns?.() ?? []} data={sampleValues} />
     </div>
   );
 };

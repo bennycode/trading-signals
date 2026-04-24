@@ -3,6 +3,7 @@ import {ExchangeOrderSide} from '@typedtrader/exchange';
 import type {ExchangeCandle} from '@typedtrader/exchange';
 import type {BacktestResult} from 'trading-strategies';
 import {formatDate} from '../utils/formatDate';
+import {NotAvailable} from './NotAvailable';
 
 interface ResultProps {
   result: BacktestResult;
@@ -35,8 +36,8 @@ function PerformanceCards({result, candles}: ResultProps) {
     {label: 'Profit & Loss', value: `${pnl >= 0 ? '+' : '-'}$${formatBig(result.profitOrLoss.abs())}`, positive: pnl >= 0, info: 'Absolute gain or loss in counter currency compared to the starting portfolio value.'},
     {label: 'Total Fees', value: `$${formatBig(result.totalFees)}`, positive: null, info: 'Total trading fees paid across all executed orders.'},
     {label: 'Total Trades', value: String(performance.totalTrades), positive: null, info: 'Number of individual orders executed (buys + sells).'},
-    {label: 'Win Rate', value: hasCycles ? `${winRate}%` : 'N/A', positive: hasCycles ? winRate >= 50 : null, info: 'Percentage of completed buy→sell cycles that closed at a profit.'},
-    {label: 'Loss Rate', value: lossRate !== null ? `${lossRate}%` : 'N/A', positive: lossRate !== null ? Number(lossRate) < 50 : null, info: 'Percentage of completed buy→sell cycles that closed at a loss. Shown in green when below 50%.'},
+    {label: 'Win Rate', value: hasCycles ? `${winRate}%` : <NotAvailable />, positive: hasCycles ? winRate >= 50 : null, info: 'Percentage of completed buy→sell cycles that closed at a profit.'},
+    {label: 'Loss Rate', value: lossRate !== null ? `${lossRate}%` : <NotAvailable />, positive: lossRate !== null ? Number(lossRate) < 50 : null, info: 'Percentage of completed buy→sell cycles that closed at a loss. Shown in green when below 50%.'},
     {label: 'Max Win Streak', value: String(performance.maxWinStreak), positive: null, info: 'Longest consecutive sequence of profitable buy→sell cycles.'},
     {label: 'Max Loss Streak', value: String(performance.maxLossStreak), positive: null, info: 'Longest consecutive sequence of losing buy→sell cycles.'},
     {label: 'Start Value', value: `$${formatBig(performance.initialPortfolioValue)}`, positive: null, info: 'Initial portfolio value in counter currency (base × first open price + counter balance).'},

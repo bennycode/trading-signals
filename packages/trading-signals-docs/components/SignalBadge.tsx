@@ -1,9 +1,14 @@
+import {NotAvailable} from './NotAvailable';
+
 interface SignalBadgeProps {
   signal: string;
 }
 
 export function SignalBadge({signal}: SignalBadgeProps) {
-  const displayText = signal === 'UNKNOWN' ? 'N/A' : signal;
+  if (signal === 'UNKNOWN') {
+    return <NotAvailable />;
+  }
+
   const colorClasses =
     signal === 'BULLISH'
       ? 'bg-green-900/50 text-green-400 border-green-800'
@@ -15,7 +20,7 @@ export function SignalBadge({signal}: SignalBadgeProps) {
 
   return (
     <span className={`inline-flex items-center px-2 py-1 rounded text-xs font-semibold border ${colorClasses}`}>
-      {displayText}
+      {signal}
     </span>
   );
 }
