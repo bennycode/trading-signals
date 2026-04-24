@@ -12,8 +12,8 @@ export const OBV: IndicatorConfig = {
   requiredInputs: 1,
   details: 'Cumulative volume-based indicator. Rising OBV with rising prices confirms uptrend.',
   createIndicator: () => new OBVClass(5),
-  processData: makeProcessData({rowInputs: ['close', 'volume'], signal: 'required', alwaysStable: true}),
-  getTableColumns: () => buildTableColumns({inputs: ['close', 'volume']}),
+  processData: makeProcessData({rowInputs: ['close', 'volume'], alwaysStable: true}),
+  getTableColumns: indicator => buildTableColumns({inputs: ['close', 'volume'], indicator}),
   chartTitle: 'On-Balance Volume (5)',
   yAxisLabel: 'OBV',
 };

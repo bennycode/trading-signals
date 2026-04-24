@@ -13,8 +13,8 @@ export const WilliamsR: IndicatorConfig = {
   details:
     'Measures overbought and oversold levels on an inverted scale from 0 to -100. Values from 0 to -20 indicate overbought conditions, while -80 to -100 indicate oversold conditions.',
   createIndicator: () => new WilliamsRClass(14),
-  processData: makeProcessData({rowInputs: ['high', 'low', 'close'], signal: 'required'}),
-  getTableColumns: () => buildTableColumns({inputs: ['high', 'low', 'close']}),
+  processData: makeProcessData({rowInputs: ['high', 'low', 'close']}),
+  getTableColumns: indicator => buildTableColumns({inputs: ['high', 'low', 'close'], indicator}),
   chartTitle: 'Williams %R (14)',
   yAxisLabel: 'Williams %R',
 };

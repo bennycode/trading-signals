@@ -12,8 +12,8 @@ export const DEMA: IndicatorConfig = {
   requiredInputs: 9,
   details: 'Reduces lag by applying EMA twice, providing faster signals than standard EMA while maintaining smoothness.',
   createIndicator: () => new DEMAClass(5),
-  processData: makeProcessData({rowInputs: ['close'], signal: 'optional'}),
-  getTableColumns: () => buildTableColumns({inputs: ['close']}),
+  processData: makeProcessData({rowInputs: ['close']}),
+  getTableColumns: indicator => buildTableColumns({inputs: ['close'], indicator}),
   chartTitle: 'DEMA (5)',
   yAxisLabel: 'Price',
 };

@@ -13,8 +13,8 @@ export const EMA: IndicatorConfig = {
   details:
     'Gives more weight to recent prices, reacting faster to price changes than SMA. Popular for identifying short-term trends.',
   createIndicator: () => new EMAClass(5),
-  processData: makeProcessData({rowInputs: ['close'], signal: 'optional'}),
-  getTableColumns: () => buildTableColumns({inputs: ['close']}),
+  processData: makeProcessData({rowInputs: ['close']}),
+  getTableColumns: indicator => buildTableColumns({inputs: ['close'], indicator}),
   chartTitle: 'EMA (5)',
   yAxisLabel: 'Price',
 };

@@ -12,8 +12,8 @@ export const CCI: IndicatorConfig = {
   requiredInputs: 20,
   details: 'Measures deviation from the average price. Readings above +100 suggest overbought, below -100 suggest oversold.',
   createIndicator: () => new CCIClass(20),
-  processData: makeProcessData({rowInputs: ['close'], addInputs: ['high', 'low', 'close'], signal: 'required'}),
-  getTableColumns: () => buildTableColumns({inputs: ['close']}),
+  processData: makeProcessData({rowInputs: ['close'], addInputs: ['high', 'low', 'close']}),
+  getTableColumns: indicator => buildTableColumns({inputs: ['close'], indicator}),
   chartTitle: 'CCI (20)',
   yAxisLabel: 'CCI',
 };

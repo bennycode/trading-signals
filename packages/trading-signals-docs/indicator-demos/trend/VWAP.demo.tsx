@@ -13,8 +13,8 @@ export const VWAP: IndicatorConfig = {
   details:
     'Calculates the average price weighted by volume. Used to assess whether trades are being executed at favorable prices.',
   createIndicator: () => new VWAPClass(),
-  processData: makeProcessData({rowInputs: ['close', 'volume'], addInputs: ['high', 'low', 'close', 'volume'], signal: 'optional', alwaysStable: true}),
-  getTableColumns: () => buildTableColumns({inputs: ['close', 'volume']}),
+  processData: makeProcessData({rowInputs: ['close', 'volume'], addInputs: ['high', 'low', 'close', 'volume'], alwaysStable: true}),
+  getTableColumns: indicator => buildTableColumns({inputs: ['close', 'volume'], indicator}),
   chartTitle: 'VWAP',
   yAxisLabel: 'Price',
 };

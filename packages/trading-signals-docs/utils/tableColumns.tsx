@@ -13,11 +13,11 @@ const priceColumns: Record<PriceColumnKey, ColumnDef> = {
 
 interface BuildOptions {
   inputs: PriceColumnKey[];
-  signal?: boolean;
+  indicator: unknown;
   extra?: ColumnDef[];
 }
 
-export function buildTableColumns({inputs, signal = true, extra = []}: BuildOptions): ColumnDef[] {
+export function buildTableColumns({inputs, indicator, extra = []}: BuildOptions): ColumnDef[] {
   const cols: ColumnDef[] = [
     {header: 'Period', key: 'period'},
     {header: 'Date', key: 'date'},
@@ -25,7 +25,7 @@ export function buildTableColumns({inputs, signal = true, extra = []}: BuildOpti
     {header: 'Result', key: 'result', className: 'text-white font-mono py-2 px-3'},
     ...extra,
   ];
-  if (signal) {
+  if (indicator && typeof indicator === 'object' && 'getSignal' in indicator) {
     cols.push({
       header: 'Signal',
       key: 'signal',

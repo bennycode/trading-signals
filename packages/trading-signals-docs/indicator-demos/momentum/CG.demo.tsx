@@ -12,8 +12,8 @@ export const CG: IndicatorConfig = {
   requiredInputs: 10,
   details: 'Identifies turning points with minimal lag. Oscillates around zero line.',
   createIndicator: () => new CGClass(10, 10),
-  processData: makeProcessData({rowInputs: ['close'], signal: 'required'}),
-  getTableColumns: () => buildTableColumns({inputs: ['close']}),
+  processData: makeProcessData({rowInputs: ['close']}),
+  getTableColumns: indicator => buildTableColumns({inputs: ['close'], indicator}),
   chartTitle: 'Center of Gravity (10,10)',
   yAxisLabel: 'CG',
 };

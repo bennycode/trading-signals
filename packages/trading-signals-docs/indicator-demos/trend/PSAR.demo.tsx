@@ -13,8 +13,8 @@ export const PSAR: IndicatorConfig = {
   details:
     'Identifies potential reversal points by placing dots above or below price. Dots below = uptrend, dots above = downtrend.',
   createIndicator: () => new PSARClass({accelerationStep: 0.02, accelerationMax: 0.2}),
-  processData: makeProcessData({rowInputs: ['high', 'low', 'close'], signal: 'optional'}),
-  getTableColumns: () => buildTableColumns({inputs: ['high', 'low', 'close']}),
+  processData: makeProcessData({rowInputs: ['high', 'low', 'close']}),
+  getTableColumns: indicator => buildTableColumns({inputs: ['high', 'low', 'close'], indicator}),
   chartTitle: 'Parabolic SAR',
   yAxisLabel: 'Price',
 };

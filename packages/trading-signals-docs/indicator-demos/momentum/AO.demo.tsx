@@ -13,8 +13,8 @@ export const AO: IndicatorConfig = {
   details:
     "Measures market momentum using the difference between a 5-period and 34-period simple moving average of the bar's midpoints.",
   createIndicator: () => new AOClass(5, 34),
-  processData: makeProcessData({rowInputs: ['high', 'low'], signal: 'required'}),
-  getTableColumns: () => buildTableColumns({inputs: ['high', 'low']}),
+  processData: makeProcessData({rowInputs: ['high', 'low']}),
+  getTableColumns: indicator => buildTableColumns({inputs: ['high', 'low'], indicator}),
   chartTitle: 'Awesome Oscillator (5,34)',
   yAxisLabel: 'AO',
 };

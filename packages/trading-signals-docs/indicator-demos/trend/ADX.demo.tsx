@@ -13,8 +13,8 @@ export const ADX: IndicatorConfig = {
   details:
     'Measures trend strength regardless of direction. Values above 25 indicate a strong trend, below 20 suggest a weak trend.',
   createIndicator: () => new ADXClass(14),
-  processData: makeProcessData({rowInputs: ['high', 'low', 'close'], signal: 'optional'}),
-  getTableColumns: () => buildTableColumns({inputs: ['high', 'low', 'close']}),
+  processData: makeProcessData({rowInputs: ['high', 'low', 'close']}),
+  getTableColumns: indicator => buildTableColumns({inputs: ['high', 'low', 'close'], indicator}),
   chartTitle: 'ADX (14)',
   yAxisLabel: 'ADX',
 };

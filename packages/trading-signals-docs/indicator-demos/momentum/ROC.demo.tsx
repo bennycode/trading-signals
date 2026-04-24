@@ -13,8 +13,8 @@ export const ROC: IndicatorConfig = {
   details:
     'Measures the percentage change in price from n periods ago. Positive values indicate upward momentum, negative values indicate downward momentum.',
   createIndicator: () => new ROCClass(9),
-  processData: makeProcessData({rowInputs: ['close'], signal: 'required'}),
-  getTableColumns: () => buildTableColumns({inputs: ['close']}),
+  processData: makeProcessData({rowInputs: ['close']}),
+  getTableColumns: indicator => buildTableColumns({inputs: ['close'], indicator}),
   chartTitle: 'ROC (9)',
   yAxisLabel: 'ROC %',
 };

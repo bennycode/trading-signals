@@ -14,7 +14,7 @@ export const HigherLowTrail: IndicatorConfig = {
     'Tracks a progressively rising stop-loss level by detecting one-sided pullback lows. Unlike a symmetric swing low, only right-side confirmation is required, so the trail responds faster. In monotonic mode (the default), the emitted level only ever rises.',
   createIndicator: () => new HigherLowTrailClass({lookback: 1}),
   processData: makeProcessData({rowInputs: ['low', 'close'], addInputs: ['high', 'low']}),
-  getTableColumns: () => buildTableColumns({inputs: ['low', 'close'], signal: false}),
+  getTableColumns: indicator => buildTableColumns({inputs: ['low', 'close'], indicator}),
   chartTitle: 'Higher-Low Trail (lookback 1)',
   yAxisLabel: 'Price',
 };

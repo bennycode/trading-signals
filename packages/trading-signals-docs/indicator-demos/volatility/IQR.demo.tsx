@@ -13,8 +13,8 @@ export const IQR: IndicatorConfig = {
   details:
     'Statistical measure of variability showing the middle 50% of data. Robust measure of spread that is less sensitive to outliers than standard deviation.',
   createIndicator: () => new IQRClass(13),
-  processData: makeProcessData({rowInputs: ['close'], signal: 'optional'}),
-  getTableColumns: () => buildTableColumns({inputs: ['close']}),
+  processData: makeProcessData({rowInputs: ['close']}),
+  getTableColumns: indicator => buildTableColumns({inputs: ['close'], indicator}),
   chartTitle: 'IQR (13)',
   yAxisLabel: 'IQR',
 };

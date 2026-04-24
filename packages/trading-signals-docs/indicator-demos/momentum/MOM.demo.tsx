@@ -13,8 +13,8 @@ export const MOM: IndicatorConfig = {
   details:
     'Momentum measures the change in price over n periods. Bullish when momentum is positive (price rising), bearish when momentum is negative (price falling).',
   createIndicator: () => new MOMClass(5),
-  processData: makeProcessData({rowInputs: ['close'], signal: 'required'}),
-  getTableColumns: () => buildTableColumns({inputs: ['close']}),
+  processData: makeProcessData({rowInputs: ['close']}),
+  getTableColumns: indicator => buildTableColumns({inputs: ['close'], indicator}),
   chartTitle: 'Momentum (5)',
   yAxisLabel: 'MOM',
 };

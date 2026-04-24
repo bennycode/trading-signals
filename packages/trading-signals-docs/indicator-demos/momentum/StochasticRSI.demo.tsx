@@ -12,8 +12,8 @@ export const StochasticRSI: IndicatorConfig = {
   requiredInputs: 14,
   details: 'Applies Stochastic Oscillator to RSI values. More sensitive to overbought/oversold than standard RSI.',
   createIndicator: () => new StochasticRSIClass(14),
-  processData: makeProcessData({rowInputs: ['close'], signal: 'required'}),
-  getTableColumns: () => buildTableColumns({inputs: ['close']}),
+  processData: makeProcessData({rowInputs: ['close']}),
+  getTableColumns: indicator => buildTableColumns({inputs: ['close'], indicator}),
   chartTitle: 'Stochastic RSI (14)',
   yAxisLabel: 'StochRSI',
 };

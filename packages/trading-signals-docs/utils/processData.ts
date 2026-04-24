@@ -7,8 +7,6 @@ interface ProcessDataOptions {
   rowInputs: PriceColumnKey[];
   /** Candle fields passed to indicator.add(). Defaults to rowInputs. Single key passes a scalar; multiple keys pass an object. */
   addInputs?: PriceColumnKey[];
-  /** 'required' calls indicator.getSignal() unconditionally; 'optional' guards with `'getSignal' in indicator`. */
-  signal?: 'required' | 'optional' | 'none';
   /** Skip the isStable check and always call getResult(). */
   alwaysStable?: boolean;
 }
@@ -32,10 +30,8 @@ export function makeProcessData(opts: ProcessDataOptions): IndicatorConfig['proc
         : null;
     const row: Record<string, unknown> = {result};
     for (const key of opts.rowInputs) row[key] = candleField(candle, key);
-    if (opts.signal === 'required') {
+    if ('getSignal' in indicator) {
       row.signal = indicator.getSignal();
-    } else if (opts.signal === 'optional') {
-      row.signal = 'getSignal' in indicator ? indicator.getSignal() : {state: 'UNKNOWN', hasChanged: false};
     }
     return row;
   };

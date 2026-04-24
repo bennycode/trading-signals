@@ -13,8 +13,8 @@ export const AC: IndicatorConfig = {
   details:
     'Shows acceleration or deceleration of the current driving force. Earlier signal of potential trend change than AO.',
   createIndicator: () => new ACClass(5, 34, 5),
-  processData: makeProcessData({rowInputs: ['high', 'low'], signal: 'required'}),
-  getTableColumns: () => buildTableColumns({inputs: ['high', 'low']}),
+  processData: makeProcessData({rowInputs: ['high', 'low']}),
+  getTableColumns: indicator => buildTableColumns({inputs: ['high', 'low'], indicator}),
   chartTitle: 'Accelerator Oscillator (5,34,5)',
   yAxisLabel: 'AC',
 };

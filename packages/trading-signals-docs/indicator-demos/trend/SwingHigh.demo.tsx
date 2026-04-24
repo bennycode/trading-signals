@@ -14,7 +14,7 @@ export const SwingHigh: IndicatorConfig = {
     'Detects symmetric pivot highs (fractal pivots). A candle is confirmed as a swing high once the configured number of candles on each side print strictly lower highs. Commonly used to mark resistance and breakout targets.',
   createIndicator: () => new SwingHighClass({lookback: SwingLookback.BILL_WILLIAMS}),
   processData: makeProcessData({rowInputs: ['high', 'close'], addInputs: ['high', 'low']}),
-  getTableColumns: () => buildTableColumns({inputs: ['high', 'close'], signal: false}),
+  getTableColumns: indicator => buildTableColumns({inputs: ['high', 'close'], indicator}),
   chartTitle: 'Swing High (lookback 2)',
   yAxisLabel: 'Price',
 };

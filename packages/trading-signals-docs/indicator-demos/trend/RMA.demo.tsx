@@ -13,8 +13,8 @@ export const RMA: IndicatorConfig = {
   details:
     'Developed by J. Welles Wilder Jr., this smoothed moving average gives more weight to historical data, resulting in a smoother line.',
   createIndicator: () => new RMAClass(5),
-  processData: makeProcessData({rowInputs: ['close'], signal: 'optional'}),
-  getTableColumns: () => buildTableColumns({inputs: ['close']}),
+  processData: makeProcessData({rowInputs: ['close']}),
+  getTableColumns: indicator => buildTableColumns({inputs: ['close'], indicator}),
   chartTitle: 'RMA (5)',
   yAxisLabel: 'Price',
 };

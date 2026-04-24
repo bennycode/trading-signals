@@ -12,8 +12,8 @@ export const REI: IndicatorConfig = {
   requiredInputs: 5,
   details: 'Measures range expansion to identify potential breakouts.',
   createIndicator: () => new REIClass(5),
-  processData: makeProcessData({rowInputs: ['close'], addInputs: ['high', 'low', 'close', 'open'], signal: 'required'}),
-  getTableColumns: () => buildTableColumns({inputs: ['close']}),
+  processData: makeProcessData({rowInputs: ['close'], addInputs: ['high', 'low', 'close', 'open']}),
+  getTableColumns: indicator => buildTableColumns({inputs: ['close'], indicator}),
   chartTitle: 'Range Expansion Index (5)',
   yAxisLabel: 'REI',
 };

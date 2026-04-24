@@ -13,8 +13,8 @@ export const TDS: IndicatorConfig = {
   details:
     'TDS tracks consecutive closes compared to the close 4 bars earlier. Bullish Setup: 9 consecutive closes greater than the close 4 bars earlier (returns 1, signals potential reversal - BEARISH). Bearish Setup: 9 consecutive closes less than the close 4 bars earlier (returns -1, signals potential reversal - BULLISH).',
   createIndicator: () => new TDSClass(),
-  processData: makeProcessData({rowInputs: ['close'], signal: 'required', alwaysStable: true}),
-  getTableColumns: () => buildTableColumns({inputs: ['close']}),
+  processData: makeProcessData({rowInputs: ['close'], alwaysStable: true}),
+  getTableColumns: indicator => buildTableColumns({inputs: ['close'], indicator}),
   chartTitle: 'Tom DeMark Sequential',
   yAxisLabel: 'TDS',
 };

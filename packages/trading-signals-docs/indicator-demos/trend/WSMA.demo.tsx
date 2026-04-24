@@ -12,8 +12,8 @@ export const WSMA: IndicatorConfig = {
   requiredInputs: 5,
   details: 'Similar to RMA, this is a smoothed moving average that reduces noise and provides a clearer view of the trend.',
   createIndicator: () => new WSMAClass(5),
-  processData: makeProcessData({rowInputs: ['close'], signal: 'optional'}),
-  getTableColumns: () => buildTableColumns({inputs: ['close']}),
+  processData: makeProcessData({rowInputs: ['close']}),
+  getTableColumns: indicator => buildTableColumns({inputs: ['close'], indicator}),
   chartTitle: 'WSMA (5)',
   yAxisLabel: 'Price',
 };

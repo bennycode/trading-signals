@@ -10,10 +10,10 @@ export const AD: IndicatorConfig = {
   description: 'Accumulation/Distribution',
   details:
     'Uses the relationship between close price and high-low range, weighted by volume, to measure money flow. Rising AD confirms an uptrend, falling AD confirms a downtrend.',
-  getTableColumns: () => buildTableColumns({inputs: ['close', 'volume']}),
+  getTableColumns: indicator => buildTableColumns({inputs: ['close', 'volume'], indicator}),
   id: 'ad',
   name: 'AD',
-  processData: makeProcessData({rowInputs: ['close', 'volume'], addInputs: ['close', 'high', 'low', 'volume'], signal: 'required', alwaysStable: true}),
+  processData: makeProcessData({rowInputs: ['close', 'volume'], addInputs: ['close', 'high', 'low', 'volume'], alwaysStable: true}),
   requiredInputs: 1,
   type: 'single',
   yAxisLabel: 'AD',

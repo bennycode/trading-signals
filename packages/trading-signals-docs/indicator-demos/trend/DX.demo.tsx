@@ -12,8 +12,8 @@ export const DX: IndicatorConfig = {
   requiredInputs: 14,
   details: 'Measures the strength of directional movement. The ADX is derived from smoothing the DX values over time.',
   createIndicator: () => new DXClass(14),
-  processData: makeProcessData({rowInputs: ['high', 'low', 'close'], signal: 'optional'}),
-  getTableColumns: () => buildTableColumns({inputs: ['high', 'low', 'close']}),
+  processData: makeProcessData({rowInputs: ['high', 'low', 'close']}),
+  getTableColumns: indicator => buildTableColumns({inputs: ['high', 'low', 'close'], indicator}),
   chartTitle: 'DX (14)',
   yAxisLabel: 'DX',
 };

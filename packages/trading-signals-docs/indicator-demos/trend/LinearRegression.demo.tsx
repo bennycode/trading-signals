@@ -22,10 +22,10 @@ export const LinearRegression: IndicatorConfig = {
       close: Number(candle.close),
     };
   },
-  getTableColumns: () =>
+  getTableColumns: indicator =>
     buildTableColumns({
       inputs: ['close'],
-      signal: false,
+      indicator,
       extra: [
         {
           header: 'Slope',

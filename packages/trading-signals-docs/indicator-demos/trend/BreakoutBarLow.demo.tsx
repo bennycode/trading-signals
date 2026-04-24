@@ -14,7 +14,7 @@ export const BreakoutBarLow: IndicatorConfig = {
     'Emits the low of any candle whose high strictly exceeds the highest high of the prior N candles — a breakout bar. The breakout-bar low is commonly used as a momentum-based stop: if price trades back below it, the breakout has failed.',
   createIndicator: () => new BreakoutBarLowClass({lookback: 20}),
   processData: makeProcessData({rowInputs: ['high', 'low']}),
-  getTableColumns: () => buildTableColumns({inputs: ['high', 'low'], signal: false}),
+  getTableColumns: indicator => buildTableColumns({inputs: ['high', 'low'], indicator}),
   chartTitle: 'Breakout-Bar Low (20)',
   yAxisLabel: 'Price',
 };

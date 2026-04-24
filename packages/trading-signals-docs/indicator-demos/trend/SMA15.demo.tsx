@@ -14,7 +14,7 @@ export const SMA15: IndicatorConfig = {
     'A specialized 15-point weighted moving average using Spencer’s fixed weights, designed to preserve trend while filtering seasonal and irregular variations.',
   createIndicator: () => new SMA15Class(15),
   processData: makeProcessData({rowInputs: ['close']}),
-  getTableColumns: () => buildTableColumns({inputs: ['close'], signal: false}),
+  getTableColumns: indicator => buildTableColumns({inputs: ['close'], indicator}),
   chartTitle: "Spencer's 15-Point MA",
   yAxisLabel: 'Price',
 };

@@ -68,7 +68,7 @@ export const renderSingleIndicator = (config: IndicatorConfig, selectedCandles: 
 
       <PriceChart title="Input Prices" data={priceData} />
 
-      <DataTable title="All Sample Values" columns={config.getTableColumns?.() ?? []} data={sampleValues} />
+      <DataTable title="All Sample Values" columns={config.getTableColumns?.(indicator) ?? []} data={sampleValues} />
     </div>
   );
 };

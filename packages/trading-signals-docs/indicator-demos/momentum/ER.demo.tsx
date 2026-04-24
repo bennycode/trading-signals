@@ -13,8 +13,8 @@ export const ER: IndicatorConfig = {
   details:
     'Measures how much of the price range was directional movement versus noise. Returns a value between 0 and 1 — near 0 means choppy/range-bound, near 1 means strongly trending. Formula: |close_now − close_N_ago| / (highest_high − lowest_low).',
   createIndicator: () => new ERClass(14),
-  processData: makeProcessData({rowInputs: ['close'], addInputs: ['high', 'low', 'close'], signal: 'required'}),
-  getTableColumns: () => buildTableColumns({inputs: ['close']}),
+  processData: makeProcessData({rowInputs: ['close'], addInputs: ['high', 'low', 'close']}),
+  getTableColumns: indicator => buildTableColumns({inputs: ['close'], indicator}),
   chartTitle: 'Range Efficiency (14)',
   yAxisLabel: 'ER',
 };

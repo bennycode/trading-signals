@@ -13,8 +13,8 @@ export const MAD: IndicatorConfig = {
   details:
     'Average absolute deviation from the mean. Measures the average distance between each data point and the mean of the dataset.',
   createIndicator: () => new MADClass(10),
-  processData: makeProcessData({rowInputs: ['close'], signal: 'optional'}),
-  getTableColumns: () => buildTableColumns({inputs: ['close']}),
+  processData: makeProcessData({rowInputs: ['close']}),
+  getTableColumns: indicator => buildTableColumns({inputs: ['close'], indicator}),
   chartTitle: 'MAD (10)',
   yAxisLabel: 'MAD',
 };

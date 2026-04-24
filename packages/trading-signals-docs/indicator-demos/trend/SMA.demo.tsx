@@ -13,8 +13,8 @@ export const SMA: IndicatorConfig = {
   details:
     'Calculates the arithmetic mean of prices over a specified period. Smooths out price fluctuations to identify the trend direction.',
   createIndicator: () => new SMAClass(5),
-  processData: makeProcessData({rowInputs: ['close'], signal: 'optional'}),
-  getTableColumns: () => buildTableColumns({inputs: ['close']}),
+  processData: makeProcessData({rowInputs: ['close']}),
+  getTableColumns: indicator => buildTableColumns({inputs: ['close'], indicator}),
   chartTitle: 'SMA (5)',
   yAxisLabel: 'Price',
 };

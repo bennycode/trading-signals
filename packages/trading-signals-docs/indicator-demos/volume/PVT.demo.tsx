@@ -10,10 +10,10 @@ export const PVT: IndicatorConfig = {
   description: 'Price Volume Trend',
   details:
     'Cumulative indicator that adds a proportional amount of volume based on percentage price change. More sensitive than OBV because it weights volume by price change rather than adding full volume.',
-  getTableColumns: () => buildTableColumns({inputs: ['close', 'volume']}),
+  getTableColumns: indicator => buildTableColumns({inputs: ['close', 'volume'], indicator}),
   id: 'pvt',
   name: 'PVT',
-  processData: makeProcessData({rowInputs: ['close', 'volume'], addInputs: ['close', 'high', 'low', 'volume'], signal: 'required', alwaysStable: true}),
+  processData: makeProcessData({rowInputs: ['close', 'volume'], addInputs: ['close', 'high', 'low', 'volume'], alwaysStable: true}),
   requiredInputs: 2,
   type: 'single',
   yAxisLabel: 'PVT',

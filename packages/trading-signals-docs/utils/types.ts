@@ -22,7 +22,7 @@ export interface IndicatorConfig<TIndicator = any, TResult = any> {
   createIndicator: () => TIndicator;
   processData?: (indicator: TIndicator, candle: ExchangeCandle, idx: number) => TResult;
   getChartData?: (result: TResult) => ChartDataPoint | ChartDataPoint[];
-  getTableColumns?: () => ColumnDef[];
+  getTableColumns?: (indicator: TIndicator) => ColumnDef[];
   chartTitle?: string;
   yAxisLabel?: string;
   customRender?: (config: IndicatorConfig<TIndicator, TResult>, selectedCandles: ExchangeCandle[]) => React.ReactElement;

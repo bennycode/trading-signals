@@ -13,8 +13,8 @@ export const TR: IndicatorConfig = {
   details:
     'Measures the greatest of: current high minus current low, absolute value of current high minus previous close, or absolute value of current low minus previous close. Low values indicate a sideways trend with little volatility.',
   createIndicator: () => new TRClass(),
-  processData: makeProcessData({rowInputs: ['close'], addInputs: ['high', 'low', 'close'], signal: 'optional'}),
-  getTableColumns: () => buildTableColumns({inputs: ['close']}),
+  processData: makeProcessData({rowInputs: ['close'], addInputs: ['high', 'low', 'close']}),
+  getTableColumns: indicator => buildTableColumns({inputs: ['close'], indicator}),
   chartTitle: 'True Range',
   yAxisLabel: 'TR',
 };

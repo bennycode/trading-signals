@@ -13,8 +13,8 @@ export const BollingerBandsWidth: IndicatorConfig = {
   details:
     'Measures the width between the upper and lower Bollinger Bands relative to the middle band. Useful for identifying squeezes and potential breakouts.',
   createIndicator: () => new BollingerBandsWidthClass(new BollingerBands(20, 2)),
-  processData: makeProcessData({rowInputs: ['close'], signal: 'optional'}),
-  getTableColumns: () => buildTableColumns({inputs: ['close']}),
+  processData: makeProcessData({rowInputs: ['close']}),
+  getTableColumns: indicator => buildTableColumns({inputs: ['close'], indicator}),
   chartTitle: 'BBW (20, 2)',
   yAxisLabel: 'BBW',
 };

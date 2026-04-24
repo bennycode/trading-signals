@@ -13,8 +13,8 @@ export const ATR: IndicatorConfig = {
   details:
     'Measures market volatility by analyzing the range of price movements. Higher values indicate higher volatility; useful for setting stop-loss levels.',
   createIndicator: () => new ATRClass(14),
-  processData: makeProcessData({rowInputs: ['close'], addInputs: ['high', 'low', 'close'], signal: 'optional'}),
-  getTableColumns: () => buildTableColumns({inputs: ['close']}),
+  processData: makeProcessData({rowInputs: ['close'], addInputs: ['high', 'low', 'close']}),
+  getTableColumns: indicator => buildTableColumns({inputs: ['close'], indicator}),
   chartTitle: 'ATR (14)',
   yAxisLabel: 'ATR',
 };

@@ -14,7 +14,7 @@ export const ZigZag: IndicatorConfig = {
     'Filters out minor price movements by connecting significant pivot highs and lows. A new pivot is only confirmed once price reverses by at least the configured percentage (deviation).',
   createIndicator: () => new ZigZagClass({deviation: 5}),
   processData: makeProcessData({rowInputs: ['high', 'low']}),
-  getTableColumns: () => buildTableColumns({inputs: ['high', 'low'], signal: false}),
+  getTableColumns: indicator => buildTableColumns({inputs: ['high', 'low'], indicator}),
   chartTitle: 'ZigZag (5% deviation)',
   yAxisLabel: 'Price',
 };

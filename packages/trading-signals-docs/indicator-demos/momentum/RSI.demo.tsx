@@ -13,8 +13,8 @@ export const RSI: IndicatorConfig = {
   details:
     'RSI measures the magnitude of recent price changes to evaluate overbought or oversold conditions. Values above 70 indicate overbought, below 30 indicate oversold.',
   createIndicator: () => new RSIClass(14),
-  processData: makeProcessData({rowInputs: ['close'], signal: 'required'}),
-  getTableColumns: () => buildTableColumns({inputs: ['close']}),
+  processData: makeProcessData({rowInputs: ['close']}),
+  getTableColumns: indicator => buildTableColumns({inputs: ['close'], indicator}),
   chartTitle: 'RSI (14)',
   yAxisLabel: 'RSI',
 };

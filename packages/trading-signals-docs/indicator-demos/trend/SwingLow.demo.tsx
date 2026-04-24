@@ -14,7 +14,7 @@ export const SwingLow: IndicatorConfig = {
     'Detects symmetric pullback lows (fractal pivots). A candle is confirmed as a swing low once the configured number of candles on each side print strictly higher lows. Commonly used to mark support levels and structural stop-loss references.',
   createIndicator: () => new SwingLowClass({lookback: SwingLookback.BILL_WILLIAMS}),
   processData: makeProcessData({rowInputs: ['low', 'close'], addInputs: ['high', 'low']}),
-  getTableColumns: () => buildTableColumns({inputs: ['low', 'close'], signal: false}),
+  getTableColumns: indicator => buildTableColumns({inputs: ['low', 'close'], indicator}),
   chartTitle: 'Swing Low (lookback 2)',
   yAxisLabel: 'Price',
 };
