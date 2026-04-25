@@ -1,7 +1,7 @@
 import type {ReactNode} from 'react';
 import type {ExchangeCandle} from '@typedtrader/exchange';
 import {formatDate} from './formatDate';
-import type {IndicatorConfig} from './types';
+import type {SingleIndicatorConfig} from './types';
 import type {PriceData} from '../components/PriceChart';
 import type {ChartDataPoint} from '../components/Chart';
 import Chart from '../components/Chart';
@@ -18,8 +18,8 @@ export const collectPriceData = (candle: ExchangeCandle, idx: number): PriceData
   close: Number(candle.close),
 });
 
-export const renderSingleIndicator = (config: IndicatorConfig, selectedCandles: ExchangeCandle[]) => {
-  const indicator = config.createIndicator!();
+export const renderSingleIndicator = (config: SingleIndicatorConfig, selectedCandles: ExchangeCandle[]) => {
+  const indicator = config.createIndicator();
   const chartData: ChartDataPoint[] = [];
   const priceData: PriceData[] = [];
   const sampleValues: Array<{
@@ -31,7 +31,7 @@ export const renderSingleIndicator = (config: IndicatorConfig, selectedCandles: 
   }> = [];
 
   selectedCandles.forEach((candle, idx) => {
-    const processedData = config.processData!(indicator, candle, idx);
+    const processedData = config.processData(indicator, candle, idx);
     const chartPoint = config.getChartData
       ? config.getChartData(processedData)
       : {x: idx + 1, y: (processedData.result as number | null) ?? null};
@@ -64,11 +64,11 @@ export const renderSingleIndicator = (config: IndicatorConfig, selectedCandles: 
         details={config.details}
       />
 
-      <Chart title={config.chartTitle!} data={chartData} yAxisLabel={config.yAxisLabel!} color={config.color} />
+      <Chart title={config.chartTitle} data={chartData} yAxisLabel={config.yAxisLabel} color={config.color} />
 
       <PriceChart title="Input Prices" data={priceData} />
 
-      <DataTable title="All Sample Values" columns={config.getTableColumns?.(indicator) ?? []} data={sampleValues} />
+      <DataTable title="All Sample Values" columns={config.getTableColumns(indicator)} data={sampleValues} />
     </div>
   );
 };

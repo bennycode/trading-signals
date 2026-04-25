@@ -38,7 +38,11 @@ export default function VolumeIndicators() {
     const dataset = datasets.find(ds => ds.id === selectedDataset);
     if (!config || !dataset) return null;
 
-    return renderSingleIndicator(config, dataset.candles);
+    if (config.type === 'single') {
+      return renderSingleIndicator(config, dataset.candles);
+    }
+
+    return config.customRender(config, dataset.candles);
   };
 
   return (

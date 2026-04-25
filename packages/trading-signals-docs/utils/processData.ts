@@ -1,6 +1,6 @@
 import type {ExchangeCandle} from '@typedtrader/exchange';
 import type {PriceColumnKey} from './tableColumns';
-import type {IndicatorConfig} from './types';
+import type {SingleIndicatorConfig} from './types';
 
 interface ProcessDataOptions {
   /** Candle fields included in the row data (used by the table). */
@@ -13,7 +13,7 @@ interface ProcessDataOptions {
 
 const candleField = (candle: ExchangeCandle, key: PriceColumnKey) => Number(candle[key]);
 
-export function makeProcessData(opts: ProcessDataOptions): IndicatorConfig['processData'] {
+export function makeProcessData(opts: ProcessDataOptions): SingleIndicatorConfig['processData'] {
   const addInputs = opts.addInputs ?? opts.rowInputs;
   return (indicator, candle) => {
     if (addInputs.length === 1) {

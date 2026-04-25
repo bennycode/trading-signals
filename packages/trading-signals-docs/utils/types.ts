@@ -2,8 +2,6 @@ import type React from 'react';
 import type {ChartDataPoint} from '../components/Chart';
 import type {ExchangeCandle} from '@typedtrader/exchange';
 
-export type IndicatorType = 'single' | 'dual' | 'triple' | 'custom';
-
 export interface ColumnDef {
   header: string;
   key: string;
@@ -11,22 +9,33 @@ export interface ColumnDef {
   className?: string;
 }
 
-export interface IndicatorConfig<TIndicator = any, TResult = any> {
+interface BaseIndicatorConfig<TIndicator = any> {
   id: string;
   name: string;
   description: string;
   color: string;
   requiredInputs: number;
-  type: IndicatorType;
   details?: string;
   createIndicator: () => TIndicator;
-  processData?: (indicator: TIndicator, candle: ExchangeCandle, idx: number) => TResult;
-  getChartData?: (result: TResult) => ChartDataPoint | ChartDataPoint[];
-  getTableColumns?: (indicator: TIndicator) => ColumnDef[];
-  chartTitle?: string;
-  yAxisLabel?: string;
-  customRender?: (config: IndicatorConfig<TIndicator, TResult>, selectedCandles: ExchangeCandle[]) => React.ReactElement;
 }
+
+export interface SingleIndicatorConfig<TIndicator = any, TResult = any> extends BaseIndicatorConfig<TIndicator> {
+  type: 'single';
+  processData: (indicator: TIndicator, candle: ExchangeCandle, idx: number) => TResult;
+  getChartData?: (result: TResult) => ChartDataPoint | ChartDataPoint[];
+  getTableColumns: (indicator: TIndicator) => ColumnDef[];
+  chartTitle: string;
+  yAxisLabel: string;
+}
+
+export interface CustomIndicatorConfig<TIndicator = any> extends BaseIndicatorConfig<TIndicator> {
+  type: 'custom';
+  customRender: (config: CustomIndicatorConfig<TIndicator>, selectedCandles: ExchangeCandle[]) => React.ReactElement;
+}
+
+export type IndicatorConfig<TIndicator = any, TResult = any> =
+  | SingleIndicatorConfig<TIndicator, TResult>
+  | CustomIndicatorConfig<TIndicator>;
 
 export interface CandleDataset {
   id: string;

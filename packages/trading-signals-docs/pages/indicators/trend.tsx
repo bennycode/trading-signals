@@ -42,7 +42,7 @@ export default function TrendIndicators() {
       return renderSingleIndicator(config, dataset.candles);
     }
 
-    return config.customRender?.(config, dataset.candles) ?? null;
+    return config.customRender(config, dataset.candles);
   };
 
   return (
