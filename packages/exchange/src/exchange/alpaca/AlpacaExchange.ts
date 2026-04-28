@@ -438,8 +438,10 @@ export class AlpacaExchange extends Exchange {
           pair,
         };
       }
+      // Notional and quantity fields can take up to 9 decimal point values:
+      // @see https://docs.alpaca.markets/docs/fractional-trading#supported-order-types
       return {
-        base_increment: '0.00000001',
+        base_increment: '0.000000001',
         base_max_size: Number.MAX_SAFE_INTEGER.toString(),
         base_min_size: '0',
         counter_increment: '0.01',
