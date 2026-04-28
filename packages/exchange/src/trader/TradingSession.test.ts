@@ -284,7 +284,53 @@ describe.sequential('TradingSession', () => {
       });
     });
 
-    it('cancels existing order before placing a new one', async () => {
+    it('keeps a pending order tracked when it fills in the race window before being canceled', async () => {
+      const advice: OrderAdvice = {
+        side: ExchangeOrderSide.SELL,
+        type: ExchangeOrderType.LIMIT,
+        amount: '1',
+        amountIn: 'base',
+        price: new Big('250'),
+      };
+      strategy.onCandle.mockResolvedValue(advice);
+
+      await session.start();
+
+      exchange.emit('candle-topic-1', sampleCandle);
+      await vi.waitFor(() => expect(exchange.placeLimitOrder).toHaveBeenCalledTimes(1));
+
+      // Race window: the order filled on the exchange before our cancel reached it,
+      // so cancelOpenOrders has no IDs to return. The order must stay tracked so the
+      // late FILL websocket event still matches.
+      exchange.cancelOpenOrders.mockResolvedValueOnce([]);
+      exchange.placeLimitOrder.mockResolvedValueOnce({
+        id: 'order-1-replacement',
+        pair,
+        side: ExchangeOrderSide.SELL,
+        size: '10',
+        type: ExchangeOrderType.LIMIT,
+        price: '253.00',
+      } satisfies ExchangePendingLimitOrder);
+
+      const onFill = vi.fn();
+      const onOrderFilled = vi.fn();
+      session.on('fill', onFill);
+      session.on('orderFilled', onOrderFilled);
+
+      // Next candle: cancel-and-replace cycle runs, but order-1 stays in pendingOrders
+      exchange.emit('candle-topic-1', sampleCandle);
+      await vi.waitFor(() => expect(exchange.placeLimitOrder).toHaveBeenCalledTimes(2));
+
+      // The late FILL event for order-1 finally arrives and is processed
+      const lateFill: ExchangeFill = {...sampleFill, order_id: 'order-1', side: ExchangeOrderSide.SELL};
+      exchange.emit('order-topic-1', lateFill);
+
+      await vi.waitFor(() => expect(onOrderFilled).toHaveBeenCalledTimes(1));
+      expect(onFill).toHaveBeenCalledWith(lateFill);
+      expect(strategy.onFill).toHaveBeenCalledWith(lateFill, expect.anything());
+    });
+
+it('cancels existing order before placing a new one', async () => {
       const advice: OrderAdvice = {
         side: ExchangeOrderSide.BUY,
         type: ExchangeOrderType.MARKET,
