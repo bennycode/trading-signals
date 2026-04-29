@@ -26,6 +26,13 @@ export interface TradingSessionStrategy {
    * to match raw exchange order ids from the fill.
    */
   onOrderFilled?(order: ExchangePendingOrder, state: TradingSessionState): Promise<void>;
+  /**
+   * Set by the `TradingSession` when the strategy is attached. Strategies call it to
+   * surface a user-facing message (re-emitted as a `'message'` event by the session,
+   * which downstream consumers like `StrategyMonitor` forward to the user). Strategies
+   * are responsible for not being chatty — every call reaches the user.
+   */
+  onMessage?: (text: string) => void;
 }
 
 /** Use as `amount` in an `OrderAdvice` to use the full available balance. */
@@ -110,6 +117,7 @@ export type TradingSessionEventMap = {
   candle: [BatchedCandle];
   error: [Error];
   fill: [ExchangeFill];
+  message: [string];
   order: [ExchangePendingOrder];
   orderFilled: [ExchangePendingOrder];
   started: [];

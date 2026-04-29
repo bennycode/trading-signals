@@ -123,6 +123,14 @@ export class StrategyMonitor {
       }
     });
 
+    session.on('message', async (text: string) => {
+      try {
+        await this.#sendStrategyMessage(row, text);
+      } catch (error) {
+        logger.error({err: error, strategyId: row.id}, 'Error handling strategy message');
+      }
+    });
+
     session.on('error', (error: Error) => {
       logger.error({err: error, strategyId: row.id, strategyName: row.strategyName}, 'Strategy error');
     });
@@ -165,6 +173,28 @@ export class StrategyMonitor {
     await platform.sendMessage(account.userId, message);
 
     logger.info({userId: account.userId, strategyId: row.id}, 'Fill notification sent');
+  }
+
+  async #sendStrategyMessage(row: StrategyAttributes, text: string): Promise<void> {
+    const account = Account.findByPk(row.accountId);
+    if (!account) {
+      logger.warn({accountId: row.accountId, strategyId: row.id}, 'Account not found for strategy message');
+      return;
+    }
+
+    const message = `${row.strategyName} (${row.pair}): ${text}`;
+
+    const platformPrefix = account.userId.split(':')[0];
+    const platform = this.#platforms.get(platformPrefix);
+
+    if (!platform) {
+      logger.warn({platformPrefix, strategyId: row.id}, 'No platform found for strategy message');
+      return;
+    }
+
+    await platform.sendMessage(account.userId, message);
+
+    logger.info({userId: account.userId, strategyId: row.id}, 'Strategy message sent');
   }
 
   async #sendFinishNotification(row: StrategyAttributes): Promise<void> {

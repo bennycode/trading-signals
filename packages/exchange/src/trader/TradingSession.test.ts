@@ -460,6 +460,18 @@ it('cancels existing order before placing a new one', async () => {
     });
   });
 
+  describe('strategy messages', () => {
+    it('relays strategy onMessage calls as session message events', () => {
+      const onMessage = vi.fn();
+      session.on('message', onMessage);
+
+      strategy.onMessage?.('hello from strategy');
+
+      expect(onMessage).toHaveBeenCalledTimes(1);
+      expect(onMessage).toHaveBeenCalledWith('hello from strategy');
+    });
+  });
+
   describe('stop', () => {
     it('cleans up subscriptions and emits stopped', async () => {
       const onStopped = vi.fn();

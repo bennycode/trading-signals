@@ -29,6 +29,7 @@ export class TradingSession extends EventEmitter<TradingSessionEventMap> {
     this.#exchange = options.exchange;
     this.#pair = options.pair;
     this.#strategy = options.strategy;
+    this.#strategy.onMessage = text => this.emit('message', text);
   }
 
   get running(): boolean {
