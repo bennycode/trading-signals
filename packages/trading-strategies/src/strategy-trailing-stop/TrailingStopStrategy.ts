@@ -54,8 +54,8 @@ export type TrailingStopState = {
   exited: boolean;
   /**
    * Net base quantity currently held. Stored as a Big string. Starts at `'0'`, jumps to
-   * the seeded balance on attach, increases on external BUY fills, and decreases on SELL
-   * fills. When it reaches zero, `exited` flips to `true`.
+   * the seeded balance on attach, and decreases on SELL fills of the strategy's own
+   * exit orders. When it reaches zero, `exited` flips to `true`.
    */
   positionSize: string;
   /**
@@ -105,8 +105,9 @@ const defaultState = (): TrailingStopState => ({
  * Attach behavior: on each candle, if not yet attached and `state.baseBalance > 0`,
  * the strategy claims the full base balance as its position and seeds the peak from
  * the configured `pivotPrice` (when provided) or otherwise from the attach candle's
- * `high`. Subsequent external BUY fills add to the position via `onFill`, but the
- * peak is not re-anchored.
+ * `high`. The position is not modified again until the strategy's own SELL fills
+ * arrive — `TradingSession` only forwards fills for orders it placed itself, so any
+ * external buys made after attach do not reach `onFill` and are not tracked.
  */
 export class TrailingStopStrategy extends Strategy {
   static override NAME = '@typedtrader/strategy-trailing-stop';
@@ -198,15 +199,11 @@ export class TrailingStopStrategy extends Strategy {
   }
 
   async onFill(fill: ExchangeFill, _state: TradingSessionState): Promise<void> {
-    const fillSize = new Big(fill.size);
-    const currentSize = new Big(this.#state.positionSize);
-
-    if (fill.side === ExchangeOrderSide.BUY) {
-      this.#state.positionSize = currentSize.plus(fillSize).toFixed();
+    if (fill.side !== ExchangeOrderSide.SELL) {
       return;
     }
-
-    const newSize = currentSize.minus(fillSize);
+    const fillSize = new Big(fill.size);
+    const newSize = new Big(this.#state.positionSize).minus(fillSize);
     if (newSize.lte(0)) {
       this.#state.positionSize = '0';
       this.#state.exited = true;
@@ -251,6 +248,21 @@ function isTrailingStopState(value: unknown): value is TrailingStopState {
   if (value.exitLimitPrice !== null) {
     if (typeof value.exitLimitPrice !== 'string' || !isValidBigString(value.exitLimitPrice)) return false;
   }
+
+  // Cross-field invariants. Restoring a state that violates these would strand the
+  // strategy in a no-op or otherwise inconsistent runtime state, so reject and let
+  // restoreState fall back to defaults.
+  const positionSize = new Big(value.positionSize);
+  const peakPrice = new Big(value.peakPrice);
+
+  // Once exited, the position must be zero. Anything else is contradictory.
+  if (value.exited && !positionSize.eq(0)) return false;
+
+  // Attached (peak set) but not exited and no position left → permanent no-op:
+  // the seed branch is skipped (peak !== '0') and the trail branch returns early
+  // (positionSize <= 0). Treat as corrupt and reset.
+  if (!peakPrice.eq(0) && !value.exited && positionSize.lte(0)) return false;
+
   return true;
 }
 

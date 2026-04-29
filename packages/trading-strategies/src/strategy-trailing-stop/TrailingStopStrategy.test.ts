@@ -270,6 +270,38 @@ describe('TrailingStopStrategy', () => {
     expect(strategy.trailingState.exitLimitPrice).toBe('90');
   });
 
+  it('rejects malformed restored state that would strand the strategy in a no-op', async () => {
+    const strategy = new TrailingStopStrategy({trailDownPct: '10'});
+
+    // peak set but no position and not exited → permanent no-op. Predicate rejects;
+    // the proxied state stays at defaults so the strategy can still attach.
+    strategy.restoreState({
+      exited: false,
+      positionSize: '0',
+      peakPrice: '120',
+      exitReason: null,
+      exitLimitPrice: null,
+    });
+
+    expect(strategy.trailingState.peakPrice).toBe('0');
+    expect(strategy.trailingState.positionSize).toBe('0');
+  });
+
+  it('rejects restored state where exited=true but positionSize is non-zero', async () => {
+    const strategy = new TrailingStopStrategy({trailDownPct: '10'});
+
+    strategy.restoreState({
+      exited: true,
+      positionSize: '5',
+      peakPrice: '120',
+      exitReason: null,
+      exitLimitPrice: null,
+    });
+
+    expect(strategy.trailingState.exited).toBe(false);
+    expect(strategy.trailingState.positionSize).toBe('0');
+  });
+
   it('restores state and resumes trailing without re-attaching', async () => {
     const strategy = new TrailingStopStrategy({trailDownPct: '10'});
 
