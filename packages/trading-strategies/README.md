@@ -86,6 +86,12 @@ type Config = MultiIndicatorConfluenceConfig; // z.infer<typeof MultiIndicatorCo
 
 - **Asset identifiers** differ by market and licensing. A **ticker symbol** (e.g., `AAPL` for [Apple Inc.](https://en.wikipedia.org/wiki/Apple_Inc.)) is an exchange-specific code and not globally unique. An **ISIN** (`US0378331005`) is a 12-character global identifier under ISO 6166, while a **CUSIP** (`037833100`) is a 9-character code used mainly in the U.S. and Canada. Both ISIN and CUSIP databases are maintained by commercial organizations and require paid licenses for redistribution, which is why many open-source projects and free APIs rely on ticker symbols instead ([source](https://forum.alpaca.markets/t/is-there-a-list-for-all-etfs/9117/4)).
 
+- A **day trader** opens and closes every position within the same trading session and holds nothing overnight, which avoids gap risk and overnight margin costs but demands constant attention. Profits come from many small intraday moves, so the typical reference candles are 1-minute to 15-minute, and stops are tight because the horizon (minutes to hours) leaves no room for adverse moves to recover.
+
+- A **swing trader** holds positions for several days to a few weeks to capture a single directional "swing" within a broader trend. The horizon is long enough to ride out intraday noise but short enough that long-term fundamentals are secondary to chart patterns and momentum. Daily and 4-hour candles are the typical reference timeframes, and stops are wider than a day trader's to absorb overnight volatility.
+
+- A **position trader** holds for months to years and treats short-term price action as noise around a longer thesis driven by fundamentals (earnings, macro shifts, structural changes). Technical analysis serves mainly to time entries; once in, drawdowns of 20% or more are tolerated as part of normal holding behavior. Weekly and monthly candles are the relevant timeframes, and trade frequency is low enough that transaction costs barely matter.
+
 ## Strategies
 
 ### BuyOnce
