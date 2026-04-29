@@ -14,6 +14,12 @@ export {
 } from './strategy-mean-reversion/MeanReversionStrategy.js';
 export {NoopStrategy, NoopSchema, type NoopConfig} from './strategy-noop/NoopStrategy.js';
 export {
+  TrailingStopStrategy,
+  TrailingStopSchema,
+  type TrailingStopConfig,
+  type TrailingStopState,
+} from './strategy-trailing-stop/TrailingStopStrategy.js';
+export {
   ProtectedStrategy,
   ProtectedStrategySchema,
   type ProtectedStrategyConfig,
