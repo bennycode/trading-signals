@@ -11,11 +11,13 @@ import {
   ScalpStrategy,
   MeanReversionStrategy,
   ProtectedStrategy,
+  TrailingStopStrategy,
   type BacktestResult,
   BuyOnceConfig,
   BuyBelowSellAboveConfig,
   type MultiIndicatorConfluenceConfig,
   type ScalpConfig,
+  type TrailingStopConfig,
 } from 'trading-strategies';
 import {DatasetSelector} from '../components/DatasetSelector';
 import {StrategyConfigurator} from '../components/StrategyConfigurator';
@@ -43,6 +45,8 @@ function createStrategy(strategyId: StrategyId, config: Record<string, unknown>)
       return new MeanReversionStrategy({config});
     case 'protection-only':
       return new ProtectedStrategy({config});
+    case 'trailing-stop':
+      return new TrailingStopStrategy(config as TrailingStopConfig);
   }
 }
 
