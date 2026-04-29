@@ -470,6 +470,15 @@ it('cancels existing order before placing a new one', async () => {
       expect(onMessage).toHaveBeenCalledTimes(1);
       expect(onMessage).toHaveBeenCalledWith('hello from strategy');
     });
+
+    it('clears strategy.onMessage when the session stops', async () => {
+      await session.start();
+      expect(strategy.onMessage).toBeTypeOf('function');
+
+      await session.stop();
+
+      expect(strategy.onMessage).toBeUndefined();
+    });
   });
 
   describe('stop', () => {

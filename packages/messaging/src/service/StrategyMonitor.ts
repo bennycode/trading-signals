@@ -13,6 +13,11 @@ interface ActiveSession {
   strategy: TradingStrategy;
 }
 
+/** Format a strategy-emitted text into the user-facing message string. Exported for tests. */
+export function formatStrategyMessage(strategyName: string, pair: string, text: string): string {
+  return `${strategyName} (${pair}): ${text}`;
+}
+
 export class StrategyMonitor {
   #platforms: Map<string, MessagingPlatform>;
   #sessions: Map<number, ActiveSession> = new Map();
@@ -182,7 +187,7 @@ export class StrategyMonitor {
       return;
     }
 
-    const message = `${row.strategyName} (${row.pair}): ${text}`;
+    const message = formatStrategyMessage(row.strategyName, row.pair, text);
 
     const platformPrefix = account.userId.split(':')[0];
     const platform = this.#platforms.get(platformPrefix);

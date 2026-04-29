@@ -92,6 +92,9 @@ export class TradingSession extends EventEmitter<TradingSessionEventMap> {
       this.#orderTopicId = null;
     }
 
+    // Drop the message relay so a stopped session can't keep emitting on the strategy's behalf.
+    this.#strategy.onMessage = undefined;
+
     this.#running = false;
     this.#pendingOrders.clear();
     this.#state = null;

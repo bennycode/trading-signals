@@ -188,9 +188,8 @@ export class TrailingStopStrategy extends Strategy {
     }
 
     const reason = `Trailing stop: close ${candle.close.toFixed()} <= peak ${newPeak.toFixed()} - ${this.#trailDownPct.toFixed()}% (target ${trailTarget.toFixed()})`;
-    const isFirstBreach = this.#state.exitReason === null;
-    this.#state.exitReason = reason;
-    if (isFirstBreach) {
+    if (this.#state.exitReason === null) {
+      this.#state.exitReason = reason;
       this.onMessage?.(reason);
     }
 
