@@ -279,6 +279,7 @@ describe('TrailingStopStrategy', () => {
       exited: false,
       positionSize: '0',
       peakPrice: '120',
+      stopPrice: '108',
       exitReason: null,
       exitLimitPrice: null,
     });
@@ -294,12 +295,88 @@ describe('TrailingStopStrategy', () => {
       exited: true,
       positionSize: '5',
       peakPrice: '120',
+      stopPrice: '108',
       exitReason: null,
       exitLimitPrice: null,
     });
 
     expect(strategy.trailingState.exited).toBe(false);
     expect(strategy.trailingState.positionSize).toBe('0');
+  });
+
+  it('exposes stopPrice in state from the moment the strategy attaches', async () => {
+    const strategy = new TrailingStopStrategy({trailDownPct: '10'});
+
+    const candles = [
+      // Attach: peak=100. stopPrice should be 90.
+      createCandle({open: '100', close: '100', low: '99', high: '100', openTimeInISO: '2025-01-01T00:00:00.000Z'}),
+      // Peak ratchets to 120. stopPrice should refresh to 108.
+      createCandle({open: '100', close: '115', low: '100', high: '120', openTimeInISO: '2025-01-01T00:01:00.000Z'}),
+    ];
+
+    const config: BacktestConfig = {
+      candles,
+      exchange: createMockExchange({baseBalance: '5'}),
+      strategy,
+      tradingPair,
+    };
+
+    await new BacktestExecutor(config).execute();
+
+    expect(strategy.trailingState.peakPrice).toBe('120');
+    expect(strategy.trailingState.stopPrice).toBe('108');
+  });
+
+  it('emits an onMessage on attach with the peak and stop target', async () => {
+    const strategy = new TrailingStopStrategy({trailDownPct: '10'});
+    const messages: string[] = [];
+    strategy.onMessage = text => messages.push(text);
+
+    const candles = [
+      createCandle({open: '100', close: '100', low: '99', high: '100', openTimeInISO: '2025-01-01T00:00:00.000Z'}),
+    ];
+
+    const config: BacktestConfig = {
+      candles,
+      exchange: createMockExchange({baseBalance: '5'}),
+      strategy,
+      tradingPair,
+    };
+
+    await new BacktestExecutor(config).execute();
+
+    expect(messages).toHaveLength(1);
+    expect(messages[0]).toBe('Trail attached. Peak: 100, stop: 90 (-10%)');
+  });
+
+  it('emits a single onMessage when the trail first breaches and not on re-emissions', async () => {
+    const strategy = new TrailingStopStrategy({trailDownPct: '10'});
+    const messages: string[] = [];
+    strategy.onMessage = text => messages.push(text);
+
+    const candles = [
+      // Attach: peak=100. target=90. (Emits attach message.)
+      createCandle({open: '100', close: '100', low: '99', high: '100', openTimeInISO: '2025-01-01T00:00:00.000Z'}),
+      // close=90 <= 90 → first breach, fires message + emits limit advice.
+      createCandle({open: '100', close: '90', low: '89', high: '100', openTimeInISO: '2025-01-01T00:01:00.000Z'}),
+      // close=85 <= 90, advice re-emitted but message must NOT fire again.
+      createCandle({open: '90', close: '85', low: '84', high: '90', openTimeInISO: '2025-01-01T00:02:00.000Z'}),
+      // Limit fills (low=84 <= 90).
+      createCandle({open: '85', close: '85', low: '84', high: '86', openTimeInISO: '2025-01-01T00:03:00.000Z'}),
+    ];
+
+    const config: BacktestConfig = {
+      candles,
+      exchange: createMockExchange({baseBalance: '5'}),
+      strategy,
+      tradingPair,
+    };
+
+    await new BacktestExecutor(config).execute();
+
+    expect(messages).toHaveLength(2);
+    expect(messages[0]).toBe('Trail attached. Peak: 100, stop: 90 (-10%)');
+    expect(messages[1]).toMatch(/^Trailing stop: close 90 <= peak 100/);
   });
 
   it('restores state and resumes trailing without re-attaching', async () => {
@@ -309,11 +386,13 @@ describe('TrailingStopStrategy', () => {
       exited: false,
       positionSize: '5',
       peakPrice: '120',
+      stopPrice: '108',
       exitReason: null,
       exitLimitPrice: null,
     });
 
     expect(strategy.trailingState.peakPrice).toBe('120');
+    expect(strategy.trailingState.stopPrice).toBe('108');
     expect(strategy.trailingState.positionSize).toBe('5');
   });
 });

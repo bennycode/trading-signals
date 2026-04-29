@@ -29,6 +29,7 @@ export class TradingSession extends EventEmitter<TradingSessionEventMap> {
     this.#exchange = options.exchange;
     this.#pair = options.pair;
     this.#strategy = options.strategy;
+    this.#strategy.onMessage = text => this.emit('message', text);
   }
 
   get running(): boolean {
@@ -90,6 +91,9 @@ export class TradingSession extends EventEmitter<TradingSessionEventMap> {
       this.#exchange.unwatchOrders(this.#orderTopicId);
       this.#orderTopicId = null;
     }
+
+    // Drop the message relay so a stopped session can't keep emitting on the strategy's behalf.
+    this.#strategy.onMessage = undefined;
 
     this.#running = false;
     this.#pendingOrders.clear();

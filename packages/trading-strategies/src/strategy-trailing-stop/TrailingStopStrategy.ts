@@ -67,6 +67,13 @@ export type TrailingStopState = {
    */
   peakPrice: string;
   /**
+   * Current trail target as a Big string — `peakPrice * (1 - trailDownPct/100)`. Refreshed
+   * on attach and on every candle that the strategy processes, so it always reflects the
+   * current peak. `'0'` while not yet attached. The exit advice fires when `candle.close`
+   * drops to or below this value.
+   */
+  stopPrice: string;
+  /**
    * Human-readable reason string captured the moment the trail was breached (close,
    * peak, percentage, target). `null` until the exit fires. Surfaced in the order
    * advice's `reason` field for downstream logging and diagnostics.
@@ -86,6 +93,7 @@ const defaultState = (): TrailingStopState => ({
   exited: false,
   positionSize: '0',
   peakPrice: '0',
+  stopPrice: '0',
   exitReason: null,
   exitLimitPrice: null,
 });
@@ -147,8 +155,14 @@ export class TrailingStopStrategy extends Strategy {
       if (state.baseBalance.lte(0)) {
         return undefined;
       }
+      const peak = this.#pivotPrice ?? candle.high;
+      const stopTarget = peak.mul(new Big(1).minus(this.#trailDownPct.div(100)));
       this.#state.positionSize = state.baseBalance.toFixed();
-      this.#state.peakPrice = (this.#pivotPrice ?? candle.high).toFixed();
+      this.#state.peakPrice = peak.toFixed();
+      this.#state.stopPrice = stopTarget.toFixed();
+      this.onMessage?.(
+        `Trail attached. Peak: ${peak.toFixed()}, stop: ${stopTarget.toFixed()} (-${this.#trailDownPct.toFixed()}%)`
+      );
       return undefined;
     }
 
@@ -167,13 +181,17 @@ export class TrailingStopStrategy extends Strategy {
     }
 
     const trailTarget = newPeak.mul(new Big(1).minus(this.#trailDownPct.div(100)));
+    this.#state.stopPrice = trailTarget.toFixed();
 
     if (candle.close.gt(trailTarget)) {
       return undefined;
     }
 
     const reason = `Trailing stop: close ${candle.close.toFixed()} <= peak ${newPeak.toFixed()} - ${this.#trailDownPct.toFixed()}% (target ${trailTarget.toFixed()})`;
-    this.#state.exitReason = reason;
+    if (this.#state.exitReason === null) {
+      this.#state.exitReason = reason;
+      this.onMessage?.(reason);
+    }
 
     if (this.#exitOrder === 'market') {
       this.#state.exitLimitPrice = null;
@@ -225,6 +243,7 @@ export class TrailingStopStrategy extends Strategy {
     restored.exited = validated.exited;
     restored.positionSize = validated.positionSize;
     restored.peakPrice = validated.peakPrice;
+    restored.stopPrice = validated.stopPrice;
     restored.exitReason = validated.exitReason;
     restored.exitLimitPrice = validated.exitLimitPrice;
   }
@@ -241,6 +260,9 @@ function isTrailingStopState(value: unknown): value is TrailingStopState {
   if (!('peakPrice' in value) || typeof value.peakPrice !== 'string' || !isValidBigString(value.peakPrice)) {
     return false;
   }
+  if (!('stopPrice' in value) || typeof value.stopPrice !== 'string' || !isValidBigString(value.stopPrice)) {
+    return false;
+  }
   if (!('exitReason' in value) || (value.exitReason !== null && typeof value.exitReason !== 'string')) return false;
   if (!('exitLimitPrice' in value)) return false;
   if (value.exitLimitPrice !== null) {
@@ -252,6 +274,7 @@ function isTrailingStopState(value: unknown): value is TrailingStopState {
   // restoreState fall back to defaults.
   const positionSize = new Big(value.positionSize);
   const peakPrice = new Big(value.peakPrice);
+  const stopPrice = new Big(value.stopPrice);
 
   // Once exited, the position must be zero. Anything else is contradictory.
   if (value.exited && !positionSize.eq(0)) return false;
@@ -260,6 +283,9 @@ function isTrailingStopState(value: unknown): value is TrailingStopState {
   // the seed branch is skipped (peak !== '0') and the trail branch returns early
   // (positionSize <= 0). Treat as corrupt and reset.
   if (!peakPrice.eq(0) && !value.exited && positionSize.lte(0)) return false;
+
+  // peakPrice and stopPrice are coupled — both '0' (not yet attached) or both non-zero.
+  if (peakPrice.eq(0) !== stopPrice.eq(0)) return false;
 
   return true;
 }

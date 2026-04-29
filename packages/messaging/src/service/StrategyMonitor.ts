@@ -13,6 +13,11 @@ interface ActiveSession {
   strategy: TradingStrategy;
 }
 
+/** Format a strategy-emitted text into the user-facing message string. Exported for tests. */
+export function formatStrategyMessage(strategyName: string, pair: string, text: string): string {
+  return `${strategyName} (${pair}): ${text}`;
+}
+
 export class StrategyMonitor {
   #platforms: Map<string, MessagingPlatform>;
   #sessions: Map<number, ActiveSession> = new Map();
@@ -123,6 +128,14 @@ export class StrategyMonitor {
       }
     });
 
+    session.on('message', async (text: string) => {
+      try {
+        await this.#sendStrategyMessage(row, text);
+      } catch (error) {
+        logger.error({err: error, strategyId: row.id}, 'Error handling strategy message');
+      }
+    });
+
     session.on('error', (error: Error) => {
       logger.error({err: error, strategyId: row.id, strategyName: row.strategyName}, 'Strategy error');
     });
@@ -145,47 +158,42 @@ export class StrategyMonitor {
     }
   }
 
-  async #sendFillNotification(row: StrategyAttributes, fill: ExchangeFill): Promise<void> {
+  /**
+   * Resolve the account + platform for a strategy row and send the message. Centralises
+   * the account lookup, prefix-based platform resolution, and warn-on-missing handling
+   * that all three notification paths share.
+   */
+  async #sendToAccount(row: StrategyAttributes, message: string): Promise<void> {
     const account = Account.findByPk(row.accountId);
     if (!account) {
-      logger.warn({accountId: row.accountId, strategyId: row.id}, 'Account not found for fill notification');
+      logger.warn({accountId: row.accountId, strategyId: row.id}, 'Account not found for notification');
       return;
     }
 
-    const message = `Order Filled!\n\nStrategy: ${row.strategyName}\nPair: ${row.pair}\nSide: ${fill.side}\nPrice: ${fill.price}\nSize: ${fill.size}\nFee: ${fill.fee} ${fill.feeAsset}\nOrder ID: ${fill.order_id}`;
-
     const platformPrefix = account.userId.split(':')[0];
     const platform = this.#platforms.get(platformPrefix);
-
     if (!platform) {
-      logger.warn({platformPrefix, strategyId: row.id}, 'No platform found for fill notification');
+      logger.warn({platformPrefix, strategyId: row.id}, 'No platform found for notification');
       return;
     }
 
     await platform.sendMessage(account.userId, message);
 
-    logger.info({userId: account.userId, strategyId: row.id}, 'Fill notification sent');
+    logger.info({userId: account.userId, strategyId: row.id}, 'Notification sent');
+  }
+
+  async #sendFillNotification(row: StrategyAttributes, fill: ExchangeFill): Promise<void> {
+    const message = `Order Filled!\n\nStrategy: ${row.strategyName}\nPair: ${row.pair}\nSide: ${fill.side}\nPrice: ${fill.price}\nSize: ${fill.size}\nFee: ${fill.fee} ${fill.feeAsset}\nOrder ID: ${fill.order_id}`;
+    await this.#sendToAccount(row, message);
+  }
+
+  async #sendStrategyMessage(row: StrategyAttributes, text: string): Promise<void> {
+    const message = formatStrategyMessage(row.strategyName, row.pair, text);
+    await this.#sendToAccount(row, message);
   }
 
   async #sendFinishNotification(row: StrategyAttributes): Promise<void> {
-    const account = Account.findByPk(row.accountId);
-    if (!account) {
-      logger.warn({accountId: row.accountId, strategyId: row.id}, 'Account not found for finish notification');
-      return;
-    }
-
     const message = `Strategy finished and removed.\n\nID: ${row.id}\nStrategy: ${row.strategyName}\nPair: ${row.pair}`;
-
-    const platformPrefix = account.userId.split(':')[0];
-    const platform = this.#platforms.get(platformPrefix);
-
-    if (!platform) {
-      logger.warn({platformPrefix, strategyId: row.id}, 'No platform found for finish notification');
-      return;
-    }
-
-    await platform.sendMessage(account.userId, message);
-
-    logger.info({userId: account.userId, strategyId: row.id}, 'Finish notification sent');
+    await this.#sendToAccount(row, message);
   }
 }

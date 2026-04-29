@@ -17,6 +17,14 @@ export abstract class Strategy implements TradingSessionStrategy {
    */
   onFinish?: () => void | Promise<void>;
 
+  /**
+   * Set by the `TradingSession` when the strategy is attached. Strategies call it to
+   * surface a user-facing message; the session re-emits it as a `'message'` event,
+   * which downstream consumers (e.g. `StrategyMonitor`) forward to the user. Strategies
+   * are responsible for not being chatty — every call reaches the user.
+   */
+  onMessage?: (text: string) => void;
+
   #_state: Record<string, unknown> | null = null;
   get state(): Record<string, unknown> | null {
     return this.#_state;
