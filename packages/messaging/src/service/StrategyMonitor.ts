@@ -159,41 +159,41 @@ export class StrategyMonitor {
   }
 
   /**
-   * Resolve the account + platform for a strategy row, send the message, and log the
-   * outcome under `label`. Centralises the account lookup, prefix-based platform
-   * resolution, and warn-on-missing handling that all three notification paths share.
+   * Resolve the account + platform for a strategy row and send the message. Centralises
+   * the account lookup, prefix-based platform resolution, and warn-on-missing handling
+   * that all three notification paths share.
    */
-  async #sendToAccount(row: StrategyAttributes, message: string, label: string): Promise<void> {
+  async #sendToAccount(row: StrategyAttributes, message: string): Promise<void> {
     const account = Account.findByPk(row.accountId);
     if (!account) {
-      logger.warn({accountId: row.accountId, strategyId: row.id}, `Account not found for ${label}`);
+      logger.warn({accountId: row.accountId, strategyId: row.id}, 'Account not found for notification');
       return;
     }
 
     const platformPrefix = account.userId.split(':')[0];
     const platform = this.#platforms.get(platformPrefix);
     if (!platform) {
-      logger.warn({platformPrefix, strategyId: row.id}, `No platform found for ${label}`);
+      logger.warn({platformPrefix, strategyId: row.id}, 'No platform found for notification');
       return;
     }
 
     await platform.sendMessage(account.userId, message);
 
-    logger.info({userId: account.userId, strategyId: row.id}, `${label} sent`);
+    logger.info({userId: account.userId, strategyId: row.id}, 'Notification sent');
   }
 
   async #sendFillNotification(row: StrategyAttributes, fill: ExchangeFill): Promise<void> {
     const message = `Order Filled!\n\nStrategy: ${row.strategyName}\nPair: ${row.pair}\nSide: ${fill.side}\nPrice: ${fill.price}\nSize: ${fill.size}\nFee: ${fill.fee} ${fill.feeAsset}\nOrder ID: ${fill.order_id}`;
-    await this.#sendToAccount(row, message, 'Fill notification');
+    await this.#sendToAccount(row, message);
   }
 
   async #sendStrategyMessage(row: StrategyAttributes, text: string): Promise<void> {
     const message = formatStrategyMessage(row.strategyName, row.pair, text);
-    await this.#sendToAccount(row, message, 'Strategy message');
+    await this.#sendToAccount(row, message);
   }
 
   async #sendFinishNotification(row: StrategyAttributes): Promise<void> {
     const message = `Strategy finished and removed.\n\nID: ${row.id}\nStrategy: ${row.strategyName}\nPair: ${row.pair}`;
-    await this.#sendToAccount(row, message, 'Finish notification');
+    await this.#sendToAccount(row, message);
   }
 }
