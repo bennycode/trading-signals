@@ -219,16 +219,14 @@ export class TrailingStopStrategy extends Strategy {
   }
 
   override restoreState(persisted: Record<string, unknown>): void {
-    super.restoreState(persisted);
-    if (!isTrailingStopState(persisted)) {
-      return;
-    }
+    const validated: TrailingStopState = isTrailingStopState(persisted) ? persisted : defaultState();
+    super.restoreState(validated);
     const restored = this.#state;
-    restored.exited = persisted.exited;
-    restored.positionSize = persisted.positionSize;
-    restored.peakPrice = persisted.peakPrice;
-    restored.exitReason = persisted.exitReason;
-    restored.exitLimitPrice = persisted.exitLimitPrice;
+    restored.exited = validated.exited;
+    restored.positionSize = validated.positionSize;
+    restored.peakPrice = validated.peakPrice;
+    restored.exitReason = validated.exitReason;
+    restored.exitLimitPrice = validated.exitLimitPrice;
   }
 }
 
