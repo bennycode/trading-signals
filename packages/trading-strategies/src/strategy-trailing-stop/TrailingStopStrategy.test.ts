@@ -302,13 +302,35 @@ describe('TrailingStopStrategy', () => {
     expect(strategy.trailingState.positionSize).toBe('0');
   });
 
+  it('emits an onMessage on attach with the peak and stop target', async () => {
+    const strategy = new TrailingStopStrategy({trailDownPct: '10'});
+    const messages: string[] = [];
+    strategy.onMessage = text => messages.push(text);
+
+    const candles = [
+      createCandle({open: '100', close: '100', low: '99', high: '100', openTimeInISO: '2025-01-01T00:00:00.000Z'}),
+    ];
+
+    const config: BacktestConfig = {
+      candles,
+      exchange: createMockExchange({baseBalance: '5'}),
+      strategy,
+      tradingPair,
+    };
+
+    await new BacktestExecutor(config).execute();
+
+    expect(messages).toHaveLength(1);
+    expect(messages[0]).toBe('Trail attached. Peak: 100, stop: 90 (-10%)');
+  });
+
   it('emits a single onMessage when the trail first breaches and not on re-emissions', async () => {
     const strategy = new TrailingStopStrategy({trailDownPct: '10'});
     const messages: string[] = [];
     strategy.onMessage = text => messages.push(text);
 
     const candles = [
-      // Attach: peak=100. target=90.
+      // Attach: peak=100. target=90. (Emits attach message.)
       createCandle({open: '100', close: '100', low: '99', high: '100', openTimeInISO: '2025-01-01T00:00:00.000Z'}),
       // close=90 <= 90 → first breach, fires message + emits limit advice.
       createCandle({open: '100', close: '90', low: '89', high: '100', openTimeInISO: '2025-01-01T00:01:00.000Z'}),
@@ -327,8 +349,9 @@ describe('TrailingStopStrategy', () => {
 
     await new BacktestExecutor(config).execute();
 
-    expect(messages).toHaveLength(1);
-    expect(messages[0]).toMatch(/^Trailing stop: close 90 <= peak 100/);
+    expect(messages).toHaveLength(2);
+    expect(messages[0]).toBe('Trail attached. Peak: 100, stop: 90 (-10%)');
+    expect(messages[1]).toMatch(/^Trailing stop: close 90 <= peak 100/);
   });
 
   it('restores state and resumes trailing without re-attaching', async () => {

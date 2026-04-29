@@ -147,8 +147,13 @@ export class TrailingStopStrategy extends Strategy {
       if (state.baseBalance.lte(0)) {
         return undefined;
       }
+      const peak = this.#pivotPrice ?? candle.high;
+      const stopTarget = peak.mul(new Big(1).minus(this.#trailDownPct.div(100)));
       this.#state.positionSize = state.baseBalance.toFixed();
-      this.#state.peakPrice = (this.#pivotPrice ?? candle.high).toFixed();
+      this.#state.peakPrice = peak.toFixed();
+      this.onMessage?.(
+        `Trail attached. Peak: ${peak.toFixed()}, stop: ${stopTarget.toFixed()} (-${this.#trailDownPct.toFixed()}%)`
+      );
       return undefined;
     }
 
