@@ -279,6 +279,7 @@ describe('TrailingStopStrategy', () => {
       exited: false,
       positionSize: '0',
       peakPrice: '120',
+      stopPrice: '108',
       exitReason: null,
       exitLimitPrice: null,
     });
@@ -294,12 +295,36 @@ describe('TrailingStopStrategy', () => {
       exited: true,
       positionSize: '5',
       peakPrice: '120',
+      stopPrice: '108',
       exitReason: null,
       exitLimitPrice: null,
     });
 
     expect(strategy.trailingState.exited).toBe(false);
     expect(strategy.trailingState.positionSize).toBe('0');
+  });
+
+  it('exposes stopPrice in state from the moment the strategy attaches', async () => {
+    const strategy = new TrailingStopStrategy({trailDownPct: '10'});
+
+    const candles = [
+      // Attach: peak=100. stopPrice should be 90.
+      createCandle({open: '100', close: '100', low: '99', high: '100', openTimeInISO: '2025-01-01T00:00:00.000Z'}),
+      // Peak ratchets to 120. stopPrice should refresh to 108.
+      createCandle({open: '100', close: '115', low: '100', high: '120', openTimeInISO: '2025-01-01T00:01:00.000Z'}),
+    ];
+
+    const config: BacktestConfig = {
+      candles,
+      exchange: createMockExchange({baseBalance: '5'}),
+      strategy,
+      tradingPair,
+    };
+
+    await new BacktestExecutor(config).execute();
+
+    expect(strategy.trailingState.peakPrice).toBe('120');
+    expect(strategy.trailingState.stopPrice).toBe('108');
   });
 
   it('emits an onMessage on attach with the peak and stop target', async () => {
@@ -361,11 +386,13 @@ describe('TrailingStopStrategy', () => {
       exited: false,
       positionSize: '5',
       peakPrice: '120',
+      stopPrice: '108',
       exitReason: null,
       exitLimitPrice: null,
     });
 
     expect(strategy.trailingState.peakPrice).toBe('120');
+    expect(strategy.trailingState.stopPrice).toBe('108');
     expect(strategy.trailingState.positionSize).toBe('5');
   });
 });
