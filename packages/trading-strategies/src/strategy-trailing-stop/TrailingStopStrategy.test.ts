@@ -245,6 +245,31 @@ describe('TrailingStopStrategy', () => {
     expect(strategy.trailingState.exitLimitPrice).toBe('99');
   });
 
+  it('defaults trailDownPct to 10 when omitted', async () => {
+    const strategy = new TrailingStopStrategy({});
+
+    const candles = [
+      // Attach: peak=100. Default 10% trail → target=90.
+      createCandle({open: '100', close: '100', low: '99', high: '100', openTimeInISO: '2025-01-01T00:00:00.000Z'}),
+      // close=90 <= 90 → exit fires at limit 90.
+      createCandle({open: '100', close: '90', low: '89', high: '100', openTimeInISO: '2025-01-01T00:01:00.000Z'}),
+      // Limit fills (low=89 <= 90).
+      createCandle({open: '90', close: '90', low: '89', high: '91', openTimeInISO: '2025-01-01T00:02:00.000Z'}),
+    ];
+
+    const config: BacktestConfig = {
+      candles,
+      exchange: createMockExchange({baseBalance: '5'}),
+      strategy,
+      tradingPair,
+    };
+
+    const result = await new BacktestExecutor(config).execute();
+
+    expect(result.trades).toHaveLength(1);
+    expect(strategy.trailingState.exitLimitPrice).toBe('90');
+  });
+
   it('restores state and resumes trailing without re-attaching', async () => {
     const strategy = new TrailingStopStrategy({trailDownPct: '10'});
 

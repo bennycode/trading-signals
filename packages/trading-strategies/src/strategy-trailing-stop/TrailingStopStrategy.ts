@@ -15,9 +15,9 @@ import {positiveNumberString} from '../util/validators.js';
 export const TrailingStopSchema = z.object({
   /**
    * Exit threshold as a percentage of the running peak. "5" → exit when close drops to
-   * peak * 0.95. Always required.
+   * peak * 0.95. Defaults to "10" (10%).
    */
-  trailDownPct: positiveNumberString,
+  trailDownPct: positiveNumberString.default('10'),
   /**
    * Optional hysteresis on peak ratcheting. When set, a new candle high only updates
    * the peak if it exceeds the previous peak by at least `trailUpPct` percent — i.e.
