@@ -10,6 +10,7 @@ import {MeanReversionStrategy, MeanReversionSchema} from '../strategy-mean-rever
 import {NoopStrategy, NoopSchema} from '../strategy-noop/NoopStrategy.js';
 import {ScalpStrategy, ScalpSchema} from '../strategy-scalp/ScalpStrategy.js';
 import {ProtectedStrategy, ProtectedStrategySchema} from '../strategy-protected/ProtectedStrategy.js';
+import {TrailingStopStrategy, TrailingStopSchema} from '../strategy-trailing-stop/TrailingStopStrategy.js';
 import type {Strategy} from './Strategy.js';
 
 interface StrategyEntry {
@@ -50,6 +51,10 @@ const registry: Record<string, StrategyEntry> = {
   [ProtectedStrategy.NAME]: {
     create: (config: unknown) => new ProtectedStrategy({config: ProtectedStrategySchema.parse(config ?? {})}),
     schema: ProtectedStrategySchema,
+  },
+  [TrailingStopStrategy.NAME]: {
+    create: (config: unknown) => new TrailingStopStrategy(TrailingStopSchema.parse(config ?? {})),
+    schema: TrailingStopSchema,
   },
 };
 

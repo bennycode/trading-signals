@@ -1,10 +1,10 @@
 import {z} from 'zod';
 import type {ExchangeCandle} from '@typedtrader/exchange';
-import {BuyOnceSchema, BuyBelowSellAboveSchema, CoinFlipSchema, MultiIndicatorConfluenceSchema, ScalpSchema, MeanReversionSchema, ProtectedStrategySchema, suggestScalpOffset} from 'trading-strategies';
+import {BuyOnceSchema, BuyBelowSellAboveSchema, CoinFlipSchema, MultiIndicatorConfluenceSchema, ScalpSchema, MeanReversionSchema, ProtectedStrategySchema, TrailingStopSchema, suggestScalpOffset} from 'trading-strategies';
 
-export {BuyOnceSchema, BuyBelowSellAboveSchema, CoinFlipSchema, MultiIndicatorConfluenceSchema, ScalpSchema, MeanReversionSchema, ProtectedStrategySchema};
+export {BuyOnceSchema, BuyBelowSellAboveSchema, CoinFlipSchema, MultiIndicatorConfluenceSchema, ScalpSchema, MeanReversionSchema, ProtectedStrategySchema, TrailingStopSchema};
 
-export type StrategyId = 'buy-and-hold' | 'buy-once' | 'buy-below-sell-above' | 'coin-flip' | 'multi-indicator-confluence' | 'scalp' | 'mean-reversion' | 'protection-only';
+export type StrategyId = 'buy-and-hold' | 'buy-once' | 'buy-below-sell-above' | 'coin-flip' | 'multi-indicator-confluence' | 'scalp' | 'mean-reversion' | 'protection-only' | 'trailing-stop';
 
 export interface StrategyDefinition {
   id: StrategyId;
@@ -135,5 +135,13 @@ export const strategyDefinitions: StrategyDefinition[] = [
         seedFromBalance: true,
       },
     }),
+  },
+  {
+    id: 'trailing-stop',
+    name: 'Trailing Stop',
+    description:
+      'Exit-only trailing stop. Attaches to an existing base balance, tracks the highest candle high since attach, and emits a sell-all advice when the close drops by trailDownPct from the peak. Set initialBase > 0 in the backtest setup so the strategy has a position to protect.',
+    schema: TrailingStopSchema,
+    getDefaultConfig: () => ({trailDownPct: '10', exitOrder: 'limit'}),
   },
 ];
