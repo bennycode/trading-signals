@@ -158,69 +158,51 @@ export class StrategyMonitor {
     }
   }
 
-  async #sendFillNotification(row: StrategyAttributes, fill: ExchangeFill): Promise<void> {
+  /**
+   * Resolve the account + platform for a strategy row, send the message, and log the
+   * outcome under `label`. Centralises the account lookup, prefix-based platform
+   * resolution, and warn-on-missing handling that all three notification paths share.
+   *
+   * `level` controls only the success log line — strategy messages can fire frequently,
+   * so they default to `debug` to keep production logs quiet, while fill/finish events
+   * stay at `info`.
+   */
+  async #sendToAccount(
+    row: StrategyAttributes,
+    message: string,
+    label: string,
+    level: 'info' | 'debug' = 'info'
+  ): Promise<void> {
     const account = Account.findByPk(row.accountId);
     if (!account) {
-      logger.warn({accountId: row.accountId, strategyId: row.id}, 'Account not found for fill notification');
+      logger.warn({accountId: row.accountId, strategyId: row.id}, `Account not found for ${label}`);
       return;
     }
 
-    const message = `Order Filled!\n\nStrategy: ${row.strategyName}\nPair: ${row.pair}\nSide: ${fill.side}\nPrice: ${fill.price}\nSize: ${fill.size}\nFee: ${fill.fee} ${fill.feeAsset}\nOrder ID: ${fill.order_id}`;
-
     const platformPrefix = account.userId.split(':')[0];
     const platform = this.#platforms.get(platformPrefix);
-
     if (!platform) {
-      logger.warn({platformPrefix, strategyId: row.id}, 'No platform found for fill notification');
+      logger.warn({platformPrefix, strategyId: row.id}, `No platform found for ${label}`);
       return;
     }
 
     await platform.sendMessage(account.userId, message);
 
-    logger.info({userId: account.userId, strategyId: row.id}, 'Fill notification sent');
+    logger[level]({userId: account.userId, strategyId: row.id}, `${label} sent`);
+  }
+
+  async #sendFillNotification(row: StrategyAttributes, fill: ExchangeFill): Promise<void> {
+    const message = `Order Filled!\n\nStrategy: ${row.strategyName}\nPair: ${row.pair}\nSide: ${fill.side}\nPrice: ${fill.price}\nSize: ${fill.size}\nFee: ${fill.fee} ${fill.feeAsset}\nOrder ID: ${fill.order_id}`;
+    await this.#sendToAccount(row, message, 'Fill notification', 'info');
   }
 
   async #sendStrategyMessage(row: StrategyAttributes, text: string): Promise<void> {
-    const account = Account.findByPk(row.accountId);
-    if (!account) {
-      logger.warn({accountId: row.accountId, strategyId: row.id}, 'Account not found for strategy message');
-      return;
-    }
-
     const message = formatStrategyMessage(row.strategyName, row.pair, text);
-
-    const platformPrefix = account.userId.split(':')[0];
-    const platform = this.#platforms.get(platformPrefix);
-
-    if (!platform) {
-      logger.warn({platformPrefix, strategyId: row.id}, 'No platform found for strategy message');
-      return;
-    }
-
-    await platform.sendMessage(account.userId, message);
-
-    logger.info({userId: account.userId, strategyId: row.id}, 'Strategy message sent');
+    await this.#sendToAccount(row, message, 'Strategy message', 'debug');
   }
 
   async #sendFinishNotification(row: StrategyAttributes): Promise<void> {
-    const account = Account.findByPk(row.accountId);
-    if (!account) {
-      logger.warn({accountId: row.accountId, strategyId: row.id}, 'Account not found for finish notification');
-      return;
-    }
-
     const message = `Strategy finished and removed.\n\nID: ${row.id}\nStrategy: ${row.strategyName}\nPair: ${row.pair}`;
-
-    const platformPrefix = account.userId.split(':')[0];
-    const platform = this.#platforms.get(platformPrefix);
-
-    if (!platform) {
-      logger.warn({platformPrefix, strategyId: row.id}, 'No platform found for finish notification');
-      return;
-    }
-
-    await platform.sendMessage(account.userId, message);
-
-    logger.info({userId: account.userId, strategyId: row.id}, 'Finish notification sent');
+    await this.#sendToAccount(row, message, 'Finish notification', 'info');
   }
 }
