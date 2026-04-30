@@ -1,7 +1,20 @@
-import type {OneMinuteBatchedCandle, OrderAdvice, TradingSessionState, TradingSessionStrategy} from '@typedtrader/exchange';
+import type {
+  OneMinuteBatchedCandle,
+  OrderAdvice,
+  TradingSessionState,
+  TradingSessionStrategy,
+} from '@typedtrader/exchange';
+import {MarketType} from './MarketType.js';
 
 export abstract class Strategy implements TradingSessionStrategy {
   static NAME: string;
+
+  /**
+   * Market regimes the strategy is designed to operate in. Subclasses should
+   * override this with the regime(s) that match their logic. An empty array
+   * means the strategy has not been categorized.
+   */
+  static marketTypes: readonly MarketType[] = [];
 
   latestAdvice: OrderAdvice | undefined = undefined;
   lastBatchedCandle: OneMinuteBatchedCandle | undefined = undefined;
@@ -99,5 +112,8 @@ export abstract class Strategy implements TradingSessionStrategy {
     });
   }
 
-  protected abstract processCandle(candle: OneMinuteBatchedCandle, state: TradingSessionState): Promise<OrderAdvice | void>;
+  protected abstract processCandle(
+    candle: OneMinuteBatchedCandle,
+    state: TradingSessionState
+  ): Promise<OrderAdvice | void>;
 }

@@ -2,6 +2,7 @@ import {z} from 'zod';
 import {AllAvailableAmount, CandleBatcher, ExchangeOrderSide, ExchangeOrderType} from '@typedtrader/exchange';
 import type {ExchangeCandle, OneMinuteBatchedCandle, OrderAdvice, TradingSessionState} from '@typedtrader/exchange';
 import {BollingerBands} from 'trading-signals';
+import {MarketType} from '../strategy/MarketType.js';
 import {ProtectedStrategy, ProtectedStrategySchema} from '../strategy-protected/ProtectedStrategy.js';
 
 const ONE_HOUR_IN_MS = 3_600_000;
@@ -22,6 +23,7 @@ export type CandleFetcher = () => Promise<ExchangeCandle[]>;
 
 export class MeanReversionStrategy extends ProtectedStrategy {
   static override NAME = '@typedtrader/strategy-mean-reversion';
+  static override marketTypes: readonly MarketType[] = [MarketType.RANGING];
 
   readonly #bbands = new BollingerBands(PERIOD, DEVIATION_MULTIPLIER);
   readonly #batcher = new CandleBatcher(ONE_HOUR_IN_MS);

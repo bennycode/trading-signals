@@ -2,6 +2,7 @@ import {z} from 'zod';
 import {AllAvailableAmount, ExchangeOrderSide, ExchangeOrderType} from '@typedtrader/exchange';
 import type {OneMinuteBatchedCandle, OrderAdvice, TradingSessionState} from '@typedtrader/exchange';
 import {BollingerBands, EMA, MACD, RSI} from 'trading-signals';
+import {MarketType} from '../strategy/MarketType.js';
 import {ProtectedStrategy, ProtectedStrategySchema} from '../strategy-protected/ProtectedStrategy.js';
 
 export const MultiIndicatorConfluenceSchema = ProtectedStrategySchema.extend({
@@ -43,6 +44,7 @@ export type MultiIndicatorConfluenceConfig = z.input<typeof MultiIndicatorConflu
 
 export class MultiIndicatorConfluenceStrategy extends ProtectedStrategy {
   static override NAME = '@typedtrader/strategy-multi-indicator-confluence';
+  static override marketTypes: readonly MarketType[] = [MarketType.BULLISH, MarketType.BEARISH];
 
   readonly #emaShort: EMA;
   readonly #emaLong: EMA;

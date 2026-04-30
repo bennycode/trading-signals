@@ -1,5 +1,6 @@
 import {z} from 'zod';
 import type {OneMinuteBatchedCandle, OrderAdvice, TradingSessionState} from '@typedtrader/exchange';
+import {MarketType} from '../strategy/MarketType.js';
 import {Strategy} from '../strategy/Strategy.js';
 
 export const NoopSchema = z.object({}).strict();
@@ -13,6 +14,7 @@ export type NoopConfig = z.input<typeof NoopSchema>;
  */
 export class NoopStrategy extends Strategy {
   static override NAME = '@typedtrader/strategy-noop';
+  static override marketTypes: readonly MarketType[] = [MarketType.BENCHMARK];
 
   constructor(_config: NoopConfig = {}) {
     super();

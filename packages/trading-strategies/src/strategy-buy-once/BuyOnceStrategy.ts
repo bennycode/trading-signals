@@ -2,6 +2,7 @@ import {z} from 'zod';
 import {AllAvailableAmount, ExchangeOrderSide, ExchangeOrderType} from '@typedtrader/exchange';
 import type {OneMinuteBatchedCandle, OrderAdvice, TradingSessionState} from '@typedtrader/exchange';
 import Big from 'big.js';
+import {MarketType} from '../strategy/MarketType.js';
 import {ProtectedStrategy, ProtectedStrategySchema} from '../strategy-protected/ProtectedStrategy.js';
 import {BuyAmountSchema, positiveNumberString} from '../util/validators.js';
 
@@ -23,6 +24,7 @@ type BuyOnceState = {
  */
 export class BuyOnceStrategy extends ProtectedStrategy {
   static override NAME = '@typedtrader/strategy-buy-once';
+  static override marketTypes: readonly MarketType[] = [MarketType.BULLISH];
 
   constructor(config: BuyOnceConfig = {}) {
     super({config, state: {bought: false}});

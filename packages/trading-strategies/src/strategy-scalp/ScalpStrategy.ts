@@ -3,6 +3,7 @@ import Big from 'big.js';
 import {AllAvailableAmount, CandleBatcher, ExchangeOrderSide, ExchangeOrderType} from '@typedtrader/exchange';
 import type {ExchangeFill, OneMinuteBatchedCandle, OrderAdvice, TradingSessionState} from '@typedtrader/exchange';
 import {EMA, ER} from 'trading-signals';
+import {MarketType} from '../strategy/MarketType.js';
 import {ProtectedStrategy, ProtectedStrategySchema} from '../strategy-protected/ProtectedStrategy.js';
 import {positiveNumberString} from '../util/validators.js';
 import {suggestScalpOffset} from './suggestScalpOffset.js';
@@ -27,6 +28,7 @@ type ScalpState = {
 
 export class ScalpStrategy extends ProtectedStrategy {
   static override NAME = '@typedtrader/strategy-scalp';
+  static override marketTypes: readonly MarketType[] = [MarketType.RANGING];
   static readonly ER_THRESHOLD = 0.4;
 
   readonly #ema: EMA;
