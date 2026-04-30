@@ -9,6 +9,7 @@ import type {
   OrderAdvice,
   TradingSessionState,
 } from '@typedtrader/exchange';
+import {MarketType} from '../strategy/MarketType.js';
 import {Strategy} from '../strategy/Strategy.js';
 import {positiveNumberString} from '../util/validators.js';
 
@@ -119,6 +120,7 @@ const defaultState = (): TrailingStopState => ({
  */
 export class TrailingStopStrategy extends Strategy {
   static override NAME = '@typedtrader/strategy-trailing-stop';
+  static override marketTypes: readonly MarketType[] = [MarketType.BULLISH];
 
   readonly #trailDownPct: Big;
   readonly #trailUpPct: Big | null;

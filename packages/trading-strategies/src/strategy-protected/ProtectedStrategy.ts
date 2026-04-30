@@ -2,6 +2,7 @@ import Big from 'big.js';
 import {z} from 'zod';
 import {AllAvailableAmount, ExchangeOrderSide, ExchangeOrderType} from '@typedtrader/exchange';
 import type {ExchangeFill, ExchangePendingOrder, LimitOrderAdvice, OneMinuteBatchedCandle, OrderAdvice, TradingSessionState} from '@typedtrader/exchange';
+import {MarketType} from '../strategy/MarketType.js';
 import {Strategy} from '../strategy/Strategy.js';
 import {positiveNumberString} from '../util/validators.js';
 
@@ -149,6 +150,7 @@ type ProtectedContainerState = {[PROTECTED_STATE_KEY]: ProtectedStrategyState};
  */
 export class ProtectedStrategy extends Strategy {
   static override NAME = '@typedtrader/strategy-protected';
+  static override marketTypes: readonly MarketType[] = [MarketType.UTILITY];
   readonly #stopLoss: GuardMode;
   readonly #takeProfit: GuardMode;
   readonly #stopLossOrder: GuardOrderType;

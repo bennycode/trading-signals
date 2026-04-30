@@ -1,6 +1,7 @@
 import {z} from 'zod';
 import {AllAvailableAmount, ExchangeOrderSide, ExchangeOrderType} from '@typedtrader/exchange';
 import type {OneMinuteBatchedCandle, OrderAdvice, TradingSessionState} from '@typedtrader/exchange';
+import {MarketType} from '../strategy/MarketType.js';
 import {ProtectedStrategy, ProtectedStrategySchema} from '../strategy-protected/ProtectedStrategy.js';
 
 export const CoinFlipSchema = ProtectedStrategySchema.extend({});
@@ -9,6 +10,7 @@ export type CoinFlipConfig = z.input<typeof CoinFlipSchema>;
 
 export class CoinFlipStrategy extends ProtectedStrategy {
   static override NAME = '@typedtrader/strategy-coin-flip';
+  static override marketTypes: readonly MarketType[] = [MarketType.BENCHMARK];
 
   constructor(config: CoinFlipConfig = {}) {
     super({config});

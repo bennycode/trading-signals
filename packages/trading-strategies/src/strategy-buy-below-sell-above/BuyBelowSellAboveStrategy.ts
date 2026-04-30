@@ -2,6 +2,7 @@ import {z} from 'zod';
 import {AllAvailableAmount, ExchangeOrderSide, ExchangeOrderType} from '@typedtrader/exchange';
 import type {OneMinuteBatchedCandle, OrderAdvice, TradingSessionState} from '@typedtrader/exchange';
 import Big from 'big.js';
+import {MarketType} from '../strategy/MarketType.js';
 import {ProtectedStrategy, ProtectedStrategySchema} from '../strategy-protected/ProtectedStrategy.js';
 import {positiveNumberString} from '../util/validators.js';
 
@@ -14,6 +15,7 @@ export type BuyBelowSellAboveConfig = z.input<typeof BuyBelowSellAboveSchema>;
 
 export class BuyBelowSellAboveStrategy extends ProtectedStrategy {
   static override NAME = '@typedtrader/strategy-buy-below-sell-above';
+  static override marketTypes: readonly MarketType[] = [MarketType.RANGING];
 
   constructor(config: BuyBelowSellAboveConfig = {}) {
     super({config});
