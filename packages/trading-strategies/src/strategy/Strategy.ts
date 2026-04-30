@@ -4,7 +4,7 @@ import type {
   TradingSessionState,
   TradingSessionStrategy,
 } from '@typedtrader/exchange';
-import {MarketType} from './MarketType.js';
+import type {MarketType} from './MarketType.js';
 
 export abstract class Strategy implements TradingSessionStrategy {
   static NAME: string;
