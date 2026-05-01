@@ -22,7 +22,7 @@
     "autoprefixer": "^10.5.0",
     "jsdom": "^29.1.0",
     "portless": "^0.12.0",
-    "postcss": "^8.5.12",
+    "postcss": "^8.5.13",
     "tailwindcss": "^4.2.2"
   },
   "name": "trading-signals-docs",
