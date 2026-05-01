@@ -45,7 +45,7 @@ jobs:
           npm install
           npx lerna run dist --scope trading-signals-docs --include-dependencies
       - name: Upload artifact
-        uses: actions/upload-pages-artifact@v4
+        uses: actions/upload-pages-artifact@v5
         with:
           path: packages/trading-signals-docs/out
   deploy:
