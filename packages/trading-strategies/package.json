@@ -7,7 +7,7 @@
     "@types/big.js": "^6.2.2",
     "big.js": "^7.0.1",
     "trading-signals": "7.4.3",
-    "zod": "^4.3.6"
+    "zod": "^4.4.1"
   },
   "description": "Trading strategies to run trading bots with JavaScript / TypeScript.",
   "devDependencies": {
