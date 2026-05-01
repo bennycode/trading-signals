@@ -18,7 +18,7 @@
     "pino": "^10.3.1",
     "pino-roll": "^4.0.0",
     "trading-strategies": "0.3.5",
-    "zod": "^4.3.6"
+    "zod": "^4.4.1"
   },
   "description": "Trading bot via messaging service.",
   "devDependencies": {

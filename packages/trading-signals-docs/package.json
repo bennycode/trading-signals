@@ -10,7 +10,7 @@
     "react-dom": "^19.2.5",
     "trading-signals": "7.4.3",
     "trading-strategies": "0.3.5",
-    "zod": "^4.3.6"
+    "zod": "^4.4.1"
   },
   "description": "Documentation and showcase website for trading-signals library",
   "devDependencies": {
