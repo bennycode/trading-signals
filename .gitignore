@@ -1,4 +1,6 @@
 *.bak
+# https://nextjs.org/docs/pages/guides/environment-variables#test-environment-variables
+.env*.local
 *.env
 *.tsbuildinfo
 *hot-update.js*
