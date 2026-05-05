@@ -82,21 +82,10 @@ class AlpacaWebSocket {
         this.#connections.set(connectionId, connection);
         this.#credentialToConnectionId.set(singletonKey, connectionId);
 
-        // Fail loud on transport drop. Keeping the in-memory state consistent across an
-        // in-process reconnect is genuinely hard (singleton-per-credentials, per-symbol
-        // bar handlers, in-flight retries). Instead, exit the worker — the orchestrator
-        // (Dokku) restarts it, which re-runs the full startup path: re-establish stream,
-        // re-subscribe symbols, re-attach handlers. Strategies persist their state to
-        // the encrypted DB on every mutation, so nothing is lost beyond a few seconds.
-        //
-        // Today no code path intentionally closes the market-data socket — strategy
-        // shutdown only unsubscribes individual symbols, and `AlpacaExchange.disconnect()`
-        // closes the trading socket but leaves this one open. So every `close` event we
-        // see here is a transport failure. If a future change adds an intentional close
-        // path (e.g. teardown when the last symbol unsubscribes, or a symmetric exchange
-        // shutdown that closes both sockets), gate this listener with an
-        // `#intentionalClose` flag the way `AlpacaTradingWebSocket.disconnect()` would —
-        // otherwise the worker will exit on a deliberate teardown.
+        // Every close on this socket is currently a transport drop — no code path
+        // closes it intentionally. Exit so Dokku restarts the worker and re-establishes
+        // the stream from scratch. If an intentional close path is ever added, gate
+        // this listener with a flag.
         stream.once('close', () => {
           console.error(
             `Market-data WebSocket closed for "${connectionId}". Exiting so the orchestrator restarts the worker.`
