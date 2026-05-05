@@ -187,8 +187,6 @@ export class TrailingStopStrategy extends Strategy {
     this.#state.stopPrice = trailTarget.toFixed();
 
     if (peakRatcheted) {
-      // Fires on every new peak. Without `trailUpPct` this can be chatty in trending
-      // markets — set `trailUpPct` to throttle ratchets to discrete steps.
       this.onMessage?.(`Peak moved to ${newPeak.toFixed()} (stop: ${trailTarget.toFixed()})`);
     }
 
