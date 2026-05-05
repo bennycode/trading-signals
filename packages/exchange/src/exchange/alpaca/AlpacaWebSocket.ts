@@ -83,7 +83,7 @@ class AlpacaWebSocket {
         this.#credentialToConnectionId.set(singletonKey, connectionId);
 
         // Every close on this socket is currently a transport drop — no code path
-        // closes it intentionally. Exit so Dokku restarts the worker and re-establishes
+        // closes it intentionally. Exit so the orchestrator restarts the worker and re-establishes
         // the stream from scratch. If an intentional close path is ever added, gate
         // this listener with a flag.
         stream.once('close', () => {
