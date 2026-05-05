@@ -83,14 +83,15 @@ class AlpacaWebSocket {
         this.#credentialToConnectionId.set(singletonKey, connectionId);
 
         // Every close on this socket is currently a transport drop — no code path
-        // closes it intentionally. Exit so the orchestrator restarts the worker and re-establishes
-        // the stream from scratch. If an intentional close path is ever added, gate
-        // this listener with a flag.
+        // closes it intentionally. Terminate via SIGTERM so the application's
+        // centralized shutdown path can run cleanup and flush logs before exit,
+        // while still letting the orchestrator restart the worker. If an
+        // intentional close path is ever added, gate this listener with a flag.
         stream.once('close', () => {
           console.error(
-            `Market-data WebSocket closed for "${connectionId}". Exiting so the orchestrator restarts the worker.`
+            `Market-data WebSocket closed for "${connectionId}". Sending SIGTERM so the orchestrator restarts the worker after graceful shutdown.`
           );
-          process.exit(1);
+          process.kill(process.pid, 'SIGTERM');
         });
 
         resolve(connection);
