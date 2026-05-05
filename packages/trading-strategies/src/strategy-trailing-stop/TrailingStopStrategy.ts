@@ -178,12 +178,17 @@ export class TrailingStopStrategy extends Strategy {
       ? previousPeak.mul(new Big(1).plus(this.#trailUpPct.div(100)))
       : previousPeak;
     const newPeak = candle.high.gte(ratchetThreshold) && candle.high.gt(previousPeak) ? candle.high : previousPeak;
-    if (newPeak.gt(previousPeak)) {
+    const peakRatcheted = newPeak.gt(previousPeak);
+    if (peakRatcheted) {
       this.#state.peakPrice = newPeak.toFixed();
     }
 
     const trailTarget = newPeak.mul(new Big(1).minus(this.#trailDownPct.div(100)));
     this.#state.stopPrice = trailTarget.toFixed();
+
+    if (peakRatcheted) {
+      this.onMessage?.(`Peak moved to ${newPeak.toFixed()} (stop: ${trailTarget.toFixed()})`);
+    }
 
     if (candle.close.gt(trailTarget)) {
       return undefined;
