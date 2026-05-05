@@ -349,6 +349,38 @@ describe('TrailingStopStrategy', () => {
     expect(messages[0]).toBe('Trail attached. Peak: 100, stop: 90 (-10%)');
   });
 
+  it('emits an onMessage on every peak ratchet with the new peak and stop target', async () => {
+    const strategy = new TrailingStopStrategy({trailDownPct: '10'});
+    const messages: string[] = [];
+    strategy.onMessage = text => messages.push(text);
+
+    const candles = [
+      // Attach: peak=100. attach message.
+      createCandle({open: '100', close: '100', low: '99', high: '100', openTimeInISO: '2025-01-01T00:00:00.000Z'}),
+      // high=120 → ratchet. peak=120, stop=108.
+      createCandle({open: '100', close: '115', low: '100', high: '120', openTimeInISO: '2025-01-01T00:01:00.000Z'}),
+      // high=120 (no new peak). No ratchet message.
+      createCandle({open: '115', close: '118', low: '115', high: '120', openTimeInISO: '2025-01-01T00:02:00.000Z'}),
+      // high=130 → ratchet. peak=130, stop=117.
+      createCandle({open: '120', close: '125', low: '119', high: '130', openTimeInISO: '2025-01-01T00:03:00.000Z'}),
+    ];
+
+    const config: BacktestConfig = {
+      candles,
+      exchange: createMockExchange({baseBalance: '5'}),
+      strategy,
+      tradingPair,
+    };
+
+    await new BacktestExecutor(config).execute();
+
+    expect(messages).toEqual([
+      'Trail attached. Peak: 100, stop: 90 (-10%)',
+      'Peak moved to 120 (stop: 108)',
+      'Peak moved to 130 (stop: 117)',
+    ]);
+  });
+
   it('emits a single onMessage when the trail first breaches and not on re-emissions', async () => {
     const strategy = new TrailingStopStrategy({trailDownPct: '10'});
     const messages: string[] = [];
