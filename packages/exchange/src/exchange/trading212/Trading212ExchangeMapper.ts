@@ -55,7 +55,8 @@ export class Trading212ExchangeMapper {
   }
 
   static toOpenOrder(order: Order, pair: TradingPair): ExchangePendingOrder {
-    const side = order.quantity !== null && order.quantity < 0 ? ExchangeOrderSide.SELL : ExchangeOrderSide.BUY;
+    const quantity = order.quantity ?? 0;
+    const side = quantity < 0 ? ExchangeOrderSide.SELL : ExchangeOrderSide.BUY;
 
     if (order.type === 'LIMIT') {
       const limit: ExchangePendingLimitOrder = {
@@ -91,10 +92,10 @@ export class Trading212ExchangeMapper {
     const orderedQty = order.orderedQuantity ?? 0;
     const filledQty = order.filledQuantity ?? 0;
     const side = orderedQty < 0 ? ExchangeOrderSide.SELL : ExchangeOrderSide.BUY;
-    const fee = order.taxes.reduce((sum, tax) => sum + tax.quantity, 0);
+    const fee = (order.taxes ?? []).reduce((sum, tax) => sum + (tax.quantity ?? 0), 0);
 
     return {
-      created_at: order.dateExecuted ?? order.dateCreated,
+      created_at: order.dateExecuted ?? order.dateCreated ?? '',
       fee: `${fee}`,
       feeAsset: pair.counter,
       order_id: `${order.id}`,

@@ -1,6 +1,10 @@
 import {Trading212Exchange} from './Trading212Exchange.js';
 
-export function getTrading212Client(options: {apiKey: string; usePaperTrading: boolean}): Trading212Exchange {
+export function getTrading212Client(options: {
+  apiKey: string;
+  apiSecret: string;
+  usePaperTrading: boolean;
+}): Trading212Exchange {
   process.on('SIGINT', () => {
     console.log('Received signal interrupt...');
     exchange.disconnect();

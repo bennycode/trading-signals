@@ -20,6 +20,7 @@ export function getExchangeClient(account: {
     case Trading212Exchange.NAME:
       return getTrading212Client({
         apiKey: account.apiKey,
+        apiSecret: account.apiSecret,
         usePaperTrading: account.isPaper,
       });
     default:

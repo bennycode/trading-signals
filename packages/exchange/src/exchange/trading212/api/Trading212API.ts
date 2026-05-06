@@ -62,13 +62,15 @@ export class Trading212API {
 
   readonly #httpClient: AxiosInstance;
 
-  constructor(options: {apiKey: string; usePaperTrading: boolean}) {
+  constructor(options: {apiKey: string; apiSecret: string; usePaperTrading: boolean}) {
     this.#httpClient = axios.create({
       baseURL: options.usePaperTrading ? Trading212API.URL_DEMO : Trading212API.URL_LIVE,
     });
 
+    const credentials = Buffer.from(`${options.apiKey}:${options.apiSecret}`).toString('base64');
+
     this.#httpClient.interceptors.request.use(config => {
-      config.headers.set('Authorization', options.apiKey);
+      config.headers.set('Authorization', `Basic ${credentials}`);
       return config;
     });
 

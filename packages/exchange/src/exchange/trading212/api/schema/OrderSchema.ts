@@ -40,18 +40,18 @@ export const Trading212TimeValidity = {
 } as const;
 
 export const OrderSchema = z.looseObject({
-  creationTime: z.string(),
-  filledQuantity: z.number(),
-  filledValue: z.number(),
+  creationTime: z.string().nullish(),
+  filledQuantity: z.number().nullish(),
+  filledValue: z.number().nullish(),
   id: z.number(),
-  limitPrice: z.number().nullable(),
-  quantity: z.number().nullable(),
+  limitPrice: z.number().nullish(),
+  quantity: z.number().nullish(),
   status: Trading212OrderStatusSchema,
-  stopPrice: z.number().nullable(),
+  stopPrice: z.number().nullish(),
   strategy: Trading212OrderStrategySchema,
   ticker: z.string(),
   type: Trading212OrderTypeSchema,
-  value: z.number().nullable(),
+  value: z.number().nullish(),
 });
 
 export const PlaceMarketOrderRequestSchema = z.object({

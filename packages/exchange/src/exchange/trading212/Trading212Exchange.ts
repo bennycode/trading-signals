@@ -42,7 +42,7 @@ export class Trading212Exchange extends Exchange {
 
   readonly #api: Trading212API;
 
-  constructor(options: {apiKey: string; usePaperTrading: boolean}) {
+  constructor(options: {apiKey: string; apiSecret: string; usePaperTrading: boolean}) {
     super(Trading212Exchange.NAME);
     this.#api = new Trading212API(options);
   }
@@ -144,7 +144,7 @@ export class Trading212Exchange extends Exchange {
   async getFills(pair: TradingPair): Promise<ExchangeFill[]> {
     const history = await this.#api.getHistoryOrders(pair.base);
     return history
-      .filter(order => order.status === Trading212OrderStatus.FILLED)
+      .filter(order => order.id != null && order.status === Trading212OrderStatus.FILLED)
       .map(order => Trading212ExchangeMapper.toFilledOrder(order, pair));
   }
 
@@ -168,9 +168,9 @@ export class Trading212Exchange extends Exchange {
     }
 
     return {
-      base_increment: `${instrument.minTradeQuantity}`,
-      base_max_size: `${instrument.maxOpenQuantity}`,
-      base_min_size: `${instrument.minTradeQuantity}`,
+      base_increment: `${instrument.minTradeQuantity ?? '0.000000001'}`,
+      base_max_size: `${instrument.maxOpenQuantity ?? Number.MAX_SAFE_INTEGER}`,
+      base_min_size: `${instrument.minTradeQuantity ?? '0'}`,
       counter_increment: '0.01',
       counter_min_size: '1',
       pair,
@@ -198,11 +198,13 @@ export class Trading212Exchange extends Exchange {
     const signedQuantity = options.side === ExchangeOrderSide.SELL ? -Number(options.size) : Number(options.size);
 
     if (options.type === ExchangeOrderType.LIMIT) {
+      // Trading212 rejects GTC for stock limit orders ("Invalid payload"). DAY is the only
+      // time-in-force that works across paper and live for equity limit orders.
       const order = await this.#api.placeLimitOrder({
         limitPrice: Number(options.price),
         quantity: signedQuantity,
         ticker: pair.base,
-        timeValidity: Trading212TimeValidity.GTC,
+        timeValidity: Trading212TimeValidity.DAY,
       });
       return Trading212ExchangeMapper.toExchangePendingOrder(order, pair, options);
     }
