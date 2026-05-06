@@ -67,7 +67,7 @@ Every broker has a thin outer class that owns `rest` + `ws`/`stream`, exposes en
   - Connection lifecycle and reconnect.
   - Singleton-per-credential connections when the broker caps concurrent sockets.
   - Multi-subscriber multiplexing via a per-connection symbol set, full-set resubscribe pattern.
-  - Retry policy via `ts-retry-promise` with a curated *non-retryable* code set rather than a retryable one.
+  - Retry policy via `ts-retry-promise` with a curated _non-retryable_ code set rather than a retryable one.
 - Module-level singleton export (`export const alpacaWebSocket = new AlpacaWebSocket()`). Callers don't manage lifecycles.
 
 ## The neutral `Exchange` base
