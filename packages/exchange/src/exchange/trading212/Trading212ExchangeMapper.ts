@@ -20,6 +20,10 @@ import {Trading212OrderStatus} from './api/schema/OrderSchema.js';
  *
  * Convention: `pair.base` is the Trading212 ticker, `pair.counter` is the instrument's
  * `currencyCode` (e.g. "USD", "EUR"). Resolve via `MetadataAPI.getInstruments()`.
+ *
+ * Trading212 encodes side in the sign of the size field: positive = BUY, negative = SELL.
+ * QUANTITY-strategy orders carry the size in `quantity`/`orderedQuantity`/`filledQuantity`;
+ * VALUE-strategy orders (placed via the Trading212 app) carry it in `value`/`orderedValue`/`filledValue`.
  */
 export class Trading212ExchangeMapper {
   static toExchangePendingOrder(
@@ -33,13 +37,14 @@ export class Trading212ExchangeMapper {
     options: ExchangeMarketOrderOptions
   ): ExchangePendingMarketOrder;
   static toExchangePendingOrder(order: Order, pair: TradingPair, options: ExchangeOrderOptions): ExchangePendingOrder {
+    const size = `${Math.abs(order.quantity ?? order.value ?? 0)}`;
     if (options.type === ExchangeOrderType.LIMIT) {
       const limit: ExchangePendingLimitOrder = {
         id: `${order.id}`,
         pair,
         price: `${order.limitPrice}`,
         side: options.side,
-        size: `${order.quantity ?? order.value}`,
+        size,
         type: ExchangeOrderType.LIMIT,
       };
       return limit;
@@ -48,15 +53,16 @@ export class Trading212ExchangeMapper {
       id: `${order.id}`,
       pair,
       side: options.side,
-      size: `${order.quantity ?? order.value}`,
+      size,
       type: ExchangeOrderType.MARKET,
     };
     return market;
   }
 
   static toOpenOrder(order: Order, pair: TradingPair): ExchangePendingOrder {
-    const quantity = order.quantity ?? 0;
-    const side = quantity < 0 ? ExchangeOrderSide.SELL : ExchangeOrderSide.BUY;
+    const signedSize = order.quantity ?? order.value ?? 0;
+    const side = signedSize < 0 ? ExchangeOrderSide.SELL : ExchangeOrderSide.BUY;
+    const size = `${Math.abs(signedSize)}`;
 
     if (order.type === 'LIMIT') {
       const limit: ExchangePendingLimitOrder = {
@@ -64,7 +70,7 @@ export class Trading212ExchangeMapper {
         pair,
         price: `${order.limitPrice}`,
         side,
-        size: `${Math.abs(order.quantity ?? 0)}`,
+        size,
         type: ExchangeOrderType.LIMIT,
       };
       return limit;
@@ -74,7 +80,7 @@ export class Trading212ExchangeMapper {
       id: `${order.id}`,
       pair,
       side,
-      size: `${Math.abs(order.quantity ?? 0)}`,
+      size,
       type: ExchangeOrderType.MARKET,
     };
     return market;
@@ -82,28 +88,33 @@ export class Trading212ExchangeMapper {
 
   /**
    * Maps a historical order entry (only FILLED entries should be passed in) to a neutral fill.
-   * Trading212 charges no commission on equity trades; FX conversion fees are included in `taxes`.
+   *
+   * Trading212 charges 0% commission on equity trades; the non-zero amounts in `taxes` are
+   * FX-conversion / stamp-duty / PTM-style fees, all debited in the **account** currency
+   * (Trading212 has no per-tax currency field). Callers must pass the account `currencyCode`
+   * — using `pair.counter` (the instrument currency) silently corrupts P&L for cross-currency
+   * accounts.
    */
-  static toFilledOrder(order: HistoryOrder, pair: TradingPair): ExchangeFill {
+  static toFilledOrder(order: HistoryOrder, pair: TradingPair, accountCurrency: string): ExchangeFill {
     if (order.status !== Trading212OrderStatus.FILLED) {
       throw new Error(`Order ID "${order.id}" is not filled.`);
     }
 
-    const orderedQty = order.orderedQuantity ?? 0;
-    const filledQty = order.filledQuantity ?? 0;
-    const side = orderedQty < 0 ? ExchangeOrderSide.SELL : ExchangeOrderSide.BUY;
+    const signedOrdered = order.orderedQuantity ?? order.orderedValue ?? 0;
+    const signedFilled = order.filledQuantity ?? order.filledValue ?? 0;
+    const side = signedOrdered < 0 ? ExchangeOrderSide.SELL : ExchangeOrderSide.BUY;
     const fee = (order.taxes ?? []).reduce((sum, tax) => sum + (tax.quantity ?? 0), 0);
 
     return {
       created_at: order.dateExecuted ?? order.dateCreated ?? '',
       fee: `${fee}`,
-      feeAsset: pair.counter,
+      feeAsset: accountCurrency,
       order_id: `${order.id}`,
       pair,
       position: ExchangeOrderPosition.LONG,
       price: `${order.fillPrice ?? 0}`,
       side,
-      size: `${Math.abs(filledQty)}`,
+      size: `${Math.abs(signedFilled)}`,
     };
   }
 }

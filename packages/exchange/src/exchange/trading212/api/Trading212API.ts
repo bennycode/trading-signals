@@ -37,6 +37,13 @@ function getRetryDelay(retryCount: number, error: AxiosError): number {
     return 1_000;
   }
 
+  // HISTORY_ORDERS pagination follows vendor-supplied `nextPagePath` URLs that include a
+  // query string (e.g. "/api/v0/equity/history/orders?cursor=…"), so a strict `===` match
+  // would miss every page after the first and fall through to the 1s default.
+  if (url.startsWith(URL.HISTORY_ORDERS)) {
+    return 60_000;
+  }
+
   switch (url) {
     case URL.ACCOUNT_CASH:
       return 2_000;
@@ -47,8 +54,6 @@ function getRetryDelay(retryCount: number, error: AxiosError): number {
       return 30_000;
     case URL.METADATA_INSTRUMENTS:
       return 50_000;
-    case URL.HISTORY_ORDERS:
-      return 60_000;
     default:
       return retryCount * 1_000;
   }

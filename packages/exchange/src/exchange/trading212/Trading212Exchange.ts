@@ -125,8 +125,11 @@ export class Trading212Exchange extends Exchange {
 
   async getOpenOrders(pair: TradingPair): Promise<ExchangePendingOrder[]> {
     const orders = await this.#api.getOrders();
+    // Drop STOP / STOP_LIMIT orders (e.g. placed manually in the Trading212 app): the
+    // neutral `ExchangeOrderType` only models MARKET and LIMIT, so mapping these would
+    // silently lose `stopPrice` and mis-classify them as MARKET.
     return orders
-      .filter(order => order.ticker === pair.base)
+      .filter(order => order.ticker === pair.base && (order.type === 'MARKET' || order.type === 'LIMIT'))
       .map(order => Trading212ExchangeMapper.toOpenOrder(order, pair));
   }
 
@@ -142,10 +145,13 @@ export class Trading212Exchange extends Exchange {
   }
 
   async getFills(pair: TradingPair): Promise<ExchangeFill[]> {
-    const history = await this.#api.getHistoryOrders(pair.base);
+    const [history, accountInfo] = await Promise.all([
+      this.#api.getHistoryOrders(pair.base),
+      this.#api.getAccountInfo(),
+    ]);
     return history
       .filter(order => order.id != null && order.status === Trading212OrderStatus.FILLED)
-      .map(order => Trading212ExchangeMapper.toFilledOrder(order, pair));
+      .map(order => Trading212ExchangeMapper.toFilledOrder(order, pair, accountInfo.currencyCode));
   }
 
   async getFillByOrderId(pair: TradingPair, orderId: string): Promise<ExchangeFill | undefined> {
