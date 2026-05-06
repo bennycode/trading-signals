@@ -1,5 +1,4 @@
-// @ts-ignore No type declarations available for dotenv-defaults
-import 'dotenv-defaults/config.js';
+import 'dotenv-defaults/config';
 import {ms, format} from 'ms';
 import {getAlpacaClient} from './getAlpacaClient.js';
 import {TradingPair} from '../TradingPair.js';

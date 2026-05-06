@@ -48,6 +48,8 @@
   "scripts": {
     "alpaca:demo": "tsx src/exchange/alpaca/demo.ts",
     "alpaca:fetchCandles": "tsx src/exchange/alpaca/fetchCandles.ts",
+    "trading212:buy": "tsx src/exchange/trading212/demo/buy.ts",
+    "trading212:listBalances": "tsx src/exchange/trading212/demo/listBalances.ts",
     "build": "tsdown --dts --format esm --format cjs",
     "clean": "rimraf --glob src/**/*{.js,.js.map,.d.ts}",
     "dist": "npm run clean && npm run build && npm run test:exports",
