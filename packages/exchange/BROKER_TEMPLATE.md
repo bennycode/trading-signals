@@ -35,6 +35,8 @@ Every broker has a thin outer class that owns `rest` + `ws`/`stream`, exposes en
 - **Type predicates over `as` casts** when narrowing `AxiosError`. Pattern: `function hasErrorCode(e: AxiosError): e is AxiosError<{code: number}>`.
 - **Auth via request interceptor** (`httpClient.interceptors.request.use(...)`). More flexible than baked-in headers — supports token refresh, signing, clock skew. Auto-recovery (refresh token, re-login) belongs inside `retryCondition`.
 - **Expose `defaults` and `interceptors` getters** so callers can layer logging/tracing/extra retries without subclassing.
+- **Per-endpoint retry-delay tables must match paginated URLs.** When a vendor's rate limit is per-endpoint (e.g. 1 req / 60s), use `startsWith` / prefix matching against the request URL so cursor-paginated follow-ups (`?cursor=…`) hit the same calibrated wait instead of busy-looping the default delay.
+- **`.env.defaults` selects the safe environment.** Default the `USE_PAPER` / `USE_SANDBOX` flag to `true` so a populated live API key alone does not fire orders on a real account.
 
 ## API classes (skip when a quality vendor SDK exists)
 
@@ -57,6 +59,13 @@ Every broker has a thin outer class that owns `rest` + `ws`/`stream`, exposes en
 - A dedicated `XxxExchangeMapper` translates wire format ↔ neutral domain types (`ExchangeCandle`, `ExchangeFill`, `ExchangePendingOrder`, etc.).
 - The Exchange class never reaches into wire-format fields directly.
 - Pays off the moment the vendor changes a field or you add a second broker.
+
+### Mapper invariants
+
+- **`size` is unsigned in neutral types; direction lives in `side`.** Wrap signed wire quantities in `Math.abs` so a SELL doesn't surface as a negative size.
+- **When the wire format has multiple representations of the same order** (e.g. quantity-strategy vs value-strategy: `quantity` / `filledQuantity` vs `value` / `orderedValue` / `filledValue`), fall back across all sources and derive `side` from whichever signed field is populated. Assuming one representation mis-classifies orders placed via the other path as 0-size.
+- **Filter, don't coerce.** If the broker returns order types outside the neutral enum (`STOP`, `STOP_LIMIT` when only MARKET/LIMIT are modelled), drop them. Silently downgrading loses fields like `stopPrice` and lies about the type.
+- **Fee asset is the account currency, not `pair.counter`.** Brokers debit FX/duty fees in the account's base currency, which differs from the instrument's quote currency on cross-currency accounts. Pass the account `currencyCode` (from `getAccountInfo`) into the mapper.
 
 ## Streaming tier
 
