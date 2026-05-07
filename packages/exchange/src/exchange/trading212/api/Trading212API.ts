@@ -158,6 +158,21 @@ export class Trading212API {
   }
 
   /**
+   * Fetches a single page of historical orders. Used by the polling order watcher to avoid
+   * re-downloading the entire history every tick.
+   *
+   * @see https://t212public-api-docs.redoc.ly/#operation/orders_1
+   */
+  async getHistoryOrdersPage(ticker?: string) {
+    const params: Record<string, string> = {limit: '50'};
+    if (ticker) {
+      params.ticker = ticker;
+    }
+    const response = await this.#httpClient.get(URL.HISTORY_ORDERS, {params});
+    return HistoryOrderPageSchema.parse(response.data);
+  }
+
+  /**
    * Fetches all historical orders (auto-paginates via `nextPagePath`).
    *
    * @see https://t212public-api-docs.redoc.ly/#operation/orders_1

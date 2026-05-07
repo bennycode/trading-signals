@@ -1,3 +1,4 @@
+import {randomUUID} from 'node:crypto';
 import Big from 'big.js';
 import {ms} from 'ms';
 import {
@@ -19,6 +20,7 @@ import {
   type ExchangeTradingRules,
 } from '../Exchange.js';
 import {TradingPair} from '../TradingPair.js';
+import type {MarketDataSource} from '../MarketDataSource.js';
 import {Trading212API} from './api/Trading212API.js';
 import {Trading212OrderStatus, Trading212TimeValidity} from './api/schema/OrderSchema.js';
 import {Trading212ExchangeMapper} from './Trading212ExchangeMapper.js';
@@ -40,11 +42,39 @@ export class Trading212Exchange extends Exchange {
     [ExchangeOrderType.LIMIT]: new Big(0),
   };
 
-  readonly #api: Trading212API;
+  /**
+   * Default poll interval for `watchOrders()`. Trading212 documents `/equity/history/orders`
+   * as 1 req / 60s, so going faster just burns into the retry-delay window.
+   */
+  static readonly ORDER_POLL_INTERVAL_MS = 60_000;
 
-  constructor(options: {apiKey: string; apiSecret: string; usePaperTrading: boolean}) {
+  readonly #api: Trading212API;
+  readonly #orderWatchers = new Map<string, NodeJS.Timeout>();
+  readonly #marketData: MarketDataSource | undefined;
+  readonly #candleListenerByTopic = new Map<string, (candle: unknown) => void>();
+
+  constructor(options: {
+    apiKey: string;
+    apiSecret: string;
+    usePaperTrading: boolean;
+    /**
+     * Optional market-data source. When provided, candle methods delegate to it; otherwise
+     * they throw. Lifecycle is owned by the caller — `disconnect()` does not close it.
+     */
+    marketData?: MarketDataSource;
+  }) {
     super(Trading212Exchange.NAME);
     this.#api = new Trading212API(options);
+    this.#marketData = options.marketData;
+  }
+
+  /**
+   * Trading212 vendor tickers carry a `_<COUNTRY>_<TYPE>` suffix (e.g. `AAPL_US_EQ`) that
+   * external data sources don't recognise. Strip it for delegated calls.
+   */
+  static toMarketDataPair(pair: TradingPair) {
+    const [base] = pair.base.split('_');
+    return new TradingPair(base, pair.counter);
   }
 
   getName(): string {
@@ -67,32 +97,107 @@ export class Trading212Exchange extends Exchange {
     return new Date().toISOString();
   }
 
-  async getCandles(_pair: TradingPair, _request: ExchangeCandleImportRequest): Promise<ExchangeCandle[]> {
-    throw new Error(`getCandles: ${NOT_SUPPORTED}`);
+  async getCandles(pair: TradingPair, request: ExchangeCandleImportRequest): Promise<ExchangeCandle[]> {
+    if (!this.#marketData) {
+      throw new Error(`getCandles: ${NOT_SUPPORTED} Pass a \`marketData\` source to enable candle methods.`);
+    }
+    return this.#marketData.getCandles(Trading212Exchange.toMarketDataPair(pair), request);
   }
 
-  async getLatestCandle(_pair: TradingPair, _intervalInMillis: number): Promise<ExchangeCandle> {
-    throw new Error(`getLatestCandle: ${NOT_SUPPORTED}`);
+  async getLatestCandle(pair: TradingPair, intervalInMillis: number): Promise<ExchangeCandle> {
+    if (!this.#marketData) {
+      throw new Error(`getLatestCandle: ${NOT_SUPPORTED} Pass a \`marketData\` source to enable candle methods.`);
+    }
+    return this.#marketData.getLatestCandle(Trading212Exchange.toMarketDataPair(pair), intervalInMillis);
   }
 
-  async watchCandles(_pair: TradingPair, _intervalInMillis: number, _openTimeInISO: string): Promise<string> {
-    throw new Error(`watchCandles: ${NOT_SUPPORTED}`);
+  async watchCandles(pair: TradingPair, intervalInMillis: number, openTimeInISO: string): Promise<string> {
+    if (!this.#marketData) {
+      throw new Error(`watchCandles: ${NOT_SUPPORTED} Pass a \`marketData\` source to enable candle methods.`);
+    }
+    const topicId = await this.#marketData.watchCandles(
+      Trading212Exchange.toMarketDataPair(pair),
+      intervalInMillis,
+      openTimeInISO
+    );
+    const forwarder = (candle: unknown) => this.emit(topicId, candle);
+    this.#marketData.on(topicId, forwarder);
+    this.#candleListenerByTopic.set(topicId, forwarder);
+    return topicId;
   }
 
-  unwatchCandles(_topicId: string): void {
-    throw new Error(`unwatchCandles: ${NOT_SUPPORTED}`);
+  unwatchCandles(topicId: string): void {
+    if (!this.#marketData) {
+      throw new Error(`unwatchCandles: ${NOT_SUPPORTED} Pass a \`marketData\` source to enable candle methods.`);
+    }
+    const forwarder = this.#candleListenerByTopic.get(topicId);
+    if (forwarder) {
+      this.#marketData.off(topicId, forwarder);
+      this.#candleListenerByTopic.delete(topicId);
+    }
+    this.#marketData.unwatchCandles(topicId);
+    this.removeAllListeners(topicId);
   }
 
-  async watchOrders(): Promise<string> {
-    throw new Error(`watchOrders: ${NOT_SUPPORTED}`);
+  /**
+   * Trading212 has no order-stream WebSocket, so this polls `/api/v0/equity/history/orders`
+   * on a timer and emits any newly-`FILLED` entries since the last tick. Latency therefore
+   * equals the poll interval (default 60s, matching Trading212's documented rate limit).
+   *
+   * The first tick takes a baseline snapshot so historical fills are not replayed.
+   */
+  async watchOrders(intervalInMillis: number = Trading212Exchange.ORDER_POLL_INTERVAL_MS): Promise<string> {
+    const topicId = randomUUID();
+
+    const [accountInfo, instruments, baseline] = await Promise.all([
+      this.#api.getAccountInfo(),
+      this.#api.getInstruments(),
+      this.#api.getHistoryOrdersPage(),
+    ]);
+
+    const tickerToCurrency = new Map(instruments.map(instrument => [instrument.ticker, instrument.currencyCode]));
+    let lastSeenId = baseline.items
+      .filter(order => order.id != null && order.status === Trading212OrderStatus.FILLED)
+      .reduce((max, order) => Math.max(max, order.id ?? 0), 0);
+
+    const tick = async () => {
+      try {
+        const page = await this.#api.getHistoryOrdersPage();
+        const newFills = page.items
+          .filter(order => order.id != null && order.status === Trading212OrderStatus.FILLED && order.id > lastSeenId)
+          .sort((a, b) => (a.id ?? 0) - (b.id ?? 0));
+
+        for (const order of newFills) {
+          const ticker = order.ticker ?? '';
+          const counter = tickerToCurrency.get(ticker) ?? accountInfo.currencyCode;
+          const pair = new TradingPair(ticker, counter);
+          this.emit(topicId, Trading212ExchangeMapper.toFilledOrder(order, pair, accountInfo.currencyCode));
+          lastSeenId = Math.max(lastSeenId, order.id ?? 0);
+        }
+      } catch (error) {
+        this.emit('error', error);
+      }
+    };
+
+    const handle = setInterval(tick, intervalInMillis);
+    this.#orderWatchers.set(topicId, handle);
+    return topicId;
   }
 
-  unwatchOrders(_topicId: string): void {
-    throw new Error(`unwatchOrders: ${NOT_SUPPORTED}`);
+  unwatchOrders(topicId: string): void {
+    const handle = this.#orderWatchers.get(topicId);
+    if (handle) {
+      clearInterval(handle);
+      this.#orderWatchers.delete(topicId);
+    }
+    this.removeAllListeners(topicId);
   }
 
   disconnect(): void {
-    // Trading212 has no persistent connections to close.
+    for (const handle of this.#orderWatchers.values()) {
+      clearInterval(handle);
+    }
+    this.#orderWatchers.clear();
   }
 
   /**

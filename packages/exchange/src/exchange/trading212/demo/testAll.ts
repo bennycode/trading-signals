@@ -24,29 +24,29 @@ async function section<T>(name: string, fn: () => Promise<T>): Promise<T | undef
   }
 }
 
-// 1. getTime
+// What time is it on the broker?
 await section('getTime', () => exchange.getTime());
 
-// 2. getName / getSmallestInterval
+// Basic info about the exchange
 console.log('\n--- getName / getSmallestInterval ---');
 console.log('name:', exchange.getName(), 'smallest interval (ms):', exchange.getSmallestInterval());
 
-// 3. getFeeRates
+// What does it cost to trade?
 await section('getFeeRates', async () => {
   const rates = await exchange.getFeeRates(pair);
   return {LIMIT: rates.LIMIT.toString(), MARKET: rates.MARKET.toString()};
 });
 
-// 4. getTradingRules
+// Minimum order size, price increment, etc.
 await section('getTradingRules', () => exchange.getTradingRules(pair));
 
-// 5. listBalances (truncated)
+// What's in the account?
 await section('listBalances', async () => {
   const balances = await exchange.listBalances();
   return `${balances.length} entries (first 3): ${JSON.stringify(balances.slice(0, 3))}`;
 });
 
-// 6. Place a LIMIT BUY below market so it stays open, then query, cancel by id
+// Place a buy below market price so it stays open, then look it up and cancel it
 const placed = await section('placeLimitOrder (BUY 1 AAPL @ $220)', () =>
   exchange.placeLimitOrder(pair, {price: '220', side: ExchangeOrderSide.BUY, size: '1'})
 );
@@ -60,7 +60,7 @@ if (placed) {
   });
 }
 
-// 7. Place another, then cancelOpenOrders
+// Place another open order, then cancel everything for this pair at once
 const second = await section('placeLimitOrder #2 (BUY 1 AAPL @ $215)', () =>
   exchange.placeLimitOrder(pair, {price: '215', side: ExchangeOrderSide.BUY, size: '1'})
 );
@@ -69,19 +69,19 @@ if (second) {
   await section('cancelOpenOrders', () => exchange.cancelOpenOrders(pair));
 }
 
-// 8. getFills (limit to first 3 to keep output readable)
+// Recent trades on the account (showing only a few to keep output short)
 await section('getFills (first 3)', async () => {
   const fills = await exchange.getFills(pair);
   return {count: fills.length, sample: fills.slice(0, 3)};
 });
 
-// 9. getAvailableBalances
+// How much can we still trade?
 await section('getAvailableBalances', async () => {
   const bal = await exchange.getAvailableBalances(pair);
   return {base: bal.base.toString(), counter: bal.counter.toString()};
 });
 
-// 10. Methods that should throw
+// These features aren't offered by Trading212 and should refuse to run
 async function expectThrow(name: string, fn: () => Promise<unknown>) {
   console.log(`\n--- ${name} (expecting throw) ---`);
   try {
@@ -101,7 +101,13 @@ await expectThrow('getCandles', () =>
 );
 await expectThrow('getLatestCandle', () => exchange.getLatestCandle(pair, 60_000));
 await expectThrow('watchCandles', () => exchange.watchCandles(pair, 60_000, new Date().toISOString()));
-await expectThrow('watchOrders', () => exchange.watchOrders());
+
+// Order updates are checked on a timer rather than streamed; just confirm we can subscribe
+await section('watchOrders (polling)', async () => {
+  const topicId = await exchange.watchOrders();
+  exchange.unwatchOrders(topicId);
+  return `subscribed + unsubscribed (topicId: ${topicId})`;
+});
 
 console.log('\n--- disconnect ---');
 exchange.disconnect();

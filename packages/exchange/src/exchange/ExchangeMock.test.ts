@@ -351,28 +351,7 @@ describe('ExchangeMock', () => {
     });
   });
 
-  describe('unsupported methods', () => {
-    it('throws on getCandles()', async () => {
-      const exchange = createExchange('0', '0');
-      await expect(
-        exchange.getCandles(pair, {
-          intervalInMillis: 60000,
-          startTimeFirstCandle: '',
-          startTimeLastCandle: '',
-        })
-      ).rejects.toThrow('not supported');
-    });
-
-    it('throws on watchCandles()', async () => {
-      const exchange = createExchange('0', '0');
-      await expect(exchange.watchCandles(pair, 60000, '')).rejects.toThrow('not supported');
-    });
-
-    it('throws on unwatchCandles()', () => {
-      const exchange = createExchange('0', '0');
-      expect(() => exchange.unwatchCandles('test')).toThrow('not supported');
-    });
-
+  describe('lifecycle', () => {
     it('disconnect() is a no-op', () => {
       const exchange = createExchange('0', '0');
       expect(() => exchange.disconnect()).not.toThrow();

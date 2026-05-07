@@ -234,11 +234,6 @@ export abstract class Exchange extends EventEmitter {
   abstract getOpenOrders(pair: TradingPair): Promise<ExchangePendingOrder[]>;
 
   /**
-   * Get candles within a specified time period.
-   */
-  abstract getCandles(pair: TradingPair, request: ExchangeCandleImportRequest): Promise<ExchangeCandle[]>;
-
-  /**
    * Find the last filled order for a pair/symbol.
    */
   async getLatestFill(pair: TradingPair, side: ExchangeOrderSide): Promise<ExchangeFill | undefined> {
@@ -251,12 +246,6 @@ export abstract class Exchange extends EventEmitter {
 
     return undefined;
   }
-
-  /**
-   * Get the latest candle for a given pair and interval.
-   * Uses the exchange's dedicated "latest" endpoint for efficiency.
-   */
-  abstract getLatestCandle(pair: TradingPair, intervalInMillis: number): Promise<ExchangeCandle>;
 
   /**
    * Get all fills. Most recent being the first item in the returned array.
@@ -273,24 +262,6 @@ export abstract class Exchange extends EventEmitter {
    * @param orderId - Order ID to look up
    */
   abstract getFillByOrderId(pair: TradingPair, orderId: string): Promise<ExchangeFill | undefined>;
-
-  /**
-   * Subscribe to real-time candle updates via WebSocket.
-   * Emits candles via EventEmitter with the returned topicId as the event name.
-   *
-   * @param pair - The trading pair to watch
-   * @param intervalInMillis - Candle interval in milliseconds
-   * @param openTimeInISO - Only emit candles newer than this time
-   * @returns The generated topicId (UUID) for this subscription
-   */
-  abstract watchCandles(pair: TradingPair, intervalInMillis: number, openTimeInISO: string): Promise<string>;
-
-  /**
-   * Unsubscribe from real-time candle updates.
-   *
-   * @param topicId - The subscription identifier to unsubscribe
-   */
-  abstract unwatchCandles(topicId: string): void;
 
   /**
    * Subscribe to real-time order fill updates via WebSocket.

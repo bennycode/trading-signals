@@ -81,9 +81,12 @@ Every broker has a thin outer class that owns `rest` + `ws`/`stream`, exposes en
 
 ## The neutral `Exchange` base
 
-- Strategies depend on `Exchange`, never on a concrete broker class.
+- `Exchange` covers **brokerage capabilities only** — orders, fills, balances, trading rules, fee rates, order-stream watchers. Market data lives in a separate `MarketDataSource` abstract class so brokers without candle endpoints (Trading212) don't have to throw on half their interface.
+- A concrete class can be both. `AlpacaExchange extends Exchange implements MarketDataSource` — Alpaca exposes orders *and* candles, and the `implements` clause keeps the candle method signatures honest against the interface.
+- A broker without market data accepts an optional `marketData?: MarketDataSource` in its constructor and delegates candle calls to it (Trading212 + Twelve Data is the reference pairing). Lifecycle of the data source is owned by the *caller*, not the broker — `disconnect()` on the broker does not close it.
+- Strategies depend on `Exchange`, `MarketDataSource`, or `Exchange & MarketDataSource` — never on a concrete broker class.
 - Domain types (`ExchangeCandle`, `ExchangeFill`, `ExchangePendingOrder`, `ExchangeBalance`, `ExchangeTradingRules`, `ExchangeFeeRate`, `ExchangeOrderSide/Type/Position`) are broker-neutral. Resist leaking vendor fields into them.
-- `disconnect()` is the single shutdown seam — every async resource the Exchange owns is reachable from one method.
+- `disconnect()` is the single shutdown seam — every async resource the class owns is reachable from one method.
 - `getSmallestInterval()` + `CandleBatcher`: when the wire format has a fixed granularity (e.g. 1-minute bars only), expose it honestly and aggregate locally rather than pretending the broker streams what it doesn't.
 
 ## Subscription handles

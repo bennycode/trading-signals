@@ -3,6 +3,7 @@
     "url": "https://github.com/bennycode/trading-signals/issues"
   },
   "dependencies": {
+    "@twelvedata/twelvedata-node": "^1.2.3",
     "@types/big.js": "^6.2.2",
     "@types/jsonabc": "^2.3.3",
     "axios": "^1.15.2",
@@ -50,6 +51,7 @@
     "alpaca:fetchCandles": "tsx src/exchange/alpaca/fetchCandles.ts",
     "trading212:buy": "tsx src/exchange/trading212/demo/buy.ts",
     "trading212:listBalances": "tsx src/exchange/trading212/demo/listBalances.ts",
+    "twelvedata:test": "tsx src/exchange/twelvedata/demo/test.ts",
     "build": "tsdown --dts --format esm --format cjs",
     "clean": "rimraf --glob src/**/*{.js,.js.map,.d.ts}",
     "dist": "npm run clean && npm run build && npm run test:exports",

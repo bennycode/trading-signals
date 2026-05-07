@@ -3,7 +3,6 @@ import {
   Exchange,
   type ExchangeBalance,
   type ExchangeCandle,
-  type ExchangeCandleImportRequest,
   type ExchangeFeeRate,
   type ExchangeFill,
   type ExchangeLimitOrderOptions,
@@ -44,7 +43,7 @@ export abstract class ExchangeMock extends Exchange {
    * Matches pending orders against the given candle's price range and returns new fills.
    * Orders placed on candle N are not matched until candle N+1 (realistic 1-candle delay).
    */
-  processCandle(candle: ExchangeCandle): ExchangeFill[] {
+  processCandle(candle: ExchangeCandle) {
     this.#currentCandle = candle;
     const newFills: ExchangeFill[] = [];
     const remaining: ExchangePendingOrder[] = [];
@@ -65,7 +64,7 @@ export abstract class ExchangeMock extends Exchange {
     return newFills;
   }
 
-  #tryMatch(order: ExchangePendingOrder, candle: ExchangeCandle): ExchangeFill | null {
+  #tryMatch(order: ExchangePendingOrder, candle: ExchangeCandle) {
     const pair = order.pair;
     const candleOpen = new Big(candle.open);
     const candleLow = new Big(candle.low);
@@ -102,7 +101,7 @@ export abstract class ExchangeMock extends Exchange {
     const revenue = size.mul(fillPrice);
     const fee = revenue.mul(feeRate);
 
-    return {
+    const fill: ExchangeFill = {
       created_at: candle.openTimeInISO,
       fee: fee.toFixed(),
       feeAsset: pair.counter,
@@ -113,9 +112,10 @@ export abstract class ExchangeMock extends Exchange {
       side: order.side,
       size: order.size,
     };
+    return fill;
   }
 
-  #applyFill(fill: ExchangeFill, order: ExchangePendingOrder): void {
+  #applyFill(fill: ExchangeFill, order: ExchangePendingOrder) {
     const size = new Big(fill.size);
     const price = new Big(fill.price);
     const fee = new Big(fill.fee);
@@ -143,7 +143,7 @@ export abstract class ExchangeMock extends Exchange {
     pair: TradingPair,
     options: ExchangeMarketOrderOptions
   ): Promise<ExchangePendingMarketOrder>;
-  protected override async placeOrder(pair: TradingPair, options: ExchangeOrderOptions): Promise<ExchangePendingOrder> {
+  protected override async placeOrder(pair: TradingPair, options: ExchangeOrderOptions) {
     const rules = await this.getTradingRules(pair);
     const size = this.#applyTradingRules(new Big(options.size), options, rules);
 
@@ -207,7 +207,7 @@ export abstract class ExchangeMock extends Exchange {
     return pending;
   }
 
-  #applyTradingRules(size: Big, options: ExchangeOrderOptions, rules: ExchangeTradingRules): Big | null {
+  #applyTradingRules(size: Big, options: ExchangeOrderOptions, rules: ExchangeTradingRules) {
     const baseIncrement = new Big(rules.base_increment);
     const baseMinSize = new Big(rules.base_min_size);
     const counterMinSize = new Big(rules.counter_min_size);
@@ -231,25 +231,25 @@ export abstract class ExchangeMock extends Exchange {
     return size;
   }
 
-  #roundDownToIncrement(value: Big, increment: Big): Big {
+  #roundDownToIncrement(value: Big, increment: Big) {
     return value.div(increment).round(0, Big.roundDown).mul(increment);
   }
 
   /** Cached fee rates to avoid async in hot path */
   #cachedFeeRates: ExchangeFeeRate | undefined;
 
-  setCachedFeeRates(rates: ExchangeFeeRate): void {
+  setCachedFeeRates(rates: ExchangeFeeRate) {
     this.#cachedFeeRates = rates;
   }
 
-  #getFeeRateSync(orderType: ExchangeOrderType): Big {
+  #getFeeRateSync(orderType: ExchangeOrderType) {
     if (!this.#cachedFeeRates) {
       throw new Error('Fee rates not cached. Call setCachedFeeRates() before processing candles.');
     }
     return this.#cachedFeeRates[orderType];
   }
 
-  #getBalance(currency: string): ExchangeMockBalance {
+  #getBalance(currency: string) {
     let balance = this.#balances.get(currency);
     if (!balance) {
       balance = {available: new Big(0), hold: new Big(0)};
@@ -258,7 +258,7 @@ export abstract class ExchangeMock extends Exchange {
     return balance;
   }
 
-  #holdBalance(currency: string, amount: Big): void {
+  #holdBalance(currency: string, amount: Big) {
     const balance = this.#getBalance(currency);
     if (balance.available.lt(amount)) {
       throw new Error(
@@ -269,19 +269,19 @@ export abstract class ExchangeMock extends Exchange {
     balance.hold = balance.hold.plus(amount);
   }
 
-  #releaseHold(currency: string, amount: Big): void {
+  #releaseHold(currency: string, amount: Big) {
     const balance = this.#getBalance(currency);
     // Release up to what's on hold (may differ from original hold due to price improvement)
     const releaseAmount = amount.gt(balance.hold) ? balance.hold : amount;
     balance.hold = balance.hold.minus(releaseAmount);
   }
 
-  #addAvailable(currency: string, amount: Big): void {
+  #addAvailable(currency: string, amount: Big) {
     const balance = this.#getBalance(currency);
     balance.available = balance.available.plus(amount);
   }
 
-  async listBalances(): Promise<ExchangeBalance[]> {
+  async listBalances() {
     const balances: ExchangeBalance[] = [];
     for (const [currency, balance] of this.#balances) {
       balances.push({
@@ -294,18 +294,18 @@ export abstract class ExchangeMock extends Exchange {
     return balances;
   }
 
-  async getFills(pair: TradingPair): Promise<ExchangeFill[]> {
+  async getFills(pair: TradingPair) {
     return this.#fills
       .filter(f => f.pair.base === pair.base && f.pair.counter === pair.counter)
       .slice()
       .reverse();
   }
 
-  async getFillByOrderId(_pair: TradingPair, orderId: string): Promise<ExchangeFill | undefined> {
+  async getFillByOrderId(_pair: TradingPair, orderId: string) {
     return this.#fills.find(f => f.order_id === orderId);
   }
 
-  async cancelOrderById(pair: TradingPair, orderId: string): Promise<void> {
+  async cancelOrderById(pair: TradingPair, orderId: string) {
     const index = this.#pendingOrders.findIndex(o => o.id === orderId);
     if (index === -1) {
       throw new Error(`Order ${orderId} not found`);
@@ -330,7 +330,7 @@ export abstract class ExchangeMock extends Exchange {
     }
   }
 
-  async cancelOpenOrders(pair: TradingPair): Promise<string[]> {
+  async cancelOpenOrders(pair: TradingPair) {
     const toCancel = this.#pendingOrders.filter(
       o => o.pair.base === pair.base && o.pair.counter === pair.counter
     );
@@ -342,48 +342,36 @@ export abstract class ExchangeMock extends Exchange {
     return canceledIds;
   }
 
-  async getLatestCandle(_pair: TradingPair, _intervalInMillis: number): Promise<ExchangeCandle> {
+  async getLatestCandle(_pair: TradingPair, _intervalInMillis: number) {
     if (!this.#currentCandle) {
       throw new Error('No candle has been processed yet');
     }
     return this.#currentCandle;
   }
 
-  async getTime(): Promise<string> {
+  async getTime() {
     return this.#currentCandle?.openTimeInISO ?? new Date().toISOString();
   }
 
-  async getOpenOrders(pair: TradingPair): Promise<ExchangePendingOrder[]> {
+  async getOpenOrders(pair: TradingPair) {
     return this.#pendingOrders.filter(
       o => o.pair.base === pair.base && o.pair.counter === pair.counter
     );
-  }
-
-  async getCandles(_pair: TradingPair, _request: ExchangeCandleImportRequest): Promise<ExchangeCandle[]> {
-    throw new Error('getCandles() is not supported in mock exchange');
-  }
-
-  async watchCandles(_pair: TradingPair, _intervalInMillis: number, _openTimeInISO: string): Promise<string> {
-    throw new Error('watchCandles() is not supported in mock exchange');
-  }
-
-  unwatchCandles(_topicId: string): void {
-    throw new Error('unwatchCandles() is not supported in mock exchange');
   }
 
   async watchOrders(): Promise<string> {
     throw new Error('watchOrders() is not supported in mock exchange');
   }
 
-  unwatchOrders(_topicId: string): void {
+  unwatchOrders(_topicId: string) {
     throw new Error('unwatchOrders() is not supported in mock exchange');
   }
 
-  disconnect(): void {
+  disconnect() {
     // No-op
   }
 
-  getPendingOrders(): ExchangePendingOrder[] {
+  getPendingOrders() {
     return [...this.#pendingOrders];
   }
 }

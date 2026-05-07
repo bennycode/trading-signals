@@ -20,6 +20,7 @@ import {
   type ExchangePendingOrder,
   type ExchangeTradingRules,
 } from '../Exchange.js';
+import type {MarketDataSource} from '../MarketDataSource.js';
 import {TradingPair} from '../TradingPair.js';
 import {alpacaWebSocket, AlpacaConnection} from './AlpacaWebSocket.js';
 import {CandleBatcher} from '../../candle/CandleBatcher.js';
@@ -30,7 +31,7 @@ import {PositionSide} from './api/schema/PositionSchema.js';
 import {alpacaTradingWebSocket, type AlpacaTradingConnection} from './AlpacaTradingWebSocket.js';
 import {TradeUpdateEvent, type TradeUpdateMessage} from './api/schema/TradingStreamSchema.js';
 
-export class AlpacaExchange extends Exchange {
+export class AlpacaExchange extends Exchange implements MarketDataSource {
   readonly #alpacaAPI: AlpacaAPI;
   readonly #SUBSCRIPTION_PLAN = 'iex' as const;
   static readonly STOCK_STREAM_SOURCE = `v2/iex`;
