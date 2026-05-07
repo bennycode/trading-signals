@@ -10,6 +10,7 @@ export {time} from './time.js';
 export {uptime} from './uptime.js';
 export {strategyAdd} from './strategy/strategyAdd.js';
 export {strategyConfig} from './strategy/strategyConfig.js';
+export {strategyCopy} from './strategy/strategyCopy.js';
 export {strategyList} from './strategy/strategyList.js';
 export {strategyRemove} from './strategy/strategyRemove.js';
 export {strategyState} from './strategy/strategyState.js';
