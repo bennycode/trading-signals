@@ -1,6 +1,7 @@
 import {AlpacaExchange} from './alpaca/AlpacaExchange.js';
 import {getAlpacaClient} from './alpaca/getAlpacaClient.js';
 import {Exchange} from './Exchange.js';
+import {MarketDataSource} from './MarketDataSource.js';
 import {Trading212Exchange} from './trading212/Trading212Exchange.js';
 import {getTrading212Client} from './trading212/getTrading212Client.js';
 
@@ -9,7 +10,7 @@ export function getExchangeClient(account: {
   apiKey: string;
   apiSecret: string;
   isPaper: boolean;
-}): Exchange {
+}): Exchange & MarketDataSource {
   switch (account.exchangeId) {
     case AlpacaExchange.NAME:
       return getAlpacaClient({

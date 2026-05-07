@@ -1,4 +1,4 @@
-import {TradingPair, Exchange, ExchangeCandle, getExchangeClient} from '@typedtrader/exchange';
+import {TradingPair, Exchange, ExchangeCandle, MarketDataSource, getExchangeClient} from '@typedtrader/exchange';
 import type {MessagingPlatform} from '../platform/MessagingPlatform.js';
 import {Account} from '../database/models/Account.js';
 import {Watch, WatchAttributes} from '../database/models/Watch.js';
@@ -7,7 +7,7 @@ import {logger} from '../logger.js';
 interface ActiveSubscription {
   watchId: number;
   topicId: string;
-  exchange: Exchange;
+  exchange: Exchange & MarketDataSource;
 }
 
 export class WatchMonitor {

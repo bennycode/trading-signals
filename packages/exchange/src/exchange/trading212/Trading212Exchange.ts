@@ -20,14 +20,14 @@ import {
   type ExchangeTradingRules,
 } from '../Exchange.js';
 import {TradingPair} from '../TradingPair.js';
-import type {MarketDataSource} from '../MarketDataSource.js';
+import {MarketDataSource} from '../MarketDataSource.js';
 import {Trading212API} from './api/Trading212API.js';
 import {Trading212OrderStatus, Trading212TimeValidity} from './api/schema/OrderSchema.js';
 import {Trading212ExchangeMapper} from './Trading212ExchangeMapper.js';
 
 const NOT_SUPPORTED = 'Trading212 does not provide this capability via its public API.';
 
-export class Trading212Exchange extends Exchange {
+export class Trading212Exchange extends Exchange implements MarketDataSource {
   static readonly NAME = 'Trading212';
 
   /**
@@ -50,6 +50,7 @@ export class Trading212Exchange extends Exchange {
 
   readonly #api: Trading212API;
   readonly #orderWatchers = new Map<string, NodeJS.Timeout>();
+  readonly #orderStoppers = new Map<string, () => void>();
   readonly #marketData: MarketDataSource | undefined;
   readonly #candleListenerByTopic = new Map<string, (candle: unknown) => void>();
 
@@ -159,6 +160,7 @@ export class Trading212Exchange extends Exchange {
     let lastSeenId = baseline.items
       .filter(order => order.id != null && order.status === Trading212OrderStatus.FILLED)
       .reduce((max, order) => Math.max(max, order.id ?? 0), 0);
+    let stopped = false;
 
     const tick = async () => {
       try {
@@ -176,26 +178,38 @@ export class Trading212Exchange extends Exchange {
         }
       } catch (error) {
         this.emit('error', error);
+      } finally {
+        if (!stopped) {
+          this.#orderWatchers.set(topicId, setTimeout(tick, intervalInMillis));
+        }
       }
     };
 
-    const handle = setInterval(tick, intervalInMillis);
-    this.#orderWatchers.set(topicId, handle);
+    this.#orderWatchers.set(topicId, setTimeout(tick, intervalInMillis));
+    this.#orderStoppers.set(topicId, () => {
+      stopped = true;
+    });
     return topicId;
   }
 
   unwatchOrders(topicId: string): void {
+    this.#orderStoppers.get(topicId)?.();
+    this.#orderStoppers.delete(topicId);
     const handle = this.#orderWatchers.get(topicId);
     if (handle) {
-      clearInterval(handle);
+      clearTimeout(handle);
       this.#orderWatchers.delete(topicId);
     }
     this.removeAllListeners(topicId);
   }
 
   disconnect(): void {
+    for (const stop of this.#orderStoppers.values()) {
+      stop();
+    }
+    this.#orderStoppers.clear();
     for (const handle of this.#orderWatchers.values()) {
-      clearInterval(handle);
+      clearTimeout(handle);
     }
     this.#orderWatchers.clear();
   }

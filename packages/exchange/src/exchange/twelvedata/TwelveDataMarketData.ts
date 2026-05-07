@@ -22,6 +22,7 @@ export class TwelveDataMarketData extends MarketDataSource {
   readonly #market: MarketDataApi;
   readonly #micCode: string | undefined;
   readonly #candleWatchers = new Map<string, NodeJS.Timeout>();
+  readonly #candleStoppers = new Map<string, () => void>();
 
   constructor(options: TwelveDataMarketDataOptions) {
     super();
@@ -66,10 +67,14 @@ export class TwelveDataMarketData extends MarketDataSource {
   /**
    * Polls `getLatestCandle` at the candle interval and emits each new bar (deduped by
    * `openTimeInISO`). Latency therefore equals one poll interval.
+   *
+   * Uses a self-rescheduling loop instead of `setInterval` so a slow tick (network
+   * stall, rate-limit retry) cannot overlap with the next request.
    */
   async watchCandles(pair: TradingPair, intervalInMillis: number, openTimeInISO: string) {
     const topicId = randomUUID();
     let lastEmittedOpenISO = openTimeInISO;
+    let stopped = false;
 
     const tick = async () => {
       try {
@@ -80,26 +85,40 @@ export class TwelveDataMarketData extends MarketDataSource {
         }
       } catch (error) {
         this.emit('error', error);
+      } finally {
+        if (!stopped) {
+          const handle = setTimeout(tick, intervalInMillis);
+          this.#candleWatchers.set(topicId, handle);
+        }
       }
     };
 
-    const handle = setInterval(tick, intervalInMillis);
-    this.#candleWatchers.set(topicId, handle);
+    this.#candleWatchers.set(topicId, setTimeout(tick, intervalInMillis));
+    // Capture the stop flag so unwatchCandles can break the chain.
+    this.#candleStoppers.set(topicId, () => {
+      stopped = true;
+    });
     return topicId;
   }
 
   unwatchCandles(topicId: string) {
+    this.#candleStoppers.get(topicId)?.();
+    this.#candleStoppers.delete(topicId);
     const handle = this.#candleWatchers.get(topicId);
     if (handle) {
-      clearInterval(handle);
+      clearTimeout(handle);
       this.#candleWatchers.delete(topicId);
     }
     this.removeAllListeners(topicId);
   }
 
   disconnect() {
+    for (const stop of this.#candleStoppers.values()) {
+      stop();
+    }
+    this.#candleStoppers.clear();
     for (const handle of this.#candleWatchers.values()) {
-      clearInterval(handle);
+      clearTimeout(handle);
     }
     this.#candleWatchers.clear();
   }
