@@ -1,7 +1,7 @@
 import Big from 'big.js';
 import {EventEmitter} from 'node:events';
 import {TradingSession} from './TradingSession.js';
-import {TradingPair} from '../exchange/TradingPair.js';
+import {TradingPair} from '../broker/TradingPair.js';
 import {
   OrderPosition,
   OrderSide,
@@ -12,7 +12,7 @@ import {
   type PendingLimitOrder,
   type PendingMarketOrder,
   type TradingRules,
-} from '../exchange/Broker.js';
+} from '../broker/Broker.js';
 import {AllAvailableAmount} from './TradingSessionTypes.js';
 import type {OrderAdvice, TradingSessionStrategy} from './TradingSessionTypes.js';
 

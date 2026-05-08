@@ -13,8 +13,8 @@ import {
   type PendingMarketOrder,
   type PendingOrder,
   type TradingRules,
-} from '../exchange/Broker.js';
-import type {TradingPair} from '../exchange/TradingPair.js';
+} from '../broker/Broker.js';
+import type {TradingPair} from '../broker/TradingPair.js';
 
 export interface TradingSessionStrategy {
   onCandle(candle: OneMinuteBatchedCandle, state: TradingSessionState): Promise<OrderAdvice | void>;
