@@ -243,8 +243,21 @@ export async function startServer() {
     logger.error({err: error}, 'Error starting report scheduler');
   });
 
-  // Graceful shutdown
+  // Graceful shutdown with a hard deadline. `strategyMonitor.stop()` awaits
+  // `session.stop({cancelOpenOrders})` which makes HTTP calls to the broker; if those
+  // hang (network failure, broker unreachable), the cleanup never completes and
+  // `process.exit(0)` in `finally` is never reached. Observed in production where a
+  // WS-close-triggered SIGTERM left the worker `Up 3 days` with no further logs.
+  // The deadline guarantees we exit within a bounded time regardless of what blocks.
+  const SHUTDOWN_DEADLINE_MS = 10_000;
   const shutdown = async () => {
+    const deadline = setTimeout(() => {
+      logger.error({deadlineMs: SHUTDOWN_DEADLINE_MS}, 'Shutdown deadline hit, force exiting');
+      logger.flush();
+      process.exit(1);
+    }, SHUTDOWN_DEADLINE_MS);
+    deadline.unref();
+
     try {
       monitors.watchMonitor.stop();
       await monitors.strategyMonitor.stop();
@@ -256,6 +269,7 @@ export async function startServer() {
     } catch (error) {
       logger.error({err: error}, 'Error during shutdown');
     } finally {
+      clearTimeout(deadline);
       logger.flush();
       process.exit(0);
     }

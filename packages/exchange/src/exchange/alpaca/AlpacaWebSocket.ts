@@ -82,16 +82,20 @@ class AlpacaWebSocket {
         this.#connections.set(connectionId, connection);
         this.#credentialToConnectionId.set(singletonKey, connectionId);
 
-        // Every close on this socket is currently a transport drop — no code path
-        // closes it intentionally. Terminate via SIGTERM so the application's
-        // centralized shutdown path can run cleanup and flush logs before exit,
-        // while still letting the orchestrator restart the worker. If an
-        // intentional close path is ever added, gate this listener with a flag.
+        // Every close on this socket is a transport drop — no code path closes it
+        // intentionally. Hard-exit so the orchestrator restarts the worker. We
+        // deliberately do NOT route this through the application's SIGTERM/shutdown
+        // handler: that path awaits cancelOpenOrders() over HTTP which can hang
+        // silently when the same network event that killed our WS also kills HTTP,
+        // leaving the worker stuck in shutdown forever. Observed in production:
+        // 2026-05-08 07:32:57 WS close → SIGTERM logged → process never exits,
+        // container "Up 3 days" with no further logs.
+        // If an intentional close path is ever added, gate this listener with a flag.
         stream.once('close', () => {
           console.error(
-            `Market-data WebSocket closed for "${connectionId}". Sending SIGTERM so the orchestrator restarts the worker after graceful shutdown.`
+            `Market-data WebSocket closed for "${connectionId}". Exiting so the orchestrator restarts the worker.`
           );
-          process.kill(process.pid, 'SIGTERM');
+          process.exit(1);
         });
 
         resolve(connection);
