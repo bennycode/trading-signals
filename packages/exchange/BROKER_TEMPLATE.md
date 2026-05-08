@@ -53,6 +53,7 @@ Every broker has a thin outer class that owns `rest` + `ws`/`stream`, exposes en
 - Schemas live in `api/schema/` next to the API class.
 - Export a named type alias alongside each schema: `export type Bar = z.infer<typeof BarSchema>`. Consumers import the type, not `z.infer`.
 - **No explicit return types** on `Schema.parse()`-returning methods — let inference do the work.
+- **Prefix vendor-specific enums and schemas with the broker name** (`AlpacaOrderStatus`, `Trading212OrderStatus`, `AlpacaAssetClass`, …) rather than using bare names. This avoids collisions with the neutral domain types exported from the package root (`OrderSide`, `OrderType`, `OrderStatus`) and signals at the import site that the symbol is a wire-format detail of one broker, not part of the cross-broker abstraction.
 
 ## Mapper layer
 
