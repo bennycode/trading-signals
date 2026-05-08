@@ -1,6 +1,6 @@
 # Broker / Exchange Integration Template
 
-This is the house style for adding a new broker or exchange to the package. The Alpaca integration under `src/exchange/alpaca/` is the canonical reference; the older sibling projects [`coinbase-pro-node`](https://github.com/bennycode/coinbase-pro-node), [`trading212-api`](https://github.com/bennycode/trading212-api), and [`ig-trading-api`](https://github.com/bennycode/ig-trading-api) follow the same recipe with minor variations.
+This is the house style for adding a new broker integration to the package. The Alpaca integration under `src/broker/alpaca/` is the canonical reference; the older sibling projects [`coinbase-pro-node`](https://github.com/bennycode/coinbase-pro-node), [`trading212-api`](https://github.com/bennycode/trading212-api), and [`ig-trading-api`](https://github.com/bennycode/ig-trading-api) follow the same recipe with minor variations.
 
 ## Layered architecture
 
@@ -9,7 +9,7 @@ Each layer has one job and exposes the smallest surface needed by the layer abov
 ```
 Strategy
   ↓ uses domain types
-Exchange (neutral interface in Exchange.ts)
+Broker (neutral interface in Broker.ts)
   ↓ uses mapper
 Mapper (wire ↔ neutral types)
   ↓ uses validated data

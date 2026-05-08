@@ -39,6 +39,9 @@ export class Trading212ExchangeMapper {
   static toExchangePendingOrder(order: Order, pair: TradingPair, options: OrderOptions): PendingOrder {
     const size = `${Math.abs(order.quantity ?? order.value ?? 0)}`;
     if (options.type === OrderType.LIMIT) {
+      if (order.limitPrice == null) {
+        throw new Error(`Trading212 returned a LIMIT order without a limitPrice (id: ${order.id}).`);
+      }
       const limit: PendingLimitOrder = {
         id: `${order.id}`,
         pair,

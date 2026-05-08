@@ -3,6 +3,31 @@ import type {MarketDataSource} from '../MarketDataSource.js';
 import {AlpacaBroker} from './AlpacaBroker.js';
 import {AlpacaMarketData} from './AlpacaMarketData.js';
 
+/**
+ * Tracks every (broker, owned-data-source) pair this factory has constructed so a single
+ * SIGINT handler can close them all. Without this guard, repeated `getAlpacaClient()` calls
+ * (e.g. one per request in a command handler) would accumulate listeners on `process` and
+ * trigger duplicate disconnects.
+ */
+const trackedBrokers: Array<{broker: AlpacaBroker; ownedMarketData: AlpacaMarketData | null}> = [];
+let sigintRegistered = false;
+
+function ensureSigintHandler() {
+  if (sigintRegistered) {
+    return;
+  }
+  sigintRegistered = true;
+  process.on('SIGINT', () => {
+    console.log('Received signal interrupt...');
+    for (const {broker, ownedMarketData} of trackedBrokers) {
+      broker.disconnect();
+      ownedMarketData?.disconnect();
+    }
+    console.log(`Sent WebSocket disconnect.`);
+    process.exit(0);
+  });
+}
+
 export function getAlpacaClient(options: {
   apiKey: string;
   apiSecret: string;
@@ -16,19 +41,12 @@ export function getAlpacaClient(options: {
 }) {
   console.log('Initializing Alpaca client', {usePaperTrading: options.usePaperTrading});
 
-  const marketData = options.marketData ?? new AlpacaMarketData(options);
-  const exchange = new AlpacaBroker({...options, marketData});
+  const ownedMarketData = options.marketData ? null : new AlpacaMarketData(options);
+  const marketData = options.marketData ?? ownedMarketData!;
+  const broker = new AlpacaBroker({...options, marketData});
 
-  process.on('SIGINT', () => {
-    console.log('Received signal interrupt...');
-    exchange.disconnect();
-    if (!options.marketData) {
-      // Only close the data source we created ourselves; an injected one is owned by the caller.
-      marketData.disconnect();
-    }
-    console.log(`Sent WebSocket disconnect.`);
-    process.exit(0);
-  });
+  trackedBrokers.push({broker, ownedMarketData});
+  ensureSigintHandler();
 
-  return exchange;
+  return broker;
 }

@@ -330,7 +330,7 @@ describe.sequential('TradingSession', () => {
       expect(strategy.onFill).toHaveBeenCalledWith(lateFill, expect.anything());
     });
 
-it('cancels existing order before placing a new one', async () => {
+    it('cancels existing order before placing a new one', async () => {
       const advice: OrderAdvice = {
         side: OrderSide.BUY,
         type: OrderType.MARKET,

@@ -81,26 +81,15 @@ await section('getAvailableBalances', async () => {
   return {base: bal.base.toString(), counter: bal.counter.toString()};
 });
 
-// These features aren't offered by Trading212 and should refuse to run
-async function expectThrow(name: string, fn: () => Promise<unknown>) {
-  console.log(`\n--- ${name} (expecting throw) ---`);
-  try {
-    await fn();
-    console.log('UNEXPECTED: did not throw');
-  } catch (error) {
-    console.log(`OK: threw "${error instanceof Error ? error.message : error}"`);
-  }
-}
-
-await expectThrow('getCandles', () =>
+// Candle methods now delegate to the wired-in marketData (Alpaca in the demo); they should succeed.
+await section('getCandles (delegated to marketData)', () =>
   exchange.getCandles(pair, {
     intervalInMillis: 60_000,
-    startTimeFirstCandle: '2025-01-01T00:00:00Z',
-    startTimeLastCandle: '2025-01-02T00:00:00Z',
+    startTimeFirstCandle: '2025-01-02T14:30:00Z',
+    startTimeLastCandle: '2025-01-02T15:00:00Z',
   })
 );
-await expectThrow('getLatestCandle', () => exchange.getLatestCandle(pair, 60_000));
-await expectThrow('watchCandles', () => exchange.watchCandles(pair, 60_000, new Date().toISOString()));
+await section('getLatestCandle (delegated to marketData)', () => exchange.getLatestCandle(pair, 60_000));
 
 // Order updates are checked on a timer rather than streamed; just confirm we can subscribe
 await section('watchOrders (polling)', async () => {

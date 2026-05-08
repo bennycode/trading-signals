@@ -71,11 +71,14 @@ export class Trading212Broker extends Broker implements MarketDataSource {
 
   /**
    * Trading212 vendor tickers carry a `_<COUNTRY>_<TYPE>` suffix (e.g. `AAPL_US_EQ`) that
-   * external data sources don't recognise. Strip it for delegated calls.
+   * external data sources don't recognise. Strip the last two underscore-separated segments
+   * (country + asset type) and join any remaining intra-symbol underscores with dots —
+   * e.g. `BRK_B_US_EQ` → `BRK.B`, the convention most US data providers use for class shares.
    */
   static toMarketDataPair(pair: TradingPair) {
-    const [base] = pair.base.split('_');
-    return new TradingPair(base, pair.counter);
+    const segments = pair.base.split('_');
+    const ticker = segments.length > 2 ? segments.slice(0, -2).join('.') : pair.base;
+    return new TradingPair(ticker, pair.counter);
   }
 
   getName(): string {
