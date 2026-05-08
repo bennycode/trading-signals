@@ -95,32 +95,35 @@ export class Trading212BrokerMapper {
   /**
    * Maps a historical order entry (only FILLED entries should be passed in) to a neutral fill.
    *
-   * Trading212 charges 0% commission on equity trades; the non-zero amounts in `taxes` are
-   * FX-conversion / stamp-duty / PTM-style fees, all debited in the **account** currency
-   * (Trading212 has no per-tax currency field). Callers must pass the account `currencyCode`
-   * — using `pair.counter` (the instrument currency) silently corrupts P&L for cross-currency
-   * accounts.
+   * Trading212's history endpoint returns each item as `{order, fill}`. The realised price,
+   * timestamp, and fee breakdown live on `fill`/`fill.walletImpact`; `order` carries the side
+   * (encoded as the sign of `quantity`) and the status. Trading212 charges 0% commission on
+   * equity trades — the non-zero `taxes.quantity` entries are FX-conversion / stamp-duty /
+   * PTM-style fees, debited in the **account** currency. Callers must pass the account
+   * `currencyCode`; using `pair.counter` (the instrument currency) corrupts P&L for
+   * cross-currency accounts.
    */
-  static toFilledOrder(order: HistoryOrder, pair: TradingPair, accountCurrency: string): Fill {
-    if (order.status !== Trading212OrderStatus.FILLED) {
+  static toFilledOrder(item: HistoryOrder, pair: TradingPair, accountCurrency: string): Fill {
+    const order = item.order;
+    const fill = item.fill;
+    if (order.status !== Trading212OrderStatus.FILLED || !fill) {
       throw new Error(`Order ID "${order.id}" is not filled.`);
     }
 
-    const signedOrdered = order.orderedQuantity ?? order.orderedValue ?? 0;
-    const signedFilled = order.filledQuantity ?? order.filledValue ?? 0;
-    const side = signedOrdered < 0 ? OrderSide.SELL : OrderSide.BUY;
-    const fee = (order.taxes ?? []).reduce((sum, tax) => sum + (tax.quantity ?? 0), 0);
+    const signedQty = fill.quantity ?? order.quantity ?? order.filledQuantity ?? 0;
+    const side = signedQty < 0 ? OrderSide.SELL : OrderSide.BUY;
+    const fee = (fill.walletImpact?.taxes ?? []).reduce((sum, tax) => sum + Math.abs(tax.quantity ?? 0), 0);
 
     return {
-      created_at: order.dateExecuted ?? order.dateCreated ?? '',
+      created_at: fill.filledAt ?? order.createdAt ?? '',
       fee: `${fee}`,
       feeAsset: accountCurrency,
       order_id: `${order.id}`,
       pair,
       position: OrderPosition.LONG,
-      price: `${order.fillPrice ?? 0}`,
+      price: `${fill.price ?? 0}`,
       side,
-      size: `${Math.abs(signedFilled)}`,
+      size: `${Math.abs(signedQty)}`,
     };
   }
 }

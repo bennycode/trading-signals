@@ -149,8 +149,8 @@ export class Trading212Broker extends Broker implements MarketDataSource {
 
     const tickerToCurrency = new Map(instruments.map(instrument => [instrument.ticker, instrument.currencyCode]));
     let lastSeenId = baseline.items
-      .filter(order => order.id != null && order.status === Trading212OrderStatus.FILLED)
-      .reduce((max, order) => Math.max(max, order.id ?? 0), 0);
+      .filter(item => item.order.id != null && item.order.status === Trading212OrderStatus.FILLED)
+      .reduce((max, item) => Math.max(max, item.order.id ?? 0), 0);
     let stopped = false;
 
     const tick = async () => {
@@ -163,26 +163,27 @@ export class Trading212Broker extends Broker implements MarketDataSource {
         do {
           const page = await this.#api.getHistoryOrdersPage(nextPath ? {nextPath} : undefined);
           let reachedSeen = false;
-          for (const order of page.items) {
-            if (order.id != null && order.id <= lastSeenId) {
+          for (const item of page.items) {
+            const orderId = item.order.id;
+            if (orderId != null && orderId <= lastSeenId) {
               reachedSeen = true;
               break;
             }
-            if (order.status === Trading212OrderStatus.FILLED && order.id != null) {
-              newFills.push(order);
+            if (item.order.status === Trading212OrderStatus.FILLED && orderId != null && item.fill) {
+              newFills.push(item);
             }
           }
           nextPath = reachedSeen ? null : page.nextPagePath;
         } while (nextPath);
 
-        newFills.sort((a, b) => (a.id ?? 0) - (b.id ?? 0));
+        newFills.sort((a, b) => (a.order.id ?? 0) - (b.order.id ?? 0));
 
-        for (const order of newFills) {
-          const ticker = order.ticker ?? '';
+        for (const item of newFills) {
+          const ticker = item.order.ticker ?? '';
           const counter = tickerToCurrency.get(ticker) ?? accountInfo.currencyCode;
           const pair = new TradingPair(ticker, counter);
-          this.emit(topicId, Trading212BrokerMapper.toFilledOrder(order, pair, accountInfo.currencyCode));
-          lastSeenId = Math.max(lastSeenId, order.id ?? 0);
+          this.emit(topicId, Trading212BrokerMapper.toFilledOrder(item, pair, accountInfo.currencyCode));
+          lastSeenId = Math.max(lastSeenId, item.order.id ?? 0);
         }
       } catch (error) {
         this.emit('error', error);
@@ -277,8 +278,8 @@ export class Trading212Broker extends Broker implements MarketDataSource {
       this.#api.getAccountInfo(),
     ]);
     return history
-      .filter(order => order.id != null && order.status === Trading212OrderStatus.FILLED)
-      .map(order => Trading212BrokerMapper.toFilledOrder(order, pair, accountInfo.currencyCode));
+      .filter(item => item.order.id != null && item.order.status === Trading212OrderStatus.FILLED && item.fill)
+      .map(item => Trading212BrokerMapper.toFilledOrder(item, pair, accountInfo.currencyCode));
   }
 
   async getFillByOrderId(pair: TradingPair, orderId: string): Promise<Fill | undefined> {
