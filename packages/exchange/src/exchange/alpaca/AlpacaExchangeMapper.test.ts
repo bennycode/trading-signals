@@ -1,12 +1,12 @@
 import {describe, expect, it, vi} from 'vitest';
 import {AlpacaExchangeMapper} from './AlpacaExchangeMapper.js';
 import minutes5 from '../../../fixtures/alpaca/bars/minutes-5.json' with {type: 'json'};
-import {AssetClass, OrderSide, OrderStatus, OrderType, TimeInForce} from './api/schema/OrderSchema.js';
+import {AlpacaAssetClass, AlpacaOrderSide, AlpacaOrderStatus, AlpacaOrderType, TimeInForce} from './api/schema/OrderSchema.js';
 import {ms} from 'ms';
 import {BatchedCandle} from '../../candle/BatchedCandle.js';
 import {CandleBatcher} from '../../candle/CandleBatcher.js';
 import {TradingPair} from '../TradingPair.js';
-import {ExchangeOrderPosition, ExchangeOrderSide} from '../Broker.js';
+import {OrderPosition, OrderSide} from '../Broker.js';
 
 describe('AlpacaExchangeMapper', () => {
   describe('mapInterval', () => {
@@ -58,7 +58,7 @@ describe('AlpacaExchangeMapper', () => {
   describe('toFilledOrder', () => {
     it('maps a filled BUY order', () => {
       const order = {
-        asset_class: AssetClass.US_EQUITY,
+        asset_class: AlpacaAssetClass.US_EQUITY,
         asset_id: '78856c3d-67c8-43bc-8cd4-e95b686cf741',
         canceled_at: null,
         client_order_id: 'bb5de406-f656-4b51-9e64-03dfda718ff8',
@@ -77,13 +77,13 @@ describe('AlpacaExchangeMapper', () => {
         replaced_at: null,
         replaced_by: null,
         replaces: null,
-        side: OrderSide.BUY,
-        status: OrderStatus.FILLED,
+        side: AlpacaOrderSide.BUY,
+        status: AlpacaOrderStatus.FILLED,
         stop_price: null,
         submitted_at: '2023-08-21T15:57:26.200646Z',
         symbol: 'SHOP',
         time_in_force: TimeInForce.DAY,
-        type: OrderType.MARKET,
+        type: AlpacaOrderType.MARKET,
         updated_at: '2023-08-21T15:57:26.842893Z',
       } as const;
 
@@ -96,15 +96,15 @@ describe('AlpacaExchangeMapper', () => {
       expect(filledOrder.feeAsset).toBe('USD');
       expect(filledOrder.order_id).toBe('b5bb0958-095f-4fa7-8ed5-294d027a9a7d');
       expect(filledOrder.pair).toBe(pair);
-      expect(filledOrder.position).toBe(ExchangeOrderPosition.LONG);
+      expect(filledOrder.position).toBe(OrderPosition.LONG);
       expect(filledOrder.price).toBe('53.05');
-      expect(filledOrder.side).toBe(ExchangeOrderSide.BUY);
+      expect(filledOrder.side).toBe(OrderSide.BUY);
       expect(filledOrder.size).toBe('3');
     });
 
     it('does not map a canceled SELL order', () => {
       const order = {
-        asset_class: AssetClass.US_EQUITY,
+        asset_class: AlpacaAssetClass.US_EQUITY,
         asset_id: '78856c3d-67c8-43bc-8cd4-e95b686cf741',
         canceled_at: '2023-08-21T20:04:27.624502Z',
         client_order_id: 'c4df8bfb-faef-4608-a4fb-e2f89b2a4697',
@@ -123,13 +123,13 @@ describe('AlpacaExchangeMapper', () => {
         replaced_at: null,
         replaced_by: null,
         replaces: null,
-        side: OrderSide.SELL,
-        status: OrderStatus.CANCELED,
+        side: AlpacaOrderSide.SELL,
+        status: AlpacaOrderStatus.CANCELED,
         stop_price: null,
         submitted_at: '2023-08-21T16:01:51.651157Z',
         symbol: 'SHOP',
         time_in_force: TimeInForce.DAY,
-        type: OrderType.LIMIT,
+        type: AlpacaOrderType.LIMIT,
         updated_at: '2023-08-21T20:04:27.627297Z',
       } as const;
 

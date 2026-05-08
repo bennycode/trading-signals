@@ -1,4 +1,4 @@
-import {TradingPair, Broker, ExchangeCandle, MarketDataSource, getBrokerClient} from '@typedtrader/exchange';
+import {TradingPair, Broker, Candle, MarketDataSource, getBrokerClient} from '@typedtrader/exchange';
 import type {MessagingPlatform} from '../platform/MessagingPlatform.js';
 import {Account} from '../database/models/Account.js';
 import {Watch, WatchAttributes} from '../database/models/Watch.js';
@@ -70,7 +70,7 @@ export class WatchMonitor {
     const topicId = await exchange.watchCandles(pair, watch.intervalMs, openTimeInISO);
 
     // Set up listener for candle events
-    exchange.on(topicId, async (candle: ExchangeCandle) => {
+    exchange.on(topicId, async (candle: Candle) => {
       try {
         const currentPrice = parseFloat(candle.close);
         const alertPrice = parseFloat(watch.alertPrice);

@@ -1,7 +1,7 @@
 import Big from 'big.js';
 import {describe, expect, it} from 'vitest';
-import {CandleBatcher, ExchangeOrderSide, ExchangeOrderType} from '@typedtrader/exchange';
-import type {ExchangeCandle, TradingSessionState} from '@typedtrader/exchange';
+import {CandleBatcher, OrderSide, OrderType} from '@typedtrader/exchange';
+import type {Candle, TradingSessionState} from '@typedtrader/exchange';
 import {MultiIndicatorConfluenceSchema, MultiIndicatorConfluenceStrategy} from './MultiIndicatorConfluenceStrategy.js';
 import type {MultiIndicatorConfluenceConfig} from './MultiIndicatorConfluenceStrategy.js';
 
@@ -49,12 +49,12 @@ const mockState: TradingSessionState = {
     pair: {base: 'BTC', counter: 'USD'} as any,
   },
   feeRates: {
-    [ExchangeOrderType.LIMIT]: new Big('0.0015'),
-    [ExchangeOrderType.MARKET]: new Big('0.0025'),
+    [OrderType.LIMIT]: new Big('0.0015'),
+    [OrderType.MARKET]: new Big('0.0025'),
   },
 };
 
-function makeExchangeCandle(close: number, index: number): ExchangeCandle {
+function makeExchangeCandle(close: number, index: number): Candle {
   const closeStr = String(close);
   return {
     base: 'BTC',
@@ -182,15 +182,15 @@ describe('MultiIndicatorConfluenceStrategy', () => {
     let buyAdvice;
     for (let i = 0; i < prices.length; i++) {
       const advice = await strategy.onCandle(makeBatchedCandle(prices[i], i), mockState);
-      if (advice?.side === ExchangeOrderSide.BUY) {
+      if (advice?.side === OrderSide.BUY) {
         buyAdvice = advice;
         break;
       }
     }
 
     expect(buyAdvice).toBeDefined();
-    expect(buyAdvice?.side).toBe(ExchangeOrderSide.BUY);
-    expect(buyAdvice?.type).toBe(ExchangeOrderType.MARKET);
+    expect(buyAdvice?.side).toBe(OrderSide.BUY);
+    expect(buyAdvice?.type).toBe(OrderType.MARKET);
     expect(buyAdvice?.amountIn).toBe('counter');
   });
 
@@ -201,15 +201,15 @@ describe('MultiIndicatorConfluenceStrategy', () => {
     let sellAdvice;
     for (let i = 0; i < prices.length; i++) {
       const advice = await strategy.onCandle(makeBatchedCandle(prices[i], i), mockState);
-      if (advice?.side === ExchangeOrderSide.SELL) {
+      if (advice?.side === OrderSide.SELL) {
         sellAdvice = advice;
         break;
       }
     }
 
     expect(sellAdvice).toBeDefined();
-    expect(sellAdvice?.side).toBe(ExchangeOrderSide.SELL);
-    expect(sellAdvice?.type).toBe(ExchangeOrderType.MARKET);
+    expect(sellAdvice?.side).toBe(OrderSide.SELL);
+    expect(sellAdvice?.type).toBe(OrderType.MARKET);
     expect(sellAdvice?.amountIn).toBe('base');
   });
 
@@ -220,7 +220,7 @@ describe('MultiIndicatorConfluenceStrategy', () => {
     let buyAdvice;
     for (let i = 0; i < prices.length; i++) {
       const advice = await strategy.onCandle(makeBatchedCandle(prices[i], i), mockState);
-      if (advice?.side === ExchangeOrderSide.BUY) {
+      if (advice?.side === OrderSide.BUY) {
         buyAdvice = advice;
         break;
       }
@@ -265,7 +265,7 @@ describe('MultiIndicatorConfluenceStrategy', () => {
     let buyAdvice;
     for (let i = 0; i < prices.length; i++) {
       const advice = await strategy.onCandle(makeBatchedCandle(prices[i], i), mockState);
-      if (advice?.side === ExchangeOrderSide.BUY) {
+      if (advice?.side === OrderSide.BUY) {
         buyAdvice = advice;
       }
     }
@@ -282,7 +282,7 @@ describe('MultiIndicatorConfluenceStrategy', () => {
     let sellAdvice;
     for (let i = 0; i < prices.length; i++) {
       const advice = await strategy.onCandle(makeBatchedCandle(prices[i], i), mockState);
-      if (advice?.side === ExchangeOrderSide.SELL) {
+      if (advice?.side === OrderSide.SELL) {
         sellAdvice = advice;
       }
     }

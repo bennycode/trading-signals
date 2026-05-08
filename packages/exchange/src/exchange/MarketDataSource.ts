@@ -1,5 +1,5 @@
 import {EventEmitter} from 'node:events';
-import type {ExchangeCandle, ExchangeCandleImportRequest} from './Broker.js';
+import type {Candle, CandleImportRequest} from './Broker.js';
 import type {TradingPair} from './TradingPair.js';
 
 /**
@@ -14,8 +14,8 @@ import type {TradingPair} from './TradingPair.js';
  * `watchCandles()`.
  */
 export abstract class MarketDataSource extends EventEmitter {
-  abstract getCandles(pair: TradingPair, request: ExchangeCandleImportRequest): Promise<ExchangeCandle[]>;
-  abstract getLatestCandle(pair: TradingPair, intervalInMillis: number): Promise<ExchangeCandle>;
+  abstract getCandles(pair: TradingPair, request: CandleImportRequest): Promise<Candle[]>;
+  abstract getLatestCandle(pair: TradingPair, intervalInMillis: number): Promise<Candle>;
   abstract watchCandles(pair: TradingPair, intervalInMillis: number, openTimeInISO: string): Promise<string>;
   abstract unwatchCandles(topicId: string): void;
   abstract disconnect(): void;

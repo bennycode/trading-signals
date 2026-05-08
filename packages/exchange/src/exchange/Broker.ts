@@ -3,19 +3,19 @@ import {EventEmitter} from 'node:events';
 import type {TradingPair} from './TradingPair.js';
 import {z} from 'zod';
 
-export const ExchangeOrderSide = {
+export const OrderSide = {
   BUY: 'BUY',
   SELL: 'SELL',
 } as const;
-export type ExchangeOrderSide = (typeof ExchangeOrderSide)[keyof typeof ExchangeOrderSide];
+export type OrderSide = (typeof OrderSide)[keyof typeof OrderSide];
 
-interface ExchangeOrderBase {
-  side: ExchangeOrderSide;
+interface OrderBase {
+  side: OrderSide;
   size: string;
-  type: ExchangeOrderType;
+  type: OrderType;
 }
 
-export const ExchangeCandleBaseSchema = z.object({
+export const CandleBaseSchema = z.object({
   /** ID of base asset */
   base: z.string(),
 
@@ -32,17 +32,17 @@ export const ExchangeCandleBaseSchema = z.object({
   sizeInMillis: z.number(),
 });
 
-export type ExchangeCandleBase = z.infer<typeof ExchangeCandleBaseSchema>;
+export type CandleBase = z.infer<typeof CandleBaseSchema>;
 
-export const ExchangeOrderType = {
+export const OrderType = {
   /** Maker */
   LIMIT: 'LIMIT',
   /** Taker */
   MARKET: 'MARKET',
 } as const;
-export type ExchangeOrderType = (typeof ExchangeOrderType)[keyof typeof ExchangeOrderType];
+export type OrderType = (typeof OrderType)[keyof typeof OrderType];
 
-export const ExchangeCandleSchema = z
+export const CandleSchema = z
   .object({
     /** Closing price (last trade) during the candle interval */
     close: z.string(),
@@ -63,11 +63,11 @@ export const ExchangeCandleSchema = z
     /** Amount of traded base currency during the candle interval */
     volume: z.string(),
   })
-  .merge(ExchangeCandleBaseSchema);
+  .merge(CandleBaseSchema);
 
-export type ExchangeCandle = z.infer<typeof ExchangeCandleSchema>;
+export type Candle = z.infer<typeof CandleSchema>;
 
-export interface ExchangeCandleImportRequest {
+export interface CandleImportRequest {
   /** Candle size in milliseconds, i.e. 60000 for 1 minute */
   intervalInMillis: number;
   /** Opening time of first candle (start) in ISO 8601 UTC timezone: '2021-01-15T01:00:00.000Z' */
@@ -81,20 +81,20 @@ export interface ExchangeCandleImportRequest {
  *
  * @see https://www.investopedia.com/articles/active-trading/042414/what-makertaker-fees-mean-you.asp
  */
-export interface ExchangeFeeRate {
+export interface FeeRate {
   /** The maker commission: When you put in a limit order on an exchange that doesn't fill immediately, it adds to the available orders for that stock. To attract more traders, the exchange may offer a lower fee when adding to the order book. */
   LIMIT: Big;
   /** The taker commission: Market orders are usually filled immediately, but they reduce available liquidity on an order book, which isn't good for exchanges. To prevent this, exchanges usually have higher taker fees than maker fees. */
   MARKET: Big;
 }
 
-export const ExchangeOrderPosition = {
+export const OrderPosition = {
   LONG: 'LONG',
   SHORT: 'SHORT',
 } as const;
-export type ExchangeOrderPosition = (typeof ExchangeOrderPosition)[keyof typeof ExchangeOrderPosition];
+export type OrderPosition = (typeof OrderPosition)[keyof typeof OrderPosition];
 
-export interface ExchangeFill {
+export interface Fill {
   /** Date in ISO 8601 format */
   created_at: string;
   /** Total fee in fee asset */
@@ -102,9 +102,9 @@ export interface ExchangeFill {
   feeAsset: string;
   order_id: string;
   pair: TradingPair;
-  position: ExchangeOrderPosition;
+  position: OrderPosition;
   price: string;
-  side: ExchangeOrderSide;
+  side: OrderSide;
   /** Total order size in base currency */
   size: string;
 }
@@ -112,17 +112,17 @@ export interface ExchangeFill {
 export interface ExchangePendingOrderBase {
   id: string;
   pair: TradingPair;
-  side: ExchangeOrderSide;
+  side: OrderSide;
   size: string;
-  type: ExchangeOrderType;
+  type: OrderType;
 }
 
-export interface ExchangePendingLimitOrder extends ExchangePendingOrderBase {
+export interface PendingLimitOrder extends ExchangePendingOrderBase {
   price: string;
   type: 'LIMIT';
 }
 
-export interface ExchangePendingMarketOrder extends ExchangePendingOrderBase {
+export interface PendingMarketOrder extends ExchangePendingOrderBase {
   /** Market orders don't have a price. */
   type: 'MARKET';
 }
@@ -134,24 +134,24 @@ export interface ExchangePendingMarketOrder extends ExchangePendingOrderBase {
  * - Sell: "sizeInCounter": false with "size": 200 means "I want to sell 200 stocks for whatever is the current price (quantitative)
  * - Buy: "sizeInCounter": false with "size": 200 means "I want to buy 200 stocks for whatever is the current price on the exchange (quantitative)
  */
-export interface ExchangeMarketOrderOptions extends ExchangeOrderBase {
+export interface MarketOrderOptions extends OrderBase {
   sizeInCounter: boolean;
 
   type: 'MARKET';
 }
 
-export interface ExchangeLimitOrderOptions extends ExchangeOrderBase {
+export interface LimitOrderOptions extends OrderBase {
   price: string;
 
   sizeInCounter: false;
   type: 'LIMIT';
 }
 
-export type ExchangeOrderOptions = ExchangeMarketOrderOptions | ExchangeLimitOrderOptions;
+export type OrderOptions = MarketOrderOptions | LimitOrderOptions;
 
-export type ExchangePendingOrder = ExchangePendingLimitOrder | ExchangePendingMarketOrder;
+export type PendingOrder = PendingLimitOrder | PendingMarketOrder;
 
-export interface ExchangeBalance {
+export interface Balance {
   /** How much of the position is available */
   available: string;
   /** Asset/Symbol, Examples: "BTC", "EUR" or "TSLA" */
@@ -159,7 +159,7 @@ export interface ExchangeBalance {
   /** How much of the position is in transit (i.e. part of an order that has to be filled) */
   hold: string;
   /** Is it a long or short position? */
-  position: ExchangeOrderPosition;
+  position: OrderPosition;
 }
 
 export interface ExchangeAvailableBalance {
@@ -167,7 +167,7 @@ export interface ExchangeAvailableBalance {
   counter: Big;
 }
 
-export interface ExchangeTradingRules {
+export interface TradingRules {
   /** Steps in which the quantity can be incremented */
   base_increment: string;
   /** Maximum quantity that can be bought */
@@ -201,13 +201,13 @@ export abstract class Broker extends EventEmitter {
     baseBalance: Big.BigSource,
     counterBalance: Big.BigSource,
     priceInCounter: Big.BigSource
-  ): ExchangeOrderSide {
+  ): OrderSide {
     const currentBaseWorthInCounter = new Big(baseBalance).mul(priceInCounter);
     const currentCounterWorthInCounter = new Big(counterBalance);
     if (currentBaseWorthInCounter.gt(currentCounterWorthInCounter)) {
-      return ExchangeOrderSide.BUY;
+      return OrderSide.BUY;
     }
-    return ExchangeOrderSide.SELL;
+    return OrderSide.SELL;
   }
 
   /**
@@ -216,7 +216,7 @@ export abstract class Broker extends EventEmitter {
    * Example:
    * [{ available: '548.20', currency: 'EUR', hold: '0.00000000' }]
    */
-  abstract listBalances(): Promise<ExchangeBalance[]>;
+  abstract listBalances(): Promise<Balance[]>;
 
   /**
    * Cancel pending orders.
@@ -231,12 +231,12 @@ export abstract class Broker extends EventEmitter {
   /**
    * Get all open (unfilled) orders for a pair.
    */
-  abstract getOpenOrders(pair: TradingPair): Promise<ExchangePendingOrder[]>;
+  abstract getOpenOrders(pair: TradingPair): Promise<PendingOrder[]>;
 
   /**
    * Find the last filled order for a pair/symbol.
    */
-  async getLatestFill(pair: TradingPair, side: ExchangeOrderSide): Promise<ExchangeFill | undefined> {
+  async getLatestFill(pair: TradingPair, side: OrderSide): Promise<Fill | undefined> {
     const fills = await this.getFills(pair);
     const fill = fills.find(fill => fill.side === side);
 
@@ -252,7 +252,7 @@ export abstract class Broker extends EventEmitter {
    *
    * @param pair - Trading pair
    */
-  abstract getFills(pair: TradingPair): Promise<ExchangeFill[]>;
+  abstract getFills(pair: TradingPair): Promise<Fill[]>;
 
   /**
    * Returns a filled order (merged when an order got split into several fills) and `undefined` if the order is not yet
@@ -261,11 +261,11 @@ export abstract class Broker extends EventEmitter {
    * @param pair - Trading pair
    * @param orderId - Order ID to look up
    */
-  abstract getFillByOrderId(pair: TradingPair, orderId: string): Promise<ExchangeFill | undefined>;
+  abstract getFillByOrderId(pair: TradingPair, orderId: string): Promise<Fill | undefined>;
 
   /**
    * Subscribe to real-time order fill updates via WebSocket.
-   * Emits ExchangeFill objects via EventEmitter with the returned topicId as the event name.
+   * Emits Fill objects via EventEmitter with the returned topicId as the event name.
    *
    * @returns The generated topicId (UUID) for this subscription
    */
@@ -278,19 +278,19 @@ export abstract class Broker extends EventEmitter {
    */
   abstract unwatchOrders(topicId: string): void;
 
-  abstract getTradingRules(pair: TradingPair): Promise<ExchangeTradingRules>;
+  abstract getTradingRules(pair: TradingPair): Promise<TradingRules>;
 
   /**
    * Returns the trading fees for a specific pair/symbol.
    *
    * @see https://www.investopedia.com/articles/active-trading/042414/what-makertaker-fees-mean-you.asp
    */
-  abstract getFeeRates(pair: TradingPair): Promise<ExchangeFeeRate>;
+  abstract getFeeRates(pair: TradingPair): Promise<FeeRate>;
 
   /**
    * Returns the fee for a specific type of order.
    */
-  async getFeeRate(pair: TradingPair, orderType: ExchangeOrderType): Promise<Big> {
+  async getFeeRate(pair: TradingPair, orderType: OrderType): Promise<Big> {
     const feeRate = await this.getFeeRates(pair);
     return feeRate[orderType];
   }
@@ -309,7 +309,7 @@ export abstract class Broker extends EventEmitter {
         available: '0',
         currency: pair.base,
         hold: '0',
-        position: ExchangeOrderPosition.LONG,
+        position: OrderPosition.LONG,
       };
     }
 
@@ -318,7 +318,7 @@ export abstract class Broker extends EventEmitter {
         available: '0',
         currency: pair.counter,
         hold: '0',
-        position: ExchangeOrderPosition.LONG,
+        position: OrderPosition.LONG,
       };
     }
 
@@ -340,13 +340,13 @@ export abstract class Broker extends EventEmitter {
    */
   protected abstract placeOrder(
     pair: TradingPair,
-    options: ExchangeLimitOrderOptions
-  ): Promise<ExchangePendingLimitOrder>;
+    options: LimitOrderOptions
+  ): Promise<PendingLimitOrder>;
   protected abstract placeOrder(
     pair: TradingPair,
-    options: ExchangeMarketOrderOptions
-  ): Promise<ExchangePendingMarketOrder>;
-  protected abstract placeOrder(pair: TradingPair, options: ExchangeOrderOptions): Promise<ExchangePendingOrder>;
+    options: MarketOrderOptions
+  ): Promise<PendingMarketOrder>;
+  protected abstract placeOrder(pair: TradingPair, options: OrderOptions): Promise<PendingOrder>;
 
   /**
    * Places a LIMIT order.
@@ -354,14 +354,14 @@ export abstract class Broker extends EventEmitter {
    */
   placeLimitOrder(
     pair: TradingPair,
-    options: Omit<ExchangeLimitOrderOptions, 'type' | 'sizeInCounter'>
-  ): Promise<ExchangePendingLimitOrder> {
+    options: Omit<LimitOrderOptions, 'type' | 'sizeInCounter'>
+  ): Promise<PendingLimitOrder> {
     return this.placeOrder(pair, {
       price: options.price,
       side: options.side,
       size: options.size,
       sizeInCounter: false,
-      type: ExchangeOrderType.LIMIT,
+      type: OrderType.LIMIT,
     });
   }
 
@@ -371,13 +371,13 @@ export abstract class Broker extends EventEmitter {
    */
   placeMarketOrder(
     pair: TradingPair,
-    options: Omit<ExchangeMarketOrderOptions, 'type'>
-  ): Promise<ExchangePendingMarketOrder> {
+    options: Omit<MarketOrderOptions, 'type'>
+  ): Promise<PendingMarketOrder> {
     return this.placeOrder(pair, {
       side: options.side,
       size: options.size,
       sizeInCounter: options.sizeInCounter,
-      type: ExchangeOrderType.MARKET,
+      type: OrderType.MARKET,
     });
   }
 

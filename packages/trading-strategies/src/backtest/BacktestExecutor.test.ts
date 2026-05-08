@@ -1,7 +1,7 @@
 import Big from 'big.js';
 import {describe, expect, it} from 'vitest';
-import {AllAvailableAmount, AlpacaBrokerMock, ExchangeOrderSide, ExchangeOrderType} from '@typedtrader/exchange';
-import type {ExchangeCandle, ExchangeTradingRules, OrderAdvice, TradingSessionState} from '@typedtrader/exchange';
+import {AllAvailableAmount, AlpacaBrokerMock, OrderSide, OrderType} from '@typedtrader/exchange';
+import type {Candle, TradingRules, OrderAdvice, TradingSessionState} from '@typedtrader/exchange';
 import {TradingPair} from '@typedtrader/exchange';
 import {BacktestExecutor} from './BacktestExecutor.js';
 import {BuyBelowSellAboveStrategy} from '../strategy-buy-below-sell-above/BuyBelowSellAboveStrategy.js';
@@ -9,7 +9,7 @@ import type {BacktestConfig} from './BacktestConfig.js';
 import {Strategy} from '../strategy/Strategy.js';
 import type {OneMinuteBatchedCandle} from '@typedtrader/exchange';
 
-function createCandle(overrides: Partial<ExchangeCandle> & {close: string; open: string}): ExchangeCandle {
+function createCandle(overrides: Partial<Candle> & {close: string; open: string}): Candle {
   const openNum = parseFloat(overrides.open);
   const closeNum = parseFloat(overrides.close);
 
@@ -104,8 +104,8 @@ describe('BacktestExecutor', () => {
 
       // Order placed on candle 1, fills on candle 2
       expect(result.trades).toHaveLength(1);
-      expect(result.trades[0].advice.side).toBe(ExchangeOrderSide.BUY);
-      expect(result.trades[0].advice.type).toBe(ExchangeOrderType.LIMIT);
+      expect(result.trades[0].advice.side).toBe(OrderSide.BUY);
+      expect(result.trades[0].advice.type).toBe(OrderType.LIMIT);
       expect(result.finalCounterBalance.lt(new Big(1000))).toBe(true);
       expect(result.finalBaseBalance.gt(new Big(0))).toBe(true);
     });
@@ -130,8 +130,8 @@ describe('BacktestExecutor', () => {
       const result = await new BacktestExecutor(config).execute();
 
       expect(result.trades).toHaveLength(1);
-      expect(result.trades[0].advice.side).toBe(ExchangeOrderSide.SELL);
-      expect(result.trades[0].advice.type).toBe(ExchangeOrderType.LIMIT);
+      expect(result.trades[0].advice.side).toBe(OrderSide.SELL);
+      expect(result.trades[0].advice.type).toBe(OrderType.LIMIT);
       expect(result.finalBaseBalance.toFixed(2)).toBe('0.00');
       expect(result.finalCounterBalance.gt(new Big(0))).toBe(true);
     });
@@ -177,8 +177,8 @@ describe('BacktestExecutor', () => {
           this.#bought = true;
 
           return {
-            side: ExchangeOrderSide.BUY,
-            type: ExchangeOrderType.MARKET,
+            side: OrderSide.BUY,
+            type: OrderType.MARKET,
             amount: AllAvailableAmount,
             amountIn: 'counter',
           };
@@ -303,8 +303,8 @@ describe('BacktestExecutor', () => {
           }
           this.#sold = true;
           return {
-            side: ExchangeOrderSide.SELL,
-            type: ExchangeOrderType.LIMIT,
+            side: OrderSide.SELL,
+            type: OrderType.LIMIT,
             amount: new Big(100),
             amountIn: 'base',
             price: candle.close,
@@ -342,7 +342,7 @@ describe('BacktestExecutor', () => {
       });
 
       // Simulate price oscillations — with 1-candle delay, orders fill on next candle
-      const candles: ExchangeCandle[] = [];
+      const candles: Candle[] = [];
       const startTime = new Date('2025-01-06T00:00:00.000Z');
       const prices = [
         '45', '48', '55', '62', '65', '58', '52', '44', '42', '50',
@@ -442,8 +442,8 @@ describe('BacktestExecutor', () => {
           this.#bought = true;
 
           return {
-            side: ExchangeOrderSide.BUY,
-            type: ExchangeOrderType.MARKET,
+            side: OrderSide.BUY,
+            type: OrderType.MARKET,
             amount: AllAvailableAmount,
             amountIn: 'counter',
           };
@@ -541,7 +541,7 @@ describe('BacktestExecutor', () => {
   });
 
   describe('tradingRules', () => {
-    const STRICT_TRADING_RULES: Omit<ExchangeTradingRules, 'pair'> = {
+    const STRICT_TRADING_RULES: Omit<TradingRules, 'pair'> = {
       base_increment: '0.0001',
       base_max_size: '100',
       base_min_size: '0.0001',
@@ -563,8 +563,8 @@ describe('BacktestExecutor', () => {
 
         protected override async processCandle(_candle: OneMinuteBatchedCandle, _state: TradingSessionState): Promise<OrderAdvice | void> {
           return {
-            side: ExchangeOrderSide.BUY,
-            type: ExchangeOrderType.MARKET,
+            side: OrderSide.BUY,
+            type: OrderType.MARKET,
             amount: AllAvailableAmount,
             amountIn: 'counter',
           };
@@ -596,8 +596,8 @@ describe('BacktestExecutor', () => {
 
         protected override async processCandle(_candle: OneMinuteBatchedCandle, _state: TradingSessionState): Promise<OrderAdvice | void> {
           return {
-            side: ExchangeOrderSide.SELL,
-            type: ExchangeOrderType.MARKET,
+            side: OrderSide.SELL,
+            type: OrderType.MARKET,
             amount: AllAvailableAmount,
             amountIn: 'base',
           };
@@ -653,7 +653,7 @@ describe('BacktestExecutor', () => {
       // counter_increment = 0.50, so a price of 100.10 rounds down to 100.00.
       // The candle's low is 100.10, so the rounded order price (100.00) is below the low
       // and the order must NOT fill.
-      const COARSE_RULES: Omit<ExchangeTradingRules, 'pair'> = {
+      const COARSE_RULES: Omit<TradingRules, 'pair'> = {
         base_increment: '0.0001',
         base_max_size: '100',
         base_min_size: '0.0001',
@@ -671,8 +671,8 @@ describe('BacktestExecutor', () => {
           }
           this.#advised = true;
           return {
-            side: ExchangeOrderSide.BUY,
-            type: ExchangeOrderType.LIMIT,
+            side: OrderSide.BUY,
+            type: OrderType.LIMIT,
             amount: AllAvailableAmount,
             amountIn: 'base',
             price: candle.close,

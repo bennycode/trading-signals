@@ -1,8 +1,8 @@
 import Big from 'big.js';
 import {describe, expect, it, vi, beforeEach} from 'vitest';
 import {TradingPair} from '../TradingPair.js';
-import {ExchangeOrderPosition, ExchangeOrderSide, ExchangeOrderType} from '../Broker.js';
-import {AssetClass, OrderSide, OrderStatus, OrderType} from './api/schema/OrderSchema.js';
+import {OrderPosition, OrderSide, OrderType} from '../Broker.js';
+import {AlpacaAssetClass, AlpacaOrderSide, AlpacaOrderStatus, AlpacaOrderType} from './api/schema/OrderSchema.js';
 import {PositionSide} from './api/schema/PositionSchema.js';
 import {TradeUpdateEvent} from './api/schema/TradingStreamSchema.js';
 
@@ -76,8 +76,8 @@ describe.sequential('AlpacaBroker', () => {
       const pair = new TradingPair('SHOP', 'USD');
       const fees = await exchange.getFeeRates(pair);
 
-      expect(fees[ExchangeOrderType.MARKET]).toEqual(new Big(0.0025));
-      expect(fees[ExchangeOrderType.LIMIT]).toEqual(new Big(0.0015));
+      expect(fees[OrderType.MARKET]).toEqual(new Big(0.0025));
+      expect(fees[OrderType.LIMIT]).toEqual(new Big(0.0015));
     });
   });
 
@@ -91,12 +91,12 @@ describe.sequential('AlpacaBroker', () => {
       const balances = await exchange.listBalances();
 
       expect(balances).toHaveLength(2);
-      expect(balances[0]).toEqual({available: '3', currency: 'SHOP', hold: '0', position: ExchangeOrderPosition.LONG});
+      expect(balances[0]).toEqual({available: '3', currency: 'SHOP', hold: '0', position: OrderPosition.LONG});
       expect(balances[1]).toEqual({
         available: '500.5',
         currency: 'USD',
         hold: '0',
-        position: ExchangeOrderPosition.LONG,
+        position: OrderPosition.LONG,
       });
     });
 
@@ -121,7 +121,7 @@ describe.sequential('AlpacaBroker', () => {
         available: '3',
         currency: 'TSLA',
         hold: '0',
-        position: ExchangeOrderPosition.SHORT,
+        position: OrderPosition.SHORT,
       });
     });
 
@@ -136,21 +136,21 @@ describe.sequential('AlpacaBroker', () => {
   });
 
   describe('getFills', () => {
-    it('returns only filled orders mapped to ExchangeFill', async () => {
+    it('returns only filled orders mapped to Fill', async () => {
       const filledOrder = {
-        asset_class: AssetClass.US_EQUITY,
+        asset_class: AlpacaAssetClass.US_EQUITY,
         created_at: '2023-08-21T15:57:26.195019Z',
         filled_avg_price: '53.05',
         filled_qty: '3',
         id: 'order-1',
-        side: OrderSide.BUY,
-        status: OrderStatus.FILLED,
+        side: AlpacaOrderSide.BUY,
+        status: AlpacaOrderStatus.FILLED,
       };
 
       const canceledOrder = {
         ...filledOrder,
         id: 'order-2',
-        status: OrderStatus.CANCELED,
+        status: AlpacaOrderStatus.CANCELED,
         filled_avg_price: null,
         filled_qty: '0',
       };
@@ -163,7 +163,7 @@ describe.sequential('AlpacaBroker', () => {
       expect(fills).toHaveLength(1);
       expect(fills[0]!.order_id).toBe('order-1');
       expect(fills[0]!.price).toBe('53.05');
-      expect(fills[0]!.side).toBe(ExchangeOrderSide.BUY);
+      expect(fills[0]!.side).toBe(OrderSide.BUY);
     });
   });
 
@@ -228,18 +228,18 @@ describe.sequential('AlpacaBroker', () => {
         id: 'order-123',
         notional: '200',
         qty: null,
-        side: OrderSide.BUY,
-        type: OrderType.MARKET,
+        side: AlpacaOrderSide.BUY,
+        type: AlpacaOrderType.MARKET,
       });
 
       const pair = new TradingPair('SHOP', 'USD');
       const order = await exchange.placeMarketOrder(pair, {
-        side: ExchangeOrderSide.BUY,
+        side: OrderSide.BUY,
         size: '200',
         sizeInCounter: true,
       });
 
-      expect(order.type).toBe(ExchangeOrderType.MARKET);
+      expect(order.type).toBe(OrderType.MARKET);
       expect(order.id).toBe('order-123');
       expect(order.size).toBe('200');
       expect(mockMethods.postOrder).toHaveBeenCalledWith({
@@ -257,18 +257,18 @@ describe.sequential('AlpacaBroker', () => {
         limit_price: '100',
         notional: null,
         qty: '5',
-        side: OrderSide.SELL,
-        type: OrderType.LIMIT,
+        side: AlpacaOrderSide.SELL,
+        type: AlpacaOrderType.LIMIT,
       });
 
       const pair = new TradingPair('SHOP', 'USD');
       const order = await exchange.placeLimitOrder(pair, {
-        side: ExchangeOrderSide.SELL,
+        side: OrderSide.SELL,
         size: '5',
         price: '100',
       });
 
-      expect(order.type).toBe(ExchangeOrderType.LIMIT);
+      expect(order.type).toBe(OrderType.LIMIT);
       expect(order.id).toBe('order-456');
       expect(mockMethods.postOrder).toHaveBeenCalledWith({
         limit_price: '100',
@@ -286,18 +286,18 @@ describe.sequential('AlpacaBroker', () => {
         limit_price: '100',
         notional: null,
         qty: '5.5',
-        side: OrderSide.SELL,
-        type: OrderType.LIMIT,
+        side: AlpacaOrderSide.SELL,
+        type: AlpacaOrderType.LIMIT,
       });
 
       const pair = new TradingPair('SHOP', 'USD');
       const order = await exchange.placeLimitOrder(pair, {
-        side: ExchangeOrderSide.SELL,
+        side: OrderSide.SELL,
         size: '5.5',
         price: '100',
       });
 
-      expect(order.type).toBe(ExchangeOrderType.LIMIT);
+      expect(order.type).toBe(OrderType.LIMIT);
       expect(order.id).toBe('order-frac');
       expect(mockMethods.postOrder).toHaveBeenCalledWith({
         extended_hours: true,
@@ -318,13 +318,13 @@ describe.sequential('AlpacaBroker', () => {
         id: 'order-789',
         notional: '100',
         qty: null,
-        side: OrderSide.BUY,
-        type: OrderType.MARKET,
+        side: AlpacaOrderSide.BUY,
+        type: AlpacaOrderType.MARKET,
       });
 
       const pair = new TradingPair('BTC', 'USD');
       await exchange.placeMarketOrder(pair, {
-        side: ExchangeOrderSide.BUY,
+        side: OrderSide.BUY,
         size: '100',
         sizeInCounter: true,
       });
@@ -371,7 +371,7 @@ describe.sequential('AlpacaBroker', () => {
       expect(mockTradingWebSocket.onTradeUpdate).toHaveBeenCalledTimes(2);
     });
 
-    it('emits ExchangeFill on fill events', async () => {
+    it('emits Fill on fill events', async () => {
       const topicId = await exchange.watchOrders();
 
       const fillHandler = vi.fn();
@@ -382,7 +382,7 @@ describe.sequential('AlpacaBroker', () => {
       registeredCb({
         event: TradeUpdateEvent.FILL,
         order: {
-          asset_class: AssetClass.US_EQUITY,
+          asset_class: AlpacaAssetClass.US_EQUITY,
           asset_id: 'test-asset',
           canceled_at: null,
           client_order_id: 'test-client',
@@ -401,13 +401,13 @@ describe.sequential('AlpacaBroker', () => {
           replaced_at: null,
           replaced_by: null,
           replaces: null,
-          side: OrderSide.BUY,
-          status: OrderStatus.FILLED,
+          side: AlpacaOrderSide.BUY,
+          status: AlpacaOrderStatus.FILLED,
           stop_price: null,
           submitted_at: '2025-01-15T14:30:00.001Z',
           symbol: 'AAPL',
           time_in_force: 'day',
-          type: OrderType.MARKET,
+          type: AlpacaOrderType.MARKET,
           updated_at: '2025-01-15T14:30:01.123Z',
         },
         price: '150.25',
@@ -420,7 +420,7 @@ describe.sequential('AlpacaBroker', () => {
         expect.objectContaining({
           order_id: 'order-fill-1',
           price: '150.25',
-          side: ExchangeOrderSide.BUY,
+          side: OrderSide.BUY,
           size: '10',
         })
       );
@@ -436,7 +436,7 @@ describe.sequential('AlpacaBroker', () => {
       registeredCb({
         event: TradeUpdateEvent.NEW,
         order: {
-          asset_class: AssetClass.US_EQUITY,
+          asset_class: AlpacaAssetClass.US_EQUITY,
           asset_id: 'test-asset',
           canceled_at: null,
           client_order_id: 'test-client',
@@ -455,13 +455,13 @@ describe.sequential('AlpacaBroker', () => {
           replaced_at: null,
           replaced_by: null,
           replaces: null,
-          side: OrderSide.BUY,
+          side: AlpacaOrderSide.BUY,
           status: 'new',
           stop_price: null,
           submitted_at: '2025-01-15T14:30:00.001Z',
           symbol: 'AAPL',
           time_in_force: 'day',
-          type: OrderType.LIMIT,
+          type: AlpacaOrderType.LIMIT,
           updated_at: '2025-01-15T14:30:00.001Z',
         },
       });

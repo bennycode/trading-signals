@@ -5,15 +5,15 @@ import {z} from 'zod';
 import {
   AllAvailableAmount,
   CandleBatcher,
-  ExchangeOrderPosition,
-  ExchangeOrderSide,
-  ExchangeOrderType,
+  OrderPosition,
+  OrderSide,
+  OrderType,
   TradingPair,
 } from '@typedtrader/exchange';
 import type {
-  ExchangeCandle,
-  ExchangeFill,
-  ExchangePendingOrder,
+  Candle,
+  Fill,
+  PendingOrder,
   LimitOrderAdvice,
   MarketOrderAdvice,
   OneMinuteBatchedCandle,
@@ -23,13 +23,13 @@ import type {
 import {ProtectedStrategy, ProtectedStrategySchema} from './ProtectedStrategy.js';
 
 function assertLimitSell(advice: OrderAdvice | void): asserts advice is LimitOrderAdvice {
-  if (!advice || advice.type !== ExchangeOrderType.LIMIT || advice.side !== ExchangeOrderSide.SELL) {
+  if (!advice || advice.type !== OrderType.LIMIT || advice.side !== OrderSide.SELL) {
     throw new Error(`Expected a LIMIT SELL advice but received ${JSON.stringify(advice)}`);
   }
 }
 
 function assertMarketSell(advice: OrderAdvice | void): asserts advice is MarketOrderAdvice {
-  if (!advice || advice.type !== ExchangeOrderType.MARKET || advice.side !== ExchangeOrderSide.SELL) {
+  if (!advice || advice.type !== OrderType.MARKET || advice.side !== OrderSide.SELL) {
     throw new Error(`Expected a MARKET SELL advice but received ${JSON.stringify(advice)}`);
   }
 }
@@ -48,8 +48,8 @@ const mockState: TradingSessionState = {
     pair,
   },
   feeRates: {
-    [ExchangeOrderType.LIMIT]: new Big('0.001'),
-    [ExchangeOrderType.MARKET]: new Big('0.002'),
+    [OrderType.LIMIT]: new Big('0.001'),
+    [OrderType.MARKET]: new Big('0.002'),
   },
 };
 
@@ -57,7 +57,7 @@ const ONE_MINUTE_IN_MS = ms('1m');
 
 function makeCandle(close: number, index = 0): OneMinuteBatchedCandle {
   const closeStr = String(close);
-  const exchangeCandle: ExchangeCandle = {
+  const exchangeCandle: Candle = {
     base: 'AAPL',
     close: closeStr,
     counter: 'USD',
@@ -72,25 +72,25 @@ function makeCandle(close: number, index = 0): OneMinuteBatchedCandle {
   return CandleBatcher.createOneMinuteBatchedCandle([exchangeCandle]);
 }
 
-function makeFill(price: string, size: string, side: ExchangeOrderSide): ExchangeFill {
+function makeFill(price: string, size: string, side: OrderSide): Fill {
   return {
     created_at: '2025-01-01T00:00:00.000Z',
     fee: '0',
     feeAsset: 'USD',
     order_id: 'order-1',
     pair,
-    position: ExchangeOrderPosition.LONG,
+    position: OrderPosition.LONG,
     price,
     side,
     size,
   };
 }
 
-function makeOrder(side: ExchangeOrderSide, type: ExchangeOrderType = ExchangeOrderType.LIMIT): ExchangePendingOrder {
-  if (type === ExchangeOrderType.LIMIT) {
-    return {id: 'order-1', pair, side, size: '10', price: '100', type: ExchangeOrderType.LIMIT};
+function makeOrder(side: OrderSide, type: OrderType = OrderType.LIMIT): PendingOrder {
+  if (type === OrderType.LIMIT) {
+    return {id: 'order-1', pair, side, size: '10', price: '100', type: OrderType.LIMIT};
   }
-  return {id: 'order-1', pair, side, size: '10', type: ExchangeOrderType.MARKET};
+  return {id: 'order-1', pair, side, size: '10', type: OrderType.MARKET};
 }
 
 const TestSchema = ProtectedStrategySchema.extend({
@@ -124,8 +124,8 @@ class TestProtectedStrategy extends ProtectedStrategy {
     const shouldSignal = storedConfig !== null && storedConfig.signalAdvice === true;
     if (shouldSignal) {
       return {
-        side: ExchangeOrderSide.BUY,
-        type: ExchangeOrderType.MARKET,
+        side: OrderSide.BUY,
+        type: OrderType.MARKET,
         amount: AllAvailableAmount,
         amountIn: 'counter',
         reason: 'test buy',
@@ -169,7 +169,7 @@ describe('ProtectedStrategy', () => {
   describe('stop-loss', () => {
     it('fires a LIMIT sell at the nominal target price when unrealized loss reaches the threshold', async () => {
       const strategy = new TestProtectedStrategy({protected: {stopLossPct: '5'}});
-      await strategy.onFill(makeFill('100', '10', ExchangeOrderSide.BUY), mockState);
+      await strategy.onFill(makeFill('100', '10', OrderSide.BUY), mockState);
 
       // Price drops 5% — stop-loss should fire
       const advice = await strategy.onCandle(makeCandle(95), mockState);
@@ -185,7 +185,7 @@ describe('ProtectedStrategy', () => {
 
     it('places the limit at the nominal target even when the market has gapped below', async () => {
       const strategy = new TestProtectedStrategy({protected: {stopLossPct: '5'}});
-      await strategy.onFill(makeFill('100', '10', ExchangeOrderSide.BUY), mockState);
+      await strategy.onFill(makeFill('100', '10', OrderSide.BUY), mockState);
 
       // Market gaps to 90 (-10%), far past the -5% threshold — limit still sits at 95
       const advice = await strategy.onCandle(makeCandle(90), mockState);
@@ -196,7 +196,7 @@ describe('ProtectedStrategy', () => {
 
     it('does not fire while within threshold', async () => {
       const strategy = new TestProtectedStrategy({protected: {stopLossPct: '5'}});
-      await strategy.onFill(makeFill('100', '10', ExchangeOrderSide.BUY), mockState);
+      await strategy.onFill(makeFill('100', '10', OrderSide.BUY), mockState);
 
       // Price drops only 3% — guard should pass, subclass runs
       const advice = await strategy.onCandle(makeCandle(97), mockState);
@@ -209,7 +209,7 @@ describe('ProtectedStrategy', () => {
       // 10 shares @ 100 = $1000 invested. stopLossNominal=10 → exit when unrealized loss
       // is $10, i.e. price of 99 (each share only needs to drop $1).
       const strategy = new TestProtectedStrategy({protected: {stopLossNominal: '10'}});
-      await strategy.onFill(makeFill('100', '10', ExchangeOrderSide.BUY), mockState);
+      await strategy.onFill(makeFill('100', '10', OrderSide.BUY), mockState);
 
       const notYet = await strategy.onCandle(makeCandle(99.5), mockState);
       expect(notYet).toBeUndefined();
@@ -224,7 +224,7 @@ describe('ProtectedStrategy', () => {
     it('fires a LIMIT sell at the exact configured price when stopLossPrice is reached', async () => {
       // stopLossPrice=92 → limit sell at exactly 92 as soon as price drops to 92 or below
       const strategy = new TestProtectedStrategy({protected: {stopLossPrice: '92'}});
-      await strategy.onFill(makeFill('100', '10', ExchangeOrderSide.BUY), mockState);
+      await strategy.onFill(makeFill('100', '10', OrderSide.BUY), mockState);
 
       const notYet = await strategy.onCandle(makeCandle(93), mockState);
       expect(notYet).toBeUndefined();
@@ -239,7 +239,7 @@ describe('ProtectedStrategy', () => {
     it('fires at the configured price regardless of avg entry', async () => {
       // Buy at 50 — far below the 92 stopLossPrice. Guard still arms and fires at 92.
       const strategy = new TestProtectedStrategy({protected: {stopLossPrice: '92'}});
-      await strategy.onFill(makeFill('50', '10', ExchangeOrderSide.BUY), mockState);
+      await strategy.onFill(makeFill('50', '10', OrderSide.BUY), mockState);
 
       // Price above the stop target — no fire even though we're above entry
       const notYet = await strategy.onCandle(makeCandle(100), mockState);
@@ -254,7 +254,7 @@ describe('ProtectedStrategy', () => {
   describe('take-profit', () => {
     it('fires a LIMIT sell at the nominal target price when unrealized gain reaches the threshold', async () => {
       const strategy = new TestProtectedStrategy({protected: {takeProfitPct: '10'}});
-      await strategy.onFill(makeFill('100', '10', ExchangeOrderSide.BUY), mockState);
+      await strategy.onFill(makeFill('100', '10', OrderSide.BUY), mockState);
 
       const advice = await strategy.onCandle(makeCandle(110), mockState);
 
@@ -269,7 +269,7 @@ describe('ProtectedStrategy', () => {
       // 10 shares @ 100 = $1000 invested. takeProfitNominal=10 → exit when portfolio hits $1010,
       // i.e. price of 101 (each share only needs to gain $1).
       const strategy = new TestProtectedStrategy({protected: {takeProfitNominal: '10'}});
-      await strategy.onFill(makeFill('100', '10', ExchangeOrderSide.BUY), mockState);
+      await strategy.onFill(makeFill('100', '10', OrderSide.BUY), mockState);
 
       const notYet = await strategy.onCandle(makeCandle(100.5), mockState);
       expect(notYet).toBeUndefined();
@@ -284,7 +284,7 @@ describe('ProtectedStrategy', () => {
     it('fires a LIMIT sell at the exact configured price when takeProfitPrice is reached', async () => {
       // takeProfitPrice=108 → limit sell at exactly 108 as soon as price rises to 108 or above
       const strategy = new TestProtectedStrategy({protected: {takeProfitPrice: '108'}});
-      await strategy.onFill(makeFill('100', '10', ExchangeOrderSide.BUY), mockState);
+      await strategy.onFill(makeFill('100', '10', OrderSide.BUY), mockState);
 
       const notYet = await strategy.onCandle(makeCandle(107), mockState);
       expect(notYet).toBeUndefined();
@@ -298,7 +298,7 @@ describe('ProtectedStrategy', () => {
 
     it('does not fire while within threshold', async () => {
       const strategy = new TestProtectedStrategy({protected: {takeProfitPct: '10'}});
-      await strategy.onFill(makeFill('100', '10', ExchangeOrderSide.BUY), mockState);
+      await strategy.onFill(makeFill('100', '10', OrderSide.BUY), mockState);
 
       const advice = await strategy.onCandle(makeCandle(105), mockState);
 
@@ -314,7 +314,7 @@ describe('ProtectedStrategy', () => {
       const advice = await strategy.onCandle(makeCandle(100), mockState);
 
       expect(advice).toBeDefined();
-      expect(advice!.side).toBe(ExchangeOrderSide.BUY);
+      expect(advice!.side).toBe(OrderSide.BUY);
       expect(strategy.ownLogicCallCount).toBe(1);
     });
   });
@@ -366,7 +366,7 @@ describe('ProtectedStrategy', () => {
 
       expect(strategy.protectedState.totalPositionSize).toBe('0');
       expect(advice).toBeDefined();
-      expect(advice!.side).toBe(ExchangeOrderSide.BUY);
+      expect(advice!.side).toBe(OrderSide.BUY);
     });
 
     it('does not seed when seedFromBalance is false (default)', async () => {
@@ -376,14 +376,14 @@ describe('ProtectedStrategy', () => {
 
       expect(strategy.protectedState.totalPositionSize).toBe('0');
       expect(advice).toBeDefined();
-      expect(advice!.side).toBe(ExchangeOrderSide.BUY);
+      expect(advice!.side).toBe(OrderSide.BUY);
     });
 
     it('does not re-seed after position was already tracked via onFill', async () => {
       const strategy = new TestProtectedStrategy({protected: {stopLossPct: '5', seedFromBalance: true}});
 
       // Position tracked via fill at 80
-      await strategy.onFill(makeFill('80', '10', ExchangeOrderSide.BUY), mockState);
+      await strategy.onFill(makeFill('80', '10', OrderSide.BUY), mockState);
 
       // Candle at 100 should NOT overwrite the fill-based tracking
       await strategy.onCandle(makeCandle(100), stateWithPosition);
@@ -413,7 +413,7 @@ describe('ProtectedStrategy', () => {
   describe('killed state', () => {
     it('keeps re-emitting the same limit-sell advice while the position has not yet been exited', async () => {
       const strategy = new TestProtectedStrategy({protected: {stopLossPct: '5'}, signalAdvice: true});
-      await strategy.onFill(makeFill('100', '10', ExchangeOrderSide.BUY), mockState);
+      await strategy.onFill(makeFill('100', '10', OrderSide.BUY), mockState);
 
       // Trigger stop-loss — position is still 10 because no sell fill has arrived yet
       const killAdvice = await strategy.onCandle(makeCandle(94), mockState);
@@ -434,13 +434,13 @@ describe('ProtectedStrategy', () => {
 
     it('goes silent once the position is fully exited via onFill', async () => {
       const strategy = new TestProtectedStrategy({protected: {stopLossPct: '5'}, signalAdvice: true});
-      await strategy.onFill(makeFill('100', '10', ExchangeOrderSide.BUY), mockState);
+      await strategy.onFill(makeFill('100', '10', OrderSide.BUY), mockState);
 
       await strategy.onCandle(makeCandle(94), mockState);
       expect(strategy.protectedState.killed).toBe(true);
 
       // The sell advice finally fills — position goes to zero
-      await strategy.onFill(makeFill('94', '10', ExchangeOrderSide.SELL), mockState);
+      await strategy.onFill(makeFill('94', '10', OrderSide.SELL), mockState);
       expect(strategy.protectedState.totalPositionSize).toBe('0');
 
       // Now subsequent candles return undefined — truly terminal
@@ -454,14 +454,14 @@ describe('ProtectedStrategy', () => {
       const onFinish = vi.fn();
       strategy.onFinish = onFinish;
 
-      await strategy.onFill(makeFill('100', '10', ExchangeOrderSide.BUY), mockState);
+      await strategy.onFill(makeFill('100', '10', OrderSide.BUY), mockState);
       await strategy.onCandle(makeCandle(94), mockState);
       expect(strategy.protectedState.killed).toBe(true);
       expect(onFinish).not.toHaveBeenCalled();
 
       // Kill-switch sell actually fills → session reports order done
-      await strategy.onFill(makeFill('94', '10', ExchangeOrderSide.SELL), mockState);
-      await strategy.onOrderFilled(makeOrder(ExchangeOrderSide.SELL), mockState);
+      await strategy.onFill(makeFill('94', '10', OrderSide.SELL), mockState);
+      await strategy.onOrderFilled(makeOrder(OrderSide.SELL), mockState);
       expect(onFinish).toHaveBeenCalledTimes(1);
     });
 
@@ -470,9 +470,9 @@ describe('ProtectedStrategy', () => {
       const onFinish = vi.fn();
       strategy.onFinish = onFinish;
 
-      await strategy.onFill(makeFill('100', '10', ExchangeOrderSide.BUY), mockState);
-      await strategy.onFill(makeFill('110', '10', ExchangeOrderSide.SELL), mockState);
-      await strategy.onOrderFilled(makeOrder(ExchangeOrderSide.SELL), mockState);
+      await strategy.onFill(makeFill('100', '10', OrderSide.BUY), mockState);
+      await strategy.onFill(makeFill('110', '10', OrderSide.SELL), mockState);
+      await strategy.onOrderFilled(makeOrder(OrderSide.SELL), mockState);
 
       expect(strategy.protectedState.killed).toBe(false);
       expect(onFinish).not.toHaveBeenCalled();
@@ -483,12 +483,12 @@ describe('ProtectedStrategy', () => {
       const onFinish = vi.fn();
       strategy.onFinish = onFinish;
 
-      await strategy.onFill(makeFill('100', '10', ExchangeOrderSide.BUY), mockState);
+      await strategy.onFill(makeFill('100', '10', OrderSide.BUY), mockState);
       await strategy.onCandle(makeCandle(94), mockState);
       expect(strategy.protectedState.killed).toBe(true);
 
       // A BUY order completing (shouldn't happen in practice once killed, but guard anyway)
-      await strategy.onOrderFilled(makeOrder(ExchangeOrderSide.BUY), mockState);
+      await strategy.onOrderFilled(makeOrder(OrderSide.BUY), mockState);
       expect(onFinish).not.toHaveBeenCalled();
     });
   });
@@ -498,8 +498,8 @@ describe('ProtectedStrategy', () => {
       const strategy = new TestProtectedStrategy({protected: {stopLossPct: '5'}});
 
       // Buy 10 @ 100, then 10 @ 120 → avg = 110
-      await strategy.onFill(makeFill('100', '10', ExchangeOrderSide.BUY), mockState);
-      await strategy.onFill(makeFill('120', '10', ExchangeOrderSide.BUY), mockState);
+      await strategy.onFill(makeFill('100', '10', OrderSide.BUY), mockState);
+      await strategy.onFill(makeFill('120', '10', OrderSide.BUY), mockState);
 
       // -5% of 110 = 104.5. At 105, no fire. At 104, fires.
       const notYet = await strategy.onCandle(makeCandle(105), mockState);
@@ -515,8 +515,8 @@ describe('ProtectedStrategy', () => {
       const strategy = new TestProtectedStrategy({protected: {stopLossPct: '5'}});
 
       // Buy 20 @ 100, then sell 10 (partial exit). Avg entry stays at 100.
-      await strategy.onFill(makeFill('100', '20', ExchangeOrderSide.BUY), mockState);
-      await strategy.onFill(makeFill('110', '10', ExchangeOrderSide.SELL), mockState);
+      await strategy.onFill(makeFill('100', '20', OrderSide.BUY), mockState);
+      await strategy.onFill(makeFill('110', '10', OrderSide.SELL), mockState);
 
       const fires = await strategy.onCandle(makeCandle(95), mockState);
       assertLimitSell(fires);
@@ -527,8 +527,8 @@ describe('ProtectedStrategy', () => {
     it('resets position tracking to zero on a full exit', async () => {
       const strategy = new TestProtectedStrategy({protected: {stopLossPct: '5'}});
 
-      await strategy.onFill(makeFill('100', '10', ExchangeOrderSide.BUY), mockState);
-      await strategy.onFill(makeFill('110', '10', ExchangeOrderSide.SELL), mockState);
+      await strategy.onFill(makeFill('100', '10', OrderSide.BUY), mockState);
+      await strategy.onFill(makeFill('110', '10', OrderSide.SELL), mockState);
 
       expect(strategy.protectedState.totalPositionSize).toBe('0');
       expect(strategy.protectedState.totalCostBasis).toBe('0');
@@ -542,13 +542,13 @@ describe('ProtectedStrategy', () => {
   describe('no guards configured', () => {
     it('always passes through to the subclass', async () => {
       const strategy = new TestProtectedStrategy({signalAdvice: true});
-      await strategy.onFill(makeFill('100', '10', ExchangeOrderSide.BUY), mockState);
+      await strategy.onFill(makeFill('100', '10', OrderSide.BUY), mockState);
 
       // Price crashes 99% — guard still does nothing because no thresholds set
       const advice = await strategy.onCandle(makeCandle(1), mockState);
 
       expect(advice).toBeDefined();
-      expect(advice!.side).toBe(ExchangeOrderSide.BUY);
+      expect(advice!.side).toBe(OrderSide.BUY);
       expect(strategy.ownLogicCallCount).toBe(1);
     });
   });
@@ -601,7 +601,7 @@ describe('ProtectedStrategy', () => {
       //   → stop-loss target: 100 * 0.95 = 95
       //   → take-profit target: 100 + 10/10 = 101
       const strategy = new TestProtectedStrategy({protected: {stopLossPct: '5', takeProfitNominal: '10'}});
-      await strategy.onFill(makeFill('100', '10', ExchangeOrderSide.BUY), mockState);
+      await strategy.onFill(makeFill('100', '10', OrderSide.BUY), mockState);
 
       // Hits take-profit first at 101
       const advice = await strategy.onCandle(makeCandle(101), mockState);
@@ -612,7 +612,7 @@ describe('ProtectedStrategy', () => {
 
     it('allows mixing nominal stop-loss with pct take-profit', async () => {
       const strategy = new TestProtectedStrategy({protected: {stopLossNominal: '10', takeProfitPct: '10'}});
-      await strategy.onFill(makeFill('100', '10', ExchangeOrderSide.BUY), mockState);
+      await strategy.onFill(makeFill('100', '10', OrderSide.BUY), mockState);
 
       // -$10 at 10 shares → price 99
       const advice = await strategy.onCandle(makeCandle(99), mockState);
@@ -627,8 +627,8 @@ describe('ProtectedStrategy', () => {
       const strategy = new TestProtectedStrategy({protected: {takeProfitNominal: '20'}});
 
       // Buy 10 @ 100, then 10 @ 120 → positionSize 20, costBasis 2200, avgEntry 110
-      await strategy.onFill(makeFill('100', '10', ExchangeOrderSide.BUY), mockState);
-      await strategy.onFill(makeFill('120', '10', ExchangeOrderSide.BUY), mockState);
+      await strategy.onFill(makeFill('100', '10', OrderSide.BUY), mockState);
+      await strategy.onFill(makeFill('120', '10', OrderSide.BUY), mockState);
 
       // +$20 target at 20 shares → each share needs to gain $1 from avg → target 111
       const notYet = await strategy.onCandle(makeCandle(110.5), mockState);
@@ -643,7 +643,7 @@ describe('ProtectedStrategy', () => {
   describe('state persistence', () => {
     it('restores guard state through restoreState', async () => {
       const strategy = new TestProtectedStrategy({protected: {stopLossPct: '5'}});
-      await strategy.onFill(makeFill('100', '10', ExchangeOrderSide.BUY), mockState);
+      await strategy.onFill(makeFill('100', '10', OrderSide.BUY), mockState);
 
       const snapshot = strategy.state;
       expect(snapshot).not.toBeNull();
@@ -660,7 +660,7 @@ describe('ProtectedStrategy', () => {
 
     it('restores the killedLimitPrice after a guard has already fired', async () => {
       const strategy = new TestProtectedStrategy({protected: {stopLossPct: '5'}});
-      await strategy.onFill(makeFill('100', '10', ExchangeOrderSide.BUY), mockState);
+      await strategy.onFill(makeFill('100', '10', OrderSide.BUY), mockState);
       await strategy.onCandle(makeCandle(95), mockState); // fire the guard
       expect(strategy.protectedState.killed).toBe(true);
 
@@ -786,26 +786,26 @@ describe('ProtectedStrategy', () => {
       const onSave = vi.fn();
       strategy.onSave = onSave;
 
-      await strategy.onFill(makeFill('100', '10', ExchangeOrderSide.BUY), mockState);
+      await strategy.onFill(makeFill('100', '10', OrderSide.BUY), mockState);
 
       expect(onSave).toHaveBeenCalled();
     });
 
     it('fires onSave when onFill reduces the position on a SELL', async () => {
       const strategy = new TestProtectedStrategy({protected: {stopLossPct: '5'}});
-      await strategy.onFill(makeFill('100', '10', ExchangeOrderSide.BUY), mockState);
+      await strategy.onFill(makeFill('100', '10', OrderSide.BUY), mockState);
 
       const onSave = vi.fn();
       strategy.onSave = onSave;
 
-      await strategy.onFill(makeFill('110', '5', ExchangeOrderSide.SELL), mockState);
+      await strategy.onFill(makeFill('110', '5', OrderSide.SELL), mockState);
 
       expect(onSave).toHaveBeenCalled();
     });
 
     it('fires onSave when a guard fires during processCandle', async () => {
       const strategy = new TestProtectedStrategy({protected: {stopLossPct: '5'}});
-      await strategy.onFill(makeFill('100', '10', ExchangeOrderSide.BUY), mockState);
+      await strategy.onFill(makeFill('100', '10', OrderSide.BUY), mockState);
 
       const onSave = vi.fn();
       strategy.onSave = onSave;
@@ -819,7 +819,7 @@ describe('ProtectedStrategy', () => {
   describe('guard priority', () => {
     it('stop-loss takes priority — subclass logic does not run when fired', async () => {
       const strategy = new TestProtectedStrategy({protected: {stopLossPct: '5'}, signalAdvice: true});
-      await strategy.onFill(makeFill('100', '10', ExchangeOrderSide.BUY), mockState);
+      await strategy.onFill(makeFill('100', '10', OrderSide.BUY), mockState);
 
       const advice = await strategy.onCandle(makeCandle(90), mockState);
 
@@ -830,7 +830,7 @@ describe('ProtectedStrategy', () => {
 
     it('stop-loss fires before take-profit when both configured and loss is hit first', async () => {
       const strategy = new TestProtectedStrategy({protected: {stopLossPct: '5', takeProfitPct: '10'}});
-      await strategy.onFill(makeFill('100', '10', ExchangeOrderSide.BUY), mockState);
+      await strategy.onFill(makeFill('100', '10', OrderSide.BUY), mockState);
 
       const advice = await strategy.onCandle(makeCandle(94), mockState);
       assertLimitSell(advice);
@@ -841,7 +841,7 @@ describe('ProtectedStrategy', () => {
   describe('order type (stopLossOrder / takeProfitOrder)', () => {
     it('defaults stopLossOrder to "limit" when not configured', async () => {
       const strategy = new TestProtectedStrategy({protected: {stopLossPct: '5'}});
-      await strategy.onFill(makeFill('100', '10', ExchangeOrderSide.BUY), mockState);
+      await strategy.onFill(makeFill('100', '10', OrderSide.BUY), mockState);
 
       const advice = await strategy.onCandle(makeCandle(95), mockState);
       assertLimitSell(advice);
@@ -850,7 +850,7 @@ describe('ProtectedStrategy', () => {
 
     it('defaults takeProfitOrder to "limit" when not configured', async () => {
       const strategy = new TestProtectedStrategy({protected: {takeProfitPct: '10'}});
-      await strategy.onFill(makeFill('100', '10', ExchangeOrderSide.BUY), mockState);
+      await strategy.onFill(makeFill('100', '10', OrderSide.BUY), mockState);
 
       const advice = await strategy.onCandle(makeCandle(110), mockState);
       assertLimitSell(advice);
@@ -859,7 +859,7 @@ describe('ProtectedStrategy', () => {
 
     it('fires a MARKET sell when stopLossOrder is "market"', async () => {
       const strategy = new TestProtectedStrategy({protected: {stopLossPct: '5', stopLossOrder: 'market'}});
-      await strategy.onFill(makeFill('100', '10', ExchangeOrderSide.BUY), mockState);
+      await strategy.onFill(makeFill('100', '10', OrderSide.BUY), mockState);
 
       const advice = await strategy.onCandle(makeCandle(95), mockState);
       assertMarketSell(advice);
@@ -875,7 +875,7 @@ describe('ProtectedStrategy', () => {
 
     it('fires a MARKET sell when takeProfitOrder is "market"', async () => {
       const strategy = new TestProtectedStrategy({protected: {takeProfitPct: '10', takeProfitOrder: 'market'}});
-      await strategy.onFill(makeFill('100', '10', ExchangeOrderSide.BUY), mockState);
+      await strategy.onFill(makeFill('100', '10', OrderSide.BUY), mockState);
 
       const advice = await strategy.onCandle(makeCandle(110), mockState);
       assertMarketSell(advice);
@@ -894,7 +894,7 @@ describe('ProtectedStrategy', () => {
           // takeProfitOrder defaults to 'limit'
         },
       });
-      await strategy.onFill(makeFill('100', '10', ExchangeOrderSide.BUY), mockState);
+      await strategy.onFill(makeFill('100', '10', OrderSide.BUY), mockState);
 
       const stopAdvice = await strategy.onCandle(makeCandle(95), mockState);
       assertMarketSell(stopAdvice);
@@ -908,7 +908,7 @@ describe('ProtectedStrategy', () => {
           takeProfitOrder: 'market',
         },
       });
-      await strategy.onFill(makeFill('100', '10', ExchangeOrderSide.BUY), mockState);
+      await strategy.onFill(makeFill('100', '10', OrderSide.BUY), mockState);
 
       const profitAdvice = await strategy.onCandle(makeCandle(110), mockState);
       assertMarketSell(profitAdvice);
@@ -916,7 +916,7 @@ describe('ProtectedStrategy', () => {
 
     it('retries market advice on subsequent candles while the position is not exited', async () => {
       const strategy = new TestProtectedStrategy({protected: {stopLossPct: '5', stopLossOrder: 'market'}, signalAdvice: true});
-      await strategy.onFill(makeFill('100', '10', ExchangeOrderSide.BUY), mockState);
+      await strategy.onFill(makeFill('100', '10', OrderSide.BUY), mockState);
 
       // Fire
       const first = await strategy.onCandle(makeCandle(95), mockState);
@@ -930,7 +930,7 @@ describe('ProtectedStrategy', () => {
 
     it('persists killedOrderType across restoreState', async () => {
       const strategy = new TestProtectedStrategy({protected: {stopLossPct: '5', stopLossOrder: 'market'}});
-      await strategy.onFill(makeFill('100', '10', ExchangeOrderSide.BUY), mockState);
+      await strategy.onFill(makeFill('100', '10', OrderSide.BUY), mockState);
       await strategy.onCandle(makeCandle(95), mockState); // fire
 
       const snapshot = strategy.state;

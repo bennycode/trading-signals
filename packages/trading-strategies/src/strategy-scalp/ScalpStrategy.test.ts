@@ -1,7 +1,7 @@
 import Big from 'big.js';
 import {describe, expect, it} from 'vitest';
-import {CandleBatcher, ExchangeOrderSide, ExchangeOrderType} from '@typedtrader/exchange';
-import type {ExchangeCandle, ExchangeFill, LimitOrderAdvice, TradingSessionState} from '@typedtrader/exchange';
+import {CandleBatcher, OrderSide, OrderType} from '@typedtrader/exchange';
+import type {Candle, Fill, LimitOrderAdvice, TradingSessionState} from '@typedtrader/exchange';
 import {TradingPair} from '@typedtrader/exchange';
 import {ScalpStrategy, ScalpSchema} from './ScalpStrategy.js';
 
@@ -19,12 +19,12 @@ const mockState: TradingSessionState = {
     pair,
   },
   feeRates: {
-    [ExchangeOrderType.LIMIT]: new Big('0.001'),
-    [ExchangeOrderType.MARKET]: new Big('0.002'),
+    [OrderType.LIMIT]: new Big('0.001'),
+    [OrderType.MARKET]: new Big('0.002'),
   },
 };
 
-function makeCandle(close: number, index: number): ExchangeCandle {
+function makeCandle(close: number, index: number): Candle {
   const closeStr = String(close);
   return {
     base: 'AAPL',
@@ -40,11 +40,11 @@ function makeCandle(close: number, index: number): ExchangeCandle {
   };
 }
 
-function toBatched(candle: ExchangeCandle) {
+function toBatched(candle: Candle) {
   return CandleBatcher.createOneMinuteBatchedCandle([candle]);
 }
 
-function makeFill(price: string, side: ExchangeOrderSide): ExchangeFill {
+function makeFill(price: string, side: OrderSide): Fill {
   return {
     created_at: '2025-01-01T00:00:00.000Z',
     fee: '0.01',
@@ -123,8 +123,8 @@ describe('ScalpStrategy', () => {
     }
 
     expect(buyAdvice).toBeDefined();
-    expect(buyAdvice!.side).toBe(ExchangeOrderSide.BUY);
-    expect(buyAdvice!.type).toBe(ExchangeOrderType.MARKET);
+    expect(buyAdvice!.side).toBe(OrderSide.BUY);
+    expect(buyAdvice!.type).toBe(OrderType.MARKET);
     expect(buyAdvice!.amountIn).toBe('counter');
   });
 
@@ -143,14 +143,14 @@ describe('ScalpStrategy', () => {
     }
 
     // Simulate fill at 103
-    await strategy.onFill(makeFill('103', ExchangeOrderSide.BUY), mockState);
+    await strategy.onFill(makeFill('103', OrderSide.BUY), mockState);
 
     // Next candle should produce a limit sell at 103 + 0.50 = 103.50
     const sellAdvice = await strategy.onCandle(toBatched(makeCandle(103, 10)), mockState);
 
     expect(sellAdvice).toBeDefined();
-    expect(sellAdvice!.side).toBe(ExchangeOrderSide.SELL);
-    expect(sellAdvice!.type).toBe(ExchangeOrderType.LIMIT);
+    expect(sellAdvice!.side).toBe(OrderSide.SELL);
+    expect(sellAdvice!.type).toBe(OrderType.LIMIT);
     expect(new Big((sellAdvice as LimitOrderAdvice).price).toFixed(2)).toBe('103.50');
   });
 
@@ -167,16 +167,16 @@ describe('ScalpStrategy', () => {
     }
 
     // Simulate buy fill, then sell fill
-    await strategy.onFill(makeFill('103', ExchangeOrderSide.BUY), mockState);
+    await strategy.onFill(makeFill('103', OrderSide.BUY), mockState);
     await strategy.onCandle(toBatched(makeCandle(103, 10)), mockState); // emit sell advice
-    await strategy.onFill(makeFill('103.50', ExchangeOrderSide.SELL), mockState);
+    await strategy.onFill(makeFill('103.50', OrderSide.SELL), mockState);
 
     // Next candle should produce a limit buy at 103.50 - 0.50 = 103.00
     const buyAdvice = await strategy.onCandle(toBatched(makeCandle(103, 11)), mockState);
 
     expect(buyAdvice).toBeDefined();
-    expect(buyAdvice!.side).toBe(ExchangeOrderSide.BUY);
-    expect(buyAdvice!.type).toBe(ExchangeOrderType.LIMIT);
+    expect(buyAdvice!.side).toBe(OrderSide.BUY);
+    expect(buyAdvice!.type).toBe(OrderType.LIMIT);
     expect(new Big((buyAdvice as LimitOrderAdvice).price).toFixed(2)).toBe('103.00');
   });
 
@@ -189,7 +189,7 @@ describe('ScalpStrategy', () => {
     }
 
     // Simulate buy fill and emit sell advice
-    await strategy.onFill(makeFill('103', ExchangeOrderSide.BUY), mockState);
+    await strategy.onFill(makeFill('103', OrderSide.BUY), mockState);
     await strategy.onCandle(toBatched(makeCandle(103, 10)), mockState);
 
     // Subsequent candles should return no advice (waiting for sell to fill)
@@ -226,8 +226,8 @@ describe('ScalpStrategy', () => {
     const advice = await strategy.onCandle(toBatched(makeCandle(103, 3)), mockState);
 
     expect(advice).toBeDefined();
-    expect(advice!.side).toBe(ExchangeOrderSide.BUY);
-    expect(advice!.type).toBe(ExchangeOrderType.MARKET);
+    expect(advice!.side).toBe(OrderSide.BUY);
+    expect(advice!.type).toBe(OrderType.MARKET);
   });
 
   it('restores state across restarts', async () => {
@@ -235,7 +235,7 @@ describe('ScalpStrategy', () => {
 
     strategy.restoreState({
       lastFillPrice: '103',
-      lastFillSide: ExchangeOrderSide.BUY,
+      lastFillSide: OrderSide.BUY,
       phase: 'pendingAdvice',
     });
 
@@ -243,8 +243,8 @@ describe('ScalpStrategy', () => {
     const advice = await strategy.onCandle(toBatched(makeCandle(103, 0)), mockState);
 
     expect(advice).toBeDefined();
-    expect(advice!.side).toBe(ExchangeOrderSide.SELL);
-    expect(advice!.type).toBe(ExchangeOrderType.LIMIT);
+    expect(advice!.side).toBe(OrderSide.SELL);
+    expect(advice!.type).toBe(OrderType.LIMIT);
     expect(new Big((advice as LimitOrderAdvice).price).toFixed(2)).toBe('103.50');
   });
 
@@ -261,7 +261,7 @@ describe('ScalpStrategy', () => {
     const strategy = new ScalpStrategy({emaPeriod: 3});
 
     // Build 20 "trading days" worth of 1-min candles spread across different dates
-    const candles: ExchangeCandle[] = [];
+    const candles: Candle[] = [];
     const dayMs = 86_400_000;
     for (let day = 0; day < 20; day++) {
       for (let min = 0; min < 7; min++) {

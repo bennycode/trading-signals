@@ -1,6 +1,6 @@
 import {z} from 'zod';
-import {AllAvailableAmount, CandleBatcher, ExchangeOrderSide, ExchangeOrderType} from '@typedtrader/exchange';
-import type {ExchangeCandle, OneMinuteBatchedCandle, OrderAdvice, TradingSessionState} from '@typedtrader/exchange';
+import {AllAvailableAmount, CandleBatcher, OrderSide, OrderType} from '@typedtrader/exchange';
+import type {Candle, OneMinuteBatchedCandle, OrderAdvice, TradingSessionState} from '@typedtrader/exchange';
 import {BollingerBands} from 'trading-signals';
 import {MarketType} from '../strategy/MarketType.js';
 import {ProtectedStrategy, ProtectedStrategySchema} from '../strategy-protected/ProtectedStrategy.js';
@@ -19,7 +19,7 @@ type MeanReversionState = {
   phase: Phase;
 };
 
-export type CandleFetcher = () => Promise<ExchangeCandle[]>;
+export type CandleFetcher = () => Promise<Candle[]>;
 
 export class MeanReversionStrategy extends ProtectedStrategy {
   static override NAME = '@typedtrader/strategy-mean-reversion';
@@ -86,8 +86,8 @@ export class MeanReversionStrategy extends ProtectedStrategy {
       if (closePrice > upper) {
         this.#state.phase = 'waitingForRebuy';
         return {
-          side: ExchangeOrderSide.SELL,
-          type: ExchangeOrderType.MARKET,
+          side: OrderSide.SELL,
+          type: OrderType.MARKET,
           amount: AllAvailableAmount,
           amountIn: 'base',
           reason: `Price ${closePrice.toFixed(2)} broke above upper band ${upper.toFixed(2)}`,
@@ -99,8 +99,8 @@ export class MeanReversionStrategy extends ProtectedStrategy {
       if (closePrice <= middle) {
         this.#state.phase = 'watching';
         return {
-          side: ExchangeOrderSide.BUY,
-          type: ExchangeOrderType.MARKET,
+          side: OrderSide.BUY,
+          type: OrderType.MARKET,
           amount: AllAvailableAmount,
           amountIn: 'counter',
           reason: `Price ${closePrice.toFixed(2)} returned to middle band ${middle.toFixed(2)}`,

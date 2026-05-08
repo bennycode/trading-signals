@@ -4,26 +4,26 @@ import {ms} from 'ms';
 import {AlpacaExchangeMapper} from './AlpacaExchangeMapper.js';
 import {
   Broker,
-  type ExchangeBalance,
-  type ExchangeCandle,
-  type ExchangeCandleImportRequest,
-  type ExchangeFeeRate,
-  type ExchangeFill,
-  type ExchangeLimitOrderOptions,
-  type ExchangeMarketOrderOptions,
-  type ExchangeOrderOptions,
-  ExchangeOrderPosition,
-  ExchangeOrderSide,
-  ExchangeOrderType,
-  type ExchangePendingLimitOrder,
-  type ExchangePendingMarketOrder,
-  type ExchangePendingOrder,
-  type ExchangeTradingRules,
+  type Balance,
+  type Candle,
+  type CandleImportRequest,
+  type FeeRate,
+  type Fill,
+  type LimitOrderOptions,
+  type MarketOrderOptions,
+  type OrderOptions,
+  OrderPosition,
+  OrderSide,
+  OrderType,
+  type PendingLimitOrder,
+  type PendingMarketOrder,
+  type PendingOrder,
+  type TradingRules,
 } from '../Broker.js';
 import {MarketDataSource} from '../MarketDataSource.js';
 import {TradingPair} from '../TradingPair.js';
 import {createAlpacaSymbol, isAlpacaCryptoSymbol} from './alpacaSymbol.js';
-import {OrderStatus} from './api/schema/OrderSchema.js';
+import {AlpacaOrderStatus} from './api/schema/OrderSchema.js';
 import {AlpacaAPI} from './api/AlpacaAPI.js';
 import {PositionSide} from './api/schema/PositionSchema.js';
 import {alpacaTradingWebSocket, type AlpacaTradingConnection} from './AlpacaTradingWebSocket.js';
@@ -72,9 +72,9 @@ export class AlpacaBroker extends Broker implements MarketDataSource {
    * @see https://docs.alpaca.markets/docs/crypto-fees
    * @see https://files.alpaca.markets/disclosures/library/BrokFeeSched.pdf
    */
-  static DEFAULT_FEE_RATES: ExchangeFeeRate = {
-    [ExchangeOrderType.MARKET]: new Big(0.0025),
-    [ExchangeOrderType.LIMIT]: new Big(0.0015),
+  static DEFAULT_FEE_RATES: FeeRate = {
+    [OrderType.MARKET]: new Big(0.0025),
+    [OrderType.LIMIT]: new Big(0.0015),
   };
 
   /**
@@ -91,11 +91,11 @@ export class AlpacaBroker extends Broker implements MarketDataSource {
     counter_min_size: '1',
   };
 
-  async getCandles(pair: TradingPair, request: ExchangeCandleImportRequest): Promise<ExchangeCandle[]> {
+  async getCandles(pair: TradingPair, request: CandleImportRequest): Promise<Candle[]> {
     return this.#marketData.getCandles(pair, request);
   }
 
-  async getLatestCandle(pair: TradingPair, intervalInMillis: number): Promise<ExchangeCandle> {
+  async getLatestCandle(pair: TradingPair, intervalInMillis: number): Promise<Candle> {
     return this.#marketData.getLatestCandle(pair, intervalInMillis);
   }
 
@@ -137,7 +137,7 @@ export class AlpacaBroker extends Broker implements MarketDataSource {
   /**
    * Subscribe to real-time order fill updates via Alpaca's trading WebSocket stream.
    * The stream is account-wide and delivers events for all orders.
-   * Only `fill` events are emitted as ExchangeFill objects.
+   * Only `fill` events are emitted as Fill objects.
    *
    * @see https://docs.alpaca.markets/docs/websocket-streaming
    */
@@ -193,8 +193,8 @@ export class AlpacaBroker extends Broker implements MarketDataSource {
    *
    * @see https://docs.alpaca.markets/reference/getallopenpositions
    */
-  async listBalances(): Promise<ExchangeBalance[]> {
-    const balances: ExchangeBalance[] = [];
+  async listBalances(): Promise<Balance[]> {
+    const balances: Balance[] = [];
 
     const positions = await this.#alpacaAPI.getPositions();
 
@@ -204,12 +204,12 @@ export class AlpacaBroker extends Broker implements MarketDataSource {
       const needsTrimming = position.asset_class === 'crypto' && position.symbol.endsWith(cashSymbol);
       const currency = needsTrimming ? position.symbol.replace(/USD$/, '') : position.symbol;
 
-      let side: ExchangeOrderPosition;
+      let side: OrderPosition;
 
       if (position.side === PositionSide.LONG) {
-        side = ExchangeOrderPosition.LONG;
+        side = OrderPosition.LONG;
       } else if (position.side === PositionSide.SHORT) {
-        side = ExchangeOrderPosition.SHORT;
+        side = OrderPosition.SHORT;
       } else {
         throw new Error(`Unknown position side "${position.side}" for symbol "${position.symbol}"`);
       }
@@ -238,7 +238,7 @@ export class AlpacaBroker extends Broker implements MarketDataSource {
       available: new Big(account.cash).toFixed(),
       currency: account.currency,
       hold: '0',
-      position: ExchangeOrderPosition.LONG,
+      position: OrderPosition.LONG,
     });
 
     return balances;
@@ -261,7 +261,7 @@ export class AlpacaBroker extends Broker implements MarketDataSource {
   }
 
   /** @see https://docs.alpaca.markets/reference/getallorders */
-  async getOpenOrders(pair: TradingPair): Promise<ExchangePendingOrder[]> {
+  async getOpenOrders(pair: TradingPair): Promise<PendingOrder[]> {
     const symbol = await this.#createReliableSymbol(pair);
     const orders = await this.#alpacaAPI.getOrders({status: 'open', symbols: symbol});
     return orders.map(order => AlpacaExchangeMapper.toOpenOrder(order, pair));
@@ -270,14 +270,14 @@ export class AlpacaBroker extends Broker implements MarketDataSource {
   /**
    * @see https://docs.alpaca.markets/reference/getallorders
    */
-  async getFills(pair: TradingPair): Promise<ExchangeFill[]> {
+  async getFills(pair: TradingPair): Promise<Fill[]> {
     const symbol = await this.#createReliableSymbol(pair);
     const orders = await this.#alpacaAPI.getOrders({status: 'closed', symbols: symbol});
-    const filledOrders = orders.filter(order => order.status === OrderStatus.FILLED);
+    const filledOrders = orders.filter(order => order.status === AlpacaOrderStatus.FILLED);
     return filledOrders.map(order => AlpacaExchangeMapper.toFilledOrder(order, pair));
   }
 
-  async getFillByOrderId(pair: TradingPair, orderId: string): Promise<ExchangeFill | undefined> {
+  async getFillByOrderId(pair: TradingPair, orderId: string): Promise<Fill | undefined> {
     const fills = await this.getFills(pair);
     return fills.find(fill => fill.order_id === orderId);
   }
@@ -290,7 +290,7 @@ export class AlpacaBroker extends Broker implements MarketDataSource {
    * @see https://docs.alpaca.markets/docs/fractional-trading
    * @see https://docs.alpaca.markets/docs/crypto-trading-1#minimum-order-size
    */
-  async getTradingRules(pair: TradingPair): Promise<ExchangeTradingRules> {
+  async getTradingRules(pair: TradingPair): Promise<TradingRules> {
     const isCrypto = await isAlpacaCryptoSymbol(this.#alpacaAPI, pair);
     const symbol = createAlpacaSymbol(pair, isCrypto);
     const assetClass = isCrypto ? 'crypto' : 'us_equity';
@@ -329,7 +329,7 @@ export class AlpacaBroker extends Broker implements MarketDataSource {
    * @see https://docs.alpaca.markets/docs/crypto-fees
    * @see https://files.alpaca.markets/disclosures/library/BrokFeeSched.pdf
    */
-  async getFeeRates(_pair: TradingPair): Promise<ExchangeFeeRate> {
+  async getFeeRates(_pair: TradingPair): Promise<FeeRate> {
     // TODO: Refine according to "30-Day Crypto Volume (USD)" and make fee rate dependant on crypto or stocks
     return AlpacaBroker.DEFAULT_FEE_RATES;
   }
@@ -341,13 +341,13 @@ export class AlpacaBroker extends Broker implements MarketDataSource {
    */
   protected override async placeOrder(
     pair: TradingPair,
-    options: ExchangeLimitOrderOptions
-  ): Promise<ExchangePendingLimitOrder>;
+    options: LimitOrderOptions
+  ): Promise<PendingLimitOrder>;
   protected override async placeOrder(
     pair: TradingPair,
-    options: ExchangeMarketOrderOptions
-  ): Promise<ExchangePendingMarketOrder>;
-  protected override async placeOrder(pair: TradingPair, options: ExchangeOrderOptions): Promise<ExchangePendingOrder> {
+    options: MarketOrderOptions
+  ): Promise<PendingMarketOrder>;
+  protected override async placeOrder(pair: TradingPair, options: OrderOptions): Promise<PendingOrder> {
     const isCrypto = await isAlpacaCryptoSymbol(this.#alpacaAPI, pair);
     const symbol = createAlpacaSymbol(pair, isCrypto);
     // Crypto orders cannot use 'day' and must be placed with 'gtc' (error code: 42210000)
@@ -355,8 +355,8 @@ export class AlpacaBroker extends Broker implements MarketDataSource {
     // @see https://docs.alpaca.markets/docs/fractional-trading
     const isFractional = options.sizeInCounter || options.size.includes('.');
     const time_in_force = isCrypto || !isFractional ? 'gtc' : 'day';
-    const side = options.side === ExchangeOrderSide.BUY ? 'buy' : 'sell';
-    const type = options.type === ExchangeOrderType.MARKET ? 'market' : 'limit';
+    const side = options.side === OrderSide.BUY ? 'buy' : 'sell';
+    const type = options.type === OrderType.MARKET ? 'market' : 'limit';
 
     const config: {
       extended_hours?: boolean;
@@ -380,7 +380,7 @@ export class AlpacaBroker extends Broker implements MarketDataSource {
       config.qty = options.size;
     }
 
-    if (options.type === ExchangeOrderType.LIMIT) {
+    if (options.type === OrderType.LIMIT) {
       config.limit_price = options.price;
     }
 

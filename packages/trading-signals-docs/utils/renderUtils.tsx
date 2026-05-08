@@ -1,5 +1,5 @@
 import type {ReactNode} from 'react';
-import type {ExchangeCandle} from '@typedtrader/exchange';
+import type {Candle} from '@typedtrader/exchange';
 import {formatDate} from './formatDate';
 import type {SingleIndicatorConfig} from './types';
 import type {PriceData} from '../components/PriceChart';
@@ -10,7 +10,7 @@ import {DataTable} from '../components/DataTable';
 import {IndicatorHeader} from '../components/IndicatorHeader';
 import {NotAvailable} from '../components/NotAvailable';
 
-export const collectPriceData = (candle: ExchangeCandle, idx: number): PriceData => ({
+export const collectPriceData = (candle: Candle, idx: number): PriceData => ({
   x: idx + 1,
   open: Number(candle.open),
   high: Number(candle.high),
@@ -18,7 +18,7 @@ export const collectPriceData = (candle: ExchangeCandle, idx: number): PriceData
   close: Number(candle.close),
 });
 
-export const renderSingleIndicator = (config: SingleIndicatorConfig, selectedCandles: ExchangeCandle[]) => {
+export const renderSingleIndicator = (config: SingleIndicatorConfig, selectedCandles: Candle[]) => {
   const indicator = config.createIndicator();
   const chartData: ChartDataPoint[] = [];
   const priceData: PriceData[] = [];

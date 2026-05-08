@@ -1,20 +1,20 @@
 import Big from 'big.js';
 import {
   Broker,
-  type ExchangeBalance,
-  type ExchangeCandle,
-  type ExchangeFeeRate,
-  type ExchangeFill,
-  type ExchangeLimitOrderOptions,
-  type ExchangeMarketOrderOptions,
-  type ExchangeOrderOptions,
-  ExchangeOrderPosition,
-  ExchangeOrderSide,
-  ExchangeOrderType,
-  type ExchangePendingLimitOrder,
-  type ExchangePendingMarketOrder,
-  type ExchangePendingOrder,
-  type ExchangeTradingRules,
+  type Balance,
+  type Candle,
+  type FeeRate,
+  type Fill,
+  type LimitOrderOptions,
+  type MarketOrderOptions,
+  type OrderOptions,
+  OrderPosition,
+  OrderSide,
+  OrderType,
+  type PendingLimitOrder,
+  type PendingMarketOrder,
+  type PendingOrder,
+  type TradingRules,
 } from './Broker.js';
 import type {TradingPair} from './TradingPair.js';
 
@@ -25,9 +25,9 @@ export interface ExchangeMockBalance {
 
 export abstract class BrokerMock extends Broker {
   readonly #balances: Map<string, ExchangeMockBalance>;
-  readonly #pendingOrders: ExchangePendingOrder[] = [];
-  readonly #fills: ExchangeFill[] = [];
-  #currentCandle: ExchangeCandle | undefined;
+  readonly #pendingOrders: PendingOrder[] = [];
+  readonly #fills: Fill[] = [];
+  #currentCandle: Candle | undefined;
   #nextOrderId = 1;
 
   constructor(config: {balances: Map<string, ExchangeMockBalance>}) {
@@ -35,18 +35,18 @@ export abstract class BrokerMock extends Broker {
     this.#balances = config.balances;
   }
 
-  abstract override getFeeRates(pair: TradingPair): Promise<ExchangeFeeRate>;
-  abstract override getTradingRules(pair: TradingPair): Promise<ExchangeTradingRules>;
+  abstract override getFeeRates(pair: TradingPair): Promise<FeeRate>;
+  abstract override getTradingRules(pair: TradingPair): Promise<TradingRules>;
   abstract override getName(): string;
   abstract override getSmallestInterval(): number;
   /**
    * Matches pending orders against the given candle's price range and returns new fills.
    * Orders placed on candle N are not matched until candle N+1 (realistic 1-candle delay).
    */
-  processCandle(candle: ExchangeCandle) {
+  processCandle(candle: Candle) {
     this.#currentCandle = candle;
-    const newFills: ExchangeFill[] = [];
-    const remaining: ExchangePendingOrder[] = [];
+    const newFills: Fill[] = [];
+    const remaining: PendingOrder[] = [];
 
     for (const order of this.#pendingOrders) {
       const fill = this.#tryMatch(order, candle);
@@ -64,7 +64,7 @@ export abstract class BrokerMock extends Broker {
     return newFills;
   }
 
-  #tryMatch(order: ExchangePendingOrder, candle: ExchangeCandle) {
+  #tryMatch(order: PendingOrder, candle: Candle) {
     const pair = order.pair;
     const candleOpen = new Big(candle.open);
     const candleLow = new Big(candle.low);
@@ -73,14 +73,14 @@ export abstract class BrokerMock extends Broker {
 
     let fillPrice: Big;
 
-    if (order.type === ExchangeOrderType.MARKET) {
+    if (order.type === OrderType.MARKET) {
       // Market orders fill at candle open price
       fillPrice = candleOpen;
     } else {
       // Limit order
       const limitPrice = new Big(order.price);
 
-      if (order.side === ExchangeOrderSide.BUY) {
+      if (order.side === OrderSide.BUY) {
         // Limit buy fills if candle.low <= order.price
         if (candleLow.gt(limitPrice)) {
           return null;
@@ -101,13 +101,13 @@ export abstract class BrokerMock extends Broker {
     const revenue = size.mul(fillPrice);
     const fee = revenue.mul(feeRate);
 
-    const fill: ExchangeFill = {
+    const fill: Fill = {
       created_at: candle.openTimeInISO,
       fee: fee.toFixed(),
       feeAsset: pair.counter,
       order_id: order.id,
       pair,
-      position: ExchangeOrderPosition.LONG,
+      position: OrderPosition.LONG,
       price: fillPrice.toFixed(),
       side: order.side,
       size: order.size,
@@ -115,12 +115,12 @@ export abstract class BrokerMock extends Broker {
     return fill;
   }
 
-  #applyFill(fill: ExchangeFill, order: ExchangePendingOrder) {
+  #applyFill(fill: Fill, order: PendingOrder) {
     const size = new Big(fill.size);
     const price = new Big(fill.price);
     const fee = new Big(fill.fee);
 
-    if (order.side === ExchangeOrderSide.BUY) {
+    if (order.side === OrderSide.BUY) {
       // Release counter hold, add base
       const counterCost = size.mul(price).plus(fee);
       this.#releaseHold(order.pair.counter, counterCost);
@@ -137,13 +137,13 @@ export abstract class BrokerMock extends Broker {
 
   protected override async placeOrder(
     pair: TradingPair,
-    options: ExchangeLimitOrderOptions
-  ): Promise<ExchangePendingLimitOrder>;
+    options: LimitOrderOptions
+  ): Promise<PendingLimitOrder>;
   protected override async placeOrder(
     pair: TradingPair,
-    options: ExchangeMarketOrderOptions
-  ): Promise<ExchangePendingMarketOrder>;
-  protected override async placeOrder(pair: TradingPair, options: ExchangeOrderOptions) {
+    options: MarketOrderOptions
+  ): Promise<PendingMarketOrder>;
+  protected override async placeOrder(pair: TradingPair, options: OrderOptions) {
     const rules = await this.getTradingRules(pair);
     const size = this.#applyTradingRules(new Big(options.size), options, rules);
 
@@ -154,9 +154,9 @@ export abstract class BrokerMock extends Broker {
     }
 
     // Validate balance and put amount on hold
-    if (options.side === ExchangeOrderSide.BUY) {
+    if (options.side === OrderSide.BUY) {
       let counterNeeded: Big;
-      if (options.type === ExchangeOrderType.LIMIT) {
+      if (options.type === OrderType.LIMIT) {
         const price = this.#roundDownToIncrement(new Big(options.price), new Big(rules.counter_increment));
         counterNeeded = size.mul(price);
         // Add estimated fee
@@ -182,32 +182,32 @@ export abstract class BrokerMock extends Broker {
 
     const orderId = String(this.#nextOrderId++);
 
-    if (options.type === ExchangeOrderType.LIMIT) {
+    if (options.type === OrderType.LIMIT) {
       const price = this.#roundDownToIncrement(new Big(options.price), new Big(rules.counter_increment));
-      const pending: ExchangePendingLimitOrder = {
+      const pending: PendingLimitOrder = {
         id: orderId,
         pair,
         price: price.toFixed(),
         side: options.side,
         size: size.toFixed(),
-        type: ExchangeOrderType.LIMIT,
+        type: OrderType.LIMIT,
       };
       this.#pendingOrders.push(pending);
       return pending;
     }
 
-    const pending: ExchangePendingMarketOrder = {
+    const pending: PendingMarketOrder = {
       id: orderId,
       pair,
       side: options.side,
       size: size.toFixed(),
-      type: ExchangeOrderType.MARKET,
+      type: OrderType.MARKET,
     };
     this.#pendingOrders.push(pending);
     return pending;
   }
 
-  #applyTradingRules(size: Big, options: ExchangeOrderOptions, rules: ExchangeTradingRules) {
+  #applyTradingRules(size: Big, options: OrderOptions, rules: TradingRules) {
     const baseIncrement = new Big(rules.base_increment);
     const baseMinSize = new Big(rules.base_min_size);
     const counterMinSize = new Big(rules.counter_min_size);
@@ -219,7 +219,7 @@ export abstract class BrokerMock extends Broker {
     }
 
     // Check minimum notional
-    if (options.type === ExchangeOrderType.LIMIT) {
+    if (options.type === OrderType.LIMIT) {
       const counterIncrement = new Big(rules.counter_increment);
       const price = this.#roundDownToIncrement(new Big(options.price), counterIncrement);
       const notional = size.mul(price);
@@ -236,13 +236,13 @@ export abstract class BrokerMock extends Broker {
   }
 
   /** Cached fee rates to avoid async in hot path */
-  #cachedFeeRates: ExchangeFeeRate | undefined;
+  #cachedFeeRates: FeeRate | undefined;
 
-  setCachedFeeRates(rates: ExchangeFeeRate) {
+  setCachedFeeRates(rates: FeeRate) {
     this.#cachedFeeRates = rates;
   }
 
-  #getFeeRateSync(orderType: ExchangeOrderType) {
+  #getFeeRateSync(orderType: OrderType) {
     if (!this.#cachedFeeRates) {
       throw new Error('Fee rates not cached. Call setCachedFeeRates() before processing candles.');
     }
@@ -282,13 +282,13 @@ export abstract class BrokerMock extends Broker {
   }
 
   async listBalances() {
-    const balances: ExchangeBalance[] = [];
+    const balances: Balance[] = [];
     for (const [currency, balance] of this.#balances) {
       balances.push({
         available: balance.available.toFixed(),
         currency,
         hold: balance.hold.toFixed(),
-        position: ExchangeOrderPosition.LONG,
+        position: OrderPosition.LONG,
       });
     }
     return balances;
@@ -315,8 +315,8 @@ export abstract class BrokerMock extends Broker {
     this.#pendingOrders.splice(index, 1);
 
     // Release hold
-    if (order.side === ExchangeOrderSide.BUY) {
-      if (order.type === ExchangeOrderType.LIMIT) {
+    if (order.side === OrderSide.BUY) {
+      if (order.type === OrderType.LIMIT) {
         const price = new Big(order.price);
         const counterAmount = new Big(order.size).mul(price);
         const feeRate = this.#getFeeRateSync(order.type);

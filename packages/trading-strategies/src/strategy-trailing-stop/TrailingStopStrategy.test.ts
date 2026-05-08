@@ -1,12 +1,12 @@
 import Big from 'big.js';
 import {describe, expect, it} from 'vitest';
-import {AlpacaBrokerMock, ExchangeOrderSide, ExchangeOrderType, TradingPair} from '@typedtrader/exchange';
-import type {ExchangeCandle} from '@typedtrader/exchange';
+import {AlpacaBrokerMock, OrderSide, OrderType, TradingPair} from '@typedtrader/exchange';
+import type {Candle} from '@typedtrader/exchange';
 import {BacktestExecutor} from '../backtest/BacktestExecutor.js';
 import {TrailingStopStrategy} from './TrailingStopStrategy.js';
 import type {BacktestConfig} from '../backtest/BacktestConfig.js';
 
-function createCandle(overrides: Partial<ExchangeCandle> & {close: string; open: string}): ExchangeCandle {
+function createCandle(overrides: Partial<Candle> & {close: string; open: string}): Candle {
   const openNum = parseFloat(overrides.open);
   const closeNum = parseFloat(overrides.close);
 
@@ -59,8 +59,8 @@ describe('TrailingStopStrategy', () => {
     const result = await new BacktestExecutor(config).execute();
 
     expect(result.trades).toHaveLength(1);
-    expect(result.trades[0].advice.side).toBe(ExchangeOrderSide.SELL);
-    expect(result.trades[0].advice.type).toBe(ExchangeOrderType.LIMIT);
+    expect(result.trades[0].advice.side).toBe(OrderSide.SELL);
+    expect(result.trades[0].advice.type).toBe(OrderType.LIMIT);
     expect(strategy.trailingState.exited).toBe(true);
     expect(strategy.trailingState.exitLimitPrice).toBe('108');
   });
@@ -135,7 +135,7 @@ describe('TrailingStopStrategy', () => {
     const result = await new BacktestExecutor(config).execute();
 
     expect(result.trades).toHaveLength(1);
-    expect(result.trades[0].advice.type).toBe(ExchangeOrderType.MARKET);
+    expect(result.trades[0].advice.type).toBe(OrderType.MARKET);
     expect(strategy.trailingState.exitLimitPrice).toBeNull();
   });
 

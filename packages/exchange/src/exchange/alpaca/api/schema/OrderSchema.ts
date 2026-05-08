@@ -2,7 +2,7 @@ import {z} from 'zod';
 
 export type Order = z.infer<typeof OrderSchema>;
 
-export const OrderStatus = {
+export const AlpacaOrderStatus = {
   ACCEPTED: 'accepted',
   ACCEPTED_FOR_BIDDING: 'accepted_for_bidding',
   CALCULATED: 'calculated',
@@ -21,12 +21,12 @@ export const OrderStatus = {
   SUSPENDED: 'suspended',
 } as const;
 
-export const OrderSide = {
+export const AlpacaOrderSide = {
   BUY: 'buy',
   SELL: 'sell',
 } as const;
 
-export const OrderType = {
+export const AlpacaOrderType = {
   LIMIT: 'limit',
   MARKET: 'market',
   STOP: 'stop',
@@ -43,13 +43,13 @@ export const TimeInForce = {
   OPG: 'opg',
 } as const;
 
-export const AssetClass = {
+export const AlpacaAssetClass = {
   CRYPTO: 'crypto',
   US_EQUITY: 'us_equity',
   US_OPTION: 'us_option',
 } as const;
 
-export type AssetClassValue = (typeof AssetClass)[keyof typeof AssetClass];
+export type AlpacaAssetClassValue = (typeof AlpacaAssetClass)[keyof typeof AlpacaAssetClass];
 
 export const OrderSchema = z.looseObject({
   asset_class: z.enum(['crypto', 'us_equity', 'us_option']),

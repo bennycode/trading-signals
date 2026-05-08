@@ -1,4 +1,4 @@
-import {AlpacaAPI, AssetClass} from '@typedtrader/exchange';
+import {AlpacaAPI, AlpacaAssetClass} from '@typedtrader/exchange';
 
 const DEFAULT_MAX_NAME_LENGTH = 30;
 
@@ -40,7 +40,7 @@ export function formatSymbolWithName(
  */
 export async function fetchUsEquityNames(api: AlpacaAPI): Promise<Map<string, string>> {
   try {
-    const assets = await api.getAssets({asset_class: AssetClass.US_EQUITY});
+    const assets = await api.getAssets({asset_class: AlpacaAssetClass.US_EQUITY});
     const map = new Map<string, string>();
     for (const asset of assets) {
       map.set(asset.symbol, asset.name);

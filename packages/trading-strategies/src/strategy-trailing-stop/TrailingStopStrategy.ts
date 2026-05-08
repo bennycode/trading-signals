@@ -1,9 +1,9 @@
 import Big from 'big.js';
 import {z} from 'zod';
-import {AllAvailableAmount, ExchangeOrderSide, ExchangeOrderType} from '@typedtrader/exchange';
+import {AllAvailableAmount, OrderSide, OrderType} from '@typedtrader/exchange';
 import type {
-  ExchangeFill,
-  ExchangePendingOrder,
+  Fill,
+  PendingOrder,
   LimitOrderAdvice,
   OneMinuteBatchedCandle,
   OrderAdvice,
@@ -203,8 +203,8 @@ export class TrailingStopStrategy extends Strategy {
     if (this.#exitOrder === 'market') {
       this.#state.exitLimitPrice = null;
       return {
-        side: ExchangeOrderSide.SELL,
-        type: ExchangeOrderType.MARKET,
+        side: OrderSide.SELL,
+        type: OrderType.MARKET,
         amount: AllAvailableAmount,
         amountIn: 'base',
         reason,
@@ -213,8 +213,8 @@ export class TrailingStopStrategy extends Strategy {
 
     this.#state.exitLimitPrice = trailTarget.toFixed();
     const advice: LimitOrderAdvice = {
-      side: ExchangeOrderSide.SELL,
-      type: ExchangeOrderType.LIMIT,
+      side: OrderSide.SELL,
+      type: OrderType.LIMIT,
       amount: AllAvailableAmount,
       amountIn: 'base',
       price: trailTarget,
@@ -223,8 +223,8 @@ export class TrailingStopStrategy extends Strategy {
     return advice;
   }
 
-  async onFill(fill: ExchangeFill, _state: TradingSessionState): Promise<void> {
-    if (fill.side !== ExchangeOrderSide.SELL) {
+  async onFill(fill: Fill, _state: TradingSessionState): Promise<void> {
+    if (fill.side !== OrderSide.SELL) {
       return;
     }
     const fillSize = new Big(fill.size);
@@ -237,8 +237,8 @@ export class TrailingStopStrategy extends Strategy {
     this.#state.positionSize = newSize.toFixed();
   }
 
-  async onOrderFilled(order: ExchangePendingOrder, _state: TradingSessionState): Promise<void> {
-    if (this.#state.exited && order.side === ExchangeOrderSide.SELL) {
+  async onOrderFilled(order: PendingOrder, _state: TradingSessionState): Promise<void> {
+    if (this.#state.exited && order.side === OrderSide.SELL) {
       this.onFinish?.();
     }
   }

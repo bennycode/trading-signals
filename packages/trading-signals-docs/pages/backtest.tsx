@@ -1,7 +1,7 @@
 import {useState, useCallback, useEffect, useRef} from 'react';
 import Big from 'big.js';
 import {AlpacaBrokerMock, TradingPair} from '@typedtrader/exchange';
-import type {ExchangeCandle} from '@typedtrader/exchange';
+import type {Candle} from '@typedtrader/exchange';
 import {
   BacktestExecutor,
   BuyOnceStrategy,
@@ -64,7 +64,7 @@ function parseInitialAmount(value: string, label: string): Big {
   return new Big(trimmed);
 }
 
-function createExchange(candles: ExchangeCandle[], initialBase: string, initialCounter: string) {
+function createExchange(candles: Candle[], initialBase: string, initialCounter: string) {
   const base = candles[0]?.base ?? 'BTC';
   const counter = candles[0]?.counter ?? 'USD';
   const balances = new Map([
@@ -99,7 +99,7 @@ export default function BacktestPage() {
   }, []);
 
   const currentDataset = selectedDataset === 'custom' ? customDataset : datasets.find(d => d.id === selectedDataset)!;
-  const candles = (currentDataset?.candles ?? []) as ExchangeCandle[];
+  const candles = (currentDataset?.candles ?? []) as Candle[];
 
   // Recompute defaults when dataset or strategy changes (including custom dataset uploads)
   useEffect(() => {
@@ -224,7 +224,7 @@ export default function BacktestPage() {
     setBaselineResult(null);
   };
 
-  const handleCustomDataset = (candles: ExchangeCandle[], name: string) => {
+  const handleCustomDataset = (candles: Candle[], name: string) => {
     setCustomDataset({id: 'custom', name, description: `Custom upload: ${name} (${candles.length} candles)`, candles});
     setSelectedDataset('custom');
     setResult(null);

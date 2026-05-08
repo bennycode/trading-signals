@@ -1,5 +1,5 @@
 import {TradingPair, TradingSession, getBrokerClient} from '@typedtrader/exchange';
-import type {ExchangeFill} from '@typedtrader/exchange';
+import type {Fill} from '@typedtrader/exchange';
 import {createStrategy} from 'trading-strategies';
 import type {Strategy as TradingStrategy} from 'trading-strategies';
 import type {MessagingPlatform} from '../platform/MessagingPlatform.js';
@@ -120,7 +120,7 @@ export class StrategyMonitor {
       }
     };
 
-    session.on('fill', async (fill: ExchangeFill) => {
+    session.on('fill', async (fill: Fill) => {
       try {
         await this.#sendFillNotification(row, fill);
       } catch (error) {
@@ -182,7 +182,7 @@ export class StrategyMonitor {
     logger.info({userId: account.userId, strategyId: row.id}, 'Notification sent');
   }
 
-  async #sendFillNotification(row: StrategyAttributes, fill: ExchangeFill): Promise<void> {
+  async #sendFillNotification(row: StrategyAttributes, fill: Fill): Promise<void> {
     const message = `Order Filled!\n\nStrategy: ${row.strategyName}\nPair: ${row.pair}\nSide: ${fill.side}\nPrice: ${fill.price}\nSize: ${fill.size}\nFee: ${fill.fee} ${fill.feeAsset}\nOrder ID: ${fill.order_id}`;
     await this.#sendToAccount(row, message);
   }

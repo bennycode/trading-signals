@@ -1,6 +1,6 @@
 import 'dotenv-defaults/config';
 import axios from 'axios';
-import {ExchangeOrderSide} from '../../Broker.js';
+import {OrderSide} from '../../Broker.js';
 import {TradingPair} from '../../TradingPair.js';
 import {getDemoClient} from './getDemoClient.js';
 
@@ -48,7 +48,7 @@ await section('listBalances', async () => {
 
 // Place a buy below market price so it stays open, then look it up and cancel it
 const placed = await section('placeLimitOrder (BUY 1 AAPL @ $220)', () =>
-  exchange.placeLimitOrder(pair, {price: '220', side: ExchangeOrderSide.BUY, size: '1'})
+  exchange.placeLimitOrder(pair, {price: '220', side: OrderSide.BUY, size: '1'})
 );
 
 await section('getOpenOrders', () => exchange.getOpenOrders(pair));
@@ -62,7 +62,7 @@ if (placed) {
 
 // Place another open order, then cancel everything for this pair at once
 const second = await section('placeLimitOrder #2 (BUY 1 AAPL @ $215)', () =>
-  exchange.placeLimitOrder(pair, {price: '215', side: ExchangeOrderSide.BUY, size: '1'})
+  exchange.placeLimitOrder(pair, {price: '215', side: OrderSide.BUY, size: '1'})
 );
 
 if (second) {

@@ -1,5 +1,5 @@
 import {z} from 'zod';
-import {ExchangeCandleBase} from '../exchange/Broker.js';
+import {CandleBase} from '../exchange/Broker.js';
 
 export const BasicCandlePrice = z.union([z.literal('open'), z.literal('high'), z.literal('low'), z.literal('close')]);
 
@@ -7,7 +7,7 @@ export type BasicCandlePriceProperty = z.infer<typeof BasicCandlePrice>;
 
 export const ONE_MINUTE_IN_MS = 60_000;
 
-export interface BatchedCandle extends ExchangeCandleBase {
+export interface BatchedCandle extends CandleBase {
   // Prices
   close: Big;
   closeAsk: Big;

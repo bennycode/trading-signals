@@ -3,14 +3,14 @@ import {EventEmitter} from 'node:events';
 import {ms, StringValue} from 'ms';
 import jsonabc from 'jsonabc';
 import {BatchedCandle, ONE_MINUTE_IN_MS, OneMinuteBatchedCandle} from './BatchedCandle.js';
-import {ExchangeCandle} from '../exchange/Broker.js';
+import {Candle} from '../exchange/Broker.js';
 
 type EventMap = {
   batchedCandle: [candle: BatchedCandle];
 };
 
 export class CandleBatcher extends EventEmitter<EventMap> {
-  #batch: ExchangeCandle[] = [];
+  #batch: Candle[] = [];
   readonly #desiredIntervalInMillis: number;
 
   constructor(desiredIntervalInMillis: number) {
@@ -28,7 +28,7 @@ export class CandleBatcher extends EventEmitter<EventMap> {
     return timespan / interval;
   }
 
-  static isBatchedCandle(candle: ExchangeCandle | BatchedCandle): candle is BatchedCandle {
+  static isBatchedCandle(candle: Candle | BatchedCandle): candle is BatchedCandle {
     return typeof candle.open !== 'string';
   }
 
@@ -36,18 +36,18 @@ export class CandleBatcher extends EventEmitter<EventMap> {
     return candle.sizeInMillis === ONE_MINUTE_IN_MS;
   }
 
-  static createOneMinuteBatchedCandle(batch: ExchangeCandle[]): OneMinuteBatchedCandle {
+  static createOneMinuteBatchedCandle(batch: Candle[]): OneMinuteBatchedCandle {
     return {
       ...CandleBatcher.createBatchedCandle(batch, ONE_MINUTE_IN_MS),
       sizeInMillis: ONE_MINUTE_IN_MS,
     };
   }
 
-  static createBatchedCandle(batch: ExchangeCandle[], desiredIntervalInMillis: number): BatchedCandle {
+  static createBatchedCandle(batch: Candle[], desiredIntervalInMillis: number): BatchedCandle {
     const openTimesArray = batch.map(candle => candle.openTimeInMillis);
     batch = batch.filter((candle, index) => index === openTimesArray.indexOf(candle.openTimeInMillis));
-    const firstCandle: ExchangeCandle = batch[0];
-    const lastCandle: ExchangeCandle = batch[batch.length - 1];
+    const firstCandle: Candle = batch[0];
+    const lastCandle: Candle = batch[batch.length - 1];
     const isPositive = new Big(lastCandle.close).gt(firstCandle.open);
 
     const accumulator: BatchedCandle = {
@@ -73,7 +73,7 @@ export class CandleBatcher extends EventEmitter<EventMap> {
       weightedMedianPrice: new Big(0),
     };
 
-    const reducer = (accumulator: BatchedCandle, candle: ExchangeCandle): BatchedCandle => {
+    const reducer = (accumulator: BatchedCandle, candle: Candle): BatchedCandle => {
       const {high, highAsk, low, lowAsk} = accumulator;
       candle.lowAsk ??= candle.low;
       candle.highAsk ??= candle.high;
@@ -129,7 +129,7 @@ export class CandleBatcher extends EventEmitter<EventMap> {
    * Example: If you aim for a 1-hour batch, and you include 15-minute candles, this function will produce a 1-hour
    * candle once you've added four sets of 15-minute candles.
    */
-  addToBatch(candle: ExchangeCandle | BatchedCandle): BatchedCandle | undefined {
+  addToBatch(candle: Candle | BatchedCandle): BatchedCandle | undefined {
     const exchangeCandle = CandleBatcher.isBatchedCandle(candle) ? CandleBatcher.toExchangeCandle(candle) : candle;
     const {currentBatchArray, newBatch} = CandleBatcher.add(exchangeCandle, this.#batch, this.#desiredIntervalInMillis);
     this.#batch = currentBatchArray;
@@ -141,12 +141,12 @@ export class CandleBatcher extends EventEmitter<EventMap> {
     return newBatch;
   }
 
-  static batchMany(candles: ExchangeCandle[], desiredIntervalInMillis: number): BatchedCandle[] {
+  static batchMany(candles: Candle[], desiredIntervalInMillis: number): BatchedCandle[] {
     if (candles.length === 0) {
       return [];
     }
     const batchesArray: BatchedCandle[] = [];
-    let currentBatchArray: ExchangeCandle[] = [];
+    let currentBatchArray: Candle[] = [];
     for (const candle of candles) {
       const addCandle = CandleBatcher.add(candle, currentBatchArray, desiredIntervalInMillis);
       if (addCandle.newBatch !== undefined) {
@@ -164,7 +164,7 @@ export class CandleBatcher extends EventEmitter<EventMap> {
    * Create a new candle which starts at the beginning of the desired interval (even when beginning candles have been
    * missed). Because of this fix, we won't get a shifted chart when candles are missing within an interval.
    */
-  static adjustCandle(candle: ExchangeCandle, desiredIntervalInMillis: number): ExchangeCandle {
+  static adjustCandle(candle: Candle, desiredIntervalInMillis: number): Candle {
     // Make a deep copy of the candle to avoid in-place modifications
     const newCandle = {...candle};
     newCandle.openTimeInMillis = candle.openTimeInMillis - (candle.openTimeInMillis % desiredIntervalInMillis);
@@ -173,11 +173,11 @@ export class CandleBatcher extends EventEmitter<EventMap> {
   }
 
   static add(
-    candle: ExchangeCandle,
-    currentBatchArray: ExchangeCandle[],
+    candle: Candle,
+    currentBatchArray: Candle[],
     desiredIntervalInMillis: number
   ): {
-    currentBatchArray: ExchangeCandle[];
+    currentBatchArray: Candle[];
     newBatch: BatchedCandle | undefined;
   } {
     if (new Big(candle.volume).eq(0)) {
@@ -226,19 +226,19 @@ export class CandleBatcher extends EventEmitter<EventMap> {
     };
   }
 
-  static toBatchedCandles(candles: ExchangeCandle[]): BatchedCandle[] {
+  static toBatchedCandles(candles: Candle[]): BatchedCandle[] {
     return CandleBatcher.batchMany(candles, candles[0].sizeInMillis);
   }
 
-  static toBatchedCandle(candle: ExchangeCandle): BatchedCandle {
+  static toBatchedCandle(candle: Candle): BatchedCandle {
     return CandleBatcher.batchMany([candle], candle.sizeInMillis)[0];
   }
 
-  static toExchangeCandles(candles: BatchedCandle[]): ExchangeCandle[] {
+  static toExchangeCandles(candles: BatchedCandle[]): Candle[] {
     return candles.map(CandleBatcher.toExchangeCandle);
   }
 
-  static toExchangeCandle(candle: BatchedCandle): ExchangeCandle {
+  static toExchangeCandle(candle: BatchedCandle): Candle {
     return {
       base: candle.base,
       close: candle.close.valueOf(),
@@ -274,8 +274,8 @@ export class CandleBatcher extends EventEmitter<EventMap> {
     );
   }
 
-  static getHighAndLow(candles: ExchangeCandle[]): {high: Big; low: Big} {
-    const reducer = (accumulator: {high: Big; low: Big}, candle: ExchangeCandle): {high: Big; low: Big} => {
+  static getHighAndLow(candles: Candle[]): {high: Big; low: Big} {
+    const reducer = (accumulator: {high: Big; low: Big}, candle: Candle): {high: Big; low: Big} => {
       const {high, low} = accumulator;
       return {
         high: high.gte(candle.high) ? high : new Big(candle.high),

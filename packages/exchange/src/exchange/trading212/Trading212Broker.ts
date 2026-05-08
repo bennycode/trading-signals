@@ -3,21 +3,21 @@ import Big from 'big.js';
 import {ms} from 'ms';
 import {
   Broker,
-  ExchangeOrderPosition,
-  ExchangeOrderSide,
-  ExchangeOrderType,
-  type ExchangeBalance,
-  type ExchangeCandle,
-  type ExchangeCandleImportRequest,
-  type ExchangeFeeRate,
-  type ExchangeFill,
-  type ExchangeLimitOrderOptions,
-  type ExchangeMarketOrderOptions,
-  type ExchangeOrderOptions,
-  type ExchangePendingLimitOrder,
-  type ExchangePendingMarketOrder,
-  type ExchangePendingOrder,
-  type ExchangeTradingRules,
+  OrderPosition,
+  OrderSide,
+  OrderType,
+  type Balance,
+  type Candle,
+  type CandleImportRequest,
+  type FeeRate,
+  type Fill,
+  type LimitOrderOptions,
+  type MarketOrderOptions,
+  type OrderOptions,
+  type PendingLimitOrder,
+  type PendingMarketOrder,
+  type PendingOrder,
+  type TradingRules,
 } from '../Broker.js';
 import {TradingPair} from '../TradingPair.js';
 import {MarketDataSource} from '../MarketDataSource.js';
@@ -35,9 +35,9 @@ export class Trading212Broker extends Broker implements MarketDataSource {
    *
    * @see https://helpcentre.trading212.com/hc/en-us/articles/360008842317
    */
-  static readonly DEFAULT_FEE_RATES: ExchangeFeeRate = {
-    [ExchangeOrderType.MARKET]: new Big(0),
-    [ExchangeOrderType.LIMIT]: new Big(0),
+  static readonly DEFAULT_FEE_RATES: FeeRate = {
+    [OrderType.MARKET]: new Big(0),
+    [OrderType.LIMIT]: new Big(0),
   };
 
   /**
@@ -98,11 +98,11 @@ export class Trading212Broker extends Broker implements MarketDataSource {
     return new Date().toISOString();
   }
 
-  async getCandles(pair: TradingPair, request: ExchangeCandleImportRequest): Promise<ExchangeCandle[]> {
+  async getCandles(pair: TradingPair, request: CandleImportRequest): Promise<Candle[]> {
     return this.#marketData.getCandles(Trading212Broker.toMarketDataPair(pair), request);
   }
 
-  async getLatestCandle(pair: TradingPair, intervalInMillis: number): Promise<ExchangeCandle> {
+  async getLatestCandle(pair: TradingPair, intervalInMillis: number): Promise<Candle> {
     return this.#marketData.getLatestCandle(Trading212Broker.toMarketDataPair(pair), intervalInMillis);
   }
 
@@ -206,34 +206,34 @@ export class Trading212Broker extends Broker implements MarketDataSource {
    * Lists open positions plus account cash. Position currency is the Trading212 ticker
    * (e.g. "AAPL_US_EQ"); account cash uses the account's `currencyCode` (e.g. "EUR").
    */
-  async listBalances(): Promise<ExchangeBalance[]> {
+  async listBalances(): Promise<Balance[]> {
     const [positions, cash, accountInfo] = await Promise.all([
       this.#api.getPositions(),
       this.#api.getAccountCash(),
       this.#api.getAccountInfo(),
     ]);
 
-    const balances: ExchangeBalance[] = positions.map(position => ({
+    const balances: Balance[] = positions.map(position => ({
       available: new Big(position.quantity).abs().toFixed(),
       currency: position.ticker,
       hold: '0',
-      position: position.quantity < 0 ? ExchangeOrderPosition.SHORT : ExchangeOrderPosition.LONG,
+      position: position.quantity < 0 ? OrderPosition.SHORT : OrderPosition.LONG,
     }));
 
     balances.push({
       available: new Big(cash.free).toFixed(),
       currency: accountInfo.currencyCode,
       hold: new Big(cash.blocked ?? 0).toFixed(),
-      position: ExchangeOrderPosition.LONG,
+      position: OrderPosition.LONG,
     });
 
     return balances;
   }
 
-  async getOpenOrders(pair: TradingPair): Promise<ExchangePendingOrder[]> {
+  async getOpenOrders(pair: TradingPair): Promise<PendingOrder[]> {
     const orders = await this.#api.getOrders();
     // Drop STOP / STOP_LIMIT orders (e.g. placed manually in the Trading212 app): the
-    // neutral `ExchangeOrderType` only models MARKET and LIMIT, so mapping these would
+    // neutral `OrderType` only models MARKET and LIMIT, so mapping these would
     // silently lose `stopPrice` and mis-classify them as MARKET.
     return orders
       .filter(order => order.ticker === pair.base && (order.type === 'MARKET' || order.type === 'LIMIT'))
@@ -251,7 +251,7 @@ export class Trading212Broker extends Broker implements MarketDataSource {
     return matching.map(order => `${order.id}`);
   }
 
-  async getFills(pair: TradingPair): Promise<ExchangeFill[]> {
+  async getFills(pair: TradingPair): Promise<Fill[]> {
     const [history, accountInfo] = await Promise.all([
       this.#api.getHistoryOrders(pair.base),
       this.#api.getAccountInfo(),
@@ -261,12 +261,12 @@ export class Trading212Broker extends Broker implements MarketDataSource {
       .map(order => Trading212ExchangeMapper.toFilledOrder(order, pair, accountInfo.currencyCode));
   }
 
-  async getFillByOrderId(pair: TradingPair, orderId: string): Promise<ExchangeFill | undefined> {
+  async getFillByOrderId(pair: TradingPair, orderId: string): Promise<Fill | undefined> {
     const fills = await this.getFills(pair);
     return fills.find(fill => fill.order_id === orderId);
   }
 
-  async getTradingRules(pair: TradingPair): Promise<ExchangeTradingRules> {
+  async getTradingRules(pair: TradingPair): Promise<TradingRules> {
     const instruments = await this.#api.getInstruments();
     const instrument = instruments.find(item => item.ticker === pair.base);
 
@@ -290,27 +290,27 @@ export class Trading212Broker extends Broker implements MarketDataSource {
     };
   }
 
-  async getFeeRates(_pair: TradingPair): Promise<ExchangeFeeRate> {
+  async getFeeRates(_pair: TradingPair): Promise<FeeRate> {
     return Trading212Broker.DEFAULT_FEE_RATES;
   }
 
   protected override async placeOrder(
     pair: TradingPair,
-    options: ExchangeLimitOrderOptions
-  ): Promise<ExchangePendingLimitOrder>;
+    options: LimitOrderOptions
+  ): Promise<PendingLimitOrder>;
   protected override async placeOrder(
     pair: TradingPair,
-    options: ExchangeMarketOrderOptions
-  ): Promise<ExchangePendingMarketOrder>;
-  protected override async placeOrder(pair: TradingPair, options: ExchangeOrderOptions): Promise<ExchangePendingOrder> {
+    options: MarketOrderOptions
+  ): Promise<PendingMarketOrder>;
+  protected override async placeOrder(pair: TradingPair, options: OrderOptions): Promise<PendingOrder> {
     if (options.sizeInCounter) {
       throw new Error('Notional (sizeInCounter) orders are not supported by the Trading212 public API.');
     }
 
     // Trading212 encodes side in the sign of `quantity`: positive = BUY, negative = SELL.
-    const signedQuantity = options.side === ExchangeOrderSide.SELL ? -Number(options.size) : Number(options.size);
+    const signedQuantity = options.side === OrderSide.SELL ? -Number(options.size) : Number(options.size);
 
-    if (options.type === ExchangeOrderType.LIMIT) {
+    if (options.type === OrderType.LIMIT) {
       // Trading212 rejects GTC for stock limit orders ("Invalid payload"). DAY is the only
       // time-in-force that works across paper and live for equity limit orders.
       const order = await this.#api.placeLimitOrder({

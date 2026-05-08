@@ -2,14 +2,14 @@ import Big from 'big.js';
 import {describe, expect, it} from 'vitest';
 import {
   CandleBatcher,
-  ExchangeOrderPosition,
-  ExchangeOrderSide,
-  ExchangeOrderType,
+  OrderPosition,
+  OrderSide,
+  OrderType,
   TradingPair,
 } from '@typedtrader/exchange';
 import type {
-  ExchangeCandle,
-  ExchangeFill,
+  Candle,
+  Fill,
   LimitOrderAdvice,
   MarketOrderAdvice,
   OneMinuteBatchedCandle,
@@ -19,13 +19,13 @@ import type {
 import {BuyOnceStrategy} from '../strategy-buy-once/BuyOnceStrategy.js';
 
 function assertMarketBuy(advice: OrderAdvice | void): asserts advice is MarketOrderAdvice {
-  if (!advice || advice.type !== ExchangeOrderType.MARKET || advice.side !== ExchangeOrderSide.BUY) {
+  if (!advice || advice.type !== OrderType.MARKET || advice.side !== OrderSide.BUY) {
     throw new Error(`Expected a MARKET BUY advice but received ${JSON.stringify(advice)}`);
   }
 }
 
 function assertLimitSell(advice: OrderAdvice | void): asserts advice is LimitOrderAdvice {
-  if (!advice || advice.type !== ExchangeOrderType.LIMIT || advice.side !== ExchangeOrderSide.SELL) {
+  if (!advice || advice.type !== OrderType.LIMIT || advice.side !== OrderSide.SELL) {
     throw new Error(`Expected a LIMIT SELL advice but received ${JSON.stringify(advice)}`);
   }
 }
@@ -44,8 +44,8 @@ const mockState: TradingSessionState = {
     pair,
   },
   feeRates: {
-    [ExchangeOrderType.LIMIT]: new Big('0.001'),
-    [ExchangeOrderType.MARKET]: new Big('0.002'),
+    [OrderType.LIMIT]: new Big('0.001'),
+    [OrderType.MARKET]: new Big('0.002'),
   },
 };
 
@@ -53,7 +53,7 @@ const ONE_MINUTE_IN_MS = 60_000;
 
 function makeCandle(close: number, index = 0): OneMinuteBatchedCandle {
   const closeStr = String(close);
-  const exchangeCandle: ExchangeCandle = {
+  const exchangeCandle: Candle = {
     base: 'AAPL',
     close: closeStr,
     counter: 'USD',
@@ -68,14 +68,14 @@ function makeCandle(close: number, index = 0): OneMinuteBatchedCandle {
   return CandleBatcher.createOneMinuteBatchedCandle([exchangeCandle]);
 }
 
-function makeFill(price: string, size: string, side: ExchangeOrderSide): ExchangeFill {
+function makeFill(price: string, size: string, side: OrderSide): Fill {
   return {
     created_at: '2025-01-01T00:00:00.000Z',
     fee: '0',
     feeAsset: 'USD',
     order_id: 'order-1',
     pair,
-    position: ExchangeOrderPosition.LONG,
+    position: OrderPosition.LONG,
     price,
     side,
     size,
@@ -106,7 +106,7 @@ describe('BuyOnceStrategy (buy-and-hold mode, no buyAt)', () => {
       const buy = await strategy.onCandle(makeCandle(100), mockState);
       assertMarketBuy(buy);
 
-      await strategy.onFill(makeFill('100', '10', ExchangeOrderSide.BUY), mockState);
+      await strategy.onFill(makeFill('100', '10', OrderSide.BUY), mockState);
 
       const hold = await strategy.onCandle(makeCandle(97, 1), mockState);
       expect(hold).toBeUndefined();
@@ -125,7 +125,7 @@ describe('BuyOnceStrategy (buy-and-hold mode, no buyAt)', () => {
 
       const buy = await strategy.onCandle(makeCandle(100), mockState);
       assertMarketBuy(buy);
-      await strategy.onFill(makeFill('100', '10', ExchangeOrderSide.BUY), mockState);
+      await strategy.onFill(makeFill('100', '10', OrderSide.BUY), mockState);
 
       const hold = await strategy.onCandle(makeCandle(105, 1), mockState);
       expect(hold).toBeUndefined();
@@ -142,12 +142,12 @@ describe('BuyOnceStrategy (buy-and-hold mode, no buyAt)', () => {
       const strategy = new BuyOnceStrategy({protected: {stopLossPct: '5', takeProfitPct: '10'}});
 
       await strategy.onCandle(makeCandle(100), mockState);
-      await strategy.onFill(makeFill('100', '10', ExchangeOrderSide.BUY), mockState);
+      await strategy.onFill(makeFill('100', '10', OrderSide.BUY), mockState);
 
       const exit = await strategy.onCandle(makeCandle(95, 1), mockState);
       assertLimitSell(exit);
 
-      await strategy.onFill(makeFill('95', '10', ExchangeOrderSide.SELL), mockState);
+      await strategy.onFill(makeFill('95', '10', OrderSide.SELL), mockState);
 
       const silent = await strategy.onCandle(makeCandle(120, 2), mockState);
       expect(silent).toBeUndefined();
@@ -158,7 +158,7 @@ describe('BuyOnceStrategy (buy-and-hold mode, no buyAt)', () => {
     it('restores the bought flag and protected position through restoreState', async () => {
       const original = new BuyOnceStrategy({protected: {stopLossPct: '5'}});
       await original.onCandle(makeCandle(100), mockState);
-      await original.onFill(makeFill('100', '10', ExchangeOrderSide.BUY), mockState);
+      await original.onFill(makeFill('100', '10', OrderSide.BUY), mockState);
 
       const snapshot = original.state;
       expect(snapshot).not.toBeNull();

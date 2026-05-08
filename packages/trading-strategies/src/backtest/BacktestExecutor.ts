@@ -1,6 +1,6 @@
 import Big from 'big.js';
-import {AllAvailableAmount, CandleBatcher, ExchangeOrderSide, ExchangeOrderType} from '@typedtrader/exchange';
-import type {ExchangeCandle, ExchangeFeeRate, ExchangeTradingRules, OrderAdvice, TradingSessionState} from '@typedtrader/exchange';
+import {AllAvailableAmount, CandleBatcher, OrderSide, OrderType} from '@typedtrader/exchange';
+import type {Candle, FeeRate, TradingRules, OrderAdvice, TradingSessionState} from '@typedtrader/exchange';
 import type {BacktestConfig} from './BacktestConfig.js';
 import type {BacktestPerformanceSummary, BacktestResult, BacktestTrade} from './BacktestResult.js';
 import {PerformanceCalculator} from './PerformanceCalculator.js';
@@ -101,8 +101,8 @@ export class BacktestExecutor {
     if (!advice) {
       // Fallback: shouldn't happen in normal flow
       return {
-        side: ExchangeOrderSide.BUY,
-        type: ExchangeOrderType.MARKET,
+        side: OrderSide.BUY,
+        type: OrderType.MARKET,
         amount: AllAvailableAmount,
         amountIn: 'counter',
       };
@@ -112,8 +112,8 @@ export class BacktestExecutor {
 
   async #buildState(
     pair: import('@typedtrader/exchange').TradingPair,
-    tradingRules: ExchangeTradingRules,
-    feeRates: ExchangeFeeRate
+    tradingRules: TradingRules,
+    feeRates: FeeRate
   ): Promise<TradingSessionState> {
     const {exchange} = this.#config;
     const [balances, fills] = await Promise.all([exchange.getAvailableBalances(pair), exchange.getFills(pair)]);
@@ -131,13 +131,13 @@ export class BacktestExecutor {
   async #placeOrderFromAdvice(
     advice: OrderAdvice,
     pair: import('@typedtrader/exchange').TradingPair,
-    tradingRules: ExchangeTradingRules,
-    feeRates: ExchangeFeeRate
+    tradingRules: TradingRules,
+    feeRates: FeeRate
   ): Promise<void> {
     const {exchange} = this.#config;
 
     try {
-      if (advice.type === ExchangeOrderType.LIMIT) {
+      if (advice.type === OrderType.LIMIT) {
         const rawPrice = new Big(advice.price);
         const price = this.#roundLimitPrice(rawPrice, tradingRules);
 
@@ -148,11 +148,11 @@ export class BacktestExecutor {
         const balances = await exchange.getAvailableBalances(pair);
 
         let size: Big;
-        if (advice.side === ExchangeOrderSide.BUY) {
+        if (advice.side === OrderSide.BUY) {
           if (advice.amount !== AllAvailableAmount) {
             size = new Big(advice.amount);
           } else {
-            const feeRate = feeRates[ExchangeOrderType.LIMIT];
+            const feeRate = feeRates[OrderType.LIMIT];
             const netSpend = balances.counter.div(new Big(1).plus(feeRate));
             size = netSpend.div(price);
           }
@@ -179,7 +179,7 @@ export class BacktestExecutor {
         // MARKET order
         const balances = await exchange.getAvailableBalances(pair);
 
-        if (advice.side === ExchangeOrderSide.BUY) {
+        if (advice.side === OrderSide.BUY) {
           if (advice.amountIn === 'counter') {
             const spendAmount = advice.amount !== AllAvailableAmount ? new Big(advice.amount) : balances.counter;
             if (spendAmount.lte(0) || balances.counter.lte(0)) {
@@ -191,7 +191,7 @@ export class BacktestExecutor {
             if (estimatedPrice.eq(0)) {
               return;
             }
-            const feeRate = feeRates[ExchangeOrderType.MARKET];
+            const feeRate = feeRates[OrderType.MARKET];
             const netSpend = actualSpend.div(new Big(1).plus(feeRate));
             const size = netSpend.div(estimatedPrice);
 
@@ -200,7 +200,7 @@ export class BacktestExecutor {
             }
 
             const order = await exchange.placeMarketOrder(pair, {
-              side: ExchangeOrderSide.BUY,
+              side: OrderSide.BUY,
               size: size.toFixed(),
               sizeInCounter: false,
             });
@@ -213,7 +213,7 @@ export class BacktestExecutor {
             }
 
             const order = await exchange.placeMarketOrder(pair, {
-              side: ExchangeOrderSide.BUY,
+              side: OrderSide.BUY,
               size: size.toFixed(),
               sizeInCounter: false,
             });
@@ -228,7 +228,7 @@ export class BacktestExecutor {
           const actualSize = amount.gt(balances.base) ? balances.base : amount;
 
           const order = await exchange.placeMarketOrder(pair, {
-            side: ExchangeOrderSide.SELL,
+            side: OrderSide.SELL,
             size: actualSize.toFixed(),
             sizeInCounter: false,
           });
@@ -241,14 +241,14 @@ export class BacktestExecutor {
   }
 
   /** Rounds a limit-order price down to the exchange's counter_increment. */
-  #roundLimitPrice(rawPrice: Big, tradingRules: ExchangeTradingRules): Big {
+  #roundLimitPrice(rawPrice: Big, tradingRules: TradingRules): Big {
     const counterIncrement = new Big(tradingRules.counter_increment);
     return rawPrice.div(counterIncrement).round(0, Big.roundDown).mul(counterIncrement);
   }
 
   #buildPerformanceSummary(
     trades: BacktestTrade[],
-    candles: ExchangeCandle[],
+    candles: Candle[],
     initialPortfolioValue: Big,
     finalPortfolioValue: Big
   ): BacktestPerformanceSummary {

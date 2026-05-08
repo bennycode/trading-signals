@@ -1,17 +1,17 @@
 import type {Bar} from './api/schema/BarSchema.js';
-import {type Order, OrderStatus, type AssetClassValue} from './api/schema/OrderSchema.js';
+import {type Order, AlpacaOrderStatus, type AlpacaAssetClassValue} from './api/schema/OrderSchema.js';
 import {ms} from 'ms';
 import {TradingPair} from '../TradingPair.js';
 import {
-  ExchangeCandle,
-  ExchangeFill,
-  ExchangeOrderOptions,
-  ExchangeOrderPosition,
-  ExchangeOrderSide,
-  ExchangeOrderType,
-  ExchangePendingLimitOrder,
-  ExchangePendingMarketOrder,
-  ExchangePendingOrder,
+  Candle,
+  Fill,
+  OrderOptions,
+  OrderPosition,
+  OrderSide,
+  OrderType,
+  PendingLimitOrder,
+  PendingMarketOrder,
+  PendingOrder,
 } from '../Broker.js';
 
 export class AlpacaExchangeMapper {
@@ -27,7 +27,7 @@ export class AlpacaExchangeMapper {
     return ms(intervalInMillis).replace('m', 'Min').replace('h', 'Hour').replace('d', 'Day');
   }
 
-  static toExchangeCandle(candle: Bar, pair: TradingPair, sizeInMillis: number): ExchangeCandle {
+  static toExchangeCandle(candle: Bar, pair: TradingPair, sizeInMillis: number): Candle {
     // Converting "RFC 3339" time to "ISO 8601 UTC" time
     const date = new Date(candle.t);
     return {
@@ -44,24 +44,24 @@ export class AlpacaExchangeMapper {
     };
   }
 
-  static toExchangePendingOrder(order: Order, pair: TradingPair, options: ExchangeOrderOptions) {
+  static toExchangePendingOrder(order: Order, pair: TradingPair, options: OrderOptions) {
     if (order.type === 'market') {
-      const pendingOrder: ExchangePendingMarketOrder = {
+      const pendingOrder: PendingMarketOrder = {
         id: order.id,
         pair,
         side: options.side,
         size: order.notional ? `${order.notional}` : `${order.qty}`,
-        type: ExchangeOrderType.MARKET,
+        type: OrderType.MARKET,
       };
       return pendingOrder;
     }
-    const pendingOrder: ExchangePendingLimitOrder = {
+    const pendingOrder: PendingLimitOrder = {
       id: order.id,
       pair,
       price: `${order.limit_price}`,
       side: options.side,
       size: `${order.qty}`,
-      type: ExchangeOrderType.LIMIT,
+      type: OrderType.LIMIT,
     };
     return pendingOrder;
   }
@@ -70,40 +70,40 @@ export class AlpacaExchangeMapper {
    * Converts an Alpaca symbol and asset class back into a TradingPair.
    * Crypto symbols use "/" delimiter (e.g., "BTC/USD"), stocks are just the ticker (e.g., "AAPL").
    */
-  static symbolToPair(symbol: string, assetClass: AssetClassValue): TradingPair {
+  static symbolToPair(symbol: string, assetClass: AlpacaAssetClassValue): TradingPair {
     if (assetClass === 'crypto') {
       return TradingPair.fromString(symbol, '/');
     }
     return new TradingPair(symbol, 'USD');
   }
 
-  static toOpenOrder(order: Order, pair: TradingPair): ExchangePendingOrder {
-    const side = order.side === 'buy' ? ExchangeOrderSide.BUY : ExchangeOrderSide.SELL;
+  static toOpenOrder(order: Order, pair: TradingPair): PendingOrder {
+    const side = order.side === 'buy' ? OrderSide.BUY : OrderSide.SELL;
 
     if (order.type === 'market') {
-      const pendingOrder: ExchangePendingMarketOrder = {
+      const pendingOrder: PendingMarketOrder = {
         id: order.id,
         pair,
         side,
         size: order.notional ? `${order.notional}` : `${order.qty}`,
-        type: ExchangeOrderType.MARKET,
+        type: OrderType.MARKET,
       };
       return pendingOrder;
     }
 
-    const pendingOrder: ExchangePendingLimitOrder = {
+    const pendingOrder: PendingLimitOrder = {
       id: order.id,
       pair,
       price: `${order.limit_price}`,
       side,
       size: `${order.qty}`,
-      type: ExchangeOrderType.LIMIT,
+      type: OrderType.LIMIT,
     };
     return pendingOrder;
   }
 
-  static toFilledOrder(order: Order, pair: TradingPair): ExchangeFill {
-    if (order.status !== OrderStatus.FILLED) {
+  static toFilledOrder(order: Order, pair: TradingPair): Fill {
+    if (order.status !== AlpacaOrderStatus.FILLED) {
       throw new Error(`Order ID "${order.id}" is not filled.`);
     }
 
@@ -115,9 +115,9 @@ export class AlpacaExchangeMapper {
       order_id: `${order.id}`,
       pair,
       /** @see https://forum.alpaca.markets/t/13480 */
-      position: ExchangeOrderPosition.LONG,
+      position: OrderPosition.LONG,
       price: `${order.filled_avg_price}`,
-      side: order.side === 'buy' ? ExchangeOrderSide.BUY : ExchangeOrderSide.SELL,
+      side: order.side === 'buy' ? OrderSide.BUY : OrderSide.SELL,
       size: `${order.filled_qty}`,
     };
   }

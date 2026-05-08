@@ -1,5 +1,5 @@
 import {z} from 'zod';
-import type {ExchangeCandle} from '@typedtrader/exchange';
+import type {Candle} from '@typedtrader/exchange';
 import {BuyOnceSchema, BuyBelowSellAboveSchema, CoinFlipSchema, MultiIndicatorConfluenceSchema, ScalpSchema, MeanReversionSchema, ProtectedStrategySchema, TrailingStopSchema, suggestScalpOffset} from 'trading-strategies';
 
 export {BuyOnceSchema, BuyBelowSellAboveSchema, CoinFlipSchema, MultiIndicatorConfluenceSchema, ScalpSchema, MeanReversionSchema, ProtectedStrategySchema, TrailingStopSchema};
@@ -11,10 +11,10 @@ export interface StrategyDefinition {
   name: string;
   description: string;
   schema: z.ZodType;
-  getDefaultConfig: (candles: ExchangeCandle[]) => Record<string, unknown>;
+  getDefaultConfig: (candles: Candle[]) => Record<string, unknown>;
 }
 
-function getPriceStats(candles: ExchangeCandle[]): {firstClose: number; minClose: number; maxClose: number} {
+function getPriceStats(candles: Candle[]): {firstClose: number; minClose: number; maxClose: number} {
   if (candles.length === 0) {
     return {firstClose: 100, minClose: 90, maxClose: 110};
   }

@@ -1,7 +1,7 @@
 import {readFile} from 'node:fs/promises';
 import {parseArgs} from 'node:util';
-import {AlpacaBrokerMock, ExchangeOrderType, TradingPair} from '@typedtrader/exchange';
-import type {ExchangeCandle} from '@typedtrader/exchange';
+import {AlpacaBrokerMock, OrderType, TradingPair} from '@typedtrader/exchange';
+import type {Candle} from '@typedtrader/exchange';
 import Big from 'big.js';
 import {BacktestExecutor} from '../backtest/BacktestExecutor.js';
 import {createStrategy, getStrategyNames} from '../strategy/StrategyRegistry.js';
@@ -40,7 +40,7 @@ try {
   process.exit(1);
 }
 
-let candles: ExchangeCandle[];
+let candles: Candle[];
 try {
   const parsed = JSON.parse(raw);
   if (!Array.isArray(parsed)) {
@@ -83,8 +83,8 @@ const exchange = new AlpacaBrokerMock({
     [tradingPair.counter, {available: startingBalance, hold: new Big(0)}],
   ]),
   feeRates: {
-    [ExchangeOrderType.MARKET]: new Big(0),
-    [ExchangeOrderType.LIMIT]: new Big(0),
+    [OrderType.MARKET]: new Big(0),
+    [OrderType.LIMIT]: new Big(0),
   },
 });
 

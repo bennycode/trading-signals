@@ -1,5 +1,5 @@
 import {z} from 'zod';
-import {AllAvailableAmount, ExchangeOrderSide, ExchangeOrderType} from '@typedtrader/exchange';
+import {AllAvailableAmount, OrderSide, OrderType} from '@typedtrader/exchange';
 import type {OneMinuteBatchedCandle, OrderAdvice, TradingSessionState} from '@typedtrader/exchange';
 import {MarketType} from '../strategy/MarketType.js';
 import {ProtectedStrategy, ProtectedStrategySchema} from '../strategy-protected/ProtectedStrategy.js';
@@ -23,15 +23,15 @@ export class CoinFlipStrategy extends ProtectedStrategy {
     }
 
     const buyMarket: OrderAdvice = {
-      side: ExchangeOrderSide.BUY,
-      type: ExchangeOrderType.MARKET,
+      side: OrderSide.BUY,
+      type: OrderType.MARKET,
       amount: AllAvailableAmount,
       amountIn: 'counter',
     };
 
     const sellMarket: OrderAdvice = {
-      side: ExchangeOrderSide.SELL,
-      type: ExchangeOrderType.MARKET,
+      side: OrderSide.SELL,
+      type: OrderType.MARKET,
       amount: AllAvailableAmount,
       amountIn: 'base',
     };

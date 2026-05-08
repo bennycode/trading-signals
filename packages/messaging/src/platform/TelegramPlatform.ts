@@ -7,7 +7,7 @@ import {
   createConversation,
 } from '@grammyjs/conversations';
 import {z} from 'zod';
-import {ExchangeOrderSide, TradingPair, getBrokerClient} from '@typedtrader/exchange';
+import {OrderSide, TradingPair, getBrokerClient} from '@typedtrader/exchange';
 import {getAvailableReportNames, reportRequiresAccount} from 'trading-strategies';
 import type {CommandHandler, MessageContext, MessagingPlatform, PlatformInfo} from './MessagingPlatform.js';
 import {markdownToTelegramHtml, splitForTelegram} from './telegramMarkdown.js';
@@ -40,20 +40,20 @@ const TRADE_COMMAND_NAMES = ['buyMarket', 'sellMarket', 'buyLimit', 'sellLimit']
 type TradeCommandName = (typeof TRADE_COMMAND_NAMES)[number];
 
 interface TradeCommandShape {
-  side: ExchangeOrderSide;
+  side: OrderSide;
   isLimit: boolean;
 }
 
 function tradeCommandShape(name: TradeCommandName): TradeCommandShape {
   switch (name) {
     case 'buyMarket':
-      return {side: ExchangeOrderSide.BUY, isLimit: false};
+      return {side: OrderSide.BUY, isLimit: false};
     case 'sellMarket':
-      return {side: ExchangeOrderSide.SELL, isLimit: false};
+      return {side: OrderSide.SELL, isLimit: false};
     case 'buyLimit':
-      return {side: ExchangeOrderSide.BUY, isLimit: true};
+      return {side: OrderSide.BUY, isLimit: true};
     case 'sellLimit':
-      return {side: ExchangeOrderSide.SELL, isLimit: true};
+      return {side: OrderSide.SELL, isLimit: true};
   }
 }
 
@@ -64,7 +64,7 @@ function buildTradeActionLabel(
   limitPrice: string | null
 ): string {
   const {side, isLimit} = tradeCommandShape(cmd);
-  const sideLabel = side === ExchangeOrderSide.BUY ? 'BUY' : 'SELL';
+  const sideLabel = side === OrderSide.BUY ? 'BUY' : 'SELL';
   const kindLabel = isLimit ? 'LIMIT' : 'MARKET';
   if (isLimit && limitPrice !== null) {
     return `${kindLabel} ${sideLabel} ${quantity} ${pair.base} @ ${limitPrice} ${pair.counter}`;

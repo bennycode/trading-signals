@@ -2,19 +2,19 @@ import Big from 'big.js';
 import {describe, expect, it} from 'vitest';
 import {BrokerMock, type ExchangeMockBalance} from './BrokerMock.js';
 import {
-  type ExchangeCandle,
-  type ExchangeFeeRate,
-  ExchangeOrderSide,
-  ExchangeOrderType,
-  type ExchangeTradingRules,
+  type Candle,
+  type FeeRate,
+  OrderSide,
+  OrderType,
+  type TradingRules,
 } from './Broker.js';
 import {TradingPair} from './TradingPair.js';
 import {ms} from 'ms';
 
 class TestExchangeMock extends BrokerMock {
-  static readonly TEST_FEE_RATES: ExchangeFeeRate = {
-    [ExchangeOrderType.MARKET]: new Big(0.0025),
-    [ExchangeOrderType.LIMIT]: new Big(0.0015),
+  static readonly TEST_FEE_RATES: FeeRate = {
+    [OrderType.MARKET]: new Big(0.0025),
+    [OrderType.LIMIT]: new Big(0.0015),
   };
 
   static readonly TEST_TRADING_RULES = {
@@ -30,11 +30,11 @@ class TestExchangeMock extends BrokerMock {
     this.setCachedFeeRates(TestExchangeMock.TEST_FEE_RATES);
   }
 
-  async getFeeRates(): Promise<ExchangeFeeRate> {
+  async getFeeRates(): Promise<FeeRate> {
     return TestExchangeMock.TEST_FEE_RATES;
   }
 
-  async getTradingRules(pair: TradingPair): Promise<ExchangeTradingRules> {
+  async getTradingRules(pair: TradingPair): Promise<TradingRules> {
     return {...TestExchangeMock.TEST_TRADING_RULES, pair};
   }
 
@@ -49,7 +49,7 @@ class TestExchangeMock extends BrokerMock {
 
 const pair = new TradingPair('BTC', 'USD');
 
-function createCandle(overrides: Partial<ExchangeCandle> & {open: string; close: string}): ExchangeCandle {
+function createCandle(overrides: Partial<Candle> & {open: string; close: string}): Candle {
   const openNum = parseFloat(overrides.open);
   const closeNum = parseFloat(overrides.close);
   return {
@@ -85,7 +85,7 @@ describe('BrokerMock', () => {
 
       // Place market buy order
       await exchange.placeMarketOrder(pair, {
-        side: ExchangeOrderSide.BUY,
+        side: OrderSide.BUY,
         size: '1',
         sizeInCounter: false,
       });
@@ -97,7 +97,7 @@ describe('BrokerMock', () => {
 
       expect(fills).toHaveLength(1);
       expect(fills[0].price).toBe('105');
-      expect(fills[0].side).toBe(ExchangeOrderSide.BUY);
+      expect(fills[0].side).toBe(OrderSide.BUY);
     });
 
     it('fills market sell order at the next candle open price', async () => {
@@ -106,7 +106,7 @@ describe('BrokerMock', () => {
       exchange.processCandle(createCandle({open: '100', close: '100'}));
 
       await exchange.placeMarketOrder(pair, {
-        side: ExchangeOrderSide.SELL,
+        side: OrderSide.SELL,
         size: '2',
         sizeInCounter: false,
       });
@@ -117,7 +117,7 @@ describe('BrokerMock', () => {
 
       expect(fills).toHaveLength(1);
       expect(fills[0].price).toBe('98');
-      expect(fills[0].side).toBe(ExchangeOrderSide.SELL);
+      expect(fills[0].side).toBe(OrderSide.SELL);
     });
   });
 
@@ -128,7 +128,7 @@ describe('BrokerMock', () => {
       exchange.processCandle(createCandle({open: '100', close: '100'}));
 
       await exchange.placeLimitOrder(pair, {
-        side: ExchangeOrderSide.BUY,
+        side: OrderSide.BUY,
         size: '1',
         price: '95',
       });
@@ -149,7 +149,7 @@ describe('BrokerMock', () => {
       exchange.processCandle(createCandle({open: '100', close: '100'}));
 
       await exchange.placeLimitOrder(pair, {
-        side: ExchangeOrderSide.BUY,
+        side: OrderSide.BUY,
         size: '1',
         price: '90',
       });
@@ -169,7 +169,7 @@ describe('BrokerMock', () => {
       exchange.processCandle(createCandle({open: '500', close: '500'}));
 
       await exchange.placeLimitOrder(pair, {
-        side: ExchangeOrderSide.BUY,
+        side: OrderSide.BUY,
         size: '1',
         price: '500',
       });
@@ -189,7 +189,7 @@ describe('BrokerMock', () => {
       exchange.processCandle(createCandle({open: '100', close: '100'}));
 
       await exchange.placeLimitOrder(pair, {
-        side: ExchangeOrderSide.SELL,
+        side: OrderSide.SELL,
         size: '2',
         price: '105',
       });
@@ -210,7 +210,7 @@ describe('BrokerMock', () => {
       exchange.processCandle(createCandle({open: '100', close: '100'}));
 
       await exchange.placeLimitOrder(pair, {
-        side: ExchangeOrderSide.SELL,
+        side: OrderSide.SELL,
         size: '2',
         price: '400',
       });
@@ -232,7 +232,7 @@ describe('BrokerMock', () => {
       exchange.processCandle(createCandle({open: '100', close: '100'}));
 
       await exchange.placeLimitOrder(pair, {
-        side: ExchangeOrderSide.BUY,
+        side: OrderSide.BUY,
         size: '1',
         price: '100',
       });
@@ -250,7 +250,7 @@ describe('BrokerMock', () => {
       exchange.processCandle(createCandle({open: '100', close: '100'}));
 
       await exchange.placeLimitOrder(pair, {
-        side: ExchangeOrderSide.SELL,
+        side: OrderSide.SELL,
         size: '2',
         price: '100',
       });
@@ -267,7 +267,7 @@ describe('BrokerMock', () => {
       exchange.processCandle(createCandle({open: '100', close: '100'}));
 
       const order = await exchange.placeLimitOrder(pair, {
-        side: ExchangeOrderSide.SELL,
+        side: OrderSide.SELL,
         size: '2',
         price: '100',
       });
@@ -288,7 +288,7 @@ describe('BrokerMock', () => {
       // Trying to buy 1 BTC at $100 = $100 needed, but only $50 available
       await expect(
         exchange.placeLimitOrder(pair, {
-          side: ExchangeOrderSide.BUY,
+          side: OrderSide.BUY,
           size: '1',
           price: '100',
         })
@@ -303,7 +303,7 @@ describe('BrokerMock', () => {
       exchange.processCandle(createCandle({open: '100', close: '100'}));
 
       await exchange.placeLimitOrder(pair, {
-        side: ExchangeOrderSide.SELL,
+        side: OrderSide.SELL,
         size: '1',
         price: '100',
       });
@@ -333,7 +333,7 @@ describe('BrokerMock', () => {
 
       // Place sell order — the current candle range would match, but it shouldn't
       await exchange.placeLimitOrder(pair, {
-        side: ExchangeOrderSide.SELL,
+        side: OrderSide.SELL,
         size: '1',
         price: '100',
       });

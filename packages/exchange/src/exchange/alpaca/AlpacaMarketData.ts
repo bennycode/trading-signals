@@ -1,7 +1,7 @@
 import {randomUUID} from 'node:crypto';
 import {ms} from 'ms';
 import {CandleBatcher} from '../../candle/CandleBatcher.js';
-import type {ExchangeCandle, ExchangeCandleImportRequest} from '../Broker.js';
+import type {Candle, CandleImportRequest} from '../Broker.js';
 import {MarketDataSource} from '../MarketDataSource.js';
 import type {TradingPair} from '../TradingPair.js';
 import {AlpacaExchangeMapper} from './AlpacaExchangeMapper.js';
@@ -43,8 +43,8 @@ export class AlpacaMarketData extends MarketDataSource {
     this.#connectStream = source => alpacaWebSocket.connect(options, source);
   }
 
-  async getCandles(pair: TradingPair, request: ExchangeCandleImportRequest): Promise<ExchangeCandle[]> {
-    const candles: ExchangeCandle[] = [];
+  async getCandles(pair: TradingPair, request: CandleImportRequest): Promise<Candle[]> {
+    const candles: Candle[] = [];
     let pageToken: string | null | undefined = undefined;
 
     const isCrypto = await isAlpacaCryptoSymbol(this.#alpacaAPI, pair);
@@ -63,7 +63,7 @@ export class AlpacaMarketData extends MarketDataSource {
     return candles;
   }
 
-  async getLatestCandle(pair: TradingPair, intervalInMillis: number): Promise<ExchangeCandle> {
+  async getLatestCandle(pair: TradingPair, intervalInMillis: number): Promise<Candle> {
     const isCrypto = await isAlpacaCryptoSymbol(this.#alpacaAPI, pair);
     const symbol = createAlpacaSymbol(pair, isCrypto);
     const fetchMethod = isCrypto ? this.#fetchLatestCryptoBars.bind(this) : this.#fetchLatestStockBars.bind(this);
@@ -140,7 +140,7 @@ export class AlpacaMarketData extends MarketDataSource {
     });
   }
 
-  #fetchCryptoBars(pair: TradingPair, request: ExchangeCandleImportRequest, pageToken: string | undefined) {
+  #fetchCryptoBars(pair: TradingPair, request: CandleImportRequest, pageToken: string | undefined) {
     return this.#alpacaAPI.getCryptoBars({
       end: request.startTimeLastCandle,
       limit: 10_000,
@@ -151,7 +151,7 @@ export class AlpacaMarketData extends MarketDataSource {
     });
   }
 
-  #fetchStockBars(pair: TradingPair, request: ExchangeCandleImportRequest, pageToken: string | undefined) {
+  #fetchStockBars(pair: TradingPair, request: CandleImportRequest, pageToken: string | undefined) {
     if (pair.counter !== 'USD') {
       throw new Error(`Cannot use "${pair.counter}". Stock "${pair.base}" can only be traded in USD on Alpaca.`);
     }

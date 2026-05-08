@@ -3,8 +3,8 @@ import {EventEmitter} from 'node:events';
 import {CandleBatcher} from '../candle/CandleBatcher.js';
 import type {BatchedCandle} from '../candle/BatchedCandle.js';
 import {ONE_MINUTE_IN_MS} from '../candle/BatchedCandle.js';
-import type {ExchangeCandle, ExchangeFill, ExchangePendingOrder} from '../exchange/Broker.js';
-import {ExchangeOrderSide, ExchangeOrderType} from '../exchange/Broker.js';
+import type {Candle, Fill, PendingOrder} from '../exchange/Broker.js';
+import {OrderSide, OrderType} from '../exchange/Broker.js';
 import {AllAvailableAmount} from './TradingSessionTypes.js';
 import type {
   OrderAdvice,
@@ -19,7 +19,7 @@ export class TradingSession extends EventEmitter<TradingSessionEventMap> {
   readonly #strategy;
 
   #state: TradingSessionState | null = null;
-  #pendingOrders = new Map<string, ExchangePendingOrder>();
+  #pendingOrders = new Map<string, PendingOrder>();
   #candleTopicId: string | null = null;
   #orderTopicId: string | null = null;
   #running = false;
@@ -101,7 +101,7 @@ export class TradingSession extends EventEmitter<TradingSessionEventMap> {
     this.emit('stopped');
   }
 
-  #onCandle = async (candle: ExchangeCandle | BatchedCandle): Promise<void> => {
+  #onCandle = async (candle: Candle | BatchedCandle): Promise<void> => {
     try {
       const batchedCandle = CandleBatcher.isBatchedCandle(candle) ? candle : CandleBatcher.toBatchedCandle(candle);
       if (!CandleBatcher.isOneMinuteCandle(batchedCandle)) {
@@ -122,7 +122,7 @@ export class TradingSession extends EventEmitter<TradingSessionEventMap> {
     }
   };
 
-  #onFill = async (fill: ExchangeFill): Promise<void> => {
+  #onFill = async (fill: Fill): Promise<void> => {
     try {
       const pending = this.#pendingOrders.get(fill.order_id);
       if (!this.#state || !pending) {
@@ -190,9 +190,9 @@ export class TradingSession extends EventEmitter<TradingSessionEventMap> {
       }
     }
 
-    let order: ExchangePendingOrder;
+    let order: PendingOrder;
 
-    if (advice.type === ExchangeOrderType.LIMIT) {
+    if (advice.type === OrderType.LIMIT) {
       const price = this.#applyPrecision(new Big(advice.price), this.#state!.tradingRules.counter_increment);
       order = await this.#exchange.placeLimitOrder(this.#pair, {
         side: advice.side,
@@ -222,7 +222,7 @@ export class TradingSession extends EventEmitter<TradingSessionEventMap> {
       return this.#applyPrecision(amount, tradingRules.base_increment);
     }
 
-    if (advice.side === ExchangeOrderSide.SELL) {
+    if (advice.side === OrderSide.SELL) {
       return this.#applyPrecision(this.#state!.baseBalance, tradingRules.base_increment);
     }
 
@@ -232,7 +232,7 @@ export class TradingSession extends EventEmitter<TradingSessionEventMap> {
     }
 
     // BUY + base amount + LIMIT → derive from counter balance / price
-    if (advice.type === ExchangeOrderType.LIMIT) {
+    if (advice.type === OrderType.LIMIT) {
       const baseAmount = this.#state!.counterBalance.div(new Big(advice.price));
       return this.#applyPrecision(baseAmount, tradingRules.base_increment);
     }

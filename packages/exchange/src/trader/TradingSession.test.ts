@@ -3,22 +3,22 @@ import {EventEmitter} from 'node:events';
 import {TradingSession} from './TradingSession.js';
 import {TradingPair} from '../exchange/TradingPair.js';
 import {
-  ExchangeOrderPosition,
-  ExchangeOrderSide,
-  ExchangeOrderType,
-  type ExchangeCandle,
-  type ExchangeFeeRate,
-  type ExchangeFill,
-  type ExchangePendingLimitOrder,
-  type ExchangePendingMarketOrder,
-  type ExchangeTradingRules,
+  OrderPosition,
+  OrderSide,
+  OrderType,
+  type Candle,
+  type FeeRate,
+  type Fill,
+  type PendingLimitOrder,
+  type PendingMarketOrder,
+  type TradingRules,
 } from '../exchange/Broker.js';
 import {AllAvailableAmount} from './TradingSessionTypes.js';
 import type {OrderAdvice, TradingSessionStrategy} from './TradingSessionTypes.js';
 
 const pair = new TradingPair('TSLA', 'USD');
 
-const tradingRules: ExchangeTradingRules = {
+const tradingRules: TradingRules = {
   base_increment: '0.001',
   base_max_size: '10000',
   base_min_size: '0.01',
@@ -27,24 +27,24 @@ const tradingRules: ExchangeTradingRules = {
   pair,
 };
 
-const feeRates: ExchangeFeeRate = {
-  [ExchangeOrderType.LIMIT]: new Big('0.001'),
-  [ExchangeOrderType.MARKET]: new Big('0.002'),
+const feeRates: FeeRate = {
+  [OrderType.LIMIT]: new Big('0.001'),
+  [OrderType.MARKET]: new Big('0.002'),
 };
 
-const sampleFill: ExchangeFill = {
+const sampleFill: Fill = {
   created_at: '2024-01-01T00:00:00.000Z',
   fee: '0.01',
   feeAsset: 'USD',
   order_id: 'order-1',
   pair,
-  position: ExchangeOrderPosition.LONG,
+  position: OrderPosition.LONG,
   price: '250.00',
-  side: ExchangeOrderSide.BUY,
+  side: OrderSide.BUY,
   size: '1',
 };
 
-const sampleCandle: ExchangeCandle = {
+const sampleCandle: Candle = {
   base: 'TSLA',
   counter: 'USD',
   open: '250.00',
@@ -68,18 +68,18 @@ function createMockExchange() {
     placeLimitOrder: vi.fn().mockResolvedValue({
       id: 'order-1',
       pair,
-      side: ExchangeOrderSide.SELL,
+      side: OrderSide.SELL,
       size: '10',
-      type: ExchangeOrderType.LIMIT,
+      type: OrderType.LIMIT,
       price: '253.00',
-    } satisfies ExchangePendingLimitOrder),
+    } satisfies PendingLimitOrder),
     placeMarketOrder: vi.fn().mockResolvedValue({
       id: 'order-2',
       pair,
-      side: ExchangeOrderSide.BUY,
+      side: OrderSide.BUY,
       size: '5000',
-      type: ExchangeOrderType.MARKET,
-    } satisfies ExchangePendingMarketOrder),
+      type: OrderType.MARKET,
+    } satisfies PendingMarketOrder),
     unwatchCandles: vi.fn(),
     unwatchOrders: vi.fn(),
     watchCandles: vi.fn().mockResolvedValue('candle-topic-1'),
@@ -133,21 +133,21 @@ describe.sequential('TradingSession', () => {
     });
 
     it('picks up all previously placed open orders', async () => {
-      const existingOrders: ExchangePendingLimitOrder[] = [
+      const existingOrders: PendingLimitOrder[] = [
         {
           id: 'previous-order-1',
           pair,
-          side: ExchangeOrderSide.BUY,
+          side: OrderSide.BUY,
           size: '5',
-          type: ExchangeOrderType.LIMIT,
+          type: OrderType.LIMIT,
           price: '240.00',
         },
         {
           id: 'previous-order-2',
           pair,
-          side: ExchangeOrderSide.SELL,
+          side: OrderSide.SELL,
           size: '3',
-          type: ExchangeOrderType.LIMIT,
+          type: OrderType.LIMIT,
           price: '260.00',
         },
       ];
@@ -160,7 +160,7 @@ describe.sequential('TradingSession', () => {
       session.on('fill', onFill);
 
       // Fill for the second open order is recognized
-      const fill: ExchangeFill = {...sampleFill, order_id: 'previous-order-2', side: ExchangeOrderSide.SELL};
+      const fill: Fill = {...sampleFill, order_id: 'previous-order-2', side: OrderSide.SELL};
       exchange.emit('order-topic-1', fill);
 
       await vi.waitFor(() => expect(onFill).toHaveBeenCalledTimes(1));
@@ -180,7 +180,7 @@ describe.sequential('TradingSession', () => {
       expect(batchedCandle.close.eq('253.00')).toBe(true);
       expect(state.baseBalance.eq('10')).toBe(true);
       expect(state.counterBalance.eq('5000')).toBe(true);
-      expect(state.lastOrderSide).toBe(ExchangeOrderSide.BUY);
+      expect(state.lastOrderSide).toBe(OrderSide.BUY);
     });
 
     it('emits candle event', async () => {
@@ -196,8 +196,8 @@ describe.sequential('TradingSession', () => {
   describe('order execution', () => {
     it('places a MARKET BUY when strategy returns advice', async () => {
       const advice: OrderAdvice = {
-        side: ExchangeOrderSide.BUY,
-        type: ExchangeOrderType.MARKET,
+        side: OrderSide.BUY,
+        type: OrderType.MARKET,
         amount: AllAvailableAmount,
         amountIn: 'counter',
       };
@@ -209,7 +209,7 @@ describe.sequential('TradingSession', () => {
       await vi.waitFor(() => expect(exchange.placeMarketOrder).toHaveBeenCalledTimes(1));
 
       expect(exchange.placeMarketOrder).toHaveBeenCalledWith(pair, {
-        side: ExchangeOrderSide.BUY,
+        side: OrderSide.BUY,
         size: '5000',
         sizeInCounter: true,
       });
@@ -217,8 +217,8 @@ describe.sequential('TradingSession', () => {
 
     it('places a LIMIT SELL with precision-applied price', async () => {
       const advice: OrderAdvice = {
-        side: ExchangeOrderSide.SELL,
-        type: ExchangeOrderType.LIMIT,
+        side: OrderSide.SELL,
+        type: OrderType.LIMIT,
         amount: '5.5678',
         amountIn: 'base',
         price: '253.456',
@@ -233,7 +233,7 @@ describe.sequential('TradingSession', () => {
       // base_increment=0.001 → 5.5678 rounds down to 5.567
       // counter_increment=0.01 → 253.456 rounds down to 253.45
       expect(exchange.placeLimitOrder).toHaveBeenCalledWith(pair, {
-        side: ExchangeOrderSide.SELL,
+        side: OrderSide.SELL,
         size: '5.567',
         price: '253.45',
       });
@@ -241,8 +241,8 @@ describe.sequential('TradingSession', () => {
 
     it('resolves null amount SELL to full base balance', async () => {
       const advice: OrderAdvice = {
-        side: ExchangeOrderSide.SELL,
-        type: ExchangeOrderType.MARKET,
+        side: OrderSide.SELL,
+        type: OrderType.MARKET,
         amount: AllAvailableAmount,
         amountIn: 'base',
       };
@@ -255,7 +255,7 @@ describe.sequential('TradingSession', () => {
 
       // base balance=10, base_increment=0.001 → 10
       expect(exchange.placeMarketOrder).toHaveBeenCalledWith(pair, {
-        side: ExchangeOrderSide.SELL,
+        side: OrderSide.SELL,
         size: '10',
         sizeInCounter: false,
       });
@@ -263,8 +263,8 @@ describe.sequential('TradingSession', () => {
 
     it('resolves null amount LIMIT BUY to counter balance / price', async () => {
       const advice: OrderAdvice = {
-        side: ExchangeOrderSide.BUY,
-        type: ExchangeOrderType.LIMIT,
+        side: OrderSide.BUY,
+        type: OrderType.LIMIT,
         amount: AllAvailableAmount,
         amountIn: 'base',
         price: '250',
@@ -278,7 +278,7 @@ describe.sequential('TradingSession', () => {
 
       // counter=5000, price=250 → 5000/250 = 20, base_increment=0.001 → 20
       expect(exchange.placeLimitOrder).toHaveBeenCalledWith(pair, {
-        side: ExchangeOrderSide.BUY,
+        side: OrderSide.BUY,
         size: '20',
         price: '250',
       });
@@ -286,8 +286,8 @@ describe.sequential('TradingSession', () => {
 
     it('keeps a pending order tracked when it fills in the race window before being canceled', async () => {
       const advice: OrderAdvice = {
-        side: ExchangeOrderSide.SELL,
-        type: ExchangeOrderType.LIMIT,
+        side: OrderSide.SELL,
+        type: OrderType.LIMIT,
         amount: '1',
         amountIn: 'base',
         price: new Big('250'),
@@ -306,11 +306,11 @@ describe.sequential('TradingSession', () => {
       exchange.placeLimitOrder.mockResolvedValueOnce({
         id: 'order-1-replacement',
         pair,
-        side: ExchangeOrderSide.SELL,
+        side: OrderSide.SELL,
         size: '10',
-        type: ExchangeOrderType.LIMIT,
+        type: OrderType.LIMIT,
         price: '253.00',
-      } satisfies ExchangePendingLimitOrder);
+      } satisfies PendingLimitOrder);
 
       const onFill = vi.fn();
       const onOrderFilled = vi.fn();
@@ -322,7 +322,7 @@ describe.sequential('TradingSession', () => {
       await vi.waitFor(() => expect(exchange.placeLimitOrder).toHaveBeenCalledTimes(2));
 
       // The late FILL event for order-1 finally arrives and is processed
-      const lateFill: ExchangeFill = {...sampleFill, order_id: 'order-1', side: ExchangeOrderSide.SELL};
+      const lateFill: Fill = {...sampleFill, order_id: 'order-1', side: OrderSide.SELL};
       exchange.emit('order-topic-1', lateFill);
 
       await vi.waitFor(() => expect(onOrderFilled).toHaveBeenCalledTimes(1));
@@ -332,8 +332,8 @@ describe.sequential('TradingSession', () => {
 
 it('cancels existing order before placing a new one', async () => {
       const advice: OrderAdvice = {
-        side: ExchangeOrderSide.BUY,
-        type: ExchangeOrderType.MARKET,
+        side: OrderSide.BUY,
+        type: OrderType.MARKET,
         amount: '100',
         amountIn: 'counter',
       };
@@ -360,8 +360,8 @@ it('cancels existing order before placing a new one', async () => {
   describe('fill handling', () => {
     it('updates state when matching fill arrives', async () => {
       const advice: OrderAdvice = {
-        side: ExchangeOrderSide.BUY,
-        type: ExchangeOrderType.MARKET,
+        side: OrderSide.BUY,
+        type: OrderType.MARKET,
         amount: '100',
         amountIn: 'counter',
       };
@@ -380,7 +380,7 @@ it('cancels existing order before placing a new one', async () => {
       session.on('fill', onFill);
 
       // Emit matching fill (order-2 = the market order id)
-      const fill: ExchangeFill = {...sampleFill, order_id: 'order-2', side: ExchangeOrderSide.BUY};
+      const fill: Fill = {...sampleFill, order_id: 'order-2', side: OrderSide.BUY};
       exchange.emit('order-topic-1', fill);
 
       await vi.waitFor(() => expect(onFill).toHaveBeenCalledTimes(1));
@@ -389,15 +389,15 @@ it('cancels existing order before placing a new one', async () => {
         expect.objectContaining({
           baseBalance: expect.any(Big),
           counterBalance: expect.any(Big),
-          lastOrderSide: ExchangeOrderSide.BUY,
+          lastOrderSide: OrderSide.BUY,
         })
       );
     });
 
     it('ignores fills with non-matching order ID', async () => {
       const advice: OrderAdvice = {
-        side: ExchangeOrderSide.BUY,
-        type: ExchangeOrderType.MARKET,
+        side: OrderSide.BUY,
+        type: OrderType.MARKET,
         amount: '100',
         amountIn: 'counter',
       };
@@ -412,7 +412,7 @@ it('cancels existing order before placing a new one', async () => {
       session.on('fill', onFill);
 
       // Emit fill with non-matching order ID
-      const fill: ExchangeFill = {...sampleFill, order_id: 'unrelated-order'};
+      const fill: Fill = {...sampleFill, order_id: 'unrelated-order'};
       exchange.emit('order-topic-1', fill);
 
       // Give it time to process, then verify no fill event
@@ -426,8 +426,8 @@ it('cancels existing order before placing a new one', async () => {
     it('emits error when order size is below minimum', async () => {
       exchange.getAvailableBalances.mockResolvedValue({base: new Big('0.001'), counter: new Big('5000')});
       const advice: OrderAdvice = {
-        side: ExchangeOrderSide.SELL,
-        type: ExchangeOrderType.MARKET,
+        side: OrderSide.SELL,
+        type: OrderType.MARKET,
         amount: AllAvailableAmount,
         amountIn: 'base',
       };

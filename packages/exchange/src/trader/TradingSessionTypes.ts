@@ -4,28 +4,28 @@ import type {EventEmitter} from 'node:events';
 import type {BatchedCandle, OneMinuteBatchedCandle} from '../candle/BatchedCandle.js';
 import {
   type ExchangeAvailableBalance,
-  type ExchangeFeeRate,
-  type ExchangeFill,
-  type ExchangeLimitOrderOptions,
-  type ExchangeMarketOrderOptions,
-  ExchangeOrderSide,
-  type ExchangePendingLimitOrder,
-  type ExchangePendingMarketOrder,
-  type ExchangePendingOrder,
-  type ExchangeTradingRules,
+  type FeeRate,
+  type Fill,
+  type LimitOrderOptions,
+  type MarketOrderOptions,
+  OrderSide,
+  type PendingLimitOrder,
+  type PendingMarketOrder,
+  type PendingOrder,
+  type TradingRules,
 } from '../exchange/Broker.js';
 import type {TradingPair} from '../exchange/TradingPair.js';
 
 export interface TradingSessionStrategy {
   onCandle(candle: OneMinuteBatchedCandle, state: TradingSessionState): Promise<OrderAdvice | void>;
-  onFill?(fill: ExchangeFill, state: TradingSessionState): Promise<void>;
+  onFill?(fill: Fill, state: TradingSessionState): Promise<void>;
   /**
    * Called after `onFill` once the session determines that one of the strategy's
    * own orders is fully filled. The strategy receives the pending order the session
    * placed on its behalf, which it can compare by reference or side without having
    * to match raw exchange order ids from the fill.
    */
-  onOrderFilled?(order: ExchangePendingOrder, state: TradingSessionState): Promise<void>;
+  onOrderFilled?(order: PendingOrder, state: TradingSessionState): Promise<void>;
   /**
    * Set by the `TradingSession` when the strategy is attached. Strategies call it to
    * surface a user-facing message (re-emitted as a `'message'` event by the session,
@@ -69,7 +69,7 @@ export type MarketOrderAdvice = MarketBuyBaseAdvice | MarketBuyCounterAdvice | M
 
 export type LimitOrderAdvice = OrderAdviceBase & {
   type: 'LIMIT';
-  side: ExchangeOrderSide;
+  side: OrderSide;
   amountIn: 'base';
   amount: BigSource | AllAvailableAmount;
   price: BigSource;
@@ -80,26 +80,26 @@ export type OrderAdvice = MarketOrderAdvice | LimitOrderAdvice;
 export interface TradingSessionState {
   readonly baseBalance: Big;
   readonly counterBalance: Big;
-  readonly lastOrderSide?: ExchangeOrderSide;
-  readonly tradingRules: ExchangeTradingRules;
-  readonly feeRates: ExchangeFeeRate;
+  readonly lastOrderSide?: OrderSide;
+  readonly tradingRules: TradingRules;
+  readonly feeRates: FeeRate;
 }
 
 export interface TradingSessionExchange extends Pick<EventEmitter, 'on'> {
   cancelOpenOrders(pair: TradingPair): Promise<string[]>;
   getAvailableBalances(pair: TradingPair): Promise<ExchangeAvailableBalance>;
-  getFeeRates(pair: TradingPair): Promise<ExchangeFeeRate>;
-  getFills(pair: TradingPair): Promise<ExchangeFill[]>;
-  getOpenOrders(pair: TradingPair): Promise<ExchangePendingOrder[]>;
-  getTradingRules(pair: TradingPair): Promise<ExchangeTradingRules>;
+  getFeeRates(pair: TradingPair): Promise<FeeRate>;
+  getFills(pair: TradingPair): Promise<Fill[]>;
+  getOpenOrders(pair: TradingPair): Promise<PendingOrder[]>;
+  getTradingRules(pair: TradingPair): Promise<TradingRules>;
   placeLimitOrder(
     pair: TradingPair,
-    options: Omit<ExchangeLimitOrderOptions, 'type' | 'sizeInCounter'>
-  ): Promise<ExchangePendingLimitOrder>;
+    options: Omit<LimitOrderOptions, 'type' | 'sizeInCounter'>
+  ): Promise<PendingLimitOrder>;
   placeMarketOrder(
     pair: TradingPair,
-    options: Omit<ExchangeMarketOrderOptions, 'type'>
-  ): Promise<ExchangePendingMarketOrder>;
+    options: Omit<MarketOrderOptions, 'type'>
+  ): Promise<PendingMarketOrder>;
   unwatchCandles(topicId: string): void;
   unwatchOrders(topicId: string): void;
   watchCandles(pair: TradingPair, intervalInMillis: number, openTimeInISO: string): Promise<string>;
@@ -116,10 +116,10 @@ export type TradingSessionEventMap = {
   advice: [OrderAdvice];
   candle: [BatchedCandle];
   error: [Error];
-  fill: [ExchangeFill];
+  fill: [Fill];
   message: [string];
-  order: [ExchangePendingOrder];
-  orderFilled: [ExchangePendingOrder];
+  order: [PendingOrder];
+  orderFilled: [PendingOrder];
   started: [];
   stopped: [];
 };

@@ -1,11 +1,11 @@
-import {ExchangeOrderSide, getBrokerClient, TradingPair} from '@typedtrader/exchange';
+import {OrderSide, getBrokerClient, TradingPair} from '@typedtrader/exchange';
 import {getAccountOrError} from '../validation/getAccountOrError.js';
 
 export interface PlaceOrderParams {
   userId: string;
   accountId: number;
   pair: TradingPair;
-  side: ExchangeOrderSide;
+  side: OrderSide;
   /** Quantity in base asset (e.g. "100" for 100 shares). */
   quantity: string;
   /** Limit price in counter asset. Omit for market orders. */
@@ -29,7 +29,7 @@ export const placeOrder = async (params: PlaceOrderParams): Promise<string> => {
       isPaper: account.isPaper,
     });
 
-    const sideLabel = params.side === ExchangeOrderSide.BUY ? 'BUY' : 'SELL';
+    const sideLabel = params.side === OrderSide.BUY ? 'BUY' : 'SELL';
 
     if (params.limitPrice === undefined) {
       const order = await client.placeMarketOrder(params.pair, {

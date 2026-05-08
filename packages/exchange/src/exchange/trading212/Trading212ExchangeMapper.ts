@@ -1,15 +1,15 @@
 import {TradingPair} from '../TradingPair.js';
 import {
-  ExchangeOrderPosition,
-  ExchangeOrderSide,
-  ExchangeOrderType,
-  type ExchangeFill,
-  type ExchangeLimitOrderOptions,
-  type ExchangeMarketOrderOptions,
-  type ExchangeOrderOptions,
-  type ExchangePendingLimitOrder,
-  type ExchangePendingMarketOrder,
-  type ExchangePendingOrder,
+  OrderPosition,
+  OrderSide,
+  OrderType,
+  type Fill,
+  type LimitOrderOptions,
+  type MarketOrderOptions,
+  type OrderOptions,
+  type PendingLimitOrder,
+  type PendingMarketOrder,
+  type PendingOrder,
 } from '../Broker.js';
 import type {HistoryOrder} from './api/schema/HistoryOrderSchema.js';
 import type {Order} from './api/schema/OrderSchema.js';
@@ -29,59 +29,59 @@ export class Trading212ExchangeMapper {
   static toExchangePendingOrder(
     order: Order,
     pair: TradingPair,
-    options: ExchangeLimitOrderOptions
-  ): ExchangePendingLimitOrder;
+    options: LimitOrderOptions
+  ): PendingLimitOrder;
   static toExchangePendingOrder(
     order: Order,
     pair: TradingPair,
-    options: ExchangeMarketOrderOptions
-  ): ExchangePendingMarketOrder;
-  static toExchangePendingOrder(order: Order, pair: TradingPair, options: ExchangeOrderOptions): ExchangePendingOrder {
+    options: MarketOrderOptions
+  ): PendingMarketOrder;
+  static toExchangePendingOrder(order: Order, pair: TradingPair, options: OrderOptions): PendingOrder {
     const size = `${Math.abs(order.quantity ?? order.value ?? 0)}`;
-    if (options.type === ExchangeOrderType.LIMIT) {
-      const limit: ExchangePendingLimitOrder = {
+    if (options.type === OrderType.LIMIT) {
+      const limit: PendingLimitOrder = {
         id: `${order.id}`,
         pair,
         price: `${order.limitPrice}`,
         side: options.side,
         size,
-        type: ExchangeOrderType.LIMIT,
+        type: OrderType.LIMIT,
       };
       return limit;
     }
-    const market: ExchangePendingMarketOrder = {
+    const market: PendingMarketOrder = {
       id: `${order.id}`,
       pair,
       side: options.side,
       size,
-      type: ExchangeOrderType.MARKET,
+      type: OrderType.MARKET,
     };
     return market;
   }
 
-  static toOpenOrder(order: Order, pair: TradingPair): ExchangePendingOrder {
+  static toOpenOrder(order: Order, pair: TradingPair): PendingOrder {
     const signedSize = order.quantity ?? order.value ?? 0;
-    const side = signedSize < 0 ? ExchangeOrderSide.SELL : ExchangeOrderSide.BUY;
+    const side = signedSize < 0 ? OrderSide.SELL : OrderSide.BUY;
     const size = `${Math.abs(signedSize)}`;
 
     if (order.type === 'LIMIT') {
-      const limit: ExchangePendingLimitOrder = {
+      const limit: PendingLimitOrder = {
         id: `${order.id}`,
         pair,
         price: `${order.limitPrice}`,
         side,
         size,
-        type: ExchangeOrderType.LIMIT,
+        type: OrderType.LIMIT,
       };
       return limit;
     }
 
-    const market: ExchangePendingMarketOrder = {
+    const market: PendingMarketOrder = {
       id: `${order.id}`,
       pair,
       side,
       size,
-      type: ExchangeOrderType.MARKET,
+      type: OrderType.MARKET,
     };
     return market;
   }
@@ -95,14 +95,14 @@ export class Trading212ExchangeMapper {
    * — using `pair.counter` (the instrument currency) silently corrupts P&L for cross-currency
    * accounts.
    */
-  static toFilledOrder(order: HistoryOrder, pair: TradingPair, accountCurrency: string): ExchangeFill {
+  static toFilledOrder(order: HistoryOrder, pair: TradingPair, accountCurrency: string): Fill {
     if (order.status !== Trading212OrderStatus.FILLED) {
       throw new Error(`Order ID "${order.id}" is not filled.`);
     }
 
     const signedOrdered = order.orderedQuantity ?? order.orderedValue ?? 0;
     const signedFilled = order.filledQuantity ?? order.filledValue ?? 0;
-    const side = signedOrdered < 0 ? ExchangeOrderSide.SELL : ExchangeOrderSide.BUY;
+    const side = signedOrdered < 0 ? OrderSide.SELL : OrderSide.BUY;
     const fee = (order.taxes ?? []).reduce((sum, tax) => sum + (tax.quantity ?? 0), 0);
 
     return {
@@ -111,7 +111,7 @@ export class Trading212ExchangeMapper {
       feeAsset: accountCurrency,
       order_id: `${order.id}`,
       pair,
-      position: ExchangeOrderPosition.LONG,
+      position: OrderPosition.LONG,
       price: `${order.fillPrice ?? 0}`,
       side,
       size: `${Math.abs(signedFilled)}`,

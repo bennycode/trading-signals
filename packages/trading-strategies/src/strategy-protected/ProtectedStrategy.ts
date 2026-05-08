@@ -1,7 +1,7 @@
 import Big from 'big.js';
 import {z} from 'zod';
-import {AllAvailableAmount, ExchangeOrderSide, ExchangeOrderType} from '@typedtrader/exchange';
-import type {ExchangeFill, ExchangePendingOrder, LimitOrderAdvice, OneMinuteBatchedCandle, OrderAdvice, TradingSessionState} from '@typedtrader/exchange';
+import {AllAvailableAmount, OrderSide, OrderType} from '@typedtrader/exchange';
+import type {Fill, PendingOrder, LimitOrderAdvice, OneMinuteBatchedCandle, OrderAdvice, TradingSessionState} from '@typedtrader/exchange';
 import {MarketType} from '../strategy/MarketType.js';
 import {Strategy} from '../strategy/Strategy.js';
 import {positiveNumberString} from '../util/validators.js';
@@ -405,12 +405,12 @@ export class ProtectedStrategy extends Strategy {
     }
   }
 
-  async onFill(fill: ExchangeFill, _state: TradingSessionState): Promise<void> {
+  async onFill(fill: Fill, _state: TradingSessionState): Promise<void> {
     const protectedState = this.#protectedState;
     const fillPrice = new Big(fill.price);
     const fillSize = new Big(fill.size);
 
-    if (fill.side === ExchangeOrderSide.BUY) {
+    if (fill.side === OrderSide.BUY) {
       const newCostBasis = new Big(protectedState.totalCostBasis).plus(fillPrice.mul(fillSize));
       const newPositionSize = new Big(protectedState.totalPositionSize).plus(fillSize);
       this.#setProtectedState({
@@ -445,8 +445,8 @@ export class ProtectedStrategy extends Strategy {
    * while the kill switch is active. While `killed === true` the subclass cannot place
    * new orders, so any SELL the session has in flight is necessarily the kill-switch sell.
    */
-  async onOrderFilled(order: ExchangePendingOrder, _state: TradingSessionState): Promise<void> {
-    if (this.#protectedState.killed && order.side === ExchangeOrderSide.SELL) {
+  async onOrderFilled(order: PendingOrder, _state: TradingSessionState): Promise<void> {
+    if (this.#protectedState.killed && order.side === OrderSide.SELL) {
       this.onFinish?.();
     }
   }
@@ -471,8 +471,8 @@ export class ProtectedStrategy extends Strategy {
   #killSwitchAdvice(reason: string, orderType: GuardOrderType, limitPrice: Big | null): OrderAdvice {
     if (orderType === 'market') {
       return {
-        side: ExchangeOrderSide.SELL,
-        type: ExchangeOrderType.MARKET,
+        side: OrderSide.SELL,
+        type: OrderType.MARKET,
         amount: AllAvailableAmount,
         amountIn: 'base',
         reason: `[KILL SWITCH] ${reason}`,
@@ -482,8 +482,8 @@ export class ProtectedStrategy extends Strategy {
       throw new Error('ProtectedStrategy: limit order type requires a limit price');
     }
     const advice: LimitOrderAdvice = {
-      side: ExchangeOrderSide.SELL,
-      type: ExchangeOrderType.LIMIT,
+      side: OrderSide.SELL,
+      type: OrderType.LIMIT,
       amount: AllAvailableAmount,
       amountIn: 'base',
       price: limitPrice,
