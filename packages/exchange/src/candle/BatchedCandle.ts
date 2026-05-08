@@ -1,5 +1,5 @@
 import {z} from 'zod';
-import {ExchangeCandleBase} from '../exchange/Exchange.js';
+import {ExchangeCandleBase} from '../exchange/Broker.js';
 
 export const BasicCandlePrice = z.union([z.literal('open'), z.literal('high'), z.literal('low'), z.literal('close')]);
 

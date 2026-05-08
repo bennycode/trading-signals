@@ -1,7 +1,7 @@
 import Big from 'big.js';
 import {describe, expect, it, vi, beforeEach} from 'vitest';
 import {TradingPair} from '../TradingPair.js';
-import {ExchangeOrderPosition, ExchangeOrderSide, ExchangeOrderType} from '../Exchange.js';
+import {ExchangeOrderPosition, ExchangeOrderSide, ExchangeOrderType} from '../Broker.js';
 import {AssetClass, OrderSide, OrderStatus, OrderType} from './api/schema/OrderSchema.js';
 import {PositionSide} from './api/schema/PositionSchema.js';
 import {TradeUpdateEvent} from './api/schema/TradingStreamSchema.js';
@@ -57,16 +57,16 @@ vi.mock('./AlpacaTradingWebSocket.js', () => ({
 }));
 
 // Import after mocking
-const {AlpacaExchange} = await import('./AlpacaExchange.js');
+const {AlpacaBroker} = await import('./AlpacaBroker.js');
 const {AlpacaMarketData} = await import('./AlpacaMarketData.js');
 
-describe.sequential('AlpacaExchange', () => {
-  let exchange: InstanceType<typeof AlpacaExchange>;
+describe.sequential('AlpacaBroker', () => {
+  let exchange: InstanceType<typeof AlpacaBroker>;
 
   beforeEach(() => {
     vi.clearAllMocks();
     const marketData = new AlpacaMarketData({apiKey: 'test', apiSecret: 'test', usePaperTrading: true});
-    exchange = new AlpacaExchange({apiKey: 'test', apiSecret: 'test', usePaperTrading: true, marketData});
+    exchange = new AlpacaBroker({apiKey: 'test', apiSecret: 'test', usePaperTrading: true, marketData});
     // Default: stock symbol (empty crypto bars)
     mockMethods.getCryptoBarsLatest.mockResolvedValue({bars: {}});
   });

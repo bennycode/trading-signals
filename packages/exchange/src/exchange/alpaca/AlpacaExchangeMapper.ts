@@ -12,7 +12,7 @@ import {
   ExchangePendingLimitOrder,
   ExchangePendingMarketOrder,
   ExchangePendingOrder,
-} from '../Exchange.js';
+} from '../Broker.js';
 
 export class AlpacaExchangeMapper {
   static mapInterval(intervalInMillis: number): string {

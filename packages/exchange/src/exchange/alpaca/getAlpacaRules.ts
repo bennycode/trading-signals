@@ -1,6 +1,6 @@
-import type {ExchangeFeeRate, ExchangeTradingRules} from '../Exchange.js';
+import type {ExchangeFeeRate, ExchangeTradingRules} from '../Broker.js';
 import type {TradingPair} from '../TradingPair.js';
-import {AlpacaExchange} from './AlpacaExchange.js';
+import {AlpacaBroker} from './AlpacaBroker.js';
 import {getAlpacaClient} from './getAlpacaClient.js';
 
 export interface AlpacaRules {
@@ -24,9 +24,9 @@ export async function getAlpacaRules(
   }
 
   return {
-    feeRates: AlpacaExchange.DEFAULT_FEE_RATES,
+    feeRates: AlpacaBroker.DEFAULT_FEE_RATES,
     tradingRules: {
-      ...AlpacaExchange.DEFAULT_CRYPTO_TRADING_RULES,
+      ...AlpacaBroker.DEFAULT_CRYPTO_TRADING_RULES,
       pair,
     },
   };

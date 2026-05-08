@@ -1,6 +1,6 @@
 /* @see https://github.com/alpacahq/alpaca-ts/issues/106#issuecomment-1165948375 */
 import type {MarketDataSource} from '../MarketDataSource.js';
-import {AlpacaExchange} from './AlpacaExchange.js';
+import {AlpacaBroker} from './AlpacaBroker.js';
 import {AlpacaMarketData} from './AlpacaMarketData.js';
 
 export function getAlpacaClient(options: {
@@ -17,7 +17,7 @@ export function getAlpacaClient(options: {
   console.log('Initializing Alpaca client', {usePaperTrading: options.usePaperTrading});
 
   const marketData = options.marketData ?? new AlpacaMarketData(options);
-  const exchange = new AlpacaExchange({...options, marketData});
+  const exchange = new AlpacaBroker({...options, marketData});
 
   process.on('SIGINT', () => {
     console.log('Received signal interrupt...');

@@ -2,7 +2,7 @@ import {randomUUID} from 'node:crypto';
 import Big from 'big.js';
 import {ms} from 'ms';
 import {
-  Exchange,
+  Broker,
   ExchangeOrderPosition,
   ExchangeOrderSide,
   ExchangeOrderType,
@@ -18,14 +18,14 @@ import {
   type ExchangePendingMarketOrder,
   type ExchangePendingOrder,
   type ExchangeTradingRules,
-} from '../Exchange.js';
+} from '../Broker.js';
 import {TradingPair} from '../TradingPair.js';
 import {MarketDataSource} from '../MarketDataSource.js';
 import {Trading212API} from './api/Trading212API.js';
 import {Trading212OrderStatus, Trading212TimeValidity} from './api/schema/OrderSchema.js';
 import {Trading212ExchangeMapper} from './Trading212ExchangeMapper.js';
 
-export class Trading212Exchange extends Exchange implements MarketDataSource {
+export class Trading212Broker extends Broker implements MarketDataSource {
   static readonly NAME = 'Trading212';
 
   /**
@@ -64,7 +64,7 @@ export class Trading212Exchange extends Exchange implements MarketDataSource {
      */
     marketData: MarketDataSource;
   }) {
-    super(Trading212Exchange.NAME);
+    super(Trading212Broker.NAME);
     this.#api = new Trading212API(options);
     this.#marketData = options.marketData;
   }
@@ -79,11 +79,11 @@ export class Trading212Exchange extends Exchange implements MarketDataSource {
   }
 
   getName(): string {
-    return Trading212Exchange.NAME;
+    return Trading212Broker.NAME;
   }
 
   /**
-   * Trading212 has no historical-bar endpoint, but the `Exchange` contract requires a value.
+   * Trading212 has no historical-bar endpoint, but the `Broker` contract requires a value.
    * Returning 1m matches the granularity strategies typically expect.
    */
   getSmallestInterval(): number {
@@ -99,16 +99,16 @@ export class Trading212Exchange extends Exchange implements MarketDataSource {
   }
 
   async getCandles(pair: TradingPair, request: ExchangeCandleImportRequest): Promise<ExchangeCandle[]> {
-    return this.#marketData.getCandles(Trading212Exchange.toMarketDataPair(pair), request);
+    return this.#marketData.getCandles(Trading212Broker.toMarketDataPair(pair), request);
   }
 
   async getLatestCandle(pair: TradingPair, intervalInMillis: number): Promise<ExchangeCandle> {
-    return this.#marketData.getLatestCandle(Trading212Exchange.toMarketDataPair(pair), intervalInMillis);
+    return this.#marketData.getLatestCandle(Trading212Broker.toMarketDataPair(pair), intervalInMillis);
   }
 
   async watchCandles(pair: TradingPair, intervalInMillis: number, openTimeInISO: string): Promise<string> {
     const topicId = await this.#marketData.watchCandles(
-      Trading212Exchange.toMarketDataPair(pair),
+      Trading212Broker.toMarketDataPair(pair),
       intervalInMillis,
       openTimeInISO
     );
@@ -135,7 +135,7 @@ export class Trading212Exchange extends Exchange implements MarketDataSource {
    *
    * The first tick takes a baseline snapshot so historical fills are not replayed.
    */
-  async watchOrders(intervalInMillis: number = Trading212Exchange.ORDER_POLL_INTERVAL_MS): Promise<string> {
+  async watchOrders(intervalInMillis: number = Trading212Broker.ORDER_POLL_INTERVAL_MS): Promise<string> {
     const topicId = randomUUID();
 
     const [accountInfo, instruments, baseline] = await Promise.all([
@@ -291,7 +291,7 @@ export class Trading212Exchange extends Exchange implements MarketDataSource {
   }
 
   async getFeeRates(_pair: TradingPair): Promise<ExchangeFeeRate> {
-    return Trading212Exchange.DEFAULT_FEE_RATES;
+    return Trading212Broker.DEFAULT_FEE_RATES;
   }
 
   protected override async placeOrder(

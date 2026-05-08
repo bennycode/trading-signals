@@ -181,7 +181,7 @@ export interface ExchangeTradingRules {
   pair: TradingPair;
 }
 
-export abstract class Exchange extends EventEmitter {
+export abstract class Broker extends EventEmitter {
   loggerName: string;
 
   constructor(loggerName: string) {

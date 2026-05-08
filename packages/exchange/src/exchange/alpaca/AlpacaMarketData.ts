@@ -1,7 +1,7 @@
 import {randomUUID} from 'node:crypto';
 import {ms} from 'ms';
 import {CandleBatcher} from '../../candle/CandleBatcher.js';
-import type {ExchangeCandle, ExchangeCandleImportRequest} from '../Exchange.js';
+import type {ExchangeCandle, ExchangeCandleImportRequest} from '../Broker.js';
 import {MarketDataSource} from '../MarketDataSource.js';
 import type {TradingPair} from '../TradingPair.js';
 import {AlpacaExchangeMapper} from './AlpacaExchangeMapper.js';
@@ -22,7 +22,7 @@ export interface AlpacaMarketDataOptions {
  * and aggregates the always-1-minute Alpaca bars into the requested interval via
  * `CandleBatcher`.
  *
- * Decoupled from `AlpacaExchange` (the brokerage class) so the same provider can feed any
+ * Decoupled from `AlpacaBroker` (the brokerage class) so the same provider can feed any
  * broker — e.g. Trading212 paired with Alpaca data for US instruments.
  *
  * @see https://docs.alpaca.markets/docs/real-time-stock-pricing-data

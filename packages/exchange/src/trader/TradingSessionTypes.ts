@@ -13,7 +13,7 @@ import {
   type ExchangePendingMarketOrder,
   type ExchangePendingOrder,
   type ExchangeTradingRules,
-} from '../exchange/Exchange.js';
+} from '../exchange/Broker.js';
 import type {TradingPair} from '../exchange/TradingPair.js';
 
 export interface TradingSessionStrategy {

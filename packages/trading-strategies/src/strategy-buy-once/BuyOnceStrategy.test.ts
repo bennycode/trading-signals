@@ -1,6 +1,6 @@
 import Big from 'big.js';
 import {describe, expect, it} from 'vitest';
-import {AlpacaExchangeMock, CandleBatcher, ExchangeOrderSide, ExchangeOrderType} from '@typedtrader/exchange';
+import {AlpacaBrokerMock, CandleBatcher, ExchangeOrderSide, ExchangeOrderType} from '@typedtrader/exchange';
 import type {ExchangeCandle, TradingSessionState} from '@typedtrader/exchange';
 import {TradingPair} from '@typedtrader/exchange';
 import {BacktestExecutor} from '../backtest/BacktestExecutor.js';
@@ -30,7 +30,7 @@ function createMockExchange(options: {baseBalance?: string; counterBalance?: str
     ['BTC', {available: new Big(options.baseBalance ?? '0'), hold: new Big(0)}],
     ['USD', {available: new Big(options.counterBalance ?? '1000'), hold: new Big(0)}],
   ]);
-  return new AlpacaExchangeMock({balances});
+  return new AlpacaBrokerMock({balances});
 }
 
 describe('BuyOnceStrategy', () => {

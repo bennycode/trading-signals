@@ -1,4 +1,4 @@
-import {getExchangeClient} from '@typedtrader/exchange';
+import {getBrokerClient} from '@typedtrader/exchange';
 import {Account} from '../../database/models/Account.js';
 
 interface ValidateClientConfig {
@@ -9,7 +9,7 @@ interface ValidateClientConfig {
 }
 
 async function validateClient(config: ValidateClientConfig) {
-  const client = getExchangeClient(config);
+  const client = getBrokerClient(config);
   await client.getTime();
 }
 

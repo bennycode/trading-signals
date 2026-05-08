@@ -9,9 +9,9 @@ const exchange = getAlpacaClient({
   usePaperTrading: true,
 });
 
-// 1. Exchange time
+// 1. Broker time
 const time = await exchange.getTime();
-console.log(`[getTime] Exchange time: ${time}`);
+console.log(`[getTime] Broker time: ${time}`);
 
 // 2. Historical stock candles
 const APPLE_USD_STOCK = new TradingPair('AAPL', 'USD');

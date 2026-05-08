@@ -3,7 +3,7 @@ import Big from 'big.js';
 import {ms} from 'ms';
 import {AlpacaExchangeMapper} from './AlpacaExchangeMapper.js';
 import {
-  Exchange,
+  Broker,
   type ExchangeBalance,
   type ExchangeCandle,
   type ExchangeCandleImportRequest,
@@ -19,7 +19,7 @@ import {
   type ExchangePendingMarketOrder,
   type ExchangePendingOrder,
   type ExchangeTradingRules,
-} from '../Exchange.js';
+} from '../Broker.js';
 import {MarketDataSource} from '../MarketDataSource.js';
 import {TradingPair} from '../TradingPair.js';
 import {createAlpacaSymbol, isAlpacaCryptoSymbol} from './alpacaSymbol.js';
@@ -29,7 +29,7 @@ import {PositionSide} from './api/schema/PositionSchema.js';
 import {alpacaTradingWebSocket, type AlpacaTradingConnection} from './AlpacaTradingWebSocket.js';
 import {TradeUpdateEvent, type TradeUpdateMessage} from './api/schema/TradingStreamSchema.js';
 
-export class AlpacaExchange extends Exchange implements MarketDataSource {
+export class AlpacaBroker extends Broker implements MarketDataSource {
   readonly #alpacaAPI: AlpacaAPI;
   readonly #marketData: MarketDataSource;
   readonly #candleListenerByTopic = new Map<string, (candle: unknown) => void>();
@@ -49,7 +49,7 @@ export class AlpacaExchange extends Exchange implements MarketDataSource {
      */
     marketData: MarketDataSource;
   }) {
-    super(AlpacaExchange.NAME);
+    super(AlpacaBroker.NAME);
 
     this.#alpacaAPI = new AlpacaAPI({
       apiKey: options.apiKey,
@@ -100,7 +100,7 @@ export class AlpacaExchange extends Exchange implements MarketDataSource {
   }
 
   getName(): string {
-    return AlpacaExchange.NAME;
+    return AlpacaBroker.NAME;
   }
 
   getSmallestInterval(): number {
@@ -331,7 +331,7 @@ export class AlpacaExchange extends Exchange implements MarketDataSource {
    */
   async getFeeRates(_pair: TradingPair): Promise<ExchangeFeeRate> {
     // TODO: Refine according to "30-Day Crypto Volume (USD)" and make fee rate dependant on crypto or stocks
-    return AlpacaExchange.DEFAULT_FEE_RATES;
+    return AlpacaBroker.DEFAULT_FEE_RATES;
   }
 
   /**

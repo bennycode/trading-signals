@@ -7,7 +7,7 @@ import {
   createConversation,
 } from '@grammyjs/conversations';
 import {z} from 'zod';
-import {ExchangeOrderSide, TradingPair, getExchangeClient} from '@typedtrader/exchange';
+import {ExchangeOrderSide, TradingPair, getBrokerClient} from '@typedtrader/exchange';
 import {getAvailableReportNames, reportRequiresAccount} from 'trading-strategies';
 import type {CommandHandler, MessageContext, MessagingPlatform, PlatformInfo} from './MessagingPlatform.js';
 import {markdownToTelegramHtml, splitForTelegram} from './telegramMarkdown.js';
@@ -248,7 +248,7 @@ async function buildTradeConfirmation(
   // the user still sees the action and can confirm without the price hint.
   let priceContext = '';
   try {
-    const client = getExchangeClient({
+    const client = getBrokerClient({
       exchangeId: account.exchange,
       apiKey: account.apiKey,
       apiSecret: account.apiSecret,

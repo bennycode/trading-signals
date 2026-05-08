@@ -3,8 +3,8 @@ import {EventEmitter} from 'node:events';
 import {CandleBatcher} from '../candle/CandleBatcher.js';
 import type {BatchedCandle} from '../candle/BatchedCandle.js';
 import {ONE_MINUTE_IN_MS} from '../candle/BatchedCandle.js';
-import type {ExchangeCandle, ExchangeFill, ExchangePendingOrder} from '../exchange/Exchange.js';
-import {ExchangeOrderSide, ExchangeOrderType} from '../exchange/Exchange.js';
+import type {ExchangeCandle, ExchangeFill, ExchangePendingOrder} from '../exchange/Broker.js';
+import {ExchangeOrderSide, ExchangeOrderType} from '../exchange/Broker.js';
 import {AllAvailableAmount} from './TradingSessionTypes.js';
 import type {
   OrderAdvice,

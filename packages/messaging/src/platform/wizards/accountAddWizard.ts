@@ -1,4 +1,4 @@
-import {AlpacaExchange, getExchangeClient} from '@typedtrader/exchange';
+import {AlpacaBroker, getBrokerClient} from '@typedtrader/exchange';
 import {Account} from '../../database/models/Account.js';
 import {logger} from '../../logger.js';
 import {inlineKeyboard, waitForTextOrCancel, type InlineButton, type WizardContext, type WizardConversation} from './shared.js';
@@ -7,7 +7,7 @@ export interface AccountAddWizardArgs {
   userId: string;
 }
 
-const EXCHANGES = [AlpacaExchange.NAME] as const;
+const EXCHANGES = [AlpacaBroker.NAME] as const;
 
 export function makeAccountAddWizard() {
   return async function accountAddWizard(
@@ -25,7 +25,7 @@ export function makeAccountAddWizard() {
     const exchange = typeof exchangeCb.match === 'string' ? exchangeCb.match.split(':')[2] : EXCHANGES[0];
 
     await exchangeCb.editMessageText(
-      `Exchange: ${exchange}\nChoose account mode:`,
+      `Broker: ${exchange}\nChoose account mode:`,
       inlineKeyboard([
         [
           {text: '📝 Paper', callback_data: 'accountadd:mode:paper'},
@@ -38,7 +38,7 @@ export function makeAccountAddWizard() {
     await modeCb.answerCallbackQuery();
     const isPaper = modeCb.match === 'accountadd:mode:paper';
 
-    await modeCb.editMessageText(`Exchange: ${exchange}\nMode: ${isPaper ? 'Paper' : 'Live'}\n\nSend a name for this account:`);
+    await modeCb.editMessageText(`Broker: ${exchange}\nMode: ${isPaper ? 'Paper' : 'Live'}\n\nSend a name for this account:`);
     const nameResp = await waitForTextOrCancel(conversation, ctx);
     if (nameResp.cancelled) return;
     const name = nameResp.text;
@@ -89,7 +89,7 @@ export function makeAccountAddWizard() {
 
     const result = await conversation.external(async () => {
       try {
-        const client = getExchangeClient({exchangeId: exchange, apiKey, apiSecret, isPaper});
+        const client = getBrokerClient({exchangeId: exchange, apiKey, apiSecret, isPaper});
         // 10s timeout guards against the underlying Alpaca HTTP client's
         // Infinity retry loop on network errors / 429s — without it a flaky
         // validation could hang the wizard forever.

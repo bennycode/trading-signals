@@ -10,7 +10,7 @@ import {
   type ExchangePendingLimitOrder,
   type ExchangePendingMarketOrder,
   type ExchangePendingOrder,
-} from '../Exchange.js';
+} from '../Broker.js';
 import type {HistoryOrder} from './api/schema/HistoryOrderSchema.js';
 import type {Order} from './api/schema/OrderSchema.js';
 import {Trading212OrderStatus} from './api/schema/OrderSchema.js';

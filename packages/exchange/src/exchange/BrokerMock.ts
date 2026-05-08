@@ -1,6 +1,6 @@
 import Big from 'big.js';
 import {
-  Exchange,
+  Broker,
   type ExchangeBalance,
   type ExchangeCandle,
   type ExchangeFeeRate,
@@ -15,7 +15,7 @@ import {
   type ExchangePendingMarketOrder,
   type ExchangePendingOrder,
   type ExchangeTradingRules,
-} from './Exchange.js';
+} from './Broker.js';
 import type {TradingPair} from './TradingPair.js';
 
 export interface ExchangeMockBalance {
@@ -23,7 +23,7 @@ export interface ExchangeMockBalance {
   hold: Big;
 }
 
-export abstract class ExchangeMock extends Exchange {
+export abstract class BrokerMock extends Broker {
   readonly #balances: Map<string, ExchangeMockBalance>;
   readonly #pendingOrders: ExchangePendingOrder[] = [];
   readonly #fills: ExchangeFill[] = [];
@@ -31,7 +31,7 @@ export abstract class ExchangeMock extends Exchange {
   #nextOrderId = 1;
 
   constructor(config: {balances: Map<string, ExchangeMockBalance>}) {
-    super('ExchangeMock');
+    super('BrokerMock');
     this.#balances = config.balances;
   }
 

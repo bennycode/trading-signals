@@ -1,4 +1,4 @@
-import {TradingPair, getExchangeClient} from '@typedtrader/exchange';
+import {TradingPair, getBrokerClient} from '@typedtrader/exchange';
 import {assertId} from '../validation/assertId.js';
 import {getAccountOrError} from '../validation/getAccountOrError.js';
 
@@ -18,7 +18,7 @@ export const price = async (request: string, userId: string) => {
     const account = getAccountOrError(userId, accountId);
 
     const pair = TradingPair.fromString(pairPart, ',');
-    const client = getExchangeClient({
+    const client = getBrokerClient({
       exchangeId: account.exchange,
       apiKey: account.apiKey,
       apiSecret: account.apiSecret,

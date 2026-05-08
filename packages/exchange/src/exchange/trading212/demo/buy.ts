@@ -1,5 +1,5 @@
 import 'dotenv-defaults/config';
-import {ExchangeOrderSide} from '../../Exchange.js';
+import {ExchangeOrderSide} from '../../Broker.js';
 import {TradingPair} from '../../TradingPair.js';
 import {getDemoClient} from './getDemoClient.js';
 

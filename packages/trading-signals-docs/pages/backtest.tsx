@@ -1,6 +1,6 @@
 import {useState, useCallback, useEffect, useRef} from 'react';
 import Big from 'big.js';
-import {AlpacaExchangeMock, TradingPair} from '@typedtrader/exchange';
+import {AlpacaBrokerMock, TradingPair} from '@typedtrader/exchange';
 import type {ExchangeCandle} from '@typedtrader/exchange';
 import {
   BacktestExecutor,
@@ -71,7 +71,7 @@ function createExchange(candles: ExchangeCandle[], initialBase: string, initialC
     [base, {available: parseInitialAmount(initialBase, 'base'), hold: new Big(0)}],
     [counter, {available: parseInitialAmount(initialCounter, 'counter'), hold: new Big(0)}],
   ]);
-  return new AlpacaExchangeMock({balances});
+  return new AlpacaBrokerMock({balances});
 }
 
 export default function BacktestPage() {

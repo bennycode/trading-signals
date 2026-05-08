@@ -1,6 +1,6 @@
 import {readFile} from 'node:fs/promises';
 import {parseArgs} from 'node:util';
-import {AlpacaExchangeMock, ExchangeOrderType, TradingPair} from '@typedtrader/exchange';
+import {AlpacaBrokerMock, ExchangeOrderType, TradingPair} from '@typedtrader/exchange';
 import type {ExchangeCandle} from '@typedtrader/exchange';
 import Big from 'big.js';
 import {BacktestExecutor} from '../backtest/BacktestExecutor.js';
@@ -77,7 +77,7 @@ const strategyConfig = JSON.parse(values.config!);
 const strategy = createStrategy(values.strategy, strategyConfig);
 
 // 3. Set up mock exchange (commission-free for US stocks)
-const exchange = new AlpacaExchangeMock({
+const exchange = new AlpacaBrokerMock({
   balances: new Map([
     [tradingPair.base, {available: new Big(0), hold: new Big(0)}],
     [tradingPair.counter, {available: startingBalance, hold: new Big(0)}],

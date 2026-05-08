@@ -1,4 +1,4 @@
-import {TradingPair, Exchange, ExchangeCandle, MarketDataSource, getExchangeClient} from '@typedtrader/exchange';
+import {TradingPair, Broker, ExchangeCandle, MarketDataSource, getBrokerClient} from '@typedtrader/exchange';
 import type {MessagingPlatform} from '../platform/MessagingPlatform.js';
 import {Account} from '../database/models/Account.js';
 import {Watch, WatchAttributes} from '../database/models/Watch.js';
@@ -7,7 +7,7 @@ import {logger} from '../logger.js';
 interface ActiveSubscription {
   watchId: number;
   topicId: string;
-  exchange: Exchange & MarketDataSource;
+  exchange: Broker & MarketDataSource;
 }
 
 export class WatchMonitor {
@@ -56,7 +56,7 @@ export class WatchMonitor {
 
     const pair = TradingPair.fromString(watch.pair, ',');
 
-    const exchange = getExchangeClient({
+    const exchange = getBrokerClient({
       exchangeId: account.exchange,
       apiKey: account.apiKey,
       apiSecret: account.apiSecret,

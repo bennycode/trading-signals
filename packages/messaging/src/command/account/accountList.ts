@@ -12,7 +12,7 @@ export const accountList = async (userId: string) => {
     return formatTelegramTable(`Accounts: ${accounts.length}`, accounts, [
       {header: 'ID', align: 'right', value: acc => String(acc.id)},
       {header: 'Name', value: acc => acc.name},
-      {header: 'Exchange', value: acc => acc.exchange},
+      {header: 'Broker', value: acc => acc.exchange},
       {header: 'Mode', value: acc => (acc.isPaper ? 'Paper' : 'Live')},
     ]);
   } catch (error) {

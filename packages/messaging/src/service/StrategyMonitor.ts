@@ -1,4 +1,4 @@
-import {TradingPair, TradingSession, getExchangeClient} from '@typedtrader/exchange';
+import {TradingPair, TradingSession, getBrokerClient} from '@typedtrader/exchange';
 import type {ExchangeFill} from '@typedtrader/exchange';
 import {createStrategy} from 'trading-strategies';
 import type {Strategy as TradingStrategy} from 'trading-strategies';
@@ -75,7 +75,7 @@ export class StrategyMonitor {
       strategy.restoreState(persisted);
     }
 
-    const exchange = getExchangeClient({
+    const exchange = getBrokerClient({
       exchangeId: account.exchange,
       apiKey: account.apiKey,
       apiSecret: account.apiSecret,

@@ -1,5 +1,5 @@
 import {EventEmitter} from 'node:events';
-import type {ExchangeCandle, ExchangeCandleImportRequest} from './Exchange.js';
+import type {ExchangeCandle, ExchangeCandleImportRequest} from './Broker.js';
 import type {TradingPair} from './TradingPair.js';
 
 /**

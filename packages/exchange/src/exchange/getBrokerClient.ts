@@ -1,11 +1,11 @@
-import {AlpacaExchange} from './alpaca/AlpacaExchange.js';
+import {AlpacaBroker} from './alpaca/AlpacaBroker.js';
 import {getAlpacaClient} from './alpaca/getAlpacaClient.js';
-import {Exchange} from './Exchange.js';
+import {Broker} from './Broker.js';
 import {MarketDataSource} from './MarketDataSource.js';
-import {Trading212Exchange} from './trading212/Trading212Exchange.js';
+import {Trading212Broker} from './trading212/Trading212Broker.js';
 import {getTrading212Client} from './trading212/getTrading212Client.js';
 
-export function getExchangeClient(
+export function getBrokerClient(
   account: {
     exchangeId: string;
     apiKey: string;
@@ -19,16 +19,16 @@ export function getExchangeClient(
      */
     marketData?: MarketDataSource;
   }
-): Exchange & MarketDataSource {
+): Broker & MarketDataSource {
   switch (account.exchangeId) {
-    case AlpacaExchange.NAME:
+    case AlpacaBroker.NAME:
       return getAlpacaClient({
         apiKey: account.apiKey,
         apiSecret: account.apiSecret,
         marketData: options?.marketData,
         usePaperTrading: account.isPaper,
       });
-    case Trading212Exchange.NAME: {
+    case Trading212Broker.NAME: {
       if (!options?.marketData) {
         throw new Error(
           `Trading212 has no market-data endpoints; pass \`options.marketData\` (e.g. an AlpacaMarketData instance constructed from separate Alpaca credentials).`
@@ -42,6 +42,6 @@ export function getExchangeClient(
       });
     }
     default:
-      throw new Error(`Exchange "${account.exchangeId}" is not supported yet`);
+      throw new Error(`Broker "${account.exchangeId}" is not supported yet`);
   }
 }

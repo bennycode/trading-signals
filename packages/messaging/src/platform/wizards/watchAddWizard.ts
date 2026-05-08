@@ -1,6 +1,6 @@
 import Big from 'big.js';
 import {ms} from 'ms';
-import {TradingPair, getExchangeClient} from '@typedtrader/exchange';
+import {TradingPair, getBrokerClient} from '@typedtrader/exchange';
 import {Account} from '../../database/models/Account.js';
 import {Watch} from '../../database/models/Watch.js';
 import {assertInterval} from '../../validation/assertInterval.js';
@@ -108,7 +108,7 @@ export function makeWatchAddWizard(deps: {watchMonitor: () => WatchMonitor | und
         if (!account || account.userId !== args.userId) {
           return {ok: false as const, error: 'Account not found.'};
         }
-        const client = getExchangeClient({
+        const client = getBrokerClient({
           exchangeId: account.exchange,
           apiKey: account.apiKey,
           apiSecret: account.apiSecret,

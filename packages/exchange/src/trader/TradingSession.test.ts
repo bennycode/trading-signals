@@ -12,7 +12,7 @@ import {
   type ExchangePendingLimitOrder,
   type ExchangePendingMarketOrder,
   type ExchangeTradingRules,
-} from '../exchange/Exchange.js';
+} from '../exchange/Broker.js';
 import {AllAvailableAmount} from './TradingSessionTypes.js';
 import type {OrderAdvice, TradingSessionStrategy} from './TradingSessionTypes.js';
 

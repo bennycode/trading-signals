@@ -6,7 +6,7 @@ import {ms} from 'ms';
 import {BatchedCandle} from '../../candle/BatchedCandle.js';
 import {CandleBatcher} from '../../candle/CandleBatcher.js';
 import {TradingPair} from '../TradingPair.js';
-import {ExchangeOrderPosition, ExchangeOrderSide} from '../Exchange.js';
+import {ExchangeOrderPosition, ExchangeOrderSide} from '../Broker.js';
 
 describe('AlpacaExchangeMapper', () => {
   describe('mapInterval', () => {

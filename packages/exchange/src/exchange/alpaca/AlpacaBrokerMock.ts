@@ -1,10 +1,10 @@
 import {ms} from 'ms';
-import type {ExchangeFeeRate, ExchangeTradingRules} from '../Exchange.js';
+import type {ExchangeFeeRate, ExchangeTradingRules} from '../Broker.js';
 import type {TradingPair} from '../TradingPair.js';
-import {ExchangeMock, type ExchangeMockBalance} from '../ExchangeMock.js';
-import {AlpacaExchange} from './AlpacaExchange.js';
+import {BrokerMock, type ExchangeMockBalance} from '../BrokerMock.js';
+import {AlpacaBroker} from './AlpacaBroker.js';
 
-export class AlpacaExchangeMock extends ExchangeMock {
+export class AlpacaBrokerMock extends BrokerMock {
   readonly #feeRates: ExchangeFeeRate;
   readonly #tradingRules: Omit<ExchangeTradingRules, 'pair'>;
 
@@ -14,8 +14,8 @@ export class AlpacaExchangeMock extends ExchangeMock {
     tradingRules?: Omit<ExchangeTradingRules, 'pair'>;
   }) {
     super({balances: config.balances});
-    this.#feeRates = config.feeRates ?? AlpacaExchange.DEFAULT_FEE_RATES;
-    this.#tradingRules = config.tradingRules ?? AlpacaExchange.DEFAULT_CRYPTO_TRADING_RULES;
+    this.#feeRates = config.feeRates ?? AlpacaBroker.DEFAULT_FEE_RATES;
+    this.#tradingRules = config.tradingRules ?? AlpacaBroker.DEFAULT_CRYPTO_TRADING_RULES;
     this.setCachedFeeRates(this.#feeRates);
   }
 
@@ -31,7 +31,7 @@ export class AlpacaExchangeMock extends ExchangeMock {
   }
 
   getName(): string {
-    return `${AlpacaExchange.NAME}Mock`;
+    return `${AlpacaBroker.NAME}Mock`;
   }
 
   getSmallestInterval(): number {

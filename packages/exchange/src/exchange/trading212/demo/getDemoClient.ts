@@ -1,9 +1,9 @@
 import assert from 'node:assert/strict';
 import {AlpacaMarketData} from '../../alpaca/AlpacaMarketData.js';
-import {Trading212Exchange} from '../Trading212Exchange.js';
+import {Trading212Broker} from '../Trading212Broker.js';
 import {getTrading212Client} from '../getTrading212Client.js';
 
-export function getDemoClient(): Trading212Exchange {
+export function getDemoClient(): Trading212Broker {
   const usePaperTrading = process.env.TRADING212_USE_PAPER !== 'false';
   const keyVar = usePaperTrading ? 'TRADING212_PAPER_API_KEY' : 'TRADING212_LIVE_API_KEY';
   const secretVar = usePaperTrading ? 'TRADING212_PAPER_API_SECRET' : 'TRADING212_LIVE_API_SECRET';

@@ -1,6 +1,6 @@
 import Big from 'big.js';
 import {describe, expect, it} from 'vitest';
-import {AllAvailableAmount, AlpacaExchangeMock, ExchangeOrderSide, ExchangeOrderType} from '@typedtrader/exchange';
+import {AllAvailableAmount, AlpacaBrokerMock, ExchangeOrderSide, ExchangeOrderType} from '@typedtrader/exchange';
 import type {ExchangeCandle, ExchangeTradingRules, OrderAdvice, TradingSessionState} from '@typedtrader/exchange';
 import {TradingPair} from '@typedtrader/exchange';
 import {BacktestExecutor} from './BacktestExecutor.js';
@@ -32,7 +32,7 @@ function createMockExchange(options: {baseBalance?: string; counterBalance?: str
     ['BTC', {available: new Big(options.baseBalance ?? '0'), hold: new Big(0)}],
     ['USD', {available: new Big(options.counterBalance ?? '1000'), hold: new Big(0)}],
   ]);
-  return new AlpacaExchangeMock({balances});
+  return new AlpacaBrokerMock({balances});
 }
 
 describe('BacktestExecutor', () => {
@@ -554,7 +554,7 @@ describe('BacktestExecutor', () => {
         ['BTC', {available: new Big(options.baseBalance ?? '0'), hold: new Big(0)}],
         ['USD', {available: new Big(options.counterBalance ?? '1000'), hold: new Big(0)}],
       ]);
-      return new AlpacaExchangeMock({balances, tradingRules: STRICT_TRADING_RULES});
+      return new AlpacaBrokerMock({balances, tradingRules: STRICT_TRADING_RULES});
     }
 
     it('skips buy trades when the computed size is below base_min_size', async () => {
@@ -684,7 +684,7 @@ describe('BacktestExecutor', () => {
         ['BTC', {available: new Big(0), hold: new Big(0)}],
         ['USD', {available: new Big(1000), hold: new Big(0)}],
       ]);
-      const exchange = new AlpacaExchangeMock({balances, tradingRules: COARSE_RULES});
+      const exchange = new AlpacaBrokerMock({balances, tradingRules: COARSE_RULES});
 
       // Candle 1: close=100.10 → advice to BUY_LIMIT at 100.10, which rounds to 100.00
       // Candle 2: low=100.10 → rounded price (100.00) < low (100.10), so order must NOT fill

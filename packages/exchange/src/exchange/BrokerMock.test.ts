@@ -1,17 +1,17 @@
 import Big from 'big.js';
 import {describe, expect, it} from 'vitest';
-import {ExchangeMock, type ExchangeMockBalance} from './ExchangeMock.js';
+import {BrokerMock, type ExchangeMockBalance} from './BrokerMock.js';
 import {
   type ExchangeCandle,
   type ExchangeFeeRate,
   ExchangeOrderSide,
   ExchangeOrderType,
   type ExchangeTradingRules,
-} from './Exchange.js';
+} from './Broker.js';
 import {TradingPair} from './TradingPair.js';
 import {ms} from 'ms';
 
-class TestExchangeMock extends ExchangeMock {
+class TestExchangeMock extends BrokerMock {
   static readonly TEST_FEE_RATES: ExchangeFeeRate = {
     [ExchangeOrderType.MARKET]: new Big(0.0025),
     [ExchangeOrderType.LIMIT]: new Big(0.0015),
@@ -75,7 +75,7 @@ function createExchange(baseAmount: string, counterAmount: string) {
   );
 }
 
-describe('ExchangeMock', () => {
+describe('BrokerMock', () => {
   describe('market orders', () => {
     it('fills market buy order at the next candle open price', async () => {
       const exchange = createExchange('0', '10000');
