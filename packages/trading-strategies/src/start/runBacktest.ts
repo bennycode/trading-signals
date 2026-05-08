@@ -108,8 +108,8 @@ if ('init' in strategy && typeof strategy.init === 'function') {
 
 // 5. Run backtest
 const result = await new BacktestExecutor({
+  broker: exchange,
   candles,
-  exchange,
   strategy,
   tradingPair,
 }).execute();

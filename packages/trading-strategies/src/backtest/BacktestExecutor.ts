@@ -13,7 +13,7 @@ export class BacktestExecutor {
   }
 
   async execute(): Promise<BacktestResult> {
-    const {candles, exchange, strategy, tradingPair} = this.#config;
+    const {candles, broker: exchange, strategy, tradingPair} = this.#config;
 
     const initialBalances = await exchange.getAvailableBalances(tradingPair);
     const initialBaseBalance = initialBalances.base;
@@ -115,7 +115,7 @@ export class BacktestExecutor {
     tradingRules: TradingRules,
     feeRates: FeeRate
   ): Promise<TradingSessionState> {
-    const {exchange} = this.#config;
+    const {broker: exchange} = this.#config;
     const [balances, fills] = await Promise.all([exchange.getAvailableBalances(pair), exchange.getFills(pair)]);
     const lastOrderSide = fills.length > 0 ? fills[0].side : undefined;
 
@@ -134,7 +134,7 @@ export class BacktestExecutor {
     tradingRules: TradingRules,
     feeRates: FeeRate
   ): Promise<void> {
-    const {exchange} = this.#config;
+    const {broker: exchange} = this.#config;
 
     try {
       if (advice.type === OrderType.LIMIT) {

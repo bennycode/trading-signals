@@ -55,11 +55,15 @@ export const OrderSchema = z.looseObject({
 });
 
 export const PlaceMarketOrderRequestSchema = z.object({
+  /** Route to Trading212's 24/5 overnight venue (true) or regular session only (default). */
+  extendedHours: z.boolean().optional(),
   quantity: z.number(),
   ticker: z.string(),
 });
 
 export const PlaceLimitOrderRequestSchema = z.object({
+  /** Route to Trading212's 24/5 overnight venue (true) or regular session only (default). */
+  extendedHours: z.boolean().optional(),
   limitPrice: z.number(),
   quantity: z.number(),
   ticker: z.string(),

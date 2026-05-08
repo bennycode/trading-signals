@@ -83,7 +83,7 @@ export class StrategyMonitor {
     });
 
     const session = new TradingSession({
-      exchange,
+      broker: exchange,
       pair,
       strategy,
     });

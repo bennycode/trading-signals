@@ -106,7 +106,7 @@ describe.sequential('TradingSession', () => {
     vi.clearAllMocks();
     exchange = createMockExchange();
     strategy = createMockStrategy();
-    session = new TradingSession({exchange, pair, strategy});
+    session = new TradingSession({broker: exchange, pair, strategy});
   });
 
   describe('start', () => {

@@ -49,7 +49,7 @@ describe('BuyOnceStrategy', () => {
 
     const config: BacktestConfig = {
       candles,
-      exchange: createMockExchange(),
+      broker: createMockExchange(),
       strategy,
       tradingPair,
     };
@@ -73,7 +73,7 @@ describe('BuyOnceStrategy', () => {
 
     const config: BacktestConfig = {
       candles,
-      exchange: createMockExchange(),
+      broker: createMockExchange(),
       strategy,
       tradingPair,
     };
@@ -97,7 +97,7 @@ describe('BuyOnceStrategy', () => {
 
     const config: BacktestConfig = {
       candles,
-      exchange: createMockExchange(),
+      broker: createMockExchange(),
       strategy,
       tradingPair,
     };
@@ -119,7 +119,7 @@ describe('BuyOnceStrategy', () => {
 
     const config: BacktestConfig = {
       candles,
-      exchange: createMockExchange(),
+      broker: createMockExchange(),
       strategy,
       tradingPair,
     };
@@ -144,7 +144,7 @@ describe('BuyOnceStrategy', () => {
 
     const config: BacktestConfig = {
       candles,
-      exchange: createMockExchange(),
+      broker: createMockExchange(),
       strategy,
       tradingPair,
     };

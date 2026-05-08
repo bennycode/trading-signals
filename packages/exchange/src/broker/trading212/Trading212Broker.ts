@@ -361,7 +361,10 @@ export class Trading212Broker extends Broker implements MarketDataSource {
     if (options.type === OrderType.LIMIT) {
       // Trading212 rejects GTC for stock limit orders ("Invalid payload"). DAY is the only
       // time-in-force that works across paper and live for equity limit orders.
+      // `extendedHours: true` always — routes through Trading212's 24/5 venue so orders
+      // submitted outside NASDAQ regular hours (14:30-21:00 UTC) don't get cancelled.
       const order = await this.#api.placeLimitOrder({
+        extendedHours: true,
         limitPrice: Number(options.price),
         quantity: signedQuantity,
         ticker: pair.base,
@@ -371,6 +374,7 @@ export class Trading212Broker extends Broker implements MarketDataSource {
     }
 
     const order = await this.#api.placeMarketOrder({
+      extendedHours: true,
       quantity: signedQuantity,
       ticker: pair.base,
     });

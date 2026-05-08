@@ -14,7 +14,7 @@ import type {
 } from './TradingSessionTypes.js';
 
 export class TradingSession extends EventEmitter<TradingSessionEventMap> {
-  readonly #exchange;
+  readonly #broker;
   readonly #pair;
   readonly #strategy;
 
@@ -26,7 +26,7 @@ export class TradingSession extends EventEmitter<TradingSessionEventMap> {
 
   constructor(options: TradingSessionOptions) {
     super();
-    this.#exchange = options.exchange;
+    this.#broker = options.broker;
     this.#pair = options.pair;
     this.#strategy = options.strategy;
     this.#strategy.onMessage = text => this.emit('message', text);
@@ -42,22 +42,22 @@ export class TradingSession extends EventEmitter<TradingSessionEventMap> {
     }
 
     const [tradingRules, feeRates] = await Promise.all([
-      this.#exchange.getTradingRules(this.#pair),
-      this.#exchange.getFeeRates(this.#pair),
+      this.#broker.getTradingRules(this.#pair),
+      this.#broker.getFeeRates(this.#pair),
     ]);
 
     // Subscribe to order WebSocket early so we don't miss fills for open orders
-    this.#orderTopicId = await this.#exchange.watchOrders();
-    this.#exchange.on(this.#orderTopicId, this.#onFill);
+    this.#orderTopicId = await this.#broker.watchOrders();
+    this.#broker.on(this.#orderTopicId, this.#onFill);
 
     // Pick up all previously placed open orders
-    const openOrders = await this.#exchange.getOpenOrders(this.#pair);
+    const openOrders = await this.#broker.getOpenOrders(this.#pair);
     for (const order of openOrders) {
       this.#pendingOrders.set(order.id, order);
     }
 
-    const balances = await this.#exchange.getAvailableBalances(this.#pair);
-    const fills = await this.#exchange.getFills(this.#pair);
+    const balances = await this.#broker.getAvailableBalances(this.#pair);
+    const fills = await this.#broker.getFills(this.#pair);
     const lastOrderSide = fills.length > 0 ? fills[0].side : undefined;
 
     this.#state = {
@@ -70,8 +70,8 @@ export class TradingSession extends EventEmitter<TradingSessionEventMap> {
 
     // Subscribe to candles only after state is ready
     const openTimeInISO = new Date().toISOString();
-    this.#candleTopicId = await this.#exchange.watchCandles(this.#pair, ONE_MINUTE_IN_MS, openTimeInISO);
-    this.#exchange.on(this.#candleTopicId, this.#onCandle);
+    this.#candleTopicId = await this.#broker.watchCandles(this.#pair, ONE_MINUTE_IN_MS, openTimeInISO);
+    this.#broker.on(this.#candleTopicId, this.#onCandle);
 
     this.#running = true;
     this.emit('started');
@@ -79,16 +79,16 @@ export class TradingSession extends EventEmitter<TradingSessionEventMap> {
 
   async stop(options?: {cancelOpenOrders: boolean}): Promise<void> {
     if (options?.cancelOpenOrders) {
-      await this.#exchange.cancelOpenOrders(this.#pair);
+      await this.#broker.cancelOpenOrders(this.#pair);
     }
 
     if (this.#candleTopicId) {
-      this.#exchange.unwatchCandles(this.#candleTopicId);
+      this.#broker.unwatchCandles(this.#candleTopicId);
       this.#candleTopicId = null;
     }
 
     if (this.#orderTopicId) {
-      this.#exchange.unwatchOrders(this.#orderTopicId);
+      this.#broker.unwatchOrders(this.#orderTopicId);
       this.#orderTopicId = null;
     }
 
@@ -132,7 +132,7 @@ export class TradingSession extends EventEmitter<TradingSessionEventMap> {
       this.#pendingOrders.delete(fill.order_id);
       this.emit('fill', fill);
 
-      const balances = await this.#exchange.getAvailableBalances(this.#pair);
+      const balances = await this.#broker.getAvailableBalances(this.#pair);
       this.#state = {
         ...this.#state!,
         baseBalance: balances.base,
@@ -158,13 +158,13 @@ export class TradingSession extends EventEmitter<TradingSessionEventMap> {
       // Only forget orders that were actually canceled. Any pending order missing
       // from the canceled list filled before our cancel reached the exchange —
       // keep it so the late FILL websocket event still matches and onFinish fires.
-      const canceledIds = await this.#exchange.cancelOpenOrders(this.#pair);
+      const canceledIds = await this.#broker.cancelOpenOrders(this.#pair);
       for (const orderId of canceledIds) {
         this.#pendingOrders.delete(orderId);
       }
     }
 
-    const balances = await this.#exchange.getAvailableBalances(this.#pair);
+    const balances = await this.#broker.getAvailableBalances(this.#pair);
     this.#state = {
       ...this.#state!,
       baseBalance: balances.base,
@@ -194,13 +194,13 @@ export class TradingSession extends EventEmitter<TradingSessionEventMap> {
 
     if (advice.type === OrderType.LIMIT) {
       const price = this.#applyPrecision(new Big(advice.price), this.#state!.tradingRules.counter_increment);
-      order = await this.#exchange.placeLimitOrder(this.#pair, {
+      order = await this.#broker.placeLimitOrder(this.#pair, {
         side: advice.side,
         size: size.toFixed(),
         price: price.toFixed(),
       });
     } else {
-      order = await this.#exchange.placeMarketOrder(this.#pair, {
+      order = await this.#broker.placeMarketOrder(this.#pair, {
         side: advice.side,
         size: size.toFixed(),
         sizeInCounter: advice.amountIn === 'counter',

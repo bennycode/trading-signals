@@ -52,7 +52,7 @@ describe('BacktestExecutor', () => {
 
       const config: BacktestConfig = {
         candles: [...candles],
-        exchange: createMockExchange({baseBalance: '1', counterBalance: '1000'}),
+        broker: createMockExchange({baseBalance: '1', counterBalance: '1000'}),
         strategy: new NoOpStrategy(),
         tradingPair,
       };
@@ -71,7 +71,7 @@ describe('BacktestExecutor', () => {
 
       const config: BacktestConfig = {
         candles: [],
-        exchange: createMockExchange(),
+        broker: createMockExchange(),
         strategy,
         tradingPair,
       };
@@ -95,7 +95,7 @@ describe('BacktestExecutor', () => {
 
       const config: BacktestConfig = {
         candles,
-        exchange: createMockExchange(),
+        broker: createMockExchange(),
         strategy,
         tradingPair,
       };
@@ -122,7 +122,7 @@ describe('BacktestExecutor', () => {
 
       const config: BacktestConfig = {
         candles,
-        exchange: createMockExchange({baseBalance: '2', counterBalance: '0'}),
+        broker: createMockExchange({baseBalance: '2', counterBalance: '0'}),
         strategy,
         tradingPair,
       };
@@ -148,7 +148,7 @@ describe('BacktestExecutor', () => {
 
       const config: BacktestConfig = {
         candles,
-        exchange: createMockExchange({baseBalance: '10', counterBalance: '0'}),
+        broker: createMockExchange({baseBalance: '10', counterBalance: '0'}),
         strategy,
         tradingPair,
       };
@@ -194,7 +194,7 @@ describe('BacktestExecutor', () => {
 
       const config: BacktestConfig = {
         candles,
-        exchange: createMockExchange(),
+        broker: createMockExchange(),
         strategy: new AlwaysBuyMarket(),
         tradingPair,
       };
@@ -231,7 +231,7 @@ describe('BacktestExecutor', () => {
 
       const config: BacktestConfig = {
         candles,
-        exchange: createMockExchange(),
+        broker: createMockExchange(),
         strategy,
         tradingPair,
       };
@@ -256,7 +256,7 @@ describe('BacktestExecutor', () => {
 
       const config: BacktestConfig = {
         candles,
-        exchange: createMockExchange({baseBalance: '0', counterBalance: '1000'}),
+        broker: createMockExchange({baseBalance: '0', counterBalance: '1000'}),
         strategy,
         tradingPair,
       };
@@ -282,7 +282,7 @@ describe('BacktestExecutor', () => {
 
       const config: BacktestConfig = {
         candles,
-        exchange: createMockExchange({counterBalance: '500'}),
+        broker: createMockExchange({counterBalance: '500'}),
         strategy,
         tradingPair,
       };
@@ -321,7 +321,7 @@ describe('BacktestExecutor', () => {
 
       const config: BacktestConfig = {
         candles,
-        exchange: createMockExchange({baseBalance: '5', counterBalance: '0'}),
+        broker: createMockExchange({baseBalance: '5', counterBalance: '0'}),
         strategy: new SellTooMuch(),
         tradingPair,
       };
@@ -372,7 +372,7 @@ describe('BacktestExecutor', () => {
 
       const config: BacktestConfig = {
         candles,
-        exchange: createMockExchange({counterBalance: '10000'}),
+        broker: createMockExchange({counterBalance: '10000'}),
         strategy,
         tradingPair,
       };
@@ -415,7 +415,7 @@ describe('BacktestExecutor', () => {
 
       const config: BacktestConfig = {
         candles,
-        exchange: createMockExchange(),
+        broker: createMockExchange(),
         strategy,
         tradingPair,
       };
@@ -459,7 +459,7 @@ describe('BacktestExecutor', () => {
 
       const config: BacktestConfig = {
         candles,
-        exchange: createMockExchange(),
+        broker: createMockExchange(),
         strategy: new BuyOnce(),
         tradingPair,
       };
@@ -495,7 +495,7 @@ describe('BacktestExecutor', () => {
       const config: BacktestConfig = {
         candles,
         // 2 BTC initial base balance so the open price matters for valuation
-        exchange: createMockExchange({baseBalance: '2', counterBalance: '0'}),
+        broker: createMockExchange({baseBalance: '2', counterBalance: '0'}),
         strategy: new NoOpStrategy(),
         tradingPair,
       };
@@ -523,7 +523,7 @@ describe('BacktestExecutor', () => {
 
       const config: BacktestConfig = {
         candles,
-        exchange: createMockExchange(),
+        broker: createMockExchange(),
         strategy: new NoOpStrategy(),
         tradingPair,
       };
@@ -580,7 +580,7 @@ describe('BacktestExecutor', () => {
       const config: BacktestConfig = {
         candles,
         // Only $1 at price $50,000 can buy 0.00002 BTC, below min 0.0001
-        exchange: createMockWithRules({counterBalance: '1'}),
+        broker: createMockWithRules({counterBalance: '1'}),
         strategy: new AlwaysBuyMarket(),
         tradingPair,
       };
@@ -611,7 +611,7 @@ describe('BacktestExecutor', () => {
 
       const config: BacktestConfig = {
         candles,
-        exchange: createMockWithRules({baseBalance: '0.00005'}),
+        broker: createMockWithRules({baseBalance: '0.00005'}),
         strategy: new AlwaysSellMarket(),
         tradingPair,
       };
@@ -637,7 +637,7 @@ describe('BacktestExecutor', () => {
 
       const config: BacktestConfig = {
         candles,
-        exchange: createMockWithRules(),
+        broker: createMockWithRules(),
         strategy,
         tradingPair,
       };
@@ -694,8 +694,8 @@ describe('BacktestExecutor', () => {
       ];
 
       const config: BacktestConfig = {
+        broker: exchange,
         candles,
-        exchange,
         strategy: new BuyAtPrice(),
         tradingPair,
       };

@@ -85,7 +85,7 @@ export interface TradingSessionState {
   readonly feeRates: FeeRate;
 }
 
-export interface TradingSessionExchange extends Pick<EventEmitter, 'on'> {
+export interface TradingSessionBroker extends Pick<EventEmitter, 'on'> {
   cancelOpenOrders(pair: TradingPair): Promise<string[]>;
   getAvailableBalances(pair: TradingPair): Promise<ExchangeAvailableBalance>;
   getFeeRates(pair: TradingPair): Promise<FeeRate>;
@@ -107,7 +107,7 @@ export interface TradingSessionExchange extends Pick<EventEmitter, 'on'> {
 }
 
 export interface TradingSessionOptions {
-  exchange: TradingSessionExchange;
+  broker: TradingSessionBroker;
   pair: TradingPair;
   strategy: TradingSessionStrategy;
 }

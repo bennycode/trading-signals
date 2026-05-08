@@ -51,7 +51,7 @@ describe('TrailingStopStrategy', () => {
 
     const config: BacktestConfig = {
       candles,
-      exchange: createMockExchange({baseBalance: '5'}),
+      broker: createMockExchange({baseBalance: '5'}),
       strategy,
       tradingPair,
     };
@@ -78,7 +78,7 @@ describe('TrailingStopStrategy', () => {
 
     const config: BacktestConfig = {
       candles,
-      exchange: createMockExchange({baseBalance: '5'}),
+      broker: createMockExchange({baseBalance: '5'}),
       strategy,
       tradingPair,
     };
@@ -103,7 +103,7 @@ describe('TrailingStopStrategy', () => {
 
     const config: BacktestConfig = {
       candles,
-      exchange: createMockExchange({baseBalance: '5'}),
+      broker: createMockExchange({baseBalance: '5'}),
       strategy,
       tradingPair,
     };
@@ -127,7 +127,7 @@ describe('TrailingStopStrategy', () => {
 
     const config: BacktestConfig = {
       candles,
-      exchange: createMockExchange({baseBalance: '5'}),
+      broker: createMockExchange({baseBalance: '5'}),
       strategy,
       tradingPair,
     };
@@ -150,7 +150,7 @@ describe('TrailingStopStrategy', () => {
 
     const config: BacktestConfig = {
       candles,
-      exchange: createMockExchange({baseBalance: '0', counterBalance: '0'}),
+      broker: createMockExchange({baseBalance: '0', counterBalance: '0'}),
       strategy,
       tradingPair,
     };
@@ -175,7 +175,7 @@ describe('TrailingStopStrategy', () => {
 
     const config: BacktestConfig = {
       candles,
-      exchange: createMockExchange({baseBalance: '5'}),
+      broker: createMockExchange({baseBalance: '5'}),
       strategy,
       tradingPair,
     };
@@ -201,7 +201,7 @@ describe('TrailingStopStrategy', () => {
 
     const config: BacktestConfig = {
       candles,
-      exchange: createMockExchange({baseBalance: '5'}),
+      broker: createMockExchange({baseBalance: '5'}),
       strategy,
       tradingPair,
     };
@@ -233,7 +233,7 @@ describe('TrailingStopStrategy', () => {
 
     const config: BacktestConfig = {
       candles,
-      exchange: createMockExchange({baseBalance: '5'}),
+      broker: createMockExchange({baseBalance: '5'}),
       strategy,
       tradingPair,
     };
@@ -259,7 +259,7 @@ describe('TrailingStopStrategy', () => {
 
     const config: BacktestConfig = {
       candles,
-      exchange: createMockExchange({baseBalance: '5'}),
+      broker: createMockExchange({baseBalance: '5'}),
       strategy,
       tradingPair,
     };
@@ -316,7 +316,7 @@ describe('TrailingStopStrategy', () => {
 
     const config: BacktestConfig = {
       candles,
-      exchange: createMockExchange({baseBalance: '5'}),
+      broker: createMockExchange({baseBalance: '5'}),
       strategy,
       tradingPair,
     };
@@ -338,7 +338,7 @@ describe('TrailingStopStrategy', () => {
 
     const config: BacktestConfig = {
       candles,
-      exchange: createMockExchange({baseBalance: '5'}),
+      broker: createMockExchange({baseBalance: '5'}),
       strategy,
       tradingPair,
     };
@@ -367,7 +367,7 @@ describe('TrailingStopStrategy', () => {
 
     const config: BacktestConfig = {
       candles,
-      exchange: createMockExchange({baseBalance: '5'}),
+      broker: createMockExchange({baseBalance: '5'}),
       strategy,
       tradingPair,
     };
@@ -399,7 +399,7 @@ describe('TrailingStopStrategy', () => {
 
     const config: BacktestConfig = {
       candles,
-      exchange: createMockExchange({baseBalance: '5'}),
+      broker: createMockExchange({baseBalance: '5'}),
       strategy,
       tradingPair,
     };
