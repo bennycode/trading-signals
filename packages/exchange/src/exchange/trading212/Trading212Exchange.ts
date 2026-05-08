@@ -25,8 +25,6 @@ import {Trading212API} from './api/Trading212API.js';
 import {Trading212OrderStatus, Trading212TimeValidity} from './api/schema/OrderSchema.js';
 import {Trading212ExchangeMapper} from './Trading212ExchangeMapper.js';
 
-const NOT_SUPPORTED = 'Trading212 does not provide this capability via its public API.';
-
 export class Trading212Exchange extends Exchange implements MarketDataSource {
   static readonly NAME = 'Trading212';
 
@@ -51,7 +49,7 @@ export class Trading212Exchange extends Exchange implements MarketDataSource {
   readonly #api: Trading212API;
   readonly #orderWatchers = new Map<string, NodeJS.Timeout>();
   readonly #orderStoppers = new Map<string, () => void>();
-  readonly #marketData: MarketDataSource | undefined;
+  readonly #marketData: MarketDataSource;
   readonly #candleListenerByTopic = new Map<string, (candle: unknown) => void>();
 
   constructor(options: {
@@ -59,10 +57,12 @@ export class Trading212Exchange extends Exchange implements MarketDataSource {
     apiSecret: string;
     usePaperTrading: boolean;
     /**
-     * Optional market-data source. When provided, candle methods delegate to it; otherwise
-     * they throw. Lifecycle is owned by the caller — `disconnect()` does not close it.
+     * Market-data source. Required: candle methods delegate here. Trading212's public API
+     * exposes no historical bars and no public WebSocket, so the data source has to come
+     * from outside (e.g. `AlpacaMarketData`). Lifecycle is owned by the caller —
+     * `disconnect()` on this class does not close it.
      */
-    marketData?: MarketDataSource;
+    marketData: MarketDataSource;
   }) {
     super(Trading212Exchange.NAME);
     this.#api = new Trading212API(options);
@@ -99,23 +99,14 @@ export class Trading212Exchange extends Exchange implements MarketDataSource {
   }
 
   async getCandles(pair: TradingPair, request: ExchangeCandleImportRequest): Promise<ExchangeCandle[]> {
-    if (!this.#marketData) {
-      throw new Error(`getCandles: ${NOT_SUPPORTED} Pass a \`marketData\` source to enable candle methods.`);
-    }
     return this.#marketData.getCandles(Trading212Exchange.toMarketDataPair(pair), request);
   }
 
   async getLatestCandle(pair: TradingPair, intervalInMillis: number): Promise<ExchangeCandle> {
-    if (!this.#marketData) {
-      throw new Error(`getLatestCandle: ${NOT_SUPPORTED} Pass a \`marketData\` source to enable candle methods.`);
-    }
     return this.#marketData.getLatestCandle(Trading212Exchange.toMarketDataPair(pair), intervalInMillis);
   }
 
   async watchCandles(pair: TradingPair, intervalInMillis: number, openTimeInISO: string): Promise<string> {
-    if (!this.#marketData) {
-      throw new Error(`watchCandles: ${NOT_SUPPORTED} Pass a \`marketData\` source to enable candle methods.`);
-    }
     const topicId = await this.#marketData.watchCandles(
       Trading212Exchange.toMarketDataPair(pair),
       intervalInMillis,
@@ -128,9 +119,6 @@ export class Trading212Exchange extends Exchange implements MarketDataSource {
   }
 
   unwatchCandles(topicId: string): void {
-    if (!this.#marketData) {
-      throw new Error(`unwatchCandles: ${NOT_SUPPORTED} Pass a \`marketData\` source to enable candle methods.`);
-    }
     const forwarder = this.#candleListenerByTopic.get(topicId);
     if (forwarder) {
       this.#marketData.off(topicId, forwarder);

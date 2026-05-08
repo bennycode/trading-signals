@@ -1,5 +1,5 @@
+import {randomUUID} from 'node:crypto';
 import Big from 'big.js';
-import axios from 'axios';
 import {ms} from 'ms';
 import {AlpacaExchangeMapper} from './AlpacaExchangeMapper.js';
 import {
@@ -20,11 +20,9 @@ import {
   type ExchangePendingOrder,
   type ExchangeTradingRules,
 } from '../Exchange.js';
-import type {MarketDataSource} from '../MarketDataSource.js';
+import {MarketDataSource} from '../MarketDataSource.js';
 import {TradingPair} from '../TradingPair.js';
-import {alpacaWebSocket, AlpacaConnection} from './AlpacaWebSocket.js';
-import {CandleBatcher} from '../../candle/CandleBatcher.js';
-import type {MinuteBarMessage} from './api/schema/StreamSchema.js';
+import {createAlpacaSymbol, isAlpacaCryptoSymbol} from './alpacaSymbol.js';
 import {OrderStatus} from './api/schema/OrderSchema.js';
 import {AlpacaAPI} from './api/AlpacaAPI.js';
 import {PositionSide} from './api/schema/PositionSchema.js';
@@ -33,17 +31,24 @@ import {TradeUpdateEvent, type TradeUpdateMessage} from './api/schema/TradingStr
 
 export class AlpacaExchange extends Exchange implements MarketDataSource {
   readonly #alpacaAPI: AlpacaAPI;
-  readonly #SUBSCRIPTION_PLAN = 'iex' as const;
-  static readonly STOCK_STREAM_SOURCE = `v2/iex`;
-  static readonly CRYPTO_STREAM_SOURCE = `v1beta3/crypto/us`;
+  readonly #marketData: MarketDataSource;
+  readonly #candleListenerByTopic = new Map<string, (candle: unknown) => void>();
 
-  #candleTopics: Map<string, {symbol: string; connectionId: string}> = new Map();
   #orderTopics: Map<string, (message: TradeUpdateMessage) => void> = new Map();
   #tradingConnectionId: string | null = null;
-  readonly #connectStream: (source: string) => Promise<AlpacaConnection>;
   readonly #connectTradingStream: () => Promise<AlpacaTradingConnection>;
 
-  constructor(options: {apiKey: string; apiSecret: string; usePaperTrading: boolean}) {
+  constructor(options: {
+    apiKey: string;
+    apiSecret: string;
+    usePaperTrading: boolean;
+    /**
+     * Market-data source for candle methods. Required: every broker delegates candle calls
+     * to its `marketData`. The default Alpaca pairing comes from `getAlpacaClient`, which
+     * wires an `AlpacaMarketData` from the same credentials.
+     */
+    marketData: MarketDataSource;
+  }) {
     super(AlpacaExchange.NAME);
 
     this.#alpacaAPI = new AlpacaAPI({
@@ -52,10 +57,7 @@ export class AlpacaExchange extends Exchange implements MarketDataSource {
       usePaperTrading: options.usePaperTrading,
     });
 
-    // Wrap Stream connection, so that nothing async happens when the "constructor" of this class is being called
-    this.#connectStream = async (source: string): Promise<AlpacaConnection> => {
-      return alpacaWebSocket.connect(options, source);
-    };
+    this.#marketData = options.marketData;
 
     this.#connectTradingStream = async (): Promise<AlpacaTradingConnection> => {
       return alpacaTradingWebSocket.connect(options);
@@ -89,111 +91,12 @@ export class AlpacaExchange extends Exchange implements MarketDataSource {
     counter_min_size: '1',
   };
 
-  #createSymbol(pair: TradingPair, isCrypto: boolean): string {
-    if (isCrypto) {
-      return `${pair.base}/${pair.counter}`;
-    }
-    return pair.base;
+  async getCandles(pair: TradingPair, request: ExchangeCandleImportRequest): Promise<ExchangeCandle[]> {
+    return this.#marketData.getCandles(pair, request);
   }
 
   async getLatestCandle(pair: TradingPair, intervalInMillis: number): Promise<ExchangeCandle> {
-    const isCrypto = await this.#isCryptoSymbol(pair);
-    const symbol = this.#createSymbol(pair, isCrypto);
-    const fetchMethod = isCrypto ? this.#fetchLatestCryptoBars.bind(this) : this.#fetchLatestStockBars.bind(this);
-    const {bars} = await fetchMethod(pair);
-    // Alpaca only provides minute-bars data, which means we need to determine the time frame and retrieve all candles
-    // within that range to construct a complete candle with the specified interval.
-    const startTimeLastCandle = new Date(bars[symbol].t).getTime();
-    const startTimeFirstCandle = startTimeLastCandle - intervalInMillis + ms('1m');
-    const candles = await this.getCandles(pair, {
-      intervalInMillis,
-      startTimeFirstCandle: new Date(startTimeFirstCandle).toISOString(),
-      startTimeLastCandle: new Date(startTimeLastCandle).toISOString(),
-    });
-    return candles[0]!;
-  }
-
-  async #fetchLatestStockBars(pair: TradingPair) {
-    return this.#alpacaAPI.getStockBarsLatest({
-      feed: this.#SUBSCRIPTION_PLAN,
-      symbols: this.#createSymbol(pair, false),
-    });
-  }
-
-  async #fetchLatestCryptoBars(pair: TradingPair) {
-    return this.#alpacaAPI.getCryptoBarsLatest({
-      symbols: this.#createSymbol(pair, true),
-    });
-  }
-
-  async #isCryptoSymbol(pair: TradingPair) {
-    try {
-      const response = await this.#fetchLatestCryptoBars(pair);
-      return Object.keys(response.bars).length > 0;
-    } catch (error) {
-      const status = axios.isAxiosError(error) ? error.response?.status : undefined;
-      if (status && status >= 400 && status < 500) {
-        return false;
-      }
-      throw error;
-    }
-  }
-
-  async #fetchCryptoBars(pair: TradingPair, request: ExchangeCandleImportRequest, pageToken: string | undefined) {
-    return this.#alpacaAPI.getCryptoBars({
-      end: request.startTimeLastCandle,
-      limit: 10_000,
-      page_token: pageToken,
-      start: request.startTimeFirstCandle,
-      symbols: this.#createSymbol(pair, true),
-      timeframe: AlpacaExchangeMapper.mapInterval(request.intervalInMillis),
-    });
-  }
-
-  #fetchStockBars(pair: TradingPair, request: ExchangeCandleImportRequest, pageToken: string | undefined) {
-    if (pair.counter !== 'USD') {
-      throw new Error(
-        `Cannot use "${pair.counter}". Stock "${pair.base}" can only be traded in USD on ${AlpacaExchange.NAME}.`
-      );
-    }
-
-    return this.#alpacaAPI.getStockBars({
-      end: request.startTimeLastCandle,
-      feed: this.#SUBSCRIPTION_PLAN,
-      limit: 10_000,
-      page_token: pageToken,
-      start: request.startTimeFirstCandle,
-      symbols: this.#createSymbol(pair, false),
-      timeframe: AlpacaExchangeMapper.mapInterval(request.intervalInMillis),
-    });
-  }
-
-  async getCandles(pair: TradingPair, request: ExchangeCandleImportRequest): Promise<ExchangeCandle[]> {
-    const candles: ExchangeCandle[] = [];
-    let pageToken: string | null | undefined = undefined;
-
-    const isCrypto = await this.#isCryptoSymbol(pair);
-
-    const fetchBars = isCrypto ? this.#fetchCryptoBars.bind(this) : this.#fetchStockBars.bind(this);
-
-    do {
-      // Make request
-      const {bars, next_page_token} = await fetchBars(pair, request, pageToken);
-
-      // Map bars
-      const entries = Object.values(bars);
-      for (const bars of entries) {
-        bars.forEach(bar => {
-          const candle = AlpacaExchangeMapper.toExchangeCandle(bar, pair, request.intervalInMillis);
-          candles.push(candle);
-        });
-      }
-
-      // Update next page
-      pageToken = next_page_token;
-    } while (pageToken);
-
-    return candles;
+    return this.#marketData.getLatestCandle(pair, intervalInMillis);
   }
 
   getName(): string {
@@ -213,55 +116,22 @@ export class AlpacaExchange extends Exchange implements MarketDataSource {
     return new Date(clock.timestamp).toISOString();
   }
 
-  unwatchCandles(topicId: string): void {
-    this.removeAllListeners(topicId);
-    const topic = this.#candleTopics.get(topicId);
-    if (topic) {
-      alpacaWebSocket.unsubscribeFromBars(topic.connectionId, topic.symbol);
-      this.#candleTopics.delete(topicId);
-    }
+  async watchCandles(pair: TradingPair, intervalInMillis: number, openTimeInISO: string): Promise<string> {
+    const topicId = await this.#marketData.watchCandles(pair, intervalInMillis, openTimeInISO);
+    const forwarder = (candle: unknown) => this.emit(topicId, candle);
+    this.#marketData.on(topicId, forwarder);
+    this.#candleListenerByTopic.set(topicId, forwarder);
+    return topicId;
   }
 
-  /**
-   * Alpaca emits candles during Stock Exchange opening times. Candles are always in minutes.
-   * Crypto candles cannot be fetched with Alpaca's SDK:
-   * https://github.com/alpacahq/alpaca-ts/issues/93#issuecomment-1692414770
-   *
-   * @note: You will only receive candles when the exchange is actually open (working hours)!
-   *
-   * @see https://docs.alpaca.markets/docs/real-time-stock-pricing-data#daily-bars-dailybars
-   * @see https://docs.alpaca.markets/docs/real-time-crypto-pricing-data
-   */
-  async watchCandles(pair: TradingPair, intervalInMillis: number, openTimeInISO: string): Promise<string> {
-    const topicId = crypto.randomUUID();
-    const isCrypto = await this.#isCryptoSymbol(pair);
-    const symbol = this.#createSymbol(pair, isCrypto);
-    const source = isCrypto ? AlpacaExchange.CRYPTO_STREAM_SOURCE : AlpacaExchange.STOCK_STREAM_SOURCE;
-    const cb = new CandleBatcher(intervalInMillis);
-    const connection = await this.#connectStream(source);
-    const smallestInterval = this.getSmallestInterval();
-    alpacaWebSocket.subscribeToBars(connection.connectionId, symbol, (message: MinuteBarMessage) => {
-      const isNewer = new Date(message.t).getTime() > new Date(openTimeInISO).getTime();
-      if (isNewer) {
-        // Bars from Alpaca always come in minutes:
-        // https://docs.alpaca.markets/docs/real-time-stock-pricing-data#minute-bars-bars
-        const candle = AlpacaExchangeMapper.toExchangeCandle(message, pair, smallestInterval);
-
-        if (intervalInMillis === smallestInterval) {
-          // No batching needed — each minute bar is already the desired interval
-          this.emit(topicId, candle);
-        } else {
-          // Emit batched candle (which will match the desired interval)
-          const batchedCandle = cb.addToBatch(candle);
-          if (batchedCandle) {
-            this.emit(topicId, batchedCandle);
-          }
-        }
-      }
-    });
-
-    this.#candleTopics.set(topicId, {symbol, connectionId: connection.connectionId});
-    return topicId;
+  unwatchCandles(topicId: string): void {
+    const forwarder = this.#candleListenerByTopic.get(topicId);
+    if (forwarder) {
+      this.#marketData.off(topicId, forwarder);
+      this.#candleListenerByTopic.delete(topicId);
+    }
+    this.#marketData.unwatchCandles(topicId);
+    this.removeAllListeners(topicId);
   }
 
   /**
@@ -272,7 +142,7 @@ export class AlpacaExchange extends Exchange implements MarketDataSource {
    * @see https://docs.alpaca.markets/docs/websocket-streaming
    */
   async watchOrders(): Promise<string> {
-    const topicId = crypto.randomUUID();
+    const topicId = randomUUID();
 
     if (!this.#tradingConnectionId) {
       const connection = await this.#connectTradingStream();
@@ -301,12 +171,11 @@ export class AlpacaExchange extends Exchange implements MarketDataSource {
     }
   }
 
+  /**
+   * Closes the trading WebSocket. The injected `marketData` is owned by the caller and not
+   * disconnected here.
+   */
   disconnect(): void {
-    for (const topic of this.#candleTopics.values()) {
-      alpacaWebSocket.unsubscribeFromBars(topic.connectionId, topic.symbol);
-    }
-    this.#candleTopics.clear();
-
     if (this.#tradingConnectionId) {
       alpacaTradingWebSocket.disconnect(this.#tradingConnectionId);
       this.#tradingConnectionId = null;
@@ -315,8 +184,8 @@ export class AlpacaExchange extends Exchange implements MarketDataSource {
   }
 
   async #createReliableSymbol(pair: TradingPair): Promise<string> {
-    const isCrypto = await this.#isCryptoSymbol(pair);
-    return this.#createSymbol(pair, isCrypto);
+    const isCrypto = await isAlpacaCryptoSymbol(this.#alpacaAPI, pair);
+    return createAlpacaSymbol(pair, isCrypto);
   }
 
   /**
@@ -422,8 +291,8 @@ export class AlpacaExchange extends Exchange implements MarketDataSource {
    * @see https://docs.alpaca.markets/docs/crypto-trading-1#minimum-order-size
    */
   async getTradingRules(pair: TradingPair): Promise<ExchangeTradingRules> {
-    const isCrypto = await this.#isCryptoSymbol(pair);
-    const symbol = this.#createSymbol(pair, isCrypto);
+    const isCrypto = await isAlpacaCryptoSymbol(this.#alpacaAPI, pair);
+    const symbol = createAlpacaSymbol(pair, isCrypto);
     const assetClass = isCrypto ? 'crypto' : 'us_equity';
     const assets = await this.#alpacaAPI.getAssets({asset_class: assetClass});
     const asset = assets.find(a => a.symbol === symbol);
@@ -479,8 +348,8 @@ export class AlpacaExchange extends Exchange implements MarketDataSource {
     options: ExchangeMarketOrderOptions
   ): Promise<ExchangePendingMarketOrder>;
   protected override async placeOrder(pair: TradingPair, options: ExchangeOrderOptions): Promise<ExchangePendingOrder> {
-    const isCrypto = await this.#isCryptoSymbol(pair);
-    const symbol = this.#createSymbol(pair, isCrypto);
+    const isCrypto = await isAlpacaCryptoSymbol(this.#alpacaAPI, pair);
+    const symbol = createAlpacaSymbol(pair, isCrypto);
     // Crypto orders cannot use 'day' and must be placed with 'gtc' (error code: 42210000)
     // Stock fractional and notional orders must use 'day' (error code: 42210000), whole share orders can use 'gtc'
     // @see https://docs.alpaca.markets/docs/fractional-trading
