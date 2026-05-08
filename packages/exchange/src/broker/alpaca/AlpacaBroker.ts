@@ -1,7 +1,7 @@
 import {randomUUID} from 'node:crypto';
 import Big from 'big.js';
 import {ms} from 'ms';
-import {AlpacaExchangeMapper} from './AlpacaExchangeMapper.js';
+import {AlpacaBrokerMapper} from './AlpacaBrokerMapper.js';
 import {
   Broker,
   type Balance,
@@ -151,8 +151,8 @@ export class AlpacaBroker extends Broker implements MarketDataSource {
 
     const cb = (message: TradeUpdateMessage) => {
       if (message.event === TradeUpdateEvent.FILL) {
-        const pair = AlpacaExchangeMapper.symbolToPair(message.order.symbol, message.order.asset_class);
-        const fill = AlpacaExchangeMapper.toFilledOrder(message.order, pair);
+        const pair = AlpacaBrokerMapper.symbolToPair(message.order.symbol, message.order.asset_class);
+        const fill = AlpacaBrokerMapper.toFilledOrder(message.order, pair);
         this.emit(topicId, fill);
       }
     };
@@ -264,7 +264,7 @@ export class AlpacaBroker extends Broker implements MarketDataSource {
   async getOpenOrders(pair: TradingPair): Promise<PendingOrder[]> {
     const symbol = await this.#createReliableSymbol(pair);
     const orders = await this.#alpacaAPI.getOrders({status: 'open', symbols: symbol});
-    return orders.map(order => AlpacaExchangeMapper.toOpenOrder(order, pair));
+    return orders.map(order => AlpacaBrokerMapper.toOpenOrder(order, pair));
   }
 
   /**
@@ -274,7 +274,7 @@ export class AlpacaBroker extends Broker implements MarketDataSource {
     const symbol = await this.#createReliableSymbol(pair);
     const orders = await this.#alpacaAPI.getOrders({status: 'closed', symbols: symbol});
     const filledOrders = orders.filter(order => order.status === AlpacaOrderStatus.FILLED);
-    return filledOrders.map(order => AlpacaExchangeMapper.toFilledOrder(order, pair));
+    return filledOrders.map(order => AlpacaBrokerMapper.toFilledOrder(order, pair));
   }
 
   async getFillByOrderId(pair: TradingPair, orderId: string): Promise<Fill | undefined> {
@@ -391,7 +391,7 @@ export class AlpacaBroker extends Broker implements MarketDataSource {
     }
 
     const order = await this.#alpacaAPI.postOrder(config);
-    return AlpacaExchangeMapper.toExchangePendingOrder(order, pair, options);
+    return AlpacaBrokerMapper.toPendingOrder(order, pair, options);
   }
 
 }

@@ -23,7 +23,7 @@ import {TradingPair} from '../TradingPair.js';
 import {MarketDataSource} from '../MarketDataSource.js';
 import {Trading212API} from './api/Trading212API.js';
 import {Trading212OrderStatus, Trading212TimeValidity} from './api/schema/OrderSchema.js';
-import {Trading212ExchangeMapper} from './Trading212ExchangeMapper.js';
+import {Trading212BrokerMapper} from './Trading212BrokerMapper.js';
 
 export class Trading212Broker extends Broker implements MarketDataSource {
   static readonly NAME = 'Trading212';
@@ -155,16 +155,33 @@ export class Trading212Broker extends Broker implements MarketDataSource {
 
     const tick = async () => {
       try {
-        const page = await this.#api.getHistoryOrdersPage();
-        const newFills = page.items
-          .filter(order => order.id != null && order.status === Trading212OrderStatus.FILLED && order.id > lastSeenId)
-          .sort((a, b) => (a.id ?? 0) - (b.id ?? 0));
+        // Page through history (newest first) until we reach an id we've already seen.
+        // Without this loop, more than 50 fills between polls would silently drop the older
+        // ones off the first page.
+        const newFills: typeof baseline.items = [];
+        let nextPath: string | null = null;
+        do {
+          const page = await this.#api.getHistoryOrdersPage(nextPath ? {nextPath} : undefined);
+          let reachedSeen = false;
+          for (const order of page.items) {
+            if (order.id != null && order.id <= lastSeenId) {
+              reachedSeen = true;
+              break;
+            }
+            if (order.status === Trading212OrderStatus.FILLED && order.id != null) {
+              newFills.push(order);
+            }
+          }
+          nextPath = reachedSeen ? null : page.nextPagePath;
+        } while (nextPath);
+
+        newFills.sort((a, b) => (a.id ?? 0) - (b.id ?? 0));
 
         for (const order of newFills) {
           const ticker = order.ticker ?? '';
           const counter = tickerToCurrency.get(ticker) ?? accountInfo.currencyCode;
           const pair = new TradingPair(ticker, counter);
-          this.emit(topicId, Trading212ExchangeMapper.toFilledOrder(order, pair, accountInfo.currencyCode));
+          this.emit(topicId, Trading212BrokerMapper.toFilledOrder(order, pair, accountInfo.currencyCode));
           lastSeenId = Math.max(lastSeenId, order.id ?? 0);
         }
       } catch (error) {
@@ -240,7 +257,7 @@ export class Trading212Broker extends Broker implements MarketDataSource {
     // silently lose `stopPrice` and mis-classify them as MARKET.
     return orders
       .filter(order => order.ticker === pair.base && (order.type === 'MARKET' || order.type === 'LIMIT'))
-      .map(order => Trading212ExchangeMapper.toOpenOrder(order, pair));
+      .map(order => Trading212BrokerMapper.toOpenOrder(order, pair));
   }
 
   async cancelOrderById(_pair: TradingPair, orderId: string): Promise<void> {
@@ -261,7 +278,7 @@ export class Trading212Broker extends Broker implements MarketDataSource {
     ]);
     return history
       .filter(order => order.id != null && order.status === Trading212OrderStatus.FILLED)
-      .map(order => Trading212ExchangeMapper.toFilledOrder(order, pair, accountInfo.currencyCode));
+      .map(order => Trading212BrokerMapper.toFilledOrder(order, pair, accountInfo.currencyCode));
   }
 
   async getFillByOrderId(pair: TradingPair, orderId: string): Promise<Fill | undefined> {
@@ -283,10 +300,14 @@ export class Trading212Broker extends Broker implements MarketDataSource {
       );
     }
 
+    // Trading212's `minTradeQuantity` is the floor *and* the increment for fractional shares.
+    // Use the same non-zero fallback for both — falling back to '0' on `base_min_size` would
+    // let computed sizes of zero pass `TradingSession`'s min-size guard.
+    const minQuantity = `${instrument.minTradeQuantity ?? '0.000000001'}`;
     return {
-      base_increment: `${instrument.minTradeQuantity ?? '0.000000001'}`,
+      base_increment: minQuantity,
       base_max_size: `${instrument.maxOpenQuantity ?? Number.MAX_SAFE_INTEGER}`,
-      base_min_size: `${instrument.minTradeQuantity ?? '0'}`,
+      base_min_size: minQuantity,
       counter_increment: '0.01',
       counter_min_size: '1',
       pair,
@@ -322,13 +343,13 @@ export class Trading212Broker extends Broker implements MarketDataSource {
         ticker: pair.base,
         timeValidity: Trading212TimeValidity.DAY,
       });
-      return Trading212ExchangeMapper.toExchangePendingOrder(order, pair, options);
+      return Trading212BrokerMapper.toPendingOrder(order, pair, options);
     }
 
     const order = await this.#api.placeMarketOrder({
       quantity: signedQuantity,
       ticker: pair.base,
     });
-    return Trading212ExchangeMapper.toExchangePendingOrder(order, pair, options);
+    return Trading212BrokerMapper.toPendingOrder(order, pair, options);
   }
 }

@@ -1,5 +1,5 @@
 export * from './AlpacaBroker.js';
-export * from './AlpacaExchangeMapper.js';
+export * from './AlpacaBrokerMapper.js';
 export * from './AlpacaBrokerMock.js';
 export * from './getAlpacaClient.js';
 export * from './getAlpacaRules.js';

@@ -14,7 +14,7 @@ import {
   PendingOrder,
 } from '../Broker.js';
 
-export class AlpacaExchangeMapper {
+export class AlpacaBrokerMapper {
   static mapInterval(intervalInMillis: number): string {
     if (intervalInMillis < ms('1m')) {
       throw new Error(`Timeframes below 1 minute are not supported.`);
@@ -27,7 +27,7 @@ export class AlpacaExchangeMapper {
     return ms(intervalInMillis).replace('m', 'Min').replace('h', 'Hour').replace('d', 'Day');
   }
 
-  static toExchangeCandle(candle: Bar, pair: TradingPair, sizeInMillis: number): Candle {
+  static toCandle(candle: Bar, pair: TradingPair, sizeInMillis: number): Candle {
     // Converting "RFC 3339" time to "ISO 8601 UTC" time
     const date = new Date(candle.t);
     return {
@@ -44,7 +44,7 @@ export class AlpacaExchangeMapper {
     };
   }
 
-  static toExchangePendingOrder(order: Order, pair: TradingPair, options: OrderOptions) {
+  static toPendingOrder(order: Order, pair: TradingPair, options: OrderOptions) {
     if (order.type === 'market') {
       const pendingOrder: PendingMarketOrder = {
         id: order.id,

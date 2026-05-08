@@ -130,7 +130,7 @@ export class CandleBatcher extends EventEmitter<EventMap> {
    * candle once you've added four sets of 15-minute candles.
    */
   addToBatch(candle: Candle | BatchedCandle): BatchedCandle | undefined {
-    const exchangeCandle = CandleBatcher.isBatchedCandle(candle) ? CandleBatcher.toExchangeCandle(candle) : candle;
+    const exchangeCandle = CandleBatcher.isBatchedCandle(candle) ? CandleBatcher.toCandle(candle) : candle;
     const {currentBatchArray, newBatch} = CandleBatcher.add(exchangeCandle, this.#batch, this.#desiredIntervalInMillis);
     this.#batch = currentBatchArray;
 
@@ -235,10 +235,10 @@ export class CandleBatcher extends EventEmitter<EventMap> {
   }
 
   static toExchangeCandles(candles: BatchedCandle[]): Candle[] {
-    return candles.map(CandleBatcher.toExchangeCandle);
+    return candles.map(CandleBatcher.toCandle);
   }
 
-  static toExchangeCandle(candle: BatchedCandle): Candle {
+  static toCandle(candle: BatchedCandle): Candle {
     return {
       base: candle.base,
       close: candle.close.valueOf(),

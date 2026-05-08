@@ -25,18 +25,18 @@ import {Trading212OrderStatus} from './api/schema/OrderSchema.js';
  * QUANTITY-strategy orders carry the size in `quantity`/`orderedQuantity`/`filledQuantity`;
  * VALUE-strategy orders (placed via the Trading212 app) carry it in `value`/`orderedValue`/`filledValue`.
  */
-export class Trading212ExchangeMapper {
-  static toExchangePendingOrder(
+export class Trading212BrokerMapper {
+  static toPendingOrder(
     order: Order,
     pair: TradingPair,
     options: LimitOrderOptions
   ): PendingLimitOrder;
-  static toExchangePendingOrder(
+  static toPendingOrder(
     order: Order,
     pair: TradingPair,
     options: MarketOrderOptions
   ): PendingMarketOrder;
-  static toExchangePendingOrder(order: Order, pair: TradingPair, options: OrderOptions): PendingOrder {
+  static toPendingOrder(order: Order, pair: TradingPair, options: OrderOptions): PendingOrder {
     const size = `${Math.abs(order.quantity ?? order.value ?? 0)}`;
     if (options.type === OrderType.LIMIT) {
       if (order.limitPrice == null) {
@@ -68,6 +68,9 @@ export class Trading212ExchangeMapper {
     const size = `${Math.abs(signedSize)}`;
 
     if (order.type === 'LIMIT') {
+      if (order.limitPrice == null) {
+        throw new Error(`Trading212 returned a LIMIT order without a limitPrice (id: ${order.id}).`);
+      }
       const limit: PendingLimitOrder = {
         id: `${order.id}`,
         pair,

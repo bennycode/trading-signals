@@ -1,5 +1,5 @@
 import {describe, expect, it, vi} from 'vitest';
-import {AlpacaExchangeMapper} from './AlpacaExchangeMapper.js';
+import {AlpacaBrokerMapper} from './AlpacaBrokerMapper.js';
 import minutes5 from '../../../fixtures/alpaca/bars/minutes-5.json' with {type: 'json'};
 import {AlpacaAssetClass, AlpacaOrderSide, AlpacaOrderStatus, AlpacaOrderType, TimeInForce} from './api/schema/OrderSchema.js';
 import {ms} from 'ms';
@@ -8,21 +8,21 @@ import {CandleBatcher} from '../../candle/CandleBatcher.js';
 import {TradingPair} from '../TradingPair.js';
 import {OrderPosition, OrderSide} from '../Broker.js';
 
-describe('AlpacaExchangeMapper', () => {
+describe('AlpacaBrokerMapper', () => {
   describe('mapInterval', () => {
     it('maps milliseconds into Alpaca-specific bar aggregation timeframes', () => {
-      expect(() => AlpacaExchangeMapper.mapInterval(ms('1s'))).toThrowError();
-      expect(AlpacaExchangeMapper.mapInterval(ms('1m'))).toBe('1Min');
-      expect(AlpacaExchangeMapper.mapInterval(ms('7m'))).toBe('7Min');
-      expect(AlpacaExchangeMapper.mapInterval(ms('59m'))).toBe('59Min');
-      expect(AlpacaExchangeMapper.mapInterval(ms('1h'))).toBe('1Hour');
-      expect(AlpacaExchangeMapper.mapInterval(ms('23h'))).toBe('23Hour');
-      expect(AlpacaExchangeMapper.mapInterval(ms('1d'))).toBe('1Day');
-      expect(() => AlpacaExchangeMapper.mapInterval(ms('2d'))).toThrowError();
+      expect(() => AlpacaBrokerMapper.mapInterval(ms('1s'))).toThrowError();
+      expect(AlpacaBrokerMapper.mapInterval(ms('1m'))).toBe('1Min');
+      expect(AlpacaBrokerMapper.mapInterval(ms('7m'))).toBe('7Min');
+      expect(AlpacaBrokerMapper.mapInterval(ms('59m'))).toBe('59Min');
+      expect(AlpacaBrokerMapper.mapInterval(ms('1h'))).toBe('1Hour');
+      expect(AlpacaBrokerMapper.mapInterval(ms('23h'))).toBe('23Hour');
+      expect(AlpacaBrokerMapper.mapInterval(ms('1d'))).toBe('1Day');
+      expect(() => AlpacaBrokerMapper.mapInterval(ms('2d'))).toThrowError();
     });
   });
 
-  describe('toExchangeCandle', () => {
+  describe('toCandle', () => {
     it('can batch candles', () => {
       const candleSize = ms('5m');
       const onBatchedCandle = vi.fn().mockImplementation((candle: BatchedCandle) => {
@@ -35,7 +35,7 @@ describe('AlpacaExchangeMapper', () => {
       cb.on('batchedCandle', onBatchedCandle);
 
       const pair = new TradingPair('AAPL', 'USD');
-      const candles = minutes5.map(bar => AlpacaExchangeMapper.toExchangeCandle(bar, pair, ms('1m')));
+      const candles = minutes5.map(bar => AlpacaBrokerMapper.toCandle(bar, pair, ms('1m')));
       candles.forEach(candle => cb.addToBatch(candle));
       expect(onBatchedCandle).toBeCalledTimes(1);
     });
@@ -43,13 +43,13 @@ describe('AlpacaExchangeMapper', () => {
 
   describe('symbolToPair', () => {
     it('maps a stock symbol to a TradingPair with USD counter', () => {
-      const pair = AlpacaExchangeMapper.symbolToPair('AAPL', 'us_equity');
+      const pair = AlpacaBrokerMapper.symbolToPair('AAPL', 'us_equity');
       expect(pair.base).toBe('AAPL');
       expect(pair.counter).toBe('USD');
     });
 
     it('maps a crypto symbol to a TradingPair by splitting on /', () => {
-      const pair = AlpacaExchangeMapper.symbolToPair('BTC/USD', 'crypto');
+      const pair = AlpacaBrokerMapper.symbolToPair('BTC/USD', 'crypto');
       expect(pair.base).toBe('BTC');
       expect(pair.counter).toBe('USD');
     });
@@ -89,7 +89,7 @@ describe('AlpacaExchangeMapper', () => {
 
       const pair = new TradingPair('SHOP', 'USD');
 
-      const filledOrder = AlpacaExchangeMapper.toFilledOrder(order, pair);
+      const filledOrder = AlpacaBrokerMapper.toFilledOrder(order, pair);
 
       expect(filledOrder.created_at).toBe('2023-08-21T15:57:26.195019Z');
       expect(filledOrder.fee).toBe('0');
@@ -135,7 +135,7 @@ describe('AlpacaExchangeMapper', () => {
 
       const pair = new TradingPair('SHOP', 'USD');
 
-      expect(() => AlpacaExchangeMapper.toFilledOrder(order, pair)).toThrowError();
+      expect(() => AlpacaBrokerMapper.toFilledOrder(order, pair)).toThrowError();
     });
   });
 });

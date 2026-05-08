@@ -4,7 +4,7 @@ import {CandleBatcher} from '../../candle/CandleBatcher.js';
 import type {Candle, CandleImportRequest} from '../Broker.js';
 import {MarketDataSource} from '../MarketDataSource.js';
 import type {TradingPair} from '../TradingPair.js';
-import {AlpacaExchangeMapper} from './AlpacaExchangeMapper.js';
+import {AlpacaBrokerMapper} from './AlpacaBrokerMapper.js';
 import {alpacaWebSocket, type AlpacaConnection} from './AlpacaWebSocket.js';
 import {AlpacaAPI} from './api/AlpacaAPI.js';
 import type {MinuteBarMessage} from './api/schema/StreamSchema.js';
@@ -54,7 +54,7 @@ export class AlpacaMarketData extends MarketDataSource {
       const {bars, next_page_token} = await fetchBars(pair, request, pageToken);
       for (const symbolBars of Object.values(bars)) {
         symbolBars.forEach(bar => {
-          candles.push(AlpacaExchangeMapper.toExchangeCandle(bar, pair, request.intervalInMillis));
+          candles.push(AlpacaBrokerMapper.toCandle(bar, pair, request.intervalInMillis));
         });
       }
       pageToken = next_page_token;
@@ -96,7 +96,7 @@ export class AlpacaMarketData extends MarketDataSource {
       if (!isNewer) {
         return;
       }
-      const candle = AlpacaExchangeMapper.toExchangeCandle(message, pair, smallestInterval);
+      const candle = AlpacaBrokerMapper.toCandle(message, pair, smallestInterval);
       if (intervalInMillis === smallestInterval) {
         this.emit(topicId, candle);
         return;
@@ -147,7 +147,7 @@ export class AlpacaMarketData extends MarketDataSource {
       page_token: pageToken,
       start: request.startTimeFirstCandle,
       symbols: createAlpacaSymbol(pair, true),
-      timeframe: AlpacaExchangeMapper.mapInterval(request.intervalInMillis),
+      timeframe: AlpacaBrokerMapper.mapInterval(request.intervalInMillis),
     });
   }
 
@@ -162,7 +162,7 @@ export class AlpacaMarketData extends MarketDataSource {
       page_token: pageToken,
       start: request.startTimeFirstCandle,
       symbols: createAlpacaSymbol(pair, false),
-      timeframe: AlpacaExchangeMapper.mapInterval(request.intervalInMillis),
+      timeframe: AlpacaBrokerMapper.mapInterval(request.intervalInMillis),
     });
   }
 }

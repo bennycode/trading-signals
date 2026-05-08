@@ -40,7 +40,7 @@ Every broker has a thin outer class that owns `rest` + `ws`/`stream`, exposes en
 
 ## API classes (skip when a quality vendor SDK exists)
 
-- **Skip the `XxxAPI` layer** when the vendor ships a typed, validated SDK and you don't need to override retry/validation. If wrapping it would just be `return sdk.foo(params)` for every method, call the SDK directly from `XxxExchange`.
+- **Skip the `XxxAPI` layer** when the vendor ships a typed, validated SDK and you don't need to override retry/validation. If wrapping it would just be `return sdk.foo(params)` for every method, call the SDK directly from `XxxBroker`.
 - **Build the layer** when the SDK is missing/stale/untyped/browser-only, or you need zod parsing as a hard boundary.
 - One method per endpoint, named after the operation, with a `@see` JSDoc URL to the vendor docs.
 - Methods are thin: parse params → call axios → parse response. No business logic.
@@ -57,8 +57,8 @@ Every broker has a thin outer class that owns `rest` + `ws`/`stream`, exposes en
 
 ## Mapper layer
 
-- A dedicated `XxxExchangeMapper` translates wire format ↔ neutral domain types (`ExchangeCandle`, `ExchangeFill`, `ExchangePendingOrder`, etc.).
-- The Exchange class never reaches into wire-format fields directly.
+- A dedicated `XxxBrokerMapper` translates wire format ↔ neutral domain types (`Candle`, `Fill`, `PendingOrder`, etc.).
+- The Broker class never reaches into wire-format fields directly.
 - Pays off the moment the vendor changes a field or you add a second broker.
 
 ### Mapper invariants
@@ -80,14 +80,14 @@ Every broker has a thin outer class that owns `rest` + `ws`/`stream`, exposes en
   - Retry policy via `ts-retry-promise` with a curated _non-retryable_ code set rather than a retryable one.
 - Module-level singleton export (`export const alpacaWebSocket = new AlpacaWebSocket()`). Callers don't manage lifecycles.
 
-## The neutral `Exchange` base
+## The neutral `Broker` base
 
-- `Exchange` covers **brokerage capabilities only** — orders, fills, balances, trading rules, fee rates, order-stream watchers. Market data lives in a separate `MarketDataSource` abstract class.
+- `Broker` covers **brokerage capabilities only** — orders, fills, balances, trading rules, fee rates, order-stream watchers. Market data lives in a separate `MarketDataSource` abstract class.
 - **Every broker class takes a mandatory `marketData: MarketDataSource` in its constructor** and delegates candle methods (`getCandles`, `getLatestCandle`, `watchCandles`, `unwatchCandles`) to it. There is no "optional, throws if missing" path — the contract is honest at the type level. Brokers that ship their own data (Alpaca) construct a default `AlpacaMarketData` inside `getAlpacaClient`; brokers without their own (Trading212) require the caller to pass one.
-- The market-data class is independent: `AlpacaMarketData extends MarketDataSource` lives next to `AlpacaExchange` but can be instantiated alone (`getAlpacaMarketData`) and re-used as the data source for any other broker. The same instance can feed multiple brokers.
+- The market-data class is independent: `AlpacaMarketData extends MarketDataSource` lives next to `AlpacaBroker` but can be instantiated alone (`getAlpacaMarketData`) and re-used as the data source for any other broker. The same instance can feed multiple brokers.
 - Lifecycle of the market-data source is owned by **whoever constructed it**. A broker's `disconnect()` does not close an injected data source — only the trading-side connections it owns directly. `getAlpacaClient` distinguishes between a caller-injected source (don't close) and an internally-constructed one (close on SIGINT).
-- Strategies depend on `Exchange`, `MarketDataSource`, or `Exchange & MarketDataSource` — never on a concrete broker class.
-- Domain types (`ExchangeCandle`, `ExchangeFill`, `ExchangePendingOrder`, `ExchangeBalance`, `ExchangeTradingRules`, `ExchangeFeeRate`, `ExchangeOrderSide/Type/Position`) are broker-neutral. Resist leaking vendor fields into them.
+- Strategies depend on `Broker`, `MarketDataSource`, or `Broker & MarketDataSource` — never on a concrete broker class.
+- Domain types (`Candle`, `Fill`, `PendingOrder`, `Balance`, `TradingRules`, `FeeRate`, `OrderSide`/`OrderType`/`OrderPosition`) are broker-neutral. Resist leaking vendor fields into them.
 - `disconnect()` is the single shutdown seam — every async resource the class owns is reachable from one method.
 - `getSmallestInterval()` + `CandleBatcher`: when the wire format has a fixed granularity (e.g. 1-minute bars only), expose it honestly and aggregate locally rather than pretending the broker streams what it doesn't.
 
@@ -121,9 +121,9 @@ These are not in any of the reference implementations and should stay out:
 
 ## Checklist for adding a new broker
 
-1. Subclass `Exchange`, leave method bodies as `throw new Error('not implemented')`.
+1. Subclass `Broker`, leave method bodies as `throw new Error('not implemented')`.
 2. If no good vendor SDK: build `XxxAPI` with zod schemas + axios-retry, one method per endpoint with `@see` links.
-3. Build `XxxExchangeMapper` (wire → neutral types).
+3. Build `XxxBrokerMapper` (wire → neutral types).
 4. Wire REST methods first (`getCandles`, `listBalances`, `placeOrder`, …) and write the test file alongside.
 5. Add `XxxStream` (native WebSocket) + `XxxWebSocket` manager only when REST is green.
-6. Register the broker in the factory (`getExchangeClient` or equivalent).
+6. Register the broker in the factory (`getBrokerClient` or equivalent).
