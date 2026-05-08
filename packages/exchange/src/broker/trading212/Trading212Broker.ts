@@ -30,8 +30,8 @@ export class Trading212Broker extends Broker implements MarketDataSource {
 
   /**
    * Trading212 charges 0% commission on equity trades. Currency-conversion fees apply on
-   * trades whose instrument currency differs from the account currency, but those are
-   * charged per-fill via `taxes` rather than as a fixed maker/taker rate.
+   * trades whose instrument currency differs from the account currency — `getFeeRates`
+   * surfaces those as `CURRENCY_CONVERSION_FEE` so strategies can subtract them up front.
    *
    * @see https://helpcentre.trading212.com/hc/en-us/articles/360008842317
    */
@@ -39,6 +39,15 @@ export class Trading212Broker extends Broker implements MarketDataSource {
     [OrderType.MARKET]: new Big(0),
     [OrderType.LIMIT]: new Big(0),
   };
+
+  /**
+   * Trading212's documented rate for currency-conversion fees on cross-currency trades
+   * (~0.15% per leg). The actual amount on each fill comes back via
+   * `fill.walletImpact.taxes[].quantity` and may vary slightly with the FX rate of the day.
+   *
+   * @see https://helpcentre.trading212.com/hc/en-us/articles/360008842317
+   */
+  static readonly CURRENCY_CONVERSION_FEE_RATE = new Big(0.0015);
 
   /**
    * Default poll interval for `watchOrders()`. Trading212 documents `/equity/history/orders`
@@ -315,8 +324,22 @@ export class Trading212Broker extends Broker implements MarketDataSource {
     };
   }
 
-  async getFeeRates(_pair: TradingPair): Promise<FeeRate> {
-    return Trading212Broker.DEFAULT_FEE_RATES;
+  async getFeeRates(pair: TradingPair): Promise<FeeRate> {
+    const accountInfo = await this.#api.getAccountInfo();
+    const isCrossCurrency = accountInfo.currencyCode !== pair.counter;
+    return {
+      ...Trading212Broker.DEFAULT_FEE_RATES,
+      ...(isCrossCurrency && {CURRENCY_CONVERSION_FEE: Trading212Broker.CURRENCY_CONVERSION_FEE_RATE}),
+    };
+  }
+
+  /**
+   * Trading212 debits all fees in the account currency, not the instrument currency.
+   * Strategies on a EUR account trading USD stocks see fees in EUR.
+   */
+  protected override async getFeeAsset(_pair: TradingPair): Promise<string> {
+    const accountInfo = await this.#api.getAccountInfo();
+    return accountInfo.currencyCode;
   }
 
   protected override async placeOrder(
