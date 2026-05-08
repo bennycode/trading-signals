@@ -188,13 +188,13 @@ export default function BacktestPage() {
       const [backtestResult, baseline] = await Promise.all([
         new BacktestExecutor({
           candles,
-          exchange: createExchange(candles, initialBase, initialCounter),
+          broker: createExchange(candles, initialBase, initialCounter),
           strategy,
           tradingPair,
         }).execute(),
         new BacktestExecutor({
           candles,
-          exchange: createExchange(candles, initialBase, initialCounter),
+          broker: createExchange(candles, initialBase, initialCounter),
           strategy: new BuyOnceStrategy(),
           tradingPair,
         }).execute(),
