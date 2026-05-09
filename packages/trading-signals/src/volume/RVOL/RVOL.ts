@@ -34,7 +34,10 @@ type SessionCurve = {
  * Designed for US-equity 1-minute bars (single contiguous session per UTC date). Crypto
  * or 24h instruments need a different session-boundary definition.
  *
- * @see https://www.investopedia.com/terms/r/relative-volume.asp
+ * RVOL is an industry / trader-platform convention rather than a classically-documented
+ * indicator (Bloomberg, ThinkOrSwim, TradingView all expose an `RVOL` study; TA-Lib,
+ * pandas-ta, and ta4j do not). The cumulative-by-time-of-day formulation used here
+ * matches what those platforms display.
  */
 export class RVOL extends IndicatorSeries<RVOLInput> {
   readonly #lookbackSessions: number;
