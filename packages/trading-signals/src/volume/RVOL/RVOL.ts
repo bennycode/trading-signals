@@ -18,7 +18,7 @@ import {IndicatorSeries} from '../../types/Indicator.js';
  *
  * @see https://arongroups.co/technical-analyze/relative-volume-indicator/
  */
-export class RVOL extends IndicatorSeries<number> {
+export class RVOL extends IndicatorSeries {
   readonly #period: number;
   readonly #priorVolumes: number[] = [];
   /** Snapshot of prior-volumes before the most recent update so `replace()` can roll back. */
@@ -26,9 +26,11 @@ export class RVOL extends IndicatorSeries<number> {
 
   constructor(period: number) {
     super();
+
     if (period < 1) {
-      throw new Error(`period must be >= 1, got ${period}`);
+      throw new Error(`period must be >= 1, got "${period}"`);
     }
+
     this.#period = period;
   }
 
@@ -37,11 +39,12 @@ export class RVOL extends IndicatorSeries<number> {
     return this.#period + 1;
   }
 
-  override update(volume: number, replace: boolean): number | null {
+  override update(volume: number, replace: boolean) {
     if (replace) {
       if (!this.#snapshot) {
         throw new Error('Cannot replace before any input has been added.');
       }
+
       this.#priorVolumes.length = 0;
       this.#priorVolumes.push(...this.#snapshot.priorVolumes);
       this.previousResult = this.#snapshot.previousResult;
@@ -64,6 +67,7 @@ export class RVOL extends IndicatorSeries<number> {
 
     // Shift the window forward; trim to bounded memory.
     this.#priorVolumes.push(volume);
+
     if (this.#priorVolumes.length > this.#period * 2) {
       this.#priorVolumes.splice(0, this.#priorVolumes.length - this.#period);
     }
@@ -71,6 +75,7 @@ export class RVOL extends IndicatorSeries<number> {
     if (baseline === 0) {
       return null;
     }
+
     return this.setResult(volume / baseline, replace);
   }
 }

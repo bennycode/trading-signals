@@ -76,4 +76,29 @@ describe('RVOL', () => {
   it('rejects period < 1', () => {
     expect(() => new RVOL(0)).toThrowError('period must be >= 1');
   });
+
+  it('throws when replace() is called before any input has been added', () => {
+    const rvol = new RVOL(3);
+
+    expect(() => rvol.replace(100)).toThrowError('Cannot replace before any input has been added.');
+  });
+
+  it('keeps memory bounded by trimming the prior-volumes buffer', () => {
+    const rvol = new RVOL(2);
+    const inputs = [10, 20, 30, 40, 50, 60, 70] as const;
+    const expectations = [null, null, 30 / 15, 40 / 25, 50 / 35, 60 / 45, 70 / 55] as const;
+
+    inputs.forEach((volume, i) => {
+      const result = rvol.add(volume);
+      const expected = expectations[i];
+
+      if (expected === null) {
+        expect(result).toBeNull();
+      } else {
+        expect(result).toBeCloseTo(expected, 6);
+      }
+    });
+
+    expect(rvol.isStable).toBe(true);
+  });
 });
