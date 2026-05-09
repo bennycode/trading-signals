@@ -41,7 +41,6 @@
     "dist": "npm run clean && npm run build",
     "backtest": "tsx src/start/runBacktest.ts",
     "strategy": "tsx src/start/runStrategy.ts",
-    "rvol-demo": "tsx src/start/runRvolDemo.ts",
     "optimise": "tsx src/start/runOptimisation.ts",
     "start": "npm run test:types && tsx watch src/start.ts",
     "test": "npm run test:types && npm run test:units",
