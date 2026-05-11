@@ -123,9 +123,9 @@ describe('ScalpStrategy', () => {
     }
 
     expect(buyAdvice).toBeDefined();
-    expect(buyAdvice!.side).toBe(OrderSide.BUY);
-    expect(buyAdvice!.type).toBe(OrderType.MARKET);
-    expect(buyAdvice!.amountIn).toBe('counter');
+    expect(buyAdvice?.side).toBe(OrderSide.BUY);
+    expect(buyAdvice?.type).toBe(OrderType.MARKET);
+    expect(buyAdvice?.amountIn).toBe('counter');
   });
 
   it('places a limit sell at fill + offset after buy fills', async () => {
@@ -149,8 +149,8 @@ describe('ScalpStrategy', () => {
     const sellAdvice = await strategy.onCandle(toBatched(makeCandle(103, 10)), mockState);
 
     expect(sellAdvice).toBeDefined();
-    expect(sellAdvice!.side).toBe(OrderSide.SELL);
-    expect(sellAdvice!.type).toBe(OrderType.LIMIT);
+    expect(sellAdvice?.side).toBe(OrderSide.SELL);
+    expect(sellAdvice?.type).toBe(OrderType.LIMIT);
     expect(new Big((sellAdvice as LimitOrderAdvice).price).toFixed(2)).toBe('103.50');
   });
 
@@ -175,8 +175,8 @@ describe('ScalpStrategy', () => {
     const buyAdvice = await strategy.onCandle(toBatched(makeCandle(103, 11)), mockState);
 
     expect(buyAdvice).toBeDefined();
-    expect(buyAdvice!.side).toBe(OrderSide.BUY);
-    expect(buyAdvice!.type).toBe(OrderType.LIMIT);
+    expect(buyAdvice?.side).toBe(OrderSide.BUY);
+    expect(buyAdvice?.type).toBe(OrderType.LIMIT);
     expect(new Big((buyAdvice as LimitOrderAdvice).price).toFixed(2)).toBe('103.00');
   });
 
@@ -211,8 +211,8 @@ describe('ScalpStrategy', () => {
       }
     }
 
-    expect(entryAdvice!.reason).toContain('Entry');
-    expect(entryAdvice!.reason).toContain('EMA');
+    expect(entryAdvice?.reason).toContain('Entry');
+    expect(entryAdvice?.reason).toContain('EMA');
   });
 
   it('pre-seeds EMA via init() to skip warmup', async () => {
@@ -226,8 +226,8 @@ describe('ScalpStrategy', () => {
     const advice = await strategy.onCandle(toBatched(makeCandle(103, 3)), mockState);
 
     expect(advice).toBeDefined();
-    expect(advice!.side).toBe(OrderSide.BUY);
-    expect(advice!.type).toBe(OrderType.MARKET);
+    expect(advice?.side).toBe(OrderSide.BUY);
+    expect(advice?.type).toBe(OrderType.MARKET);
   });
 
   it('restores state across restarts', async () => {
@@ -243,8 +243,8 @@ describe('ScalpStrategy', () => {
     const advice = await strategy.onCandle(toBatched(makeCandle(103, 0)), mockState);
 
     expect(advice).toBeDefined();
-    expect(advice!.side).toBe(OrderSide.SELL);
-    expect(advice!.type).toBe(OrderType.LIMIT);
+    expect(advice?.side).toBe(OrderSide.SELL);
+    expect(advice?.type).toBe(OrderType.LIMIT);
     expect(new Big((advice as LimitOrderAdvice).price).toFixed(2)).toBe('103.50');
   });
 

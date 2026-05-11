@@ -314,7 +314,7 @@ describe('ProtectedStrategy', () => {
       const advice = await strategy.onCandle(makeCandle(100), mockState);
 
       expect(advice).toBeDefined();
-      expect(advice!.side).toBe(OrderSide.BUY);
+      expect(advice?.side).toBe(OrderSide.BUY);
       expect(strategy.ownLogicCallCount).toBe(1);
     });
   });
@@ -366,7 +366,7 @@ describe('ProtectedStrategy', () => {
 
       expect(strategy.protectedState.totalPositionSize).toBe('0');
       expect(advice).toBeDefined();
-      expect(advice!.side).toBe(OrderSide.BUY);
+      expect(advice?.side).toBe(OrderSide.BUY);
     });
 
     it('does not seed when seedFromBalance is false (default)', async () => {
@@ -376,7 +376,7 @@ describe('ProtectedStrategy', () => {
 
       expect(strategy.protectedState.totalPositionSize).toBe('0');
       expect(advice).toBeDefined();
-      expect(advice!.side).toBe(OrderSide.BUY);
+      expect(advice?.side).toBe(OrderSide.BUY);
     });
 
     it('does not re-seed after position was already tracked via onFill', async () => {
@@ -548,7 +548,7 @@ describe('ProtectedStrategy', () => {
       const advice = await strategy.onCandle(makeCandle(1), mockState);
 
       expect(advice).toBeDefined();
-      expect(advice!.side).toBe(OrderSide.BUY);
+      expect(advice?.side).toBe(OrderSide.BUY);
       expect(strategy.ownLogicCallCount).toBe(1);
     });
   });

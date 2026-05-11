@@ -107,7 +107,7 @@ describe.sequential('AlpacaBroker', () => {
       mockMethods.getAccount.mockResolvedValue({cash: '0', currency: 'USD', last_equity: '30000'});
 
       const balances = await exchange.listBalances();
-      expect(balances[0]!.currency).toBe('USDT');
+      expect(balances[0]?.currency).toBe('USDT');
     });
 
     it('uses absolute values for SHORT positions', async () => {
@@ -161,9 +161,9 @@ describe.sequential('AlpacaBroker', () => {
       const fills = await exchange.getFills(pair);
 
       expect(fills).toHaveLength(1);
-      expect(fills[0]!.order_id).toBe('order-1');
-      expect(fills[0]!.price).toBe('53.05');
-      expect(fills[0]!.side).toBe(OrderSide.BUY);
+      expect(fills[0]?.order_id).toBe('order-1');
+      expect(fills[0]?.price).toBe('53.05');
+      expect(fills[0]?.side).toBe(OrderSide.BUY);
     });
   });
 
@@ -378,7 +378,7 @@ describe.sequential('AlpacaBroker', () => {
       exchange.on(topicId, fillHandler);
 
       // Get the registered callback and simulate a fill event
-      const registeredCb = mockTradingWebSocket.onTradeUpdate.mock.calls[0]![1];
+      const registeredCb = mockTradingWebSocket.onTradeUpdate.mock.calls[0]?.[1];
       registeredCb({
         event: TradeUpdateEvent.FILL,
         order: {
@@ -432,7 +432,7 @@ describe.sequential('AlpacaBroker', () => {
       const fillHandler = vi.fn();
       exchange.on(topicId, fillHandler);
 
-      const registeredCb = mockTradingWebSocket.onTradeUpdate.mock.calls[0]![1];
+      const registeredCb = mockTradingWebSocket.onTradeUpdate.mock.calls[0]?.[1];
       registeredCb({
         event: TradeUpdateEvent.NEW,
         order: {
