@@ -1,10 +1,10 @@
 import Big from 'big.js';
 import {describe, expect, it} from 'vitest';
-import {CandleBatcher, ExchangeOrderType, TradingPair} from '@typedtrader/exchange';
-import type {ExchangeCandle, TradingSessionState} from '@typedtrader/exchange';
+import {CandleBatcher, OrderType, TradingPair} from '@typedtrader/exchange';
+import type {Candle, TradingSessionState} from '@typedtrader/exchange';
 import {NoopStrategy} from './NoopStrategy.js';
 
-function createCandle(): ExchangeCandle {
+function createCandle(): Candle {
   return {
     base: 'BTC',
     counter: 'USD',
@@ -32,8 +32,8 @@ function createState(): TradingSessionState {
       pair: new TradingPair('BTC', 'USD'),
     },
     feeRates: {
-      [ExchangeOrderType.LIMIT]: new Big('0.001'),
-      [ExchangeOrderType.MARKET]: new Big('0.002'),
+      [OrderType.LIMIT]: new Big('0.001'),
+      [OrderType.MARKET]: new Big('0.002'),
     },
   };
 }

@@ -1,4 +1,4 @@
-import type {ExchangeOrderSide, OrderAdvice} from '@typedtrader/exchange';
+import type {OrderSide, OrderAdvice} from '@typedtrader/exchange';
 import type Big from 'big.js';
 
 export interface BacktestTrade {
@@ -11,7 +11,7 @@ export interface BacktestTrade {
   /** The price at which the trade was executed (in counter currency per unit of base). */
   price: Big;
   /** Whether this was a buy or sell order. */
-  side: ExchangeOrderSide;
+  side: OrderSide;
   /** The quantity of the base asset traded. */
   size: Big;
 }

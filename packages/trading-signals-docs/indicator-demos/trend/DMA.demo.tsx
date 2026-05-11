@@ -1,7 +1,7 @@
 import {Chart as HighchartsChart} from '@highcharts/react';
 import {DMA as DMAClass, SMA} from 'trading-signals';
 import type {ReactNode} from 'react';
-import type {ExchangeCandle} from '@typedtrader/exchange';
+import type {Candle} from '@typedtrader/exchange';
 import type {ChartDataPoint} from '../../components/Chart';
 import {NotAvailable} from '../../components/NotAvailable';
 import PriceChart, {type PriceData} from '../../components/PriceChart';
@@ -10,7 +10,7 @@ import {formatDate} from '../../utils/formatDate';
 import {collectPriceData} from '../../utils/renderUtils';
 import type {IndicatorConfig} from '../../utils/types';
 
-const renderDMA = (config: IndicatorConfig, selectedCandles: ExchangeCandle[]) => {
+const renderDMA = (config: IndicatorConfig, selectedCandles: Candle[]) => {
   const dma = new DMAClass(5, 9, SMA);
   const chartDataShort: ChartDataPoint[] = [];
   const chartDataLong: ChartDataPoint[] = [];

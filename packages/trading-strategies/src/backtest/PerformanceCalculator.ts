@@ -1,6 +1,6 @@
 import Big from 'big.js';
-import type {ExchangeCandle} from '@typedtrader/exchange';
-import {ExchangeOrderSide} from '@typedtrader/exchange';
+import type {Candle} from '@typedtrader/exchange';
+import {OrderSide} from '@typedtrader/exchange';
 import type {BacktestTrade} from './BacktestResult.js';
 
 export class PerformanceCalculator {
@@ -22,7 +22,7 @@ export class PerformanceCalculator {
   /**
    * Calculates buy-and-hold return: percentage change from first candle's close to last candle's close.
    */
-  static calculateBuyAndHoldReturn(candles: ExchangeCandle[]): Big {
+  static calculateBuyAndHoldReturn(candles: Candle[]): Big {
     if (candles.length < 2) {
       return new Big(0);
     }
@@ -68,7 +68,7 @@ export class PerformanceCalculator {
     let pendingBuys: BacktestTrade[] = [];
 
     for (const trade of trades) {
-      if (trade.side === ExchangeOrderSide.BUY) {
+      if (trade.side === OrderSide.BUY) {
         pendingBuys.push(trade);
       } else if (pendingBuys.length > 0) {
         const totalBuySize = pendingBuys.reduce((s, t) => s.plus(t.size), new Big(0));

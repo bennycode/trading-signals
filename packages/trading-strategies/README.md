@@ -50,9 +50,11 @@ type Config = MultiIndicatorConfluenceConfig; // z.infer<typeof MultiIndicatorCo
 
 ## Domain Knowledge
 
-- An **exchange** (such as the [NYSE](https://en.wikipedia.org/wiki/New_York_Stock_Exchange)) is a marketplace where buyers and sellers trade assets, it matches orders by price and time, and it operates only during **specific opening hours**.
+- An **exchange** (such as the [NYSE](https://en.wikipedia.org/wiki/New_York_Stock_Exchange) or [NASDAQ](https://en.wikipedia.org/wiki/Nasdaq)) is a marketplace where buyers and sellers trade assets, it matches orders by price and time, and it operates only during **specific opening hours**. An exchange does not hold customer accounts; it runs the order book.
 
-- A **broker** (such as [Alpaca](https://alpaca.markets/) or [Interactive Brokers](https://www.interactivebrokers.com/)) is a service that gives traders access to the exchange and executes trades, acting as the middle layer between the trader and the market.
+- A **broker** (such as [Alpaca](https://alpaca.markets/), [Trading212](https://www.trading212.com/), or [Interactive Brokers](https://www.interactivebrokers.com/)) is a service that holds customer accounts, accepts orders, and routes them to one or more exchanges (or to market makers for internalization). Brokers are the middle layer between the trader and the market.
+
+- **Market data** is the stream of price information published by an exchange (or redistributed by a vendor): historical candles (OHLC bars), real-time trade ticks, quotes (bid/ask), and order-book snapshots. A broker may resell market data alongside execution (Alpaca, Coinbase). A pure data vendor (Polygon, Twelve Data, Finnhub, Bloomberg) sells price feeds without holding accounts.
 
 - **Backtesting** is the process of evaluating a trading strategy by running it on historical market data to see how it would have performed.
 
@@ -98,18 +100,18 @@ type Config = MultiIndicatorConfluenceConfig; // z.infer<typeof MultiIndicatorCo
 
 Buys once and then stays silent. Supports two modes depending on whether `buyAt` is set:
 
-| Config | Behavior | Order type |
-| --- | --- | --- |
-| No `buyAt` | Buys immediately on the first candle | Market |
-| `buyAt: "95"` | Waits for the close price to drop to 95, then buys | Limit |
+| Config        | Behavior                                           | Order type |
+| ------------- | -------------------------------------------------- | ---------- |
+| No `buyAt`    | Buys immediately on the first candle               | Market     |
+| `buyAt: "95"` | Waits for the close price to drop to 95, then buys | Limit      |
 
 **Sizing** is controlled with `quantity` or `spend` (mutually exclusive, enforced at the type level):
 
-| Config | Meaning |
-| --- | --- |
-| _(neither)_ | Spend all available counter balance |
-| `quantity: "10"` | Buy exactly 10 units of the base asset |
-| `spend: "500"` | Spend exactly 500 units of counter currency |
+| Config           | Meaning                                     |
+| ---------------- | ------------------------------------------- |
+| _(neither)_      | Spend all available counter balance         |
+| `quantity: "10"` | Buy exactly 10 units of the base asset      |
+| `spend: "500"`   | Spend exactly 500 units of counter currency |
 
 All strategies extend `ProtectedStrategy`, so stop-loss and take-profit guards can be added via the `protected` key:
 
@@ -152,25 +154,25 @@ The strategy seeds its position tracking from the account's base balance and the
 
 No strategy works in every market. Classifying the current market state — the **regime** — helps decide which strategy is actually applicable right now. A useful model crosses **direction** (is price going up, down, or nowhere?) with **volatility** (how much is it moving?):
 
-|                  | Low volatility                                   | High volatility                                 |
-| ---------------- | ------------------------------------------------ | ----------------------------------------------- |
-| **Uptrending**   | **Smooth uptrend** — trend-following longs       | **Volatile uptrend** — breakout longs, wide stops |
-| **Downtrending** | **Smooth downtrend** — trend-following shorts    | **Volatile downtrend** — breakout shorts        |
-| **Ranging**      | **Tight range** — wait / accumulate              | **Wide range** — mean reversion, scalping       |
+|                  | Low volatility                                | High volatility                                   |
+| ---------------- | --------------------------------------------- | ------------------------------------------------- |
+| **Uptrending**   | **Smooth uptrend** — trend-following longs    | **Volatile uptrend** — breakout longs, wide stops |
+| **Downtrending** | **Smooth downtrend** — trend-following shorts | **Volatile downtrend** — breakout shorts          |
+| **Ranging**      | **Tight range** — wait / accumulate           | **Wide range** — mean reversion, scalping         |
 
-Splitting direction into *up* / *down* / *ranging* (instead of a single *directional* axis) matters because long-only strategies only apply to uptrends, short strategies only to downtrends, and mean reversion works very differently in a sideways range than inside a trend.
+Splitting direction into _up_ / _down_ / _ranging_ (instead of a single _directional_ axis) matters because long-only strategies only apply to uptrends, short strategies only to downtrends, and mean reversion works very differently in a sideways range than inside a trend.
 
 In practice this maps cleanly onto measurements that are cheap to compute from daily candles:
 
-- **Direction strength:** the [Efficiency Ratio](https://www.investopedia.com/articles/trading/07/kama.asp) (ER) — close to `1` means a clean directional move, close to `0` means pure noise. Pair it with the sign of the long-window slope (or a moving-average crossover) to decide *up* vs. *down*.
+- **Direction strength:** the [Efficiency Ratio](https://www.investopedia.com/articles/trading/07/kama.asp) (ER) — close to `1` means a clean directional move, close to `0` means pure noise. Pair it with the sign of the long-window slope (or a moving-average crossover) to decide _up_ vs. _down_.
 - **Volatility:** average daily range relative to price (ATR%).
 
 A seventh bucket worth naming is **noise** — price movement with neither direction nor meaningful range. No strategy has an edge there; the right move is to stay out.
 
 Two distinct things use this concept:
 
-1. **Strategies** declare which regime(s) they target as static metadata, so you can answer *"given today's market for AAPL, which of my strategies are applicable?"*.
-2. **Stocks** get a *dynamic* regime label computed from recent price action, so the same stock can be classified differently across time windows.
+1. **Strategies** declare which regime(s) they target as static metadata, so you can answer _"given today's market for AAPL, which of my strategies are applicable?"_.
+2. **Stocks** get a _dynamic_ regime label computed from recent price action, so the same stock can be classified differently across time windows.
 
 ## Backtesting
 

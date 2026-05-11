@@ -1,6 +1,6 @@
 import {useRef, useState} from 'react';
 import type {ChangeEvent} from 'react';
-import type {ExchangeCandle} from '@typedtrader/exchange';
+import type {Candle} from '@typedtrader/exchange';
 
 interface Dataset {
   id: string;
@@ -12,7 +12,7 @@ interface DatasetSelectorProps {
   datasets: Dataset[];
   selectedDataset: string;
   onDatasetChange: (datasetId: string) => void;
-  onCustomDataset?: (candles: ExchangeCandle[], name: string) => void;
+  onCustomDataset?: (candles: Candle[], name: string) => void;
   customDatasetName?: string | null;
 }
 
@@ -32,8 +32,8 @@ export function DatasetSelector({datasets, selectedDataset, onDatasetChange, onC
       try {
         const json = JSON.parse(reader.result as string);
         const {z} = await import('zod');
-        const {ExchangeCandleSchema} = await import('@typedtrader/exchange');
-        const result = z.array(ExchangeCandleSchema).safeParse(json);
+        const {CandleSchema} = await import('@typedtrader/exchange');
+        const result = z.array(CandleSchema).safeParse(json);
         if (!result.success) {
           const issues = result.error.issues.slice(0, 3);
           setUploadError(issues.map(i => `${i.path.join('.')}: ${i.message}`).join('; '));

@@ -1,7 +1,7 @@
 import {z} from 'zod';
 import Big from 'big.js';
-import {AllAvailableAmount, CandleBatcher, ExchangeOrderSide, ExchangeOrderType} from '@typedtrader/exchange';
-import type {ExchangeFill, OneMinuteBatchedCandle, OrderAdvice, TradingSessionState} from '@typedtrader/exchange';
+import {AllAvailableAmount, CandleBatcher, OrderSide, OrderType} from '@typedtrader/exchange';
+import type {Fill, OneMinuteBatchedCandle, OrderAdvice, TradingSessionState} from '@typedtrader/exchange';
 import {EMA, ER} from 'trading-signals';
 import {MarketType} from '../strategy/MarketType.js';
 import {ProtectedStrategy, ProtectedStrategySchema} from '../strategy-protected/ProtectedStrategy.js';
@@ -23,7 +23,7 @@ type Phase = 'entry' | 'pendingAdvice' | 'waitingForFill';
 type ScalpState = {
   phase: Phase;
   lastFillPrice: string | null;
-  lastFillSide: ExchangeOrderSide | null;
+  lastFillSide: OrderSide | null;
 };
 
 export class ScalpStrategy extends ProtectedStrategy {
@@ -60,14 +60,14 @@ export class ScalpStrategy extends ProtectedStrategy {
    */
   init(candles: OneMinuteBatchedCandle[]): void {
     if (candles.length > 0) {
-      const exchangeCandles = CandleBatcher.toExchangeCandles(candles);
+      const plainCandles = CandleBatcher.toCandles(candles);
 
       if (!this.#config.offset) {
-        const offset = suggestScalpOffset(exchangeCandles);
+        const offset = suggestScalpOffset(plainCandles);
         this.#config.offset = offset.toFixed(2);
       }
 
-      this.#scalpFriendly = this.#computeRangeEfficiency(exchangeCandles);
+      this.#scalpFriendly = this.#computeRangeEfficiency(plainCandles);
     }
 
     for (const candle of candles) {
@@ -79,7 +79,7 @@ export class ScalpStrategy extends ProtectedStrategy {
     return this.#scalpFriendly;
   }
 
-  #computeRangeEfficiency(candles: import('@typedtrader/exchange').ExchangeCandle[]): boolean {
+  #computeRangeEfficiency(candles: import('@typedtrader/exchange').Candle[]): boolean {
     const ONE_DAY_IN_MS = 86_400_000;
     const isSubDaily = candles[0].sizeInMillis < ONE_DAY_IN_MS;
 
@@ -129,7 +129,7 @@ export class ScalpStrategy extends ProtectedStrategy {
     return er.getResultOrThrow() < ScalpStrategy.ER_THRESHOLD;
   }
 
-  override async onFill(fill: ExchangeFill, state: TradingSessionState): Promise<void> {
+  override async onFill(fill: Fill, state: TradingSessionState): Promise<void> {
     await super.onFill(fill, state);
     this.#state.lastFillPrice = fill.price;
     this.#state.lastFillSide = fill.side;
@@ -144,7 +144,7 @@ export class ScalpStrategy extends ProtectedStrategy {
     }
 
     if (typeof persisted.lastFillSide === 'string') {
-      this.#state.lastFillSide = persisted.lastFillSide as ExchangeOrderSide;
+      this.#state.lastFillSide = persisted.lastFillSide as OrderSide;
     }
 
     if (typeof persisted.phase === 'string') {
@@ -197,8 +197,8 @@ export class ScalpStrategy extends ProtectedStrategy {
     this.#state.phase = 'waitingForFill';
 
     return {
-      side: ExchangeOrderSide.BUY,
-      type: ExchangeOrderType.MARKET,
+      side: OrderSide.BUY,
+      type: OrderType.MARKET,
       amount: AllAvailableAmount,
       amountIn: 'counter',
       reason: `Entry: price ${closePrice.toFixed(2)} above EMA(${this.#ema.interval}) ${emaValue.toFixed(2)}`,
@@ -215,13 +215,13 @@ export class ScalpStrategy extends ProtectedStrategy {
     const offset = new Big(this.#config.offset);
     const lastFillPrice = new Big(this.#state.lastFillPrice);
 
-    if (this.#state.lastFillSide === ExchangeOrderSide.BUY) {
+    if (this.#state.lastFillSide === OrderSide.BUY) {
       // Just bought — sell at fill + offset
       const sellPrice = lastFillPrice.plus(offset);
 
       return {
-        side: ExchangeOrderSide.SELL,
-        type: ExchangeOrderType.LIMIT,
+        side: OrderSide.SELL,
+        type: OrderType.LIMIT,
         amount: AllAvailableAmount,
         amountIn: 'base',
         price: sellPrice,
@@ -233,8 +233,8 @@ export class ScalpStrategy extends ProtectedStrategy {
     const buyPrice = lastFillPrice.minus(offset);
 
     return {
-      side: ExchangeOrderSide.BUY,
-      type: ExchangeOrderType.LIMIT,
+      side: OrderSide.BUY,
+      type: OrderType.LIMIT,
       amount: AllAvailableAmount,
       amountIn: 'base',
       price: buyPrice,

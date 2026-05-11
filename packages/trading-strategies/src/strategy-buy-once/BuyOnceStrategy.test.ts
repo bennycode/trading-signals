@@ -1,13 +1,13 @@
 import Big from 'big.js';
 import {describe, expect, it} from 'vitest';
-import {AlpacaExchangeMock, CandleBatcher, ExchangeOrderSide, ExchangeOrderType} from '@typedtrader/exchange';
-import type {ExchangeCandle, TradingSessionState} from '@typedtrader/exchange';
+import {AlpacaBrokerMock, CandleBatcher, OrderSide, OrderType} from '@typedtrader/exchange';
+import type {Candle, TradingSessionState} from '@typedtrader/exchange';
 import {TradingPair} from '@typedtrader/exchange';
 import {BacktestExecutor} from '../backtest/BacktestExecutor.js';
 import {BuyOnceStrategy} from './BuyOnceStrategy.js';
 import type {BacktestConfig} from '../backtest/BacktestConfig.js';
 
-function createCandle(overrides: Partial<ExchangeCandle> & {close: string; open: string}): ExchangeCandle {
+function createCandle(overrides: Partial<Candle> & {close: string; open: string}): Candle {
   const openNum = parseFloat(overrides.open);
   const closeNum = parseFloat(overrides.close);
 
@@ -30,7 +30,7 @@ function createMockExchange(options: {baseBalance?: string; counterBalance?: str
     ['BTC', {available: new Big(options.baseBalance ?? '0'), hold: new Big(0)}],
     ['USD', {available: new Big(options.counterBalance ?? '1000'), hold: new Big(0)}],
   ]);
-  return new AlpacaExchangeMock({balances});
+  return new AlpacaBrokerMock({balances});
 }
 
 describe('BuyOnceStrategy', () => {
@@ -49,7 +49,7 @@ describe('BuyOnceStrategy', () => {
 
     const config: BacktestConfig = {
       candles,
-      exchange: createMockExchange(),
+      broker: createMockExchange(),
       strategy,
       tradingPair,
     };
@@ -57,8 +57,8 @@ describe('BuyOnceStrategy', () => {
     const result = await new BacktestExecutor(config).execute();
 
     expect(result.trades).toHaveLength(1);
-    expect(result.trades[0].advice.side).toBe(ExchangeOrderSide.BUY);
-    expect(result.trades[0].advice.type).toBe(ExchangeOrderType.LIMIT);
+    expect(result.trades[0].advice.side).toBe(OrderSide.BUY);
+    expect(result.trades[0].advice.type).toBe(OrderType.LIMIT);
     expect(result.finalBaseBalance.gt(0)).toBe(true);
   });
 
@@ -73,7 +73,7 @@ describe('BuyOnceStrategy', () => {
 
     const config: BacktestConfig = {
       candles,
-      exchange: createMockExchange(),
+      broker: createMockExchange(),
       strategy,
       tradingPair,
     };
@@ -97,7 +97,7 @@ describe('BuyOnceStrategy', () => {
 
     const config: BacktestConfig = {
       candles,
-      exchange: createMockExchange(),
+      broker: createMockExchange(),
       strategy,
       tradingPair,
     };
@@ -119,7 +119,7 @@ describe('BuyOnceStrategy', () => {
 
     const config: BacktestConfig = {
       candles,
-      exchange: createMockExchange(),
+      broker: createMockExchange(),
       strategy,
       tradingPair,
     };
@@ -144,7 +144,7 @@ describe('BuyOnceStrategy', () => {
 
     const config: BacktestConfig = {
       candles,
-      exchange: createMockExchange(),
+      broker: createMockExchange(),
       strategy,
       tradingPair,
     };
@@ -169,8 +169,8 @@ describe('BuyOnceStrategy', () => {
         pair: tradingPair,
       },
       feeRates: {
-        [ExchangeOrderType.LIMIT]: new Big('0.001'),
-        [ExchangeOrderType.MARKET]: new Big('0.002'),
+        [OrderType.LIMIT]: new Big('0.001'),
+        [OrderType.MARKET]: new Big('0.002'),
       },
     };
 

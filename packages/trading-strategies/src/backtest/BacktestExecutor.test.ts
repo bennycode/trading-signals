@@ -1,7 +1,7 @@
 import Big from 'big.js';
 import {describe, expect, it} from 'vitest';
-import {AllAvailableAmount, AlpacaExchangeMock, ExchangeOrderSide, ExchangeOrderType} from '@typedtrader/exchange';
-import type {ExchangeCandle, ExchangeTradingRules, OrderAdvice, TradingSessionState} from '@typedtrader/exchange';
+import {AllAvailableAmount, AlpacaBrokerMock, OrderSide, OrderType} from '@typedtrader/exchange';
+import type {Candle, TradingRules, OrderAdvice, TradingSessionState} from '@typedtrader/exchange';
 import {TradingPair} from '@typedtrader/exchange';
 import {BacktestExecutor} from './BacktestExecutor.js';
 import {BuyBelowSellAboveStrategy} from '../strategy-buy-below-sell-above/BuyBelowSellAboveStrategy.js';
@@ -9,7 +9,7 @@ import type {BacktestConfig} from './BacktestConfig.js';
 import {Strategy} from '../strategy/Strategy.js';
 import type {OneMinuteBatchedCandle} from '@typedtrader/exchange';
 
-function createCandle(overrides: Partial<ExchangeCandle> & {close: string; open: string}): ExchangeCandle {
+function createCandle(overrides: Partial<Candle> & {close: string; open: string}): Candle {
   const openNum = parseFloat(overrides.open);
   const closeNum = parseFloat(overrides.close);
 
@@ -32,7 +32,7 @@ function createMockExchange(options: {baseBalance?: string; counterBalance?: str
     ['BTC', {available: new Big(options.baseBalance ?? '0'), hold: new Big(0)}],
     ['USD', {available: new Big(options.counterBalance ?? '1000'), hold: new Big(0)}],
   ]);
-  return new AlpacaExchangeMock({balances});
+  return new AlpacaBrokerMock({balances});
 }
 
 describe('BacktestExecutor', () => {
@@ -52,7 +52,7 @@ describe('BacktestExecutor', () => {
 
       const config: BacktestConfig = {
         candles: [...candles],
-        exchange: createMockExchange({baseBalance: '1', counterBalance: '1000'}),
+        broker: createMockExchange({baseBalance: '1', counterBalance: '1000'}),
         strategy: new NoOpStrategy(),
         tradingPair,
       };
@@ -71,7 +71,7 @@ describe('BacktestExecutor', () => {
 
       const config: BacktestConfig = {
         candles: [],
-        exchange: createMockExchange(),
+        broker: createMockExchange(),
         strategy,
         tradingPair,
       };
@@ -95,7 +95,7 @@ describe('BacktestExecutor', () => {
 
       const config: BacktestConfig = {
         candles,
-        exchange: createMockExchange(),
+        broker: createMockExchange(),
         strategy,
         tradingPair,
       };
@@ -104,8 +104,8 @@ describe('BacktestExecutor', () => {
 
       // Order placed on candle 1, fills on candle 2
       expect(result.trades).toHaveLength(1);
-      expect(result.trades[0].advice.side).toBe(ExchangeOrderSide.BUY);
-      expect(result.trades[0].advice.type).toBe(ExchangeOrderType.LIMIT);
+      expect(result.trades[0].advice.side).toBe(OrderSide.BUY);
+      expect(result.trades[0].advice.type).toBe(OrderType.LIMIT);
       expect(result.finalCounterBalance.lt(new Big(1000))).toBe(true);
       expect(result.finalBaseBalance.gt(new Big(0))).toBe(true);
     });
@@ -122,7 +122,7 @@ describe('BacktestExecutor', () => {
 
       const config: BacktestConfig = {
         candles,
-        exchange: createMockExchange({baseBalance: '2', counterBalance: '0'}),
+        broker: createMockExchange({baseBalance: '2', counterBalance: '0'}),
         strategy,
         tradingPair,
       };
@@ -130,8 +130,8 @@ describe('BacktestExecutor', () => {
       const result = await new BacktestExecutor(config).execute();
 
       expect(result.trades).toHaveLength(1);
-      expect(result.trades[0].advice.side).toBe(ExchangeOrderSide.SELL);
-      expect(result.trades[0].advice.type).toBe(ExchangeOrderType.LIMIT);
+      expect(result.trades[0].advice.side).toBe(OrderSide.SELL);
+      expect(result.trades[0].advice.type).toBe(OrderType.LIMIT);
       expect(result.finalBaseBalance.toFixed(2)).toBe('0.00');
       expect(result.finalCounterBalance.gt(new Big(0))).toBe(true);
     });
@@ -148,7 +148,7 @@ describe('BacktestExecutor', () => {
 
       const config: BacktestConfig = {
         candles,
-        exchange: createMockExchange({baseBalance: '10', counterBalance: '0'}),
+        broker: createMockExchange({baseBalance: '10', counterBalance: '0'}),
         strategy,
         tradingPair,
       };
@@ -177,8 +177,8 @@ describe('BacktestExecutor', () => {
           this.#bought = true;
 
           return {
-            side: ExchangeOrderSide.BUY,
-            type: ExchangeOrderType.MARKET,
+            side: OrderSide.BUY,
+            type: OrderType.MARKET,
             amount: AllAvailableAmount,
             amountIn: 'counter',
           };
@@ -194,7 +194,7 @@ describe('BacktestExecutor', () => {
 
       const config: BacktestConfig = {
         candles,
-        exchange: createMockExchange(),
+        broker: createMockExchange(),
         strategy: new AlwaysBuyMarket(),
         tradingPair,
       };
@@ -231,7 +231,7 @@ describe('BacktestExecutor', () => {
 
       const config: BacktestConfig = {
         candles,
-        exchange: createMockExchange(),
+        broker: createMockExchange(),
         strategy,
         tradingPair,
       };
@@ -256,7 +256,7 @@ describe('BacktestExecutor', () => {
 
       const config: BacktestConfig = {
         candles,
-        exchange: createMockExchange({baseBalance: '0', counterBalance: '1000'}),
+        broker: createMockExchange({baseBalance: '0', counterBalance: '1000'}),
         strategy,
         tradingPair,
       };
@@ -282,7 +282,7 @@ describe('BacktestExecutor', () => {
 
       const config: BacktestConfig = {
         candles,
-        exchange: createMockExchange({counterBalance: '500'}),
+        broker: createMockExchange({counterBalance: '500'}),
         strategy,
         tradingPair,
       };
@@ -303,8 +303,8 @@ describe('BacktestExecutor', () => {
           }
           this.#sold = true;
           return {
-            side: ExchangeOrderSide.SELL,
-            type: ExchangeOrderType.LIMIT,
+            side: OrderSide.SELL,
+            type: OrderType.LIMIT,
             amount: new Big(100),
             amountIn: 'base',
             price: candle.close,
@@ -321,7 +321,7 @@ describe('BacktestExecutor', () => {
 
       const config: BacktestConfig = {
         candles,
-        exchange: createMockExchange({baseBalance: '5', counterBalance: '0'}),
+        broker: createMockExchange({baseBalance: '5', counterBalance: '0'}),
         strategy: new SellTooMuch(),
         tradingPair,
       };
@@ -342,7 +342,7 @@ describe('BacktestExecutor', () => {
       });
 
       // Simulate price oscillations — with 1-candle delay, orders fill on next candle
-      const candles: ExchangeCandle[] = [];
+      const candles: Candle[] = [];
       const startTime = new Date('2025-01-06T00:00:00.000Z');
       const prices = [
         '45', '48', '55', '62', '65', '58', '52', '44', '42', '50',
@@ -372,7 +372,7 @@ describe('BacktestExecutor', () => {
 
       const config: BacktestConfig = {
         candles,
-        exchange: createMockExchange({counterBalance: '10000'}),
+        broker: createMockExchange({counterBalance: '10000'}),
         strategy,
         tradingPair,
       };
@@ -415,7 +415,7 @@ describe('BacktestExecutor', () => {
 
       const config: BacktestConfig = {
         candles,
-        exchange: createMockExchange(),
+        broker: createMockExchange(),
         strategy,
         tradingPair,
       };
@@ -442,8 +442,8 @@ describe('BacktestExecutor', () => {
           this.#bought = true;
 
           return {
-            side: ExchangeOrderSide.BUY,
-            type: ExchangeOrderType.MARKET,
+            side: OrderSide.BUY,
+            type: OrderType.MARKET,
             amount: AllAvailableAmount,
             amountIn: 'counter',
           };
@@ -459,7 +459,7 @@ describe('BacktestExecutor', () => {
 
       const config: BacktestConfig = {
         candles,
-        exchange: createMockExchange(),
+        broker: createMockExchange(),
         strategy: new BuyOnce(),
         tradingPair,
       };
@@ -495,7 +495,7 @@ describe('BacktestExecutor', () => {
       const config: BacktestConfig = {
         candles,
         // 2 BTC initial base balance so the open price matters for valuation
-        exchange: createMockExchange({baseBalance: '2', counterBalance: '0'}),
+        broker: createMockExchange({baseBalance: '2', counterBalance: '0'}),
         strategy: new NoOpStrategy(),
         tradingPair,
       };
@@ -523,7 +523,7 @@ describe('BacktestExecutor', () => {
 
       const config: BacktestConfig = {
         candles,
-        exchange: createMockExchange(),
+        broker: createMockExchange(),
         strategy: new NoOpStrategy(),
         tradingPair,
       };
@@ -541,7 +541,7 @@ describe('BacktestExecutor', () => {
   });
 
   describe('tradingRules', () => {
-    const STRICT_TRADING_RULES: Omit<ExchangeTradingRules, 'pair'> = {
+    const STRICT_TRADING_RULES: Omit<TradingRules, 'pair'> = {
       base_increment: '0.0001',
       base_max_size: '100',
       base_min_size: '0.0001',
@@ -554,7 +554,7 @@ describe('BacktestExecutor', () => {
         ['BTC', {available: new Big(options.baseBalance ?? '0'), hold: new Big(0)}],
         ['USD', {available: new Big(options.counterBalance ?? '1000'), hold: new Big(0)}],
       ]);
-      return new AlpacaExchangeMock({balances, tradingRules: STRICT_TRADING_RULES});
+      return new AlpacaBrokerMock({balances, tradingRules: STRICT_TRADING_RULES});
     }
 
     it('skips buy trades when the computed size is below base_min_size', async () => {
@@ -563,8 +563,8 @@ describe('BacktestExecutor', () => {
 
         protected override async processCandle(_candle: OneMinuteBatchedCandle, _state: TradingSessionState): Promise<OrderAdvice | void> {
           return {
-            side: ExchangeOrderSide.BUY,
-            type: ExchangeOrderType.MARKET,
+            side: OrderSide.BUY,
+            type: OrderType.MARKET,
             amount: AllAvailableAmount,
             amountIn: 'counter',
           };
@@ -580,7 +580,7 @@ describe('BacktestExecutor', () => {
       const config: BacktestConfig = {
         candles,
         // Only $1 at price $50,000 can buy 0.00002 BTC, below min 0.0001
-        exchange: createMockWithRules({counterBalance: '1'}),
+        broker: createMockWithRules({counterBalance: '1'}),
         strategy: new AlwaysBuyMarket(),
         tradingPair,
       };
@@ -596,8 +596,8 @@ describe('BacktestExecutor', () => {
 
         protected override async processCandle(_candle: OneMinuteBatchedCandle, _state: TradingSessionState): Promise<OrderAdvice | void> {
           return {
-            side: ExchangeOrderSide.SELL,
-            type: ExchangeOrderType.MARKET,
+            side: OrderSide.SELL,
+            type: OrderType.MARKET,
             amount: AllAvailableAmount,
             amountIn: 'base',
           };
@@ -611,7 +611,7 @@ describe('BacktestExecutor', () => {
 
       const config: BacktestConfig = {
         candles,
-        exchange: createMockWithRules({baseBalance: '0.00005'}),
+        broker: createMockWithRules({baseBalance: '0.00005'}),
         strategy: new AlwaysSellMarket(),
         tradingPair,
       };
@@ -637,7 +637,7 @@ describe('BacktestExecutor', () => {
 
       const config: BacktestConfig = {
         candles,
-        exchange: createMockWithRules(),
+        broker: createMockWithRules(),
         strategy,
         tradingPair,
       };
@@ -653,7 +653,7 @@ describe('BacktestExecutor', () => {
       // counter_increment = 0.50, so a price of 100.10 rounds down to 100.00.
       // The candle's low is 100.10, so the rounded order price (100.00) is below the low
       // and the order must NOT fill.
-      const COARSE_RULES: Omit<ExchangeTradingRules, 'pair'> = {
+      const COARSE_RULES: Omit<TradingRules, 'pair'> = {
         base_increment: '0.0001',
         base_max_size: '100',
         base_min_size: '0.0001',
@@ -671,8 +671,8 @@ describe('BacktestExecutor', () => {
           }
           this.#advised = true;
           return {
-            side: ExchangeOrderSide.BUY,
-            type: ExchangeOrderType.LIMIT,
+            side: OrderSide.BUY,
+            type: OrderType.LIMIT,
             amount: AllAvailableAmount,
             amountIn: 'base',
             price: candle.close,
@@ -684,7 +684,7 @@ describe('BacktestExecutor', () => {
         ['BTC', {available: new Big(0), hold: new Big(0)}],
         ['USD', {available: new Big(1000), hold: new Big(0)}],
       ]);
-      const exchange = new AlpacaExchangeMock({balances, tradingRules: COARSE_RULES});
+      const exchange = new AlpacaBrokerMock({balances, tradingRules: COARSE_RULES});
 
       // Candle 1: close=100.10 → advice to BUY_LIMIT at 100.10, which rounds to 100.00
       // Candle 2: low=100.10 → rounded price (100.00) < low (100.10), so order must NOT fill
@@ -694,8 +694,8 @@ describe('BacktestExecutor', () => {
       ];
 
       const config: BacktestConfig = {
+        broker: exchange,
         candles,
-        exchange,
         strategy: new BuyAtPrice(),
         tradingPair,
       };

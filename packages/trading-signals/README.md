@@ -204,6 +204,7 @@ console.log(signal.hasChanged); // true if the signal state changed from the pre
 1. Rate-of-Change (ROC)
 1. Relative Moving Average (RMA)
 1. Relative Strength Index (RSI)
+1. Relative Volume (RVOL)
 1. Simple Moving Average (SMA)
 1. Spencer's 15-Point Moving Average (SMA15)
 1. Stochastic Oscillator (STOCH)

@@ -86,7 +86,7 @@ export class ScalpScannerReport extends Report<ScalpScannerConfig> {
       const erValue = er.getResultOrThrow();
 
       // Compute ATR% for context
-      const exchangeCandles = daily.map((bar, i) => ({
+      const plainCandles = daily.map((bar, i) => ({
         base: symbol,
         close: String(bar.close),
         counter: 'USD',
@@ -101,7 +101,7 @@ export class ScalpScannerReport extends Report<ScalpScannerConfig> {
 
       let offsetStr = 'N/A';
       try {
-        const offset = suggestScalpOffset(exchangeCandles);
+        const offset = suggestScalpOffset(plainCandles);
         offsetStr = '$' + offset.toFixed(2);
       } catch {
         // Not enough data for ATR

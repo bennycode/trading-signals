@@ -1,46 +1,14 @@
-import {z} from 'zod';
-import {AllAvailableAmount, ExchangeOrderSide, ExchangeOrderType} from '@typedtrader/exchange';
+import {AllAvailableAmount, OrderSide, OrderType} from '@typedtrader/exchange';
 import type {OneMinuteBatchedCandle, OrderAdvice, TradingSessionState} from '@typedtrader/exchange';
 import {BollingerBands, EMA, MACD, RSI} from 'trading-signals';
 import {MarketType} from '../strategy/MarketType.js';
-import {ProtectedStrategy, ProtectedStrategySchema} from '../strategy-protected/ProtectedStrategy.js';
+import {ProtectedStrategy} from '../strategy-protected/ProtectedStrategy.js';
+import {
+  MultiIndicatorConfluenceSchema,
+  type MultiIndicatorConfluenceConfig,
+} from './MultiIndicatorConfluenceSchema.js';
 
-export const MultiIndicatorConfluenceSchema = ProtectedStrategySchema.extend({
-  /** EMA short period for trend detection. */
-  emaShortPeriod: z.number().int().positive(),
-  /** EMA long period for trend detection. */
-  emaLongPeriod: z.number().int().positive(),
-  /** MACD short EMA period. */
-  macdShortPeriod: z.number().int().positive(),
-  /** MACD long EMA period. */
-  macdLongPeriod: z.number().int().positive(),
-  /** MACD signal EMA period. */
-  macdSignalPeriod: z.number().int().positive(),
-  /** Bollinger Bands period. */
-  bollingerPeriod: z.number().int().positive(),
-  /** Bollinger Bands standard deviation multiplier. */
-  bollingerDeviationMultiplier: z.number().positive(),
-  /** RSI period. */
-  rsiPeriod: z.number().int().positive(),
-  /** RSI overbought threshold (veto BUY above this). */
-  rsiOverbought: z.number().positive().max(100),
-  /** RSI oversold threshold (veto SELL below this). */
-  rsiOversold: z.number().positive().max(100),
-})
-  .refine(data => data.emaShortPeriod < data.emaLongPeriod, {
-    message: 'emaShortPeriod must be less than emaLongPeriod',
-    path: ['emaShortPeriod'],
-  })
-  .refine(data => data.macdShortPeriod < data.macdLongPeriod, {
-    message: 'macdShortPeriod must be less than macdLongPeriod',
-    path: ['macdShortPeriod'],
-  })
-  .refine(data => data.rsiOversold < data.rsiOverbought, {
-    message: 'rsiOversold must be less than rsiOverbought',
-    path: ['rsiOversold'],
-  });
-
-export type MultiIndicatorConfluenceConfig = z.input<typeof MultiIndicatorConfluenceSchema>;
+export {MultiIndicatorConfluenceSchema, type MultiIndicatorConfluenceConfig};
 
 export class MultiIndicatorConfluenceStrategy extends ProtectedStrategy {
   static override NAME = '@typedtrader/strategy-multi-indicator-confluence';
@@ -116,11 +84,11 @@ export class MultiIndicatorConfluenceStrategy extends ProtectedStrategy {
       return;
     }
 
-    const emaShortValue = this.#emaShort.getResult()!;
-    const emaLongValue = this.#emaLong.getResult()!;
-    const macdResult = this.#macd.getResult()!;
-    const bollingerResult = this.#bollingerBands.getResult()!;
-    const rsiValue = this.#rsi.getResult()!;
+    const emaShortValue = this.#emaShort.getResultOrThrow();
+    const emaLongValue = this.#emaLong.getResultOrThrow();
+    const macdResult = this.#macd.getResultOrThrow();
+    const bollingerResult = this.#bollingerBands.getResultOrThrow();
+    const rsiValue = this.#rsi.getResultOrThrow();
 
     const emaBullish = emaShortValue > emaLongValue;
     const emaBearish = emaShortValue < emaLongValue;
@@ -141,8 +109,8 @@ export class MultiIndicatorConfluenceStrategy extends ProtectedStrategy {
       ].join('; ');
 
       return {
-        side: ExchangeOrderSide.BUY,
-        type: ExchangeOrderType.MARKET,
+        side: OrderSide.BUY,
+        type: OrderType.MARKET,
         amount: AllAvailableAmount,
         amountIn: 'counter',
         reason,
@@ -159,8 +127,8 @@ export class MultiIndicatorConfluenceStrategy extends ProtectedStrategy {
       ].join('; ');
 
       return {
-        side: ExchangeOrderSide.SELL,
-        type: ExchangeOrderType.MARKET,
+        side: OrderSide.SELL,
+        type: OrderType.MARKET,
         amount: AllAvailableAmount,
         amountIn: 'base',
         reason,

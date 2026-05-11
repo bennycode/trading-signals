@@ -1,5 +1,5 @@
 import Big from 'big.js';
-import type {ExchangeCandle} from '@typedtrader/exchange';
+import type {Candle} from '@typedtrader/exchange';
 import {ATR} from 'trading-signals';
 
 const ONE_DAY_IN_MS = 86_400_000;
@@ -12,8 +12,8 @@ const ONE_DAY_IN_MS = 86_400_000;
  * are sorted by `openTimeInMillis` before deriving open/close, and the
  * returned daily candles are ordered from oldest to newest.
  */
-function aggregateToDailyCandles(candles: ExchangeCandle[]): ExchangeCandle[] {
-  const dayMap = new Map<string, ExchangeCandle[]>();
+function aggregateToDailyCandles(candles: Candle[]): Candle[] {
+  const dayMap = new Map<string, Candle[]>();
 
   for (const candle of candles) {
     const dayKey = candle.openTimeInISO.slice(0, 10);
@@ -27,7 +27,7 @@ function aggregateToDailyCandles(candles: ExchangeCandle[]): ExchangeCandle[] {
 
   const sortedDayEntries = Array.from(dayMap.entries()).sort(([dayA], [dayB]) => dayA.localeCompare(dayB));
 
-  const daily: ExchangeCandle[] = [];
+  const daily: Candle[] = [];
 
   for (const [, bars] of sortedDayEntries) {
     const sortedBars = [...bars].sort((a, b) => a.openTimeInMillis - b.openTimeInMillis);
@@ -73,7 +73,7 @@ function aggregateToDailyCandles(candles: ExchangeCandle[]): ExchangeCandle[] {
  * @param candles - Historical candles (any interval; at least `atrPeriod` trading days)
  * @param atrPeriod - ATR smoothing period (default: 14)
  */
-export function suggestScalpOffset(candles: ExchangeCandle[], atrPeriod: number = 14): Big {
+export function suggestScalpOffset(candles: Candle[], atrPeriod: number = 14): Big {
   const isSubDaily = candles.length > 0 && candles[0].sizeInMillis < ONE_DAY_IN_MS;
   const effectiveCandles = isSubDaily ? aggregateToDailyCandles(candles) : candles;
 

@@ -1,5 +1,7 @@
 # Exchange Package
 
+For the full architectural template (layering, outer composition root, mapper layer, streaming manager, neutral `Exchange` base, etc.), see [BROKER_TEMPLATE.md](./BROKER_TEMPLATE.md). The notes below are a condensed checklist.
+
 ## Exchange Implementation Patterns
 
 When implementing an exchange integration, follow these patterns:

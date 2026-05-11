@@ -13,7 +13,7 @@ import one_day_in_minutes from '../../fixtures/candles/candle-batcher/one_day_in
 import one_hour_in_minutes from '../../fixtures/candles/candle-batcher/one_hour_in_minutes.json' with {type: 'json'};
 import {BatchedCandle} from './BatchedCandle.js';
 import {CandleBatcher} from './CandleBatcher.js';
-import {ExchangeCandle} from '../exchange/Exchange.js';
+import {Candle} from '../broker/Broker.js';
 
 describe('CandleBatcher', () => {
   describe('amountOfCandles', () => {
@@ -87,7 +87,7 @@ describe('CandleBatcher', () => {
     });
 
     it('does not batch candles with zero volume', () => {
-      const candles: ExchangeCandle[] = [
+      const candles: Candle[] = [
         {
           base: 'BTC',
           close: '50000',
@@ -144,7 +144,7 @@ describe('CandleBatcher', () => {
     it('does not batch candles which are already part of the batch', () => {
       const cb = new CandleBatcher(ms('1h'));
 
-      const candles: ExchangeCandle[] = [
+      const candles: Candle[] = [
         {
           base: 'BNB',
           close: '404.64860000',
@@ -317,7 +317,7 @@ describe('CandleBatcher', () => {
     });
 
     it('calculates the price change', () => {
-      const candles: ExchangeCandle[] = [
+      const candles: Candle[] = [
         {
           base: 'BTC',
           close: '35692.69000000',
@@ -339,7 +339,7 @@ describe('CandleBatcher', () => {
 
   describe('getHighAndLow', () => {
     it('finds the high and low of multiple candles', () => {
-      const candles: ExchangeCandle[] = [
+      const candles: Candle[] = [
         {
           base: 'BNB',
           close: '38.66140000',

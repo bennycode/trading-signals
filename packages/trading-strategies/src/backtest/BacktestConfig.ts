@@ -1,10 +1,10 @@
-import type {ExchangeCandle, ExchangeMock, TradingPair, TradingSessionStrategy} from '@typedtrader/exchange';
+import type {Candle, BrokerMock, TradingPair, TradingSessionStrategy} from '@typedtrader/exchange';
 
 export interface BacktestConfig {
   /** The candle data to run through the strategy (in chronological order). */
-  candles: ExchangeCandle[];
+  candles: Candle[];
   /** The mock exchange instance that handles order matching, balance tracking, and fee calculation. */
-  exchange: ExchangeMock;
+  broker: BrokerMock;
   /** The strategy instance to backtest. */
   strategy: TradingSessionStrategy;
   /** The trading pair, e.g. BTC/USD or TSLA/USD. */

@@ -1,5 +1,5 @@
 import Big from 'big.js';
-import {TradingPair, getExchangeClient} from '@typedtrader/exchange';
+import {TradingPair, getBrokerClient} from '@typedtrader/exchange';
 import {Watch, WatchAttributes} from '../../database/models/Watch.js';
 import {ms} from 'ms';
 import {assertId} from '../../validation/assertId.js';
@@ -41,7 +41,7 @@ export const watchAdd = async (request: string, userId: string): Promise<WatchRe
     const intervalMs = assertInterval(interval);
 
     // Fetch current price as baseline
-    const client = getExchangeClient({
+    const client = getBrokerClient({
       exchangeId: account.exchange,
       apiKey: account.apiKey,
       apiSecret: account.apiSecret,

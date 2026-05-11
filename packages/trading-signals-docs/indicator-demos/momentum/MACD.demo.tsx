@@ -1,7 +1,7 @@
 import {Chart as HighchartsChart} from '@highcharts/react';
 import {EMA, MACD as MACDClass} from 'trading-signals';
 import type {ReactNode} from 'react';
-import type {ExchangeCandle} from '@typedtrader/exchange';
+import type {Candle} from '@typedtrader/exchange';
 import type {ChartDataPoint} from '../../components/Chart';
 import {NotAvailable} from '../../components/NotAvailable';
 import PriceChart, {type PriceData} from '../../components/PriceChart';
@@ -10,7 +10,7 @@ import {formatDate} from '../../utils/formatDate';
 import {collectPriceData} from '../../utils/renderUtils';
 import type {IndicatorConfig} from '../../utils/types';
 
-const renderMACD = (config: IndicatorConfig, selectedCandles: ExchangeCandle[]) => {
+const renderMACD = (config: IndicatorConfig, selectedCandles: Candle[]) => {
   const macd = new MACDClass(new EMA(12), new EMA(26), new EMA(9));
   const chartDataMACD: ChartDataPoint[] = [];
   const chartDataSignal: ChartDataPoint[] = [];

@@ -1,7 +1,7 @@
 import {readFile} from 'node:fs/promises';
 import {parseArgs} from 'node:util';
-import {AlpacaExchangeMock, ExchangeOrderType, TradingPair} from '@typedtrader/exchange';
-import type {ExchangeCandle} from '@typedtrader/exchange';
+import {AlpacaBrokerMock, OrderType, TradingPair} from '@typedtrader/exchange';
+import type {Candle} from '@typedtrader/exchange';
 import Big from 'big.js';
 import {BacktestExecutor} from '../backtest/BacktestExecutor.js';
 import {createStrategy, getStrategyNames} from '../strategy/StrategyRegistry.js';
@@ -40,7 +40,7 @@ try {
   process.exit(1);
 }
 
-let candles: ExchangeCandle[];
+let candles: Candle[];
 try {
   const parsed = JSON.parse(raw);
   if (!Array.isArray(parsed)) {
@@ -77,14 +77,14 @@ const strategyConfig = JSON.parse(values.config!);
 const strategy = createStrategy(values.strategy, strategyConfig);
 
 // 3. Set up mock exchange (commission-free for US stocks)
-const exchange = new AlpacaExchangeMock({
+const exchange = new AlpacaBrokerMock({
   balances: new Map([
     [tradingPair.base, {available: new Big(0), hold: new Big(0)}],
     [tradingPair.counter, {available: startingBalance, hold: new Big(0)}],
   ]),
   feeRates: {
-    [ExchangeOrderType.MARKET]: new Big(0),
-    [ExchangeOrderType.LIMIT]: new Big(0),
+    [OrderType.MARKET]: new Big(0),
+    [OrderType.LIMIT]: new Big(0),
   },
 });
 
@@ -108,8 +108,8 @@ if ('init' in strategy && typeof strategy.init === 'function') {
 
 // 5. Run backtest
 const result = await new BacktestExecutor({
+  broker: exchange,
   candles,
-  exchange,
   strategy,
   tradingPair,
 }).execute();

@@ -1,13 +1,13 @@
 import {Chart as HighchartsChart, type HighchartsOptionsType} from '@highcharts/react';
-import {ExchangeOrderSide} from '@typedtrader/exchange';
-import type {ExchangeCandle} from '@typedtrader/exchange';
+import {OrderSide} from '@typedtrader/exchange';
+import type {Candle} from '@typedtrader/exchange';
 import type {BacktestResult} from 'trading-strategies';
 import {formatDate} from '../utils/formatDate';
 import {NotAvailable} from './NotAvailable';
 
 interface ResultProps {
   result: BacktestResult;
-  candles: ExchangeCandle[];
+  candles: Candle[];
 }
 
 interface BacktestResultsProps extends ResultProps {
@@ -25,7 +25,7 @@ function PerformanceCards({result, candles}: ResultProps) {
   const {performance} = result;
   const returnPct = Number(performance.returnPercentage.toFixed(2));
   const winRate = Number(performance.winRate.toFixed(1));
-  const hasCycles = result.trades.some(t => t.side === ExchangeOrderSide.SELL);
+  const hasCycles = result.trades.some(t => t.side === OrderSide.SELL);
   const lossRate = hasCycles ? (100 - winRate).toFixed(1) : null;
   const pnl = Number(result.profitOrLoss.toFixed(2));
   const base = candles[0]?.base ?? 'Base';
@@ -86,7 +86,7 @@ function PriceChartWithTrades({result, candles}: ResultProps) {
   const candleIndexByTime = new Map(candles.map((c, i) => [c.openTimeInISO, i + 1]));
 
   const buyMarkers = result.trades
-    .filter(t => t.side === ExchangeOrderSide.BUY)
+    .filter(t => t.side === OrderSide.BUY)
     .map(t => {
       const x = candleIndexByTime.get(t.openTimeInISO) ?? 0;
       return {x, y: Number(t.price.toFixed(2)), name: `BUY @ $${t.price.toFixed(2)}`};
@@ -94,7 +94,7 @@ function PriceChartWithTrades({result, candles}: ResultProps) {
     .filter(m => m.x > 0);
 
   const sellMarkers = result.trades
-    .filter(t => t.side === ExchangeOrderSide.SELL)
+    .filter(t => t.side === OrderSide.SELL)
     .map(t => {
       const x = candleIndexByTime.get(t.openTimeInISO) ?? 0;
       return {x, y: Number(t.price.toFixed(2)), name: `SELL @ $${t.price.toFixed(2)}`};
@@ -213,7 +213,7 @@ function TradeHistoryTable({result}: {result: BacktestResult}) {
               <td className="py-2 px-3">
                 <span
                   className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${
-                    trade.side === ExchangeOrderSide.BUY
+                    trade.side === OrderSide.BUY
                       ? 'bg-green-900/50 text-green-400'
                       : 'bg-red-900/50 text-red-400'
                   }`}>

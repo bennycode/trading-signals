@@ -1,4 +1,4 @@
-import type {ExchangeCandle} from '@typedtrader/exchange';
+import type {Candle} from '@typedtrader/exchange';
 import {strategyDefinitions, type StrategyId} from '../utils/strategySchemas';
 import {SchemaReference} from './SchemaReference';
 
@@ -8,7 +8,7 @@ interface StrategyConfiguratorProps {
   configJson: string;
   onConfigJsonChange: (json: string) => void;
   validationError: string | null;
-  candles: ExchangeCandle[];
+  candles: Candle[];
 }
 
 export function StrategyConfigurator({

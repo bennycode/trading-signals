@@ -1,6 +1,6 @@
 import {Chart as HighchartsChart} from '@highcharts/react';
 import type {ReactNode} from 'react';
-import type {ExchangeCandle} from '@typedtrader/exchange';
+import type {Candle} from '@typedtrader/exchange';
 import type {ChartDataPoint} from '../../components/Chart';
 import {NotAvailable} from '../../components/NotAvailable';
 import PriceChart, {type PriceData} from '../../components/PriceChart';
@@ -13,11 +13,11 @@ export interface BandsOptions {
   label: string;
   paramString: string;
   createIndicator: () => any;
-  addCandle: (indicator: any, candle: ExchangeCandle) => void;
+  addCandle: (indicator: any, candle: Candle) => void;
   details: string;
 }
 
-export const renderBands = (config: IndicatorConfig, selectedCandles: ExchangeCandle[], options: BandsOptions) => {
+export const renderBands = (config: IndicatorConfig, selectedCandles: Candle[], options: BandsOptions) => {
   const indicator = options.createIndicator();
   const chartDataUpper: ChartDataPoint[] = [];
   const chartDataMiddle: ChartDataPoint[] = [];

@@ -1,7 +1,7 @@
 import {useState, useCallback, useEffect, useRef} from 'react';
 import Big from 'big.js';
-import {AlpacaExchangeMock, TradingPair} from '@typedtrader/exchange';
-import type {ExchangeCandle} from '@typedtrader/exchange';
+import {AlpacaBrokerMock, TradingPair} from '@typedtrader/exchange';
+import type {Candle} from '@typedtrader/exchange';
 import {
   BacktestExecutor,
   BuyOnceStrategy,
@@ -64,14 +64,14 @@ function parseInitialAmount(value: string, label: string): Big {
   return new Big(trimmed);
 }
 
-function createExchange(candles: ExchangeCandle[], initialBase: string, initialCounter: string) {
+function createExchange(candles: Candle[], initialBase: string, initialCounter: string) {
   const base = candles[0]?.base ?? 'BTC';
   const counter = candles[0]?.counter ?? 'USD';
   const balances = new Map([
     [base, {available: parseInitialAmount(initialBase, 'base'), hold: new Big(0)}],
     [counter, {available: parseInitialAmount(initialCounter, 'counter'), hold: new Big(0)}],
   ]);
-  return new AlpacaExchangeMock({balances});
+  return new AlpacaBrokerMock({balances});
 }
 
 export default function BacktestPage() {
@@ -99,7 +99,7 @@ export default function BacktestPage() {
   }, []);
 
   const currentDataset = selectedDataset === 'custom' ? customDataset : datasets.find(d => d.id === selectedDataset)!;
-  const candles = (currentDataset?.candles ?? []) as ExchangeCandle[];
+  const candles = (currentDataset?.candles ?? []) as Candle[];
 
   // Recompute defaults when dataset or strategy changes (including custom dataset uploads)
   useEffect(() => {
@@ -188,13 +188,13 @@ export default function BacktestPage() {
       const [backtestResult, baseline] = await Promise.all([
         new BacktestExecutor({
           candles,
-          exchange: createExchange(candles, initialBase, initialCounter),
+          broker: createExchange(candles, initialBase, initialCounter),
           strategy,
           tradingPair,
         }).execute(),
         new BacktestExecutor({
           candles,
-          exchange: createExchange(candles, initialBase, initialCounter),
+          broker: createExchange(candles, initialBase, initialCounter),
           strategy: new BuyOnceStrategy(),
           tradingPair,
         }).execute(),
@@ -224,7 +224,7 @@ export default function BacktestPage() {
     setBaselineResult(null);
   };
 
-  const handleCustomDataset = (candles: ExchangeCandle[], name: string) => {
+  const handleCustomDataset = (candles: Candle[], name: string) => {
     setCustomDataset({id: 'custom', name, description: `Custom upload: ${name} (${candles.length} candles)`, candles});
     setSelectedDataset('custom');
     setResult(null);
