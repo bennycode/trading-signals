@@ -4,7 +4,7 @@ import {AccountSchema} from './schema/AccountSchema.js';
 import {AssetSchema} from './schema/AssetSchema.js';
 import {BarsResponseSchema, LatestBarsResponseSchema} from './schema/BarSchema.js';
 import {ClockSchema} from './schema/ClockSchema.js';
-import {OrderSchema, type AlpacaAssetClassValue} from './schema/OrderSchema.js';
+import {OrderSchema, type AlpacaAssetClass} from './schema/OrderSchema.js';
 import {PositionSchema} from './schema/PositionSchema.js';
 import {SnapshotsResponseSchema} from './schema/SnapshotSchema.js';
 import {z} from 'zod';
@@ -147,7 +147,7 @@ export class AlpacaAPI {
   }
 
   /** @see https://docs.alpaca.markets/reference/get-v2-assets */
-  async getAssets(params: {asset_class: AlpacaAssetClassValue}) {
+  async getAssets(params: {asset_class: AlpacaAssetClass}) {
     const response = await this.#tradingClient.get('/v2/assets', {params});
     return z.array(AssetSchema).parse(response.data);
   }

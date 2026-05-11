@@ -1,5 +1,5 @@
 import type {Bar} from './api/schema/BarSchema.js';
-import {type Order, AlpacaOrderStatus, type AlpacaAssetClassValue} from './api/schema/OrderSchema.js';
+import {type Order, AlpacaOrderStatus, type AlpacaAssetClass} from './api/schema/OrderSchema.js';
 import {ms} from 'ms';
 import {TradingPair} from '../TradingPair.js';
 import {
@@ -70,7 +70,7 @@ export class AlpacaBrokerMapper {
    * Converts an Alpaca symbol and asset class back into a TradingPair.
    * Crypto symbols use "/" delimiter (e.g., "BTC/USD"), stocks are just the ticker (e.g., "AAPL").
    */
-  static symbolToPair(symbol: string, assetClass: AlpacaAssetClassValue): TradingPair {
+  static symbolToPair(symbol: string, assetClass: AlpacaAssetClass): TradingPair {
     if (assetClass === 'crypto') {
       return TradingPair.fromString(symbol, '/');
     }
