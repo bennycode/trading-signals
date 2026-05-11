@@ -21,8 +21,13 @@ import {IndicatorSeries} from '../../types/Indicator.js';
 export class RVOL extends IndicatorSeries {
   readonly #period: number;
   readonly #priorVolumes: number[] = [];
-  /** Snapshot of prior-volumes before the most recent update so `replace()` can roll back. */
-  #snapshot: {priorVolumes: number[]; previousResult: number | undefined} | null = null;
+  /**
+   * Snapshot of the state captured at the start of every non-replace `update()` so
+   * `replace()` can rewind exactly one step. We save the *current* result (not
+   * `previousResult`) — on restore that value becomes `previousResult`, because the
+   * subsequent `setResult(_, true)` deliberately leaves `previousResult` untouched.
+   */
+  #snapshot: {priorVolumes: number[]; resultBeforeUpdate: number | undefined} | null = null;
 
   constructor(period: number) {
     super();
@@ -47,11 +52,14 @@ export class RVOL extends IndicatorSeries {
 
       this.#priorVolumes.length = 0;
       this.#priorVolumes.push(...this.#snapshot.priorVolumes);
-      this.previousResult = this.#snapshot.previousResult;
+      // Restoring `previousResult` to the pre-update `result` matches what `setResult(_,
+      // replace=true)` expects: "previousResult is already what it should be after the
+      // replace, just overwrite the current result".
+      this.previousResult = this.#snapshot.resultBeforeUpdate;
     } else {
       this.#snapshot = {
-        previousResult: this.previousResult,
         priorVolumes: [...this.#priorVolumes],
+        resultBeforeUpdate: this.result,
       };
     }
 

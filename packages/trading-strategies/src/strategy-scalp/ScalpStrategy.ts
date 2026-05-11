@@ -60,14 +60,14 @@ export class ScalpStrategy extends ProtectedStrategy {
    */
   init(candles: OneMinuteBatchedCandle[]): void {
     if (candles.length > 0) {
-      const exchangeCandles = CandleBatcher.toExchangeCandles(candles);
+      const plainCandles = CandleBatcher.toCandles(candles);
 
       if (!this.#config.offset) {
-        const offset = suggestScalpOffset(exchangeCandles);
+        const offset = suggestScalpOffset(plainCandles);
         this.#config.offset = offset.toFixed(2);
       }
 
-      this.#scalpFriendly = this.#computeRangeEfficiency(exchangeCandles);
+      this.#scalpFriendly = this.#computeRangeEfficiency(plainCandles);
     }
 
     for (const candle of candles) {

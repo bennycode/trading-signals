@@ -73,6 +73,26 @@ describe('RVOL', () => {
     expect(restored).toBe(original);
   });
 
+  it('rewinds exactly one update on replace (after multiple results)', () => {
+    // Sequence the indicator through several stable results, then verify that replacing
+    // the most recent value lands on the SAME result we would have got if we'd called
+    // add() with the replacement value instead. Equivalence is the contract of replace().
+    const setup = [100, 100, 100] as const;
+    const drive = [200, 300] as const;
+
+    const a = new RVOL(3);
+    setup.forEach(v => a.add(v));
+    drive.forEach(v => a.add(v));
+    a.replace(400);
+
+    const b = new RVOL(3);
+    setup.forEach(v => b.add(v));
+    b.add(drive[0]);
+    b.add(400);
+
+    expect(a.getResultOrThrow()).toBe(b.getResultOrThrow());
+  });
+
   it('rejects period < 1', () => {
     expect(() => new RVOL(0)).toThrowError('period must be >= 1');
   });

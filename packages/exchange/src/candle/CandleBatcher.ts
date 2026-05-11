@@ -234,7 +234,7 @@ export class CandleBatcher extends EventEmitter<EventMap> {
     return CandleBatcher.batchMany([candle], candle.sizeInMillis)[0];
   }
 
-  static toExchangeCandles(candles: BatchedCandle[]): Candle[] {
+  static toCandles(candles: BatchedCandle[]): Candle[] {
     return candles.map(CandleBatcher.toCandle);
   }
 

@@ -1,5 +1,5 @@
 import {config} from 'dotenv-defaults';
-import {AlpacaMarketData, getTrading212Client, TradingPair, TradingSession} from '@typedtrader/exchange';
+import {AlpacaMarketData, getTrading212Client, OrderSide, TradingPair, TradingSession} from '@typedtrader/exchange';
 import {BuyOnceStrategy} from '../strategy-buy-once/BuyOnceStrategy.js';
 
 // The exchange package owns the credentials. Load its env so this script can run from
@@ -28,7 +28,7 @@ const session = new TradingSession({broker, pair, strategy});
 
 session.on('error', () => {});
 session.on('orderFilled', () => {
-  if (strategy.latestAdvice?.side === 'SELL') {
+  if (strategy.latestAdvice?.side === OrderSide.SELL) {
     void session.stop().then(() => {
       marketData.disconnect();
       broker.disconnect();

@@ -262,11 +262,19 @@ export class Trading212Broker extends Broker implements MarketDataSource {
 
   async getOpenOrders(pair: TradingPair): Promise<PendingOrder[]> {
     const orders = await this.#api.getOrders();
-    // Drop STOP / STOP_LIMIT orders (e.g. placed manually in the Trading212 app): the
-    // neutral `OrderType` only models MARKET and LIMIT, so mapping these would
-    // silently lose `stopPrice` and mis-classify them as MARKET.
+    // Drop orders that don't fit the neutral model:
+    // - STOP / STOP_LIMIT (e.g. placed manually in the Trading212 app): neutral `OrderType`
+    //   only models MARKET and LIMIT; coercing would silently lose `stopPrice`.
+    // - VALUE-strategy orders (notional amount in `value` instead of `quantity`): neutral
+    //   `PendingOrder.size` is base-asset units, not notional. Filter to QUANTITY-strategy
+    //   orders only.
     return orders
-      .filter(order => order.ticker === pair.base && (order.type === 'MARKET' || order.type === 'LIMIT'))
+      .filter(
+        order =>
+          order.ticker === pair.base &&
+          (order.type === 'MARKET' || order.type === 'LIMIT') &&
+          order.quantity != null
+      )
       .map(order => Trading212BrokerMapper.toOpenOrder(order, pair));
   }
 
