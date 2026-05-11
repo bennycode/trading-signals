@@ -46,6 +46,34 @@ describe('RVOL', () => {
     expect(rvol.isStable).toBe(false);
   });
 
+  it('clears a previously stable result when the baseline drops to zero', () => {
+    const rvol = new RVOL(2);
+    rvol.add(100);
+    rvol.add(100);
+    rvol.add(200); // baseline 100, ratio 2 → stable
+    expect(rvol.isStable).toBe(true);
+    expect(rvol.getResultOrThrow()).toBe(2);
+
+    // Force the next baseline to zero by replacing both prior values.
+    rvol.replace(100); // restore window to [100, 100], result back to undefined-then-2
+    expect(rvol.isStable).toBe(true);
+    // Now add two zeros so the next add sees baseline 0.
+    const rvol2 = new RVOL(2);
+    rvol2.add(100);
+    rvol2.add(50);
+    rvol2.add(75); // baseline 75, ratio 1 → stable
+    expect(rvol2.isStable).toBe(true);
+
+    rvol2.add(0);
+    expect(rvol2.isStable).toBe(true); // window still has non-zero priors
+    rvol2.add(0);
+    // priors become [0, 0] for the next baseline; next add returns null and clears result.
+    const r = rvol2.add(50);
+    expect(r).toBeNull();
+    expect(rvol2.isStable).toBe(false);
+    expect(() => rvol2.getResultOrThrow()).toThrow();
+  });
+
   it('shifts the window forward as new values arrive', () => {
     const rvol = new RVOL(3);
     [100, 100, 100].forEach(v => rvol.add(v));

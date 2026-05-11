@@ -81,6 +81,12 @@ export class RVOL extends IndicatorSeries {
     }
 
     if (baseline === 0) {
+      // No valid ratio against a zero baseline. Clear `result` so `isStable` and
+      // `getResultOrThrow()` honestly reflect that the most recent update produced no
+      // value — otherwise a stale ratio from a previous update would be observable here.
+      // Direct assignment (rather than `setResult`) because `setResult` only takes a
+      // concrete number; this is the documented exception for clearing state.
+      this.result = undefined;
       return null;
     }
 

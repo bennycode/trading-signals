@@ -230,6 +230,14 @@ export class Trading212Broker extends Broker implements MarketDataSource {
       clearTimeout(handle);
     }
     this.#orderWatchers.clear();
+
+    // Tear down active candle subscriptions. The injected `marketData` itself is owned
+    // by the caller and intentionally not disconnected here — but the forwarders,
+    // listeners, and remote topic subscriptions that this broker registered against it
+    // do need cleanup. Snapshot the keys so `unwatchCandles` can mutate the map safely.
+    for (const topicId of [...this.#candleListenerByTopic.keys()]) {
+      this.unwatchCandles(topicId);
+    }
   }
 
   /**
