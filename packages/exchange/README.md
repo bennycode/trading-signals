@@ -48,7 +48,7 @@ import {AlpacaMarketData, getTrading212Client, TradingPair} from '@typedtrader/e
 
 // 1. Construct an Alpaca-backed market-data source.
 const marketData = new AlpacaMarketData({
-  apiKey: 'ALPACA_API_KEY,
+  apiKey: 'ALPACA_API_KEY',
   apiSecret: 'ALPACA_API_SECRET',
   usePaperTrading: false, // read-only; doesn't place orders
 });
