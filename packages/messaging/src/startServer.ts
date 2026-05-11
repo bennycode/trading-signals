@@ -11,6 +11,7 @@ import {
   reportRemove,
   strategyAdd,
   strategyConfig,
+  strategyCopy,
   strategyList,
   strategyRemove,
   strategyState,
@@ -136,6 +137,19 @@ function registerCommands(platform: MessagingPlatform, monitors: Monitors): void
 
   platform.registerCommand('strategyConfig', async ctx => {
     await ctx.reply(await strategyConfig(ctx.content, ctx.senderId));
+  });
+
+  platform.registerCommand('strategyCopy', async ctx => {
+    const result = await strategyCopy(ctx.content, ctx.senderId);
+    await ctx.reply(result.message);
+
+    if (result.strategy) {
+      try {
+        await monitors.strategyMonitor.subscribeToStrategy(result.strategy);
+      } catch (error) {
+        logger.error({err: error}, 'Error starting copied strategy');
+      }
+    }
   });
 
   platform.registerCommand('strategyState', async ctx => {
