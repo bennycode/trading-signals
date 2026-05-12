@@ -784,6 +784,28 @@ export class TelegramPlatform implements MessagingPlatform {
     }
   }
 
+  /**
+   * Broadcast an operator alert to every configured owner. Per-recipient failures
+   * are logged but never thrown so a single bad chat ID can't block the rest of
+   * the fan-out. When no owners are configured (a dev-mode setup with the bot
+   * open to anyone), this is intentionally a no-op — there's nobody specific to
+   * notify.
+   */
+  async alertOperators(text: string): Promise<void> {
+    if (this.#ownerIds.length === 0) {
+      logger.warn('alertOperators called but no Telegram owner IDs are configured; dropping alert');
+      return;
+    }
+    const results = await Promise.allSettled(
+      this.#ownerIds.map(ownerId => this.sendMessage(`${PLATFORM_PREFIX}${ownerId}`, text))
+    );
+    for (const [index, result] of results.entries()) {
+      if (result.status === 'rejected') {
+        logger.warn({err: result.reason, ownerId: this.#ownerIds[index]}, 'Failed to deliver operator alert');
+      }
+    }
+  }
+
   get commandList(): string[] {
     return Array.from(this.#commands.keys()).map(cmd => `/${cmd}`);
   }

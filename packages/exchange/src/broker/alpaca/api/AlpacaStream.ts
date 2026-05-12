@@ -7,6 +7,19 @@ export interface AlpacaStreamCredentials {
 }
 
 /**
+ * Payload emitted alongside the {@link AlpacaStream} `close` event so observers
+ * can tell network drops apart from server-side closures, normal shutdowns,
+ * etc. Lifted directly from the underlying {@link CloseEvent}.
+ *
+ * @see https://datatracker.ietf.org/doc/html/rfc6455#section-7.4 standard close codes
+ */
+export interface AlpacaStreamCloseInfo {
+  code: number;
+  reason: string;
+  wasClean: boolean;
+}
+
+/**
  * Alpaca market data WebSocket stream using Node.js native WebSocket.
  *
  * @see https://docs.alpaca.markets/docs/real-time-stock-pricing-data
@@ -56,8 +69,13 @@ export class AlpacaStream extends EventEmitter {
       this.emit('error', event);
     });
 
-    this.#connection.addEventListener('close', () => {
-      this.emit('close', this);
+    this.#connection.addEventListener('close', event => {
+      const info: AlpacaStreamCloseInfo = {
+        code: event.code,
+        reason: event.reason,
+        wasClean: event.wasClean,
+      };
+      this.emit('close', this, info);
     });
   }
 

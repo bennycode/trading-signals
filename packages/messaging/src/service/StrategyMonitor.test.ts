@@ -7,6 +7,7 @@ function createMockPlatform(): MessagingPlatform {
     start: vi.fn(),
     stop: vi.fn(),
     sendMessage: vi.fn(),
+    alertOperators: vi.fn(),
     registerCommand: vi.fn(),
     commandList: [],
     platformInfo: {botAddress: '', sdkVersion: ''},
