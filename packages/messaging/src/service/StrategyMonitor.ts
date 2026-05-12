@@ -11,7 +11,6 @@ interface ActiveSession {
   strategyId: number;
   session: TradingSession;
   strategy: TradingStrategy;
-  row: StrategyAttributes;
 }
 
 /** Format a strategy-emitted text into the user-facing message string. Exported for tests. */
@@ -19,31 +18,9 @@ export function formatStrategyMessage(strategyName: string, pair: string, text: 
   return `${strategyName} (${pair}): ${text}`;
 }
 
-/**
- * Audit interval for the candle-freshness watchdog.
- * Exported so other places (e.g. tests) can reason about it without duplicating the constant.
- */
-export const CANDLE_FRESHNESS_AUDIT_INTERVAL_MS = 60_000;
-
-/**
- * When the gap since the last candle exceeds this threshold during a period we'd
- * otherwise expect activity, fire one alert per silent stretch.
- */
-export const CANDLE_FRESHNESS_STALE_MS = 15 * 60_000;
-
-/**
- * Upper bound on the staleness we still alert about. Beyond this we assume the
- * pair is simply outside its market hours (overnight, weekend, holiday) and stop
- * warning. Catches the "WS died mid-day" case without spamming on Saturday at 3am.
- */
-export const CANDLE_FRESHNESS_GIVE_UP_MS = 8 * 60 * 60_000;
-
 export class StrategyMonitor {
   #platforms: Map<string, MessagingPlatform>;
   #sessions: Map<number, ActiveSession> = new Map();
-  #lastCandleAt: Map<number, number> = new Map();
-  #freshnessAlertSent: Set<number> = new Set();
-  #freshnessAuditInterval: NodeJS.Timeout | null = null;
 
   constructor(platforms: Map<string, MessagingPlatform>) {
     this.#platforms = platforms;
@@ -61,28 +38,16 @@ export class StrategyMonitor {
         logger.error({err: error, strategyId: row.id, strategyName: row.strategyName}, 'Failed to start strategy');
       }
     }
-
-    if (!this.#freshnessAuditInterval) {
-      this.#freshnessAuditInterval = setInterval(() => this.#auditCandleFreshness(), CANDLE_FRESHNESS_AUDIT_INTERVAL_MS);
-      this.#freshnessAuditInterval.unref();
-    }
   }
 
   /**
    * Stop all active strategy sessions.
    */
   async stop(): Promise<void> {
-    if (this.#freshnessAuditInterval) {
-      clearInterval(this.#freshnessAuditInterval);
-      this.#freshnessAuditInterval = null;
-    }
-
     for (const active of this.#sessions.values()) {
       await active.session.stop({cancelOpenOrders: false});
     }
     this.#sessions.clear();
-    this.#lastCandleAt.clear();
-    this.#freshnessAlertSent.clear();
   }
 
   /**
@@ -171,21 +136,13 @@ export class StrategyMonitor {
       }
     });
 
-    // Candle-freshness tracking — clears the alert flag every time a candle arrives,
-    // so a transient WS hiccup that resolves itself doesn't leave an unactionable warning.
-    session.on('candle', () => {
-      this.#lastCandleAt.set(row.id, Date.now());
-      this.#freshnessAlertSent.delete(row.id);
-    });
-
     session.on('error', (error: Error) => {
       logger.error({err: error, strategyId: row.id, strategyName: row.strategyName}, 'Strategy error');
     });
 
     await session.start();
 
-    this.#sessions.set(row.id, {strategyId: row.id, session, strategy, row});
-    this.#lastCandleAt.set(row.id, Date.now());
+    this.#sessions.set(row.id, {strategyId: row.id, session, strategy});
     logger.info({strategyId: row.id, strategyName: row.strategyName, pair: row.pair}, 'Started strategy');
   }
 
@@ -197,45 +154,7 @@ export class StrategyMonitor {
     if (active) {
       await active.session.stop({cancelOpenOrders: true});
       this.#sessions.delete(strategyId);
-      this.#lastCandleAt.delete(strategyId);
-      this.#freshnessAlertSent.delete(strategyId);
       logger.info({strategyId}, 'Stopped strategy');
-    }
-  }
-
-  /**
-   * Periodic check that catches the "WebSocket alive but silent" failure mode
-   * — the one that twice left an INTC trailing-stop deaf during a US trading day.
-   * Fires one Telegram alert per silent stretch (cleared when a candle arrives).
-   * Stays quiet beyond {@link CANDLE_FRESHNESS_GIVE_UP_MS} so weekends and overnight
-   * gaps don't spam.
-   */
-  #auditCandleFreshness(): void {
-    const now = Date.now();
-    for (const [strategyId, lastAt] of this.#lastCandleAt) {
-      if (this.#freshnessAlertSent.has(strategyId)) {
-        continue;
-      }
-      const elapsed = now - lastAt;
-      if (elapsed > CANDLE_FRESHNESS_STALE_MS && elapsed < CANDLE_FRESHNESS_GIVE_UP_MS) {
-        this.#freshnessAlertSent.add(strategyId);
-        void this.#sendCandleFreshnessAlert(strategyId, elapsed);
-      }
-    }
-  }
-
-  async #sendCandleFreshnessAlert(strategyId: number, elapsedMs: number): Promise<void> {
-    const active = this.#sessions.get(strategyId);
-    if (!active) {
-      return;
-    }
-    const minutes = Math.round(elapsedMs / 60_000);
-    logger.error({strategyId, elapsedMs}, 'Candle freshness alert');
-    const message = `⚠️ Strategy "${active.row.strategyName}" on ${active.row.pair} has not received a candle in ${minutes} minutes. The market-data WebSocket may be stuck — check logs.`;
-    try {
-      await this.#sendToAccount(active.row, message);
-    } catch (error) {
-      logger.error({err: error, strategyId}, 'Failed to send candle freshness alert');
     }
   }
 
