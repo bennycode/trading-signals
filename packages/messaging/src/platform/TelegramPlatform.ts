@@ -1,5 +1,6 @@
-import {Bot} from 'grammy';
+import {Bot, GrammyError} from 'grammy';
 import type {Context} from 'grammy';
+import {autoRetry} from '@grammyjs/auto-retry';
 import {
   type Conversation,
   type ConversationFlavor,
@@ -31,6 +32,20 @@ const REPORT_CALLBACK_PREFIX = 'report:';
 const ACCOUNT_CALLBACK_PREFIX = 'reportaccount:';
 const MODE_CALLBACK_PREFIX = 'reportmode:';
 const INTERVAL_CALLBACK_PREFIX = 'reportinterval:';
+
+/**
+ * Returns true when the error means "Telegram understood the request but rejected
+ * the HTML body" — usually a `can't parse entities` description, sometimes a
+ * generic Bad Request whose message mentions parsing. These are the only
+ * cases where retrying with plaintext (no `parse_mode`) is the right call.
+ * Network errors (HttpError / ECONNRESET) are not in this category.
+ */
+function isHtmlParseError(error: unknown): error is GrammyError {
+  if (!(error instanceof GrammyError)) {
+    return false;
+  }
+  return /can't parse entities|parse_mode|HTML/i.test(error.description);
+}
 
 const TRADE_CONVERSATION_ID = 'trade';
 // Display (camelCase) names shown in `/help` and usage errors. grammY
@@ -332,6 +347,19 @@ export class TelegramPlatform implements MessagingPlatform {
 
   constructor(botToken: string, ownerIds?: string) {
     this.#bot = new Bot<TradeContext>(botToken);
+
+    // Auto-retry transient API failures (HttpError / ECONNRESET, 5xx server errors,
+    // rate-limit `retry_after` responses) before they ever reach our catch blocks.
+    // Bounded so a sustained outage can't pile up indefinite retries; once the
+    // budget is exhausted the error propagates and the caller (or the outer process)
+    // decides what to do.
+    // @see https://grammy.dev/plugins/auto-retry
+    this.#bot.api.config.use(
+      autoRetry({
+        maxRetryAttempts: 3,
+        maxDelaySeconds: 30,
+      })
+    );
     // Filter out empty entries so whitespace- or comma-only inputs (e.g. " " or ",")
     // collapse to an empty list and are treated as open mode, not as a list of empty IDs.
     this.#ownerIds = ownerIds
@@ -775,11 +803,32 @@ export class TelegramPlatform implements MessagingPlatform {
   async sendMessage(userId: string, text: string): Promise<void> {
     const chatId = userId.replace(PLATFORM_PREFIX, '');
     for (const chunk of splitForTelegram(text)) {
+      // The render and the send have separate failure modes. Render errors (our
+      // markdown→HTML converter throwing) and "Telegram rejected our HTML"
+      // errors both make plaintext a safe fallback. Transport errors
+      // (HttpError/ECONNRESET, timeouts) and other Telegram API errors do not —
+      // retrying the same network with a different `parse_mode` won't help and
+      // silently strips formatting. So we only fall back for the two cases
+      // where it's actually the right answer; everything else propagates.
+      let html: string;
       try {
-        await this.#bot.api.sendMessage(chatId, markdownToTelegramHtml(chunk), {parse_mode: 'HTML'});
+        html = markdownToTelegramHtml(chunk);
       } catch (error) {
-        logger.warn({err: error}, 'Falling back to plaintext after markdown-to-HTML render failure');
+        logger.warn({err: error}, 'Markdown→HTML render failed, sending plaintext');
         await this.#bot.api.sendMessage(chatId, chunk);
+        continue;
+      }
+
+      try {
+        await this.#bot.api.sendMessage(chatId, html, {parse_mode: 'HTML'});
+      } catch (error) {
+        if (isHtmlParseError(error)) {
+          logger.warn({err: error}, 'Telegram rejected HTML, retrying as plaintext');
+          await this.#bot.api.sendMessage(chatId, chunk);
+          continue;
+        }
+        logger.warn({err: error}, 'Telegram sendMessage failed');
+        throw error;
       }
     }
   }

@@ -48,6 +48,7 @@ vi.mock('grammy', () => {
       stop: mockStop,
       api: {
         sendMessage: mockSendMessage,
+        config: {use: vi.fn()},
       },
       get botInfo() {
         return botInfo;
@@ -55,8 +56,20 @@ vi.mock('grammy', () => {
     };
   }
 
-  return {Bot};
+  class GrammyError extends Error {
+    description: string;
+    constructor(description: string) {
+      super(description);
+      this.description = description;
+    }
+  }
+
+  return {Bot, GrammyError};
 });
+
+vi.mock('@grammyjs/auto-retry', () => ({
+  autoRetry: vi.fn(() => vi.fn()),
+}));
 
 describe('TelegramPlatform', () => {
   beforeEach(() => {
@@ -283,16 +296,29 @@ describe('TelegramPlatform', () => {
       expect(mockSendMessage).toHaveBeenCalledWith('123456', '<b>Report:</b> 5 items', {parse_mode: 'HTML'});
     });
 
-    it('falls back to plain text when HTML parsing fails', async () => {
+    it('falls back to plain text when Telegram rejects the HTML body', async () => {
       const platform = new TelegramPlatform('bot-token');
 
-      mockSendMessage.mockRejectedValueOnce(new Error('Bad Request: can\'t parse entities'));
+      const {GrammyError} = await import('grammy');
+      mockSendMessage.mockRejectedValueOnce(new GrammyError("Bad Request: can't parse entities"));
 
       await platform.sendMessage('telegram:123456', 'Hello world');
 
       expect(mockSendMessage).toHaveBeenCalledTimes(2);
       expect(mockSendMessage).toHaveBeenNthCalledWith(1, '123456', 'Hello world', {parse_mode: 'HTML'});
       expect(mockSendMessage).toHaveBeenNthCalledWith(2, '123456', 'Hello world');
+    });
+
+    it('does not fall back to plain text on transport errors — propagates them', async () => {
+      const platform = new TelegramPlatform('bot-token');
+
+      // ECONNRESET / HttpError / generic network failure: not a GrammyError, not a parse rejection.
+      mockSendMessage.mockRejectedValueOnce(new Error('read ECONNRESET'));
+
+      await expect(platform.sendMessage('telegram:123456', 'Hello world')).rejects.toThrow('read ECONNRESET');
+
+      // Only the first (HTML) send is attempted; no silent plaintext retry.
+      expect(mockSendMessage).toHaveBeenCalledTimes(1);
     });
 
     it('passes the raw chat ID when no prefix is present', async () => {
