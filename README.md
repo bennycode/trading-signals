@@ -50,19 +50,22 @@ At the foundation, **trading-signals** provides technical indicators like SMA, E
 graph TD
     messaging["@typedtrader/messaging (Chatbot)"]
 
-    messaging --> strategies["trading-strategies"]
-    messaging --> exchange["@typedtrader/exchange"]
+    messaging --> session["TradingSession (online: pairs a strategy with a broker)"]
+    website["typedtrader.com (Visual Backtester)"] --> backtest["BacktestExecutor (offline: replays historical candles)"]
+
+    session --> strategies["trading-strategies"]
+    session --> exchange["@typedtrader/exchange"]
+    backtest --> strategies
+    backtest --> exchange
 
     strategies --> signals["trading-signals"]
 
     signals --> SMA
     signals --> EMA
-    signals --> RSI
     signals --> BBANDS["Bollinger Bands"]
-    signals --> MACD
     signals --> more["..."]
 
     exchange --> Alpaca
-    exchange --> IB["Interactive Brokers"]
+    exchange --> T212["Trading 212"]
     exchange --> more-exchanges["..."]
 ```
