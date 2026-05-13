@@ -335,16 +335,11 @@ export class TelegramPlatform implements MessagingPlatform {
   constructor(botToken: string, ownerIds?: string) {
     this.#bot = new Bot<TradeContext>(botToken);
 
-    // Auto-retry transient API failures (HttpError / ECONNRESET, 5xx server errors,
-    // rate-limit `retry_after` responses) before they ever reach our catch blocks.
-    // Bounded so a sustained outage can't pile up indefinite retries; once the
-    // budget is exhausted the error propagates and the caller (or the outer process)
-    // decides what to do.
     // @see https://grammy.dev/plugins/auto-retry
     this.#bot.api.config.use(
       autoRetry({
-        maxRetryAttempts: 3,
-        maxDelaySeconds: 30,
+        maxRetryAttempts: Infinity,
+        maxDelaySeconds: 120,
       })
     );
     // Filter out empty entries so whitespace- or comma-only inputs (e.g. " " or ",")
@@ -800,7 +795,7 @@ export class TelegramPlatform implements MessagingPlatform {
       try {
         html = markdownToTelegramHtml(chunk);
       } catch (error) {
-        logger.warn({err: error}, 'Markdown→HTML render failed, sending plaintext');
+        logger.warn({err: error}, 'Markdown-to-HTML render failed, sending plaintext...');
         await this.#bot.api.sendMessage(chatId, chunk);
         continue;
       }
