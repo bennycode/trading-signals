@@ -56,15 +56,7 @@ vi.mock('grammy', () => {
     };
   }
 
-  class GrammyError extends Error {
-    description: string;
-    constructor(description: string) {
-      super(description);
-      this.description = description;
-    }
-  }
-
-  return {Bot, GrammyError};
+  return {Bot};
 });
 
 vi.mock('@grammyjs/auto-retry', () => ({
@@ -296,28 +288,16 @@ describe('TelegramPlatform', () => {
       expect(mockSendMessage).toHaveBeenCalledWith('123456', '<b>Report:</b> 5 items', {parse_mode: 'HTML'});
     });
 
-    it('falls back to plain text when Telegram rejects the HTML body', async () => {
+    it('propagates API send errors instead of silently falling back to plaintext', async () => {
       const platform = new TelegramPlatform('bot-token');
 
-      const {GrammyError} = await import('grammy');
-      mockSendMessage.mockRejectedValueOnce(new GrammyError("Bad Request: can't parse entities"));
-
-      await platform.sendMessage('telegram:123456', 'Hello world');
-
-      expect(mockSendMessage).toHaveBeenCalledTimes(2);
-      expect(mockSendMessage).toHaveBeenNthCalledWith(1, '123456', 'Hello world', {parse_mode: 'HTML'});
-      expect(mockSendMessage).toHaveBeenNthCalledWith(2, '123456', 'Hello world');
-    });
-
-    it('does not fall back to plain text on transport errors — propagates them', async () => {
-      const platform = new TelegramPlatform('bot-token');
-
-      // ECONNRESET / HttpError / generic network failure: not a GrammyError, not a parse rejection.
+      // Anything that escapes the `@grammyjs/auto-retry` budget — transport error,
+      // Telegram rejection, rate-limit exhaustion — should reach the caller.
       mockSendMessage.mockRejectedValueOnce(new Error('read ECONNRESET'));
 
       await expect(platform.sendMessage('telegram:123456', 'Hello world')).rejects.toThrow('read ECONNRESET');
 
-      // Only the first (HTML) send is attempted; no silent plaintext retry.
+      // Only the HTML send is attempted; no silent plaintext retry.
       expect(mockSendMessage).toHaveBeenCalledTimes(1);
     });
 
