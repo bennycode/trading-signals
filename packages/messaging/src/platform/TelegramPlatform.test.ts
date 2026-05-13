@@ -48,6 +48,7 @@ vi.mock('grammy', () => {
       stop: mockStop,
       api: {
         sendMessage: mockSendMessage,
+        config: {use: vi.fn()},
       },
       get botInfo() {
         return botInfo;
@@ -57,6 +58,10 @@ vi.mock('grammy', () => {
 
   return {Bot};
 });
+
+vi.mock('@grammyjs/auto-retry', () => ({
+  autoRetry: vi.fn(() => vi.fn()),
+}));
 
 describe('TelegramPlatform', () => {
   beforeEach(() => {
@@ -283,16 +288,17 @@ describe('TelegramPlatform', () => {
       expect(mockSendMessage).toHaveBeenCalledWith('123456', '<b>Report:</b> 5 items', {parse_mode: 'HTML'});
     });
 
-    it('falls back to plain text when HTML parsing fails', async () => {
+    it('propagates API send errors instead of silently falling back to plaintext', async () => {
       const platform = new TelegramPlatform('bot-token');
 
-      mockSendMessage.mockRejectedValueOnce(new Error('Bad Request: can\'t parse entities'));
+      // Anything that escapes the `@grammyjs/auto-retry` budget — transport error,
+      // Telegram rejection, rate-limit exhaustion — should reach the caller.
+      mockSendMessage.mockRejectedValueOnce(new Error('read ECONNRESET'));
 
-      await platform.sendMessage('telegram:123456', 'Hello world');
+      await expect(platform.sendMessage('telegram:123456', 'Hello world')).rejects.toThrow('read ECONNRESET');
 
-      expect(mockSendMessage).toHaveBeenCalledTimes(2);
-      expect(mockSendMessage).toHaveBeenNthCalledWith(1, '123456', 'Hello world', {parse_mode: 'HTML'});
-      expect(mockSendMessage).toHaveBeenNthCalledWith(2, '123456', 'Hello world');
+      // Only the HTML send is attempted; no silent plaintext retry.
+      expect(mockSendMessage).toHaveBeenCalledTimes(1);
     });
 
     it('passes the raw chat ID when no prefix is present', async () => {

@@ -1,5 +1,6 @@
 import {Bot} from 'grammy';
 import type {Context} from 'grammy';
+import {autoRetry} from '@grammyjs/auto-retry';
 import {
   type Conversation,
   type ConversationFlavor,
@@ -31,6 +32,7 @@ const REPORT_CALLBACK_PREFIX = 'report:';
 const ACCOUNT_CALLBACK_PREFIX = 'reportaccount:';
 const MODE_CALLBACK_PREFIX = 'reportmode:';
 const INTERVAL_CALLBACK_PREFIX = 'reportinterval:';
+
 
 const TRADE_CONVERSATION_ID = 'trade';
 // Display (camelCase) names shown in `/help` and usage errors. grammY
@@ -332,6 +334,14 @@ export class TelegramPlatform implements MessagingPlatform {
 
   constructor(botToken: string, ownerIds?: string) {
     this.#bot = new Bot<TradeContext>(botToken);
+
+    // @see https://grammy.dev/plugins/auto-retry
+    this.#bot.api.config.use(
+      autoRetry({
+        maxRetryAttempts: Infinity,
+        maxDelaySeconds: 120,
+      })
+    );
     // Filter out empty entries so whitespace- or comma-only inputs (e.g. " " or ",")
     // collapse to an empty list and are treated as open mode, not as a list of empty IDs.
     this.#ownerIds = ownerIds
@@ -775,12 +785,22 @@ export class TelegramPlatform implements MessagingPlatform {
   async sendMessage(userId: string, text: string): Promise<void> {
     const chatId = userId.replace(PLATFORM_PREFIX, '');
     for (const chunk of splitForTelegram(text)) {
+      // If our markdown→HTML converter throws (bug in the converter, malformed
+      // input we didn't anticipate), fall back to plaintext so the user still
+      // receives the message. API-side failures (transport, Telegram parse
+      // rejection, rate limit) are NOT caught here — `@grammyjs/auto-retry`
+      // handles transients at the API layer, anything it can't recover from
+      // propagates to the caller.
+      let html: string;
       try {
-        await this.#bot.api.sendMessage(chatId, markdownToTelegramHtml(chunk), {parse_mode: 'HTML'});
+        html = markdownToTelegramHtml(chunk);
       } catch (error) {
-        logger.warn({err: error}, 'Falling back to plaintext after markdown-to-HTML render failure');
+        logger.warn({err: error}, 'Markdown-to-HTML render failed, sending plaintext...');
         await this.#bot.api.sendMessage(chatId, chunk);
+        continue;
       }
+
+      await this.#bot.api.sendMessage(chatId, html, {parse_mode: 'HTML'});
     }
   }
 

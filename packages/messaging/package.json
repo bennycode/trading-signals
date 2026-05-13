@@ -3,6 +3,7 @@
     "url": "https://github.com/bennycode/trading-signals/issues"
   },
   "dependencies": {
+    "@grammyjs/auto-retry": "^2.0.2",
     "@grammyjs/conversations": "^2.1.1",
     "@typedtrader/exchange": "0.2.5",
     "@types/moment-duration-format": "2.2.7",
