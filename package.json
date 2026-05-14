@@ -39,10 +39,7 @@
     "follow-redirects": ">=1.15.12",
     "postcss": ">=8.5.10",
     "tar": ">=7.5.11",
-    "yaml": ">=2.8.3",
-    "nx": {
-      "brace-expansion": ">=4.0.1"
-    }
+    "yaml": ">=2.8.3"
   },
   "workspaces": {
     "packages": [
