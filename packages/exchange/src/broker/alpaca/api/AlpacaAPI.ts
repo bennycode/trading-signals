@@ -27,7 +27,6 @@ export class AlpacaAPI {
 
     const retryConfig: Parameters<typeof axiosRetry>[1] = {
       // Capped so a sustained 429 or network outage can't hang a request forever.
-      // With the linear backoff below, 20 retries spans at most ~3.5 minutes.
       retries: 20,
       retryCondition: error => {
         // Alpaca Error Code 40310100 typically means your order was forbidden by Alpaca's system because it would trigger a Pattern Day Trader (PDT) violation.
