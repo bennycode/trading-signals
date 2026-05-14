@@ -84,13 +84,7 @@ export function makeAccountEditWizard(deps: {
     const result = await conversation.external(async () => {
       try {
         const client = getBrokerClient({exchangeId: account.exchange, apiKey, apiSecret, isPaper: account.isPaper});
-        // 10s timeout guards against the underlying Alpaca HTTP client's
-        // Infinity retry loop on network errors / 429s — without it a flaky
-        // validation could hang the wizard forever.
-        await Promise.race([
-          client.getTime(),
-          new Promise<never>((_, reject) => setTimeout(() => reject(new Error('Validation timed out after 10s')), 10_000)),
-        ]);
+        await client.getTime();
         Account.update(account.id, {apiKey, apiSecret});
         return {ok: true as const};
       } catch (error) {
