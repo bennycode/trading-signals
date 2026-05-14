@@ -1,5 +1,6 @@
 import axios, {type AxiosError} from 'axios';
 import axiosRetry from 'axios-retry';
+import {ms} from 'ms';
 import {AccountSchema} from './schema/AccountSchema.js';
 import {AssetSchema} from './schema/AssetSchema.js';
 import {BarsResponseSchema, LatestBarsResponseSchema} from './schema/BarSchema.js';
@@ -38,7 +39,7 @@ export class AlpacaAPI {
         return axiosRetry.isNetworkError(error) || error.response?.status === 429;
       },
       retryDelay: retryCount => {
-        return retryCount * 1_000;
+        return retryCount * ms('1s');
       },
     };
 
