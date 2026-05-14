@@ -58,6 +58,8 @@ export function makeAccountEditWizard(deps: {
     const apiSecretChatId = apiSecretCtx.msg.chat.id;
     const apiSecretMessageId = apiSecretCtx.msg.message_id;
     if (apiSecret.startsWith('/')) {
+      // Also delete the already-received API key message — it carries a real credential.
+      await ctx.api.deleteMessage(apiKeyChatId, apiKeyMessageId).catch(() => {});
       await ctx.api.deleteMessage(apiSecretChatId, apiSecretMessageId).catch(() => {});
       await ctx.reply('Wizard cancelled. Resend your command to start fresh.');
       return;
