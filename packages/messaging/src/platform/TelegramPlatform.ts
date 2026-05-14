@@ -379,7 +379,15 @@ export class TelegramPlatform implements MessagingPlatform {
     // /cancel command could never fire while any wizard was active.
     this.#bot.use(createConversation(tradeWizard, {id: TRADE_CONVERSATION_ID, parallel: true}));
     this.#bot.use(createConversation(makeAccountAddWizard(), {id: ACCOUNT_ADD_WIZARD_ID, parallel: true}));
-    this.#bot.use(createConversation(makeAccountEditWizard(), {id: ACCOUNT_EDIT_WIZARD_ID, parallel: true}));
+    this.#bot.use(
+      createConversation(
+        makeAccountEditWizard({
+          strategyMonitor: () => this.#strategyMonitor,
+          watchMonitor: () => this.#watchMonitor,
+        }),
+        {id: ACCOUNT_EDIT_WIZARD_ID, parallel: true}
+      )
+    );
     this.#bot.use(
       createConversation(makeWatchAddWizard({watchMonitor: () => this.#watchMonitor}), {
         id: WATCH_ADD_WIZARD_ID,

@@ -1,13 +1,17 @@
 import {getBrokerClient} from '@typedtrader/exchange';
 import {Account} from '../../database/models/Account.js';
 import {logger} from '../../logger.js';
+import {restartAccountSessions, type StrategyMonitor, type WatchMonitor} from '../../service/index.js';
 import {inlineKeyboard, type InlineButton, type WizardContext, type WizardConversation} from './shared.js';
 
 export interface AccountEditWizardArgs {
   userId: string;
 }
 
-export function makeAccountEditWizard() {
+export function makeAccountEditWizard(deps: {
+  strategyMonitor: () => StrategyMonitor | undefined;
+  watchMonitor: () => WatchMonitor | undefined;
+}) {
   return async function accountEditWizard(
     conversation: WizardConversation,
     ctx: WizardContext,
@@ -100,6 +104,9 @@ export function makeAccountEditWizard() {
 
     if (result.ok) {
       await ctx.reply(`Account "${account.name}" (ID: ${account.id}) updated successfully. Connection test passed.`);
+      // Restart the account's running watches and strategies so they reconnect with the new
+      // credentials. Strategies persist their state before stopping.
+      await conversation.external(() => restartAccountSessions(account.id, deps.strategyMonitor(), deps.watchMonitor()));
     } else {
       await ctx.reply(`Error updating account: ${result.error}`);
     }
