@@ -36,9 +36,12 @@
   "overrides": {
     "axios": ">=1.14.0",
     "esbuild": ">=0.25.0",
+    "follow-redirects": ">=1.15.12",
+    "postcss": ">=8.5.10",
     "tar": ">=7.5.11",
-    "@esbuild-kit/core-utils": {
-      "esbuild": ">=0.25.0"
+    "yaml": ">=2.8.3",
+    "nx": {
+      "brace-expansion": ">=4.0.1"
     }
   },
   "workspaces": {
