@@ -1,4 +1,4 @@
-import {eq, and, asc} from 'drizzle-orm';
+import {eq, and, asc, sql} from 'drizzle-orm';
 import {db} from '../initializeDatabase.js';
 import {accounts, Account as AccountType, NewAccount} from '../schema.js';
 
@@ -33,6 +33,15 @@ export class Account {
 
   static findAllOrderedById(): AccountType[] {
     return db.select().from(accounts).orderBy(asc(accounts.id)).all();
+  }
+
+  static update(id: number, data: Partial<AccountCreationAttributes>): AccountType | undefined {
+    return db
+      .update(accounts)
+      .set({...data, updatedAt: sql`CURRENT_TIMESTAMP`})
+      .where(eq(accounts.id, id))
+      .returning()
+      .get();
   }
 
   static destroy(id: number): void {

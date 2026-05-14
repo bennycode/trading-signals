@@ -1,5 +1,6 @@
 import {
   accountAdd,
+  accountEdit,
   accountList,
   accountRemove,
   accountTime,
@@ -42,6 +43,14 @@ function registerCommands(platform: MessagingPlatform, monitors: Monitors): void
 
   platform.registerCommand('accountAdd', async ctx => {
     const result = await accountAdd(ctx.content, ctx.senderId);
+
+    if (result) {
+      await ctx.reply(result);
+    }
+  });
+
+  platform.registerCommand('accountEdit', async ctx => {
+    const result = await accountEdit(ctx.content, ctx.senderId);
 
     if (result) {
       await ctx.reply(result);
