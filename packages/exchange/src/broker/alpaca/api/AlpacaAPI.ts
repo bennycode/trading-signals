@@ -1,5 +1,6 @@
 import axios, {type AxiosError} from 'axios';
 import axiosRetry from 'axios-retry';
+import {ms} from 'ms';
 import {AccountSchema} from './schema/AccountSchema.js';
 import {AssetSchema} from './schema/AssetSchema.js';
 import {BarsResponseSchema, LatestBarsResponseSchema} from './schema/BarSchema.js';
@@ -25,20 +26,21 @@ export class AlpacaAPI {
     };
 
     const retryConfig: Parameters<typeof axiosRetry>[1] = {
-      retries: Infinity,
+      retries: 20,
       retryCondition: error => {
         // Alpaca Error Code 40310100 typically means your order was forbidden by Alpaca's system because it would trigger a Pattern Day Trader (PDT) violation.
         if (hasResponseCode(error) && error.response?.data.code === 40310100) {
           return false;
         }
-        // account is not allowed to short
+        // Account is not allowed to short (you must have $2,000 or more)
+        // @see https://docs.alpaca.markets/us/docs/margin-and-short-selling
         if (hasResponseCode(error) && error.response?.data.code === 40310000) {
           return false;
         }
         return axiosRetry.isNetworkError(error) || error.response?.status === 429;
       },
       retryDelay: retryCount => {
-        return retryCount * 1_000;
+        return retryCount * ms('1s');
       },
     };
 
