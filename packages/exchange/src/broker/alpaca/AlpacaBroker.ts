@@ -1,4 +1,5 @@
 import {randomUUID} from 'node:crypto';
+import axios from 'axios';
 import Big from 'big.js';
 import {ms} from 'ms';
 import {AlpacaBrokerMapper} from './AlpacaBrokerMapper.js';
@@ -28,6 +29,20 @@ import {AlpacaAPI} from './api/AlpacaAPI.js';
 import {PositionSide} from './api/schema/PositionSchema.js';
 import {alpacaTradingWebSocket, type AlpacaTradingConnection} from './AlpacaTradingWebSocket.js';
 import {TradeUpdateEvent, type TradeUpdateMessage} from './api/schema/TradingStreamSchema.js';
+
+/**
+ * An open order can fill (or be canceled) between fetching it and issuing the cancel. Alpaca then
+ * responds with HTTP 422 "order is already in \"filled\" state" (or "canceled", "expired", ...).
+ */
+function isOrderAlreadyInactiveError(error: unknown): boolean {
+  if (!axios.isAxiosError(error) || error.response?.status !== 422) {
+    return false;
+  }
+  const data = error.response.data;
+  return (
+    !!data && typeof data === 'object' && 'message' in data && typeof data.message === 'string' && data.message.includes('already in')
+  );
+}
 
 export class AlpacaBroker extends Broker implements MarketDataSource {
   readonly #alpacaAPI: AlpacaAPI;
@@ -257,7 +272,14 @@ export class AlpacaBroker extends Broker implements MarketDataSource {
   }
 
   async cancelOrderById(_pair: TradingPair, orderId: string): Promise<void> {
-    await this.#alpacaAPI.deleteOrder(orderId);
+    try {
+      await this.#alpacaAPI.deleteOrder(orderId);
+    } catch (error) {
+      // The order is no longer open, which is the outcome a cancel aims for — treat it as success.
+      if (!isOrderAlreadyInactiveError(error)) {
+        throw error;
+      }
+    }
   }
 
   /** @see https://docs.alpaca.markets/reference/getallorders */
