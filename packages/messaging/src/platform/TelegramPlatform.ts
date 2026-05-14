@@ -20,10 +20,12 @@ import type {ReportScheduler, StrategyMonitor, WatchMonitor} from '../service/in
 import {logger} from '../logger.js';
 import {
   ACCOUNT_ADD_WIZARD_ID,
+  ACCOUNT_EDIT_WIZARD_ID,
   STRATEGY_ADD_WIZARD_ID,
   WATCH_ADD_WIZARD_ID,
 } from './wizards/shared.js';
 import {makeAccountAddWizard} from './wizards/accountAddWizard.js';
+import {makeAccountEditWizard} from './wizards/accountEditWizard.js';
 import {makeWatchAddWizard} from './wizards/watchAddWizard.js';
 import {makeStrategyAddWizard} from './wizards/strategyAddWizard.js';
 
@@ -377,6 +379,7 @@ export class TelegramPlatform implements MessagingPlatform {
     // /cancel command could never fire while any wizard was active.
     this.#bot.use(createConversation(tradeWizard, {id: TRADE_CONVERSATION_ID, parallel: true}));
     this.#bot.use(createConversation(makeAccountAddWizard(), {id: ACCOUNT_ADD_WIZARD_ID, parallel: true}));
+    this.#bot.use(createConversation(makeAccountEditWizard(), {id: ACCOUNT_EDIT_WIZARD_ID, parallel: true}));
     this.#bot.use(
       createConversation(makeWatchAddWizard({watchMonitor: () => this.#watchMonitor}), {
         id: WATCH_ADD_WIZARD_ID,
@@ -445,6 +448,10 @@ export class TelegramPlatform implements MessagingPlatform {
     // account/watch/strategy adds use conversations-based wizards
     if (lowerNames.includes('accountadd')) {
       this.#registerWizardCommand('accountadd', ACCOUNT_ADD_WIZARD_ID);
+      return;
+    }
+    if (lowerNames.includes('accountedit')) {
+      this.#registerWizardCommand('accountedit', ACCOUNT_EDIT_WIZARD_ID);
       return;
     }
     if (lowerNames.includes('watchadd')) {

@@ -14,6 +14,7 @@ export function inlineKeyboard(rows: InlineButton[][]) {
 }
 
 export const ACCOUNT_ADD_WIZARD_ID = 'accountAdd';
+export const ACCOUNT_EDIT_WIZARD_ID = 'accountEdit';
 export const WATCH_ADD_WIZARD_ID = 'watchAdd';
 export const STRATEGY_ADD_WIZARD_ID = 'strategyAdd';
 
