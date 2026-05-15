@@ -6,7 +6,7 @@ import {BarsResponseSchema, LatestBarsResponseSchema} from './schema/BarSchema.j
 import {ClockSchema} from './schema/ClockSchema.js';
 import {OrderSchema, type AlpacaAssetClass} from './schema/OrderSchema.js';
 import {PositionSchema} from './schema/PositionSchema.js';
-import {attachCredentialRedaction} from './redactCredentials.js';
+import {simplifyError} from './redactCredentials.js';
 import {SnapshotsResponseSchema} from './schema/SnapshotSchema.js';
 import {z} from 'zod';
 
@@ -48,7 +48,7 @@ export class AlpacaAPI {
       headers,
     });
     axiosRetry(this.#tradingClient, retryConfig);
-    attachCredentialRedaction(this.#tradingClient, ['APCA-API-KEY-ID', 'APCA-API-SECRET-KEY']);
+    simplifyError(this.#tradingClient);
 
     // @see https://docs.alpaca.markets/us/docs/market-data-faq#checklist-for-broker-partners
     this.#marketDataClient = axios.create({
@@ -56,7 +56,7 @@ export class AlpacaAPI {
       headers,
     });
     axiosRetry(this.#marketDataClient, retryConfig);
-    attachCredentialRedaction(this.#marketDataClient, ['APCA-API-KEY-ID', 'APCA-API-SECRET-KEY']);
+    simplifyError(this.#marketDataClient);
   }
 
   /** @see https://docs.alpaca.markets/reference/get-v2-clock */
