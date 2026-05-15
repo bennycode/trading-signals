@@ -59,6 +59,7 @@ vi.mock('./AlpacaTradingWebSocket.js', () => ({
 // Import after mocking
 const {AlpacaBroker} = await import('./AlpacaBroker.js');
 const {AlpacaMarketData} = await import('./AlpacaMarketData.js');
+const {SimplifiedHttpError} = await import('../../util/SimplifiedHttpError.js');
 
 describe.sequential('AlpacaBroker', () => {
   let exchange: InstanceType<typeof AlpacaBroker>;
@@ -351,6 +352,32 @@ describe.sequential('AlpacaBroker', () => {
       expect(mockMethods.deleteOrder).toHaveBeenCalledTimes(2);
       expect(mockMethods.deleteOrder).toHaveBeenCalledWith('open-1');
       expect(mockMethods.deleteOrder).toHaveBeenCalledWith('open-2');
+    });
+
+    it('ignores orders that filled between fetching and canceling them', async () => {
+      mockMethods.getOrders.mockResolvedValue([{id: 'open-1'}]);
+      mockMethods.deleteOrder.mockRejectedValue(
+        new SimplifiedHttpError({
+          data: {code: 42210000, message: 'order is already in "filled" state'},
+          status: 422,
+        })
+      );
+
+      const pair = new TradingPair('SHOP', 'USD');
+      const canceledIds = await exchange.cancelOpenOrders(pair);
+
+      expect(canceledIds).toEqual(['open-1']);
+    });
+
+    it('rethrows unexpected cancellation errors', async () => {
+      mockMethods.getOrders.mockResolvedValue([{id: 'open-1'}]);
+      mockMethods.deleteOrder.mockRejectedValue(
+        new SimplifiedHttpError({data: {message: 'internal server error'}, status: 500})
+      );
+
+      const pair = new TradingPair('SHOP', 'USD');
+
+      await expect(exchange.cancelOpenOrders(pair)).rejects.toThrow('500 Unknown Error');
     });
   });
 

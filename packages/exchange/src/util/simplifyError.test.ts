@@ -1,6 +1,7 @@
 import axios, {AxiosError, AxiosHeaders} from 'axios';
 import {describe, expect, it} from 'vitest';
 import {simplifyError} from './simplifyError.js';
+import {SimplifiedHttpError} from './SimplifiedHttpError.js';
 
 function createClientThatFailsWith(error: AxiosError) {
   const client = axios.create();
@@ -28,6 +29,29 @@ describe('simplifyError', () => {
     simplifyError(client);
 
     await expect(client.get('/whatever')).rejects.toBe(original);
+  });
+
+  it('exposes status, data and url on the rejected error so callers can introspect', async () => {
+    const client = createClientThatFailsWith(
+      buildAxiosError({
+        config: {headers: new AxiosHeaders(), url: 'https://api.alpaca.markets/v2/orders/abc'},
+        response: {
+          config: {headers: new AxiosHeaders()},
+          data: {code: 42210000, message: 'order is already in "filled" state'},
+          headers: {},
+          request: {res: {responseUrl: 'https://api.alpaca.markets/v2/orders/abc'}},
+          status: 422,
+          statusText: 'Unprocessable Entity',
+        },
+      })
+    );
+
+    await expect(client.get('/v2/orders/abc')).rejects.toMatchObject({
+      data: {code: 42210000, message: 'order is already in "filled" state'},
+      status: 422,
+      url: 'https://api.alpaca.markets/v2/orders/abc',
+    });
+    await expect(client.get('/v2/orders/abc')).rejects.toBeInstanceOf(SimplifiedHttpError);
   });
 
   it('does not leak credential headers via the rejected error', async () => {
