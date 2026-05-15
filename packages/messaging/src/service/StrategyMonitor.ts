@@ -97,7 +97,7 @@ export class StrategyMonitor {
       pendingSave = true;
       queueMicrotask(() => {
         pendingSave = false;
-        this.#persistStrategyState(row.id, strategy);
+        this.#persistStrategy(row.id, strategy);
       });
     };
 
@@ -167,7 +167,7 @@ export class StrategyMonitor {
         continue;
       }
       try {
-        this.#persistStrategyState(row.id, active.strategy);
+        this.#persistStrategy(row.id, active.strategy);
         await active.session.stop({cancelOpenOrders: false});
         this.#sessions.delete(row.id);
 
@@ -182,7 +182,7 @@ export class StrategyMonitor {
     }
   }
 
-  #persistStrategyState(strategyId: number, strategy: TradingStrategy): void {
+  #persistStrategy(strategyId: number, strategy: TradingStrategy): void {
     if (strategy.state) {
       Strategy.updateState(strategyId, JSON.stringify(strategy.state));
     }

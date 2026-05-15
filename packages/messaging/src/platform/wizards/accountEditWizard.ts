@@ -1,4 +1,4 @@
-import {getBrokerClient} from '@typedtrader/exchange';
+import {getAuthenticatedBrokerClient} from '@typedtrader/exchange';
 import {Account} from '../../database/models/Account.js';
 import {logger} from '../../logger.js';
 import {restartAccountSessions, type StrategyMonitor, type WatchMonitor} from '../../service/index.js';
@@ -58,7 +58,6 @@ export function makeAccountEditWizard(deps: {
     const apiSecretChatId = apiSecretCtx.msg.chat.id;
     const apiSecretMessageId = apiSecretCtx.msg.message_id;
     if (apiSecret.startsWith('/')) {
-      // Also delete the already-received API key message — it carries a real credential.
       await ctx.api.deleteMessage(apiKeyChatId, apiKeyMessageId).catch(() => {});
       await ctx.api.deleteMessage(apiSecretChatId, apiSecretMessageId).catch(() => {});
       await ctx.reply('Wizard cancelled. Resend your command to start fresh.');
@@ -85,23 +84,18 @@ export function makeAccountEditWizard(deps: {
 
     const result = await conversation.external(async () => {
       try {
-        const client = getBrokerClient({exchangeId: account.exchange, apiKey, apiSecret, isPaper: account.isPaper});
-        await client.getTime();
+        await getAuthenticatedBrokerClient({exchangeId: account.exchange, apiKey, apiSecret, isPaper: account.isPaper});
         Account.update(account.id, {apiKey, apiSecret});
         return {ok: true as const};
       } catch (error) {
-        // Log ONLY the message — the raw axios error carries the API key
-        // and secret in its request.headers / config.headers fields.
         const message = error instanceof Error ? error.message : 'Unknown error';
-        logger.error({message}, 'accountEdit wizard failed');
+        logger.error({err: error}, 'accountEdit wizard failed');
         return {ok: false as const, error: message};
       }
     });
 
     if (result.ok) {
       await ctx.reply(`Account "${account.name}" (ID: ${account.id}) updated successfully. Connection test passed.`);
-      // Restart the account's running watches and strategies so they reconnect with the new
-      // credentials. Strategies persist their state before stopping.
       await conversation.external(() => restartAccountSessions(account.id, deps.strategyMonitor(), deps.watchMonitor()));
     } else {
       await ctx.reply(`Error updating account: ${result.error}`);

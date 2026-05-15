@@ -1,4 +1,4 @@
-import {getBrokerClient} from '@typedtrader/exchange';
+import {getAuthenticatedBrokerClient} from '@typedtrader/exchange';
 import {Account} from '../../database/models/Account.js';
 import {assertId} from '../../validation/assertId.js';
 import {getAccountOrError} from '../../validation/getAccountOrError.js';
@@ -22,17 +22,14 @@ export async function accountEdit(request: string, userId: string): Promise<Acco
 
   try {
     const accountId = assertId(idStr);
-    // Keeps the account ID, name, exchange and isPaper mode (and therefore all linked
-    // watches, strategies and reports) — only the credentials are replaced.
     const account = getAccountOrError(userId, accountId);
 
-    const client = getBrokerClient({
+    await getAuthenticatedBrokerClient({
       exchangeId: account.exchange,
       apiKey,
       apiSecret,
       isPaper: account.isPaper,
     });
-    await client.getTime();
 
     Account.update(accountId, {apiKey, apiSecret});
 
