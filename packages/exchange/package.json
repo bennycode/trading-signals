@@ -46,6 +46,7 @@
     "access": "public"
   },
   "scripts": {
+    "alpaca:cancelOrder": "tsx src/broker/alpaca/cancelOrderDemo.ts",
     "alpaca:demo": "tsx src/broker/alpaca/demo.ts",
     "alpaca:fetchCandles": "tsx src/broker/alpaca/fetchCandles.ts",
     "trading212:buy": "tsx src/broker/trading212/demo/buy.ts",

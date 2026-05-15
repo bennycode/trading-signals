@@ -1,48 +1,52 @@
 import axios, {type AxiosInstance} from 'axios';
 
-const REDACTED = '[REDACTED]';
-
-// Headers that carry Alpaca credentials and must never reach logs.
-const SENSITIVE_HEADERS = ['APCA-API-KEY-ID', 'APCA-API-SECRET-KEY'];
-
-function redactHeaders(headers: Record<string, unknown> | null | undefined): void {
+function stripHeaders(headers: Record<string, unknown> | null | undefined, sensitiveHeaders: string[]): void {
   if (!headers) {
     return;
   }
-  for (const name of SENSITIVE_HEADERS) {
-    if (headers[name] !== undefined) {
-      headers[name] = REDACTED;
-    }
+  for (const name of sensitiveHeaders) {
+    delete headers[name];
   }
 }
 
-// Node's HTTP client keeps the raw request as a single header blob on `request._header`.
-function redactRawHeaderBlob(raw: string): string {
-  return raw.replace(new RegExp(`^(${SENSITIVE_HEADERS.join('|')}): .*$`, 'gim'), `$1: ${REDACTED}`);
+// Node's HTTP client keeps the raw request as a single header blob on `request._header`,
+// with each header on its own CRLF-terminated line ("Header-Name: value\r\n").
+function stripRawHeaderBlob(raw: string, sensitiveHeaders: string[]): string {
+  const lowercased = sensitiveHeaders.map(name => name.toLowerCase());
+  return raw
+    .split('\r\n')
+    .filter(line => {
+      const colon = line.indexOf(':');
+      if (colon === -1) {
+        return true;
+      }
+      return !lowercased.includes(line.slice(0, colon).toLowerCase());
+    })
+    .join('\r\n');
 }
 
 /**
- * Strips Alpaca API credentials from an Axios error in place. Axios attaches the request headers to
- * `config`, `response.config` and `request._header`, so an unredacted error dumped to a logger
- * leaks the API key and secret.
+ * Removes the given credential headers from an Axios error in place. Axios attaches the request
+ * headers to `config`, `response.config` and `request._header`, so an unstripped error dumped to a
+ * logger leaks the credentials.
  */
-export function redactCredentials(error: unknown): unknown {
+export function redactCredentials(error: unknown, sensitiveHeaders: string[]): unknown {
   if (!axios.isAxiosError(error)) {
     return error;
   }
-  redactHeaders(error.config?.headers);
-  redactHeaders(error.response?.config?.headers);
+  stripHeaders(error.config?.headers, sensitiveHeaders);
+  stripHeaders(error.response?.config?.headers, sensitiveHeaders);
   const request = error.request;
   if (request && typeof request._header === 'string') {
-    request._header = redactRawHeaderBlob(request._header);
+    request._header = stripRawHeaderBlob(request._header, sensitiveHeaders);
   }
   return error;
 }
 
-/** Registers a response interceptor that redacts credentials from every rejected request. */
-export function attachCredentialRedaction(client: AxiosInstance): void {
+/** Registers a response interceptor that removes the given credential headers from every rejected request. */
+export function attachCredentialRedaction(client: AxiosInstance, sensitiveHeaders: string[]): void {
   client.interceptors.response.use(
     response => response,
-    (error: unknown) => Promise.reject(redactCredentials(error))
+    (error: unknown) => Promise.reject(redactCredentials(error, sensitiveHeaders))
   );
 }

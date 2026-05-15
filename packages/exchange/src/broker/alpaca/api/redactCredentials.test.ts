@@ -28,36 +28,36 @@ describe('redactCredentials', () => {
   it('redacts credentials from the request config headers', () => {
     const error = createAxiosError();
 
-    redactCredentials(error);
+    redactCredentials(error, ['APCA-API-KEY-ID', 'APCA-API-SECRET-KEY']);
 
-    expect(error.config.headers['APCA-API-KEY-ID']).toBe('[REDACTED]');
-    expect(error.config.headers['APCA-API-SECRET-KEY']).toBe('[REDACTED]');
+    expect(error.config.headers['APCA-API-KEY-ID']).toBeUndefined();
+    expect(error.config.headers['APCA-API-SECRET-KEY']).toBeUndefined();
   });
 
   it('redacts credentials from the response config headers', () => {
     const error = createAxiosError();
 
-    redactCredentials(error);
+    redactCredentials(error, ['APCA-API-KEY-ID', 'APCA-API-SECRET-KEY']);
 
-    expect(error.response.config.headers['APCA-API-KEY-ID']).toBe('[REDACTED]');
-    expect(error.response.config.headers['APCA-API-SECRET-KEY']).toBe('[REDACTED]');
+    expect(error.response.config.headers['APCA-API-KEY-ID']).toBeUndefined();
+    expect(error.response.config.headers['APCA-API-SECRET-KEY']).toBeUndefined();
   });
 
   it('redacts credentials from the raw request header blob', () => {
     const error = createAxiosError();
 
-    redactCredentials(error);
+    redactCredentials(error, ['APCA-API-KEY-ID', 'APCA-API-SECRET-KEY']);
 
     expect(error.request._header).not.toContain(FAKE_KEY_ID);
     expect(error.request._header).not.toContain(FAKE_SECRET);
-    expect(error.request._header).toContain('APCA-API-KEY-ID: [REDACTED]');
-    expect(error.request._header).toContain('APCA-API-SECRET-KEY: [REDACTED]');
+    expect(error.request._header).not.toContain('APCA-API-KEY-ID');
+    expect(error.request._header).not.toContain('APCA-API-SECRET-KEY');
   });
 
   it('leaves non-sensitive headers untouched', () => {
     const error = createAxiosError();
 
-    redactCredentials(error);
+    redactCredentials(error, ['APCA-API-KEY-ID', 'APCA-API-SECRET-KEY']);
 
     expect(error.config.headers.Accept).toBe('application/json');
     expect(error.request._header).toContain('Accept: application/json');
@@ -66,6 +66,6 @@ describe('redactCredentials', () => {
   it('returns non-Axios errors unchanged', () => {
     const error = new Error('boom');
 
-    expect(redactCredentials(error)).toBe(error);
+    expect(redactCredentials(error, ['APCA-API-KEY-ID', 'APCA-API-SECRET-KEY'])).toBe(error);
   });
 });

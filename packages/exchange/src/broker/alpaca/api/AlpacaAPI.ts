@@ -48,7 +48,7 @@ export class AlpacaAPI {
       headers,
     });
     axiosRetry(this.#tradingClient, retryConfig);
-    attachCredentialRedaction(this.#tradingClient);
+    attachCredentialRedaction(this.#tradingClient, ['APCA-API-KEY-ID', 'APCA-API-SECRET-KEY']);
 
     // @see https://docs.alpaca.markets/us/docs/market-data-faq#checklist-for-broker-partners
     this.#marketDataClient = axios.create({
@@ -56,7 +56,7 @@ export class AlpacaAPI {
       headers,
     });
     axiosRetry(this.#marketDataClient, retryConfig);
-    attachCredentialRedaction(this.#marketDataClient);
+    attachCredentialRedaction(this.#marketDataClient, ['APCA-API-KEY-ID', 'APCA-API-SECRET-KEY']);
   }
 
   /** @see https://docs.alpaca.markets/reference/get-v2-clock */
