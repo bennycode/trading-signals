@@ -227,7 +227,7 @@ export class StrategyMonitor {
   }
 
   async #sendStartNotification(row: StrategyAttributes): Promise<void> {
-    await this.#sendToAccount(row, `Strategy ${row.id} started.`);
+    await this.#sendToAccount(row, `Strategy "${row.id}" started.`);
   }
 
   async #sendFinishNotification(row: StrategyAttributes): Promise<void> {

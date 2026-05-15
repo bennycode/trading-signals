@@ -149,7 +149,7 @@ export class WatchMonitor {
       return;
     }
 
-    await platform.sendMessage(account.userId, `Watch ${watch.id} started.`);
+    await platform.sendMessage(account.userId, `Watch "${watch.id}" started.`);
     logger.info({userId: account.userId, watchId: watch.id}, 'Watch start notification sent');
   }
 
