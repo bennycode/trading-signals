@@ -2,7 +2,7 @@ import {getAuthenticatedBrokerClient} from '@typedtrader/exchange';
 import {Account} from '../../database/models/Account.js';
 import {logger} from '../../logger.js';
 import {restartAccountSessions, type StrategyMonitor, type WatchMonitor} from '../../service/index.js';
-import {inlineKeyboard, type InlineButton, type WizardContext, type WizardConversation} from './shared.js';
+import {deleteSecretMessages, inlineKeyboard, type InlineButton, type WizardContext, type WizardConversation} from './shared.js';
 
 export interface AccountEditWizardArgs {
   userId: string;
@@ -64,21 +64,10 @@ export function makeAccountEditWizard(deps: {
       return;
     }
 
-    // Delete both secret-bearing messages. Use primitive ids + ctx.api so the
-    // external callback doesn't depend on the waitFor context objects, which
-    // have replay-time quirks when used with conversation.external.
-    await conversation.external(async () => {
-      for (const [chatId, messageId, label] of [
-        [apiKeyChatId, apiKeyMessageId, 'API key'],
-        [apiSecretChatId, apiSecretMessageId, 'API secret'],
-      ] as const) {
-        try {
-          await ctx.api.deleteMessage(chatId, messageId);
-        } catch (error) {
-          logger.warn({err: error, label}, 'accountEdit: failed to delete secret message');
-        }
-      }
-    });
+    await deleteSecretMessages(conversation, ctx, 'accountEdit', [
+      {chatId: apiKeyChatId, messageId: apiKeyMessageId, label: 'API key'},
+      {chatId: apiSecretChatId, messageId: apiSecretMessageId, label: 'API secret'},
+    ]);
 
     await ctx.reply('Validating credentials…');
 
