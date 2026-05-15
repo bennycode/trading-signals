@@ -1,4 +1,4 @@
-import axios from 'axios';
+import {SimplifiedHttpError} from '../../util/SimplifiedHttpError.js';
 import type {AlpacaAPI} from './api/AlpacaAPI.js';
 import type {TradingPair} from '../TradingPair.js';
 
@@ -19,8 +19,7 @@ export async function isAlpacaCryptoSymbol(api: AlpacaAPI, pair: TradingPair) {
     const response = await api.getCryptoBarsLatest({symbols: createAlpacaSymbol(pair, true)});
     return Object.keys(response.bars).length > 0;
   } catch (error) {
-    const status = axios.isAxiosError(error) ? error.response?.status : undefined;
-    if (status && status >= 400 && status < 500) {
+    if (error instanceof SimplifiedHttpError && error.status >= 400 && error.status < 500) {
       return false;
     }
     throw error;

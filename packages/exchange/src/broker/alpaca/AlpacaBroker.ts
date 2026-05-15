@@ -1,7 +1,7 @@
 import {randomUUID} from 'node:crypto';
-import axios from 'axios';
 import Big from 'big.js';
 import {ms} from 'ms';
+import {SimplifiedHttpError} from '../../util/SimplifiedHttpError.js';
 import {AlpacaBrokerMapper} from './AlpacaBrokerMapper.js';
 import {
   Broker,
@@ -31,17 +31,17 @@ import {alpacaTradingWebSocket, type AlpacaTradingConnection} from './AlpacaTrad
 import {TradeUpdateEvent, type TradeUpdateMessage} from './api/schema/TradingStreamSchema.js';
 
 /**
- * An open order can fill (or be canceled) between fetching it and issuing the cancel. Alpaca then
- * responds with HTTP 422 "order is already in \"filled\" state" (or "canceled", "expired", ...).
+ * Alpaca rejects to cancel already filled orders with:
+ *
+ * status: 422 Unprocessable Entity
+ * body:   {"code":42210000,"message":"order is already in \"filled\" state"}
  */
-function isOrderAlreadyInactiveError(error: unknown): boolean {
-  if (!axios.isAxiosError(error) || error.response?.status !== 422) {
+function isAlreadyFilledOrder(error: unknown): boolean {
+  if (!(error instanceof SimplifiedHttpError) || error.status !== 422) {
     return false;
   }
-  const data = error.response.data;
-  return (
-    !!data && typeof data === 'object' && 'message' in data && typeof data.message === 'string' && data.message.includes('already in')
-  );
+  const data = error.data;
+  return !!data && typeof data === 'object' && 'code' in data && data.code === 42210000;
 }
 
 export class AlpacaBroker extends Broker implements MarketDataSource {
@@ -275,8 +275,7 @@ export class AlpacaBroker extends Broker implements MarketDataSource {
     try {
       await this.#alpacaAPI.deleteOrder(orderId);
     } catch (error) {
-      // The order is no longer open, which is the outcome a cancel aims for — treat it as success.
-      if (!isOrderAlreadyInactiveError(error)) {
+      if (!isAlreadyFilledOrder(error)) {
         throw error;
       }
     }
@@ -361,14 +360,8 @@ export class AlpacaBroker extends Broker implements MarketDataSource {
    *
    * @see https://docs.alpaca.markets/docs/working-with-orders#place-new-orders
    */
-  protected override async placeOrder(
-    pair: TradingPair,
-    options: LimitOrderOptions
-  ): Promise<PendingLimitOrder>;
-  protected override async placeOrder(
-    pair: TradingPair,
-    options: MarketOrderOptions
-  ): Promise<PendingMarketOrder>;
+  protected override async placeOrder(pair: TradingPair, options: LimitOrderOptions): Promise<PendingLimitOrder>;
+  protected override async placeOrder(pair: TradingPair, options: MarketOrderOptions): Promise<PendingMarketOrder>;
   protected override async placeOrder(pair: TradingPair, options: OrderOptions): Promise<PendingOrder> {
     const isCrypto = await isAlpacaCryptoSymbol(this.#alpacaAPI, pair);
     const symbol = createAlpacaSymbol(pair, isCrypto);
@@ -415,5 +408,4 @@ export class AlpacaBroker extends Broker implements MarketDataSource {
     const order = await this.#alpacaAPI.postOrder(config);
     return AlpacaBrokerMapper.toPendingOrder(order, pair, options);
   }
-
 }
