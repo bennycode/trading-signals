@@ -26,7 +26,13 @@ import {initializeDatabase} from './database/initializeDatabase.js';
 import {logger} from './logger.js';
 import type {MessagingPlatform} from './platform/index.js';
 import {TelegramPlatform} from './platform/TelegramPlatform.js';
-import {WatchMonitor, StrategyMonitor, ReportScheduler, restartAccountSessions} from './service/index.js';
+import {
+  PlatformDispatcher,
+  ReportScheduler,
+  StrategyMonitor,
+  WatchMonitor,
+  restartAccountSessions,
+} from './service/index.js';
 
 interface Monitors {
   watchMonitor: WatchMonitor;
@@ -232,10 +238,11 @@ export async function startServer() {
     logger.warn('No messaging platforms configured. Set TELEGRAM_BOT_TOKEN to enable a platform.');
   }
 
+  const dispatcher = new PlatformDispatcher(platforms);
   const monitors: Monitors = {
-    watchMonitor: new WatchMonitor(platforms),
-    strategyMonitor: new StrategyMonitor(platforms),
-    reportScheduler: new ReportScheduler(platforms),
+    watchMonitor: new WatchMonitor(dispatcher),
+    strategyMonitor: new StrategyMonitor(dispatcher),
+    reportScheduler: new ReportScheduler(dispatcher),
   };
 
   for (const [, platform] of platforms) {
