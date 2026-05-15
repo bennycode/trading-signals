@@ -34,7 +34,7 @@ import {TradeUpdateEvent, type TradeUpdateMessage} from './api/schema/TradingStr
  * Alpaca rejects to cancel already filled orders with:
  *
  * status: 422 Unprocessable Entity
- * body:   {"code":42210000,"message":"order is already in \"filled\" state"}
+ * body: {"code":42210000,"message":"order is already in \"filled\" state"}
  */
 function isAlreadyFilledOrder(error: unknown): boolean {
   if (!(error instanceof SimplifiedHttpError) || error.status !== 422) {
