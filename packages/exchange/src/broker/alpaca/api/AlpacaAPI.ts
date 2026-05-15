@@ -7,6 +7,7 @@ import {BarsResponseSchema, LatestBarsResponseSchema} from './schema/BarSchema.j
 import {ClockSchema} from './schema/ClockSchema.js';
 import {OrderSchema, type AlpacaAssetClass} from './schema/OrderSchema.js';
 import {PositionSchema} from './schema/PositionSchema.js';
+import {simplifyError} from '../../../util/simplifyError.js';
 import {SnapshotsResponseSchema} from './schema/SnapshotSchema.js';
 import {z} from 'zod';
 
@@ -49,14 +50,15 @@ export class AlpacaAPI {
       headers,
     });
     axiosRetry(this.#tradingClient, retryConfig);
+    simplifyError(this.#tradingClient);
 
-    // Market data is read-only — paper trading keys authenticate against the production data endpoint.
-    // The sandbox data endpoint (data.sandbox.alpaca.markets) requires separate sandbox-specific credentials.
+    // @see https://docs.alpaca.markets/us/docs/market-data-faq#checklist-for-broker-partners
     this.#marketDataClient = axios.create({
-      baseURL: 'https://data.alpaca.markets',
+      baseURL: options.usePaperTrading ? 'https://data.sandbox.alpaca.markets' : 'https://data.alpaca.markets',
       headers,
     });
     axiosRetry(this.#marketDataClient, retryConfig);
+    simplifyError(this.#marketDataClient);
   }
 
   /** @see https://docs.alpaca.markets/reference/get-v2-clock */
