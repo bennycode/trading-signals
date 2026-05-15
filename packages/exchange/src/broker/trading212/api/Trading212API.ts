@@ -1,6 +1,7 @@
 import axios, {type AxiosDefaults, type AxiosError, type AxiosInstance} from 'axios';
 import axiosRetry from 'axios-retry';
 import {z} from 'zod';
+import {simplifyError} from '../../../util/simplifyError.js';
 import {AccountCashSchema, AccountInfoSchema} from './schema/AccountSchema.js';
 import {HistoryOrderPageSchema, type HistoryOrder} from './schema/HistoryOrderSchema.js';
 import {InstrumentSchema} from './schema/InstrumentSchema.js';
@@ -86,6 +87,8 @@ export class Trading212API {
       },
       retryDelay: getRetryDelay,
     });
+
+    simplifyError(this.#httpClient);
   }
 
   get defaults(): AxiosDefaults {
