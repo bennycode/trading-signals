@@ -6,7 +6,7 @@ import {BarsResponseSchema, LatestBarsResponseSchema} from './schema/BarSchema.j
 import {ClockSchema} from './schema/ClockSchema.js';
 import {OrderSchema, type AlpacaAssetClass} from './schema/OrderSchema.js';
 import {PositionSchema} from './schema/PositionSchema.js';
-import {simplifyError} from './redactCredentials.js';
+import {simplifyError} from './simplifyError.js';
 import {SnapshotsResponseSchema} from './schema/SnapshotSchema.js';
 import {z} from 'zod';
 
