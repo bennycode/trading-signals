@@ -47,6 +47,7 @@ vi.mock('../database/models/Strategy.js', () => ({
 }));
 
 const {StrategyMonitor, formatStrategyMessage} = await import('./StrategyMonitor.js');
+const {PlatformDispatcher} = await import('./PlatformDispatcher.js');
 
 function createMockPlatform(): MessagingPlatform {
   return {
@@ -121,7 +122,7 @@ describe('StrategyMonitor.restartForAccount', () => {
   });
 
   it('persists state, stops without cancelling orders, and re-subscribes an active session', async () => {
-    const monitor = new StrategyMonitor(new Map());
+    const monitor = new StrategyMonitor(new PlatformDispatcher(new Map()));
     const row = createStrategyRow();
     await monitor.subscribeToStrategy(row);
     expect(TradingSessionMock).toHaveBeenCalledTimes(1);
@@ -140,7 +141,7 @@ describe('StrategyMonitor.restartForAccount', () => {
   });
 
   it('skips rows that have no active session', async () => {
-    const monitor = new StrategyMonitor(new Map());
+    const monitor = new StrategyMonitor(new PlatformDispatcher(new Map()));
     mockStrategyModel.findByAccountIds.mockReturnValue([createStrategyRow({id: 99})]);
 
     await monitor.restartForAccount(7);

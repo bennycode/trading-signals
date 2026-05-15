@@ -1,21 +1,21 @@
 import {TradingPair, Broker, Candle, MarketDataSource, getBrokerClient} from '@typedtrader/exchange';
-import type {MessagingPlatform} from '../platform/MessagingPlatform.js';
 import {Account} from '../database/models/Account.js';
 import {Watch, WatchAttributes} from '../database/models/Watch.js';
 import {logger} from '../logger.js';
+import {PlatformDispatcher} from './PlatformDispatcher.js';
 
 interface ActiveSubscription {
   watchId: number;
   topicId: string;
-  exchange: Broker & MarketDataSource;
+  broker: Broker & MarketDataSource;
 }
 
 export class WatchMonitor {
-  #platforms: Map<string, MessagingPlatform>;
+  #dispatcher: PlatformDispatcher;
   #subscriptions: Map<number, ActiveSubscription> = new Map();
 
-  constructor(platforms: Map<string, MessagingPlatform>) {
-    this.#platforms = platforms;
+  constructor(dispatcher: PlatformDispatcher) {
+    this.#dispatcher = dispatcher;
   }
 
   /**
@@ -26,6 +26,7 @@ export class WatchMonitor {
     const watches = Watch.findAllOrderedById();
     for (const watch of watches) {
       await this.subscribeToWatch(watch);
+      await this.#dispatcher.sendToAccount(watch.accountId, `Watch "${watch.id}" started.`);
     }
   }
 
@@ -34,7 +35,7 @@ export class WatchMonitor {
    */
   stop(): void {
     for (const subscription of this.#subscriptions.values()) {
-      subscription.exchange.unwatchCandles(subscription.topicId);
+      subscription.broker.unwatchCandles(subscription.topicId);
     }
     this.#subscriptions.clear();
   }
@@ -90,7 +91,7 @@ export class WatchMonitor {
     this.#subscriptions.set(watch.id, {
       watchId: watch.id,
       topicId,
-      exchange,
+      broker: exchange,
     });
 
     logger.info({watchId: watch.id, pair: watch.pair}, 'Subscribed to watch');
@@ -102,8 +103,8 @@ export class WatchMonitor {
   unsubscribeFromWatch(watchId: number): void {
     const subscription = this.#subscriptions.get(watchId);
     if (subscription) {
-      subscription.exchange.unwatchCandles(subscription.topicId);
-      subscription.exchange.removeAllListeners(subscription.topicId);
+      subscription.broker.unwatchCandles(subscription.topicId);
+      subscription.broker.removeAllListeners(subscription.topicId);
       this.#subscriptions.delete(watchId);
       logger.info({watchId}, 'Unsubscribed from watch');
     }
@@ -137,12 +138,6 @@ export class WatchMonitor {
   async #sendAlert(watch: WatchAttributes, currentPrice: number): Promise<void> {
     const {counter} = TradingPair.fromString(watch.pair, ',');
 
-    const account = Account.findByPk(watch.accountId);
-
-    if (!account) {
-      logger.warn({accountId: watch.accountId, watchId: watch.id}, 'Account not found when sending alert');
-      return;
-    }
     const dirSymbol = watch.thresholdDirection === 'up' ? '+' : '-';
     const thresholdDisplay =
       watch.thresholdType === 'percent'
@@ -156,16 +151,6 @@ export class WatchMonitor {
 
     const message = `Price Alert Triggered!\n\nPair: ${watch.pair}\nBaseline: ${watch.baselinePrice} ${counter}\nAlert price: ${watch.alertPrice} ${counter}\nCurrent: ${currentPrice} ${counter}\nDiff: ${diffDisplay}\nThreshold: ${thresholdDisplay}\n\nThis watch has been automatically removed.`;
 
-    const platformPrefix = account.userId.split(':')[0];
-    const platform = this.#platforms.get(platformPrefix);
-
-    if (!platform) {
-      logger.warn({platformPrefix, watchId: watch.id}, 'No platform found for alert');
-      return;
-    }
-
-    await platform.sendMessage(account.userId, message);
-
-    logger.info({userId: account.userId, watchId: watch.id}, 'Alert sent');
+    await this.#dispatcher.sendToAccount(watch.accountId, message);
   }
 }

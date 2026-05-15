@@ -1,7 +1,7 @@
 import {createReport} from 'trading-strategies';
-import type {MessagingPlatform} from '../platform/MessagingPlatform.js';
 import {Report, type ReportAttributes} from '../database/models/Report.js';
 import {logger} from '../logger.js';
+import {PlatformDispatcher} from './PlatformDispatcher.js';
 
 interface ScheduledReport {
   reportId: number;
@@ -9,11 +9,11 @@ interface ScheduledReport {
 }
 
 export class ReportScheduler {
-  #platforms: Map<string, MessagingPlatform>;
+  #dispatcher: PlatformDispatcher;
   #scheduled: Map<number, ScheduledReport> = new Map();
 
-  constructor(platforms: Map<string, MessagingPlatform>) {
-    this.#platforms = platforms;
+  constructor(dispatcher: PlatformDispatcher) {
+    this.#dispatcher = dispatcher;
   }
 
   async start(): Promise<void> {
@@ -82,15 +82,9 @@ export class ReportScheduler {
     const report = createReport(row.reportName, config);
     const result = await report.run();
 
-    const platformPrefix = row.userId.split(':')[0];
-    const platform = this.#platforms.get(platformPrefix);
-
-    if (!platform) {
-      logger.warn({platformPrefix, reportId: row.id}, 'No platform found for report');
-      return;
+    const sent = await this.#dispatcher.sendToUser(row.userId, result);
+    if (sent) {
+      logger.info({reportId: row.id, userId: row.userId}, 'Report result sent');
     }
-
-    await platform.sendMessage(row.userId, result);
-    logger.info({reportId: row.id, userId: row.userId}, 'Report result sent');
   }
 }

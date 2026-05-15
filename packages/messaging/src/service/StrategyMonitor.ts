@@ -2,10 +2,10 @@ import {TradingPair, TradingSession, getBrokerClient} from '@typedtrader/exchang
 import type {Fill} from '@typedtrader/exchange';
 import {createStrategy} from 'trading-strategies';
 import type {Strategy as TradingStrategy} from 'trading-strategies';
-import type {MessagingPlatform} from '../platform/MessagingPlatform.js';
 import {Account} from '../database/models/Account.js';
 import {Strategy, type StrategyAttributes} from '../database/models/Strategy.js';
 import {logger} from '../logger.js';
+import {PlatformDispatcher} from './PlatformDispatcher.js';
 
 interface ActiveSession {
   strategyId: number;
@@ -19,11 +19,11 @@ export function formatStrategyMessage(strategyName: string, pair: string, text: 
 }
 
 export class StrategyMonitor {
-  #platforms: Map<string, MessagingPlatform>;
+  #dispatcher: PlatformDispatcher;
   #sessions: Map<number, ActiveSession> = new Map();
 
-  constructor(platforms: Map<string, MessagingPlatform>) {
-    this.#platforms = platforms;
+  constructor(dispatcher: PlatformDispatcher) {
+    this.#dispatcher = dispatcher;
   }
 
   /**
@@ -34,6 +34,7 @@ export class StrategyMonitor {
     for (const row of rows) {
       try {
         await this.subscribeToStrategy(row);
+        await this.#dispatcher.sendToAccount(row.accountId, `Strategy "${row.id}" started.`);
       } catch (error) {
         logger.error({err: error, strategyId: row.id, strategyName: row.strategyName}, 'Failed to start strategy');
       }
@@ -191,42 +192,18 @@ export class StrategyMonitor {
     }
   }
 
-  /**
-   * Resolve the account + platform for a strategy row and send the message. Centralises
-   * the account lookup, prefix-based platform resolution, and warn-on-missing handling
-   * that all three notification paths share.
-   */
-  async #sendToAccount(row: StrategyAttributes, message: string): Promise<void> {
-    const account = Account.findByPk(row.accountId);
-    if (!account) {
-      logger.warn({accountId: row.accountId, strategyId: row.id}, 'Account not found for notification');
-      return;
-    }
-
-    const platformPrefix = account.userId.split(':')[0];
-    const platform = this.#platforms.get(platformPrefix);
-    if (!platform) {
-      logger.warn({platformPrefix, strategyId: row.id}, 'No platform found for notification');
-      return;
-    }
-
-    await platform.sendMessage(account.userId, message);
-
-    logger.info({userId: account.userId, strategyId: row.id}, 'Notification sent');
-  }
-
   async #sendFillNotification(row: StrategyAttributes, fill: Fill): Promise<void> {
     const message = `Order Filled!\n\nStrategy: ${row.strategyName}\nPair: ${row.pair}\nSide: ${fill.side}\nPrice: ${fill.price}\nSize: ${fill.size}\nFee: ${fill.fee} ${fill.feeAsset}\nOrder ID: ${fill.order_id}`;
-    await this.#sendToAccount(row, message);
+    await this.#dispatcher.sendToAccount(row.accountId, message);
   }
 
   async #sendStrategyMessage(row: StrategyAttributes, text: string): Promise<void> {
     const message = formatStrategyMessage(row.strategyName, row.pair, text);
-    await this.#sendToAccount(row, message);
+    await this.#dispatcher.sendToAccount(row.accountId, message);
   }
 
   async #sendFinishNotification(row: StrategyAttributes): Promise<void> {
     const message = `Strategy finished and removed.\n\nID: ${row.id}\nStrategy: ${row.strategyName}\nPair: ${row.pair}`;
-    await this.#sendToAccount(row, message);
+    await this.#dispatcher.sendToAccount(row.accountId, message);
   }
 }

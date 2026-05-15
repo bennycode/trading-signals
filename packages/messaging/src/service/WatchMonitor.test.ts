@@ -32,6 +32,7 @@ vi.mock('../database/models/Watch.js', () => ({
 }));
 
 const {WatchMonitor} = await import('./WatchMonitor.js');
+const {PlatformDispatcher} = await import('./PlatformDispatcher.js');
 
 function createMockPlatform(): MessagingPlatform {
   return {
@@ -92,7 +93,7 @@ describe('WatchMonitor.restartForAccount', () => {
   });
 
   it('tears down and recreates an active subscription from a freshly loaded row', async () => {
-    const monitor = new WatchMonitor(new Map());
+    const monitor = new WatchMonitor(new PlatformDispatcher(new Map()));
     const row = createWatchRow();
     await monitor.subscribeToWatch(row);
     expect(mockExchange.watchCandles).toHaveBeenCalledTimes(1);
@@ -110,7 +111,7 @@ describe('WatchMonitor.restartForAccount', () => {
   });
 
   it('skips watches that have no active subscription', async () => {
-    const monitor = new WatchMonitor(new Map());
+    const monitor = new WatchMonitor(new PlatformDispatcher(new Map()));
     mockWatchModel.findByAccountIds.mockReturnValue([createWatchRow({id: 99})]);
 
     await monitor.restartForAccount(7);
