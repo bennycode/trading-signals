@@ -2,17 +2,18 @@ import type {MessagingPlatform} from '../platform/MessagingPlatform.js';
 import {Account} from '../database/models/Account.js';
 import {logger} from '../logger.js';
 
+/** Platform prefix such as "telegram" */
+type PlatformPrefix = string;
+
 /**
  * Resolves the right `MessagingPlatform` for a given user and sends messages.
  *
- * User IDs are namespaced by a platform prefix (e.g. `telegram:123456`); the
- * dispatcher owns that convention plus the warn-on-missing handling that every
- * notification path shares, so monitors don't each re-implement it.
+ * User IDs are namespaced by a platform prefix (e.g. `telegram:123456`).
  */
 export class PlatformDispatcher {
-  readonly #platforms: Map<string, MessagingPlatform>;
+  readonly #platforms: Map<PlatformPrefix, MessagingPlatform>;
 
-  constructor(platforms: Map<string, MessagingPlatform>) {
+  constructor(platforms: Map<PlatformPrefix, MessagingPlatform>) {
     this.#platforms = platforms;
   }
 
