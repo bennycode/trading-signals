@@ -1,5 +1,6 @@
 import {
   accountAdd,
+  accountEdit,
   accountList,
   accountRemove,
   accountTime,
@@ -25,7 +26,7 @@ import {initializeDatabase} from './database/initializeDatabase.js';
 import {logger} from './logger.js';
 import type {MessagingPlatform} from './platform/index.js';
 import {TelegramPlatform} from './platform/TelegramPlatform.js';
-import {WatchMonitor, StrategyMonitor, ReportScheduler} from './service/index.js';
+import {WatchMonitor, StrategyMonitor, ReportScheduler, restartAccountSessions} from './service/index.js';
 
 interface Monitors {
   watchMonitor: WatchMonitor;
@@ -45,6 +46,15 @@ function registerCommands(platform: MessagingPlatform, monitors: Monitors): void
 
     if (result) {
       await ctx.reply(result);
+    }
+  });
+
+  platform.registerCommand('accountEdit', async ctx => {
+    const result = await accountEdit(ctx.content, ctx.senderId);
+    await ctx.reply(result.message);
+
+    if (result.accountId !== undefined) {
+      await restartAccountSessions(result.accountId, monitors.strategyMonitor, monitors.watchMonitor);
     }
   });
 

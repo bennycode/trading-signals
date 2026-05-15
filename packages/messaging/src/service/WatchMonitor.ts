@@ -109,6 +109,31 @@ export class WatchMonitor {
     }
   }
 
+  /**
+   * Restart every active watch subscription bound to an account. Used after the account's
+   * credentials change so subscriptions reconnect with the new keys. Watches hold no
+   * accumulated state, so the existing subscription is simply torn down and recreated from
+   * the freshly loaded row.
+   */
+  async restartForAccount(accountId: number): Promise<void> {
+    const watches = Watch.findByAccountIds([accountId]);
+    for (const watch of watches) {
+      if (!this.#subscriptions.has(watch.id)) {
+        continue;
+      }
+      try {
+        this.unsubscribeFromWatch(watch.id);
+        const freshWatch = Watch.findByPk(watch.id);
+        if (freshWatch) {
+          await this.subscribeToWatch(freshWatch);
+        }
+        logger.info({watchId: watch.id, accountId}, 'Restarted watch after account update');
+      } catch (error) {
+        logger.error({err: error, watchId: watch.id, accountId}, 'Failed to restart watch after account update');
+      }
+    }
+  }
+
   async #sendAlert(watch: WatchAttributes, currentPrice: number): Promise<void> {
     const {counter} = TradingPair.fromString(watch.pair, ',');
 

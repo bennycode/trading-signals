@@ -1,7 +1,7 @@
-import {AlpacaBroker, getBrokerClient} from '@typedtrader/exchange';
+import {AlpacaBroker, getAuthenticatedBrokerClient} from '@typedtrader/exchange';
 import {Account} from '../../database/models/Account.js';
 import {logger} from '../../logger.js';
-import {inlineKeyboard, waitForTextOrCancel, type InlineButton, type WizardContext, type WizardConversation} from './shared.js';
+import {deleteSecretMessages, inlineKeyboard, waitForTextOrCancel, type InlineButton, type WizardContext, type WizardConversation} from './shared.js';
 
 export interface AccountAddWizardArgs {
   userId: string;
@@ -64,41 +64,22 @@ export function makeAccountAddWizard() {
     const apiSecretChatId = apiSecretCtx.msg.chat.id;
     const apiSecretMessageId = apiSecretCtx.msg.message_id;
     if (apiSecret.startsWith('/')) {
+      await ctx.api.deleteMessage(apiKeyChatId, apiKeyMessageId).catch(() => {});
       await ctx.api.deleteMessage(apiSecretChatId, apiSecretMessageId).catch(() => {});
       await ctx.reply('Wizard cancelled. Resend your command to start fresh.');
       return;
     }
 
-    // Delete both secret-bearing messages. Use primitive ids + ctx.api so the
-    // external callback doesn't depend on the waitFor context objects, which
-    // have replay-time quirks when used with conversation.external.
-    await conversation.external(async () => {
-      for (const [chatId, messageId, label] of [
-        [apiKeyChatId, apiKeyMessageId, 'API key'],
-        [apiSecretChatId, apiSecretMessageId, 'API secret'],
-      ] as const) {
-        try {
-          await ctx.api.deleteMessage(chatId, messageId);
-        } catch (error) {
-          logger.warn({err: error, label}, 'accountAdd: failed to delete secret message');
-        }
-      }
-    });
+    await deleteSecretMessages(conversation, ctx, 'accountAdd', [
+      {chatId: apiKeyChatId, messageId: apiKeyMessageId, label: 'API key'},
+      {chatId: apiSecretChatId, messageId: apiSecretMessageId, label: 'API secret'},
+    ]);
 
     await ctx.reply('Validating credentials…');
 
     const result = await conversation.external(async () => {
       try {
-        const client = getBrokerClient({exchangeId: exchange, apiKey, apiSecret, isPaper});
-        // 10s timeout guards against the underlying Alpaca HTTP client's
-        // Infinity retry loop on network errors / 429s — without it a flaky
-        // validation could hang the wizard forever.
-        await Promise.race([
-          client.getTime(),
-          new Promise<never>((_, reject) =>
-            setTimeout(() => reject(new Error('Validation timed out after 10s')), 10_000)
-          ),
-        ]);
+        await getAuthenticatedBrokerClient({exchangeId: exchange, apiKey, apiSecret, isPaper});
         const account = Account.create({
           userId: args.userId,
           name,
@@ -109,10 +90,8 @@ export function makeAccountAddWizard() {
         });
         return {ok: true as const, id: account.id};
       } catch (error) {
-        // Log ONLY the message — the raw axios error carries the API key
-        // and secret in its request.headers / config.headers fields.
         const message = error instanceof Error ? error.message : 'Unknown error';
-        logger.error({message}, 'accountAdd wizard failed');
+        logger.error({err: error}, 'accountAdd wizard failed');
         return {ok: false as const, error: message};
       }
     });

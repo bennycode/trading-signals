@@ -1,5 +1,12 @@
 import type {Context} from 'grammy';
 import type {Conversation, ConversationFlavor} from '@grammyjs/conversations';
+import {logger} from '../../logger.js';
+
+export interface SecretMessage {
+  chatId: number;
+  messageId: number;
+  label: string;
+}
 
 export type WizardContext = ConversationFlavor<Context>;
 export type WizardConversation = Conversation<WizardContext, WizardContext>;
@@ -14,6 +21,7 @@ export function inlineKeyboard(rows: InlineButton[][]) {
 }
 
 export const ACCOUNT_ADD_WIZARD_ID = 'accountAdd';
+export const ACCOUNT_EDIT_WIZARD_ID = 'accountEdit';
 export const WATCH_ADD_WIZARD_ID = 'watchAdd';
 export const STRATEGY_ADD_WIZARD_ID = 'strategyAdd';
 
@@ -40,4 +48,26 @@ export async function waitForTextOrCancel(
     return {text: '', cancelled: true};
   }
   return {text, cancelled: false};
+}
+
+/**
+ * Delete secret-bearing messages from the chat. Uses primitive ids + ctx.api so the
+ * external callback doesn't depend on the waitFor context objects, which have
+ * replay-time quirks when used with conversation.external.
+ */
+export async function deleteSecretMessages(
+  conversation: WizardConversation,
+  ctx: WizardContext,
+  source: string,
+  messages: SecretMessage[]
+): Promise<void> {
+  await conversation.external(async () => {
+    for (const {chatId, messageId, label} of messages) {
+      try {
+        await ctx.api.deleteMessage(chatId, messageId);
+      } catch (error) {
+        logger.warn({err: error, label}, `${source}: failed to delete secret message`);
+      }
+    }
+  });
 }

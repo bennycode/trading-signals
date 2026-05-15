@@ -1,4 +1,5 @@
 export {accountAdd} from './account/accountAdd.js';
+export {accountEdit} from './account/accountEdit.js';
 export {accountList} from './account/accountList.js';
 export {accountRemove} from './account/accountRemove.js';
 export {accountTime} from './account/accountTime.js';

@@ -28,6 +28,7 @@ Command names are case-insensitive — `/reportAdd`, `/reportadd`, and `/REPORTA
 | ----------------- | -------------------------------------------------------- |
 | `/help`           | List all available commands                              |
 | `/accountAdd`     | Add a new trading account with exchange credentials      |
+| `/accountEdit`    | Update an account's API key and secret                   |
 | `/accountList`    | List all trading accounts                                |
 | `/accountRemove`  | Remove a trading account                                 |
 | `/accountTime`    | Show the current server time from an account's exchange  |

@@ -97,12 +97,7 @@ export class StrategyMonitor {
       pendingSave = true;
       queueMicrotask(() => {
         pendingSave = false;
-        if (strategy.state) {
-          Strategy.updateState(row.id, JSON.stringify(strategy.state));
-        }
-        if (strategy.config) {
-          Strategy.updateConfig(row.id, JSON.stringify(strategy.config));
-        }
+        this.#persistStrategy(row.id, strategy);
       });
     };
 
@@ -155,6 +150,44 @@ export class StrategyMonitor {
       await active.session.stop({cancelOpenOrders: true});
       this.#sessions.delete(strategyId);
       logger.info({strategyId}, 'Stopped strategy');
+    }
+  }
+
+  /**
+   * Restart every active strategy session bound to an account. Used after the account's
+   * credentials change so live sessions reconnect with the new keys. Each session persists
+   * its strategy state, stops without cancelling open orders, then re-subscribes from the
+   * freshly loaded row.
+   */
+  async restartForAccount(accountId: number): Promise<void> {
+    const rows = Strategy.findByAccountIds([accountId]);
+    for (const row of rows) {
+      const active = this.#sessions.get(row.id);
+      if (!active) {
+        continue;
+      }
+      try {
+        this.#persistStrategy(row.id, active.strategy);
+        await active.session.stop({cancelOpenOrders: false});
+        this.#sessions.delete(row.id);
+
+        const freshRow = Strategy.findByPk(row.id);
+        if (freshRow) {
+          await this.subscribeToStrategy(freshRow);
+        }
+        logger.info({strategyId: row.id, accountId}, 'Restarted strategy after account update');
+      } catch (error) {
+        logger.error({err: error, strategyId: row.id, accountId}, 'Failed to restart strategy after account update');
+      }
+    }
+  }
+
+  #persistStrategy(strategyId: number, strategy: TradingStrategy): void {
+    if (strategy.state) {
+      Strategy.updateState(strategyId, JSON.stringify(strategy.state));
+    }
+    if (strategy.config) {
+      Strategy.updateConfig(strategyId, JSON.stringify(strategy.config));
     }
   }
 
