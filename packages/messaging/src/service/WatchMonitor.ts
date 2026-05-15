@@ -26,6 +26,7 @@ export class WatchMonitor {
     const watches = Watch.findAllOrderedById();
     for (const watch of watches) {
       await this.subscribeToWatch(watch);
+      await this.#sendStartNotification(watch);
     }
   }
 
@@ -132,6 +133,24 @@ export class WatchMonitor {
         logger.error({err: error, watchId: watch.id, accountId}, 'Failed to restart watch after account update');
       }
     }
+  }
+
+  async #sendStartNotification(watch: WatchAttributes): Promise<void> {
+    const account = Account.findByPk(watch.accountId);
+    if (!account) {
+      logger.warn({accountId: watch.accountId, watchId: watch.id}, 'Account not found when sending start notification');
+      return;
+    }
+
+    const platformPrefix = account.userId.split(':')[0];
+    const platform = this.#platforms.get(platformPrefix);
+    if (!platform) {
+      logger.warn({platformPrefix, watchId: watch.id}, 'No platform found for start notification');
+      return;
+    }
+
+    await platform.sendMessage(account.userId, `Watch ${watch.id} started.`);
+    logger.info({userId: account.userId, watchId: watch.id}, 'Watch start notification sent');
   }
 
   async #sendAlert(watch: WatchAttributes, currentPrice: number): Promise<void> {

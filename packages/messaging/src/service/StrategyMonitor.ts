@@ -34,6 +34,7 @@ export class StrategyMonitor {
     for (const row of rows) {
       try {
         await this.subscribeToStrategy(row);
+        await this.#sendStartNotification(row);
       } catch (error) {
         logger.error({err: error, strategyId: row.id, strategyName: row.strategyName}, 'Failed to start strategy');
       }
@@ -223,6 +224,10 @@ export class StrategyMonitor {
   async #sendStrategyMessage(row: StrategyAttributes, text: string): Promise<void> {
     const message = formatStrategyMessage(row.strategyName, row.pair, text);
     await this.#sendToAccount(row, message);
+  }
+
+  async #sendStartNotification(row: StrategyAttributes): Promise<void> {
+    await this.#sendToAccount(row, `Strategy ${row.id} started.`);
   }
 
   async #sendFinishNotification(row: StrategyAttributes): Promise<void> {
