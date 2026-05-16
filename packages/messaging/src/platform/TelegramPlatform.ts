@@ -28,6 +28,7 @@ import {makeStrategyAddWizard} from './wizards/strategyAddWizard.js';
 
 const PLATFORM_PREFIX = 'telegram:';
 const REPORT_CALLBACK_PREFIX = 'report:';
+const PROMISE_REJECTED = 'rejected';
 const ACCOUNT_CALLBACK_PREFIX = 'reportaccount:';
 const MODE_CALLBACK_PREFIX = 'reportmode:';
 const INTERVAL_CALLBACK_PREFIX = 'reportinterval:';
@@ -800,7 +801,7 @@ export class TelegramPlatform implements MessagingPlatform {
       this.#ownerIds.map(ownerId => this.sendMessage(`${PLATFORM_PREFIX}${ownerId}`, text))
     );
     for (const [index, result] of results.entries()) {
-      if (result.status === 'rejected') {
+      if (result.status === PROMISE_REJECTED) {
         logger.warn({err: result.reason, ownerId: this.#ownerIds[index]}, 'Failed to deliver operator alert');
       }
     }
