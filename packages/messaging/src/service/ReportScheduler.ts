@@ -82,8 +82,6 @@ export class ReportScheduler {
   async #runAndNotify(row: ReportAttributes): Promise<void> {
     const config = JSON.parse(row.config);
 
-    // Rebuild the AlpacaAPI from the current account row on every tick so a rotated
-    // apiKey/apiSecret takes effect on the next scheduled run without restarting the server.
     let api: AlpacaAPI | undefined;
     if (reportRequiresAccount(row.reportName)) {
       const account = Account.findByPk(row.accountId);
