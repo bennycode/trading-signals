@@ -89,6 +89,13 @@ export class ReportScheduler {
         logger.warn({reportId: row.id, accountId: row.accountId}, 'Account not found for report — skipping run');
         return;
       }
+      if (account.userId !== row.userId) {
+        logger.warn(
+          {reportId: row.id, accountId: row.accountId, accountUserId: account.userId, rowUserId: row.userId},
+          'Account does not belong to report owner — skipping run',
+        );
+        return;
+      }
       api = new AlpacaAPI({apiKey: account.apiKey, apiSecret: account.apiSecret, usePaperTrading: account.isPaper});
     }
 
