@@ -1,6 +1,8 @@
-import {createReport} from 'trading-strategies';
+import {AlpacaAPI} from '@typedtrader/exchange';
+import {createReport, reportRequiresAccount} from 'trading-strategies';
 import {Report, type ReportAttributes} from '../database/models/Report.js';
 import {logger} from '../logger.js';
+import {getAccountOrError} from '../validation/getAccountOrError.js';
 import {PlatformDispatcher} from './PlatformDispatcher.js';
 
 interface ScheduledReport {
@@ -79,7 +81,22 @@ export class ReportScheduler {
 
   async #runAndNotify(row: ReportAttributes): Promise<void> {
     const config = JSON.parse(row.config);
-    const report = createReport(row.reportName, config);
+
+    let api: AlpacaAPI | undefined;
+    if (reportRequiresAccount(row.reportName)) {
+      try {
+        const account = getAccountOrError(row.userId, row.accountId);
+        api = new AlpacaAPI({apiKey: account.apiKey, apiSecret: account.apiSecret, usePaperTrading: account.isPaper});
+      } catch (error) {
+        logger.warn(
+          {err: error, reportId: row.id, accountId: row.accountId, userId: row.userId},
+          'Account not available for report — skipping run',
+        );
+        return;
+      }
+    }
+
+    const report = createReport(row.reportName, config, api);
     const result = await report.run();
 
     const sent = await this.#dispatcher.sendToUser(row.userId, result);

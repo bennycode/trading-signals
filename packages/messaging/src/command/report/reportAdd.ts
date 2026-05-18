@@ -1,7 +1,9 @@
 import {ms} from 'ms';
+import {AlpacaAPI} from '@typedtrader/exchange';
 import {createReport, getAvailableReportNames, reportRequiresAccount, resolveReportConfig} from 'trading-strategies';
 import {Account} from '../../database/models/Account.js';
 import {Report} from '../../database/models/Report.js';
+import type {Account as AccountRow} from '../../database/schema.js';
 import type {ReportAttributes} from '../../database/models/Report.js';
 
 export interface ReportAddResult {
@@ -10,7 +12,6 @@ export interface ReportAddResult {
 }
 
 export interface ReportAddOptions {
-  /** When set, the report is saved to the DB and scheduled instead of run once. */
   intervalMs?: number;
 }
 
@@ -21,7 +22,6 @@ export const reportAdd = async (
 ): Promise<ReportAddResult> => {
   const {intervalMs} = options;
 
-  // Parse "<reportName> [<accountId>]"
   const parts = request.trim().split(/\s+/);
   const reportName = parts[0] ?? '';
   const accountIdStr = parts[1];
@@ -34,13 +34,12 @@ export const reportAdd = async (
     };
   }
 
-  // Resolve base config from environment
   const config = resolveReportConfig(reportName);
   if (!config) {
     return {message: `Report "${reportName}" is not available. Either the report does not exist or its required environment variables are not set.\nAvailable reports: ${available.join(', ') || 'none'}`};
   }
 
-  // If report requires an account, resolve credentials from the account database
+  let account: AccountRow | undefined;
   if (reportRequiresAccount(reportName)) {
     if (!accountIdStr) {
       return {message: `Report "${reportName}" requires an exchange account.\nUsage: /reportAdd ${reportName} <accountId>`};
@@ -52,29 +51,31 @@ export const reportAdd = async (
       return {message: `Invalid account ID "${accountIdStr}". Must be a number.`};
     }
 
-    const account = Account.findByUserIdAndId(userId, accountId);
+    account = Account.findByUserIdAndId(userId, accountId);
     if (!account) {
       return {message: `Account ${accountId} not found. Use /accountList to see your accounts.`};
     }
-
-    config.apiKey = account.apiKey;
-    config.apiSecret = account.apiSecret;
   }
 
   const configJson = JSON.stringify(config);
 
   try {
-    const report = createReport(reportName, config);
+    const api = account
+      ? new AlpacaAPI({apiKey: account.apiKey, apiSecret: account.apiSecret, usePaperTrading: account.isPaper})
+      : undefined;
+    const report = createReport(reportName, config, api);
 
-    // One-shot: run immediately and return results
     if (!intervalMs) {
       const result = await report.run();
       return {message: result};
     }
 
-    // Scheduled: save to DB
+    if (!account) {
+      return {message: `Report "${reportName}" cannot be scheduled without an account.`};
+    }
     const row = Report.create({
       userId,
+      accountId: account.id,
       reportName,
       config: configJson,
       intervalMs,

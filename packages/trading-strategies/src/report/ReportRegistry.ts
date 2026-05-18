@@ -1,52 +1,67 @@
 import type {z} from 'zod';
+import type {AlpacaAPI} from '@typedtrader/exchange';
 import type {Report} from './Report.js';
 import {SP500HeatmapReport, SP500HeatmapSchema} from '../report-sp500-heatmap/SP500HeatmapReport.js';
 import {SP500MomentumReport, SP500MomentumSchema} from '../report-sp500-momentum/SP500MomentumReport.js';
 import {ScalpScannerReport, ScalpScannerSchema} from '../report-scalp-scanner/ScalpScannerReport.js';
 
 interface ReportEntry {
-  create: (config: unknown) => Report;
+  /**
+   * Constructs a report. For `requiresAccount` reports the caller must pass an `AlpacaAPI`
+   * instance built from the bound exchange account; otherwise an error is thrown.
+   */
+  create: (config: unknown, api?: AlpacaAPI) => Report;
   schema: z.ZodType;
   /**
    * Returns the base config resolved from environment variables, or `undefined` when the report
    * cannot be run because its required environment variables are missing.
    *
-   * Reports that expect their credentials to come from an exchange account at runtime
-   * (see `requiresAccount`) should return `{}` here — the account credentials are merged
-   * into this object by the caller before invoking `create()`.
+   * Reports that take their exchange credentials from an account at runtime
+   * (see `requiresAccount`) should return `{}` here — the caller resolves the account and
+   * passes an `AlpacaAPI` to `createReport()`/`create()`.
    */
   resolveConfig: () => Record<string, unknown> | undefined;
-  /** When true, this report requires an exchange account (apiKey/apiSecret) passed at runtime */
+  /** When true, this report requires an exchange account; the caller must supply an `AlpacaAPI`. */
   requiresAccount?: boolean;
+}
+
+function requireApi(name: string, api: AlpacaAPI | undefined): AlpacaAPI {
+  if (!api) {
+    throw new Error(`Report "${name}" requires an exchange account but no AlpacaAPI was provided.`);
+  }
+  return api;
 }
 
 const registry: Record<string, ReportEntry> = {
   [SP500HeatmapReport.NAME]: {
-    create: (config: unknown) => new SP500HeatmapReport(SP500HeatmapSchema.parse(config)),
+    create: (config, api) =>
+      new SP500HeatmapReport(SP500HeatmapSchema.parse(config), requireApi(SP500HeatmapReport.NAME, api)),
     schema: SP500HeatmapSchema,
     requiresAccount: true,
     resolveConfig: () => ({}),
   },
   [SP500MomentumReport.NAME]: {
-    create: (config: unknown) => new SP500MomentumReport(SP500MomentumSchema.parse(config)),
+    create: (config, api) =>
+      new SP500MomentumReport(SP500MomentumSchema.parse(config), requireApi(SP500MomentumReport.NAME, api)),
     schema: SP500MomentumSchema,
     requiresAccount: true,
     resolveConfig: () => ({}),
   },
   [ScalpScannerReport.NAME]: {
-    create: (config: unknown) => new ScalpScannerReport(ScalpScannerSchema.parse(config)),
+    create: (config, api) =>
+      new ScalpScannerReport(ScalpScannerSchema.parse(config), requireApi(ScalpScannerReport.NAME, api)),
     schema: ScalpScannerSchema,
     requiresAccount: true,
     resolveConfig: () => ({}),
   },
 };
 
-export function createReport(name: string, config: unknown): Report {
+export function createReport(name: string, config: unknown, api?: AlpacaAPI): Report {
   const entry = registry[name];
   if (!entry) {
     throw new Error(`Unknown report "${name}". Available: ${getReportNames().join(', ')}`);
   }
-  return entry.create(config);
+  return entry.create(config, api);
 }
 
 /** Returns names of all registered reports */

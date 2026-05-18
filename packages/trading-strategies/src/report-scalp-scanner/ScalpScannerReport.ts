@@ -9,10 +9,6 @@ import {suggestScalpOffset} from '../strategy-scalp/suggestScalpOffset.js';
 import {fetchUsEquityNames, formatSymbolWithName, TELEGRAM_TABLE_NAME_MAX} from '../util/formatSymbolWithName.js';
 
 export const ScalpScannerSchema = z.object({
-  /** Alpaca API key */
-  apiKey: z.string().min(1),
-  /** Alpaca API secret */
-  apiSecret: z.string().min(1),
   /** Stock symbols to scan (defaults to S&P 500) */
   symbols: z.array(z.string()).optional(),
   /** Number of trading days to analyze (default: 60, ~3 months) */
@@ -43,13 +39,9 @@ export class ScalpScannerReport extends Report<ScalpScannerConfig> {
 
   readonly #api: AlpacaAPI;
 
-  constructor(config: ScalpScannerConfig) {
+  constructor(config: ScalpScannerConfig, api: AlpacaAPI) {
     super(config);
-    this.#api = new AlpacaAPI({
-      apiKey: config.apiKey,
-      apiSecret: config.apiSecret,
-      usePaperTrading: false,
-    });
+    this.#api = api;
   }
 
   async run(): Promise<string> {

@@ -57,6 +57,13 @@
       "when": 1776399447892,
       "tag": "0007_neat_pretty_boy",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "6",
+      "when": 1779135287631,
+      "tag": "0008_conscious_onslaught",
+      "breakpoints": true
     }
   ]
 }

@@ -5,10 +5,7 @@ import {fetchUsEquityNames, formatSymbolWithName, TELEGRAM_TABLE_NAME_MAX} from 
 import {findFirstTradingDay, getDateString} from '../util/TimeUtil.js';
 import {SP500_TICKERS} from '../util/sp500Tickers.js';
 
-export const SP500MomentumSchema = z.object({
-  apiKey: z.string().min(1),
-  apiSecret: z.string().min(1),
-});
+export const SP500MomentumSchema = z.object({});
 
 export type SP500MomentumConfig = z.infer<typeof SP500MomentumSchema>;
 
@@ -26,13 +23,9 @@ export class SP500MomentumReport extends Report<SP500MomentumConfig> {
 
   readonly #api: AlpacaAPI;
 
-  constructor(config: SP500MomentumConfig) {
+  constructor(config: SP500MomentumConfig, api: AlpacaAPI) {
     super(config);
-    this.#api = new AlpacaAPI({
-      apiKey: config.apiKey,
-      apiSecret: config.apiSecret,
-      usePaperTrading: false,
-    });
+    this.#api = api;
   }
 
   async run(): Promise<string> {
