@@ -12,7 +12,6 @@ export interface ReportAddResult {
 }
 
 export interface ReportAddOptions {
-  /** When set, the report is saved to the DB and scheduled instead of run once. */
   intervalMs?: number;
 }
 
@@ -23,7 +22,6 @@ export const reportAdd = async (
 ): Promise<ReportAddResult> => {
   const {intervalMs} = options;
 
-  // Parse "<reportName> [<accountId>]"
   const parts = request.trim().split(/\s+/);
   const reportName = parts[0] ?? '';
   const accountIdStr = parts[1];
@@ -36,14 +34,11 @@ export const reportAdd = async (
     };
   }
 
-  // Resolve base config from environment
   const config = resolveReportConfig(reportName);
   if (!config) {
     return {message: `Report "${reportName}" is not available. Either the report does not exist or its required environment variables are not set.\nAvailable reports: ${available.join(', ') || 'none'}`};
   }
 
-  // If report requires an account, resolve the account row and pass an AlpacaAPI built from it
-  // to the report constructor at runtime. Credentials are no longer persisted in the report config.
   let account: AccountRow | undefined;
   if (reportRequiresAccount(reportName)) {
     if (!accountIdStr) {
@@ -70,17 +65,12 @@ export const reportAdd = async (
       : undefined;
     const report = createReport(reportName, config, api);
 
-    // One-shot: run immediately and return results
     if (!intervalMs) {
       const result = await report.run();
       return {message: result};
     }
 
-    // Scheduled: save to DB with a reference to the account so the scheduler can rebuild
-    // an AlpacaAPI from the current account row on each tick (picks up rotated credentials).
     if (!account) {
-      // Reports that don't require an account currently have no way to schedule either —
-      // there's no row.accountId to write. Guard explicitly until that need arises.
       return {message: `Report "${reportName}" cannot be scheduled without an account.`};
     }
     const row = Report.create({
