@@ -1,8 +1,8 @@
 import {AlpacaAPI} from '@typedtrader/exchange';
 import {createReport, reportRequiresAccount} from 'trading-strategies';
-import {Account} from '../database/models/Account.js';
 import {Report, type ReportAttributes} from '../database/models/Report.js';
 import {logger} from '../logger.js';
+import {getAccountOrError} from '../validation/getAccountOrError.js';
 import {PlatformDispatcher} from './PlatformDispatcher.js';
 
 interface ScheduledReport {
@@ -84,19 +84,16 @@ export class ReportScheduler {
 
     let api: AlpacaAPI | undefined;
     if (reportRequiresAccount(row.reportName)) {
-      const account = Account.findByPk(row.accountId);
-      if (!account) {
-        logger.warn({reportId: row.id, accountId: row.accountId}, 'Account not found for report — skipping run');
-        return;
-      }
-      if (account.userId !== row.userId) {
+      try {
+        const account = getAccountOrError(row.userId, row.accountId);
+        api = new AlpacaAPI({apiKey: account.apiKey, apiSecret: account.apiSecret, usePaperTrading: account.isPaper});
+      } catch (error) {
         logger.warn(
-          {reportId: row.id, accountId: row.accountId, accountUserId: account.userId, rowUserId: row.userId},
-          'Account does not belong to report owner — skipping run',
+          {err: error, reportId: row.id, accountId: row.accountId, userId: row.userId},
+          'Account not available for report — skipping run',
         );
         return;
       }
-      api = new AlpacaAPI({apiKey: account.apiKey, apiSecret: account.apiSecret, usePaperTrading: account.isPaper});
     }
 
     const report = createReport(row.reportName, config, api);
