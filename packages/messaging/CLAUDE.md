@@ -15,5 +15,3 @@ const account = Account.findByPk(accountId);
 if (!account) { ... }
 if (account.userId !== userId) { ... }
 ```
-
-Background paths (e.g. `ReportScheduler`, `StrategyMonitor`) catch the thrown error, log a `warn`, and skip the run instead of surfacing it to a user.
