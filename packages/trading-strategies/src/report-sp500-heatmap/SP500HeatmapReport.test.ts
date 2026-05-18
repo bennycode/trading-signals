@@ -1,30 +1,24 @@
 import {describe, expect, it} from 'vitest';
+import {AlpacaAPI} from '@typedtrader/exchange';
 import {classifyDay, SP500HeatmapReport, SP500HeatmapSchema} from './SP500HeatmapReport.js';
+
+function createApi(): AlpacaAPI {
+  return new AlpacaAPI({apiKey: 'test-key', apiSecret: 'test-secret', usePaperTrading: true});
+}
 
 describe('SP500HeatmapReport', () => {
   it('has the correct NAME', () => {
     expect(SP500HeatmapReport.NAME).toBe('@typedtrader/report-sp500-heatmap');
   });
 
-  it('validates config with Zod schema', () => {
-    const parsed = SP500HeatmapSchema.parse({apiKey: 'test-key', apiSecret: 'test-secret'});
-    expect(parsed.apiKey).toBe('test-key');
-    expect(parsed.apiSecret).toBe('test-secret');
-  });
-
-  it('rejects config without apiKey', () => {
-    expect(() => SP500HeatmapSchema.parse({apiSecret: 'test'})).toThrow();
-  });
-
-  it('rejects config without apiSecret', () => {
-    expect(() => SP500HeatmapSchema.parse({apiKey: 'test'})).toThrow();
+  it('accepts an empty config (credentials come from the injected AlpacaAPI)', () => {
+    expect(() => SP500HeatmapSchema.parse({})).not.toThrow();
   });
 
   it('stores config from constructor', () => {
-    const config = SP500HeatmapSchema.parse({apiKey: 'my-key', apiSecret: 'my-secret'});
-    const report = new SP500HeatmapReport(config);
-    expect(report.config.apiKey).toBe('my-key');
-    expect(report.config.apiSecret).toBe('my-secret');
+    const config = SP500HeatmapSchema.parse({});
+    const report = new SP500HeatmapReport(config, createApi());
+    expect(report.config).toEqual({});
   });
 });
 

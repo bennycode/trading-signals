@@ -52,6 +52,9 @@ export type NewStrategyRow = typeof strategies.$inferInsert;
 export const reports = sqliteTable('reports', {
   id: integer('id').primaryKey({autoIncrement: true}),
   userId: text('userId').notNull(),
+  accountId: integer('accountId')
+    .notNull()
+    .references(() => accounts.id, {onDelete: 'cascade'}),
   reportName: text('reportName').notNull(),
   config: text('config').notNull(),
   intervalMs: integer('intervalMs'),

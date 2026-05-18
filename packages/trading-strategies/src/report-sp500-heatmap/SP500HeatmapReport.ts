@@ -4,10 +4,7 @@ import {MESSAGE_BREAK, Report} from '../report/Report.js';
 import {fetchUsEquityNames, formatSymbolWithName, TELEGRAM_TABLE_NAME_MAX} from '../util/formatSymbolWithName.js';
 import {SP500_TICKERS} from '../util/sp500Tickers.js';
 
-export const SP500HeatmapSchema = z.object({
-  apiKey: z.string().min(1),
-  apiSecret: z.string().min(1),
-});
+export const SP500HeatmapSchema = z.object({});
 
 export type SP500HeatmapConfig = z.infer<typeof SP500HeatmapSchema>;
 
@@ -31,13 +28,9 @@ export class SP500HeatmapReport extends Report<SP500HeatmapConfig> {
 
   readonly #api: AlpacaAPI;
 
-  constructor(config: SP500HeatmapConfig) {
+  constructor(config: SP500HeatmapConfig, api: AlpacaAPI) {
     super(config);
-    this.#api = new AlpacaAPI({
-      apiKey: config.apiKey,
-      apiSecret: config.apiSecret,
-      usePaperTrading: false,
-    });
+    this.#api = api;
   }
 
   async run(): Promise<string> {

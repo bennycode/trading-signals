@@ -1,36 +1,26 @@
 import {describe, expect, it} from 'vitest';
+import {AlpacaAPI} from '@typedtrader/exchange';
 import {ScalpScannerReport, ScalpScannerSchema} from './ScalpScannerReport.js';
+
+function createApi(): AlpacaAPI {
+  return new AlpacaAPI({apiKey: 'test-key', apiSecret: 'test-secret', usePaperTrading: true});
+}
 
 describe('ScalpScannerReport', () => {
   it('has the correct NAME', () => {
     expect(ScalpScannerReport.NAME).toBe('@typedtrader/report-scalp-scanner');
   });
 
-  it('validates config with Zod schema', () => {
-    const config = ScalpScannerSchema.parse({
-      apiKey: 'test-key',
-      apiSecret: 'test-secret',
-    });
+  it('applies sensible defaults when given an empty config', () => {
+    const config = ScalpScannerSchema.parse({});
 
-    expect(config.apiKey).toBe('test-key');
-    expect(config.apiSecret).toBe('test-secret');
     expect(config.lookbackDays).toBe(60);
     expect(config.erThreshold).toBe(0.4);
     expect(config.symbols).toBeUndefined();
   });
 
-  it('rejects config without apiKey', () => {
-    expect(() => ScalpScannerSchema.parse({apiSecret: 'test'})).toThrow();
-  });
-
-  it('rejects config without apiSecret', () => {
-    expect(() => ScalpScannerSchema.parse({apiKey: 'test'})).toThrow();
-  });
-
   it('accepts custom symbols and lookbackDays', () => {
     const config = ScalpScannerSchema.parse({
-      apiKey: 'key',
-      apiSecret: 'secret',
       symbols: ['AMD', 'INTC', 'TSLA'],
       lookbackDays: 30,
       erThreshold: 0.3,
@@ -42,10 +32,9 @@ describe('ScalpScannerReport', () => {
   });
 
   it('stores config from constructor', () => {
-    const config = ScalpScannerSchema.parse({apiKey: 'k', apiSecret: 's'});
-    const report = new ScalpScannerReport(config);
+    const config = ScalpScannerSchema.parse({symbols: ['AMD']});
+    const report = new ScalpScannerReport(config, createApi());
 
-    expect(report.config.apiKey).toBe('k');
-    expect(report.config.apiSecret).toBe('s');
+    expect(report.config.symbols).toEqual(['AMD']);
   });
 });

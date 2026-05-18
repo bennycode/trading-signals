@@ -1,4 +1,6 @@
-import {createReport} from 'trading-strategies';
+import {AlpacaAPI} from '@typedtrader/exchange';
+import {createReport, reportRequiresAccount} from 'trading-strategies';
+import {Account} from '../database/models/Account.js';
 import {Report, type ReportAttributes} from '../database/models/Report.js';
 import {logger} from '../logger.js';
 import {PlatformDispatcher} from './PlatformDispatcher.js';
@@ -79,7 +81,20 @@ export class ReportScheduler {
 
   async #runAndNotify(row: ReportAttributes): Promise<void> {
     const config = JSON.parse(row.config);
-    const report = createReport(row.reportName, config);
+
+    // Rebuild the AlpacaAPI from the current account row on every tick so a rotated
+    // apiKey/apiSecret takes effect on the next scheduled run without restarting the server.
+    let api: AlpacaAPI | undefined;
+    if (reportRequiresAccount(row.reportName)) {
+      const account = Account.findByPk(row.accountId);
+      if (!account) {
+        logger.warn({reportId: row.id, accountId: row.accountId}, 'Account not found for report — skipping run');
+        return;
+      }
+      api = new AlpacaAPI({apiKey: account.apiKey, apiSecret: account.apiSecret, usePaperTrading: account.isPaper});
+    }
+
+    const report = createReport(row.reportName, config, api);
     const result = await report.run();
 
     const sent = await this.#dispatcher.sendToUser(row.userId, result);
