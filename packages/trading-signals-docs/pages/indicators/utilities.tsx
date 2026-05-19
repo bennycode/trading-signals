@@ -28,7 +28,9 @@ function UtilityInfoPanel({utility}: {utility: UtilityInfoConfig}) {
             <p className="text-slate-300 text-sm leading-relaxed">{utility.details}</p>
           </div>
         )}
-        <p className="text-slate-500 text-xs italic">No interactive demo yet for this utility.</p>
+        {!utility.signature && !utility.details && (
+          <p className="text-slate-500 text-xs italic">No documentation yet for this utility.</p>
+        )}
       </div>
     </div>
   );
