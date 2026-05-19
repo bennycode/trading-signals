@@ -8,6 +8,6 @@
  * @param percentage The percentage to apply. `25` means "25%".
  * @returns The base value with the percentage applied.
  */
-export function addPercentage(baseValue: number, percentage: number): number {
+export function addPercentageChange(baseValue: number, percentage: number): number {
   return baseValue * (1 + percentage / 100);
 }

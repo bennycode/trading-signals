@@ -1,4 +1,4 @@
-import {addPercentageDemo} from './addPercentage.demo';
+import {addPercentageChangeDemo} from './addPercentageChange.demo';
 import {getAverageDemo} from './getAverage.demo';
 import {getMaxMinDemo} from './getMaxMin.demo';
 import {getMedianDemo} from './getMedian.demo';
@@ -14,7 +14,7 @@ export const interactiveUtilities = [
   getStandardDeviationDemo,
   getMaxMinDemo,
   getPercentageChangeDemo,
-  addPercentageDemo,
+  addPercentageChangeDemo,
   getShareDemo,
 ] as const;
 

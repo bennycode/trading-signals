@@ -1,4 +1,4 @@
-export * from './addPercentage.js';
+export * from './addPercentageChange.js';
 export * from './getAverage.js';
 export * from './getGrid.js';
 export * from './getMaximum.js';
