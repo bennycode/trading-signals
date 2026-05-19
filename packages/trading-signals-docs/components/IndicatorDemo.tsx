@@ -46,16 +46,8 @@ export default function IndicatorDemo({example}: {example: IndicatorExample}) {
         <p className="text-slate-400 text-sm">{example.description}</p>
       </div>
 
-      <div className="grid md:grid-cols-2 gap-6 p-6">
-        {/* Left: Code Example */}
-        <div>
-          <h4 className="text-sm font-semibold text-slate-300 mb-3">Code Example</h4>
-          <pre className="bg-slate-900 border border-slate-700 rounded p-4 overflow-x-auto text-xs">
-            <code className="text-slate-300">{example.code}</code>
-          </pre>
-        </div>
-
-        {/* Right: Interactive Demo */}
+      <div className="space-y-6 p-6">
+        {/* Interactive Demo */}
         <div>
           <h4 className="text-sm font-semibold text-slate-300 mb-3">Interactive Demo</h4>
 
@@ -105,6 +97,14 @@ export default function IndicatorDemo({example}: {example: IndicatorExample}) {
               ))}
             </div>
           </div>
+        </div>
+
+        {/* Code Example */}
+        <div>
+          <h4 className="text-sm font-semibold text-slate-300 mb-3">Code Example</h4>
+          <pre className="bg-slate-900 border border-slate-700 rounded p-4 overflow-x-auto text-xs">
+            <code className="text-slate-300">{example.code}</code>
+          </pre>
         </div>
       </div>
     </div>
