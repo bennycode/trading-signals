@@ -8,12 +8,18 @@ interface IndicatorListProps {
   indicators: Indicator[];
   selectedIndicator: string;
   onIndicatorChange: (indicatorId: string) => void;
+  title?: string;
 }
 
-export function IndicatorList({indicators, selectedIndicator, onIndicatorChange}: IndicatorListProps) {
+export function IndicatorList({
+  indicators,
+  selectedIndicator,
+  onIndicatorChange,
+  title = 'Momentum Indicators',
+}: IndicatorListProps) {
   return (
     <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-4">
-      <h2 className="text-lg font-semibold text-white mb-4">Momentum Indicators</h2>
+      <h2 className="text-lg font-semibold text-white mb-4">{title}</h2>
       <nav className="space-y-1">
         {indicators.map(indicator => (
           <button

@@ -1,37 +1,14 @@
-import {useEffect, useState} from 'react';
+import {useState} from 'react';
 import {DatasetSelector} from '../../components/DatasetSelector';
 import {IndicatorList} from '../../components/IndicatorList';
+import {useHashSelection} from '../../hooks/useHashSelection';
 import {indicators} from '../../indicator-demos/trend';
 import {datasets} from '../../utils/datasets';
 import {renderSingleIndicator} from '../../utils/renderUtils';
 
 export default function TrendIndicators() {
-  const [selectedIndicator, setSelectedIndicator] = useState<string>('sma');
+  const [selectedIndicator, selectIndicator] = useHashSelection(indicators, 'sma');
   const [selectedDataset, setSelectedDataset] = useState<string>('uptrend');
-
-  useEffect(() => {
-    const hash = window.location.hash.slice(1);
-    if (hash && indicators.some(ind => ind.id === hash)) {
-      setSelectedIndicator(hash);
-    }
-  }, []);
-
-  useEffect(() => {
-    const handleHashChange = () => {
-      const hash = window.location.hash.slice(1);
-      if (hash && indicators.some(ind => ind.id === hash)) {
-        setSelectedIndicator(hash);
-      }
-    };
-
-    window.addEventListener('hashchange', handleHashChange);
-    return () => window.removeEventListener('hashchange', handleHashChange);
-  }, []);
-
-  const handleIndicatorChange = (indicatorId: string) => {
-    setSelectedIndicator(indicatorId);
-    window.location.hash = indicatorId;
-  };
 
   const renderIndicatorContent = () => {
     const config = indicators.find(ind => ind.id === selectedIndicator);
@@ -54,7 +31,7 @@ export default function TrendIndicators() {
           <IndicatorList
             indicators={indicators}
             selectedIndicator={selectedIndicator}
-            onIndicatorChange={handleIndicatorChange}
+            onIndicatorChange={selectIndicator}
           />
         </div>
       </aside>

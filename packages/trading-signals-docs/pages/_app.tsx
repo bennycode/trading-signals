@@ -15,8 +15,24 @@ export default function App({Component, pageProps}: AppProps) {
     {name: 'Volatility', href: '/indicators/volatility'},
     {name: 'Volume', href: '/indicators/volume'},
     {name: 'Utilities', href: '/indicators/utilities'},
-    {name: 'Backtest', href: '/backtest'},
+    {name: 'Backtest', href: '/backtest', highlight: true},
   ];
+
+  const getNavClasses = (item: (typeof navigation)[number], isActive: boolean, isMobile = false) => {
+    const base = `${isMobile ? 'block text-center' : ''} px-3 py-2 rounded-md text-sm font-medium transition-colors`;
+
+    if (item.highlight) {
+      return `${base} ${
+        isActive
+          ? 'bg-amber-500 text-white shadow-lg shadow-amber-500/30 ring-1 ring-amber-400'
+          : 'bg-amber-600 text-white hover:bg-amber-500 shadow-md shadow-amber-600/20'
+      }`;
+    }
+
+    return `${base} ${
+      isActive ? 'bg-blue-600 text-white' : 'text-slate-300 hover:bg-slate-800 hover:text-white'
+    }`;
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
@@ -32,11 +48,7 @@ export default function App({Component, pageProps}: AppProps) {
                   <Link
                     key={item.href}
                     href={item.href}
-                    className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                      router.pathname === item.href
-                        ? 'bg-blue-600 text-white'
-                        : 'text-slate-300 hover:bg-slate-800 hover:text-white'
-                    }`}>
+                    className={getNavClasses(item, router.pathname === item.href)}>
                     {item.name}
                   </Link>
                 ))}
@@ -80,11 +92,7 @@ export default function App({Component, pageProps}: AppProps) {
                   key={item.href}
                   href={item.href}
                   onClick={() => setMobileMenuOpen(false)}
-                  className={`block px-3 py-2 rounded-md text-sm font-medium text-center transition-colors ${
-                    router.pathname === item.href
-                      ? 'bg-blue-600 text-white'
-                      : 'text-slate-300 hover:bg-slate-800 hover:text-white'
-                  }`}>
+                  className={getNavClasses(item, router.pathname === item.href, true)}>
                   {item.name}
                 </Link>
               ))}
