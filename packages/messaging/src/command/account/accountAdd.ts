@@ -29,6 +29,11 @@ export async function accountAdd(request: string, userId: string) {
       if (!source) {
         return `Market-data account (ID: ${marketDataAccountId}) was not found.`;
       }
+      // The data source must run in the same mode (paper/live): Alpaca serves data from
+      // different environments and keys per mode, so the pairing must match.
+      if (source.isPaper !== isPaper) {
+        return `Market-data account (ID: ${marketDataAccountId}) is ${source.isPaper ? 'Paper' : 'Live'}, but this account is ${isPaper ? 'Paper' : 'Live'}. The data source must run in the same mode.`;
+      }
       marketData = buildMarketDataFromAccount(source);
     }
 

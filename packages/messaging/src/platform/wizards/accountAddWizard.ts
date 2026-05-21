@@ -49,13 +49,19 @@ export function makeAccountAddWizard() {
     // credentials for candles. Ask which existing account should serve as that data source.
     let marketDataAccountId: number | null = null;
     if (EXCHANGES_WITHOUT_MARKET_DATA.includes(exchange)) {
+      // The data source must run in the same mode: Alpaca serves data from different
+      // environments (data.sandbox vs data.alpaca) and keys for paper vs live, so a paper
+      // account can only feed a paper account and likewise for live.
+      const modeLabel = isPaper ? 'Paper' : 'Live';
       const dataSourceAccounts = await conversation.external(() =>
-        Account.findByUserId(args.userId).filter(candidate => candidate.exchange === AlpacaBroker.NAME)
+        Account.findByUserId(args.userId).filter(
+          candidate => candidate.exchange === AlpacaBroker.NAME && candidate.isPaper === isPaper
+        )
       );
 
       if (dataSourceAccounts.length === 0) {
         await modeCb.editMessageText(
-          `${exchange} has no market data of its own and needs an existing ${AlpacaBroker.NAME} account as its data source.\n\nAdd an ${AlpacaBroker.NAME} account first, then re-run /accountAdd.`
+          `${exchange} has no market data of its own and needs an existing ${modeLabel} ${AlpacaBroker.NAME} account as its data source.\n\nAdd a ${modeLabel} ${AlpacaBroker.NAME} account first, then re-run /accountAdd.`
         );
         return;
       }
