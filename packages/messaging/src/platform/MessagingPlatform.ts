@@ -22,6 +22,13 @@ export interface MessagingPlatform {
   start(): Promise<void>;
   stop(): Promise<void>;
   sendMessage(userId: string, text: string): Promise<void>;
+  /**
+   * Broadcast an operator-facing alert (e.g. "WebSocket closed", "process restarted")
+   * to every owner configured on this platform. Implementations should swallow per-recipient
+   * errors so a single delivery failure doesn't block the rest — callers typically invoke
+   * this from contexts (process shutdown, error handlers) where they can't recover anyway.
+   */
+  alertOperators(text: string): Promise<void>;
   registerCommand(name: string | string[], handler: CommandHandler): void;
   setReportScheduler?(scheduler: unknown): void;
   setWatchMonitor?(monitor: unknown): void;

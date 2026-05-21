@@ -1,6 +1,6 @@
 import {ms} from 'ms';
 import {retry, RetryConfig} from 'ts-retry-promise';
-import {AlpacaStream, type AlpacaStreamCredentials} from './api/AlpacaStream.js';
+import {AlpacaStream, type AlpacaStreamCloseInfo, type AlpacaStreamCredentials} from './api/AlpacaStream.js';
 import type {MinuteBarMessage, StreamMessage} from './api/schema/StreamSchema.js';
 
 const hasErrorCode = (error: unknown): error is {code: string | number} => {
@@ -13,6 +13,18 @@ export interface AlpacaConnection {
 }
 
 /**
+ * Payload passed to the optional {@link AlpacaWebSocket.onClose} handler when the
+ * market-data stream drops. The handler runs before `process.exit(1)` so operators
+ * can be notified (e.g. via Telegram) which connection died and why.
+ */
+export interface AlpacaWebSocketCloseInfo extends AlpacaStreamCloseInfo {
+  connectionId: string;
+}
+
+/** How long the close handler waits for `onClose` before forcing the process exit. */
+const ON_CLOSE_DEADLINE_MS = 2_000;
+
+/**
  * Alpaca only allows 1 WebSocket connection per API key. This class manages
  * WebSocket connections as singletons to avoid the following error:
  * {"T":"error","code":406,"msg":"connection limit exceeded"}
@@ -21,6 +33,16 @@ class AlpacaWebSocket {
   #connections: Map<string, AlpacaConnection> = new Map();
   #symbols: Map<string, Set<string>> = new Map();
   #credentialToConnectionId: Map<string, string> = new Map();
+
+  /**
+   * Optional observability hook. Invoked just before {@link process.exit} when a
+   * market-data stream closes, so callers (typically the messaging layer at
+   * application startup) can surface an alert. Awaited with a {@link ON_CLOSE_DEADLINE_MS}
+   * deadline so a hung handler can't block the exit — the bug being instrumented
+   * here is "process stops emitting any signal," so the worst case is to lose the
+   * notification, not to lose the exit.
+   */
+  onClose?: (info: AlpacaWebSocketCloseInfo) => Promise<void> | void;
 
   /**
    * @see https://docs.alpaca.markets/docs/streaming-market-data#connection
@@ -85,11 +107,29 @@ class AlpacaWebSocket {
         /**
          * Every close on this socket is currently a failure (transport drop).
          * In this case, we do a hard-exit so the orchestrator restarts the stream.
+         * Before exiting we (1) log the close code / reason / wasClean — which the
+         * underlying `error` event throws away — and (2) give `onClose` a bounded
+         * window to fire an alert so operators learn about the drop without having
+         * to tail dokku logs.
          */
-        stream.once('close', () => {
+        stream.once('close', async (_stream: AlpacaStream, info: AlpacaStreamCloseInfo | undefined) => {
+          const closeInfo: AlpacaWebSocketCloseInfo = {
+            connectionId,
+            code: info?.code ?? 0,
+            reason: info?.reason ?? '',
+            wasClean: info?.wasClean ?? false,
+          };
           console.error(
-            `Market-data WebSocket closed for "${connectionId}". Exiting so the orchestrator restarts the stream.`
+            `Market-data WebSocket closed for "${connectionId}" (code=${closeInfo.code}, reason="${closeInfo.reason}", wasClean=${closeInfo.wasClean}). Exiting so the orchestrator restarts the stream.`
           );
+          if (this.onClose) {
+            await Promise.race([
+              Promise.resolve(this.onClose(closeInfo)).catch(error => {
+                console.error('AlpacaWebSocket onClose handler threw', error);
+              }),
+              new Promise<void>(resolve => setTimeout(resolve, ON_CLOSE_DEADLINE_MS).unref()),
+            ]);
+          }
           process.exit(1);
         });
 

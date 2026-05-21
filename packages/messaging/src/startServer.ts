@@ -22,6 +22,7 @@ import {
   watchList,
   watchRemove,
 } from './command/index.js';
+import {alpacaWebSocket, type AlpacaWebSocketCloseInfo} from '@typedtrader/exchange';
 import {initializeDatabase} from './database/initializeDatabase.js';
 import {logger} from './logger.js';
 import type {MessagingPlatform} from './platform/index.js';
@@ -251,6 +252,22 @@ export async function startServer() {
     platform.setWatchMonitor?.(monitors.watchMonitor);
     platform.setStrategyMonitor?.(monitors.strategyMonitor);
   }
+
+  // Operator-facing alert when the market-data WebSocket closes. Without this the
+  // close event only surfaces in dokku logs — by the time you notice, the strategy
+  // has been deaf for hours. The AlpacaWebSocket close handler caps how long it
+  // waits for us before exiting, so a hung Telegram API call can't keep the
+  // worker alive.
+  alpacaWebSocket.onClose = async (info: AlpacaWebSocketCloseInfo) => {
+    const text =
+      `⚠️ Market-data WebSocket closed.\n` +
+      `Connection: ${info.connectionId}\n` +
+      `Code: ${info.code}\n` +
+      `Reason: ${info.reason || '(none)'}\n` +
+      `Clean: ${info.wasClean ? 'yes' : 'no'}\n\n` +
+      `The worker is exiting; the orchestrator will restart it.`;
+    await Promise.allSettled([...platforms.values()].map(platform => platform.alertOperators(text)));
+  };
 
   // Start platforms first so the bot stays responsive for commands like
   // /strategyList even if a monitor's startup stalls (e.g. a stuck
