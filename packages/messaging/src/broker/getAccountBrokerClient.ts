@@ -11,6 +11,13 @@ import {Account, type AccountAttributes} from '../database/models/Account.js';
  * Build a `MarketDataSource` from an account's stored credentials. Only brokers that expose
  * historical bars / a candle stream qualify; others throw so the caller surfaces a clear error
  * instead of constructing a broker that will fail later on a candle call.
+ *
+ * Cheap to call repeatedly: this returns a fresh `AlpacaMarketData` wrapper, but the wrapper
+ * does NOT own a socket. The actual WebSocket lives in the process-global `alpacaWebSocket`
+ * singleton, which dedupes by `${apiKey}:${source}`. So a Trading212 account that references
+ * the same Alpaca account the user added directly shares one socket per source (Alpaca allows
+ * only one connection per API key), rather than opening a second one and tripping its
+ * "connection limit exceeded" (406) error.
  */
 export function buildMarketDataFromAccount(source: AccountAttributes): MarketDataSource {
   switch (source.exchange) {
