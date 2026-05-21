@@ -1,4 +1,4 @@
-import {sqliteTable, integer, text} from 'drizzle-orm/sqlite-core';
+import {sqliteTable, integer, text, type AnySQLiteColumn} from 'drizzle-orm/sqlite-core';
 import {sql} from 'drizzle-orm';
 
 export const accounts = sqliteTable('accounts', {
@@ -9,6 +9,15 @@ export const accounts = sqliteTable('accounts', {
   isPaper: integer('isPaper', {mode: 'boolean'}).notNull().default(true),
   apiKey: text('apiKey').notNull(),
   apiSecret: text('apiSecret').notNull(),
+  /**
+   * Optional reference to another account whose credentials supply market data for this
+   * one. Required for brokers without their own data feed (e.g. Trading212, which reuses
+   * an existing Alpaca account). `set null` so deleting the data-source account leaves
+   * this account intact (just without a feed) rather than cascade-deleting it.
+   */
+  marketDataAccountId: integer('marketDataAccountId').references((): AnySQLiteColumn => accounts.id, {
+    onDelete: 'set null',
+  }),
   createdAt: text('createdAt').default('CURRENT_TIMESTAMP'),
   updatedAt: text('updatedAt').default('CURRENT_TIMESTAMP'),
 });

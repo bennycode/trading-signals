@@ -8,10 +8,11 @@ import {
   createConversation,
 } from '@grammyjs/conversations';
 import {z} from 'zod';
-import {OrderSide, TradingPair, getBrokerClient} from '@typedtrader/exchange';
+import {OrderSide, TradingPair} from '@typedtrader/exchange';
 import {getAvailableReportNames, reportRequiresAccount} from 'trading-strategies';
 import type {CommandHandler, MessageContext, MessagingPlatform, PlatformInfo} from './MessagingPlatform.js';
 import {markdownToTelegramHtml, splitForTelegram} from './telegramMarkdown.js';
+import {getAccountBrokerClient} from '../broker/getAccountBrokerClient.js';
 import {placeOrder} from '../command/placeOrder.js';
 import {reportAdd} from '../command/report/reportAdd.js';
 import {assertInterval} from '../validation/assertInterval.js';
@@ -252,12 +253,7 @@ async function buildTradeConfirmation(
   // the user still sees the action and can confirm without the price hint.
   let priceContext = '';
   try {
-    const client = getBrokerClient({
-      exchangeId: account.exchange,
-      apiKey: account.apiKey,
-      apiSecret: account.apiSecret,
-      isPaper: account.isPaper,
-    });
+    const client = getAccountBrokerClient(account);
     const smallestInterval = client.getSmallestInterval();
     const candle = await client.getLatestCandle(pair, smallestInterval);
     priceContext = `\nCurrent ~${candle.close} ${pair.counter}`;

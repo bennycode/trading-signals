@@ -1,4 +1,5 @@
-import {TradingPair, Broker, Candle, MarketDataSource, getBrokerClient} from '@typedtrader/exchange';
+import {TradingPair, Broker, Candle, MarketDataSource} from '@typedtrader/exchange';
+import {getAccountBrokerClient} from '../broker/getAccountBrokerClient.js';
 import {Account} from '../database/models/Account.js';
 import {Watch, WatchAttributes} from '../database/models/Watch.js';
 import {logger} from '../logger.js';
@@ -25,8 +26,15 @@ export class WatchMonitor {
   async start(): Promise<void> {
     const watches = Watch.findAllOrderedById();
     for (const watch of watches) {
-      await this.subscribeToWatch(watch);
-      await this.#dispatcher.sendToAccount(watch.accountId, `Watch "${watch.id}" started.`);
+      // Isolate failures: a single misconfigured watch (e.g. a Trading212 account with a
+      // missing/invalid market-data source, or a transient auth/network error) must not
+      // abort startup for the remaining watches.
+      try {
+        await this.subscribeToWatch(watch);
+        await this.#dispatcher.sendToAccount(watch.accountId, `Watch "${watch.id}" started.`);
+      } catch (error) {
+        logger.error({err: error, watchId: watch.id, accountId: watch.accountId}, 'Failed to start watch');
+      }
     }
   }
 
@@ -57,12 +65,7 @@ export class WatchMonitor {
 
     const pair = TradingPair.fromString(watch.pair, ',');
 
-    const exchange = getBrokerClient({
-      exchangeId: account.exchange,
-      apiKey: account.apiKey,
-      apiSecret: account.apiSecret,
-      isPaper: account.isPaper,
-    });
+    const exchange = getAccountBrokerClient(account);
 
     // Subscribe to candle updates and get the topicId
     const createdAtDate = watch.createdAt ? new Date(watch.createdAt) : null;

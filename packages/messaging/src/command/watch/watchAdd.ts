@@ -1,5 +1,6 @@
 import Big from 'big.js';
-import {TradingPair, getBrokerClient} from '@typedtrader/exchange';
+import {TradingPair} from '@typedtrader/exchange';
+import {getAccountBrokerClient} from '../../broker/getAccountBrokerClient.js';
 import {Watch, WatchAttributes} from '../../database/models/Watch.js';
 import {ms} from 'ms';
 import {assertId} from '../../validation/assertId.js';
@@ -41,12 +42,7 @@ export const watchAdd = async (request: string, userId: string): Promise<WatchRe
     const intervalMs = assertInterval(interval);
 
     // Fetch current price as baseline
-    const client = getBrokerClient({
-      exchangeId: account.exchange,
-      apiKey: account.apiKey,
-      apiSecret: account.apiSecret,
-      isPaper: account.isPaper,
-    });
+    const client = getAccountBrokerClient(account);
 
     const smallestInterval = client.getSmallestInterval();
     if (intervalMs < smallestInterval) {
