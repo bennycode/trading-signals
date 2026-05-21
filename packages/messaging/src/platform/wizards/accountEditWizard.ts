@@ -1,4 +1,5 @@
 import {getAuthenticatedBrokerClient} from '@typedtrader/exchange';
+import {buildMarketDataFromAccount} from '../../broker/getAccountBrokerClient.js';
 import {Account} from '../../database/models/Account.js';
 import {logger} from '../../logger.js';
 import {restartAccountSessions, type StrategyMonitor, type WatchMonitor} from '../../service/index.js';
@@ -73,7 +74,21 @@ export function makeAccountEditWizard(deps: {
 
     const result = await conversation.external(async () => {
       try {
-        await getAuthenticatedBrokerClient({exchangeId: account.exchange, apiKey, apiSecret, isPaper: account.isPaper});
+        // Feed-less brokers (e.g. Trading212) need their existing data source resolved to
+        // validate; the edit only changes credentials, not marketDataAccountId.
+        let marketData;
+        if (account.marketDataAccountId !== null) {
+          const source = Account.findByUserIdAndId(args.userId, account.marketDataAccountId);
+          if (!source) {
+            return {ok: false as const, error: `Market-data account (ID: ${account.marketDataAccountId}) was not found.`};
+          }
+          marketData = buildMarketDataFromAccount(source);
+        }
+
+        await getAuthenticatedBrokerClient(
+          {exchangeId: account.exchange, apiKey, apiSecret, isPaper: account.isPaper},
+          marketData ? {marketData} : undefined
+        );
         Account.update(account.id, {apiKey, apiSecret});
         return {ok: true as const};
       } catch (error) {

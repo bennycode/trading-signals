@@ -1,4 +1,5 @@
-import {TradingPair, getBrokerClient} from '@typedtrader/exchange';
+import {TradingPair} from '@typedtrader/exchange';
+import {getAccountBrokerClient} from '../broker/getAccountBrokerClient.js';
 import {assertId} from '../validation/assertId.js';
 import {getAccountOrError} from '../validation/getAccountOrError.js';
 
@@ -18,12 +19,7 @@ export const price = async (request: string, userId: string) => {
     const account = getAccountOrError(userId, accountId);
 
     const pair = TradingPair.fromString(pairPart, ',');
-    const client = getBrokerClient({
-      exchangeId: account.exchange,
-      apiKey: account.apiKey,
-      apiSecret: account.apiSecret,
-      isPaper: account.isPaper,
-    });
+    const client = getAccountBrokerClient(account);
 
     const smallestInterval = client.getSmallestInterval();
     const candle = await client.getLatestCandle(pair, smallestInterval);

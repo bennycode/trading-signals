@@ -1,4 +1,4 @@
-import {getBrokerClient} from '@typedtrader/exchange';
+import {getAccountBrokerClient} from '../../broker/getAccountBrokerClient.js';
 import {assertId} from '../../validation/assertId.js';
 import {getAccountOrError} from '../../validation/getAccountOrError.js';
 
@@ -9,12 +9,7 @@ export const accountTime = async (request: string, userId: string) => {
     const accountId = assertId(request);
     const account = getAccountOrError(userId, accountId);
 
-    const client = getBrokerClient({
-      exchangeId: account.exchange,
-      apiKey: account.apiKey,
-      apiSecret: account.apiSecret,
-      isPaper: account.isPaper,
-    });
+    const client = getAccountBrokerClient(account);
     const time = await client.getTime();
 
     return `Broker time: ${time}`;

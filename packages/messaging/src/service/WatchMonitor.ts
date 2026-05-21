@@ -1,4 +1,5 @@
-import {TradingPair, Broker, Candle, MarketDataSource, getBrokerClient} from '@typedtrader/exchange';
+import {TradingPair, Broker, Candle, MarketDataSource} from '@typedtrader/exchange';
+import {getAccountBrokerClient} from '../broker/getAccountBrokerClient.js';
 import {Account} from '../database/models/Account.js';
 import {Watch, WatchAttributes} from '../database/models/Watch.js';
 import {logger} from '../logger.js';
@@ -57,12 +58,7 @@ export class WatchMonitor {
 
     const pair = TradingPair.fromString(watch.pair, ',');
 
-    const exchange = getBrokerClient({
-      exchangeId: account.exchange,
-      apiKey: account.apiKey,
-      apiSecret: account.apiSecret,
-      isPaper: account.isPaper,
-    });
+    const exchange = getAccountBrokerClient(account);
 
     // Subscribe to candle updates and get the topicId
     const createdAtDate = watch.createdAt ? new Date(watch.createdAt) : null;

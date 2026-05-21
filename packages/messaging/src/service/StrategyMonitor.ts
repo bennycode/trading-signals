@@ -1,7 +1,8 @@
-import {TradingPair, TradingSession, getBrokerClient} from '@typedtrader/exchange';
+import {TradingPair, TradingSession} from '@typedtrader/exchange';
 import type {Fill} from '@typedtrader/exchange';
 import {createStrategy} from 'trading-strategies';
 import type {Strategy as TradingStrategy} from 'trading-strategies';
+import {getAccountBrokerClient} from '../broker/getAccountBrokerClient.js';
 import {Account} from '../database/models/Account.js';
 import {Strategy, type StrategyAttributes} from '../database/models/Strategy.js';
 import {logger} from '../logger.js';
@@ -76,12 +77,7 @@ export class StrategyMonitor {
       strategy.restoreState(persisted);
     }
 
-    const exchange = getBrokerClient({
-      exchangeId: account.exchange,
-      apiKey: account.apiKey,
-      apiSecret: account.apiSecret,
-      isPaper: account.isPaper,
-    });
+    const exchange = getAccountBrokerClient(account);
 
     const session = new TradingSession({
       broker: exchange,
