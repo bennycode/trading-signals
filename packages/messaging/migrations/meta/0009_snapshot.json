@@ -84,9 +84,7 @@
       "indexes": {
         "accounts_name_unique": {
           "name": "accounts_name_unique",
-          "columns": [
-            "name"
-          ],
+          "columns": ["name"],
           "isUnique": true
         }
       },
@@ -95,12 +93,8 @@
           "name": "accounts_marketDataAccountId_accounts_id_fk",
           "tableFrom": "accounts",
           "tableTo": "accounts",
-          "columnsFrom": [
-            "marketDataAccountId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["marketDataAccountId"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         }
@@ -176,12 +170,8 @@
           "name": "reports_accountId_accounts_id_fk",
           "tableFrom": "reports",
           "tableTo": "accounts",
-          "columnsFrom": [
-            "accountId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["accountId"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -250,12 +240,8 @@
           "name": "strategies_accountId_accounts_id_fk",
           "tableFrom": "strategies",
           "tableTo": "accounts",
-          "columnsFrom": [
-            "accountId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["accountId"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -345,12 +331,8 @@
           "name": "watches_accountId_accounts_id_fk",
           "tableFrom": "watches",
           "tableTo": "accounts",
-          "columnsFrom": [
-            "accountId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["accountId"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
