@@ -1,1 +1,1 @@
-ALTER TABLE `accounts` ADD `marketDataAccountId` integer REFERENCES accounts(id);
+ALTER TABLE `accounts` ADD `marketDataAccountId` integer REFERENCES accounts(id) ON DELETE SET NULL;

@@ -26,8 +26,15 @@ export class WatchMonitor {
   async start(): Promise<void> {
     const watches = Watch.findAllOrderedById();
     for (const watch of watches) {
-      await this.subscribeToWatch(watch);
-      await this.#dispatcher.sendToAccount(watch.accountId, `Watch "${watch.id}" started.`);
+      // Isolate failures: a single misconfigured watch (e.g. a Trading212 account with a
+      // missing/invalid market-data source, or a transient auth/network error) must not
+      // abort startup for the remaining watches.
+      try {
+        await this.subscribeToWatch(watch);
+        await this.#dispatcher.sendToAccount(watch.accountId, `Watch "${watch.id}" started.`);
+      } catch (error) {
+        logger.error({err: error, watchId: watch.id, accountId: watch.accountId}, 'Failed to start watch');
+      }
     }
   }
 
