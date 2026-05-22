@@ -89,8 +89,10 @@ describe('BacktestExecutor', () => {
     it('executes a buy with 1-candle delay when price drops below the buyBelow threshold', async () => {
       const strategy = new BuyBelowSellAboveStrategy({buyBelow: '100'});
 
-      // Candle 1: close=90 < 100 → advice to BUY_LIMIT, order placed
-      // Candle 2: order fills at candle 2 (1-candle delay)
+      /*
+       * Candle 1: close=90 < 100 → advice to BUY_LIMIT, order placed
+       * Candle 2: order fills at candle 2 (1-candle delay)
+       */
       const candles = [
         createCandle({open: '95', close: '90', low: '88', high: '95', openTimeInISO: '2025-01-01T00:00:00.000Z'}),
         createCandle({open: '92', close: '95', low: '88', high: '95', openTimeInISO: '2025-01-01T00:01:00.000Z'}),
@@ -116,8 +118,10 @@ describe('BacktestExecutor', () => {
     it('executes a sell with 1-candle delay when price rises above the sellAbove threshold', async () => {
       const strategy = new BuyBelowSellAboveStrategy({sellAbove: '100'});
 
-      // Candle 1: close=110 > 100 → advice to SELL_LIMIT, order placed
-      // Candle 2: order fills at candle 2
+      /*
+       * Candle 1: close=110 > 100 → advice to SELL_LIMIT, order placed
+       * Candle 2: order fills at candle 2
+       */
       const candles = [
         createCandle({open: '105', close: '110', low: '105', high: '115', openTimeInISO: '2025-01-01T00:00:00.000Z'}),
         createCandle({open: '108', close: '112', low: '106', high: '115', openTimeInISO: '2025-01-01T00:01:00.000Z'}),
@@ -142,8 +146,10 @@ describe('BacktestExecutor', () => {
     it('deducts maker fees on limit orders', async () => {
       const strategy = new BuyBelowSellAboveStrategy({sellAbove: '50'});
 
-      // Candle 1: close=100 > 50 → SELL_LIMIT advice
-      // Candle 2: order fills
+      /*
+       * Candle 1: close=100 > 50 → SELL_LIMIT advice
+       * Candle 2: order fills
+       */
       const candles = [
         createCandle({open: '100', close: '100', low: '100', high: '100', openTimeInISO: '2025-01-01T00:00:00.000Z'}),
         createCandle({open: '100', close: '100', low: '100', high: '100', openTimeInISO: '2025-01-01T00:01:00.000Z'}),
@@ -160,8 +166,10 @@ describe('BacktestExecutor', () => {
 
       expect(result.trades).toHaveLength(1);
 
-      // Selling 10 BTC at 100 USD = 1000 USD revenue
-      // Limit fee: 0.15% of 1000 = 1.50
+      /*
+       * Selling 10 BTC at 100 USD = 1000 USD revenue
+       * Limit fee: 0.15% of 1000 = 1.50
+       */
       const trade = result.trades[0];
       expect(trade.fee.toFixed(2)).toBe('1.50');
       expect(result.totalFees.toFixed(2)).toBe('1.50');
@@ -191,8 +199,10 @@ describe('BacktestExecutor', () => {
         }
       }
 
-      // Candle 1: strategy says buy market
-      // Candle 2: market order fills at candle 2's open price
+      /*
+       * Candle 1: strategy says buy market
+       * Candle 2: market order fills at candle 2's open price
+       */
       const candles = [
         createCandle({open: '50', close: '50', low: '50', high: '50', openTimeInISO: '2025-01-01T00:00:00.000Z'}),
         createCandle({open: '50', close: '50', low: '50', high: '50', openTimeInISO: '2025-01-01T00:01:00.000Z'}),
@@ -221,12 +231,14 @@ describe('BacktestExecutor', () => {
         sellAbove: '120',
       });
 
-      // Need extra candles to account for 1-candle delay:
-      // Candle 1: close=80 → BUY advice
-      // Candle 2: buy fills, close=85 → BUY advice again
-      // Candle 3: buy fills, close=115 → no trigger
-      // Candle 4: close=130 → SELL advice
-      // Candle 5: sell fills
+      /*
+       * Need extra candles to account for 1-candle delay:
+       * Candle 1: close=80 → BUY advice
+       * Candle 2: buy fills, close=85 → BUY advice again
+       * Candle 3: buy fills, close=115 → no trigger
+       * Candle 4: close=130 → SELL advice
+       * Candle 5: sell fills
+       */
       const candles = [
         createCandle({open: '80', close: '80', low: '78', high: '82', openTimeInISO: '2025-01-01T00:00:00.000Z'}),
         createCandle({open: '82', close: '85', low: '78', high: '90', openTimeInISO: '2025-01-01T00:01:00.000Z'}),
@@ -321,8 +333,10 @@ describe('BacktestExecutor', () => {
         }
       }
 
-      // Candle 1: strategy says sell 100, order placed (capped to 5)
-      // Candle 2: order fills
+      /*
+       * Candle 1: strategy says sell 100, order placed (capped to 5)
+       * Candle 2: order fills
+       */
       const candles = [
         createCandle({open: '50', close: '50', low: '50', high: '50', openTimeInISO: '2025-01-01T00:00:00.000Z'}),
         createCandle({open: '50', close: '50', low: '50', high: '50', openTimeInISO: '2025-01-01T00:01:00.000Z'}),
@@ -508,8 +522,10 @@ describe('BacktestExecutor', () => {
         }
       }
 
-      // Candle 1: strategy says buy, order placed
-      // Candle 2: market order fills at open=100, then price goes to 150
+      /*
+       * Candle 1: strategy says buy, order placed
+       * Candle 2: market order fills at open=100, then price goes to 150
+       */
       const candles = [
         createCandle({open: '100', close: '100', low: '100', high: '100', openTimeInISO: '2025-01-01T00:00:00.000Z'}),
         createCandle({open: '100', close: '150', low: '100', high: '150', openTimeInISO: '2025-06-01T00:00:00.000Z'}),
@@ -744,9 +760,11 @@ describe('BacktestExecutor', () => {
     });
 
     it('does not fill a limit order when the rounded price falls outside the candle range', async () => {
-      // counter_increment = 0.50, so a price of 100.10 rounds down to 100.00.
-      // The candle's low is 100.10, so the rounded order price (100.00) is below the low
-      // and the order must NOT fill.
+      /*
+       * counter_increment = 0.50, so a price of 100.10 rounds down to 100.00.
+       * The candle's low is 100.10, so the rounded order price (100.00) is below the low
+       * and the order must NOT fill.
+       */
       const COARSE_RULES: Omit<TradingRules, 'pair'> = {
         base_increment: '0.0001',
         base_max_size: '100',
@@ -783,8 +801,10 @@ describe('BacktestExecutor', () => {
       ]);
       const exchange = new AlpacaBrokerMock({balances, tradingRules: COARSE_RULES});
 
-      // Candle 1: close=100.10 → advice to BUY_LIMIT at 100.10, which rounds to 100.00
-      // Candle 2: low=100.10 → rounded price (100.00) < low (100.10), so order must NOT fill
+      /*
+       * Candle 1: close=100.10 → advice to BUY_LIMIT at 100.10, which rounds to 100.00
+       * Candle 2: low=100.10 → rounded price (100.00) < low (100.10), so order must NOT fill
+       */
       const candles = [
         createCandle({
           open: '100.10',

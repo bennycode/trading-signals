@@ -40,9 +40,11 @@ export function buildMarketDataFromAccount(source: AccountAttributes): MarketDat
  * account (enforcing the same-user ownership rule) and turns it into a `MarketDataSource`.
  */
 function resolveMarketData(account: AccountAttributes): MarketDataSource | undefined {
-  // Explicitly check null (DB default) and undefined (legacy rows / test fixtures) so a
-  // stray 0 / NaN isn't silently treated as "no data source" — it falls through to the
-  // lookup below and surfaces a targeted "not found" error instead.
+  /*
+   * Explicitly check null (DB default) and undefined (legacy rows / test fixtures) so a
+   * stray 0 / NaN isn't silently treated as "no data source" — it falls through to the
+   * lookup below and surfaces a targeted "not found" error instead.
+   */
   if (account.marketDataAccountId === null || account.marketDataAccountId === undefined) {
     return undefined;
   }

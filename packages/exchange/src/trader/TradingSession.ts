@@ -155,9 +155,11 @@ export class TradingSession extends EventEmitter<TradingSessionEventMap> {
 
   async #executeAdvice(advice: OrderAdvice): Promise<void> {
     if (this.#pendingOrders.size > 0) {
-      // Only forget orders that were actually canceled. Any pending order missing
-      // from the canceled list filled before our cancel reached the exchange —
-      // keep it so the late FILL websocket event still matches and onFinish fires.
+      /*
+       * Only forget orders that were actually canceled. Any pending order missing
+       * from the canceled list filled before our cancel reached the exchange —
+       * keep it so the late FILL websocket event still matches and onFinish fires.
+       */
       const canceledIds = await this.#broker.cancelOpenOrders(this.#pair);
       for (const orderId of canceledIds) {
         this.#pendingOrders.delete(orderId);

@@ -2,8 +2,10 @@ import {NotEnoughDataError} from '../../index.js';
 import {ATR} from './ATR.js';
 
 describe('ATR', () => {
-  // Test data verified with:
-  // https://tulipindicators.org/atr
+  /*
+   * Test data verified with:
+   * https://tulipindicators.org/atr
+   */
   const candles = [
     {close: 81.59, high: 82.15, low: 81.29},
     {close: 81.06, high: 81.89, low: 80.64},

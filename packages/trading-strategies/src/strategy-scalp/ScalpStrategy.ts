@@ -9,8 +9,10 @@ import {positiveNumberString} from '../util/validators.js';
 import {suggestScalpOffset} from './suggestScalpOffset.js';
 
 export const ScalpSchema = ProtectedStrategySchema.extend({
-  /** Nominal price offset for each leg of the scalp (e.g., "0.10" means sell at fill+0.10, re-buy at fill-0.10).
-   *  When omitted, the offset is auto-computed from historical candles passed to `init()`. */
+  /**
+   * Nominal price offset for each leg of the scalp (e.g., "0.10" means sell at fill+0.10, re-buy at fill-0.10).
+   *  When omitted, the offset is auto-computed from historical candles passed to `init()`.
+   */
   offset: positiveNumberString.optional(),
   /** EMA period used for the initial entry filter. Default: 5. */
   emaPeriod: z.number().int().positive().optional().default(5),
@@ -184,8 +186,10 @@ export class ScalpStrategy extends ProtectedStrategy {
       return;
     }
 
-    // Refuse to open a position without a configured exit offset — otherwise
-    // the strategy would get stuck in pendingAdvice after the fill.
+    /*
+     * Refuse to open a position without a configured exit offset — otherwise
+     * the strategy would get stuck in pendingAdvice after the fill.
+     */
     if (!this.#config.offset) {
       return;
     }

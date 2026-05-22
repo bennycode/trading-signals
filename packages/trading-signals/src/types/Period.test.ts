@@ -48,8 +48,10 @@ describe('Period', () => {
 
   describe('isStable', () => {
     it('returns the lowest and highest value during the period when it is stable', () => {
-      // Test data verified with:
-      // https://tulipindicators.org/min
+      /*
+       * Test data verified with:
+       * https://tulipindicators.org/min
+       */
       const prices = [
         81.59, 81.06, 82.87, 83.0, 83.61, 83.15, 82.84, 83.99, 84.55, 84.36, 85.53, 86.54, 86.89, 87.77, 87.29,
       ] as const;

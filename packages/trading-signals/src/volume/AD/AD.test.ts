@@ -4,8 +4,10 @@ import {TradingSignal} from '../../types/index.js';
 describe('AD', () => {
   describe('getResultOrThrow', () => {
     it('calculates the Accumulation/Distribution line', () => {
-      // Test data verified with:
-      // https://www.investopedia.com/terms/a/accumulationdistribution.asp
+      /*
+       * Test data verified with:
+       * https://www.investopedia.com/terms/a/accumulationdistribution.asp
+       */
       const candles = [
         {close: 62.15, high: 62.34, low: 61.37, volume: 7849},
         {close: 60.81, high: 62.05, low: 60.69, volume: 11692},

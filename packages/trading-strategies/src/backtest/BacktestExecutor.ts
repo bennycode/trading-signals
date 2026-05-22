@@ -65,9 +65,11 @@ export class BacktestExecutor {
       await this.#placeOrderFromAdvice(advice, tradingPair, tradingRules, feeRates);
     }
 
-    // Cancel any orders placed on the last candle that were never filled.
-    // This releases their held balances back to available so the final stats
-    // correctly reflect what the portfolio actually holds.
+    /*
+     * Cancel any orders placed on the last candle that were never filled.
+     * This releases their held balances back to available so the final stats
+     * correctly reflect what the portfolio actually holds.
+     */
     await exchange.cancelOpenOrders(tradingPair);
 
     const finalBalances = await exchange.getAvailableBalances(tradingPair);

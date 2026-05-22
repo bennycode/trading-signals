@@ -13,8 +13,10 @@ const {mockSession, mockStrategy, TradingSessionMock, mockAccountModel, mockStra
       state: {position: 'long'},
       config: {threshold: 10},
     },
-    // Must stay a regular function: the code under test calls `new TradingSession(...)`,
-    // and arrow functions are not constructable.
+    /*
+     * Must stay a regular function: the code under test calls `new TradingSession(...)`,
+     * and arrow functions are not constructable.
+     */
     // eslint-disable-next-line prefer-arrow-callback
     TradingSessionMock: vi.fn(function () {
       return session;

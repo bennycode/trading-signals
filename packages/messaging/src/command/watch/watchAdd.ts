@@ -14,8 +14,10 @@ export interface WatchResult {
   watch?: WatchAttributes;
 }
 
-// Request Example: "/watchAdd SHOP,USD 1 1m +5%"
-// Format: "<pair> <accountId> <interval> <threshold>"
+/*
+ * Request Example: "/watchAdd SHOP,USD 1 1m +5%"
+ * Format: "<pair> <accountId> <interval> <threshold>"
+ */
 export const watchAdd = async (request: string, userId: string): Promise<WatchResult> => {
   const parts = request.trim().split(' ');
 

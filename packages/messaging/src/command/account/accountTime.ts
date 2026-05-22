@@ -2,8 +2,10 @@ import {getAccountBrokerClient} from '../../broker/getAccountBrokerClient.js';
 import {assertId} from '../../validation/assertId.js';
 import {getAccountOrError} from '../../validation/getAccountOrError.js';
 
-// Request Example: "1"
-// Format: "<accountId>"
+/*
+ * Request Example: "1"
+ * Format: "<accountId>"
+ */
 export const accountTime = async (request: string, userId: string) => {
   try {
     const accountId = assertId(request);

@@ -5,8 +5,10 @@ import {TradingSignal} from '../../types/Indicator.js';
 describe('ROC', () => {
   describe('getResultOrThrow', () => {
     it('identifies an up-trending asset by a positive ROC', () => {
-      // Test data verified with:
-      // https://tulipindicators.org/roc
+      /*
+       * Test data verified with:
+       * https://tulipindicators.org/roc
+       */
       const prices = [
         81.59, 81.06, 82.87, 83.0, 83.61, 83.15, 82.84, 83.99, 84.55, 84.36, 85.53, 86.54, 86.89, 87.77, 87.29,
       ] as const;

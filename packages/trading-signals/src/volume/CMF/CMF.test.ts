@@ -5,8 +5,10 @@ import {TradingSignal} from '../../types/index.js';
 describe('CMF', () => {
   describe('getResultOrThrow', () => {
     it('calculates the Chaikin Money Flow', () => {
-      // Test data verified with:
-      // https://school.stockcharts.com/doku.php?id=technical_indicators:chaikin_money_flow_cmf
+      /*
+       * Test data verified with:
+       * https://school.stockcharts.com/doku.php?id=technical_indicators:chaikin_money_flow_cmf
+       */
       const candles = [
         {close: 62.15, high: 62.34, low: 61.37, volume: 7849},
         {close: 60.81, high: 62.05, low: 60.69, volume: 11692},

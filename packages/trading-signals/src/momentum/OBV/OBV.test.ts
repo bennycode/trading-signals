@@ -5,8 +5,10 @@ import {TradingSignal} from '../../types/index.js';
 describe('OBV', () => {
   describe('getResultOrThrow', () => {
     it('calculates the relative strength index', () => {
-      // Test data verified with:
-      // https://www.investopedia.com/terms/o/onbalancevolume.asp#mntl-sc-block_1-0-27
+      /*
+       * Test data verified with:
+       * https://www.investopedia.com/terms/o/onbalancevolume.asp#mntl-sc-block_1-0-27
+       */
       const prices = [10, 10.15, 10.17, 10.13, 10.11, 10.15, 10.2, 10.2, 10.22, 10.21] as const;
       const volumes = [25200, 30000, 25600, 32000, 23000, 40000, 36000, 20500, 23000, 27500] as const;
       const candles = prices.map((price, index) => ({

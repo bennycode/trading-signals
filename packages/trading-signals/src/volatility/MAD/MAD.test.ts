@@ -2,8 +2,10 @@ import {MAD} from './MAD.js';
 import {NotEnoughDataError} from '../../error/index.js';
 
 describe('MAD', () => {
-  // Test data verified with:
-  // https://tulipindicators.org/md
+  /*
+   * Test data verified with:
+   * https://tulipindicators.org/md
+   */
   const prices = [
     81.59, 81.06, 82.87, 83.0, 83.61, 83.15, 82.84, 83.99, 84.55, 84.36, 85.53, 86.54, 86.89, 87.77, 87.29,
   ] as const;
@@ -42,8 +44,10 @@ describe('MAD', () => {
 
   describe('getResultOrThrow', () => {
     it('calculates the absolute deviation from the mean over a period', () => {
-      // Test data verified with:
-      // https://en.wikipedia.org/wiki/Average_absolute_deviation#Mean_absolute_deviation_around_a_central_point
+      /*
+       * Test data verified with:
+       * https://en.wikipedia.org/wiki/Average_absolute_deviation#Mean_absolute_deviation_around_a_central_point
+       */
       const prices = [2, 2, 3, 4, 14];
       const mad = new MAD(5);
 
@@ -95,15 +99,19 @@ describe('MAD', () => {
     });
 
     it('calculates the mean when no mean is given', () => {
-      // Test data verified with:
-      // https://en.wikipedia.org/wiki/Average_absolute_deviation#Mean_absolute_deviation_around_a_central_point
+      /*
+       * Test data verified with:
+       * https://en.wikipedia.org/wiki/Average_absolute_deviation#Mean_absolute_deviation_around_a_central_point
+       */
       const prices = [2, 2, 3, 4, 14];
       expect(MAD.getResultFromBatch(prices)).toBe(3.6);
     });
 
     it('accepts a supplied mean', () => {
-      // Test data verified with:
-      // https://en.wikipedia.org/wiki/Average_absolute_deviation#Mean_absolute_deviation_around_a_central_point
+      /*
+       * Test data verified with:
+       * https://en.wikipedia.org/wiki/Average_absolute_deviation#Mean_absolute_deviation_around_a_central_point
+       */
       const prices = [2, 2, 3, 4, 14];
       const mean = 5;
       expect(MAD.getResultFromBatch(prices, mean)).toBe(3.6);

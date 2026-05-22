@@ -10,8 +10,10 @@ interface AccountEditResult {
   accountId?: number;
 }
 
-// Request Example: "1 API_KEY API_SECRET"
-// Format: "<id> <apiKey> <apiSecret>"
+/*
+ * Request Example: "1 API_KEY API_SECRET"
+ * Format: "<id> <apiKey> <apiSecret>"
+ */
 export async function accountEdit(request: string, userId: string): Promise<AccountEditResult> {
   const parts = request.trim().split(' ');
 
@@ -25,8 +27,10 @@ export async function accountEdit(request: string, userId: string): Promise<Acco
     const accountId = assertId(idStr);
     const account = getAccountOrError(userId, accountId);
 
-    // Resolve the existing data source so feed-less brokers (e.g. Trading212) can be
-    // validated; account.marketDataAccountId is unchanged by an edit.
+    /*
+     * Resolve the existing data source so feed-less brokers (e.g. Trading212) can be
+     * validated; account.marketDataAccountId is unchanged by an edit.
+     */
     let marketData;
     if (account.marketDataAccountId !== null) {
       const source = Account.findByUserIdAndId(userId, account.marketDataAccountId);

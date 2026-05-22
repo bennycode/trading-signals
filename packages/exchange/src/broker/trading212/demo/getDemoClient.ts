@@ -12,8 +12,10 @@ export function getDemoClient(): Trading212Broker {
   assert.ok(apiKey, `Missing ${keyVar} in environment`);
   assert.ok(apiSecret, `Missing ${secretVar} in environment`);
 
-  // Trading212 has no candle endpoints; the demo wires AlpacaMarketData with separate
-  // Alpaca paper credentials so candle methods on the broker work end-to-end.
+  /*
+   * Trading212 has no candle endpoints; the demo wires AlpacaMarketData with separate
+   * Alpaca paper credentials so candle methods on the broker work end-to-end.
+   */
   const alpacaKey = process.env.ALPACA_PAPER_API_KEY;
   const alpacaSecret = process.env.ALPACA_PAPER_API_SECRET;
   assert.ok(alpacaKey, 'Missing ALPACA_PAPER_API_KEY in environment (Trading212 needs an external market-data source)');

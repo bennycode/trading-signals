@@ -28,10 +28,12 @@ export function makeStrategyAddWizard(deps: {strategyMonitor: () => StrategyMoni
       return;
     }
 
-    // Encode the index rather than the strategy name: Telegram caps
-    // callback_data at 64 bytes, and names like
-    // "@typedtrader/strategy-multi-indicator-confluence" blow past that
-    // once prefixed.
+    /*
+     * Encode the index rather than the strategy name: Telegram caps
+     * callback_data at 64 bytes, and names like
+     * "@typedtrader/strategy-multi-indicator-confluence" blow past that
+     * once prefixed.
+     */
     const strategyButtons: InlineButton[][] = strategies.map((name, idx) => [
       {text: name, callback_data: `strategyadd:strat:${idx}`},
     ]);

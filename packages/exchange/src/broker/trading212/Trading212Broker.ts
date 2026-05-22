@@ -164,9 +164,11 @@ export class Trading212Broker extends Broker implements MarketDataSource {
 
     const tick = async () => {
       try {
-        // Page through history (newest first) until we reach an id we've already seen.
-        // Without this loop, more than 50 fills between polls would silently drop the older
-        // ones off the first page.
+        /*
+         * Page through history (newest first) until we reach an id we've already seen.
+         * Without this loop, more than 50 fills between polls would silently drop the older
+         * ones off the first page.
+         */
         const newFills: typeof baseline.items = [];
         let nextPath: string | null = null;
         do {
@@ -231,10 +233,12 @@ export class Trading212Broker extends Broker implements MarketDataSource {
     }
     this.#orderWatchers.clear();
 
-    // Tear down active candle subscriptions. The injected `marketData` itself is owned
-    // by the caller and intentionally not disconnected here — but the forwarders,
-    // listeners, and remote topic subscriptions that this broker registered against it
-    // do need cleanup. Snapshot the keys so `unwatchCandles` can mutate the map safely.
+    /*
+     * Tear down active candle subscriptions. The injected `marketData` itself is owned
+     * by the caller and intentionally not disconnected here — but the forwarders,
+     * listeners, and remote topic subscriptions that this broker registered against it
+     * do need cleanup. Snapshot the keys so `unwatchCandles` can mutate the map safely.
+     */
     for (const topicId of [...this.#candleListenerByTopic.keys()]) {
       this.unwatchCandles(topicId);
     }
@@ -270,12 +274,14 @@ export class Trading212Broker extends Broker implements MarketDataSource {
 
   async getOpenOrders(pair: TradingPair): Promise<PendingOrder[]> {
     const orders = await this.#api.getOrders();
-    // Drop orders that don't fit the neutral model:
-    // - STOP / STOP_LIMIT (e.g. placed manually in the Trading212 app): neutral `OrderType`
-    //   only models MARKET and LIMIT; coercing would silently lose `stopPrice`.
-    // - VALUE-strategy orders (notional amount in `value` instead of `quantity`): neutral
-    //   `PendingOrder.size` is base-asset units, not notional. Filter to QUANTITY-strategy
-    //   orders only.
+    /*
+     * Drop orders that don't fit the neutral model:
+     * - STOP / STOP_LIMIT (e.g. placed manually in the Trading212 app): neutral `OrderType`
+     *   only models MARKET and LIMIT; coercing would silently lose `stopPrice`.
+     * - VALUE-strategy orders (notional amount in `value` instead of `quantity`): neutral
+     *   `PendingOrder.size` is base-asset units, not notional. Filter to QUANTITY-strategy
+     *   orders only.
+     */
     return orders
       .filter(
         order =>
@@ -322,9 +328,11 @@ export class Trading212Broker extends Broker implements MarketDataSource {
       throw new Error(`Instrument "${pair.base}" is quoted in "${instrument.currencyCode}", not "${pair.counter}".`);
     }
 
-    // Trading212's `minTradeQuantity` is the floor *and* the increment for fractional shares.
-    // Use the same non-zero fallback for both — falling back to '0' on `base_min_size` would
-    // let computed sizes of zero pass `TradingSession`'s min-size guard.
+    /*
+     * Trading212's `minTradeQuantity` is the floor *and* the increment for fractional shares.
+     * Use the same non-zero fallback for both — falling back to '0' on `base_min_size` would
+     * let computed sizes of zero pass `TradingSession`'s min-size guard.
+     */
     const minQuantity = `${instrument.minTradeQuantity ?? '0.000000001'}`;
     return {
       base_increment: minQuantity,
@@ -365,10 +373,12 @@ export class Trading212Broker extends Broker implements MarketDataSource {
     const signedQuantity = options.side === OrderSide.SELL ? -Number(options.size) : Number(options.size);
 
     if (options.type === OrderType.LIMIT) {
-      // Trading212 rejects GTC for stock limit orders ("Invalid payload"). DAY is the only
-      // time-in-force that works across paper and live for equity limit orders.
-      // `extendedHours: true` always — routes through Trading212's 24/5 venue so orders
-      // submitted outside NASDAQ regular hours (14:30-21:00 UTC) don't get cancelled.
+      /*
+       * Trading212 rejects GTC for stock limit orders ("Invalid payload"). DAY is the only
+       * time-in-force that works across paper and live for equity limit orders.
+       * `extendedHours: true` always — routes through Trading212's 24/5 venue so orders
+       * submitted outside NASDAQ regular hours (14:30-21:00 UTC) don't get cancelled.
+       */
       const order = await this.#api.placeLimitOrder({
         extendedHours: true,
         limitPrice: Number(options.price),

@@ -5,8 +5,10 @@ import {AC} from './AC.js';
 type Candle = readonly [timestamp: number, open: number, close: number, high: number, low: number, volume: number];
 
 describe('AC', () => {
-  // Test data verified with:
-  // https://github.com/jesse-ai/jesse/blob/8e502d070c24bed29db80e1d0938781d8cdb1046/tests/data/test_candles_indicators.py#L4351
+  /*
+   * Test data verified with:
+   * https://github.com/jesse-ai/jesse/blob/8e502d070c24bed29db80e1d0938781d8cdb1046/tests/data/test_candles_indicators.py#L4351
+   */
   const candles: readonly Candle[] = [
     [1563408000000, 210.8, 225.73, 229.65, 205.71, 609081.49094],
     [1563494400000, 225.75, 220.73, 226.23, 212.52, 371622.21865],
@@ -287,8 +289,10 @@ describe('AC', () => {
         ac.add(candle);
       }
 
-      // Result verified with:
-      // https://github.com/jesse-ai/jesse/blob/53297462d48ebf43f9df46ab5005076d25073e5e/tests/test_indicators.py#L14
+      /*
+       * Result verified with:
+       * https://github.com/jesse-ai/jesse/blob/53297462d48ebf43f9df46ab5005076d25073e5e/tests/test_indicators.py#L14
+       */
       expect(ac.isStable).toBe(true);
       expect(ac.getRequiredInputs()).toBe(39);
       expect(ac.getResultOrThrow().toFixed(2)).toBe('-21.97');

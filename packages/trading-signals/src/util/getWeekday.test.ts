@@ -43,8 +43,10 @@ describe('weekday indicators', () => {
     });
 
     it('handles date line crossing', () => {
-      // Test with Pacific timezone where date differs from UTC
-      // January 1, 2024 at 7 AM UTC = December 31, 2023 at 11 PM PST
+      /*
+       * Test with Pacific timezone where date differs from UTC
+       * January 1, 2024 at 7 AM UTC = December 31, 2023 at 11 PM PST
+       */
       const date = new Date('2024-01-01T07:00:00Z'); // 7 AM UTC Monday
       expect(isMonday('UTC', date)).toBe(true);
       expect(isSunday('America/Los_Angeles', date)).toBe(true); // Still Sunday at 11 PM PST

@@ -93,8 +93,10 @@ describe('TelegramPlatform', () => {
     it('includes the self-registered trade commands even before registerCommand is called', () => {
       const platform = new TelegramPlatform('bot-token');
 
-      // Trade commands register themselves in the TelegramPlatform constructor
-      // because their wizards depend on grammy + the conversations plugin.
+      /*
+       * Trade commands register themselves in the TelegramPlatform constructor
+       * because their wizards depend on grammy + the conversations plugin.
+       */
       expect(platform.commandList).toEqual(
         expect.arrayContaining(['/buyMarket', '/sellMarket', '/buyLimit', '/sellLimit'])
       );
@@ -128,9 +130,11 @@ describe('TelegramPlatform', () => {
 
       platform.registerCommand('reportAdd', vi.fn());
 
-      // reportAdd uses bot.command and bot.callbackQuery, not the generic handler path.
-      // grammY only accepts lowercase command names, so the registration uses 'reportadd'
-      // while the display name stays camelCase.
+      /*
+       * reportAdd uses bot.command and bot.callbackQuery, not the generic handler path.
+       * grammY only accepts lowercase command names, so the registration uses 'reportadd'
+       * while the display name stays camelCase.
+       */
       expect(mockCommand).toHaveBeenCalledWith('reportadd', expect.any(Function));
       expect(mockCallbackQuery).toHaveBeenCalledWith(expect.any(RegExp), expect.any(Function));
     });
@@ -295,8 +299,10 @@ describe('TelegramPlatform', () => {
     it('propagates API send errors instead of silently falling back to plaintext', async () => {
       const platform = new TelegramPlatform('bot-token');
 
-      // Anything that escapes the `@grammyjs/auto-retry` budget — transport error,
-      // Telegram rejection, rate-limit exhaustion — should reach the caller.
+      /*
+       * Anything that escapes the `@grammyjs/auto-retry` budget — transport error,
+       * Telegram rejection, rate-limit exhaustion — should reach the caller.
+       */
       mockSendMessage.mockRejectedValueOnce(new Error('read ECONNRESET'));
 
       await expect(platform.sendMessage('telegram:123456', 'Hello world')).rejects.toThrow('read ECONNRESET');
@@ -351,10 +357,12 @@ describe('TelegramPlatform', () => {
   });
 
   describe('auth middleware', () => {
-    // `bot.command(name, handler)` is called both by the constructor (for
-    // self-registered trade commands) and by each `registerCommand` call, so
-    // `mockCommand.mock.calls[0]` is no longer the command under test.
-    // Look up the callback by matching the first argument instead.
+    /*
+     * `bot.command(name, handler)` is called both by the constructor (for
+     * self-registered trade commands) and by each `registerCommand` call, so
+     * `mockCommand.mock.calls[0]` is no longer the command under test.
+     * Look up the callback by matching the first argument instead.
+     */
     const findRegisteredCallback = (commandName: string) => {
       const call = mockCommand.mock.calls.find(([names]) => {
         if (Array.isArray(names)) {

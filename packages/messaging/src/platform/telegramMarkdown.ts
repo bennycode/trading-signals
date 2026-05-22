@@ -71,8 +71,10 @@ const TELEGRAM_MAX_CHUNK = 3900;
  * (`\n`) boundaries, and only hard-split a single line as a last resort.
  */
 export function splitForTelegram(markdown: string, maxLength = TELEGRAM_MAX_CHUNK): string[] {
-  // Honor forced section breaks first. Strip the surrounding newlines that end
-  // up around the marker after line-join so each section starts cleanly.
+  /*
+   * Honor forced section breaks first. Strip the surrounding newlines that end
+   * up around the marker after line-join so each section starts cleanly.
+   */
   const sections = markdown
     .split(MESSAGE_BREAK)
     .map(trimNewlines)

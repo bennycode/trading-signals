@@ -172,8 +172,10 @@ export class ProtectedStrategy extends Strategy {
     // Parse only the nested `protected` sub-object — the subclass owns the rest of the config.
     const protectedConfig = ProtectedConfigSchema.parse(options.config[PROTECTED_STATE_KEY] ?? {});
 
-    // Zod's `.refine()` would turn the schema into `ZodEffects`, which cannot
-    // be `.extend()`-ed by subclasses. Mutual exclusion is validated here instead.
+    /*
+     * Zod's `.refine()` would turn the schema into `ZodEffects`, which cannot
+     * be `.extend()`-ed by subclasses. Mutual exclusion is validated here instead.
+     */
     const stopLossFields = [
       protectedConfig.stopLossPct,
       protectedConfig.stopLossNominal,
@@ -462,9 +464,11 @@ export class ProtectedStrategy extends Strategy {
       [PROTECTED_STATE_KEY]: restoredProtected,
     });
 
-    // The base class only updates `#_state`; the proxied state still points at
-    // the original object from the constructor. Reassigning `protected` through
-    // the proxy propagates restored values into the proxied state.
+    /*
+     * The base class only updates `#_state`; the proxied state still points at
+     * the original object from the constructor. Reassigning `protected` through
+     * the proxy propagates restored values into the proxied state.
+     */
     this.#setProtectedState(restoredProtected);
   }
 
@@ -543,8 +547,10 @@ function isProtectedStrategyState(value: unknown): value is ProtectedStrategySta
     return false;
   }
 
-  // Cross-field invariants: a killed state must be fully specified so that
-  // the retry path in onCandle has everything it needs to build fresh advice.
+  /*
+   * Cross-field invariants: a killed state must be fully specified so that
+   * the retry path in onCandle has everything it needs to build fresh advice.
+   */
   if (candidate.killed === true) {
     if (candidate.killedOrderType === null) {
       return false;

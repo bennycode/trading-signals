@@ -4,8 +4,10 @@ import {assertId} from '../validation/assertId.js';
 import {assertInterval} from '../validation/assertInterval.js';
 import {getAccountOrError} from '../validation/getAccountOrError.js';
 
-// Request Example: "1 SHOP,USD 1h"
-// Format: "<accountId> <pair> <interval>"
+/*
+ * Request Example: "1 SHOP,USD 1h"
+ * Format: "<accountId> <pair> <interval>"
+ */
 export const candle = async (request: string, userId: string) => {
   const parts = request.trim().split(' ');
 

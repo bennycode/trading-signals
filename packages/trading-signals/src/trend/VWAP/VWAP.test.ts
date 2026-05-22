@@ -39,8 +39,10 @@ describe('VWAP', () => {
     it('calculates VWAP correctly', () => {
       const vwap = new VWAP();
 
-      // Test data verified with:
-      // https://github.com/cinar/indicatorts/blob/v2.2.2/src/indicator/volume/volumeWeightedAveragePrice.test.ts
+      /*
+       * Test data verified with:
+       * https://github.com/cinar/indicatorts/blob/v2.2.2/src/indicator/volume/volumeWeightedAveragePrice.test.ts
+       */
       const data = [
         {close: 9, high: 9, low: 9, volume: 100},
         {close: 11, high: 11, low: 11, volume: 110},

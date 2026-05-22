@@ -52,13 +52,17 @@ export function makeAccountAddWizard() {
     await modeCb.answerCallbackQuery();
     const isPaper = modeCb.match === 'accountadd:mode:paper';
 
-    // Brokers without their own market-data feed (e.g. Trading212) reuse another account's
-    // credentials for candles. Ask which existing account should serve as that data source.
+    /*
+     * Brokers without their own market-data feed (e.g. Trading212) reuse another account's
+     * credentials for candles. Ask which existing account should serve as that data source.
+     */
     let marketDataAccountId: number | null = null;
     if (EXCHANGES_WITHOUT_MARKET_DATA.includes(exchange)) {
-      // The data source must run in the same mode: Alpaca serves data from different
-      // environments (data.sandbox vs data.alpaca) and keys for paper vs live, so a paper
-      // account can only feed a paper account and likewise for live.
+      /*
+       * The data source must run in the same mode: Alpaca serves data from different
+       * environments (data.sandbox vs data.alpaca) and keys for paper vs live, so a paper
+       * account can only feed a paper account and likewise for live.
+       */
       const modeLabel = isPaper ? 'Paper' : 'Live';
       const dataSourceAccounts = await conversation.external(() =>
         Account.findByUserId(args.userId).filter(
@@ -142,8 +146,10 @@ export function makeAccountAddWizard() {
 
     const result = await conversation.external(async () => {
       try {
-        // Feed-less brokers need their referenced data source wired in, otherwise the
-        // connection test (and every later candle call) fails to construct a client.
+        /*
+         * Feed-less brokers need their referenced data source wired in, otherwise the
+         * connection test (and every later candle call) fails to construct a client.
+         */
         let marketData;
         if (marketDataAccountId !== null) {
           const source = Account.findByUserIdAndId(args.userId, marketDataAccountId);

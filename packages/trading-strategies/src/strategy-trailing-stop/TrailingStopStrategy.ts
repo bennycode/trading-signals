@@ -284,9 +284,11 @@ function isTrailingStopState(value: unknown): value is TrailingStopState {
     }
   }
 
-  // Cross-field invariants. Restoring a state that violates these would strand the
-  // strategy in a no-op or otherwise inconsistent runtime state, so reject and let
-  // restoreState fall back to defaults.
+  /*
+   * Cross-field invariants. Restoring a state that violates these would strand the
+   * strategy in a no-op or otherwise inconsistent runtime state, so reject and let
+   * restoreState fall back to defaults.
+   */
   const positionSize = new Big(value.positionSize);
   const peakPrice = new Big(value.peakPrice);
   const stopPrice = new Big(value.stopPrice);
@@ -296,9 +298,11 @@ function isTrailingStopState(value: unknown): value is TrailingStopState {
     return false;
   }
 
-  // Attached (peak set) but not exited and no position left → permanent no-op:
-  // the seed branch is skipped (peak !== '0') and the trail branch returns early
-  // (positionSize <= 0). Treat as corrupt and reset.
+  /*
+   * Attached (peak set) but not exited and no position left → permanent no-op:
+   * the seed branch is skipped (peak !== '0') and the trail branch returns early
+   * (positionSize <= 0). Treat as corrupt and reset.
+   */
   if (!peakPrice.eq(0) && !value.exited && positionSize.lte(0)) {
     return false;
   }

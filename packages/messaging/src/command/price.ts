@@ -3,8 +3,10 @@ import {getAccountBrokerClient} from '../broker/getAccountBrokerClient.js';
 import {assertId} from '../validation/assertId.js';
 import {getAccountOrError} from '../validation/getAccountOrError.js';
 
-// Request Example: "1 SHOP,USD"
-// Format: "<accountId> <pair>"
+/*
+ * Request Example: "1 SHOP,USD"
+ * Format: "<accountId> <pair>"
+ */
 export const price = async (request: string, userId: string) => {
   const parts = request.trim().split(' ');
 

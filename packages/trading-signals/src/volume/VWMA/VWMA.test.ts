@@ -6,10 +6,12 @@ import {EMA} from '../../trend/EMA/EMA.js';
 describe('VWMA', () => {
   describe('getResultOrThrow', () => {
     it('calculates the Volume Weighted Moving Average', () => {
-      // Price 10 * Volume 100 = 1000
-      // Price 12 * Volume 200 = 2400
-      // Price 11 * Volume 150 = 1650
-      // Sum PV = 5050, Sum V = 450, VWMA = 5050/450 = 11.222...
+      /*
+       * Price 10 * Volume 100 = 1000
+       * Price 12 * Volume 200 = 2400
+       * Price 11 * Volume 150 = 1650
+       * Sum PV = 5050, Sum V = 450, VWMA = 5050/450 = 11.222...
+       */
       const candles = [
         {close: 10, high: 11, low: 9, volume: 100},
         {close: 12, high: 13, low: 11, volume: 200},

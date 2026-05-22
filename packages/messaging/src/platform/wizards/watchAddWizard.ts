@@ -147,8 +147,10 @@ export function makeWatchAddWizard(deps: {watchMonitor: () => WatchMonitor | und
         });
         return {ok: true as const, watch, baselinePrice, alertPrice: alertPrice.toString(), counter: pair.counter};
       } catch (error) {
-        // Log ONLY the message — axios errors carry the API key and secret
-        // in their headers.
+        /*
+         * Log ONLY the message — axios errors carry the API key and secret
+         * in their headers.
+         */
         const message = error instanceof Error ? error.message : 'Unknown error';
         logger.error({message}, 'watchAdd wizard failed');
         return {ok: false as const, error: message};

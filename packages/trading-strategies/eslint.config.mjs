@@ -18,9 +18,5 @@ export default defineConfig({
     // companion pattern as an enum replacement. `no-redeclare` misfires on the shared
     // value/type name even though TypeScript allows it; renaming would break public APIs.
     '@typescript-eslint/no-redeclare': 'off',
-    // eslint-plugin-sort-keys-fix@1.1.2 calls the removed context.getSourceCode() and
-    // crashes under ESLint 10 whenever it has a key to reorder. It is only a stylistic
-    // warning, so disable it until the plugin supports ESLint 10.
-    'sort-keys-fix/sort-keys-fix': 'off',
   },
 });

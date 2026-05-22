@@ -48,9 +48,11 @@ export class HigherLowTrail extends IndicatorSeries<HighLow> {
   }
 
   update(candle: HighLow<number>, replace: boolean) {
-    // If the bar being replaced produced the last emission, unwind it up-front so the
-    // monotonic check compares against the correct baseline trail — not whatever stale
-    // `previousResult` happens to hold.
+    /*
+     * If the bar being replaced produced the last emission, unwind it up-front so the
+     * monotonic check compares against the correct baseline trail — not whatever stale
+     * `previousResult` happens to hold.
+     */
     if (replace && this.#lastEmitted) {
       this.rollbackLastResult();
     }

@@ -8,10 +8,12 @@ vi.mock('axios', () => ({
   },
 }));
 
-// axios-retry runs at module-load time and wraps interceptors on the axios
-// instance. We bypass it because the mocked axios instance has no
-// interceptors — the real retry behavior is exercised by the production
-// client, not by these unit tests.
+/*
+ * axios-retry runs at module-load time and wraps interceptors on the axios
+ * instance. We bypass it because the mocked axios instance has no
+ * interceptors — the real retry behavior is exercised by the production
+ * client, not by these unit tests.
+ */
 vi.mock('axios-retry', () => ({
   default: vi.fn(),
 }));
@@ -100,8 +102,10 @@ describe('isEarningsDay', () => {
 
     await isEarningsDay({
       apiKey: 'secret-key',
-      // Late-evening UTC rolls into the next calendar day in Asia but stays
-      // on 2026-05-01 in UTC. The implementation must anchor to UTC.
+      /*
+       * Late-evening UTC rolls into the next calendar day in Asia but stays
+       * on 2026-05-01 in UTC. The implementation must anchor to UTC.
+       */
       date: new Date('2026-05-01T23:45:00Z'),
       symbol: 'AAPL',
     });

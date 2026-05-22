@@ -33,8 +33,10 @@ export class AlpacaAPI {
         if (hasResponseCode(error) && error.response?.data.code === 40310100) {
           return false;
         }
-        // Account is not allowed to short (you must have $2,000 or more)
-        // @see https://docs.alpaca.markets/us/docs/margin-and-short-selling
+        /*
+         * Account is not allowed to short (you must have $2,000 or more)
+         * @see https://docs.alpaca.markets/us/docs/margin-and-short-selling
+         */
         if (hasResponseCode(error) && error.response?.data.code === 40310000) {
           return false;
         }

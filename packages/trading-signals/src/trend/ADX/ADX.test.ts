@@ -1,9 +1,11 @@
 import {ADX} from './ADX.js';
 
 describe('ADX', () => {
-  // Test data verified with:
-  // https://tulipindicators.org/adx
-  // https://github.com/TulipCharts/tulipindicators/blob/v0.9.1/tests/untest.txt#L36-L37
+  /*
+   * Test data verified with:
+   * https://tulipindicators.org/adx
+   * https://github.com/TulipCharts/tulipindicators/blob/v0.9.1/tests/untest.txt#L36-L37
+   */
   const candles = [
     {close: 81.59, high: 82.15, low: 81.29},
     {close: 81.06, high: 81.89, low: 80.64},

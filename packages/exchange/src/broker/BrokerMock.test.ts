@@ -332,8 +332,10 @@ describe('BrokerMock', () => {
         price: '100',
       });
 
-      // The order was placed after processCandle, so it wasn't included in matching
-      // Verify the order is still pending
+      /*
+       * The order was placed after processCandle, so it wasn't included in matching
+       * Verify the order is still pending
+       */
       expect(exchange.getPendingOrders()).toHaveLength(1);
 
       // Only fills on the NEXT candle

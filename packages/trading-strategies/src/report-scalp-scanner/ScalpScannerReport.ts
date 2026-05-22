@@ -62,8 +62,10 @@ export class ScalpScannerReport extends Report<ScalpScannerConfig> {
         continue;
       }
 
-      // Trim to the most recent `lookbackDays` trading days so the analysis window
-      // matches the documented behavior regardless of weekends/holidays.
+      /*
+       * Trim to the most recent `lookbackDays` trading days so the analysis window
+       * matches the documented behavior regardless of weekends/holidays.
+       */
       const allDaily = this.#aggregateToDailyBars(bars);
       const daily = allDaily.slice(-this.config.lookbackDays);
       if (daily.length < 14) {

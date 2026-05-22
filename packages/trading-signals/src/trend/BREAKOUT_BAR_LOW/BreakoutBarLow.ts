@@ -38,9 +38,11 @@ export class BreakoutBarLow extends IndicatorSeries<HighLow> {
   }
 
   update(candle: HighLow<number>, replace: boolean) {
-    // If the bar being replaced produced the last emission, unwind it up-front so
-    // `getResult()` doesn't keep a stale breakout low when the replacement no longer
-    // qualifies as a breakout.
+    /*
+     * If the bar being replaced produced the last emission, unwind it up-front so
+     * `getResult()` doesn't keep a stale breakout low when the replacement no longer
+     * qualifies as a breakout.
+     */
     if (replace && this.#lastEmitted) {
       this.rollbackLastResult();
     }

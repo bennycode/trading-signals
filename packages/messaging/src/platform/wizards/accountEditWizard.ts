@@ -45,8 +45,10 @@ export function makeAccountEditWizard(deps: {
       typeof accountCb.match === 'string' ? parseInt(accountCb.match.split(':')[2], 10) : accounts[0].id;
     const account = accounts.find(a => a.id === selectedId) ?? accounts[0];
 
-    // The account ID, name, exchange and paper mode are kept — only the
-    // credentials change, so all linked watches, strategies and reports stay intact.
+    /*
+     * The account ID, name, exchange and paper mode are kept — only the
+     * credentials change, so all linked watches, strategies and reports stay intact.
+     */
     await accountCb.editMessageText(
       `Account: ${account.name}\n\nSend the new API key (the message will be deleted after receipt):`
     );
@@ -81,8 +83,10 @@ export function makeAccountEditWizard(deps: {
 
     const result = await conversation.external(async () => {
       try {
-        // Feed-less brokers (e.g. Trading212) need their existing data source resolved to
-        // validate; the edit only changes credentials, not marketDataAccountId.
+        /*
+         * Feed-less brokers (e.g. Trading212) need their existing data source resolved to
+         * validate; the edit only changes credentials, not marketDataAccountId.
+         */
         let marketData;
         if (account.marketDataAccountId !== null) {
           const source = Account.findByUserIdAndId(args.userId, account.marketDataAccountId);

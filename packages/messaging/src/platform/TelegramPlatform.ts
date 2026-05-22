@@ -32,9 +32,11 @@ const MODE_CALLBACK_PREFIX = 'reportmode:';
 const INTERVAL_CALLBACK_PREFIX = 'reportinterval:';
 
 const TRADE_CONVERSATION_ID = 'trade';
-// Display (camelCase) names shown in `/help` and usage errors. grammY
-// registration uses the lowercased form so command matching stays
-// case-insensitive via the middleware installed in the constructor.
+/*
+ * Display (camelCase) names shown in `/help` and usage errors. grammY
+ * registration uses the lowercased form so command matching stays
+ * case-insensitive via the middleware installed in the constructor.
+ */
 const TRADE_COMMAND_NAMES = ['buyMarket', 'sellMarket', 'buyLimit', 'sellLimit'] as const;
 type TradeCommandName = (typeof TRADE_COMMAND_NAMES)[number];
 
@@ -151,10 +153,12 @@ async function tradeWizard(conversation: TradeConversation, ctx: TradeContext, a
   }
   const userId = `${PLATFORM_PREFIX}${senderId}`;
 
-  // Account lookup touches the database — wrap it in `external` so the
-  // conversations engine records the value in the replay log instead of
-  // re-executing the query on every resume. Only return the fields needed
-  // for the picker so sensitive credentials are not persisted in replay state.
+  /*
+   * Account lookup touches the database — wrap it in `external` so the
+   * conversations engine records the value in the replay log instead of
+   * re-executing the query on every resume. Only return the fields needed
+   * for the picker so sensitive credentials are not persisted in replay state.
+   */
   const accounts = await conversation.external(() =>
     Account.findByUserId(userId).map(acc => ({
       id: acc.id,
@@ -182,8 +186,10 @@ async function tradeWizard(conversation: TradeConversation, ctx: TradeContext, a
   await ctx.reply(`${actionLabel}\nSelect an account:`, inlineKeyboard(accountButtons));
 
   const accountSelection = await conversation.waitForCallbackQuery(accounts.map(acc => `trade:acc:${acc.id}`));
-  // `match` is `string | RegExpMatchArray` in the type system, but since we
-  // only pass literal strings as triggers it's always a string at runtime.
+  /*
+   * `match` is `string | RegExpMatchArray` in the type system, but since we
+   * only pass literal strings as triggers it's always a string at runtime.
+   */
   const selectedData = typeof accountSelection.match === 'string' ? accountSelection.match : '';
   const accountId = Number.parseInt(selectedData.split(':')[2] ?? '', 10);
 
@@ -232,8 +238,10 @@ async function buildTradeConfirmation(
 
   const actionLabel = buildTradeActionLabel(args.cmd, pair, args.quantity, args.limitPrice ?? null);
 
-  // Fetch current price as confirmation context. Failure is non-fatal —
-  // the user still sees the action and can confirm without the price hint.
+  /*
+   * Fetch current price as confirmation context. Failure is non-fatal —
+   * the user still sees the action and can confirm without the price hint.
+   */
   let priceContext = '';
   try {
     const client = getAccountBrokerClient(account);
@@ -296,8 +304,10 @@ async function replyWithMarkdown(ctx: Context, text: string): Promise<void> {
     try {
       await ctx.reply(markdownToTelegramHtml(chunk), {parse_mode: 'HTML'});
     } catch (error) {
-      // Log the escaper failure instead of silently swallowing it — a silent
-      // fallback would hide a real escaper bug (and any XSS it enables).
+      /*
+       * Log the escaper failure instead of silently swallowing it — a silent
+       * fallback would hide a real escaper bug (and any XSS it enables).
+       */
       logger.warn({err: error}, 'Falling back to plaintext after markdown-to-HTML render failure');
       await ctx.reply(chunk);
     }
@@ -323,8 +333,10 @@ export class TelegramPlatform implements MessagingPlatform {
         maxDelaySeconds: 120,
       })
     );
-    // Filter out empty entries so whitespace- or comma-only inputs (e.g. " " or ",")
-    // collapse to an empty list and are treated as open mode, not as a list of empty IDs.
+    /*
+     * Filter out empty entries so whitespace- or comma-only inputs (e.g. " " or ",")
+     * collapse to an empty list and are treated as open mode, not as a list of empty IDs.
+     */
     this.#ownerIds = ownerIds
       ? ownerIds
           .split(',')
@@ -332,15 +344,19 @@ export class TelegramPlatform implements MessagingPlatform {
           .filter(id => id.length > 0)
       : [];
 
-    // Normalize incoming /Commands to lowercase so grammY's case-sensitive
-    // command matching accepts any casing (/reportAdd, /REPORTADD, /repOrTADd).
-    // Must run before the command handlers installed below.
+    /*
+     * Normalize incoming /Commands to lowercase so grammY's case-sensitive
+     * command matching accepts any casing (/reportAdd, /REPORTADD, /repOrTADd).
+     * Must run before the command handlers installed below.
+     */
     this.#bot.use(lowercaseCommandMiddleware);
 
-    // Drop unauthorized updates before they reach the conversations plugin or
-    // any command / callback handler. This is the global gate — individual
-    // handlers still call `#authorizedUserId` to obtain the prefixed userId,
-    // but they can trust the middleware has already turned away non-owners.
+    /*
+     * Drop unauthorized updates before they reach the conversations plugin or
+     * any command / callback handler. This is the global gate — individual
+     * handlers still call `#authorizedUserId` to obtain the prefixed userId,
+     * but they can trust the middleware has already turned away non-owners.
+     */
     this.#bot.use(async (ctx, next) => {
       if (this.#authorizedUserId(ctx) === null) {
         return;
@@ -348,16 +364,20 @@ export class TelegramPlatform implements MessagingPlatform {
       await next();
     });
 
-    // Install @grammyjs/conversations plugin BEFORE any command handlers are
-    // registered. The `conversations()` middleware must run for every update
-    // so it can resume active sessions on subsequent callback_query updates,
-    // and `createConversation(...)` has to be visible to the command handler
-    // that calls `ctx.conversation.enter(...)`.
+    /*
+     * Install @grammyjs/conversations plugin BEFORE any command handlers are
+     * registered. The `conversations()` middleware must run for every update
+     * so it can resume active sessions on subsequent callback_query updates,
+     * and `createConversation(...)` has to be visible to the command handler
+     * that calls `ctx.conversation.enter(...)`.
+     */
     this.#bot.use(conversations());
-    // parallel: true lets non-matching updates fall through to downstream
-    // middleware (our command handlers). Without it, typing /watchAdd during
-    // an active /accountAdd exchange-picker would be dropped, and the global
-    // /cancel command could never fire while any wizard was active.
+    /*
+     * parallel: true lets non-matching updates fall through to downstream
+     * middleware (our command handlers). Without it, typing /watchAdd during
+     * an active /accountAdd exchange-picker would be dropped, and the global
+     * /cancel command could never fire while any wizard was active.
+     */
     this.#bot.use(createConversation(tradeWizard, {id: TRADE_CONVERSATION_ID, parallel: true}));
     this.#bot.use(createConversation(makeAccountAddWizard(), {id: ACCOUNT_ADD_WIZARD_ID, parallel: true}));
     this.#bot.use(
@@ -382,17 +402,21 @@ export class TelegramPlatform implements MessagingPlatform {
       })
     );
 
-    // Trade commands are Telegram-specific: they need inline keyboards and
-    // the conversations plugin, so they register themselves directly here
-    // instead of going through the cross-platform `registerCommand` interface.
+    /*
+     * Trade commands are Telegram-specific: they need inline keyboards and
+     * the conversations plugin, so they register themselves directly here
+     * instead of going through the cross-platform `registerCommand` interface.
+     */
     for (const name of TRADE_COMMAND_NAMES) {
       this.#registerTradeCommand(name);
     }
 
-    // /cancel fires when no active wait consumes it — i.e. when nothing is
-    // active, or when the active wait is callback-only (non-text updates
-    // fall through). During a text-wait, each wizard detects /command input
-    // internally and cancels itself.
+    /*
+     * /cancel fires when no active wait consumes it — i.e. when nothing is
+     * active, or when the active wait is callback-only (non-text updates
+     * fall through). During a text-wait, each wizard detects /command input
+     * internally and cancels itself.
+     */
     this.#commands.set('cancel', async () => {});
     this.#bot.command('cancel', async ctx => {
       if (this.#authorizedUserId(ctx) === null) {
@@ -589,8 +613,10 @@ export class TelegramPlatform implements MessagingPlatform {
 
       const accountId = Number.parseInt(accountIdStr, 10);
       if (!Number.isFinite(accountId) || !Account.findByUserIdAndId(userId, accountId)) {
-        // Either the callback_data was crafted or the account belongs to
-        // someone else. Either way: refuse and leave no useful error detail.
+        /*
+         * Either the callback_data was crafted or the account belongs to
+         * someone else. Either way: refuse and leave no useful error detail.
+         */
         await ctx.editMessageText('Account not found.');
         return;
       }
@@ -742,10 +768,12 @@ export class TelegramPlatform implements MessagingPlatform {
       const activeBefore = Object.keys(ctx.conversation.active());
       logger.info({commandName, conversationId, activeBefore}, 'wizard command invoked');
       try {
-        // Auto-cancel any wizard already in progress for this user. Only
-        // reachable when the existing wait was callback-only (non-text falls
-        // through to this handler) — text waits consume the new /command
-        // text first and cancel themselves via waitForTextOrCancel.
+        /*
+         * Auto-cancel any wizard already in progress for this user. Only
+         * reachable when the existing wait was callback-only (non-text falls
+         * through to this handler) — text waits consume the new /command
+         * text first and cancel themselves via waitForTextOrCancel.
+         */
         for (const name of activeBefore) {
           await ctx.conversation.exit(name);
         }
@@ -759,10 +787,12 @@ export class TelegramPlatform implements MessagingPlatform {
   }
 
   #registerTradeCommand(name: TradeCommandName): void {
-    // Record the camelCase name so it appears in `/help`. The handler stored
-    // here is never invoked directly — the real wizard runs via the
-    // `bot.command(...)` handler installed below — but `commandList` reads
-    // from `#commands`.
+    /*
+     * Record the camelCase name so it appears in `/help`. The handler stored
+     * here is never invoked directly — the real wizard runs via the
+     * `bot.command(...)` handler installed below — but `commandList` reads
+     * from `#commands`.
+     */
     this.#commands.set(name, async () => {});
 
     this.#bot.command(name.toLowerCase(), async ctx => {
@@ -793,8 +823,10 @@ export class TelegramPlatform implements MessagingPlatform {
       sdkVersion: 'grammY',
     };
 
-    // bot.start() resolves only when the bot is stopped, so we don't await it —
-    // we want start() to return to the caller once polling is running.
+    /*
+     * bot.start() resolves only when the bot is stopped, so we don't await it —
+     * we want start() to return to the caller once polling is running.
+     */
     this.#bot.start({drop_pending_updates: true}).catch((err: unknown) => {
       logger.error({err}, 'Telegram bot polling error');
     });
@@ -809,12 +841,14 @@ export class TelegramPlatform implements MessagingPlatform {
   async sendMessage(userId: string, text: string): Promise<void> {
     const chatId = userId.replace(PLATFORM_PREFIX, '');
     for (const chunk of splitForTelegram(text)) {
-      // If our markdown→HTML converter throws (bug in the converter, malformed
-      // input we didn't anticipate), fall back to plaintext so the user still
-      // receives the message. API-side failures (transport, Telegram parse
-      // rejection, rate limit) are NOT caught here — `@grammyjs/auto-retry`
-      // handles transients at the API layer, anything it can't recover from
-      // propagates to the caller.
+      /*
+       * If our markdown→HTML converter throws (bug in the converter, malformed
+       * input we didn't anticipate), fall back to plaintext so the user still
+       * receives the message. API-side failures (transport, Telegram parse
+       * rejection, rate limit) are NOT caught here — `@grammyjs/auto-retry`
+       * handles transients at the API layer, anything it can't recover from
+       * propagates to the caller.
+       */
       let html: string;
       try {
         html = markdownToTelegramHtml(chunk);
