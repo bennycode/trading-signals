@@ -1,4 +1,4 @@
-import {TradingPair} from '../TradingPair.js';
+import type {TradingPair} from '../TradingPair.js';
 import {
   OrderPosition,
   OrderSide,
@@ -26,20 +26,14 @@ import {Trading212OrderStatus} from './api/schema/OrderSchema.js';
  * VALUE-strategy orders (placed via the Trading212 app) carry it in `value`/`orderedValue`/`filledValue`.
  */
 export class Trading212BrokerMapper {
-  static toPendingOrder(
-    order: Order,
-    pair: TradingPair,
-    options: LimitOrderOptions
-  ): PendingLimitOrder;
-  static toPendingOrder(
-    order: Order,
-    pair: TradingPair,
-    options: MarketOrderOptions
-  ): PendingMarketOrder;
+  static toPendingOrder(order: Order, pair: TradingPair, options: LimitOrderOptions): PendingLimitOrder;
+  static toPendingOrder(order: Order, pair: TradingPair, options: MarketOrderOptions): PendingMarketOrder;
   static toPendingOrder(order: Order, pair: TradingPair, options: OrderOptions): PendingOrder {
-    // We only ever place QUANTITY-strategy orders, so `quantity` is always populated on
-    // the response. Never fall back to `value` — that's notional, not base quantity, and
-    // would corrupt the neutral `PendingOrder.size` (which is interpreted in base units).
+    /*
+     * We only ever place QUANTITY-strategy orders, so `quantity` is always populated on
+     * the response. Never fall back to `value` — that's notional, not base quantity, and
+     * would corrupt the neutral `PendingOrder.size` (which is interpreted in base units).
+     */
     if (order.quantity == null) {
       throw new Error(`Trading212 returned an order without a quantity (id: ${order.id}).`);
     }
@@ -69,9 +63,11 @@ export class Trading212BrokerMapper {
   }
 
   static toOpenOrder(order: Order, pair: TradingPair): PendingOrder {
-    // Callers must filter to QUANTITY-strategy orders before reaching this mapper;
-    // VALUE-strategy orders store notional in `value`, not base quantity, and there's no
-    // neutral representation for them yet. See `Trading212Broker.getOpenOrders`.
+    /*
+     * Callers must filter to QUANTITY-strategy orders before reaching this mapper;
+     * VALUE-strategy orders store notional in `value`, not base quantity, and there's no
+     * neutral representation for them yet. See `Trading212Broker.getOpenOrders`.
+     */
     if (order.quantity == null) {
       throw new Error(`Trading212 returned an order without a quantity (id: ${order.id}).`);
     }

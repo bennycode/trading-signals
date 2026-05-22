@@ -9,10 +9,12 @@ export interface StrategyCopyResult {
   strategy?: StrategyAttributes;
 }
 
-// Chat command example: "/strategyCopy 5 2 BTC,USD"
-// The MessagingPlatform strips the command name, so `request` only contains the args.
-// Args format: "<sourceStrategyId> <targetAccountId> <targetPair>"
-// Args example: "5 2 BTC,USD"
+/*
+ * Chat command example: "/strategyCopy 5 2 BTC,USD"
+ * The MessagingPlatform strips the command name, so `request` only contains the args.
+ * Args format: "<sourceStrategyId> <targetAccountId> <targetPair>"
+ * Args example: "5 2 BTC,USD"
+ */
 export const strategyCopy = async (request: string, userId: string): Promise<StrategyCopyResult> => {
   const parts = request.trim().split(/\s+/).filter(Boolean);
 
@@ -40,15 +42,19 @@ export const strategyCopy = async (request: string, userId: string): Promise<Str
       return {message: `Strategy with ID "${sourceId}" not found`};
     }
 
-    // Security: verify the source strategy's account belongs to the user
-    // before exposing its config to a copy operation.
+    /*
+     * Security: verify the source strategy's account belongs to the user
+     * before exposing its config to a copy operation.
+     */
     getAccountOrError(userId, source.accountId);
 
     const targetAccountId = assertId(targetAccountIdStr);
     const targetAccount = getAccountOrError(userId, targetAccountId);
 
-    // Validate the source strategy is still instantiable before persisting a copy
-    // that StrategyMonitor would otherwise fail to start.
+    /*
+     * Validate the source strategy is still instantiable before persisting a copy
+     * that StrategyMonitor would otherwise fail to start.
+     */
     let parsedConfig: unknown;
     try {
       parsedConfig = JSON.parse(source.config);
@@ -60,9 +66,9 @@ export const strategyCopy = async (request: string, userId: string): Promise<Str
     const pairString = pair.asString(',');
     const row = Strategy.create({
       accountId: targetAccount.id,
-      strategyName: source.strategyName,
       config: source.config,
       pair: pairString,
+      strategyName: source.strategyName,
     });
 
     return {

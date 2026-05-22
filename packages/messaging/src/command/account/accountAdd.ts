@@ -1,8 +1,10 @@
 import {getAuthenticatedBrokerClient} from '@typedtrader/exchange';
 import {Account} from '../../database/models/Account.js';
 
-// Request Example: "MyAlpaca alpaca false API_KEY API_SECRET"
-// Format: "<name> <exchange> <isPaper> <apiKey> <apiSecret>"
+/*
+ * Request Example: "MyAlpaca alpaca false API_KEY API_SECRET"
+ * Format: "<name> <exchange> <isPaper> <apiKey> <apiSecret>"
+ */
 export async function accountAdd(request: string, userId: string) {
   const parts = request.trim().split(' ');
 
@@ -15,15 +17,15 @@ export async function accountAdd(request: string, userId: string) {
   const isPaper = isPaperStr.toLowerCase() === 'true';
 
   try {
-    await getAuthenticatedBrokerClient({exchangeId: exchange, apiKey, apiSecret, isPaper});
+    await getAuthenticatedBrokerClient({apiKey, apiSecret, exchangeId: exchange, isPaper});
 
     const account = Account.create({
-      userId,
-      name,
-      exchange,
-      isPaper,
       apiKey,
       apiSecret,
+      exchange,
+      isPaper,
+      name,
+      userId,
     });
 
     return `Account created successfully with ID "${account.id}". Connection test passed.`;

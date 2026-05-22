@@ -5,7 +5,7 @@ import type {Strategy as TradingStrategy} from 'trading-strategies';
 import {Account} from '../database/models/Account.js';
 import {Strategy, type StrategyAttributes} from '../database/models/Strategy.js';
 import {logger} from '../logger.js';
-import {PlatformDispatcher} from './PlatformDispatcher.js';
+import type {PlatformDispatcher} from './PlatformDispatcher.js';
 
 interface ActiveSession {
   strategyId: number;
@@ -19,8 +19,8 @@ export function formatStrategyMessage(strategyName: string, pair: string, text: 
 }
 
 export class StrategyMonitor {
-  #dispatcher: PlatformDispatcher;
-  #sessions: Map<number, ActiveSession> = new Map();
+  readonly #dispatcher: PlatformDispatcher;
+  readonly #sessions: Map<number, ActiveSession> = new Map();
 
   constructor(dispatcher: PlatformDispatcher) {
     this.#dispatcher = dispatcher;
@@ -72,14 +72,14 @@ export class StrategyMonitor {
 
     // Restore persisted state if available
     if (row.state) {
-      const persisted = JSON.parse(row.state);
+      const persisted: Record<string, unknown> = JSON.parse(row.state);
       strategy.restoreState(persisted);
     }
 
     const exchange = getBrokerClient({
-      exchangeId: account.exchange,
       apiKey: account.apiKey,
       apiSecret: account.apiSecret,
+      exchangeId: account.exchange,
       isPaper: account.isPaper,
     });
 
@@ -102,9 +102,11 @@ export class StrategyMonitor {
       });
     };
 
-    // Auto-remove when the strategy signals it is terminally done (e.g. the kill-switch
-    // sell has fully filled). Cancel any still-open orders on the way out so we don't
-    // leave stray limit orders (e.g. a retried kill-switch order) behind on the exchange.
+    /*
+     * Auto-remove when the strategy signals it is terminally done (e.g. the kill-switch
+     * sell has fully filled). Cancel any still-open orders on the way out so we don't
+     * leave stray limit orders (e.g. a retried kill-switch order) behind on the exchange.
+     */
     strategy.onFinish = async () => {
       try {
         await session.stop({cancelOpenOrders: true});
@@ -138,8 +140,8 @@ export class StrategyMonitor {
 
     await session.start();
 
-    this.#sessions.set(row.id, {strategyId: row.id, session, strategy});
-    logger.info({strategyId: row.id, strategyName: row.strategyName, pair: row.pair}, 'Started strategy');
+    this.#sessions.set(row.id, {session, strategy, strategyId: row.id});
+    logger.info({pair: row.pair, strategyId: row.id, strategyName: row.strategyName}, 'Started strategy');
   }
 
   /**
@@ -176,9 +178,9 @@ export class StrategyMonitor {
         if (freshRow) {
           await this.subscribeToStrategy(freshRow);
         }
-        logger.info({strategyId: row.id, accountId}, 'Restarted strategy after account update');
+        logger.info({accountId, strategyId: row.id}, 'Restarted strategy after account update');
       } catch (error) {
-        logger.error({err: error, strategyId: row.id, accountId}, 'Failed to restart strategy after account update');
+        logger.error({accountId, err: error, strategyId: row.id}, 'Failed to restart strategy after account update');
       }
     }
   }

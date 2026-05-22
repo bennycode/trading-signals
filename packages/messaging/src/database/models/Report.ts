@@ -16,21 +16,11 @@ export class Report {
   }
 
   static findByUserId(userId: string): ReportRow[] {
-    return db
-      .select()
-      .from(reports)
-      .where(eq(reports.userId, userId))
-      .orderBy(asc(reports.id))
-      .all();
+    return db.select().from(reports).where(eq(reports.userId, userId)).orderBy(asc(reports.id)).all();
   }
 
   static findAllWithInterval(): ReportRow[] {
-    return db
-      .select()
-      .from(reports)
-      .where(isNotNull(reports.intervalMs))
-      .orderBy(asc(reports.id))
-      .all();
+    return db.select().from(reports).where(isNotNull(reports.intervalMs)).orderBy(asc(reports.id)).all();
   }
 
   static updateLastRunAt(id: number, lastRunAt: number): void {

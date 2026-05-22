@@ -1,4 +1,4 @@
-import {z} from 'zod';
+import type {z} from 'zod';
 import {AllAvailableAmount, OrderSide, OrderType} from '@typedtrader/exchange';
 import type {OneMinuteBatchedCandle, OrderAdvice, TradingSessionState} from '@typedtrader/exchange';
 import Big from 'big.js';
@@ -25,7 +25,10 @@ export class BuyBelowSellAboveStrategy extends ProtectedStrategy {
     return this.getProxiedConfig<BuyBelowSellAboveConfig>();
   }
 
-  protected override async processCandle(candle: OneMinuteBatchedCandle, state: TradingSessionState): Promise<OrderAdvice | void> {
+  protected override async processCandle(
+    candle: OneMinuteBatchedCandle,
+    state: TradingSessionState
+  ): Promise<OrderAdvice | void> {
     const guardAdvice = await super.processCandle(candle, state);
     if (guardAdvice) {
       return guardAdvice;
@@ -38,11 +41,11 @@ export class BuyBelowSellAboveStrategy extends ProtectedStrategy {
 
       if (closePrice.lt(buyBelowPrice)) {
         return {
-          side: OrderSide.BUY,
-          type: OrderType.LIMIT,
           amount: AllAvailableAmount,
           amountIn: 'base',
           price: closePrice,
+          side: OrderSide.BUY,
+          type: OrderType.LIMIT,
         };
       }
     }
@@ -52,11 +55,11 @@ export class BuyBelowSellAboveStrategy extends ProtectedStrategy {
 
       if (closePrice.gt(sellAbovePrice)) {
         return {
-          side: OrderSide.SELL,
-          type: OrderType.LIMIT,
           amount: AllAvailableAmount,
           amountIn: 'base',
           price: closePrice,
+          side: OrderSide.SELL,
+          type: OrderType.LIMIT,
         };
       }
     }

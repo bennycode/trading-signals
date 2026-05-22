@@ -1,5 +1,6 @@
 import {ms} from 'ms';
-import {retry, RetryConfig} from 'ts-retry-promise';
+import type {RetryConfig} from 'ts-retry-promise';
+import {retry} from 'ts-retry-promise';
 import {AlpacaStream, type AlpacaStreamCredentials} from './api/AlpacaStream.js';
 import type {MinuteBarMessage, StreamMessage} from './api/schema/StreamSchema.js';
 
@@ -18,9 +19,9 @@ export interface AlpacaConnection {
  * {"T":"error","code":406,"msg":"connection limit exceeded"}
  */
 class AlpacaWebSocket {
-  #connections: Map<string, AlpacaConnection> = new Map();
-  #symbols: Map<string, Set<string>> = new Map();
-  #credentialToConnectionId: Map<string, string> = new Map();
+  readonly #connections: Map<string, AlpacaConnection> = new Map();
+  readonly #symbols: Map<string, Set<string>> = new Map();
+  readonly #credentialToConnectionId: Map<string, string> = new Map();
 
   /**
    * @see https://docs.alpaca.markets/docs/streaming-market-data#connection

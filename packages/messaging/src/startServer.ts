@@ -240,9 +240,9 @@ export async function startServer() {
 
   const dispatcher = new PlatformDispatcher(platforms);
   const monitors: Monitors = {
-    watchMonitor: new WatchMonitor(dispatcher),
-    strategyMonitor: new StrategyMonitor(dispatcher),
     reportScheduler: new ReportScheduler(dispatcher),
+    strategyMonitor: new StrategyMonitor(dispatcher),
+    watchMonitor: new WatchMonitor(dispatcher),
   };
 
   for (const [, platform] of platforms) {
@@ -252,16 +252,20 @@ export async function startServer() {
     platform.setStrategyMonitor?.(monitors.strategyMonitor);
   }
 
-  // Start platforms first so the bot stays responsive for commands like
-  // /strategyList even if a monitor's startup stalls (e.g. a stuck
-  // exchange WebSocket during strategy subscription).
+  /*
+   * Start platforms first so the bot stays responsive for commands like
+   * /strategyList even if a monitor's startup stalls (e.g. a stuck
+   * exchange WebSocket during strategy subscription).
+   */
   for (const platform of platforms.values()) {
     await platform.start();
   }
 
-  // Start monitors in the background — do not await, so that a hang in one
-  // (e.g. an Alpaca "connection limit exceeded" retry loop) cannot block
-  // the others or the command surface.
+  /*
+   * Start monitors in the background — do not await, so that a hang in one
+   * (e.g. an Alpaca "connection limit exceeded" retry loop) cannot block
+   * the others or the command surface.
+   */
   monitors.watchMonitor.start().catch((error: unknown) => {
     logger.error({err: error}, 'Error starting watch monitor');
   });

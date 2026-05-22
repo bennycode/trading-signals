@@ -1,5 +1,5 @@
 import {z} from 'zod';
-import {CandleBase} from '../broker/Broker.js';
+import type {CandleBase} from '../broker/Broker.js';
 
 export const BasicCandlePrice = z.union([z.literal('open'), z.literal('high'), z.literal('low'), z.literal('close')]);
 

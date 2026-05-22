@@ -2,17 +2,8 @@ import type {Bar} from './api/schema/BarSchema.js';
 import {type Order, AlpacaOrderStatus, type AlpacaAssetClass} from './api/schema/OrderSchema.js';
 import {ms} from 'ms';
 import {TradingPair} from '../TradingPair.js';
-import {
-  Candle,
-  Fill,
-  OrderOptions,
-  OrderPosition,
-  OrderSide,
-  OrderType,
-  PendingLimitOrder,
-  PendingMarketOrder,
-  PendingOrder,
-} from '../Broker.js';
+import type {Candle, Fill, OrderOptions, PendingLimitOrder, PendingMarketOrder, PendingOrder} from '../Broker.js';
+import {OrderPosition, OrderSide, OrderType} from '../Broker.js';
 
 export class AlpacaBrokerMapper {
   static mapInterval(intervalInMillis: number): string {

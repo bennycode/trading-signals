@@ -40,14 +40,10 @@ export async function waitForTextOrCancel(
   const text = msgCtx.msg.text.trim();
   if (text.startsWith('/')) {
     const isExplicitCancel = text.toLowerCase().startsWith('/cancel');
-    await ctx.reply(
-      isExplicitCancel
-        ? 'Cancelled.'
-        : 'Wizard cancelled. Resend your command to start fresh.'
-    );
-    return {text: '', cancelled: true};
+    await ctx.reply(isExplicitCancel ? 'Cancelled.' : 'Wizard cancelled. Resend your command to start fresh.');
+    return {cancelled: true, text: ''};
   }
-  return {text, cancelled: false};
+  return {cancelled: false, text};
 }
 
 /**
@@ -62,7 +58,7 @@ export async function deleteSecretMessages(
   messages: SecretMessage[]
 ): Promise<void> {
   await conversation.external(async () => {
-    for (const {chatId, messageId, label} of messages) {
+    for (const {chatId, label, messageId} of messages) {
       try {
         await ctx.api.deleteMessage(chatId, messageId);
       } catch (error) {

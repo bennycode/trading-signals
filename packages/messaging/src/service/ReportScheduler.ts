@@ -3,7 +3,7 @@ import {createReport, reportRequiresAccount} from 'trading-strategies';
 import {Report, type ReportAttributes} from '../database/models/Report.js';
 import {logger} from '../logger.js';
 import {getAccountOrError} from '../validation/getAccountOrError.js';
-import {PlatformDispatcher} from './PlatformDispatcher.js';
+import type {PlatformDispatcher} from './PlatformDispatcher.js';
 
 interface ScheduledReport {
   reportId: number;
@@ -11,8 +11,8 @@ interface ScheduledReport {
 }
 
 export class ReportScheduler {
-  #dispatcher: PlatformDispatcher;
-  #scheduled: Map<number, ScheduledReport> = new Map();
+  readonly #dispatcher: PlatformDispatcher;
+  readonly #scheduled: Map<number, ScheduledReport> = new Map();
 
   constructor(dispatcher: PlatformDispatcher) {
     this.#dispatcher = dispatcher;
@@ -65,8 +65,8 @@ export class ReportScheduler {
 
     this.#scheduled.set(row.id, {reportId: row.id, timer: setTimeout(tick, initialDelay)});
     logger.info(
-      {reportId: row.id, reportName: row.reportName, intervalMs, initialDelay, lastRunAt: row.lastRunAt},
-      'Scheduled report',
+      {initialDelay, intervalMs, lastRunAt: row.lastRunAt, reportId: row.id, reportName: row.reportName},
+      'Scheduled report'
     );
   }
 
@@ -89,8 +89,8 @@ export class ReportScheduler {
         api = new AlpacaAPI({apiKey: account.apiKey, apiSecret: account.apiSecret, usePaperTrading: account.isPaper});
       } catch (error) {
         logger.warn(
-          {err: error, reportId: row.id, accountId: row.accountId, userId: row.userId},
-          'Account not available for report — skipping run',
+          {accountId: row.accountId, err: error, reportId: row.id, userId: row.userId},
+          'Account not available for report — skipping run'
         );
         return;
       }

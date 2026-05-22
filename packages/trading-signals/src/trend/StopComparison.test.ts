@@ -132,8 +132,10 @@ describe('Stop-loss comparison on AMD (2026-01-20 → 2026-04-17)', () => {
       const trail = new HigherLowTrail({lookback: 1, monotonic: false});
       const emissions = collectEmissions(AMD_CANDLES, candle => trail.add(candle));
 
-      // Non-monotonic fires on every bar where the previous bar's low was strictly lower,
-      // so it generates many more emissions than the monotonic variant.
+      /*
+       * Non-monotonic fires on every bar where the previous bar's low was strictly lower,
+       * so it generates many more emissions than the monotonic variant.
+       */
       expect(emissions.length).toBeGreaterThan(20);
       expect(emissions.at(-1)).toEqual({date: '2026-04-17', value: 261.7});
     });
@@ -166,9 +168,11 @@ describe('Stop-loss comparison on AMD (2026-01-20 → 2026-04-17)', () => {
       const trailing = trail.getResultOrThrow();
       const momentum = breakout.getResultOrThrow();
 
-      // Structural (symmetric fractal) lags the most and sits deepest below price.
-      // Trailing (one-sided, monotonic) sits in the middle after confirming the rally.
-      // Momentum (20-day breakout-bar low) sits highest — tied to the latest breakout.
+      /*
+       * Structural (symmetric fractal) lags the most and sits deepest below price.
+       * Trailing (one-sided, monotonic) sits in the middle after confirming the rally.
+       * Momentum (20-day breakout-bar low) sits highest — tied to the latest breakout.
+       */
       expect(structural).toBeLessThan(trailing);
       expect(trailing).toBeLessThan(momentum);
 

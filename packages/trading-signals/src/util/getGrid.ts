@@ -6,7 +6,7 @@ export type GridConfig = {
   tickSize?: number;
 };
 
-export function getGrid({lower, upper, levels, tickSize, spacing}: GridConfig): number[] {
+export function getGrid({levels, lower, spacing, tickSize, upper}: GridConfig): number[] {
   const prices: number[] = [];
 
   if (spacing === 'arithmetic') {

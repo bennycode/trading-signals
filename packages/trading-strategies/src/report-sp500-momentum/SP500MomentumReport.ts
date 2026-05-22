@@ -1,5 +1,5 @@
 import {z} from 'zod';
-import {AlpacaAPI} from '@typedtrader/exchange';
+import type {AlpacaAPI} from '@typedtrader/exchange';
 import {MESSAGE_BREAK, Report} from '../report/Report.js';
 import {fetchUsEquityNames, formatSymbolWithName, TELEGRAM_TABLE_NAME_MAX} from '../util/formatSymbolWithName.js';
 import {findFirstTradingDay, getDateString} from '../util/TimeUtil.js';
@@ -54,10 +54,10 @@ export class SP500MomentumReport extends Report<SP500MomentumConfig> {
       const priceThen = pastPrices.get(ticker);
       if (priceNow != null && priceThen != null && priceThen > 0) {
         results.push({
-          ticker,
-          priceNow,
           price12MonthsAgo: priceThen,
+          priceNow,
           returnPct: ((priceNow - priceThen) / priceThen) * 100,
+          ticker,
         });
       }
     }
@@ -91,12 +91,12 @@ export class SP500MomentumReport extends Report<SP500MomentumConfig> {
     const result = new Map<string, number>();
 
     const response = await this.#api.getStockBars({
-      symbols: symbols.join(','),
-      timeframe: '1Day',
-      start: start.toISOString(),
       end: end.toISOString(),
       feed: 'iex',
       limit: 10_000,
+      start: start.toISOString(),
+      symbols: symbols.join(','),
+      timeframe: '1Day',
     });
 
     for (const [symbol, symbolBars] of Object.entries(response.bars)) {
@@ -153,7 +153,9 @@ export class SP500MomentumReport extends Report<SP500MomentumConfig> {
     lines.push(`Stocks ranked: ${results.length} / ${SP500_TICKERS.length}`);
 
     lines.push('');
-    lines.push('**Recommendation (based on 12-1 momentum, 3-month hold):** Hold the top winners for 3 months, then re-evaluate.');
+    lines.push(
+      '**Recommendation (based on 12-1 momentum, 3-month hold):** Hold the top winners for 3 months, then re-evaluate.'
+    );
 
     // Disclaimer
     lines.push('');

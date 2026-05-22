@@ -10,6 +10,10 @@ const pair = new TradingPair('AAPL', 'USD');
 const mockState: TradingSessionState = {
   baseBalance: new Big(0),
   counterBalance: new Big(1000),
+  feeRates: {
+    [OrderType.LIMIT]: new Big('0.001'),
+    [OrderType.MARKET]: new Big('0.002'),
+  },
   tradingRules: {
     base_increment: '0.01',
     base_max_size: '10000',
@@ -17,10 +21,6 @@ const mockState: TradingSessionState = {
     counter_increment: '0.01',
     counter_min_size: '1',
     pair,
-  },
-  feeRates: {
-    [OrderType.LIMIT]: new Big('0.001'),
-    [OrderType.MARKET]: new Big('0.002'),
   },
 };
 
@@ -51,7 +51,7 @@ function makeFill(price: string, side: OrderSide): Fill {
     feeAsset: 'USD',
     order_id: 'order-1',
     pair,
-    position: 'LONG' as any,
+    position: 'LONG',
     price,
     side,
     size: '10',
@@ -64,7 +64,7 @@ describe('ScalpSchema', () => {
   });
 
   it('accepts config with custom emaPeriod', () => {
-    const config = ScalpSchema.parse({offset: '0.50', emaPeriod: 10});
+    const config = ScalpSchema.parse({emaPeriod: 10, offset: '0.50'});
     expect(config.emaPeriod).toBe(10);
   });
 
@@ -81,7 +81,7 @@ describe('ScalpSchema', () => {
 
 describe('ScalpStrategy', () => {
   it('returns no advice during EMA warmup', async () => {
-    const strategy = new ScalpStrategy({offset: '0.10', emaPeriod: 5});
+    const strategy = new ScalpStrategy({emaPeriod: 5, offset: '0.10'});
 
     // Feed 4 candles (need 5 for EMA to stabilize)
     for (let i = 0; i < 4; i++) {
@@ -91,7 +91,7 @@ describe('ScalpStrategy', () => {
   });
 
   it('returns no advice when price is below EMA', async () => {
-    const strategy = new ScalpStrategy({offset: '0.10', emaPeriod: 3});
+    const strategy = new ScalpStrategy({emaPeriod: 3, offset: '0.10'});
 
     // Rising prices to warm up EMA, then a drop
     const prices = [100, 102, 104, 98] as const;
@@ -107,7 +107,7 @@ describe('ScalpStrategy', () => {
   });
 
   it('enters with a market buy when price crosses above EMA', async () => {
-    const strategy = new ScalpStrategy({offset: '0.10', emaPeriod: 3});
+    const strategy = new ScalpStrategy({emaPeriod: 3, offset: '0.10'});
 
     // Steady rise so price stays above EMA
     const prices = [100, 101, 102, 103] as const;
@@ -129,7 +129,7 @@ describe('ScalpStrategy', () => {
   });
 
   it('places a limit sell at fill + offset after buy fills', async () => {
-    const strategy = new ScalpStrategy({offset: '0.50', emaPeriod: 3});
+    const strategy = new ScalpStrategy({emaPeriod: 3, offset: '0.50'});
 
     // Warm up and trigger entry
     const prices = [100, 101, 102, 103] as const;
@@ -155,7 +155,7 @@ describe('ScalpStrategy', () => {
   });
 
   it('places a limit buy at fill - offset after sell fills', async () => {
-    const strategy = new ScalpStrategy({offset: '0.50', emaPeriod: 3});
+    const strategy = new ScalpStrategy({emaPeriod: 3, offset: '0.50'});
 
     // Warm up and trigger entry
     for (let i = 0; i < 4; i++) {
@@ -181,7 +181,7 @@ describe('ScalpStrategy', () => {
   });
 
   it('returns no advice while waiting for a fill', async () => {
-    const strategy = new ScalpStrategy({offset: '0.50', emaPeriod: 3});
+    const strategy = new ScalpStrategy({emaPeriod: 3, offset: '0.50'});
 
     // Trigger entry
     for (let i = 0; i < 4; i++) {
@@ -198,7 +198,7 @@ describe('ScalpStrategy', () => {
   });
 
   it('includes a reason in the entry advice', async () => {
-    const strategy = new ScalpStrategy({offset: '0.10', emaPeriod: 3});
+    const strategy = new ScalpStrategy({emaPeriod: 3, offset: '0.10'});
 
     let entryAdvice;
 
@@ -216,7 +216,7 @@ describe('ScalpStrategy', () => {
   });
 
   it('pre-seeds EMA via init() to skip warmup', async () => {
-    const strategy = new ScalpStrategy({offset: '0.10', emaPeriod: 3});
+    const strategy = new ScalpStrategy({emaPeriod: 3, offset: '0.10'});
 
     // Pre-seed with 3 candles
     const historicalCandles = [makeCandle(100, 0), makeCandle(101, 1), makeCandle(102, 2)] as const;
@@ -231,7 +231,7 @@ describe('ScalpStrategy', () => {
   });
 
   it('restores state across restarts', async () => {
-    const strategy = new ScalpStrategy({offset: '0.50', emaPeriod: 3});
+    const strategy = new ScalpStrategy({emaPeriod: 3, offset: '0.50'});
 
     strategy.restoreState({
       lastFillPrice: '103',

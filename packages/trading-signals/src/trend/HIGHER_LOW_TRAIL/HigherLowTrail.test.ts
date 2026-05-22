@@ -140,9 +140,11 @@ describe('HigherLowTrail', () => {
     });
 
     it('preserves the monotonic trail when replacing a non-emitting bar that would otherwise form a lower pivot', () => {
-      // Regression test: earlier implementations compared against `previousResult` on replace,
-      // which was `undefined` after a non-emitting bar, so the monotonic guard silently let
-      // the trail collapse downward on the replacement.
+      /*
+       * Regression test: earlier implementations compared against `previousResult` on replace,
+       * which was `undefined` after a non-emitting bar, so the monotonic guard silently let
+       * the trail collapse downward on the replacement.
+       */
       const trail = new HigherLowTrail({lookback: 2});
 
       const setup = [
@@ -158,8 +160,10 @@ describe('HigherLowTrail', () => {
 
       expect(trail.getResult()).toBe(20);
 
-      // Replace the last (non-emitting) bar. The replacement also forms a pivot 5, which
-      // must stay blocked by the monotonic guard because the current trail is 20.
+      /*
+       * Replace the last (non-emitting) bar. The replacement also forms a pivot 5, which
+       * must stay blocked by the monotonic guard because the current trail is 20.
+       */
       const replaced = trail.replace({high: 22, low: 20});
 
       expect(replaced).toBeNull();

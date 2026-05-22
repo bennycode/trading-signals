@@ -6,8 +6,10 @@ import candles from '../../fixtures/STOCH/candles.json' with {type: 'json'};
 describe('StochasticOscillator', () => {
   describe('update', () => {
     it('calculates the StochasticOscillator', () => {
-      // Test data verified with:
-      // https://tulipindicators.org/stoch
+      /*
+       * Test data verified with:
+       * https://tulipindicators.org/stoch
+       */
       const stochKs = ['77.39', '83.13', '84.87', '88.36', '95.25', '96.74', '91.09'] as const;
       const stochDs = ['75.70', '78.01', '81.79', '85.45', '89.49', '93.45', '94.36'] as const;
 

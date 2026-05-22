@@ -1,7 +1,14 @@
 import {AlpacaBroker, getAuthenticatedBrokerClient} from '@typedtrader/exchange';
 import {Account} from '../../database/models/Account.js';
 import {logger} from '../../logger.js';
-import {deleteSecretMessages, inlineKeyboard, waitForTextOrCancel, type InlineButton, type WizardContext, type WizardConversation} from './shared.js';
+import {
+  deleteSecretMessages,
+  inlineKeyboard,
+  waitForTextOrCancel,
+  type InlineButton,
+  type WizardContext,
+  type WizardConversation,
+} from './shared.js';
 
 export interface AccountAddWizardArgs {
   userId: string;
@@ -16,7 +23,7 @@ export function makeAccountAddWizard() {
     args: AccountAddWizardArgs
   ): Promise<void> {
     const exchangeButtons: InlineButton[][] = EXCHANGES.map(name => [
-      {text: name, callback_data: `accountadd:ex:${name}`},
+      {callback_data: `accountadd:ex:${name}`, text: name},
     ]);
     await ctx.reply('Pick an exchange:', inlineKeyboard(exchangeButtons));
 
@@ -28,8 +35,8 @@ export function makeAccountAddWizard() {
       `Broker: ${exchange}\nChoose account mode:`,
       inlineKeyboard([
         [
-          {text: '📝 Paper', callback_data: 'accountadd:mode:paper'},
-          {text: '💵 Live', callback_data: 'accountadd:mode:live'},
+          {callback_data: 'accountadd:mode:paper', text: '📝 Paper'},
+          {callback_data: 'accountadd:mode:live', text: '💵 Live'},
         ],
       ])
     );
@@ -38,9 +45,13 @@ export function makeAccountAddWizard() {
     await modeCb.answerCallbackQuery();
     const isPaper = modeCb.match === 'accountadd:mode:paper';
 
-    await modeCb.editMessageText(`Broker: ${exchange}\nMode: ${isPaper ? 'Paper' : 'Live'}\n\nSend a name for this account:`);
+    await modeCb.editMessageText(
+      `Broker: ${exchange}\nMode: ${isPaper ? 'Paper' : 'Live'}\n\nSend a name for this account:`
+    );
     const nameResp = await waitForTextOrCancel(conversation, ctx);
-    if (nameResp.cancelled) return;
+    if (nameResp.cancelled) {
+      return;
+    }
     const name = nameResp.text;
     if (!name) {
       await ctx.reply('Account name cannot be empty. Aborted.');
@@ -71,28 +82,28 @@ export function makeAccountAddWizard() {
     }
 
     await deleteSecretMessages(conversation, ctx, 'accountAdd', [
-      {chatId: apiKeyChatId, messageId: apiKeyMessageId, label: 'API key'},
-      {chatId: apiSecretChatId, messageId: apiSecretMessageId, label: 'API secret'},
+      {chatId: apiKeyChatId, label: 'API key', messageId: apiKeyMessageId},
+      {chatId: apiSecretChatId, label: 'API secret', messageId: apiSecretMessageId},
     ]);
 
     await ctx.reply('Validating credentials…');
 
     const result = await conversation.external(async () => {
       try {
-        await getAuthenticatedBrokerClient({exchangeId: exchange, apiKey, apiSecret, isPaper});
+        await getAuthenticatedBrokerClient({apiKey, apiSecret, exchangeId: exchange, isPaper});
         const account = Account.create({
-          userId: args.userId,
-          name,
-          exchange,
-          isPaper,
           apiKey,
           apiSecret,
+          exchange,
+          isPaper,
+          name,
+          userId: args.userId,
         });
-        return {ok: true as const, id: account.id};
+        return {id: account.id, ok: true as const};
       } catch (error) {
         const message = error instanceof Error ? error.message : 'Unknown error';
         logger.error({err: error}, 'accountAdd wizard failed');
-        return {ok: false as const, error: message};
+        return {error: message, ok: false as const};
       }
     });
 

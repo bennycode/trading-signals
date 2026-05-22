@@ -1,12 +1,6 @@
 import Big from 'big.js';
 import {describe, expect, it} from 'vitest';
-import {
-  CandleBatcher,
-  OrderPosition,
-  OrderSide,
-  OrderType,
-  TradingPair,
-} from '@typedtrader/exchange';
+import {CandleBatcher, OrderPosition, OrderSide, OrderType, TradingPair} from '@typedtrader/exchange';
 import type {
   Candle,
   Fill,
@@ -35,6 +29,10 @@ const pair = new TradingPair('AAPL', 'USD');
 const mockState: TradingSessionState = {
   baseBalance: new Big(0),
   counterBalance: new Big(1000),
+  feeRates: {
+    [OrderType.LIMIT]: new Big('0.001'),
+    [OrderType.MARKET]: new Big('0.002'),
+  },
   tradingRules: {
     base_increment: '0.01',
     base_max_size: '10000',
@@ -42,10 +40,6 @@ const mockState: TradingSessionState = {
     counter_increment: '0.01',
     counter_min_size: '1',
     pair,
-  },
-  feeRates: {
-    [OrderType.LIMIT]: new Big('0.001'),
-    [OrderType.MARKET]: new Big('0.002'),
   },
 };
 

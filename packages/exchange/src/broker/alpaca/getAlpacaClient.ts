@@ -9,7 +9,7 @@ import {AlpacaMarketData} from './AlpacaMarketData.js';
  * (e.g. one per request in a command handler) would accumulate listeners on `process` and
  * trigger duplicate disconnects.
  */
-const trackedBrokers: Array<{broker: AlpacaBroker; ownedMarketData: AlpacaMarketData | null}> = [];
+const trackedBrokers: {broker: AlpacaBroker; ownedMarketData: AlpacaMarketData | null}[] = [];
 let sigintRegistered = false;
 
 function ensureSigintHandler() {

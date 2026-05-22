@@ -60,7 +60,7 @@ export class PerformanceCalculator {
       }
     }
 
-    return {maxWinStreak, maxLossStreak};
+    return {maxLossStreak, maxWinStreak};
   }
 
   static #buildCycles(trades: BacktestTrade[]): {buyAvgPrice: Big; sellAvgPrice: Big}[] {

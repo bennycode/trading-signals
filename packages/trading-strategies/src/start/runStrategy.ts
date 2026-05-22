@@ -2,9 +2,11 @@ import {config} from 'dotenv-defaults';
 import {AlpacaMarketData, getTrading212Client, OrderSide, TradingPair, TradingSession} from '@typedtrader/exchange';
 import {BuyOnceStrategy} from '../strategy-buy-once/BuyOnceStrategy.js';
 
-// The exchange package owns the credentials. Load its env so this script can run from
-// trading-strategies/ without duplicating secrets.
-config({path: '../exchange/.env', defaults: '../exchange/.env.defaults'});
+/*
+ * The exchange package owns the credentials. Load its env so this script can run from
+ * trading-strategies/ without duplicating secrets.
+ */
+config({defaults: '../exchange/.env.defaults', path: '../exchange/.env'});
 
 const marketData = new AlpacaMarketData({
   apiKey: process.env.ALPACA_LIVE_API_KEY!,
@@ -19,8 +21,8 @@ const broker = getTrading212Client({
 });
 
 const strategy = new BuyOnceStrategy({
-  quantity: '1',
   protected: {takeProfitNominal: '0.10'},
+  quantity: '1',
 });
 
 const pair = new TradingPair('AMD_US_EQ', 'USD');
@@ -39,12 +41,9 @@ session.on('orderFilled', () => {
 
 await session.start();
 
-setTimeout(
-  async () => {
-    await session.stop({cancelOpenOrders: true});
-    marketData.disconnect();
-    broker.disconnect();
-    process.exit(0);
-  },
-  15 * 60_000
-);
+setTimeout(async () => {
+  await session.stop({cancelOpenOrders: true});
+  marketData.disconnect();
+  broker.disconnect();
+  process.exit(0);
+}, 15 * 60_000);

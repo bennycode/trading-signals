@@ -4,7 +4,13 @@ import {Account} from '../../database/models/Account.js';
 import {Strategy} from '../../database/models/Strategy.js';
 import {logger} from '../../logger.js';
 import type {StrategyMonitor} from '../../service/index.js';
-import {inlineKeyboard, waitForTextOrCancel, type InlineButton, type WizardContext, type WizardConversation} from './shared.js';
+import {
+  inlineKeyboard,
+  waitForTextOrCancel,
+  type InlineButton,
+  type WizardContext,
+  type WizardConversation,
+} from './shared.js';
 
 export interface StrategyAddWizardArgs {
   userId: string;
@@ -22,22 +28,24 @@ export function makeStrategyAddWizard(deps: {strategyMonitor: () => StrategyMoni
       return;
     }
 
-    // Encode the index rather than the strategy name: Telegram caps
-    // callback_data at 64 bytes, and names like
-    // "@typedtrader/strategy-multi-indicator-confluence" blow past that
-    // once prefixed.
+    /*
+     * Encode the index rather than the strategy name: Telegram caps
+     * callback_data at 64 bytes, and names like
+     * "@typedtrader/strategy-multi-indicator-confluence" blow past that
+     * once prefixed.
+     */
     const strategyButtons: InlineButton[][] = strategies.map((name, idx) => [
-      {text: name, callback_data: `strategyadd:strat:${idx}`},
+      {callback_data: `strategyadd:strat:${idx}`, text: name},
     ]);
     await ctx.reply('Pick a strategy:', inlineKeyboard(strategyButtons));
 
     const stratCb = await conversation.waitForCallbackQuery(strategies.map((_, idx) => `strategyadd:strat:${idx}`));
     await stratCb.answerCallbackQuery();
-    const stratIdx = Number.parseInt(typeof stratCb.match === 'string' ? stratCb.match.split(':')[2] ?? '' : '', 10);
+    const stratIdx = Number.parseInt(typeof stratCb.match === 'string' ? (stratCb.match.split(':')[2] ?? '') : '', 10);
     const strategyName = strategies[stratIdx] ?? '';
 
     const accounts = await conversation.external(() =>
-      Account.findByUserId(args.userId).map(a => ({id: a.id, name: a.name, exchange: a.exchange, isPaper: a.isPaper}))
+      Account.findByUserId(args.userId).map(a => ({exchange: a.exchange, id: a.id, isPaper: a.isPaper, name: a.name}))
     );
     if (accounts.length === 0) {
       await stratCb.editMessageText(`Strategy: ${strategyName}\nNo account found. Use /accountAdd first.`);
@@ -45,7 +53,7 @@ export function makeStrategyAddWizard(deps: {strategyMonitor: () => StrategyMoni
     }
 
     const accountButtons: InlineButton[][] = accounts.map(a => [
-      {text: `${a.name} (${a.exchange}${a.isPaper ? ' paper' : ''})`, callback_data: `strategyadd:acc:${a.id}`},
+      {callback_data: `strategyadd:acc:${a.id}`, text: `${a.name} (${a.exchange}${a.isPaper ? ' paper' : ''})`},
     ]);
     await stratCb.editMessageText(`Strategy: ${strategyName}\nPick an account:`, inlineKeyboard(accountButtons));
 
@@ -59,7 +67,9 @@ export function makeStrategyAddWizard(deps: {strategyMonitor: () => StrategyMoni
       `Strategy: ${strategyName}\nAccount: ${accountLabel}\n\nSend a trading pair (e.g. SHOP,USD):`
     );
     const pairResp = await waitForTextOrCancel(conversation, ctx);
-    if (pairResp.cancelled) return;
+    if (pairResp.cancelled) {
+      return;
+    }
     const pairStr = pairResp.text;
     try {
       TradingPair.fromString(pairStr, ',');
@@ -70,7 +80,9 @@ export function makeStrategyAddWizard(deps: {strategyMonitor: () => StrategyMoni
 
     await ctx.reply('Send config as JSON (or "{}" for defaults):');
     const cfgResp = await waitForTextOrCancel(conversation, ctx);
-    if (cfgResp.cancelled) return;
+    if (cfgResp.cancelled) {
+      return;
+    }
     const configJson = cfgResp.text || '{}';
 
     let config: unknown;
@@ -85,20 +97,20 @@ export function makeStrategyAddWizard(deps: {strategyMonitor: () => StrategyMoni
       try {
         const account = Account.findByPk(accountId);
         if (!account || account.userId !== args.userId) {
-          return {ok: false as const, error: 'Account not found.'};
+          return {error: 'Account not found.', ok: false as const};
         }
         createStrategy(strategyName, config);
         const row = Strategy.create({
           accountId,
-          strategyName,
           config: configJson,
           pair: pairStr,
+          strategyName,
         });
-        return {ok: true as const, strategy: row, accountName: account.name};
+        return {accountName: account.name, ok: true as const, strategy: row};
       } catch (error) {
         const message = error instanceof Error ? error.message : 'Unknown error';
         logger.error({message}, 'strategyAdd wizard failed');
-        return {ok: false as const, error: message};
+        return {error: message, ok: false as const};
       }
     });
 

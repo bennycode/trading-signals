@@ -1,7 +1,7 @@
 import {z} from 'zod';
 import Big from 'big.js';
 import {AllAvailableAmount, CandleBatcher, OrderSide, OrderType} from '@typedtrader/exchange';
-import type {Fill, OneMinuteBatchedCandle, OrderAdvice, TradingSessionState} from '@typedtrader/exchange';
+import type {Candle, Fill, OneMinuteBatchedCandle, OrderAdvice, TradingSessionState} from '@typedtrader/exchange';
 import {EMA, ER} from 'trading-signals';
 import {MarketType} from '../strategy/MarketType.js';
 import {ProtectedStrategy, ProtectedStrategySchema} from '../strategy-protected/ProtectedStrategy.js';
@@ -9,11 +9,13 @@ import {positiveNumberString} from '../util/validators.js';
 import {suggestScalpOffset} from './suggestScalpOffset.js';
 
 export const ScalpSchema = ProtectedStrategySchema.extend({
-  /** Nominal price offset for each leg of the scalp (e.g., "0.10" means sell at fill+0.10, re-buy at fill-0.10).
-   *  When omitted, the offset is auto-computed from historical candles passed to `init()`. */
-  offset: positiveNumberString.optional(),
   /** EMA period used for the initial entry filter. Default: 5. */
   emaPeriod: z.number().int().positive().optional().default(5),
+  /**
+   * Nominal price offset for each leg of the scalp (e.g., "0.10" means sell at fill+0.10, re-buy at fill-0.10).
+   *  When omitted, the offset is auto-computed from historical candles passed to `init()`.
+   */
+  offset: positiveNumberString.optional(),
 });
 
 export type ScalpConfig = z.infer<typeof ScalpSchema>;
@@ -37,7 +39,7 @@ export class ScalpStrategy extends ProtectedStrategy {
   constructor(config: ScalpConfig) {
     super({
       config,
-      state: {phase: 'entry', lastFillPrice: null, lastFillSide: null},
+      state: {lastFillPrice: null, lastFillSide: null, phase: 'entry'},
     });
     this.#ema = new EMA(this.#config.emaPeriod);
   }
@@ -79,7 +81,7 @@ export class ScalpStrategy extends ProtectedStrategy {
     return this.#scalpFriendly;
   }
 
-  #computeRangeEfficiency(candles: import('@typedtrader/exchange').Candle[]): boolean {
+  #computeRangeEfficiency(candles: Candle[]): boolean {
     const ONE_DAY_IN_MS = 86_400_000;
     const isSubDaily = candles[0].sizeInMillis < ONE_DAY_IN_MS;
 
@@ -94,15 +96,19 @@ export class ScalpStrategy extends ProtectedStrategy {
         let b = dayMap.get(day);
 
         if (!b) {
-          b = {high: -Infinity, low: Infinity, close: 0};
+          b = {close: 0, high: -Infinity, low: Infinity};
           dayMap.set(day, b);
         }
 
         const h = parseFloat(c.high);
         const l = parseFloat(c.low);
 
-        if (h > b.high) b.high = h;
-        if (l < b.low) b.low = l;
+        if (h > b.high) {
+          b.high = h;
+        }
+        if (l < b.low) {
+          b.low = l;
+        }
 
         b.close = parseFloat(c.close);
       }
@@ -152,7 +158,10 @@ export class ScalpStrategy extends ProtectedStrategy {
     }
   }
 
-  protected override async processCandle(candle: OneMinuteBatchedCandle, state: TradingSessionState): Promise<OrderAdvice | void> {
+  protected override async processCandle(
+    candle: OneMinuteBatchedCandle,
+    state: TradingSessionState
+  ): Promise<OrderAdvice | void> {
     const guardAdvice = await super.processCandle(candle, state);
     if (guardAdvice) {
       return guardAdvice;
@@ -177,8 +186,10 @@ export class ScalpStrategy extends ProtectedStrategy {
       return;
     }
 
-    // Refuse to open a position without a configured exit offset — otherwise
-    // the strategy would get stuck in pendingAdvice after the fill.
+    /*
+     * Refuse to open a position without a configured exit offset — otherwise
+     * the strategy would get stuck in pendingAdvice after the fill.
+     */
     if (!this.#config.offset) {
       return;
     }
@@ -197,11 +208,11 @@ export class ScalpStrategy extends ProtectedStrategy {
     this.#state.phase = 'waitingForFill';
 
     return {
-      side: OrderSide.BUY,
-      type: OrderType.MARKET,
       amount: AllAvailableAmount,
       amountIn: 'counter',
       reason: `Entry: price ${closePrice.toFixed(2)} above EMA(${this.#ema.interval}) ${emaValue.toFixed(2)}`,
+      side: OrderSide.BUY,
+      type: OrderType.MARKET,
     };
   }
 
@@ -220,12 +231,12 @@ export class ScalpStrategy extends ProtectedStrategy {
       const sellPrice = lastFillPrice.plus(offset);
 
       return {
-        side: OrderSide.SELL,
-        type: OrderType.LIMIT,
         amount: AllAvailableAmount,
         amountIn: 'base',
         price: sellPrice,
         reason: `Scalp sell: fill ${lastFillPrice.toFixed(2)} + offset ${offset.toFixed(2)}`,
+        side: OrderSide.SELL,
+        type: OrderType.LIMIT,
       };
     }
 
@@ -233,12 +244,12 @@ export class ScalpStrategy extends ProtectedStrategy {
     const buyPrice = lastFillPrice.minus(offset);
 
     return {
-      side: OrderSide.BUY,
-      type: OrderType.LIMIT,
       amount: AllAvailableAmount,
       amountIn: 'base',
       price: buyPrice,
       reason: `Scalp buy: fill ${lastFillPrice.toFixed(2)} - offset ${offset.toFixed(2)}`,
+      side: OrderSide.BUY,
+      type: OrderType.LIMIT,
     };
   }
 }

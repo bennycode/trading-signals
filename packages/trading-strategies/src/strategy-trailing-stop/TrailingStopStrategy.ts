@@ -15,6 +15,20 @@ import {positiveNumberString} from '../util/validators.js';
 
 export const TrailingStopSchema = z.object({
   /**
+   * Order type used to exit. `"limit"` (default) places the sell at the trail target —
+   * guaranteed price, but may not fill on a gap. `"market"` guarantees fill at the
+   * prevailing price.
+   */
+  exitOrder: z.enum(['limit', 'market']).default('limit'),
+  /**
+   * Optional initial pivot price. When set, the peak seeds from this value on attach
+   * instead of the attach candle's `high`. From there the peak ratchets up normally on
+   * subsequent candle highs. Useful when you know the right anchor (e.g. cost basis or
+   * a recent swing high) and don't want the strategy to seed from whatever candle
+   * happens to be first.
+   */
+  pivotPrice: positiveNumberString.optional(),
+  /**
    * Exit threshold as a percentage of the running peak. "5" → exit when close drops to
    * peak * 0.95. Defaults to "10" (10%).
    */
@@ -28,20 +42,6 @@ export const TrailingStopSchema = z.object({
    * When omitted, the peak ratchets on every candle high that exceeds the previous one.
    */
   trailUpPct: positiveNumberString.optional(),
-  /**
-   * Optional initial pivot price. When set, the peak seeds from this value on attach
-   * instead of the attach candle's `high`. From there the peak ratchets up normally on
-   * subsequent candle highs. Useful when you know the right anchor (e.g. cost basis or
-   * a recent swing high) and don't want the strategy to seed from whatever candle
-   * happens to be first.
-   */
-  pivotPrice: positiveNumberString.optional(),
-  /**
-   * Order type used to exit. `"limit"` (default) places the sell at the trail target —
-   * guaranteed price, but may not fill on a gap. `"market"` guarantees fill at the
-   * prevailing price.
-   */
-  exitOrder: z.enum(['limit', 'market']).default('limit'),
 });
 
 export type TrailingStopConfig = z.input<typeof TrailingStopSchema>;
@@ -92,11 +92,11 @@ export type TrailingStopState = {
 
 const defaultState = (): TrailingStopState => ({
   exited: false,
-  positionSize: '0',
-  peakPrice: '0',
-  stopPrice: '0',
-  exitReason: null,
   exitLimitPrice: null,
+  exitReason: null,
+  peakPrice: '0',
+  positionSize: '0',
+  stopPrice: '0',
 });
 
 /**
@@ -203,22 +203,22 @@ export class TrailingStopStrategy extends Strategy {
     if (this.#exitOrder === 'market') {
       this.#state.exitLimitPrice = null;
       return {
-        side: OrderSide.SELL,
-        type: OrderType.MARKET,
         amount: AllAvailableAmount,
         amountIn: 'base',
         reason,
+        side: OrderSide.SELL,
+        type: OrderType.MARKET,
       };
     }
 
     this.#state.exitLimitPrice = trailTarget.toFixed();
     const advice: LimitOrderAdvice = {
-      side: OrderSide.SELL,
-      type: OrderType.LIMIT,
       amount: AllAvailableAmount,
       amountIn: 'base',
       price: trailTarget,
       reason,
+      side: OrderSide.SELL,
+      type: OrderType.LIMIT,
     };
     return advice;
   }
@@ -239,7 +239,7 @@ export class TrailingStopStrategy extends Strategy {
 
   async onOrderFilled(order: PendingOrder, _state: TradingSessionState): Promise<void> {
     if (this.#state.exited && order.side === OrderSide.SELL) {
-      this.onFinish?.();
+      await this.onFinish?.();
     }
   }
 
@@ -260,7 +260,9 @@ function isTrailingStopState(value: unknown): value is TrailingStopState {
   if (!value || typeof value !== 'object') {
     return false;
   }
-  if (!('exited' in value) || typeof value.exited !== 'boolean') return false;
+  if (!('exited' in value) || typeof value.exited !== 'boolean') {
+    return false;
+  }
   if (!('positionSize' in value) || typeof value.positionSize !== 'string' || !isValidBigString(value.positionSize)) {
     return false;
   }
@@ -270,29 +272,45 @@ function isTrailingStopState(value: unknown): value is TrailingStopState {
   if (!('stopPrice' in value) || typeof value.stopPrice !== 'string' || !isValidBigString(value.stopPrice)) {
     return false;
   }
-  if (!('exitReason' in value) || (value.exitReason !== null && typeof value.exitReason !== 'string')) return false;
-  if (!('exitLimitPrice' in value)) return false;
+  if (!('exitReason' in value) || (value.exitReason !== null && typeof value.exitReason !== 'string')) {
+    return false;
+  }
+  if (!('exitLimitPrice' in value)) {
+    return false;
+  }
   if (value.exitLimitPrice !== null) {
-    if (typeof value.exitLimitPrice !== 'string' || !isValidBigString(value.exitLimitPrice)) return false;
+    if (typeof value.exitLimitPrice !== 'string' || !isValidBigString(value.exitLimitPrice)) {
+      return false;
+    }
   }
 
-  // Cross-field invariants. Restoring a state that violates these would strand the
-  // strategy in a no-op or otherwise inconsistent runtime state, so reject and let
-  // restoreState fall back to defaults.
+  /*
+   * Cross-field invariants. Restoring a state that violates these would strand the
+   * strategy in a no-op or otherwise inconsistent runtime state, so reject and let
+   * restoreState fall back to defaults.
+   */
   const positionSize = new Big(value.positionSize);
   const peakPrice = new Big(value.peakPrice);
   const stopPrice = new Big(value.stopPrice);
 
   // Once exited, the position must be zero. Anything else is contradictory.
-  if (value.exited && !positionSize.eq(0)) return false;
+  if (value.exited && !positionSize.eq(0)) {
+    return false;
+  }
 
-  // Attached (peak set) but not exited and no position left → permanent no-op:
-  // the seed branch is skipped (peak !== '0') and the trail branch returns early
-  // (positionSize <= 0). Treat as corrupt and reset.
-  if (!peakPrice.eq(0) && !value.exited && positionSize.lte(0)) return false;
+  /*
+   * Attached (peak set) but not exited and no position left → permanent no-op:
+   * the seed branch is skipped (peak !== '0') and the trail branch returns early
+   * (positionSize <= 0). Treat as corrupt and reset.
+   */
+  if (!peakPrice.eq(0) && !value.exited && positionSize.lte(0)) {
+    return false;
+  }
 
   // peakPrice and stopPrice are coupled — both '0' (not yet attached) or both non-zero.
-  if (peakPrice.eq(0) !== stopPrice.eq(0)) return false;
+  if (peakPrice.eq(0) !== stopPrice.eq(0)) {
+    return false;
+  }
 
   return true;
 }

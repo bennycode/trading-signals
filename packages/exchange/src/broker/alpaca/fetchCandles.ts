@@ -1,6 +1,7 @@
 // @ts-ignore No type declarations available for dotenv-defaults
 import 'dotenv-defaults/config.js';
-import {ms, StringValue} from 'ms';
+import type {StringValue} from 'ms';
+import {ms} from 'ms';
 import {parseArgs} from 'node:util';
 import {writeCandles} from '../../candle/writeCandles.js';
 import {TradingPair} from '../TradingPair.js';
@@ -8,12 +9,12 @@ import {getAlpacaClient} from './getAlpacaClient.js';
 
 const {values} = parseArgs({
   options: {
-    base: {type: 'string', default: 'ETH'},
-    counter: {type: 'string', default: 'USD'},
-    from: {type: 'string', default: '2025-09-11T00:00:00.000Z'},
-    to: {type: 'string', default: '2025-10-20T00:00:00.000Z'},
-    interval: {type: 'string', default: '1d'},
-    output: {type: 'string', short: 'o'},
+    base: {default: 'ETH', type: 'string'},
+    counter: {default: 'USD', type: 'string'},
+    from: {default: '2025-09-11T00:00:00.000Z', type: 'string'},
+    interval: {default: '1d', type: 'string'},
+    output: {short: 'o', type: 'string'},
+    to: {default: '2025-10-20T00:00:00.000Z', type: 'string'},
   },
 });
 
@@ -33,8 +34,8 @@ console.log(`Fetching "${pair.asString('/')}" (${values.interval} candles) from 
 
 const candles = await exchange.getCandles(pair, {
   intervalInMillis: interval,
-  startTimeFirstCandle: values.from!,
-  startTimeLastCandle: values.to!,
+  startTimeFirstCandle: values.from,
+  startTimeLastCandle: values.to,
 });
 
 console.log(`Received ${candles.length} candles.`);

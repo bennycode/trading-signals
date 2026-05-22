@@ -2,7 +2,13 @@ import {getAuthenticatedBrokerClient} from '@typedtrader/exchange';
 import {Account} from '../../database/models/Account.js';
 import {logger} from '../../logger.js';
 import {restartAccountSessions, type StrategyMonitor, type WatchMonitor} from '../../service/index.js';
-import {deleteSecretMessages, inlineKeyboard, type InlineButton, type WizardContext, type WizardConversation} from './shared.js';
+import {
+  deleteSecretMessages,
+  inlineKeyboard,
+  type InlineButton,
+  type WizardContext,
+  type WizardConversation,
+} from './shared.js';
 
 export interface AccountEditWizardArgs {
   userId: string;
@@ -26,19 +32,22 @@ export function makeAccountEditWizard(deps: {
 
     const accountButtons: InlineButton[][] = accounts.map(account => [
       {
-        text: `${account.name} (${account.exchange}, ${account.isPaper ? 'Paper' : 'Live'})`,
         callback_data: `accountedit:acc:${account.id}`,
+        text: `${account.name} (${account.exchange}, ${account.isPaper ? 'Paper' : 'Live'})`,
       },
     ]);
     await ctx.reply('Pick an account to update:', inlineKeyboard(accountButtons));
 
     const accountCb = await conversation.waitForCallbackQuery(accounts.map(a => `accountedit:acc:${a.id}`));
     await accountCb.answerCallbackQuery();
-    const selectedId = typeof accountCb.match === 'string' ? parseInt(accountCb.match.split(':')[2], 10) : accounts[0].id;
+    const selectedId =
+      typeof accountCb.match === 'string' ? parseInt(accountCb.match.split(':')[2], 10) : accounts[0].id;
     const account = accounts.find(a => a.id === selectedId) ?? accounts[0];
 
-    // The account ID, name, exchange and paper mode are kept — only the
-    // credentials change, so all linked watches, strategies and reports stay intact.
+    /*
+     * The account ID, name, exchange and paper mode are kept — only the
+     * credentials change, so all linked watches, strategies and reports stay intact.
+     */
     await accountCb.editMessageText(
       `Account: ${account.name}\n\nSend the new API key (the message will be deleted after receipt):`
     );
@@ -65,27 +74,29 @@ export function makeAccountEditWizard(deps: {
     }
 
     await deleteSecretMessages(conversation, ctx, 'accountEdit', [
-      {chatId: apiKeyChatId, messageId: apiKeyMessageId, label: 'API key'},
-      {chatId: apiSecretChatId, messageId: apiSecretMessageId, label: 'API secret'},
+      {chatId: apiKeyChatId, label: 'API key', messageId: apiKeyMessageId},
+      {chatId: apiSecretChatId, label: 'API secret', messageId: apiSecretMessageId},
     ]);
 
     await ctx.reply('Validating credentials…');
 
     const result = await conversation.external(async () => {
       try {
-        await getAuthenticatedBrokerClient({exchangeId: account.exchange, apiKey, apiSecret, isPaper: account.isPaper});
+        await getAuthenticatedBrokerClient({apiKey, apiSecret, exchangeId: account.exchange, isPaper: account.isPaper});
         Account.update(account.id, {apiKey, apiSecret});
         return {ok: true as const};
       } catch (error) {
         const message = error instanceof Error ? error.message : 'Unknown error';
         logger.error({err: error}, 'accountEdit wizard failed');
-        return {ok: false as const, error: message};
+        return {error: message, ok: false as const};
       }
     });
 
     if (result.ok) {
       await ctx.reply(`Account "${account.name}" (ID: ${account.id}) updated successfully. Connection test passed.`);
-      await conversation.external(() => restartAccountSessions(account.id, deps.strategyMonitor(), deps.watchMonitor()));
+      await conversation.external(() =>
+        restartAccountSessions(account.id, deps.strategyMonitor(), deps.watchMonitor())
+      );
     } else {
       await ctx.reply(`Error updating account: ${result.error}`);
     }

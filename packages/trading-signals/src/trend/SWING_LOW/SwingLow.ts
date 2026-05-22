@@ -38,9 +38,11 @@ export class SwingLow extends IndicatorSeries<HighLow> {
   }
 
   update(candle: HighLow<number>, replace: boolean) {
-    // If the bar we're replacing caused the last emission, unwind it up-front so the
-    // pivot check evaluates against fresh state and `getResult()` doesn't keep a stale
-    // pivot when the replacement no longer qualifies.
+    /*
+     * If the bar we're replacing caused the last emission, unwind it up-front so the
+     * pivot check evaluates against fresh state and `getResult()` doesn't keep a stale
+     * pivot when the replacement no longer qualifies.
+     */
     if (replace && this.#lastEmitted) {
       this.rollbackLastResult();
     }

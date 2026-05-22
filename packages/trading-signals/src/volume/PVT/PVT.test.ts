@@ -5,8 +5,10 @@ import {TradingSignal} from '../../types/index.js';
 describe('PVT', () => {
   describe('getResultOrThrow', () => {
     it('calculates the Price Volume Trend', () => {
-      // Test data verified with:
-      // https://www.investopedia.com/terms/p/pvt.asp
+      /*
+       * Test data verified with:
+       * https://www.investopedia.com/terms/p/pvt.asp
+       */
       const candles = [
         {close: 10, high: 10, low: 9, volume: 25000},
         {close: 10.5, high: 11, low: 9.5, volume: 30000},
@@ -23,9 +25,11 @@ describe('PVT', () => {
       expect(pvt.isStable).toBe(true);
       expect(pvt.getRequiredInputs()).toBe(2);
 
-      // First result: PVT = 0 + 30000 * ((10.5 - 10) / 10) = 1500
-      // Second result: PVT = 1500 + 28000 * ((10.2 - 10.5) / 10.5) = 1500 - 800 = 700
-      // Third result: PVT = 700 + 26000 * ((10.3 - 10.2) / 10.2) ≈ 700 + 254.9... ≈ 954.9...
+      /*
+       * First result: PVT = 0 + 30000 * ((10.5 - 10) / 10) = 1500
+       * Second result: PVT = 1500 + 28000 * ((10.2 - 10.5) / 10.5) = 1500 - 800 = 700
+       * Third result: PVT = 700 + 26000 * ((10.3 - 10.2) / 10.2) ≈ 700 + 254.9... ≈ 954.9...
+       */
     });
 
     it('handles zero previous close gracefully', () => {

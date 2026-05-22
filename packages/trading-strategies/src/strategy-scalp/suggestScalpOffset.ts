@@ -40,8 +40,12 @@ function aggregateToDailyCandles(candles: Candle[]): Candle[] {
     for (const bar of sortedBars) {
       const h = parseFloat(bar.high);
       const l = parseFloat(bar.low);
-      if (h > high) high = h;
-      if (l < low) low = l;
+      if (h > high) {
+        high = h;
+      }
+      if (l < low) {
+        low = l;
+      }
       volume += parseFloat(bar.volume);
     }
 
@@ -85,9 +89,9 @@ export function suggestScalpOffset(candles: Candle[], atrPeriod: number = 14): B
 
   for (const candle of effectiveCandles) {
     atr.add({
+      close: parseFloat(candle.close),
       high: parseFloat(candle.high),
       low: parseFloat(candle.low),
-      close: parseFloat(candle.close),
     });
   }
 

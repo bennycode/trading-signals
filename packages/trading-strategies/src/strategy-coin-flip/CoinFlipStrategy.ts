@@ -1,4 +1,4 @@
-import {z} from 'zod';
+import type {z} from 'zod';
 import {AllAvailableAmount, OrderSide, OrderType} from '@typedtrader/exchange';
 import type {OneMinuteBatchedCandle, OrderAdvice, TradingSessionState} from '@typedtrader/exchange';
 import {MarketType} from '../strategy/MarketType.js';
@@ -16,28 +16,33 @@ export class CoinFlipStrategy extends ProtectedStrategy {
     super({config});
   }
 
-  protected override async processCandle(candle: OneMinuteBatchedCandle, state: TradingSessionState): Promise<OrderAdvice | void> {
+  protected override async processCandle(
+    candle: OneMinuteBatchedCandle,
+    state: TradingSessionState
+  ): Promise<OrderAdvice | void> {
     const guardAdvice = await super.processCandle(candle, state);
     if (guardAdvice) {
       return guardAdvice;
     }
 
     const buyMarket: OrderAdvice = {
-      side: OrderSide.BUY,
-      type: OrderType.MARKET,
       amount: AllAvailableAmount,
       amountIn: 'counter',
+      side: OrderSide.BUY,
+      type: OrderType.MARKET,
     };
 
     const sellMarket: OrderAdvice = {
-      side: OrderSide.SELL,
-      type: OrderType.MARKET,
       amount: AllAvailableAmount,
       amountIn: 'base',
+      side: OrderSide.SELL,
+      type: OrderType.MARKET,
     };
 
-    // Using bitwise AND instead of modulo to avoid modulo bias
-    // (a Uint8 ranges 0–255, which is not evenly divisible by 100)
+    /*
+     * Using bitwise AND instead of modulo to avoid modulo bias
+     * (a Uint8 ranges 0–255, which is not evenly divisible by 100)
+     */
     const result = globalThis.crypto.getRandomValues(new Uint8Array(1))[0] & 1;
 
     return result === 0 ? buyMarket : sellMarket;

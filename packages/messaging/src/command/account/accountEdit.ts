@@ -9,8 +9,10 @@ interface AccountEditResult {
   accountId?: number;
 }
 
-// Request Example: "1 API_KEY API_SECRET"
-// Format: "<id> <apiKey> <apiSecret>"
+/*
+ * Request Example: "1 API_KEY API_SECRET"
+ * Format: "<id> <apiKey> <apiSecret>"
+ */
 export async function accountEdit(request: string, userId: string): Promise<AccountEditResult> {
   const parts = request.trim().split(' ');
 
@@ -25,17 +27,17 @@ export async function accountEdit(request: string, userId: string): Promise<Acco
     const account = getAccountOrError(userId, accountId);
 
     await getAuthenticatedBrokerClient({
-      exchangeId: account.exchange,
       apiKey,
       apiSecret,
+      exchangeId: account.exchange,
       isPaper: account.isPaper,
     });
 
     Account.update(accountId, {apiKey, apiSecret});
 
     return {
-      message: `Account "${account.name}" (ID: ${accountId}) updated successfully. Connection test passed.`,
       accountId,
+      message: `Account "${account.name}" (ID: ${accountId}) updated successfully. Connection test passed.`,
     };
   } catch (error) {
     if (error instanceof Error) {

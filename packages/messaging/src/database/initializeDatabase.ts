@@ -1,5 +1,6 @@
 import Database from 'better-sqlite3-multiple-ciphers';
-import {BetterSQLite3Database, drizzle} from 'drizzle-orm/better-sqlite3';
+import type {BetterSQLite3Database} from 'drizzle-orm/better-sqlite3';
+import {drizzle} from 'drizzle-orm/better-sqlite3';
 import {migrate} from 'drizzle-orm/better-sqlite3/migrator';
 import path from 'node:path';
 import * as schema from './schema.js';

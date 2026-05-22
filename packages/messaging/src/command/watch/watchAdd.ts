@@ -1,6 +1,7 @@
 import Big from 'big.js';
 import {TradingPair, getBrokerClient} from '@typedtrader/exchange';
-import {Watch, WatchAttributes} from '../../database/models/Watch.js';
+import type {WatchAttributes} from '../../database/models/Watch.js';
+import {Watch} from '../../database/models/Watch.js';
 import {ms} from 'ms';
 import {assertId} from '../../validation/assertId.js';
 import {assertInterval} from '../../validation/assertInterval.js';
@@ -12,8 +13,10 @@ export interface WatchResult {
   watch?: WatchAttributes;
 }
 
-// Request Example: "/watchAdd SHOP,USD 1 1m +5%"
-// Format: "<pair> <accountId> <interval> <threshold>"
+/*
+ * Request Example: "/watchAdd SHOP,USD 1 1m +5%"
+ * Format: "<pair> <accountId> <interval> <threshold>"
+ */
 export const watchAdd = async (request: string, userId: string): Promise<WatchResult> => {
   const parts = request.trim().split(' ');
 
@@ -42,15 +45,17 @@ export const watchAdd = async (request: string, userId: string): Promise<WatchRe
 
     // Fetch current price as baseline
     const client = getBrokerClient({
-      exchangeId: account.exchange,
       apiKey: account.apiKey,
       apiSecret: account.apiSecret,
+      exchangeId: account.exchange,
       isPaper: account.isPaper,
     });
 
     const smallestInterval = client.getSmallestInterval();
     if (intervalMs < smallestInterval) {
-      return {message: `Invalid interval. Minimum for ${account.exchange} is ${ms(smallestInterval, {long: true})}. Examples: 1m, 5m, 1h`};
+      return {
+        message: `Invalid interval. Minimum for ${account.exchange} is ${ms(smallestInterval, {long: true})}. Examples: 1m, 5m, 1h`,
+      };
     }
 
     const candle = await client.getLatestCandle(pair, smallestInterval);
@@ -72,13 +77,13 @@ export const watchAdd = async (request: string, userId: string): Promise<WatchRe
     // Create watch
     const createdWatch = Watch.create({
       accountId,
-      pair: pairPart,
-      intervalMs,
-      thresholdType: threshold.type,
-      thresholdDirection: threshold.direction,
-      thresholdValue: threshold.value.toString(),
-      baselinePrice: baselinePrice.toString(),
       alertPrice: alertPrice.toString(),
+      baselinePrice: baselinePrice.toString(),
+      intervalMs,
+      pair: pairPart,
+      thresholdDirection: threshold.direction,
+      thresholdType: threshold.type,
+      thresholdValue: threshold.value.toString(),
     });
 
     return {

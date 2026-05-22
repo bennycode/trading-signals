@@ -1,4 +1,5 @@
-import {OrderSide, getBrokerClient, TradingPair} from '@typedtrader/exchange';
+import type {TradingPair} from '@typedtrader/exchange';
+import {OrderSide, getBrokerClient} from '@typedtrader/exchange';
 import {getAccountOrError} from '../validation/getAccountOrError.js';
 
 export interface PlaceOrderParams {
@@ -23,9 +24,9 @@ export const placeOrder = async (params: PlaceOrderParams): Promise<string> => {
     const account = getAccountOrError(params.userId, params.accountId);
 
     const client = getBrokerClient({
-      exchangeId: account.exchange,
       apiKey: account.apiKey,
       apiSecret: account.apiSecret,
+      exchangeId: account.exchange,
       isPaper: account.isPaper,
     });
 
@@ -42,9 +43,9 @@ export const placeOrder = async (params: PlaceOrderParams): Promise<string> => {
     }
 
     const order = await client.placeLimitOrder(params.pair, {
+      price: params.limitPrice,
       side: params.side,
       size: params.quantity,
-      price: params.limitPrice,
     });
 
     return `Placed LIMIT ${sideLabel} (${order.id}) for ${params.quantity} ${params.pair.base} @ ${params.limitPrice} ${params.pair.counter} on "${account.name}"`;

@@ -1,6 +1,9 @@
 import type {z} from 'zod';
 import {BuyOnceStrategy, BuyOnceSchema} from '../strategy-buy-once/BuyOnceStrategy.js';
-import {BuyBelowSellAboveStrategy, BuyBelowSellAboveSchema} from '../strategy-buy-below-sell-above/BuyBelowSellAboveStrategy.js';
+import {
+  BuyBelowSellAboveStrategy,
+  BuyBelowSellAboveSchema,
+} from '../strategy-buy-below-sell-above/BuyBelowSellAboveStrategy.js';
 import {CoinFlipStrategy, CoinFlipSchema} from '../strategy-coin-flip/CoinFlipStrategy.js';
 import {
   MultiIndicatorConfluenceStrategy,
@@ -19,30 +22,25 @@ interface StrategyEntry {
 }
 
 const registry: Record<string, StrategyEntry> = {
-  [BuyOnceStrategy.NAME]: {
-    create: (config: unknown) => new BuyOnceStrategy(BuyOnceSchema.parse(config ?? {})),
-    schema: BuyOnceSchema,
-  },
   [BuyBelowSellAboveStrategy.NAME]: {
     create: (config: unknown) => new BuyBelowSellAboveStrategy(BuyBelowSellAboveSchema.parse(config)),
     schema: BuyBelowSellAboveSchema,
+  },
+  [BuyOnceStrategy.NAME]: {
+    create: (config: unknown) => new BuyOnceStrategy(BuyOnceSchema.parse(config ?? {})),
+    schema: BuyOnceSchema,
   },
   [CoinFlipStrategy.NAME]: {
     create: (config: unknown) => new CoinFlipStrategy(CoinFlipSchema.parse(config ?? {})),
     schema: CoinFlipSchema,
   },
-  [MultiIndicatorConfluenceStrategy.NAME]: {
-    create: (config: unknown) =>
-      new MultiIndicatorConfluenceStrategy(MultiIndicatorConfluenceSchema.parse(config)),
-    schema: MultiIndicatorConfluenceSchema,
-  },
-  [ScalpStrategy.NAME]: {
-    create: (config: unknown) => new ScalpStrategy(ScalpSchema.parse(config)),
-    schema: ScalpSchema,
-  },
   [MeanReversionStrategy.NAME]: {
     create: (config: unknown) => new MeanReversionStrategy({config: MeanReversionSchema.parse(config ?? {})}),
     schema: MeanReversionSchema,
+  },
+  [MultiIndicatorConfluenceStrategy.NAME]: {
+    create: (config: unknown) => new MultiIndicatorConfluenceStrategy(MultiIndicatorConfluenceSchema.parse(config)),
+    schema: MultiIndicatorConfluenceSchema,
   },
   [NoopStrategy.NAME]: {
     create: (config: unknown) => new NoopStrategy(NoopSchema.parse(config ?? {})),
@@ -51,6 +49,10 @@ const registry: Record<string, StrategyEntry> = {
   [ProtectedStrategy.NAME]: {
     create: (config: unknown) => new ProtectedStrategy({config: ProtectedStrategySchema.parse(config ?? {})}),
     schema: ProtectedStrategySchema,
+  },
+  [ScalpStrategy.NAME]: {
+    create: (config: unknown) => new ScalpStrategy(ScalpSchema.parse(config)),
+    schema: ScalpSchema,
   },
   [TrailingStopStrategy.NAME]: {
     create: (config: unknown) => new TrailingStopStrategy(TrailingStopSchema.parse(config ?? {})),

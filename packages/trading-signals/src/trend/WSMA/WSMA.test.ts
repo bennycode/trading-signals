@@ -55,8 +55,10 @@ describe('WSMA', () => {
 
   describe('getResultOrThrow', () => {
     it('calculates the WSMA based on a SMA', () => {
-      // Test data verified with:
-      // https://runkit.com/anandaravindan/wema
+      /*
+       * Test data verified with:
+       * https://runkit.com/anandaravindan/wema
+       */
       const prices = [11, 12, 13, 14, 15, 16, 18, 19, 22, 23, 23] as const;
       const expectations = ['13.00', '13.60', '14.48', '15.38', '16.71', '17.97', '18.97'] as const;
       const wsma = new WSMA(5);
@@ -75,8 +77,10 @@ describe('WSMA', () => {
     });
 
     it('is compatible with results from Tulip Indicators (TI)', () => {
-      // Test data verified with:
-      // https://github.com/TulipCharts/tulipindicators/blob/v0.8.0/tests/atoz.txt#L299-L302
+      /*
+       * Test data verified with:
+       * https://github.com/TulipCharts/tulipindicators/blob/v0.8.0/tests/atoz.txt#L299-L302
+       */
       const prices = [
         62.125, 61.125, 62.3438, 65.3125, 63.9688, 63.4375, 63, 63.7812, 63.4062, 63.4062, 62.4375, 61.8438,
       ] as const;

@@ -3,10 +3,7 @@ import type {OneMinuteBatchedCandle, OrderAdvice, TradingSessionState} from '@ty
 import {BollingerBands, EMA, MACD, RSI} from 'trading-signals';
 import {MarketType} from '../strategy/MarketType.js';
 import {ProtectedStrategy} from '../strategy-protected/ProtectedStrategy.js';
-import {
-  MultiIndicatorConfluenceSchema,
-  type MultiIndicatorConfluenceConfig,
-} from './MultiIndicatorConfluenceSchema.js';
+import {MultiIndicatorConfluenceSchema, type MultiIndicatorConfluenceConfig} from './MultiIndicatorConfluenceSchema.js';
 
 export {MultiIndicatorConfluenceSchema, type MultiIndicatorConfluenceConfig};
 
@@ -65,7 +62,10 @@ export class MultiIndicatorConfluenceStrategy extends ProtectedStrategy {
     return this.#candlesProcessed;
   }
 
-  protected override async processCandle(candle: OneMinuteBatchedCandle, state: TradingSessionState): Promise<OrderAdvice | void> {
+  protected override async processCandle(
+    candle: OneMinuteBatchedCandle,
+    state: TradingSessionState
+  ): Promise<OrderAdvice | void> {
     const guardAdvice = await super.processCandle(candle, state);
     if (guardAdvice) {
       return guardAdvice;
@@ -109,11 +109,11 @@ export class MultiIndicatorConfluenceStrategy extends ProtectedStrategy {
       ].join('; ');
 
       return {
-        side: OrderSide.BUY,
-        type: OrderType.MARKET,
         amount: AllAvailableAmount,
         amountIn: 'counter',
         reason,
+        side: OrderSide.BUY,
+        type: OrderType.MARKET,
       };
     }
 
@@ -127,11 +127,11 @@ export class MultiIndicatorConfluenceStrategy extends ProtectedStrategy {
       ].join('; ');
 
       return {
-        side: OrderSide.SELL,
-        type: OrderType.MARKET,
         amount: AllAvailableAmount,
         amountIn: 'base',
         reason,
+        side: OrderSide.SELL,
+        type: OrderType.MARKET,
       };
     }
   }

@@ -1,6 +1,6 @@
 import Big from 'big.js';
 import {AllAvailableAmount, CandleBatcher, OrderSide, OrderType} from '@typedtrader/exchange';
-import type {Candle, FeeRate, TradingRules, OrderAdvice, TradingSessionState} from '@typedtrader/exchange';
+import type {Candle, FeeRate, TradingRules, OrderAdvice, TradingPair, TradingSessionState} from '@typedtrader/exchange';
 import type {BacktestConfig} from './BacktestConfig.js';
 import type {BacktestPerformanceSummary, BacktestResult, BacktestTrade} from './BacktestResult.js';
 import {PerformanceCalculator} from './PerformanceCalculator.js';
@@ -13,7 +13,7 @@ export class BacktestExecutor {
   }
 
   async execute(): Promise<BacktestResult> {
-    const {candles, broker: exchange, strategy, tradingPair} = this.#config;
+    const {broker: exchange, candles, strategy, tradingPair} = this.#config;
 
     const initialBalances = await exchange.getAvailableBalances(tradingPair);
     const initialBaseBalance = initialBalances.base;
@@ -65,9 +65,11 @@ export class BacktestExecutor {
       await this.#placeOrderFromAdvice(advice, tradingPair, tradingRules, feeRates);
     }
 
-    // Cancel any orders placed on the last candle that were never filled.
-    // This releases their held balances back to available so the final stats
-    // correctly reflect what the portfolio actually holds.
+    /*
+     * Cancel any orders placed on the last candle that were never filled.
+     * This releases their held balances back to available so the final stats
+     * correctly reflect what the portfolio actually holds.
+     */
     await exchange.cancelOpenOrders(tradingPair);
 
     const finalBalances = await exchange.getAvailableBalances(tradingPair);
@@ -101,20 +103,16 @@ export class BacktestExecutor {
     if (!advice) {
       // Fallback: shouldn't happen in normal flow
       return {
-        side: OrderSide.BUY,
-        type: OrderType.MARKET,
         amount: AllAvailableAmount,
         amountIn: 'counter',
+        side: OrderSide.BUY,
+        type: OrderType.MARKET,
       };
     }
     return advice;
   }
 
-  async #buildState(
-    pair: import('@typedtrader/exchange').TradingPair,
-    tradingRules: TradingRules,
-    feeRates: FeeRate
-  ): Promise<TradingSessionState> {
+  async #buildState(pair: TradingPair, tradingRules: TradingRules, feeRates: FeeRate): Promise<TradingSessionState> {
     const {broker: exchange} = this.#config;
     const [balances, fills] = await Promise.all([exchange.getAvailableBalances(pair), exchange.getFills(pair)]);
     const lastOrderSide = fills.length > 0 ? fills[0].side : undefined;
@@ -122,15 +120,15 @@ export class BacktestExecutor {
     return {
       baseBalance: balances.base,
       counterBalance: balances.counter,
-      tradingRules,
       feeRates,
       lastOrderSide,
+      tradingRules,
     };
   }
 
   async #placeOrderFromAdvice(
     advice: OrderAdvice,
-    pair: import('@typedtrader/exchange').TradingPair,
+    pair: TradingPair,
     tradingRules: TradingRules,
     feeRates: FeeRate
   ): Promise<void> {
@@ -258,7 +256,7 @@ export class BacktestExecutor {
 
     const winRate = PerformanceCalculator.calculateWinRate(trades);
     const buyAndHoldReturnPercentage = PerformanceCalculator.calculateBuyAndHoldReturn(candles);
-    const {maxWinStreak, maxLossStreak} = PerformanceCalculator.calculateStreaks(trades);
+    const {maxLossStreak, maxWinStreak} = PerformanceCalculator.calculateStreaks(trades);
 
     return {
       buyAndHoldReturnPercentage,

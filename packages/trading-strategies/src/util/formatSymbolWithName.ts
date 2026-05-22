@@ -1,4 +1,5 @@
-import {AlpacaAPI, AlpacaAssetClass} from '@typedtrader/exchange';
+import type {AlpacaAPI} from '@typedtrader/exchange';
+import {AlpacaAssetClass} from '@typedtrader/exchange';
 
 const DEFAULT_MAX_NAME_LENGTH = 30;
 

@@ -11,7 +11,7 @@ export const reportList = async (userId: string): Promise<string> => {
     }
 
     return formatTelegramTable(`Your reports: ${reports.length}`, reports, [
-      {header: 'ID', align: 'right', value: r => String(r.id)},
+      {align: 'right', header: 'ID', value: r => String(r.id)},
       {header: 'Report', value: r => r.reportName},
       {header: 'Schedule', value: r => (r.intervalMs ? `every ${ms(r.intervalMs, {long: true})}` : 'one-shot')},
     ]);

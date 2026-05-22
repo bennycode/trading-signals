@@ -19,7 +19,7 @@ export class TradingSession extends EventEmitter<TradingSessionEventMap> {
   readonly #strategy;
 
   #state: TradingSessionState | null = null;
-  #pendingOrders = new Map<string, PendingOrder>();
+  readonly #pendingOrders = new Map<string, PendingOrder>();
   #candleTopicId: string | null = null;
   #orderTopicId: string | null = null;
   #running = false;
@@ -63,9 +63,9 @@ export class TradingSession extends EventEmitter<TradingSessionEventMap> {
     this.#state = {
       baseBalance: balances.base,
       counterBalance: balances.counter,
+      feeRates,
       lastOrderSide,
       tradingRules,
-      feeRates,
     };
 
     // Subscribe to candles only after state is ready
@@ -101,7 +101,7 @@ export class TradingSession extends EventEmitter<TradingSessionEventMap> {
     this.emit('stopped');
   }
 
-  #onCandle = async (candle: Candle | BatchedCandle): Promise<void> => {
+  readonly #onCandle = async (candle: Candle | BatchedCandle): Promise<void> => {
     try {
       const batchedCandle = CandleBatcher.isBatchedCandle(candle) ? candle : CandleBatcher.toBatchedCandle(candle);
       if (!CandleBatcher.isOneMinuteCandle(batchedCandle)) {
@@ -122,7 +122,7 @@ export class TradingSession extends EventEmitter<TradingSessionEventMap> {
     }
   };
 
-  #onFill = async (fill: Fill): Promise<void> => {
+  readonly #onFill = async (fill: Fill): Promise<void> => {
     try {
       const pending = this.#pendingOrders.get(fill.order_id);
       if (!this.#state || !pending) {
@@ -134,7 +134,7 @@ export class TradingSession extends EventEmitter<TradingSessionEventMap> {
 
       const balances = await this.#broker.getAvailableBalances(this.#pair);
       this.#state = {
-        ...this.#state!,
+        ...this.#state,
         baseBalance: balances.base,
         counterBalance: balances.counter,
         lastOrderSide: fill.side,
@@ -155,9 +155,11 @@ export class TradingSession extends EventEmitter<TradingSessionEventMap> {
 
   async #executeAdvice(advice: OrderAdvice): Promise<void> {
     if (this.#pendingOrders.size > 0) {
-      // Only forget orders that were actually canceled. Any pending order missing
-      // from the canceled list filled before our cancel reached the exchange —
-      // keep it so the late FILL websocket event still matches and onFinish fires.
+      /*
+       * Only forget orders that were actually canceled. Any pending order missing
+       * from the canceled list filled before our cancel reached the exchange —
+       * keep it so the late FILL websocket event still matches and onFinish fires.
+       */
       const canceledIds = await this.#broker.cancelOpenOrders(this.#pair);
       for (const orderId of canceledIds) {
         this.#pendingOrders.delete(orderId);
@@ -176,28 +178,26 @@ export class TradingSession extends EventEmitter<TradingSessionEventMap> {
       return;
     }
 
-    const {base_min_size, counter_min_size} = this.#state!.tradingRules;
+    const {base_min_size, counter_min_size} = this.#state.tradingRules;
 
     if (advice.amountIn === 'counter') {
       if (size.lt(counter_min_size)) {
         this.emit('error', new Error(`Order size "${size}" is below minimum counter size "${counter_min_size}"`));
         return;
       }
-    } else {
-      if (size.lt(base_min_size)) {
-        this.emit('error', new Error(`Order size "${size}" is below minimum base size "${base_min_size}"`));
-        return;
-      }
+    } else if (size.lt(base_min_size)) {
+      this.emit('error', new Error(`Order size "${size}" is below minimum base size "${base_min_size}"`));
+      return;
     }
 
     let order: PendingOrder;
 
     if (advice.type === OrderType.LIMIT) {
-      const price = this.#applyPrecision(new Big(advice.price), this.#state!.tradingRules.counter_increment);
+      const price = this.#applyPrecision(new Big(advice.price), this.#state.tradingRules.counter_increment);
       order = await this.#broker.placeLimitOrder(this.#pair, {
+        price: price.toFixed(),
         side: advice.side,
         size: size.toFixed(),
-        price: price.toFixed(),
       });
     } else {
       order = await this.#broker.placeMarketOrder(this.#pair, {

@@ -33,26 +33,26 @@ function requireApi(name: string, api: AlpacaAPI | undefined): AlpacaAPI {
 }
 
 const registry: Record<string, ReportEntry> = {
+  [ScalpScannerReport.NAME]: {
+    create: (config, api) =>
+      new ScalpScannerReport(ScalpScannerSchema.parse(config), requireApi(ScalpScannerReport.NAME, api)),
+    requiresAccount: true,
+    resolveConfig: () => ({}),
+    schema: ScalpScannerSchema,
+  },
   [SP500HeatmapReport.NAME]: {
     create: (config, api) =>
       new SP500HeatmapReport(SP500HeatmapSchema.parse(config), requireApi(SP500HeatmapReport.NAME, api)),
-    schema: SP500HeatmapSchema,
     requiresAccount: true,
     resolveConfig: () => ({}),
+    schema: SP500HeatmapSchema,
   },
   [SP500MomentumReport.NAME]: {
     create: (config, api) =>
       new SP500MomentumReport(SP500MomentumSchema.parse(config), requireApi(SP500MomentumReport.NAME, api)),
+    requiresAccount: true,
+    resolveConfig: () => ({}),
     schema: SP500MomentumSchema,
-    requiresAccount: true,
-    resolveConfig: () => ({}),
-  },
-  [ScalpScannerReport.NAME]: {
-    create: (config, api) =>
-      new ScalpScannerReport(ScalpScannerSchema.parse(config), requireApi(ScalpScannerReport.NAME, api)),
-    schema: ScalpScannerSchema,
-    requiresAccount: true,
-    resolveConfig: () => ({}),
   },
 };
 

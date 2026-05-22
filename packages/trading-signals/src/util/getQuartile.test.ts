@@ -7,9 +7,11 @@ describe('getQuartile', () => {
 
       const result = getQuartile(prices, 0.25);
 
-      // For even number of elements: [1, 3, 5, 7, 9, 11]
-      // Median index is 3, lower half is [1, 3, 5]
-      // Q1 is median of lower half: 3 -> (1 + 3 + 5) / 3
+      /*
+       * For even number of elements: [1, 3, 5, 7, 9, 11]
+       * Median index is 3, lower half is [1, 3, 5]
+       * Q1 is median of lower half: 3 -> (1 + 3 + 5) / 3
+       */
       expect(result).toBe(3);
     });
 
@@ -18,9 +20,11 @@ describe('getQuartile', () => {
 
       const result = getQuartile(prices, 0.75);
 
-      // For even number of elements: [1, 3, 5, 7, 9, 11]
-      // Median index is 3, upper half is [7, 9, 11]
-      // Q3 is median of upper half: 9 -> (7 + 9 + 11) / 3
+      /*
+       * For even number of elements: [1, 3, 5, 7, 9, 11]
+       * Median index is 3, upper half is [7, 9, 11]
+       * Q3 is median of upper half: 9 -> (7 + 9 + 11) / 3
+       */
       expect(result).toBe(9);
     });
   });
@@ -31,15 +35,19 @@ describe('getQuartile', () => {
 
       const result = getQuartile(prices, 0.25);
 
-      // For odd number of elements: [1, 3, 5, 7, 9]
-      // Median index is 2, lower half is [1, 3]
-      // Q1 is median of lower half: 2 -> (1 + 3) / 2
+      /*
+       * For odd number of elements: [1, 3, 5, 7, 9]
+       * Median index is 2, lower half is [1, 3]
+       * Q1 is median of lower half: 2 -> (1 + 3) / 2
+       */
       expect(result).toBe(2);
     });
 
     it('calculates the second quartile (Q2)', () => {
-      // Test data verified with:
-      // https://en.wikipedia.org/wiki/Quartile#Example_2
+      /*
+       * Test data verified with:
+       * https://en.wikipedia.org/wiki/Quartile#Example_2
+       */
       const prices = [7, 15, 36, 39, 40, 41];
 
       const result = getQuartile(prices, 0.5);
@@ -52,9 +60,11 @@ describe('getQuartile', () => {
 
       const result = getQuartile(prices, 0.75);
 
-      // For odd number of elements: [1, 3, 5, 7, 9]
-      // Median index is 2, upper half is [7, 9]
-      // Q3 is median of upper half: 8 -> (7 + 9) / 2
+      /*
+       * For odd number of elements: [1, 3, 5, 7, 9]
+       * Median index is 2, upper half is [7, 9]
+       * Q3 is median of upper half: 8 -> (7 + 9) / 2
+       */
       expect(result).toBe(8);
     });
   });

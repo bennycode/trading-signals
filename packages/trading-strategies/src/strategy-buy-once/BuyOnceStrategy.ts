@@ -1,4 +1,4 @@
-import {z} from 'zod';
+import type {z} from 'zod';
 import {AllAvailableAmount, OrderSide, OrderType} from '@typedtrader/exchange';
 import type {OneMinuteBatchedCandle, OrderAdvice, TradingSessionState} from '@typedtrader/exchange';
 import Big from 'big.js';
@@ -38,7 +38,10 @@ export class BuyOnceStrategy extends ProtectedStrategy {
     return this.getProxiedState<BuyOnceState>();
   }
 
-  protected override async processCandle(candle: OneMinuteBatchedCandle, state: TradingSessionState): Promise<OrderAdvice | void> {
+  protected override async processCandle(
+    candle: OneMinuteBatchedCandle,
+    state: TradingSessionState
+  ): Promise<OrderAdvice | void> {
     const guardAdvice = await super.processCandle(candle, state);
     if (guardAdvice) {
       return guardAdvice;
@@ -54,17 +57,17 @@ export class BuyOnceStrategy extends ProtectedStrategy {
       this.#state.bought = true;
       if (quantity) {
         return {
-          side: OrderSide.BUY,
-          type: OrderType.MARKET,
           amount: quantity,
           amountIn: 'base',
+          side: OrderSide.BUY,
+          type: OrderType.MARKET,
         };
       }
       return {
-        side: OrderSide.BUY,
-        type: OrderType.MARKET,
         amount: spend ?? AllAvailableAmount,
         amountIn: 'counter',
+        side: OrderSide.BUY,
+        type: OrderType.MARKET,
       };
     }
 
@@ -84,11 +87,11 @@ export class BuyOnceStrategy extends ProtectedStrategy {
     }
 
     return {
-      side: OrderSide.BUY,
-      type: OrderType.LIMIT,
       amount,
       amountIn: 'base',
       price: buyAtPrice,
+      side: OrderSide.BUY,
+      type: OrderType.LIMIT,
     };
   }
 

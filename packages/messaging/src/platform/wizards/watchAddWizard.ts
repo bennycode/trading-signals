@@ -7,7 +7,13 @@ import {assertInterval} from '../../validation/assertInterval.js';
 import {parseThreshold} from '../../validation/parseThreshold.js';
 import {logger} from '../../logger.js';
 import type {WatchMonitor} from '../../service/index.js';
-import {inlineKeyboard, waitForTextOrCancel, type InlineButton, type WizardContext, type WizardConversation} from './shared.js';
+import {
+  inlineKeyboard,
+  waitForTextOrCancel,
+  type InlineButton,
+  type WizardContext,
+  type WizardConversation,
+} from './shared.js';
 
 export interface WatchAddWizardArgs {
   userId: string;
@@ -22,7 +28,7 @@ export function makeWatchAddWizard(deps: {watchMonitor: () => WatchMonitor | und
     args: WatchAddWizardArgs
   ): Promise<void> {
     const accounts = await conversation.external(() =>
-      Account.findByUserId(args.userId).map(a => ({id: a.id, name: a.name, exchange: a.exchange, isPaper: a.isPaper}))
+      Account.findByUserId(args.userId).map(a => ({exchange: a.exchange, id: a.id, isPaper: a.isPaper, name: a.name}))
     );
     if (accounts.length === 0) {
       await ctx.reply('No account found. Use /accountAdd first.');
@@ -30,7 +36,7 @@ export function makeWatchAddWizard(deps: {watchMonitor: () => WatchMonitor | und
     }
 
     const accountButtons: InlineButton[][] = accounts.map(a => [
-      {text: `${a.name} (${a.exchange}${a.isPaper ? ' paper' : ''})`, callback_data: `watchadd:acc:${a.id}`},
+      {callback_data: `watchadd:acc:${a.id}`, text: `${a.name} (${a.exchange}${a.isPaper ? ' paper' : ''})`},
     ]);
     await ctx.reply('Pick an account:', inlineKeyboard(accountButtons));
 
@@ -40,7 +46,9 @@ export function makeWatchAddWizard(deps: {watchMonitor: () => WatchMonitor | und
 
     await accountCb.editMessageText('Send a trading pair (e.g. SHOP,USD):');
     const pairResp = await waitForTextOrCancel(conversation, ctx);
-    if (pairResp.cancelled) return;
+    if (pairResp.cancelled) {
+      return;
+    }
     const pairStr = pairResp.text;
     let pair: TradingPair;
     try {
@@ -53,8 +61,8 @@ export function makeWatchAddWizard(deps: {watchMonitor: () => WatchMonitor | und
     await ctx.reply(
       `Pair: ${pairStr}\nSelect check interval:`,
       inlineKeyboard([
-        INTERVALS.slice(0, 4).map(i => ({text: i, callback_data: `watchadd:int:${i}`})),
-        INTERVALS.slice(4).map(i => ({text: i, callback_data: `watchadd:int:${i}`})),
+        INTERVALS.slice(0, 4).map(i => ({callback_data: `watchadd:int:${i}`, text: i})),
+        INTERVALS.slice(4).map(i => ({callback_data: `watchadd:int:${i}`, text: i})),
       ])
     );
     const intervalCb = await conversation.waitForCallbackQuery(INTERVALS.map(i => `watchadd:int:${i}`));
@@ -65,8 +73,8 @@ export function makeWatchAddWizard(deps: {watchMonitor: () => WatchMonitor | und
       `Pair: ${pairStr}\nInterval: ${interval}\nAlert direction:`,
       inlineKeyboard([
         [
-          {text: '⬆️ Up', callback_data: 'watchadd:dir:up'},
-          {text: '⬇️ Down', callback_data: 'watchadd:dir:down'},
+          {callback_data: 'watchadd:dir:up', text: '⬆️ Up'},
+          {callback_data: 'watchadd:dir:down', text: '⬇️ Down'},
         ],
       ])
     );
@@ -78,8 +86,8 @@ export function makeWatchAddWizard(deps: {watchMonitor: () => WatchMonitor | und
       `Pair: ${pairStr}\nInterval: ${interval}\nDirection: ${direction}\nThreshold type:`,
       inlineKeyboard([
         [
-          {text: '% Percent', callback_data: 'watchadd:type:percent'},
-          {text: '# Absolute', callback_data: 'watchadd:type:absolute'},
+          {callback_data: 'watchadd:type:percent', text: '% Percent'},
+          {callback_data: 'watchadd:type:absolute', text: '# Absolute'},
         ],
       ])
     );
@@ -91,7 +99,9 @@ export function makeWatchAddWizard(deps: {watchMonitor: () => WatchMonitor | und
       `Pair: ${pairStr}\nInterval: ${interval}\nDirection: ${direction}\nType: ${thresholdType}\n\nSend the threshold value (e.g. 5 for 5%):`
     );
     const valueResp = await waitForTextOrCancel(conversation, ctx);
-    if (valueResp.cancelled) return;
+    if (valueResp.cancelled) {
+      return;
+    }
     const valueStr = valueResp.text;
     const thresholdInput = `${direction === 'up' ? '+' : '-'}${valueStr}${thresholdType === 'percent' ? '%' : ''}`;
     const threshold = parseThreshold(thresholdInput);
@@ -106,20 +116,20 @@ export function makeWatchAddWizard(deps: {watchMonitor: () => WatchMonitor | und
       try {
         const account = Account.findByPk(accountId);
         if (!account || account.userId !== args.userId) {
-          return {ok: false as const, error: 'Account not found.'};
+          return {error: 'Account not found.', ok: false as const};
         }
         const client = getBrokerClient({
-          exchangeId: account.exchange,
           apiKey: account.apiKey,
           apiSecret: account.apiSecret,
+          exchangeId: account.exchange,
           isPaper: account.isPaper,
         });
         const smallestInterval = client.getSmallestInterval();
         const intervalMs = assertInterval(interval);
         if (intervalMs < smallestInterval) {
           return {
-            ok: false as const,
             error: `Minimum interval for ${account.exchange} is ${ms(smallestInterval, {long: true})}.`,
+            ok: false as const,
           };
         }
         const candle = await client.getLatestCandle(pair, smallestInterval);
@@ -131,21 +141,23 @@ export function makeWatchAddWizard(deps: {watchMonitor: () => WatchMonitor | und
             : new Big(baselinePrice).plus(multiplier.times(threshold.value));
         const watch = Watch.create({
           accountId,
-          pair: pairStr,
-          intervalMs,
-          thresholdType: threshold.type,
-          thresholdDirection: threshold.direction,
-          thresholdValue: threshold.value.toString(),
-          baselinePrice: baselinePrice.toString(),
           alertPrice: alertPrice.toString(),
+          baselinePrice: baselinePrice.toString(),
+          intervalMs,
+          pair: pairStr,
+          thresholdDirection: threshold.direction,
+          thresholdType: threshold.type,
+          thresholdValue: threshold.value.toString(),
         });
-        return {ok: true as const, watch, baselinePrice, alertPrice: alertPrice.toString(), counter: pair.counter};
+        return {alertPrice: alertPrice.toString(), baselinePrice, counter: pair.counter, ok: true as const, watch};
       } catch (error) {
-        // Log ONLY the message — axios errors carry the API key and secret
-        // in their headers.
+        /*
+         * Log ONLY the message — axios errors carry the API key and secret
+         * in their headers.
+         */
         const message = error instanceof Error ? error.message : 'Unknown error';
         logger.error({message}, 'watchAdd wizard failed');
-        return {ok: false as const, error: message};
+        return {error: message, ok: false as const};
       }
     });
 
