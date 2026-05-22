@@ -51,7 +51,7 @@ function makeFill(price: string, side: OrderSide): Fill {
     feeAsset: 'USD',
     order_id: 'order-1',
     pair,
-    position: 'LONG' as any,
+    position: 'LONG',
     price,
     side,
     size: '10',

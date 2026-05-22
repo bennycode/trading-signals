@@ -20,7 +20,7 @@ import {
   type TradingRules,
 } from '../Broker.js';
 import {TradingPair} from '../TradingPair.js';
-import {MarketDataSource} from '../MarketDataSource.js';
+import type {MarketDataSource} from '../MarketDataSource.js';
 import {Trading212API} from './api/Trading212API.js';
 import {Trading212OrderStatus, Trading212TimeValidity} from './api/schema/OrderSchema.js';
 import {Trading212BrokerMapper} from './Trading212BrokerMapper.js';
@@ -279,9 +279,7 @@ export class Trading212Broker extends Broker implements MarketDataSource {
     return orders
       .filter(
         order =>
-          order.ticker === pair.base &&
-          (order.type === 'MARKET' || order.type === 'LIMIT') &&
-          order.quantity != null
+          order.ticker === pair.base && (order.type === 'MARKET' || order.type === 'LIMIT') && order.quantity != null
       )
       .map(order => Trading212BrokerMapper.toOpenOrder(order, pair));
   }
@@ -321,9 +319,7 @@ export class Trading212Broker extends Broker implements MarketDataSource {
     }
 
     if (instrument.currencyCode !== pair.counter) {
-      throw new Error(
-        `Instrument "${pair.base}" is quoted in "${instrument.currencyCode}", not "${pair.counter}".`
-      );
+      throw new Error(`Instrument "${pair.base}" is quoted in "${instrument.currencyCode}", not "${pair.counter}".`);
     }
 
     // Trading212's `minTradeQuantity` is the floor *and* the increment for fractional shares.
@@ -358,14 +354,8 @@ export class Trading212Broker extends Broker implements MarketDataSource {
     return accountInfo.currencyCode;
   }
 
-  protected override async placeOrder(
-    pair: TradingPair,
-    options: LimitOrderOptions
-  ): Promise<PendingLimitOrder>;
-  protected override async placeOrder(
-    pair: TradingPair,
-    options: MarketOrderOptions
-  ): Promise<PendingMarketOrder>;
+  protected override async placeOrder(pair: TradingPair, options: LimitOrderOptions): Promise<PendingLimitOrder>;
+  protected override async placeOrder(pair: TradingPair, options: MarketOrderOptions): Promise<PendingMarketOrder>;
   protected override async placeOrder(pair: TradingPair, options: OrderOptions): Promise<PendingOrder> {
     if (options.sizeInCounter) {
       throw new Error('Notional (sizeInCounter) orders are not supported by the Trading212 public API.');

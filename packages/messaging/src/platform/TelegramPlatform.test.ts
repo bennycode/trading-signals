@@ -103,8 +103,12 @@ describe('TelegramPlatform', () => {
 
   describe('registerCommand', () => {
     const findRegisteredCallbackQuery = (pattern: string) => {
-      const call = mockCallbackQuery.mock.calls.find(([regex]) => regex instanceof RegExp && regex.source.includes(pattern));
-      if (!call) throw new Error(`bot.callbackQuery was never called with pattern "${pattern}"`);
+      const call = mockCallbackQuery.mock.calls.find(
+        ([regex]) => regex instanceof RegExp && regex.source.includes(pattern)
+      );
+      if (!call) {
+        throw new Error(`bot.callbackQuery was never called with pattern "${pattern}"`);
+      }
       return call[1];
     };
 
@@ -147,7 +151,7 @@ describe('TelegramPlatform', () => {
         match: ['', 'not-an-interval', 'rsi'],
       };
 
-      await callback(ctx as never);
+      await callback(ctx);
 
       expect(ctx.editMessageText).toHaveBeenCalledWith(
         'Invalid interval "not-an-interval". Please select one of: 1m, 1h, 6h, 12h, 1d, 1w.'
@@ -170,7 +174,7 @@ describe('TelegramPlatform', () => {
         const callback = findRegisteredCallbackQuery('report:');
         const ctx = buildCtx(999, ['', 'rsi']);
 
-        await callback(ctx as never);
+        await callback(ctx);
 
         expect(ctx.editMessageText).not.toHaveBeenCalled();
         expect(mockFindByUserId).not.toHaveBeenCalled();
@@ -183,7 +187,7 @@ describe('TelegramPlatform', () => {
         const callback = findRegisteredCallbackQuery('reportaccount:');
         const ctx = buildCtx(999, ['', '42', 'rsi']);
 
-        await callback(ctx as never);
+        await callback(ctx);
 
         expect(ctx.editMessageText).not.toHaveBeenCalled();
         expect(mockFindByUserIdAndId).not.toHaveBeenCalled();
@@ -196,7 +200,7 @@ describe('TelegramPlatform', () => {
         const callback = findRegisteredCallbackQuery('reportmode:');
         const ctx = buildCtx(999, ['', 'rsi']);
 
-        await callback(ctx as never);
+        await callback(ctx);
 
         expect(mockedReportAdd).not.toHaveBeenCalled();
       });
@@ -211,7 +215,7 @@ describe('TelegramPlatform', () => {
         const callback = findRegisteredCallbackQuery('report:');
         const ctx = buildCtx(111, ['', '../../etc/passwd']);
 
-        await callback(ctx as never);
+        await callback(ctx);
 
         expect(ctx.editMessageText).toHaveBeenCalledWith('Unknown report "../../etc/passwd".');
         expect(mockFindByUserId).not.toHaveBeenCalled();
@@ -229,7 +233,7 @@ describe('TelegramPlatform', () => {
         const callback = findRegisteredCallbackQuery('reportaccount:');
         const ctx = buildCtx(111, ['', '42', 'rsi']);
 
-        await callback(ctx as never);
+        await callback(ctx);
 
         expect(mockFindByUserIdAndId).toHaveBeenCalledWith('telegram:111', 42);
         expect(ctx.editMessageText).toHaveBeenCalledWith('Account not found.');
@@ -245,7 +249,7 @@ describe('TelegramPlatform', () => {
         const callback = findRegisteredCallbackQuery('reportmode:');
         const ctx = buildCtx(111, ['', 'bogus-report']);
 
-        await callback(ctx as never);
+        await callback(ctx);
 
         expect(ctx.editMessageText).toHaveBeenCalledWith('Unknown report "bogus-report".');
         expect(mockedReportAdd).not.toHaveBeenCalled();
@@ -262,7 +266,7 @@ describe('TelegramPlatform', () => {
         const callback = findRegisteredCallbackQuery('reportmode:');
         const ctx = buildCtx(111, ['', 'rsi 999']);
 
-        await callback(ctx as never);
+        await callback(ctx);
 
         expect(mockFindByUserIdAndId).toHaveBeenCalledWith('telegram:111', 999);
         expect(ctx.editMessageText).toHaveBeenCalledWith('Account not found.');
@@ -353,10 +357,14 @@ describe('TelegramPlatform', () => {
     // Look up the callback by matching the first argument instead.
     const findRegisteredCallback = (commandName: string) => {
       const call = mockCommand.mock.calls.find(([names]) => {
-        if (Array.isArray(names)) return names.includes(commandName);
+        if (Array.isArray(names)) {
+          return names.includes(commandName);
+        }
         return names === commandName;
       });
-      if (!call) throw new Error(`bot.command was never called with "${commandName}"`);
+      if (!call) {
+        throw new Error(`bot.command was never called with "${commandName}"`);
+      }
       return call[1];
     };
 

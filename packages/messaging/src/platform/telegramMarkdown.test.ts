@@ -66,11 +66,7 @@ describe('splitForTelegram', () => {
 
   it('honors MESSAGE_BREAK markers as forced section splits', () => {
     const text = `**Section 1**\nline a\n${MESSAGE_BREAK}\n**Section 2**\nline b\n${MESSAGE_BREAK}\n**Section 3**\nline c`;
-    expect(splitForTelegram(text)).toEqual([
-      '**Section 1**\nline a',
-      '**Section 2**\nline b',
-      '**Section 3**\nline c',
-    ]);
+    expect(splitForTelegram(text)).toEqual(['**Section 1**\nline a', '**Section 2**\nline b', '**Section 3**\nline c']);
   });
 
   it('still size-splits within a section that exceeds the limit after a forced break', () => {

@@ -1,7 +1,14 @@
 import Big from 'big.js';
 import {z} from 'zod';
 import {AllAvailableAmount, OrderSide, OrderType} from '@typedtrader/exchange';
-import type {Fill, PendingOrder, LimitOrderAdvice, OneMinuteBatchedCandle, OrderAdvice, TradingSessionState} from '@typedtrader/exchange';
+import type {
+  Fill,
+  PendingOrder,
+  LimitOrderAdvice,
+  OneMinuteBatchedCandle,
+  OrderAdvice,
+  TradingSessionState,
+} from '@typedtrader/exchange';
 import {MarketType} from '../strategy/MarketType.js';
 import {Strategy} from '../strategy/Strategy.js';
 import {positiveNumberString} from '../util/validators.js';
@@ -78,11 +85,7 @@ export type ProtectedStrategyConfig = z.infer<typeof ProtectedStrategySchema>;
 
 type GuardOrderType = 'limit' | 'market';
 
-type GuardMode =
-  | {kind: 'pct'; pct: Big}
-  | {kind: 'nominal'; nominal: Big}
-  | {kind: 'price'; price: Big}
-  | null;
+type GuardMode = {kind: 'pct'; pct: Big} | {kind: 'nominal'; nominal: Big} | {kind: 'price'; price: Big} | null;
 
 export type ProtectedStrategyState = {
   killed: boolean;
@@ -241,10 +244,7 @@ export class ProtectedStrategy extends Strategy {
    * or a market sell, depending on the configured order type) until `onFill`
    * brings the position to zero. Only then does `onCandle` return `void`.
    */
-  override async onCandle(
-    candle: OneMinuteBatchedCandle,
-    state: TradingSessionState
-  ): Promise<OrderAdvice | void> {
+  override async onCandle(candle: OneMinuteBatchedCandle, state: TradingSessionState): Promise<OrderAdvice | void> {
     this.lastBatchedCandle = candle;
 
     const protectedState = this.#protectedState;
@@ -447,7 +447,7 @@ export class ProtectedStrategy extends Strategy {
    */
   async onOrderFilled(order: PendingOrder, _state: TradingSessionState): Promise<void> {
     if (this.#protectedState.killed && order.side === OrderSide.SELL) {
-      this.onFinish?.();
+      await this.onFinish?.();
     }
   }
 
@@ -517,8 +517,12 @@ function isProtectedStrategyState(value: unknown): value is ProtectedStrategySta
   }
   const candidate = value as Record<string, unknown>;
 
-  if (typeof candidate.killed !== 'boolean') return false;
-  if (candidate.killedReason !== null && typeof candidate.killedReason !== 'string') return false;
+  if (typeof candidate.killed !== 'boolean') {
+    return false;
+  }
+  if (candidate.killedReason !== null && typeof candidate.killedReason !== 'string') {
+    return false;
+  }
   if (
     candidate.killedOrderType !== null &&
     candidate.killedOrderType !== 'limit' &&
@@ -526,16 +530,28 @@ function isProtectedStrategyState(value: unknown): value is ProtectedStrategySta
   ) {
     return false;
   }
-  if (candidate.killedLimitPrice !== null && typeof candidate.killedLimitPrice !== 'string') return false;
-  if (typeof candidate.totalCostBasis !== 'string' || !isValidBigString(candidate.totalCostBasis)) return false;
-  if (typeof candidate.totalPositionSize !== 'string' || !isValidBigString(candidate.totalPositionSize)) return false;
-  if (typeof candidate.killedLimitPrice === 'string' && !isValidBigString(candidate.killedLimitPrice)) return false;
+  if (candidate.killedLimitPrice !== null && typeof candidate.killedLimitPrice !== 'string') {
+    return false;
+  }
+  if (typeof candidate.totalCostBasis !== 'string' || !isValidBigString(candidate.totalCostBasis)) {
+    return false;
+  }
+  if (typeof candidate.totalPositionSize !== 'string' || !isValidBigString(candidate.totalPositionSize)) {
+    return false;
+  }
+  if (typeof candidate.killedLimitPrice === 'string' && !isValidBigString(candidate.killedLimitPrice)) {
+    return false;
+  }
 
   // Cross-field invariants: a killed state must be fully specified so that
   // the retry path in onCandle has everything it needs to build fresh advice.
   if (candidate.killed === true) {
-    if (candidate.killedOrderType === null) return false;
-    if (candidate.killedOrderType === 'limit' && candidate.killedLimitPrice === null) return false;
+    if (candidate.killedOrderType === null) {
+      return false;
+    }
+    if (candidate.killedOrderType === 'limit' && candidate.killedLimitPrice === null) {
+      return false;
+    }
   }
 
   return true;

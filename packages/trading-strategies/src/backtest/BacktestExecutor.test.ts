@@ -43,7 +43,10 @@ describe('BacktestExecutor', () => {
       class NoOpStrategy extends Strategy {
         static override NAME = 'NoOp';
 
-        protected override async processCandle(_candle: OneMinuteBatchedCandle, _state: TradingSessionState): Promise<OrderAdvice | void> {
+        protected override async processCandle(
+          _candle: OneMinuteBatchedCandle,
+          _state: TradingSessionState
+        ): Promise<OrderAdvice | void> {
           return undefined;
         }
       }
@@ -169,7 +172,10 @@ describe('BacktestExecutor', () => {
         static override NAME = 'AlwaysBuyMarket';
         #bought = false;
 
-        protected override async processCandle(_candle: OneMinuteBatchedCandle, _state: TradingSessionState): Promise<OrderAdvice | void> {
+        protected override async processCandle(
+          _candle: OneMinuteBatchedCandle,
+          _state: TradingSessionState
+        ): Promise<OrderAdvice | void> {
           if (this.#bought) {
             return undefined;
           }
@@ -297,7 +303,10 @@ describe('BacktestExecutor', () => {
         static override NAME = 'SellTooMuch';
         #sold = false;
 
-        protected override async processCandle(candle: OneMinuteBatchedCandle, _state: TradingSessionState): Promise<OrderAdvice | void> {
+        protected override async processCandle(
+          candle: OneMinuteBatchedCandle,
+          _state: TradingSessionState
+        ): Promise<OrderAdvice | void> {
           if (this.#sold) {
             return undefined;
           }
@@ -345,12 +354,58 @@ describe('BacktestExecutor', () => {
       const candles: Candle[] = [];
       const startTime = new Date('2025-01-06T00:00:00.000Z');
       const prices = [
-        '45', '48', '55', '62', '65', '58', '52', '44', '42', '50',
-        '55', '63', '68', '60', '53', '47', '43', '49', '56', '64',
-        '70', '59', '51', '46', '40', '48', '57', '66', '72', '61',
-        '54', '47', '43', '50', '58', '65', '71', '60', '52', '45',
-        '41', '49', '56', '63', '69', '58', '50', '44', '42', '48',
-        '55', '62',
+        '45',
+        '48',
+        '55',
+        '62',
+        '65',
+        '58',
+        '52',
+        '44',
+        '42',
+        '50',
+        '55',
+        '63',
+        '68',
+        '60',
+        '53',
+        '47',
+        '43',
+        '49',
+        '56',
+        '64',
+        '70',
+        '59',
+        '51',
+        '46',
+        '40',
+        '48',
+        '57',
+        '66',
+        '72',
+        '61',
+        '54',
+        '47',
+        '43',
+        '50',
+        '58',
+        '65',
+        '71',
+        '60',
+        '52',
+        '45',
+        '41',
+        '49',
+        '56',
+        '63',
+        '69',
+        '58',
+        '50',
+        '44',
+        '42',
+        '48',
+        '55',
+        '62',
       ] as const;
 
       prices.forEach((price, i) => {
@@ -434,7 +489,10 @@ describe('BacktestExecutor', () => {
         static override NAME = 'BuyOnce';
         #bought = false;
 
-        protected override async processCandle(_candle: OneMinuteBatchedCandle, _state: TradingSessionState): Promise<OrderAdvice | void> {
+        protected override async processCandle(
+          _candle: OneMinuteBatchedCandle,
+          _state: TradingSessionState
+        ): Promise<OrderAdvice | void> {
           if (this.#bought) {
             return undefined;
           }
@@ -481,7 +539,10 @@ describe('BacktestExecutor', () => {
       class NoOpStrategy extends Strategy {
         static override NAME = 'NoOp';
 
-        protected override async processCandle(_candle: OneMinuteBatchedCandle, _state: TradingSessionState): Promise<OrderAdvice | void> {
+        protected override async processCandle(
+          _candle: OneMinuteBatchedCandle,
+          _state: TradingSessionState
+        ): Promise<OrderAdvice | void> {
           return undefined;
         }
       }
@@ -514,7 +575,10 @@ describe('BacktestExecutor', () => {
       class NoOpStrategy extends Strategy {
         static override NAME = 'NoOp';
 
-        protected override async processCandle(_candle: OneMinuteBatchedCandle, _state: TradingSessionState): Promise<OrderAdvice | void> {
+        protected override async processCandle(
+          _candle: OneMinuteBatchedCandle,
+          _state: TradingSessionState
+        ): Promise<OrderAdvice | void> {
           return undefined;
         }
       }
@@ -561,7 +625,10 @@ describe('BacktestExecutor', () => {
       class AlwaysBuyMarket extends Strategy {
         static override NAME = 'AlwaysBuyMarket';
 
-        protected override async processCandle(_candle: OneMinuteBatchedCandle, _state: TradingSessionState): Promise<OrderAdvice | void> {
+        protected override async processCandle(
+          _candle: OneMinuteBatchedCandle,
+          _state: TradingSessionState
+        ): Promise<OrderAdvice | void> {
           return {
             side: OrderSide.BUY,
             type: OrderType.MARKET,
@@ -573,8 +640,20 @@ describe('BacktestExecutor', () => {
 
       // Two candles: advice on candle 1, would fill on candle 2
       const candles = [
-        createCandle({open: '50000', close: '50000', low: '50000', high: '50000', openTimeInISO: '2025-01-01T00:00:00.000Z'}),
-        createCandle({open: '50000', close: '50000', low: '50000', high: '50000', openTimeInISO: '2025-01-01T00:01:00.000Z'}),
+        createCandle({
+          open: '50000',
+          close: '50000',
+          low: '50000',
+          high: '50000',
+          openTimeInISO: '2025-01-01T00:00:00.000Z',
+        }),
+        createCandle({
+          open: '50000',
+          close: '50000',
+          low: '50000',
+          high: '50000',
+          openTimeInISO: '2025-01-01T00:01:00.000Z',
+        }),
       ];
 
       const config: BacktestConfig = {
@@ -594,7 +673,10 @@ describe('BacktestExecutor', () => {
       class AlwaysSellMarket extends Strategy {
         static override NAME = 'AlwaysSellMarket';
 
-        protected override async processCandle(_candle: OneMinuteBatchedCandle, _state: TradingSessionState): Promise<OrderAdvice | void> {
+        protected override async processCandle(
+          _candle: OneMinuteBatchedCandle,
+          _state: TradingSessionState
+        ): Promise<OrderAdvice | void> {
           return {
             side: OrderSide.SELL,
             type: OrderType.MARKET,
@@ -605,8 +687,20 @@ describe('BacktestExecutor', () => {
       }
 
       const candles = [
-        createCandle({open: '50000', close: '50000', low: '50000', high: '50000', openTimeInISO: '2025-01-01T00:00:00.000Z'}),
-        createCandle({open: '50000', close: '50000', low: '50000', high: '50000', openTimeInISO: '2025-01-01T00:01:00.000Z'}),
+        createCandle({
+          open: '50000',
+          close: '50000',
+          low: '50000',
+          high: '50000',
+          openTimeInISO: '2025-01-01T00:00:00.000Z',
+        }),
+        createCandle({
+          open: '50000',
+          close: '50000',
+          low: '50000',
+          high: '50000',
+          openTimeInISO: '2025-01-01T00:01:00.000Z',
+        }),
       ];
 
       const config: BacktestConfig = {
@@ -665,7 +759,10 @@ describe('BacktestExecutor', () => {
         static override NAME = 'BuyAtPrice';
         #advised = false;
 
-        protected override async processCandle(candle: OneMinuteBatchedCandle, _state: TradingSessionState): Promise<OrderAdvice | void> {
+        protected override async processCandle(
+          candle: OneMinuteBatchedCandle,
+          _state: TradingSessionState
+        ): Promise<OrderAdvice | void> {
           if (this.#advised) {
             return undefined;
           }
@@ -689,8 +786,20 @@ describe('BacktestExecutor', () => {
       // Candle 1: close=100.10 → advice to BUY_LIMIT at 100.10, which rounds to 100.00
       // Candle 2: low=100.10 → rounded price (100.00) < low (100.10), so order must NOT fill
       const candles = [
-        createCandle({open: '100.10', close: '100.10', low: '100.10', high: '105.00', openTimeInISO: '2025-01-01T00:00:00.000Z'}),
-        createCandle({open: '101.00', close: '102.00', low: '100.10', high: '105.00', openTimeInISO: '2025-01-01T00:01:00.000Z'}),
+        createCandle({
+          open: '100.10',
+          close: '100.10',
+          low: '100.10',
+          high: '105.00',
+          openTimeInISO: '2025-01-01T00:00:00.000Z',
+        }),
+        createCandle({
+          open: '101.00',
+          close: '102.00',
+          low: '100.10',
+          high: '105.00',
+          openTimeInISO: '2025-01-01T00:01:00.000Z',
+        }),
       ];
 
       const config: BacktestConfig = {

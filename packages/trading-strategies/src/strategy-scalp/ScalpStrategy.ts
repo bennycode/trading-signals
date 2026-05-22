@@ -1,7 +1,7 @@
 import {z} from 'zod';
 import Big from 'big.js';
 import {AllAvailableAmount, CandleBatcher, OrderSide, OrderType} from '@typedtrader/exchange';
-import type {Fill, OneMinuteBatchedCandle, OrderAdvice, TradingSessionState} from '@typedtrader/exchange';
+import type {Candle, Fill, OneMinuteBatchedCandle, OrderAdvice, TradingSessionState} from '@typedtrader/exchange';
 import {EMA, ER} from 'trading-signals';
 import {MarketType} from '../strategy/MarketType.js';
 import {ProtectedStrategy, ProtectedStrategySchema} from '../strategy-protected/ProtectedStrategy.js';
@@ -79,7 +79,7 @@ export class ScalpStrategy extends ProtectedStrategy {
     return this.#scalpFriendly;
   }
 
-  #computeRangeEfficiency(candles: import('@typedtrader/exchange').Candle[]): boolean {
+  #computeRangeEfficiency(candles: Candle[]): boolean {
     const ONE_DAY_IN_MS = 86_400_000;
     const isSubDaily = candles[0].sizeInMillis < ONE_DAY_IN_MS;
 
@@ -101,8 +101,12 @@ export class ScalpStrategy extends ProtectedStrategy {
         const h = parseFloat(c.high);
         const l = parseFloat(c.low);
 
-        if (h > b.high) b.high = h;
-        if (l < b.low) b.low = l;
+        if (h > b.high) {
+          b.high = h;
+        }
+        if (l < b.low) {
+          b.low = l;
+        }
 
         b.close = parseFloat(c.close);
       }
@@ -152,7 +156,10 @@ export class ScalpStrategy extends ProtectedStrategy {
     }
   }
 
-  protected override async processCandle(candle: OneMinuteBatchedCandle, state: TradingSessionState): Promise<OrderAdvice | void> {
+  protected override async processCandle(
+    candle: OneMinuteBatchedCandle,
+    state: TradingSessionState
+  ): Promise<OrderAdvice | void> {
     const guardAdvice = await super.processCandle(candle, state);
     if (guardAdvice) {
       return guardAdvice;

@@ -1,6 +1,7 @@
 import {eq, asc, inArray} from 'drizzle-orm';
 import {db} from '../initializeDatabase.js';
-import {strategies, StrategyRow, NewStrategyRow} from '../schema.js';
+import type {StrategyRow, NewStrategyRow} from '../schema.js';
+import {strategies} from '../schema.js';
 
 export type StrategyAttributes = StrategyRow;
 export type StrategyCreationAttributes = Omit<NewStrategyRow, 'id' | 'createdAt' | 'state'>;

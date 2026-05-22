@@ -1,4 +1,10 @@
-import {AlpacaBroker, AlpacaMarketData, getBrokerClient, type Broker, type MarketDataSource} from '@typedtrader/exchange';
+import {
+  AlpacaBroker,
+  AlpacaMarketData,
+  getBrokerClient,
+  type Broker,
+  type MarketDataSource,
+} from '@typedtrader/exchange';
 import {Account, type AccountAttributes} from '../database/models/Account.js';
 
 /**

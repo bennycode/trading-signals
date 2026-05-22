@@ -1,5 +1,5 @@
 import {z} from 'zod';
-import {AlpacaAPI} from '@typedtrader/exchange';
+import type {AlpacaAPI} from '@typedtrader/exchange';
 import {MESSAGE_BREAK, Report} from '../report/Report.js';
 import {fetchUsEquityNames, formatSymbolWithName, TELEGRAM_TABLE_NAME_MAX} from '../util/formatSymbolWithName.js';
 import {findFirstTradingDay, getDateString} from '../util/TimeUtil.js';
@@ -153,7 +153,9 @@ export class SP500MomentumReport extends Report<SP500MomentumConfig> {
     lines.push(`Stocks ranked: ${results.length} / ${SP500_TICKERS.length}`);
 
     lines.push('');
-    lines.push('**Recommendation (based on 12-1 momentum, 3-month hold):** Hold the top winners for 3 months, then re-evaluate.');
+    lines.push(
+      '**Recommendation (based on 12-1 momentum, 3-month hold):** Hold the top winners for 3 months, then re-evaluate.'
+    );
 
     // Disclaimer
     lines.push('');

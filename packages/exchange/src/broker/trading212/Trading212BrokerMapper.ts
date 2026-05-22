@@ -1,4 +1,4 @@
-import {TradingPair} from '../TradingPair.js';
+import type {TradingPair} from '../TradingPair.js';
 import {
   OrderPosition,
   OrderSide,
@@ -26,16 +26,8 @@ import {Trading212OrderStatus} from './api/schema/OrderSchema.js';
  * VALUE-strategy orders (placed via the Trading212 app) carry it in `value`/`orderedValue`/`filledValue`.
  */
 export class Trading212BrokerMapper {
-  static toPendingOrder(
-    order: Order,
-    pair: TradingPair,
-    options: LimitOrderOptions
-  ): PendingLimitOrder;
-  static toPendingOrder(
-    order: Order,
-    pair: TradingPair,
-    options: MarketOrderOptions
-  ): PendingMarketOrder;
+  static toPendingOrder(order: Order, pair: TradingPair, options: LimitOrderOptions): PendingLimitOrder;
+  static toPendingOrder(order: Order, pair: TradingPair, options: MarketOrderOptions): PendingMarketOrder;
   static toPendingOrder(order: Order, pair: TradingPair, options: OrderOptions): PendingOrder {
     // We only ever place QUANTITY-strategy orders, so `quantity` is always populated on
     // the response. Never fall back to `value` — that's notional, not base quantity, and

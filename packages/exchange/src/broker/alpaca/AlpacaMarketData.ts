@@ -84,9 +84,7 @@ export class AlpacaMarketData extends MarketDataSource {
       throw new Error(`Alpaca returned no candles for ${pair.asString('/')}.`);
     }
 
-    return candles.reduce((latest, candle) =>
-      candle.openTimeInMillis > latest.openTimeInMillis ? candle : latest
-    );
+    return candles.reduce((latest, candle) => (candle.openTimeInMillis > latest.openTimeInMillis ? candle : latest));
   }
 
   /**

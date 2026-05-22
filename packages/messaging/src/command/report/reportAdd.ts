@@ -36,13 +36,17 @@ export const reportAdd = async (
 
   const config = resolveReportConfig(reportName);
   if (!config) {
-    return {message: `Report "${reportName}" is not available. Either the report does not exist or its required environment variables are not set.\nAvailable reports: ${available.join(', ') || 'none'}`};
+    return {
+      message: `Report "${reportName}" is not available. Either the report does not exist or its required environment variables are not set.\nAvailable reports: ${available.join(', ') || 'none'}`,
+    };
   }
 
   let account: AccountRow | undefined;
   if (reportRequiresAccount(reportName)) {
     if (!accountIdStr) {
-      return {message: `Report "${reportName}" requires an exchange account.\nUsage: /reportAdd ${reportName} <accountId>`};
+      return {
+        message: `Report "${reportName}" requires an exchange account.\nUsage: /reportAdd ${reportName} <accountId>`,
+      };
     }
 
     const accountId = parseInt(accountIdStr, 10);

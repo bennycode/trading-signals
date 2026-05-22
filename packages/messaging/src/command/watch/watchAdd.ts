@@ -1,7 +1,8 @@
 import Big from 'big.js';
 import {TradingPair} from '@typedtrader/exchange';
 import {getAccountBrokerClient} from '../../broker/getAccountBrokerClient.js';
-import {Watch, WatchAttributes} from '../../database/models/Watch.js';
+import type {WatchAttributes} from '../../database/models/Watch.js';
+import {Watch} from '../../database/models/Watch.js';
 import {ms} from 'ms';
 import {assertId} from '../../validation/assertId.js';
 import {assertInterval} from '../../validation/assertInterval.js';
@@ -46,7 +47,9 @@ export const watchAdd = async (request: string, userId: string): Promise<WatchRe
 
     const smallestInterval = client.getSmallestInterval();
     if (intervalMs < smallestInterval) {
-      return {message: `Invalid interval. Minimum for ${account.exchange} is ${ms(smallestInterval, {long: true})}. Examples: 1m, 5m, 1h`};
+      return {
+        message: `Invalid interval. Minimum for ${account.exchange} is ${ms(smallestInterval, {long: true})}. Examples: 1m, 5m, 1h`,
+      };
     }
 
     const candle = await client.getLatestCandle(pair, smallestInterval);

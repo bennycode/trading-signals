@@ -1,5 +1,5 @@
 import {z} from 'zod';
-import {AlpacaAPI} from '@typedtrader/exchange';
+import type {AlpacaAPI} from '@typedtrader/exchange';
 import {MESSAGE_BREAK, Report} from '../report/Report.js';
 import {fetchUsEquityNames, formatSymbolWithName, TELEGRAM_TABLE_NAME_MAX} from '../util/formatSymbolWithName.js';
 import {SP500_TICKERS} from '../util/sp500Tickers.js';
@@ -34,7 +34,10 @@ export class SP500HeatmapReport extends Report<SP500HeatmapConfig> {
   }
 
   async run(): Promise<string> {
-    const [results, names] = await Promise.all([this.#fetchIntradayChanges(SP500_TICKERS), fetchUsEquityNames(this.#api)]);
+    const [results, names] = await Promise.all([
+      this.#fetchIntradayChanges(SP500_TICKERS),
+      fetchUsEquityNames(this.#api),
+    ]);
 
     results.sort((a, b) => b.changePct - a.changePct);
 

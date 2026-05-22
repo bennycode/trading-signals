@@ -39,12 +39,9 @@ session.on('orderFilled', () => {
 
 await session.start();
 
-setTimeout(
-  async () => {
-    await session.stop({cancelOpenOrders: true});
-    marketData.disconnect();
-    broker.disconnect();
-    process.exit(0);
-  },
-  15 * 60_000
-);
+setTimeout(async () => {
+  await session.stop({cancelOpenOrders: true});
+  marketData.disconnect();
+  broker.disconnect();
+  process.exit(0);
+}, 15 * 60_000);

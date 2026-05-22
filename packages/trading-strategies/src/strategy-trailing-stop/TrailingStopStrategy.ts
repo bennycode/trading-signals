@@ -239,7 +239,7 @@ export class TrailingStopStrategy extends Strategy {
 
   async onOrderFilled(order: PendingOrder, _state: TradingSessionState): Promise<void> {
     if (this.#state.exited && order.side === OrderSide.SELL) {
-      this.onFinish?.();
+      await this.onFinish?.();
     }
   }
 
@@ -260,7 +260,9 @@ function isTrailingStopState(value: unknown): value is TrailingStopState {
   if (!value || typeof value !== 'object') {
     return false;
   }
-  if (!('exited' in value) || typeof value.exited !== 'boolean') return false;
+  if (!('exited' in value) || typeof value.exited !== 'boolean') {
+    return false;
+  }
   if (!('positionSize' in value) || typeof value.positionSize !== 'string' || !isValidBigString(value.positionSize)) {
     return false;
   }
@@ -270,10 +272,16 @@ function isTrailingStopState(value: unknown): value is TrailingStopState {
   if (!('stopPrice' in value) || typeof value.stopPrice !== 'string' || !isValidBigString(value.stopPrice)) {
     return false;
   }
-  if (!('exitReason' in value) || (value.exitReason !== null && typeof value.exitReason !== 'string')) return false;
-  if (!('exitLimitPrice' in value)) return false;
+  if (!('exitReason' in value) || (value.exitReason !== null && typeof value.exitReason !== 'string')) {
+    return false;
+  }
+  if (!('exitLimitPrice' in value)) {
+    return false;
+  }
   if (value.exitLimitPrice !== null) {
-    if (typeof value.exitLimitPrice !== 'string' || !isValidBigString(value.exitLimitPrice)) return false;
+    if (typeof value.exitLimitPrice !== 'string' || !isValidBigString(value.exitLimitPrice)) {
+      return false;
+    }
   }
 
   // Cross-field invariants. Restoring a state that violates these would strand the
@@ -284,15 +292,21 @@ function isTrailingStopState(value: unknown): value is TrailingStopState {
   const stopPrice = new Big(value.stopPrice);
 
   // Once exited, the position must be zero. Anything else is contradictory.
-  if (value.exited && !positionSize.eq(0)) return false;
+  if (value.exited && !positionSize.eq(0)) {
+    return false;
+  }
 
   // Attached (peak set) but not exited and no position left → permanent no-op:
   // the seed branch is skipped (peak !== '0') and the trail branch returns early
   // (positionSize <= 0). Treat as corrupt and reset.
-  if (!peakPrice.eq(0) && !value.exited && positionSize.lte(0)) return false;
+  if (!peakPrice.eq(0) && !value.exited && positionSize.lte(0)) {
+    return false;
+  }
 
   // peakPrice and stopPrice are coupled — both '0' (not yet attached) or both non-zero.
-  if (peakPrice.eq(0) !== stopPrice.eq(0)) return false;
+  if (peakPrice.eq(0) !== stopPrice.eq(0)) {
+    return false;
+  }
 
   return true;
 }

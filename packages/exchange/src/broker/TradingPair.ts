@@ -41,8 +41,6 @@ export class TradingPair implements TradingPairJSON {
     if (base && counter) {
       return new TradingPair(base, counter);
     }
-    throw new Error(
-      `Symbol "${symbol}" cannot be split with delimiter "${delimiter}".`
-    );
+    throw new Error(`Symbol "${symbol}" cannot be split with delimiter "${delimiter}".`);
   }
 }

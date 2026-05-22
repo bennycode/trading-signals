@@ -2,7 +2,14 @@ import {AlpacaBroker, Trading212Broker, getAuthenticatedBrokerClient} from '@typ
 import {buildMarketDataFromAccount} from '../../broker/getAccountBrokerClient.js';
 import {Account} from '../../database/models/Account.js';
 import {logger} from '../../logger.js';
-import {deleteSecretMessages, inlineKeyboard, waitForTextOrCancel, type InlineButton, type WizardContext, type WizardConversation} from './shared.js';
+import {
+  deleteSecretMessages,
+  inlineKeyboard,
+  waitForTextOrCancel,
+  type InlineButton,
+  type WizardContext,
+  type WizardConversation,
+} from './shared.js';
 
 /**
  * Brokers that bring no market-data feed of their own and therefore must reuse another
@@ -94,7 +101,9 @@ export function makeAccountAddWizard() {
     }
 
     const nameResp = await waitForTextOrCancel(conversation, ctx);
-    if (nameResp.cancelled) return;
+    if (nameResp.cancelled) {
+      return;
+    }
     const name = nameResp.text;
     if (!name) {
       await ctx.reply('Account name cannot be empty. Aborted.');

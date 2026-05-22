@@ -1,12 +1,7 @@
 import {Bot} from 'grammy';
 import type {Context} from 'grammy';
 import {autoRetry} from '@grammyjs/auto-retry';
-import {
-  type Conversation,
-  type ConversationFlavor,
-  conversations,
-  createConversation,
-} from '@grammyjs/conversations';
+import {type Conversation, type ConversationFlavor, conversations, createConversation} from '@grammyjs/conversations';
 import {z} from 'zod';
 import {OrderSide, TradingPair} from '@typedtrader/exchange';
 import {getAvailableReportNames, reportRequiresAccount} from 'trading-strategies';
@@ -35,7 +30,6 @@ const REPORT_CALLBACK_PREFIX = 'report:';
 const ACCOUNT_CALLBACK_PREFIX = 'reportaccount:';
 const MODE_CALLBACK_PREFIX = 'reportmode:';
 const INTERVAL_CALLBACK_PREFIX = 'reportinterval:';
-
 
 const TRADE_CONVERSATION_ID = 'trade';
 // Display (camelCase) names shown in `/help` and usage errors. grammY
@@ -95,10 +89,7 @@ interface TradeArgs {
  * command into validated args. Returns `null` and replies with the usage error if
  * anything is off — the caller can just return early.
  */
-async function parseTradeCommandInput(
-  ctx: Context,
-  cmd: TradeCommandName
-): Promise<TradeArgs | null> {
+async function parseTradeCommandInput(ctx: Context, cmd: TradeCommandName): Promise<TradeArgs | null> {
   const {isLimit} = tradeCommandShape(cmd);
 
   const text = ctx.message?.text ?? '';
@@ -152,11 +143,7 @@ async function parseTradeCommandInput(
  * handles state and routing for us. No `callback_data` encoding, no manual
  * dispatcher, no step-state machine.
  */
-async function tradeWizard(
-  conversation: TradeConversation,
-  ctx: TradeContext,
-  args: TradeArgs
-): Promise<void> {
+async function tradeWizard(conversation: TradeConversation, ctx: TradeContext, args: TradeArgs): Promise<void> {
   const senderId = ctx.from?.id?.toString();
   if (!senderId) {
     await ctx.reply('Unable to determine sender');
@@ -194,18 +181,14 @@ async function tradeWizard(
   ]);
   await ctx.reply(`${actionLabel}\nSelect an account:`, inlineKeyboard(accountButtons));
 
-  const accountSelection = await conversation.waitForCallbackQuery(
-    accounts.map(acc => `trade:acc:${acc.id}`)
-  );
+  const accountSelection = await conversation.waitForCallbackQuery(accounts.map(acc => `trade:acc:${acc.id}`));
   // `match` is `string | RegExpMatchArray` in the type system, but since we
   // only pass literal strings as triggers it's always a string at runtime.
   const selectedData = typeof accountSelection.match === 'string' ? accountSelection.match : '';
   const accountId = Number.parseInt(selectedData.split(':')[2] ?? '', 10);
 
   // Step 2: fetch price context + show confirmation
-  const confirmation = await conversation.external(() =>
-    buildTradeConfirmation(userId, args, pair, accountId)
-  );
+  const confirmation = await conversation.external(() => buildTradeConfirmation(userId, args, pair, accountId));
   await accountSelection.answerCallbackQuery();
   await accountSelection.editMessageText(confirmation.text, confirmation.keyboard);
 
@@ -322,9 +305,9 @@ async function replyWithMarkdown(ctx: Context, text: string): Promise<void> {
 }
 
 export class TelegramPlatform implements MessagingPlatform {
-  #bot: Bot<TradeContext>;
-  #ownerIds: string[];
-  #commands: Map<string, CommandHandler> = new Map();
+  readonly #bot: Bot<TradeContext>;
+  readonly #ownerIds: string[];
+  readonly #commands: Map<string, CommandHandler> = new Map();
   #platformInfo: PlatformInfo = {botAddress: '', sdkVersion: ''};
   #reportScheduler?: ReportScheduler;
   #watchMonitor?: WatchMonitor;
@@ -359,7 +342,9 @@ export class TelegramPlatform implements MessagingPlatform {
     // handlers still call `#authorizedUserId` to obtain the prefixed userId,
     // but they can trust the middleware has already turned away non-owners.
     this.#bot.use(async (ctx, next) => {
-      if (this.#authorizedUserId(ctx) === null) return;
+      if (this.#authorizedUserId(ctx) === null) {
+        return;
+      }
       await next();
     });
 
@@ -410,7 +395,9 @@ export class TelegramPlatform implements MessagingPlatform {
     // internally and cancels itself.
     this.#commands.set('cancel', async () => {});
     this.#bot.command('cancel', async ctx => {
-      if (this.#authorizedUserId(ctx) === null) return;
+      if (this.#authorizedUserId(ctx) === null) {
+        return;
+      }
       const active = ctx.conversation.active();
       const names = Object.keys(active);
       if (names.length === 0) {
@@ -469,7 +456,9 @@ export class TelegramPlatform implements MessagingPlatform {
 
     this.#bot.command(lowerNames, async ctx => {
       const userId = this.#authorizedUserId(ctx);
-      if (!userId) return;
+      if (!userId) {
+        return;
+      }
 
       // Extract text after the /command
       const text = ctx.message?.text ?? '';
@@ -503,8 +492,12 @@ export class TelegramPlatform implements MessagingPlatform {
    */
   #authorizedUserId(ctx: Context): string | null {
     const senderId = ctx.from?.id?.toString();
-    if (!senderId) return null;
-    if (this.#ownerIds.length === 0) return `${PLATFORM_PREFIX}${senderId}`;
+    if (!senderId) {
+      return null;
+    }
+    if (this.#ownerIds.length === 0) {
+      return `${PLATFORM_PREFIX}${senderId}`;
+    }
     if (!this.#ownerIds.includes(senderId)) {
       logger.warn({senderId, ownerIds: this.#ownerIds}, 'Ignoring unauthorized Telegram update');
       return null;
@@ -515,7 +508,9 @@ export class TelegramPlatform implements MessagingPlatform {
   #registerReportAddCommand(): void {
     this.#bot.command('reportadd', async ctx => {
       const userId = this.#authorizedUserId(ctx);
-      if (!userId) return;
+      if (!userId) {
+        return;
+      }
 
       const available = getAvailableReportNames();
       if (available.length === 0) {
@@ -535,7 +530,9 @@ export class TelegramPlatform implements MessagingPlatform {
       await ctx.answerCallbackQuery();
 
       const userId = this.#authorizedUserId(ctx);
-      if (!userId) return;
+      if (!userId) {
+        return;
+      }
 
       const reportName = ctx.match[1];
       if (!this.#isKnownReport(reportName)) {
@@ -547,7 +544,9 @@ export class TelegramPlatform implements MessagingPlatform {
         const userAccounts = Account.findByUserId(userId);
 
         if (userAccounts.length === 0) {
-          await ctx.editMessageText(`Report "${reportName}" requires an exchange account.\nUse /accountAdd to add one first.`);
+          await ctx.editMessageText(
+            `Report "${reportName}" requires an exchange account.\nUse /accountAdd to add one first.`
+          );
           return;
         }
 
@@ -576,7 +575,9 @@ export class TelegramPlatform implements MessagingPlatform {
       await ctx.answerCallbackQuery();
 
       const userId = this.#authorizedUserId(ctx);
-      if (!userId) return;
+      if (!userId) {
+        return;
+      }
 
       const accountIdStr = ctx.match[1];
       const reportName = ctx.match[2];
@@ -611,7 +612,9 @@ export class TelegramPlatform implements MessagingPlatform {
       await ctx.answerCallbackQuery();
 
       const userId = this.#authorizedUserId(ctx);
-      if (!userId) return;
+      if (!userId) {
+        return;
+      }
 
       const reportInput = ctx.match[1];
       const validation = this.#validateReportInput(userId, reportInput);
@@ -632,7 +635,9 @@ export class TelegramPlatform implements MessagingPlatform {
       await ctx.answerCallbackQuery();
 
       const userId = this.#authorizedUserId(ctx);
-      if (!userId) return;
+      if (!userId) {
+        return;
+      }
 
       const reportInput = ctx.match[1];
       const validation = this.#validateReportInput(userId, reportInput);
@@ -663,7 +668,9 @@ export class TelegramPlatform implements MessagingPlatform {
       await ctx.answerCallbackQuery();
 
       const userId = this.#authorizedUserId(ctx);
-      if (!userId) return;
+      if (!userId) {
+        return;
+      }
 
       const interval = ctx.match[1];
       const reportInput = ctx.match[2];
@@ -729,7 +736,9 @@ export class TelegramPlatform implements MessagingPlatform {
   #registerWizardCommand(commandName: string, conversationId: string): void {
     this.#bot.command(commandName, async ctx => {
       const userId = this.#authorizedUserId(ctx);
-      if (!userId) return;
+      if (!userId) {
+        return;
+      }
       const activeBefore = Object.keys(ctx.conversation.active());
       logger.info({commandName, conversationId, activeBefore}, 'wizard command invoked');
       try {
@@ -758,10 +767,14 @@ export class TelegramPlatform implements MessagingPlatform {
 
     this.#bot.command(name.toLowerCase(), async ctx => {
       const userId = this.#authorizedUserId(ctx);
-      if (!userId) return;
+      if (!userId) {
+        return;
+      }
 
       const args = await parseTradeCommandInput(ctx, name);
-      if (!args) return; // parseTradeCommandInput already replied with the usage error
+      if (!args) {
+        return;
+      } // parseTradeCommandInput already replied with the usage error
 
       await ctx.conversation.enter(TRADE_CONVERSATION_ID, args);
     });

@@ -21,8 +21,8 @@ import {
   type PendingOrder,
   type TradingRules,
 } from '../Broker.js';
-import {MarketDataSource} from '../MarketDataSource.js';
-import {TradingPair} from '../TradingPair.js';
+import type {MarketDataSource} from '../MarketDataSource.js';
+import type {TradingPair} from '../TradingPair.js';
 import {createAlpacaSymbol, isAlpacaCryptoSymbol} from './alpacaSymbol.js';
 import {AlpacaOrderStatus} from './api/schema/OrderSchema.js';
 import {AlpacaAPI} from './api/AlpacaAPI.js';
@@ -49,7 +49,7 @@ export class AlpacaBroker extends Broker implements MarketDataSource {
   readonly #marketData: MarketDataSource;
   readonly #candleListenerByTopic = new Map<string, (candle: unknown) => void>();
 
-  #orderTopics: Map<string, (message: TradeUpdateMessage) => void> = new Map();
+  readonly #orderTopics: Map<string, (message: TradeUpdateMessage) => void> = new Map();
   #tradingConnectionId: string | null = null;
   readonly #connectTradingStream: () => Promise<AlpacaTradingConnection>;
 

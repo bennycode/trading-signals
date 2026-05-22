@@ -1,9 +1,11 @@
-import {TradingPair, Broker, Candle, MarketDataSource} from '@typedtrader/exchange';
+import type {Broker, Candle, MarketDataSource} from '@typedtrader/exchange';
+import {TradingPair} from '@typedtrader/exchange';
 import {getAccountBrokerClient} from '../broker/getAccountBrokerClient.js';
 import {Account} from '../database/models/Account.js';
-import {Watch, WatchAttributes} from '../database/models/Watch.js';
+import type {WatchAttributes} from '../database/models/Watch.js';
+import {Watch} from '../database/models/Watch.js';
 import {logger} from '../logger.js';
-import {PlatformDispatcher} from './PlatformDispatcher.js';
+import type {PlatformDispatcher} from './PlatformDispatcher.js';
 
 interface ActiveSubscription {
   watchId: number;
@@ -12,8 +14,8 @@ interface ActiveSubscription {
 }
 
 export class WatchMonitor {
-  #dispatcher: PlatformDispatcher;
-  #subscriptions: Map<number, ActiveSubscription> = new Map();
+  readonly #dispatcher: PlatformDispatcher;
+  readonly #subscriptions: Map<number, ActiveSubscription> = new Map();
 
   constructor(dispatcher: PlatformDispatcher) {
     this.#dispatcher = dispatcher;

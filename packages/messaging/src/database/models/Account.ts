@@ -1,6 +1,7 @@
 import {eq, and, asc, sql} from 'drizzle-orm';
 import {db} from '../initializeDatabase.js';
-import {accounts, Account as AccountType, NewAccount} from '../schema.js';
+import type {Account as AccountType, NewAccount} from '../schema.js';
+import {accounts} from '../schema.js';
 
 export type AccountAttributes = AccountType;
 export type AccountCreationAttributes = Omit<NewAccount, 'id' | 'createdAt' | 'updatedAt'>;
@@ -15,12 +16,7 @@ export class Account {
   }
 
   static findByUserId(userId: string): AccountType[] {
-    return db
-      .select()
-      .from(accounts)
-      .where(eq(accounts.userId, userId))
-      .orderBy(asc(accounts.id))
-      .all();
+    return db.select().from(accounts).where(eq(accounts.userId, userId)).orderBy(asc(accounts.id)).all();
   }
 
   static findByUserIdAndId(userId: string, id: number): AccountType | undefined {

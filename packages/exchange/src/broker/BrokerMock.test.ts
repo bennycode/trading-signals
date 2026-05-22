@@ -1,13 +1,7 @@
 import Big from 'big.js';
 import {describe, expect, it} from 'vitest';
 import {BrokerMock, type ExchangeMockBalance} from './BrokerMock.js';
-import {
-  type Candle,
-  type FeeRate,
-  OrderSide,
-  OrderType,
-  type TradingRules,
-} from './Broker.js';
+import {type Candle, type FeeRate, OrderSide, OrderType, type TradingRules} from './Broker.js';
 import {TradingPair} from './TradingPair.js';
 import {ms} from 'ms';
 

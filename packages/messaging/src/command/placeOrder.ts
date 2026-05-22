@@ -1,4 +1,5 @@
-import {OrderSide, TradingPair} from '@typedtrader/exchange';
+import type {TradingPair} from '@typedtrader/exchange';
+import {OrderSide} from '@typedtrader/exchange';
 import {getAccountBrokerClient} from '../broker/getAccountBrokerClient.js';
 import {getAccountOrError} from '../validation/getAccountOrError.js';
 

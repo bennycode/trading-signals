@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import {AlpacaMarketData} from '../../alpaca/AlpacaMarketData.js';
-import {Trading212Broker} from '../Trading212Broker.js';
+import type {Trading212Broker} from '../Trading212Broker.js';
 import {getTrading212Client} from '../getTrading212Client.js';
 
 export function getDemoClient(): Trading212Broker {

@@ -36,7 +36,7 @@ function makeAccount(overrides: Partial<AccountAttributes> = {}): AccountAttribu
     createdAt: null,
     updatedAt: null,
     ...overrides,
-  } as AccountAttributes;
+  };
 }
 
 describe('getAccountBrokerClient', () => {

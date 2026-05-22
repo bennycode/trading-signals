@@ -6,7 +6,7 @@ import {getAccountBrokerClient} from '../broker/getAccountBrokerClient.js';
 import {Account} from '../database/models/Account.js';
 import {Strategy, type StrategyAttributes} from '../database/models/Strategy.js';
 import {logger} from '../logger.js';
-import {PlatformDispatcher} from './PlatformDispatcher.js';
+import type {PlatformDispatcher} from './PlatformDispatcher.js';
 
 interface ActiveSession {
   strategyId: number;
@@ -20,8 +20,8 @@ export function formatStrategyMessage(strategyName: string, pair: string, text: 
 }
 
 export class StrategyMonitor {
-  #dispatcher: PlatformDispatcher;
-  #sessions: Map<number, ActiveSession> = new Map();
+  readonly #dispatcher: PlatformDispatcher;
+  readonly #sessions: Map<number, ActiveSession> = new Map();
 
   constructor(dispatcher: PlatformDispatcher) {
     this.#dispatcher = dispatcher;
@@ -73,7 +73,7 @@ export class StrategyMonitor {
 
     // Restore persisted state if available
     if (row.state) {
-      const persisted = JSON.parse(row.state);
+      const persisted: Record<string, unknown> = JSON.parse(row.state);
       strategy.restoreState(persisted);
     }
 

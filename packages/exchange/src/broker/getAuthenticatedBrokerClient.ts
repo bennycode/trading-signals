@@ -1,6 +1,6 @@
-import {Broker} from './Broker.js';
+import type {Broker} from './Broker.js';
 import {getBrokerClient} from './getBrokerClient.js';
-import {MarketDataSource} from './MarketDataSource.js';
+import type {MarketDataSource} from './MarketDataSource.js';
 
 /**
  * Build a broker client and prove its credentials are authorized by issuing a network request.

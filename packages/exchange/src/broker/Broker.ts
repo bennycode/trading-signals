@@ -382,14 +382,8 @@ export abstract class Broker extends EventEmitter {
    * Generic function to place an order.
    * @protected Please use `placeLimitOrder` or `placeMarketOrder`.
    */
-  protected abstract placeOrder(
-    pair: TradingPair,
-    options: LimitOrderOptions
-  ): Promise<PendingLimitOrder>;
-  protected abstract placeOrder(
-    pair: TradingPair,
-    options: MarketOrderOptions
-  ): Promise<PendingMarketOrder>;
+  protected abstract placeOrder(pair: TradingPair, options: LimitOrderOptions): Promise<PendingLimitOrder>;
+  protected abstract placeOrder(pair: TradingPair, options: MarketOrderOptions): Promise<PendingMarketOrder>;
   protected abstract placeOrder(pair: TradingPair, options: OrderOptions): Promise<PendingOrder>;
 
   /**
@@ -413,10 +407,7 @@ export abstract class Broker extends EventEmitter {
    * Places a MARKET order.
    * @see https://www.investopedia.com/terms/m/marketorder.asp
    */
-  placeMarketOrder(
-    pair: TradingPair,
-    options: Omit<MarketOrderOptions, 'type'>
-  ): Promise<PendingMarketOrder> {
+  placeMarketOrder(pair: TradingPair, options: Omit<MarketOrderOptions, 'type'>): Promise<PendingMarketOrder> {
     return this.placeOrder(pair, {
       side: options.side,
       size: options.size,

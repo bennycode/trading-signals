@@ -309,7 +309,10 @@ describe('ProtectedStrategy', () => {
 
   describe('no position', () => {
     it('skips guard checks when nothing has been bought', async () => {
-      const strategy = new TestProtectedStrategy({protected: {stopLossPct: '1', takeProfitPct: '1'}, signalAdvice: true});
+      const strategy = new TestProtectedStrategy({
+        protected: {stopLossPct: '1', takeProfitPct: '1'},
+        signalAdvice: true,
+      });
 
       const advice = await strategy.onCandle(makeCandle(100), mockState);
 
@@ -360,7 +363,10 @@ describe('ProtectedStrategy', () => {
     });
 
     it('does not seed when baseBalance is zero', async () => {
-      const strategy = new TestProtectedStrategy({protected: {stopLossPct: '5', seedFromBalance: true}, signalAdvice: true});
+      const strategy = new TestProtectedStrategy({
+        protected: {stopLossPct: '5', seedFromBalance: true},
+        signalAdvice: true,
+      });
 
       const advice = await strategy.onCandle(makeCandle(100), mockState);
 
@@ -915,7 +921,10 @@ describe('ProtectedStrategy', () => {
     });
 
     it('retries market advice on subsequent candles while the position is not exited', async () => {
-      const strategy = new TestProtectedStrategy({protected: {stopLossPct: '5', stopLossOrder: 'market'}, signalAdvice: true});
+      const strategy = new TestProtectedStrategy({
+        protected: {stopLossPct: '5', stopLossOrder: 'market'},
+        signalAdvice: true,
+      });
       await strategy.onFill(makeFill('100', '10', OrderSide.BUY), mockState);
 
       // Fire

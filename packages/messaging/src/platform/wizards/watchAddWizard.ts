@@ -8,7 +8,13 @@ import {assertInterval} from '../../validation/assertInterval.js';
 import {parseThreshold} from '../../validation/parseThreshold.js';
 import {logger} from '../../logger.js';
 import type {WatchMonitor} from '../../service/index.js';
-import {inlineKeyboard, waitForTextOrCancel, type InlineButton, type WizardContext, type WizardConversation} from './shared.js';
+import {
+  inlineKeyboard,
+  waitForTextOrCancel,
+  type InlineButton,
+  type WizardContext,
+  type WizardConversation,
+} from './shared.js';
 
 export interface WatchAddWizardArgs {
   userId: string;
@@ -41,7 +47,9 @@ export function makeWatchAddWizard(deps: {watchMonitor: () => WatchMonitor | und
 
     await accountCb.editMessageText('Send a trading pair (e.g. SHOP,USD):');
     const pairResp = await waitForTextOrCancel(conversation, ctx);
-    if (pairResp.cancelled) return;
+    if (pairResp.cancelled) {
+      return;
+    }
     const pairStr = pairResp.text;
     let pair: TradingPair;
     try {
@@ -92,7 +100,9 @@ export function makeWatchAddWizard(deps: {watchMonitor: () => WatchMonitor | und
       `Pair: ${pairStr}\nInterval: ${interval}\nDirection: ${direction}\nType: ${thresholdType}\n\nSend the threshold value (e.g. 5 for 5%):`
     );
     const valueResp = await waitForTextOrCancel(conversation, ctx);
-    if (valueResp.cancelled) return;
+    if (valueResp.cancelled) {
+      return;
+    }
     const valueStr = valueResp.text;
     const thresholdInput = `${direction === 'up' ? '+' : '-'}${valueStr}${thresholdType === 'percent' ? '%' : ''}`;
     const threshold = parseThreshold(thresholdInput);

@@ -19,7 +19,14 @@ function makeDailyCandle(open: number, high: number, low: number, close: number,
   };
 }
 
-function makeHourlyCandle(open: number, high: number, low: number, close: number, dayIndex: number, hourIndex: number): Candle {
+function makeHourlyCandle(
+  open: number,
+  high: number,
+  low: number,
+  close: number,
+  dayIndex: number,
+  hourIndex: number
+): Candle {
   const hourMs = 1735689600000 + dayIndex * 86_400_000 + hourIndex * 3_600_000;
   return {
     base: 'AAPL',
@@ -59,13 +66,9 @@ describe('suggestScalpOffset', () => {
   });
 
   it('returns a larger offset for more volatile candles', () => {
-    const lowVol = Array.from({length: 20}, (_, i) =>
-      makeDailyCandle(100, 100.5, 99.5, 100, i)
-    );
+    const lowVol = Array.from({length: 20}, (_, i) => makeDailyCandle(100, 100.5, 99.5, 100, i));
 
-    const highVol = Array.from({length: 20}, (_, i) =>
-      makeDailyCandle(100, 110, 90, 100, i)
-    );
+    const highVol = Array.from({length: 20}, (_, i) => makeDailyCandle(100, 110, 90, 100, i));
 
     const lowOffset = suggestScalpOffset(lowVol);
     const highOffset = suggestScalpOffset(highVol);

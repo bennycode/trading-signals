@@ -14,7 +14,9 @@ export function formatTelegramTable<T>(title: string, rows: T[], columns: TableC
   const widths = columns.map(col => Math.max(col.header.length, ...rows.map(row => col.value(row).length)));
 
   const renderCells = (cells: string[]): string =>
-    cells.map((cell, i) => (columns[i].align === 'right' ? cell.padStart(widths[i]) : cell.padEnd(widths[i]))).join('  ');
+    cells
+      .map((cell, i) => (columns[i].align === 'right' ? cell.padStart(widths[i]) : cell.padEnd(widths[i])))
+      .join('  ');
 
   const lines: string[] = [];
   lines.push(`**${title}**`);

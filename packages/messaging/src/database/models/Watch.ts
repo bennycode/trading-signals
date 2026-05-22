@@ -1,6 +1,7 @@
 import {eq, asc, inArray} from 'drizzle-orm';
 import {db} from '../initializeDatabase.js';
-import {watches, Watch as WatchType, NewWatch} from '../schema.js';
+import type {Watch as WatchType, NewWatch} from '../schema.js';
+import {watches} from '../schema.js';
 
 export type WatchAttributes = WatchType;
 export type WatchCreationAttributes = Omit<NewWatch, 'id' | 'createdAt'>;
@@ -22,12 +23,7 @@ export class Watch {
     if (accountIds.length === 0) {
       return [];
     }
-    return db
-      .select()
-      .from(watches)
-      .where(inArray(watches.accountId, accountIds))
-      .orderBy(asc(watches.id))
-      .all();
+    return db.select().from(watches).where(inArray(watches.accountId, accountIds)).orderBy(asc(watches.id)).all();
   }
 
   static destroy(id: number): void {

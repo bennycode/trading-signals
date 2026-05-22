@@ -40,8 +40,12 @@ function aggregateToDailyCandles(candles: Candle[]): Candle[] {
     for (const bar of sortedBars) {
       const h = parseFloat(bar.high);
       const l = parseFloat(bar.low);
-      if (h > high) high = h;
-      if (l < low) low = l;
+      if (h > high) {
+        high = h;
+      }
+      if (l < low) {
+        low = l;
+      }
       volume += parseFloat(bar.volume);
     }
 

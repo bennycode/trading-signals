@@ -16,7 +16,9 @@ const {values} = parseArgs({
 });
 
 if (!values.data || !values.strategy) {
-  console.log('Usage: tsx src/start/runBacktest.ts --data <candles.json> --strategy <name> [--config <json>] [--balance <amount>]');
+  console.log(
+    'Usage: tsx src/start/runBacktest.ts --data <candles.json> --strategy <name> [--config <json>] [--balance <amount>]'
+  );
   console.log('');
   console.log('Options:');
   console.log('  --data, -d       Path to candle JSON file');
@@ -36,7 +38,9 @@ let raw: string;
 try {
   raw = await readFile(values.data, 'utf8');
 } catch (error) {
-  console.error(`Failed to read candle file "${values.data}": ${error instanceof Error ? error.message : String(error)}`);
+  console.error(
+    `Failed to read candle file "${values.data}": ${error instanceof Error ? error.message : String(error)}`
+  );
   process.exit(1);
 }
 
@@ -60,7 +64,7 @@ if (candles.length === 0) {
 const firstCandle = candles[0];
 const lastCandle = candles[candles.length - 1];
 const tradingPair = new TradingPair(firstCandle.base, firstCandle.counter);
-const startingBalance = new Big(values.balance!);
+const startingBalance = new Big(values.balance);
 const counter = tradingPair.counter;
 
 console.log(`Candles:   ${candles.length} from ${values.data}`);
@@ -73,7 +77,7 @@ console.log(`Balance:   ${startingBalance.toFixed(2)} ${counter}`);
 console.log('---');
 
 // 2. Create strategy from registry
-const strategyConfig = JSON.parse(values.config!);
+const strategyConfig = JSON.parse(values.config);
 const strategy = createStrategy(values.strategy, strategyConfig);
 
 // 3. Set up mock exchange (commission-free for US stocks)
@@ -131,4 +135,6 @@ console.log(`P&L:             ${result.profitOrLoss.toFixed(2)} ${counter}`);
 console.log(`Fees:            ${result.totalFees.toFixed(2)} ${counter}`);
 console.log(`Max Win Streak:  ${performance.maxWinStreak}`);
 console.log(`Max Loss Streak: ${performance.maxLossStreak}`);
-console.log(`Portfolio:       ${performance.initialPortfolioValue.toFixed(2)} → ${performance.finalPortfolioValue.toFixed(2)} ${counter}`);
+console.log(
+  `Portfolio:       ${performance.initialPortfolioValue.toFixed(2)} → ${performance.finalPortfolioValue.toFixed(2)} ${counter}`
+);

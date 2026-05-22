@@ -56,8 +56,8 @@ export abstract class Strategy implements TradingSessionStrategy {
     this.onSave?.();
   }
 
-  #proxiedState: Record<string, unknown> | null = null;
-  #proxiedConfig: Record<string, unknown> | null = null;
+  readonly #proxiedState: Record<string, unknown> | null = null;
+  readonly #proxiedConfig: Record<string, unknown> | null = null;
 
   constructor(options?: {state?: Record<string, unknown>; config?: Record<string, unknown>}) {
     if (options?.state) {

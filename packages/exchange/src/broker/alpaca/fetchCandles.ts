@@ -1,6 +1,7 @@
 // @ts-ignore No type declarations available for dotenv-defaults
 import 'dotenv-defaults/config.js';
-import {ms, StringValue} from 'ms';
+import type {StringValue} from 'ms';
+import {ms} from 'ms';
 import {parseArgs} from 'node:util';
 import {writeCandles} from '../../candle/writeCandles.js';
 import {TradingPair} from '../TradingPair.js';
@@ -33,8 +34,8 @@ console.log(`Fetching "${pair.asString('/')}" (${values.interval} candles) from 
 
 const candles = await exchange.getCandles(pair, {
   intervalInMillis: interval,
-  startTimeFirstCandle: values.from!,
-  startTimeLastCandle: values.to!,
+  startTimeFirstCandle: values.from,
+  startTimeLastCandle: values.to,
 });
 
 console.log(`Received ${candles.length} candles.`);

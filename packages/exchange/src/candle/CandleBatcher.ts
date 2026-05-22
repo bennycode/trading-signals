@@ -1,9 +1,11 @@
 import {Big} from 'big.js';
 import {EventEmitter} from 'node:events';
-import {ms, StringValue} from 'ms';
+import type {StringValue} from 'ms';
+import {ms} from 'ms';
 import jsonabc from 'jsonabc';
-import {BatchedCandle, ONE_MINUTE_IN_MS, OneMinuteBatchedCandle} from './BatchedCandle.js';
-import {Candle} from '../broker/Broker.js';
+import type {BatchedCandle, OneMinuteBatchedCandle} from './BatchedCandle.js';
+import {ONE_MINUTE_IN_MS} from './BatchedCandle.js';
+import type {Candle} from '../broker/Broker.js';
 
 type EventMap = {
   batchedCandle: [candle: BatchedCandle];

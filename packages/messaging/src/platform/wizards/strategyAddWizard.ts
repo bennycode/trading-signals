@@ -4,7 +4,13 @@ import {Account} from '../../database/models/Account.js';
 import {Strategy} from '../../database/models/Strategy.js';
 import {logger} from '../../logger.js';
 import type {StrategyMonitor} from '../../service/index.js';
-import {inlineKeyboard, waitForTextOrCancel, type InlineButton, type WizardContext, type WizardConversation} from './shared.js';
+import {
+  inlineKeyboard,
+  waitForTextOrCancel,
+  type InlineButton,
+  type WizardContext,
+  type WizardConversation,
+} from './shared.js';
 
 export interface StrategyAddWizardArgs {
   userId: string;
@@ -33,7 +39,7 @@ export function makeStrategyAddWizard(deps: {strategyMonitor: () => StrategyMoni
 
     const stratCb = await conversation.waitForCallbackQuery(strategies.map((_, idx) => `strategyadd:strat:${idx}`));
     await stratCb.answerCallbackQuery();
-    const stratIdx = Number.parseInt(typeof stratCb.match === 'string' ? stratCb.match.split(':')[2] ?? '' : '', 10);
+    const stratIdx = Number.parseInt(typeof stratCb.match === 'string' ? (stratCb.match.split(':')[2] ?? '') : '', 10);
     const strategyName = strategies[stratIdx] ?? '';
 
     const accounts = await conversation.external(() =>
@@ -59,7 +65,9 @@ export function makeStrategyAddWizard(deps: {strategyMonitor: () => StrategyMoni
       `Strategy: ${strategyName}\nAccount: ${accountLabel}\n\nSend a trading pair (e.g. SHOP,USD):`
     );
     const pairResp = await waitForTextOrCancel(conversation, ctx);
-    if (pairResp.cancelled) return;
+    if (pairResp.cancelled) {
+      return;
+    }
     const pairStr = pairResp.text;
     try {
       TradingPair.fromString(pairStr, ',');
@@ -70,7 +78,9 @@ export function makeStrategyAddWizard(deps: {strategyMonitor: () => StrategyMoni
 
     await ctx.reply('Send config as JSON (or "{}" for defaults):');
     const cfgResp = await waitForTextOrCancel(conversation, ctx);
-    if (cfgResp.cancelled) return;
+    if (cfgResp.cancelled) {
+      return;
+    }
     const configJson = cfgResp.text || '{}';
 
     let config: unknown;
