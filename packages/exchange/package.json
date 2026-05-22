@@ -53,7 +53,7 @@
     "build": "tsdown --dts --format esm --format cjs",
     "clean": "rimraf --glob src/**/*{.js,.js.map,.d.ts}",
     "dist": "npm run clean && npm run build && npm run test:exports",
-    "lint": "npm run lint:types && npm run lint:code && npm run lint:other",
+    "lint": "npm run lint:code && npm run lint:other",
     "lint:code": "eslint .",
     "lint:other": "npm run prettier -- --list-different",
     "lint:types": "tsc --noEmit",

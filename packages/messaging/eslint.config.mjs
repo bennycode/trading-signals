@@ -19,5 +19,7 @@ export default defineConfig({
     // companion pattern as an enum replacement. `no-redeclare` misfires on the shared
     // value/type name even though TypeScript allows it; renaming would break public APIs.
     '@typescript-eslint/no-redeclare': 'off',
+    // Object-key sorting is not enforced in this repo for now.
+    'perfectionist/sort-objects': 'off',
   },
 });

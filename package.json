@@ -24,6 +24,7 @@
     "dist": "lerna run dist",
     "fix": "lerna run fix --parallel",
     "graph": "nx graph",
+    "prelint": "lerna run dist",
     "lint": "lerna run lint --parallel",
     "release": "npm install && npm run dist && lerna publish && git commit -am \"chore: update CHANGELOGs\" && git push && npm run clean",
     "start:bot": "lerna run dist --scope @typedtrader/messaging --include-dependencies && lerna run start --scope @typedtrader/messaging",
