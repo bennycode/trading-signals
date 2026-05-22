@@ -1,10 +1,4 @@
-import {
-  AlpacaBroker,
-  AlpacaMarketData,
-  Broker,
-  MarketDataSource,
-  getBrokerClient,
-} from '@typedtrader/exchange';
+import {AlpacaBroker, AlpacaMarketData, getBrokerClient, type Broker, type MarketDataSource} from '@typedtrader/exchange';
 import {Account, type AccountAttributes} from '../database/models/Account.js';
 
 /**
@@ -40,8 +34,10 @@ export function buildMarketDataFromAccount(source: AccountAttributes): MarketDat
  * account (enforcing the same-user ownership rule) and turns it into a `MarketDataSource`.
  */
 function resolveMarketData(account: AccountAttributes): MarketDataSource | undefined {
-  // Falsy covers both `null` (DB default) and `undefined` (legacy rows / test fixtures).
-  if (!account.marketDataAccountId) {
+  // Explicitly check null (DB default) and undefined (legacy rows / test fixtures) so a
+  // stray 0 / NaN isn't silently treated as "no data source" — it falls through to the
+  // lookup below and surfaces a targeted "not found" error instead.
+  if (account.marketDataAccountId === null || account.marketDataAccountId === undefined) {
     return undefined;
   }
 
