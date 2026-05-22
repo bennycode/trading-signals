@@ -88,8 +88,10 @@ export class REI extends TrendIndicatorSeries<HighLowClose<number>> {
     this.#lows.push(candle.low);
     this.#closes.push(candle.close);
 
-    // We need at least interval + 8 candles for REI calculation
-    // REI uses data from prior periods for comparison
+    /*
+     * We need at least interval + 8 candles for REI calculation
+     * REI uses data from prior periods for comparison
+     */
     if (this.#highs.length < this.getRequiredInputs()) {
       return null;
     }

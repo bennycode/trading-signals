@@ -68,10 +68,12 @@ export class AlpacaMarketData extends MarketDataSource {
     const symbol = createAlpacaSymbol(pair, isCrypto);
     const fetchMethod = isCrypto ? this.#fetchLatestCryptoBars.bind(this) : this.#fetchLatestStockBars.bind(this);
     const {bars} = await fetchMethod(pair);
-    // Fetch a window large enough to contain at least one bar of the requested interval,
-    // then sort by `openTimeInMillis` and return the most recent one. The bars/latest
-    // endpoint gives us the latest 1-minute bar's timestamp; we ask `getCandles()` to
-    // align that to the requested `intervalInMillis` and return the candle that includes it.
+    /*
+     * Fetch a window large enough to contain at least one bar of the requested interval,
+     * then sort by `openTimeInMillis` and return the most recent one. The bars/latest
+     * endpoint gives us the latest 1-minute bar's timestamp; we ask `getCandles()` to
+     * align that to the requested `intervalInMillis` and return the candle that includes it.
+     */
     const latestBarStart = new Date(bars[symbol].t).getTime();
     const startTimeFirstCandle = latestBarStart - intervalInMillis + ms('1m');
     const candles = await this.getCandles(pair, {
@@ -84,9 +86,7 @@ export class AlpacaMarketData extends MarketDataSource {
       throw new Error(`Alpaca returned no candles for ${pair.asString('/')}.`);
     }
 
-    return candles.reduce((latest, candle) =>
-      candle.openTimeInMillis > latest.openTimeInMillis ? candle : latest
-    );
+    return candles.reduce((latest, candle) => (candle.openTimeInMillis > latest.openTimeInMillis ? candle : latest));
   }
 
   /**

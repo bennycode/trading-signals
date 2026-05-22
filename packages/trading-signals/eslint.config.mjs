@@ -13,4 +13,8 @@ export default defineConfig({
     '**/vitest.config.ts',
     'eslint.config.mjs',
   ],
+  rules: {
+    // Object-key sorting is not enforced in this repo for now.
+    'perfectionist/sort-objects': 'off',
+  },
 });

@@ -3,9 +3,11 @@ import {TradingSignal} from '../../types/Indicator.js';
 import {CCI} from './CCI.js';
 
 describe('CCI', () => {
-  // Test data verified with:
-  // https://tulipindicators.org/cci
-  // @see https://github.com/TulipCharts/tulipindicators/blob/v0.9.1/tests/untest.txt#L99-L102
+  /*
+   * Test data verified with:
+   * https://tulipindicators.org/cci
+   * @see https://github.com/TulipCharts/tulipindicators/blob/v0.9.1/tests/untest.txt#L99-L102
+   */
   const candles = [
     {close: 81.59, high: 82.15, low: 81.29},
     {close: 81.06, high: 81.89, low: 80.64},

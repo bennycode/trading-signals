@@ -20,8 +20,10 @@ describe('StochasticRSI', () => {
 
   describe('getResultOrThrow', () => {
     it('calculates the Stochastic RSI', () => {
-      // Test data verified with:
-      // https://github.com/TulipCharts/tulipindicators/blob/0bc8dfc46cfc89366bf8cef6dfad1fb6f81b3b7b/tests/untest.txt#L382-L384
+      /*
+       * Test data verified with:
+       * https://github.com/TulipCharts/tulipindicators/blob/0bc8dfc46cfc89366bf8cef6dfad1fb6f81b3b7b/tests/untest.txt#L382-L384
+       */
       const prices = [
         81.59, 81.06, 82.87, 83.0, 83.61, 83.15, 82.84, 83.99, 84.55, 84.36, 85.53, 86.54, 86.89, 87.77, 87.29,
       ] as const;
@@ -42,8 +44,10 @@ describe('StochasticRSI', () => {
     });
 
     it('calculates smoothing %K and %D lines', () => {
-      // Test data based on:
-      // https://github.com/bennycode/trading-signals/issues/793#issuecomment-2820887096
+      /*
+       * Test data based on:
+       * https://github.com/bennycode/trading-signals/issues/793#issuecomment-2820887096
+       */
       const prices = [
         87069.6, 86963.1, 87041.8, 87132.1, 87178.1, 87300, 87231, 87471.9, 87475.2, 87554.8, 87346.1, 87652, 87716.1,
         88360, 88428.1, 88354, 88316, 88038.3, 87916.5, 88147.8, 87870.1, 88110.1, 88210, 88122.1, 88181.9, 88240.2,

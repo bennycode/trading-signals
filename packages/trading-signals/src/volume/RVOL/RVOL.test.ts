@@ -23,9 +23,11 @@ describe('RVOL', () => {
   });
 
   it('excludes the current input from the baseline', () => {
-    // Three prior values [100, 100, 100], today = 200.
-    // If today were included: baseline = (100+100+100+200)/4 = 125 → ratio = 1.6.
-    // Excluded:                baseline = (100+100+100)/3 = 100 → ratio = 2.0.
+    /*
+     * Three prior values [100, 100, 100], today = 200.
+     * If today were included: baseline = (100+100+100+200)/4 = 125 → ratio = 1.6.
+     * Excluded:                baseline = (100+100+100)/3 = 100 → ratio = 2.0.
+     */
     const rvol = new RVOL(3);
     [100, 100, 100, 200].forEach(v => rvol.add(v));
     expect(rvol.getResultOrThrow()).toBe(2);
@@ -102,9 +104,11 @@ describe('RVOL', () => {
   });
 
   it('rewinds exactly one update on replace (after multiple results)', () => {
-    // Sequence the indicator through several stable results, then verify that replacing
-    // the most recent value lands on the SAME result we would have got if we'd called
-    // add() with the replacement value instead. Equivalence is the contract of replace().
+    /*
+     * Sequence the indicator through several stable results, then verify that replacing
+     * the most recent value lands on the SAME result we would have got if we'd called
+     * add() with the replacement value instead. Equivalence is the contract of replace().
+     */
     const setup = [100, 100, 100] as const;
     const drive = [200, 300] as const;
 

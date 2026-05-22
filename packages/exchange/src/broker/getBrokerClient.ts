@@ -1,7 +1,7 @@
 import {AlpacaBroker} from './alpaca/AlpacaBroker.js';
 import {getAlpacaClient} from './alpaca/getAlpacaClient.js';
-import {Broker} from './Broker.js';
-import {MarketDataSource} from './MarketDataSource.js';
+import type {Broker} from './Broker.js';
+import type {MarketDataSource} from './MarketDataSource.js';
 import {Trading212Broker} from './trading212/Trading212Broker.js';
 import {getTrading212Client} from './trading212/getTrading212Client.js';
 

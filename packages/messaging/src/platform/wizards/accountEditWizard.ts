@@ -1,8 +1,15 @@
 import {getAuthenticatedBrokerClient} from '@typedtrader/exchange';
+import {buildMarketDataFromAccount} from '../../broker/getAccountBrokerClient.js';
 import {Account} from '../../database/models/Account.js';
 import {logger} from '../../logger.js';
 import {restartAccountSessions, type StrategyMonitor, type WatchMonitor} from '../../service/index.js';
-import {deleteSecretMessages, inlineKeyboard, type InlineButton, type WizardContext, type WizardConversation} from './shared.js';
+import {
+  deleteSecretMessages,
+  inlineKeyboard,
+  type InlineButton,
+  type WizardContext,
+  type WizardConversation,
+} from './shared.js';
 
 export interface AccountEditWizardArgs {
   userId: string;
@@ -34,11 +41,14 @@ export function makeAccountEditWizard(deps: {
 
     const accountCb = await conversation.waitForCallbackQuery(accounts.map(a => `accountedit:acc:${a.id}`));
     await accountCb.answerCallbackQuery();
-    const selectedId = typeof accountCb.match === 'string' ? parseInt(accountCb.match.split(':')[2], 10) : accounts[0].id;
+    const selectedId =
+      typeof accountCb.match === 'string' ? parseInt(accountCb.match.split(':')[2], 10) : accounts[0].id;
     const account = accounts.find(a => a.id === selectedId) ?? accounts[0];
 
-    // The account ID, name, exchange and paper mode are kept — only the
-    // credentials change, so all linked watches, strategies and reports stay intact.
+    /*
+     * The account ID, name, exchange and paper mode are kept — only the
+     * credentials change, so all linked watches, strategies and reports stay intact.
+     */
     await accountCb.editMessageText(
       `Account: ${account.name}\n\nSend the new API key (the message will be deleted after receipt):`
     );
@@ -73,7 +83,26 @@ export function makeAccountEditWizard(deps: {
 
     const result = await conversation.external(async () => {
       try {
-        await getAuthenticatedBrokerClient({exchangeId: account.exchange, apiKey, apiSecret, isPaper: account.isPaper});
+        /*
+         * Feed-less brokers (e.g. Trading212) need their existing data source resolved to
+         * validate; the edit only changes credentials, not marketDataAccountId.
+         */
+        let marketData;
+        if (account.marketDataAccountId !== null) {
+          const source = Account.findByUserIdAndId(args.userId, account.marketDataAccountId);
+          if (!source) {
+            return {
+              ok: false as const,
+              error: `Market-data account (ID: ${account.marketDataAccountId}) was not found.`,
+            };
+          }
+          marketData = buildMarketDataFromAccount(source);
+        }
+
+        await getAuthenticatedBrokerClient(
+          {exchangeId: account.exchange, apiKey, apiSecret, isPaper: account.isPaper},
+          marketData ? {marketData} : undefined
+        );
         Account.update(account.id, {apiKey, apiSecret});
         return {ok: true as const};
       } catch (error) {
@@ -85,7 +114,9 @@ export function makeAccountEditWizard(deps: {
 
     if (result.ok) {
       await ctx.reply(`Account "${account.name}" (ID: ${account.id}) updated successfully. Connection test passed.`);
-      await conversation.external(() => restartAccountSessions(account.id, deps.strategyMonitor(), deps.watchMonitor()));
+      await conversation.external(() =>
+        restartAccountSessions(account.id, deps.strategyMonitor(), deps.watchMonitor())
+      );
     } else {
       await ctx.reply(`Error updating account: ${result.error}`);
     }

@@ -18,9 +18,7 @@ describe('ReportRegistry', () => {
   });
 
   it('throws when an account-requiring report is created without an AlpacaAPI', () => {
-    expect(() => createReport('@typedtrader/report-sp500-momentum', {})).toThrow(
-      /requires an exchange account/
-    );
+    expect(() => createReport('@typedtrader/report-sp500-momentum', {})).toThrow(/requires an exchange account/);
   });
 
   it('throws for unknown report name', () => {

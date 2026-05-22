@@ -2,9 +2,11 @@ import {PSAR} from './PSAR.js';
 import {NotEnoughDataError} from '../../error/index.js';
 
 describe('PSAR', () => {
-  // Test data verified with:
-  // https://tulipindicators.org/psar
-  // @see https://github.com/TulipCharts/tulipindicators/blob/v0.9.1/tests/untest.txt#L317
+  /*
+   * Test data verified with:
+   * https://tulipindicators.org/psar
+   * @see https://github.com/TulipCharts/tulipindicators/blob/v0.9.1/tests/untest.txt#L317
+   */
   const testData = [
     {date: '2005-11-01', high: 82.15, low: 81.29, psar: null},
     {date: '2005-11-02', high: 81.89, low: 80.64, psar: 82.15},
@@ -31,8 +33,10 @@ describe('PSAR', () => {
     // Skip the first value which is null
 
     testData.forEach((row, i) => {
-      // Different PSAR implementations may have slight variations in their calculations
-      // Use a wider tolerance to account for these differences
+      /*
+       * Different PSAR implementations may have slight variations in their calculations
+       * Use a wider tolerance to account for these differences
+       */
       if (row.psar === null) {
         expect(results[i]).toBeNull();
       } else {
@@ -289,8 +293,10 @@ describe('PSAR', () => {
     // Add a previous candle
     psar.update({high: 9, low: 8}, false);
 
-    // Create a candle where only the pre-previous high is higher than SAR
-    // This tests line 292-293 where prePreviousHigh > sar but previousHigh < sar
+    /*
+     * Create a candle where only the pre-previous high is higher than SAR
+     * This tests line 292-293 where prePreviousHigh > sar but previousHigh < sar
+     */
     const result = psar.add({high: 12, low: 7.5});
 
     // Should have adjusted the SAR to be below the high price
@@ -307,17 +313,23 @@ describe('PSAR', () => {
     // Continue downtrend
     psar.add({high: 10, low: 9});
 
-    // Now create a scenario where the SAR is low and both previous and pre-previous high
-    // are above it
+    /*
+     * Now create a scenario where the SAR is low and both previous and pre-previous high
+     * are above it
+     */
     let result = psar.add({high: 11, low: 7});
 
-    // This next candle will create a scenario where high > sar and both prePrevious and previous are relevant
-    // This tests both lines 292-293 AND 296-297
+    /*
+     * This next candle will create a scenario where high > sar and both prePrevious and previous are relevant
+     * This tests both lines 292-293 AND 296-297
+     */
     result = psar.add({high: 12, low: 6});
     expect(result).toBeLessThan(12);
 
-    // Add one more candle to test the case where prePreviousCandle exists but high is not greater than SAR
-    // This should continue in uptrend but not trigger the prePrevious logic
+    /*
+     * Add one more candle to test the case where prePreviousCandle exists but high is not greater than SAR
+     * This should continue in uptrend but not trigger the prePrevious logic
+     */
     result = psar.add({high: 13, low: 12});
     expect(result).toBeLessThan(12);
   });
@@ -337,8 +349,10 @@ describe('PSAR', () => {
     psar['extreme'] = 8;
     psar['isLong'] = false;
 
-    // Now make a new low that will cause acceleration to exceed max
-    // This specifically tests lines 308-310 where acceleration > max
+    /*
+     * Now make a new low that will cause acceleration to exceed max
+     * This specifically tests lines 308-310 where acceleration > max
+     */
     const result = psar.add({high: 7, low: 6});
 
     // Verify the update worked correctly
@@ -359,8 +373,10 @@ describe('PSAR', () => {
     // Force down trend with extreme low
     psar.add({high: 7, low: 6});
 
-    // Now create a scenario where price reverses but SAR would be equal to low
-    // This will test line 164-166 where SAR needs adjustment when sar >= low
+    /*
+     * Now create a scenario where price reverses but SAR would be equal to low
+     * This will test line 164-166 where SAR needs adjustment when sar >= low
+     */
     psar.add({high: 11, low: 6});
 
     // The SAR should be adjusted to low - 0.01
@@ -412,8 +428,10 @@ describe('PSAR', () => {
     psar['isLong'] = true;
     psar['extreme'] = 11;
 
-    // Make a new high that will cause acceleration to exceed max
-    // This specifically tests the branch on lines 111-113
+    /*
+     * Make a new high that will cause acceleration to exceed max
+     * This specifically tests the branch on lines 111-113
+     */
     psar.update({high: 12, low: 11}, false);
 
     // Verify acceleration was capped at max (not higher)
@@ -590,8 +608,10 @@ describe('PSAR', () => {
     psar['prePreviousCandle'] = {high: 12, low: 10.5}; // prePreviousCandle.low < sar
     psar['previousCandle'] = {high: 12.5, low: 10.2}; // previousCandle.low < sar
 
-    // This update should hit both prePreviousLow and previousLow checks
-    // and specifically execute lines 99-101
+    /*
+     * This update should hit both prePreviousLow and previousLow checks
+     * and specifically execute lines 99-101
+     */
     const result = psar.update({high: 13, low: 11.5}, false);
 
     // Should be adjusted to previousCandle.low
@@ -608,10 +628,12 @@ describe('PSAR', () => {
     // Move to downtrend
     psar.update({high: 9, low: 8}, false);
 
-    // Create a previous candle with higher high but no prePreviousCandle influence
-    // Set up conditions where prePreviousCandle exists but high is not > sar
-    // This forces the code to skip the prePreviousCandle branch and take the "else if" path
-    // targeting lines 299-301
+    /*
+     * Create a previous candle with higher high but no prePreviousCandle influence
+     * Set up conditions where prePreviousCandle exists but high is not > sar
+     * This forces the code to skip the prePreviousCandle branch and take the "else if" path
+     * targeting lines 299-301
+     */
     const result = psar.update({high: 7, low: 6}, false);
     expect(result).toBeGreaterThan(7);
   });
@@ -627,8 +649,10 @@ describe('PSAR', () => {
     psar.update({high: 8, low: 7}, false);
     psar.update({high: 7, low: 6}, false);
 
-    // Create a scenario where previousHigh > sar with prePreviousCandle
-    // by setting up a high candle after downtrend
+    /*
+     * Create a scenario where previousHigh > sar with prePreviousCandle
+     * by setting up a high candle after downtrend
+     */
     psar.update({high: 9, low: 7}, false);
 
     // Move one more time and our test branch should be covered
@@ -654,8 +678,10 @@ describe('PSAR', () => {
     psar['prePreviousCandle'] = null;
     psar['previousCandle'] = {high: 8.5, low: 7.5};
 
-    // This should test the specific branch on line 139-141
-    // but also hit the else if on 136-138 with the next candle
+    /*
+     * This should test the specific branch on line 139-141
+     * but also hit the else if on 136-138 with the next candle
+     */
     psar.update({high: 7.5, low: 7}, false);
 
     // Now add a candle with prePreviousCandle to hit lines 136-138
@@ -683,8 +709,10 @@ describe('PSAR', () => {
     psar['extreme'] = 11;
     psar['previousCandle'] = {high: 11, low: 9}; // previousCandle.low < sar
 
-    // This should trigger the branch in line 102-104 where previousCandle.low < sar
-    // with no prePreviousCandle influence
+    /*
+     * This should trigger the branch in line 102-104 where previousCandle.low < sar
+     * with no prePreviousCandle influence
+     */
     const result = psar.update({high: 12, low: 10}, false);
 
     // The SAR should be adjusted to previousCandle.low
@@ -694,13 +722,17 @@ describe('PSAR', () => {
   it('tests the exact conditions needed for full branch coverage', () => {
     const psar = new PSAR({accelerationMax: 0.2, accelerationStep: 0.1});
 
-    // Let's add a new approach to cover line 105-106 (previousLow < sar check)
-    // First initialize the indicator
+    /*
+     * Let's add a new approach to cover line 105-106 (previousLow < sar check)
+     * First initialize the indicator
+     */
     psar.update({high: 10, low: 9}, false);
     psar.update({high: 11, low: 10}, false);
 
-    // Set up a very specific sequence of candles to hit our target branches
-    // 1. This update will create a prePreviousCandle
+    /*
+     * Set up a very specific sequence of candles to hit our target branches
+     * 1. This update will create a prePreviousCandle
+     */
     psar.update({high: 12, low: 11}, false);
 
     // 2. This update will create a previousCandle, and SAR will be below low
@@ -748,8 +780,10 @@ describe('PSAR', () => {
     // This update must hit both conditions and specifically lines 137-138
     const result = psar.update({high: 7.2, low: 6.8}, false);
 
-    // After both branches have been executed, SAR should be adjusted to one of the highs
-    // Based on the code execution path, it will be set to the higher of the two (prePrevious.high)
+    /*
+     * After both branches have been executed, SAR should be adjusted to one of the highs
+     * Based on the code execution path, it will be set to the higher of the two (prePrevious.high)
+     */
     expect(result).toBe(8);
   });
 
@@ -763,8 +797,10 @@ describe('PSAR', () => {
     // Make last candle with a low SAR
     psar.update({high: 7, low: 6}, false);
 
-    // Now create a candle that will specifically test the else branch on lines 299-301
-    // We make the high higher than SAR but not crossing above to cause a trend change
+    /*
+     * Now create a candle that will specifically test the else branch on lines 299-301
+     * We make the high higher than SAR but not crossing above to cause a trend change
+     */
     const result = psar.update({high: 7.1, low: 6.5}, false);
 
     // Should be greater than the high (it would adjust SAR based on the previousCandle.high)
@@ -781,8 +817,10 @@ describe('PSAR', () => {
     // Continue downtrend
     psar.update({high: 8, low: 7}, false);
 
-    // Create a scenario where price creates a new high that triggers reversal
-    // but the extreme point (low) would be equal to or higher than the new low
+    /*
+     * Create a scenario where price creates a new high that triggers reversal
+     * but the extreme point (low) would be equal to or higher than the new low
+     */
     const result = psar.update({high: 11, low: 7}, false); // High causes reversal but extreme would equal low
 
     // The SAR should be properly adjusted to be below the price (low - 0.01)
@@ -860,8 +898,10 @@ describe('PSAR', () => {
     psar.update({high: 10, low: 9}, false);
     psar.update({high: 11, low: 10}, false);
 
-    // Use prePreviousCandle branch path but make sure previousLow is NOT < SAR
-    // Set state for an uptrend with pre-previous candle
+    /*
+     * Use prePreviousCandle branch path but make sure previousLow is NOT < SAR
+     * Set state for an uptrend with pre-previous candle
+     */
     psar['lastSar'] = 5; // SAR much lower than low price
     psar['prePreviousCandle'] = {high: 9, low: 8};
     psar['previousCandle'] = {high: 9.5, low: 8.5};
@@ -875,8 +915,10 @@ describe('PSAR', () => {
     psarDownTrend.update({high: 10, low: 9}, false);
     psarDownTrend.update({high: 9, low: 8}, false);
 
-    // Use prePreviousCandle branch path but make sure previousHigh is NOT > SAR
-    // Set state for a downtrend with pre-previous candle
+    /*
+     * Use prePreviousCandle branch path but make sure previousHigh is NOT > SAR
+     * Set state for a downtrend with pre-previous candle
+     */
     psarDownTrend['lastSar'] = 12; // SAR much higher than high price
     psarDownTrend['prePreviousCandle'] = {high: 9, low: 8};
     psarDownTrend['previousCandle'] = {high: 8.5, low: 7.5};

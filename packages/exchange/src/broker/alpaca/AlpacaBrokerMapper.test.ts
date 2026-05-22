@@ -1,9 +1,15 @@
 import {describe, expect, it, vi} from 'vitest';
 import {AlpacaBrokerMapper} from './AlpacaBrokerMapper.js';
 import minutes5 from '../../../fixtures/alpaca/bars/minutes-5.json' with {type: 'json'};
-import {AlpacaAssetClass, AlpacaOrderSide, AlpacaOrderStatus, AlpacaOrderType, TimeInForce} from './api/schema/OrderSchema.js';
+import {
+  AlpacaAssetClass,
+  AlpacaOrderSide,
+  AlpacaOrderStatus,
+  AlpacaOrderType,
+  TimeInForce,
+} from './api/schema/OrderSchema.js';
 import {ms} from 'ms';
-import {BatchedCandle} from '../../candle/BatchedCandle.js';
+import type {BatchedCandle} from '../../candle/BatchedCandle.js';
 import {CandleBatcher} from '../../candle/CandleBatcher.js';
 import {TradingPair} from '../TradingPair.js';
 import {OrderPosition, OrderSide} from '../Broker.js';

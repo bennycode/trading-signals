@@ -1,8 +1,10 @@
 import {TR} from './TR.js';
 
 describe('TR', () => {
-  // Test data verified with:
-  // https://tulipindicators.org/tr
+  /*
+   * Test data verified with:
+   * https://tulipindicators.org/tr
+   */
   const candles = [
     {close: 81.59, high: 82.15, low: 81.29},
     {close: 81.06, high: 81.89, low: 80.64},

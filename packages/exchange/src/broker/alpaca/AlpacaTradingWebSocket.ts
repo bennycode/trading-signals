@@ -19,9 +19,9 @@ export interface AlpacaTradingConnection {
  * @see https://docs.alpaca.markets/docs/websocket-streaming
  */
 class AlpacaTradingWebSocket {
-  #connections: Map<string, AlpacaTradingConnection> = new Map();
-  #credentialToConnectionId: Map<string, string> = new Map();
-  #listeners: Map<string, Set<(message: TradeUpdateMessage) => void>> = new Map();
+  readonly #connections: Map<string, AlpacaTradingConnection> = new Map();
+  readonly #credentialToConnectionId: Map<string, string> = new Map();
+  readonly #listeners: Map<string, Set<(message: TradeUpdateMessage) => void>> = new Map();
 
   static readonly #NON_RETRYABLE_CODES = new Set([402, 404, 405, 409]);
 

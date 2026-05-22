@@ -1,13 +1,7 @@
 import Big from 'big.js';
 import {describe, expect, it} from 'vitest';
 import {BrokerMock, type ExchangeMockBalance} from './BrokerMock.js';
-import {
-  type Candle,
-  type FeeRate,
-  OrderSide,
-  OrderType,
-  type TradingRules,
-} from './Broker.js';
+import {type Candle, type FeeRate, OrderSide, OrderType, type TradingRules} from './Broker.js';
 import {TradingPair} from './TradingPair.js';
 import {ms} from 'ms';
 
@@ -338,8 +332,10 @@ describe('BrokerMock', () => {
         price: '100',
       });
 
-      // The order was placed after processCandle, so it wasn't included in matching
-      // Verify the order is still pending
+      /*
+       * The order was placed after processCandle, so it wasn't included in matching
+       * Verify the order is still pending
+       */
       expect(exchange.getPendingOrders()).toHaveLength(1);
 
       // Only fills on the NEXT candle

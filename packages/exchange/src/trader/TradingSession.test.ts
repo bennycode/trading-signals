@@ -230,8 +230,10 @@ describe.sequential('TradingSession', () => {
       exchange.emit('candle-topic-1', sampleCandle);
       await vi.waitFor(() => expect(exchange.placeLimitOrder).toHaveBeenCalledTimes(1));
 
-      // base_increment=0.001 → 5.5678 rounds down to 5.567
-      // counter_increment=0.01 → 253.456 rounds down to 253.45
+      /*
+       * base_increment=0.001 → 5.5678 rounds down to 5.567
+       * counter_increment=0.01 → 253.456 rounds down to 253.45
+       */
       expect(exchange.placeLimitOrder).toHaveBeenCalledWith(pair, {
         side: OrderSide.SELL,
         size: '5.567',
@@ -299,9 +301,11 @@ describe.sequential('TradingSession', () => {
       exchange.emit('candle-topic-1', sampleCandle);
       await vi.waitFor(() => expect(exchange.placeLimitOrder).toHaveBeenCalledTimes(1));
 
-      // Race window: the order filled on the exchange before our cancel reached it,
-      // so cancelOpenOrders has no IDs to return. The order must stay tracked so the
-      // late FILL websocket event still matches.
+      /*
+       * Race window: the order filled on the exchange before our cancel reached it,
+       * so cancelOpenOrders has no IDs to return. The order must stay tracked so the
+       * late FILL websocket event still matches.
+       */
       exchange.cancelOpenOrders.mockResolvedValueOnce([]);
       exchange.placeLimitOrder.mockResolvedValueOnce({
         id: 'order-1-replacement',

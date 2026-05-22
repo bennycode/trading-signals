@@ -110,8 +110,10 @@ describe('BuyOnceStrategy', () => {
   it('spends the entire counter balance when amount is null', async () => {
     const strategy = new BuyOnceStrategy({buyAt: '50'});
 
-    // Candle 1: close=50 → advice triggers (limit buy at 50)
-    // Candle 2: order fills
+    /*
+     * Candle 1: close=50 → advice triggers (limit buy at 50)
+     * Candle 2: order fills
+     */
     const candles = [
       createCandle({open: '50', close: '50', low: '48', high: '52', openTimeInISO: '2025-01-01T00:00:00.000Z'}),
       createCandle({open: '50', close: '50', low: '48', high: '52', openTimeInISO: '2025-01-01T00:01:00.000Z'}),
@@ -135,8 +137,10 @@ describe('BuyOnceStrategy', () => {
   it('executes at the predefined limit price when it is reachable', async () => {
     const strategy = new BuyOnceStrategy({buyAt: '95'});
 
-    // Candle 1: close=90 < 95, advice triggers (limit buy at 95)
-    // Candle 2: low=88 <= 95, order fills. Open=92 < 95, so price improvement: fills at 92
+    /*
+     * Candle 1: close=90 < 95, advice triggers (limit buy at 95)
+     * Candle 2: low=88 <= 95, order fills. Open=92 < 95, so price improvement: fills at 92
+     */
     const candles = [
       createCandle({open: '100', close: '90', low: '88', high: '102', openTimeInISO: '2025-01-01T00:00:00.000Z'}),
       createCandle({open: '92', close: '88', low: '85', high: '96', openTimeInISO: '2025-01-01T00:01:00.000Z'}),

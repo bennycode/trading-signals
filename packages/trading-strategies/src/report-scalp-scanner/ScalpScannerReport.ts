@@ -1,5 +1,5 @@
 import {z} from 'zod';
-import {AlpacaAPI} from '@typedtrader/exchange';
+import type {AlpacaAPI} from '@typedtrader/exchange';
 import type {Bar} from '@typedtrader/exchange';
 import {ER} from 'trading-signals';
 import {MESSAGE_BREAK, Report} from '../report/Report.js';
@@ -62,8 +62,10 @@ export class ScalpScannerReport extends Report<ScalpScannerConfig> {
         continue;
       }
 
-      // Trim to the most recent `lookbackDays` trading days so the analysis window
-      // matches the documented behavior regardless of weekends/holidays.
+      /*
+       * Trim to the most recent `lookbackDays` trading days so the analysis window
+       * matches the documented behavior regardless of weekends/holidays.
+       */
       const allDaily = this.#aggregateToDailyBars(bars);
       const daily = allDaily.slice(-this.config.lookbackDays);
       if (daily.length < 14) {
@@ -112,13 +114,9 @@ export class ScalpScannerReport extends Report<ScalpScannerConfig> {
       });
     }
 
-    const scalpFriendly = results
-      .filter(r => r.er < this.config.erThreshold)
-      .sort((a, b) => a.er - b.er);
+    const scalpFriendly = results.filter(r => r.er < this.config.erThreshold).sort((a, b) => a.er - b.er);
 
-    const trending = results
-      .filter(r => r.er >= this.config.erThreshold)
-      .sort((a, b) => b.er - a.er);
+    const trending = results.filter(r => r.er >= this.config.erThreshold).sort((a, b) => b.er - a.er);
 
     return this.#formatResults(scalpFriendly, trending, results.length, names);
   }
@@ -176,8 +174,12 @@ export class ScalpScannerReport extends Report<ScalpScannerConfig> {
       if (!existing) {
         dayMap.set(day, {close: bar.c, high: bar.h, low: bar.l});
       } else {
-        if (bar.h > existing.high) existing.high = bar.h;
-        if (bar.l < existing.low) existing.low = bar.l;
+        if (bar.h > existing.high) {
+          existing.high = bar.h;
+        }
+        if (bar.l < existing.low) {
+          existing.low = bar.l;
+        }
         existing.close = bar.c;
       }
     }
@@ -185,7 +187,12 @@ export class ScalpScannerReport extends Report<ScalpScannerConfig> {
     return [...dayMap.values()];
   }
 
-  #formatResults(scalpFriendly: ScanResult[], trending: ScanResult[], total: number, names: Map<string, string>): string {
+  #formatResults(
+    scalpFriendly: ScanResult[],
+    trending: ScanResult[],
+    total: number,
+    names: Map<string, string>
+  ): string {
     const lines: string[] = [];
     const top = 20;
 
@@ -261,7 +268,9 @@ export class ScalpScannerReport extends Report<ScalpScannerConfig> {
 
     // Disclaimer
     lines.push('');
-    lines.push('This report is for informational purposes only. Always do your own research and make informed decisions before trading. Past range efficiency does not guarantee future price behavior.');
+    lines.push(
+      'This report is for informational purposes only. Always do your own research and make informed decisions before trading. Past range efficiency does not guarantee future price behavior.'
+    );
 
     return lines.join('\n');
   }

@@ -1,12 +1,6 @@
 import Big from 'big.js';
 import {describe, expect, it} from 'vitest';
-import {
-  CandleBatcher,
-  OrderPosition,
-  OrderSide,
-  OrderType,
-  TradingPair,
-} from '@typedtrader/exchange';
+import {CandleBatcher, OrderPosition, OrderSide, OrderType, TradingPair} from '@typedtrader/exchange';
 import type {
   Candle,
   Fill,

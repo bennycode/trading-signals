@@ -206,8 +206,10 @@ describe('ProtectedStrategy', () => {
     });
 
     it('fires a LIMIT sell at the nominal USD loss target when stopLossNominal is reached', async () => {
-      // 10 shares @ 100 = $1000 invested. stopLossNominal=10 → exit when unrealized loss
-      // is $10, i.e. price of 99 (each share only needs to drop $1).
+      /*
+       * 10 shares @ 100 = $1000 invested. stopLossNominal=10 → exit when unrealized loss
+       * is $10, i.e. price of 99 (each share only needs to drop $1).
+       */
       const strategy = new TestProtectedStrategy({protected: {stopLossNominal: '10'}});
       await strategy.onFill(makeFill('100', '10', OrderSide.BUY), mockState);
 
@@ -266,8 +268,10 @@ describe('ProtectedStrategy', () => {
     });
 
     it('fires a LIMIT sell at the nominal USD target when takeProfitNominal is reached', async () => {
-      // 10 shares @ 100 = $1000 invested. takeProfitNominal=10 → exit when portfolio hits $1010,
-      // i.e. price of 101 (each share only needs to gain $1).
+      /*
+       * 10 shares @ 100 = $1000 invested. takeProfitNominal=10 → exit when portfolio hits $1010,
+       * i.e. price of 101 (each share only needs to gain $1).
+       */
       const strategy = new TestProtectedStrategy({protected: {takeProfitNominal: '10'}});
       await strategy.onFill(makeFill('100', '10', OrderSide.BUY), mockState);
 
@@ -309,7 +313,10 @@ describe('ProtectedStrategy', () => {
 
   describe('no position', () => {
     it('skips guard checks when nothing has been bought', async () => {
-      const strategy = new TestProtectedStrategy({protected: {stopLossPct: '1', takeProfitPct: '1'}, signalAdvice: true});
+      const strategy = new TestProtectedStrategy({
+        protected: {stopLossPct: '1', takeProfitPct: '1'},
+        signalAdvice: true,
+      });
 
       const advice = await strategy.onCandle(makeCandle(100), mockState);
 
@@ -360,7 +367,10 @@ describe('ProtectedStrategy', () => {
     });
 
     it('does not seed when baseBalance is zero', async () => {
-      const strategy = new TestProtectedStrategy({protected: {stopLossPct: '5', seedFromBalance: true}, signalAdvice: true});
+      const strategy = new TestProtectedStrategy({
+        protected: {stopLossPct: '5', seedFromBalance: true},
+        signalAdvice: true,
+      });
 
       const advice = await strategy.onCandle(makeCandle(100), mockState);
 
@@ -421,8 +431,10 @@ describe('ProtectedStrategy', () => {
       expect(new Big(killAdvice.price).toFixed(2)).toBe('95.00');
       expect(strategy.protectedState.killed).toBe(true);
 
-      // Simulate exchange rejecting/delaying the fill: next candle must retry with
-      // the same nominal limit price, regardless of where the market is now.
+      /*
+       * Simulate exchange rejecting/delaying the fill: next candle must retry with
+       * the same nominal limit price, regardless of where the market is now.
+       */
       const retryAdvice = await strategy.onCandle(makeCandle(120), mockState);
       assertLimitSell(retryAdvice);
       expect(new Big(retryAdvice.price).toFixed(2)).toBe('95.00');
@@ -597,9 +609,11 @@ describe('ProtectedStrategy', () => {
     });
 
     it('allows mixing pct on one direction with nominal on the other', async () => {
-      // stopLossPct 5 + takeProfitNominal 10 on 10 @ 100
-      //   → stop-loss target: 100 * 0.95 = 95
-      //   → take-profit target: 100 + 10/10 = 101
+      /*
+       * stopLossPct 5 + takeProfitNominal 10 on 10 @ 100
+       *   → stop-loss target: 100 * 0.95 = 95
+       *   → take-profit target: 100 + 10/10 = 101
+       */
       const strategy = new TestProtectedStrategy({protected: {stopLossPct: '5', takeProfitNominal: '10'}});
       await strategy.onFill(makeFill('100', '10', OrderSide.BUY), mockState);
 
@@ -691,8 +705,10 @@ describe('ProtectedStrategy', () => {
     it('falls back to defaults when restored state has killed=true but no killedOrderType', async () => {
       const strategy = new TestProtectedStrategy({protected: {stopLossPct: '5'}});
 
-      // Inconsistent persisted state: marked killed but missing the order type
-      // needed for the retry path. Must not silently accept.
+      /*
+       * Inconsistent persisted state: marked killed but missing the order type
+       * needed for the retry path. Must not silently accept.
+       */
       strategy.restoreState({
         protected: {
           killed: true,
@@ -915,7 +931,10 @@ describe('ProtectedStrategy', () => {
     });
 
     it('retries market advice on subsequent candles while the position is not exited', async () => {
-      const strategy = new TestProtectedStrategy({protected: {stopLossPct: '5', stopLossOrder: 'market'}, signalAdvice: true});
+      const strategy = new TestProtectedStrategy({
+        protected: {stopLossPct: '5', stopLossOrder: 'market'},
+        signalAdvice: true,
+      });
       await strategy.onFill(makeFill('100', '10', OrderSide.BUY), mockState);
 
       // Fire

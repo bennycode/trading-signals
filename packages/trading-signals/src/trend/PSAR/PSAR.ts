@@ -102,8 +102,10 @@ export class PSAR extends IndicatorSeries<HighLow<number>> {
 
     // Adjust SAR position if needed
     if (this.isLong) {
-      // Adjust SAR based on previous lows
-      // If pre-previous candle exists and current low is less than SAR
+      /*
+       * Adjust SAR based on previous lows
+       * If pre-previous candle exists and current low is less than SAR
+       */
       const hasPrevPrev = this.prePreviousCandle != null;
       if (hasPrevPrev && low < sar) {
         // Apply pre-previous low adjustment if needed
@@ -139,9 +141,11 @@ export class PSAR extends IndicatorSeries<HighLow<number>> {
         this.acceleration = this.accelerationStep; // Reset acceleration
       }
     } else {
-      // Short position
-      // Adjust SAR based on previous highs
-      // If pre-previous candle exists and current high is greater than SAR
+      /*
+       * Short position
+       * Adjust SAR based on previous highs
+       * If pre-previous candle exists and current high is greater than SAR
+       */
       const hasPrevPrev = this.prePreviousCandle != null;
       if (hasPrevPrev && high > sar) {
         // Apply pre-previous high adjustment if needed
@@ -174,8 +178,10 @@ export class PSAR extends IndicatorSeries<HighLow<number>> {
         this.extreme = high; // Set new extreme to current high
         this.acceleration = this.accelerationStep; // Reset acceleration
 
-        // Ensure the SAR is below the price in the uptrend by setting it slightly below the low
-        // This fixes the edge case in the test
+        /*
+         * Ensure the SAR is below the price in the uptrend by setting it slightly below the low
+         * This fixes the edge case in the test
+         */
         if (sar >= low) {
           sar = low - 0.01;
         }

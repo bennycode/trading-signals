@@ -66,11 +66,7 @@ describe('splitForTelegram', () => {
 
   it('honors MESSAGE_BREAK markers as forced section splits', () => {
     const text = `**Section 1**\nline a\n${MESSAGE_BREAK}\n**Section 2**\nline b\n${MESSAGE_BREAK}\n**Section 3**\nline c`;
-    expect(splitForTelegram(text)).toEqual([
-      '**Section 1**\nline a',
-      '**Section 2**\nline b',
-      '**Section 3**\nline c',
-    ]);
+    expect(splitForTelegram(text)).toEqual(['**Section 1**\nline a', '**Section 2**\nline b', '**Section 3**\nline c']);
   });
 
   it('still size-splits within a section that exceeds the limit after a forced break', () => {
@@ -90,8 +86,10 @@ describe('splitForTelegram', () => {
   });
 
   it('keeps chunks under the default Telegram limit for a realistic report', () => {
-    // Simulate a report with 100 numbered items in a single paragraph, each ~60 chars.
-    // Total ~6000 chars, forcing a split.
+    /*
+     * Simulate a report with 100 numbered items in a single paragraph, each ~60 chars.
+     * Total ~6000 chars, forcing a split.
+     */
     const lines = Array.from({length: 100}, (_, i) => `${i + 1}. Some Company Name (TICKER) — detail one, detail two`);
     const longReport = '**Header**\n' + lines.join('\n');
     const chunks = splitForTelegram(longReport);

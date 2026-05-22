@@ -1,4 +1,6 @@
-import {OrderSide, getBrokerClient, TradingPair} from '@typedtrader/exchange';
+import type {TradingPair} from '@typedtrader/exchange';
+import {OrderSide} from '@typedtrader/exchange';
+import {getAccountBrokerClient} from '../broker/getAccountBrokerClient.js';
 import {getAccountOrError} from '../validation/getAccountOrError.js';
 
 export interface PlaceOrderParams {
@@ -22,12 +24,7 @@ export const placeOrder = async (params: PlaceOrderParams): Promise<string> => {
   try {
     const account = getAccountOrError(params.userId, params.accountId);
 
-    const client = getBrokerClient({
-      exchangeId: account.exchange,
-      apiKey: account.apiKey,
-      apiSecret: account.apiSecret,
-      isPaper: account.isPaper,
-    });
+    const client = getAccountBrokerClient(account);
 
     const sideLabel = params.side === OrderSide.BUY ? 'BUY' : 'SELL';
 

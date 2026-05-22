@@ -38,10 +38,12 @@ describe('TrailingStopStrategy', () => {
   it('attaches on the first candle and exits with a limit sell at the trail target by default', async () => {
     const strategy = new TrailingStopStrategy({trailDownPct: '10'});
 
-    // C1: attach at close=100. peak=100.
-    // C2: high=120 → peak ratchets to 120. close=118 > 108 → no exit.
-    // C3: high=120, close=107 → 107 <= 108 → exit fires (limit sell at 108).
-    // C4: limit sell fills (low=105 <= 108).
+    /*
+     * C1: attach at close=100. peak=100.
+     * C2: high=120 → peak ratchets to 120. close=118 > 108 → no exit.
+     * C3: high=120, close=107 → 107 <= 108 → exit fires (limit sell at 108).
+     * C4: limit sell fills (low=105 <= 108).
+     */
     const candles = [
       createCandle({open: '100', close: '100', low: '99', high: '101', openTimeInISO: '2025-01-01T00:00:00.000Z'}),
       createCandle({open: '105', close: '118', low: '104', high: '120', openTimeInISO: '2025-01-01T00:01:00.000Z'}),
@@ -273,8 +275,10 @@ describe('TrailingStopStrategy', () => {
   it('rejects malformed restored state that would strand the strategy in a no-op', async () => {
     const strategy = new TrailingStopStrategy({trailDownPct: '10'});
 
-    // peak set but no position and not exited → permanent no-op. Predicate rejects;
-    // the proxied state stays at defaults so the strategy can still attach.
+    /*
+     * peak set but no position and not exited → permanent no-op. Predicate rejects;
+     * the proxied state stays at defaults so the strategy can still attach.
+     */
     strategy.restoreState({
       exited: false,
       positionSize: '0',

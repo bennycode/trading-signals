@@ -62,9 +62,11 @@ describe('WilliamsR', () => {
     });
 
     it('verifies Williams %R is equivalent to inverted Stochastic %K', () => {
-      // Williams %R = -100 * (Highest High - Close) / (Highest High - Lowest Low)
-      // Stochastic %K = 100 * (Close - Lowest Low) / (Highest High - Lowest Low)
-      // Therefore: Williams %R = Stochastic %K - 100
+      /*
+       * Williams %R = -100 * (Highest High - Close) / (Highest High - Lowest Low)
+       * Stochastic %K = 100 * (Close - Lowest Low) / (Highest High - Lowest Low)
+       * Therefore: Williams %R = Stochastic %K - 100
+       */
       const willR = new WilliamsR(5);
       const stoch = new StochasticOscillator(5, 1, 1);
 

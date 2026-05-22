@@ -1,11 +1,12 @@
-import {TradingPair, TradingSession, getBrokerClient} from '@typedtrader/exchange';
+import {TradingPair, TradingSession} from '@typedtrader/exchange';
 import type {Fill} from '@typedtrader/exchange';
 import {createStrategy} from 'trading-strategies';
 import type {Strategy as TradingStrategy} from 'trading-strategies';
+import {getAccountBrokerClient} from '../broker/getAccountBrokerClient.js';
 import {Account} from '../database/models/Account.js';
 import {Strategy, type StrategyAttributes} from '../database/models/Strategy.js';
 import {logger} from '../logger.js';
-import {PlatformDispatcher} from './PlatformDispatcher.js';
+import type {PlatformDispatcher} from './PlatformDispatcher.js';
 
 interface ActiveSession {
   strategyId: number;
@@ -19,8 +20,8 @@ export function formatStrategyMessage(strategyName: string, pair: string, text: 
 }
 
 export class StrategyMonitor {
-  #dispatcher: PlatformDispatcher;
-  #sessions: Map<number, ActiveSession> = new Map();
+  readonly #dispatcher: PlatformDispatcher;
+  readonly #sessions: Map<number, ActiveSession> = new Map();
 
   constructor(dispatcher: PlatformDispatcher) {
     this.#dispatcher = dispatcher;
@@ -72,16 +73,11 @@ export class StrategyMonitor {
 
     // Restore persisted state if available
     if (row.state) {
-      const persisted = JSON.parse(row.state);
+      const persisted: Record<string, unknown> = JSON.parse(row.state);
       strategy.restoreState(persisted);
     }
 
-    const exchange = getBrokerClient({
-      exchangeId: account.exchange,
-      apiKey: account.apiKey,
-      apiSecret: account.apiSecret,
-      isPaper: account.isPaper,
-    });
+    const exchange = getAccountBrokerClient(account);
 
     const session = new TradingSession({
       broker: exchange,
@@ -102,9 +98,11 @@ export class StrategyMonitor {
       });
     };
 
-    // Auto-remove when the strategy signals it is terminally done (e.g. the kill-switch
-    // sell has fully filled). Cancel any still-open orders on the way out so we don't
-    // leave stray limit orders (e.g. a retried kill-switch order) behind on the exchange.
+    /*
+     * Auto-remove when the strategy signals it is terminally done (e.g. the kill-switch
+     * sell has fully filled). Cancel any still-open orders on the way out so we don't
+     * leave stray limit orders (e.g. a retried kill-switch order) behind on the exchange.
+     */
     strategy.onFinish = async () => {
       try {
         await session.stop({cancelOpenOrders: true});

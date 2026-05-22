@@ -40,11 +40,7 @@ export async function waitForTextOrCancel(
   const text = msgCtx.msg.text.trim();
   if (text.startsWith('/')) {
     const isExplicitCancel = text.toLowerCase().startsWith('/cancel');
-    await ctx.reply(
-      isExplicitCancel
-        ? 'Cancelled.'
-        : 'Wizard cancelled. Resend your command to start fresh.'
-    );
+    await ctx.reply(isExplicitCancel ? 'Cancelled.' : 'Wizard cancelled. Resend your command to start fresh.');
     return {text: '', cancelled: true};
   }
   return {text, cancelled: false};

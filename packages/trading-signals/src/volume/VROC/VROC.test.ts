@@ -5,11 +5,13 @@ import {TradingSignal} from '../../types/index.js';
 describe('VROC', () => {
   describe('getResultOrThrow', () => {
     it('calculates the Volume Rate of Change', () => {
-      // VROC(3) needs 4 data points (interval + 1)
-      // VROC = ((current - prev_n) / prev_n) * 100
-      // After [1000, 1500, 2000, 2500]: (2500-1000)/1000*100 = 150
-      // After [1500, 2000, 2500, 3000]: (3000-1500)/1500*100 = 100
-      // After [2000, 2500, 3000, 2000]: (2000-2000)/2000*100 = 0
+      /*
+       * VROC(3) needs 4 data points (interval + 1)
+       * VROC = ((current - prev_n) / prev_n) * 100
+       * After [1000, 1500, 2000, 2500]: (2500-1000)/1000*100 = 150
+       * After [1500, 2000, 2500, 3000]: (3000-1500)/1500*100 = 100
+       * After [2000, 2500, 3000, 2000]: (2000-2000)/2000*100 = 0
+       */
       const volumes = [1000, 1500, 2000, 2500, 3000, 2000] as const;
       const expectations = ['150.00', '100.00', '0.00'] as const;
       const vroc = new VROC(3);

@@ -1,6 +1,9 @@
 import type {z} from 'zod';
 import {BuyOnceStrategy, BuyOnceSchema} from '../strategy-buy-once/BuyOnceStrategy.js';
-import {BuyBelowSellAboveStrategy, BuyBelowSellAboveSchema} from '../strategy-buy-below-sell-above/BuyBelowSellAboveStrategy.js';
+import {
+  BuyBelowSellAboveStrategy,
+  BuyBelowSellAboveSchema,
+} from '../strategy-buy-below-sell-above/BuyBelowSellAboveStrategy.js';
 import {CoinFlipStrategy, CoinFlipSchema} from '../strategy-coin-flip/CoinFlipStrategy.js';
 import {
   MultiIndicatorConfluenceStrategy,
@@ -32,8 +35,7 @@ const registry: Record<string, StrategyEntry> = {
     schema: CoinFlipSchema,
   },
   [MultiIndicatorConfluenceStrategy.NAME]: {
-    create: (config: unknown) =>
-      new MultiIndicatorConfluenceStrategy(MultiIndicatorConfluenceSchema.parse(config)),
+    create: (config: unknown) => new MultiIndicatorConfluenceStrategy(MultiIndicatorConfluenceSchema.parse(config)),
     schema: MultiIndicatorConfluenceSchema,
   },
   [ScalpStrategy.NAME]: {

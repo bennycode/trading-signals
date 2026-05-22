@@ -39,8 +39,10 @@ describe('BollingerBandsWidth', () => {
         {close: 72.67, high: 73.13, low: 71.87, open: 72.96}, // 2021/09/13
       ] as const;
 
-      // Test data verified with:
-      // https://www.tradingview.com/support/solutions/43000501972/
+      /*
+       * Test data verified with:
+       * https://www.tradingview.com/support/solutions/43000501972/
+       */
       const expectations = [
         '0.19',
         '0.21',

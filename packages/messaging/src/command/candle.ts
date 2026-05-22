@@ -1,10 +1,13 @@
-import {TradingPair, getBrokerClient} from '@typedtrader/exchange';
+import {TradingPair} from '@typedtrader/exchange';
+import {getAccountBrokerClient} from '../broker/getAccountBrokerClient.js';
 import {assertId} from '../validation/assertId.js';
 import {assertInterval} from '../validation/assertInterval.js';
 import {getAccountOrError} from '../validation/getAccountOrError.js';
 
-// Request Example: "1 SHOP,USD 1h"
-// Format: "<accountId> <pair> <interval>"
+/*
+ * Request Example: "1 SHOP,USD 1h"
+ * Format: "<accountId> <pair> <interval>"
+ */
 export const candle = async (request: string, userId: string) => {
   const parts = request.trim().split(' ');
 
@@ -21,12 +24,7 @@ export const candle = async (request: string, userId: string) => {
     const pair = TradingPair.fromString(pairPart, ',');
     const intervalInMillis = assertInterval(interval);
 
-    const client = getBrokerClient({
-      exchangeId: account.exchange,
-      apiKey: account.apiKey,
-      apiSecret: account.apiSecret,
-      isPaper: account.isPaper,
-    });
+    const client = getAccountBrokerClient(account);
     const candle = await client.getLatestCandle(pair, intervalInMillis);
 
     return JSON.stringify(candle);

@@ -135,14 +135,8 @@ export abstract class BrokerMock extends Broker {
     this.#fills.push(fill);
   }
 
-  protected override async placeOrder(
-    pair: TradingPair,
-    options: LimitOrderOptions
-  ): Promise<PendingLimitOrder>;
-  protected override async placeOrder(
-    pair: TradingPair,
-    options: MarketOrderOptions
-  ): Promise<PendingMarketOrder>;
+  protected override async placeOrder(pair: TradingPair, options: LimitOrderOptions): Promise<PendingLimitOrder>;
+  protected override async placeOrder(pair: TradingPair, options: MarketOrderOptions): Promise<PendingMarketOrder>;
   protected override async placeOrder(pair: TradingPair, options: OrderOptions) {
     const rules = await this.getTradingRules(pair);
     const size = this.#applyTradingRules(new Big(options.size), options, rules);
@@ -162,17 +156,15 @@ export abstract class BrokerMock extends Broker {
         // Add estimated fee
         const feeRate = this.#getFeeRateSync(options.type);
         counterNeeded = counterNeeded.plus(counterNeeded.mul(feeRate));
+      } else if (options.sizeInCounter) {
+        // Market order: we don't know the exact price yet, so hold the full counter amount.
+        counterNeeded = new Big(options.size);
       } else {
-        // Market order: we don't know the exact price yet, so hold the full counter amount if sizeInCounter
-        if (options.sizeInCounter) {
-          counterNeeded = new Big(options.size);
-        } else {
-          // Best-effort: hold based on current candle price if available
-          const estimatedPrice = this.#currentCandle ? new Big(this.#currentCandle.close) : new Big(0);
-          counterNeeded = size.mul(estimatedPrice);
-          const feeRate = this.#getFeeRateSync(options.type);
-          counterNeeded = counterNeeded.plus(counterNeeded.mul(feeRate));
-        }
+        // Market order, best-effort: hold based on current candle price if available.
+        const estimatedPrice = this.#currentCandle ? new Big(this.#currentCandle.close) : new Big(0);
+        counterNeeded = size.mul(estimatedPrice);
+        const feeRate = this.#getFeeRateSync(options.type);
+        counterNeeded = counterNeeded.plus(counterNeeded.mul(feeRate));
       }
 
       this.#holdBalance(pair.counter, counterNeeded);
@@ -331,9 +323,7 @@ export abstract class BrokerMock extends Broker {
   }
 
   async cancelOpenOrders(pair: TradingPair) {
-    const toCancel = this.#pendingOrders.filter(
-      o => o.pair.base === pair.base && o.pair.counter === pair.counter
-    );
+    const toCancel = this.#pendingOrders.filter(o => o.pair.base === pair.base && o.pair.counter === pair.counter);
     const canceledIds: string[] = [];
     for (const order of toCancel) {
       await this.cancelOrderById(pair, order.id);
@@ -354,9 +344,7 @@ export abstract class BrokerMock extends Broker {
   }
 
   async getOpenOrders(pair: TradingPair) {
-    return this.#pendingOrders.filter(
-      o => o.pair.base === pair.base && o.pair.counter === pair.counter
-    );
+    return this.#pendingOrders.filter(o => o.pair.base === pair.base && o.pair.counter === pair.counter);
   }
 
   async watchOrders(): Promise<string> {

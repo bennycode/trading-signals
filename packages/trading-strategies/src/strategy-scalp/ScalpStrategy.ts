@@ -1,7 +1,7 @@
 import {z} from 'zod';
 import Big from 'big.js';
 import {AllAvailableAmount, CandleBatcher, OrderSide, OrderType} from '@typedtrader/exchange';
-import type {Fill, OneMinuteBatchedCandle, OrderAdvice, TradingSessionState} from '@typedtrader/exchange';
+import type {Candle, Fill, OneMinuteBatchedCandle, OrderAdvice, TradingSessionState} from '@typedtrader/exchange';
 import {EMA, ER} from 'trading-signals';
 import {MarketType} from '../strategy/MarketType.js';
 import {ProtectedStrategy, ProtectedStrategySchema} from '../strategy-protected/ProtectedStrategy.js';
@@ -9,8 +9,10 @@ import {positiveNumberString} from '../util/validators.js';
 import {suggestScalpOffset} from './suggestScalpOffset.js';
 
 export const ScalpSchema = ProtectedStrategySchema.extend({
-  /** Nominal price offset for each leg of the scalp (e.g., "0.10" means sell at fill+0.10, re-buy at fill-0.10).
-   *  When omitted, the offset is auto-computed from historical candles passed to `init()`. */
+  /**
+   * Nominal price offset for each leg of the scalp (e.g., "0.10" means sell at fill+0.10, re-buy at fill-0.10).
+   *  When omitted, the offset is auto-computed from historical candles passed to `init()`.
+   */
   offset: positiveNumberString.optional(),
   /** EMA period used for the initial entry filter. Default: 5. */
   emaPeriod: z.number().int().positive().optional().default(5),
@@ -79,7 +81,7 @@ export class ScalpStrategy extends ProtectedStrategy {
     return this.#scalpFriendly;
   }
 
-  #computeRangeEfficiency(candles: import('@typedtrader/exchange').Candle[]): boolean {
+  #computeRangeEfficiency(candles: Candle[]): boolean {
     const ONE_DAY_IN_MS = 86_400_000;
     const isSubDaily = candles[0].sizeInMillis < ONE_DAY_IN_MS;
 
@@ -101,8 +103,12 @@ export class ScalpStrategy extends ProtectedStrategy {
         const h = parseFloat(c.high);
         const l = parseFloat(c.low);
 
-        if (h > b.high) b.high = h;
-        if (l < b.low) b.low = l;
+        if (h > b.high) {
+          b.high = h;
+        }
+        if (l < b.low) {
+          b.low = l;
+        }
 
         b.close = parseFloat(c.close);
       }
@@ -152,7 +158,10 @@ export class ScalpStrategy extends ProtectedStrategy {
     }
   }
 
-  protected override async processCandle(candle: OneMinuteBatchedCandle, state: TradingSessionState): Promise<OrderAdvice | void> {
+  protected override async processCandle(
+    candle: OneMinuteBatchedCandle,
+    state: TradingSessionState
+  ): Promise<OrderAdvice | void> {
     const guardAdvice = await super.processCandle(candle, state);
     if (guardAdvice) {
       return guardAdvice;
@@ -177,8 +186,10 @@ export class ScalpStrategy extends ProtectedStrategy {
       return;
     }
 
-    // Refuse to open a position without a configured exit offset — otherwise
-    // the strategy would get stuck in pendingAdvice after the fill.
+    /*
+     * Refuse to open a position without a configured exit offset — otherwise
+     * the strategy would get stuck in pendingAdvice after the fill.
+     */
     if (!this.#config.offset) {
       return;
     }

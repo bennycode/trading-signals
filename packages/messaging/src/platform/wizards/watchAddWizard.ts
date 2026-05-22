@@ -1,13 +1,20 @@
 import Big from 'big.js';
 import {ms} from 'ms';
-import {TradingPair, getBrokerClient} from '@typedtrader/exchange';
+import {TradingPair} from '@typedtrader/exchange';
+import {getAccountBrokerClient} from '../../broker/getAccountBrokerClient.js';
 import {Account} from '../../database/models/Account.js';
 import {Watch} from '../../database/models/Watch.js';
 import {assertInterval} from '../../validation/assertInterval.js';
 import {parseThreshold} from '../../validation/parseThreshold.js';
 import {logger} from '../../logger.js';
 import type {WatchMonitor} from '../../service/index.js';
-import {inlineKeyboard, waitForTextOrCancel, type InlineButton, type WizardContext, type WizardConversation} from './shared.js';
+import {
+  inlineKeyboard,
+  waitForTextOrCancel,
+  type InlineButton,
+  type WizardContext,
+  type WizardConversation,
+} from './shared.js';
 
 export interface WatchAddWizardArgs {
   userId: string;
@@ -40,7 +47,9 @@ export function makeWatchAddWizard(deps: {watchMonitor: () => WatchMonitor | und
 
     await accountCb.editMessageText('Send a trading pair (e.g. SHOP,USD):');
     const pairResp = await waitForTextOrCancel(conversation, ctx);
-    if (pairResp.cancelled) return;
+    if (pairResp.cancelled) {
+      return;
+    }
     const pairStr = pairResp.text;
     let pair: TradingPair;
     try {
@@ -91,7 +100,9 @@ export function makeWatchAddWizard(deps: {watchMonitor: () => WatchMonitor | und
       `Pair: ${pairStr}\nInterval: ${interval}\nDirection: ${direction}\nType: ${thresholdType}\n\nSend the threshold value (e.g. 5 for 5%):`
     );
     const valueResp = await waitForTextOrCancel(conversation, ctx);
-    if (valueResp.cancelled) return;
+    if (valueResp.cancelled) {
+      return;
+    }
     const valueStr = valueResp.text;
     const thresholdInput = `${direction === 'up' ? '+' : '-'}${valueStr}${thresholdType === 'percent' ? '%' : ''}`;
     const threshold = parseThreshold(thresholdInput);
@@ -108,12 +119,7 @@ export function makeWatchAddWizard(deps: {watchMonitor: () => WatchMonitor | und
         if (!account || account.userId !== args.userId) {
           return {ok: false as const, error: 'Account not found.'};
         }
-        const client = getBrokerClient({
-          exchangeId: account.exchange,
-          apiKey: account.apiKey,
-          apiSecret: account.apiSecret,
-          isPaper: account.isPaper,
-        });
+        const client = getAccountBrokerClient(account);
         const smallestInterval = client.getSmallestInterval();
         const intervalMs = assertInterval(interval);
         if (intervalMs < smallestInterval) {
@@ -141,8 +147,10 @@ export function makeWatchAddWizard(deps: {watchMonitor: () => WatchMonitor | und
         });
         return {ok: true as const, watch, baselinePrice, alertPrice: alertPrice.toString(), counter: pair.counter};
       } catch (error) {
-        // Log ONLY the message — axios errors carry the API key and secret
-        // in their headers.
+        /*
+         * Log ONLY the message — axios errors carry the API key and secret
+         * in their headers.
+         */
         const message = error instanceof Error ? error.message : 'Unknown error';
         logger.error({message}, 'watchAdd wizard failed');
         return {ok: false as const, error: message};

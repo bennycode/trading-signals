@@ -1,7 +1,14 @@
 import Big from 'big.js';
 import {z} from 'zod';
 import {AllAvailableAmount, OrderSide, OrderType} from '@typedtrader/exchange';
-import type {Fill, PendingOrder, LimitOrderAdvice, OneMinuteBatchedCandle, OrderAdvice, TradingSessionState} from '@typedtrader/exchange';
+import type {
+  Fill,
+  PendingOrder,
+  LimitOrderAdvice,
+  OneMinuteBatchedCandle,
+  OrderAdvice,
+  TradingSessionState,
+} from '@typedtrader/exchange';
 import {MarketType} from '../strategy/MarketType.js';
 import {Strategy} from '../strategy/Strategy.js';
 import {positiveNumberString} from '../util/validators.js';
@@ -78,11 +85,7 @@ export type ProtectedStrategyConfig = z.infer<typeof ProtectedStrategySchema>;
 
 type GuardOrderType = 'limit' | 'market';
 
-type GuardMode =
-  | {kind: 'pct'; pct: Big}
-  | {kind: 'nominal'; nominal: Big}
-  | {kind: 'price'; price: Big}
-  | null;
+type GuardMode = {kind: 'pct'; pct: Big} | {kind: 'nominal'; nominal: Big} | {kind: 'price'; price: Big} | null;
 
 export type ProtectedStrategyState = {
   killed: boolean;
@@ -169,8 +172,10 @@ export class ProtectedStrategy extends Strategy {
     // Parse only the nested `protected` sub-object — the subclass owns the rest of the config.
     const protectedConfig = ProtectedConfigSchema.parse(options.config[PROTECTED_STATE_KEY] ?? {});
 
-    // Zod's `.refine()` would turn the schema into `ZodEffects`, which cannot
-    // be `.extend()`-ed by subclasses. Mutual exclusion is validated here instead.
+    /*
+     * Zod's `.refine()` would turn the schema into `ZodEffects`, which cannot
+     * be `.extend()`-ed by subclasses. Mutual exclusion is validated here instead.
+     */
     const stopLossFields = [
       protectedConfig.stopLossPct,
       protectedConfig.stopLossNominal,
@@ -241,10 +246,7 @@ export class ProtectedStrategy extends Strategy {
    * or a market sell, depending on the configured order type) until `onFill`
    * brings the position to zero. Only then does `onCandle` return `void`.
    */
-  override async onCandle(
-    candle: OneMinuteBatchedCandle,
-    state: TradingSessionState
-  ): Promise<OrderAdvice | void> {
+  override async onCandle(candle: OneMinuteBatchedCandle, state: TradingSessionState): Promise<OrderAdvice | void> {
     this.lastBatchedCandle = candle;
 
     const protectedState = this.#protectedState;
@@ -447,7 +449,7 @@ export class ProtectedStrategy extends Strategy {
    */
   async onOrderFilled(order: PendingOrder, _state: TradingSessionState): Promise<void> {
     if (this.#protectedState.killed && order.side === OrderSide.SELL) {
-      this.onFinish?.();
+      await this.onFinish?.();
     }
   }
 
@@ -462,9 +464,11 @@ export class ProtectedStrategy extends Strategy {
       [PROTECTED_STATE_KEY]: restoredProtected,
     });
 
-    // The base class only updates `#_state`; the proxied state still points at
-    // the original object from the constructor. Reassigning `protected` through
-    // the proxy propagates restored values into the proxied state.
+    /*
+     * The base class only updates `#_state`; the proxied state still points at
+     * the original object from the constructor. Reassigning `protected` through
+     * the proxy propagates restored values into the proxied state.
+     */
     this.#setProtectedState(restoredProtected);
   }
 
@@ -517,8 +521,12 @@ function isProtectedStrategyState(value: unknown): value is ProtectedStrategySta
   }
   const candidate = value as Record<string, unknown>;
 
-  if (typeof candidate.killed !== 'boolean') return false;
-  if (candidate.killedReason !== null && typeof candidate.killedReason !== 'string') return false;
+  if (typeof candidate.killed !== 'boolean') {
+    return false;
+  }
+  if (candidate.killedReason !== null && typeof candidate.killedReason !== 'string') {
+    return false;
+  }
   if (
     candidate.killedOrderType !== null &&
     candidate.killedOrderType !== 'limit' &&
@@ -526,16 +534,30 @@ function isProtectedStrategyState(value: unknown): value is ProtectedStrategySta
   ) {
     return false;
   }
-  if (candidate.killedLimitPrice !== null && typeof candidate.killedLimitPrice !== 'string') return false;
-  if (typeof candidate.totalCostBasis !== 'string' || !isValidBigString(candidate.totalCostBasis)) return false;
-  if (typeof candidate.totalPositionSize !== 'string' || !isValidBigString(candidate.totalPositionSize)) return false;
-  if (typeof candidate.killedLimitPrice === 'string' && !isValidBigString(candidate.killedLimitPrice)) return false;
+  if (candidate.killedLimitPrice !== null && typeof candidate.killedLimitPrice !== 'string') {
+    return false;
+  }
+  if (typeof candidate.totalCostBasis !== 'string' || !isValidBigString(candidate.totalCostBasis)) {
+    return false;
+  }
+  if (typeof candidate.totalPositionSize !== 'string' || !isValidBigString(candidate.totalPositionSize)) {
+    return false;
+  }
+  if (typeof candidate.killedLimitPrice === 'string' && !isValidBigString(candidate.killedLimitPrice)) {
+    return false;
+  }
 
-  // Cross-field invariants: a killed state must be fully specified so that
-  // the retry path in onCandle has everything it needs to build fresh advice.
+  /*
+   * Cross-field invariants: a killed state must be fully specified so that
+   * the retry path in onCandle has everything it needs to build fresh advice.
+   */
   if (candidate.killed === true) {
-    if (candidate.killedOrderType === null) return false;
-    if (candidate.killedOrderType === 'limit' && candidate.killedLimitPrice === null) return false;
+    if (candidate.killedOrderType === null) {
+      return false;
+    }
+    if (candidate.killedOrderType === 'limit' && candidate.killedLimitPrice === null) {
+      return false;
+    }
   }
 
   return true;

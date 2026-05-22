@@ -2,17 +2,17 @@ import type Big from 'big.js';
 import type {BigSource} from 'big.js';
 import type {EventEmitter} from 'node:events';
 import type {BatchedCandle, OneMinuteBatchedCandle} from '../candle/BatchedCandle.js';
-import {
-  type ExchangeAvailableBalance,
-  type FeeRate,
-  type Fill,
-  type LimitOrderOptions,
-  type MarketOrderOptions,
-  OrderSide,
-  type PendingLimitOrder,
-  type PendingMarketOrder,
-  type PendingOrder,
-  type TradingRules,
+import type {OrderSide} from '../broker/Broker.js';
+import type {
+  ExchangeAvailableBalance,
+  FeeRate,
+  Fill,
+  LimitOrderOptions,
+  MarketOrderOptions,
+  PendingLimitOrder,
+  PendingMarketOrder,
+  PendingOrder,
+  TradingRules,
 } from '../broker/Broker.js';
 import type {TradingPair} from '../broker/TradingPair.js';
 
@@ -96,10 +96,7 @@ export interface TradingSessionBroker extends Pick<EventEmitter, 'on'> {
     pair: TradingPair,
     options: Omit<LimitOrderOptions, 'type' | 'sizeInCounter'>
   ): Promise<PendingLimitOrder>;
-  placeMarketOrder(
-    pair: TradingPair,
-    options: Omit<MarketOrderOptions, 'type'>
-  ): Promise<PendingMarketOrder>;
+  placeMarketOrder(pair: TradingPair, options: Omit<MarketOrderOptions, 'type'>): Promise<PendingMarketOrder>;
   unwatchCandles(topicId: string): void;
   unwatchOrders(topicId: string): void;
   watchCandles(pair: TradingPair, intervalInMillis: number, openTimeInISO: string): Promise<string>;

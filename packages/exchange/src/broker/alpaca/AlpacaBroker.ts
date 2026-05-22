@@ -21,8 +21,8 @@ import {
   type PendingOrder,
   type TradingRules,
 } from '../Broker.js';
-import {MarketDataSource} from '../MarketDataSource.js';
-import {TradingPair} from '../TradingPair.js';
+import type {MarketDataSource} from '../MarketDataSource.js';
+import type {TradingPair} from '../TradingPair.js';
 import {createAlpacaSymbol, isAlpacaCryptoSymbol} from './alpacaSymbol.js';
 import {AlpacaOrderStatus} from './api/schema/OrderSchema.js';
 import {AlpacaAPI} from './api/AlpacaAPI.js';
@@ -49,7 +49,7 @@ export class AlpacaBroker extends Broker implements MarketDataSource {
   readonly #marketData: MarketDataSource;
   readonly #candleListenerByTopic = new Map<string, (candle: unknown) => void>();
 
-  #orderTopics: Map<string, (message: TradeUpdateMessage) => void> = new Map();
+  readonly #orderTopics: Map<string, (message: TradeUpdateMessage) => void> = new Map();
   #tradingConnectionId: string | null = null;
   readonly #connectTradingStream: () => Promise<AlpacaTradingConnection>;
 
@@ -238,8 +238,10 @@ export class AlpacaBroker extends Broker implements MarketDataSource {
       });
     }
 
-    // The Alpaca exchange handles available portfolio cash within the "Account API"
-    // @see https://alpaca.markets/docs/api-references/trading-api/account/
+    /*
+     * The Alpaca exchange handles available portfolio cash within the "Account API"
+     * @see https://alpaca.markets/docs/api-references/trading-api/account/
+     */
     const account = await this.#alpacaAPI.getAccount();
 
     // @see https://docs.alpaca.markets/docs/user-protection#pattern-day-trader-pdt-protection-at-alpaca
@@ -329,8 +331,10 @@ export class AlpacaBroker extends Broker implements MarketDataSource {
           pair,
         };
       }
-      // Notional and quantity fields can take up to 9 decimal places:
-      // @see https://docs.alpaca.markets/docs/fractional-trading#supported-order-types
+      /*
+       * Notional and quantity fields can take up to 9 decimal places:
+       * @see https://docs.alpaca.markets/docs/fractional-trading#supported-order-types
+       */
       return {
         base_increment: '0.000000001',
         base_max_size: Number.MAX_SAFE_INTEGER.toString(),
@@ -365,9 +369,11 @@ export class AlpacaBroker extends Broker implements MarketDataSource {
   protected override async placeOrder(pair: TradingPair, options: OrderOptions): Promise<PendingOrder> {
     const isCrypto = await isAlpacaCryptoSymbol(this.#alpacaAPI, pair);
     const symbol = createAlpacaSymbol(pair, isCrypto);
-    // Crypto orders cannot use 'day' and must be placed with 'gtc' (error code: 42210000)
-    // Stock fractional and notional orders must use 'day' (error code: 42210000), whole share orders can use 'gtc'
-    // @see https://docs.alpaca.markets/docs/fractional-trading
+    /*
+     * Crypto orders cannot use 'day' and must be placed with 'gtc' (error code: 42210000)
+     * Stock fractional and notional orders must use 'day' (error code: 42210000), whole share orders can use 'gtc'
+     * @see https://docs.alpaca.markets/docs/fractional-trading
+     */
     const isFractional = options.sizeInCounter || options.size.includes('.');
     const time_in_force = isCrypto || !isFractional ? 'gtc' : 'day';
     const side = options.side === OrderSide.BUY ? 'buy' : 'sell';

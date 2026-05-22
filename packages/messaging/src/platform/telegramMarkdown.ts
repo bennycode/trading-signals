@@ -13,8 +13,12 @@ function escapeHtml(text: string): string {
 function trimNewlines(text: string): string {
   let start = 0;
   let end = text.length;
-  while (start < end && text[start] === '\n') start++;
-  while (end > start && text[end - 1] === '\n') end--;
+  while (start < end && text[start] === '\n') {
+    start++;
+  }
+  while (end > start && text[end - 1] === '\n') {
+    end--;
+  }
   return text.slice(start, end);
 }
 
@@ -67,8 +71,10 @@ const TELEGRAM_MAX_CHUNK = 3900;
  * (`\n`) boundaries, and only hard-split a single line as a last resort.
  */
 export function splitForTelegram(markdown: string, maxLength = TELEGRAM_MAX_CHUNK): string[] {
-  // Honor forced section breaks first. Strip the surrounding newlines that end
-  // up around the marker after line-join so each section starts cleanly.
+  /*
+   * Honor forced section breaks first. Strip the surrounding newlines that end
+   * up around the marker after line-join so each section starts cleanly.
+   */
   const sections = markdown
     .split(MESSAGE_BREAK)
     .map(trimNewlines)
@@ -109,7 +115,9 @@ function splitSectionForTelegram(markdown: string, maxLength: number): string[] 
   };
 
   for (const paragraph of markdown.split('\n\n')) {
-    if (tryAppend(paragraph, '\n\n')) continue;
+    if (tryAppend(paragraph, '\n\n')) {
+      continue;
+    }
     flush();
     if (paragraph.length <= maxLength) {
       current = paragraph;
@@ -117,7 +125,9 @@ function splitSectionForTelegram(markdown: string, maxLength: number): string[] 
     }
     // Paragraph too big on its own — fall back to per-line splitting
     for (const line of paragraph.split('\n')) {
-      if (tryAppend(line, '\n')) continue;
+      if (tryAppend(line, '\n')) {
+        continue;
+      }
       flush();
       if (line.length <= maxLength) {
         current = line;
