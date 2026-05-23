@@ -35,7 +35,7 @@ describe('BollingerBands', () => {
         const resLower = Number(data.lower[index]);
         const resUpper = Number(data.upper[index]);
 
-        const {middle, upper, lower} = bb.getResultOrThrow();
+        const {lower, middle, upper} = bb.getResultOrThrow();
 
         expect(middle.toPrecision(12)).toEqual(resMiddle.toPrecision(12));
         expect(lower.toPrecision(12)).toEqual(resLower.toPrecision(12));

@@ -78,11 +78,11 @@ export const reportAdd = async (
       return {message: `Report "${reportName}" cannot be scheduled without an account.`};
     }
     const row = Report.create({
-      userId,
       accountId: account.id,
-      reportName,
       config: configJson,
       intervalMs,
+      reportName,
+      userId,
     });
 
     return {

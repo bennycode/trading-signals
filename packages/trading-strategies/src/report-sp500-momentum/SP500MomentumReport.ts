@@ -54,10 +54,10 @@ export class SP500MomentumReport extends Report<SP500MomentumConfig> {
       const priceThen = pastPrices.get(ticker);
       if (priceNow != null && priceThen != null && priceThen > 0) {
         results.push({
-          ticker,
-          priceNow,
           price12MonthsAgo: priceThen,
+          priceNow,
           returnPct: ((priceNow - priceThen) / priceThen) * 100,
+          ticker,
         });
       }
     }
@@ -91,12 +91,12 @@ export class SP500MomentumReport extends Report<SP500MomentumConfig> {
     const result = new Map<string, number>();
 
     const response = await this.#api.getStockBars({
-      symbols: symbols.join(','),
-      timeframe: '1Day',
-      start: start.toISOString(),
       end: end.toISOString(),
       feed: 'iex',
       limit: 10_000,
+      start: start.toISOString(),
+      symbols: symbols.join(','),
+      timeframe: '1Day',
     });
 
     for (const [symbol, symbolBars] of Object.entries(response.bars)) {

@@ -46,15 +46,15 @@ const sampleFill: Fill = {
 
 const sampleCandle: Candle = {
   base: 'TSLA',
+  close: '253.00',
   counter: 'USD',
-  open: '250.00',
   high: '255.00',
   low: '248.00',
-  close: '253.00',
-  volume: '1000',
+  open: '250.00',
   openTimeInISO: '2024-01-01T00:00:00.000Z',
   openTimeInMillis: 1704067200000,
   sizeInMillis: 60_000,
+  volume: '1000',
 };
 
 function createMockExchange() {
@@ -68,10 +68,10 @@ function createMockExchange() {
     placeLimitOrder: vi.fn().mockResolvedValue({
       id: 'order-1',
       pair,
+      price: '253.00',
       side: OrderSide.SELL,
       size: '10',
       type: OrderType.LIMIT,
-      price: '253.00',
     } satisfies PendingLimitOrder),
     placeMarketOrder: vi.fn().mockResolvedValue({
       id: 'order-2',
@@ -137,18 +137,18 @@ describe.sequential('TradingSession', () => {
         {
           id: 'previous-order-1',
           pair,
+          price: '240.00',
           side: OrderSide.BUY,
           size: '5',
           type: OrderType.LIMIT,
-          price: '240.00',
         },
         {
           id: 'previous-order-2',
           pair,
+          price: '260.00',
           side: OrderSide.SELL,
           size: '3',
           type: OrderType.LIMIT,
-          price: '260.00',
         },
       ];
       exchange.getOpenOrders.mockResolvedValue(existingOrders);
@@ -196,10 +196,10 @@ describe.sequential('TradingSession', () => {
   describe('order execution', () => {
     it('places a MARKET BUY when strategy returns advice', async () => {
       const advice: OrderAdvice = {
-        side: OrderSide.BUY,
-        type: OrderType.MARKET,
         amount: AllAvailableAmount,
         amountIn: 'counter',
+        side: OrderSide.BUY,
+        type: OrderType.MARKET,
       };
       strategy.onCandle.mockResolvedValue(advice);
 
@@ -217,11 +217,11 @@ describe.sequential('TradingSession', () => {
 
     it('places a LIMIT SELL with precision-applied price', async () => {
       const advice: OrderAdvice = {
-        side: OrderSide.SELL,
-        type: OrderType.LIMIT,
         amount: '5.5678',
         amountIn: 'base',
         price: '253.456',
+        side: OrderSide.SELL,
+        type: OrderType.LIMIT,
       };
       strategy.onCandle.mockResolvedValue(advice);
 
@@ -235,18 +235,18 @@ describe.sequential('TradingSession', () => {
        * counter_increment=0.01 → 253.456 rounds down to 253.45
        */
       expect(exchange.placeLimitOrder).toHaveBeenCalledWith(pair, {
+        price: '253.45',
         side: OrderSide.SELL,
         size: '5.567',
-        price: '253.45',
       });
     });
 
     it('resolves null amount SELL to full base balance', async () => {
       const advice: OrderAdvice = {
-        side: OrderSide.SELL,
-        type: OrderType.MARKET,
         amount: AllAvailableAmount,
         amountIn: 'base',
+        side: OrderSide.SELL,
+        type: OrderType.MARKET,
       };
       strategy.onCandle.mockResolvedValue(advice);
 
@@ -265,11 +265,11 @@ describe.sequential('TradingSession', () => {
 
     it('resolves null amount LIMIT BUY to counter balance / price', async () => {
       const advice: OrderAdvice = {
-        side: OrderSide.BUY,
-        type: OrderType.LIMIT,
         amount: AllAvailableAmount,
         amountIn: 'base',
         price: '250',
+        side: OrderSide.BUY,
+        type: OrderType.LIMIT,
       };
       strategy.onCandle.mockResolvedValue(advice);
 
@@ -280,19 +280,19 @@ describe.sequential('TradingSession', () => {
 
       // counter=5000, price=250 → 5000/250 = 20, base_increment=0.001 → 20
       expect(exchange.placeLimitOrder).toHaveBeenCalledWith(pair, {
+        price: '250',
         side: OrderSide.BUY,
         size: '20',
-        price: '250',
       });
     });
 
     it('keeps a pending order tracked when it fills in the race window before being canceled', async () => {
       const advice: OrderAdvice = {
-        side: OrderSide.SELL,
-        type: OrderType.LIMIT,
         amount: '1',
         amountIn: 'base',
         price: new Big('250'),
+        side: OrderSide.SELL,
+        type: OrderType.LIMIT,
       };
       strategy.onCandle.mockResolvedValue(advice);
 
@@ -310,10 +310,10 @@ describe.sequential('TradingSession', () => {
       exchange.placeLimitOrder.mockResolvedValueOnce({
         id: 'order-1-replacement',
         pair,
+        price: '253.00',
         side: OrderSide.SELL,
         size: '10',
         type: OrderType.LIMIT,
-        price: '253.00',
       } satisfies PendingLimitOrder);
 
       const onFill = vi.fn();
@@ -336,10 +336,10 @@ describe.sequential('TradingSession', () => {
 
     it('cancels existing order before placing a new one', async () => {
       const advice: OrderAdvice = {
-        side: OrderSide.BUY,
-        type: OrderType.MARKET,
         amount: '100',
         amountIn: 'counter',
+        side: OrderSide.BUY,
+        type: OrderType.MARKET,
       };
       strategy.onCandle.mockResolvedValue(advice);
 
@@ -364,10 +364,10 @@ describe.sequential('TradingSession', () => {
   describe('fill handling', () => {
     it('updates state when matching fill arrives', async () => {
       const advice: OrderAdvice = {
-        side: OrderSide.BUY,
-        type: OrderType.MARKET,
         amount: '100',
         amountIn: 'counter',
+        side: OrderSide.BUY,
+        type: OrderType.MARKET,
       };
       strategy.onCandle.mockResolvedValue(advice);
 
@@ -400,10 +400,10 @@ describe.sequential('TradingSession', () => {
 
     it('ignores fills with non-matching order ID', async () => {
       const advice: OrderAdvice = {
-        side: OrderSide.BUY,
-        type: OrderType.MARKET,
         amount: '100',
         amountIn: 'counter',
+        side: OrderSide.BUY,
+        type: OrderType.MARKET,
       };
       strategy.onCandle.mockResolvedValue(advice);
 
@@ -430,10 +430,10 @@ describe.sequential('TradingSession', () => {
     it('emits error when order size is below minimum', async () => {
       exchange.getAvailableBalances.mockResolvedValue({base: new Big('0.001'), counter: new Big('5000')});
       const advice: OrderAdvice = {
-        side: OrderSide.SELL,
-        type: OrderType.MARKET,
         amount: AllAvailableAmount,
         amountIn: 'base',
+        side: OrderSide.SELL,
+        type: OrderType.MARKET,
       };
       strategy.onCandle.mockResolvedValue(advice);
 

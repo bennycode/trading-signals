@@ -13,7 +13,7 @@ export const strategyList = async (userId: string) => {
     }
 
     return formatTelegramTable(`Active strategies: ${strategies.length}`, strategies, [
-      {header: 'ID', align: 'right', value: s => String(s.id)},
+      {align: 'right', header: 'ID', value: s => String(s.id)},
       {header: 'Strategy', value: s => s.strategyName},
       {header: 'Pair', value: s => s.pair},
     ]);

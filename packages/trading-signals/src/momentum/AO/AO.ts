@@ -38,7 +38,7 @@ export class AO extends TrendIndicatorSeries<HighLow<number>> {
     return this.long.getRequiredInputs();
   }
 
-  update({low, high}: HighLow<number>, replace: boolean) {
+  update({high, low}: HighLow<number>, replace: boolean) {
     const medianPrice = (low + high) / 2;
 
     this.short.update(medianPrice, replace);

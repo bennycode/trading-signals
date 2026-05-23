@@ -35,8 +35,8 @@ export const AuthenticatedMessageSchema = z.looseObject({
 });
 
 export const SubscriptionMessageSchema = z.looseObject({
-  T: z.literal('subscription'),
   bars: z.array(z.string()),
+  T: z.literal('subscription'),
 });
 
 export const StreamMessageSchema = z.union([

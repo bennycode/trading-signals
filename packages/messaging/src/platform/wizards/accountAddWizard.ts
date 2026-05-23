@@ -30,7 +30,7 @@ export function makeAccountAddWizard() {
     args: AccountAddWizardArgs
   ): Promise<void> {
     const exchangeButtons: InlineButton[][] = EXCHANGES.map(name => [
-      {text: name, callback_data: `accountadd:ex:${name}`},
+      {callback_data: `accountadd:ex:${name}`, text: name},
     ]);
     await ctx.reply('Pick an exchange:', inlineKeyboard(exchangeButtons));
 
@@ -42,8 +42,8 @@ export function makeAccountAddWizard() {
       `Broker: ${exchange}\nChoose account mode:`,
       inlineKeyboard([
         [
-          {text: '📝 Paper', callback_data: 'accountadd:mode:paper'},
-          {text: '💵 Live', callback_data: 'accountadd:mode:live'},
+          {callback_data: 'accountadd:mode:paper', text: '📝 Paper'},
+          {callback_data: 'accountadd:mode:live', text: '💵 Live'},
         ],
       ])
     );
@@ -79,8 +79,8 @@ export function makeAccountAddWizard() {
 
       const dataSourceButtons: InlineButton[][] = dataSourceAccounts.map(candidate => [
         {
-          text: `${candidate.name} (${candidate.isPaper ? 'Paper' : 'Live'})`,
           callback_data: `accountadd:mds:${candidate.id}`,
+          text: `${candidate.name} (${candidate.isPaper ? 'Paper' : 'Live'})`,
         },
       ]);
       await modeCb.editMessageText(
@@ -138,8 +138,8 @@ export function makeAccountAddWizard() {
     }
 
     await deleteSecretMessages(conversation, ctx, 'accountAdd', [
-      {chatId: apiKeyChatId, messageId: apiKeyMessageId, label: 'API key'},
-      {chatId: apiSecretChatId, messageId: apiSecretMessageId, label: 'API secret'},
+      {chatId: apiKeyChatId, label: 'API key', messageId: apiKeyMessageId},
+      {chatId: apiSecretChatId, label: 'API secret', messageId: apiSecretMessageId},
     ]);
 
     await ctx.reply('Validating credentials…');
@@ -154,29 +154,29 @@ export function makeAccountAddWizard() {
         if (marketDataAccountId !== null) {
           const source = Account.findByUserIdAndId(args.userId, marketDataAccountId);
           if (!source) {
-            return {ok: false as const, error: 'Selected market-data account was not found.'};
+            return {error: 'Selected market-data account was not found.', ok: false as const};
           }
           marketData = buildMarketDataFromAccount(source);
         }
 
         await getAuthenticatedBrokerClient(
-          {exchangeId: exchange, apiKey, apiSecret, isPaper},
+          {apiKey, apiSecret, exchangeId: exchange, isPaper},
           marketData ? {marketData} : undefined
         );
         const account = Account.create({
-          userId: args.userId,
-          name,
-          exchange,
-          isPaper,
           apiKey,
           apiSecret,
+          exchange,
+          isPaper,
           marketDataAccountId,
+          name,
+          userId: args.userId,
         });
-        return {ok: true as const, id: account.id};
+        return {id: account.id, ok: true as const};
       } catch (error) {
         const message = error instanceof Error ? error.message : 'Unknown error';
         logger.error({err: error}, 'accountAdd wizard failed');
-        return {ok: false as const, error: message};
+        return {error: message, ok: false as const};
       }
     });
 

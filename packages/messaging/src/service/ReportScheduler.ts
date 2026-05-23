@@ -65,7 +65,7 @@ export class ReportScheduler {
 
     this.#scheduled.set(row.id, {reportId: row.id, timer: setTimeout(tick, initialDelay)});
     logger.info(
-      {reportId: row.id, reportName: row.reportName, intervalMs, initialDelay, lastRunAt: row.lastRunAt},
+      {initialDelay, intervalMs, lastRunAt: row.lastRunAt, reportId: row.id, reportName: row.reportName},
       'Scheduled report'
     );
   }
@@ -89,7 +89,7 @@ export class ReportScheduler {
         api = new AlpacaAPI({apiKey: account.apiKey, apiSecret: account.apiSecret, usePaperTrading: account.isPaper});
       } catch (error) {
         logger.warn(
-          {err: error, reportId: row.id, accountId: row.accountId, userId: row.userId},
+          {accountId: row.accountId, err: error, reportId: row.id, userId: row.userId},
           'Account not available for report — skipping run'
         );
         return;

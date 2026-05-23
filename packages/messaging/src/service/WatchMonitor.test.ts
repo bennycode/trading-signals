@@ -2,25 +2,25 @@ import {describe, it, expect, vi, beforeEach} from 'vitest';
 import type {MessagingPlatform} from '../platform/MessagingPlatform.js';
 import type {WatchAttributes} from '../database/models/Watch.js';
 
-const {mockExchange, mockAccountModel, mockWatchModel} = vi.hoisted(() => ({
-  mockExchange: {
-    watchCandles: vi.fn(),
-    on: vi.fn(),
-    unwatchCandles: vi.fn(),
-    removeAllListeners: vi.fn(),
-  },
+const {mockAccountModel, mockExchange, mockWatchModel} = vi.hoisted(() => ({
   mockAccountModel: {findByPk: vi.fn()},
+  mockExchange: {
+    on: vi.fn(),
+    removeAllListeners: vi.fn(),
+    unwatchCandles: vi.fn(),
+    watchCandles: vi.fn(),
+  },
   mockWatchModel: {
+    destroy: vi.fn(),
+    findAllOrderedById: vi.fn(() => []),
     findByAccountIds: vi.fn(),
     findByPk: vi.fn(),
-    findAllOrderedById: vi.fn(() => []),
-    destroy: vi.fn(),
   },
 }));
 
 vi.mock('@typedtrader/exchange', () => ({
-  TradingPair: {fromString: vi.fn(() => ({base: 'BTC', counter: 'USD'}))},
   getBrokerClient: vi.fn(() => mockExchange),
+  TradingPair: {fromString: vi.fn(() => ({base: 'BTC', counter: 'USD'}))},
 }));
 
 vi.mock('../database/models/Account.js', () => ({
@@ -36,27 +36,27 @@ const {PlatformDispatcher} = await import('./PlatformDispatcher.js');
 
 function createMockPlatform(): MessagingPlatform {
   return {
-    start: vi.fn(),
-    stop: vi.fn(),
-    sendMessage: vi.fn(),
-    registerCommand: vi.fn(),
     commandList: [],
     platformInfo: {botAddress: '', sdkVersion: ''},
+    registerCommand: vi.fn(),
+    sendMessage: vi.fn(),
+    start: vi.fn(),
+    stop: vi.fn(),
   };
 }
 
 function createWatchRow(overrides: Partial<WatchAttributes> = {}): WatchAttributes {
   return {
-    id: 1,
     accountId: 7,
-    pair: 'BTC,USD',
-    intervalMs: 60_000,
     alertPrice: '50000',
     baselinePrice: '49000',
+    createdAt: '2026-05-14T00:00:00.000Z',
+    id: 1,
+    intervalMs: 60_000,
+    pair: 'BTC,USD',
     thresholdDirection: 'up',
     thresholdType: 'percent',
     thresholdValue: '2',
-    createdAt: '2026-05-14T00:00:00.000Z',
     ...overrides,
   };
 }
@@ -85,9 +85,9 @@ describe('WatchMonitor.restartForAccount', () => {
     vi.clearAllMocks();
     mockExchange.watchCandles.mockResolvedValue('topic-1');
     mockAccountModel.findByPk.mockReturnValue({
-      exchange: 'alpaca',
       apiKey: 'key',
       apiSecret: 'secret',
+      exchange: 'alpaca',
       isPaper: true,
     });
   });

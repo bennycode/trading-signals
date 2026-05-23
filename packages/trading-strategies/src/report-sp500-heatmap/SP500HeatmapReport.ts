@@ -50,8 +50,8 @@ export class SP500HeatmapReport extends Report<SP500HeatmapConfig> {
     for (let i = 0; i < symbols.length; i += BATCH_SIZE) {
       const batch = symbols.slice(i, i + BATCH_SIZE);
       const response = await this.#api.getStockSnapshots({
-        symbols: batch.join(','),
         feed: 'iex',
+        symbols: batch.join(','),
       });
 
       for (const [ticker, snapshot] of Object.entries(response)) {
@@ -59,10 +59,10 @@ export class SP500HeatmapReport extends Report<SP500HeatmapConfig> {
         const prevClose = snapshot.prevDailyBar?.c;
         if (price != null && prevClose != null && prevClose > 0) {
           results.push({
-            ticker,
+            changePct: ((price - prevClose) / prevClose) * 100,
             prevClose,
             price,
-            changePct: ((price - prevClose) / prevClose) * 100,
+            ticker,
           });
         }
       }

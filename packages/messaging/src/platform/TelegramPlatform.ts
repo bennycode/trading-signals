@@ -48,13 +48,13 @@ interface TradeCommandShape {
 function tradeCommandShape(name: TradeCommandName): TradeCommandShape {
   switch (name) {
     case 'buyMarket':
-      return {side: OrderSide.BUY, isLimit: false};
+      return {isLimit: false, side: OrderSide.BUY};
     case 'sellMarket':
-      return {side: OrderSide.SELL, isLimit: false};
+      return {isLimit: false, side: OrderSide.SELL};
     case 'buyLimit':
-      return {side: OrderSide.BUY, isLimit: true};
+      return {isLimit: true, side: OrderSide.BUY};
     case 'sellLimit':
-      return {side: OrderSide.SELL, isLimit: true};
+      return {isLimit: true, side: OrderSide.SELL};
   }
 }
 
@@ -64,7 +64,7 @@ function buildTradeActionLabel(
   quantity: string,
   limitPrice: string | null
 ): string {
-  const {side, isLimit} = tradeCommandShape(cmd);
+  const {isLimit, side} = tradeCommandShape(cmd);
   const sideLabel = side === OrderSide.BUY ? 'BUY' : 'SELL';
   const kindLabel = isLimit ? 'LIMIT' : 'MARKET';
   if (isLimit && limitPrice !== null) {
@@ -133,9 +133,9 @@ async function parseTradeCommandInput(ctx: Context, cmd: TradeCommandName): Prom
 
   return {
     cmd,
+    limitPrice: isLimit ? String(positiveNumber.parse(priceInput)) : undefined,
     pairStr,
     quantity: String(quantityCheck.data),
-    limitPrice: isLimit ? String(positiveNumber.parse(priceInput)) : undefined,
   };
 }
 
@@ -161,10 +161,10 @@ async function tradeWizard(conversation: TradeConversation, ctx: TradeContext, a
    */
   const accounts = await conversation.external(() =>
     Account.findByUserId(userId).map(acc => ({
-      id: acc.id,
-      name: acc.name,
       exchange: acc.exchange,
+      id: acc.id,
       isPaper: acc.isPaper,
+      name: acc.name,
     }))
   );
 
@@ -179,8 +179,8 @@ async function tradeWizard(conversation: TradeConversation, ctx: TradeContext, a
   // Step 1: account picker
   const accountButtons: InlineButton[][] = accounts.map(acc => [
     {
-      text: `${acc.name} (${acc.exchange}${acc.isPaper ? ' paper' : ''})`,
       callback_data: `trade:acc:${acc.id}`,
+      text: `${acc.name} (${acc.exchange}${acc.isPaper ? ' paper' : ''})`,
     },
   ]);
   await ctx.reply(`${actionLabel}\nSelect an account:`, inlineKeyboard(accountButtons));
@@ -211,12 +211,12 @@ async function tradeWizard(conversation: TradeConversation, ctx: TradeContext, a
   await decision.editMessageText('Placing order…');
   const result = await conversation.external(() =>
     placeOrder({
-      userId,
       accountId,
-      pair,
-      side: tradeCommandShape(args.cmd).side,
-      quantity: args.quantity,
       limitPrice: args.limitPrice,
+      pair,
+      quantity: args.quantity,
+      side: tradeCommandShape(args.cmd).side,
+      userId,
     })
   );
   await decision.editMessageText(result);
@@ -231,8 +231,8 @@ async function buildTradeConfirmation(
   const account = Account.findByUserIdAndId(userId, accountId);
   if (!account) {
     return {
-      text: `Account "${accountId}" not found. Run the command again.`,
       keyboard: inlineKeyboard([]),
+      text: `Account "${accountId}" not found. Run the command again.`,
     };
   }
 
@@ -255,12 +255,12 @@ async function buildTradeConfirmation(
   const text = `${actionLabel}\nAccount: ${account.name}${priceContext}\n\nProceed?`;
   const keyboard = inlineKeyboard([
     [
-      {text: '✓ Yes, place order', callback_data: 'trade:cnf:y'},
-      {text: '✗ Cancel', callback_data: 'trade:cnf:n'},
+      {callback_data: 'trade:cnf:y', text: '✓ Yes, place order'},
+      {callback_data: 'trade:cnf:n', text: '✗ Cancel'},
     ],
   ]);
 
-  return {text, keyboard};
+  return {keyboard, text};
 }
 
 interface InlineButton {
@@ -329,8 +329,8 @@ export class TelegramPlatform implements MessagingPlatform {
     // @see https://grammy.dev/plugins/auto-retry
     this.#bot.api.config.use(
       autoRetry({
-        maxRetryAttempts: Infinity,
         maxDelaySeconds: 120,
+        maxRetryAttempts: Infinity,
       })
     );
     /*
@@ -490,12 +490,12 @@ export class TelegramPlatform implements MessagingPlatform {
       const content = commandEnd === -1 ? '' : text.slice(commandEnd + 1);
 
       const messageCtx: MessageContext = {
-        senderId: userId,
-        platformId: 'telegram',
         content,
+        platformId: 'telegram',
         reply: async (replyText: string) => {
           await replyWithMarkdown(ctx, replyText);
         },
+        senderId: userId,
       };
 
       await handler(messageCtx);
@@ -523,7 +523,7 @@ export class TelegramPlatform implements MessagingPlatform {
       return `${PLATFORM_PREFIX}${senderId}`;
     }
     if (!this.#ownerIds.includes(senderId)) {
-      logger.warn({senderId, ownerIds: this.#ownerIds}, 'Ignoring unauthorized Telegram update');
+      logger.warn({ownerIds: this.#ownerIds, senderId}, 'Ignoring unauthorized Telegram update');
       return null;
     }
     return `${PLATFORM_PREFIX}${senderId}`;
@@ -543,7 +543,7 @@ export class TelegramPlatform implements MessagingPlatform {
       }
 
       const rows: InlineButton[][] = available.map(name => [
-        {text: name, callback_data: `${REPORT_CALLBACK_PREFIX}${name}`},
+        {callback_data: `${REPORT_CALLBACK_PREFIX}${name}`, text: name},
       ]);
 
       await ctx.reply('Select a report to run:', inlineKeyboard(rows));
@@ -576,8 +576,8 @@ export class TelegramPlatform implements MessagingPlatform {
 
         const rows: InlineButton[][] = userAccounts.map(acc => [
           {
-            text: `${acc.name} (${acc.exchange}${acc.isPaper ? ' paper' : ''})`,
             callback_data: `${ACCOUNT_CALLBACK_PREFIX}${acc.id}:${reportName}`,
+            text: `${acc.name} (${acc.exchange}${acc.isPaper ? ' paper' : ''})`,
           },
         ]);
 
@@ -588,8 +588,8 @@ export class TelegramPlatform implements MessagingPlatform {
       await ctx.editMessageText(
         `Report: ${reportName}\nRun once or schedule recurring?`,
         inlineKeyboard([
-          [{text: 'Run once', callback_data: `${MODE_CALLBACK_PREFIX}once:${reportName}`}],
-          [{text: 'Schedule recurring', callback_data: `${MODE_CALLBACK_PREFIX}schedule:${reportName}`}],
+          [{callback_data: `${MODE_CALLBACK_PREFIX}once:${reportName}`, text: 'Run once'}],
+          [{callback_data: `${MODE_CALLBACK_PREFIX}schedule:${reportName}`, text: 'Schedule recurring'}],
         ])
       );
     });
@@ -627,8 +627,8 @@ export class TelegramPlatform implements MessagingPlatform {
       await ctx.editMessageText(
         `Report: ${reportName} (account ${accountId})\nRun once or schedule recurring?`,
         inlineKeyboard([
-          [{text: 'Run once', callback_data: `${MODE_CALLBACK_PREFIX}once:${reportWithAccount}`}],
-          [{text: 'Schedule recurring', callback_data: `${MODE_CALLBACK_PREFIX}schedule:${reportWithAccount}`}],
+          [{callback_data: `${MODE_CALLBACK_PREFIX}once:${reportWithAccount}`, text: 'Run once'}],
+          [{callback_data: `${MODE_CALLBACK_PREFIX}schedule:${reportWithAccount}`, text: 'Schedule recurring'}],
         ])
       );
     });
@@ -676,14 +676,14 @@ export class TelegramPlatform implements MessagingPlatform {
         `Report: ${validation.reportName}\nSelect interval:`,
         inlineKeyboard([
           [
-            {text: '1m', callback_data: `${INTERVAL_CALLBACK_PREFIX}1m:${reportInput}`},
-            {text: '1h', callback_data: `${INTERVAL_CALLBACK_PREFIX}1h:${reportInput}`},
-            {text: '6h', callback_data: `${INTERVAL_CALLBACK_PREFIX}6h:${reportInput}`},
+            {callback_data: `${INTERVAL_CALLBACK_PREFIX}1m:${reportInput}`, text: '1m'},
+            {callback_data: `${INTERVAL_CALLBACK_PREFIX}1h:${reportInput}`, text: '1h'},
+            {callback_data: `${INTERVAL_CALLBACK_PREFIX}6h:${reportInput}`, text: '6h'},
           ],
           [
-            {text: '12h', callback_data: `${INTERVAL_CALLBACK_PREFIX}12h:${reportInput}`},
-            {text: '1d', callback_data: `${INTERVAL_CALLBACK_PREFIX}1d:${reportInput}`},
-            {text: '1w', callback_data: `${INTERVAL_CALLBACK_PREFIX}1w:${reportInput}`},
+            {callback_data: `${INTERVAL_CALLBACK_PREFIX}12h:${reportInput}`, text: '12h'},
+            {callback_data: `${INTERVAL_CALLBACK_PREFIX}1d:${reportInput}`, text: '1d'},
+            {callback_data: `${INTERVAL_CALLBACK_PREFIX}1w:${reportInput}`, text: '1w'},
           ],
         ])
       );
@@ -745,15 +745,15 @@ export class TelegramPlatform implements MessagingPlatform {
     const accountIdStr = parts[1];
 
     if (!this.#isKnownReport(reportName)) {
-      return {ok: false, message: `Unknown report "${reportName}".`};
+      return {message: `Unknown report "${reportName}".`, ok: false};
     }
 
     if (accountIdStr !== undefined) {
       const accountId = Number.parseInt(accountIdStr, 10);
       if (!Number.isFinite(accountId) || !Account.findByUserIdAndId(userId, accountId)) {
-        return {ok: false, message: 'Account not found.'};
+        return {message: 'Account not found.', ok: false};
       }
-      return {ok: true, reportName, accountId};
+      return {accountId, ok: true, reportName};
     }
 
     return {ok: true, reportName};
@@ -766,7 +766,7 @@ export class TelegramPlatform implements MessagingPlatform {
         return;
       }
       const activeBefore = Object.keys(ctx.conversation.active());
-      logger.info({commandName, conversationId, activeBefore}, 'wizard command invoked');
+      logger.info({activeBefore, commandName, conversationId}, 'wizard command invoked');
       try {
         /*
          * Auto-cancel any wizard already in progress for this user. Only
@@ -780,7 +780,7 @@ export class TelegramPlatform implements MessagingPlatform {
         await ctx.conversation.enter(conversationId, {userId});
       } catch (error) {
         const message = error instanceof Error ? error.message : 'Unknown error';
-        logger.error({message, conversationId}, 'wizard entry failed');
+        logger.error({conversationId, message}, 'wizard entry failed');
         await ctx.reply('Could not start the wizard — please try again in a moment.');
       }
     });

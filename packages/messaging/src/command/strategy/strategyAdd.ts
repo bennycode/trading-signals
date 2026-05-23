@@ -51,9 +51,9 @@ export const strategyAdd = async (request: string, userId: string): Promise<Stra
     const pairString = pair.asString(',');
     const row = Strategy.create({
       accountId: account.id,
-      strategyName,
       config: configJson,
       pair: pairString,
+      strategyName,
     });
 
     return {

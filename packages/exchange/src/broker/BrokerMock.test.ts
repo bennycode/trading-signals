@@ -7,8 +7,8 @@ import {ms} from 'ms';
 
 class TestExchangeMock extends BrokerMock {
   static readonly TEST_FEE_RATES: FeeRate = {
-    [OrderType.MARKET]: new Big(0.0025),
     [OrderType.LIMIT]: new Big(0.0015),
+    [OrderType.MARKET]: new Big(0.0025),
   };
 
   static readonly TEST_TRADING_RULES = {
@@ -48,11 +48,11 @@ function createCandle(overrides: Partial<Candle> & {open: string; close: string}
   const closeNum = parseFloat(overrides.close);
   return {
     base: 'BTC',
+    close: overrides.close,
     counter: 'USD',
     high: overrides.high ?? String(Math.max(openNum, closeNum)),
     low: overrides.low ?? String(Math.min(openNum, closeNum)),
     open: overrides.open,
-    close: overrides.close,
     openTimeInISO: overrides.openTimeInISO ?? '2025-01-01T00:00:00.000Z',
     openTimeInMillis: overrides.openTimeInMillis ?? 1735689600000,
     sizeInMillis: overrides.sizeInMillis ?? 60000,
@@ -75,7 +75,7 @@ describe('BrokerMock', () => {
       const exchange = createExchange('0', '10000');
 
       // Process first candle to set current state
-      exchange.processCandle(createCandle({open: '100', close: '100'}));
+      exchange.processCandle(createCandle({close: '100', open: '100'}));
 
       // Place market buy order
       await exchange.placeMarketOrder(pair, {
@@ -86,7 +86,7 @@ describe('BrokerMock', () => {
 
       // Process next candle — order should fill at this candle's open
       const fills = exchange.processCandle(
-        createCandle({open: '105', close: '110', openTimeInISO: '2025-01-01T00:01:00.000Z'})
+        createCandle({close: '110', open: '105', openTimeInISO: '2025-01-01T00:01:00.000Z'})
       );
 
       expect(fills).toHaveLength(1);
@@ -97,7 +97,7 @@ describe('BrokerMock', () => {
     it('fills market sell order at the next candle open price', async () => {
       const exchange = createExchange('5', '0');
 
-      exchange.processCandle(createCandle({open: '100', close: '100'}));
+      exchange.processCandle(createCandle({close: '100', open: '100'}));
 
       await exchange.placeMarketOrder(pair, {
         side: OrderSide.SELL,
@@ -106,7 +106,7 @@ describe('BrokerMock', () => {
       });
 
       const fills = exchange.processCandle(
-        createCandle({open: '98', close: '95', openTimeInISO: '2025-01-01T00:01:00.000Z'})
+        createCandle({close: '95', open: '98', openTimeInISO: '2025-01-01T00:01:00.000Z'})
       );
 
       expect(fills).toHaveLength(1);
@@ -119,17 +119,17 @@ describe('BrokerMock', () => {
     it('fills limit buy when candle low reaches the limit price', async () => {
       const exchange = createExchange('0', '10000');
 
-      exchange.processCandle(createCandle({open: '100', close: '100'}));
+      exchange.processCandle(createCandle({close: '100', open: '100'}));
 
       await exchange.placeLimitOrder(pair, {
+        price: '95',
         side: OrderSide.BUY,
         size: '1',
-        price: '95',
       });
 
       // Next candle: open=98, low=93 — limit price 95 is reachable
       const fills = exchange.processCandle(
-        createCandle({open: '98', close: '96', low: '93', high: '99', openTimeInISO: '2025-01-01T00:01:00.000Z'})
+        createCandle({close: '96', high: '99', low: '93', open: '98', openTimeInISO: '2025-01-01T00:01:00.000Z'})
       );
 
       expect(fills).toHaveLength(1);
@@ -140,17 +140,17 @@ describe('BrokerMock', () => {
     it('stays pending when limit buy price is not reached', async () => {
       const exchange = createExchange('0', '10000');
 
-      exchange.processCandle(createCandle({open: '100', close: '100'}));
+      exchange.processCandle(createCandle({close: '100', open: '100'}));
 
       await exchange.placeLimitOrder(pair, {
+        price: '90',
         side: OrderSide.BUY,
         size: '1',
-        price: '90',
       });
 
       // Next candle: low=92, doesn't reach limit price of 90
       const fills = exchange.processCandle(
-        createCandle({open: '98', close: '96', low: '92', high: '99', openTimeInISO: '2025-01-01T00:01:00.000Z'})
+        createCandle({close: '96', high: '99', low: '92', open: '98', openTimeInISO: '2025-01-01T00:01:00.000Z'})
       );
 
       expect(fills).toHaveLength(0);
@@ -160,17 +160,17 @@ describe('BrokerMock', () => {
     it('gives price improvement when candle opens below limit buy price', async () => {
       const exchange = createExchange('0', '10000');
 
-      exchange.processCandle(createCandle({open: '500', close: '500'}));
+      exchange.processCandle(createCandle({close: '500', open: '500'}));
 
       await exchange.placeLimitOrder(pair, {
+        price: '500',
         side: OrderSide.BUY,
         size: '1',
-        price: '500',
       });
 
       // Next candle opens at 360, well below limit of 500 → price improvement
       const fills = exchange.processCandle(
-        createCandle({open: '360', close: '380', low: '350', high: '400', openTimeInISO: '2025-01-01T00:01:00.000Z'})
+        createCandle({close: '380', high: '400', low: '350', open: '360', openTimeInISO: '2025-01-01T00:01:00.000Z'})
       );
 
       expect(fills).toHaveLength(1);
@@ -180,17 +180,17 @@ describe('BrokerMock', () => {
     it('fills limit sell when candle high reaches the limit price', async () => {
       const exchange = createExchange('5', '0');
 
-      exchange.processCandle(createCandle({open: '100', close: '100'}));
+      exchange.processCandle(createCandle({close: '100', open: '100'}));
 
       await exchange.placeLimitOrder(pair, {
+        price: '105',
         side: OrderSide.SELL,
         size: '2',
-        price: '105',
       });
 
       // Next candle: open=102, high=108 — limit price 105 is reachable
       const fills = exchange.processCandle(
-        createCandle({open: '102', close: '106', low: '101', high: '108', openTimeInISO: '2025-01-01T00:01:00.000Z'})
+        createCandle({close: '106', high: '108', low: '101', open: '102', openTimeInISO: '2025-01-01T00:01:00.000Z'})
       );
 
       expect(fills).toHaveLength(1);
@@ -201,17 +201,17 @@ describe('BrokerMock', () => {
     it('gives price improvement when candle opens above limit sell price', async () => {
       const exchange = createExchange('5', '0');
 
-      exchange.processCandle(createCandle({open: '100', close: '100'}));
+      exchange.processCandle(createCandle({close: '100', open: '100'}));
 
       await exchange.placeLimitOrder(pair, {
+        price: '400',
         side: OrderSide.SELL,
         size: '2',
-        price: '400',
       });
 
       // Next candle opens at 450, above limit of 400 → price improvement
       const fills = exchange.processCandle(
-        createCandle({open: '450', close: '430', low: '420', high: '460', openTimeInISO: '2025-01-01T00:01:00.000Z'})
+        createCandle({close: '430', high: '460', low: '420', open: '450', openTimeInISO: '2025-01-01T00:01:00.000Z'})
       );
 
       expect(fills).toHaveLength(1);
@@ -223,12 +223,12 @@ describe('BrokerMock', () => {
     it('puts counter on hold when placing a buy order', async () => {
       const exchange = createExchange('0', '10000');
 
-      exchange.processCandle(createCandle({open: '100', close: '100'}));
+      exchange.processCandle(createCandle({close: '100', open: '100'}));
 
       await exchange.placeLimitOrder(pair, {
+        price: '100',
         side: OrderSide.BUY,
         size: '1',
-        price: '100',
       });
 
       const balances = await exchange.listBalances();
@@ -241,12 +241,12 @@ describe('BrokerMock', () => {
     it('puts base on hold when placing a sell order', async () => {
       const exchange = createExchange('5', '0');
 
-      exchange.processCandle(createCandle({open: '100', close: '100'}));
+      exchange.processCandle(createCandle({close: '100', open: '100'}));
 
       await exchange.placeLimitOrder(pair, {
+        price: '100',
         side: OrderSide.SELL,
         size: '2',
-        price: '100',
       });
 
       const balances = await exchange.listBalances();
@@ -258,12 +258,12 @@ describe('BrokerMock', () => {
     it('releases hold on cancel', async () => {
       const exchange = createExchange('5', '0');
 
-      exchange.processCandle(createCandle({open: '100', close: '100'}));
+      exchange.processCandle(createCandle({close: '100', open: '100'}));
 
       const order = await exchange.placeLimitOrder(pair, {
+        price: '100',
         side: OrderSide.SELL,
         size: '2',
-        price: '100',
       });
 
       await exchange.cancelOrderById(pair, order.id);
@@ -277,14 +277,14 @@ describe('BrokerMock', () => {
     it('rejects orders with insufficient balance', async () => {
       const exchange = createExchange('0', '50');
 
-      exchange.processCandle(createCandle({open: '100', close: '100'}));
+      exchange.processCandle(createCandle({close: '100', open: '100'}));
 
       // Trying to buy 1 BTC at $100 = $100 needed, but only $50 available
       await expect(
         exchange.placeLimitOrder(pair, {
+          price: '100',
           side: OrderSide.BUY,
           size: '1',
-          price: '100',
         })
       ).rejects.toThrow('Insufficient');
     });
@@ -294,16 +294,16 @@ describe('BrokerMock', () => {
     it('deducts fees on fill', async () => {
       const exchange = createExchange('5', '0');
 
-      exchange.processCandle(createCandle({open: '100', close: '100'}));
+      exchange.processCandle(createCandle({close: '100', open: '100'}));
 
       await exchange.placeLimitOrder(pair, {
+        price: '100',
         side: OrderSide.SELL,
         size: '1',
-        price: '100',
       });
 
       const fills = exchange.processCandle(
-        createCandle({open: '100', close: '100', low: '100', high: '100', openTimeInISO: '2025-01-01T00:01:00.000Z'})
+        createCandle({close: '100', high: '100', low: '100', open: '100', openTimeInISO: '2025-01-01T00:01:00.000Z'})
       );
 
       expect(fills).toHaveLength(1);
@@ -322,14 +322,14 @@ describe('BrokerMock', () => {
       const exchange = createExchange('5', '0');
 
       // Process initial candle
-      const candle1 = createCandle({open: '100', close: '100', low: '90', high: '110'});
+      const candle1 = createCandle({close: '100', high: '110', low: '90', open: '100'});
       exchange.processCandle(candle1);
 
       // Place sell order — the current candle range would match, but it shouldn't
       await exchange.placeLimitOrder(pair, {
+        price: '100',
         side: OrderSide.SELL,
         size: '1',
-        price: '100',
       });
 
       /*
@@ -340,7 +340,7 @@ describe('BrokerMock', () => {
 
       // Only fills on the NEXT candle
       const fills = exchange.processCandle(
-        createCandle({open: '100', close: '100', low: '100', high: '100', openTimeInISO: '2025-01-01T00:01:00.000Z'})
+        createCandle({close: '100', high: '100', low: '100', open: '100', openTimeInISO: '2025-01-01T00:01:00.000Z'})
       );
 
       expect(fills).toHaveLength(1);

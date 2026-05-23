@@ -5,24 +5,24 @@ describe('parseThreshold', () => {
   describe('percent thresholds', () => {
     it('parses positive percent', () => {
       expect(parseThreshold('+5%')).toEqual({
-        type: 'percent',
         direction: 'up',
+        type: 'percent',
         value: 5,
       });
     });
 
     it('parses negative percent', () => {
       expect(parseThreshold('-10%')).toEqual({
-        type: 'percent',
         direction: 'down',
+        type: 'percent',
         value: 10,
       });
     });
 
     it('parses decimal percent', () => {
       expect(parseThreshold('+2.5%')).toEqual({
-        type: 'percent',
         direction: 'up',
+        type: 'percent',
         value: 2.5,
       });
     });
@@ -31,24 +31,24 @@ describe('parseThreshold', () => {
   describe('absolute thresholds', () => {
     it('parses positive absolute', () => {
       expect(parseThreshold('+100')).toEqual({
-        type: 'absolute',
         direction: 'up',
+        type: 'absolute',
         value: 100,
       });
     });
 
     it('parses negative absolute', () => {
       expect(parseThreshold('-50')).toEqual({
-        type: 'absolute',
         direction: 'down',
+        type: 'absolute',
         value: 50,
       });
     });
 
     it('parses decimal absolute', () => {
       expect(parseThreshold('-50.5')).toEqual({
-        type: 'absolute',
         direction: 'down',
+        type: 'absolute',
         value: 50.5,
       });
     });
@@ -57,8 +57,8 @@ describe('parseThreshold', () => {
   describe('whitespace handling', () => {
     it('trims leading and trailing whitespace', () => {
       expect(parseThreshold('  +5%  ')).toEqual({
-        type: 'percent',
         direction: 'up',
+        type: 'percent',
         value: 5,
       });
     });

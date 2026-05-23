@@ -36,8 +36,8 @@ export class Trading212Broker extends Broker implements MarketDataSource {
    * @see https://helpcentre.trading212.com/hc/en-us/articles/360008842317
    */
   static readonly DEFAULT_FEE_RATES: FeeRate = {
-    [OrderType.MARKET]: new Big(0),
     [OrderType.LIMIT]: new Big(0),
+    [OrderType.MARKET]: new Big(0),
   };
 
   /**

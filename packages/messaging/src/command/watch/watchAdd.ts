@@ -73,13 +73,13 @@ export const watchAdd = async (request: string, userId: string): Promise<WatchRe
     // Create watch
     const createdWatch = Watch.create({
       accountId,
-      pair: pairPart,
-      intervalMs,
-      thresholdType: threshold.type,
-      thresholdDirection: threshold.direction,
-      thresholdValue: threshold.value.toString(),
-      baselinePrice: baselinePrice.toString(),
       alertPrice: alertPrice.toString(),
+      baselinePrice: baselinePrice.toString(),
+      intervalMs,
+      pair: pairPart,
+      thresholdDirection: threshold.direction,
+      thresholdType: threshold.type,
+      thresholdValue: threshold.value.toString(),
     });
 
     return {

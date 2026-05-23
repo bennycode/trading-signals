@@ -2,13 +2,12 @@ import {sqliteTable, integer, text, type AnySQLiteColumn} from 'drizzle-orm/sqli
 import {sql} from 'drizzle-orm';
 
 export const accounts = sqliteTable('accounts', {
-  id: integer('id').primaryKey({autoIncrement: true}),
-  userId: text('userId').notNull(),
-  name: text('name').notNull().unique(),
-  exchange: text('exchange').notNull(),
-  isPaper: integer('isPaper', {mode: 'boolean'}).notNull().default(true),
   apiKey: text('apiKey').notNull(),
   apiSecret: text('apiSecret').notNull(),
+  createdAt: text('createdAt').default('CURRENT_TIMESTAMP'),
+  exchange: text('exchange').notNull(),
+  id: integer('id').primaryKey({autoIncrement: true}),
+  isPaper: integer('isPaper', {mode: 'boolean'}).notNull().default(true),
   /**
    * Optional reference to another account whose credentials supply market data for this
    * one. Required for brokers without their own data feed (e.g. Trading212, which reuses
@@ -18,57 +17,58 @@ export const accounts = sqliteTable('accounts', {
   marketDataAccountId: integer('marketDataAccountId').references((): AnySQLiteColumn => accounts.id, {
     onDelete: 'set null',
   }),
-  createdAt: text('createdAt').default('CURRENT_TIMESTAMP'),
+  name: text('name').notNull().unique(),
   updatedAt: text('updatedAt').default('CURRENT_TIMESTAMP'),
+  userId: text('userId').notNull(),
 });
 
 export type Account = typeof accounts.$inferSelect;
 export type NewAccount = typeof accounts.$inferInsert;
 
 export const watches = sqliteTable('watches', {
-  id: integer('id').primaryKey({autoIncrement: true}),
   accountId: integer('accountId')
     .notNull()
     .references(() => accounts.id, {onDelete: 'cascade'}),
-  pair: text('pair').notNull(),
-  intervalMs: integer('intervalMs').notNull(),
-  thresholdType: text('thresholdType', {enum: ['percent', 'absolute']}).notNull(),
-  thresholdDirection: text('thresholdDirection', {enum: ['up', 'down']}).notNull(),
-  thresholdValue: text('thresholdValue').notNull(),
-  baselinePrice: text('baselinePrice').notNull(),
   alertPrice: text('alertPrice').notNull(),
+  baselinePrice: text('baselinePrice').notNull(),
   createdAt: text('createdAt').default(sql`(CURRENT_TIMESTAMP)`),
+  id: integer('id').primaryKey({autoIncrement: true}),
+  intervalMs: integer('intervalMs').notNull(),
+  pair: text('pair').notNull(),
+  thresholdDirection: text('thresholdDirection', {enum: ['up', 'down']}).notNull(),
+  thresholdType: text('thresholdType', {enum: ['percent', 'absolute']}).notNull(),
+  thresholdValue: text('thresholdValue').notNull(),
 });
 
 export type Watch = typeof watches.$inferSelect;
 export type NewWatch = typeof watches.$inferInsert;
 
 export const strategies = sqliteTable('strategies', {
-  id: integer('id').primaryKey({autoIncrement: true}),
   accountId: integer('accountId')
     .notNull()
     .references(() => accounts.id, {onDelete: 'cascade'}),
-  strategyName: text('strategyName').notNull(),
   config: text('config').notNull(),
+  createdAt: text('createdAt').default(sql`(CURRENT_TIMESTAMP)`),
+  id: integer('id').primaryKey({autoIncrement: true}),
   pair: text('pair').notNull(),
   state: text('state'),
-  createdAt: text('createdAt').default(sql`(CURRENT_TIMESTAMP)`),
+  strategyName: text('strategyName').notNull(),
 });
 
 export type StrategyRow = typeof strategies.$inferSelect;
 export type NewStrategyRow = typeof strategies.$inferInsert;
 
 export const reports = sqliteTable('reports', {
-  id: integer('id').primaryKey({autoIncrement: true}),
-  userId: text('userId').notNull(),
   accountId: integer('accountId')
     .notNull()
     .references(() => accounts.id, {onDelete: 'cascade'}),
-  reportName: text('reportName').notNull(),
   config: text('config').notNull(),
+  createdAt: text('createdAt').default(sql`(CURRENT_TIMESTAMP)`),
+  id: integer('id').primaryKey({autoIncrement: true}),
   intervalMs: integer('intervalMs'),
   lastRunAt: integer('lastRunAt'),
-  createdAt: text('createdAt').default(sql`(CURRENT_TIMESTAMP)`),
+  reportName: text('reportName').notNull(),
+  userId: text('userId').notNull(),
 });
 
 export type ReportRow = typeof reports.$inferSelect;

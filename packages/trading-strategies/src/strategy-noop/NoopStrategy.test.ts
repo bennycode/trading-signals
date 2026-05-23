@@ -7,11 +7,11 @@ import {NoopStrategy} from './NoopStrategy.js';
 function createCandle(): Candle {
   return {
     base: 'BTC',
-    counter: 'USD',
-    open: '100',
     close: '101',
+    counter: 'USD',
     high: '102',
     low: '99',
+    open: '100',
     openTimeInISO: '2025-01-01T00:00:00.000Z',
     openTimeInMillis: 1735689600000,
     sizeInMillis: 60000,
@@ -23,6 +23,10 @@ function createState(): TradingSessionState {
   return {
     baseBalance: new Big(0),
     counterBalance: new Big(1000),
+    feeRates: {
+      [OrderType.LIMIT]: new Big('0.001'),
+      [OrderType.MARKET]: new Big('0.002'),
+    },
     tradingRules: {
       base_increment: '0.01',
       base_max_size: '10000',
@@ -30,10 +34,6 @@ function createState(): TradingSessionState {
       counter_increment: '0.01',
       counter_min_size: '1',
       pair: new TradingPair('BTC', 'USD'),
-    },
-    feeRates: {
-      [OrderType.LIMIT]: new Big('0.001'),
-      [OrderType.MARKET]: new Big('0.002'),
     },
   };
 }

@@ -42,9 +42,9 @@ export async function accountEdit(request: string, userId: string): Promise<Acco
 
     await getAuthenticatedBrokerClient(
       {
-        exchangeId: account.exchange,
         apiKey,
         apiSecret,
+        exchangeId: account.exchange,
         isPaper: account.isPaper,
       },
       marketData ? {marketData} : undefined
@@ -53,8 +53,8 @@ export async function accountEdit(request: string, userId: string): Promise<Acco
     Account.update(accountId, {apiKey, apiSecret});
 
     return {
-      message: `Account "${account.name}" (ID: ${accountId}) updated successfully. Connection test passed.`,
       accountId,
+      message: `Account "${account.name}" (ID: ${accountId}) updated successfully. Connection test passed.`,
     };
   } catch (error) {
     if (error instanceof Error) {

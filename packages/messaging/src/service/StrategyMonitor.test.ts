@@ -2,16 +2,25 @@ import {describe, it, expect, vi, beforeEach} from 'vitest';
 import type {MessagingPlatform} from '../platform/MessagingPlatform.js';
 import type {StrategyAttributes} from '../database/models/Strategy.js';
 
-const {mockSession, mockStrategy, TradingSessionMock, mockAccountModel, mockStrategyModel} = vi.hoisted(() => {
-  const session = {start: vi.fn(), stop: vi.fn(), on: vi.fn()};
+const {mockAccountModel, mockSession, mockStrategy, mockStrategyModel, TradingSessionMock} = vi.hoisted(() => {
+  const session = {on: vi.fn(), start: vi.fn(), stop: vi.fn()};
   return {
+    mockAccountModel: {findByPk: vi.fn()},
     mockSession: session,
     mockStrategy: {
-      restoreState: vi.fn(),
-      onSave: undefined as (() => void) | undefined,
-      onFinish: undefined as (() => void) | undefined,
-      state: {position: 'long'},
       config: {threshold: 10},
+      onFinish: undefined as (() => void) | undefined,
+      onSave: undefined as (() => void) | undefined,
+      restoreState: vi.fn(),
+      state: {position: 'long'},
+    },
+    mockStrategyModel: {
+      destroy: vi.fn(),
+      findAllOrderedById: vi.fn(() => []),
+      findByAccountIds: vi.fn(),
+      findByPk: vi.fn(),
+      updateConfig: vi.fn(),
+      updateState: vi.fn(),
     },
     /*
      * Must stay a regular function: the code under test calls `new TradingSession(...)`,
@@ -21,22 +30,13 @@ const {mockSession, mockStrategy, TradingSessionMock, mockAccountModel, mockStra
     TradingSessionMock: vi.fn(function () {
       return session;
     }),
-    mockAccountModel: {findByPk: vi.fn()},
-    mockStrategyModel: {
-      findByAccountIds: vi.fn(),
-      findByPk: vi.fn(),
-      findAllOrderedById: vi.fn(() => []),
-      updateState: vi.fn(),
-      updateConfig: vi.fn(),
-      destroy: vi.fn(),
-    },
   };
 });
 
 vi.mock('@typedtrader/exchange', () => ({
-  TradingSession: TradingSessionMock,
-  TradingPair: {fromString: vi.fn(() => ({base: 'BTC', counter: 'USD'}))},
   getBrokerClient: vi.fn(() => ({})),
+  TradingPair: {fromString: vi.fn(() => ({base: 'BTC', counter: 'USD'}))},
+  TradingSession: TradingSessionMock,
 }));
 
 vi.mock('trading-strategies', () => ({
@@ -51,29 +51,29 @@ vi.mock('../database/models/Strategy.js', () => ({
   Strategy: mockStrategyModel,
 }));
 
-const {StrategyMonitor, formatStrategyMessage} = await import('./StrategyMonitor.js');
+const {formatStrategyMessage, StrategyMonitor} = await import('./StrategyMonitor.js');
 const {PlatformDispatcher} = await import('./PlatformDispatcher.js');
 
 function createMockPlatform(): MessagingPlatform {
   return {
-    start: vi.fn(),
-    stop: vi.fn(),
-    sendMessage: vi.fn(),
-    registerCommand: vi.fn(),
     commandList: [],
     platformInfo: {botAddress: '', sdkVersion: ''},
+    registerCommand: vi.fn(),
+    sendMessage: vi.fn(),
+    start: vi.fn(),
+    stop: vi.fn(),
   };
 }
 
 function createStrategyRow(overrides: Partial<StrategyAttributes> = {}): StrategyAttributes {
   return {
-    id: 1,
     accountId: 7,
-    strategyName: '@typedtrader/strategy-trailing-stop',
-    pair: 'BTC,USD',
     config: '{"threshold":10}',
-    state: null,
     createdAt: null,
+    id: 1,
+    pair: 'BTC,USD',
+    state: null,
+    strategyName: '@typedtrader/strategy-trailing-stop',
     ...overrides,
   };
 }
@@ -118,9 +118,9 @@ describe('StrategyMonitor.restartForAccount', () => {
     mockStrategy.state = {position: 'long'};
     mockStrategy.config = {threshold: 10};
     mockAccountModel.findByPk.mockReturnValue({
-      exchange: 'alpaca',
       apiKey: 'key',
       apiSecret: 'secret',
+      exchange: 'alpaca',
       isPaper: true,
       userId: 'telegram:42',
     });

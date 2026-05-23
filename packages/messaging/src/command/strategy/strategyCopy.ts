@@ -66,9 +66,9 @@ export const strategyCopy = async (request: string, userId: string): Promise<Str
     const pairString = pair.asString(',');
     const row = Strategy.create({
       accountId: targetAccount.id,
-      strategyName: source.strategyName,
       config: source.config,
       pair: pairString,
+      strategyName: source.strategyName,
     });
 
     return {

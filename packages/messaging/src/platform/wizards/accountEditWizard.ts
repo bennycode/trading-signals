@@ -33,8 +33,8 @@ export function makeAccountEditWizard(deps: {
 
     const accountButtons: InlineButton[][] = accounts.map(account => [
       {
-        text: `${account.name} (${account.exchange}, ${account.isPaper ? 'Paper' : 'Live'})`,
         callback_data: `accountedit:acc:${account.id}`,
+        text: `${account.name} (${account.exchange}, ${account.isPaper ? 'Paper' : 'Live'})`,
       },
     ]);
     await ctx.reply('Pick an account to update:', inlineKeyboard(accountButtons));
@@ -75,8 +75,8 @@ export function makeAccountEditWizard(deps: {
     }
 
     await deleteSecretMessages(conversation, ctx, 'accountEdit', [
-      {chatId: apiKeyChatId, messageId: apiKeyMessageId, label: 'API key'},
-      {chatId: apiSecretChatId, messageId: apiSecretMessageId, label: 'API secret'},
+      {chatId: apiKeyChatId, label: 'API key', messageId: apiKeyMessageId},
+      {chatId: apiSecretChatId, label: 'API secret', messageId: apiSecretMessageId},
     ]);
 
     await ctx.reply('Validating credentials…');
@@ -92,15 +92,15 @@ export function makeAccountEditWizard(deps: {
           const source = Account.findByUserIdAndId(args.userId, account.marketDataAccountId);
           if (!source) {
             return {
-              ok: false as const,
               error: `Market-data account (ID: ${account.marketDataAccountId}) was not found.`,
+              ok: false as const,
             };
           }
           marketData = buildMarketDataFromAccount(source);
         }
 
         await getAuthenticatedBrokerClient(
-          {exchangeId: account.exchange, apiKey, apiSecret, isPaper: account.isPaper},
+          {apiKey, apiSecret, exchangeId: account.exchange, isPaper: account.isPaper},
           marketData ? {marketData} : undefined
         );
         Account.update(account.id, {apiKey, apiSecret});
@@ -108,7 +108,7 @@ export function makeAccountEditWizard(deps: {
       } catch (error) {
         const message = error instanceof Error ? error.message : 'Unknown error';
         logger.error({err: error}, 'accountEdit wizard failed');
-        return {ok: false as const, error: message};
+        return {error: message, ok: false as const};
       }
     });
 

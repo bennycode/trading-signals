@@ -42,18 +42,18 @@ export async function accountAdd(request: string, userId: string) {
     }
 
     await getAuthenticatedBrokerClient(
-      {exchangeId: exchange, apiKey, apiSecret, isPaper},
+      {apiKey, apiSecret, exchangeId: exchange, isPaper},
       marketData ? {marketData} : undefined
     );
 
     const account = Account.create({
-      userId,
-      name,
-      exchange,
-      isPaper,
       apiKey,
       apiSecret,
+      exchange,
+      isPaper,
       marketDataAccountId,
+      name,
+      userId,
     });
 
     return `Account created successfully with ID "${account.id}". Connection test passed.`;

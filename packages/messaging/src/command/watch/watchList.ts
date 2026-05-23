@@ -13,7 +13,7 @@ export const watchList = async (userId: string) => {
     }
 
     return formatTelegramTable(`Active watches: ${watches.length}`, watches, [
-      {header: 'ID', align: 'right', value: w => String(w.id)},
+      {align: 'right', header: 'ID', value: w => String(w.id)},
       {header: 'Pair', value: w => w.pair},
       {header: 'Baseline', value: w => w.baselinePrice},
       {

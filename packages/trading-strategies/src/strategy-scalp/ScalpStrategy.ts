@@ -9,13 +9,13 @@ import {positiveNumberString} from '../util/validators.js';
 import {suggestScalpOffset} from './suggestScalpOffset.js';
 
 export const ScalpSchema = ProtectedStrategySchema.extend({
+  /** EMA period used for the initial entry filter. Default: 5. */
+  emaPeriod: z.number().int().positive().optional().default(5),
   /**
    * Nominal price offset for each leg of the scalp (e.g., "0.10" means sell at fill+0.10, re-buy at fill-0.10).
    *  When omitted, the offset is auto-computed from historical candles passed to `init()`.
    */
   offset: positiveNumberString.optional(),
-  /** EMA period used for the initial entry filter. Default: 5. */
-  emaPeriod: z.number().int().positive().optional().default(5),
 });
 
 export type ScalpConfig = z.infer<typeof ScalpSchema>;
@@ -39,7 +39,7 @@ export class ScalpStrategy extends ProtectedStrategy {
   constructor(config: ScalpConfig) {
     super({
       config,
-      state: {phase: 'entry', lastFillPrice: null, lastFillSide: null},
+      state: {lastFillPrice: null, lastFillSide: null, phase: 'entry'},
     });
     this.#ema = new EMA(this.#config.emaPeriod);
   }
@@ -96,7 +96,7 @@ export class ScalpStrategy extends ProtectedStrategy {
         let b = dayMap.get(day);
 
         if (!b) {
-          b = {high: -Infinity, low: Infinity, close: 0};
+          b = {close: 0, high: -Infinity, low: Infinity};
           dayMap.set(day, b);
         }
 
@@ -208,11 +208,11 @@ export class ScalpStrategy extends ProtectedStrategy {
     this.#state.phase = 'waitingForFill';
 
     return {
-      side: OrderSide.BUY,
-      type: OrderType.MARKET,
       amount: AllAvailableAmount,
       amountIn: 'counter',
       reason: `Entry: price ${closePrice.toFixed(2)} above EMA(${this.#ema.interval}) ${emaValue.toFixed(2)}`,
+      side: OrderSide.BUY,
+      type: OrderType.MARKET,
     };
   }
 
@@ -231,12 +231,12 @@ export class ScalpStrategy extends ProtectedStrategy {
       const sellPrice = lastFillPrice.plus(offset);
 
       return {
-        side: OrderSide.SELL,
-        type: OrderType.LIMIT,
         amount: AllAvailableAmount,
         amountIn: 'base',
         price: sellPrice,
         reason: `Scalp sell: fill ${lastFillPrice.toFixed(2)} + offset ${offset.toFixed(2)}`,
+        side: OrderSide.SELL,
+        type: OrderType.LIMIT,
       };
     }
 
@@ -244,12 +244,12 @@ export class ScalpStrategy extends ProtectedStrategy {
     const buyPrice = lastFillPrice.minus(offset);
 
     return {
-      side: OrderSide.BUY,
-      type: OrderType.LIMIT,
       amount: AllAvailableAmount,
       amountIn: 'base',
       price: buyPrice,
       reason: `Scalp buy: fill ${lastFillPrice.toFixed(2)} - offset ${offset.toFixed(2)}`,
+      side: OrderSide.BUY,
+      type: OrderType.LIMIT,
     };
   }
 }

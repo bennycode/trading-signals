@@ -89,9 +89,9 @@ export function suggestScalpOffset(candles: Candle[], atrPeriod: number = 14): B
 
   for (const candle of effectiveCandles) {
     atr.add({
+      close: parseFloat(candle.close),
       high: parseFloat(candle.high),
       low: parseFloat(candle.low),
-      close: parseFloat(candle.close),
     });
   }
 

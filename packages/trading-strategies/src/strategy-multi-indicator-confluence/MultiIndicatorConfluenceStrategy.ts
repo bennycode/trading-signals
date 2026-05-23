@@ -109,11 +109,11 @@ export class MultiIndicatorConfluenceStrategy extends ProtectedStrategy {
       ].join('; ');
 
       return {
-        side: OrderSide.BUY,
-        type: OrderType.MARKET,
         amount: AllAvailableAmount,
         amountIn: 'counter',
         reason,
+        side: OrderSide.BUY,
+        type: OrderType.MARKET,
       };
     }
 
@@ -127,11 +127,11 @@ export class MultiIndicatorConfluenceStrategy extends ProtectedStrategy {
       ].join('; ');
 
       return {
-        side: OrderSide.SELL,
-        type: OrderType.MARKET,
         amount: AllAvailableAmount,
         amountIn: 'base',
         reason,
+        side: OrderSide.SELL,
+        type: OrderType.MARKET,
       };
     }
   }

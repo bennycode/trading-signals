@@ -88,8 +88,8 @@ export class AlpacaBroker extends Broker implements MarketDataSource {
    * @see https://files.alpaca.markets/disclosures/library/BrokFeeSched.pdf
    */
   static DEFAULT_FEE_RATES: FeeRate = {
-    [OrderType.MARKET]: new Big(0.0025),
     [OrderType.LIMIT]: new Big(0.0015),
+    [OrderType.MARKET]: new Big(0.0025),
   };
 
   /**

@@ -59,7 +59,7 @@ export class CCI extends TrendIndicatorSeries<HighLowClose<number>> {
     return null;
   }
 
-  #cacheTypicalPrice({high, low, close}: HighLowClose<number>, replace: boolean) {
+  #cacheTypicalPrice({close, high, low}: HighLowClose<number>, replace: boolean) {
     const typicalPrice = (high + low + close) / 3;
     pushUpdate(this.#typicalPrices, replace, typicalPrice, this.interval);
     return typicalPrice;

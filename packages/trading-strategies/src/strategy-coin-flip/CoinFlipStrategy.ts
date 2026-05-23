@@ -26,17 +26,17 @@ export class CoinFlipStrategy extends ProtectedStrategy {
     }
 
     const buyMarket: OrderAdvice = {
-      side: OrderSide.BUY,
-      type: OrderType.MARKET,
       amount: AllAvailableAmount,
       amountIn: 'counter',
+      side: OrderSide.BUY,
+      type: OrderType.MARKET,
     };
 
     const sellMarket: OrderAdvice = {
-      side: OrderSide.SELL,
-      type: OrderType.MARKET,
       amount: AllAvailableAmount,
       amountIn: 'base',
+      side: OrderSide.SELL,
+      type: OrderType.MARKET,
     };
 
     /*

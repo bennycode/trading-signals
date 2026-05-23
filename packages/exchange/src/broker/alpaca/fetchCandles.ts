@@ -9,12 +9,12 @@ import {getAlpacaClient} from './getAlpacaClient.js';
 
 const {values} = parseArgs({
   options: {
-    base: {type: 'string', default: 'ETH'},
-    counter: {type: 'string', default: 'USD'},
-    from: {type: 'string', default: '2025-09-11T00:00:00.000Z'},
-    to: {type: 'string', default: '2025-10-20T00:00:00.000Z'},
-    interval: {type: 'string', default: '1d'},
-    output: {type: 'string', short: 'o'},
+    base: {default: 'ETH', type: 'string'},
+    counter: {default: 'USD', type: 'string'},
+    from: {default: '2025-09-11T00:00:00.000Z', type: 'string'},
+    interval: {default: '1d', type: 'string'},
+    output: {short: 'o', type: 'string'},
+    to: {default: '2025-10-20T00:00:00.000Z', type: 'string'},
   },
 });
 

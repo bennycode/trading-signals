@@ -40,6 +40,10 @@ const signalConfig: MultiIndicatorConfluenceConfig = {
 const mockState: TradingSessionState = {
   baseBalance: new Big(0),
   counterBalance: new Big(1000),
+  feeRates: {
+    [OrderType.LIMIT]: new Big('0.0015'),
+    [OrderType.MARKET]: new Big('0.0025'),
+  },
   tradingRules: {
     base_increment: '0.0001',
     base_max_size: '100',
@@ -47,10 +51,6 @@ const mockState: TradingSessionState = {
     counter_increment: '0.01',
     counter_min_size: '1',
     pair: {base: 'BTC', counter: 'USD'} as any,
-  },
-  feeRates: {
-    [OrderType.LIMIT]: new Big('0.0015'),
-    [OrderType.MARKET]: new Big('0.0025'),
   },
 };
 
@@ -103,28 +103,28 @@ describe('MultiIndicatorConfluenceSchema', () => {
 
   it('rejects rsiOversold >= rsiOverbought', () => {
     expect(() =>
-      MultiIndicatorConfluenceSchema.parse({...defaultConfig, rsiOversold: 70, rsiOverbought: 70})
+      MultiIndicatorConfluenceSchema.parse({...defaultConfig, rsiOverbought: 70, rsiOversold: 70})
     ).toThrow();
     expect(() =>
-      MultiIndicatorConfluenceSchema.parse({...defaultConfig, rsiOversold: 80, rsiOverbought: 70})
+      MultiIndicatorConfluenceSchema.parse({...defaultConfig, rsiOverbought: 70, rsiOversold: 80})
     ).toThrow();
   });
 
   it('rejects emaShortPeriod >= emaLongPeriod', () => {
     expect(() =>
-      MultiIndicatorConfluenceSchema.parse({...defaultConfig, emaShortPeriod: 5, emaLongPeriod: 5})
+      MultiIndicatorConfluenceSchema.parse({...defaultConfig, emaLongPeriod: 5, emaShortPeriod: 5})
     ).toThrow();
     expect(() =>
-      MultiIndicatorConfluenceSchema.parse({...defaultConfig, emaShortPeriod: 10, emaLongPeriod: 5})
+      MultiIndicatorConfluenceSchema.parse({...defaultConfig, emaLongPeriod: 5, emaShortPeriod: 10})
     ).toThrow();
   });
 
   it('rejects macdShortPeriod >= macdLongPeriod', () => {
     expect(() =>
-      MultiIndicatorConfluenceSchema.parse({...defaultConfig, macdShortPeriod: 5, macdLongPeriod: 5})
+      MultiIndicatorConfluenceSchema.parse({...defaultConfig, macdLongPeriod: 5, macdShortPeriod: 5})
     ).toThrow();
     expect(() =>
-      MultiIndicatorConfluenceSchema.parse({...defaultConfig, macdShortPeriod: 10, macdLongPeriod: 5})
+      MultiIndicatorConfluenceSchema.parse({...defaultConfig, macdLongPeriod: 5, macdShortPeriod: 10})
     ).toThrow();
   });
 

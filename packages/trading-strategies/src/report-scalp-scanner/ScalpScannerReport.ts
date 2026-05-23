@@ -9,12 +9,12 @@ import {suggestScalpOffset} from '../strategy-scalp/suggestScalpOffset.js';
 import {fetchUsEquityNames, formatSymbolWithName, TELEGRAM_TABLE_NAME_MAX} from '../util/formatSymbolWithName.js';
 
 export const ScalpScannerSchema = z.object({
-  /** Stock symbols to scan (defaults to S&P 500) */
-  symbols: z.array(z.string()).optional(),
-  /** Number of trading days to analyze (default: 60, ~3 months) */
-  lookbackDays: z.number().int().positive().optional().default(60),
   /** ER threshold below which a stock is considered scalp-friendly (default: 0.4) */
   erThreshold: z.number().positive().optional().default(ScalpStrategy.ER_THRESHOLD),
+  /** Number of trading days to analyze (default: 60, ~3 months) */
+  lookbackDays: z.number().int().positive().optional().default(60),
+  /** Stock symbols to scan (defaults to S&P 500) */
+  symbols: z.array(z.string()).optional(),
 });
 
 export type ScalpScannerConfig = z.infer<typeof ScalpScannerSchema>;
@@ -107,10 +107,10 @@ export class ScalpScannerReport extends Report<ScalpScannerConfig> {
       const atrPct = (avgRange / avgPrice) * 100;
 
       results.push({
-        symbol,
-        er: erValue,
         atrPct,
+        er: erValue,
         suggestedOffset: offsetStr,
+        symbol,
       });
     }
 
@@ -143,13 +143,13 @@ export class ScalpScannerReport extends Report<ScalpScannerConfig> {
 
     do {
       const response = await this.#api.getStockBars({
-        symbols: symbols.join(','),
-        timeframe: '1Day',
-        start: start.toISOString(),
         end: end.toISOString(),
         feed: 'iex',
         limit: 10_000,
         page_token: pageToken,
+        start: start.toISOString(),
+        symbols: symbols.join(','),
+        timeframe: '1Day',
       });
 
       for (const [symbol, symbolBars] of Object.entries(response.bars)) {

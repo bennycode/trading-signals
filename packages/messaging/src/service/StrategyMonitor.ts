@@ -136,8 +136,8 @@ export class StrategyMonitor {
 
     await session.start();
 
-    this.#sessions.set(row.id, {strategyId: row.id, session, strategy});
-    logger.info({strategyId: row.id, strategyName: row.strategyName, pair: row.pair}, 'Started strategy');
+    this.#sessions.set(row.id, {session, strategy, strategyId: row.id});
+    logger.info({pair: row.pair, strategyId: row.id, strategyName: row.strategyName}, 'Started strategy');
   }
 
   /**
@@ -174,9 +174,9 @@ export class StrategyMonitor {
         if (freshRow) {
           await this.subscribeToStrategy(freshRow);
         }
-        logger.info({strategyId: row.id, accountId}, 'Restarted strategy after account update');
+        logger.info({accountId, strategyId: row.id}, 'Restarted strategy after account update');
       } catch (error) {
-        logger.error({err: error, strategyId: row.id, accountId}, 'Failed to restart strategy after account update');
+        logger.error({accountId, err: error, strategyId: row.id}, 'Failed to restart strategy after account update');
       }
     }
   }

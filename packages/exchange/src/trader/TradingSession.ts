@@ -63,9 +63,9 @@ export class TradingSession extends EventEmitter<TradingSessionEventMap> {
     this.#state = {
       baseBalance: balances.base,
       counterBalance: balances.counter,
+      feeRates,
       lastOrderSide,
       tradingRules,
-      feeRates,
     };
 
     // Subscribe to candles only after state is ready
@@ -195,9 +195,9 @@ export class TradingSession extends EventEmitter<TradingSessionEventMap> {
     if (advice.type === OrderType.LIMIT) {
       const price = this.#applyPrecision(new Big(advice.price), this.#state.tradingRules.counter_increment);
       order = await this.#broker.placeLimitOrder(this.#pair, {
+        price: price.toFixed(),
         side: advice.side,
         size: size.toFixed(),
-        price: price.toFixed(),
       });
     } else {
       order = await this.#broker.placeMarketOrder(this.#pair, {
