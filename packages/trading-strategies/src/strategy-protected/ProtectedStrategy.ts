@@ -19,41 +19,18 @@ import {positiveNumberString} from '../util/validators.js';
  */
 export const ProtectedConfigSchema = z.object({
   /**
-   * Stop-loss as a percentage of avg entry. "5" = sell everything at avgEntry * 0.95.
-   * Mutually exclusive with `stopLossNominal` and `stopLossPrice`. Omit all three to
-   * disable the stop-loss guard.
+   * When `true`, the strategy seeds its position tracking from the account's existing
+   * base balance and the first candle's close price. This allows attaching guard
+   * protection to a position that was opened externally (manual trade, another strategy).
+   * Percentage and nominal guards will be relative to the price at attach time.
    */
-  stopLossPct: positiveNumberString.optional(),
+  seedFromBalance: z.boolean().default(false),
   /**
    * Stop-loss as an absolute unrealized loss in counter currency. "10" on a 10-share
    * position bought at $100 → fires at $99 (unrealized loss = $10). Mutually exclusive
    * with `stopLossPct` and `stopLossPrice`.
    */
   stopLossNominal: positiveNumberString.optional(),
-  /**
-   * Stop-loss as an absolute price target. "95" → fires as soon as the candle close
-   * drops to $95 or below, placing a limit sell at $95. Mutually exclusive with
-   * `stopLossPct` and `stopLossNominal`.
-   */
-  stopLossPrice: positiveNumberString.optional(),
-  /**
-   * Take-profit as a percentage of avg entry. "10" = sell everything at avgEntry * 1.10.
-   * Mutually exclusive with `takeProfitNominal` and `takeProfitPrice`. Omit all three to
-   * disable the take-profit guard.
-   */
-  takeProfitPct: positiveNumberString.optional(),
-  /**
-   * Take-profit as an absolute unrealized gain in counter currency. "10" on a 10-share
-   * position bought at $100 → fires at $101 (unrealized gain = $10). Mutually exclusive
-   * with `takeProfitPct` and `takeProfitPrice`.
-   */
-  takeProfitNominal: positiveNumberString.optional(),
-  /**
-   * Take-profit as an absolute price target. "105" → fires as soon as the candle close
-   * reaches $105 or above, placing a limit sell at $105. Mutually exclusive with
-   * `takeProfitPct` and `takeProfitNominal`.
-   */
-  takeProfitPrice: positiveNumberString.optional(),
   /**
    * Order type used to execute the stop-loss kill switch. `"limit"` (default) places a
    * limit sell at the nominal target price — guaranteed exit price, but may not fill if
@@ -62,17 +39,40 @@ export const ProtectedConfigSchema = z.object({
    */
   stopLossOrder: z.enum(['limit', 'market']).default('limit'),
   /**
+   * Stop-loss as a percentage of avg entry. "5" = sell everything at avgEntry * 0.95.
+   * Mutually exclusive with `stopLossNominal` and `stopLossPrice`. Omit all three to
+   * disable the stop-loss guard.
+   */
+  stopLossPct: positiveNumberString.optional(),
+  /**
+   * Stop-loss as an absolute price target. "95" → fires as soon as the candle close
+   * drops to $95 or below, placing a limit sell at $95. Mutually exclusive with
+   * `stopLossPct` and `stopLossNominal`.
+   */
+  stopLossPrice: positiveNumberString.optional(),
+  /**
+   * Take-profit as an absolute unrealized gain in counter currency. "10" on a 10-share
+   * position bought at $100 → fires at $101 (unrealized gain = $10). Mutually exclusive
+   * with `takeProfitPct` and `takeProfitPrice`.
+   */
+  takeProfitNominal: positiveNumberString.optional(),
+  /**
    * Order type used to execute the take-profit kill switch. See `stopLossOrder` for the
    * trade-off between `"limit"` (default) and `"market"`.
    */
   takeProfitOrder: z.enum(['limit', 'market']).default('limit'),
   /**
-   * When `true`, the strategy seeds its position tracking from the account's existing
-   * base balance and the first candle's close price. This allows attaching guard
-   * protection to a position that was opened externally (manual trade, another strategy).
-   * Percentage and nominal guards will be relative to the price at attach time.
+   * Take-profit as a percentage of avg entry. "10" = sell everything at avgEntry * 1.10.
+   * Mutually exclusive with `takeProfitNominal` and `takeProfitPrice`. Omit all three to
+   * disable the take-profit guard.
    */
-  seedFromBalance: z.boolean().default(false),
+  takeProfitPct: positiveNumberString.optional(),
+  /**
+   * Take-profit as an absolute price target. "105" → fires as soon as the candle close
+   * reaches $105 or above, placing a limit sell at $105. Mutually exclusive with
+   * `takeProfitPct` and `takeProfitNominal`.
+   */
+  takeProfitPrice: positiveNumberString.optional(),
 });
 
 /** All of the kill-switch settings, nested under a single namespaced `protected` key. */
@@ -104,9 +104,9 @@ const PROTECTED_STATE_KEY = 'protected';
 
 const defaultProtectedState = (): ProtectedStrategyState => ({
   killed: false,
-  killedReason: null,
-  killedOrderType: null,
   killedLimitPrice: null,
+  killedOrderType: null,
+  killedReason: null,
   totalCostBasis: '0',
   totalPositionSize: '0',
 });
@@ -305,9 +305,9 @@ export class ProtectedStrategy extends Strategy {
         const reason = this.#stopLossReason(avgEntry, currentPrice, positionSize, targetPrice, orderType);
         this.#setProtectedState({
           killed: true,
-          killedReason: reason,
-          killedOrderType: orderType,
           killedLimitPrice: orderType === 'limit' ? targetPrice.toFixed() : null,
+          killedOrderType: orderType,
+          killedReason: reason,
         });
         return this.#killSwitchAdvice(reason, orderType, orderType === 'limit' ? targetPrice : null);
       }
@@ -320,9 +320,9 @@ export class ProtectedStrategy extends Strategy {
         const reason = this.#takeProfitReason(avgEntry, currentPrice, positionSize, targetPrice, orderType);
         this.#setProtectedState({
           killed: true,
-          killedReason: reason,
-          killedOrderType: orderType,
           killedLimitPrice: orderType === 'limit' ? targetPrice.toFixed() : null,
+          killedOrderType: orderType,
+          killedReason: reason,
         });
         return this.#killSwitchAdvice(reason, orderType, orderType === 'limit' ? targetPrice : null);
       }
@@ -475,23 +475,23 @@ export class ProtectedStrategy extends Strategy {
   #killSwitchAdvice(reason: string, orderType: GuardOrderType, limitPrice: Big | null): OrderAdvice {
     if (orderType === 'market') {
       return {
-        side: OrderSide.SELL,
-        type: OrderType.MARKET,
         amount: AllAvailableAmount,
         amountIn: 'base',
         reason: `[KILL SWITCH] ${reason}`,
+        side: OrderSide.SELL,
+        type: OrderType.MARKET,
       };
     }
     if (!limitPrice) {
       throw new Error('ProtectedStrategy: limit order type requires a limit price');
     }
     const advice: LimitOrderAdvice = {
-      side: OrderSide.SELL,
-      type: OrderType.LIMIT,
       amount: AllAvailableAmount,
       amountIn: 'base',
       price: limitPrice,
       reason: `[KILL SWITCH] ${reason}`,
+      side: OrderSide.SELL,
+      type: OrderType.LIMIT,
     };
     return advice;
   }

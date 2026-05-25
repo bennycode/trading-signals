@@ -21,8 +21,8 @@ export function parseThreshold(thresholdStr: string): ParsedThreshold | null {
     }
 
     return {
-      type: 'percent',
       direction: sign === '+' ? 'up' : 'down',
+      type: 'percent',
       value,
     };
   }
@@ -37,8 +37,8 @@ export function parseThreshold(thresholdStr: string): ParsedThreshold | null {
     }
 
     return {
-      type: 'absolute',
       direction: sign === '+' ? 'up' : 'down',
+      type: 'absolute',
       value,
     };
   }

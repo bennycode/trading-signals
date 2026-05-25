@@ -5,22 +5,22 @@ const logDirectory = process.env.TYPEDTRADER_LOG_DIRECTORY?.trim() || process.en
 
 const targets: pino.TransportTargetOptions[] = [
   {
-    target: 'pino/file',
-    options: {destination: 1},
     level: 'info',
+    options: {destination: 1},
+    target: 'pino/file',
   },
 ];
 
 if (logDirectory) {
   targets.push({
-    target: 'pino-roll',
+    level: 'debug',
     options: {
       file: path.join(logDirectory, 'typedtrader.log'),
-      size: '10m',
       limit: {count: 10},
       mkdir: true,
+      size: '10m',
     },
-    level: 'debug',
+    target: 'pino-roll',
   });
 }
 

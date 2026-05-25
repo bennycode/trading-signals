@@ -35,7 +35,7 @@ export function makeStrategyAddWizard(deps: {strategyMonitor: () => StrategyMoni
      * once prefixed.
      */
     const strategyButtons: InlineButton[][] = strategies.map((name, idx) => [
-      {text: name, callback_data: `strategyadd:strat:${idx}`},
+      {callback_data: `strategyadd:strat:${idx}`, text: name},
     ]);
     await ctx.reply('Pick a strategy:', inlineKeyboard(strategyButtons));
 
@@ -45,7 +45,7 @@ export function makeStrategyAddWizard(deps: {strategyMonitor: () => StrategyMoni
     const strategyName = strategies[stratIdx] ?? '';
 
     const accounts = await conversation.external(() =>
-      Account.findByUserId(args.userId).map(a => ({id: a.id, name: a.name, exchange: a.exchange, isPaper: a.isPaper}))
+      Account.findByUserId(args.userId).map(a => ({exchange: a.exchange, id: a.id, isPaper: a.isPaper, name: a.name}))
     );
     if (accounts.length === 0) {
       await stratCb.editMessageText(`Strategy: ${strategyName}\nNo account found. Use /accountAdd first.`);
@@ -53,7 +53,7 @@ export function makeStrategyAddWizard(deps: {strategyMonitor: () => StrategyMoni
     }
 
     const accountButtons: InlineButton[][] = accounts.map(a => [
-      {text: `${a.name} (${a.exchange}${a.isPaper ? ' paper' : ''})`, callback_data: `strategyadd:acc:${a.id}`},
+      {callback_data: `strategyadd:acc:${a.id}`, text: `${a.name} (${a.exchange}${a.isPaper ? ' paper' : ''})`},
     ]);
     await stratCb.editMessageText(`Strategy: ${strategyName}\nPick an account:`, inlineKeyboard(accountButtons));
 
@@ -97,20 +97,20 @@ export function makeStrategyAddWizard(deps: {strategyMonitor: () => StrategyMoni
       try {
         const account = Account.findByPk(accountId);
         if (!account || account.userId !== args.userId) {
-          return {ok: false as const, error: 'Account not found.'};
+          return {error: 'Account not found.', ok: false as const};
         }
         createStrategy(strategyName, config);
         const row = Strategy.create({
           accountId,
-          strategyName,
           config: configJson,
           pair: pairStr,
+          strategyName,
         });
-        return {ok: true as const, strategy: row, accountName: account.name};
+        return {accountName: account.name, ok: true as const, strategy: row};
       } catch (error) {
         const message = error instanceof Error ? error.message : 'Unknown error';
         logger.error({message}, 'strategyAdd wizard failed');
-        return {ok: false as const, error: message};
+        return {error: message, ok: false as const};
       }
     });
 

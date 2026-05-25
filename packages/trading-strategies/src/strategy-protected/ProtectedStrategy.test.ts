@@ -39,6 +39,10 @@ const pair = new TradingPair('AAPL', 'USD');
 const mockState: TradingSessionState = {
   baseBalance: new Big(0),
   counterBalance: new Big(1000),
+  feeRates: {
+    [OrderType.LIMIT]: new Big('0.001'),
+    [OrderType.MARKET]: new Big('0.002'),
+  },
   tradingRules: {
     base_increment: '0.01',
     base_max_size: '10000',
@@ -46,10 +50,6 @@ const mockState: TradingSessionState = {
     counter_increment: '0.01',
     counter_min_size: '1',
     pair,
-  },
-  feeRates: {
-    [OrderType.LIMIT]: new Big('0.001'),
-    [OrderType.MARKET]: new Big('0.002'),
   },
 };
 
@@ -88,7 +88,7 @@ function makeFill(price: string, size: string, side: OrderSide): Fill {
 
 function makeOrder(side: OrderSide, type: OrderType = OrderType.LIMIT): PendingOrder {
   if (type === OrderType.LIMIT) {
-    return {id: 'order-1', pair, side, size: '10', price: '100', type: OrderType.LIMIT};
+    return {id: 'order-1', pair, price: '100', side, size: '10', type: OrderType.LIMIT};
   }
   return {id: 'order-1', pair, side, size: '10', type: OrderType.MARKET};
 }
@@ -124,11 +124,11 @@ class TestProtectedStrategy extends ProtectedStrategy {
     const shouldSignal = storedConfig !== null && storedConfig.signalAdvice === true;
     if (shouldSignal) {
       return {
-        side: OrderSide.BUY,
-        type: OrderType.MARKET,
         amount: AllAvailableAmount,
         amountIn: 'counter',
         reason: 'test buy',
+        side: OrderSide.BUY,
+        type: OrderType.MARKET,
       };
     }
   }
@@ -333,7 +333,7 @@ describe('ProtectedStrategy', () => {
     };
 
     it('seeds position from account balance and first candle close', async () => {
-      const strategy = new TestProtectedStrategy({protected: {stopLossPct: '5', seedFromBalance: true}});
+      const strategy = new TestProtectedStrategy({protected: {seedFromBalance: true, stopLossPct: '5'}});
 
       // First candle at 100 with 10 shares in account → seeds avgEntry=100, size=10
       await strategy.onCandle(makeCandle(100), stateWithPosition);
@@ -343,7 +343,7 @@ describe('ProtectedStrategy', () => {
     });
 
     it('fires stop-loss relative to the seeded baseline price', async () => {
-      const strategy = new TestProtectedStrategy({protected: {stopLossPct: '5', seedFromBalance: true}});
+      const strategy = new TestProtectedStrategy({protected: {seedFromBalance: true, stopLossPct: '5'}});
 
       // Seed at 100
       await strategy.onCandle(makeCandle(100), stateWithPosition);
@@ -355,7 +355,7 @@ describe('ProtectedStrategy', () => {
     });
 
     it('fires take-profit relative to the seeded baseline price', async () => {
-      const strategy = new TestProtectedStrategy({protected: {takeProfitPct: '10', seedFromBalance: true}});
+      const strategy = new TestProtectedStrategy({protected: {seedFromBalance: true, takeProfitPct: '10'}});
 
       // Seed at 100
       await strategy.onCandle(makeCandle(100), stateWithPosition);
@@ -368,7 +368,7 @@ describe('ProtectedStrategy', () => {
 
     it('does not seed when baseBalance is zero', async () => {
       const strategy = new TestProtectedStrategy({
-        protected: {stopLossPct: '5', seedFromBalance: true},
+        protected: {seedFromBalance: true, stopLossPct: '5'},
         signalAdvice: true,
       });
 
@@ -390,7 +390,7 @@ describe('ProtectedStrategy', () => {
     });
 
     it('does not re-seed after position was already tracked via onFill', async () => {
-      const strategy = new TestProtectedStrategy({protected: {stopLossPct: '5', seedFromBalance: true}});
+      const strategy = new TestProtectedStrategy({protected: {seedFromBalance: true, stopLossPct: '5'}});
 
       // Position tracked via fill at 80
       await strategy.onFill(makeFill('80', '10', OrderSide.BUY), mockState);
@@ -403,12 +403,12 @@ describe('ProtectedStrategy', () => {
     });
 
     it('persists seeded state through restoreState', async () => {
-      const strategy = new TestProtectedStrategy({protected: {stopLossPct: '5', seedFromBalance: true}});
+      const strategy = new TestProtectedStrategy({protected: {seedFromBalance: true, stopLossPct: '5'}});
       await strategy.onCandle(makeCandle(100), stateWithPosition);
 
       const snapshot = strategy.state;
 
-      const restored = new TestProtectedStrategy({protected: {stopLossPct: '5', seedFromBalance: true}});
+      const restored = new TestProtectedStrategy({protected: {seedFromBalance: true, stopLossPct: '5'}});
       restored.restoreState(snapshot!);
 
       expect(restored.protectedState.totalPositionSize).toBe('10');
@@ -567,13 +567,13 @@ describe('ProtectedStrategy', () => {
 
   describe('mutual exclusion', () => {
     it('rejects setting both stopLossPct and stopLossNominal', () => {
-      expect(() => new TestProtectedStrategy({protected: {stopLossPct: '5', stopLossNominal: '10'}})).toThrow(
+      expect(() => new TestProtectedStrategy({protected: {stopLossNominal: '10', stopLossPct: '5'}})).toThrow(
         /stopLossPct, stopLossNominal, and stopLossPrice are mutually exclusive/
       );
     });
 
     it('rejects setting both takeProfitPct and takeProfitNominal', () => {
-      expect(() => new TestProtectedStrategy({protected: {takeProfitPct: '10', takeProfitNominal: '5'}})).toThrow(
+      expect(() => new TestProtectedStrategy({protected: {takeProfitNominal: '5', takeProfitPct: '10'}})).toThrow(
         /takeProfitPct, takeProfitNominal, and takeProfitPrice are mutually exclusive/
       );
     });
@@ -604,7 +604,7 @@ describe('ProtectedStrategy', () => {
 
     it('rejects setting all three stop-loss variants', () => {
       expect(
-        () => new TestProtectedStrategy({protected: {stopLossPct: '5', stopLossNominal: '10', stopLossPrice: '95'}})
+        () => new TestProtectedStrategy({protected: {stopLossNominal: '10', stopLossPct: '5', stopLossPrice: '95'}})
       ).toThrow(/stopLossPct, stopLossNominal, and stopLossPrice are mutually exclusive/);
     });
 
@@ -712,9 +712,9 @@ describe('ProtectedStrategy', () => {
       strategy.restoreState({
         protected: {
           killed: true,
-          killedReason: 'stale',
-          killedOrderType: null,
           killedLimitPrice: null,
+          killedOrderType: null,
+          killedReason: 'stale',
           totalCostBasis: '1000',
           totalPositionSize: '10',
         },
@@ -730,9 +730,9 @@ describe('ProtectedStrategy', () => {
       strategy.restoreState({
         protected: {
           killed: true,
-          killedReason: 'stale',
-          killedOrderType: 'limit',
           killedLimitPrice: null,
+          killedOrderType: 'limit',
+          killedReason: 'stale',
           totalCostBasis: '1000',
           totalPositionSize: '10',
         },
@@ -747,9 +747,9 @@ describe('ProtectedStrategy', () => {
       strategy.restoreState({
         protected: {
           killed: true,
-          killedReason: 'Stop-loss fired',
-          killedOrderType: 'market',
           killedLimitPrice: null,
+          killedOrderType: 'market',
+          killedReason: 'Stop-loss fired',
           totalCostBasis: '1000',
           totalPositionSize: '10',
         },
@@ -766,9 +766,9 @@ describe('ProtectedStrategy', () => {
       strategy.restoreState({
         protected: {
           killed: false,
-          killedReason: null,
-          killedOrderType: null,
           killedLimitPrice: null,
+          killedOrderType: null,
+          killedReason: null,
           totalCostBasis: 'not-a-number',
           totalPositionSize: '10',
         },
@@ -784,9 +784,9 @@ describe('ProtectedStrategy', () => {
       strategy.restoreState({
         protected: {
           killed: true,
-          killedReason: null,
-          killedOrderType: 'limit',
           killedLimitPrice: 'garbage',
+          killedOrderType: 'limit',
+          killedReason: null,
           totalCostBasis: '1000',
           totalPositionSize: '10',
         },
@@ -874,7 +874,7 @@ describe('ProtectedStrategy', () => {
     });
 
     it('fires a MARKET sell when stopLossOrder is "market"', async () => {
-      const strategy = new TestProtectedStrategy({protected: {stopLossPct: '5', stopLossOrder: 'market'}});
+      const strategy = new TestProtectedStrategy({protected: {stopLossOrder: 'market', stopLossPct: '5'}});
       await strategy.onFill(makeFill('100', '10', OrderSide.BUY), mockState);
 
       const advice = await strategy.onCandle(makeCandle(95), mockState);
@@ -890,7 +890,7 @@ describe('ProtectedStrategy', () => {
     });
 
     it('fires a MARKET sell when takeProfitOrder is "market"', async () => {
-      const strategy = new TestProtectedStrategy({protected: {takeProfitPct: '10', takeProfitOrder: 'market'}});
+      const strategy = new TestProtectedStrategy({protected: {takeProfitOrder: 'market', takeProfitPct: '10'}});
       await strategy.onFill(makeFill('100', '10', OrderSide.BUY), mockState);
 
       const advice = await strategy.onCandle(makeCandle(110), mockState);
@@ -904,8 +904,8 @@ describe('ProtectedStrategy', () => {
     it('can mix a market stop-loss with a limit take-profit', async () => {
       const strategy = new TestProtectedStrategy({
         protected: {
-          stopLossPct: '5',
           stopLossOrder: 'market',
+          stopLossPct: '5',
           takeProfitPct: '10',
           // takeProfitOrder defaults to 'limit'
         },
@@ -920,8 +920,8 @@ describe('ProtectedStrategy', () => {
       const strategy = new TestProtectedStrategy({
         protected: {
           stopLossPct: '5',
-          takeProfitPct: '10',
           takeProfitOrder: 'market',
+          takeProfitPct: '10',
         },
       });
       await strategy.onFill(makeFill('100', '10', OrderSide.BUY), mockState);
@@ -932,7 +932,7 @@ describe('ProtectedStrategy', () => {
 
     it('retries market advice on subsequent candles while the position is not exited', async () => {
       const strategy = new TestProtectedStrategy({
-        protected: {stopLossPct: '5', stopLossOrder: 'market'},
+        protected: {stopLossOrder: 'market', stopLossPct: '5'},
         signalAdvice: true,
       });
       await strategy.onFill(makeFill('100', '10', OrderSide.BUY), mockState);
@@ -948,13 +948,13 @@ describe('ProtectedStrategy', () => {
     });
 
     it('persists killedOrderType across restoreState', async () => {
-      const strategy = new TestProtectedStrategy({protected: {stopLossPct: '5', stopLossOrder: 'market'}});
+      const strategy = new TestProtectedStrategy({protected: {stopLossOrder: 'market', stopLossPct: '5'}});
       await strategy.onFill(makeFill('100', '10', OrderSide.BUY), mockState);
       await strategy.onCandle(makeCandle(95), mockState); // fire
 
       const snapshot = strategy.state;
 
-      const restored = new TestProtectedStrategy({protected: {stopLossPct: '5', stopLossOrder: 'market'}});
+      const restored = new TestProtectedStrategy({protected: {stopLossOrder: 'market', stopLossPct: '5'}});
       restored.restoreState(snapshot!);
       expect(restored.protectedState.killedOrderType).toBe('market');
       expect(restored.protectedState.killedLimitPrice).toBeNull();

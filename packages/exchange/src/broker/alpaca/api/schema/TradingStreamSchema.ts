@@ -32,12 +32,12 @@ export const TradeUpdateEvent = {
 export const TradeUpdateMessageSchema = z.looseObject({
   event: z.string(),
   order: OrderSchema,
+  /** Total position size after this event (present on fill/partial_fill events) */
+  position_qty: z.string().optional(),
   /** Per-share fill price (present on fill/partial_fill events) */
   price: z.string().optional(),
   /** Number of shares filled in this event (present on fill/partial_fill events) */
   qty: z.string().optional(),
-  /** Total position size after this event (present on fill/partial_fill events) */
-  position_qty: z.string().optional(),
   /** Timestamp of the fill event */
   timestamp: z.string().optional(),
 });

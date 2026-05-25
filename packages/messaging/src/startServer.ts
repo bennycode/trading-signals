@@ -240,9 +240,9 @@ export async function startServer() {
 
   const dispatcher = new PlatformDispatcher(platforms);
   const monitors: Monitors = {
-    watchMonitor: new WatchMonitor(dispatcher),
-    strategyMonitor: new StrategyMonitor(dispatcher),
     reportScheduler: new ReportScheduler(dispatcher),
+    strategyMonitor: new StrategyMonitor(dispatcher),
+    watchMonitor: new WatchMonitor(dispatcher),
   };
 
   for (const [, platform] of platforms) {

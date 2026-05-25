@@ -21,20 +21,20 @@ vi.mock('../database/models/Account.js', () => ({
   Account: mockAccountModel,
 }));
 
-const {getAccountBrokerClient, buildMarketDataFromAccount} = await import('./getAccountBrokerClient.js');
+const {buildMarketDataFromAccount, getAccountBrokerClient} = await import('./getAccountBrokerClient.js');
 
 function makeAccount(overrides: Partial<AccountAttributes> = {}): AccountAttributes {
   return {
-    id: 1,
-    userId: 'user-1',
-    name: 'My Account',
-    exchange: 'Alpaca',
-    isPaper: true,
     apiKey: 'key',
     apiSecret: 'secret',
-    marketDataAccountId: null,
     createdAt: null,
+    exchange: 'Alpaca',
+    id: 1,
+    isPaper: true,
+    marketDataAccountId: null,
+    name: 'My Account',
     updatedAt: null,
+    userId: 'user-1',
     ...overrides,
   };
 }
@@ -52,15 +52,15 @@ describe('getAccountBrokerClient', () => {
     expect(mockAccountModel.findByUserIdAndId).not.toHaveBeenCalled();
     expect(AlpacaMarketDataMock).not.toHaveBeenCalled();
     expect(getBrokerClientMock).toHaveBeenCalledWith(
-      {exchangeId: 'Alpaca', apiKey: 'key', apiSecret: 'secret', isPaper: true},
+      {apiKey: 'key', apiSecret: 'secret', exchangeId: 'Alpaca', isPaper: true},
       undefined
     );
   });
 
   it('resolves the referenced account into an AlpacaMarketData and passes it through', () => {
-    const source = makeAccount({id: 7, exchange: 'Alpaca', isPaper: false, apiKey: 'alp-key', apiSecret: 'alp-secret'});
+    const source = makeAccount({apiKey: 'alp-key', apiSecret: 'alp-secret', exchange: 'Alpaca', id: 7, isPaper: false});
     mockAccountModel.findByUserIdAndId.mockReturnValue(source);
-    const account = makeAccount({id: 2, exchange: 'Trading212', userId: 'user-1', marketDataAccountId: 7});
+    const account = makeAccount({exchange: 'Trading212', id: 2, marketDataAccountId: 7, userId: 'user-1'});
 
     getAccountBrokerClient(account);
 
@@ -84,7 +84,7 @@ describe('getAccountBrokerClient', () => {
   });
 
   it('throws when the referenced account cannot serve as a market-data source', () => {
-    const source = makeAccount({id: 5, exchange: 'Trading212'});
+    const source = makeAccount({exchange: 'Trading212', id: 5});
     mockAccountModel.findByUserIdAndId.mockReturnValue(source);
     const account = makeAccount({exchange: 'Trading212', marketDataAccountId: 5});
 

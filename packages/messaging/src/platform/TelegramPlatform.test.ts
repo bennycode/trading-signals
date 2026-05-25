@@ -15,8 +15,8 @@ const botInfo = {username: 'testbot'};
 const mockedReportAdd = vi.mocked(reportAdd);
 
 vi.mock('trading-strategies', () => ({
-  MESSAGE_BREAK: '\f',
   getAvailableReportNames: vi.fn().mockReturnValue([]),
+  MESSAGE_BREAK: '\f',
 }));
 
 vi.mock('../command/report/reportAdd.js', () => ({
@@ -40,19 +40,19 @@ vi.mock('@grammyjs/conversations', () => ({
 vi.mock('grammy', () => {
   function Bot() {
     return {
-      command: mockCommand,
-      callbackQuery: mockCallbackQuery,
-      use: mockUse,
-      init: mockInit,
-      start: mockStart,
-      stop: mockStop,
       api: {
-        sendMessage: mockSendMessage,
         config: {use: vi.fn()},
+        sendMessage: mockSendMessage,
       },
       get botInfo() {
         return botInfo;
       },
+      callbackQuery: mockCallbackQuery,
+      command: mockCommand,
+      init: mockInit,
+      start: mockStart,
+      stop: mockStop,
+      use: mockUse,
     };
   }
 
@@ -485,8 +485,8 @@ describe('TelegramPlatform', () => {
     function buildCtx(text: string): Context {
       return {
         message: {
+          entities: [{length: text.split(' ')[0].length, offset: 0, type: 'bot_command'}],
           text,
-          entities: [{type: 'bot_command', offset: 0, length: text.split(' ')[0].length}],
         },
       } as unknown as Context;
     }
@@ -522,7 +522,7 @@ describe('TelegramPlatform', () => {
     });
 
     it('is a no-op when no bot_command entity is present', async () => {
-      const ctx = {message: {text: 'hello world', entities: []}} as unknown as Context;
+      const ctx = {message: {entities: [], text: 'hello world'}} as unknown as Context;
       await lowercaseCommandMiddleware(ctx, async () => {});
       expect(ctx.message?.text).toBe('hello world');
     });

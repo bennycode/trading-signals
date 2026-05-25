@@ -68,9 +68,9 @@ export function getAccountBrokerClient(account: AccountAttributes): Broker & Mar
   const marketData = resolveMarketData(account);
   return getBrokerClient(
     {
-      exchangeId: account.exchange,
       apiKey: account.apiKey,
       apiSecret: account.apiSecret,
+      exchangeId: account.exchange,
       isPaper: account.isPaper,
     },
     marketData ? {marketData} : undefined

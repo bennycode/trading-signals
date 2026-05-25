@@ -41,11 +41,11 @@ export class BuyBelowSellAboveStrategy extends ProtectedStrategy {
 
       if (closePrice.lt(buyBelowPrice)) {
         return {
-          side: OrderSide.BUY,
-          type: OrderType.LIMIT,
           amount: AllAvailableAmount,
           amountIn: 'base',
           price: closePrice,
+          side: OrderSide.BUY,
+          type: OrderType.LIMIT,
         };
       }
     }
@@ -55,11 +55,11 @@ export class BuyBelowSellAboveStrategy extends ProtectedStrategy {
 
       if (closePrice.gt(sellAbovePrice)) {
         return {
-          side: OrderSide.SELL,
-          type: OrderType.LIMIT,
           amount: AllAvailableAmount,
           amountIn: 'base',
           price: closePrice,
+          side: OrderSide.SELL,
+          type: OrderType.LIMIT,
         };
       }
     }

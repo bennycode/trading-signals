@@ -13,11 +13,11 @@ function createCandle(overrides: Partial<Candle> & {close: string; open: string}
 
   return {
     base: 'BTC',
+    close: overrides.close,
     counter: 'USD',
     high: overrides.high ?? String(Math.max(openNum, closeNum)),
     low: overrides.low ?? String(Math.min(openNum, closeNum)),
     open: overrides.open,
-    close: overrides.close,
     openTimeInISO: overrides.openTimeInISO ?? '2025-01-01T00:00:00.000Z',
     openTimeInMillis: overrides.openTimeInMillis ?? 1735689600000,
     sizeInMillis: overrides.sizeInMillis ?? 60000,
@@ -40,16 +40,16 @@ describe('BuyOnceStrategy', () => {
     const strategy = new BuyOnceStrategy({buyAt: '100'});
 
     const candles = [
-      createCandle({open: '110', close: '110', low: '108', high: '112', openTimeInISO: '2025-01-01T00:00:00.000Z'}),
+      createCandle({close: '110', high: '112', low: '108', open: '110', openTimeInISO: '2025-01-01T00:00:00.000Z'}),
       // Price drops through 100 — target is within [95, 105]
-      createCandle({open: '105', close: '95', low: '95', high: '105', openTimeInISO: '2025-01-01T00:01:00.000Z'}),
+      createCandle({close: '95', high: '105', low: '95', open: '105', openTimeInISO: '2025-01-01T00:01:00.000Z'}),
       // Order fills on this candle
-      createCandle({open: '98', close: '90', low: '88', high: '102', openTimeInISO: '2025-01-01T00:02:00.000Z'}),
+      createCandle({close: '90', high: '102', low: '88', open: '98', openTimeInISO: '2025-01-01T00:02:00.000Z'}),
     ];
 
     const config: BacktestConfig = {
-      candles,
       broker: createMockExchange(),
+      candles,
       strategy,
       tradingPair,
     };
@@ -66,14 +66,14 @@ describe('BuyOnceStrategy', () => {
     const strategy = new BuyOnceStrategy({buyAt: '50'});
 
     const candles = [
-      createCandle({open: '100', close: '100', openTimeInISO: '2025-01-01T00:00:00.000Z'}),
-      createCandle({open: '90', close: '80', openTimeInISO: '2025-01-01T00:01:00.000Z'}),
-      createCandle({open: '70', close: '60', openTimeInISO: '2025-01-01T00:02:00.000Z'}),
+      createCandle({close: '100', open: '100', openTimeInISO: '2025-01-01T00:00:00.000Z'}),
+      createCandle({close: '80', open: '90', openTimeInISO: '2025-01-01T00:01:00.000Z'}),
+      createCandle({close: '60', open: '70', openTimeInISO: '2025-01-01T00:02:00.000Z'}),
     ];
 
     const config: BacktestConfig = {
-      candles,
       broker: createMockExchange(),
+      candles,
       strategy,
       tradingPair,
     };
@@ -89,15 +89,15 @@ describe('BuyOnceStrategy', () => {
 
     const candles = [
       // Close at 80, below 100 — advice triggers
-      createCandle({open: '110', close: '80', low: '80', high: '110', openTimeInISO: '2025-01-01T00:00:00.000Z'}),
+      createCandle({close: '80', high: '110', low: '80', open: '110', openTimeInISO: '2025-01-01T00:00:00.000Z'}),
       // Fill happens here, strategy already bought so no new advice
-      createCandle({open: '90', close: '70', low: '70', high: '105', openTimeInISO: '2025-01-01T00:01:00.000Z'}),
-      createCandle({open: '80', close: '60', low: '60', high: '105', openTimeInISO: '2025-01-01T00:02:00.000Z'}),
+      createCandle({close: '70', high: '105', low: '70', open: '90', openTimeInISO: '2025-01-01T00:01:00.000Z'}),
+      createCandle({close: '60', high: '105', low: '60', open: '80', openTimeInISO: '2025-01-01T00:02:00.000Z'}),
     ];
 
     const config: BacktestConfig = {
-      candles,
       broker: createMockExchange(),
+      candles,
       strategy,
       tradingPair,
     };
@@ -115,13 +115,13 @@ describe('BuyOnceStrategy', () => {
      * Candle 2: order fills
      */
     const candles = [
-      createCandle({open: '50', close: '50', low: '48', high: '52', openTimeInISO: '2025-01-01T00:00:00.000Z'}),
-      createCandle({open: '50', close: '50', low: '48', high: '52', openTimeInISO: '2025-01-01T00:01:00.000Z'}),
+      createCandle({close: '50', high: '52', low: '48', open: '50', openTimeInISO: '2025-01-01T00:00:00.000Z'}),
+      createCandle({close: '50', high: '52', low: '48', open: '50', openTimeInISO: '2025-01-01T00:01:00.000Z'}),
     ];
 
     const config: BacktestConfig = {
-      candles,
       broker: createMockExchange(),
+      candles,
       strategy,
       tradingPair,
     };
@@ -142,13 +142,13 @@ describe('BuyOnceStrategy', () => {
      * Candle 2: low=88 <= 95, order fills. Open=92 < 95, so price improvement: fills at 92
      */
     const candles = [
-      createCandle({open: '100', close: '90', low: '88', high: '102', openTimeInISO: '2025-01-01T00:00:00.000Z'}),
-      createCandle({open: '92', close: '88', low: '85', high: '96', openTimeInISO: '2025-01-01T00:01:00.000Z'}),
+      createCandle({close: '90', high: '102', low: '88', open: '100', openTimeInISO: '2025-01-01T00:00:00.000Z'}),
+      createCandle({close: '88', high: '96', low: '85', open: '92', openTimeInISO: '2025-01-01T00:01:00.000Z'}),
     ];
 
     const config: BacktestConfig = {
-      candles,
       broker: createMockExchange(),
+      candles,
       strategy,
       tradingPair,
     };
@@ -164,6 +164,10 @@ describe('BuyOnceStrategy', () => {
     const mockState: TradingSessionState = {
       baseBalance: new Big(0),
       counterBalance: new Big(1000),
+      feeRates: {
+        [OrderType.LIMIT]: new Big('0.001'),
+        [OrderType.MARKET]: new Big('0.002'),
+      },
       tradingRules: {
         base_increment: '0.01',
         base_max_size: '10000',
@@ -172,17 +176,13 @@ describe('BuyOnceStrategy', () => {
         counter_min_size: '1',
         pair: tradingPair,
       },
-      feeRates: {
-        [OrderType.LIMIT]: new Big('0.001'),
-        [OrderType.MARKET]: new Big('0.002'),
-      },
     };
 
     const strategy = new BuyOnceStrategy({buyAt: '100'});
     strategy.restoreState({bought: true});
 
     // Close price is below buyAt — would normally trigger a buy, but state is restored as already bought
-    const candle = createCandle({open: '80', close: '80', openTimeInISO: '2025-01-01T00:00:00.000Z'});
+    const candle = createCandle({close: '80', open: '80', openTimeInISO: '2025-01-01T00:00:00.000Z'});
     const advice = await strategy.onCandle(CandleBatcher.createOneMinuteBatchedCandle([candle]), mockState);
 
     expect(advice).toBeUndefined();

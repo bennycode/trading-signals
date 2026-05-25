@@ -21,9 +21,9 @@ describe('ScalpScannerReport', () => {
 
   it('accepts custom symbols and lookbackDays', () => {
     const config = ScalpScannerSchema.parse({
-      symbols: ['AMD', 'INTC', 'TSLA'],
-      lookbackDays: 30,
       erThreshold: 0.3,
+      lookbackDays: 30,
+      symbols: ['AMD', 'INTC', 'TSLA'],
     });
 
     expect(config.symbols).toEqual(['AMD', 'INTC', 'TSLA']);

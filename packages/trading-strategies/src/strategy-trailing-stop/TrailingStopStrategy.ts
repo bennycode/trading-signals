@@ -15,6 +15,20 @@ import {positiveNumberString} from '../util/validators.js';
 
 export const TrailingStopSchema = z.object({
   /**
+   * Order type used to exit. `"limit"` (default) places the sell at the trail target —
+   * guaranteed price, but may not fill on a gap. `"market"` guarantees fill at the
+   * prevailing price.
+   */
+  exitOrder: z.enum(['limit', 'market']).default('limit'),
+  /**
+   * Optional initial pivot price. When set, the peak seeds from this value on attach
+   * instead of the attach candle's `high`. From there the peak ratchets up normally on
+   * subsequent candle highs. Useful when you know the right anchor (e.g. cost basis or
+   * a recent swing high) and don't want the strategy to seed from whatever candle
+   * happens to be first.
+   */
+  pivotPrice: positiveNumberString.optional(),
+  /**
    * Exit threshold as a percentage of the running peak. "5" → exit when close drops to
    * peak * 0.95. Defaults to "10" (10%).
    */
@@ -28,20 +42,6 @@ export const TrailingStopSchema = z.object({
    * When omitted, the peak ratchets on every candle high that exceeds the previous one.
    */
   trailUpPct: positiveNumberString.optional(),
-  /**
-   * Optional initial pivot price. When set, the peak seeds from this value on attach
-   * instead of the attach candle's `high`. From there the peak ratchets up normally on
-   * subsequent candle highs. Useful when you know the right anchor (e.g. cost basis or
-   * a recent swing high) and don't want the strategy to seed from whatever candle
-   * happens to be first.
-   */
-  pivotPrice: positiveNumberString.optional(),
-  /**
-   * Order type used to exit. `"limit"` (default) places the sell at the trail target —
-   * guaranteed price, but may not fill on a gap. `"market"` guarantees fill at the
-   * prevailing price.
-   */
-  exitOrder: z.enum(['limit', 'market']).default('limit'),
 });
 
 export type TrailingStopConfig = z.input<typeof TrailingStopSchema>;
@@ -92,11 +92,11 @@ export type TrailingStopState = {
 
 const defaultState = (): TrailingStopState => ({
   exited: false,
-  positionSize: '0',
-  peakPrice: '0',
-  stopPrice: '0',
-  exitReason: null,
   exitLimitPrice: null,
+  exitReason: null,
+  peakPrice: '0',
+  positionSize: '0',
+  stopPrice: '0',
 });
 
 /**
@@ -203,22 +203,22 @@ export class TrailingStopStrategy extends Strategy {
     if (this.#exitOrder === 'market') {
       this.#state.exitLimitPrice = null;
       return {
-        side: OrderSide.SELL,
-        type: OrderType.MARKET,
         amount: AllAvailableAmount,
         amountIn: 'base',
         reason,
+        side: OrderSide.SELL,
+        type: OrderType.MARKET,
       };
     }
 
     this.#state.exitLimitPrice = trailTarget.toFixed();
     const advice: LimitOrderAdvice = {
-      side: OrderSide.SELL,
-      type: OrderType.LIMIT,
       amount: AllAvailableAmount,
       amountIn: 'base',
       price: trailTarget,
       reason,
+      side: OrderSide.SELL,
+      type: OrderType.LIMIT,
     };
     return advice;
   }

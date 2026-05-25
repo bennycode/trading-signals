@@ -13,7 +13,7 @@ export class BacktestExecutor {
   }
 
   async execute(): Promise<BacktestResult> {
-    const {candles, broker: exchange, strategy, tradingPair} = this.#config;
+    const {broker: exchange, candles, strategy, tradingPair} = this.#config;
 
     const initialBalances = await exchange.getAvailableBalances(tradingPair);
     const initialBaseBalance = initialBalances.base;
@@ -103,10 +103,10 @@ export class BacktestExecutor {
     if (!advice) {
       // Fallback: shouldn't happen in normal flow
       return {
-        side: OrderSide.BUY,
-        type: OrderType.MARKET,
         amount: AllAvailableAmount,
         amountIn: 'counter',
+        side: OrderSide.BUY,
+        type: OrderType.MARKET,
       };
     }
     return advice;
@@ -120,9 +120,9 @@ export class BacktestExecutor {
     return {
       baseBalance: balances.base,
       counterBalance: balances.counter,
-      tradingRules,
       feeRates,
       lastOrderSide,
+      tradingRules,
     };
   }
 
@@ -256,7 +256,7 @@ export class BacktestExecutor {
 
     const winRate = PerformanceCalculator.calculateWinRate(trades);
     const buyAndHoldReturnPercentage = PerformanceCalculator.calculateBuyAndHoldReturn(candles);
-    const {maxWinStreak, maxLossStreak} = PerformanceCalculator.calculateStreaks(trades);
+    const {maxLossStreak, maxWinStreak} = PerformanceCalculator.calculateStreaks(trades);
 
     return {
       buyAndHoldReturnPercentage,

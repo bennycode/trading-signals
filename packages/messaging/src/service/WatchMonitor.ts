@@ -37,7 +37,7 @@ export class WatchMonitor {
         await this.subscribeToWatch(watch);
         await this.#dispatcher.sendToAccount(watch.accountId, `Watch "${watch.id}" started.`);
       } catch (error) {
-        logger.error({err: error, watchId: watch.id, accountId: watch.accountId}, 'Failed to start watch');
+        logger.error({accountId: watch.accountId, err: error, watchId: watch.id}, 'Failed to start watch');
       }
     }
   }
@@ -96,12 +96,12 @@ export class WatchMonitor {
     });
 
     this.#subscriptions.set(watch.id, {
-      watchId: watch.id,
-      topicId,
       broker: exchange,
+      topicId,
+      watchId: watch.id,
     });
 
-    logger.info({watchId: watch.id, pair: watch.pair}, 'Subscribed to watch');
+    logger.info({pair: watch.pair, watchId: watch.id}, 'Subscribed to watch');
   }
 
   /**
@@ -135,9 +135,9 @@ export class WatchMonitor {
         if (freshWatch) {
           await this.subscribeToWatch(freshWatch);
         }
-        logger.info({watchId: watch.id, accountId}, 'Restarted watch after account update');
+        logger.info({accountId, watchId: watch.id}, 'Restarted watch after account update');
       } catch (error) {
-        logger.error({err: error, watchId: watch.id, accountId}, 'Failed to restart watch after account update');
+        logger.error({accountId, err: error, watchId: watch.id}, 'Failed to restart watch after account update');
       }
     }
   }

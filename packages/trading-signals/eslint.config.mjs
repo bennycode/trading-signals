@@ -14,7 +14,7 @@ export default defineConfig({
     'eslint.config.mjs',
   ],
   rules: {
-    // Object-key sorting is not enforced in this repo for now.
-    'perfectionist/sort-objects': 'off',
+    // Object-key sorting is enforced across all packages.
+    'perfectionist/sort-objects': 'error',
   },
 });

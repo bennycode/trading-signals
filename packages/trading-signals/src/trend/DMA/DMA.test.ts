@@ -84,7 +84,7 @@ describe('DMA', () => {
         dma.add(Number(price));
       }
 
-      const {short, long} = dma.getResultOrThrow();
+      const {long, short} = dma.getResultOrThrow();
       expect(dma.getRequiredInputs()).toBe(longInterval);
       expect(dma.isStable).toBe(true);
       expect(short > long).toBe(true);

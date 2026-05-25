@@ -83,17 +83,17 @@ export class MeanReversionStrategy extends ProtectedStrategy {
       return;
     }
 
-    const {upper, middle} = this.#bbands.getResultOrThrow();
+    const {middle, upper} = this.#bbands.getResultOrThrow();
 
     if (this.#state.phase === 'watching') {
       if (closePrice > upper) {
         this.#state.phase = 'waitingForRebuy';
         return {
-          side: OrderSide.SELL,
-          type: OrderType.MARKET,
           amount: AllAvailableAmount,
           amountIn: 'base',
           reason: `Price ${closePrice.toFixed(2)} broke above upper band ${upper.toFixed(2)}`,
+          side: OrderSide.SELL,
+          type: OrderType.MARKET,
         };
       }
     }
@@ -102,11 +102,11 @@ export class MeanReversionStrategy extends ProtectedStrategy {
       if (closePrice <= middle) {
         this.#state.phase = 'watching';
         return {
-          side: OrderSide.BUY,
-          type: OrderType.MARKET,
           amount: AllAvailableAmount,
           amountIn: 'counter',
           reason: `Price ${closePrice.toFixed(2)} returned to middle band ${middle.toFixed(2)}`,
+          side: OrderSide.BUY,
+          type: OrderType.MARKET,
         };
       }
     }

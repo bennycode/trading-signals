@@ -8,10 +8,10 @@ import {createStrategy, getStrategyNames} from '../strategy/StrategyRegistry.js'
 
 const {values} = parseArgs({
   options: {
-    data: {type: 'string', short: 'd'},
-    strategy: {type: 'string', short: 's'},
-    config: {type: 'string', short: 'c', default: '{}'},
-    balance: {type: 'string', short: 'b', default: '10000'},
+    balance: {default: '10000', short: 'b', type: 'string'},
+    config: {default: '{}', short: 'c', type: 'string'},
+    data: {short: 'd', type: 'string'},
+    strategy: {short: 's', type: 'string'},
   },
 });
 
@@ -87,8 +87,8 @@ const exchange = new AlpacaBrokerMock({
     [tradingPair.counter, {available: startingBalance, hold: new Big(0)}],
   ]),
   feeRates: {
-    [OrderType.MARKET]: new Big(0),
     [OrderType.LIMIT]: new Big(0),
+    [OrderType.MARKET]: new Big(0),
   },
 });
 

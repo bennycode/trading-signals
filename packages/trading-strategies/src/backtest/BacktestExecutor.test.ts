@@ -15,11 +15,11 @@ function createCandle(overrides: Partial<Candle> & {close: string; open: string}
 
   return {
     base: 'BTC',
+    close: overrides.close,
     counter: 'USD',
     high: overrides.high ?? String(Math.max(openNum, closeNum)),
     low: overrides.low ?? String(Math.min(openNum, closeNum)),
     open: overrides.open,
-    close: overrides.close,
     openTimeInISO: overrides.openTimeInISO ?? '2025-01-01T00:00:00.000Z',
     openTimeInMillis: overrides.openTimeInMillis ?? 1735689600000,
     sizeInMillis: overrides.sizeInMillis ?? 60000,
@@ -51,11 +51,11 @@ describe('BacktestExecutor', () => {
         }
       }
 
-      const candles = [createCandle({open: '100', close: '105'}), createCandle({open: '105', close: '110'})] as const;
+      const candles = [createCandle({close: '105', open: '100'}), createCandle({close: '110', open: '105'})] as const;
 
       const config: BacktestConfig = {
-        candles: [...candles],
         broker: createMockExchange({baseBalance: '1', counterBalance: '1000'}),
+        candles: [...candles],
         strategy: new NoOpStrategy(),
         tradingPair,
       };
@@ -73,8 +73,8 @@ describe('BacktestExecutor', () => {
       const strategy = new BuyBelowSellAboveStrategy({buyBelow: '50'});
 
       const config: BacktestConfig = {
-        candles: [],
         broker: createMockExchange(),
+        candles: [],
         strategy,
         tradingPair,
       };
@@ -94,13 +94,13 @@ describe('BacktestExecutor', () => {
        * Candle 2: order fills at candle 2 (1-candle delay)
        */
       const candles = [
-        createCandle({open: '95', close: '90', low: '88', high: '95', openTimeInISO: '2025-01-01T00:00:00.000Z'}),
-        createCandle({open: '92', close: '95', low: '88', high: '95', openTimeInISO: '2025-01-01T00:01:00.000Z'}),
+        createCandle({close: '90', high: '95', low: '88', open: '95', openTimeInISO: '2025-01-01T00:00:00.000Z'}),
+        createCandle({close: '95', high: '95', low: '88', open: '92', openTimeInISO: '2025-01-01T00:01:00.000Z'}),
       ];
 
       const config: BacktestConfig = {
-        candles,
         broker: createMockExchange(),
+        candles,
         strategy,
         tradingPair,
       };
@@ -123,13 +123,13 @@ describe('BacktestExecutor', () => {
        * Candle 2: order fills at candle 2
        */
       const candles = [
-        createCandle({open: '105', close: '110', low: '105', high: '115', openTimeInISO: '2025-01-01T00:00:00.000Z'}),
-        createCandle({open: '108', close: '112', low: '106', high: '115', openTimeInISO: '2025-01-01T00:01:00.000Z'}),
+        createCandle({close: '110', high: '115', low: '105', open: '105', openTimeInISO: '2025-01-01T00:00:00.000Z'}),
+        createCandle({close: '112', high: '115', low: '106', open: '108', openTimeInISO: '2025-01-01T00:01:00.000Z'}),
       ];
 
       const config: BacktestConfig = {
-        candles,
         broker: createMockExchange({baseBalance: '2', counterBalance: '0'}),
+        candles,
         strategy,
         tradingPair,
       };
@@ -151,13 +151,13 @@ describe('BacktestExecutor', () => {
        * Candle 2: order fills
        */
       const candles = [
-        createCandle({open: '100', close: '100', low: '100', high: '100', openTimeInISO: '2025-01-01T00:00:00.000Z'}),
-        createCandle({open: '100', close: '100', low: '100', high: '100', openTimeInISO: '2025-01-01T00:01:00.000Z'}),
+        createCandle({close: '100', high: '100', low: '100', open: '100', openTimeInISO: '2025-01-01T00:00:00.000Z'}),
+        createCandle({close: '100', high: '100', low: '100', open: '100', openTimeInISO: '2025-01-01T00:01:00.000Z'}),
       ];
 
       const config: BacktestConfig = {
-        candles,
         broker: createMockExchange({baseBalance: '10', counterBalance: '0'}),
+        candles,
         strategy,
         tradingPair,
       };
@@ -191,10 +191,10 @@ describe('BacktestExecutor', () => {
           this.#bought = true;
 
           return {
-            side: OrderSide.BUY,
-            type: OrderType.MARKET,
             amount: AllAvailableAmount,
             amountIn: 'counter',
+            side: OrderSide.BUY,
+            type: OrderType.MARKET,
           };
         }
       }
@@ -204,13 +204,13 @@ describe('BacktestExecutor', () => {
        * Candle 2: market order fills at candle 2's open price
        */
       const candles = [
-        createCandle({open: '50', close: '50', low: '50', high: '50', openTimeInISO: '2025-01-01T00:00:00.000Z'}),
-        createCandle({open: '50', close: '50', low: '50', high: '50', openTimeInISO: '2025-01-01T00:01:00.000Z'}),
+        createCandle({close: '50', high: '50', low: '50', open: '50', openTimeInISO: '2025-01-01T00:00:00.000Z'}),
+        createCandle({close: '50', high: '50', low: '50', open: '50', openTimeInISO: '2025-01-01T00:01:00.000Z'}),
       ];
 
       const config: BacktestConfig = {
-        candles,
         broker: createMockExchange(),
+        candles,
         strategy: new AlwaysBuyMarket(),
         tradingPair,
       };
@@ -240,16 +240,16 @@ describe('BacktestExecutor', () => {
        * Candle 5: sell fills
        */
       const candles = [
-        createCandle({open: '80', close: '80', low: '78', high: '82', openTimeInISO: '2025-01-01T00:00:00.000Z'}),
-        createCandle({open: '82', close: '85', low: '78', high: '90', openTimeInISO: '2025-01-01T00:01:00.000Z'}),
-        createCandle({open: '110', close: '115', low: '108', high: '118', openTimeInISO: '2025-01-01T00:02:00.000Z'}),
-        createCandle({open: '120', close: '130', low: '118', high: '135', openTimeInISO: '2025-01-01T00:03:00.000Z'}),
-        createCandle({open: '128', close: '132', low: '125', high: '135', openTimeInISO: '2025-01-01T00:04:00.000Z'}),
+        createCandle({close: '80', high: '82', low: '78', open: '80', openTimeInISO: '2025-01-01T00:00:00.000Z'}),
+        createCandle({close: '85', high: '90', low: '78', open: '82', openTimeInISO: '2025-01-01T00:01:00.000Z'}),
+        createCandle({close: '115', high: '118', low: '108', open: '110', openTimeInISO: '2025-01-01T00:02:00.000Z'}),
+        createCandle({close: '130', high: '135', low: '118', open: '120', openTimeInISO: '2025-01-01T00:03:00.000Z'}),
+        createCandle({close: '132', high: '135', low: '125', open: '128', openTimeInISO: '2025-01-01T00:04:00.000Z'}),
       ];
 
       const config: BacktestConfig = {
-        candles,
         broker: createMockExchange(),
+        candles,
         strategy,
         tradingPair,
       };
@@ -268,13 +268,13 @@ describe('BacktestExecutor', () => {
       const strategy = new BuyBelowSellAboveStrategy({sellAbove: '50'});
 
       const candles = [
-        createCandle({open: '100', close: '100', openTimeInISO: '2025-01-01T00:00:00.000Z'}),
-        createCandle({open: '100', close: '100', openTimeInISO: '2025-01-01T00:01:00.000Z'}),
+        createCandle({close: '100', open: '100', openTimeInISO: '2025-01-01T00:00:00.000Z'}),
+        createCandle({close: '100', open: '100', openTimeInISO: '2025-01-01T00:01:00.000Z'}),
       ];
 
       const config: BacktestConfig = {
-        candles,
         broker: createMockExchange({baseBalance: '0', counterBalance: '1000'}),
+        candles,
         strategy,
         tradingPair,
       };
@@ -291,16 +291,16 @@ describe('BacktestExecutor', () => {
       const strategy = new BuyBelowSellAboveStrategy({buyBelow: '1000'});
 
       const candles = [
-        createCandle({open: '50', close: '50', low: '48', high: '52', openTimeInISO: '2025-01-01T00:00:00.000Z'}),
-        createCandle({open: '55', close: '55', low: '48', high: '58', openTimeInISO: '2025-01-01T00:01:00.000Z'}),
-        createCandle({open: '60', close: '60', low: '58', high: '62', openTimeInISO: '2025-01-01T00:02:00.000Z'}),
-        createCandle({open: '65', close: '65', low: '63', high: '67', openTimeInISO: '2025-01-01T00:03:00.000Z'}),
-        createCandle({open: '70', close: '70', low: '68', high: '72', openTimeInISO: '2025-01-01T00:04:00.000Z'}),
+        createCandle({close: '50', high: '52', low: '48', open: '50', openTimeInISO: '2025-01-01T00:00:00.000Z'}),
+        createCandle({close: '55', high: '58', low: '48', open: '55', openTimeInISO: '2025-01-01T00:01:00.000Z'}),
+        createCandle({close: '60', high: '62', low: '58', open: '60', openTimeInISO: '2025-01-01T00:02:00.000Z'}),
+        createCandle({close: '65', high: '67', low: '63', open: '65', openTimeInISO: '2025-01-01T00:03:00.000Z'}),
+        createCandle({close: '70', high: '72', low: '68', open: '70', openTimeInISO: '2025-01-01T00:04:00.000Z'}),
       ];
 
       const config: BacktestConfig = {
-        candles,
         broker: createMockExchange({counterBalance: '500'}),
+        candles,
         strategy,
         tradingPair,
       };
@@ -324,11 +324,11 @@ describe('BacktestExecutor', () => {
           }
           this.#sold = true;
           return {
-            side: OrderSide.SELL,
-            type: OrderType.LIMIT,
             amount: new Big(100),
             amountIn: 'base',
             price: candle.close,
+            side: OrderSide.SELL,
+            type: OrderType.LIMIT,
           };
         }
       }
@@ -338,13 +338,13 @@ describe('BacktestExecutor', () => {
        * Candle 2: order fills
        */
       const candles = [
-        createCandle({open: '50', close: '50', low: '50', high: '50', openTimeInISO: '2025-01-01T00:00:00.000Z'}),
-        createCandle({open: '50', close: '50', low: '50', high: '50', openTimeInISO: '2025-01-01T00:01:00.000Z'}),
+        createCandle({close: '50', high: '50', low: '50', open: '50', openTimeInISO: '2025-01-01T00:00:00.000Z'}),
+        createCandle({close: '50', high: '50', low: '50', open: '50', openTimeInISO: '2025-01-01T00:01:00.000Z'}),
       ];
 
       const config: BacktestConfig = {
-        candles,
         broker: createMockExchange({baseBalance: '5', counterBalance: '0'}),
+        candles,
         strategy: new SellTooMuch(),
         tradingPair,
       };
@@ -428,10 +428,10 @@ describe('BacktestExecutor', () => {
 
         candles.push(
           createCandle({
-            open: price,
             close: price,
             high: String(priceNum + 2),
             low: String(priceNum - 2),
+            open: price,
             openTimeInISO: time.toISOString(),
             openTimeInMillis: time.getTime(),
             sizeInMillis: 7 * 24 * 60 * 60 * 1000,
@@ -440,8 +440,8 @@ describe('BacktestExecutor', () => {
       });
 
       const config: BacktestConfig = {
-        candles,
         broker: createMockExchange({counterBalance: '10000'}),
+        candles,
         strategy,
         tradingPair,
       };
@@ -472,19 +472,19 @@ describe('BacktestExecutor', () => {
 
       // With 1-candle delay, we need pairs of candles for each trade to fill
       const candles = [
-        createCandle({open: '40', close: '40', low: '38', high: '42', openTimeInISO: '2025-01-01T00:00:00.000Z'}),
-        createCandle({open: '42', close: '45', low: '38', high: '48', openTimeInISO: '2025-01-15T00:00:00.000Z'}),
-        createCandle({open: '90', close: '90', low: '88', high: '95', openTimeInISO: '2025-02-01T00:00:00.000Z'}),
-        createCandle({open: '88', close: '85', low: '82', high: '92', openTimeInISO: '2025-02-15T00:00:00.000Z'}),
-        createCandle({open: '35', close: '35', low: '33', high: '38', openTimeInISO: '2025-03-01T00:00:00.000Z'}),
-        createCandle({open: '37', close: '40', low: '33', high: '42', openTimeInISO: '2025-03-15T00:00:00.000Z'}),
-        createCandle({open: '85', close: '85', low: '83', high: '90', openTimeInISO: '2025-04-01T00:00:00.000Z'}),
-        createCandle({open: '83', close: '80', low: '78', high: '88', openTimeInISO: '2025-04-15T00:00:00.000Z'}),
+        createCandle({close: '40', high: '42', low: '38', open: '40', openTimeInISO: '2025-01-01T00:00:00.000Z'}),
+        createCandle({close: '45', high: '48', low: '38', open: '42', openTimeInISO: '2025-01-15T00:00:00.000Z'}),
+        createCandle({close: '90', high: '95', low: '88', open: '90', openTimeInISO: '2025-02-01T00:00:00.000Z'}),
+        createCandle({close: '85', high: '92', low: '82', open: '88', openTimeInISO: '2025-02-15T00:00:00.000Z'}),
+        createCandle({close: '35', high: '38', low: '33', open: '35', openTimeInISO: '2025-03-01T00:00:00.000Z'}),
+        createCandle({close: '40', high: '42', low: '33', open: '37', openTimeInISO: '2025-03-15T00:00:00.000Z'}),
+        createCandle({close: '85', high: '90', low: '83', open: '85', openTimeInISO: '2025-04-01T00:00:00.000Z'}),
+        createCandle({close: '80', high: '88', low: '78', open: '83', openTimeInISO: '2025-04-15T00:00:00.000Z'}),
       ];
 
       const config: BacktestConfig = {
-        candles,
         broker: createMockExchange(),
+        candles,
         strategy,
         tradingPair,
       };
@@ -514,10 +514,10 @@ describe('BacktestExecutor', () => {
           this.#bought = true;
 
           return {
-            side: OrderSide.BUY,
-            type: OrderType.MARKET,
             amount: AllAvailableAmount,
             amountIn: 'counter',
+            side: OrderSide.BUY,
+            type: OrderType.MARKET,
           };
         }
       }
@@ -527,13 +527,13 @@ describe('BacktestExecutor', () => {
        * Candle 2: market order fills at open=100, then price goes to 150
        */
       const candles = [
-        createCandle({open: '100', close: '100', low: '100', high: '100', openTimeInISO: '2025-01-01T00:00:00.000Z'}),
-        createCandle({open: '100', close: '150', low: '100', high: '150', openTimeInISO: '2025-06-01T00:00:00.000Z'}),
+        createCandle({close: '100', high: '100', low: '100', open: '100', openTimeInISO: '2025-01-01T00:00:00.000Z'}),
+        createCandle({close: '150', high: '150', low: '100', open: '100', openTimeInISO: '2025-06-01T00:00:00.000Z'}),
       ];
 
       const config: BacktestConfig = {
-        candles,
         broker: createMockExchange(),
+        candles,
         strategy: new BuyOnce(),
         tradingPair,
       };
@@ -565,14 +565,14 @@ describe('BacktestExecutor', () => {
 
       // firstOpen=50, lastClose=200 — they differ so the test distinguishes which is used
       const candles = [
-        createCandle({open: '50', close: '80', low: '48', high: '82', openTimeInISO: '2025-01-01T00:00:00.000Z'}),
-        createCandle({open: '120', close: '200', low: '115', high: '205', openTimeInISO: '2025-01-02T00:00:00.000Z'}),
+        createCandle({close: '80', high: '82', low: '48', open: '50', openTimeInISO: '2025-01-01T00:00:00.000Z'}),
+        createCandle({close: '200', high: '205', low: '115', open: '120', openTimeInISO: '2025-01-02T00:00:00.000Z'}),
       ];
 
       const config: BacktestConfig = {
-        candles,
         // 2 BTC initial base balance so the open price matters for valuation
         broker: createMockExchange({baseBalance: '2', counterBalance: '0'}),
+        candles,
         strategy: new NoOpStrategy(),
         tradingPair,
       };
@@ -599,11 +599,11 @@ describe('BacktestExecutor', () => {
         }
       }
 
-      const candles = [createCandle({open: '100', close: '100'})];
+      const candles = [createCandle({close: '100', open: '100'})];
 
       const config: BacktestConfig = {
-        candles,
         broker: createMockExchange(),
+        candles,
         strategy: new NoOpStrategy(),
         tradingPair,
       };
@@ -646,10 +646,10 @@ describe('BacktestExecutor', () => {
           _state: TradingSessionState
         ): Promise<OrderAdvice | void> {
           return {
-            side: OrderSide.BUY,
-            type: OrderType.MARKET,
             amount: AllAvailableAmount,
             amountIn: 'counter',
+            side: OrderSide.BUY,
+            type: OrderType.MARKET,
           };
         }
       }
@@ -657,25 +657,25 @@ describe('BacktestExecutor', () => {
       // Two candles: advice on candle 1, would fill on candle 2
       const candles = [
         createCandle({
-          open: '50000',
           close: '50000',
-          low: '50000',
           high: '50000',
+          low: '50000',
+          open: '50000',
           openTimeInISO: '2025-01-01T00:00:00.000Z',
         }),
         createCandle({
-          open: '50000',
           close: '50000',
-          low: '50000',
           high: '50000',
+          low: '50000',
+          open: '50000',
           openTimeInISO: '2025-01-01T00:01:00.000Z',
         }),
       ];
 
       const config: BacktestConfig = {
-        candles,
         // Only $1 at price $50,000 can buy 0.00002 BTC, below min 0.0001
         broker: createMockWithRules({counterBalance: '1'}),
+        candles,
         strategy: new AlwaysBuyMarket(),
         tradingPair,
       };
@@ -694,34 +694,34 @@ describe('BacktestExecutor', () => {
           _state: TradingSessionState
         ): Promise<OrderAdvice | void> {
           return {
-            side: OrderSide.SELL,
-            type: OrderType.MARKET,
             amount: AllAvailableAmount,
             amountIn: 'base',
+            side: OrderSide.SELL,
+            type: OrderType.MARKET,
           };
         }
       }
 
       const candles = [
         createCandle({
-          open: '50000',
           close: '50000',
-          low: '50000',
           high: '50000',
+          low: '50000',
+          open: '50000',
           openTimeInISO: '2025-01-01T00:00:00.000Z',
         }),
         createCandle({
-          open: '50000',
           close: '50000',
-          low: '50000',
           high: '50000',
+          low: '50000',
+          open: '50000',
           openTimeInISO: '2025-01-01T00:01:00.000Z',
         }),
       ];
 
       const config: BacktestConfig = {
-        candles,
         broker: createMockWithRules({baseBalance: '0.00005'}),
+        candles,
         strategy: new AlwaysSellMarket(),
         tradingPair,
       };
@@ -739,15 +739,15 @@ describe('BacktestExecutor', () => {
 
       // With 1-candle delay: buy advice on c1, fills c2, sell advice on c3, fills c4
       const candles = [
-        createCandle({open: '80', close: '80', low: '78', high: '82', openTimeInISO: '2025-01-01T00:00:00.000Z'}),
-        createCandle({open: '82', close: '85', low: '78', high: '90', openTimeInISO: '2025-01-01T00:01:00.000Z'}),
-        createCandle({open: '130', close: '130', low: '128', high: '135', openTimeInISO: '2025-01-02T00:00:00.000Z'}),
-        createCandle({open: '128', close: '132', low: '125', high: '135', openTimeInISO: '2025-01-02T00:01:00.000Z'}),
+        createCandle({close: '80', high: '82', low: '78', open: '80', openTimeInISO: '2025-01-01T00:00:00.000Z'}),
+        createCandle({close: '85', high: '90', low: '78', open: '82', openTimeInISO: '2025-01-01T00:01:00.000Z'}),
+        createCandle({close: '130', high: '135', low: '128', open: '130', openTimeInISO: '2025-01-02T00:00:00.000Z'}),
+        createCandle({close: '132', high: '135', low: '125', open: '128', openTimeInISO: '2025-01-02T00:01:00.000Z'}),
       ];
 
       const config: BacktestConfig = {
-        candles,
         broker: createMockWithRules(),
+        candles,
         strategy,
         tradingPair,
       };
@@ -786,11 +786,11 @@ describe('BacktestExecutor', () => {
           }
           this.#advised = true;
           return {
-            side: OrderSide.BUY,
-            type: OrderType.LIMIT,
             amount: AllAvailableAmount,
             amountIn: 'base',
             price: candle.close,
+            side: OrderSide.BUY,
+            type: OrderType.LIMIT,
           };
         }
       }
@@ -807,17 +807,17 @@ describe('BacktestExecutor', () => {
        */
       const candles = [
         createCandle({
-          open: '100.10',
           close: '100.10',
-          low: '100.10',
           high: '105.00',
+          low: '100.10',
+          open: '100.10',
           openTimeInISO: '2025-01-01T00:00:00.000Z',
         }),
         createCandle({
-          open: '101.00',
           close: '102.00',
-          low: '100.10',
           high: '105.00',
+          low: '100.10',
+          open: '101.00',
           openTimeInISO: '2025-01-01T00:01:00.000Z',
         }),
       ];

@@ -48,7 +48,7 @@ export class AccelerationBands extends TechnicalIndicator<BandsResult, HighLowCl
     return this.#middleBand.getRequiredInputs();
   }
 
-  update({high, low, close}: HighLowClose<number>, replace: boolean) {
+  update({close, high, low}: HighLowClose<number>, replace: boolean) {
     const highPlusLow = high + low;
     const coefficient = highPlusLow === 0 ? 0 : ((high - low) / highPlusLow) * this.width;
 

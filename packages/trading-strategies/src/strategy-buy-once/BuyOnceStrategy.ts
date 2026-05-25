@@ -57,17 +57,17 @@ export class BuyOnceStrategy extends ProtectedStrategy {
       this.#state.bought = true;
       if (quantity) {
         return {
-          side: OrderSide.BUY,
-          type: OrderType.MARKET,
           amount: quantity,
           amountIn: 'base',
+          side: OrderSide.BUY,
+          type: OrderType.MARKET,
         };
       }
       return {
-        side: OrderSide.BUY,
-        type: OrderType.MARKET,
         amount: spend ?? AllAvailableAmount,
         amountIn: 'counter',
+        side: OrderSide.BUY,
+        type: OrderType.MARKET,
       };
     }
 
@@ -87,11 +87,11 @@ export class BuyOnceStrategy extends ProtectedStrategy {
     }
 
     return {
-      side: OrderSide.BUY,
-      type: OrderType.LIMIT,
       amount,
       amountIn: 'base',
       price: buyAtPrice,
+      side: OrderSide.BUY,
+      type: OrderType.LIMIT,
     };
   }
 

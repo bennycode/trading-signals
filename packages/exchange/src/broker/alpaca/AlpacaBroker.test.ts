@@ -67,7 +67,7 @@ describe.sequential('AlpacaBroker', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     const marketData = new AlpacaMarketData({apiKey: 'test', apiSecret: 'test', usePaperTrading: true});
-    exchange = new AlpacaBroker({apiKey: 'test', apiSecret: 'test', usePaperTrading: true, marketData});
+    exchange = new AlpacaBroker({apiKey: 'test', apiSecret: 'test', marketData, usePaperTrading: true});
     // Default: stock symbol (empty crypto bars)
     mockMethods.getCryptoBarsLatest.mockResolvedValue({bars: {}});
   });
@@ -150,10 +150,10 @@ describe.sequential('AlpacaBroker', () => {
 
       const canceledOrder = {
         ...filledOrder,
-        id: 'order-2',
-        status: AlpacaOrderStatus.CANCELED,
         filled_avg_price: null,
         filled_qty: '0',
+        id: 'order-2',
+        status: AlpacaOrderStatus.CANCELED,
       };
 
       mockMethods.getOrders.mockResolvedValue([filledOrder, canceledOrder]);
@@ -264,9 +264,9 @@ describe.sequential('AlpacaBroker', () => {
 
       const pair = new TradingPair('SHOP', 'USD');
       const order = await exchange.placeLimitOrder(pair, {
+        price: '100',
         side: OrderSide.SELL,
         size: '5',
-        price: '100',
       });
 
       expect(order.type).toBe(OrderType.LIMIT);
@@ -293,9 +293,9 @@ describe.sequential('AlpacaBroker', () => {
 
       const pair = new TradingPair('SHOP', 'USD');
       const order = await exchange.placeLimitOrder(pair, {
+        price: '100',
         side: OrderSide.SELL,
         size: '5.5',
-        price: '100',
       });
 
       expect(order.type).toBe(OrderType.LIMIT);
