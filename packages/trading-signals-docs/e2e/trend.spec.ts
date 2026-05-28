@@ -1,10 +1,10 @@
 import {expect, test} from '@playwright/test';
 
-import {buildTrendPage} from './pages/trendPage';
+import {TrendPage} from './pages/TrendPage';
 
 test.describe('Trend indicators page', () => {
   test('selecting EMA on a synthetic downtrend reflects the choice in URL and UI', async ({page}) => {
-    const trendPage = buildTrendPage(page);
+    const trendPage = new TrendPage(page);
     await trendPage.goto();
 
     await trendPage.selectIndicator('ema');

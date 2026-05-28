@@ -1,10 +1,10 @@
 import {expect, test} from '@playwright/test';
 
-import {buildHomePage} from './pages/homePage';
+import {HomePage} from './pages/HomePage';
 
 test.describe('Homepage', () => {
   test('renders the hero, category navigation, and external links', async ({page}) => {
-    const homePage = buildHomePage(page);
+    const homePage = new HomePage(page);
     await homePage.goto();
 
     await expect(page.getByRole('heading', {level: 1, name: 'Trading Signals'})).toBeVisible();
@@ -26,7 +26,7 @@ test.describe('Homepage', () => {
   });
 
   test('navigates from the homepage to the trend indicators page', async ({page}) => {
-    const homePage = buildHomePage(page);
+    const homePage = new HomePage(page);
     await homePage.goto();
 
     await homePage.openCategory('Trend Indicators');

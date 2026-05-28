@@ -6,19 +6,24 @@ Playwright lives at `packages/trading-signals-docs/e2e/`. Vitest excludes that f
 
 A spec earns an E2E slot only when the integration itself is the test — page navigation, hydration of client components, third-party widgets (Highcharts, etc.) actually rendering, or anything that needs a real browser to be meaningful. Anything that can be exercised with a mocked render belongs in the vitest unit suite (co-located `*.test.ts(x)` files next to the code under test).
 
-## Page objects are factory functions
+## Page objects are classes
 
-Match the codebase style — arrow functions, no `class`. Each page object exposes `goto()` plus verb actions; specs compose them so every `test` body reads arrange / act / assert in ~3 lines. When a body grows past ~6 lines, extract the next verb to the page object.
+Use the classic class-based [Page Object Model](https://playwright.dev/docs/pom) — one class per page, `page` held as a private readonly field, public async methods for verb actions. Each page object exposes `goto()` plus verb actions; specs compose them so every `test` body reads arrange / act / assert in ~3 lines. When a body grows past ~6 lines, extract the next verb to the page object.
 
 ```ts
-// e2e/pages/homePage.ts
-export const buildHomePage = (page: Page): HomePage => ({
-  goto: async () => page.goto('/'),
-  openCategory: async category => { ... },
-});
+// e2e/pages/HomePage.ts
+export class HomePage {
+  constructor(private readonly page: Page) {}
+
+  async goto(): Promise<void> {
+    await this.page.goto('/');
+  }
+
+  async openCategory(category: string): Promise<void> { ... }
+}
 ```
 
-Page objects live under `e2e/pages/<name>Page.ts` and are named `build<Name>Page`.
+Page objects live under `e2e/pages/<Name>Page.ts` (PascalCase filename to match the exported class) and the class is named `<Name>Page`. Specs instantiate with `new <Name>Page(page)`.
 
 ## Run via `npm run test:e2e`
 
