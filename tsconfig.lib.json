@@ -23,11 +23,6 @@
     "target": "es2022",
     "types": ["node", "vitest/globals"]
   },
-  "exclude": [
-    "${configDir}/dist",
-    "${configDir}/docs",
-    "${configDir}/node_modules",
-    "${configDir}/vitest.config.ts"
-  ],
+  "exclude": ["${configDir}/dist", "${configDir}/docs", "${configDir}/node_modules", "${configDir}/vitest.config.ts"],
   "extends": "./tsconfig.base.json"
 }
