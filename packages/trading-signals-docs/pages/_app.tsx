@@ -1,8 +1,11 @@
+import {Highcharts} from '@highcharts/react';
 import type {AppProps} from 'next/app';
 import Link from 'next/link';
 import {useRouter} from 'next/router';
 import {useState} from 'react';
 import '../styles/globals.css';
+
+Highcharts.setOptions({accessibility: {enabled: false}});
 
 export default function App({Component, pageProps}: AppProps) {
   const router = useRouter();
