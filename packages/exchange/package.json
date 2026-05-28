@@ -33,7 +33,7 @@
     "access": "public"
   },
   "scripts": {
-    "alpaca:demo": "tsx src/broker/alpaca/demo/testAll.ts",
+    "alpaca:testAll": "tsx src/broker/alpaca/demo/testAll.ts",
     "alpaca:fetchCandles": "tsx src/broker/alpaca/demo/fetchCandles.ts",
     "trading212:buy": "tsx src/broker/trading212/demo/buy.ts",
     "trading212:listBalances": "tsx src/broker/trading212/demo/listBalances.ts",
