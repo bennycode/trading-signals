@@ -16,8 +16,10 @@
   },
   "exports": {
     ".": {
+      "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
-    }
+    },
+    "./package.json": "./package.json"
   },
   "files": [
     "dist",
@@ -30,14 +32,14 @@
     "trading"
   ],
   "license": "MIT",
-  "main": "src/index.js",
+  "main": "dist/index.js",
   "name": "trading-strategies",
   "publishConfig": {
     "access": "public"
   },
   "scripts": {
-    "build": "tsc",
-    "clean": "rimraf --glob src/**/*{.js,.js.map,.d.ts}",
+    "build": "tsc -p tsconfig.build.json",
+    "clean": "rimraf coverage dist",
     "dist": "npm run clean && npm run build",
     "backtest": "tsx src/start/runBacktest.ts",
     "strategy": "tsx src/start/runStrategy.ts",
@@ -53,5 +55,6 @@
     "test:units:watch": "vitest --watch"
   },
   "type": "module",
+  "types": "dist/index.d.ts",
   "version": "0.3.5"
 }

@@ -5,6 +5,7 @@
     "${configDir}/node_modules",
     "${configDir}/src/fixtures",
     "${configDir}/src/start",
+    "${configDir}/src/start.ts",
     "${configDir}/src/**/demo",
     "${configDir}/src/**/demo.ts",
     "${configDir}/src/**/fetchCandles.ts",
