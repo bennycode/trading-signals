@@ -9,25 +9,12 @@ on:
       - main
     paths:
       - 'packages/trading-signals-docs/**'
-      - 'packages/exchange/**'
-      - 'packages/trading-signals/**'
-      - 'packages/trading-strategies/**'
-      - 'package.json'
-      - 'package-lock.json'
-      - '.nvmrc'
-      - '.github/workflows/run-docs-e2e.yml'
   pull_request:
     branches:
       - main
     paths:
       - 'packages/trading-signals-docs/**'
-      - 'packages/exchange/**'
-      - 'packages/trading-signals/**'
-      - 'packages/trading-strategies/**'
-      - 'package.json'
-      - 'package-lock.json'
-      - '.nvmrc'
-      - '.github/workflows/run-docs-e2e.yml'
+  workflow_dispatch:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
