@@ -1,12 +1,3 @@
 {
-  "exclude": [
-    "${configDir}/dist",
-    "${configDir}/docs",
-    "${configDir}/node_modules",
-    "${configDir}/src/fixtures",
-    "${configDir}/src/start",
-    "${configDir}/vitest.config.ts",
-    "**/*.test.ts"
-  ],
-  "extends": "./tsconfig.json"
+  "extends": "../../tsconfig.build.json"
 }
