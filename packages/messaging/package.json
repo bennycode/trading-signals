@@ -42,8 +42,8 @@
   "name": "@typedtrader/messaging",
   "private": true,
   "scripts": {
-    "build": "tsc",
-    "clean": "rimraf --glob src/**/*{.js,.js.map,.d.ts}",
+    "build": "tsc -p tsconfig.build.json",
+    "clean": "rimraf coverage dist",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "tsx src/database/migrate.ts",
     "db:studio": "drizzle-kit studio",
