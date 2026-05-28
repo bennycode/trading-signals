@@ -7,11 +7,11 @@ test.describe('Trend indicators page', () => {
     const trendPage = buildTrendPage(page);
     await trendPage.goto();
 
-    await trendPage.selectIndicator('EMA');
+    await trendPage.selectIndicator('ema');
     await trendPage.selectMarketCondition('Synthetic Downtrend');
 
     await expect(page).toHaveURL(/#ema$/);
-    await expect(page.getByRole('combobox')).toHaveValue('downtrend');
+    await expect(page.getByTestId('market-condition-select')).toHaveValue('downtrend');
     await expect(page.getByText('Falling market - prices trending downward (1d)')).toBeVisible();
   });
 });

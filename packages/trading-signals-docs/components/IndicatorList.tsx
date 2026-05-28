@@ -24,6 +24,7 @@ export function IndicatorList({
         {indicators.map(indicator => (
           <button
             key={indicator.id}
+            data-testid={`indicator-${indicator.id}`}
             onClick={() => onIndicatorChange(indicator.id)}
             className={`w-full text-left px-3 py-2 rounded-md text-sm transition-colors ${
               selectedIndicator === indicator.id
