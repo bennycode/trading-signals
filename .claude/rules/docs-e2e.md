@@ -4,7 +4,7 @@ Playwright lives at `packages/trading-signals-docs/e2e/`. Vitest excludes that f
 
 ## Write E2E only for cross-cutting behavior
 
-A spec earns an E2E slot only when the integration itself is the test — page navigation, hydration of client components, third-party widgets (Highcharts, etc.) actually rendering, or anything that needs a real browser to be meaningful. Anything that can be exercised with a mocked render belongs in the vitest unit suite under `__tests__/`.
+A spec earns an E2E slot only when the integration itself is the test — page navigation, hydration of client components, third-party widgets (Highcharts, etc.) actually rendering, or anything that needs a real browser to be meaningful. Anything that can be exercised with a mocked render belongs in the vitest unit suite (co-located `*.test.ts(x)` files next to the code under test).
 
 ## Page objects are factory functions
 
