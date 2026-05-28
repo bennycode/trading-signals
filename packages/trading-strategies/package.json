@@ -14,13 +14,7 @@
     "ms": "4.0.0-nightly.202508271359",
     "tsx": "^4.21.0"
   },
-  "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "default": "./dist/index.js"
-    },
-    "./package.json": "./package.json"
-  },
+  "exports": "./dist/index.js",
   "files": [
     "dist",
     "!dist/start",
@@ -32,7 +26,6 @@
     "trading"
   ],
   "license": "MIT",
-  "main": "dist/index.js",
   "name": "trading-strategies",
   "publishConfig": {
     "access": "public"

@@ -15,13 +15,7 @@
     "zod": "^4.4.3"
   },
   "description": "Trading strategies to run trading bots with JavaScript / TypeScript.",
-  "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "default": "./dist/index.js"
-    },
-    "./package.json": "./package.json"
-  },
+  "exports": "./dist/index.js",
   "files": [
     "dist",
     "!dist/start",
@@ -34,7 +28,6 @@
     "typedtrader"
   ],
   "license": "MIT",
-  "main": "dist/index.js",
   "name": "@typedtrader/exchange",
   "publishConfig": {
     "access": "public"

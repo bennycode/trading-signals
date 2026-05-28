@@ -26,11 +26,7 @@
     "drizzle-kit": "^0.31.10",
     "tsx": "^4.21.0"
   },
-  "exports": {
-    ".": {
-      "default": "./dist/index.js"
-    }
-  },
+  "exports": "./dist/index.js",
   "files": [
     "dist",
     "!dist/start",
@@ -43,7 +39,6 @@
     "trading"
   ],
   "license": "MIT",
-  "main": "src/index.js",
   "name": "@typedtrader/messaging",
   "private": true,
   "scripts": {
