@@ -14,6 +14,7 @@
   },
   "description": "Documentation and showcase website for trading-signals library",
   "devDependencies": {
+    "@playwright/test": "^1.60.0",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
     "@types/react": "^19.2.14",
@@ -33,6 +34,7 @@
     "lint": "exit 0",
     "start": "next start",
     "test": "npm run test:types && npm run test:units",
+    "test:e2e": "playwright test",
     "test:types": "tsc --noEmit",
     "test:units": "vitest run",
     "test:watch": "vitest"
