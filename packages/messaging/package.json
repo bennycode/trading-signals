@@ -60,7 +60,6 @@
     "prettier": "prettier --config ../../.prettierrc.json --ignore-path ../../.gitignore --log-level error \"**/*.{json,scss,yml}\"",
     "start": "npm run test:types && tsx watch src/start.ts",
     "test": "npm run test:types && npm run test:imports && npm run test:units -- --coverage",
-    "test:exports": "attw --pack . --profile node16",
     "test:imports": "depcruise -c ../../.dependency-cruiser.cjs src --include-only \"^src\"",
     "test:types": "npm run lint:types",
     "test:units": "vitest run --passWithNoTests",

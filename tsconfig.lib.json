@@ -27,7 +27,6 @@
     "${configDir}/dist",
     "${configDir}/docs",
     "${configDir}/node_modules",
-    "${configDir}/tsdown.config.ts",
     "${configDir}/vitest.config.ts"
   ],
   "extends": "./tsconfig.base.json"
