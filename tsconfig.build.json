@@ -9,7 +9,8 @@
     "${configDir}/src/**/demo",
     "${configDir}/src/**/demo.ts",
     "${configDir}/src/**/fetchCandles.ts",
-    "${configDir}/*.config.ts",
+    "${configDir}/drizzle.config.ts",
+    "${configDir}/vitest.config.ts",
     "**/*.test.ts"
   ],
   "extends": "./tsconfig.lib.json"
