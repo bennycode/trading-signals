@@ -26,11 +26,7 @@
     "drizzle-kit": "^0.31.10",
     "tsx": "^4.21.0"
   },
-  "exports": {
-    ".": {
-      "default": "./dist/index.js"
-    }
-  },
+  "exports": "./dist/index.js",
   "files": [
     "dist",
     "!dist/start",
@@ -43,12 +39,11 @@
     "trading"
   ],
   "license": "MIT",
-  "main": "src/index.js",
   "name": "@typedtrader/messaging",
   "private": true,
   "scripts": {
-    "build": "tsc",
-    "clean": "rimraf --glob src/**/*{.js,.js.map,.d.ts}",
+    "build": "tsc -p tsconfig.build.json",
+    "clean": "rimraf coverage dist",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "tsx src/database/migrate.ts",
     "db:studio": "drizzle-kit studio",
@@ -60,7 +55,6 @@
     "prettier": "prettier --config ../../.prettierrc.json --ignore-path ../../.gitignore --log-level error \"**/*.{json,scss,yml}\"",
     "start": "npm run test:types && tsx watch src/start.ts",
     "test": "npm run test:types && npm run test:imports && npm run test:units -- --coverage",
-    "test:exports": "attw --pack . --profile node16",
     "test:imports": "depcruise -c ../../.dependency-cruiser.cjs src --include-only \"^src\"",
     "test:types": "npm run lint:types",
     "test:units": "vitest run --passWithNoTests",

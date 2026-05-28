@@ -15,19 +15,7 @@
     "zod": "^4.4.3"
   },
   "description": "Trading strategies to run trading bots with JavaScript / TypeScript.",
-  "exports": {
-    ".": {
-      "import": {
-        "types": "./dist/index.d.mts",
-        "default": "./dist/index.mjs"
-      },
-      "require": {
-        "types": "./dist/index.d.cts",
-        "default": "./dist/index.cjs"
-      }
-    },
-    "./package.json": "./package.json"
-  },
+  "exports": "./dist/index.js",
   "files": [
     "dist",
     "!dist/start",
@@ -40,19 +28,18 @@
     "typedtrader"
   ],
   "license": "MIT",
-  "main": "src/index.js",
   "name": "@typedtrader/exchange",
   "publishConfig": {
     "access": "public"
   },
   "scripts": {
-    "alpaca:demo": "tsx src/broker/alpaca/demo.ts",
-    "alpaca:fetchCandles": "tsx src/broker/alpaca/fetchCandles.ts",
+    "alpaca:testAll": "tsx src/broker/alpaca/demo/testAll.ts",
+    "alpaca:fetchCandles": "tsx src/broker/alpaca/demo/fetchCandles.ts",
     "trading212:buy": "tsx src/broker/trading212/demo/buy.ts",
     "trading212:listBalances": "tsx src/broker/trading212/demo/listBalances.ts",
-    "build": "tsdown --dts --format esm --format cjs",
-    "clean": "rimraf --glob src/**/*{.js,.js.map,.d.ts}",
-    "dist": "npm run clean && npm run build && npm run test:exports",
+    "build": "tsc -p tsconfig.build.json",
+    "clean": "rimraf coverage dist",
+    "dist": "npm run clean && npm run build",
     "lint": "npm run lint:code && npm run lint:other",
     "lint:code": "eslint .",
     "lint:other": "npm run prettier -- --list-different",
@@ -60,12 +47,12 @@
     "prettier": "prettier --config ../../.prettierrc.json --ignore-path ../../.gitignore --log-level error \"**/*.{json,scss,yml}\"",
     "start": "exit 0",
     "test": "npm run test:types && npm run test:imports && npm run test:units -- --coverage",
-    "test:exports": "attw --pack . --profile node16",
     "test:imports": "depcruise -c ../../.dependency-cruiser.cjs src --include-only \"^src\"",
     "test:types": "npm run lint:types",
     "test:units": "vitest run --passWithNoTests",
     "test:units:watch": "vitest --watch"
   },
   "type": "module",
+  "types": "dist/index.d.ts",
   "version": "0.2.5"
 }

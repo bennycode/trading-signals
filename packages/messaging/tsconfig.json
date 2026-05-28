@@ -1,4 +1,4 @@
 {
   "extends": "../../tsconfig.lib.json",
-  "exclude": ["drizzle.config.ts", "tsdown.config.ts", "dist"]
+  "exclude": ["drizzle.config.ts", "dist"]
 }

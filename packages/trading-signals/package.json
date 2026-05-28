@@ -4,23 +4,9 @@
   },
   "description": "Technical indicators to run technical analysis with JavaScript / TypeScript.",
   "devDependencies": {
-    "generate-changelog": "^1.8.0",
-    "tsdown": "^0.21.10"
+    "generate-changelog": "^1.8.0"
   },
-  "exports": {
-    ".": {
-      "import": {
-        "types": "./dist/index.d.mts",
-        "default": "./dist/index.mjs"
-      },
-      "require": {
-        "types": "./dist/index.d.cts",
-        "default": "./dist/index.cjs"
-      },
-      "default": "./dist/index.mjs"
-    },
-    "./package.json": "./package.json"
-  },
+  "exports": "./dist/index.js",
   "files": [
     "dist",
     "!dist/start",
@@ -55,17 +41,16 @@
     "trading"
   ],
   "license": "MIT",
-  "main": "dist/index.js",
   "name": "trading-signals",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/bennycode/trading-signals.git"
   },
   "scripts": {
-    "build": "tsdown --dts --format esm --format cjs",
+    "build": "tsc -p tsconfig.build.json",
     "changelog:commit": "git add CHANGELOG.md && git commit -m \"docs: updated CHANGELOG.md\"",
     "clean": "rimraf coverage dist",
-    "dist": "npm run clean && npm run build && npm run test:exports",
+    "dist": "npm run clean && npm run build",
     "fix": "npm run fix:other && npm run fix:code",
     "fix:code": "npm run lint:code -- --fix",
     "fix:other": "npm run prettier -- --write",
@@ -81,12 +66,12 @@
     "release:patch": "generate-changelog -p -x \"chore,test\" && npm run changelog:commit && npm version patch",
     "start": "tsx ./src/start/demo.ts",
     "test": "npm run test:types && npm run test:imports && npm run test:units -- --coverage",
-    "test:exports": "attw --pack . --profile node16",
     "test:imports": "depcruise -c ../../.dependency-cruiser.cjs src --include-only \"^src\"",
     "test:types": "npm run lint:types",
     "test:units": "vitest run --passWithNoTests",
     "test:units:watch": "vitest --watch"
   },
   "type": "module",
+  "types": "dist/index.d.ts",
   "version": "7.4.3"
 }

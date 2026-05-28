@@ -3,9 +3,9 @@ import 'dotenv-defaults/config.js';
 import type {StringValue} from 'ms';
 import {ms} from 'ms';
 import {parseArgs} from 'node:util';
-import {writeCandles} from '../../candle/writeCandles.js';
-import {TradingPair} from '../TradingPair.js';
-import {getAlpacaClient} from './getAlpacaClient.js';
+import {writeCandles} from '../../../candle/writeCandles.js';
+import {TradingPair} from '../../TradingPair.js';
+import {getAlpacaClient} from '../getAlpacaClient.js';
 
 const {values} = parseArgs({
   options: {
