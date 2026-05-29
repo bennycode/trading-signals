@@ -178,15 +178,6 @@ export class TradingSession extends EventEmitter<TradingSessionEventMap> {
       return;
     }
 
-    /*
-     * Defense in depth: a strategy can legitimately request `AllAvailableAmount`, but if the
-     * relevant balance is zero (e.g. the position was closed externally and the strategy's
-     * persisted state is stale) the resolved size is zero. Some brokers — Alpaca for US
-     * equities — set `base_min_size` to "0", so the `< minSize` check below wouldn't catch
-     * this and the order would reach the exchange only to be rejected with 422 "qty must be
-     * > 0" once a minute. Skip the call, surface the situation, and let upstream fix the
-     * strategy state.
-     */
     if (size.lte(0)) {
       this.emit(
         'error',
