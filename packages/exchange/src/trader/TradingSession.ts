@@ -5,6 +5,7 @@ import type {BatchedCandle} from '../candle/BatchedCandle.js';
 import {ONE_MINUTE_IN_MS} from '../candle/BatchedCandle.js';
 import type {Candle, Fill, PendingOrder} from '../broker/Broker.js';
 import {OrderSide, OrderType} from '../broker/Broker.js';
+import {NonPositiveOrderSizeError} from './TradingSessionErrors.js';
 import {AllAvailableAmount} from './TradingSessionTypes.js';
 import type {
   OrderAdvice,
@@ -181,10 +182,7 @@ export class TradingSession extends EventEmitter<TradingSessionEventMap> {
     if (size.lte(0)) {
       this.emit(
         'error',
-        new Error(
-          `Refusing to place "${advice.side}" order with non-positive size "${size.toFixed()}" ` +
-            `(amountIn="${advice.amountIn}"). The strategy's view of the position is likely stale.`
-        )
+        new NonPositiveOrderSizeError({amountIn: advice.amountIn, side: advice.side, size: size.toFixed()})
       );
       return;
     }

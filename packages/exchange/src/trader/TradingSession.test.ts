@@ -13,6 +13,7 @@ import {
   type PendingMarketOrder,
   type TradingRules,
 } from '../broker/Broker.js';
+import {NonPositiveOrderSizeError} from './TradingSessionErrors.js';
 import {AllAvailableAmount} from './TradingSessionTypes.js';
 import type {OrderAdvice, TradingSessionStrategy} from './TradingSessionTypes.js';
 
@@ -472,7 +473,11 @@ describe.sequential('TradingSession', () => {
       exchange.emit('candle-topic-1', sampleCandle);
       await vi.waitFor(() => expect(onError).toHaveBeenCalledTimes(1));
 
-      expect(onError.mock.calls[0][0].message).toContain('non-positive size');
+      const error = onError.mock.calls[0][0];
+      expect(error).toBeInstanceOf(NonPositiveOrderSizeError);
+      expect(error.side).toBe(OrderSide.SELL);
+      expect(error.amountIn).toBe('base');
+      expect(error.size).toBe('0');
       expect(exchange.placeMarketOrder).not.toHaveBeenCalled();
       expect(exchange.placeLimitOrder).not.toHaveBeenCalled();
     });
