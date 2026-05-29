@@ -152,7 +152,7 @@ export class StrategyMonitor {
       return;
     }
 
-    const message = `Order Filled!\n\nStrategy: ${row.strategyName}\nPair: ${row.pair}\nSide: ${fill.side}\nPrice: ${fill.price}\nSize: ${fill.size}\nFee: ${fill.fee} ${fill.feeAsset}`;
+    const message = `Order Filled!\n\nStrategy: ${row.strategyName}\nPair: ${row.pair}\nSide: ${fill.side}\nPrice: ${fill.price}\nSize: ${fill.size}\nFee: ${fill.fee} ${fill.feeAsset}\nOrder ID: ${fill.order_id}`;
 
     const platformPrefix = account.userId.split(':')[0];
     const platform = this.#platforms.get(platformPrefix);

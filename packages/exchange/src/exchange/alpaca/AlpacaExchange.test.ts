@@ -206,7 +206,7 @@ describe.sequential('AlpacaExchange', () => {
       const rules = await exchange.getTradingRules(pair);
 
       expect(rules.base_min_size).toBe('0');
-      expect(rules.base_increment).toBe('0.00000001');
+      expect(rules.base_increment).toBe('0.000000001');
       expect(rules.counter_increment).toBe('0.01');
     });
 
