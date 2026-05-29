@@ -13,7 +13,7 @@ import {
   type PendingMarketOrder,
   type TradingRules,
 } from '../broker/Broker.js';
-import {NonPositiveOrderSizeError} from './TradingSessionErrors.js';
+import {NonPositiveOrderSizeError, OrderSizeBelowMinimumError} from './TradingSessionErrors.js';
 import {AllAvailableAmount} from './TradingSessionTypes.js';
 import type {OrderAdvice, TradingSessionStrategy} from './TradingSessionTypes.js';
 
@@ -446,7 +446,13 @@ describe.sequential('TradingSession', () => {
       exchange.emit('candle-topic-1', sampleCandle);
       await vi.waitFor(() => expect(onError).toHaveBeenCalledTimes(1));
 
-      expect(onError.mock.calls[0][0].message).toContain('below minimum base size');
+      const error = onError.mock.calls[0][0];
+      expect(error).toBeInstanceOf(OrderSizeBelowMinimumError);
+      expect(error.side).toBe(OrderSide.SELL);
+      expect(error.amountIn).toBe('base');
+      // base balance=0.001, base_increment=0.001 → rounds to 0.001 (still below base_min_size=0.01).
+      expect(error.size).toBe('0.001');
+      expect(error.minimumSize).toBe('0.01');
       expect(exchange.placeMarketOrder).not.toHaveBeenCalled();
     });
 

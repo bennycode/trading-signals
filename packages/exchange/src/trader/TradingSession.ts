@@ -5,7 +5,7 @@ import type {BatchedCandle} from '../candle/BatchedCandle.js';
 import {ONE_MINUTE_IN_MS} from '../candle/BatchedCandle.js';
 import type {Candle, Fill, PendingOrder} from '../broker/Broker.js';
 import {OrderSide, OrderType} from '../broker/Broker.js';
-import {NonPositiveOrderSizeError} from './TradingSessionErrors.js';
+import {NonPositiveOrderSizeError, OrderSizeBelowMinimumError} from './TradingSessionErrors.js';
 import {AllAvailableAmount} from './TradingSessionTypes.js';
 import type {
   OrderAdvice,
@@ -188,14 +188,18 @@ export class TradingSession extends EventEmitter<TradingSessionEventMap> {
     }
 
     const {base_min_size, counter_min_size} = this.#state.tradingRules;
+    const minimumSize = advice.amountIn === 'counter' ? counter_min_size : base_min_size;
 
-    if (advice.amountIn === 'counter') {
-      if (size.lt(counter_min_size)) {
-        this.emit('error', new Error(`Order size "${size}" is below minimum counter size "${counter_min_size}"`));
-        return;
-      }
-    } else if (size.lt(base_min_size)) {
-      this.emit('error', new Error(`Order size "${size}" is below minimum base size "${base_min_size}"`));
+    if (size.lt(minimumSize)) {
+      this.emit(
+        'error',
+        new OrderSizeBelowMinimumError({
+          amountIn: advice.amountIn,
+          minimumSize,
+          side: advice.side,
+          size: size.toFixed(),
+        })
+      );
       return;
     }
 
