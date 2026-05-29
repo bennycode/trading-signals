@@ -164,19 +164,18 @@ export class TrailingStopStrategy extends Strategy {
 
     /*
      * Post-restore reconciliation. Runs at most once per process, on the first candle
-     * where the strategy is already attached (peakPrice !== '0'). If the broker reports
-     * a smaller base balance than the strategy's persisted positionSize, the position
-     * was reduced or fully closed outside the strategy — usually because a previous
-     * fill never propagated through `onFill` (e.g. unclean shutdown between fill arrival
-     * and state persistence). Without this check, the strategy would keep re-emitting a
-     * sell-all every minute against a phantom position; `TradingSession` would then
-     * resolve the size to 0 and either drop the order (post-Bug-B fix) or send qty=0
-     * to the broker (pre-fix) — either way, log spam without forward progress.
+     * where the strategy is already attached (peakPrice !== '0'). The broker is the source
+     * of truth for base balance — if persisted positionSize disagrees in either direction,
+     * sync to the broker. Downward drift usually means a previous fill never propagated
+     * through `onFill` (e.g. unclean shutdown between fill arrival and persistence) and
+     * the position is partially or fully gone; upward drift means shares were acquired
+     * externally while a previous worker was down. When the broker reports zero, mark
+     * the strategy exited and tear the session down.
      */
     if (!this.#reconciled && this.#state.peakPrice !== '0') {
       this.#reconciled = true;
       const persistedSize = new Big(this.#state.positionSize);
-      if (persistedSize.gt(0) && state.baseBalance.lt(persistedSize)) {
+      if (!state.baseBalance.eq(persistedSize)) {
         if (state.baseBalance.lte(0)) {
           const message =
             `Reconciliation: persisted positionSize ${persistedSize.toFixed()} but broker reports ` +
@@ -189,8 +188,8 @@ export class TrailingStopStrategy extends Strategy {
           return undefined;
         }
         const message =
-          `Reconciliation: persisted positionSize ${persistedSize.toFixed()} exceeds broker baseBalance ` +
-          `${state.baseBalance.toFixed()}. Shrinking position size to match.`;
+          `Reconciliation: persisted positionSize ${persistedSize.toFixed()} but broker reports ` +
+          `baseBalance ${state.baseBalance.toFixed()}. Syncing position size to broker.`;
         this.onMessage?.(message);
         this.#state.positionSize = state.baseBalance.toFixed();
       }

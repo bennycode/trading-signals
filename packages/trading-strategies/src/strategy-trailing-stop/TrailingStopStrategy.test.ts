@@ -481,14 +481,14 @@ describe('TrailingStopStrategy', () => {
     expect(messages[0]).toMatch(/Reconciliation: persisted positionSize 5 but broker reports baseBalance 0/);
   });
 
-  it('shrinks positionSize when broker reports a smaller balance than persisted', async () => {
+  it('syncs positionSize to broker when the live balance is smaller than persisted', async () => {
     const strategy = new TrailingStopStrategy({trailDownPct: '10'});
     const messages: string[] = [];
     strategy.onMessage = text => messages.push(text);
 
     /*
-     * Persisted size 5; live balance 3. Partial drift — keep trading, but with the
-     * smaller, accurate size. Strategy should NOT mark itself exited.
+     * Persisted size 5; live balance 3. Partial downward drift — keep trading with the
+     * broker-truthful smaller size. Strategy should NOT mark itself exited.
      */
     strategy.restoreState({
       exited: false,
@@ -502,7 +502,7 @@ describe('TrailingStopStrategy', () => {
     const candles = [
       /*
        * High enough above the trail target that no exit fires; we just want to verify
-       * reconciliation reduced positionSize without ending the session.
+       * reconciliation adjusted positionSize without ending the session.
        */
       createCandle({close: '115', high: '116', low: '114', open: '115', openTimeInISO: '2025-01-01T00:00:00.000Z'}),
     ];
@@ -519,7 +519,45 @@ describe('TrailingStopStrategy', () => {
     expect(strategy.trailingState.exited).toBe(false);
     expect(strategy.trailingState.positionSize).toBe('3');
     expect(messages).toHaveLength(1);
-    expect(messages[0]).toMatch(/Reconciliation: persisted positionSize 5 exceeds broker baseBalance 3/);
+    expect(messages[0]).toMatch(/Reconciliation: persisted positionSize 5 but broker reports baseBalance 3/);
+  });
+
+  it('claims the extra when the broker reports a larger balance than persisted', async () => {
+    const strategy = new TrailingStopStrategy({trailDownPct: '10'});
+    const messages: string[] = [];
+    strategy.onMessage = text => messages.push(text);
+
+    /*
+     * Persisted size 3; live balance 5. Upward drift — someone bought more externally
+     * while a previous worker was down. Treat broker as source of truth and let the
+     * trailing stop manage the larger position.
+     */
+    strategy.restoreState({
+      exited: false,
+      exitLimitPrice: null,
+      exitReason: null,
+      peakPrice: '120',
+      positionSize: '3',
+      stopPrice: '108',
+    });
+
+    const candles = [
+      createCandle({close: '115', high: '116', low: '114', open: '115', openTimeInISO: '2025-01-01T00:00:00.000Z'}),
+    ];
+
+    const config: BacktestConfig = {
+      broker: createMockExchange({baseBalance: '5'}),
+      candles,
+      strategy,
+      tradingPair,
+    };
+
+    await new BacktestExecutor(config).execute();
+
+    expect(strategy.trailingState.exited).toBe(false);
+    expect(strategy.trailingState.positionSize).toBe('5');
+    expect(messages).toHaveLength(1);
+    expect(messages[0]).toMatch(/Reconciliation: persisted positionSize 3 but broker reports baseBalance 5/);
   });
 
   it('does not reconcile a fresh strategy that has not yet attached', async () => {
