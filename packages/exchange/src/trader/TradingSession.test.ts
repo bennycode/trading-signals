@@ -450,9 +450,11 @@ describe.sequential('TradingSession', () => {
     });
 
     it('refuses to place an order when AllAvailableAmount resolves to zero', async () => {
-      // baseBalance=0 → resolved size is 0. This can happen when the position is closed
-      // outside the strategy and the strategy's persisted state hasn't caught up. The
-      // session must drop the advice instead of forwarding qty=0 to the broker.
+      /*
+       * baseBalance=0 → resolved size is 0. This can happen when the position is closed
+       * outside the strategy and the strategy's persisted state hasn't caught up. The
+       * session must drop the advice instead of forwarding qty=0 to the broker.
+       */
       exchange.getAvailableBalances.mockResolvedValue({base: new Big('0'), counter: new Big('5000')});
       const advice: OrderAdvice = {
         amount: AllAvailableAmount,
