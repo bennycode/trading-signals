@@ -456,8 +456,10 @@ describe('TrailingStopStrategy', () => {
     });
 
     const candles = [
-      // Single candle, deep below the stop. Pre-fix this would emit a sell-all advice
-      // every iteration; post-fix the strategy reconciles, marks exited, and stays silent.
+      /*
+       * Single candle, deep below the stop. Pre-fix this would emit a sell-all advice
+       * every iteration; post-fix the strategy reconciles, marks exited, and stays silent.
+       */
       createCandle({close: '100', high: '101', low: '99', open: '100', openTimeInISO: '2025-01-01T00:00:00.000Z'}),
       createCandle({close: '95', high: '96', low: '94', open: '100', openTimeInISO: '2025-01-01T00:01:00.000Z'}),
     ];
@@ -484,8 +486,10 @@ describe('TrailingStopStrategy', () => {
     const messages: string[] = [];
     strategy.onMessage = text => messages.push(text);
 
-    // Persisted size 5; live balance 3. Partial drift — keep trading, but with the
-    // smaller, accurate size. Strategy should NOT mark itself exited.
+    /*
+     * Persisted size 5; live balance 3. Partial drift — keep trading, but with the
+     * smaller, accurate size. Strategy should NOT mark itself exited.
+     */
     strategy.restoreState({
       exited: false,
       exitLimitPrice: null,
@@ -496,8 +500,10 @@ describe('TrailingStopStrategy', () => {
     });
 
     const candles = [
-      // High enough above the trail target that no exit fires; we just want to verify
-      // reconciliation reduced positionSize without ending the session.
+      /*
+       * High enough above the trail target that no exit fires; we just want to verify
+       * reconciliation reduced positionSize without ending the session.
+       */
       createCandle({close: '115', high: '116', low: '114', open: '115', openTimeInISO: '2025-01-01T00:00:00.000Z'}),
     ];
 
@@ -521,8 +527,10 @@ describe('TrailingStopStrategy', () => {
     const messages: string[] = [];
     strategy.onMessage = text => messages.push(text);
 
-    // No restoreState — default state, peakPrice='0', positionSize='0'. The first candle
-    // should run the normal attach branch (with broker baseBalance=5), not reconciliation.
+    /*
+     * No restoreState — default state, peakPrice='0', positionSize='0'. The first candle
+     * should run the normal attach branch (with broker baseBalance=5), not reconciliation.
+     */
     const candles = [
       createCandle({close: '100', high: '101', low: '99', open: '100', openTimeInISO: '2025-01-01T00:00:00.000Z'}),
     ];
