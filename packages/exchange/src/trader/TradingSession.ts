@@ -191,8 +191,8 @@ export class TradingSession extends EventEmitter<TradingSessionEventMap> {
       this.emit(
         'error',
         new Error(
-          `Refusing to place ${advice.side} order with non-positive size "${size.toFixed()}" ` +
-            `(amountIn=${advice.amountIn}). The strategy's view of the position is likely stale.`
+          `Refusing to place "${advice.side}" order with non-positive size "${size.toFixed()}" ` +
+            `(amountIn="${advice.amountIn}"). The strategy's view of the position is likely stale.`
         )
       );
       return;
