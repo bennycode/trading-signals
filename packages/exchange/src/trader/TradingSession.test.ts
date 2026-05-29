@@ -449,6 +449,32 @@ describe.sequential('TradingSession', () => {
       expect(exchange.placeMarketOrder).not.toHaveBeenCalled();
     });
 
+    it('refuses to place an order when AllAvailableAmount resolves to zero', async () => {
+      // baseBalance=0 → resolved size is 0. This can happen when the position is closed
+      // outside the strategy and the strategy's persisted state hasn't caught up. The
+      // session must drop the advice instead of forwarding qty=0 to the broker.
+      exchange.getAvailableBalances.mockResolvedValue({base: new Big('0'), counter: new Big('5000')});
+      const advice: OrderAdvice = {
+        amount: AllAvailableAmount,
+        amountIn: 'base',
+        side: OrderSide.SELL,
+        type: OrderType.MARKET,
+      };
+      strategy.onCandle.mockResolvedValue(advice);
+
+      const onError = vi.fn();
+      session.on('error', onError);
+
+      await session.start();
+
+      exchange.emit('candle-topic-1', sampleCandle);
+      await vi.waitFor(() => expect(onError).toHaveBeenCalledTimes(1));
+
+      expect(onError.mock.calls[0][0].message).toContain('non-positive size');
+      expect(exchange.placeMarketOrder).not.toHaveBeenCalled();
+      expect(exchange.placeLimitOrder).not.toHaveBeenCalled();
+    });
+
     it('emits error when strategy.onCandle throws', async () => {
       strategy.onCandle.mockRejectedValue(new Error('Strategy crashed'));
 
