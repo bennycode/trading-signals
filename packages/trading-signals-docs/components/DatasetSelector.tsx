@@ -60,6 +60,7 @@ export function DatasetSelector({datasets, selectedDataset, onDatasetChange, onC
     <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-4">
       <h3 className="text-sm font-semibold text-white mb-3">Market Condition</h3>
       <select
+        data-testid="market-condition-select"
         value={selectedDataset}
         onChange={e => onDatasetChange(e.target.value)}
         className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-md text-white text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent">
