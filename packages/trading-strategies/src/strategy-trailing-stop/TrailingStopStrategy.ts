@@ -127,6 +127,15 @@ export class TrailingStopStrategy extends Strategy {
   readonly #pivotPrice: Big | null;
   readonly #exitOrder: 'limit' | 'market';
 
+  /*
+   * One-shot flag for the post-restore reconciliation check in `processCandle`. It is
+   * intentionally NOT persisted: every fresh process should reconcile once against the
+   * live broker balance on the first candle after restore, because the persisted state
+   * could have been written before a fill arrived (or a previous process died before
+   * `onFill` updated state) — see the NVDA incident write-up in the conversation log.
+   */
+  #reconciled = false;
+
   constructor(config: TrailingStopConfig) {
     super({config, state: defaultState()});
     const parsed = TrailingStopSchema.parse(config);
@@ -151,6 +160,40 @@ export class TrailingStopStrategy extends Strategy {
   ): Promise<OrderAdvice | void> {
     if (this.#state.exited) {
       return undefined;
+    }
+
+    /*
+     * Post-restore reconciliation. Runs at most once per process, on the first candle
+     * where the strategy is already attached (peakPrice !== '0'). If the broker reports
+     * a smaller base balance than the strategy's persisted positionSize, the position
+     * was reduced or fully closed outside the strategy — usually because a previous
+     * fill never propagated through `onFill` (e.g. unclean shutdown between fill arrival
+     * and state persistence). Without this check, the strategy would keep re-emitting a
+     * sell-all every minute against a phantom position; `TradingSession` would then
+     * resolve the size to 0 and either drop the order (post-Bug-B fix) or send qty=0
+     * to the broker (pre-fix) — either way, log spam without forward progress.
+     */
+    if (!this.#reconciled && this.#state.peakPrice !== '0') {
+      this.#reconciled = true;
+      const persistedSize = new Big(this.#state.positionSize);
+      if (persistedSize.gt(0) && state.baseBalance.lt(persistedSize)) {
+        if (state.baseBalance.lte(0)) {
+          const message =
+            `Reconciliation: persisted positionSize ${persistedSize.toFixed()} but broker reports ` +
+            `baseBalance ${state.baseBalance.toFixed()}. Position was closed outside the strategy — ` +
+            `marking as exited.`;
+          this.onMessage?.(message);
+          this.#state.positionSize = '0';
+          this.#state.exited = true;
+          await this.onFinish?.();
+          return undefined;
+        }
+        const message =
+          `Reconciliation: persisted positionSize ${persistedSize.toFixed()} exceeds broker baseBalance ` +
+          `${state.baseBalance.toFixed()}. Shrinking position size to match.`;
+        this.onMessage?.(message);
+        this.#state.positionSize = state.baseBalance.toFixed();
+      }
     }
 
     if (this.#state.peakPrice === '0') {

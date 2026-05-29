@@ -1,5 +1,5 @@
 import Big from 'big.js';
-import {describe, expect, it} from 'vitest';
+import {describe, expect, it, vi} from 'vitest';
 import {AlpacaBrokerMock, OrderSide, OrderType, TradingPair} from '@typedtrader/exchange';
 import type {Candle} from '@typedtrader/exchange';
 import {BacktestExecutor} from '../backtest/BacktestExecutor.js';
@@ -430,5 +430,117 @@ describe('TrailingStopStrategy', () => {
     expect(strategy.trailingState.peakPrice).toBe('120');
     expect(strategy.trailingState.stopPrice).toBe('108');
     expect(strategy.trailingState.positionSize).toBe('5');
+  });
+
+  /*
+   * Regression coverage for the NVDA incident (2026-05): persisted state thought it held
+   * 1 share but the broker had already filled the trail's sell while the previous worker
+   * was alive. On restart the strategy kept emitting sell-all advice against a zero
+   * baseBalance, generating an Alpaca "qty must be > 0" error every minute. Reconciliation
+   * must catch the drift on the first candle after restore and abort the session cleanly.
+   */
+  it('reconciles to exited when broker reports zero base balance after restore', async () => {
+    const strategy = new TrailingStopStrategy({trailDownPct: '10'});
+    const messages: string[] = [];
+    const onFinish = vi.fn();
+    strategy.onMessage = text => messages.push(text);
+    strategy.onFinish = onFinish;
+
+    strategy.restoreState({
+      exited: false,
+      exitLimitPrice: '108',
+      exitReason: 'Trailing stop: close 107 <= peak 120 - 10% (target 108)',
+      peakPrice: '120',
+      positionSize: '5',
+      stopPrice: '108',
+    });
+
+    const candles = [
+      // Single candle, deep below the stop. Pre-fix this would emit a sell-all advice
+      // every iteration; post-fix the strategy reconciles, marks exited, and stays silent.
+      createCandle({close: '100', high: '101', low: '99', open: '100', openTimeInISO: '2025-01-01T00:00:00.000Z'}),
+      createCandle({close: '95', high: '96', low: '94', open: '100', openTimeInISO: '2025-01-01T00:01:00.000Z'}),
+    ];
+
+    const config: BacktestConfig = {
+      broker: createMockExchange({baseBalance: '0'}),
+      candles,
+      strategy,
+      tradingPair,
+    };
+
+    const result = await new BacktestExecutor(config).execute();
+
+    expect(result.trades).toHaveLength(0);
+    expect(strategy.trailingState.exited).toBe(true);
+    expect(strategy.trailingState.positionSize).toBe('0');
+    expect(onFinish).toHaveBeenCalledTimes(1);
+    expect(messages).toHaveLength(1);
+    expect(messages[0]).toMatch(/Reconciliation: persisted positionSize 5 but broker reports baseBalance 0/);
+  });
+
+  it('shrinks positionSize when broker reports a smaller balance than persisted', async () => {
+    const strategy = new TrailingStopStrategy({trailDownPct: '10'});
+    const messages: string[] = [];
+    strategy.onMessage = text => messages.push(text);
+
+    // Persisted size 5; live balance 3. Partial drift — keep trading, but with the
+    // smaller, accurate size. Strategy should NOT mark itself exited.
+    strategy.restoreState({
+      exited: false,
+      exitLimitPrice: null,
+      exitReason: null,
+      peakPrice: '120',
+      positionSize: '5',
+      stopPrice: '108',
+    });
+
+    const candles = [
+      // High enough above the trail target that no exit fires; we just want to verify
+      // reconciliation reduced positionSize without ending the session.
+      createCandle({close: '115', high: '116', low: '114', open: '115', openTimeInISO: '2025-01-01T00:00:00.000Z'}),
+    ];
+
+    const config: BacktestConfig = {
+      broker: createMockExchange({baseBalance: '3'}),
+      candles,
+      strategy,
+      tradingPair,
+    };
+
+    await new BacktestExecutor(config).execute();
+
+    expect(strategy.trailingState.exited).toBe(false);
+    expect(strategy.trailingState.positionSize).toBe('3');
+    expect(messages).toHaveLength(1);
+    expect(messages[0]).toMatch(/Reconciliation: persisted positionSize 5 exceeds broker baseBalance 3/);
+  });
+
+  it('does not reconcile a fresh strategy that has not yet attached', async () => {
+    const strategy = new TrailingStopStrategy({trailDownPct: '10'});
+    const messages: string[] = [];
+    strategy.onMessage = text => messages.push(text);
+
+    // No restoreState — default state, peakPrice='0', positionSize='0'. The first candle
+    // should run the normal attach branch (with broker baseBalance=5), not reconciliation.
+    const candles = [
+      createCandle({close: '100', high: '101', low: '99', open: '100', openTimeInISO: '2025-01-01T00:00:00.000Z'}),
+    ];
+
+    const config: BacktestConfig = {
+      broker: createMockExchange({baseBalance: '5'}),
+      candles,
+      strategy,
+      tradingPair,
+    };
+
+    await new BacktestExecutor(config).execute();
+
+    expect(strategy.trailingState.exited).toBe(false);
+    expect(strategy.trailingState.peakPrice).toBe('101');
+    expect(strategy.trailingState.positionSize).toBe('5');
+    // Only the attach message — no reconciliation noise.
+    expect(messages).toHaveLength(1);
+    expect(messages[0]).toMatch(/^Trail attached/);
   });
 });
