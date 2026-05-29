@@ -1,4 +1,4 @@
-name: 'Run Docs E2E'
+name: 'Run E2E Docs'
 
 permissions:
   contents: read
