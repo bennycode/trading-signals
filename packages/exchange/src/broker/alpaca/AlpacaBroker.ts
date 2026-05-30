@@ -106,6 +106,23 @@ export class AlpacaBroker extends Broker implements MarketDataSource {
     counter_min_size: '1',
   };
 
+  /**
+   * Default trading rules for non-crypto (fractional/notional) assets on Alpaca.
+   * Notional and quantity fields can take up to 9 decimal places. Alpaca defines no
+   * minimum quantity (only a ~$1 notional floor: "buy as little as $1 worth of shares"),
+   * so `base_min_size` is set to the smallest placeable order: one `base_increment`.
+   *
+   * @see https://docs.alpaca.markets/docs/fractional-trading#supported-order-types
+   */
+  static DEFAULT_FRACTIONAL_TRADING_RULES = {
+    base_increment: '0.000000001',
+    base_max_size: Number.MAX_SAFE_INTEGER.toString(),
+    /** Alpaca defines only a $1 notional floor, not a quantity minimum, so the smallest placeable order is one increment */
+    base_min_size: '0.000000001',
+    counter_increment: '0.01',
+    counter_min_size: '1',
+  };
+
   async getCandles(pair: TradingPair, request: CandleImportRequest): Promise<Candle[]> {
     return this.#marketData.getCandles(pair, request);
   }
@@ -321,26 +338,18 @@ export class AlpacaBroker extends Broker implements MarketDataSource {
     const asset = assets.find(a => a.symbol === symbol);
 
     if (asset) {
-      if (asset.class === 'crypto' && asset.min_order_size && asset.min_trade_increment && asset.price_increment) {
+      if (asset.class === 'crypto') {
         return {
-          base_increment: asset.min_trade_increment,
+          base_increment: asset.min_trade_increment || AlpacaBroker.DEFAULT_CRYPTO_TRADING_RULES.base_increment,
           base_max_size: Number.MAX_SAFE_INTEGER.toString(),
-          base_min_size: asset.min_order_size,
-          counter_increment: asset.price_increment,
+          base_min_size: asset.min_order_size || AlpacaBroker.DEFAULT_CRYPTO_TRADING_RULES.base_min_size,
+          counter_increment: asset.price_increment || AlpacaBroker.DEFAULT_CRYPTO_TRADING_RULES.counter_increment,
           counter_min_size: pair.counter === 'USD' ? '1' : '0',
           pair,
         };
       }
-      /*
-       * Notional and quantity fields can take up to 9 decimal places:
-       * @see https://docs.alpaca.markets/docs/fractional-trading#supported-order-types
-       */
       return {
-        base_increment: '0.000000001',
-        base_max_size: Number.MAX_SAFE_INTEGER.toString(),
-        base_min_size: '0',
-        counter_increment: '0.01',
-        counter_min_size: '1',
+        ...AlpacaBroker.DEFAULT_FRACTIONAL_TRADING_RULES,
         pair,
       };
     }
