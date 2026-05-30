@@ -140,12 +140,7 @@ export abstract class BrokerMock extends Broker {
   protected override async placeOrder(pair: TradingPair, options: OrderOptions) {
     const rules = await this.getTradingRules(pair);
     const size = this.#applyTradingRules(new Big(options.size), options, rules);
-
-    if (!size) {
-      throw new Error(
-        `Order rejected: size ${options.size} does not meet trading rules (min: ${rules.base_min_size}, increment: ${rules.base_increment})`
-      );
-    }
+    assert.ok(size);
 
     // Validate balance and put amount on hold
     if (options.side === OrderSide.BUY) {
