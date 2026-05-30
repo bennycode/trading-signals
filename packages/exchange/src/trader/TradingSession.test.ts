@@ -7,30 +7,16 @@ import {
   OrderSide,
   OrderType,
   type Candle,
-  type FeeRate,
   type Fill,
   type PendingLimitOrder,
   type PendingMarketOrder,
-  type TradingRules,
 } from '../broker/Broker.js';
+import {OrderSizeBelowMinimumError} from './OrderSizeBelowMinimumError.js';
 import {AllAvailableAmount} from './TradingSessionTypes.js';
 import type {OrderAdvice, TradingSessionStrategy} from './TradingSessionTypes.js';
+import {AlpacaBroker} from '../broker/alpaca/AlpacaBroker.js';
 
 const pair = new TradingPair('TSLA', 'USD');
-
-const tradingRules: TradingRules = {
-  base_increment: '0.001',
-  base_max_size: '10000',
-  base_min_size: '0.01',
-  counter_increment: '0.01',
-  counter_min_size: '1',
-  pair,
-};
-
-const feeRates: FeeRate = {
-  [OrderType.LIMIT]: new Big('0.001'),
-  [OrderType.MARKET]: new Big('0.002'),
-};
 
 const sampleFill: Fill = {
   created_at: '2024-01-01T00:00:00.000Z',
@@ -61,10 +47,10 @@ function createMockExchange() {
   return Object.assign(new EventEmitter(), {
     cancelOpenOrders: vi.fn().mockResolvedValue([]),
     getAvailableBalances: vi.fn().mockResolvedValue({base: new Big('10'), counter: new Big('5000')}),
-    getFeeRates: vi.fn().mockResolvedValue(feeRates),
+    getFeeRates: vi.fn().mockResolvedValue(AlpacaBroker.DEFAULT_FEE_RATES),
     getFills: vi.fn().mockResolvedValue([sampleFill]),
     getOpenOrders: vi.fn().mockResolvedValue([]),
-    getTradingRules: vi.fn().mockResolvedValue(tradingRules),
+    getTradingRules: vi.fn().mockResolvedValue(AlpacaBroker.DEFAULT_FRACTIONAL_TRADING_RULES),
     placeLimitOrder: vi.fn().mockResolvedValue({
       id: 'order-1',
       pair,
@@ -97,7 +83,7 @@ function createMockStrategy(): TradingSessionStrategy & {
   };
 }
 
-describe.sequential('TradingSession', () => {
+describe('TradingSession', {concurrent: false}, () => {
   let exchange: ReturnType<typeof createMockExchange>;
   let strategy: ReturnType<typeof createMockStrategy>;
   let session: TradingSession;
@@ -231,13 +217,13 @@ describe.sequential('TradingSession', () => {
       await vi.waitFor(() => expect(exchange.placeLimitOrder).toHaveBeenCalledTimes(1));
 
       /*
-       * base_increment=0.001 → 5.5678 rounds down to 5.567
+       * base_increment=0.000000001 → 5.5678 stays 5.5678
        * counter_increment=0.01 → 253.456 rounds down to 253.45
        */
       expect(exchange.placeLimitOrder).toHaveBeenCalledWith(pair, {
         price: '253.45',
         side: OrderSide.SELL,
-        size: '5.567',
+        size: '5.5678',
       });
     });
 
@@ -427,7 +413,49 @@ describe.sequential('TradingSession', () => {
   });
 
   describe('error handling', () => {
+    it('refuses to place an order when the available amount resolves to zero', async () => {
+      /*
+       * This can happen when the position is closed
+       * outside the strategy and the strategy's persisted state hasn't caught up. The
+       * session must drop the advice instead of forwarding a zero quantity to the broker.
+       */
+      exchange.getAvailableBalances.mockResolvedValue({base: new Big('0'), counter: new Big('5000')});
+      const advice: OrderAdvice = {
+        amount: AllAvailableAmount,
+        amountIn: 'base',
+        side: OrderSide.SELL,
+        type: OrderType.MARKET,
+      };
+      strategy.onCandle.mockResolvedValue(advice);
+
+      const onError = vi.fn();
+      session.on('error', onError);
+
+      await session.start();
+
+      exchange.emit('candle-topic-1', sampleCandle);
+      await vi.waitFor(() => expect(onError).toHaveBeenCalledTimes(1));
+
+      const [[error]] = onError.mock.calls;
+      expect(error).toBeInstanceOf(OrderSizeBelowMinimumError);
+      expect(error.side).toBe(OrderSide.SELL);
+      expect(error.amountIn).toBe('base');
+      expect(error.size).toBe('0');
+      expect(error.minimumSize).toBe('0.000000001');
+      expect(exchange.placeMarketOrder).not.toHaveBeenCalled();
+      expect(exchange.placeLimitOrder).not.toHaveBeenCalled();
+    });
+
     it('emits error when order size is below minimum', async () => {
+      /*
+       * The fractional defaults set base_min_size == base_increment, leaving no room for a
+       * positive-but-below-minimum size, so raise the minimum to exercise that branch.
+       */
+      exchange.getTradingRules.mockResolvedValue({
+        ...AlpacaBroker.DEFAULT_FRACTIONAL_TRADING_RULES,
+        base_min_size: '0.01',
+        pair,
+      });
       exchange.getAvailableBalances.mockResolvedValue({base: new Big('0.001'), counter: new Big('5000')});
       const advice: OrderAdvice = {
         amount: AllAvailableAmount,
@@ -445,7 +473,12 @@ describe.sequential('TradingSession', () => {
       exchange.emit('candle-topic-1', sampleCandle);
       await vi.waitFor(() => expect(onError).toHaveBeenCalledTimes(1));
 
-      expect(onError.mock.calls[0][0].message).toContain('below minimum base size');
+      const [[error]] = onError.mock.calls;
+      expect(error).toBeInstanceOf(OrderSizeBelowMinimumError);
+      expect(error.side).toBe(OrderSide.SELL);
+      expect(error.amountIn).toBe('base');
+      expect(error.size).toBe('0.001');
+      expect(error.minimumSize).toBe('0.01');
       expect(exchange.placeMarketOrder).not.toHaveBeenCalled();
     });
 
