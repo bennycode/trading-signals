@@ -11,6 +11,7 @@ import {
   type PendingLimitOrder,
   type PendingMarketOrder,
 } from '../broker/Broker.js';
+import {OrderSizeBelowMinimumError} from './OrderSizeBelowMinimumError.js';
 import {AllAvailableAmount} from './TradingSessionTypes.js';
 import type {OrderAdvice, TradingSessionStrategy} from './TradingSessionTypes.js';
 import {AlpacaBroker} from '../broker/alpaca/AlpacaBroker.js';
@@ -435,7 +436,12 @@ describe('TradingSession', {concurrent: false}, () => {
       exchange.emit('candle-topic-1', sampleCandle);
       await vi.waitFor(() => expect(onError).toHaveBeenCalledTimes(1));
 
-      expect(onError).toHaveBeenCalledWith(expect.any(Error));
+      const [[error]] = onError.mock.calls;
+      expect(error).toBeInstanceOf(OrderSizeBelowMinimumError);
+      expect(error.side).toBe(OrderSide.SELL);
+      expect(error.amountIn).toBe('base');
+      expect(error.size).toBe('0');
+      expect(error.minimumSize).toBe('0.000000001');
       expect(exchange.placeMarketOrder).not.toHaveBeenCalled();
       expect(exchange.placeLimitOrder).not.toHaveBeenCalled();
     });
@@ -465,7 +471,12 @@ describe('TradingSession', {concurrent: false}, () => {
       exchange.emit('candle-topic-1', sampleCandle);
       await vi.waitFor(() => expect(onError).toHaveBeenCalledTimes(1));
 
-      expect(onError.mock.calls[0][0].message).toContain('below minimum base size');
+      const [[error]] = onError.mock.calls;
+      expect(error).toBeInstanceOf(OrderSizeBelowMinimumError);
+      expect(error.side).toBe(OrderSide.SELL);
+      expect(error.amountIn).toBe('base');
+      expect(error.size).toBe('0.001');
+      expect(error.minimumSize).toBe('0.01');
       expect(exchange.placeMarketOrder).not.toHaveBeenCalled();
     });
 
