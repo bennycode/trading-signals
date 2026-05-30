@@ -156,3 +156,50 @@ describe('StrategyMonitor.restartForAccount', () => {
     expect(mockStrategyModel.updateState).not.toHaveBeenCalled();
   });
 });
+
+describe('StrategyMonitor session error handling', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockAccountModel.findByPk.mockReturnValue({
+      apiKey: 'key',
+      apiSecret: 'secret',
+      exchange: 'alpaca',
+      isPaper: true,
+      userId: 'telegram:42',
+    });
+  });
+
+  function getSessionErrorHandler(): (error: Error) => void {
+    const call = mockSession.on.mock.calls.find(args => args[0] === 'error');
+    return call?.[1] as (error: Error) => void;
+  }
+
+  it('stops the strategy, cancels open orders, keeps the row, and alerts the user', async () => {
+    const dispatcher = new PlatformDispatcher(new Map());
+    const sendToAccount = vi.spyOn(dispatcher, 'sendToAccount').mockResolvedValue(true);
+    const monitor = new StrategyMonitor(dispatcher);
+    await monitor.subscribeToStrategy(createStrategyRow());
+
+    getSessionErrorHandler()(new Error('Order size "0" is below minimum base size "0.000000001"'));
+
+    await vi.waitFor(() => expect(sendToAccount).toHaveBeenCalledTimes(1));
+    expect(mockSession.stop).toHaveBeenCalledWith({cancelOpenOrders: true});
+    // The persisted row is kept so the user can fix the cause and restart.
+    expect(mockStrategyModel.destroy).not.toHaveBeenCalled();
+    expect(sendToAccount).toHaveBeenCalledWith(7, expect.stringContaining('below minimum base size'));
+  });
+
+  it('tears the session down only once when the error repeats', async () => {
+    const dispatcher = new PlatformDispatcher(new Map());
+    const sendToAccount = vi.spyOn(dispatcher, 'sendToAccount').mockResolvedValue(true);
+    const monitor = new StrategyMonitor(dispatcher);
+    await monitor.subscribeToStrategy(createStrategyRow());
+
+    const onError = getSessionErrorHandler();
+    onError(new Error('boom'));
+    onError(new Error('boom again'));
+
+    await vi.waitFor(() => expect(sendToAccount).toHaveBeenCalledTimes(1));
+    expect(mockSession.stop).toHaveBeenCalledTimes(1);
+  });
+});

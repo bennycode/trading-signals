@@ -85,7 +85,17 @@ export class Trading212API {
     axiosRetry(this.#httpClient, {
       retries: Infinity,
       retryCondition: (error: AxiosError) => {
-        return axiosRetry.isNetworkError(error) || error.response?.status === 429 || error.code === 'EAI_AGAIN';
+        /*
+         * Retry network errors, rate limits (429) and 5xx server errors on every request,
+         * including non-idempotent POST/PUT calls (order placement and replacement).
+         */
+        const status = error.response?.status;
+        return (
+          axiosRetry.isNetworkError(error) ||
+          status === 429 ||
+          error.code === 'EAI_AGAIN' ||
+          (status !== undefined && status >= 500)
+        );
       },
       retryDelay: getRetryDelay,
     });

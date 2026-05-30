@@ -40,7 +40,12 @@ export class AlpacaAPI {
         if (hasResponseCode(error) && error.response?.data.code === 40310000) {
           return false;
         }
-        return axiosRetry.isNetworkError(error) || error.response?.status === 429;
+        /*
+         * Retry network errors, rate limits (429) and 5xx server errors on every request,
+         * including non-idempotent POST/PUT calls (order placement and replacement).
+         */
+        const status = error.response?.status;
+        return axiosRetry.isNetworkError(error) || status === 429 || (status !== undefined && status >= 500);
       },
       retryDelay: retryCount => {
         return retryCount * ms('1s');
