@@ -97,7 +97,7 @@ function createMockStrategy(): TradingSessionStrategy & {
   };
 }
 
-describe.sequential('TradingSession', () => {
+describe('TradingSession', {concurrent: false}, () => {
   let exchange: ReturnType<typeof createMockExchange>;
   let strategy: ReturnType<typeof createMockStrategy>;
   let session: TradingSession;

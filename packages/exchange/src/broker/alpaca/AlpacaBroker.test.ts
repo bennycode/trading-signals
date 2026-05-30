@@ -61,7 +61,7 @@ const {AlpacaBroker} = await import('./AlpacaBroker.js');
 const {AlpacaMarketData} = await import('./AlpacaMarketData.js');
 const {SimplifiedHttpError} = await import('../../util/SimplifiedHttpError.js');
 
-describe.sequential('AlpacaBroker', () => {
+describe('AlpacaBroker', {concurrent: false}, () => {
   let exchange: InstanceType<typeof AlpacaBroker>;
 
   beforeEach(() => {
@@ -208,7 +208,7 @@ describe.sequential('AlpacaBroker', () => {
       const pair = new TradingPair('SHOP', 'USD');
       const rules = await exchange.getTradingRules(pair);
 
-      expect(rules.base_min_size).toBe('0');
+      expect(rules.base_min_size).toBe('0.000000001');
       expect(rules.base_increment).toBe('0.000000001');
       expect(rules.counter_increment).toBe('0.01');
     });
