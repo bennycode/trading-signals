@@ -447,8 +447,10 @@ describe('TradingSession', {concurrent: false}, () => {
     });
 
     it('emits error when order size is below minimum', async () => {
-      // The fractional defaults set base_min_size == base_increment, leaving no room for a
-      // positive-but-below-minimum size, so raise the minimum to exercise that branch.
+      /*
+       * The fractional defaults set base_min_size == base_increment, leaving no room for a
+       * positive-but-below-minimum size, so raise the minimum to exercise that branch.
+       */
       exchange.getTradingRules.mockResolvedValue({
         ...AlpacaBroker.DEFAULT_FRACTIONAL_TRADING_RULES,
         base_min_size: '0.01',
