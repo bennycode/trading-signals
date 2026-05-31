@@ -16,6 +16,42 @@ function hasResponseCode(error: AxiosError): error is AxiosError<{code: number}>
   return !!data && typeof data === 'object' && 'code' in data && typeof data.code === 'number';
 }
 
+/**
+ * Alpaca Error Code 40310100 typically means your order was forbidden by Alpaca's system
+ * because it would trigger a Pattern Day Trader (PDT) violation.
+ *
+ * @see https://docs.alpaca.markets/us/docs/user-protection#pattern-day-trader-pdt-protection-at-alpaca
+ */
+function isPatternDayTrader(error: AxiosError) {
+  return hasResponseCode(error) && error.response?.data.code === 40310100;
+}
+
+/**
+ * Alpaca Error Code 40310000 means the account is not allowed to short (you must have
+ * $2,000 or more account equity.).
+ *
+ * @see https://docs.alpaca.markets/us/docs/margin-and-short-selling
+ */
+function isNotAllowedToShort(error: AxiosError) {
+  return hasResponseCode(error) && error.response?.data.code === 40310000;
+}
+
+/**
+ * Decides whether a failed Alpaca request should be retried. Network errors, rate limits
+ * (429) and 5xx server errors are retried on every request — including non-idempotent
+ * POST/PUT calls (order placement and replacement) — except for a few business errors that
+ * can never succeed on retry.
+ */
+export function shouldRetryAlpacaRequest(error: AxiosError): boolean {
+  if (isPatternDayTrader(error)) {
+    return false;
+  }
+  if (isNotAllowedToShort(error)) {
+    return false;
+  }
+  return axiosRetry.isRetryableError(error);
+}
+
 export class AlpacaAPI {
   readonly #tradingClient;
   readonly #marketDataClient;
@@ -28,23 +64,7 @@ export class AlpacaAPI {
 
     const retryConfig: Parameters<typeof axiosRetry>[1] = {
       retries: 20,
-      retryCondition: error => {
-        // Alpaca Error Code 40310100 typically means your order was forbidden by Alpaca's system because it would trigger a Pattern Day Trader (PDT) violation.
-        if (hasResponseCode(error) && error.response?.data.code === 40310100) {
-          return false;
-        }
-        /*
-         * Account is not allowed to short (you must have $2,000 or more)
-         * @see https://docs.alpaca.markets/us/docs/margin-and-short-selling
-         */
-        if (hasResponseCode(error) && error.response?.data.code === 40310000) {
-          return false;
-        }
-        /*
-         * Retry network errors, rate limits (429) and 5xx server errors on every request,
-         */
-        return axiosRetry.isRetryableError(error);
-      },
+      retryCondition: shouldRetryAlpacaRequest,
       retryDelay: retryCount => {
         return retryCount * ms('1s');
       },
