@@ -42,10 +42,8 @@ export class AlpacaAPI {
         }
         /*
          * Retry network errors, rate limits (429) and 5xx server errors on every request,
-         * including non-idempotent POST/PUT calls (order placement and replacement).
          */
-        const status = error.response?.status;
-        return axiosRetry.isNetworkError(error) || status === 429 || (status !== undefined && status >= 500);
+        return axiosRetry.isRetryableError(error);
       },
       retryDelay: retryCount => {
         return retryCount * ms('1s');
