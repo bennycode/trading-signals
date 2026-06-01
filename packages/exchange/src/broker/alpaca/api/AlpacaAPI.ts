@@ -36,13 +36,7 @@ function isNotAllowedToShort(error: AxiosError) {
   return hasResponseCode(error) && error.response?.data.code === 40310000;
 }
 
-/**
- * Decides whether a failed Alpaca request should be retried. Network errors, rate limits
- * (429) and 5xx server errors are retried on every request — including non-idempotent
- * POST/PUT calls (order placement and replacement) — except for a few business errors that
- * can never succeed on retry.
- */
-export function shouldRetryAlpacaRequest(error: AxiosError): boolean {
+export function shouldRetryAlpacaRequest(error: AxiosError) {
   if (isPatternDayTrader(error)) {
     return false;
   }
