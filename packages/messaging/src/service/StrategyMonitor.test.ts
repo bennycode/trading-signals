@@ -61,7 +61,7 @@ vi.mock('../database/models/Strategy.js', () => ({
   Strategy: mockStrategyModel,
 }));
 
-const {formatStrategyMessage, StrategyMonitor} = await import('./StrategyMonitor.js');
+const {formatStrategyMessage, STRATEGY_ERROR_LOG_MESSAGE, StrategyMonitor} = await import('./StrategyMonitor.js');
 const {PlatformDispatcher} = await import('./PlatformDispatcher.js');
 
 function createMockPlatform(): MessagingPlatform {
@@ -203,7 +203,10 @@ describe('StrategyMonitor session error handling', () => {
     // The persisted row is kept so the user can fix the cause and restart.
     expect(mockStrategyModel.destroy).not.toHaveBeenCalled();
     // The user is alerted on their account, and the typed error is forwarded intact.
-    expect(logger.error).toHaveBeenCalledWith(expect.objectContaining({err: expect.any(OrderSizeBelowMinimumError)}));
+    expect(logger.error).toHaveBeenCalledWith(
+      expect.objectContaining({err: expect.any(OrderSizeBelowMinimumError)}),
+      STRATEGY_ERROR_LOG_MESSAGE
+    );
   });
 
   it('tears the session down only once when the error repeats', async () => {

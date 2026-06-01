@@ -14,6 +14,9 @@ interface ActiveSession {
   strategy: TradingStrategy;
 }
 
+/** Pino log message used when a session surfaces an unrecoverable error. Exported for tests. */
+export const STRATEGY_ERROR_LOG_MESSAGE = 'Strategy error';
+
 /** Format a strategy-emitted text into the user-facing message string. Exported for tests. */
 export function formatStrategyMessage(strategyName: string, pair: string, text: string): string {
   return `${strategyName} (${pair}): ${text}`;
@@ -188,7 +191,7 @@ export class StrategyMonitor {
    * repeated `'error'` events only tear the session down once.
    */
   async #handleSessionError(row: StrategyAttributes, error: Error): Promise<void> {
-    logger.error({err: error, strategyId: row.id, strategyName: row.strategyName}, 'Strategy error');
+    logger.error({err: error, strategyId: row.id, strategyName: row.strategyName}, STRATEGY_ERROR_LOG_MESSAGE);
 
     const active = this.#sessions.get(row.id);
     if (!active) {
