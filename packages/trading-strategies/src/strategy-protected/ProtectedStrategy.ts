@@ -357,13 +357,7 @@ export class ProtectedStrategy extends Strategy {
     }
   }
 
-  #stopLossReason(
-    avgEntry: Big,
-    currentPrice: Big,
-    positionSize: Big,
-    targetPrice: Big,
-    orderType: GuardOrderType
-  ): string {
+  #stopLossReason(avgEntry: Big, currentPrice: Big, positionSize: Big, targetPrice: Big, orderType: GuardOrderType) {
     if (!this.#stopLoss) {
       return '';
     }
@@ -382,13 +376,7 @@ export class ProtectedStrategy extends Strategy {
     }
   }
 
-  #takeProfitReason(
-    avgEntry: Big,
-    currentPrice: Big,
-    positionSize: Big,
-    targetPrice: Big,
-    orderType: GuardOrderType
-  ): string {
+  #takeProfitReason(avgEntry: Big, currentPrice: Big, positionSize: Big, targetPrice: Big, orderType: GuardOrderType) {
     if (!this.#takeProfit) {
       return '';
     }
@@ -563,7 +551,7 @@ function isProtectedStrategyState(value: unknown): value is ProtectedStrategySta
   return true;
 }
 
-function isValidBigString(value: string): boolean {
+function isValidBigString(value: string) {
   try {
     new Big(value);
     return true;

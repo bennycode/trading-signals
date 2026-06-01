@@ -187,12 +187,7 @@ export class ScalpScannerReport extends Report<ScalpScannerConfig> {
     return [...dayMap.values()];
   }
 
-  #formatResults(
-    scalpFriendly: ScanResult[],
-    trending: ScanResult[],
-    total: number,
-    names: Map<string, string>
-  ): string {
+  #formatResults(scalpFriendly: ScanResult[], trending: ScanResult[], total: number, names: Map<string, string>) {
     const lines: string[] = [];
     const top = 20;
 

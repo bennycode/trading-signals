@@ -18,6 +18,14 @@ export default defineConfig({
     // companion pattern as an enum replacement. `no-redeclare` misfires on the shared
     // value/type name even though TypeScript allows it; renaming would break public APIs.
     '@typescript-eslint/no-redeclare': 'off',
+    'no-restricted-syntax': [
+      'error',
+      {
+        message: 'Drop the explicit primitive return type and rely on inference.',
+        selector:
+          ':matches(FunctionDeclaration, FunctionExpression, ArrowFunctionExpression) > TSTypeAnnotation > :matches(TSBooleanKeyword, TSNumberKeyword, TSStringKeyword, TSBigIntKeyword)',
+      },
+    ],
     // Object-key sorting is enforced across all packages.
     'perfectionist/sort-objects': 'error',
   },

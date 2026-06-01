@@ -7,7 +7,7 @@ import {getAverage} from './getAverage.js';
  * @see https://www.mathsisfun.com/data/standard-deviation-formulas.html
  * @see https://www.youtube.com/watch?v=9-8E8L_77-8
  */
-export function getStandardDeviation(values: number[], average?: number): number {
+export function getStandardDeviation(values: number[], average?: number) {
   const middle = average || getAverage(values);
   const squaredDifferences = values.map(value => value - middle).map(value => value * value);
   const averageDifference = getAverage(squaredDifferences);

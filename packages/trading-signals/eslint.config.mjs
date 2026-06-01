@@ -14,6 +14,14 @@ export default defineConfig({
     'eslint.config.mjs',
   ],
   rules: {
+    'no-restricted-syntax': [
+      'error',
+      {
+        message: 'Drop the explicit primitive return type and rely on inference.',
+        selector:
+          ':matches(FunctionDeclaration, FunctionExpression, ArrowFunctionExpression) > TSTypeAnnotation > :matches(TSBooleanKeyword, TSNumberKeyword, TSStringKeyword, TSBigIntKeyword)',
+      },
+    ],
     // Object-key sorting is enforced across all packages.
     'perfectionist/sort-objects': 'error',
   },

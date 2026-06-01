@@ -32,11 +32,11 @@ class TestExchangeMock extends BrokerMock {
     return {...TestExchangeMock.TEST_TRADING_RULES, pair};
   }
 
-  getName(): string {
+  getName() {
     return 'TestExchange';
   }
 
-  getSmallestInterval(): number {
+  getSmallestInterval() {
     return ms('1m');
   }
 }

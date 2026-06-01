@@ -6,7 +6,7 @@ import type {Candle, Fill, OrderOptions, PendingLimitOrder, PendingMarketOrder, 
 import {OrderPosition, OrderSide, OrderType} from '../Broker.js';
 
 export class AlpacaBrokerMapper {
-  static mapInterval(intervalInMillis: number): string {
+  static mapInterval(intervalInMillis: number) {
     if (intervalInMillis < ms('1m')) {
       throw new Error(`Timeframes below 1 minute are not supported.`);
     }

@@ -8,7 +8,7 @@
  * @returns The percentage share. `100` means "100%".
  * @throws If `total` is `0`, because the share is undefined.
  */
-export function getShare(amount: number, total: number): number {
+export function getShare(amount: number, total: number) {
   if (total === 0) {
     throw new Error('Cannot calculate share of a total of "0".');
   }

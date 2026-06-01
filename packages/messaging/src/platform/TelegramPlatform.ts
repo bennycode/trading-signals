@@ -58,12 +58,7 @@ function tradeCommandShape(name: TradeCommandName): TradeCommandShape {
   }
 }
 
-function buildTradeActionLabel(
-  cmd: TradeCommandName,
-  pair: TradingPair,
-  quantity: string,
-  limitPrice: string | null
-): string {
+function buildTradeActionLabel(cmd: TradeCommandName, pair: TradingPair, quantity: string, limitPrice: string | null) {
   const {isLimit, side} = tradeCommandShape(cmd);
   const sideLabel = side === OrderSide.BUY ? 'BUY' : 'SELL';
   const kindLabel = isLimit ? 'LIMIT' : 'MARKET';
@@ -725,7 +720,7 @@ export class TelegramPlatform implements MessagingPlatform {
     });
   }
 
-  #isKnownReport(reportName: string): boolean {
+  #isKnownReport(reportName: string) {
     return getAvailableReportNames().includes(reportName);
   }
 

@@ -36,7 +36,7 @@ import {TradeUpdateEvent, type TradeUpdateMessage} from './api/schema/TradingStr
  * status: 422 Unprocessable Entity
  * body: {"code":42210000,"message":"order is already in \"filled\" state"}
  */
-function isAlreadyFilledOrder(error: unknown): boolean {
+function isAlreadyFilledOrder(error: unknown) {
   if (!(error instanceof SimplifiedHttpError) || error.status !== 422) {
     return false;
   }
@@ -131,11 +131,11 @@ export class AlpacaBroker extends Broker implements MarketDataSource {
     return this.#marketData.getLatestCandle(pair, intervalInMillis);
   }
 
-  getName(): string {
+  getName() {
     return AlpacaBroker.NAME;
   }
 
-  getSmallestInterval(): number {
+  getSmallestInterval() {
     return ms('1m');
   }
 

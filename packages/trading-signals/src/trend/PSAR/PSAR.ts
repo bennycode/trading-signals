@@ -50,7 +50,7 @@ export class PSAR extends IndicatorSeries<HighLow<number>> {
     }
   }
 
-  override get isStable(): boolean {
+  override get isStable() {
     return this.lastSar !== null;
   }
 
@@ -195,7 +195,7 @@ export class PSAR extends IndicatorSeries<HighLow<number>> {
     return this.setResult(sar, replace);
   }
 
-  override getResultOrThrow(): number {
+  override getResultOrThrow() {
     return super.getResultOrThrow();
   }
 }

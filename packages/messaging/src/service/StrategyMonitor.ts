@@ -15,7 +15,7 @@ interface ActiveSession {
 }
 
 /** Format a strategy-emitted text into the user-facing message string. Exported for tests. */
-export function formatStrategyMessage(strategyName: string, pair: string, text: string): string {
+export function formatStrategyMessage(strategyName: string, pair: string, text: string) {
   return `${strategyName} (${pair}): ${text}`;
 }
 

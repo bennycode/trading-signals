@@ -20,7 +20,7 @@ export class CandleBatcher extends EventEmitter<EventMap> {
     this.#desiredIntervalInMillis = desiredIntervalInMillis;
   }
 
-  get present(): number {
+  get present() {
     return this.#batch.length;
   }
 
@@ -255,7 +255,7 @@ export class CandleBatcher extends EventEmitter<EventMap> {
     };
   }
 
-  static override toString(candle: BatchedCandle): string {
+  static override toString(candle: BatchedCandle) {
     return JSON.stringify(
       jsonabc.sortObj({
         base: candle.base,

@@ -6,11 +6,11 @@ const HTML_ESCAPES: Record<string, string> = {
   '>': '&gt;',
 };
 
-function escapeHtml(text: string): string {
+function escapeHtml(text: string) {
   return text.replace(/[&<>]/g, ch => HTML_ESCAPES[ch]);
 }
 
-function trimNewlines(text: string): string {
+function trimNewlines(text: string) {
   let start = 0;
   let end = text.length;
   while (start < end && text[start] === '\n') {
@@ -22,7 +22,7 @@ function trimNewlines(text: string): string {
   return text.slice(start, end);
 }
 
-function convertOutsideCode(text: string): string {
+function convertOutsideCode(text: string) {
   return escapeHtml(text).replace(/\*\*(.+?)\*\*/g, '<b>$1</b>');
 }
 
@@ -35,7 +35,7 @@ function convertOutsideCode(text: string): string {
  *
  * Other markdown is passed through as plain text.
  */
-export function markdownToTelegramHtml(markdown: string): string {
+export function markdownToTelegramHtml(markdown: string) {
   const parts: string[] = [];
   const codeBlockRegex = /```(?:\w*\n)?([\s\S]*?)```/g;
   let lastIndex = 0;
@@ -105,7 +105,7 @@ function splitSectionForTelegram(markdown: string, maxLength: number): string[] 
     }
   };
 
-  const tryAppend = (piece: string, separator: string): boolean => {
+  const tryAppend = (piece: string, separator: string) => {
     const candidate = current ? current + separator + piece : piece;
     if (candidate.length <= maxLength) {
       current = candidate;

@@ -90,7 +90,7 @@ export class Trading212Broker extends Broker implements MarketDataSource {
     return new TradingPair(ticker, pair.counter);
   }
 
-  getName(): string {
+  getName() {
     return Trading212Broker.NAME;
   }
 
@@ -98,7 +98,7 @@ export class Trading212Broker extends Broker implements MarketDataSource {
    * Trading212 has no historical-bar endpoint, but the `Broker` contract requires a value.
    * Returning 1m matches the granularity strategies typically expect.
    */
-  getSmallestInterval(): number {
+  getSmallestInterval() {
     return ms('1m');
   }
 

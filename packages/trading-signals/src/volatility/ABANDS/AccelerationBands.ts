@@ -78,7 +78,7 @@ export class AccelerationBands extends TechnicalIndicator<BandsResult, HighLowCl
     return null;
   }
 
-  override get isStable(): boolean {
+  override get isStable() {
     return this.#middleBand.isStable;
   }
 

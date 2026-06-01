@@ -9,7 +9,7 @@
  * @returns The percentage change. `100` means "100%".
  * @throws If `baseValue` is `0`, because the percentage change is undefined.
  */
-export function getPercentageChange(baseValue: number, newValue: number): number {
+export function getPercentageChange(baseValue: number, newValue: number) {
   if (baseValue === 0) {
     throw new Error('Cannot calculate percentage change from a base value of "0".');
   }

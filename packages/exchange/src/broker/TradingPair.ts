@@ -28,11 +28,11 @@ export class TradingPair implements TradingPairJSON {
     this.counter = counter;
   }
 
-  isEqual(other: TradingPair): boolean {
+  isEqual(other: TradingPair) {
     return this.base === other.base && this.counter === other.counter;
   }
 
-  asString(delimiter: string): string {
+  asString(delimiter: string) {
     return `${this.base}${delimiter}${this.counter}`;
   }
 

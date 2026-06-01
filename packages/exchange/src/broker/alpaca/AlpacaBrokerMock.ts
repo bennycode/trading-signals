@@ -30,11 +30,11 @@ export class AlpacaBrokerMock extends BrokerMock {
     };
   }
 
-  getName(): string {
+  getName() {
     return `${AlpacaBroker.NAME}Mock`;
   }
 
-  getSmallestInterval(): number {
+  getSmallestInterval() {
     return ms('1m');
   }
 }

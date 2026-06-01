@@ -16,7 +16,7 @@ const EarningsCalendarResponseSchema = z.looseObject({
 
 export type EarningsEntry = z.infer<typeof EarningsEntrySchema>;
 
-function toIsoDate(date: Date): string {
+function toIsoDate(date: Date) {
   return date.toISOString().slice(0, 10);
 }
 

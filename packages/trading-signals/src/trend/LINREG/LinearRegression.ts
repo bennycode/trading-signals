@@ -78,7 +78,7 @@ export class LinearRegression extends TechnicalIndicator<LinearRegressionResult,
     return (this.result = this.#calculateRegression(this.prices));
   }
 
-  override get isStable(): boolean {
+  override get isStable() {
     try {
       this.getResultOrThrow();
       return true;

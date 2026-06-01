@@ -26,13 +26,13 @@ export class DEMA extends IndicatorSeries {
     return this.#outer.getRequiredInputs();
   }
 
-  update(price: number, replace: boolean): number {
+  update(price: number, replace: boolean) {
     const innerResult = this.#inner.update(price, replace);
     const outerResult = this.#outer.update(innerResult, replace);
     return this.setResult(innerResult * 2 - outerResult, replace);
   }
 
-  override get isStable(): boolean {
+  override get isStable() {
     return this.#outer.isStable;
   }
 }

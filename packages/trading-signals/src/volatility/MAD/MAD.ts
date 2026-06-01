@@ -39,7 +39,7 @@ export class MAD extends IndicatorSeries {
     return null;
   }
 
-  static getResultFromBatch(prices: number[], average?: number): number {
+  static getResultFromBatch(prices: number[], average?: number) {
     if (prices.length === 0) {
       return 0;
     }

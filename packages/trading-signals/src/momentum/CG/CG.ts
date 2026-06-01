@@ -22,7 +22,7 @@ export class CG extends TrendIndicatorSeries {
 
   public readonly prices: number[] = [];
 
-  override get isStable(): boolean {
+  override get isStable() {
     return this.signal.isStable;
   }
 

@@ -19,7 +19,7 @@ export class TR extends IndicatorSeries<HighLowClose<number>> {
     return 2;
   }
 
-  update(candle: HighLowClose<number>, replace: boolean): number {
+  update(candle: HighLowClose<number>, replace: boolean) {
     const {high, low} = candle;
     const highLow = high - low;
 
