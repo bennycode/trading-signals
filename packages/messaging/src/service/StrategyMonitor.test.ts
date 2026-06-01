@@ -106,11 +106,12 @@ describe('StrategyMonitor platform routing', () => {
     platforms.set('telegram', telegram);
 
     const userId = 'telegram:42';
+    const message = formatStrategyMessage('Trail', 'BTC-USD', 'attached');
     const platform = platforms.get(userId.split(':')[0]);
-    await platform?.sendMessage(userId, formatStrategyMessage('Trail', 'BTC-USD', 'attached'));
+    await platform?.sendMessage(userId, message);
 
     expect(telegram.sendMessage).toHaveBeenCalledTimes(1);
-    expect(telegram.sendMessage).toHaveBeenCalledWith('telegram:42', 'Trail (BTC-USD): attached');
+    expect(telegram.sendMessage).toHaveBeenCalledWith(userId, message);
   });
 
   it('returns no platform when the userId prefix is unknown', () => {
@@ -181,7 +182,8 @@ describe('StrategyMonitor session error handling', () => {
 
   function getSessionErrorHandler(): (error: Error) => void {
     const call = mockSession.on.mock.calls.find(args => args[0] === 'error');
-    return call?.[1] as (error: Error) => void;
+    assert.ok(call);
+    return call[1];
   }
 
   it('stops the strategy, cancels open orders, and alerts the user', async () => {
