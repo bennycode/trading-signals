@@ -4,7 +4,7 @@
   },
   "dependencies": {
     "@typedtrader/exchange": "0.2.5",
-    "@types/big.js": "^6.2.2",
+    "@types/big.js": "^7.0.0",
     "big.js": "^7.0.1",
     "trading-signals": "7.4.3",
     "zod": "^4.4.3"
