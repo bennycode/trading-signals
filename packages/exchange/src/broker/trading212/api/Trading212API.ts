@@ -85,9 +85,6 @@ export class Trading212API {
     axiosRetry(this.#httpClient, {
       retries: Infinity,
       retryCondition: (error: AxiosError) => {
-        /*
-         * Retry network errors, rate limits (429) and 5xx server errors on every request,
-         */
         return axiosRetry.isRetryableError(error);
       },
       retryDelay: getRetryDelay,

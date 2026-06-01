@@ -130,14 +130,6 @@ export class StrategyMonitor {
       }
     });
 
-    /*
-     * Any error surfacing here has already survived the HTTP layer's retry policy (network
-     * errors, 429 and idempotent 5xx are retried), so it is a real, actionable failure:
-     * a sustained outage, a non-retryable API rejection, or a strategy logic error. Stop the
-     * session and alert the user instead of letting it retry the broken advice every candle
-     * (which spammed the logs). The persisted row is kept so the user can fix the cause and
-     * restart it.
-     */
     session.on('error', (error: Error) => {
       void this.#handleSessionError(row, error);
     });

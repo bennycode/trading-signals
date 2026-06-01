@@ -1,4 +1,6 @@
 import {describe, it, expect, vi, beforeEach} from 'vitest';
+import {OrderSide, OrderSizeBelowMinimumError} from '@typedtrader/exchange';
+import {logger} from '../logger.js';
 import type {MessagingPlatform} from '../platform/MessagingPlatform.js';
 import type {StrategyAttributes} from '../database/models/Strategy.js';
 
@@ -33,14 +35,22 @@ const {mockAccountModel, mockSession, mockStrategy, mockStrategyModel, TradingSe
   };
 });
 
-vi.mock('@typedtrader/exchange', () => ({
-  getBrokerClient: vi.fn(() => ({})),
-  TradingPair: {fromString: vi.fn(() => ({base: 'BTC', counter: 'USD'}))},
-  TradingSession: TradingSessionMock,
-}));
+vi.mock('@typedtrader/exchange', async importActual => {
+  const actual = await importActual<Record<string, unknown>>();
+  return {
+    ...actual,
+    getBrokerClient: vi.fn(() => ({})),
+    TradingPair: {fromString: vi.fn(() => ({base: 'BTC', counter: 'USD'}))},
+    TradingSession: TradingSessionMock,
+  };
+});
 
 vi.mock('trading-strategies', () => ({
   createStrategy: vi.fn(() => mockStrategy),
+}));
+
+vi.mock('../logger.js', () => ({
+  logger: {debug: vi.fn(), error: vi.fn(), info: vi.fn(), warn: vi.fn()},
 }));
 
 vi.mock('../database/models/Account.js', () => ({
@@ -174,19 +184,26 @@ describe('StrategyMonitor session error handling', () => {
     return call?.[1] as (error: Error) => void;
   }
 
-  it('stops the strategy, cancels open orders, keeps the row, and alerts the user', async () => {
+  it('stops the strategy, cancels open orders, and alerts the user', async () => {
     const dispatcher = new PlatformDispatcher(new Map());
     const sendToAccount = vi.spyOn(dispatcher, 'sendToAccount').mockResolvedValue(true);
     const monitor = new StrategyMonitor(dispatcher);
     await monitor.subscribeToStrategy(createStrategyRow());
 
-    getSessionErrorHandler()(new Error('Order size "0" is below minimum base size "0.000000001"'));
+    const error = new OrderSizeBelowMinimumError({
+      amountIn: 'base',
+      minimumSize: '0.000000001',
+      side: OrderSide.SELL,
+      size: '0',
+    });
+    getSessionErrorHandler()(error);
 
     await vi.waitFor(() => expect(sendToAccount).toHaveBeenCalledTimes(1));
     expect(mockSession.stop).toHaveBeenCalledWith({cancelOpenOrders: true});
     // The persisted row is kept so the user can fix the cause and restart.
     expect(mockStrategyModel.destroy).not.toHaveBeenCalled();
-    expect(sendToAccount).toHaveBeenCalledWith(7, expect.stringContaining('below minimum base size'));
+    // The user is alerted on their account, and the typed error is forwarded intact.
+    expect(logger.error).toHaveBeenCalledWith(expect.objectContaining({err: expect.any(OrderSizeBelowMinimumError)}));
   });
 
   it('tears the session down only once when the error repeats', async () => {
