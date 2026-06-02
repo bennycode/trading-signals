@@ -14,6 +14,9 @@ interface ActiveSession {
   strategy: TradingStrategy;
 }
 
+/** Pino log message used when a session surfaces an unrecoverable error. Exported for tests. */
+export const STRATEGY_ERROR_LOG_MESSAGE = 'Strategy error';
+
 /** Format a strategy-emitted text into the user-facing message string. Exported for tests. */
 export function formatStrategyMessage(strategyName: string, pair: string, text: string): string {
   return `${strategyName} (${pair}): ${text}`;
@@ -131,7 +134,7 @@ export class StrategyMonitor {
     });
 
     session.on('error', (error: Error) => {
-      logger.error({err: error, strategyId: row.id, strategyName: row.strategyName}, 'Strategy error');
+      void this.#handleSessionError(row, error);
     });
 
     await session.start();
@@ -181,6 +184,36 @@ export class StrategyMonitor {
     }
   }
 
+  /**
+   * Stop a strategy after an unrecoverable session error: cancel any open orders so nothing
+   * is left live on the exchange, drop it from the active sessions, and alert the user. The
+   * persisted row is kept on purpose so the user can fix the cause and restart it. Guarded so
+   * repeated `'error'` events only tear the session down once.
+   */
+  async #handleSessionError(row: StrategyAttributes, error: Error): Promise<void> {
+    logger.error({err: error, strategyId: row.id, strategyName: row.strategyName}, STRATEGY_ERROR_LOG_MESSAGE);
+
+    const active = this.#sessions.get(row.id);
+    if (!active) {
+      return;
+    }
+    this.#sessions.delete(row.id);
+
+    try {
+      await active.session.stop({cancelOpenOrders: true});
+    } catch (stopError) {
+      logger.error({err: stopError, strategyId: row.id}, 'Error stopping strategy after failure');
+    }
+
+    try {
+      await this.#sendErrorNotification(row, error);
+    } catch (notifyError) {
+      logger.error({err: notifyError, strategyId: row.id}, 'Error notifying user of strategy failure');
+    }
+
+    logger.info({strategyId: row.id, strategyName: row.strategyName}, 'Stopped strategy after error');
+  }
+
   #persistStrategy(strategyId: number, strategy: TradingStrategy): void {
     if (strategy.state) {
       Strategy.updateState(strategyId, JSON.stringify(strategy.state));
@@ -202,6 +235,11 @@ export class StrategyMonitor {
 
   async #sendFinishNotification(row: StrategyAttributes): Promise<void> {
     const message = `Strategy finished and removed.\n\nID: ${row.id}\nStrategy: ${row.strategyName}\nPair: ${row.pair}`;
+    await this.#dispatcher.sendToAccount(row.accountId, message);
+  }
+
+  async #sendErrorNotification(row: StrategyAttributes, error: Error): Promise<void> {
+    const message = `Strategy stopped due to an error.\n\nID: ${row.id}\nStrategy: ${row.strategyName}\nPair: ${row.pair}\nError: ${error.message}\n\nFix the cause and restart it when ready.`;
     await this.#dispatcher.sendToAccount(row.accountId, message);
   }
 }

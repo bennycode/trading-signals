@@ -1,4 +1,7 @@
+import assert from 'node:assert/strict';
 import {describe, it, expect, vi, beforeEach} from 'vitest';
+import {OrderSide, OrderSizeBelowMinimumError} from '@typedtrader/exchange';
+import {logger} from '../logger.js';
 import type {MessagingPlatform} from '../platform/MessagingPlatform.js';
 import type {StrategyAttributes} from '../database/models/Strategy.js';
 
@@ -33,14 +36,22 @@ const {mockAccountModel, mockSession, mockStrategy, mockStrategyModel, TradingSe
   };
 });
 
-vi.mock('@typedtrader/exchange', () => ({
-  getBrokerClient: vi.fn(() => ({})),
-  TradingPair: {fromString: vi.fn(() => ({base: 'BTC', counter: 'USD'}))},
-  TradingSession: TradingSessionMock,
-}));
+vi.mock('@typedtrader/exchange', async importActual => {
+  const actual = await importActual<Record<string, unknown>>();
+  return {
+    ...actual,
+    getBrokerClient: vi.fn(() => ({})),
+    TradingPair: {fromString: vi.fn(() => ({base: 'BTC', counter: 'USD'}))},
+    TradingSession: TradingSessionMock,
+  };
+});
 
 vi.mock('trading-strategies', () => ({
   createStrategy: vi.fn(() => mockStrategy),
+}));
+
+vi.mock('../logger.js', () => ({
+  logger: {debug: vi.fn(), error: vi.fn(), info: vi.fn(), warn: vi.fn()},
 }));
 
 vi.mock('../database/models/Account.js', () => ({
@@ -51,7 +62,7 @@ vi.mock('../database/models/Strategy.js', () => ({
   Strategy: mockStrategyModel,
 }));
 
-const {formatStrategyMessage, StrategyMonitor} = await import('./StrategyMonitor.js');
+const {formatStrategyMessage, STRATEGY_ERROR_LOG_MESSAGE, StrategyMonitor} = await import('./StrategyMonitor.js');
 const {PlatformDispatcher} = await import('./PlatformDispatcher.js');
 
 function createMockPlatform(): MessagingPlatform {
@@ -96,11 +107,12 @@ describe('StrategyMonitor platform routing', () => {
     platforms.set('telegram', telegram);
 
     const userId = 'telegram:42';
+    const message = formatStrategyMessage('Trail', 'BTC-USD', 'attached');
     const platform = platforms.get(userId.split(':')[0]);
-    await platform?.sendMessage(userId, formatStrategyMessage('Trail', 'BTC-USD', 'attached'));
+    await platform?.sendMessage(userId, message);
 
     expect(telegram.sendMessage).toHaveBeenCalledTimes(1);
-    expect(telegram.sendMessage).toHaveBeenCalledWith('telegram:42', 'Trail (BTC-USD): attached');
+    expect(telegram.sendMessage).toHaveBeenCalledWith(userId, message);
   });
 
   it('returns no platform when the userId prefix is unknown', () => {
@@ -154,5 +166,63 @@ describe('StrategyMonitor.restartForAccount', () => {
     expect(mockSession.stop).not.toHaveBeenCalled();
     expect(mockStrategyModel.findByPk).not.toHaveBeenCalled();
     expect(mockStrategyModel.updateState).not.toHaveBeenCalled();
+  });
+});
+
+describe('StrategyMonitor session error handling', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockAccountModel.findByPk.mockReturnValue({
+      apiKey: 'key',
+      apiSecret: 'secret',
+      exchange: 'alpaca',
+      isPaper: true,
+      userId: 'telegram:42',
+    });
+  });
+
+  function getSessionErrorHandler(): (error: Error) => void {
+    const call = mockSession.on.mock.calls.find(args => args[0] === 'error');
+    assert.ok(call);
+    return call[1];
+  }
+
+  it('stops the strategy, cancels open orders, and alerts the user', async () => {
+    const dispatcher = new PlatformDispatcher(new Map());
+    const sendToAccount = vi.spyOn(dispatcher, 'sendToAccount').mockResolvedValue(true);
+    const monitor = new StrategyMonitor(dispatcher);
+    await monitor.subscribeToStrategy(createStrategyRow());
+
+    const error = new OrderSizeBelowMinimumError({
+      amountIn: 'base',
+      minimumSize: '0.000000001',
+      side: OrderSide.SELL,
+      size: '0',
+    });
+    getSessionErrorHandler()(error);
+
+    await vi.waitFor(() => expect(sendToAccount).toHaveBeenCalledTimes(1));
+    expect(mockSession.stop).toHaveBeenCalledWith({cancelOpenOrders: true});
+    // The persisted row is kept so the user can fix the cause and restart.
+    expect(mockStrategyModel.destroy).not.toHaveBeenCalled();
+    // The user is alerted on their account, and the typed error is forwarded intact.
+    expect(logger.error).toHaveBeenCalledWith(
+      expect.objectContaining({err: expect.any(OrderSizeBelowMinimumError)}),
+      STRATEGY_ERROR_LOG_MESSAGE
+    );
+  });
+
+  it('tears the session down only once when the error repeats', async () => {
+    const dispatcher = new PlatformDispatcher(new Map());
+    const sendToAccount = vi.spyOn(dispatcher, 'sendToAccount').mockResolvedValue(true);
+    const monitor = new StrategyMonitor(dispatcher);
+    await monitor.subscribeToStrategy(createStrategyRow());
+
+    const onError = getSessionErrorHandler();
+    onError(new Error('boom'));
+    onError(new Error('boom again'));
+
+    await vi.waitFor(() => expect(sendToAccount).toHaveBeenCalledTimes(1));
+    expect(mockSession.stop).toHaveBeenCalledTimes(1);
   });
 });
