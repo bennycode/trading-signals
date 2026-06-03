@@ -203,10 +203,14 @@ describe('StrategyMonitor session error handling', () => {
 
     await vi.waitFor(() => expect(sendToAccount).toHaveBeenCalledTimes(1));
     expect(mockSession.stop).toHaveBeenCalledWith({cancelOpenOrders: true});
-    // The persisted row is kept so the user can fix the cause and restart.
-    expect(mockStrategyModel.destroy).not.toHaveBeenCalled();
-    // The user is alerted on their account, and the typed error is forwarded intact.
-    expect(logger.error).toHaveBeenCalledWith(
+    expect(
+      mockStrategyModel.destroy,
+      'The persisted row is kept so the user can fix the cause and restart'
+    ).not.toHaveBeenCalled();
+    expect(
+      logger.error,
+      'The user is alerted on their account, and the typed error is forwarded intact'
+    ).toHaveBeenCalledWith(
       expect.objectContaining({err: expect.any(OrderSizeBelowMinimumError)}),
       STRATEGY_ERROR_LOG_MESSAGE
     );
