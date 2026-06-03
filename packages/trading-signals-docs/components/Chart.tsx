@@ -1,4 +1,4 @@
-import {Chart as HighchartsChart, HighchartsOptionsType, HighchartsReactRefObject} from '@highcharts/react';
+import {Chart as HighchartsChart, ChartOptions, HighchartsReactRefObject} from '@highcharts/react';
 import {useRef} from 'react';
 
 export interface ChartDataPoint {
@@ -23,7 +23,7 @@ export interface ChartProps {
 export default function Chart({title, data, yAxisLabel = 'Value', color = '#3b82f6'}: ChartProps) {
   const chartRef = useRef<HighchartsReactRefObject>(null);
 
-  const options: HighchartsOptionsType = {
+  const options: ChartOptions = {
     chart: {
       type: 'line',
       backgroundColor: 'transparent',
