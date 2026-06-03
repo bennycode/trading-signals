@@ -4,7 +4,7 @@ import {Report} from './Report.js';
 class TestReport extends Report<{greeting: string}> {
   static override NAME = 'test-report';
 
-  async run(): Promise<string> {
+  async run() {
     return `Hello, ${this.config.greeting}!`;
   }
 }

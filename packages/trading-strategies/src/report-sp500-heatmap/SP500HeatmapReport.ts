@@ -33,7 +33,7 @@ export class SP500HeatmapReport extends Report<SP500HeatmapConfig> {
     this.#api = api;
   }
 
-  async run(): Promise<string> {
+  async run() {
     const [results, names] = await Promise.all([
       this.#fetchIntradayChanges(SP500_TICKERS),
       fetchUsEquityNames(this.#api),

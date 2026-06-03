@@ -44,7 +44,7 @@ export class ScalpScannerReport extends Report<ScalpScannerConfig> {
     this.#api = api;
   }
 
-  async run(): Promise<string> {
+  async run() {
     const symbols = this.config.symbols ?? SP500_TICKERS;
     const end = new Date();
     // Fetch extra calendar days to account for weekends/holidays

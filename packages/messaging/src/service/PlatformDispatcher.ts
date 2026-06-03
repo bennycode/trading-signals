@@ -17,7 +17,7 @@ export class PlatformDispatcher {
     this.#platforms = platforms;
   }
 
-  async sendToUser(userId: string, message: string): Promise<boolean> {
+  async sendToUser(userId: string, message: string) {
     const platformPrefix = userId.split(':')[0];
     const platform = this.#platforms.get(platformPrefix);
     if (!platform) {
@@ -28,7 +28,7 @@ export class PlatformDispatcher {
     return true;
   }
 
-  async sendToAccount(accountId: number, message: string): Promise<boolean> {
+  async sendToAccount(accountId: number, message: string) {
     const account = Account.findByPk(accountId);
     if (!account) {
       logger.warn({accountId}, 'Account not found to send notification');

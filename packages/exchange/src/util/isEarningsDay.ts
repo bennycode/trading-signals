@@ -35,7 +35,7 @@ axiosRetry(client, {
  *
  * @see https://finnhub.io/docs/api/earnings-calendar
  */
-export async function isEarningsDay(options: {apiKey: string; date: Date; symbol: string}): Promise<boolean> {
+export async function isEarningsDay(options: {apiKey: string; date: Date; symbol: string}) {
   const isoDate = toIsoDate(options.date);
   const response = await client.get('/calendar/earnings', {
     params: {

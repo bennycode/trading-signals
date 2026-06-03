@@ -3,7 +3,7 @@ import {assertId} from '../../validation/assertId.js';
 import {getAccountOrError} from '../../validation/getAccountOrError.js';
 
 // Request Example: "5"
-export const strategyState = async (request: string, userId: string): Promise<string> => {
+export const strategyState = async (request: string, userId: string) => {
   try {
     const strategyId = assertId(request);
     const row = Strategy.findByPk(strategyId);

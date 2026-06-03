@@ -28,7 +28,7 @@ export class SP500MomentumReport extends Report<SP500MomentumConfig> {
     this.#api = api;
   }
 
-  async run(): Promise<string> {
+  async run() {
     const now = new Date();
 
     // 12-1 momentum: skip the most recent month, look back 12 months from there

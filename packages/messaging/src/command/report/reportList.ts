@@ -2,7 +2,7 @@ import {ms} from 'ms';
 import {Report} from '../../database/models/Report.js';
 import {formatTelegramTable} from '../formatTable.js';
 
-export const reportList = async (userId: string): Promise<string> => {
+export const reportList = async (userId: string) => {
   try {
     const reports = Report.findByUserId(userId);
 

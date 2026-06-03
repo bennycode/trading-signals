@@ -1,7 +1,7 @@
 import Big from 'big.js';
 import {describe, expect, it} from 'vitest';
 import {BrokerMock, type ExchangeMockBalance} from './BrokerMock.js';
-import {type Candle, type FeeRate, OrderSide, OrderType, type TradingRules} from './Broker.js';
+import {type Candle, type FeeRate, type Fill, OrderSide, OrderType, type TradingRules} from './Broker.js';
 import {TradingPair} from './TradingPair.js';
 import {ms} from 'ms';
 
@@ -347,10 +347,68 @@ describe('BrokerMock', () => {
     });
   });
 
-  describe('lifecycle', () => {
-    it('disconnect() is a no-op', () => {
+  describe('watchOrders', () => {
+    it('returns a unique topicId per subscription', async () => {
       const exchange = createExchange('0', '0');
-      expect(() => exchange.disconnect()).not.toThrow();
+
+      const first = await exchange.watchOrders();
+      const second = await exchange.watchOrders();
+
+      expect(first).not.toBe(second);
+    });
+
+    it('emits fills to subscribers on the returned topic', async () => {
+      const exchange = createExchange('0', '10000');
+
+      exchange.processCandle(createCandle({close: '100', open: '100'}));
+
+      const topicId = await exchange.watchOrders();
+      const received: Fill[] = [];
+      exchange.on(topicId, (fill: Fill) => received.push(fill));
+
+      await exchange.placeMarketOrder(pair, {side: OrderSide.BUY, size: '1', sizeInCounter: false});
+
+      const fills = exchange.processCandle(
+        createCandle({close: '110', open: '105', openTimeInISO: '2025-01-01T00:01:00.000Z'})
+      );
+
+      expect(received, 'subscriber receives exactly the fills returned by processCandle').toEqual(fills);
+      expect(received[0].side).toBe(OrderSide.BUY);
+    });
+
+    it('stops emitting after unwatchOrders()', async () => {
+      const exchange = createExchange('0', '10000');
+
+      exchange.processCandle(createCandle({close: '100', open: '100'}));
+
+      const topicId = await exchange.watchOrders();
+      const received: Fill[] = [];
+      exchange.on(topicId, (fill: Fill) => received.push(fill));
+      exchange.unwatchOrders(topicId);
+
+      await exchange.placeMarketOrder(pair, {side: OrderSide.BUY, size: '1', sizeInCounter: false});
+      exchange.processCandle(createCandle({close: '110', open: '105', openTimeInISO: '2025-01-01T00:01:00.000Z'}));
+
+      expect(received).toHaveLength(0);
+    });
+  });
+
+  describe('lifecycle', () => {
+    it('disconnect() removes order subscriptions', async () => {
+      const exchange = createExchange('0', '10000');
+
+      exchange.processCandle(createCandle({close: '100', open: '100'}));
+
+      const topicId = await exchange.watchOrders();
+      const received: Fill[] = [];
+      exchange.on(topicId, (fill: Fill) => received.push(fill));
+
+      exchange.disconnect();
+
+      await exchange.placeMarketOrder(pair, {side: OrderSide.BUY, size: '1', sizeInCounter: false});
+      exchange.processCandle(createCandle({close: '110', open: '105', openTimeInISO: '2025-01-01T00:01:00.000Z'}));
+
+      expect(received, 'disconnect() should stop fill emissions').toHaveLength(0);
     });
   });
 });
