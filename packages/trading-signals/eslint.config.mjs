@@ -1,20 +1,3 @@
-import {defineConfig} from 'eslint/config';
-import eslintConfig from '@tstv/eslint-config';
+import {createConfig} from '../../eslint.config.base.mjs';
 
-export default defineConfig({
-  extends: [eslintConfig],
-  files: ['**/*.{ts,tsx,mts,cts,js,jsx,mjs,cjs}'],
-  ignores: [
-    '**/.dependency-cruiser.cjs',
-    '**/coverage/**',
-    '**/dist/**',
-    '**/docs/**',
-    '**/tsdown.config.ts',
-    '**/vitest.config.ts',
-    'eslint.config.mjs',
-  ],
-  rules: {
-    // Object-key sorting is enforced across all packages.
-    'perfectionist/sort-objects': 'error',
-  },
-});
+export default createConfig();

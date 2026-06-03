@@ -36,7 +36,7 @@ import {TradeUpdateEvent, type TradeUpdateMessage} from './api/schema/TradingStr
  * status: 422 Unprocessable Entity
  * body: {"code":42210000,"message":"order is already in \"filled\" state"}
  */
-function isAlreadyFilledOrder(error: unknown): boolean {
+function isAlreadyFilledOrder(error: unknown) {
   if (!(error instanceof SimplifiedHttpError) || error.status !== 422) {
     return false;
   }
@@ -131,11 +131,11 @@ export class AlpacaBroker extends Broker implements MarketDataSource {
     return this.#marketData.getLatestCandle(pair, intervalInMillis);
   }
 
-  getName(): string {
+  getName() {
     return AlpacaBroker.NAME;
   }
 
-  getSmallestInterval(): number {
+  getSmallestInterval() {
     return ms('1m');
   }
 
@@ -143,12 +143,12 @@ export class AlpacaBroker extends Broker implements MarketDataSource {
    * Original time format from Alpaca is "RFC 3339" (i.e. "2023-08-08T18:58:27.26720022-04:00"),
    * we convert it to "ISO 8601 UTC" (i.e. "2023-08-08T22:58:27.267Z").
    */
-  async getTime(): Promise<string> {
+  async getTime() {
     const clock = await this.#alpacaAPI.getClock();
     return new Date(clock.timestamp).toISOString();
   }
 
-  async watchCandles(pair: TradingPair, intervalInMillis: number, openTimeInISO: string): Promise<string> {
+  async watchCandles(pair: TradingPair, intervalInMillis: number, openTimeInISO: string) {
     const topicId = await this.#marketData.watchCandles(pair, intervalInMillis, openTimeInISO);
     const forwarder = (candle: unknown) => this.emit(topicId, candle);
     this.#marketData.on(topicId, forwarder);
@@ -173,7 +173,7 @@ export class AlpacaBroker extends Broker implements MarketDataSource {
    *
    * @see https://docs.alpaca.markets/docs/websocket-streaming
    */
-  async watchOrders(): Promise<string> {
+  async watchOrders() {
     const topicId = randomUUID();
 
     if (!this.#tradingConnectionId) {
@@ -215,7 +215,7 @@ export class AlpacaBroker extends Broker implements MarketDataSource {
     this.#orderTopics.clear();
   }
 
-  async #createReliableSymbol(pair: TradingPair): Promise<string> {
+  async #createReliableSymbol(pair: TradingPair) {
     const isCrypto = await isAlpacaCryptoSymbol(this.#alpacaAPI, pair);
     return createAlpacaSymbol(pair, isCrypto);
   }

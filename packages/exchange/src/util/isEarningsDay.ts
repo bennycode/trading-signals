@@ -16,7 +16,7 @@ const EarningsCalendarResponseSchema = z.looseObject({
 
 export type EarningsEntry = z.infer<typeof EarningsEntrySchema>;
 
-function toIsoDate(date: Date): string {
+function toIsoDate(date: Date) {
   return date.toISOString().slice(0, 10);
 }
 
@@ -35,7 +35,7 @@ axiosRetry(client, {
  *
  * @see https://finnhub.io/docs/api/earnings-calendar
  */
-export async function isEarningsDay(options: {apiKey: string; date: Date; symbol: string}): Promise<boolean> {
+export async function isEarningsDay(options: {apiKey: string; date: Date; symbol: string}) {
   const isoDate = toIsoDate(options.date);
   const response = await client.get('/calendar/earnings', {
     params: {

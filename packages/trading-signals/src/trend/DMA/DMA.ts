@@ -30,7 +30,7 @@ export class DMA extends TechnicalIndicator<DMAResult, number> {
     this.long = new SmoothingIndicator(long);
   }
 
-  override get isStable(): boolean {
+  override get isStable() {
     return this.long.isStable;
   }
 

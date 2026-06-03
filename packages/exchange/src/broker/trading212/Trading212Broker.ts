@@ -90,7 +90,7 @@ export class Trading212Broker extends Broker implements MarketDataSource {
     return new TradingPair(ticker, pair.counter);
   }
 
-  getName(): string {
+  getName() {
     return Trading212Broker.NAME;
   }
 
@@ -98,7 +98,7 @@ export class Trading212Broker extends Broker implements MarketDataSource {
    * Trading212 has no historical-bar endpoint, but the `Broker` contract requires a value.
    * Returning 1m matches the granularity strategies typically expect.
    */
-  getSmallestInterval(): number {
+  getSmallestInterval() {
     return ms('1m');
   }
 
@@ -106,7 +106,7 @@ export class Trading212Broker extends Broker implements MarketDataSource {
    * Trading212 does not expose a server-time endpoint. The local clock is returned in ISO 8601
    * UTC; callers that need exchange-side time should consult instrument working schedules.
    */
-  async getTime(): Promise<string> {
+  async getTime() {
     return new Date().toISOString();
   }
 
@@ -118,7 +118,7 @@ export class Trading212Broker extends Broker implements MarketDataSource {
     return this.#marketData.getLatestCandle(Trading212Broker.toMarketDataPair(pair), intervalInMillis);
   }
 
-  async watchCandles(pair: TradingPair, intervalInMillis: number, openTimeInISO: string): Promise<string> {
+  async watchCandles(pair: TradingPair, intervalInMillis: number, openTimeInISO: string) {
     const topicId = await this.#marketData.watchCandles(
       Trading212Broker.toMarketDataPair(pair),
       intervalInMillis,
@@ -147,7 +147,7 @@ export class Trading212Broker extends Broker implements MarketDataSource {
    *
    * The first tick takes a baseline snapshot so historical fills are not replayed.
    */
-  async watchOrders(intervalInMillis: number = Trading212Broker.ORDER_POLL_INTERVAL_MS): Promise<string> {
+  async watchOrders(intervalInMillis: number = Trading212Broker.ORDER_POLL_INTERVAL_MS) {
     const topicId = randomUUID();
 
     const [accountInfo, instruments, baseline] = await Promise.all([
@@ -357,7 +357,7 @@ export class Trading212Broker extends Broker implements MarketDataSource {
    * Trading212 debits all fees in the account currency, not the instrument currency.
    * Strategies on a EUR account trading USD stocks see fees in EUR.
    */
-  protected override async getFeeAsset(_pair: TradingPair): Promise<string> {
+  protected override async getFeeAsset(_pair: TradingPair) {
     const accountInfo = await this.#api.getAccountInfo();
     return accountInfo.currencyCode;
   }

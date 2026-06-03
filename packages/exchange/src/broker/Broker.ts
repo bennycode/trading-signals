@@ -335,7 +335,7 @@ export abstract class Broker extends EventEmitter {
    * with cross-currency accounts (e.g. Trading212 EUR account trading USD instruments)
    * override this to return the account currency.
    */
-  protected async getFeeAsset(pair: TradingPair): Promise<string> {
+  protected async getFeeAsset(pair: TradingPair) {
     return pair.counter;
   }
 

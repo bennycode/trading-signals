@@ -1,3 +1,4 @@
+import {randomUUID} from 'node:crypto';
 import Big from 'big.js';
 import {
   Broker,
@@ -29,6 +30,7 @@ export abstract class BrokerMock extends Broker {
   readonly #fills: Fill[] = [];
   #currentCandle: Candle | undefined;
   #nextOrderId = 1;
+  readonly #orderTopics = new Set<string>();
 
   constructor(config: {balances: Map<string, ExchangeMockBalance>}) {
     super('BrokerMock');
@@ -60,6 +62,13 @@ export abstract class BrokerMock extends Broker {
 
     this.#pendingOrders.length = 0;
     this.#pendingOrders.push(...remaining);
+
+    // Notify `watchOrders()` subscribers, mirroring a real broker's WebSocket fill stream.
+    for (const fill of newFills) {
+      for (const topicId of this.#orderTopics) {
+        this.emit(topicId, fill);
+      }
+    }
 
     return newFills;
   }
@@ -342,16 +351,29 @@ export abstract class BrokerMock extends Broker {
     return this.#pendingOrders.filter(o => o.pair.base === pair.base && o.pair.counter === pair.counter);
   }
 
-  async watchOrders(): Promise<string> {
-    throw new Error('watchOrders() is not supported in mock exchange');
+  /**
+   * Subscribe to simulated order fill updates. Fills produced by {@link processCandle}
+   * are emitted as {@link Fill} objects via EventEmitter using the returned topicId as
+   * the event name, matching a real broker's WebSocket fill stream.
+   *
+   * @returns The generated topicId (UUID) for this subscription
+   */
+  async watchOrders() {
+    const topicId = randomUUID();
+    this.#orderTopics.add(topicId);
+    return topicId;
   }
 
-  unwatchOrders(_topicId: string) {
-    throw new Error('unwatchOrders() is not supported in mock exchange');
+  unwatchOrders(topicId: string) {
+    this.removeAllListeners(topicId);
+    this.#orderTopics.delete(topicId);
   }
 
   disconnect() {
-    // No-op
+    for (const topicId of this.#orderTopics) {
+      this.removeAllListeners(topicId);
+    }
+    this.#orderTopics.clear();
   }
 
   getPendingOrders() {

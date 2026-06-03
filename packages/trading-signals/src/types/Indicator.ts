@@ -46,7 +46,7 @@ export abstract class TechnicalIndicator<Result, Input> implements Indicator<Res
     return this.result;
   }
 
-  get isStable(): boolean {
+  get isStable() {
     return this.result !== undefined;
   }
 
@@ -71,7 +71,7 @@ export abstract class TechnicalIndicator<Result, Input> implements Indicator<Res
 export abstract class IndicatorSeries<Input = number> extends TechnicalIndicator<number, Input> {
   protected previousResult?: number;
 
-  protected setResult(value: number, replace: boolean): number {
+  protected setResult(value: number, replace: boolean) {
     // When replacing the latest value, restore previous result first
     if (replace) {
       this.result = this.previousResult;
@@ -105,7 +105,7 @@ export abstract class TrendIndicatorSeries<
   protected abstract calculateSignalState(result?: number | null | undefined): SignalState;
   #previousSignalState?: SignalState;
 
-  protected override setResult(value: number, replace: boolean): number {
+  protected override setResult(value: number, replace: boolean) {
     // When replacing, restore the previous signal state
     if (replace && this.previousResult !== undefined) {
       this.#previousSignalState = this.calculateSignalState(this.previousResult);

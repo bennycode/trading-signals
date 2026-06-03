@@ -1,6 +1,6 @@
 import {getMedian} from './getMedian.js';
 
-export function getQuartile(values: number[], q: 0.25 | 0.5 | 0.75): number {
+export function getQuartile(values: number[], q: 0.25 | 0.5 | 0.75) {
   const sorted = [...values].sort((a, b) => a - b);
   const n = sorted.length;
 

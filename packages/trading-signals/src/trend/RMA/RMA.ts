@@ -25,7 +25,7 @@ export class RMA extends MovingAverage {
     return this.interval;
   }
 
-  update(price: number, replace: boolean): number {
+  update(price: number, replace: boolean) {
     if (!replace) {
       this.#pricesCounter++;
     } else if (replace && this.#pricesCounter === 0) {
@@ -41,7 +41,7 @@ export class RMA extends MovingAverage {
     );
   }
 
-  override getResultOrThrow(): number {
+  override getResultOrThrow() {
     if (this.#pricesCounter < this.interval) {
       throw new NotEnoughDataError(this.getRequiredInputs());
     }
@@ -49,7 +49,7 @@ export class RMA extends MovingAverage {
     return this.result!;
   }
 
-  override get isStable(): boolean {
+  override get isStable() {
     try {
       this.getResultOrThrow();
       return true;

@@ -37,7 +37,7 @@ export class MultiIndicatorConfluenceStrategy extends ProtectedStrategy {
   }
 
   /** Number of candles required before the strategy can produce signals. */
-  get requiredWarmupCandles(): number {
+  get requiredWarmupCandles() {
     return Math.max(
       this.#config.emaLongPeriod,
       this.#config.bollingerPeriod,
@@ -47,7 +47,7 @@ export class MultiIndicatorConfluenceStrategy extends ProtectedStrategy {
   }
 
   /** Whether all indicators have received enough data to produce stable results. */
-  get isWarmedUp(): boolean {
+  get isWarmedUp() {
     return (
       this.#emaShort.isStable &&
       this.#emaLong.isStable &&
@@ -58,7 +58,7 @@ export class MultiIndicatorConfluenceStrategy extends ProtectedStrategy {
   }
 
   /** Number of candles processed so far. */
-  get candlesProcessed(): number {
+  get candlesProcessed() {
     return this.#candlesProcessed;
   }
 

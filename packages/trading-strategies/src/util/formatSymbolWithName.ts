@@ -26,7 +26,7 @@ export function formatSymbolWithName(
   symbol: string,
   names: Map<string, string>,
   maxNameLength: number = DEFAULT_MAX_NAME_LENGTH
-): string {
+) {
   const name = names.get(symbol);
   if (!name) {
     return symbol;

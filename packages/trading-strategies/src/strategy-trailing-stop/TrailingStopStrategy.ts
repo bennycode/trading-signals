@@ -315,7 +315,7 @@ function isTrailingStopState(value: unknown): value is TrailingStopState {
   return true;
 }
 
-function isValidBigString(value: string): boolean {
+function isValidBigString(value: string) {
   try {
     new Big(value);
     return true;

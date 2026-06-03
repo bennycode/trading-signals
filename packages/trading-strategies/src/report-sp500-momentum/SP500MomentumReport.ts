@@ -28,7 +28,7 @@ export class SP500MomentumReport extends Report<SP500MomentumConfig> {
     this.#api = api;
   }
 
-  async run(): Promise<string> {
+  async run() {
     const now = new Date();
 
     // 12-1 momentum: skip the most recent month, look back 12 months from there
@@ -109,7 +109,7 @@ export class SP500MomentumReport extends Report<SP500MomentumConfig> {
     return result;
   }
 
-  #formatResults(results: MomentumResult[], fromDate: string, toDate: string, names: Map<string, string>): string {
+  #formatResults(results: MomentumResult[], fromDate: string, toDate: string, names: Map<string, string>) {
     const top = 20;
     const lines: string[] = [];
 
@@ -125,7 +125,7 @@ export class SP500MomentumReport extends Report<SP500MomentumConfig> {
       ...losers.map(r => formatSymbolWithName(r.ticker, names, TELEGRAM_TABLE_NAME_MAX).length)
     );
 
-    const renderRow = (index: number, r: MomentumResult): string => {
+    const renderRow = (index: number, r: MomentumResult) => {
       const stock = formatSymbolWithName(r.ticker, names, TELEGRAM_TABLE_NAME_MAX).padEnd(stockColWidth);
       return `${String(index).padStart(4)}  ${stock}  ${(r.returnPct.toFixed(2) + '%').padStart(9)}  ${('$' + r.priceNow.toFixed(2)).padStart(9)}`;
     };

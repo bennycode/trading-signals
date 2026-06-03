@@ -95,7 +95,7 @@ export function resolveReportConfig(name: string): Record<string, unknown> | und
 }
 
 /** Returns true if the report requires an exchange account (apiKey/apiSecret) at runtime */
-export function reportRequiresAccount(name: string): boolean {
+export function reportRequiresAccount(name: string) {
   const entry = registry[name];
   return entry?.requiresAccount ?? false;
 }

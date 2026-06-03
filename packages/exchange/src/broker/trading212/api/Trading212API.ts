@@ -30,7 +30,7 @@ const URL = {
  *
  * @see https://t212public-api-docs.redoc.ly/
  */
-function getRetryDelay(retryCount: number, error: AxiosError): number {
+function getRetryDelay(retryCount: number, error: AxiosError) {
   const url = error.config?.url ?? '';
   const method = error.config?.method;
 

@@ -20,7 +20,7 @@ export interface PlaceOrderParams {
  * is caught and folded into the returned string — the caller never sees an
  * exception.
  */
-export const placeOrder = async (params: PlaceOrderParams): Promise<string> => {
+export const placeOrder = async (params: PlaceOrderParams) => {
   try {
     const account = getAccountOrError(params.userId, params.accountId);
 

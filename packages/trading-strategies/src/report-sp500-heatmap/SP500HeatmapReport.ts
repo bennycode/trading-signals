@@ -33,7 +33,7 @@ export class SP500HeatmapReport extends Report<SP500HeatmapConfig> {
     this.#api = api;
   }
 
-  async run(): Promise<string> {
+  async run() {
     const [results, names] = await Promise.all([
       this.#fetchIntradayChanges(SP500_TICKERS),
       fetchUsEquityNames(this.#api),
@@ -71,7 +71,7 @@ export class SP500HeatmapReport extends Report<SP500HeatmapConfig> {
     return results;
   }
 
-  #formatResults(results: HeatmapResult[], names: Map<string, string>): string {
+  #formatResults(results: HeatmapResult[], names: Map<string, string>) {
     const reportDate = new Date().toISOString().slice(0, 10);
     const total = results.length;
     const upCount = results.filter(r => r.changePct > 0).length;
@@ -98,7 +98,7 @@ export class SP500HeatmapReport extends Report<SP500HeatmapConfig> {
       ...losers.map(r => formatSymbolWithName(r.ticker, names, TELEGRAM_TABLE_NAME_MAX).length)
     );
 
-    const renderRow = (index: number, r: HeatmapResult): string => {
+    const renderRow = (index: number, r: HeatmapResult) => {
       const stock = formatSymbolWithName(r.ticker, names, TELEGRAM_TABLE_NAME_MAX).padEnd(stockColWidth);
       return `${String(index).padStart(4)}  ${stock}  ${(r.changePct.toFixed(2) + '%').padStart(8)}  ${('$' + r.price.toFixed(2)).padStart(9)}`;
     };

@@ -92,7 +92,7 @@ export class AlpacaMarketData extends MarketDataSource {
   /**
    * @see https://docs.alpaca.markets/docs/real-time-stock-pricing-data#minute-bars-bars
    */
-  async watchCandles(pair: TradingPair, intervalInMillis: number, openTimeInISO: string): Promise<string> {
+  async watchCandles(pair: TradingPair, intervalInMillis: number, openTimeInISO: string) {
     const topicId = randomUUID();
     const isCrypto = await isAlpacaCryptoSymbol(this.#alpacaAPI, pair);
     const symbol = createAlpacaSymbol(pair, isCrypto);

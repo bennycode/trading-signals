@@ -18,7 +18,7 @@ interface ActiveSession {
 export const STRATEGY_ERROR_LOG_MESSAGE = 'Strategy error';
 
 /** Format a strategy-emitted text into the user-facing message string. Exported for tests. */
-export function formatStrategyMessage(strategyName: string, pair: string, text: string): string {
+export function formatStrategyMessage(strategyName: string, pair: string, text: string) {
   return `${strategyName} (${pair}): ${text}`;
 }
 

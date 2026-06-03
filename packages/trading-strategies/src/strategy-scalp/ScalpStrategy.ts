@@ -77,11 +77,11 @@ export class ScalpStrategy extends ProtectedStrategy {
     }
   }
 
-  get scalpFriendly(): boolean {
+  get scalpFriendly() {
     return this.#scalpFriendly;
   }
 
-  #computeRangeEfficiency(candles: Candle[]): boolean {
+  #computeRangeEfficiency(candles: Candle[]) {
     const ONE_DAY_IN_MS = 86_400_000;
     const isSubDaily = candles[0].sizeInMillis < ONE_DAY_IN_MS;
 

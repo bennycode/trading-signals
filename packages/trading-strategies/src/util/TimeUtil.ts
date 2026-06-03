@@ -1,4 +1,4 @@
-export function getDateString(date: Date): string {
+export function getDateString(date: Date) {
   return date.toISOString().split('T')[0];
 }
 

@@ -35,7 +35,7 @@ export class ZigZag extends IndicatorSeries<HighLow> {
     this.#deviation = config.deviation;
   }
 
-  override getRequiredInputs(): number {
+  override getRequiredInputs() {
     return 1;
   }
 
