@@ -1,4 +1,4 @@
-import {Chart as HighchartsChart, type HighchartsOptionsType} from '@highcharts/react';
+import {Chart as HighchartsChart, type ChartOptions} from '@highcharts/react';
 import {OrderSide} from '@typedtrader/exchange';
 import type {Candle} from '@typedtrader/exchange';
 import type {BacktestResult} from 'trading-strategies';
@@ -101,7 +101,7 @@ function PriceChartWithTrades({result, candles}: ResultProps) {
     })
     .filter(m => m.x > 0);
 
-  const options: HighchartsOptionsType = {
+  const options: ChartOptions = {
     chart: {backgroundColor: 'transparent', height: 350},
     title: {text: 'Price Chart with Trades', style: {color: '#e2e8f0', fontSize: '16px', fontWeight: '600'}},
     credits: {enabled: false},
