@@ -1,6 +1,6 @@
 import Big from 'big.js';
 import {describe, expect, it} from 'vitest';
-import {AlpacaBrokerMock, OrderSide, OrderType, TradingPair} from '@typedtrader/exchange';
+import {AlpacaBroker, AlpacaBrokerMock, OrderSide, OrderType, TradingPair} from '@typedtrader/exchange';
 import type {Candle} from '@typedtrader/exchange';
 import {BacktestExecutor} from '../backtest/BacktestExecutor.js';
 import {TrailingStopStrategy} from './TrailingStopStrategy.js';
@@ -24,21 +24,13 @@ function createCandle(overrides: Partial<Candle> & {close: string; open: string}
   };
 }
 
-function createMockExchange(
-  options: {baseBalance?: string; counterBalance?: string; baseMinSize?: string} = {}
-) {
+function createMockExchange(options: {baseBalance?: string; counterBalance?: string; baseMinSize?: string} = {}) {
   const balances = new Map([
     ['BTC', {available: new Big(options.baseBalance ?? '5'), hold: new Big(0)}],
     ['USD', {available: new Big(options.counterBalance ?? '0'), hold: new Big(0)}],
   ]);
   const tradingRules = options.baseMinSize
-    ? {
-        base_increment: '0.000000001',
-        base_max_size: '1000000',
-        base_min_size: options.baseMinSize,
-        counter_increment: '0.01',
-        counter_min_size: '1',
-      }
+    ? {...AlpacaBroker.DEFAULT_CRYPTO_TRADING_RULES, base_min_size: options.baseMinSize}
     : undefined;
   return new AlpacaBrokerMock({balances, tradingRules});
 }

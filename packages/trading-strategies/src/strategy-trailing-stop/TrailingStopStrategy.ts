@@ -141,16 +141,6 @@ export class TrailingStopStrategy extends Strategy {
     return {...this.#state};
   }
 
-  /**
-   * Whether the available base balance is large enough to place an exit order. Anything
-   * below the exchange's minimum order size (`base_min_size`) is unsellable dust, so the
-   * position counts as effectively closed. Gating on this threshold rather than `> 0`
-   * stops a tiny residue left after a fill from keeping the strategy armed forever.
-   */
-  #hasSellablePosition(state: TradingSessionState): boolean {
-    return state.baseBalance.gte(new Big(state.tradingRules.base_min_size));
-  }
-
   protected override async processCandle(
     candle: OneMinuteBatchedCandle,
     state: TradingSessionState
@@ -160,7 +150,7 @@ export class TrailingStopStrategy extends Strategy {
     }
 
     if (this.#state.peakPrice === '0') {
-      if (!this.#hasSellablePosition(state)) {
+      if (!this.hasSellablePosition(state)) {
         return undefined;
       }
       const peak = this.#pivotPrice ?? candle.high;
@@ -173,7 +163,7 @@ export class TrailingStopStrategy extends Strategy {
       return undefined;
     }
 
-    if (!this.#hasSellablePosition(state)) {
+    if (!this.hasSellablePosition(state)) {
       return undefined;
     }
 
@@ -231,11 +221,13 @@ export class TrailingStopStrategy extends Strategy {
     if (fill.side !== OrderSide.SELL) {
       return;
     }
-    // The exit sells the full available balance, so a SELL fill that drains the live
-    // base balance below the minimum order size means the position is closed — only
-    // unsellable dust remains. Reading the post-fill balance (rather than decrementing a
-    // snapshot) keeps the strategy correct even when size was added after attach.
-    if (!this.#hasSellablePosition(state)) {
+    /*
+     * The exit sells the full available balance, so a SELL fill that drains the live
+     * base balance below the minimum order size means the position is closed — only
+     * unsellable dust remains. Reading the post-fill balance (rather than decrementing a
+     * snapshot) keeps the strategy correct even when size was added after attach.
+     */
+    if (!this.hasSellablePosition(state)) {
       this.#state.exited = true;
     }
   }
