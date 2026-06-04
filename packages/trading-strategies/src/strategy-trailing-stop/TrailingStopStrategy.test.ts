@@ -1,6 +1,6 @@
 import Big from 'big.js';
 import {describe, expect, it} from 'vitest';
-import {AlpacaBrokerMock, OrderSide, OrderType, TradingPair} from '@typedtrader/exchange';
+import {AlpacaBroker, AlpacaBrokerMock, OrderSide, OrderType, TradingPair} from '@typedtrader/exchange';
 import type {Candle} from '@typedtrader/exchange';
 import {BacktestExecutor} from '../backtest/BacktestExecutor.js';
 import {TrailingStopStrategy} from './TrailingStopStrategy.js';
@@ -24,12 +24,15 @@ function createCandle(overrides: Partial<Candle> & {close: string; open: string}
   };
 }
 
-function createMockExchange(options: {baseBalance?: string; counterBalance?: string} = {}) {
+function createMockExchange(options: {baseBalance?: string; counterBalance?: string; baseMinSize?: string} = {}) {
   const balances = new Map([
     ['BTC', {available: new Big(options.baseBalance ?? '5'), hold: new Big(0)}],
     ['USD', {available: new Big(options.counterBalance ?? '0'), hold: new Big(0)}],
   ]);
-  return new AlpacaBrokerMock({balances});
+  const tradingRules = options.baseMinSize
+    ? {...AlpacaBroker.DEFAULT_CRYPTO_TRADING_RULES, base_min_size: options.baseMinSize}
+    : undefined;
+  return new AlpacaBrokerMock({balances, tradingRules});
 }
 
 describe('TrailingStopStrategy', () => {
@@ -163,6 +166,28 @@ describe('TrailingStopStrategy', () => {
     expect(strategy.trailingState.peakPrice).toBe('0');
   });
 
+  it('does not attach to a dust balance below the exchange minimum order size', async () => {
+    const strategy = new TrailingStopStrategy({trailDownPct: '10'});
+
+    // base_min_size=1 but only 0.5 available → unsellable dust, so no attach, no advice.
+    const candles = [
+      createCandle({close: '100', high: '101', low: '99', open: '100', openTimeInISO: '2025-01-01T00:00:00.000Z'}),
+      createCandle({close: '80', high: '101', low: '79', open: '100', openTimeInISO: '2025-01-01T00:01:00.000Z'}),
+    ];
+
+    const config: BacktestConfig = {
+      broker: createMockExchange({baseBalance: '0.5', baseMinSize: '1'}),
+      candles,
+      strategy,
+      tradingPair,
+    };
+
+    const result = await new BacktestExecutor(config).execute();
+
+    expect(result.trades).toHaveLength(0);
+    expect(strategy.trailingState.peakPrice).toBe('0');
+  });
+
   it('seeds the peak from the attach candle high, not from its close', async () => {
     const strategy = new TrailingStopStrategy({trailDownPct: '10'});
 
@@ -272,40 +297,24 @@ describe('TrailingStopStrategy', () => {
     expect(strategy.trailingState.exitLimitPrice).toBe('90');
   });
 
-  it('rejects malformed restored state that would strand the strategy in a no-op', async () => {
+  it('rejects malformed restored state where peakPrice and stopPrice are decoupled', async () => {
     const strategy = new TrailingStopStrategy({trailDownPct: '10'});
 
     /*
-     * peak set but no position and not exited → permanent no-op. Predicate rejects;
-     * the proxied state stays at defaults so the strategy can still attach.
+     * peakPrice set but stopPrice still '0' (or vice versa) is contradictory — the two
+     * are always seeded together. Predicate rejects; the proxied state stays at defaults
+     * so the strategy can still attach.
      */
     strategy.restoreState({
       exited: false,
       exitLimitPrice: null,
       exitReason: null,
       peakPrice: '120',
-      positionSize: '0',
-      stopPrice: '108',
+      stopPrice: '0',
     });
 
     expect(strategy.trailingState.peakPrice).toBe('0');
-    expect(strategy.trailingState.positionSize).toBe('0');
-  });
-
-  it('rejects restored state where exited=true but positionSize is non-zero', async () => {
-    const strategy = new TrailingStopStrategy({trailDownPct: '10'});
-
-    strategy.restoreState({
-      exited: true,
-      exitLimitPrice: null,
-      exitReason: null,
-      peakPrice: '120',
-      positionSize: '5',
-      stopPrice: '108',
-    });
-
-    expect(strategy.trailingState.exited).toBe(false);
-    expect(strategy.trailingState.positionSize).toBe('0');
+    expect(strategy.trailingState.stopPrice).toBe('0');
   });
 
   it('exposes stopPrice in state from the moment the strategy attaches', async () => {
@@ -423,12 +432,10 @@ describe('TrailingStopStrategy', () => {
       exitLimitPrice: null,
       exitReason: null,
       peakPrice: '120',
-      positionSize: '5',
       stopPrice: '108',
     });
 
     expect(strategy.trailingState.peakPrice).toBe('120');
     expect(strategy.trailingState.stopPrice).toBe('108');
-    expect(strategy.trailingState.positionSize).toBe('5');
   });
 });

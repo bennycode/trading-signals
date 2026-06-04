@@ -1,3 +1,4 @@
+import Big from 'big.js';
 import type {
   OneMinuteBatchedCandle,
   OrderAdvice,
@@ -83,6 +84,16 @@ export abstract class Strategy implements TradingSessionStrategy {
 
   restoreState(persisted: Record<string, unknown>): void {
     this.#_state = persisted;
+  }
+
+  /**
+   * Whether the available base balance is large enough to place an order. Anything below
+   * the exchange's minimum order size (`base_min_size`) is unsellable dust, so for
+   * position/exit purposes it counts as no position. Gating on this threshold rather than
+   * `> 0` stops a tiny residue left after a fill from being treated as an open position.
+   */
+  protected hasSellablePosition(state: TradingSessionState) {
+    return state.baseBalance.gte(new Big(state.tradingRules.base_min_size));
   }
 
   protected getProxiedState<T extends Record<string, unknown>>(): T {
