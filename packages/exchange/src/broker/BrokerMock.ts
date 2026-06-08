@@ -1,9 +1,11 @@
+import assert from 'node:assert';
 import {randomUUID} from 'node:crypto';
 import Big from 'big.js';
 import {
   Broker,
   type Balance,
   type Candle,
+  type CandleImportRequest,
   type FeeRate,
   type Fill,
   type LimitOrderOptions,
@@ -29,12 +31,22 @@ export abstract class BrokerMock extends Broker {
   readonly #pendingOrders: PendingOrder[] = [];
   readonly #fills: Fill[] = [];
   #currentCandle: Candle | undefined;
+  #historicalCandles: Candle[] = [];
   #nextOrderId = 1;
   readonly #orderTopics = new Set<string>();
 
   constructor(config: {balances: Map<string, ExchangeMockBalance>}) {
     super('BrokerMock');
     this.#balances = config.balances;
+  }
+
+  /** Seed the candles returned by {@link getCandles} (used to exercise strategy warm-up). */
+  setHistoricalCandles(candles: Candle[]) {
+    this.#historicalCandles = candles;
+  }
+
+  async getCandles(_pair: TradingPair, _request: CandleImportRequest): Promise<Candle[]> {
+    return this.#historicalCandles;
   }
 
   abstract override getFeeRates(pair: TradingPair): Promise<FeeRate>;

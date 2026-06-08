@@ -5,6 +5,8 @@ import {
   BuyBelowSellAboveSchema,
 } from '../strategy-buy-below-sell-above/BuyBelowSellAboveStrategy.js';
 import {CoinFlipStrategy, CoinFlipSchema} from '../strategy-coin-flip/CoinFlipStrategy.js';
+import {ChandelierTrailStrategy} from '../strategy-dynamic-trail/ChandelierTrailStrategy.js';
+import {DynamicTrailStrategy, DynamicTrailSchema} from '../strategy-dynamic-trail/DynamicTrailStrategy.js';
 import {
   MultiIndicatorConfluenceStrategy,
   MultiIndicatorConfluenceSchema,
@@ -30,9 +32,17 @@ const registry: Record<string, StrategyEntry> = {
     create: (config: unknown) => new BuyOnceStrategy(BuyOnceSchema.parse(config ?? {})),
     schema: BuyOnceSchema,
   },
+  [ChandelierTrailStrategy.NAME]: {
+    create: (config: unknown) => new ChandelierTrailStrategy(DynamicTrailSchema.parse(config ?? {})),
+    schema: DynamicTrailSchema,
+  },
   [CoinFlipStrategy.NAME]: {
     create: (config: unknown) => new CoinFlipStrategy(CoinFlipSchema.parse(config ?? {})),
     schema: CoinFlipSchema,
+  },
+  [DynamicTrailStrategy.NAME]: {
+    create: (config: unknown) => new DynamicTrailStrategy(DynamicTrailSchema.parse(config ?? {})),
+    schema: DynamicTrailSchema,
   },
   [MeanReversionStrategy.NAME]: {
     create: (config: unknown) => new MeanReversionStrategy({config: MeanReversionSchema.parse(config ?? {})}),

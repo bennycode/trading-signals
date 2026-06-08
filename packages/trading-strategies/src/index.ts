@@ -37,6 +37,31 @@ export {
   type ProtectedStrategyState,
 } from './strategy-protected/ProtectedStrategy.js';
 export {suggestScalpOffset} from './strategy-scalp/suggestScalpOffset.js';
+export {
+  DynamicTrailStrategy,
+  DynamicTrailSchema,
+  type DynamicTrailConfig,
+  type DynamicTrailState,
+} from './strategy-dynamic-trail/DynamicTrailStrategy.js';
+export {ChandelierTrailStrategy} from './strategy-dynamic-trail/ChandelierTrailStrategy.js';
+export {
+  assessTrailSuitability,
+  type TrailSuitabilityOptions,
+  type TrailSuitabilityReport,
+  type TrailSuitabilityVerdict,
+} from './strategy-dynamic-trail/assessTrailSuitability.js';
+export {atrTrailStop, percentTrailStop, trailStop, type TrailStopOptions} from './util/trailStop.js';
+export {TrendFilter} from './util/TrendFilter.js';
+export {AtrPercent, atrToPercent} from './util/AtrPercent.js';
+export {
+  ATR_TRAIL_BANDS,
+  DEFAULT_ATR_TRAIL_MULTIPLE,
+  atrMultipleToPercent,
+  classifyAtrMultiple,
+  percentToAtrMultiple,
+  type AtrRoomVerdict,
+} from './util/atrUnits.js';
+export {MarketRegimeFilter, type MarketRegimeOptions} from './util/MarketRegimeFilter.js';
 export * from './report/index.js';
 export {
   SP500HeatmapReport,
