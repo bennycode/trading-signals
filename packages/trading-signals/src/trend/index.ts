@@ -6,6 +6,7 @@ export * from './DX/DX.js';
 export * from './EMA/EMA.js';
 export * from './HIGHER_LOW_TRAIL/HigherLowTrail.js';
 export * from './LINREG/LinearRegression.js';
+export * from './MA/MovingAverage.js';
 export * from './PSAR/PSAR.js';
 export * from './RMA/RMA.js';
 export * from './SMA/SMA.js';
