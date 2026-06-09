@@ -4,6 +4,8 @@ import type {EventEmitter} from 'node:events';
 import type {BatchedCandle, OneMinuteBatchedCandle} from '../candle/BatchedCandle.js';
 import type {OrderSide} from '../broker/Broker.js';
 import type {
+  Candle,
+  CandleImportRequest,
   ExchangeAvailableBalance,
   FeeRate,
   Fill,
@@ -16,7 +18,23 @@ import type {
 } from '../broker/Broker.js';
 import type {TradingPair} from '../broker/TradingPair.js';
 
+/**
+ * Supplies historical candles so a strategy can warm up its indicators before going live.
+ * The session binds an implementation to the current pair and hands it to {@link
+ * TradingSessionStrategy.init}; the strategy decides the interval and how many candles it needs.
+ */
+export interface HistoricalCandleProvider {
+  /** Fetch the most recent `count` candles of the given interval, oldest first. */
+  getRecentCandles(intervalInMillis: number, count: number): Promise<Candle[]>;
+}
+
 export interface TradingSessionStrategy {
+  /**
+   * Optional warm-up hook called once by the session on `start()`, before any live candle, so the
+   * strategy can pre-seed its indicators from history (e.g. fetch daily candles to warm an ATR
+   * instead of sitting unprotected through the live warm-up period).
+   */
+  init?(provider: HistoricalCandleProvider): Promise<void>;
   onCandle(candle: OneMinuteBatchedCandle, state: TradingSessionState): Promise<OrderAdvice | void>;
   onFill?(fill: Fill, state: TradingSessionState): Promise<void>;
   /**
@@ -88,6 +106,7 @@ export interface TradingSessionState {
 export interface TradingSessionBroker extends Pick<EventEmitter, 'on'> {
   cancelOpenOrders(pair: TradingPair): Promise<string[]>;
   getAvailableBalances(pair: TradingPair): Promise<ExchangeAvailableBalance>;
+  getCandles(pair: TradingPair, request: CandleImportRequest): Promise<Candle[]>;
   getFeeRates(pair: TradingPair): Promise<FeeRate>;
   getFills(pair: TradingPair): Promise<Fill[]>;
   getOpenOrders(pair: TradingPair): Promise<PendingOrder[]>;

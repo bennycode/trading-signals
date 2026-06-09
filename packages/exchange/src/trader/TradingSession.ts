@@ -69,6 +69,21 @@ export class TradingSession extends EventEmitter<TradingSessionEventMap> {
       tradingRules,
     };
 
+    // Warm up the strategy's indicators from history before any live candle arrives.
+    if (this.#strategy.init) {
+      await this.#strategy.init({
+        getRecentCandles: (intervalInMillis, count) => {
+          const nowInMillis = Date.now();
+          const startInMillis = nowInMillis - intervalInMillis * count;
+          return this.#broker.getCandles(this.#pair, {
+            intervalInMillis,
+            startTimeFirstCandle: new Date(startInMillis).toISOString(),
+            startTimeLastCandle: new Date(nowInMillis).toISOString(),
+          });
+        },
+      });
+    }
+
     // Subscribe to candles only after state is ready
     const openTimeInISO = new Date().toISOString();
     this.#candleTopicId = await this.#broker.watchCandles(this.#pair, ONE_MINUTE_IN_MS, openTimeInISO);

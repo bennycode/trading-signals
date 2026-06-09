@@ -47,6 +47,7 @@ function createMockExchange() {
   return Object.assign(new EventEmitter(), {
     cancelOpenOrders: vi.fn().mockResolvedValue([]),
     getAvailableBalances: vi.fn().mockResolvedValue({base: new Big('10'), counter: new Big('5000')}),
+    getCandles: vi.fn().mockResolvedValue([]),
     getFeeRates: vi.fn().mockResolvedValue(AlpacaBroker.DEFAULT_FEE_RATES),
     getFills: vi.fn().mockResolvedValue([sampleFill]),
     getOpenOrders: vi.fn().mockResolvedValue([]),
@@ -111,6 +112,22 @@ describe('TradingSession', {concurrent: false}, () => {
       expect(exchange.watchOrders).toHaveBeenCalled();
       expect(session.running).toBe(true);
       expect(onStarted).toHaveBeenCalledTimes(1);
+    });
+
+    it('warms up the strategy from history before subscribing to live candles', async () => {
+      const init = vi.fn().mockResolvedValue(undefined);
+      const warmStrategy = {init, onCandle: vi.fn().mockResolvedValue(undefined)};
+      const warmSession = new TradingSession({broker: exchange, pair, strategy: warmStrategy});
+
+      await warmSession.start();
+
+      expect(init).toHaveBeenCalledTimes(1);
+
+      // The provider handed to init fetches history through the broker's getCandles.
+      const provider = init.mock.calls[0][0];
+      await provider.getRecentCandles(86_400_000, 30);
+
+      expect(exchange.getCandles).toHaveBeenCalledWith(pair, expect.objectContaining({intervalInMillis: 86_400_000}));
     });
 
     it('throws if already running', async () => {
