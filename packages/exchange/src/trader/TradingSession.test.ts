@@ -123,9 +123,9 @@ describe('TradingSession', {concurrent: false}, () => {
 
       expect(init).toHaveBeenCalledTimes(1);
 
-      // The provider handed to init fetches history through the broker's getCandles.
-      const provider = init.mock.calls[0][0];
-      await provider.getRecentCandles(86_400_000, 30);
+      // The fetcher handed to init is the broker's getCandles bound to this pair.
+      const fetchCandles = init.mock.calls[0][0];
+      await fetchCandles({intervalInMillis: 86_400_000, startTimeFirstCandle: 'a', startTimeLastCandle: 'b'});
 
       expect(exchange.getCandles).toHaveBeenCalledWith(pair, expect.objectContaining({intervalInMillis: 86_400_000}));
     });

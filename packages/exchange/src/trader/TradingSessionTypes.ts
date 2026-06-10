@@ -19,14 +19,11 @@ import type {
 import type {TradingPair} from '../broker/TradingPair.js';
 
 /**
- * Supplies historical candles so a strategy can warm up its indicators before going live.
- * The session binds an implementation to the current pair and hands it to {@link
- * TradingSessionStrategy.init}; the strategy decides the interval and how many candles it needs.
+ * Fetches historical candles for the session's pair — a thin bind over the broker's `getCandles`,
+ * handed to a strategy's {@link TradingSessionStrategy.init} so it can warm up its indicators from
+ * a window of history it chooses.
  */
-export interface HistoricalCandleProvider {
-  /** Fetch the most recent `count` candles of the given interval, oldest first. */
-  getRecentCandles(intervalInMillis: number, count: number): Promise<Candle[]>;
-}
+export type FetchHistoricalCandles = (request: CandleImportRequest) => Promise<Candle[]>;
 
 export interface TradingSessionStrategy {
   /**
@@ -34,7 +31,7 @@ export interface TradingSessionStrategy {
    * strategy can pre-seed its indicators from history (e.g. fetch daily candles to warm an ATR
    * instead of sitting unprotected through the live warm-up period).
    */
-  init?(provider: HistoricalCandleProvider): Promise<void>;
+  init?(fetchCandles: FetchHistoricalCandles): Promise<void>;
   onCandle(candle: OneMinuteBatchedCandle, state: TradingSessionState): Promise<OrderAdvice | void>;
   onFill?(fill: Fill, state: TradingSessionState): Promise<void>;
   /**

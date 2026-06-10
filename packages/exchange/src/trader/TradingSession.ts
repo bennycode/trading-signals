@@ -69,19 +69,10 @@ export class TradingSession extends EventEmitter<TradingSessionEventMap> {
       tradingRules,
     };
 
-    // Warm up the strategy's indicators from history before any live candle arrives.
+    // Warm up the strategy's indicators from history before any live candle arrives. The strategy
+    // chooses the window; the session just binds `getCandles` to this pair.
     if (this.#strategy.init) {
-      await this.#strategy.init({
-        getRecentCandles: (intervalInMillis, count) => {
-          const nowInMillis = Date.now();
-          const startInMillis = nowInMillis - intervalInMillis * count;
-          return this.#broker.getCandles(this.#pair, {
-            intervalInMillis,
-            startTimeFirstCandle: new Date(startInMillis).toISOString(),
-            startTimeLastCandle: new Date(nowInMillis).toISOString(),
-          });
-        },
-      });
+      await this.#strategy.init(request => this.#broker.getCandles(this.#pair, request));
     }
 
     // Subscribe to candles only after state is ready
