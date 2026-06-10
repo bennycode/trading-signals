@@ -28,11 +28,6 @@ export const uptrendStxCandles: Candle[] = uptrendStxRaw;
 export const urth2024Candles: Candle[] = urth2024Raw;
 export const urth2025Candles: Candle[] = urth2025Raw;
 
-/**
- * Labeled market-condition candle datasets. The synthetic trio (uptrend/downtrend/sideways) plus
- * real-ticker regime examples and broad-market index series (URTH). `uptrend-stx` is the canonical
- * "uptrend with a mid-trend shakeout" — a real whipsaw trap rather than a smooth climb.
- */
 export const datasets: CandleDataset[] = [
   {
     candles: uptrendCandles,
