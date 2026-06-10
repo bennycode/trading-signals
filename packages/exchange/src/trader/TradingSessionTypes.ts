@@ -19,19 +19,26 @@ import type {
 import type {TradingPair} from '../broker/TradingPair.js';
 
 /**
- * Fetches historical candles for the session's pair — a thin bind over the broker's `getCandles`,
- * handed to a strategy's {@link TradingSessionStrategy.init} so it can warm up its indicators from
- * a window of history it chooses.
+ * Read-only market-data context handed to a strategy's {@link TradingSessionStrategy.init}. It lets
+ * the strategy pull whatever history it needs to warm up (e.g. 300 hourly candles for an ATR) but
+ * deliberately exposes no order placement — warm-up reads data, it never trades. Both real brokers
+ * and standalone {@link MarketDataSource}s satisfy this shape.
  */
-export type FetchHistoricalCandles = (request: CandleImportRequest) => Promise<Candle[]>;
+export interface MarketDataProvider {
+  getCandles(pair: TradingPair, request: CandleImportRequest): Promise<Candle[]>;
+  getLatestCandle(pair: TradingPair, intervalInMillis: number): Promise<Candle>;
+  /** Fetch the most recent `count` candles of the given interval, oldest first. */
+  getRecentCandles(pair: TradingPair, count: number, intervalInMillis: number): Promise<Candle[]>;
+}
 
 export interface TradingSessionStrategy {
   /**
-   * Optional warm-up hook called once by the session on `start()`, before any live candle, so the
-   * strategy can pre-seed its indicators from history (e.g. fetch daily candles to warm an ATR
-   * instead of sitting unprotected through the live warm-up period).
+   * Optional warm-up hook called once by the session on `start()`, before any live candle. The
+   * strategy is handed a read-only {@link MarketDataProvider} and the session's pair, so it can pull
+   * the history it needs (e.g. `market.getRecentCandles(pair, 300, ONE_HOUR_IN_MS)` to warm a daily
+   * ATR) instead of sitting unprotected through the live warm-up period. It can only read data here.
    */
-  init?(fetchCandles: FetchHistoricalCandles): Promise<void>;
+  init?(market: MarketDataProvider, pair: TradingPair): Promise<void>;
   onCandle(candle: OneMinuteBatchedCandle, state: TradingSessionState): Promise<OrderAdvice | void>;
   onFill?(fill: Fill, state: TradingSessionState): Promise<void>;
   /**
@@ -100,10 +107,9 @@ export interface TradingSessionState {
   readonly feeRates: FeeRate;
 }
 
-export interface TradingSessionBroker extends Pick<EventEmitter, 'on'> {
+export interface TradingSessionBroker extends MarketDataProvider, Pick<EventEmitter, 'on'> {
   cancelOpenOrders(pair: TradingPair): Promise<string[]>;
   getAvailableBalances(pair: TradingPair): Promise<ExchangeAvailableBalance>;
-  getCandles(pair: TradingPair, request: CandleImportRequest): Promise<Candle[]>;
   getFeeRates(pair: TradingPair): Promise<FeeRate>;
   getFills(pair: TradingPair): Promise<Fill[]>;
   getOpenOrders(pair: TradingPair): Promise<PendingOrder[]>;

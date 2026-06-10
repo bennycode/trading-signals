@@ -131,6 +131,10 @@ export class AlpacaBroker extends Broker implements MarketDataSource {
     return this.#marketData.getLatestCandle(pair, intervalInMillis);
   }
 
+  async getRecentCandles(pair: TradingPair, count: number, intervalInMillis: number): Promise<Candle[]> {
+    return this.#marketData.getRecentCandles(pair, count, intervalInMillis);
+  }
+
   getName() {
     return AlpacaBroker.NAME;
   }

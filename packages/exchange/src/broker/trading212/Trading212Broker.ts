@@ -118,6 +118,10 @@ export class Trading212Broker extends Broker implements MarketDataSource {
     return this.#marketData.getLatestCandle(Trading212Broker.toMarketDataPair(pair), intervalInMillis);
   }
 
+  async getRecentCandles(pair: TradingPair, count: number, intervalInMillis: number): Promise<Candle[]> {
+    return this.#marketData.getRecentCandles(Trading212Broker.toMarketDataPair(pair), count, intervalInMillis);
+  }
+
   async watchCandles(pair: TradingPair, intervalInMillis: number, openTimeInISO: string) {
     const topicId = await this.#marketData.watchCandles(
       Trading212Broker.toMarketDataPair(pair),

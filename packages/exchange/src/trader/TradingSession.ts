@@ -69,10 +69,12 @@ export class TradingSession extends EventEmitter<TradingSessionEventMap> {
       tradingRules,
     };
 
-    // Warm up the strategy's indicators from history before any live candle arrives. The strategy
-    // chooses the window; the session just binds `getCandles` to this pair.
+    /*
+     * Warm up the strategy's indicators from history before any live candle arrives. The broker is a
+     * read-only MarketDataProvider here; backward pagination lives in the data layer, not the session.
+     */
     if (this.#strategy.init) {
-      await this.#strategy.init(request => this.#broker.getCandles(this.#pair, request));
+      await this.#strategy.init(this.#broker, this.#pair);
     }
 
     // Subscribe to candles only after state is ready

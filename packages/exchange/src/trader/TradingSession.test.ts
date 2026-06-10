@@ -50,7 +50,9 @@ function createMockExchange() {
     getCandles: vi.fn().mockResolvedValue([]),
     getFeeRates: vi.fn().mockResolvedValue(AlpacaBroker.DEFAULT_FEE_RATES),
     getFills: vi.fn().mockResolvedValue([sampleFill]),
+    getLatestCandle: vi.fn().mockResolvedValue(sampleCandle),
     getOpenOrders: vi.fn().mockResolvedValue([]),
+    getRecentCandles: vi.fn().mockResolvedValue([]),
     getTradingRules: vi.fn().mockResolvedValue(AlpacaBroker.DEFAULT_FRACTIONAL_TRADING_RULES),
     placeLimitOrder: vi.fn().mockResolvedValue({
       id: 'order-1',
@@ -123,11 +125,15 @@ describe('TradingSession', {concurrent: false}, () => {
 
       expect(init).toHaveBeenCalledTimes(1);
 
-      // The fetcher handed to init is the broker's getCandles bound to this pair.
-      const fetchCandles = init.mock.calls[0][0];
-      await fetchCandles({intervalInMillis: 86_400_000, startTimeFirstCandle: 'a', startTimeLastCandle: 'b'});
+      /*
+       * init receives the broker as a read-only MarketDataProvider plus the session's pair, so the
+       * strategy can pull history with a count + interval and never has to compute calendar windows.
+       */
+      const [market, initPair] = init.mock.calls[0];
+      expect(initPair, 'init is handed the session pair').toBe(pair);
 
-      expect(exchange.getCandles).toHaveBeenCalledWith(pair, expect.objectContaining({intervalInMillis: 86_400_000}));
+      await market.getRecentCandles(pair, 300, 86_400_000);
+      expect(exchange.getRecentCandles).toHaveBeenCalledWith(pair, 300, 86_400_000);
     });
 
     it('throws if already running', async () => {

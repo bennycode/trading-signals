@@ -49,6 +49,11 @@ export abstract class BrokerMock extends Broker {
     return this.#historicalCandles;
   }
 
+  /** Returns the most recent `count` seeded candles, oldest first — mirrors the live backward fetch. */
+  async getRecentCandles(_pair: TradingPair, count: number, _intervalInMillis: number): Promise<Candle[]> {
+    return count <= 0 ? [] : this.#historicalCandles.slice(-count);
+  }
+
   abstract override getFeeRates(pair: TradingPair): Promise<FeeRate>;
   abstract override getTradingRules(pair: TradingPair): Promise<TradingRules>;
   abstract override getName(): string;
