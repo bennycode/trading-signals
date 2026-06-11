@@ -70,8 +70,8 @@ export class TradingSession extends EventEmitter<TradingSessionEventMap> {
     };
 
     /*
-     * Warm up the strategy's indicators from history before any live candle arrives. The broker is a
-     * read-only MarketDataProvider here; backward pagination lives in the data layer, not the session.
+     * Let the strategy initialize before the first live candle arrives. It only gets read access to
+     * recent candles here; backward pagination lives in the data layer, not the session.
      */
     if (this.#strategy.init) {
       await this.#strategy.init(this.#broker, this.#pair);

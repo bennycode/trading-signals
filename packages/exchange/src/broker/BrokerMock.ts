@@ -5,7 +5,6 @@ import {
   Broker,
   type Balance,
   type Candle,
-  type CandleImportRequest,
   type FeeRate,
   type Fill,
   type LimitOrderOptions,
@@ -40,13 +39,9 @@ export abstract class BrokerMock extends Broker {
     this.#balances = config.balances;
   }
 
-  /** Seed the candles returned by {@link getCandles} (used to exercise strategy warm-up). */
+  /** Seed the candles returned by {@link getRecentCandles} (used to exercise strategy warm-up). */
   setHistoricalCandles(candles: Candle[]) {
     this.#historicalCandles = candles;
-  }
-
-  async getCandles(_pair: TradingPair, _request: CandleImportRequest): Promise<Candle[]> {
-    return this.#historicalCandles;
   }
 
   /** Returns the most recent `count` seeded candles, oldest first — mirrors the live backward fetch. */

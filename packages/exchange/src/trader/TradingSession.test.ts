@@ -47,7 +47,6 @@ function createMockExchange() {
   return Object.assign(new EventEmitter(), {
     cancelOpenOrders: vi.fn().mockResolvedValue([]),
     getAvailableBalances: vi.fn().mockResolvedValue({base: new Big('10'), counter: new Big('5000')}),
-    getCandles: vi.fn().mockResolvedValue([]),
     getFeeRates: vi.fn().mockResolvedValue(AlpacaBroker.DEFAULT_FEE_RATES),
     getFills: vi.fn().mockResolvedValue([sampleFill]),
     getLatestCandle: vi.fn().mockResolvedValue(sampleCandle),
@@ -126,8 +125,8 @@ describe('TradingSession', {concurrent: false}, () => {
       expect(init).toHaveBeenCalledTimes(1);
 
       /*
-       * init receives the broker as a read-only MarketDataProvider plus the session's pair, so the
-       * strategy can pull history with a count + interval and never has to compute calendar windows.
+       * init receives the broker as a read-only data source plus the session's pair, so the strategy
+       * can pull history with a count + interval and never has to compute calendar windows.
        */
       const [market, initPair] = init.mock.calls[0];
       expect(initPair, 'init is handed the session pair').toBe(pair);

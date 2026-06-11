@@ -5,7 +5,6 @@ import type {BatchedCandle, OneMinuteBatchedCandle} from '../candle/BatchedCandl
 import type {OrderSide} from '../broker/Broker.js';
 import type {
   Candle,
-  CandleImportRequest,
   ExchangeAvailableBalance,
   FeeRate,
   Fill,
@@ -16,29 +15,18 @@ import type {
   PendingOrder,
   TradingRules,
 } from '../broker/Broker.js';
+import type {MarketDataSource} from '../broker/MarketDataSource.js';
 import type {TradingPair} from '../broker/TradingPair.js';
-
-/**
- * Read-only market-data context handed to a strategy's {@link TradingSessionStrategy.init}. It lets
- * the strategy pull whatever history it needs to warm up (e.g. 300 hourly candles for an ATR) but
- * deliberately exposes no order placement — warm-up reads data, it never trades. Both real brokers
- * and standalone {@link MarketDataSource}s satisfy this shape.
- */
-export interface MarketDataProvider {
-  getCandles(pair: TradingPair, request: CandleImportRequest): Promise<Candle[]>;
-  getLatestCandle(pair: TradingPair, intervalInMillis: number): Promise<Candle>;
-  /** Fetch the most recent `count` candles of the given interval, oldest first. */
-  getRecentCandles(pair: TradingPair, count: number, intervalInMillis: number): Promise<Candle[]>;
-}
 
 export interface TradingSessionStrategy {
   /**
-   * Optional warm-up hook called once by the session on `start()`, before any live candle. The
-   * strategy is handed a read-only {@link MarketDataProvider} and the session's pair, so it can pull
-   * the history it needs (e.g. `market.getRecentCandles(pair, 300, ONE_HOUR_IN_MS)` to warm a daily
-   * ATR) instead of sitting unprotected through the live warm-up period. It can only read data here.
+   * Optional initialization hook called once by the session on `start()`, before any live candle.
+   * The strategy receives a read-only slice of the {@link MarketDataSource} — it can pull recent
+   * history via `market.getRecentCandles(pair, count, intervalInMillis)` — plus the session's pair,
+   * and uses it to set up whatever it needs ahead of trading (e.g. pre-seeding indicators from
+   * history). It can only read data here, never place orders.
    */
-  init?(market: MarketDataProvider, pair: TradingPair): Promise<void>;
+  init?(market: Pick<MarketDataSource, 'getRecentCandles'>, pair: TradingPair): Promise<void>;
   onCandle(candle: OneMinuteBatchedCandle, state: TradingSessionState): Promise<OrderAdvice | void>;
   onFill?(fill: Fill, state: TradingSessionState): Promise<void>;
   /**
@@ -107,12 +95,13 @@ export interface TradingSessionState {
   readonly feeRates: FeeRate;
 }
 
-export interface TradingSessionBroker extends MarketDataProvider, Pick<EventEmitter, 'on'> {
+export interface TradingSessionBroker extends Pick<EventEmitter, 'on'> {
   cancelOpenOrders(pair: TradingPair): Promise<string[]>;
   getAvailableBalances(pair: TradingPair): Promise<ExchangeAvailableBalance>;
   getFeeRates(pair: TradingPair): Promise<FeeRate>;
   getFills(pair: TradingPair): Promise<Fill[]>;
   getOpenOrders(pair: TradingPair): Promise<PendingOrder[]>;
+  getRecentCandles(pair: TradingPair, count: number, intervalInMillis: number): Promise<Candle[]>;
   getTradingRules(pair: TradingPair): Promise<TradingRules>;
   placeLimitOrder(
     pair: TradingPair,
