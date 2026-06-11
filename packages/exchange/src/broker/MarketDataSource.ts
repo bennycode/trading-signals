@@ -19,56 +19,48 @@ export abstract class MarketDataSource extends EventEmitter {
 
   /**
    * Fetch the most recent `count` candles of the given interval, oldest first — so a strategy can
-   * say "300 hourly candles" without computing calendar windows itself.
+   * say "300 hourly candles" without computing calendar windows itself. This is the `count > 1`
+   * generalization of `getLatestCandle`: same "anchor to the latest real bar" trick, wider window.
    *
-   * Anchors to the latest real bar (so market closures — nights, weekends, holidays — don't leave
-   * us paging an empty "now" window that never fills) and walks backward in widening windows,
-   * deduping by open time, until it has `count` bars or history runs out. Built purely on the
-   * abstract `getCandles`/`getLatestCandle`, so every data source inherits it without supplying its
-   * own backward pagination.
+   * Anchors the window's end to the latest real bar (so market closures — nights, weekends,
+   * holidays — don't leave us with an empty "now" window that never fills) and pins it there while
+   * widening the start backward. `getCandles` already paginates a time window to exhaustion, so each
+   * attempt returns a superset of the previous one — no cross-window dedupe needed. We over-ask and
+   * widen only because `count` bars can span far more wall-clock than `count * interval` once closed
+   * sessions are excluded. Built purely on the abstract `getCandles`/`getLatestCandle`.
    */
   async getRecentCandles(pair: TradingPair, count: number, intervalInMillis: number): Promise<Candle[]> {
     if (count <= 0) {
       return [];
     }
 
-    const byOpenTime = new Map<number, Candle>();
     const latest = await this.getLatestCandle(pair, intervalInMillis);
-    byOpenTime.set(latest.openTimeInMillis, latest);
-    let endInMillis = latest.openTimeInMillis;
+    const endInMillis = latest.openTimeInMillis;
 
     /*
-     * Backstop against an endlessly under-filling window (e.g. a long market halt). Each page can
-     * only add bars older than the previous one, so this bounds, not truncates, normal histories.
+     * Start at a 2x over-ask and keep doubling the look-back when closures leave us short. The
+     * attempt cap is a backstop against an instrument whose history is simply shorter than `count`;
+     * each doubling reaches back exponentially, so a handful of attempts covers years of bars.
      */
-    const MAX_PAGES = 50;
+    const MAX_ATTEMPTS = 8;
+    let spanInMillis = intervalInMillis * count * 2;
 
-    for (let page = 0; page < MAX_PAGES && byOpenTime.size < count; page++) {
-      const missing = count - byOpenTime.size;
-      // Over-ask (2x) so closed sessions inside the window don't starve a single page.
-      const spanInMillis = intervalInMillis * missing * 2;
-      const window = await this.getCandles(pair, {
+    let candles: Candle[] = [];
+    for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
+      candles = await this.getCandles(pair, {
         intervalInMillis,
         startTimeFirstCandle: new Date(endInMillis - spanInMillis).toISOString(),
         startTimeLastCandle: new Date(endInMillis).toISOString(),
       });
 
-      let oldest = endInMillis;
-      for (const candle of window) {
-        byOpenTime.set(candle.openTimeInMillis, candle);
-        if (candle.openTimeInMillis < oldest) {
-          oldest = candle.openTimeInMillis;
-        }
-      }
-
-      if (oldest >= endInMillis) {
-        // The window surfaced nothing older than where we already were — no more history exists.
+      if (candles.length >= count) {
         break;
       }
-      endInMillis = oldest;
+      spanInMillis *= 2;
     }
 
-    return [...byOpenTime.values()].sort((left, right) => left.openTimeInMillis - right.openTimeInMillis).slice(-count);
+    // `getCandles` returns oldest-first, so the most recent `count` are the tail.
+    return candles.slice(-count);
   }
 
   abstract watchCandles(pair: TradingPair, intervalInMillis: number, openTimeInISO: string): Promise<string>;

@@ -19,13 +19,6 @@ import type {MarketDataSource} from '../broker/MarketDataSource.js';
 import type {TradingPair} from '../broker/TradingPair.js';
 
 export interface TradingSessionStrategy {
-  /**
-   * Optional initialization hook called once by the session on `start()`, before any live candle.
-   * The strategy receives a read-only slice of the {@link MarketDataSource} — it can pull recent
-   * history via `market.getRecentCandles(pair, count, intervalInMillis)` — plus the session's pair,
-   * and uses it to set up whatever it needs ahead of trading (e.g. pre-seeding indicators from
-   * history). It can only read data here, never place orders.
-   */
   init?(market: Pick<MarketDataSource, 'getRecentCandles'>, pair: TradingPair): Promise<void>;
   onCandle(candle: OneMinuteBatchedCandle, state: TradingSessionState): Promise<OrderAdvice | void>;
   onFill?(fill: Fill, state: TradingSessionState): Promise<void>;

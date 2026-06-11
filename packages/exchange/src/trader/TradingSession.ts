@@ -69,10 +69,6 @@ export class TradingSession extends EventEmitter<TradingSessionEventMap> {
       tradingRules,
     };
 
-    /*
-     * Let the strategy initialize before the first live candle arrives. It only gets read access to
-     * recent candles here; backward pagination lives in the data layer, not the session.
-     */
     if (this.#strategy.init) {
       await this.#strategy.init(this.#broker, this.#pair);
     }
