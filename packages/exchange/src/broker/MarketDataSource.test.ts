@@ -34,20 +34,22 @@ function buildDataset(length: number, spacingInMillis: number): Candle[] {
  */
 class TestMarketDataSource extends MarketDataSource {
   readonly windows: {startInMillis: number; endInMillis: number}[] = [];
+  readonly #dataset: Candle[];
 
-  constructor(private readonly dataset: Candle[]) {
+  constructor(dataset: Candle[]) {
     super();
+    this.#dataset = dataset;
   }
 
   async getCandles(_pair: TradingPair, request: CandleImportRequest): Promise<Candle[]> {
     const startInMillis = new Date(request.startTimeFirstCandle).getTime();
     const endInMillis = new Date(request.startTimeLastCandle).getTime();
     this.windows.push({endInMillis, startInMillis});
-    return this.dataset.filter(c => c.openTimeInMillis >= startInMillis && c.openTimeInMillis <= endInMillis);
+    return this.#dataset.filter(c => c.openTimeInMillis >= startInMillis && c.openTimeInMillis <= endInMillis);
   }
 
   async getLatestCandle(): Promise<Candle> {
-    return this.dataset[this.dataset.length - 1];
+    return this.#dataset[this.#dataset.length - 1];
   }
 
   async watchCandles() {
