@@ -14,7 +14,8 @@
   ],
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
-    "clean": "rimraf dist"
+    "clean": "rimraf dist",
+    "dist": "npm run clean && npm run build"
   },
   "dependencies": {
     "@typedtrader/exchange": "0.2.5"
