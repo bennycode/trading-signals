@@ -85,7 +85,6 @@ export const datasets: CandleDataset[] = [
   },
 ];
 
-/** Look up a dataset by its `id` (e.g. `'uptrend-stx'`), or `undefined` if there is no match. */
 export function getDataset(id: string): CandleDataset | undefined {
   return datasets.find(dataset => dataset.id === id);
 }

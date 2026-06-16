@@ -19,15 +19,7 @@ export abstract class MarketDataSource extends EventEmitter {
 
   /**
    * Fetch the most recent `count` candles of the given interval, oldest first — so a strategy can
-   * say "300 hourly candles" without computing calendar windows itself. This is the `count > 1`
-   * generalization of `getLatestCandle`: same "anchor to the latest real bar" trick, wider window.
-   *
-   * Anchors the window's end to the latest real bar (so market closures — nights, weekends,
-   * holidays — don't leave us with an empty "now" window that never fills) and pins it there while
-   * widening the start backward. `getCandles` already paginates a time window to exhaustion, so each
-   * attempt returns a superset of the previous one — no cross-window dedupe needed. We over-ask and
-   * widen only because `count` bars can span far more wall-clock than `count * interval` once closed
-   * sessions are excluded. Built purely on the abstract `getCandles`/`getLatestCandle`.
+   * say "300 hourly candles" without computing calendar windows itself.
    */
   async getRecentCandles(pair: TradingPair, count: number, intervalInMillis: number): Promise<Candle[]> {
     if (count <= 0) {

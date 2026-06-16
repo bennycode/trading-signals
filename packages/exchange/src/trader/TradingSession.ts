@@ -69,9 +69,7 @@ export class TradingSession extends EventEmitter<TradingSessionEventMap> {
       tradingRules,
     };
 
-    if (this.#strategy.init) {
-      await this.#strategy.init(this.#broker, this.#pair);
-    }
+    await this.#strategy.init?.(this.#broker, this.#pair);
 
     // Subscribe to candles only after state is ready
     const openTimeInISO = new Date().toISOString();
