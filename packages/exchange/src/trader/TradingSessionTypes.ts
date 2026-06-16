@@ -4,6 +4,7 @@ import type {EventEmitter} from 'node:events';
 import type {BatchedCandle, OneMinuteBatchedCandle} from '../candle/BatchedCandle.js';
 import type {OrderSide} from '../broker/Broker.js';
 import type {
+  Candle,
   ExchangeAvailableBalance,
   FeeRate,
   Fill,
@@ -14,9 +15,11 @@ import type {
   PendingOrder,
   TradingRules,
 } from '../broker/Broker.js';
+import type {MarketDataSource} from '../broker/MarketDataSource.js';
 import type {TradingPair} from '../broker/TradingPair.js';
 
 export interface TradingSessionStrategy {
+  init?(market: Pick<MarketDataSource, 'getRecentCandles'>, pair: TradingPair): Promise<void>;
   onCandle(candle: OneMinuteBatchedCandle, state: TradingSessionState): Promise<OrderAdvice | void>;
   onFill?(fill: Fill, state: TradingSessionState): Promise<void>;
   /**
@@ -91,6 +94,7 @@ export interface TradingSessionBroker extends Pick<EventEmitter, 'on'> {
   getFeeRates(pair: TradingPair): Promise<FeeRate>;
   getFills(pair: TradingPair): Promise<Fill[]>;
   getOpenOrders(pair: TradingPair): Promise<PendingOrder[]>;
+  getRecentCandles(pair: TradingPair, count: number, intervalInMillis: number): Promise<Candle[]>;
   getTradingRules(pair: TradingPair): Promise<TradingRules>;
   placeLimitOrder(
     pair: TradingPair,

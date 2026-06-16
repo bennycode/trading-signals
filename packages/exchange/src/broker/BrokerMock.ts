@@ -30,12 +30,23 @@ export abstract class BrokerMock extends Broker {
   readonly #pendingOrders: PendingOrder[] = [];
   readonly #fills: Fill[] = [];
   #currentCandle: Candle | undefined;
+  #historicalCandles: Candle[] = [];
   #nextOrderId = 1;
   readonly #orderTopics = new Set<string>();
 
   constructor(config: {balances: Map<string, ExchangeMockBalance>}) {
     super('BrokerMock');
     this.#balances = config.balances;
+  }
+
+  /** Seed the candles returned by {@link getRecentCandles} (used to exercise strategy warm-up). */
+  setHistoricalCandles(candles: Candle[]) {
+    this.#historicalCandles = candles;
+  }
+
+  /** Returns the most recent `count` seeded candles, oldest first — mirrors the live backward fetch. */
+  async getRecentCandles(_pair: TradingPair, count: number, _intervalInMillis: number): Promise<Candle[]> {
+    return count <= 0 ? [] : this.#historicalCandles.slice(-count);
   }
 
   abstract override getFeeRates(pair: TradingPair): Promise<FeeRate>;

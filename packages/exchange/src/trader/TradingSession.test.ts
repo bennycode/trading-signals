@@ -49,7 +49,9 @@ function createMockExchange() {
     getAvailableBalances: vi.fn().mockResolvedValue({base: new Big('10'), counter: new Big('5000')}),
     getFeeRates: vi.fn().mockResolvedValue(AlpacaBroker.DEFAULT_FEE_RATES),
     getFills: vi.fn().mockResolvedValue([sampleFill]),
+    getLatestCandle: vi.fn().mockResolvedValue(sampleCandle),
     getOpenOrders: vi.fn().mockResolvedValue([]),
+    getRecentCandles: vi.fn().mockResolvedValue([]),
     getTradingRules: vi.fn().mockResolvedValue(AlpacaBroker.DEFAULT_FRACTIONAL_TRADING_RULES),
     placeLimitOrder: vi.fn().mockResolvedValue({
       id: 'order-1',
@@ -111,6 +113,26 @@ describe('TradingSession', {concurrent: false}, () => {
       expect(exchange.watchOrders).toHaveBeenCalled();
       expect(session.running).toBe(true);
       expect(onStarted).toHaveBeenCalledTimes(1);
+    });
+
+    it('warms up the strategy from history before subscribing to live candles', async () => {
+      const init = vi.fn().mockResolvedValue(undefined);
+      const warmStrategy = {init, onCandle: vi.fn().mockResolvedValue(undefined)};
+      const warmSession = new TradingSession({broker: exchange, pair, strategy: warmStrategy});
+
+      await warmSession.start();
+
+      expect(init).toHaveBeenCalledTimes(1);
+
+      /*
+       * init receives the broker as a read-only data source plus the session's pair, so the strategy
+       * can pull history with a count + interval and never has to compute calendar windows.
+       */
+      const [market, initPair] = init.mock.calls[0];
+      expect(initPair, 'init is handed the session pair').toBe(pair);
+
+      await market.getRecentCandles(pair, 300, 86_400_000);
+      expect(exchange.getRecentCandles).toHaveBeenCalledWith(pair, 300, 86_400_000);
     });
 
     it('throws if already running', async () => {
