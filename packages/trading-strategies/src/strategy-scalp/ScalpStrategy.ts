@@ -59,8 +59,11 @@ export class ScalpStrategy extends ProtectedStrategy {
    *
    * Also evaluates Range Efficiency (ER) to determine if the stock is
    * scalp-friendly. Trending stocks (ER >= 0.4) are flagged as unsuitable.
+   *
+   * Distinct from the base `init(market, pair)` warm-up hook: this pre-seeds from candles the
+   * caller already holds (e.g. a backtest dataset), rather than pulling history from a data source.
    */
-  init(candles: OneMinuteBatchedCandle[]): void {
+  seedFromCandles(candles: OneMinuteBatchedCandle[]): void {
     if (candles.length > 0) {
       const plainCandles = CandleBatcher.toCandles(candles);
 

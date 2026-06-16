@@ -1,7 +1,9 @@
 import Big from 'big.js';
 import type {
+  MarketDataSource,
   OneMinuteBatchedCandle,
   OrderAdvice,
+  TradingPair,
   TradingSessionState,
   TradingSessionStrategy,
 } from '@typedtrader/exchange';
@@ -80,6 +82,16 @@ export abstract class Strategy implements TradingSessionStrategy {
     const advice = await this.processCandle(candle, state);
     this.latestAdvice = advice ? advice : undefined;
     return advice;
+  }
+
+  /**
+   * Initialization hook called once by the runtime on session start, before any live candle. The
+   * base implementation does nothing; strategies override it to set up whatever they need ahead of
+   * trading — e.g. fetch daily candles via `market.getRecentCandles(...)` to warm an ATR. Only data
+   * can be read here; the strategy cannot place orders.
+   */
+  async init(_market: Pick<MarketDataSource, 'getRecentCandles'>, _pair: TradingPair): Promise<void> {
+    // No-op by default; strategies override this when they need to initialize from history.
   }
 
   restoreState(persisted: Record<string, unknown>): void {

@@ -92,11 +92,11 @@ const exchange = new AlpacaBrokerMock({
   },
 });
 
-// 4. Pre-seed strategy if it supports init()
-if ('init' in strategy && typeof strategy.init === 'function') {
+// 4. Pre-seed strategy from the loaded dataset if it supports it (e.g. ScalpStrategy).
+if ('seedFromCandles' in strategy && typeof strategy.seedFromCandles === 'function') {
   const {CandleBatcher} = await import('@typedtrader/exchange');
   const batchedCandles = CandleBatcher.toBatchedCandles(candles);
-  strategy.init(batchedCandles);
+  strategy.seedFromCandles(batchedCandles);
 
   if (strategy.config?.offset) {
     console.log(`Auto-computed offset: ${strategy.config.offset} ${counter}`);

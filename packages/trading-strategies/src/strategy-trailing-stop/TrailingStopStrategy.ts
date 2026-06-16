@@ -11,6 +11,7 @@ import type {
 } from '@typedtrader/exchange';
 import {MarketType} from '../strategy/MarketType.js';
 import {Strategy} from '../strategy/Strategy.js';
+import {percentTrailStop} from '../util/trailStop.js';
 import {positiveNumberString} from '../util/validators.js';
 
 export const TrailingStopSchema = z.object({
@@ -154,7 +155,7 @@ export class TrailingStopStrategy extends Strategy {
         return undefined;
       }
       const peak = this.#pivotPrice ?? candle.high;
-      const stopTarget = peak.mul(new Big(1).minus(this.#trailDownPct.div(100)));
+      const stopTarget = percentTrailStop(peak, this.#trailDownPct);
       this.#state.peakPrice = peak.toFixed();
       this.#state.stopPrice = stopTarget.toFixed();
       this.onMessage?.(
@@ -177,7 +178,7 @@ export class TrailingStopStrategy extends Strategy {
       this.#state.peakPrice = newPeak.toFixed();
     }
 
-    const trailTarget = newPeak.mul(new Big(1).minus(this.#trailDownPct.div(100)));
+    const trailTarget = percentTrailStop(newPeak, this.#trailDownPct);
     this.#state.stopPrice = trailTarget.toFixed();
 
     if (peakRatcheted) {

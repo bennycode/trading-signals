@@ -11,6 +11,7 @@
   },
   "description": "Trading strategies to run trading bots with JavaScript / TypeScript.",
   "devDependencies": {
+    "@typedtrader/candles": "0.1.0",
     "ms": "4.0.0-nightly.202508271359",
     "tsx": "^4.21.0"
   },
@@ -41,8 +42,7 @@
     "lint:code": "eslint .",
     "lint:other": "npm run prettier -- --list-different",
     "prettier": "prettier --config ../../.prettierrc.json --ignore-path ../../.gitignore --log-level error \"**/*.{json,scss,yml}\"",
-    "dev": "npm run test:types && tsx watch src/start.ts",
-    "start": "tsx src/start.ts",
+    "start": "npm run test:types && tsx watch src/start.ts",
     "test": "npm run test:types && npm run test:units",
     "test:types": "tsc --noEmit",
     "test:units": "vitest run --passWithNoTests",

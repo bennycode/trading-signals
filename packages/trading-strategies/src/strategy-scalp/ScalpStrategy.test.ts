@@ -215,12 +215,12 @@ describe('ScalpStrategy', () => {
     expect(entryAdvice?.reason).toContain('EMA');
   });
 
-  it('pre-seeds EMA via init() to skip warmup', async () => {
+  it('pre-seeds EMA via seedFromCandles() to skip warmup', async () => {
     const strategy = new ScalpStrategy({emaPeriod: 3, offset: '0.10'});
 
     // Pre-seed with 3 candles
     const historicalCandles = [makeCandle(100, 0), makeCandle(101, 1), makeCandle(102, 2)] as const;
-    strategy.init(historicalCandles.map(toBatched));
+    strategy.seedFromCandles(historicalCandles.map(toBatched));
 
     // First live candle with rising price should trigger entry immediately
     const advice = await strategy.onCandle(toBatched(makeCandle(103, 3)), mockState);
@@ -257,7 +257,7 @@ describe('ScalpStrategy', () => {
     expect(() => ScalpSchema.parse({emaPeriod: 10})).not.toThrow();
   });
 
-  it('auto-computes offset from init() candles when not configured', () => {
+  it('auto-computes offset from seedFromCandles() candles when not configured', () => {
     const strategy = new ScalpStrategy({emaPeriod: 3});
 
     // Build 20 "trading days" worth of 1-min candles spread across different dates
@@ -284,6 +284,6 @@ describe('ScalpStrategy', () => {
     }
 
     // Should not throw — offset is auto-computed from the candles
-    strategy.init(candles.map(toBatched));
+    strategy.seedFromCandles(candles.map(toBatched));
   });
 });
