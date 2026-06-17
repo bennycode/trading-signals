@@ -1,22 +1,12 @@
 import Big from 'big.js';
 import type {BigSource} from 'big.js';
 
-/**
- * Percentage trailing stop: `peak * (1 - trailDownPct/100)`. A `trailDownPct` of `10` puts the
- * stop 10% below the running peak. The percentage is fixed regardless of how volatile the
- * instrument is, so the same number can sit inside the noise band of a high-volatility name
- * while being too wide for a calm one.
- */
+/** Percentage trailing stop: places the stop a fixed percentage below the running peak. */
 export function percentTrailStop(peak: BigSource, trailDownPct: BigSource): Big {
   return new Big(peak).mul(new Big(1).minus(new Big(trailDownPct).div(100)));
 }
 
-/**
- * Volatility-scaled trailing stop: `peak - atrMultiple * atr`. Sizing the stop to the Average
- * True Range widens it for volatile instruments and tightens it for calm ones, so a single
- * multiple (commonly 2.5–3.5) works across symbols instead of hand-picking a percentage each
- * time. Feed it the current ATR reading (e.g. from the `ATR` indicator in `trading-signals`).
- */
+/** Volatility-scaled trailing stop: places the stop a multiple of ATR below the running peak. */
 export function atrTrailStop(peak: BigSource, atr: BigSource, atrMultiple: BigSource): Big {
   return new Big(peak).minus(new Big(atr).mul(atrMultiple));
 }
@@ -28,7 +18,7 @@ export interface TrailStopOptions {
   trailDownPct?: BigSource;
   /** Current ATR reading. Must be paired with `atrMultiple` to take effect. */
   atr?: BigSource;
-  /** ATR multiple. Must be paired with `atr` to take effect. */
+  /** How many ATRs below the peak the stop sits. Must be paired with `atr` to take effect. */
   atrMultiple?: BigSource;
 }
 
