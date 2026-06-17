@@ -14,14 +14,14 @@ export interface MarketRegimeOptions {
 }
 
 /**
- * Market-regime gate driven by an index series (e.g. SPY or QQQ). Pure and feed-agnostic: the
- * caller pushes index closes from wherever it sources them, so the calculation is reusable and
- * unit-testable without any cross-symbol plumbing in the trading session.
+ * Market-regime gate driven by a broad-market index series (e.g. SPY or QQQ — ETFs tracking the
+ * S&P 500 and the Nasdaq-100). Pure and feed-agnostic: the caller pushes index closes from
+ * wherever it sources them, so the calculation is reusable and unit-testable without any
+ * cross-symbol plumbing in the trading session.
  *
- * Reports "risk-on" when the index is above its trend line and (optionally) within
- * `maxDrawdownPct` of its running peak. This is what distinguishes a broad risk-off selloff
- * (honor the stop, get out) from an idiosyncratic single-name dip (a stock can wobble while the
- * index holds its trend — hold through it).
+ * This is what lets a strategy tell a broad market-wide selloff (honor the stop, get out) apart
+ * from a dip in a single stock (one name can wobble while the whole market holds its trend — hold
+ * through it). See {@link isRiskOn} for what the regimes mean.
  */
 export class MarketRegimeFilter {
   readonly #trend: TrendFilter;
@@ -46,7 +46,6 @@ export class MarketRegimeFilter {
     }
   }
 
-  /** `true` once the trend moving average is warmed up. */
   get isReady() {
     return this.#trend.isReady;
   }
@@ -61,9 +60,11 @@ export class MarketRegimeFilter {
   }
 
   /**
-   * `true` when the index is at or above its trend line and within the configured drawdown band.
-   * Returns `false` until the trend moving average is warmed up — an un-warmed filter makes no
-   * claim about the regime.
+   * `true` in a "risk-on" regime: the broad market is healthy, so a strategy can ride out a single
+   * name's wobble instead of stopping out on it. Turns `false` for "risk-off" (broad weakness —
+   * honor the stop and get out) once the index loses its trend line or falls more than the
+   * configured drawdown below its peak. Stays `false` until the trend moving average is warmed up,
+   * since an un-warmed filter makes no claim about the regime.
    */
   get isRiskOn() {
     if (!this.#trend.isAbove(this.#lastClose)) {

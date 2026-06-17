@@ -39,11 +39,13 @@ describe('trailStop', () => {
     expect(trailStop({atr: 1, atrMultiple: 3, peak: 100, trailDownPct: 20}).toFixed(2)).toBe('80.00');
   });
 
-  it('ignores a lone atr without a multiple', () => {
-    expect(trailStop({atr: 8, peak: 100, trailDownPct: 10}).toFixed(2)).toBe('90.00');
+  it('rejects a lone atr without its multiple at compile time', () => {
+    // @ts-expect-error - atr and atrMultiple travel as a pair; one without the other is not a valid input
+    expect(() => trailStop({atr: 8, peak: 100, trailDownPct: 10})).not.toThrow();
   });
 
-  it('throws when neither a percentage nor a complete ATR pair is supplied', () => {
+  it('rejects a request with no trail method, and guards untyped callers at runtime', () => {
+    // @ts-expect-error - the type requires a percentage or a complete ATR pair; the throw guards untyped callers
     expect(() => trailStop({peak: 100})).toThrowError('trailStop requires trailDownPct, or both atr and atrMultiple');
   });
 });

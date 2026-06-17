@@ -6,8 +6,10 @@ describe('atrToPercent', () => {
     expect(atrToPercent(52.64, 740.53)).toBeCloseTo(7.11, 2);
   });
 
-  it('is scale-invariant: the same percentage for proportional price and ATR', () => {
-    expect(atrToPercent(0.7, 10)).toBeCloseTo(atrToPercent(70, 1_000), 10);
+  it('makes volatility comparable across instruments regardless of nominal price', () => {
+    // A $7 stock moving $0.49/bar is exactly as volatile as a $700 stock moving $49/bar.
+    expect(atrToPercent(0.49, 7), 'same % despite a 100x price difference').toBeCloseTo(atrToPercent(49, 700), 10);
+    expect(atrToPercent(0.49, 7), 'both read as ~7% per bar').toBeCloseTo(7, 10);
   });
 });
 

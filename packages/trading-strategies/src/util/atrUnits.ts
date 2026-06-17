@@ -42,23 +42,10 @@ export const ATR_TRAIL_BANDS = {
 /** A sensible default ATR multiple for a trend-following trailing stop (Chandelier Exit convention). */
 export const DEFAULT_ATR_TRAIL_MULTIPLE = 3;
 
-/**
- * How an ATR multiple rates as trailing-stop wiggle room (see {@link ATR_TRAIL_BANDS}):
- *
- * - `'whippy'` — below ~2× ATR. The stop sits inside the instrument's normal per-bar range, so
- *   routine noise trips it; prone to premature stop-outs (the STX 10% ≈ 1.4× trail was here).
- * - `'balanced'` — ~2× to 3.5× ATR. Enough room to ride normal volatility while still protecting
- *   the position; the 3× Chandelier Exit default lives here.
- * - `'loose'` — at or above ~3.5× ATR. Survives deep noise and rides trends through pullbacks,
- *   but gives back more open profit before triggering on a real reversal.
- */
+/** How an ATR multiple rates as trailing-stop wiggle room. See {@link ATR_TRAIL_BANDS} for the thresholds. */
 export type AtrRoomVerdict = 'whippy' | 'balanced' | 'loose';
 
-/**
- * Classifies an ATR multiple against {@link ATR_TRAIL_BANDS}: `'whippy'` (too tight, prone to
- * noise stop-outs), `'balanced'`, or `'loose'` (wide, gives back more before triggering).
- * `classifyAtrMultiple(1.41)` → `'whippy'`, which is exactly why the STX 10% trail got whipsawed.
- */
+/** Classifies an ATR multiple into an {@link AtrRoomVerdict} using the {@link ATR_TRAIL_BANDS} thresholds. */
 export function classifyAtrMultiple(atrMultiple: number): AtrRoomVerdict {
   if (atrMultiple < ATR_TRAIL_BANDS.whippyBelow) {
     return 'whippy';

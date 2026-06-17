@@ -1,19 +1,15 @@
 import {ATR, type HighLowClose} from 'trading-signals';
 
 /**
- * Expresses an ATR reading as a percentage of price: `atr / price * 100`. Normalizing the raw
- * (price-unit) ATR makes volatility comparable across instruments and timeframes — a $52 ATR
- * means nothing without the price, but "7% per bar" is directly comparable between a $7 and a
- * $700 stock.
+ * Makes volatility comparable across instruments and timeframes: a raw $52 ATR means nothing
+ * without the price, but "7% per bar" is directly comparable between a $7 and a $700 stock.
  */
 export function atrToPercent(atr: number, price: number) {
   return (atr / price) * 100;
 }
 
 /**
- * Average True Range expressed as a percentage of the latest close — the "usual % move per
- * bar". Feed it `{high, low, close}` candles; once the underlying ATR is warmed up, {@link value}
- * returns the typical bar range as a percent of price.
+ * Average True Range expressed as a percentage of the latest close — the "usual % move per bar".
  *
  * Built on the `ATR` indicator from `trading-signals`, so it inherits Wilder's smoothing. Useful
  * for sizing volatility-aware stops (see `atrTrailStop`) without hand-tuning a percentage per
@@ -33,7 +29,6 @@ export class AtrPercent {
     this.#lastClose = candle.close;
   }
 
-  /** `true` once the underlying ATR has enough data to produce a stable reading. */
   get isReady() {
     return this.#atr.isStable;
   }

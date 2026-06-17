@@ -11,24 +11,23 @@ export function atrTrailStop(peak: BigSource, atr: BigSource, atrMultiple: BigSo
   return new Big(peak).minus(new Big(atr).mul(atrMultiple));
 }
 
-export interface TrailStopOptions {
+/** An ATR reading is only actionable together with the multiple applied to it, so the two travel as a pair. */
+type AtrInputs = {atr: BigSource; atrMultiple: BigSource};
+
+/**
+ * Trailing-stop inputs. The union requires at least one method — a percentage, an ATR pair, or
+ * both — so an empty or half-specified request (e.g. an ATR with no multiple) won't type-check.
+ */
+export type TrailStopOptions = {
   /** Running peak the trail is measured down from. */
   peak: BigSource;
-  /** Percentage distance below the peak. Omit to trail purely on volatility. */
-  trailDownPct?: BigSource;
-  /** Current ATR reading. Must be paired with `atrMultiple` to take effect. */
-  atr?: BigSource;
-  /** How many ATRs below the peak the stop sits. Must be paired with `atr` to take effect. */
-  atrMultiple?: BigSource;
-}
+} & ({atr?: never; atrMultiple?: never; trailDownPct: BigSource} | (AtrInputs & {trailDownPct?: BigSource}));
 
 /**
  * Combined trailing stop. Computes whichever of the percentage and ATR stops the inputs allow
  * and returns the **lower (looser)** of them, so neither method can force a tighter stop than
  * the other — volatility can only widen the trail. With just `trailDownPct` it behaves like
  * {@link percentTrailStop}; with `atr` + `atrMultiple` it adds {@link atrTrailStop} to the mix.
- *
- * @throws when neither a percentage nor a complete ATR pair is supplied.
  */
 export function trailStop(options: TrailStopOptions): Big {
   const {atr, atrMultiple, peak, trailDownPct} = options;
