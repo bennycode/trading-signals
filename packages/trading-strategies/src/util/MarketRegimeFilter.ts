@@ -21,7 +21,7 @@ export interface MarketRegimeOptions {
  *
  * This is what lets a strategy tell a broad market-wide selloff (honor the stop, get out) apart
  * from a dip in a single stock (one name can wobble while the whole market holds its trend — hold
- * through it). See {@link isRiskOn} for what the regimes mean.
+ * through it). See {@link shouldExit} for the actionable signal.
  */
 export class MarketRegimeFilter {
   readonly #trend: TrendFilter;
@@ -35,7 +35,6 @@ export class MarketRegimeFilter {
     this.#maxDrawdownRatio = options.maxDrawdownPct === undefined ? null : options.maxDrawdownPct / 100;
   }
 
-  /** Push the next index closing price into the regime model. */
   addIndexClose(close: number): void {
     this.#trend.add(close);
     this.#lastClose = close;
@@ -60,21 +59,25 @@ export class MarketRegimeFilter {
   }
 
   /**
-   * `true` in a "risk-on" regime: the broad market is healthy, so a strategy can ride out a single
-   * name's wobble instead of stopping out on it. Turns `false` for "risk-off" (broad weakness —
-   * honor the stop and get out) once the index loses its trend line or falls more than the
-   * configured drawdown below its peak. Stays `false` until the trend moving average is warmed up,
-   * since an un-warmed filter makes no claim about the regime.
+   * `true` when the regime says exit: the broad market has turned risk-off — it closed below its
+   * trend line, or fell more than the configured drawdown below its peak — so a strategy should get
+   * defensive instead of riding the move out. `false` while the market is healthy (a single name
+   * can wobble while the market holds its trend — hold through it), and also while the trend moving
+   * average is still warming up, since an un-warmed filter makes no claim about the regime.
    */
-  get isRiskOn() {
-    if (!this.#trend.isAbove(this.#lastClose)) {
+  get shouldExit() {
+    if (!this.isReady) {
       return false;
+    }
+
+    if (!this.#trend.isAbove(this.#lastClose)) {
+      return true;
     }
 
     if (this.#maxDrawdownRatio !== null && this.drawdown > this.#maxDrawdownRatio) {
-      return false;
+      return true;
     }
 
-    return true;
+    return false;
   }
 }

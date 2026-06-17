@@ -23,7 +23,6 @@ export class AtrPercent {
     this.#atr = new ATR(interval);
   }
 
-  /** Push the next candle. Both the ATR and the reference close are updated. */
   add(candle: HighLowClose<number>): void {
     this.#atr.add(candle);
     this.#lastClose = candle.close;
@@ -33,7 +32,6 @@ export class AtrPercent {
     return this.#atr.isStable;
   }
 
-  /** Raw ATR in price units, or `null` until warmed up. */
   get atr() {
     return this.#atr.isStable ? this.#atr.getResultOrThrow() : null;
   }
