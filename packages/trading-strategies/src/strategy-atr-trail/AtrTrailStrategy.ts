@@ -1,6 +1,6 @@
 import Big from 'big.js';
 import {z} from 'zod';
-import {AllAvailableAmount, OrderSide, OrderType} from '@typedtrader/exchange';
+import {AllAvailableAmount, CandleBatcher, OrderSide, OrderType} from '@typedtrader/exchange';
 import type {
   Fill,
   MarketDataSource,
@@ -24,6 +24,14 @@ export const AtrTrailSchema = z.object({
   atrIntervalMillis: z.number().int().positive().default(ONE_DAY_IN_MS),
   /** ATR multiple that sets the trail width: `trailPct = atrMultiple * ATR%`. Defaults to "3" (Chandelier convention). */
   atrMultiple: positiveNumberString.default('3'),
+  /**
+   * When `true`, keep re-sizing the trail from a rolling ATR as live candles arrive, instead of
+   * freezing it at `init`. The ATR window advances only when a full `atrIntervalMillis` bar
+   * completes, so a daily ATR steps once per day — intraday minute candles accumulate into the
+   * current bar but don't move the width until that day closes. The stop still only ratchets up, so
+   * a volatility spike can widen the trail for future peaks but never loosens a locked stop.
+   */
+  rolling: z.boolean().default(false),
 });
 
 export type AtrTrailConfig = z.input<typeof AtrTrailSchema>;
@@ -47,11 +55,13 @@ const defaultState = (): AtrTrailState => ({
 });
 
 /**
- * Exit-only trailing stop whose width is sized **once** from the instrument's own volatility: on
- * `init` it pulls recent history, measures ATR%, and freezes the trail at `atrMultiple * ATR%`.
- * From then on it is an ordinary percentage trail that ratchets the peak up and exits on a breach —
- * no live ATR feed, no re-sizing. The point is to set a sensible, volatility-aware stop distance for
- * the specific stock (wide for a volatile name, tight for a calm one) without hand-tuning a percent.
+ * Exit-only trailing stop whose width is sized from the instrument's own volatility: on `init` it
+ * pulls recent history, measures ATR%, and sets the trail to `atrMultiple * ATR%`. By default that
+ * width is **frozen** — from then on it's an ordinary percentage trail that ratchets the peak up and
+ * exits on a breach. With `rolling: true` the ATR keeps advancing on completed `atrIntervalMillis`
+ * bars and the width re-sizes, while the stop still only ratchets up. The point either way is a
+ * sensible, volatility-aware stop distance (wide for a volatile name, tight for a calm one) without
+ * hand-tuning a percent.
  *
  * Attaches to whatever base balance exists (opened elsewhere or carried across a restart) and exits
  * the full available balance with a limit sell at the trail target when `candle.close` drops to it.
@@ -65,6 +75,7 @@ export class AtrTrailStrategy extends Strategy {
   readonly #atrInterval: number;
   readonly #atrIntervalMillis: number;
   readonly #atrMultiple: Big;
+  readonly #atrBatcher: CandleBatcher | null;
 
   constructor(config: AtrTrailConfig) {
     super({config, state: defaultState()});
@@ -73,6 +84,7 @@ export class AtrTrailStrategy extends Strategy {
     this.#atrIntervalMillis = parsed.atrIntervalMillis;
     this.#atrMultiple = new Big(parsed.atrMultiple);
     this.#atrPercent = new AtrPercent(parsed.atrInterval);
+    this.#atrBatcher = parsed.rolling ? new CandleBatcher(parsed.atrIntervalMillis) : null;
   }
 
   get #state(): AtrTrailState {
@@ -109,11 +121,41 @@ export class AtrTrailStrategy extends Strategy {
     );
   }
 
+  /**
+   * Rolling mode only (no-op otherwise): aggregate the live candle toward the ATR timeframe and
+   * re-size the trail when a bar completes. A daily ATR therefore steps once per day — intraday
+   * minute candles accumulate into the current bar and don't move the width until that day closes.
+   */
+  #advanceRollingAtr(candle: OneMinuteBatchedCandle): void {
+    if (!this.#atrBatcher) {
+      return;
+    }
+    const completed = this.#atrBatcher.addToBatch(candle);
+    if (!completed) {
+      return;
+    }
+    this.#atrPercent.add({
+      close: completed.close.toNumber(),
+      high: completed.high.toNumber(),
+      low: completed.low.toNumber(),
+    });
+    const atrPercent = this.#atrPercent.value;
+    if (atrPercent !== null) {
+      this.#state.trailDownPct = this.#atrMultiple.mul(atrPercent).toFixed();
+    }
+  }
+
   protected override async processCandle(
     candle: OneMinuteBatchedCandle,
     state: TradingSessionState
   ): Promise<OrderAdvice | void> {
-    if (this.#state.exited || this.#state.trailDownPct === null) {
+    if (this.#state.exited) {
+      return undefined;
+    }
+
+    this.#advanceRollingAtr(candle);
+
+    if (this.#state.trailDownPct === null) {
       return undefined;
     }
 
@@ -137,7 +179,10 @@ export class AtrTrailStrategy extends Strategy {
     }
 
     const peak = candle.high.gt(this.#state.peakPrice) ? candle.high : new Big(this.#state.peakPrice);
-    const stop = peak.mul(new Big(1).minus(trailDownPct.div(100)));
+    const candidateStop = peak.mul(new Big(1).minus(trailDownPct.div(100)));
+    // Ratchet up only: a wider (rolling) trail can lower the candidate, but the stop never falls.
+    const previousStop = new Big(this.#state.stopPrice);
+    const stop = candidateStop.gt(previousStop) ? candidateStop : previousStop;
     this.#state.peakPrice = peak.toFixed();
     this.#state.stopPrice = stop.toFixed();
 

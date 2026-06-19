@@ -44,6 +44,16 @@ function toBatched(close: number, high: number, low: number) {
   return CandleBatcher.createOneMinuteBatchedCandle([dailyCandle(0, close, high, low)]);
 }
 
+/** A 1-minute candle stamped at a specific instant, for exercising the rolling daily-ATR batching. */
+function minuteAt(openTimeInMillis: number, close: number, high: number, low: number) {
+  const raw: Candle = {
+    ...dailyCandle(0, close, high, low),
+    openTimeInISO: new Date(openTimeInMillis).toISOString(),
+    openTimeInMillis,
+  };
+  return CandleBatcher.createOneMinuteBatchedCandle([raw]);
+}
+
 function warmExchange() {
   const exchange = new AlpacaBrokerMock({
     balances: new Map([['STX', {available: new Big('10'), hold: new Big(0)}]]),
@@ -123,5 +133,36 @@ describe('AtrTrailStrategy', () => {
 
   it('has the expected strategy name', () => {
     expect(AtrTrailStrategy.NAME).toBe('@typedtrader/strategy-atr-trail');
+  });
+
+  it('rolling: a daily ATR window does not move intraday on minute candles', async () => {
+    const strategy = new AtrTrailStrategy({atrInterval: 14, atrMultiple: '2', rolling: true});
+    await strategy.init(warmExchange(), pair);
+    const sizedAtInit = strategy.trailState.trailDownPct;
+    expect(sizedAtInit, 'init sized the trail').not.toBeNull();
+
+    // Five wild swings, all within the same UTC day → the daily bar hasn't closed yet.
+    const dayStart = Date.UTC(2026, 5, 1);
+    for (let minute = 1; minute <= 5; minute++) {
+      await strategy.onCandle(minuteAt(dayStart + minute * 60_000, 108, 130, 70), heldState);
+    }
+
+    expect(strategy.trailState.trailDownPct, 'a turbulent day still uses the prior days ATR window').toBe(sizedAtInit);
+  });
+
+  it('rolling: re-sizes the trail once a turbulent day closes', async () => {
+    const strategy = new AtrTrailStrategy({atrInterval: 14, atrMultiple: '2', rolling: true});
+    await strategy.init(warmExchange(), pair);
+    const sizedAtInit = Number(strategy.trailState.trailDownPct);
+
+    // Day 1 has a far wider range than the warm-up (~60 vs 10) but only counts once it closes.
+    await strategy.onCandle(minuteAt(Date.UTC(2026, 5, 1), 100, 160, 100), heldState);
+    expect(Number(strategy.trailState.trailDownPct), 'unchanged mid-day-1').toBe(sizedAtInit);
+
+    // The day-2 candle completes day 1's bar → ATR rises → the trail widens.
+    await strategy.onCandle(minuteAt(Date.UTC(2026, 5, 2), 100, 130, 95), heldState);
+    expect(Number(strategy.trailState.trailDownPct), 'trail widened after the turbulent day closed').toBeGreaterThan(
+      sizedAtInit
+    );
   });
 });
