@@ -80,6 +80,13 @@ const AtrTrailStateSchema = z
  * Attaches to whatever base balance exists (opened elsewhere or carried across a restart) and exits
  * the full available balance with a limit sell at the trail target when `candle.close` drops to it.
  * If the ATR can't be sized from history (too few candles), it holds without a stop and says so.
+ *
+ * Suitability: ATR-multiple trailing fits high-volatility single names, not calm trending indices.
+ * The trail is only ever as wide as the instrument's own ATR, so on a low-volatility index (e.g. a
+ * ~0.7% daily ATR) even a 4x trail is ~3% — too tight to survive routine pullbacks, and it whipsaws
+ * you out of a steady uptrend at a large opportunity cost. On a volatile name (e.g. a ~7% ATR) the
+ * same multiple sizes a trail wide enough to ride a shakeout through to the recovery. Backtest the
+ * candidate multiples on the instrument's own history before trusting one.
  */
 export class AtrTrailStrategy extends Strategy {
   static override NAME = '@typedtrader/strategy-atr-trail';
