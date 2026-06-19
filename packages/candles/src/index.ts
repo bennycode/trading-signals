@@ -6,6 +6,7 @@ import sidewaysPgRaw from '../json/sideways-pg.json' with {type: 'json'};
 import uptrendRaw from '../json/uptrend.json' with {type: 'json'};
 import uptrendSlvRaw from '../json/uptrend-slv.json' with {type: 'json'};
 import uptrendStxRaw from '../json/uptrend-stx.json' with {type: 'json'};
+import urth2022Raw from '../json/urth-2022-1h.json' with {type: 'json'};
 import urth2024Raw from '../json/urth-2024-1h.json' with {type: 'json'};
 import urth2025Raw from '../json/urth-2025-1h.json' with {type: 'json'};
 
@@ -25,6 +26,7 @@ export const sidewaysPgCandles: Candle[] = sidewaysPgRaw;
 export const uptrendCandles: Candle[] = uptrendRaw;
 export const uptrendSlvCandles: Candle[] = uptrendSlvRaw;
 export const uptrendStxCandles: Candle[] = uptrendStxRaw;
+export const urth2022Candles: Candle[] = urth2022Raw;
 export const urth2024Candles: Candle[] = urth2024Raw;
 export const urth2025Candles: Candle[] = urth2025Raw;
 
@@ -70,6 +72,12 @@ export const datasets: CandleDataset[] = [
     description: 'STX uptrend with a mid-trend shakeout - Jan-Jun 2026 (1d)',
     id: 'uptrend-stx',
     name: 'Uptrend Shakeout (STX)',
+  },
+  {
+    candles: urth2022Candles,
+    description: 'iShares MSCI World ETF (URTH) - full year 2022, a bear market (1h)',
+    id: 'urth-2022',
+    name: 'MSCI World ETF (2022)',
   },
   {
     candles: urth2024Candles,
