@@ -1,4 +1,5 @@
 import Big from 'big.js';
+import {ms} from 'ms';
 import {z} from 'zod';
 import {AllAvailableAmount, CandleBatcher, OrderSide, OrderType} from '@typedtrader/exchange';
 import type {
@@ -15,13 +16,11 @@ import {Strategy} from '../strategy/Strategy.js';
 import {AtrPercent} from '../util/AtrPercent.js';
 import {positiveNumberString} from '../util/validators.js';
 
-const ONE_DAY_IN_MS = 86_400_000;
-
 export const AtrTrailSchema = z.object({
   /** ATR lookback used to measure volatility from history. Defaults to 14. */
   atrInterval: z.number().int().positive().default(14),
   /** Candle size (ms) the warm-up history is pulled and the ATR is measured on. Defaults to daily. */
-  atrIntervalMillis: z.number().int().positive().default(ONE_DAY_IN_MS),
+  atrIntervalMillis: z.number().int().positive().default(ms('1d')),
   /** ATR multiple that sets the trail width: `trailPct = atrMultiple * ATR%`. Defaults to "3" (Chandelier convention). */
   atrMultiple: positiveNumberString.default('3'),
   /**
@@ -53,6 +52,21 @@ const defaultState = (): AtrTrailState => ({
   stopPrice: '0',
   trailDownPct: null,
 });
+
+const numericString = z.string().refine(canParseBig, 'must be a numeric string');
+
+/** Validates a persisted state on restore so a malformed/stale snapshot falls back to defaults. */
+const AtrTrailStateSchema = z
+  .object({
+    exited: z.boolean(),
+    peakPrice: numericString,
+    stopPrice: numericString,
+    trailDownPct: numericString.nullable(),
+  })
+  // peakPrice and stopPrice are coupled — both '0' (not yet attached) or both non-zero.
+  .refine(state => new Big(state.peakPrice).eq(0) === new Big(state.stopPrice).eq(0), {
+    message: 'peakPrice and stopPrice must both be zero or both non-zero',
+  });
 
 /**
  * Exit-only trailing stop whose width is sized from the instrument's own volatility: on `init` it
@@ -219,7 +233,8 @@ export class AtrTrailStrategy extends Strategy {
   }
 
   override restoreState(persisted: Record<string, unknown>): void {
-    const validated = isAtrTrailState(persisted) ? persisted : defaultState();
+    const parsed = AtrTrailStateSchema.safeParse(persisted);
+    const validated = parsed.success ? parsed.data : defaultState();
     super.restoreState(validated);
     const restored = this.#state;
     restored.exited = validated.exited;
@@ -229,34 +244,7 @@ export class AtrTrailStrategy extends Strategy {
   }
 }
 
-function isAtrTrailState(value: unknown): value is AtrTrailState {
-  if (!value || typeof value !== 'object') {
-    return false;
-  }
-  if (!('exited' in value) || typeof value.exited !== 'boolean') {
-    return false;
-  }
-  if (!('peakPrice' in value) || typeof value.peakPrice !== 'string' || !isValidBigString(value.peakPrice)) {
-    return false;
-  }
-  if (!('stopPrice' in value) || typeof value.stopPrice !== 'string' || !isValidBigString(value.stopPrice)) {
-    return false;
-  }
-  if (!('trailDownPct' in value)) {
-    return false;
-  }
-  if (
-    value.trailDownPct !== null &&
-    (typeof value.trailDownPct !== 'string' || !isValidBigString(value.trailDownPct))
-  ) {
-    return false;
-  }
-
-  // peakPrice and stopPrice are coupled — both '0' (not yet attached) or both non-zero.
-  return new Big(value.peakPrice).eq(0) === new Big(value.stopPrice).eq(0);
-}
-
-function isValidBigString(value: string) {
+function canParseBig(value: string) {
   try {
     new Big(value);
     return true;

@@ -135,6 +135,23 @@ describe('AtrTrailStrategy', () => {
     expect(AtrTrailStrategy.NAME).toBe('@typedtrader/strategy-atr-trail');
   });
 
+  it('restores a valid persisted state', () => {
+    const strategy = new AtrTrailStrategy({atrInterval: 14, atrMultiple: '2'});
+
+    strategy.restoreState({exited: false, peakPrice: '200', stopPrice: '160', trailDownPct: '20'});
+
+    expect(strategy.trailState).toMatchObject({exited: false, peakPrice: '200', stopPrice: '160', trailDownPct: '20'});
+  });
+
+  it('falls back to defaults on a malformed persisted state', () => {
+    const strategy = new AtrTrailStrategy({atrInterval: 14, atrMultiple: '2'});
+
+    // peakPrice non-zero while stopPrice is '0' violates the coupling invariant.
+    strategy.restoreState({exited: false, peakPrice: '200', stopPrice: '0', trailDownPct: '20'});
+
+    expect(strategy.trailState).toMatchObject({exited: false, peakPrice: '0', stopPrice: '0', trailDownPct: null});
+  });
+
   it('rolling: a daily ATR window does not move intraday on minute candles', async () => {
     const strategy = new AtrTrailStrategy({atrInterval: 14, atrMultiple: '2', rolling: true});
     await strategy.init(warmExchange(), pair);
