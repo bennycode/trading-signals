@@ -6,6 +6,12 @@ export {
   type AtrTrailConfig,
   type AtrTrailState,
 } from './strategy-atr-trail/AtrTrailStrategy.js';
+export {
+  assessAtrMultiples,
+  type AssessAtrMultiplesOptions,
+  type AtrMultipleAssessment,
+  type AtrMultipleOutcome,
+} from './strategy-atr-trail/assessAtrMultiples.js';
 export {BuyOnceStrategy, BuyOnceSchema, type BuyOnceConfig} from './strategy-buy-once/BuyOnceStrategy.js';
 /** @deprecated Use {@link BuyOnceStrategy} without `buyAt` instead. */
 export {
