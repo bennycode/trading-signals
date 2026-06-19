@@ -89,7 +89,7 @@ describe('AtrTrailStrategy', () => {
     expect(await strategy.onCandle(toBatched(170, 198, 168), heldState)).toBeUndefined();
   });
 
-  it('exits with a market sell when the close breaches the ATR-sized stop', async () => {
+  it('exits with a limit sell at the trail target when the close breaches the ATR-sized stop', async () => {
     const strategy = new AtrTrailStrategy({atrInterval: 14, atrMultiple: '2'});
     await strategy.init(warmExchange(), pair);
 
@@ -97,7 +97,10 @@ describe('AtrTrailStrategy', () => {
     const advice = await strategy.onCandle(toBatched(155, 196, 150), heldState); // close 155 <= 160
 
     expect(advice?.side).toBe(OrderSide.SELL);
-    expect(advice?.type).toBe(OrderType.MARKET);
+    expect(advice?.type).toBe(OrderType.LIMIT);
+    if (advice?.type === OrderType.LIMIT) {
+      expect(new Big(advice.price).toFixed(), 'limit price is the trail target').toBe('160');
+    }
   });
 
   it('ratchets the stop up as the peak rises', async () => {

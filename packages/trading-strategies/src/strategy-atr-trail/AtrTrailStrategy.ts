@@ -54,8 +54,8 @@ const defaultState = (): AtrTrailState => ({
  * the specific stock (wide for a volatile name, tight for a calm one) without hand-tuning a percent.
  *
  * Attaches to whatever base balance exists (opened elsewhere or carried across a restart) and exits
- * the full available balance with a market sell when `candle.close` drops to the trail target. If the
- * ATR can't be sized from history (too few candles), it holds without a stop and says so.
+ * the full available balance with a limit sell at the trail target when `candle.close` drops to it.
+ * If the ATR can't be sized from history (too few candles), it holds without a stop and says so.
  */
 export class AtrTrailStrategy extends Strategy {
   static override NAME = '@typedtrader/strategy-atr-trail';
@@ -147,12 +147,17 @@ export class AtrTrailStrategy extends Strategy {
 
     const reason = `ATR trailing stop: close ${candle.close.toFixed()} <= ${stop.toFixed()} (peak ${peak.toFixed()} -${trailDownPct.toFixed(2)}%).`;
     this.onMessage?.(reason);
+    /*
+     * Sell at the trail target rather than at market, so a gap straight through the stop can't fill
+     * far below it. The limit re-emits each candle (tracking the ratcheted stop) until it fills.
+     */
     return {
       amount: AllAvailableAmount,
       amountIn: 'base',
+      price: stop,
       reason,
       side: OrderSide.SELL,
-      type: OrderType.MARKET,
+      type: OrderType.LIMIT,
     };
   }
 
