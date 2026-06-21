@@ -1,11 +1,19 @@
 import {useRef, useState} from 'react';
 import type {ChangeEvent} from 'react';
 import type {Candle} from '@typedtrader/exchange';
+import type {MarketRegime} from '@typedtrader/candles';
+
+const REGIME_BADGE: Record<MarketRegime, string> = {
+  bear: 'bg-red-500/20 text-red-400',
+  bull: 'bg-emerald-500/20 text-emerald-400',
+  sideways: 'bg-slate-500/30 text-slate-300',
+};
 
 interface Dataset {
   id: string;
   name: string;
   description: string;
+  regime: MarketRegime;
 }
 
 interface DatasetSelectorProps {
@@ -16,9 +24,16 @@ interface DatasetSelectorProps {
   customDatasetName?: string | null;
 }
 
-export function DatasetSelector({datasets, selectedDataset, onDatasetChange, onCustomDataset, customDatasetName}: DatasetSelectorProps) {
+export function DatasetSelector({
+  customDatasetName,
+  datasets,
+  onCustomDataset,
+  onDatasetChange,
+  selectedDataset,
+}: DatasetSelectorProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploadError, setUploadError] = useState<string | null>(null);
+  const selectedMeta = datasets.find(ds => ds.id === selectedDataset);
 
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -71,7 +86,15 @@ export function DatasetSelector({datasets, selectedDataset, onDatasetChange, onC
         ))}
         {selectedDataset === 'custom' && <option value="custom">{customDatasetName ?? 'Custom'}</option>}
       </select>
-      <p className="mt-2 text-xs text-slate-400">{datasets.find(ds => ds.id === selectedDataset)?.description}</p>
+      {selectedMeta && (
+        <div className="mt-2 flex items-center gap-2">
+          <span
+            className={`px-1.5 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wide ${REGIME_BADGE[selectedMeta.regime]}`}>
+            {selectedMeta.regime}
+          </span>
+          <p className="text-xs text-slate-400">{selectedMeta.description}</p>
+        </div>
+      )}
 
       <input ref={fileInputRef} type="file" accept=".json" onChange={handleFileChange} className="hidden" />
       <button
