@@ -113,4 +113,12 @@ describe('rankDeltaIcon', () => {
     expect(rankDeltaIcon(0), 'held').toBe('');
     expect(rankDeltaIcon(null), 'new entry, unranked last month').toBe('★');
   });
+
+  it('inverts the arrow for the worst-first losers list', () => {
+    // In the losers table a stock that got worse rises toward #1, so the arrow flips.
+    expect(rankDeltaIcon(-2, true), 'got worse → rises in the losers list').toBe('▲');
+    expect(rankDeltaIcon(3, true), 'recovered → falls in the losers list').toBe('▼');
+    expect(rankDeltaIcon(0, true), 'held').toBe('');
+    expect(rankDeltaIcon(null, true), 'new entry').toBe('★');
+  });
 });

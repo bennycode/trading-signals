@@ -106,15 +106,20 @@ export function withRankDeltas(current: MomentumResult[], previous: MomentumResu
   });
 }
 
-/** A marker for the rank column: `▲` climbed, `▼` slipped, `★` new entry (unranked last month), empty when held. */
-export function rankDeltaIcon(rankDelta: number | null) {
+/**
+ * Arrow for the rank column, pointing the way the row moved *within its own table* since last month:
+ * `▲` rose, `▼` fell, `★` new entry, empty when unchanged. Pass `invert` for the losers table — its
+ * worst-first numbering runs opposite to the overall ranking, so a stock that got worse rises in it.
+ */
+export function rankDeltaIcon(rankDelta: number | null, invert = false) {
   if (rankDelta === null) {
     return '★';
   }
   if (rankDelta === 0) {
     return '';
   }
-  return rankDelta > 0 ? '▲' : '▼';
+  const roseInList = invert ? rankDelta < 0 : rankDelta > 0;
+  return roseInList ? '▲' : '▼';
 }
 
 export class SP500MomentumReport extends Report<SP500MomentumConfig> {
@@ -212,9 +217,9 @@ export class SP500MomentumReport extends Report<SP500MomentumConfig> {
     const header = `Rank  ${'Stock'.padEnd(stockColWidth)}  ${'12m Ret'.padStart(9)}  ${'Price'.padStart(9)}`;
     const divider = `----  ${'-'.repeat(stockColWidth)}  ---------  ---------`;
 
-    const renderRow = (displayRank: number, r: RankedMomentum) => {
+    const renderRow = (displayRank: number, r: RankedMomentum, invertArrow = false) => {
       // Rank number right-aligned, then a single arrow slot so columns stay aligned with or without movement.
-      const rank = String(displayRank).padStart(3) + (rankDeltaIcon(r.rankDelta) || ' ');
+      const rank = String(displayRank).padStart(3) + (rankDeltaIcon(r.rankDelta, invertArrow) || ' ');
       const stock = formatSymbolWithName(r.ticker, names, TELEGRAM_TABLE_NAME_MAX).padEnd(stockColWidth);
       const ret = (r.returnPct.toFixed(2) + '%').padStart(9);
       const price = ('$' + r.priceNow.toFixed(2)).padStart(9);
@@ -236,7 +241,8 @@ export class SP500MomentumReport extends Report<SP500MomentumConfig> {
     lines.push(header);
     lines.push(divider);
     for (let i = 0; i < losers.length; i++) {
-      lines.push(renderRow(i + 1, losers[i]));
+      // Invert the arrow: the losers list is worst-first, so "got worse" means rising toward #1.
+      lines.push(renderRow(i + 1, losers[i], true));
     }
     lines.push('```');
 
@@ -244,7 +250,7 @@ export class SP500MomentumReport extends Report<SP500MomentumConfig> {
     lines.push(
       `Price = close on ${toDate} (formation-window end), not the live quote — the 12-1 window skips the most recent month.`
     );
-    lines.push('Next to the rank: ▲/▼ = moved up/down vs last month, ★ = new entry.');
+    lines.push('Next to the rank: ▲/▼ = moved up/down in this list vs last month, ★ = new entry.');
     lines.push(`Stocks ranked: ${results.length} / ${SP500_TICKERS.length}`);
 
     lines.push('');
