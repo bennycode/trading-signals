@@ -42,7 +42,13 @@ function firstTradingDayOfMonth(year: number, monthIndex: number): Date {
  */
 export function getExchangeYearMonth(isoTimestamp: string, timeZone: string): {month: number; year: number} {
   const fields = Object.fromEntries(
-    new Intl.DateTimeFormat('en-CA', {month: '2-digit', timeZone, year: 'numeric'})
+    new Intl.DateTimeFormat('en-US', {
+      calendar: 'gregory',
+      month: '2-digit',
+      numberingSystem: 'latn',
+      timeZone,
+      year: 'numeric',
+    })
       .formatToParts(new Date(isoTimestamp))
       .map(part => [part.type, part.value])
   );
