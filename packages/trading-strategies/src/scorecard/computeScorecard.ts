@@ -4,9 +4,9 @@
  * The rubric exists to answer one question — has a stock already run past the point of a sensible
  * entry? — so every band rewards room left (upside, low extension, reasonable valuation, growth,
  * and analysts still raising targets) and punishes a stretched, priced-for-perfection chart. A
- * falling-knife guard demotes names that have broken below their 50-day, where a stale analyst
- * target makes the upside look deceptively good. Same inputs always yield the same ranking; a
- * stock's score never depends on the others in the list.
+ * falling-knife guard stops trusting the upside/extension bands (and adds a penalty) for any name
+ * that has broken well below its 50-day, where a stale analyst target makes a crash look deceptively
+ * cheap. Same inputs always yield the same ranking; a stock's score never depends on the others.
  */
 
 /** Raw, per-ticker inputs the rubric scores. The orchestrator fills these from the data provider. */
@@ -136,19 +136,27 @@ export function scoreRevisionMomentum(revisionPct: number) {
   return -2; // targets being cut — momentum fading
 }
 
-/** How far below its 50-day a name must fall to count as a broken trend rather than a normal wobble. */
-const FALLING_KNIFE_THRESHOLD_PCT = -8;
+/**
+ * How far below its 50-day a name must fall to count as a broken trend rather than a normal pullback.
+ * Set deliberately deep: in a broad selloff healthy names routinely sit ~5–10% under their 50-day,
+ * and only a genuine break (well past that) signals a stale target.
+ */
+const FALLING_KNIFE_THRESHOLD_PCT = -15;
+
+/** Penalty once a trend is broken — a gap-down is real negative information, not a discount. */
+const TREND_BREAK_PENALTY = -2;
 
 /**
- * Falling-knife guard. A momentum name trades above its 50-day by definition; once it drops well
- * through it, the short-term trend has broken and — critically — the analyst target is now stale, so
- * the upside and extension bands read misleadingly bullish (a crash temporarily looks "cheaper and
- * less stretched"). The threshold keeps an ordinary 2–3% dip from tripping the penalty; only a real
- * break (a gap-down through the line) does, parking the name until the dust settles.
+ * Falling-knife test. A momentum name trades above its 50-day by definition; once it drops well
+ * through it (more than {@link FALLING_KNIFE_THRESHOLD_PCT} below), the short-term trend has broken.
+ * The threshold keeps an ordinary 2–3% dip from tripping — only a real break (a gap-down through the
+ * line) counts. {@link computeScorecard} uses it to stop trusting the now-stale upside/extension bands.
  */
-export function scoreTrendBreak(price: number, movingAverage50: number) {
-  const belowFiftyDayPct = movingAverage50 > 0 ? (price / movingAverage50 - 1) * 100 : 0;
-  return belowFiftyDayPct < FALLING_KNIFE_THRESHOLD_PCT ? -3 : 0;
+export function isTrendBroken(price: number, movingAverage50: number) {
+  if (movingAverage50 <= 0) {
+    return false;
+  }
+  return (price / movingAverage50 - 1) * 100 < FALLING_KNIFE_THRESHOLD_PCT;
 }
 
 function toRow(input: ScorecardInput): ScorecardRow {
@@ -165,17 +173,24 @@ function toRow(input: ScorecardInput): ScorecardRow {
       ? (input.targetLastMonth / input.targetLastQuarter - 1) * 100
       : 0;
 
-  const trendBreakPenalty = scoreTrendBreak(input.price, input.movingAverage50);
-  const trendBroken = trendBreakPenalty < 0;
+  const trendBroken = isTrendBroken(input.price, input.movingAverage50);
+
+  /*
+   * A broken trend means the analyst target is stale, so a crash makes the upside and extension bands
+   * look deceptively good ("cheaper, less stretched"). Don't trust them: cap their positive
+   * contribution at zero, then add a penalty for the break itself.
+   */
+  const upsideScore = trendBroken ? Math.min(0, scoreUpside(upsidePct)) : scoreUpside(upsidePct);
+  const extensionScore = trendBroken ? Math.min(0, scoreExtension(extensionPct)) : scoreExtension(extensionPct);
 
   const score =
-    scoreUpside(upsidePct) +
-    scoreExtension(extensionPct) +
+    upsideScore +
+    extensionScore +
     scoreForwardPE(forwardPE) +
     scoreGrowth(epsGrowthPct) +
     scoreRating(input.rating) +
     scoreRevisionMomentum(revisionPct) +
-    trendBreakPenalty;
+    (trendBroken ? TREND_BREAK_PENALTY : 0);
 
   return {
     epsGrowthPct,

@@ -4,9 +4,9 @@ import {
   scoreExtension,
   scoreForwardPE,
   scoreGrowth,
+  isTrendBroken,
   scoreRating,
   scoreRevisionMomentum,
-  scoreTrendBreak,
   scoreUpside,
   selectForwardEps,
 } from './computeScorecard.js';
@@ -68,11 +68,12 @@ describe('scoreRevisionMomentum', () => {
   });
 });
 
-describe('scoreTrendBreak', () => {
-  it('penalizes a real break but spares an ordinary wobble', () => {
-    expect(scoreTrendBreak(91, 110), '~17% below — broken').toBe(-3);
-    expect(scoreTrendBreak(108, 110), '~2% below — normal dip').toBe(0);
-    expect(scoreTrendBreak(120, 110), 'above the 50-day').toBe(0);
+describe('isTrendBroken', () => {
+  it('flags a real break but spares an ordinary selloff pullback', () => {
+    expect(isTrendBroken(91, 110), '~17% below — broken').toBe(true);
+    expect(isTrendBroken(100, 110), '~9% below — pullback, not a break').toBe(false);
+    expect(isTrendBroken(108, 110), '~2% below — normal dip').toBe(false);
+    expect(isTrendBroken(120, 110), 'above the 50-day').toBe(false);
   });
 });
 
@@ -190,11 +191,13 @@ describe('computeScorecard', () => {
     };
     const [row] = computeScorecard([broken]);
     expect(row.trendBroken, 'price below its 50-day').toBe(true);
+    // Neutralized: upside +2 → 0, extension +1 → 0, plus a -2 penalty. fwdPE +1, growth +1 remain → 0.
+    expect(row.score).toBe(0);
 
-    // The same name still holding its 50-day would score exactly 3 higher (no guard penalty).
+    // The same name holding its 50-day keeps its upside/extension credit and takes no penalty.
     const [held] = computeScorecard([{...broken, movingAverage50: 85}]);
     expect(held.trendBroken).toBe(false);
-    expect(held.score - row.score, 'the guard costs 3 points').toBe(3);
+    expect(held.score - row.score, 'the broken trend costs the +3 of stale bands plus a -2 penalty').toBe(5);
   });
 
   it('is order-independent: shuffled inputs produce the same ranking', () => {
