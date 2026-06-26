@@ -20,11 +20,12 @@ export class MomentumScorecard {
   }
 
   async #fetchInput(ticker: string, now: Date): Promise<ScorecardInput> {
-    const [quote, target, estimates, ratings] = await Promise.all([
+    const [quote, target, estimates, ratings, targetSummary] = await Promise.all([
       this.#fmp.getQuote(ticker),
       this.#fmp.getPriceTargetConsensus(ticker),
       this.#fmp.getAnalystEstimates(ticker, 'annual'),
       this.#fmp.getRatingsSnapshot(ticker),
+      this.#fmp.getPriceTargetSummary(ticker),
     ]);
 
     const {epsForwardYear1, epsForwardYear2} = selectForwardEps(estimates, now);
@@ -36,6 +37,8 @@ export class MomentumScorecard {
       price: quote.price,
       rating: ratings.rating,
       targetConsensus: target.targetConsensus,
+      targetLastMonth: targetSummary.lastMonthAvgPriceTarget,
+      targetLastQuarter: targetSummary.lastQuarterAvgPriceTarget,
       ticker,
     };
   }

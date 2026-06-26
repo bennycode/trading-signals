@@ -2,9 +2,9 @@
  * Deterministic "am I too late?" scorecard for momentum names.
  *
  * The rubric exists to answer one question — has a stock already run past the point of a sensible
- * entry? — so every band rewards room left (upside, low extension, reasonable valuation, growth)
- * and punishes a stretched, priced-for-perfection chart. Same inputs always yield the same ranking;
- * a stock's score never depends on the others in the list.
+ * entry? — so every band rewards room left (upside, low extension, reasonable valuation, growth,
+ * and analysts still raising targets) and punishes a stretched, priced-for-perfection chart. Same
+ * inputs always yield the same ranking; a stock's score never depends on the others in the list.
  */
 
 /** Raw, per-ticker inputs the rubric scores. The orchestrator fills these from the data provider. */
@@ -19,6 +19,10 @@ export interface ScorecardInput {
   epsForwardYear2: number;
   /** Aggregate analyst letter grade (e.g. "A-", "B+", "C"). */
   rating: string;
+  /** Average analyst price target as of last month — for estimate-revision momentum. */
+  targetLastMonth: number;
+  /** Average analyst price target as of last quarter — the baseline the last month is compared against. */
+  targetLastQuarter: number;
 }
 
 export interface ScorecardRow {
@@ -33,7 +37,9 @@ export interface ScorecardRow {
   /** Distance above the 200-day moving average, in percent. The primary "too late" gauge. */
   extensionPct: number;
   rating: string;
-  /** Sum of the five rubric bands; higher means more room left (less likely to be too late). */
+  /** Recent change in the average target (last month vs last quarter), in percent. Positive = analysts raising. */
+  revisionPct: number;
+  /** Sum of the six rubric bands; higher means more room left (less likely to be too late). */
   score: number;
 }
 
@@ -106,18 +112,45 @@ export function scoreRating(rating: string) {
   return -1; // C or worse, or unrecognized
 }
 
+/**
+ * Estimate-revision momentum: the recent move in the average analyst target. This is the one band
+ * that re-admits "trend" — rising targets are the fundamental tell that a move will persist rather
+ * than exhaust, and it isn't captured by valuation, growth, or a composite sentiment score.
+ */
+export function scoreRevisionMomentum(revisionPct: number) {
+  if (revisionPct >= 3) {
+    return 2; // analysts raising targets fast
+  }
+  if (revisionPct >= 0.5) {
+    return 1;
+  }
+  if (revisionPct > -0.5) {
+    return 0; // roughly flat
+  }
+  return -2; // targets being cut — momentum fading
+}
+
 function toRow(input: ScorecardInput): ScorecardRow {
   const upsidePct = (input.targetConsensus / input.price - 1) * 100;
   const extensionPct = (input.price / input.movingAverage200 - 1) * 100;
   const forwardPE = input.epsForwardYear1 > 0 ? input.price / input.epsForwardYear1 : null;
   const epsGrowthPct = input.epsForwardYear1 > 0 ? (input.epsForwardYear2 / input.epsForwardYear1 - 1) * 100 : null;
+  /*
+   * Both must be present: a zero last-month target means "no target issued recently" (missing data),
+   * not a 100% cut, so it scores neutral rather than getting hammered.
+   */
+  const revisionPct =
+    input.targetLastMonth > 0 && input.targetLastQuarter > 0
+      ? (input.targetLastMonth / input.targetLastQuarter - 1) * 100
+      : 0;
 
   const score =
     scoreUpside(upsidePct) +
     scoreExtension(extensionPct) +
     scoreForwardPE(forwardPE) +
     scoreGrowth(epsGrowthPct) +
-    scoreRating(input.rating);
+    scoreRating(input.rating) +
+    scoreRevisionMomentum(revisionPct);
 
   return {
     epsGrowthPct,
@@ -125,6 +158,7 @@ function toRow(input: ScorecardInput): ScorecardRow {
     forwardPE,
     price: input.price,
     rating: input.rating,
+    revisionPct,
     score,
     ticker: input.ticker,
     upsidePct,

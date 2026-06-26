@@ -4,6 +4,7 @@ import {ms} from 'ms';
 import {z} from 'zod';
 import {FmpAnalystEstimateSchema} from './schema/FmpAnalystEstimateSchema.js';
 import {FmpPriceTargetConsensusSchema} from './schema/FmpPriceTargetConsensusSchema.js';
+import {FmpPriceTargetSummarySchema} from './schema/FmpPriceTargetSummarySchema.js';
 import {FmpQuoteSchema} from './schema/FmpQuoteSchema.js';
 import {FmpRatingsSnapshotSchema} from './schema/FmpRatingsSnapshotSchema.js';
 import {simplifyError} from '../../util/simplifyError.js';
@@ -53,5 +54,11 @@ export class FmpAPI {
   async getRatingsSnapshot(symbol: string) {
     const response = await this.#client.get('/ratings-snapshot', {params: {symbol}});
     return z.array(FmpRatingsSnapshotSchema).parse(response.data)[0];
+  }
+
+  /** @see https://site.financialmodelingprep.com/developer/docs/stable#price-target-summary */
+  async getPriceTargetSummary(symbol: string) {
+    const response = await this.#client.get('/price-target-summary', {params: {symbol}});
+    return z.array(FmpPriceTargetSummarySchema).parse(response.data)[0];
   }
 }

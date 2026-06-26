@@ -5,6 +5,7 @@ import {
   scoreForwardPE,
   scoreGrowth,
   scoreRating,
+  scoreRevisionMomentum,
   scoreUpside,
   selectForwardEps,
 } from './computeScorecard.js';
@@ -57,6 +58,15 @@ describe('scoreRating', () => {
   });
 });
 
+describe('scoreRevisionMomentum', () => {
+  it('rewards rising targets and punishes cuts', () => {
+    expect(scoreRevisionMomentum(4), 'targets raised sharply').toBe(2);
+    expect(scoreRevisionMomentum(1), 'targets nudged up').toBe(1);
+    expect(scoreRevisionMomentum(0), 'flat').toBe(0);
+    expect(scoreRevisionMomentum(-2), 'targets being cut').toBe(-2);
+  });
+});
+
 describe('computeScorecard', () => {
   it('ranks a clean entry above an overextended momentum name', () => {
     /*
@@ -71,6 +81,8 @@ describe('computeScorecard', () => {
         price: 675.39,
         rating: 'B+',
         targetConsensus: 479.29,
+        targetLastMonth: 479.29,
+        targetLastQuarter: 479.29,
         ticker: 'WDC',
       },
       {
@@ -80,6 +92,8 @@ describe('computeScorecard', () => {
         price: 343.71,
         rating: 'B+',
         targetConsensus: 411.8,
+        targetLastMonth: 411.8,
+        targetLastQuarter: 411.8,
         ticker: 'GOOGL',
       },
     ]);
@@ -100,14 +114,50 @@ describe('computeScorecard', () => {
         price: 26.98,
         rating: 'C',
         targetConsensus: 30.8,
+        targetLastMonth: 30.8,
+        targetLastQuarter: 30.8,
         ticker: 'WBD',
       },
     ]);
 
     expect(row.forwardPE, 'no multiple when EPS is negative').toBeNull();
     expect(row.epsGrowthPct, 'no growth ratio when base EPS is negative').toBeNull();
-    // upside +14% (+1), extension +6% (+2), PE null (-1), growth null (-2), rating C (-1) = -1
+    // upside +14% (+1), extension +6% (+2), PE null (-1), growth null (-2), rating C (-1), revision flat (0) = -1
     expect(row.score).toBe(-1);
+  });
+
+  it('lifts a name whose analysts are still raising targets', () => {
+    const base = {
+      epsForwardYear1: 10,
+      epsForwardYear2: 12,
+      movingAverage200: 100,
+      price: 110,
+      rating: 'B',
+      targetConsensus: 120,
+      ticker: 'AAA',
+    };
+    const [flat] = computeScorecard([{...base, targetLastMonth: 120, targetLastQuarter: 120}]);
+    const [rising] = computeScorecard([{...base, targetLastMonth: 126, targetLastQuarter: 120}]); // +5%
+
+    expect(rising.revisionPct, 'targets up 5%').toBeCloseTo(5);
+    expect(rising.score - flat.score, 'rising targets add the +2 band').toBe(2);
+  });
+
+  it('treats a missing last-month target as neutral, not a 100% cut', () => {
+    const [row] = computeScorecard([
+      {
+        epsForwardYear1: 10,
+        epsForwardYear2: 12,
+        movingAverage200: 100,
+        price: 110,
+        rating: 'B',
+        targetConsensus: 120,
+        targetLastMonth: 0, // no analyst issued a target in the last month
+        targetLastQuarter: 120,
+        ticker: 'AAA',
+      },
+    ]);
+    expect(row.revisionPct, 'no recent target → neutral, not -100%').toBe(0);
   });
 
   it('is order-independent: shuffled inputs produce the same ranking', () => {
@@ -119,6 +169,8 @@ describe('computeScorecard', () => {
         price: 1213,
         rating: 'A-',
         targetConsensus: 1496,
+        targetLastMonth: 1438,
+        targetLastQuarter: 1389,
         ticker: 'MU',
       },
       {
@@ -128,6 +180,8 @@ describe('computeScorecard', () => {
         price: 343,
         rating: 'B+',
         targetConsensus: 411,
+        targetLastMonth: 411,
+        targetLastQuarter: 411,
         ticker: 'GOOGL',
       },
       {
@@ -137,6 +191,8 @@ describe('computeScorecard', () => {
         price: 132,
         rating: 'C-',
         targetConsensus: 91,
+        targetLastMonth: 91,
+        targetLastQuarter: 95,
         ticker: 'INTC',
       },
     ];
