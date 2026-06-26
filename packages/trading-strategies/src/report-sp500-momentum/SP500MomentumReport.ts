@@ -2,8 +2,8 @@ import {z} from 'zod';
 import type {AlpacaAPI} from '@typedtrader/exchange';
 import {MESSAGE_BREAK, Report} from '../report/Report.js';
 import {fetchUsEquityNames, formatSymbolWithName, TELEGRAM_TABLE_NAME_MAX} from '../util/formatSymbolWithName.js';
-import {findFirstTradingDay, getDateString} from '../util/TimeUtil.js';
-import {SP500_TICKERS} from '../util/sp500Tickers.js';
+import {getDateString} from '../util/TimeUtil.js';
+import {SP500_TICKERS, SP500_TIMEZONE} from '../util/sp500Tickers.js';
 
 export const SP500MomentumSchema = z.object({});
 
@@ -18,6 +18,110 @@ interface MomentumResult {
 
 const BATCH_SIZE = 1000;
 
+const WEEKEND_SHIFT_TO_MONDAY: Record<number, number> = {
+  0: 1, // Sunday → Monday
+  6: 2, // Saturday → Monday
+};
+
+/**
+ * Anchored in UTC on purpose: the result must not drift with the server's local
+ * timezone. Skips weekends only — market holidays are absorbed by the multi-day
+ * price-fetch window, which takes the first available bar at or after this date.
+ */
+function firstTradingDayOfMonth(year: number, monthIndex: number): Date {
+  const date = new Date(Date.UTC(year, monthIndex, 1));
+  date.setUTCDate(date.getUTCDate() + (WEEKEND_SHIFT_TO_MONDAY[date.getUTCDay()] ?? 0));
+  return date;
+}
+
+/**
+ * Reads which calendar month an instant falls in *at the exchange*, not on the server.
+ * Late on the 31st in New York is already the 1st in UTC, so a server-local read would
+ * roll the report a day early; resolving in {@link SP500_TIMEZONE} keeps it on the US
+ * market calendar.
+ */
+export function getExchangeYearMonth(isoTimestamp: string, timeZone: string): {month: number; year: number} {
+  const fields = Object.fromEntries(
+    new Intl.DateTimeFormat('en-US', {
+      calendar: 'gregory',
+      month: '2-digit',
+      numberingSystem: 'latn',
+      timeZone,
+      year: 'numeric',
+    })
+      .formatToParts(new Date(isoTimestamp))
+      .map(part => [part.type, part.value])
+  );
+  return {month: Number(fields.month), year: Number(fields.year)};
+}
+
+/**
+ * The 12-1 window of Jegadeesh & Titman (1993): drop the most recent (current) month to
+ * sidestep short-term reversal, end the formation window at the start of the prior month,
+ * and begin it twelve months earlier.
+ */
+export function getMomentumWindow(exchangeYear: number, exchangeMonth: number): {pastDate: Date; recentDate: Date} {
+  const recentDate = firstTradingDayOfMonth(exchangeYear, exchangeMonth - 2);
+  const pastDate = firstTradingDayOfMonth(recentDate.getUTCFullYear() - 1, recentDate.getUTCMonth());
+  return {pastDate, recentDate};
+}
+
+interface RankedMomentum extends MomentumResult {
+  /** 1-based position in the current full ranking. */
+  rank: number;
+  /**
+   * Movement versus last month's ranking: positive means the stock climbed toward #1, negative
+   * means it slipped. `null` when it wasn't ranked last month (no comparable price), shown as "new".
+   */
+  rankDelta: number | null;
+}
+
+/** Ranks every ticker with a usable price pair by its window return, best first. */
+function rankByMomentum(endPrices: Map<string, number>, startPrices: Map<string, number>): MomentumResult[] {
+  const results: MomentumResult[] = [];
+  for (const ticker of SP500_TICKERS) {
+    const priceNow = endPrices.get(ticker);
+    const priceThen = startPrices.get(ticker);
+    if (priceNow != null && priceThen != null && priceThen > 0) {
+      results.push({
+        price12MonthsAgo: priceThen,
+        priceNow,
+        returnPct: ((priceNow - priceThen) / priceThen) * 100,
+        ticker,
+      });
+    }
+  }
+  results.sort((a, b) => b.returnPct - a.returnPct);
+  return results;
+}
+
+/** Annotates the current ranking with each ticker's rank movement against the previous month's ranking. */
+export function withRankDeltas(current: MomentumResult[], previous: MomentumResult[]): RankedMomentum[] {
+  const previousRank = new Map<string, number>();
+  previous.forEach((result, index) => previousRank.set(result.ticker, index + 1));
+  return current.map((result, index) => {
+    const rank = index + 1;
+    const priorRank = previousRank.get(result.ticker);
+    return {...result, rank, rankDelta: priorRank === undefined ? null : priorRank - rank};
+  });
+}
+
+/**
+ * Arrow for the rank column, pointing the way the row moved *within its own table* since last month:
+ * `▲` rose, `▼` fell, `★` new entry, empty when unchanged. Pass `invert` for the losers table — its
+ * worst-first numbering runs opposite to the overall ranking, so a stock that got worse rises in it.
+ */
+export function rankDeltaIcon(rankDelta: number | null, invert = false) {
+  if (rankDelta === null) {
+    return '★';
+  }
+  if (rankDelta === 0) {
+    return '';
+  }
+  const roseInList = invert ? rankDelta < 0 : rankDelta > 0;
+  return roseInList ? '▲' : '▼';
+}
+
 export class SP500MomentumReport extends Report<SP500MomentumConfig> {
   static override NAME = '@typedtrader/report-sp500-momentum';
 
@@ -29,42 +133,27 @@ export class SP500MomentumReport extends Report<SP500MomentumConfig> {
   }
 
   async run() {
-    const now = new Date();
+    const clock = await this.#api.getClock();
+    const {month, year} = getExchangeYearMonth(clock.timestamp, SP500_TIMEZONE);
 
-    // 12-1 momentum: skip the most recent month, look back 12 months from there
-    const recentMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-    const pastMonth = new Date(recentMonth.getFullYear() - 1, recentMonth.getMonth(), 1);
+    // The current ranking and the one a month earlier, so the report can show how ranks moved.
+    const current = getMomentumWindow(year, month);
+    const previous = getMomentumWindow(year, month - 1);
 
-    const recentDate = findFirstTradingDay(recentMonth);
-    const pastDate = findFirstTradingDay(pastMonth);
+    const toDate = getDateString(current.recentDate);
+    const fromDate = getDateString(current.pastDate);
 
-    const toDate = getDateString(recentDate);
-    const fromDate = getDateString(pastDate);
-
-    const [currentPrices, pastPrices, names] = await Promise.all([
-      this.#getClosingPrices(SP500_TICKERS, recentDate),
-      this.#getClosingPrices(SP500_TICKERS, pastDate),
+    const [currentEnd, currentStart, previousEnd, previousStart, names] = await Promise.all([
+      this.#getClosingPrices(SP500_TICKERS, current.recentDate),
+      this.#getClosingPrices(SP500_TICKERS, current.pastDate),
+      this.#getClosingPrices(SP500_TICKERS, previous.recentDate),
+      this.#getClosingPrices(SP500_TICKERS, previous.pastDate),
       fetchUsEquityNames(this.#api),
     ]);
 
-    const results: MomentumResult[] = [];
+    const ranked = withRankDeltas(rankByMomentum(currentEnd, currentStart), rankByMomentum(previousEnd, previousStart));
 
-    for (const ticker of SP500_TICKERS) {
-      const priceNow = currentPrices.get(ticker);
-      const priceThen = pastPrices.get(ticker);
-      if (priceNow != null && priceThen != null && priceThen > 0) {
-        results.push({
-          price12MonthsAgo: priceThen,
-          priceNow,
-          returnPct: ((priceNow - priceThen) / priceThen) * 100,
-          ticker,
-        });
-      }
-    }
-
-    results.sort((a, b) => b.returnPct - a.returnPct);
-
-    return this.#formatResults(results, fromDate, toDate, names);
+    return this.#formatResults(ranked, fromDate, toDate, names);
   }
 
   async #getClosingPrices(symbols: string[], targetDate: Date): Promise<Map<string, number>> {
@@ -109,7 +198,7 @@ export class SP500MomentumReport extends Report<SP500MomentumConfig> {
     return result;
   }
 
-  #formatResults(results: MomentumResult[], fromDate: string, toDate: string, names: Map<string, string>) {
+  #formatResults(results: RankedMomentum[], fromDate: string, toDate: string, names: Map<string, string>) {
     const top = 20;
     const lines: string[] = [];
 
@@ -125,31 +214,43 @@ export class SP500MomentumReport extends Report<SP500MomentumConfig> {
       ...losers.map(r => formatSymbolWithName(r.ticker, names, TELEGRAM_TABLE_NAME_MAX).length)
     );
 
-    const renderRow = (index: number, r: MomentumResult) => {
+    const header = `Rank  ${'Stock'.padEnd(stockColWidth)}  ${'12m Ret'.padStart(9)}  ${'Price'.padStart(9)}`;
+    const divider = `----  ${'-'.repeat(stockColWidth)}  ---------  ---------`;
+
+    const renderRow = (displayRank: number, r: RankedMomentum, invertArrow = false) => {
+      // Rank number right-aligned, then a single arrow slot so columns stay aligned with or without movement.
+      const rank = String(displayRank).padStart(3) + (rankDeltaIcon(r.rankDelta, invertArrow) || ' ');
       const stock = formatSymbolWithName(r.ticker, names, TELEGRAM_TABLE_NAME_MAX).padEnd(stockColWidth);
-      return `${String(index).padStart(4)}  ${stock}  ${(r.returnPct.toFixed(2) + '%').padStart(9)}  ${('$' + r.priceNow.toFixed(2)).padStart(9)}`;
+      const ret = (r.returnPct.toFixed(2) + '%').padStart(9);
+      const price = ('$' + r.priceNow.toFixed(2)).padStart(9);
+      return `${rank}  ${stock}  ${ret}  ${price}`;
     };
 
     lines.push(`**Top ${winners.length} Winners (12m return)**`);
     lines.push('```');
-    lines.push(`Rank  ${'Stock'.padEnd(stockColWidth)}  12m Ret    Price`);
-    lines.push(`----  ${'-'.repeat(stockColWidth)}  ---------  ---------`);
-    for (let i = 0; i < winners.length; i++) {
-      lines.push(renderRow(i + 1, winners[i]));
+    lines.push(header);
+    lines.push(divider);
+    for (const winner of winners) {
+      lines.push(renderRow(winner.rank, winner));
     }
     lines.push('```');
 
     lines.push(MESSAGE_BREAK);
     lines.push(`**Bottom ${losers.length} Losers (12m return)**`);
     lines.push('```');
-    lines.push(`Rank  ${'Stock'.padEnd(stockColWidth)}  12m Ret    Price`);
-    lines.push(`----  ${'-'.repeat(stockColWidth)}  ---------  ---------`);
+    lines.push(header);
+    lines.push(divider);
     for (let i = 0; i < losers.length; i++) {
-      lines.push(renderRow(i + 1, losers[i]));
+      // Invert the arrow: the losers list is worst-first, so "got worse" means rising toward #1.
+      lines.push(renderRow(i + 1, losers[i], true));
     }
     lines.push('```');
 
     lines.push('');
+    lines.push(
+      `Price = close on ${toDate} (formation-window end), not the live quote — the 12-1 window skips the most recent month.`
+    );
+    lines.push('Next to the rank: ▲/▼ = moved up/down in this list vs last month, ★ = new entry.');
     lines.push(`Stocks ranked: ${results.length} / ${SP500_TICKERS.length}`);
 
     lines.push('');
