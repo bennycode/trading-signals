@@ -6,6 +6,7 @@ import {
   scoreGrowth,
   scoreRating,
   scoreRevisionMomentum,
+  scoreTrendBreak,
   scoreUpside,
   selectForwardEps,
 } from './computeScorecard.js';
@@ -67,6 +68,14 @@ describe('scoreRevisionMomentum', () => {
   });
 });
 
+describe('scoreTrendBreak', () => {
+  it('penalizes a real break but spares an ordinary wobble', () => {
+    expect(scoreTrendBreak(91, 110), '~17% below — broken').toBe(-3);
+    expect(scoreTrendBreak(108, 110), '~2% below — normal dip').toBe(0);
+    expect(scoreTrendBreak(120, 110), 'above the 50-day').toBe(0);
+  });
+});
+
 describe('computeScorecard', () => {
   it('ranks a clean entry above an overextended momentum name', () => {
     /*
@@ -77,6 +86,7 @@ describe('computeScorecard', () => {
       {
         epsForwardYear1: 9.98737,
         epsForwardYear2: 17.79608,
+        movingAverage50: 600,
         movingAverage200: 275.00195,
         price: 675.39,
         rating: 'B+',
@@ -88,6 +98,7 @@ describe('computeScorecard', () => {
       {
         epsForwardYear1: 14.24199,
         epsForwardYear2: 14.71419,
+        movingAverage50: 320,
         movingAverage200: 312.8154,
         price: 343.71,
         rating: 'B+',
@@ -110,6 +121,7 @@ describe('computeScorecard', () => {
       {
         epsForwardYear1: -1.31671,
         epsForwardYear2: -0.050203,
+        movingAverage50: 26,
         movingAverage200: 25.3797,
         price: 26.98,
         rating: 'C',
@@ -122,7 +134,7 @@ describe('computeScorecard', () => {
 
     expect(row.forwardPE, 'no multiple when EPS is negative').toBeNull();
     expect(row.epsGrowthPct, 'no growth ratio when base EPS is negative').toBeNull();
-    // upside +14% (+1), extension +6% (+2), PE null (-1), growth null (-2), rating C (-1), revision flat (0) = -1
+    // upside +14% (+1), extension +6% (+2), PE null (-1), growth null (-2), rating C (-1), revision flat (0), trend ok (0) = -1
     expect(row.score).toBe(-1);
   });
 
@@ -130,6 +142,7 @@ describe('computeScorecard', () => {
     const base = {
       epsForwardYear1: 10,
       epsForwardYear2: 12,
+      movingAverage50: 100,
       movingAverage200: 100,
       price: 110,
       rating: 'B',
@@ -148,6 +161,7 @@ describe('computeScorecard', () => {
       {
         epsForwardYear1: 10,
         epsForwardYear2: 12,
+        movingAverage50: 100,
         movingAverage200: 100,
         price: 110,
         rating: 'B',
@@ -160,11 +174,35 @@ describe('computeScorecard', () => {
     expect(row.revisionPct, 'no recent target → neutral, not -100%').toBe(0);
   });
 
+  it('demotes a falling knife: below its 50-day despite a stale-target upside', () => {
+    // ON-like: crashed to 91 (target still 110 → looks like +21% upside), but broke its 50-day.
+    const broken = {
+      epsForwardYear1: 4,
+      epsForwardYear2: 5,
+      movingAverage50: 110,
+      movingAverage200: 70,
+      price: 91,
+      rating: 'B',
+      targetConsensus: 110,
+      targetLastMonth: 110,
+      targetLastQuarter: 110,
+      ticker: 'ON',
+    };
+    const [row] = computeScorecard([broken]);
+    expect(row.trendBroken, 'price below its 50-day').toBe(true);
+
+    // The same name still holding its 50-day would score exactly 3 higher (no guard penalty).
+    const [held] = computeScorecard([{...broken, movingAverage50: 85}]);
+    expect(held.trendBroken).toBe(false);
+    expect(held.score - row.score, 'the guard costs 3 points').toBe(3);
+  });
+
   it('is order-independent: shuffled inputs produce the same ranking', () => {
     const inputs = [
       {
         epsForwardYear1: 68,
         epsForwardYear2: 133,
+        movingAverage50: 1000,
         movingAverage200: 415,
         price: 1213,
         rating: 'A-',
@@ -176,6 +214,7 @@ describe('computeScorecard', () => {
       {
         epsForwardYear1: 14,
         epsForwardYear2: 14,
+        movingAverage50: 320,
         movingAverage200: 312,
         price: 343,
         rating: 'B+',
@@ -187,6 +226,7 @@ describe('computeScorecard', () => {
       {
         epsForwardYear1: 1.08,
         epsForwardYear2: 1.57,
+        movingAverage50: 120,
         movingAverage200: 57,
         price: 132,
         rating: 'C-',

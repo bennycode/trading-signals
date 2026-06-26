@@ -3,14 +3,18 @@
  *
  * The rubric exists to answer one question — has a stock already run past the point of a sensible
  * entry? — so every band rewards room left (upside, low extension, reasonable valuation, growth,
- * and analysts still raising targets) and punishes a stretched, priced-for-perfection chart. Same
- * inputs always yield the same ranking; a stock's score never depends on the others in the list.
+ * and analysts still raising targets) and punishes a stretched, priced-for-perfection chart. A
+ * falling-knife guard demotes names that have broken below their 50-day, where a stale analyst
+ * target makes the upside look deceptively good. Same inputs always yield the same ranking; a
+ * stock's score never depends on the others in the list.
  */
 
 /** Raw, per-ticker inputs the rubric scores. The orchestrator fills these from the data provider. */
 export interface ScorecardInput {
   ticker: string;
   price: number;
+  /** 50-day moving average. A momentum name losing it signals a broken short-term trend. */
+  movingAverage50: number;
   movingAverage200: number;
   targetConsensus: number;
   /** Average EPS estimate for the nearest forward fiscal year. */
@@ -39,7 +43,9 @@ export interface ScorecardRow {
   rating: string;
   /** Recent change in the average target (last month vs last quarter), in percent. Positive = analysts raising. */
   revisionPct: number;
-  /** Sum of the six rubric bands; higher means more room left (less likely to be too late). */
+  /** True when price has dropped well below its 50-day MA — a broken trend that makes the target/upside stale. */
+  trendBroken: boolean;
+  /** Sum of the rubric bands plus the trend-break guard; higher means more room left (less likely too late). */
   score: number;
 }
 
@@ -130,6 +136,21 @@ export function scoreRevisionMomentum(revisionPct: number) {
   return -2; // targets being cut — momentum fading
 }
 
+/** How far below its 50-day a name must fall to count as a broken trend rather than a normal wobble. */
+const FALLING_KNIFE_THRESHOLD_PCT = -8;
+
+/**
+ * Falling-knife guard. A momentum name trades above its 50-day by definition; once it drops well
+ * through it, the short-term trend has broken and — critically — the analyst target is now stale, so
+ * the upside and extension bands read misleadingly bullish (a crash temporarily looks "cheaper and
+ * less stretched"). The threshold keeps an ordinary 2–3% dip from tripping the penalty; only a real
+ * break (a gap-down through the line) does, parking the name until the dust settles.
+ */
+export function scoreTrendBreak(price: number, movingAverage50: number) {
+  const belowFiftyDayPct = movingAverage50 > 0 ? (price / movingAverage50 - 1) * 100 : 0;
+  return belowFiftyDayPct < FALLING_KNIFE_THRESHOLD_PCT ? -3 : 0;
+}
+
 function toRow(input: ScorecardInput): ScorecardRow {
   const upsidePct = (input.targetConsensus / input.price - 1) * 100;
   const extensionPct = (input.price / input.movingAverage200 - 1) * 100;
@@ -144,13 +165,17 @@ function toRow(input: ScorecardInput): ScorecardRow {
       ? (input.targetLastMonth / input.targetLastQuarter - 1) * 100
       : 0;
 
+  const trendBreakPenalty = scoreTrendBreak(input.price, input.movingAverage50);
+  const trendBroken = trendBreakPenalty < 0;
+
   const score =
     scoreUpside(upsidePct) +
     scoreExtension(extensionPct) +
     scoreForwardPE(forwardPE) +
     scoreGrowth(epsGrowthPct) +
     scoreRating(input.rating) +
-    scoreRevisionMomentum(revisionPct);
+    scoreRevisionMomentum(revisionPct) +
+    trendBreakPenalty;
 
   return {
     epsGrowthPct,
@@ -161,6 +186,7 @@ function toRow(input: ScorecardInput): ScorecardRow {
     revisionPct,
     score,
     ticker: input.ticker,
+    trendBroken,
     upsidePct,
   };
 }

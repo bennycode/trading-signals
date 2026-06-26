@@ -33,6 +33,7 @@ export class MomentumScorecard {
     return {
       epsForwardYear1,
       epsForwardYear2,
+      movingAverage50: quote.priceAvg50,
       movingAverage200: quote.priceAvg200,
       price: quote.price,
       rating: ratings.rating,
