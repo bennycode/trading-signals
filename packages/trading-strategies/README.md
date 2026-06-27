@@ -40,7 +40,7 @@ Available reports include:
 - **`SP500HeatmapReport`** — a snapshot of S&P 500 performance.
 - **`ScalpScannerReport`** — scans for short-term scalping opportunities.
 
-Adding a **fingerprint (a short hash of the raw result data)** to a report is good practice: when two runs share the same fingerprint nothing changed. `SP500MomentumReport` does this via `hashMomentumRanking`, which it prints in the report footer.
+Adding a **fingerprint (a short hash of the raw result data)** to a report is good practice: when two runs share the same fingerprint nothing changed.
 
 ## Zod Schemas
 
