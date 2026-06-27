@@ -48,9 +48,10 @@ export type TrailingStopConfig = z.input<typeof TrailingStopSchema>;
 
 export type TrailingStopState = {
   /**
-   * `true` once the trailing-stop sell has fully filled (position reduced to zero in
-   * `onFill`). Once set, `processCandle` short-circuits and emits no further advice;
-   * `onOrderFilled` invokes `onFinish` so the runtime can tear the session down.
+   * `true` once the position is gone — either the trailing-stop sell fully filled (detected in
+   * `onFill`) or the position was found already closed on a later candle (closed manually or by
+   * another process). Once set, `processCandle` short-circuits and emits no further advice, and
+   * `onFinish` is invoked so the runtime can tear the session down.
    */
   exited: boolean;
   /**
@@ -164,6 +165,15 @@ export class TrailingStopStrategy extends Strategy {
     }
 
     if (!this.hasSellablePosition(state)) {
+      /*
+       * We attached to a position earlier but it is gone now — our own exit filled, or it was
+       * closed manually or by another process (a rebalance, a different strategy). There is
+       * nothing left to trail, so finish and let the runtime tear the session down. This is what
+       * prevents orphaned trailing stops: a position closed outside this strategy still cleans up
+       * (on the next candle once the balance reflects it, e.g. after the position drops to zero).
+       */
+      this.#state.exited = true;
+      await this.onFinish?.();
       return undefined;
     }
 
