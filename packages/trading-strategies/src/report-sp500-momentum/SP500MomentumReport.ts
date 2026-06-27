@@ -1,3 +1,4 @@
+import {createHash} from 'node:crypto';
 import {z} from 'zod';
 import type {AlpacaAPI} from '@typedtrader/exchange';
 import {MESSAGE_BREAK, Report} from '../report/Report.js';
@@ -93,6 +94,17 @@ function rankByMomentum(endPrices: Map<string, number>, startPrices: Map<string,
   }
   results.sort((a, b) => b.returnPct - a.returnPct);
   return results;
+}
+
+/**
+ * Stable fingerprint of a ranking, built from the raw ranked data — the ordered tickers and the
+ * prices that produced them — never from the rendered message. Two runs over the same formation
+ * window hash identically, so an unchanged fingerprint from one day to the next means the ranking
+ * did not move; editing the footer, the disclaimer, or any formatting leaves it untouched.
+ */
+export function hashMomentumRanking(ranked: MomentumResult[]) {
+  const canonical = ranked.map(result => `${result.ticker}:${result.priceNow}:${result.price12MonthsAgo}`).join('|');
+  return createHash('sha256').update(canonical).digest('hex').slice(0, 12);
 }
 
 /** Annotates the current ranking with each ticker's rank movement against the previous month's ranking. */
@@ -252,6 +264,7 @@ export class SP500MomentumReport extends Report<SP500MomentumConfig> {
     );
     lines.push('Next to the rank: ▲/▼ = moved up/down in this list vs last month, ★ = new entry.');
     lines.push(`Stocks ranked: ${results.length} / ${SP500_TICKERS.length}`);
+    lines.push(`Result hash: ${hashMomentumRanking(results)} (same as a prior run = ranking unchanged)`);
 
     lines.push('');
     lines.push(
