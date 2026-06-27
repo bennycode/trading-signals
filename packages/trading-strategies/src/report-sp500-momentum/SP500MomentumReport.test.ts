@@ -4,6 +4,7 @@ import {SP500_TIMEZONE} from '../util/sp500Tickers.js';
 import {
   getExchangeYearMonth,
   getMomentumWindow,
+  hashMomentumRanking,
   rankDeltaIcon,
   SP500MomentumReport,
   SP500MomentumSchema,
@@ -120,5 +121,31 @@ describe('rankDeltaIcon', () => {
     expect(rankDeltaIcon(3, true), 'recovered → falls in the losers list').toBe('▼');
     expect(rankDeltaIcon(0, true), 'held').toBe('');
     expect(rankDeltaIcon(null, true), 'new entry').toBe('★');
+  });
+});
+
+describe('hashMomentumRanking', () => {
+  it('is identical for the same ranking, so an unchanged hash means the ranking did not move', () => {
+    expect(hashMomentumRanking(ranking('A', 'B', 'C'))).toBe(hashMomentumRanking(ranking('A', 'B', 'C')));
+  });
+
+  it('changes when the order changes', () => {
+    expect(hashMomentumRanking(ranking('A', 'B', 'C'))).not.toBe(hashMomentumRanking(ranking('B', 'A', 'C')));
+  });
+
+  it('changes when a price changes', () => {
+    const base = [{price12MonthsAgo: 100, priceNow: 150, returnPct: 50, ticker: 'A'}];
+    const moved = [{price12MonthsAgo: 100, priceNow: 160, returnPct: 60, ticker: 'A'}];
+    expect(hashMomentumRanking(base)).not.toBe(hashMomentumRanking(moved));
+  });
+
+  it('is unaffected by display-only fields, so footer and formatting edits never change it', () => {
+    const raw = {price12MonthsAgo: 100, priceNow: 150, returnPct: 50, ticker: 'A'};
+    const newcomer = {...raw, rank: 1, rankDelta: null};
+    const climber = {...raw, rank: 9, rankDelta: 7};
+    expect(
+      hashMomentumRanking([newcomer]),
+      'rank and rankDelta are presentation, not part of the raw fingerprint'
+    ).toBe(hashMomentumRanking([climber]));
   });
 });
