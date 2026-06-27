@@ -34,6 +34,30 @@ import type {OrderAdvice} from '@typedtrader/exchange';
 
 In addition to strategies, the library includes reports that analyze market data and return formatted results. Reports implement the `Report` base class and can be run on-demand or scheduled at recurring intervals.
 
+Available reports include:
+
+- **`SP500MomentumReport`** — ranks the S&P 500 by 12-1 cross-sectional momentum (Jegadeesh & Titman, 1993).
+- **`SP500HeatmapReport`** — a snapshot of S&P 500 performance.
+- **`ScalpScannerReport`** — scans for short-term scalping opportunities.
+
+### Fingerprint a report so changes can be noticed
+
+A report scheduled at a recurring interval often produces the same output run after run — for example, a monthly ranking does not move on a daily schedule. Adding a **fingerprint (a short content hash)** to a report is good practice: when two runs share the same fingerprint you instantly know nothing changed, and when it differs you know to look.
+
+Two guidelines make the fingerprint reliable:
+
+1. **Hash the raw result data, not the rendered message.** Build the hash from the underlying values (e.g. the ordered tickers and prices that produced a ranking) so that editing wording, formatting, or a disclaimer never changes it — only a real change in the data does.
+2. **Render the fingerprint into the report** so it travels with the message and can be compared at a glance, or persisted to detect day-over-day changes.
+
+`SP500MomentumReport` follows this pattern via `hashMomentumRanking`, which fingerprints the ranking from its raw ranked data and prints it in the report footer:
+
+```ts
+import {hashMomentumRanking} from 'trading-strategies';
+
+const fingerprint = hashMomentumRanking(ranking); // e.g. "809c8f61391a"
+// Same fingerprint as a prior run → the ranking is unchanged.
+```
+
 ## Zod Schemas
 
 Every strategy exports a Zod schema for configuration validation and type inference:
