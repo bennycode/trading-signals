@@ -2,21 +2,13 @@ import {z} from 'zod';
 import type {AlpacaAPI} from '@typedtrader/exchange';
 import {MESSAGE_BREAK, Report} from '../report/Report.js';
 import {fetchUsEquityNames, formatSymbolWithName, TELEGRAM_TABLE_NAME_MAX} from '../util/formatSymbolWithName.js';
+import {getMomentumRanking, type MomentumResult} from '../util/momentumRanking.js';
 import {getDateString} from '../util/TimeUtil.js';
 import {SP500_TICKERS, SP500_TIMEZONE} from '../util/sp500Tickers.js';
 
 export const SP500MomentumSchema = z.object({});
 
 export type SP500MomentumConfig = z.infer<typeof SP500MomentumSchema>;
-
-interface MomentumResult {
-  ticker: string;
-  priceNow: number;
-  price12MonthsAgo: number;
-  returnPct: number;
-}
-
-const BATCH_SIZE = 1000;
 
 const WEEKEND_SHIFT_TO_MONDAY: Record<number, number> = {
   0: 1, // Sunday → Monday
@@ -76,25 +68,6 @@ interface RankedMomentum extends MomentumResult {
   rankDelta: number | null;
 }
 
-/** Ranks every ticker with a usable price pair by its window return, best first. */
-function rankByMomentum(endPrices: Map<string, number>, startPrices: Map<string, number>): MomentumResult[] {
-  const results: MomentumResult[] = [];
-  for (const ticker of SP500_TICKERS) {
-    const priceNow = endPrices.get(ticker);
-    const priceThen = startPrices.get(ticker);
-    if (priceNow != null && priceThen != null && priceThen > 0) {
-      results.push({
-        price12MonthsAgo: priceThen,
-        priceNow,
-        returnPct: ((priceNow - priceThen) / priceThen) * 100,
-        ticker,
-      });
-    }
-  }
-  results.sort((a, b) => b.returnPct - a.returnPct);
-  return results;
-}
-
 /** Annotates the current ranking with each ticker's rank movement against the previous month's ranking. */
 export function withRankDeltas(current: MomentumResult[], previous: MomentumResult[]): RankedMomentum[] {
   const previousRank = new Map<string, number>();
@@ -143,59 +116,15 @@ export class SP500MomentumReport extends Report<SP500MomentumConfig> {
     const toDate = getDateString(current.recentDate);
     const fromDate = getDateString(current.pastDate);
 
-    const [currentEnd, currentStart, previousEnd, previousStart, names] = await Promise.all([
-      this.#getClosingPrices(SP500_TICKERS, current.recentDate),
-      this.#getClosingPrices(SP500_TICKERS, current.pastDate),
-      this.#getClosingPrices(SP500_TICKERS, previous.recentDate),
-      this.#getClosingPrices(SP500_TICKERS, previous.pastDate),
+    const [currentRanking, previousRanking, names] = await Promise.all([
+      getMomentumRanking(this.#api, current),
+      getMomentumRanking(this.#api, previous),
       fetchUsEquityNames(this.#api),
     ]);
 
-    const ranked = withRankDeltas(rankByMomentum(currentEnd, currentStart), rankByMomentum(previousEnd, previousStart));
+    const ranked = withRankDeltas(currentRanking, previousRanking);
 
     return this.#formatResults(ranked, fromDate, toDate, names);
-  }
-
-  async #getClosingPrices(symbols: string[], targetDate: Date): Promise<Map<string, number>> {
-    const prices = new Map<string, number>();
-
-    // Fetch a 5-day window around the target date to account for holidays
-    const start = new Date(targetDate);
-    const end = new Date(targetDate);
-    end.setDate(end.getDate() + 5);
-
-    for (let i = 0; i < symbols.length; i += BATCH_SIZE) {
-      const batch = symbols.slice(i, i + BATCH_SIZE);
-      const batchPrices = await this.#fetchClosingPricesForBatch(batch, start, end);
-
-      for (const [symbol, price] of batchPrices) {
-        prices.set(symbol, price);
-      }
-    }
-
-    return prices;
-  }
-
-  async #fetchClosingPricesForBatch(symbols: string[], start: Date, end: Date): Promise<Map<string, number>> {
-    const result = new Map<string, number>();
-
-    const response = await this.#api.getStockBars({
-      end: end.toISOString(),
-      feed: 'iex',
-      limit: 10_000,
-      start: start.toISOString(),
-      symbols: symbols.join(','),
-      timeframe: '1Day',
-    });
-
-    for (const [symbol, symbolBars] of Object.entries(response.bars)) {
-      if (symbolBars.length > 0) {
-        // Use the first available bar's close as the price near the target date
-        result.set(symbol, symbolBars[0].c);
-      }
-    }
-
-    return result;
   }
 
   #formatResults(results: RankedMomentum[], fromDate: string, toDate: string, names: Map<string, string>) {

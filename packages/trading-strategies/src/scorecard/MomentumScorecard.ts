@@ -19,6 +19,12 @@ export class MomentumScorecard {
     return computeScorecard(inputs);
   }
 
+  /** Scores the tickers and returns them ranked best-first, for callers that only need the order. */
+  async rank(tickers: string[], now: Date): Promise<string[]> {
+    const rows = await this.build(tickers, now);
+    return rows.map(row => row.ticker);
+  }
+
   async #fetchInput(ticker: string, now: Date): Promise<ScorecardInput> {
     const [quote, target, estimates, ratings, targetSummary] = await Promise.all([
       this.#fmp.getQuote(ticker),
