@@ -1,14 +1,21 @@
-import type {AlpacaAPI, FmpAPI} from '@typedtrader/exchange';
+import type {AlpacaAPI} from '@typedtrader/exchange';
 import {computeRebalance, type Holding, type RebalancePlan} from './computeRebalance.js';
 import {getExchangeYearMonth, getMomentumWindow} from '../report-sp500-momentum/SP500MomentumReport.js';
-import {MomentumScorecard} from '../scorecard/MomentumScorecard.js';
 import {getMomentumRanking} from '../util/momentumRanking.js';
 import {SP500_TIMEZONE} from '../util/sp500Tickers.js';
+
+/**
+ * Anything that can rank a set of tickers best-first. Both `MomentumScorecard` (FMP) and
+ * `TipRanksScorecard` satisfy it, so the rotation is agnostic to which data provider scores the picks.
+ */
+export interface PortfolioScorer {
+  rank(tickers: string[], now: Date): Promise<string[]>;
+}
 
 export interface MomentumRotationConfig {
   /** Number of equal-weight positions to hold. */
   positionCount: number;
-  /** Number of top momentum winners fed into the scorecard before picking the best `positionCount`. */
+  /** Number of top momentum winners fed into the scorer before picking the best `positionCount`. */
   momentumPoolSize: number;
 }
 
@@ -29,12 +36,12 @@ const DEFAULT_CONFIG: MomentumRotationConfig = {momentumPoolSize: 20, positionCo
  */
 export class MomentumRotation {
   readonly #alpaca: AlpacaAPI;
-  readonly #scorecard: MomentumScorecard;
+  readonly #scorer: PortfolioScorer;
   readonly #config: MomentumRotationConfig;
 
-  constructor(alpaca: AlpacaAPI, fmp: FmpAPI, config: Partial<MomentumRotationConfig> = {}) {
+  constructor(alpaca: AlpacaAPI, scorer: PortfolioScorer, config: Partial<MomentumRotationConfig> = {}) {
     this.#alpaca = alpaca;
-    this.#scorecard = new MomentumScorecard(fmp);
+    this.#scorer = scorer;
     this.#config = {...DEFAULT_CONFIG, ...config};
   }
 
@@ -43,8 +50,8 @@ export class MomentumRotation {
     const {month, year} = getExchangeYearMonth(now.toISOString(), SP500_TIMEZONE);
     const ranking = await getMomentumRanking(this.#alpaca, getMomentumWindow(year, month));
     const winners = ranking.slice(0, this.#config.momentumPoolSize).map(result => result.ticker);
-    const scored = await this.#scorecard.build(winners, now);
-    return scored.slice(0, this.#config.positionCount).map(row => row.ticker);
+    const ranked = await this.#scorer.rank(winners, now);
+    return ranked.slice(0, this.#config.positionCount);
   }
 
   /** Builds the rebalance plan without placing any orders, so it can be reviewed or paper-traded first. */
