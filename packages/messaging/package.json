@@ -54,6 +54,7 @@
     "lint:other": "npm run prettier -- --list-different",
     "lint:types": "tsc --noEmit",
     "prettier": "prettier --config ../../.prettierrc.json --ignore-path ../../.gitignore --log-level error \"**/*.{json,scss,yml}\"",
+    "rotation": "tsx src/runMomentumRotation.ts",
     "start": "tsx src/start.ts",
     "test": "npm run test:types && npm run test:imports && npm run test:units -- --coverage",
     "test:imports": "depcruise -c ../../.dependency-cruiser.cjs src --include-only \"^src\"",
