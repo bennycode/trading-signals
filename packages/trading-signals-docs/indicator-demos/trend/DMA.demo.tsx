@@ -15,14 +15,14 @@ const renderDMA = (config: IndicatorConfig, selectedCandles: Candle[]) => {
   const chartDataShort: ChartDataPoint[] = [];
   const chartDataLong: ChartDataPoint[] = [];
   const priceData: PriceData[] = [];
-  const sampleValues: Array<{
+  const sampleValues: {
     period: number;
     date: string;
     close: number;
     short: ReactNode;
     long: ReactNode;
     signal: string;
-  }> = [];
+  }[] = [];
 
   selectedCandles.forEach((candle, idx) => {
     dma.add(Number(candle.close));
@@ -30,18 +30,18 @@ const renderDMA = (config: IndicatorConfig, selectedCandles: Candle[]) => {
     const signal =
       'getSignal' in dma
         ? (dma.getSignal as () => {state: string; hasChanged: boolean})()
-        : {state: 'UNKNOWN', hasChanged: false};
+        : {hasChanged: false, state: 'UNKNOWN'};
     chartDataShort.push({x: idx + 1, y: result?.short ?? null});
     chartDataLong.push({x: idx + 1, y: result?.long ?? null});
 
     priceData.push(collectPriceData(candle, idx));
 
     sampleValues.push({
-      period: idx + 1,
-      date: formatDate(candle.openTimeInISO),
       close: Number(candle.close),
-      short: result ? result.short.toFixed(2) : <NotAvailable />,
+      date: formatDate(candle.openTimeInISO),
       long: result ? result.long.toFixed(2) : <NotAvailable />,
+      period: idx + 1,
+      short: result ? result.short.toFixed(2) : <NotAvailable />,
       signal: signal.state,
     });
   });
@@ -59,43 +59,31 @@ const renderDMA = (config: IndicatorConfig, selectedCandles: Candle[]) => {
       <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-4">
         <HighchartsChart
           options={{
-            chart: {type: 'line', backgroundColor: 'transparent', height: 300},
-            title: {text: 'Dual Moving Average (5,9)', style: {color: '#e2e8f0', fontSize: '16px', fontWeight: '600'}},
+            chart: {backgroundColor: 'transparent', height: 300, type: 'line'},
             credits: {enabled: false},
-            xAxis: {
-              title: {text: 'Period', style: {color: '#94a3b8'}},
-              labels: {style: {color: '#94a3b8'}},
-              gridLineColor: '#334155',
-            },
-            yAxis: {
-              title: {text: 'Price', style: {color: '#94a3b8'}},
-              labels: {style: {color: '#94a3b8'}},
-              gridLineColor: '#334155',
-            },
             legend: {enabled: true, itemStyle: {color: '#e2e8f0'}},
-            plotOptions: {line: {marker: {enabled: true, radius: 3}, lineWidth: 2}},
+            plotOptions: {line: {lineWidth: 2, marker: {enabled: true, radius: 3}}},
             series: [
               {
-                type: 'line',
-                name: 'Short MA (5)',
-                data: chartDataShort.map(point => [point.x, point.y]),
                 color: config.color,
+                data: chartDataShort.map(point => [point.x, point.y]),
                 marker: {fillColor: config.color},
+                name: 'Short MA (5)',
+                type: 'line',
               },
               {
-                type: 'line',
-                name: 'Long MA (9)',
-                data: chartDataLong.map(point => [point.x, point.y]),
                 color: '#f97316',
+                data: chartDataLong.map(point => [point.x, point.y]),
                 marker: {fillColor: '#f97316'},
+                name: 'Long MA (9)',
+                type: 'line',
               },
             ],
+            title: {style: {color: '#e2e8f0', fontSize: '16px', fontWeight: '600'}, text: 'Dual Moving Average (5,9)'},
             tooltip: {
               backgroundColor: '#1e293b',
               borderColor: '#475569',
-              style: {color: '#e2e8f0'},
-              shared: true,
-              formatter: function (): string {
+              formatter: function () {
                 let s: string = `<b>Period ${(this as any).x}</b><br/>`;
                 ((this as any).points as any[])?.forEach((point: any) => {
                   const yValue = typeof point.y === 'number' ? point.y.toFixed(2) : 'N/A';
@@ -103,6 +91,18 @@ const renderDMA = (config: IndicatorConfig, selectedCandles: Candle[]) => {
                 });
                 return s;
               },
+              shared: true,
+              style: {color: '#e2e8f0'},
+            },
+            xAxis: {
+              gridLineColor: '#334155',
+              labels: {style: {color: '#94a3b8'}},
+              title: {style: {color: '#94a3b8'}, text: 'Period'},
+            },
+            yAxis: {
+              gridLineColor: '#334155',
+              labels: {style: {color: '#94a3b8'}},
+              title: {style: {color: '#94a3b8'}, text: 'Price'},
             },
           }}
         />
@@ -146,14 +146,14 @@ const renderDMA = (config: IndicatorConfig, selectedCandles: Candle[]) => {
 };
 
 export const DMA: IndicatorConfig = {
-  id: 'dma',
-  name: 'DMA',
-  description: 'Dual Moving Average',
   color: '#22d3ee',
-  type: 'custom',
-  requiredInputs: 9,
-  details:
-    'Compares two moving averages. When the short MA crosses above the long MA, it signals a potential buy opportunity.',
   createIndicator: () => new DMAClass(5, 9, SMA),
   customRender: renderDMA,
+  description: 'Dual Moving Average',
+  details:
+    'Compares two moving averages. When the short MA crosses above the long MA, it signals a potential buy opportunity.',
+  id: 'dma',
+  name: 'DMA',
+  requiredInputs: 9,
+  type: 'custom',
 };

@@ -4,17 +4,17 @@ import {buildTableColumns} from '../../utils/tableColumns';
 import type {IndicatorConfig} from '../../utils/types';
 
 export const ATR: IndicatorConfig = {
-  id: 'atr',
-  name: 'ATR',
-  description: 'Average True Range',
+  chartTitle: 'ATR (14)',
   color: '#f59e0b',
-  type: 'single',
-  requiredInputs: 14,
+  createIndicator: () => new ATRClass(14),
+  description: 'Average True Range',
   details:
     'Measures market volatility by analyzing the range of price movements. Higher values indicate higher volatility; useful for setting stop-loss levels.',
-  createIndicator: () => new ATRClass(14),
-  processData: makeProcessData({rowInputs: ['close'], addInputs: ['high', 'low', 'close']}),
-  getTableColumns: indicator => buildTableColumns({inputs: ['close'], indicator}),
-  chartTitle: 'ATR (14)',
+  getTableColumns: indicator => buildTableColumns({indicator, inputs: ['close']}),
+  id: 'atr',
+  name: 'ATR',
+  processData: makeProcessData({addInputs: ['high', 'low', 'close'], rowInputs: ['close']}),
+  requiredInputs: 14,
+  type: 'single',
   yAxisLabel: 'ATR',
 };

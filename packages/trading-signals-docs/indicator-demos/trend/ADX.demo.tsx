@@ -4,17 +4,17 @@ import {buildTableColumns} from '../../utils/tableColumns';
 import type {IndicatorConfig} from '../../utils/types';
 
 export const ADX: IndicatorConfig = {
-  id: 'adx',
-  name: 'ADX',
-  description: 'Average Directional Index',
+  chartTitle: 'ADX (14)',
   color: '#a855f7',
-  type: 'single',
-  requiredInputs: 14,
+  createIndicator: () => new ADXClass(14),
+  description: 'Average Directional Index',
   details:
     'Measures trend strength regardless of direction. Values above 25 indicate a strong trend, below 20 suggest a weak trend.',
-  createIndicator: () => new ADXClass(14),
+  getTableColumns: indicator => buildTableColumns({indicator, inputs: ['high', 'low', 'close']}),
+  id: 'adx',
+  name: 'ADX',
   processData: makeProcessData({rowInputs: ['high', 'low', 'close']}),
-  getTableColumns: indicator => buildTableColumns({inputs: ['high', 'low', 'close'], indicator}),
-  chartTitle: 'ADX (14)',
+  requiredInputs: 14,
+  type: 'single',
   yAxisLabel: 'ADX',
 };

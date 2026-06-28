@@ -42,13 +42,17 @@ export default function UtilityFunctions() {
         <div className="sticky top-6 space-y-4">
           <IndicatorList
             title="Utility Functions"
-            indicators={interactiveUtilities.map(util => ({id: util.id, name: util.name, description: util.description}))}
+            indicators={interactiveUtilities.map(util => ({
+              description: util.description,
+              id: util.id,
+              name: util.name,
+            }))}
             selectedIndicator={selectedUtility}
             onIndicatorChange={selectUtility}
           />
           <IndicatorList
             title="Other Utility Functions"
-            indicators={otherUtilities.map(util => ({id: util.id, name: util.name, description: util.description}))}
+            indicators={otherUtilities.map(util => ({description: util.description, id: util.id, name: util.name}))}
             selectedIndicator={selectedUtility}
             onIndicatorChange={selectUtility}
           />

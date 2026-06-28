@@ -1,10 +1,10 @@
 interface IndicatorSelectorProps {
-  indicators: Array<{id: string; name: string; description: string}>;
+  indicators: {id: string; name: string; description: string}[];
   selectedId: string;
   onSelect: (id: string) => void;
 }
 
-export function IndicatorSelector({indicators, selectedId, onSelect}: IndicatorSelectorProps) {
+export function IndicatorSelector({indicators, onSelect, selectedId}: IndicatorSelectorProps) {
   return (
     <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-4 mb-6">
       <h3 className="text-lg font-semibold text-white mb-3">Select Indicator</h3>

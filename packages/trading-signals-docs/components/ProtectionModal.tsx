@@ -12,9 +12,9 @@ interface GuardForm {
 
 const emptyGuard = (): GuardForm => ({
   enabled: false,
+  orderType: 'limit',
   triggerType: 'pct',
   value: '',
-  orderType: 'limit',
 });
 
 function toTriggerType(value: string): TriggerType {
@@ -39,36 +39,45 @@ function parseGuard(
   const orderType: OrderType = typeof order === 'string' ? toOrderType(order) : 'limit';
 
   if (typeof pct === 'string') {
-    return {enabled: true, triggerType: 'pct', value: pct, orderType};
+    return {enabled: true, orderType, triggerType: 'pct', value: pct};
   }
   if (typeof nominal === 'string') {
-    return {enabled: true, triggerType: 'nominal', value: nominal, orderType};
+    return {enabled: true, orderType, triggerType: 'nominal', value: nominal};
   }
   if (typeof price === 'string') {
-    return {enabled: true, triggerType: 'price', value: price, orderType};
+    return {enabled: true, orderType, triggerType: 'price', value: price};
   }
   return emptyGuard();
 }
 
-function buildProtectedConfig(
-  stopLoss: GuardForm,
-  takeProfit: GuardForm
-): Record<string, unknown> | undefined {
+function buildProtectedConfig(stopLoss: GuardForm, takeProfit: GuardForm): Record<string, unknown> | undefined {
   const result: Record<string, unknown> = {};
 
   if (stopLoss.enabled && stopLoss.value.trim()) {
     const value = stopLoss.value.trim();
-    if (stopLoss.triggerType === 'pct') result.stopLossPct = value;
-    if (stopLoss.triggerType === 'nominal') result.stopLossNominal = value;
-    if (stopLoss.triggerType === 'price') result.stopLossPrice = value;
+    if (stopLoss.triggerType === 'pct') {
+      result.stopLossPct = value;
+    }
+    if (stopLoss.triggerType === 'nominal') {
+      result.stopLossNominal = value;
+    }
+    if (stopLoss.triggerType === 'price') {
+      result.stopLossPrice = value;
+    }
     result.stopLossOrder = stopLoss.orderType;
   }
 
   if (takeProfit.enabled && takeProfit.value.trim()) {
     const value = takeProfit.value.trim();
-    if (takeProfit.triggerType === 'pct') result.takeProfitPct = value;
-    if (takeProfit.triggerType === 'nominal') result.takeProfitNominal = value;
-    if (takeProfit.triggerType === 'price') result.takeProfitPrice = value;
+    if (takeProfit.triggerType === 'pct') {
+      result.takeProfitPct = value;
+    }
+    if (takeProfit.triggerType === 'nominal') {
+      result.takeProfitNominal = value;
+    }
+    if (takeProfit.triggerType === 'price') {
+      result.takeProfitPrice = value;
+    }
     result.takeProfitOrder = takeProfit.orderType;
   }
 
@@ -82,7 +91,7 @@ interface ProtectionModalProps {
   onClose: () => void;
 }
 
-export function ProtectionModal({open, initialProtected, onSave, onClose}: ProtectionModalProps) {
+export function ProtectionModal({initialProtected, onClose, onSave, open}: ProtectionModalProps) {
   const [stopLoss, setStopLoss] = useState<GuardForm>(emptyGuard);
   const [takeProfit, setTakeProfit] = useState<GuardForm>(emptyGuard);
 
@@ -94,9 +103,11 @@ export function ProtectionModal({open, initialProtected, onSave, onClose}: Prote
       setStopLoss(parseGuard(initialProtected, 'stopLoss'));
       setTakeProfit(parseGuard(initialProtected, 'takeProfit'));
     } else {
-      // Fresh open with no existing protection: pre-enable stop-loss so the
-      // form is visible immediately. User just has to type a value and Save.
-      setStopLoss({enabled: true, triggerType: 'pct', value: '', orderType: 'limit'});
+      /*
+       * Fresh open with no existing protection: pre-enable stop-loss so the
+       * form is visible immediately. User just has to type a value and Save.
+       */
+      setStopLoss({enabled: true, orderType: 'limit', triggerType: 'pct', value: ''});
       setTakeProfit(emptyGuard());
     }
   }, [open, initialProtected]);
@@ -129,17 +140,15 @@ export function ProtectionModal({open, initialProtected, onSave, onClose}: Prote
   };
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4"
-      onClick={onClose}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4" onClick={onClose}>
       <div
         className="bg-slate-800 border border-slate-700 rounded-lg p-6 w-full max-w-md shadow-xl"
         onClick={e => e.stopPropagation()}>
         <h3 className="text-lg font-semibold text-white mb-2">Protection settings</h3>
         <p className="text-xs text-slate-400 mb-4">
-          Stop-loss and take-profit kill switches run on top of the selected strategy. Enable either or
-          both to have the backtester exit automatically when thresholds are reached. Once a guard fires,
-          the strategy is terminal for the session.
+          Stop-loss and take-profit kill switches run on top of the selected strategy. Enable either or both to have the
+          backtester exit automatically when thresholds are reached. Once a guard fires, the strategy is terminal for
+          the session.
         </p>
 
         <GuardSection title="Stop-loss" suffix="loss" guard={stopLoss} onChange={setStopLoss} />
@@ -182,7 +191,7 @@ interface GuardSectionProps {
   onChange: (guard: GuardForm) => void;
 }
 
-function GuardSection({title, suffix, guard, onChange}: GuardSectionProps) {
+function GuardSection({guard, onChange, suffix, title}: GuardSectionProps) {
   const update = (patch: Partial<GuardForm>) => onChange({...guard, ...patch});
 
   const valueLabel =

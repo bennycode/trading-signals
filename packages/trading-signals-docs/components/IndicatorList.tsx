@@ -13,8 +13,8 @@ interface IndicatorListProps {
 
 export function IndicatorList({
   indicators,
-  selectedIndicator,
   onIndicatorChange,
+  selectedIndicator,
   title = 'Momentum Indicators',
 }: IndicatorListProps) {
   return (

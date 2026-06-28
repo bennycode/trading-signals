@@ -10,10 +10,10 @@ export const EMV: IndicatorConfig = {
   description: 'Ease of Movement',
   details:
     'Relates price change to volume to assess trend strength. Positive EMV means prices are advancing with ease, negative EMV means prices are declining easily. Uses SMA smoothing.',
-  getTableColumns: indicator => buildTableColumns({inputs: ['close', 'volume'], indicator}),
+  getTableColumns: indicator => buildTableColumns({indicator, inputs: ['close', 'volume']}),
   id: 'emv',
   name: 'EMV',
-  processData: makeProcessData({rowInputs: ['close', 'volume'], addInputs: ['close', 'high', 'low', 'volume']}),
+  processData: makeProcessData({addInputs: ['close', 'high', 'low', 'volume'], rowInputs: ['close', 'volume']}),
   requiredInputs: 15,
   type: 'single',
   yAxisLabel: 'EMV',

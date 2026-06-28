@@ -11,24 +11,24 @@ import {IndicatorHeader} from '../components/IndicatorHeader';
 import {NotAvailable} from '../components/NotAvailable';
 
 export const collectPriceData = (candle: Candle, idx: number): PriceData => ({
-  x: idx + 1,
-  open: Number(candle.open),
+  close: Number(candle.close),
   high: Number(candle.high),
   low: Number(candle.low),
-  close: Number(candle.close),
+  open: Number(candle.open),
+  x: idx + 1,
 });
 
 export const renderSingleIndicator = (config: SingleIndicatorConfig, selectedCandles: Candle[]) => {
   const indicator = config.createIndicator();
   const chartData: ChartDataPoint[] = [];
   const priceData: PriceData[] = [];
-  const sampleValues: Array<{
+  const sampleValues: {
     period: number;
     date: string;
     result: ReactNode;
     signal?: string;
     [key: string]: any;
-  }> = [];
+  }[] = [];
 
   selectedCandles.forEach((candle, idx) => {
     const processedData = config.processData(indicator, candle, idx);
@@ -44,12 +44,22 @@ export const renderSingleIndicator = (config: SingleIndicatorConfig, selectedCan
 
     priceData.push(collectPriceData(candle, idx));
 
+    /*
+     * processData returns an intentionally dynamic shape (TResult defaults to any so each indicator can
+     * return its own fields), and the sampleValues row already allows arbitrary keys via its index
+     * signature — so spreading it is unavoidably "unsafe" by the linter's reckoning.
+     */
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     sampleValues.push({
-      period: idx + 1,
       date: formatDate(candle.openTimeInISO),
+      period: idx + 1,
       ...processedData,
       result:
-        processedData.result !== null && processedData.result !== undefined ? processedData.result.toFixed(2) : <NotAvailable />,
+        processedData.result !== null && processedData.result !== undefined ? (
+          processedData.result.toFixed(2)
+        ) : (
+          <NotAvailable />
+        ),
       signal: processedData.signal?.state,
     });
   });
