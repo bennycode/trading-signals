@@ -1,5 +1,6 @@
-import {Chart as HighchartsChart, ChartOptions, HighchartsReactRefObject} from '@highcharts/react';
-import { useRef } from 'react';
+import type {ChartOptions, HighchartsReactRefObject} from '@highcharts/react';
+import {Chart as HighchartsChart} from '@highcharts/react';
+import {useRef} from 'react';
 
 export interface PriceData {
   x: number;
@@ -14,115 +15,115 @@ export interface PriceChartProps {
   data: PriceData[];
 }
 
-export default function PriceChart({title, data}: PriceChartProps) {
+export default function PriceChart({data, title}: PriceChartProps) {
   const chartRef = useRef<HighchartsReactRefObject>(null);
 
   const options: ChartOptions = {
     chart: {
-      type: 'line',
       backgroundColor: 'transparent',
       height: 200,
+      type: 'line',
     },
+    credits: {
+      enabled: false,
+    },
+    legend: {
+      enabled: true,
+      itemHoverStyle: {
+        color: '#e2e8f0',
+      },
+      itemStyle: {
+        color: '#94a3b8',
+      },
+    },
+    plotOptions: {
+      line: {
+        lineWidth: 1.5,
+        marker: {
+          enabled: false,
+        },
+      },
+    },
+    series: [
+      {
+        color: '#a78bfa',
+        data: data.map(point => [point.x, point.open]),
+        marker: {
+          fillColor: '#a78bfa',
+        },
+        name: 'Open',
+        type: 'line',
+      },
+      {
+        color: '#10b981',
+        data: data.map(point => [point.x, point.high]),
+        marker: {
+          fillColor: '#10b981',
+        },
+        name: 'High',
+        type: 'line',
+      },
+      {
+        color: '#ef4444',
+        data: data.map(point => [point.x, point.low]),
+        marker: {
+          fillColor: '#ef4444',
+        },
+        name: 'Low',
+        type: 'line',
+      },
+      {
+        color: '#3b82f6',
+        data: data.map(point => [point.x, point.close]),
+        marker: {
+          fillColor: '#3b82f6',
+        },
+        name: 'Close',
+        type: 'line',
+      },
+    ],
     title: {
-      text: title,
       style: {
         color: '#e2e8f0',
         fontSize: '14px',
         fontWeight: '600',
       },
+      text: title,
     },
-    credits: {
-      enabled: false,
-    },
-    xAxis: {
-      title: {
-        text: 'Period',
-        style: {color: '#94a3b8'},
-      },
-      labels: {
-        style: {color: '#94a3b8'},
-      },
-      gridLineColor: '#334155',
-    },
-    yAxis: {
-      title: {
-        text: 'Price ($)',
-        style: {color: '#94a3b8'},
-      },
-      labels: {
-        style: {color: '#94a3b8'},
-      },
-      gridLineColor: '#334155',
-    },
-    legend: {
-      enabled: true,
-      itemStyle: {
-        color: '#94a3b8',
-      },
-      itemHoverStyle: {
-        color: '#e2e8f0',
-      },
-    },
-    plotOptions: {
-      line: {
-        marker: {
-          enabled: false,
-        },
-        lineWidth: 1.5,
-      },
-    },
-    series: [
-      {
-        type: 'line',
-        name: 'Open',
-        data: data.map(point => [point.x, point.open]),
-        color: '#a78bfa',
-        marker: {
-          fillColor: '#a78bfa',
-        },
-      },
-      {
-        type: 'line',
-        name: 'High',
-        data: data.map(point => [point.x, point.high]),
-        color: '#10b981',
-        marker: {
-          fillColor: '#10b981',
-        },
-      },
-      {
-        type: 'line',
-        name: 'Low',
-        data: data.map(point => [point.x, point.low]),
-        color: '#ef4444',
-        marker: {
-          fillColor: '#ef4444',
-        },
-      },
-      {
-        type: 'line',
-        name: 'Close',
-        data: data.map(point => [point.x, point.close]),
-        color: '#3b82f6',
-        marker: {
-          fillColor: '#3b82f6',
-        },
-      },
-    ],
     tooltip: {
       backgroundColor: '#1e293b',
       borderColor: '#475569',
-      style: {
-        color: '#e2e8f0',
-      },
-      shared: true,
-      formatter: function (): string {
+      formatter: function () {
         let s: string = `<b>Period ${(this as any).x}</b><br/>`;
         ((this as any).points as any[])?.forEach((point: any) => {
           const yValue = typeof point.y === 'number' ? `$${point.y.toFixed(2)}` : 'N/A';
           s += `${point.series.name}: ${yValue}<br/>`;
         });
         return s;
+      },
+      shared: true,
+      style: {
+        color: '#e2e8f0',
+      },
+    },
+    xAxis: {
+      gridLineColor: '#334155',
+      labels: {
+        style: {color: '#94a3b8'},
+      },
+      title: {
+        style: {color: '#94a3b8'},
+        text: 'Period',
+      },
+    },
+    yAxis: {
+      gridLineColor: '#334155',
+      labels: {
+        style: {color: '#94a3b8'},
+      },
+      title: {
+        style: {color: '#94a3b8'},
+        text: 'Price ($)',
       },
     },
   };

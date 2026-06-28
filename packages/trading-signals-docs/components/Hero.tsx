@@ -5,7 +5,7 @@ interface HeroProps {
   githubUrl: string;
 }
 
-export function Hero({title, description, npmUrl, githubUrl}: HeroProps) {
+export function Hero({description, githubUrl, npmUrl, title}: HeroProps) {
   return (
     <div className="text-center space-y-4 py-12">
       <h1 className="text-5xl font-bold text-white">{title}</h1>

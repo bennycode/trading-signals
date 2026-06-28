@@ -13,11 +13,8 @@ import {
   ProtectedStrategy,
   TrailingStopStrategy,
   type BacktestResult,
-  BuyOnceConfig,
-  BuyBelowSellAboveConfig,
   type MultiIndicatorConfluenceConfig,
   type ScalpConfig,
-  type TrailingStopConfig,
 } from 'trading-strategies';
 import {DatasetSelector} from '../components/DatasetSelector';
 import {StrategyConfigurator} from '../components/StrategyConfigurator';
@@ -30,13 +27,13 @@ import {strategyDefinitions, type StrategyId} from '../utils/strategySchemas';
 function createStrategy(strategyId: StrategyId, config: Record<string, unknown>) {
   switch (strategyId) {
     case 'buy-and-hold':
-      return new BuyOnceStrategy(config as BuyOnceConfig);
+      return new BuyOnceStrategy(config);
     case 'coin-flip':
       return new CoinFlipStrategy(config);
     case 'buy-once':
-      return new BuyOnceStrategy(config as BuyOnceConfig);
+      return new BuyOnceStrategy(config);
     case 'buy-below-sell-above':
-      return new BuyBelowSellAboveStrategy(config as BuyBelowSellAboveConfig);
+      return new BuyBelowSellAboveStrategy(config);
     case 'multi-indicator-confluence':
       return new MultiIndicatorConfluenceStrategy(config as MultiIndicatorConfluenceConfig);
     case 'scalp':
@@ -46,7 +43,7 @@ function createStrategy(strategyId: StrategyId, config: Record<string, unknown>)
     case 'protection-only':
       return new ProtectedStrategy({config});
     case 'trailing-stop':
-      return new TrailingStopStrategy(config as TrailingStopConfig);
+      return new TrailingStopStrategy(config);
   }
 }
 
@@ -99,7 +96,7 @@ export default function BacktestPage() {
   }, []);
 
   const currentDataset = selectedDataset === 'custom' ? customDataset : datasets.find(d => d.id === selectedDataset)!;
-  const candles = (currentDataset?.candles ?? []) as Candle[];
+  const candles = currentDataset?.candles ?? [];
 
   // Recompute defaults when dataset or strategy changes (including custom dataset uploads)
   useEffect(() => {
@@ -187,14 +184,14 @@ export default function BacktestPage() {
 
       const [backtestResult, baseline] = await Promise.all([
         new BacktestExecutor({
-          candles,
           broker: createExchange(candles, initialBase, initialCounter),
+          candles,
           strategy,
           tradingPair,
         }).execute(),
         new BacktestExecutor({
-          candles,
           broker: createExchange(candles, initialBase, initialCounter),
+          candles,
           strategy: new BuyOnceStrategy(),
           tradingPair,
         }).execute(),
@@ -225,7 +222,7 @@ export default function BacktestPage() {
   };
 
   const handleCustomDataset = (candles: Candle[], name: string) => {
-    setCustomDataset({id: 'custom', name, description: `Custom upload: ${name} (${candles.length} candles)`, candles});
+    setCustomDataset({candles, description: `Custom upload: ${name} (${candles.length} candles)`, id: 'custom', name});
     setSelectedDataset('custom');
     setResult(null);
     setBaselineResult(null);

@@ -1,49 +1,49 @@
-import { CategoryCard } from '../components/CategoryCard';
-import { Hero } from '../components/Hero';
-import { MarketClock } from '../components/MarketClock';
-import { QuickStart } from '../components/QuickStart';
+import {CategoryCard} from '../components/CategoryCard';
+import {Hero} from '../components/Hero';
+import {MarketClock} from '../components/MarketClock';
+import {QuickStart} from '../components/QuickStart';
 
 export default function Home() {
   const categories = [
     {
-      name: 'Trend Indicators',
+      color: 'from-blue-500 to-cyan-500',
       description: 'Measure the direction of a trend (uptrend, downtrend or sideways trend)',
       href: '/indicators/trend',
       icon: '📈',
       indicators: ['SMA', 'EMA', 'DEMA', 'WMA', 'MACD', 'ADX', 'PSAR', 'VWAP'],
-      color: 'from-blue-500 to-cyan-500',
+      name: 'Trend Indicators',
     },
     {
-      name: 'Momentum Indicators',
+      color: 'from-purple-500 to-pink-500',
       description: 'Measure the speed and strength of price movements',
       href: '/indicators/momentum',
       icon: '⚡',
       indicators: ['RSI', 'Stochastic', 'CCI', 'ROC', 'AO', 'AC', 'MOM', 'OBV'],
-      color: 'from-purple-500 to-pink-500',
+      name: 'Momentum Indicators',
     },
     {
-      name: 'Volatility Indicators',
+      color: 'from-orange-500 to-red-500',
       description: 'Measure the degree of variation in prices over time',
       href: '/indicators/volatility',
       icon: '🌊',
       indicators: ['Bollinger Bands', 'ATR', 'BBW', 'IQR', 'MAD', 'TR'],
-      color: 'from-orange-500 to-red-500',
+      name: 'Volatility Indicators',
     },
     {
-      name: 'Volume Indicators',
+      color: 'from-emerald-500 to-teal-500',
       description: 'Analyze trading volume to confirm trends and identify reversals',
       href: '/indicators/volume',
       icon: '📊',
       indicators: ['AD', 'CMF', 'PVT', 'EMV', 'VROC', 'VWMA'],
-      color: 'from-emerald-500 to-teal-500',
+      name: 'Volume Indicators',
     },
     {
-      name: 'Utility Functions',
+      color: 'from-slate-500 to-slate-600',
       description: 'Mathematical utilities for technical analysis',
       href: '/indicators/utilities',
       icon: '🛠️',
       indicators: ['Average', 'Median', 'Standard Deviation', 'Min/Max', 'Quartiles'],
-      color: 'from-slate-500 to-slate-600',
+      name: 'Utility Functions',
     },
   ];
 
