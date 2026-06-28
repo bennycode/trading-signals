@@ -154,37 +154,56 @@ export class TrailingStopStrategy extends Strategy {
     candle: OneMinuteBatchedCandle,
     state: TradingSessionState
   ): Promise<OrderAdvice | void> {
-    if (this.#state.exited) {
-      return undefined;
-    }
+    const attached = this.#isAttached;
+    const holding = this.hasSellablePosition(state);
 
-    if (!this.#isAttached) {
-      if (!this.hasSellablePosition(state)) {
+    /*
+     * Each case spells out the exact state it handles rather than relying on an invariant left
+     * behind by an earlier early-return. `attached` and `holding` are read once up front so the
+     * conditions compare cached booleans instead of re-running hasSellablePosition per case.
+     */
+    switch (true) {
+      case this.#state.exited:
         return undefined;
-      }
-      const peak = this.#pivotPrice ?? candle.high;
-      const stopTarget = peak.mul(new Big(1).minus(this.#trailDownPct.div(100)));
-      this.#state.peakPrice = peak.toFixed();
-      this.#state.stopPrice = stopTarget.toFixed();
-      this.onMessage?.(
-        `Trail attached. Peak: ${peak.toFixed()}, stop: ${stopTarget.toFixed()} (-${this.#trailDownPct.toFixed()}%)`
-      );
-      return undefined;
+      case !attached && !holding:
+        return undefined; // No position yet, keep waiting to attach.
+      case !attached && holding:
+        this.#attach(candle);
+        return undefined;
+      case attached && !holding:
+        await this.#finishPositionGone();
+        return undefined;
+      case attached && holding:
+        return this.#trail(candle);
+      default:
+        return undefined;
     }
+  }
 
-    if (!this.hasSellablePosition(state)) {
-      /*
-       * We attached to a position earlier but it is gone now — our own exit filled, or it was
-       * closed manually or by another process (a rebalance, a different strategy). There is
-       * nothing left to trail, so finish and let the runtime tear the session down. This is what
-       * prevents orphaned trailing stops: a position closed outside this strategy still cleans up
-       * (on the next candle once the balance reflects it, e.g. after the position drops to zero).
-       */
-      this.#state.exited = true;
-      await this.onFinish?.();
-      return undefined;
-    }
+  /** Latches the trail onto the current position: records the starting peak and its stop target. */
+  #attach(candle: OneMinuteBatchedCandle) {
+    const peak = this.#pivotPrice ?? candle.high;
+    const stopTarget = peak.mul(new Big(1).minus(this.#trailDownPct.div(100)));
+    this.#state.peakPrice = peak.toFixed();
+    this.#state.stopPrice = stopTarget.toFixed();
+    this.onMessage?.(
+      `Trail attached. Peak: ${peak.toFixed()}, stop: ${stopTarget.toFixed()} (-${this.#trailDownPct.toFixed()}%)`
+    );
+  }
 
+  async #finishPositionGone() {
+    /*
+     * We were attached but the position is gone now — our own exit filled, or it was closed
+     * manually or by another process (a rebalance, a different strategy). There is nothing left
+     * to trail, so finish and let the runtime tear the session down. This is what prevents
+     * orphaned trailing stops: a position closed outside this strategy still cleans up.
+     */
+    this.#state.exited = true;
+    await this.onFinish?.();
+  }
+
+  /** Ratchets the peak upward, refreshes the stop, and emits a SELL once price breaches the trail. */
+  #trail(candle: OneMinuteBatchedCandle): OrderAdvice | void {
     const previousPeak = new Big(this.#state.peakPrice);
     const ratchetThreshold = this.#trailUpPct
       ? previousPeak.mul(new Big(1).plus(this.#trailUpPct.div(100)))
