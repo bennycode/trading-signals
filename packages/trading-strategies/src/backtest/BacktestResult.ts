@@ -25,6 +25,8 @@ export interface BacktestPerformanceSummary {
   initialPortfolioValue: Big;
   /** Longest consecutive losing streak (round-trip cycles). */
   maxLossStreak: number;
+  /** Largest peak-to-trough drop of the equity curve, as a positive percentage (`25` means the account fell 25% from a high). */
+  maxDrawdownPercentage: Big;
   /** Longest consecutive winning streak (round-trip cycles). */
   maxWinStreak: number;
   /** Return on investment as a percentage (e.g. "12.5" means 12.5%). */
@@ -36,6 +38,8 @@ export interface BacktestPerformanceSummary {
 }
 
 export interface BacktestResult {
+  /** Mark-to-market portfolio value (in counter currency) at each step: the initial value followed by one entry per candle close. */
+  equityCurve: Big[];
   /** Final amount of the base asset after the backtest. */
   finalBaseBalance: Big;
   /** Final amount of the counter asset after the backtest. */

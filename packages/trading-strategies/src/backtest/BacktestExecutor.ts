@@ -28,6 +28,15 @@ export class BacktestExecutor {
     const trades: BacktestTrade[] = [];
     let totalFees = new Big(0);
 
+    const firstOpenPrice = candles.length > 0 ? new Big(candles[0].open) : new Big(0);
+    const initialPortfolioValue = initialBaseBalance.mul(firstOpenPrice).plus(initialCounterBalance);
+
+    /*
+     * Mark-to-market the portfolio at each candle close so the max-drawdown calculation has a value series to
+     * work with. Starts at the initial value so a drop on the very first candle still counts.
+     */
+    const equityCurve: Big[] = [initialPortfolioValue];
+
     for (const candle of candles) {
       // Step 1: Match pending orders from previous iteration against this candle
       const fills = exchange.processCandle(candle);
@@ -57,12 +66,13 @@ export class BacktestExecutor {
       const state = await this.#buildState(tradingPair, tradingRules, feeRates);
       const advice = await strategy.onCandle(batchedCandle, state);
 
-      if (!advice) {
-        continue;
+      // Step 3: Translate advice into exchange orders
+      if (advice) {
+        await this.#placeOrderFromAdvice(advice, tradingPair, tradingRules, feeRates);
       }
 
-      // Step 3: Translate advice into exchange orders
-      await this.#placeOrderFromAdvice(advice, tradingPair, tradingRules, feeRates);
+      // Step 4: Record the portfolio's mark-to-market value at this candle's close
+      equityCurve.push(await this.#getPortfolioValue(tradingPair, new Big(candle.close)));
     }
 
     /*
@@ -73,16 +83,21 @@ export class BacktestExecutor {
     await exchange.cancelOpenOrders(tradingPair);
 
     const finalBalances = await exchange.getAvailableBalances(tradingPair);
-    const firstOpenPrice = candles.length > 0 ? new Big(candles[0].open) : new Big(0);
     const lastClosePrice = candles.length > 0 ? new Big(candles[candles.length - 1].close) : new Big(0);
 
-    const initialPortfolioValue = initialBaseBalance.mul(firstOpenPrice).plus(initialCounterBalance);
     const finalPortfolioValue = finalBalances.base.mul(lastClosePrice).plus(finalBalances.counter);
     const profitOrLoss = finalPortfolioValue.minus(initialPortfolioValue);
 
-    const performance = this.#buildPerformanceSummary(trades, candles, initialPortfolioValue, finalPortfolioValue);
+    const performance = this.#buildPerformanceSummary(
+      trades,
+      candles,
+      initialPortfolioValue,
+      finalPortfolioValue,
+      equityCurve
+    );
 
     return {
+      equityCurve,
       finalBaseBalance: finalBalances.base,
       finalCounterBalance: finalBalances.counter,
       initialBaseBalance,
@@ -110,6 +125,24 @@ export class BacktestExecutor {
       };
     }
     return advice;
+  }
+
+  /** Total portfolio value in counter currency, valuing the base holding at `price`. Counts held balances (funds locked in open orders), so a pending order never looks like a loss on the equity curve. */
+  async #getPortfolioValue(pair: TradingPair, price: Big): Promise<Big> {
+    const balances = await this.#config.broker.listBalances();
+    let base = new Big(0);
+    let counter = new Big(0);
+
+    for (const balance of balances) {
+      const total = new Big(balance.available).plus(balance.hold);
+      if (balance.currency === pair.base) {
+        base = total;
+      } else if (balance.currency === pair.counter) {
+        counter = total;
+      }
+    }
+
+    return base.mul(price).plus(counter);
   }
 
   async #buildState(pair: TradingPair, tradingRules: TradingRules, feeRates: FeeRate): Promise<TradingSessionState> {
@@ -248,7 +281,8 @@ export class BacktestExecutor {
     trades: BacktestTrade[],
     candles: Candle[],
     initialPortfolioValue: Big,
-    finalPortfolioValue: Big
+    finalPortfolioValue: Big,
+    equityCurve: Big[]
   ): BacktestPerformanceSummary {
     const returnPercentage = initialPortfolioValue.gt(0)
       ? finalPortfolioValue.minus(initialPortfolioValue).div(initialPortfolioValue).mul(100)
@@ -257,11 +291,13 @@ export class BacktestExecutor {
     const winRate = PerformanceCalculator.calculateWinRate(trades);
     const buyAndHoldReturnPercentage = PerformanceCalculator.calculateBuyAndHoldReturn(candles);
     const {maxLossStreak, maxWinStreak} = PerformanceCalculator.calculateStreaks(trades);
+    const maxDrawdownPercentage = PerformanceCalculator.calculateMaxDrawdown(equityCurve);
 
     return {
       buyAndHoldReturnPercentage,
       finalPortfolioValue,
       initialPortfolioValue,
+      maxDrawdownPercentage,
       maxLossStreak,
       maxWinStreak,
       returnPercentage,

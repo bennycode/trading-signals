@@ -1,10 +1,10 @@
 import {readFile} from 'node:fs/promises';
 import {parseArgs} from 'node:util';
-import {AlpacaBrokerMock, OrderType, TradingPair} from '@typedtrader/exchange';
+import {TradingPair} from '@typedtrader/exchange';
 import type {Candle} from '@typedtrader/exchange';
 import Big from 'big.js';
-import {BacktestExecutor} from '../backtest/BacktestExecutor.js';
-import {createStrategy, getStrategyNames} from '../strategy/StrategyRegistry.js';
+import {runSingleBacktest} from '../backtest/runSingleBacktest.js';
+import {getStrategyNames} from '../strategy/StrategyRegistry.js';
 
 const {values} = parseArgs({
   options: {
@@ -76,47 +76,31 @@ console.log(`Config:    ${values.config}`);
 console.log(`Balance:   ${startingBalance.toFixed(2)} ${counter}`);
 console.log('---');
 
-// 2. Create strategy from registry
+// 2. Run the backtest (creates the strategy, seeds it via init(), then replays the candles)
 const strategyConfig = JSON.parse(values.config);
-const strategy = createStrategy(values.strategy, strategyConfig);
+const {result} = await runSingleBacktest({
+  beforeRun: strategy => {
+    if (!('init' in strategy && typeof strategy.init === 'function')) {
+      return;
+    }
 
-// 3. Set up mock exchange (commission-free for US stocks)
-const exchange = new AlpacaBrokerMock({
-  balances: new Map([
-    [tradingPair.base, {available: new Big(0), hold: new Big(0)}],
-    [tradingPair.counter, {available: startingBalance, hold: new Big(0)}],
-  ]),
-  feeRates: {
-    [OrderType.LIMIT]: new Big(0),
-    [OrderType.MARKET]: new Big(0),
+    if (strategy.config?.offset) {
+      console.log(`Auto-computed offset: ${strategy.config.offset} ${counter}`);
+    }
+
+    if ('scalpFriendly' in strategy) {
+      const friendly = Boolean(strategy.scalpFriendly);
+      console.log(`Scalp-friendly (ER): ${friendly ? 'Yes' : 'No — stock is trending, strategy will not trade'}`);
+    }
+
+    console.log('---');
   },
-});
-
-// 4. Pre-seed strategy if it supports init()
-if ('init' in strategy && typeof strategy.init === 'function') {
-  const {CandleBatcher} = await import('@typedtrader/exchange');
-  const batchedCandles = CandleBatcher.toBatchedCandles(candles);
-  strategy.init(batchedCandles);
-
-  if (strategy.config?.offset) {
-    console.log(`Auto-computed offset: ${strategy.config.offset} ${counter}`);
-  }
-
-  if ('scalpFriendly' in strategy) {
-    const friendly = strategy.scalpFriendly as boolean;
-    console.log(`Scalp-friendly (ER): ${friendly ? 'Yes' : 'No — stock is trending, strategy will not trade'}`);
-  }
-
-  console.log('---');
-}
-
-// 5. Run backtest
-const result = await new BacktestExecutor({
-  broker: exchange,
   candles,
-  strategy,
+  config: strategyConfig,
+  startingBalance,
+  strategyName: values.strategy,
   tradingPair,
-}).execute();
+});
 
 // 6. Print results
 const {performance} = result;
@@ -131,6 +115,7 @@ console.log(`Trades:          ${performance.totalTrades}`);
 console.log(`Win Rate:        ${performance.winRate.toFixed(1)}%`);
 console.log(`Return:          ${performance.returnPercentage.toFixed(2)}%`);
 console.log(`Buy & Hold:      ${performance.buyAndHoldReturnPercentage.toFixed(2)}%`);
+console.log(`Max Drawdown:    ${performance.maxDrawdownPercentage.toFixed(2)}%`);
 console.log(`P&L:             ${result.profitOrLoss.toFixed(2)} ${counter}`);
 console.log(`Fees:            ${result.totalFees.toFixed(2)} ${counter}`);
 console.log(`Max Win Streak:  ${performance.maxWinStreak}`);

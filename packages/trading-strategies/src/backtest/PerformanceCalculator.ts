@@ -63,6 +63,35 @@ export class PerformanceCalculator {
     return {maxLossStreak, maxWinStreak};
   }
 
+  /**
+   * Largest peak-to-trough drop of the equity curve, as a positive percentage (`0` = never underwater,
+   * `25` = the portfolio lost a quarter of its value from a high before recovering). Drawdown is the pain
+   * a strategy puts you through to earn its return — two strategies with the same return are not equal if
+   * one of them halved your account on the way there.
+   */
+  static calculateMaxDrawdown(equityCurve: Big[]): Big {
+    if (equityCurve.length === 0) {
+      return new Big(0);
+    }
+
+    let peak = equityCurve[0];
+    let maxDrawdown = new Big(0);
+
+    for (const value of equityCurve) {
+      if (value.gt(peak)) {
+        peak = value;
+      }
+      if (peak.gt(0)) {
+        const drawdown = peak.minus(value).div(peak).mul(100);
+        if (drawdown.gt(maxDrawdown)) {
+          maxDrawdown = drawdown;
+        }
+      }
+    }
+
+    return maxDrawdown;
+  }
+
   static #buildCycles(trades: BacktestTrade[]): {buyAvgPrice: Big; sellAvgPrice: Big}[] {
     const cycles: {buyAvgPrice: Big; sellAvgPrice: Big}[] = [];
     let pendingBuys: BacktestTrade[] = [];
