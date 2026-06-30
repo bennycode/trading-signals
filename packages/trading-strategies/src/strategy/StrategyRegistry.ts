@@ -1,4 +1,5 @@
 import type {z} from 'zod';
+import {AtrTrailStrategy, AtrTrailSchema} from '../strategy-atr-trail/AtrTrailStrategy.js';
 import {BuyOnceStrategy, BuyOnceSchema} from '../strategy-buy-once/BuyOnceStrategy.js';
 import {
   BuyBelowSellAboveStrategy,
@@ -22,6 +23,10 @@ interface StrategyEntry {
 }
 
 const registry: Record<string, StrategyEntry> = {
+  [AtrTrailStrategy.NAME]: {
+    create: (config: unknown) => new AtrTrailStrategy(AtrTrailSchema.parse(config ?? {})),
+    schema: AtrTrailSchema,
+  },
   [BuyBelowSellAboveStrategy.NAME]: {
     create: (config: unknown) => new BuyBelowSellAboveStrategy(BuyBelowSellAboveSchema.parse(config)),
     schema: BuyBelowSellAboveSchema,
