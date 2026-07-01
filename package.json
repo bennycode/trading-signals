@@ -4,7 +4,7 @@
     "@types/node": "^26.0.1",
     "@vitest/coverage-v8": "^4.0.18",
     "cross-env": "^10.1.0",
-    "dependency-cruiser": "^17.4.0",
+    "dependency-cruiser": "^18.0.0",
     "eslint": "^10.3.0",
     "jsdom": "^29.1.1",
     "lefthook": "^2.1.6",
