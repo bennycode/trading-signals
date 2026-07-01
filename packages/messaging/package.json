@@ -8,7 +8,7 @@
     "@typedtrader/exchange": "0.2.5",
     "@types/moment-duration-format": "2.2.7",
     "@types/node": "^26.0.1",
-    "better-sqlite3": "^12.10.0",
+    "better-sqlite3": "^12.11.1",
     "better-sqlite3-multiple-ciphers": "^12.11.1",
     "drizzle-orm": "^0.45.2",
     "grammy": "^1.44.0",
