@@ -6,7 +6,7 @@
     "@typedtrader/candles": "0.1.0",
     "@typedtrader/exchange": "0.2.5",
     "highcharts": "^12.6.0",
-    "next": "^16.2.6",
+    "next": "^16.2.9",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
     "trading-signals": "7.4.3",
