@@ -1,7 +1,7 @@
 {
   "dependencies": {
     "@highcharts/react": "^5.0.1",
-    "@tailwindcss/postcss": "^4.3.0",
+    "@tailwindcss/postcss": "^4.3.2",
     "@testing-library/dom": "^10.4.1",
     "@typedtrader/candles": "0.1.0",
     "@typedtrader/exchange": "0.2.5",
