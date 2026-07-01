@@ -9,7 +9,7 @@
     "@types/moment-duration-format": "2.2.7",
     "@types/node": "^25.7.0",
     "better-sqlite3": "^12.10.0",
-    "better-sqlite3-multiple-ciphers": "^12.10.0",
+    "better-sqlite3-multiple-ciphers": "^12.11.1",
     "drizzle-orm": "^0.45.2",
     "grammy": "^1.43.0",
     "moment": "^2.30.1",
