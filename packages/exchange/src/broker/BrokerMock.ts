@@ -404,11 +404,11 @@ export abstract class BrokerMock extends Broker {
 
     // Give back exactly what was held for this order (works for limit AND market buys)
     const hold = this.#orderHolds.get(orderId);
-    if (hold) {
-      this.#releaseHold(hold.currency, hold.amount);
-      this.#addAvailable(hold.currency, hold.amount);
-      this.#orderHolds.delete(orderId);
-    }
+    assert.ok(hold, `No hold recorded for order "${orderId}"`);
+
+    this.#releaseHold(hold.currency, hold.amount);
+    this.#addAvailable(hold.currency, hold.amount);
+    this.#orderHolds.delete(orderId);
   }
 
   async cancelOpenOrders(pair: TradingPair) {
