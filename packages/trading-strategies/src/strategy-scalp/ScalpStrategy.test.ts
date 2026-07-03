@@ -1,7 +1,8 @@
 import Big from 'big.js';
 import {describe, expect, it} from 'vitest';
 import {CandleBatcher, OrderSide, OrderType} from '@typedtrader/exchange';
-import type {Candle, Fill, LimitOrderAdvice, TradingSessionState} from '@typedtrader/exchange';
+import type {Candle, Fill} from '@typedtrader/exchange';
+import type {LimitOrderAdvice, TradingSessionState} from '../trader/index.js';
 import {TradingPair} from '@typedtrader/exchange';
 import {ScalpStrategy, ScalpSchema} from './ScalpStrategy.js';
 

@@ -335,7 +335,7 @@ export class Trading212Broker extends Broker implements MarketDataSource {
     /*
      * Trading212's `minTradeQuantity` is the floor *and* the increment for fractional shares.
      * Use the same non-zero fallback for both — falling back to '0' on `base_min_size` would
-     * let computed sizes of zero pass `TradingSession`'s min-size guard.
+     * let computed sizes of zero pass the trading session's min-size guard.
      */
     const minQuantity = `${instrument.minTradeQuantity ?? '0.000000001'}`;
     return {

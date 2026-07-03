@@ -1,8 +1,15 @@
 import Big from 'big.js';
-import {AllAvailableAmount, CandleBatcher, OrderSide, OrderType} from '@typedtrader/exchange';
-import type {Candle, FeeRate, TradingRules, OrderAdvice, TradingPair, TradingSessionState} from '@typedtrader/exchange';
+import {CandleBatcher} from '@typedtrader/exchange';
+import type {Candle, FeeRate, TradingRules, TradingPair} from '@typedtrader/exchange';
+import {AdviceExecutor} from '../trader/AdviceExecutor.js';
+import type {OrderAdvice, TradingSessionState} from '../trader/TradingSessionTypes.js';
 import type {BacktestConfig} from './BacktestConfig.js';
-import type {BacktestPerformanceSummary, BacktestResult, BacktestTrade} from './BacktestResult.js';
+import type {
+  BacktestPerformanceSummary,
+  BacktestResult,
+  BacktestSkippedAdvice,
+  BacktestTrade,
+} from './BacktestResult.js';
 import {PerformanceCalculator} from './PerformanceCalculator.js';
 
 export class BacktestExecutor {
@@ -25,7 +32,11 @@ export class BacktestExecutor {
       exchange.getFeeRates(tradingPair),
     ]);
 
+    // The exact same advice→order translation a live TradingSession uses
+    const adviceExecutor = new AdviceExecutor({broker: exchange, feeRates, pair: tradingPair, tradingRules});
+
     const trades: BacktestTrade[] = [];
+    const skippedAdvices: BacktestSkippedAdvice[] = [];
     let totalFees = new Big(0);
 
     for (const candle of candles) {
@@ -35,7 +46,7 @@ export class BacktestExecutor {
       if (fills.length > 0) {
         for (const fill of fills) {
           trades.push({
-            advice: this.#findAdviceForFill(fill.order_id, trades),
+            advice: this.#findAdviceForFill(fill.order_id),
             fee: new Big(fill.fee),
             openTimeInISO: fill.created_at,
             price: new Big(fill.price),
@@ -61,8 +72,23 @@ export class BacktestExecutor {
         continue;
       }
 
-      // Step 3: Translate advice into exchange orders
-      await this.#placeOrderFromAdvice(advice, tradingPair, tradingRules, feeRates);
+      // Step 3: Replace outstanding orders with the newest advice, mirroring TradingSession
+      const openOrders = await exchange.getOpenOrders(tradingPair);
+      if (openOrders.length > 0) {
+        await exchange.cancelOpenOrders(tradingPair);
+      }
+
+      const outcome = await adviceExecutor.execute(advice);
+
+      if (outcome.status === 'PLACED') {
+        this.#orderAdviceMap.set(outcome.order.id, advice);
+      } else {
+        skippedAdvices.push({
+          advice,
+          openTimeInISO: candle.openTimeInISO,
+          reason: outcome.error.message,
+        });
+      }
     }
 
     /*
@@ -89,6 +115,7 @@ export class BacktestExecutor {
       initialCounterBalance,
       performance,
       profitOrLoss,
+      skippedAdvices,
       totalCandles: candles.length,
       totalFees,
       trades,
@@ -98,16 +125,11 @@ export class BacktestExecutor {
   /** Map to track which order_id corresponds to which advice */
   readonly #orderAdviceMap = new Map<string, OrderAdvice>();
 
-  #findAdviceForFill(orderId: string, _trades: BacktestTrade[]): OrderAdvice {
+  #findAdviceForFill(orderId: string): OrderAdvice {
     const advice = this.#orderAdviceMap.get(orderId);
     if (!advice) {
-      // Fallback: shouldn't happen in normal flow
-      return {
-        amount: AllAvailableAmount,
-        amountIn: 'counter',
-        side: OrderSide.BUY,
-        type: OrderType.MARKET,
-      };
+      // Fabricating a fallback advice here would silently corrupt the cycle/win-rate stats
+      throw new Error(`No advice recorded for filled order "${orderId}"`);
     }
     return advice;
   }
@@ -124,124 +146,6 @@ export class BacktestExecutor {
       lastOrderSide,
       tradingRules,
     };
-  }
-
-  async #placeOrderFromAdvice(
-    advice: OrderAdvice,
-    pair: TradingPair,
-    tradingRules: TradingRules,
-    feeRates: FeeRate
-  ): Promise<void> {
-    const {broker: exchange} = this.#config;
-
-    try {
-      if (advice.type === OrderType.LIMIT) {
-        const rawPrice = new Big(advice.price);
-        const price = this.#roundLimitPrice(rawPrice, tradingRules);
-
-        if (price.lte(0)) {
-          return;
-        }
-
-        const balances = await exchange.getAvailableBalances(pair);
-
-        let size: Big;
-        if (advice.side === OrderSide.BUY) {
-          if (advice.amount !== AllAvailableAmount) {
-            size = new Big(advice.amount);
-          } else {
-            const feeRate = feeRates[OrderType.LIMIT];
-            const netSpend = balances.counter.div(new Big(1).plus(feeRate));
-            size = netSpend.div(price);
-          }
-        } else {
-          // SELL
-          const amount = advice.amount !== AllAvailableAmount ? new Big(advice.amount) : balances.base;
-          if (amount.lte(0) || balances.base.lte(0)) {
-            return;
-          }
-          size = amount.gt(balances.base) ? balances.base : amount;
-        }
-
-        if (size.lte(0)) {
-          return;
-        }
-
-        const order = await exchange.placeLimitOrder(pair, {
-          price: price.toFixed(),
-          side: advice.side,
-          size: size.toFixed(),
-        });
-        this.#orderAdviceMap.set(order.id, advice);
-      } else {
-        // MARKET order
-        const balances = await exchange.getAvailableBalances(pair);
-
-        if (advice.side === OrderSide.BUY) {
-          if (advice.amountIn === 'counter') {
-            const spendAmount = advice.amount !== AllAvailableAmount ? new Big(advice.amount) : balances.counter;
-            if (spendAmount.lte(0) || balances.counter.lte(0)) {
-              return;
-            }
-            const actualSpend = spendAmount.gt(balances.counter) ? balances.counter : spendAmount;
-            const latestCandle = await exchange.getLatestCandle(pair, 0);
-            const estimatedPrice = new Big(latestCandle.close);
-            if (estimatedPrice.eq(0)) {
-              return;
-            }
-            const feeRate = feeRates[OrderType.MARKET];
-            const netSpend = actualSpend.div(new Big(1).plus(feeRate));
-            const size = netSpend.div(estimatedPrice);
-
-            if (size.lte(0)) {
-              return;
-            }
-
-            const order = await exchange.placeMarketOrder(pair, {
-              side: OrderSide.BUY,
-              size: size.toFixed(),
-              sizeInCounter: false,
-            });
-            this.#orderAdviceMap.set(order.id, advice);
-          } else {
-            // amountIn: 'base' — amount is always explicit (enforced by MarketBuyBaseAdvice)
-            const size = new Big(advice.amount);
-            if (size.lte(0)) {
-              return;
-            }
-
-            const order = await exchange.placeMarketOrder(pair, {
-              side: OrderSide.BUY,
-              size: size.toFixed(),
-              sizeInCounter: false,
-            });
-            this.#orderAdviceMap.set(order.id, advice);
-          }
-        } else {
-          // SELL MARKET
-          const amount = advice.amount !== AllAvailableAmount ? new Big(advice.amount) : balances.base;
-          if (amount.lte(0) || balances.base.lte(0)) {
-            return;
-          }
-          const actualSize = amount.gt(balances.base) ? balances.base : amount;
-
-          const order = await exchange.placeMarketOrder(pair, {
-            side: OrderSide.SELL,
-            size: actualSize.toFixed(),
-            sizeInCounter: false,
-          });
-          this.#orderAdviceMap.set(order.id, advice);
-        }
-      }
-    } catch {
-      // Order rejected (insufficient balance, trading rules, etc.) - skip
-    }
-  }
-
-  /** Rounds a limit-order price down to the exchange's counter_increment. */
-  #roundLimitPrice(rawPrice: Big, tradingRules: TradingRules): Big {
-    const counterIncrement = new Big(tradingRules.counter_increment);
-    return rawPrice.div(counterIncrement).round(0, Big.roundDown).mul(counterIncrement);
   }
 
   #buildPerformanceSummary(

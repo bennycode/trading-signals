@@ -1,20 +1,11 @@
 import Big from 'big.js';
 import {EventEmitter} from 'node:events';
+import {AlpacaBroker, OrderPosition, OrderSide, OrderType, TradingPair} from '@typedtrader/exchange';
+import type {Candle, Fill, PendingLimitOrder, PendingMarketOrder} from '@typedtrader/exchange';
 import {TradingSession} from './TradingSession.js';
-import {TradingPair} from '../broker/TradingPair.js';
-import {
-  OrderPosition,
-  OrderSide,
-  OrderType,
-  type Candle,
-  type Fill,
-  type PendingLimitOrder,
-  type PendingMarketOrder,
-} from '../broker/Broker.js';
 import {OrderSizeBelowMinimumError} from './OrderSizeBelowMinimumError.js';
 import {AllAvailableAmount} from './TradingSessionTypes.js';
 import type {OrderAdvice, TradingSessionStrategy} from './TradingSessionTypes.js';
-import {AlpacaBroker} from '../broker/alpaca/AlpacaBroker.js';
 
 const pair = new TradingPair('TSLA', 'USD');
 
@@ -286,11 +277,15 @@ describe('TradingSession', {concurrent: false}, () => {
       exchange.emit('candle-topic-1', sampleCandle);
       await vi.waitFor(() => expect(exchange.placeLimitOrder).toHaveBeenCalledTimes(1));
 
-      // counter=5000, price=250 → 5000/250 = 20, base_increment=0.001 → 20
+      /*
+       * The full counter balance is reduced by the limit fee (0.15%) before sizing, because
+       * fees are charged on top of the notional and would otherwise exceed the balance:
+       * counter=5000 → 5000/1.0015 = 4992.51… → /250 = 19.9700449326…, base_increment=0.000000001
+       */
       expect(exchange.placeLimitOrder).toHaveBeenCalledWith(pair, {
         price: '250',
         side: OrderSide.BUY,
-        size: '20',
+        size: '19.970044932',
       });
     });
 

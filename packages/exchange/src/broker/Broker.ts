@@ -132,6 +132,8 @@ export interface PendingLimitOrder extends ExchangePendingOrderBase {
 export interface PendingMarketOrder extends ExchangePendingOrderBase {
   /** Market orders don't have a price. */
   type: 'MARKET';
+  /** When `true`, `size` is a counter-currency (notional) amount, not a base quantity. */
+  sizeInCounter?: boolean;
 }
 
 /**

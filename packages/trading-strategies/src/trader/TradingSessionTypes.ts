@@ -1,22 +1,23 @@
 import type Big from 'big.js';
 import type {BigSource} from 'big.js';
 import type {EventEmitter} from 'node:events';
-import type {BatchedCandle, OneMinuteBatchedCandle} from '../candle/BatchedCandle.js';
-import type {OrderSide} from '../broker/Broker.js';
 import type {
+  BatchedCandle,
   Candle,
   ExchangeAvailableBalance,
   FeeRate,
   Fill,
   LimitOrderOptions,
+  MarketDataSource,
   MarketOrderOptions,
+  OneMinuteBatchedCandle,
+  OrderSide,
   PendingLimitOrder,
   PendingMarketOrder,
   PendingOrder,
+  TradingPair,
   TradingRules,
-} from '../broker/Broker.js';
-import type {MarketDataSource} from '../broker/MarketDataSource.js';
-import type {TradingPair} from '../broker/TradingPair.js';
+} from '@typedtrader/exchange';
 
 export interface TradingSessionStrategy {
   init?(market: Pick<MarketDataSource, 'getRecentCandles'>, pair: TradingPair): Promise<void>;

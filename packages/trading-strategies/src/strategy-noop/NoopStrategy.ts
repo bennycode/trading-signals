@@ -1,5 +1,6 @@
 import {z} from 'zod';
-import type {OneMinuteBatchedCandle, OrderAdvice, TradingSessionState} from '@typedtrader/exchange';
+import type {OneMinuteBatchedCandle} from '@typedtrader/exchange';
+import type {OrderAdvice, TradingSessionState} from '../trader/index.js';
 import {MarketType} from '../strategy/MarketType.js';
 import {Strategy} from '../strategy/Strategy.js';
 

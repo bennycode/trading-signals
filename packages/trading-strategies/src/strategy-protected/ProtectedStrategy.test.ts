@@ -2,24 +2,10 @@ import Big from 'big.js';
 import {ms} from 'ms';
 import {describe, expect, it, vi} from 'vitest';
 import {z} from 'zod';
-import {
-  AllAvailableAmount,
-  CandleBatcher,
-  OrderPosition,
-  OrderSide,
-  OrderType,
-  TradingPair,
-} from '@typedtrader/exchange';
-import type {
-  Candle,
-  Fill,
-  PendingOrder,
-  LimitOrderAdvice,
-  MarketOrderAdvice,
-  OneMinuteBatchedCandle,
-  OrderAdvice,
-  TradingSessionState,
-} from '@typedtrader/exchange';
+import {CandleBatcher, OrderPosition, OrderSide, OrderType, TradingPair} from '@typedtrader/exchange';
+import {AllAvailableAmount} from '../trader/index.js';
+import type {Candle, Fill, PendingOrder, OneMinuteBatchedCandle} from '@typedtrader/exchange';
+import type {LimitOrderAdvice, MarketOrderAdvice, OrderAdvice, TradingSessionState} from '../trader/index.js';
 import {ProtectedStrategy, ProtectedStrategySchema} from './ProtectedStrategy.js';
 
 function assertLimitSell(advice: OrderAdvice | void): asserts advice is LimitOrderAdvice {

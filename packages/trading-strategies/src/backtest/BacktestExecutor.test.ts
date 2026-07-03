@@ -1,7 +1,9 @@
 import Big from 'big.js';
 import {describe, expect, it} from 'vitest';
-import {AllAvailableAmount, AlpacaBrokerMock, OrderSide, OrderType} from '@typedtrader/exchange';
-import type {Candle, TradingRules, OrderAdvice, TradingSessionState} from '@typedtrader/exchange';
+import {AlpacaBrokerMock, OrderSide, OrderType} from '@typedtrader/exchange';
+import {AllAvailableAmount} from '../trader/index.js';
+import type {Candle, TradingRules} from '@typedtrader/exchange';
+import type {OrderAdvice, TradingSessionState} from '../trader/index.js';
 import {TradingPair} from '@typedtrader/exchange';
 import {BacktestExecutor} from './BacktestExecutor.js';
 import {BuyBelowSellAboveStrategy} from '../strategy-buy-below-sell-above/BuyBelowSellAboveStrategy.js';
@@ -284,6 +286,58 @@ describe('BacktestExecutor', () => {
       // Strategy advises sell, but base balance is 0
       expect(result.trades).toHaveLength(0);
       expect(result.finalBaseBalance.toFixed(2)).toBe('0.00');
+      expect(result.finalCounterBalance.toFixed(2)).toBe('1000.00');
+
+      // Dropped advice is reported, not silently swallowed — one skip per advising candle
+      expect(result.skippedAdvices).toHaveLength(2);
+      expect(result.skippedAdvices[0].reason).toContain('below minimum');
+      expect(result.skippedAdvices[0].advice.side).toBe(OrderSide.SELL);
+    });
+
+    it('cancels an outstanding order when newer advice arrives, mirroring a live session', async () => {
+      class RepriceBuy extends Strategy {
+        static override NAME = 'RepriceBuy';
+        #candleCount = 0;
+
+        protected override async processCandle(
+          _candle: OneMinuteBatchedCandle,
+          _state: TradingSessionState
+        ): Promise<OrderAdvice | void> {
+          this.#candleCount += 1;
+
+          if (this.#candleCount === 1) {
+            // Would fill on candle 3 (low=88) if it survived
+            return {amount: '1', amountIn: 'base', price: '90', side: OrderSide.BUY, type: OrderType.LIMIT};
+          }
+
+          if (this.#candleCount === 2) {
+            // Replaces the first order with one that can never fill
+            return {amount: '1', amountIn: 'base', price: '50', side: OrderSide.BUY, type: OrderType.LIMIT};
+          }
+        }
+      }
+
+      const candles = [
+        createCandle({close: '100', high: '100', low: '100', open: '100', openTimeInISO: '2025-01-01T00:00:00.000Z'}),
+        createCandle({close: '100', high: '100', low: '100', open: '100', openTimeInISO: '2025-01-01T00:01:00.000Z'}),
+        createCandle({close: '95', high: '100', low: '88', open: '100', openTimeInISO: '2025-01-01T00:02:00.000Z'}),
+      ];
+
+      const config: BacktestConfig = {
+        broker: createMockExchange(),
+        candles,
+        strategy: new RepriceBuy(),
+        tradingPair,
+      };
+
+      const result = await new BacktestExecutor(config).execute();
+
+      /*
+       * A live TradingSession cancels outstanding orders before acting on new advice. Without
+       * that, the buy@90 from candle 1 would survive and fill on candle 3 (low=88) — a trade
+       * a live session would never make.
+       */
+      expect(result.trades).toHaveLength(0);
       expect(result.finalCounterBalance.toFixed(2)).toBe('1000.00');
     });
 
@@ -683,6 +737,8 @@ describe('BacktestExecutor', () => {
       const result = await new BacktestExecutor(config).execute();
 
       expect(result.trades).toHaveLength(0);
+      expect(result.skippedAdvices).toHaveLength(2);
+      expect(result.skippedAdvices[0].reason).toContain('below the minimum');
     });
 
     it('skips sell trades when the base balance is below base_min_size', async () => {

@@ -1,7 +1,8 @@
 import Big from 'big.js';
 import {describe, expect, it} from 'vitest';
 import {AlpacaBrokerMock, CandleBatcher, OrderSide, OrderType} from '@typedtrader/exchange';
-import type {Candle, TradingSessionState} from '@typedtrader/exchange';
+import type {Candle} from '@typedtrader/exchange';
+import type {TradingSessionState} from '../trader/index.js';
 import {TradingPair} from '@typedtrader/exchange';
 import {BacktestExecutor} from '../backtest/BacktestExecutor.js';
 import {BuyOnceStrategy} from './BuyOnceStrategy.js';

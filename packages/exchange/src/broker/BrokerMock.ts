@@ -28,6 +28,11 @@ export interface ExchangeMockBalance {
 export abstract class BrokerMock extends Broker {
   readonly #balances: Map<string, ExchangeMockBalance>;
   readonly #pendingOrders: PendingOrder[] = [];
+  /**
+   * Exact amount put on hold per order, so cancels and fills release precisely what was
+   * held — reconstructing the hold from order fields drifts once prices improve on fill.
+   */
+  readonly #orderHolds = new Map<string, {amount: Big; currency: string}>();
   readonly #fills: Fill[] = [];
   #currentCandle: Candle | undefined;
   #historicalCandles: Candle[] = [];
@@ -97,6 +102,31 @@ export abstract class BrokerMock extends Broker {
     if (order.type === OrderType.MARKET) {
       // Market orders fill at candle open price
       fillPrice = candleOpen;
+
+      if (order.sizeInCounter) {
+        /*
+         * Notional order: `size` is the total counter spend. The fee comes out of that
+         * spend, and the base quantity is whatever the remainder buys at the fill price —
+         * conversion happens here, at fill time, never at placement time with a stale price.
+         */
+        const feeRate = this.#getFeeRateSync(OrderType.MARKET);
+        const grossCounter = new Big(order.size);
+        const netCounter = grossCounter.div(new Big(1).plus(feeRate));
+        const fee = grossCounter.minus(netCounter);
+
+        const fill: Fill = {
+          created_at: candle.openTimeInISO,
+          fee: fee.toFixed(),
+          feeAsset: pair.counter,
+          order_id: order.id,
+          pair,
+          position: OrderPosition.LONG,
+          price: fillPrice.toFixed(),
+          side: order.side,
+          size: netCounter.div(fillPrice).toFixed(),
+        };
+        return fill;
+      }
     } else {
       // Limit order
       const limitPrice = new Big(order.price);
@@ -140,19 +170,30 @@ export abstract class BrokerMock extends Broker {
     const size = new Big(fill.size);
     const price = new Big(fill.price);
     const fee = new Big(fill.fee);
+    const hold = this.#orderHolds.get(order.id);
+    assert.ok(hold, `No hold recorded for order "${order.id}"`);
 
     if (order.side === OrderSide.BUY) {
-      // Release counter hold, add base
       const counterCost = size.mul(price).plus(fee);
-      this.#releaseHold(order.pair.counter, counterCost);
+      this.#releaseHold(order.pair.counter, hold.amount);
+      /*
+       * The hold was an estimate (limit price, or a pre-fill price for market orders).
+       * Settle the difference: refund unspent counter on price improvement, or charge
+       * the shortfall when the fill came in above the estimate.
+       */
+      const refund = hold.amount.minus(counterCost);
+      if (!refund.eq(0)) {
+        this.#addAvailable(order.pair.counter, refund);
+      }
       this.#addAvailable(order.pair.base, size);
     } else {
       // Release base hold, add counter revenue
-      this.#releaseHold(order.pair.base, size);
+      this.#releaseHold(order.pair.base, hold.amount);
       const netRevenue = size.mul(price).minus(fee);
       this.#addAvailable(order.pair.counter, netRevenue);
     }
 
+    this.#orderHolds.delete(order.id);
     this.#fills.push(fill);
   }
 
@@ -160,8 +201,20 @@ export abstract class BrokerMock extends Broker {
   protected override async placeOrder(pair: TradingPair, options: MarketOrderOptions): Promise<PendingMarketOrder>;
   protected override async placeOrder(pair: TradingPair, options: OrderOptions) {
     const rules = await this.getTradingRules(pair);
-    const size = this.#applyTradingRules(new Big(options.size), options, rules);
-    assert.ok(size);
+    const isCounterSized = options.type === OrderType.MARKET && options.sizeInCounter;
+
+    let size: Big;
+
+    if (isCounterSized) {
+      assert.ok(options.side === OrderSide.BUY, 'BrokerMock only supports counter-sized (notional) MARKET BUY orders');
+      size = this.#applyNotionalTradingRules(new Big(options.size), rules);
+    } else {
+      const validated = this.#applyTradingRules(new Big(options.size), options, rules);
+      assert.ok(validated, `Order size "${options.size}" violates the trading rules`);
+      size = validated;
+    }
+
+    const orderId = String(this.#nextOrderId++);
 
     // Validate balance and put amount on hold
     if (options.side === OrderSide.BUY) {
@@ -173,8 +226,8 @@ export abstract class BrokerMock extends Broker {
         const feeRate = this.#getFeeRateSync(options.type);
         counterNeeded = counterNeeded.plus(counterNeeded.mul(feeRate));
       } else if (options.sizeInCounter) {
-        // Market order: we don't know the exact price yet, so hold the full counter amount.
-        counterNeeded = new Big(options.size);
+        // Notional market order: the size IS the full counter spend, fee included.
+        counterNeeded = size;
       } else {
         // Market order, best-effort: hold based on current candle price if available.
         const estimatedPrice = this.#currentCandle ? new Big(this.#currentCandle.close) : new Big(0);
@@ -184,11 +237,11 @@ export abstract class BrokerMock extends Broker {
       }
 
       this.#holdBalance(pair.counter, counterNeeded);
+      this.#orderHolds.set(orderId, {amount: counterNeeded, currency: pair.counter});
     } else {
       this.#holdBalance(pair.base, size);
+      this.#orderHolds.set(orderId, {amount: size, currency: pair.base});
     }
-
-    const orderId = String(this.#nextOrderId++);
 
     if (options.type === OrderType.LIMIT) {
       const price = this.#roundDownToIncrement(new Big(options.price), new Big(rules.counter_increment));
@@ -209,10 +262,38 @@ export abstract class BrokerMock extends Broker {
       pair,
       side: options.side,
       size: size.toFixed(),
+      sizeInCounter: options.sizeInCounter,
       type: OrderType.MARKET,
     };
     this.#pendingOrders.push(pending);
     return pending;
+  }
+
+  /**
+   * Rule enforcement for counter-sized (notional) orders. The base quantity is only known
+   * at fill time, so the base minimum is checked against an estimate from the current
+   * candle — mirroring a real broker rejecting an order that is too small to execute.
+   */
+  #applyNotionalTradingRules(counterAmount: Big, rules: TradingRules) {
+    const size = this.#roundDownToIncrement(counterAmount, new Big(rules.counter_increment));
+    assert.ok(
+      size.gte(rules.counter_min_size),
+      `Notional size "${size.toFixed()}" is below the minimum of "${rules.counter_min_size}"`
+    );
+
+    if (this.#currentCandle) {
+      const estimatedPrice = new Big(this.#currentCandle.close);
+      if (estimatedPrice.gt(0)) {
+        const feeRate = this.#getFeeRateSync(OrderType.MARKET);
+        const estimatedBase = size.div(new Big(1).plus(feeRate)).div(estimatedPrice);
+        assert.ok(
+          estimatedBase.gte(rules.base_min_size),
+          `Notional size "${size.toFixed()}" buys an estimated "${estimatedBase.toFixed()}" base units, below the minimum of "${rules.base_min_size}"`
+        );
+      }
+    }
+
+    return size;
   }
 
   #applyTradingRules(size: Big, options: OrderOptions, rules: TradingRules) {
@@ -313,28 +394,20 @@ export abstract class BrokerMock extends Broker {
     return this.#fills.find(f => f.order_id === orderId);
   }
 
-  async cancelOrderById(pair: TradingPair, orderId: string) {
+  async cancelOrderById(_pair: TradingPair, orderId: string) {
     const index = this.#pendingOrders.findIndex(o => o.id === orderId);
     if (index === -1) {
       throw new Error(`Order ${orderId} not found`);
     }
 
-    const order = this.#pendingOrders[index];
     this.#pendingOrders.splice(index, 1);
 
-    // Release hold
-    if (order.side === OrderSide.BUY) {
-      if (order.type === OrderType.LIMIT) {
-        const price = new Big(order.price);
-        const counterAmount = new Big(order.size).mul(price);
-        const feeRate = this.#getFeeRateSync(order.type);
-        const totalHeld = counterAmount.plus(counterAmount.mul(feeRate));
-        this.#releaseHold(pair.counter, totalHeld);
-        this.#addAvailable(pair.counter, totalHeld);
-      }
-    } else {
-      this.#releaseHold(pair.base, new Big(order.size));
-      this.#addAvailable(pair.base, new Big(order.size));
+    // Give back exactly what was held for this order (works for limit AND market buys)
+    const hold = this.#orderHolds.get(orderId);
+    if (hold) {
+      this.#releaseHold(hold.currency, hold.amount);
+      this.#addAvailable(hold.currency, hold.amount);
+      this.#orderHolds.delete(orderId);
     }
   }
 

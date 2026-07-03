@@ -15,7 +15,7 @@ Utilities for handling trading exchange data with proper type safety and aggrega
 The `Broker` interface is intentionally kept generic so that any broker can implement it. This means:
 
 - **Bring your own broker.** Alpaca and Trading212 are first-class, but the package is built to be extended.
-- **Extend the abstract `Broker` class** and your integration plugs straight into `TradingSession` for live strategies and `BacktestExecutor` for backtesting — both for free, with no extra wiring. See [`BROKER_TEMPLATE.md`](./BROKER_TEMPLATE.md) for the conventions every integration follows.
+- **Extend the abstract `Broker` class** and your integration plugs straight into the `trading-strategies` package's `TradingSession` for live strategies and `BacktestExecutor` for backtesting — both for free, with no extra wiring. See [`BROKER_TEMPLATE.md`](./BROKER_TEMPLATE.md) for the conventions every integration follows.
 - **Extend `MarketDataSource`** to add live-streaming candles for your strategies. If your broker has no market-data API, plug in an existing source (e.g. Alpaca) instead — execution and market data are deliberately separated so they can be mixed and matched.
 
 ## Alpaca
