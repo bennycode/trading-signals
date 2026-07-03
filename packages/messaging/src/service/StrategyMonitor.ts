@@ -1,6 +1,6 @@
-import {TradingPair, TradingSession} from '@typedtrader/exchange';
+import {TradingPair} from '@typedtrader/exchange';
 import type {Fill} from '@typedtrader/exchange';
-import {createStrategy} from 'trading-strategies';
+import {createStrategy, TradingSession} from 'trading-strategies';
 import type {Strategy as TradingStrategy} from 'trading-strategies';
 import {getAccountBrokerClient} from '../broker/getAccountBrokerClient.js';
 import {Account} from '../database/models/Account.js';

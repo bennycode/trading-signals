@@ -1,10 +1,6 @@
 import Big from 'big.js';
-import type {
-  OneMinuteBatchedCandle,
-  OrderAdvice,
-  TradingSessionState,
-  TradingSessionStrategy,
-} from '@typedtrader/exchange';
+import type {OneMinuteBatchedCandle} from '@typedtrader/exchange';
+import type {OrderAdvice, TradingSessionState, TradingSessionStrategy} from '../trader/index.js';
 import type {MarketType} from './MarketType.js';
 
 export abstract class Strategy implements TradingSessionStrategy {

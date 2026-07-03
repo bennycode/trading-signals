@@ -1,4 +1,5 @@
-import type {Candle, BrokerMock, TradingPair, TradingSessionStrategy} from '@typedtrader/exchange';
+import type {Candle, BrokerMock, TradingPair} from '@typedtrader/exchange';
+import type {TradingSessionStrategy} from '../trader/index.js';
 
 export interface BacktestConfig {
   /** The candle data to run through the strategy (in chronological order). */

@@ -1,12 +1,7 @@
-import Big from 'big.js';
 import {EventEmitter} from 'node:events';
-import {CandleBatcher} from '../candle/CandleBatcher.js';
-import type {BatchedCandle} from '../candle/BatchedCandle.js';
-import {ONE_MINUTE_IN_MS} from '../candle/BatchedCandle.js';
-import type {Candle, Fill, PendingOrder} from '../broker/Broker.js';
-import {OrderSide, OrderType} from '../broker/Broker.js';
-import {OrderSizeBelowMinimumError} from './OrderSizeBelowMinimumError.js';
-import {AllAvailableAmount} from './TradingSessionTypes.js';
+import {CandleBatcher, ONE_MINUTE_IN_MS} from '@typedtrader/exchange';
+import type {BatchedCandle, Candle, Fill, PendingOrder} from '@typedtrader/exchange';
+import {AdviceExecutor} from './AdviceExecutor.js';
 import type {
   OrderAdvice,
   TradingSessionEventMap,
@@ -20,6 +15,7 @@ export class TradingSession extends EventEmitter<TradingSessionEventMap> {
   readonly #strategy;
 
   #state: TradingSessionState | null = null;
+  #adviceExecutor: AdviceExecutor | null = null;
   readonly #pendingOrders = new Map<string, PendingOrder>();
   #candleTopicId: string | null = null;
   #orderTopicId: string | null = null;
@@ -69,6 +65,8 @@ export class TradingSession extends EventEmitter<TradingSessionEventMap> {
       tradingRules,
     };
 
+    this.#adviceExecutor = new AdviceExecutor({broker: this.#broker, feeRates, pair: this.#pair, tradingRules});
+
     await this.#strategy.init?.(this.#broker, this.#pair);
 
     // Subscribe to candles only after state is ready
@@ -101,6 +99,7 @@ export class TradingSession extends EventEmitter<TradingSessionEventMap> {
     this.#running = false;
     this.#pendingOrders.clear();
     this.#state = null;
+    this.#adviceExecutor = null;
     this.emit('stopped');
   }
 
@@ -169,87 +168,20 @@ export class TradingSession extends EventEmitter<TradingSessionEventMap> {
       }
     }
 
-    const balances = await this.#broker.getAvailableBalances(this.#pair);
+    const outcome = await this.#adviceExecutor!.execute(advice);
+
     this.#state = {
       ...this.#state!,
-      baseBalance: balances.base,
-      counterBalance: balances.counter,
+      baseBalance: outcome.balances.base,
+      counterBalance: outcome.balances.counter,
     };
 
-    const size = this.#resolveOrderSize(advice);
-    if (!size) {
+    if (outcome.status === 'SKIPPED') {
+      this.emit('error', outcome.error);
       return;
     }
 
-    const {base_min_size, counter_min_size} = this.#state.tradingRules;
-    const minimumSize = advice.amountIn === 'counter' ? counter_min_size : base_min_size;
-
-    if (size.lt(minimumSize)) {
-      this.emit(
-        'error',
-        new OrderSizeBelowMinimumError({
-          amountIn: advice.amountIn,
-          minimumSize,
-          side: advice.side,
-          size: size.toFixed(),
-        })
-      );
-      return;
-    }
-
-    let order: PendingOrder;
-
-    if (advice.type === OrderType.LIMIT) {
-      const price = this.#applyPrecision(new Big(advice.price), this.#state.tradingRules.counter_increment);
-      order = await this.#broker.placeLimitOrder(this.#pair, {
-        price: price.toFixed(),
-        side: advice.side,
-        size: size.toFixed(),
-      });
-    } else {
-      order = await this.#broker.placeMarketOrder(this.#pair, {
-        side: advice.side,
-        size: size.toFixed(),
-        sizeInCounter: advice.amountIn === 'counter',
-      });
-    }
-
-    this.#pendingOrders.set(order.id, order);
-    this.emit('order', order);
-  }
-
-  #resolveOrderSize(advice: OrderAdvice): Big | null {
-    const {tradingRules} = this.#state!;
-
-    if (advice.amount !== AllAvailableAmount) {
-      const amount = new Big(advice.amount);
-      if (advice.amountIn === 'counter') {
-        return this.#applyPrecision(amount, tradingRules.counter_increment);
-      }
-      return this.#applyPrecision(amount, tradingRules.base_increment);
-    }
-
-    if (advice.side === OrderSide.SELL) {
-      return this.#applyPrecision(this.#state!.baseBalance, tradingRules.base_increment);
-    }
-
-    // BUY
-    if (advice.amountIn === 'counter') {
-      return this.#applyPrecision(this.#state!.counterBalance, tradingRules.counter_increment);
-    }
-
-    // BUY + base amount + LIMIT → derive from counter balance / price
-    if (advice.type === OrderType.LIMIT) {
-      const baseAmount = this.#state!.counterBalance.div(new Big(advice.price));
-      return this.#applyPrecision(baseAmount, tradingRules.base_increment);
-    }
-
-    // Unreachable: MarketBuyBaseAdvice requires a non-null amount, handled above
-    return null;
-  }
-
-  #applyPrecision(value: Big, increment: string): Big {
-    const inc = new Big(increment);
-    return value.div(inc).round(0, Big.roundDown).mul(inc);
+    this.#pendingOrders.set(outcome.order.id, outcome.order);
+    this.emit('order', outcome.order);
   }
 }

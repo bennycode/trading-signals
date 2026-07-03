@@ -1,4 +1,4 @@
-import type {OrderSide} from '../broker/Broker.js';
+import type {OrderSide} from '@typedtrader/exchange';
 import type {OrderAdvice} from './TradingSessionTypes.js';
 
 export class OrderSizeBelowMinimumError extends Error {

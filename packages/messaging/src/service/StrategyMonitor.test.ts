@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import {describe, it, expect, vi, beforeEach} from 'vitest';
-import {OrderSide, OrderSizeBelowMinimumError} from '@typedtrader/exchange';
+import {OrderSide} from '@typedtrader/exchange';
+import {OrderSizeBelowMinimumError} from 'trading-strategies';
 import {logger} from '../logger.js';
 import type {MessagingPlatform} from '../platform/MessagingPlatform.js';
 import type {StrategyAttributes} from '../database/models/Strategy.js';
@@ -42,13 +43,17 @@ vi.mock('@typedtrader/exchange', async importActual => {
     ...actual,
     getBrokerClient: vi.fn(() => ({})),
     TradingPair: {fromString: vi.fn(() => ({base: 'BTC', counter: 'USD'}))},
-    TradingSession: TradingSessionMock,
   };
 });
 
-vi.mock('trading-strategies', () => ({
-  createStrategy: vi.fn(() => mockStrategy),
-}));
+vi.mock('trading-strategies', async importActual => {
+  const actual = await importActual<Record<string, unknown>>();
+  return {
+    ...actual,
+    createStrategy: vi.fn(() => mockStrategy),
+    TradingSession: TradingSessionMock,
+  };
+});
 
 vi.mock('../logger.js', () => ({
   logger: {debug: vi.fn(), error: vi.fn(), info: vi.fn(), warn: vi.fn()},
