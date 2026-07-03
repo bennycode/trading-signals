@@ -28,16 +28,16 @@ npm install trading-signals
 
 ## Usage
 
-**CommonJS:**
-
-```ts
-const {SMA} = require('trading-signals');
-```
-
-**ESM:**
+The library is published as ESM:
 
 ```ts
 import {SMA} from 'trading-signals';
+```
+
+CommonJS projects can load it via [`require(esm)`](https://nodejs.org/api/modules.html#loading-ecmascript-modules-using-require) on Node.js 20.19+:
+
+```ts
+const {SMA} = require('trading-signals');
 ```
 
 **Example:**
