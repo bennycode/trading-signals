@@ -1,13 +1,13 @@
 import type {NextConfig} from 'next';
 
 const nextConfig: NextConfig = {
-  reactStrictMode: true,
-  output: 'export',
-  trailingSlash: true,
-  transpilePackages: ['trading-strategies', '@typedtrader/exchange'],
   images: {
     unoptimized: true,
   },
+  output: 'export',
+  reactStrictMode: true,
+  trailingSlash: true,
+  transpilePackages: ['trading-strategies', '@typedtrader/exchange', 'highcharts', '@highcharts/react'],
 };
 
 export default nextConfig;

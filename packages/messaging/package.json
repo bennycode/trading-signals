@@ -7,7 +7,7 @@
     "@grammyjs/conversations": "^2.1.1",
     "@typedtrader/exchange": "0.2.5",
     "@types/moment-duration-format": "2.2.7",
-    "@types/node": "^26.0.1",
+    "@types/node": "^26.1.0",
     "better-sqlite3": "^12.11.1",
     "better-sqlite3-multiple-ciphers": "^12.11.1",
     "drizzle-orm": "^0.45.2",
@@ -24,7 +24,7 @@
   "description": "Trading bot via messaging service.",
   "devDependencies": {
     "drizzle-kit": "^0.31.10",
-    "tsx": "^4.21.0"
+    "tsx": "^4.22.5"
   },
   "exports": "./dist/index.js",
   "files": [
