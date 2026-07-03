@@ -14,7 +14,7 @@ A fully interactive backtester at `/backtest` that lets you simulate trading str
 
 ## Customization
 
-- **Colors**: Edit `tailwind.config.js` to change the theme
+- **Colors**: Add [`@theme`](https://tailwindcss.com/docs/theme) tokens in `styles/globals.css` (Tailwind v4 is configured in CSS, there is no `tailwind.config.js`)
 - **Add indicators**: Follow the pattern in existing indicator pages
 - **Modify layout**: Edit `pages/_app.tsx` for navigation/footer changes
 - **Styling**: Customize `styles/globals.css`
