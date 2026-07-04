@@ -3,6 +3,13 @@ import type {OneMinuteBatchedCandle} from '@typedtrader/exchange';
 import type {OrderAdvice, TradingSessionState, TradingSessionStrategy} from '../trader/index.js';
 import type {MarketType} from './MarketType.js';
 
+/**
+ * State persistence is snapshot-based: the Proxy behind `getProxiedState()` only traps
+ * TOP-LEVEL assignments, so mutating a nested object in place (e.g.
+ * `this.state.foo.bar = x`) changes memory but is silently lost on restart. Use
+ * {@link Strategy.setState} to update nested state — it merges the patch and persists
+ * in one step.
+ */
 export abstract class Strategy implements TradingSessionStrategy {
   static NAME: string;
 
@@ -55,9 +62,11 @@ export abstract class Strategy implements TradingSessionStrategy {
 
   readonly #proxiedState: Record<string, unknown> | null = null;
   readonly #proxiedConfig: Record<string, unknown> | null = null;
+  readonly #stateTarget: Record<string, unknown> | null = null;
 
   constructor(options?: {state?: Record<string, unknown>; config?: Record<string, unknown>}) {
     if (options?.state) {
+      this.#stateTarget = options.state;
       this.#proxiedState = this.#createProxy(options.state, snapshot => {
         this.state = snapshot;
       });
@@ -80,6 +89,17 @@ export abstract class Strategy implements TradingSessionStrategy {
 
   restoreState(persisted: Record<string, unknown>): void {
     this.#_state = persisted;
+  }
+
+  /**
+   * The supported way to update nested state (see the class doc for the Proxy trap this
+   * avoids). Writes go to the raw target instead of through the Proxy so a multi-key
+   * patch persists once, not once per key.
+   */
+  setState<T extends Record<string, unknown>>(patch: Partial<T>): void {
+    const target = this.#stateTarget ?? {...this.state};
+    Object.assign(target, patch);
+    this.state = {...target};
   }
 
   /**
