@@ -13,6 +13,7 @@ import type {BatchedCandle} from '../../candle/BatchedCandle.js';
 import {CandleBatcher} from '../../candle/CandleBatcher.js';
 import {TradingPair} from '../TradingPair.js';
 import {OrderPosition, OrderSide} from '../Broker.js';
+import {AlpacaBroker} from './AlpacaBroker.js';
 
 describe('AlpacaBrokerMapper', () => {
   describe('mapInterval', () => {
@@ -62,7 +63,7 @@ describe('AlpacaBrokerMapper', () => {
   });
 
   describe('toFilledOrder', () => {
-    it('maps a filled BUY order', () => {
+    it('maps a filled stock BUY order without a fee because stock trades are commission-free', () => {
       const order = {
         asset_class: AlpacaAssetClass.US_EQUITY,
         asset_id: '78856c3d-67c8-43bc-8cd4-e95b686cf741',
@@ -95,7 +96,7 @@ describe('AlpacaBrokerMapper', () => {
 
       const pair = new TradingPair('SHOP', 'USD');
 
-      const filledOrder = AlpacaBrokerMapper.toFilledOrder(order, pair);
+      const filledOrder = AlpacaBrokerMapper.toFilledOrder(order, pair, AlpacaBroker.DEFAULT_FEE_RATES);
 
       expect(filledOrder.created_at).toBe('2023-08-21T15:57:26.195019Z');
       expect(filledOrder.fee).toBe('0');
@@ -106,6 +107,92 @@ describe('AlpacaBrokerMapper', () => {
       expect(filledOrder.price).toBe('53.05');
       expect(filledOrder.side).toBe(OrderSide.BUY);
       expect(filledOrder.size).toBe('3');
+    });
+
+    it('charges the taker fee of a crypto MARKET BUY in the credited base asset', () => {
+      const order = {
+        asset_class: AlpacaAssetClass.CRYPTO,
+        asset_id: '276e2673-764b-4ab6-a611-caf665ca6340',
+        canceled_at: null,
+        client_order_id: '0571ce61-bf65-4f0c-b3f6-7e13ac2c1e46',
+        created_at: '2024-05-06T09:00:00.000001Z',
+        expired_at: null,
+        extended_hours: false,
+        failed_at: null,
+        filled_at: '2024-05-06T09:00:00.500000Z',
+        filled_avg_price: '61234.5',
+        filled_qty: '2.5',
+        id: '9f6f7c9e-3d9c-4a37-8f0f-97e0a54a5b26',
+        legs: null,
+        limit_price: null,
+        notional: null,
+        qty: '2.5',
+        replaced_at: null,
+        replaced_by: null,
+        replaces: null,
+        side: AlpacaOrderSide.BUY,
+        status: AlpacaOrderStatus.FILLED,
+        stop_price: null,
+        submitted_at: '2024-05-06T09:00:00.000002Z',
+        symbol: 'BTC/USD',
+        time_in_force: TimeInForce.GTC,
+        type: AlpacaOrderType.MARKET,
+        updated_at: '2024-05-06T09:00:00.600000Z',
+      } as const;
+
+      const pair = new TradingPair('BTC', 'USD');
+
+      const filledOrder = AlpacaBrokerMapper.toFilledOrder(order, pair, AlpacaBroker.DEFAULT_FEE_RATES);
+
+      // Credited asset on a BUY is the base: 2.5 BTC * 0.0025 (taker) = 0.00625 BTC
+      expect(filledOrder.fee).toBe('0.00625');
+      expect(filledOrder.feeAsset).toBe('BTC');
+      expect(filledOrder.price).toBe('61234.5');
+      expect(filledOrder.side).toBe(OrderSide.BUY);
+      expect(filledOrder.size).toBe('2.5');
+    });
+
+    it('charges the maker fee of a crypto LIMIT SELL in the credited counter asset', () => {
+      const order = {
+        asset_class: AlpacaAssetClass.CRYPTO,
+        asset_id: '276e2673-764b-4ab6-a611-caf665ca6340',
+        canceled_at: null,
+        client_order_id: 'a26b64d1-3c75-4c3d-9a51-8f7f7f6a1d55',
+        created_at: '2024-05-07T10:00:00.000001Z',
+        expired_at: null,
+        extended_hours: false,
+        failed_at: null,
+        filled_at: '2024-05-07T10:05:00.000000Z',
+        filled_avg_price: '61234.5',
+        filled_qty: '0.4',
+        id: 'e0cf78be-13a1-4d17-9e0a-59f0f3b3f0a8',
+        legs: null,
+        limit_price: '61234.5',
+        notional: null,
+        qty: '0.4',
+        replaced_at: null,
+        replaced_by: null,
+        replaces: null,
+        side: AlpacaOrderSide.SELL,
+        status: AlpacaOrderStatus.FILLED,
+        stop_price: null,
+        submitted_at: '2024-05-07T10:00:00.000002Z',
+        symbol: 'BTC/USD',
+        time_in_force: TimeInForce.GTC,
+        type: AlpacaOrderType.LIMIT,
+        updated_at: '2024-05-07T10:05:00.100000Z',
+      } as const;
+
+      const pair = new TradingPair('BTC', 'USD');
+
+      const filledOrder = AlpacaBrokerMapper.toFilledOrder(order, pair, AlpacaBroker.DEFAULT_FEE_RATES);
+
+      // Credited asset on a SELL is the counter: 0.4 BTC * 61234.5 USD * 0.0015 (maker) = 36.7407 USD
+      expect(filledOrder.fee).toBe('36.7407');
+      expect(filledOrder.feeAsset).toBe('USD');
+      expect(filledOrder.price).toBe('61234.5');
+      expect(filledOrder.side).toBe(OrderSide.SELL);
+      expect(filledOrder.size).toBe('0.4');
     });
 
     it('does not map a canceled SELL order', () => {
@@ -141,7 +228,7 @@ describe('AlpacaBrokerMapper', () => {
 
       const pair = new TradingPair('SHOP', 'USD');
 
-      expect(() => AlpacaBrokerMapper.toFilledOrder(order, pair)).toThrowError();
+      expect(() => AlpacaBrokerMapper.toFilledOrder(order, pair, AlpacaBroker.DEFAULT_FEE_RATES)).toThrowError();
     });
   });
 });

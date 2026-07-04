@@ -188,7 +188,11 @@ export class AlpacaBroker extends Broker implements MarketDataSource {
     const cb = (message: TradeUpdateMessage) => {
       if (message.event === TradeUpdateEvent.FILL) {
         const pair = AlpacaBrokerMapper.symbolToPair(message.order.symbol, message.order.asset_class);
-        const fill = AlpacaBrokerMapper.toFilledOrder(message.order, pair);
+        /*
+         * The stream is account-wide (no single pair to query rates for), so the default fee
+         * schedule is used — the same values `getFeeRates` returns today.
+         */
+        const fill = AlpacaBrokerMapper.toFilledOrder(message.order, pair, AlpacaBroker.DEFAULT_FEE_RATES);
         this.emit(topicId, fill);
       }
     };
@@ -318,7 +322,8 @@ export class AlpacaBroker extends Broker implements MarketDataSource {
     const symbol = await this.#createReliableSymbol(pair);
     const orders = await this.#alpacaAPI.getOrders({status: 'closed', symbols: symbol});
     const filledOrders = orders.filter(order => order.status === AlpacaOrderStatus.FILLED);
-    return filledOrders.map(order => AlpacaBrokerMapper.toFilledOrder(order, pair));
+    const feeRates = await this.getFeeRates(pair);
+    return filledOrders.map(order => AlpacaBrokerMapper.toFilledOrder(order, pair, feeRates));
   }
 
   async getFillByOrderId(pair: TradingPair, orderId: string): Promise<Fill | undefined> {

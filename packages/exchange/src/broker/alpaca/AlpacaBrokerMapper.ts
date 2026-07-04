@@ -1,8 +1,17 @@
+import Big from 'big.js';
 import type {Bar} from './api/schema/BarSchema.js';
 import {type Order, AlpacaOrderStatus, type AlpacaAssetClass} from './api/schema/OrderSchema.js';
 import {ms} from 'ms';
 import {TradingPair} from '../TradingPair.js';
-import type {Candle, Fill, OrderOptions, PendingLimitOrder, PendingMarketOrder, PendingOrder} from '../Broker.js';
+import type {
+  Candle,
+  FeeRate,
+  Fill,
+  OrderOptions,
+  PendingLimitOrder,
+  PendingMarketOrder,
+  PendingOrder,
+} from '../Broker.js';
 import {OrderPosition, OrderSide, OrderType} from '../Broker.js';
 
 export class AlpacaBrokerMapper {
@@ -93,22 +102,56 @@ export class AlpacaBrokerMapper {
     return pendingOrder;
   }
 
-  static toFilledOrder(order: Order, pair: TradingPair): Fill {
+  static toFilledOrder(order: Order, pair: TradingPair, feeRates: FeeRate): Fill {
     if (order.status !== AlpacaOrderStatus.FILLED) {
       throw new Error(`Order ID "${order.id}" is not filled.`);
     }
 
+    if (order.filled_avg_price === null) {
+      throw new Error(`Order ID "${order.id}" is filled but has no average fill price.`);
+    }
+
+    const side = order.side === 'buy' ? OrderSide.BUY : OrderSide.SELL;
+
+    /*
+     * Alpaca's order payload carries no fee field, so the realized fee has to be derived here.
+     * Stocks/ETFs are commission-free, but crypto is not: Alpaca deducts the fee from the
+     * credited asset (what you receive) per trade — a BUY pays in the base asset, a SELL pays
+     * in the counter/fiat. Limit orders are billed at the maker rate; every other order type
+     * removes liquidity and is billed at the taker (market) rate.
+     *
+     * @see https://docs.alpaca.markets/docs/crypto-fees
+     * @see https://files.alpaca.markets/disclosures/library/BrokFeeSched.pdf
+     */
+    let fee = '0';
+    let feeAsset = pair.counter;
+
+    if (order.asset_class === 'crypto') {
+      const feeRate = order.type === 'limit' ? feeRates.LIMIT : feeRates.MARKET;
+      const filledQty = new Big(order.filled_qty);
+      if (side === OrderSide.BUY) {
+        fee = filledQty.times(feeRate).toFixed();
+        feeAsset = pair.base;
+      } else {
+        fee = filledQty.times(order.filled_avg_price).times(feeRate).toFixed();
+        feeAsset = pair.counter;
+      }
+    }
+
     return {
       created_at: `${order.created_at}`,
-      /** Alpaca does not charge a commission (except for crypto) for trades: https://files.alpaca.markets/disclosures/library/BrokFeeSched.pdf */
-      fee: '0',
-      feeAsset: pair.counter,
+      fee,
+      feeAsset,
       order_id: `${order.id}`,
       pair,
-      /** @see https://forum.alpaca.markets/t/13480 */
+      /**
+       * Alpaca's order payload has no position side — from the order alone, a SELL that closes
+       * a long is indistinguishable from one that opens a short (https://forum.alpaca.markets/t/13480).
+       * This integration only trades long, so every fill is reported as LONG.
+       */
       position: OrderPosition.LONG,
-      price: `${order.filled_avg_price}`,
-      side: order.side === 'buy' ? OrderSide.BUY : OrderSide.SELL,
+      price: order.filled_avg_price,
+      side,
       size: `${order.filled_qty}`,
     };
   }
