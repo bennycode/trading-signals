@@ -3,9 +3,6 @@
     "url": "https://github.com/bennycode/trading-signals/issues"
   },
   "description": "Technical indicators to run technical analysis with JavaScript / TypeScript.",
-  "devDependencies": {
-    "generate-changelog": "^1.8.0"
-  },
   "exports": "./dist/index.js",
   "files": [
     "dist",
@@ -48,7 +45,6 @@
   },
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
-    "changelog:commit": "git add CHANGELOG.md && git commit -m \"docs: updated CHANGELOG.md\"",
     "clean": "rimraf coverage dist",
     "dist": "npm run clean && npm run build",
     "fix": "npm run fix:other && npm run fix:code",
@@ -58,12 +54,7 @@
     "lint:code": "eslint .",
     "lint:other": "npm run prettier -- --list-different",
     "lint:types": "tsc --noEmit",
-    "postversion": "git push origin && git push origin --tags && npm publish && git restore .",
     "prettier": "prettier --config ../../.prettierrc.json --ignore-path ../../.gitignore --log-level error \"**/*.{json,scss,yml}\"",
-    "preversion": "npm run test && npm run dist",
-    "release:major": "generate-changelog -M -x \"chore,test\" && npm run changelog:commit && npm version major",
-    "release:minor": "generate-changelog -m -x \"chore,test\" && npm run changelog:commit && npm version minor",
-    "release:patch": "generate-changelog -p -x \"chore,test\" && npm run changelog:commit && npm version patch",
     "start": "tsx ./src/start/demo.ts",
     "test": "npm run test:types && npm run test:imports && npm run test:units -- --coverage",
     "test:imports": "depcruise -c ../../.dependency-cruiser.cjs src --include-only \"^src\"",
