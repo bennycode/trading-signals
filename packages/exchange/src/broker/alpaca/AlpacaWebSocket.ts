@@ -1,3 +1,4 @@
+import {EventEmitter} from 'node:events';
 import {ms} from 'ms';
 import type {RetryConfig} from 'ts-retry-promise';
 import {retry} from 'ts-retry-promise';
@@ -17,11 +18,22 @@ export interface AlpacaConnection {
  * Alpaca only allows 1 WebSocket connection per API key. This class manages
  * WebSocket connections as singletons to avoid the following error:
  * {"T":"error","code":406,"msg":"connection limit exceeded"}
+ *
+ * When a connection drops unexpectedly it is re-established in-process (same
+ * `connectionId`, same bar subscriptions) instead of killing the process —
+ * other trading sessions and bots share this process and must keep running.
+ * Hosts can observe the lifecycle via the emitted `reconnecting`,
+ * `resubscribed`, and `reconnect_failed` events.
  */
-class AlpacaWebSocket {
+class AlpacaWebSocket extends EventEmitter {
   readonly #connections: Map<string, AlpacaConnection> = new Map();
-  readonly #symbols: Map<string, Set<string>> = new Map();
+  /** Bar callbacks per connection, keyed by symbol, so reconnects can restore them. */
+  readonly #subscriptions: Map<string, Map<string, Set<(bar: MinuteBarMessage) => void>>> = new Map();
   readonly #credentialToConnectionId: Map<string, string> = new Map();
+  /** Connection parameters retained for re-authentication after a transport drop. */
+  readonly #connectionParams: Map<string, {credentials: AlpacaStreamCredentials; source: string}> = new Map();
+  /** Connections closed via `disconnect()` — their `close` event must not trigger a reconnect. */
+  readonly #intentionalCloses: Set<string> = new Set();
 
   /**
    * @see https://docs.alpaca.markets/docs/streaming-market-data#connection
@@ -52,20 +64,8 @@ class AlpacaWebSocket {
     timeout: 'INFINITELY',
   } as const;
 
-  async #establishConnection(credentials: AlpacaStreamCredentials, source: string): Promise<AlpacaConnection> {
-    // Check if we already have a connection for these credentials + source
-    const singletonKey = `${credentials.apiKey}:${source}`;
-    const existingConnectionId = this.#credentialToConnectionId.get(singletonKey);
-    if (existingConnectionId) {
-      const existing = this.#connections.get(existingConnectionId);
-      if (existing) {
-        return existing;
-      }
-    }
-
-    const connectionId = crypto.randomUUID();
-
-    return new Promise<AlpacaConnection>((resolve, reject) => {
+  #openStream(credentials: AlpacaStreamCredentials, source: string, connectionId: string): Promise<AlpacaStream> {
+    return new Promise<AlpacaStream>((resolve, reject) => {
       const stream = new AlpacaStream(credentials, source);
 
       stream.on('error', (error: unknown) => {
@@ -77,30 +77,99 @@ class AlpacaWebSocket {
         console.log(`WebSocket streaming is subscribed with ID "${connectionId}":`, JSON.stringify(message));
       });
 
-      stream.on('authenticated', () => {
+      stream.once('authenticated', () => {
         console.log(`WebSocket streaming is authenticated with ID "${connectionId}".`);
-        const connection = {connectionId, stream};
-        this.#connections.set(connectionId, connection);
-        this.#credentialToConnectionId.set(singletonKey, connectionId);
-
-        /**
-         * Every close on this socket is currently a failure (transport drop).
-         * In this case, we do a hard-exit so the orchestrator restarts the stream.
-         */
-        stream.once('close', () => {
-          console.error(
-            `Market-data WebSocket closed for "${connectionId}". Exiting so the orchestrator restarts the stream.`
-          );
-          process.exit(1);
-        });
-
-        resolve(connection);
+        resolve(stream);
       });
     });
   }
 
+  /**
+   * Installs the single message handler plus the close watchdog on a freshly
+   * authenticated stream. Exactly one message handler exists per stream, so
+   * repeated subscribe/unsubscribe cycles cannot stack duplicate listeners.
+   */
+  #wireStream(connectionId: string, stream: AlpacaStream): void {
+    stream.on('message', (message: StreamMessage) => {
+      this.#dispatchBar(connectionId, message);
+    });
+
+    stream.once('close', () => {
+      if (this.#intentionalCloses.delete(connectionId)) {
+        return;
+      }
+      console.error(`Market-data WebSocket closed unexpectedly for "${connectionId}". Reconnecting in-process.`);
+      this.emit('reconnecting', {connectionId});
+      void this.#reconnect(connectionId);
+    });
+  }
+
+  #dispatchBar(connectionId: string, message: StreamMessage): void {
+    if (message.T !== 'b') {
+      return;
+    }
+    const callbacks = this.#subscriptions.get(connectionId)?.get(message.S);
+    if (!callbacks) {
+      return;
+    }
+    for (const cb of callbacks) {
+      cb(message);
+    }
+  }
+
+  async #reconnect(connectionId: string): Promise<void> {
+    const params = this.#connectionParams.get(connectionId);
+    if (!params) {
+      return;
+    }
+
+    try {
+      const stream = await retry(
+        () => this.#openStream(params.credentials, params.source, connectionId),
+        this.#retryConfig
+      );
+
+      const connection = this.#connections.get(connectionId);
+      if (!connection) {
+        // Disconnected while the reconnect was in flight
+        stream.close();
+        return;
+      }
+
+      connection.stream = stream;
+      this.#wireStream(connectionId, stream);
+
+      const symbols = Array.from(this.#subscriptions.get(connectionId)?.keys() ?? []);
+      if (symbols.length > 0) {
+        stream.subscribe('bars', symbols);
+      }
+      this.emit('resubscribed', {connectionId, symbols});
+    } catch (error) {
+      console.error(`Reconnect failed permanently for "${connectionId}".`, error);
+      this.emit('reconnect_failed', {connectionId, error});
+    }
+  }
+
   async connect(credentials: AlpacaStreamCredentials, source: string): Promise<AlpacaConnection> {
-    return retry(() => this.#establishConnection(credentials, source), this.#retryConfig);
+    const singletonKey = `${credentials.apiKey}:${source}`;
+    const existingConnectionId = this.#credentialToConnectionId.get(singletonKey);
+    if (existingConnectionId) {
+      const existing = this.#connections.get(existingConnectionId);
+      if (existing) {
+        return existing;
+      }
+    }
+
+    const connectionId = crypto.randomUUID();
+    const stream = await retry(() => this.#openStream(credentials, source, connectionId), this.#retryConfig);
+
+    const connection: AlpacaConnection = {connectionId, stream};
+    this.#connections.set(connectionId, connection);
+    this.#credentialToConnectionId.set(singletonKey, connectionId);
+    this.#connectionParams.set(connectionId, {credentials, source});
+    this.#wireStream(connectionId, stream);
+
+    return connection;
   }
 
   /**
@@ -114,21 +183,20 @@ class AlpacaWebSocket {
       return;
     }
 
-    // Track symbols per connection
-    let symbols = this.#symbols.get(connectionId);
-    if (!symbols) {
-      symbols = new Set();
-      this.#symbols.set(connectionId, symbols);
+    let subscriptions = this.#subscriptions.get(connectionId);
+    if (!subscriptions) {
+      subscriptions = new Map();
+      this.#subscriptions.set(connectionId, subscriptions);
     }
-    symbols.add(symbol);
 
-    connection.stream.on('message', (message: StreamMessage) => {
-      if (message.T === 'b' && message.S === symbol) {
-        cb(message);
-      }
-    });
+    let callbacks = subscriptions.get(symbol);
+    if (!callbacks) {
+      callbacks = new Set();
+      subscriptions.set(symbol, callbacks);
+    }
+    callbacks.add(cb);
 
-    const allSymbols = Array.from(symbols);
+    const allSymbols = Array.from(subscriptions.keys());
     connection.stream.unsubscribe('bars', allSymbols);
     connection.stream.subscribe('bars', allSymbols);
   }
@@ -139,10 +207,28 @@ class AlpacaWebSocket {
       return;
     }
 
-    const symbols = this.#symbols.get(connectionId);
-    symbols?.delete(symbol);
+    this.#subscriptions.get(connectionId)?.delete(symbol);
 
     connection.stream.unsubscribe('bars', [symbol]);
+  }
+
+  disconnect(connectionId: string) {
+    const connection = this.#connections.get(connectionId);
+    if (!connection) {
+      return;
+    }
+
+    this.#intentionalCloses.add(connectionId);
+    connection.stream.close();
+
+    this.#connections.delete(connectionId);
+    this.#subscriptions.delete(connectionId);
+    this.#connectionParams.delete(connectionId);
+    for (const [singletonKey, id] of this.#credentialToConnectionId) {
+      if (id === connectionId) {
+        this.#credentialToConnectionId.delete(singletonKey);
+      }
+    }
   }
 }
 
