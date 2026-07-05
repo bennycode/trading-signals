@@ -393,6 +393,7 @@ export class AlpacaBroker extends Broker implements MarketDataSource {
     const type = options.type === OrderType.MARKET ? 'market' : 'limit';
 
     const config: {
+      client_order_id: string;
       extended_hours?: boolean;
       limit_price?: string;
       notional?: string;
@@ -402,6 +403,13 @@ export class AlpacaBroker extends Broker implements MarketDataSource {
       time_in_force: string;
       type: string;
     } = {
+      /*
+       * Order placement is never auto-retried (a blind retry can duplicate a position), so a
+       * failed POST needs a client-side id: it lets operators reconcile whether the original
+       * request landed and makes any manual re-submission with the same id deduplicated by Alpaca.
+       * @see https://docs.alpaca.markets/docs/orders-at-alpaca#client-order-id
+       */
+      client_order_id: randomUUID(),
       side,
       symbol,
       time_in_force,
