@@ -1,4 +1,4 @@
-import {TechnicalIndicator, TradingSignal} from '../../types/Indicator.js';
+import {TradingSignal, TrendTechnicalIndicator} from '../../types/Indicator.js';
 import type {BandsResult} from '../../types/BandsResult.js';
 import {getAverage, getStandardDeviation, pushUpdate} from '../../util/index.js';
 
@@ -12,10 +12,8 @@ import {getAverage, getStandardDeviation, pushUpdate} from '../../util/index.js'
  *
  * @see https://www.investopedia.com/terms/b/bollingerbands.asp
  */
-export class BollingerBands extends TechnicalIndicator<BandsResult, number> {
+export class BollingerBands extends TrendTechnicalIndicator<BandsResult> {
   public readonly prices: number[] = [];
-  #previousResult?: BandsResult;
-  #twoPreviousResult?: BandsResult;
   #lastPrice?: number;
   #previousPrice?: number;
 
@@ -33,57 +31,56 @@ export class BollingerBands extends TechnicalIndicator<BandsResult, number> {
   }
 
   update(price: number, replace: boolean) {
-    const dropOut = pushUpdate(this.prices, replace, price, this.interval);
+    pushUpdate(this.prices, replace, price, this.interval);
 
+    /*
+     * Rewind the price history so "calculateSignalState" sees the price that belonged to
+     * "previousResult" while "setResult" re-caches the previous signal state
+     */
     if (replace) {
-      this.result = this.#previousResult;
-      this.#previousResult = this.#twoPreviousResult;
       this.#lastPrice = this.#previousPrice;
     }
 
-    this.#twoPreviousResult = this.#previousResult;
-    this.#previousResult = this.result;
-    this.#previousPrice = this.#lastPrice;
-    this.#lastPrice = price;
+    let result: BandsResult | null = null;
 
-    if (dropOut) {
+    if (this.prices.length === this.interval) {
       const middle = getAverage(this.prices);
       const standardDeviation = getStandardDeviation(this.prices, middle);
 
-      return (this.result = {
-        lower: middle - standardDeviation * this.deviationMultiplier,
-        middle,
-        upper: middle + standardDeviation * this.deviationMultiplier,
-      });
+      result = this.setResult(
+        {
+          lower: middle - standardDeviation * this.deviationMultiplier,
+          middle,
+          upper: middle + standardDeviation * this.deviationMultiplier,
+        },
+        replace
+      );
     }
 
-    return null;
+    if (!replace) {
+      this.#previousPrice = this.#lastPrice;
+    }
+
+    this.#lastPrice = price;
+
+    return result;
   }
 
-  protected calculateSignal(result?: BandsResult | null, price?: number) {
+  protected override calculateSignalState(result?: BandsResult | null) {
+    const price = this.#lastPrice;
+
     if (!result || price === undefined) {
       return TradingSignal.UNKNOWN;
     }
+
     if (price > result.upper) {
       return TradingSignal.BULLISH;
     }
+
     if (price < result.lower) {
       return TradingSignal.BEARISH;
     }
+
     return TradingSignal.SIDEWAYS;
-  }
-
-  getSignal(): {
-    state: (typeof TradingSignal)[keyof typeof TradingSignal];
-    hasChanged: boolean;
-  } {
-    const previousState = this.calculateSignal(this.#twoPreviousResult, this.#previousPrice);
-    const state = this.calculateSignal(this.#previousResult, this.#lastPrice);
-    const hasChanged = previousState !== state;
-
-    return {
-      hasChanged,
-      state,
-    };
   }
 }
