@@ -5,10 +5,10 @@ import type {MarketType} from './MarketType.js';
 
 /**
  * State persistence is snapshot-based: the Proxy behind `getProxiedState()` only traps
- * TOP-LEVEL assignments, so mutating a nested object in place (e.g.
- * `this.state.foo.bar = x`) changes memory but is silently lost on restart. Use
- * {@link Strategy.setState} to update nested state — it merges the patch and persists
- * in one step.
+ * TOP-LEVEL assignments, so mutating a nested object reached through it in place (e.g.
+ * `this.getProxiedState().foo.bar = x`) changes memory but is silently lost on restart.
+ * Use {@link Strategy.setState} to update nested state — it merges the patch and
+ * persists in one step.
  */
 export abstract class Strategy implements TradingSessionStrategy {
   static NAME: string;
@@ -97,9 +97,28 @@ export abstract class Strategy implements TradingSessionStrategy {
    * patch persists once, not once per key.
    */
   setState<T extends Record<string, unknown>>(patch: Partial<T>): void {
-    const target = this.#stateTarget ?? {...this.state};
-    Object.assign(target, patch);
-    this.state = {...target};
+    const snapshot = this.state;
+    if (!snapshot) {
+      throw new Error('No state to update. Pass {state} to the Strategy constructor or call restoreState() first.');
+    }
+
+    if (this.#stateTarget) {
+      /*
+       * Sync the Proxy's target to the persisted snapshot before patching: restoreState()
+       * replaces the snapshot but not the target, so merging from the target alone would
+       * resurrect stale pre-restore values and clobber restored keys.
+       */
+      for (const key of Object.keys(this.#stateTarget)) {
+        if (!(key in snapshot)) {
+          delete this.#stateTarget[key];
+        }
+      }
+      Object.assign(this.#stateTarget, snapshot, patch);
+      this.state = {...this.#stateTarget};
+      return;
+    }
+
+    this.state = {...snapshot, ...patch};
   }
 
   /**

@@ -35,7 +35,7 @@ function getPersistedState(strategy: Strategy): Record<string, unknown> {
   return state;
 }
 
-describe(Strategy, () => {
+describe('Strategy', () => {
   describe('setState', () => {
     it('merges the patch into the current state and fires onSave exactly once', () => {
       const {onSave, strategy} = makeStrategy();
@@ -85,6 +85,30 @@ describe(Strategy, () => {
       restored.restoreState(persisted);
 
       expect(restored.state).toEqual({counter: 7, nested: {value: 3}});
+    });
+
+    it('keeps restored keys when setState is called after restoreState', () => {
+      const restored = new TestStrategy({counter: 0, nested: {value: 1}});
+      restored.restoreState({counter: 7, nested: {value: 3}});
+
+      restored.setState<TestState>({nested: {value: 4}});
+
+      expect(restored.state).toEqual({counter: 7, nested: {value: 4}});
+      expect(restored.proxiedState.counter).toBe(7);
+    });
+  });
+
+  describe('without state', () => {
+    class StatelessStrategy extends Strategy {
+      static override NAME = 'stateless-strategy';
+
+      protected override async processCandle(): Promise<void> {}
+    }
+
+    it('throws when setState is called before any state exists', () => {
+      const strategy = new StatelessStrategy();
+
+      expect(() => strategy.setState({counter: 1})).toThrow('No state to update');
     });
   });
 });
