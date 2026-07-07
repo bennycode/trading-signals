@@ -66,7 +66,8 @@ export class StochasticOscillator extends TrendTechnicalIndicator<StochasticResu
       // Prevent division by zero
       fastK = fastK / (divisor === 0 ? 1 : divisor);
       const stochK = this.#periodM.update(fastK, replace); // (stoch_k, %k)
-      const stochD = stochK && this.#periodP.update(stochK, replace); // (stoch_d, %d)
+      // %K of 0 (close at the window low) is a valid reading and must still feed the %D average
+      const stochD = stochK !== null ? this.#periodP.update(stochK, replace) : null; // (stoch_d, %d)
 
       if (stochK !== null && stochD !== null) {
         return this.setResult(

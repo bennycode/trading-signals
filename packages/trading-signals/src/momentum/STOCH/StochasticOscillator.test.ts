@@ -98,6 +98,19 @@ describe('StochasticOscillator', () => {
       expect(result?.stochK.toFixed(2)).toBe('0.00');
       expect(result?.stochD.toFixed(2)).toBe('0.00');
     });
+
+    it('includes a %K of zero in the %D average', () => {
+      const stoch = new StochasticOscillator(1, 1, 3);
+
+      // A close at the window low produces %K = 0, which must still count toward %D
+      expect(stoch.add({close: 5, high: 10, low: 0})).toBeNull();
+      expect(stoch.add({close: 0, high: 10, low: 0})).toBeNull();
+
+      const result = stoch.add({close: 1, high: 4, low: 0});
+
+      expect(result?.stochK.toFixed(2)).toBe('25.00');
+      expect(result?.stochD.toFixed(2)).toBe('25.00');
+    });
   });
 
   describe('getSignal', () => {
