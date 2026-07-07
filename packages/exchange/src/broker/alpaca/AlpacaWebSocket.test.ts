@@ -187,5 +187,21 @@ describe('alpacaWebSocket', {concurrent: false}, () => {
 
       expect(onAppleBar).not.toHaveBeenCalled();
     });
+
+    it('survives subscription updates while the underlying socket is closed', async () => {
+      const connection = await alpacaWebSocket.connect(createCredentials(), 'v2/iex');
+      const stream = getStream(0);
+      const closedSocketError = new Error('WebSocket is not open');
+      stream.subscribe.mockImplementation(() => {
+        throw closedSocketError;
+      });
+      stream.unsubscribe.mockImplementation(() => {
+        throw closedSocketError;
+      });
+
+      const callback = vi.fn();
+      expect(() => alpacaWebSocket.subscribeToBars(connection.connectionId, 'AAPL', callback)).not.toThrow();
+      expect(() => alpacaWebSocket.unsubscribeFromBars(connection.connectionId, 'AAPL')).not.toThrow();
+    });
   });
 });

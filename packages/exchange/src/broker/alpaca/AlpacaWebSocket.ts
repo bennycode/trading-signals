@@ -197,8 +197,10 @@ class AlpacaWebSocket extends EventEmitter {
     callbacks.add(cb);
 
     const allSymbols = Array.from(subscriptions.keys());
-    connection.stream.unsubscribe('bars', allSymbols);
-    connection.stream.subscribe('bars', allSymbols);
+    this.#sendSubscriptionUpdate(connection, stream => {
+      stream.unsubscribe('bars', allSymbols);
+      stream.subscribe('bars', allSymbols);
+    });
   }
 
   unsubscribeFromBars(connectionId: string, symbol: string) {
@@ -209,7 +211,23 @@ class AlpacaWebSocket extends EventEmitter {
 
     this.#subscriptions.get(connectionId)?.delete(symbol);
 
-    connection.stream.unsubscribe('bars', [symbol]);
+    this.#sendSubscriptionUpdate(connection, stream => {
+      stream.unsubscribe('bars', [symbol]);
+    });
+  }
+
+  /**
+   * Subscription updates go over the wire, and during a reconnect window the current
+   * stream may already be closed — `WebSocket#send` then throws, which would crash the
+   * host process. Swallowing the failure is safe: the reconnect path resubscribes every
+   * tracked symbol from `#subscriptions` once the fresh stream is authenticated.
+   */
+  #sendSubscriptionUpdate(connection: AlpacaConnection, update: (stream: AlpacaStream) => void) {
+    try {
+      update(connection.stream);
+    } catch (error) {
+      console.warn(`Subscription update on "${connection.connectionId}" deferred to reconnect:`, error);
+    }
   }
 
   disconnect(connectionId: string) {
