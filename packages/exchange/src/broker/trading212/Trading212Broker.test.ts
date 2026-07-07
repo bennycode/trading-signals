@@ -546,7 +546,7 @@ describe('Trading212Broker', {concurrent: false}, () => {
       expect(mockMethods.getHistoryOrdersPage).toHaveBeenCalledTimes(1);
     });
 
-    it('emits "error" instead of throwing and keeps polling after an API failure', async () => {
+    it('emits "error" to a registered listener and keeps polling after an API failure', async () => {
       mockMethods.getHistoryOrdersPage
         .mockResolvedValueOnce({items: [], nextPagePath: null})
         .mockRejectedValueOnce(new Error('Trading212 is down'))
@@ -560,7 +560,9 @@ describe('Trading212Broker', {concurrent: false}, () => {
 
       await vi.advanceTimersByTimeAsync(1_000);
       await vi.advanceTimersByTimeAsync(0);
-      expect(errorHandler).toHaveBeenCalledWith(new Error('Trading212 is down'));
+      const [emittedError] = errorHandler.mock.calls[0];
+      expect(emittedError).toBeInstanceOf(Error);
+      expect((emittedError as Error).message).toBe('Trading212 is down');
       expect(fillHandler).not.toHaveBeenCalled();
 
       await vi.advanceTimersByTimeAsync(1_000);
