@@ -1,4 +1,4 @@
-import {TechnicalIndicator, TradingSignal} from '../../types/Indicator.js';
+import {TradingSignal, TrendTechnicalIndicator} from '../../types/Indicator.js';
 import type {MovingAverage} from '../../trend/MA/MovingAverage.js';
 import type {MovingAverageTypes} from '../../trend/MA/MovingAverageTypes.js';
 import {SMA} from '../../trend/SMA/SMA.js';
@@ -23,12 +23,10 @@ import type {HighLowClose} from '../../types/HighLowClose.js';
  * @see https://github.com/QuantConnect/Lean/blob/master/Indicators/AccelerationBands.cs
  * @see https://github.com/twopirllc/pandas-ta/blob/master/pandas_ta/volatility/accbands.py
  */
-export class AccelerationBands extends TechnicalIndicator<BandsResult, HighLowClose<number>> {
+export class AccelerationBands extends TrendTechnicalIndicator<BandsResult, HighLowClose<number>> {
   readonly #lowerBand: MovingAverage;
   readonly #middleBand: MovingAverage;
   readonly #upperBand: MovingAverage;
-  #previousResult?: BandsResult;
-  #twoPreviousResult?: BandsResult;
   #lastClose?: number;
   #previousClose?: number;
 
@@ -56,56 +54,51 @@ export class AccelerationBands extends TechnicalIndicator<BandsResult, HighLowCl
     this.#middleBand.update(close, replace);
     this.#upperBand.update(high * (1 + coefficient), replace);
 
+    /*
+     * Rewind the close history so "calculateSignalState" sees the close that belonged to
+     * "previousResult" while "setResult" re-caches the previous signal state
+     */
     if (replace) {
-      this.result = this.#previousResult;
-      this.#previousResult = this.#twoPreviousResult;
       this.#lastClose = this.#previousClose;
     }
 
-    this.#twoPreviousResult = this.#previousResult;
-    this.#previousResult = this.result;
-    this.#previousClose = this.#lastClose;
-    this.#lastClose = close;
+    let result: BandsResult | null = null;
 
-    if (this.isStable) {
-      return (this.result = {
-        lower: this.#lowerBand.getResultOrThrow(),
-        middle: this.#middleBand.getResultOrThrow(),
-        upper: this.#upperBand.getResultOrThrow(),
-      });
+    if (this.#middleBand.isStable) {
+      result = this.setResult(
+        {
+          lower: this.#lowerBand.getResultOrThrow(),
+          middle: this.#middleBand.getResultOrThrow(),
+          upper: this.#upperBand.getResultOrThrow(),
+        },
+        replace
+      );
     }
 
-    return null;
+    if (!replace) {
+      this.#previousClose = this.#lastClose;
+    }
+
+    this.#lastClose = close;
+
+    return result;
   }
 
-  override get isStable() {
-    return this.#middleBand.isStable;
-  }
+  protected override calculateSignalState(result?: BandsResult | null) {
+    const close = this.#lastClose;
 
-  protected calculateSignal(result?: BandsResult | null, close?: number) {
     if (!result || close === undefined) {
       return TradingSignal.UNKNOWN;
     }
+
     if (close > result.upper) {
       return TradingSignal.BULLISH;
     }
+
     if (close < result.lower) {
       return TradingSignal.BEARISH;
     }
+
     return TradingSignal.SIDEWAYS;
-  }
-
-  getSignal(): {
-    state: (typeof TradingSignal)[keyof typeof TradingSignal];
-    hasChanged: boolean;
-  } {
-    const previousState = this.calculateSignal(this.#twoPreviousResult, this.#previousClose);
-    const state = this.calculateSignal(this.#previousResult, this.#lastClose);
-    const hasChanged = previousState !== state;
-
-    return {
-      hasChanged,
-      state,
-    };
   }
 }

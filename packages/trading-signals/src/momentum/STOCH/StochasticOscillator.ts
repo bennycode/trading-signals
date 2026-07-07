@@ -1,6 +1,6 @@
 import {SMA} from '../../trend/SMA/SMA.js';
 import type {HighLowClose} from '../../types/HighLowClose.js';
-import {TechnicalIndicator, TradingSignal} from '../../types/Indicator.js';
+import {TradingSignal, TrendTechnicalIndicator} from '../../types/Indicator.js';
 import {pushUpdate} from '../../util/pushUpdate.js';
 
 export interface StochasticResult {
@@ -28,11 +28,10 @@ export interface StochasticResult {
  * @see https://www.investopedia.com/terms/s/stochasticoscillator.asp
  * @see https://tulipindicators.org/stoch
  */
-export class StochasticOscillator extends TechnicalIndicator<StochasticResult, HighLowClose<number>> {
+export class StochasticOscillator extends TrendTechnicalIndicator<StochasticResult, HighLowClose<number>> {
   public readonly candles: HighLowClose<number>[] = [];
   readonly #periodM: SMA;
   readonly #periodP: SMA;
-  #previousResult?: StochasticResult;
 
   /**
    * @param n The %k period
@@ -70,23 +69,20 @@ export class StochasticOscillator extends TechnicalIndicator<StochasticResult, H
       const stochD = stochK && this.#periodP.update(stochK, replace); // (stoch_d, %d)
 
       if (stochK !== null && stochD !== null) {
-        if (replace) {
-          this.result = this.#previousResult;
-        }
-
-        this.#previousResult = this.result;
-
-        return (this.result = {
-          stochD,
-          stochK,
-        });
+        return this.setResult(
+          {
+            stochD,
+            stochK,
+          },
+          replace
+        );
       }
     }
 
     return null;
   }
 
-  protected calculateSignal(result?: StochasticResult | null | undefined) {
+  protected override calculateSignalState(result?: StochasticResult | null | undefined) {
     const hasResult = result !== null && result !== undefined;
     const isOversold = hasResult && result.stochK <= 20;
     const isOverbought = hasResult && result.stochK >= 80;
@@ -101,19 +97,5 @@ export class StochasticOscillator extends TechnicalIndicator<StochasticResult, H
       default:
         return TradingSignal.SIDEWAYS;
     }
-  }
-
-  getSignal(): {
-    state: (typeof TradingSignal)[keyof typeof TradingSignal];
-    hasChanged: boolean;
-  } {
-    const previousState = this.calculateSignal(this.#previousResult);
-    const state = this.calculateSignal(this.getResult());
-    const hasChanged = previousState !== state;
-
-    return {
-      hasChanged,
-      state,
-    };
   }
 }

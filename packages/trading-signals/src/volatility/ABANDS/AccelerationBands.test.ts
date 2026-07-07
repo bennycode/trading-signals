@@ -18,7 +18,7 @@ describe('AccelerationBands', () => {
     it('returns upper, middle and lower bands', () => {
       const interval = 20;
       const accBands = new AccelerationBands(interval, 4);
-      expect(accBands.isStable).toBe(false);
+      const offset = accBands.getRequiredInputs() - 1;
 
       // Test data from: https://github.com/QuantConnect/Lean/blob/master/Tests/TestData/spy_acceleration_bands_20_4.txt
       const candles = [
@@ -42,12 +42,13 @@ describe('AccelerationBands', () => {
         {close: 188.12, high: 189.74, low: 186.93, open: 188.24},
         {close: 191.63, high: 191.83, low: 189.44, open: 190.4},
         {close: 192.13, high: 192.49, low: 189.82, open: 192.03},
-      ];
+      ] as const;
 
-      for (const candle of candles) {
-        const {close, high, low} = candle;
+      candles.forEach(({close, high, low}, index) => {
         accBands.add({close, high, low});
-      }
+
+        expect(accBands.isStable).toBe(index >= offset);
+      });
 
       let result = accBands.getResultOrThrow();
 
@@ -75,6 +76,30 @@ describe('AccelerationBands', () => {
       } catch (error) {
         expect(error).toBeInstanceOf(NotEnoughDataError);
       }
+    });
+  });
+
+  describe('replace', () => {
+    it('replaces the most recently added value', () => {
+      const accBands = new AccelerationBands(5, 4);
+
+      for (let i = 0; i < 5; i++) {
+        accBands.add({close: 50 + i, high: 60, low: 40});
+      }
+
+      const originalValue = {close: 55, high: 60, low: 40} as const;
+      const replacedValue = {close: 45, high: 60, low: 40} as const;
+
+      const originalResult = accBands.add(originalValue);
+      const replacedResult = accBands.replace(replacedValue);
+
+      expect(replacedResult?.middle).not.toBe(originalResult?.middle);
+
+      const restoredResult = accBands.replace(originalValue);
+
+      expect(restoredResult?.lower).toBe(originalResult?.lower);
+      expect(restoredResult?.middle).toBe(originalResult?.middle);
+      expect(restoredResult?.upper).toBe(originalResult?.upper);
     });
   });
 
@@ -117,32 +142,38 @@ describe('AccelerationBands', () => {
       expect(signal.state).toBe(TradingSignal.UNKNOWN);
     });
 
-    it('returns BULLISH when close breaks above the previous upper band', () => {
+    it('returns BULLISH when the close breaks above the upper band', () => {
       const accBands = new AccelerationBands(5, 4);
-      // 5 stable candles for first result, then spike: signal compares against previous bands
+
+      // Fill the interval with flat candles so the bands stay narrow around 50
       for (let i = 0; i < 5; i++) {
         accBands.add({close: 50, high: 51, low: 49});
       }
+
       accBands.add({close: 80, high: 81, low: 79});
       const signal = accBands.getSignal();
       expect(signal.state).toBe(TradingSignal.BULLISH);
     });
 
-    it('returns BEARISH when close breaks below the previous lower band', () => {
+    it('returns BEARISH when the close breaks below the lower band', () => {
       const accBands = new AccelerationBands(5, 4);
+
       for (let i = 0; i < 5; i++) {
         accBands.add({close: 50, high: 51, low: 49});
       }
+
       accBands.add({close: 20, high: 21, low: 19});
       const signal = accBands.getSignal();
       expect(signal.state).toBe(TradingSignal.BEARISH);
     });
 
-    it('returns SIDEWAYS when close is between the previous bands', () => {
+    it('returns SIDEWAYS when the close stays between the bands', () => {
       const accBands = new AccelerationBands(5, 4);
+
       for (let i = 0; i < 5; i++) {
         accBands.add({close: 50, high: 51, low: 49});
       }
+
       accBands.add({close: 50, high: 51, low: 49});
       const signal = accBands.getSignal();
       expect(signal.state).toBe(TradingSignal.SIDEWAYS);
@@ -150,13 +181,15 @@ describe('AccelerationBands', () => {
 
     it('tracks signal state changes', () => {
       const accBands = new AccelerationBands(5, 4);
-      // 6 stable candles: need previous result to exist for non-UNKNOWN signal
+
+      // Flat candles keep the bands narrow around 50
       for (let i = 0; i < 6; i++) {
         accBands.add({close: 50, high: 51, low: 49});
       }
+
       expect(accBands.getSignal().state).toBe(TradingSignal.SIDEWAYS);
 
-      // Spike above previous upper band (BULLISH)
+      // Spike up: the close escapes the bands to the upside
       accBands.add({close: 80, high: 81, low: 79});
       const signal = accBands.getSignal();
       expect(signal.state).toBe(TradingSignal.BULLISH);
@@ -165,17 +198,24 @@ describe('AccelerationBands', () => {
 
     it('restores previous signal state on replace', () => {
       const accBands = new AccelerationBands(5, 4);
+
       for (let i = 0; i < 6; i++) {
         accBands.add({close: 50, high: 51, low: 49});
       }
+
       expect(accBands.getSignal().state).toBe(TradingSignal.SIDEWAYS);
 
       // Add a spike, then replace it with a normal value
       accBands.add({close: 80, high: 81, low: 79});
       expect(accBands.getSignal().state).toBe(TradingSignal.BULLISH);
 
+      const signal = accBands.getSignal();
       accBands.replace({close: 50, high: 51, low: 49});
-      expect(accBands.getSignal().state).toBe(TradingSignal.SIDEWAYS);
+      const restoredSignal = accBands.getSignal();
+
+      expect(signal.hasChanged).toBe(true);
+      expect(restoredSignal.state).toBe(TradingSignal.SIDEWAYS);
+      expect(restoredSignal.hasChanged).toBe(false);
     });
   });
 });
