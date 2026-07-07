@@ -118,7 +118,11 @@ export class AlpacaBrokerMapper {
      * Stocks/ETFs are commission-free, but crypto is not: Alpaca deducts the fee from the
      * credited asset (what you receive) per trade — a BUY pays in the base asset, a SELL pays
      * in the counter/fiat. Limit orders are billed at the maker rate; every other order type
-     * removes liquidity and is billed at the taker (market) rate.
+     * removes liquidity and is billed at the taker (market) rate. This is an approximation:
+     * a marketable limit order (one that executes immediately) actually pays the taker rate,
+     * but the order payload does not say whether the fill added or removed liquidity, so the
+     * order type is the best available signal. Reconcile against account activities when
+     * exact figures matter.
      *
      * @see https://docs.alpaca.markets/docs/crypto-fees
      * @see https://files.alpaca.markets/disclosures/library/BrokFeeSched.pdf

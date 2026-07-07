@@ -187,13 +187,22 @@ export class AlpacaBroker extends Broker implements MarketDataSource {
 
     const cb = (message: TradeUpdateMessage) => {
       if (message.event === TradeUpdateEvent.FILL) {
-        const pair = AlpacaBrokerMapper.symbolToPair(message.order.symbol, message.order.asset_class);
         /*
-         * The stream is account-wide (no single pair to query rates for), so the default fee
-         * schedule is used — the same values `getFeeRates` returns today.
+         * The trading stream invokes listeners without a try/catch, so a mapping error on one
+         * malformed payload (e.g. a FILL without `filled_avg_price`) must not escape and take
+         * down the socket handler — drop the message and keep the stream alive.
          */
-        const fill = AlpacaBrokerMapper.toFilledOrder(message.order, pair, AlpacaBroker.DEFAULT_FEE_RATES);
-        this.emit(topicId, fill);
+        try {
+          const pair = AlpacaBrokerMapper.symbolToPair(message.order.symbol, message.order.asset_class);
+          /*
+           * The stream is account-wide (no single pair to query rates for), so the default fee
+           * schedule is used — the same values `getFeeRates` returns today.
+           */
+          const fill = AlpacaBrokerMapper.toFilledOrder(message.order, pair, AlpacaBroker.DEFAULT_FEE_RATES);
+          this.emit(topicId, fill);
+        } catch (error) {
+          console.warn(`Dropped unmappable fill for order "${message.order.id}":`, error);
+        }
       }
     };
 
