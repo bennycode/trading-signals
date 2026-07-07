@@ -155,7 +155,7 @@ describe('Trading212BrokerMapper', () => {
   });
 
   describe('toFilledOrder', () => {
-    it('maps a filled BUY order and sums the tax lines into a fee in the account currency', () => {
+    it('maps a filled BUY order and nets the debit tax lines into a fee in the account currency', () => {
       const item: HistoryOrder = {
         fill: {
           filledAt: '2025-06-02T14:30:01.000Z',
@@ -190,6 +190,43 @@ describe('Trading212BrokerMapper', () => {
         side: OrderSide.BUY,
         size: '2',
       });
+    });
+
+    it('subtracts credit/rebate tax lines from the fee instead of inflating it', () => {
+      const item: HistoryOrder = {
+        fill: {
+          filledAt: '2025-06-02T14:30:01.000Z',
+          price: 100.5,
+          quantity: 2,
+          walletImpact: {
+            taxes: [
+              {name: 'CURRENCY_CONVERSION_FEE', quantity: -0.5},
+              {name: 'CURRENCY_CONVERSION_FEE_REBATE', quantity: 0.2},
+            ],
+          },
+        },
+        order: {id: 12, quantity: 2, status: Trading212OrderStatus.FILLED, ticker: 'AAPL_US_EQ'},
+      };
+
+      const fill = Trading212BrokerMapper.toFilledOrder(item, pair, 'EUR');
+
+      expect(fill.fee).toBe('0.3');
+    });
+
+    it('clamps a net tax credit to a zero fee because neutral Fill.fee is an additive cost', () => {
+      const item: HistoryOrder = {
+        fill: {
+          filledAt: '2025-06-02T14:30:01.000Z',
+          price: 100.5,
+          quantity: 2,
+          walletImpact: {taxes: [{name: 'CURRENCY_CONVERSION_FEE_REBATE', quantity: 0.4}]},
+        },
+        order: {id: 13, quantity: 2, status: Trading212OrderStatus.FILLED, ticker: 'AAPL_US_EQ'},
+      };
+
+      const fill = Trading212BrokerMapper.toFilledOrder(item, pair, 'EUR');
+
+      expect(fill.fee).toBe('0');
     });
 
     it('maps a filled SELL order from a negative fill quantity', () => {

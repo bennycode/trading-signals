@@ -273,6 +273,54 @@ describe('Trading212Broker', {concurrent: false}, () => {
       expect(mockMethods.cancelOrder).toHaveBeenCalledWith(201);
       expect(mockMethods.cancelOrder).toHaveBeenCalledWith(202);
     });
+
+    it('spares manually placed STOP/STOP_LIMIT/VALUE orders that getOpenOrders does not expose', async () => {
+      mockMethods.getOrders.mockResolvedValue([
+        {
+          id: 301,
+          limitPrice: 90,
+          quantity: 1,
+          status: Trading212OrderStatus.NEW,
+          strategy: 'QUANTITY',
+          ticker: 'AAPL_US_EQ',
+          type: 'LIMIT',
+        },
+        {
+          id: 302,
+          quantity: -1,
+          status: Trading212OrderStatus.NEW,
+          stopPrice: 140,
+          strategy: 'QUANTITY',
+          ticker: 'AAPL_US_EQ',
+          type: 'STOP',
+        },
+        {
+          id: 303,
+          limitPrice: 139,
+          quantity: -1,
+          status: Trading212OrderStatus.NEW,
+          stopPrice: 140,
+          strategy: 'QUANTITY',
+          ticker: 'AAPL_US_EQ',
+          type: 'STOP_LIMIT',
+        },
+        {
+          id: 304,
+          status: Trading212OrderStatus.NEW,
+          strategy: 'VALUE',
+          ticker: 'AAPL_US_EQ',
+          type: 'MARKET',
+          value: 100,
+        },
+      ]);
+      mockMethods.cancelOrder.mockResolvedValue(undefined);
+
+      const canceledIds = await broker.cancelOpenOrders(pair);
+
+      expect(canceledIds).toEqual(['301']);
+      expect(mockMethods.cancelOrder).toHaveBeenCalledTimes(1);
+      expect(mockMethods.cancelOrder).toHaveBeenCalledWith(301);
+    });
   });
 
   describe('getFills', () => {
@@ -407,6 +455,58 @@ describe('Trading212Broker', {concurrent: false}, () => {
       broker.unwatchOrders(topicId);
     });
 
+    it('seeds the baseline cursor from orders of any status so a fill-free history does not trigger full paging', async () => {
+      const cancelledOrder = {
+        fill: null,
+        order: {id: 10, quantity: 1, status: Trading212OrderStatus.CANCELLED, ticker: 'AAPL_US_EQ'},
+      };
+      mockMethods.getHistoryOrdersPage
+        .mockResolvedValueOnce({items: [cancelledOrder], nextPagePath: null})
+        .mockResolvedValueOnce({items: [cancelledOrder], nextPagePath: '/api/v0/equity/history/orders?cursor=abc'})
+        .mockResolvedValueOnce({items: [createFilledHistoryOrder(11), cancelledOrder], nextPagePath: null});
+
+      const topicId = await broker.watchOrders(1_000);
+      const fillHandler = vi.fn<(fill: Fill) => void>();
+      broker.on(topicId, fillHandler);
+
+      await vi.advanceTimersByTimeAsync(1_000);
+      await vi.advanceTimersByTimeAsync(0);
+
+      // Baseline + one poll: the tick stopped at the already-seen id instead of following nextPagePath.
+      expect(mockMethods.getHistoryOrdersPage).toHaveBeenCalledTimes(2);
+      expect(fillHandler).not.toHaveBeenCalled();
+
+      await vi.advanceTimersByTimeAsync(1_000);
+      await vi.advanceTimersByTimeAsync(0);
+
+      expect(fillHandler).toHaveBeenCalledTimes(1);
+      expect(fillHandler).toHaveBeenCalledWith(expect.objectContaining({order_id: '11'}));
+      broker.unwatchOrders(topicId);
+    });
+
+    it('advances the cursor past non-FILLED orders seen while polling so they are not re-paged forever', async () => {
+      const cancelledOrder = {
+        fill: null,
+        order: {id: 12, quantity: 1, status: Trading212OrderStatus.CANCELLED, ticker: 'AAPL_US_EQ'},
+      };
+      mockMethods.getHistoryOrdersPage
+        .mockResolvedValueOnce({items: [createFilledHistoryOrder(10)], nextPagePath: null})
+        .mockResolvedValueOnce({items: [cancelledOrder, createFilledHistoryOrder(10)], nextPagePath: null})
+        .mockResolvedValueOnce({items: [cancelledOrder], nextPagePath: '/api/v0/equity/history/orders?cursor=abc'});
+
+      const topicId = await broker.watchOrders(1_000);
+      const fillHandler = vi.fn<(fill: Fill) => void>();
+      broker.on(topicId, fillHandler);
+
+      await vi.advanceTimersByTimeAsync(2_000);
+      await vi.advanceTimersByTimeAsync(0);
+
+      // Tick 2 stopped at the cancelled order's id instead of following nextPagePath.
+      expect(mockMethods.getHistoryOrdersPage).toHaveBeenCalledTimes(3);
+      expect(fillHandler).not.toHaveBeenCalled();
+      broker.unwatchOrders(topicId);
+    });
+
     it('pages through history until the last seen id so a burst of fills is not truncated', async () => {
       mockMethods.getHistoryOrdersPage
         .mockResolvedValueOnce({items: [createFilledHistoryOrder(10)], nextPagePath: null})
@@ -467,6 +567,29 @@ describe('Trading212Broker', {concurrent: false}, () => {
       await vi.advanceTimersByTimeAsync(0);
       expect(fillHandler).toHaveBeenCalledWith(expect.objectContaining({order_id: '21'}));
       broker.unwatchOrders(topicId);
+    });
+
+    it('survives a poll failure without any "error" listener (Node throws on unhandled "error" emissions)', async () => {
+      const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+      mockMethods.getHistoryOrdersPage
+        .mockResolvedValueOnce({items: [], nextPagePath: null})
+        .mockRejectedValueOnce(new Error('Trading212 is down'))
+        .mockResolvedValueOnce({items: [createFilledHistoryOrder(21)], nextPagePath: null});
+
+      const topicId = await broker.watchOrders(1_000);
+      const fillHandler = vi.fn<(fill: Fill) => void>();
+      broker.on(topicId, fillHandler);
+
+      await vi.advanceTimersByTimeAsync(1_000);
+      await vi.advanceTimersByTimeAsync(0);
+      expect(warn).toHaveBeenCalledWith('[Trading212] watchOrders poll failed:', new Error('Trading212 is down'));
+
+      await vi.advanceTimersByTimeAsync(1_000);
+      await vi.advanceTimersByTimeAsync(0);
+      expect(fillHandler).toHaveBeenCalledWith(expect.objectContaining({order_id: '21'}));
+
+      broker.unwatchOrders(topicId);
+      warn.mockRestore();
     });
   });
 });
