@@ -27,8 +27,8 @@ class MarketDataSourceStub extends MarketDataSource {
     throw new Error('Not implemented');
   }
 
-  async watchCandles() {
-    throw new Error('Not implemented');
+  watchCandles() {
+    return Promise.reject<string>(new Error('Not implemented'));
   }
 
   unwatchCandles(): void {}
