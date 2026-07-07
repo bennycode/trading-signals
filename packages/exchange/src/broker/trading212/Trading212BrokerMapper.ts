@@ -1,3 +1,4 @@
+import Big from 'big.js';
 import type {TradingPair} from '../TradingPair.js';
 import {
   OrderPosition,
@@ -120,11 +121,19 @@ export class Trading212BrokerMapper {
 
     const signedQty = fill.quantity ?? order.quantity ?? order.filledQuantity ?? 0;
     const side = signedQty < 0 ? OrderSide.SELL : OrderSide.BUY;
-    const fee = (fill.walletImpact?.taxes ?? []).reduce((sum, tax) => sum + Math.abs(tax.quantity ?? 0), 0);
+    /*
+     * Tax lines are signed from the account's perspective: debits (FX conversion, stamp
+     * duty) are negative, credits/rebates positive. Net them instead of summing magnitudes
+     * so a rebate reduces the fee rather than inflating it. Neutral `Fill.fee` is a cost
+     * that downstream P&L accumulates additively, so the rare net credit (rebates exceeding
+     * charges) is clamped to zero instead of reported as a negative fee.
+     */
+    const netCost = (fill.walletImpact?.taxes ?? []).reduce((sum, tax) => sum.minus(tax.quantity ?? 0), new Big(0));
+    const fee = netCost.lt(0) ? new Big(0) : netCost;
 
     return {
       created_at: fill.filledAt ?? order.createdAt ?? '',
-      fee: `${fee}`,
+      fee: fee.toFixed(),
       feeAsset: accountCurrency,
       order_id: `${order.id}`,
       pair,

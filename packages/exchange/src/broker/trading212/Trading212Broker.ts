@@ -22,7 +22,7 @@ import {
 import {TradingPair} from '../TradingPair.js';
 import type {MarketDataSource} from '../MarketDataSource.js';
 import {Trading212API} from './api/Trading212API.js';
-import {Trading212OrderStatus, Trading212TimeValidity} from './api/schema/OrderSchema.js';
+import {Trading212OrderStatus, Trading212TimeValidity, type Order} from './api/schema/OrderSchema.js';
 import {Trading212BrokerMapper} from './Trading212BrokerMapper.js';
 
 export class Trading212Broker extends Broker implements MarketDataSource {
@@ -161,9 +161,14 @@ export class Trading212Broker extends Broker implements MarketDataSource {
     ]);
 
     const tickerToCurrency = new Map(instruments.map(instrument => [instrument.ticker, instrument.currencyCode]));
-    let lastSeenId = baseline.items
-      .filter(item => item.order.id != null && item.order.status === Trading212OrderStatus.FILLED)
-      .reduce((max, item) => Math.max(max, item.order.id ?? 0), 0);
+    /*
+     * The cursor exists to bound paging, not to mark fills, so seed it from the newest
+     * order of ANY status. Seeding from FILLED entries only would leave it at 0 on an
+     * account whose history holds no fill yet, making every tick page the entire order
+     * history against Trading212's 1 req/60s budget. Replay safety is unaffected:
+     * everything in this snapshot predates watchOrders and must never be emitted anyway.
+     */
+    let lastSeenId = baseline.items.reduce((max, item) => Math.max(max, item.order.id ?? 0), 0);
     let stopped = false;
 
     const tick = async () => {
@@ -174,6 +179,7 @@ export class Trading212Broker extends Broker implements MarketDataSource {
          * ones off the first page.
          */
         const newFills: typeof baseline.items = [];
+        let maxScannedId = lastSeenId;
         let nextPath: string | null = null;
         do {
           const page = await this.#api.getHistoryOrdersPage(nextPath ? {nextPath} : undefined);
@@ -184,6 +190,7 @@ export class Trading212Broker extends Broker implements MarketDataSource {
               reachedSeen = true;
               break;
             }
+            maxScannedId = Math.max(maxScannedId, orderId ?? 0);
             if (item.order.status === Trading212OrderStatus.FILLED && orderId != null && item.fill) {
               newFills.push(item);
             }
@@ -200,8 +207,25 @@ export class Trading212Broker extends Broker implements MarketDataSource {
           this.emit(topicId, Trading212BrokerMapper.toFilledOrder(item, pair, accountInfo.currencyCode));
           lastSeenId = Math.max(lastSeenId, item.order.id ?? 0);
         }
+
+        /*
+         * Non-FILLED entries (cancellations, rejections) never emit, but leaving them ahead
+         * of the cursor would make every subsequent tick re-scan — and eventually re-page —
+         * the same finalized orders.
+         */
+        lastSeenId = Math.max(lastSeenId, maxScannedId);
       } catch (error) {
-        this.emit('error', error);
+        /*
+         * 'error' is Node's reserved event: emitting it with zero listeners throws
+         * synchronously, and inside a timer callback that would take down the whole
+         * process over a transient poll failure. Broadcast only when someone is
+         * listening; otherwise warn, so polling always survives to the next tick.
+         */
+        if (this.listenerCount('error') > 0) {
+          this.emit('error', error);
+        } else {
+          console.warn(`[${this.loggerName}] watchOrders poll failed:`, error);
+        }
       } finally {
         if (!stopped) {
           this.#orderWatchers.set(topicId, setTimeout(tick, intervalInMillis));
@@ -276,21 +300,27 @@ export class Trading212Broker extends Broker implements MarketDataSource {
     return balances;
   }
 
+  /**
+   * Shared visibility filter for {@link getOpenOrders} and {@link cancelOpenOrders}.
+   *
+   * The neutral model can only represent QUANTITY-strategy MARKET/LIMIT orders:
+   * - STOP / STOP_LIMIT (e.g. protective stops placed manually in the Trading212 app):
+   *   neutral `OrderType` only models MARKET and LIMIT; coercing would silently lose `stopPrice`.
+   * - VALUE-strategy orders (notional amount in `value` instead of `quantity`): neutral
+   *   `PendingOrder.size` is base-asset units, not notional.
+   *
+   * Both call sites apply this filter on purpose — a session must never cancel an order it
+   * cannot list, or its cancel-before-place would silently wipe a protective stop the user
+   * placed manually.
+   */
+  static #fitsNeutralOrderModel(order: Order) {
+    return (order.type === 'MARKET' || order.type === 'LIMIT') && order.quantity != null;
+  }
+
   async getOpenOrders(pair: TradingPair): Promise<PendingOrder[]> {
     const orders = await this.#api.getOrders();
-    /*
-     * Drop orders that don't fit the neutral model:
-     * - STOP / STOP_LIMIT (e.g. placed manually in the Trading212 app): neutral `OrderType`
-     *   only models MARKET and LIMIT; coercing would silently lose `stopPrice`.
-     * - VALUE-strategy orders (notional amount in `value` instead of `quantity`): neutral
-     *   `PendingOrder.size` is base-asset units, not notional. Filter to QUANTITY-strategy
-     *   orders only.
-     */
     return orders
-      .filter(
-        order =>
-          order.ticker === pair.base && (order.type === 'MARKET' || order.type === 'LIMIT') && order.quantity != null
-      )
+      .filter(order => order.ticker === pair.base && Trading212Broker.#fitsNeutralOrderModel(order))
       .map(order => Trading212BrokerMapper.toOpenOrder(order, pair));
   }
 
@@ -300,7 +330,10 @@ export class Trading212Broker extends Broker implements MarketDataSource {
 
   async cancelOpenOrders(pair: TradingPair): Promise<string[]> {
     const orders = await this.#api.getOrders();
-    const matching = orders.filter(order => order.ticker === pair.base);
+    // Cancel only what getOpenOrders exposes — see #fitsNeutralOrderModel for the invariant.
+    const matching = orders.filter(
+      order => order.ticker === pair.base && Trading212Broker.#fitsNeutralOrderModel(order)
+    );
     await Promise.all(matching.map(order => this.#api.cancelOrder(order.id)));
     return matching.map(order => `${order.id}`);
   }
