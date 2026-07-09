@@ -77,6 +77,24 @@ type OrderAdvice = MarketOrderAdvice | LimitOrderAdvice;
 
 > The public `onCandle` you see on the base class is a template method — it calls your `processCandle` and caches `latestAdvice`. You override `processCandle`, not `onCandle`.
 
+### Extending a base strategy
+
+You don't have to extend `Strategy` directly. Strategies are ordinary classes, so a subclass can layer shared behaviour onto the base contract and let other strategies inherit it. The library ships one such base: **`ProtectedStrategy`** adds composable stop-loss / take-profit kill-switches. A strategy that extends it calls `super.processCandle(candle, state)` first and returns immediately if a guard fires, otherwise it runs its own logic:
+
+```ts
+class MyStrategy extends ProtectedStrategy {
+  protected override async processCandle(candle, state) {
+    const guardAdvice = await super.processCandle(candle, state);
+    if (guardAdvice) {
+      return guardAdvice; // a stop-loss / take-profit guard tripped — exit now
+    }
+    // ...your own signal logic, returning OrderAdvice | void
+  }
+}
+```
+
+Build your own base the same way when several strategies need to share warm-up, position tracking, or risk rules — or extend `Strategy` directly (as `NoopStrategy` does) when a strategy needs none of that.
+
 ## Running a Strategy
 
 The same strategy instance runs unchanged in two places. Both feed it 1-minute candles + `TradingSessionState`, and both route the returned advice through the **same `AdviceExecutor`** — so sizing, rounding, min-notional clamping and rejection behaviour are identical in backtest and in production. A backtest is a faithful dry run of the live path, not a separate reimplementation.
