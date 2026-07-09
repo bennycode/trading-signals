@@ -20,6 +20,11 @@ export {
 } from './strategy-multi-indicator-confluence/MultiIndicatorConfluenceStrategy.js';
 export {ScalpStrategy, ScalpSchema, type ScalpConfig} from './strategy-scalp/ScalpStrategy.js';
 export {
+  SmaCrossoverStrategy,
+  SmaCrossoverSchema,
+  type SmaCrossoverConfig,
+} from './strategy-sma-crossover/SmaCrossoverStrategy.js';
+export {
   MeanReversionStrategy,
   MeanReversionSchema,
   type MeanReversionConfig,
