@@ -1,10 +1,10 @@
 import {z} from 'zod';
 import type {Candle} from '@typedtrader/exchange';
-import {BuyOnceSchema, BuyBelowSellAboveSchema, CoinFlipSchema, MultiIndicatorConfluenceSchema, ScalpSchema, MeanReversionSchema, ProtectedStrategySchema, TrailingStopSchema, suggestScalpOffset} from 'trading-strategies';
+import {BuyOnceSchema, BuyBelowSellAboveSchema, CoinFlipSchema, MultiIndicatorConfluenceSchema, ScalpSchema, MeanReversionSchema, SmaCrossoverSchema, ProtectedStrategySchema, TrailingStopSchema, suggestScalpOffset} from 'trading-strategies';
 
-export {BuyOnceSchema, BuyBelowSellAboveSchema, CoinFlipSchema, MultiIndicatorConfluenceSchema, ScalpSchema, MeanReversionSchema, ProtectedStrategySchema, TrailingStopSchema};
+export {BuyOnceSchema, BuyBelowSellAboveSchema, CoinFlipSchema, MultiIndicatorConfluenceSchema, ScalpSchema, MeanReversionSchema, SmaCrossoverSchema, ProtectedStrategySchema, TrailingStopSchema};
 
-export type StrategyId = 'buy-and-hold' | 'buy-once' | 'buy-below-sell-above' | 'coin-flip' | 'multi-indicator-confluence' | 'scalp' | 'mean-reversion' | 'protection-only' | 'trailing-stop';
+export type StrategyId = 'buy-and-hold' | 'buy-once' | 'buy-below-sell-above' | 'coin-flip' | 'multi-indicator-confluence' | 'scalp' | 'mean-reversion' | 'sma-crossover' | 'protection-only' | 'trailing-stop';
 
 export interface StrategyDefinition {
   id: StrategyId;
@@ -121,6 +121,14 @@ export const strategyDefinitions: StrategyDefinition[] = [
       'Batches 1-minute candles into 1-hour bars and applies Bollinger Bands (20, 2.5). Sells when price breaks above the upper band; rebuys when it returns to the middle band.',
     schema: MeanReversionSchema,
     getDefaultConfig: () => ({}),
+  },
+  {
+    id: 'sma-crossover',
+    name: 'SMA Crossover',
+    description:
+      'Crosses a fast SMA against a slow SMA — each with its own period and timeframe (e.g. SMA5 on 1m bars vs SMA10 on 2m bars). Buys when the fast SMA crosses above the slow one and sells when it crosses below (market orders).',
+    schema: SmaCrossoverSchema,
+    getDefaultConfig: () => ({fastPeriod: 5, fastTimeframe: '1m', slowPeriod: 10, slowTimeframe: '2m'}),
   },
   {
     id: 'protection-only',

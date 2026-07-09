@@ -10,6 +10,8 @@ import {
   MultiIndicatorConfluenceStrategy,
   ScalpStrategy,
   MeanReversionStrategy,
+  SmaCrossoverStrategy,
+  SmaCrossoverSchema,
   ProtectedStrategy,
   TrailingStopStrategy,
   type BacktestResult,
@@ -43,6 +45,8 @@ function createStrategy(strategyId: StrategyId, config: Record<string, unknown>)
       return new ScalpStrategy(config as ScalpConfig);
     case 'mean-reversion':
       return new MeanReversionStrategy({config});
+    case 'sma-crossover':
+      return new SmaCrossoverStrategy(SmaCrossoverSchema.parse(config));
     case 'protection-only':
       return new ProtectedStrategy({config});
     case 'trailing-stop':
