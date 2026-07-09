@@ -53,7 +53,7 @@ interface TradingSessionState {
 }
 ```
 
-**Output — declarative advice, not orders.** A strategy never places an order itself. It returns an `OrderAdvice` describing *what* it wants, or `void`/`undefined` to do nothing this candle. The runtime turns advice into a real (sized, rounded, validated) order:
+**Output — declarative advice, not orders.** A strategy never places an order itself. It returns an `OrderAdvice` describing _what_ it wants, or `void`/`undefined` to do nothing this candle. The runtime turns advice into a real (sized, rounded, validated) order:
 
 ```ts
 type OrderAdvice = MarketOrderAdvice | LimitOrderAdvice;
@@ -63,7 +63,7 @@ type OrderAdvice = MarketOrderAdvice | LimitOrderAdvice;
 
 - `amountIn` selects whether `amount` is denominated in the **base** asset (units) or **counter** currency (spend).
 - `AllAvailableAmount` is a sentinel meaning "use the full available balance."
-- `reason` is optional free text surfaced in reports/events for debugging *why* a trade fired.
+- `reason` is optional free text surfaced in reports/events for debugging _why_ a trade fired.
 
 **Lifecycle hooks (all optional except `processCandle`):**
 
@@ -72,7 +72,7 @@ type OrderAdvice = MarketOrderAdvice | LimitOrderAdvice;
 | `init(market, pair)` | Once at startup — fetch history, warm up indicators, precompute offsets. |
 | `processCandle(candle, state)` | Every 1-minute candle. Return advice or `void`. |
 | `onFill(fill, state)` | A fill occurred — update internal position/cost-basis tracking. |
-| `onOrderFilled(order, state)` | One of *your* orders is fully filled (compare by reference/side, no raw id matching). |
+| `onOrderFilled(order, state)` | One of _your_ orders is fully filled (compare by reference/side, no raw id matching). |
 | `onMessage(text)` | Set by the runtime; call it to surface a user-facing message (used sparingly). |
 
 > The public `onCandle` you see on the base class is a template method — it calls your `processCandle` and caches `latestAdvice`. You override `processCandle`, not `onCandle`.
