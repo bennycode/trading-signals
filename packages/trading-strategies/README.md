@@ -22,132 +22,47 @@ The "trading-strategies" library provides a TypeScript implementation for common
 npm install trading-strategies
 ```
 
-## Usage
+## How a Strategy Works
 
-```ts
-import {Strategy, AllAvailableAmount} from 'trading-strategies';
-import type {OrderAdvice} from 'trading-strategies';
-import {OrderSide, OrderType} from '@typedtrader/exchange';
-```
+A strategy watches the market one candle at a time and decides what to do next: **buy, sell, or wait.** You write that decision; the library handles the rest — turning it into a correctly sized order and keeping track of balances, fees, and each exchange's trading rules for you.
 
-## The Strategy Contract
+On every new candle your strategy sees the latest price data and a snapshot of your account, then returns one of:
 
-A strategy is **candles in, advice out**. You implement a single method; the runtime does the rest.
+- **Buy** — at the current price (market order) or at a price you set (limit order)
+- **Sell** — at the current price or at a price you set
+- **Nothing** — sit this one out
 
-```ts
-protected abstract processCandle(
-  candle: OneMinuteBatchedCandle,
-  state: TradingSessionState
-): Promise<OrderAdvice | void>;
-```
+A strategy never places orders itself. It only gives _advice_, and the library works out how to fill it safely.
 
-**Input — one candle per call.** Strategies always receive **1-minute batched candles** (`OneMinuteBatchedCandle`). If your logic works on a larger timeframe, aggregate internally with `CandleBatcher` (e.g. `MeanReversionStrategy` batches to 1-hour bars). Alongside the candle you get a read-only `TradingSessionState`:
+You can also start from a ready-made base instead of from scratch. For example, **`ProtectedStrategy`** adds automatic stop-loss and take-profit guards: build your buy/sell logic on top of it and your position is protected with no extra work.
 
-```ts
-interface TradingSessionState {
-  readonly baseBalance: Big;
-  readonly counterBalance: Big;
-  readonly lastOrderSide?: OrderSide;
-  readonly tradingRules: TradingRules; // tick/step size, min notional, min sizes
-  readonly feeRates: FeeRate;
-}
-```
+## Same Strategy, Backtest or Live
 
-**Output — declarative advice, not orders.** A strategy never places an order itself. It returns an `OrderAdvice` describing _what_ it wants, or `void`/`undefined` to do nothing this candle. The runtime turns advice into a real (sized, rounded, validated) order:
+Write a strategy once and run it in two places without changing a line:
 
-```ts
-type OrderAdvice = MarketOrderAdvice | LimitOrderAdvice;
-// e.g. { type: 'MARKET', side: 'SELL', amountIn: 'base', amount: AllAvailableAmount, reason?: '...' }
-//      { type: 'LIMIT',  side: 'BUY',  amountIn: 'base', amount: '10', price: '95', reason?: '...' }
-```
+- **Backtest** — replay historical candles to measure how it would have performed.
+- **Live or paper trading** — stream real candles from a broker and trade for real, or with simulated money.
 
-- `amountIn` selects whether `amount` is denominated in the **base** asset (units) or **counter** currency (spend).
-- `AllAvailableAmount` is a sentinel meaning "use the full available balance."
-- `reason` is optional free text surfaced in reports/events for debugging _why_ a trade fired.
+Both give the strategy the same information and handle its advice the same way, so a backtest is a faithful rehearsal of live trading — not a rough approximation. Always backtest before you go live (see [Backtesting](#backtesting)).
 
-**Lifecycle hooks (all optional except `processCandle`):**
-
-| Hook | When it fires |
-| --- | --- |
-| `init(market, pair)` | Once at startup — fetch history, warm up indicators, precompute offsets. |
-| `processCandle(candle, state)` | Every 1-minute candle. Return advice or `void`. |
-| `onFill(fill, state)` | A fill occurred — update internal position/cost-basis tracking. |
-| `onOrderFilled(order, state)` | One of _your_ orders is fully filled (compare by reference/side, no raw id matching). |
-| `onMessage(text)` | Set by the runtime; call it to surface a user-facing message (used sparingly). |
-
-> The public `onCandle` you see on the base class is a template method — it calls your `processCandle` and caches `latestAdvice`. You override `processCandle`, not `onCandle`.
-
-### Extending a base strategy
-
-You don't have to extend `Strategy` directly. Strategies are ordinary classes, so a subclass can layer shared behaviour onto the base contract and let other strategies inherit it. The library ships one such base: **`ProtectedStrategy`** adds composable stop-loss / take-profit kill-switches. A strategy that extends it calls `super.processCandle(candle, state)` first and returns immediately if a guard fires, otherwise it runs its own logic:
-
-```ts
-class MyStrategy extends ProtectedStrategy {
-  protected override async processCandle(candle, state) {
-    const guardAdvice = await super.processCandle(candle, state);
-    if (guardAdvice) {
-      return guardAdvice; // a stop-loss / take-profit guard tripped — exit now
-    }
-    // ...your own signal logic, returning OrderAdvice | void
-  }
-}
-```
-
-Build your own base the same way when several strategies need to share warm-up, position tracking, or risk rules — or extend `Strategy` directly (as `NoopStrategy` does) when a strategy needs none of that.
-
-## Running a Strategy
-
-The same strategy instance runs unchanged in two places. Both feed it 1-minute candles + `TradingSessionState`, and both route the returned advice through the **same `AdviceExecutor`** — so sizing, rounding, min-notional clamping and rejection behaviour are identical in backtest and in production. A backtest is a faithful dry run of the live path, not a separate reimplementation.
-
-**Backtest (historical, `BrokerMock`):**
+Running a backtest looks like this:
 
 ```ts
 import {BacktestExecutor, MeanReversionStrategy} from 'trading-strategies';
 
 const result = await new BacktestExecutor({
-  candles, // Candle[] in chronological order
-  broker, // a BrokerMock (e.g. AlpacaBrokerMock)
+  candles, // historical price data
+  broker, // a simulated exchange
   strategy: new MeanReversionStrategy(),
   tradingPair,
 }).execute();
 
-console.log(result.performance.returnPercentage, result.performance.buyAndHoldReturnPercentage);
+console.log(result.performance.returnPercentage);
 ```
 
-**Live / paper (streaming, real broker):**
+## What a Strategy Can Use
 
-```ts
-import {TradingSession, MeanReversionStrategy} from 'trading-strategies';
-
-const session = new TradingSession({
-  broker, // a live TradingSessionBroker
-  pair: tradingPair,
-  strategy: new MeanReversionStrategy(),
-});
-
-session.on('advice', advice => console.log('advice', advice));
-session.on('order', order => console.log('placed', order));
-session.on('error', err => console.error('skipped', err));
-
-await session.start(); // subscribes to candle + order streams; run until stop()
-```
-
-`TradingSession` is an `EventEmitter` (`started`, `candle`, `advice`, `order`, `fill`, `orderFilled`, `message`, `error`, `stopped`), so monitors and UIs observe the run without reaching into the strategy.
-
-## Strategies Are Just Async Code
-
-`processCandle` and `init` are `async` and return `Promise`s on purpose: a strategy is free to `await` **any** data source, not only `trading-signals` indicators. Technical indicators are the common case, not a requirement.
-
-Inside a strategy you can legitimately:
-
-- query a database (recent signals, positions, your own risk state),
-- fetch daily news, earnings, or analyst/stock reports over HTTP,
-- call an MCP server (e.g. TipRanks) for ratings or price targets,
-- combine any of the above with indicator readings before returning advice.
-
-`MeanReversionStrategy` already does this: it accepts a `fetchCandles` callback and pulls historical bars during warm-up, and every strategy's `init(market, pair)` receives a `MarketDataSource` for exactly this reason.
-
-> **Do the expensive/slow work in `init` or on a coarse cadence, not on every 1-minute candle.** In a backtest `processCandle` runs once per candle over the whole history, so per-candle network calls make runs slow (and non-reproducible). Warm up and cache in `init`, refresh on an interval, and keep the per-candle path cheap.
+Most strategies combine **technical indicators** from the companion [trading-signals](https://www.npmjs.com/package/trading-signals) library — moving averages, RSI, Bollinger Bands, and so on. That's the common case, but not a rule: a strategy is ordinary code, so before it decides it can also draw on anything else — your own database, the latest news or earnings, or analyst ratings from an outside service.
 
 ## Reports
 
