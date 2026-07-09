@@ -65,37 +65,53 @@ describe('SmaCrossoverStrategy', () => {
   // Falls first (fast SMA below slow), then rallies (cross up → BUY), then drops (cross down → SELL).
   const crossoverPrices = [10, 9, 8, 7, 6, 7, 9, 12, 15, 12, 9, 6];
 
+  /*
+   * Different timeframes: fast SMA2 on 1m bars vs slow SMA2 on 2m bars.
+   * The 2m batcher emits on candle indices 1, 3, 5, 7, 9, so the slow SMA is stable from
+   * index 3 onward. Fast crosses above slow at index 6 (BUY) and back below at index 9 (SELL).
+   */
+  const dualTimeframePrices = [10, 10, 10, 8, 8, 6, 14, 20, 8, 4];
+
   describe('config', () => {
     it('applies defaults when constructed without a config', () => {
       const strategy = new SmaCrossoverStrategy();
       expect(strategy.isWarmedUp).toBe(false);
     });
 
-    it('rejects a shortPeriod that is not smaller than longPeriod', () => {
-      expect(() => new SmaCrossoverStrategy({longPeriod: 20, shortPeriod: 20})).toThrowError(/must be smaller/);
-      expect(() => new SmaCrossoverStrategy({longPeriod: 20, shortPeriod: 30})).toThrowError(/must be smaller/);
+    it('rejects a fast and slow SMA that are configured identically', () => {
+      expect(
+        () => new SmaCrossoverStrategy({fastPeriod: 10, fastTimeframe: '5m', slowPeriod: 10, slowTimeframe: '5m'})
+      ).toThrowError(/never cross/);
+    });
+
+    it('allows the same timeframe as long as the periods differ', () => {
+      expect(
+        () => new SmaCrossoverStrategy({fastPeriod: 2, fastTimeframe: '1m', slowPeriod: 3, slowTimeframe: '1m'})
+      ).not.toThrow();
     });
 
     it('rejects a timeframe below one minute', () => {
-      expect(() => new SmaCrossoverStrategy({timeframe: '30s'})).toThrowError();
+      expect(() => new SmaCrossoverStrategy({fastTimeframe: '30s'})).toThrowError();
+      expect(() => new SmaCrossoverStrategy({slowTimeframe: '30s'})).toThrowError();
     });
 
     it('accepts ms-syntax timeframes like "5m" and "1d"', () => {
-      expect(() => new SmaCrossoverStrategy({timeframe: '5m'})).not.toThrow();
-      expect(() => new SmaCrossoverStrategy({timeframe: '1d'})).not.toThrow();
+      expect(() => new SmaCrossoverStrategy({fastTimeframe: '5m', slowTimeframe: '1d'})).not.toThrow();
     });
   });
 
-  describe('processCandle', () => {
+  describe('processCandle (shared timeframe)', () => {
+    const config = {fastPeriod: 2, fastTimeframe: '1m', slowPeriod: 3, slowTimeframe: '1m'} as const;
+
     it('stays silent until both SMAs are warmed up', async () => {
-      const strategy = new SmaCrossoverStrategy({longPeriod: 3, shortPeriod: 2, timeframe: '1m'});
-      const advices = await feed(strategy, [10, 11]); // only 2 bars: SMA3 not stable yet
+      const strategy = new SmaCrossoverStrategy(config);
+      const advices = await feed(strategy, [10, 11]); // only 2 bars: slow SMA3 not stable yet
       expect(advices).toHaveLength(0);
       expect(strategy.isWarmedUp).toBe(false);
     });
 
     it('buys when the fast SMA crosses above the slow SMA', async () => {
-      const strategy = new SmaCrossoverStrategy({longPeriod: 3, shortPeriod: 2, timeframe: '1m'});
+      const strategy = new SmaCrossoverStrategy(config);
       const [buy] = await feed(strategy, crossoverPrices);
       assertMarket(buy, OrderSide.BUY);
       expect(buy.amountIn).toBe('counter');
@@ -103,7 +119,7 @@ describe('SmaCrossoverStrategy', () => {
     });
 
     it('sells when the fast SMA crosses back below the slow SMA', async () => {
-      const strategy = new SmaCrossoverStrategy({longPeriod: 3, shortPeriod: 2, timeframe: '1m'});
+      const strategy = new SmaCrossoverStrategy(config);
       const [, sell] = await feed(strategy, crossoverPrices);
       assertMarket(sell, OrderSide.SELL);
       expect(sell.amountIn).toBe('base');
@@ -111,9 +127,30 @@ describe('SmaCrossoverStrategy', () => {
     });
 
     it('fires exactly one BUY then one SELL across a single up-and-down swing', async () => {
-      const strategy = new SmaCrossoverStrategy({longPeriod: 3, shortPeriod: 2, timeframe: '1m'});
+      const strategy = new SmaCrossoverStrategy(config);
       const advices = await feed(strategy, crossoverPrices);
       expect(advices.map(advice => advice.side)).toEqual([OrderSide.BUY, OrderSide.SELL]);
+    });
+  });
+
+  describe('processCandle (different timeframes)', () => {
+    const config = {fastPeriod: 2, fastTimeframe: '1m', slowPeriod: 2, slowTimeframe: '2m'} as const;
+
+    it('crosses a 1m fast SMA against a 2m slow SMA (one BUY then one SELL)', async () => {
+      const strategy = new SmaCrossoverStrategy(config);
+      const advices = await feed(strategy, dualTimeframePrices);
+      expect(advices.map(advice => advice.side)).toEqual([OrderSide.BUY, OrderSide.SELL]);
+      const [buy, sell] = advices;
+      assertMarket(buy, OrderSide.BUY);
+      assertMarket(sell, OrderSide.SELL);
+    });
+
+    it('waits for the slower SMA before it can produce advice', async () => {
+      const strategy = new SmaCrossoverStrategy(config);
+      // Two 1m candles warm up the fast SMA but only complete one 2m bar, so slow SMA2 is not stable.
+      const advices = await feed(strategy, dualTimeframePrices.slice(0, 3));
+      expect(advices).toHaveLength(0);
+      expect(strategy.isWarmedUp).toBe(false);
     });
   });
 });
