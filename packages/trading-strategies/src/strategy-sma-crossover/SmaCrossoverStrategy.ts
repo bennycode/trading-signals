@@ -7,7 +7,7 @@ import {SMA} from 'trading-signals';
 import {AllAvailableAmount} from '../trader/index.js';
 import type {OrderAdvice, TradingSessionState} from '../trader/index.js';
 import {MarketType} from '../strategy/MarketType.js';
-import {ProtectedStrategy, ProtectedStrategySchema} from '../strategy-protected/ProtectedStrategy.js';
+import {Strategy} from '../strategy/Strategy.js';
 
 const ONE_MINUTE_IN_MS = 60_000;
 
@@ -19,7 +19,7 @@ const timeframeString = z.string().refine(value => {
 
 const barCount = z.number().int().positive();
 
-export const SmaCrossoverSchema = ProtectedStrategySchema.extend({
+export const SmaCrossoverSchema = z.object({
   /** Number of bars in the slow SMA. Must be larger than `shortPeriod`. */
   longPeriod: barCount.default(20),
   /** Number of bars in the fast SMA. Must be smaller than `longPeriod`. */
@@ -36,7 +36,7 @@ export type SmaCrossoverConfig = z.input<typeof SmaCrossoverSchema>;
  * when it crosses *below*, the trend has turned down, so sell. Both entries and
  * exits are market orders using the full available balance.
  */
-export class SmaCrossoverStrategy extends ProtectedStrategy {
+export class SmaCrossoverStrategy extends Strategy {
   static override NAME = '@typedtrader/strategy-sma-crossover';
   static override marketTypes: readonly MarketType[] = [MarketType.BULLISH, MarketType.BEARISH];
 
@@ -78,13 +78,8 @@ export class SmaCrossoverStrategy extends ProtectedStrategy {
 
   protected override async processCandle(
     candle: OneMinuteBatchedCandle,
-    state: TradingSessionState
+    _state: TradingSessionState
   ): Promise<OrderAdvice | void> {
-    const guardAdvice = await super.processCandle(candle, state);
-    if (guardAdvice) {
-      return guardAdvice;
-    }
-
     // Strategies always receive 1-minute candles; roll them up to the configured timeframe.
     const bar = this.#batcher.addToBatch(candle);
     if (!bar) {
