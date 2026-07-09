@@ -10,14 +10,10 @@ import {
   MultiIndicatorConfluenceStrategy,
   ScalpStrategy,
   MeanReversionStrategy,
+  SmaCrossoverStrategy,
   ProtectedStrategy,
   TrailingStopStrategy,
   type BacktestResult,
-  BuyOnceConfig,
-  BuyBelowSellAboveConfig,
-  type MultiIndicatorConfluenceConfig,
-  type ScalpConfig,
-  type TrailingStopConfig,
 } from 'trading-strategies';
 import {DatasetSelector} from '../components/DatasetSelector';
 import {StrategyConfigurator} from '../components/StrategyConfigurator';
@@ -25,28 +21,42 @@ import {BacktestResults} from '../components/BacktestResults';
 import {ProtectionModal} from '../components/ProtectionModal';
 import {datasets} from '../utils/datasets';
 import type {CandleDataset} from '../utils/types';
-import {strategyDefinitions, type StrategyId} from '../utils/strategySchemas';
+import {
+  strategyDefinitions,
+  type StrategyId,
+  BuyOnceSchema,
+  BuyBelowSellAboveSchema,
+  CoinFlipSchema,
+  MultiIndicatorConfluenceSchema,
+  ScalpSchema,
+  MeanReversionSchema,
+  SmaCrossoverSchema,
+  ProtectedStrategySchema,
+  TrailingStopSchema,
+} from '../utils/strategySchemas';
 
 function createStrategy(strategyId: StrategyId, config: Record<string, unknown>) {
   switch (strategyId) {
     case 'buy-and-hold':
-      return new BuyOnceStrategy(config as BuyOnceConfig);
+      return new BuyOnceStrategy(BuyOnceSchema.parse(config));
     case 'coin-flip':
-      return new CoinFlipStrategy(config);
+      return new CoinFlipStrategy(CoinFlipSchema.parse(config));
     case 'buy-once':
-      return new BuyOnceStrategy(config as BuyOnceConfig);
+      return new BuyOnceStrategy(BuyOnceSchema.parse(config));
     case 'buy-below-sell-above':
-      return new BuyBelowSellAboveStrategy(config as BuyBelowSellAboveConfig);
+      return new BuyBelowSellAboveStrategy(BuyBelowSellAboveSchema.parse(config));
     case 'multi-indicator-confluence':
-      return new MultiIndicatorConfluenceStrategy(config as MultiIndicatorConfluenceConfig);
+      return new MultiIndicatorConfluenceStrategy(MultiIndicatorConfluenceSchema.parse(config));
     case 'scalp':
-      return new ScalpStrategy(config as ScalpConfig);
+      return new ScalpStrategy(ScalpSchema.parse(config));
     case 'mean-reversion':
-      return new MeanReversionStrategy({config});
+      return new MeanReversionStrategy({config: MeanReversionSchema.parse(config)});
+    case 'sma-crossover':
+      return new SmaCrossoverStrategy(SmaCrossoverSchema.parse(config));
     case 'protection-only':
-      return new ProtectedStrategy({config});
+      return new ProtectedStrategy({config: ProtectedStrategySchema.parse(config)});
     case 'trailing-stop':
-      return new TrailingStopStrategy(config as TrailingStopConfig);
+      return new TrailingStopStrategy(TrailingStopSchema.parse(config));
   }
 }
 
