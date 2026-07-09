@@ -105,8 +105,8 @@ describe('SmaCrossoverStrategy', () => {
 
     it('stays silent until both SMAs are warmed up', async () => {
       const strategy = new SmaCrossoverStrategy(config);
-      const advices = await feed(strategy, [10, 11]); // only 2 bars: slow SMA3 not stable yet
-      expect(advices).toHaveLength(0);
+      const advices = await feed(strategy, [10, 11]);
+      expect(advices, 'only 2 bars fed, so the slow SMA3 is not stable yet').toHaveLength(0);
       expect(strategy.isWarmedUp).toBe(false);
     });
 
@@ -147,9 +147,8 @@ describe('SmaCrossoverStrategy', () => {
 
     it('waits for the slower SMA before it can produce advice', async () => {
       const strategy = new SmaCrossoverStrategy(config);
-      // Two 1m candles warm up the fast SMA but only complete one 2m bar, so slow SMA2 is not stable.
       const advices = await feed(strategy, dualTimeframePrices.slice(0, 3));
-      expect(advices).toHaveLength(0);
+      expect(advices, 'three 1m candles complete only one 2m bar, so the slow SMA2 is not stable yet').toHaveLength(0);
       expect(strategy.isWarmedUp).toBe(false);
     });
   });
