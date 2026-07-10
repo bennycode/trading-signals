@@ -111,12 +111,13 @@ export default function BacktestPage() {
   const currentDataset = selectedDataset === 'custom' ? customDataset : datasets.find(d => d.id === selectedDataset)!;
   const candles = (currentDataset?.candles ?? []) as Candle[];
 
-  // Recompute defaults when dataset or strategy changes (including custom dataset uploads)
+  // Recompute defaults only when the strategy changes — deliberately NOT on Market Condition
+  // (dataset) changes, so manual config edits survive switching between datasets.
   useEffect(() => {
     const def = strategyDefinitions.find(s => s.id === selectedStrategy)!;
     const defaults = def.getDefaultConfig(candles);
     setConfigJson(JSON.stringify(defaults, null, 2));
-  }, [selectedDataset, selectedStrategy, customDataset]);
+  }, [selectedStrategy]);
 
   // Validate JSON on every change
   useEffect(() => {
