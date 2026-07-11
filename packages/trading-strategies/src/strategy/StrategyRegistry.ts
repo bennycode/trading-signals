@@ -6,6 +6,10 @@ import {
 } from '../strategy-buy-below-sell-above/BuyBelowSellAboveStrategy.js';
 import {CoinFlipStrategy, CoinFlipSchema} from '../strategy-coin-flip/CoinFlipStrategy.js';
 import {
+  FeeAwareSmaCrossoverStrategy,
+  FeeAwareSmaCrossoverSchema,
+} from '../strategy-fee-aware-sma-crossover/FeeAwareSmaCrossoverStrategy.js';
+import {
   MultiIndicatorConfluenceStrategy,
   MultiIndicatorConfluenceSchema,
 } from '../strategy-multi-indicator-confluence/MultiIndicatorConfluenceStrategy.js';
@@ -34,6 +38,10 @@ const registry: Record<string, StrategyEntry> = {
   [CoinFlipStrategy.NAME]: {
     create: (config: unknown) => new CoinFlipStrategy(CoinFlipSchema.parse(config ?? {})),
     schema: CoinFlipSchema,
+  },
+  [FeeAwareSmaCrossoverStrategy.NAME]: {
+    create: (config: unknown) => new FeeAwareSmaCrossoverStrategy(FeeAwareSmaCrossoverSchema.parse(config ?? {})),
+    schema: FeeAwareSmaCrossoverSchema,
   },
   [MeanReversionStrategy.NAME]: {
     create: (config: unknown) => new MeanReversionStrategy({config: MeanReversionSchema.parse(config ?? {})}),
