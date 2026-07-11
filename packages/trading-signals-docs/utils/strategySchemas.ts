@@ -1,10 +1,10 @@
 import {z} from 'zod';
 import type {Candle} from '@typedtrader/exchange';
-import {BuyOnceSchema, BuyBelowSellAboveSchema, CoinFlipSchema, MultiIndicatorConfluenceSchema, ScalpSchema, MeanReversionSchema, SmaCrossoverSchema, ProtectedStrategySchema, TrailingStopSchema, suggestScalpOffset} from 'trading-strategies';
+import {BuyOnceSchema, BuyBelowSellAboveSchema, CoinFlipSchema, MultiIndicatorConfluenceSchema, ScalpSchema, MeanReversionSchema, SmaCrossoverSchema, FeeAwareSmaCrossoverSchema, ProtectedStrategySchema, TrailingStopSchema, suggestScalpOffset} from 'trading-strategies';
 
-export {BuyOnceSchema, BuyBelowSellAboveSchema, CoinFlipSchema, MultiIndicatorConfluenceSchema, ScalpSchema, MeanReversionSchema, SmaCrossoverSchema, ProtectedStrategySchema, TrailingStopSchema};
+export {BuyOnceSchema, BuyBelowSellAboveSchema, CoinFlipSchema, MultiIndicatorConfluenceSchema, ScalpSchema, MeanReversionSchema, SmaCrossoverSchema, FeeAwareSmaCrossoverSchema, ProtectedStrategySchema, TrailingStopSchema};
 
-export type StrategyId = 'buy-and-hold' | 'buy-once' | 'buy-below-sell-above' | 'coin-flip' | 'multi-indicator-confluence' | 'scalp' | 'mean-reversion' | 'sma-crossover' | 'protection-only' | 'trailing-stop';
+export type StrategyId = 'buy-and-hold' | 'buy-once' | 'buy-below-sell-above' | 'coin-flip' | 'multi-indicator-confluence' | 'scalp' | 'mean-reversion' | 'sma-crossover' | 'fee-aware-sma-crossover' | 'protection-only' | 'trailing-stop';
 
 export interface StrategyDefinition {
   id: StrategyId;
@@ -128,6 +128,14 @@ export const strategyDefinitions: StrategyDefinition[] = [
     description:
       'Crosses a fast SMA against a slow SMA — each with its own period and timeframe (e.g. SMA5 on 1m bars vs SMA10 on 2m bars). Buys when the fast SMA crosses above the slow one and sells when it crosses below (market orders).',
     schema: SmaCrossoverSchema,
+    getDefaultConfig: () => ({fastPeriod: 5, fastTimeframe: '1m', slowPeriod: 10, slowTimeframe: '2m'}),
+  },
+  {
+    id: 'fee-aware-sma-crossover',
+    name: 'SMA Crossover (Fee-Aware)',
+    description:
+      'Same as SMA Crossover, but it never sells at a loss: on a bearish cross it only sells when the round trip — last buy price vs current price, with the taker fee on both legs — nets a profit. Otherwise it holds. Cuts the fee bleed from whipsaw exits (trade-off: it can hold through a downtrend, so add a stop-loss for a hard floor).',
+    schema: FeeAwareSmaCrossoverSchema,
     getDefaultConfig: () => ({fastPeriod: 5, fastTimeframe: '1m', slowPeriod: 10, slowTimeframe: '2m'}),
   },
   {

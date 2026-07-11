@@ -11,6 +11,7 @@ import {
   ScalpStrategy,
   MeanReversionStrategy,
   SmaCrossoverStrategy,
+  FeeAwareSmaCrossoverStrategy,
   ProtectedStrategy,
   TrailingStopStrategy,
   type BacktestResult,
@@ -31,6 +32,7 @@ import {
   ScalpSchema,
   MeanReversionSchema,
   SmaCrossoverSchema,
+  FeeAwareSmaCrossoverSchema,
   ProtectedStrategySchema,
   TrailingStopSchema,
 } from '../utils/strategySchemas';
@@ -53,6 +55,8 @@ function createStrategy(strategyId: StrategyId, config: Record<string, unknown>)
       return new MeanReversionStrategy({config: MeanReversionSchema.parse(config)});
     case 'sma-crossover':
       return new SmaCrossoverStrategy(SmaCrossoverSchema.parse(config));
+    case 'fee-aware-sma-crossover':
+      return new FeeAwareSmaCrossoverStrategy(FeeAwareSmaCrossoverSchema.parse(config));
     case 'protection-only':
       return new ProtectedStrategy({config: ProtectedStrategySchema.parse(config)});
     case 'trailing-stop':
