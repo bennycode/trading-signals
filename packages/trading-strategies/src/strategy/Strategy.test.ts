@@ -1,0 +1,78 @@
+import Big from 'big.js';
+import {describe, expect, it} from 'vitest';
+import {OrderPosition, OrderSide, OrderType, TradingPair} from '@typedtrader/exchange';
+import type {Fill, OneMinuteBatchedCandle} from '@typedtrader/exchange';
+import type {OrderAdvice, TradingSessionState} from '../trader/index.js';
+import {Strategy} from './Strategy.js';
+
+const pair = new TradingPair('AAPL', 'USD');
+
+const mockState: TradingSessionState = {
+  baseBalance: new Big(0),
+  counterBalance: new Big(1000),
+  feeRates: {[OrderType.LIMIT]: new Big('0.001'), [OrderType.MARKET]: new Big('0.002')},
+  tradingRules: {
+    base_increment: '0.0001',
+    base_max_size: '100000',
+    base_min_size: '0.0001',
+    counter_increment: '0.01',
+    counter_min_size: '1',
+    pair,
+  },
+};
+
+function makeFill(price: string, size: string, side: OrderSide): Fill {
+  return {
+    created_at: '2025-01-01T00:00:00.000Z',
+    fee: '0',
+    feeAsset: 'USD',
+    order_id: 'order-1',
+    pair,
+    position: OrderPosition.LONG,
+    price,
+    side,
+    size,
+  };
+}
+
+/** Minimal concrete strategy that never trades — exercises only the base position tracking. */
+class TestStrategy extends Strategy {
+  static override NAME = 'test-strategy';
+
+  protected override async processCandle(
+    _candle: OneMinuteBatchedCandle,
+    _state: TradingSessionState
+  ): Promise<OrderAdvice | void> {
+    // Never trades; only the inherited position tracking is under test.
+  }
+}
+
+describe('Strategy fill tracking', () => {
+  it('starts with no recorded fills', () => {
+    const strategy = new TestStrategy();
+    expect(strategy.lastBuyPrice).toBeUndefined();
+    expect(strategy.lastSellPrice).toBeUndefined();
+  });
+
+  it('records the most recent buy price', async () => {
+    const strategy = new TestStrategy();
+    await strategy.onFill(makeFill('100', '1', OrderSide.BUY), mockState);
+    await strategy.onFill(makeFill('120', '1', OrderSide.BUY), mockState);
+    expect(strategy.lastBuyPrice?.toNumber()).toBe(120); // latest buy wins
+    expect(strategy.lastSellPrice).toBeUndefined();
+  });
+
+  it('records the most recent sell price without clearing the last buy', async () => {
+    const strategy = new TestStrategy();
+    await strategy.onFill(makeFill('100', '1', OrderSide.BUY), mockState);
+    await strategy.onFill(makeFill('130', '1', OrderSide.SELL), mockState);
+    expect(strategy.lastBuyPrice?.toNumber()).toBe(100);
+    expect(strategy.lastSellPrice?.toNumber()).toBe(130);
+  });
+
+  it('persists the last fills under the strategy state so the runtime can save it', async () => {
+    const strategy = new TestStrategy();
+    await strategy.onFill(makeFill('100', '1', OrderSide.BUY), mockState);
+    expect(strategy.state).toMatchObject({__lastFills__: {lastBuyPrice: '100', lastSellPrice: null}});
+  });
+});

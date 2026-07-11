@@ -1,7 +1,22 @@
 import Big from 'big.js';
-import type {OneMinuteBatchedCandle} from '@typedtrader/exchange';
+import {OrderSide} from '@typedtrader/exchange';
+import type {Fill, OneMinuteBatchedCandle} from '@typedtrader/exchange';
 import type {OrderAdvice, TradingSessionState, TradingSessionStrategy} from '../trader/index.js';
 import type {MarketType} from './MarketType.js';
+
+const LAST_FILLS_STATE_KEY = '__lastFills__';
+
+/** Most recent fill price per side, persisted alongside the strategy's own state under a reserved key. */
+type LastFills = {
+  /** Price of the most recent BUY fill, as a Big string. `null` until the first buy. */
+  lastBuyPrice: string | null;
+  /** Price of the most recent SELL fill, as a Big string. `null` until the first sell. */
+  lastSellPrice: string | null;
+};
+
+type LastFillsContainer = {[LAST_FILLS_STATE_KEY]: LastFills};
+
+const defaultLastFills = (): LastFills => ({lastBuyPrice: null, lastSellPrice: null});
 
 export abstract class Strategy implements TradingSessionStrategy {
   static NAME: string;
@@ -57,12 +72,21 @@ export abstract class Strategy implements TradingSessionStrategy {
   readonly #proxiedConfig: Record<string, unknown> | null = null;
 
   constructor(options?: {state?: Record<string, unknown>; config?: Record<string, unknown>}) {
-    if (options?.state) {
-      this.#proxiedState = this.#createProxy(options.state, snapshot => {
-        this.state = snapshot;
-      });
-      this.state = {...options.state};
-    }
+    /*
+     * The base always keeps a state object so it can track the open position from fills,
+     * even for strategies that don't declare any state of their own. A restored position
+     * (present in the provided state) is preserved rather than reset.
+     */
+    const providedState = options?.state ?? {};
+    const initialState: Record<string, unknown> = {
+      ...providedState,
+      [LAST_FILLS_STATE_KEY]: providedState[LAST_FILLS_STATE_KEY] ?? defaultLastFills(),
+    };
+    this.#proxiedState = this.#createProxy(initialState, snapshot => {
+      this.state = snapshot;
+    });
+    this.state = {...initialState};
+
     if (options?.config) {
       this.#proxiedConfig = this.#createProxy(options.config, snapshot => {
         this.config = snapshot;
@@ -80,6 +104,43 @@ export abstract class Strategy implements TradingSessionStrategy {
 
   restoreState(persisted: Record<string, unknown>): void {
     this.#_state = persisted;
+  }
+
+  /**
+   * Records the most recent BUY / SELL fill price, exposed as {@link lastBuyPrice} /
+   * {@link lastSellPrice}, so a strategy can measure an exit against its entry without
+   * bookkeeping of its own. Subclasses that override `onFill` MUST call
+   * `super.onFill(fill, state)` to keep this accurate.
+   */
+  async onFill(fill: Fill, _state: TradingSessionState): Promise<void> {
+    const patch: Partial<LastFills> =
+      fill.side === OrderSide.BUY ? {lastBuyPrice: fill.price} : {lastSellPrice: fill.price};
+    this.#setLastFills(patch);
+  }
+
+  /** Price of the most recent BUY fill, or `undefined` if there hasn't been one. */
+  get lastBuyPrice(): Big | undefined {
+    const price = this.#lastFills.lastBuyPrice;
+    return price === null ? undefined : new Big(price);
+  }
+
+  /** Price of the most recent SELL fill, or `undefined` if there hasn't been one. */
+  get lastSellPrice(): Big | undefined {
+    const price = this.#lastFills.lastSellPrice;
+    return price === null ? undefined : new Big(price);
+  }
+
+  get #lastFills(): LastFills {
+    return this.getProxiedState<LastFillsContainer>()[LAST_FILLS_STATE_KEY];
+  }
+
+  #setLastFills(patch: Partial<LastFills>): void {
+    /*
+     * Reassigning the reserved top-level key trips the state Proxy's set trap, which fires
+     * `onSave` so the runtime persists it (nested mutations would bypass persistence).
+     */
+    const proxied = this.getProxiedState<LastFillsContainer>();
+    proxied[LAST_FILLS_STATE_KEY] = {...proxied[LAST_FILLS_STATE_KEY], ...patch};
   }
 
   /**
