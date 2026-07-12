@@ -2,7 +2,7 @@ import Big from 'big.js';
 import {z} from 'zod';
 import {OrderSide, OrderType} from '@typedtrader/exchange';
 import {AllAvailableAmount} from '../trader/index.js';
-import type {Fill, PendingOrder, OneMinuteBatchedCandle} from '@typedtrader/exchange';
+import type {PendingOrder, OneMinuteBatchedCandle} from '@typedtrader/exchange';
 import type {LimitOrderAdvice, OrderAdvice, TradingSessionState} from '../trader/index.js';
 import {MarketType} from '../strategy/MarketType.js';
 import {Strategy} from '../strategy/Strategy.js';
@@ -14,10 +14,9 @@ import {positiveNumberString} from '../util/validators.js';
  */
 export const ProtectedConfigSchema = z.object({
   /**
-   * When `true`, the strategy seeds its position tracking from the account's existing
-   * base balance and the first candle's close price. This allows attaching guard
-   * protection to a position that was opened externally (manual trade, another strategy).
-   * Percentage and nominal guards will be relative to the price at attach time.
+   * When `true`, the strategy seeds its guard entry price from the first candle's close
+   * so it can attach to a position opened externally (manual trade, another strategy),
+   * where there is no buy of its own to measure from.
    */
   seedFromBalance: z.boolean().default(false),
   /**
@@ -34,7 +33,7 @@ export const ProtectedConfigSchema = z.object({
    */
   stopLossOrder: z.enum(['limit', 'market']).default('limit'),
   /**
-   * Stop-loss as a percentage of avg entry. "5" = sell everything at avgEntry * 0.95.
+   * Stop-loss as a percentage of the entry price. "5" = sell everything at entry * 0.95.
    * Mutually exclusive with `stopLossNominal` and `stopLossPrice`. Omit all three to
    * disable the stop-loss guard.
    */
@@ -57,7 +56,7 @@ export const ProtectedConfigSchema = z.object({
    */
   takeProfitOrder: z.enum(['limit', 'market']).default('limit'),
   /**
-   * Take-profit as a percentage of avg entry. "10" = sell everything at avgEntry * 1.10.
+   * Take-profit as a percentage of the entry price. "10" = sell everything at entry * 1.10.
    * Mutually exclusive with `takeProfitNominal` and `takeProfitPrice`. Omit all three to
    * disable the take-profit guard.
    */
@@ -89,10 +88,12 @@ export type ProtectedStrategyState = {
   killedOrderType: GuardOrderType | null;
   /** Limit price of the kill-switch sell order, as a Big string. `null` for market orders or until a guard fires. */
   killedLimitPrice: string | null;
-  /** Cumulative cost basis across all BUY fills: sum of (price * size). Stored as a Big string. */
-  totalCostBasis: string;
-  /** Net base quantity held (BUYs minus SELLs). Stored as a Big string. */
-  totalPositionSize: string;
+  /**
+   * Entry price captured when `seedFromBalance` attaches guards to a position opened outside
+   * the strategy (no buy fill of its own), as a Big string. `null` when there is no seeded
+   * position — a real buy uses the base strategy's last buy price instead.
+   */
+  seedEntryPrice: string | null;
 };
 
 const PROTECTED_STATE_KEY = 'protected';
@@ -102,8 +103,7 @@ const defaultProtectedState = (): ProtectedStrategyState => ({
   killedLimitPrice: null,
   killedOrderType: null,
   killedReason: null,
-  totalCostBasis: '0',
-  totalPositionSize: '0',
+  seedEntryPrice: null,
 });
 
 type ProtectedContainerState = {[PROTECTED_STATE_KEY]: ProtectedStrategyState};
@@ -117,7 +117,7 @@ type ProtectedContainerState = {[PROTECTED_STATE_KEY]: ProtectedStrategyState};
  *
  * Kill-switch orders can be configured as either `limit` (default) or `market` per
  * direction via `stopLossOrder` / `takeProfitOrder`. For `limit` orders, the advice
- * uses the nominal threshold price (for example, `avgEntry * (1 ± threshold/100)`
+ * uses the nominal threshold price (for example, `entry * (1 ± threshold/100)`
  * for percentage-based guards) rather than the current market price — the kill
  * switch exits at exactly the configured percentage regardless of how far the
  * market has already moved, at the cost of possibly not filling in a gap scenario.
@@ -125,12 +125,11 @@ type ProtectedContainerState = {[PROTECTED_STATE_KEY]: ProtectedStrategyState};
  * whatever the prevailing market offers at the firing candle — guaranteed fill,
  * unpredictable price.
  *
- * Position tracking uses cost-basis averaging from `onFill` events, so it handles
- * multiple buys and partial sells correctly. Once a guard fires, the subclass is
- * never called again for this session; the strategy keeps emitting the same
- * sell-all advice (limit with the stored target price, or market) on every candle
- * until `onFill` confirms the position is fully exited — so a rejected or delayed
- * placement is automatically retried.
+ * Guards measure from the strategy's last buy price (tracked by the base `Strategy`) and
+ * the live base balance, so there is no position bookkeeping of its own. Once a guard fires,
+ * the subclass is never called again for this session; the strategy keeps emitting the same
+ * sell-all advice (limit with the stored target price, or market) on every candle until the
+ * position is fully sold — so a rejected or delayed placement is automatically retried.
  *
  * Usage:
  *
@@ -235,11 +234,10 @@ export class ProtectedStrategy extends Strategy {
   }
 
   /**
-   * Once a guard has fired, the subclass is never called again. If the position
-   * is still non-zero (the sell order was rejected or hasn't filled yet), this
-   * keeps re-emitting the kill-switch advice (limit at the stored target price
-   * or a market sell, depending on the configured order type) until `onFill`
-   * brings the position to zero. Only then does `onCandle` return `void`.
+   * Once a guard has fired, the subclass is never called again. While a sellable position
+   * remains (the sell order was rejected or hasn't filled yet), this keeps re-emitting the
+   * kill-switch advice (limit at the stored target price or a market sell, depending on the
+   * configured order type). Only once the position is gone does it return `void`.
    */
   protected override async decideAdvice(
     candle: OneMinuteBatchedCandle,
@@ -248,8 +246,7 @@ export class ProtectedStrategy extends Strategy {
     const protectedState = this.#protectedState;
     if (protectedState.killed) {
       // Kill switch active: re-emit the exit until the position is gone, then stay silent.
-      const positionSize = new Big(protectedState.totalPositionSize);
-      if (positionSize.gt(0) && protectedState.killedOrderType) {
+      if (this.hasSellablePosition(state) && protectedState.killedOrderType) {
         const limitPrice = protectedState.killedLimitPrice ? new Big(protectedState.killedLimitPrice) : null;
         return this.#killSwitchAdvice(
           protectedState.killedReason ?? 'kill switch',
@@ -271,30 +268,29 @@ export class ProtectedStrategy extends Strategy {
       return;
     }
 
-    let positionSize = new Big(this.#protectedState.totalPositionSize);
-
-    if (positionSize.lte(0) && this.#seedFromBalance && state.baseBalance.gt(0)) {
-      const seedSize = state.baseBalance;
-      const seedCost = candle.close.mul(seedSize);
-      this.#setProtectedState({
-        totalCostBasis: seedCost.toFixed(),
-        totalPositionSize: seedSize.toFixed(),
-      });
-      positionSize = seedSize;
+    // Attach guards to an externally-opened position (no buy of our own) once, if configured.
+    if (
+      this.#seedFromBalance &&
+      !this.lastBuyPrice &&
+      this.#protectedState.seedEntryPrice === null &&
+      state.baseBalance.gt(0)
+    ) {
+      this.#setProtectedState({seedEntryPrice: candle.close.toFixed()});
     }
 
-    if (positionSize.lte(0)) {
+    const entryPrice = this.#entryPrice;
+    if (!entryPrice || !this.hasSellablePosition(state)) {
       return;
     }
 
-    const avgEntry = new Big(this.#protectedState.totalCostBasis).div(positionSize);
+    const positionSize = state.baseBalance;
     const currentPrice = candle.close;
 
     if (this.#stopLoss) {
-      const targetPrice = this.#resolveStopLossLimit(avgEntry, positionSize);
+      const targetPrice = this.#resolveStopLossLimit(entryPrice, positionSize);
       if (currentPrice.lte(targetPrice)) {
         const orderType = this.#stopLossOrder;
-        const reason = this.#stopLossReason(avgEntry, currentPrice, positionSize, targetPrice, orderType);
+        const reason = this.#stopLossReason(entryPrice, currentPrice, positionSize, targetPrice, orderType);
         this.#setProtectedState({
           killed: true,
           killedLimitPrice: orderType === 'limit' ? targetPrice.toFixed() : null,
@@ -306,10 +302,10 @@ export class ProtectedStrategy extends Strategy {
     }
 
     if (this.#takeProfit) {
-      const targetPrice = this.#resolveTakeProfitLimit(avgEntry, positionSize);
+      const targetPrice = this.#resolveTakeProfitLimit(entryPrice, positionSize);
       if (currentPrice.gte(targetPrice)) {
         const orderType = this.#takeProfitOrder;
-        const reason = this.#takeProfitReason(avgEntry, currentPrice, positionSize, targetPrice, orderType);
+        const reason = this.#takeProfitReason(entryPrice, currentPrice, positionSize, targetPrice, orderType);
         this.#setProtectedState({
           killed: true,
           killedLimitPrice: orderType === 'limit' ? targetPrice.toFixed() : null,
@@ -321,46 +317,56 @@ export class ProtectedStrategy extends Strategy {
     }
   }
 
-  #resolveStopLossLimit(avgEntry: Big, positionSize: Big): Big {
+  /** Entry the guards measure against: the base strategy's last buy, or a seeded price for an external position. */
+  get #entryPrice(): Big | undefined {
+    const lastBuy = this.lastBuyPrice;
+    if (lastBuy) {
+      return lastBuy;
+    }
+    const seeded = this.#protectedState.seedEntryPrice;
+    return seeded === null ? undefined : new Big(seeded);
+  }
+
+  #resolveStopLossLimit(entryPrice: Big, positionSize: Big): Big {
     if (!this.#stopLoss) {
       throw new Error('unreachable: stop-loss is not configured');
     }
     switch (this.#stopLoss.kind) {
       case 'pct':
-        return avgEntry.mul(new Big(1).minus(this.#stopLoss.pct.div(100)));
+        return entryPrice.mul(new Big(1).minus(this.#stopLoss.pct.div(100)));
       case 'nominal':
-        return avgEntry.minus(this.#stopLoss.nominal.div(positionSize));
+        return entryPrice.minus(this.#stopLoss.nominal.div(positionSize));
       case 'price':
         return this.#stopLoss.price;
     }
   }
 
-  #resolveTakeProfitLimit(avgEntry: Big, positionSize: Big): Big {
+  #resolveTakeProfitLimit(entryPrice: Big, positionSize: Big): Big {
     if (!this.#takeProfit) {
       throw new Error('unreachable: take-profit is not configured');
     }
     switch (this.#takeProfit.kind) {
       case 'pct':
-        return avgEntry.mul(new Big(1).plus(this.#takeProfit.pct.div(100)));
+        return entryPrice.mul(new Big(1).plus(this.#takeProfit.pct.div(100)));
       case 'nominal':
-        return avgEntry.plus(this.#takeProfit.nominal.div(positionSize));
+        return entryPrice.plus(this.#takeProfit.nominal.div(positionSize));
       case 'price':
         return this.#takeProfit.price;
     }
   }
 
-  #stopLossReason(avgEntry: Big, currentPrice: Big, positionSize: Big, targetPrice: Big, orderType: GuardOrderType) {
+  #stopLossReason(entryPrice: Big, currentPrice: Big, positionSize: Big, targetPrice: Big, orderType: GuardOrderType) {
     if (!this.#stopLoss) {
       return '';
     }
     const orderSuffix = orderType === 'limit' ? `(limit ${targetPrice.toFixed()})` : '(market)';
     switch (this.#stopLoss.kind) {
       case 'pct': {
-        const pctChange = currentPrice.minus(avgEntry).div(avgEntry).mul(100);
+        const pctChange = currentPrice.minus(entryPrice).div(entryPrice).mul(100);
         return `Stop-loss: ${pctChange.toFixed(2)}% <= -${this.#stopLoss.pct.toFixed(2)}% ${orderSuffix}`;
       }
       case 'nominal': {
-        const unrealized = currentPrice.minus(avgEntry).mul(positionSize);
+        const unrealized = currentPrice.minus(entryPrice).mul(positionSize);
         return `Stop-loss: unrealized ${unrealized.toFixed(2)} <= -${this.#stopLoss.nominal.toFixed(2)} ${orderSuffix}`;
       }
       case 'price':
@@ -368,58 +374,29 @@ export class ProtectedStrategy extends Strategy {
     }
   }
 
-  #takeProfitReason(avgEntry: Big, currentPrice: Big, positionSize: Big, targetPrice: Big, orderType: GuardOrderType) {
+  #takeProfitReason(
+    entryPrice: Big,
+    currentPrice: Big,
+    positionSize: Big,
+    targetPrice: Big,
+    orderType: GuardOrderType
+  ) {
     if (!this.#takeProfit) {
       return '';
     }
     const orderSuffix = orderType === 'limit' ? `(limit ${targetPrice.toFixed()})` : '(market)';
     switch (this.#takeProfit.kind) {
       case 'pct': {
-        const pctChange = currentPrice.minus(avgEntry).div(avgEntry).mul(100);
+        const pctChange = currentPrice.minus(entryPrice).div(entryPrice).mul(100);
         return `Take-profit: +${pctChange.toFixed(2)}% >= +${this.#takeProfit.pct.toFixed(2)}% ${orderSuffix}`;
       }
       case 'nominal': {
-        const unrealized = currentPrice.minus(avgEntry).mul(positionSize);
+        const unrealized = currentPrice.minus(entryPrice).mul(positionSize);
         return `Take-profit: unrealized +${unrealized.toFixed(2)} >= +${this.#takeProfit.nominal.toFixed(2)} ${orderSuffix}`;
       }
       case 'price':
         return `Take-profit: price ${currentPrice.toFixed()} >= target ${this.#takeProfit.price.toFixed()} ${orderSuffix}`;
     }
-  }
-
-  protected override async processFill(fill: Fill, _state: TradingSessionState): Promise<void> {
-    const protectedState = this.#protectedState;
-    const fillPrice = new Big(fill.price);
-    const fillSize = new Big(fill.size);
-
-    if (fill.side === OrderSide.BUY) {
-      const newCostBasis = new Big(protectedState.totalCostBasis).plus(fillPrice.mul(fillSize));
-      const newPositionSize = new Big(protectedState.totalPositionSize).plus(fillSize);
-      this.#setProtectedState({
-        totalCostBasis: newCostBasis.toFixed(),
-        totalPositionSize: newPositionSize.toFixed(),
-      });
-      return;
-    }
-
-    // SELL: reduce position proportionally using the current average entry price.
-    const currentPositionSize = new Big(protectedState.totalPositionSize);
-    if (currentPositionSize.lte(0)) {
-      return;
-    }
-
-    const avgEntry = new Big(protectedState.totalCostBasis).div(currentPositionSize);
-    const newPositionSize = currentPositionSize.minus(fillSize);
-
-    if (newPositionSize.lte(0)) {
-      this.#setProtectedState({totalCostBasis: '0', totalPositionSize: '0'});
-      return;
-    }
-
-    this.#setProtectedState({
-      totalCostBasis: avgEntry.mul(newPositionSize).toFixed(),
-      totalPositionSize: newPositionSize.toFixed(),
-    });
   }
 
   /**
@@ -470,18 +447,17 @@ export class ProtectedStrategy extends Strategy {
  * Validates that a persisted object is a well-formed `ProtectedStrategyState`.
  *
  * Beyond shape checks, this also enforces cross-field invariants that
- * `restoreState` relies on to produce a safe runtime state:
+ * `hydrateState` relies on to produce a safe runtime state:
  *
- * - If `killed === true`, `killedOrderType` must be set so the retry path in
- *   `onCandle` can re-emit the correct advice kind. A `killed=true` state with
+ * - If `killed === true`, `killedOrderType` must be set so the retry path can
+ *   re-emit the correct advice kind. A `killed=true` state with
  *   `killedOrderType=null` would leave an open position with no further exit.
  * - If `killedOrderType === 'limit'`, `killedLimitPrice` must be set so the
  *   retry can re-build the limit advice.
- * - Numeric string fields (`totalCostBasis`, `totalPositionSize`,
- *   `killedLimitPrice`) must be parseable by `Big` — otherwise the next
- *   `onCandle` would throw inside `new Big(...)`.
+ * - Numeric string fields (`killedLimitPrice`, `seedEntryPrice`) must be
+ *   parseable by `Big` — otherwise the next candle would throw inside `new Big(...)`.
  *
- * Returning `false` from here causes `restoreState` to fall back to the
+ * Returning `false` from here causes `hydrateState` to fall back to the
  * default state, re-arming the guards on the next candle.
  */
 function isProtectedStrategyState(value: unknown): value is ProtectedStrategyState {
@@ -506,19 +482,19 @@ function isProtectedStrategyState(value: unknown): value is ProtectedStrategySta
   if (candidate.killedLimitPrice !== null && typeof candidate.killedLimitPrice !== 'string') {
     return false;
   }
-  if (typeof candidate.totalCostBasis !== 'string' || !isValidBigString(candidate.totalCostBasis)) {
-    return false;
-  }
-  if (typeof candidate.totalPositionSize !== 'string' || !isValidBigString(candidate.totalPositionSize)) {
-    return false;
-  }
   if (typeof candidate.killedLimitPrice === 'string' && !isValidBigString(candidate.killedLimitPrice)) {
+    return false;
+  }
+  if (
+    candidate.seedEntryPrice !== null &&
+    (typeof candidate.seedEntryPrice !== 'string' || !isValidBigString(candidate.seedEntryPrice))
+  ) {
     return false;
   }
 
   /*
    * Cross-field invariants: a killed state must be fully specified so that
-   * the retry path in onCandle has everything it needs to build fresh advice.
+   * the retry path has everything it needs to build fresh advice.
    */
   if (candidate.killed === true) {
     if (candidate.killedOrderType === null) {

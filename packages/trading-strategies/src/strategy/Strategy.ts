@@ -112,6 +112,7 @@ export abstract class Strategy implements TradingSessionStrategy {
 
   restoreState(persisted: Record<string, unknown>): void {
     this.#_state = persisted;
+    this.#restoreLastFills(persisted);
     this.hydrateState(persisted);
   }
 
@@ -151,6 +152,18 @@ export abstract class Strategy implements TradingSessionStrategy {
     // Replace the whole key so the state Proxy notices the change and saves it.
     const proxied = this.getProxiedState<LastFillsContainer>();
     proxied[LAST_FILLS_STATE_KEY] = {...proxied[LAST_FILLS_STATE_KEY], ...patch};
+  }
+
+  #restoreLastFills(persisted: Record<string, unknown>): void {
+    const fills = persisted[LAST_FILLS_STATE_KEY];
+    if (!fills || typeof fills !== 'object') {
+      return;
+    }
+    const record = fills as Record<string, unknown>;
+    this.#setLastFills({
+      lastBuyPrice: typeof record.lastBuyPrice === 'string' ? record.lastBuyPrice : null,
+      lastSellPrice: typeof record.lastSellPrice === 'string' ? record.lastSellPrice : null,
+    });
   }
 
   /**
