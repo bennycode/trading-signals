@@ -390,8 +390,7 @@ export class ProtectedStrategy extends Strategy {
     }
   }
 
-  override async onFill(fill: Fill, state: TradingSessionState): Promise<void> {
-    await super.onFill(fill, state);
+  protected override async processFill(fill: Fill, _state: TradingSessionState): Promise<void> {
     const protectedState = this.#protectedState;
     const fillPrice = new Big(fill.price);
     const fillSize = new Big(fill.size);

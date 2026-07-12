@@ -249,8 +249,7 @@ export class TrailingStopStrategy extends Strategy {
     return advice;
   }
 
-  override async onFill(fill: Fill, state: TradingSessionState): Promise<void> {
-    await super.onFill(fill, state);
+  protected override async processFill(fill: Fill, state: TradingSessionState): Promise<void> {
     if (fill.side !== OrderSide.SELL) {
       return;
     }

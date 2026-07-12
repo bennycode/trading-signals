@@ -4,13 +4,10 @@ import type {Fill, OneMinuteBatchedCandle} from '@typedtrader/exchange';
 import type {OrderAdvice, TradingSessionState, TradingSessionStrategy} from '../trader/index.js';
 import type {MarketType} from './MarketType.js';
 
-const LAST_FILLS_STATE_KEY = '__lastFills__';
+const LAST_FILLS_STATE_KEY = 'strategyLastFills';
 
-/** Most recent fill price per side, persisted alongside the strategy's own state under a reserved key. */
 type LastFills = {
-  /** Price of the most recent BUY fill, as a Big string. `null` until the first buy. */
   lastBuyPrice: string | null;
-  /** Price of the most recent SELL fill, as a Big string. `null` until the first sell. */
   lastSellPrice: string | null;
 };
 
@@ -73,9 +70,8 @@ export abstract class Strategy implements TradingSessionStrategy {
 
   constructor(options?: {state?: Record<string, unknown>; config?: Record<string, unknown>}) {
     /*
-     * The base always keeps a state object so it can track the open position from fills,
-     * even for strategies that don't declare any state of their own. A restored position
-     * (present in the provided state) is preserved rather than reset.
+     * The base always keeps a state object so it can remember the last buy and sell price,
+     * even for strategies that declare no state of their own. A restored value is kept as-is.
      */
     const providedState = options?.state ?? {};
     const initialState: Record<string, unknown> = {
@@ -107,24 +103,25 @@ export abstract class Strategy implements TradingSessionStrategy {
   }
 
   /**
-   * Records the most recent BUY / SELL fill price, exposed as {@link lastBuyPrice} /
-   * {@link lastSellPrice}, so a strategy can measure an exit against its entry without
-   * bookkeeping of its own. Subclasses that override `onFill` MUST call
-   * `super.onFill(fill, state)` to keep this accurate.
+   * Remembers the last buy and sell price, then lets subclasses react by overriding
+   * `processFill`. Because the tracking lives here and `processFill` is the extension point,
+   * a subclass can never forget to keep the last prices up to date.
    */
-  async onFill(fill: Fill, _state: TradingSessionState): Promise<void> {
+  async onFill(fill: Fill, state: TradingSessionState): Promise<void> {
     const patch: Partial<LastFills> =
       fill.side === OrderSide.BUY ? {lastBuyPrice: fill.price} : {lastSellPrice: fill.price};
     this.#setLastFills(patch);
+    await this.processFill(fill, state);
   }
 
-  /** Price of the most recent BUY fill, or `undefined` if there hasn't been one. */
+  /** Override to react to a fill. The last buy and sell price are already recorded by the time this runs. */
+  protected async processFill(_fill: Fill, _state: TradingSessionState): Promise<void> {}
+
   get lastBuyPrice(): Big | undefined {
     const price = this.#lastFills.lastBuyPrice;
     return price === null ? undefined : new Big(price);
   }
 
-  /** Price of the most recent SELL fill, or `undefined` if there hasn't been one. */
   get lastSellPrice(): Big | undefined {
     const price = this.#lastFills.lastSellPrice;
     return price === null ? undefined : new Big(price);
@@ -135,10 +132,7 @@ export abstract class Strategy implements TradingSessionStrategy {
   }
 
   #setLastFills(patch: Partial<LastFills>): void {
-    /*
-     * Reassigning the reserved top-level key trips the state Proxy's set trap, which fires
-     * `onSave` so the runtime persists it (nested mutations would bypass persistence).
-     */
+    // Replace the whole key so the state Proxy notices the change and saves it.
     const proxied = this.getProxiedState<LastFillsContainer>();
     proxied[LAST_FILLS_STATE_KEY] = {...proxied[LAST_FILLS_STATE_KEY], ...patch};
   }

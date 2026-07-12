@@ -137,8 +137,8 @@ export class ScalpStrategy extends ProtectedStrategy {
     return er.getResultOrThrow() < ScalpStrategy.ER_THRESHOLD;
   }
 
-  override async onFill(fill: Fill, state: TradingSessionState): Promise<void> {
-    await super.onFill(fill, state);
+  protected override async processFill(fill: Fill, state: TradingSessionState): Promise<void> {
+    await super.processFill(fill, state);
     this.#state.lastFillPrice = fill.price;
     this.#state.lastFillSide = fill.side;
     this.#state.phase = 'pendingAdvice';

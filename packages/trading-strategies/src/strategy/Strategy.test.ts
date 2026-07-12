@@ -43,7 +43,16 @@ class TestStrategy extends Strategy {
     _candle: OneMinuteBatchedCandle,
     _state: TradingSessionState
   ): Promise<OrderAdvice | void> {
-    // Never trades; only the inherited position tracking is under test.
+    // Never trades; only the inherited fill tracking is under test.
+  }
+}
+
+/** Overrides the fill hook to prove the base still tracks prices without any `super` call. */
+class FillHookStrategy extends TestStrategy {
+  fillCount = 0;
+
+  protected override async processFill(): Promise<void> {
+    this.fillCount++;
   }
 }
 
@@ -73,6 +82,13 @@ describe('Strategy fill tracking', () => {
   it('persists the last fills under the strategy state so the runtime can save it', async () => {
     const strategy = new TestStrategy();
     await strategy.onFill(makeFill('100', '1', OrderSide.BUY), mockState);
-    expect(strategy.state).toMatchObject({__lastFills__: {lastBuyPrice: '100', lastSellPrice: null}});
+    expect(strategy.state).toMatchObject({strategyLastFills: {lastBuyPrice: '100', lastSellPrice: null}});
+  });
+
+  it('still tracks prices when a subclass overrides the fill hook (no super call needed)', async () => {
+    const strategy = new FillHookStrategy();
+    await strategy.onFill(makeFill('100', '1', OrderSide.BUY), mockState);
+    expect(strategy.fillCount).toBe(1); // the subclass hook ran
+    expect(strategy.lastBuyPrice?.toNumber()).toBe(100); // and the base tracked the price on its own
   });
 });
