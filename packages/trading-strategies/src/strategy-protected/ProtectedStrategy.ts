@@ -241,29 +241,26 @@ export class ProtectedStrategy extends Strategy {
    * or a market sell, depending on the configured order type) until `onFill`
    * brings the position to zero. Only then does `onCandle` return `void`.
    */
-  override async onCandle(candle: OneMinuteBatchedCandle, state: TradingSessionState): Promise<OrderAdvice | void> {
-    this.lastBatchedCandle = candle;
-
+  protected override async decideAdvice(
+    candle: OneMinuteBatchedCandle,
+    state: TradingSessionState
+  ): Promise<OrderAdvice | void> {
     const protectedState = this.#protectedState;
     if (protectedState.killed) {
+      // Kill switch active: re-emit the exit until the position is gone, then stay silent.
       const positionSize = new Big(protectedState.totalPositionSize);
       if (positionSize.gt(0) && protectedState.killedOrderType) {
         const limitPrice = protectedState.killedLimitPrice ? new Big(protectedState.killedLimitPrice) : null;
-        const advice = this.#killSwitchAdvice(
+        return this.#killSwitchAdvice(
           protectedState.killedReason ?? 'kill switch',
           protectedState.killedOrderType,
           limitPrice
         );
-        this.latestAdvice = advice;
-        return advice;
       }
-      this.latestAdvice = undefined;
       return;
     }
 
-    const advice = await this.processCandle(candle, state);
-    this.latestAdvice = advice ? advice : undefined;
-    return advice;
+    return super.decideAdvice(candle, state);
   }
 
   protected override async processCandle(
@@ -436,22 +433,11 @@ export class ProtectedStrategy extends Strategy {
     }
   }
 
-  override restoreState(persisted: Record<string, unknown>): void {
+  protected override hydrateState(persisted: Record<string, unknown>): void {
     const existing = persisted[PROTECTED_STATE_KEY];
     const restoredProtected: ProtectedStrategyState = isProtectedStrategyState(existing)
       ? existing
       : defaultProtectedState();
-
-    super.restoreState({
-      ...persisted,
-      [PROTECTED_STATE_KEY]: restoredProtected,
-    });
-
-    /*
-     * The base class only updates `#_state`; the proxied state still points at
-     * the original object from the constructor. Reassigning `protected` through
-     * the proxy propagates restored values into the proxied state.
-     */
     this.#setProtectedState(restoredProtected);
   }
 

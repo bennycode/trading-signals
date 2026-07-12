@@ -56,6 +56,15 @@ class FillHookStrategy extends TestStrategy {
   }
 }
 
+/** Overrides the restore hook to prove the base stores state without a `super.restoreState()` call. */
+class RestoreHookStrategy extends TestStrategy {
+  hydrated: Record<string, unknown> | undefined = undefined;
+
+  protected override hydrateState(persisted: Record<string, unknown>): void {
+    this.hydrated = persisted;
+  }
+}
+
 describe('Strategy fill tracking', () => {
   it('starts with no recorded fills', () => {
     const strategy = new TestStrategy();
@@ -90,5 +99,12 @@ describe('Strategy fill tracking', () => {
     await strategy.onFill(makeFill('100', '1', OrderSide.BUY), mockState);
     expect(strategy.fillCount).toBe(1); // the subclass hook ran
     expect(strategy.lastBuyPrice?.toNumber()).toBe(100); // and the base tracked the price on its own
+  });
+
+  it('stores state and calls the hydrateState hook on restore (no super call needed)', () => {
+    const strategy = new RestoreHookStrategy();
+    strategy.restoreState({foo: 'bar'});
+    expect(strategy.state).toMatchObject({foo: 'bar'}); // the base stored the snapshot
+    expect(strategy.hydrated).toEqual({foo: 'bar'}); // the subclass hook ran without chaining super
   });
 });

@@ -144,9 +144,8 @@ export class ScalpStrategy extends ProtectedStrategy {
     this.#state.phase = 'pendingAdvice';
   }
 
-  override restoreState(persisted: Record<string, unknown>): void {
-    super.restoreState(persisted);
-
+  protected override hydrateState(persisted: Record<string, unknown>): void {
+    super.hydrateState(persisted);
     if (typeof persisted.lastFillPrice === 'string') {
       this.#state.lastFillPrice = persisted.lastFillPrice;
     }

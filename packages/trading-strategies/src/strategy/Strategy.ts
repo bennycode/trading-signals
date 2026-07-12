@@ -93,14 +93,30 @@ export abstract class Strategy implements TradingSessionStrategy {
 
   async onCandle(candle: OneMinuteBatchedCandle, state: TradingSessionState): Promise<OrderAdvice | void> {
     this.lastBatchedCandle = candle;
-    const advice = await this.processCandle(candle, state);
+    const advice = await this.decideAdvice(candle, state);
     this.latestAdvice = advice ? advice : undefined;
     return advice;
   }
 
+  /**
+   * Turns a candle into advice. Defaults to `processCandle`. A base that needs to gate candle
+   * handling (like ProtectedStrategy while a kill switch is active) overrides this instead of
+   * `onCandle`, so the candle and advice bookkeeping above is never duplicated or forgotten.
+   */
+  protected async decideAdvice(
+    candle: OneMinuteBatchedCandle,
+    state: TradingSessionState
+  ): Promise<OrderAdvice | void> {
+    return this.processCandle(candle, state);
+  }
+
   restoreState(persisted: Record<string, unknown>): void {
     this.#_state = persisted;
+    this.hydrateState(persisted);
   }
+
+  /** Override to copy persisted fields into the live state on restore. The base has already stored the snapshot. */
+  protected hydrateState(_persisted: Record<string, unknown>): void {}
 
   /**
    * Remembers the last buy and sell price, then lets subclasses react by overriding

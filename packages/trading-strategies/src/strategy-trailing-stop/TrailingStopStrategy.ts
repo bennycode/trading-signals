@@ -270,9 +270,8 @@ export class TrailingStopStrategy extends Strategy {
     }
   }
 
-  override restoreState(persisted: Record<string, unknown>): void {
+  protected override hydrateState(persisted: Record<string, unknown>): void {
     const validated: TrailingStopState = isTrailingStopState(persisted) ? persisted : defaultState();
-    super.restoreState(validated);
     const restored = this.#state;
     restored.exited = validated.exited;
     restored.peakPrice = validated.peakPrice;
