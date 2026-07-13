@@ -142,7 +142,7 @@ describe('GraphStrategy', () => {
       const nodes = {...minimalNodes};
       delete (nodes as Record<string, unknown>).buy;
       const connections = minimalConnections.filter(connection => connection.to.node !== 'buy');
-      expect(() => new GraphStrategy({connections, nodes, version: 1})).toThrowError(/no advice node/);
+      expect(() => new GraphStrategy({connections, nodes, version: 1})).toThrowError(/no sink node/);
     });
 
     it('rejects an invalid node config with a node-addressable error', () => {
@@ -160,9 +160,48 @@ describe('GraphStrategy', () => {
         ...minimalNodes,
         buy: {config: {amount: 'ALL_AVAILABLE_AMOUNT', amountIn: 'base', side: 'BUY'}, type: 'advice'},
       };
+      // Refinement issues have an empty path — the message must not degrade to "invalid config — : …".
       expect(() => new GraphStrategy({connections: minimalConnections, nodes, version: 1})).toThrowError(
-        /Node "buy": invalid config/
+        /Node "buy": invalid config — A BUY sized in base/
       );
+    });
+
+    it('evaluates equivalent graphs identically regardless of JSON key order', async () => {
+      /*
+       * Two advice nodes race on the same trigger tick — "first advice wins" must not
+       * depend on how the JSON happens to order its keys or connections.
+       */
+      const nodes: StrategyGraphInput['nodes'] = {
+        adviceA: {config: {amountIn: 'counter', reason: 'A', side: 'BUY'}, type: 'advice'},
+        adviceB: {config: {amountIn: 'counter', reason: 'B', side: 'BUY'}, type: 'advice'},
+        candles: {type: 'source:candle'},
+        close: {type: 'field'},
+        condition: {config: {operator: 'gt', trigger: 'always'}, type: 'if'},
+        sma: {config: {period: 2}, type: 'indicator'},
+      };
+      const connections: StrategyGraphInput['connections'] = [
+        {from: {node: 'candles'}, to: {node: 'close'}},
+        {from: {node: 'close'}, to: {node: 'sma'}},
+        {from: {node: 'close'}, to: {node: 'condition', port: 'a'}},
+        {from: {node: 'sma'}, to: {node: 'condition', port: 'b'}},
+        {from: {node: 'condition', port: 'true'}, to: {node: 'adviceA', port: 'when'}},
+        {from: {node: 'condition', port: 'true'}, to: {node: 'adviceB', port: 'when'}},
+      ];
+      const reversed: StrategyGraphInput = {
+        connections: [...connections].reverse(),
+        nodes: Object.fromEntries(Object.entries(nodes).reverse()),
+        version: 1,
+      };
+
+      const prices = [10, 11, 12, 13];
+      const [advices, reversedAdvices] = await Promise.all([
+        feed(new GraphStrategy({connections, nodes, version: 1}), prices),
+        feed(new GraphStrategy(reversed), prices),
+      ]);
+
+      expect(advices.length).toBeGreaterThan(0);
+      expect(advices.map(advice => advice.reason)).toEqual(reversedAdvices.map(advice => advice.reason));
+      expect(advices.every(advice => advice.reason === 'A')).toBe(true);
     });
 
     it('rejects a cyclic graph', () => {

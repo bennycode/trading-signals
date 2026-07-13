@@ -98,7 +98,10 @@ export class GraphStrategy extends Strategy {
       definitions.set(id, definition);
       const result = definition.configSchema.safeParse(node.config ?? {});
       if (!result.success) {
-        const issues = result.error.issues.map(issue => `${issue.path.join('.')}: ${issue.message}`).join('; ');
+        // Refinement issues carry an empty path — printing "…— : message" would just add noise.
+        const issues = result.error.issues
+          .map(issue => (issue.path.length > 0 ? `${issue.path.join('.')}: ${issue.message}` : issue.message))
+          .join('; ');
         throw new Error(`Node "${id}": invalid config — ${issues}`);
       }
       parsedConfigs.set(id, result.data);
@@ -154,13 +157,21 @@ export class GraphStrategy extends Strategy {
 
   /** Kahn's algorithm. Also the cycle detector: a cycle leaves nodes with unresolved inputs. */
   static #sortTopologically(graph: StrategyGraph, definitions: Map<string, NodeTypeDefinition>): string[] {
-    const nodeIds = Object.keys(graph.nodes);
+    /*
+     * Sort ids (and dependents, below) so evaluation order — and with it the "first advice
+     * wins" rule — depends only on the graph's structure, never on JSON key or connection
+     * ordering. Equivalent graphs serialized differently must behave identically.
+     */
+    const nodeIds = Object.keys(graph.nodes).sort();
     const dependents = new Map<string, string[]>(nodeIds.map(id => [id, []]));
     const pendingInputs = new Map<string, number>(nodeIds.map(id => [id, 0]));
 
     for (const {from, to} of graph.connections) {
       dependents.get(from.node)!.push(to.node);
       pendingInputs.set(to.node, pendingInputs.get(to.node)! + 1);
+    }
+    for (const list of dependents.values()) {
+      list.sort();
     }
 
     const queue = nodeIds.filter(id => pendingInputs.get(id) === 0);
@@ -185,7 +196,7 @@ export class GraphStrategy extends Strategy {
 
     // Guarantee at least one path can produce advice; a graph without a sink can never trade.
     if (![...definitions.values()].some(definition => definition.category === 'sink')) {
-      throw new Error('Graph has no advice node — it can never produce a trade');
+      throw new Error('Graph has no sink node (such as an order advice node) — it can never produce a trade');
     }
 
     return order;
