@@ -1,4 +1,4 @@
-import {useCallback, useMemo, useRef, useState} from 'react';
+import {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import dynamic from 'next/dynamic';
 import Big from 'big.js';
 import {AlpacaBrokerMock, TradingPair} from '@typedtrader/exchange';
@@ -77,9 +77,20 @@ export default function GraphBuilderPage() {
 
   const loadGraph = useCallback((graph: StrategyGraphInput) => {
     setLoadedGraph(graph);
+    // Sync immediately — validation must not lag until the client-only canvas re-hydrates.
+    setCurrentGraph(graph);
     setEditorKey(key => key + 1);
     setResult(null);
     setBaselineResult(null);
+  }, []);
+
+  // Clear the pending "Copied!" reset when navigating away mid-countdown.
+  useEffect(() => {
+    return () => {
+      if (copiedTimer.current) {
+        clearTimeout(copiedTimer.current);
+      }
+    };
   }, []);
 
   const copyJson = useCallback(async () => {
@@ -146,8 +157,8 @@ export default function GraphBuilderPage() {
         <div>
           <h1 className="text-2xl font-bold text-white">Strategy Builder</h1>
           <p className="text-slate-400 text-sm mt-1 max-w-2xl">
-            Stack building blocks into a trading strategy: candles flow through batchers and indicators into
-            conditions that fire order advice. The graph you see is exactly what runs in the backtest.
+            Stack building blocks into a trading strategy: candles flow through batchers and indicators into conditions
+            that fire order advice. The graph you see is exactly what runs in the backtest.
           </p>
         </div>
         <div className="flex gap-2">
@@ -244,7 +255,9 @@ export default function GraphBuilderPage() {
           )}
 
           <details className="bg-slate-800/50 border border-slate-700 rounded-lg p-4">
-            <summary className="text-sm font-semibold text-white cursor-pointer select-none">Share / Import JSON</summary>
+            <summary className="text-sm font-semibold text-white cursor-pointer select-none">
+              Share / Import JSON
+            </summary>
             <div className="mt-3 space-y-2">
               <button
                 data-testid="graph-copy-json"

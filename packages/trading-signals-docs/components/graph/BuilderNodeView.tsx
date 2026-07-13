@@ -125,13 +125,16 @@ export function createBuilderNodeView({onConfigChange, onDelete}: BuilderNodeCal
                       type={field.widget === 'number' ? 'number' : 'text'}
                       placeholder={field.placeholder}
                       value={value === undefined ? '' : String(value)}
-                      onChange={event =>
-                        onConfigChange(
-                          id,
-                          field.key,
-                          field.widget === 'number' ? Number(event.target.value) : event.target.value
-                        )
-                      }
+                      onChange={event => {
+                        // A cleared number field falls back to the schema default instead of forcing 0.
+                        const next =
+                          field.widget === 'number'
+                            ? event.target.value === ''
+                              ? undefined
+                              : Number(event.target.value)
+                            : event.target.value;
+                        onConfigChange(id, field.key, next);
+                      }}
                     />
                   )}
                 </label>

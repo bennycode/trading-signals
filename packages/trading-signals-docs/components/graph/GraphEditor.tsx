@@ -42,9 +42,19 @@ export function GraphEditor({initialGraph, onGraphChange}: GraphEditorProps) {
   const onConfigChange = useCallback(
     (nodeId: string, key: string, value: unknown) => {
       setNodes(current =>
-        current.map(node =>
-          node.id === nodeId ? {...node, data: {...node.data, config: {...node.data.config, [key]: value}}} : node
-        )
+        current.map(node => {
+          if (node.id !== nodeId) {
+            return node;
+          }
+          const config = {...node.data.config};
+          // `undefined` means "unset" — remove the key so the node's schema default applies.
+          if (value === undefined) {
+            delete config[key];
+          } else {
+            config[key] = value;
+          }
+          return {...node, data: {...node.data, config}};
+        })
       );
     },
     [setNodes]
