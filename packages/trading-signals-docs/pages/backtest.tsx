@@ -109,10 +109,12 @@ export default function BacktestPage() {
   }, []);
 
   const currentDataset = selectedDataset === 'custom' ? customDataset : datasets.find(d => d.id === selectedDataset)!;
-  const candles = (currentDataset?.candles ?? []) as Candle[];
+  const candles = currentDataset?.candles ?? [];
 
-  // Recompute defaults only when the strategy changes — deliberately NOT on Market Condition
-  // (dataset) changes, so manual config edits survive switching between datasets.
+  /*
+   * Recompute defaults only when the strategy changes — deliberately NOT on Market Condition
+   * (dataset) changes, so manual config edits survive switching between datasets.
+   */
   useEffect(() => {
     const def = strategyDefinitions.find(s => s.id === selectedStrategy)!;
     const defaults = def.getDefaultConfig(candles);
@@ -198,14 +200,14 @@ export default function BacktestPage() {
 
       const [backtestResult, baseline] = await Promise.all([
         new BacktestExecutor({
-          candles,
           broker: createExchange(candles, initialBase, initialCounter),
+          candles,
           strategy,
           tradingPair,
         }).execute(),
         new BacktestExecutor({
-          candles,
           broker: createExchange(candles, initialBase, initialCounter),
+          candles,
           strategy: new BuyOnceStrategy(),
           tradingPair,
         }).execute(),
@@ -236,7 +238,7 @@ export default function BacktestPage() {
   };
 
   const handleCustomDataset = (candles: Candle[], name: string) => {
-    setCustomDataset({id: 'custom', name, description: `Custom upload: ${name} (${candles.length} candles)`, candles});
+    setCustomDataset({candles, description: `Custom upload: ${name} (${candles.length} candles)`, id: 'custom', name});
     setSelectedDataset('custom');
     setResult(null);
     setBaselineResult(null);
