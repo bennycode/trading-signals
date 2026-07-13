@@ -1,5 +1,6 @@
 export * from './backtest/index.js';
 export * from './strategy/index.js';
+export * from './strategy-graph/index.js';
 export * from './trader/index.js';
 export {BuyOnceStrategy, BuyOnceSchema, type BuyOnceConfig} from './strategy-buy-once/BuyOnceStrategy.js';
 /** @deprecated Use {@link BuyOnceStrategy} without `buyAt` instead. */
