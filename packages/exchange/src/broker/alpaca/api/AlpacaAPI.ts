@@ -36,7 +36,23 @@ function isNotAllowedToShort(error: AxiosError) {
   return hasResponseCode(error) && error.response?.data.code === 40310000;
 }
 
+/**
+ * `POST /v2/orders` is not idempotent from the client's point of view: on a timeout or 5xx the
+ * order may still have been accepted server-side, so a blind retry can open a duplicate
+ * position with real money. Order placement must fail fast and surface the error to the caller
+ * instead of being retried; the `client_order_id` we send allows operators to reconcile
+ * whether the original request landed.
+ *
+ * @see https://docs.alpaca.markets/docs/orders-at-alpaca#client-order-id
+ */
+function isOrderPlacement(error: AxiosError) {
+  return error.config?.method?.toLowerCase() === 'post' && error.config.url === '/v2/orders';
+}
+
 export function shouldRetryAlpacaRequest(error: AxiosError) {
+  if (isOrderPlacement(error)) {
+    return false;
+  }
   if (isPatternDayTrader(error)) {
     return false;
   }
@@ -154,8 +170,12 @@ export class AlpacaAPI {
     await this.#tradingClient.delete(`/v2/orders/${orderId}`);
   }
 
-  /** @see https://docs.alpaca.markets/reference/postorder */
+  /**
+   * @see https://docs.alpaca.markets/reference/postorder
+   * @see https://docs.alpaca.markets/docs/orders-at-alpaca#client-order-id
+   */
   async postOrder(params: {
+    client_order_id: string;
     extended_hours?: boolean;
     limit_price?: string;
     notional?: string;

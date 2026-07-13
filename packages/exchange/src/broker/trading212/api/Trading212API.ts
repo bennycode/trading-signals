@@ -62,6 +62,27 @@ function getRetryDelay(retryCount: number, error: AxiosError) {
   }
 }
 
+const ORDER_PLACEMENT_URLS: ReadonlySet<string> = new Set([URL.ORDERS_LIMIT, URL.ORDERS_MARKET]);
+
+/**
+ * Order-placement POSTs are not idempotent: on a timeout or 5xx the order may still have been
+ * accepted server-side, and Trading212's public API offers no idempotency key to deduplicate a
+ * re-submission — so a blind retry can open a duplicate position with real money. Order
+ * placement must fail fast and surface the error to the caller; everything else keeps the
+ * rate-limit-aware retry behavior.
+ */
+function isOrderPlacement(error: AxiosError) {
+  const url = error.config?.url ?? '';
+  return error.config?.method?.toLowerCase() === 'post' && ORDER_PLACEMENT_URLS.has(url);
+}
+
+export function shouldRetryTrading212Request(error: AxiosError) {
+  if (isOrderPlacement(error)) {
+    return false;
+  }
+  return axiosRetry.isRetryableError(error);
+}
+
 export class Trading212API {
   static readonly URL = URL;
 
@@ -84,9 +105,7 @@ export class Trading212API {
 
     axiosRetry(this.#httpClient, {
       retries: Infinity,
-      retryCondition: (error: AxiosError) => {
-        return axiosRetry.isRetryableError(error);
-      },
+      retryCondition: shouldRetryTrading212Request,
       retryDelay: getRetryDelay,
     });
 
