@@ -3,6 +3,13 @@ import type {OneMinuteBatchedCandle} from '@typedtrader/exchange';
 import type {OrderAdvice, TradingSessionState, TradingSessionStrategy} from '../trader/index.js';
 import type {MarketType} from './MarketType.js';
 
+/**
+ * State persistence is snapshot-based: the Proxy behind `getProxiedState()` only traps
+ * TOP-LEVEL assignments, so mutating a nested object reached through it in place (e.g.
+ * `this.getProxiedState().foo.bar = x`) changes memory but is silently lost on restart.
+ * Use {@link Strategy.setState} to update nested state — it merges the patch and
+ * persists in one step.
+ */
 export abstract class Strategy implements TradingSessionStrategy {
   static NAME: string;
 
@@ -55,9 +62,11 @@ export abstract class Strategy implements TradingSessionStrategy {
 
   readonly #proxiedState: Record<string, unknown> | null = null;
   readonly #proxiedConfig: Record<string, unknown> | null = null;
+  readonly #stateTarget: Record<string, unknown> | null = null;
 
   constructor(options?: {state?: Record<string, unknown>; config?: Record<string, unknown>}) {
     if (options?.state) {
+      this.#stateTarget = options.state;
       this.#proxiedState = this.#createProxy(options.state, snapshot => {
         this.state = snapshot;
       });
@@ -80,6 +89,36 @@ export abstract class Strategy implements TradingSessionStrategy {
 
   restoreState(persisted: Record<string, unknown>): void {
     this.#_state = persisted;
+  }
+
+  /**
+   * The supported way to update nested state (see the class doc for the Proxy trap this
+   * avoids). Writes go to the raw target instead of through the Proxy so a multi-key
+   * patch persists once, not once per key.
+   */
+  setState<T extends Record<string, unknown>>(patch: Partial<T>): void {
+    const snapshot = this.state;
+    if (!snapshot) {
+      throw new Error('No state to update. Pass {state} to the Strategy constructor or call restoreState() first.');
+    }
+
+    if (this.#stateTarget) {
+      /*
+       * Sync the Proxy's target to the persisted snapshot before patching: restoreState()
+       * replaces the snapshot but not the target, so merging from the target alone would
+       * resurrect stale pre-restore values and clobber restored keys.
+       */
+      for (const key of Object.keys(this.#stateTarget)) {
+        if (!(key in snapshot)) {
+          delete this.#stateTarget[key];
+        }
+      }
+      Object.assign(this.#stateTarget, snapshot, patch);
+      this.state = {...this.#stateTarget};
+      return;
+    }
+
+    this.state = {...snapshot, ...patch};
   }
 
   /**
