@@ -4,7 +4,7 @@ Messaging interface for controlling personal trading bots remotely via [Telegram
 
 ## Features
 
-- **Multi-Platform:** Flexible `MessagingPlatform` interface for adding new platforms
+- **Platform Seam:** Slash commands and notifications run through the `MessagingPlatform` interface; interactive wizards are Telegram-only (see [Platform Support](#platform-support))
 - **Command Interface:** Execute trading bot commands via messaging
 - **Real-Time Updates:** Get live candle data, time, and bot status
 - **Owner Authentication:** Access control via Telegram user IDs
@@ -62,6 +62,32 @@ For example, to protect an existing AAPL position with a 5% stop-loss and 10% ta
 ```
 /strategyAdd 1 AAPL,USD {"protected":{"stopLossPct":"5","takeProfitPct":"10","seedFromBalance":true}}
 ```
+
+## Platform Support
+
+Telegram is the only implemented platform. The `MessagingPlatform` interface (`src/platform/MessagingPlatform.ts`) is a seam, not a full abstraction — only part of the feature set goes through it.
+
+**Platform-agnostic today:**
+
+- Slash commands registered via `registerCommand` — plain text in, Markdown reply out
+- Notifications (watch alerts, strategy updates, scheduled report output) via `PlatformDispatcher`, routed by platform-prefixed user IDs (e.g. `telegram:123456`)
+
+**Telegram-only (built on grammY):**
+
+- Interactive wizards: `/accountAdd`, `/accountEdit`, `/watchAdd`, `/strategyAdd`, and the trade commands (`/buyMarket`, `/sellMarket`, `/buyLimit`, `/sellLimit`)
+- Inline keyboards and multi-step callback flows such as `/reportAdd`
+
+### Adding a new platform
+
+Implement `MessagingPlatform` and register the instance in `startServer.ts` under a unique platform prefix:
+
+- `start()` / `stop()` — connect and disconnect the bot
+- `sendMessage(userId, text)` — deliver Markdown to a platform-prefixed user ID (strip your own prefix)
+- `registerCommand(name, handler)` — wire slash commands to the shared, platform-agnostic handlers
+- `commandList` / `platformInfo` — power `/help` and `/version`
+- Optional: `setReportScheduler` / `setWatchMonitor` / `setStrategyMonitor` — typed against the port interfaces in `MessagingPlatform.ts`; only needed if your platform offers flows that activate reports, watches, or strategies
+
+Current limits: a new platform gets text commands and notifications only. The wizards and inline-keyboard flows live inside `TelegramPlatform` and would need a platform-specific reimplementation.
 
 ## Motivation
 
