@@ -130,3 +130,52 @@ export abstract class TrendIndicatorSeries<
     };
   }
 }
+
+/**
+ * Counterpart to {@link TrendIndicatorSeries} for indicators whose result is a composite object
+ * (e.g. multiple bands or lines) instead of a single number. Subclasses inherit previous-result
+ * caching and signal-change detection so they don't have to hand-roll it per indicator.
+ */
+export abstract class TrendTechnicalIndicator<
+  Result,
+  Input = number,
+  SignalState = TradingSignals,
+> extends TechnicalIndicator<Result, Input> {
+  protected abstract calculateSignalState(result?: Result | null | undefined): SignalState;
+  protected previousResult?: Result;
+  #previousSignalState?: SignalState;
+
+  protected setResult(value: Result, replace: boolean) {
+    // When replacing, restore the previous signal state
+    if (replace && this.previousResult !== undefined) {
+      this.#previousSignalState = this.calculateSignalState(this.previousResult);
+    } else if (!replace) {
+      // Cache the previous signal state before updating
+      this.#previousSignalState = this.calculateSignalState(this.result);
+    }
+
+    // When replacing the latest value, restore previous result first
+    if (replace) {
+      this.result = this.previousResult;
+    }
+
+    // Cache previous result
+    this.previousResult = this.result;
+
+    // Set new result
+    return (this.result = value);
+  }
+
+  getSignal(): {
+    state: SignalState;
+    hasChanged: boolean;
+  } {
+    const currentState = this.calculateSignalState(this.getResult());
+    const hasChanged = this.#previousSignalState !== undefined && this.#previousSignalState !== currentState;
+
+    return {
+      hasChanged,
+      state: currentState,
+    };
+  }
+}
