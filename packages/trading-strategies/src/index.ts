@@ -25,6 +25,11 @@ export {
   type SmaCrossoverConfig,
 } from './strategy-sma-crossover/SmaCrossoverStrategy.js';
 export {
+  FeeAwareSmaCrossoverStrategy,
+  FeeAwareSmaCrossoverSchema,
+  type FeeAwareSmaCrossoverConfig,
+} from './strategy-fee-aware-sma-crossover/FeeAwareSmaCrossoverStrategy.js';
+export {
   MeanReversionStrategy,
   MeanReversionSchema,
   type MeanReversionConfig,

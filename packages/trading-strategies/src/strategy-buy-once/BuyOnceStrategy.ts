@@ -97,8 +97,8 @@ export class BuyOnceStrategy extends ProtectedStrategy {
     };
   }
 
-  override restoreState(persisted: Record<string, unknown>): void {
-    super.restoreState(persisted);
+  protected override hydrateState(persisted: Record<string, unknown>): void {
+    super.hydrateState(persisted);
     if (typeof persisted.bought === 'boolean') {
       this.#state.bought = persisted.bought;
     }

@@ -137,16 +137,15 @@ export class ScalpStrategy extends ProtectedStrategy {
     return er.getResultOrThrow() < ScalpStrategy.ER_THRESHOLD;
   }
 
-  override async onFill(fill: Fill, state: TradingSessionState): Promise<void> {
-    await super.onFill(fill, state);
+  protected override async processFill(fill: Fill, state: TradingSessionState): Promise<void> {
+    await super.processFill(fill, state);
     this.#state.lastFillPrice = fill.price;
     this.#state.lastFillSide = fill.side;
     this.#state.phase = 'pendingAdvice';
   }
 
-  override restoreState(persisted: Record<string, unknown>): void {
-    super.restoreState(persisted);
-
+  protected override hydrateState(persisted: Record<string, unknown>): void {
+    super.hydrateState(persisted);
     if (typeof persisted.lastFillPrice === 'string') {
       this.#state.lastFillPrice = persisted.lastFillPrice;
     }

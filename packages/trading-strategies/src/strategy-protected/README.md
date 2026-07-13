@@ -8,7 +8,7 @@ An abstract base class that adds composable **kill-switch** behaviour (stop-loss
 
 | Phase | Action |
 | --- | --- |
-| **active** | Tracks position cost basis via `onFill`. On each candle, checks whether any configured guard has tripped. |
+| **active** | Tracks position cost basis via `processFill`. On each candle, checks whether any configured guard has tripped. |
 | **tripped** | A guard has fired. Emits a `SELL` advice — `LIMIT` at the nominal target price or `MARKET`, depending on `stopLossOrder` / `takeProfitOrder`. The subclass is not called. |
 | **retrying** | Still tripped, position not yet fully exited. Keeps re-emitting the same advice on every candle until `onFill` clears it. |
 | **closed** | Position fully exited via `onFill`. `onCandle` returns `void` for the rest of the session. Truly terminal. |
@@ -80,9 +80,7 @@ export class MyStrategy extends ProtectedStrategy {
   constructor(config: MyStrategyConfig) {
     super({
       config,
-      state: {
-        /* subclass-specific fields */
-      },
+      state: {/* subclass-specific fields */},
     });
   }
 
@@ -97,7 +95,7 @@ export class MyStrategy extends ProtectedStrategy {
 }
 ```
 
-`onFill` is inherited and handles position tracking automatically. If a subclass overrides `onFill` for its own state machine (e.g. `ScalpStrategy`), it must call `super.onFill(fill, state)` first so cost-basis tracking stays in sync.
+Cost-basis tracking runs in `processFill`, the hook the base `Strategy` calls on every fill (after it records the last buy/sell price). A subclass that needs its own fill handling (e.g. `ScalpStrategy`) overrides `processFill` and calls `super.processFill(fill, state)` first so cost-basis tracking stays in sync.
 
 ## Position tracking
 

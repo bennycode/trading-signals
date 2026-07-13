@@ -38,6 +38,11 @@ const mockState: TradingSessionState = {
 
 const ONE_MINUTE_IN_MS = 60_000;
 
+/** A state holding `base` units — guards read the live balance to know there's a position to protect. */
+function held(base: number): TradingSessionState {
+  return {...mockState, baseBalance: new Big(base)};
+}
+
 function makeCandle(close: number, index = 0): OneMinuteBatchedCandle {
   const closeStr = String(close);
   const exchangeCandle: Candle = {
@@ -95,10 +100,10 @@ describe('BuyOnceStrategy (buy-and-hold mode, no buyAt)', () => {
 
       await strategy.onFill(makeFill('100', '10', OrderSide.BUY), mockState);
 
-      const hold = await strategy.onCandle(makeCandle(97, 1), mockState);
+      const hold = await strategy.onCandle(makeCandle(97, 1), held(10));
       expect(hold).toBeUndefined();
 
-      const exit = await strategy.onCandle(makeCandle(95, 2), mockState);
+      const exit = await strategy.onCandle(makeCandle(95, 2), held(10));
       assertLimitSell(exit);
       expect(new Big(exit.price).toFixed(2)).toBe('95.00');
       expect(exit.reason).toContain('[KILL SWITCH]');
@@ -114,10 +119,10 @@ describe('BuyOnceStrategy (buy-and-hold mode, no buyAt)', () => {
       assertMarketBuy(buy);
       await strategy.onFill(makeFill('100', '10', OrderSide.BUY), mockState);
 
-      const hold = await strategy.onCandle(makeCandle(105, 1), mockState);
+      const hold = await strategy.onCandle(makeCandle(105, 1), held(10));
       expect(hold).toBeUndefined();
 
-      const exit = await strategy.onCandle(makeCandle(110, 2), mockState);
+      const exit = await strategy.onCandle(makeCandle(110, 2), held(10));
       assertLimitSell(exit);
       expect(new Big(exit.price).toFixed(2)).toBe('110.00');
       expect(exit.reason).toContain('Take-profit');
@@ -131,7 +136,7 @@ describe('BuyOnceStrategy (buy-and-hold mode, no buyAt)', () => {
       await strategy.onCandle(makeCandle(100), mockState);
       await strategy.onFill(makeFill('100', '10', OrderSide.BUY), mockState);
 
-      const exit = await strategy.onCandle(makeCandle(95, 1), mockState);
+      const exit = await strategy.onCandle(makeCandle(95, 1), held(10));
       assertLimitSell(exit);
 
       await strategy.onFill(makeFill('95', '10', OrderSide.SELL), mockState);
@@ -153,10 +158,10 @@ describe('BuyOnceStrategy (buy-and-hold mode, no buyAt)', () => {
       const restored = new BuyOnceStrategy({protected: {stopLossPct: '5'}});
       restored.restoreState(snapshot!);
 
-      const shouldHold = await restored.onCandle(makeCandle(98, 1), mockState);
+      const shouldHold = await restored.onCandle(makeCandle(98, 1), held(10));
       expect(shouldHold).toBeUndefined();
 
-      const exit = await restored.onCandle(makeCandle(95, 2), mockState);
+      const exit = await restored.onCandle(makeCandle(95, 2), held(10));
       assertLimitSell(exit);
       expect(new Big(exit.price).toFixed(2)).toBe('95.00');
     });
