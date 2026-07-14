@@ -22,13 +22,47 @@ The "trading-strategies" library provides a TypeScript implementation for common
 npm install trading-strategies
 ```
 
-## Usage
+## How a Strategy Works
+
+A strategy watches the market one candle at a time and decides what to do next: **buy, sell, or wait.** You write that decision; the library handles the rest — turning it into a correctly sized order and keeping track of balances, fees, and each exchange's trading rules for you.
+
+On every new candle your strategy sees the latest price data and a snapshot of your account, then returns one of:
+
+- **Buy** — at the current price (market order) or at a price you set (limit order)
+- **Sell** — at the current price or at a price you set
+- **Nothing** — sit this one out
+
+A strategy never places orders itself. It only gives _advice_, and the library works out how to fill it safely.
+
+You can also start from a ready-made base instead of from scratch. For example, **`ProtectedStrategy`** adds automatic stop-loss and take-profit guards: build your buy/sell logic on top of it and your position is protected with no extra work.
+
+## Same Strategy, Backtest or Live
+
+Write a strategy once and run it in two places without changing a line:
+
+- **Backtest** — replay historical candles to measure how it would have performed.
+- **Live or paper trading** — stream real candles from a broker and trade for real, or with simulated money.
+
+Both give the strategy the same information and handle its advice the same way, so a backtest is a faithful rehearsal of live trading — not a rough approximation. Always backtest before you go live (see [Backtesting](#backtesting)).
+
+Running a backtest looks like this:
 
 ```ts
-import {Strategy} from 'trading-strategies';
-import {ExchangeOrderSide, ExchangeOrderType} from '@typedtrader/exchange';
-import type {OrderAdvice} from '@typedtrader/exchange';
+import {BacktestExecutor, MeanReversionStrategy} from 'trading-strategies';
+
+const result = await new BacktestExecutor({
+  candles, // historical price data
+  broker, // a simulated exchange
+  strategy: new MeanReversionStrategy(),
+  tradingPair,
+}).execute();
+
+console.log(result.performance.returnPercentage);
 ```
+
+## What a Strategy Can Use
+
+Most strategies combine **technical indicators** from the companion [trading-signals](https://www.npmjs.com/package/trading-signals) library — moving averages, RSI, Bollinger Bands, and so on. That's the common case, but not a rule: a strategy is ordinary code, so before it decides it can also draw on anything else — your own database, the latest news or earnings, or analyst ratings from an outside service.
 
 ## Reports
 
@@ -152,11 +186,14 @@ The strategy seeds its position tracking from the account's base balance and the
 
 ## Strategy Signals
 
-- `BUY_MARKET`: Buy at current market price
-- `BUY_LIMIT`: Buy when price reaches specified limit
-- `SELL_MARKET`: Sell at current market price
-- `SELL_LIMIT`: Sell when price reaches specified limit
-- `NONE`: No action recommended
+A strategy expresses intent by returning an `OrderAdvice` from `processCandle` (see [The Strategy Contract](#the-strategy-contract)), or `void`/`undefined` for "no action". The four actionable shapes:
+
+- **Buy at market** — `{type: 'MARKET', side: 'BUY', amountIn: 'counter', amount}`
+- **Buy at limit** — `{type: 'LIMIT', side: 'BUY', amountIn: 'base', amount, price}`
+- **Sell at market** — `{type: 'MARKET', side: 'SELL', amountIn: 'base', amount}`
+- **Sell at limit** — `{type: 'LIMIT', side: 'SELL', amountIn: 'base', amount, price}`
+
+Use `AllAvailableAmount` as `amount` to trade the full available balance.
 
 ## Market Regimes
 
