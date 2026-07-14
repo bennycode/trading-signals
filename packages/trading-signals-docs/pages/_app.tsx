@@ -3,6 +3,7 @@ import type {AppProps} from 'next/app';
 import Link from 'next/link';
 import {useRouter} from 'next/router';
 import {useState} from 'react';
+import '@xyflow/react/dist/style.css';
 import '../styles/globals.css';
 
 Highcharts.setOptions({accessibility: {enabled: false}});
@@ -12,13 +13,14 @@ export default function App({Component, pageProps}: AppProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const navigation = [
-    {name: 'Home', href: '/'},
-    {name: 'Trend', href: '/indicators/trend'},
-    {name: 'Momentum', href: '/indicators/momentum'},
-    {name: 'Volatility', href: '/indicators/volatility'},
-    {name: 'Volume', href: '/indicators/volume'},
-    {name: 'Utilities', href: '/indicators/utilities'},
-    {name: 'Backtest', href: '/backtest', highlight: true},
+    {href: '/', name: 'Home'},
+    {href: '/indicators/trend', name: 'Trend'},
+    {href: '/indicators/momentum', name: 'Momentum'},
+    {href: '/indicators/volatility', name: 'Volatility'},
+    {href: '/indicators/volume', name: 'Volume'},
+    {href: '/indicators/utilities', name: 'Utilities'},
+    {highlight: true, href: '/backtest', name: 'Backtest'},
+    {highlight: true, href: '/graph-builder', name: 'Builder'},
   ];
 
   const getNavClasses = (item: (typeof navigation)[number], isActive: boolean, isMobile = false) => {
@@ -32,9 +34,7 @@ export default function App({Component, pageProps}: AppProps) {
       }`;
     }
 
-    return `${base} ${
-      isActive ? 'bg-blue-600 text-white' : 'text-slate-300 hover:bg-slate-800 hover:text-white'
-    }`;
+    return `${base} ${isActive ? 'bg-blue-600 text-white' : 'text-slate-300 hover:bg-slate-800 hover:text-white'}`;
   };
 
   return (
@@ -48,10 +48,7 @@ export default function App({Component, pageProps}: AppProps) {
               </Link>
               <div className="hidden md:flex space-x-4">
                 {navigation.map(item => (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    className={getNavClasses(item, router.pathname === item.href)}>
+                  <Link key={item.href} href={item.href} className={getNavClasses(item, router.pathname === item.href)}>
                     {item.name}
                   </Link>
                 ))}
@@ -82,7 +79,11 @@ export default function App({Component, pageProps}: AppProps) {
                   {mobileMenuOpen ? (
                     <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                   ) : (
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"
+                    />
                   )}
                 </svg>
               </button>
@@ -119,7 +120,8 @@ export default function App({Component, pageProps}: AppProps) {
       <footer className="border-t border-slate-700 mt-16 py-8">
         <div className="container mx-auto px-4 text-center text-slate-400">
           <p>
-            Built with ❤️ by <a
+            Built with ❤️ by{' '}
+            <a
               href="https://github.com/sponsors/bennycode"
               target="_blank"
               rel="noopener noreferrer"
