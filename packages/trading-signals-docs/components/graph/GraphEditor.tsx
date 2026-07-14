@@ -1,15 +1,30 @@
-import {useCallback, useEffect, useMemo, useRef} from 'react';
+import {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {Background, Controls, ReactFlow, addEdge, useEdgesState, useNodesState} from '@xyflow/react';
 import type {Connection, Edge, IsValidConnection} from '@xyflow/react';
 import {getNodeTypeDefinition, getNodeTypes} from 'trading-strategies';
 import type {StrategyGraphInput} from 'trading-strategies';
 import type {BuilderNode} from '../../utils/graphIO';
 import {fromStrategyGraph, toStrategyGraph} from '../../utils/graphIO';
+import {NODE_FIELDS} from './nodeFields';
 import {PORT_COLORS, createBuilderNodeView} from './BuilderNodeView';
+
+/** A new object (even with an identical graph) is what tells the editor to apply a reset. */
+export interface GraphResetSignal {
+  graph: StrategyGraphInput;
+  token: number;
+}
 
 interface GraphEditorProps {
   initialGraph: StrategyGraphInput;
   onGraphChange: (graph: StrategyGraphInput) => void;
+  /**
+   * Set by the page to replace the whole canvas (Clear/Template/JSON import) — a bumped
+   * `token` applies `graph` without unmounting React Flow. `next/dynamic` doesn't forward
+   * refs to the loaded component's own imperative handle (it hijacks the ref for its own
+   * `{retry}` API), so a plain prop is the reliable way to command a reset across that
+   * dynamic-import boundary.
+   */
+  resetSignal: GraphResetSignal | null;
 }
 
 const CATEGORY_DOTS: Record<string, string> = {
@@ -19,6 +34,42 @@ const CATEGORY_DOTS: Record<string, string> = {
   source: 'bg-amber-500',
   transform: 'bg-orange-400',
 };
+
+const GRID_COLUMNS = 4;
+const COLUMN_WIDTH = 240;
+const GRID_ORIGIN_X = 240;
+const GRID_ORIGIN_Y = 40;
+const NODE_GAP_Y = 24;
+const NODE_HEADER_HEIGHT = 56;
+const PORT_LABEL_ROW_HEIGHT = 20;
+const FIELD_ROW_HEIGHT = 34;
+const NODE_BOTTOM_PADDING = 12;
+
+/**
+ * Nodes vary in height (an `advice` node with 4 config fields is much taller than a bare
+ * `source:candle` node). A fixed row height would let tall nodes overlap the row below, so
+ * placement uses this estimate to pack nodes shelf-style instead of a uniform grid.
+ */
+function estimateNodeHeight(nodeType: string) {
+  const definition = getNodeTypeDefinition(nodeType);
+  const portRows = definition ? Math.max(definition.inputs.length, definition.outputs.length) : 0;
+  const fieldRows = NODE_FIELDS[nodeType]?.length ?? 0;
+  return NODE_HEADER_HEIGHT + portRows * PORT_LABEL_ROW_HEIGHT + fieldRows * FIELD_ROW_HEIGHT + NODE_BOTTOM_PADDING;
+}
+
+/** Buckets already-placed nodes (template load, JSON import, manual drags) into their nearest column. */
+function columnHeightsFor(nodes: readonly BuilderNode[]): number[] {
+  const heights = Array<number>(GRID_COLUMNS).fill(GRID_ORIGIN_Y);
+  for (const node of nodes) {
+    const column = Math.min(
+      GRID_COLUMNS - 1,
+      Math.max(0, Math.round((node.position.x - GRID_ORIGIN_X) / COLUMN_WIDTH))
+    );
+    const bottom = node.position.y + estimateNodeHeight(node.data.nodeType) + NODE_GAP_Y;
+    heights[column] = Math.max(heights[column], bottom);
+  }
+  return heights;
+}
 
 function styleEdge(edge: Edge, nodes: BuilderNode[]): Edge {
   const source = nodes.find(node => node.id === edge.source);
@@ -31,13 +82,29 @@ function styleEdge(edge: Edge, nodes: BuilderNode[]): Edge {
   };
 }
 
-export function GraphEditor({initialGraph, onGraphChange}: GraphEditorProps) {
-  const initial = useMemo(() => fromStrategyGraph(initialGraph), [initialGraph]);
+export function GraphEditor({initialGraph, onGraphChange, resetSignal}: GraphEditorProps) {
+  /*
+   * `initialGraph` seeds the very first render only; later resets arrive via `resetSignal`
+   * below so the canvas (viewport, React Flow internals) never has to unmount.
+   */
+  const [initial] = useState(() => fromStrategyGraph(initialGraph));
   const [nodes, setNodes, onNodesChange] = useNodesState<BuilderNode>(initial.nodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>(
     initial.edges.map(edge => styleEdge(edge, initial.nodes))
   );
-  const nextNodeNumber = useRef(1);
+  const columnHeights = useRef<number[]>(columnHeightsFor(initial.nodes));
+  const lastAppliedToken = useRef<number | null>(null);
+
+  useEffect(() => {
+    if (!resetSignal || resetSignal.token === lastAppliedToken.current) {
+      return;
+    }
+    lastAppliedToken.current = resetSignal.token;
+    const converted = fromStrategyGraph(resetSignal.graph);
+    columnHeights.current = columnHeightsFor(converted.nodes);
+    setNodes(converted.nodes);
+    setEdges(converted.edges.map(edge => styleEdge(edge, converted.nodes)));
+  }, [resetSignal, setNodes, setEdges]);
 
   const onConfigChange = useCallback(
     (nodeId: string, key: string, value: unknown) => {
@@ -109,26 +176,22 @@ export function GraphEditor({initialGraph, onGraphChange}: GraphEditorProps) {
   const addNode = useCallback(
     (nodeType: string) => {
       const shortName = nodeType.replace('source:', '');
-      setNodes(current => {
-        let id = `${shortName}-${nextNodeNumber.current}`;
-        while (current.some(node => node.id === id)) {
-          nextNodeNumber.current += 1;
-          id = `${shortName}-${nextNodeNumber.current}`;
-        }
-        nextNodeNumber.current += 1;
-        // Grid placement right of the palette so fresh nodes never hide behind it or each other.
-        const column = current.length % 4;
-        const row = Math.floor(current.length / 4);
-        const newNode: BuilderNode = {
-          data: {config: {}, nodeType},
-          id,
-          position: {x: 240 + column * 240, y: 40 + row * 300},
-          type: 'builder',
-        };
-        return [...current, newNode];
-      });
+      let suffix = nodes.length + 1;
+      let id = `${shortName}-${suffix}`;
+      while (nodes.some(node => node.id === id)) {
+        suffix += 1;
+        id = `${shortName}-${suffix}`;
+      }
+      // Shelf-pack into the shortest column so a tall node never overlaps the one placed after it.
+      const heights = columnHeights.current;
+      const column = heights.indexOf(Math.min(...heights));
+      const position = {x: GRID_ORIGIN_X + column * COLUMN_WIDTH, y: heights[column]};
+      heights[column] += estimateNodeHeight(nodeType) + NODE_GAP_Y;
+
+      const newNode: BuilderNode = {data: {config: {}, nodeType}, id, position, type: 'builder'};
+      setNodes(current => [...current, newNode]);
     },
-    [setNodes]
+    [nodes, setNodes]
   );
 
   useEffect(() => {

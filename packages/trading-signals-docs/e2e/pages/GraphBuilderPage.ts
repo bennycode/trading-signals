@@ -11,6 +11,8 @@ export class GraphBuilderPage {
   }
 
   async clearCanvas(): Promise<void> {
+    // Clearing now asks for confirmation (accidental clicks used to wipe the whole graph).
+    this.page.once('dialog', dialog => dialog.accept());
     await this.page.getByTestId('graph-clear').click();
   }
 

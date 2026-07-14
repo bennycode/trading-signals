@@ -1,9 +1,20 @@
 import {Handle, Position} from '@xyflow/react';
 import type {NodeProps} from '@xyflow/react';
 import {getNodeTypeDefinition} from 'trading-strategies';
-import type {NodePortDefinition, PortValueKind} from 'trading-strategies';
+import type {NodePortDefinition, NodeTypeDefinition, PortValueKind} from 'trading-strategies';
 import type {BuilderNode} from '../../utils/graphIO';
 import {NODE_FIELDS} from './nodeFields';
+
+/**
+ * The engine's own Zod defaults, not a UI guess. Parsing `{}` runs every `.default(...)` in
+ * the schema, so an unset config key resolves to exactly the value `GraphStrategy` would use.
+ */
+function getConfigDefaults(definition: NodeTypeDefinition): Record<string, unknown> {
+  const result = definition.configSchema.safeParse({});
+  return result.success && typeof result.data === 'object' && result.data !== null
+    ? (result.data as Record<string, unknown>)
+    : {};
+}
 
 /** Ports snap only to matching colors — the visual grammar for "these blocks fit together". */
 export const PORT_COLORS: Record<PortValueKind, string> = {
@@ -71,6 +82,7 @@ export function createBuilderNodeView({onConfigChange, onDelete}: BuilderNodeCal
     }
     const fields = NODE_FIELDS[data.nodeType] ?? [];
     const accent = CATEGORY_ACCENTS[definition.category] ?? 'border-t-slate-500';
+    const defaults = getConfigDefaults(definition);
 
     return (
       <div
@@ -101,6 +113,7 @@ export function createBuilderNodeView({onConfigChange, onDelete}: BuilderNodeCal
           <div className="px-3 pb-2.5 pt-1 space-y-1.5">
             {fields.map(field => {
               const value = data.config[field.key];
+              const defaultValue = defaults[field.key];
               const common =
                 'nodrag w-full bg-slate-900 border border-slate-600 rounded px-1.5 py-1 text-xs text-white focus:outline-none focus:border-purple-500';
               return (
@@ -110,7 +123,7 @@ export function createBuilderNodeView({onConfigChange, onDelete}: BuilderNodeCal
                     <select
                       data-testid={`node-${id}-${field.key}`}
                       className={common}
-                      value={String(value ?? field.options?.[0]?.value ?? '')}
+                      value={String(value ?? defaultValue ?? field.options?.[0]?.value ?? '')}
                       onChange={event => onConfigChange(id, field.key, event.target.value)}>
                       {field.options?.map(option => (
                         <option key={option.value} value={option.value}>
@@ -123,7 +136,11 @@ export function createBuilderNodeView({onConfigChange, onDelete}: BuilderNodeCal
                       data-testid={`node-${id}-${field.key}`}
                       className={common}
                       type={field.widget === 'number' ? 'number' : 'text'}
-                      placeholder={field.placeholder}
+                      /*
+                       * Shows the engine's real schema default (not just a static hint) so an
+                       * unset field never looks blank when a value will actually be used.
+                       */
+                      placeholder={defaultValue !== undefined ? String(defaultValue) : field.placeholder}
                       value={value === undefined ? '' : String(value)}
                       onChange={event => {
                         // A cleared number field falls back to the schema default instead of forcing 0.

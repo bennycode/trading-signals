@@ -15,6 +15,8 @@ import {BacktestResults} from '../components/BacktestResults';
 import {DatasetSelector} from '../components/DatasetSelector';
 import {datasets} from '../utils/datasets';
 import type {CandleDataset} from '../utils/types';
+import {useDebouncedValue} from '../utils/useDebouncedValue';
+import type {GraphResetSignal} from '../components/graph/GraphEditor';
 
 const GraphEditor = dynamic(() => import('../components/graph/GraphEditor').then(module => module.GraphEditor), {
   loading: () => (
@@ -24,6 +26,8 @@ const GraphEditor = dynamic(() => import('../components/graph/GraphEditor').then
   ),
   ssr: false,
 });
+
+const VALIDATION_DEBOUNCE_MS = 200;
 
 function createExchange(candles: Candle[], initialBase: string, initialCounter: string) {
   const base = candles[0]?.base ?? 'BTC';
@@ -36,8 +40,8 @@ function createExchange(candles: Candle[], initialBase: string, initialCounter: 
 }
 
 export default function GraphBuilderPage() {
-  const [loadedGraph, setLoadedGraph] = useState<StrategyGraphInput>(() => createSmaCrossoverGraph());
-  const [editorKey, setEditorKey] = useState(0);
+  const [loadedGraph] = useState<StrategyGraphInput>(() => createSmaCrossoverGraph());
+  const [resetSignal, setResetSignal] = useState<GraphResetSignal | null>(null);
   const [currentGraph, setCurrentGraph] = useState<StrategyGraphInput | null>(null);
   const [selectedDataset, setSelectedDataset] = useState(datasets[0].id);
   const [customDataset, setCustomDataset] = useState<CandleDataset | null>(null);
@@ -59,27 +63,35 @@ export default function GraphBuilderPage() {
     setCurrentGraph(graph);
   }, []);
 
+  /*
+   * Rebuilding the interpreter on every keystroke of a config field is wasted work — settle
+   * on a value briefly before re-validating.
+   */
+  const debouncedGraph = useDebouncedValue(currentGraph, VALIDATION_DEBOUNCE_MS);
+
   /**
    * The single source of truth for "is this strategy runnable": constructing the real
    * interpreter. Whatever error it throws is exactly what a backtest would hit.
    */
   const validationError = useMemo(() => {
-    if (!currentGraph || Object.keys(currentGraph.nodes).length === 0) {
+    if (!debouncedGraph || Object.keys(debouncedGraph.nodes).length === 0) {
       return 'Add nodes to build a strategy';
     }
     try {
-      new GraphStrategy(currentGraph);
+      new GraphStrategy(debouncedGraph);
       return null;
     } catch (error) {
       return error instanceof Error ? error.message : 'Invalid graph';
     }
-  }, [currentGraph]);
+  }, [debouncedGraph]);
 
   const loadGraph = useCallback((graph: StrategyGraphInput) => {
-    setLoadedGraph(graph);
-    // Sync immediately — validation must not lag until the client-only canvas re-hydrates.
+    /*
+     * Reset the canvas in place (no remount) — the editor keeps its viewport, and
+     * `currentGraph` is synced immediately so validation never shows stale state.
+     */
+    setResetSignal(current => ({graph, token: (current?.token ?? 0) + 1}));
     setCurrentGraph(graph);
-    setEditorKey(key => key + 1);
     setResult(null);
     setBaselineResult(null);
   }, []);
@@ -97,7 +109,13 @@ export default function GraphBuilderPage() {
     if (!currentGraph) {
       return;
     }
-    await navigator.clipboard.writeText(JSON.stringify(currentGraph, null, 2));
+    try {
+      await navigator.clipboard.writeText(JSON.stringify(currentGraph, null, 2));
+    } catch (error) {
+      setJsonError(error instanceof Error ? error.message : 'Could not copy to clipboard');
+      return;
+    }
+    setJsonError(null);
     if (copiedTimer.current) {
       clearTimeout(copiedTimer.current);
     }
@@ -164,7 +182,11 @@ export default function GraphBuilderPage() {
         <div className="flex gap-2">
           <button
             data-testid="graph-clear"
-            onClick={() => loadGraph({connections: [], nodes: {}, version: 1})}
+            onClick={() => {
+              if (window.confirm('Clear the canvas? This removes every node and connection and cannot be undone.')) {
+                loadGraph({connections: [], nodes: {}, version: 1});
+              }
+            }}
             className="py-2 px-4 rounded-lg text-sm font-medium bg-slate-700 hover:bg-slate-600 text-white transition-colors cursor-pointer">
             Clear canvas
           </button>
@@ -286,7 +308,7 @@ export default function GraphBuilderPage() {
 
         {/* Canvas */}
         <div className="flex-1 min-w-0">
-          <GraphEditor key={editorKey} initialGraph={loadedGraph} onGraphChange={onGraphChange} />
+          <GraphEditor initialGraph={loadedGraph} onGraphChange={onGraphChange} resetSignal={resetSignal} />
         </div>
       </div>
 
