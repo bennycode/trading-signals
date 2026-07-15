@@ -26,7 +26,7 @@ const configFileOverride = {
  * Shared ESLint config for every package in this monorepo. Pass `ignores` to append
  * package-specific ignore globs on top of the common ones.
  */
-export function createConfig({ignores = []} = {}) {
+export function createConfig({ignores = []}: {ignores?: string[]} = {}) {
   return defineConfig([
     {
       extends: [eslintConfig],
