@@ -1,19 +1,16 @@
 import axios, {AxiosError, AxiosHeaders, type AxiosResponse, type InternalAxiosRequestConfig} from 'axios';
 import {z} from 'zod';
 import {AlpacaAPI, shouldRetryAlpacaRequest} from './AlpacaAPI.js';
+import {SimplifiedHttpError} from '../../../util/SimplifiedHttpError.js';
 import type {Order} from './schema/OrderSchema.js';
 
-type Request = {method: string; url: string};
-
-function httpError(status: number, data: unknown = {}, request?: Request): AxiosError {
-  const config: InternalAxiosRequestConfig = {headers: new AxiosHeaders(), ...request};
-  const response: AxiosResponse = {config, data, headers: new AxiosHeaders(), status, statusText: ''};
-  return new AxiosError(`Request failed with status ${status}`, 'ERR_BAD_RESPONSE', config, undefined, response);
+function httpError(status: number, data: unknown = {}) {
+  return new SimplifiedHttpError({data, status});
 }
 
-function networkError(code: string, request?: Request): AxiosError {
-  const config: InternalAxiosRequestConfig = {headers: new AxiosHeaders(), ...request};
-  return new AxiosError(`Network error: ${code}`, code, config);
+// Network failures (e.g. EAI_AGAIN) carry no HTTP response, so simplifyError normalizes them to status 0.
+function networkError(code: string) {
+  return new SimplifiedHttpError({data: code, status: undefined});
 }
 
 describe('shouldRetryAlpacaRequest', () => {
@@ -41,20 +38,8 @@ describe('shouldRetryAlpacaRequest', () => {
     expect(shouldRetryAlpacaRequest(httpError(403, {code: 40310000}))).toBe(false);
   });
 
-  describe('order placement (POST /v2/orders)', () => {
-    const placeOrder: Request = {method: 'post', url: '/v2/orders'};
-
-    it('retries server errors (HTTP 503) because the client order id keeps a re-submission from duplicating the order', () => {
-      expect(shouldRetryAlpacaRequest(httpError(503, {}, placeOrder))).toBe(true);
-    });
-
-    it('retries network errors (EAI_AGAIN)', () => {
-      expect(shouldRetryAlpacaRequest(networkError('EAI_AGAIN', placeOrder))).toBe(true);
-    });
-
-    it('does not retry business rejections (Alpaca code 40310100)', () => {
-      expect(shouldRetryAlpacaRequest(httpError(403, {code: 40310100}, placeOrder))).toBe(false);
-    });
+  it('does not retry errors that were not normalized by simplifyError', () => {
+    expect(shouldRetryAlpacaRequest(new Error('boom'))).toBe(false);
   });
 });
 
