@@ -1,6 +1,6 @@
 import axios from 'axios';
-import axiosRetry from 'axios-retry';
 import {z} from 'zod';
+import {withRetry} from './retry.js';
 
 const EarningsEntrySchema = z.looseObject({
   date: z.string(),
@@ -24,11 +24,10 @@ const client = axios.create({
   baseURL: 'https://finnhub.io/api/v1',
 });
 
-axiosRetry(client, {
-  retries: 3,
-  retryCondition: error => axiosRetry.isNetworkError(error) || error.response?.status === 429,
-  retryDelay: retryCount => retryCount * 1_000,
-});
+// This client skips simplifyError, so errors arrive as raw AxiosError — not SimplifiedHttpError.
+function isRetryableFinnhubError(error: unknown) {
+  return axios.isAxiosError(error) && (!error.response || error.response.status === 429);
+}
 
 /**
  * Checks whether a symbol is reporting quarterly earnings on the given UTC date.
@@ -37,14 +36,18 @@ axiosRetry(client, {
  */
 export async function isEarningsDay(options: {apiKey: string; date: Date; symbol: string}) {
   const isoDate = toIsoDate(options.date);
-  const response = await client.get('/calendar/earnings', {
-    params: {
-      from: isoDate,
-      symbol: options.symbol,
-      to: isoDate,
-      token: options.apiKey,
-    },
-  });
+  const response = await withRetry(
+    () =>
+      client.get('/calendar/earnings', {
+        params: {
+          from: isoDate,
+          symbol: options.symbol,
+          to: isoDate,
+          token: options.apiKey,
+        },
+      }),
+    {isRetryable: isRetryableFinnhubError, retries: 3}
+  );
   const parsed = EarningsCalendarResponseSchema.parse(response.data);
   const entries = parsed.earningsCalendar ?? [];
   return entries.some(entry => entry.symbol === options.symbol && entry.date === isoDate);
