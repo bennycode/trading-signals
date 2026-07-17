@@ -1,6 +1,6 @@
-import axios, {type AxiosDefaults, type AxiosError, type AxiosInstance} from 'axios';
-import axiosRetry from 'axios-retry';
+import axios, {type AxiosDefaults, type AxiosInstance} from 'axios';
 import {z} from 'zod';
+import {retry} from '../../../util/retry.js';
 import {simplifyError} from '../../../util/simplifyError.js';
 import {AccountCashSchema, AccountInfoSchema} from './schema/AccountSchema.js';
 import {HistoryOrderPageSchema, type HistoryOrder} from './schema/HistoryOrderSchema.js';
@@ -26,42 +26,11 @@ const URL = {
 } as const;
 
 /**
- * Per-endpoint retry delays (ms) calibrated to Trading212's documented rate limits.
+ * The `@retry` delay on each method is calibrated to Trading212's documented rate limit
+ * for that endpoint.
  *
  * @see https://t212public-api-docs.redoc.ly/
  */
-function getRetryDelay(retryCount: number, error: AxiosError) {
-  const url = error.config?.url ?? '';
-  const method = error.config?.method;
-
-  if (method === 'get' && url.startsWith(`${URL.ORDERS}/`)) {
-    return 1_000;
-  }
-
-  /*
-   * HISTORY_ORDERS pagination follows vendor-supplied `nextPagePath` URLs that include a
-   * query string (e.g. "/api/v0/equity/history/orders?cursor=…"), so a strict `===` match
-   * would miss every page after the first and fall through to the 1s default.
-   */
-  if (url.startsWith(URL.HISTORY_ORDERS)) {
-    return 60_000;
-  }
-
-  switch (url) {
-    case URL.ACCOUNT_CASH:
-      return 2_000;
-    case URL.ORDERS:
-    case URL.PORTFOLIO:
-      return 5_000;
-    case URL.ACCOUNT_INFO:
-      return 30_000;
-    case URL.METADATA_INSTRUMENTS:
-      return 50_000;
-    default:
-      return retryCount * 1_000;
-  }
-}
-
 export class Trading212API {
   static readonly URL = URL;
 
@@ -82,14 +51,6 @@ export class Trading212API {
       return config;
     });
 
-    axiosRetry(this.#httpClient, {
-      retries: Infinity,
-      retryCondition: (error: AxiosError) => {
-        return axiosRetry.isRetryableError(error);
-      },
-      retryDelay: getRetryDelay,
-    });
-
     simplifyError(this.#httpClient);
   }
 
@@ -102,47 +63,55 @@ export class Trading212API {
   }
 
   /** @see https://t212public-api-docs.redoc.ly/#operation/accountCash */
+  @retry({delayMs: 2_000})
   async getAccountCash() {
     const response = await this.#httpClient.get(URL.ACCOUNT_CASH);
     return AccountCashSchema.parse(response.data);
   }
 
   /** @see https://t212public-api-docs.redoc.ly/#operation/account */
+  @retry({delayMs: 30_000})
   async getAccountInfo() {
     const response = await this.#httpClient.get(URL.ACCOUNT_INFO);
     return AccountInfoSchema.parse(response.data);
   }
 
   /** @see https://t212public-api-docs.redoc.ly/#operation/portfolio */
+  @retry({delayMs: 5_000})
   async getPositions() {
     const response = await this.#httpClient.get(URL.PORTFOLIO);
     return z.array(PositionSchema).parse(response.data);
   }
 
   /** @see https://t212public-api-docs.redoc.ly/#operation/positionByTicker */
+  @retry()
   async getPositionByTicker(ticker: string) {
     const response = await this.#httpClient.get(`${URL.PORTFOLIO}/${ticker}`);
     return PositionSchema.parse(response.data);
   }
 
   /** @see https://t212public-api-docs.redoc.ly/#operation/orders */
+  @retry({delayMs: 5_000})
   async getOrders() {
     const response = await this.#httpClient.get(URL.ORDERS);
     return z.array(OrderSchema).parse(response.data);
   }
 
   /** @see https://t212public-api-docs.redoc.ly/#operation/orderById */
+  @retry({delayMs: 1_000})
   async getOrderById(id: number) {
     const response = await this.#httpClient.get(`${URL.ORDERS}/${id}`);
     return OrderSchema.parse(response.data);
   }
 
   /** @see https://t212public-api-docs.redoc.ly/#operation/cancelOrder */
+  @retry()
   async cancelOrder(id: number): Promise<void> {
     await this.#httpClient.delete(`${URL.ORDERS}/${id}`);
   }
 
   /** @see https://t212public-api-docs.redoc.ly/#operation/placeMarketOrder */
+  @retry()
   async placeMarketOrder(request: PlaceMarketOrderRequest) {
     const validated = PlaceMarketOrderRequestSchema.parse(request);
     const response = await this.#httpClient.post(URL.ORDERS_MARKET, validated);
@@ -150,6 +119,7 @@ export class Trading212API {
   }
 
   /** @see https://t212public-api-docs.redoc.ly/#operation/placeLimitOrder */
+  @retry()
   async placeLimitOrder(request: PlaceLimitOrderRequest) {
     const validated = PlaceLimitOrderRequestSchema.parse(request);
     const response = await this.#httpClient.post(URL.ORDERS_LIMIT, validated);
@@ -157,6 +127,7 @@ export class Trading212API {
   }
 
   /** @see https://t212public-api-docs.redoc.ly/#operation/instruments */
+  @retry({delayMs: 50_000})
   async getInstruments() {
     const response = await this.#httpClient.get(URL.METADATA_INSTRUMENTS);
     return z.array(InstrumentSchema).parse(response.data);
@@ -169,6 +140,7 @@ export class Trading212API {
    *
    * @see https://t212public-api-docs.redoc.ly/#operation/orders_1
    */
+  @retry({delayMs: 60_000})
   async getHistoryOrdersPage(options?: {nextPath?: string; ticker?: string}) {
     if (options?.nextPath) {
       const response = await this.#httpClient.get(options.nextPath);
@@ -183,25 +155,20 @@ export class Trading212API {
   }
 
   /**
-   * Fetches all historical orders (auto-paginates via `nextPagePath`).
+   * Fetches all historical orders (auto-paginates via `nextPagePath`). Deliberately not decorated
+   * with `@retry` — each page is fetched through {@link getHistoryOrdersPage}, so a transient
+   * failure retries only the affected page instead of restarting the whole pagination.
    *
    * @see https://t212public-api-docs.redoc.ly/#operation/orders_1
    */
   async getHistoryOrders(ticker?: string): Promise<HistoryOrder[]> {
     const items: HistoryOrder[] = [];
-    let nextPath: string | null = null;
-    const params: Record<string, string> = {limit: '50'};
-    if (ticker) {
-      params.ticker = ticker;
-    }
+    let nextPath: string | undefined = undefined;
 
     do {
-      const response = nextPath
-        ? await this.#httpClient.get(nextPath)
-        : await this.#httpClient.get(URL.HISTORY_ORDERS, {params});
-      const page = HistoryOrderPageSchema.parse(response.data);
+      const page = await this.getHistoryOrdersPage({nextPath, ticker});
       items.push(...page.items);
-      nextPath = page.nextPagePath;
+      nextPath = page.nextPagePath ?? undefined;
     } while (nextPath);
 
     return items;
