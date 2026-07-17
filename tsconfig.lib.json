@@ -1,9 +1,7 @@
 {
   "compilerOptions": {
     "declaration": true,
-    "emitDecoratorMetadata": false,
     "erasableSyntaxOnly": true,
-    "experimentalDecorators": true,
     "forceConsistentCasingInFileNames": true,
     "lib": ["es2023"],
     "module": "node20",

@@ -6,7 +6,6 @@
     "@types/big.js": "^7.0.0",
     "@types/jsonabc": "^2.3.3",
     "axios": "^1.18.1",
-    "axios-retry": "^4.5.0",
     "big.js": "^7.0.1",
     "dotenv-defaults": "^6.0.0",
     "jsonabc": "^2.3.1",
