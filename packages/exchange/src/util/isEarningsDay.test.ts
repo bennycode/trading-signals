@@ -9,14 +9,6 @@ vi.mock(import('axios'), () => ({
   } as unknown as AxiosStatic,
 }));
 
-/*
- * axios-retry runs at module-load time and wraps interceptors on the axios
- * instance. We bypass it because the mocked axios instance has no
- * interceptors — the real retry behavior is exercised by the production
- * client, not by these unit tests.
- */
-vi.mock(import('axios-retry'));
-
 const {isEarningsDay} = await import('./isEarningsDay.js');
 
 describe('isEarningsDay', () => {
