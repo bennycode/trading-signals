@@ -10,7 +10,8 @@ export interface RetryOptions {
   retries?: number;
 }
 
-function isTransientHttpError(error: unknown) {
+/** Retryable transient failures as normalized into {@link SimplifiedHttpError}: network errors (status 0), 429 rate limits, and 5xx responses. */
+export function isTransientHttpError(error: unknown) {
   if (!(error instanceof SimplifiedHttpError)) {
     return false;
   }
