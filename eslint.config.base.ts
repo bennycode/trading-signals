@@ -22,13 +22,11 @@ const configFileOverride = {
   files: ['**/eslint.config.*'],
 };
 
-type CreateConfigOptions = Pick<Config, 'ignores'>;
-
 /**
- * Shared ESLint config for every package in this monorepo. Pass `ignores` to append
- * package-specific ignore globs on top of the common ones.
+ * Shared ESLint config for every package in this monorepo. Pass `config` to append
+ * package-specific configuration and ignore globs on top of the common ones.
  */
-export function createConfig({ignores = []}: CreateConfigOptions = {}) {
+export function createConfig({ignores = [], ...config}: Config = {}) {
   return defineConfig([
     /*
      * Global ignores: a config object with ONLY `ignores` excludes files entirely.
@@ -71,6 +69,7 @@ export function createConfig({ignores = []}: CreateConfigOptions = {}) {
         'perfectionist/sort-objects': 'error',
       },
     },
+    config,
     configFileOverride,
   ]);
 }
