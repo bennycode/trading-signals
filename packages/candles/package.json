@@ -25,7 +25,7 @@
     "test:types": "tsc --noEmit",
     "test:units": "vitest run"
   },
-  "dependencies": {
+  "devDependencies": {
     "@typedtrader/exchange": "0.2.5"
   }
 }
