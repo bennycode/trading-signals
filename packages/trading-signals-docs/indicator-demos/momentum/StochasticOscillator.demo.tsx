@@ -15,10 +15,10 @@ const renderStochastic = (config: IndicatorConfig, selectedCandles: Candle[]) =>
   const chartDataK: ChartDataPoint[] = [];
   const chartDataD: ChartDataPoint[] = [];
   const priceData: PriceData[] = [];
-  const sampleValues: Array<{period: number; date: string; close: number; k: ReactNode; d: ReactNode; signal: string}> = [];
+  const sampleValues: {period: number; date: string; close: number; k: ReactNode; d: ReactNode; signal: string}[] = [];
 
   selectedCandles.forEach((candle, idx) => {
-    stoch.add({high: Number(candle.high), low: Number(candle.low), close: Number(candle.close)});
+    stoch.add({close: Number(candle.close), high: Number(candle.high), low: Number(candle.low)});
     const result = stoch.isStable ? stoch.getResult() : null;
     const signal = stoch.getSignal();
     chartDataK.push({x: idx + 1, y: result?.stochK ?? null});
@@ -27,11 +27,11 @@ const renderStochastic = (config: IndicatorConfig, selectedCandles: Candle[]) =>
     priceData.push(collectPriceData(candle, idx));
 
     sampleValues.push({
-      period: idx + 1,
-      date: formatDate(candle.openTimeInISO),
       close: Number(candle.close),
-      k: result ? result.stochK.toFixed(2) : <NotAvailable />,
       d: result ? result.stochD.toFixed(2) : <NotAvailable />,
+      date: formatDate(candle.openTimeInISO),
+      k: result ? result.stochK.toFixed(2) : <NotAvailable />,
+      period: idx + 1,
       signal: signal.state,
     });
   });
@@ -51,43 +51,34 @@ const renderStochastic = (config: IndicatorConfig, selectedCandles: Candle[]) =>
       <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-4">
         <HighchartsChart
           options={{
-            chart: {type: 'line', backgroundColor: 'transparent', height: 300},
-            title: {text: 'Stochastic Oscillator (14,3,3)', style: {color: '#e2e8f0', fontSize: '16px', fontWeight: '600'}},
+            chart: {backgroundColor: 'transparent', height: 300, type: 'line'},
             credits: {enabled: false},
-            xAxis: {
-              title: {text: 'Period', style: {color: '#94a3b8'}},
-              labels: {style: {color: '#94a3b8'}},
-              gridLineColor: '#334155',
-            },
-            yAxis: {
-              title: {text: 'Value', style: {color: '#94a3b8'}},
-              labels: {style: {color: '#94a3b8'}},
-              gridLineColor: '#334155',
-            },
             legend: {enabled: true, itemStyle: {color: '#e2e8f0'}},
-            plotOptions: {line: {marker: {enabled: true, radius: 3}, lineWidth: 2}},
+            plotOptions: {line: {lineWidth: 2, marker: {enabled: true, radius: 3}}},
             series: [
               {
-                type: 'line',
-                name: '%K',
-                data: chartDataK.map(point => [point.x, point.y]),
                 color: config.color,
+                data: chartDataK.map(point => [point.x, point.y]),
                 marker: {fillColor: config.color},
+                name: '%K',
+                type: 'line',
               },
               {
-                type: 'line',
-                name: '%D',
-                data: chartDataD.map(point => [point.x, point.y]),
                 color: '#f97316',
+                data: chartDataD.map(point => [point.x, point.y]),
                 marker: {fillColor: '#f97316'},
+                name: '%D',
+                type: 'line',
               },
             ],
+            title: {
+              style: {color: '#e2e8f0', fontSize: '16px', fontWeight: '600'},
+              text: 'Stochastic Oscillator (14,3,3)',
+            },
             tooltip: {
               backgroundColor: '#1e293b',
               borderColor: '#475569',
-              style: {color: '#e2e8f0'},
-              shared: true,
-              formatter: function (): string {
+              formatter: function () {
                 let s: string = `<b>Period ${(this as any).x}</b><br/>`;
                 ((this as any).points as any[])?.forEach((point: any) => {
                   const yValue = typeof point.y === 'number' ? point.y.toFixed(2) : 'N/A';
@@ -95,6 +86,18 @@ const renderStochastic = (config: IndicatorConfig, selectedCandles: Candle[]) =>
                 });
                 return s;
               },
+              shared: true,
+              style: {color: '#e2e8f0'},
+            },
+            xAxis: {
+              gridLineColor: '#334155',
+              labels: {style: {color: '#94a3b8'}},
+              title: {style: {color: '#94a3b8'}, text: 'Period'},
+            },
+            yAxis: {
+              gridLineColor: '#334155',
+              labels: {style: {color: '#94a3b8'}},
+              title: {style: {color: '#94a3b8'}, text: 'Value'},
             },
           }}
         />
@@ -138,12 +141,12 @@ const renderStochastic = (config: IndicatorConfig, selectedCandles: Candle[]) =>
 };
 
 export const StochasticOscillator: IndicatorConfig = {
-  id: 'stoch',
-  name: 'Stochastic',
-  description: 'Stochastic Oscillator',
   color: '#ec4899',
-  type: 'custom',
-  requiredInputs: 17,
   createIndicator: () => new StochasticOscillatorClass(14, 3, 3),
   customRender: renderStochastic,
+  description: 'Stochastic Oscillator',
+  id: 'stoch',
+  name: 'Stochastic',
+  requiredInputs: 17,
+  type: 'custom',
 };

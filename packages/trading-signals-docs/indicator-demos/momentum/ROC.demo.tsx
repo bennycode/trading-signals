@@ -4,17 +4,17 @@ import {buildTableColumns} from '../../utils/tableColumns';
 import type {IndicatorConfig} from '../../utils/types';
 
 export const ROC: IndicatorConfig = {
-  id: 'roc',
-  name: 'ROC',
-  description: 'Rate of Change',
+  chartTitle: 'ROC (9)',
   color: '#10b981',
-  type: 'single',
-  requiredInputs: 9,
+  createIndicator: () => new ROCClass(9),
+  description: 'Rate of Change',
   details:
     'Measures the percentage change in price from n periods ago. Positive values indicate upward momentum, negative values indicate downward momentum.',
-  createIndicator: () => new ROCClass(9),
+  getTableColumns: indicator => buildTableColumns({indicator, inputs: ['close']}),
+  id: 'roc',
+  name: 'ROC',
   processData: makeProcessData({rowInputs: ['close']}),
-  getTableColumns: indicator => buildTableColumns({inputs: ['close'], indicator}),
-  chartTitle: 'ROC (9)',
+  requiredInputs: 9,
+  type: 'single',
   yAxisLabel: 'ROC %',
 };

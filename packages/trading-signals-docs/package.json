@@ -32,7 +32,7 @@
     "build": "next build",
     "dev": "next dev",
     "dist": "npm run build",
-    "lint": "exit 0",
+    "lint": "eslint .",
     "start": "next start",
     "test": "npm run test:types && npm run test:units",
     "test:e2e": "playwright test",

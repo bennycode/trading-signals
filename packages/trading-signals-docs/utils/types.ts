@@ -34,8 +34,7 @@ export interface CustomIndicatorConfig<TIndicator = any> extends BaseIndicatorCo
 }
 
 export type IndicatorConfig<TIndicator = any, TResult = any> =
-  | SingleIndicatorConfig<TIndicator, TResult>
-  | CustomIndicatorConfig<TIndicator>;
+  SingleIndicatorConfig<TIndicator, TResult> | CustomIndicatorConfig<TIndicator>;
 
 export interface CandleDataset {
   id: string;

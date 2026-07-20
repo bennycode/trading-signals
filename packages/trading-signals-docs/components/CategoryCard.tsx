@@ -8,7 +8,7 @@ interface CategoryCardProps {
   indicators: string[];
 }
 
-export function CategoryCard({name, description, href, icon, indicators}: CategoryCardProps) {
+export function CategoryCard({description, href, icon, indicators, name}: CategoryCardProps) {
   return (
     <Link
       href={href}

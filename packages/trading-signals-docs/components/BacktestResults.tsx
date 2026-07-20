@@ -1,4 +1,5 @@
 import {Chart as HighchartsChart, type ChartOptions} from '@highcharts/react';
+import type {Big} from 'big.js';
 import {OrderSide} from '@typedtrader/exchange';
 import type {Candle} from '@typedtrader/exchange';
 import type {BacktestResult} from 'trading-strategies';
@@ -14,14 +15,14 @@ interface BacktestResultsProps extends ResultProps {
   baselineResult: BacktestResult | null;
 }
 
-function formatBig(val: import('big.js').Big, decimals = 2): string {
+function formatBig(val: Big, decimals = 2) {
   return Number(val.toFixed(decimals)).toLocaleString(undefined, {
-    minimumFractionDigits: decimals,
     maximumFractionDigits: decimals,
+    minimumFractionDigits: decimals,
   });
 }
 
-function PerformanceCards({result, candles}: ResultProps) {
+function PerformanceCards({candles, result}: ResultProps) {
   const {performance} = result;
   const returnPct = Number(performance.returnPercentage.toFixed(2));
   const winRate = Number(performance.winRate.toFixed(1));
@@ -32,18 +33,78 @@ function PerformanceCards({result, candles}: ResultProps) {
   const counter = candles[0]?.counter ?? 'Counter';
 
   const cards = [
-    {label: 'ROI', value: `${returnPct >= 0 ? '+' : ''}${returnPct}%`, positive: returnPct >= 0, info: 'Return on investment: percentage change in total portfolio value from start to end.'},
-    {label: 'Profit & Loss', value: `${pnl >= 0 ? '+' : '-'}$${formatBig(result.profitOrLoss.abs())}`, positive: pnl >= 0, info: 'Absolute gain or loss in counter currency compared to the starting portfolio value.'},
-    {label: 'Total Fees', value: `$${formatBig(result.totalFees)}`, positive: null, info: 'Total trading fees paid across all executed orders.'},
-    {label: 'Total Trades', value: String(performance.totalTrades), positive: null, info: 'Number of individual orders executed (buys + sells).'},
-    {label: 'Win Rate', value: hasCycles ? `${winRate}%` : <NotAvailable />, positive: hasCycles ? winRate >= 50 : null, info: 'Percentage of completed buy→sell cycles that closed at a profit.'},
-    {label: 'Loss Rate', value: lossRate !== null ? `${lossRate}%` : <NotAvailable />, positive: lossRate !== null ? Number(lossRate) < 50 : null, info: 'Percentage of completed buy→sell cycles that closed at a loss. Shown in green when below 50%.'},
-    {label: 'Max Win Streak', value: String(performance.maxWinStreak), positive: null, info: 'Longest consecutive sequence of profitable buy→sell cycles.'},
-    {label: 'Max Loss Streak', value: String(performance.maxLossStreak), positive: null, info: 'Longest consecutive sequence of losing buy→sell cycles.'},
-    {label: 'Start Value', value: `$${formatBig(performance.initialPortfolioValue)}`, positive: null, info: 'Initial portfolio value in counter currency (base × first open price + counter balance).'},
-    {label: 'Final Value', value: `$${formatBig(performance.finalPortfolioValue)}`, positive: null, info: 'Final portfolio value in counter currency (base × last close price + counter balance).'},
-    {label: `Final Base (${base})`, value: formatBig(result.finalBaseBalance, 6), positive: null, info: `Remaining ${base} balance at the end of the backtest.`},
-    {label: `Final Counter (${counter})`, value: `$${formatBig(result.finalCounterBalance)}`, positive: null, info: `Remaining ${counter} cash balance at the end of the backtest.`},
+    {
+      info: 'Return on investment: percentage change in total portfolio value from start to end.',
+      label: 'ROI',
+      positive: returnPct >= 0,
+      value: `${returnPct >= 0 ? '+' : ''}${returnPct}%`,
+    },
+    {
+      info: 'Absolute gain or loss in counter currency compared to the starting portfolio value.',
+      label: 'Profit & Loss',
+      positive: pnl >= 0,
+      value: `${pnl >= 0 ? '+' : '-'}$${formatBig(result.profitOrLoss.abs())}`,
+    },
+    {
+      info: 'Total trading fees paid across all executed orders.',
+      label: 'Total Fees',
+      positive: null,
+      value: `$${formatBig(result.totalFees)}`,
+    },
+    {
+      info: 'Number of individual orders executed (buys + sells).',
+      label: 'Total Trades',
+      positive: null,
+      value: String(performance.totalTrades),
+    },
+    {
+      info: 'Percentage of completed buy→sell cycles that closed at a profit.',
+      label: 'Win Rate',
+      positive: hasCycles ? winRate >= 50 : null,
+      value: hasCycles ? `${winRate}%` : <NotAvailable />,
+    },
+    {
+      info: 'Percentage of completed buy→sell cycles that closed at a loss. Shown in green when below 50%.',
+      label: 'Loss Rate',
+      positive: lossRate !== null ? Number(lossRate) < 50 : null,
+      value: lossRate !== null ? `${lossRate}%` : <NotAvailable />,
+    },
+    {
+      info: 'Longest consecutive sequence of profitable buy→sell cycles.',
+      label: 'Max Win Streak',
+      positive: null,
+      value: String(performance.maxWinStreak),
+    },
+    {
+      info: 'Longest consecutive sequence of losing buy→sell cycles.',
+      label: 'Max Loss Streak',
+      positive: null,
+      value: String(performance.maxLossStreak),
+    },
+    {
+      info: 'Initial portfolio value in counter currency (base × first open price + counter balance).',
+      label: 'Start Value',
+      positive: null,
+      value: `$${formatBig(performance.initialPortfolioValue)}`,
+    },
+    {
+      info: 'Final portfolio value in counter currency (base × last close price + counter balance).',
+      label: 'Final Value',
+      positive: null,
+      value: `$${formatBig(performance.finalPortfolioValue)}`,
+    },
+    {
+      info: `Remaining ${base} balance at the end of the backtest.`,
+      label: `Final Base (${base})`,
+      positive: null,
+      value: formatBig(result.finalBaseBalance, 6),
+    },
+    {
+      info: `Remaining ${counter} cash balance at the end of the backtest.`,
+      label: `Final Counter (${counter})`,
+      positive: null,
+      value: `$${formatBig(result.finalCounterBalance)}`,
+    },
   ];
 
   return (
@@ -72,15 +133,15 @@ function PerformanceCards({result, candles}: ResultProps) {
   );
 }
 
-function PriceChartWithTrades({result, candles}: ResultProps) {
+function PriceChartWithTrades({candles, result}: ResultProps) {
   const priceData = candles.map((c, i) => ({
-    x: i + 1,
-    y: Number(c.close),
-    open: Number(c.open),
+    close: Number(c.close),
     high: Number(c.high),
     low: Number(c.low),
-    close: Number(c.close),
+    open: Number(c.open),
     time: formatDate(c.openTimeInISO),
+    x: i + 1,
+    y: Number(c.close),
   }));
 
   const candleIndexByTime = new Map(candles.map((c, i) => [c.openTimeInISO, i + 1]));
@@ -89,7 +150,7 @@ function PriceChartWithTrades({result, candles}: ResultProps) {
     .filter(t => t.side === OrderSide.BUY)
     .map(t => {
       const x = candleIndexByTime.get(t.openTimeInISO) ?? 0;
-      return {x, y: Number(t.price.toFixed(2)), name: `BUY @ $${t.price.toFixed(2)}`};
+      return {name: `BUY @ $${t.price.toFixed(2)}`, x, y: Number(t.price.toFixed(2))};
     })
     .filter(m => m.x > 0);
 
@@ -97,36 +158,52 @@ function PriceChartWithTrades({result, candles}: ResultProps) {
     .filter(t => t.side === OrderSide.SELL)
     .map(t => {
       const x = candleIndexByTime.get(t.openTimeInISO) ?? 0;
-      return {x, y: Number(t.price.toFixed(2)), name: `SELL @ $${t.price.toFixed(2)}`};
+      return {name: `SELL @ $${t.price.toFixed(2)}`, x, y: Number(t.price.toFixed(2))};
     })
     .filter(m => m.x > 0);
 
   const options: ChartOptions = {
     chart: {backgroundColor: 'transparent', height: 350},
-    title: {text: 'Price Chart with Trades', style: {color: '#e2e8f0', fontSize: '16px', fontWeight: '600'}},
     credits: {enabled: false},
-    xAxis: {
-      title: {text: 'Period', style: {color: '#94a3b8'}},
-      labels: {style: {color: '#94a3b8'}},
-      gridLineColor: '#334155',
-    },
-    yAxis: {
-      title: {text: 'Price', style: {color: '#94a3b8'}},
-      labels: {style: {color: '#94a3b8'}},
-      gridLineColor: '#334155',
-    },
     legend: {
       itemStyle: {color: '#94a3b8'},
     },
+    series: [
+      {
+        color: '#3b82f6',
+        data: priceData,
+        lineWidth: 2,
+        marker: {enabled: false},
+        name: 'Price',
+        type: 'line',
+      },
+      {
+        color: '#22c55e',
+        data: buyMarkers.map(m => ({name: m.name, x: m.x, y: m.y})),
+        marker: {lineColor: '#22c55e', lineWidth: 1, radius: 6, symbol: 'triangle'},
+        name: 'BUY',
+        tooltip: {pointFormat: '{point.name}'},
+        type: 'scatter',
+      },
+      {
+        color: '#ef4444',
+        data: sellMarkers.map(m => ({name: m.name, x: m.x, y: m.y})),
+        marker: {lineColor: '#ef4444', lineWidth: 1, radius: 6, symbol: 'triangle-down'},
+        name: 'SELL',
+        tooltip: {pointFormat: '{point.name}'},
+        type: 'scatter',
+      },
+    ],
+    title: {style: {color: '#e2e8f0', fontSize: '16px', fontWeight: '600'}, text: 'Price Chart with Trades'},
     tooltip: {
       backgroundColor: '#1e293b',
       borderColor: '#475569',
-      style: {color: '#e2e8f0'},
-      shared: true,
-      formatter: function (): string {
+      formatter: function () {
         const points = (this as any).points as any[];
-        // The OHLC fields live on the line series points, not the scatter markers.
-        // Don't trust points[0] — find the point that actually carries the candle data.
+        /*
+         * The OHLC fields live on the line series points, not the scatter markers.
+         * Don't trust points[0] — find the point that actually carries the candle data.
+         */
         const ohlc = points?.find((p: any) => typeof p?.point?.open === 'number')?.point;
         let s = `<b>${ohlc?.time ?? 'Period ' + (this as any).x}</b><br/>`;
         if (ohlc) {
@@ -142,33 +219,19 @@ function PriceChartWithTrades({result, candles}: ResultProps) {
         });
         return s;
       },
+      shared: true,
+      style: {color: '#e2e8f0'},
     },
-    series: [
-      {
-        type: 'line',
-        name: 'Price',
-        data: priceData,
-        color: '#3b82f6',
-        marker: {enabled: false},
-        lineWidth: 2,
-      },
-      {
-        type: 'scatter',
-        name: 'BUY',
-        data: buyMarkers.map(m => ({x: m.x, y: m.y, name: m.name})),
-        color: '#22c55e',
-        marker: {symbol: 'triangle', radius: 6, lineColor: '#22c55e', lineWidth: 1},
-        tooltip: {pointFormat: '{point.name}'},
-      },
-      {
-        type: 'scatter',
-        name: 'SELL',
-        data: sellMarkers.map(m => ({x: m.x, y: m.y, name: m.name})),
-        color: '#ef4444',
-        marker: {symbol: 'triangle-down', radius: 6, lineColor: '#ef4444', lineWidth: 1},
-        tooltip: {pointFormat: '{point.name}'},
-      },
-    ],
+    xAxis: {
+      gridLineColor: '#334155',
+      labels: {style: {color: '#94a3b8'}},
+      title: {style: {color: '#94a3b8'}, text: 'Period'},
+    },
+    yAxis: {
+      gridLineColor: '#334155',
+      labels: {style: {color: '#94a3b8'}},
+      title: {style: {color: '#94a3b8'}, text: 'Price'},
+    },
   };
 
   return (
@@ -207,15 +270,11 @@ function TradeHistoryTable({result}: {result: BacktestResult}) {
           {result.trades.map((trade, i) => (
             <tr key={i} className="border-b border-slate-800 hover:bg-slate-700/30">
               <td className="py-2 px-3 text-slate-300">{i + 1}</td>
-              <td className="py-2 px-3 text-slate-300 font-mono text-xs">
-                {formatDate(trade.openTimeInISO)}
-              </td>
+              <td className="py-2 px-3 text-slate-300 font-mono text-xs">{formatDate(trade.openTimeInISO)}</td>
               <td className="py-2 px-3">
                 <span
                   className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${
-                    trade.side === OrderSide.BUY
-                      ? 'bg-green-900/50 text-green-400'
-                      : 'bg-red-900/50 text-red-400'
+                    trade.side === OrderSide.BUY ? 'bg-green-900/50 text-green-400' : 'bg-red-900/50 text-red-400'
                   }`}>
                   {trade.advice.side} {trade.advice.type}
                 </span>
@@ -240,7 +299,7 @@ function WinnerBadge() {
   );
 }
 
-export function BacktestResults({result, baselineResult, candles}: BacktestResultsProps) {
+export function BacktestResults({baselineResult, candles, result}: BacktestResultsProps) {
   const strategyWins = baselineResult
     ? result.performance.returnPercentage.gte(baselineResult.performance.returnPercentage)
     : null;

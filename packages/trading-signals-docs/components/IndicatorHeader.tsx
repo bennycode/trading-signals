@@ -6,7 +6,7 @@ interface IndicatorHeaderProps {
   details?: string;
 }
 
-export function IndicatorHeader({name, parameters, requiredInputs, description, details}: IndicatorHeaderProps) {
+export function IndicatorHeader({description, details, name, parameters, requiredInputs}: IndicatorHeaderProps) {
   return (
     <div>
       <h2 className="text-2xl font-bold text-white mb-2 select-text">

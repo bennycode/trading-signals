@@ -1,6 +1,6 @@
 import {useEffect, useState} from 'react';
 
-function getLocalTime(hour: number, minute: number): string {
+function getLocalTime(hour: number, minute: number) {
   const now = new Date();
   const etStr = now.toLocaleString('en-US', {timeZone: 'America/New_York'});
   const et = new Date(etStr);
@@ -9,10 +9,10 @@ function getLocalTime(hour: number, minute: number): string {
   const diff = et.getTime() - new Date(etStr).getTime();
   const local = new Date(now.getTime() + diff);
 
-  return local.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit', hour12: false});
+  return local.toLocaleTimeString([], {hour: '2-digit', hour12: false, minute: '2-digit'});
 }
 
-function isMarketOpen(): boolean {
+function isMarketOpen() {
   const now = new Date();
   const et = new Date(now.toLocaleString('en-US', {timeZone: 'America/New_York'}));
   const day = et.getDay();
@@ -45,8 +45,13 @@ export function MarketClock() {
   return (
     <div className="text-center">
       <p className="text-slate-400 flex items-center justify-center gap-2">
-        Nasdaq trading hours today*: <span className="text-white font-mono">{openingTime} - {closingTime}</span> your local time
-        <span className={`px-2 py-0.5 rounded text-xs font-medium ${open ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>
+        Nasdaq trading hours today*:{' '}
+        <span className="text-white font-mono">
+          {openingTime} - {closingTime}
+        </span>{' '}
+        your local time
+        <span
+          className={`px-2 py-0.5 rounded text-xs font-medium ${open ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>
           {open ? 'Open' : 'Closed'}
         </span>
       </p>

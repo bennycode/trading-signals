@@ -28,9 +28,12 @@ const configFileOverride = {
  */
 export function createConfig({ignores = []}: {ignores?: string[]} = {}) {
   return defineConfig([
+    /*
+     * Global ignores: a config object with ONLY `ignores` excludes files entirely.
+     * Attached to a config that also has `files`, the same patterns would only exclude
+     * files from that one object and extended configs could still lint them.
+     */
     {
-      extends: [eslintConfig],
-      files: ['**/*.{ts,tsx,mts,cts,js,jsx,mjs,cjs}'],
       ignores: [
         '**/.dependency-cruiser.cjs',
         '**/coverage/**',
@@ -40,6 +43,10 @@ export function createConfig({ignores = []}: {ignores?: string[]} = {}) {
         '**/vitest.config.ts',
         ...ignores,
       ],
+    },
+    {
+      extends: [eslintConfig],
+      files: ['**/*.{ts,tsx,mts,cts,js,jsx,mjs,cjs}'],
       rules: {
         /*
          * The codebase uses the idiomatic `const X = {...} as const` + `type X = ...`

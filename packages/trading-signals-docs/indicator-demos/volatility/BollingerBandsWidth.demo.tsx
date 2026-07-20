@@ -4,17 +4,17 @@ import {buildTableColumns} from '../../utils/tableColumns';
 import type {IndicatorConfig} from '../../utils/types';
 
 export const BollingerBandsWidth: IndicatorConfig = {
-  id: 'bbw',
-  name: 'BBW',
-  description: 'Bollinger Bands Width',
+  chartTitle: 'BBW (20, 2)',
   color: '#10b981',
-  type: 'single',
-  requiredInputs: 20,
+  createIndicator: () => new BollingerBandsWidthClass(new BollingerBands(20, 2)),
+  description: 'Bollinger Bands Width',
   details:
     'Measures the width between the upper and lower Bollinger Bands relative to the middle band. Useful for identifying squeezes and potential breakouts.',
-  createIndicator: () => new BollingerBandsWidthClass(new BollingerBands(20, 2)),
+  getTableColumns: indicator => buildTableColumns({indicator, inputs: ['close']}),
+  id: 'bbw',
+  name: 'BBW',
   processData: makeProcessData({rowInputs: ['close']}),
-  getTableColumns: indicator => buildTableColumns({inputs: ['close'], indicator}),
-  chartTitle: 'BBW (20, 2)',
+  requiredInputs: 20,
+  type: 'single',
   yAxisLabel: 'BBW',
 };

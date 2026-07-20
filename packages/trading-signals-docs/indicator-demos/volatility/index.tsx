@@ -7,4 +7,12 @@ import {MAD} from './MAD.demo';
 import {TR} from './TR.demo';
 import type {IndicatorConfig} from '../../utils/types';
 
-export const indicators: IndicatorConfig[] = [BollingerBands, AccelerationBands, ATR, TR, BollingerBandsWidth, IQR, MAD];
+export const indicators: IndicatorConfig[] = [
+  BollingerBands,
+  AccelerationBands,
+  ATR,
+  TR,
+  BollingerBandsWidth,
+  IQR,
+  MAD,
+];

@@ -7,11 +7,11 @@ interface SchemaReferenceProps {
 }
 
 export function SchemaReference({schema}: SchemaReferenceProps) {
-  const {topLevel, protectedProps} = useMemo(() => {
+  const {protectedProps, topLevel} = useMemo(() => {
     const all = extractProperties(schema);
     const top = all.filter(p => p.name !== 'protected');
     const nested = extractNestedProperties(schema, 'protected');
-    return {topLevel: top, protectedProps: nested};
+    return {protectedProps: nested, topLevel: top};
   }, [schema]);
 
   if (topLevel.length === 0 && protectedProps.length === 0) {
