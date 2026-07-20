@@ -2,7 +2,6 @@ import {Big} from 'big.js';
 import {EventEmitter} from 'node:events';
 import type {StringValue} from 'ms';
 import {ms} from 'ms';
-import jsonabc from 'jsonabc';
 import type {BatchedCandle, OneMinuteBatchedCandle} from './BatchedCandle.js';
 import {ONE_MINUTE_IN_MS} from './BatchedCandle.js';
 import type {Candle} from '../broker/Broker.js';
@@ -256,8 +255,9 @@ export class CandleBatcher extends EventEmitter<EventMap> {
   }
 
   static override toString(candle: BatchedCandle) {
+    // Deterministic output relies on the keys staying alphabetically sorted (enforced by perfectionist/sort-objects).
     return JSON.stringify(
-      jsonabc.sortObj({
+      {
         base: candle.base,
         close: candle.close.valueOf(),
         counter: candle.counter,
@@ -270,7 +270,7 @@ export class CandleBatcher extends EventEmitter<EventMap> {
         sizeInMillis: candle.sizeInMillis,
         volume: candle.volume.valueOf(),
         weightedMedianPrice: candle.weightedMedianPrice.valueOf(),
-      }),
+      },
       null,
       2
     );
