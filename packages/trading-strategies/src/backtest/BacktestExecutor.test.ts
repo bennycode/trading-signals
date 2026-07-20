@@ -2,7 +2,7 @@ import Big from 'big.js';
 import {describe, expect, it} from 'vitest';
 import {AlpacaBrokerMock, OrderSide, OrderType} from '@typedtrader/exchange';
 import {AllAvailableAmount} from '../trader/index.js';
-import type {Candle, TradingRules} from '@typedtrader/exchange';
+import type {Candle, MarketDataSource, TradingRules} from '@typedtrader/exchange';
 import type {OrderAdvice, TradingSessionState} from '../trader/index.js';
 import {TradingPair} from '@typedtrader/exchange';
 import {BacktestExecutor} from './BacktestExecutor.js';
@@ -889,6 +889,58 @@ describe('BacktestExecutor', () => {
 
       // The rounded price (100.00) is below the candle's low (100.10) — no fill should occur
       expect(result.trades).toHaveLength(0);
+    });
+  });
+
+  describe('strategy init', () => {
+    /** Records what its `init` hook can see, mirroring a strategy that warms up from history. */
+    class InitProbeStrategy extends Strategy {
+      static override NAME = 'InitProbe';
+      initializedBeforeFirstCandle: boolean | undefined = undefined;
+      seenWarmupCandles: Candle[] = [];
+      #candlesProcessed = 0;
+
+      async init(market: Pick<MarketDataSource, 'getRecentCandles'>, pair: TradingPair): Promise<void> {
+        this.initializedBeforeFirstCandle = this.#candlesProcessed === 0;
+        this.seenWarmupCandles = await market.getRecentCandles(pair, 10, 60_000);
+      }
+
+      protected override async processCandle(
+        _candle: OneMinuteBatchedCandle,
+        _state: TradingSessionState
+      ): Promise<OrderAdvice | void> {
+        this.#candlesProcessed += 1;
+      }
+    }
+
+    const runCandles = [
+      createCandle({close: '105', open: '100', openTimeInISO: '2025-01-01T00:10:00.000Z'}),
+      createCandle({close: '110', open: '105', openTimeInISO: '2025-01-01T00:11:00.000Z'}),
+    ];
+
+    it('calls init before the first candle, mirroring a live TradingSession', async () => {
+      const strategy = new InitProbeStrategy();
+      await new BacktestExecutor({broker: createMockExchange(), candles: runCandles, strategy, tradingPair}).execute();
+      expect(strategy.initializedBeforeFirstCandle).toBe(true);
+    });
+
+    it('feeds init from warmupCandles only — never the candles under test (lookahead guard)', async () => {
+      const warmup = [createCandle({close: '95', open: '90', openTimeInISO: '2025-01-01T00:00:00.000Z'})];
+      const strategy = new InitProbeStrategy();
+      await new BacktestExecutor({
+        broker: createMockExchange(),
+        candles: runCandles,
+        strategy,
+        tradingPair,
+        warmupCandles: warmup,
+      }).execute();
+      expect(strategy.seenWarmupCandles).toEqual(warmup);
+    });
+
+    it('gives init an empty history when no warmup candles are configured', async () => {
+      const strategy = new InitProbeStrategy();
+      await new BacktestExecutor({broker: createMockExchange(), candles: runCandles, strategy, tradingPair}).execute();
+      expect(strategy.seenWarmupCandles).toEqual([]);
     });
   });
 });
