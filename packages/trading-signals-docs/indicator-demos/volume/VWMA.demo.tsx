@@ -10,10 +10,10 @@ export const VWMA: IndicatorConfig = {
   description: 'Volume Weighted Moving Average',
   details:
     'Similar to SMA but weights each price by its volume. High-volume bars have more influence. Uses a signal line (SMA by default) for crossover signals. When VWMA crosses above the signal line, it indicates bullish momentum.',
-  getTableColumns: indicator => buildTableColumns({inputs: ['close', 'volume'], indicator}),
+  getTableColumns: indicator => buildTableColumns({indicator, inputs: ['close', 'volume']}),
   id: 'vwma',
   name: 'VWMA',
-  processData: makeProcessData({rowInputs: ['close', 'volume'], addInputs: ['close', 'high', 'low', 'volume']}),
+  processData: makeProcessData({addInputs: ['close', 'high', 'low', 'volume'], rowInputs: ['close', 'volume']}),
   requiredInputs: 20,
   type: 'single',
   yAxisLabel: 'VWMA',

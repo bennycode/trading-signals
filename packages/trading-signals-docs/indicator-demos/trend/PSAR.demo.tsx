@@ -4,17 +4,17 @@ import {buildTableColumns} from '../../utils/tableColumns';
 import type {IndicatorConfig} from '../../utils/types';
 
 export const PSAR: IndicatorConfig = {
-  id: 'psar',
-  name: 'PSAR',
-  description: 'Parabolic SAR',
+  chartTitle: 'Parabolic SAR',
   color: '#f97316',
-  type: 'single',
-  requiredInputs: 2,
+  createIndicator: () => new PSARClass({accelerationMax: 0.2, accelerationStep: 0.02}),
+  description: 'Parabolic SAR',
   details:
     'Identifies potential reversal points by placing dots above or below price. Dots below = uptrend, dots above = downtrend.',
-  createIndicator: () => new PSARClass({accelerationStep: 0.02, accelerationMax: 0.2}),
+  getTableColumns: indicator => buildTableColumns({indicator, inputs: ['high', 'low', 'close']}),
+  id: 'psar',
+  name: 'PSAR',
   processData: makeProcessData({rowInputs: ['high', 'low', 'close']}),
-  getTableColumns: indicator => buildTableColumns({inputs: ['high', 'low', 'close'], indicator}),
-  chartTitle: 'Parabolic SAR',
+  requiredInputs: 2,
+  type: 'single',
   yAxisLabel: 'Price',
 };

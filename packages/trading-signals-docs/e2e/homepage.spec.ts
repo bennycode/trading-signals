@@ -11,11 +11,11 @@ test.describe('Homepage', () => {
 
     await expect(page.getByRole('link', {name: 'View on NPM'})).toHaveAttribute(
       'href',
-      'https://www.npmjs.com/package/trading-signals',
+      'https://www.npmjs.com/package/trading-signals'
     );
     await expect(page.getByRole('link', {name: 'View on GitHub'})).toHaveAttribute(
       'href',
-      'https://github.com/bennycode/trading-signals',
+      'https://github.com/bennycode/trading-signals'
     );
 
     await expect(page.getByRole('heading', {level: 2, name: 'Indicator Categories'})).toBeVisible();

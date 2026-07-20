@@ -1,4 +1,5 @@
-import {Chart as HighchartsChart, ChartOptions, HighchartsReactRefObject} from '@highcharts/react';
+import type {ChartOptions, HighchartsReactRefObject} from '@highcharts/react';
+import {Chart as HighchartsChart} from '@highcharts/react';
 import {useRef} from 'react';
 
 export interface ChartDataPoint {
@@ -20,79 +21,79 @@ export interface ChartProps {
   flags?: FlagPoint[];
 }
 
-export default function Chart({title, data, yAxisLabel = 'Value', color = '#3b82f6'}: ChartProps) {
+export default function Chart({color = '#3b82f6', data, title, yAxisLabel = 'Value'}: ChartProps) {
   const chartRef = useRef<HighchartsReactRefObject>(null);
 
   const options: ChartOptions = {
     chart: {
-      type: 'line',
       backgroundColor: 'transparent',
       height: 300,
-    },
-    title: {
-      text: title,
-      style: {
-        color: '#e2e8f0',
-        fontSize: '16px',
-        fontWeight: '600',
-      },
+      type: 'line',
     },
     credits: {
       enabled: false,
-    },
-    xAxis: {
-      title: {
-        text: 'Period',
-        style: {color: '#94a3b8'},
-      },
-      labels: {
-        style: {color: '#94a3b8'},
-      },
-      gridLineColor: '#334155',
-    },
-    yAxis: {
-      title: {
-        text: yAxisLabel,
-        style: {color: '#94a3b8'},
-      },
-      labels: {
-        style: {color: '#94a3b8'},
-      },
-      gridLineColor: '#334155',
     },
     legend: {
       enabled: false,
     },
     plotOptions: {
       line: {
+        lineWidth: 2,
         marker: {
           enabled: true,
           radius: 3,
         },
-        lineWidth: 2,
       },
     },
     series: [
       {
-        type: 'line',
-        name: yAxisLabel,
-        id: 'main-series',
-        data: data.map(point => [point.x, point.y]),
         color: color,
+        data: data.map(point => [point.x, point.y]),
+        id: 'main-series',
         marker: {
           fillColor: color,
         },
+        name: yAxisLabel,
+        type: 'line',
       },
     ],
+    title: {
+      style: {
+        color: '#e2e8f0',
+        fontSize: '16px',
+        fontWeight: '600',
+      },
+      text: title,
+    },
     tooltip: {
       backgroundColor: '#1e293b',
       borderColor: '#475569',
-      style: {
-        color: '#e2e8f0',
-      },
       formatter: function () {
         const yValue = typeof this.y === 'number' ? this.y.toFixed(2) : 'N/A';
         return `<b>Period ${this.x}</b><br/>${yAxisLabel}: ${yValue}`;
+      },
+      style: {
+        color: '#e2e8f0',
+      },
+    },
+    xAxis: {
+      gridLineColor: '#334155',
+      labels: {
+        style: {color: '#94a3b8'},
+      },
+      title: {
+        style: {color: '#94a3b8'},
+        text: 'Period',
+      },
+    },
+    yAxis: {
+      gridLineColor: '#334155',
+      labels: {
+        style: {color: '#94a3b8'},
+      },
+      title: {
+        style: {color: '#94a3b8'},
+        text: yAxisLabel,
       },
     },
   };

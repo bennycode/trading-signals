@@ -2,15 +2,6 @@ import {addPercentageChange} from 'trading-signals';
 import type {UtilityCalculatorConfig} from './types';
 
 export const addPercentageChangeDemo: UtilityCalculatorConfig = {
-  kind: 'calculator',
-  id: 'add-percentage-change',
-  name: 'Add Percentage Change',
-  description: 'Apply a percentage change to a starting value to get the final value.',
-  inputs: [
-    {label: 'Starting Value', defaultValue: '100'},
-    {label: 'Percentage Change (%)', defaultValue: '50'},
-  ],
-  outputLabel: 'Final Value',
   calculate: (from, percentage) => addPercentageChange(from, percentage),
   code: `import { addPercentageChange } from 'trading-signals';
 
@@ -18,4 +9,13 @@ export const addPercentageChangeDemo: UtilityCalculatorConfig = {
 const target = addPercentageChange(100, 50);
 
 console.log(target); // 150`,
+  description: 'Apply a percentage change to a starting value to get the final value.',
+  id: 'add-percentage-change',
+  inputs: [
+    {defaultValue: '100', label: 'Starting Value'},
+    {defaultValue: '50', label: 'Percentage Change (%)'},
+  ],
+  kind: 'calculator',
+  name: 'Add Percentage Change',
+  outputLabel: 'Final Value',
 };
