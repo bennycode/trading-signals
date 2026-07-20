@@ -1,4 +1,4 @@
-import {defineConfig} from 'eslint/config';
+import {type Config, defineConfig} from 'eslint/config';
 import typescriptEslint from '@typescript-eslint/eslint-plugin';
 import eslintConfig from '@tstv/eslint-config';
 
@@ -23,10 +23,10 @@ const configFileOverride = {
 };
 
 /**
- * Shared ESLint config for every package in this monorepo. Pass `ignores` to append
- * package-specific ignore globs on top of the common ones.
+ * Shared ESLint config for every package in this monorepo. Pass `config` to append
+ * package-specific configuration and ignore globs on top of the common ones.
  */
-export function createConfig({ignores = []} = {}) {
+export function createConfig({ignores = [], ...config}: Config = {}) {
   return defineConfig([
     /*
      * Global ignores: a config object with ONLY `ignores` excludes files entirely.
@@ -69,6 +69,7 @@ export function createConfig({ignores = []} = {}) {
         'perfectionist/sort-objects': 'error',
       },
     },
+    config,
     configFileOverride,
   ]);
 }

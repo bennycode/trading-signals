@@ -19,6 +19,6 @@
     "target": "ES2020",
     "esModuleInterop": true
   },
-  "exclude": ["node_modules"],
+  "exclude": ["eslint.config.ts", "node_modules"],
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx"]
 }

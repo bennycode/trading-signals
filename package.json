@@ -24,7 +24,7 @@
     "graph": "nx graph",
     "prelint": "lerna run dist",
     "lint": "npm run lint:config && lerna run lint --parallel",
-    "lint:config": "eslint eslint.config.mjs eslint.config.base.mjs",
+    "lint:config": "eslint eslint.config.ts eslint.config.base.ts",
     "release": "npm install && npm run dist && lerna publish && npm run clean",
     "start:bot": "lerna run dist --scope @typedtrader/messaging --include-dependencies && lerna run start --scope @typedtrader/messaging",
     "start:docs": "lerna run dist --scope trading-signals-docs --include-dependencies && lerna run dev --scope trading-signals-docs",
