@@ -51,7 +51,7 @@
     "fix:code": "npm run lint:code -- --fix",
     "fix:other": "npm run prettier -- --write",
     "lint": "npm run lint:types && npm run lint:code && npm run lint:other",
-    "lint:code": "eslint --flag unstable_native_nodejs_ts_config .",
+    "lint:code": "eslint .",
     "lint:other": "npm run prettier -- --list-different",
     "lint:types": "tsc --noEmit",
     "prettier": "prettier --config ../../.prettierrc.json --ignore-path ../../.gitignore --log-level error \"**/*.{json,scss,yml}\"",
