@@ -4,17 +4,17 @@ import {buildTableColumns} from '../../utils/tableColumns';
 import type {IndicatorConfig} from '../../utils/types';
 
 export const EMA: IndicatorConfig = {
-  id: 'ema',
-  name: 'EMA',
-  description: 'Exponential Moving Average',
+  chartTitle: 'EMA (5)',
   color: '#8b5cf6',
-  type: 'single',
-  requiredInputs: 5,
+  createIndicator: () => new EMAClass(5),
+  description: 'Exponential Moving Average',
   details:
     'Gives more weight to recent prices, reacting faster to price changes than SMA. Popular for identifying short-term trends.',
-  createIndicator: () => new EMAClass(5),
+  getTableColumns: indicator => buildTableColumns({indicator, inputs: ['close']}),
+  id: 'ema',
+  name: 'EMA',
   processData: makeProcessData({rowInputs: ['close']}),
-  getTableColumns: indicator => buildTableColumns({inputs: ['close'], indicator}),
-  chartTitle: 'EMA (5)',
+  requiredInputs: 5,
+  type: 'single',
   yAxisLabel: 'Price',
 };

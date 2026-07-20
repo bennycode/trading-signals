@@ -16,7 +16,7 @@ const renderMACD = (config: IndicatorConfig, selectedCandles: Candle[]) => {
   const chartDataSignal: ChartDataPoint[] = [];
   const chartDataHistogram: ChartDataPoint[] = [];
   const priceData: PriceData[] = [];
-  const sampleValues: Array<{period: number; date: string; close: number; result: ReactNode; signal: string}> = [];
+  const sampleValues: {period: number; date: string; close: number; result: ReactNode; signal: string}[] = [];
 
   selectedCandles.forEach((candle, idx) => {
     macd.add(Number(candle.close));
@@ -29,9 +29,9 @@ const renderMACD = (config: IndicatorConfig, selectedCandles: Candle[]) => {
     priceData.push(collectPriceData(candle, idx));
 
     sampleValues.push({
-      period: idx + 1,
-      date: formatDate(candle.openTimeInISO),
       close: Number(candle.close),
+      date: formatDate(candle.openTimeInISO),
+      period: idx + 1,
       result: result ? `${result.macd.toFixed(4)}` : <NotAvailable />,
       signal: trendSignal.state,
     });
@@ -53,53 +53,41 @@ const renderMACD = (config: IndicatorConfig, selectedCandles: Candle[]) => {
       <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-4">
         <HighchartsChart
           options={{
-            chart: {type: 'line', backgroundColor: 'transparent', height: 300},
-            title: {text: 'MACD (12,26,9)', style: {color: '#e2e8f0', fontSize: '16px', fontWeight: '600'}},
+            chart: {backgroundColor: 'transparent', height: 300, type: 'line'},
             credits: {enabled: false},
-            xAxis: {
-              title: {text: 'Period', style: {color: '#94a3b8'}},
-              labels: {style: {color: '#94a3b8'}},
-              gridLineColor: '#334155',
-            },
-            yAxis: {
-              title: {text: 'Value', style: {color: '#94a3b8'}},
-              labels: {style: {color: '#94a3b8'}},
-              gridLineColor: '#334155',
-            },
             legend: {enabled: true, itemStyle: {color: '#e2e8f0'}},
             plotOptions: {
-              line: {marker: {enabled: true, radius: 3}, lineWidth: 2},
               column: {borderWidth: 0},
+              line: {lineWidth: 2, marker: {enabled: true, radius: 3}},
             },
             series: [
               {
-                type: 'line',
-                name: 'MACD',
-                data: chartDataMACD.map(point => [point.x, point.y]),
                 color: config.color,
+                data: chartDataMACD.map(point => [point.x, point.y]),
                 marker: {fillColor: config.color},
-              },
-              {
+                name: 'MACD',
                 type: 'line',
-                name: 'Signal',
-                data: chartDataSignal.map(point => [point.x, point.y]),
-                color: '#f97316',
-                marker: {fillColor: '#f97316'},
               },
               {
-                type: 'column',
-                name: 'Histogram',
-                data: chartDataHistogram.map(point => [point.x, point.y]),
+                color: '#f97316',
+                data: chartDataSignal.map(point => [point.x, point.y]),
+                marker: {fillColor: '#f97316'},
+                name: 'Signal',
+                type: 'line',
+              },
+              {
                 color: '#6366f1',
+                data: chartDataHistogram.map(point => [point.x, point.y]),
+                name: 'Histogram',
                 opacity: 0.5,
+                type: 'column',
               },
             ],
+            title: {style: {color: '#e2e8f0', fontSize: '16px', fontWeight: '600'}, text: 'MACD (12,26,9)'},
             tooltip: {
               backgroundColor: '#1e293b',
               borderColor: '#475569',
-              style: {color: '#e2e8f0'},
-              shared: true,
-              formatter: function (): string {
+              formatter: function () {
                 let s: string = `<b>Period ${(this as any).x}</b><br/>`;
                 ((this as any).points as any[])?.forEach((point: any) => {
                   const yValue = typeof point.y === 'number' ? point.y.toFixed(4) : 'N/A';
@@ -107,6 +95,18 @@ const renderMACD = (config: IndicatorConfig, selectedCandles: Candle[]) => {
                 });
                 return s;
               },
+              shared: true,
+              style: {color: '#e2e8f0'},
+            },
+            xAxis: {
+              gridLineColor: '#334155',
+              labels: {style: {color: '#94a3b8'}},
+              title: {style: {color: '#94a3b8'}, text: 'Period'},
+            },
+            yAxis: {
+              gridLineColor: '#334155',
+              labels: {style: {color: '#94a3b8'}},
+              title: {style: {color: '#94a3b8'}, text: 'Value'},
             },
           }}
         />
@@ -148,12 +148,12 @@ const renderMACD = (config: IndicatorConfig, selectedCandles: Candle[]) => {
 };
 
 export const MACD: IndicatorConfig = {
-  id: 'macd',
-  name: 'MACD',
-  description: 'Moving Average Convergence Divergence',
   color: '#3b82f6',
-  type: 'custom',
-  requiredInputs: 33,
   createIndicator: () => new MACDClass(new EMA(12), new EMA(26), new EMA(9)),
   customRender: renderMACD,
+  description: 'Moving Average Convergence Divergence',
+  id: 'macd',
+  name: 'MACD',
+  requiredInputs: 33,
+  type: 'custom',
 };

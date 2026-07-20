@@ -4,16 +4,16 @@ import {buildTableColumns} from '../../utils/tableColumns';
 import type {IndicatorConfig} from '../../utils/types';
 
 export const OBV: IndicatorConfig = {
+  chartTitle: 'On-Balance Volume (5)',
+  color: '#14b8a6',
+  createIndicator: () => new OBVClass(5),
+  description: 'On-Balance Volume',
+  details: 'Cumulative volume-based indicator. Rising OBV with rising prices confirms uptrend.',
+  getTableColumns: indicator => buildTableColumns({indicator, inputs: ['close', 'volume']}),
   id: 'obv',
   name: 'OBV',
-  description: 'On-Balance Volume',
-  color: '#14b8a6',
-  type: 'single',
+  processData: makeProcessData({alwaysStable: true, rowInputs: ['close', 'volume']}),
   requiredInputs: 1,
-  details: 'Cumulative volume-based indicator. Rising OBV with rising prices confirms uptrend.',
-  createIndicator: () => new OBVClass(5),
-  processData: makeProcessData({rowInputs: ['close', 'volume'], alwaysStable: true}),
-  getTableColumns: indicator => buildTableColumns({inputs: ['close', 'volume'], indicator}),
-  chartTitle: 'On-Balance Volume (5)',
+  type: 'single',
   yAxisLabel: 'OBV',
 };

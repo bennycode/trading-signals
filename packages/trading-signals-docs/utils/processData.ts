@@ -20,16 +20,16 @@ export function makeProcessData(opts: ProcessDataOptions): SingleIndicatorConfig
       indicator.add(candleField(candle, addInputs[0]));
     } else {
       const payload: Record<string, number> = {};
-      for (const key of addInputs) payload[key] = candleField(candle, key);
+      for (const key of addInputs) {
+        payload[key] = candleField(candle, key);
+      }
       indicator.add(payload);
     }
-    const result = opts.alwaysStable
-      ? indicator.getResult()
-      : indicator.isStable
-        ? indicator.getResult()
-        : null;
+    const result = opts.alwaysStable ? indicator.getResult() : indicator.isStable ? indicator.getResult() : null;
     const row: Record<string, unknown> = {result};
-    for (const key of opts.rowInputs) row[key] = candleField(candle, key);
+    for (const key of opts.rowInputs) {
+      row[key] = candleField(candle, key);
+    }
     if ('getSignal' in indicator) {
       row.signal = indicator.getSignal();
     }

@@ -4,7 +4,7 @@ interface CodeExampleProps {
   language?: string;
 }
 
-export function CodeExample({title = 'Code Example', code, language = 'typescript'}: CodeExampleProps) {
+export function CodeExample({code, language = 'typescript', title = 'Code Example'}: CodeExampleProps) {
   return (
     <div className="bg-purple-900/20 border border-purple-800/50 rounded-lg p-4">
       <h3 className="text-lg font-semibold text-purple-400 mb-2">{title}</h3>

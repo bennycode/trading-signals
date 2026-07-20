@@ -4,37 +4,37 @@ import {buildTableColumns} from '../../utils/tableColumns';
 import type {IndicatorConfig} from '../../utils/types';
 
 export const LinearRegression: IndicatorConfig = {
-  id: 'linreg',
-  name: 'LINREG',
-  description: 'Linear Regression',
+  chartTitle: 'Linear Regression (14)',
   color: '#ec4899',
-  type: 'single',
-  requiredInputs: 14,
+  createIndicator: () => new LinearRegressionClass(14),
+  description: 'Linear Regression',
   details:
     'Fits a straight line to recent prices using least-squares. The prediction is the point on the line at the latest bar; the slope indicates trend direction and strength.',
-  createIndicator: () => new LinearRegressionClass(14),
+  getTableColumns: indicator =>
+    buildTableColumns({
+      extra: [
+        {
+          className: 'text-slate-300 font-mono py-2 px-3',
+          header: 'Slope',
+          key: 'slope',
+          render: val => (val === null || val === undefined ? <NotAvailable /> : val.toFixed(4)),
+        },
+      ],
+      indicator,
+      inputs: ['close'],
+    }),
+  id: 'linreg',
+  name: 'LINREG',
   processData: (indicator, candle) => {
     indicator.add(Number(candle.close));
     const full = indicator.isStable ? indicator.getResult() : null;
     return {
+      close: Number(candle.close),
       result: full?.prediction ?? null,
       slope: full?.slope ?? null,
-      close: Number(candle.close),
     };
   },
-  getTableColumns: indicator =>
-    buildTableColumns({
-      inputs: ['close'],
-      indicator,
-      extra: [
-        {
-          header: 'Slope',
-          key: 'slope',
-          render: val => (val === null || val === undefined ? <NotAvailable /> : val.toFixed(4)),
-          className: 'text-slate-300 font-mono py-2 px-3',
-        },
-      ],
-    }),
-  chartTitle: 'Linear Regression (14)',
+  requiredInputs: 14,
+  type: 'single',
   yAxisLabel: 'Price',
 };
