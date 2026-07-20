@@ -1,4 +1,4 @@
-import {defineConfig} from 'eslint/config';
+import {type Config, defineConfig} from 'eslint/config';
 import typescriptEslint from '@typescript-eslint/eslint-plugin';
 import eslintConfig from '@tstv/eslint-config';
 
@@ -22,11 +22,13 @@ const configFileOverride = {
   files: ['**/eslint.config.*'],
 };
 
+type CreateConfigOptions = Pick<Config, 'ignores'>;
+
 /**
  * Shared ESLint config for every package in this monorepo. Pass `ignores` to append
  * package-specific ignore globs on top of the common ones.
  */
-export function createConfig({ignores = []}: {ignores?: string[]} = {}) {
+export function createConfig({ignores = []}: CreateConfigOptions = {}) {
   return defineConfig([
     /*
      * Global ignores: a config object with ONLY `ignores` excludes files entirely.
