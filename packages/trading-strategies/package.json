@@ -6,12 +6,12 @@
     "@typedtrader/exchange": "0.2.5",
     "@types/big.js": "^7.0.0",
     "big.js": "^7.0.1",
+    "ms": "4.0.0-nightly.202508271359",
     "trading-signals": "7.4.3",
     "zod": "^4.4.3"
   },
   "description": "Trading strategies to run trading bots with JavaScript / TypeScript.",
   "devDependencies": {
-    "ms": "4.0.0-nightly.202508271359",
     "tsx": "^4.22.5"
   },
   "exports": "./dist/index.js",
