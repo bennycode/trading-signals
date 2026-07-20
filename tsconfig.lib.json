@@ -5,7 +5,7 @@
     "erasableSyntaxOnly": true,
     "experimentalDecorators": true,
     "forceConsistentCasingInFileNames": true,
-    "lib": ["es2023"],
+    "lib": ["es2025"],
     "module": "node20",
     "newLine": "lf",
     "noEmitOnError": true,
