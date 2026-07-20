@@ -255,7 +255,6 @@ export class CandleBatcher extends EventEmitter<EventMap> {
   }
 
   static override toString(candle: BatchedCandle) {
-    // Deterministic output relies on the keys staying alphabetically sorted (enforced by perfectionist/sort-objects).
     return JSON.stringify(
       {
         base: candle.base,
