@@ -17,7 +17,7 @@
     "clean": "rimraf dist",
     "dist": "npm run clean && npm run build",
     "lint": "npm run lint:code && npm run lint:other",
-    "lint:code": "eslint .",
+    "lint:code": "eslint --flag unstable_native_nodejs_ts_config .",
     "lint:other": "npm run prettier -- --list-different",
     "prettier": "prettier --config ../../.prettierrc.json --ignore-path ../../.gitignore --log-level error \"**/*.{json,scss,yml}\"",
     "test": "npm run test:types && npm run test:imports && npm run test:units",

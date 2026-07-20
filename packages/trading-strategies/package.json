@@ -37,7 +37,7 @@
     "backtest": "tsx src/start/runBacktest.ts",
     "strategy": "tsx src/start/runStrategy.ts",
     "lint": "npm run lint:code && npm run lint:other",
-    "lint:code": "eslint .",
+    "lint:code": "eslint --flag unstable_native_nodejs_ts_config .",
     "lint:other": "npm run prettier -- --list-different",
     "prettier": "prettier --config ../../.prettierrc.json --ignore-path ../../.gitignore --log-level error \"**/*.{json,scss,yml}\"",
     "dev": "npm run test:types && tsx watch src/start.ts",

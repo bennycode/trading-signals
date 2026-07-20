@@ -32,7 +32,7 @@
     "build": "next build",
     "dev": "next dev",
     "dist": "npm run build",
-    "lint": "eslint .",
+    "lint": "eslint --flag unstable_native_nodejs_ts_config .",
     "start": "next start",
     "test": "npm run test:types && npm run test:units",
     "test:e2e": "playwright test",
