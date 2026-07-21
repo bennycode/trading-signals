@@ -21,7 +21,7 @@
     "lint:other": "npm run prettier -- --list-different",
     "prettier": "prettier --config ../../.prettierrc.json --ignore-path ../../.gitignore --log-level error \"**/*.{json,scss,yml}\"",
     "test": "npm run test:types && npm run test:imports && npm run test:units",
-    "test:imports": "depcruise -c ../../.dependency-cruiser.cjs src --include-only \"^src\"",
+    "test:imports": "depcruise -c ../../.dependency-cruiser.json src --include-only \"^src\"",
     "test:types": "tsc --noEmit",
     "test:units": "vitest run"
   },
