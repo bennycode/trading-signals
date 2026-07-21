@@ -249,6 +249,109 @@ The information and publications of [trading-signals](https://github.com/bennyco
 
 It is very important to do your own analysis before making any investment based on your own personal circumstances. If you need financial advice or further advice in general, it is recommended that you identify a relevantly qualified individual in your jurisdiction who can advise you accordingly.
 
+## Migrating from "technicalindicators"
+
+If you're coming from [technicalindicators](https://github.com/anandanand84/technicalindicators) (unmaintained since March 2020), the switch is straightforward. The core difference: "technicalindicators" is batch-oriented (arrays in, arrays out), while "trading-signals" is streaming-first (feed values as they arrive, no reprocessing of historical data).
+
+### API differences at a glance
+
+| technicalindicators                    | trading-signals                                |
+| -------------------------------------- | ---------------------------------------------- |
+| `new SMA({period: 3, values: []})`     | `new SMA(3)`                                   |
+| `sma.nextValue(price)`                 | `sma.add(price)`                               |
+| `SMA.calculate({period, values})`      | `sma.updates(values)`                          |
+| Parallel arrays: `{high: [], low: []}` | One object per candle: `{high, low, close}`    |
+| Returns `undefined` during warmup      | Returns `null` during warmup                   |
+| `setConfig('precision', 10)` (global)  | Not needed — control precision via `toFixed()` |
+
+### Batch calculation
+
+```ts
+// Before (technicalindicators):
+import {SMA} from 'technicalindicators';
+
+const results = SMA.calculate({period: 3, values: [10, 20, 30, 40]}); // [20, 30]
+
+// After (trading-signals):
+import {SMA} from 'trading-signals';
+
+const sma = new SMA(3);
+const results = sma.updates([10, 20, 30, 40]); // [null, null, 20, 30]
+```
+
+The result array from `updates(...)` keeps the same length as the input and contains `null` until the indicator is stable, so input and output indices always line up.
+
+### Streaming (tick-by-tick)
+
+```ts
+// Before (technicalindicators):
+import {RSI} from 'technicalindicators';
+
+const rsi = new RSI({period: 14, values: []});
+const result = rsi.nextValue(price); // number | undefined
+
+// After (trading-signals):
+import {RSI} from 'trading-signals';
+
+const rsi = new RSI(14);
+const result = rsi.add(price); // number | null
+```
+
+### Candle-based indicators
+
+"technicalindicators" takes parallel arrays, "trading-signals" takes one object per candle — a natural fit for live data where candles arrive one at a time:
+
+```ts
+// Before (technicalindicators):
+import {ATR} from 'technicalindicators';
+
+const results = ATR.calculate({
+  period: 14,
+  high: [81.59, 81.06],
+  low: [80.64, 80.84],
+  close: [81.29, 80.64],
+});
+
+// After (trading-signals):
+import {ATR} from 'trading-signals';
+
+const atr = new ATR(14);
+atr.add({close: 81.29, high: 81.59, low: 80.64});
+atr.add({close: 80.64, high: 81.06, low: 80.84});
+```
+
+### Indicator name mapping
+
+| technicalindicators | trading-signals                   |
+| ------------------- | --------------------------------- |
+| `ADL`               | `AD`                              |
+| `ADX`               | `ADX`                             |
+| `ATR`               | `ATR`                             |
+| `AwesomeOscillator` | `AO`                              |
+| `BollingerBands`    | `BollingerBands`                  |
+| `CCI`               | `CCI`                             |
+| `EMA`               | `EMA`                             |
+| `MACD`              | `MACD` (composed of `EMA`/`DEMA`) |
+| `OBV`               | `OBV`                             |
+| `PSAR`              | `PSAR`                            |
+| `ROC`               | `ROC`                             |
+| `RSI`               | `RSI`                             |
+| `SMA`               | `SMA`                             |
+| `Stochastic`        | `StochasticOscillator`            |
+| `StochasticRSI`     | `StochasticRSI`                   |
+| `TrueRange`         | `TR`                              |
+| `VWAP`              | `VWAP`                            |
+| `WEMA`              | `WSMA`                            |
+| `WilliamsR`         | `WilliamsR`                       |
+| `WMA`               | `WMA`                             |
+
+Two mappings worth a note:
+
+- **MACD** takes moving-average instances instead of period numbers, so you can freely combine `EMA` and `DEMA`: `new MACD(new EMA(12), new EMA(26), new EMA(9))`. Its result uses `macd` (lowercase) instead of `MACD` as the property name.
+- **Stochastic** results use `stochK`/`stochD` instead of `k`/`d`.
+
+Candlestick pattern recognition (doji, engulfing, etc.) and `IchimokuCloud` have no equivalent in "trading-signals". For everything else, you gain streaming updates, `replace(...)` for live chart corrections, built-in signal states via `getSignal()`, and strict TypeScript types.
+
 ## Alternatives
 
 - [Cloud9Trader Indicators (JavaScript)](https://github.com/Cloud9Trader/TechnicalIndicators)
