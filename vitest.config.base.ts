@@ -16,6 +16,7 @@ export default defineConfig({
     },
     environment: 'node',
     globals: true,
+    restoreMocks: true,
     sequence: {
       concurrent: true,
       shuffle: true,

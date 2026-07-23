@@ -1,5 +1,8 @@
 import {describe, it, expect, vi, beforeEach} from 'vitest';
-import type {Context} from 'grammy';
+import type {Bot as GrammyBot, Context} from 'grammy';
+import type {conversations, createConversation} from '@grammyjs/conversations';
+import type {getAvailableReportNames} from 'trading-strategies';
+import type {Account} from '../database/models/Account.js';
 import {TelegramPlatform, lowercaseCommandMiddleware} from './TelegramPlatform.js';
 import {reportAdd} from '../command/report/reportAdd.js';
 import {logger} from '../logger.js';
@@ -14,30 +17,30 @@ const mockUse = vi.fn();
 const botInfo = {username: 'testbot'};
 const mockedReportAdd = vi.mocked(reportAdd);
 
-vi.mock('trading-strategies', () => ({
-  getAvailableReportNames: vi.fn().mockReturnValue([]),
-  MESSAGE_BREAK: '\f',
+vi.mock(import('trading-strategies'), () => ({
+  getAvailableReportNames: vi.fn().mockReturnValue([]) as unknown as typeof getAvailableReportNames,
+  MESSAGE_BREAK: '\f' as const,
 }));
 
-vi.mock('../command/report/reportAdd.js', () => ({
+vi.mock(import('../command/report/reportAdd.js'), () => ({
   reportAdd: vi.fn(),
 }));
 
 const mockFindByUserId = vi.fn().mockReturnValue([]);
 const mockFindByUserIdAndId = vi.fn().mockReturnValue(undefined);
-vi.mock('../database/models/Account.js', () => ({
+vi.mock(import('../database/models/Account.js'), () => ({
   Account: {
     findByUserId: (...args: unknown[]) => mockFindByUserId(...args),
     findByUserIdAndId: (...args: unknown[]) => mockFindByUserIdAndId(...args),
-  },
+  } as unknown as typeof Account,
 }));
 
-vi.mock('@grammyjs/conversations', () => ({
-  conversations: vi.fn(() => 'conversations-middleware'),
-  createConversation: vi.fn(() => 'create-conversation-middleware'),
+vi.mock(import('@grammyjs/conversations'), () => ({
+  conversations: vi.fn(() => 'conversations-middleware') as unknown as typeof conversations,
+  createConversation: vi.fn(() => 'create-conversation-middleware') as unknown as typeof createConversation,
 }));
 
-vi.mock('grammy', () => {
+vi.mock(import('grammy'), () => {
   function Bot() {
     return {
       api: {
@@ -56,10 +59,10 @@ vi.mock('grammy', () => {
     };
   }
 
-  return {Bot};
+  return {Bot: Bot as unknown as typeof GrammyBot};
 });
 
-vi.mock('@grammyjs/auto-retry', () => ({
+vi.mock(import('@grammyjs/auto-retry'), () => ({
   autoRetry: vi.fn(() => vi.fn()),
 }));
 

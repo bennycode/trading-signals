@@ -3,8 +3,11 @@ import {describe, it, expect, vi, beforeEach} from 'vitest';
 import {OrderSide} from '@typedtrader/exchange';
 import {OrderSizeBelowMinimumError} from 'trading-strategies';
 import {logger} from '../logger.js';
+import type {getBrokerClient, TradingPair} from '@typedtrader/exchange';
+import type {createStrategy, TradingSession} from 'trading-strategies';
 import type {MessagingPlatform} from '../platform/MessagingPlatform.js';
-import type {StrategyAttributes} from '../database/models/Strategy.js';
+import type {Account} from '../database/models/Account.js';
+import type {Strategy, StrategyAttributes} from '../database/models/Strategy.js';
 
 const {mockAccountModel, mockSession, mockStrategy, mockStrategyModel, TradingSessionMock} = vi.hoisted(() => {
   const session = {on: vi.fn(), start: vi.fn(), stop: vi.fn()};
@@ -37,34 +40,34 @@ const {mockAccountModel, mockSession, mockStrategy, mockStrategyModel, TradingSe
   };
 });
 
-vi.mock('@typedtrader/exchange', async importActual => {
-  const actual = await importActual<Record<string, unknown>>();
+vi.mock(import('@typedtrader/exchange'), async importActual => {
+  const actual = await importActual();
   return {
     ...actual,
-    getBrokerClient: vi.fn(() => ({})),
-    TradingPair: {fromString: vi.fn(() => ({base: 'BTC', counter: 'USD'}))},
+    getBrokerClient: vi.fn(() => ({})) as unknown as typeof getBrokerClient,
+    TradingPair: {fromString: vi.fn(() => ({base: 'BTC', counter: 'USD'}))} as unknown as typeof TradingPair,
   };
 });
 
-vi.mock('trading-strategies', async importActual => {
-  const actual = await importActual<Record<string, unknown>>();
+vi.mock(import('trading-strategies'), async importActual => {
+  const actual = await importActual();
   return {
     ...actual,
-    createStrategy: vi.fn(() => mockStrategy),
-    TradingSession: TradingSessionMock,
+    createStrategy: vi.fn(() => mockStrategy) as unknown as typeof createStrategy,
+    TradingSession: TradingSessionMock as unknown as typeof TradingSession,
   };
 });
 
-vi.mock('../logger.js', () => ({
-  logger: {debug: vi.fn(), error: vi.fn(), info: vi.fn(), warn: vi.fn()},
+vi.mock(import('../logger.js'), () => ({
+  logger: {debug: vi.fn(), error: vi.fn(), info: vi.fn(), warn: vi.fn()} as unknown as typeof logger,
 }));
 
-vi.mock('../database/models/Account.js', () => ({
-  Account: mockAccountModel,
+vi.mock(import('../database/models/Account.js'), () => ({
+  Account: mockAccountModel as unknown as typeof Account,
 }));
 
-vi.mock('../database/models/Strategy.js', () => ({
-  Strategy: mockStrategyModel,
+vi.mock(import('../database/models/Strategy.js'), () => ({
+  Strategy: mockStrategyModel as unknown as typeof Strategy,
 }));
 
 const {formatStrategyMessage, STRATEGY_ERROR_LOG_MESSAGE, StrategyMonitor} = await import('./StrategyMonitor.js');

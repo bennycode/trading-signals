@@ -1,16 +1,17 @@
 import {beforeEach, describe, expect, it, vi} from 'vitest';
 import type {Candle} from '../Broker.js';
 import {MarketDataSource} from '../MarketDataSource.js';
+import type {Trading212API} from './api/Trading212API.js';
 
 // Shared mock references
 const mockMethods = {
   getAccountCash: vi.fn(),
 };
 
-vi.mock('./api/Trading212API.js', () => ({
+vi.mock(import('./api/Trading212API.js'), () => ({
   Trading212API: class {
     getAccountCash = mockMethods.getAccountCash;
-  },
+  } as unknown as typeof Trading212API,
 }));
 
 // Import after mocking
