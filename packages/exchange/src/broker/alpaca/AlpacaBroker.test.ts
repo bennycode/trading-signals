@@ -5,6 +5,8 @@ import {OrderPosition, OrderSide, OrderType} from '../Broker.js';
 import {AlpacaAssetClass, AlpacaOrderSide, AlpacaOrderStatus, AlpacaOrderType} from './api/schema/OrderSchema.js';
 import {PositionSide} from './api/schema/PositionSchema.js';
 import {TradeUpdateEvent} from './api/schema/TradingStreamSchema.js';
+import type {AlpacaAPI} from './api/AlpacaAPI.js';
+import type {alpacaTradingWebSocket} from './AlpacaTradingWebSocket.js';
 
 // Shared mock references
 const mockMethods = {
@@ -21,7 +23,7 @@ const mockMethods = {
   postOrder: vi.fn(),
 };
 
-vi.mock('./api/AlpacaAPI.js', () => ({
+vi.mock(import('./api/AlpacaAPI.js'), () => ({
   AlpacaAPI: class {
     deleteOrder = mockMethods.deleteOrder;
     getAccount = mockMethods.getAccount;
@@ -34,16 +36,10 @@ vi.mock('./api/AlpacaAPI.js', () => ({
     getStockBars = mockMethods.getStockBars;
     getStockBarsLatest = mockMethods.getStockBarsLatest;
     postOrder = mockMethods.postOrder;
-  },
+  } as unknown as typeof AlpacaAPI,
 }));
 
-vi.mock('./AlpacaWebSocket.js', () => ({
-  alpacaWebSocket: {
-    connect: vi.fn(),
-    subscribeToBars: vi.fn(),
-    unsubscribeFromBars: vi.fn(),
-  },
-}));
+vi.mock(import('./AlpacaWebSocket.js'));
 
 const mockTradingWebSocket = {
   connect: vi.fn().mockResolvedValue({connectionId: 'trading-conn', stream: {}}),
@@ -52,8 +48,8 @@ const mockTradingWebSocket = {
   onTradeUpdate: vi.fn(),
 };
 
-vi.mock('./AlpacaTradingWebSocket.js', () => ({
-  alpacaTradingWebSocket: mockTradingWebSocket,
+vi.mock(import('./AlpacaTradingWebSocket.js'), () => ({
+  alpacaTradingWebSocket: mockTradingWebSocket as unknown as typeof alpacaTradingWebSocket,
 }));
 
 // Import after mocking

@@ -1,5 +1,6 @@
 import {describe, it, expect, vi, beforeEach} from 'vitest';
-import type {AccountAttributes} from '../database/models/Account.js';
+import type {AlpacaBroker, AlpacaMarketData, getBrokerClient} from '@typedtrader/exchange';
+import type {Account, AccountAttributes} from '../database/models/Account.js';
 
 const {AlpacaMarketDataMock, getBrokerClientMock, mockAccountModel} = vi.hoisted(() => {
   return {
@@ -11,14 +12,14 @@ const {AlpacaMarketDataMock, getBrokerClientMock, mockAccountModel} = vi.hoisted
   };
 });
 
-vi.mock('@typedtrader/exchange', () => ({
-  AlpacaBroker: {NAME: 'Alpaca'},
-  AlpacaMarketData: AlpacaMarketDataMock,
-  getBrokerClient: getBrokerClientMock,
+vi.mock(import('@typedtrader/exchange'), () => ({
+  AlpacaBroker: {NAME: 'Alpaca'} as unknown as typeof AlpacaBroker,
+  AlpacaMarketData: AlpacaMarketDataMock as unknown as typeof AlpacaMarketData,
+  getBrokerClient: getBrokerClientMock as unknown as typeof getBrokerClient,
 }));
 
-vi.mock('../database/models/Account.js', () => ({
-  Account: mockAccountModel,
+vi.mock(import('../database/models/Account.js'), () => ({
+  Account: mockAccountModel as unknown as typeof Account,
 }));
 
 const {buildMarketDataFromAccount, getAccountBrokerClient} = await import('./getAccountBrokerClient.js');

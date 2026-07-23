@@ -1,6 +1,8 @@
 import {describe, it, expect, vi, beforeEach} from 'vitest';
+import type {getBrokerClient, TradingPair} from '@typedtrader/exchange';
 import type {MessagingPlatform} from '../platform/MessagingPlatform.js';
-import type {WatchAttributes} from '../database/models/Watch.js';
+import type {Account} from '../database/models/Account.js';
+import type {Watch, WatchAttributes} from '../database/models/Watch.js';
 
 const {mockAccountModel, mockExchange, mockWatchModel} = vi.hoisted(() => ({
   mockAccountModel: {findByPk: vi.fn()},
@@ -18,17 +20,17 @@ const {mockAccountModel, mockExchange, mockWatchModel} = vi.hoisted(() => ({
   },
 }));
 
-vi.mock('@typedtrader/exchange', () => ({
-  getBrokerClient: vi.fn(() => mockExchange),
-  TradingPair: {fromString: vi.fn(() => ({base: 'BTC', counter: 'USD'}))},
+vi.mock(import('@typedtrader/exchange'), () => ({
+  getBrokerClient: vi.fn(() => mockExchange) as unknown as typeof getBrokerClient,
+  TradingPair: {fromString: vi.fn(() => ({base: 'BTC', counter: 'USD'}))} as unknown as typeof TradingPair,
 }));
 
-vi.mock('../database/models/Account.js', () => ({
-  Account: mockAccountModel,
+vi.mock(import('../database/models/Account.js'), () => ({
+  Account: mockAccountModel as unknown as typeof Account,
 }));
 
-vi.mock('../database/models/Watch.js', () => ({
-  Watch: mockWatchModel,
+vi.mock(import('../database/models/Watch.js'), () => ({
+  Watch: mockWatchModel as unknown as typeof Watch,
 }));
 
 const {WatchMonitor} = await import('./WatchMonitor.js');
