@@ -6,7 +6,6 @@ import {AlpacaAssetClass, AlpacaOrderSide, AlpacaOrderStatus, AlpacaOrderType} f
 import {PositionSide} from './api/schema/PositionSchema.js';
 import {TradeUpdateEvent} from './api/schema/TradingStreamSchema.js';
 import type {AlpacaAPI} from './api/AlpacaAPI.js';
-import type {alpacaWebSocket} from './AlpacaWebSocket.js';
 import type {alpacaTradingWebSocket} from './AlpacaTradingWebSocket.js';
 
 // Shared mock references
@@ -40,13 +39,7 @@ vi.mock(import('./api/AlpacaAPI.js'), () => ({
   } as unknown as typeof AlpacaAPI,
 }));
 
-vi.mock(import('./AlpacaWebSocket.js'), () => ({
-  alpacaWebSocket: {
-    connect: vi.fn(),
-    subscribeToBars: vi.fn(),
-    unsubscribeFromBars: vi.fn(),
-  } as unknown as typeof alpacaWebSocket,
-}));
+vi.mock(import('./AlpacaWebSocket.js'));
 
 const mockTradingWebSocket = {
   connect: vi.fn().mockResolvedValue({connectionId: 'trading-conn', stream: {}}),

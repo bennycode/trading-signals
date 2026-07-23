@@ -1,6 +1,5 @@
 import {describe, it, expect, vi, beforeEach} from 'vitest';
 import type {Bot as GrammyBot, Context} from 'grammy';
-import type {conversations, createConversation} from '@grammyjs/conversations';
 import type {getAvailableReportNames} from 'trading-strategies';
 import type {Account} from '../database/models/Account.js';
 import {TelegramPlatform, lowercaseCommandMiddleware} from './TelegramPlatform.js';
@@ -22,9 +21,7 @@ vi.mock(import('trading-strategies'), () => ({
   MESSAGE_BREAK: '\f' as const,
 }));
 
-vi.mock(import('../command/report/reportAdd.js'), () => ({
-  reportAdd: vi.fn(),
-}));
+vi.mock(import('../command/report/reportAdd.js'));
 
 const mockFindByUserId = vi.fn().mockReturnValue([]);
 const mockFindByUserIdAndId = vi.fn().mockReturnValue(undefined);
@@ -35,10 +32,7 @@ vi.mock(import('../database/models/Account.js'), () => ({
   } as unknown as typeof Account,
 }));
 
-vi.mock(import('@grammyjs/conversations'), () => ({
-  conversations: vi.fn(() => 'conversations-middleware') as unknown as typeof conversations,
-  createConversation: vi.fn(() => 'create-conversation-middleware') as unknown as typeof createConversation,
-}));
+vi.mock(import('@grammyjs/conversations'));
 
 vi.mock(import('grammy'), () => {
   function Bot() {
@@ -62,9 +56,7 @@ vi.mock(import('grammy'), () => {
   return {Bot: Bot as unknown as typeof GrammyBot};
 });
 
-vi.mock(import('@grammyjs/auto-retry'), () => ({
-  autoRetry: vi.fn(() => vi.fn()),
-}));
+vi.mock(import('@grammyjs/auto-retry'));
 
 describe('TelegramPlatform', () => {
   beforeEach(() => {
