@@ -16,6 +16,7 @@ export default defineConfig({
     },
     environment: 'node',
     globals: true,
+    // https://main.vitest.dev/guide/learn/writing-tests-with-ai.html#mock-cleanup
     restoreMocks: true,
     sequence: {
       concurrent: true,
