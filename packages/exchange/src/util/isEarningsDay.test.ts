@@ -1,6 +1,5 @@
 import {describe, expect, it, vi, beforeEach} from 'vitest';
 import type {AxiosStatic} from 'axios';
-import type axiosRetry from 'axios-retry';
 
 const mockGet = vi.fn();
 
@@ -16,9 +15,7 @@ vi.mock(import('axios'), () => ({
  * interceptors — the real retry behavior is exercised by the production
  * client, not by these unit tests.
  */
-vi.mock(import('axios-retry'), () => ({
-  default: vi.fn() as unknown as typeof axiosRetry,
-}));
+vi.mock(import('axios-retry'));
 
 const {isEarningsDay} = await import('./isEarningsDay.js');
 
