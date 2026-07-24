@@ -1,13 +1,13 @@
-import type {HighLow} from '../../types/HighLowClose.js';
-import {TechnicalIndicator} from '../../types/Indicator.js';
+import type {HighLow} from '../../base/Candle.type.js';
+import {TechnicalIndicator} from '../../base/Indicator.js';
 import {pushUpdate} from '../../util/pushUpdate.js';
 
-export interface AroonResult {
+export type AroonResult = {
   /** Measures how recently the lowest low occurred (100 = this candle, 0 = interval candles ago) */
   aroonDown: number;
   /** Measures how recently the highest high occurred (100 = this candle, 0 = interval candles ago) */
   aroonUp: number;
-}
+};
 
 /**
  * Aroon (AROON)

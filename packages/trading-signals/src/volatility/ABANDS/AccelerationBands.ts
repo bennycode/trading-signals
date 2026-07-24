@@ -1,9 +1,9 @@
-import {TechnicalIndicator, TradingSignal} from '../../types/Indicator.js';
+import {TechnicalIndicator, TradingSignal} from '../../base/Indicator.js';
 import type {MovingAverage} from '../../trend/MA/MovingAverage.js';
 import type {MovingAverageTypes} from '../../trend/MA/MovingAverageTypes.js';
 import {SMA} from '../../trend/SMA/SMA.js';
-import type {BandsResult} from '../../types/BandsResult.js';
-import type {HighLowClose} from '../../types/HighLowClose.js';
+import type {BandsResult} from '../../base/BandsResult.type.js';
+import type {HighLowClose} from '../../base/Candle.type.js';
 
 /**
  * Acceleration Bands (ABANDS)

@@ -1,10 +1,10 @@
 import {TechnicalIndicator} from './Indicator.js';
 import {pushUpdate} from '../util/pushUpdate.js';
 
-export interface PeriodResult {
+export type PeriodResult = {
   highest: number;
   lowest: number;
-}
+};
 
 export class Period extends TechnicalIndicator<PeriodResult, number> {
   public values: number[];

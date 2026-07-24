@@ -1,6 +1,6 @@
 import type {DEMA} from '../../trend/DEMA/DEMA.js';
 import type {EMA} from '../../trend/EMA/EMA.js';
-import {TechnicalIndicator, TradingSignal} from '../../types/Indicator.js';
+import {TechnicalIndicator, TradingSignal} from '../../base/Indicator.js';
 import {pushUpdate} from '../../util/pushUpdate.js';
 
 export type MACDResult = {

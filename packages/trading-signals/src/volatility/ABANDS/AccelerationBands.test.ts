@@ -1,7 +1,7 @@
 import {EMA} from '../../trend/EMA/EMA.js';
 import {NotEnoughDataError} from '../../error/index.js';
 import {SMA} from '../../trend/SMA/SMA.js';
-import {TradingSignal} from '../../types/Indicator.js';
+import {TradingSignal} from '../../base/Indicator.js';
 import {AccelerationBands} from './AccelerationBands.js';
 
 describe('AccelerationBands', () => {

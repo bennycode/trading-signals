@@ -1,14 +1,14 @@
 import {SMA} from '../../trend/SMA/SMA.js';
-import type {HighLowClose} from '../../types/HighLowClose.js';
-import {TechnicalIndicator, TradingSignal} from '../../types/Indicator.js';
+import type {HighLowClose} from '../../base/Candle.type.js';
+import {TechnicalIndicator, TradingSignal} from '../../base/Indicator.js';
 import {pushUpdate} from '../../util/pushUpdate.js';
 
-export interface StochasticResult {
+export type StochasticResult = {
   /** Slow stochastic indicator (%D) */
   stochD: number;
   /** Fast stochastic indicator (%K) */
   stochK: number;
-}
+};
 
 /**
  * Stochastic Oscillator (STOCH)

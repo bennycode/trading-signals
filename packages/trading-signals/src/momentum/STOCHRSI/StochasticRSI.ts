@@ -2,8 +2,8 @@ import type {MovingAverage} from '../../trend/MA/MovingAverage.js';
 import type {MovingAverageTypes} from '../../trend/MA/MovingAverageTypes.js';
 import {SMA} from '../../trend/SMA/SMA.js';
 import {WSMA} from '../../trend/WSMA/WSMA.js';
-import {TradingSignal, TrendIndicatorSeries} from '../../types/Indicator.js';
-import {Period} from '../../types/Period.js';
+import {TradingSignal, TrendIndicatorSeries} from '../../base/Indicator.js';
+import {Period} from '../../base/Period.js';
 import {RSI} from '../RSI/RSI.js';
 
 /**

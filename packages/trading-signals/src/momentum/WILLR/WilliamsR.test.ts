@@ -1,7 +1,7 @@
 import {WilliamsR} from './WilliamsR.js';
 import {StochasticOscillator} from '../STOCH/StochasticOscillator.js';
 import {NotEnoughDataError} from '../../error/index.js';
-import {TradingSignal} from '../../types/index.js';
+import {TradingSignal} from '../../base/index.js';
 import candles from '../../fixtures/STOCH/candles.json' with {type: 'json'};
 
 describe('WilliamsR', () => {

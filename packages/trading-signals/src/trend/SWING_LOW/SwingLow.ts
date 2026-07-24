@@ -1,5 +1,5 @@
-import {IndicatorSeries} from '../../types/Indicator.js';
-import type {HighLow} from '../../types/HighLowClose.js';
+import {IndicatorSeries} from '../../base/Indicator.js';
+import type {HighLow} from '../../base/Candle.type.js';
 import {pushUpdate} from '../../util/pushUpdate.js';
 
 export type SwingLowConfig = {

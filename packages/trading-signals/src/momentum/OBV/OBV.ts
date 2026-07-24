@@ -1,5 +1,5 @@
-import type {OpenHighLowCloseVolume} from '../../types/HighLowClose.js';
-import {TrendIndicatorSeries, TradingSignal} from '../../types/Indicator.js';
+import type {OpenHighLowCloseVolume} from '../../base/Candle.type.js';
+import {TrendIndicatorSeries, TradingSignal} from '../../base/Indicator.js';
 import {pushUpdate} from '../../util/pushUpdate.js';
 
 /**
