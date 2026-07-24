@@ -16,6 +16,7 @@ export * from './SMA15/SMA15.js';
 export * from './SWING_HIGH/SwingHigh.js';
 export * from './SWING_LOW/SwingLookback.js';
 export * from './SWING_LOW/SwingLow.js';
+export * from './TEMA/TEMA.js';
 export * from './VWAP/VWAP.js';
 export * from './WMA/WMA.js';
 export * from './WSMA/WSMA.js';
