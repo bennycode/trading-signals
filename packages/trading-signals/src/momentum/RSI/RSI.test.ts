@@ -1,6 +1,6 @@
 import {RSI} from './RSI.js';
 import {NotEnoughDataError} from '../../error/index.js';
-import {TradingSignal} from '../../types/index.js';
+import {TradingSignal} from '../../base/index.js';
 
 describe('RSI', () => {
   describe('update', () => {

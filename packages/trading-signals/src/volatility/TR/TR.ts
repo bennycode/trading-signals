@@ -1,5 +1,5 @@
-import {IndicatorSeries} from '../../types/Indicator.js';
-import type {HighLowClose} from '../../types/Candle.types.js';
+import {IndicatorSeries} from '../../base/Indicator.js';
+import type {HighLowClose} from '../../base/Candle.types.js';
 
 /**
  * True Range (TR)

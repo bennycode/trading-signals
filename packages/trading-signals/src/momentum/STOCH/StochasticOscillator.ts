@@ -1,6 +1,6 @@
 import {SMA} from '../../trend/SMA/SMA.js';
-import type {HighLowClose} from '../../types/Candle.types.js';
-import {TechnicalIndicator, TradingSignal} from '../../types/Indicator.js';
+import type {HighLowClose} from '../../base/Candle.types.js';
+import {TechnicalIndicator, TradingSignal} from '../../base/Indicator.js';
 import {pushUpdate} from '../../util/pushUpdate.js';
 
 export interface StochasticResult {

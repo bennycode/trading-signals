@@ -1,5 +1,5 @@
 import {REI} from './REI.js';
-import {TradingSignal} from '../../types/index.js';
+import {TradingSignal} from '../../base/index.js';
 
 describe('REI', () => {
   const testData = [

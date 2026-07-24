@@ -1,4 +1,4 @@
-import {TechnicalIndicator} from '../../types/Indicator.js';
+import {TechnicalIndicator} from '../../base/Indicator.js';
 import {pushUpdate} from '../../util/pushUpdate.js';
 
 export type LinearRegressionResult = {

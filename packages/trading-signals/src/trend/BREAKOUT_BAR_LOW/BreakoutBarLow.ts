@@ -1,5 +1,5 @@
-import {IndicatorSeries} from '../../types/Indicator.js';
-import type {HighLow} from '../../types/Candle.types.js';
+import {IndicatorSeries} from '../../base/Indicator.js';
+import type {HighLow} from '../../base/Candle.types.js';
 import {pushUpdate} from '../../util/pushUpdate.js';
 
 export type BreakoutBarLowConfig = {

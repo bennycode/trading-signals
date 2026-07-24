@@ -1,6 +1,6 @@
 import {ROC} from './ROC.js';
 import {NotEnoughDataError} from '../../error/index.js';
-import {TradingSignal} from '../../types/Indicator.js';
+import {TradingSignal} from '../../base/Indicator.js';
 
 describe('ROC', () => {
   describe('getResultOrThrow', () => {

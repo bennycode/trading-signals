@@ -1,5 +1,5 @@
-import type {HighLow} from '../../types/Candle.types.js';
-import {TechnicalIndicator} from '../../types/Indicator.js';
+import type {HighLow} from '../../base/Candle.types.js';
+import {TechnicalIndicator} from '../../base/Indicator.js';
 import {pushUpdate} from '../../util/pushUpdate.js';
 
 export interface AroonResult {

@@ -1,6 +1,6 @@
 import {MOM} from './MOM.js';
 import {NotEnoughDataError} from '../../error/index.js';
-import {TradingSignal} from '../../types/Indicator.js';
+import {TradingSignal} from '../../base/Indicator.js';
 
 describe('MOM', () => {
   describe('update', () => {

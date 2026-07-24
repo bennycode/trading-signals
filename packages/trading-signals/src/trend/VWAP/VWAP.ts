@@ -1,5 +1,5 @@
-import {IndicatorSeries} from '../../types/Indicator.js';
-import type {HighLowCloseVolume} from '../../types/Candle.types.js';
+import {IndicatorSeries} from '../../base/Indicator.js';
+import type {HighLowCloseVolume} from '../../base/Candle.types.js';
 
 /**
  * Volume-Weighted Average Price (VWAP)

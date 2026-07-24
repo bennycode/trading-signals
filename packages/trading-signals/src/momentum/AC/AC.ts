@@ -1,6 +1,6 @@
 import {SMA} from '../../trend/SMA/SMA.js';
-import type {HighLow} from '../../types/Candle.types.js';
-import {TrendIndicatorSeries, TradingSignal} from '../../types/Indicator.js';
+import type {HighLow} from '../../base/Candle.types.js';
+import {TrendIndicatorSeries, TradingSignal} from '../../base/Indicator.js';
 import {AO} from '../AO/AO.js';
 import {MOM} from '../MOM/MOM.js';
 

@@ -215,10 +215,10 @@ override update(candle: HighLowClose<number>, replace: boolean) {
 Reference implementation: [PR #1212 (Aroon)](https://github.com/bennycode/trading-signals/pull/1212) shows all steps end to end.
 
 1. **Pick the category folder** — `src/momentum/`, `src/trend/`, `src/volatility/` or `src/volume/`. Create a directory named after the indicator code in uppercase, with the class file named after the exported class: `src/trend/AROON/Aroon.ts`.
-2. **Extend the right base class** (`src/types/Indicator.ts`):
+2. **Extend the right base class** (`src/base/Indicator.ts`):
    - Single-number result → `IndicatorSeries` (or `TrendIndicatorSeries` for signal tracking). Use `setResult()`.
    - Multi-value result (e.g. `{aroonUp, aroonDown}`) → `TechnicalIndicator<Result, Input>`. Export the result interface. Here `this.result` is assigned directly — `setResult()` only exists on `IndicatorSeries`.
-3. **Use shared building blocks** — input types from `src/types/HighLowClose.ts` (`HighLow`, `HighLowClose`, …), `pushUpdate()` from `src/util/` for the sliding candle window, and existing indicators (SMA, EMA, ATR, …) as internal components instead of reimplementing them.
+3. **Use shared building blocks** — input types from `src/base/Candle.types.ts` (`HighLow`, `HighLowClose`, …), `pushUpdate()` from `src/util/` for the sliding candle window, and existing indicators (SMA, EMA, ATR, …) as internal components instead of reimplementing them.
 4. **Implement the contract** — `getRequiredInputs()` returns the warm-up count; `update(input, replace)` returns the result or `null` during warm-up. `replace()` must be correct: if the result is a pure function of the candle window, `pushUpdate()` handles it; if the indicator carries smoothing state, restore the previous state on replace.
 5. **No constructor parameter properties** — the codebase compiles with `erasableSyntaxOnly`, so declare fields explicitly and assign them in the constructor.
 6. **Write the class JSDoc with intent** — indicator name and code, type (Trend/Momentum/…), what it tells a trader, and `@see` links to sources (e.g. Investopedia, Tulip Indicators).

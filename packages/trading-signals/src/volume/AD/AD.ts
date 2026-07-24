@@ -1,5 +1,5 @@
-import type {HighLowCloseVolume} from '../../types/Candle.types.js';
-import {TradingSignal, TrendIndicatorSeries} from '../../types/Indicator.js';
+import type {HighLowCloseVolume} from '../../base/Candle.types.js';
+import {TradingSignal, TrendIndicatorSeries} from '../../base/Indicator.js';
 
 /**
  * Accumulation/Distribution (AD)

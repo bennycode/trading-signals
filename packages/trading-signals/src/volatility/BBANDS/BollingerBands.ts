@@ -1,5 +1,5 @@
-import {TechnicalIndicator, TradingSignal} from '../../types/Indicator.js';
-import type {BandsResult} from '../../types/BandsResult.js';
+import {TechnicalIndicator, TradingSignal} from '../../base/Indicator.js';
+import type {BandsResult} from '../../base/BandsResult.js';
 import {getAverage, getStandardDeviation, pushUpdate} from '../../util/index.js';
 
 /**
