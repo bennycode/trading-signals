@@ -188,6 +188,7 @@ console.log(signal.hasChanged); // true if the signal state changed from the pre
 1. Chaikin Money Flow (CMF)
 1. Chaikin Oscillator (ADOSC)
 1. Chande Momentum Oscillator (CMO)
+1. Chandelier Exit (CE)
 1. Commodity Channel Index (CCI)
 1. Directional Movement Index (DMI / DX)
 1. Double Exponential Moving Average (DEMA)
