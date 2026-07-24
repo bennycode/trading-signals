@@ -1,7 +1,7 @@
 import type {MovingAverage} from '../../trend/MA/MovingAverage.js';
 import type {MovingAverageTypes} from '../../trend/MA/MovingAverageTypes.js';
 import {SMA} from '../../trend/SMA/SMA.js';
-import type {HighLow} from '../../types/HighLowClose.js';
+import type {HighLow} from '../../types/Candle.types.js';
 import {TrendIndicatorSeries, TradingSignal} from '../../types/Indicator.js';
 
 /**

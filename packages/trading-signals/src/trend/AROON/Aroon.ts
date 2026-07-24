@@ -1,4 +1,4 @@
-import type {HighLow} from '../../types/HighLowClose.js';
+import type {HighLow} from '../../types/Candle.types.js';
 import {TechnicalIndicator} from '../../types/Indicator.js';
 import {pushUpdate} from '../../util/pushUpdate.js';
 

@@ -1,5 +1,5 @@
 import {SMA} from '../../trend/SMA/SMA.js';
-import type {HighLowClose} from '../../types/HighLowClose.js';
+import type {HighLowClose} from '../../types/Candle.types.js';
 import {TradingSignal, TrendIndicatorSeries} from '../../types/Indicator.js';
 import {pushUpdate} from '../../util/index.js';
 import {MAD} from '../../volatility/MAD/MAD.js';

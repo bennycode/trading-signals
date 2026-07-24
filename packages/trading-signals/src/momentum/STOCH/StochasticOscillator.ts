@@ -1,5 +1,5 @@
 import {SMA} from '../../trend/SMA/SMA.js';
-import type {HighLowClose} from '../../types/HighLowClose.js';
+import type {HighLowClose} from '../../types/Candle.types.js';
 import {TechnicalIndicator, TradingSignal} from '../../types/Indicator.js';
 import {pushUpdate} from '../../util/pushUpdate.js';
 
