@@ -213,6 +213,7 @@ console.log(signal.hasChanged); // true if the signal state changed from the pre
 1. Stochastic RSI (STOCHRSI)
 1. Tom Demark's Sequential Indicator (TDS)
 1. True Range (TR)
+1. Ultimate Oscillator (ULTOSC)
 1. Volume Rate of Change (VROC)
 1. Volume-Weighted Average Price (VWAP)
 1. Volume Weighted Moving Average (VWMA)
