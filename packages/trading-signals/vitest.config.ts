@@ -15,7 +15,7 @@ export default mergeConfig(
       },
       tags: [
         {
-          description: 'Verifies indicator results against Tulip Indicators reference data.',
+          description: 'Verifies indicator results against Tulip Indicators reference data (https://tulipindicators.org/).',
           name: 'tulipindicators',
         },
       ],
