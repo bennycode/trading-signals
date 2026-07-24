@@ -178,6 +178,7 @@ console.log(signal.hasChanged); // true if the signal state changed from the pre
 1. Acceleration Bands (ABANDS)
 1. Accelerator Oscillator (AC)
 1. Accumulation/Distribution (AD)
+1. Aroon (AROON)
 1. Average Directional Index (ADX)
 1. Average True Range (ATR)
 1. Awesome Oscillator (AO)
