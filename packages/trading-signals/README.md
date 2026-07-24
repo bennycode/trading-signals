@@ -204,6 +204,7 @@ console.log(signal.hasChanged); // true if the signal state changed from the pre
 1. Normalized Average True Range (NATR)
 1. On-Balance Volume (OBV)
 1. Parabolic SAR (PSAR)
+1. Percentage Price Oscillator (PPO)
 1. Price Volume Trend (PVT)
 1. Range Expansion Index (REI)
 1. Rate-of-Change (ROC)
