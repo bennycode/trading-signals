@@ -234,7 +234,7 @@ interface Indicator<Result, Input> {
 
 # Adding a New Indicator
 
-Reference implementation: [PR #1212 (Aroon)](https://github.com/bennycode/trading-signals/pull/1212) shows all steps end to end.
+Reference implementation: [PR #1214 (MFI)](https://github.com/bennycode/trading-signals/pull/1214) shows all steps end to end, including the signal conventions.
 
 1. **Pick the category folder** — `src/momentum/`, `src/trend/`, `src/volatility/` or `src/volume/`. Create a directory named after the indicator code in uppercase, with the class file named after the exported class: `src/trend/AROON/Aroon.ts`.
 2. **Extend the right base class** (`src/base/Indicator.ts`):
