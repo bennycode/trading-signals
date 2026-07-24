@@ -51,26 +51,26 @@ describe('Aroon', () => {
 
   describe('replace', () => {
     it('replaces the most recently added value', () => {
-      const interval = 5;
-      const aroon = new Aroon(interval);
-      const aroonWithReplace = new Aroon(interval);
-
-      const correct = {high: 90.0, low: 89.0} as const;
-      const wrong = {high: 82.0, low: 79.0} as const;
+      const aroon = new Aroon(5);
 
       aroon.updates(candles, false);
-      aroonWithReplace.updates(candles, false);
 
-      const originalResult = aroon.add(correct);
-      const replacedResult = aroonWithReplace.add(wrong);
+      const originalValue = {high: 90.0, low: 89.0} as const;
+      const replacedValue = {high: 82.0, low: 79.0} as const;
 
-      expect(replacedResult?.aroonDown).not.toBe(originalResult?.aroonDown);
-      expect(replacedResult?.aroonUp).not.toBe(originalResult?.aroonUp);
+      // New highest high on the most recent candle, lowest low 5 candles ago
+      const originalResult = aroon.add(originalValue);
 
-      const restoredResult = aroonWithReplace.replace(correct);
+      expect(originalResult).toEqual({aroonDown: 0, aroonUp: 100});
 
-      expect(restoredResult?.aroonDown).toBe(originalResult?.aroonDown);
-      expect(restoredResult?.aroonUp).toBe(originalResult?.aroonUp);
+      // New lowest low on the most recent candle, highest high 2 candles ago
+      const replacedResult = aroon.replace(replacedValue);
+
+      expect(replacedResult).toEqual({aroonDown: 100, aroonUp: 60});
+
+      const restoredResult = aroon.replace(originalValue);
+
+      expect(restoredResult).toEqual(originalResult);
     });
   });
 
