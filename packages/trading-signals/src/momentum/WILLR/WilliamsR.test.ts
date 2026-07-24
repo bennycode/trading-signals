@@ -68,7 +68,7 @@ describe('WilliamsR', () => {
        * Therefore: Williams %R = Stochastic %K - 100
        */
       const willR = new WilliamsR(5);
-      const stoch = new StochasticOscillator(5, 1, 1);
+      const stoch = new StochasticOscillator({dPeriod: 1, kPeriod: 5, kSlowingPeriod: 1});
 
       candles.forEach(candle => {
         const willRResult = willR.add(candle);

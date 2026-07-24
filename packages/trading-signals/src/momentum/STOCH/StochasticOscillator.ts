@@ -11,6 +11,15 @@ export type StochasticResult = {
   stochK: number;
 };
 
+export type StochasticOscillatorConfig = {
+  /** Period of the moving average over %k values, producing the slow %d line */
+  dPeriod: number;
+  /** Number of candles used for the high/low trading range of the fast %k line */
+  kPeriod: number;
+  /** Slowing period applied to the raw %k values */
+  kSlowingPeriod: number;
+};
+
 /**
  * Stochastic Oscillator (STOCH)
  * Type: Momentum
@@ -31,48 +40,46 @@ export type StochasticResult = {
  */
 export class StochasticOscillator extends TechnicalIndicator<StochasticResult, HighLowClose<number>> {
   public readonly candles: HighLowClose<number>[] = [];
-  readonly #periodM: SMA;
-  readonly #periodP: SMA;
+  readonly #smoothK: SMA;
+  readonly #smoothD: SMA;
   #previousResult?: StochasticResult;
 
-  /**
-   * @param n The %k period
-   * @param m The %k slowing period
-   * @param p The %d period
-   */
-  public n: number;
-  public m: number;
-  public p: number;
+  public readonly kPeriod: number;
+  public readonly kSlowingPeriod: number;
+  public readonly dPeriod: number;
   readonly #overbought: number;
   readonly #oversold: number;
 
-  constructor(n: number, m: number, p: number, {overbought = 80, oversold = 20}: SignalThresholds = {}) {
+  constructor(
+    {dPeriod, kPeriod, kSlowingPeriod}: StochasticOscillatorConfig,
+    {overbought = 80, oversold = 20}: SignalThresholds = {}
+  ) {
     super();
-    this.n = n;
-    this.m = m;
-    this.p = p;
-    this.#periodM = new SMA(m);
-    this.#periodP = new SMA(p);
+    this.kPeriod = kPeriod;
+    this.kSlowingPeriod = kSlowingPeriod;
+    this.dPeriod = dPeriod;
+    this.#smoothK = new SMA(kSlowingPeriod);
+    this.#smoothD = new SMA(dPeriod);
     this.#overbought = overbought;
     this.#oversold = oversold;
   }
 
   override getRequiredInputs() {
-    return this.n + this.p + 1;
+    return this.kPeriod + this.dPeriod + 1;
   }
 
   update(candle: HighLowClose<number>, replace: boolean) {
-    pushUpdate(this.candles, replace, candle, this.n);
+    pushUpdate(this.candles, replace, candle, this.kPeriod);
 
-    if (this.candles.length === this.n) {
+    if (this.candles.length === this.kPeriod) {
       const highest = Math.max(...this.candles.map(candle => candle.high));
       const lowest = Math.min(...this.candles.map(candle => candle.low));
       const divisor = highest - lowest;
       let fastK = (candle.close - lowest) * 100;
       // Prevent division by zero
       fastK = fastK / (divisor === 0 ? 1 : divisor);
-      const stochK = this.#periodM.update(fastK, replace); // (stoch_k, %k)
-      const stochD = stochK && this.#periodP.update(stochK, replace); // (stoch_d, %d)
+      const stochK = this.#smoothK.update(fastK, replace); // (stoch_k, %k)
+      const stochD = stochK && this.#smoothD.update(stochK, replace); // (stoch_d, %d)
 
       if (stochK !== null && stochD !== null) {
         if (replace) {

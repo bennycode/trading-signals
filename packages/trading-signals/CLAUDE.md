@@ -179,7 +179,7 @@ When testing the `replace()` method, verify bidirectional replacement by testing
 ```ts
 // ❌ Bad: Only tests that replace changes the value
 it('can replace recently added values', () => {
-  const stoch = new StochasticOscillator(5, 3, 3);
+  const stoch = new StochasticOscillator({dPeriod: 3, kPeriod: 5, kSlowingPeriod: 3});
 
   for (let i = 0; i < 9; i++) {
     stoch.add({close: 50 + i, high: 100, low: 10});
@@ -197,7 +197,7 @@ it('can replace recently added values', () => {
 
 // ✅ Good: Tests replacement and restoration to verify replace functionality
 it('replaces the most recently added value', () => {
-  const stoch = new StochasticOscillator(5, 3, 3);
+  const stoch = new StochasticOscillator({dPeriod: 3, kPeriod: 5, kSlowingPeriod: 3});
 
   for (let i = 0; i < 9; i++) {
     stoch.add({close: 50 + i, high: 100, low: 10});
