@@ -1,6 +1,7 @@
 import {SMA} from '../../trend/SMA/SMA.js';
 import type {HighLowClose} from '../../base/Candle.type.js';
 import {TradingSignal, TrendIndicatorSeries} from '../../base/Indicator.js';
+import type {SignalThresholds} from '../../base/SignalThresholds.type.js';
 import {pushUpdate} from '../../util/index.js';
 import {MAD} from '../../volatility/MAD/MAD.js';
 
@@ -31,13 +32,17 @@ import {MAD} from '../../volatility/MAD/MAD.js';
 export class CCI extends TrendIndicatorSeries<HighLowClose<number>> {
   readonly #sma: SMA;
   readonly #typicalPrices: number[];
+  readonly #overbought: number;
+  readonly #oversold: number;
   public readonly interval: number;
 
-  constructor(interval: number) {
+  constructor(interval: number, {overbought = 100, oversold = -100}: SignalThresholds = {}) {
     super();
     this.interval = interval;
     this.#sma = new SMA(this.interval);
     this.#typicalPrices = [];
+    this.#overbought = overbought;
+    this.#oversold = oversold;
   }
 
   override getRequiredInputs() {
@@ -67,8 +72,8 @@ export class CCI extends TrendIndicatorSeries<HighLowClose<number>> {
 
   protected calculateSignalState(result?: number | null | undefined) {
     const hasResult = result !== null && result !== undefined;
-    const isOversold = hasResult && result <= -100;
-    const isOverbought = hasResult && result >= 100;
+    const isOversold = hasResult && result <= this.#oversold;
+    const isOverbought = hasResult && result >= this.#overbought;
 
     switch (true) {
       case !hasResult:

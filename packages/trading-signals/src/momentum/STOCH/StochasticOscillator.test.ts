@@ -13,7 +13,7 @@ describe('StochasticOscillator', () => {
       const stochKs = ['77.39', '83.13', '84.87', '88.36', '95.25', '96.74', '91.09'] as const;
       const stochDs = ['75.70', '78.01', '81.79', '85.45', '89.49', '93.45', '94.36'] as const;
 
-      const stoch = new StochasticOscillator(5, 3, 3);
+      const stoch = new StochasticOscillator({dPeriod: 3, kPeriod: 5, kSlowingPeriod: 3});
       const offset = stoch.getRequiredInputs() - 1;
 
       candles.forEach((candle, i) => {
@@ -34,7 +34,7 @@ describe('StochasticOscillator', () => {
 
   describe('replace', () => {
     it('replaces the most recently added value', () => {
-      const stoch = new StochasticOscillator(5, 3, 3);
+      const stoch = new StochasticOscillator({dPeriod: 3, kPeriod: 5, kSlowingPeriod: 3});
 
       // Add enough data to make it stable
       for (let i = 0; i < 9; i++) {
@@ -62,7 +62,7 @@ describe('StochasticOscillator', () => {
 
   describe('getResultOrThrow', () => {
     it('throws an error when there is not enough input data', () => {
-      const stoch = new StochasticOscillator(5, 3, 3);
+      const stoch = new StochasticOscillator({dPeriod: 3, kPeriod: 5, kSlowingPeriod: 3});
 
       stoch.add({close: 1, high: 1, low: 1});
       stoch.add({close: 1, high: 2, low: 1});
@@ -80,7 +80,7 @@ describe('StochasticOscillator', () => {
     });
 
     it('prevents division by zero errors when highest high and lowest low have the same value', () => {
-      const stoch = new StochasticOscillator(5, 3, 3);
+      const stoch = new StochasticOscillator({dPeriod: 3, kPeriod: 5, kSlowingPeriod: 3});
       stoch.updates(
         [
           {close: 100, high: 100, low: 100},
@@ -102,13 +102,27 @@ describe('StochasticOscillator', () => {
 
   describe('getSignal', () => {
     it('returns UNKNOWN when there is no result', () => {
-      const stoch = new StochasticOscillator(5, 3, 3);
+      const stoch = new StochasticOscillator({dPeriod: 3, kPeriod: 5, kSlowingPeriod: 3});
       const signal = stoch.getSignal();
       expect(signal.state).toBe(TradingSignal.UNKNOWN);
     });
 
+    it('respects custom overbought and oversold thresholds', () => {
+      const sensitiveBull = new StochasticOscillator({dPeriod: 3, kPeriod: 5, kSlowingPeriod: 3}, {overbought: 40});
+      const sensitiveBear = new StochasticOscillator({dPeriod: 3, kPeriod: 5, kSlowingPeriod: 3}, {oversold: 50});
+
+      for (let i = 0; i < 9; i++) {
+        sensitiveBull.add({close: 50, high: 100, low: 10});
+        sensitiveBear.add({close: 50, high: 100, low: 10});
+      }
+
+      expect(sensitiveBull.getResultOrThrow().stochK.toFixed(2)).toBe('44.44');
+      expect(sensitiveBull.getSignal().state).toBe(TradingSignal.BULLISH);
+      expect(sensitiveBear.getSignal().state).toBe(TradingSignal.BEARISH);
+    });
+
     it('returns OVERSOLD when stochK <= 20', () => {
-      const stoch = new StochasticOscillator(5, 3, 3);
+      const stoch = new StochasticOscillator({dPeriod: 3, kPeriod: 5, kSlowingPeriod: 3});
       // Build data that creates oversold condition
       for (let i = 0; i < 9; i++) {
         stoch.add({close: 20, high: 100, low: 10});
@@ -119,7 +133,7 @@ describe('StochasticOscillator', () => {
     });
 
     it('returns OVERBOUGHT when stochK >= 80', () => {
-      const stoch = new StochasticOscillator(5, 3, 3);
+      const stoch = new StochasticOscillator({dPeriod: 3, kPeriod: 5, kSlowingPeriod: 3});
       // Build data that creates overbought condition
       for (let i = 0; i < 9; i++) {
         stoch.add({close: 95, high: 100, low: 10});
@@ -130,7 +144,7 @@ describe('StochasticOscillator', () => {
     });
 
     it('returns NEUTRAL when stochK is between 20 and 80', () => {
-      const stoch = new StochasticOscillator(5, 3, 3);
+      const stoch = new StochasticOscillator({dPeriod: 3, kPeriod: 5, kSlowingPeriod: 3});
       // Build data that creates neutral condition
       for (let i = 0; i < 9; i++) {
         stoch.add({close: 50, high: 100, low: 10});

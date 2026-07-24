@@ -1,5 +1,6 @@
 import type {HighLowCloseVolume} from '../../base/Candle.type.js';
 import {TradingSignal, TrendIndicatorSeries} from '../../base/Indicator.js';
+import type {SignalThresholds} from '../../base/SignalThresholds.type.js';
 import {pushUpdate} from '../../util/pushUpdate.js';
 
 /**
@@ -19,20 +20,13 @@ import {pushUpdate} from '../../util/pushUpdate.js';
  * @see https://www.investopedia.com/terms/m/mfi.asp
  * @see https://tulipindicators.org/mfi
  */
-export type MFIThresholds = {
-  /** MFI value at or above which the market counts as overbought (default: 80) */
-  overbought?: number;
-  /** MFI value at or below which the market counts as oversold (default: 20) */
-  oversold?: number;
-};
-
 export class MFI extends TrendIndicatorSeries<HighLowCloseVolume<number>> {
   readonly #candles: HighLowCloseVolume<number>[] = [];
   readonly #overbought: number;
   readonly #oversold: number;
   public readonly interval: number;
 
-  constructor(interval: number, {overbought = 80, oversold = 20}: MFIThresholds = {}) {
+  constructor(interval: number, {overbought = 80, oversold = 20}: SignalThresholds = {}) {
     super();
     this.interval = interval;
     this.#overbought = overbought;

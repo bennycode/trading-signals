@@ -11,7 +11,7 @@ import {collectPriceData} from '../../utils/renderUtils';
 import type {IndicatorConfig} from '../../utils/types';
 
 const renderStochastic = (config: IndicatorConfig, selectedCandles: Candle[]) => {
-  const stoch = new StochasticOscillatorClass(14, 3, 3);
+  const stoch = new StochasticOscillatorClass({dPeriod: 3, kPeriod: 14, kSlowingPeriod: 3});
   const chartDataK: ChartDataPoint[] = [];
   const chartDataD: ChartDataPoint[] = [];
   const priceData: PriceData[] = [];
@@ -40,7 +40,8 @@ const renderStochastic = (config: IndicatorConfig, selectedCandles: Candle[]) =>
     <div className="space-y-6">
       <div>
         <h2 className="text-2xl font-bold text-white mb-2 select-text">
-          StochasticOscillator({stoch.n}, {stoch.m}, {stoch.p}) / Required Inputs: {stoch.getRequiredInputs()}
+          StochasticOscillator({stoch.kPeriod}, {stoch.kSlowingPeriod}, {stoch.dPeriod}) / Required Inputs:{' '}
+          {stoch.getRequiredInputs()}
         </h2>
         <p className="text-slate-300 select-text">{config.description}</p>
         <p className="text-slate-400 text-sm mt-2 select-text">
@@ -142,7 +143,7 @@ const renderStochastic = (config: IndicatorConfig, selectedCandles: Candle[]) =>
 
 export const StochasticOscillator: IndicatorConfig = {
   color: '#ec4899',
-  createIndicator: () => new StochasticOscillatorClass(14, 3, 3),
+  createIndicator: () => new StochasticOscillatorClass({dPeriod: 3, kPeriod: 14, kSlowingPeriod: 3}),
   customRender: renderStochastic,
   description: 'Stochastic Oscillator',
   id: 'stoch',

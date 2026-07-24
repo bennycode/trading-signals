@@ -1,5 +1,6 @@
 import {TradingSignal, TrendIndicatorSeries} from '../../base/Indicator.js';
 import type {HighLowClose} from '../../base/Candle.type.js';
+import type {SignalThresholds} from '../../base/SignalThresholds.type.js';
 import {pushUpdate} from '../../util/pushUpdate.js';
 
 /**
@@ -22,10 +23,14 @@ export class WilliamsR extends TrendIndicatorSeries<HighLowClose<number>> {
   public readonly candles: HighLowClose<number>[] = [];
 
   public readonly interval: number;
+  readonly #overbought: number;
+  readonly #oversold: number;
 
-  constructor(interval: number) {
+  constructor(interval: number, {overbought = -20, oversold = -80}: SignalThresholds = {}) {
     super();
     this.interval = interval;
+    this.#overbought = overbought;
+    this.#oversold = oversold;
   }
 
   override getRequiredInputs() {
@@ -64,8 +69,8 @@ export class WilliamsR extends TrendIndicatorSeries<HighLowClose<number>> {
 
   protected calculateSignalState(result?: number | null | undefined) {
     const hasResult = result !== null && result !== undefined;
-    const isOverbought = hasResult && result >= -20;
-    const isOversold = hasResult && result <= -80;
+    const isOverbought = hasResult && result >= this.#overbought;
+    const isOversold = hasResult && result <= this.#oversold;
 
     switch (true) {
       case !hasResult:
