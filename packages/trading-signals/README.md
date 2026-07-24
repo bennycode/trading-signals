@@ -193,6 +193,7 @@ console.log(signal.hasChanged); // true if the signal state changed from the pre
 1. Ease of Movement (EMV)
 1. Exponential Moving Average (EMA)
 1. Efficiency Ratio (ER)
+1. Hull Moving Average (HMA)
 1. Interquartile Range (IQR)
 1. Linear Regression (LINREG)
 1. Mean Absolute Deviation (MAD)
