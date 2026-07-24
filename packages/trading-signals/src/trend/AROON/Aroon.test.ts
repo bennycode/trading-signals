@@ -58,12 +58,10 @@ describe('Aroon', () => {
       const originalValue = {high: 90.0, low: 89.0} as const;
       const replacedValue = {high: 82.0, low: 79.0} as const;
 
-      // New highest high on the most recent candle, lowest low 5 candles ago
       const originalResult = aroon.add(originalValue);
 
       expect(originalResult).toEqual({aroonDown: 0, aroonUp: 100});
 
-      // New lowest low on the most recent candle, highest high 2 candles ago
       const replacedResult = aroon.replace(replacedValue);
 
       expect(replacedResult).toEqual({aroonDown: 100, aroonUp: 60});
