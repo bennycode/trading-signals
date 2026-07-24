@@ -196,6 +196,7 @@ console.log(signal.hasChanged); // true if the signal state changed from the pre
 1. Efficiency Ratio (ER)
 1. Hull Moving Average (HMA)
 1. Interquartile Range (IQR)
+1. Kaufman's Adaptive Moving Average (KAMA)
 1. Linear Regression (LINREG)
 1. Mean Absolute Deviation (MAD)
 1. Momentum (MOM / MTM)
