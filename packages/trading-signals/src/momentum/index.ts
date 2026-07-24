@@ -13,4 +13,5 @@ export * from './RSI/RSI.js';
 export * from './STOCH/StochasticOscillator.js';
 export * from './STOCHRSI/StochasticRSI.js';
 export * from './TDS/TDS.js';
+export * from './ULTOSC/UltimateOscillator.js';
 export * from './WILLR/WilliamsR.js';
