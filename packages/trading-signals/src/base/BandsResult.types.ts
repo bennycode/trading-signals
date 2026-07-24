@@ -1,5 +1,5 @@
-export interface BandsResult {
+export type BandsResult = {
   lower: number;
   middle: number;
   upper: number;
-}
+};
