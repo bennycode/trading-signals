@@ -65,6 +65,7 @@ describe('Aroon', () => {
       const replacedResult = aroonWithReplace.add(wrong);
 
       expect(replacedResult?.aroonDown).not.toBe(originalResult?.aroonDown);
+      expect(replacedResult?.aroonUp).not.toBe(originalResult?.aroonUp);
 
       const restoredResult = aroonWithReplace.replace(correct);
 
@@ -90,6 +91,22 @@ describe('Aroon', () => {
 
       expect(aroon.isStable).toBe(true);
       expect(aroon.getRequiredInputs()).toBe(interval + 1);
+    });
+
+    it('uses the most recent occurrence when the highest high or lowest low is tied', () => {
+      const aroon = new Aroon(5);
+      const candlesWithTies = [
+        {high: 10, low: 5},
+        {high: 12, low: 3},
+        {high: 11, low: 4},
+        {high: 12, low: 3},
+        {high: 11, low: 4},
+        {high: 10, low: 5},
+      ] as const;
+
+      aroon.updates(candlesWithTies, false);
+
+      expect(aroon.getResultOrThrow()).toEqual({aroonDown: 60, aroonUp: 60});
     });
 
     it('throws an error when there is not enough input data', () => {
