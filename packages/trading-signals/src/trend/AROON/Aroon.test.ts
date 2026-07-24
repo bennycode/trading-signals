@@ -67,6 +67,7 @@ describe('Aroon', () => {
       const replacedResult = aroon.replace(replacedValue);
 
       expect(replacedResult).toEqual({aroonDown: 100, aroonUp: 60});
+      expect(replacedResult).not.toEqual(originalResult);
 
       const restoredResult = aroon.replace(originalValue);
 
