@@ -131,6 +131,24 @@ describe('MFI', () => {
       expect(mfi.getSignal().state).toBe(TradingSignal.BEARISH);
     });
 
+    it('respects custom overbought and oversold thresholds', () => {
+      const strictMfi = new MFI(5, {overbought: 90});
+      const looseMfi = new MFI(5, {oversold: 55});
+      const flatCandle = {close: 50, high: 51, low: 49, volume: 1_000_000} as const;
+
+      strictMfi.updates(candles, false);
+
+      expect(strictMfi.getResultOrThrow().toFixed(3)).toBe('84.647');
+      expect(strictMfi.getSignal().state).toBe(TradingSignal.SIDEWAYS);
+
+      for (let i = 0; i < 6; i++) {
+        looseMfi.add(flatCandle);
+      }
+
+      expect(looseMfi.getResultOrThrow()).toBe(50);
+      expect(looseMfi.getSignal().state).toBe(TradingSignal.BEARISH);
+    });
+
     it('returns SIDEWAYS when the MFI is between the oversold and overbought thresholds', () => {
       const mfi = new MFI(5);
       const flatCandle = {close: 50, high: 51, low: 49, volume: 1_000_000} as const;

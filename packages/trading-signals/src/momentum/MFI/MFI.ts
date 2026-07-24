@@ -12,19 +12,31 @@ import {pushUpdate} from '../../util/pushUpdate.js';
  * 100.
  *
  * Interpretation:
- * An MFI of 80 or above indicates an overbought condition, 20 or below indicates an oversold condition. Divergence
+ * An MFI of 80 or above indicates an overbought condition, 20 or below indicates an oversold condition (both
+ * thresholds can be customized via the constructor). Divergence
  * between MFI and price (e.g. price makes a new high while MFI does not) can signal an upcoming reversal.
  *
  * @see https://www.investopedia.com/terms/m/mfi.asp
  * @see https://tulipindicators.org/mfi
  */
+export type MFIThresholds = {
+  /** MFI value at or above which the market counts as overbought (default: 80) */
+  overbought?: number;
+  /** MFI value at or below which the market counts as oversold (default: 20) */
+  oversold?: number;
+};
+
 export class MFI extends TrendIndicatorSeries<HighLowCloseVolume<number>> {
   readonly #candles: HighLowCloseVolume<number>[] = [];
+  readonly #overbought: number;
+  readonly #oversold: number;
   public readonly interval: number;
 
-  constructor(interval: number) {
+  constructor(interval: number, {overbought = 80, oversold = 20}: MFIThresholds = {}) {
     super();
     this.interval = interval;
+    this.#overbought = overbought;
+    this.#oversold = oversold;
   }
 
   override getRequiredInputs() {
@@ -64,8 +76,8 @@ export class MFI extends TrendIndicatorSeries<HighLowCloseVolume<number>> {
 
   protected calculateSignalState(result: number | null | undefined) {
     const hasResult = result !== null && result !== undefined;
-    const isOversold = hasResult && result <= 20;
-    const isOverbought = hasResult && result >= 80;
+    const isOversold = hasResult && result <= this.#oversold;
+    const isOverbought = hasResult && result >= this.#overbought;
 
     switch (true) {
       case !hasResult:
