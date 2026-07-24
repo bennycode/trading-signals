@@ -4,19 +4,13 @@ import {TradingSignal} from '../../base/index.js';
 
 describe('TRIX', () => {
   /*
-   * Input data taken from the Tulip Indicators test suite:
+   * Test data verified with:
    * https://github.com/TulipCharts/tulipindicators/blob/v0.9.1/tests/untest.txt#L422-L424
-   *
-   * The expected values differ from Tulip's (0.492, 0.512) because Tulip divides the change by the
-   * CURRENT triple EMA while the textbook definition (TA-Lib, TradingView, StockCharts) divides by
-   * the PREVIOUS one:
-   * https://github.com/TulipCharts/tulipindicators/blob/v0.9.1/indicators/trix.c#L69
-   * This implementation follows the textbook definition.
    */
   const prices = [
     81.59, 81.06, 82.87, 83.0, 83.61, 83.15, 82.84, 83.99, 84.55, 84.36, 85.53, 86.54, 86.89, 87.77, 87.29,
   ] as const;
-  const expectations = ['0.495', '0.515'] as const;
+  const expectations = ['0.492', '0.512'] as const;
 
   describe('replace', () => {
     it('replaces the most recently added value', () => {
@@ -29,7 +23,7 @@ describe('TRIX', () => {
 
       const originalResult = trix.add(originalValue);
 
-      expect(originalResult?.toFixed(3)).toBe('0.609');
+      expect(originalResult?.toFixed(3)).toBe('0.605');
 
       const replacedResult = trix.replace(replacedValue);
 
@@ -43,7 +37,7 @@ describe('TRIX', () => {
   });
 
   describe('getResultOrThrow', () => {
-    it('calculates the percent change of the triple smoothed EMA', () => {
+    it('is compatible with results from Tulip Indicators (TI)', {tags: ['tulipindicators']}, () => {
       const interval = 5;
       const trix = new TRIX(interval);
       const offset = trix.getRequiredInputs() - 1;
@@ -60,7 +54,7 @@ describe('TRIX', () => {
       expect(trix.getRequiredInputs()).toBe(14);
     });
 
-    it('never produces a result when the triple EMA has no value to change from', () => {
+    it('never produces a result when the triple EMA is zero', () => {
       const trix = new TRIX(5);
 
       for (let i = 0; i < 14; i++) {

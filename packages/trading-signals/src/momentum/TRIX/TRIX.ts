@@ -10,9 +10,8 @@ import {EMA} from '../../trend/EMA/EMA.js';
  * considers significant — its zero-line crossings are used as trend-change signals with less whipsaw than raw
  * momentum oscillators.
  *
- * The percent change divides by the previous triple EMA (the textbook definition, as used by TA-Lib and most
- * charting platforms). Note: Tulip Indicators divides by the current value instead, so its reference values differ
- * slightly.
+ * The percent change divides by the current triple EMA, matching Tulip Indicators. Note: TA-Lib and most charting
+ * platforms divide by the previous value instead, so their readings differ slightly.
  *
  * @see https://www.investopedia.com/terms/t/trix.asp
  * @see https://tulipindicators.org/trix
@@ -56,8 +55,8 @@ export class TRIX extends TrendIndicatorSeries {
 
           this.#previousTripleEma = triple;
 
-          if (previous !== undefined && previous !== 0) {
-            return this.setResult((100 * (triple - previous)) / previous, replace);
+          if (previous !== undefined && triple !== 0) {
+            return this.setResult((100 * (triple - previous)) / triple, replace);
           }
         }
       }
