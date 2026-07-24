@@ -44,7 +44,7 @@ describe('MACD', () => {
   });
 
   describe('getResultOrThrow', () => {
-    it('is compatible with results from Tulip Indicators (TI)', () => {
+    it('is compatible with results from Tulip Indicators (TI)', {tags: ['tulipindicators']}, () => {
       /*
        * Test data verified with:
        * https://tulipindicators.org/macd

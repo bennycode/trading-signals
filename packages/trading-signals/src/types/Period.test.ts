@@ -47,7 +47,7 @@ describe('Period', () => {
   });
 
   describe('isStable', () => {
-    it('returns the lowest and highest value during the period when it is stable', () => {
+    it('returns the lowest and highest value during the period when it is stable', {tags: ['tulipindicators']}, () => {
       /*
        * Test data verified with:
        * https://tulipindicators.org/min

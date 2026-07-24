@@ -76,7 +76,7 @@ describe('WSMA', () => {
       expect(wsma.getResultOrThrow().toFixed(2)).toBe('18.97');
     });
 
-    it('is compatible with results from Tulip Indicators (TI)', () => {
+    it('is compatible with results from Tulip Indicators (TI)', {tags: ['tulipindicators']}, () => {
       /*
        * Test data verified with:
        * https://github.com/TulipCharts/tulipindicators/blob/v0.8.0/tests/atoz.txt#L299-L302

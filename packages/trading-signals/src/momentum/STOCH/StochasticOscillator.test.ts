@@ -5,7 +5,7 @@ import candles from '../../fixtures/STOCH/candles.json' with {type: 'json'};
 
 describe('StochasticOscillator', () => {
   describe('update', () => {
-    it('calculates the StochasticOscillator', () => {
+    it('calculates the StochasticOscillator', {tags: ['tulipindicators']}, () => {
       /*
        * Test data verified with:
        * https://tulipindicators.org/stoch

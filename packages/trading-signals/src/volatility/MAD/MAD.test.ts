@@ -58,7 +58,7 @@ describe('MAD', () => {
       expect(mad.getResultOrThrow()).toBe(3.6);
     });
 
-    it('is compatible with results from Tulip Indicators (TI)', () => {
+    it('is compatible with results from Tulip Indicators (TI)', {tags: ['tulipindicators']}, () => {
       const mad = new MAD(5);
       const offset = mad.getRequiredInputs() - 1;
 

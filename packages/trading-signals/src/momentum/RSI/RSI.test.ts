@@ -23,7 +23,7 @@ describe('RSI', () => {
   });
 
   describe('getResultOrThrow', () => {
-    it('calculates the relative strength index', () => {
+    it('calculates the relative strength index', {tags: ['tulipindicators']}, () => {
       /*
        * Test data verified with:
        * https://github.com/TulipCharts/tulipindicators/blob/v0.8.0/tests/untest.txt#L347-L349

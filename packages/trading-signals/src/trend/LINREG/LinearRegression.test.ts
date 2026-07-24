@@ -3,7 +3,7 @@ import {NotEnoughDataError} from '../../error/index.js';
 
 describe('LinearRegression', () => {
   describe('intercept (linregintercept)', () => {
-    it('calculates the intercept values correctly', () => {
+    it('calculates the intercept values correctly', {tags: ['tulipindicators']}, () => {
       /*
        * Test data verified with:
        * https://github.com/TulipCharts/tulipindicators/blob/v0.9.1/tests/untest.txt#L226
