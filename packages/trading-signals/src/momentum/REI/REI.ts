@@ -1,5 +1,6 @@
 import type {HighLowClose} from '../../base/Candle.type.js';
 import {TradingSignal, TrendIndicatorSeries} from '../../base/Indicator.js';
+import type {SignalThresholds} from '../../base/SignalThresholds.type.js';
 
 /**
  * Range Expansion Index (REI)
@@ -26,16 +27,20 @@ export class REI extends TrendIndicatorSeries<HighLowClose<number>> {
   readonly #closes: number[] = [];
 
   public readonly interval: number;
+  readonly #overbought: number;
+  readonly #oversold: number;
 
-  constructor(interval: number) {
+  constructor(interval: number, {overbought = 60, oversold = -60}: SignalThresholds = {}) {
     super();
     this.interval = interval;
+    this.#overbought = overbought;
+    this.#oversold = oversold;
   }
 
   protected calculateSignalState(result?: number | null | undefined) {
     const hasResult = result !== null && result !== undefined;
-    const isOverbought = hasResult && result > 60;
-    const isOversold = hasResult && result < -60;
+    const isOverbought = hasResult && result > this.#overbought;
+    const isOversold = hasResult && result < this.#oversold;
 
     switch (true) {
       case !hasResult:

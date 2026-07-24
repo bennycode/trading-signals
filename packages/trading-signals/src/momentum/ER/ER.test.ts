@@ -110,6 +110,22 @@ describe('ER', () => {
       expect(er.getSignal().state).toBe(TradingSignal.UNKNOWN);
     });
 
+    it('respects a custom trending threshold', () => {
+      const er = new ER(3, {trending: 0.8});
+      const candles = [
+        {close: 100, high: 101, low: 99},
+        {close: 103, high: 104, low: 102},
+        {close: 106, high: 107, low: 105},
+      ] as const;
+
+      for (const candle of candles) {
+        er.add(candle);
+      }
+
+      expect(er.getResultOrThrow()).toBe(0.75);
+      expect(er.getSignal().state).toBe(TradingSignal.SIDEWAYS);
+    });
+
     it('returns BULLISH when efficiency >= 0.5 (trending)', () => {
       const er = new ER(3);
 

@@ -1,4 +1,5 @@
 import {TradingSignal, TrendIndicatorSeries} from '../../base/Indicator.js';
+import type {SignalThresholds} from '../../base/SignalThresholds.type.js';
 import type {MovingAverage} from '../../trend/MA/MovingAverage.js';
 import type {MovingAverageTypes} from '../../trend/MA/MovingAverageTypes.js';
 import {pushUpdate} from '../../util/pushUpdate.js';
@@ -24,14 +25,22 @@ export class RSI extends TrendIndicatorSeries {
   readonly #avgGain: MovingAverage;
   readonly #avgLoss: MovingAverage;
   readonly #maxValue = 100;
+  readonly #overbought: number;
+  readonly #oversold: number;
 
   public readonly interval: number;
 
-  constructor(interval: number, SmoothingIndicator: MovingAverageTypes = WSMA) {
+  constructor(
+    interval: number,
+    SmoothingIndicator: MovingAverageTypes = WSMA,
+    {overbought = 70, oversold = 30}: SignalThresholds = {}
+  ) {
     super();
     this.interval = interval;
     this.#avgGain = new SmoothingIndicator(this.interval);
     this.#avgLoss = new SmoothingIndicator(this.interval);
+    this.#overbought = overbought;
+    this.#oversold = oversold;
   }
 
   override getRequiredInputs() {
@@ -72,8 +81,8 @@ export class RSI extends TrendIndicatorSeries {
 
   protected calculateSignalState(result: number | null | undefined) {
     const hasResult = result !== null && result !== undefined;
-    const isOversold = hasResult && result <= 30;
-    const isOverbought = hasResult && result >= 70;
+    const isOversold = hasResult && result <= this.#oversold;
+    const isOverbought = hasResult && result >= this.#overbought;
 
     switch (true) {
       case !hasResult:

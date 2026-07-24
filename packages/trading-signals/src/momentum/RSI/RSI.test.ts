@@ -1,6 +1,7 @@
 import {RSI} from './RSI.js';
 import {NotEnoughDataError} from '../../error/index.js';
 import {TradingSignal} from '../../base/index.js';
+import {WSMA} from '../../trend/WSMA/WSMA.js';
 
 describe('RSI', () => {
   describe('update', () => {
@@ -87,6 +88,24 @@ describe('RSI', () => {
       const rsi = new RSI(5);
       const signal = rsi.getSignal();
       expect(signal.state).toBe(TradingSignal.UNKNOWN);
+    });
+
+    it('respects custom overbought and oversold thresholds', () => {
+      const prices = [100, 100.5, 100, 99.5, 100, 100.5] as const;
+      const sensitiveBull = new RSI(5, WSMA, {overbought: 30});
+      const sensitiveBear = new RSI(5, WSMA, {oversold: 70});
+
+      for (const price of prices) {
+        sensitiveBull.add(price);
+        sensitiveBear.add(price);
+      }
+
+      const result = sensitiveBull.getResultOrThrow();
+
+      expect(result).toBeGreaterThan(30);
+      expect(result).toBeLessThan(70);
+      expect(sensitiveBull.getSignal().state).toBe(TradingSignal.BULLISH);
+      expect(sensitiveBear.getSignal().state).toBe(TradingSignal.BEARISH);
     });
 
     it('returns OVERSOLD when RSI <= 30', () => {

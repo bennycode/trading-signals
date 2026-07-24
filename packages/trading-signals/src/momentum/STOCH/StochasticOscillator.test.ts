@@ -107,6 +107,20 @@ describe('StochasticOscillator', () => {
       expect(signal.state).toBe(TradingSignal.UNKNOWN);
     });
 
+    it('respects custom overbought and oversold thresholds', () => {
+      const sensitiveBull = new StochasticOscillator(5, 3, 3, {overbought: 40});
+      const sensitiveBear = new StochasticOscillator(5, 3, 3, {oversold: 50});
+
+      for (let i = 0; i < 9; i++) {
+        sensitiveBull.add({close: 50, high: 100, low: 10});
+        sensitiveBear.add({close: 50, high: 100, low: 10});
+      }
+
+      expect(sensitiveBull.getResultOrThrow().stochK.toFixed(2)).toBe('44.44');
+      expect(sensitiveBull.getSignal().state).toBe(TradingSignal.BULLISH);
+      expect(sensitiveBear.getSignal().state).toBe(TradingSignal.BEARISH);
+    });
+
     it('returns OVERSOLD when stochK <= 20', () => {
       const stoch = new StochasticOscillator(5, 3, 3);
       // Build data that creates oversold condition

@@ -1,6 +1,7 @@
 import {SMA} from '../../trend/SMA/SMA.js';
 import type {HighLowClose} from '../../base/Candle.type.js';
 import {TechnicalIndicator, TradingSignal} from '../../base/Indicator.js';
+import type {SignalThresholds} from '../../base/SignalThresholds.type.js';
 import {pushUpdate} from '../../util/pushUpdate.js';
 
 export type StochasticResult = {
@@ -42,14 +43,18 @@ export class StochasticOscillator extends TechnicalIndicator<StochasticResult, H
   public n: number;
   public m: number;
   public p: number;
+  readonly #overbought: number;
+  readonly #oversold: number;
 
-  constructor(n: number, m: number, p: number) {
+  constructor(n: number, m: number, p: number, {overbought = 80, oversold = 20}: SignalThresholds = {}) {
     super();
     this.n = n;
     this.m = m;
     this.p = p;
     this.#periodM = new SMA(m);
     this.#periodP = new SMA(p);
+    this.#overbought = overbought;
+    this.#oversold = oversold;
   }
 
   override getRequiredInputs() {
@@ -88,8 +93,8 @@ export class StochasticOscillator extends TechnicalIndicator<StochasticResult, H
 
   protected calculateSignal(result?: StochasticResult | null | undefined) {
     const hasResult = result !== null && result !== undefined;
-    const isOversold = hasResult && result.stochK <= 20;
-    const isOverbought = hasResult && result.stochK >= 80;
+    const isOversold = hasResult && result.stochK <= this.#oversold;
+    const isOverbought = hasResult && result.stochK >= this.#overbought;
 
     switch (true) {
       case !hasResult:

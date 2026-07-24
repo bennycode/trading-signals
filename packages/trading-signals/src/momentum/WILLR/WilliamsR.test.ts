@@ -132,6 +132,16 @@ describe('WilliamsR', () => {
       expect(signal).toBe(TradingSignal.UNKNOWN);
     });
 
+    it('respects custom overbought and oversold thresholds', () => {
+      const willR = new WilliamsR(14, {overbought: -10, oversold: -90});
+      const calculateSignalState = willR['calculateSignalState'].bind(willR);
+
+      expect(calculateSignalState(-20)).toBe(TradingSignal.SIDEWAYS);
+      expect(calculateSignalState(-10)).toBe(TradingSignal.BULLISH);
+      expect(calculateSignalState(-80)).toBe(TradingSignal.SIDEWAYS);
+      expect(calculateSignalState(-90)).toBe(TradingSignal.BEARISH);
+    });
+
     it('returns OVERBOUGHT when Williams %R >= -20', () => {
       const willR = new WilliamsR(14);
       const calculateSignalState = willR['calculateSignalState'].bind(willR);
