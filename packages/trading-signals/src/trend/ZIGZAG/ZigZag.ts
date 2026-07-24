@@ -1,5 +1,5 @@
 import {IndicatorSeries} from '../../base/Indicator.js';
-import type {HighLow} from '../../base/Candle.types.js';
+import type {HighLow} from '../../base/Candle.type.js';
 
 export type ZigZagConfig = {
   /**

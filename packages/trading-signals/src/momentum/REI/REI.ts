@@ -1,4 +1,4 @@
-import type {HighLowClose} from '../../base/Candle.types.js';
+import type {HighLowClose} from '../../base/Candle.type.js';
 import {TradingSignal, TrendIndicatorSeries} from '../../base/Indicator.js';
 
 /**

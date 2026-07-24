@@ -1,4 +1,4 @@
-import type {HighLow} from '../../base/Candle.types.js';
+import type {HighLow} from '../../base/Candle.type.js';
 import {TechnicalIndicator} from '../../base/Indicator.js';
 import {pushUpdate} from '../../util/pushUpdate.js';
 

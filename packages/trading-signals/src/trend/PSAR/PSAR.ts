@@ -1,4 +1,4 @@
-import type {HighLow} from '../../base/Candle.types.js';
+import type {HighLow} from '../../base/Candle.type.js';
 import {IndicatorSeries} from '../../base/Indicator.js';
 
 export type PSARConfig = {

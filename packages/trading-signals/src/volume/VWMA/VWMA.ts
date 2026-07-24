@@ -1,4 +1,4 @@
-import type {HighLowCloseVolume} from '../../base/Candle.types.js';
+import type {HighLowCloseVolume} from '../../base/Candle.type.js';
 import {TradingSignal, TrendIndicatorSeries} from '../../base/Indicator.js';
 import type {MovingAverage} from '../../trend/MA/MovingAverage.js';
 import type {MovingAverageTypes} from '../../trend/MA/MovingAverageTypes.js';

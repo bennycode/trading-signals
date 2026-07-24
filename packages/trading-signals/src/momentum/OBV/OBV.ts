@@ -1,4 +1,4 @@
-import type {OpenHighLowCloseVolume} from '../../base/Candle.types.js';
+import type {OpenHighLowCloseVolume} from '../../base/Candle.type.js';
 import {TrendIndicatorSeries, TradingSignal} from '../../base/Indicator.js';
 import {pushUpdate} from '../../util/pushUpdate.js';
 

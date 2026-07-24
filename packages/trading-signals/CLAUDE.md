@@ -210,6 +210,28 @@ override update(candle: HighLowClose<number>, replace: boolean) {
 }
 ```
 
+Use a closed `type` alias for data shapes (indicator results, candle types). Reserve `interface` for contracts that classes `implement`. Standalone files holding only type definitions carry the `.type.ts` suffix (singular, like `.test.ts`), e.g. `src/base/Candle.type.ts`.
+
+```ts
+// ❌ Bad: a result shape is a fixed data contract, not an extension point
+export interface AroonResult {
+  aroonDown: number;
+  aroonUp: number;
+}
+
+// ✅ Good: closed type alias
+export type AroonResult = {
+  aroonDown: number;
+  aroonUp: number;
+};
+
+// ✅ Good: interface for a contract that classes implement
+interface Indicator<Result, Input> {
+  isStable: boolean;
+  add(input: Input): Result | null;
+}
+```
+
 # Adding a New Indicator
 
 Reference implementation: [PR #1212 (Aroon)](https://github.com/bennycode/trading-signals/pull/1212) shows all steps end to end.
@@ -218,7 +240,7 @@ Reference implementation: [PR #1212 (Aroon)](https://github.com/bennycode/tradin
 2. **Extend the right base class** (`src/base/Indicator.ts`):
    - Single-number result → `IndicatorSeries` (or `TrendIndicatorSeries` for signal tracking). Use `setResult()`.
    - Multi-value result (e.g. `{aroonUp, aroonDown}`) → `TechnicalIndicator<Result, Input>`. Export the result interface. Here `this.result` is assigned directly — `setResult()` only exists on `IndicatorSeries`.
-3. **Use shared building blocks** — input types from `src/base/Candle.types.ts` (`HighLow`, `HighLowClose`, …), `pushUpdate()` from `src/util/` for the sliding candle window, and existing indicators (SMA, EMA, ATR, …) as internal components instead of reimplementing them.
+3. **Use shared building blocks** — input types from `src/base/Candle.type.ts` (`HighLow`, `HighLowClose`, …), `pushUpdate()` from `src/util/` for the sliding candle window, and existing indicators (SMA, EMA, ATR, …) as internal components instead of reimplementing them.
 4. **Implement the contract** — `getRequiredInputs()` returns the warm-up count; `update(input, replace)` returns the result or `null` during warm-up. `replace()` must be correct: if the result is a pure function of the candle window, `pushUpdate()` handles it; if the indicator carries smoothing state, restore the previous state on replace.
 5. **No constructor parameter properties** — the codebase compiles with `erasableSyntaxOnly`, so declare fields explicitly and assign them in the constructor.
 6. **Write the class JSDoc with intent** — indicator name and code, type (Trend/Momentum/…), what it tells a trader, and `@see` links to sources (e.g. Investopedia, Tulip Indicators).

@@ -2,7 +2,7 @@ import {IndicatorSeries} from '../../base/Indicator.js';
 import type {MovingAverage} from '../../trend/MA/MovingAverage.js';
 import type {MovingAverageTypes} from '../../trend/MA/MovingAverageTypes.js';
 import {TR} from '../TR/TR.js';
-import type {HighLowClose} from '../../base/Candle.types.js';
+import type {HighLowClose} from '../../base/Candle.type.js';
 import {WSMA} from '../../trend/WSMA/WSMA.js';
 
 /**
