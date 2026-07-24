@@ -217,6 +217,7 @@ console.log(signal.hasChanged); // true if the signal state changed from the pre
 1. Stochastic RSI (STOCHRSI)
 1. Tom Demark's Sequential Indicator (TDS)
 1. Triple Exponential Moving Average (TEMA)
+1. Triple Smoothed EMA Rate of Change (TRIX)
 1. True Range (TR)
 1. Ultimate Oscillator (ULTOSC)
 1. Volume Rate of Change (VROC)
