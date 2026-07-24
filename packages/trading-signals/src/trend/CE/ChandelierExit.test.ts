@@ -5,7 +5,7 @@ describe('ChandelierExit', () => {
   /*
    * Expected values computed with an independent implementation of the StockCharts formula
    * (highest high − multiplier × ATR / lowest low + multiplier × ATR, Wilder's ATR):
-   * https://school.stockcharts.com/doku.php?id=technical_indicators:chandelier_exit
+   * https://chartschool.stockcharts.com/table-of-contents/technical-indicators-and-overlays/technical-overlays/chandelier-exit
    */
   const candles = [
     {close: 81.59, high: 82.15, low: 81.29},

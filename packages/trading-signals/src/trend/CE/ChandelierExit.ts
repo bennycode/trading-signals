@@ -30,7 +30,7 @@ export type ChandelierExitConfig = {
  * short positions.
  *
  * @see https://corporatefinanceinstitute.com/resources/equities/chandelier-exit/
- * @see https://school.stockcharts.com/doku.php?id=technical_indicators:chandelier_exit
+ * @see https://chartschool.stockcharts.com/table-of-contents/technical-indicators-and-overlays/technical-overlays/chandelier-exit
  */
 export class ChandelierExit extends TechnicalIndicator<ChandelierExitResult, HighLowClose<number>> {
   readonly #atr: ATR;
