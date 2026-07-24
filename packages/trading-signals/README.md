@@ -201,6 +201,7 @@ console.log(signal.hasChanged); // true if the signal state changed from the pre
 1. Momentum (MOM / MTM)
 1. Money Flow Index (MFI)
 1. Moving Average Convergence Divergence (MACD)
+1. Normalized Average True Range (NATR)
 1. On-Balance Volume (OBV)
 1. Parabolic SAR (PSAR)
 1. Price Volume Trend (PVT)
