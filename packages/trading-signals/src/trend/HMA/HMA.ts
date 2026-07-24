@@ -12,7 +12,7 @@ import {WMA} from '../WMA/WMA.js';
  *
  * The half and square-root periods are truncated to integers, matching Tulip Indicators.
  *
- * @see https://alanhull.com/hull-moving-average
+ * @see https://alanhull.com/the-hull-moving-average/
  * @see https://tulipindicators.org/hma
  */
 export class HMA extends MovingAverage {
