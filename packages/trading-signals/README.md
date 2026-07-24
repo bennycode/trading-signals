@@ -197,6 +197,7 @@ console.log(signal.hasChanged); // true if the signal state changed from the pre
 1. Linear Regression (LINREG)
 1. Mean Absolute Deviation (MAD)
 1. Momentum (MOM / MTM)
+1. Money Flow Index (MFI)
 1. Moving Average Convergence Divergence (MACD)
 1. On-Balance Volume (OBV)
 1. Parabolic SAR (PSAR)
