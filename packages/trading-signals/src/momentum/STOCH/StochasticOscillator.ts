@@ -3,12 +3,12 @@ import type {HighLowClose} from '../../base/Candle.types.js';
 import {TechnicalIndicator, TradingSignal} from '../../base/Indicator.js';
 import {pushUpdate} from '../../util/pushUpdate.js';
 
-export interface StochasticResult {
+export type StochasticResult = {
   /** Slow stochastic indicator (%D) */
   stochD: number;
   /** Fast stochastic indicator (%K) */
   stochK: number;
-}
+};
 
 /**
  * Stochastic Oscillator (STOCH)
