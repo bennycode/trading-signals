@@ -243,10 +243,12 @@ Reference implementation: [PR #1212 (Aroon)](https://github.com/bennycode/tradin
 3. **Use shared building blocks** — input types from `src/base/Candle.type.ts` (`HighLow`, `HighLowClose`, …), `pushUpdate()` from `src/util/` for the sliding candle window, and existing indicators (SMA, EMA, ATR, …) as internal components instead of reimplementing them.
 4. **Implement the contract** — `getRequiredInputs()` returns the warm-up count; `update(input, replace)` returns the result or `null` during warm-up. `replace()` must be correct: if the result is a pure function of the candle window, `pushUpdate()` handles it; if the indicator carries smoothing state, restore the previous state on replace.
 5. **No constructor parameter properties** — the codebase compiles with `erasableSyntaxOnly`, so declare fields explicitly and assign them in the constructor.
-6. **Write the class JSDoc with intent** — indicator name and code, type (Trend/Momentum/…), what it tells a trader, and `@see` links to sources (e.g. Investopedia, Tulip Indicators).
-7. **Export it** — add the class to the category `index.ts` (alphabetical order) and add the indicator to the "Supported Technical Indicators" list in `README.md` (alphabetical order).
-8. **Write co-located tests** (`<Name>.test.ts`, 100% coverage is enforced):
+6. **Write the class JSDoc with intent** — indicator name and code, type (Trend/Momentum/…), what it tells a trader, and `@see` links to sources (e.g. Investopedia, Tulip Indicators). When the indicator has an established interpretation (e.g. overbought/oversold thresholds), state it in an "Interpretation:" paragraph.
+7. **Encode the interpretation as a signal** — if the JSDoc claims an interpretation, implement it in `calculateSignalState` (via `TrendIndicatorSeries`, or a `getSignal()` like `StochasticOscillator` for multi-value results) so the claim is executable, not decorative. Convention: `TradingSignal` reports the direction of current pressure, not trade advice — overbought → `BULLISH`, oversold → `BEARISH` (see RSI, MFI, STOCH). Neutral or warm-up states must map to `SIDEWAYS` / `UNKNOWN` so a dead market never fabricates a directional signal.
+8. **Export it** — add the class to the category `index.ts` (alphabetical order) and add the indicator to the "Supported Technical Indicators" list in `README.md` (alphabetical order).
+9. **Write co-located tests** (`<Name>.test.ts`, 100% coverage is enforced):
    - Verify results against external reference data. Prefer [Tulip Indicators test data](https://github.com/TulipCharts/tulipindicators/blob/v0.9.1/tests/untest.txt), link the exact lines in a comment, and tag the test with `{tags: ['tulipindicators']}`.
    - Add a single-instance bidirectional `replace()` test asserting exact values for the original, replaced and restored results.
    - Add a `NotEnoughDataError` test for `getResultOrThrow()` before warm-up.
-   - Cover behavioral edge cases so a mutated comparison operator fails the suite (e.g. tie-breaking of equal extremes in Aroon).
+   - Cover every signal state the indicator can emit (`UNKNOWN`, `BULLISH`, `BEARISH`, `SIDEWAYS`) with its own test.
+   - Cover behavioral edge cases so a mutated comparison operator fails the suite (e.g. tie-breaking of equal extremes in Aroon, zero total money flow in MFI).
