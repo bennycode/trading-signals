@@ -33,7 +33,7 @@ describe('AO', () => {
   ] as const;
 
   describe('getResultOrThrow', () => {
-    it('works with an interval setting of 5/34', () => {
+    it('works with an interval setting of 5/34', {tags: ['tulipindicators']}, () => {
       const shortInterval = 5;
       const longInterval = 34;
 

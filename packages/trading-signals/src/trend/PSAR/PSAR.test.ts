@@ -25,7 +25,7 @@ describe('PSAR', () => {
     {date: '2005-11-21', high: 87.87, low: 87.01, psar: 85.76},
   ] as const;
 
-  it('calculates PSAR correctly', () => {
+  it('calculates PSAR correctly', {tags: ['tulipindicators']}, () => {
     const psar = new PSAR({accelerationMax: 0.2, accelerationStep: 0.02});
 
     const results = testData.map(candle => psar.add({high: candle.high, low: candle.low}));

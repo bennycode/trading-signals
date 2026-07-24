@@ -4,7 +4,7 @@ import {TradingSignal} from '../../types/Indicator.js';
 
 describe('ROC', () => {
   describe('getResultOrThrow', () => {
-    it('identifies an up-trending asset by a positive ROC', () => {
+    it('identifies an up-trending asset by a positive ROC', {tags: ['tulipindicators']}, () => {
       /*
        * Test data verified with:
        * https://tulipindicators.org/roc

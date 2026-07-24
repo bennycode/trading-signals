@@ -19,7 +19,7 @@ describe('StochasticRSI', () => {
   });
 
   describe('getResultOrThrow', () => {
-    it('calculates the Stochastic RSI', () => {
+    it('calculates the Stochastic RSI', {tags: ['tulipindicators']}, () => {
       /*
        * Test data verified with:
        * https://github.com/TulipCharts/tulipindicators/blob/0bc8dfc46cfc89366bf8cef6dfad1fb6f81b3b7b/tests/untest.txt#L382-L384

@@ -51,7 +51,7 @@ describe('ADX', () => {
   });
 
   describe('getResultOrThrow', () => {
-    it('calculates the Average Directional Index (ADX)', () => {
+    it('calculates the Average Directional Index (ADX)', {tags: ['tulipindicators']}, () => {
       const interval = 5;
       const adx = new ADX(interval);
       const offset = adx.getRequiredInputs() - 1;

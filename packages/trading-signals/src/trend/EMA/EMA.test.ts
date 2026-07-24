@@ -81,7 +81,7 @@ describe('EMA', () => {
   });
 
   describe('getResultOrThrow', () => {
-    it('calculates the Exponential Moving Average over a period of 5', () => {
+    it('calculates the Exponential Moving Average over a period of 5', {tags: ['tulipindicators']}, () => {
       const interval = 5;
       const ema = new EMA(interval);
 

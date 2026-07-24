@@ -62,7 +62,7 @@ describe('CCI', () => {
   });
 
   describe('getResultOrThrow', () => {
-    it('calculates the Commodity Channel Index (CCI)', () => {
+    it('calculates the Commodity Channel Index (CCI)', {tags: ['tulipindicators']}, () => {
       const interval = 5;
       const cci = new CCI(interval);
       const offset = cci.getRequiredInputs() - 1;
