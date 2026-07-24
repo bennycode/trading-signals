@@ -1,6 +1,7 @@
 import {ADX} from './ADX.demo';
 import {Aroon} from './Aroon.demo';
 import {BreakoutBarLow} from './BreakoutBarLow.demo';
+import {ChandelierExit} from './ChandelierExit.demo';
 import {DEMA} from './DEMA.demo';
 import {HMA} from './HMA.demo';
 import {KAMA} from './KAMA.demo';
@@ -30,6 +31,7 @@ export const indicators: IndicatorConfig[] = [
   HMA,
   KAMA,
   Aroon,
+  ChandelierExit,
   WMA,
   RMA,
   WSMA,
