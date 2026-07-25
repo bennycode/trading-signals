@@ -204,12 +204,6 @@ It is very important to do your own analysis before making any investment based 
 
 [![Benny Neugebauer on Stack Exchange][stack_exchange_bennycode_badge]][stack_exchange_bennycode_url]
 
-## ⭐️ Become a TypeScript rockstar! ⭐️
-
-This package was built by Benny Neugebauer. Checkout my [**TypeScript course**](https://typescript.tv/) to become a coding rockstar!
-
-[<img src="https://raw.githubusercontent.com/bennycode/trading-signals/main/packages/trading-signals/tstv.png">](https://typescript.tv/)
-
 [stack_exchange_bennycode_badge]: https://stackexchange.com/users/flair/203782.png?theme=default
 [stack_exchange_bennycode_url]: https://stackexchange.com/users/203782/benny-neugebauer?tab=accounts
 
