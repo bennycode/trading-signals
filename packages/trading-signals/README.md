@@ -22,6 +22,76 @@ All indicators can be updated over time by streaming data (prices or [candles](h
 - **Zero Runtime Dependencies:** Minimal bundle size
 - **Type Safety:** Full TypeScript with strict mode
 
+## Supported Technical Indicators
+
+1. Acceleration Bands (ABANDS)
+1. Accelerator Oscillator (AC)
+1. Accumulation/Distribution (AD)
+1. Aroon (AROON)
+1. Average Directional Index (ADX)
+1. Average True Range (ATR)
+1. Awesome Oscillator (AO)
+1. Bollinger Bands (BBANDS)
+1. Bollinger Bands Width (BBW)
+1. Center of Gravity (CG)
+1. Chaikin Money Flow (CMF)
+1. Chaikin Oscillator (ADOSC)
+1. Chande Momentum Oscillator (CMO)
+1. Chandelier Exit (CE)
+1. Commodity Channel Index (CCI)
+1. Directional Movement Index (DMI / DX)
+1. Double Exponential Moving Average (DEMA)
+1. Dual Moving Average (DMA)
+1. Ease of Movement (EMV)
+1. Exponential Moving Average (EMA)
+1. Efficiency Ratio (ER)
+1. Hull Moving Average (HMA)
+1. Interquartile Range (IQR)
+1. Kaufman's Adaptive Moving Average (KAMA)
+1. Linear Regression (LINREG)
+1. Mean Absolute Deviation (MAD)
+1. Momentum (MOM / MTM)
+1. Money Flow Index (MFI)
+1. Moving Average Convergence Divergence (MACD)
+1. Normalized Average True Range (NATR)
+1. On-Balance Volume (OBV)
+1. Parabolic SAR (PSAR)
+1. Percentage Price Oscillator (PPO)
+1. Price Volume Trend (PVT)
+1. Range Expansion Index (REI)
+1. Rate-of-Change (ROC)
+1. Relative Moving Average (RMA)
+1. Relative Strength Index (RSI)
+1. Relative Volume (RVOL)
+1. Simple Moving Average (SMA)
+1. Spencer's 15-Point Moving Average (SMA15)
+1. Stochastic Oscillator (STOCH)
+1. Stochastic RSI (STOCHRSI)
+1. Tom Demark's Sequential Indicator (TDS)
+1. Triple Exponential Moving Average (TEMA)
+1. Triple Smoothed EMA Rate of Change (TRIX)
+1. True Range (TR)
+1. Ultimate Oscillator (ULTOSC)
+1. Volume Rate of Change (VROC)
+1. Volume-Weighted Average Price (VWAP)
+1. Volume Weighted Moving Average (VWMA)
+1. Weighted Moving Average (WMA)
+1. Wilder's Smoothed Moving Average (WSMA / WWS / SMMA / MEMA)
+1. Williams %R (WILLR)
+1. Zig Zag Indicator (ZigZag)
+
+Utility Methods:
+
+1. Average / Mean
+1. Grid Sizing (for [grid trading bots](https://b2broker.com/news/understanding-grid-trading-purpose-pros-cons/))
+1. Maximum
+1. Median
+1. Minimum
+1. Quartile
+1. Standard Deviation
+1. Streaks
+1. Weekday
+
 ## Installation
 
 ```bash
@@ -201,76 +271,6 @@ console.log(signal.hasChanged); // true if the signal state changed from the pre
 
 - Indicators: Have no upper or lower limits
 - Oscillators: Move within a fixed range (e.g. 0-100, –1 to +1)
-
-## Supported Technical Indicators
-
-1. Acceleration Bands (ABANDS)
-1. Accelerator Oscillator (AC)
-1. Accumulation/Distribution (AD)
-1. Aroon (AROON)
-1. Average Directional Index (ADX)
-1. Average True Range (ATR)
-1. Awesome Oscillator (AO)
-1. Bollinger Bands (BBANDS)
-1. Bollinger Bands Width (BBW)
-1. Center of Gravity (CG)
-1. Chaikin Money Flow (CMF)
-1. Chaikin Oscillator (ADOSC)
-1. Chande Momentum Oscillator (CMO)
-1. Chandelier Exit (CE)
-1. Commodity Channel Index (CCI)
-1. Directional Movement Index (DMI / DX)
-1. Double Exponential Moving Average (DEMA)
-1. Dual Moving Average (DMA)
-1. Ease of Movement (EMV)
-1. Exponential Moving Average (EMA)
-1. Efficiency Ratio (ER)
-1. Hull Moving Average (HMA)
-1. Interquartile Range (IQR)
-1. Kaufman's Adaptive Moving Average (KAMA)
-1. Linear Regression (LINREG)
-1. Mean Absolute Deviation (MAD)
-1. Momentum (MOM / MTM)
-1. Money Flow Index (MFI)
-1. Moving Average Convergence Divergence (MACD)
-1. Normalized Average True Range (NATR)
-1. On-Balance Volume (OBV)
-1. Parabolic SAR (PSAR)
-1. Percentage Price Oscillator (PPO)
-1. Price Volume Trend (PVT)
-1. Range Expansion Index (REI)
-1. Rate-of-Change (ROC)
-1. Relative Moving Average (RMA)
-1. Relative Strength Index (RSI)
-1. Relative Volume (RVOL)
-1. Simple Moving Average (SMA)
-1. Spencer's 15-Point Moving Average (SMA15)
-1. Stochastic Oscillator (STOCH)
-1. Stochastic RSI (STOCHRSI)
-1. Tom Demark's Sequential Indicator (TDS)
-1. Triple Exponential Moving Average (TEMA)
-1. Triple Smoothed EMA Rate of Change (TRIX)
-1. True Range (TR)
-1. Ultimate Oscillator (ULTOSC)
-1. Volume Rate of Change (VROC)
-1. Volume-Weighted Average Price (VWAP)
-1. Volume Weighted Moving Average (VWMA)
-1. Weighted Moving Average (WMA)
-1. Wilder's Smoothed Moving Average (WSMA / WWS / SMMA / MEMA)
-1. Williams %R (WILLR)
-1. Zig Zag Indicator (ZigZag)
-
-Utility Methods:
-
-1. Average / Mean
-1. Grid Sizing (for [grid trading bots](https://b2broker.com/news/understanding-grid-trading-purpose-pros-cons/))
-1. Maximum
-1. Median
-1. Minimum
-1. Quartile
-1. Standard Deviation
-1. Streaks
-1. Weekday
 
 ## Alternatives
 
