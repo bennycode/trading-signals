@@ -1,12 +1,20 @@
 # https://lefthook.dev/configuration/
 pre-commit:
-  # Not parallel: `format` rewrites the files that `lint` then reads.
-  parallel: false
+  # Safe in parallel: the two globs are disjoint.
+  parallel: true
   commands:
     format:
-      glob: '*.{cjs,css,cts,html,js,json,jsx,less,md,mjs,mts,scss,ts,tsx,yaml,yml}'
+      glob: '*.{css,html,json,less,md,scss,yaml,yml}'
       run: npx oxfmt {staged_files}
       stage_fixed: true
     lint:
       glob: '*.{cjs,cts,js,jsx,mjs,mts,ts,tsx}'
-      run: npx oxlint {staged_files}
+      # Fix, then format, then verify. Formatting has to come after the fixes because removing
+      # an `else` branch leaves its body over-indented. The last line decides whether the commit
+      # proceeds: `--fix` reports overlapping fixes it skipped, so it exits non-zero even for
+      # files it fully cleaned.
+      run: |
+        npx oxlint --fix {staged_files}
+        npx oxfmt {staged_files}
+        npx oxlint {staged_files}
+      stage_fixed: true
