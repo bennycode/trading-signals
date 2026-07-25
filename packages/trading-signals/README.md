@@ -6,7 +6,9 @@ Technical indicators and overlays to run [technical analysis](https://en.wikiped
 
 ## Motivation
 
-The "trading-signals" library provides a TypeScript implementation for common technical indicators. It is well-suited for algorithmic trading, allowing developers to perform signal computations for automated trading strategies.
+Financial trading is usually associated with Python or C. Serious technical analysis was assumed to live outside the JavaScript ecosystem, so TypeScript developers had to either shell out to a Python service or reimplement indicators themselves. This library exists to show that it doesn't have to be that way: algorithmic trading works just as well in TypeScript, on the runtime you already use, with the type safety you already rely on.
+
+The goal is to provide renowned technical indicators — the ones traders actually reference, matching the values that established tools produce — as a well-tested TypeScript implementation you can build automated trading strategies on.
 
 All indicators can be updated over time by streaming data (prices or [candles](https://en.wikipedia.org/wiki/Candlestick_chart)) to the `add` method. Some indicators also provide `static` batch methods for further performance improvements when providing data up-front during a backtest or historical data import. You can try it out streaming input data by running the provided [demo script](./src/start/demo.ts) with `npm start`, which uses a keyboard input stream.
 
@@ -61,10 +63,10 @@ sma.replace(40);
 // You can check if an indicator is stable:
 console.log(sma.isStable); // true
 
-// If an indicator is stable, you can get its result:
+// You can read the result as "number | null", which is null until the indicator is stable:
 console.log(sma.getResult()); // 50.0003
 
-// You can also get the result without optional chaining:
+// Or you can read it as "number" and let it throw while the indicator is not stable yet:
 console.log(sma.getResultOrThrow()); // 50.0003
 
 // Various precisions are available too:
@@ -80,9 +82,36 @@ console.log(sma.highest?.toFixed(2)); // "53.33"
 
 To input data, you need to call the indicator's `add` method. Depending on whether the minimum required input data for the interval has been reached, the `add` method may or may not return a result from the indicator.
 
-### When to use `getResultOrThrow()`?
+### When to use `getResult()` vs. `getResultOrThrow()`?
 
-You can call `getResultOrThrow()` at any point in time, but it throws errors unless an indicator has received the minimum amount of data. If you call `getResultOrThrow()` before an indicator has received the required amount of input values, a `NotEnoughDataError` will be thrown.
+Both accessors read the current value of an indicator. They differ only in how they report that an indicator has not received enough data yet:
+
+| Method               | Return type      | Before the indicator is stable |
+| -------------------- | ---------------- | ------------------------------ |
+| `getResult()`        | `Result \| null` | Returns `null`                 |
+| `getResultOrThrow()` | `Result`         | Throws `NotEnoughDataError`    |
+
+Use **`getResult()`** when the absence of a value is an expected state your code can handle, typically on a hot path that runs while the indicator is still warming up. Branch on `null` and skip, return, or wait for the next candle:
+
+```ts
+const result = sma.getResult();
+
+if (result === null) {
+  return; // Not enough data yet, wait for more candles
+}
+
+trade(result);
+```
+
+Use **`getResultOrThrow()`** when a missing value would be a bug, for example after you have already checked `isStable`, or when your code cannot meaningfully continue without a result. You get a plain `Result` back, so no null check is needed:
+
+```ts
+if (sma.isStable) {
+  trade(sma.getResultOrThrow());
+}
+```
+
+What you should not do is call `getResult()` and silence the `null` with a non-null assertion (`getResult()!`). That hides the warm-up case from the type system and crashes at runtime instead. Either branch on `null` or use `getResultOrThrow()`.
 
 **Example:**
 
@@ -243,24 +272,6 @@ Utility Methods:
 1. Streaks
 1. Weekday
 
-## Performance
-
-### Floating-point arithmetic caveats
-
-JavaScript uses double-precision floating-point arithmetic. For example, `0.1 + 0.2` yields `0.30000000000000004` due to binary floating-point representation.
-
-![JavaScript arithmetic](https://raw.githubusercontent.com/bennycode/trading-signals/main/packages/trading-signals/js-arithmetic.png)
-
-While this isn’t perfectly accurate, it usually doesn’t matter in practice since indicators often work with averages, which already smooth out precision. In test cases, you can control precision by using Vitest’s [toBeCloseTo](https://vitest.dev/api/expect.html#tobecloseto) assertion.
-
-Earlier versions of this library (up to version 6) used [big.js][1] for arbitrary-precision arithmetic, but that made calculations about 100x slower on average. For this reason, support for [big.js][1] was removed starting with version 7.
-
-## Disclaimer
-
-The information and publications of [trading-signals](https://github.com/bennycode/trading-signals) do not constitute financial advice, investment advice, trading advice or any other form of advice. All results from [trading-signals](https://github.com/bennycode/trading-signals) are intended for information purposes only.
-
-It is very important to do your own analysis before making any investment based on your own personal circumstances. If you need financial advice or further advice in general, it is recommended that you identify a relevantly qualified individual in your jurisdiction who can advise you accordingly.
-
 ## Alternatives
 
 - [Cloud9Trader Indicators (JavaScript)](https://github.com/Cloud9Trader/TechnicalIndicators)
@@ -280,14 +291,6 @@ It is very important to do your own analysis before making any investment based 
 - [Technical Analysis Library using Pandas and Numpy (Python)](https://github.com/bukosabino/ta)
 - [Tulip Indicators (ANSI C)](https://github.com/TulipCharts/tulipindicators)
 
-## Documentation
-
-Build and run the documentation:
-
-```bash
-npm run docs
-```
-
 ## Maintainers
 
 [![Benny Neugebauer on Stack Exchange][stack_exchange_bennycode_badge]][stack_exchange_bennycode_url]
@@ -298,7 +301,6 @@ This package was built by Benny Neugebauer. Checkout my [**TypeScript course**](
 
 [<img src="https://raw.githubusercontent.com/bennycode/trading-signals/main/packages/trading-signals/tstv.png">](https://typescript.tv/)
 
-[1]: http://mikemcl.github.io/big.js/
 [stack_exchange_bennycode_badge]: https://stackexchange.com/users/flair/203782.png?theme=default
 [stack_exchange_bennycode_url]: https://stackexchange.com/users/203782/benny-neugebauer?tab=accounts
 
