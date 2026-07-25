@@ -80,9 +80,7 @@ export class MyStrategy extends ProtectedStrategy {
   constructor(config: MyStrategyConfig) {
     super({
       config,
-      state: {
-        /* subclass-specific fields */
-      },
+      state: {/* subclass-specific fields */},
     });
   }
 

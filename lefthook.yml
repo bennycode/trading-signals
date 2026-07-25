@@ -3,10 +3,18 @@ pre-commit:
   parallel: true
   commands:
     format:
-      glob: '*.{css,html,json,less,md,scss,yml}'
-      run: npx -c "cross-env NODE_OPTIONS=--max_old_space_size=4096 prettier --write --log-level error {staged_files}"
+      glob: '*.{css,html,json,less,md,scss,yml,yaml}'
+      run: npx oxfmt {staged_files}
       stage_fixed: true
     lint:
       glob: 'packages/**/*.{js,jsx,ts,tsx}'
-      run: npx eslint {staged_files} --fix
+      # Rule fixes first, formatting last, then a verification pass that decides whether the
+      # commit proceeds. The fix run's own exit code is deliberately ignored: when two rules
+      # want to rewrite the same span, oxlint applies one and still reports the other, so it
+      # exits non-zero even for files it has fully cleaned. Only the final run is meaningful.
+      # This command and `format` have disjoint globs, so they never race despite `parallel`.
+      run: |
+        npx oxlint --fix {staged_files} >/dev/null 2>&1 || true
+        npx oxfmt {staged_files}
+        npx oxlint {staged_files}
       stage_fixed: true

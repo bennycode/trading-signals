@@ -32,13 +32,18 @@
     "build": "next build",
     "dev": "next dev",
     "dist": "npm run build",
-    "lint": "eslint .",
     "start": "next start",
     "test": "npm run test:types && npm run test:units",
     "test:e2e": "playwright test",
     "test:types": "tsc --noEmit",
     "test:units": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "fix": "npm run fix:code && npm run fix:other",
+    "fix:code": "oxlint . --fix || true",
+    "fix:other": "oxfmt",
+    "lint": "npm run lint:code && npm run lint:other",
+    "lint:code": "oxlint .",
+    "lint:other": "oxfmt --list-different"
   },
   "type": "module",
   "version": "2.0.0"
