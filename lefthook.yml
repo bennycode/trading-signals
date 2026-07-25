@@ -1,18 +1,12 @@
 # https://lefthook.dev/configuration/
 pre-commit:
-  parallel: true
+  # Not parallel: `format` rewrites the files that `lint` then reads.
+  parallel: false
   commands:
     format:
-      glob: '*.{css,html,json,less,md,scss,yml,yaml}'
+      glob: '*.{css,html,js,json,jsx,less,md,mjs,scss,ts,tsx,yaml,yml}'
       run: npx oxfmt {staged_files}
       stage_fixed: true
     lint:
-      glob: 'packages/**/*.{js,jsx,ts,tsx}'
-      # The fix run's exit code is ignored: when two rules want to rewrite the same span, oxlint
-      # applies one and still reports the other, so it exits non-zero even for files it fully
-      # cleaned. The final run is what decides whether the commit proceeds.
-      run: |
-        npx oxlint --fix {staged_files} || true
-        npx oxfmt {staged_files}
-        npx oxlint {staged_files}
-      stage_fixed: true
+      glob: '*.{js,jsx,mjs,ts,tsx}'
+      run: npx oxlint {staged_files}
