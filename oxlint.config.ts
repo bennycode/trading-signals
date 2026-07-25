@@ -36,32 +36,18 @@ export default defineConfig({
   ],
 
   // Rules Oxlint has no native equivalent for, bridged through its ESLint plugin support.
-  jsPlugins: ['@stylistic/eslint-plugin', 'eslint-plugin-perfectionist', './oxlint-plugin-local.mjs'],
+  jsPlugins: ['@stylistic/eslint-plugin', 'eslint-plugin-perfectionist'],
 
   // Runs the type-aware rules below through oxlint-tsgolint. Honoured only in the root config.
   options: {
     typeAware: true,
   },
 
-  overrides: [
-    {
-      /*
-       * The plugin walks AST nodes that carry no type information, so every `node.type` read
-       * looks like an unsafe `any` argument to the rule.
-       */
-      files: ['oxlint-plugin-local.mjs'],
-      rules: {
-        'typescript/no-unsafe-argument': 'off',
-      },
-    },
-  ],
-
   plugins: ['typescript'],
 
   rules: {
     '@stylistic/multiline-comment-style': ['error', 'starred-block'],
     curly: 'error',
-    'local/no-primitive-return-type': 'error',
     'max-depth': ['warn', 4],
     'no-cond-assign': 'error',
     'no-console': 'off',
