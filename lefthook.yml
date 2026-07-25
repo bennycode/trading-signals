@@ -1,20 +1,16 @@
 # https://lefthook.dev/configuration/
 pre-commit:
-  # Safe in parallel: the two globs are disjoint.
-  parallel: true
   commands:
-    format:
-      glob: '*.{css,html,json,less,md,scss,yaml,yml}'
-      run: npx oxfmt {staged_files}
-      stage_fixed: true
-    lint:
-      glob: '*.{cjs,cts,js,jsx,mjs,mts,ts,tsx}'
-      # Fix, then format, then verify. Formatting has to come after the fixes because removing
-      # an `else` branch leaves its body over-indented. The last line decides whether the commit
+    oxc:
+      # Fix, then format, then verify. Formatting comes after the fixes because removing an
+      # `else` branch leaves its body over-indented. The last line decides whether the commit
       # proceeds: `--fix` reports overlapping fixes it skipped, so it exits non-zero even for
-      # files it fully cleaned.
+      # files it has fully cleaned.
+      #
+      # No globs needed. Both tools skip file types they do not handle, and the flag stops a
+      # commit that touches none of their file types from failing outright.
       run: |
-        npx oxlint --fix {staged_files}
-        npx oxfmt {staged_files}
-        npx oxlint {staged_files}
+        npx oxlint --fix --no-error-on-unmatched-pattern {staged_files}
+        npx oxfmt --no-error-on-unmatched-pattern {staged_files}
+        npx oxlint --no-error-on-unmatched-pattern {staged_files}
       stage_fixed: true
