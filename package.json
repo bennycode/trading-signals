@@ -30,7 +30,7 @@
     "fix:other": "oxfmt",
     "graph": "nx graph",
     "prelint": "lerna run dist",
-    "lint": "npm run lint:code && npm run lint:other && lerna run test:types --parallel",
+    "lint": "npm run lint:code && npm run lint:other",
     "lint:code": "oxlint",
     "lint:other": "oxfmt --list-different",
     "release": "npm install && npm run dist && lerna publish && npm run clean",

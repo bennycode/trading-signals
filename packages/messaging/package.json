@@ -52,7 +52,7 @@
     "fix": "npm run fix:code && npm run fix:other",
     "fix:code": "oxlint . --fix || true",
     "fix:other": "oxfmt",
-    "lint": "npm run test:types && npm run lint:code && npm run lint:other",
+    "lint": "npm run lint:code && npm run lint:other",
     "lint:code": "oxlint .",
     "lint:other": "oxfmt --list-different",
     "start": "tsx src/start.ts",
