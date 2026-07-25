@@ -4,9 +4,9 @@ pre-commit:
   parallel: false
   commands:
     format:
-      glob: '*.{css,html,js,json,jsx,less,md,mjs,scss,ts,tsx,yaml,yml}'
+      glob: '*.{cjs,css,cts,html,js,json,jsx,less,md,mjs,mts,scss,ts,tsx,yaml,yml}'
       run: npx oxfmt {staged_files}
       stage_fixed: true
     lint:
-      glob: '*.{js,jsx,mjs,ts,tsx}'
+      glob: '*.{cjs,cts,js,jsx,mjs,mts,ts,tsx}'
       run: npx oxlint {staged_files}
