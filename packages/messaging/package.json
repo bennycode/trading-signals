@@ -1,6 +1,45 @@
 {
+  "name": "@typedtrader/messaging",
+  "version": "0.5.0",
+  "private": true,
+  "description": "Trading bot via messaging service.",
+  "keywords": [
+    "messenger",
+    "trading"
+  ],
+  "homepage": "https://bennycode.com/trading-signals",
   "bugs": {
     "url": "https://github.com/bennycode/trading-signals/issues"
+  },
+  "license": "MIT",
+  "files": [
+    "dist",
+    "!dist/start",
+    "!dist/test",
+    "!dist/**/*.test.*"
+  ],
+  "type": "module",
+  "exports": "./dist/index.js",
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "clean": "rimraf coverage dist",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "tsx src/database/migrate.ts",
+    "db:studio": "drizzle-kit studio",
+    "dist": "npm run clean && npm run build",
+    "dev": "npm run test:types && tsx watch src/start.ts",
+    "fix": "npm run fix:code && npm run fix:other",
+    "fix:code": "oxlint . --fix || true",
+    "fix:other": "oxfmt",
+    "lint": "npm run lint:code && npm run lint:other",
+    "lint:code": "oxlint .",
+    "lint:other": "oxfmt --list-different",
+    "start": "tsx src/start.ts",
+    "test": "npm run test:types && npm run test:imports && npm run test:units -- --coverage",
+    "test:imports": "depcruise -c ../../.dependency-cruiser.json src --include-only \"^src\"",
+    "test:types": "tsc --noEmit",
+    "test:units": "vitest run --passWithNoTests",
+    "test:units:watch": "vitest --watch"
   },
   "dependencies": {
     "@grammyjs/auto-retry": "^2.0.2",
@@ -21,46 +60,8 @@
     "trading-strategies": "0.4.0",
     "zod": "^4.4.3"
   },
-  "description": "Trading bot via messaging service.",
   "devDependencies": {
     "drizzle-kit": "^0.31.10",
     "tsx": "^4.22.5"
-  },
-  "exports": "./dist/index.js",
-  "files": [
-    "dist",
-    "!dist/start",
-    "!dist/test",
-    "!dist/**/*.test.*"
-  ],
-  "homepage": "https://bennycode.com/trading-signals",
-  "keywords": [
-    "messenger",
-    "trading"
-  ],
-  "license": "MIT",
-  "name": "@typedtrader/messaging",
-  "private": true,
-  "scripts": {
-    "build": "tsc -p tsconfig.build.json",
-    "clean": "rimraf coverage dist",
-    "db:generate": "drizzle-kit generate",
-    "db:migrate": "tsx src/database/migrate.ts",
-    "db:studio": "drizzle-kit studio",
-    "dist": "npm run clean && npm run build",
-    "dev": "npm run test:types && tsx watch src/start.ts",
-    "lint": "npm run lint:code && npm run lint:other",
-    "lint:code": "eslint .",
-    "lint:other": "npm run prettier -- --list-different",
-    "lint:types": "tsc --noEmit",
-    "prettier": "prettier --config ../../.prettierrc.json --ignore-path ../../.gitignore --log-level error \"**/*.{json,scss,yml}\"",
-    "start": "tsx src/start.ts",
-    "test": "npm run test:types && npm run test:imports && npm run test:units -- --coverage",
-    "test:imports": "depcruise -c ../../.dependency-cruiser.json src --include-only \"^src\"",
-    "test:types": "npm run lint:types",
-    "test:units": "vitest run --passWithNoTests",
-    "test:units:watch": "vitest --watch"
-  },
-  "type": "module",
-  "version": "0.5.0"
+  }
 }

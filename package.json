@@ -1,38 +1,24 @@
 {
-  "devDependencies": {
-    "@stylistic/eslint-plugin": "^5.10.0",
-    "@types/node": "^26.1.0",
-    "@typescript-eslint/eslint-plugin": "^8.65.0",
-    "@typescript-eslint/parser": "^8.65.0",
-    "@vitest/coverage-v8": "^4.0.18",
-    "conventional-changelog-conventionalcommits": "^8.0.0",
-    "cross-env": "^10.1.0",
-    "dependency-cruiser": "^18.0.0",
-    "eslint": "^10.6.0",
-    "eslint-config-prettier": "^10.1.8",
-    "eslint-plugin-perfectionist": "^5.10.0",
-    "eslint-plugin-prettier": "^5.5.6",
-    "globals": "^17.7.0",
-    "jsdom": "^29.1.1",
-    "lefthook": "^2.1.9",
-    "lerna": "^9.0.7",
-    "prettier": "^3.9.6",
-    "rimraf": "^6.1.3",
-    "tsx": "^4.22.5",
-    "typescript": "^6.0.3",
-    "vite": "^8.1.3",
-    "vitest": "^4.0.14"
-  },
   "name": "typedtrader",
+  "version": "0.0.0",
   "private": true,
+  "workspaces": {
+    "packages": [
+      "packages/*"
+    ]
+  },
+  "type": "module",
   "scripts": {
     "clean": "lerna run clean --parallel",
     "dist": "lerna run dist",
-    "fix": "lerna run fix --parallel",
+    "fix": "npm run fix:code && npm run fix:other",
+    "fix:code": "oxlint --fix || true",
+    "fix:other": "oxfmt",
     "graph": "nx graph",
     "prelint": "lerna run dist",
-    "lint": "npm run lint:config && lerna run lint --parallel",
-    "lint:config": "eslint eslint.config.ts eslint.config.base.ts",
+    "lint": "npm run lint:code && npm run lint:other",
+    "lint:code": "oxlint",
+    "lint:other": "oxfmt --list-different",
     "release": "npm install && npm run dist && lerna publish && npm run clean",
     "start:bot": "lerna run dist --scope @typedtrader/messaging --include-dependencies && lerna run start --scope @typedtrader/messaging",
     "start:docs": "lerna run dist --scope trading-signals-docs --include-dependencies && lerna run dev --scope trading-signals-docs",
@@ -40,7 +26,29 @@
     "test": "lerna run --no-sort --concurrency 8 test",
     "test:types": "lerna run --no-sort --concurrency 8 test:types"
   },
-  "version": "0.0.0",
+  "devDependencies": {
+    "@stylistic/eslint-plugin": "^5.10.0",
+    "@types/node": "^26.1.0",
+    "@vitest/coverage-v8": "^4.0.18",
+    "conventional-changelog-conventionalcommits": "^8.0.0",
+    "cross-env": "^10.1.0",
+    "dependency-cruiser": "^18.0.0",
+    "eslint-plugin-perfectionist": "^5.10.0",
+    "jsdom": "^29.1.1",
+    "lefthook": "^2.1.9",
+    "lerna": "^9.0.7",
+    "oxfmt": "^0.60.0",
+    "oxlint": "^1.75.0",
+    "oxlint-tsgolint": "^7.0.2001",
+    "rimraf": "^6.1.3",
+    "tsx": "^4.22.5",
+    "typescript": "^6.0.3",
+    "vite": "^8.1.3",
+    "vitest": "^4.0.14"
+  },
+  "optionalDependencies": {
+    "encoding": "^0.1.13"
+  },
   "overrides": {
     "axios": ">=1.14.0",
     "brace-expansion": ">=5.0.8",
@@ -49,13 +57,5 @@
     "postcss": ">=8.5.10",
     "sharp": ">=0.35.1",
     "tar": ">=7.5.21"
-  },
-  "workspaces": {
-    "packages": [
-      "packages/*"
-    ]
-  },
-  "optionalDependencies": {
-    "encoding": "^0.1.13"
   }
 }
