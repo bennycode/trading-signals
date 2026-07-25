@@ -1,6 +1,11 @@
 import {type Config, defineConfig} from 'eslint/config';
+import stylistic from '@stylistic/eslint-plugin';
 import typescriptEslint from '@typescript-eslint/eslint-plugin';
-import eslintConfig from '@tstv/eslint-config';
+import tsParser from '@typescript-eslint/parser';
+import eslintConfigPrettier from 'eslint-config-prettier';
+import perfectionist from 'eslint-plugin-perfectionist';
+import prettier from 'eslint-plugin-prettier';
+import globals from 'globals';
 
 /*
  * Forbid explicit primitive return types where TypeScript trivially infers the same type.
@@ -45,15 +50,91 @@ export function createConfig({ignores = [], ...config}: Config = {}) {
       ],
     },
     {
-      extends: [eslintConfig],
+      /*
+       * `eslint-config-prettier` only switches rules off, so it belongs in `extends` where it
+       * is applied before this object's own `rules` block and can't clobber a deliberate choice.
+       */
+      extends: [eslintConfigPrettier],
       files: ['**/*.{ts,tsx,mts,cts,js,jsx,mjs,cjs}'],
+
+      languageOptions: {
+        ecmaVersion: 8,
+
+        globals: {
+          ...globals.browser,
+          ...globals.node,
+        },
+        parser: tsParser,
+        parserOptions: {
+          ecmaFeatures: {
+            jsx: true,
+          },
+          // https://typescript-eslint.io/blog/parser-options-project-true/
+          project: true,
+        },
+
+        sourceType: 'module',
+      },
+
+      // https://eslint.org/docs/latest/use/configure/configuration-files#configuration-naming-conventions
+      name: 'typedtrader/base',
+
+      plugins: {
+        '@stylistic': stylistic,
+        '@typescript-eslint': typescriptEslint,
+        perfectionist,
+        prettier,
+      },
+
       rules: {
+        '@stylistic/multiline-comment-style': ['error', 'starred-block'],
+        '@typescript-eslint/array-type': 'error',
+        '@typescript-eslint/consistent-type-assertions': 'error',
+        '@typescript-eslint/consistent-type-imports': 'error',
+        '@typescript-eslint/explicit-function-return-type': 'off',
+        '@typescript-eslint/member-ordering': 'off',
+        '@typescript-eslint/no-dupe-class-members': ['error'],
+
+        '@typescript-eslint/no-floating-promises': [
+          'error',
+          {
+            ignoreIIFE: true,
+          },
+        ],
+
+        '@typescript-eslint/no-import-type-side-effects': 'error',
+        '@typescript-eslint/no-namespace': 'error',
+
         /*
          * The codebase uses the idiomatic `const X = {...} as const` + `type X = ...`
          * companion pattern as an enum replacement. `no-redeclare` misfires on the shared
          * value/type name even though TypeScript allows it; renaming would break public APIs.
          */
         '@typescript-eslint/no-redeclare': 'off',
+
+        '@typescript-eslint/no-this-alias': 'error',
+        '@typescript-eslint/no-unnecessary-type-assertion': 'error',
+        '@typescript-eslint/no-unsafe-argument': 'error',
+        '@typescript-eslint/no-unused-vars': 'off',
+        '@typescript-eslint/prefer-as-const': 'error',
+        '@typescript-eslint/prefer-for-of': 'off',
+        '@typescript-eslint/prefer-readonly': 'error',
+        '@typescript-eslint/return-await': ['error', 'in-try-catch'],
+        '@typescript-eslint/typedef': 'off',
+        curly: 'error',
+        'dot-notation': 'off',
+        'max-depth': ['warn', 4],
+        'no-cond-assign': 'error',
+        'no-console': 'off',
+        'no-const-assign': 'error',
+        'no-dupe-class-members': 'off',
+        'no-duplicate-case': 'error',
+        'no-else-return': 'error',
+        'no-inner-declarations': 'error',
+        'no-invalid-this': 'error',
+        'no-lonely-if': 'error',
+        'no-redeclare': 'off',
+
         'no-restricted-syntax': [
           'error',
           {
@@ -65,8 +146,50 @@ export function createConfig({ignores = [], ...config}: Config = {}) {
             selector: `${FUNCTIONS_WITH_BODY} > TSTypeAnnotation > TSTypeReference[typeName.name='Promise'] > TSTypeParameterInstantiation > ${PRIMITIVE_KEYWORDS}`,
           },
         ],
-        // Object-key sorting is enforced across all packages.
-        'perfectionist/sort-objects': 'error',
+
+        'no-return-await': 'off',
+        'no-sequences': 'error',
+        'no-shadow': 'off',
+        'no-sparse-arrays': 'error',
+        'no-template-curly-in-string': 'error',
+        'no-unneeded-ternary': 'error',
+        'no-unused-expressions': 'error',
+        'no-unused-vars': 'off',
+        'no-useless-return': 'error',
+        'no-var': 'error',
+        'one-var': ['error', 'never'],
+
+        'padding-line-between-statements': [
+          'error',
+          {
+            blankLine: 'always',
+            next: ['export', 'expression'],
+            prev: 'import',
+          },
+        ],
+
+        /*
+         * Object-key sorting is enforced across all packages. We use a plugin instead of
+         * ESLint's core `sort-keys` rule because that rule is frozen and provides no autofix.
+         * https://eslint.org/docs/latest/rules/sort-keys#require-object-keys-to-be-sorted-sort-keys
+         */
+        'perfectionist/sort-objects': [
+          'error',
+          {
+            ignoreCase: false,
+            order: 'asc',
+            type: 'natural',
+          },
+        ],
+
+        'prefer-arrow-callback': 'error',
+        'prefer-const': 'error',
+        'prefer-promise-reject-errors': 'error',
+        'prettier/prettier': 'error',
+        'sort-imports': 'off',
+        'sort-vars': 'error',
+        'space-in-parens': 'error',
+        strict: ['error', 'global'],
       },
     },
     config,
