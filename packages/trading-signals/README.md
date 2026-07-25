@@ -6,9 +6,9 @@ Technical indicators and overlays to run [technical analysis](https://en.wikiped
 
 ## Motivation
 
-Financial trading is usually associated with Python or C. That leaves TypeScript developers two options, both bad: call out to a Python service, or reimplement every indicator by hand. Neither is necessary. Algorithmic trading works in TypeScript too, on the runtime you already ship.
+The "trading-signals" library provides a TypeScript implementation for common technical indicators. It is well-suited for algorithmic trading, allowing developers to perform signal computations for automated trading strategies.
 
-So the goal here is to provide renowned technical indicators, the ones traders actually reference, in TypeScript. Results are checked against reference data from [Tulip Indicators](https://tulipindicators.org/), so the numbers match what charting software shows.
+Financial trading does not require Python or C, so the goal here is to provide renowned technical indicators in TypeScript. Results are checked against reference data from [Tulip Indicators](https://tulipindicators.org/).
 
 All indicators can be updated over time by streaming data (prices or [candles](https://en.wikipedia.org/wiki/Candlestick_chart)) to the `add` method. Some indicators also provide `static` batch methods for further performance improvements when providing data up-front during a backtest or historical data import. You can try it out streaming input data by running the provided [demo script](./src/start/demo.ts) with `npm start`, which uses a keyboard input stream.
 
@@ -154,14 +154,14 @@ To input data, you need to call the indicator's `add` method. Depending on wheth
 
 ### When to use `getResult()` vs. `getResultOrThrow()`?
 
-Both accessors read the current value. They differ in what happens before the indicator has enough data:
+Both accessors read the current value. They differ before the indicator has enough data:
 
 | Method               | Return type      | Before the indicator is stable |
 | -------------------- | ---------------- | ------------------------------ |
 | `getResult()`        | `Result \| null` | Returns `null`                 |
 | `getResultOrThrow()` | `Result`         | Throws `NotEnoughDataError`    |
 
-Reach for `getResult()` when a missing value is normal, such as on a hot path that runs while the indicator is still warming up:
+Use `getResult()` when a missing value is normal, for example while the indicator is still warming up:
 
 ```ts
 const result = sma.getResult();
@@ -173,7 +173,7 @@ if (result === null) {
 trade(result);
 ```
 
-Reach for `getResultOrThrow()` when a missing value would be a bug, usually once you have checked `isStable`. It hands back a plain `Result`, so there is no `null` to deal with:
+Use `getResultOrThrow()` once you have checked `isStable`, or wherever a missing value would be a bug:
 
 ```ts
 if (sma.isStable) {
@@ -181,7 +181,7 @@ if (sma.isStable) {
 }
 ```
 
-Do not write `getResult()!`. The non-null assertion hides the warm-up case from the compiler and crashes at runtime instead. Check for `null` or use `getResultOrThrow()`.
+Never write `getResult()!`. The assertion hides warm-up from the compiler and crashes at runtime.
 
 **Example:**
 
