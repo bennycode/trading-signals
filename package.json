@@ -21,6 +21,7 @@
   },
   "name": "typedtrader",
   "private": true,
+  "type": "module",
   "scripts": {
     "clean": "lerna run clean --parallel",
     "dist": "lerna run dist",
