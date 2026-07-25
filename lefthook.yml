@@ -8,13 +8,11 @@ pre-commit:
       stage_fixed: true
     lint:
       glob: 'packages/**/*.{js,jsx,ts,tsx}'
-      # Rule fixes first, formatting last, then a verification pass that decides whether the
-      # commit proceeds. The fix run's own exit code is deliberately ignored: when two rules
-      # want to rewrite the same span, oxlint applies one and still reports the other, so it
-      # exits non-zero even for files it has fully cleaned. Only the final run is meaningful.
-      # This command and `format` have disjoint globs, so they never race despite `parallel`.
+      # The fix run's exit code is ignored: when two rules want to rewrite the same span, oxlint
+      # applies one and still reports the other, so it exits non-zero even for files it fully
+      # cleaned. The final run is what decides whether the commit proceeds.
       run: |
-        npx oxlint --fix {staged_files} >/dev/null 2>&1 || true
+        npx oxlint --fix {staged_files} || true
         npx oxfmt {staged_files}
         npx oxlint {staged_files}
       stage_fixed: true

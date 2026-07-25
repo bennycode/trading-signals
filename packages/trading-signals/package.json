@@ -1,16 +1,7 @@
 {
-  "bugs": {
-    "url": "https://github.com/bennycode/trading-signals/issues"
-  },
+  "name": "trading-signals",
+  "version": "8.0.0",
   "description": "Technical indicators to run technical analysis with JavaScript / TypeScript.",
-  "exports": "./dist/index.js",
-  "files": [
-    "dist",
-    "!dist/start",
-    "!dist/test",
-    "!dist/**/*.test.*"
-  ],
-  "homepage": "https://bennycode.com/trading-signals",
   "keywords": [
     "adx",
     "algorithmic",
@@ -37,12 +28,24 @@
     "technical-overlays",
     "trading"
   ],
+  "homepage": "https://bennycode.com/trading-signals",
+  "bugs": {
+    "url": "https://github.com/bennycode/trading-signals/issues"
+  },
   "license": "MIT",
-  "name": "trading-signals",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/bennycode/trading-signals.git"
   },
+  "files": [
+    "dist",
+    "!dist/start",
+    "!dist/test",
+    "!dist/**/*.test.*"
+  ],
+  "type": "module",
+  "types": "dist/index.d.ts",
+  "exports": "./dist/index.js",
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
     "clean": "rimraf coverage dist",
@@ -59,8 +62,5 @@
     "test:types": "tsc --noEmit",
     "test:units": "vitest run --passWithNoTests",
     "test:units:watch": "vitest --watch"
-  },
-  "type": "module",
-  "types": "dist/index.d.ts",
-  "version": "8.0.0"
+  }
 }

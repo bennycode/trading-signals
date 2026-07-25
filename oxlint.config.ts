@@ -1,14 +1,6 @@
 import {defineConfig} from 'oxlint';
 
-/**
- * Single lint config for the whole monorepo. Oxlint resolves it from any package directory, so
- * per-package scripts are a bare `oxlint .`.
- */
 export default defineConfig({
-  /*
-   * Oxlint enables its `correctness` rules by default. Switching the category off keeps this
-   * config the sole source of truth, matching how the previous ESLint setup behaved.
-   */
   categories: {
     correctness: 'off',
   },

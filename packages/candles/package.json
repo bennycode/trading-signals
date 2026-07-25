@@ -2,16 +2,19 @@
   "name": "@typedtrader/candles",
   "version": "0.2.0",
   "description": "Labeled market-condition candle datasets (uptrend, downtrend, sideways, …) for tests and docs.",
+  "files": [
+    "dist",
+    "json"
+  ],
   "type": "module",
   "types": "dist/src/index.d.ts",
   "exports": {
     ".": "./dist/src/index.js",
     "./json/*": "./json/*"
   },
-  "files": [
-    "dist",
-    "json"
-  ],
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
     "clean": "rimraf dist",
@@ -29,8 +32,5 @@
   },
   "devDependencies": {
     "@typedtrader/exchange": "0.3.0"
-  },
-  "publishConfig": {
-    "access": "public"
   }
 }
