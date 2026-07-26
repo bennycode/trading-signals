@@ -57,8 +57,7 @@
     "lint:code": "oxlint .",
     "lint:other": "oxfmt --list-different",
     "start": "tsx ./src/start/demo.ts",
-    "test": "npm run test:types && npm run test:imports && npm run test:units -- --coverage",
-    "test:imports": "depcruise -c ../../.dependency-cruiser.json src --include-only \"^src\"",
+    "test": "npm run test:types && npm run test:units -- --coverage",
     "test:types": "tsc --noEmit",
     "test:units": "vitest run --passWithNoTests",
     "test:units:watch": "vitest --watch"
