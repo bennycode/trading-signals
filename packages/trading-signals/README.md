@@ -154,14 +154,14 @@ To input data, you need to call the indicator's `add` method. Depending on wheth
 
 ### When to use `getResult()` vs. `getResultOrThrow()`?
 
-Both accessors read the current value. They differ before the indicator has enough data:
+Both accessors read the current value:
 
 | Method               | Return type      | Before the indicator is stable |
 | -------------------- | ---------------- | ------------------------------ |
 | `getResult()`        | `Result \| null` | Returns `null`                 |
 | `getResultOrThrow()` | `Result`         | Throws `NotEnoughDataError`    |
 
-Use `getResult()` when a missing value is normal, for example while the indicator is still warming up:
+`getResult()` returns `null` when no result is available, which is usually during warm-up. You have to check for it before using the value:
 
 ```ts
 const result = sma.getResult();
@@ -173,7 +173,7 @@ if (result === null) {
 trade(result);
 ```
 
-Use `getResultOrThrow()` once you have checked `isStable`, or wherever a missing value would be a bug:
+`getResultOrThrow()` throws instead. That is a hard crash, but it saves you the null check, so use it once you have checked `isStable` or wherever a missing result would be a bug:
 
 ```ts
 if (sma.isStable) {
