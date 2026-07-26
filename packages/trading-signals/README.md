@@ -8,7 +8,7 @@ Technical indicators and overlays to run [technical analysis](https://en.wikiped
 
 The "trading-signals" library provides a TypeScript implementation for common technical indicators. It is well-suited for algorithmic trading, allowing developers to perform signal computations for automated trading strategies.
 
-Financial trading does not require Python or C, so the goal here is to provide renowned technical indicators in TypeScript. Results are checked against reference data from [Tulip Indicators](https://tulipindicators.org/).
+Financial trading does not require Python or C, so the goal here is to provide renowned technical indicators in TypeScript. Results are checked against reference data like [Tulip Indicators](https://tulipindicators.org/).
 
 All indicators can be updated over time by streaming data (prices or [candles](https://en.wikipedia.org/wiki/Candlestick_chart)) to the `add` method. Some indicators also provide `static` batch methods for further performance improvements when providing data up-front during a backtest or historical data import. You can try it out streaming input data by running the provided [demo script](./src/start/demo.ts) with `npm start`, which uses a keyboard input stream.
 
