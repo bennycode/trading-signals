@@ -40,10 +40,6 @@ export default defineConfig({
   rules: {
     '@stylistic/multiline-comment-style': ['error', 'starred-block'],
     curly: 'error',
-    /*
-     * Import-graph cycles were previously caught by dependency-cruiser's `no-circular`. Oxlint
-     * checks them natively, so the rule survives the move to Knip.
-     */
     'import/no-cycle': 'error',
     'max-depth': ['warn', 4],
     'no-cond-assign': 'error',
@@ -72,11 +68,6 @@ export default defineConfig({
     'prefer-arrow-callback': 'error',
     'prefer-const': 'error',
     'prefer-promise-reject-errors': 'error',
-    /*
-     * Object-key sorting is enforced across all packages. Case-insensitive so that keys like the
-     * single-letter `S`/`T` fields in Alpaca's wire schemas group with their lowercase siblings
-     * instead of being hoisted above them by ASCII ordering.
-     */
     'sort-keys': ['error', 'asc', {caseSensitive: false, natural: true}],
     'sort-vars': 'error',
     'typescript/array-type': 'error',
