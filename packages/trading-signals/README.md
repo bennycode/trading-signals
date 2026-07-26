@@ -152,36 +152,7 @@ console.log(sma.highest?.toFixed(2)); // "53.33"
 
 To input data, you need to call the indicator's `add` method. Depending on whether the minimum required input data for the interval has been reached, the `add` method may or may not return a result from the indicator.
 
-### When to use `getResult()` vs. `getResultOrThrow()`?
-
-Both accessors read the current value:
-
-| Method               | Return type      | Before the indicator is stable |
-| -------------------- | ---------------- | ------------------------------ |
-| `getResult()`        | `Result \| null` | Returns `null`                 |
-| `getResultOrThrow()` | `Result`         | Throws `NotEnoughDataError`    |
-
-`getResult()` returns `null` when no result is available, which is usually during warm-up. You have to check for it before using the value:
-
-```ts
-const result = sma.getResult();
-
-if (result === null) {
-  return; // Not enough data yet
-}
-
-trade(result);
-```
-
-`getResultOrThrow()` throws instead. That is a hard crash, but it saves you the null check, so use it once you have checked `isStable` or wherever a missing result would be a bug:
-
-```ts
-if (sma.isStable) {
-  trade(sma.getResultOrThrow());
-}
-```
-
-Never write `getResult()!`. The assertion hides warm-up from the compiler and crashes at runtime.
+### When to use `getResultOrThrow()`?
 
 **Example:**
 
