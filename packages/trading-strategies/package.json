@@ -45,6 +45,7 @@
     "@typedtrader/exchange": "0.3.0",
     "@types/big.js": "^7.0.0",
     "big.js": "^7.0.1",
+    "dotenv-defaults": "^6.0.0",
     "ms": "4.0.0-nightly.202508271359",
     "trading-signals": "8.0.0",
     "zod": "^4.4.3"

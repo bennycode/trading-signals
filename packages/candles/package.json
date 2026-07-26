@@ -25,8 +25,7 @@
     "lint": "npm run lint:code && npm run lint:other",
     "lint:code": "oxlint .",
     "lint:other": "oxfmt --list-different",
-    "test": "npm run test:types && npm run test:imports && npm run test:units",
-    "test:imports": "depcruise -c ../../.dependency-cruiser.json src --include-only \"^src\"",
+    "test": "npm run test:types && npm run test:units",
     "test:types": "tsc --noEmit",
     "test:units": "vitest run"
   },

@@ -1,0 +1,20 @@
+{
+  "$schema": "https://unpkg.com/knip@6/schema.json",
+  "exclude": ["exports", "nsExports", "nsTypes", "types"],
+  "ignoreBinaries": ["nx"],
+  "ignoreDependencies": ["conventional-changelog-conventionalcommits", "pino-roll"],
+  "workspaces": {
+    "packages/exchange": {
+      "entry": ["src/**/demo/*.ts"]
+    },
+    "packages/trading-signals": {
+      "entry": ["src/start/**/*.ts"]
+    },
+    "packages/trading-signals-docs": {
+      "entry": ["e2e/**/*.ts"]
+    },
+    "packages/trading-strategies": {
+      "entry": ["src/start/**/*.ts"]
+    }
+  }
+}

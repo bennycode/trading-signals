@@ -28,18 +28,23 @@ export default defineConfig({
   ],
 
   // Rules Oxlint has no native equivalent for, bridged through its ESLint plugin support.
-  jsPlugins: ['@stylistic/eslint-plugin', 'eslint-plugin-perfectionist'],
+  jsPlugins: ['@stylistic/eslint-plugin'],
 
   // Runs the type-aware rules below through oxlint-tsgolint. Honoured only in the root config.
   options: {
     typeAware: true,
   },
 
-  plugins: ['typescript'],
+  plugins: ['import', 'typescript'],
 
   rules: {
     '@stylistic/multiline-comment-style': ['error', 'starred-block'],
     curly: 'error',
+    /*
+     * Import-graph cycles were previously caught by dependency-cruiser's `no-circular`. Oxlint
+     * checks them natively, so the rule survives the move to Knip.
+     */
+    'import/no-cycle': 'error',
     'max-depth': ['warn', 4],
     'no-cond-assign': 'error',
     'no-console': 'off',
@@ -64,14 +69,15 @@ export default defineConfig({
     'no-unused-vars': 'off',
     'no-useless-return': 'error',
     'no-var': 'error',
-    /*
-     * Object-key sorting is enforced across all packages. We use a plugin instead of the core
-     * `sort-keys` rule because that rule is frozen upstream and provides no autofix.
-     */
-    'perfectionist/sort-objects': ['error', {ignoreCase: false, order: 'asc', type: 'natural'}],
     'prefer-arrow-callback': 'error',
     'prefer-const': 'error',
     'prefer-promise-reject-errors': 'error',
+    /*
+     * Object-key sorting is enforced across all packages. Case-insensitive so that keys like the
+     * single-letter `S`/`T` fields in Alpaca's wire schemas group with their lowercase siblings
+     * instead of being hoisted above them by ASCII ordering.
+     */
+    'sort-keys': ['error', 'asc', {caseSensitive: false, natural: true}],
     'sort-vars': 'error',
     'typescript/array-type': 'error',
     'typescript/consistent-type-assertions': 'error',
