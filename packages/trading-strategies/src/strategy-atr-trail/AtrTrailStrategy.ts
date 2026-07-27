@@ -1,19 +1,13 @@
 import Big from 'big.js';
 import {ms} from 'ms';
+import {AtrTrail, AtrTrailMode} from 'trading-signals';
 import {z} from 'zod';
-import {AllAvailableAmount, CandleBatcher, OrderSide, OrderType} from '@typedtrader/exchange';
-import type {
-  Fill,
-  MarketDataSource,
-  OneMinuteBatchedCandle,
-  OrderAdvice,
-  PendingOrder,
-  TradingPair,
-  TradingSessionState,
-} from '@typedtrader/exchange';
+import {CandleBatcher, OrderSide, OrderType} from '@typedtrader/exchange';
+import {AllAvailableAmount} from '../trader/index.js';
+import type {Fill, MarketDataSource, OneMinuteBatchedCandle, PendingOrder, TradingPair} from '@typedtrader/exchange';
+import type {OrderAdvice, TradingSessionState} from '../trader/index.js';
 import {MarketType} from '../strategy/MarketType.js';
 import {Strategy} from '../strategy/Strategy.js';
-import {AtrPercent} from '../util/AtrPercent.js';
 import {positiveNumberString} from '../util/validators.js';
 
 export const AtrTrailSchema = z.object({
@@ -70,7 +64,9 @@ const AtrTrailStateSchema = z
 
 /**
  * Exit-only trailing stop whose width is sized from the instrument's own volatility: on `init` it
- * pulls recent history, measures ATR%, and sets the trail to `atrMultiple * ATR%`. By default that
+ * pulls recent history and sizes the trail via the `AtrTrail` indicator from `trading-signals`
+ * (`trailPct = atrMultiple * ATR%`). The peak/stop ratchet stays here because it is position-scoped
+ * (highest high since attach), while the indicator's own peak spans the whole feed. By default the
  * width is **frozen** — from then on it's an ordinary percentage trail that ratchets the peak up and
  * exits on a breach. With `rolling: true` the ATR keeps advancing on completed `atrIntervalMillis`
  * bars and the width re-sizes, while the stop still only ratchets up. The point either way is a
@@ -92,7 +88,7 @@ export class AtrTrailStrategy extends Strategy {
   static override NAME = '@typedtrader/strategy-atr-trail';
   static override marketTypes: readonly MarketType[] = [MarketType.BULLISH];
 
-  readonly #atrPercent: AtrPercent;
+  readonly #atrTrail: AtrTrail;
   readonly #atrInterval: number;
   readonly #atrIntervalMillis: number;
   readonly #atrMultiple: Big;
@@ -104,7 +100,17 @@ export class AtrTrailStrategy extends Strategy {
     this.#atrInterval = parsed.atrInterval;
     this.#atrIntervalMillis = parsed.atrIntervalMillis;
     this.#atrMultiple = new Big(parsed.atrMultiple);
-    this.#atrPercent = new AtrPercent(parsed.atrInterval);
+    /*
+     * Always ROLLING, even when the strategy's `rolling` config is off: the indicator's FROZEN mode
+     * locks the width at the FIRST stable candle, but the strategy sizes from the FULL warm-up
+     * history pulled in `init`. Freezing is the strategy's job — with `rolling: false` the batcher
+     * stays null and the indicator simply never sees another candle after `init`.
+     */
+    this.#atrTrail = new AtrTrail({
+      interval: parsed.atrInterval,
+      mode: AtrTrailMode.ROLLING,
+      multiplier: Number(parsed.atrMultiple),
+    });
     this.#atrBatcher = parsed.rolling ? new CandleBatcher(parsed.atrIntervalMillis) : null;
   }
 
@@ -122,21 +128,22 @@ export class AtrTrailStrategy extends Strategy {
     const count = this.#atrInterval * 2 + 1;
     const candles = await market.getRecentCandles(pair, count, this.#atrIntervalMillis);
     for (const candle of candles) {
-      this.#atrPercent.add({
+      this.#atrTrail.add({
         close: parseFloat(candle.close),
         high: parseFloat(candle.high),
         low: parseFloat(candle.low),
       });
     }
 
-    const atrPercent = this.#atrPercent.value;
-    if (atrPercent === null) {
+    const result = this.#atrTrail.getResult();
+    if (result === null) {
       this.onMessage?.(`ATR trail could not be sized from ${candles.length} candles; holding without a stop.`);
       return;
     }
 
-    const trailDownPct = this.#atrMultiple.mul(atrPercent);
+    const trailDownPct = new Big(result.trailPct);
     this.#state.trailDownPct = trailDownPct.toFixed();
+    const atrPercent = trailDownPct.div(this.#atrMultiple);
     this.onMessage?.(
       `ATR trail sized to ${trailDownPct.toFixed(2)}% (${this.#atrMultiple.toFixed()}x ${atrPercent.toFixed(2)}% ATR).`
     );
@@ -155,14 +162,13 @@ export class AtrTrailStrategy extends Strategy {
     if (!completed) {
       return;
     }
-    this.#atrPercent.add({
+    const result = this.#atrTrail.add({
       close: completed.close.toNumber(),
       high: completed.high.toNumber(),
       low: completed.low.toNumber(),
     });
-    const atrPercent = this.#atrPercent.value;
-    if (atrPercent !== null) {
-      this.#state.trailDownPct = this.#atrMultiple.mul(atrPercent).toFixed();
+    if (result !== null) {
+      this.#state.trailDownPct = new Big(result.trailPct).toFixed();
     }
   }
 
