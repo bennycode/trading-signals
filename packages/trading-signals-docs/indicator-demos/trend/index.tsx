@@ -15,8 +15,10 @@ import {PSAR} from './PSAR.demo';
 import {RMA} from './RMA.demo';
 import {SMA} from './SMA.demo';
 import {SMA15} from './SMA15.demo';
+import {SuperTrend} from './SuperTrend.demo';
 import {SwingHigh} from './SwingHigh.demo';
 import {SwingLow} from './SwingLow.demo';
+import {VolatilityStop} from './VolatilityStop.demo';
 import {VWAP} from './VWAP.demo';
 import {WMA} from './WMA.demo';
 import {WSMA} from './WSMA.demo';
@@ -47,4 +49,6 @@ export const indicators: IndicatorConfig[] = [
   SwingHigh,
   HigherLowTrail,
   BreakoutBarLow,
+  SuperTrend,
+  VolatilityStop,
 ];
