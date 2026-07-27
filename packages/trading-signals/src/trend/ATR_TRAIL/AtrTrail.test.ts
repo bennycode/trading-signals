@@ -28,7 +28,12 @@ describe('AtrTrail', () => {
        * The width stays 20% although the last candle's volatility explodes, and the peak of 250
        * never falls back although the last candle prints far below it.
        */
-      const expectations = ['84.00', '160.00', '200.00', '200.00'] as const;
+      const expectations = [
+        {peak: 105, stop: '84.00', trail: '84.00', trailPct: '20.00'},
+        {peak: 200, stop: '160.00', trail: '160.00', trailPct: '20.00'},
+        {peak: 250, stop: '200.00', trail: '200.00', trailPct: '20.00'},
+        {peak: 250, stop: '200.00', trail: '200.00', trailPct: '20.00'},
+      ] as const;
       const trail = new AtrTrail({interval: 5, multiplier: 2});
       const offset = trail.getRequiredInputs() - 1;
 
@@ -36,7 +41,11 @@ describe('AtrTrail', () => {
         const result = trail.add(candle);
 
         if (result) {
-          expect(result.toFixed(2)).toBe(expectations[i - offset]);
+          const expected = expectations[i - offset];
+          expect(result.peak).toBe(expected.peak);
+          expect(result.stop.toFixed(2)).toBe(expected.stop);
+          expect(result.trail.toFixed(2)).toBe(expected.trail);
+          expect(result.trailPct.toFixed(2)).toBe(expected.trailPct);
         }
       });
 
@@ -47,10 +56,16 @@ describe('AtrTrail', () => {
     it('re-sizes the trail from the live ATR in ROLLING mode without loosening the stop', () => {
       const candles = [...warmupCandles, ...followUpCandles] as const;
       /*
-       * The width widens as the ATR picks up, but the volatility spike of the last candle only
-       * lowers the candidate stop — the emitted stop never decreases.
+       * The width widens as the ATR picks up. On the last candle the volatility spike pushes the
+       * raw trail candidate far below the committed stop — both values are exposed and diverge,
+       * while the stop itself never decreases.
        */
-      const expectations = ['84.00', '142.56', '181.84', '181.84'] as const;
+      const expectations = [
+        {peak: 105, stop: '84.00', trail: '84.00', trailPct: '20.00'},
+        {peak: 200, stop: '142.56', trail: '142.56', trailPct: '28.72'},
+        {peak: 250, stop: '181.84', trail: '181.84', trailPct: '27.27'},
+        {peak: 250, stop: '181.84', trail: '90.93', trailPct: '63.63'},
+      ] as const;
       const trail = new AtrTrail({interval: 5, mode: AtrTrailMode.ROLLING, multiplier: 2});
       const offset = trail.getRequiredInputs() - 1;
 
@@ -58,7 +73,11 @@ describe('AtrTrail', () => {
         const result = trail.add(candle);
 
         if (result) {
-          expect(result.toFixed(2)).toBe(expectations[i - offset]);
+          const expected = expectations[i - offset];
+          expect(result.peak).toBe(expected.peak);
+          expect(result.stop.toFixed(2)).toBe(expected.stop);
+          expect(result.trail.toFixed(2)).toBe(expected.trail);
+          expect(result.trailPct.toFixed(2)).toBe(expected.trailPct);
         }
       });
 
@@ -75,8 +94,10 @@ describe('AtrTrail', () => {
       }
 
       // Volatile: 10% ATR -> stop 20% below the peak of 105. Calm: 1% ATR -> stop 2% below 100.5.
-      expect(volatile.getResultOrThrow().toFixed(2)).toBe('84.00');
-      expect(calm.getResultOrThrow().toFixed(2)).toBe('98.49');
+      expect(volatile.getResultOrThrow().trailPct).toBe(20);
+      expect(volatile.getResultOrThrow().stop.toFixed(2)).toBe('84.00');
+      expect(calm.getResultOrThrow().trailPct).toBe(2);
+      expect(calm.getResultOrThrow().stop.toFixed(2)).toBe('98.49');
     });
 
     it('uses an interval of 14, a multiplier of 3 and the FROZEN mode by default', () => {
@@ -111,15 +132,16 @@ describe('AtrTrail', () => {
 
       const originalResult = trail.add(originalValue);
 
-      expect(originalResult?.toFixed(2)).toBe('160.00');
+      expect(originalResult?.stop.toFixed(2)).toBe('160.00');
 
       const replacedResult = trail.replace(replacedValue);
 
-      expect(replacedResult?.toFixed(2)).toBe('88.00');
+      expect(replacedResult?.peak).toBe(110);
+      expect(replacedResult?.stop.toFixed(2)).toBe('88.00');
 
       const restoredResult = trail.replace(originalValue);
 
-      expect(restoredResult).toBe(originalResult);
+      expect(restoredResult).toEqual(originalResult);
     });
 
     it('replaces the most recently added value in ROLLING mode', () => {
@@ -132,19 +154,20 @@ describe('AtrTrail', () => {
 
       const originalResult = trail.add(originalValue);
 
-      expect(originalResult?.toFixed(2)).toBe('142.56');
+      expect(originalResult?.stop.toFixed(2)).toBe('142.56');
 
       /*
-       * The replaced candle's stop candidate (83.60) sits below the already committed stop of
-       * 84.00, so the ratchet keeps the prior stop in place.
+       * The replaced candle's trail candidate (83.60) sits below the already committed stop of
+       * 84.00, so the ratchet keeps the prior stop while the raw trail exposes the candidate.
        */
       const replacedResult = trail.replace(replacedValue);
 
-      expect(replacedResult?.toFixed(2)).toBe('84.00');
+      expect(replacedResult?.trail.toFixed(2)).toBe('83.60');
+      expect(replacedResult?.stop.toFixed(2)).toBe('84.00');
 
       const restoredResult = trail.replace(originalValue);
 
-      expect(restoredResult).toBe(originalResult);
+      expect(restoredResult).toEqual(originalResult);
     });
   });
 });
