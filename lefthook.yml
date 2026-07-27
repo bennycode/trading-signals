@@ -6,6 +6,6 @@ pre-commit:
         npx oxlint --fix --no-error-on-unmatched-pattern {staged_files}
         npx oxfmt --no-error-on-unmatched-pattern {staged_files}
       stage_fixed: true
-    actionlint:
+    action-validator:
       glob: '.github/workflows/*.{yml,yaml}'
-      run: actionlint {staged_files}
+      run: npx action-validator {staged_files}
