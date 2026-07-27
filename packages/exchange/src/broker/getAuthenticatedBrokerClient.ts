@@ -9,6 +9,6 @@ export async function getAuthenticatedBrokerClient(
   ...args: Parameters<typeof getBrokerClient>
 ): Promise<Broker & MarketDataSource> {
   const client = getBrokerClient(...args);
-  await client.getTime();
+  await client.verifyCredentials();
   return client;
 }

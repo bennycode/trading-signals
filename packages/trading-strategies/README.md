@@ -34,6 +34,14 @@ import type {OrderAdvice} from '@typedtrader/exchange';
 
 In addition to strategies, the library includes reports that analyze market data and return formatted results. Reports implement the `Report` base class and can be run on-demand or scheduled at recurring intervals.
 
+Available reports include:
+
+- **`SP500MomentumReport`** — ranks the S&P 500 by 12-1 cross-sectional momentum (Jegadeesh & Titman, 1993).
+- **`SP500HeatmapReport`** — a snapshot of S&P 500 performance.
+- **`ScalpScannerReport`** — scans for short-term scalping opportunities.
+
+Adding a **fingerprint (a short hash of the raw result data)** to a report is good practice: when two runs share the same fingerprint nothing changed.
+
 ## Zod Schemas
 
 Every strategy exports a Zod schema for configuration validation and type inference:
@@ -195,12 +203,6 @@ It is very important to do your own analysis before making any investment based 
 ## Maintainers
 
 [![Benny Neugebauer on Stack Exchange][stack_exchange_bennycode_badge]][stack_exchange_bennycode_url]
-
-## ⭐️ Become a TypeScript rockstar! ⭐️
-
-This package was built by Benny Neugebauer. Checkout my [**TypeScript course**](https://typescript.tv/) to become a coding rockstar!
-
-[<img src="https://raw.githubusercontent.com/bennycode/trading-signals/main/packages/trading-signals/tstv.png">](https://typescript.tv/)
 
 [stack_exchange_bennycode_badge]: https://stackexchange.com/users/flair/203782.png?theme=default
 [stack_exchange_bennycode_url]: https://stackexchange.com/users/203782/benny-neugebauer?tab=accounts

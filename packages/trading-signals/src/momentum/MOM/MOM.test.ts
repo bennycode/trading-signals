@@ -1,6 +1,6 @@
 import {MOM} from './MOM.js';
 import {NotEnoughDataError} from '../../error/index.js';
-import {TradingSignal} from '../../types/Indicator.js';
+import {TradingSignal} from '../../base/Indicator.js';
 
 describe('MOM', () => {
   describe('update', () => {
@@ -21,7 +21,7 @@ describe('MOM', () => {
   });
 
   describe('getResultOrThrow', () => {
-    it('returns the price 5 intervals ago', () => {
+    it('returns the price 5 intervals ago', {tags: ['tulipindicators']}, () => {
       /*
        * Test data verified with:
        * https://github.com/TulipCharts/tulipindicators/blob/v0.8.0/tests/untest.txt#L286-L288

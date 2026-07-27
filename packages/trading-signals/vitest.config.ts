@@ -13,6 +13,13 @@ export default mergeConfig(
           statements: 100,
         },
       },
+      tags: [
+        {
+          description:
+            'Verifies indicator results against Tulip Indicators reference data (https://tulipindicators.org/).',
+          name: 'tulipindicators',
+        },
+      ],
     },
   })
 );

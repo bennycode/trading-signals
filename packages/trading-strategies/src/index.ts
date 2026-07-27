@@ -1,5 +1,6 @@
 export * from './backtest/index.js';
 export * from './strategy/index.js';
+export * from './trader/index.js';
 export {
   AtrTrailStrategy,
   AtrTrailSchema,
@@ -24,6 +25,11 @@ export {
   type MultiIndicatorConfluenceConfig,
 } from './strategy-multi-indicator-confluence/MultiIndicatorConfluenceStrategy.js';
 export {ScalpStrategy, ScalpSchema, type ScalpConfig} from './strategy-scalp/ScalpStrategy.js';
+export {
+  SmaCrossoverStrategy,
+  SmaCrossoverSchema,
+  type SmaCrossoverConfig,
+} from './strategy-sma-crossover/SmaCrossoverStrategy.js';
 export {
   MeanReversionStrategy,
   MeanReversionSchema,
@@ -62,6 +68,7 @@ export {
   type SP500HeatmapConfig,
 } from './report-sp500-heatmap/SP500HeatmapReport.js';
 export {
+  hashMomentumRanking,
   SP500MomentumReport,
   SP500MomentumSchema,
   type SP500MomentumConfig,

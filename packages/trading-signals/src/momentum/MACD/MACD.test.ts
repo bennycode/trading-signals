@@ -1,7 +1,7 @@
 import {MACD} from './MACD.js';
 import {EMA} from '../../trend/EMA/EMA.js';
 import {NotEnoughDataError} from '../../error/index.js';
-import {TradingSignal} from '../../types/index.js';
+import {TradingSignal} from '../../base/index.js';
 
 describe('MACD', () => {
   describe('replace', () => {
@@ -44,7 +44,7 @@ describe('MACD', () => {
   });
 
   describe('getResultOrThrow', () => {
-    it('is compatible with results from Tulip Indicators (TI)', () => {
+    it('is compatible with results from Tulip Indicators (TI)', {tags: ['tulipindicators']}, () => {
       /*
        * Test data verified with:
        * https://tulipindicators.org/macd

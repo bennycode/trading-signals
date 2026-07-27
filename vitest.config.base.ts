@@ -2,8 +2,10 @@ import {defineConfig} from 'vitest/config';
 
 export default defineConfig({
   esbuild: {
-    // Allows using the "accessor" keyword in TypeScript:
-    // https://github.com/vitest-dev/vitest/issues/5976#issuecomment-2190804966
+    /*
+     * Allows using the "accessor" keyword in TypeScript:
+     * https://github.com/vitest-dev/vitest/issues/5976#issuecomment-2190804966
+     */
     target: 'es2022',
   },
   test: {
@@ -16,6 +18,8 @@ export default defineConfig({
     },
     environment: 'node',
     globals: true,
+    // https://main.vitest.dev/guide/learn/writing-tests-with-ai.html#mock-cleanup
+    restoreMocks: true,
     sequence: {
       concurrent: true,
       shuffle: true,

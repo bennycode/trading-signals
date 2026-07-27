@@ -1,10 +1,10 @@
 import {ROC} from './ROC.js';
 import {NotEnoughDataError} from '../../error/index.js';
-import {TradingSignal} from '../../types/Indicator.js';
+import {TradingSignal} from '../../base/Indicator.js';
 
 describe('ROC', () => {
   describe('getResultOrThrow', () => {
-    it('identifies an up-trending asset by a positive ROC', () => {
+    it('identifies an up-trending asset by a positive ROC', {tags: ['tulipindicators']}, () => {
       /*
        * Test data verified with:
        * https://tulipindicators.org/roc

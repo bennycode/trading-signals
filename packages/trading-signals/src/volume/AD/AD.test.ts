@@ -1,5 +1,5 @@
 import {AD} from './AD.js';
-import {TradingSignal} from '../../types/index.js';
+import {TradingSignal} from '../../base/index.js';
 
 describe('AD', () => {
   describe('getResultOrThrow', () => {

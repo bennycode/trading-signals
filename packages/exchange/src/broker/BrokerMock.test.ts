@@ -113,6 +113,57 @@ describe('BrokerMock', () => {
       expect(fills[0].price).toBe('98');
       expect(fills[0].side).toBe(OrderSide.SELL);
     });
+
+    it('converts a counter-sized (notional) market buy at the fill price with the fee inside the spend', async () => {
+      const exchange = createExchange('0', '10000');
+
+      exchange.processCandle(createCandle({close: '100', open: '100'}));
+
+      await exchange.placeMarketOrder(pair, {
+        side: OrderSide.BUY,
+        size: '1000',
+        sizeInCounter: true,
+      });
+
+      // Converts at the NEXT candle's open (105), not at the stale price seen at placement time (100)
+      const fills = exchange.processCandle(
+        createCandle({close: '110', open: '105', openTimeInISO: '2025-01-01T00:01:00.000Z'})
+      );
+
+      expect(fills).toHaveLength(1);
+      const fill = fills[0];
+      expect(fill.price).toBe('105');
+
+      // The 0.25% taker fee comes out of the 1000 USD spend, so net = 1000 / 1.0025
+      const net = new Big('1000').div('1.0025');
+      expect(new Big(fill.fee).toFixed(8)).toBe(new Big('1000').minus(net).toFixed(8));
+      expect(new Big(fill.size).toFixed(8)).toBe(net.div('105').toFixed(8));
+
+      // Exactly the notional amount left the counter balance — no more, no less
+      const balances = await exchange.getAvailableBalances(pair);
+      expect(balances.counter.toFixed(2)).toBe('9000.00');
+      expect(balances.base.eq(fill.size)).toBe(true);
+    });
+
+    it('releases the full hold when a counter-sized market buy is canceled', async () => {
+      const exchange = createExchange('0', '10000');
+
+      exchange.processCandle(createCandle({close: '100', open: '100'}));
+
+      await exchange.placeMarketOrder(pair, {
+        side: OrderSide.BUY,
+        size: '1000',
+        sizeInCounter: true,
+      });
+      await exchange.cancelOpenOrders(pair);
+
+      const balances = await exchange.getAvailableBalances(pair);
+      expect(balances.counter.toFixed(2)).toBe('10000.00');
+
+      const [btc, usd] = await exchange.listBalances();
+      expect(btc.hold).toBe('0');
+      expect(usd.hold).toBe('0');
+    });
   });
 
   describe('limit orders', () => {

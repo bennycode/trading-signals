@@ -1,5 +1,5 @@
 import {NotEnoughDataError} from '../../error/index.js';
-import {TradingSignal} from '../../types/Indicator.js';
+import {TradingSignal} from '../../base/Indicator.js';
 import {AO} from './AO.js';
 
 describe('AO', () => {
@@ -33,7 +33,7 @@ describe('AO', () => {
   ] as const;
 
   describe('getResultOrThrow', () => {
-    it('works with an interval setting of 5/34', () => {
+    it('works with an interval setting of 5/34', {tags: ['tulipindicators']}, () => {
       const shortInterval = 5;
       const longInterval = 34;
 

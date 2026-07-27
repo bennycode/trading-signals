@@ -1,6 +1,6 @@
 import {VWMA} from './VWMA.js';
 import {NotEnoughDataError} from '../../error/index.js';
-import {TradingSignal} from '../../types/index.js';
+import {TradingSignal} from '../../base/index.js';
 import {EMA} from '../../trend/EMA/EMA.js';
 
 describe('VWMA', () => {

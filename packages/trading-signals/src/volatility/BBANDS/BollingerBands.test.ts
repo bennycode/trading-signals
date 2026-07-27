@@ -1,7 +1,7 @@
 import {BollingerBands} from './BollingerBands.js';
 import data from '../../fixtures/BB/data.json' with {type: 'json'};
 import {NotEnoughDataError} from '../../error/index.js';
-import {TradingSignal} from '../../types/Indicator.js';
+import {TradingSignal} from '../../base/Indicator.js';
 
 describe('BollingerBands', () => {
   describe('prices', () => {
@@ -60,7 +60,7 @@ describe('BollingerBands', () => {
       }
     });
 
-    it('is compatible with results from Tulip Indicators (TI)', () => {
+    it('is compatible with results from Tulip Indicators (TI)', {tags: ['tulipindicators']}, () => {
       /*
        * Test data verified with:
        * https://tulipindicators.org/bbands

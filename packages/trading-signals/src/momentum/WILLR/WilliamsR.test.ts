@@ -1,7 +1,7 @@
 import {WilliamsR} from './WilliamsR.js';
 import {StochasticOscillator} from '../STOCH/StochasticOscillator.js';
 import {NotEnoughDataError} from '../../error/index.js';
-import {TradingSignal} from '../../types/index.js';
+import {TradingSignal} from '../../base/index.js';
 import candles from '../../fixtures/STOCH/candles.json' with {type: 'json'};
 
 describe('WilliamsR', () => {
@@ -68,7 +68,7 @@ describe('WilliamsR', () => {
        * Therefore: Williams %R = Stochastic %K - 100
        */
       const willR = new WilliamsR(5);
-      const stoch = new StochasticOscillator(5, 1, 1);
+      const stoch = new StochasticOscillator({dPeriod: 1, kPeriod: 5, kSlowingPeriod: 1});
 
       candles.forEach(candle => {
         const willRResult = willR.add(candle);
@@ -130,6 +130,16 @@ describe('WilliamsR', () => {
       const calculateSignalState = willR['calculateSignalState'].bind(willR);
       const signal = calculateSignalState(null);
       expect(signal).toBe(TradingSignal.UNKNOWN);
+    });
+
+    it('respects custom overbought and oversold thresholds', () => {
+      const willR = new WilliamsR(14, {overbought: -10, oversold: -90});
+      const calculateSignalState = willR['calculateSignalState'].bind(willR);
+
+      expect(calculateSignalState(-20)).toBe(TradingSignal.SIDEWAYS);
+      expect(calculateSignalState(-10)).toBe(TradingSignal.BULLISH);
+      expect(calculateSignalState(-80)).toBe(TradingSignal.SIDEWAYS);
+      expect(calculateSignalState(-90)).toBe(TradingSignal.BEARISH);
     });
 
     it('returns OVERBOUGHT when Williams %R >= -20', () => {

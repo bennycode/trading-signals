@@ -13,7 +13,7 @@ interface DataTableProps<T> {
   data: T[];
 }
 
-export function DataTable<T extends Record<string, any>>({title, columns, data}: DataTableProps<T>) {
+export function DataTable<T extends Record<string, any>>({columns, data, title}: DataTableProps<T>) {
   return (
     <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-4">
       {title && <h3 className="text-lg font-semibold text-white mb-3">{title}</h3>}

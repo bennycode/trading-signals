@@ -41,7 +41,7 @@ describe('TR', () => {
   ] as const;
 
   describe('getResultOrThrow', () => {
-    it('calculates the True Range (TR)', () => {
+    it('calculates the True Range (TR)', {tags: ['tulipindicators']}, () => {
       const tr = new TR();
 
       candles.forEach((candle, i) => {

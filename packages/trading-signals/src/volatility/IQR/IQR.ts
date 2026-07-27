@@ -1,4 +1,4 @@
-import {IndicatorSeries} from '../../types/Indicator.js';
+import {IndicatorSeries} from '../../base/Indicator.js';
 import {getQuartile} from '../../util/getQuartile.js';
 
 /**

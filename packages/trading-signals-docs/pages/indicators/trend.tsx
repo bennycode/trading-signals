@@ -13,7 +13,9 @@ export default function TrendIndicators() {
   const renderIndicatorContent = () => {
     const config = indicators.find(ind => ind.id === selectedIndicator);
     const dataset = datasets.find(ds => ds.id === selectedDataset);
-    if (!config || !dataset) return null;
+    if (!config || !dataset) {
+      return null;
+    }
 
     if (config.type === 'single') {
       return renderSingleIndicator(config, dataset.candles);

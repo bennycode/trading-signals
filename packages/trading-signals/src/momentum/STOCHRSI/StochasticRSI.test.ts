@@ -1,7 +1,7 @@
 import {SMA} from '../../trend/SMA/SMA.js';
 import {WSMA} from '../../trend/WSMA/WSMA.js';
 import {StochasticRSI} from './StochasticRSI.js';
-import {TradingSignal} from '../../types/index.js';
+import {TradingSignal} from '../../base/index.js';
 
 describe('StochasticRSI', () => {
   describe('replace', () => {
@@ -19,7 +19,7 @@ describe('StochasticRSI', () => {
   });
 
   describe('getResultOrThrow', () => {
-    it('calculates the Stochastic RSI', () => {
+    it('calculates the Stochastic RSI', {tags: ['tulipindicators']}, () => {
       /*
        * Test data verified with:
        * https://github.com/TulipCharts/tulipindicators/blob/0bc8dfc46cfc89366bf8cef6dfad1fb6f81b3b7b/tests/untest.txt#L382-L384
@@ -114,6 +114,25 @@ describe('StochasticRSI', () => {
       const stochRSI = new StochasticRSI(5);
       const signal = stochRSI.getSignal();
       expect(signal.state).toBe(TradingSignal.UNKNOWN);
+    });
+
+    it('respects custom overbought and oversold thresholds', () => {
+      const prices = [50, 51, 50.5, 51.5, 50.2, 51.8, 50.7, 51.2, 50.9, 51.1, 50.6, 51.4, 50.4, 51.6, 50.8] as const;
+      const smoothing = () => ({d: new SMA(3), k: new SMA(3)});
+      const sensitiveBull = new StochasticRSI(5, WSMA, smoothing(), {overbought: 0.2, oversold: 0.1});
+      const sensitiveBear = new StochasticRSI(5, WSMA, smoothing(), {oversold: 0.8});
+
+      for (const price of prices) {
+        sensitiveBull.add(price);
+        sensitiveBear.add(price);
+      }
+
+      const result = sensitiveBull.getResultOrThrow();
+
+      expect(result).toBeGreaterThan(0.2);
+      expect(result).toBeLessThan(0.8);
+      expect(sensitiveBull.getSignal().state).toBe(TradingSignal.BULLISH);
+      expect(sensitiveBear.getSignal().state).toBe(TradingSignal.BEARISH);
     });
 
     it('returns UNKNOWN when StochRSI is in mid-range (between 0.2 and 0.8)', () => {

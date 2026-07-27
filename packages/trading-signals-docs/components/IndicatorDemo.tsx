@@ -7,17 +7,17 @@ export interface IndicatorExample {
   description: string;
   code: string;
   inputValues: number[];
-  calculate: (values: number[]) => {result: string | null; allResults: Array<{value: number; result: string | null}>};
+  calculate: (values: number[]) => {result: string | null; allResults: {value: number; result: string | null}[]};
 }
 
 export default function IndicatorDemo({example}: {example: IndicatorExample}) {
   const [customInput, setCustomInput] = useState('');
   const [values, setValues] = useState<number[]>(example.inputValues);
   const [currentResult, setCurrentResult] = useState<string | null>(null);
-  const [allResults, setAllResults] = useState<Array<{value: number; result: string | null}>>([]);
+  const [allResults, setAllResults] = useState<{value: number; result: string | null}[]>([]);
 
   useEffect(() => {
-    const {result, allResults} = example.calculate(values);
+    const {allResults, result} = example.calculate(values);
     setCurrentResult(result);
     setAllResults(allResults);
   }, [values, example]);

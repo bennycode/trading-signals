@@ -1,32 +1,24 @@
 {
+  "name": "trading-strategies",
+  "version": "0.4.0",
+  "description": "Trading strategies to run trading bots with JavaScript / TypeScript.",
+  "keywords": [
+    "trading"
+  ],
+  "homepage": "https://bennycode.com/trading-signals",
   "bugs": {
     "url": "https://github.com/bennycode/trading-signals/issues"
   },
-  "dependencies": {
-    "@typedtrader/exchange": "0.2.5",
-    "@types/big.js": "^7.0.0",
-    "big.js": "^7.0.1",
-    "trading-signals": "7.4.3",
-    "zod": "^4.4.3"
-  },
-  "description": "Trading strategies to run trading bots with JavaScript / TypeScript.",
-  "devDependencies": {
-    "ms": "4.0.0-nightly.202508271359",
-    "tsx": "^4.21.0"
-  },
-  "exports": "./dist/index.js",
+  "license": "MIT",
   "files": [
     "dist",
     "!dist/start",
     "!dist/test",
     "!dist/**/*.test.*"
   ],
-  "homepage": "https://bennycode.com/trading-signals",
-  "keywords": [
-    "trading"
-  ],
-  "license": "MIT",
-  "name": "trading-strategies",
+  "type": "module",
+  "types": "dist/index.d.ts",
+  "exports": "./dist/index.js",
   "publishConfig": {
     "access": "public"
   },
@@ -36,11 +28,12 @@
     "dist": "npm run clean && npm run build",
     "backtest": "tsx src/start/runBacktest.ts",
     "strategy": "tsx src/start/runStrategy.ts",
-    "optimise": "tsx src/start/runOptimisation.ts",
+    "fix": "npm run fix:code && npm run fix:other",
+    "fix:code": "oxlint . --fix || true",
+    "fix:other": "oxfmt",
     "lint": "npm run lint:code && npm run lint:other",
-    "lint:code": "eslint .",
-    "lint:other": "npm run prettier -- --list-different",
-    "prettier": "prettier --config ../../.prettierrc.json --ignore-path ../../.gitignore --log-level error \"**/*.{json,scss,yml}\"",
+    "lint:code": "oxlint .",
+    "lint:other": "oxfmt --list-different",
     "dev": "npm run test:types && tsx watch src/start.ts",
     "start": "tsx src/start.ts",
     "test": "npm run test:types && npm run test:units",
@@ -48,7 +41,16 @@
     "test:units": "vitest run --passWithNoTests",
     "test:units:watch": "vitest --watch"
   },
-  "type": "module",
-  "types": "dist/index.d.ts",
-  "version": "0.3.5"
+  "dependencies": {
+    "@typedtrader/exchange": "0.3.0",
+    "@types/big.js": "^7.0.0",
+    "big.js": "^7.0.1",
+    "dotenv-defaults": "^6.0.0",
+    "ms": "4.0.0-nightly.202508271359",
+    "trading-signals": "8.0.0",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "tsx": "^4.22.5"
+  }
 }

@@ -62,7 +62,7 @@ describe('DX', () => {
   });
 
   describe('getResultOrThrow', () => {
-    it('calculates the Directional Movement Index (DX)', () => {
+    it('calculates the Directional Movement Index (DX)', {tags: ['tulipindicators']}, () => {
       const interval = 5;
       const dx = new DX(interval);
       const offset = dx.getRequiredInputs() - 1;

@@ -1,7 +1,8 @@
 import Big from 'big.js';
 import {describe, expect, it} from 'vitest';
 import {CandleBatcher, OrderType, TradingPair} from '@typedtrader/exchange';
-import type {Candle, TradingSessionState} from '@typedtrader/exchange';
+import type {Candle} from '@typedtrader/exchange';
+import type {TradingSessionState} from '../trader/index.js';
 import {NoopStrategy} from './NoopStrategy.js';
 
 function createCandle(): Candle {

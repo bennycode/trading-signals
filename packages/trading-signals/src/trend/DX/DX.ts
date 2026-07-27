@@ -1,8 +1,8 @@
 import {ATR} from '../../volatility/ATR/ATR.js';
-import {IndicatorSeries} from '../../types/Indicator.js';
+import {IndicatorSeries} from '../../base/Indicator.js';
 import type {MovingAverage} from '../MA/MovingAverage.js';
 import type {MovingAverageTypes} from '../MA/MovingAverageTypes.js';
-import type {HighLowClose} from '../../types/HighLowClose.js';
+import type {HighLowClose} from '../../base/Candle.type.js';
 import {WSMA} from '../WSMA/WSMA.js';
 
 /**

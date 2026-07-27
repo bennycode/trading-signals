@@ -73,7 +73,7 @@ describe('SMA', () => {
   });
 
   describe('getResultOrThrow', () => {
-    it('calculates the moving average based on the last 5 prices', () => {
+    it('calculates the moving average based on the last 5 prices', {tags: ['tulipindicators']}, () => {
       /*
        * Test data verified with:
        * https://github.com/TulipCharts/tulipindicators/blob/v0.8.0/tests/untest.txt#L359-L361

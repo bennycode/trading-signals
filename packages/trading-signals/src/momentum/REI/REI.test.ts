@@ -1,5 +1,5 @@
 import {REI} from './REI.js';
-import {TradingSignal} from '../../types/index.js';
+import {TradingSignal} from '../../base/index.js';
 
 describe('REI', () => {
   const testData = [
@@ -216,6 +216,16 @@ describe('REI', () => {
       const rei = new REI(8);
       const signal = rei.getSignal();
       expect(signal.state).toBe(TradingSignal.UNKNOWN);
+    });
+
+    it('respects custom overbought and oversold thresholds', () => {
+      const rei = new REI(8, {overbought: 80, oversold: -80});
+      const calculateSignal = rei['calculateSignalState'].bind(rei);
+
+      expect(calculateSignal(61)).toBe(TradingSignal.SIDEWAYS);
+      expect(calculateSignal(81)).toBe(TradingSignal.BULLISH);
+      expect(calculateSignal(-61)).toBe(TradingSignal.SIDEWAYS);
+      expect(calculateSignal(-81)).toBe(TradingSignal.BEARISH);
     });
 
     it('returns OVERBOUGHT when REI > 60', () => {

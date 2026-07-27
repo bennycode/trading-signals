@@ -4,7 +4,17 @@ import {BollingerBands} from './BollingerBands.demo';
 import {BollingerBandsWidth} from './BollingerBandsWidth.demo';
 import {IQR} from './IQR.demo';
 import {MAD} from './MAD.demo';
+import {NATR} from './NATR.demo';
 import {TR} from './TR.demo';
 import type {IndicatorConfig} from '../../utils/types';
 
-export const indicators: IndicatorConfig[] = [BollingerBands, AccelerationBands, ATR, TR, BollingerBandsWidth, IQR, MAD];
+export const indicators: IndicatorConfig[] = [
+  BollingerBands,
+  AccelerationBands,
+  ATR,
+  NATR,
+  TR,
+  BollingerBandsWidth,
+  IQR,
+  MAD,
+];

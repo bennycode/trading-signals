@@ -1,3 +1,10 @@
+/**
+ * IANA zone of the S&P 500's listing venues (NYSE/Nasdaq). Calendar boundaries
+ * (e.g. which month a report belongs to) resolve here so a report rolls over on
+ * the US market clock instead of whatever timezone the server happens to run in.
+ */
+export const SP500_TIMEZONE = 'America/New_York';
+
 /** S&P 500 constituent tickers (as of early 2026). Update periodically. */
 export const SP500_TICKERS = [
   'AAPL',

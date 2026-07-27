@@ -1,26 +1,48 @@
 # Change Log
 
-All notable changes to this project will be documented in this file.
-See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
+All notable changes to this project will be documented in this file. See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
+
+## [8.0.0](https://github.com/bennycode/trading-signals/compare/trading-signals@7.4.3...trading-signals@8.0.0) (2026-07-24)
+
+### ⚠ BREAKING CHANGES
+
+- **trading-signals:** configurable signal thresholds + named StochasticOscillator config (#1215)
+
+### Features
+
+- **exchange:** Add Trading212 broker integration ([#1073](https://github.com/bennycode/trading-signals/issues/1073))
+- **messaging:** support Trading212 in /accountAdd via a referenced data source ([#1088](https://github.com/bennycode/trading-signals/issues/1088))
+- **trading-signals, trading-signals-docs:** add percentage utilities and calculator-style docs ([#1087](https://github.com/bennycode/trading-signals/issues/1087))
+- **trading-signals:** add Aroon indicator (AROON) ([#1212](https://github.com/bennycode/trading-signals/issues/1212))
+- **trading-signals:** add Chaikin Oscillator (ADOSC) ([#1224](https://github.com/bennycode/trading-signals/issues/1224))
+- **trading-signals:** add Chande Momentum Oscillator (CMO) ([#1218](https://github.com/bennycode/trading-signals/issues/1218))
+- **trading-signals:** add Chandelier Exit (CE) ([#1226](https://github.com/bennycode/trading-signals/issues/1226))
+- **trading-signals:** add Hull Moving Average (HMA) ([#1217](https://github.com/bennycode/trading-signals/issues/1217))
+- **trading-signals:** add Kaufman's Adaptive Moving Average (KAMA) ([#1219](https://github.com/bennycode/trading-signals/issues/1219))
+- **trading-signals:** add Money Flow Index (MFI) ([#1214](https://github.com/bennycode/trading-signals/issues/1214))
+- **trading-signals:** add Normalized Average True Range (NATR) ([#1220](https://github.com/bennycode/trading-signals/issues/1220))
+- **trading-signals:** add Percentage Price Oscillator (PPO) ([#1221](https://github.com/bennycode/trading-signals/issues/1221))
+- **trading-signals:** Add signals for bands ([#961](https://github.com/bennycode/trading-signals/issues/961))
+- **trading-signals:** add swing-point and stop-level indicators ([#1053](https://github.com/bennycode/trading-signals/issues/1053))
+- **trading-signals:** add Triple Exponential Moving Average (TEMA) ([#1222](https://github.com/bennycode/trading-signals/issues/1222))
+- **trading-signals:** add Triple Smoothed EMA Rate of Change (TRIX) ([#1223](https://github.com/bennycode/trading-signals/issues/1223))
+- **trading-signals:** add Ultimate Oscillator (ULTOSC) ([#1216](https://github.com/bennycode/trading-signals/issues/1216))
+- **trading-signals:** Add volume indicator category ([#1034](https://github.com/bennycode/trading-signals/issues/1034))
+- **trading-signals:** configurable signal thresholds + named StochasticOscillator config ([#1215](https://github.com/bennycode/trading-signals/issues/1215))
+- **trading-signals:** convert ESLint configs to native TypeScript ([#1195](https://github.com/bennycode/trading-signals/issues/1195))
+- **trading-signals:** export MovingAverage base class ([#1123](https://github.com/bennycode/trading-signals/issues/1123))
+- **trading-strategies, messaging:** Add Scalp Scanner ([#1035](https://github.com/bennycode/trading-signals/issues/1035))
+- **trading-strategies:** Add MultiIndicatorConfluenceStrategy ([#972](https://github.com/bennycode/trading-signals/issues/972))
 
 ## [7.4.3](https://github.com/bennycode/trading-signals/compare/trading-signals@7.4.2...trading-signals@7.4.3) (2026-01-21)
 
-
 ### Bug Fixes
 
-* **trading-signals:** Repair replace functionality for ROC ([#925](https://github.com/bennycode/trading-signals/issues/925)) ([1ee7b7c](https://github.com/bennycode/trading-signals/commit/1ee7b7cd8f830da20bc5b64bad48601ff72d0345))
-
-
-
-
+- **trading-signals:** Repair replace functionality for ROC ([#925](https://github.com/bennycode/trading-signals/issues/925)) ([1ee7b7c](https://github.com/bennycode/trading-signals/commit/1ee7b7cd8f830da20bc5b64bad48601ff72d0345))
 
 ## [7.4.2](https://github.com/bennycode/trading-signals/compare/trading-signals@7.4.1...trading-signals@7.4.2) (2025-12-31)
 
 **Note:** Version bump only for package trading-signals
-
-
-
-
 
 ## [7.4.1](https://github.com/bennycode/trading-signals/compare/trading-signals@7.4.0...trading-signals@7.4.1) (2025-12-31)
 

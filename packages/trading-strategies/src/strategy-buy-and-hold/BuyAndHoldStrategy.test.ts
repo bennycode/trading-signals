@@ -1,15 +1,8 @@
 import Big from 'big.js';
 import {describe, expect, it} from 'vitest';
 import {CandleBatcher, OrderPosition, OrderSide, OrderType, TradingPair} from '@typedtrader/exchange';
-import type {
-  Candle,
-  Fill,
-  LimitOrderAdvice,
-  MarketOrderAdvice,
-  OneMinuteBatchedCandle,
-  OrderAdvice,
-  TradingSessionState,
-} from '@typedtrader/exchange';
+import type {Candle, Fill, OneMinuteBatchedCandle} from '@typedtrader/exchange';
+import type {LimitOrderAdvice, MarketOrderAdvice, OrderAdvice, TradingSessionState} from '../trader/index.js';
 import {BuyOnceStrategy} from '../strategy-buy-once/BuyOnceStrategy.js';
 
 function assertMarketBuy(advice: OrderAdvice | void): asserts advice is MarketOrderAdvice {

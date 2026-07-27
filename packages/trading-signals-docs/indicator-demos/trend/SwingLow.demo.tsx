@@ -4,17 +4,17 @@ import {buildTableColumns} from '../../utils/tableColumns';
 import type {IndicatorConfig} from '../../utils/types';
 
 export const SwingLow: IndicatorConfig = {
-  id: 'swing-low',
-  name: 'SwingLow',
-  description: 'Swing Low Detector',
+  chartTitle: 'Swing Low (lookback 2)',
   color: '#10b981',
-  type: 'single',
-  requiredInputs: 5,
+  createIndicator: () => new SwingLowClass({lookback: SwingLookback.BILL_WILLIAMS}),
+  description: 'Swing Low Detector',
   details:
     'Detects symmetric pullback lows (fractal pivots). A candle is confirmed as a swing low once the configured number of candles on each side print strictly higher lows. Commonly used to mark support levels and structural stop-loss references.',
-  createIndicator: () => new SwingLowClass({lookback: SwingLookback.BILL_WILLIAMS}),
-  processData: makeProcessData({rowInputs: ['low', 'close'], addInputs: ['high', 'low']}),
-  getTableColumns: indicator => buildTableColumns({inputs: ['low', 'close'], indicator}),
-  chartTitle: 'Swing Low (lookback 2)',
+  getTableColumns: indicator => buildTableColumns({indicator, inputs: ['low', 'close']}),
+  id: 'swing-low',
+  name: 'SwingLow',
+  processData: makeProcessData({addInputs: ['high', 'low'], rowInputs: ['low', 'close']}),
+  requiredInputs: 5,
+  type: 'single',
   yAxisLabel: 'Price',
 };

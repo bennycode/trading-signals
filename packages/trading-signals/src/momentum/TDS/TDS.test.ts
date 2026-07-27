@@ -1,5 +1,5 @@
 import {TDS} from './TDS.js';
-import {TradingSignal} from '../../types/index.js';
+import {TradingSignal} from '../../base/index.js';
 
 describe('TDS', () => {
   it('does not return a result for less than 9 prices', () => {

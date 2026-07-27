@@ -1,4 +1,4 @@
-import {TradingSignal, TrendIndicatorSeries} from '../../types/Indicator.js';
+import {TradingSignal, TrendIndicatorSeries} from '../../base/Indicator.js';
 import {pushUpdate} from '../../util/pushUpdate.js';
 
 /**

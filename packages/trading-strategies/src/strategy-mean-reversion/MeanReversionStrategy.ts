@@ -1,6 +1,8 @@
 import type {z} from 'zod';
-import {AllAvailableAmount, CandleBatcher, OrderSide, OrderType} from '@typedtrader/exchange';
-import type {Candle, OneMinuteBatchedCandle, OrderAdvice, TradingSessionState} from '@typedtrader/exchange';
+import {CandleBatcher, OrderSide, OrderType} from '@typedtrader/exchange';
+import {AllAvailableAmount} from '../trader/index.js';
+import type {Candle, OneMinuteBatchedCandle} from '@typedtrader/exchange';
+import type {OrderAdvice, TradingSessionState} from '../trader/index.js';
 import {BollingerBands} from 'trading-signals';
 import {MarketType} from '../strategy/MarketType.js';
 import {ProtectedStrategy, ProtectedStrategySchema} from '../strategy-protected/ProtectedStrategy.js';

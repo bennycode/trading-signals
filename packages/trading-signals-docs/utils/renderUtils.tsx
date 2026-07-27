@@ -11,30 +11,37 @@ import {IndicatorHeader} from '../components/IndicatorHeader';
 import {NotAvailable} from '../components/NotAvailable';
 
 export const collectPriceData = (candle: Candle, idx: number): PriceData => ({
-  x: idx + 1,
-  open: Number(candle.open),
+  close: Number(candle.close),
   high: Number(candle.high),
   low: Number(candle.low),
-  close: Number(candle.close),
+  open: Number(candle.open),
+  x: idx + 1,
 });
+
+/** Shape shared by every demo's `processData` result — extra indicator-specific keys pass through to the sample table. */
+type ProcessedIndicatorData = {
+  result?: number | null;
+  signal?: {state?: string};
+  [key: string]: unknown;
+};
 
 export const renderSingleIndicator = (config: SingleIndicatorConfig, selectedCandles: Candle[]) => {
   const indicator = config.createIndicator();
   const chartData: ChartDataPoint[] = [];
   const priceData: PriceData[] = [];
-  const sampleValues: Array<{
+  const sampleValues: {
     period: number;
     date: string;
     result: ReactNode;
     signal?: string;
     [key: string]: any;
-  }> = [];
+  }[] = [];
 
   selectedCandles.forEach((candle, idx) => {
-    const processedData = config.processData(indicator, candle, idx);
+    const processedData: ProcessedIndicatorData = config.processData(indicator, candle, idx);
     const chartPoint = config.getChartData
       ? config.getChartData(processedData)
-      : {x: idx + 1, y: (processedData.result as number | null) ?? null};
+      : {x: idx + 1, y: processedData.result ?? null};
 
     if (Array.isArray(chartPoint)) {
       chartData.push(...chartPoint);
@@ -45,11 +52,15 @@ export const renderSingleIndicator = (config: SingleIndicatorConfig, selectedCan
     priceData.push(collectPriceData(candle, idx));
 
     sampleValues.push({
-      period: idx + 1,
       date: formatDate(candle.openTimeInISO),
+      period: idx + 1,
       ...processedData,
       result:
-        processedData.result !== null && processedData.result !== undefined ? processedData.result.toFixed(2) : <NotAvailable />,
+        processedData.result !== null && processedData.result !== undefined ? (
+          processedData.result.toFixed(2)
+        ) : (
+          <NotAvailable />
+        ),
       signal: processedData.signal?.state,
     });
   });

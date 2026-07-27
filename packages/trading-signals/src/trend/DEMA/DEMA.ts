@@ -1,5 +1,5 @@
 import {EMA} from '../EMA/EMA.js';
-import {IndicatorSeries} from '../../types/Indicator.js';
+import {IndicatorSeries} from '../../base/Indicator.js';
 
 /**
  * Double Exponential Moving Average (DEMA)

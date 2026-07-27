@@ -4,17 +4,17 @@ import {buildTableColumns} from '../../utils/tableColumns';
 import type {IndicatorConfig} from '../../utils/types';
 
 export const RMA: IndicatorConfig = {
-  id: 'rma',
-  name: 'RMA',
-  description: "Relative Moving Average (Wilder's MA)",
+  chartTitle: 'RMA (5)',
   color: '#f59e0b',
-  type: 'single',
-  requiredInputs: 5,
+  createIndicator: () => new RMAClass(5),
+  description: "Relative Moving Average (Wilder's MA)",
   details:
     'Developed by J. Welles Wilder Jr., this smoothed moving average gives more weight to historical data, resulting in a smoother line.',
-  createIndicator: () => new RMAClass(5),
+  getTableColumns: indicator => buildTableColumns({indicator, inputs: ['close']}),
+  id: 'rma',
+  name: 'RMA',
   processData: makeProcessData({rowInputs: ['close']}),
-  getTableColumns: indicator => buildTableColumns({inputs: ['close'], indicator}),
-  chartTitle: 'RMA (5)',
+  requiredInputs: 5,
+  type: 'single',
   yAxisLabel: 'Price',
 };

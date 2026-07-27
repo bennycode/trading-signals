@@ -4,17 +4,17 @@ import {buildTableColumns} from '../../utils/tableColumns';
 import type {IndicatorConfig} from '../../utils/types';
 
 export const BreakoutBarLow: IndicatorConfig = {
-  id: 'breakout-bar-low',
-  name: 'BreakoutBarLow',
-  description: 'Breakout-Bar Low',
+  chartTitle: 'Breakout-Bar Low (20)',
   color: '#f59e0b',
-  type: 'single',
-  requiredInputs: 21,
+  createIndicator: () => new BreakoutBarLowClass({lookback: 20}),
+  description: 'Breakout-Bar Low',
   details:
     'Emits the low of any candle whose high strictly exceeds the highest high of the prior N candles — a breakout bar. The breakout-bar low is commonly used as a momentum-based stop: if price trades back below it, the breakout has failed.',
-  createIndicator: () => new BreakoutBarLowClass({lookback: 20}),
+  getTableColumns: indicator => buildTableColumns({indicator, inputs: ['high', 'low']}),
+  id: 'breakout-bar-low',
+  name: 'BreakoutBarLow',
   processData: makeProcessData({rowInputs: ['high', 'low']}),
-  getTableColumns: indicator => buildTableColumns({inputs: ['high', 'low'], indicator}),
-  chartTitle: 'Breakout-Bar Low (20)',
+  requiredInputs: 21,
+  type: 'single',
   yAxisLabel: 'Price',
 };

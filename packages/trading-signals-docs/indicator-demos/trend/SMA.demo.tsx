@@ -4,17 +4,17 @@ import {buildTableColumns} from '../../utils/tableColumns';
 import type {IndicatorConfig} from '../../utils/types';
 
 export const SMA: IndicatorConfig = {
-  id: 'sma',
-  name: 'SMA',
-  description: 'Simple Moving Average',
+  chartTitle: 'SMA (5)',
   color: '#3b82f6',
-  type: 'single',
-  requiredInputs: 5,
+  createIndicator: () => new SMAClass(5),
+  description: 'Simple Moving Average',
   details:
     'Calculates the arithmetic mean of prices over a specified period. Smooths out price fluctuations to identify the trend direction.',
-  createIndicator: () => new SMAClass(5),
+  getTableColumns: indicator => buildTableColumns({indicator, inputs: ['close']}),
+  id: 'sma',
+  name: 'SMA',
   processData: makeProcessData({rowInputs: ['close']}),
-  getTableColumns: indicator => buildTableColumns({inputs: ['close'], indicator}),
-  chartTitle: 'SMA (5)',
+  requiredInputs: 5,
+  type: 'single',
   yAxisLabel: 'Price',
 };

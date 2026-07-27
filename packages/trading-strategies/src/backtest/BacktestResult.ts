@@ -1,5 +1,6 @@
-import type {OrderSide, OrderAdvice} from '@typedtrader/exchange';
+import type {OrderSide} from '@typedtrader/exchange';
 import type Big from 'big.js';
+import type {OrderAdvice} from '../trader/TradingSessionTypes.js';
 
 export interface BacktestTrade {
   /** The advice that triggered this trade. */
@@ -54,4 +55,19 @@ export interface BacktestResult {
   totalCandles: number;
   /** All trades executed during the backtest. */
   trades: BacktestTrade[];
+  /**
+   * Advice the executor could not turn into an order (below minimum size, insufficient
+   * balance, rule violations). A live session surfaces these as `error` events; a backtest
+   * that hid them would report results a live run could never reproduce.
+   */
+  skippedAdvices: BacktestSkippedAdvice[];
+}
+
+export interface BacktestSkippedAdvice {
+  /** The advice that could not be executed. */
+  advice: OrderAdvice;
+  /** The ISO timestamp of the candle on which the advice was skipped. */
+  openTimeInISO: string;
+  /** Why the order was not placed. */
+  reason: string;
 }

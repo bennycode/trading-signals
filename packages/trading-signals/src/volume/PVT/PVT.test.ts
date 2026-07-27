@@ -1,6 +1,6 @@
 import {PVT} from './PVT.js';
 import {NotEnoughDataError} from '../../error/index.js';
-import {TradingSignal} from '../../types/index.js';
+import {TradingSignal} from '../../base/index.js';
 
 describe('PVT', () => {
   describe('getResultOrThrow', () => {

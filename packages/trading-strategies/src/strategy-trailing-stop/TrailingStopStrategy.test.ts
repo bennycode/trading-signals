@@ -1,5 +1,5 @@
 import Big from 'big.js';
-import {describe, expect, it} from 'vitest';
+import {describe, expect, it, vi} from 'vitest';
 import {AlpacaBroker, AlpacaBrokerMock, OrderSide, OrderType, TradingPair} from '@typedtrader/exchange';
 import type {Candle} from '@typedtrader/exchange';
 import {BacktestExecutor} from '../backtest/BacktestExecutor.js';
@@ -68,6 +68,29 @@ describe('TrailingStopStrategy', () => {
     expect(result.trades[0].advice.type).toBe(OrderType.LIMIT);
     expect(strategy.trailingState.exited).toBe(true);
     expect(strategy.trailingState.exitLimitPrice).toBe('108');
+  });
+
+  it('finishes (auto-removes) when an attached position is gone, e.g. closed externally', async () => {
+    /*
+     * Simulate a strategy that attached to a position on a previous run, then the position was
+     * closed outside this strategy (a manual sale, a rebalance). It boots with a zero balance.
+     */
+    const strategy = new TrailingStopStrategy({trailDownPct: '10'});
+    strategy.restoreState({exited: false, exitLimitPrice: null, exitReason: null, peakPrice: '100', stopPrice: '90'});
+    const onFinish = vi.fn();
+    strategy.onFinish = onFinish;
+
+    const config: BacktestConfig = {
+      broker: createMockExchange({baseBalance: '0'}),
+      candles: [createCandle({close: '95', open: '95'})],
+      strategy,
+      tradingPair,
+    };
+
+    await new BacktestExecutor(config).execute();
+
+    expect(strategy.trailingState.exited, 'no position left to trail → marked done').toBe(true);
+    expect(onFinish, 'runtime is told to tear the session down').toHaveBeenCalledTimes(1);
   });
 
   it('does not exit while price stays above the trail target', async () => {

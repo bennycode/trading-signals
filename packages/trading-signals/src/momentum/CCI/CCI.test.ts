@@ -1,5 +1,5 @@
 import {NotEnoughDataError} from '../../error/index.js';
-import {TradingSignal} from '../../types/Indicator.js';
+import {TradingSignal} from '../../base/Indicator.js';
 import {CCI} from './CCI.js';
 
 describe('CCI', () => {
@@ -62,7 +62,7 @@ describe('CCI', () => {
   });
 
   describe('getResultOrThrow', () => {
-    it('calculates the Commodity Channel Index (CCI)', () => {
+    it('calculates the Commodity Channel Index (CCI)', {tags: ['tulipindicators']}, () => {
       const interval = 5;
       const cci = new CCI(interval);
       const offset = cci.getRequiredInputs() - 1;
@@ -97,6 +97,25 @@ describe('CCI', () => {
       const cci = new CCI(5);
       const signal = cci.getSignal();
       expect(signal.state).toBe(TradingSignal.UNKNOWN);
+    });
+
+    it('respects custom overbought and oversold thresholds', () => {
+      const risingCandles = [
+        {close: 60, high: 61, low: 59},
+        {close: 70, high: 71, low: 69},
+        {close: 80, high: 81, low: 79},
+        {close: 90, high: 91, low: 89},
+        {close: 100, high: 101, low: 99},
+      ] as const;
+      const strictCci = new CCI(5, {overbought: 120});
+      const sensitiveCci = new CCI(5, {overbought: 110});
+
+      strictCci.updates(risingCandles, false);
+      sensitiveCci.updates(risingCandles, false);
+
+      expect(strictCci.getResultOrThrow().toFixed(2)).toBe('111.11');
+      expect(strictCci.getSignal().state).toBe(TradingSignal.SIDEWAYS);
+      expect(sensitiveCci.getSignal().state).toBe(TradingSignal.BULLISH);
     });
 
     it('returns OVERSOLD when CCI <= -100', () => {

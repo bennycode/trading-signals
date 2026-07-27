@@ -4,17 +4,17 @@ import {buildTableColumns} from '../../utils/tableColumns';
 import type {IndicatorConfig} from '../../utils/types';
 
 export const AC: IndicatorConfig = {
-  id: 'ac',
-  name: 'AC',
-  description: 'Accelerator Oscillator',
+  chartTitle: 'Accelerator Oscillator (5,34,5)',
   color: '#6366f1',
-  type: 'single',
-  requiredInputs: 39,
+  createIndicator: () => new ACClass(5, 34, 5),
+  description: 'Accelerator Oscillator',
   details:
     'Shows acceleration or deceleration of the current driving force. Earlier signal of potential trend change than AO.',
-  createIndicator: () => new ACClass(5, 34, 5),
+  getTableColumns: indicator => buildTableColumns({indicator, inputs: ['high', 'low']}),
+  id: 'ac',
+  name: 'AC',
   processData: makeProcessData({rowInputs: ['high', 'low']}),
-  getTableColumns: indicator => buildTableColumns({inputs: ['high', 'low'], indicator}),
-  chartTitle: 'Accelerator Oscillator (5,34,5)',
+  requiredInputs: 39,
+  type: 'single',
   yAxisLabel: 'AC',
 };

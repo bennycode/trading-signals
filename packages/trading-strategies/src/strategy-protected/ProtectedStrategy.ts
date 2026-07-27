@@ -1,14 +1,9 @@
 import Big from 'big.js';
 import {z} from 'zod';
-import {AllAvailableAmount, OrderSide, OrderType} from '@typedtrader/exchange';
-import type {
-  Fill,
-  PendingOrder,
-  LimitOrderAdvice,
-  OneMinuteBatchedCandle,
-  OrderAdvice,
-  TradingSessionState,
-} from '@typedtrader/exchange';
+import {OrderSide, OrderType} from '@typedtrader/exchange';
+import {AllAvailableAmount} from '../trader/index.js';
+import type {Fill, PendingOrder, OneMinuteBatchedCandle} from '@typedtrader/exchange';
+import type {LimitOrderAdvice, OrderAdvice, TradingSessionState} from '../trader/index.js';
 import {MarketType} from '../strategy/MarketType.js';
 import {Strategy} from '../strategy/Strategy.js';
 import {positiveNumberString} from '../util/validators.js';

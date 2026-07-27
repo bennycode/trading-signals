@@ -4,17 +4,21 @@ import {buildTableColumns} from '../../utils/tableColumns';
 import type {IndicatorConfig} from '../../utils/types';
 
 export const VWAP: IndicatorConfig = {
-  id: 'vwap',
-  name: 'VWAP',
-  description: 'Volume Weighted Average Price',
+  chartTitle: 'VWAP',
   color: '#ef4444',
-  type: 'single',
-  requiredInputs: 1,
+  createIndicator: () => new VWAPClass(),
+  description: 'Volume Weighted Average Price',
   details:
     'Calculates the average price weighted by volume. Used to assess whether trades are being executed at favorable prices.',
-  createIndicator: () => new VWAPClass(),
-  processData: makeProcessData({rowInputs: ['close', 'volume'], addInputs: ['high', 'low', 'close', 'volume'], alwaysStable: true}),
-  getTableColumns: indicator => buildTableColumns({inputs: ['close', 'volume'], indicator}),
-  chartTitle: 'VWAP',
+  getTableColumns: indicator => buildTableColumns({indicator, inputs: ['close', 'volume']}),
+  id: 'vwap',
+  name: 'VWAP',
+  processData: makeProcessData({
+    addInputs: ['high', 'low', 'close', 'volume'],
+    alwaysStable: true,
+    rowInputs: ['close', 'volume'],
+  }),
+  requiredInputs: 1,
+  type: 'single',
   yAxisLabel: 'Price',
 };

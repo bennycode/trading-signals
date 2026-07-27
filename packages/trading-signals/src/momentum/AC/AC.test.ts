@@ -1,5 +1,5 @@
 import {NotEnoughDataError} from '../../error/index.js';
-import {TradingSignal} from '../../types/Indicator.js';
+import {TradingSignal} from '../../base/Indicator.js';
 import {AC} from './AC.js';
 
 type Candle = readonly [timestamp: number, open: number, close: number, high: number, low: number, volume: number];

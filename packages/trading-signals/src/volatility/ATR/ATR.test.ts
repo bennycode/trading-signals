@@ -59,7 +59,7 @@ describe('ATR', () => {
   });
 
   describe('getResultOrThrow', () => {
-    it('calculates the Average True Range (ATR)', () => {
+    it('calculates the Average True Range (ATR)', {tags: ['tulipindicators']}, () => {
       const interval = 5;
       const atr = new ATR(interval);
 

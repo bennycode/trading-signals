@@ -15,7 +15,7 @@ Utilities for handling trading exchange data with proper type safety and aggrega
 The `Broker` interface is intentionally kept generic so that any broker can implement it. This means:
 
 - **Bring your own broker.** Alpaca and Trading212 are first-class, but the package is built to be extended.
-- **Extend the abstract `Broker` class** and your integration plugs straight into `TradingSession` for live strategies and `BacktestExecutor` for backtesting — both for free, with no extra wiring. See [`BROKER_TEMPLATE.md`](./BROKER_TEMPLATE.md) for the conventions every integration follows.
+- **Extend the abstract `Broker` class** and your integration plugs straight into the `trading-strategies` package's `TradingSession` for live strategies and `BacktestExecutor` for backtesting — both for free, with no extra wiring. See [`BROKER_TEMPLATE.md`](./BROKER_TEMPLATE.md) for the conventions every integration follows.
 - **Extend `MarketDataSource`** to add live-streaming candles for your strategies. If your broker has no market-data API, plug in an existing source (e.g. Alpaca) instead — execution and market data are deliberately separated so they can be mixed and matched.
 
 ## Alpaca
@@ -32,14 +32,34 @@ const exchange = getAlpacaClient({
 });
 ```
 
+**Why Alpaca:**
+
+- **Commission-free** US stocks and ETFs, with fractional shares.
+- **Add funds commission-free** with [Revolut](https://www.revolut.com/), avoiding the transfer fees most banks charge.
+- **Free paper trading** that mirrors the live API, so strategies can be validated without risking capital.
+- **Free market data** via the IEX feed, including WebSocket-streamed minute bars (the source this package pairs with other brokers).
+- **Crypto** trades 24/7 alongside equities.
+- **[24/5 trading](https://docs.alpaca.markets/us/docs/245-trading)** of US stocks via an overnight session, so positions can be opened or closed from Sunday evening through Friday evening.
+
 **Resources:**
 
 - [Alpaca API Reference](https://docs.alpaca.markets/reference/)
 - [Alpaca OpenAPI Files](https://docs.alpaca.markets/openapi)
+- [24/5 Trading](https://docs.alpaca.markets/us/docs/245-trading)
 
 ## Trading212
 
-[Trading212](https://www.trading212.com/) is supported as a broker. Its API has **no historical bars and no WebSocket**, so `Trading212Broker` requires an external `MarketDataSource` for candle methods.
+[Trading212](https://www.trading212.com/) is supported as a broker.
+
+**Why Trading212:**
+
+- **Commission-free** investing in 13,000+ stocks and ETFs, with fractional shares from £1/€1.
+- **Broad UK, European, and US coverage.**
+- **Multi-currency accounts** for depositing and investing in 13 currencies.
+- **Tax-advantaged Stocks & Shares ISA** (and Cash ISA) for UK residents, with no account fees.
+- **Daily [interest](https://www.trading212.com/interest-on-cash)** paid on uninvested cash.
+
+Its API has **no historical bars and no WebSocket**, so `Trading212Broker` requires an external `MarketDataSource` for candle methods.
 
 The package separates **execution** (`Broker`) from **market data** (`MarketDataSource`) so any data provider can be paired with any broker. For US equities, Alpaca's market-data feed is the natural pairing as it is free, works with a paper account, and supports WebSocket-streamed minute bars:
 

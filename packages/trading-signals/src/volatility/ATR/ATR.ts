@@ -1,8 +1,8 @@
-import {IndicatorSeries} from '../../types/Indicator.js';
+import {IndicatorSeries} from '../../base/Indicator.js';
 import type {MovingAverage} from '../../trend/MA/MovingAverage.js';
 import type {MovingAverageTypes} from '../../trend/MA/MovingAverageTypes.js';
 import {TR} from '../TR/TR.js';
-import type {HighLowClose} from '../../types/HighLowClose.js';
+import type {HighLowClose} from '../../base/Candle.type.js';
 import {WSMA} from '../../trend/WSMA/WSMA.js';
 
 /**

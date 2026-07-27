@@ -8,6 +8,9 @@ export class HomePage {
   }
 
   async openCategory(category: string): Promise<void> {
-    await this.page.getByRole('link', {name: new RegExp(category)}).first().click();
+    await this.page
+      .getByRole('link', {name: new RegExp(category)})
+      .first()
+      .click();
   }
 }

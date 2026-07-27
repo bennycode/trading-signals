@@ -1,45 +1,50 @@
 {
-  "dependencies": {
-    "@highcharts/react": "^5.0.1",
-    "@tailwindcss/postcss": "^4.3.0",
-    "@testing-library/dom": "^10.4.1",
-    "@typedtrader/candles": "0.1.0",
-    "@typedtrader/exchange": "0.2.5",
-    "highcharts": "^12.6.0",
-    "next": "^16.2.6",
-    "react": "^19.2.6",
-    "react-dom": "^19.2.6",
-    "trading-signals": "7.4.3",
-    "trading-strategies": "0.3.5",
-    "zod": "^4.4.3"
-  },
-  "description": "Documentation and showcase website for trading-signals library",
-  "devDependencies": {
-    "@playwright/test": "^1.60.0",
-    "@testing-library/jest-dom": "^6.9.1",
-    "@testing-library/react": "^16.3.2",
-    "@types/react": "^19.2.15",
-    "@types/react-dom": "^19.2.3",
-    "@vitejs/plugin-react": "^6.0.2",
-    "autoprefixer": "^10.5.0",
-    "jsdom": "^29.1.1",
-    "postcss": "^8.5.15",
-    "tailwindcss": "^4.2.2"
-  },
   "name": "trading-signals-docs",
+  "version": "2.0.0",
   "private": true,
+  "description": "Documentation and showcase website for trading-signals library",
+  "type": "module",
   "scripts": {
     "build": "next build",
     "dev": "next dev",
     "dist": "npm run build",
-    "lint": "exit 0",
     "start": "next start",
     "test": "npm run test:types && npm run test:units",
     "test:e2e": "playwright test",
     "test:types": "tsc --noEmit",
     "test:units": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "fix": "npm run fix:code && npm run fix:other",
+    "fix:code": "oxlint . --fix || true",
+    "fix:other": "oxfmt",
+    "lint": "npm run lint:code && npm run lint:other",
+    "lint:code": "oxlint .",
+    "lint:other": "oxfmt --list-different"
   },
-  "type": "module",
-  "version": "1.4.0"
+  "dependencies": {
+    "@highcharts/react": "^5.2.2",
+    "@tailwindcss/postcss": "^4.3.2",
+    "@typedtrader/candles": "0.2.0",
+    "@typedtrader/exchange": "0.3.0",
+    "@types/big.js": "^7.0.0",
+    "big.js": "^7.0.1",
+    "highcharts": "^13.0.0",
+    "next": "^16.3.0-preview.9",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7",
+    "trading-signals": "8.0.0",
+    "trading-strategies": "0.4.0",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.61.1",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@types/react": "^19.2.17",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^6.0.3",
+    "autoprefixer": "^10.5.2",
+    "jsdom": "^29.1.1",
+    "postcss": "^8.5.23",
+    "tailwindcss": "^4.3.2"
+  }
 }
