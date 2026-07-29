@@ -1,7 +1,5 @@
 # @typedtrader/exchange
 
-[![npm](https://img.shields.io/npm/v/@typedtrader/exchange.svg)](https://www.npmjs.com/package/@typedtrader/exchange) [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](https://opensource.org/licenses/MIT) [![TypeScript](https://img.shields.io/badge/types-included-blue.svg)](https://www.typescriptlang.org/)
-
 Typed broker clients for algorithmic trading in TypeScript. Trade through [Alpaca](https://alpaca.markets/) or [Trading212](https://www.trading212.com/) with one consistent API — every response validated at runtime (zod), all money math in arbitrary precision (big.js), live candles streamed over WebSocket.
 
 ### [Install](#installation) · [Brokers](#supported-brokers) · [Quick Start](#quick-start-alpaca) · [Raw API](#raw-api-access) · [Rate Limits](#rate-limiting) · [Extend](#bring-your-own-broker)
