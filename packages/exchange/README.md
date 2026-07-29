@@ -1,14 +1,14 @@
 # @typedtrader/exchange
 
-Typed broker clients for algorithmic trading in TypeScript. Trade through [Alpaca](https://alpaca.markets/) or [Trading212](https://www.trading212.com/) with one consistent API — every response validated at runtime (zod), all money math in arbitrary precision (big.js), live candles streamed over WebSocket.
+Typed broker clients for algorithmic trading in TypeScript. Trade through brokers like [Alpaca](https://alpaca.markets/) and [Trading212](https://www.trading212.com/) with one consistent API: every response validated at runtime (zod), all money math in arbitrary precision (big.js), live candles streamed over WebSocket.
 
 ### [Install](#installation) · [Brokers](#supported-brokers) · [Quick Start](#quick-start-alpaca) · [Raw API](#raw-api-access) · [Rate Limits](#rate-limiting) · [Extend](#bring-your-own-broker)
 
 ## Motivation
 
-Libraries like [CCXT](https://github.com/ccxt/ccxt) prove how powerful a unified trading API is — but they stop at crypto exchanges. This package brings the same idea to traditional brokers: one typed API that connects stock brokers like Alpaca and Trading212 the way CCXT connects crypto exchanges.
+[CCXT](https://github.com/ccxt/ccxt) proved how much a unified trading API is worth, but it stops at crypto exchanges. This package brings the same idea to traditional brokers: one typed API for stock brokers like Alpaca and Trading212.
 
-It also aims beyond the basic paths most trading APIs cover. Long **and** short positions, market **and** limit orders, fills, fee estimation, and trading rules are all part of one `Broker` contract — the full spectrum of trading, not just "place a buy order".
+It also covers more of trading than the basic paths most broker APIs wrap. Long and short positions, market and limit orders, fills, fee estimation, and trading rules are all part of one `Broker` contract.
 
 ## Installation
 
@@ -20,10 +20,10 @@ The package is ESM-only and targets the latest Node.js LTS.
 
 ## Features
 
-- **One broker API for every broker:** place market/limit orders, list balances, watch fills and candles — identical methods whether you trade through Alpaca or Trading212
-- **Paper trading:** both brokers support a sandbox environment via a single `usePaperTrading` flag
-- **Runtime validation:** every API response is parsed with zod schemas — malformed data fails loudly instead of corrupting your strategy
-- **High precision:** `big.js` for order sizes, prices, and fees — no floating-point drift
+- **One API for every broker:** place market/limit orders, list balances, watch fills and candles with the same methods on every supported broker
+- **Paper trading:** a single `usePaperTrading` flag switches a broker to its sandbox environment
+- **Runtime validation:** every API response is parsed with zod schemas, so malformed data fails loudly instead of corrupting your strategy
+- **High precision:** `big.js` for order sizes, prices, and fees, with no floating-point drift
 - **Streaming candles:** WebSocket-fed minute bars, batched into larger timeframes using human-readable intervals (e.g. `"5m"`, `"1h"`)
 - **Fee awareness:** `getFeeRates()` / `estimateFee()` let strategies subtract round-trip costs before entering a position
 
@@ -34,7 +34,9 @@ The package is ESM-only and targets the latest Node.js LTS.
 | `alpaca` | [Alpaca](https://alpaca.markets/) | US stocks, ETFs, crypto | ✅ | ✅ IEX feed, WebSocket streamed | ✅ WebSocket stream | [docs.alpaca.markets](https://docs.alpaca.markets/reference/) |
 | `trading212` | [Trading212](https://www.trading212.com/) | 13,000+ US/UK/EU stocks and ETFs | ✅ | ❌ bring your own source | 🔁 polled (~60s) | [docs.trading212.com](https://docs.trading212.com/api) |
 
-You need to create the API keys yourself in each broker's dashboard — this package talks to the brokers with your credentials but never creates accounts or keys for you: [Alpaca API keys](https://docs.alpaca.markets/us/docs/getting-started) · [Trading212 API keys](https://helpcentre.trading212.com/hc/en-us/articles/14584770928157-Trading-212-API-key)
+More brokers are planned, and the `Broker` abstraction is built for it (see [Bring Your Own Broker](#bring-your-own-broker)).
+
+You create the API keys yourself in each broker's dashboard. The package uses your credentials but never creates accounts or keys for you: [Alpaca API keys](https://docs.alpaca.markets/us/docs/getting-started) · [Trading212 API keys](https://helpcentre.trading212.com/hc/en-us/articles/14584770928157-Trading-212-API-key)
 
 ## Quick Start: Alpaca
 
@@ -67,7 +69,7 @@ await broker.placeLimitOrder(pair, {side: 'BUY', size: '1', price: latest.close}
 
 ## Quick Start: Trading212
 
-Trading212's API has **no historical bars and no WebSocket**, so the broker is paired with an external market-data source. For US equities, Alpaca's feed is the natural choice — it is free, works with a paper account, and streams minute bars over WebSocket:
+Trading212's API has no historical bars and no WebSocket, so the broker is paired with an external market-data source. For US equities, Alpaca's feed is the natural choice: it is free, works with a paper account, and streams minute bars over WebSocket.
 
 ```ts
 import {AlpacaMarketData, getTrading212Client, TradingPair} from '@typedtrader/exchange';
@@ -84,7 +86,7 @@ const broker = getTrading212Client({
   apiKey: 'TRADING212_API_KEY',
   apiSecret: 'TRADING212_API_SECRET',
   usePaperTrading: true,
-  marketData, // required — Trading212 has no candles of its own
+  marketData, // required: Trading212 has no candles of its own
 });
 
 // 3. Use the broker as if it provided everything natively. Symbol mapping is automatic:
@@ -112,7 +114,7 @@ await broker.placeLimitOrder(pair, {side: 'BUY', size: '1', price: latest.close}
 
 ## Raw API Access
 
-Prefer direct REST calls over the broker abstraction? The low-level clients are exported too, with zod-validated responses and rate-limit-aware retries built in:
+The low-level REST clients are exported too, for direct calls without the broker abstraction. They keep the zod-validated responses and rate-limit-aware retries:
 
 ```ts
 import {Trading212API} from '@typedtrader/exchange';
@@ -128,21 +130,21 @@ const positions = await api.getPositions();
 const orders = await api.getHistoryOrders(); // auto-paginates
 ```
 
-`AlpacaAPI` offers the same for Alpaca.
+Every broker integration exports its raw client the same way (`AlpacaAPI`, `Trading212API`, ...).
 
 ## Rate Limiting
 
-Brokers enforce rate limits, and this package respects them so you don't have to:
+Brokers enforce rate limits. The package respects them automatically:
 
-- **Automatic retries with broker-aware delays.** Both clients use `axios-retry` under the hood. Trading212's retry delays are calibrated per endpoint to its documented limits (e.g. account cash: 1 req / 2s, order history: 1 req / 60s), so a rate-limited request waits exactly as long as it must — no longer.
+- **Automatic retries with broker-aware delays.** Every client uses `axios-retry`, with retry delays calibrated per endpoint to the broker's documented limits (e.g. Trading212 account cash: 1 req / 2s, order history: 1 req / 60s), so a rate-limited request waits exactly as long as it must.
 - **Polling matches documented limits.** Where the package polls (Trading212's `watchOrders`), the interval defaults to the broker's documented rate limit rather than hammering the API.
 - **Transient network errors** (`EAI_AGAIN`, HTTP 429/5xx) are retried transparently; non-retryable errors (401, 403, validation failures) surface immediately.
 
 ## Bring Your Own Broker
 
-Alpaca and Trading212 are first-class, but any broker can be integrated:
+The built-in integrations are first-class, but any broker can be added:
 
-- **Extend the abstract `Broker` class** and your integration plugs straight into the `trading-strategies` package's `TradingSession` (live trading) and `BacktestExecutor` (backtesting) — no extra wiring.
+- **Extend the abstract `Broker` class** and your integration plugs straight into the `trading-strategies` package's `TradingSession` (live trading) and `BacktestExecutor` (backtesting) with no extra wiring.
 - **Extend `MarketDataSource`** to stream candles from your own data provider. Execution and market data are deliberately separated, so any data source can be paired with any broker.
 
 See [`BROKER_TEMPLATE.md`](https://github.com/bennycode/trading-signals/blob/main/packages/exchange/BROKER_TEMPLATE.md) for the conventions every integration follows.
