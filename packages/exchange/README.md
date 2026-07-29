@@ -1,6 +1,10 @@
 # @typedtrader/exchange
 
+[![npm](https://img.shields.io/npm/v/@typedtrader/exchange.svg)](https://www.npmjs.com/package/@typedtrader/exchange) [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](https://opensource.org/licenses/MIT) [![TypeScript](https://img.shields.io/badge/types-included-blue.svg)](https://www.typescriptlang.org/)
+
 Typed broker clients for algorithmic trading in TypeScript. Trade through [Alpaca](https://alpaca.markets/) or [Trading212](https://www.trading212.com/) with one consistent API — every response validated at runtime (zod), all money math in arbitrary precision (big.js), live candles streamed over WebSocket.
+
+### [Install](#installation) · [Brokers](#supported-brokers) · [Quick Start](#quick-start-alpaca) · [Raw API](#raw-api-access) · [Rate Limits](#rate-limiting) · [Extend](#bring-your-own-broker) · [Disclaimer](#disclaimer)
 
 ## Installation
 
@@ -18,6 +22,15 @@ The package is ESM-only and targets the latest Node.js LTS.
 - **High precision:** `big.js` for order sizes, prices, and fees — no floating-point drift
 - **Streaming candles:** WebSocket-fed minute bars, batched into larger timeframes using human-readable intervals (e.g. `"5m"`, `"1h"`)
 - **Fee awareness:** `getFeeRates()` / `estimateFee()` let strategies subtract round-trip costs before entering a position
+
+## Supported Brokers
+
+| id | name | markets | paper trading | market data | order updates | API docs |
+| --- | --- | --- | :-: | --- | --- | --- |
+| `alpaca` | [Alpaca](https://alpaca.markets/) | US stocks, ETFs, crypto | ✅ | ✅ IEX feed, WebSocket streamed | ✅ WebSocket stream | [docs.alpaca.markets](https://docs.alpaca.markets/reference/) |
+| `trading212` | [Trading212](https://www.trading212.com/) | 13,000+ US/UK/EU stocks and ETFs | ✅ | ❌ bring your own source | 🔁 polled (~60s) | [docs.trading212.com](https://docs.trading212.com/api) |
+
+You need to create the API keys yourself in each broker's dashboard — this package talks to the brokers with your credentials but never creates accounts or keys for you: [Alpaca API keys](https://docs.alpaca.markets/us/docs/getting-started) · [Trading212 API keys](https://helpcentre.trading212.com/hc/en-us/articles/14584770928157-Trading-212-API-key)
 
 ## Quick Start: Alpaca
 
@@ -113,6 +126,14 @@ const orders = await api.getHistoryOrders(); // auto-paginates
 
 `AlpacaAPI` offers the same for Alpaca.
 
+## Rate Limiting
+
+Brokers enforce rate limits, and this package respects them so you don't have to:
+
+- **Automatic retries with broker-aware delays.** Both clients use `axios-retry` under the hood. Trading212's retry delays are calibrated per endpoint to its documented limits (e.g. account cash: 1 req / 2s, order history: 1 req / 60s), so a rate-limited request waits exactly as long as it must — no longer.
+- **Polling matches documented limits.** Where the package polls (Trading212's `watchOrders`), the interval defaults to the broker's documented rate limit rather than hammering the API.
+- **Transient network errors** (`EAI_AGAIN`, HTTP 429/5xx) are retried transparently; non-retryable errors (401, 403, validation failures) surface immediately.
+
 ## Bring Your Own Broker
 
 Alpaca and Trading212 are first-class, but any broker can be integrated:
@@ -121,3 +142,12 @@ Alpaca and Trading212 are first-class, but any broker can be integrated:
 - **Extend `MarketDataSource`** to stream candles from your own data provider. Execution and market data are deliberately separated, so any data source can be paired with any broker.
 
 See [`BROKER_TEMPLATE.md`](https://github.com/bennycode/trading-signals/blob/main/packages/exchange/BROKER_TEMPLATE.md) for the conventions every integration follows.
+
+## Disclaimer
+
+`@typedtrader/exchange` is software, not a financial service. It is **free, open-source, non-custodial broker-client software under the MIT license**:
+
+- **Non-custodial** — the package never holds your money. It talks to your broker's API directly, with API keys you create and control.
+- **Not financial advice** — nothing in this package or its documentation is a recommendation to buy or sell any instrument. The broker comparisons describe API capabilities, not investment suitability.
+- **MIT license** — use it for any purpose, at your own risk, without warranty of any kind.
+- **Trading involves risk of loss.** Validate every strategy against a paper-trading environment (`usePaperTrading: true`) before committing real capital.
