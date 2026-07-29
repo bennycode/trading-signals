@@ -6,9 +6,9 @@ Typed broker clients for algorithmic trading in TypeScript. Trade through broker
 
 ## Motivation
 
-[CCXT](https://github.com/ccxt/ccxt) proved how much a unified trading API is worth, but it stops at crypto exchanges. This package brings the same idea to traditional brokers: one typed API for stock brokers like Alpaca and Trading212.
+This package provides a unified trading API for traditional brokers like Alpaca and Trading212. Write your strategy against one typed `Broker` contract and it runs on any supported broker, the way [CCXT](https://github.com/ccxt/ccxt) does it for crypto exchanges.
 
-It also covers more of trading than the basic paths most broker APIs wrap. Long and short positions, market and limit orders, fills, fee estimation, and trading rules are all part of one `Broker` contract.
+It also covers more of trading than the basic paths most broker APIs wrap: long and short positions, market and limit orders, fills, fee estimation, and trading rules.
 
 ## Installation
 
