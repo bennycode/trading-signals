@@ -4,7 +4,13 @@
 
 Typed broker clients for algorithmic trading in TypeScript. Trade through [Alpaca](https://alpaca.markets/) or [Trading212](https://www.trading212.com/) with one consistent API — every response validated at runtime (zod), all money math in arbitrary precision (big.js), live candles streamed over WebSocket.
 
-### [Install](#installation) · [Brokers](#supported-brokers) · [Quick Start](#quick-start-alpaca) · [Raw API](#raw-api-access) · [Rate Limits](#rate-limiting) · [Extend](#bring-your-own-broker) · [Disclaimer](#disclaimer)
+### [Install](#installation) · [Brokers](#supported-brokers) · [Quick Start](#quick-start-alpaca) · [Raw API](#raw-api-access) · [Rate Limits](#rate-limiting) · [Extend](#bring-your-own-broker)
+
+## Motivation
+
+Libraries like [CCXT](https://github.com/ccxt/ccxt) prove how powerful a unified trading API is — but they stop at crypto exchanges. This package brings the same idea to traditional brokers: one typed API that connects stock brokers like Alpaca and Trading212 the way CCXT connects crypto exchanges.
+
+It also aims beyond the basic paths most trading APIs cover. Long **and** short positions, market **and** limit orders, fills, fee estimation, and trading rules are all part of one `Broker` contract — the full spectrum of trading, not just "place a buy order".
 
 ## Installation
 
@@ -142,12 +148,3 @@ Alpaca and Trading212 are first-class, but any broker can be integrated:
 - **Extend `MarketDataSource`** to stream candles from your own data provider. Execution and market data are deliberately separated, so any data source can be paired with any broker.
 
 See [`BROKER_TEMPLATE.md`](https://github.com/bennycode/trading-signals/blob/main/packages/exchange/BROKER_TEMPLATE.md) for the conventions every integration follows.
-
-## Disclaimer
-
-`@typedtrader/exchange` is software, not a financial service. It is **free, open-source, non-custodial broker-client software under the MIT license**:
-
-- **Non-custodial** — the package never holds your money. It talks to your broker's API directly, with API keys you create and control.
-- **Not financial advice** — nothing in this package or its documentation is a recommendation to buy or sell any instrument. The broker comparisons describe API capabilities, not investment suitability.
-- **MIT license** — use it for any purpose, at your own risk, without warranty of any kind.
-- **Trading involves risk of loss.** Validate every strategy against a paper-trading environment (`usePaperTrading: true`) before committing real capital.
