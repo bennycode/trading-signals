@@ -106,7 +106,6 @@ await broker.placeLimitOrder(pair, {side: 'BUY', size: '1', price: latest.close}
 
 **Good to know:**
 
-- **Coverage mismatch.** Alpaca's free IEX feed covers US equities (and crypto). Trading212's universe includes European and UK instruments that Alpaca has no data for; those tickers will fail at `getCandles` even though Trading212 can trade them. Pair with a different data source (Bloomberg, Polygon, EODHD, Twelve Data) for non-US coverage.
 - **Cross-currency fees.** Trading212 debits a currency-conversion fee on cross-currency trades (e.g. a EUR account buying USD instruments) at ~0.15% per leg. `getFeeRates()` surfaces this as `CURRENCY_CONVERSION_FEE`; `estimateFee()` includes it in the total.
 - **Order updates are polled.** Trading212 has no order-stream WebSocket, so `watchOrders` polls once per minute (matching Trading212's documented rate limit). Fills arrive within ~60 seconds rather than push-style.
 
