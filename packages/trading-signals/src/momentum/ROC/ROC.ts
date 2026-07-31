@@ -15,6 +15,8 @@ export class ROC extends TrendIndicatorSeries {
 
   public readonly interval: number;
 
+  #comparePrice: number | null = null;
+
   constructor(interval: number) {
     super();
     this.interval = interval;
@@ -25,11 +27,13 @@ export class ROC extends TrendIndicatorSeries {
   }
 
   update(price: number, replace: boolean) {
-    const comparePrice = this.prices.length === this.interval ? this.prices[0] : null;
+    if (!replace || this.#comparePrice === null) {
+      this.#comparePrice = this.prices.length === this.interval ? this.prices[0] : null;
+    }
     pushUpdate(this.prices, replace, price, this.interval);
 
-    if (comparePrice !== null) {
-      return this.setResult((price - comparePrice) / comparePrice, replace);
+    if (this.#comparePrice !== null) {
+      return this.setResult((price - this.#comparePrice) / this.#comparePrice, replace);
     }
 
     return null;
