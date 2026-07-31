@@ -30,7 +30,12 @@ export class PVT extends TrendIndicatorSeries<HighLowCloseVolume> {
     }
 
     const previousClose = this.#candles[0].close;
-    const previousPVT = this.result ?? 0;
+    /*
+     * PVT accumulates onto the running total, so a replacement has to build on the total from
+     * before the replaced candle. `this.result` still carries that candle's contribution until
+     * `setResult()` unwinds it, which would count the bar twice.
+     */
+    const previousPVT = (replace ? this.previousResult : this.result) ?? 0;
 
     if (previousClose === 0) {
       return this.setResult(previousPVT, replace);

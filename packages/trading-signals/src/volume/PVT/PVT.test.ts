@@ -106,6 +106,25 @@ describe('PVT', () => {
   });
 
   describe('replace', () => {
+    it('accumulates onto the total from before the replaced candle', () => {
+      const candle = (close: number) => ({close, high: close, low: close, volume: 1000}) as const;
+
+      const replaced = new PVT();
+      replaced.add(candle(100));
+      replaced.add(candle(110));
+      replaced.add(candle(120));
+      replaced.replace(candle(130));
+
+      const reference = new PVT();
+      reference.add(candle(100));
+      reference.add(candle(110));
+      reference.add(candle(130));
+
+      expect(replaced.getResultOrThrow(), 'a replacement must not count the replaced candle twice').toBe(
+        reference.getResultOrThrow()
+      );
+    });
+
     it('replaces the most recently added value', () => {
       const pvt = new PVT();
       pvt.add({close: 10, high: 10, low: 9, volume: 25000});
