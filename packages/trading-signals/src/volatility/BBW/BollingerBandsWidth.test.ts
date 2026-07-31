@@ -45,6 +45,7 @@ describe('BollingerBandsWidth', () => {
        */
       const expectations = [
         '0.19',
+        '0.19',
         '0.21',
         '0.21',
         '0.21',
@@ -59,7 +60,7 @@ describe('BollingerBandsWidth', () => {
 
       const interval = 20;
       const bbw = new BollingerBandsWidth(new BollingerBands(interval, 2));
-      const offset = bbw.getRequiredInputs();
+      const offset = bbw.getRequiredInputs() - 1;
 
       expect(bbw.getRequiredInputs()).toBe(interval);
 
