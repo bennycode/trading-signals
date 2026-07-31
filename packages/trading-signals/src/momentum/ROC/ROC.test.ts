@@ -143,5 +143,19 @@ describe('ROC', () => {
 
       expect(roc.getResultOrThrow().toFixed(2)).toEqual(expectation.toFixed(2));
     });
+
+    it('keeps the correct comparand when replacing after the window has advanced', () => {
+      const interval = 3;
+
+      const withReplace = new ROC(interval);
+      [10, 11, 12, 13].forEach(price => withReplace.add(price));
+      withReplace.replace(13);
+
+      const withoutReplace = new ROC(interval);
+      [10, 11, 12, 13].forEach(price => withoutReplace.add(price));
+
+      expect(withReplace.getResultOrThrow().toFixed(4)).toBe('0.3000');
+      expect(withReplace.getResultOrThrow().toFixed(5)).toBe(withoutReplace.getResultOrThrow().toFixed(5));
+    });
   });
 });
