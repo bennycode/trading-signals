@@ -1,5 +1,4 @@
-import type {StrategyMonitor} from './StrategyMonitor.js';
-import type {WatchMonitor} from './WatchMonitor.js';
+import type {StrategyMonitorPort, WatchMonitorPort} from '../platform/MessagingPlatform.js';
 
 /**
  * Restart every watch and strategy bound to an account so live sessions reconnect with the
@@ -8,8 +7,8 @@ import type {WatchMonitor} from './WatchMonitor.js';
  */
 export async function restartAccountSessions(
   accountId: number,
-  strategyMonitor: StrategyMonitor | undefined,
-  watchMonitor: WatchMonitor | undefined
+  strategyMonitor: StrategyMonitorPort | undefined,
+  watchMonitor: WatchMonitorPort | undefined
 ): Promise<void> {
   await strategyMonitor?.restartForAccount(accountId);
   await watchMonitor?.restartForAccount(accountId);

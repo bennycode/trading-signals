@@ -3,7 +3,7 @@ import {createStrategy, getStrategyNames} from 'trading-strategies';
 import {Account} from '../../database/models/Account.js';
 import {Strategy} from '../../database/models/Strategy.js';
 import {logger} from '../../logger.js';
-import type {StrategyMonitor} from '../../service/index.js';
+import type {StrategyMonitorPort} from '../MessagingPlatform.js';
 import {
   inlineKeyboard,
   waitForTextOrCancel,
@@ -16,7 +16,7 @@ export interface StrategyAddWizardArgs {
   userId: string;
 }
 
-export function makeStrategyAddWizard(deps: {strategyMonitor: () => StrategyMonitor | undefined}) {
+export function makeStrategyAddWizard(deps: {strategyMonitor: () => StrategyMonitorPort | undefined}) {
   return async function strategyAddWizard(
     conversation: WizardConversation,
     ctx: WizardContext,
