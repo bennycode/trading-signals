@@ -110,6 +110,112 @@ describe('TDS', () => {
       const result = tds.replace(20);
       expect(result).toBeNull();
     });
+
+    it('changes nothing when the latest close is replaced with the same value', () => {
+      const tds = new TDS();
+      const closes = [10, 10, 10, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19] as const;
+
+      closes.forEach(close => tds.add(close));
+
+      const resultBefore = tds.getResult();
+      const countBefore = tds['setupCount'];
+      const directionBefore = tds['setupDirection'];
+
+      tds.replace(19);
+
+      expect(tds.getResult(), 'replacing a close with itself is a no-op').toBe(resultBefore);
+      expect(tds['setupCount'], 'and leaves the setup count alone').toBe(countBefore);
+      expect(tds['setupDirection'], 'and the setup direction').toBe(directionBefore);
+    });
+
+    it('does not advance the setup count twice for the same bar', () => {
+      const tds = new TDS();
+
+      for (let i = 0; i < 4; i++) {
+        tds.add(10);
+      }
+
+      tds.add(15);
+      tds.add(16);
+
+      expect(tds['setupCount'], 'two bars closed above the close four bars earlier').toBe(2);
+
+      tds.replace(17);
+
+      expect(tds['setupCount'], 'replacing the second bar must not count it again').toBe(2);
+      expect(tds['setupDirection']).toBe('bullish');
+    });
+
+    it('restores the setup direction when a replacement reverses the bar', () => {
+      const tds = new TDS();
+
+      for (let i = 0; i < 4; i++) {
+        tds.add(10);
+      }
+
+      tds.add(15);
+      tds.add(16);
+      tds.replace(5);
+
+      expect(tds['setupCount'], 'a bearish bar restarts the count').toBe(1);
+      expect(tds['setupDirection'], 'the direction flips with the replaced bar').toBe('bearish');
+    });
+
+    it('matches an equivalent series that never used replace', () => {
+      const closes = [10, 10, 10, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19] as const;
+
+      const replaced = new TDS();
+      closes.slice(0, -1).forEach(close => replaced.add(close));
+      replaced.add(99);
+      replaced.replace(closes[closes.length - 1]);
+
+      const reference = new TDS();
+      closes.forEach(close => reference.add(close));
+
+      expect(replaced.getResult(), 'a replacement must reproduce the add-only series').toBe(reference.getResult());
+      expect(replaced['setupCount']).toBe(reference['setupCount']);
+      expect(replaced['setupDirection']).toBe(reference['setupDirection']);
+    });
+
+    it('keeps an earlier setup when the replaced bar completed nothing', () => {
+      const tds = new TDS();
+
+      for (let i = 0; i < 4; i++) {
+        tds.add(10);
+      }
+
+      for (let i = 0; i < 9; i++) {
+        tds.add(11 + i);
+      }
+
+      expect(tds.getResult(), 'nine rising bars complete a bullish setup').toBe(1);
+
+      // Neither of these bars completes a setup, so the earlier result stands.
+      tds.add(5);
+      tds.replace(6);
+
+      expect(tds.getResult(), 'replacing a bar that emitted nothing must not withdraw an older setup').toBe(1);
+    });
+
+    it('withdraws a completed setup when the replacement breaks it', () => {
+      const tds = new TDS();
+
+      for (let i = 0; i < 4; i++) {
+        tds.add(10);
+      }
+
+      for (let i = 0; i < 8; i++) {
+        tds.add(11 + i);
+      }
+
+      expect(tds.getResult(), 'eight bars are one short of a completed setup').toBeNull();
+
+      expect(tds.add(19), 'the ninth consecutive bar completes the bullish setup').toBe(1);
+
+      tds.replace(5);
+
+      expect(tds.getResult(), 'the setup no longer completes, so the emission is withdrawn').toBeNull();
+    });
   });
 
   describe('getSignal', () => {
