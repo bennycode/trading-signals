@@ -15,6 +15,19 @@ export type PSARConfig = {
 };
 
 /**
+ * Everything {@link PSAR.update} reads before it decides on the next SAR. Capturing it lets a
+ * replacement re-run the latest candle from the state that candle originally saw.
+ */
+type PSARState = {
+  acceleration: number;
+  extreme: number | null;
+  isLong: boolean | null;
+  lastSar: number | null;
+  prePreviousCandle: HighLow<number> | null;
+  previousCandle: HighLow<number> | null;
+};
+
+/**
  * Parabolic SAR
  * Type: Trend
  *
@@ -36,6 +49,7 @@ export class PSAR extends IndicatorSeries<HighLow<number>> {
   private isLong: boolean | null = null;
   private previousCandle: HighLow<number> | null = null;
   private prePreviousCandle: HighLow<number> | null = null;
+  private previousState: PSARState | null = null;
 
   constructor(config: PSARConfig) {
     super();
@@ -58,14 +72,35 @@ export class PSAR extends IndicatorSeries<HighLow<number>> {
     return 2;
   }
 
+  private captureState(): PSARState {
+    return {
+      acceleration: this.acceleration,
+      extreme: this.extreme,
+      isLong: this.isLong,
+      lastSar: this.lastSar,
+      prePreviousCandle: this.prePreviousCandle,
+      previousCandle: this.previousCandle,
+    };
+  }
+
+  private restoreState(state: PSARState) {
+    this.acceleration = state.acceleration;
+    this.extreme = state.extreme;
+    this.isLong = state.isLong;
+    this.lastSar = state.lastSar;
+    this.prePreviousCandle = state.prePreviousCandle;
+    this.previousCandle = state.previousCandle;
+  }
+
   update(candle: HighLow<number>, replace: boolean): number | null {
     const {high, low} = candle;
 
-    // If replacing the last candle and we haven't processed enough data yet
-    const notEnoughData = !this.previousCandle || this.lastSar === null;
-    if (replace && notEnoughData) {
-      this.previousCandle = candle;
-      return null;
+    if (replace) {
+      if (this.previousState !== null) {
+        this.restoreState(this.previousState);
+      }
+    } else {
+      this.previousState = this.captureState();
     }
 
     // First candle, just store it and return null
