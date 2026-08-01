@@ -2,9 +2,10 @@ name: 'Release'
 
 permissions:
   contents: write
-  # Lets lerna trade a GitHub OIDC token for a short-lived npm token, so no
-  # long-lived NPM_TOKEN is needed once trusted publishing is configured for
-  # each package. It also makes lerna attach provenance to public packages.
+  # The only npm credential. Lerna trades this for a short-lived npm token per
+  # package and attaches provenance to public ones. Every published package
+  # therefore needs trusted publishing configured on npmjs.com, pointing at this
+  # repository and this workflow file, or its publish fails.
   id-token: write
 
 on:
@@ -29,9 +30,9 @@ jobs:
       - uses: actions/setup-node@v7
         with:
           node-version-file: '.nvmrc'
-          # Writes the auth token to a separate user-level .npmrc, leaving the
-          # repo's own .npmrc (registry, min-release-age) untouched.
-          registry-url: 'https://registry.npmjs.org'
+          # No registry-url on purpose: it would write _authToken=${NODE_AUTH_TOKEN}
+          # into an .npmrc, and npm fails to parse that when no token is set. The
+          # registry comes from lerna.json and the repo's own .npmrc instead.
       - name: 'Configure git author for the publish commit'
         run: |
           git config user.name 'github-actions[bot]'
@@ -49,9 +50,6 @@ jobs:
       - name: 'Publish'
         run: npx lerna publish --yes
         env:
-          # Fallback for packages that do not have trusted publishing configured
-          # yet. OIDC takes precedence whenever the exchange succeeds.
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
           GH_TOKEN: ${{ secrets.RELEASE_TOKEN || secrets.GITHUB_TOKEN }}
       - name: 'Summarize what was published'
         if: always()
