@@ -22,11 +22,11 @@ jobs:
       - uses: actions/setup-node@v7
         with:
           node-version-file: '.nvmrc'
-      - name: 'Install dependencies'
+      - name: 'Install'
         run: npm ci
-      - name: 'Verify provenance and registry signatures of installed dependencies'
+      - name: 'Audit'
         run: npm audit signatures
-      - name: 'Verify'
+      - name: 'Test'
         run: |
           npm run lint
           npm test
@@ -36,7 +36,7 @@ jobs:
         run: npx lerna publish --yes
         env:
           GH_TOKEN: ${{ secrets.GH_AUTOMERGE_TOKEN }}
-      - name: 'Summarize what was published'
+      - name: 'Summary'
         if: always()
         run: |
           {
