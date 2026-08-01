@@ -33,7 +33,7 @@
     "@stylistic/eslint-plugin": "^5.10.0",
     "@types/node": "^26.1.0",
     "@vitest/coverage-v8": "^4.0.18",
-    "conventional-changelog-conventionalcommits": "^10.2.1",
+    "conventional-changelog-conventionalcommits": "^9.3.1",
     "jsdom": "^30.0.0",
     "knip": "^6.29.0",
     "lefthook": "^2.1.9",
