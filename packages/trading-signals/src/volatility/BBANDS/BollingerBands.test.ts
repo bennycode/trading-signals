@@ -175,6 +175,20 @@ describe('BollingerBands', () => {
       expect(restoredResult?.middle, 'replacing back restores the original bands').toBe(originalResult.middle);
     });
 
+    it('changes nothing when the latest price is replaced with the same value', () => {
+      const bb = new BollingerBands(5, 2);
+      const prices = [81.59, 81.06, 82.87, 83.0, 83.61, 83.15] as const;
+
+      prices.forEach(price => bb.add(price));
+
+      const resultBefore = bb.getResultOrThrow();
+
+      bb.replace(83.15);
+
+      expect(bb.getResultOrThrow(), 'replacing a price with itself is a no-op').toEqual(resultBefore);
+      expect(bb.isStable, 'and it stays stable').toBe(true);
+    });
+
     it('keeps calculating when a price of zero drops out of the window', () => {
       const bb = new BollingerBands(3, 2);
 
