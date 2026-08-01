@@ -2,10 +2,6 @@ name: 'Release'
 
 permissions:
   contents: write
-  # The only npm credential. Lerna trades this for a short-lived npm token per
-  # package and attaches provenance to public ones. Every published package
-  # therefore needs trusted publishing configured on npmjs.com, pointing at this
-  # repository and this workflow file, or its publish fails.
   id-token: write
 
 on:
@@ -21,22 +17,11 @@ jobs:
     steps:
       - uses: actions/checkout@v7
         with:
-          # Lerna derives bumps and changelogs from the whole commit and tag history.
           fetch-depth: 0
-          # main requires the test-coverage check, which a brand-new publish commit
-          # cannot have yet. GITHUB_TOKEN gets rejected; an admin PAT bypasses it
-          # because the branch has enforce_admins disabled.
           token: ${{ secrets.GH_AUTOMERGE_TOKEN }}
       - uses: actions/setup-node@v7
         with:
           node-version-file: '.nvmrc'
-          # No registry-url on purpose: it would write _authToken=${NODE_AUTH_TOKEN}
-          # into an .npmrc, and npm fails to parse that when no token is set. The
-          # registry comes from lerna.json and the repo's own .npmrc instead.
-      - name: 'Configure git author for the publish commit'
-        run: |
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
       - name: 'Install dependencies'
         run: npm ci
       - name: 'Verify provenance and registry signatures of installed dependencies'
