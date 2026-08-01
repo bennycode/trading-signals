@@ -144,6 +144,46 @@ describe('BollingerBands', () => {
     });
   });
 
+  describe('update', () => {
+    it('recalculates the bands when replacing the latest price', () => {
+      const bb = new BollingerBands(5, 2);
+      const prices = [81.59, 81.06, 82.87, 83.0, 83.61, 83.15] as const;
+
+      prices.forEach(price => bb.add(price));
+
+      const originalResult = bb.getResultOrThrow();
+      const replacedResult = bb.replace(90);
+
+      expect(replacedResult?.middle, 'a replacement recalculates the bands').not.toBe(originalResult.middle);
+
+      const restoredResult = bb.replace(83.15);
+
+      expect(restoredResult?.middle, 'replacing back restores the original bands').toBe(originalResult.middle);
+    });
+
+    it('changes nothing when the latest price is replaced with the same value', () => {
+      const bb = new BollingerBands(5, 2);
+      const prices = [81.59, 81.06, 82.87, 83.0, 83.61, 83.15] as const;
+
+      prices.forEach(price => bb.add(price));
+
+      const resultBefore = bb.getResultOrThrow();
+
+      bb.replace(83.15);
+
+      expect(bb.getResultOrThrow(), 'replacing a price with itself is a no-op').toEqual(resultBefore);
+      expect(bb.isStable, 'and it stays stable').toBe(true);
+    });
+
+    it('keeps calculating when a price of zero drops out of the window', () => {
+      const bb = new BollingerBands(3, 2);
+
+      [0, 1, 2, 3].forEach(price => bb.add(price));
+
+      expect(bb.getResultOrThrow().middle, 'a zero drop-out must not suppress the calculation').toBe(2);
+    });
+  });
+
   describe('getSignal', () => {
     it('returns UNKNOWN when there is no result', () => {
       const bb = new BollingerBands(10);
