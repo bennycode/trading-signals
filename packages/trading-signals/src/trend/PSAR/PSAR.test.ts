@@ -58,11 +58,44 @@ describe('PSAR', () => {
     // Replace the second candle
     const replacedResult = psar.replace({high: testData[1].high, low: testData[1].low});
 
-    // Allow small differences due to floating point arithmetic
-    const diff = Math.abs((initialResult || 0) - (replacedResult || 0));
-    // Use a reasonable tolerance - 1% or 0.1 absolute
-    const tolerance = Math.max((initialResult || 0) * 0.01, 0.1);
-    expect(diff).toBeLessThanOrEqual(tolerance);
+    expect(replacedResult, 'replacing a candle with itself reproduces the result exactly').toBe(initialResult);
+  });
+
+  it('reproduces an add-only series after a replacement', () => {
+    const candles = testData.slice(0, 20).map(({high, low}) => ({high, low}));
+    const decoy = {high: 999, low: 1};
+
+    const replaced = new PSAR({accelerationMax: 0.2, accelerationStep: 0.02});
+    candles.slice(0, -1).forEach(candle => replaced.add(candle));
+    replaced.add(decoy);
+    const replacedResult = replaced.replace(candles[candles.length - 1]);
+
+    const reference = new PSAR({accelerationMax: 0.2, accelerationStep: 0.02});
+    let referenceResult: number | null = null;
+    candles.forEach(candle => {
+      referenceResult = reference.add(candle);
+    });
+
+    expect(replacedResult, 'a replacement must undo the state the decoy candle left behind').toBe(referenceResult);
+  });
+
+  it('reproduces an add-only series when the decoy candle reversed the trend', () => {
+    const candles = testData.slice(0, 12).map(({high, low}) => ({high, low}));
+    // A deep low forces a long-to-short reversal, which resets acceleration and the extreme point.
+    const reversingDecoy = {high: 84, low: 40};
+
+    const replaced = new PSAR({accelerationMax: 0.2, accelerationStep: 0.02});
+    candles.slice(0, -1).forEach(candle => replaced.add(candle));
+    replaced.add(reversingDecoy);
+    const replacedResult = replaced.replace(candles[candles.length - 1]);
+
+    const reference = new PSAR({accelerationMax: 0.2, accelerationStep: 0.02});
+    let referenceResult: number | null = null;
+    candles.forEach(candle => {
+      referenceResult = reference.add(candle);
+    });
+
+    expect(replacedResult, 'a reversal caused by the replaced candle must be undone too').toBe(referenceResult);
   });
 
   it('returns null when replacing without enough data', () => {
