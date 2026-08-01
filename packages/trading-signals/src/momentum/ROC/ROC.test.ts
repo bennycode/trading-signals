@@ -160,6 +160,25 @@ describe('ROC', () => {
       expect(restoredResult, 'replacing back restores the original result').toBe(originalResult);
     });
 
+    it('changes nothing when the latest price is replaced with the same value', () => {
+      const prices = [81.59, 81.06, 82.87, 83.0, 83.61, 83.15, 82.84] as const;
+
+      // Swept over every length because the comparand only goes wrong at the boundary.
+      for (let length = 1; length <= prices.length; length++) {
+        const roc = new ROC(5);
+
+        prices.slice(0, length).forEach(price => roc.add(price));
+
+        const resultBefore = roc.getResult();
+        const stableBefore = roc.isStable;
+
+        roc.replace(prices[length - 1]);
+
+        expect(roc.getResult(), `replacing price ${length} with itself is a no-op`).toBe(resultBefore);
+        expect(roc.isStable, `and does not change stability at ${length} prices`).toBe(stableBefore);
+      }
+    });
+
     it('stays unstable when replacing before the window is full', () => {
       const roc = new ROC(3);
 
