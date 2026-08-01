@@ -125,6 +125,21 @@ describe('PVT', () => {
       );
     });
 
+    it('changes nothing when the latest candle is replaced with the same values', () => {
+      const candle = (close: number) => ({close, high: close, low: close, volume: 1000}) as const;
+      const pvt = new PVT();
+
+      pvt.add(candle(100));
+      pvt.add(candle(110));
+      pvt.add(candle(120));
+
+      const resultBefore = pvt.getResultOrThrow();
+
+      pvt.replace(candle(120));
+
+      expect(pvt.getResultOrThrow(), 'replacing a candle with itself is a no-op').toBe(resultBefore);
+    });
+
     it('replaces the most recently added value', () => {
       const pvt = new PVT();
       pvt.add({close: 10, high: 10, low: 9, volume: 25000});
