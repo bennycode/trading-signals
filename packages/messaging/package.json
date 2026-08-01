@@ -47,7 +47,7 @@
     "@types/big.js": "^7.0.0",
     "@types/moment-duration-format": "2.2.7",
     "@types/node": "^26.1.0",
-    "better-sqlite3": "^12.11.1",
+    "better-sqlite3": "^13.0.1",
     "better-sqlite3-multiple-ciphers": "^12.11.1",
     "big.js": "^7.0.1",
     "dotenv-defaults": "^6.0.0",
