@@ -23,7 +23,8 @@ export class ROC extends TrendIndicatorSeries {
   }
 
   override getRequiredInputs() {
-    return this.interval;
+    // Comparing against the price `interval` bars back needs that bar on top of the interval itself.
+    return this.interval + 1;
   }
 
   update(price: number, replace: boolean) {
