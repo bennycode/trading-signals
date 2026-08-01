@@ -94,6 +94,22 @@ describe('ZigZag', () => {
       ).toBe(addedFirst.add(candle));
     });
 
+    it('keeps an earlier pivot when the replaced candle reversed nothing', () => {
+      const zigzag = new ZigZag({deviation: 15});
+
+      collect(zigzag, candles.slice(0, 20));
+
+      const pivot = zigzag.getResult();
+
+      expect(pivot, 'the series has already reported a pivot').not.toBeNull();
+
+      // Neither candle reverses the trend, so the earlier pivot stands.
+      expect(zigzag.add({high: 89, low: 86}), 'a quiet candle reports nothing').toBeNull();
+      expect(zigzag.replace({high: 90, low: 87}), 'nor does its replacement').toBeNull();
+
+      expect(zigzag.getResult(), 'replacing a candle that reported nothing must not drop an older pivot').toBe(pivot);
+    });
+
     it('takes back a pivot when the replacement no longer reverses the trend', () => {
       const zigzag = new ZigZag({deviation: 15});
 
