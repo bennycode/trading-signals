@@ -20,7 +20,7 @@ describe('ROC', () => {
 
       const interval = 5;
       const roc = new ROC(interval);
-      const offset = roc.getRequiredInputs();
+      const offset = roc.getRequiredInputs() - 1;
 
       prices.forEach((price, i) => {
         roc.add(price);
@@ -31,7 +31,7 @@ describe('ROC', () => {
         }
       });
 
-      expect(roc.getRequiredInputs()).toBe(interval);
+      expect(roc.getRequiredInputs(), 'a comparison needs one bar more than the interval').toBe(interval + 1);
       expect(roc.getSignal()).toEqual({
         hasChanged: false,
         state: TradingSignal.BULLISH,
@@ -75,6 +75,20 @@ describe('ROC', () => {
       const mockedPrices = [0.0001904, 0.00019071, 0.00019198, 0.0001922, 0.00019214, 0.00019205];
       mockedPrices.forEach(price => indicator.add(price));
       expect(indicator.isStable).toBe(true);
+    });
+
+    it('becomes stable after exactly the number of inputs it reports as required', () => {
+      const roc = new ROC(3);
+      const required = roc.getRequiredInputs();
+
+      for (let i = 1; i < required; i++) {
+        roc.add(10 + i);
+        expect(roc.isStable, `${i} of ${required} inputs is not enough`).toBe(false);
+      }
+
+      roc.add(20);
+
+      expect(roc.isStable, 'the reported number of inputs produces a result').toBe(true);
     });
   });
 
