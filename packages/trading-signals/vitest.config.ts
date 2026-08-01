@@ -19,6 +19,10 @@ export default mergeConfig(
             'Verifies indicator results against Tulip Indicators reference data (https://tulipindicators.org/).',
           name: 'tulipindicators',
         },
+        {
+          description: 'Tests written specifically to guard against bugs that already happened.',
+          name: 'regression',
+        },
       ],
     },
   })

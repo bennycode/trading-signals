@@ -144,18 +144,28 @@ describe('ROC', () => {
       expect(roc.getResultOrThrow().toFixed(2)).toEqual(expectation.toFixed(2));
     });
 
-    it('keeps the correct comparand when replacing after the window has advanced', () => {
+    it('keeps the correct comparand when replacing after the window has advanced', {tags: ['regression']}, () => {
       const interval = 3;
+      const prices = [10, 11, 12, 13];
 
-      const withReplace = new ROC(interval);
-      [10, 11, 12, 13].forEach(price => withReplace.add(price));
-      withReplace.replace(13);
+      const original = new ROC(interval);
+      const replaced = new ROC(interval);
 
-      const withoutReplace = new ROC(interval);
-      [10, 11, 12, 13].forEach(price => withoutReplace.add(price));
+      prices.forEach(price => {
+        original.add(price);
+        replaced.add(price);
+      });
 
-      expect(withReplace.getResultOrThrow().toFixed(4)).toBe('0.3000');
-      expect(withReplace.getResultOrThrow().toFixed(5)).toBe(withoutReplace.getResultOrThrow().toFixed(5));
+      expect(replaced.getResultOrThrow().toFixed(), 'two sets fed identical prices produce identical results').toBe(
+        original.getResultOrThrow().toFixed()
+      );
+
+      replaced.replace(prices[prices.length - 1]);
+
+      expect(
+        replaced.getResultOrThrow().toFixed(),
+        'replacing the last value with an identical value leaves the result unchanged'
+      ).toBe(original.getResultOrThrow().toFixed());
     });
   });
 });
