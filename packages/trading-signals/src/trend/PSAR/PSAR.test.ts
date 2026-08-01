@@ -48,17 +48,23 @@ describe('PSAR', () => {
     });
   });
 
-  it('handles replace correctly', () => {
-    const psar = new PSAR({accelerationMax: 0.2, accelerationStep: 0.02});
+  it('changes nothing when the latest candle is replaced with the same values', () => {
+    const candles = testData.map(({high, low}) => ({high, low}));
 
-    // Add first two candles
-    psar.add({high: testData[0].high, low: testData[0].low});
-    const initialResult = psar.add({high: testData[1].high, low: testData[1].low});
+    // Swept over every length because the carried state only diverges at some of them.
+    for (let length = 1; length <= candles.length; length++) {
+      const psar = new PSAR({accelerationMax: 0.2, accelerationStep: 0.02});
 
-    // Replace the second candle
-    const replacedResult = psar.replace({high: testData[1].high, low: testData[1].low});
+      candles.slice(0, length).forEach(candle => psar.add(candle));
 
-    expect(replacedResult, 'replacing a candle with itself reproduces the result exactly').toBe(initialResult);
+      const resultBefore = psar.getResult();
+      const stableBefore = psar.isStable;
+
+      psar.replace(candles[length - 1]);
+
+      expect(psar.getResult(), `replacing candle ${length} with itself is a no-op`).toBe(resultBefore);
+      expect(psar.isStable, `and does not change stability at ${length} candles`).toBe(stableBefore);
+    }
   });
 
   it('reproduces an add-only series after a replacement', () => {
