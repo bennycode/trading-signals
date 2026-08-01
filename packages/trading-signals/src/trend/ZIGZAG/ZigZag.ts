@@ -24,11 +24,22 @@ export type ZigZagConfig = {
  * @see https://capex.com/en/academy/zigzag
  * @see https://corporatefinanceinstitute.com/resources/career-map/sell-side/capital-markets/zig-zag-indicator/
  */
+/**
+ * The swing state {@link ZigZag.update} carries between candles. Capturing it lets a replacement
+ * re-run the latest candle from the state that candle originally saw.
+ */
+type ZigZagState = {
+  highestExtreme: number | null;
+  isUp: boolean;
+  lowestExtreme: number | null;
+};
+
 export class ZigZag extends IndicatorSeries<HighLow> {
   readonly #deviation: number;
   #isUp: boolean = false;
   #highestExtreme: number | null = null;
   #lowestExtreme: number | null = null;
+  #previousState: ZigZagState | null = null;
 
   constructor(config: ZigZagConfig) {
     super();
@@ -42,6 +53,25 @@ export class ZigZag extends IndicatorSeries<HighLow> {
   update(candle: HighLow<number>, replace: boolean): number | null {
     const low = candle.low;
     const high = candle.high;
+
+    if (replace) {
+      if (this.#previousState !== null) {
+        this.#isUp = this.#previousState.isUp;
+        this.#highestExtreme = this.#previousState.highestExtreme;
+        this.#lowestExtreme = this.#previousState.lowestExtreme;
+      }
+      /*
+       * ZigZag only emits on a reversal, so a replacement that no longer reverses has to take back
+       * the pivot the replaced candle reported.
+       */
+      this.rollbackLastResult();
+    } else {
+      this.#previousState = {
+        highestExtreme: this.#highestExtreme,
+        isUp: this.#isUp,
+        lowestExtreme: this.#lowestExtreme,
+      };
+    }
 
     if (this.#lowestExtreme === null) {
       this.#lowestExtreme = low;
