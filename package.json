@@ -34,7 +34,7 @@
     "@types/node": "^26.1.0",
     "@vitest/coverage-v8": "^4.0.18",
     "conventional-changelog-conventionalcommits": "^8.0.0",
-    "jsdom": "^29.1.1",
+    "jsdom": "^30.0.0",
     "knip": "^6.29.0",
     "lefthook": "^2.1.9",
     "lerna": "^9.0.7",
