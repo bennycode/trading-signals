@@ -94,6 +94,21 @@ describe('ZigZag', () => {
       ).toBe(addedFirst.add(candle));
     });
 
+    it('changes nothing when the latest candle is replaced with the same values', () => {
+      // Swept over every length because the swing state only diverges at some of them.
+      for (let length = 1; length <= candles.length; length++) {
+        const zigzag = new ZigZag({deviation: 15});
+
+        collect(zigzag, candles.slice(0, length));
+
+        const resultBefore = zigzag.getResult();
+
+        zigzag.replace(candles[length - 1]);
+
+        expect(zigzag.getResult(), `replacing candle ${length} with itself is a no-op`).toBe(resultBefore);
+      }
+    });
+
     it('keeps an earlier pivot when the replaced candle reversed nothing', () => {
       const zigzag = new ZigZag({deviation: 15});
 
