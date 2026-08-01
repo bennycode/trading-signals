@@ -111,6 +111,23 @@ describe('TDS', () => {
       expect(result).toBeNull();
     });
 
+    it('changes nothing when the latest close is replaced with the same value', () => {
+      const tds = new TDS();
+      const closes = [10, 10, 10, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19] as const;
+
+      closes.forEach(close => tds.add(close));
+
+      const resultBefore = tds.getResult();
+      const countBefore = tds['setupCount'];
+      const directionBefore = tds['setupDirection'];
+
+      tds.replace(19);
+
+      expect(tds.getResult(), 'replacing a close with itself is a no-op').toBe(resultBefore);
+      expect(tds['setupCount'], 'and leaves the setup count alone').toBe(countBefore);
+      expect(tds['setupDirection'], 'and the setup direction').toBe(directionBefore);
+    });
+
     it('does not advance the setup count twice for the same bar', () => {
       const tds = new TDS();
 
