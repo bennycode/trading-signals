@@ -26,7 +26,7 @@ jobs:
           # main requires the test-coverage check, which a brand-new publish commit
           # cannot have yet. GITHUB_TOKEN gets rejected; an admin PAT bypasses it
           # because the branch has enforce_admins disabled.
-          token: ${{ secrets.GH_AUTOMERGE_TOKEN || secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.GH_AUTOMERGE_TOKEN }}
       - uses: actions/setup-node@v7
         with:
           node-version-file: '.nvmrc'
@@ -50,7 +50,7 @@ jobs:
       - name: 'Publish'
         run: npx lerna publish --yes
         env:
-          GH_TOKEN: ${{ secrets.GH_AUTOMERGE_TOKEN || secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GH_AUTOMERGE_TOKEN }}
       - name: 'Summarize what was published'
         if: always()
         run: |
