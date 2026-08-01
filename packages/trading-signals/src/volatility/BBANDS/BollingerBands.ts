@@ -18,11 +18,6 @@ export class BollingerBands extends TechnicalIndicator<BandsResult, number> {
   #twoPreviousResult?: BandsResult;
   #lastPrice?: number;
   #previousPrice?: number;
-  /**
-   * Latches on the first evicted price. Only an `add()` evicts, so reading the eviction directly
-   * made every `replace()` fall through and drop the result.
-   */
-  #hasEvictedPrice: boolean = false;
 
   public readonly interval: number;
   public readonly deviationMultiplier: number;
@@ -38,11 +33,7 @@ export class BollingerBands extends TechnicalIndicator<BandsResult, number> {
   }
 
   update(price: number, replace: boolean) {
-    const dropOut = pushUpdate(this.prices, replace, price, this.interval);
-
-    if (dropOut !== null) {
-      this.#hasEvictedPrice = true;
-    }
+    pushUpdate(this.prices, replace, price, this.interval);
 
     if (replace) {
       this.result = this.#previousResult;
@@ -55,7 +46,7 @@ export class BollingerBands extends TechnicalIndicator<BandsResult, number> {
     this.#previousPrice = this.#lastPrice;
     this.#lastPrice = price;
 
-    if (this.#hasEvictedPrice) {
+    if (this.prices.length === this.interval) {
       const middle = getAverage(this.prices);
       const standardDeviation = getStandardDeviation(this.prices, middle);
 
