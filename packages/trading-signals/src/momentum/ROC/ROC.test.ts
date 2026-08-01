@@ -144,7 +144,7 @@ describe('ROC', () => {
       expect(roc.getResultOrThrow().toFixed(2)).toEqual(expectation.toFixed(2));
     });
 
-    it('keeps the correct comparand when replacing after the window has advanced', () => {
+    it('keeps the correct comparand when replacing after the window has advanced', {tags: ['regression']}, () => {
       const interval = 3;
       const prices = [10, 11, 12, 13];
 
