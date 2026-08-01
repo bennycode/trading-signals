@@ -160,6 +160,26 @@ describe('TDS', () => {
       expect(replaced['setupDirection']).toBe(reference['setupDirection']);
     });
 
+    it('keeps an earlier setup when the replaced bar completed nothing', () => {
+      const tds = new TDS();
+
+      for (let i = 0; i < 4; i++) {
+        tds.add(10);
+      }
+
+      for (let i = 0; i < 9; i++) {
+        tds.add(11 + i);
+      }
+
+      expect(tds.getResult(), 'nine rising bars complete a bullish setup').toBe(1);
+
+      // Neither of these bars completes a setup, so the earlier result stands.
+      tds.add(5);
+      tds.replace(6);
+
+      expect(tds.getResult(), 'replacing a bar that emitted nothing must not withdraw an older setup').toBe(1);
+    });
+
     it('withdraws a completed setup when the replacement breaks it', () => {
       const tds = new TDS();
 
