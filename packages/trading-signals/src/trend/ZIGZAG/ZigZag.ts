@@ -10,6 +10,16 @@ export type ZigZagConfig = {
 };
 
 /**
+ * The swing state {@link ZigZag.update} carries between candles. Capturing it lets a replacement
+ * re-run the latest candle from the state that candle originally saw.
+ */
+type ZigZagState = {
+  highestExtreme: number | null;
+  isUp: boolean;
+  lowestExtreme: number | null;
+};
+
+/**
  * ZigZag Indicator (ZigZag)
  * Type: Trend
  *
@@ -29,6 +39,12 @@ export class ZigZag extends IndicatorSeries<HighLow> {
   #isUp: boolean = false;
   #highestExtreme: number | null = null;
   #lowestExtreme: number | null = null;
+  #previousState: ZigZagState | null = null;
+  /**
+   * Whether the latest candle reversed the trend. ZigZag emits only on a reversal and its result
+   * persists in between, so only a candle that emitted may withdraw that pivot when replaced.
+   */
+  #lastCandleReversed: boolean = false;
 
   constructor(config: ZigZagConfig) {
     super();
@@ -42,6 +58,25 @@ export class ZigZag extends IndicatorSeries<HighLow> {
   update(candle: HighLow<number>, replace: boolean): number | null {
     const low = candle.low;
     const high = candle.high;
+
+    if (replace) {
+      if (this.#previousState !== null) {
+        this.#isUp = this.#previousState.isUp;
+        this.#highestExtreme = this.#previousState.highestExtreme;
+        this.#lowestExtreme = this.#previousState.lowestExtreme;
+      }
+      if (this.#lastCandleReversed) {
+        this.rollbackLastResult();
+      }
+    } else {
+      this.#previousState = {
+        highestExtreme: this.#highestExtreme,
+        isUp: this.#isUp,
+        lowestExtreme: this.#lowestExtreme,
+      };
+    }
+
+    this.#lastCandleReversed = false;
 
     if (this.#lowestExtreme === null) {
       this.#lowestExtreme = low;
@@ -60,6 +95,7 @@ export class ZigZag extends IndicatorSeries<HighLow> {
       } else if (low < uptrendReversal) {
         this.#isUp = false;
         this.#lowestExtreme = low;
+        this.#lastCandleReversed = true;
         return this.setResult(this.#highestExtreme, replace);
       }
     } else {
@@ -70,6 +106,7 @@ export class ZigZag extends IndicatorSeries<HighLow> {
       } else if (high > downtrendReversal) {
         this.#isUp = true;
         this.#highestExtreme = high;
+        this.#lastCandleReversed = true;
         return this.setResult(this.#lowestExtreme, replace);
       }
     }
