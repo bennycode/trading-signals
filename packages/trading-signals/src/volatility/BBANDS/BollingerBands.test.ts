@@ -49,6 +49,20 @@ describe('BollingerBands', () => {
       expect(bb.deviationMultiplier).toBe(2);
     });
 
+    it('emits the first result as soon as the interval is filled', () => {
+      const bb = new BollingerBands(5, 2);
+      const prices = [10, 11, 12, 13, 14] as const;
+
+      prices.slice(0, -1).forEach(price => bb.add(price));
+
+      expect(bb.isStable, 'four prices do not fill an interval of five').toBe(false);
+
+      const result = bb.add(prices[4]);
+
+      expect(bb.isStable, 'the fifth price completes the interval').toBe(true);
+      expect(result?.middle, 'the first band averages all five prices').toBe(12);
+    });
+
     it('throws an error when there is not enough input data', () => {
       const bb = new BollingerBands(20);
 
@@ -193,7 +207,7 @@ describe('BollingerBands', () => {
 
     it('returns BULLISH when price breaks above the previous upper band', () => {
       const bb = new BollingerBands(10, 2);
-      // Need 12 adds: 11 for first result, 12th to have a previous result to compare against
+      // The signal compares against the previous bands, so more than one result must exist
       for (let i = 0; i < 11; i++) {
         bb.add(50);
       }
@@ -225,7 +239,7 @@ describe('BollingerBands', () => {
 
     it('tracks signal state changes', () => {
       const bb = new BollingerBands(10, 2);
-      // Build up stable data: 12 adds to get a previous result for comparison
+      // Build up stable data so a previous result exists for comparison
       for (let i = 0; i < 12; i++) {
         bb.add(50);
       }
