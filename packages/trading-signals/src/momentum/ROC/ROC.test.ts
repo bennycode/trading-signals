@@ -144,18 +144,49 @@ describe('ROC', () => {
 
   describe('update', () => {
     it('returns a valid result when replacing values', () => {
-      const prices = [81.59, 81.06, 82.87, 83.0, 83.61] as const;
-      const updatePrice = 82.84;
-      const expectation = 0.01911999019;
+      const prices = [81.59, 81.06, 82.87, 83.0, 83.61, 83.15] as const;
 
-      const interval = 5;
-      const roc = new ROC(interval);
+      const roc = new ROC(5);
 
       prices.forEach(price => roc.add(price));
 
-      roc.replace(updatePrice);
+      const originalResult = roc.getResultOrThrow();
+      const replacedResult = roc.replace(82.84);
 
-      expect(roc.getResultOrThrow().toFixed(2)).toEqual(expectation.toFixed(2));
+      expect(replacedResult, 'a replacement recalculates against the same comparand').not.toBe(originalResult);
+
+      const restoredResult = roc.replace(83.15);
+
+      expect(restoredResult, 'replacing back restores the original result').toBe(originalResult);
+    });
+
+    it('changes nothing when the latest price is replaced with the same value', () => {
+      const prices = [81.59, 81.06, 82.87, 83.0, 83.61, 83.15, 82.84] as const;
+
+      // Swept over every length because the comparand only goes wrong at the boundary.
+      for (let length = 1; length <= prices.length; length++) {
+        const roc = new ROC(5);
+
+        prices.slice(0, length).forEach(price => roc.add(price));
+
+        const resultBefore = roc.getResult();
+        const stableBefore = roc.isStable;
+
+        roc.replace(prices[length - 1]);
+
+        expect(roc.getResult(), `replacing price ${length} with itself is a no-op`).toBe(resultBefore);
+        expect(roc.isStable, `and does not change stability at ${length} prices`).toBe(stableBefore);
+      }
+    });
+
+    it('stays unstable when replacing before the window is full', () => {
+      const roc = new ROC(3);
+
+      [10, 11, 12].forEach(price => roc.add(price));
+
+      expect(roc.isStable, 'three prices do not fill a ROC(3) comparison window').toBe(false);
+      expect(roc.replace(12.5), 'a replacement adds no bar, so there is still nothing to compare').toBeNull();
+      expect(roc.isStable, 'a replacement must never make an unstable indicator stable').toBe(false);
     });
 
     it('keeps the correct comparand when replacing after the window has advanced', () => {
