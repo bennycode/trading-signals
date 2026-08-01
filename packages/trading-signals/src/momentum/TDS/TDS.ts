@@ -19,6 +19,17 @@ export class TDS extends TrendIndicatorSeries {
   private readonly closes: number[] = [];
   private setupCount: number = 0;
   private setupDirection: 'bullish' | 'bearish' | null = null;
+  /*
+   * The setup state as of the bar before the current one. A replacement re-runs the latest bar, so
+   * the count has to start again from what that bar originally found, not from what it left behind.
+   */
+  private previousSetupCount: number = 0;
+  private previousSetupDirection: 'bullish' | 'bearish' | null = null;
+  /*
+   * Whether the latest bar completed a setup. TDS emits sparsely and its result persists between
+   * setups, so only a bar that emitted may withdraw that emission when it gets replaced.
+   */
+  private lastBarCompletedSetup: boolean = false;
 
   override getRequiredInputs() {
     return 9;
@@ -27,8 +38,20 @@ export class TDS extends TrendIndicatorSeries {
   update(close: number, replace: boolean): number | null {
     if (replace) {
       this.closes.pop();
+      this.setupCount = this.previousSetupCount;
+      this.setupDirection = this.previousSetupDirection;
+
+      if (this.lastBarCompletedSetup) {
+        this.rollbackLastResult();
+      }
+    } else {
+      this.previousSetupCount = this.setupCount;
+      this.previousSetupDirection = this.setupDirection;
     }
+
     this.closes.push(close);
+    this.lastBarCompletedSetup = false;
+
     if (this.closes.length < 5) {
       return null;
     }
@@ -60,6 +83,7 @@ export class TDS extends TrendIndicatorSeries {
       const result = this.setupDirection === 'bullish' ? 1 : -1;
       this.setupCount = 0;
       this.setupDirection = null;
+      this.lastBarCompletedSetup = true;
       return this.setResult(result, replace);
     }
     return null;
