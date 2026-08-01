@@ -42,20 +42,26 @@ describe('BollingerBandsWidth', () => {
       /*
        * Test data verified with:
        * https://www.tradingview.com/support/solutions/43000501972/
+       *
+       * TradingView reports BBW to two decimals, which is too coarse to tell neighbouring readings
+       * apart: the first two bars below both display as "0.19". These expectations are the same
+       * series carried out to eight decimals, derived from the definition
+       * `(upper - lower) / middle` over a 20-price window with a population standard deviation.
+       * Each one still rounds to the TradingView figure quoted beside it.
        */
       const expectations = [
-        '0.19',
-        '0.19',
-        '0.21',
-        '0.21',
-        '0.21',
-        '0.20',
-        '0.18',
-        '0.15',
-        '0.13',
-        '0.11',
-        '0.09',
-        '0.09',
+        '0.18527244', // 0.19
+        '0.19448621', // 0.19
+        '0.20620703', // 0.21
+        '0.20947164', // 0.21
+        '0.20811594', // 0.21
+        '0.20235584', // 0.20
+        '0.18343591', // 0.18
+        '0.15339154', // 0.15
+        '0.12996632', // 0.13
+        '0.10676506', // 0.11
+        '0.08600268', // 0.09
+        '0.08869419', // 0.09
       ] as const;
 
       const interval = 20;
@@ -68,7 +74,7 @@ describe('BollingerBandsWidth', () => {
         bbw.add(close);
         if (bbw.isStable) {
           const expected = expectations[i - offset];
-          expect(bbw.getResultOrThrow().toFixed(2)).toBe(`${expected}`);
+          expect(bbw.getResultOrThrow().toFixed(8)).toBe(`${expected}`);
         }
       });
     });
