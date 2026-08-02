@@ -23,6 +23,12 @@ jobs:
           # https://github.com/settings/personal-access-tokens
           # Repository permissions: "Contents" (Read and write)
           token: ${{ secrets.RELEASE_TOKEN }}
+      # A fresh runner has no git identity, so lerna's version commit fails with
+      # "empty ident name" before it can tag or publish anything.
+      - name: 'Identity'
+        run: |
+          git config user.name 'Benny Neugebauer'
+          git config user.email 'mail@bennycode.com'
       - uses: actions/setup-node@v7
         with:
           node-version-file: '.nvmrc'
