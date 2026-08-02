@@ -44,6 +44,11 @@ jobs:
         run: npm run dist
       - name: 'Publish'
         run: npx lerna publish --yes
+        env:
+          # Required by createRelease in lerna.json. Uses the PAT rather than
+          # GITHUB_TOKEN so the releases are attributed to the same person as
+          # the publish commit. npm auth is unrelated and comes from OIDC.
+          GH_TOKEN: ${{ secrets.RELEASE_TOKEN }}
       - name: 'Summary'
         if: always()
         run: |
