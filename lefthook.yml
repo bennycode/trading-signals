@@ -8,4 +8,6 @@ pre-commit:
       stage_fixed: true
     action-validator:
       glob: '.github/workflows/*.{yml,yaml}'
-      run: npx action-validator {staged_files}
+      # action-validator takes a single file, so staging two workflows at once
+      # would otherwise pass it two arguments and fail on its usage message.
+      run: for file in {staged_files}; do npx action-validator "$file" || exit 1; done
