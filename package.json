@@ -25,7 +25,8 @@
     "pretest": "lerna run dist",
     "test": "npm run test:imports && lerna run --no-sort --concurrency 8 test",
     "test:imports": "knip",
-    "test:types": "lerna run --no-sort --concurrency 8 test:types"
+    "test:types": "lerna run --no-sort --concurrency 8 test:types",
+    "version": "oxfmt packages/*/CHANGELOG.md"
   },
   "devDependencies": {
     "@action-validator/cli": "^0.6.0",
