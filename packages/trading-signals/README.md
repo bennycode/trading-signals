@@ -72,7 +72,6 @@ All indicators can be updated over time by streaming data (prices or [candles](h
 1. Triple Exponential Moving Average (TEMA)
 1. Triple Smoothed EMA Rate of Change (TRIX)
 1. True Range (TR)
-1. Typical Price (TYPPRICE)
 1. Ultimate Oscillator (ULTOSC)
 1. Volatility Stop (VSTOP)
 1. Volume Rate of Change (VROC)
