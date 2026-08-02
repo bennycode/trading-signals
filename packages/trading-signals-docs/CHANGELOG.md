@@ -1,6 +1,14 @@
 # Change Log
 
-All notable changes to this project will be documented in this file. See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
+All notable changes to this project will be documented in this file.
+See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
+
+## [2.1.0](https://github.com/bennycode/trading-signals/compare/trading-signals-docs@2.0.0...trading-signals-docs@2.1.0) (2026-08-02)
+
+### Features
+
+* **trading-signals-docs:** add SuperTrend and Volatility Stop demos ([#1239](https://github.com/bennycode/trading-signals/issues/1239))
+
 
 ## [2.0.0](https://github.com/bennycode/trading-signals/compare/trading-signals-docs@1.4.0...trading-signals-docs@2.0.0) (2026-07-24)
 

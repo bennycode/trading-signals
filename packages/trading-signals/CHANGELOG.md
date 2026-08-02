@@ -1,6 +1,19 @@
 # Change Log
 
-All notable changes to this project will be documented in this file. See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
+All notable changes to this project will be documented in this file.
+See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
+
+## [8.1.0](https://github.com/bennycode/trading-signals/compare/trading-signals@8.0.0...trading-signals@8.1.0) (2026-08-02)
+
+### Features
+
+* **trading-signals:** add SuperTrend indicator (SUPERTREND) ([#1238](https://github.com/bennycode/trading-signals/issues/1238))
+* **trading-signals:** add Volatility Stop indicator (VSTOP) ([#1237](https://github.com/bennycode/trading-signals/issues/1237))
+
+### Bug Fixes
+
+* **trading-signals:** use correct comparand when replacing ROC values ([#1242](https://github.com/bennycode/trading-signals/issues/1242))
+
 
 ## [8.0.0](https://github.com/bennycode/trading-signals/compare/trading-signals@7.4.3...trading-signals@8.0.0) (2026-07-24)
 

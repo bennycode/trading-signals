@@ -1,6 +1,14 @@
 # Change Log
 
-All notable changes to this project will be documented in this file. See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
+All notable changes to this project will be documented in this file.
+See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
+
+## [0.3.1](https://github.com/bennycode/trading-signals/compare/@typedtrader/exchange@0.3.0...@typedtrader/exchange@0.3.1) (2026-08-02)
+
+### Bug Fixes
+
+* **exchange:** remove console noise and dotenv-defaults from consumer install ([#1240](https://github.com/bennycode/trading-signals/issues/1240))
+
 
 ## [0.3.0](https://github.com/bennycode/trading-signals/compare/@typedtrader/exchange@0.2.5...@typedtrader/exchange@0.3.0) (2026-07-24)
 

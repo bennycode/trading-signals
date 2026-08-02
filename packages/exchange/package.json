@@ -1,6 +1,6 @@
 {
   "name": "@typedtrader/exchange",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Trading strategies to run trading bots with JavaScript / TypeScript.",
   "keywords": [
     "trading",

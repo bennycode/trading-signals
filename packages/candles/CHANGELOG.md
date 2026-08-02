@@ -1,6 +1,15 @@
 # Change Log
 
-All notable changes to this project will be documented in this file. See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
+All notable changes to this project will be documented in this file.
+See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
+
+## [0.2.1](https://github.com/bennycode/trading-signals/compare/@typedtrader/candles@0.2.0...@typedtrader/candles@0.2.1) (2026-08-02)
+
+**Note:** Version bump only for package @typedtrader/candles
+
+
+
+
 
 ## 0.2.0 (2026-07-24)
 

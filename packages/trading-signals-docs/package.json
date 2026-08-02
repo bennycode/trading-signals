@@ -1,6 +1,6 @@
 {
   "name": "trading-signals-docs",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "private": true,
   "description": "Documentation and showcase website for trading-signals library",
   "type": "module",
@@ -24,16 +24,16 @@
   "dependencies": {
     "@highcharts/react": "^5.2.2",
     "@tailwindcss/postcss": "^4.3.2",
-    "@typedtrader/candles": "0.2.0",
-    "@typedtrader/exchange": "0.3.0",
+    "@typedtrader/candles": "0.2.1",
+    "@typedtrader/exchange": "0.3.1",
     "@types/big.js": "^7.0.0",
     "big.js": "^7.0.1",
     "highcharts": "^13.0.0",
     "next": "^16.3.0-preview.10",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
-    "trading-signals": "8.0.0",
-    "trading-strategies": "0.4.0",
+    "trading-signals": "8.1.0",
+    "trading-strategies": "0.4.1",
     "zod": "^4.4.3"
   },
   "devDependencies": {
