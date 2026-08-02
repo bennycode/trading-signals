@@ -19,6 +19,10 @@ jobs:
         uses: actions/checkout@v7
         with:
           fetch-depth: 0
+          # Create PAT at:
+          # https://github.com/settings/personal-access-tokens
+          # Repository permissions: "Contents" (Read and write)
+          token: ${{ secrets.RELEASE_TOKEN }}
       - uses: actions/setup-node@v7
         with:
           node-version-file: '.nvmrc'
@@ -34,8 +38,6 @@ jobs:
         run: npm run dist
       - name: 'Publish'
         run: npx lerna publish --yes
-        env:
-          GH_TOKEN: ${{ secrets.GH_AUTOMERGE_TOKEN }}
       - name: 'Summary'
         if: always()
         run: |
