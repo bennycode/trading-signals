@@ -21,7 +21,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: 'Checkout'
+      - name: 'Checkout Repository'
         uses: actions/checkout@v7
       - name: 'Setup Node'
         uses: actions/setup-node@v7
@@ -32,7 +32,7 @@ jobs:
         uses: actions/configure-pages@v6
         with:
           static_site_generator: next
-      - name: 'Restore cache'
+      - name: 'Restore Cache'
         uses: actions/cache@v6
         with:
           path: |
@@ -42,11 +42,11 @@ jobs:
           # If source files changed but packages didn't, rebuild from a prior cache.
           restore-keys: |
             ${{ runner.os }}-nextjs-${{ hashFiles('**/package-lock.json', '**/yarn.lock') }}-
-      - name: 'Install'
+      - name: 'Install Dependencies'
         run: npm ci
-      - name: 'Build'
+      - name: 'Build Documentation'
         run: npx lerna run dist --scope trading-signals-docs --include-dependencies
-      - name: 'Upload artifact'
+      - name: 'Upload Artifact'
         uses: actions/upload-pages-artifact@v5
         with:
           path: packages/trading-signals-docs/out

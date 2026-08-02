@@ -13,7 +13,7 @@ jobs:
     name: 'Label PR based on title'
     runs-on: ubuntu-latest
     steps:
-      - name: 'Apply labels'
+      - name: 'Apply Labels'
         uses: srvaroa/labeler@v1.11
         env:
           GITHUB_TOKEN: ${{ github.token }}
