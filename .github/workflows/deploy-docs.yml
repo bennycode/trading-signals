@@ -12,7 +12,9 @@ permissions:
   pages: write
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  # Ref-less on purpose: the Pages deployment API is global, so two refs
+  # deploying at once would race.
+  group: ${{ github.workflow }}
   cancel-in-progress: true
 
 jobs:
