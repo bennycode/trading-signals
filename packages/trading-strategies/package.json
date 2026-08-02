@@ -10,6 +10,11 @@
     "url": "https://github.com/bennycode/trading-signals/issues"
   },
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bennycode/trading-signals.git",
+    "directory": "packages/trading-strategies"
+  },
   "files": [
     "dist",
     "!dist/start",
