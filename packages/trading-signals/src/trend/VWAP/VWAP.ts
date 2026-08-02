@@ -1,5 +1,6 @@
 import {IndicatorSeries} from '../../base/Indicator.js';
 import type {HighLowCloseVolume} from '../../base/Candle.type.js';
+import {getTypicalPrice} from '../../util/getTypicalPrice.js';
 
 /**
  * Volume-Weighted Average Price (VWAP)
@@ -20,9 +21,8 @@ export class VWAP extends IndicatorSeries<HighLowCloseVolume<number>> {
     super();
   }
 
-  #calculateTypicalPriceVolume(data: HighLowCloseVolume<number>) {
-    const hlc3 = (data.high + data.low + data.close) / 3;
-    return hlc3 * data.volume;
+  #calculateTypicalPriceVolume(candle: HighLowCloseVolume<number>) {
+    return getTypicalPrice(candle) * candle.volume;
   }
 
   override getRequiredInputs() {

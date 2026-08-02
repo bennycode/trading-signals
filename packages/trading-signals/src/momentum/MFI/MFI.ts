@@ -1,6 +1,7 @@
 import type {HighLowCloseVolume} from '../../base/Candle.type.js';
 import {TradingSignal, TrendIndicatorSeries} from '../../base/Indicator.js';
 import type {SignalThresholds} from '../../base/SignalThresholds.type.js';
+import {getTypicalPrice} from '../../util/getTypicalPrice.js';
 import {pushUpdate} from '../../util/pushUpdate.js';
 
 /**
@@ -44,7 +45,7 @@ export class MFI extends TrendIndicatorSeries<HighLowCloseVolume<number>> {
       return null;
     }
 
-    const typicalPrices = this.#candles.map(({close, high, low}) => (high + low + close) / 3);
+    const typicalPrices = this.#candles.map(getTypicalPrice);
     let positiveFlow = 0;
     let negativeFlow = 0;
 

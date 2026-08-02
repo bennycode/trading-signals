@@ -2,7 +2,7 @@ import {SMA} from '../../trend/SMA/SMA.js';
 import type {HighLowClose} from '../../base/Candle.type.js';
 import {TradingSignal, TrendIndicatorSeries} from '../../base/Indicator.js';
 import type {SignalThresholds} from '../../base/SignalThresholds.type.js';
-import {pushUpdate} from '../../util/index.js';
+import {getTypicalPrice, pushUpdate} from '../../util/index.js';
 import {MAD} from '../../volatility/MAD/MAD.js';
 
 /**
@@ -64,8 +64,8 @@ export class CCI extends TrendIndicatorSeries<HighLowClose<number>> {
     return null;
   }
 
-  #cacheTypicalPrice({close, high, low}: HighLowClose<number>, replace: boolean) {
-    const typicalPrice = (high + low + close) / 3;
+  #cacheTypicalPrice(candle: HighLowClose<number>, replace: boolean) {
+    const typicalPrice = getTypicalPrice(candle);
     pushUpdate(this.#typicalPrices, replace, typicalPrice, this.interval);
     return typicalPrice;
   }

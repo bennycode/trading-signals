@@ -9,5 +9,6 @@ export * from './getQuartile.js';
 export * from './getShare.js';
 export * from './getStandardDeviation.js';
 export * from './getStreaks.js';
+export * from './getTypicalPrice.js';
 export * from './getWeekday.js';
 export * from './pushUpdate.js';
