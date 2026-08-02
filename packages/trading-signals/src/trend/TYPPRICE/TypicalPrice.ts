@@ -1,5 +1,6 @@
 import {IndicatorSeries} from '../../base/Indicator.js';
 import type {HighLowClose} from '../../base/Candle.type.js';
+import {getTypicalPrice} from '../../util/getTypicalPrice.js';
 
 /**
  * Typical Price (TYPPRICE)
@@ -19,8 +20,6 @@ export class TypicalPrice extends IndicatorSeries<HighLowClose<number>> {
   }
 
   update(candle: HighLowClose<number>, replace: boolean) {
-    const {high, low, close} = candle;
-
-    return this.setResult((high + low + close) / 3, replace);
+    return this.setResult(getTypicalPrice(candle), replace);
   }
 }
