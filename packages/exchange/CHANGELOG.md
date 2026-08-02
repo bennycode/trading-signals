@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.3.2](https://github.com/bennycode/trading-signals/compare/@typedtrader/exchange@0.3.1...@typedtrader/exchange@0.3.2) (2026-08-02)
+
+### Bug Fixes
+
+- format lerna-generated changelogs via the version lifecycle ([#1268](https://github.com/bennycode/trading-signals/issues/1268))
+- **trading-signals, trading-strategies, candles, exchange:** add repository metadata for npm provenance ([#1267](https://github.com/bennycode/trading-signals/issues/1267))
+
 ## [0.3.1](https://github.com/bennycode/trading-signals/compare/@typedtrader/exchange@0.3.0...@typedtrader/exchange@0.3.1) (2026-08-02)
 
 ### Bug Fixes

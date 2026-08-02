@@ -1,6 +1,6 @@
 {
   "name": "@typedtrader/candles",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "Labeled market-condition candle datasets (uptrend, downtrend, sideways, …) for tests and docs.",
   "repository": {
     "type": "git",
@@ -35,6 +35,6 @@
     "test:units": "vitest run"
   },
   "devDependencies": {
-    "@typedtrader/exchange": "0.3.1"
+    "@typedtrader/exchange": "0.3.2"
   }
 }

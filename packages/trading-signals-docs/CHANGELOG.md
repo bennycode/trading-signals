@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file. See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.1.1](https://github.com/bennycode/trading-signals/compare/trading-signals-docs@2.1.0...trading-signals-docs@2.1.1) (2026-08-02)
+
+### Bug Fixes
+
+- format lerna-generated changelogs via the version lifecycle ([#1268](https://github.com/bennycode/trading-signals/issues/1268))
+
 ## [2.1.0](https://github.com/bennycode/trading-signals/compare/trading-signals-docs@2.0.0...trading-signals-docs@2.1.0) (2026-08-02)
 
 ### Features
