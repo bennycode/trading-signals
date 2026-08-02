@@ -8,6 +8,7 @@
 .DS_Store
 .idea/
 .vscode/
+!.vscode/extensions.json
 !.vscode/settings.json
 config.json
 coverage/

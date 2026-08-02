@@ -2,12 +2,13 @@ name: 'Release'
 
 permissions:
   contents: write
+  id-token: write
 
 on:
   workflow_dispatch:
 
 concurrency:
-  group: 'release'
+  group: ${{ github.workflow }}
   cancel-in-progress: false
 
 jobs:
@@ -16,25 +17,16 @@ jobs:
     steps:
       - uses: actions/checkout@v7
         with:
-          # Lerna derives bumps and changelogs from the whole commit and tag history.
           fetch-depth: 0
-          # main requires the test-coverage check, which a brand-new publish commit
-          # cannot have yet. GITHUB_TOKEN gets rejected; an admin PAT bypasses it
-          # because the branch has enforce_admins disabled.
-          token: ${{ secrets.RELEASE_TOKEN || secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.GH_AUTOMERGE_TOKEN }}
       - uses: actions/setup-node@v7
         with:
           node-version-file: '.nvmrc'
-          # Writes the auth token to a separate user-level .npmrc, leaving the
-          # repo's own .npmrc (registry, min-release-age) untouched.
-          registry-url: 'https://registry.npmjs.org'
-      - name: 'Configure git author for the publish commit'
-        run: |
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-      - name: 'Install dependencies'
+      - name: 'Install'
         run: npm ci
-      - name: 'Verify'
+      - name: 'Audit'
+        run: npm audit signatures
+      - name: 'Test'
         run: |
           npm run lint
           npm test
@@ -43,5 +35,11 @@ jobs:
       - name: 'Publish'
         run: npx lerna publish --yes
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-          GH_TOKEN: ${{ secrets.RELEASE_TOKEN || secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GH_AUTOMERGE_TOKEN }}
+      - name: 'Summary'
+        if: always()
+        run: |
+          {
+            echo "### Published"
+            git tag --points-at HEAD | sed 's/^/- /'
+          } >> "$GITHUB_STEP_SUMMARY"
