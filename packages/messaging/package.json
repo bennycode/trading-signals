@@ -1,6 +1,6 @@
 {
   "name": "@typedtrader/messaging",
-  "version": "0.5.2",
+  "version": "0.5.3",
   "private": true,
   "description": "Trading bot via messaging service.",
   "keywords": [
@@ -59,7 +59,7 @@
     "ms": "4.0.0-nightly.202508271359",
     "pino": "^10.3.1",
     "pino-roll": "^4.0.0",
-    "trading-strategies": "0.4.2",
+    "trading-strategies": "0.4.3",
     "zod": "^4.4.3"
   },
   "devDependencies": {

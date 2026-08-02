@@ -1,6 +1,6 @@
 {
   "name": "trading-signals-docs",
-  "version": "2.1.1",
+  "version": "2.1.2",
   "private": true,
   "description": "Documentation and showcase website for trading-signals library",
   "type": "module",
@@ -32,8 +32,8 @@
     "next": "^16.3.0-preview.10",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
-    "trading-signals": "8.1.1",
-    "trading-strategies": "0.4.2",
+    "trading-signals": "8.2.0",
+    "trading-strategies": "0.4.3",
     "zod": "^4.4.3"
   },
   "devDependencies": {
