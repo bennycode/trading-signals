@@ -27,8 +27,8 @@ jobs:
       # "empty ident name" before it can tag or publish anything.
       - name: 'Identity'
         run: |
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git config user.name 'Benny Neugebauer'
+          git config user.email 'mail@bennycode.com'
       - uses: actions/setup-node@v7
         with:
           node-version-file: '.nvmrc'
