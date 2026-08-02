@@ -1,11 +1,11 @@
 name: 'Release'
 
+on:
+  workflow_dispatch:
+
 permissions:
   contents: write
   id-token: write
-
-on:
-  workflow_dispatch:
 
 concurrency:
   group: ${{ github.workflow }}
@@ -29,9 +29,11 @@ jobs:
         run: |
           git config user.name 'Benny Neugebauer'
           git config user.email 'mail@bennycode.com'
-      - uses: actions/setup-node@v7
+      - name: 'Setup Node'
+        uses: actions/setup-node@v7
         with:
           node-version-file: '.nvmrc'
+          cache: 'npm'
       - name: 'Install'
         run: npm ci
       - name: 'Audit'
@@ -46,7 +48,7 @@ jobs:
         run: npx lerna publish --yes
         env:
           # Required by createRelease in lerna.json. Uses the PAT rather than
-          # GITHUB_TOKEN so the releases are attributed to the same person as
+          # github.token so the releases are attributed to the same person as
           # the publish commit. npm auth is unrelated and comes from OIDC.
           GH_TOKEN: ${{ secrets.RELEASE_TOKEN }}
       - name: 'Summary'

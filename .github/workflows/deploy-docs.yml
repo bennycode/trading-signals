@@ -2,13 +2,14 @@ name: 'Deploy Documentation'
 
 on:
   push:
-    branches: ['main']
+    branches:
+      - main
   workflow_dispatch:
 
 permissions:
   contents: read
-  pages: write
   id-token: write
+  pages: write
 
 concurrency:
   group: 'pages'
@@ -18,17 +19,18 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: 'Checkout'
         uses: actions/checkout@v7
-      - name: Setup Node
+      - name: 'Setup Node'
         uses: actions/setup-node@v7
         with:
           node-version-file: '.nvmrc'
-      - name: Setup Pages
+          cache: 'npm'
+      - name: 'Setup Pages'
         uses: actions/configure-pages@v6
         with:
           static_site_generator: next
-      - name: Restore cache
+      - name: 'Restore cache'
         uses: actions/cache@v6
         with:
           path: |
@@ -38,13 +40,11 @@ jobs:
           # If source files changed but packages didn't, rebuild from a prior cache.
           restore-keys: |
             ${{ runner.os }}-nextjs-${{ hashFiles('**/package-lock.json', '**/yarn.lock') }}-
-      - name: Install dependencies
-        run: npm install
-      - name: Build library and docs
-        run: |
-          npm install
-          npx lerna run dist --scope trading-signals-docs --include-dependencies
-      - name: Upload artifact
+      - name: 'Install'
+        run: npm ci
+      - name: 'Build'
+        run: npx lerna run dist --scope trading-signals-docs --include-dependencies
+      - name: 'Upload artifact'
         uses: actions/upload-pages-artifact@v5
         with:
           path: packages/trading-signals-docs/out
@@ -55,6 +55,6 @@ jobs:
     runs-on: ubuntu-latest
     needs: build
     steps:
-      - name: Deploy to GitHub Pages
+      - name: 'Deploy to GitHub Pages'
         id: deployment
         uses: actions/deploy-pages@v5
