@@ -19,6 +19,10 @@ jobs:
         uses: actions/checkout@v7
         with:
           fetch-depth: 0
+          # Persisted as the credential lerna's git push reuses. main requires the
+          # test-coverage check, which a brand-new publish commit cannot have yet,
+          # so GITHUB_TOKEN is rejected and an admin PAT is needed to bypass it.
+          token: ${{ secrets.RELEASE_TOKEN }}
       - uses: actions/setup-node@v7
         with:
           node-version-file: '.nvmrc'
@@ -32,10 +36,11 @@ jobs:
           npm test
       - name: 'Build'
         run: npm run dist
+      # npm auth comes from the OIDC exchange enabled by id-token above. No
+      # GH_TOKEN: createRelease is off in lerna.json, so nothing calls the
+      # GitHub API here.
       - name: 'Publish'
         run: npx lerna publish --yes
-        env:
-          GH_TOKEN: ${{ secrets.GH_AUTOMERGE_TOKEN }}
       - name: 'Summary'
         if: always()
         run: |

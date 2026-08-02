@@ -4,7 +4,6 @@
       "allowBranch": "main",
       "changelogPreset": "conventional-changelog-conventionalcommits",
       "conventionalCommits": true,
-      "createRelease": "github",
       "message": "[skip ci] chore: Publish"
     }
   },
