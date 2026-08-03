@@ -6,8 +6,6 @@ pre-commit:
         npx oxlint --fix --no-error-on-unmatched-pattern {staged_files}
         npx oxfmt --no-error-on-unmatched-pattern {staged_files}
       stage_fixed: true
-    action-validator:
+    actionlint:
       glob: '.github/workflows/*.{yml,yaml}'
-      # action-validator takes a single file, so staging two workflows at once
-      # would otherwise pass it two arguments and fail on its usage message.
-      run: for file in {staged_files}; do npx action-validator "$file" || exit 1; done
+      run: npx github-actionlint {staged_files}
