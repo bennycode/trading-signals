@@ -1,6 +1,15 @@
 import {TDS} from './TDS.js';
 import {TradingSignal} from '../../base/index.js';
 
+/** Captures everything a replacement could corrupt, so tests compare the whole setup state at once. */
+function getSetupState(tds: TDS) {
+  return {
+    result: tds.getResult(),
+    setupCount: tds['setupCount'],
+    setupDirection: tds['setupDirection'],
+  };
+}
+
 describe('TDS', () => {
   it('does not return a result for less than 9 prices', () => {
     const tds = new TDS();
@@ -115,17 +124,13 @@ describe('TDS', () => {
       const tds = new TDS();
       const closes = [10, 10, 10, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19] as const;
 
-      closes.forEach(close => tds.add(close));
+      tds.updates(closes);
 
-      const resultBefore = tds.getResult();
-      const countBefore = tds['setupCount'];
-      const directionBefore = tds['setupDirection'];
+      const stateBefore = getSetupState(tds);
 
       tds.replace(19);
 
-      expect(tds.getResult(), 'replacing a close with itself is a no-op').toBe(resultBefore);
-      expect(tds['setupCount'], 'and leaves the setup count alone').toBe(countBefore);
-      expect(tds['setupDirection'], 'and the setup direction').toBe(directionBefore);
+      expect(getSetupState(tds), 'replacing a close with itself is a no-op').toEqual(stateBefore);
     });
 
     it('does not advance the setup count twice for the same bar', () => {
@@ -165,16 +170,16 @@ describe('TDS', () => {
       const closes = [10, 10, 10, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19] as const;
 
       const replaced = new TDS();
-      closes.slice(0, -1).forEach(close => replaced.add(close));
+      replaced.updates(closes.slice(0, -1));
       replaced.add(99);
       replaced.replace(closes[closes.length - 1]);
 
       const reference = new TDS();
-      closes.forEach(close => reference.add(close));
+      reference.updates(closes);
 
-      expect(replaced.getResult(), 'a replacement must reproduce the add-only series').toBe(reference.getResult());
-      expect(replaced['setupCount']).toBe(reference['setupCount']);
-      expect(replaced['setupDirection']).toBe(reference['setupDirection']);
+      expect(getSetupState(replaced), 'a replacement must reproduce the add-only series').toEqual(
+        getSetupState(reference)
+      );
     });
 
     it('keeps an earlier setup when the replaced bar completed nothing', () => {

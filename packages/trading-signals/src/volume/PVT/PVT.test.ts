@@ -18,9 +18,7 @@ describe('PVT', () => {
 
       const pvt = new PVT();
 
-      for (const candle of candles) {
-        pvt.add(candle);
-      }
+      pvt.updates(candles);
 
       expect(pvt.isStable).toBe(true);
       expect(pvt.getRequiredInputs()).toBe(2);
@@ -82,9 +80,7 @@ describe('PVT', () => {
         {close: 11.5, high: 12, low: 10, volume: 35000},
       ] as const;
 
-      for (const candle of candles) {
-        pvt.add(candle);
-      }
+      pvt.updates(candles);
 
       expect(pvt.getSignal().state).toBe(TradingSignal.BULLISH);
     });
@@ -97,28 +93,23 @@ describe('PVT', () => {
         {close: 9.5, high: 10, low: 9, volume: 25000},
       ] as const;
 
-      for (const candle of candles) {
-        pvt.add(candle);
-      }
+      pvt.updates(candles);
 
       expect(pvt.getSignal().state).toBe(TradingSignal.BEARISH);
     });
   });
 
   describe('replace', () => {
-    it('accumulates onto the total from before the replaced candle', () => {
-      const candle = (close: number) => ({close, high: close, low: close, volume: 1000}) as const;
+    /** Keeps the tests focused on the close price by faking a candle that has no intra-bar movement. */
+    const fakeFlatCandle = (close: number) => ({close, high: close, low: close, volume: 1000}) as const;
 
+    it('accumulates onto the total from before the replaced candle', () => {
       const replaced = new PVT();
-      replaced.add(candle(100));
-      replaced.add(candle(110));
-      replaced.add(candle(120));
-      replaced.replace(candle(130));
+      replaced.updates([fakeFlatCandle(100), fakeFlatCandle(110), fakeFlatCandle(120)]);
+      replaced.replace(fakeFlatCandle(130));
 
       const reference = new PVT();
-      reference.add(candle(100));
-      reference.add(candle(110));
-      reference.add(candle(130));
+      reference.updates([fakeFlatCandle(100), fakeFlatCandle(110), fakeFlatCandle(130)]);
 
       expect(replaced.getResultOrThrow(), 'a replacement must not count the replaced candle twice').toBe(
         reference.getResultOrThrow()
@@ -126,16 +117,13 @@ describe('PVT', () => {
     });
 
     it('changes nothing when the latest candle is replaced with the same values', () => {
-      const candle = (close: number) => ({close, high: close, low: close, volume: 1000}) as const;
       const pvt = new PVT();
 
-      pvt.add(candle(100));
-      pvt.add(candle(110));
-      pvt.add(candle(120));
+      pvt.updates([fakeFlatCandle(100), fakeFlatCandle(110), fakeFlatCandle(120)]);
 
       const resultBefore = pvt.getResultOrThrow();
 
-      pvt.replace(candle(120));
+      pvt.replace(fakeFlatCandle(120));
 
       expect(pvt.getResultOrThrow(), 'replacing a candle with itself is a no-op').toBe(resultBefore);
     });

@@ -30,14 +30,7 @@ describe('ZigZag', () => {
         };
       });
 
-      const results = [];
-
-      for (const candle of candles) {
-        const result = zigzag.add(candle);
-        if (result !== null) {
-          results.push(result);
-        }
-      }
+      const results = zigzag.updates(candles).filter(result => result !== null);
 
       expect(results).toEqual(expected);
     });
@@ -54,28 +47,14 @@ describe('ZigZag', () => {
 
     const candles = highs.map((high, index) => ({high, low: lows[index]}));
 
-    function collect(zigzag: ZigZag, inputs: readonly {high: number; low: number}[]) {
-      const results: number[] = [];
-
-      for (const candle of inputs) {
-        const result = zigzag.add(candle);
-
-        if (result !== null) {
-          results.push(result);
-        }
-      }
-
-      return results;
-    }
-
     it('reproduces an add-only series after a replacement', () => {
       const replaced = new ZigZag({deviation: 15});
-      collect(replaced, candles.slice(0, -1));
+      replaced.updates(candles.slice(0, -1));
       replaced.add({high: 500, low: 400});
       replaced.replace(candles[candles.length - 1]);
 
       const reference = new ZigZag({deviation: 15});
-      collect(reference, candles);
+      reference.updates(candles);
 
       expect(replaced.getResult(), 'a replacement must undo the state the decoy candle left behind').toBe(
         reference.getResult()
@@ -99,7 +78,7 @@ describe('ZigZag', () => {
       for (let length = 1; length <= candles.length; length++) {
         const zigzag = new ZigZag({deviation: 15});
 
-        collect(zigzag, candles.slice(0, length));
+        zigzag.updates(candles.slice(0, length));
 
         const resultBefore = zigzag.getResult();
 
@@ -112,7 +91,7 @@ describe('ZigZag', () => {
     it('keeps an earlier pivot when the replaced candle reversed nothing', () => {
       const zigzag = new ZigZag({deviation: 15});
 
-      collect(zigzag, candles.slice(0, 20));
+      zigzag.updates(candles.slice(0, 20));
 
       const pivot = zigzag.getResult();
 
@@ -128,7 +107,7 @@ describe('ZigZag', () => {
     it('takes back a pivot when the replacement no longer reverses the trend', () => {
       const zigzag = new ZigZag({deviation: 15});
 
-      collect(zigzag, candles.slice(0, 20));
+      zigzag.updates(candles.slice(0, 20));
 
       const resultBeforeReversal = zigzag.getResult();
 

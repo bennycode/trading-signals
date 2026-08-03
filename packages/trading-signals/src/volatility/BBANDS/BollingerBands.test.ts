@@ -53,7 +53,7 @@ describe('BollingerBands', () => {
       const bb = new BollingerBands(5, 2);
       const prices = [10, 11, 12, 13, 14] as const;
 
-      prices.slice(0, -1).forEach(price => bb.add(price));
+      bb.updates(prices.slice(0, -1));
 
       expect(bb.isStable, 'four prices do not fill an interval of five').toBe(false);
 
@@ -163,7 +163,7 @@ describe('BollingerBands', () => {
       const bb = new BollingerBands(5, 2);
       const prices = [81.59, 81.06, 82.87, 83.0, 83.61, 83.15] as const;
 
-      prices.forEach(price => bb.add(price));
+      bb.updates(prices);
 
       const originalResult = bb.getResultOrThrow();
       const replacedResult = bb.replace(90);
@@ -179,7 +179,7 @@ describe('BollingerBands', () => {
       const bb = new BollingerBands(5, 2);
       const prices = [81.59, 81.06, 82.87, 83.0, 83.61, 83.15] as const;
 
-      prices.forEach(price => bb.add(price));
+      bb.updates(prices);
 
       const resultBefore = bb.getResultOrThrow();
 
@@ -192,7 +192,7 @@ describe('BollingerBands', () => {
     it('keeps calculating when a price of zero drops out of the window', () => {
       const bb = new BollingerBands(3, 2);
 
-      [0, 1, 2, 3].forEach(price => bb.add(price));
+      bb.updates([0, 1, 2, 3]);
 
       expect(bb.getResultOrThrow().middle, 'a zero drop-out must not suppress the calculation').toBe(2);
     });
@@ -207,7 +207,7 @@ describe('BollingerBands', () => {
 
     it('returns BULLISH when price breaks above the previous upper band', () => {
       const bb = new BollingerBands(10, 2);
-      // The signal compares against the previous bands, so more than one result must exist
+      // Need 12 adds: 10 for the first result, 12th to have a previous result to compare against
       for (let i = 0; i < 11; i++) {
         bb.add(50);
       }
@@ -239,7 +239,7 @@ describe('BollingerBands', () => {
 
     it('tracks signal state changes', () => {
       const bb = new BollingerBands(10, 2);
-      // Build up stable data so a previous result exists for comparison
+      // Build up stable data: 12 adds to get a previous result for comparison
       for (let i = 0; i < 12; i++) {
         bb.add(50);
       }

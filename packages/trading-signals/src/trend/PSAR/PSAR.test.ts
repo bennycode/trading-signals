@@ -55,7 +55,7 @@ describe('PSAR', () => {
     for (let length = 1; length <= candles.length; length++) {
       const psar = new PSAR({accelerationMax: 0.2, accelerationStep: 0.02});
 
-      candles.slice(0, length).forEach(candle => psar.add(candle));
+      psar.updates(candles.slice(0, length));
 
       const resultBefore = psar.getResult();
       const stableBefore = psar.isStable;
@@ -72,15 +72,12 @@ describe('PSAR', () => {
     const decoy = {high: 999, low: 1};
 
     const replaced = new PSAR({accelerationMax: 0.2, accelerationStep: 0.02});
-    candles.slice(0, -1).forEach(candle => replaced.add(candle));
+    replaced.updates(candles.slice(0, -1));
     replaced.add(decoy);
     const replacedResult = replaced.replace(candles[candles.length - 1]);
 
     const reference = new PSAR({accelerationMax: 0.2, accelerationStep: 0.02});
-    let referenceResult: number | null = null;
-    candles.forEach(candle => {
-      referenceResult = reference.add(candle);
-    });
+    const referenceResult = reference.updates(candles).at(-1);
 
     expect(replacedResult, 'a replacement must undo the state the decoy candle left behind').toBe(referenceResult);
   });
@@ -91,15 +88,12 @@ describe('PSAR', () => {
     const reversingDecoy = {high: 84, low: 40};
 
     const replaced = new PSAR({accelerationMax: 0.2, accelerationStep: 0.02});
-    candles.slice(0, -1).forEach(candle => replaced.add(candle));
+    replaced.updates(candles.slice(0, -1));
     replaced.add(reversingDecoy);
     const replacedResult = replaced.replace(candles[candles.length - 1]);
 
     const reference = new PSAR({accelerationMax: 0.2, accelerationStep: 0.02});
-    let referenceResult: number | null = null;
-    candles.forEach(candle => {
-      referenceResult = reference.add(candle);
-    });
+    const referenceResult = reference.updates(candles).at(-1);
 
     expect(replacedResult, 'a reversal caused by the replaced candle must be undone too').toBe(referenceResult);
   });

@@ -48,6 +48,10 @@ describe('BollingerBandsWidth', () => {
        * series carried out to eight decimals, derived from the definition
        * `(upper - lower) / middle` over a 20-price window with a population standard deviation.
        * Each one still rounds to the TradingView figure quoted beside it.
+       *
+       * TradingView plots its first BBW value on the 20th bar, exactly where the first
+       * expectation below sits. The previous implementation became stable one bar late, so the
+       * old test silently skipped TradingView's first plotted value.
        */
       const expectations = [
         '0.18527244', // 0.19

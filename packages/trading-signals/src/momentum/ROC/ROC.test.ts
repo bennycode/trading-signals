@@ -31,7 +31,6 @@ describe('ROC', () => {
         }
       });
 
-      expect(roc.getRequiredInputs(), 'a comparison needs one bar more than the interval').toBe(interval + 1);
       expect(roc.getSignal()).toEqual({
         hasChanged: false,
         state: TradingSignal.BULLISH,
@@ -41,11 +40,9 @@ describe('ROC', () => {
     it('identifies a down-trending asset by a negative ROC', () => {
       const roc = new ROC(5);
 
-      const prices = [1000, 900, 800, 700, 600, 500, 400, 300, 200, 100];
+      const prices = [1000, 900, 800, 700, 600, 500, 400, 300, 200, 100] as const;
 
-      prices.forEach(price => {
-        roc.add(price);
-      });
+      roc.updates(prices);
 
       expect(roc.getResultOrThrow().toFixed(2)).toBe('-0.83');
       expect(roc.getSignal()).toEqual({
@@ -66,14 +63,23 @@ describe('ROC', () => {
     });
   });
 
+  describe('getRequiredInputs', () => {
+    it('returns one bar more than the interval because a comparison needs an older price', () => {
+      const interval = 5;
+      const roc = new ROC(interval);
+
+      expect(roc.getRequiredInputs()).toBe(interval + 1);
+    });
+  });
+
   describe('isStable', () => {
     it('returns true when it can return reliable data', () => {
       const interval = 5;
       const indicator = new ROC(interval);
       expect(indicator.isStable).toBe(false);
 
-      const mockedPrices = [0.0001904, 0.00019071, 0.00019198, 0.0001922, 0.00019214, 0.00019205];
-      mockedPrices.forEach(price => indicator.add(price));
+      const mockedPrices = [0.0001904, 0.00019071, 0.00019198, 0.0001922, 0.00019214, 0.00019205] as const;
+      indicator.updates(mockedPrices);
       expect(indicator.isStable).toBe(true);
     });
 
@@ -103,9 +109,7 @@ describe('ROC', () => {
       const roc = new ROC(5);
       const prices = [100, 101, 102, 103, 104, 105] as const;
 
-      for (const price of prices) {
-        roc.add(price);
-      }
+      roc.updates(prices);
 
       const signal = roc.getSignal();
 
@@ -117,9 +121,7 @@ describe('ROC', () => {
       const roc = new ROC(5);
       const prices = [105, 104, 103, 102, 101, 100] as const;
 
-      for (const price of prices) {
-        roc.add(price);
-      }
+      roc.updates(prices);
 
       const signal = roc.getSignal();
 
@@ -131,9 +133,7 @@ describe('ROC', () => {
       const roc = new ROC(5);
       const prices = [100, 100, 100, 100, 100, 100] as const;
 
-      for (const price of prices) {
-        roc.add(price);
-      }
+      roc.updates(prices);
 
       const signal = roc.getSignal();
 
@@ -148,7 +148,7 @@ describe('ROC', () => {
 
       const roc = new ROC(5);
 
-      prices.forEach(price => roc.add(price));
+      roc.updates(prices);
 
       const originalResult = roc.getResultOrThrow();
       const replacedResult = roc.replace(82.84);
@@ -167,7 +167,7 @@ describe('ROC', () => {
       for (let length = 1; length <= prices.length; length++) {
         const roc = new ROC(5);
 
-        prices.slice(0, length).forEach(price => roc.add(price));
+        roc.updates(prices.slice(0, length));
 
         const resultBefore = roc.getResult();
         const stableBefore = roc.isStable;
@@ -182,7 +182,7 @@ describe('ROC', () => {
     it('stays unstable when replacing before the window is full', () => {
       const roc = new ROC(3);
 
-      [10, 11, 12].forEach(price => roc.add(price));
+      roc.updates([10, 11, 12]);
 
       expect(roc.isStable, 'three prices do not fill a ROC(3) comparison window').toBe(false);
       expect(roc.replace(12.5), 'a replacement adds no bar, so there is still nothing to compare').toBeNull();
