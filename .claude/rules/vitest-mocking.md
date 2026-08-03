@@ -78,4 +78,4 @@ Mocked constants must match their literal types exactly (e.g. `MESSAGE_BREAK: '\
 
 ## No manual mock restoration
 
-`restoreMocks: true` is enabled in `vitest.config.base.ts`, so spies created with `vi.spyOn` are restored automatically before each test. Do not add `vi.restoreAllMocks()` in `afterEach`.
+`restoreMocks: true` is enabled in `vitest.shared.ts`, so spies created with `vi.spyOn` are restored automatically before each test. Do not add `vi.restoreAllMocks()` in `afterEach`.
