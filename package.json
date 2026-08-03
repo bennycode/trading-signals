@@ -29,12 +29,11 @@
     "version": "oxfmt packages/*/CHANGELOG.md"
   },
   "devDependencies": {
-    "@action-validator/cli": "^0.6.0",
-    "@action-validator/core": "^0.6.0",
     "@stylistic/eslint-plugin": "^5.10.0",
     "@types/node": "^26.1.0",
     "@vitest/coverage-v8": "^4.0.18",
     "conventional-changelog-conventionalcommits": "^9.3.1",
+    "github-actionlint": "^1.7.12",
     "jsdom": "^30.0.0",
     "knip": "^6.29.0",
     "lefthook": "^2.1.9",
