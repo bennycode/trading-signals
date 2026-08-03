@@ -10,12 +10,17 @@ export type ZigZagConfig = {
 };
 
 /**
- * The swing state {@link ZigZag.update} carries between candles. Capturing it lets a replacement
- * re-run the latest candle from the state that candle originally saw.
+ * The swing state {@link ZigZag.update} carries between candles. Held in the base-class state
+ * container so a replacement re-runs the latest candle from the state that candle originally saw.
  */
 type ZigZagState = {
   highestExtreme: number | null;
   isUp: boolean;
+  /*
+   * Whether the latest candle reversed the trend. ZigZag emits only on a reversal and its result
+   * persists in between, so only a candle that emitted may withdraw that pivot when replaced.
+   */
+  lastCandleReversed: boolean;
   lowestExtreme: number | null;
 };
 
@@ -34,17 +39,14 @@ type ZigZagState = {
  * @see https://capex.com/en/academy/zigzag
  * @see https://corporatefinanceinstitute.com/resources/career-map/sell-side/capital-markets/zig-zag-indicator/
  */
-export class ZigZag extends IndicatorSeries<HighLow> {
+export class ZigZag extends IndicatorSeries<HighLow, ZigZagState> {
   readonly #deviation: number;
-  #isUp: boolean = false;
-  #highestExtreme: number | null = null;
-  #lowestExtreme: number | null = null;
-  #previousState: ZigZagState | null = null;
-  /**
-   * Whether the latest candle reversed the trend. ZigZag emits only on a reversal and its result
-   * persists in between, so only a candle that emitted may withdraw that pivot when replaced.
-   */
-  #lastCandleReversed: boolean = false;
+  protected override state: ZigZagState = {
+    highestExtreme: null,
+    isUp: false,
+    lastCandleReversed: false,
+    lowestExtreme: null,
+  };
 
   constructor(config: ZigZagConfig) {
     super();
@@ -59,55 +61,47 @@ export class ZigZag extends IndicatorSeries<HighLow> {
     const low = candle.low;
     const high = candle.high;
 
-    if (replace) {
-      if (this.#previousState !== null) {
-        this.#isUp = this.#previousState.isUp;
-        this.#highestExtreme = this.#previousState.highestExtreme;
-        this.#lowestExtreme = this.#previousState.lowestExtreme;
-      }
-      if (this.#lastCandleReversed) {
-        this.rollbackLastResult();
-      }
-    } else {
-      this.#previousState = {
-        highestExtreme: this.#highestExtreme,
-        isUp: this.#isUp,
-        lowestExtreme: this.#lowestExtreme,
-      };
+    // Read before trackState() rewinds the flag to what the candle before the replaced one found
+    if (replace && this.state.lastCandleReversed) {
+      this.rollbackLastResult();
     }
 
-    this.#lastCandleReversed = false;
+    this.trackState(replace);
 
-    if (this.#lowestExtreme === null) {
-      this.#lowestExtreme = low;
+    const state = this.state;
+
+    state.lastCandleReversed = false;
+
+    if (state.lowestExtreme === null) {
+      state.lowestExtreme = low;
     }
 
-    if (this.#highestExtreme === null) {
-      this.#highestExtreme = high;
+    if (state.highestExtreme === null) {
+      state.highestExtreme = high;
     }
 
-    if (this.#isUp) {
+    if (state.isUp) {
       const uptrendReversal =
-        this.#lowestExtreme + ((this.#highestExtreme - this.#lowestExtreme) * (100 - this.#deviation)) / 100;
+        state.lowestExtreme + ((state.highestExtreme - state.lowestExtreme) * (100 - this.#deviation)) / 100;
 
-      if (high > this.#highestExtreme) {
-        this.#highestExtreme = high;
+      if (high > state.highestExtreme) {
+        state.highestExtreme = high;
       } else if (low < uptrendReversal) {
-        this.#isUp = false;
-        this.#lowestExtreme = low;
-        this.#lastCandleReversed = true;
-        return this.setResult(this.#highestExtreme, replace);
+        state.isUp = false;
+        state.lowestExtreme = low;
+        state.lastCandleReversed = true;
+        return this.setResult(state.highestExtreme, replace);
       }
     } else {
-      const downtrendReversal = low + ((this.#highestExtreme - low) * this.#deviation) / 100;
+      const downtrendReversal = low + ((state.highestExtreme - low) * this.#deviation) / 100;
 
-      if (low < this.#lowestExtreme) {
-        this.#lowestExtreme = low;
+      if (low < state.lowestExtreme) {
+        state.lowestExtreme = low;
       } else if (high > downtrendReversal) {
-        this.#isUp = true;
-        this.#highestExtreme = high;
-        this.#lastCandleReversed = true;
-        return this.setResult(this.#lowestExtreme, replace);
+        state.isUp = true;
+        state.highestExtreme = high;
+        state.lastCandleReversed = true;
+        return this.setResult(state.lowestExtreme, replace);
       }
     }
 

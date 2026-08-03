@@ -1,15 +1,6 @@
 import {TDS} from './TDS.js';
 import {TradingSignal} from '../../base/index.js';
 
-/** Captures everything a replacement could corrupt, so tests compare the whole setup state at once. */
-function getSetupState(tds: TDS) {
-  return {
-    result: tds.getResult(),
-    setupCount: tds['setupCount'],
-    setupDirection: tds['setupDirection'],
-  };
-}
-
 describe('TDS', () => {
   it('does not return a result for less than 9 prices', () => {
     const tds = new TDS();
@@ -54,7 +45,7 @@ describe('TDS', () => {
     for (let i = 0; i < 20; i++) {
       tds.add(i);
     }
-    expect(tds['closes'].length).toBeLessThanOrEqual(13);
+    expect(tds.getState().closes.length).toBeLessThanOrEqual(13);
   });
 
   it('detects a direction change from bearish to bullish', () => {
@@ -66,8 +57,8 @@ describe('TDS', () => {
     tds.add(4);
     tds.add(3);
     const result = tds.add(20);
-    expect(tds['setupCount']).toBe(1);
-    expect(tds['setupDirection']).toBe('bullish');
+    expect(tds.getState().setupCount).toBe(1);
+    expect(tds.getState().setupDirection).toBe('bullish');
     expect(result).toBeNull();
   });
 
@@ -80,8 +71,8 @@ describe('TDS', () => {
     tds.add(21);
     tds.add(22);
     const result = tds.add(5);
-    expect(tds['setupCount']).toBe(1);
-    expect(tds['setupDirection']).toBe('bearish');
+    expect(tds.getState().setupCount).toBe(1);
+    expect(tds.getState().setupDirection).toBe('bearish');
     expect(result).toBeNull();
   });
 
@@ -97,15 +88,15 @@ describe('TDS', () => {
     tds.add(16);
 
     // Current setup should be bullish with count 2
-    expect(tds['setupCount']).toBe(2);
-    expect(tds['setupDirection']).toBe('bullish');
+    expect(tds.getState().setupCount).toBe(2);
+    expect(tds.getState().setupDirection).toBe('bullish');
 
     // Add a close equal to "prev4" (10 === 10)
     const result = tds.add(prev4);
 
     // Setup count and direction should remain unchanged
-    expect(tds['setupCount']).toBe(2);
-    expect(tds['setupDirection']).toBe('bullish');
+    expect(tds.getState().setupCount).toBe(2);
+    expect(tds.getState().setupDirection).toBe('bullish');
     expect(result).toBeNull();
   });
 
@@ -126,11 +117,11 @@ describe('TDS', () => {
 
       tds.updates(closes);
 
-      const stateBefore = getSetupState(tds);
+      const stateBefore = tds.getState();
 
       tds.replace(19);
 
-      expect(getSetupState(tds), 'replacing a close with itself is a no-op').toEqual(stateBefore);
+      expect(tds.getState(), 'replacing a close with itself is a no-op').toEqual(stateBefore);
     });
 
     it('does not advance the setup count twice for the same bar', () => {
@@ -143,12 +134,12 @@ describe('TDS', () => {
       tds.add(15);
       tds.add(16);
 
-      expect(tds['setupCount'], 'two bars closed above the close four bars earlier').toBe(2);
+      expect(tds.getState().setupCount, 'two bars closed above the close four bars earlier').toBe(2);
 
       tds.replace(17);
 
-      expect(tds['setupCount'], 'replacing the second bar must not count it again').toBe(2);
-      expect(tds['setupDirection']).toBe('bullish');
+      expect(tds.getState().setupCount, 'replacing the second bar must not count it again').toBe(2);
+      expect(tds.getState().setupDirection).toBe('bullish');
     });
 
     it('restores the setup direction when a replacement reverses the bar', () => {
@@ -162,8 +153,8 @@ describe('TDS', () => {
       tds.add(16);
       tds.replace(5);
 
-      expect(tds['setupCount'], 'a bearish bar restarts the count').toBe(1);
-      expect(tds['setupDirection'], 'the direction flips with the replaced bar').toBe('bearish');
+      expect(tds.getState().setupCount, 'a bearish bar restarts the count').toBe(1);
+      expect(tds.getState().setupDirection, 'the direction flips with the replaced bar').toBe('bearish');
     });
 
     it('matches an equivalent series that never used replace', () => {
@@ -172,14 +163,17 @@ describe('TDS', () => {
       const replaced = new TDS();
       replaced.updates(closes.slice(0, -1));
       replaced.add(99);
-      replaced.replace(closes[closes.length - 1]);
 
       const reference = new TDS();
       reference.updates(closes);
 
-      expect(getSetupState(replaced), 'a replacement must reproduce the add-only series').toEqual(
-        getSetupState(reference)
+      expect(replaced.getState(), 'the decoy bar leaves the two indicators in different states').not.toEqual(
+        reference.getState()
       );
+
+      replaced.replace(closes[closes.length - 1]);
+
+      expect(replaced.getState(), 'a replacement must reproduce the add-only series').toEqual(reference.getState());
     });
 
     it('keeps an earlier setup when the replaced bar completed nothing', () => {
