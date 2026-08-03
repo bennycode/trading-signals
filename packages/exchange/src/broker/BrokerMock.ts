@@ -25,6 +25,14 @@ export interface ExchangeMockBalance {
   hold: Big;
 }
 
+export interface BrokerMockSlippageConfig {
+  rate?: Big;
+}
+
+export interface BrokerMockFillModelConfig {
+  priceImprovement?: boolean;
+}
+
 export abstract class BrokerMock extends Broker {
   readonly #balances: Map<string, ExchangeMockBalance>;
   readonly #pendingOrders: PendingOrder[] = [];
@@ -38,10 +46,22 @@ export abstract class BrokerMock extends Broker {
   #historicalCandles: Candle[] = [];
   #nextOrderId = 1;
   readonly #orderTopics = new Set<string>();
+  readonly #slippageRate: Big;
+  readonly #priceImprovement: boolean;
 
-  constructor(config: {balances: Map<string, ExchangeMockBalance>}) {
+  constructor(config: {
+    balances: Map<string, ExchangeMockBalance>;
+    fillModel?: BrokerMockFillModelConfig;
+    slippage?: BrokerMockSlippageConfig;
+  }) {
     super('BrokerMock');
     this.#balances = config.balances;
+    this.#slippageRate = config.slippage?.rate ?? new Big(0);
+    assert.ok(
+      this.#slippageRate.gte(0) && this.#slippageRate.lt(1),
+      `Slippage rate "${this.#slippageRate.toFixed()}" must be within [0, 1)`
+    );
+    this.#priceImprovement = config.fillModel?.priceImprovement ?? true;
   }
 
   /** Seed the candles returned by {@link getRecentCandles} (used to exercise strategy warm-up). */
@@ -100,8 +120,15 @@ export abstract class BrokerMock extends Broker {
     let fillPrice: Big;
 
     if (order.type === OrderType.MARKET) {
-      // Market orders fill at candle open price
-      fillPrice = candleOpen;
+      const increment = new Big(this.#getTradingRulesSync().counter_increment);
+      const rawPrice =
+        order.side === OrderSide.BUY
+          ? candleOpen.mul(new Big(1).plus(this.#slippageRate))
+          : candleOpen.mul(new Big(1).minus(this.#slippageRate));
+      fillPrice =
+        order.side === OrderSide.BUY
+          ? this.#roundUpToIncrement(rawPrice, increment)
+          : this.#roundDownToIncrement(rawPrice, increment);
 
       if (order.sizeInCounter) {
         /*
@@ -136,15 +163,21 @@ export abstract class BrokerMock extends Broker {
         if (candleLow.gt(limitPrice)) {
           return null;
         }
-        // Price improvement: min(order.price, candle.open)
-        fillPrice = limitPrice.lt(candleOpen) ? limitPrice : candleOpen;
+        if (this.#priceImprovement) {
+          fillPrice = limitPrice.lt(candleOpen) ? limitPrice : candleOpen;
+        } else {
+          fillPrice = limitPrice.gt(candleHigh) ? candleHigh : limitPrice;
+        }
       } else {
         // Limit sell fills if candle.high >= order.price
         if (candleHigh.lt(limitPrice)) {
           return null;
         }
-        // Price improvement: max(order.price, candle.open)
-        fillPrice = limitPrice.gt(candleOpen) ? limitPrice : candleOpen;
+        if (this.#priceImprovement) {
+          fillPrice = limitPrice.gt(candleOpen) ? limitPrice : candleOpen;
+        } else {
+          fillPrice = limitPrice.lt(candleLow) ? candleLow : limitPrice;
+        }
       }
     }
 
@@ -231,7 +264,7 @@ export abstract class BrokerMock extends Broker {
       } else {
         // Market order, best-effort: hold based on current candle price if available.
         const estimatedPrice = this.#currentCandle ? new Big(this.#currentCandle.close) : new Big(0);
-        counterNeeded = size.mul(estimatedPrice);
+        counterNeeded = size.mul(estimatedPrice).mul(new Big(1).plus(this.#slippageRate));
         const feeRate = this.#getFeeRateSync(options.type);
         counterNeeded = counterNeeded.plus(counterNeeded.mul(feeRate));
       }
@@ -324,6 +357,10 @@ export abstract class BrokerMock extends Broker {
     return value.div(increment).round(0, Big.roundDown).mul(increment);
   }
 
+  #roundUpToIncrement(value: Big, increment: Big) {
+    return value.div(increment).round(0, Big.roundUp).mul(increment);
+  }
+
   /** Cached fee rates to avoid async in hot path */
   #cachedFeeRates: FeeRate | undefined;
 
@@ -336,6 +373,19 @@ export abstract class BrokerMock extends Broker {
       throw new Error('Fee rates not cached. Call setCachedFeeRates() before processing candles.');
     }
     return this.#cachedFeeRates[orderType];
+  }
+
+  #cachedTradingRules: Omit<TradingRules, 'pair'> | undefined;
+
+  setCachedTradingRules(rules: Omit<TradingRules, 'pair'>) {
+    this.#cachedTradingRules = rules;
+  }
+
+  #getTradingRulesSync() {
+    if (!this.#cachedTradingRules) {
+      throw new Error('Trading rules not cached. Call setCachedTradingRules() before processing candles.');
+    }
+    return this.#cachedTradingRules;
   }
 
   #getBalance(currency: string) {

@@ -1,6 +1,11 @@
 import Big from 'big.js';
 import {describe, expect, it} from 'vitest';
-import {BrokerMock, type ExchangeMockBalance} from './BrokerMock.js';
+import {
+  BrokerMock,
+  type BrokerMockFillModelConfig,
+  type BrokerMockSlippageConfig,
+  type ExchangeMockBalance,
+} from './BrokerMock.js';
 import {type Candle, type FeeRate, type Fill, OrderSide, OrderType, type TradingRules} from './Broker.js';
 import {TradingPair} from './TradingPair.js';
 import {ms} from 'ms';
@@ -19,9 +24,14 @@ class TestExchangeMock extends BrokerMock {
     counter_min_size: '1',
   };
 
-  constructor(balances: Map<string, ExchangeMockBalance>) {
-    super({balances});
+  constructor(
+    balances: Map<string, ExchangeMockBalance>,
+    slippage?: BrokerMockSlippageConfig,
+    fillModel?: BrokerMockFillModelConfig
+  ) {
+    super({balances, fillModel, slippage});
     this.setCachedFeeRates(TestExchangeMock.TEST_FEE_RATES);
+    this.setCachedTradingRules(TestExchangeMock.TEST_TRADING_RULES);
   }
 
   async getFeeRates(): Promise<FeeRate> {
@@ -60,12 +70,19 @@ function createCandle(overrides: Partial<Candle> & {open: string; close: string}
   };
 }
 
-function createExchange(baseAmount: string, counterAmount: string) {
+function createExchange(
+  baseAmount: string,
+  counterAmount: string,
+  slippage?: BrokerMockSlippageConfig,
+  fillModel?: BrokerMockFillModelConfig
+) {
   return new TestExchangeMock(
     new Map([
       ['BTC', {available: new Big(baseAmount), hold: new Big(0)}],
       ['USD', {available: new Big(counterAmount), hold: new Big(0)}],
-    ])
+    ]),
+    slippage,
+    fillModel
   );
 }
 
@@ -365,6 +382,230 @@ describe('BrokerMock', () => {
       const balances = await exchange.listBalances();
       const usdBalance = balances.find(b => b.currency === 'USD')!;
       expect(usdBalance.available).toBe('99.85');
+    });
+  });
+
+  describe('slippage', () => {
+    it('fills a market buy above the candle open when slippage is configured', async () => {
+      const exchange = createExchange('0', '10000', {rate: new Big('0.01')});
+
+      exchange.processCandle(createCandle({close: '100', open: '100'}));
+
+      await exchange.placeMarketOrder(pair, {
+        side: OrderSide.BUY,
+        size: '1',
+        sizeInCounter: false,
+      });
+
+      const fills = exchange.processCandle(
+        createCandle({close: '110', open: '105', openTimeInISO: '2025-01-01T00:01:00.000Z'})
+      );
+
+      expect(fills).toHaveLength(1);
+      expect(fills[0].price, '105 open + 1% slippage').toBe('106.05');
+    });
+
+    it('fills a market sell below the candle open when slippage is configured', async () => {
+      const exchange = createExchange('5', '0', {rate: new Big('0.01')});
+
+      exchange.processCandle(createCandle({close: '100', open: '100'}));
+
+      await exchange.placeMarketOrder(pair, {
+        side: OrderSide.SELL,
+        size: '2',
+        sizeInCounter: false,
+      });
+
+      const fills = exchange.processCandle(
+        createCandle({close: '95', open: '98', openTimeInISO: '2025-01-01T00:01:00.000Z'})
+      );
+
+      expect(fills).toHaveLength(1);
+      expect(fills[0].price, '98 open - 1% slippage').toBe('97.02');
+    });
+
+    it('applies slippage to a counter-sized (notional) market buy', async () => {
+      const exchange = createExchange('0', '10000', {rate: new Big('0.01')});
+
+      exchange.processCandle(createCandle({close: '100', open: '100'}));
+
+      await exchange.placeMarketOrder(pair, {
+        side: OrderSide.BUY,
+        size: '1000',
+        sizeInCounter: true,
+      });
+
+      const fills = exchange.processCandle(
+        createCandle({close: '110', open: '105', openTimeInISO: '2025-01-01T00:01:00.000Z'})
+      );
+
+      expect(fills).toHaveLength(1);
+      const fill = fills[0];
+      expect(fill.price, '105 open + 1% slippage').toBe('106.05');
+
+      const net = new Big('1000').div('1.0025');
+      expect(new Big(fill.fee).toFixed(8)).toBe(new Big('1000').minus(net).toFixed(8));
+      expect(new Big(fill.size).toFixed(8)).toBe(net.div('106.05').toFixed(8));
+    });
+
+    it('rounds a slipped market fill against the trader to the counter increment', async () => {
+      const exchange = createExchange('0', '10000', {rate: new Big('0.0033')});
+
+      exchange.processCandle(createCandle({close: '100', open: '100'}));
+
+      await exchange.placeMarketOrder(pair, {
+        side: OrderSide.BUY,
+        size: '1',
+        sizeInCounter: false,
+      });
+
+      const fills = exchange.processCandle(
+        createCandle({close: '110', open: '105', openTimeInISO: '2025-01-01T00:01:00.000Z'})
+      );
+
+      expect(fills).toHaveLength(1);
+      // 105 * 1.0033 = 105.3465, rounded up (against a buyer) to the 0.01 counter increment
+      expect(fills[0].price).toBe('105.35');
+    });
+
+    it('defaults to zero slippage when not configured', async () => {
+      const exchange = createExchange('0', '10000');
+
+      exchange.processCandle(createCandle({close: '100', open: '100'}));
+
+      await exchange.placeMarketOrder(pair, {
+        side: OrderSide.BUY,
+        size: '1',
+        sizeInCounter: false,
+      });
+
+      const fills = exchange.processCandle(
+        createCandle({close: '110', open: '105', openTimeInISO: '2025-01-01T00:01:00.000Z'})
+      );
+
+      expect(fills[0].price).toBe('105');
+    });
+
+    it('does not apply slippage to limit order fills', async () => {
+      const exchange = createExchange('0', '10000', {rate: new Big('0.05')});
+
+      exchange.processCandle(createCandle({close: '100', open: '100'}));
+
+      await exchange.placeLimitOrder(pair, {
+        price: '95',
+        side: OrderSide.BUY,
+        size: '1',
+      });
+
+      const fills = exchange.processCandle(
+        createCandle({close: '96', high: '99', low: '93', open: '98', openTimeInISO: '2025-01-01T00:01:00.000Z'})
+      );
+
+      expect(fills).toHaveLength(1);
+      expect(fills[0].price, 'unaffected by the 5% market-order slippage rate').toBe('95');
+    });
+
+    it('rejects a slippage rate outside [0, 1)', () => {
+      expect(() => createExchange('0', '10000', {rate: new Big('1')})).toThrow('must be within [0, 1)');
+      expect(() => createExchange('0', '10000', {rate: new Big('-0.01')})).toThrow('must be within [0, 1)');
+    });
+  });
+
+  describe('fillModel.priceImprovement', () => {
+    it('fills a limit buy at the exact limit price when price improvement is disabled and the limit price is reachable', async () => {
+      const exchange = createExchange('0', '10000', undefined, {priceImprovement: false});
+
+      exchange.processCandle(createCandle({close: '500', open: '500'}));
+
+      await exchange.placeLimitOrder(pair, {
+        price: '380',
+        side: OrderSide.BUY,
+        size: '1',
+      });
+
+      const fills = exchange.processCandle(
+        createCandle({close: '380', high: '400', low: '350', open: '360', openTimeInISO: '2025-01-01T00:01:00.000Z'})
+      );
+
+      expect(fills).toHaveLength(1);
+      expect(fills[0].price, 'fills at the limit price itself, not the candle open').toBe('380');
+    });
+
+    it('clamps a limit buy fill to the candle high when the limit price is unreachable and price improvement is disabled', async () => {
+      const exchange = createExchange('0', '10000', undefined, {priceImprovement: false});
+
+      exchange.processCandle(createCandle({close: '500', open: '500'}));
+
+      await exchange.placeLimitOrder(pair, {
+        price: '500',
+        side: OrderSide.BUY,
+        size: '1',
+      });
+
+      const fills = exchange.processCandle(
+        createCandle({close: '380', high: '400', low: '350', open: '360', openTimeInISO: '2025-01-01T00:01:00.000Z'})
+      );
+
+      expect(fills).toHaveLength(1);
+      expect(fills[0].price, 'clamped to the candle high — nothing traded at the 500 limit').toBe('400');
+    });
+
+    it('fills a limit sell at the exact limit price when price improvement is disabled and the limit price is reachable', async () => {
+      const exchange = createExchange('5', '0', undefined, {priceImprovement: false});
+
+      exchange.processCandle(createCandle({close: '100', open: '100'}));
+
+      await exchange.placeLimitOrder(pair, {
+        price: '440',
+        side: OrderSide.SELL,
+        size: '2',
+      });
+
+      const fills = exchange.processCandle(
+        createCandle({close: '430', high: '460', low: '420', open: '450', openTimeInISO: '2025-01-01T00:01:00.000Z'})
+      );
+
+      expect(fills).toHaveLength(1);
+      expect(fills[0].price, 'fills at the limit price itself, not the candle open').toBe('440');
+    });
+
+    it('clamps a limit sell fill to the candle low when the limit price is unreachable and price improvement is disabled', async () => {
+      const exchange = createExchange('5', '0', undefined, {priceImprovement: false});
+
+      exchange.processCandle(createCandle({close: '100', open: '100'}));
+
+      await exchange.placeLimitOrder(pair, {
+        price: '400',
+        side: OrderSide.SELL,
+        size: '2',
+      });
+
+      const fills = exchange.processCandle(
+        createCandle({close: '430', high: '460', low: '420', open: '450', openTimeInISO: '2025-01-01T00:01:00.000Z'})
+      );
+
+      expect(fills).toHaveLength(1);
+      expect(fills[0].price, 'clamped to the candle low — nothing traded at the 400 limit').toBe('420');
+    });
+
+    it('applies slippage to market fills and disabled price improvement to limit fills independently', async () => {
+      const exchange = createExchange('0', '10000', {rate: new Big('0.02')}, {priceImprovement: false});
+
+      exchange.processCandle(createCandle({close: '100', open: '100'}));
+
+      await exchange.placeMarketOrder(pair, {side: OrderSide.BUY, size: '1', sizeInCounter: false});
+      await exchange.placeLimitOrder(pair, {price: '210', side: OrderSide.BUY, size: '1'});
+
+      const fills = exchange.processCandle(
+        createCandle({close: '220', high: '250', low: '180', open: '200', openTimeInISO: '2025-01-01T00:01:00.000Z'})
+      );
+
+      expect(fills).toHaveLength(2);
+      const marketFill = fills.find(f => f.order_id === '1')!;
+      const limitFill = fills.find(f => f.order_id === '2')!;
+
+      expect(marketFill.price, '200 open + 2% slippage').toBe('204');
+      expect(limitFill.price, 'exact limit price, unaffected by the market-order slippage rate').toBe('210');
     });
   });
 
