@@ -26,10 +26,12 @@ export interface ExchangeMockBalance {
 }
 
 export interface BrokerMockSlippageConfig {
+  /** Fraction of the fill price lost to slippage: "0.01" is 1%. Applied against market fills only. */
   rate?: Big;
 }
 
 export interface BrokerMockFillModelConfig {
+  /** Whether limit orders can fill at a better price than the limit (default `true`). */
   priceImprovement?: boolean;
 }
 
