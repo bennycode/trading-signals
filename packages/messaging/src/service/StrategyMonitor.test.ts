@@ -218,10 +218,7 @@ describe('StrategyMonitor session error handling', () => {
     expect(
       logger.error,
       'The user is alerted on their account, and the typed error is forwarded intact'
-    ).toHaveBeenCalledWith(
-      expect.objectContaining({err: expect.any(OrderSizeBelowMinimumError)}),
-      STRATEGY_ERROR_LOG_MESSAGE
-    );
+    ).toHaveBeenCalledWith(expect.objectContaining({err: error}), STRATEGY_ERROR_LOG_MESSAGE);
   });
 
   it('tears the session down only once when the error repeats', async () => {

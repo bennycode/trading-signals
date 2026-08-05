@@ -1,9 +1,9 @@
 import {LinearRegression as LinearRegressionClass} from 'trading-signals';
 import {NotAvailable} from '../../components/NotAvailable';
 import {buildTableColumns} from '../../utils/tableColumns';
-import type {IndicatorConfig} from '../../utils/types';
+import type {SingleIndicatorConfig} from '../../utils/types';
 
-export const LinearRegression: IndicatorConfig = {
+export const LinearRegression: SingleIndicatorConfig<LinearRegressionClass> = {
   chartTitle: 'Linear Regression (14)',
   color: '#ec4899',
   createIndicator: () => new LinearRegressionClass(14),
@@ -17,7 +17,7 @@ export const LinearRegression: IndicatorConfig = {
           className: 'text-slate-300 font-mono py-2 px-3',
           header: 'Slope',
           key: 'slope',
-          render: val => (val === null || val === undefined ? <NotAvailable /> : val.toFixed(4)),
+          render: val => (typeof val === 'number' ? val.toFixed(4) : <NotAvailable />),
         },
       ],
       indicator,

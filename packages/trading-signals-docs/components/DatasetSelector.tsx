@@ -45,7 +45,7 @@ export function DatasetSelector({
     const reader = new FileReader();
     reader.onload = async () => {
       try {
-        const json = JSON.parse(reader.result as string);
+        const json: unknown = JSON.parse(reader.result as string);
         const {z} = await import('zod');
         const {CandleSchema} = await import('@typedtrader/exchange');
         const result = z.array(CandleSchema).safeParse(json);

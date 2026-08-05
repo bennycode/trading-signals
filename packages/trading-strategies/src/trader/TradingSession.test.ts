@@ -1,4 +1,5 @@
 import Big from 'big.js';
+import type {Mock} from 'vitest';
 import {EventEmitter} from 'node:events';
 import {AlpacaBroker, OrderPosition, OrderSide, OrderType, TradingPair} from '@typedtrader/exchange';
 import type {Candle, Fill, PendingLimitOrder, PendingMarketOrder} from '@typedtrader/exchange';
@@ -67,12 +68,12 @@ function createMockExchange() {
 }
 
 function createMockStrategy(): TradingSessionStrategy & {
-  onCandle: ReturnType<typeof vi.fn>;
-  onFill: ReturnType<typeof vi.fn>;
+  onCandle: Mock<TradingSessionStrategy['onCandle']>;
+  onFill: Mock<NonNullable<TradingSessionStrategy['onFill']>>;
 } {
   return {
-    onCandle: vi.fn().mockResolvedValue(undefined),
-    onFill: vi.fn().mockResolvedValue(undefined),
+    onCandle: vi.fn<TradingSessionStrategy['onCandle']>().mockResolvedValue(undefined),
+    onFill: vi.fn<NonNullable<TradingSessionStrategy['onFill']>>().mockResolvedValue(undefined),
   };
 }
 
@@ -107,7 +108,7 @@ describe('TradingSession', {concurrent: false}, () => {
     });
 
     it('warms up the strategy from history before subscribing to live candles', async () => {
-      const init = vi.fn().mockResolvedValue(undefined);
+      const init = vi.fn<NonNullable<TradingSessionStrategy['init']>>().mockResolvedValue(undefined);
       const warmStrategy = {init, onCandle: vi.fn().mockResolvedValue(undefined)};
       const warmSession = new TradingSession({broker: exchange, pair, strategy: warmStrategy});
 
@@ -391,14 +392,11 @@ describe('TradingSession', {concurrent: false}, () => {
       exchange.emit('order-topic-1', fill);
 
       await vi.waitFor(() => expect(onFill).toHaveBeenCalledTimes(1));
-      expect(strategy.onFill).toHaveBeenCalledWith(
-        fill,
-        expect.objectContaining({
-          baseBalance: expect.any(Big),
-          counterBalance: expect.any(Big),
-          lastOrderSide: OrderSide.BUY,
-        })
-      );
+      const [forwardedFill, fillState] = strategy.onFill.mock.calls[0];
+      expect(forwardedFill).toEqual(fill);
+      expect(fillState.baseBalance).toBeInstanceOf(Big);
+      expect(fillState.counterBalance).toBeInstanceOf(Big);
+      expect(fillState.lastOrderSide).toBe(OrderSide.BUY);
     });
 
     it('ignores fills with non-matching order ID', async () => {

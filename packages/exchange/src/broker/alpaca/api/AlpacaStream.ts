@@ -34,7 +34,8 @@ export class AlpacaStream extends EventEmitter {
     });
 
     this.#connection.addEventListener('message', event => {
-      const messages: unknown[] = JSON.parse(String(event.data));
+      const payload: unknown = JSON.parse(String(event.data));
+      const messages: unknown[] = Array.isArray(payload) ? payload : [payload];
 
       for (const message of messages) {
         this.emit('message', message);

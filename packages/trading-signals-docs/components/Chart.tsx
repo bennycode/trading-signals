@@ -21,6 +21,24 @@ export interface ChartProps {
   flags?: FlagPoint[];
 }
 
+type TooltipFormatter = NonNullable<NonNullable<ChartOptions['tooltip']>['formatter']>;
+
+/**
+ * Every multi-series demo chart shares one tooltip look; `formatValue` covers the per-chart
+ * differences (e.g. 4 decimals for MACD, a `$` prefix for prices).
+ */
+export const createSharedTooltipFormatter = (
+  formatValue: (y: number) => string = y => y.toFixed(2)
+): TooltipFormatter =>
+  function () {
+    let s = `<b>Period ${this.x}</b><br/>`;
+    this.points?.forEach(point => {
+      const yValue = typeof point.y === 'number' ? formatValue(point.y) : 'N/A';
+      s += `${point.series.name}: ${yValue}<br/>`;
+    });
+    return s;
+  };
+
 export default function Chart({color = '#3b82f6', data, title, yAxisLabel = 'Value'}: ChartProps) {
   const chartRef = useRef<HighchartsReactRefObject>(null);
 
