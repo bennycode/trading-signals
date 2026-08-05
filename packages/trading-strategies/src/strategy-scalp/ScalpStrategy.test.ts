@@ -1,7 +1,7 @@
 import Big from 'big.js';
 import {describe, expect, it} from 'vitest';
 import {CandleBatcher, OrderSide, OrderType} from '@typedtrader/exchange';
-import type {Candle, Fill} from '@typedtrader/exchange';
+import type {Candle, Fill, MarketDataSource} from '@typedtrader/exchange';
 import type {LimitOrderAdvice, TradingSessionState} from '../trader/index.js';
 import {TradingPair} from '@typedtrader/exchange';
 import {ScalpStrategy, ScalpSchema} from './ScalpStrategy.js';
@@ -43,6 +43,12 @@ function makeCandle(close: number, index: number): Candle {
 
 function toBatched(candle: Candle) {
   return CandleBatcher.createOneMinuteBatchedCandle([candle]);
+}
+
+function marketWith(candles: Candle[]): Pick<MarketDataSource, 'getRecentCandles'> {
+  return {
+    getRecentCandles: async () => candles,
+  };
 }
 
 function makeFill(price: string, side: OrderSide): Fill {
@@ -220,8 +226,8 @@ describe('ScalpStrategy', () => {
     const strategy = new ScalpStrategy({emaPeriod: 3, offset: '0.10'});
 
     // Pre-seed with 3 candles
-    const historicalCandles = [makeCandle(100, 0), makeCandle(101, 1), makeCandle(102, 2)] as const;
-    strategy.init(historicalCandles.map(toBatched));
+    const historicalCandles = [makeCandle(100, 0), makeCandle(101, 1), makeCandle(102, 2)];
+    await strategy.init(marketWith(historicalCandles), pair);
 
     // First live candle with rising price should trigger entry immediately
     const advice = await strategy.onCandle(toBatched(makeCandle(103, 3)), mockState);
@@ -258,7 +264,7 @@ describe('ScalpStrategy', () => {
     expect(() => ScalpSchema.parse({emaPeriod: 10})).not.toThrow();
   });
 
-  it('auto-computes offset from init() candles when not configured', () => {
+  it('auto-computes offset from init() candles when not configured', async () => {
     const strategy = new ScalpStrategy({emaPeriod: 3});
 
     // Build 20 "trading days" worth of 1-min candles spread across different dates
@@ -284,7 +290,39 @@ describe('ScalpStrategy', () => {
       }
     }
 
-    // Should not throw — offset is auto-computed from the candles
-    strategy.init(candles.map(toBatched));
+    await strategy.init(marketWith(candles), pair);
+
+    // ATR(14) * 0.2 over the fixture's daily aggregation
+    expect(strategy.config?.offset).toBe('1.25');
+  });
+
+  it('requests daily candles for warmup', async () => {
+    const strategy = new ScalpStrategy({emaPeriod: 3, offset: '0.10'});
+    const requests: {pair: TradingPair; count: number; intervalInMillis: number}[] = [];
+
+    await strategy.init(
+      {
+        getRecentCandles: async (requestedPair, count, intervalInMillis) => {
+          requests.push({count, intervalInMillis, pair: requestedPair});
+          return [];
+        },
+      },
+      pair
+    );
+
+    expect(requests).toEqual([{count: ScalpStrategy.WARMUP_DAYS, intervalInMillis: 86_400_000, pair}]);
+  });
+
+  it('stays inactive-safe when no warmup history is available', async () => {
+    const strategy = new ScalpStrategy({emaPeriod: 3});
+
+    await strategy.init(marketWith([]), pair);
+    expect(strategy.config?.offset).toBeUndefined();
+
+    // Warm the EMA past stability with rising prices — only the missing offset blocks the entry
+    for (let i = 0; i < 4; i++) {
+      const advice = await strategy.onCandle(toBatched(makeCandle(100 + i, i)), mockState);
+      expect(advice).toBeUndefined();
+    }
   });
 });

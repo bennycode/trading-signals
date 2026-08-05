@@ -35,6 +35,16 @@ export abstract class Strategy implements TradingSessionStrategy {
    */
   onMessage?: (text: string) => void;
 
+  /**
+   * Optional warm-up hook, invoked by the runtime (live `TradingSession` or the backtest
+   * runner) before the first candle is delivered, so a strategy can fetch history and
+   * pre-seed its indicators. Declared type-only on the base class — derived from the
+   * interface so there is one source of truth — so every subclass implementation is
+   * compile-checked against this one signature; a drifted override fails the build
+   * instead of failing at runtime.
+   */
+  declare init?: TradingSessionStrategy['init'];
+
   #_state: Record<string, unknown> | null = null;
   get state(): Record<string, unknown> | null {
     return this.#_state;

@@ -1,10 +1,12 @@
 import {readFile} from 'node:fs/promises';
 import {parseArgs} from 'node:util';
-import {AlpacaBrokerMock, OrderType, TradingPair} from '@typedtrader/exchange';
-import type {Candle} from '@typedtrader/exchange';
+import {z} from 'zod';
+import {AlpacaBrokerMock, CandleSchema, OrderType, TradingPair} from '@typedtrader/exchange';
+import type {Candle, MarketDataSource} from '@typedtrader/exchange';
 import Big from 'big.js';
 import {BacktestExecutor} from '../backtest/BacktestExecutor.js';
 import {createStrategy, getStrategyNames} from '../strategy/StrategyRegistry.js';
+import {ScalpStrategy} from '../strategy-scalp/ScalpStrategy.js';
 
 const {values} = parseArgs({
   options: {
@@ -46,11 +48,7 @@ try {
 
 let candles: Candle[];
 try {
-  const parsed = JSON.parse(raw);
-  if (!Array.isArray(parsed)) {
-    throw new Error('Candle file must contain a JSON array');
-  }
-  candles = parsed;
+  candles = z.array(CandleSchema).parse(JSON.parse(raw));
 } catch (error) {
   console.error(`Invalid candle file "${values.data}": ${error instanceof Error ? error.message : String(error)}`);
   process.exit(1);
@@ -77,7 +75,7 @@ console.log(`Balance:   ${startingBalance.toFixed(2)} ${counter}`);
 console.log('---');
 
 // 2. Create strategy from registry
-const strategyConfig = JSON.parse(values.config);
+const strategyConfig: unknown = JSON.parse(values.config);
 const strategy = createStrategy(values.strategy, strategyConfig);
 
 // 3. Set up mock exchange (commission-free for US stocks)
@@ -92,19 +90,30 @@ const exchange = new AlpacaBrokerMock({
   },
 });
 
-// 4. Pre-seed strategy if it supports init()
-if ('init' in strategy && typeof strategy.init === 'function') {
-  const {CandleBatcher} = await import('@typedtrader/exchange');
-  const batchedCandles = CandleBatcher.toBatchedCandles(candles);
-  strategy.init(batchedCandles);
+// 4. Warm up the strategy with the backtest file's own history
+if (strategy.init) {
+  /*
+   * Candle-array-backed MarketDataSource stub. It deliberately ignores the requested count
+   * and interval and serves the file's entire history: backtest files carry no data from
+   * before the backtest window to warm up on, and strategies aggregate to the granularity
+   * they need (e.g. daily bars for ATR/ER) anyway. This matches what strategies always saw
+   * in backtests — including the look-ahead it implies (warm-up reads the same candles the
+   * backtest then replays), which is a known trade-off of file-based runs.
+   */
+  const market: Pick<MarketDataSource, 'getRecentCandles'> = {
+    getRecentCandles: async () => candles,
+  };
+
+  await strategy.init(market, tradingPair);
 
   if (strategy.config?.offset) {
     console.log(`Auto-computed offset: ${strategy.config.offset} ${counter}`);
   }
 
-  if ('scalpFriendly' in strategy) {
-    const friendly = strategy.scalpFriendly as boolean;
-    console.log(`Scalp-friendly (ER): ${friendly ? 'Yes' : 'No — stock is trending, strategy will not trade'}`);
+  if (strategy instanceof ScalpStrategy) {
+    console.log(
+      `Scalp-friendly (ER): ${strategy.scalpFriendly ? 'Yes' : 'No — stock is trending, strategy will not trade'}`
+    );
   }
 
   console.log('---');

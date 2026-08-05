@@ -19,7 +19,7 @@ A scalping strategy that enters on short-term EMA momentum and then ping-pongs l
 
 ### Auto-offset
 
-When no `offset` is provided, calling `init()` with historical candles will auto-compute one using `suggestScalpOffset()`. This function aggregates candles to daily bars (regardless of input interval) and returns `ATR(14) * 0.2`. The computation takes <5ms even on 20k+ candles.
+When no `offset` is provided, `init(market, pair)` fetches the last 30 daily candles from the given market-data source and auto-computes one using `suggestScalpOffset()`. This function aggregates candles to daily bars (regardless of input interval) and returns `ATR(14) * 0.2`. The computation takes <5ms even on 20k+ candles. Both the live `TradingSession` and the backtest runner invoke `init()` automatically before the first candle.
 
 ## When to use it
 
