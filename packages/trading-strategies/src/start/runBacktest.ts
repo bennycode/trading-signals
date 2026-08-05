@@ -90,32 +90,29 @@ const exchange = new AlpacaBrokerMock({
   },
 });
 
-// 4. Warm up the strategy with the backtest file's own history
-if (strategy.init) {
-  /*
-   * Candle-array-backed MarketDataSource stub. It deliberately ignores the requested count
-   * and interval and serves the file's entire history: backtest files carry no data from
-   * before the backtest window to warm up on, and strategies aggregate to the granularity
-   * they need (e.g. daily bars for ATR/ER) anyway. This matches what strategies always saw
-   * in backtests — including the look-ahead it implies (warm-up reads the same candles the
-   * backtest then replays), which is a known trade-off of file-based runs.
-   */
-  const market: Pick<MarketDataSource, 'getRecentCandles'> = {
-    getRecentCandles: async () => candles,
-  };
+/*
+ * 4. Warm up the strategy with the backtest file's own history, via a candle-array-backed
+ * MarketDataSource stub. It deliberately ignores the requested count and interval and serves
+ * the file's entire history: backtest files carry no data from before the backtest window to
+ * warm up on, and strategies aggregate to the granularity they need (e.g. daily bars for
+ * ATR/ER) anyway. This matches what strategies always saw in backtests — including the
+ * look-ahead it implies (warm-up reads the same candles the backtest then replays), which is
+ * a known trade-off of file-based runs.
+ */
+const market: Pick<MarketDataSource, 'getRecentCandles'> = {
+  getRecentCandles: async () => candles,
+};
 
-  await strategy.init(market, tradingPair);
+await strategy.init(market, tradingPair);
 
-  if (strategy.config?.offset) {
-    console.log(`Auto-computed offset: ${strategy.config.offset} ${counter}`);
-  }
+if (strategy.config?.offset) {
+  console.log(`Auto-computed offset: ${strategy.config.offset} ${counter}`);
+}
 
-  if (strategy instanceof ScalpStrategy) {
-    console.log(
-      `Scalp-friendly (ER): ${strategy.scalpFriendly ? 'Yes' : 'No — stock is trending, strategy will not trade'}`
-    );
-  }
-
+if (strategy instanceof ScalpStrategy) {
+  console.log(
+    `Scalp-friendly (ER): ${strategy.scalpFriendly ? 'Yes' : 'No — stock is trending, strategy will not trade'}`
+  );
   console.log('---');
 }
 

@@ -68,7 +68,7 @@ export class ScalpStrategy extends ProtectedStrategy {
    * Also evaluates Range Efficiency (ER) to determine if the stock is scalp-friendly.
    * Trending stocks (ER at or above {@link ScalpStrategy.ER_THRESHOLD}) are flagged as unsuitable.
    */
-  override init = async (market: Pick<MarketDataSource, 'getRecentCandles'>, pair: TradingPair): Promise<void> => {
+  override async init(market: Pick<MarketDataSource, 'getRecentCandles'>, pair: TradingPair): Promise<void> {
     const candles = await market.getRecentCandles(pair, ScalpStrategy.WARMUP_DAYS, ONE_DAY_IN_MS);
 
     if (candles.length === 0) {
@@ -84,7 +84,7 @@ export class ScalpStrategy extends ProtectedStrategy {
     for (const candle of candles) {
       this.#ema.add(parseFloat(candle.close));
     }
-  };
+  }
 
   get scalpFriendly() {
     return this.#scalpFriendly;

@@ -1,5 +1,5 @@
 import Big from 'big.js';
-import type {OneMinuteBatchedCandle} from '@typedtrader/exchange';
+import type {MarketDataSource, OneMinuteBatchedCandle, TradingPair} from '@typedtrader/exchange';
 import type {OrderAdvice, TradingSessionState, TradingSessionStrategy} from '../trader/index.js';
 import type {MarketType} from './MarketType.js';
 
@@ -34,16 +34,6 @@ export abstract class Strategy implements TradingSessionStrategy {
    * are responsible for not being chatty — every call reaches the user.
    */
   onMessage?: (text: string) => void;
-
-  /**
-   * Optional warm-up hook, invoked by the runtime (live `TradingSession` or the backtest
-   * runner) before the first candle is delivered, so a strategy can fetch history and
-   * pre-seed its indicators. Declared type-only on the base class — derived from the
-   * interface so there is one source of truth — so every subclass implementation is
-   * compile-checked against this one signature; a drifted override fails the build
-   * instead of failing at runtime.
-   */
-  declare init?: TradingSessionStrategy['init'];
 
   #_state: Record<string, unknown> | null = null;
   get state(): Record<string, unknown> | null {
@@ -80,6 +70,16 @@ export abstract class Strategy implements TradingSessionStrategy {
       this.config = {...options.config};
     }
   }
+
+  /**
+   * Warm-up hook, invoked by the runtime (live `TradingSession` or the backtest runner)
+   * before the first candle is delivered, so a strategy can fetch history and pre-seed its
+   * indicators. The base implementation is a deliberate no-op so strategies without a
+   * warmup need implement nothing; overriding with a drifted signature fails the build —
+   * this method is checked against `TradingSessionStrategy` via `implements`, and every
+   * subclass override is checked against this method.
+   */
+  async init(_market: Pick<MarketDataSource, 'getRecentCandles'>, _pair: TradingPair): Promise<void> {}
 
   async onCandle(candle: OneMinuteBatchedCandle, state: TradingSessionState): Promise<OrderAdvice | void> {
     this.lastBatchedCandle = candle;
