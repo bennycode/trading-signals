@@ -1,3 +1,4 @@
+import {testReplaceContract} from '../../fixtures/testReplaceContract.js';
 import {PSAR} from './PSAR.js';
 import {NotEnoughDataError} from '../../error/index.js';
 
@@ -960,4 +961,19 @@ describe('PSAR', () => {
     // This should hit the ternary operator with previousHigh > sar = false
     psarDownTrend.update({high: 8, low: 7}, false);
   });
+});
+
+testReplaceContract({
+  create: () => new PSAR({accelerationMax: 0.2, accelerationStep: 0.02}),
+  divergentInput: {high: 999, low: 1},
+  inputs: [
+    {high: 82.15, low: 81.29},
+    {high: 81.89, low: 80.64},
+    {high: 83.03, low: 81.31},
+    {high: 83.3, low: 82.65},
+    {high: 83.85, low: 83.07},
+    {high: 83.9, low: 83.11},
+    {high: 83.33, low: 82.49},
+    {high: 84.3, low: 82.3},
+  ],
 });

@@ -1,3 +1,4 @@
+import {testReplaceContract} from '../../fixtures/testReplaceContract.js';
 import {NotEnoughDataError} from '../../error/index.js';
 import {TradingSignal} from '../../base/Indicator.js';
 import {AO} from './AO.js';
@@ -157,4 +158,17 @@ describe('AO', () => {
       expect(signal.state).toBe(TradingSignal.SIDEWAYS);
     });
   });
+});
+
+testReplaceContract({
+  create: () => new AO(2, 5),
+  divergentInput: {high: 1_000, low: 900},
+  inputs: [
+    {high: 32.11, low: 25.69},
+    {high: 27.62, low: 25.57},
+    {high: 28.26, low: 25.73},
+    {high: 28.02, low: 25.69},
+    {high: 26.93, low: 25.69},
+    {high: 26.65, low: 26.17},
+  ],
 });

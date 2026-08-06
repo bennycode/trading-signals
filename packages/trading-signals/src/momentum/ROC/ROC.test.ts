@@ -1,3 +1,4 @@
+import {testReplaceContract} from '../../fixtures/testReplaceContract.js';
 import {ROC} from './ROC.js';
 import {NotEnoughDataError} from '../../error/index.js';
 import {TradingSignal} from '../../base/Indicator.js';
@@ -213,4 +214,10 @@ describe('ROC', () => {
       ).toBe(original.getResultOrThrow().toFixed());
     });
   });
+});
+
+testReplaceContract({
+  create: () => new ROC(5),
+  divergentInput: 1_000,
+  inputs: [81.59, 81.06, 82.87, 83.0, 83.61, 83.15, 82.84],
 });

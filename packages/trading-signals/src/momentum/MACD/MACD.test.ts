@@ -1,3 +1,4 @@
+import {testReplaceContract} from '../../fixtures/testReplaceContract.js';
 import {MACD} from './MACD.js';
 import {EMA} from '../../trend/EMA/EMA.js';
 import {NotEnoughDataError} from '../../error/index.js';
@@ -201,4 +202,10 @@ describe('MACD', () => {
       expect(typeof signal.hasChanged).toBe('boolean');
     });
   });
+});
+
+testReplaceContract({
+  create: () => new MACD(new EMA(2), new EMA(5), new EMA(9)),
+  divergentInput: 1_000,
+  inputs: [81.59, 81.06, 82.87, 83.0, 83.61, 83.15, 82.84],
 });

@@ -1,3 +1,4 @@
+import {testReplaceContract} from '../../fixtures/testReplaceContract.js';
 import {StochasticOscillator} from './StochasticOscillator.js';
 import {NotEnoughDataError} from '../../error/index.js';
 import {TradingSignal} from '../../base/index.js';
@@ -156,4 +157,21 @@ describe('StochasticOscillator', () => {
       expect(result.stochK).toBeLessThan(80);
     });
   });
+});
+
+testReplaceContract({
+  create: () => new StochasticOscillator({dPeriod: 3, kPeriod: 5, kSlowingPeriod: 3}),
+  divergentInput: {close: 95, high: 100, low: 10},
+  inputs: [
+    {close: 50, high: 100, low: 10},
+    {close: 51, high: 100, low: 10},
+    {close: 52, high: 100, low: 10},
+    {close: 53, high: 100, low: 10},
+    {close: 54, high: 100, low: 10},
+    {close: 55, high: 100, low: 10},
+    {close: 56, high: 100, low: 10},
+    {close: 57, high: 100, low: 10},
+    {close: 58, high: 100, low: 10},
+    {close: 59, high: 100, low: 10},
+  ],
 });

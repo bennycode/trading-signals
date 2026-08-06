@@ -1,3 +1,4 @@
+import {testReplaceContract} from '../../fixtures/testReplaceContract.js';
 import {HMA} from './HMA.js';
 import {NotEnoughDataError} from '../../error/index.js';
 
@@ -75,4 +76,10 @@ describe('HMA', () => {
       }
     });
   });
+});
+
+testReplaceContract({
+  create: () => new HMA(5),
+  divergentInput: 1_000,
+  inputs: [81.59, 81.06, 82.87, 83.0, 83.61, 83.15, 82.84, 83.99],
 });

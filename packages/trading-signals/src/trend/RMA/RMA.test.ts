@@ -1,3 +1,4 @@
+import {testReplaceContract} from '../../fixtures/testReplaceContract.js';
 import {RMA, NotEnoughDataError} from '../../index.js';
 
 describe('RMA', () => {
@@ -108,4 +109,10 @@ describe('RMA', () => {
       }
     });
   });
+});
+
+testReplaceContract({
+  create: () => new RMA(5),
+  divergentInput: 1_000,
+  inputs: [81.59, 81.06, 82.87, 83.0, 83.61, 83.15],
 });

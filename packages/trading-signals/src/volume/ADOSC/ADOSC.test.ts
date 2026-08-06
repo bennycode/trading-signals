@@ -1,3 +1,4 @@
+import {testReplaceContract} from '../../fixtures/testReplaceContract.js';
 import {ADOSC} from './ADOSC.js';
 import {NotEnoughDataError} from '../../error/index.js';
 import {TradingSignal} from '../../base/index.js';
@@ -131,4 +132,17 @@ describe('ADOSC', () => {
       expect(adosc.getSignal().state).toBe(TradingSignal.SIDEWAYS);
     });
   });
+});
+
+testReplaceContract({
+  create: () => new ADOSC({fastPeriod: 2, slowPeriod: 5}),
+  divergentInput: {close: 249, high: 250, low: 150, volume: 99_000_000},
+  inputs: [
+    {close: 81.59, high: 82.15, low: 81.29, volume: 5_653_100},
+    {close: 81.06, high: 81.89, low: 80.64, volume: 6_447_400},
+    {close: 82.87, high: 83.03, low: 81.31, volume: 7_690_900},
+    {close: 83.0, high: 83.3, low: 82.65, volume: 3_831_400},
+    {close: 83.61, high: 83.85, low: 83.07, volume: 4_455_100},
+    {close: 83.15, high: 83.9, low: 83.11, volume: 3_798_000},
+  ],
 });

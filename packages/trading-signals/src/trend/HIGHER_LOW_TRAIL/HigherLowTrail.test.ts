@@ -1,3 +1,4 @@
+import {testReplaceContract} from '../../fixtures/testReplaceContract.js';
 import {NotEnoughDataError} from '../../error/NotEnoughDataError.js';
 import {HigherLowTrail} from './HigherLowTrail.js';
 
@@ -182,4 +183,14 @@ describe('HigherLowTrail', () => {
       expect(trail.getRequiredInputs()).toBe(4);
     });
   });
+});
+
+testReplaceContract({
+  create: () => new HigherLowTrail({lookback: 1}),
+  divergentInput: {high: 1_000, low: 1},
+  inputs: [
+    {high: 12, low: 10},
+    {high: 10, low: 8},
+    {high: 14, low: 12},
+  ],
 });

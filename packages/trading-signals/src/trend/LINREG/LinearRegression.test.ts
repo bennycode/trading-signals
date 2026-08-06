@@ -1,3 +1,4 @@
+import {testReplaceContract} from '../../fixtures/testReplaceContract.js';
 import {LinearRegression} from '../../index.js';
 import {NotEnoughDataError} from '../../error/index.js';
 
@@ -109,4 +110,10 @@ describe('LinearRegression', () => {
       expect(linreg.add(10)).toBeNull();
     });
   });
+});
+
+testReplaceContract({
+  create: () => new LinearRegression(5),
+  divergentInput: 1_000,
+  inputs: [10, 11, 12, 13, 14, 15],
 });

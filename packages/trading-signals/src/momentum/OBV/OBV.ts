@@ -25,7 +25,7 @@ export class OBV extends TrendIndicatorSeries<OpenHighLowCloseVolume<number>> {
   }
 
   update(candle: OpenHighLowCloseVolume<number>, replace: boolean) {
-    pushUpdate({array: this.candles, item: candle, maxLength: this.getRequiredInputs(), replace: replace});
+    pushUpdate({array: this.candles, item: candle, maxLength: this.getRequiredInputs(), replace});
 
     if (this.candles.length < this.getRequiredInputs()) {
       return null;
@@ -33,11 +33,16 @@ export class OBV extends TrendIndicatorSeries<OpenHighLowCloseVolume<number>> {
 
     const prevCandle = this.candles[this.candles.length - 2];
     const prevPrice = prevCandle.close;
-    const prevResult = this.result ?? 0;
+    /*
+     * OBV accumulates onto the running total, so a replacement has to build on the total from
+     * before the replaced candle. `this.result` still carries that candle's contribution until
+     * `setResult()` unwinds it, which would count the bar twice.
+     */
+    const prevResult = (replace ? this.previousResult : this.result) ?? 0;
     const currentPrice = candle.close;
     const nextResult = currentPrice > prevPrice ? candle.volume : currentPrice < prevPrice ? -candle.volume : 0;
 
-    return this.setResult(prevResult + nextResult, false);
+    return this.setResult(prevResult + nextResult, replace);
   }
 
   protected calculateSignalState(result: number | null | undefined) {

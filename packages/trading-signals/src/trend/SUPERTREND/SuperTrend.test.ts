@@ -1,3 +1,4 @@
+import {testReplaceContract} from '../../fixtures/testReplaceContract.js';
 import {SuperTrend} from './SuperTrend.js';
 import {NotEnoughDataError} from '../../error/index.js';
 
@@ -125,4 +126,21 @@ describe('SuperTrend', () => {
       }
     });
   });
+});
+
+testReplaceContract({
+  create: () => new SuperTrend({interval: 5, multiplier: 2}),
+  divergentInput: {close: 10, high: 90, low: 9},
+  inputs: [
+    {close: 81, high: 82, low: 80},
+    {close: 82, high: 83, low: 81},
+    {close: 83, high: 84, low: 82},
+    {close: 84, high: 85, low: 83},
+    {close: 85, high: 86, low: 84},
+    {close: 86, high: 87, low: 85},
+    {close: 87, high: 88, low: 86},
+    {close: 90.5, high: 91, low: 87},
+    {close: 91, high: 92, low: 89},
+    {close: 92, high: 93, low: 90},
+  ],
 });

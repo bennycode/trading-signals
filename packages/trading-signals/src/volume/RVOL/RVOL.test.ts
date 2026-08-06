@@ -1,3 +1,4 @@
+import {testReplaceContract} from '../../fixtures/testReplaceContract.js';
 import {NotEnoughDataError} from '../../error/index.js';
 import {RVOL} from './RVOL.js';
 
@@ -153,4 +154,10 @@ describe('RVOL', () => {
 
     expect(rvol.isStable).toBe(true);
   });
+});
+
+testReplaceContract({
+  create: () => new RVOL(3),
+  divergentInput: 9_999,
+  inputs: [100, 100, 100, 200, 300],
 });

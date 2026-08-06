@@ -1,3 +1,4 @@
+import {testReplaceContract} from '../../fixtures/testReplaceContract.js';
 import {Aroon} from './Aroon.js';
 import {NotEnoughDataError} from '../../error/index.js';
 
@@ -119,4 +120,19 @@ describe('Aroon', () => {
       }
     });
   });
+});
+
+testReplaceContract({
+  create: () => new Aroon(5),
+  divergentInput: {high: 500, low: 1},
+  inputs: [
+    {high: 82.15, low: 81.29},
+    {high: 81.89, low: 80.64},
+    {high: 83.03, low: 81.31},
+    {high: 83.3, low: 82.65},
+    {high: 83.85, low: 83.07},
+    {high: 83.9, low: 83.11},
+    {high: 83.33, low: 82.49},
+    {high: 84.3, low: 82.3},
+  ],
 });

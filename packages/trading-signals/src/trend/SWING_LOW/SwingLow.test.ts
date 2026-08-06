@@ -1,3 +1,4 @@
+import {testReplaceContract} from '../../fixtures/testReplaceContract.js';
 import {NotEnoughDataError} from '../../error/NotEnoughDataError.js';
 import {SwingLookback} from './SwingLookback.js';
 import {SwingLow} from './SwingLow.js';
@@ -150,4 +151,17 @@ describe('SwingLow', () => {
       expect(swingLow.getRequiredInputs()).toBe(11);
     });
   });
+});
+
+testReplaceContract({
+  create: () => new SwingLow({lookback: SwingLookback.BILL_WILLIAMS}),
+  divergentInput: {high: 2, low: 1},
+  inputs: [
+    {high: 12, low: 11},
+    {high: 11, low: 10},
+    {high: 9, low: 8},
+    {high: 6, low: 5},
+    {high: 8, low: 7},
+    {high: 10, low: 9},
+  ],
 });

@@ -1,3 +1,4 @@
+import {testReplaceContract} from '../../fixtures/testReplaceContract.js';
 import {WSMA} from './WSMA.js';
 import {NotEnoughDataError} from '../../error/index.js';
 
@@ -162,4 +163,10 @@ describe('WSMA', () => {
       expect(wsma.isStable).toBe(true);
     });
   });
+});
+
+testReplaceContract({
+  create: () => new WSMA(3),
+  divergentInput: 1_000,
+  inputs: [11, 12, 13, 14, 15],
 });

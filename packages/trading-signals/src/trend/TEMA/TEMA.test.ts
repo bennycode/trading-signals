@@ -1,3 +1,4 @@
+import {testReplaceContract} from '../../fixtures/testReplaceContract.js';
 import {TEMA} from './TEMA.js';
 import {NotEnoughDataError} from '../../error/index.js';
 
@@ -64,4 +65,10 @@ describe('TEMA', () => {
       }
     });
   });
+});
+
+testReplaceContract({
+  create: () => new TEMA(5),
+  divergentInput: 1_000,
+  inputs: [81.59, 81.06, 82.87, 83.0, 83.61, 83.15, 82.84, 83.99, 84.55, 84.36, 85.53, 86.54, 86.89, 87.77, 87.29],
 });

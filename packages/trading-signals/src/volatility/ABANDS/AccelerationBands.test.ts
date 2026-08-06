@@ -1,3 +1,4 @@
+import {testReplaceContract} from '../../fixtures/testReplaceContract.js';
 import {EMA} from '../../trend/EMA/EMA.js';
 import {NotEnoughDataError} from '../../error/index.js';
 import {SMA} from '../../trend/SMA/SMA.js';
@@ -178,4 +179,17 @@ describe('AccelerationBands', () => {
       expect(accBands.getSignal().state).toBe(TradingSignal.SIDEWAYS);
     });
   });
+});
+
+testReplaceContract({
+  create: () => new AccelerationBands(5, 4),
+  divergentInput: {close: 300, high: 320, low: 280},
+  inputs: [
+    {close: 195.55, high: 198.05, low: 194.96},
+    {close: 192.59, high: 193.86, low: 191.61},
+    {close: 197.43, high: 197.61, low: 195.17},
+    {close: 194.79, high: 199.47, low: 194.35},
+    {close: 195.85, high: 197.22, low: 194.25},
+    {close: 196.74, high: 196.82, low: 194.53},
+  ],
 });

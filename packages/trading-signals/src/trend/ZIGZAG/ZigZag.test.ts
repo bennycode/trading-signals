@@ -1,3 +1,4 @@
+import {testReplaceContract} from '../../fixtures/testReplaceContract.js';
 import {ZigZag} from './ZigZag.js';
 
 describe('ZigZag', () => {
@@ -128,4 +129,31 @@ describe('ZigZag', () => {
       expect(zigzag.getRequiredInputs()).toBe(expected);
     });
   });
+});
+
+testReplaceContract({
+  create: () => new ZigZag({deviation: 15}),
+  divergentInput: {high: 60, low: 1},
+  inputs: [
+    {high: -8, low: -9},
+    {high: -4, low: -5},
+    {high: -1, low: -2},
+    {high: 9, low: 8},
+    {high: 8, low: 7},
+    {high: 7, low: 6},
+    {high: 6, low: 5},
+    {high: 5, low: 4},
+    {high: 4, low: 3},
+    {high: 3, low: 2},
+    {high: 2, low: 1},
+    {high: 1, low: 0},
+    {high: 11, low: 10},
+    {high: 22, low: 20},
+    {high: 33, low: 30},
+    {high: 44, low: 40},
+    {high: 55, low: 50},
+    {high: 66, low: 60},
+    {high: 77, low: 70},
+    {high: 88, low: 80},
+  ],
 });

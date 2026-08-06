@@ -1,3 +1,4 @@
+import {testReplaceContract} from '../../fixtures/testReplaceContract.js';
 import {IQR} from './IQR.js';
 
 describe('IQR', () => {
@@ -104,4 +105,10 @@ describe('IQR', () => {
       expect(iqr.getResultOrThrow()).toBe(3);
     });
   });
+});
+
+testReplaceContract({
+  create: () => new IQR(5),
+  divergentInput: 1_000,
+  inputs: [7, 7, 31, 31, 47, 75],
 });

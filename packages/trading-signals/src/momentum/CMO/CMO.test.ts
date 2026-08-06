@@ -1,3 +1,4 @@
+import {testReplaceContract} from '../../fixtures/testReplaceContract.js';
 import {CMO} from './CMO.js';
 import {NotEnoughDataError} from '../../error/index.js';
 import {TradingSignal} from '../../base/index.js';
@@ -140,4 +141,10 @@ describe('CMO', () => {
       expect(sensitiveBear.getSignal().state).toBe(TradingSignal.BEARISH);
     });
   });
+});
+
+testReplaceContract({
+  create: () => new CMO(5),
+  divergentInput: 1_000,
+  inputs: [81.59, 81.06, 82.87, 83.0, 83.61, 83.15, 82.84],
 });

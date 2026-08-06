@@ -1,3 +1,4 @@
+import {testReplaceContract} from '../../fixtures/testReplaceContract.js';
 import {UltimateOscillator} from './UltimateOscillator.js';
 import {NotEnoughDataError} from '../../error/index.js';
 import {TradingSignal} from '../../base/index.js';
@@ -211,4 +212,18 @@ describe('UltimateOscillator', () => {
       expect(sensitiveBear.getSignal().state).toBe(TradingSignal.BEARISH);
     });
   });
+});
+
+testReplaceContract({
+  create: () => new UltimateOscillator({longPeriod: 5, mediumPeriod: 3, shortPeriod: 2}),
+  divergentInput: {close: 1_000, high: 1_100, low: 900},
+  inputs: [
+    {close: 81.59, high: 82.15, low: 81.29},
+    {close: 81.06, high: 81.89, low: 80.64},
+    {close: 82.87, high: 83.03, low: 81.31},
+    {close: 83.0, high: 83.3, low: 82.65},
+    {close: 83.61, high: 83.85, low: 83.07},
+    {close: 83.15, high: 83.9, low: 83.11},
+    {close: 82.84, high: 83.33, low: 82.49},
+  ],
 });

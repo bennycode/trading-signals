@@ -1,3 +1,4 @@
+import {testReplaceContract} from '../../fixtures/testReplaceContract.js';
 import {RSI} from './RSI.js';
 import {NotEnoughDataError} from '../../error/index.js';
 import {TradingSignal} from '../../base/index.js';
@@ -152,4 +153,10 @@ describe('RSI', () => {
       expect(signal.state).toBe(TradingSignal.SIDEWAYS);
     });
   });
+});
+
+testReplaceContract({
+  create: () => new RSI(5),
+  divergentInput: 1_000,
+  inputs: [81.59, 81.06, 82.87, 83.0, 83.61, 83.15, 82.84, 83.99],
 });

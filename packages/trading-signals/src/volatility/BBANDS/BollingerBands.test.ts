@@ -1,3 +1,4 @@
+import {testReplaceContract} from '../../fixtures/testReplaceContract.js';
 import {BollingerBands} from './BollingerBands.js';
 import data from '../../fixtures/BB/data.json' with {type: 'json'};
 import {NotEnoughDataError} from '../../error/index.js';
@@ -267,4 +268,10 @@ describe('BollingerBands', () => {
       expect(bb.getSignal().state).toBe(TradingSignal.SIDEWAYS);
     });
   });
+});
+
+testReplaceContract({
+  create: () => new BollingerBands(5, 2),
+  divergentInput: 1_000,
+  inputs: [81.59, 81.06, 82.87, 83.0, 83.61, 83.15],
 });

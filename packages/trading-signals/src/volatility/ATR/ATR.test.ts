@@ -1,3 +1,4 @@
+import {testReplaceContract} from '../../fixtures/testReplaceContract.js';
 import {NotEnoughDataError} from '../../index.js';
 import {ATR} from './ATR.js';
 
@@ -123,4 +124,17 @@ describe('ATR', () => {
       expect(atr.getResultOrThrow().toFixed(2)).toBe(latestResult);
     });
   });
+});
+
+testReplaceContract({
+  create: () => new ATR(3),
+  divergentInput: {close: 200, high: 250, low: 150},
+  inputs: [
+    {close: 81.59, high: 82.15, low: 81.29},
+    {close: 81.06, high: 81.89, low: 80.64},
+    {close: 82.87, high: 83.03, low: 81.31},
+    {close: 83.0, high: 83.3, low: 82.65},
+    {close: 83.61, high: 83.85, low: 83.07},
+    {close: 83.15, high: 83.9, low: 83.11},
+  ],
 });

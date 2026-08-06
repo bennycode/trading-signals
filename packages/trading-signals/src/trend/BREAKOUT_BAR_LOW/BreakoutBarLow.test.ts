@@ -1,3 +1,4 @@
+import {testReplaceContract} from '../../fixtures/testReplaceContract.js';
 import {NotEnoughDataError} from '../../error/NotEnoughDataError.js';
 import {BreakoutBarLow} from './BreakoutBarLow.js';
 
@@ -115,4 +116,16 @@ describe('BreakoutBarLow', () => {
       expect(breakout.getRequiredInputs()).toBe(21);
     });
   });
+});
+
+testReplaceContract({
+  create: () => new BreakoutBarLow({lookback: 3}),
+  divergentInput: {high: 1_000, low: 999},
+  inputs: [
+    {high: 10, low: 8},
+    {high: 12, low: 10},
+    {high: 11, low: 9},
+    {high: 15, low: 11},
+    {high: 13, low: 10},
+  ],
 });

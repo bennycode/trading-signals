@@ -1,3 +1,4 @@
+import {testReplaceContract} from '../../fixtures/testReplaceContract.js';
 import {VWMA} from './VWMA.js';
 import {NotEnoughDataError} from '../../error/index.js';
 import {TradingSignal} from '../../base/index.js';
@@ -198,4 +199,15 @@ describe('VWMA', () => {
       expect(restoredResult).toBe(originalResult);
     });
   });
+});
+
+testReplaceContract({
+  create: () => new VWMA(3),
+  divergentInput: {close: 500, high: 510, low: 490, volume: 99_000},
+  inputs: [
+    {close: 10, high: 11, low: 9, volume: 100},
+    {close: 12, high: 13, low: 11, volume: 200},
+    {close: 11, high: 12, low: 10, volume: 150},
+    {close: 14, high: 15, low: 12, volume: 300},
+  ],
 });

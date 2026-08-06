@@ -1,3 +1,4 @@
+import {testReplaceContract} from '../../fixtures/testReplaceContract.js';
 import {SMA} from '../../trend/SMA/SMA.js';
 import {WSMA} from '../../trend/WSMA/WSMA.js';
 import {StochasticRSI} from './StochasticRSI.js';
@@ -186,4 +187,10 @@ describe('StochasticRSI', () => {
       expect(signal.state).toBe(TradingSignal.BULLISH);
     });
   });
+});
+
+testReplaceContract({
+  create: () => new StochasticRSI(5),
+  divergentInput: 1_000,
+  inputs: [81.59, 81.06, 82.87, 83.0, 83.61, 83.15, 82.84, 83.99, 84.55, 84.36, 85.53, 86.54, 86.89, 87.77, 87.29],
 });

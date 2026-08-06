@@ -1,3 +1,4 @@
+import {testReplaceContract} from '../../fixtures/testReplaceContract.js';
 import {MAD} from './MAD.js';
 import {NotEnoughDataError} from '../../error/index.js';
 
@@ -117,4 +118,10 @@ describe('MAD', () => {
       expect(MAD.getResultFromBatch(prices, mean)).toBe(3.6);
     });
   });
+});
+
+testReplaceContract({
+  create: () => new MAD(5),
+  divergentInput: 1_000,
+  inputs: [81.59, 81.06, 82.87, 83.0, 83.61, 83.15],
 });

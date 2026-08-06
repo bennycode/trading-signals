@@ -1,3 +1,4 @@
+import {testReplaceContract} from '../../fixtures/testReplaceContract.js';
 import {NotEnoughDataError} from '../../error/index.js';
 import {TradingSignal} from '../../base/Indicator.js';
 import {CG} from './CG.js';
@@ -153,4 +154,10 @@ describe('CG', () => {
       expect(cg.getResultOrThrow()).toBe(cg.signal.getResultOrThrow());
     });
   });
+});
+
+testReplaceContract({
+  create: () => new CG(5, 10),
+  divergentInput: 1_000,
+  inputs: [100, 110, 120, 130, 140, 150, 160, 170, 180, 190, 200],
 });

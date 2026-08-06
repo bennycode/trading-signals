@@ -1,3 +1,4 @@
+import {testReplaceContract} from '../../fixtures/testReplaceContract.js';
 import {WMA, NotEnoughDataError} from '../../index.js';
 
 describe('WMA', () => {
@@ -123,4 +124,10 @@ describe('WMA', () => {
       }
     });
   });
+});
+
+testReplaceContract({
+  create: () => new WMA(3),
+  divergentInput: 1_000,
+  inputs: [11, 12, 13, 14, 15],
 });

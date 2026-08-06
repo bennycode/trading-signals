@@ -1,3 +1,4 @@
+import {testReplaceContract} from '../../fixtures/testReplaceContract.js';
 import {SMA, NotEnoughDataError} from '../../index.js';
 
 describe('SMA', () => {
@@ -143,4 +144,10 @@ describe('SMA', () => {
       expect(sma.getResult()).toBe(expected);
     });
   });
+});
+
+testReplaceContract({
+  create: () => new SMA(3),
+  divergentInput: 1_000,
+  inputs: [10, 20, 30, 40, 50],
 });

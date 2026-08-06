@@ -1,3 +1,4 @@
+import {testReplaceContract} from '../../fixtures/testReplaceContract.js';
 import {BollingerBands} from '../BBANDS/BollingerBands.js';
 import {BollingerBandsWidth} from './BollingerBandsWidth.js';
 
@@ -83,4 +84,10 @@ describe('BollingerBandsWidth', () => {
       });
     });
   });
+});
+
+testReplaceContract({
+  create: () => new BollingerBandsWidth(new BollingerBands(5, 2)),
+  divergentInput: 500,
+  inputs: [68.21, 68.63, 68.01, 68.0, 67.28, 65.49],
 });

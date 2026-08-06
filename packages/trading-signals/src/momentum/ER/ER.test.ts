@@ -1,3 +1,4 @@
+import {testReplaceContract} from '../../fixtures/testReplaceContract.js';
 import {ER} from './ER.js';
 import {NotEnoughDataError} from '../../error/index.js';
 import {TradingSignal} from '../../base/Indicator.js';
@@ -191,4 +192,15 @@ describe('ER', () => {
       expect(er.getRequiredInputs()).toBe(20);
     });
   });
+});
+
+testReplaceContract({
+  create: () => new ER(3),
+  divergentInput: {close: 1_000, high: 1_100, low: 900},
+  inputs: [
+    {close: 100, high: 101, low: 99},
+    {close: 102, high: 103, low: 101},
+    {close: 104, high: 105, low: 103},
+    {close: 106, high: 107, low: 105},
+  ],
 });

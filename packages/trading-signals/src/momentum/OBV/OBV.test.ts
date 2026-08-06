@@ -1,3 +1,4 @@
+import {testReplaceContract} from '../../fixtures/testReplaceContract.js';
 import {OBV} from './OBV.js';
 import {NotEnoughDataError} from '../../error/index.js';
 import {TradingSignal} from '../../base/index.js';
@@ -116,4 +117,15 @@ describe('OBV', () => {
       expect(signal.state).toBe(TradingSignal.SIDEWAYS);
     });
   });
+});
+
+testReplaceContract({
+  create: () => new OBV(2),
+  divergentInput: {close: 1, high: 500, low: 1, open: 500, volume: 99_000},
+  inputs: [
+    {close: 100, high: 100, low: 100, open: 100, volume: 1_000},
+    {close: 101, high: 101, low: 101, open: 101, volume: 1_500},
+    {close: 102, high: 102, low: 102, open: 102, volume: 2_000},
+    {close: 101, high: 102, low: 100, open: 102, volume: 1_800},
+  ],
 });

@@ -1,3 +1,4 @@
+import {testReplaceContract} from '../../fixtures/testReplaceContract.js';
 import {DEMA} from './DEMA.js';
 import {NotEnoughDataError} from '../../error/index.js';
 
@@ -76,4 +77,10 @@ describe('DEMA', () => {
       expect(dema.isStable).toBe(true);
     });
   });
+});
+
+testReplaceContract({
+  create: () => new DEMA(10),
+  divergentInput: 1_000,
+  inputs: [81, 24, 75, 21, 34, 25, 72, 92, 99, 2, 86, 80],
 });

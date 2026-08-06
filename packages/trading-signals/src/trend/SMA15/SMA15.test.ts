@@ -1,3 +1,4 @@
+import {testReplaceContract} from '../../fixtures/testReplaceContract.js';
 import {SMA15, NotEnoughDataError} from '../../index.js';
 
 describe('SMA15', () => {
@@ -79,4 +80,10 @@ describe('SMA15', () => {
       }
     });
   });
+});
+
+testReplaceContract({
+  create: () => new SMA15(15),
+  divergentInput: 1_000,
+  inputs: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
 });

@@ -1,3 +1,4 @@
+import {testReplaceContract} from '../../fixtures/testReplaceContract.js';
 import {TR} from './TR.js';
 
 describe('TR', () => {
@@ -92,4 +93,14 @@ describe('TR', () => {
       expect(tr.getResultOrThrow().toFixed(2)).toBe(latestResult);
     });
   });
+});
+
+testReplaceContract({
+  create: () => new TR(),
+  divergentInput: {close: 200, high: 250, low: 150},
+  inputs: [
+    {close: 81.59, high: 82.15, low: 81.29},
+    {close: 81.06, high: 81.89, low: 80.64},
+    {close: 82.87, high: 83.03, low: 81.31},
+  ],
 });

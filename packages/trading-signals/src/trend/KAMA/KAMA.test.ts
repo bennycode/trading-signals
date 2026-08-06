@@ -1,3 +1,4 @@
+import {testReplaceContract} from '../../fixtures/testReplaceContract.js';
 import {KAMA} from './KAMA.js';
 import {NotEnoughDataError} from '../../error/index.js';
 
@@ -86,4 +87,10 @@ describe('KAMA', () => {
       }
     });
   });
+});
+
+testReplaceContract({
+  create: () => new KAMA(5),
+  divergentInput: 1_000,
+  inputs: [81.59, 81.06, 82.87, 83.0, 83.61, 83.15],
 });

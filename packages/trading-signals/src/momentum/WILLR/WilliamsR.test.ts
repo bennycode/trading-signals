@@ -1,3 +1,4 @@
+import {testReplaceContract} from '../../fixtures/testReplaceContract.js';
 import {WilliamsR} from './WilliamsR.js';
 import {StochasticOscillator} from '../STOCH/StochasticOscillator.js';
 import {NotEnoughDataError} from '../../error/index.js';
@@ -163,4 +164,17 @@ describe('WilliamsR', () => {
       expect(signal).toBe(TradingSignal.SIDEWAYS);
     });
   });
+});
+
+testReplaceContract({
+  create: () => new WilliamsR(5),
+  divergentInput: {close: 900, high: 1_000, low: 800},
+  inputs: [
+    {close: 10, high: 11, low: 9},
+    {close: 11, high: 12, low: 10},
+    {close: 12, high: 13, low: 11},
+    {close: 11.5, high: 12.5, low: 10.5},
+    {close: 12.5, high: 13.5, low: 11.5},
+    {close: 13, high: 14, low: 12},
+  ],
 });

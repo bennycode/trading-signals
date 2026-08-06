@@ -1,3 +1,4 @@
+import {testReplaceContract} from '../../fixtures/testReplaceContract.js';
 import {PVT} from './PVT.js';
 import {NotEnoughDataError} from '../../error/index.js';
 import {TradingSignal} from '../../base/index.js';
@@ -145,4 +146,15 @@ describe('PVT', () => {
       expect(restoredResult).toBe(originalResult);
     });
   });
+});
+
+testReplaceContract({
+  create: () => new PVT(),
+  divergentInput: {close: 500, high: 500, low: 500, volume: 99_000},
+  inputs: [
+    {close: 10, high: 10, low: 9, volume: 25_000},
+    {close: 10.5, high: 11, low: 9.5, volume: 30_000},
+    {close: 10.2, high: 10.8, low: 10, volume: 28_000},
+    {close: 10.3, high: 10.5, low: 9.8, volume: 26_000},
+  ],
 });

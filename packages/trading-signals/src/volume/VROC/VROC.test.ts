@@ -1,3 +1,4 @@
+import {testReplaceContract} from '../../fixtures/testReplaceContract.js';
 import {VROC} from './VROC.js';
 import {NotEnoughDataError} from '../../error/index.js';
 import {TradingSignal} from '../../base/index.js';
@@ -128,4 +129,10 @@ describe('VROC', () => {
       expect(restoredResult).toBe(originalResult);
     });
   });
+});
+
+testReplaceContract({
+  create: () => new VROC(3),
+  divergentInput: 99_000,
+  inputs: [1000, 1500, 2000, 2500, 3000],
 });

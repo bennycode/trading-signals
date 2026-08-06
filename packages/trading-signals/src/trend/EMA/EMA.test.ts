@@ -1,3 +1,4 @@
+import {testReplaceContract} from '../../fixtures/testReplaceContract.js';
 import {EMA, NotEnoughDataError} from '../../index.js';
 
 describe('EMA', () => {
@@ -111,4 +112,10 @@ describe('EMA', () => {
       }
     });
   });
+});
+
+testReplaceContract({
+  create: () => new EMA(5),
+  divergentInput: 1_000,
+  inputs: [81.59, 81.06, 82.87, 83.0, 83.61, 83.15],
 });
