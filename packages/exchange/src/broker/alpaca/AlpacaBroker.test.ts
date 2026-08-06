@@ -45,7 +45,7 @@ const mockTradingWebSocket = {
   connect: vi.fn().mockResolvedValue({connectionId: 'trading-conn', stream: {}}),
   disconnect: vi.fn(),
   offTradeUpdate: vi.fn(),
-  onTradeUpdate: vi.fn(),
+  onTradeUpdate: vi.fn<typeof alpacaTradingWebSocket.onTradeUpdate>(),
 };
 
 vi.mock(import('./AlpacaTradingWebSocket.js'), () => ({

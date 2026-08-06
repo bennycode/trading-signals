@@ -6,12 +6,29 @@ import {TelegramPlatform, lowercaseCommandMiddleware} from './TelegramPlatform.j
 import {reportAdd} from '../command/report/reportAdd.js';
 import {logger} from '../logger.js';
 
+/*
+ * The captured-handler types describe only the ctx surface the tests drive — enough for the
+ * specs to invoke the handlers with plain-object ctx doubles instead of full grammy contexts.
+ */
+type CapturedCommandHandler = (ctx: {
+  from: {id: number} | undefined;
+  message: {text: string};
+  reply: (text: string) => Promise<void>;
+}) => Promise<void>;
+
+type CapturedCallbackQueryHandler = (ctx: {
+  answerCallbackQuery: () => Promise<void>;
+  editMessageText: (text: string) => Promise<void>;
+  from: {id: number} | undefined;
+  match: string[];
+}) => Promise<void>;
+
 const mockSendMessage = vi.fn();
 const mockInit = vi.fn();
 const mockStart = vi.fn().mockReturnValue(new Promise(() => {}));
 const mockStop = vi.fn();
-const mockCommand = vi.fn();
-const mockCallbackQuery = vi.fn();
+const mockCommand = vi.fn<(command: string | string[], handler: CapturedCommandHandler) => void>();
+const mockCallbackQuery = vi.fn<(pattern: RegExp, handler: CapturedCallbackQueryHandler) => void>();
 const mockUse = vi.fn();
 const botInfo = {username: 'testbot'};
 const mockedReportAdd = vi.mocked(reportAdd);
@@ -23,12 +40,12 @@ vi.mock(import('trading-strategies'), () => ({
 
 vi.mock(import('../command/report/reportAdd.js'));
 
-const mockFindByUserId = vi.fn().mockReturnValue([]);
-const mockFindByUserIdAndId = vi.fn().mockReturnValue(undefined);
+const mockFindByUserId = vi.fn<typeof Account.findByUserId>().mockReturnValue([]);
+const mockFindByUserIdAndId = vi.fn<typeof Account.findByUserIdAndId>().mockReturnValue(undefined);
 vi.mock(import('../database/models/Account.js'), () => ({
   Account: {
-    findByUserId: (...args: unknown[]) => mockFindByUserId(...args),
-    findByUserIdAndId: (...args: unknown[]) => mockFindByUserIdAndId(...args),
+    findByUserId: (...args: Parameters<typeof Account.findByUserId>) => mockFindByUserId(...args),
+    findByUserIdAndId: (...args: Parameters<typeof Account.findByUserIdAndId>) => mockFindByUserIdAndId(...args),
   } as unknown as typeof Account,
 }));
 

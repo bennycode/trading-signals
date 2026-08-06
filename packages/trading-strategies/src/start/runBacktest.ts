@@ -1,10 +1,23 @@
 import {readFile} from 'node:fs/promises';
 import {parseArgs} from 'node:util';
-import {AlpacaBrokerMock, OrderType, TradingPair} from '@typedtrader/exchange';
-import type {Candle} from '@typedtrader/exchange';
+import {config} from 'dotenv-defaults';
+import {z} from 'zod';
+import {AlpacaBrokerMock, AlpacaMarketData, CandleSchema, OrderType, TradingPair} from '@typedtrader/exchange';
+import type {Candle, MarketDataSource} from '@typedtrader/exchange';
 import Big from 'big.js';
 import {BacktestExecutor} from '../backtest/BacktestExecutor.js';
 import {createStrategy, getStrategyNames} from '../strategy/StrategyRegistry.js';
+import {ScalpStrategy} from '../strategy-scalp/ScalpStrategy.js';
+
+/*
+ * Credentials load from the monorepo root .env first, then from the exchange package's .env
+ * (the current home of broker secrets). Root wins on duplicate keys, so secrets can be
+ * consolidated into a single root file without touching this script. No defaults file is
+ * loaded — its placeholder values would masquerade as real credentials and trigger doomed
+ * live-warmup requests on machines without a configured .env.
+ */
+config({path: '../../.env'});
+config({path: '../exchange/.env'});
 
 const {values} = parseArgs({
   options: {
@@ -46,11 +59,7 @@ try {
 
 let candles: Candle[];
 try {
-  const parsed = JSON.parse(raw);
-  if (!Array.isArray(parsed)) {
-    throw new Error('Candle file must contain a JSON array');
-  }
-  candles = parsed;
+  candles = z.array(CandleSchema).parse(JSON.parse(raw));
 } catch (error) {
   console.error(`Invalid candle file "${values.data}": ${error instanceof Error ? error.message : String(error)}`);
   process.exit(1);
@@ -77,7 +86,7 @@ console.log(`Balance:   ${startingBalance.toFixed(2)} ${counter}`);
 console.log('---');
 
 // 2. Create strategy from registry
-const strategyConfig = JSON.parse(values.config);
+const strategyConfig: unknown = JSON.parse(values.config);
 const strategy = createStrategy(values.strategy, strategyConfig);
 
 // 3. Set up mock exchange (commission-free for US stocks)
@@ -92,21 +101,55 @@ const exchange = new AlpacaBrokerMock({
   },
 });
 
-// 4. Pre-seed strategy if it supports init()
-if ('init' in strategy && typeof strategy.init === 'function') {
-  const {CandleBatcher} = await import('@typedtrader/exchange');
-  const batchedCandles = CandleBatcher.toBatchedCandles(candles);
-  strategy.init(batchedCandles);
+/*
+ * 4. Warm up the strategy. With Alpaca credentials configured, warmup candles are fetched
+ * live from just before the backtest window, so the warmup never sees the candles the
+ * backtest replays. Without credentials (or when the fetch fails, e.g. for non-Alpaca
+ * pairs), the file's own history is served instead — with the look-ahead that implies.
+ */
+const alpacaApiKey = process.env.ALPACA_LIVE_API_KEY;
+const alpacaApiSecret = process.env.ALPACA_LIVE_API_SECRET;
+const liveMarketData =
+  alpacaApiKey && alpacaApiSecret
+    ? new AlpacaMarketData({apiKey: alpacaApiKey, apiSecret: alpacaApiSecret, usePaperTrading: false})
+    : null;
 
-  if (strategy.config?.offset) {
-    console.log(`Auto-computed offset: ${strategy.config.offset} ${counter}`);
-  }
+const market: Pick<MarketDataSource, 'getRecentCandles'> = {
+  getRecentCandles: async (pair, count, intervalInMillis) => {
+    if (liveMarketData) {
+      try {
+        // Over-ask 2x so weekends and market holidays still leave enough candles.
+        const spanInMillis = count * intervalInMillis * 2;
+        const preWindowCandles = await liveMarketData.getCandles(pair, {
+          intervalInMillis,
+          startTimeFirstCandle: new Date(firstCandle.openTimeInMillis - spanInMillis).toISOString(),
+          startTimeLastCandle: new Date(firstCandle.openTimeInMillis - intervalInMillis).toISOString(),
+        });
 
-  if ('scalpFriendly' in strategy) {
-    const friendly = strategy.scalpFriendly as boolean;
-    console.log(`Scalp-friendly (ER): ${friendly ? 'Yes' : 'No — stock is trending, strategy will not trade'}`);
-  }
+        if (preWindowCandles.length > 0) {
+          console.log(`Warmup:    ${Math.min(count, preWindowCandles.length)} pre-window candles from Alpaca`);
+          return preWindowCandles.slice(-count);
+        }
+      } catch (error) {
+        console.warn(`Warmup:    live fetch failed (${error instanceof Error ? error.message : String(error)})`);
+      }
+    }
 
+    console.log('Warmup:    using the backtest file itself (includes the replayed window)');
+    return candles;
+  },
+};
+
+await strategy.init(market, tradingPair);
+
+if (strategy.config?.offset) {
+  console.log(`Auto-computed offset: ${strategy.config.offset} ${counter}`);
+}
+
+if (strategy instanceof ScalpStrategy) {
+  console.log(
+    `Scalp-friendly (ER): ${strategy.scalpFriendly ? 'Yes' : 'No — stock is trending, strategy will not trade'}`
+  );
   console.log('---');
 }
 

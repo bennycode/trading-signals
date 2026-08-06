@@ -2,7 +2,7 @@ import {Chart as HighchartsChart} from '@highcharts/react';
 import {Aroon as AroonClass} from 'trading-signals';
 import type {ReactNode} from 'react';
 import type {Candle} from '@typedtrader/exchange';
-import type {ChartDataPoint} from '../../components/Chart';
+import {createSharedTooltipFormatter, type ChartDataPoint} from '../../components/Chart';
 import {NotAvailable} from '../../components/NotAvailable';
 import PriceChart, {type PriceData} from '../../components/PriceChart';
 import {formatDate} from '../../utils/formatDate';
@@ -69,14 +69,7 @@ const renderAroon = (config: IndicatorConfig, selectedCandles: Candle[]) => {
             tooltip: {
               backgroundColor: '#1e293b',
               borderColor: '#475569',
-              formatter: function () {
-                let s: string = `<b>Period ${(this as any).x}</b><br/>`;
-                ((this as any).points as any[])?.forEach((point: any) => {
-                  const yValue = typeof point.y === 'number' ? point.y.toFixed(2) : 'N/A';
-                  s += `${point.series.name}: ${yValue}<br/>`;
-                });
-                return s;
-              },
+              formatter: createSharedTooltipFormatter(),
               shared: true,
               style: {color: '#e2e8f0'},
             },

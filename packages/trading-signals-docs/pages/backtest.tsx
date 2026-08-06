@@ -60,6 +60,10 @@ function createStrategy(strategyId: StrategyId, config: Record<string, unknown>)
   }
 }
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
 function parseInitialAmount(value: string, label: string): Big {
   const trimmed = value.trim();
 
@@ -124,7 +128,7 @@ export default function BacktestPage() {
   // Validate JSON on every change
   useEffect(() => {
     try {
-      const parsed = JSON.parse(configJson);
+      const parsed: unknown = JSON.parse(configJson);
       const def = strategyDefinitions.find(s => s.id === selectedStrategy)!;
       const parseResult = def.schema.safeParse(parsed);
       if (!parseResult.success) {
@@ -140,8 +144,8 @@ export default function BacktestPage() {
 
   const currentProtected: Record<string, unknown> | undefined = (() => {
     try {
-      const parsed = JSON.parse(configJson);
-      if (parsed && typeof parsed === 'object' && parsed.protected && typeof parsed.protected === 'object') {
+      const parsed: unknown = JSON.parse(configJson);
+      if (isRecord(parsed) && isRecord(parsed.protected)) {
         return parsed.protected;
       }
     } catch {
@@ -153,9 +157,8 @@ export default function BacktestPage() {
   const handleProtectionSave = useCallback(
     (nextProtected: Record<string, unknown> | undefined) => {
       try {
-        const parsed = JSON.parse(configJson);
-        const base = parsed && typeof parsed === 'object' ? parsed : {};
-        const next = {...base};
+        const parsed: unknown = JSON.parse(configJson);
+        const next: Record<string, unknown> = isRecord(parsed) ? {...parsed} : {};
         if (nextProtected === undefined) {
           delete next.protected;
         } else {
@@ -184,7 +187,7 @@ export default function BacktestPage() {
     setRunning(true);
     setError(null);
     try {
-      const parsed = JSON.parse(configJson);
+      const parsed: unknown = JSON.parse(configJson);
       const def = strategyDefinitions.find(s => s.id === selectedStrategy)!;
       const parseResult = def.schema.safeParse(parsed);
       if (!parseResult.success) {

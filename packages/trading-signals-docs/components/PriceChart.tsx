@@ -1,6 +1,7 @@
 import type {ChartOptions, HighchartsReactRefObject} from '@highcharts/react';
 import {Chart as HighchartsChart} from '@highcharts/react';
 import {useRef} from 'react';
+import {createSharedTooltipFormatter} from './Chart';
 
 export interface PriceData {
   x: number;
@@ -93,14 +94,7 @@ export default function PriceChart({data, title}: PriceChartProps) {
     tooltip: {
       backgroundColor: '#1e293b',
       borderColor: '#475569',
-      formatter: function () {
-        let s: string = `<b>Period ${(this as any).x}</b><br/>`;
-        ((this as any).points as any[])?.forEach((point: any) => {
-          const yValue = typeof point.y === 'number' ? `$${point.y.toFixed(2)}` : 'N/A';
-          s += `${point.series.name}: ${yValue}<br/>`;
-        });
-        return s;
-      },
+      formatter: createSharedTooltipFormatter(y => `$${y.toFixed(2)}`),
       shared: true,
       style: {
         color: '#e2e8f0',

@@ -1,7 +1,7 @@
 import type {ReactNode} from 'react';
 import type {Candle} from '@typedtrader/exchange';
 import {formatDate} from './formatDate';
-import type {SingleIndicatorConfig} from './types';
+import type {ProcessedIndicatorData, SingleIndicatorConfig} from './types';
 import type {PriceData} from '../components/PriceChart';
 import type {ChartDataPoint} from '../components/Chart';
 import Chart from '../components/Chart';
@@ -18,13 +18,6 @@ export const collectPriceData = (candle: Candle, idx: number): PriceData => ({
   x: idx + 1,
 });
 
-/** Shape shared by every demo's `processData` result — extra indicator-specific keys pass through to the sample table. */
-type ProcessedIndicatorData = {
-  result?: number | null;
-  signal?: {state?: string};
-  [key: string]: unknown;
-};
-
 export const renderSingleIndicator = (config: SingleIndicatorConfig, selectedCandles: Candle[]) => {
   const indicator = config.createIndicator();
   const chartData: ChartDataPoint[] = [];
@@ -34,7 +27,7 @@ export const renderSingleIndicator = (config: SingleIndicatorConfig, selectedCan
     date: string;
     result: ReactNode;
     signal?: string;
-    [key: string]: any;
+    [key: string]: unknown;
   }[] = [];
 
   selectedCandles.forEach((candle, idx) => {

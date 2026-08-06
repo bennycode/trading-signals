@@ -12,6 +12,8 @@ export default defineConfig({
   },
 
   ignorePatterns: [
+    // Agent worktree copies — linting them breaks tsgolint's type-aware pass for the whole run
+    '.claude/**',
     '**/.dependency-cruiser.cjs',
     '**/.next/**',
     '**/coverage/**',
@@ -80,6 +82,10 @@ export default defineConfig({
     'typescript/no-this-alias': 'error',
     'typescript/no-unnecessary-type-assertion': 'error',
     'typescript/no-unsafe-argument': 'error',
+    'typescript/no-unsafe-assignment': 'error',
+    'typescript/no-unsafe-call': 'error',
+    'typescript/no-unsafe-member-access': 'error',
+    'typescript/no-unsafe-return': 'error',
     'typescript/prefer-as-const': 'error',
     'typescript/prefer-for-of': 'off',
     'typescript/prefer-readonly': 'error',

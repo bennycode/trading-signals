@@ -1,8 +1,8 @@
 import {z} from 'zod';
 import Big from 'big.js';
-import {CandleBatcher, OrderSide, OrderType} from '@typedtrader/exchange';
+import {OrderSide, OrderType} from '@typedtrader/exchange';
 import {AllAvailableAmount} from '../trader/index.js';
-import type {Candle, Fill, OneMinuteBatchedCandle} from '@typedtrader/exchange';
+import type {Candle, Fill, MarketDataSource, OneMinuteBatchedCandle, TradingPair} from '@typedtrader/exchange';
 import type {OrderAdvice, TradingSessionState} from '../trader/index.js';
 import {EMA, ER} from 'trading-signals';
 import {MarketType} from '../strategy/MarketType.js';
@@ -22,6 +22,8 @@ export const ScalpSchema = ProtectedStrategySchema.extend({
 
 export type ScalpConfig = z.infer<typeof ScalpSchema>;
 
+const ONE_DAY_IN_MS = 86_400_000;
+
 type Phase = 'entry' | 'pendingAdvice' | 'waitingForFill';
 
 type ScalpState = {
@@ -34,6 +36,11 @@ export class ScalpStrategy extends ProtectedStrategy {
   static override NAME = '@typedtrader/strategy-scalp';
   static override marketTypes: readonly MarketType[] = [MarketType.RANGING];
   static readonly ER_THRESHOLD = 0.4;
+  /**
+   * How many past days of price history to fetch for warm-up — enough for the offset and
+   * trend checks even across market holidays and shortened trading weeks.
+   */
+  static readonly WARMUP_DAYS = 30;
 
   readonly #ema: EMA;
   #scalpFriendly = true;
@@ -55,27 +62,25 @@ export class ScalpStrategy extends ProtectedStrategy {
   }
 
   /**
-   * Pre-seed the EMA with historical candles to skip the live warmup period.
-   * When no offset is configured, it is auto-computed from these candles using
-   * daily ATR (takes <5ms even on 20k+ candles).
-   *
-   * Also evaluates Range Efficiency (ER) to determine if the stock is
-   * scalp-friendly. Trending stocks (ER >= 0.4) are flagged as unsuitable.
+   * Pre-seeds the entry filter with recent history so the strategy can trade from the first
+   * live candle. When no offset is configured, one is derived from the stock's typical daily
+   * range. Stocks in a strong trend are flagged as unsuitable for scalping.
    */
-  init(candles: OneMinuteBatchedCandle[]): void {
-    if (candles.length > 0) {
-      const plainCandles = CandleBatcher.toCandles(candles);
+  override async init(market: Pick<MarketDataSource, 'getRecentCandles'>, pair: TradingPair): Promise<void> {
+    const candles = await market.getRecentCandles(pair, ScalpStrategy.WARMUP_DAYS, ONE_DAY_IN_MS);
 
-      if (!this.#config.offset) {
-        const offset = suggestScalpOffset(plainCandles);
-        this.#config.offset = offset.toFixed(2);
-      }
-
-      this.#scalpFriendly = this.#computeRangeEfficiency(plainCandles);
+    if (candles.length === 0) {
+      return;
     }
 
+    if (!this.#config.offset) {
+      this.#config.offset = suggestScalpOffset(candles).toFixed(2);
+    }
+
+    this.#scalpFriendly = this.#computeRangeEfficiency(candles);
+
     for (const candle of candles) {
-      this.#ema.add(candle.close.toNumber());
+      this.#ema.add(parseFloat(candle.close));
     }
   }
 
@@ -84,7 +89,6 @@ export class ScalpStrategy extends ProtectedStrategy {
   }
 
   #computeRangeEfficiency(candles: Candle[]) {
-    const ONE_DAY_IN_MS = 86_400_000;
     const isSubDaily = candles[0].sizeInMillis < ONE_DAY_IN_MS;
 
     // Aggregate to daily bars if needed

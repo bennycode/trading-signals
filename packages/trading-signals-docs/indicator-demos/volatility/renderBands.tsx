@@ -1,7 +1,8 @@
 import {Chart as HighchartsChart} from '@highcharts/react';
 import type {ReactNode} from 'react';
+import type {BandsResult} from 'trading-signals';
 import type {Candle} from '@typedtrader/exchange';
-import type {ChartDataPoint} from '../../components/Chart';
+import {createSharedTooltipFormatter, type ChartDataPoint} from '../../components/Chart';
 import {NotAvailable} from '../../components/NotAvailable';
 import PriceChart, {type PriceData} from '../../components/PriceChart';
 import {SignalBadge} from '../../components/SignalBadge';
@@ -9,15 +10,27 @@ import {formatDate} from '../../utils/formatDate';
 import {collectPriceData} from '../../utils/renderUtils';
 import type {IndicatorConfig} from '../../utils/types';
 
-export interface BandsOptions {
+/** The slice of a bands-style indicator (Bollinger Bands, Acceleration Bands, …) this renderer reads. */
+interface BandsIndicator {
+  isStable: boolean;
+  getResult(): BandsResult | null;
+  getRequiredInputs(): number;
+  getSignal?(): {state: string; hasChanged: boolean};
+}
+
+export interface BandsOptions<TIndicator extends BandsIndicator> {
   label: string;
   paramString: string;
-  createIndicator: () => any;
-  addCandle: (indicator: any, candle: Candle) => void;
+  createIndicator: () => TIndicator;
+  addCandle: (indicator: TIndicator, candle: Candle) => void;
   details: string;
 }
 
-export const renderBands = (config: IndicatorConfig, selectedCandles: Candle[], options: BandsOptions) => {
+export const renderBands = <TIndicator extends BandsIndicator>(
+  config: IndicatorConfig,
+  selectedCandles: Candle[],
+  options: BandsOptions<TIndicator>
+) => {
   const indicator = options.createIndicator();
   const chartDataUpper: ChartDataPoint[] = [];
   const chartDataMiddle: ChartDataPoint[] = [];
@@ -36,10 +49,7 @@ export const renderBands = (config: IndicatorConfig, selectedCandles: Candle[], 
   selectedCandles.forEach((candle, idx) => {
     options.addCandle(indicator, candle);
     const result = indicator.isStable ? indicator.getResult() : null;
-    const signal =
-      'getSignal' in indicator
-        ? (indicator.getSignal as () => {state: string; hasChanged: boolean})()
-        : {hasChanged: false, state: 'UNKNOWN'};
+    const signal = indicator.getSignal?.() ?? {hasChanged: false, state: 'UNKNOWN'};
 
     chartDataUpper.push({x: idx + 1, y: result?.upper ?? null});
     chartDataMiddle.push({x: idx + 1, y: result?.middle ?? null});
@@ -105,14 +115,7 @@ export const renderBands = (config: IndicatorConfig, selectedCandles: Candle[], 
             tooltip: {
               backgroundColor: '#1e293b',
               borderColor: '#475569',
-              formatter: function () {
-                let s: string = `<b>Period ${(this as any).x}</b><br/>`;
-                ((this as any).points as any[])?.forEach((point: any) => {
-                  const yValue = typeof point.y === 'number' ? point.y.toFixed(2) : 'N/A';
-                  s += `${point.series.name}: ${yValue}<br/>`;
-                });
-                return s;
-              },
+              formatter: createSharedTooltipFormatter(),
               shared: true,
               style: {color: '#e2e8f0'},
             },

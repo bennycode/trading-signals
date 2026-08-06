@@ -1,4 +1,3 @@
-import assert from 'node:assert/strict';
 import {describe, it, expect, vi, beforeEach} from 'vitest';
 import {OrderSide} from '@typedtrader/exchange';
 import {OrderSizeBelowMinimumError} from 'trading-strategies';
@@ -10,7 +9,11 @@ import type {Account} from '../database/models/Account.js';
 import type {Strategy, StrategyAttributes} from '../database/models/Strategy.js';
 
 const {mockAccountModel, mockSession, mockStrategy, mockStrategyModel, TradingSessionMock} = vi.hoisted(() => {
-  const session = {on: vi.fn(), start: vi.fn(), stop: vi.fn()};
+  const session = {
+    on: vi.fn<(event: string, listener: (error: Error) => void) => void>(),
+    start: vi.fn(),
+    stop: vi.fn(),
+  };
   return {
     mockAccountModel: {findByPk: vi.fn()},
     mockSession: session,
@@ -72,6 +75,11 @@ vi.mock(import('../database/models/Strategy.js'), () => ({
 
 const {formatStrategyMessage, STRATEGY_ERROR_LOG_MESSAGE, StrategyMonitor} = await import('./StrategyMonitor.js');
 const {PlatformDispatcher} = await import('./PlatformDispatcher.js');
+
+/** Wraps `toBeDefined` in an assertion function so the check also narrows the type. */
+function expectDefined<T>(value: T): asserts value is Exclude<T, undefined> {
+  expect(value).toBeDefined();
+}
 
 function createMockPlatform(): MessagingPlatform {
   return {
@@ -191,7 +199,7 @@ describe('StrategyMonitor session error handling', () => {
 
   function getSessionErrorHandler(): (error: Error) => void {
     const call = mockSession.on.mock.calls.find(args => args[0] === 'error');
-    assert.ok(call);
+    expectDefined(call);
     return call[1];
   }
 
@@ -218,10 +226,7 @@ describe('StrategyMonitor session error handling', () => {
     expect(
       logger.error,
       'The user is alerted on their account, and the typed error is forwarded intact'
-    ).toHaveBeenCalledWith(
-      expect.objectContaining({err: expect.any(OrderSizeBelowMinimumError)}),
-      STRATEGY_ERROR_LOG_MESSAGE
-    );
+    ).toHaveBeenCalledWith(expect.objectContaining({err: error}), STRATEGY_ERROR_LOG_MESSAGE);
   });
 
   it('tears the session down only once when the error repeats', async () => {
