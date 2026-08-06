@@ -1,4 +1,3 @@
-import assert from 'node:assert/strict';
 import {describe, it, expect, vi, beforeEach} from 'vitest';
 import {OrderSide} from '@typedtrader/exchange';
 import {OrderSizeBelowMinimumError} from 'trading-strategies';
@@ -76,6 +75,11 @@ vi.mock(import('../database/models/Strategy.js'), () => ({
 
 const {formatStrategyMessage, STRATEGY_ERROR_LOG_MESSAGE, StrategyMonitor} = await import('./StrategyMonitor.js');
 const {PlatformDispatcher} = await import('./PlatformDispatcher.js');
+
+/** Wraps `toBeDefined` in an assertion function so the check also narrows the type. */
+function expectDefined<T>(value: T): asserts value is Exclude<T, undefined> {
+  expect(value).toBeDefined();
+}
 
 function createMockPlatform(): MessagingPlatform {
   return {
@@ -195,7 +199,7 @@ describe('StrategyMonitor session error handling', () => {
 
   function getSessionErrorHandler(): (error: Error) => void {
     const call = mockSession.on.mock.calls.find(args => args[0] === 'error');
-    assert.ok(call);
+    expectDefined(call);
     return call[1];
   }
 
