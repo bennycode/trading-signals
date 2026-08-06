@@ -1,4 +1,3 @@
-import assert from 'node:assert/strict';
 import Big from 'big.js';
 import type {Mock} from 'vitest';
 import {EventEmitter} from 'node:events';
@@ -66,6 +65,11 @@ function createMockExchange() {
     watchCandles: vi.fn().mockResolvedValue('candle-topic-1'),
     watchOrders: vi.fn().mockResolvedValue('order-topic-1'),
   });
+}
+
+/** Wraps `toBeInstanceOf` in an assertion function so the check also narrows the type. */
+function expectInstanceOf<T>(value: unknown, ctor: new (...args: never[]) => T): asserts value is T {
+  expect(value).toBeInstanceOf(ctor);
 }
 
 function createMockStrategy(): TradingSessionStrategy & {
@@ -453,7 +457,7 @@ describe('TradingSession', {concurrent: false}, () => {
       await vi.waitFor(() => expect(onError).toHaveBeenCalledTimes(1));
 
       const [[error]] = onError.mock.calls;
-      assert.ok(error instanceof OrderSizeBelowMinimumError);
+      expectInstanceOf(error, OrderSizeBelowMinimumError);
       expect(error.side).toBe(OrderSide.SELL);
       expect(error.amountIn).toBe('base');
       expect(error.size).toBe('0');
@@ -490,7 +494,7 @@ describe('TradingSession', {concurrent: false}, () => {
       await vi.waitFor(() => expect(onError).toHaveBeenCalledTimes(1));
 
       const [[error]] = onError.mock.calls;
-      assert.ok(error instanceof OrderSizeBelowMinimumError);
+      expectInstanceOf(error, OrderSizeBelowMinimumError);
       expect(error.side).toBe(OrderSide.SELL);
       expect(error.amountIn).toBe('base');
       expect(error.size).toBe('0.001');
