@@ -15,10 +15,6 @@ interface ActiveSession {
   strategy: TradingStrategy;
 }
 
-/**
- * Guards the DB → runtime boundary: `row.state` is a JSON string written by an earlier process,
- * so anything that isn't a plain object means the row is corrupt and must not reach `restoreState`.
- */
 const persistedStateSchema = z.record(z.string(), z.unknown());
 
 /** Pino log message used when a session surfaces an unrecoverable error. Exported for tests. */

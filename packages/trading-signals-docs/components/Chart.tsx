@@ -24,8 +24,8 @@ export interface ChartProps {
 type TooltipFormatter = NonNullable<NonNullable<ChartOptions['tooltip']>['formatter']>;
 
 /**
- * Every multi-series demo chart shares one tooltip look; `formatValue` covers the per-chart
- * differences (e.g. 4 decimals for MACD, a `$` prefix for prices).
+ * Every multi-series demo chart shares one tooltip look; each chart only customizes how a
+ * value is printed (e.g. 4 decimals for MACD, a `$` prefix for prices).
  */
 export const createSharedTooltipFormatter = (
   formatValue: (y: number) => string = y => y.toFixed(2)

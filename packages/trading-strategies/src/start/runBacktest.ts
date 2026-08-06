@@ -10,11 +10,13 @@ import {createStrategy, getStrategyNames} from '../strategy/StrategyRegistry.js'
 import {ScalpStrategy} from '../strategy-scalp/ScalpStrategy.js';
 
 /*
- * The exchange package owns the credentials. Load its env so this script can run from
- * trading-strategies/ without duplicating secrets. Its defaults file is deliberately not
- * loaded — the placeholder values in there would masquerade as real credentials and trigger
- * doomed live-warmup requests on machines without a configured .env.
+ * Credentials load from the monorepo root .env first, then from the exchange package's .env
+ * (the current home of broker secrets). Root wins on duplicate keys, so secrets can be
+ * consolidated into a single root file without touching this script. No defaults file is
+ * loaded — its placeholder values would masquerade as real credentials and trigger doomed
+ * live-warmup requests on machines without a configured .env.
  */
+config({path: '../../.env'});
 config({path: '../exchange/.env'});
 
 const {values} = parseArgs({

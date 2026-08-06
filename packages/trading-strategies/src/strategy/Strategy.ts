@@ -71,10 +71,6 @@ export abstract class Strategy implements TradingSessionStrategy {
     }
   }
 
-  /**
-   * Warm-up hook, called before the first candle so a strategy can fetch history and
-   * pre-seed its indicators. No-op by default — override to opt in.
-   */
   async init(_market: Pick<MarketDataSource, 'getRecentCandles'>, _pair: TradingPair): Promise<void> {}
 
   async onCandle(candle: OneMinuteBatchedCandle, state: TradingSessionState): Promise<OrderAdvice | void> {

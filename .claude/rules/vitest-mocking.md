@@ -15,7 +15,7 @@ const getBalances = vi.fn<AlpacaBroker['getAvailableBalances']>().mockResolvedVa
 });
 ```
 
-Derive the signature instead of hand-writing it: `SomeType['method']`, `typeof SomeClass.staticMethod`, or `NonNullable<SomeType['optionalMethod']>`. A bare `vi.fn()` remains fine for pure call-recording sinks (`toHaveBeenCalledTimes` and friends) where no data flows in either direction.
+Derive the signature instead of hand-writing it: `SomeType['method']`, `typeof SomeClass.staticMethod`, or `NonNullable<SomeType['optionalMethod']>`. A bare `vi.fn()` remains fine for pure call-recording sinks that are only asserted with `toHaveBeenCalledTimes` or `toHaveBeenCalledWith`, where no data flows in either direction.
 
 ## Always use the typed `import()` form
 

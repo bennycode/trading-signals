@@ -1,4 +1,5 @@
 import type {ReactElement, ReactNode} from 'react';
+import type {TechnicalIndicator, TrendIndicatorSeries} from 'trading-signals';
 import type {ChartDataPoint} from '../components/Chart';
 import type {Candle} from '@typedtrader/exchange';
 
@@ -9,17 +10,23 @@ export interface ColumnDef {
   className?: string;
 }
 
+/** Scalar for single-value indicators, keyed bar values for OHLC-style ones. */
+export type DemoIndicatorInput = number | Record<string, number>;
+
+/** Signal shape shared by every signal-capable `trading-signals` indicator. */
+export type DemoSignal = ReturnType<TrendIndicatorSeries['getSignal']>;
+
 /**
- * What the generic demo plumbing relies on from a `trading-signals` indicator. Result and input
- * shapes differ per indicator, so a config that reads them parameterizes `IndicatorConfig<TIndicator>`.
+ * What the generic demo plumbing relies on from a `trading-signals` indicator, derived from the
+ * library's own contracts. `add` stays a locally declared method so indicators with narrower
+ * input types remain assignable. Result and input shapes differ per indicator, so a config that
+ * reads them parameterizes `IndicatorConfig<TIndicator>`.
  */
-export interface DemoIndicator {
-  isStable: boolean;
+export type DemoIndicator = Pick<TechnicalIndicator<unknown, never>, 'isStable' | 'getResult'> & {
   interval?: number;
-  add(input: number | Record<string, number>): unknown;
-  getResult(): unknown;
-  getSignal?(): {state: string; hasChanged: boolean};
-}
+  add(input: DemoIndicatorInput): unknown;
+  getSignal?(): DemoSignal;
+};
 
 /** Shape shared by every demo's `processData` result — extra indicator-specific keys pass through to the sample table. */
 export interface ProcessedIndicatorData {

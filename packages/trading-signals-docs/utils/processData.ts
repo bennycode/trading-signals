@@ -1,6 +1,7 @@
+import type {IndicatorSeries} from 'trading-signals';
 import type {Candle} from '@typedtrader/exchange';
 import type {PriceColumnKey} from './tableColumns';
-import type {ProcessedIndicatorData} from './types';
+import type {DemoIndicatorInput, DemoSignal, ProcessedIndicatorData} from './types';
 
 interface ProcessDataOptions {
   /** Candle fields included in the row data (used by the table). */
@@ -12,12 +13,10 @@ interface ProcessDataOptions {
 }
 
 /** Narrower than `DemoIndicator`: every indicator routed through here yields a single numeric result. */
-interface SeriesIndicator {
-  isStable: boolean;
-  add(input: number | Record<string, number>): unknown;
-  getResult(): number | null;
-  getSignal?(): {state: string; hasChanged: boolean};
-}
+type SeriesIndicator = Pick<IndicatorSeries, 'isStable' | 'getResult'> & {
+  add(input: DemoIndicatorInput): unknown;
+  getSignal?(): DemoSignal;
+};
 
 const candleField = (candle: Candle, key: PriceColumnKey) => Number(candle[key]);
 

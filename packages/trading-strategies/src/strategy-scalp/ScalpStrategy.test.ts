@@ -229,10 +229,9 @@ describe('ScalpStrategy', () => {
     const historicalCandles = [makeCandle(100, 0), makeCandle(101, 1), makeCandle(102, 2)];
     await strategy.init(marketWith(historicalCandles), pair);
 
-    // First live candle with rising price should trigger entry immediately
     const advice = await strategy.onCandle(toBatched(makeCandle(103, 3)), mockState);
 
-    expect(advice).toBeDefined();
+    expect(advice, 'EMA pre-seeded by init() triggers entry on the first live candle').toBeDefined();
     expect(advice?.side).toBe(OrderSide.BUY);
     expect(advice?.type).toBe(OrderType.MARKET);
   });
@@ -292,8 +291,7 @@ describe('ScalpStrategy', () => {
 
     await strategy.init(marketWith(candles), pair);
 
-    // ATR(14) * 0.2 over the fixture's daily aggregation
-    expect(strategy.config?.offset).toBe('1.25');
+    expect(strategy.config?.offset, "ATR(14) * 0.2 over the fixture's daily aggregation").toBe('1.25');
   });
 
   it('requests daily candles for warmup', async () => {
@@ -317,12 +315,11 @@ describe('ScalpStrategy', () => {
     const strategy = new ScalpStrategy({emaPeriod: 3});
 
     await strategy.init(marketWith([]), pair);
-    expect(strategy.config?.offset).toBeUndefined();
+    expect(strategy.config?.offset, 'no offset can be derived from empty history').toBeUndefined();
 
-    // Warm the EMA past stability with rising prices — only the missing offset blocks the entry
     for (let i = 0; i < 4; i++) {
       const advice = await strategy.onCandle(toBatched(makeCandle(100 + i, i)), mockState);
-      expect(advice).toBeUndefined();
+      expect(advice, 'entry stays blocked by the missing offset even once the EMA is warm').toBeUndefined();
     }
   });
 });
