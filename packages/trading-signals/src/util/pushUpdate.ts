@@ -1,7 +1,11 @@
 type PushUpdateOptions<T> = {
+  /** Array that receives the item; mutated in place */
   array: T[];
+  /** Item to append, or to overwrite the last element with */
   item: T;
+  /** Size at which the array should be capped */
   maxLength: number;
+  /** Overwrite the last element instead of appending */
   replace: boolean;
 };
 
