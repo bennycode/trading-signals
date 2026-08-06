@@ -1,7 +1,6 @@
-import {testReplaceContract} from '../../fixtures/testReplaceContract.js';
+import {testIndicatorContract} from '../../fixtures/testIndicatorContract.js';
 import {WilliamsR} from './WilliamsR.js';
 import {StochasticOscillator} from '../STOCH/StochasticOscillator.js';
-import {NotEnoughDataError} from '../../error/index.js';
 import {TradingSignal} from '../../base/index.js';
 import candles from '../../fixtures/STOCH/candles.json' with {type: 'json'};
 
@@ -37,17 +36,6 @@ describe('WilliamsR', () => {
       expect(willR.isStable).toBe(true);
       expect(willR.getRequiredInputs()).toBe(5);
       expect(willR.getResultOrThrow().toFixed(2)).toBe('-17.88');
-    });
-
-    it('returns null until enough values are provided', () => {
-      const willR = new WilliamsR(5);
-
-      for (let i = 0; i < 4; i++) {
-        const result = willR.add({close: i, high: i + 1, low: i - 1});
-        expect(result).toBeNull();
-      }
-
-      expect(willR.isStable).toBe(false);
     });
 
     it('prevents division by zero when highest high and lowest low have the same value', () => {
@@ -108,23 +96,6 @@ describe('WilliamsR', () => {
     });
   });
 
-  describe('getResultOrThrow', () => {
-    it('throws an error when there is not enough input data', () => {
-      const willR = new WilliamsR(14);
-
-      for (let i = 0; i < 13; i++) {
-        willR.add({close: i, high: i + 1, low: i - 1});
-      }
-
-      try {
-        willR.getResultOrThrow();
-        throw new Error('Expected error');
-      } catch (error) {
-        expect(error).toBeInstanceOf(NotEnoughDataError);
-      }
-    });
-  });
-
   describe('getSignal', () => {
     it('returns UNKNOWN when there is no result', () => {
       const willR = new WilliamsR(14);
@@ -166,7 +137,7 @@ describe('WilliamsR', () => {
   });
 });
 
-testReplaceContract({
+testIndicatorContract({
   create: () => new WilliamsR(5),
   divergentInput: {close: 900, high: 1_000, low: 800},
   inputs: [

@@ -1,6 +1,5 @@
-import {testReplaceContract} from '../../fixtures/testReplaceContract.js';
+import {testIndicatorContract} from '../../fixtures/testIndicatorContract.js';
 import {SuperTrend} from './SuperTrend.js';
-import {NotEnoughDataError} from '../../error/index.js';
 
 describe('SuperTrend', () => {
   /*
@@ -114,21 +113,10 @@ describe('SuperTrend', () => {
       expect(result?.supertrend.toFixed(3)).toBe('10.025');
       expect(result?.trend).toBe('BULLISH');
     });
-
-    it('throws an error when there is not enough input data', () => {
-      const supertrend = new SuperTrend({interval: 5, multiplier: 2});
-
-      try {
-        supertrend.getResultOrThrow();
-        throw new Error('Expected error');
-      } catch (error) {
-        expect(error).toBeInstanceOf(NotEnoughDataError);
-      }
-    });
   });
 });
 
-testReplaceContract({
+testIndicatorContract({
   create: () => new SuperTrend({interval: 5, multiplier: 2}),
   divergentInput: {close: 10, high: 90, low: 9},
   inputs: [

@@ -16,7 +16,7 @@ export class TR extends IndicatorSeries<HighLowClose<number>> {
   #twoPreviousCandle?: HighLowClose<number>;
 
   override getRequiredInputs() {
-    return 2;
+    return 1;
   }
 
   update(candle: HighLowClose<number>, replace: boolean) {

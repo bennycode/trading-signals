@@ -1,6 +1,5 @@
-import {testReplaceContract} from '../../fixtures/testReplaceContract.js';
+import {testIndicatorContract} from '../../fixtures/testIndicatorContract.js';
 import {WSMA} from './WSMA.js';
-import {NotEnoughDataError} from '../../error/index.js';
 
 describe('WSMA', () => {
   describe('replace', () => {
@@ -115,30 +114,6 @@ describe('WSMA', () => {
       expect(wsma.isStable).toBe(true);
       expect(wsma.getResultOrThrow().toFixed(4)).toBe('62.8540');
     });
-
-    it('throws an error when there is no input data', () => {
-      const wsma = new WSMA(3);
-
-      try {
-        wsma.getResultOrThrow();
-        throw new Error('Expected error');
-      } catch (error) {
-        expect(error).toBeInstanceOf(NotEnoughDataError);
-      }
-    });
-
-    it('throws an error when there is not enough input data', () => {
-      const wsma = new WSMA(3);
-      wsma.add(1);
-      wsma.add(2);
-
-      try {
-        wsma.getResultOrThrow();
-        throw new Error('Expected error');
-      } catch (error) {
-        expect(error).toBeInstanceOf(NotEnoughDataError);
-      }
-    });
   });
 
   describe('updates', () => {
@@ -165,7 +140,7 @@ describe('WSMA', () => {
   });
 });
 
-testReplaceContract({
+testIndicatorContract({
   create: () => new WSMA(3),
   divergentInput: 1_000,
   inputs: [11, 12, 13, 14, 15],

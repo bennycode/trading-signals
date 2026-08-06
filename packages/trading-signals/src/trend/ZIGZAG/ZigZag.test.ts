@@ -1,4 +1,4 @@
-import {testReplaceContract} from '../../fixtures/testReplaceContract.js';
+import {testIndicatorContract} from '../../fixtures/testIndicatorContract.js';
 import {ZigZag} from './ZigZag.js';
 
 describe('ZigZag', () => {
@@ -131,7 +131,7 @@ describe('ZigZag', () => {
   });
 });
 
-testReplaceContract({
+testIndicatorContract({
   create: () => new ZigZag({deviation: 15}),
   divergentInput: {high: 60, low: 1},
   inputs: [

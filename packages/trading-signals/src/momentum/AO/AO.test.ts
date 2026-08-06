@@ -1,5 +1,4 @@
-import {testReplaceContract} from '../../fixtures/testReplaceContract.js';
-import {NotEnoughDataError} from '../../error/index.js';
+import {testIndicatorContract} from '../../fixtures/testIndicatorContract.js';
 import {TradingSignal} from '../../base/Indicator.js';
 import {AO} from './AO.js';
 
@@ -59,17 +58,6 @@ describe('AO', () => {
         hasChanged: false,
         state: TradingSignal.BEARISH,
       });
-    });
-
-    it('throws an error when there is not enough input data', () => {
-      const ao = new AO(5, 34);
-
-      try {
-        ao.getResultOrThrow();
-        throw new Error('Expected error');
-      } catch (error) {
-        expect(error).toBeInstanceOf(NotEnoughDataError);
-      }
     });
   });
 
@@ -160,7 +148,7 @@ describe('AO', () => {
   });
 });
 
-testReplaceContract({
+testIndicatorContract({
   create: () => new AO(2, 5),
   divergentInput: {high: 1_000, low: 900},
   inputs: [

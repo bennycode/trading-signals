@@ -1,5 +1,5 @@
-import {testReplaceContract} from '../../fixtures/testReplaceContract.js';
-import {SMA, NotEnoughDataError} from '../../index.js';
+import {testIndicatorContract} from '../../fixtures/testIndicatorContract.js';
+import {SMA} from '../../index.js';
 
 describe('SMA', () => {
   describe('prices', () => {
@@ -113,17 +113,6 @@ describe('SMA', () => {
       expect(sma.getRequiredInputs()).toBe(interval);
       expect(sma.getResultOrThrow()).toBe(86.804);
     });
-
-    it('throws an error when there is not enough input data', () => {
-      const sma = new SMA(5);
-
-      try {
-        sma.getResultOrThrow();
-        throw new Error('Expected error');
-      } catch (error) {
-        expect(error).toBeInstanceOf(NotEnoughDataError);
-      }
-    });
   });
 
   describe('getRequiredInputs', () => {
@@ -146,7 +135,7 @@ describe('SMA', () => {
   });
 });
 
-testReplaceContract({
+testIndicatorContract({
   create: () => new SMA(3),
   divergentInput: 1_000,
   inputs: [10, 20, 30, 40, 50],

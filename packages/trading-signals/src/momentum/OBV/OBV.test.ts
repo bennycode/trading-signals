@@ -1,6 +1,5 @@
-import {testReplaceContract} from '../../fixtures/testReplaceContract.js';
+import {testIndicatorContract} from '../../fixtures/testIndicatorContract.js';
 import {OBV} from './OBV.js';
-import {NotEnoughDataError} from '../../error/index.js';
 import {TradingSignal} from '../../base/index.js';
 
 describe('OBV', () => {
@@ -44,18 +43,6 @@ describe('OBV', () => {
       expect(obv.isStable).toBe(true);
       expect(obv.getRequiredInputs()).toBe(2);
       expect(obv.getResultOrThrow().toFixed(2)).toBe('72100.00');
-    });
-
-    it('throws an error when there is not enough input data', () => {
-      const obv = new OBV(2);
-      expect(obv.isStable).toBe(false);
-      try {
-        obv.getResultOrThrow();
-        throw new Error('Expected error');
-      } catch (error) {
-        expect(obv.isStable).toBe(false);
-        expect(error).toBeInstanceOf(NotEnoughDataError);
-      }
     });
   });
 
@@ -119,7 +106,7 @@ describe('OBV', () => {
   });
 });
 
-testReplaceContract({
+testIndicatorContract({
   create: () => new OBV(2),
   divergentInput: {close: 1, high: 500, low: 1, open: 500, volume: 99_000},
   inputs: [

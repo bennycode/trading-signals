@@ -1,4 +1,4 @@
-import {testReplaceContract} from '../../fixtures/testReplaceContract.js';
+import {testIndicatorContract} from '../../fixtures/testIndicatorContract.js';
 import {TDS} from './TDS.js';
 import {TradingSignal} from '../../base/index.js';
 
@@ -261,7 +261,7 @@ describe('TDS', () => {
   });
 });
 
-testReplaceContract({
+testIndicatorContract({
   create: () => new TDS(),
   divergentInput: 1_000,
   inputs: [10, 10, 10, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19],

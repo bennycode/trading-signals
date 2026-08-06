@@ -1,6 +1,5 @@
-import {testReplaceContract} from '../../fixtures/testReplaceContract.js';
+import {testIndicatorContract} from '../../fixtures/testIndicatorContract.js';
 import {NATR} from './NATR.js';
-import {NotEnoughDataError} from '../../error/index.js';
 
 describe('NATR', () => {
   /*
@@ -79,21 +78,10 @@ describe('NATR', () => {
       expect(natr.isStable).toBe(true);
       expect(natr.getRequiredInputs()).toBe(interval);
     });
-
-    it('throws an error when there is not enough input data', () => {
-      const natr = new NATR(5);
-
-      try {
-        natr.getResultOrThrow();
-        throw new Error('Expected error');
-      } catch (error) {
-        expect(error).toBeInstanceOf(NotEnoughDataError);
-      }
-    });
   });
 });
 
-testReplaceContract({
+testIndicatorContract({
   create: () => new NATR(5),
   divergentInput: {close: 200, high: 250, low: 150},
   inputs: [

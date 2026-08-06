@@ -1,6 +1,5 @@
-import {testReplaceContract} from '../../fixtures/testReplaceContract.js';
+import {testIndicatorContract} from '../../fixtures/testIndicatorContract.js';
 import {RSI} from './RSI.js';
-import {NotEnoughDataError} from '../../error/index.js';
 import {TradingSignal} from '../../base/index.js';
 import {WSMA} from '../../trend/WSMA/WSMA.js';
 
@@ -68,19 +67,6 @@ describe('RSI', () => {
       const rsi = new RSI(2);
       rsi.updates(updates, false);
       expect(rsi.getResultOrThrow()).toBe(100);
-    });
-
-    it('throws an error when there is not enough input data', () => {
-      const rsi = new RSI(2);
-      rsi.add(0);
-      expect(rsi.isStable).toBe(false);
-      try {
-        rsi.getResultOrThrow();
-        throw new Error('Expected error');
-      } catch (error) {
-        expect(rsi.isStable).toBe(false);
-        expect(error).toBeInstanceOf(NotEnoughDataError);
-      }
     });
   });
 
@@ -155,7 +141,7 @@ describe('RSI', () => {
   });
 });
 
-testReplaceContract({
+testIndicatorContract({
   create: () => new RSI(5),
   divergentInput: 1_000,
   inputs: [81.59, 81.06, 82.87, 83.0, 83.61, 83.15, 82.84, 83.99],

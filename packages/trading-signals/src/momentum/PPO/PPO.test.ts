@@ -1,6 +1,5 @@
-import {testReplaceContract} from '../../fixtures/testReplaceContract.js';
+import {testIndicatorContract} from '../../fixtures/testIndicatorContract.js';
 import {PPO} from './PPO.js';
-import {NotEnoughDataError} from '../../error/index.js';
 import {TradingSignal} from '../../base/index.js';
 
 describe('PPO', () => {
@@ -68,17 +67,6 @@ describe('PPO', () => {
       expect(ppo.isStable).toBe(true);
       expect(ppo.getRequiredInputs()).toBe(5);
     });
-
-    it('throws an error when there is not enough input data', () => {
-      const ppo = new PPO();
-
-      try {
-        ppo.getResultOrThrow();
-        throw new Error('Expected error');
-      } catch (error) {
-        expect(error).toBeInstanceOf(NotEnoughDataError);
-      }
-    });
   });
 
   describe('getSignal', () => {
@@ -123,7 +111,7 @@ describe('PPO', () => {
   });
 });
 
-testReplaceContract({
+testIndicatorContract({
   create: () => new PPO({fastPeriod: 2, slowPeriod: 5}),
   divergentInput: 1_000,
   inputs: [81.59, 81.06, 82.87, 83.0, 83.61, 83.15, 82.84],

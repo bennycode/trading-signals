@@ -1,6 +1,5 @@
-import {testReplaceContract} from '../../fixtures/testReplaceContract.js';
+import {testIndicatorContract} from '../../fixtures/testIndicatorContract.js';
 import {ADOSC} from './ADOSC.js';
-import {NotEnoughDataError} from '../../error/index.js';
 import {TradingSignal} from '../../base/index.js';
 
 describe('ADOSC', () => {
@@ -79,17 +78,6 @@ describe('ADOSC', () => {
       expect(adosc.isStable).toBe(true);
       expect(adosc.getRequiredInputs()).toBe(5);
     });
-
-    it('throws an error when there is not enough input data', () => {
-      const adosc = new ADOSC();
-
-      try {
-        adosc.getResultOrThrow();
-        throw new Error('Expected error');
-      } catch (error) {
-        expect(error).toBeInstanceOf(NotEnoughDataError);
-      }
-    });
   });
 
   describe('getSignal', () => {
@@ -134,7 +122,7 @@ describe('ADOSC', () => {
   });
 });
 
-testReplaceContract({
+testIndicatorContract({
   create: () => new ADOSC({fastPeriod: 2, slowPeriod: 5}),
   divergentInput: {close: 249, high: 250, low: 150, volume: 99_000_000},
   inputs: [

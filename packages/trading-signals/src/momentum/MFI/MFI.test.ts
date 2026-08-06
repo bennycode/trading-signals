@@ -1,6 +1,5 @@
-import {testReplaceContract} from '../../fixtures/testReplaceContract.js';
+import {testIndicatorContract} from '../../fixtures/testIndicatorContract.js';
 import {MFI} from './MFI.js';
-import {NotEnoughDataError} from '../../error/index.js';
 import {TradingSignal} from '../../base/index.js';
 
 describe('MFI', () => {
@@ -91,17 +90,6 @@ describe('MFI', () => {
 
       expect(mfi.getResultOrThrow()).toBe(50);
     });
-
-    it('throws an error when there is not enough input data', () => {
-      const mfi = new MFI(5);
-
-      try {
-        mfi.getResultOrThrow();
-        throw new Error('Expected error');
-      } catch (error) {
-        expect(error).toBeInstanceOf(NotEnoughDataError);
-      }
-    });
   });
 
   describe('getSignal', () => {
@@ -163,7 +151,7 @@ describe('MFI', () => {
   });
 });
 
-testReplaceContract({
+testIndicatorContract({
   create: () => new MFI(5),
   divergentInput: {close: 500, high: 500, low: 500, volume: 99_000},
   inputs: [

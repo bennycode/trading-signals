@@ -1,5 +1,5 @@
-import {testReplaceContract} from '../../fixtures/testReplaceContract.js';
-import {WMA, NotEnoughDataError} from '../../index.js';
+import {testIndicatorContract} from '../../fixtures/testIndicatorContract.js';
+import {WMA} from '../../index.js';
 
 describe('WMA', () => {
   describe('prices', () => {
@@ -112,21 +112,10 @@ describe('WMA', () => {
 
       expect(wma.isStable).toBe(true);
     });
-
-    it('throws an error when there is not enough input data', () => {
-      const wma = new WMA(5);
-
-      try {
-        wma.getResultOrThrow();
-        throw new Error('Expected error');
-      } catch (error) {
-        expect(error).toBeInstanceOf(NotEnoughDataError);
-      }
-    });
   });
 });
 
-testReplaceContract({
+testIndicatorContract({
   create: () => new WMA(3),
   divergentInput: 1_000,
   inputs: [11, 12, 13, 14, 15],

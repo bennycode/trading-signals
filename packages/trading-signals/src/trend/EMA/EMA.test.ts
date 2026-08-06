@@ -1,5 +1,5 @@
-import {testReplaceContract} from '../../fixtures/testReplaceContract.js';
-import {EMA, NotEnoughDataError} from '../../index.js';
+import {testIndicatorContract} from '../../fixtures/testIndicatorContract.js';
+import {EMA} from '../../index.js';
 
 describe('EMA', () => {
   /*
@@ -99,22 +99,10 @@ describe('EMA', () => {
 
       expect(ema.getResultOrThrow().toFixed(2)).toBe('86.70');
     });
-
-    it('throws an error when there is not enough input data', () => {
-      const ema = new EMA(10);
-
-      try {
-        ema.getResultOrThrow();
-        throw new Error('Expected error');
-      } catch (error) {
-        expect(error).toBeInstanceOf(NotEnoughDataError);
-        expect(ema.isStable).toBe(false);
-      }
-    });
   });
 });
 
-testReplaceContract({
+testIndicatorContract({
   create: () => new EMA(5),
   divergentInput: 1_000,
   inputs: [81.59, 81.06, 82.87, 83.0, 83.61, 83.15],

@@ -1,6 +1,5 @@
-import {testReplaceContract} from '../../fixtures/testReplaceContract.js';
+import {testIndicatorContract} from '../../fixtures/testIndicatorContract.js';
 import {Aroon} from './Aroon.js';
-import {NotEnoughDataError} from '../../error/index.js';
 
 describe('Aroon', () => {
   /*
@@ -108,21 +107,10 @@ describe('Aroon', () => {
 
       expect(aroon.getResultOrThrow()).toEqual({aroonDown: 60, aroonUp: 60});
     });
-
-    it('throws an error when there is not enough input data', () => {
-      const aroon = new Aroon(5);
-
-      try {
-        aroon.getResultOrThrow();
-        throw new Error('Expected error');
-      } catch (error) {
-        expect(error).toBeInstanceOf(NotEnoughDataError);
-      }
-    });
   });
 });
 
-testReplaceContract({
+testIndicatorContract({
   create: () => new Aroon(5),
   divergentInput: {high: 500, low: 1},
   inputs: [

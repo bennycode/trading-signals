@@ -1,4 +1,4 @@
-import {testReplaceContract} from '../../fixtures/testReplaceContract.js';
+import {testIndicatorContract} from '../../fixtures/testIndicatorContract.js';
 import {TR} from './TR.js';
 
 describe('TR', () => {
@@ -54,7 +54,7 @@ describe('TR', () => {
       });
 
       expect(tr.isStable).toBe(true);
-      expect(tr.getRequiredInputs()).toBe(2);
+      expect(tr.getRequiredInputs()).toBe(1);
       expect(tr.getResultOrThrow().toFixed(2)).toBe('0.86');
     });
   });
@@ -95,7 +95,7 @@ describe('TR', () => {
   });
 });
 
-testReplaceContract({
+testIndicatorContract({
   create: () => new TR(),
   divergentInput: {close: 200, high: 250, low: 150},
   inputs: [

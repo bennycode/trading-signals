@@ -1,4 +1,4 @@
-import {testReplaceContract} from '../../fixtures/testReplaceContract.js';
+import {testIndicatorContract} from '../../fixtures/testIndicatorContract.js';
 import {ADX} from './ADX.js';
 
 describe('ADX', () => {
@@ -94,7 +94,7 @@ describe('ADX', () => {
   });
 });
 
-testReplaceContract({
+testIndicatorContract({
   create: () => new ADX(5),
   divergentInput: {close: 1_000, high: 1_000, low: 1_000},
   inputs: [

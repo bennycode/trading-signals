@@ -1,7 +1,6 @@
-import {testReplaceContract} from '../../fixtures/testReplaceContract.js';
+import {testIndicatorContract} from '../../fixtures/testIndicatorContract.js';
 import {BollingerBands} from './BollingerBands.js';
 import data from '../../fixtures/BB/data.json' with {type: 'json'};
-import {NotEnoughDataError} from '../../error/index.js';
 import {TradingSignal} from '../../base/Indicator.js';
 
 describe('BollingerBands', () => {
@@ -62,17 +61,6 @@ describe('BollingerBands', () => {
 
       expect(bb.isStable, 'the fifth price completes the interval').toBe(true);
       expect(result?.middle, 'the first band averages all five prices').toBe(12);
-    });
-
-    it('throws an error when there is not enough input data', () => {
-      const bb = new BollingerBands(20);
-
-      try {
-        bb.getResultOrThrow();
-        throw new Error('Expected error');
-      } catch (error) {
-        expect(error).toBeInstanceOf(NotEnoughDataError);
-      }
     });
 
     it('is compatible with results from Tulip Indicators (TI)', {tags: ['tulipindicators']}, () => {
@@ -270,7 +258,7 @@ describe('BollingerBands', () => {
   });
 });
 
-testReplaceContract({
+testIndicatorContract({
   create: () => new BollingerBands(5, 2),
   divergentInput: 1_000,
   inputs: [81.59, 81.06, 82.87, 83.0, 83.61, 83.15],

@@ -1,4 +1,4 @@
-import {testReplaceContract} from '../../fixtures/testReplaceContract.js';
+import {testIndicatorContract} from '../../fixtures/testIndicatorContract.js';
 import {REI} from './REI.js';
 import {TradingSignal} from '../../base/index.js';
 
@@ -199,17 +199,6 @@ describe('REI', () => {
 
       expect(rei.getResultOrThrow().toFixed(2)).toBe('-14.99');
     });
-
-    it('returns null until there are enough data points', () => {
-      const interval = 8;
-      const rei = new REI(interval);
-
-      for (let i = 0; i < 15; i++) {
-        rei.add({close: i, high: i, low: i});
-      }
-
-      expect(rei.getResult()).toBeNull();
-    });
   });
 
   describe('getSignal', () => {
@@ -257,7 +246,7 @@ describe('REI', () => {
   });
 });
 
-testReplaceContract({
+testIndicatorContract({
   create: () => new REI(8),
   divergentInput: {close: 3_000, high: 4_000, low: 2_000},
   inputs: [

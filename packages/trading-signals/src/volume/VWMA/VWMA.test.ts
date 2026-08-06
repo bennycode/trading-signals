@@ -1,6 +1,5 @@
-import {testReplaceContract} from '../../fixtures/testReplaceContract.js';
+import {testIndicatorContract} from '../../fixtures/testIndicatorContract.js';
 import {VWMA} from './VWMA.js';
-import {NotEnoughDataError} from '../../error/index.js';
 import {TradingSignal} from '../../base/index.js';
 import {EMA} from '../../trend/EMA/EMA.js';
 
@@ -53,18 +52,6 @@ describe('VWMA', () => {
       }
 
       expect(vwmaWeighted.getResultOrThrow()).toBeGreaterThan(vwmaEven.getResultOrThrow());
-    });
-
-    it('throws an error when there is not enough input data', () => {
-      const vwma = new VWMA(5);
-      expect(vwma.isStable).toBe(false);
-
-      try {
-        vwma.getResultOrThrow();
-        throw new Error('Expected error');
-      } catch (error) {
-        expect(error).toBeInstanceOf(NotEnoughDataError);
-      }
     });
 
     it('returns null when all volumes are zero', () => {
@@ -201,7 +188,7 @@ describe('VWMA', () => {
   });
 });
 
-testReplaceContract({
+testIndicatorContract({
   create: () => new VWMA(3),
   divergentInput: {close: 500, high: 510, low: 490, volume: 99_000},
   inputs: [

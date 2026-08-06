@@ -1,4 +1,4 @@
-import {testReplaceContract} from '../../fixtures/testReplaceContract.js';
+import {testIndicatorContract} from '../../fixtures/testIndicatorContract.js';
 import {AD} from './AD.js';
 import {TradingSignal} from '../../base/index.js';
 
@@ -82,7 +82,7 @@ describe('AD', () => {
   });
 });
 
-testReplaceContract({
+testIndicatorContract({
   create: () => new AD(),
   divergentInput: {close: 509, high: 510, low: 490, volume: 99_000},
   inputs: [

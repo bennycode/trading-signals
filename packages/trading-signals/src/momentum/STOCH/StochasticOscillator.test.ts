@@ -1,6 +1,5 @@
-import {testReplaceContract} from '../../fixtures/testReplaceContract.js';
+import {testIndicatorContract} from '../../fixtures/testIndicatorContract.js';
 import {StochasticOscillator} from './StochasticOscillator.js';
-import {NotEnoughDataError} from '../../error/index.js';
 import {TradingSignal} from '../../base/index.js';
 import candles from '../../fixtures/STOCH/candles.json' with {type: 'json'};
 
@@ -62,24 +61,6 @@ describe('StochasticOscillator', () => {
   });
 
   describe('getResultOrThrow', () => {
-    it('throws an error when there is not enough input data', () => {
-      const stoch = new StochasticOscillator({dPeriod: 3, kPeriod: 5, kSlowingPeriod: 3});
-
-      stoch.add({close: 1, high: 1, low: 1});
-      stoch.add({close: 1, high: 2, low: 1});
-      stoch.add({close: 1, high: 3, low: 1});
-      stoch.add({close: 1, high: 4, low: 1});
-      stoch.add({close: 1, high: 5, low: 1}); // Emits 1st of 3 required values for %d period
-      stoch.add({close: 1, high: 6, low: 1}); // Emits 2nd of 3 required values for %d period
-
-      try {
-        stoch.getResultOrThrow();
-        throw new Error('Expected error');
-      } catch (error) {
-        expect(error).toBeInstanceOf(NotEnoughDataError);
-      }
-    });
-
     it('prevents division by zero errors when highest high and lowest low have the same value', () => {
       const stoch = new StochasticOscillator({dPeriod: 3, kPeriod: 5, kSlowingPeriod: 3});
       stoch.updates(
@@ -159,7 +140,7 @@ describe('StochasticOscillator', () => {
   });
 });
 
-testReplaceContract({
+testIndicatorContract({
   create: () => new StochasticOscillator({dPeriod: 3, kPeriod: 5, kSlowingPeriod: 3}),
   divergentInput: {close: 95, high: 100, low: 10},
   inputs: [

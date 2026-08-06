@@ -1,5 +1,4 @@
-import {testReplaceContract} from '../../fixtures/testReplaceContract.js';
-import {NotEnoughDataError} from '../../error/NotEnoughDataError.js';
+import {testIndicatorContract} from '../../fixtures/testIndicatorContract.js';
 import {HigherLowTrail} from './HigherLowTrail.js';
 
 describe('HigherLowTrail', () => {
@@ -100,15 +99,6 @@ describe('HigherLowTrail', () => {
 
       expect(detected).toEqual([5]);
     });
-
-    it('throws when accessed before enough data has been added', () => {
-      const trail = new HigherLowTrail({lookback: 1});
-
-      trail.add({high: 12, low: 10});
-
-      expect(() => trail.getResultOrThrow()).toThrow(NotEnoughDataError);
-      expect(trail.isStable).toBe(false);
-    });
   });
 
   describe('replace', () => {
@@ -185,7 +175,7 @@ describe('HigherLowTrail', () => {
   });
 });
 
-testReplaceContract({
+testIndicatorContract({
   create: () => new HigherLowTrail({lookback: 1}),
   divergentInput: {high: 1_000, low: 1},
   inputs: [

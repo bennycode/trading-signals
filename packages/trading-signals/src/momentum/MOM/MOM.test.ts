@@ -1,6 +1,5 @@
-import {testReplaceContract} from '../../fixtures/testReplaceContract.js';
+import {testIndicatorContract} from '../../fixtures/testIndicatorContract.js';
 import {MOM} from './MOM.js';
-import {NotEnoughDataError} from '../../error/index.js';
 import {TradingSignal} from '../../base/Indicator.js';
 
 describe('MOM', () => {
@@ -44,17 +43,6 @@ describe('MOM', () => {
 
       expect(momentum.isStable).toBe(true);
       expect(momentum.getRequiredInputs()).toBe(6);
-    });
-
-    it('throws an error when there is not enough input data', () => {
-      const momentum = new MOM(5);
-
-      try {
-        momentum.getResultOrThrow();
-        throw new Error('Expected error');
-      } catch (error) {
-        expect(error).toBeInstanceOf(NotEnoughDataError);
-      }
     });
   });
 
@@ -117,7 +105,7 @@ describe('MOM', () => {
   });
 });
 
-testReplaceContract({
+testIndicatorContract({
   create: () => new MOM(5),
   divergentInput: 1_000,
   inputs: [81.59, 81.06, 82.87, 83.0, 83.61, 83.15, 82.84],

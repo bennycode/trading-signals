@@ -1,4 +1,4 @@
-import {testReplaceContract} from '../../fixtures/testReplaceContract.js';
+import {testIndicatorContract} from '../../fixtures/testIndicatorContract.js';
 import {IQR} from './IQR.js';
 
 describe('IQR', () => {
@@ -107,7 +107,7 @@ describe('IQR', () => {
   });
 });
 
-testReplaceContract({
+testIndicatorContract({
   create: () => new IQR(5),
   divergentInput: 1_000,
   inputs: [7, 7, 31, 31, 47, 75],

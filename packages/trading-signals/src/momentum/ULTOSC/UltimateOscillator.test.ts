@@ -1,6 +1,5 @@
-import {testReplaceContract} from '../../fixtures/testReplaceContract.js';
+import {testIndicatorContract} from '../../fixtures/testIndicatorContract.js';
 import {UltimateOscillator} from './UltimateOscillator.js';
-import {NotEnoughDataError} from '../../error/index.js';
 import {TradingSignal} from '../../base/index.js';
 
 describe('UltimateOscillator', () => {
@@ -143,17 +142,6 @@ describe('UltimateOscillator', () => {
 
       expect(ultosc.getResultOrThrow()).toBe(50);
     });
-
-    it('throws an error when there is not enough input data', () => {
-      const ultosc = new UltimateOscillator();
-
-      try {
-        ultosc.getResultOrThrow();
-        throw new Error('Expected error');
-      } catch (error) {
-        expect(error).toBeInstanceOf(NotEnoughDataError);
-      }
-    });
   });
 
   describe('getSignal', () => {
@@ -214,7 +202,7 @@ describe('UltimateOscillator', () => {
   });
 });
 
-testReplaceContract({
+testIndicatorContract({
   create: () => new UltimateOscillator({longPeriod: 5, mediumPeriod: 3, shortPeriod: 2}),
   divergentInput: {close: 1_000, high: 1_100, low: 900},
   inputs: [

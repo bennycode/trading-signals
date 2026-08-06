@@ -1,4 +1,4 @@
-import {testReplaceContract} from '../../fixtures/testReplaceContract.js';
+import {testIndicatorContract} from '../../fixtures/testIndicatorContract.js';
 import {EMA, SMA} from '../../index.js';
 import twoDays from '../../fixtures/DMA/LTC-USDT-1h-2d.json' with {type: 'json'};
 import {DMA} from './DMA.js';
@@ -93,7 +93,7 @@ describe('DMA', () => {
   });
 });
 
-testReplaceContract({
+testIndicatorContract({
   create: () => new DMA(3, 6, SMA),
   divergentInput: 1_000,
   inputs: [41, 37, 20.9, 100, 30.71, 40, 30],

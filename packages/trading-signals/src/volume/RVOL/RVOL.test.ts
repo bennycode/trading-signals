@@ -1,5 +1,4 @@
-import {testReplaceContract} from '../../fixtures/testReplaceContract.js';
-import {NotEnoughDataError} from '../../error/index.js';
+import {testIndicatorContract} from '../../fixtures/testIndicatorContract.js';
 import {RVOL} from './RVOL.js';
 
 describe('RVOL', () => {
@@ -87,12 +86,6 @@ describe('RVOL', () => {
     expect(rvol.getResultOrThrow()).toBeCloseTo(200 / ((100 + 100 + 200) / 3), 4);
   });
 
-  it('throws NotEnoughDataError before warm-up completes', () => {
-    const rvol = new RVOL(5);
-    rvol.add(100);
-    expect(() => rvol.getResultOrThrow()).toThrowError(NotEnoughDataError);
-  });
-
   it('replaces the most recent value', () => {
     const rvol = new RVOL(3);
     [100, 100, 100].forEach(v => rvol.add(v));
@@ -156,7 +149,7 @@ describe('RVOL', () => {
   });
 });
 
-testReplaceContract({
+testIndicatorContract({
   create: () => new RVOL(3),
   divergentInput: 9_999,
   inputs: [100, 100, 100, 200, 300],

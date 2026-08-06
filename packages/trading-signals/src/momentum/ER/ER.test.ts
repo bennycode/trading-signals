@@ -1,6 +1,5 @@
-import {testReplaceContract} from '../../fixtures/testReplaceContract.js';
+import {testIndicatorContract} from '../../fixtures/testIndicatorContract.js';
 import {ER} from './ER.js';
-import {NotEnoughDataError} from '../../error/index.js';
 import {TradingSignal} from '../../base/Indicator.js';
 
 describe('ER', () => {
@@ -73,17 +72,6 @@ describe('ER', () => {
       }
 
       expect(er.getResultOrThrow()).toBe(0);
-    });
-
-    it('throws an error when there is not enough input data', () => {
-      const er = new ER(5);
-
-      try {
-        er.getResultOrThrow();
-        throw new Error('Expected error');
-      } catch (error) {
-        expect(error).toBeInstanceOf(NotEnoughDataError);
-      }
     });
   });
 
@@ -194,7 +182,7 @@ describe('ER', () => {
   });
 });
 
-testReplaceContract({
+testIndicatorContract({
   create: () => new ER(3),
   divergentInput: {close: 1_000, high: 1_100, low: 900},
   inputs: [

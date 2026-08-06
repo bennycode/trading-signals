@@ -1,4 +1,4 @@
-import {testReplaceContract} from '../../fixtures/testReplaceContract.js';
+import {testIndicatorContract} from '../../fixtures/testIndicatorContract.js';
 import {PSAR} from './PSAR.js';
 import {NotEnoughDataError} from '../../error/index.js';
 
@@ -963,7 +963,7 @@ describe('PSAR', () => {
   });
 });
 
-testReplaceContract({
+testIndicatorContract({
   create: () => new PSAR({accelerationMax: 0.2, accelerationStep: 0.02}),
   divergentInput: {high: 999, low: 1},
   inputs: [

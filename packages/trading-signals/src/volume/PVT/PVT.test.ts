@@ -1,6 +1,5 @@
-import {testReplaceContract} from '../../fixtures/testReplaceContract.js';
+import {testIndicatorContract} from '../../fixtures/testIndicatorContract.js';
 import {PVT} from './PVT.js';
-import {NotEnoughDataError} from '../../error/index.js';
 import {TradingSignal} from '../../base/index.js';
 
 describe('PVT', () => {
@@ -38,18 +37,6 @@ describe('PVT', () => {
 
       expect(pvt.isStable).toBe(true);
       expect(pvt.getResultOrThrow()).toBe(0);
-    });
-
-    it('throws an error when there is not enough input data', () => {
-      const pvt = new PVT();
-      expect(pvt.isStable).toBe(false);
-
-      try {
-        pvt.getResultOrThrow();
-        throw new Error('Expected error');
-      } catch (error) {
-        expect(error).toBeInstanceOf(NotEnoughDataError);
-      }
     });
   });
 
@@ -148,7 +135,7 @@ describe('PVT', () => {
   });
 });
 
-testReplaceContract({
+testIndicatorContract({
   create: () => new PVT(),
   divergentInput: {close: 500, high: 500, low: 500, volume: 99_000},
   inputs: [

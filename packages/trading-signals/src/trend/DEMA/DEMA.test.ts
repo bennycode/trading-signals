@@ -1,6 +1,5 @@
-import {testReplaceContract} from '../../fixtures/testReplaceContract.js';
+import {testIndicatorContract} from '../../fixtures/testIndicatorContract.js';
 import {DEMA} from './DEMA.js';
-import {NotEnoughDataError} from '../../error/index.js';
 
 const dema10results = [
   81, 62.157024793388416, 65.1412471825695, 49.61361928829999, 42.570707415663364, 34.597495090487996,
@@ -55,17 +54,6 @@ describe('DEMA', () => {
       expect(dema.isStable).toBe(true);
       expect(dema.getRequiredInputs()).toBe(interval);
     });
-
-    it('throws an error when there is not enough input data', () => {
-      const dema = new DEMA(10);
-
-      try {
-        dema.getResultOrThrow();
-        throw new Error('Expected error');
-      } catch (error) {
-        expect(error).toBeInstanceOf(NotEnoughDataError);
-      }
-    });
   });
 
   describe('isStable', () => {
@@ -79,7 +67,7 @@ describe('DEMA', () => {
   });
 });
 
-testReplaceContract({
+testIndicatorContract({
   create: () => new DEMA(10),
   divergentInput: 1_000,
   inputs: [81, 24, 75, 21, 34, 25, 72, 92, 99, 2, 86, 80],

@@ -1,6 +1,5 @@
-import {testReplaceContract} from '../../fixtures/testReplaceContract.js';
+import {testIndicatorContract} from '../../fixtures/testIndicatorContract.js';
 import {EMV} from './EMV.js';
-import {NotEnoughDataError} from '../../error/index.js';
 import {TradingSignal} from '../../base/index.js';
 
 describe('EMV', () => {
@@ -24,18 +23,6 @@ describe('EMV', () => {
 
       expect(emv.isStable).toBe(true);
       expect(emv.getRequiredInputs()).toBe(6);
-    });
-
-    it('throws an error when there is not enough input data', () => {
-      const emv = new EMV(5);
-      expect(emv.isStable).toBe(false);
-
-      try {
-        emv.getResultOrThrow();
-        throw new Error('Expected error');
-      } catch (error) {
-        expect(error).toBeInstanceOf(NotEnoughDataError);
-      }
     });
   });
 
@@ -151,7 +138,7 @@ describe('EMV', () => {
   });
 });
 
-testReplaceContract({
+testIndicatorContract({
   create: () => new EMV(5),
   divergentInput: {close: 509, high: 510, low: 490, volume: 99_000},
   inputs: [

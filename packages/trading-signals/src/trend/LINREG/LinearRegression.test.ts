@@ -1,6 +1,5 @@
-import {testReplaceContract} from '../../fixtures/testReplaceContract.js';
+import {testIndicatorContract} from '../../fixtures/testIndicatorContract.js';
 import {LinearRegression} from '../../index.js';
-import {NotEnoughDataError} from '../../error/index.js';
 
 describe('LinearRegression', () => {
   describe('intercept (linregintercept)', () => {
@@ -100,11 +99,6 @@ describe('LinearRegression', () => {
   });
 
   describe('error handling', () => {
-    it('throws NotEnoughDataError when getting result without enough data', () => {
-      const linreg = new LinearRegression(5);
-      expect(() => linreg.getResultOrThrow()).toThrow(NotEnoughDataError);
-    });
-
     it('returns null when updating with insufficient data', () => {
       const linreg = new LinearRegression(5);
       expect(linreg.add(10)).toBeNull();
@@ -112,7 +106,7 @@ describe('LinearRegression', () => {
   });
 });
 
-testReplaceContract({
+testIndicatorContract({
   create: () => new LinearRegression(5),
   divergentInput: 1_000,
   inputs: [10, 11, 12, 13, 14, 15],

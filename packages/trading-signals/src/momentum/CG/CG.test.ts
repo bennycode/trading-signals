@@ -1,5 +1,4 @@
-import {testReplaceContract} from '../../fixtures/testReplaceContract.js';
-import {NotEnoughDataError} from '../../error/index.js';
+import {testIndicatorContract} from '../../fixtures/testIndicatorContract.js';
 import {TradingSignal} from '../../base/Indicator.js';
 import {CG} from './CG.js';
 
@@ -91,17 +90,6 @@ describe('CG', () => {
       expect(cg.getResultOrThrow().toFixed(4)).toBe('2.7059');
     });
 
-    it('throws an error when there is not enough input data', () => {
-      const cg = new CG(10, 20);
-
-      try {
-        cg.getResultOrThrow();
-        throw new Error('Expected error');
-      } catch (error) {
-        expect(error).toBeInstanceOf(NotEnoughDataError);
-      }
-    });
-
     it('is protected against division by zero errors', () => {
       const cg = new CG(1, 1);
       cg.add(0);
@@ -156,7 +144,7 @@ describe('CG', () => {
   });
 });
 
-testReplaceContract({
+testIndicatorContract({
   create: () => new CG(5, 10),
   divergentInput: 1_000,
   inputs: [100, 110, 120, 130, 140, 150, 160, 170, 180, 190, 200],

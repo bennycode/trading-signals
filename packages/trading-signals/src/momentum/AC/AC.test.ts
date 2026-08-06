@@ -1,5 +1,4 @@
-import {testReplaceContract} from '../../fixtures/testReplaceContract.js';
-import {NotEnoughDataError} from '../../error/index.js';
+import {testIndicatorContract} from '../../fixtures/testIndicatorContract.js';
 import {TradingSignal} from '../../base/Indicator.js';
 import {AC} from './AC.js';
 
@@ -295,20 +294,9 @@ describe('AC', () => {
        * https://github.com/jesse-ai/jesse/blob/53297462d48ebf43f9df46ab5005076d25073e5e/tests/test_indicators.py#L14
        */
       expect(ac.isStable).toBe(true);
-      expect(ac.getRequiredInputs()).toBe(39);
+      expect(ac.getRequiredInputs()).toBe(38);
       expect(ac.getResultOrThrow().toFixed(2)).toBe('-21.97');
       expect(ac.momentum.getResultOrThrow().toFixed(2)).toBe('-9.22');
-    });
-
-    it('throws an error when there is not enough input data', () => {
-      const ac = new AC(5, 34, 5);
-
-      try {
-        ac.getResultOrThrow();
-        throw new Error('Expected error');
-      } catch (error) {
-        expect(error).toBeInstanceOf(NotEnoughDataError);
-      }
     });
   });
 
@@ -385,7 +373,7 @@ describe('AC', () => {
   });
 });
 
-testReplaceContract({
+testIndicatorContract({
   create: () => new AC(5, 10, 5),
   divergentInput: {high: 1_000, low: 998},
   inputs: [

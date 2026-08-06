@@ -1,5 +1,4 @@
-import {testReplaceContract} from '../../fixtures/testReplaceContract.js';
-import {NotEnoughDataError} from '../../error/index.js';
+import {testIndicatorContract} from '../../fixtures/testIndicatorContract.js';
 import {TradingSignal} from '../../base/Indicator.js';
 import {CCI} from './CCI.js';
 
@@ -80,16 +79,6 @@ describe('CCI', () => {
 
       const actual = cci.getResultOrThrow().toFixed(2);
       expect(actual).toBe('71.93');
-    });
-
-    it('throws an error when there is not enough input data', () => {
-      const cci = new CCI(5);
-      try {
-        cci.getResultOrThrow();
-        throw new Error('Expected error');
-      } catch (error) {
-        expect(error).toBeInstanceOf(NotEnoughDataError);
-      }
     });
   });
 
@@ -186,7 +175,7 @@ describe('CCI', () => {
   });
 });
 
-testReplaceContract({
+testIndicatorContract({
   create: () => new CCI(5),
   divergentInput: {close: 1_000, high: 1_100, low: 900},
   inputs: [

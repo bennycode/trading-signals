@@ -1,6 +1,5 @@
-import {testReplaceContract} from '../../fixtures/testReplaceContract.js';
+import {testIndicatorContract} from '../../fixtures/testIndicatorContract.js';
 import {CMF} from './CMF.js';
-import {NotEnoughDataError} from '../../error/index.js';
 import {TradingSignal} from '../../base/index.js';
 
 describe('CMF', () => {
@@ -30,18 +29,6 @@ describe('CMF', () => {
       const result = cmf.getResultOrThrow();
 
       expect(result).toBeLessThan(0);
-    });
-
-    it('throws an error when there is not enough input data', () => {
-      const cmf = new CMF(5);
-      expect(cmf.isStable).toBe(false);
-
-      try {
-        cmf.getResultOrThrow();
-        throw new Error('Expected error');
-      } catch (error) {
-        expect(error).toBeInstanceOf(NotEnoughDataError);
-      }
     });
 
     it('handles candles where high equals low', () => {
@@ -153,7 +140,7 @@ describe('CMF', () => {
   });
 });
 
-testReplaceContract({
+testIndicatorContract({
   create: () => new CMF(5),
   divergentInput: {close: 509, high: 510, low: 490, volume: 99_000},
   inputs: [

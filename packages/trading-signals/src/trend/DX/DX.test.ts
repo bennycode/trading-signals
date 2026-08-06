@@ -1,4 +1,4 @@
-import {testReplaceContract} from '../../fixtures/testReplaceContract.js';
+import {testIndicatorContract} from '../../fixtures/testIndicatorContract.js';
 import {DX} from './DX.js';
 
 describe('DX', () => {
@@ -99,7 +99,7 @@ describe('DX', () => {
   });
 });
 
-testReplaceContract({
+testIndicatorContract({
   create: () => new DX(5),
   divergentInput: {close: 9_000, high: 9_000, low: 9_000},
   inputs: [

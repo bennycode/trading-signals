@@ -1,6 +1,5 @@
-import {testReplaceContract} from '../../fixtures/testReplaceContract.js';
+import {testIndicatorContract} from '../../fixtures/testIndicatorContract.js';
 import {ROC} from './ROC.js';
-import {NotEnoughDataError} from '../../error/index.js';
 import {TradingSignal} from '../../base/Indicator.js';
 
 describe('ROC', () => {
@@ -50,17 +49,6 @@ describe('ROC', () => {
         hasChanged: false,
         state: TradingSignal.BEARISH,
       });
-    });
-
-    it('throws an error when there is not enough input data', () => {
-      const roc = new ROC(6);
-
-      try {
-        roc.getResultOrThrow();
-        throw new Error('Expected error');
-      } catch (error) {
-        expect(error).toBeInstanceOf(NotEnoughDataError);
-      }
     });
   });
 
@@ -216,7 +204,7 @@ describe('ROC', () => {
   });
 });
 
-testReplaceContract({
+testIndicatorContract({
   create: () => new ROC(5),
   divergentInput: 1_000,
   inputs: [81.59, 81.06, 82.87, 83.0, 83.61, 83.15, 82.84],
