@@ -37,8 +37,8 @@ export class ScalpStrategy extends ProtectedStrategy {
   static override marketTypes: readonly MarketType[] = [MarketType.RANGING];
   static readonly ER_THRESHOLD = 0.4;
   /**
-   * Daily candles fetched for warm-up. The offset (ATR) and the Range Efficiency filter
-   * each need 14 daily bars; 30 leaves headroom for market holidays and shortened weeks.
+   * How many past days of price history to fetch for warm-up — enough for the offset and
+   * trend checks even across market holidays and shortened trading weeks.
    */
   static readonly WARMUP_DAYS = 30;
 
@@ -62,11 +62,9 @@ export class ScalpStrategy extends ProtectedStrategy {
   }
 
   /**
-   * Pre-seeds the EMA with recent history to skip the live warmup period. When no offset
-   * is configured, it is auto-computed from daily ATR (takes <5ms even on 20k+ candles).
-   *
-   * Also evaluates Range Efficiency (ER) to determine if the stock is scalp-friendly.
-   * Trending stocks (ER at or above {@link ScalpStrategy.ER_THRESHOLD}) are flagged as unsuitable.
+   * Pre-seeds the entry filter with recent history so the strategy can trade from the first
+   * live candle. When no offset is configured, one is derived from the stock's typical daily
+   * range. Stocks in a strong trend are flagged as unsuitable for scalping.
    */
   override async init(market: Pick<MarketDataSource, 'getRecentCandles'>, pair: TradingPair): Promise<void> {
     const candles = await market.getRecentCandles(pair, ScalpStrategy.WARMUP_DAYS, ONE_DAY_IN_MS);

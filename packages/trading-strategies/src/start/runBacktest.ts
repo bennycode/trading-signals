@@ -1,12 +1,21 @@
 import {readFile} from 'node:fs/promises';
 import {parseArgs} from 'node:util';
+import {config} from 'dotenv-defaults';
 import {z} from 'zod';
-import {AlpacaBrokerMock, CandleSchema, OrderType, TradingPair} from '@typedtrader/exchange';
+import {AlpacaBrokerMock, AlpacaMarketData, CandleSchema, OrderType, TradingPair} from '@typedtrader/exchange';
 import type {Candle, MarketDataSource} from '@typedtrader/exchange';
 import Big from 'big.js';
 import {BacktestExecutor} from '../backtest/BacktestExecutor.js';
 import {createStrategy, getStrategyNames} from '../strategy/StrategyRegistry.js';
 import {ScalpStrategy} from '../strategy-scalp/ScalpStrategy.js';
+
+/*
+ * The exchange package owns the credentials. Load its env so this script can run from
+ * trading-strategies/ without duplicating secrets. Its defaults file is deliberately not
+ * loaded — the placeholder values in there would masquerade as real credentials and trigger
+ * doomed live-warmup requests on machines without a configured .env.
+ */
+config({path: '../exchange/.env'});
 
 const {values} = parseArgs({
   options: {
@@ -91,16 +100,42 @@ const exchange = new AlpacaBrokerMock({
 });
 
 /*
- * 4. Warm up the strategy with the backtest file's own history, via a candle-array-backed
- * MarketDataSource stub. It deliberately ignores the requested count and interval and serves
- * the file's entire history: backtest files carry no data from before the backtest window to
- * warm up on, and strategies aggregate to the granularity they need (e.g. daily bars for
- * ATR/ER) anyway. This matches what strategies always saw in backtests — including the
- * look-ahead it implies (warm-up reads the same candles the backtest then replays), which is
- * a known trade-off of file-based runs.
+ * 4. Warm up the strategy. With Alpaca credentials configured, warmup candles are fetched
+ * live from just before the backtest window, so the warmup never sees the candles the
+ * backtest replays. Without credentials (or when the fetch fails, e.g. for non-Alpaca
+ * pairs), the file's own history is served instead — with the look-ahead that implies.
  */
+const alpacaApiKey = process.env.ALPACA_LIVE_API_KEY;
+const alpacaApiSecret = process.env.ALPACA_LIVE_API_SECRET;
+const liveMarketData =
+  alpacaApiKey && alpacaApiSecret
+    ? new AlpacaMarketData({apiKey: alpacaApiKey, apiSecret: alpacaApiSecret, usePaperTrading: false})
+    : null;
+
 const market: Pick<MarketDataSource, 'getRecentCandles'> = {
-  getRecentCandles: async () => candles,
+  getRecentCandles: async (pair, count, intervalInMillis) => {
+    if (liveMarketData) {
+      try {
+        // Over-ask 2x so weekends and market holidays still leave enough candles.
+        const spanInMillis = count * intervalInMillis * 2;
+        const preWindowCandles = await liveMarketData.getCandles(pair, {
+          intervalInMillis,
+          startTimeFirstCandle: new Date(firstCandle.openTimeInMillis - spanInMillis).toISOString(),
+          startTimeLastCandle: new Date(firstCandle.openTimeInMillis - intervalInMillis).toISOString(),
+        });
+
+        if (preWindowCandles.length > 0) {
+          console.log(`Warmup:    ${Math.min(count, preWindowCandles.length)} pre-window candles from Alpaca`);
+          return preWindowCandles.slice(-count);
+        }
+      } catch (error) {
+        console.warn(`Warmup:    live fetch failed (${error instanceof Error ? error.message : String(error)})`);
+      }
+    }
+
+    console.log('Warmup:    using the backtest file itself (includes the replayed window)');
+    return candles;
+  },
 };
 
 await strategy.init(market, tradingPair);

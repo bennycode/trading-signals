@@ -72,12 +72,8 @@ export abstract class Strategy implements TradingSessionStrategy {
   }
 
   /**
-   * Warm-up hook, invoked by the runtime (live `TradingSession` or the backtest runner)
-   * before the first candle is delivered, so a strategy can fetch history and pre-seed its
-   * indicators. The base implementation is a deliberate no-op so strategies without a
-   * warmup need implement nothing; overriding with a drifted signature fails the build —
-   * this method is checked against `TradingSessionStrategy` via `implements`, and every
-   * subclass override is checked against this method.
+   * Warm-up hook, called before the first candle so a strategy can fetch history and
+   * pre-seed its indicators. No-op by default — override to opt in.
    */
   async init(_market: Pick<MarketDataSource, 'getRecentCandles'>, _pair: TradingPair): Promise<void> {}
 
