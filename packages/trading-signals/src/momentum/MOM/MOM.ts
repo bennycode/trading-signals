@@ -28,7 +28,7 @@ export class MOM extends TrendIndicatorSeries {
   }
 
   update(value: number, replace: boolean) {
-    pushUpdate(this.#history, replace, value, this.#historyLength);
+    pushUpdate({array: this.#history, item: value, maxLength: this.#historyLength, replace: replace});
 
     if (this.#history.length === this.#historyLength) {
       return this.setResult(value - this.#history[0], replace);

@@ -30,7 +30,7 @@ export class ROC extends TrendIndicatorSeries {
      * Keeping the comparand inside the window makes `replace()` correct for free: the window is the
      * only state, so re-running the latest bar cannot read anything the previous bar left behind.
      */
-    pushUpdate(this.prices, replace, price, this.getRequiredInputs());
+    pushUpdate({array: this.prices, item: price, maxLength: this.getRequiredInputs(), replace: replace});
 
     if (this.prices.length === this.getRequiredInputs()) {
       const comparePrice = this.prices[0];

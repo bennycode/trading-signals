@@ -33,7 +33,7 @@ export class BollingerBands extends TechnicalIndicator<BandsResult, number> {
   }
 
   update(price: number, replace: boolean) {
-    pushUpdate(this.prices, replace, price, this.interval);
+    pushUpdate({array: this.prices, item: price, maxLength: this.interval, replace: replace});
 
     if (replace) {
       this.result = this.#previousResult;

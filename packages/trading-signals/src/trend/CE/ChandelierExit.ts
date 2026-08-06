@@ -52,7 +52,7 @@ export class ChandelierExit extends TechnicalIndicator<ChandelierExitResult, Hig
 
   update(candle: HighLowClose<number>, replace: boolean) {
     const atr = this.#atr.update(candle, replace);
-    pushUpdate(this.#candles, replace, candle, this.interval);
+    pushUpdate({array: this.#candles, item: candle, maxLength: this.interval, replace: replace});
 
     // The candle window fills in lockstep with the ATR warm-up, so this single guard covers both
     if (atr === null) {

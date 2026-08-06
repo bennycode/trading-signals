@@ -38,7 +38,7 @@ export class WilliamsR extends TrendIndicatorSeries<HighLowClose<number>> {
   }
 
   override update(candle: HighLowClose<number>, replace: boolean) {
-    pushUpdate(this.candles, replace, candle, this.interval);
+    pushUpdate({array: this.candles, item: candle, maxLength: this.interval, replace: replace});
 
     if (this.candles.length === this.interval) {
       let highest = this.candles[0].high;

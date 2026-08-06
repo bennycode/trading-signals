@@ -18,7 +18,7 @@ export class SMA extends MovingAverage {
   }
 
   update(price: number, replace: boolean) {
-    pushUpdate(this.prices, replace, price, this.interval);
+    pushUpdate({array: this.prices, item: price, maxLength: this.interval, replace: replace});
 
     if (this.prices.length === this.interval) {
       return this.setResult(getAverage(this.prices), replace);

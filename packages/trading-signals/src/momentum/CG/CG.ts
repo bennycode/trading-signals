@@ -60,7 +60,7 @@ export class CG extends TrendIndicatorSeries {
   }
 
   update(price: number, replace: boolean) {
-    pushUpdate(this.prices, replace, price, this.interval);
+    pushUpdate({array: this.prices, item: price, maxLength: this.interval, replace: replace});
 
     let nominator = 0;
     let denominator = 0;

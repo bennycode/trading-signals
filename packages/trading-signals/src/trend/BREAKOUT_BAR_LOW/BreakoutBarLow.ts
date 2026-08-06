@@ -48,7 +48,7 @@ export class BreakoutBarLow extends IndicatorSeries<HighLow> {
     }
     this.#lastEmitted = false;
 
-    pushUpdate(this.#highs, replace, candle.high, this.getRequiredInputs());
+    pushUpdate({array: this.#highs, item: candle.high, maxLength: this.getRequiredInputs(), replace: replace});
 
     if (this.#highs.length < this.getRequiredInputs()) {
       return null;

@@ -25,10 +25,40 @@ export type TradingSignals = (typeof TradingSignal)[keyof typeof TradingSignal];
 /**
  * Implements common update behaviour among indicators.
  */
-export abstract class TechnicalIndicator<Result, Input> implements Indicator<Result, Input> {
+export abstract class TechnicalIndicator<
+  Result,
+  Input,
+  State extends object = Record<string, never>,
+> implements Indicator<Result, Input> {
   protected result: Result | undefined;
+  /**
+   * Single container for every mutable field (beyond the result) that `update()` may change.
+   * Keeping such fields here instead of in loose class fields lets the base class rewind them
+   * generically on `replace()` (see {@link trackState}) and makes two indicator instances
+   * comparable via {@link getState}.
+   */
+  protected state: State = {} as State;
+  #previousState?: State;
 
   abstract getRequiredInputs(): number;
+
+  protected trackState(replace: boolean) {
+    if (replace) {
+      if (this.#previousState !== undefined) {
+        this.state = structuredClone(this.#previousState);
+      }
+    } else {
+      this.#previousState = structuredClone(this.state);
+    }
+  }
+
+  /**
+   * Snapshot of the result and the mutable state, so two indicator instances fed the same
+   * inputs can be compared.
+   */
+  getState() {
+    return structuredClone({...this.state, result: this.result});
+  }
 
   getResult() {
     try {
@@ -68,7 +98,10 @@ export abstract class TechnicalIndicator<Result, Input> implements Indicator<Res
 /**
  * Tracks results of an indicator over time.
  */
-export abstract class IndicatorSeries<Input = number> extends TechnicalIndicator<number, Input> {
+export abstract class IndicatorSeries<
+  Input = number,
+  State extends object = Record<string, never>,
+> extends TechnicalIndicator<number, Input, State> {
   protected previousResult?: number;
 
   protected setResult(value: number, replace: boolean) {
@@ -101,7 +134,8 @@ export abstract class IndicatorSeries<Input = number> extends TechnicalIndicator
 export abstract class TrendIndicatorSeries<
   Input = number,
   SignalState = TradingSignals,
-> extends IndicatorSeries<Input> {
+  State extends object = Record<string, never>,
+> extends IndicatorSeries<Input, State> {
   protected abstract calculateSignalState(result?: number | null | undefined): SignalState;
   #previousSignalState?: SignalState;
 
