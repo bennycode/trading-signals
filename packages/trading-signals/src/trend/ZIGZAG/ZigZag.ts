@@ -20,7 +20,7 @@ type ZigZagState = {
    * Whether the latest candle reversed the trend. ZigZag emits only on a reversal and its result
    * persists in between, so only a candle that emitted may withdraw that pivot when replaced.
    */
-  lastCandleReversed: boolean;
+  lastCandleReversedTrend: boolean;
   lowestExtreme: number | null;
 };
 
@@ -44,7 +44,7 @@ export class ZigZag extends IndicatorSeries<HighLow, ZigZagState> {
   protected override state: ZigZagState = {
     highestExtreme: null,
     isUp: false,
-    lastCandleReversed: false,
+    lastCandleReversedTrend: false,
     lowestExtreme: null,
   };
 
@@ -62,7 +62,7 @@ export class ZigZag extends IndicatorSeries<HighLow, ZigZagState> {
     const high = candle.high;
 
     // Read before trackState() rewinds the flag to what the candle before the replaced one found
-    if (replace && this.state.lastCandleReversed) {
+    if (replace && this.state.lastCandleReversedTrend) {
       this.rollbackLastResult();
     }
 
@@ -70,7 +70,7 @@ export class ZigZag extends IndicatorSeries<HighLow, ZigZagState> {
 
     const state = this.state;
 
-    state.lastCandleReversed = false;
+    state.lastCandleReversedTrend = false;
 
     if (state.lowestExtreme === null) {
       state.lowestExtreme = low;
@@ -89,7 +89,7 @@ export class ZigZag extends IndicatorSeries<HighLow, ZigZagState> {
       } else if (low < uptrendReversal) {
         state.isUp = false;
         state.lowestExtreme = low;
-        state.lastCandleReversed = true;
+        state.lastCandleReversedTrend = true;
         return this.setResult(state.highestExtreme, replace);
       }
     } else {
@@ -100,7 +100,7 @@ export class ZigZag extends IndicatorSeries<HighLow, ZigZagState> {
       } else if (high > downtrendReversal) {
         state.isUp = true;
         state.highestExtreme = high;
-        state.lastCandleReversed = true;
+        state.lastCandleReversedTrend = true;
         return this.setResult(state.lowestExtreme, replace);
       }
     }

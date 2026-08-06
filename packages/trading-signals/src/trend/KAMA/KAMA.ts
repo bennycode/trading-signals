@@ -26,7 +26,7 @@ export class KAMA extends MovingAverage {
   }
 
   update(price: number, replace: boolean) {
-    pushUpdate(this.#prices, replace, price, this.interval + 1);
+    pushUpdate({array: this.#prices, item: price, maxLength: this.interval + 1, replace: replace});
 
     if (this.#prices.length < this.interval) {
       return null;

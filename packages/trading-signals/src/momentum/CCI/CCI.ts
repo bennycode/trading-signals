@@ -66,7 +66,7 @@ export class CCI extends TrendIndicatorSeries<HighLowClose<number>> {
 
   #cacheTypicalPrice({close, high, low}: HighLowClose<number>, replace: boolean) {
     const typicalPrice = (high + low + close) / 3;
-    pushUpdate(this.#typicalPrices, replace, typicalPrice, this.interval);
+    pushUpdate({array: this.#typicalPrices, item: typicalPrice, maxLength: this.interval, replace: replace});
     return typicalPrice;
   }
 

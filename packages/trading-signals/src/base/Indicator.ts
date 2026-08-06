@@ -42,12 +42,6 @@ export abstract class TechnicalIndicator<
 
   abstract getRequiredInputs(): number;
 
-  /**
-   * Rewinds `state` by one bar on a replacement, or snapshots it before a regular add. Stateful
-   * indicators call this first in `update()`, so a replacement re-runs the latest bar from the
-   * exact state that bar originally saw — without per-field rollback bookkeeping, which is easy
-   * to get wrong when a field is forgotten.
-   */
   protected trackState(replace: boolean) {
     if (replace) {
       if (this.#previousState !== undefined) {
@@ -59,9 +53,8 @@ export abstract class TechnicalIndicator<
   }
 
   /**
-   * Snapshot of the result and the declared mutable state. Two indicators fed equivalent input
-   * series must produce identical snapshots, which makes state divergence visible as a diff in
-   * tests: `expect(a.getState()).toEqual(b.getState())`.
+   * Snapshot of the result and the mutable state, so two indicator instances fed the same
+   * inputs can be compared.
    */
   getState() {
     return structuredClone({...this.state, result: this.result});

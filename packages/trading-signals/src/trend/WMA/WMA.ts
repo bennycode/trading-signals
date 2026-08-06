@@ -23,7 +23,7 @@ export class WMA extends MovingAverage {
   }
 
   update(price: number, replace: boolean) {
-    pushUpdate(this.prices, replace, price, this.interval);
+    pushUpdate({array: this.prices, item: price, maxLength: this.interval, replace: replace});
 
     if (this.prices.length === this.interval) {
       const weightedPricesSum = this.prices.reduce((acc: number, price: number, index: number) => {

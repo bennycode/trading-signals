@@ -30,7 +30,7 @@ export class PVT extends TrendIndicatorSeries<HighLowCloseVolume, TradingSignals
     this.trackState(replace);
 
     // trackState() already rewound the window on a replacement, so the candle is always appended
-    pushUpdate(this.state.candles, false, candle, 2);
+    pushUpdate({array: this.state.candles, item: candle, maxLength: 2, replace: false});
 
     if (this.state.candles.length < 2) {
       return null;

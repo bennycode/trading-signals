@@ -38,7 +38,7 @@ export class EMV extends TrendIndicatorSeries<HighLowCloseVolume> {
   }
 
   update(candle: HighLowCloseVolume, replace: boolean) {
-    pushUpdate(this.#candles, replace, candle, 2);
+    pushUpdate({array: this.#candles, item: candle, maxLength: 2, replace: replace});
 
     if (this.#candles.length < 2) {
       return null;

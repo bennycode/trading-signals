@@ -25,7 +25,7 @@ export class OBV extends TrendIndicatorSeries<OpenHighLowCloseVolume<number>> {
   }
 
   update(candle: OpenHighLowCloseVolume<number>, replace: boolean) {
-    pushUpdate(this.candles, replace, candle, this.getRequiredInputs());
+    pushUpdate({array: this.candles, item: candle, maxLength: this.getRequiredInputs(), replace: replace});
 
     if (this.candles.length < this.getRequiredInputs()) {
       return null;

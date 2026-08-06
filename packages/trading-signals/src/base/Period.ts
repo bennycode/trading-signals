@@ -34,7 +34,7 @@ export class Period extends TechnicalIndicator<PeriodResult, number> {
   }
 
   update(value: number, replace: boolean) {
-    pushUpdate(this.values, replace, value, this.interval);
+    pushUpdate({array: this.values, item: value, maxLength: this.interval, replace: replace});
 
     if (this.values.length === this.interval) {
       this.#lowest = Math.min(...this.values);

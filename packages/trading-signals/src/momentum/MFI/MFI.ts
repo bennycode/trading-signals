@@ -38,7 +38,7 @@ export class MFI extends TrendIndicatorSeries<HighLowCloseVolume<number>> {
   }
 
   update(candle: HighLowCloseVolume<number>, replace: boolean) {
-    pushUpdate(this.#candles, replace, candle, this.getRequiredInputs());
+    pushUpdate({array: this.#candles, item: candle, maxLength: this.getRequiredInputs(), replace: replace});
 
     if (this.#candles.length < this.getRequiredInputs()) {
       return null;

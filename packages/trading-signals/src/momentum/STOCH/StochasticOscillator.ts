@@ -69,7 +69,7 @@ export class StochasticOscillator extends TechnicalIndicator<StochasticResult, H
   }
 
   update(candle: HighLowClose<number>, replace: boolean) {
-    pushUpdate(this.candles, replace, candle, this.kPeriod);
+    pushUpdate({array: this.candles, item: candle, maxLength: this.kPeriod, replace: replace});
 
     if (this.candles.length === this.kPeriod) {
       const highest = Math.max(...this.candles.map(candle => candle.high));

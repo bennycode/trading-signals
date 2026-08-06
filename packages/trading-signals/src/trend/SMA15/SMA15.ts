@@ -24,7 +24,7 @@ export class SMA15 extends MovingAverage {
   }
 
   update(price: number, replace: boolean) {
-    pushUpdate(this.prices, replace, price, this.getRequiredInputs());
+    pushUpdate({array: this.prices, item: price, maxLength: this.getRequiredInputs(), replace: replace});
 
     if (this.prices.length === this.getRequiredInputs()) {
       let weightedPricesSum = 0;
