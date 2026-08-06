@@ -40,12 +40,12 @@ vi.mock(import('trading-strategies'), () => ({
 
 vi.mock(import('../command/report/reportAdd.js'));
 
-const mockFindByUserId = vi.fn().mockReturnValue([]);
-const mockFindByUserIdAndId = vi.fn().mockReturnValue(undefined);
+const mockFindByUserId = vi.fn<typeof Account.findByUserId>().mockReturnValue([]);
+const mockFindByUserIdAndId = vi.fn<typeof Account.findByUserIdAndId>().mockReturnValue(undefined);
 vi.mock(import('../database/models/Account.js'), () => ({
   Account: {
-    findByUserId: (...args: unknown[]) => mockFindByUserId(...args),
-    findByUserIdAndId: (...args: unknown[]) => mockFindByUserIdAndId(...args),
+    findByUserId: (...args: Parameters<typeof Account.findByUserId>) => mockFindByUserId(...args),
+    findByUserIdAndId: (...args: Parameters<typeof Account.findByUserIdAndId>) => mockFindByUserIdAndId(...args),
   } as unknown as typeof Account,
 }));
 

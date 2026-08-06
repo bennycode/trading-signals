@@ -1,5 +1,22 @@
 # Vitest Module Mocking
 
+## Type every `vi.fn()` that feeds data into the code under test
+
+The `no-unsafe-*` lint rules catch an untyped mock's `any` when it is _read_ (destructured calls, member access, returns). They cannot catch the input side: `vi.fn().mockResolvedValue(wrongShape)` silently feeds garbage into the code under test as if it were typed data. So any `vi.fn()` whose return value the code consumes — `mockResolvedValue`, `mockReturnValue`, `mockImplementation` with a payload — must carry its real signature.
+
+```ts
+// ❌ Bad: payload is unchecked — a wrong shape passes the type checker
+const getBalances = vi.fn().mockResolvedValue({basee: new Big(1)});
+
+// ✅ Good: signature makes the payload compiler-checked
+const getBalances = vi.fn<AlpacaBroker['getAvailableBalances']>().mockResolvedValue({
+  base: new Big(1),
+  counter: new Big(5000),
+});
+```
+
+Derive the signature instead of hand-writing it: `SomeType['method']`, `typeof SomeClass.staticMethod`, or `NonNullable<SomeType['optionalMethod']>`. A bare `vi.fn()` remains fine for pure call-recording sinks (`toHaveBeenCalledTimes` and friends) where no data flows in either direction.
+
 ## Always use the typed `import()` form
 
 Never pass a string path to `vi.mock` — pass the module via `import()`. The factory is then checked against the real module's shape, so a renamed or removed export fails at type-check instead of at runtime, and `importOriginal` is fully typed (no generics needed).

@@ -1,3 +1,4 @@
+import assert from 'node:assert/strict';
 import Big from 'big.js';
 import type {Mock} from 'vitest';
 import {EventEmitter} from 'node:events';
@@ -443,7 +444,7 @@ describe('TradingSession', {concurrent: false}, () => {
       };
       strategy.onCandle.mockResolvedValue(advice);
 
-      const onError = vi.fn();
+      const onError = vi.fn<(error: Error) => void>();
       session.on('error', onError);
 
       await session.start();
@@ -452,7 +453,7 @@ describe('TradingSession', {concurrent: false}, () => {
       await vi.waitFor(() => expect(onError).toHaveBeenCalledTimes(1));
 
       const [[error]] = onError.mock.calls;
-      expect(error).toBeInstanceOf(OrderSizeBelowMinimumError);
+      assert.ok(error instanceof OrderSizeBelowMinimumError);
       expect(error.side).toBe(OrderSide.SELL);
       expect(error.amountIn).toBe('base');
       expect(error.size).toBe('0');
@@ -480,7 +481,7 @@ describe('TradingSession', {concurrent: false}, () => {
       };
       strategy.onCandle.mockResolvedValue(advice);
 
-      const onError = vi.fn();
+      const onError = vi.fn<(error: Error) => void>();
       session.on('error', onError);
 
       await session.start();
@@ -489,7 +490,7 @@ describe('TradingSession', {concurrent: false}, () => {
       await vi.waitFor(() => expect(onError).toHaveBeenCalledTimes(1));
 
       const [[error]] = onError.mock.calls;
-      expect(error).toBeInstanceOf(OrderSizeBelowMinimumError);
+      assert.ok(error instanceof OrderSizeBelowMinimumError);
       expect(error.side).toBe(OrderSide.SELL);
       expect(error.amountIn).toBe('base');
       expect(error.size).toBe('0.001');
@@ -500,7 +501,7 @@ describe('TradingSession', {concurrent: false}, () => {
     it('emits error when strategy.onCandle throws', async () => {
       strategy.onCandle.mockRejectedValue(new Error('Strategy crashed'));
 
-      const onError = vi.fn();
+      const onError = vi.fn<(error: Error) => void>();
       session.on('error', onError);
 
       await session.start();

@@ -10,7 +10,11 @@ import type {Account} from '../database/models/Account.js';
 import type {Strategy, StrategyAttributes} from '../database/models/Strategy.js';
 
 const {mockAccountModel, mockSession, mockStrategy, mockStrategyModel, TradingSessionMock} = vi.hoisted(() => {
-  const session = {on: vi.fn(), start: vi.fn(), stop: vi.fn()};
+  const session = {
+    on: vi.fn<(event: string, listener: (error: Error) => void) => void>(),
+    start: vi.fn(),
+    stop: vi.fn(),
+  };
   return {
     mockAccountModel: {findByPk: vi.fn()},
     mockSession: session,
