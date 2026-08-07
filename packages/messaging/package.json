@@ -45,6 +45,7 @@
     "@grammyjs/conversations": "^2.1.1",
     "@typedtrader/exchange": "0.3.2",
     "@types/big.js": "^7.0.0",
+    "better-sqlite3": "^13.0.1",
     "better-sqlite3-multiple-ciphers": "^12.11.1",
     "big.js": "^7.0.1",
     "dotenv-defaults": "^6.0.0",
