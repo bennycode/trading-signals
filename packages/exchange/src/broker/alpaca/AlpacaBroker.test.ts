@@ -222,6 +222,7 @@ describe('AlpacaBroker', {concurrent: false}, () => {
 
   describe('placeOrder', () => {
     const isUuid = (value: string) => z.uuid({version: 'v4'}).safeParse(value).success;
+    const uuidMatcher: unknown = expect.toSatisfy(isUuid);
 
     it('places a stock MARKET BUY order with notional amount', async () => {
       mockMethods.postOrder.mockResolvedValue({
@@ -243,7 +244,7 @@ describe('AlpacaBroker', {concurrent: false}, () => {
       expect(order.id).toBe('order-123');
       expect(order.size).toBe('200');
       expect(mockMethods.postOrder).toHaveBeenCalledWith({
-        client_order_id: expect.toSatisfy(isUuid),
+        client_order_id: uuidMatcher,
         notional: '200',
         side: 'buy',
         symbol: 'SHOP',
@@ -272,7 +273,7 @@ describe('AlpacaBroker', {concurrent: false}, () => {
       expect(order.type).toBe(OrderType.LIMIT);
       expect(order.id).toBe('order-456');
       expect(mockMethods.postOrder).toHaveBeenCalledWith({
-        client_order_id: expect.toSatisfy(isUuid),
+        client_order_id: uuidMatcher,
         limit_price: '100',
         qty: '5',
         side: 'sell',
@@ -302,7 +303,7 @@ describe('AlpacaBroker', {concurrent: false}, () => {
       expect(order.type).toBe(OrderType.LIMIT);
       expect(order.id).toBe('order-frac');
       expect(mockMethods.postOrder).toHaveBeenCalledWith({
-        client_order_id: expect.toSatisfy(isUuid),
+        client_order_id: uuidMatcher,
         extended_hours: true,
         limit_price: '100',
         qty: '5.5',
@@ -333,7 +334,7 @@ describe('AlpacaBroker', {concurrent: false}, () => {
       });
 
       expect(mockMethods.postOrder).toHaveBeenCalledWith({
-        client_order_id: expect.toSatisfy(isUuid),
+        client_order_id: uuidMatcher,
         notional: '100',
         side: 'buy',
         symbol: 'BTC/USD',
@@ -356,7 +357,10 @@ describe('AlpacaBroker', {concurrent: false}, () => {
       await exchange.placeMarketOrder(pair, options);
       await exchange.placeMarketOrder(pair, options);
 
-      const clientOrderIds = mockMethods.postOrder.mock.calls.map(([params]) => params.client_order_id);
+      const clientOrderIds = mockMethods.postOrder.mock.calls.map(call => {
+        const [params] = call as Parameters<AlpacaAPI['postOrder']>;
+        return params.client_order_id;
+      });
       expect(clientOrderIds).toHaveLength(2);
       for (const clientOrderId of clientOrderIds) {
         expect(clientOrderId).toSatisfy(isUuid);
