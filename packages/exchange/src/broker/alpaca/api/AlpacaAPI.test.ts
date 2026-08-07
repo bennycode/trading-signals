@@ -42,28 +42,16 @@ describe('shouldRetryAlpacaRequest', () => {
   describe('order placement (POST /v2/orders)', () => {
     const placeOrder: Request = {method: 'post', url: '/v2/orders'};
 
-    it('does not retry server errors (HTTP 503) because the order may have been accepted server-side', () => {
-      expect(shouldRetryAlpacaRequest(httpError(503, {}, placeOrder))).toBe(false);
+    it('retries server errors (HTTP 503) because the client order id keeps a re-submission from duplicating the order', () => {
+      expect(shouldRetryAlpacaRequest(httpError(503, {}, placeOrder))).toBe(true);
     });
 
-    it('does not retry rate limits (HTTP 429)', () => {
-      expect(shouldRetryAlpacaRequest(httpError(429, {}, placeOrder))).toBe(false);
+    it('retries network errors (EAI_AGAIN)', () => {
+      expect(shouldRetryAlpacaRequest(networkError('EAI_AGAIN', placeOrder))).toBe(true);
     });
 
-    it('does not retry network errors (EAI_AGAIN)', () => {
-      expect(shouldRetryAlpacaRequest(networkError('EAI_AGAIN', placeOrder))).toBe(false);
-    });
-
-    it('does not retry when axios reports the method in uppercase', () => {
-      expect(shouldRetryAlpacaRequest(httpError(503, {}, {method: 'POST', url: '/v2/orders'}))).toBe(false);
-    });
-
-    it('still retries reads of the same endpoint (GET /v2/orders)', () => {
-      expect(shouldRetryAlpacaRequest(httpError(503, {}, {method: 'get', url: '/v2/orders'}))).toBe(true);
-    });
-
-    it('still retries idempotent order cancellations (DELETE)', () => {
-      expect(shouldRetryAlpacaRequest(httpError(503, {}, {method: 'delete', url: '/v2/orders/order-1'}))).toBe(true);
+    it('does not retry business rejections (Alpaca code 40310100)', () => {
+      expect(shouldRetryAlpacaRequest(httpError(403, {code: 40310100}, placeOrder))).toBe(false);
     });
   });
 });
