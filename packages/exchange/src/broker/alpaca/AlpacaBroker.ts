@@ -393,6 +393,7 @@ export class AlpacaBroker extends Broker implements MarketDataSource {
     const type = options.type === OrderType.MARKET ? 'market' : 'limit';
 
     const config: {
+      client_order_id: string;
       extended_hours?: boolean;
       limit_price?: string;
       notional?: string;
@@ -402,6 +403,14 @@ export class AlpacaBroker extends Broker implements MarketDataSource {
       time_in_force: string;
       type: string;
     } = {
+      /*
+       * The client-side id makes order placement safe to retry: a re-submission carries the same
+       * id, so if the original POST already landed server-side, Alpaca rejects the duplicate
+       * instead of opening a second position — and operators can reconcile any in-doubt
+       * submission by querying the id.
+       * @see https://docs.alpaca.markets/us/docs/working-with-orders#using-client-order-ids
+       */
+      client_order_id: randomUUID(),
       side,
       symbol,
       time_in_force,

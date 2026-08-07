@@ -1,5 +1,6 @@
 import Big from 'big.js';
 import {describe, expect, it, vi, beforeEach} from 'vitest';
+import {z} from 'zod';
 import {TradingPair} from '../TradingPair.js';
 import {OrderPosition, OrderSide, OrderType} from '../Broker.js';
 import {AlpacaAssetClass, AlpacaOrderSide, AlpacaOrderStatus, AlpacaOrderType} from './api/schema/OrderSchema.js';
@@ -220,6 +221,9 @@ describe('AlpacaBroker', {concurrent: false}, () => {
   });
 
   describe('placeOrder', () => {
+    const isUuid = (value: string) => z.uuid({version: 'v4'}).safeParse(value).success;
+    const uuidMatcher: unknown = expect.toSatisfy(isUuid);
+
     it('places a stock MARKET BUY order with notional amount', async () => {
       mockMethods.postOrder.mockResolvedValue({
         id: 'order-123',
@@ -240,6 +244,7 @@ describe('AlpacaBroker', {concurrent: false}, () => {
       expect(order.id).toBe('order-123');
       expect(order.size).toBe('200');
       expect(mockMethods.postOrder).toHaveBeenCalledWith({
+        client_order_id: uuidMatcher,
         notional: '200',
         side: 'buy',
         symbol: 'SHOP',
@@ -268,6 +273,7 @@ describe('AlpacaBroker', {concurrent: false}, () => {
       expect(order.type).toBe(OrderType.LIMIT);
       expect(order.id).toBe('order-456');
       expect(mockMethods.postOrder).toHaveBeenCalledWith({
+        client_order_id: uuidMatcher,
         limit_price: '100',
         qty: '5',
         side: 'sell',
@@ -297,6 +303,7 @@ describe('AlpacaBroker', {concurrent: false}, () => {
       expect(order.type).toBe(OrderType.LIMIT);
       expect(order.id).toBe('order-frac');
       expect(mockMethods.postOrder).toHaveBeenCalledWith({
+        client_order_id: uuidMatcher,
         extended_hours: true,
         limit_price: '100',
         qty: '5.5',
@@ -327,12 +334,38 @@ describe('AlpacaBroker', {concurrent: false}, () => {
       });
 
       expect(mockMethods.postOrder).toHaveBeenCalledWith({
+        client_order_id: uuidMatcher,
         notional: '100',
         side: 'buy',
         symbol: 'BTC/USD',
         time_in_force: 'gtc',
         type: 'market',
       });
+    });
+
+    it('sends a fresh client_order_id (UUID) with every placement so operators can reconcile failed submissions', async () => {
+      mockMethods.postOrder.mockResolvedValue({
+        id: 'order-123',
+        notional: '200',
+        qty: null,
+        side: AlpacaOrderSide.BUY,
+        type: AlpacaOrderType.MARKET,
+      });
+
+      const pair = new TradingPair('SHOP', 'USD');
+      const options = {side: OrderSide.BUY, size: '200', sizeInCounter: true} as const;
+      await exchange.placeMarketOrder(pair, options);
+      await exchange.placeMarketOrder(pair, options);
+
+      const clientOrderIds = mockMethods.postOrder.mock.calls.map(call => {
+        const [params] = call as Parameters<AlpacaAPI['postOrder']>;
+        return params.client_order_id;
+      });
+      expect(clientOrderIds).toHaveLength(2);
+      for (const clientOrderId of clientOrderIds) {
+        expect(clientOrderId).toSatisfy(isUuid);
+      }
+      expect(new Set(clientOrderIds).size).toBe(2);
     });
   });
 

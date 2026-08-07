@@ -154,8 +154,12 @@ export class AlpacaAPI {
     await this.#tradingClient.delete(`/v2/orders/${orderId}`);
   }
 
-  /** @see https://docs.alpaca.markets/reference/postorder */
+  /**
+   * @see https://docs.alpaca.markets/reference/postorder
+   * @see https://docs.alpaca.markets/us/docs/working-with-orders#using-client-order-ids
+   */
   async postOrder(params: {
+    client_order_id: string;
     extended_hours?: boolean;
     limit_price?: string;
     notional?: string;

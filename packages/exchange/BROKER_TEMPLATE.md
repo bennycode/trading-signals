@@ -38,6 +38,10 @@ Every broker has a thin outer class that owns `rest` + `ws`/`stream`, exposes en
 - **Per-endpoint retry-delay tables must match paginated URLs.** When a vendor's rate limit is per-endpoint (e.g. 1 req / 60s), use `startsWith` / prefix matching against the request URL so cursor-paginated follow-ups (`?cursor=…`) hit the same calibrated wait instead of busy-looping the default delay.
 - **`.env.defaults` selects the safe environment.** Default the `USE_PAPER` / `USE_SANDBOX` flag to `true` so a populated live API key alone does not fire orders on a real account.
 
+### Order submission reconciliation
+
+- **Send a client-generated order id with every placement** when the vendor supports it (e.g. Alpaca's `client_order_id`). A failed POST can then be reconciled: query by the client id to learn whether the original request landed, and a manual re-submission with the same id is deduplicated server-side. See https://docs.alpaca.markets/us/docs/working-with-orders#using-client-order-ids.
+
 ## API classes (skip when a quality vendor SDK exists)
 
 - **Skip the `XxxAPI` layer** when the vendor ships a typed, validated SDK and you don't need to override retry/validation. If wrapping it would just be `return sdk.foo(params)` for every method, call the SDK directly from `XxxBroker`.
