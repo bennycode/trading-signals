@@ -194,33 +194,38 @@ describe('BollingerBands', () => {
       expect(signal.state).toBe(TradingSignal.UNKNOWN);
     });
 
-    it('returns BULLISH when price breaks above the previous upper band', () => {
+    it('returns BULLISH when the price breaks above the upper band', () => {
       const bb = new BollingerBands(10, 2);
-      // Need 12 adds: 10 for the first result, 12th to have a previous result to compare against
+
+      // Fill the interval with flat prices so the bands stay narrow around 50
       for (let i = 0; i < 11; i++) {
         bb.add(50);
       }
-      // Now spike: signal compares 100 against the previous bands (all 50s → narrow bands)
+
       bb.add(100);
       const signal = bb.getSignal();
       expect(signal.state).toBe(TradingSignal.BULLISH);
     });
 
-    it('returns BEARISH when price breaks below the previous lower band', () => {
+    it('returns BEARISH when the price breaks below the lower band', () => {
       const bb = new BollingerBands(10, 2);
+
       for (let i = 0; i < 11; i++) {
         bb.add(50);
       }
+
       bb.add(0);
       const signal = bb.getSignal();
       expect(signal.state).toBe(TradingSignal.BEARISH);
     });
 
-    it('returns SIDEWAYS when price is between the previous bands', () => {
+    it('returns SIDEWAYS when the price stays between the bands', () => {
       const bb = new BollingerBands(10, 2);
+
       for (let i = 0; i < 11; i++) {
         bb.add(50 + (i % 2));
       }
+
       bb.add(50);
       const signal = bb.getSignal();
       expect(signal.state).toBe(TradingSignal.SIDEWAYS);
@@ -228,13 +233,15 @@ describe('BollingerBands', () => {
 
     it('tracks signal state changes', () => {
       const bb = new BollingerBands(10, 2);
-      // Build up stable data: 12 adds to get a previous result for comparison
+
+      // Flat prices keep the bands narrow around 50
       for (let i = 0; i < 12; i++) {
         bb.add(50);
       }
+
       expect(bb.getSignal().state).toBe(TradingSignal.SIDEWAYS);
 
-      // Spike up: compared against previous narrow bands → BULLISH
+      // Spike up: the price escapes the bands to the upside
       bb.add(100);
       const signal = bb.getSignal();
       expect(signal.state).toBe(TradingSignal.BULLISH);
@@ -243,17 +250,23 @@ describe('BollingerBands', () => {
 
     it('restores previous signal state on replace', () => {
       const bb = new BollingerBands(10, 2);
+
       for (let i = 0; i < 12; i++) {
         bb.add(50);
       }
+
       expect(bb.getSignal().state).toBe(TradingSignal.SIDEWAYS);
 
       // Add a spike, then replace it with a normal value
       bb.add(100);
-      expect(bb.getSignal().state).toBe(TradingSignal.BULLISH);
+      const signal = bb.getSignal();
+      expect(signal.state).toBe(TradingSignal.BULLISH);
+      expect(signal.hasChanged).toBe(true);
 
       bb.replace(50);
-      expect(bb.getSignal().state).toBe(TradingSignal.SIDEWAYS);
+      const restoredSignal = bb.getSignal();
+      expect(restoredSignal.state).toBe(TradingSignal.SIDEWAYS);
+      expect(restoredSignal.hasChanged).toBe(false);
     });
   });
 });
