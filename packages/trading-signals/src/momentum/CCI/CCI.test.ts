@@ -1,5 +1,5 @@
-import {NotEnoughDataError} from '../../error/index.js';
-import {TradingSignal} from '../../types/Indicator.js';
+import {testIndicatorContract} from '../../fixtures/testIndicatorContract.js';
+import {TradingSignal} from '../../base/Indicator.js';
 import {CCI} from './CCI.js';
 
 describe('CCI', () => {
@@ -62,7 +62,7 @@ describe('CCI', () => {
   });
 
   describe('getResultOrThrow', () => {
-    it('calculates the Commodity Channel Index (CCI)', () => {
+    it('calculates the Commodity Channel Index (CCI)', {tags: ['tulipindicators']}, () => {
       const interval = 5;
       const cci = new CCI(interval);
       const offset = cci.getRequiredInputs() - 1;
@@ -80,16 +80,6 @@ describe('CCI', () => {
       const actual = cci.getResultOrThrow().toFixed(2);
       expect(actual).toBe('71.93');
     });
-
-    it('throws an error when there is not enough input data', () => {
-      const cci = new CCI(5);
-      try {
-        cci.getResultOrThrow();
-        throw new Error('Expected error');
-      } catch (error) {
-        expect(error).toBeInstanceOf(NotEnoughDataError);
-      }
-    });
   });
 
   describe('getSignal', () => {
@@ -97,6 +87,25 @@ describe('CCI', () => {
       const cci = new CCI(5);
       const signal = cci.getSignal();
       expect(signal.state).toBe(TradingSignal.UNKNOWN);
+    });
+
+    it('respects custom overbought and oversold thresholds', () => {
+      const risingCandles = [
+        {close: 60, high: 61, low: 59},
+        {close: 70, high: 71, low: 69},
+        {close: 80, high: 81, low: 79},
+        {close: 90, high: 91, low: 89},
+        {close: 100, high: 101, low: 99},
+      ] as const;
+      const strictCci = new CCI(5, {overbought: 120});
+      const sensitiveCci = new CCI(5, {overbought: 110});
+
+      strictCci.updates(risingCandles, false);
+      sensitiveCci.updates(risingCandles, false);
+
+      expect(strictCci.getResultOrThrow().toFixed(2)).toBe('111.11');
+      expect(strictCci.getSignal().state).toBe(TradingSignal.SIDEWAYS);
+      expect(sensitiveCci.getSignal().state).toBe(TradingSignal.BULLISH);
     });
 
     it('returns OVERSOLD when CCI <= -100', () => {
@@ -164,4 +173,17 @@ describe('CCI', () => {
       expect(signal.state).toBe(TradingSignal.SIDEWAYS);
     });
   });
+});
+
+testIndicatorContract({
+  create: () => new CCI(5),
+  divergentInput: {close: 1_000, high: 1_100, low: 900},
+  inputs: [
+    {close: 81.59, high: 82.15, low: 81.29},
+    {close: 81.06, high: 81.89, low: 80.64},
+    {close: 82.87, high: 83.03, low: 81.31},
+    {close: 83.0, high: 83.3, low: 82.65},
+    {close: 83.61, high: 83.85, low: 83.07},
+    {close: 83.15, high: 83.9, low: 83.11},
+  ],
 });

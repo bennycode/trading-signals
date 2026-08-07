@@ -1,3 +1,4 @@
+import {testIndicatorContract} from '../../fixtures/testIndicatorContract.js';
 import {PSAR} from './PSAR.js';
 import {NotEnoughDataError} from '../../error/index.js';
 
@@ -25,7 +26,7 @@ describe('PSAR', () => {
     {date: '2005-11-21', high: 87.87, low: 87.01, psar: 85.76},
   ] as const;
 
-  it('calculates PSAR correctly', () => {
+  it('calculates PSAR correctly', {tags: ['tulipindicators']}, () => {
     const psar = new PSAR({accelerationMax: 0.2, accelerationStep: 0.02});
 
     const results = testData.map(candle => psar.add({high: candle.high, low: candle.low}));
@@ -48,21 +49,68 @@ describe('PSAR', () => {
     });
   });
 
-  it('handles replace correctly', () => {
-    const psar = new PSAR({accelerationMax: 0.2, accelerationStep: 0.02});
+  it('changes nothing when the latest candle is replaced with the same values', () => {
+    const candles = testData.map(({high, low}) => ({high, low}));
 
-    // Add first two candles
-    psar.add({high: testData[0].high, low: testData[0].low});
-    const initialResult = psar.add({high: testData[1].high, low: testData[1].low});
+    // Swept over every length because the carried state only diverges at some of them.
+    for (let length = 1; length <= candles.length; length++) {
+      const psar = new PSAR({accelerationMax: 0.2, accelerationStep: 0.02});
 
-    // Replace the second candle
-    const replacedResult = psar.replace({high: testData[1].high, low: testData[1].low});
+      psar.updates(candles.slice(0, length));
 
-    // Allow small differences due to floating point arithmetic
-    const diff = Math.abs((initialResult || 0) - (replacedResult || 0));
-    // Use a reasonable tolerance - 1% or 0.1 absolute
-    const tolerance = Math.max((initialResult || 0) * 0.01, 0.1);
-    expect(diff).toBeLessThanOrEqual(tolerance);
+      const resultBefore = psar.getResult();
+      const stableBefore = psar.isStable;
+
+      psar.replace(candles[length - 1]);
+
+      expect(psar.getResult(), `replacing candle ${length} with itself is a no-op`).toBe(resultBefore);
+      expect(psar.isStable, `and does not change stability at ${length} candles`).toBe(stableBefore);
+    }
+  });
+
+  it('reproduces an add-only series after a replacement', () => {
+    const candles = testData.slice(0, 20).map(({high, low}) => ({high, low}));
+    const decoy = {high: 999, low: 1};
+
+    const replaced = new PSAR({accelerationMax: 0.2, accelerationStep: 0.02});
+    replaced.updates(candles.slice(0, -1));
+    replaced.add(decoy);
+    const replacedResult = replaced.replace(candles[candles.length - 1]);
+
+    const reference = new PSAR({accelerationMax: 0.2, accelerationStep: 0.02});
+    const referenceResult = reference.updates(candles).at(-1);
+
+    expect(replacedResult, 'a replacement must undo the state the decoy candle left behind').toBe(referenceResult);
+  });
+
+  it('reproduces an add-only series when the decoy candle reversed the trend', () => {
+    const candles = testData.slice(0, 12).map(({high, low}) => ({high, low}));
+    // A deep low forces a long-to-short reversal, which resets acceleration and the extreme point.
+    const reversingDecoy = {high: 84, low: 40};
+
+    const replaced = new PSAR({accelerationMax: 0.2, accelerationStep: 0.02});
+    replaced.updates(candles.slice(0, -1));
+    replaced.add(reversingDecoy);
+    const replacedResult = replaced.replace(candles[candles.length - 1]);
+
+    const reference = new PSAR({accelerationMax: 0.2, accelerationStep: 0.02});
+    const referenceResult = reference.updates(candles).at(-1);
+
+    expect(replacedResult, 'a reversal caused by the replaced candle must be undone too').toBe(referenceResult);
+  });
+
+  it('treats repeated replacements before any input as replacing the same bar', () => {
+    const doubleReplaced = new PSAR({accelerationMax: 0.2, accelerationStep: 0.02});
+    doubleReplaced.replace({high: 22, low: 20});
+    doubleReplaced.replace({high: 10, low: 9});
+
+    const reference = new PSAR({accelerationMax: 0.2, accelerationStep: 0.02});
+    reference.add({high: 10, low: 9});
+
+    expect(
+      doubleReplaced.getState(),
+      'two replacements without any prior input must not act as two logical bars'
+    ).toEqual(reference.getState());
   });
 
   it('returns null when replacing without enough data', () => {
@@ -345,9 +393,9 @@ describe('PSAR', () => {
     psar.add({high: 9, low: 8});
 
     // Directly set the acceleration to just below max
-    psar['acceleration'] = 0.19;
-    psar['extreme'] = 8;
-    psar['isLong'] = false;
+    psar['state'].acceleration = 0.19;
+    psar['state'].extreme = 8;
+    psar['state'].isLong = false;
 
     /*
      * Now make a new low that will cause acceleration to exceed max
@@ -359,7 +407,7 @@ describe('PSAR', () => {
     expect(result).toBeGreaterThan(7);
 
     // Verify acceleration was capped
-    expect(psar['acceleration']).toBe(psar['accelerationMax']);
+    expect(psar['state'].acceleration).toBe(psar['accelerationMax']);
   });
 
   it('adjusts SAR on reversal when SAR >= low', () => {
@@ -413,7 +461,7 @@ describe('PSAR', () => {
     psar.update({high: 15, low: 14}, false);
 
     // Verify acceleration has hit the max at some point
-    expect(psar['acceleration']).toBe(psar['accelerationMax']);
+    expect(psar['state'].acceleration).toBe(psar['accelerationMax']);
   });
 
   it('caps acceleration when exceeding max in uptrend', () => {
@@ -424,9 +472,9 @@ describe('PSAR', () => {
     psar.update({high: 11, low: 10}, false);
 
     // Directly set acceleration to a specific value that will exceed max after one more step
-    psar['acceleration'] = psar['accelerationMax'] * 0.95;
-    psar['isLong'] = true;
-    psar['extreme'] = 11;
+    psar['state'].acceleration = psar['accelerationMax'] * 0.95;
+    psar['state'].isLong = true;
+    psar['state'].extreme = 11;
 
     /*
      * Make a new high that will cause acceleration to exceed max
@@ -435,7 +483,7 @@ describe('PSAR', () => {
     psar.update({high: 12, low: 11}, false);
 
     // Verify acceleration was capped at max (not higher)
-    expect(psar['acceleration']).toBe(psar['accelerationMax']);
+    expect(psar['state'].acceleration).toBe(psar['accelerationMax']);
   });
 
   it('adjusts SAR to previous high in short position', () => {
@@ -446,11 +494,11 @@ describe('PSAR', () => {
     psar.update({high: 9, low: 8}, false);
 
     // Directly set the state to test the specific code path
-    psar['isLong'] = false; // Downtrend
-    psar['lastSar'] = 8; // Set SAR
-    psar['extreme'] = 7; // Set extreme point
-    psar['prePreviousCandle'] = null; // Ensure no pre-previous influence
-    psar['previousCandle'] = {high: 9, low: 8}; // Previous candle with high > SAR
+    psar['state'].isLong = false; // Downtrend
+    psar['state'].lastSar = 8; // Set SAR
+    psar['state'].extreme = 7; // Set extreme point
+    psar['state'].prePreviousCandle = null; // Ensure no pre-previous influence
+    psar['state'].previousCandle = {high: 9, low: 8}; // Previous candle with high > SAR
 
     // This should hit line 299-301
     const result = psar.update({high: 7.5, low: 7}, false);
@@ -467,11 +515,11 @@ describe('PSAR', () => {
     psar.update({high: 9, low: 8}, false);
 
     // Set up a specific scenario to test lines 292-298
-    psar['isLong'] = false; // Downtrend
-    psar['lastSar'] = 8.5; // Set SAR
-    psar['extreme'] = 7; // Set extreme point
-    psar['prePreviousCandle'] = {high: 9, low: 8}; // prePreviousCandle.high > SAR
-    psar['previousCandle'] = {high: 8, low: 7}; // previousCandle.high < SAR
+    psar['state'].isLong = false; // Downtrend
+    psar['state'].lastSar = 8.5; // Set SAR
+    psar['state'].extreme = 7; // Set extreme point
+    psar['state'].prePreviousCandle = {high: 9, low: 8}; // prePreviousCandle.high > SAR
+    psar['state'].previousCandle = {high: 8, low: 7}; // previousCandle.high < SAR
 
     // This update should test line 292-293 (prePreviousCandle.high > sar) but skip 296-297
     const result = psar.update({high: 7.5, low: 7}, false);
@@ -488,11 +536,11 @@ describe('PSAR', () => {
     psar.update({high: 9, low: 8}, false);
 
     // Set up all with specific values
-    psar['isLong'] = false; // Downtrend
-    psar['lastSar'] = 8; // Set SAR
-    psar['extreme'] = 7; // Set extreme point
-    psar['prePreviousCandle'] = {high: 8.5, low: 7.5}; // prePreviousCandle exists with high < sar
-    psar['previousCandle'] = {high: 9.5, low: 8.5}; // previousCandle.high > SAR
+    psar['state'].isLong = false; // Downtrend
+    psar['state'].lastSar = 8; // Set SAR
+    psar['state'].extreme = 7; // Set extreme point
+    psar['state'].prePreviousCandle = {high: 8.5, low: 7.5}; // prePreviousCandle exists with high < sar
+    psar['state'].previousCandle = {high: 9.5, low: 8.5}; // previousCandle.high > SAR
 
     // First ensure high > sar to trigger prePreviousCandle branch, but only previousCandle.high > sar
     const result = psar.update({high: 8.2, low: 7.2}, false);
@@ -538,11 +586,11 @@ describe('PSAR', () => {
     psar.update({high: 9, low: 8}, false);
 
     // Set up a specific scenario to test lines 258-264
-    psar['isLong'] = true; // Uptrend
-    psar['lastSar'] = 7.5; // Set SAR
-    psar['extreme'] = 9; // Set extreme point
-    psar['prePreviousCandle'] = {high: 9, low: 8}; // prePreviousCandle.low > SAR
-    psar['previousCandle'] = {high: 8, low: 6}; // previousCandle.low < SAR
+    psar['state'].isLong = true; // Uptrend
+    psar['state'].lastSar = 7.5; // Set SAR
+    psar['state'].extreme = 9; // Set extreme point
+    psar['state'].prePreviousCandle = {high: 9, low: 8}; // prePreviousCandle.low > SAR
+    psar['state'].previousCandle = {high: 8, low: 6}; // previousCandle.low < SAR
 
     // This update should hit lines 262-264 with previousCandle.low < sar
     const result = psar.update({high: 8.5, low: 7}, false);
@@ -559,11 +607,11 @@ describe('PSAR', () => {
     psar.update({high: 9, low: 8}, false);
 
     // Directly set internal state
-    psar['isLong'] = true; // Uptrend
-    psar['lastSar'] = 8.5; // Set SAR above both lows
-    psar['extreme'] = 10; // Set extreme point
-    psar['prePreviousCandle'] = {high: 9, low: 7}; // prePreviousCandle.low < SAR
-    psar['previousCandle'] = {high: 10, low: 7.5}; // previousCandle.low < SAR
+    psar['state'].isLong = true; // Uptrend
+    psar['state'].lastSar = 8.5; // Set SAR above both lows
+    psar['state'].extreme = 10; // Set extreme point
+    psar['state'].prePreviousCandle = {high: 9, low: 7}; // prePreviousCandle.low < SAR
+    psar['state'].previousCandle = {high: 10, low: 7.5}; // previousCandle.low < SAR
 
     // This update should hit both lines 258-260 AND 262-264
     const result = psar.update({high: 11, low: 9.5}, false);
@@ -581,11 +629,11 @@ describe('PSAR', () => {
     psar.update({high: 9, low: 8}, false);
 
     // Set up a specific scenario to test line 258-260
-    psar['isLong'] = true; // Uptrend
-    psar['lastSar'] = 8; // Set SAR
-    psar['extreme'] = 9.5; // Set extreme point
-    psar['prePreviousCandle'] = {high: 9, low: 7.5}; // prePreviousCandle.low < SAR
-    psar['previousCandle'] = {high: 10, low: 8.5}; // previousCandle.low > SAR
+    psar['state'].isLong = true; // Uptrend
+    psar['state'].lastSar = 8; // Set SAR
+    psar['state'].extreme = 9.5; // Set extreme point
+    psar['state'].prePreviousCandle = {high: 9, low: 7.5}; // prePreviousCandle.low < SAR
+    psar['state'].previousCandle = {high: 10, low: 8.5}; // previousCandle.low > SAR
 
     // This update should specifically hit line 258-260 with prePreviousCandle.low < sar
     const result = psar.update({high: 10.5, low: 8}, false);
@@ -602,11 +650,11 @@ describe('PSAR', () => {
     psar.update({high: 11, low: 10}, false);
 
     // Set up a specific scenario to test line 99-101
-    psar['isLong'] = true;
-    psar['lastSar'] = 11; // Set SAR high
-    psar['extreme'] = 12;
-    psar['prePreviousCandle'] = {high: 12, low: 10.5}; // prePreviousCandle.low < sar
-    psar['previousCandle'] = {high: 12.5, low: 10.2}; // previousCandle.low < sar
+    psar['state'].isLong = true;
+    psar['state'].lastSar = 11; // Set SAR high
+    psar['state'].extreme = 12;
+    psar['state'].prePreviousCandle = {high: 12, low: 10.5}; // prePreviousCandle.low < sar
+    psar['state'].previousCandle = {high: 12.5, low: 10.2}; // previousCandle.low < sar
 
     /*
      * This update should hit both prePreviousLow and previousLow checks
@@ -670,13 +718,13 @@ describe('PSAR', () => {
     psar.update({high: 9, low: 8}, false); // First calculation
 
     // Set up a scenario where we're in a downtrend
-    psar['isLong'] = false;
-    psar['lastSar'] = 8;
-    psar['extreme'] = 7;
+    psar['state'].isLong = false;
+    psar['state'].lastSar = 8;
+    psar['state'].extreme = 7;
 
     // Set up a previous candle with high > sar but no pre-previous candle
-    psar['prePreviousCandle'] = null;
-    psar['previousCandle'] = {high: 8.5, low: 7.5};
+    psar['state'].prePreviousCandle = null;
+    psar['state'].previousCandle = {high: 8.5, low: 7.5};
 
     /*
      * This should test the specific branch on line 139-141
@@ -685,8 +733,8 @@ describe('PSAR', () => {
     psar.update({high: 7.5, low: 7}, false);
 
     // Now add a candle with prePreviousCandle to hit lines 136-138
-    psar['prePreviousCandle'] = {high: 8.5, low: 7.5};
-    psar['previousCandle'] = {high: 8.6, low: 7.6};
+    psar['state'].prePreviousCandle = {high: 8.5, low: 7.5};
+    psar['state'].previousCandle = {high: 8.6, low: 7.6};
 
     // Update with a price that triggers high > sar but only in previousCandle
     const result = psar.update({high: 8.1, low: 7.1}, false);
@@ -703,11 +751,11 @@ describe('PSAR', () => {
     psar.update({high: 11, low: 10}, false);
 
     // Set up a specific scenario to test line 102-104
-    psar['isLong'] = true;
-    psar['prePreviousCandle'] = null; // Ensure no pre-previous influence
-    psar['lastSar'] = 9.5; // Set SAR above previous low
-    psar['extreme'] = 11;
-    psar['previousCandle'] = {high: 11, low: 9}; // previousCandle.low < sar
+    psar['state'].isLong = true;
+    psar['state'].prePreviousCandle = null; // Ensure no pre-previous influence
+    psar['state'].lastSar = 9.5; // Set SAR above previous low
+    psar['state'].extreme = 11;
+    psar['state'].previousCandle = {high: 11, low: 9}; // previousCandle.low < sar
 
     /*
      * This should trigger the branch in line 102-104 where previousCandle.low < sar
@@ -736,8 +784,8 @@ describe('PSAR', () => {
     psar.update({high: 12, low: 11}, false);
 
     // 2. This update will create a previousCandle, and SAR will be below low
-    psar['lastSar'] = 12.5; // Setting high to ensure lt conditions are met
-    psar['isLong'] = true;
+    psar['state'].lastSar = 12.5; // Setting high to ensure lt conditions are met
+    psar['state'].isLong = true;
 
     // 3. Make low < sar, to trigger the branch where previousLow < sar
     const testCandle = {high: 15, low: 10}; // Low is less than SAR
@@ -753,8 +801,8 @@ describe('PSAR', () => {
     psarDown.add({high: 13, low: 12}); // Sets up prePreviousCandle
 
     // Set up specific state for hitting line 150-151
-    psarDown['isLong'] = false; // Downtrend
-    psarDown['lastSar'] = 10; // Low SAR
+    psarDown['state'].isLong = false; // Downtrend
+    psarDown['state'].lastSar = 10; // Low SAR
 
     // Execute with high > sar to hit the branch
     const downTrendResult = psarDown.add({high: 15, low: 12});
@@ -769,13 +817,13 @@ describe('PSAR', () => {
     psar.update({high: 9, low: 8}, false);
 
     // Set up a very specific scenario to target lines 137-138
-    psar['isLong'] = false;
-    psar['lastSar'] = 7;
-    psar['extreme'] = 6;
+    psar['state'].isLong = false;
+    psar['state'].lastSar = 7;
+    psar['state'].extreme = 6;
 
     // Set both prePreviousCandle.high > sar and previousCandle.high > sar
-    psar['prePreviousCandle'] = {high: 8, low: 7.5}; // prePrevious.high > sar
-    psar['previousCandle'] = {high: 7.5, low: 7}; // previous.high > sar
+    psar['state'].prePreviousCandle = {high: 8, low: 7.5}; // prePrevious.high > sar
+    psar['state'].previousCandle = {high: 7.5, low: 7}; // previous.high > sar
 
     // This update must hit both conditions and specifically lines 137-138
     const result = psar.update({high: 7.2, low: 6.8}, false);
@@ -869,8 +917,8 @@ describe('PSAR', () => {
     psar.update({high: 11, low: 10}, false);
 
     // Create a scenario where previousLow is less than SAR
-    psar['lastSar'] = 12; // SAR higher than previous low
-    psar['isLong'] = true;
+    psar['state'].lastSar = 12; // SAR higher than previous low
+    psar['state'].isLong = true;
 
     // This will call updateSARWithPreviousLow with previousLow < sar
     psar.update({high: 13, low: 11}, false);
@@ -883,8 +931,8 @@ describe('PSAR', () => {
     psarDownTrend.update({high: 12, low: 11}, false);
 
     // Set up conditions
-    psarDownTrend['lastSar'] = 10; // SAR lower than previous high
-    psarDownTrend['isLong'] = false;
+    psarDownTrend['state'].lastSar = 10; // SAR lower than previous high
+    psarDownTrend['state'].isLong = false;
 
     // This will call updateSARWithPreviousHigh with previousHigh > sar
     psarDownTrend.update({high: 11, low: 10}, false);
@@ -902,10 +950,10 @@ describe('PSAR', () => {
      * Use prePreviousCandle branch path but make sure previousLow is NOT < SAR
      * Set state for an uptrend with pre-previous candle
      */
-    psar['lastSar'] = 5; // SAR much lower than low price
-    psar['prePreviousCandle'] = {high: 9, low: 8};
-    psar['previousCandle'] = {high: 9.5, low: 8.5};
-    psar['isLong'] = true;
+    psar['state'].lastSar = 5; // SAR much lower than low price
+    psar['state'].prePreviousCandle = {high: 9, low: 8};
+    psar['state'].previousCandle = {high: 9.5, low: 8.5};
+    psar['state'].isLong = true;
 
     // This should hit the ternary operator with previousLow < sar = false
     psar.update({high: 10, low: 9}, false);
@@ -919,12 +967,27 @@ describe('PSAR', () => {
      * Use prePreviousCandle branch path but make sure previousHigh is NOT > SAR
      * Set state for a downtrend with pre-previous candle
      */
-    psarDownTrend['lastSar'] = 12; // SAR much higher than high price
-    psarDownTrend['prePreviousCandle'] = {high: 9, low: 8};
-    psarDownTrend['previousCandle'] = {high: 8.5, low: 7.5};
-    psarDownTrend['isLong'] = false;
+    psarDownTrend['state'].lastSar = 12; // SAR much higher than high price
+    psarDownTrend['state'].prePreviousCandle = {high: 9, low: 8};
+    psarDownTrend['state'].previousCandle = {high: 8.5, low: 7.5};
+    psarDownTrend['state'].isLong = false;
 
     // This should hit the ternary operator with previousHigh > sar = false
     psarDownTrend.update({high: 8, low: 7}, false);
   });
+});
+
+testIndicatorContract({
+  create: () => new PSAR({accelerationMax: 0.2, accelerationStep: 0.02}),
+  divergentInput: {high: 999, low: 1},
+  inputs: [
+    {high: 82.15, low: 81.29},
+    {high: 81.89, low: 80.64},
+    {high: 83.03, low: 81.31},
+    {high: 83.3, low: 82.65},
+    {high: 83.85, low: 83.07},
+    {high: 83.9, low: 83.11},
+    {high: 83.33, low: 82.49},
+    {high: 84.3, low: 82.3},
+  ],
 });

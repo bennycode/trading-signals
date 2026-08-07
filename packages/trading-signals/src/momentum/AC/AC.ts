@@ -1,6 +1,6 @@
 import {SMA} from '../../trend/SMA/SMA.js';
-import type {HighLow} from '../../types/HighLowClose.js';
-import {TrendIndicatorSeries, TradingSignal} from '../../types/Indicator.js';
+import type {HighLow} from '../../base/Candle.type.js';
+import {TrendIndicatorSeries, TradingSignal} from '../../base/Indicator.js';
 import {AO} from '../AO/AO.js';
 import {MOM} from '../MOM/MOM.js';
 
@@ -32,7 +32,8 @@ export class AC extends TrendIndicatorSeries<HighLow<number>> {
   }
 
   override getRequiredInputs() {
-    return this.ao.getRequiredInputs() + this.signal.getRequiredInputs();
+    // The bar that yields the first AO result is also the signal SMA's first input.
+    return this.ao.getRequiredInputs() + this.signal.getRequiredInputs() - 1;
   }
 
   update(input: HighLow<number>, replace: boolean) {

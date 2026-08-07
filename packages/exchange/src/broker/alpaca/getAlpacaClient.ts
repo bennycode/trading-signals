@@ -39,8 +39,6 @@ export function getAlpacaClient(options: {
    */
   marketData?: MarketDataSource;
 }) {
-  console.log('Initializing Alpaca client', {usePaperTrading: options.usePaperTrading});
-
   const ownedMarketData = options.marketData ? null : new AlpacaMarketData(options);
   const marketData = options.marketData ?? ownedMarketData!;
   const broker = new AlpacaBroker({...options, marketData});

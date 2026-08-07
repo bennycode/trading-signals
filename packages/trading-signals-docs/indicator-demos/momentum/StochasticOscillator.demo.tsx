@@ -2,7 +2,7 @@ import {Chart as HighchartsChart} from '@highcharts/react';
 import {StochasticOscillator as StochasticOscillatorClass} from 'trading-signals';
 import type {ReactNode} from 'react';
 import type {Candle} from '@typedtrader/exchange';
-import type {ChartDataPoint} from '../../components/Chart';
+import {createSharedTooltipFormatter, type ChartDataPoint} from '../../components/Chart';
 import {NotAvailable} from '../../components/NotAvailable';
 import PriceChart, {type PriceData} from '../../components/PriceChart';
 import {SignalBadge} from '../../components/SignalBadge';
@@ -11,7 +11,7 @@ import {collectPriceData} from '../../utils/renderUtils';
 import type {IndicatorConfig} from '../../utils/types';
 
 const renderStochastic = (config: IndicatorConfig, selectedCandles: Candle[]) => {
-  const stoch = new StochasticOscillatorClass(14, 3, 3);
+  const stoch = new StochasticOscillatorClass({dPeriod: 3, kPeriod: 14, kSlowingPeriod: 3});
   const chartDataK: ChartDataPoint[] = [];
   const chartDataD: ChartDataPoint[] = [];
   const priceData: PriceData[] = [];
@@ -40,7 +40,8 @@ const renderStochastic = (config: IndicatorConfig, selectedCandles: Candle[]) =>
     <div className="space-y-6">
       <div>
         <h2 className="text-2xl font-bold text-white mb-2 select-text">
-          StochasticOscillator({stoch.n}, {stoch.m}, {stoch.p}) / Required Inputs: {stoch.getRequiredInputs()}
+          StochasticOscillator({stoch.kPeriod}, {stoch.kSlowingPeriod}, {stoch.dPeriod}) / Required Inputs:{' '}
+          {stoch.getRequiredInputs()}
         </h2>
         <p className="text-slate-300 select-text">{config.description}</p>
         <p className="text-slate-400 text-sm mt-2 select-text">
@@ -78,14 +79,7 @@ const renderStochastic = (config: IndicatorConfig, selectedCandles: Candle[]) =>
             tooltip: {
               backgroundColor: '#1e293b',
               borderColor: '#475569',
-              formatter: function () {
-                let s: string = `<b>Period ${(this as any).x}</b><br/>`;
-                ((this as any).points as any[])?.forEach((point: any) => {
-                  const yValue = typeof point.y === 'number' ? point.y.toFixed(2) : 'N/A';
-                  s += `${point.series.name}: ${yValue}<br/>`;
-                });
-                return s;
-              },
+              formatter: createSharedTooltipFormatter(),
               shared: true,
               style: {color: '#e2e8f0'},
             },
@@ -142,7 +136,7 @@ const renderStochastic = (config: IndicatorConfig, selectedCandles: Candle[]) =>
 
 export const StochasticOscillator: IndicatorConfig = {
   color: '#ec4899',
-  createIndicator: () => new StochasticOscillatorClass(14, 3, 3),
+  createIndicator: () => new StochasticOscillatorClass({dPeriod: 3, kPeriod: 14, kSlowingPeriod: 3}),
   customRender: renderStochastic,
   description: 'Stochastic Oscillator',
   id: 'stoch',

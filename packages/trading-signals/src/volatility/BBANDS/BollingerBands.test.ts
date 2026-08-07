@@ -1,7 +1,7 @@
+import {testIndicatorContract} from '../../fixtures/testIndicatorContract.js';
 import {BollingerBands} from './BollingerBands.js';
 import data from '../../fixtures/BB/data.json' with {type: 'json'};
-import {NotEnoughDataError} from '../../error/index.js';
-import {TradingSignal} from '../../types/Indicator.js';
+import {TradingSignal} from '../../base/Indicator.js';
 
 describe('BollingerBands', () => {
   describe('prices', () => {
@@ -49,18 +49,21 @@ describe('BollingerBands', () => {
       expect(bb.deviationMultiplier).toBe(2);
     });
 
-    it('throws an error when there is not enough input data', () => {
-      const bb = new BollingerBands(20);
+    it('emits the first result as soon as the interval is filled', () => {
+      const bb = new BollingerBands(5, 2);
+      const prices = [10, 11, 12, 13, 14] as const;
 
-      try {
-        bb.getResultOrThrow();
-        throw new Error('Expected error');
-      } catch (error) {
-        expect(error).toBeInstanceOf(NotEnoughDataError);
-      }
+      bb.updates(prices.slice(0, -1));
+
+      expect(bb.isStable, 'four prices do not fill an interval of five').toBe(false);
+
+      const result = bb.add(prices[4]);
+
+      expect(bb.isStable, 'the fifth price completes the interval').toBe(true);
+      expect(result?.middle, 'the first band averages all five prices').toBe(12);
     });
 
-    it('is compatible with results from Tulip Indicators (TI)', () => {
+    it('is compatible with results from Tulip Indicators (TI)', {tags: ['tulipindicators']}, () => {
       /*
        * Test data verified with:
        * https://tulipindicators.org/bbands
@@ -144,6 +147,46 @@ describe('BollingerBands', () => {
     });
   });
 
+  describe('update', () => {
+    it('recalculates the bands when replacing the latest price', () => {
+      const bb = new BollingerBands(5, 2);
+      const prices = [81.59, 81.06, 82.87, 83.0, 83.61, 83.15] as const;
+
+      bb.updates(prices);
+
+      const originalResult = bb.getResultOrThrow();
+      const replacedResult = bb.replace(90);
+
+      expect(replacedResult?.middle, 'a replacement recalculates the bands').not.toBe(originalResult.middle);
+
+      const restoredResult = bb.replace(83.15);
+
+      expect(restoredResult?.middle, 'replacing back restores the original bands').toBe(originalResult.middle);
+    });
+
+    it('changes nothing when the latest price is replaced with the same value', () => {
+      const bb = new BollingerBands(5, 2);
+      const prices = [81.59, 81.06, 82.87, 83.0, 83.61, 83.15] as const;
+
+      bb.updates(prices);
+
+      const resultBefore = bb.getResultOrThrow();
+
+      bb.replace(83.15);
+
+      expect(bb.getResultOrThrow(), 'replacing a price with itself is a no-op').toEqual(resultBefore);
+      expect(bb.isStable, 'and it stays stable').toBe(true);
+    });
+
+    it('keeps calculating when a price of zero drops out of the window', () => {
+      const bb = new BollingerBands(3, 2);
+
+      bb.updates([0, 1, 2, 3]);
+
+      expect(bb.getResultOrThrow().middle, 'a zero drop-out must not suppress the calculation').toBe(2);
+    });
+  });
+
   describe('getSignal', () => {
     it('returns UNKNOWN when there is no result', () => {
       const bb = new BollingerBands(10);
@@ -153,7 +196,7 @@ describe('BollingerBands', () => {
 
     it('returns BULLISH when price breaks above the previous upper band', () => {
       const bb = new BollingerBands(10, 2);
-      // Need 12 adds: 11 for first result, 12th to have a previous result to compare against
+      // Need 12 adds: 10 for the first result, 12th to have a previous result to compare against
       for (let i = 0; i < 11; i++) {
         bb.add(50);
       }
@@ -213,4 +256,10 @@ describe('BollingerBands', () => {
       expect(bb.getSignal().state).toBe(TradingSignal.SIDEWAYS);
     });
   });
+});
+
+testIndicatorContract({
+  create: () => new BollingerBands(5, 2),
+  divergentInput: 1_000,
+  inputs: [81.59, 81.06, 82.87, 83.0, 83.61, 83.15],
 });

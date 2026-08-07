@@ -3,11 +3,13 @@ import type {ColumnDef} from './types';
 
 export type PriceColumnKey = 'open' | 'high' | 'low' | 'close' | 'volume';
 
+const formatUsd = (val: unknown) => (typeof val === 'number' ? `$${val.toFixed(2)}` : String(val));
+
 const priceColumns: Record<PriceColumnKey, ColumnDef> = {
-  close: {className: 'text-slate-300 py-2 px-3', header: 'Close', key: 'close', render: val => `$${val.toFixed(2)}`},
-  high: {className: 'text-slate-300 py-2 px-3', header: 'High', key: 'high', render: val => `$${val.toFixed(2)}`},
-  low: {className: 'text-slate-300 py-2 px-3', header: 'Low', key: 'low', render: val => `$${val.toFixed(2)}`},
-  open: {className: 'text-slate-300 py-2 px-3', header: 'Open', key: 'open', render: val => `$${val.toFixed(2)}`},
+  close: {className: 'text-slate-300 py-2 px-3', header: 'Close', key: 'close', render: formatUsd},
+  high: {className: 'text-slate-300 py-2 px-3', header: 'High', key: 'high', render: formatUsd},
+  low: {className: 'text-slate-300 py-2 px-3', header: 'Low', key: 'low', render: formatUsd},
+  open: {className: 'text-slate-300 py-2 px-3', header: 'Open', key: 'open', render: formatUsd},
   volume: {className: 'text-slate-300 py-2 px-3', header: 'Volume', key: 'volume'},
 };
 
@@ -30,7 +32,7 @@ export function buildTableColumns({extra = [], indicator, inputs}: BuildOptions)
       className: 'py-2 px-3',
       header: 'Signal',
       key: 'signal',
-      render: val => <SignalBadge signal={val} />,
+      render: val => <SignalBadge signal={typeof val === 'string' ? val : 'UNKNOWN'} />,
     });
   }
   return cols;

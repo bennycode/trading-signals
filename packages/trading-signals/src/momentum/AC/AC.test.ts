@@ -1,5 +1,5 @@
-import {NotEnoughDataError} from '../../error/index.js';
-import {TradingSignal} from '../../types/Indicator.js';
+import {testIndicatorContract} from '../../fixtures/testIndicatorContract.js';
+import {TradingSignal} from '../../base/Indicator.js';
 import {AC} from './AC.js';
 
 type Candle = readonly [timestamp: number, open: number, close: number, high: number, low: number, volume: number];
@@ -294,20 +294,9 @@ describe('AC', () => {
        * https://github.com/jesse-ai/jesse/blob/53297462d48ebf43f9df46ab5005076d25073e5e/tests/test_indicators.py#L14
        */
       expect(ac.isStable).toBe(true);
-      expect(ac.getRequiredInputs()).toBe(39);
+      expect(ac.getRequiredInputs()).toBe(38);
       expect(ac.getResultOrThrow().toFixed(2)).toBe('-21.97');
       expect(ac.momentum.getResultOrThrow().toFixed(2)).toBe('-9.22');
-    });
-
-    it('throws an error when there is not enough input data', () => {
-      const ac = new AC(5, 34, 5);
-
-      try {
-        ac.getResultOrThrow();
-        throw new Error('Expected error');
-      } catch (error) {
-        expect(error).toBeInstanceOf(NotEnoughDataError);
-      }
     });
   });
 
@@ -382,4 +371,27 @@ describe('AC', () => {
       expect(signal.hasChanged).toBe(false);
     });
   });
+});
+
+testIndicatorContract({
+  create: () => new AC(5, 10, 5),
+  divergentInput: {high: 1_000, low: 998},
+  inputs: [
+    {high: 101, low: 99},
+    {high: 103, low: 101},
+    {high: 106, low: 104},
+    {high: 109, low: 107},
+    {high: 113, low: 111},
+    {high: 117, low: 115},
+    {high: 121, low: 119},
+    {high: 126, low: 124},
+    {high: 131, low: 129},
+    {high: 136, low: 134},
+    {high: 141, low: 139},
+    {high: 146, low: 144},
+    {high: 151, low: 149},
+    {high: 156, low: 154},
+    {high: 161, low: 159},
+    {high: 166, low: 164},
+  ],
 });

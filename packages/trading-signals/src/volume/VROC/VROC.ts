@@ -1,4 +1,4 @@
-import {TradingSignal, TrendIndicatorSeries} from '../../types/Indicator.js';
+import {TradingSignal, TrendIndicatorSeries} from '../../base/Indicator.js';
 import {pushUpdate} from '../../util/pushUpdate.js';
 
 /**
@@ -31,7 +31,7 @@ export class VROC extends TrendIndicatorSeries {
   }
 
   update(volume: number, replace: boolean) {
-    pushUpdate(this.#volumes, replace, volume, this.#historyLength);
+    pushUpdate({array: this.#volumes, item: volume, maxLength: this.#historyLength, replace: replace});
 
     if (this.#volumes.length < this.#historyLength) {
       return null;

@@ -1,5 +1,5 @@
 import {defineConfig, mergeConfig} from 'vitest/config';
-import baseConfig from '../../vitest.config.base';
+import baseConfig from '../../vitest.shared';
 
 export default mergeConfig(
   baseConfig,
@@ -13,6 +13,17 @@ export default mergeConfig(
           statements: 100,
         },
       },
+      tags: [
+        {
+          description:
+            'Verifies indicator results against Tulip Indicators reference data (https://tulipindicators.org/).',
+          name: 'tulipindicators',
+        },
+        {
+          description: 'Tests written specifically to guard against bugs that already happened.',
+          name: 'regression',
+        },
+      ],
     },
   })
 );

@@ -1,6 +1,6 @@
 import Big from 'big.js';
 import {describe, expect, it} from 'vitest';
-import {CandleBatcher, OrderSide, OrderType} from '@typedtrader/exchange';
+import {CandleBatcher, OrderSide, OrderType, TradingPair} from '@typedtrader/exchange';
 import type {Candle} from '@typedtrader/exchange';
 import type {TradingSessionState} from '../trader/index.js';
 import {MultiIndicatorConfluenceSchema, MultiIndicatorConfluenceStrategy} from './MultiIndicatorConfluenceStrategy.js';
@@ -51,7 +51,7 @@ const mockState: TradingSessionState = {
     base_min_size: '0.0001',
     counter_increment: '0.01',
     counter_min_size: '1',
-    pair: {base: 'BTC', counter: 'USD'} as any,
+    pair: new TradingPair('BTC', 'USD'),
   },
 };
 

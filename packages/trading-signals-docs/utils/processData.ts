@@ -1,6 +1,7 @@
+import type {IndicatorSeries} from 'trading-signals';
 import type {Candle} from '@typedtrader/exchange';
 import type {PriceColumnKey} from './tableColumns';
-import type {SingleIndicatorConfig} from './types';
+import type {DemoIndicatorInput, DemoSignal, ProcessedIndicatorData} from './types';
 
 interface ProcessDataOptions {
   /** Candle fields included in the row data (used by the table). */
@@ -11,11 +12,17 @@ interface ProcessDataOptions {
   alwaysStable?: boolean;
 }
 
+/** Narrower than `DemoIndicator`: every indicator routed through here yields a single numeric result. */
+type SeriesIndicator = Pick<IndicatorSeries, 'isStable' | 'getResult'> & {
+  add(input: DemoIndicatorInput): unknown;
+  getSignal?(): DemoSignal;
+};
+
 const candleField = (candle: Candle, key: PriceColumnKey) => Number(candle[key]);
 
-export function makeProcessData(opts: ProcessDataOptions): SingleIndicatorConfig['processData'] {
+export function makeProcessData(opts: ProcessDataOptions) {
   const addInputs = opts.addInputs ?? opts.rowInputs;
-  return (indicator, candle) => {
+  return (indicator: SeriesIndicator, candle: Candle): ProcessedIndicatorData => {
     if (addInputs.length === 1) {
       indicator.add(candleField(candle, addInputs[0]));
     } else {
@@ -26,11 +33,11 @@ export function makeProcessData(opts: ProcessDataOptions): SingleIndicatorConfig
       indicator.add(payload);
     }
     const result = opts.alwaysStable ? indicator.getResult() : indicator.isStable ? indicator.getResult() : null;
-    const row: Record<string, unknown> = {result};
+    const row: ProcessedIndicatorData = {result};
     for (const key of opts.rowInputs) {
       row[key] = candleField(candle, key);
     }
-    if ('getSignal' in indicator) {
+    if (indicator.getSignal) {
       row.signal = indicator.getSignal();
     }
     return row;

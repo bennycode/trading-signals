@@ -7,6 +7,5 @@ export function getTrading212Client(options: {
   usePaperTrading: boolean;
   marketData: MarketDataSource;
 }): Trading212Broker {
-  console.log('Initializing Trading212 client', {usePaperTrading: options.usePaperTrading});
   return new Trading212Broker(options);
 }

@@ -1,6 +1,6 @@
+import {testIndicatorContract} from '../../fixtures/testIndicatorContract.js';
 import {PVT} from './PVT.js';
-import {NotEnoughDataError} from '../../error/index.js';
-import {TradingSignal} from '../../types/index.js';
+import {TradingSignal} from '../../base/index.js';
 
 describe('PVT', () => {
   describe('getResultOrThrow', () => {
@@ -18,9 +18,7 @@ describe('PVT', () => {
 
       const pvt = new PVT();
 
-      for (const candle of candles) {
-        pvt.add(candle);
-      }
+      pvt.updates(candles);
 
       expect(pvt.isStable).toBe(true);
       expect(pvt.getRequiredInputs()).toBe(2);
@@ -39,18 +37,6 @@ describe('PVT', () => {
 
       expect(pvt.isStable).toBe(true);
       expect(pvt.getResultOrThrow()).toBe(0);
-    });
-
-    it('throws an error when there is not enough input data', () => {
-      const pvt = new PVT();
-      expect(pvt.isStable).toBe(false);
-
-      try {
-        pvt.getResultOrThrow();
-        throw new Error('Expected error');
-      } catch (error) {
-        expect(error).toBeInstanceOf(NotEnoughDataError);
-      }
     });
   });
 
@@ -82,9 +68,7 @@ describe('PVT', () => {
         {close: 11.5, high: 12, low: 10, volume: 35000},
       ] as const;
 
-      for (const candle of candles) {
-        pvt.add(candle);
-      }
+      pvt.updates(candles);
 
       expect(pvt.getSignal().state).toBe(TradingSignal.BULLISH);
     });
@@ -97,15 +81,41 @@ describe('PVT', () => {
         {close: 9.5, high: 10, low: 9, volume: 25000},
       ] as const;
 
-      for (const candle of candles) {
-        pvt.add(candle);
-      }
+      pvt.updates(candles);
 
       expect(pvt.getSignal().state).toBe(TradingSignal.BEARISH);
     });
   });
 
   describe('replace', () => {
+    /** Keeps the tests focused on the close price by faking a candle that has no intra-bar movement. */
+    const fakeFlatCandle = (close: number) => ({close, high: close, low: close, volume: 1000}) as const;
+
+    it('accumulates onto the total from before the replaced candle', () => {
+      const replaced = new PVT();
+      replaced.updates([fakeFlatCandle(100), fakeFlatCandle(110), fakeFlatCandle(120)]);
+      replaced.replace(fakeFlatCandle(130));
+
+      const reference = new PVT();
+      reference.updates([fakeFlatCandle(100), fakeFlatCandle(110), fakeFlatCandle(130)]);
+
+      expect(replaced.getResultOrThrow(), 'a replacement must not count the replaced candle twice').toBe(
+        reference.getResultOrThrow()
+      );
+    });
+
+    it('changes nothing when the latest candle is replaced with the same values', () => {
+      const pvt = new PVT();
+
+      pvt.updates([fakeFlatCandle(100), fakeFlatCandle(110), fakeFlatCandle(120)]);
+
+      const resultBefore = pvt.getResultOrThrow();
+
+      pvt.replace(fakeFlatCandle(120));
+
+      expect(pvt.getResultOrThrow(), 'replacing a candle with itself is a no-op').toBe(resultBefore);
+    });
+
     it('replaces the most recently added value', () => {
       const pvt = new PVT();
       pvt.add({close: 10, high: 10, low: 9, volume: 25000});
@@ -123,4 +133,15 @@ describe('PVT', () => {
       expect(restoredResult).toBe(originalResult);
     });
   });
+});
+
+testIndicatorContract({
+  create: () => new PVT(),
+  divergentInput: {close: 500, high: 500, low: 500, volume: 99_000},
+  inputs: [
+    {close: 10, high: 10, low: 9, volume: 25_000},
+    {close: 10.5, high: 11, low: 9.5, volume: 30_000},
+    {close: 10.2, high: 10.8, low: 10, volume: 28_000},
+    {close: 10.3, high: 10.5, low: 9.8, volume: 26_000},
+  ],
 });

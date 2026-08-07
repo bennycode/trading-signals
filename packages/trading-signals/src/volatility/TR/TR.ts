@@ -1,5 +1,5 @@
-import {IndicatorSeries} from '../../types/Indicator.js';
-import type {HighLowClose} from '../../types/HighLowClose.js';
+import {IndicatorSeries} from '../../base/Indicator.js';
+import type {HighLowClose} from '../../base/Candle.type.js';
 
 /**
  * True Range (TR)
@@ -16,7 +16,7 @@ export class TR extends IndicatorSeries<HighLowClose<number>> {
   #twoPreviousCandle?: HighLowClose<number>;
 
   override getRequiredInputs() {
-    return 2;
+    return 1;
   }
 
   update(candle: HighLowClose<number>, replace: boolean) {

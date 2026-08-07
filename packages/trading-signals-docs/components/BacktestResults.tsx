@@ -199,22 +199,21 @@ function PriceChartWithTrades({candles, result}: ResultProps) {
       backgroundColor: '#1e293b',
       borderColor: '#475569',
       formatter: function () {
-        const points = (this as any).points as any[];
         /*
-         * The OHLC fields live on the line series points, not the scatter markers.
-         * Don't trust points[0] — find the point that actually carries the candle data.
+         * The OHLC fields live on the price data, not the scatter markers.
+         * Don't trust the hovered point — resolve the candle by its x position.
          */
-        const ohlc = points?.find((p: any) => typeof p?.point?.open === 'number')?.point;
-        let s = `<b>${ohlc?.time ?? 'Period ' + (this as any).x}</b><br/>`;
+        const ohlc = priceData.find(p => p.x === this.x);
+        let s = `<b>${ohlc?.time ?? `Period ${this.x}`}</b><br/>`;
         if (ohlc) {
           s += `Open: $${ohlc.open.toFixed(2)}<br/>`;
           s += `High: $${ohlc.high.toFixed(2)}<br/>`;
           s += `Low: $${ohlc.low.toFixed(2)}<br/>`;
           s += `Close: $${ohlc.close.toFixed(2)}<br/>`;
         }
-        points?.forEach((point: any) => {
+        this.points?.forEach(point => {
           if (point.series.type === 'scatter') {
-            s += `${point.point.name}<br/>`;
+            s += `${point.name}<br/>`;
           }
         });
         return s;

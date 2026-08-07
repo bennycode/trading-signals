@@ -1,5 +1,5 @@
 import Big from 'big.js';
-import type {OneMinuteBatchedCandle} from '@typedtrader/exchange';
+import type {MarketDataSource, OneMinuteBatchedCandle, TradingPair} from '@typedtrader/exchange';
 import type {OrderAdvice, TradingSessionState, TradingSessionStrategy} from '../trader/index.js';
 import type {MarketType} from './MarketType.js';
 
@@ -70,6 +70,8 @@ export abstract class Strategy implements TradingSessionStrategy {
       this.config = {...options.config};
     }
   }
+
+  async init(_market: Pick<MarketDataSource, 'getRecentCandles'>, _pair: TradingPair): Promise<void> {}
 
   async onCandle(candle: OneMinuteBatchedCandle, state: TradingSessionState): Promise<OrderAdvice | void> {
     this.lastBatchedCandle = candle;

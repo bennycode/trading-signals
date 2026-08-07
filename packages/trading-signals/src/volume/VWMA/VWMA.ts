@@ -1,5 +1,5 @@
-import type {HighLowCloseVolume} from '../../types/HighLowClose.js';
-import {TradingSignal, TrendIndicatorSeries} from '../../types/Indicator.js';
+import type {HighLowCloseVolume} from '../../base/Candle.type.js';
+import {TradingSignal, TrendIndicatorSeries} from '../../base/Indicator.js';
 import type {MovingAverage} from '../../trend/MA/MovingAverage.js';
 import type {MovingAverageTypes} from '../../trend/MA/MovingAverageTypes.js';
 import {SMA} from '../../trend/SMA/SMA.js';
@@ -38,7 +38,7 @@ export class VWMA extends TrendIndicatorSeries<HighLowCloseVolume> {
   }
 
   update(candle: HighLowCloseVolume, replace: boolean) {
-    pushUpdate(this.#candles, replace, candle, this.interval);
+    pushUpdate({array: this.#candles, item: candle, maxLength: this.interval, replace: replace});
 
     if (this.#candles.length < this.interval) {
       return null;

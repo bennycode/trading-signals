@@ -1,6 +1,6 @@
 import type {DEMA} from '../../trend/DEMA/DEMA.js';
 import type {EMA} from '../../trend/EMA/EMA.js';
-import {TechnicalIndicator, TradingSignal} from '../../types/Indicator.js';
+import {TechnicalIndicator, TradingSignal} from '../../base/Indicator.js';
 import {pushUpdate} from '../../util/pushUpdate.js';
 
 export type MACDResult = {
@@ -38,7 +38,7 @@ export class MACD extends TechnicalIndicator<MACDResult, number> {
   }
 
   update(price: number, replace: boolean) {
-    pushUpdate(this.prices, replace, price, this.long.interval);
+    pushUpdate({array: this.prices, item: price, maxLength: this.long.interval, replace: replace});
 
     const short = this.short.update(price, replace);
     const long = this.long.update(price, replace);

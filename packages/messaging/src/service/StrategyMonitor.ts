@@ -2,6 +2,7 @@ import {TradingPair} from '@typedtrader/exchange';
 import type {Fill} from '@typedtrader/exchange';
 import {createStrategy, TradingSession} from 'trading-strategies';
 import type {Strategy as TradingStrategy} from 'trading-strategies';
+import {z} from 'zod';
 import {getAccountBrokerClient} from '../broker/getAccountBrokerClient.js';
 import {Account} from '../database/models/Account.js';
 import {Strategy, type StrategyAttributes} from '../database/models/Strategy.js';
@@ -13,6 +14,8 @@ interface ActiveSession {
   session: TradingSession;
   strategy: TradingStrategy;
 }
+
+const persistedStateSchema = z.record(z.string(), z.unknown());
 
 /** Pino log message used when a session surfaces an unrecoverable error. Exported for tests. */
 export const STRATEGY_ERROR_LOG_MESSAGE = 'Strategy error';
@@ -70,13 +73,13 @@ export class StrategyMonitor {
     }
 
     const pair = TradingPair.fromString(row.pair, ',');
-    const config = JSON.parse(row.config);
+    const config: unknown = JSON.parse(row.config);
 
     const strategy = createStrategy(row.strategyName, config);
 
     // Restore persisted state if available
     if (row.state) {
-      const persisted: Record<string, unknown> = JSON.parse(row.state);
+      const persisted = persistedStateSchema.parse(JSON.parse(row.state));
       strategy.restoreState(persisted);
     }
 

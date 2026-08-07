@@ -1,3 +1,4 @@
+import {testIndicatorContract} from '../../fixtures/testIndicatorContract.js';
 import {TR} from './TR.js';
 
 describe('TR', () => {
@@ -41,7 +42,7 @@ describe('TR', () => {
   ] as const;
 
   describe('getResultOrThrow', () => {
-    it('calculates the True Range (TR)', () => {
+    it('calculates the True Range (TR)', {tags: ['tulipindicators']}, () => {
       const tr = new TR();
 
       candles.forEach((candle, i) => {
@@ -53,7 +54,7 @@ describe('TR', () => {
       });
 
       expect(tr.isStable).toBe(true);
-      expect(tr.getRequiredInputs()).toBe(2);
+      expect(tr.getRequiredInputs()).toBe(1);
       expect(tr.getResultOrThrow().toFixed(2)).toBe('0.86');
     });
   });
@@ -92,4 +93,14 @@ describe('TR', () => {
       expect(tr.getResultOrThrow().toFixed(2)).toBe(latestResult);
     });
   });
+});
+
+testIndicatorContract({
+  create: () => new TR(),
+  divergentInput: {close: 200, high: 250, low: 150},
+  inputs: [
+    {close: 81.59, high: 82.15, low: 81.29},
+    {close: 81.06, high: 81.89, low: 80.64},
+    {close: 82.87, high: 83.03, low: 81.31},
+  ],
 });

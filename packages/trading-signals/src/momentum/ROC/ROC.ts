@@ -1,4 +1,4 @@
-import {TrendIndicatorSeries, TradingSignal} from '../../types/Indicator.js';
+import {TrendIndicatorSeries, TradingSignal} from '../../base/Indicator.js';
 import {pushUpdate} from '../../util/pushUpdate.js';
 
 /**
@@ -21,14 +21,19 @@ export class ROC extends TrendIndicatorSeries {
   }
 
   override getRequiredInputs() {
-    return this.interval;
+    // Comparing against the price `interval` bars back needs that bar on top of the interval itself.
+    return this.interval + 1;
   }
 
   update(price: number, replace: boolean) {
-    const comparePrice = this.prices.length === this.interval ? this.prices[0] : null;
-    pushUpdate(this.prices, replace, price, this.interval);
+    /*
+     * Keeping the comparand inside the window makes `replace()` correct for free: the window is the
+     * only state, so re-running the latest bar cannot read anything the previous bar left behind.
+     */
+    pushUpdate({array: this.prices, item: price, maxLength: this.getRequiredInputs(), replace: replace});
 
-    if (comparePrice !== null) {
+    if (this.prices.length === this.getRequiredInputs()) {
+      const comparePrice = this.prices[0];
       return this.setResult((price - comparePrice) / comparePrice, replace);
     }
 

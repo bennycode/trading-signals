@@ -37,7 +37,10 @@ export class AlpacaTradingStream extends EventEmitter {
     });
 
     this.#connection.addEventListener('message', event => {
-      const data: string | ArrayBuffer = event.data;
+      const data: unknown = event.data;
+      if (typeof data !== 'string' && !(data instanceof ArrayBuffer)) {
+        return;
+      }
       const text = typeof data === 'string' ? data : new TextDecoder().decode(data);
       const message: unknown = JSON.parse(text);
       this.emit('message', message);

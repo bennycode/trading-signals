@@ -1,5 +1,5 @@
-import type {HighLow} from '../../types/HighLowClose.js';
-import {IndicatorSeries} from '../../types/Indicator.js';
+import type {HighLow} from '../../base/Candle.type.js';
+import {IndicatorSeries} from '../../base/Indicator.js';
 
 export type PSARConfig = {
   /**
@@ -15,6 +15,19 @@ export type PSARConfig = {
 };
 
 /**
+ * Everything {@link PSAR.update} reads before it decides on the next SAR. Capturing it lets a
+ * replacement re-run the latest candle from the state that candle originally saw.
+ */
+type PSARState = {
+  acceleration: number;
+  extreme: number | null;
+  isLong: boolean | null;
+  lastSar: number | null;
+  prePreviousCandle: HighLow<number> | null;
+  previousCandle: HighLow<number> | null;
+};
+
+/**
  * Parabolic SAR
  * Type: Trend
  *
@@ -27,15 +40,17 @@ export type PSARConfig = {
  * It's particularly useful in trending markets, but less reliable in sideways or choppy markets.
  *
  */
-export class PSAR extends IndicatorSeries<HighLow<number>> {
+export class PSAR extends IndicatorSeries<HighLow<number>, PSARState> {
   private readonly accelerationStep: number;
   private readonly accelerationMax: number;
-  private acceleration: number = 0;
-  private extreme: number | null = null;
-  private lastSar: number | null = null;
-  private isLong: boolean | null = null;
-  private previousCandle: HighLow<number> | null = null;
-  private prePreviousCandle: HighLow<number> | null = null;
+  protected override state: PSARState = {
+    acceleration: 0,
+    extreme: null,
+    isLong: null,
+    lastSar: null,
+    prePreviousCandle: null,
+    previousCandle: null,
+  };
 
   constructor(config: PSARConfig) {
     super();
@@ -51,7 +66,7 @@ export class PSAR extends IndicatorSeries<HighLow<number>> {
   }
 
   override get isStable() {
-    return this.lastSar !== null;
+    return this.state.lastSar !== null;
   }
 
   override getRequiredInputs() {
@@ -61,73 +76,70 @@ export class PSAR extends IndicatorSeries<HighLow<number>> {
   update(candle: HighLow<number>, replace: boolean): number | null {
     const {high, low} = candle;
 
-    // If replacing the last candle and we haven't processed enough data yet
-    const notEnoughData = !this.previousCandle || this.lastSar === null;
-    if (replace && notEnoughData) {
-      this.previousCandle = candle;
-      return null;
-    }
+    this.trackState(replace);
+
+    const state = this.state;
 
     // First candle, just store it and return null
-    if (!this.previousCandle) {
-      this.previousCandle = candle;
+    if (!state.previousCandle) {
+      state.previousCandle = candle;
       return null;
     }
 
     // Second candle (first calculation)
-    if (this.lastSar === null) {
+    if (state.lastSar === null) {
       // Determine initial trend direction - match Tulip Indicators approach
       const currentMidpoint = (high + low) / 2;
-      const previousMidpoint = (this.previousCandle.high + this.previousCandle.low) / 2;
+      const previousMidpoint = (state.previousCandle.high + state.previousCandle.low) / 2;
 
-      this.isLong = currentMidpoint >= previousMidpoint; // Using >= like Tulip implementation
+      state.isLong = currentMidpoint >= previousMidpoint; // Using >= like Tulip implementation
 
-      if (this.isLong) {
-        this.extreme = high;
-        this.lastSar = this.previousCandle.low;
+      if (state.isLong) {
+        state.extreme = high;
+        state.lastSar = state.previousCandle.low;
       } else {
-        this.extreme = low;
-        this.lastSar = this.previousCandle.high;
+        state.extreme = low;
+        state.lastSar = state.previousCandle.high;
       }
 
-      this.acceleration = this.accelerationStep;
-      this.prePreviousCandle = this.previousCandle;
-      this.previousCandle = candle;
+      state.acceleration = this.accelerationStep;
+      state.prePreviousCandle = state.previousCandle;
+      state.previousCandle = candle;
 
-      return this.setResult(this.lastSar, replace);
+      return this.setResult(state.lastSar, replace);
     }
 
     // Calculate SAR for the current period
-    let sar = (this.extreme! - this.lastSar) * this.acceleration + this.lastSar;
+    let sar = (state.extreme! - state.lastSar) * state.acceleration + state.lastSar;
 
     // Adjust SAR position if needed
-    if (this.isLong) {
+    if (state.isLong) {
       /*
        * Adjust SAR based on previous lows
        * If pre-previous candle exists and current low is less than SAR
        */
-      const hasPrevPrev = this.prePreviousCandle != null;
+      const hasPrevPrev = state.prePreviousCandle != null;
       if (hasPrevPrev && low < sar) {
         // Apply pre-previous low adjustment if needed
-        if (this.prePreviousCandle!.low < sar) {
-          sar = this.prePreviousCandle!.low;
+        if (state.prePreviousCandle!.low < sar) {
+          sar = state.prePreviousCandle!.low;
         }
 
         // Apply previous low adjustment
-        sar = this.previousCandle.low < sar ? this.previousCandle.low : sar;
+        sar = state.previousCandle.low < sar ? state.previousCandle.low : sar;
       }
       // No pre-previous candle, but check previous low
-      else if (this.previousCandle.low < sar) {
-        sar = this.previousCandle.low;
+      else if (state.previousCandle.low < sar) {
+        sar = state.previousCandle.low;
       }
 
       // Update acceleration factor and extreme point if price makes new high
-      if (high > this.extreme!) {
-        this.extreme = high;
-        if (this.acceleration < this.accelerationMax) {
-          this.acceleration += this.accelerationStep;
-          if (this.acceleration > this.accelerationMax) {
-            this.acceleration = this.accelerationMax;
+      if (high > state.extreme!) {
+        state.extreme = high;
+        if (state.acceleration < this.accelerationMax) {
+          state.acceleration += this.accelerationStep;
+          if (state.acceleration > this.accelerationMax) {
+            state.acceleration = this.accelerationMax;
           }
         }
       }
@@ -135,10 +147,10 @@ export class PSAR extends IndicatorSeries<HighLow<number>> {
       // Check if trend reverses (price falls below SAR)
       if (low < sar) {
         // Reverse to short
-        this.isLong = false;
-        sar = this.extreme!; // Set SAR to the extreme point
-        this.extreme = low; // Set new extreme to current low
-        this.acceleration = this.accelerationStep; // Reset acceleration
+        state.isLong = false;
+        sar = state.extreme!; // Set SAR to the extreme point
+        state.extreme = low; // Set new extreme to current low
+        state.acceleration = this.accelerationStep; // Reset acceleration
       }
     } else {
       /*
@@ -146,37 +158,37 @@ export class PSAR extends IndicatorSeries<HighLow<number>> {
        * Adjust SAR based on previous highs
        * If pre-previous candle exists and current high is greater than SAR
        */
-      const hasPrevPrev = this.prePreviousCandle != null;
+      const hasPrevPrev = state.prePreviousCandle != null;
       if (hasPrevPrev && high > sar) {
         // Apply pre-previous high adjustment if needed
-        if (this.prePreviousCandle!.high > sar) {
-          sar = this.prePreviousCandle!.high;
+        if (state.prePreviousCandle!.high > sar) {
+          sar = state.prePreviousCandle!.high;
         }
 
         // Apply previous high adjustment
-        sar = this.previousCandle.high > sar ? this.previousCandle.high : sar;
+        sar = state.previousCandle.high > sar ? state.previousCandle.high : sar;
       }
       // No pre-previous candle, but check previous high
-      else if (this.previousCandle.high > sar) {
-        sar = this.previousCandle.high;
+      else if (state.previousCandle.high > sar) {
+        sar = state.previousCandle.high;
       }
 
       // Update acceleration factor and extreme point if price makes new low
-      if (low < this.extreme!) {
-        this.extreme = low;
-        this.acceleration += this.accelerationStep;
-        if (this.acceleration > this.accelerationMax) {
-          this.acceleration = this.accelerationMax;
+      if (low < state.extreme!) {
+        state.extreme = low;
+        state.acceleration += this.accelerationStep;
+        if (state.acceleration > this.accelerationMax) {
+          state.acceleration = this.accelerationMax;
         }
       }
 
       // Check if trend reverses (price rises above SAR)
       if (high > sar) {
         // Reverse to long
-        this.isLong = true;
-        sar = this.extreme!; // Set SAR to the extreme point
-        this.extreme = high; // Set new extreme to current high
-        this.acceleration = this.accelerationStep; // Reset acceleration
+        state.isLong = true;
+        sar = state.extreme!; // Set SAR to the extreme point
+        state.extreme = high; // Set new extreme to current high
+        state.acceleration = this.accelerationStep; // Reset acceleration
 
         /*
          * Ensure the SAR is below the price in the uptrend by setting it slightly below the low
@@ -188,9 +200,9 @@ export class PSAR extends IndicatorSeries<HighLow<number>> {
       }
     }
 
-    this.lastSar = sar;
-    this.prePreviousCandle = this.previousCandle;
-    this.previousCandle = candle;
+    state.lastSar = sar;
+    state.prePreviousCandle = state.previousCandle;
+    state.previousCandle = candle;
 
     return this.setResult(sar, replace);
   }

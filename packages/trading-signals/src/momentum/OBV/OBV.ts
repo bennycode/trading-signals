@@ -1,5 +1,5 @@
-import type {OpenHighLowCloseVolume} from '../../types/HighLowClose.js';
-import {TrendIndicatorSeries, TradingSignal} from '../../types/Indicator.js';
+import type {OpenHighLowCloseVolume} from '../../base/Candle.type.js';
+import {TrendIndicatorSeries, TradingSignal} from '../../base/Indicator.js';
 import {pushUpdate} from '../../util/pushUpdate.js';
 
 /**
@@ -25,7 +25,7 @@ export class OBV extends TrendIndicatorSeries<OpenHighLowCloseVolume<number>> {
   }
 
   update(candle: OpenHighLowCloseVolume<number>, replace: boolean) {
-    pushUpdate(this.candles, replace, candle, this.getRequiredInputs());
+    pushUpdate({array: this.candles, item: candle, maxLength: this.getRequiredInputs(), replace});
 
     if (this.candles.length < this.getRequiredInputs()) {
       return null;
@@ -33,11 +33,15 @@ export class OBV extends TrendIndicatorSeries<OpenHighLowCloseVolume<number>> {
 
     const prevCandle = this.candles[this.candles.length - 2];
     const prevPrice = prevCandle.close;
-    const prevResult = this.result ?? 0;
+    /*
+     * OBV accumulates onto the running total, so a replacement has to build on the total from
+     * before the replaced candle.
+     */
+    const prevResult = (replace ? this.previousResult : this.result) ?? 0;
     const currentPrice = candle.close;
     const nextResult = currentPrice > prevPrice ? candle.volume : currentPrice < prevPrice ? -candle.volume : 0;
 
-    return this.setResult(prevResult + nextResult, false);
+    return this.setResult(prevResult + nextResult, replace);
   }
 
   protected calculateSignalState(result: number | null | undefined) {

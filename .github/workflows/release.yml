@@ -1,0 +1,60 @@
+name: 'Release'
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  id-token: write
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 'Checkout Repository'
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          # Create PAT at:
+          # https://github.com/settings/personal-access-tokens
+          # Repository permissions: "Contents" (Read and write)
+          token: ${{ secrets.RELEASE_TOKEN }}
+      # A fresh runner has no git identity, so lerna's version commit fails with
+      # "empty ident name" before it can tag or publish anything.
+      - name: 'Configure Git Identity'
+        run: |
+          git config user.name 'Benny Neugebauer'
+          git config user.email 'mail@bennycode.com'
+      - name: 'Setup Node'
+        uses: actions/setup-node@v7
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+      - name: 'Install Dependencies'
+        run: npm ci
+      - name: 'Audit Signatures'
+        run: npm audit signatures
+      - name: 'Lint and Test'
+        run: |
+          npm run lint
+          npm test
+      - name: 'Build Packages'
+        run: npm run dist
+      - name: 'Publish Packages'
+        run: npx lerna publish --yes
+        env:
+          # Required by createRelease in lerna.json. Uses the PAT rather than
+          # github.token so the releases are attributed to the same person as
+          # the publish commit. npm auth is unrelated and comes from OIDC.
+          GH_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+      - name: 'Write Job Summary'
+        if: always()
+        run: |
+          {
+            echo "### Published"
+            git tag --points-at HEAD | sed 's/^/- /'
+          } >> "$GITHUB_STEP_SUMMARY"

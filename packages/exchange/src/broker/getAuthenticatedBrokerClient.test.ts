@@ -1,4 +1,5 @@
 import {beforeEach, describe, expect, it, vi} from 'vitest';
+import type {getBrokerClient} from './getBrokerClient.js';
 
 const {getBrokerClientMock, verifyCredentialsMock} = vi.hoisted(() => {
   const verifyCredentials = vi.fn();
@@ -8,8 +9,8 @@ const {getBrokerClientMock, verifyCredentialsMock} = vi.hoisted(() => {
   };
 });
 
-vi.mock('./getBrokerClient.js', () => ({
-  getBrokerClient: getBrokerClientMock,
+vi.mock(import('./getBrokerClient.js'), () => ({
+  getBrokerClient: getBrokerClientMock as unknown as typeof getBrokerClient,
 }));
 
 const {getAuthenticatedBrokerClient} = await import('./getAuthenticatedBrokerClient.js');

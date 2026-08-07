@@ -1,5 +1,6 @@
 import {EMA} from '../EMA/EMA.js';
-import {IndicatorSeries} from '../../types/Indicator.js';
+import {IndicatorSeries} from '../../base/Indicator.js';
+import {NotEnoughDataError} from '../../error/index.js';
 
 /**
  * Double Exponential Moving Average (DEMA)
@@ -30,6 +31,14 @@ export class DEMA extends IndicatorSeries {
     const innerResult = this.#inner.update(price, replace);
     const outerResult = this.#outer.update(innerResult, replace);
     return this.setResult(innerResult * 2 - outerResult, replace);
+  }
+
+  override getResultOrThrow() {
+    if (!this.isStable) {
+      throw new NotEnoughDataError(this.getRequiredInputs());
+    }
+
+    return super.getResultOrThrow();
   }
 
   override get isStable() {
