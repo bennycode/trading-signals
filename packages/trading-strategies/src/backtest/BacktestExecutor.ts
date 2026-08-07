@@ -35,6 +35,17 @@ export class BacktestExecutor {
     // The exact same advice→order translation a live TradingSession uses
     const adviceExecutor = new AdviceExecutor({broker: exchange, feeRates, pair: tradingPair, tradingRules});
 
+    /*
+     * Mirror TradingSession.start(), which inits the strategy before the first candle. The
+     * market view is fed exclusively from `warmupCandles` (never the exchange), so init can
+     * only ever see history from before the backtest window — not the candles under test.
+     */
+    const warmupCandles = this.#config.warmupCandles ?? [];
+    await strategy.init?.(
+      {getRecentCandles: async (_pair, count) => (count > 0 ? warmupCandles.slice(-count) : [])},
+      tradingPair
+    );
+
     const trades: BacktestTrade[] = [];
     const skippedAdvices: BacktestSkippedAdvice[] = [];
     let totalFees = new Big(0);
