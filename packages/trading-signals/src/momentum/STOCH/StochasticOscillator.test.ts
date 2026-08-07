@@ -30,6 +30,19 @@ describe('StochasticOscillator', () => {
       expect(stoch.getRequiredInputs()).toBe(9);
       expect(stoch.getResultOrThrow().stochK.toFixed(2)).toBe('91.09');
     });
+
+    it('keeps feeding the %D average when %K is zero', () => {
+      const stoch = new StochasticOscillator({dPeriod: 3, kPeriod: 5, kSlowingPeriod: 3});
+      // Closing on the window low keeps %K at exactly zero
+      const candle = {close: 10, high: 100, low: 10} as const;
+
+      const results = Array.from({length: stoch.getRequiredInputs()}, () => stoch.add(candle));
+
+      // %D averages three %K readings, so a result must not appear before the 9th candle
+      expect(results[6]).toBeNull();
+      expect(results[7]).toBeNull();
+      expect(results[8]).toEqual({stochD: 0, stochK: 0});
+    });
   });
 
   describe('replace', () => {
