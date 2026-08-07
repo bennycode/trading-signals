@@ -24,13 +24,14 @@ const {values} = parseArgs({
     balance: {default: '10000', short: 'b', type: 'string'},
     config: {default: '{}', short: 'c', type: 'string'},
     data: {short: 'd', type: 'string'},
+    slippage: {default: '0', type: 'string'},
     strategy: {short: 's', type: 'string'},
   },
 });
 
 if (!values.data || !values.strategy) {
   console.log(
-    'Usage: tsx src/start/runBacktest.ts --data <candles.json> --strategy <name> [--config <json>] [--balance <amount>]'
+    'Usage: tsx src/start/runBacktest.ts --data <candles.json> --strategy <name> [--config <json>] [--balance <amount>] [--slippage <rate>]'
   );
   console.log('');
   console.log('Options:');
@@ -38,6 +39,7 @@ if (!values.data || !values.strategy) {
   console.log('  --strategy, -s   Strategy name from registry');
   console.log('  --config, -c     Strategy config as JSON (default: {})');
   console.log('  --balance, -b    Starting cash in counter currency (default: 10000)');
+  console.log('  --slippage       Market-order slippage rate, e.g. 0.001 for 0.1% (default: 0)');
   console.log('');
   console.log('Available strategies:');
   for (const name of getStrategyNames()) {
@@ -74,6 +76,7 @@ const firstCandle = candles[0];
 const lastCandle = candles[candles.length - 1];
 const tradingPair = new TradingPair(firstCandle.base, firstCandle.counter);
 const startingBalance = new Big(values.balance);
+const slippageRate = new Big(values.slippage);
 const counter = tradingPair.counter;
 
 console.log(`Candles:   ${candles.length} from ${values.data}`);
@@ -83,6 +86,7 @@ console.log(`Open:      ${firstCandle.open} ${counter}  Close: ${lastCandle.clos
 console.log(`Strategy:  ${values.strategy}`);
 console.log(`Config:    ${values.config}`);
 console.log(`Balance:   ${startingBalance.toFixed(2)} ${counter}`);
+console.log(`Slippage:  ${slippageRate.mul(100).toFixed(2)}%`);
 console.log('---');
 
 // 2. Create strategy from registry
@@ -99,6 +103,7 @@ const exchange = new AlpacaBrokerMock({
     [OrderType.LIMIT]: new Big(0),
     [OrderType.MARKET]: new Big(0),
   },
+  slippage: {rate: slippageRate},
 });
 
 /*
