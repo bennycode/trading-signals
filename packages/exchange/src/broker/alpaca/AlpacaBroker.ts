@@ -407,7 +407,7 @@ export class AlpacaBroker extends Broker implements MarketDataSource {
        * Order placement is never auto-retried (a blind retry can duplicate a position), so a
        * failed POST needs a client-side id: it lets operators reconcile whether the original
        * request landed and makes any manual re-submission with the same id deduplicated by Alpaca.
-       * @see https://docs.alpaca.markets/docs/orders-at-alpaca#client-order-id
+       * @see https://docs.alpaca.markets/us/docs/working-with-orders#using-client-order-ids
        */
       client_order_id: randomUUID(),
       side,

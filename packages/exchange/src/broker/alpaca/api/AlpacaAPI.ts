@@ -172,7 +172,7 @@ export class AlpacaAPI {
 
   /**
    * @see https://docs.alpaca.markets/reference/postorder
-   * @see https://docs.alpaca.markets/docs/orders-at-alpaca#client-order-id
+   * @see https://docs.alpaca.markets/us/docs/working-with-orders#using-client-order-ids
    */
   async postOrder(params: {
     client_order_id: string;
