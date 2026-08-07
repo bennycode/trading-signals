@@ -44,7 +44,13 @@ export abstract class TechnicalIndicator<
 
   protected trackState(replace: boolean) {
     if (replace) {
-      if (this.#previousState !== undefined) {
+      if (this.#previousState === undefined) {
+        /*
+         * A replacement before any input still needs a rollback baseline, so repeated
+         * replacements of the first logical input remain replacements.
+         */
+        this.#previousState = structuredClone(this.state);
+      } else {
         this.state = structuredClone(this.#previousState);
       }
     } else {

@@ -99,6 +99,20 @@ describe('PSAR', () => {
     expect(replacedResult, 'a reversal caused by the replaced candle must be undone too').toBe(referenceResult);
   });
 
+  it('treats repeated replacements before any input as replacing the same bar', () => {
+    const doubleReplaced = new PSAR({accelerationMax: 0.2, accelerationStep: 0.02});
+    doubleReplaced.replace({high: 22, low: 20});
+    doubleReplaced.replace({high: 10, low: 9});
+
+    const reference = new PSAR({accelerationMax: 0.2, accelerationStep: 0.02});
+    reference.add({high: 10, low: 9});
+
+    expect(
+      doubleReplaced.getState(),
+      'two replacements without any prior input must not act as two logical bars'
+    ).toEqual(reference.getState());
+  });
+
   it('returns null when replacing without enough data', () => {
     const psar = new PSAR({accelerationMax: 0.2, accelerationStep: 0.02});
 
