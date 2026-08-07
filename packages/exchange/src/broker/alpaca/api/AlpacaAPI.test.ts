@@ -96,7 +96,8 @@ describe('postOrder', () => {
 
     const createSpy = vi.spyOn(axios, 'create');
     const api = new AlpacaAPI({apiKey: 'test', apiSecret: 'test', usePaperTrading: true});
-    const tradingClient = createSpy.mock.results[0]?.value;
+    const firstCreated = createSpy.mock.results[0];
+    const tradingClient = firstCreated?.type === 'return' ? firstCreated.value : undefined;
     if (!tradingClient) {
       throw new Error('Expected AlpacaAPI to create a trading client.');
     }
