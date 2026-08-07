@@ -40,9 +40,7 @@ Every broker has a thin outer class that owns `rest` + `ws`/`stream`, exposes en
 
 ### Order submission reconciliation
 
-- **Never auto-retry order-placement POSTs.** Placement is not idempotent: on a timeout or 5xx the order may still have been accepted server-side, and a blind retry can open a duplicate position with real money. Exclude the placement endpoints from `retryCondition` so submission fails fast and surfaces the error to the caller.
 - **Send a client-generated order id with every placement** when the vendor supports it (e.g. Alpaca's `client_order_id`). A failed POST can then be reconciled: query by the client id to learn whether the original request landed, and a manual re-submission with the same id is deduplicated server-side. See https://docs.alpaca.markets/us/docs/working-with-orders#using-client-order-ids.
-- **When the vendor offers no idempotency key**, failing fast is the only safe behavior — reconcile by comparing open orders and positions against expectations before re-submitting.
 
 ## API classes (skip when a quality vendor SDK exists)
 
