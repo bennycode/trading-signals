@@ -35,8 +35,7 @@ export class OBV extends TrendIndicatorSeries<OpenHighLowCloseVolume<number>> {
     const prevPrice = prevCandle.close;
     /*
      * OBV accumulates onto the running total, so a replacement has to build on the total from
-     * before the replaced candle. `this.result` still carries that candle's contribution until
-     * `setResult()` unwinds it, which would count the bar twice.
+     * before the replaced candle.
      */
     const prevResult = (replace ? this.previousResult : this.result) ?? 0;
     const currentPrice = candle.close;

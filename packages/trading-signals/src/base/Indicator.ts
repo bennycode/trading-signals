@@ -31,12 +31,6 @@ export abstract class TechnicalIndicator<
   State extends object = Record<string, never>,
 > implements Indicator<Result, Input> {
   protected result: Result | undefined;
-  /**
-   * Single container for every mutable field (beyond the result) that `update()` may change.
-   * Keeping such fields here instead of in loose class fields lets the base class rewind them
-   * generically on `replace()` (see {@link trackState}) and makes two indicator instances
-   * comparable via {@link getState}.
-   */
   protected state: State = {} as State;
   #previousState?: State;
 

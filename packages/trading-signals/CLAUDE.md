@@ -21,6 +21,18 @@ Reference implementation: [PR #1214 (MFI)](https://github.com/bennycode/trading-
 
 # Coding Conventions
 
+Comments explain domain intent in plain language and must not reference concrete code constructs — method names, field names, or types rot the moment the code changes.
+
+```ts
+// ❌ Bad: names `this.result` and `setResult()`, which ties the comment to the implementation
+// PVT accumulates onto the running total. `this.result` still carries that candle's
+// contribution until `setResult()` unwinds it, which would count the bar twice.
+
+// ✅ Good: states the domain rule only
+// PVT accumulates onto the running total, so a replacement has to build on the total
+// from before the replaced candle.
+```
+
 Wrap variables in quotes for log clarity.
 
 ```ts

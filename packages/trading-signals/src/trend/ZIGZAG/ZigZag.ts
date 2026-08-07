@@ -16,7 +16,7 @@ export type ZigZagConfig = {
 type ZigZagState = {
   highestExtreme: number | null;
   isUp: boolean;
-  /*
+  /**
    * Whether the latest candle reversed the trend. ZigZag emits only on a reversal and its result
    * persists in between, so only a candle that emitted may withdraw that pivot when replaced.
    */

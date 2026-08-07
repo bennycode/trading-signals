@@ -39,8 +39,7 @@ export class PVT extends TrendIndicatorSeries<HighLowCloseVolume, TradingSignals
     const previousClose = this.state.candles[0].close;
     /*
      * PVT accumulates onto the running total, so a replacement has to build on the total from
-     * before the replaced candle. `this.result` still carries that candle's contribution until
-     * `setResult()` unwinds it, which would count the bar twice.
+     * before the replaced candle.
      */
     const previousPVT = (replace ? this.previousResult : this.result) ?? 0;
 

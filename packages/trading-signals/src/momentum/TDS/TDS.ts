@@ -2,7 +2,7 @@ import {TradingSignal, TrendIndicatorSeries, type TradingSignals} from '../../ba
 
 type TDSState = {
   closes: number[];
-  /*
+  /**
    * Whether the latest bar completed a setup. TDS emits sparsely and its result persists between
    * setups, so only a bar that emitted may withdraw that emission when it gets replaced.
    */

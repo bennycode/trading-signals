@@ -1,17 +1,10 @@
 import {describe, expect, it} from 'vitest';
+import type {TechnicalIndicator} from '../base/Indicator.js';
 import {NotEnoughDataError} from '../error/NotEnoughDataError.js';
 
 type IndicatorContractOptions<Input> = {
   /** Creates a fresh instance of the indicator under test */
-  create: () => {
-    add(input: Input): unknown;
-    getRequiredInputs(): number;
-    getResult(): unknown;
-    getResultOrThrow(): unknown;
-    getState(): object;
-    isStable: boolean;
-    replace(input: Input): unknown;
-  };
+  create: () => TechnicalIndicator<unknown, Input, object>;
   /** Input that must lead the indicator into a different state than the last of `inputs` */
   divergentInput: Input;
   /** Input series fed before exercising replace(); the last input is the one being replaced */
@@ -46,6 +39,18 @@ export function testIndicatorContract<Input>({create, divergentInput, inputs}: I
         indicator.add(input);
         expectNoResult(index + 1);
       });
+    });
+
+    it('yields a result once the warm-up is complete', () => {
+      const indicator = create();
+
+      for (const input of inputs) {
+        indicator.add(input);
+      }
+
+      expect(indicator.isStable, 'the contract inputs leave the indicator stable').toBe(true);
+      expect(indicator.getResult(), 'a warmed-up indicator never yields undefined').not.toBeUndefined();
+      expect(indicator.getResultOrThrow(), 'a stable indicator yields an actual result').not.toBeNull();
     });
   });
 
