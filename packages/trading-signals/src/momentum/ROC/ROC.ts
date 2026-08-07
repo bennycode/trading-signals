@@ -15,25 +15,26 @@ export class ROC extends TrendIndicatorSeries {
 
   public readonly interval: number;
 
-  #comparePrice: number | null = null;
-
   constructor(interval: number) {
     super();
     this.interval = interval;
   }
 
   override getRequiredInputs() {
-    return this.interval;
+    // Comparing against the price `interval` bars back needs that bar on top of the interval itself.
+    return this.interval + 1;
   }
 
   update(price: number, replace: boolean) {
-    if (!replace || this.#comparePrice === null) {
-      this.#comparePrice = this.prices.length === this.interval ? this.prices[0] : null;
-    }
-    pushUpdate(this.prices, replace, price, this.interval);
+    /*
+     * Keeping the comparand inside the window makes `replace()` correct for free: the window is the
+     * only state, so re-running the latest bar cannot read anything the previous bar left behind.
+     */
+    pushUpdate({array: this.prices, item: price, maxLength: this.getRequiredInputs(), replace: replace});
 
-    if (this.#comparePrice !== null) {
-      return this.setResult((price - this.#comparePrice) / this.#comparePrice, replace);
+    if (this.prices.length === this.getRequiredInputs()) {
+      const comparePrice = this.prices[0];
+      return this.setResult((price - comparePrice) / comparePrice, replace);
     }
 
     return null;

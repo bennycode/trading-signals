@@ -43,7 +43,7 @@ export class SwingHigh extends IndicatorSeries<HighLow> {
     }
     this.#lastEmitted = false;
 
-    pushUpdate(this.#window, replace, candle.high, this.getRequiredInputs());
+    pushUpdate({array: this.#window, item: candle.high, maxLength: this.getRequiredInputs(), replace: replace});
 
     if (this.#window.length < this.getRequiredInputs()) {
       return null;

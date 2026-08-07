@@ -1,4 +1,5 @@
-import {RMA, NotEnoughDataError} from '../../index.js';
+import {testIndicatorContract} from '../../fixtures/testIndicatorContract.js';
+import {RMA} from '../../index.js';
 
 describe('RMA', () => {
   const prices = [
@@ -95,17 +96,11 @@ describe('RMA', () => {
       }
       expect(rma.getResultOrThrow().toFixed(2)).toBe('85.83');
     });
-
-    it('throws an error when there is not enough input data', () => {
-      const rma = new RMA(10);
-
-      try {
-        rma.getResultOrThrow();
-        throw new Error('Expected error');
-      } catch (error) {
-        expect(error).toBeInstanceOf(NotEnoughDataError);
-        expect(rma.isStable).toBe(false);
-      }
-    });
   });
+});
+
+testIndicatorContract({
+  create: () => new RMA(5),
+  divergentInput: 1_000,
+  inputs: [81.59, 81.06, 82.87, 83.0, 83.61, 83.15],
 });

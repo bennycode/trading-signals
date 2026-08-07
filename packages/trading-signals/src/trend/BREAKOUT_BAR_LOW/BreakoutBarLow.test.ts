@@ -1,4 +1,4 @@
-import {NotEnoughDataError} from '../../error/NotEnoughDataError.js';
+import {testIndicatorContract} from '../../fixtures/testIndicatorContract.js';
 import {BreakoutBarLow} from './BreakoutBarLow.js';
 
 describe('BreakoutBarLow', () => {
@@ -61,16 +61,6 @@ describe('BreakoutBarLow', () => {
 
       expect(breakout.getResult()).toBeNull();
     });
-
-    it('throws when accessed before enough data has been added', () => {
-      const breakout = new BreakoutBarLow({lookback: 3});
-
-      breakout.add({high: 10, low: 8});
-      breakout.add({high: 12, low: 10});
-
-      expect(() => breakout.getResultOrThrow()).toThrow(NotEnoughDataError);
-      expect(breakout.isStable).toBe(false);
-    });
   });
 
   describe('replace', () => {
@@ -115,4 +105,16 @@ describe('BreakoutBarLow', () => {
       expect(breakout.getRequiredInputs()).toBe(21);
     });
   });
+});
+
+testIndicatorContract({
+  create: () => new BreakoutBarLow({lookback: 3}),
+  divergentInput: {high: 1_000, low: 999},
+  inputs: [
+    {high: 10, low: 8},
+    {high: 12, low: 10},
+    {high: 11, low: 9},
+    {high: 15, low: 11},
+    {high: 13, low: 10},
+  ],
 });

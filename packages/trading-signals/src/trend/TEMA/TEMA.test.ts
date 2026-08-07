@@ -1,5 +1,5 @@
+import {testIndicatorContract} from '../../fixtures/testIndicatorContract.js';
 import {TEMA} from './TEMA.js';
-import {NotEnoughDataError} from '../../error/index.js';
 
 describe('TEMA', () => {
   /*
@@ -52,16 +52,11 @@ describe('TEMA', () => {
       expect(tema.isStable).toBe(true);
       expect(tema.getRequiredInputs()).toBe(13);
     });
-
-    it('throws an error when there is not enough input data', () => {
-      const tema = new TEMA(5);
-
-      try {
-        tema.getResultOrThrow();
-        throw new Error('Expected error');
-      } catch (error) {
-        expect(error).toBeInstanceOf(NotEnoughDataError);
-      }
-    });
   });
+});
+
+testIndicatorContract({
+  create: () => new TEMA(5),
+  divergentInput: 1_000,
+  inputs: [81.59, 81.06, 82.87, 83.0, 83.61, 83.15, 82.84, 83.99, 84.55, 84.36, 85.53, 86.54, 86.89, 87.77, 87.29],
 });

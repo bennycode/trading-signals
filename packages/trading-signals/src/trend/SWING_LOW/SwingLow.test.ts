@@ -1,4 +1,4 @@
-import {NotEnoughDataError} from '../../error/NotEnoughDataError.js';
+import {testIndicatorContract} from '../../fixtures/testIndicatorContract.js';
 import {SwingLookback} from './SwingLookback.js';
 import {SwingLow} from './SwingLow.js';
 
@@ -95,16 +95,6 @@ describe('SwingLow', () => {
 
       expect(detected).toEqual([10]);
     });
-
-    it('throws when accessed before enough data has been added', () => {
-      const swingLow = new SwingLow({lookback: SwingLookback.BILL_WILLIAMS});
-
-      swingLow.add({high: 11, low: 10});
-      swingLow.add({high: 9, low: 8});
-
-      expect(() => swingLow.getResultOrThrow()).toThrow(NotEnoughDataError);
-      expect(swingLow.isStable).toBe(false);
-    });
   });
 
   describe('replace', () => {
@@ -150,4 +140,17 @@ describe('SwingLow', () => {
       expect(swingLow.getRequiredInputs()).toBe(11);
     });
   });
+});
+
+testIndicatorContract({
+  create: () => new SwingLow({lookback: SwingLookback.BILL_WILLIAMS}),
+  divergentInput: {high: 2, low: 1},
+  inputs: [
+    {high: 12, low: 11},
+    {high: 11, low: 10},
+    {high: 9, low: 8},
+    {high: 6, low: 5},
+    {high: 8, low: 7},
+    {high: 10, low: 9},
+  ],
 });

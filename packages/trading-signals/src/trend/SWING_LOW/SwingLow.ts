@@ -48,7 +48,7 @@ export class SwingLow extends IndicatorSeries<HighLow> {
     }
     this.#lastEmitted = false;
 
-    pushUpdate(this.#window, replace, candle.low, this.getRequiredInputs());
+    pushUpdate({array: this.#window, item: candle.low, maxLength: this.getRequiredInputs(), replace: replace});
 
     if (this.#window.length < this.getRequiredInputs()) {
       return null;

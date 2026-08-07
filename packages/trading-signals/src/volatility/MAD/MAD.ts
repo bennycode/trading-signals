@@ -24,7 +24,7 @@ export class MAD extends IndicatorSeries {
   }
 
   update(price: number, replace: boolean) {
-    pushUpdate(this.prices, replace, price, this.interval);
+    pushUpdate({array: this.prices, item: price, maxLength: this.interval, replace: replace});
 
     if (this.prices.length === this.interval) {
       const mean = getAverage(this.prices);

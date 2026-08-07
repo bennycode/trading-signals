@@ -26,7 +26,7 @@ export class VWAP extends IndicatorSeries<HighLowCloseVolume<number>> {
   }
 
   override getRequiredInputs() {
-    return 2;
+    return 1;
   }
 
   override update(candle: HighLowCloseVolume<number>, replace: boolean) {

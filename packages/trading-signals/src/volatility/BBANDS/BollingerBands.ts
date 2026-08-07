@@ -33,7 +33,7 @@ export class BollingerBands extends TechnicalIndicator<BandsResult, number> {
   }
 
   update(price: number, replace: boolean) {
-    const dropOut = pushUpdate(this.prices, replace, price, this.interval);
+    pushUpdate({array: this.prices, item: price, maxLength: this.interval, replace: replace});
 
     if (replace) {
       this.result = this.#previousResult;
@@ -46,7 +46,7 @@ export class BollingerBands extends TechnicalIndicator<BandsResult, number> {
     this.#previousPrice = this.#lastPrice;
     this.#lastPrice = price;
 
-    if (dropOut) {
+    if (this.prices.length === this.interval) {
       const middle = getAverage(this.prices);
       const standardDeviation = getStandardDeviation(this.prices, middle);
 

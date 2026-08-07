@@ -69,7 +69,7 @@ export class LinearRegression extends TechnicalIndicator<LinearRegressionResult,
   }
 
   update(price: number, replace: boolean): LinearRegressionResult | null {
-    pushUpdate(this.prices, replace, price, this.interval);
+    pushUpdate({array: this.prices, item: price, maxLength: this.interval, replace: replace});
 
     if (this.prices.length < this.interval) {
       return null;

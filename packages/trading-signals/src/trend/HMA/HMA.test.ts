@@ -1,5 +1,5 @@
+import {testIndicatorContract} from '../../fixtures/testIndicatorContract.js';
 import {HMA} from './HMA.js';
-import {NotEnoughDataError} from '../../error/index.js';
 
 describe('HMA', () => {
   /*
@@ -63,16 +63,11 @@ describe('HMA', () => {
       expect(hma.isStable).toBe(true);
       expect(hma.getRequiredInputs()).toBe(6);
     });
-
-    it('throws an error when there is not enough input data', () => {
-      const hma = new HMA(5);
-
-      try {
-        hma.getResultOrThrow();
-        throw new Error('Expected error');
-      } catch (error) {
-        expect(error).toBeInstanceOf(NotEnoughDataError);
-      }
-    });
   });
+});
+
+testIndicatorContract({
+  create: () => new HMA(5),
+  divergentInput: 1_000,
+  inputs: [81.59, 81.06, 82.87, 83.0, 83.61, 83.15, 82.84, 83.99],
 });

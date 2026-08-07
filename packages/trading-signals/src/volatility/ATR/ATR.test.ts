@@ -1,4 +1,4 @@
-import {NotEnoughDataError} from '../../index.js';
+import {testIndicatorContract} from '../../fixtures/testIndicatorContract.js';
 import {ATR} from './ATR.js';
 
 describe('ATR', () => {
@@ -76,17 +76,6 @@ describe('ATR', () => {
       expect(atr.getRequiredInputs()).toBe(interval);
       expect(atr.getResultOrThrow().toFixed(2)).toBe('1.14');
     });
-
-    it('throws an error when there is not enough input data', () => {
-      const atr = new ATR(14);
-
-      try {
-        atr.getResultOrThrow();
-        throw new Error('Expected error');
-      } catch (error) {
-        expect(error).toBeInstanceOf(NotEnoughDataError);
-      }
-    });
   });
 
   describe('replace', () => {
@@ -123,4 +112,17 @@ describe('ATR', () => {
       expect(atr.getResultOrThrow().toFixed(2)).toBe(latestResult);
     });
   });
+});
+
+testIndicatorContract({
+  create: () => new ATR(3),
+  divergentInput: {close: 200, high: 250, low: 150},
+  inputs: [
+    {close: 81.59, high: 82.15, low: 81.29},
+    {close: 81.06, high: 81.89, low: 80.64},
+    {close: 82.87, high: 83.03, low: 81.31},
+    {close: 83.0, high: 83.3, low: 82.65},
+    {close: 83.61, high: 83.85, low: 83.07},
+    {close: 83.15, high: 83.9, low: 83.11},
+  ],
 });

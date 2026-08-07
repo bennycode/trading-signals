@@ -1,5 +1,5 @@
+import {testIndicatorContract} from '../../fixtures/testIndicatorContract.js';
 import {CMO} from './CMO.js';
-import {NotEnoughDataError} from '../../error/index.js';
 import {TradingSignal} from '../../base/index.js';
 
 describe('CMO', () => {
@@ -74,17 +74,6 @@ describe('CMO', () => {
 
       expect(cmo.getResultOrThrow()).toBe(0);
     });
-
-    it('throws an error when there is not enough input data', () => {
-      const cmo = new CMO(5);
-
-      try {
-        cmo.getResultOrThrow();
-        throw new Error('Expected error');
-      } catch (error) {
-        expect(error).toBeInstanceOf(NotEnoughDataError);
-      }
-    });
   });
 
   describe('getSignal', () => {
@@ -140,4 +129,10 @@ describe('CMO', () => {
       expect(sensitiveBear.getSignal().state).toBe(TradingSignal.BEARISH);
     });
   });
+});
+
+testIndicatorContract({
+  create: () => new CMO(5),
+  divergentInput: 1_000,
+  inputs: [81.59, 81.06, 82.87, 83.0, 83.61, 83.15, 82.84],
 });

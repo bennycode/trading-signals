@@ -1,5 +1,5 @@
+import {testIndicatorContract} from '../../fixtures/testIndicatorContract.js';
 import {ROC} from './ROC.js';
-import {NotEnoughDataError} from '../../error/index.js';
 import {TradingSignal} from '../../base/Indicator.js';
 
 describe('ROC', () => {
@@ -20,7 +20,7 @@ describe('ROC', () => {
 
       const interval = 5;
       const roc = new ROC(interval);
-      const offset = roc.getRequiredInputs();
+      const offset = roc.getRequiredInputs() - 1;
 
       prices.forEach((price, i) => {
         roc.add(price);
@@ -31,7 +31,6 @@ describe('ROC', () => {
         }
       });
 
-      expect(roc.getRequiredInputs()).toBe(interval);
       expect(roc.getSignal()).toEqual({
         hasChanged: false,
         state: TradingSignal.BULLISH,
@@ -41,11 +40,9 @@ describe('ROC', () => {
     it('identifies a down-trending asset by a negative ROC', () => {
       const roc = new ROC(5);
 
-      const prices = [1000, 900, 800, 700, 600, 500, 400, 300, 200, 100];
+      const prices = [1000, 900, 800, 700, 600, 500, 400, 300, 200, 100] as const;
 
-      prices.forEach(price => {
-        roc.add(price);
-      });
+      roc.updates(prices);
 
       expect(roc.getResultOrThrow().toFixed(2)).toBe('-0.83');
       expect(roc.getSignal()).toEqual({
@@ -53,16 +50,14 @@ describe('ROC', () => {
         state: TradingSignal.BEARISH,
       });
     });
+  });
 
-    it('throws an error when there is not enough input data', () => {
-      const roc = new ROC(6);
+  describe('getRequiredInputs', () => {
+    it('returns one bar more than the interval because a comparison needs an older price', () => {
+      const interval = 5;
+      const roc = new ROC(interval);
 
-      try {
-        roc.getResultOrThrow();
-        throw new Error('Expected error');
-      } catch (error) {
-        expect(error).toBeInstanceOf(NotEnoughDataError);
-      }
+      expect(roc.getRequiredInputs()).toBe(interval + 1);
     });
   });
 
@@ -72,9 +67,23 @@ describe('ROC', () => {
       const indicator = new ROC(interval);
       expect(indicator.isStable).toBe(false);
 
-      const mockedPrices = [0.0001904, 0.00019071, 0.00019198, 0.0001922, 0.00019214, 0.00019205];
-      mockedPrices.forEach(price => indicator.add(price));
+      const mockedPrices = [0.0001904, 0.00019071, 0.00019198, 0.0001922, 0.00019214, 0.00019205] as const;
+      indicator.updates(mockedPrices);
       expect(indicator.isStable).toBe(true);
+    });
+
+    it('becomes stable after exactly the number of inputs it reports as required', () => {
+      const roc = new ROC(3);
+      const required = roc.getRequiredInputs();
+
+      for (let i = 1; i < required; i++) {
+        roc.add(10 + i);
+        expect(roc.isStable, `${i} of ${required} inputs is not enough`).toBe(false);
+      }
+
+      roc.add(20);
+
+      expect(roc.isStable, 'the reported number of inputs produces a result').toBe(true);
     });
   });
 
@@ -89,9 +98,7 @@ describe('ROC', () => {
       const roc = new ROC(5);
       const prices = [100, 101, 102, 103, 104, 105] as const;
 
-      for (const price of prices) {
-        roc.add(price);
-      }
+      roc.updates(prices);
 
       const signal = roc.getSignal();
 
@@ -103,9 +110,7 @@ describe('ROC', () => {
       const roc = new ROC(5);
       const prices = [105, 104, 103, 102, 101, 100] as const;
 
-      for (const price of prices) {
-        roc.add(price);
-      }
+      roc.updates(prices);
 
       const signal = roc.getSignal();
 
@@ -117,9 +122,7 @@ describe('ROC', () => {
       const roc = new ROC(5);
       const prices = [100, 100, 100, 100, 100, 100] as const;
 
-      for (const price of prices) {
-        roc.add(price);
-      }
+      roc.updates(prices);
 
       const signal = roc.getSignal();
 
@@ -130,18 +133,49 @@ describe('ROC', () => {
 
   describe('update', () => {
     it('returns a valid result when replacing values', () => {
-      const prices = [81.59, 81.06, 82.87, 83.0, 83.61] as const;
-      const updatePrice = 82.84;
-      const expectation = 0.01911999019;
+      const prices = [81.59, 81.06, 82.87, 83.0, 83.61, 83.15] as const;
 
-      const interval = 5;
-      const roc = new ROC(interval);
+      const roc = new ROC(5);
 
-      prices.forEach(price => roc.add(price));
+      roc.updates(prices);
 
-      roc.replace(updatePrice);
+      const originalResult = roc.getResultOrThrow();
+      const replacedResult = roc.replace(82.84);
 
-      expect(roc.getResultOrThrow().toFixed(2)).toEqual(expectation.toFixed(2));
+      expect(replacedResult, 'a replacement recalculates against the same comparand').not.toBe(originalResult);
+
+      const restoredResult = roc.replace(83.15);
+
+      expect(restoredResult, 'replacing back restores the original result').toBe(originalResult);
+    });
+
+    it('changes nothing when the latest price is replaced with the same value', () => {
+      const prices = [81.59, 81.06, 82.87, 83.0, 83.61, 83.15, 82.84] as const;
+
+      // Swept over every length because the comparand only goes wrong at the boundary.
+      for (let length = 1; length <= prices.length; length++) {
+        const roc = new ROC(5);
+
+        roc.updates(prices.slice(0, length));
+
+        const resultBefore = roc.getResult();
+        const stableBefore = roc.isStable;
+
+        roc.replace(prices[length - 1]);
+
+        expect(roc.getResult(), `replacing price ${length} with itself is a no-op`).toBe(resultBefore);
+        expect(roc.isStable, `and does not change stability at ${length} prices`).toBe(stableBefore);
+      }
+    });
+
+    it('stays unstable when replacing before the window is full', () => {
+      const roc = new ROC(3);
+
+      roc.updates([10, 11, 12]);
+
+      expect(roc.isStable, 'three prices do not fill a ROC(3) comparison window').toBe(false);
+      expect(roc.replace(12.5), 'a replacement adds no bar, so there is still nothing to compare').toBeNull();
+      expect(roc.isStable, 'a replacement must never make an unstable indicator stable').toBe(false);
     });
 
     it('keeps the correct comparand when replacing after the window has advanced', {tags: ['regression']}, () => {
@@ -168,4 +202,10 @@ describe('ROC', () => {
       ).toBe(original.getResultOrThrow().toFixed());
     });
   });
+});
+
+testIndicatorContract({
+  create: () => new ROC(5),
+  divergentInput: 1_000,
+  inputs: [81.59, 81.06, 82.87, 83.0, 83.61, 83.15, 82.84],
 });

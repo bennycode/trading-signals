@@ -1,3 +1,4 @@
+import {testIndicatorContract} from '../../fixtures/testIndicatorContract.js';
 import {REI} from './REI.js';
 import {TradingSignal} from '../../base/index.js';
 
@@ -198,17 +199,6 @@ describe('REI', () => {
 
       expect(rei.getResultOrThrow().toFixed(2)).toBe('-14.99');
     });
-
-    it('returns null until there are enough data points', () => {
-      const interval = 8;
-      const rei = new REI(interval);
-
-      for (let i = 0; i < 15; i++) {
-        rei.add({close: i, high: i, low: i});
-      }
-
-      expect(rei.getResult()).toBeNull();
-    });
   });
 
   describe('getSignal', () => {
@@ -254,4 +244,28 @@ describe('REI', () => {
       expect(signal.state).toBe(TradingSignal.SIDEWAYS);
     });
   });
+});
+
+testIndicatorContract({
+  create: () => new REI(8),
+  divergentInput: {close: 3_000, high: 4_000, low: 2_000},
+  inputs: [
+    {close: 453.13, high: 456.19, low: 450.43},
+    {close: 454.27, high: 454.36, low: 448.73},
+    {close: 458.87, high: 459.58, low: 450.8},
+    {close: 458.17, high: 458.34, low: 454.32},
+    {close: 452.57, high: 457.78, low: 451.81},
+    {close: 454.86, high: 460.25, low: 453.9},
+    {close: 450.18, high: 453.69, low: 448.91},
+    {close: 460.69, high: 460.95, low: 456.11},
+    {close: 457.36, high: 462.52, low: 456.93},
+    {close: 458.68, high: 461.72, low: 455.31},
+    {close: 460.36, high: 461.68, low: 455.54},
+    {close: 461.97, high: 462.11, low: 456.89},
+    {close: 462.97, high: 464.14, low: 460.86},
+    {close: 463.87, high: 465.69, low: 463.02},
+    {close: 467.68, high: 469.65, low: 464.03},
+    {close: 470.38, high: 473.33, low: 468.78},
+    {close: 471.12, high: 473.5, low: 469.4},
+  ],
 });

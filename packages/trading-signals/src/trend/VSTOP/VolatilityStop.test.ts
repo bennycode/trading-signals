@@ -1,5 +1,5 @@
+import {testIndicatorContract} from '../../fixtures/testIndicatorContract.js';
 import {VolatilityStop} from './VolatilityStop.js';
-import {NotEnoughDataError} from '../../error/index.js';
 
 describe('VolatilityStop', () => {
   /*
@@ -96,16 +96,24 @@ describe('VolatilityStop', () => {
       expect(vstop.getRequiredInputs()).toBe(5);
       expect(vstop.multiplier).toBe(3.5);
     });
-
-    it('throws an error when there is not enough input data', () => {
-      const vstop = new VolatilityStop({interval: 5, multiplier: 1});
-
-      try {
-        vstop.getResultOrThrow();
-        throw new Error('Expected error');
-      } catch (error) {
-        expect(error).toBeInstanceOf(NotEnoughDataError);
-      }
-    });
   });
+});
+
+testIndicatorContract({
+  create: () => new VolatilityStop({interval: 5, multiplier: 1}),
+  divergentInput: {close: 1, high: 14, low: 0.5},
+  inputs: [
+    {close: 10, high: 11, low: 9},
+    {close: 11, high: 12, low: 10},
+    {close: 12, high: 13, low: 11},
+    {close: 13, high: 14, low: 12},
+    {close: 14, high: 15, low: 13},
+    {close: 15, high: 16, low: 14},
+    {close: 14.5, high: 15.5, low: 13.5},
+    {close: 10, high: 15, low: 9.5},
+    {close: 9, high: 10, low: 8},
+    {close: 9.5, high: 10.5, low: 8.5},
+    {close: 13, high: 13.5, low: 9},
+    {close: 14, high: 15, low: 13},
+  ],
 });

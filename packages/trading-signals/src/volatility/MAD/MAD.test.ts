@@ -1,5 +1,5 @@
+import {testIndicatorContract} from '../../fixtures/testIndicatorContract.js';
 import {MAD} from './MAD.js';
-import {NotEnoughDataError} from '../../error/index.js';
 
 describe('MAD', () => {
   /*
@@ -80,16 +80,6 @@ describe('MAD', () => {
       }
       expect(mad.getResultOrThrow().toFixed(2)).toBe('0.62');
     });
-
-    it('throws an error when there is not enough input data', () => {
-      const mad = new MAD(5);
-      try {
-        mad.getResultOrThrow();
-        throw new Error('Expected error');
-      } catch (error) {
-        expect(error).toBeInstanceOf(NotEnoughDataError);
-      }
-    });
   });
 
   describe('getResultFromBatch', () => {
@@ -117,4 +107,10 @@ describe('MAD', () => {
       expect(MAD.getResultFromBatch(prices, mean)).toBe(3.6);
     });
   });
+});
+
+testIndicatorContract({
+  create: () => new MAD(5),
+  divergentInput: 1_000,
+  inputs: [81.59, 81.06, 82.87, 83.0, 83.61, 83.15],
 });

@@ -48,7 +48,7 @@ export class RSI extends TrendIndicatorSeries {
   }
 
   update(price: number, replace: boolean) {
-    pushUpdate(this.#previousPrices, replace, price, this.interval);
+    pushUpdate({array: this.#previousPrices, item: price, maxLength: this.interval, replace: replace});
 
     // Ensure at least 2 prices are available for calculation
     if (this.#previousPrices.length < 2) {

@@ -32,7 +32,7 @@ export class CMF extends TrendIndicatorSeries<HighLowCloseVolume> {
   }
 
   update(candle: HighLowCloseVolume, replace: boolean) {
-    pushUpdate(this.#candles, replace, candle, this.interval);
+    pushUpdate({array: this.#candles, item: candle, maxLength: this.interval, replace: replace});
 
     if (this.#candles.length < this.interval) {
       return null;

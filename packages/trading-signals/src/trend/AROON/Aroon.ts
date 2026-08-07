@@ -35,7 +35,7 @@ export class Aroon extends TechnicalIndicator<AroonResult, HighLow<number>> {
   }
 
   update(candle: HighLow<number>, replace: boolean) {
-    pushUpdate(this.#candles, replace, candle, this.getRequiredInputs());
+    pushUpdate({array: this.#candles, item: candle, maxLength: this.getRequiredInputs(), replace: replace});
 
     if (this.#candles.length < this.getRequiredInputs()) {
       return null;

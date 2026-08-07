@@ -37,7 +37,7 @@ export class CMO extends TrendIndicatorSeries {
   }
 
   update(price: number, replace: boolean) {
-    pushUpdate(this.#prices, replace, price, this.getRequiredInputs());
+    pushUpdate({array: this.#prices, item: price, maxLength: this.getRequiredInputs(), replace: replace});
 
     if (this.#prices.length < this.getRequiredInputs()) {
       return null;

@@ -32,7 +32,8 @@ export class AC extends TrendIndicatorSeries<HighLow<number>> {
   }
 
   override getRequiredInputs() {
-    return this.ao.getRequiredInputs() + this.signal.getRequiredInputs();
+    // The bar that yields the first AO result is also the signal SMA's first input.
+    return this.ao.getRequiredInputs() + this.signal.getRequiredInputs() - 1;
   }
 
   update(input: HighLow<number>, replace: boolean) {

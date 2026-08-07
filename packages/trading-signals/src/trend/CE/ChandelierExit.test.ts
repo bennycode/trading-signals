@@ -1,5 +1,5 @@
+import {testIndicatorContract} from '../../fixtures/testIndicatorContract.js';
 import {ChandelierExit} from './ChandelierExit.js';
-import {NotEnoughDataError} from '../../error/index.js';
 
 describe('ChandelierExit', () => {
   /*
@@ -101,16 +101,20 @@ describe('ChandelierExit', () => {
       expect(ce.getRequiredInputs()).toBe(22);
       expect(ce.multiplier).toBe(3);
     });
-
-    it('throws an error when there is not enough input data', () => {
-      const ce = new ChandelierExit({interval: 5, multiplier: 3});
-
-      try {
-        ce.getResultOrThrow();
-        throw new Error('Expected error');
-      } catch (error) {
-        expect(error).toBeInstanceOf(NotEnoughDataError);
-      }
-    });
   });
+});
+
+testIndicatorContract({
+  create: () => new ChandelierExit({interval: 5, multiplier: 3}),
+  divergentInput: {close: 500, high: 510, low: 490},
+  inputs: [
+    {close: 81.59, high: 82.15, low: 81.29},
+    {close: 81.06, high: 81.89, low: 80.64},
+    {close: 82.87, high: 83.03, low: 81.31},
+    {close: 83.0, high: 83.3, low: 82.65},
+    {close: 83.61, high: 83.85, low: 83.07},
+    {close: 83.15, high: 83.9, low: 83.11},
+    {close: 82.84, high: 83.33, low: 82.49},
+    {close: 83.99, high: 84.3, low: 82.3},
+  ],
 });

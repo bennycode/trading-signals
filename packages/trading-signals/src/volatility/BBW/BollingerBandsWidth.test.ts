@@ -1,3 +1,4 @@
+import {testIndicatorContract} from '../../fixtures/testIndicatorContract.js';
 import {BollingerBands} from '../BBANDS/BollingerBands.js';
 import {BollingerBandsWidth} from './BollingerBandsWidth.js';
 
@@ -42,24 +43,35 @@ describe('BollingerBandsWidth', () => {
       /*
        * Test data verified with:
        * https://www.tradingview.com/support/solutions/43000501972/
+       *
+       * TradingView reports BBW to two decimals, which is too coarse to tell neighbouring readings
+       * apart: the first two bars below both display as "0.19". These expectations are the same
+       * series carried out to eight decimals, derived from the definition
+       * `(upper - lower) / middle` over a 20-price window with a population standard deviation.
+       * Each one still rounds to the TradingView figure quoted beside it.
+       *
+       * TradingView plots its first BBW value on the 20th bar, exactly where the first
+       * expectation below sits. The previous implementation became stable one bar late, so the
+       * old test silently skipped TradingView's first plotted value.
        */
       const expectations = [
-        '0.19',
-        '0.21',
-        '0.21',
-        '0.21',
-        '0.20',
-        '0.18',
-        '0.15',
-        '0.13',
-        '0.11',
-        '0.09',
-        '0.09',
+        '0.18527244', // 0.19
+        '0.19448621', // 0.19
+        '0.20620703', // 0.21
+        '0.20947164', // 0.21
+        '0.20811594', // 0.21
+        '0.20235584', // 0.20
+        '0.18343591', // 0.18
+        '0.15339154', // 0.15
+        '0.12996632', // 0.13
+        '0.10676506', // 0.11
+        '0.08600268', // 0.09
+        '0.08869419', // 0.09
       ] as const;
 
       const interval = 20;
       const bbw = new BollingerBandsWidth(new BollingerBands(interval, 2));
-      const offset = bbw.getRequiredInputs();
+      const offset = bbw.getRequiredInputs() - 1;
 
       expect(bbw.getRequiredInputs()).toBe(interval);
 
@@ -67,9 +79,15 @@ describe('BollingerBandsWidth', () => {
         bbw.add(close);
         if (bbw.isStable) {
           const expected = expectations[i - offset];
-          expect(bbw.getResultOrThrow().toFixed(2)).toBe(`${expected}`);
+          expect(bbw.getResultOrThrow().toFixed(8)).toBe(`${expected}`);
         }
       });
     });
   });
+});
+
+testIndicatorContract({
+  create: () => new BollingerBandsWidth(new BollingerBands(5, 2)),
+  divergentInput: 500,
+  inputs: [68.21, 68.63, 68.01, 68.0, 67.28, 65.49],
 });

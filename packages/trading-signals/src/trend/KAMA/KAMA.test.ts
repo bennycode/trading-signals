@@ -1,5 +1,5 @@
+import {testIndicatorContract} from '../../fixtures/testIndicatorContract.js';
 import {KAMA} from './KAMA.js';
-import {NotEnoughDataError} from '../../error/index.js';
 
 describe('KAMA', () => {
   /*
@@ -74,16 +74,11 @@ describe('KAMA', () => {
 
       expect(kama.getResultOrThrow()).toBe(100);
     });
-
-    it('throws an error when there is not enough input data', () => {
-      const kama = new KAMA(5);
-
-      try {
-        kama.getResultOrThrow();
-        throw new Error('Expected error');
-      } catch (error) {
-        expect(error).toBeInstanceOf(NotEnoughDataError);
-      }
-    });
   });
+});
+
+testIndicatorContract({
+  create: () => new KAMA(5),
+  divergentInput: 1_000,
+  inputs: [81.59, 81.06, 82.87, 83.0, 83.61, 83.15],
 });

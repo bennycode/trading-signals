@@ -41,9 +41,9 @@ export class ER extends TrendIndicatorSeries<HighLowClose> {
   }
 
   update(candle: HighLowClose, replace: boolean) {
-    pushUpdate(this.#closes, replace, candle.close, this.interval);
-    pushUpdate(this.#highs, replace, candle.high, this.interval);
-    pushUpdate(this.#lows, replace, candle.low, this.interval);
+    pushUpdate({array: this.#closes, item: candle.close, maxLength: this.interval, replace: replace});
+    pushUpdate({array: this.#highs, item: candle.high, maxLength: this.interval, replace: replace});
+    pushUpdate({array: this.#lows, item: candle.low, maxLength: this.interval, replace: replace});
 
     if (this.#closes.length < this.interval) {
       return null;

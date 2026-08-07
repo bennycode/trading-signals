@@ -1,5 +1,5 @@
+import {testIndicatorContract} from '../../fixtures/testIndicatorContract.js';
 import {VROC} from './VROC.js';
-import {NotEnoughDataError} from '../../error/index.js';
 import {TradingSignal} from '../../base/index.js';
 
 describe('VROC', () => {
@@ -28,18 +28,6 @@ describe('VROC', () => {
 
       expect(vroc.isStable).toBe(true);
       expect(vroc.getRequiredInputs()).toBe(4);
-    });
-
-    it('throws an error when there is not enough input data', () => {
-      const vroc = new VROC(5);
-      expect(vroc.isStable).toBe(false);
-
-      try {
-        vroc.getResultOrThrow();
-        throw new Error('Expected error');
-      } catch (error) {
-        expect(error).toBeInstanceOf(NotEnoughDataError);
-      }
     });
 
     it('returns 0 when previous volume is 0', () => {
@@ -128,4 +116,10 @@ describe('VROC', () => {
       expect(restoredResult).toBe(originalResult);
     });
   });
+});
+
+testIndicatorContract({
+  create: () => new VROC(3),
+  divergentInput: 99_000,
+  inputs: [1000, 1500, 2000, 2500, 3000],
 });
