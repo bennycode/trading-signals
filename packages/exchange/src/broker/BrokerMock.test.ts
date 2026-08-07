@@ -468,6 +468,44 @@ describe('BrokerMock', () => {
       expect(fills[0].price).toBe('105.35');
     });
 
+    it('clamps a slipped market buy to the candle high when the rate would fill above it', async () => {
+      const exchange = createExchange('0', '10000', {rate: new Big('0.05')});
+
+      exchange.processCandle(createCandle({close: '100', open: '100'}));
+
+      await exchange.placeMarketOrder(pair, {
+        side: OrderSide.BUY,
+        size: '1',
+        sizeInCounter: false,
+      });
+
+      const fills = exchange.processCandle(
+        createCandle({close: '100', high: '100.5', low: '99.5', open: '100', openTimeInISO: '2025-01-01T00:01:00.000Z'})
+      );
+
+      expect(fills).toHaveLength(1);
+      expect(fills[0].price, '100 open + 5% slippage would be 105, clamped to the candle high').toBe('100.5');
+    });
+
+    it('clamps a slipped market sell to the candle low when the rate would fill below it', async () => {
+      const exchange = createExchange('5', '0', {rate: new Big('0.05')});
+
+      exchange.processCandle(createCandle({close: '100', open: '100'}));
+
+      await exchange.placeMarketOrder(pair, {
+        side: OrderSide.SELL,
+        size: '1',
+        sizeInCounter: false,
+      });
+
+      const fills = exchange.processCandle(
+        createCandle({close: '100', high: '100.5', low: '99.5', open: '100', openTimeInISO: '2025-01-01T00:01:00.000Z'})
+      );
+
+      expect(fills).toHaveLength(1);
+      expect(fills[0].price, '100 open - 5% slippage would be 95, clamped to the candle low').toBe('99.5');
+    });
+
     it('defaults to zero slippage when not configured', async () => {
       const exchange = createExchange('0', '10000');
 

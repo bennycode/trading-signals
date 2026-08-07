@@ -127,10 +127,23 @@ export abstract class BrokerMock extends Broker {
         order.side === OrderSide.BUY
           ? candleOpen.mul(new Big(1).plus(this.#slippageRate))
           : candleOpen.mul(new Big(1).minus(this.#slippageRate));
-      fillPrice =
+      const roundedPrice =
         order.side === OrderSide.BUY
           ? this.#roundUpToIncrement(rawPrice, increment)
           : this.#roundDownToIncrement(rawPrice, increment);
+      /*
+       * Slippage must not produce a fill outside the prices that actually traded in this
+       * candle — same requirement as the priceImprovement:false clamp below, just applied
+       * to the slipped price instead of the raw limit price.
+       */
+      fillPrice =
+        order.side === OrderSide.BUY
+          ? roundedPrice.gt(candleHigh)
+            ? candleHigh
+            : roundedPrice
+          : roundedPrice.lt(candleLow)
+            ? candleLow
+            : roundedPrice;
 
       if (order.sizeInCounter) {
         /*
