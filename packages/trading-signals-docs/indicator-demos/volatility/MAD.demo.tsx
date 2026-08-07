@@ -4,17 +4,17 @@ import {buildTableColumns} from '../../utils/tableColumns';
 import type {IndicatorConfig} from '../../utils/types';
 
 export const MAD: IndicatorConfig = {
-  id: 'mad',
-  name: 'MAD',
-  description: 'Mean Absolute Deviation',
+  chartTitle: 'MAD (10)',
   color: '#ef4444',
-  type: 'single',
-  requiredInputs: 10,
+  createIndicator: () => new MADClass(10),
+  description: 'Mean Absolute Deviation',
   details:
     'Average absolute deviation from the mean. Measures the average distance between each data point and the mean of the dataset.',
-  createIndicator: () => new MADClass(10),
+  getTableColumns: indicator => buildTableColumns({indicator, inputs: ['close']}),
+  id: 'mad',
+  name: 'MAD',
   processData: makeProcessData({rowInputs: ['close']}),
-  getTableColumns: indicator => buildTableColumns({inputs: ['close'], indicator}),
-  chartTitle: 'MAD (10)',
+  requiredInputs: 10,
+  type: 'single',
   yAxisLabel: 'MAD',
 };

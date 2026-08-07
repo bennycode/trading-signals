@@ -1,7 +1,7 @@
+import {testIndicatorContract} from '../../fixtures/testIndicatorContract.js';
 import {MACD} from './MACD.js';
 import {EMA} from '../../trend/EMA/EMA.js';
-import {NotEnoughDataError} from '../../error/index.js';
-import {TradingSignal} from '../../types/index.js';
+import {TradingSignal} from '../../base/index.js';
 
 describe('MACD', () => {
   describe('replace', () => {
@@ -44,7 +44,7 @@ describe('MACD', () => {
   });
 
   describe('getResultOrThrow', () => {
-    it('is compatible with results from Tulip Indicators (TI)', () => {
+    it('is compatible with results from Tulip Indicators (TI)', {tags: ['tulipindicators']}, () => {
       /*
        * Test data verified with:
        * https://tulipindicators.org/macd
@@ -128,17 +128,6 @@ describe('MACD', () => {
 
       expect(macd.isStable).toBe(true);
     });
-
-    it('throws an error when there is not enough input data', () => {
-      const macd = new MACD(new EMA(12), new EMA(26), new EMA(9));
-
-      try {
-        macd.getResultOrThrow();
-        throw new Error('Expected error');
-      } catch (error) {
-        expect(error).toBeInstanceOf(NotEnoughDataError);
-      }
-    });
   });
 
   describe('isStable', () => {
@@ -201,4 +190,10 @@ describe('MACD', () => {
       expect(typeof signal.hasChanged).toBe('boolean');
     });
   });
+});
+
+testIndicatorContract({
+  create: () => new MACD(new EMA(2), new EMA(5), new EMA(9)),
+  divergentInput: 1_000,
+  inputs: [81.59, 81.06, 82.87, 83.0, 83.61, 83.15, 82.84],
 });

@@ -1,12 +1,12 @@
-import {TechnicalIndicator} from '../../types/Indicator.js';
+import {TechnicalIndicator} from '../../base/Indicator.js';
 import type {MovingAverage} from '../MA/MovingAverage.js';
 import type {MovingAverageTypes} from '../MA/MovingAverageTypes.js';
 import {SMA} from '../SMA/SMA.js';
 
-export interface DMAResult {
+export type DMAResult = {
   long: number;
   short: number;
-}
+};
 
 /**
  * Dual Moving Average (DMA)

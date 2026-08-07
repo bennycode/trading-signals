@@ -1,7 +1,7 @@
+import {testIndicatorContract} from '../../fixtures/testIndicatorContract.js';
 import {WilliamsR} from './WilliamsR.js';
 import {StochasticOscillator} from '../STOCH/StochasticOscillator.js';
-import {NotEnoughDataError} from '../../error/index.js';
-import {TradingSignal} from '../../types/index.js';
+import {TradingSignal} from '../../base/index.js';
 import candles from '../../fixtures/STOCH/candles.json' with {type: 'json'};
 
 describe('WilliamsR', () => {
@@ -38,17 +38,6 @@ describe('WilliamsR', () => {
       expect(willR.getResultOrThrow().toFixed(2)).toBe('-17.88');
     });
 
-    it('returns null until enough values are provided', () => {
-      const willR = new WilliamsR(5);
-
-      for (let i = 0; i < 4; i++) {
-        const result = willR.add({close: i, high: i + 1, low: i - 1});
-        expect(result).toBeNull();
-      }
-
-      expect(willR.isStable).toBe(false);
-    });
-
     it('prevents division by zero when highest high and lowest low have the same value', () => {
       const willR = new WilliamsR(5);
 
@@ -68,7 +57,7 @@ describe('WilliamsR', () => {
        * Therefore: Williams %R = Stochastic %K - 100
        */
       const willR = new WilliamsR(5);
-      const stoch = new StochasticOscillator(5, 1, 1);
+      const stoch = new StochasticOscillator({dPeriod: 1, kPeriod: 5, kSlowingPeriod: 1});
 
       candles.forEach(candle => {
         const willRResult = willR.add(candle);
@@ -107,29 +96,22 @@ describe('WilliamsR', () => {
     });
   });
 
-  describe('getResultOrThrow', () => {
-    it('throws an error when there is not enough input data', () => {
-      const willR = new WilliamsR(14);
-
-      for (let i = 0; i < 13; i++) {
-        willR.add({close: i, high: i + 1, low: i - 1});
-      }
-
-      try {
-        willR.getResultOrThrow();
-        throw new Error('Expected error');
-      } catch (error) {
-        expect(error).toBeInstanceOf(NotEnoughDataError);
-      }
-    });
-  });
-
   describe('getSignal', () => {
     it('returns UNKNOWN when there is no result', () => {
       const willR = new WilliamsR(14);
       const calculateSignalState = willR['calculateSignalState'].bind(willR);
       const signal = calculateSignalState(null);
       expect(signal).toBe(TradingSignal.UNKNOWN);
+    });
+
+    it('respects custom overbought and oversold thresholds', () => {
+      const willR = new WilliamsR(14, {overbought: -10, oversold: -90});
+      const calculateSignalState = willR['calculateSignalState'].bind(willR);
+
+      expect(calculateSignalState(-20)).toBe(TradingSignal.SIDEWAYS);
+      expect(calculateSignalState(-10)).toBe(TradingSignal.BULLISH);
+      expect(calculateSignalState(-80)).toBe(TradingSignal.SIDEWAYS);
+      expect(calculateSignalState(-90)).toBe(TradingSignal.BEARISH);
     });
 
     it('returns OVERBOUGHT when Williams %R >= -20', () => {
@@ -153,4 +135,17 @@ describe('WilliamsR', () => {
       expect(signal).toBe(TradingSignal.SIDEWAYS);
     });
   });
+});
+
+testIndicatorContract({
+  create: () => new WilliamsR(5),
+  divergentInput: {close: 900, high: 1_000, low: 800},
+  inputs: [
+    {close: 10, high: 11, low: 9},
+    {close: 11, high: 12, low: 10},
+    {close: 12, high: 13, low: 11},
+    {close: 11.5, high: 12.5, low: 10.5},
+    {close: 12.5, high: 13.5, low: 11.5},
+    {close: 13, high: 14, low: 12},
+  ],
 });

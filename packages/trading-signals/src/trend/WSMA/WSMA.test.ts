@@ -1,5 +1,5 @@
+import {testIndicatorContract} from '../../fixtures/testIndicatorContract.js';
 import {WSMA} from './WSMA.js';
-import {NotEnoughDataError} from '../../error/index.js';
 
 describe('WSMA', () => {
   describe('replace', () => {
@@ -76,7 +76,7 @@ describe('WSMA', () => {
       expect(wsma.getResultOrThrow().toFixed(2)).toBe('18.97');
     });
 
-    it('is compatible with results from Tulip Indicators (TI)', () => {
+    it('is compatible with results from Tulip Indicators (TI)', {tags: ['tulipindicators']}, () => {
       /*
        * Test data verified with:
        * https://github.com/TulipCharts/tulipindicators/blob/v0.8.0/tests/atoz.txt#L299-L302
@@ -114,30 +114,6 @@ describe('WSMA', () => {
       expect(wsma.isStable).toBe(true);
       expect(wsma.getResultOrThrow().toFixed(4)).toBe('62.8540');
     });
-
-    it('throws an error when there is no input data', () => {
-      const wsma = new WSMA(3);
-
-      try {
-        wsma.getResultOrThrow();
-        throw new Error('Expected error');
-      } catch (error) {
-        expect(error).toBeInstanceOf(NotEnoughDataError);
-      }
-    });
-
-    it('throws an error when there is not enough input data', () => {
-      const wsma = new WSMA(3);
-      wsma.add(1);
-      wsma.add(2);
-
-      try {
-        wsma.getResultOrThrow();
-        throw new Error('Expected error');
-      } catch (error) {
-        expect(error).toBeInstanceOf(NotEnoughDataError);
-      }
-    });
   });
 
   describe('updates', () => {
@@ -162,4 +138,10 @@ describe('WSMA', () => {
       expect(wsma.isStable).toBe(true);
     });
   });
+});
+
+testIndicatorContract({
+  create: () => new WSMA(3),
+  divergentInput: 1_000,
+  inputs: [11, 12, 13, 14, 15],
 });

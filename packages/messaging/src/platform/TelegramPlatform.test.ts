@@ -1,43 +1,57 @@
 import {describe, it, expect, vi, beforeEach} from 'vitest';
-import type {Context} from 'grammy';
+import type {Bot as GrammyBot, Context} from 'grammy';
+import type {getAvailableReportNames} from 'trading-strategies';
+import type {Account} from '../database/models/Account.js';
 import {TelegramPlatform, lowercaseCommandMiddleware} from './TelegramPlatform.js';
 import {reportAdd} from '../command/report/reportAdd.js';
 import {logger} from '../logger.js';
+
+/*
+ * The captured-handler types describe only the ctx surface the tests drive — enough for the
+ * specs to invoke the handlers with plain-object ctx doubles instead of full grammy contexts.
+ */
+type CapturedCommandHandler = (ctx: {
+  from: {id: number} | undefined;
+  message: {text: string};
+  reply: (text: string) => Promise<void>;
+}) => Promise<void>;
+
+type CapturedCallbackQueryHandler = (ctx: {
+  answerCallbackQuery: () => Promise<void>;
+  editMessageText: (text: string) => Promise<void>;
+  from: {id: number} | undefined;
+  match: string[];
+}) => Promise<void>;
 
 const mockSendMessage = vi.fn();
 const mockInit = vi.fn();
 const mockStart = vi.fn().mockReturnValue(new Promise(() => {}));
 const mockStop = vi.fn();
-const mockCommand = vi.fn();
-const mockCallbackQuery = vi.fn();
+const mockCommand = vi.fn<(command: string | string[], handler: CapturedCommandHandler) => void>();
+const mockCallbackQuery = vi.fn<(pattern: RegExp, handler: CapturedCallbackQueryHandler) => void>();
 const mockUse = vi.fn();
 const botInfo = {username: 'testbot'};
 const mockedReportAdd = vi.mocked(reportAdd);
 
-vi.mock('trading-strategies', () => ({
-  getAvailableReportNames: vi.fn().mockReturnValue([]),
-  MESSAGE_BREAK: '\f',
+vi.mock(import('trading-strategies'), () => ({
+  getAvailableReportNames: vi.fn().mockReturnValue([]) as unknown as typeof getAvailableReportNames,
+  MESSAGE_BREAK: '\f' as const,
 }));
 
-vi.mock('../command/report/reportAdd.js', () => ({
-  reportAdd: vi.fn(),
-}));
+vi.mock(import('../command/report/reportAdd.js'));
 
-const mockFindByUserId = vi.fn().mockReturnValue([]);
-const mockFindByUserIdAndId = vi.fn().mockReturnValue(undefined);
-vi.mock('../database/models/Account.js', () => ({
+const mockFindByUserId = vi.fn<typeof Account.findByUserId>().mockReturnValue([]);
+const mockFindByUserIdAndId = vi.fn<typeof Account.findByUserIdAndId>().mockReturnValue(undefined);
+vi.mock(import('../database/models/Account.js'), () => ({
   Account: {
-    findByUserId: (...args: unknown[]) => mockFindByUserId(...args),
-    findByUserIdAndId: (...args: unknown[]) => mockFindByUserIdAndId(...args),
-  },
+    findByUserId: (...args: Parameters<typeof Account.findByUserId>) => mockFindByUserId(...args),
+    findByUserIdAndId: (...args: Parameters<typeof Account.findByUserIdAndId>) => mockFindByUserIdAndId(...args),
+  } as unknown as typeof Account,
 }));
 
-vi.mock('@grammyjs/conversations', () => ({
-  conversations: vi.fn(() => 'conversations-middleware'),
-  createConversation: vi.fn(() => 'create-conversation-middleware'),
-}));
+vi.mock(import('@grammyjs/conversations'));
 
-vi.mock('grammy', () => {
+vi.mock(import('grammy'), () => {
   function Bot() {
     return {
       api: {
@@ -56,12 +70,10 @@ vi.mock('grammy', () => {
     };
   }
 
-  return {Bot};
+  return {Bot: Bot as unknown as typeof GrammyBot};
 });
 
-vi.mock('@grammyjs/auto-retry', () => ({
-  autoRetry: vi.fn(() => vi.fn()),
-}));
+vi.mock(import('@grammyjs/auto-retry'));
 
 describe('TelegramPlatform', () => {
   beforeEach(() => {

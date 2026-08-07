@@ -1,6 +1,6 @@
+import {testIndicatorContract} from '../../fixtures/testIndicatorContract.js';
 import {ER} from './ER.js';
-import {NotEnoughDataError} from '../../error/index.js';
-import {TradingSignal} from '../../types/Indicator.js';
+import {TradingSignal} from '../../base/Indicator.js';
 
 describe('ER', () => {
   describe('getResultOrThrow', () => {
@@ -73,17 +73,6 @@ describe('ER', () => {
 
       expect(er.getResultOrThrow()).toBe(0);
     });
-
-    it('throws an error when there is not enough input data', () => {
-      const er = new ER(5);
-
-      try {
-        er.getResultOrThrow();
-        throw new Error('Expected error');
-      } catch (error) {
-        expect(error).toBeInstanceOf(NotEnoughDataError);
-      }
-    });
   });
 
   describe('isStable', () => {
@@ -108,6 +97,22 @@ describe('ER', () => {
       const er = new ER(5);
 
       expect(er.getSignal().state).toBe(TradingSignal.UNKNOWN);
+    });
+
+    it('respects a custom trending threshold', () => {
+      const er = new ER(3, {trending: 0.8});
+      const candles = [
+        {close: 100, high: 101, low: 99},
+        {close: 103, high: 104, low: 102},
+        {close: 106, high: 107, low: 105},
+      ] as const;
+
+      for (const candle of candles) {
+        er.add(candle);
+      }
+
+      expect(er.getResultOrThrow()).toBe(0.75);
+      expect(er.getSignal().state).toBe(TradingSignal.SIDEWAYS);
     });
 
     it('returns BULLISH when efficiency >= 0.5 (trending)', () => {
@@ -175,4 +180,15 @@ describe('ER', () => {
       expect(er.getRequiredInputs()).toBe(20);
     });
   });
+});
+
+testIndicatorContract({
+  create: () => new ER(3),
+  divergentInput: {close: 1_000, high: 1_100, low: 900},
+  inputs: [
+    {close: 100, high: 101, low: 99},
+    {close: 102, high: 103, low: 101},
+    {close: 104, high: 105, low: 103},
+    {close: 106, high: 107, low: 105},
+  ],
 });

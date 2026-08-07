@@ -80,7 +80,7 @@ export class ReportScheduler {
   }
 
   async #runAndNotify(row: ReportAttributes): Promise<void> {
-    const config = JSON.parse(row.config);
+    const config: unknown = JSON.parse(row.config);
 
     let api: AlpacaAPI | undefined;
     if (reportRequiresAccount(row.reportName)) {

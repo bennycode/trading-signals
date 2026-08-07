@@ -1,4 +1,15 @@
-import {TradingSignal, TrendIndicatorSeries} from '../../types/Indicator.js';
+import {TradingSignal, TrendIndicatorSeries, type TradingSignals} from '../../base/Indicator.js';
+
+type TDSState = {
+  closes: number[];
+  /**
+   * Whether the latest bar completed a setup. TDS emits sparsely and its result persists between
+   * setups, so only a bar that emitted may withdraw that emission when it gets replaced.
+   */
+  lastBarCompletedSetup: boolean;
+  setupCount: number;
+  setupDirection: 'bullish' | 'bearish' | null;
+};
 
 /**
  * Tom Demark's Sequential Indicator (TDS)
@@ -15,51 +26,63 @@ import {TradingSignal, TrendIndicatorSeries} from '../../types/Indicator.js';
  * @see https://hackernoon.com/how-to-buy-sell-cryptocurrency-with-number-indicator-td-sequential-5af46f0ebce1
  * @see https://practicaltechnicalanalysis.blogspot.com/2013/01/tom-demark-sequential.html
  */
-export class TDS extends TrendIndicatorSeries {
-  private readonly closes: number[] = [];
-  private setupCount: number = 0;
-  private setupDirection: 'bullish' | 'bearish' | null = null;
+export class TDS extends TrendIndicatorSeries<number, TradingSignals, TDSState> {
+  protected override state: TDSState = {
+    closes: [],
+    lastBarCompletedSetup: false,
+    setupCount: 0,
+    setupDirection: null,
+  };
 
   override getRequiredInputs() {
     return 9;
   }
 
   update(close: number, replace: boolean): number | null {
-    if (replace) {
-      this.closes.pop();
+    // Read before trackState() rewinds the flag to what the bar before the replaced one found
+    if (replace && this.state.lastBarCompletedSetup) {
+      this.rollbackLastResult();
     }
-    this.closes.push(close);
-    if (this.closes.length < 5) {
+
+    this.trackState(replace);
+
+    const state = this.state;
+
+    state.closes.push(close);
+    state.lastBarCompletedSetup = false;
+
+    if (state.closes.length < 5) {
       return null;
     }
     // Only keep the last 13 closes for memory efficiency
-    if (this.closes.length > 13) {
-      this.closes.shift();
+    if (state.closes.length > 13) {
+      state.closes.shift();
     }
-    const index = this.closes.length - 1;
-    const prev4 = this.closes[index - 4];
+    const index = state.closes.length - 1;
+    const prev4 = state.closes[index - 4];
     if (close > prev4) {
-      if (this.setupDirection === 'bearish') {
-        this.setupCount = 1;
-        this.setupDirection = 'bullish';
+      if (state.setupDirection === 'bearish') {
+        state.setupCount = 1;
+        state.setupDirection = 'bullish';
       } else {
-        this.setupCount++;
-        this.setupDirection = 'bullish';
+        state.setupCount++;
+        state.setupDirection = 'bullish';
       }
     } else if (close < prev4) {
-      if (this.setupDirection === 'bullish') {
-        this.setupCount = 1;
-        this.setupDirection = 'bearish';
+      if (state.setupDirection === 'bullish') {
+        state.setupCount = 1;
+        state.setupDirection = 'bearish';
       } else {
-        this.setupCount++;
-        this.setupDirection = 'bearish';
+        state.setupCount++;
+        state.setupDirection = 'bearish';
       }
     }
     // Setup completed
-    if (this.setupCount >= this.getRequiredInputs()) {
-      const result = this.setupDirection === 'bullish' ? 1 : -1;
-      this.setupCount = 0;
-      this.setupDirection = null;
+    if (state.setupCount >= this.getRequiredInputs()) {
+      const result = state.setupDirection === 'bullish' ? 1 : -1;
+      state.setupCount = 0;
+      state.setupDirection = null;
+      state.lastBarCompletedSetup = true;
       return this.setResult(result, replace);
     }
     return null;

@@ -1,3 +1,4 @@
+import {testIndicatorContract} from '../../fixtures/testIndicatorContract.js';
 import {VWAP} from './VWAP.js';
 
 // @see https://github.com/cinar/indicatorts/blob/main/src/indicator/volume/volumeWeightedAveragePrice.test.ts
@@ -58,8 +59,20 @@ describe('VWAP', () => {
         expect(result?.toFixed(2)).toBe(expected[index]);
       }
 
-      expect(vwap.getRequiredInputs()).toBe(2);
+      expect(vwap.getRequiredInputs()).toBe(1);
       expect(vwap.getResultOrThrow().toFixed(2)).toBe('9.18');
     });
   });
+});
+
+testIndicatorContract({
+  create: () => new VWAP(),
+  divergentInput: {close: 1_000, high: 1_000, low: 1_000, volume: 1_000},
+  inputs: [
+    {close: 9, high: 9, low: 9, volume: 100},
+    {close: 11, high: 11, low: 11, volume: 110},
+    {close: 7, high: 7, low: 7, volume: 80},
+    {close: 10, high: 10, low: 10, volume: 120},
+    {close: 8, high: 8, low: 8, volume: 90},
+  ],
 });

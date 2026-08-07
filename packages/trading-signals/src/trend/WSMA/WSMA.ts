@@ -1,4 +1,4 @@
-import {IndicatorSeries} from '../../types/Indicator.js';
+import {IndicatorSeries} from '../../base/Indicator.js';
 import {SMA} from '../SMA/SMA.js';
 
 /**

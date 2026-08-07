@@ -4,17 +4,17 @@ import {buildTableColumns} from '../../utils/tableColumns';
 import type {IndicatorConfig} from '../../utils/types';
 
 export const ZigZag: IndicatorConfig = {
-  id: 'zigzag',
-  name: 'ZigZag',
-  description: 'ZigZag Indicator',
+  chartTitle: 'ZigZag (5% deviation)',
   color: '#f43f5e',
-  type: 'single',
-  requiredInputs: 1,
+  createIndicator: () => new ZigZagClass({deviation: 5}),
+  description: 'ZigZag Indicator',
   details:
     'Filters out minor price movements by connecting significant pivot highs and lows. A new pivot is only confirmed once price reverses by at least the configured percentage (deviation).',
-  createIndicator: () => new ZigZagClass({deviation: 5}),
+  getTableColumns: indicator => buildTableColumns({indicator, inputs: ['high', 'low']}),
+  id: 'zigzag',
+  name: 'ZigZag',
   processData: makeProcessData({rowInputs: ['high', 'low']}),
-  getTableColumns: indicator => buildTableColumns({inputs: ['high', 'low'], indicator}),
-  chartTitle: 'ZigZag (5% deviation)',
+  requiredInputs: 1,
+  type: 'single',
   yAxisLabel: 'Price',
 };

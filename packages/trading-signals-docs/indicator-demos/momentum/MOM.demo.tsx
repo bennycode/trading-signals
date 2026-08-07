@@ -4,17 +4,17 @@ import {buildTableColumns} from '../../utils/tableColumns';
 import type {IndicatorConfig} from '../../utils/types';
 
 export const MOM: IndicatorConfig = {
-  id: 'mom',
-  name: 'MOM',
-  description: 'Momentum',
+  chartTitle: 'Momentum (5)',
   color: '#84cc16',
-  type: 'single',
-  requiredInputs: 5,
+  createIndicator: () => new MOMClass(5),
+  description: 'Momentum',
   details:
     'Momentum measures the change in price over n periods. Bullish when momentum is positive (price rising), bearish when momentum is negative (price falling).',
-  createIndicator: () => new MOMClass(5),
+  getTableColumns: indicator => buildTableColumns({indicator, inputs: ['close']}),
+  id: 'mom',
+  name: 'MOM',
   processData: makeProcessData({rowInputs: ['close']}),
-  getTableColumns: indicator => buildTableColumns({inputs: ['close'], indicator}),
-  chartTitle: 'Momentum (5)',
+  requiredInputs: 5,
+  type: 'single',
   yAxisLabel: 'MOM',
 };

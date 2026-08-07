@@ -10,10 +10,10 @@ export const CMF: IndicatorConfig = {
   description: 'Chaikin Money Flow',
   details:
     'Measures buying and selling pressure over a period. Oscillates between -1 and +1. Values above 0 indicate accumulation (buying pressure), below 0 indicate distribution (selling pressure).',
-  getTableColumns: indicator => buildTableColumns({inputs: ['close', 'volume'], indicator}),
+  getTableColumns: indicator => buildTableColumns({indicator, inputs: ['close', 'volume']}),
   id: 'cmf',
   name: 'CMF',
-  processData: makeProcessData({rowInputs: ['close', 'volume'], addInputs: ['close', 'high', 'low', 'volume']}),
+  processData: makeProcessData({addInputs: ['close', 'high', 'low', 'volume'], rowInputs: ['close', 'volume']}),
   requiredInputs: 20,
   type: 'single',
   yAxisLabel: 'CMF',

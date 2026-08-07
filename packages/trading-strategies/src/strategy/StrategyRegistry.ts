@@ -12,6 +12,7 @@ import {
 import {MeanReversionStrategy, MeanReversionSchema} from '../strategy-mean-reversion/MeanReversionStrategy.js';
 import {NoopStrategy, NoopSchema} from '../strategy-noop/NoopStrategy.js';
 import {ScalpStrategy, ScalpSchema} from '../strategy-scalp/ScalpStrategy.js';
+import {SmaCrossoverStrategy, SmaCrossoverSchema} from '../strategy-sma-crossover/SmaCrossoverStrategy.js';
 import {ProtectedStrategy, ProtectedStrategySchema} from '../strategy-protected/ProtectedStrategy.js';
 import {TrailingStopStrategy, TrailingStopSchema} from '../strategy-trailing-stop/TrailingStopStrategy.js';
 import type {Strategy} from './Strategy.js';
@@ -53,6 +54,10 @@ const registry: Record<string, StrategyEntry> = {
   [ScalpStrategy.NAME]: {
     create: (config: unknown) => new ScalpStrategy(ScalpSchema.parse(config)),
     schema: ScalpSchema,
+  },
+  [SmaCrossoverStrategy.NAME]: {
+    create: (config: unknown) => new SmaCrossoverStrategy(SmaCrossoverSchema.parse(config ?? {})),
+    schema: SmaCrossoverSchema,
   },
   [TrailingStopStrategy.NAME]: {
     create: (config: unknown) => new TrailingStopStrategy(TrailingStopSchema.parse(config ?? {})),

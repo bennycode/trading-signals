@@ -5,7 +5,7 @@
     "erasableSyntaxOnly": true,
     "experimentalDecorators": true,
     "forceConsistentCasingInFileNames": true,
-    "lib": ["es2023"],
+    "lib": ["es2025"],
     "module": "node20",
     "newLine": "lf",
     "noEmitOnError": true,
@@ -24,5 +24,6 @@
     "types": ["node", "vitest/globals"]
   },
   "exclude": ["${configDir}/dist", "${configDir}/docs", "${configDir}/node_modules", "${configDir}/vitest.config.ts"],
-  "extends": "./tsconfig.base.json"
+  "extends": "./tsconfig.base.json",
+  "include": ["${configDir}/src"]
 }

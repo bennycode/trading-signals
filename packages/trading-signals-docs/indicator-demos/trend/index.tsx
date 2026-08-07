@@ -1,6 +1,11 @@
 import {ADX} from './ADX.demo';
+import {Aroon} from './Aroon.demo';
 import {BreakoutBarLow} from './BreakoutBarLow.demo';
+import {ChandelierExit} from './ChandelierExit.demo';
 import {DEMA} from './DEMA.demo';
+import {HMA} from './HMA.demo';
+import {KAMA} from './KAMA.demo';
+import {TEMA} from './TEMA.demo';
 import {DMA} from './DMA.demo';
 import {DX} from './DX.demo';
 import {EMA} from './EMA.demo';
@@ -10,8 +15,10 @@ import {PSAR} from './PSAR.demo';
 import {RMA} from './RMA.demo';
 import {SMA} from './SMA.demo';
 import {SMA15} from './SMA15.demo';
+import {SuperTrend} from './SuperTrend.demo';
 import {SwingHigh} from './SwingHigh.demo';
 import {SwingLow} from './SwingLow.demo';
+import {VolatilityStop} from './VolatilityStop.demo';
 import {VWAP} from './VWAP.demo';
 import {WMA} from './WMA.demo';
 import {WSMA} from './WSMA.demo';
@@ -22,6 +29,11 @@ export const indicators: IndicatorConfig[] = [
   SMA,
   EMA,
   DEMA,
+  TEMA,
+  HMA,
+  KAMA,
+  Aroon,
+  ChandelierExit,
   WMA,
   RMA,
   WSMA,
@@ -37,4 +49,6 @@ export const indicators: IndicatorConfig[] = [
   SwingHigh,
   HigherLowTrail,
   BreakoutBarLow,
+  SuperTrend,
+  VolatilityStop,
 ];

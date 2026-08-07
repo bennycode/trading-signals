@@ -4,16 +4,17 @@ import {buildTableColumns} from '../../utils/tableColumns';
 import type {IndicatorConfig} from '../../utils/types';
 
 export const CCI: IndicatorConfig = {
+  chartTitle: 'CCI (20)',
+  color: '#f59e0b',
+  createIndicator: () => new CCIClass(20),
+  description: 'Commodity Channel Index',
+  details:
+    'Measures deviation from the average price. Readings above +100 suggest overbought, below -100 suggest oversold.',
+  getTableColumns: indicator => buildTableColumns({indicator, inputs: ['close']}),
   id: 'cci',
   name: 'CCI',
-  description: 'Commodity Channel Index',
-  color: '#f59e0b',
-  type: 'single',
+  processData: makeProcessData({addInputs: ['high', 'low', 'close'], rowInputs: ['close']}),
   requiredInputs: 20,
-  details: 'Measures deviation from the average price. Readings above +100 suggest overbought, below -100 suggest oversold.',
-  createIndicator: () => new CCIClass(20),
-  processData: makeProcessData({rowInputs: ['close'], addInputs: ['high', 'low', 'close']}),
-  getTableColumns: indicator => buildTableColumns({inputs: ['close'], indicator}),
-  chartTitle: 'CCI (20)',
+  type: 'single',
   yAxisLabel: 'CCI',
 };

@@ -19,9 +19,24 @@ export function simplifyError(client: AxiosInstance) {
           data: error.response?.data,
           status: error.response?.status,
           statusText: error.response?.statusText,
-          url: error.response?.request?.res?.responseUrl ?? error.config?.url,
+          url: getResponseUrl(error.response?.request) ?? error.config?.url,
         })
       );
     }
   );
+}
+
+/**
+ * Axios types `request` as `any`, but after redirects the effective URL only exists on the
+ * underlying Node.js response (`request.res.responseUrl`), so it is dug out with runtime checks.
+ */
+function getResponseUrl(request: unknown): string | undefined {
+  if (typeof request !== 'object' || request === null || !('res' in request)) {
+    return undefined;
+  }
+  const res: unknown = request.res;
+  if (typeof res !== 'object' || res === null || !('responseUrl' in res)) {
+    return undefined;
+  }
+  return typeof res.responseUrl === 'string' ? res.responseUrl : undefined;
 }

@@ -1,6 +1,7 @@
+import {testIndicatorContract} from '../../fixtures/testIndicatorContract.js';
 import {RSI} from './RSI.js';
-import {NotEnoughDataError} from '../../error/index.js';
-import {TradingSignal} from '../../types/index.js';
+import {TradingSignal} from '../../base/index.js';
+import {WSMA} from '../../trend/WSMA/WSMA.js';
 
 describe('RSI', () => {
   describe('update', () => {
@@ -23,7 +24,7 @@ describe('RSI', () => {
   });
 
   describe('getResultOrThrow', () => {
-    it('calculates the relative strength index', () => {
+    it('calculates the relative strength index', {tags: ['tulipindicators']}, () => {
       /*
        * Test data verified with:
        * https://github.com/TulipCharts/tulipindicators/blob/v0.8.0/tests/untest.txt#L347-L349
@@ -67,19 +68,6 @@ describe('RSI', () => {
       rsi.updates(updates, false);
       expect(rsi.getResultOrThrow()).toBe(100);
     });
-
-    it('throws an error when there is not enough input data', () => {
-      const rsi = new RSI(2);
-      rsi.add(0);
-      expect(rsi.isStable).toBe(false);
-      try {
-        rsi.getResultOrThrow();
-        throw new Error('Expected error');
-      } catch (error) {
-        expect(rsi.isStable).toBe(false);
-        expect(error).toBeInstanceOf(NotEnoughDataError);
-      }
-    });
   });
 
   describe('getSignal', () => {
@@ -87,6 +75,24 @@ describe('RSI', () => {
       const rsi = new RSI(5);
       const signal = rsi.getSignal();
       expect(signal.state).toBe(TradingSignal.UNKNOWN);
+    });
+
+    it('respects custom overbought and oversold thresholds', () => {
+      const prices = [100, 100.5, 100, 99.5, 100, 100.5] as const;
+      const sensitiveBull = new RSI(5, WSMA, {overbought: 30});
+      const sensitiveBear = new RSI(5, WSMA, {oversold: 70});
+
+      for (const price of prices) {
+        sensitiveBull.add(price);
+        sensitiveBear.add(price);
+      }
+
+      const result = sensitiveBull.getResultOrThrow();
+
+      expect(result).toBeGreaterThan(30);
+      expect(result).toBeLessThan(70);
+      expect(sensitiveBull.getSignal().state).toBe(TradingSignal.BULLISH);
+      expect(sensitiveBear.getSignal().state).toBe(TradingSignal.BEARISH);
     });
 
     it('returns OVERSOLD when RSI <= 30', () => {
@@ -133,4 +139,10 @@ describe('RSI', () => {
       expect(signal.state).toBe(TradingSignal.SIDEWAYS);
     });
   });
+});
+
+testIndicatorContract({
+  create: () => new RSI(5),
+  divergentInput: 1_000,
+  inputs: [81.59, 81.06, 82.87, 83.0, 83.61, 83.15, 82.84, 83.99],
 });

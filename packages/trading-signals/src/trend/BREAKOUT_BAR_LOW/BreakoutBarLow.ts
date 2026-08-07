@@ -1,5 +1,5 @@
-import {IndicatorSeries} from '../../types/Indicator.js';
-import type {HighLow} from '../../types/HighLowClose.js';
+import {IndicatorSeries} from '../../base/Indicator.js';
+import type {HighLow} from '../../base/Candle.type.js';
 import {pushUpdate} from '../../util/pushUpdate.js';
 
 export type BreakoutBarLowConfig = {
@@ -48,7 +48,7 @@ export class BreakoutBarLow extends IndicatorSeries<HighLow> {
     }
     this.#lastEmitted = false;
 
-    pushUpdate(this.#highs, replace, candle.high, this.getRequiredInputs());
+    pushUpdate({array: this.#highs, item: candle.high, maxLength: this.getRequiredInputs(), replace: replace});
 
     if (this.#highs.length < this.getRequiredInputs()) {
       return null;

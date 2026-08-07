@@ -1,4 +1,5 @@
 import Big from 'big.js';
+import type {Mock} from 'vitest';
 import {EventEmitter} from 'node:events';
 import {AlpacaBroker, OrderPosition, OrderSide, OrderType, TradingPair} from '@typedtrader/exchange';
 import type {Candle, Fill, PendingLimitOrder, PendingMarketOrder} from '@typedtrader/exchange';
@@ -66,13 +67,18 @@ function createMockExchange() {
   });
 }
 
+/** Wraps `toBeInstanceOf` in an assertion function so the check also narrows the type. */
+function expectInstanceOf<T>(value: unknown, ctor: new (...args: never[]) => T): asserts value is T {
+  expect(value).toBeInstanceOf(ctor);
+}
+
 function createMockStrategy(): TradingSessionStrategy & {
-  onCandle: ReturnType<typeof vi.fn>;
-  onFill: ReturnType<typeof vi.fn>;
+  onCandle: Mock<TradingSessionStrategy['onCandle']>;
+  onFill: Mock<NonNullable<TradingSessionStrategy['onFill']>>;
 } {
   return {
-    onCandle: vi.fn().mockResolvedValue(undefined),
-    onFill: vi.fn().mockResolvedValue(undefined),
+    onCandle: vi.fn<TradingSessionStrategy['onCandle']>().mockResolvedValue(undefined),
+    onFill: vi.fn<NonNullable<TradingSessionStrategy['onFill']>>().mockResolvedValue(undefined),
   };
 }
 
@@ -107,7 +113,7 @@ describe('TradingSession', {concurrent: false}, () => {
     });
 
     it('warms up the strategy from history before subscribing to live candles', async () => {
-      const init = vi.fn().mockResolvedValue(undefined);
+      const init = vi.fn<NonNullable<TradingSessionStrategy['init']>>().mockResolvedValue(undefined);
       const warmStrategy = {init, onCandle: vi.fn().mockResolvedValue(undefined)};
       const warmSession = new TradingSession({broker: exchange, pair, strategy: warmStrategy});
 
@@ -391,14 +397,11 @@ describe('TradingSession', {concurrent: false}, () => {
       exchange.emit('order-topic-1', fill);
 
       await vi.waitFor(() => expect(onFill).toHaveBeenCalledTimes(1));
-      expect(strategy.onFill).toHaveBeenCalledWith(
-        fill,
-        expect.objectContaining({
-          baseBalance: expect.any(Big),
-          counterBalance: expect.any(Big),
-          lastOrderSide: OrderSide.BUY,
-        })
-      );
+      const [forwardedFill, fillState] = strategy.onFill.mock.calls[0];
+      expect(forwardedFill).toEqual(fill);
+      expect(fillState.baseBalance).toBeInstanceOf(Big);
+      expect(fillState.counterBalance).toBeInstanceOf(Big);
+      expect(fillState.lastOrderSide).toBe(OrderSide.BUY);
     });
 
     it('ignores fills with non-matching order ID', async () => {
@@ -445,7 +448,7 @@ describe('TradingSession', {concurrent: false}, () => {
       };
       strategy.onCandle.mockResolvedValue(advice);
 
-      const onError = vi.fn();
+      const onError = vi.fn<(error: Error) => void>();
       session.on('error', onError);
 
       await session.start();
@@ -454,7 +457,7 @@ describe('TradingSession', {concurrent: false}, () => {
       await vi.waitFor(() => expect(onError).toHaveBeenCalledTimes(1));
 
       const [[error]] = onError.mock.calls;
-      expect(error).toBeInstanceOf(OrderSizeBelowMinimumError);
+      expectInstanceOf(error, OrderSizeBelowMinimumError);
       expect(error.side).toBe(OrderSide.SELL);
       expect(error.amountIn).toBe('base');
       expect(error.size).toBe('0');
@@ -482,7 +485,7 @@ describe('TradingSession', {concurrent: false}, () => {
       };
       strategy.onCandle.mockResolvedValue(advice);
 
-      const onError = vi.fn();
+      const onError = vi.fn<(error: Error) => void>();
       session.on('error', onError);
 
       await session.start();
@@ -491,7 +494,7 @@ describe('TradingSession', {concurrent: false}, () => {
       await vi.waitFor(() => expect(onError).toHaveBeenCalledTimes(1));
 
       const [[error]] = onError.mock.calls;
-      expect(error).toBeInstanceOf(OrderSizeBelowMinimumError);
+      expectInstanceOf(error, OrderSizeBelowMinimumError);
       expect(error.side).toBe(OrderSide.SELL);
       expect(error.amountIn).toBe('base');
       expect(error.size).toBe('0.001');
@@ -502,7 +505,7 @@ describe('TradingSession', {concurrent: false}, () => {
     it('emits error when strategy.onCandle throws', async () => {
       strategy.onCandle.mockRejectedValue(new Error('Strategy crashed'));
 
-      const onError = vi.fn();
+      const onError = vi.fn<(error: Error) => void>();
       session.on('error', onError);
 
       await session.start();

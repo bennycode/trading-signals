@@ -1,8 +1,13 @@
-import {TradingSignal, TrendIndicatorSeries} from '../../types/Indicator.js';
-import type {HighLowClose} from '../../types/HighLowClose.js';
+import {TradingSignal, TrendIndicatorSeries} from '../../base/Indicator.js';
+import type {HighLowClose} from '../../base/Candle.type.js';
 import {getMaximum} from '../../util/getMaximum.js';
 import {getMinimum} from '../../util/getMinimum.js';
 import {pushUpdate} from '../../util/pushUpdate.js';
+
+export type ERThresholds = {
+  /** ER value at or above which the market counts as trending (default: 0.5) */
+  trending?: number;
+};
 
 /**
  * Range Efficiency (ER)
@@ -23,10 +28,12 @@ export class ER extends TrendIndicatorSeries<HighLowClose> {
   readonly #lows: number[] = [];
 
   public readonly interval: number;
+  readonly #trending: number;
 
-  constructor(interval: number) {
+  constructor(interval: number, {trending = 0.5}: ERThresholds = {}) {
     super();
     this.interval = interval;
+    this.#trending = trending;
   }
 
   override getRequiredInputs() {
@@ -34,9 +41,9 @@ export class ER extends TrendIndicatorSeries<HighLowClose> {
   }
 
   update(candle: HighLowClose, replace: boolean) {
-    pushUpdate(this.#closes, replace, candle.close, this.interval);
-    pushUpdate(this.#highs, replace, candle.high, this.interval);
-    pushUpdate(this.#lows, replace, candle.low, this.interval);
+    pushUpdate({array: this.#closes, item: candle.close, maxLength: this.interval, replace: replace});
+    pushUpdate({array: this.#highs, item: candle.high, maxLength: this.interval, replace: replace});
+    pushUpdate({array: this.#lows, item: candle.low, maxLength: this.interval, replace: replace});
 
     if (this.#closes.length < this.interval) {
       return null;
@@ -59,7 +66,7 @@ export class ER extends TrendIndicatorSeries<HighLowClose> {
       return TradingSignal.UNKNOWN;
     }
 
-    if (result >= 0.5) {
+    if (result >= this.#trending) {
       return TradingSignal.BULLISH;
     }
 

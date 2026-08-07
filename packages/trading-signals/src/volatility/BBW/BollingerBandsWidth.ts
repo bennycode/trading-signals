@@ -1,5 +1,5 @@
 import type {BollingerBands} from '../BBANDS/BollingerBands.js';
-import {IndicatorSeries} from '../../types/Indicator.js';
+import {IndicatorSeries} from '../../base/Indicator.js';
 
 /**
  * Bollinger Bands Width (BBW)

@@ -1,4 +1,5 @@
 export * from './AD/AD.js';
+export * from './ADOSC/ADOSC.js';
 export * from './CMF/CMF.js';
 export * from './EMV/EMV.js';
 export * from './PVT/PVT.js';

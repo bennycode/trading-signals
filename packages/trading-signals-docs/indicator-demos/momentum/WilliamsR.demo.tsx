@@ -4,17 +4,17 @@ import {buildTableColumns} from '../../utils/tableColumns';
 import type {IndicatorConfig} from '../../utils/types';
 
 export const WilliamsR: IndicatorConfig = {
-  id: 'willr',
-  name: 'Williams %R',
-  description: 'Williams Percent Range',
+  chartTitle: 'Williams %R (14)',
   color: '#22d3ee',
-  type: 'single',
-  requiredInputs: 14,
+  createIndicator: () => new WilliamsRClass(14),
+  description: 'Williams Percent Range',
   details:
     'Measures overbought and oversold levels on an inverted scale from 0 to -100. Values from 0 to -20 indicate overbought conditions, while -80 to -100 indicate oversold conditions.',
-  createIndicator: () => new WilliamsRClass(14),
+  getTableColumns: indicator => buildTableColumns({indicator, inputs: ['high', 'low', 'close']}),
+  id: 'willr',
+  name: 'Williams %R',
   processData: makeProcessData({rowInputs: ['high', 'low', 'close']}),
-  getTableColumns: indicator => buildTableColumns({inputs: ['high', 'low', 'close'], indicator}),
-  chartTitle: 'Williams %R (14)',
+  requiredInputs: 14,
+  type: 'single',
   yAxisLabel: 'Williams %R',
 };

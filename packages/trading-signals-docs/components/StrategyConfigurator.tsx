@@ -12,12 +12,12 @@ interface StrategyConfiguratorProps {
 }
 
 export function StrategyConfigurator({
-  selectedStrategy,
-  onStrategyChange,
+  candles,
   configJson,
   onConfigJsonChange,
+  onStrategyChange,
+  selectedStrategy,
   validationError,
-  candles,
 }: StrategyConfiguratorProps) {
   const definition = strategyDefinitions.find(s => s.id === selectedStrategy)!;
 

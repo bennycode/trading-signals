@@ -110,6 +110,16 @@ export class Trading212Broker extends Broker implements MarketDataSource {
     return new Date().toISOString();
   }
 
+  /**
+   * The default probe uses `getTime()`, but Trading212's `getTime()` never leaves the process,
+   * so it would accept any credentials. Probe `/equity/account/cash` instead: it is authenticated
+   * and has the most generous rate limit of Trading212's account endpoints (1 request per 2s,
+   * vs. 30s for account info — see `getRetryDelay` in `Trading212API`).
+   */
+  override async verifyCredentials(): Promise<void> {
+    await this.#api.getAccountCash();
+  }
+
   async getCandles(pair: TradingPair, request: CandleImportRequest): Promise<Candle[]> {
     return this.#marketData.getCandles(Trading212Broker.toMarketDataPair(pair), request);
   }

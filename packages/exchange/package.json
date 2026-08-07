@@ -1,34 +1,30 @@
 {
+  "name": "@typedtrader/exchange",
+  "version": "0.3.2",
+  "description": "Trading strategies to run trading bots with JavaScript / TypeScript.",
+  "keywords": [
+    "trading",
+    "typedtrader"
+  ],
+  "homepage": "https://bennycode.com/trading-signals",
   "bugs": {
     "url": "https://github.com/bennycode/trading-signals/issues"
   },
-  "dependencies": {
-    "@types/big.js": "^7.0.0",
-    "@types/jsonabc": "^2.3.3",
-    "axios": "^1.18.1",
-    "axios-retry": "^4.5.0",
-    "big.js": "^7.0.1",
-    "dotenv-defaults": "^6.0.0",
-    "jsonabc": "^2.3.1",
-    "ms": "4.0.0-nightly.202508271359",
-    "ts-retry-promise": "^0.8.1",
-    "zod": "^4.4.3"
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bennycode/trading-signals.git",
+    "directory": "packages/exchange"
   },
-  "description": "Trading strategies to run trading bots with JavaScript / TypeScript.",
-  "exports": "./dist/index.js",
   "files": [
     "dist",
     "!dist/start",
     "!dist/test",
     "!dist/**/*.test.*"
   ],
-  "homepage": "https://bennycode.com/trading-signals",
-  "keywords": [
-    "trading",
-    "typedtrader"
-  ],
-  "license": "MIT",
-  "name": "@typedtrader/exchange",
+  "type": "module",
+  "types": "dist/index.d.ts",
+  "exports": "./dist/index.js",
   "publishConfig": {
     "access": "public"
   },
@@ -40,19 +36,28 @@
     "build": "tsc -p tsconfig.build.json",
     "clean": "rimraf coverage dist",
     "dist": "npm run clean && npm run build",
+    "fix": "npm run fix:code && npm run fix:other",
+    "fix:code": "oxlint . --fix || true",
+    "fix:other": "oxfmt",
     "lint": "npm run lint:code && npm run lint:other",
-    "lint:code": "eslint .",
-    "lint:other": "npm run prettier -- --list-different",
-    "lint:types": "tsc --noEmit",
-    "prettier": "prettier --config ../../.prettierrc.json --ignore-path ../../.gitignore --log-level error \"**/*.{json,scss,yml}\"",
+    "lint:code": "oxlint .",
+    "lint:other": "oxfmt --list-different",
     "start": "exit 0",
-    "test": "npm run test:types && npm run test:imports && npm run test:units -- --coverage",
-    "test:imports": "depcruise -c ../../.dependency-cruiser.cjs src --include-only \"^src\"",
-    "test:types": "npm run lint:types",
+    "test": "npm run test:types && npm run test:units -- --coverage",
+    "test:types": "tsc --noEmit",
     "test:units": "vitest run --passWithNoTests",
     "test:units:watch": "vitest --watch"
   },
-  "type": "module",
-  "types": "dist/index.d.ts",
-  "version": "0.2.5"
+  "dependencies": {
+    "@types/big.js": "^7.0.0",
+    "axios": "^1.18.1",
+    "axios-retry": "^4.5.0",
+    "big.js": "^7.0.1",
+    "ms": "4.0.0-nightly.202508271359",
+    "ts-retry-promise": "^0.8.1",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "dotenv-defaults": "^6.0.0"
+  }
 }

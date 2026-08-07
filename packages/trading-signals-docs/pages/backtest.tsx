@@ -10,14 +10,10 @@ import {
   MultiIndicatorConfluenceStrategy,
   ScalpStrategy,
   MeanReversionStrategy,
+  SmaCrossoverStrategy,
   ProtectedStrategy,
   TrailingStopStrategy,
   type BacktestResult,
-  BuyOnceConfig,
-  BuyBelowSellAboveConfig,
-  type MultiIndicatorConfluenceConfig,
-  type ScalpConfig,
-  type TrailingStopConfig,
 } from 'trading-strategies';
 import {DatasetSelector} from '../components/DatasetSelector';
 import {StrategyConfigurator} from '../components/StrategyConfigurator';
@@ -25,29 +21,47 @@ import {BacktestResults} from '../components/BacktestResults';
 import {ProtectionModal} from '../components/ProtectionModal';
 import {datasets} from '../utils/datasets';
 import type {CandleDataset} from '../utils/types';
-import {strategyDefinitions, type StrategyId} from '../utils/strategySchemas';
+import {
+  strategyDefinitions,
+  type StrategyId,
+  BuyOnceSchema,
+  BuyBelowSellAboveSchema,
+  CoinFlipSchema,
+  MultiIndicatorConfluenceSchema,
+  ScalpSchema,
+  MeanReversionSchema,
+  SmaCrossoverSchema,
+  ProtectedStrategySchema,
+  TrailingStopSchema,
+} from '../utils/strategySchemas';
 
 function createStrategy(strategyId: StrategyId, config: Record<string, unknown>) {
   switch (strategyId) {
     case 'buy-and-hold':
-      return new BuyOnceStrategy(config as BuyOnceConfig);
+      return new BuyOnceStrategy(BuyOnceSchema.parse(config));
     case 'coin-flip':
-      return new CoinFlipStrategy(config);
+      return new CoinFlipStrategy(CoinFlipSchema.parse(config));
     case 'buy-once':
-      return new BuyOnceStrategy(config as BuyOnceConfig);
+      return new BuyOnceStrategy(BuyOnceSchema.parse(config));
     case 'buy-below-sell-above':
-      return new BuyBelowSellAboveStrategy(config as BuyBelowSellAboveConfig);
+      return new BuyBelowSellAboveStrategy(BuyBelowSellAboveSchema.parse(config));
     case 'multi-indicator-confluence':
-      return new MultiIndicatorConfluenceStrategy(config as MultiIndicatorConfluenceConfig);
+      return new MultiIndicatorConfluenceStrategy(MultiIndicatorConfluenceSchema.parse(config));
     case 'scalp':
-      return new ScalpStrategy(config as ScalpConfig);
+      return new ScalpStrategy(ScalpSchema.parse(config));
     case 'mean-reversion':
-      return new MeanReversionStrategy({config});
+      return new MeanReversionStrategy({config: MeanReversionSchema.parse(config)});
+    case 'sma-crossover':
+      return new SmaCrossoverStrategy(SmaCrossoverSchema.parse(config));
     case 'protection-only':
-      return new ProtectedStrategy({config});
+      return new ProtectedStrategy({config: ProtectedStrategySchema.parse(config)});
     case 'trailing-stop':
-      return new TrailingStopStrategy(config as TrailingStopConfig);
+      return new TrailingStopStrategy(TrailingStopSchema.parse(config));
   }
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
 function parseInitialAmount(value: string, label: string): Big {
@@ -99,19 +113,22 @@ export default function BacktestPage() {
   }, []);
 
   const currentDataset = selectedDataset === 'custom' ? customDataset : datasets.find(d => d.id === selectedDataset)!;
-  const candles = (currentDataset?.candles ?? []) as Candle[];
+  const candles = currentDataset?.candles ?? [];
 
-  // Recompute defaults when dataset or strategy changes (including custom dataset uploads)
+  /*
+   * Recompute defaults only when the strategy changes — deliberately NOT on Market Condition
+   * (dataset) changes, so manual config edits survive switching between datasets.
+   */
   useEffect(() => {
     const def = strategyDefinitions.find(s => s.id === selectedStrategy)!;
     const defaults = def.getDefaultConfig(candles);
     setConfigJson(JSON.stringify(defaults, null, 2));
-  }, [selectedDataset, selectedStrategy, customDataset]);
+  }, [selectedStrategy]);
 
   // Validate JSON on every change
   useEffect(() => {
     try {
-      const parsed = JSON.parse(configJson);
+      const parsed: unknown = JSON.parse(configJson);
       const def = strategyDefinitions.find(s => s.id === selectedStrategy)!;
       const parseResult = def.schema.safeParse(parsed);
       if (!parseResult.success) {
@@ -127,8 +144,8 @@ export default function BacktestPage() {
 
   const currentProtected: Record<string, unknown> | undefined = (() => {
     try {
-      const parsed = JSON.parse(configJson);
-      if (parsed && typeof parsed === 'object' && parsed.protected && typeof parsed.protected === 'object') {
+      const parsed: unknown = JSON.parse(configJson);
+      if (isRecord(parsed) && isRecord(parsed.protected)) {
         return parsed.protected;
       }
     } catch {
@@ -140,9 +157,8 @@ export default function BacktestPage() {
   const handleProtectionSave = useCallback(
     (nextProtected: Record<string, unknown> | undefined) => {
       try {
-        const parsed = JSON.parse(configJson);
-        const base = parsed && typeof parsed === 'object' ? parsed : {};
-        const next = {...base};
+        const parsed: unknown = JSON.parse(configJson);
+        const next: Record<string, unknown> = isRecord(parsed) ? {...parsed} : {};
         if (nextProtected === undefined) {
           delete next.protected;
         } else {
@@ -171,7 +187,7 @@ export default function BacktestPage() {
     setRunning(true);
     setError(null);
     try {
-      const parsed = JSON.parse(configJson);
+      const parsed: unknown = JSON.parse(configJson);
       const def = strategyDefinitions.find(s => s.id === selectedStrategy)!;
       const parseResult = def.schema.safeParse(parsed);
       if (!parseResult.success) {
@@ -187,14 +203,14 @@ export default function BacktestPage() {
 
       const [backtestResult, baseline] = await Promise.all([
         new BacktestExecutor({
-          candles,
           broker: createExchange(candles, initialBase, initialCounter),
+          candles,
           strategy,
           tradingPair,
         }).execute(),
         new BacktestExecutor({
-          candles,
           broker: createExchange(candles, initialBase, initialCounter),
+          candles,
           strategy: new BuyOnceStrategy(),
           tradingPair,
         }).execute(),
@@ -225,7 +241,7 @@ export default function BacktestPage() {
   };
 
   const handleCustomDataset = (candles: Candle[], name: string) => {
-    setCustomDataset({id: 'custom', name, description: `Custom upload: ${name} (${candles.length} candles)`, candles});
+    setCustomDataset({candles, description: `Custom upload: ${name} (${candles.length} candles)`, id: 'custom', name});
     setSelectedDataset('custom');
     setResult(null);
     setBaselineResult(null);

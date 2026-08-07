@@ -1,7 +1,7 @@
 import type {ReactNode} from 'react';
 import type {Candle} from '@typedtrader/exchange';
 import {formatDate} from './formatDate';
-import type {SingleIndicatorConfig} from './types';
+import type {ProcessedIndicatorData, SingleIndicatorConfig} from './types';
 import type {PriceData} from '../components/PriceChart';
 import type {ChartDataPoint} from '../components/Chart';
 import Chart from '../components/Chart';
@@ -11,30 +11,30 @@ import {IndicatorHeader} from '../components/IndicatorHeader';
 import {NotAvailable} from '../components/NotAvailable';
 
 export const collectPriceData = (candle: Candle, idx: number): PriceData => ({
-  x: idx + 1,
-  open: Number(candle.open),
+  close: Number(candle.close),
   high: Number(candle.high),
   low: Number(candle.low),
-  close: Number(candle.close),
+  open: Number(candle.open),
+  x: idx + 1,
 });
 
 export const renderSingleIndicator = (config: SingleIndicatorConfig, selectedCandles: Candle[]) => {
   const indicator = config.createIndicator();
   const chartData: ChartDataPoint[] = [];
   const priceData: PriceData[] = [];
-  const sampleValues: Array<{
+  const sampleValues: {
     period: number;
     date: string;
     result: ReactNode;
     signal?: string;
-    [key: string]: any;
-  }> = [];
+    [key: string]: unknown;
+  }[] = [];
 
   selectedCandles.forEach((candle, idx) => {
-    const processedData = config.processData(indicator, candle, idx);
+    const processedData: ProcessedIndicatorData = config.processData(indicator, candle, idx);
     const chartPoint = config.getChartData
       ? config.getChartData(processedData)
-      : {x: idx + 1, y: (processedData.result as number | null) ?? null};
+      : {x: idx + 1, y: processedData.result ?? null};
 
     if (Array.isArray(chartPoint)) {
       chartData.push(...chartPoint);
@@ -45,11 +45,15 @@ export const renderSingleIndicator = (config: SingleIndicatorConfig, selectedCan
     priceData.push(collectPriceData(candle, idx));
 
     sampleValues.push({
-      period: idx + 1,
       date: formatDate(candle.openTimeInISO),
+      period: idx + 1,
       ...processedData,
       result:
-        processedData.result !== null && processedData.result !== undefined ? processedData.result.toFixed(2) : <NotAvailable />,
+        processedData.result !== null && processedData.result !== undefined ? (
+          processedData.result.toFixed(2)
+        ) : (
+          <NotAvailable />
+        ),
       signal: processedData.signal?.state,
     });
   });

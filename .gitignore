@@ -7,7 +7,8 @@
 .cache
 .DS_Store
 .idea/
-.vscode/
+.vscode/*
+!.vscode/extensions.json
 !.vscode/settings.json
 config.json
 coverage/
@@ -16,3 +17,4 @@ lerna-debug.log
 node_modules/
 npm-debug.log*
 .claude/scheduled_tasks.lock
+.claude/worktrees/

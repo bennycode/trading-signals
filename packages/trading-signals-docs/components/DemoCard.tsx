@@ -10,7 +10,7 @@ interface DemoCardProps {
  * Outer card chrome shared by IndicatorDemo, CalculatorDemo, and UtilityInfoPanel:
  * dark panel with a bordered header (name + description) and a padded content area below.
  */
-export function DemoCard({name, description, children}: DemoCardProps) {
+export function DemoCard({children, description, name}: DemoCardProps) {
   return (
     <div className="bg-slate-800/50 border border-slate-700 rounded-lg overflow-hidden">
       <div className="border-b border-slate-700 p-4">

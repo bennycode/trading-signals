@@ -1,5 +1,5 @@
-import type {HighLowCloseVolume} from '../../types/HighLowClose.js';
-import {TradingSignal, TrendIndicatorSeries} from '../../types/Indicator.js';
+import type {HighLowCloseVolume} from '../../base/Candle.type.js';
+import {TradingSignal, TrendIndicatorSeries} from '../../base/Indicator.js';
 import {SMA} from '../../trend/SMA/SMA.js';
 import {pushUpdate} from '../../util/pushUpdate.js';
 
@@ -38,7 +38,7 @@ export class EMV extends TrendIndicatorSeries<HighLowCloseVolume> {
   }
 
   update(candle: HighLowCloseVolume, replace: boolean) {
-    pushUpdate(this.#candles, replace, candle, 2);
+    pushUpdate({array: this.#candles, item: candle, maxLength: 2, replace: replace});
 
     if (this.#candles.length < 2) {
       return null;

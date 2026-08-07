@@ -1,8 +1,5 @@
 name: 'Run E2E Docs'
 
-permissions:
-  contents: read
-
 on:
   push:
     branches:
@@ -16,6 +13,9 @@ on:
       - 'packages/trading-signals-docs/**'
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -24,23 +24,25 @@ jobs:
   test-docs-e2e:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-node@v6
+      - name: 'Checkout Repository'
+        uses: actions/checkout@v7
+      - name: 'Setup Node'
+        uses: actions/setup-node@v7
         with:
           node-version-file: '.nvmrc'
           cache: 'npm'
-      - name: 'Install dependencies'
+      - name: 'Install Dependencies'
         run: npm ci
-      - name: 'Build workspace dependencies'
+      - name: 'Build Documentation'
         run: npx lerna run dist --scope trading-signals-docs --include-dependencies
-      - name: 'Install Playwright browsers'
+      - name: 'Install Playwright Browsers'
         run: npx playwright install --with-deps chromium
         working-directory: packages/trading-signals-docs
-      - name: 'Run Playwright e2e'
+      - name: 'Run E2E Tests'
         run: npm run test:e2e --workspace=packages/trading-signals-docs
         env:
           CI: 'true'
-      - name: 'Upload Playwright report on failure'
+      - name: 'Upload Playwright Report on Failure'
         if: failure()
         uses: actions/upload-artifact@v7
         with:

@@ -1,10 +1,11 @@
 # https://lefthook.dev/configuration/
 pre-commit:
-  parallel: true
   commands:
-    format:
-      glob: '*.{css,html,json,less,md,scss,yml}'
-      run: npx -c "cross-env NODE_OPTIONS=--max_old_space_size=4096 prettier --write --log-level error {staged_files}"
-    lint:
-      glob: 'packages/**/*.{js,jsx,ts,tsx}'
-      run: npx eslint {staged_files} --fix
+    oxc:
+      run: |
+        npx oxlint --fix --no-error-on-unmatched-pattern {staged_files}
+        npx oxfmt --no-error-on-unmatched-pattern {staged_files}
+      stage_fixed: true
+    actionlint:
+      glob: '.github/workflows/*.{yml,yaml}'
+      run: npx github-actionlint {staged_files}

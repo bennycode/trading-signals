@@ -1,6 +1,10 @@
-import type {HighLowCloseVolume} from '../../types/HighLowClose.js';
-import {TradingSignal, TrendIndicatorSeries} from '../../types/Indicator.js';
+import type {HighLowCloseVolume} from '../../base/Candle.type.js';
+import {TradingSignal, TrendIndicatorSeries, type TradingSignals} from '../../base/Indicator.js';
 import {pushUpdate} from '../../util/pushUpdate.js';
+
+type PVTState = {
+  candles: HighLowCloseVolume[];
+};
 
 /**
  * Price Volume Trend (PVT)
@@ -15,22 +19,29 @@ import {pushUpdate} from '../../util/pushUpdate.js';
  *
  * @see https://www.investopedia.com/terms/p/pvt.asp
  */
-export class PVT extends TrendIndicatorSeries<HighLowCloseVolume> {
-  readonly #candles: HighLowCloseVolume[] = [];
+export class PVT extends TrendIndicatorSeries<HighLowCloseVolume, TradingSignals, PVTState> {
+  protected override state: PVTState = {candles: []};
 
   override getRequiredInputs() {
     return 2;
   }
 
   update(candle: HighLowCloseVolume, replace: boolean) {
-    pushUpdate(this.#candles, replace, candle, 2);
+    this.trackState(replace);
 
-    if (this.#candles.length < 2) {
+    // trackState() already rewound the window on a replacement, so the candle is always appended
+    pushUpdate({array: this.state.candles, item: candle, maxLength: 2, replace: false});
+
+    if (this.state.candles.length < 2) {
       return null;
     }
 
-    const previousClose = this.#candles[0].close;
-    const previousPVT = this.result ?? 0;
+    const previousClose = this.state.candles[0].close;
+    /*
+     * PVT accumulates onto the running total, so a replacement has to build on the total from
+     * before the replaced candle.
+     */
+    const previousPVT = (replace ? this.previousResult : this.result) ?? 0;
 
     if (previousClose === 0) {
       return this.setResult(previousPVT, replace);

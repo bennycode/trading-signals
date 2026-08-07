@@ -4,17 +4,17 @@ import {buildTableColumns} from '../../utils/tableColumns';
 import type {IndicatorConfig} from '../../utils/types';
 
 export const RSI: IndicatorConfig = {
-  id: 'rsi',
-  name: 'RSI',
-  description: 'Relative Strength Index',
+  chartTitle: 'RSI (14)',
   color: '#8b5cf6',
-  type: 'single',
-  requiredInputs: 14,
+  createIndicator: () => new RSIClass(14),
+  description: 'Relative Strength Index',
   details:
     'RSI measures the magnitude of recent price changes to evaluate overbought or oversold conditions. Values above 70 indicate overbought, below 30 indicate oversold.',
-  createIndicator: () => new RSIClass(14),
+  getTableColumns: indicator => buildTableColumns({indicator, inputs: ['close']}),
+  id: 'rsi',
+  name: 'RSI',
   processData: makeProcessData({rowInputs: ['close']}),
-  getTableColumns: indicator => buildTableColumns({inputs: ['close'], indicator}),
-  chartTitle: 'RSI (14)',
+  requiredInputs: 14,
+  type: 'single',
   yAxisLabel: 'RSI',
 };

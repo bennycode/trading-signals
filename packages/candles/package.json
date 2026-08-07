@@ -1,31 +1,40 @@
 {
   "name": "@typedtrader/candles",
-  "version": "0.1.0",
+  "version": "0.2.2",
   "description": "Labeled market-condition candle datasets (uptrend, downtrend, sideways, …) for tests and docs.",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bennycode/trading-signals.git",
+    "directory": "packages/candles"
+  },
+  "files": [
+    "dist",
+    "json"
+  ],
   "type": "module",
   "types": "dist/src/index.d.ts",
   "exports": {
     ".": "./dist/src/index.js",
     "./json/*": "./json/*"
   },
-  "files": [
-    "dist",
-    "json"
-  ],
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
     "clean": "rimraf dist",
     "dist": "npm run clean && npm run build",
+    "fix": "npm run fix:code && npm run fix:other",
+    "fix:code": "oxlint . --fix || true",
+    "fix:other": "oxfmt",
     "lint": "npm run lint:code && npm run lint:other",
-    "lint:code": "eslint .",
-    "lint:other": "npm run prettier -- --list-different",
-    "prettier": "prettier --config ../../.prettierrc.json --ignore-path ../../.gitignore --log-level error \"**/*.{json,scss,yml}\"",
-    "test": "npm run test:types && npm run test:imports && npm run test:units",
-    "test:imports": "depcruise -c ../../.dependency-cruiser.cjs src --include-only \"^src\"",
+    "lint:code": "oxlint .",
+    "lint:other": "oxfmt --list-different",
+    "test": "npm run test:types && npm run test:units",
     "test:types": "tsc --noEmit",
     "test:units": "vitest run"
   },
-  "dependencies": {
-    "@typedtrader/exchange": "0.2.5"
+  "devDependencies": {
+    "@typedtrader/exchange": "0.3.2"
   }
 }

@@ -381,6 +381,16 @@ export abstract class Broker extends EventEmitter {
   abstract getTime(): Promise<string>;
 
   /**
+   * Proves the configured credentials are authorized by issuing an authenticated network request,
+   * so bad keys surface immediately instead of at the first real trade. The default probe is
+   * {@link getTime}. Subclasses whose `getTime()` never leaves the process (brokers without a
+   * server-time endpoint, e.g. Trading212) MUST override this with a genuinely authenticated call.
+   */
+  async verifyCredentials(): Promise<void> {
+    await this.getTime();
+  }
+
+  /**
    * Generic function to place an order.
    * @protected Please use `placeLimitOrder` or `placeMarketOrder`.
    */

@@ -18,7 +18,7 @@ export interface CalculatorExample {
   code: string;
 }
 
-function formatResult(value: number): string {
+function formatResult(value: number) {
   if (!Number.isFinite(value)) {
     return '—';
   }

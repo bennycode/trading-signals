@@ -10,7 +10,7 @@ export const VROC: IndicatorConfig = {
   description: 'Volume Rate of Change',
   details:
     'Measures percentage change in volume over a period. Positive VROC indicates increasing volume (confirms trend), negative VROC indicates declining volume (weakening trend).',
-  getTableColumns: indicator => buildTableColumns({inputs: ['volume'], indicator}),
+  getTableColumns: indicator => buildTableColumns({indicator, inputs: ['volume']}),
   id: 'vroc',
   name: 'VROC',
   processData: makeProcessData({rowInputs: ['volume']}),

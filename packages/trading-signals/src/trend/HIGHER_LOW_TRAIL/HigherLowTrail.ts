@@ -1,5 +1,5 @@
-import {IndicatorSeries} from '../../types/Indicator.js';
-import type {HighLow} from '../../types/HighLowClose.js';
+import {IndicatorSeries} from '../../base/Indicator.js';
+import type {HighLow} from '../../base/Candle.type.js';
 import {pushUpdate} from '../../util/pushUpdate.js';
 
 export type HigherLowTrailConfig = {
@@ -58,7 +58,7 @@ export class HigherLowTrail extends IndicatorSeries<HighLow> {
     }
     this.#lastEmitted = false;
 
-    pushUpdate(this.#window, replace, candle.low, this.getRequiredInputs());
+    pushUpdate({array: this.#window, item: candle.low, maxLength: this.getRequiredInputs(), replace: replace});
 
     if (this.#window.length < this.getRequiredInputs()) {
       return null;
