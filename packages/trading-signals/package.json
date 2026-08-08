@@ -1,6 +1,6 @@
 {
   "name": "trading-signals",
-  "version": "8.2.0",
+  "version": "8.2.1",
   "description": "Technical indicators to run technical analysis with JavaScript / TypeScript.",
   "keywords": [
     "adx",

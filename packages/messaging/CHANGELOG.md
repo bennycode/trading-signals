@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file. See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.5.4](https://github.com/bennycode/trading-signals/compare/@typedtrader/messaging@0.5.3...@typedtrader/messaging@0.5.4) (2026-08-08)
+
+**Note:** Version bump only for package @typedtrader/messaging
+
 ## [0.5.3](https://github.com/bennycode/trading-signals/compare/@typedtrader/messaging@0.5.2...@typedtrader/messaging@0.5.3) (2026-08-02)
 
 **Note:** Version bump only for package @typedtrader/messaging

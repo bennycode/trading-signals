@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file. See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [8.2.1](https://github.com/bennycode/trading-signals/compare/trading-signals@8.2.0...trading-signals@8.2.1) (2026-08-08)
+
+### Bug Fixes
+
+- **trading-signals:** correct replace() across six indicators ([#1261](https://github.com/bennycode/trading-signals/issues/1261))
+
 ## [8.2.0](https://github.com/bennycode/trading-signals/compare/trading-signals@8.1.1...trading-signals@8.2.0) (2026-08-02)
 
 ### Features

@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file. See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.1.3](https://github.com/bennycode/trading-signals/compare/trading-signals-docs@2.1.2...trading-signals-docs@2.1.3) (2026-08-08)
+
+**Note:** Version bump only for package trading-signals-docs
+
 ## [2.1.2](https://github.com/bennycode/trading-signals/compare/trading-signals-docs@2.1.1...trading-signals-docs@2.1.2) (2026-08-02)
 
 **Note:** Version bump only for package trading-signals-docs
