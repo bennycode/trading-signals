@@ -5,6 +5,7 @@ export * from './BOP/BOP.js';
 export * from './CCI/CCI.js';
 export * from './CG/CG.js';
 export * from './CMO/CMO.js';
+export * from './COPPOCK/CoppockCurve.js';
 export * from './ER/ER.js';
 export * from './FISHER/FisherTransform.js';
 export * from './MACD/MACD.js';

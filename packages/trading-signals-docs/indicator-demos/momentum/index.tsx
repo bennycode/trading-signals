@@ -5,6 +5,7 @@ import {BOP} from './BOP.demo';
 import {CCI} from './CCI.demo';
 import {CG} from './CG.demo';
 import {CMO} from './CMO.demo';
+import {CoppockCurve} from './CoppockCurve.demo';
 import {ER} from './ER.demo';
 import {FisherTransform} from './FisherTransform.demo';
 import {MACD} from './MACD.demo';
@@ -46,5 +47,6 @@ export const indicators: IndicatorConfig[] = [
   APO,
   BOP,
   FisherTransform,
+  CoppockCurve,
   TRIX,
 ];
