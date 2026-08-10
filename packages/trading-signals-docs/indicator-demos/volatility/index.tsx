@@ -2,6 +2,7 @@ import {AccelerationBands} from './AccelerationBands.demo';
 import {ATR} from './ATR.demo';
 import {BollingerBands} from './BollingerBands.demo';
 import {BollingerBandsWidth} from './BollingerBandsWidth.demo';
+import {DonchianChannels} from './DonchianChannels.demo';
 import {IQR} from './IQR.demo';
 import {MAD} from './MAD.demo';
 import {NATR} from './NATR.demo';
@@ -11,6 +12,7 @@ import type {IndicatorConfig} from '../../utils/types';
 export const indicators: IndicatorConfig[] = [
   BollingerBands,
   AccelerationBands,
+  DonchianChannels,
   ATR,
   NATR,
   TR,
