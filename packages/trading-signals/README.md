@@ -27,6 +27,7 @@ All indicators can be updated over time by streaming data (prices or [candles](h
 1. Acceleration Bands (ABANDS)
 1. Accelerator Oscillator (AC)
 1. Accumulation/Distribution (AD)
+1. Arnaud Legoux Moving Average (ALMA)
 1. Aroon (AROON)
 1. Average Directional Index (ADX)
 1. Average True Range (ATR)
