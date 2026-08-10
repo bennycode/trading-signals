@@ -6,6 +6,7 @@ import {CCI} from './CCI.demo';
 import {CG} from './CG.demo';
 import {CMO} from './CMO.demo';
 import {ER} from './ER.demo';
+import {FisherTransform} from './FisherTransform.demo';
 import {MACD} from './MACD.demo';
 import {MFI} from './MFI.demo';
 import {MOM} from './MOM.demo';
@@ -44,5 +45,6 @@ export const indicators: IndicatorConfig[] = [
   PPO,
   APO,
   BOP,
+  FisherTransform,
   TRIX,
 ];

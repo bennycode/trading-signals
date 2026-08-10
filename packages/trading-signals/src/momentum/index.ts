@@ -6,6 +6,7 @@ export * from './CCI/CCI.js';
 export * from './CG/CG.js';
 export * from './CMO/CMO.js';
 export * from './ER/ER.js';
+export * from './FISHER/FisherTransform.js';
 export * from './MACD/MACD.js';
 export * from './MFI/MFI.js';
 export * from './MOM/MOM.js';

@@ -48,6 +48,7 @@ All indicators can be updated over time by streaming data (prices or [candles](h
 1. Ease of Movement (EMV)
 1. Exponential Moving Average (EMA)
 1. Efficiency Ratio (ER)
+1. Fisher Transform (FISHER)
 1. Force Index (FI)
 1. Fractal Adaptive Moving Average (FRAMA)
 1. Hull Moving Average (HMA)
