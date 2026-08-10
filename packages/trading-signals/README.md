@@ -55,6 +55,7 @@ All indicators can be updated over time by streaming data (prices or [candles](h
 1. Force Index (FI)
 1. Fractal Adaptive Moving Average (FRAMA)
 1. Hull Moving Average (HMA)
+1. Ichimoku Cloud (ICHIMOKU)
 1. Interquartile Range (IQR)
 1. Kaufman's Adaptive Moving Average (KAMA)
 1. Keltner Channels (KC)
