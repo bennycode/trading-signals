@@ -5,19 +5,28 @@ Reference implementation: [PR #1214 (MFI)](https://github.com/bennycode/trading-
 1. **Pick the category folder** — `src/momentum/`, `src/trend/`, `src/volatility/` or `src/volume/`. Create a directory named after the indicator code in uppercase, with the class file named after the exported class: `src/trend/AROON/Aroon.ts`.
 2. **Extend the right base class** (`src/base/Indicator.ts`):
    - Single-number result → `IndicatorSeries` (or `TrendIndicatorSeries` for signal tracking). Use `setResult()`.
+   - Zero-line oscillator (above zero = bullish pressure, below = bearish) → `ZeroCrossSeries`. It implements `calculateSignalState` once for the whole family — the subclass writes no signal code (see AO, MOM, PPO, TRIX, ADOSC, CMF, EMV, VROC).
    - Multi-value result (e.g. `{aroonUp, aroonDown}`) → `TechnicalIndicator<Result, Input>`. Export the result type. Here `this.result` is assigned directly — `setResult()` only exists on `IndicatorSeries`.
 3. **Use shared building blocks** — input types from `src/base/Candle.type.ts` (`HighLow`, `HighLowClose`, …), `pushUpdate()` from `src/util/` for the sliding candle window, and existing indicators (SMA, EMA, ATR, …) as internal components instead of reimplementing them.
 4. **Implement the contract** — `getRequiredInputs()` returns the warm-up count; `update(input, replace)` returns the result or `null` during warm-up. `replace()` must be correct: if the result is a pure function of the candle window, `pushUpdate()` handles it; if the indicator carries smoothing state, restore the previous state on replace.
 5. **No constructor parameter properties** — the codebase compiles with `erasableSyntaxOnly`, so declare fields explicitly and assign them in the constructor.
 6. **Write the class JSDoc with intent** — indicator name and code, type (Trend/Momentum/…), what it tells a trader, and `@see` links to sources (e.g. Investopedia, Tulip Indicators). When the indicator has an established interpretation (e.g. overbought/oversold thresholds), state it in an "Interpretation:" paragraph.
-7. **Encode the interpretation as a signal** — if the JSDoc claims an interpretation, implement it in `calculateSignalState` (via `TrendIndicatorSeries`, or a `getSignal()` like `StochasticOscillator` for multi-value results) so the claim is executable, not decorative. Convention: `TradingSignal` reports the direction of current pressure, not trade advice — overbought → `BULLISH`, oversold → `BEARISH` (see RSI, MFI, STOCH). Neutral or warm-up states must map to `SIDEWAYS` / `UNKNOWN` so a dead market never fabricates a directional signal.
+7. **Encode the interpretation as a signal** — if the JSDoc claims an interpretation, implement it in `calculateSignalState` (via `TrendIndicatorSeries`, or a `getSignal()` like `StochasticOscillator` for multi-value results) so the claim is executable, not decorative. Zero-line oscillators get this for free by extending `ZeroCrossSeries` (step 2) — only implement `calculateSignalState` when the indicator reads the zero line differently. Convention: `TradingSignal` reports the direction of current pressure, not trade advice — overbought → `BULLISH`, oversold → `BEARISH` (see RSI, MFI, STOCH). Neutral or warm-up states must map to `SIDEWAYS` / `UNKNOWN` so a dead market never fabricates a directional signal.
 8. **Export it** — add the class to the category `index.ts` (alphabetical order) and add the indicator to the "Supported Technical Indicators" list in `README.md` (alphabetical order).
 9. **Write co-located tests** (`<Name>.test.ts`, 100% coverage is enforced):
+   - Register the shared contract fixture (`src/fixtures/testIndicatorContract.ts`) once per indicator, at top level outside the `describe` block. It covers the warm-up contract (unstable, `getResult()` null, `getResultOrThrow()` throws `NotEnoughDataError`) and `replace()` state consistency, so no hand-written tests for those:
+     ```ts
+     testIndicatorContract({
+       create: () => new MOM(5),
+       divergentInput: 1_000,
+       inputs: [81.59, 81.06, 82.87, 83.0, 83.61, 83.15, 82.84],
+     });
+     ```
    - Verify results against external reference data. Prefer [Tulip Indicators test data](https://github.com/TulipCharts/tulipindicators/blob/v0.9.1/tests/untest.txt), link the exact lines in a comment, and tag the test with `{tags: ['tulipindicators']}`.
-   - Add a single-instance bidirectional `replace()` test asserting exact values for the original, replaced and restored results.
-   - Add a `NotEnoughDataError` test for `getResultOrThrow()` before warm-up.
+   - Add a single-instance bidirectional `replace()` test asserting exact values for the original, replaced and restored results — the contract fixture only checks state equality, not the concrete numbers.
    - Cover every signal state the indicator can emit (`UNKNOWN`, `BULLISH`, `BEARISH`, `SIDEWAYS`) with its own test.
    - Cover behavioral edge cases so a mutated comparison operator fails the suite (e.g. tie-breaking of equal extremes in Aroon, zero total money flow in MFI).
+10. **Add a docs demo** — create `packages/trading-signals-docs/indicator-demos/<category>/<Class>.demo.tsx` exporting an `IndicatorConfig` and register it in that folder's `index.tsx` (the `indicators` array order drives the sidebar order; the config's `id` becomes the URL hash, e.g. `/indicators/momentum#mom`). The docs site consumes the built library, so preview with `npm run start:docs` from the repo root — it rebuilds the package first.
 
 # Coding Conventions
 
