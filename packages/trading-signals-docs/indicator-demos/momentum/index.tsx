@@ -20,6 +20,7 @@ import {StochasticOscillator} from './StochasticOscillator.demo';
 import {StochasticRSI} from './StochasticRSI.demo';
 import {TDS} from './TDS.demo';
 import {TRIX} from './TRIX.demo';
+import {TSI} from './TSI.demo';
 import {UltimateOscillator} from './UltimateOscillator.demo';
 import {WilliamsR} from './WilliamsR.demo';
 import type {IndicatorConfig} from '../../utils/types';
@@ -49,4 +50,5 @@ export const indicators: IndicatorConfig[] = [
   FisherTransform,
   CoppockCurve,
   TRIX,
+  TSI,
 ];
