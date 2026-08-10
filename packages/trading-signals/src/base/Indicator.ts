@@ -172,7 +172,7 @@ export abstract class TrendIndicatorSeries<
  * different zero-line reading (e.g. treating zero itself as directional) implement their own
  * signal instead.
  */
-export abstract class ZeroCrossTrendIndicatorSeries<Input = number> extends TrendIndicatorSeries<Input> {
+export abstract class ZeroCrossSeries<Input = number> extends TrendIndicatorSeries<Input> {
   protected calculateSignalState(result: number | null | undefined) {
     if (result === null || result === undefined) {
       return TradingSignal.UNKNOWN;

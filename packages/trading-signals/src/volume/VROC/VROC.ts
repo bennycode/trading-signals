@@ -1,4 +1,4 @@
-import {ZeroCrossTrendIndicatorSeries} from '../../base/Indicator.js';
+import {ZeroCrossSeries} from '../../base/Indicator.js';
 import {pushUpdate} from '../../util/pushUpdate.js';
 
 /**
@@ -14,7 +14,7 @@ import {pushUpdate} from '../../util/pushUpdate.js';
  *
  * @see https://www.investopedia.com/terms/v/volumerateofchange.asp
  */
-export class VROC extends ZeroCrossTrendIndicatorSeries {
+export class VROC extends ZeroCrossSeries {
   readonly #volumes: number[] = [];
   readonly #historyLength: number;
 

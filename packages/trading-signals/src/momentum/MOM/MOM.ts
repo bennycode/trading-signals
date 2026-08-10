@@ -1,4 +1,4 @@
-import {ZeroCrossTrendIndicatorSeries} from '../../base/Indicator.js';
+import {ZeroCrossSeries} from '../../base/Indicator.js';
 import {pushUpdate} from '../../util/pushUpdate.js';
 
 /**
@@ -10,7 +10,7 @@ import {pushUpdate} from '../../util/pushUpdate.js';
  * @see https://en.wikipedia.org/wiki/Momentum_(technical_analysis)
  * @see https://www.warriortrading.com/momentum-indicator/
  */
-export class MOM extends ZeroCrossTrendIndicatorSeries {
+export class MOM extends ZeroCrossSeries {
   readonly #history: number[];
   readonly #historyLength: number;
 

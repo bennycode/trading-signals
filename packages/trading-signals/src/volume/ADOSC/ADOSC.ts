@@ -1,5 +1,5 @@
 import type {HighLowCloseVolume} from '../../base/Candle.type.js';
-import {ZeroCrossTrendIndicatorSeries} from '../../base/Indicator.js';
+import {ZeroCrossSeries} from '../../base/Indicator.js';
 import {EMA} from '../../trend/EMA/EMA.js';
 import {AD} from '../AD/AD.js';
 
@@ -22,7 +22,7 @@ export type ADOSCConfig = {
  * @see https://www.investopedia.com/terms/c/chaikinoscillator.asp
  * @see https://tulipindicators.org/adosc
  */
-export class ADOSC extends ZeroCrossTrendIndicatorSeries<HighLowCloseVolume> {
+export class ADOSC extends ZeroCrossSeries<HighLowCloseVolume> {
   readonly #ad = new AD();
   readonly #fast: EMA;
   readonly #slow: EMA;

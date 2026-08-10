@@ -2,7 +2,7 @@ import type {MovingAverage} from '../../trend/MA/MovingAverage.js';
 import type {MovingAverageTypes} from '../../trend/MA/MovingAverageTypes.js';
 import {SMA} from '../../trend/SMA/SMA.js';
 import type {HighLow} from '../../base/Candle.type.js';
-import {ZeroCrossTrendIndicatorSeries} from '../../base/Indicator.js';
+import {ZeroCrossSeries} from '../../base/Indicator.js';
 
 /**
  * Awesome Oscillator (AO)
@@ -20,7 +20,7 @@ import {ZeroCrossTrendIndicatorSeries} from '../../base/Indicator.js';
  * @see https://www.tradingview.com/support/solutions/43000501826-awesome-oscillator-ao/
  * @see https://tradingstrategyguides.com/bill-williams-awesome-oscillator-strategy/
  */
-export class AO extends ZeroCrossTrendIndicatorSeries<HighLow<number>> {
+export class AO extends ZeroCrossSeries<HighLow<number>> {
   public readonly long: MovingAverage;
   public readonly short: MovingAverage;
   public readonly shortInterval: number;

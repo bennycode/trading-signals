@@ -1,5 +1,5 @@
 import type {HighLowCloseVolume} from '../../base/Candle.type.js';
-import {ZeroCrossTrendIndicatorSeries} from '../../base/Indicator.js';
+import {ZeroCrossSeries} from '../../base/Indicator.js';
 import {SMA} from '../../trend/SMA/SMA.js';
 import {pushUpdate} from '../../util/pushUpdate.js';
 
@@ -19,7 +19,7 @@ import {pushUpdate} from '../../util/pushUpdate.js';
  *
  * @see https://www.investopedia.com/terms/e/easeofmovement.asp
  */
-export class EMV extends ZeroCrossTrendIndicatorSeries<HighLowCloseVolume> {
+export class EMV extends ZeroCrossSeries<HighLowCloseVolume> {
   readonly #candles: HighLowCloseVolume[] = [];
   readonly #sma: SMA;
   readonly #scale: number;

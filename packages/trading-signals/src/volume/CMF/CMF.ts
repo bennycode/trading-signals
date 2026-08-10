@@ -1,5 +1,5 @@
 import type {HighLowCloseVolume} from '../../base/Candle.type.js';
-import {ZeroCrossTrendIndicatorSeries} from '../../base/Indicator.js';
+import {ZeroCrossSeries} from '../../base/Indicator.js';
 import {pushUpdate} from '../../util/pushUpdate.js';
 
 /**
@@ -17,7 +17,7 @@ import {pushUpdate} from '../../util/pushUpdate.js';
  *
  * @see https://www.investopedia.com/terms/c/chaikinoscillator.asp
  */
-export class CMF extends ZeroCrossTrendIndicatorSeries<HighLowCloseVolume> {
+export class CMF extends ZeroCrossSeries<HighLowCloseVolume> {
   readonly #candles: HighLowCloseVolume[] = [];
 
   public readonly interval: number;

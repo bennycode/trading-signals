@@ -1,4 +1,4 @@
-import {ZeroCrossTrendIndicatorSeries} from '../../base/Indicator.js';
+import {ZeroCrossSeries} from '../../base/Indicator.js';
 import {EMA} from '../../trend/EMA/EMA.js';
 
 /**
@@ -16,7 +16,7 @@ import {EMA} from '../../trend/EMA/EMA.js';
  * @see https://www.investopedia.com/terms/t/trix.asp
  * @see https://tulipindicators.org/trix
  */
-export class TRIX extends ZeroCrossTrendIndicatorSeries {
+export class TRIX extends ZeroCrossSeries {
   readonly #single: EMA;
   readonly #double: EMA;
   readonly #triple: EMA;

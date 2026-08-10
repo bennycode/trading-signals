@@ -1,4 +1,4 @@
-import {ZeroCrossTrendIndicatorSeries} from '../../base/Indicator.js';
+import {ZeroCrossSeries} from '../../base/Indicator.js';
 import {EMA} from '../../trend/EMA/EMA.js';
 
 export type PPOConfig = {
@@ -20,7 +20,7 @@ export type PPOConfig = {
  * @see https://www.investopedia.com/terms/p/ppo.asp
  * @see https://tulipindicators.org/ppo
  */
-export class PPO extends ZeroCrossTrendIndicatorSeries {
+export class PPO extends ZeroCrossSeries {
   readonly #fast: EMA;
   readonly #slow: EMA;
 
