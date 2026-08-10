@@ -4,6 +4,7 @@ import {Aroon} from './Aroon.demo';
 import {BreakoutBarLow} from './BreakoutBarLow.demo';
 import {ChandelierExit} from './ChandelierExit.demo';
 import {DEMA} from './DEMA.demo';
+import {FRAMA} from './FRAMA.demo';
 import {HMA} from './HMA.demo';
 import {KAMA} from './KAMA.demo';
 import {T3} from './T3.demo';
@@ -42,6 +43,7 @@ export const indicators: IndicatorConfig[] = [
   ALMA,
   ZLEMA,
   VIDYA,
+  FRAMA,
   Aroon,
   ChandelierExit,
   WMA,

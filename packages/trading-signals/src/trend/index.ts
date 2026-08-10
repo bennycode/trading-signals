@@ -7,6 +7,7 @@ export * from './DEMA/DEMA.js';
 export * from './DMA/DMA.js';
 export * from './DX/DX.js';
 export * from './EMA/EMA.js';
+export * from './FRAMA/FRAMA.js';
 export * from './HIGHER_LOW_TRAIL/HigherLowTrail.js';
 export * from './HMA/HMA.js';
 export * from './KAMA/KAMA.js';

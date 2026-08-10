@@ -1,5 +1,6 @@
 import type {ALMA} from '../ALMA/ALMA.js';
 import type {EMA} from '../EMA/EMA.js';
+import type {FRAMA} from '../FRAMA/FRAMA.js';
 import type {HMA} from '../HMA/HMA.js';
 import type {RMA} from '../RMA/RMA.js';
 import type {SMA} from '../SMA/SMA.js';
@@ -13,6 +14,7 @@ import type {ZLEMA} from '../ZLEMA/ZLEMA.js';
 export type MovingAverageTypes =
   | typeof ALMA
   | typeof EMA
+  | typeof FRAMA
   | typeof HMA
   | typeof RMA
   | typeof SMA
