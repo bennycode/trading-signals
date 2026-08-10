@@ -166,8 +166,8 @@ export abstract class TrendIndicatorSeries<
 }
 
 /**
- * Encodes the shared oscillator interpretation once: the side of the zero line tells the
- * direction of current pressure. Oscillators that read zero differently implement their own signal.
+ * Most oscillators share one reading of the zero line. Above it means bullish pressure, below it
+ * bearish. Oscillators that read the zero line differently implement their own signal.
  */
 export abstract class ZeroCrossSeries<Input = number> extends TrendIndicatorSeries<Input> {
   protected calculateSignalState(result: number | null | undefined) {
