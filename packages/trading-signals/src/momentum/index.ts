@@ -8,6 +8,7 @@ export * from './CMO/CMO.js';
 export * from './COPPOCK/CoppockCurve.js';
 export * from './ER/ER.js';
 export * from './FISHER/FisherTransform.js';
+export * from './KST/KST.js';
 export * from './MACD/MACD.js';
 export * from './MFI/MFI.js';
 export * from './MOM/MOM.js';

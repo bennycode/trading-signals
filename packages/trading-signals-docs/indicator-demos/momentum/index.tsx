@@ -8,6 +8,7 @@ import {CMO} from './CMO.demo';
 import {CoppockCurve} from './CoppockCurve.demo';
 import {ER} from './ER.demo';
 import {FisherTransform} from './FisherTransform.demo';
+import {KST} from './KST.demo';
 import {MACD} from './MACD.demo';
 import {MFI} from './MFI.demo';
 import {MOM} from './MOM.demo';
@@ -49,6 +50,7 @@ export const indicators: IndicatorConfig[] = [
   BOP,
   FisherTransform,
   CoppockCurve,
+  KST,
   TRIX,
   TSI,
 ];
