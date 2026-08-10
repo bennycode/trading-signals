@@ -33,6 +33,7 @@ All indicators can be updated over time by streaming data (prices or [candles](h
 1. Average Directional Index (ADX)
 1. Average True Range (ATR)
 1. Awesome Oscillator (AO)
+1. Balance of Power (BOP)
 1. Bollinger Bands (BBANDS)
 1. Bollinger Bands Width (BBW)
 1. Center of Gravity (CG)
