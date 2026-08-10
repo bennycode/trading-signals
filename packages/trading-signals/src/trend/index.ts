@@ -20,6 +20,7 @@ export * from './SWING_HIGH/SwingHigh.js';
 export * from './SWING_LOW/SwingLookback.js';
 export * from './SWING_LOW/SwingLow.js';
 export * from './TEMA/TEMA.js';
+export * from './TRIMA/TRIMA.js';
 export * from './VSTOP/VolatilityStop.js';
 export * from './VWAP/VWAP.js';
 export * from './WMA/WMA.js';

@@ -69,6 +69,7 @@ All indicators can be updated over time by streaming data (prices or [candles](h
 1. Stochastic RSI (STOCHRSI)
 1. SuperTrend (SUPERTREND)
 1. Tom Demark's Sequential Indicator (TDS)
+1. Triangular Moving Average (TRIMA)
 1. Triple Exponential Moving Average (TEMA)
 1. Triple Smoothed EMA Rate of Change (TRIX)
 1. True Range (TR)
