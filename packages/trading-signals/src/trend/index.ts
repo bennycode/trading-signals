@@ -23,6 +23,7 @@ export * from './SWING_LOW/SwingLow.js';
 export * from './T3/T3.js';
 export * from './TEMA/TEMA.js';
 export * from './TRIMA/TRIMA.js';
+export * from './VIDYA/VIDYA.js';
 export * from './VSTOP/VolatilityStop.js';
 export * from './VWAP/VWAP.js';
 export * from './WMA/WMA.js';

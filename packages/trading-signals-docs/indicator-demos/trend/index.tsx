@@ -9,6 +9,7 @@ import {KAMA} from './KAMA.demo';
 import {T3} from './T3.demo';
 import {TEMA} from './TEMA.demo';
 import {TRIMA} from './TRIMA.demo';
+import {VIDYA} from './VIDYA.demo';
 import {DMA} from './DMA.demo';
 import {DX} from './DX.demo';
 import {EMA} from './EMA.demo';
@@ -40,6 +41,7 @@ export const indicators: IndicatorConfig[] = [
   TRIMA,
   ALMA,
   ZLEMA,
+  VIDYA,
   Aroon,
   ChandelierExit,
   WMA,
