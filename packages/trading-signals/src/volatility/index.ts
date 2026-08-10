@@ -4,6 +4,7 @@ export * from './BBANDS/BollingerBands.js';
 export * from './BBW/BollingerBandsWidth.js';
 export * from './DC/DonchianChannels.js';
 export * from './IQR/IQR.js';
+export * from './KC/KeltnerChannels.js';
 export * from './MAD/MAD.js';
 export * from './NATR/NATR.js';
 export * from './TR/TR.js';

@@ -4,6 +4,7 @@ import {BollingerBands} from './BollingerBands.demo';
 import {BollingerBandsWidth} from './BollingerBandsWidth.demo';
 import {DonchianChannels} from './DonchianChannels.demo';
 import {IQR} from './IQR.demo';
+import {KeltnerChannels} from './KeltnerChannels.demo';
 import {MAD} from './MAD.demo';
 import {NATR} from './NATR.demo';
 import {TR} from './TR.demo';
@@ -13,6 +14,7 @@ export const indicators: IndicatorConfig[] = [
   BollingerBands,
   AccelerationBands,
   DonchianChannels,
+  KeltnerChannels,
   ATR,
   NATR,
   TR,
