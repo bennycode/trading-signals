@@ -11,6 +11,7 @@ import {T3} from './T3.demo';
 import {TEMA} from './TEMA.demo';
 import {TRIMA} from './TRIMA.demo';
 import {VIDYA} from './VIDYA.demo';
+import {VortexIndicator} from './VortexIndicator.demo';
 import {DMA} from './DMA.demo';
 import {DX} from './DX.demo';
 import {EMA} from './EMA.demo';
@@ -44,6 +45,7 @@ export const indicators: IndicatorConfig[] = [
   ZLEMA,
   VIDYA,
   FRAMA,
+  VortexIndicator,
   Aroon,
   ChandelierExit,
   WMA,

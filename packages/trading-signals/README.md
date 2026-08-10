@@ -93,6 +93,7 @@ All indicators can be updated over time by streaming data (prices or [candles](h
 1. Volume Rate of Change (VROC)
 1. Volume-Weighted Average Price (VWAP)
 1. Volume Weighted Moving Average (VWMA)
+1. Vortex Indicator (VI)
 1. Weighted Moving Average (WMA)
 1. Wilder's Smoothed Moving Average (WSMA / WWS / SMMA / MEMA)
 1. Williams %R (WILLR)
