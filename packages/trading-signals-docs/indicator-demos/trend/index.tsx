@@ -5,6 +5,7 @@ import {ChandelierExit} from './ChandelierExit.demo';
 import {DEMA} from './DEMA.demo';
 import {HMA} from './HMA.demo';
 import {KAMA} from './KAMA.demo';
+import {T3} from './T3.demo';
 import {TEMA} from './TEMA.demo';
 import {TRIMA} from './TRIMA.demo';
 import {DMA} from './DMA.demo';
@@ -31,6 +32,7 @@ export const indicators: IndicatorConfig[] = [
   EMA,
   DEMA,
   TEMA,
+  T3,
   HMA,
   KAMA,
   TRIMA,

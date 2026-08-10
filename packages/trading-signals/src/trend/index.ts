@@ -19,6 +19,7 @@ export * from './SUPERTREND/SuperTrend.js';
 export * from './SWING_HIGH/SwingHigh.js';
 export * from './SWING_LOW/SwingLookback.js';
 export * from './SWING_LOW/SwingLow.js';
+export * from './T3/T3.js';
 export * from './TEMA/TEMA.js';
 export * from './TRIMA/TRIMA.js';
 export * from './VSTOP/VolatilityStop.js';

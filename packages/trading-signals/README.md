@@ -68,6 +68,7 @@ All indicators can be updated over time by streaming data (prices or [candles](h
 1. Stochastic Oscillator (STOCH)
 1. Stochastic RSI (STOCHRSI)
 1. SuperTrend (SUPERTREND)
+1. Tillson T3 Moving Average (T3)
 1. Tom Demark's Sequential Indicator (TDS)
 1. Triangular Moving Average (TRIMA)
 1. Triple Exponential Moving Average (TEMA)
