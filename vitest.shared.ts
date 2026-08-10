@@ -1,13 +1,17 @@
 import {transform} from 'esbuild';
 import {defineConfig} from 'vitest/config';
+import tsconfig from './tsconfig.lib.json';
+
+/*
+ * Vitest transpiles tests with target "node18" by default, which downlevels newer syntax
+ * (e.g. the "accessor" keyword: https://github.com/vitest-dev/vitest/issues/5976).
+ * Reusing the tsconfig target keeps tests on the same language level that ships in dist.
+ */
+const target = tsconfig.compilerOptions.target;
 
 export default defineConfig({
   esbuild: {
-    /*
-     * Allows using the "accessor" keyword in TypeScript:
-     * https://github.com/vitest-dev/vitest/issues/5976#issuecomment-2190804966
-     */
-    target: 'es2022',
+    target,
   },
   plugins: [
     {
@@ -24,7 +28,7 @@ export default defineConfig({
         if (!/\.tsx?$/.test(id) || !/^\s*@[A-Za-z_$]/m.test(code)) {
           return null;
         }
-        return transform(code, {loader: 'ts', sourcefile: id, sourcemap: true, target: 'es2022'});
+        return transform(code, {loader: 'ts', sourcefile: id, sourcemap: true, target});
       },
     },
   ],
