@@ -28,3 +28,4 @@ export * from './VWAP/VWAP.js';
 export * from './WMA/WMA.js';
 export * from './WSMA/WSMA.js';
 export * from './ZIGZAG/ZigZag.js';
+export * from './ZLEMA/ZLEMA.js';

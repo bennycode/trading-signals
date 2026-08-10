@@ -7,6 +7,7 @@ import type {T3} from '../T3/T3.js';
 import type {TRIMA} from '../TRIMA/TRIMA.js';
 import type {WMA} from '../WMA/WMA.js';
 import type {WSMA} from '../WSMA/WSMA.js';
+import type {ZLEMA} from '../ZLEMA/ZLEMA.js';
 
 export type MovingAverageTypes =
   | typeof ALMA
@@ -17,4 +18,5 @@ export type MovingAverageTypes =
   | typeof T3
   | typeof TRIMA
   | typeof WMA
-  | typeof WSMA;
+  | typeof WSMA
+  | typeof ZLEMA;

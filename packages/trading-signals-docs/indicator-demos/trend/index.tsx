@@ -26,6 +26,7 @@ import {VWAP} from './VWAP.demo';
 import {WMA} from './WMA.demo';
 import {WSMA} from './WSMA.demo';
 import {ZigZag} from './ZigZag.demo';
+import {ZLEMA} from './ZLEMA.demo';
 import type {IndicatorConfig} from '../../utils/types';
 
 export const indicators: IndicatorConfig[] = [
@@ -38,6 +39,7 @@ export const indicators: IndicatorConfig[] = [
   KAMA,
   TRIMA,
   ALMA,
+  ZLEMA,
   Aroon,
   ChandelierExit,
   WMA,

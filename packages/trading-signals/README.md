@@ -83,6 +83,7 @@ All indicators can be updated over time by streaming data (prices or [candles](h
 1. Weighted Moving Average (WMA)
 1. Wilder's Smoothed Moving Average (WSMA / WWS / SMMA / MEMA)
 1. Williams %R (WILLR)
+1. Zero-Lag Exponential Moving Average (ZLEMA)
 1. Zig Zag Indicator (ZigZag)
 
 Utility Methods:
