@@ -7,6 +7,7 @@ export * from './CG/CG.js';
 export * from './CMO/CMO.js';
 export * from './COPPOCK/CoppockCurve.js';
 export * from './ER/ER.js';
+export * from './ERI/ElderRay.js';
 export * from './FISHER/FisherTransform.js';
 export * from './KST/KST.js';
 export * from './MACD/MACD.js';

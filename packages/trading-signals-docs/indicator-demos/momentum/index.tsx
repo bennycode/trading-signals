@@ -6,6 +6,7 @@ import {CCI} from './CCI.demo';
 import {CG} from './CG.demo';
 import {CMO} from './CMO.demo';
 import {CoppockCurve} from './CoppockCurve.demo';
+import {ElderRay} from './ElderRay.demo';
 import {ER} from './ER.demo';
 import {FisherTransform} from './FisherTransform.demo';
 import {KST} from './KST.demo';
@@ -51,6 +52,7 @@ export const indicators: IndicatorConfig[] = [
   FisherTransform,
   CoppockCurve,
   KST,
+  ElderRay,
   TRIX,
   TSI,
 ];

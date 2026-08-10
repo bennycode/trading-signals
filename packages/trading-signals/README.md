@@ -47,6 +47,7 @@ All indicators can be updated over time by streaming data (prices or [candles](h
 1. Double Exponential Moving Average (DEMA)
 1. Dual Moving Average (DMA)
 1. Ease of Movement (EMV)
+1. Elder Ray Index (ERI)
 1. Exponential Moving Average (EMA)
 1. Efficiency Ratio (ER)
 1. Fisher Transform (FISHER)
