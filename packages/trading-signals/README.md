@@ -24,6 +24,7 @@ All indicators can be updated over time by streaming data (prices or [candles](h
 
 ## Supported Technical Indicators
 
+1. Absolute Price Oscillator (APO)
 1. Acceleration Bands (ABANDS)
 1. Accelerator Oscillator (AC)
 1. Accumulation/Distribution (AD)

@@ -1,5 +1,6 @@
 import {AC} from './AC.demo';
 import {AO} from './AO.demo';
+import {APO} from './APO.demo';
 import {CCI} from './CCI.demo';
 import {CG} from './CG.demo';
 import {CMO} from './CMO.demo';
@@ -40,5 +41,6 @@ export const indicators: IndicatorConfig[] = [
   UltimateOscillator,
   CMO,
   PPO,
+  APO,
   TRIX,
 ];
