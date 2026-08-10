@@ -164,3 +164,25 @@ export abstract class TrendIndicatorSeries<
     };
   }
 }
+
+/**
+ * Most oscillators share one reading of the zero line. Above it means bullish pressure, below it
+ * bearish. Oscillators that read the zero line differently implement their own signal.
+ */
+export abstract class ZeroCrossSeries<Input = number> extends TrendIndicatorSeries<Input> {
+  protected calculateSignalState(result: number | null | undefined) {
+    if (result === null || result === undefined) {
+      return TradingSignal.UNKNOWN;
+    }
+
+    if (result > 0) {
+      return TradingSignal.BULLISH;
+    }
+
+    if (result < 0) {
+      return TradingSignal.BEARISH;
+    }
+
+    return TradingSignal.SIDEWAYS;
+  }
+}

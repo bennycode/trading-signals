@@ -1,5 +1,5 @@
 import type {HighLowCloseVolume} from '../../base/Candle.type.js';
-import {TradingSignal, TrendIndicatorSeries} from '../../base/Indicator.js';
+import {ZeroCrossSeries} from '../../base/Indicator.js';
 import {EMA} from '../../trend/EMA/EMA.js';
 import {AD} from '../AD/AD.js';
 
@@ -22,7 +22,7 @@ export type ADOSCConfig = {
  * @see https://www.investopedia.com/terms/c/chaikinoscillator.asp
  * @see https://tulipindicators.org/adosc
  */
-export class ADOSC extends TrendIndicatorSeries<HighLowCloseVolume> {
+export class ADOSC extends ZeroCrossSeries<HighLowCloseVolume> {
   readonly #ad = new AD();
   readonly #fast: EMA;
   readonly #slow: EMA;
@@ -52,22 +52,5 @@ export class ADOSC extends TrendIndicatorSeries<HighLowCloseVolume> {
     }
 
     return null;
-  }
-
-  protected calculateSignalState(result: number | null | undefined) {
-    const hasResult = result !== null && result !== undefined;
-    const isBullish = hasResult && result > 0;
-    const isBearish = hasResult && result < 0;
-
-    switch (true) {
-      case !hasResult:
-        return TradingSignal.UNKNOWN;
-      case isBullish:
-        return TradingSignal.BULLISH;
-      case isBearish:
-        return TradingSignal.BEARISH;
-      default:
-        return TradingSignal.SIDEWAYS;
-    }
   }
 }

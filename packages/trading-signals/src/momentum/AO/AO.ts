@@ -2,7 +2,7 @@ import type {MovingAverage} from '../../trend/MA/MovingAverage.js';
 import type {MovingAverageTypes} from '../../trend/MA/MovingAverageTypes.js';
 import {SMA} from '../../trend/SMA/SMA.js';
 import type {HighLow} from '../../base/Candle.type.js';
-import {TrendIndicatorSeries, TradingSignal} from '../../base/Indicator.js';
+import {ZeroCrossSeries} from '../../base/Indicator.js';
 
 /**
  * Awesome Oscillator (AO)
@@ -20,7 +20,7 @@ import {TrendIndicatorSeries, TradingSignal} from '../../base/Indicator.js';
  * @see https://www.tradingview.com/support/solutions/43000501826-awesome-oscillator-ao/
  * @see https://tradingstrategyguides.com/bill-williams-awesome-oscillator-strategy/
  */
-export class AO extends TrendIndicatorSeries<HighLow<number>> {
+export class AO extends ZeroCrossSeries<HighLow<number>> {
   public readonly long: MovingAverage;
   public readonly short: MovingAverage;
   public readonly shortInterval: number;
@@ -49,22 +49,5 @@ export class AO extends TrendIndicatorSeries<HighLow<number>> {
     }
 
     return null;
-  }
-
-  protected calculateSignalState(result: number | null | undefined) {
-    const hasResult = result !== null && result !== undefined;
-    const isBullish = hasResult && result > 0;
-    const isBearish = hasResult && result < 0;
-
-    switch (true) {
-      case !hasResult:
-        return TradingSignal.UNKNOWN;
-      case isBullish:
-        return TradingSignal.BULLISH;
-      case isBearish:
-        return TradingSignal.BEARISH;
-      default:
-        return TradingSignal.SIDEWAYS;
-    }
   }
 }

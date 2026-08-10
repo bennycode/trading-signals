@@ -1,5 +1,5 @@
 import type {HighLowCloseVolume} from '../../base/Candle.type.js';
-import {TradingSignal, TrendIndicatorSeries} from '../../base/Indicator.js';
+import {ZeroCrossSeries} from '../../base/Indicator.js';
 import {pushUpdate} from '../../util/pushUpdate.js';
 
 /**
@@ -17,7 +17,7 @@ import {pushUpdate} from '../../util/pushUpdate.js';
  *
  * @see https://www.investopedia.com/terms/c/chaikinoscillator.asp
  */
-export class CMF extends TrendIndicatorSeries<HighLowCloseVolume> {
+export class CMF extends ZeroCrossSeries<HighLowCloseVolume> {
   readonly #candles: HighLowCloseVolume[] = [];
 
   public readonly interval: number;
@@ -56,21 +56,5 @@ export class CMF extends TrendIndicatorSeries<HighLowCloseVolume> {
     const cmf = sumVolume === 0 ? 0 : sumMoneyFlowVolume / sumVolume;
 
     return this.setResult(cmf, replace);
-  }
-
-  protected calculateSignalState(result: number | null | undefined) {
-    if (result === null || result === undefined) {
-      return TradingSignal.UNKNOWN;
-    }
-
-    if (result > 0) {
-      return TradingSignal.BULLISH;
-    }
-
-    if (result < 0) {
-      return TradingSignal.BEARISH;
-    }
-
-    return TradingSignal.SIDEWAYS;
   }
 }
