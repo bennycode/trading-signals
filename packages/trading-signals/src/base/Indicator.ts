@@ -164,3 +164,28 @@ export abstract class TrendIndicatorSeries<
     };
   }
 }
+
+/**
+ * Many oscillators share the same established interpretation: the side of the zero line the
+ * reading sits on tells the direction of current pressure. This base class encodes that
+ * interpretation once, so an oscillator only implements its calculation. Indicators with a
+ * different zero-line reading (e.g. treating zero itself as directional) implement their own
+ * signal instead.
+ */
+export abstract class ZeroCrossTrendIndicatorSeries<Input = number> extends TrendIndicatorSeries<Input> {
+  protected calculateSignalState(result: number | null | undefined) {
+    if (result === null || result === undefined) {
+      return TradingSignal.UNKNOWN;
+    }
+
+    if (result > 0) {
+      return TradingSignal.BULLISH;
+    }
+
+    if (result < 0) {
+      return TradingSignal.BEARISH;
+    }
+
+    return TradingSignal.SIDEWAYS;
+  }
+}

@@ -1,4 +1,4 @@
-import {TradingSignal, TrendIndicatorSeries} from '../../base/Indicator.js';
+import {ZeroCrossTrendIndicatorSeries} from '../../base/Indicator.js';
 import {EMA} from '../../trend/EMA/EMA.js';
 
 export type PPOConfig = {
@@ -20,7 +20,7 @@ export type PPOConfig = {
  * @see https://www.investopedia.com/terms/p/ppo.asp
  * @see https://tulipindicators.org/ppo
  */
-export class PPO extends TrendIndicatorSeries {
+export class PPO extends ZeroCrossTrendIndicatorSeries {
   readonly #fast: EMA;
   readonly #slow: EMA;
 
@@ -48,22 +48,5 @@ export class PPO extends TrendIndicatorSeries {
     }
 
     return null;
-  }
-
-  protected calculateSignalState(result: number | null | undefined) {
-    const hasResult = result !== null && result !== undefined;
-    const isBullish = hasResult && result > 0;
-    const isBearish = hasResult && result < 0;
-
-    switch (true) {
-      case !hasResult:
-        return TradingSignal.UNKNOWN;
-      case isBullish:
-        return TradingSignal.BULLISH;
-      case isBearish:
-        return TradingSignal.BEARISH;
-      default:
-        return TradingSignal.SIDEWAYS;
-    }
   }
 }

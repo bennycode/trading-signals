@@ -1,4 +1,4 @@
-import {TradingSignal, TrendIndicatorSeries} from '../../base/Indicator.js';
+import {ZeroCrossTrendIndicatorSeries} from '../../base/Indicator.js';
 import {EMA} from '../../trend/EMA/EMA.js';
 
 /**
@@ -16,7 +16,7 @@ import {EMA} from '../../trend/EMA/EMA.js';
  * @see https://www.investopedia.com/terms/t/trix.asp
  * @see https://tulipindicators.org/trix
  */
-export class TRIX extends TrendIndicatorSeries {
+export class TRIX extends ZeroCrossTrendIndicatorSeries {
   readonly #single: EMA;
   readonly #double: EMA;
   readonly #triple: EMA;
@@ -63,22 +63,5 @@ export class TRIX extends TrendIndicatorSeries {
     }
 
     return null;
-  }
-
-  protected calculateSignalState(result: number | null | undefined) {
-    const hasResult = result !== null && result !== undefined;
-    const isBullish = hasResult && result > 0;
-    const isBearish = hasResult && result < 0;
-
-    switch (true) {
-      case !hasResult:
-        return TradingSignal.UNKNOWN;
-      case isBullish:
-        return TradingSignal.BULLISH;
-      case isBearish:
-        return TradingSignal.BEARISH;
-      default:
-        return TradingSignal.SIDEWAYS;
-    }
   }
 }

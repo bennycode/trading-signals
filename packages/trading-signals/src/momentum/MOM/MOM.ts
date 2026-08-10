@@ -1,4 +1,4 @@
-import {TradingSignal, TrendIndicatorSeries} from '../../base/Indicator.js';
+import {ZeroCrossTrendIndicatorSeries} from '../../base/Indicator.js';
 import {pushUpdate} from '../../util/pushUpdate.js';
 
 /**
@@ -10,7 +10,7 @@ import {pushUpdate} from '../../util/pushUpdate.js';
  * @see https://en.wikipedia.org/wiki/Momentum_(technical_analysis)
  * @see https://www.warriortrading.com/momentum-indicator/
  */
-export class MOM extends TrendIndicatorSeries {
+export class MOM extends ZeroCrossTrendIndicatorSeries {
   readonly #history: number[];
   readonly #historyLength: number;
 
@@ -35,23 +35,5 @@ export class MOM extends TrendIndicatorSeries {
     }
 
     return null;
-  }
-
-  protected calculateSignalState(result?: number | null | undefined) {
-    const hasResult = result !== null && result !== undefined;
-
-    if (!hasResult) {
-      return TradingSignal.UNKNOWN;
-    }
-
-    if (result > 0) {
-      return TradingSignal.BULLISH;
-    }
-
-    if (result < 0) {
-      return TradingSignal.BEARISH;
-    }
-
-    return TradingSignal.SIDEWAYS;
   }
 }

@@ -1,5 +1,5 @@
 import type {HighLowCloseVolume} from '../../base/Candle.type.js';
-import {TradingSignal, TrendIndicatorSeries} from '../../base/Indicator.js';
+import {ZeroCrossTrendIndicatorSeries} from '../../base/Indicator.js';
 import {SMA} from '../../trend/SMA/SMA.js';
 import {pushUpdate} from '../../util/pushUpdate.js';
 
@@ -19,7 +19,7 @@ import {pushUpdate} from '../../util/pushUpdate.js';
  *
  * @see https://www.investopedia.com/terms/e/easeofmovement.asp
  */
-export class EMV extends TrendIndicatorSeries<HighLowCloseVolume> {
+export class EMV extends ZeroCrossTrendIndicatorSeries<HighLowCloseVolume> {
   readonly #candles: HighLowCloseVolume[] = [];
   readonly #sma: SMA;
   readonly #scale: number;
@@ -62,21 +62,5 @@ export class EMV extends TrendIndicatorSeries<HighLowCloseVolume> {
     }
 
     return this.setResult(smaResult, replace);
-  }
-
-  protected calculateSignalState(result: number | null | undefined) {
-    if (result === null || result === undefined) {
-      return TradingSignal.UNKNOWN;
-    }
-
-    if (result > 0) {
-      return TradingSignal.BULLISH;
-    }
-
-    if (result < 0) {
-      return TradingSignal.BEARISH;
-    }
-
-    return TradingSignal.SIDEWAYS;
   }
 }

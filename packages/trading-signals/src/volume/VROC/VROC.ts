@@ -1,4 +1,4 @@
-import {TradingSignal, TrendIndicatorSeries} from '../../base/Indicator.js';
+import {ZeroCrossTrendIndicatorSeries} from '../../base/Indicator.js';
 import {pushUpdate} from '../../util/pushUpdate.js';
 
 /**
@@ -14,7 +14,7 @@ import {pushUpdate} from '../../util/pushUpdate.js';
  *
  * @see https://www.investopedia.com/terms/v/volumerateofchange.asp
  */
-export class VROC extends TrendIndicatorSeries {
+export class VROC extends ZeroCrossTrendIndicatorSeries {
   readonly #volumes: number[] = [];
   readonly #historyLength: number;
 
@@ -46,21 +46,5 @@ export class VROC extends TrendIndicatorSeries {
     const vroc = ((volume - previousVolume) / previousVolume) * 100;
 
     return this.setResult(vroc, replace);
-  }
-
-  protected calculateSignalState(result: number | null | undefined) {
-    if (result === null || result === undefined) {
-      return TradingSignal.UNKNOWN;
-    }
-
-    if (result > 0) {
-      return TradingSignal.BULLISH;
-    }
-
-    if (result < 0) {
-      return TradingSignal.BEARISH;
-    }
-
-    return TradingSignal.SIDEWAYS;
   }
 }
