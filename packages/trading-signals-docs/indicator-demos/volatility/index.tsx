@@ -13,6 +13,7 @@ import {MassIndex} from './MassIndex.demo';
 import {NATR} from './NATR.demo';
 import {PercentB} from './PercentB.demo';
 import {ProjectionOscillator} from './ProjectionOscillator.demo';
+import {RogersSatchellVolatility} from './RogersSatchellVolatility.demo';
 import {TR} from './TR.demo';
 import {TTMSqueeze} from './TTMSqueeze.demo';
 import {UlcerIndex} from './UlcerIndex.demo';
@@ -37,4 +38,5 @@ export const indicators: IndicatorConfig[] = [
   CVI,
   CHOP,
   TTMSqueeze,
+  RogersSatchellVolatility,
 ];
