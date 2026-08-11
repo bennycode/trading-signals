@@ -161,7 +161,7 @@ All indicators can be updated over time by streaming data (prices or [candles](h
 | `getCAGR` | Compound Annual Growth Rate: the constant yearly return between two values. |
 | `getCorrelation` | Pearson correlation between two series. |
 | `getGrid` | Price levels for [grid trading bots](https://b2broker.com/news/understanding-grid-trading-purpose-pros-cons/), with arithmetic or geometric spacing. |
-| `getLinearRegression` | Least-squares line through a window: slope, intercept, and one-bar-ahead forecast (Tulip's `tsf`). |
+| `getLinearRegression` | Fits a straight line through a series and returns its slope, intercept and the projected next value. |
 | `getLogReturns` | Per-bar logarithmic returns of a price series. |
 | `getMaxDrawdown` | Deepest peak-to-trough decline of a series, in percent. |
 | `getMaximum` | Largest value of a series. |
