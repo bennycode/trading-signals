@@ -14,6 +14,7 @@ import {NATR} from './NATR.demo';
 import {PercentB} from './PercentB.demo';
 import {ProjectionOscillator} from './ProjectionOscillator.demo';
 import {TR} from './TR.demo';
+import {TTMSqueeze} from './TTMSqueeze.demo';
 import {UlcerIndex} from './UlcerIndex.demo';
 import type {IndicatorConfig} from '../../utils/types';
 
@@ -35,4 +36,5 @@ export const indicators: IndicatorConfig[] = [
   GAPO,
   CVI,
   CHOP,
+  TTMSqueeze,
 ];
