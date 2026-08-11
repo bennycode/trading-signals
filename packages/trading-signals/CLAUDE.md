@@ -134,6 +134,18 @@ it('returns null until enough values are provided', () => {
 });
 ```
 
+The same applies in plural: feed a test series through an `add()` loop instead of `updates(inputs, false)` — the boolean is the same noise, and the lone `replace()` under test stands out.
+
+```ts
+// ❌ Bad: `updates` drags the replace flag along
+ema.updates(prices, false);
+
+// ✅ Good: A plain loop states the intent without the flag
+for (const price of prices) {
+  ema.add(price);
+}
+```
+
 Avoid explicitly specifying generic type parameters when a default is already provided:
 
 ```ts
