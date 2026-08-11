@@ -1,6 +1,7 @@
 import type {HighLowClose} from '../../base/Candle.type.js';
 import {ThresholdCrossSeries} from '../../base/Indicator.js';
 import type {SignalThresholds} from '../../base/SignalThresholds.type.js';
+import {getTrueRange} from '../../util/getTrueRange.js';
 import {pushUpdate} from '../../util/pushUpdate.js';
 
 export type UltimateOscillatorConfig = {
@@ -61,13 +62,12 @@ export class UltimateOscillator extends ThresholdCrossSeries<HighLowClose<number
     const trueRanges: number[] = [];
 
     for (let i = 1; i < this.#candles.length; i++) {
-      const {close, high, low} = this.#candles[i];
+      const {close, low} = this.#candles[i];
       const previousClose = this.#candles[i - 1].close;
       const trueLow = Math.min(low, previousClose);
-      const trueHigh = Math.max(high, previousClose);
 
       buyingPressures.push(close - trueLow);
-      trueRanges.push(trueHigh - trueLow);
+      trueRanges.push(getTrueRange(this.#candles[i], previousClose));
     }
 
     const average = (period: number) => {

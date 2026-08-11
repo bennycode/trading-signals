@@ -1,5 +1,6 @@
 import type {HighLow} from '../../base/Candle.type.js';
 import {TechnicalIndicator} from '../../base/Indicator.js';
+import {getMedianPrice} from '../../util/getMedianPrice.js';
 import {pushUpdate} from '../../util/pushUpdate.js';
 import {WSMA} from '../WSMA/WSMA.js';
 
@@ -125,7 +126,7 @@ export class Alligator extends TechnicalIndicator<AlligatorResult, HighLow<numbe
   }
 
   update(candle: HighLow<number>, replace: boolean) {
-    const median = (candle.high + candle.low) / 2;
+    const median = getMedianPrice(candle);
 
     this.#delay(this.#jaw, median, this.state.jawBuffer, this.jawShift, replace);
     this.#delay(this.#lips, median, this.state.lipsBuffer, this.lipsShift, replace);

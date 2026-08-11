@@ -1,5 +1,6 @@
 import type {HighLowClose} from '../../base/Candle.type.js';
 import {TechnicalIndicator, TradingSignal} from '../../base/Indicator.js';
+import {getMedianPrice} from '../../util/getMedianPrice.js';
 import {ATR} from '../../volatility/ATR/ATR.js';
 
 export type SuperTrendResult = {
@@ -71,7 +72,7 @@ export class SuperTrend extends TechnicalIndicator<SuperTrendResult, HighLowClos
       return null;
     }
 
-    const hl2 = (candle.high + candle.low) / 2;
+    const hl2 = getMedianPrice(candle);
     const basicUpperBand = hl2 + this.multiplier * atr;
     const basicLowerBand = hl2 - this.multiplier * atr;
 

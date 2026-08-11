@@ -1,6 +1,7 @@
 import type {HighLow} from '../../base/Candle.type.js';
 import {ZeroCrossSeries} from '../../base/Indicator.js';
 import {getMaximum} from '../../util/getMaximum.js';
+import {getMedianPrice} from '../../util/getMedianPrice.js';
 import {getMinimum} from '../../util/getMinimum.js';
 import {pushUpdate} from '../../util/pushUpdate.js';
 
@@ -51,7 +52,7 @@ export class FisherTransform extends ZeroCrossSeries<HighLow<number>> {
       this.#fisher = this.#previousFisher;
     }
 
-    const median = (high + low) / 2;
+    const median = getMedianPrice({high, low});
 
     pushUpdate({array: this.#medians, item: median, maxLength: this.interval, replace});
 
