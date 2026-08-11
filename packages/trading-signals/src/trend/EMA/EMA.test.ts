@@ -29,11 +29,16 @@ describe('EMA', () => {
       const ema = new EMA(interval);
       const emaWithReplace = new EMA(interval);
 
-      ema.updates(prices, false);
+      for (const price of prices) {
+        ema.add(price);
+      }
 
       emaWithReplace.add(90210);
       emaWithReplace.replace(prices[0]);
-      emaWithReplace.updates(prices.slice(1), false);
+
+      for (const price of prices.slice(1)) {
+        emaWithReplace.add(price);
+      }
 
       expect(emaWithReplace.getResultOrThrow()).toBe(ema.getResultOrThrow());
     });

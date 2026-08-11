@@ -26,11 +26,16 @@ describe('RMA', () => {
       const rmaWithReplace = new RMA(interval);
       const inputPrices = [11, 12, 13, 14, 15, 16] as const;
 
-      rma.updates(inputPrices, false);
+      for (const price of inputPrices) {
+        rma.add(price);
+      }
 
       rmaWithReplace.add(90210);
       rmaWithReplace.replace(inputPrices[0]);
-      rmaWithReplace.updates(inputPrices.slice(1), false);
+
+      for (const price of inputPrices.slice(1)) {
+        rmaWithReplace.add(price);
+      }
 
       expect(rmaWithReplace.getResultOrThrow()).toBe(rma.getResultOrThrow());
     });

@@ -8,9 +8,14 @@ describe('WSMA', () => {
       const wsma = new WSMA(interval);
       const wsmaWithReplace = new WSMA(interval);
 
-      wsma.updates([11, 12, 13, 14], false);
+      for (const price of [11, 12, 13, 14]) {
+        wsma.add(price);
+      }
 
-      wsmaWithReplace.updates([11, 12, 5000], false);
+      for (const price of [11, 12, 5000]) {
+        wsmaWithReplace.add(price);
+      }
+
       wsmaWithReplace.replace(13);
       wsmaWithReplace.add(14);
 
