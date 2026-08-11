@@ -1,6 +1,6 @@
 import type {HighLowClose} from '../../base/Candle.type.js';
 import {TradingSignal, TrendIndicator} from '../../base/Indicator.js';
-import {calculateLinearRegression} from '../../trend/LINREG/LinearRegression.js';
+import {getLinearRegression} from '../../util/getLinearRegression.js';
 import {getAverage} from '../../util/getAverage.js';
 import {pushUpdate} from '../../util/pushUpdate.js';
 import {BollingerBands} from '../BBANDS/BollingerBands.js';
@@ -84,7 +84,7 @@ export class TTMSqueeze extends TrendIndicator<TTMSqueezeResult, HighLowClose<nu
    * market.
    */
   #regressionValue(window: readonly number[]) {
-    const {intercept, slope} = calculateLinearRegression(window);
+    const {intercept, slope} = getLinearRegression(window);
 
     return slope * (window.length - 1) + intercept;
   }

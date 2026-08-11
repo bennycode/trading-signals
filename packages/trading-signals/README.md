@@ -155,12 +155,17 @@ Utility Methods:
 
 1. Average / Mean
 1. Grid Sizing (for [grid trading bots](https://b2broker.com/news/understanding-grid-trading-purpose-pros-cons/))
+1. Linear Regression (least squares, with one-bar-ahead forecast)
 1. Maximum
 1. Median
 1. Minimum
+1. Percentage Change (get & apply)
 1. Quartile
+1. Share (percentage of a total)
+1. Sliding Window Update (`pushUpdate`)
 1. Standard Deviation
 1. Streaks
+1. Typical Price (HLC/3)
 1. Weekday
 
 ## Installation

@@ -1,5 +1,5 @@
 import {ZeroCrossSeries} from '../../base/Indicator.js';
-import {calculateLinearRegression} from '../../trend/LINREG/LinearRegression.js';
+import {getLinearRegression} from '../../util/getLinearRegression.js';
 import {pushUpdate} from '../../util/pushUpdate.js';
 
 /**
@@ -49,7 +49,7 @@ export class CFO extends ZeroCrossSeries {
     }
 
     // The forecast for the newest bar is fitted over the closes that precede it
-    const {prediction: forecast} = calculateLinearRegression(this.#closes.slice(0, this.interval));
+    const {prediction: forecast} = getLinearRegression(this.#closes.slice(0, this.interval));
 
     return this.setResult((100 * (close - forecast)) / close, replace);
   }
