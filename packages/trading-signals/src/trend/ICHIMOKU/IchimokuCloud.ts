@@ -1,7 +1,5 @@
 import type {HighLow} from '../../base/Candle.type.js';
 import {TechnicalIndicator} from '../../base/Indicator.js';
-import {getMaximum} from '../../util/getMaximum.js';
-import {getMinimum} from '../../util/getMinimum.js';
 import {pushUpdate} from '../../util/pushUpdate.js';
 
 export type IchimokuCloudResult = {
@@ -59,11 +57,17 @@ export class IchimokuCloud extends TechnicalIndicator<IchimokuCloudResult, HighL
     return Math.max(this.baseInterval, this.conversionInterval, this.spanBInterval);
   }
 
-  // Hosoda's equilibrium: the middle of the range traded over the window
+  // Hosoda's equilibrium: the middle of the range traded over the window, in a single pass to keep the hot path allocation-free
   #getMidpoint(interval: number) {
-    const window = this.#candles.slice(-interval);
-    const highestHigh = getMaximum(window.map(candle => candle.high));
-    const lowestLow = getMinimum(window.map(candle => candle.low));
+    const start = this.#candles.length - interval;
+    let highestHigh = this.#candles[start].high;
+    let lowestLow = this.#candles[start].low;
+
+    for (let i = start + 1; i < this.#candles.length; i++) {
+      const {high, low} = this.#candles[i];
+      highestHigh = Math.max(highestHigh, high);
+      lowestLow = Math.min(lowestLow, low);
+    }
 
     return (highestHigh + lowestLow) / 2;
   }

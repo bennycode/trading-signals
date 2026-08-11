@@ -1,6 +1,6 @@
 import type {HighLow} from '../../base/Candle.type.js';
 import {TechnicalIndicator} from '../../base/Indicator.js';
-import {getMaximum, getMinimum, pushUpdate} from '../../util/index.js';
+import {pushUpdate} from '../../util/index.js';
 
 export type DonchianChannelsResult = {
   lower: number;
@@ -44,8 +44,14 @@ export class DonchianChannels extends TechnicalIndicator<DonchianChannelsResult,
       return null;
     }
 
-    const upper = getMaximum(this.#candles.map(({high}) => high));
-    const lower = getMinimum(this.#candles.map(({low}) => low));
+    // A single pass over the window keeps the hot path free of per-candle array allocations
+    let upper = this.#candles[0].high;
+    let lower = this.#candles[0].low;
+
+    for (const {high, low} of this.#candles) {
+      upper = Math.max(upper, high);
+      lower = Math.min(lower, low);
+    }
 
     return (this.result = {
       lower,
