@@ -1,6 +1,6 @@
 import {IndicatorSeries} from '../../base/Indicator.js';
 import type {HighLowCloseVolume} from '../../base/Candle.type.js';
-import {getTypicalPrice} from '../../util/getTypicalPrice.js';
+import {getTypicalPrice} from '../../util/candle/getTypicalPrice.js';
 
 /**
  * Volume-Weighted Average Price (VWAP)

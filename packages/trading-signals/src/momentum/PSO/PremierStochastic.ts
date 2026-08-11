@@ -1,9 +1,9 @@
 import type {HighLowClose} from '../../base/Candle.type.js';
 import {ZeroCrossSeries} from '../../base/Indicator.js';
 import {EMA} from '../../trend/EMA/EMA.js';
-import {getMaximum} from '../../util/getMaximum.js';
-import {getMinimum} from '../../util/getMinimum.js';
-import {pushUpdate} from '../../util/pushUpdate.js';
+import {getMaximum} from '../../util/math/getMaximum.js';
+import {getMinimum} from '../../util/math/getMinimum.js';
+import {pushUpdate} from '../../util/array/pushUpdate.js';
 
 export type PremierStochasticConfig = {
   /** Length of each smoothing pass; defaults to the square root of the stochastic interval (rounded), as derived in the original article */

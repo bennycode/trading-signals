@@ -1,8 +1,8 @@
 import type {HighLowCloseVolume} from '../../base/Candle.type.js';
 import {ThresholdCrossSeries} from '../../base/Indicator.js';
 import type {SignalThresholds} from '../../base/SignalThresholds.type.js';
-import {getTypicalPrice} from '../../util/getTypicalPrice.js';
-import {pushUpdate} from '../../util/pushUpdate.js';
+import {getTypicalPrice} from '../../util/candle/getTypicalPrice.js';
+import {pushUpdate} from '../../util/array/pushUpdate.js';
 
 /**
  * Money Flow Index (MFI)

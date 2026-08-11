@@ -1,5 +1,5 @@
 import {MovingAverage} from '../MA/MovingAverage.js';
-import {pushUpdate} from '../../util/pushUpdate.js';
+import {pushUpdate} from '../../util/array/pushUpdate.js';
 
 /**
  * Weighted Moving Average (WMA)

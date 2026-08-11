@@ -1,9 +1,9 @@
 import type {HighLow} from '../../base/Candle.type.js';
 import {ZeroCrossSeries} from '../../base/Indicator.js';
-import {getMaximum} from '../../util/getMaximum.js';
-import {getMedianPrice} from '../../util/getMedianPrice.js';
-import {getMinimum} from '../../util/getMinimum.js';
-import {pushUpdate} from '../../util/pushUpdate.js';
+import {getMaximum} from '../../util/math/getMaximum.js';
+import {getMedianPrice} from '../../util/candle/getMedianPrice.js';
+import {getMinimum} from '../../util/math/getMinimum.js';
+import {pushUpdate} from '../../util/array/pushUpdate.js';
 
 /**
  * Fisher Transform (FISHER)

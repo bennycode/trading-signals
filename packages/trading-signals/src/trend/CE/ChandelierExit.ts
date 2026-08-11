@@ -1,6 +1,6 @@
 import type {HighLowClose} from '../../base/Candle.type.js';
 import {TechnicalIndicator} from '../../base/Indicator.js';
-import {pushUpdate} from '../../util/pushUpdate.js';
+import {pushUpdate} from '../../util/array/pushUpdate.js';
 import {ATR} from '../../volatility/ATR/ATR.js';
 
 export type ChandelierExitResult = {

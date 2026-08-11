@@ -2,7 +2,7 @@ import {ADX} from '../ADX/ADX.js';
 import {IndicatorSeries} from '../../base/Indicator.js';
 import type {HighLowClose} from '../../base/Candle.type.js';
 import type {MovingAverageTypes} from '../MA/MovingAverageTypes.js';
-import {pushUpdate} from '../../util/pushUpdate.js';
+import {pushUpdate} from '../../util/array/pushUpdate.js';
 import {WSMA} from '../WSMA/WSMA.js';
 
 /**

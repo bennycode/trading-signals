@@ -1,7 +1,7 @@
 import {ThresholdCrossSeries} from '../../base/Indicator.js';
 import type {SignalThresholds} from '../../base/SignalThresholds.type.js';
 import {WSMA} from '../../trend/WSMA/WSMA.js';
-import {pushUpdate} from '../../util/pushUpdate.js';
+import {pushUpdate} from '../../util/array/pushUpdate.js';
 
 export type RMIConfig = {
   /** Number of bars in the Wilder smoothing of the up/down momentum streams */

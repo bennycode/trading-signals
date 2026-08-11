@@ -1,6 +1,6 @@
 import type {OpenHighLowClose} from '../../base/Candle.type.js';
 import {TradingSignal, TrendIndicator} from '../../base/Indicator.js';
-import {pushUpdate} from '../../util/pushUpdate.js';
+import {pushUpdate} from '../../util/array/pushUpdate.js';
 
 export type RelativeVigorIndexResult = {
   /** Main line: how much of the traded range the closes actually captured */

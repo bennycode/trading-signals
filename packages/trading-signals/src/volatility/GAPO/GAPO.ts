@@ -1,6 +1,6 @@
 import type {HighLow} from '../../base/Candle.type.js';
 import {IndicatorSeries} from '../../base/Indicator.js';
-import {pushUpdate} from '../../util/pushUpdate.js';
+import {pushUpdate} from '../../util/array/pushUpdate.js';
 
 /**
  * Gopalakrishnan Range Index (GAPO)

@@ -1,5 +1,5 @@
 import {IndicatorSeries} from '../../base/Indicator.js';
-import {getQuartile} from '../../util/getQuartile.js';
+import {getQuartile} from '../../util/math/getQuartile.js';
 
 /**
  * Interquartile Range (IQR)

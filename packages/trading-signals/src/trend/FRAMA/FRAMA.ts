@@ -1,6 +1,6 @@
-import {getMaximum} from '../../util/getMaximum.js';
-import {getMinimum} from '../../util/getMinimum.js';
-import {pushUpdate} from '../../util/pushUpdate.js';
+import {getMaximum} from '../../util/math/getMaximum.js';
+import {getMinimum} from '../../util/math/getMinimum.js';
+import {pushUpdate} from '../../util/array/pushUpdate.js';
 import {MovingAverage} from '../MA/MovingAverage.js';
 
 /**

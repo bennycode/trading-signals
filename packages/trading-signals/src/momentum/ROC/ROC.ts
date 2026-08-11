@@ -1,5 +1,5 @@
 import {TrendIndicatorSeries, TradingSignal} from '../../base/Indicator.js';
-import {pushUpdate} from '../../util/pushUpdate.js';
+import {pushUpdate} from '../../util/array/pushUpdate.js';
 
 /**
  * Rate Of Change Indicator (ROC)

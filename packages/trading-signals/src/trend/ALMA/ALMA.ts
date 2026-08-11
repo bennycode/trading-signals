@@ -1,5 +1,5 @@
 import {MovingAverage} from '../MA/MovingAverage.js';
-import {pushUpdate} from '../../util/pushUpdate.js';
+import {pushUpdate} from '../../util/array/pushUpdate.js';
 
 /**
  * Arnaud Legoux Moving Average (ALMA)

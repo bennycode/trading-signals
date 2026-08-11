@@ -1,6 +1,6 @@
 import type {HighLowCloseVolume} from '../../base/Candle.type.js';
 import {ZeroCrossSeries} from '../../base/Indicator.js';
-import {pushUpdate} from '../../util/pushUpdate.js';
+import {pushUpdate} from '../../util/array/pushUpdate.js';
 
 /**
  * Chaikin Money Flow (CMF)

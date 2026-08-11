@@ -1,6 +1,6 @@
 import type {HighLowClose} from '../../base/Candle.type.js';
 import {IndicatorSeries} from '../../base/Indicator.js';
-import {pushUpdate} from '../../util/pushUpdate.js';
+import {pushUpdate} from '../../util/array/pushUpdate.js';
 
 type TrueExtremes = {
   trueHigh: number;

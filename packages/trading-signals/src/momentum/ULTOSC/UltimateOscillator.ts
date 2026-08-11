@@ -1,8 +1,8 @@
 import type {HighLowClose} from '../../base/Candle.type.js';
 import {ThresholdCrossSeries} from '../../base/Indicator.js';
 import type {SignalThresholds} from '../../base/SignalThresholds.type.js';
-import {getTrueRange} from '../../util/getTrueRange.js';
-import {pushUpdate} from '../../util/pushUpdate.js';
+import {getTrueRange} from '../../util/candle/getTrueRange.js';
+import {pushUpdate} from '../../util/array/pushUpdate.js';
 
 export type UltimateOscillatorConfig = {
   /** Number of candles in the long lookback (default: 28) */

@@ -1,5 +1,5 @@
-import {getAverage} from './getAverage.js';
-import {getStandardDeviation} from './getStandardDeviation.js';
+import {getAverage} from '../math/getAverage.js';
+import {getStandardDeviation} from '../math/getStandardDeviation.js';
 
 /**
  * Reward earned per unit of risk taken: the average excess return divided by the volatility of the

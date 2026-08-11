@@ -1,8 +1,8 @@
 import type {HighLowCloseVolume} from '../../base/Candle.type.js';
 import {ZeroCrossSeries} from '../../base/Indicator.js';
 import {SMA} from '../../trend/SMA/SMA.js';
-import {getMedianPrice} from '../../util/getMedianPrice.js';
-import {pushUpdate} from '../../util/pushUpdate.js';
+import {getMedianPrice} from '../../util/candle/getMedianPrice.js';
+import {pushUpdate} from '../../util/array/pushUpdate.js';
 
 /**
  * Ease of Movement (EMV)

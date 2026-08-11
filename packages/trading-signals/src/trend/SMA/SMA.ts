@@ -1,6 +1,6 @@
 import {MovingAverage} from '../MA/MovingAverage.js';
-import {getAverage} from '../../util/getAverage.js';
-import {pushUpdate} from '../../util/pushUpdate.js';
+import {getAverage} from '../../util/math/getAverage.js';
+import {pushUpdate} from '../../util/array/pushUpdate.js';
 
 /**
  * Simple Moving Average (SMA)

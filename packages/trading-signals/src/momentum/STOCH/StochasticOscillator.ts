@@ -2,7 +2,7 @@ import {SMA} from '../../trend/SMA/SMA.js';
 import type {HighLowClose} from '../../base/Candle.type.js';
 import {TradingSignal, TrendIndicator} from '../../base/Indicator.js';
 import type {SignalThresholds} from '../../base/SignalThresholds.type.js';
-import {pushUpdate} from '../../util/pushUpdate.js';
+import {pushUpdate} from '../../util/array/pushUpdate.js';
 
 export type StochasticResult = {
   /** Slow stochastic indicator (%D) */

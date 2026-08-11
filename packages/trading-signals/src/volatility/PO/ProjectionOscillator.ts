@@ -1,7 +1,7 @@
 import type {HighLowClose} from '../../base/Candle.type.js';
 import {ThresholdCrossSeries} from '../../base/Indicator.js';
 import type {SignalThresholds} from '../../base/SignalThresholds.type.js';
-import {pushUpdate} from '../../util/pushUpdate.js';
+import {pushUpdate} from '../../util/array/pushUpdate.js';
 
 export type ProjectionOscillatorConfig = {
   /** Number of candles in the regression window that forms the projection bands */

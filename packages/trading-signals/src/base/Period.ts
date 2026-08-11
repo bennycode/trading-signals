@@ -1,5 +1,5 @@
 import {TechnicalIndicator} from './Indicator.js';
-import {pushUpdate} from '../util/pushUpdate.js';
+import {pushUpdate} from '../util/array/pushUpdate.js';
 
 export type PeriodResult = {
   highest: number;

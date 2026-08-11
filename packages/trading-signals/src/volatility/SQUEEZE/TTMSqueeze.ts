@@ -1,8 +1,8 @@
 import type {HighLowClose} from '../../base/Candle.type.js';
 import {TradingSignal, TrendIndicator} from '../../base/Indicator.js';
-import {getLinearRegression} from '../../util/getLinearRegression.js';
-import {getAverage} from '../../util/getAverage.js';
-import {pushUpdate} from '../../util/pushUpdate.js';
+import {getLinearRegression} from '../../util/math/getLinearRegression.js';
+import {getAverage} from '../../util/math/getAverage.js';
+import {pushUpdate} from '../../util/array/pushUpdate.js';
 import {BollingerBands} from '../BBANDS/BollingerBands.js';
 import {KeltnerChannels} from '../KC/KeltnerChannels.js';
 
