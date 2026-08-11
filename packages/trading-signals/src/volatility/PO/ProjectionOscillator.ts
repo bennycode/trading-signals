@@ -40,6 +40,12 @@ export class ProjectionOscillator extends TrendIndicatorSeries<HighLowClose<numb
     signalThresholds: {overbought = 80, oversold = 20} = {},
   }: ProjectionOscillatorConfig = {}) {
     super();
+
+    // A regression slope needs at least two points; a single bar has no slope to project along
+    if (interval < 2) {
+      throw new Error(`The interval has to be at least 2, but "${interval}" was given.`);
+    }
+
     this.interval = interval;
     this.#overbought = overbought;
     this.#oversold = oversold;

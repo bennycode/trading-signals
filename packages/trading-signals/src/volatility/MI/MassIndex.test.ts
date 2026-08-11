@@ -49,6 +49,17 @@ describe('MassIndex', () => {
   });
 
   describe('getResultOrThrow', () => {
+    it('reads a market that never trades a range as no expansion', () => {
+      const interval = 3;
+      const mi = new MassIndex(interval);
+
+      for (let i = 0; i < 30; i++) {
+        mi.add({high: 100, low: 100});
+      }
+
+      expect(mi.getResultOrThrow()).toBe(interval);
+    });
+
     it('sums the smoothed range ratios over the interval', {tags: ['tulipindicators']}, () => {
       const mi = new MassIndex(3);
       const offset = mi.getRequiredInputs() - 1;

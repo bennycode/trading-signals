@@ -44,7 +44,8 @@ export class UlcerIndex extends IndicatorSeries {
         highestClose = currentClose;
       }
 
-      const percentageDrawdown = (100 * (currentClose - highestClose)) / highestClose;
+      // A highest close of zero leaves no value to draw down from, so such a bar reads as no drawdown
+      const percentageDrawdown = highestClose === 0 ? 0 : (100 * (currentClose - highestClose)) / highestClose;
       squaredDrawdownSum += percentageDrawdown ** 2;
     }
 

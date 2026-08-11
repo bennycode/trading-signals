@@ -58,7 +58,14 @@ export class MassIndex extends IndicatorSeries<HighLow> {
       return null;
     }
 
-    pushUpdate({array: this.#ratios, item: single / double, maxLength: this.interval, replace});
+    /*
+     * A market whose candles never trade a range keeps both smoothing passes at zero. A constant
+     * range of any size reads exactly 1, so the dead-market limit is 1 (no expansion) instead of
+     * a division by zero poisoning the sum.
+     */
+    const ratio = double === 0 ? 1 : single / double;
+
+    pushUpdate({array: this.#ratios, item: ratio, maxLength: this.interval, replace});
 
     if (this.#ratios.length === this.interval) {
       return this.setResult(

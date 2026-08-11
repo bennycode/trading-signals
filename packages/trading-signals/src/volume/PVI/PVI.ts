@@ -40,8 +40,11 @@ export class PVI extends IndicatorSeries<HighLowCloseVolume, PVIState> {
     if (this.state.candles.length === 2) {
       const previous = this.state.candles[0];
 
-      // Only a crowd day (expanding volume) moves the index; quiet days leave it untouched
-      if (candle.volume > previous.volume) {
+      /*
+       * Only a crowd day (expanding volume) moves the index; quiet days leave it untouched.
+       * A previous close of zero offers no base to measure a price change against, so the index stays put.
+       */
+      if (previous.close !== 0 && candle.volume > previous.volume) {
         this.state.pvi += ((candle.close - previous.close) / previous.close) * this.state.pvi;
       }
     }

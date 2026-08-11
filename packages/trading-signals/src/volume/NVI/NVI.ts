@@ -43,7 +43,8 @@ export class NVI extends IndicatorSeries<HighLowCloseVolume, NVIState> {
 
     const previousCandle = this.state.previousCandle;
 
-    if (previousCandle !== null && candle.volume < previousCandle.volume) {
+    // A previous close of zero offers no base to measure a price change against, so the index stays put
+    if (previousCandle !== null && previousCandle.close !== 0 && candle.volume < previousCandle.volume) {
       const priceChangeRatio = (candle.close - previousCandle.close) / previousCandle.close;
       this.state.nvi += priceChangeRatio * this.state.nvi;
     }

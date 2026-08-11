@@ -3,6 +3,14 @@ import {NVI} from './NVI.js';
 
 describe('NVI', () => {
   describe('getResultOrThrow', () => {
+    it('keeps the index untouched when the previous close is zero', () => {
+      const nvi = new NVI();
+
+      nvi.add({close: 0, high: 0, low: 0, volume: 200});
+
+      expect(nvi.add({close: 10, high: 10, low: 10, volume: 100})).toBe(1_000);
+    });
+
     it('is compatible with results from Tulip Indicators (TI)', {tags: ['tulipindicators']}, () => {
       /*
        * Test data verified with:

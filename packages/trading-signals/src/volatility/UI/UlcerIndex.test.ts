@@ -12,6 +12,16 @@ describe('UlcerIndex', () => {
   });
 
   describe('getResultOrThrow', () => {
+    it('reads a market pinned at zero as having no drawdown', () => {
+      const ui = new UlcerIndex(3);
+
+      for (let i = 0; i < 3; i++) {
+        ui.add(0);
+      }
+
+      expect(ui.getResultOrThrow()).toBe(0);
+    });
+
     it('matches the Skender.Stock.Indicators reference results', () => {
       /*
        * The expectations are the Skender.Stock.Indicators v3.0.0 baseline for the Ulcer Index (14)

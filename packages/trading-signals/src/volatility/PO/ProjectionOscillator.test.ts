@@ -46,6 +46,14 @@ describe('ProjectionOscillator', () => {
   const crashCandle = {close: 4, high: 13, low: 3} as const;
   const candles = [...uptrendCandles, crashCandle] as const;
 
+  describe('constructor', () => {
+    it('rejects an interval that cannot form a regression slope', () => {
+      expect(() => new ProjectionOscillator({interval: 1})).toThrowError(
+        'The interval has to be at least 2, but "1" was given.'
+      );
+    });
+  });
+
   describe('getResultOrThrow', () => {
     it('locates the close within the projection bands', () => {
       const expectations = [80, 10] as const;
