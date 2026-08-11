@@ -1,6 +1,6 @@
 import type {HighLow} from '../../base/Candle.type.js';
 import {TechnicalIndicator} from '../../base/Indicator.js';
-import {pushUpdate} from '../../util/pushUpdate.js';
+import {pushUpdate} from '../../util/array/pushUpdate.js';
 
 export type AroonResult = {
   /** Measures how recently the lowest low occurred (100 = this candle, 0 = interval candles ago) */

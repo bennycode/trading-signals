@@ -1,6 +1,6 @@
 import {SMA} from '../../trend/SMA/SMA.js';
 import {TradingSignal, TrendIndicatorSeries} from '../../base/Indicator.js';
-import {pushUpdate} from '../../util/pushUpdate.js';
+import {pushUpdate} from '../../util/array/pushUpdate.js';
 
 /**
  * Center of Gravity (CG)

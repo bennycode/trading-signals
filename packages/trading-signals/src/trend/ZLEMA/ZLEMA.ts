@@ -1,6 +1,6 @@
 import {MovingAverage} from '../MA/MovingAverage.js';
 import {NotEnoughDataError} from '../../error/index.js';
-import {pushUpdate} from '../../util/pushUpdate.js';
+import {pushUpdate} from '../../util/array/pushUpdate.js';
 
 /**
  * Zero-Lag Exponential Moving Average (ZLEMA)

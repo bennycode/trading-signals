@@ -1,5 +1,5 @@
 import {ZeroCrossSeries} from '../../base/Indicator.js';
-import {pushUpdate} from '../../util/pushUpdate.js';
+import {pushUpdate} from '../../util/array/pushUpdate.js';
 
 /**
  * Momentum Indicator (MOM / MTM)

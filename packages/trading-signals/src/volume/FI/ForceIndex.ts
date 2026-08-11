@@ -1,7 +1,7 @@
 import type {HighLowCloseVolume} from '../../base/Candle.type.js';
 import {ZeroCrossSeries} from '../../base/Indicator.js';
 import {EMA} from '../../trend/EMA/EMA.js';
-import {pushUpdate} from '../../util/pushUpdate.js';
+import {pushUpdate} from '../../util/array/pushUpdate.js';
 
 /**
  * Force Index (FI)

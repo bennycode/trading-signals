@@ -1,6 +1,6 @@
 import {ZeroCrossSeries} from '../../base/Indicator.js';
 import {getLinearRegression} from '../../util/statistics/getLinearRegression.js';
-import {pushUpdate} from '../../util/pushUpdate.js';
+import {pushUpdate} from '../../util/array/pushUpdate.js';
 
 /**
  * Chande Forecast Oscillator (CFO)

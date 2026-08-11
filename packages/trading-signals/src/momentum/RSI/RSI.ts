@@ -2,7 +2,7 @@ import {ThresholdCrossSeries} from '../../base/Indicator.js';
 import type {SignalThresholds} from '../../base/SignalThresholds.type.js';
 import type {MovingAverage} from '../../trend/MA/MovingAverage.js';
 import type {MovingAverageTypes} from '../../trend/MA/MovingAverageTypes.js';
-import {pushUpdate} from '../../util/pushUpdate.js';
+import {pushUpdate} from '../../util/array/pushUpdate.js';
 import {WSMA} from '../../trend/WSMA/WSMA.js';
 
 /**

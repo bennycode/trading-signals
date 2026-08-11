@@ -1,7 +1,7 @@
 import {TechnicalIndicator} from '../../base/Indicator.js';
 import type {LinearRegressionResult} from '../../util/statistics/getLinearRegression.js';
 import {getLinearRegression} from '../../util/statistics/getLinearRegression.js';
-import {pushUpdate} from '../../util/pushUpdate.js';
+import {pushUpdate} from '../../util/array/pushUpdate.js';
 
 /**
  * Linear Regression (LINREG)

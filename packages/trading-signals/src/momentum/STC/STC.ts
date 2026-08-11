@@ -1,7 +1,7 @@
 import {ThresholdCrossSeries} from '../../base/Indicator.js';
 import type {SignalThresholds} from '../../base/SignalThresholds.type.js';
 import {EMA} from '../../trend/EMA/EMA.js';
-import {pushUpdate} from '../../util/pushUpdate.js';
+import {pushUpdate} from '../../util/array/pushUpdate.js';
 
 export type STCConfig = {
   /** Number of readings in the window of both stochastic scalings (default: 10) */

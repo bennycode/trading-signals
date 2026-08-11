@@ -1,6 +1,6 @@
 import type {OpenHighLowCloseVolume} from '../../base/Candle.type.js';
 import {TrendIndicatorSeries, TradingSignal} from '../../base/Indicator.js';
-import {pushUpdate} from '../../util/pushUpdate.js';
+import {pushUpdate} from '../../util/array/pushUpdate.js';
 
 /**
  * On-Balance Volume (OBV)

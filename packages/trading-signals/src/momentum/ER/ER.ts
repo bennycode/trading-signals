@@ -2,7 +2,7 @@ import {TradingSignal, TrendIndicatorSeries} from '../../base/Indicator.js';
 import type {HighLowClose} from '../../base/Candle.type.js';
 import {getMaximum} from '../../util/statistics/getMaximum.js';
 import {getMinimum} from '../../util/statistics/getMinimum.js';
-import {pushUpdate} from '../../util/pushUpdate.js';
+import {pushUpdate} from '../../util/array/pushUpdate.js';
 
 export type ERThresholds = {
   /** ER value at or above which the market counts as trending (default: 0.5) */

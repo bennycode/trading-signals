@@ -1,7 +1,7 @@
 import {IndicatorSeries} from '../../base/Indicator.js';
 import {getMaximum} from '../../util/statistics/getMaximum.js';
 import {getMinimum} from '../../util/statistics/getMinimum.js';
-import {pushUpdate} from '../../util/pushUpdate.js';
+import {pushUpdate} from '../../util/array/pushUpdate.js';
 
 /**
  * Vertical Horizontal Filter (VHF)

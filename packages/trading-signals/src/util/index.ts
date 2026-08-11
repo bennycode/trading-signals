@@ -1,3 +1,4 @@
+export * from './array/pushUpdate.js';
 export * from './candle/getAveragePrice.js';
 export * from './candle/getMedianPrice.js';
 export * from './candle/getTrueRange.js';
@@ -9,7 +10,6 @@ export * from './performance/getLogReturns.js';
 export * from './performance/getMaxDrawdown.js';
 export * from './performance/getReturns.js';
 export * from './performance/getSharpeRatio.js';
-export * from './pushUpdate.js';
 export * from './statistics/addPercentageChange.js';
 export * from './statistics/getAverage.js';
 export * from './statistics/getCorrelation.js';

@@ -1,7 +1,7 @@
 import type {HighLowClose} from '../../base/Candle.type.js';
 import {TradingSignal, TrendIndicator} from '../../base/Indicator.js';
 import {getTrueRange} from '../../util/candle/getTrueRange.js';
-import {pushUpdate} from '../../util/pushUpdate.js';
+import {pushUpdate} from '../../util/array/pushUpdate.js';
 
 export type VortexResult = {
   /** Downward movement line (VI−) */

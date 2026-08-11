@@ -1,7 +1,7 @@
 import {ThresholdCrossSeries} from '../../base/Indicator.js';
 import type {HighLowClose} from '../../base/Candle.type.js';
 import type {SignalThresholds} from '../../base/SignalThresholds.type.js';
-import {pushUpdate} from '../../util/pushUpdate.js';
+import {pushUpdate} from '../../util/array/pushUpdate.js';
 
 /**
  * Williams %R (Williams Percent Range)

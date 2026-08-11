@@ -1,6 +1,6 @@
 import type {HighLowCloseVolume} from '../../base/Candle.type.js';
 import {TradingSignal, TrendIndicatorSeries, type TradingSignals} from '../../base/Indicator.js';
-import {pushUpdate} from '../../util/pushUpdate.js';
+import {pushUpdate} from '../../util/array/pushUpdate.js';
 
 type PVTState = {
   candles: HighLowCloseVolume[];

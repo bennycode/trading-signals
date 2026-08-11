@@ -1,6 +1,6 @@
 import {ThresholdCrossSeries} from '../../base/Indicator.js';
 import type {SignalThresholds} from '../../base/SignalThresholds.type.js';
-import {pushUpdate} from '../../util/pushUpdate.js';
+import {pushUpdate} from '../../util/array/pushUpdate.js';
 
 export type PSLConfig = {
   /** Number of close-to-close comparisons in the window; the warm-up needs one close more than this */
