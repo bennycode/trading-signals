@@ -1,4 +1,5 @@
 import {AC} from './AC.demo';
+import {AccumulativeSwingIndex} from './AccumulativeSwingIndex.demo';
 import {AO} from './AO.demo';
 import {APO} from './APO.demo';
 import {BOP} from './BOP.demo';
@@ -74,6 +75,7 @@ export const indicators: IndicatorConfig[] = [
   DisparityIndex,
   DPO,
   IBS,
+  AccumulativeSwingIndex,
   PGO,
   PMO,
   PremierStochastic,
