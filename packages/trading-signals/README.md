@@ -47,6 +47,7 @@ All indicators can be updated over time by streaming data (prices or [candles](h
 1. Coppock Curve (COPPOCK)
 1. Detrended Price Oscillator (DPO)
 1. Directional Movement Index (DMI / DX)
+1. Disparity Index (DI)
 1. Donchian Channels (DC)
 1. Double Exponential Moving Average (DEMA)
 1. Dual Moving Average (DMA)
@@ -210,7 +211,6 @@ console.log(sma.highest?.toFixed(2)); // "53.33"
 
 ## Alternatives
 
-- [Highcharts Indicators (TypeScript)](https://github.com/highcharts/highcharts/tree/v12.3.0/ts/Stock/Indicators)
 - [Jesse Trading Bot Indicators (Python)](https://docs.jesse.trade/docs/indicators/reference.html)
 - [LEAN Indicators (C#)](https://github.com/QuantConnect/Lean/tree/master/Indicators)
 - [libindicators (C#)](https://github.com/mgfx/libindicators)
