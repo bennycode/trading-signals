@@ -71,6 +71,7 @@ All indicators can be updated over time by streaming data (prices or [candles](h
 1. On-Balance Volume (OBV)
 1. Parabolic SAR (PSAR)
 1. Percentage Price Oscillator (PPO)
+1. Percentage Volume Oscillator (PVO)
 1. Positive Volume Index (PVI)
 1. Price Volume Trend (PVT)
 1. Qstick (QSTICK)
