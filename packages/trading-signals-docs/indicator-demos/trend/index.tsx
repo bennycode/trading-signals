@@ -8,6 +8,8 @@ import {FRAMA} from './FRAMA.demo';
 import {HMA} from './HMA.demo';
 import {IchimokuCloud} from './IchimokuCloud.demo';
 import {KAMA} from './KAMA.demo';
+import {MAMA} from './MAMA.demo';
+import {McGinleyDynamic} from './McGinleyDynamic.demo';
 import {T3} from './T3.demo';
 import {TEMA} from './TEMA.demo';
 import {TRIMA} from './TRIMA.demo';
@@ -22,6 +24,7 @@ import {PSAR} from './PSAR.demo';
 import {RMA} from './RMA.demo';
 import {SMA} from './SMA.demo';
 import {SMA15} from './SMA15.demo';
+import {SuperSmoother} from './SuperSmoother.demo';
 import {SuperTrend} from './SuperTrend.demo';
 import {SwingHigh} from './SwingHigh.demo';
 import {SwingLow} from './SwingLow.demo';
@@ -46,6 +49,9 @@ export const indicators: IndicatorConfig[] = [
   ZLEMA,
   VIDYA,
   FRAMA,
+  McGinleyDynamic,
+  MAMA,
+  SuperSmoother,
   VortexIndicator,
   IchimokuCloud,
   Aroon,
