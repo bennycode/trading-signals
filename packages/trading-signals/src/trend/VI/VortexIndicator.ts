@@ -1,5 +1,5 @@
 import type {HighLowClose} from '../../base/Candle.type.js';
-import {TechnicalIndicator, TradingSignal} from '../../base/Indicator.js';
+import {TradingSignal, TrendIndicator} from '../../base/Indicator.js';
 import {pushUpdate} from '../../util/pushUpdate.js';
 
 export type VortexResult = {
@@ -25,10 +25,9 @@ export type VortexResult = {
  * @see https://school.stockcharts.com/doku.php?id=technical_indicators:vortex_indicator
  * @see https://www.investopedia.com/terms/v/vortex-indicator-vi.asp
  */
-export class VortexIndicator extends TechnicalIndicator<VortexResult, HighLowClose<number>> {
+export class VortexIndicator extends TrendIndicator<VortexResult, HighLowClose<number>> {
   public readonly interval: number;
   readonly #candles: HighLowClose<number>[] = [];
-  #previousResult?: VortexResult;
 
   constructor(interval: number = 14) {
     super();
@@ -62,31 +61,31 @@ export class VortexIndicator extends TechnicalIndicator<VortexResult, HighLowClo
       );
     }
 
-    if (replace) {
-      this.result = this.#previousResult;
-    }
-
-    this.#previousResult = this.result;
-
     /*
      * A window without any true range means the price never moved, so there is no movement to
      * attribute to either line. Reporting zero on both sides keeps a dead market sideways
      * instead of fabricating a direction from a division by zero.
      */
     if (trueRange === 0) {
-      return (this.result = {
-        minus: 0,
-        plus: 0,
-      });
+      return this.setResult(
+        {
+          minus: 0,
+          plus: 0,
+        },
+        replace
+      );
     }
 
-    return (this.result = {
-      minus: downwardMovement / trueRange,
-      plus: upwardMovement / trueRange,
-    });
+    return this.setResult(
+      {
+        minus: downwardMovement / trueRange,
+        plus: upwardMovement / trueRange,
+      },
+      replace
+    );
   }
 
-  protected calculateSignal(result?: VortexResult | null | undefined) {
+  protected calculateSignalState(result?: VortexResult | null | undefined) {
     const hasResult = result !== null && result !== undefined;
     const isBullish = hasResult && result.plus > result.minus;
     const isBearish = hasResult && result.minus > result.plus;
@@ -101,19 +100,5 @@ export class VortexIndicator extends TechnicalIndicator<VortexResult, HighLowClo
       default:
         return TradingSignal.SIDEWAYS;
     }
-  }
-
-  getSignal(): {
-    state: (typeof TradingSignal)[keyof typeof TradingSignal];
-    hasChanged: boolean;
-  } {
-    const previousState = this.calculateSignal(this.#previousResult);
-    const state = this.calculateSignal(this.getResult());
-    const hasChanged = previousState !== state;
-
-    return {
-      hasChanged,
-      state,
-    };
   }
 }

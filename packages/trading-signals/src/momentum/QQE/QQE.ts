@@ -1,4 +1,4 @@
-import {TechnicalIndicator, TradingSignal} from '../../base/Indicator.js';
+import {TradingSignal, TrendIndicator} from '../../base/Indicator.js';
 import {EMA} from '../../trend/EMA/EMA.js';
 import {RSI} from '../RSI/RSI.js';
 
@@ -56,7 +56,7 @@ type QQEState = {
  * @see https://www.tradingview.com/script/0vn4HZ7O-Quantitative-Qualitative-Estimation-QQE/
  * @see https://www.tradingview.com/script/34U0KMEK-QQE-MT4-Glaz-modified-by-JustUncleL/
  */
-export class QQE extends TechnicalIndicator<QQEResult, number, QQEState> {
+export class QQE extends TrendIndicator<QQEResult, number, QQEState> {
   readonly #rsi: RSI;
   readonly #rsiSmoothing: EMA;
   readonly #firstVolatilitySmoothing: EMA;
@@ -66,7 +66,6 @@ export class QQE extends TechnicalIndicator<QQEResult, number, QQEState> {
    * readings, which is how the original formulates its two volatility stages.
    */
   readonly #wilderInterval: number;
-  #previousResult?: QQEResult;
 
   public readonly fastFactor: number;
   public readonly rsiInterval: number;
@@ -174,19 +173,16 @@ export class QQE extends TechnicalIndicator<QQEResult, number, QQEState> {
     this.state.previousBands = previousBands;
     this.state.bands = bands;
 
-    if (replace) {
-      this.result = this.#previousResult;
-    }
-
-    this.#previousResult = this.result;
-
-    return (this.result = {
-      rsiMa,
-      trailingStop: bands.isUp ? bands.longband : bands.shortband,
-    });
+    return this.setResult(
+      {
+        rsiMa,
+        trailingStop: bands.isUp ? bands.longband : bands.shortband,
+      },
+      replace
+    );
   }
 
-  protected calculateSignal(result?: QQEResult | null | undefined) {
+  protected calculateSignalState(result?: QQEResult | null | undefined) {
     const hasResult = result !== null && result !== undefined;
     const isBullish = hasResult && result.rsiMa > result.trailingStop;
     const isBearish = hasResult && result.rsiMa < result.trailingStop;
@@ -201,19 +197,5 @@ export class QQE extends TechnicalIndicator<QQEResult, number, QQEState> {
       default:
         return TradingSignal.SIDEWAYS;
     }
-  }
-
-  getSignal(): {
-    state: (typeof TradingSignal)[keyof typeof TradingSignal];
-    hasChanged: boolean;
-  } {
-    const previousState = this.calculateSignal(this.#previousResult);
-    const state = this.calculateSignal(this.getResult());
-    const hasChanged = previousState !== state;
-
-    return {
-      hasChanged,
-      state,
-    };
   }
 }

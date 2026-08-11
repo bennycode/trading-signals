@@ -1,4 +1,4 @@
-import {TechnicalIndicator, TradingSignal} from '../../base/Indicator.js';
+import {TradingSignal, TrendIndicator} from '../../base/Indicator.js';
 import {EMA} from '../../trend/EMA/EMA.js';
 
 export type PMOConfig = {
@@ -79,10 +79,9 @@ class DecisionPointSmoothing {
  *
  * @see https://chartschool.stockcharts.com/table-of-contents/technical-indicators-and-overlays/technical-indicators/decisionpoint-price-momentum-oscillator-pmo
  */
-export class PMO extends TechnicalIndicator<PMOResult, number> {
+export class PMO extends TrendIndicator<PMOResult, number> {
   #previousPrice?: number;
   #penultimatePrice?: number;
-  #previousResult?: PMOResult;
 
   readonly #rateOfChangeSmoothing: DecisionPointSmoothing;
   readonly #pmoSmoothing: DecisionPointSmoothing;
@@ -130,23 +129,20 @@ export class PMO extends TechnicalIndicator<PMOResult, number> {
       if (this.#pmoSmoothing.isStable) {
         const signal = this.#signal.update(pmo, replace);
 
-        if (replace) {
-          this.result = this.#previousResult;
-        }
-
-        this.#previousResult = this.result;
-
-        return (this.result = {
-          pmo,
-          signal,
-        });
+        return this.setResult(
+          {
+            pmo,
+            signal,
+          },
+          replace
+        );
       }
     }
 
     return null;
   }
 
-  protected calculateSignal(result?: PMOResult | null) {
+  protected calculateSignalState(result?: PMOResult | null) {
     const hasResult = result !== null && result !== undefined;
     const isBullish = hasResult && result.pmo > result.signal;
     const isBearish = hasResult && result.pmo < result.signal;
@@ -161,16 +157,5 @@ export class PMO extends TechnicalIndicator<PMOResult, number> {
       default:
         return TradingSignal.SIDEWAYS;
     }
-  }
-
-  getSignal() {
-    const previousState = this.calculateSignal(this.#previousResult);
-    const state = this.calculateSignal(this.getResult());
-    const hasChanged = previousState !== state;
-
-    return {
-      hasChanged,
-      state,
-    };
   }
 }

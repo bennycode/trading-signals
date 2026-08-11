@@ -1,4 +1,4 @@
-import {TechnicalIndicator, TradingSignal} from '../../base/Indicator.js';
+import {TradingSignal, TrendIndicator} from '../../base/Indicator.js';
 import type {HilbertCycleState} from '../HT/HilbertTransform.js';
 import {createHilbertCycleState, measureDominantCycle, pushCapped} from '../HT/HilbertTransform.js';
 
@@ -45,10 +45,9 @@ const RAD_TO_DEG = 180 / Math.PI;
  * @see https://www.mesasoftware.com/papers/MAMA.pdf
  * @see https://github.com/TA-Lib/ta-lib/blob/main/src/ta_func/ta_MAMA.c
  */
-export class MAMA extends TechnicalIndicator<MAMAResult, number, MAMAState> {
+export class MAMA extends TrendIndicator<MAMAResult, number, MAMAState> {
   public readonly fastLimit: number;
   public readonly slowLimit: number;
-  #previousResult?: MAMAResult;
 
   protected override state: MAMAState = {
     ...createHilbertCycleState(),
@@ -108,19 +107,16 @@ export class MAMA extends TechnicalIndicator<MAMAResult, number, MAMAState> {
       return null;
     }
 
-    if (replace) {
-      this.result = this.#previousResult;
-    }
-
-    this.#previousResult = this.result;
-
-    return (this.result = {
-      fama: state.fama,
-      mama: state.mama,
-    });
+    return this.setResult(
+      {
+        fama: state.fama,
+        mama: state.mama,
+      },
+      replace
+    );
   }
 
-  protected calculateSignal(result?: MAMAResult | null | undefined) {
+  protected calculateSignalState(result?: MAMAResult | null | undefined) {
     const hasResult = result !== null && result !== undefined;
     const isBullish = hasResult && result.mama > result.fama;
     const isBearish = hasResult && result.mama < result.fama;
@@ -135,19 +131,5 @@ export class MAMA extends TechnicalIndicator<MAMAResult, number, MAMAState> {
       default:
         return TradingSignal.SIDEWAYS;
     }
-  }
-
-  getSignal(): {
-    state: (typeof TradingSignal)[keyof typeof TradingSignal];
-    hasChanged: boolean;
-  } {
-    const previousState = this.calculateSignal(this.#previousResult);
-    const state = this.calculateSignal(this.getResult());
-    const hasChanged = previousState !== state;
-
-    return {
-      hasChanged,
-      state,
-    };
   }
 }

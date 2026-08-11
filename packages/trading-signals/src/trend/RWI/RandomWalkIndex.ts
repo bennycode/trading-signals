@@ -1,5 +1,5 @@
 import type {HighLowClose} from '../../base/Candle.type.js';
-import {TechnicalIndicator, TradingSignal} from '../../base/Indicator.js';
+import {TradingSignal, TrendIndicator} from '../../base/Indicator.js';
 import {pushUpdate} from '../../util/pushUpdate.js';
 import {ATR} from '../../volatility/ATR/ATR.js';
 
@@ -33,12 +33,11 @@ export type RandomWalkIndexResult = {
  * @see https://github.com/ta4j/ta4j/blob/master/ta4j-core/src/main/java/org/ta4j/core/indicators/RWIHighIndicator.java
  * @see https://github.com/ta4j/ta4j/blob/master/ta4j-core/src/main/java/org/ta4j/core/indicators/RWILowIndicator.java
  */
-export class RandomWalkIndex extends TechnicalIndicator<RandomWalkIndexResult, HighLowClose<number>> {
+export class RandomWalkIndex extends TrendIndicator<RandomWalkIndexResult, HighLowClose<number>> {
   public readonly interval: number;
   readonly #candles: HighLowClose<number>[] = [];
   readonly #atrs: ATR[] = [];
   readonly #randomWalkDrifts: number[] = [];
-  #previousResult?: RandomWalkIndexResult;
 
   constructor(interval: number = 14) {
     super();
@@ -71,12 +70,6 @@ export class RandomWalkIndex extends TechnicalIndicator<RandomWalkIndexResult, H
       return null;
     }
 
-    if (replace) {
-      this.result = this.#previousResult;
-    }
-
-    this.#previousResult = this.result;
-
     let high: number | undefined;
     let low: number | undefined;
 
@@ -102,19 +95,25 @@ export class RandomWalkIndex extends TechnicalIndicator<RandomWalkIndexResult, H
     });
 
     if (high === undefined || low === undefined) {
-      return (this.result = {
-        high: 0,
-        low: 0,
-      });
+      return this.setResult(
+        {
+          high: 0,
+          low: 0,
+        },
+        replace
+      );
     }
 
-    return (this.result = {
-      high,
-      low,
-    });
+    return this.setResult(
+      {
+        high,
+        low,
+      },
+      replace
+    );
   }
 
-  protected calculateSignal(result?: RandomWalkIndexResult | null | undefined) {
+  protected calculateSignalState(result?: RandomWalkIndexResult | null | undefined) {
     const hasResult = result !== null && result !== undefined;
     const isBullish = hasResult && result.high > result.low;
     const isBearish = hasResult && result.low > result.high;
@@ -129,19 +128,5 @@ export class RandomWalkIndex extends TechnicalIndicator<RandomWalkIndexResult, H
       default:
         return TradingSignal.SIDEWAYS;
     }
-  }
-
-  getSignal(): {
-    state: (typeof TradingSignal)[keyof typeof TradingSignal];
-    hasChanged: boolean;
-  } {
-    const previousState = this.calculateSignal(this.#previousResult);
-    const state = this.calculateSignal(this.getResult());
-    const hasChanged = previousState !== state;
-
-    return {
-      hasChanged,
-      state,
-    };
   }
 }

@@ -1,6 +1,6 @@
 import {SMA} from '../../trend/SMA/SMA.js';
 import type {HighLowClose} from '../../base/Candle.type.js';
-import {TechnicalIndicator, TradingSignal} from '../../base/Indicator.js';
+import {TradingSignal, TrendIndicator} from '../../base/Indicator.js';
 import type {SignalThresholds} from '../../base/SignalThresholds.type.js';
 import {pushUpdate} from '../../util/pushUpdate.js';
 
@@ -43,11 +43,10 @@ export type StochasticOscillatorConfig = {
  * @see https://www.investopedia.com/terms/s/stochasticoscillator.asp
  * @see https://tulipindicators.org/stoch
  */
-export class StochasticOscillator extends TechnicalIndicator<StochasticResult, HighLowClose<number>> {
+export class StochasticOscillator extends TrendIndicator<StochasticResult, HighLowClose<number>> {
   public readonly candles: HighLowClose<number>[] = [];
   readonly #smoothK: SMA;
   readonly #smoothD: SMA;
-  #previousResult?: StochasticResult;
 
   public readonly kPeriod: number;
   public readonly kSlowingPeriod: number;
@@ -88,24 +87,21 @@ export class StochasticOscillator extends TechnicalIndicator<StochasticResult, H
       const stochD = stochK !== null ? this.#smoothD.update(stochK, replace) : null; // (stoch_d, %d)
 
       if (stochK !== null && stochD !== null) {
-        if (replace) {
-          this.result = this.#previousResult;
-        }
-
-        this.#previousResult = this.result;
-
-        return (this.result = {
-          stochD,
-          stochJ: 3 * stochK - 2 * stochD,
-          stochK,
-        });
+        return this.setResult(
+          {
+            stochD,
+            stochJ: 3 * stochK - 2 * stochD,
+            stochK,
+          },
+          replace
+        );
       }
     }
 
     return null;
   }
 
-  protected calculateSignal(result?: StochasticResult | null | undefined) {
+  protected calculateSignalState(result?: StochasticResult | null | undefined) {
     const hasResult = result !== null && result !== undefined;
     const isOversold = hasResult && result.stochK <= this.#oversold;
     const isOverbought = hasResult && result.stochK >= this.#overbought;
@@ -120,19 +116,5 @@ export class StochasticOscillator extends TechnicalIndicator<StochasticResult, H
       default:
         return TradingSignal.SIDEWAYS;
     }
-  }
-
-  getSignal(): {
-    state: (typeof TradingSignal)[keyof typeof TradingSignal];
-    hasChanged: boolean;
-  } {
-    const previousState = this.calculateSignal(this.#previousResult);
-    const state = this.calculateSignal(this.getResult());
-    const hasChanged = previousState !== state;
-
-    return {
-      hasChanged,
-      state,
-    };
   }
 }
