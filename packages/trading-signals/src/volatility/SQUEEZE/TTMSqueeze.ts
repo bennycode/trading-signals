@@ -1,6 +1,6 @@
 import type {HighLowClose} from '../../base/Candle.type.js';
 import {TradingSignal, TrendIndicator} from '../../base/Indicator.js';
-import {calculateLinearRegression} from '../../trend/LINREG/LinearRegression.js';
+import {getLinearRegression} from '../../util/getLinearRegression.js';
 import {getAverage} from '../../util/getAverage.js';
 import {pushUpdate} from '../../util/pushUpdate.js';
 import {BollingerBands} from '../BBANDS/BollingerBands.js';
@@ -60,6 +60,12 @@ export class TTMSqueeze extends TrendIndicator<TTMSqueezeResult, HighLowClose<nu
 
   constructor({bbInterval = 20, bbMultiplier = 2, kcInterval = 20, kcMultiplier = 1.5}: TTMSqueezeConfig = {}) {
     super();
+
+    // The momentum histogram fits a regression over a window of this length, and a single point cannot define a line
+    if (!Number.isFinite(kcInterval) || kcInterval < 2) {
+      throw new Error(`The kcInterval has to be at least 2, but "${kcInterval}" was given.`);
+    }
+
     this.bbInterval = bbInterval;
     this.bbMultiplier = bbMultiplier;
     this.kcInterval = kcInterval;
@@ -84,7 +90,7 @@ export class TTMSqueeze extends TrendIndicator<TTMSqueezeResult, HighLowClose<nu
    * market.
    */
   #regressionValue(window: readonly number[]) {
-    const {intercept, slope} = calculateLinearRegression(window);
+    const {intercept, slope} = getLinearRegression(window);
 
     return slope * (window.length - 1) + intercept;
   }

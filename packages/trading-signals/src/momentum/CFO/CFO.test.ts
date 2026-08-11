@@ -3,6 +3,13 @@ import {testIndicatorContract} from '../../fixtures/testIndicatorContract.js';
 import {CFO} from './CFO.js';
 
 describe('CFO', () => {
+  describe('constructor', () => {
+    it('rejects an interval below 2', () => {
+      expect(() => new CFO(1)).toThrowError('The interval has to be at least 2, but "1" was given.');
+      expect(() => new CFO(Number.NaN)).toThrowError('The interval has to be at least 2, but "NaN" was given.');
+    });
+  });
+
   describe('update', () => {
     it('replaces the most recently added value', () => {
       const cfo = new CFO(5);

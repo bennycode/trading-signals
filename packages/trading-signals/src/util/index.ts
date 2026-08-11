@@ -1,6 +1,7 @@
 export * from './addPercentageChange.js';
 export * from './getAverage.js';
 export * from './getGrid.js';
+export * from './getLinearRegression.js';
 export * from './getMaximum.js';
 export * from './getMedian.js';
 export * from './getMinimum.js';

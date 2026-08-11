@@ -1,5 +1,5 @@
 import {ZeroCrossSeries} from '../../base/Indicator.js';
-import {calculateLinearRegression} from '../../trend/LINREG/LinearRegression.js';
+import {getLinearRegression} from '../../util/getLinearRegression.js';
 import {pushUpdate} from '../../util/pushUpdate.js';
 
 /**
@@ -29,6 +29,12 @@ export class CFO extends ZeroCrossSeries {
 
   constructor(interval: number = 14) {
     super();
+
+    // A single point cannot define a trend line to project, so a forecast would be fabricated
+    if (!Number.isFinite(interval) || interval < 2) {
+      throw new Error(`The interval has to be at least 2, but "${interval}" was given.`);
+    }
+
     this.interval = interval;
   }
 
@@ -49,7 +55,7 @@ export class CFO extends ZeroCrossSeries {
     }
 
     // The forecast for the newest bar is fitted over the closes that precede it
-    const {prediction: forecast} = calculateLinearRegression(this.#closes.slice(0, this.interval));
+    const {prediction: forecast} = getLinearRegression(this.#closes.slice(0, this.interval));
 
     return this.setResult((100 * (close - forecast)) / close, replace);
   }

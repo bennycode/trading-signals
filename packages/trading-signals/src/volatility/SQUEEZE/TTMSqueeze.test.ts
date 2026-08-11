@@ -34,6 +34,17 @@ const worksheetCandles = [
 ] as const;
 
 describe('TTMSqueeze', () => {
+  describe('constructor', () => {
+    it('rejects a kcInterval below 2', () => {
+      expect(() => new TTMSqueeze({kcInterval: 1})).toThrowError(
+        'The kcInterval has to be at least 2, but "1" was given.'
+      );
+      expect(() => new TTMSqueeze({kcInterval: Number.NaN})).toThrowError(
+        'The kcInterval has to be at least 2, but "NaN" was given.'
+      );
+    });
+  });
+
   describe('update', () => {
     it('detects the squeeze in a tight range and its release with rising momentum on the breakout', () => {
       const expectations = [
