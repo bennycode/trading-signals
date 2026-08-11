@@ -33,6 +33,7 @@ All indicators can be updated over time by streaming data (prices or [candles](h
 1. Arnaud Legoux Moving Average (ALMA)
 1. Aroon (AROON)
 1. Average Directional Index (ADX)
+1. Average Directional Index Rating (ADXR)
 1. Average True Range (ATR)
 1. Awesome Oscillator (AO)
 1. Balance of Power (BOP)
@@ -104,6 +105,7 @@ All indicators can be updated over time by streaming data (prices or [candles](h
 1. Psychological Line (PSL)
 1. Qstick (QSTICK)
 1. Quantitative Qualitative Estimation (QQE)
+1. Random Walk Index (RWI)
 1. Range Expansion Index (REI)
 1. Rank Correlation Index (RCI)
 1. Rate-of-Change (ROC)
@@ -242,14 +244,6 @@ console.log(sma.highest?.toFixed(2)); // "53.33"
 
 - Indicators: Have no upper or lower limits
 - Oscillators: Move within a fixed range (e.g. 0-100, –1 to +1)
-
-## Alternatives
-
-- [ta-math (TypeScript)](https://github.com/munrocket/ta-math)
-- [ta4j (Java)](https://github.com/ta4j/ta4j)
-- [Technical Analysis for Rust (Rust)](https://github.com/greyblake/ta-rs)
-- [Technical Analysis Library using Pandas and Numpy (Python)](https://github.com/bukosabino/ta)
-- [Tulip Indicators (ANSI C)](https://github.com/TulipCharts/tulipindicators)
 
 ## Maintainers
 
