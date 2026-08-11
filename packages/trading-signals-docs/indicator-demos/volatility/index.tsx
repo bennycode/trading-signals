@@ -3,6 +3,7 @@ import {ATR} from './ATR.demo';
 import {BollingerBands} from './BollingerBands.demo';
 import {BollingerBandsWidth} from './BollingerBandsWidth.demo';
 import {DonchianChannels} from './DonchianChannels.demo';
+import {GAPO} from './GAPO.demo';
 import {IQR} from './IQR.demo';
 import {KeltnerChannels} from './KeltnerChannels.demo';
 import {MAD} from './MAD.demo';
@@ -27,4 +28,5 @@ export const indicators: IndicatorConfig[] = [
   UlcerIndex,
   ProjectionOscillator,
   MassIndex,
+  GAPO,
 ];
