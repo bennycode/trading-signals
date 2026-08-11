@@ -23,6 +23,12 @@ export class LinearRegression extends TechnicalIndicator<LinearRegressionResult,
 
   constructor(interval: number) {
     super();
+
+    // A single point cannot define a line, so a slope would be fabricated.
+    if (!Number.isFinite(interval) || interval < 2) {
+      throw new Error(`The interval has to be at least 2, but "${interval}" was given.`);
+    }
+
     this.interval = interval;
   }
 

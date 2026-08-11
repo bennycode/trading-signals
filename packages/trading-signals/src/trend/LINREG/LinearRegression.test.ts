@@ -2,6 +2,15 @@ import {testIndicatorContract} from '../../fixtures/testIndicatorContract.js';
 import {LinearRegression} from '../../index.js';
 
 describe('LinearRegression', () => {
+  describe('constructor', () => {
+    it('rejects an interval below 2', () => {
+      expect(() => new LinearRegression(1)).toThrowError('The interval has to be at least 2, but "1" was given.');
+      expect(() => new LinearRegression(Number.NaN)).toThrowError(
+        'The interval has to be at least 2, but "NaN" was given.'
+      );
+    });
+  });
+
   describe('intercept (linregintercept)', () => {
     it('calculates the intercept values correctly', {tags: ['tulipindicators']}, () => {
       /*
