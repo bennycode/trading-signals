@@ -1,6 +1,6 @@
 {
   "name": "trading-strategies",
-  "version": "0.4.4",
+  "version": "0.4.5",
   "description": "Trading strategies to run trading bots with JavaScript / TypeScript.",
   "keywords": [
     "trading"
@@ -52,7 +52,7 @@
     "big.js": "^7.0.1",
     "dotenv-defaults": "^6.0.0",
     "ms": "4.0.0-nightly.202508271359",
-    "trading-signals": "8.2.1",
+    "trading-signals": "8.3.0",
     "zod": "^4.4.3"
   },
   "devDependencies": {

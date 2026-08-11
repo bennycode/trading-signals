@@ -2,6 +2,28 @@
 
 All notable changes to this project will be documented in this file. See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [8.3.0](https://github.com/bennycode/trading-signals/compare/trading-signals@8.2.1...trading-signals@8.3.0) (2026-08-11)
+
+### Features
+
+- **trading-signals:** add Ichimoku Cloud, Keltner/Donchian Channels and Vortex Indicator ([#1286](https://github.com/bennycode/trading-signals/issues/1286))
+- **trading-signals:** add nine oscillators (APO, BOP, COPPOCK, ERI, FI, FISHER, KST, KVO, TSI) ([#1285](https://github.com/bennycode/trading-signals/issues/1285))
+- **trading-signals:** add six moving average variants (ALMA, FRAMA, T3, TRIMA, VIDYA, ZLEMA) ([#1284](https://github.com/bennycode/trading-signals/issues/1284))
+- **trading-signals:** close the Cloud9Trader feature gap (PB, DPO, PGO, GAPO, PMO) ([#1298](https://github.com/bennycode/trading-signals/issues/1298))
+- **trading-signals:** close the Highcharts indicator gap (Disparity Index) ([#1292](https://github.com/bennycode/trading-signals/issues/1292))
+- **trading-signals:** close the indicatorts feature gap (8 indicators + KDJ %J line) ([#1290](https://github.com/bennycode/trading-signals/issues/1290))
+- **trading-signals:** close the Jesse feature gap (9 indicators) ([#1293](https://github.com/bennycode/trading-signals/issues/1293))
+- **trading-signals:** close the LEAN feature gap (10 indicators) ([#1294](https://github.com/bennycode/trading-signals/issues/1294))
+- **trading-signals:** close the Pandas TA feature gap (8 indicators) ([#1295](https://github.com/bennycode/trading-signals/issues/1295))
+- **trading-signals:** close the Stock Indicators .NET and StockSharp gaps (7 indicators) ([#1296](https://github.com/bennycode/trading-signals/issues/1296))
+- **trading-signals:** expand the utility toolkit ([#1305](https://github.com/bennycode/trading-signals/issues/1305))
+- **trading-signals:** finish the alternatives sourcing campaign (RWI, ADXR) ([#1297](https://github.com/bennycode/trading-signals/issues/1297))
+
+### Bug Fixes
+
+- **trading-signals:** LINREG one-bar-ahead forecast + RSI declared warm-up ([#1299](https://github.com/bennycode/trading-signals/issues/1299))
+- **trading-signals:** re-seed EMA, RMA and WSMA when the seeding price is replaced ([#1287](https://github.com/bennycode/trading-signals/issues/1287))
+
 ## [8.2.1](https://github.com/bennycode/trading-signals/compare/trading-signals@8.2.0...trading-signals@8.2.1) (2026-08-08)
 
 ### Bug Fixes
