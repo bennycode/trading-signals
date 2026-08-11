@@ -42,6 +42,7 @@ All indicators can be updated over time by streaming data (prices or [candles](h
 1. Chaikin Oscillator (ADOSC)
 1. Chaikin Volatility (CVI)
 1. Chande Forecast Oscillator (CFO)
+1. Chande Kroll Stop (CKS)
 1. Chande Momentum Oscillator (CMO)
 1. Chandelier Exit (CE)
 1. Choppiness Index (CHOP)

@@ -2,6 +2,7 @@ import {ADX} from './ADX.demo';
 import {ALMA} from './ALMA.demo';
 import {Aroon} from './Aroon.demo';
 import {BreakoutBarLow} from './BreakoutBarLow.demo';
+import {ChandeKrollStop} from './ChandeKrollStop.demo';
 import {ChandelierExit} from './ChandelierExit.demo';
 import {DEMA} from './DEMA.demo';
 import {FRAMA} from './FRAMA.demo';
@@ -56,6 +57,7 @@ export const indicators: IndicatorConfig[] = [
   IchimokuCloud,
   Aroon,
   ChandelierExit,
+  ChandeKrollStop,
   WMA,
   RMA,
   WSMA,
