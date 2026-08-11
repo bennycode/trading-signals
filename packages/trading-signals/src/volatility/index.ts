@@ -7,5 +7,6 @@ export * from './IQR/IQR.js';
 export * from './KC/KeltnerChannels.js';
 export * from './MAD/MAD.js';
 export * from './NATR/NATR.js';
+export * from './PO/ProjectionOscillator.js';
 export * from './TR/TR.js';
 export * from './UI/UlcerIndex.js';
