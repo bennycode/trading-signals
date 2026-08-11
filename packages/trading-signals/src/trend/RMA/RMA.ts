@@ -26,19 +26,18 @@ export class RMA extends MovingAverage {
   }
 
   update(price: number, replace: boolean) {
-    if (!replace) {
-      this.#pricesCounter++;
-    } else if (replace && this.#pricesCounter === 0) {
+    if (!replace || this.#pricesCounter === 0) {
       this.#pricesCounter++;
     }
 
-    if (replace && this.previousResult !== undefined) {
-      return this.setResult(price * this.#weightFactor + this.previousResult * (1 - this.#weightFactor), replace);
-    }
-    return this.setResult(
-      price * this.#weightFactor + (this.result !== undefined ? this.result : price) * (1 - this.#weightFactor),
-      replace
-    );
+    /*
+     * The smoothing continues from the reading that existed before the incoming price. A replacement
+     * of the very first price finds no such reading: that price seeded the average, so the average
+     * has to be seeded anew instead of blending with the seed it replaces.
+     */
+    const previous = replace ? this.previousResult : this.result;
+
+    return this.setResult(price * this.#weightFactor + (previous ?? price) * (1 - this.#weightFactor), replace);
   }
 
   override getResultOrThrow() {

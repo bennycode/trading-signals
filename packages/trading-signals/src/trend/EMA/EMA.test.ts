@@ -24,6 +24,27 @@ describe('EMA', () => {
   ] as const;
 
   describe('replace', () => {
+    it('re-seeds the average when the very first price is replaced', () => {
+      const interval = 5;
+      const ema = new EMA(interval);
+      const emaWithReplace = new EMA(interval);
+      const firstPrice = prices[0];
+      const remainingPrices = prices.slice(1);
+
+      for (const price of prices) {
+        ema.add(price);
+      }
+
+      emaWithReplace.add(90210);
+      emaWithReplace.replace(firstPrice);
+
+      for (const price of remainingPrices) {
+        emaWithReplace.add(price);
+      }
+
+      expect(emaWithReplace.getResultOrThrow()).toBe(ema.getResultOrThrow());
+    });
+
     it('replaces the most recently added value', () => {
       const interval = 5;
       const ema = new EMA(interval);
