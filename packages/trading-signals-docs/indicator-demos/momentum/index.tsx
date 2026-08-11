@@ -17,7 +17,9 @@ import {ElderRay} from './ElderRay.demo';
 import {ER} from './ER.demo';
 import {FisherTransform} from './FisherTransform.demo';
 import {IBS} from './IBS.demo';
+import {IMI} from './IMI.demo';
 import {KST} from './KST.demo';
+import {LaguerreRSI} from './LaguerreRSI.demo';
 import {MACD} from './MACD.demo';
 import {MFI} from './MFI.demo';
 import {MOM} from './MOM.demo';
@@ -29,8 +31,10 @@ import {PremierStochastic} from './PremierStochastic.demo';
 import {PSL} from './PSL.demo';
 import {QQE} from './QQE.demo';
 import {Qstick} from './Qstick.demo';
+import {RCI} from './RCI.demo';
 import {REI} from './REI.demo';
 import {RVGI} from './RelativeVigorIndex.demo';
+import {RMI} from './RMI.demo';
 import {ROC} from './ROC.demo';
 import {RSI} from './RSI.demo';
 import {SMI} from './SMI.demo';
@@ -79,13 +83,17 @@ export const indicators: IndicatorConfig[] = [
   DisparityIndex,
   DPO,
   IBS,
+  IMI,
   AccumulativeSwingIndex,
   ConnorsRSI,
+  LaguerreRSI,
   PGO,
   PMO,
   PremierStochastic,
   PSL,
   QQE,
+  RCI,
+  RMI,
   RVGI,
   SMI,
   STC,
