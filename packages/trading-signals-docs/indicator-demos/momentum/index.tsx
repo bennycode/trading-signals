@@ -33,6 +33,7 @@ import {Qstick} from './Qstick.demo';
 import {RCI} from './RCI.demo';
 import {REI} from './REI.demo';
 import {RVGI} from './RelativeVigorIndex.demo';
+import {RMI} from './RMI.demo';
 import {ROC} from './ROC.demo';
 import {RSI} from './RSI.demo';
 import {SMI} from './SMI.demo';
@@ -90,6 +91,7 @@ export const indicators: IndicatorConfig[] = [
   PSL,
   QQE,
   RCI,
+  RMI,
   RVGI,
   SMI,
   STC,

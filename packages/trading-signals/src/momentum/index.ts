@@ -31,6 +31,7 @@ export * from './QQE/QQE.js';
 export * from './QSTICK/Qstick.js';
 export * from './RCI/RCI.js';
 export * from './REI/REI.js';
+export * from './RMI/RMI.js';
 export * from './ROC/ROC.js';
 export * from './RSI/RSI.js';
 export * from './RVGI/RelativeVigorIndex.js';
