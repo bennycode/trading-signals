@@ -61,7 +61,8 @@ export class StochasticRSI extends TrendIndicatorSeries {
   }
 
   override getRequiredInputs() {
-    return this.#rsi.getRequiredInputs() + this.#period.getRequiredInputs();
+    // The first stable RSI reading already counts toward the stochastic window, so it is not paid for twice.
+    return this.#rsi.getRequiredInputs() + this.#period.getRequiredInputs() - 1;
   }
 
   update(price: number, replace: boolean) {

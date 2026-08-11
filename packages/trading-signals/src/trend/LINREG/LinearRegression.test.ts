@@ -2,6 +2,15 @@ import {testIndicatorContract} from '../../fixtures/testIndicatorContract.js';
 import {LinearRegression} from '../../index.js';
 
 describe('LinearRegression', () => {
+  describe('constructor', () => {
+    it('rejects an interval below 2', () => {
+      expect(() => new LinearRegression(1)).toThrowError('The interval has to be at least 2, but "1" was given.');
+      expect(() => new LinearRegression(Number.NaN)).toThrowError(
+        'The interval has to be at least 2, but "NaN" was given.'
+      );
+    });
+  });
+
   describe('intercept (linregintercept)', () => {
     it('calculates the intercept values correctly', {tags: ['tulipindicators']}, () => {
       /*
@@ -41,8 +50,45 @@ describe('LinearRegression', () => {
     });
   });
 
+  describe('prediction (tsf)', () => {
+    it('forecasts the value one bar ahead of the regression window', {tags: ['tulipindicators']}, () => {
+      /*
+       * Test data verified with:
+       * https://github.com/TulipCharts/tulipindicators/blob/v0.9.1/tests/untest.txt#L430-L432
+       */
+      const period = 5;
+      const prices = [
+        81.59, 81.06, 82.87, 83.0, 83.61, 83.15, 82.84, 83.99, 84.55, 84.36, 85.53, 86.54, 86.89, 87.77, 87.29,
+      ] as const;
+      const expected = [
+        '84.220',
+        '84.214',
+        '83.121',
+        '83.681',
+        '84.444',
+        '85.017',
+        '85.979',
+        '86.818',
+        '87.632',
+        '88.672',
+        '88.229',
+      ] as const;
+
+      const linreg = new LinearRegression(period);
+      const offset = period - 1;
+
+      prices.forEach((price, index) => {
+        linreg.add(price);
+        if (index >= offset) {
+          const result = linreg.getResultOrThrow();
+          expect(result.prediction.toFixed(3)).toBe(expected[index - offset]);
+        }
+      });
+    });
+  });
+
   describe('getResultOrThrow', () => {
-    it('calculates regression values correctly', () => {
+    it('projects a perfect linear trend one bar beyond the window', () => {
       const prices = [10, 11, 12, 13, 14] as const;
       const linreg = new LinearRegression(prices.length);
 
@@ -50,8 +96,8 @@ describe('LinearRegression', () => {
       const result = linreg.getResultOrThrow();
 
       expect(result.slope).toBe(1);
-      expect(result.intercept).toBe(9);
-      expect(result.prediction).toBe(14);
+      expect(result.intercept).toBe(10);
+      expect(result.prediction).toBe(15);
     });
 
     it('handles non-perfect linear relationships', () => {
@@ -61,9 +107,9 @@ describe('LinearRegression', () => {
       prices.forEach(price => linreg.add(price));
       const result = linreg.getResultOrThrow();
 
-      expect(result.prediction).toBeDefined();
-      expect(result.slope).toBeDefined();
-      expect(result.intercept).toBeDefined();
+      expect(result.slope.toFixed(2)).toBe('0.23');
+      expect(result.intercept.toFixed(2)).toBe('10.60');
+      expect(result.prediction.toFixed(2)).toBe('11.75');
     });
   });
 

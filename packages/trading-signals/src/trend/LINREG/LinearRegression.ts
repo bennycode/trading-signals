@@ -2,7 +2,7 @@ import {TechnicalIndicator} from '../../base/Indicator.js';
 import {pushUpdate} from '../../util/pushUpdate.js';
 
 export type LinearRegressionResult = {
-  // The predicted value (equivalent to TulipCharts' linreg)
+  // The one-bar-ahead forecast (equivalent to TulipCharts' tsf)
   prediction: number;
   // The slope (equivalent to TulipCharts' linregslope)
   slope: number;
@@ -23,6 +23,12 @@ export class LinearRegression extends TechnicalIndicator<LinearRegressionResult,
 
   constructor(interval: number) {
     super();
+
+    // A single point cannot define a line, so a slope would be fabricated.
+    if (!Number.isFinite(interval) || interval < 2) {
+      throw new Error(`The interval has to be at least 2, but "${interval}" was given.`);
+    }
+
     this.interval = interval;
   }
 
@@ -32,22 +38,6 @@ export class LinearRegression extends TechnicalIndicator<LinearRegressionResult,
 
   #calculateRegression(prices: number[]): LinearRegressionResult {
     const n = prices.length;
-    const isPerfectLinearTrend = prices.every((price, i) => {
-      if (i === 0) {
-        return true;
-      }
-      return Math.abs(price - prices[i - 1] - 1) < 1e-10;
-    });
-
-    if (isPerfectLinearTrend) {
-      const slope = 1;
-      const intercept = prices[0] - slope; // Subtract slope to get true intercept
-      const nextX = n; // Predict the next value
-      const prediction = slope * nextX + intercept;
-      return {intercept, prediction, slope};
-    }
-
-    // Otherwise fall back to standard least squares regression
     const sumX = ((n - 1) * n) / 2; // sum of 0..n-1
     const sumY = prices.reduce((a, b) => a + b, 0);
     let sumXY = 0;

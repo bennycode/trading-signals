@@ -21,6 +21,19 @@ describe('RSI', () => {
       expect(rsi.isStable).toBe(true);
       expect(rsi.getResultOrThrow().toFixed(2)).toBe('75.94');
     });
+
+    it('yields its first reading exactly at the declared warm-up count', () => {
+      const rsi = new RSI(5);
+      const prices = [81.59, 81.06, 82.87, 83.0, 83.61, 83.15] as const;
+
+      expect(prices.length).toBe(rsi.getRequiredInputs());
+
+      prices.forEach((price, index) => {
+        const result = rsi.add(price);
+        const isWarmedUp = index >= rsi.getRequiredInputs() - 1;
+        expect(result !== null).toBe(isWarmedUp);
+      });
+    });
   });
 
   describe('getResultOrThrow', () => {
@@ -47,7 +60,7 @@ describe('RSI', () => {
 
       const interval = 5;
       const rsi = new RSI(interval);
-      const offset = rsi.getRequiredInputs();
+      const offset = rsi.getRequiredInputs() - 1;
 
       prices.forEach((price, i) => {
         rsi.add(price);
@@ -58,7 +71,7 @@ describe('RSI', () => {
       });
 
       expect(rsi.isStable).toBe(true);
-      expect(rsi.getRequiredInputs()).toBe(interval);
+      expect(rsi.getRequiredInputs()).toBe(interval + 1);
       expect(rsi.getResultOrThrow().toFixed(2)).toBe('78.50');
     });
 

@@ -44,7 +44,8 @@ export class RSI extends TrendIndicatorSeries {
   }
 
   override getRequiredInputs() {
-    return this.#avgGain.getRequiredInputs();
+    // The first price only anchors the change measurement and yields no gain or loss reading.
+    return this.#avgGain.getRequiredInputs() + 1;
   }
 
   update(price: number, replace: boolean) {
