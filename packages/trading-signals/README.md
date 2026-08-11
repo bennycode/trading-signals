@@ -33,6 +33,7 @@ All indicators can be updated over time by streaming data (prices or [candles](h
 1. Arnaud Legoux Moving Average (ALMA)
 1. Aroon (AROON)
 1. Average Directional Index (ADX)
+1. Average Directional Index Rating (ADXR)
 1. Average True Range (ATR)
 1. Awesome Oscillator (AO)
 1. Balance of Power (BOP)

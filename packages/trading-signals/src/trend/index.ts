@@ -1,4 +1,5 @@
 export * from './ADX/ADX.js';
+export * from './ADXR/ADXR.js';
 export * from './ALLIGATOR/Alligator.js';
 export * from './ALLIGATOR/GatorOscillator.js';
 export * from './ALMA/ALMA.js';

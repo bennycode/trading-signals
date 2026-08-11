@@ -1,4 +1,5 @@
 import {ADX} from './ADX.demo';
+import {ADXR} from './ADXR.demo';
 import {Alligator} from './Alligator.demo';
 import {ALMA} from './ALMA.demo';
 import {Aroon} from './Aroon.demo';
@@ -71,6 +72,7 @@ export const indicators: IndicatorConfig[] = [
   WSMA,
   VWAP,
   ADX,
+  ADXR,
   DX,
   PSAR,
   DMA,
