@@ -210,7 +210,6 @@ console.log(sma.highest?.toFixed(2)); // "53.33"
 
 ## Alternatives
 
-- [Crypto Trading Hub Indicators (TypeScript)](https://github.com/anandanand84/technicalindicators)
 - [Highcharts Indicators (TypeScript)](https://github.com/highcharts/highcharts/tree/v12.3.0/ts/Stock/Indicators)
 - [Jesse Trading Bot Indicators (Python)](https://docs.jesse.trade/docs/indicators/reference.html)
 - [LEAN Indicators (C#)](https://github.com/QuantConnect/Lean/tree/master/Indicators)
