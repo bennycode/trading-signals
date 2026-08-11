@@ -11,3 +11,4 @@ export * from './PVT/PVT.js';
 export * from './RVOL/RVOL.js';
 export * from './VROC/VROC.js';
 export * from './VWMA/VWMA.js';
+export * from './WAD/WAD.js';

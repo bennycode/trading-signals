@@ -10,6 +10,21 @@ import {PVO} from './PVO.demo';
 import {PVT} from './PVT.demo';
 import {VROC} from './VROC.demo';
 import {VWMA} from './VWMA.demo';
+import {WAD} from './WAD.demo';
 import type {IndicatorConfig} from '../../utils/types';
 
-export const indicators: IndicatorConfig[] = [AD, ADOSC, CMF, PVT, EMV, ForceIndex, KVO, NVI, PVI, PVO, VROC, VWMA];
+export const indicators: IndicatorConfig[] = [
+  AD,
+  ADOSC,
+  CMF,
+  PVT,
+  EMV,
+  ForceIndex,
+  KVO,
+  NVI,
+  PVI,
+  PVO,
+  VROC,
+  VWMA,
+  WAD,
+];
