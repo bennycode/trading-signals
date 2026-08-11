@@ -220,7 +220,6 @@ console.log(sma.highest?.toFixed(2)); // "53.33"
 
 ## Alternatives
 
-- [Jesse Trading Bot Indicators (Python)](https://docs.jesse.trade/docs/indicators/reference.html)
 - [LEAN Indicators (C#)](https://github.com/QuantConnect/Lean/tree/master/Indicators)
 - [libindicators (C#)](https://github.com/mgfx/libindicators)
 - [Pandas TA (Python)](https://github.com/twopirllc/pandas-ta)
