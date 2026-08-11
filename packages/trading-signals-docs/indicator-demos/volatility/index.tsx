@@ -13,6 +13,7 @@ import {MassIndex} from './MassIndex.demo';
 import {NATR} from './NATR.demo';
 import {PercentB} from './PercentB.demo';
 import {ProjectionOscillator} from './ProjectionOscillator.demo';
+import {RelativeVolatilityIndex} from './RelativeVolatilityIndex.demo';
 import {RogersSatchellVolatility} from './RogersSatchellVolatility.demo';
 import {TR} from './TR.demo';
 import {TTMSqueeze} from './TTMSqueeze.demo';
@@ -39,4 +40,5 @@ export const indicators: IndicatorConfig[] = [
   CHOP,
   TTMSqueeze,
   RogersSatchellVolatility,
+  RelativeVolatilityIndex,
 ];

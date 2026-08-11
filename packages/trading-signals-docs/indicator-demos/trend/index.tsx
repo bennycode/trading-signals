@@ -6,6 +6,7 @@ import {ChandeKrollStop} from './ChandeKrollStop.demo';
 import {ChandelierExit} from './ChandelierExit.demo';
 import {DEMA} from './DEMA.demo';
 import {FRAMA} from './FRAMA.demo';
+import {GannHiLo} from './GannHiLo.demo';
 import {HMA} from './HMA.demo';
 import {IchimokuCloud} from './IchimokuCloud.demo';
 import {KAMA} from './KAMA.demo';
@@ -14,6 +15,7 @@ import {McGinleyDynamic} from './McGinleyDynamic.demo';
 import {T3} from './T3.demo';
 import {TEMA} from './TEMA.demo';
 import {TRIMA} from './TRIMA.demo';
+import {VHF} from './VHF.demo';
 import {VIDYA} from './VIDYA.demo';
 import {VortexIndicator} from './VortexIndicator.demo';
 import {DMA} from './DMA.demo';
@@ -53,6 +55,8 @@ export const indicators: IndicatorConfig[] = [
   McGinleyDynamic,
   MAMA,
   SuperSmoother,
+  VHF,
+  GannHiLo,
   VortexIndicator,
   IchimokuCloud,
   Aroon,

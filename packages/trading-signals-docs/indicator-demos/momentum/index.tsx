@@ -26,11 +26,14 @@ import {PGO} from './PGO.demo';
 import {PMO} from './PMO.demo';
 import {PPO} from './PPO.demo';
 import {PremierStochastic} from './PremierStochastic.demo';
+import {PSL} from './PSL.demo';
+import {QQE} from './QQE.demo';
 import {Qstick} from './Qstick.demo';
 import {REI} from './REI.demo';
 import {RVGI} from './RelativeVigorIndex.demo';
 import {ROC} from './ROC.demo';
 import {RSI} from './RSI.demo';
+import {SMI} from './SMI.demo';
 import {STC} from './STC.demo';
 import {StochasticOscillator} from './StochasticOscillator.demo';
 import {StochasticRSI} from './StochasticRSI.demo';
@@ -81,7 +84,10 @@ export const indicators: IndicatorConfig[] = [
   PGO,
   PMO,
   PremierStochastic,
+  PSL,
+  QQE,
   RVGI,
+  SMI,
   STC,
   TRIX,
   TSI,
