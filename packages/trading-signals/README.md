@@ -44,6 +44,7 @@ All indicators can be updated over time by streaming data (prices or [candles](h
 1. Chande Forecast Oscillator (CFO)
 1. Chande Momentum Oscillator (CMO)
 1. Chandelier Exit (CE)
+1. Choppiness Index (CHOP)
 1. Commodity Channel Index (CCI)
 1. Coppock Curve (COPPOCK)
 1. Detrended Price Oscillator (DPO)

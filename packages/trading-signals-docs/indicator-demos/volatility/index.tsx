@@ -2,6 +2,7 @@ import {AccelerationBands} from './AccelerationBands.demo';
 import {ATR} from './ATR.demo';
 import {BollingerBands} from './BollingerBands.demo';
 import {BollingerBandsWidth} from './BollingerBandsWidth.demo';
+import {CHOP} from './CHOP.demo';
 import {CVI} from './CVI.demo';
 import {DonchianChannels} from './DonchianChannels.demo';
 import {GAPO} from './GAPO.demo';
@@ -33,4 +34,5 @@ export const indicators: IndicatorConfig[] = [
   MassIndex,
   GAPO,
   CVI,
+  CHOP,
 ];
