@@ -103,6 +103,20 @@ describe('KVO', () => {
       expect(kvo.isStable).toBe(true);
       expect(kvo.getRequiredInputs()).toBe(2);
     });
+
+    it('stays finite when the market has never traded a range', () => {
+      const kvo = new KVO(2, 5);
+      const flatCandle = {close: 100, high: 100, low: 100, volume: 5_000} as const;
+
+      kvo.add(flatCandle);
+
+      expect(kvo.add(flatCandle)).toBe(0);
+      expect(kvo.getSignal().state).toBe(TradingSignal.SIDEWAYS);
+
+      kvo.add({close: 105, high: 106, low: 99, volume: 6_000});
+
+      expect(kvo.getResultOrThrow()).toBe(200_000);
+    });
   });
 
   describe('getSignal', () => {

@@ -104,7 +104,16 @@ export class KVO extends ZeroCrossSeries<HighLowCloseVolume> {
 
     // Until the first flip (only possible while consecutive sums tie), volume counts as buying pressure, matching the reference implementation.
     const direction = state.trend === -1 ? -1 : 1;
-    const volumeForce = candle.volume * Math.abs((range / state.cumulativeMeasurement) * 2 - 1) * 100 * direction;
+
+    /*
+     * A market that has never traded a range offers no swing to attribute volume to, so its volume force is zero.
+     * This deliberately deviates from the Tulip reference, which divides by the empty measurement and poisons every
+     * later reading — a streaming indicator could never recover from that.
+     */
+    const volumeForce =
+      state.cumulativeMeasurement === 0
+        ? 0
+        : candle.volume * Math.abs((range / state.cumulativeMeasurement) * 2 - 1) * 100 * direction;
 
     const emas =
       state.emas === null
