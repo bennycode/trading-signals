@@ -49,6 +49,7 @@ All indicators can be updated over time by streaming data (prices or [candles](h
 1. Commodity Channel Index (CCI)
 1. Coppock Curve (COPPOCK)
 1. DeMarker (DEM)
+1. Derivative Oscillator (DOSC)
 1. Detrended Price Oscillator (DPO)
 1. Directional Movement Index (DMI / DX)
 1. Disparity Index (DI)

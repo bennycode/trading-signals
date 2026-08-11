@@ -9,6 +9,7 @@ export * from './CMO/CMO.js';
 export * from './COPPOCK/CoppockCurve.js';
 export * from './DEM/DeMarker.js';
 export * from './DI/DisparityIndex.js';
+export * from './DOSC/DerivativeOscillator.js';
 export * from './DPO/DPO.js';
 export * from './ER/ER.js';
 export * from './ERI/ElderRay.js';
