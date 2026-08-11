@@ -1,4 +1,4 @@
-import type {HighLowClose} from '../base/Candle.type.js';
+import type {HighLowClose} from '../../base/Candle.type.js';
 
 /**
  * Collapses a candle into the single price most of its trading happened around. Used wherever an indicator needs a

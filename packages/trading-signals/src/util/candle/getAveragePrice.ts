@@ -1,4 +1,4 @@
-import type {OpenHighLowClose} from '../base/Candle.type.js';
+import type {OpenHighLowClose} from '../../base/Candle.type.js';
 
 /**
  * Collapses a candle into the plain average of its four marks, treating where the bar opened as

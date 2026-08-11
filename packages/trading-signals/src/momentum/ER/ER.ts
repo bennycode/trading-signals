@@ -1,7 +1,7 @@
 import {TradingSignal, TrendIndicatorSeries} from '../../base/Indicator.js';
 import type {HighLowClose} from '../../base/Candle.type.js';
-import {getMaximum} from '../../util/getMaximum.js';
-import {getMinimum} from '../../util/getMinimum.js';
+import {getMaximum} from '../../util/statistics/getMaximum.js';
+import {getMinimum} from '../../util/statistics/getMinimum.js';
 import {pushUpdate} from '../../util/pushUpdate.js';
 
 export type ERThresholds = {

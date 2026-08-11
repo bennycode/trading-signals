@@ -1,4 +1,4 @@
-import type {HighLow} from '../base/Candle.type.js';
+import type {HighLow} from '../../base/Candle.type.js';
 
 /**
  * Collapses a candle into the midpoint of its trading range — the bar's center of gravity without

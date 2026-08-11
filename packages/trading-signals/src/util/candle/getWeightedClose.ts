@@ -1,4 +1,4 @@
-import type {HighLowClose} from '../base/Candle.type.js';
+import type {HighLowClose} from '../../base/Candle.type.js';
 
 /**
  * Collapses a candle into a single price with the close counted twice, leaning the reading toward

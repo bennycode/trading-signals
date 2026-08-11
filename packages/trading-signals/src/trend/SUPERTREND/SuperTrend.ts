@@ -1,6 +1,6 @@
 import type {HighLowClose} from '../../base/Candle.type.js';
 import {TechnicalIndicator, TradingSignal} from '../../base/Indicator.js';
-import {getMedianPrice} from '../../util/getMedianPrice.js';
+import {getMedianPrice} from '../../util/candle/getMedianPrice.js';
 import {ATR} from '../../volatility/ATR/ATR.js';
 
 export type SuperTrendResult = {

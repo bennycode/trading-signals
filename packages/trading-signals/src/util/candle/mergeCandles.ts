@@ -1,4 +1,4 @@
-import type {OpenHighLowCloseVolume} from '../base/Candle.type.js';
+import type {OpenHighLowCloseVolume} from '../../base/Candle.type.js';
 
 /**
  * Merges consecutive candles into a single candle of a higher timeframe — five 1-minute candles

@@ -1,6 +1,6 @@
 import type {HighLow} from '../../base/Candle.type.js';
 import {TechnicalIndicator} from '../../base/Indicator.js';
-import {getMedianPrice} from '../../util/getMedianPrice.js';
+import {getMedianPrice} from '../../util/candle/getMedianPrice.js';
 import {pushUpdate} from '../../util/pushUpdate.js';
 import {WSMA} from '../WSMA/WSMA.js';
 

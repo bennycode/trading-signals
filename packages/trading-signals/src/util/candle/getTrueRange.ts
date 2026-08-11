@@ -1,4 +1,4 @@
-import type {HighLowClose} from '../base/Candle.type.js';
+import type {HighLowClose} from '../../base/Candle.type.js';
 
 /**
  * Measures how far price truly travelled during a bar: the candle's range, widened by any gap from

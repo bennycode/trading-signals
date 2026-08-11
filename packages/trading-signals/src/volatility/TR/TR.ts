@@ -1,6 +1,6 @@
 import {IndicatorSeries} from '../../base/Indicator.js';
 import type {HighLowClose} from '../../base/Candle.type.js';
-import {getTrueRange} from '../../util/getTrueRange.js';
+import {getTrueRange} from '../../util/candle/getTrueRange.js';
 
 /**
  * True Range (TR)

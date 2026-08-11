@@ -1,8 +1,8 @@
 import type {HighLowClose} from '../../base/Candle.type.js';
 import {ZeroCrossSeries} from '../../base/Indicator.js';
 import {EMA} from '../../trend/EMA/EMA.js';
-import {getMaximum} from '../../util/getMaximum.js';
-import {getMinimum} from '../../util/getMinimum.js';
+import {getMaximum} from '../../util/statistics/getMaximum.js';
+import {getMinimum} from '../../util/statistics/getMinimum.js';
 import {pushUpdate} from '../../util/pushUpdate.js';
 
 export type PremierStochasticConfig = {

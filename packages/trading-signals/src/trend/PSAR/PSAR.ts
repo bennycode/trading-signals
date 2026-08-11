@@ -1,6 +1,6 @@
 import type {HighLow} from '../../base/Candle.type.js';
 import {IndicatorSeries} from '../../base/Indicator.js';
-import {getMedianPrice} from '../../util/getMedianPrice.js';
+import {getMedianPrice} from '../../util/candle/getMedianPrice.js';
 
 export type PSARConfig = {
   /**

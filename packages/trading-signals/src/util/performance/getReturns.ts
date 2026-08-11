@@ -1,4 +1,4 @@
-import {getPercentageChange} from './getPercentageChange.js';
+import {getPercentageChange} from '../statistics/getPercentageChange.js';
 
 /**
  * Converts a price series into per-bar simple returns, in percent (`25` means "+25%"). Returns are
