@@ -15,6 +15,7 @@ export * from './MFI/MFI.js';
 export * from './MOM/MOM.js';
 export * from './OBV/OBV.js';
 export * from './PPO/PPO.js';
+export * from './QSTICK/Qstick.js';
 export * from './REI/REI.js';
 export * from './ROC/ROC.js';
 export * from './RSI/RSI.js';

@@ -15,6 +15,7 @@ import {MFI} from './MFI.demo';
 import {MOM} from './MOM.demo';
 import {OBV} from './OBV.demo';
 import {PPO} from './PPO.demo';
+import {Qstick} from './Qstick.demo';
 import {REI} from './REI.demo';
 import {ROC} from './ROC.demo';
 import {RSI} from './RSI.demo';
@@ -53,6 +54,7 @@ export const indicators: IndicatorConfig[] = [
   CoppockCurve,
   KST,
   ElderRay,
+  Qstick,
   TRIX,
   TSI,
 ];
