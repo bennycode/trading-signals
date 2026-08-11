@@ -14,6 +14,7 @@ export * from './NATR/NATR.js';
 export * from './PB/PercentB.js';
 export * from './PO/ProjectionOscillator.js';
 export * from './RSV/RogersSatchellVolatility.js';
+export * from './RVI/RelativeVolatilityIndex.js';
 export * from './SQUEEZE/TTMSqueeze.js';
 export * from './TR/TR.js';
 export * from './UI/UlcerIndex.js';

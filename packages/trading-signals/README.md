@@ -102,6 +102,7 @@ All indicators can be updated over time by streaming data (prices or [candles](h
 1. Relative Moving Average (RMA)
 1. Relative Strength Index (RSI)
 1. Relative Vigor Index (RVGI)
+1. Relative Volatility Index (RVI)
 1. Relative Volume (RVOL)
 1. Rogers-Satchell Volatility (RSV)
 1. Schaff Trend Cycle (STC)
