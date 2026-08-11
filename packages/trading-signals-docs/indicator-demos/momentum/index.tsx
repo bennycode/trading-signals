@@ -7,6 +7,7 @@ import {CFO} from './CFO.demo';
 import {CG} from './CG.demo';
 import {CMO} from './CMO.demo';
 import {CoppockCurve} from './CoppockCurve.demo';
+import {DeMarker} from './DeMarker.demo';
 import {DisparityIndex} from './DisparityIndex.demo';
 import {DPO} from './DPO.demo';
 import {ElderRay} from './ElderRay.demo';
@@ -64,6 +65,7 @@ export const indicators: IndicatorConfig[] = [
   ElderRay,
   Qstick,
   CFO,
+  DeMarker,
   DisparityIndex,
   DPO,
   PGO,
