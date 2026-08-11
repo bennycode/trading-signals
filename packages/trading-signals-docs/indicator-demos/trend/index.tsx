@@ -6,6 +6,7 @@ import {ChandeKrollStop} from './ChandeKrollStop.demo';
 import {ChandelierExit} from './ChandelierExit.demo';
 import {DEMA} from './DEMA.demo';
 import {FRAMA} from './FRAMA.demo';
+import {GannHiLo} from './GannHiLo.demo';
 import {HMA} from './HMA.demo';
 import {IchimokuCloud} from './IchimokuCloud.demo';
 import {KAMA} from './KAMA.demo';
@@ -55,6 +56,7 @@ export const indicators: IndicatorConfig[] = [
   MAMA,
   SuperSmoother,
   VHF,
+  GannHiLo,
   VortexIndicator,
   IchimokuCloud,
   Aroon,

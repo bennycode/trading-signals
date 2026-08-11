@@ -10,6 +10,7 @@ export * from './DX/DX.js';
 export * from './EMA/EMA.js';
 export * from './FRAMA/FRAMA.js';
 export * from './HIGHER_LOW_TRAIL/HigherLowTrail.js';
+export * from './HILO/GannHiLo.js';
 export * from './HMA/HMA.js';
 export * from './ICHIMOKU/IchimokuCloud.js';
 export * from './KAMA/KAMA.js';
