@@ -238,7 +238,6 @@ console.log(sma.highest?.toFixed(2)); // "53.33"
 
 ## Alternatives
 
-- [Pandas TA (Python)](https://github.com/twopirllc/pandas-ta)
 - [Stock Indicators for .NET (C#)](https://github.com/DaveSkender/Stock.Indicators)
 - [StockSharp (C#)](https://github.com/StockSharp/StockSharp)
 - [ta-lib (C)](https://github.com/TA-Lib/ta-lib/tree/main/src/ta_func)
