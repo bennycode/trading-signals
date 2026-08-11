@@ -67,6 +67,7 @@ All indicators can be updated over time by streaming data (prices or [candles](h
 1. Fractal Adaptive Moving Average (FRAMA)
 1. Gann HiLo Activator (HILO)
 1. Gopalakrishnan Range Index (GAPO)
+1. Hilbert Transform Instantaneous Trendline (HT)
 1. Hull Moving Average (HMA)
 1. Ichimoku Cloud (ICHIMOKU)
 1. Internal Bar Strength (IBS)

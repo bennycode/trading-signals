@@ -8,6 +8,7 @@ import {DEMA} from './DEMA.demo';
 import {FRAMA} from './FRAMA.demo';
 import {GannHiLo} from './GannHiLo.demo';
 import {HMA} from './HMA.demo';
+import {HTTrendline} from './HTTrendline.demo';
 import {IchimokuCloud} from './IchimokuCloud.demo';
 import {KAMA} from './KAMA.demo';
 import {MAMA} from './MAMA.demo';
@@ -55,6 +56,7 @@ export const indicators: IndicatorConfig[] = [
   McGinleyDynamic,
   MAMA,
   SuperSmoother,
+  HTTrendline,
   VHF,
   GannHiLo,
   VortexIndicator,

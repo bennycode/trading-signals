@@ -12,6 +12,7 @@ export * from './FRAMA/FRAMA.js';
 export * from './HIGHER_LOW_TRAIL/HigherLowTrail.js';
 export * from './HILO/GannHiLo.js';
 export * from './HMA/HMA.js';
+export * from './HT/HTTrendline.js';
 export * from './ICHIMOKU/IchimokuCloud.js';
 export * from './KAMA/KAMA.js';
 export * from './LINREG/LinearRegression.js';
