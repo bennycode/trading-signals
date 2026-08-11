@@ -14,6 +14,7 @@ export * from './ICHIMOKU/IchimokuCloud.js';
 export * from './KAMA/KAMA.js';
 export * from './LINREG/LinearRegression.js';
 export * from './MA/MovingAverage.js';
+export * from './MD/McGinleyDynamic.js';
 export * from './PSAR/PSAR.js';
 export * from './RMA/RMA.js';
 export * from './SMA/SMA.js';

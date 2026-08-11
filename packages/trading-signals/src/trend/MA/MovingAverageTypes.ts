@@ -2,6 +2,7 @@ import type {ALMA} from '../ALMA/ALMA.js';
 import type {EMA} from '../EMA/EMA.js';
 import type {FRAMA} from '../FRAMA/FRAMA.js';
 import type {HMA} from '../HMA/HMA.js';
+import type {McGinleyDynamic} from '../MD/McGinleyDynamic.js';
 import type {RMA} from '../RMA/RMA.js';
 import type {SMA} from '../SMA/SMA.js';
 import type {T3} from '../T3/T3.js';
@@ -16,6 +17,7 @@ export type MovingAverageTypes =
   | typeof EMA
   | typeof FRAMA
   | typeof HMA
+  | typeof McGinleyDynamic
   | typeof RMA
   | typeof SMA
   | typeof T3

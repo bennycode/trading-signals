@@ -8,6 +8,7 @@ import {FRAMA} from './FRAMA.demo';
 import {HMA} from './HMA.demo';
 import {IchimokuCloud} from './IchimokuCloud.demo';
 import {KAMA} from './KAMA.demo';
+import {McGinleyDynamic} from './McGinleyDynamic.demo';
 import {T3} from './T3.demo';
 import {TEMA} from './TEMA.demo';
 import {TRIMA} from './TRIMA.demo';
@@ -46,6 +47,7 @@ export const indicators: IndicatorConfig[] = [
   ZLEMA,
   VIDYA,
   FRAMA,
+  McGinleyDynamic,
   VortexIndicator,
   IchimokuCloud,
   Aroon,
