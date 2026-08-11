@@ -41,7 +41,7 @@ export class RCI extends TrendIndicatorSeries {
     super();
 
     // A single-bar window has no rank order to correlate and would divide by zero
-    if (interval < 2) {
+    if (!Number.isFinite(interval) || interval < 2) {
       throw new Error(`The interval has to be at least 2, but "${interval}" was given.`);
     }
 

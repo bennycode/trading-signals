@@ -6,6 +6,7 @@ describe('RCI', () => {
   describe('constructor', () => {
     it('rejects an interval below 2', () => {
       expect(() => new RCI(1)).toThrowError('The interval has to be at least 2, but "1" was given.');
+      expect(() => new RCI(Number.NaN)).toThrowError('The interval has to be at least 2, but "NaN" was given.');
     });
 
     it('defaults to the conventional short-term interval of 9', () => {

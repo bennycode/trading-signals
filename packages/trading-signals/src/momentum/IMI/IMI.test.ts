@@ -25,6 +25,11 @@ describe('IMI', () => {
   const expectations = [75, 50, 70, 30] as const;
 
   describe('constructor', () => {
+    it('rejects a window length that cannot form a real buffer', () => {
+      expect(() => new IMI(0)).toThrowError('The interval has to be a positive number, but "0" was given.');
+      expect(() => new IMI(Number.NaN)).toThrowError('The interval has to be a positive number, but "NaN" was given.');
+    });
+
     it('defaults to the interval of 14 suggested by Tushar Chande and Stanley Kroll', () => {
       const imi = new IMI();
 

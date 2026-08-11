@@ -111,6 +111,12 @@ describe('LaguerreRSI', () => {
   });
 
   describe('constructor', () => {
+    it('rejects a gamma that is not a real number', () => {
+      expect(() => new LaguerreRSI({gamma: Number.NaN})).toThrowError(
+        'The gamma has to be at least 0 and below 1, but "NaN" was given.'
+      );
+    });
+
     it("defaults to the damping factor of Ehlers' book and accepts a gamma of 0", () => {
       expect(new LaguerreRSI().gamma).toBe(0.5);
       expect(new LaguerreRSI({gamma: 0}).gamma).toBe(0);

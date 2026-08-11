@@ -56,6 +56,21 @@ const liveLipsConfig = {
 
 describe('Alligator', () => {
   describe('constructor', () => {
+    it('rejects smoothing windows and displacements that cannot form real buffers', () => {
+      expect(() => new Alligator({jawInterval: Number.NaN})).toThrowError(
+        'The jawInterval has to be a positive number, but "NaN" was given.'
+      );
+      expect(() => new Alligator({lipsInterval: 0})).toThrowError(
+        'The lipsInterval has to be a positive number, but "0" was given.'
+      );
+      expect(() => new Alligator({teethShift: -1})).toThrowError(
+        'The teethShift has to be zero or a positive number, but "-1" was given.'
+      );
+      expect(() => new Alligator({jawShift: Number.NaN})).toThrowError(
+        'The jawShift has to be zero or a positive number, but "NaN" was given.'
+      );
+    });
+
     it('uses the smoothing windows and shifts published by Bill Williams by default', () => {
       const alligator = new Alligator();
 

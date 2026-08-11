@@ -44,6 +44,14 @@ export class RMI extends TrendIndicatorSeries {
 
   constructor({interval = 14, momentum = 5, signalThresholds: {overbought = 70, oversold = 30} = {}}: RMIConfig = {}) {
     super();
+
+    // The smoothing and the momentum span both need real positive lengths, or the close history never caps
+    for (const [name, value] of Object.entries({interval, momentum})) {
+      if (!Number.isFinite(value) || value < 1) {
+        throw new Error(`The ${name} has to be a positive number, but "${value}" was given.`);
+      }
+    }
+
     this.interval = interval;
     this.momentum = momentum;
     this.#avgUpMomentum = new WSMA(interval);

@@ -4,6 +4,15 @@ import {RSI} from '../RSI/RSI.js';
 import {TradingSignal} from '../../base/index.js';
 
 describe('RMI', () => {
+  describe('constructor', () => {
+    it('rejects smoothing and momentum spans that cannot form real buffers', () => {
+      expect(() => new RMI({interval: 0})).toThrowError('The interval has to be a positive number, but "0" was given.');
+      expect(() => new RMI({momentum: Number.NaN})).toThrowError(
+        'The momentum has to be a positive number, but "NaN" was given.'
+      );
+    });
+  });
+
   /*
    * Hand-derived worksheet for Roger Altman's RMI (Technical Analysis of Stocks & Commodities,
    * February 1993) with a 2-bar momentum span and 3-bar Wilder smoothing.

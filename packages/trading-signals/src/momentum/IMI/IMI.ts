@@ -31,6 +31,12 @@ export class IMI extends TrendIndicatorSeries<OpenHighLowClose> {
 
   constructor(interval: number = 14, {overbought = 70, oversold = 30}: SignalThresholds = {}) {
     super();
+
+    // The candle window never fills nor caps without a real positive length
+    if (!Number.isFinite(interval) || interval < 1) {
+      throw new Error(`The interval has to be a positive number, but "${interval}" was given.`);
+    }
+
     this.interval = interval;
     this.#overbought = overbought;
     this.#oversold = oversold;

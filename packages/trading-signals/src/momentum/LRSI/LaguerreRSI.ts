@@ -67,7 +67,7 @@ export class LaguerreRSI extends TrendIndicatorSeries<number, TradingSignals, La
   constructor({gamma = 0.5, signalThresholds: {overbought = 0.8, oversold = 0.2} = {}}: LaguerreRSIConfig = {}) {
     super();
 
-    if (gamma < 0 || gamma >= 1) {
+    if (!Number.isFinite(gamma) || gamma < 0 || gamma >= 1) {
       throw new Error(`The gamma has to be at least 0 and below 1, but "${gamma}" was given.`);
     }
 

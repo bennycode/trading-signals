@@ -79,6 +79,19 @@ export class Alligator extends TechnicalIndicator<AlligatorResult, HighLow<numbe
     teethShift = 5,
   }: AlligatorConfig = {}) {
     super();
+
+    // A line needs a real smoothing window and a real displacement, or its buffers never fill nor cap
+    for (const [name, value] of Object.entries({jawInterval, lipsInterval, teethInterval})) {
+      if (!Number.isFinite(value) || value < 1) {
+        throw new Error(`The ${name} has to be a positive number, but "${value}" was given.`);
+      }
+    }
+
+    for (const [name, value] of Object.entries({jawShift, lipsShift, teethShift})) {
+      if (!Number.isFinite(value) || value < 0) {
+        throw new Error(`The ${name} has to be zero or a positive number, but "${value}" was given.`);
+      }
+    }
     this.jawInterval = jawInterval;
     this.jawShift = jawShift;
     this.lipsInterval = lipsInterval;
