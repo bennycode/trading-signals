@@ -245,7 +245,6 @@ console.log(sma.highest?.toFixed(2)); // "53.33"
 
 ## Alternatives
 
-- [ta-lib (C)](https://github.com/TA-Lib/ta-lib/tree/main/src/ta_func)
 - [ta-math (TypeScript)](https://github.com/munrocket/ta-math)
 - [ta4j (Java)](https://github.com/ta4j/ta4j)
 - [Technical Analysis for Rust (Rust)](https://github.com/greyblake/ta-rs)
