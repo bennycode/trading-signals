@@ -3,6 +3,7 @@ export * from './ALMA/ALMA.js';
 export * from './AROON/Aroon.js';
 export * from './BREAKOUT_BAR_LOW/BreakoutBarLow.js';
 export * from './CE/ChandelierExit.js';
+export * from './CKS/ChandeKrollStop.js';
 export * from './DEMA/DEMA.js';
 export * from './DMA/DMA.js';
 export * from './DX/DX.js';

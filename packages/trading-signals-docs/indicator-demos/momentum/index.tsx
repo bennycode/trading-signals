@@ -1,4 +1,5 @@
 import {AC} from './AC.demo';
+import {AccumulativeSwingIndex} from './AccumulativeSwingIndex.demo';
 import {AO} from './AO.demo';
 import {APO} from './APO.demo';
 import {BOP} from './BOP.demo';
@@ -6,12 +7,16 @@ import {CCI} from './CCI.demo';
 import {CFO} from './CFO.demo';
 import {CG} from './CG.demo';
 import {CMO} from './CMO.demo';
+import {ConnorsRSI} from './ConnorsRSI.demo';
 import {CoppockCurve} from './CoppockCurve.demo';
+import {DeMarker} from './DeMarker.demo';
+import {DerivativeOscillator} from './DerivativeOscillator.demo';
 import {DisparityIndex} from './DisparityIndex.demo';
 import {DPO} from './DPO.demo';
 import {ElderRay} from './ElderRay.demo';
 import {ER} from './ER.demo';
 import {FisherTransform} from './FisherTransform.demo';
+import {IBS} from './IBS.demo';
 import {KST} from './KST.demo';
 import {MACD} from './MACD.demo';
 import {MFI} from './MFI.demo';
@@ -20,8 +25,10 @@ import {OBV} from './OBV.demo';
 import {PGO} from './PGO.demo';
 import {PMO} from './PMO.demo';
 import {PPO} from './PPO.demo';
+import {PremierStochastic} from './PremierStochastic.demo';
 import {Qstick} from './Qstick.demo';
 import {REI} from './REI.demo';
+import {RVGI} from './RelativeVigorIndex.demo';
 import {ROC} from './ROC.demo';
 import {RSI} from './RSI.demo';
 import {STC} from './STC.demo';
@@ -64,10 +71,17 @@ export const indicators: IndicatorConfig[] = [
   ElderRay,
   Qstick,
   CFO,
+  DeMarker,
+  DerivativeOscillator,
   DisparityIndex,
   DPO,
+  IBS,
+  AccumulativeSwingIndex,
+  ConnorsRSI,
   PGO,
   PMO,
+  PremierStochastic,
+  RVGI,
   STC,
   TRIX,
   TSI,
