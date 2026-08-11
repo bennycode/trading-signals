@@ -29,6 +29,12 @@ export class CFO extends ZeroCrossSeries {
 
   constructor(interval: number = 14) {
     super();
+
+    // A single point cannot define a trend line to project, so a forecast would be fabricated
+    if (!Number.isFinite(interval) || interval < 2) {
+      throw new Error(`The interval has to be at least 2, but "${interval}" was given.`);
+    }
+
     this.interval = interval;
   }
 
