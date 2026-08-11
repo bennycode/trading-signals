@@ -1,6 +1,6 @@
 import {EMA} from '../../trend/EMA/EMA.js';
 import type {HighLowClose} from '../../base/Candle.type.js';
-import {TechnicalIndicator, TradingSignal} from '../../base/Indicator.js';
+import {TradingSignal, TrendIndicator} from '../../base/Indicator.js';
 
 export type ElderRayResult = {
   /** Sellers' ability to drag the price below the consensus of value (negative readings show seller strength) */
@@ -25,9 +25,8 @@ export type ElderRayResult = {
  * @see https://school.stockcharts.com/doku.php?id=technical_indicators:elder_ray_index
  * @see https://www.investopedia.com/articles/trading/03/022603.asp
  */
-export class ElderRay extends TechnicalIndicator<ElderRayResult, HighLowClose<number>> {
+export class ElderRay extends TrendIndicator<ElderRayResult, HighLowClose<number>> {
   readonly #ema: EMA;
-  #previousResult?: ElderRayResult;
   public readonly interval: number;
 
   constructor(interval: number = 13) {
@@ -49,19 +48,16 @@ export class ElderRay extends TechnicalIndicator<ElderRayResult, HighLowClose<nu
 
     const ema = this.#ema.getResultOrThrow();
 
-    if (replace) {
-      this.result = this.#previousResult;
-    }
-
-    this.#previousResult = this.result;
-
-    return (this.result = {
-      bearPower: candle.low - ema,
-      bullPower: candle.high - ema,
-    });
+    return this.setResult(
+      {
+        bearPower: candle.low - ema,
+        bullPower: candle.high - ema,
+      },
+      replace
+    );
   }
 
-  protected calculateSignal(result?: ElderRayResult | null | undefined) {
+  protected calculateSignalState(result?: ElderRayResult | null | undefined) {
     const hasResult = result !== null && result !== undefined;
     const isBullish = hasResult && result.bullPower > 0 && result.bearPower > 0;
     const isBearish = hasResult && result.bullPower < 0 && result.bearPower < 0;
@@ -76,19 +72,5 @@ export class ElderRay extends TechnicalIndicator<ElderRayResult, HighLowClose<nu
       default:
         return TradingSignal.SIDEWAYS;
     }
-  }
-
-  getSignal(): {
-    state: (typeof TradingSignal)[keyof typeof TradingSignal];
-    hasChanged: boolean;
-  } {
-    const previousState = this.calculateSignal(this.#previousResult);
-    const state = this.calculateSignal(this.getResult());
-    const hasChanged = previousState !== state;
-
-    return {
-      hasChanged,
-      state,
-    };
   }
 }

@@ -1,7 +1,7 @@
 import {EMA} from '../../trend/EMA/EMA.js';
 import {SMA} from '../../trend/SMA/SMA.js';
 import type {HighLowClose} from '../../base/Candle.type.js';
-import {TechnicalIndicator, TradingSignal} from '../../base/Indicator.js';
+import {TradingSignal, TrendIndicator} from '../../base/Indicator.js';
 
 export type WaveTrendResult = {
   /** Fast wave line (WT1) */
@@ -36,7 +36,7 @@ export type WaveTrendConfig = {
  * @see https://www.tradingview.com/script/2KE8wTuF-Indicator-WaveTrend-Oscillator-WT/
  * @see https://medium.com/@samuel.mcculloch/lets-take-a-look-at-wavetrend-with-crosses-lazybear-s-indicator-2ece1737f72f
  */
-export class WaveTrend extends TechnicalIndicator<WaveTrendResult, HighLowClose<number>> {
+export class WaveTrend extends TrendIndicator<WaveTrendResult, HighLowClose<number>> {
   public readonly averageInterval: number;
   public readonly channelInterval: number;
   public readonly smoothingInterval: number;
@@ -44,7 +44,6 @@ export class WaveTrend extends TechnicalIndicator<WaveTrendResult, HighLowClose<
   readonly #deviation: EMA;
   readonly #wave: EMA;
   readonly #trigger: SMA;
-  #previousResult?: WaveTrendResult;
 
   constructor({averageInterval = 21, channelInterval = 10, smoothingInterval = 4}: WaveTrendConfig = {}) {
     super();
@@ -78,16 +77,10 @@ export class WaveTrend extends TechnicalIndicator<WaveTrendResult, HighLowClose<
       return null;
     }
 
-    if (replace) {
-      this.result = this.#previousResult;
-    }
-
-    this.#previousResult = this.result;
-
-    return (this.result = {wt1, wt2});
+    return this.setResult({wt1, wt2}, replace);
   }
 
-  protected calculateSignal(result?: WaveTrendResult | null | undefined) {
+  protected calculateSignalState(result?: WaveTrendResult | null | undefined) {
     const hasResult = result !== null && result !== undefined;
     const isBullish = hasResult && result.wt1 > result.wt2;
     const isBearish = hasResult && result.wt1 < result.wt2;
@@ -102,19 +95,5 @@ export class WaveTrend extends TechnicalIndicator<WaveTrendResult, HighLowClose<
       default:
         return TradingSignal.SIDEWAYS;
     }
-  }
-
-  getSignal(): {
-    state: (typeof TradingSignal)[keyof typeof TradingSignal];
-    hasChanged: boolean;
-  } {
-    const previousState = this.calculateSignal(this.#previousResult);
-    const state = this.calculateSignal(this.getResult());
-    const hasChanged = previousState !== state;
-
-    return {
-      hasChanged,
-      state,
-    };
   }
 }

@@ -1,5 +1,5 @@
 import type {OpenHighLowClose} from '../../base/Candle.type.js';
-import {TechnicalIndicator, TradingSignal} from '../../base/Indicator.js';
+import {TradingSignal, TrendIndicator} from '../../base/Indicator.js';
 import {pushUpdate} from '../../util/pushUpdate.js';
 
 export type RelativeVigorIndexResult = {
@@ -26,10 +26,9 @@ export type RelativeVigorIndexResult = {
  * @see https://www.tradingview.com/support/solutions/43000591593-relative-vigor-index/
  * @see https://www.investopedia.com/terms/r/relative_vigor_index.asp
  */
-export class RelativeVigorIndex extends TechnicalIndicator<RelativeVigorIndexResult, OpenHighLowClose<number>> {
+export class RelativeVigorIndex extends TrendIndicator<RelativeVigorIndexResult, OpenHighLowClose<number>> {
   public readonly interval: number;
   readonly #candles: OpenHighLowClose<number>[] = [];
-  #previousResult?: RelativeVigorIndexResult;
 
   constructor(interval: number = 10) {
     super();
@@ -77,19 +76,16 @@ export class RelativeVigorIndex extends TechnicalIndicator<RelativeVigorIndexRes
     const rvgi = vigorAt(newest);
     const signal = (rvgi + 2 * vigorAt(newest - 1) + 2 * vigorAt(newest - 2) + vigorAt(newest - 3)) / 6;
 
-    if (replace) {
-      this.result = this.#previousResult;
-    }
-
-    this.#previousResult = this.result;
-
-    return (this.result = {
-      rvgi,
-      signal,
-    });
+    return this.setResult(
+      {
+        rvgi,
+        signal,
+      },
+      replace
+    );
   }
 
-  protected calculateSignal(result?: RelativeVigorIndexResult | null | undefined) {
+  protected calculateSignalState(result?: RelativeVigorIndexResult | null | undefined) {
     const hasResult = result !== null && result !== undefined;
     const isBullish = hasResult && result.rvgi > result.signal;
     const isBearish = hasResult && result.rvgi < result.signal;
@@ -104,19 +100,5 @@ export class RelativeVigorIndex extends TechnicalIndicator<RelativeVigorIndexRes
       default:
         return TradingSignal.SIDEWAYS;
     }
-  }
-
-  getSignal(): {
-    state: (typeof TradingSignal)[keyof typeof TradingSignal];
-    hasChanged: boolean;
-  } {
-    const previousState = this.calculateSignal(this.#previousResult);
-    const state = this.calculateSignal(this.getResult());
-    const hasChanged = previousState !== state;
-
-    return {
-      hasChanged,
-      state,
-    };
   }
 }

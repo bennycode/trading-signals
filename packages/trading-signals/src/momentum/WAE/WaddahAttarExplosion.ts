@@ -1,5 +1,5 @@
 import type {HighLowClose} from '../../base/Candle.type.js';
-import {TechnicalIndicator, TradingSignal} from '../../base/Indicator.js';
+import {TradingSignal, TrendIndicator} from '../../base/Indicator.js';
 import {EMA} from '../../trend/EMA/EMA.js';
 import {ATR} from '../../volatility/ATR/ATR.js';
 import {BollingerBands} from '../../volatility/BBANDS/BollingerBands.js';
@@ -55,7 +55,7 @@ export type WaddahAttarExplosionConfig = {
  * @see https://www.tradingview.com/script/d9IjcYyS-Waddah-Attar-Explosion-V2-SHK/
  * @see https://www.tradingview.com/script/iu3kKWDI-Waddah-Attar-Explosion-LazyBear/
  */
-export class WaddahAttarExplosion extends TechnicalIndicator<WaddahAttarExplosionResult, HighLowClose<number>> {
+export class WaddahAttarExplosion extends TrendIndicator<WaddahAttarExplosionResult, HighLowClose<number>> {
   public readonly deadZoneMultiplier: number;
   public readonly sensitivity: number;
 
@@ -65,7 +65,6 @@ export class WaddahAttarExplosion extends TechnicalIndicator<WaddahAttarExplosio
 
   #currentMacd?: number;
   #previousMacd?: number;
-  #previousResult?: WaddahAttarExplosionResult;
 
   constructor({
     atrInterval = 100,
@@ -116,20 +115,17 @@ export class WaddahAttarExplosion extends TechnicalIndicator<WaddahAttarExplosio
       return null;
     }
 
-    if (replace) {
-      this.result = this.#previousResult;
-    }
-
-    this.#previousResult = this.result;
-
-    return (this.result = {
-      deadZone: atr * this.deadZoneMultiplier,
-      explosion: bands.upper - bands.lower,
-      trend: (macd.macd - previousMacd) * this.sensitivity,
-    });
+    return this.setResult(
+      {
+        deadZone: atr * this.deadZoneMultiplier,
+        explosion: bands.upper - bands.lower,
+        trend: (macd.macd - previousMacd) * this.sensitivity,
+      },
+      replace
+    );
   }
 
-  protected calculateSignal(result?: WaddahAttarExplosionResult | null | undefined) {
+  protected calculateSignalState(result?: WaddahAttarExplosionResult | null | undefined) {
     const hasResult = result !== null && result !== undefined;
     const isExploding = hasResult && result.explosion > result.deadZone;
     const isBullish = isExploding && result.trend > 0;
@@ -145,19 +141,5 @@ export class WaddahAttarExplosion extends TechnicalIndicator<WaddahAttarExplosio
       default:
         return TradingSignal.SIDEWAYS;
     }
-  }
-
-  getSignal(): {
-    state: (typeof TradingSignal)[keyof typeof TradingSignal];
-    hasChanged: boolean;
-  } {
-    const previousState = this.calculateSignal(this.#previousResult);
-    const state = this.calculateSignal(this.getResult());
-    const hasChanged = previousState !== state;
-
-    return {
-      hasChanged,
-      state,
-    };
   }
 }

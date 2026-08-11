@@ -1,5 +1,5 @@
 import type {HighLowClose} from '../../base/Candle.type.js';
-import {TechnicalIndicator, TradingSignal} from '../../base/Indicator.js';
+import {TradingSignal, TrendIndicator} from '../../base/Indicator.js';
 import {calculateLinearRegression} from '../../trend/LINREG/LinearRegression.js';
 import {getAverage} from '../../util/getAverage.js';
 import {pushUpdate} from '../../util/pushUpdate.js';
@@ -47,7 +47,7 @@ export type TTMSqueezeConfig = {
  * @see https://pastebin.com/UCpcX8d7
  * @see https://school.stockcharts.com/doku.php?id=technical_indicators:ttm_squeeze
  */
-export class TTMSqueeze extends TechnicalIndicator<TTMSqueezeResult, HighLowClose<number>> {
+export class TTMSqueeze extends TrendIndicator<TTMSqueezeResult, HighLowClose<number>> {
   public readonly bbInterval: number;
   public readonly bbMultiplier: number;
   public readonly kcInterval: number;
@@ -57,7 +57,6 @@ export class TTMSqueeze extends TechnicalIndicator<TTMSqueezeResult, HighLowClos
   readonly #keltner: KeltnerChannels;
   readonly #candles: HighLowClose<number>[] = [];
   readonly #anchoredDistances: number[] = [];
-  #previousResult?: TTMSqueezeResult;
 
   constructor({bbInterval = 20, bbMultiplier = 2, kcInterval = 20, kcMultiplier = 1.5}: TTMSqueezeConfig = {}) {
     super();
@@ -114,19 +113,16 @@ export class TTMSqueeze extends TechnicalIndicator<TTMSqueezeResult, HighLowClos
       return null;
     }
 
-    if (replace) {
-      this.result = this.#previousResult;
-    }
-
-    this.#previousResult = this.result;
-
-    return (this.result = {
-      isSqueezed: bollinger.upper < keltner.upper && bollinger.lower > keltner.lower,
-      momentum: this.#regressionValue(this.#anchoredDistances),
-    });
+    return this.setResult(
+      {
+        isSqueezed: bollinger.upper < keltner.upper && bollinger.lower > keltner.lower,
+        momentum: this.#regressionValue(this.#anchoredDistances),
+      },
+      replace
+    );
   }
 
-  protected calculateSignal(result?: TTMSqueezeResult | null | undefined) {
+  protected calculateSignalState(result?: TTMSqueezeResult | null | undefined) {
     const hasResult = result !== null && result !== undefined;
     const isBullish = hasResult && result.momentum > 0;
     const isBearish = hasResult && result.momentum < 0;
@@ -141,19 +137,5 @@ export class TTMSqueeze extends TechnicalIndicator<TTMSqueezeResult, HighLowClos
       default:
         return TradingSignal.SIDEWAYS;
     }
-  }
-
-  getSignal(): {
-    state: (typeof TradingSignal)[keyof typeof TradingSignal];
-    hasChanged: boolean;
-  } {
-    const previousState = this.calculateSignal(this.#previousResult);
-    const state = this.calculateSignal(this.getResult());
-    const hasChanged = previousState !== state;
-
-    return {
-      hasChanged,
-      state,
-    };
   }
 }
