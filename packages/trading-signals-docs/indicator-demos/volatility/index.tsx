@@ -6,8 +6,11 @@ import {DonchianChannels} from './DonchianChannels.demo';
 import {IQR} from './IQR.demo';
 import {KeltnerChannels} from './KeltnerChannels.demo';
 import {MAD} from './MAD.demo';
+import {MassIndex} from './MassIndex.demo';
 import {NATR} from './NATR.demo';
+import {ProjectionOscillator} from './ProjectionOscillator.demo';
 import {TR} from './TR.demo';
+import {UlcerIndex} from './UlcerIndex.demo';
 import type {IndicatorConfig} from '../../utils/types';
 
 export const indicators: IndicatorConfig[] = [
@@ -21,4 +24,7 @@ export const indicators: IndicatorConfig[] = [
   BollingerBandsWidth,
   IQR,
   MAD,
+  UlcerIndex,
+  ProjectionOscillator,
+  MassIndex,
 ];

@@ -3,6 +3,7 @@ import {AO} from './AO.demo';
 import {APO} from './APO.demo';
 import {BOP} from './BOP.demo';
 import {CCI} from './CCI.demo';
+import {CFO} from './CFO.demo';
 import {CG} from './CG.demo';
 import {CMO} from './CMO.demo';
 import {CoppockCurve} from './CoppockCurve.demo';
@@ -15,6 +16,7 @@ import {MFI} from './MFI.demo';
 import {MOM} from './MOM.demo';
 import {OBV} from './OBV.demo';
 import {PPO} from './PPO.demo';
+import {Qstick} from './Qstick.demo';
 import {REI} from './REI.demo';
 import {ROC} from './ROC.demo';
 import {RSI} from './RSI.demo';
@@ -53,6 +55,8 @@ export const indicators: IndicatorConfig[] = [
   CoppockCurve,
   KST,
   ElderRay,
+  Qstick,
+  CFO,
   TRIX,
   TSI,
 ];

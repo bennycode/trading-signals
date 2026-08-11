@@ -14,8 +14,17 @@ const renderStochastic = (config: IndicatorConfig, selectedCandles: Candle[]) =>
   const stoch = new StochasticOscillatorClass({dPeriod: 3, kPeriod: 14, kSlowingPeriod: 3});
   const chartDataK: ChartDataPoint[] = [];
   const chartDataD: ChartDataPoint[] = [];
+  const chartDataJ: ChartDataPoint[] = [];
   const priceData: PriceData[] = [];
-  const sampleValues: {period: number; date: string; close: number; k: ReactNode; d: ReactNode; signal: string}[] = [];
+  const sampleValues: {
+    period: number;
+    date: string;
+    close: number;
+    k: ReactNode;
+    d: ReactNode;
+    j: ReactNode;
+    signal: string;
+  }[] = [];
 
   selectedCandles.forEach((candle, idx) => {
     stoch.add({close: Number(candle.close), high: Number(candle.high), low: Number(candle.low)});
@@ -23,6 +32,7 @@ const renderStochastic = (config: IndicatorConfig, selectedCandles: Candle[]) =>
     const signal = stoch.getSignal();
     chartDataK.push({x: idx + 1, y: result?.stochK ?? null});
     chartDataD.push({x: idx + 1, y: result?.stochD ?? null});
+    chartDataJ.push({x: idx + 1, y: result?.stochJ ?? null});
 
     priceData.push(collectPriceData(candle, idx));
 
@@ -30,6 +40,7 @@ const renderStochastic = (config: IndicatorConfig, selectedCandles: Candle[]) =>
       close: Number(candle.close),
       d: result ? result.stochD.toFixed(2) : <NotAvailable />,
       date: formatDate(candle.openTimeInISO),
+      j: result ? result.stochJ.toFixed(2) : <NotAvailable />,
       k: result ? result.stochK.toFixed(2) : <NotAvailable />,
       period: idx + 1,
       signal: signal.state,
@@ -71,6 +82,13 @@ const renderStochastic = (config: IndicatorConfig, selectedCandles: Candle[]) =>
                 name: '%D',
                 type: 'line',
               },
+              {
+                color: '#38bdf8',
+                data: chartDataJ.map(point => [point.x, point.y]),
+                marker: {fillColor: '#38bdf8'},
+                name: '%J',
+                type: 'line',
+              },
             ],
             title: {
               style: {color: '#e2e8f0', fontSize: '16px', fontWeight: '600'},
@@ -110,6 +128,7 @@ const renderStochastic = (config: IndicatorConfig, selectedCandles: Candle[]) =>
                 <th className="text-left text-slate-300 py-2 px-3">Close</th>
                 <th className="text-left text-slate-300 py-2 px-3">%K</th>
                 <th className="text-left text-slate-300 py-2 px-3">%D</th>
+                <th className="text-left text-slate-300 py-2 px-3">%J</th>
                 <th className="text-left text-slate-300 py-2 px-3">Signal</th>
               </tr>
             </thead>
@@ -121,6 +140,7 @@ const renderStochastic = (config: IndicatorConfig, selectedCandles: Candle[]) =>
                   <td className="text-slate-300 py-2 px-3">${row.close.toFixed(2)}</td>
                   <td className="text-white font-mono py-2 px-3">{row.k}</td>
                   <td className="text-white font-mono py-2 px-3">{row.d}</td>
+                  <td className="text-white font-mono py-2 px-3">{row.j}</td>
                   <td className="py-2 px-3">
                     <SignalBadge signal={row.signal} />
                   </td>

@@ -7,6 +7,8 @@ import {pushUpdate} from '../../util/pushUpdate.js';
 export type StochasticResult = {
   /** Slow stochastic indicator (%D) */
   stochD: number;
+  /** Divergence indicator (%J): amplifies the spread between %K and %D and is not bound to the 0-100 range */
+  stochJ: number;
   /** Fast stochastic indicator (%K) */
   stochK: number;
 };
@@ -33,6 +35,9 @@ export type StochasticOscillatorConfig = {
  * The stochastic k (%k) values represent the relation between current close to the period's price range (high/low). It
  * is sometimes referred as the "fast" stochastic period (fastk). The stochastic d (%d) values represent a Moving
  * Average of the %k values. It is sometimes referred as the "slow" period.
+ *
+ * The stochastic j (%j) line completes the KDJ reading popular on Asian markets: it projects the divergence between
+ * %k and %d ahead (3 × %k - 2 × %d), so it turns before either line and overshoots the 0-100 range at price extremes.
  *
  * @see https://en.wikipedia.org/wiki/Stochastic_oscillator
  * @see https://www.investopedia.com/terms/s/stochasticoscillator.asp
@@ -79,7 +84,8 @@ export class StochasticOscillator extends TechnicalIndicator<StochasticResult, H
       // Prevent division by zero
       fastK = fastK / (divisor === 0 ? 1 : divisor);
       const stochK = this.#smoothK.update(fastK, replace); // (stoch_k, %k)
-      const stochD = stochK && this.#smoothD.update(stochK, replace); // (stoch_d, %d)
+      // A %k of exactly 0 is a legitimate reading (close pinned to the window low) and must still feed the %d smoothing
+      const stochD = stochK !== null ? this.#smoothD.update(stochK, replace) : null; // (stoch_d, %d)
 
       if (stochK !== null && stochD !== null) {
         if (replace) {
@@ -90,6 +96,7 @@ export class StochasticOscillator extends TechnicalIndicator<StochasticResult, H
 
         return (this.result = {
           stochD,
+          stochJ: 3 * stochK - 2 * stochD,
           stochK,
         });
       }

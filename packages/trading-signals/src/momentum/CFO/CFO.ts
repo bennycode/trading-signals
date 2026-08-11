@@ -1,0 +1,79 @@
+import {ZeroCrossSeries} from '../../base/Indicator.js';
+import {pushUpdate} from '../../util/pushUpdate.js';
+
+/**
+ * Chande Forecast Oscillator (CFO)
+ * Type: Momentum
+ *
+ * Developed by Tushar Chande, the oscillator measures how far the close deviates from the close its
+ * own trend had projected for that bar, expressed as a percentage of the close. The projection is a
+ * least-squares regression line fitted through the preceding closes of the interval and extended one
+ * bar ahead — the "time series forecast" (TSF). Tulip Indicators ships the same close-to-forecast
+ * comparison as its Forecast Oscillator.
+ *
+ * Interpretation:
+ * Positive readings mean price runs ahead of its own trend's projection (bullish pressure), negative
+ * readings mean price falls short of it (bearish pressure). A zero-line cross marks the moment price
+ * switches from lagging its trend to leading it, or vice versa. A close of zero makes the percentage
+ * deviation undefined, so the oscillator reports the neutral zero line instead — a worthless
+ * instrument exerts no directional pressure.
+ *
+ * @see https://tulipindicators.org/fosc
+ * @see https://www.fmlabs.com/reference/default.htm?url=ForecastOscillator.htm
+ */
+export class CFO extends ZeroCrossSeries {
+  readonly #closes: number[] = [];
+
+  public readonly interval: number;
+
+  constructor(interval: number = 14) {
+    super();
+    this.interval = interval;
+  }
+
+  override getRequiredInputs() {
+    return this.interval + 1;
+  }
+
+  /**
+   * Projects the straight line through the given closes one bar ahead (the "time series forecast").
+   * Computed locally instead of reusing the linear-regression indicator, because that one
+   * short-circuits windows climbing in unit steps with a projection that lands one bar short —
+   * which would fake pressure here on a perfectly trending price.
+   */
+  #forecast(window: readonly number[]) {
+    const n = window.length;
+    let sumY = 0;
+    let sumXY = 0;
+
+    for (let x = 0; x < n; x++) {
+      sumY += window[x];
+      sumXY += x * window[x];
+    }
+
+    const sumX = ((n - 1) * n) / 2;
+    const sumXX = ((n - 1) * n * (2 * n - 1)) / 6;
+    const slope = (n * sumXY - sumX * sumY) / (n * sumXX - sumX * sumX);
+    const intercept = (sumY - slope * sumX) / n;
+
+    return slope * n + intercept;
+  }
+
+  update(close: number, replace: boolean) {
+    pushUpdate({array: this.#closes, item: close, maxLength: this.getRequiredInputs(), replace: replace});
+
+    if (this.#closes.length < this.getRequiredInputs()) {
+      return null;
+    }
+
+    // A dead market never fabricates a directional signal
+    if (close === 0) {
+      return this.setResult(0, replace);
+    }
+
+    // The forecast for the newest bar is fitted over the closes that precede it
+    const forecast = this.#forecast(this.#closes.slice(0, this.interval));
+
+    return this.setResult((100 * (close - forecast)) / close, replace);
+  }
+}
