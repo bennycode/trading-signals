@@ -11,6 +11,33 @@ export type LinearRegressionResult = {
 };
 
 /**
+ * Least-squares line through the given values. The fitted line at the newest value is
+ * `slope * (values.length - 1) + intercept`; the returned prediction extends it one bar ahead.
+ */
+export const calculateLinearRegression = (values: readonly number[]): LinearRegressionResult => {
+  const n = values.length;
+  let sumY = 0;
+  let sumXY = 0;
+
+  for (let x = 0; x < n; x++) {
+    sumY += values[x];
+    sumXY += x * values[x];
+  }
+
+  const sumX = ((n - 1) * n) / 2;
+  const sumXX = ((n - 1) * n * (2 * n - 1)) / 6;
+  const slope = (n * sumXY - sumX * sumY) / (n * sumXX - sumX * sumX);
+  const intercept = (sumY - slope * sumX) / n;
+  const prediction = slope * n + intercept;
+
+  return {
+    intercept,
+    prediction,
+    slope,
+  };
+};
+
+/**
  * Linear Regression (LINREG)
  * Type: Trend
  *
@@ -36,28 +63,6 @@ export class LinearRegression extends TechnicalIndicator<LinearRegressionResult,
     return this.interval;
   }
 
-  #calculateRegression(prices: number[]): LinearRegressionResult {
-    const n = prices.length;
-    const sumX = ((n - 1) * n) / 2; // sum of 0..n-1
-    const sumY = prices.reduce((a, b) => a + b, 0);
-    let sumXY = 0;
-    let sumXX = 0;
-    for (let i = 0; i < n; i++) {
-      sumXY += i * prices[i];
-      sumXX += i * i;
-    }
-
-    const slope = (n * sumXY - sumX * sumY) / (n * sumXX - sumX * sumX);
-    const intercept = (sumY - slope * sumX) / n;
-    const prediction = slope * n + intercept;
-
-    return {
-      intercept,
-      prediction,
-      slope,
-    };
-  }
-
   update(price: number, replace: boolean): LinearRegressionResult | null {
     pushUpdate({array: this.prices, item: price, maxLength: this.interval, replace: replace});
 
@@ -65,7 +70,7 @@ export class LinearRegression extends TechnicalIndicator<LinearRegressionResult,
       return null;
     }
 
-    return (this.result = this.#calculateRegression(this.prices));
+    return (this.result = calculateLinearRegression(this.prices));
   }
 
   override get isStable() {

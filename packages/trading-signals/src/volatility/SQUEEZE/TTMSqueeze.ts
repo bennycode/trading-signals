@@ -1,5 +1,6 @@
 import type {HighLowClose} from '../../base/Candle.type.js';
 import {TechnicalIndicator, TradingSignal} from '../../base/Indicator.js';
+import {calculateLinearRegression} from '../../trend/LINREG/LinearRegression.js';
 import {getAverage} from '../../util/getAverage.js';
 import {pushUpdate} from '../../util/pushUpdate.js';
 import {BollingerBands} from '../BBANDS/BollingerBands.js';
@@ -79,28 +80,14 @@ export class TTMSqueeze extends TechnicalIndicator<TTMSqueezeResult, HighLowClos
   }
 
   /**
-   * Fits a least-squares line through the anchored distances and reads it at the newest candle.
-   * Computed locally instead of reusing the linear-regression indicator, because that one projects
-   * the line one candle ahead and short-circuits windows climbing in unit steps with a projection
-   * that lands one candle short — either quirk would distort the histogram of a steadily trending
+   * Fits a least-squares line through the anchored distances and reads it at the newest candle —
+   * not the one-bar-ahead forecast, which would overstate the momentum of a steadily trending
    * market.
    */
   #regressionValue(window: readonly number[]) {
-    const n = window.length;
-    let sumY = 0;
-    let sumXY = 0;
+    const {intercept, slope} = calculateLinearRegression(window);
 
-    for (let x = 0; x < n; x++) {
-      sumY += window[x];
-      sumXY += x * window[x];
-    }
-
-    const sumX = ((n - 1) * n) / 2;
-    const sumXX = ((n - 1) * n * (2 * n - 1)) / 6;
-    const slope = (n * sumXY - sumX * sumY) / (n * sumXX - sumX * sumX);
-    const intercept = (sumY - slope * sumX) / n;
-
-    return slope * (n - 1) + intercept;
+    return slope * (window.length - 1) + intercept;
   }
 
   update(candle: HighLowClose<number>, replace: boolean) {
