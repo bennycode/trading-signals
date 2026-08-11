@@ -29,6 +29,7 @@ export * from './PSL/PSL.js';
 export * from './PSO/PremierStochastic.js';
 export * from './QQE/QQE.js';
 export * from './QSTICK/Qstick.js';
+export * from './RCI/RCI.js';
 export * from './REI/REI.js';
 export * from './ROC/ROC.js';
 export * from './RSI/RSI.js';

@@ -30,6 +30,7 @@ import {PremierStochastic} from './PremierStochastic.demo';
 import {PSL} from './PSL.demo';
 import {QQE} from './QQE.demo';
 import {Qstick} from './Qstick.demo';
+import {RCI} from './RCI.demo';
 import {REI} from './REI.demo';
 import {RVGI} from './RelativeVigorIndex.demo';
 import {ROC} from './ROC.demo';
@@ -88,6 +89,7 @@ export const indicators: IndicatorConfig[] = [
   PremierStochastic,
   PSL,
   QQE,
+  RCI,
   RVGI,
   SMI,
   STC,
