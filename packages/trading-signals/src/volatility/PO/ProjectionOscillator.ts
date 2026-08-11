@@ -1,5 +1,5 @@
 import type {HighLowClose} from '../../base/Candle.type.js';
-import {TradingSignal, TrendIndicatorSeries} from '../../base/Indicator.js';
+import {ThresholdCrossSeries} from '../../base/Indicator.js';
 import type {SignalThresholds} from '../../base/SignalThresholds.type.js';
 import {pushUpdate} from '../../util/pushUpdate.js';
 
@@ -29,17 +29,15 @@ export type ProjectionOscillatorConfig = {
  *
  * @see https://www.fmlabs.com/reference/default.htm?url=ProjectionOscillator.htm
  */
-export class ProjectionOscillator extends TrendIndicatorSeries<HighLowClose<number>> {
+export class ProjectionOscillator extends ThresholdCrossSeries<HighLowClose<number>> {
   readonly #candles: HighLowClose<number>[] = [];
-  readonly #overbought: number;
-  readonly #oversold: number;
   public readonly interval: number;
 
   constructor({
     interval = 14,
     signalThresholds: {overbought = 80, oversold = 20} = {},
   }: ProjectionOscillatorConfig = {}) {
-    super();
+    super({overbought, oversold});
 
     // A regression slope needs at least two points; a single bar has no slope to project along
     if (interval < 2) {
@@ -47,8 +45,6 @@ export class ProjectionOscillator extends TrendIndicatorSeries<HighLowClose<numb
     }
 
     this.interval = interval;
-    this.#overbought = overbought;
-    this.#oversold = oversold;
   }
 
   override getRequiredInputs() {
@@ -91,22 +87,5 @@ export class ProjectionOscillator extends TrendIndicatorSeries<HighLowClose<numb
     }
 
     return this.setResult((100 * (candle.close - lower)) / (upper - lower), replace);
-  }
-
-  protected calculateSignalState(result: number | null | undefined) {
-    const hasResult = result !== null && result !== undefined;
-    const isOversold = hasResult && result <= this.#oversold;
-    const isOverbought = hasResult && result >= this.#overbought;
-
-    switch (true) {
-      case !hasResult:
-        return TradingSignal.UNKNOWN;
-      case isOversold:
-        return TradingSignal.BEARISH;
-      case isOverbought:
-        return TradingSignal.BULLISH;
-      default:
-        return TradingSignal.SIDEWAYS;
-    }
   }
 }

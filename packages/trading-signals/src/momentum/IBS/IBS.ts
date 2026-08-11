@@ -1,5 +1,5 @@
 import type {HighLowClose} from '../../base/Candle.type.js';
-import {TradingSignal, TrendIndicatorSeries} from '../../base/Indicator.js';
+import {ThresholdCrossSeries} from '../../base/Indicator.js';
 import type {SignalThresholds} from '../../base/SignalThresholds.type.js';
 
 /**
@@ -21,14 +21,9 @@ import type {SignalThresholds} from '../../base/SignalThresholds.type.js';
  * @see https://github.com/QuantConnect/Lean/blob/master/Indicators/InternalBarStrength.cs
  * @see https://www.naaim.org/wp-content/uploads/2014/04/00V_Alexander_Pagonidis_The-IBS-Effect-Mean-Reversion-in-Equity-ETFs-1.pdf
  */
-export class IBS extends TrendIndicatorSeries<HighLowClose<number>> {
-  readonly #overbought: number;
-  readonly #oversold: number;
-
+export class IBS extends ThresholdCrossSeries<HighLowClose<number>> {
   constructor({overbought = 0.8, oversold = 0.2}: SignalThresholds = {}) {
-    super();
-    this.#overbought = overbought;
-    this.#oversold = oversold;
+    super({overbought, oversold});
   }
 
   override getRequiredInputs() {
@@ -43,22 +38,5 @@ export class IBS extends TrendIndicatorSeries<HighLowClose<number>> {
     }
 
     return this.setResult((close - low) / range, replace);
-  }
-
-  protected calculateSignalState(result: number | null | undefined) {
-    const hasResult = result !== null && result !== undefined;
-    const isOversold = hasResult && result <= this.#oversold;
-    const isOverbought = hasResult && result >= this.#overbought;
-
-    switch (true) {
-      case !hasResult:
-        return TradingSignal.UNKNOWN;
-      case isOversold:
-        return TradingSignal.BEARISH;
-      case isOverbought:
-        return TradingSignal.BULLISH;
-      default:
-        return TradingSignal.SIDEWAYS;
-    }
   }
 }

@@ -1,5 +1,5 @@
 import type {HighLow} from '../../base/Candle.type.js';
-import {TradingSignal, TrendIndicatorSeries} from '../../base/Indicator.js';
+import {ThresholdCrossSeries} from '../../base/Indicator.js';
 import type {SignalThresholds} from '../../base/SignalThresholds.type.js';
 import {pushUpdate} from '../../util/pushUpdate.js';
 
@@ -27,17 +27,13 @@ export type DeMarkerConfig = {
  * @see https://www.metatrader5.com/en/terminal/help/indicators/oscillators/demarker
  * @see https://www.investopedia.com/terms/d/demarkerindicator.asp
  */
-export class DeMarker extends TrendIndicatorSeries<HighLow<number>> {
+export class DeMarker extends ThresholdCrossSeries<HighLow<number>> {
   readonly #candles: HighLow<number>[] = [];
-  readonly #overbought: number;
-  readonly #oversold: number;
   public readonly interval: number;
 
   constructor({interval = 14, signalThresholds: {overbought = 0.7, oversold = 0.3} = {}}: DeMarkerConfig = {}) {
-    super();
+    super({overbought, oversold});
     this.interval = interval;
-    this.#overbought = overbought;
-    this.#oversold = oversold;
   }
 
   override getRequiredInputs() {
@@ -75,22 +71,5 @@ export class DeMarker extends TrendIndicatorSeries<HighLow<number>> {
     }
 
     return this.setResult(deMaxSum / totalPressure, replace);
-  }
-
-  protected calculateSignalState(result?: number | null | undefined) {
-    const hasResult = result !== null && result !== undefined;
-    const isOverbought = hasResult && result >= this.#overbought;
-    const isOversold = hasResult && result <= this.#oversold;
-
-    switch (true) {
-      case !hasResult:
-        return TradingSignal.UNKNOWN;
-      case isOverbought:
-        return TradingSignal.BULLISH;
-      case isOversold:
-        return TradingSignal.BEARISH;
-      default:
-        return TradingSignal.SIDEWAYS;
-    }
   }
 }

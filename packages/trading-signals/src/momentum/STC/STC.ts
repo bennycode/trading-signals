@@ -1,4 +1,4 @@
-import {TradingSignal, TrendIndicatorSeries} from '../../base/Indicator.js';
+import {ThresholdCrossSeries} from '../../base/Indicator.js';
 import type {SignalThresholds} from '../../base/SignalThresholds.type.js';
 import {EMA} from '../../trend/EMA/EMA.js';
 import {pushUpdate} from '../../util/pushUpdate.js';
@@ -51,15 +51,13 @@ function stochasticPosition(window: readonly number[]) {
  *
  * @see https://www.investopedia.com/articles/forex/10/schaff-trend-cycle-indicator.asp
  */
-export class STC extends TrendIndicatorSeries {
+export class STC extends ThresholdCrossSeries {
   readonly #fastEma: EMA;
   readonly #slowEma: EMA;
   readonly #dSmoothing: EMA;
   readonly #stcSmoothing: EMA;
   readonly #macdWindow: number[] = [];
   readonly #dWindow: number[] = [];
-  readonly #overbought: number;
-  readonly #oversold: number;
 
   public readonly cycleInterval: number;
   public readonly fastInterval: number;
@@ -71,7 +69,7 @@ export class STC extends TrendIndicatorSeries {
     signalThresholds: {overbought = 75, oversold = 25} = {},
     slowInterval = 50,
   }: STCConfig = {}) {
-    super();
+    super({overbought, oversold});
 
     // A window of a single reading offers no range to locate that reading in
     if (cycleInterval < 2) {
@@ -90,8 +88,6 @@ export class STC extends TrendIndicatorSeries {
      */
     this.#dSmoothing = new EMA(3);
     this.#stcSmoothing = new EMA(3);
-    this.#overbought = overbought;
-    this.#oversold = oversold;
   }
 
   override getRequiredInputs() {
@@ -124,22 +120,5 @@ export class STC extends TrendIndicatorSeries {
     }
 
     return this.setResult(this.#stcSmoothing.update(stochasticPosition(this.#dWindow), replace), replace);
-  }
-
-  protected calculateSignalState(result: number | null | undefined) {
-    const hasResult = result !== null && result !== undefined;
-    const isOversold = hasResult && result <= this.#oversold;
-    const isOverbought = hasResult && result >= this.#overbought;
-
-    switch (true) {
-      case !hasResult:
-        return TradingSignal.UNKNOWN;
-      case isOversold:
-        return TradingSignal.BEARISH;
-      case isOverbought:
-        return TradingSignal.BULLISH;
-      default:
-        return TradingSignal.SIDEWAYS;
-    }
   }
 }

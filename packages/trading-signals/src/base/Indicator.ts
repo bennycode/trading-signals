@@ -1,4 +1,5 @@
 import {NotEnoughDataError} from '../error/NotEnoughDataError.js';
+import type {SignalThresholds} from './SignalThresholds.type.js';
 
 type Nullable<Result> = Result | null;
 
@@ -181,6 +182,42 @@ export abstract class ZeroCrossSeries<Input = number> extends TrendIndicatorSeri
 
     if (result < 0) {
       return TradingSignal.BEARISH;
+    }
+
+    return TradingSignal.SIDEWAYS;
+  }
+}
+
+/**
+ * Threshold oscillators share one reading of their overbought/oversold bands: a reading inside the
+ * overbought band means bullish pressure, one inside the oversold band bearish pressure. The
+ * reported direction is the pressure itself, not trade advice. Oscillators that read their bands
+ * differently implement their own signal.
+ */
+export abstract class ThresholdCrossSeries<
+  Input = number,
+  State extends object = Record<string, never>,
+> extends TrendIndicatorSeries<Input, TradingSignals, State> {
+  readonly #overbought: number;
+  readonly #oversold: number;
+
+  constructor({overbought, oversold}: Required<SignalThresholds>) {
+    super();
+    this.#overbought = overbought;
+    this.#oversold = oversold;
+  }
+
+  protected calculateSignalState(result?: number | null | undefined) {
+    if (result === null || result === undefined) {
+      return TradingSignal.UNKNOWN;
+    }
+
+    if (result <= this.#oversold) {
+      return TradingSignal.BEARISH;
+    }
+
+    if (result >= this.#overbought) {
+      return TradingSignal.BULLISH;
     }
 
     return TradingSignal.SIDEWAYS;

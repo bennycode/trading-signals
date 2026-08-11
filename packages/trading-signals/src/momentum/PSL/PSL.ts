@@ -1,4 +1,4 @@
-import {TradingSignal, TrendIndicatorSeries} from '../../base/Indicator.js';
+import {ThresholdCrossSeries} from '../../base/Indicator.js';
 import type {SignalThresholds} from '../../base/SignalThresholds.type.js';
 import {pushUpdate} from '../../util/pushUpdate.js';
 
@@ -30,17 +30,13 @@ export type PSLConfig = {
  * @see https://www.moomoo.com/us/support/topic3_814
  * @see https://www.quantshare.com/item-851-psychological-line
  */
-export class PSL extends TrendIndicatorSeries {
+export class PSL extends ThresholdCrossSeries {
   readonly #closes: number[] = [];
-  readonly #overbought: number;
-  readonly #oversold: number;
   public readonly interval: number;
 
   constructor({interval = 12, signalThresholds: {overbought = 75, oversold = 25} = {}}: PSLConfig = {}) {
-    super();
+    super({overbought, oversold});
     this.interval = interval;
-    this.#overbought = overbought;
-    this.#oversold = oversold;
   }
 
   override getRequiredInputs() {
@@ -63,22 +59,5 @@ export class PSL extends TrendIndicatorSeries {
     }
 
     return this.setResult((100 * risingPeriods) / this.interval, replace);
-  }
-
-  protected calculateSignalState(result: number | null | undefined) {
-    const hasResult = result !== null && result !== undefined;
-    const isOversold = hasResult && result <= this.#oversold;
-    const isOverbought = hasResult && result >= this.#overbought;
-
-    switch (true) {
-      case !hasResult:
-        return TradingSignal.UNKNOWN;
-      case isOversold:
-        return TradingSignal.BEARISH;
-      case isOverbought:
-        return TradingSignal.BULLISH;
-      default:
-        return TradingSignal.SIDEWAYS;
-    }
   }
 }

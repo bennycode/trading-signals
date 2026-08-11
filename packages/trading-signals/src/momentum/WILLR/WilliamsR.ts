@@ -1,4 +1,4 @@
-import {TradingSignal, TrendIndicatorSeries} from '../../base/Indicator.js';
+import {ThresholdCrossSeries} from '../../base/Indicator.js';
 import type {HighLowClose} from '../../base/Candle.type.js';
 import type {SignalThresholds} from '../../base/SignalThresholds.type.js';
 import {pushUpdate} from '../../util/pushUpdate.js';
@@ -19,18 +19,14 @@ import {pushUpdate} from '../../util/pushUpdate.js';
  * @see https://en.wikipedia.org/wiki/Williams_%25R
  * @see https://www.investopedia.com/terms/w/williamsr.asp
  */
-export class WilliamsR extends TrendIndicatorSeries<HighLowClose<number>> {
+export class WilliamsR extends ThresholdCrossSeries<HighLowClose<number>> {
   public readonly candles: HighLowClose<number>[] = [];
 
   public readonly interval: number;
-  readonly #overbought: number;
-  readonly #oversold: number;
 
   constructor(interval: number, {overbought = -20, oversold = -80}: SignalThresholds = {}) {
-    super();
+    super({overbought, oversold});
     this.interval = interval;
-    this.#overbought = overbought;
-    this.#oversold = oversold;
   }
 
   override getRequiredInputs() {
@@ -65,22 +61,5 @@ export class WilliamsR extends TrendIndicatorSeries<HighLowClose<number>> {
     }
 
     return null;
-  }
-
-  protected calculateSignalState(result?: number | null | undefined) {
-    const hasResult = result !== null && result !== undefined;
-    const isOverbought = hasResult && result >= this.#overbought;
-    const isOversold = hasResult && result <= this.#oversold;
-
-    switch (true) {
-      case !hasResult:
-        return TradingSignal.UNKNOWN;
-      case isOverbought:
-        return TradingSignal.BULLISH;
-      case isOversold:
-        return TradingSignal.BEARISH;
-      default:
-        return TradingSignal.SIDEWAYS;
-    }
   }
 }

@@ -1,5 +1,5 @@
 import type {HighLowClose} from '../../base/Candle.type.js';
-import {TradingSignal, TrendIndicatorSeries} from '../../base/Indicator.js';
+import {ThresholdCrossSeries} from '../../base/Indicator.js';
 import type {SignalThresholds} from '../../base/SignalThresholds.type.js';
 import {EMA} from '../../trend/EMA/EMA.js';
 import {pushUpdate} from '../../util/pushUpdate.js';
@@ -36,14 +36,12 @@ export type SMIConfig = {
  * @see https://www.tradingview.com/support/solutions/43000707882-stochastic-momentum-index-smi/
  * @see https://www.fmlabs.com/reference/SMI.htm
  */
-export class SMI extends TrendIndicatorSeries<HighLowClose<number>> {
+export class SMI extends ThresholdCrossSeries<HighLowClose<number>> {
   readonly #candles: HighLowClose<number>[] = [];
   readonly #smoothedDistance: EMA;
   readonly #smoothedRange: EMA;
   readonly #doubleSmoothedDistance: EMA;
   readonly #doubleSmoothedRange: EMA;
-  readonly #overbought: number;
-  readonly #oversold: number;
 
   public readonly interval: number;
   public readonly smooth1: number;
@@ -53,7 +51,7 @@ export class SMI extends TrendIndicatorSeries<HighLowClose<number>> {
     {interval = 10, smooth1 = 3, smooth2 = 3}: SMIConfig = {},
     {overbought = 40, oversold = -40}: SignalThresholds = {}
   ) {
-    super();
+    super({overbought, oversold});
     this.interval = interval;
     this.smooth1 = smooth1;
     this.smooth2 = smooth2;
@@ -61,8 +59,6 @@ export class SMI extends TrendIndicatorSeries<HighLowClose<number>> {
     this.#smoothedRange = new EMA(smooth1);
     this.#doubleSmoothedDistance = new EMA(smooth2);
     this.#doubleSmoothedRange = new EMA(smooth2);
-    this.#overbought = overbought;
-    this.#oversold = oversold;
   }
 
   override getRequiredInputs() {
@@ -96,22 +92,5 @@ export class SMI extends TrendIndicatorSeries<HighLowClose<number>> {
     }
 
     return null;
-  }
-
-  protected calculateSignalState(result: number | null | undefined) {
-    const hasResult = result !== null && result !== undefined;
-    const isOversold = hasResult && result <= this.#oversold;
-    const isOverbought = hasResult && result >= this.#overbought;
-
-    switch (true) {
-      case !hasResult:
-        return TradingSignal.UNKNOWN;
-      case isOversold:
-        return TradingSignal.BEARISH;
-      case isOverbought:
-        return TradingSignal.BULLISH;
-      default:
-        return TradingSignal.SIDEWAYS;
-    }
   }
 }
