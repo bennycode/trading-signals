@@ -35,6 +35,7 @@ All indicators can be updated over time by streaming data (prices or [candles](h
 1. Awesome Oscillator (AO)
 1. Balance of Power (BOP)
 1. Bollinger Bands (BBANDS)
+1. Bollinger Bands %B (PB)
 1. Bollinger Bands Width (BBW)
 1. Center of Gravity (CG)
 1. Chaikin Money Flow (CMF)
@@ -44,6 +45,7 @@ All indicators can be updated over time by streaming data (prices or [candles](h
 1. Chandelier Exit (CE)
 1. Commodity Channel Index (CCI)
 1. Coppock Curve (COPPOCK)
+1. Detrended Price Oscillator (DPO)
 1. Directional Movement Index (DMI / DX)
 1. Donchian Channels (DC)
 1. Double Exponential Moving Average (DEMA)
@@ -55,6 +57,7 @@ All indicators can be updated over time by streaming data (prices or [candles](h
 1. Fisher Transform (FISHER)
 1. Force Index (FI)
 1. Fractal Adaptive Moving Average (FRAMA)
+1. Gopalakrishnan Range Index (GAPO)
 1. Hull Moving Average (HMA)
 1. Ichimoku Cloud (ICHIMOKU)
 1. Interquartile Range (IQR)
@@ -75,6 +78,8 @@ All indicators can be updated over time by streaming data (prices or [candles](h
 1. Percentage Price Oscillator (PPO)
 1. Percentage Volume Oscillator (PVO)
 1. Positive Volume Index (PVI)
+1. Pretty Good Oscillator (PGO)
+1. Price Momentum Oscillator (PMO)
 1. Price Volume Trend (PVT)
 1. Projection Oscillator (PO)
 1. Qstick (QSTICK)
@@ -205,8 +210,6 @@ console.log(sma.highest?.toFixed(2)); // "53.33"
 
 ## Alternatives
 
-- [Cloud9Trader Indicators (JavaScript)](https://github.com/Cloud9Trader/TechnicalIndicators)
-- [Crypto Trading Hub Indicators (TypeScript)](https://github.com/anandanand84/technicalindicators)
 - [Highcharts Indicators (TypeScript)](https://github.com/highcharts/highcharts/tree/v12.3.0/ts/Stock/Indicators)
 - [Jesse Trading Bot Indicators (Python)](https://docs.jesse.trade/docs/indicators/reference.html)
 - [LEAN Indicators (C#)](https://github.com/QuantConnect/Lean/tree/master/Indicators)

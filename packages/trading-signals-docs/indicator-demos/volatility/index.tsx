@@ -3,11 +3,13 @@ import {ATR} from './ATR.demo';
 import {BollingerBands} from './BollingerBands.demo';
 import {BollingerBandsWidth} from './BollingerBandsWidth.demo';
 import {DonchianChannels} from './DonchianChannels.demo';
+import {GAPO} from './GAPO.demo';
 import {IQR} from './IQR.demo';
 import {KeltnerChannels} from './KeltnerChannels.demo';
 import {MAD} from './MAD.demo';
 import {MassIndex} from './MassIndex.demo';
 import {NATR} from './NATR.demo';
+import {PercentB} from './PercentB.demo';
 import {ProjectionOscillator} from './ProjectionOscillator.demo';
 import {TR} from './TR.demo';
 import {UlcerIndex} from './UlcerIndex.demo';
@@ -22,9 +24,11 @@ export const indicators: IndicatorConfig[] = [
   NATR,
   TR,
   BollingerBandsWidth,
+  PercentB,
   IQR,
   MAD,
   UlcerIndex,
   ProjectionOscillator,
   MassIndex,
+  GAPO,
 ];

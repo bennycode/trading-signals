@@ -7,6 +7,7 @@ import {CFO} from './CFO.demo';
 import {CG} from './CG.demo';
 import {CMO} from './CMO.demo';
 import {CoppockCurve} from './CoppockCurve.demo';
+import {DPO} from './DPO.demo';
 import {ElderRay} from './ElderRay.demo';
 import {ER} from './ER.demo';
 import {FisherTransform} from './FisherTransform.demo';
@@ -15,6 +16,8 @@ import {MACD} from './MACD.demo';
 import {MFI} from './MFI.demo';
 import {MOM} from './MOM.demo';
 import {OBV} from './OBV.demo';
+import {PGO} from './PGO.demo';
+import {PMO} from './PMO.demo';
 import {PPO} from './PPO.demo';
 import {Qstick} from './Qstick.demo';
 import {REI} from './REI.demo';
@@ -57,6 +60,9 @@ export const indicators: IndicatorConfig[] = [
   ElderRay,
   Qstick,
   CFO,
+  DPO,
+  PGO,
+  PMO,
   TRIX,
   TSI,
 ];
