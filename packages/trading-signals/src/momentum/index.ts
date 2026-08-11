@@ -13,6 +13,7 @@ export * from './DPO/DPO.js';
 export * from './ER/ER.js';
 export * from './ERI/ElderRay.js';
 export * from './FISHER/FisherTransform.js';
+export * from './IBS/IBS.js';
 export * from './KST/KST.js';
 export * from './MACD/MACD.js';
 export * from './MFI/MFI.js';
