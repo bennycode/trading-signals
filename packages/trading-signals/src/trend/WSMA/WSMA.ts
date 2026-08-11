@@ -35,13 +35,20 @@ export class WSMA extends IndicatorSeries {
 
   update(price: number, replace: boolean) {
     const sma = this.#indicator.update(price, replace);
-    if (replace && this.previousResult !== undefined) {
-      const smoothed = (price - this.previousResult) * this.#smoothingFactor;
-      return this.setResult(smoothed + this.previousResult, replace);
-    } else if (!replace && this.result !== undefined) {
-      const smoothed = (price - this.result) * this.#smoothingFactor;
-      return this.setResult(smoothed + this.result, replace);
-    } else if (this.result === undefined && sma !== null) {
+
+    /*
+     * The smoothing continues from the reading that existed before the incoming price. A replacement
+     * of the price that completed the first window finds no such reading: that price produced the
+     * seed, so the fresh average of the reshaped window re-seeds the smoothing.
+     */
+    const previous = replace ? this.previousResult : this.result;
+
+    if (previous !== undefined) {
+      const smoothed = (price - previous) * this.#smoothingFactor;
+      return this.setResult(smoothed + previous, replace);
+    }
+
+    if (sma !== null) {
       return this.setResult(sma, replace);
     }
 

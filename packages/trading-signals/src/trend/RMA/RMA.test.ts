@@ -20,6 +20,21 @@ describe('RMA', () => {
   ] as const;
 
   describe('replace', () => {
+    it('re-seeds the average when the very first price is replaced', () => {
+      const interval = 5;
+      const rma = new RMA(interval);
+      const rmaWithReplace = new RMA(interval);
+      const inputPrices = [11, 12, 13, 14, 15, 16] as const;
+
+      rma.updates(inputPrices, false);
+
+      rmaWithReplace.add(90210);
+      rmaWithReplace.replace(inputPrices[0]);
+      rmaWithReplace.updates(inputPrices.slice(1), false);
+
+      expect(rmaWithReplace.getResultOrThrow()).toBe(rma.getResultOrThrow());
+    });
+
     it('replaces the most recently added value', () => {
       const interval = 5;
       const rma = new RMA(interval);

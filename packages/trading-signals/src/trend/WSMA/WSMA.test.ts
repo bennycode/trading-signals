@@ -3,6 +3,20 @@ import {WSMA} from './WSMA.js';
 
 describe('WSMA', () => {
   describe('replace', () => {
+    it('re-seeds the average when the price that completed the first window is replaced', () => {
+      const interval = 3;
+      const wsma = new WSMA(interval);
+      const wsmaWithReplace = new WSMA(interval);
+
+      wsma.updates([11, 12, 13, 14], false);
+
+      wsmaWithReplace.updates([11, 12, 5000], false);
+      wsmaWithReplace.replace(13);
+      wsmaWithReplace.add(14);
+
+      expect(wsmaWithReplace.getResultOrThrow()).toBe(wsma.getResultOrThrow());
+    });
+
     it('replaces the most recently added value', () => {
       const interval = 3;
 
