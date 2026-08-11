@@ -1,11 +1,16 @@
 import {ADX} from './ADX.demo';
+import {ALMA} from './ALMA.demo';
 import {Aroon} from './Aroon.demo';
 import {BreakoutBarLow} from './BreakoutBarLow.demo';
 import {ChandelierExit} from './ChandelierExit.demo';
 import {DEMA} from './DEMA.demo';
+import {FRAMA} from './FRAMA.demo';
 import {HMA} from './HMA.demo';
 import {KAMA} from './KAMA.demo';
+import {T3} from './T3.demo';
 import {TEMA} from './TEMA.demo';
+import {TRIMA} from './TRIMA.demo';
+import {VIDYA} from './VIDYA.demo';
 import {DMA} from './DMA.demo';
 import {DX} from './DX.demo';
 import {EMA} from './EMA.demo';
@@ -23,6 +28,7 @@ import {VWAP} from './VWAP.demo';
 import {WMA} from './WMA.demo';
 import {WSMA} from './WSMA.demo';
 import {ZigZag} from './ZigZag.demo';
+import {ZLEMA} from './ZLEMA.demo';
 import type {IndicatorConfig} from '../../utils/types';
 
 export const indicators: IndicatorConfig[] = [
@@ -30,8 +36,14 @@ export const indicators: IndicatorConfig[] = [
   EMA,
   DEMA,
   TEMA,
+  T3,
   HMA,
   KAMA,
+  TRIMA,
+  ALMA,
+  ZLEMA,
+  VIDYA,
+  FRAMA,
   Aroon,
   ChandelierExit,
   WMA,
