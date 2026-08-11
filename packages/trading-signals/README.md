@@ -155,35 +155,35 @@ All indicators can be updated over time by streaming data (prices or [candles](h
 
 | Utility | Description |
 | --- | --- |
-| `addPercentageChange` | Applies a percentage change to a base value (adding 25 to 100 yields 125). Useful for position sizing and target math. |
+| `addPercentageChange` | Applies a percentage change to a base value (adding 25 to 100 yields 125). |
 | `getAverage` | Mean of a series. |
 | `getAveragePrice` | Collapses a candle into the average of its four marks (OHLC/4). |
-| `getCAGR` | Compound Annual Growth Rate: the constant yearly return between two values, comparable across investments and horizons. |
-| `getCorrelation` | Pearson correlation between two series, used for pairs trading and diversification checks. |
+| `getCAGR` | Compound Annual Growth Rate: the constant yearly return between two values. |
+| `getCorrelation` | Pearson correlation between two series. |
 | `getGrid` | Price levels for [grid trading bots](https://b2broker.com/news/understanding-grid-trading-purpose-pros-cons/), with arithmetic or geometric spacing. |
 | `getLinearRegression` | Least-squares line through a window: slope, intercept, and one-bar-ahead forecast (Tulip's `tsf`). |
-| `getLogReturns` | Per-bar logarithmic returns of a price series. They add up across bars, which makes them preferred for statistical work. |
-| `getMaxDrawdown` | Deepest peak-to-trough decline of a series, in percent. The worst loss riding the series from a top to the following bottom. |
+| `getLogReturns` | Per-bar logarithmic returns of a price series. |
+| `getMaxDrawdown` | Deepest peak-to-trough decline of a series, in percent. |
 | `getMaximum` | Largest value of a series. |
 | `getMedian` | Middle value of a series. |
 | `getMedianPrice` | Midpoint of a candle's trading range (HL/2). |
 | `getMinimum` | Smallest value of a series. |
 | `getPercentageChange` | Percentage change between two values (going from 100 to 125 yields 25). |
 | `getQuartile` | Quartile (25th, 50th or 75th percentile) of a series. |
-| `getReturns` | Per-bar simple returns of a price series, in percent. The raw material of volatility and performance math. |
+| `getReturns` | Per-bar simple returns of a price series, in percent. |
 | `getShare` | Percentage share an amount represents of a total. |
-| `getSharpeRatio` | Average excess return per unit of volatility. The reward-for-risk reading of a return series. |
+| `getSharpeRatio` | Average excess return per unit of volatility. |
 | `getStandardDeviation` | Spread of a series around its mean. |
 | `getStreaks` | Lengths and percentage moves of consecutive up/down runs in a series. |
-| `getTrueRange` | A candle's range widened by any gap from the previous close. The volatility unit behind ATR. |
+| `getTrueRange` | A candle's range widened by any gap from the previous close. |
 | `getTypicalPrice` | Collapses a candle into the price most of its trading happened around (HLC/3). |
-| `getWeightedClose` | Candle price with the close counted twice (HLCC/4), leaning toward where the bar settled. |
-| `getZScore` | How many standard deviations a value sits from its window's mean. The core mean-reversion reading. |
+| `getWeightedClose` | Candle price with the close counted twice (HLCC/4). |
+| `getZScore` | How many standard deviations a value sits from its window's mean. |
 | `hasCrossedOver` | Detects the moment series A crosses above series B (golden cross). |
 | `hasCrossedUnder` | Detects the moment series A crosses below series B (death cross). |
-| `isMonday` to `isSunday` | Weekday checks for a date in a given IANA timezone, e.g. to skip weekend candles. |
+| `isMonday` to `isSunday` | Weekday checks for a date in a given IANA timezone. |
 | `mergeCandles` | Aggregates consecutive candles into one of a higher timeframe (five 1-minute candles become one 5-minute candle). |
-| `pushUpdate` | Sliding-window push with replace support. The primitive behind every streaming indicator's candle window. |
+| `pushUpdate` | Sliding-window push with replace support. |
 
 ## Installation
 
