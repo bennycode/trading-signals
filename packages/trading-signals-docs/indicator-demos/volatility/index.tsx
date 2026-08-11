@@ -6,6 +6,7 @@ import {DonchianChannels} from './DonchianChannels.demo';
 import {IQR} from './IQR.demo';
 import {KeltnerChannels} from './KeltnerChannels.demo';
 import {MAD} from './MAD.demo';
+import {MassIndex} from './MassIndex.demo';
 import {NATR} from './NATR.demo';
 import {ProjectionOscillator} from './ProjectionOscillator.demo';
 import {TR} from './TR.demo';
@@ -25,4 +26,5 @@ export const indicators: IndicatorConfig[] = [
   MAD,
   UlcerIndex,
   ProjectionOscillator,
+  MassIndex,
 ];
