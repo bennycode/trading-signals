@@ -7,6 +7,7 @@ import {CCI} from './CCI.demo';
 import {CFO} from './CFO.demo';
 import {CG} from './CG.demo';
 import {CMO} from './CMO.demo';
+import {ConnorsRSI} from './ConnorsRSI.demo';
 import {CoppockCurve} from './CoppockCurve.demo';
 import {DeMarker} from './DeMarker.demo';
 import {DerivativeOscillator} from './DerivativeOscillator.demo';
@@ -76,6 +77,7 @@ export const indicators: IndicatorConfig[] = [
   DPO,
   IBS,
   AccumulativeSwingIndex,
+  ConnorsRSI,
   PGO,
   PMO,
   PremierStochastic,
