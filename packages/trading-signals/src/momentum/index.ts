@@ -22,6 +22,7 @@ export * from './OBV/OBV.js';
 export * from './PGO/PGO.js';
 export * from './PMO/PMO.js';
 export * from './PPO/PPO.js';
+export * from './PSO/PremierStochastic.js';
 export * from './QSTICK/Qstick.js';
 export * from './REI/REI.js';
 export * from './ROC/ROC.js';

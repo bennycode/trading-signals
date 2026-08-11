@@ -22,6 +22,7 @@ import {OBV} from './OBV.demo';
 import {PGO} from './PGO.demo';
 import {PMO} from './PMO.demo';
 import {PPO} from './PPO.demo';
+import {PremierStochastic} from './PremierStochastic.demo';
 import {Qstick} from './Qstick.demo';
 import {REI} from './REI.demo';
 import {ROC} from './ROC.demo';
@@ -72,6 +73,7 @@ export const indicators: IndicatorConfig[] = [
   IBS,
   PGO,
   PMO,
+  PremierStochastic,
   STC,
   TRIX,
   TSI,
