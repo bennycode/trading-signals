@@ -30,6 +30,24 @@ describe('StochasticOscillator', () => {
       expect(stoch.getRequiredInputs()).toBe(9);
       expect(stoch.getResultOrThrow().stochK.toFixed(2)).toBe('91.09');
     });
+
+    /*
+     * Hand-derived: with a slowing period of 1, %k equals the raw close position in the 2-candle range.
+     * Candle 2 closes at the very top (%k = 100), candle 3 at the very bottom (%k = 0), so
+     * %d = (100 + 0) / 2 = 50 and %j = 3 × 0 - 2 × 50 = -100, escaping the 0-100 range.
+     */
+    it('projects the divergence between %k and %d as the %j line', () => {
+      const stoch = new StochasticOscillator({dPeriod: 2, kPeriod: 2, kSlowingPeriod: 1});
+
+      stoch.add({close: 5, high: 10, low: 0});
+      stoch.add({close: 10, high: 10, low: 0});
+
+      const result = stoch.add({close: 0, high: 10, low: 0});
+
+      expect(result?.stochK).toBe(0);
+      expect(result?.stochD).toBe(50);
+      expect(result?.stochJ).toBe(-100);
+    });
   });
 
   describe('replace', () => {
