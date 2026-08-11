@@ -31,6 +31,7 @@ import {TDS} from './TDS.demo';
 import {TRIX} from './TRIX.demo';
 import {TSI} from './TSI.demo';
 import {UltimateOscillator} from './UltimateOscillator.demo';
+import {WaddahAttarExplosion} from './WaddahAttarExplosion.demo';
 import {WaveTrend} from './WaveTrend.demo';
 import {WilliamsR} from './WilliamsR.demo';
 import type {IndicatorConfig} from '../../utils/types';
@@ -71,4 +72,5 @@ export const indicators: IndicatorConfig[] = [
   TRIX,
   TSI,
   WaveTrend,
+  WaddahAttarExplosion,
 ];
