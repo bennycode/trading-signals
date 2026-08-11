@@ -245,14 +245,6 @@ console.log(sma.highest?.toFixed(2)); // "53.33"
 - Indicators: Have no upper or lower limits
 - Oscillators: Move within a fixed range (e.g. 0-100, –1 to +1)
 
-## Alternatives
-
-- [ta-math (TypeScript)](https://github.com/munrocket/ta-math)
-- [ta4j (Java)](https://github.com/ta4j/ta4j)
-- [Technical Analysis for Rust (Rust)](https://github.com/greyblake/ta-rs)
-- [Technical Analysis Library using Pandas and Numpy (Python)](https://github.com/bukosabino/ta)
-- [Tulip Indicators (ANSI C)](https://github.com/TulipCharts/tulipindicators)
-
 ## Maintainers
 
 [![Benny Neugebauer on Stack Exchange][stack_exchange_bennycode_badge]][stack_exchange_bennycode_url]
