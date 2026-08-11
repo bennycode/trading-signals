@@ -96,6 +96,7 @@ All indicators can be updated over time by streaming data (prices or [candles](h
 1. Spencer's 15-Point Moving Average (SMA15)
 1. Stochastic Oscillator (STOCH)
 1. Stochastic RSI (STOCHRSI)
+1. SuperSmoother Filter (SUPERSMOOTHER)
 1. SuperTrend (SUPERTREND)
 1. Tillson T3 Moving Average (T3)
 1. Tom Demark's Sequential Indicator (TDS)

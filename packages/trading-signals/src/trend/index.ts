@@ -19,6 +19,7 @@ export * from './PSAR/PSAR.js';
 export * from './RMA/RMA.js';
 export * from './SMA/SMA.js';
 export * from './SMA15/SMA15.js';
+export * from './SUPERSMOOTHER/SuperSmoother.js';
 export * from './SUPERTREND/SuperTrend.js';
 export * from './SWING_HIGH/SwingHigh.js';
 export * from './SWING_LOW/SwingLookback.js';

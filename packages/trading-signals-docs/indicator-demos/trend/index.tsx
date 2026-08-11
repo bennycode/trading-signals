@@ -23,6 +23,7 @@ import {PSAR} from './PSAR.demo';
 import {RMA} from './RMA.demo';
 import {SMA} from './SMA.demo';
 import {SMA15} from './SMA15.demo';
+import {SuperSmoother} from './SuperSmoother.demo';
 import {SuperTrend} from './SuperTrend.demo';
 import {SwingHigh} from './SwingHigh.demo';
 import {SwingLow} from './SwingLow.demo';
@@ -48,6 +49,7 @@ export const indicators: IndicatorConfig[] = [
   VIDYA,
   FRAMA,
   McGinleyDynamic,
+  SuperSmoother,
   VortexIndicator,
   IchimokuCloud,
   Aroon,
