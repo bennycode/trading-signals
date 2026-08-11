@@ -123,6 +123,7 @@ All indicators can be updated over time by streaming data (prices or [candles](h
 1. Ulcer Index (UI)
 1. Ultimate Oscillator (ULTOSC)
 1. Variable Index Dynamic Average (VIDYA)
+1. Vertical Horizontal Filter (VHF)
 1. Volatility Stop (VSTOP)
 1. Volume Rate of Change (VROC)
 1. Volume-Weighted Average Price (VWAP)

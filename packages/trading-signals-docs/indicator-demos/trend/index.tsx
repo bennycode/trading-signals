@@ -14,6 +14,7 @@ import {McGinleyDynamic} from './McGinleyDynamic.demo';
 import {T3} from './T3.demo';
 import {TEMA} from './TEMA.demo';
 import {TRIMA} from './TRIMA.demo';
+import {VHF} from './VHF.demo';
 import {VIDYA} from './VIDYA.demo';
 import {VortexIndicator} from './VortexIndicator.demo';
 import {DMA} from './DMA.demo';
@@ -53,6 +54,7 @@ export const indicators: IndicatorConfig[] = [
   McGinleyDynamic,
   MAMA,
   SuperSmoother,
+  VHF,
   VortexIndicator,
   IchimokuCloud,
   Aroon,
