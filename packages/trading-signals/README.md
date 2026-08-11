@@ -72,6 +72,7 @@ All indicators can be updated over time by streaming data (prices or [candles](h
 1. Mass Index (MI)
 1. McGinley Dynamic (MD)
 1. Mean Absolute Deviation (MAD)
+1. MESA Adaptive Moving Average (MAMA)
 1. Momentum (MOM / MTM)
 1. Money Flow Index (MFI)
 1. Moving Average Convergence Divergence (MACD)
