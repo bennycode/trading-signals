@@ -32,6 +32,7 @@ import {REI} from './REI.demo';
 import {RVGI} from './RelativeVigorIndex.demo';
 import {ROC} from './ROC.demo';
 import {RSI} from './RSI.demo';
+import {SMI} from './SMI.demo';
 import {STC} from './STC.demo';
 import {StochasticOscillator} from './StochasticOscillator.demo';
 import {StochasticRSI} from './StochasticRSI.demo';
@@ -84,6 +85,7 @@ export const indicators: IndicatorConfig[] = [
   PremierStochastic,
   PSL,
   RVGI,
+  SMI,
   STC,
   TRIX,
   TSI,

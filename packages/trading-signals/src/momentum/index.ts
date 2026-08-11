@@ -33,6 +33,7 @@ export * from './RSI/RSI.js';
 export * from './RVGI/RelativeVigorIndex.js';
 export * from './SI/AccumulativeSwingIndex.js';
 export * from './SI/SwingIndex.js';
+export * from './SMI/SMI.js';
 export * from './STC/STC.js';
 export * from './STOCH/StochasticOscillator.js';
 export * from './STOCHRSI/StochasticRSI.js';

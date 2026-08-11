@@ -108,6 +108,7 @@ All indicators can be updated over time by streaming data (prices or [candles](h
 1. Schaff Trend Cycle (STC)
 1. Simple Moving Average (SMA)
 1. Spencer's 15-Point Moving Average (SMA15)
+1. Stochastic Momentum Index (SMI)
 1. Stochastic Oscillator (STOCH)
 1. Stochastic RSI (STOCHRSI)
 1. SuperSmoother Filter (SUPERSMOOTHER)
