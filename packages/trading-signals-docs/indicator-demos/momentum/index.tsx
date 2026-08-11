@@ -27,6 +27,7 @@ import {PMO} from './PMO.demo';
 import {PPO} from './PPO.demo';
 import {PremierStochastic} from './PremierStochastic.demo';
 import {PSL} from './PSL.demo';
+import {QQE} from './QQE.demo';
 import {Qstick} from './Qstick.demo';
 import {REI} from './REI.demo';
 import {RVGI} from './RelativeVigorIndex.demo';
@@ -84,6 +85,7 @@ export const indicators: IndicatorConfig[] = [
   PMO,
   PremierStochastic,
   PSL,
+  QQE,
   RVGI,
   SMI,
   STC,

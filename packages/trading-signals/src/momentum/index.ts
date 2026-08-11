@@ -26,6 +26,7 @@ export * from './PMO/PMO.js';
 export * from './PPO/PPO.js';
 export * from './PSL/PSL.js';
 export * from './PSO/PremierStochastic.js';
+export * from './QQE/QQE.js';
 export * from './QSTICK/Qstick.js';
 export * from './REI/REI.js';
 export * from './ROC/ROC.js';
