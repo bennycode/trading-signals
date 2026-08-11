@@ -8,6 +8,7 @@ import {KeltnerChannels} from './KeltnerChannels.demo';
 import {MAD} from './MAD.demo';
 import {NATR} from './NATR.demo';
 import {TR} from './TR.demo';
+import {UlcerIndex} from './UlcerIndex.demo';
 import type {IndicatorConfig} from '../../utils/types';
 
 export const indicators: IndicatorConfig[] = [
@@ -21,4 +22,5 @@ export const indicators: IndicatorConfig[] = [
   BollingerBandsWidth,
   IQR,
   MAD,
+  UlcerIndex,
 ];
