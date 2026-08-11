@@ -155,7 +155,7 @@ All indicators can be updated over time by streaming data (prices or [candles](h
 
 | Utility | Description |
 | --- | --- |
-| `addPercentageChange` | Applies a percentage change to a base value (adding 25 to 100 yields 125). |
+| `addPercentageChange` | Applies a percentage change to a base value (adding 25 to 100 gives 125). |
 | `getAverage` | Mean of a series. |
 | `getAveragePrice` | Collapses a candle into the average of its four marks (OHLC/4). |
 | `getCAGR` | Compound Annual Growth Rate: the constant yearly return between two values. |
@@ -168,7 +168,7 @@ All indicators can be updated over time by streaming data (prices or [candles](h
 | `getMedian` | Middle value of a series. |
 | `getMedianPrice` | Midpoint of a candle's trading range (HL/2). |
 | `getMinimum` | Smallest value of a series. |
-| `getPercentageChange` | Percentage change between two values (going from 100 to 125 yields 25). |
+| `getPercentageChange` | Percentage change between two values (going from 100 to 125 gives 25). |
 | `getQuartile` | Quartile (25th, 50th or 75th percentile) of a series. |
 | `getReturns` | Per-bar simple returns of a price series, in percent. |
 | `getShare` | Percentage share an amount represents of a total. |
