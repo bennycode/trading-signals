@@ -19,6 +19,7 @@ import {FisherTransform} from './FisherTransform.demo';
 import {IBS} from './IBS.demo';
 import {IMI} from './IMI.demo';
 import {KST} from './KST.demo';
+import {LaguerreRSI} from './LaguerreRSI.demo';
 import {MACD} from './MACD.demo';
 import {MFI} from './MFI.demo';
 import {MOM} from './MOM.demo';
@@ -85,6 +86,7 @@ export const indicators: IndicatorConfig[] = [
   IMI,
   AccumulativeSwingIndex,
   ConnorsRSI,
+  LaguerreRSI,
   PGO,
   PMO,
   PremierStochastic,

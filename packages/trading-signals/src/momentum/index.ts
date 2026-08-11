@@ -18,6 +18,7 @@ export * from './FISHER/FisherTransform.js';
 export * from './IBS/IBS.js';
 export * from './IMI/IMI.js';
 export * from './KST/KST.js';
+export * from './LRSI/LaguerreRSI.js';
 export * from './MACD/MACD.js';
 export * from './MFI/MFI.js';
 export * from './MOM/MOM.js';
