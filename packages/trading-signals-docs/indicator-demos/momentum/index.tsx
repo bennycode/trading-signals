@@ -16,6 +16,7 @@ import {MACD} from './MACD.demo';
 import {MFI} from './MFI.demo';
 import {MOM} from './MOM.demo';
 import {OBV} from './OBV.demo';
+import {PGO} from './PGO.demo';
 import {PPO} from './PPO.demo';
 import {Qstick} from './Qstick.demo';
 import {REI} from './REI.demo';
@@ -59,6 +60,7 @@ export const indicators: IndicatorConfig[] = [
   Qstick,
   CFO,
   DPO,
+  PGO,
   TRIX,
   TSI,
 ];
