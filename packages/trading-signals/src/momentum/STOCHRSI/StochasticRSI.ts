@@ -2,7 +2,7 @@ import type {MovingAverage} from '../../trend/MA/MovingAverage.js';
 import type {MovingAverageTypes} from '../../trend/MA/MovingAverageTypes.js';
 import {SMA} from '../../trend/SMA/SMA.js';
 import {WSMA} from '../../trend/WSMA/WSMA.js';
-import {TradingSignal, TrendIndicatorSeries} from '../../base/Indicator.js';
+import {ThresholdCrossSeries} from '../../base/Indicator.js';
 import {Period} from '../../base/Period.js';
 import type {SignalThresholds} from '../../base/SignalThresholds.type.js';
 import {RSI} from '../RSI/RSI.js';
@@ -26,7 +26,7 @@ import {RSI} from '../RSI/RSI.js';
  * @see https://lakshmishree.com/blog/stochastic-rsi-indicator/
  * @see https://alchemymarkets.com/education/indicators/stochastic-rsi/
  */
-export class StochasticRSI extends TrendIndicatorSeries {
+export class StochasticRSI extends ThresholdCrossSeries {
   readonly #period: Period;
   readonly #rsi: RSI;
 
@@ -35,9 +35,6 @@ export class StochasticRSI extends TrendIndicatorSeries {
     readonly k: MovingAverage;
     readonly d: MovingAverage;
   };
-
-  readonly #overbought: number;
-  readonly #oversold: number;
 
   constructor(
     interval: number,
@@ -51,13 +48,11 @@ export class StochasticRSI extends TrendIndicatorSeries {
     },
     {overbought = 0.8, oversold = 0.2}: SignalThresholds = {}
   ) {
-    super();
+    super({overbought, oversold});
     this.interval = interval;
     this.smoothing = smoothing;
     this.#period = new Period(interval);
     this.#rsi = new RSI(interval, SmoothingRSI);
-    this.#overbought = overbought;
-    this.#oversold = oversold;
   }
 
   override getRequiredInputs() {
@@ -88,22 +83,5 @@ export class StochasticRSI extends TrendIndicatorSeries {
     }
 
     return null;
-  }
-
-  protected calculateSignalState(result?: number | null | undefined) {
-    const hasResult = result !== null && result !== undefined;
-    const isOversold = hasResult && result <= this.#oversold;
-    const isOverbought = hasResult && result >= this.#overbought;
-
-    switch (true) {
-      case !hasResult:
-        return TradingSignal.UNKNOWN;
-      case isOversold:
-        return TradingSignal.BEARISH;
-      case isOverbought:
-        return TradingSignal.BULLISH;
-      default:
-        return TradingSignal.SIDEWAYS;
-    }
   }
 }

@@ -1,5 +1,5 @@
 import type {HighLowClose} from '../../base/Candle.type.js';
-import {TradingSignal, TrendIndicatorSeries} from '../../base/Indicator.js';
+import {ThresholdCrossSeries} from '../../base/Indicator.js';
 import type {SignalThresholds} from '../../base/SignalThresholds.type.js';
 import {pushUpdate} from '../../util/pushUpdate.js';
 
@@ -29,10 +29,8 @@ export type UltimateOscillatorConfig = {
  * @see https://www.investopedia.com/terms/u/ultimateoscillator.asp
  * @see https://tulipindicators.org/ultosc
  */
-export class UltimateOscillator extends TrendIndicatorSeries<HighLowClose<number>> {
+export class UltimateOscillator extends ThresholdCrossSeries<HighLowClose<number>> {
   readonly #candles: HighLowClose<number>[] = [];
-  readonly #overbought: number;
-  readonly #oversold: number;
 
   public readonly shortPeriod: number;
   public readonly mediumPeriod: number;
@@ -42,12 +40,10 @@ export class UltimateOscillator extends TrendIndicatorSeries<HighLowClose<number
     {longPeriod = 28, mediumPeriod = 14, shortPeriod = 7}: UltimateOscillatorConfig = {},
     {overbought = 70, oversold = 30}: SignalThresholds = {}
   ) {
-    super();
+    super({overbought, oversold});
     this.shortPeriod = shortPeriod;
     this.mediumPeriod = mediumPeriod;
     this.longPeriod = longPeriod;
-    this.#overbought = overbought;
-    this.#oversold = oversold;
   }
 
   override getRequiredInputs() {
@@ -105,22 +101,5 @@ export class UltimateOscillator extends TrendIndicatorSeries<HighLowClose<number
     const longAverage = long.buyingPressureSum / long.trueRangeSum;
 
     return this.setResult((100 * (4 * shortAverage + 2 * mediumAverage + longAverage)) / 7, replace);
-  }
-
-  protected calculateSignalState(result: number | null | undefined) {
-    const hasResult = result !== null && result !== undefined;
-    const isOversold = hasResult && result <= this.#oversold;
-    const isOverbought = hasResult && result >= this.#overbought;
-
-    switch (true) {
-      case !hasResult:
-        return TradingSignal.UNKNOWN;
-      case isOversold:
-        return TradingSignal.BEARISH;
-      case isOverbought:
-        return TradingSignal.BULLISH;
-      default:
-        return TradingSignal.SIDEWAYS;
-    }
   }
 }

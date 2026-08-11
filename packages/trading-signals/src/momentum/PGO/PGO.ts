@@ -1,5 +1,5 @@
 import type {HighLowClose} from '../../base/Candle.type.js';
-import {TradingSignal, TrendIndicatorSeries} from '../../base/Indicator.js';
+import {ThresholdCrossSeries} from '../../base/Indicator.js';
 import type {SignalThresholds} from '../../base/SignalThresholds.type.js';
 import {EMA} from '../../trend/EMA/EMA.js';
 import {SMA} from '../../trend/SMA/SMA.js';
@@ -35,24 +35,20 @@ export type PGOConfig = {
  * @see https://library.tradingtechnologies.com/trade/chrt-ti-pretty-good-oscillator.html
  * @see https://github.com/twopirllc/pandas-ta
  */
-export class PGO extends TrendIndicatorSeries<HighLowClose<number>> {
+export class PGO extends ThresholdCrossSeries<HighLowClose<number>> {
   readonly #sma: SMA;
   readonly #atr: ATR;
   readonly #atrSmoothing: EMA;
-  readonly #overbought: number;
-  readonly #oversold: number;
   public readonly interval: number;
 
   constructor({interval = 14, signalThresholds: {overbought = 3, oversold = -3} = {}}: PGOConfig = {}) {
-    super();
+    super({overbought, oversold});
 
     this.interval = interval;
     this.#sma = new SMA(interval);
     // Wilder's smoothing forms the ATR before the EMA refines it, matching the pandas-ta reference
     this.#atr = new ATR(interval, WSMA);
     this.#atrSmoothing = new EMA(interval);
-    this.#overbought = overbought;
-    this.#oversold = oversold;
   }
 
   override getRequiredInputs() {
@@ -80,22 +76,5 @@ export class PGO extends TrendIndicatorSeries<HighLowClose<number>> {
     }
 
     return this.setResult((candle.close - sma) / smoothedAtr, replace);
-  }
-
-  protected calculateSignalState(result: number | null | undefined) {
-    const hasResult = result !== null && result !== undefined;
-    const isOversold = hasResult && result <= this.#oversold;
-    const isOverbought = hasResult && result >= this.#overbought;
-
-    switch (true) {
-      case !hasResult:
-        return TradingSignal.UNKNOWN;
-      case isOversold:
-        return TradingSignal.BEARISH;
-      case isOverbought:
-        return TradingSignal.BULLISH;
-      default:
-        return TradingSignal.SIDEWAYS;
-    }
   }
 }

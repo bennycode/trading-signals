@@ -1,5 +1,5 @@
 import type {OpenHighLowClose} from '../../base/Candle.type.js';
-import {TradingSignal, TrendIndicatorSeries} from '../../base/Indicator.js';
+import {ThresholdCrossSeries} from '../../base/Indicator.js';
 import type {SignalThresholds} from '../../base/SignalThresholds.type.js';
 import {pushUpdate} from '../../util/pushUpdate.js';
 
@@ -22,15 +22,13 @@ import {pushUpdate} from '../../util/pushUpdate.js';
  * @see https://www.investopedia.com/terms/i/intraday-momentum-index-imi.asp
  * @see https://www.fidelity.com/learning-center/trading-investing/technical-analysis/technical-indicator-guide/imi
  */
-export class IMI extends TrendIndicatorSeries<OpenHighLowClose> {
+export class IMI extends ThresholdCrossSeries<OpenHighLowClose> {
   readonly #candles: OpenHighLowClose[] = [];
-  readonly #overbought: number;
-  readonly #oversold: number;
 
   public readonly interval: number;
 
   constructor(interval: number = 14, {overbought = 70, oversold = 30}: SignalThresholds = {}) {
-    super();
+    super({overbought, oversold});
 
     // The candle window never fills nor caps without a real positive length
     if (!Number.isFinite(interval) || interval < 1) {
@@ -38,8 +36,6 @@ export class IMI extends TrendIndicatorSeries<OpenHighLowClose> {
     }
 
     this.interval = interval;
-    this.#overbought = overbought;
-    this.#oversold = oversold;
   }
 
   override getRequiredInputs() {
@@ -72,22 +68,5 @@ export class IMI extends TrendIndicatorSeries<OpenHighLowClose> {
     }
 
     return this.setResult((100 * gains) / totalPressure, replace);
-  }
-
-  protected calculateSignalState(result: number | null | undefined) {
-    const hasResult = result !== null && result !== undefined;
-    const isOversold = hasResult && result <= this.#oversold;
-    const isOverbought = hasResult && result >= this.#overbought;
-
-    switch (true) {
-      case !hasResult:
-        return TradingSignal.UNKNOWN;
-      case isOversold:
-        return TradingSignal.BEARISH;
-      case isOverbought:
-        return TradingSignal.BULLISH;
-      default:
-        return TradingSignal.SIDEWAYS;
-    }
   }
 }

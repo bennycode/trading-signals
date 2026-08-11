@@ -1,4 +1,4 @@
-import {TradingSignal, TrendIndicatorSeries, type TradingSignals} from '../../base/Indicator.js';
+import {ThresholdCrossSeries} from '../../base/Indicator.js';
 import type {SignalThresholds} from '../../base/SignalThresholds.type.js';
 
 export type LaguerreRSIConfig = {
@@ -50,7 +50,7 @@ type LaguerreRSIState = {
  * @see https://www.mesasoftware.com/papers/TimeWarp.pdf
  * @see https://github.com/StockSharp/StockSharp/blob/master/Algo.Indicators/LaguerreRSI.cs
  */
-export class LaguerreRSI extends TrendIndicatorSeries<number, TradingSignals, LaguerreRSIState> {
+export class LaguerreRSI extends ThresholdCrossSeries<number, LaguerreRSIState> {
   protected override state: LaguerreRSIState = {
     barsTotal: 0,
     l0: 0,
@@ -59,21 +59,16 @@ export class LaguerreRSI extends TrendIndicatorSeries<number, TradingSignals, La
     l3: 0,
   };
 
-  readonly #overbought: number;
-  readonly #oversold: number;
-
   public readonly gamma: number;
 
   constructor({gamma = 0.5, signalThresholds: {overbought = 0.8, oversold = 0.2} = {}}: LaguerreRSIConfig = {}) {
-    super();
+    super({overbought, oversold});
 
     if (!Number.isFinite(gamma) || gamma < 0 || gamma >= 1) {
       throw new Error(`The gamma has to be at least 0 and below 1, but "${gamma}" was given.`);
     }
 
     this.gamma = gamma;
-    this.#overbought = overbought;
-    this.#oversold = oversold;
   }
 
   override getRequiredInputs() {
@@ -125,22 +120,5 @@ export class LaguerreRSI extends TrendIndicatorSeries<number, TradingSignals, La
     }
 
     return this.setResult(upwardPressure / totalPressure, replace);
-  }
-
-  protected calculateSignalState(result?: number | null | undefined) {
-    const hasResult = result !== null && result !== undefined;
-    const isOverbought = hasResult && result >= this.#overbought;
-    const isOversold = hasResult && result <= this.#oversold;
-
-    switch (true) {
-      case !hasResult:
-        return TradingSignal.UNKNOWN;
-      case isOverbought:
-        return TradingSignal.BULLISH;
-      case isOversold:
-        return TradingSignal.BEARISH;
-      default:
-        return TradingSignal.SIDEWAYS;
-    }
   }
 }

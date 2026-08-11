@@ -1,4 +1,4 @@
-import {TradingSignal, TrendIndicatorSeries} from '../../base/Indicator.js';
+import {ThresholdCrossSeries} from '../../base/Indicator.js';
 import type {SignalThresholds} from '../../base/SignalThresholds.type.js';
 import {pushUpdate} from '../../util/pushUpdate.js';
 
@@ -30,15 +30,13 @@ import {pushUpdate} from '../../util/pushUpdate.js';
  * @see https://github.com/StockSharp/StockSharp/blob/master/Algo.Indicators/RankCorrelationIndex.cs
  * @see https://strategyquant.com/codebase/rci3lines/
  */
-export class RCI extends TrendIndicatorSeries {
+export class RCI extends ThresholdCrossSeries {
   readonly #closes: number[] = [];
-  readonly #overbought: number;
-  readonly #oversold: number;
 
   public readonly interval: number;
 
   constructor(interval: number = 9, {overbought = 80, oversold = -80}: SignalThresholds = {}) {
-    super();
+    super({overbought, oversold});
 
     // A single-bar window has no rank order to correlate and would divide by zero
     if (!Number.isFinite(interval) || interval < 2) {
@@ -46,8 +44,6 @@ export class RCI extends TrendIndicatorSeries {
     }
 
     this.interval = interval;
-    this.#overbought = overbought;
-    this.#oversold = oversold;
   }
 
   override getRequiredInputs() {
@@ -86,22 +82,5 @@ export class RCI extends TrendIndicatorSeries {
     const rci = (1 - (6 * squaredRankDistances) / (n * (n ** 2 - 1))) * 100;
 
     return this.setResult(rci, replace);
-  }
-
-  protected calculateSignalState(result: number | null | undefined) {
-    const hasResult = result !== null && result !== undefined;
-    const isOversold = hasResult && result <= this.#oversold;
-    const isOverbought = hasResult && result >= this.#overbought;
-
-    switch (true) {
-      case !hasResult:
-        return TradingSignal.UNKNOWN;
-      case isOversold:
-        return TradingSignal.BEARISH;
-      case isOverbought:
-        return TradingSignal.BULLISH;
-      default:
-        return TradingSignal.SIDEWAYS;
-    }
   }
 }

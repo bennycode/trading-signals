@@ -1,4 +1,4 @@
-import {TradingSignal, TrendIndicatorSeries} from '../../base/Indicator.js';
+import {ThresholdCrossSeries} from '../../base/Indicator.js';
 import type {SignalThresholds} from '../../base/SignalThresholds.type.js';
 import {WSMA} from '../../trend/WSMA/WSMA.js';
 import {pushUpdate} from '../../util/pushUpdate.js';
@@ -32,18 +32,16 @@ export type RMIConfig = {
  * @see https://github.com/StockSharp/StockSharp/blob/master/Algo/Indicators/RelativeMomentumIndex.cs
  * @see https://docs.motivewave.com/studies/q-r#relative-momentum-index
  */
-export class RMI extends TrendIndicatorSeries {
+export class RMI extends ThresholdCrossSeries {
   readonly #closes: number[] = [];
   readonly #avgUpMomentum: WSMA;
   readonly #avgDownMomentum: WSMA;
-  readonly #overbought: number;
-  readonly #oversold: number;
 
   public readonly interval: number;
   public readonly momentum: number;
 
   constructor({interval = 14, momentum = 5, signalThresholds: {overbought = 70, oversold = 30} = {}}: RMIConfig = {}) {
-    super();
+    super({overbought, oversold});
 
     // The smoothing and the momentum span both need real positive lengths, or the close history never caps
     for (const [name, value] of Object.entries({interval, momentum})) {
@@ -56,8 +54,6 @@ export class RMI extends TrendIndicatorSeries {
     this.momentum = momentum;
     this.#avgUpMomentum = new WSMA(interval);
     this.#avgDownMomentum = new WSMA(interval);
-    this.#overbought = overbought;
-    this.#oversold = oversold;
   }
 
   override getRequiredInputs() {
@@ -95,22 +91,5 @@ export class RMI extends TrendIndicatorSeries {
     }
 
     return null;
-  }
-
-  protected calculateSignalState(result: number | null | undefined) {
-    const hasResult = result !== null && result !== undefined;
-    const isOversold = hasResult && result <= this.#oversold;
-    const isOverbought = hasResult && result >= this.#overbought;
-
-    switch (true) {
-      case !hasResult:
-        return TradingSignal.UNKNOWN;
-      case isOversold:
-        return TradingSignal.BEARISH;
-      case isOverbought:
-        return TradingSignal.BULLISH;
-      default:
-        return TradingSignal.SIDEWAYS;
-    }
   }
 }

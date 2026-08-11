@@ -1,4 +1,4 @@
-import {TradingSignal, TrendIndicatorSeries, type TradingSignals} from '../../base/Indicator.js';
+import {ThresholdCrossSeries} from '../../base/Indicator.js';
 import type {SignalThresholds} from '../../base/SignalThresholds.type.js';
 import {RSI} from '../RSI/RSI.js';
 
@@ -40,7 +40,7 @@ type ConnorsRSIState = {
  * @see https://www.tradingview.com/support/solutions/43000502017-connors-rsi-crsi/
  * @see https://chartschool.stockcharts.com/table-of-contents/technical-indicators-and-overlays/technical-indicators/connorsrsi
  */
-export class ConnorsRSI extends TrendIndicatorSeries<number, TradingSignals, ConnorsRSIState> {
+export class ConnorsRSI extends ThresholdCrossSeries<number, ConnorsRSIState> {
   protected override state: ConnorsRSIState = {
     previousClose: null,
     returns: [],
@@ -49,8 +49,6 @@ export class ConnorsRSI extends TrendIndicatorSeries<number, TradingSignals, Con
 
   readonly #priceRsi: RSI;
   readonly #streakRsi: RSI;
-  readonly #overbought: number;
-  readonly #oversold: number;
 
   public readonly percentRankInterval: number;
   public readonly rsiInterval: number;
@@ -62,15 +60,13 @@ export class ConnorsRSI extends TrendIndicatorSeries<number, TradingSignals, Con
     signalThresholds = {},
     streakRsiInterval = 2,
   }: ConnorsRSIConfig = {}) {
-    super();
     const {overbought = 90, oversold = 10} = signalThresholds;
+    super({overbought, oversold});
     this.percentRankInterval = percentRankInterval;
     this.rsiInterval = rsiInterval;
     this.streakRsiInterval = streakRsiInterval;
     this.#priceRsi = new RSI(rsiInterval);
     this.#streakRsi = new RSI(streakRsiInterval);
-    this.#overbought = overbought;
-    this.#oversold = oversold;
   }
 
   override getRequiredInputs() {
@@ -138,22 +134,5 @@ export class ConnorsRSI extends TrendIndicatorSeries<number, TradingSignals, Con
     }
 
     return 0;
-  }
-
-  protected calculateSignalState(result: number | null | undefined) {
-    const hasResult = result !== null && result !== undefined;
-    const isOversold = hasResult && result <= this.#oversold;
-    const isOverbought = hasResult && result >= this.#overbought;
-
-    switch (true) {
-      case !hasResult:
-        return TradingSignal.UNKNOWN;
-      case isOversold:
-        return TradingSignal.BEARISH;
-      case isOverbought:
-        return TradingSignal.BULLISH;
-      default:
-        return TradingSignal.SIDEWAYS;
-    }
   }
 }

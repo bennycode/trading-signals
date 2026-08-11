@@ -1,4 +1,4 @@
-import {TradingSignal, TrendIndicatorSeries} from '../../base/Indicator.js';
+import {ThresholdCrossSeries} from '../../base/Indicator.js';
 import type {SignalThresholds} from '../../base/SignalThresholds.type.js';
 import {BollingerBands} from '../BBANDS/BollingerBands.js';
 
@@ -29,20 +29,16 @@ export type PercentBConfig = {
  * @see https://school.stockcharts.com/doku.php?id=technical_indicators:bollinger_band_perce_b
  * @see https://www.tradingview.com/support/solutions/43000501971-bollinger-bands-b-b/
  */
-export class PercentB extends TrendIndicatorSeries {
+export class PercentB extends ThresholdCrossSeries {
   readonly #bollingerBands: BollingerBands;
-  readonly #overbought: number;
-  readonly #oversold: number;
 
   constructor({
     deviationMultiplier = 2,
     interval = 20,
     signalThresholds: {overbought = 1, oversold = 0} = {},
   }: PercentBConfig = {}) {
-    super();
+    super({overbought, oversold});
     this.#bollingerBands = new BollingerBands(interval, deviationMultiplier);
-    this.#overbought = overbought;
-    this.#oversold = oversold;
   }
 
   override getRequiredInputs() {
@@ -64,22 +60,5 @@ export class PercentB extends TrendIndicatorSeries {
     }
 
     return this.setResult((close - bands.lower) / range, replace);
-  }
-
-  protected calculateSignalState(result: number | null | undefined) {
-    const hasResult = result !== null && result !== undefined;
-    const isOversold = hasResult && result <= this.#oversold;
-    const isOverbought = hasResult && result >= this.#overbought;
-
-    switch (true) {
-      case !hasResult:
-        return TradingSignal.UNKNOWN;
-      case isOversold:
-        return TradingSignal.BEARISH;
-      case isOverbought:
-        return TradingSignal.BULLISH;
-      default:
-        return TradingSignal.SIDEWAYS;
-    }
   }
 }

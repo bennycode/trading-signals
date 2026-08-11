@@ -1,4 +1,4 @@
-import {TradingSignal, TrendIndicatorSeries} from '../../base/Indicator.js';
+import {ThresholdCrossSeries} from '../../base/Indicator.js';
 import type {SignalThresholds} from '../../base/SignalThresholds.type.js';
 import type {MovingAverage} from '../../trend/MA/MovingAverage.js';
 import type {MovingAverageTypes} from '../../trend/MA/MovingAverageTypes.js';
@@ -20,13 +20,11 @@ import {WSMA} from '../../trend/WSMA/WSMA.js';
  * @see https://en.wikipedia.org/wiki/Relative_strength_index
  * @see https://www.investopedia.com/terms/r/rsi.asp
  */
-export class RSI extends TrendIndicatorSeries {
+export class RSI extends ThresholdCrossSeries {
   readonly #previousPrices: number[] = [];
   readonly #avgGain: MovingAverage;
   readonly #avgLoss: MovingAverage;
   readonly #maxValue = 100;
-  readonly #overbought: number;
-  readonly #oversold: number;
 
   public readonly interval: number;
 
@@ -35,12 +33,10 @@ export class RSI extends TrendIndicatorSeries {
     SmoothingIndicator: MovingAverageTypes = WSMA,
     {overbought = 70, oversold = 30}: SignalThresholds = {}
   ) {
-    super();
+    super({overbought, oversold});
     this.interval = interval;
     this.#avgGain = new SmoothingIndicator(this.interval);
     this.#avgLoss = new SmoothingIndicator(this.interval);
-    this.#overbought = overbought;
-    this.#oversold = oversold;
   }
 
   override getRequiredInputs() {
@@ -78,22 +74,5 @@ export class RSI extends TrendIndicatorSeries {
     }
 
     return null;
-  }
-
-  protected calculateSignalState(result: number | null | undefined) {
-    const hasResult = result !== null && result !== undefined;
-    const isOversold = hasResult && result <= this.#oversold;
-    const isOverbought = hasResult && result >= this.#overbought;
-
-    switch (true) {
-      case !hasResult:
-        return TradingSignal.UNKNOWN;
-      case isOversold:
-        return TradingSignal.BEARISH;
-      case isOverbought:
-        return TradingSignal.BULLISH;
-      default:
-        return TradingSignal.SIDEWAYS;
-    }
   }
 }

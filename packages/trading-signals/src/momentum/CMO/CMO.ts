@@ -1,4 +1,4 @@
-import {TradingSignal, TrendIndicatorSeries} from '../../base/Indicator.js';
+import {ThresholdCrossSeries} from '../../base/Indicator.js';
 import type {SignalThresholds} from '../../base/SignalThresholds.type.js';
 import {pushUpdate} from '../../util/pushUpdate.js';
 
@@ -18,18 +18,14 @@ import {pushUpdate} from '../../util/pushUpdate.js';
  * @see https://www.investopedia.com/terms/c/chandemomentumoscillator.asp
  * @see https://tulipindicators.org/cmo
  */
-export class CMO extends TrendIndicatorSeries {
+export class CMO extends ThresholdCrossSeries {
   readonly #prices: number[] = [];
-  readonly #overbought: number;
-  readonly #oversold: number;
 
   public readonly interval: number;
 
   constructor(interval: number, {overbought = 50, oversold = -50}: SignalThresholds = {}) {
-    super();
+    super({overbought, oversold});
     this.interval = interval;
-    this.#overbought = overbought;
-    this.#oversold = oversold;
   }
 
   override getRequiredInputs() {
@@ -64,22 +60,5 @@ export class CMO extends TrendIndicatorSeries {
     }
 
     return this.setResult((100 * (gains - losses)) / total, replace);
-  }
-
-  protected calculateSignalState(result: number | null | undefined) {
-    const hasResult = result !== null && result !== undefined;
-    const isOversold = hasResult && result <= this.#oversold;
-    const isOverbought = hasResult && result >= this.#overbought;
-
-    switch (true) {
-      case !hasResult:
-        return TradingSignal.UNKNOWN;
-      case isOversold:
-        return TradingSignal.BEARISH;
-      case isOverbought:
-        return TradingSignal.BULLISH;
-      default:
-        return TradingSignal.SIDEWAYS;
-    }
   }
 }

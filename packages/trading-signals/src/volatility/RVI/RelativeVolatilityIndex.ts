@@ -1,4 +1,4 @@
-import {TradingSignal, TrendIndicatorSeries} from '../../base/Indicator.js';
+import {ThresholdCrossSeries} from '../../base/Indicator.js';
 import type {SignalThresholds} from '../../base/SignalThresholds.type.js';
 import {WSMA} from '../../trend/WSMA/WSMA.js';
 import {getStandardDeviation, pushUpdate} from '../../util/index.js';
@@ -36,12 +36,10 @@ export type RelativeVolatilityIndexConfig = {
  * @see https://www.tradingview.com/support/solutions/43000594684-relative-volatility-index/
  * @see https://docs.motivewave.com/studies/q-r#relative-volatility-index
  */
-export class RelativeVolatilityIndex extends TrendIndicatorSeries {
+export class RelativeVolatilityIndex extends ThresholdCrossSeries {
   readonly #closes: number[] = [];
   readonly #avgUpVolatility: WSMA;
   readonly #avgDownVolatility: WSMA;
-  readonly #overbought: number;
-  readonly #oversold: number;
 
   public readonly interval: number;
   public readonly stddevInterval: number;
@@ -51,7 +49,7 @@ export class RelativeVolatilityIndex extends TrendIndicatorSeries {
     signalThresholds: {overbought = 60, oversold = 40} = {},
     stddevInterval = 10,
   }: RelativeVolatilityIndexConfig = {}) {
-    super();
+    super({overbought, oversold});
 
     // A single close carries no deviation and leaves no previous close to compare against
     if (stddevInterval < 2) {
@@ -62,8 +60,6 @@ export class RelativeVolatilityIndex extends TrendIndicatorSeries {
     this.stddevInterval = stddevInterval;
     this.#avgUpVolatility = new WSMA(interval);
     this.#avgDownVolatility = new WSMA(interval);
-    this.#overbought = overbought;
-    this.#oversold = oversold;
   }
 
   override getRequiredInputs() {
@@ -98,22 +94,5 @@ export class RelativeVolatilityIndex extends TrendIndicatorSeries {
     }
 
     return null;
-  }
-
-  protected calculateSignalState(result: number | null | undefined) {
-    const hasResult = result !== null && result !== undefined;
-    const isOversold = hasResult && result <= this.#oversold;
-    const isOverbought = hasResult && result >= this.#overbought;
-
-    switch (true) {
-      case !hasResult:
-        return TradingSignal.UNKNOWN;
-      case isOversold:
-        return TradingSignal.BEARISH;
-      case isOverbought:
-        return TradingSignal.BULLISH;
-      default:
-        return TradingSignal.SIDEWAYS;
-    }
   }
 }
