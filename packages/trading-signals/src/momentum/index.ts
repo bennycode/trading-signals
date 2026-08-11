@@ -31,3 +31,4 @@ export * from './TRIX/TRIX.js';
 export * from './TSI/TSI.js';
 export * from './ULTOSC/UltimateOscillator.js';
 export * from './WILLR/WilliamsR.js';
+export * from './WT/WaveTrend.js';
