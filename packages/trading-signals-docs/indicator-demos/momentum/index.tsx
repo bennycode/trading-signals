@@ -3,6 +3,7 @@ import {AO} from './AO.demo';
 import {APO} from './APO.demo';
 import {BOP} from './BOP.demo';
 import {CCI} from './CCI.demo';
+import {CFO} from './CFO.demo';
 import {CG} from './CG.demo';
 import {CMO} from './CMO.demo';
 import {CoppockCurve} from './CoppockCurve.demo';
@@ -55,6 +56,7 @@ export const indicators: IndicatorConfig[] = [
   KST,
   ElderRay,
   Qstick,
+  CFO,
   TRIX,
   TSI,
 ];
