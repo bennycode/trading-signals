@@ -79,6 +79,7 @@ All indicators can be updated over time by streaming data (prices or [candles](h
 1. Percentage Volume Oscillator (PVO)
 1. Positive Volume Index (PVI)
 1. Pretty Good Oscillator (PGO)
+1. Price Momentum Oscillator (PMO)
 1. Price Volume Trend (PVT)
 1. Projection Oscillator (PO)
 1. Qstick (QSTICK)
