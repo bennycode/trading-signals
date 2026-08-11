@@ -1,4 +1,5 @@
 import {ZeroCrossSeries} from '../../base/Indicator.js';
+import {calculateLinearRegression} from '../../trend/LINREG/LinearRegression.js';
 import {pushUpdate} from '../../util/pushUpdate.js';
 
 /**
@@ -35,30 +36,6 @@ export class CFO extends ZeroCrossSeries {
     return this.interval + 1;
   }
 
-  /**
-   * Projects the straight line through the given closes one bar ahead (the "time series forecast").
-   * Computed locally instead of reusing the linear-regression indicator, because that one
-   * short-circuits windows climbing in unit steps with a projection that lands one bar short —
-   * which would fake pressure here on a perfectly trending price.
-   */
-  #forecast(window: readonly number[]) {
-    const n = window.length;
-    let sumY = 0;
-    let sumXY = 0;
-
-    for (let x = 0; x < n; x++) {
-      sumY += window[x];
-      sumXY += x * window[x];
-    }
-
-    const sumX = ((n - 1) * n) / 2;
-    const sumXX = ((n - 1) * n * (2 * n - 1)) / 6;
-    const slope = (n * sumXY - sumX * sumY) / (n * sumXX - sumX * sumX);
-    const intercept = (sumY - slope * sumX) / n;
-
-    return slope * n + intercept;
-  }
-
   update(close: number, replace: boolean) {
     pushUpdate({array: this.#closes, item: close, maxLength: this.getRequiredInputs(), replace: replace});
 
@@ -72,7 +49,7 @@ export class CFO extends ZeroCrossSeries {
     }
 
     // The forecast for the newest bar is fitted over the closes that precede it
-    const forecast = this.#forecast(this.#closes.slice(0, this.interval));
+    const {prediction: forecast} = calculateLinearRegression(this.#closes.slice(0, this.interval));
 
     return this.setResult((100 * (close - forecast)) / close, replace);
   }
