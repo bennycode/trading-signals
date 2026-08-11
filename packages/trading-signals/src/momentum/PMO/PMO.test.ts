@@ -67,6 +67,15 @@ describe('PMO', () => {
   });
 
   describe('constructor', () => {
+    it('rejects a smoothing interval that cannot form a finite weight', () => {
+      expect(() => new PMO({smoothing1: 0})).toThrowError(
+        'The interval has to be a positive number, but "0" was given.'
+      );
+      expect(() => new PMO({smoothing2: Number.NaN})).toThrowError(
+        'The interval has to be a positive number, but "NaN" was given.'
+      );
+    });
+
     it("uses Carl Swenlin's canonical periods of 35, 20 and 10 by default", () => {
       const pmo = new PMO();
 

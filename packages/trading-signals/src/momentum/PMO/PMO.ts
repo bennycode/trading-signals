@@ -27,6 +27,11 @@ class DecisionPointSmoothing {
   readonly #weightFactor: number;
 
   constructor(interval: number) {
+    // The smoothing weight divides by the interval, so only a finite positive number keeps every reading finite
+    if (!Number.isFinite(interval) || interval < 1) {
+      throw new Error(`The interval has to be a positive number, but "${interval}" was given.`);
+    }
+
     this.#interval = interval;
     this.#weightFactor = 2 / interval;
   }
