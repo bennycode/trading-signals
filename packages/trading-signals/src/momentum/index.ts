@@ -27,6 +27,7 @@ export * from './QSTICK/Qstick.js';
 export * from './REI/REI.js';
 export * from './ROC/ROC.js';
 export * from './RSI/RSI.js';
+export * from './RVGI/RelativeVigorIndex.js';
 export * from './STC/STC.js';
 export * from './STOCH/StochasticOscillator.js';
 export * from './STOCHRSI/StochasticRSI.js';
