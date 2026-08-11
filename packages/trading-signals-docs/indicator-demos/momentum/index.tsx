@@ -1,9 +1,15 @@
 import {AC} from './AC.demo';
 import {AO} from './AO.demo';
+import {APO} from './APO.demo';
+import {BOP} from './BOP.demo';
 import {CCI} from './CCI.demo';
 import {CG} from './CG.demo';
 import {CMO} from './CMO.demo';
+import {CoppockCurve} from './CoppockCurve.demo';
+import {ElderRay} from './ElderRay.demo';
 import {ER} from './ER.demo';
+import {FisherTransform} from './FisherTransform.demo';
+import {KST} from './KST.demo';
 import {MACD} from './MACD.demo';
 import {MFI} from './MFI.demo';
 import {MOM} from './MOM.demo';
@@ -16,6 +22,7 @@ import {StochasticOscillator} from './StochasticOscillator.demo';
 import {StochasticRSI} from './StochasticRSI.demo';
 import {TDS} from './TDS.demo';
 import {TRIX} from './TRIX.demo';
+import {TSI} from './TSI.demo';
 import {UltimateOscillator} from './UltimateOscillator.demo';
 import {WilliamsR} from './WilliamsR.demo';
 import type {IndicatorConfig} from '../../utils/types';
@@ -40,5 +47,12 @@ export const indicators: IndicatorConfig[] = [
   UltimateOscillator,
   CMO,
   PPO,
+  APO,
+  BOP,
+  FisherTransform,
+  CoppockCurve,
+  KST,
+  ElderRay,
   TRIX,
+  TSI,
 ];
