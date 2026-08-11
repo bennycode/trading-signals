@@ -6,11 +6,13 @@ import {ChandelierExit} from './ChandelierExit.demo';
 import {DEMA} from './DEMA.demo';
 import {FRAMA} from './FRAMA.demo';
 import {HMA} from './HMA.demo';
+import {IchimokuCloud} from './IchimokuCloud.demo';
 import {KAMA} from './KAMA.demo';
 import {T3} from './T3.demo';
 import {TEMA} from './TEMA.demo';
 import {TRIMA} from './TRIMA.demo';
 import {VIDYA} from './VIDYA.demo';
+import {VortexIndicator} from './VortexIndicator.demo';
 import {DMA} from './DMA.demo';
 import {DX} from './DX.demo';
 import {EMA} from './EMA.demo';
@@ -44,6 +46,8 @@ export const indicators: IndicatorConfig[] = [
   ZLEMA,
   VIDYA,
   FRAMA,
+  VortexIndicator,
+  IchimokuCloud,
   Aroon,
   ChandelierExit,
   WMA,
