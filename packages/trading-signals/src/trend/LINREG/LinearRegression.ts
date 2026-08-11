@@ -16,6 +16,12 @@ export type LinearRegressionResult = {
  */
 export const calculateLinearRegression = (values: readonly number[]): LinearRegressionResult => {
   const n = values.length;
+
+  // A single point cannot define a line, so a slope would be fabricated
+  if (n < 2) {
+    throw new Error(`The linear regression has to be fitted over at least 2 values, but "${n}" was given.`);
+  }
+
   let sumY = 0;
   let sumXY = 0;
 

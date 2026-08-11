@@ -1,5 +1,17 @@
 import {testIndicatorContract} from '../../fixtures/testIndicatorContract.js';
 import {LinearRegression} from '../../index.js';
+import {calculateLinearRegression} from './LinearRegression.js';
+
+describe('calculateLinearRegression', () => {
+  it('rejects windows with fewer than 2 values', () => {
+    expect(() => calculateLinearRegression([42])).toThrowError(
+      'The linear regression has to be fitted over at least 2 values, but "1" was given.'
+    );
+    expect(() => calculateLinearRegression([])).toThrowError(
+      'The linear regression has to be fitted over at least 2 values, but "0" was given.'
+    );
+  });
+});
 
 describe('LinearRegression', () => {
   describe('constructor', () => {
