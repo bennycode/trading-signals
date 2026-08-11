@@ -4,6 +4,17 @@ import {TradingSignal} from '../../base/index.js';
 import {WSMA} from '../../trend/WSMA/WSMA.js';
 
 describe('RSI', () => {
+  describe('constructor', () => {
+    it('rejects inverted or unreadable signal thresholds', () => {
+      expect(() => new RSI(5, WSMA, {overbought: 30, oversold: 70})).toThrowError(
+        'The oversold threshold ("70") has to be at or below the overbought threshold ("30").'
+      );
+      expect(() => new RSI(5, WSMA, {overbought: Number.NaN})).toThrowError(
+        'The oversold threshold ("30") has to be at or below the overbought threshold ("NaN").'
+      );
+    });
+  });
+
   describe('update', () => {
     it('can replace recently added values', () => {
       const rsi = new RSI(5);

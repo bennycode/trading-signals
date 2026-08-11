@@ -203,6 +203,14 @@ export abstract class ThresholdCrossSeries<
 
   constructor({overbought, oversold}: Required<SignalThresholds>) {
     super();
+
+    // Inverted bands would flag bullish pressure below the bearish band; when both bands meet at a single value, the oversold reading wins
+    if (!Number.isFinite(overbought) || !Number.isFinite(oversold) || oversold > overbought) {
+      throw new Error(
+        `The oversold threshold ("${oversold}") has to be at or below the overbought threshold ("${overbought}").`
+      );
+    }
+
     this.#overbought = overbought;
     this.#oversold = oversold;
   }
