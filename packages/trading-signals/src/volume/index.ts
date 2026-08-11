@@ -4,6 +4,7 @@ export * from './CMF/CMF.js';
 export * from './EMV/EMV.js';
 export * from './FI/ForceIndex.js';
 export * from './KVO/KVO.js';
+export * from './MARKETFI/MarketFacilitationIndex.js';
 export * from './NVI/NVI.js';
 export * from './PVI/PVI.js';
 export * from './PVO/PVO.js';

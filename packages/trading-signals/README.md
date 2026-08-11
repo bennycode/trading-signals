@@ -75,6 +75,7 @@ All indicators can be updated over time by streaming data (prices or [candles](h
 1. Klinger Volume Oscillator (KVO)
 1. Know Sure Thing (KST)
 1. Linear Regression (LINREG)
+1. Market Facilitation Index (MARKETFI)
 1. Mass Index (MI)
 1. McGinley Dynamic (MD)
 1. Mean Absolute Deviation (MAD)

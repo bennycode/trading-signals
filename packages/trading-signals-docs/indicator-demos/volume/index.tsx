@@ -4,6 +4,7 @@ import {CMF} from './CMF.demo';
 import {EMV} from './EMV.demo';
 import {ForceIndex} from './ForceIndex.demo';
 import {KVO} from './KVO.demo';
+import {MarketFacilitationIndex} from './MarketFacilitationIndex.demo';
 import {NVI} from './NVI.demo';
 import {PVI} from './PVI.demo';
 import {PVO} from './PVO.demo';
@@ -21,6 +22,7 @@ export const indicators: IndicatorConfig[] = [
   EMV,
   ForceIndex,
   KVO,
+  MarketFacilitationIndex,
   NVI,
   PVI,
   PVO,
