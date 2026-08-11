@@ -1,4 +1,5 @@
 import {ADX} from './ADX.demo';
+import {Alligator} from './Alligator.demo';
 import {ALMA} from './ALMA.demo';
 import {Aroon} from './Aroon.demo';
 import {BreakoutBarLow} from './BreakoutBarLow.demo';
@@ -59,6 +60,7 @@ export const indicators: IndicatorConfig[] = [
   HTTrendline,
   VHF,
   GannHiLo,
+  Alligator,
   VortexIndicator,
   IchimokuCloud,
   Aroon,
