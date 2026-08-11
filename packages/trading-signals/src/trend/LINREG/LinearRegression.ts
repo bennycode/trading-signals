@@ -1,6 +1,6 @@
 import {TechnicalIndicator} from '../../base/Indicator.js';
-import type {LinearRegressionResult} from '../../util/statistics/getLinearRegression.js';
-import {getLinearRegression} from '../../util/statistics/getLinearRegression.js';
+import type {LinearRegressionResult} from '../../util/math/getLinearRegression.js';
+import {getLinearRegression} from '../../util/math/getLinearRegression.js';
 import {pushUpdate} from '../../util/array/pushUpdate.js';
 
 /**

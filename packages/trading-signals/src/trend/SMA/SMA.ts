@@ -1,5 +1,5 @@
 import {MovingAverage} from '../MA/MovingAverage.js';
-import {getAverage} from '../../util/statistics/getAverage.js';
+import {getAverage} from '../../util/math/getAverage.js';
 import {pushUpdate} from '../../util/array/pushUpdate.js';
 
 /**

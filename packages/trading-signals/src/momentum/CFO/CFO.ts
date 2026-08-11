@@ -1,5 +1,5 @@
 import {ZeroCrossSeries} from '../../base/Indicator.js';
-import {getLinearRegression} from '../../util/statistics/getLinearRegression.js';
+import {getLinearRegression} from '../../util/math/getLinearRegression.js';
 import {pushUpdate} from '../../util/array/pushUpdate.js';
 
 /**

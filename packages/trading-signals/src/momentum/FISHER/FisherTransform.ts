@@ -1,8 +1,8 @@
 import type {HighLow} from '../../base/Candle.type.js';
 import {ZeroCrossSeries} from '../../base/Indicator.js';
-import {getMaximum} from '../../util/statistics/getMaximum.js';
+import {getMaximum} from '../../util/math/getMaximum.js';
 import {getMedianPrice} from '../../util/candle/getMedianPrice.js';
-import {getMinimum} from '../../util/statistics/getMinimum.js';
+import {getMinimum} from '../../util/math/getMinimum.js';
 import {pushUpdate} from '../../util/array/pushUpdate.js';
 
 /**
