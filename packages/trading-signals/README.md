@@ -35,6 +35,7 @@ All indicators can be updated over time by streaming data (prices or [candles](h
 1. Awesome Oscillator (AO)
 1. Balance of Power (BOP)
 1. Bollinger Bands (BBANDS)
+1. Bollinger Bands %B (PB)
 1. Bollinger Bands Width (BBW)
 1. Center of Gravity (CG)
 1. Chaikin Money Flow (CMF)
