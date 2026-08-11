@@ -7,6 +7,7 @@ export * from './CFO/CFO.js';
 export * from './CG/CG.js';
 export * from './CMO/CMO.js';
 export * from './COPPOCK/CoppockCurve.js';
+export * from './DI/DisparityIndex.js';
 export * from './DPO/DPO.js';
 export * from './ER/ER.js';
 export * from './ERI/ElderRay.js';

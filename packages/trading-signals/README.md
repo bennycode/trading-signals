@@ -47,6 +47,7 @@ All indicators can be updated over time by streaming data (prices or [candles](h
 1. Coppock Curve (COPPOCK)
 1. Detrended Price Oscillator (DPO)
 1. Directional Movement Index (DMI / DX)
+1. Disparity Index (DI)
 1. Donchian Channels (DC)
 1. Double Exponential Moving Average (DEMA)
 1. Dual Moving Average (DMA)
