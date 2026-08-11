@@ -1,6 +1,7 @@
 import type {HighLowCloseVolume} from '../../base/Candle.type.js';
 import {ZeroCrossSeries} from '../../base/Indicator.js';
 import {SMA} from '../../trend/SMA/SMA.js';
+import {getMedianPrice} from '../../util/getMedianPrice.js';
 import {pushUpdate} from '../../util/pushUpdate.js';
 
 /**
@@ -45,7 +46,7 @@ export class EMV extends ZeroCrossSeries<HighLowCloseVolume> {
     }
 
     const prev = this.#candles[0];
-    const distanceMoved = (candle.high + candle.low) / 2 - (prev.high + prev.low) / 2;
+    const distanceMoved = getMedianPrice(candle) - getMedianPrice(prev);
     const highLowDiff = candle.high - candle.low;
 
     let emv1 = 0;

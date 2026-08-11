@@ -1,5 +1,6 @@
 import type {HighLowClose} from '../../base/Candle.type.js';
 import {TradingSignal, TrendIndicator} from '../../base/Indicator.js';
+import {getTrueRange} from '../../util/getTrueRange.js';
 import {pushUpdate} from '../../util/pushUpdate.js';
 
 export type VortexResult = {
@@ -54,11 +55,7 @@ export class VortexIndicator extends TrendIndicator<VortexResult, HighLowClose<n
       const previous = this.#candles[i - 1];
       upwardMovement += Math.abs(current.high - previous.low);
       downwardMovement += Math.abs(current.low - previous.high);
-      trueRange += Math.max(
-        current.high - current.low,
-        Math.abs(current.high - previous.close),
-        Math.abs(current.low - previous.close)
-      );
+      trueRange += getTrueRange(current, previous.close);
     }
 
     /*

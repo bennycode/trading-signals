@@ -1,5 +1,6 @@
 import {IndicatorSeries} from '../../base/Indicator.js';
 import type {HighLowClose} from '../../base/Candle.type.js';
+import {getTrueRange} from '../../util/getTrueRange.js';
 
 /**
  * True Range (TR)
@@ -20,22 +21,15 @@ export class TR extends IndicatorSeries<HighLowClose<number>> {
   }
 
   update(candle: HighLowClose<number>, replace: boolean) {
-    const {high, low} = candle;
-    const highLow = high - low;
-
     if (this.#previousCandle && replace) {
       this.#previousCandle = this.#twoPreviousCandle;
     }
 
-    if (this.#previousCandle) {
-      const highClose = Math.abs(high - this.#previousCandle.close);
-      const lowClose = Math.abs(low - this.#previousCandle.close);
-      this.#twoPreviousCandle = this.#previousCandle;
-      this.#previousCandle = candle;
-      return this.setResult(Math.max(highLow, highClose, lowClose), replace);
-    }
+    const trueRange = getTrueRange(candle, this.#previousCandle?.close);
+
     this.#twoPreviousCandle = this.#previousCandle;
     this.#previousCandle = candle;
-    return this.setResult(highLow, replace);
+
+    return this.setResult(trueRange, replace);
   }
 }

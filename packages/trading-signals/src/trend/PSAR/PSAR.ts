@@ -1,5 +1,6 @@
 import type {HighLow} from '../../base/Candle.type.js';
 import {IndicatorSeries} from '../../base/Indicator.js';
+import {getMedianPrice} from '../../util/getMedianPrice.js';
 
 export type PSARConfig = {
   /**
@@ -89,8 +90,8 @@ export class PSAR extends IndicatorSeries<HighLow<number>, PSARState> {
     // Second candle (first calculation)
     if (state.lastSar === null) {
       // Determine initial trend direction - match Tulip Indicators approach
-      const currentMidpoint = (high + low) / 2;
-      const previousMidpoint = (state.previousCandle.high + state.previousCandle.low) / 2;
+      const currentMidpoint = getMedianPrice(candle);
+      const previousMidpoint = getMedianPrice(state.previousCandle);
 
       state.isLong = currentMidpoint >= previousMidpoint; // Using >= like Tulip implementation
 
