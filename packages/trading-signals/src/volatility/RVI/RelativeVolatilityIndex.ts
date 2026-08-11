@@ -52,6 +52,12 @@ export class RelativeVolatilityIndex extends TrendIndicatorSeries {
     stddevInterval = 10,
   }: RelativeVolatilityIndexConfig = {}) {
     super();
+
+    // A single close carries no deviation and leaves no previous close to compare against
+    if (stddevInterval < 2) {
+      throw new Error(`The stddevInterval has to be at least 2, but "${stddevInterval}" was given.`);
+    }
+
     this.interval = interval;
     this.stddevInterval = stddevInterval;
     this.#avgUpVolatility = new WSMA(interval);

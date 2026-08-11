@@ -26,6 +26,14 @@ describe('RelativeVolatilityIndex', () => {
   const prices = [10, 12, 11, 13, 14, 12, 12, 15] as const;
   const expectations = ['71.65', '50.27', '50.27', '77.01'] as const;
 
+  describe('constructor', () => {
+    it('rejects a deviation window that cannot form a comparison', () => {
+      expect(() => new RelativeVolatilityIndex({stddevInterval: 1})).toThrowError(
+        'The stddevInterval has to be at least 2, but "1" was given.'
+      );
+    });
+  });
+
   describe('getResultOrThrow', () => {
     it('matches the hand-derived Dorsey worksheet', () => {
       const rvi = new RelativeVolatilityIndex({interval: 3, stddevInterval: 3});
