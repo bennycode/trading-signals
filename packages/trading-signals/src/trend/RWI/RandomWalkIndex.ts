@@ -50,6 +50,12 @@ export class RandomWalkIndex extends TechnicalIndicator<RandomWalkIndexResult, H
     }
   }
 
+  /*
+   * The longest stretch measures a full interval of true ranges, and the very first candle only
+   * seeds the range comparison without contributing one — so one candle more than the interval
+   * has to arrive before every stretch is measurable. The reference implementation emits its
+   * first reading on exactly that candle.
+   */
   override getRequiredInputs() {
     return this.interval + 1;
   }
