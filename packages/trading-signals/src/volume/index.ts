@@ -5,6 +5,7 @@ export * from './EMV/EMV.js';
 export * from './FI/ForceIndex.js';
 export * from './KVO/KVO.js';
 export * from './NVI/NVI.js';
+export * from './PVI/PVI.js';
 export * from './PVT/PVT.js';
 export * from './RVOL/RVOL.js';
 export * from './VROC/VROC.js';
