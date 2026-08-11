@@ -71,6 +71,7 @@ All indicators can be updated over time by streaming data (prices or [candles](h
 1. Ichimoku Cloud (ICHIMOKU)
 1. Internal Bar Strength (IBS)
 1. Interquartile Range (IQR)
+1. Intraday Momentum Index (IMI)
 1. Kaufman's Adaptive Moving Average (KAMA)
 1. Keltner Channels (KC)
 1. Klinger Volume Oscillator (KVO)

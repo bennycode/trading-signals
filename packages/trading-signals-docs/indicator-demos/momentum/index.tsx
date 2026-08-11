@@ -17,6 +17,7 @@ import {ElderRay} from './ElderRay.demo';
 import {ER} from './ER.demo';
 import {FisherTransform} from './FisherTransform.demo';
 import {IBS} from './IBS.demo';
+import {IMI} from './IMI.demo';
 import {KST} from './KST.demo';
 import {MACD} from './MACD.demo';
 import {MFI} from './MFI.demo';
@@ -79,6 +80,7 @@ export const indicators: IndicatorConfig[] = [
   DisparityIndex,
   DPO,
   IBS,
+  IMI,
   AccumulativeSwingIndex,
   ConnorsRSI,
   PGO,
