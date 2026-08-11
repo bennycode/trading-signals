@@ -59,7 +59,7 @@ describe('APO', () => {
       prices.forEach((price, i) => {
         const result = apo.add(price);
 
-        if (result) {
+        if (result !== null) {
           expect(result.toFixed(3)).toBe(expectations[i - offset]);
         }
       });
