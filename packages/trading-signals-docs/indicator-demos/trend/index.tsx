@@ -15,6 +15,7 @@ import {IchimokuCloud} from './IchimokuCloud.demo';
 import {KAMA} from './KAMA.demo';
 import {MAMA} from './MAMA.demo';
 import {McGinleyDynamic} from './McGinleyDynamic.demo';
+import {RandomWalkIndex} from './RandomWalkIndex.demo';
 import {T3} from './T3.demo';
 import {TEMA} from './TEMA.demo';
 import {TRIMA} from './TRIMA.demo';
@@ -62,6 +63,7 @@ export const indicators: IndicatorConfig[] = [
   VHF,
   GannHiLo,
   Alligator,
+  RandomWalkIndex,
   VortexIndicator,
   IchimokuCloud,
   Aroon,

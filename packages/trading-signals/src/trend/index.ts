@@ -24,6 +24,7 @@ export * from './MAMA/MAMA.js';
 export * from './MD/McGinleyDynamic.js';
 export * from './PSAR/PSAR.js';
 export * from './RMA/RMA.js';
+export * from './RWI/RandomWalkIndex.js';
 export * from './SMA/SMA.js';
 export * from './SMA15/SMA15.js';
 export * from './SUPERSMOOTHER/SuperSmoother.js';

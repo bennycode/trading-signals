@@ -105,6 +105,7 @@ All indicators can be updated over time by streaming data (prices or [candles](h
 1. Psychological Line (PSL)
 1. Qstick (QSTICK)
 1. Quantitative Qualitative Estimation (QQE)
+1. Random Walk Index (RWI)
 1. Range Expansion Index (REI)
 1. Rank Correlation Index (RCI)
 1. Rate-of-Change (ROC)
