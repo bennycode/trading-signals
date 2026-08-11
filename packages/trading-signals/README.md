@@ -95,6 +95,7 @@ All indicators can be updated over time by streaming data (prices or [candles](h
 1. Price Momentum Oscillator (PMO)
 1. Price Volume Trend (PVT)
 1. Projection Oscillator (PO)
+1. Psychological Line (PSL)
 1. Qstick (QSTICK)
 1. Range Expansion Index (REI)
 1. Rate-of-Change (ROC)
