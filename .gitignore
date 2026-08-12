@@ -18,3 +18,8 @@ node_modules/
 npm-debug.log*
 .claude/scheduled_tasks.lock
 .claude/worktrees/
+
+# Stryker mutation testing
+.stryker-tmp/
+reports/
+stryker.log
