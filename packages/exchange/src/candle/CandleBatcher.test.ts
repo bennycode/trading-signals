@@ -102,27 +102,28 @@ describe('CandleBatcher', () => {
         },
         {
           base: 'BTC',
-          close: '50100',
+          close: '50200',
           counter: 'USDT',
-          high: '50200',
+          high: '50300',
           low: '50000',
           open: '50000',
           openTimeInISO: '2021-01-01T00:01:00.000Z',
           openTimeInMillis: 1609459260000,
           sizeInMillis: 60000,
-          volume: '0',
+          volume: '15',
         },
+        // A quiet final minute: no trades, OHLC flat at the last traded price
         {
           base: 'BTC',
           close: '50200',
           counter: 'USDT',
-          high: '50300',
-          low: '50100',
-          open: '50100',
+          high: '50200',
+          low: '50200',
+          open: '50200',
           openTimeInISO: '2021-01-01T00:02:00.000Z',
           openTimeInMillis: 1609459320000,
           sizeInMillis: 60000,
-          volume: '15',
+          volume: '0',
         },
       ];
 
@@ -136,17 +137,17 @@ describe('CandleBatcher', () => {
         }
       });
 
-      expect(batchedCandles.length, 'zero-volume candle stays in the batch instead of being dropped').toBe(1);
+      expect(batchedCandles.length, 'zero-volume candle completes the interval instead of being dropped').toBe(1);
       const [batch] = batchedCandles;
       expect(batch.open.toString()).toBe('50000');
       expect(batch.high.toString()).toBe('50300');
       expect(batch.low.toString()).toBe('49900');
-      expect(batch.close.toString()).toBe('50200');
+      expect(batch.close.toString(), 'close comes from the zero-volume candle').toBe('50200');
       expect(batch.volume.toString()).toBe('25');
       expect(
         batch.weightedMedianPrice.toString(),
-        'weighted median only counts traded volume: (10 * 50000 + 0 + 15 * 50200) / 25'
-      ).toBe('50120');
+        'weighted median only counts traded volume: (10 * 50000 + 15 * 50150 + 0) / 25'
+      ).toBe('50090');
     });
 
     it('produces a batched candle from a single zero-volume candle', () => {
