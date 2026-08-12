@@ -1,6 +1,6 @@
 ---
 name: code-review
-description: Repository coding standards for reviewing pull requests. Apply when reviewing TypeScript code, tests, comments/JSDoc, or Playwright e2e specs in this repository.
+description: Repository coding standards for reviewing pull requests. Apply when reviewing TypeScript code.
 ---
 
 # Code Review Standards
