@@ -136,16 +136,17 @@ describe('CandleBatcher', () => {
         }
       });
 
-      // The zero-volume candle stays in the batch instead of being dropped
-      expect(batchedCandles.length).toBe(1);
+      expect(batchedCandles.length, 'zero-volume candle stays in the batch instead of being dropped').toBe(1);
       const [batch] = batchedCandles;
       expect(batch.open.toString()).toBe('50000');
       expect(batch.high.toString()).toBe('50300');
       expect(batch.low.toString()).toBe('49900');
       expect(batch.close.toString()).toBe('50200');
       expect(batch.volume.toString()).toBe('25');
-      // Weighted median only counts traded volume: (10 * 50000 + 0 + 15 * 50200) / 25
-      expect(batch.weightedMedianPrice.toString()).toBe('50120');
+      expect(
+        batch.weightedMedianPrice.toString(),
+        'weighted median only counts traded volume: (10 * 50000 + 0 + 15 * 50200) / 25'
+      ).toBe('50120');
     });
 
     it('produces a batched candle from a single zero-volume candle', () => {
@@ -166,8 +167,10 @@ describe('CandleBatcher', () => {
 
       expect(batch.volume.toString()).toBe('0');
       expect(batch.close.toString()).toBe('50000');
-      // Zero total volume falls back to the close price instead of dividing by zero
-      expect(batch.weightedMedianPrice.toString()).toBe('50000');
+      expect(
+        batch.weightedMedianPrice.toString(),
+        'zero total volume falls back to the close price instead of dividing by zero'
+      ).toBe('50000');
     });
 
     it('does not batch candles which are already part of the batch', () => {
