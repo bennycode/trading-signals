@@ -181,12 +181,6 @@ export class CandleBatcher extends EventEmitter<EventMap> {
     currentBatchArray: Candle[];
     newBatch: BatchedCandle | undefined;
   } {
-    if (new Big(candle.volume).eq(0)) {
-      return {
-        currentBatchArray: currentBatchArray,
-        newBatch: undefined,
-      };
-    }
     if (currentBatchArray.length === 0) {
       const adjustedCandle = CandleBatcher.adjustCandle(candle, desiredIntervalInMillis);
       currentBatchArray.push(adjustedCandle);

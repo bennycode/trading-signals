@@ -86,7 +86,7 @@ describe('CandleBatcher', () => {
       expect(daysInHours.length).toBe(48);
     });
 
-    it('does not batch candles with zero volume', () => {
+    it('includes zero-volume candles when batching, matching exchange-native aggregation', () => {
       const candles: Candle[] = [
         {
           base: 'BTC',
@@ -102,31 +102,32 @@ describe('CandleBatcher', () => {
         },
         {
           base: 'BTC',
-          close: '50100',
+          close: '50200',
           counter: 'USDT',
-          high: '50200',
+          high: '50300',
           low: '50000',
           open: '50000',
           openTimeInISO: '2021-01-01T00:01:00.000Z',
           openTimeInMillis: 1609459260000,
           sizeInMillis: 60000,
-          volume: '0',
+          volume: '15',
         },
+        // A quiet final minute: no trades, OHLC flat at the last traded price
         {
           base: 'BTC',
           close: '50200',
           counter: 'USDT',
-          high: '50300',
-          low: '50100',
-          open: '50100',
+          high: '50200',
+          low: '50200',
+          open: '50200',
           openTimeInISO: '2021-01-01T00:02:00.000Z',
           openTimeInMillis: 1609459320000,
           sizeInMillis: 60000,
-          volume: '15',
+          volume: '0',
         },
       ];
 
-      const cb = new CandleBatcher(ms('5m'));
+      const cb = new CandleBatcher(ms('3m'));
       const batchedCandles: BatchedCandle[] = [];
 
       candles.forEach(candle => {
@@ -136,9 +137,41 @@ describe('CandleBatcher', () => {
         }
       });
 
-      expect(batchedCandles.length).toBe(0);
-      // Zero-volume candles are filtered out, so only 2 candles remain in the batch
-      expect(cb.present).toBe(2);
+      expect(batchedCandles.length, 'zero-volume candle completes the interval instead of being dropped').toBe(1);
+      const [batch] = batchedCandles;
+      expect(batch.open.toString()).toBe('50000');
+      expect(batch.high.toString()).toBe('50300');
+      expect(batch.low.toString()).toBe('49900');
+      expect(batch.close.toString(), 'close comes from the zero-volume candle').toBe('50200');
+      expect(batch.volume.toString()).toBe('25');
+      expect(
+        batch.weightedMedianPrice.toString(),
+        'weighted median only counts traded volume: (10 * 50000 + 15 * 50150 + 0) / 25'
+      ).toBe('50090');
+    });
+
+    it('produces a batched candle from a single zero-volume candle', () => {
+      const zeroVolumeCandle: Candle = {
+        base: 'BTC',
+        close: '50000',
+        counter: 'USDT',
+        high: '50000',
+        low: '50000',
+        open: '50000',
+        openTimeInISO: '2021-01-01T00:00:00.000Z',
+        openTimeInMillis: 1609459200000,
+        sizeInMillis: 60000,
+        volume: '0',
+      };
+
+      const batch = CandleBatcher.toBatchedCandle(zeroVolumeCandle);
+
+      expect(batch.volume.toString()).toBe('0');
+      expect(batch.close.toString()).toBe('50000');
+      expect(
+        batch.weightedMedianPrice.toString(),
+        'zero total volume falls back to the close price instead of dividing by zero'
+      ).toBe('50000');
     });
 
     it('does not batch candles which are already part of the batch', () => {
