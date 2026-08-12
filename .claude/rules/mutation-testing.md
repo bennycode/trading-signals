@@ -19,8 +19,3 @@ npx stryker run --mutate src/candle/CandleBatcher.ts    # scoped to one file
 ```
 
 The HTML report lands in `reports/mutation/mutation.html`; surviving mutants are the test gaps. Incremental mode keeps re-runs fast.
-
-## For reviewers
-
-- Flag assertions that would still pass if the change under review were reverted — name the mutation that survives.
-- When a test's discriminating power is unclear, suggest a scoped mutation run on the file under test instead of guessing.
