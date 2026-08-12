@@ -11,12 +11,10 @@ This repository's coding standards live in [`.claude/rules/`](../../../.claude/r
 
 Every changed test must be able to fail. Flag assertions that would still pass if the change under review were reverted, and name the mutation that survives.
 
-When a test's discriminating power is unclear, run Stryker on the file under test instead of guessing (set up in `packages/exchange`):
+When a test's discriminating power is unclear, run Stryker on the file under test instead of guessing:
 
 ```sh
-cd packages/exchange
-npm run test:mutation                                   # full package (~16s)
-npx stryker run --mutate src/candle/CandleBatcher.ts    # scoped to the file under review
+npx stryker run --mutate <file>
 ```
 
-Surviving mutants in the changed code are test gaps — report each one with its file, line, and the mutation that survived.
+Surviving mutants in the changed code are test gaps. Please report each one with its file, line, and the mutation that survived.
