@@ -80,8 +80,4 @@ useEma(ema);
 const ema = this.#ema.getResultOrThrow();
 ```
 
-Use (a) on a hot path that runs before the indicator has warmed up — return / skip / branch on the `undefined` instead of pretending it can't happen.
-
-Use (b) once you've already gated on `isStable` / `isWarmedUp`, or anywhere a missing result indicates a programmer error rather than an expected state. `getResultOrThrow()` is the canonical accessor on every `IndicatorSeries` / `TechnicalIndicator` subclass and throws a meaningful error.
-
 What you should never do: write `getResult()!`. The `!` is the antipattern; either branch on `undefined` or throw.
