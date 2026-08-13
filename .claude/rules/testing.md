@@ -1,6 +1,28 @@
-# Vitest Module Mocking
+---
+paths:
+  - '**/*.test.{ts,tsx}'
+---
 
-## Type every `vi.fn()` that feeds data into the code under test
+# Testing (Vitest)
+
+## Put test expectations in `expect` messages, not comments
+
+When an assertion needs an explanation, pass it as the message argument — `expect(actual, message)` — instead of writing a comment above the line. A comment is invisible at the moment it matters most: when the test fails, the comment stays in the source while the terminal shows only the raw value mismatch. The message prints in the failure output, right where you debug.
+
+```ts
+// ❌ Bad: the explanation is lost at failure time
+// The zero-volume candle stays in the batch instead of being dropped
+expect(batchedCandles.length).toBe(1);
+
+// ✅ Good: the explanation prints when the assertion fails
+expect(batchedCandles.length, 'zero-volume candle stays in the batch instead of being dropped').toBe(1);
+```
+
+The message states the expectation or invariant being protected — never the mechanics (`'length should be 1'` adds nothing the diff doesn't show). Not every `expect` needs a message: add one exactly where you would otherwise have written a comment.
+
+## Module Mocking
+
+### Type every `vi.fn()` that feeds data into the code under test
 
 The `no-unsafe-*` lint rules catch an untyped mock's `any` when it is _read_ (destructured calls, member access, returns). They cannot catch the input side: `vi.fn().mockResolvedValue(wrongShape)` silently feeds garbage into the code under test as if it were typed data. So any `vi.fn()` whose return value the code consumes — `mockResolvedValue`, `mockReturnValue`, `mockImplementation` with a payload — must carry its real signature.
 
@@ -17,7 +39,7 @@ const getBalances = vi.fn<AlpacaBroker['getAvailableBalances']>().mockResolvedVa
 
 Derive the signature instead of hand-writing it: `SomeType['method']`, `typeof SomeClass.staticMethod`, or `NonNullable<SomeType['optionalMethod']>`. A bare `vi.fn()` remains fine for pure call-recording sinks that are only asserted with `toHaveBeenCalledTimes` or `toHaveBeenCalledWith`, where no data flows in either direction.
 
-## Always use the typed `import()` form
+### Always use the typed `import()` form
 
 Never pass a string path to `vi.mock` — pass the module via `import()`. The factory is then checked against the real module's shape, so a renamed or removed export fails at type-check instead of at runtime, and `importOriginal` is fully typed (no generics needed).
 
@@ -44,7 +66,7 @@ vi.mock(import('trading-strategies'), async importActual => {
 });
 ```
 
-## Prefer a bare automock when the test only needs stubs
+### Prefer a bare automock when the test only needs stubs
 
 `vi.mock(import('...'))` without a factory replaces every export with a typed `vi.fn()` returning `undefined` — no casts, no hand-rolled object. Use it whenever the test never asserts on specific return values.
 
@@ -60,7 +82,7 @@ vi.mock(import('@grammyjs/auto-retry'));
 
 Caveat: automock **imports the real module** to discover its exports. Only use it when that import is side-effect-free.
 
-## Use a factory when the real module must not execute
+### Use a factory when the real module must not execute
 
 Database models (Sequelize registration), the logger (pino setup), and anything else with import side effects must be mocked with a factory — the factory prevents the original module from loading at all.
 
@@ -73,7 +95,7 @@ vi.mock(import('../database/models/Account.js'), () => ({
 
 A factory is also required when the mock carries behavior the test drives or asserts on (canned return values, captured callbacks, stub classes).
 
-## Cast partial mocks per export, as narrowly as possible
+### Cast partial mocks per export, as narrowly as possible
 
 A partial stand-in (a stub class, a model with only `findByPk`) will not satisfy the real type — cast it with `as unknown as typeof X` on the **individual export**, never on the whole factory return. That way the export names stay compiler-checked and only the member shape is loosened. Use `import type` for the referenced types so nothing real is loaded.
 
@@ -93,6 +115,6 @@ vi.mock(import('./api/AlpacaAPI.js'), () => ({
 
 Mocked constants must match their literal types exactly (e.g. `MESSAGE_BREAK: '\f' as const`) — the typed factory will flag a widened `string`.
 
-## No manual mock restoration
+### No manual mock restoration
 
 `restoreMocks: true` is enabled in `vitest.shared.ts`, so spies created with `vi.spyOn` are restored automatically before each test. Do not add `vi.restoreAllMocks()` in `afterEach`.
