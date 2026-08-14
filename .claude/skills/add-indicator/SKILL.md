@@ -26,7 +26,7 @@ Every indicator must reproduce published reference values, asserted exactly and 
 1. [Tulip Indicators](https://tulipindicators.org/): its repository ships a test data file with inputs and expected outputs for every indicator it supports. Match to three decimals and link the exact lines of the version you used.
 2. [TA-Lib](https://ta-lib.org/): match emissions bar-for-bar against its [C sources](https://github.com/TA-Lib/ta-lib), including the lookback. Preferred for Ehlers-style indicators that Tulip does not ship.
 3. [Skender.Stock.Indicators](https://github.com/DaveSkender/Stock.Indicators): usable for pure-window math only. Its EMA-style recursions seed from an SMA while this library seeds from the first input, so smoothed series do not transfer.
-4. No reference available: derive expected values by hand with exact fractions, show the derivation in a comment, and add property tests.
+4. No reference implementation available: search the web for published test vectors first. Worked step-by-step examples often exist on [Wikipedia](https://en.wikipedia.org/), [Investopedia](https://www.investopedia.com/), or in the indicator author's original publication; a found vector beats a self-made one. Only when nothing is published, derive expected values by hand with exact fractions, show the derivation in a comment, and add property tests.
 
 Two recurring pitfalls when matching references:
 
