@@ -1,3 +1,8 @@
+---
+paths:
+  - 'packages/trading-signals-docs/e2e/**/*'
+---
+
 # Docs E2E (Playwright)
 
 Playwright lives at `packages/trading-signals-docs/e2e/`. Vitest excludes that folder; the two suites do not overlap.
