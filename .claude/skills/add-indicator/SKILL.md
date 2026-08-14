@@ -9,18 +9,9 @@ The step-by-step recipe and all coding conventions live in `packages/trading-sig
 
 ## Reuse the base classes
 
-Do not hand-roll result caching, signal tracking, or overbought/oversold logic. Pick the smallest base class that fits (all in `packages/trading-signals/src/base/Indicator.ts`):
+Do not hand-roll result caching, signal tracking, or overbought/oversold logic. Read `packages/trading-signals/src/base/Indicator.ts` and extend the smallest base class that fits: each class's JSDoc states which indicator shape it serves, and that file is the current inventory (new bases get added as indicator families grow, so trust the file over any list written down elsewhere).
 
-| Indicator shape | Base class | You write |
-| --- | --- | --- |
-| Single-number result, no signal | `IndicatorSeries` | `update()` with `setResult()` |
-| Single-number result with signal | `TrendIndicatorSeries` | `update()` plus `calculateSignalState()` |
-| Zero-line oscillator (above zero = bullish) | `ZeroCrossSeries` | `update()` only, no signal code |
-| Overbought/oversold oscillator | `ThresholdCrossSeries` | `update()` plus `super({overbought, oversold})`, no signal code |
-| Composite result (bands, lines) with signal | `TrendIndicator` | `update()` with `setResult()` plus `calculateSignalState()` |
-| Composite result, no signal | `TechnicalIndicator` | `update()` with direct `this.result` assignment |
-
-Reuse shared building blocks instead of reimplementing them: existing indicators as components (`SMA`, `EMA`, `ATR`, `TR`), the sliding-window primitive `pushUpdate()` (`src/util/array/`), candle transforms like `getTrueRange`, `getMedianPrice`, `getTypicalPrice` (`src/util/candle/`), math helpers like `getAverage`, `getStandardDeviation`, `getLinearRegression` (`src/util/math/`), and the Ehlers dominant-cycle engine (`src/trend/HT/HilbertTransform.ts`) for Hilbert-transform indicators. If your indicator computes something two other indicators already compute, extract or reuse a shared helper instead of adding a third copy.
+Before writing helper math, check the categorized utilities under `packages/trading-signals/src/util/` and reach for existing indicators as internal components instead of reimplementing them. If your indicator computes something two other indicators already compute, extract or reuse a shared helper rather than adding a third copy.
 
 ## Reuse the test infrastructure
 
