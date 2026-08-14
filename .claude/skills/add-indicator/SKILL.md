@@ -32,7 +32,3 @@ Two recurring pitfalls when matching references:
 
 - Rounding ties: values printed by C can differ from JavaScript rounding in the last digit when the true result sits exactly half-way (for example 84.4575). Keep the value this library computes and document the tie in the fixture comment; never loosen the assertion precision to hide it.
 - Dead markets: some references emit NaN or a fabricated direction on flat input. This library never fabricates a directional signal (see the convention in CLAUDE.md); document any deviation from the reference in a comment where it occurs.
-
-## Check your work locally
-
-Run the indicator's own test suite first (scope the test runner to its directory), then the package type-check, then `npm test` and `npm run lint` from the repository root, which enforce the coverage thresholds and formatting.
