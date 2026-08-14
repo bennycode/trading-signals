@@ -1,70 +1,57 @@
 ---
 name: add-indicator
-description: Orchestrate adding technical indicators to the trading-signals package with parallel subagents, reference-data verification, full quality gates, and the Copilot review loop. Use when asked to add, implement, or source indicators, whether a single one or in bulk from another library's feature list.
+description: Guide for implementing technical indicators in the trading-signals package by reusing the shared base classes, utilities, and test infrastructure, and by verifying results against well-known reference implementations (Tulip Indicators, TA-Lib, Skender). Use when asked to add, implement, or port an indicator.
 ---
 
-# Add Indicator Pipeline
+# Add an Indicator
 
-You are the integrator. Subagents write indicator code; you alone touch git, shared files, and pull requests. The per-indicator recipe and all code/test conventions live in `packages/trading-signals/CLAUDE.md` and are the authority; this skill covers the orchestration around that recipe.
+The step-by-step recipe and all coding conventions live in `packages/trading-signals/CLAUDE.md` and are the authority. This skill covers the three things that make an implementation land on the first review: reuse the base classes, reuse the test infrastructure, and verify against a well-known reference.
 
-## 1. Scope the work
+## Reuse the base classes
 
-Compare the requested indicators against the "Supported Technical Indicators" list in `packages/trading-signals/README.md`. Indicators travel under many names (WSMA = SMMA = MEMA), so check codes and aliases before declaring one missing. For bulk sourcing from another library, build the complete work list first and confirm it with the user before spawning agents.
+Do not hand-roll result caching, signal tracking, or overbought/oversold logic. Pick the smallest base class that fits (all in `packages/trading-signals/src/base/Indicator.ts`):
 
-## 2. Branch
+| Indicator shape | Base class | You write |
+| --- | --- | --- |
+| Single-number result, no signal | `IndicatorSeries` | `update()` with `setResult()` |
+| Single-number result with signal | `TrendIndicatorSeries` | `update()` plus `calculateSignalState()` |
+| Zero-line oscillator (above zero = bullish) | `ZeroCrossSeries` | `update()` only, no signal code |
+| Overbought/oversold oscillator | `ThresholdCrossSeries` | `update()` plus `super({overbought, oversold})`, no signal code |
+| Composite result (bands, lines) with signal | `TrendIndicator` | `update()` with `setResult()` plus `calculateSignalState()` |
+| Composite result, no signal | `TechnicalIndicator` | `update()` with direct `this.result` assignment |
 
-Create a feature branch from `origin/main`. Never commit to main, never push to main, and never merge a PR without an explicit request in the user's own words; the open PR is the stopping point.
+Reuse shared building blocks instead of reimplementing them: existing indicators as components (`SMA`, `EMA`, `ATR`, `TR`), the sliding-window primitive `pushUpdate()` (`src/util/array/`), candle transforms like `getTrueRange`, `getMedianPrice`, `getTypicalPrice` (`src/util/candle/`), math helpers like `getAverage`, `getStandardDeviation`, `getLinearRegression` (`src/util/math/`), and the Ehlers dominant-cycle engine (`src/trend/HT/HilbertTransform.ts`) for Hilbert-transform indicators. If your indicator computes something two other indicators already compute, extract or reuse a shared helper instead of adding a third copy.
 
-## 3. Fan out workers
+## Reuse the test infrastructure
 
-Spawn one background agent per indicator using `agent-prompt-template.md` in this skill directory. Fill in the indicator name, code, category folder, the exact three files to create, and the verification data source. Cap parallelism at 4 to 6 agents. Workers never run git commands and never edit shared files (barrels, README, demo registries). If an agent stalls, resume it with a message instead of respawning; if an agent reports SKIPPED, accept the refusal and surface the reason to the user.
+Register the shared contract fixture once, at top level of your test file. It covers the warm-up contract (unstable, `getResult()` returns null, `getResultOrThrow()` throws `NotEnoughDataError`) and proves that `replace()` restores the exact state of an add-only series, so you never write those tests by hand:
 
-## 4. Verification data hierarchy
+```ts
+import {testIndicatorContract} from '../../fixtures/testIndicatorContract.js';
 
-Every indicator must reproduce external reference values. Prefer sources in this order:
-
-1. Tulip Indicators `untest.txt` (pin v0.9.1). Match to three decimals, link the exact lines in a test comment, and tag the test with `{tags: ['tulipindicators']}`. Fetch with `curl -s https://raw.githubusercontent.com/TulipCharts/tulipindicators/v0.9.1/tests/untest.txt`.
-2. TA-Lib behavior anchors for Ehlers-style indicators (link the `ta_func` C source; match emissions bar-for-bar including lookback).
-3. Skender fixtures, but only for pure-window math. SMA-seeded EMA recursions do not transfer because this repo seeds from the first input.
-4. Hand-derived exact-fraction worksheets plus property tests, documented in the test file.
-
-Rounding ties: reference values printed by C can differ from JavaScript `toFixed` in the last digit when the true value sits exactly half-way (for example 84.4575). Keep the value this library computes and document the tie in the fixture comment; never loosen the assertion precision to hide it.
-
-Deviations from a reference (NaN policies, dead-market behavior) follow the dead-market rule in CLAUDE.md and must be documented in a comment where they occur.
-
-## 5. Integrate (orchestrator only)
-
-After each worker finishes, wire the shared files yourself: the category barrel `src/<category>/index.ts` (alphabetical), the README indicator list (alphabetical), and the docs demo registration in `packages/trading-signals-docs/indicator-demos/<category>/index.tsx`. The demo import name must match the demo file's actual export. Commit one indicator per commit as `feat(trading-signals): add <Name> (<CODE>)`.
-
-## 6. Gates, in cost order
-
-1. Scoped tests from `packages/trading-signals/`: `npx vitest run --dir src/<category>/<CODE>`. Use exactly one `--dir` per invocation; bare path filters also match stale copies under `.claude/worktrees/`.
-2. `npx tsc --noEmit` from `packages/trading-signals/`.
-3. Root `npm test` (knip plus all package suites; coverage thresholds are 100% across all metrics and fail the build).
-4. Root `npm run lint` (oxlint plus oxfmt; oxfmt must run from the repo root).
-
-Shell discipline: the working directory persists between commands, so prefer `git -C <repo-root>` and absolute paths, and never read a pipe's exit code as the command's.
-
-## 7. PR and the Copilot loop
-
-Push the branch and open a PR describing what was added, which references verified it, and which gates ran. Then request a Copilot review:
-
-```bash
-gh api -X POST repos/<owner>/<repo>/pulls/<N>/requested_reviewers \
-  -f 'reviewers[]=copilot-pull-request-reviewer[bot]'
+testIndicatorContract({
+  create: () => new MOM(5),
+  divergentInput: 1_000,
+  inputs: [81.59, 81.06, 82.87, 83.0, 83.61, 83.15, 82.84],
+});
 ```
 
-`gh pr edit --add-reviewer Copilot` silently fails; use the REST call above. Poll the reviews until one arrives, then read its verdict from the "generated N comments" line in the review body.
+On top of the fixture, add what only you can know: a reference-data test (next section), a bidirectional `replace()` test with exact values, one test per signal state the indicator can emit, and behavioral edge cases so a mutated comparison operator fails the suite. Coverage thresholds are 100% across all metrics and fail the build; the review process also runs mutation testing against your tests.
 
-For every finding, fix the code, run the gates, push, and re-request review. Repeat until the latest review says "no new comments", then resolve the addressed threads via the GraphQL `resolveReviewThread` mutation. For a false positive, verify with arithmetic or a test, keep the code, add an explanatory comment at the disputed location, and tell the user. Never post PR comments, review replies, or thread messages: code gets pushed, words get drafted for the user to approve.
+## Verify against a well-known reference
 
-## 8. Stacking and merging (only on explicit request)
+Every indicator must reproduce published reference values. Sources in order of preference:
 
-For multi-PR campaigns, base each PR on the previous branch so slices stay reviewable. When the user asks to merge the stack, run the train one PR at a time:
+1. [Tulip Indicators](https://tulipindicators.org/) test data: [`untest.txt` (v0.9.1)](https://github.com/TulipCharts/tulipindicators/blob/v0.9.1/tests/untest.txt). Match to three decimals, link the exact lines in a test comment, and tag the test with `{tags: ['tulipindicators']}`.
+2. [TA-Lib](https://ta-lib.org/): match emissions bar-for-bar against the [`ta_func` C sources](https://github.com/TA-Lib/ta-lib/tree/main/src/ta_func), including the lookback. Preferred for Ehlers-style indicators that Tulip does not ship.
+3. [Skender.Stock.Indicators](https://github.com/DaveSkender/Stock.Indicators): usable for pure-window math only. Its EMA-style recursions seed from an SMA while this library seeds from the first input, so smoothed series do not transfer.
+4. No reference available: derive expected values by hand with exact fractions, show the derivation in a comment, and add property tests.
 
-1. Retarget the child PR to main before merging its parent, otherwise GitHub auto-closes the child when the parent branch is deleted.
-2. Squash-merge the parent with `--delete-branch`, then fast-forward local main.
-3. Rebase the child: `git rebase --onto origin/main <old-parent-tip-sha> <child-branch>` and push with `--force-with-lease`. Record branch tip SHAs before anything gets deleted.
-4. Wait for the child's full CI (the test workflows only run against main), then repeat.
+Two recurring pitfalls when matching references:
 
-Local `package-lock.json` drift blocks rebases; stash it around the train and pop it afterwards.
+- Rounding ties: values printed by C can differ from JavaScript `toFixed` in the last digit when the true result sits exactly half-way (for example 84.4575). Keep the value this library computes and document the tie in the fixture comment; never loosen the assertion precision to hide it.
+- Dead markets: some references emit NaN or a fabricated direction on flat input. This library never fabricates a directional signal (see the convention in CLAUDE.md); document any deviation from the reference in a comment where it occurs.
+
+## Check your work locally
+
+From `packages/trading-signals/`: `npx vitest run --dir src/<category>/<CODE>` (one `--dir` per invocation), then `npx tsc --noEmit`. From the repo root: `npm test` (includes knip and the 100% coverage gates) and `npm run lint`.
