@@ -470,6 +470,63 @@ describe('BrokerMock', () => {
       expect(fills[0].price, '100 open - 5% slippage would be 95, clamped to the candle low').toBe('99.5');
     });
 
+    it('fills a market buy above the candle high when clamping is disabled', async () => {
+      const exchange = createExchange('0', '10000', {clamp: false, rate: new Big('0.05')});
+
+      exchange.processCandle(createCandle({close: '100', open: '100'}));
+
+      await exchange.placeMarketOrder(pair, {
+        side: OrderSide.BUY,
+        size: '1',
+        sizeInCounter: false,
+      });
+
+      const fills = exchange.processCandle(
+        createCandle({close: '100', high: '100.5', low: '99.5', open: '100', openTimeInISO: '2025-01-01T00:01:00.000Z'})
+      );
+
+      expect(fills).toHaveLength(1);
+      expect(fills[0].price, 'the full 5% rate, above the 100.5 candle high').toBe('105');
+    });
+
+    it('fills a market sell below the candle low when clamping is disabled', async () => {
+      const exchange = createExchange('5', '0', {clamp: false, rate: new Big('0.05')});
+
+      exchange.processCandle(createCandle({close: '100', open: '100'}));
+
+      await exchange.placeMarketOrder(pair, {
+        side: OrderSide.SELL,
+        size: '1',
+        sizeInCounter: false,
+      });
+
+      const fills = exchange.processCandle(
+        createCandle({close: '100', high: '100.5', low: '99.5', open: '100', openTimeInISO: '2025-01-01T00:01:00.000Z'})
+      );
+
+      expect(fills).toHaveLength(1);
+      expect(fills[0].price, 'the full 5% rate, below the 99.5 candle low').toBe('95');
+    });
+
+    it('applies no slippage to a clamped buy when the candle opens at its high', async () => {
+      const exchange = createExchange('0', '10000', {rate: new Big('0.05')});
+
+      exchange.processCandle(createCandle({close: '100', open: '100'}));
+
+      await exchange.placeMarketOrder(pair, {
+        side: OrderSide.BUY,
+        size: '1',
+        sizeInCounter: false,
+      });
+
+      const fills = exchange.processCandle(
+        createCandle({close: '98', high: '100', low: '97', open: '100', openTimeInISO: '2025-01-01T00:01:00.000Z'})
+      );
+
+      expect(fills).toHaveLength(1);
+      expect(fills[0].price, 'the clamp caps the rate at the candle range, which is zero above the open').toBe('100');
+    });
+
     it('defaults to zero slippage when not configured', async () => {
       const exchange = createExchange('0', '10000');
 
