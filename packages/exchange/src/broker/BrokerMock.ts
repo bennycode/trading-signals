@@ -25,6 +25,13 @@ export interface ExchangeMockBalance {
   hold: Big;
 }
 
+export interface BrokerMockSlippageConfig {
+  /** Fraction of the fill price lost to slippage: "0.01" is 1%. Applied against market fills only. */
+  rate?: Big;
+  /** Keep slipped fills inside the candle's traded range (default `true`). */
+  clamp?: boolean;
+}
+
 export abstract class BrokerMock extends Broker {
   readonly #balances: Map<string, ExchangeMockBalance>;
   readonly #pendingOrders: PendingOrder[] = [];
@@ -38,10 +45,18 @@ export abstract class BrokerMock extends Broker {
   #historicalCandles: Candle[] = [];
   #nextOrderId = 1;
   readonly #orderTopics = new Set<string>();
+  readonly #slippageRate: Big;
+  readonly #clampSlippage: boolean;
 
-  constructor(config: {balances: Map<string, ExchangeMockBalance>}) {
+  constructor(config: {balances: Map<string, ExchangeMockBalance>; slippage?: BrokerMockSlippageConfig}) {
     super('BrokerMock');
     this.#balances = config.balances;
+    this.#slippageRate = config.slippage?.rate ?? new Big(0);
+    assert.ok(
+      this.#slippageRate.gte(0) && this.#slippageRate.lt(1),
+      `Slippage rate "${this.#slippageRate.toFixed()}" must be within [0, 1)`
+    );
+    this.#clampSlippage = config.slippage?.clamp ?? true;
   }
 
   /** Seed the candles returned by {@link getRecentCandles} (used to exercise strategy warm-up). */
@@ -100,8 +115,7 @@ export abstract class BrokerMock extends Broker {
     let fillPrice: Big;
 
     if (order.type === OrderType.MARKET) {
-      // Market orders fill at candle open price
-      fillPrice = candleOpen;
+      fillPrice = this.#applySlippage(order.side, candleOpen, candleLow, candleHigh);
 
       if (order.sizeInCounter) {
         /*
@@ -164,6 +178,16 @@ export abstract class BrokerMock extends Broker {
       size: order.size,
     };
     return fill;
+  }
+
+  /** Market orders pay for immediacy: the fill lands worse than the candle open, never better. */
+  #applySlippage(side: OrderSide, candleOpen: Big, candleLow: Big, candleHigh: Big) {
+    if (side === OrderSide.BUY) {
+      const slipped = candleOpen.mul(new Big(1).plus(this.#slippageRate));
+      return this.#clampSlippage && slipped.gt(candleHigh) ? candleHigh : slipped;
+    }
+    const slipped = candleOpen.mul(new Big(1).minus(this.#slippageRate));
+    return this.#clampSlippage && slipped.lt(candleLow) ? candleLow : slipped;
   }
 
   #applyFill(fill: Fill, order: PendingOrder) {
