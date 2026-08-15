@@ -28,15 +28,7 @@ export interface ExchangeMockBalance {
 export interface BrokerMockSlippageConfig {
   /** Fraction of the fill price lost to slippage: "0.01" is 1%. Applied against market fills only. */
   rate?: Big;
-  /**
-   * Keep slipped fills inside the candle's traded range (default `true`).
-   *
-   * A candle's high and low are built from trades, while a market order pays the spread, so a
-   * real fill can land outside the range that printed. Clamping is the safer default but caps
-   * the effective rate at the candle's own range: on a candle whose high equals its open, a
-   * clamped buy pays no slippage at any rate. Set to `false` to model gaps and thin books,
-   * where the cap hides the cost this setting exists to measure.
-   */
+  /** Keep slipped fills inside the candle's traded range (default `true`). */
   clamp?: boolean;
 }
 
@@ -188,11 +180,7 @@ export abstract class BrokerMock extends Broker {
     return fill;
   }
 
-  /**
-   * Market orders pay for immediacy: the fill lands worse than the candle open, never better.
-   * See {@link BrokerMockSlippageConfig.clamp} for why the result is capped at the candle's
-   * high (buys) or low (sells) by default, and when to turn that off.
-   */
+  /** Market orders pay for immediacy: the fill lands worse than the candle open, never better. */
   #applySlippage(side: OrderSide, candleOpen: Big, candleLow: Big, candleHigh: Big) {
     if (side === OrderSide.BUY) {
       const slipped = candleOpen.mul(new Big(1).plus(this.#slippageRate));
