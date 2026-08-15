@@ -47,29 +47,7 @@ describe('AlpacaBrokerMock', () => {
     expect(fills[0].price, '105 open + 1% slippage').toBe('106.05');
   });
 
-  it('threads the fillModel config through to fills', async () => {
-    const exchange = new AlpacaBrokerMock({
-      balances: new Map([
-        ['BTC', {available: new Big(0), hold: new Big(0)}],
-        ['USD', {available: new Big(10000), hold: new Big(0)}],
-      ]),
-      feeRates: {[OrderType.LIMIT]: new Big(0), [OrderType.MARKET]: new Big(0)},
-      fillModel: {priceImprovement: false},
-    });
-
-    exchange.processCandle(createCandle({close: '500', open: '500'}));
-
-    await exchange.placeLimitOrder(pair, {price: '380', side: OrderSide.BUY, size: '1'});
-
-    const fills = exchange.processCandle(
-      createCandle({close: '380', high: '400', low: '350', open: '360', openTimeInISO: '2025-01-01T00:01:00.000Z'})
-    );
-
-    expect(fills).toHaveLength(1);
-    expect(fills[0].price, 'fills at the limit price itself, not the candle open').toBe('380');
-  });
-
-  it('defaults to no slippage and price improvement enabled', async () => {
+  it('defaults to no slippage', async () => {
     const exchange = new AlpacaBrokerMock({
       balances: new Map([
         ['BTC', {available: new Big(0), hold: new Big(0)}],
