@@ -20,7 +20,6 @@ config({path: '../../.env'});
 config({path: '../exchange/.env'});
 
 const {values} = parseArgs({
-  // Lets `--no-slippage-clamp` write `false` into `slippage-clamp`, so the flag name matches the broker's config key.
   allowNegative: true,
   options: {
     balance: {default: '10000', short: 'b', type: 'string'},
