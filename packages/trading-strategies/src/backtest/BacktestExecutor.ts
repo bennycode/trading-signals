@@ -38,6 +38,9 @@ export class BacktestExecutor {
     const trades: BacktestTrade[] = [];
     const skippedAdvices: BacktestSkippedAdvice[] = [];
     let totalFees = new Big(0);
+    const firstOpenPrice = candles.length > 0 ? new Big(candles[0].open) : new Big(0);
+    const initialPortfolioValue = initialBaseBalance.mul(firstOpenPrice).plus(initialCounterBalance);
+    const equityCurve = [initialPortfolioValue];
 
     for (const candle of candles) {
       // Step 1: Match pending orders from previous iteration against this candle
@@ -67,6 +70,7 @@ export class BacktestExecutor {
       const batchedCandle = CandleBatcher.createOneMinuteBatchedCandle([candle]);
       const state = await this.#buildState(tradingPair, tradingRules, feeRates);
       const advice = await strategy.onCandle(batchedCandle, state);
+      equityCurve.push(await this.#calculatePortfolioValue(new Big(candle.close)));
 
       if (!advice) {
         continue;
@@ -99,14 +103,18 @@ export class BacktestExecutor {
     await exchange.cancelOpenOrders(tradingPair);
 
     const finalBalances = await exchange.getAvailableBalances(tradingPair);
-    const firstOpenPrice = candles.length > 0 ? new Big(candles[0].open) : new Big(0);
     const lastClosePrice = candles.length > 0 ? new Big(candles[candles.length - 1].close) : new Big(0);
 
-    const initialPortfolioValue = initialBaseBalance.mul(firstOpenPrice).plus(initialCounterBalance);
     const finalPortfolioValue = finalBalances.base.mul(lastClosePrice).plus(finalBalances.counter);
     const profitOrLoss = finalPortfolioValue.minus(initialPortfolioValue);
 
-    const performance = this.#buildPerformanceSummary(trades, candles, initialPortfolioValue, finalPortfolioValue);
+    const performance = this.#buildPerformanceSummary(
+      trades,
+      candles,
+      equityCurve,
+      initialPortfolioValue,
+      finalPortfolioValue
+    );
 
     return {
       finalBaseBalance: finalBalances.base,
@@ -148,9 +156,20 @@ export class BacktestExecutor {
     };
   }
 
+  async #calculatePortfolioValue(price: Big): Promise<Big> {
+    const {broker, tradingPair} = this.#config;
+    const balances = await broker.listBalances();
+    const total = (currency: string) => {
+      const balance = balances.find(item => item.currency === currency);
+      return new Big(balance?.available ?? 0).plus(balance?.hold ?? 0);
+    };
+    return total(tradingPair.base).mul(price).plus(total(tradingPair.counter));
+  }
+
   #buildPerformanceSummary(
     trades: BacktestTrade[],
     candles: Candle[],
+    equityCurve: Big[],
     initialPortfolioValue: Big,
     finalPortfolioValue: Big
   ): BacktestPerformanceSummary {
@@ -160,15 +179,21 @@ export class BacktestExecutor {
 
     const winRate = PerformanceCalculator.calculateWinRate(trades);
     const buyAndHoldReturnPercentage = PerformanceCalculator.calculateBuyAndHoldReturn(candles);
+    const maxDrawdownPercentage = PerformanceCalculator.calculateMaxDrawdown(equityCurve);
+    const sharpeRatio = PerformanceCalculator.calculateSharpeRatio(equityCurve);
+    const sortinoRatio = PerformanceCalculator.calculateSortinoRatio(equityCurve);
     const {maxLossStreak, maxWinStreak} = PerformanceCalculator.calculateStreaks(trades);
 
     return {
       buyAndHoldReturnPercentage,
       finalPortfolioValue,
       initialPortfolioValue,
+      maxDrawdownPercentage,
       maxLossStreak,
       maxWinStreak,
       returnPercentage,
+      sharpeRatio,
+      sortinoRatio,
       totalTrades: trades.length,
       winRate,
     };

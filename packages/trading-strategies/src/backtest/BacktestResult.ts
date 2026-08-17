@@ -24,12 +24,18 @@ export interface BacktestPerformanceSummary {
   finalPortfolioValue: Big;
   /** Initial portfolio value in counter currency (base * firstOpen + counter). */
   initialPortfolioValue: Big;
+  /** Largest peak-to-trough decline of the portfolio equity curve, as a positive percentage. */
+  maxDrawdownPercentage: Big;
   /** Longest consecutive losing streak (round-trip cycles). */
   maxLossStreak: number;
   /** Longest consecutive winning streak (round-trip cycles). */
   maxWinStreak: number;
   /** Return on investment as a percentage (e.g. "12.5" means 12.5%). */
   returnPercentage: Big;
+  /** Mean candle-to-candle portfolio return divided by its standard deviation. */
+  sharpeRatio: Big;
+  /** Mean candle-to-candle portfolio return divided by its downside deviation. */
+  sortinoRatio: Big;
   /** Total number of trades (buys + sells). */
   totalTrades: number;
   /** Ratio of profitable round-trip cycles (buy followed by sell at a higher effective price). */

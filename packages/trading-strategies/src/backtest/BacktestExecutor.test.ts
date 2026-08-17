@@ -88,6 +88,35 @@ describe('BacktestExecutor', () => {
       expect(result.profitOrLoss.toFixed(2)).toBe('0.00');
     });
 
+    it('derives risk-adjusted metrics from the candle-by-candle portfolio equity curve', async () => {
+      class NoOpStrategy extends Strategy {
+        static override NAME = 'NoOp';
+
+        protected override async processCandle(
+          _candle: OneMinuteBatchedCandle,
+          _state: TradingSessionState
+        ): Promise<OrderAdvice | void> {
+          return undefined;
+        }
+      }
+
+      const candles = [
+        createCandle({close: '120', open: '100'}),
+        createCandle({close: '90', open: '120'}),
+        createCandle({close: '108', open: '90'}),
+      ];
+      const result = await new BacktestExecutor({
+        broker: createMockExchange({baseBalance: '1', counterBalance: '0'}),
+        candles,
+        strategy: new NoOpStrategy(),
+        tradingPair,
+      }).execute();
+
+      expect(result.performance.maxDrawdownPercentage.toNumber()).toBeCloseTo(25, 8);
+      expect(result.performance.sharpeRatio.toNumber()).toBeCloseTo(0.235702, 6);
+      expect(result.performance.sortinoRatio.toNumber()).toBeCloseTo(0.34641, 6);
+    });
+
     it('executes a buy with 1-candle delay when price drops below the buyBelow threshold', async () => {
       const strategy = new BuyBelowSellAboveStrategy({buyBelow: '100'});
 
@@ -339,6 +368,8 @@ describe('BacktestExecutor', () => {
        */
       expect(result.trades).toHaveLength(0);
       expect(result.finalCounterBalance.toFixed(2)).toBe('1000.00');
+      expect(result.performance.maxDrawdownPercentage.toFixed()).toBe('0');
+      expect(result.performance.sharpeRatio.toFixed()).toBe('0');
     });
 
     it('tracks the total number of candles processed', async () => {
