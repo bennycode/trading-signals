@@ -1,9 +1,11 @@
 import type {StringValue} from 'ms';
 import {ms} from 'ms';
 import {z} from 'zod';
-import {CandleBatcher, OrderSide, OrderType} from '@typedtrader/exchange';
-import type {OneMinuteBatchedCandle} from '@typedtrader/exchange';
+import {OrderSide, OrderType} from '@typedtrader/exchange';
+import type {BatchedCandle, OneMinuteBatchedCandle} from '@typedtrader/exchange';
 import {SMA} from 'trading-signals';
+import {SignalRuntime, candleSignal, indicatorSignal} from '../signal/index.js';
+import type {IndicatorSignalDefinition} from '../signal/index.js';
 import {AllAvailableAmount} from '../trader/index.js';
 import type {OrderAdvice, TradingSessionState} from '../trader/index.js';
 import {MarketType} from '../strategy/MarketType.js';
@@ -47,10 +49,11 @@ export class SmaCrossoverStrategy extends Strategy {
   readonly #slowPeriod: number;
   readonly #fastTimeframe: string;
   readonly #slowTimeframe: string;
-  readonly #fast: SMA;
-  readonly #slow: SMA;
-  readonly #fastBatcher: CandleBatcher;
-  readonly #slowBatcher: CandleBatcher;
+  readonly #fast: IndicatorSignalDefinition<BatchedCandle, number, number>;
+  readonly #slow: IndicatorSignalDefinition<BatchedCandle, number, number>;
+  readonly #signals: SignalRuntime;
+  #fastRevision = 0;
+  #slowRevision = 0;
 
   /**
    * Whether the fast SMA sat above the slow SMA on the previous evaluated bar.
@@ -76,42 +79,53 @@ export class SmaCrossoverStrategy extends Strategy {
     this.#slowPeriod = parsed.slowPeriod;
     this.#fastTimeframe = parsed.fastTimeframe;
     this.#slowTimeframe = parsed.slowTimeframe;
-    this.#fast = new SMA(parsed.fastPeriod);
-    this.#slow = new SMA(parsed.slowPeriod);
-    this.#fastBatcher = new CandleBatcher(fastIntervalInMillis);
-    this.#slowBatcher = new CandleBatcher(slowIntervalInMillis);
+    const fastBars = candleSignal({id: `bars-${parsed.fastTimeframe}`, intervalInMillis: fastIntervalInMillis});
+    const slowBars =
+      slowIntervalInMillis === fastIntervalInMillis
+        ? fastBars
+        : candleSignal({id: `bars-${parsed.slowTimeframe}`, intervalInMillis: slowIntervalInMillis});
+    this.#fast = indicatorSignal({
+      createIndicator: () => new SMA(parsed.fastPeriod),
+      id: `sma-${parsed.fastPeriod}-${parsed.fastTimeframe}`,
+      selectInput: bar => bar.close.toNumber(),
+      source: fastBars,
+    });
+    this.#slow = indicatorSignal({
+      createIndicator: () => new SMA(parsed.slowPeriod),
+      id: `sma-${parsed.slowPeriod}-${parsed.slowTimeframe}`,
+      selectInput: bar => bar.close.toNumber(),
+      source: slowBars,
+    });
+    this.#signals = new SignalRuntime([this.#fast, this.#slow]);
   }
 
   /** Whether both SMAs have seen enough bars to produce a value. */
   get isWarmedUp() {
-    return this.#fast.isStable && this.#slow.isStable;
+    return (
+      this.#signals.snapshot.get(this.#fast).status === 'ready' &&
+      this.#signals.snapshot.get(this.#slow).status === 'ready'
+    );
   }
 
   protected override async processCandle(
     candle: OneMinuteBatchedCandle,
     _state: TradingSessionState
   ): Promise<OrderAdvice | void> {
-    // Strategies always receive 1-minute candles; roll them up to each SMA's own timeframe.
-    const fastBar = this.#fastBatcher.addToBatch(candle);
-    if (fastBar) {
-      this.#fast.add(fastBar.close.toNumber());
-    }
-    const slowBar = this.#slowBatcher.addToBatch(candle);
-    if (slowBar) {
-      this.#slow.add(slowBar.close.toNumber());
-    }
-
-    // No SMA advanced on this candle, so the relationship cannot have changed.
-    if (!fastBar && !slowBar) {
+    const snapshot = this.#signals.updateCandle(candle);
+    const fastReading = snapshot.get(this.#fast);
+    const slowReading = snapshot.get(this.#slow);
+    if (fastReading.status !== 'ready' || slowReading.status !== 'ready') {
       return;
     }
 
-    if (!this.isWarmedUp) {
+    if (fastReading.revision === this.#fastRevision && slowReading.revision === this.#slowRevision) {
       return;
     }
+    this.#fastRevision = fastReading.revision;
+    this.#slowRevision = slowReading.revision;
 
-    const fastValue = this.#fast.getResultOrThrow();
-    const slowValue = this.#slow.getResultOrThrow();
+    const fastValue = fastReading.value;
+    const slowValue = slowReading.value;
     const fastAboveSlow = fastValue > slowValue;
 
     // Detecting a *crossover* needs the previous relationship, not just this bar's.
