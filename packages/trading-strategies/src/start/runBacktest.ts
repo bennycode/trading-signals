@@ -20,11 +20,13 @@ config({path: '../../.env'});
 config({path: '../exchange/.env'});
 
 const {values} = parseArgs({
+  // Lets `--no-slippage-clamp` write `false` into `slippage-clamp`, so the flag name matches the broker's config key.
+  allowNegative: true,
   options: {
     balance: {default: '10000', short: 'b', type: 'string'},
     config: {default: '{}', short: 'c', type: 'string'},
     data: {short: 'd', type: 'string'},
-    'no-slippage-clamp': {default: false, type: 'boolean'},
+    'slippage-clamp': {default: true, type: 'boolean'},
     'slippage-rate': {default: '0', type: 'string'},
     strategy: {short: 's', type: 'string'},
   },
@@ -32,16 +34,16 @@ const {values} = parseArgs({
 
 if (!values.data || !values.strategy) {
   console.log(
-    'Usage: tsx src/start/runBacktest.ts --data <candles.json> --strategy <name> [--config <json>] [--balance <amount>] [--slippage-rate <rate>]'
+    'Usage: tsx src/start/runBacktest.ts --data <candles.json> --strategy <name> [--config <json>] [--balance <amount>] [--slippage-rate <rate>] [--no-slippage-clamp]'
   );
   console.log('');
   console.log('Options:');
-  console.log('  --data, -d       Path to candle JSON file');
-  console.log('  --strategy, -s   Strategy name from registry');
-  console.log('  --config, -c     Strategy config as JSON (default: {})');
-  console.log('  --balance, -b    Starting cash in counter currency (default: 10000)');
-  console.log('  --slippage-rate  Market-order slippage rate, e.g. 0.001 for 0.1% (default: 0)');
-  console.log('  --no-slippage-clamp  Let slipped fills leave the candle range (default: clamped)');
+  console.log('  --data, -d             Path to candle JSON file');
+  console.log('  --strategy, -s         Strategy name from registry');
+  console.log('  --config, -c           Strategy config as JSON (default: {})');
+  console.log('  --balance, -b          Starting cash in counter currency (default: 10000)');
+  console.log('  --slippage-rate        Market-order slippage rate, e.g. 0.001 for 0.1% (default: 0)');
+  console.log('  --[no-]slippage-clamp  Keep slipped fills inside the candle range (default: on)');
   console.log('');
   console.log('Available strategies:');
   for (const name of getStrategyNames()) {
@@ -79,7 +81,7 @@ const lastCandle = candles[candles.length - 1];
 const tradingPair = new TradingPair(firstCandle.base, firstCandle.counter);
 const startingBalance = new Big(values.balance);
 const slippageRate = new Big(values['slippage-rate']);
-const clampSlippage = !values['no-slippage-clamp'];
+const slippageClamp = values['slippage-clamp'];
 const counter = tradingPair.counter;
 
 console.log(`Candles:   ${candles.length} from ${values.data}`);
@@ -89,7 +91,7 @@ console.log(`Open:      ${firstCandle.open} ${counter}  Close: ${lastCandle.clos
 console.log(`Strategy:  ${values.strategy}`);
 console.log(`Config:    ${values.config}`);
 console.log(`Balance:   ${startingBalance.toFixed(2)} ${counter}`);
-console.log(`Slippage:  ${slippageRate.mul(100).toFixed(2)}%${clampSlippage ? ' (clamped to candle range)' : ''}`);
+console.log(`Slippage:  ${slippageRate.mul(100).toFixed(2)}%${slippageClamp ? ' (clamped to candle range)' : ''}`);
 console.log('---');
 
 // 2. Create strategy from registry
@@ -106,7 +108,7 @@ const exchange = new AlpacaBrokerMock({
     [OrderType.LIMIT]: new Big(0),
     [OrderType.MARKET]: new Big(0),
   },
-  slippage: {clamp: clampSlippage, rate: slippageRate},
+  slippage: {clamp: slippageClamp, rate: slippageRate},
 });
 
 /*
