@@ -12,6 +12,15 @@ import type {
 } from './BacktestResult.js';
 import {PerformanceCalculator} from './PerformanceCalculator.js';
 
+interface PerformanceSummaryConfig {
+  candles: Candle[];
+  /** Portfolio value at the initial open, followed by one entry per processed candle. */
+  equityCurve: readonly Big[];
+  finalPortfolioValue: Big;
+  initialPortfolioValue: Big;
+  trades: BacktestTrade[];
+}
+
 export class BacktestExecutor {
   readonly #config: BacktestConfig;
 
@@ -108,13 +117,13 @@ export class BacktestExecutor {
     const finalPortfolioValue = finalBalances.base.mul(lastClosePrice).plus(finalBalances.counter);
     const profitOrLoss = finalPortfolioValue.minus(initialPortfolioValue);
 
-    const performance = this.#buildPerformanceSummary(
-      trades,
+    const performance = this.#buildPerformanceSummary({
       candles,
       equityCurve,
+      finalPortfolioValue,
       initialPortfolioValue,
-      finalPortfolioValue
-    );
+      trades,
+    });
 
     return {
       finalBaseBalance: finalBalances.base,
@@ -166,13 +175,13 @@ export class BacktestExecutor {
     return total(tradingPair.base).mul(price).plus(total(tradingPair.counter));
   }
 
-  #buildPerformanceSummary(
-    trades: BacktestTrade[],
-    candles: Candle[],
-    equityCurve: Big[],
-    initialPortfolioValue: Big,
-    finalPortfolioValue: Big
-  ): BacktestPerformanceSummary {
+  #buildPerformanceSummary({
+    candles,
+    equityCurve,
+    finalPortfolioValue,
+    initialPortfolioValue,
+    trades,
+  }: PerformanceSummaryConfig): BacktestPerformanceSummary {
     const returnPercentage = initialPortfolioValue.gt(0)
       ? finalPortfolioValue.minus(initialPortfolioValue).div(initialPortfolioValue).mul(100)
       : new Big(0);
