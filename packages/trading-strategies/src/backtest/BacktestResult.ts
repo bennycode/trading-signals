@@ -32,10 +32,16 @@ export interface BacktestPerformanceSummary {
   maxWinStreak: number;
   /** Return on investment as a percentage (e.g. "12.5" means 12.5%). */
   returnPercentage: Big;
-  /** Mean candle-to-candle portfolio return divided by its standard deviation. */
-  sharpeRatio: Big;
-  /** Mean candle-to-candle portfolio return divided by its downside deviation. */
-  sortinoRatio: Big;
+  /**
+   * Mean candle-to-candle portfolio return divided by its standard deviation, or `undefined` when
+   * the equity curve leaves no deviation to divide by.
+   */
+  sharpeRatio: Big | undefined;
+  /**
+   * Mean candle-to-candle portfolio return divided by its downside deviation, or `undefined` when
+   * the equity curve never declined.
+   */
+  sortinoRatio: Big | undefined;
   /** Total number of trades (buys + sells). */
   totalTrades: number;
   /** Ratio of profitable round-trip cycles (buy followed by sell at a higher effective price). */

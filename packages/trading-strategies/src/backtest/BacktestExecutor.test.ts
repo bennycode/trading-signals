@@ -113,8 +113,8 @@ describe('BacktestExecutor', () => {
       }).execute();
 
       expect(result.performance.maxDrawdownPercentage.toNumber()).toBeCloseTo(25, 8);
-      expect(result.performance.sharpeRatio.toNumber()).toBeCloseTo(0.235702, 6);
-      expect(result.performance.sortinoRatio.toNumber()).toBeCloseTo(0.34641, 6);
+      expect(result.performance.sharpeRatio?.toNumber()).toBeCloseTo(0.235702, 6);
+      expect(result.performance.sortinoRatio?.toNumber()).toBeCloseTo(0.34641, 6);
     });
 
     it('executes a buy with 1-candle delay when price drops below the buyBelow threshold', async () => {
@@ -369,7 +369,11 @@ describe('BacktestExecutor', () => {
       expect(result.trades).toHaveLength(0);
       expect(result.finalCounterBalance.toFixed(2)).toBe('1000.00');
       expect(result.performance.maxDrawdownPercentage.toFixed()).toBe('0');
-      expect(result.performance.sharpeRatio.toFixed()).toBe('0');
+      expect(
+        result.performance.sharpeRatio,
+        'an untouched portfolio has a flat equity curve, so there is no deviation to divide by'
+      ).toBeUndefined();
+      expect(result.performance.sortinoRatio, 'a flat equity curve never declined').toBeUndefined();
     });
 
     it('tracks the total number of candles processed', async () => {
