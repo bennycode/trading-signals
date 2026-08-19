@@ -5,6 +5,65 @@ import type {BacktestTrade} from './BacktestResult.js';
 
 export class PerformanceCalculator {
   /**
+   * Calculates the unannualized Sharpe ratio from consecutive portfolio equity returns.
+   *
+   * `null` when there is no deviation to divide by: fewer than two equity points, or a curve whose
+   * returns never vary. Zero is not a usable stand-in, because zero already reads as "no edge" — it
+   * would score a perfectly steady winner the same as a strategy that never traded.
+   */
+  static calculateSharpeRatio(equityCurve: readonly Big[]): Big | null {
+    const returns = PerformanceCalculator.#calculateReturns(equityCurve);
+    if (returns.length === 0) {
+      return null;
+    }
+
+    const mean = PerformanceCalculator.#mean(returns);
+    const variance = returns.reduce((sum, value) => sum.plus(value.minus(mean).pow(2)), new Big(0)).div(returns.length);
+    return variance.eq(0) ? null : mean.div(variance.sqrt());
+  }
+
+  /**
+   * Calculates the unannualized Sortino ratio using zero as the target return.
+   *
+   * `null` when the curve has no downside deviation to divide by. Zero is not a usable stand-in: a
+   * curve without a single losing candle would rank below one that lost money, inverting the
+   * comparison this metric exists to make.
+   */
+  static calculateSortinoRatio(equityCurve: readonly Big[]): Big | null {
+    const returns = PerformanceCalculator.#calculateReturns(equityCurve);
+    if (returns.length === 0) {
+      return null;
+    }
+
+    const downsideVariance = returns
+      .reduce((sum, value) => sum.plus(value.lt(0) ? value.pow(2) : 0), new Big(0))
+      .div(returns.length);
+    return downsideVariance.eq(0) ? null : PerformanceCalculator.#mean(returns).div(downsideVariance.sqrt());
+  }
+
+  /**
+   * Calculates the largest peak-to-trough portfolio decline as a positive percentage.
+   */
+  static calculateMaxDrawdown(equityCurve: readonly Big[]): Big {
+    let peak: Big | undefined;
+    let maxDrawdown = new Big(0);
+
+    for (const value of equityCurve) {
+      if (!peak || value.gt(peak)) {
+        peak = value;
+      }
+      if (peak.gt(0)) {
+        const drawdown = peak.minus(value).div(peak);
+        if (drawdown.gt(maxDrawdown)) {
+          maxDrawdown = drawdown;
+        }
+      }
+    }
+
+    return maxDrawdown.mul(100);
+  }
+
+  /**
    * Calculates win rate by pairing buy trades with subsequent sell trades into round-trip cycles.
    * A cycle is "won" when the volume-weighted average sell price exceeds the volume-weighted average buy price.
    */
@@ -84,5 +143,21 @@ export class PerformanceCalculator {
     }
 
     return cycles;
+  }
+
+  static #calculateReturns(equityCurve: readonly Big[]): Big[] {
+    const returns: Big[] = [];
+    for (let index = 1; index < equityCurve.length; index++) {
+      const previous = equityCurve[index - 1];
+      if (previous.eq(0)) {
+        continue;
+      }
+      returns.push(equityCurve[index].minus(previous).div(previous));
+    }
+    return returns;
+  }
+
+  static #mean(values: readonly Big[]): Big {
+    return values.reduce((sum, value) => sum.plus(value), new Big(0)).div(values.length);
   }
 }
