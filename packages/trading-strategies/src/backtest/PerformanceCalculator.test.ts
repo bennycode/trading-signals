@@ -22,15 +22,12 @@ describe('PerformanceCalculator risk-adjusted metrics', () => {
     expect(
       PerformanceCalculator.calculateSharpeRatio([]),
       'a curve with fewer than two points yields no returns to measure'
-    ).toBeUndefined();
-    expect(
-      PerformanceCalculator.calculateSharpeRatio(flatEquityCurve),
-      'zero variance has no deviation'
-    ).toBeUndefined();
+    ).toBeNull();
+    expect(PerformanceCalculator.calculateSharpeRatio(flatEquityCurve), 'zero variance has no deviation').toBeNull();
     expect(
       PerformanceCalculator.calculateSortinoRatio(flatEquityCurve),
       'zero downside deviation has nothing to divide by'
-    ).toBeUndefined();
+    ).toBeNull();
     expect(
       PerformanceCalculator.calculateMaxDrawdown(flatEquityCurve).toFixed(),
       'a flat curve genuinely never declines, so zero is a real drawdown rather than a missing value'
@@ -44,7 +41,7 @@ describe('PerformanceCalculator risk-adjusted metrics', () => {
     expect(
       PerformanceCalculator.calculateSortinoRatio(flawless),
       'no losing candle means no downside deviation, so the ratio is absent rather than zero'
-    ).toBeUndefined();
+    ).toBeNull();
     expect(
       PerformanceCalculator.calculateSortinoRatio(lossy)?.toNumber(),
       'a curve that did lose money has a measurable downside, so it stays comparable'
@@ -57,6 +54,6 @@ describe('PerformanceCalculator risk-adjusted metrics', () => {
     expect(
       PerformanceCalculator.calculateSharpeRatio(steadyGain),
       'a constant +10% per candle has zero variance, and zero would read as no edge at all'
-    ).toBeUndefined();
+    ).toBeNull();
   });
 });

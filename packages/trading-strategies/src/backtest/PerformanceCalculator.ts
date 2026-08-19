@@ -7,38 +7,38 @@ export class PerformanceCalculator {
   /**
    * Calculates the unannualized Sharpe ratio from consecutive portfolio equity returns.
    *
-   * Undefined when there is no deviation to divide by: fewer than two equity points, or a curve
-   * whose returns never vary. Zero is not a usable stand-in, because zero already reads as "no
-   * edge" — it would score a perfectly steady winner the same as a strategy that never traded.
+   * `null` when there is no deviation to divide by: fewer than two equity points, or a curve whose
+   * returns never vary. Zero is not a usable stand-in, because zero already reads as "no edge" — it
+   * would score a perfectly steady winner the same as a strategy that never traded.
    */
-  static calculateSharpeRatio(equityCurve: readonly Big[]): Big | undefined {
+  static calculateSharpeRatio(equityCurve: readonly Big[]): Big | null {
     const returns = PerformanceCalculator.#calculateReturns(equityCurve);
     if (returns.length === 0) {
-      return undefined;
+      return null;
     }
 
     const mean = PerformanceCalculator.#mean(returns);
     const variance = returns.reduce((sum, value) => sum.plus(value.minus(mean).pow(2)), new Big(0)).div(returns.length);
-    return variance.eq(0) ? undefined : mean.div(variance.sqrt());
+    return variance.eq(0) ? null : mean.div(variance.sqrt());
   }
 
   /**
    * Calculates the unannualized Sortino ratio using zero as the target return.
    *
-   * Undefined when the curve has no downside deviation to divide by. Zero is not a usable stand-in:
-   * a curve without a single losing candle would rank below one that lost money, inverting the
+   * `null` when the curve has no downside deviation to divide by. Zero is not a usable stand-in: a
+   * curve without a single losing candle would rank below one that lost money, inverting the
    * comparison this metric exists to make.
    */
-  static calculateSortinoRatio(equityCurve: readonly Big[]): Big | undefined {
+  static calculateSortinoRatio(equityCurve: readonly Big[]): Big | null {
     const returns = PerformanceCalculator.#calculateReturns(equityCurve);
     if (returns.length === 0) {
-      return undefined;
+      return null;
     }
 
     const downsideVariance = returns
       .reduce((sum, value) => sum.plus(value.lt(0) ? value.pow(2) : 0), new Big(0))
       .div(returns.length);
-    return downsideVariance.eq(0) ? undefined : PerformanceCalculator.#mean(returns).div(downsideVariance.sqrt());
+    return downsideVariance.eq(0) ? null : PerformanceCalculator.#mean(returns).div(downsideVariance.sqrt());
   }
 
   /**

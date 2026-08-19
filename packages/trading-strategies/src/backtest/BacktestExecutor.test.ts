@@ -372,8 +372,8 @@ describe('BacktestExecutor', () => {
       expect(
         result.performance.sharpeRatio,
         'an untouched portfolio has a flat equity curve, so there is no deviation to divide by'
-      ).toBeUndefined();
-      expect(result.performance.sortinoRatio, 'a flat equity curve never declined').toBeUndefined();
+      ).toBeNull();
+      expect(result.performance.sortinoRatio, 'a flat equity curve never declined').toBeNull();
     });
 
     it('tracks the total number of candles processed', async () => {
