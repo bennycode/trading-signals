@@ -219,14 +219,13 @@ export class ProtectedStrategy extends Strategy {
   }
 
   /**
-   * Reassigns the top-level `protected` key on the proxied state with a merged
-   * snapshot. The top-level write triggers the base `Strategy` Proxy's `set`
-   * trap, which in turn fires `onSave` so `StrategyMonitor` persists to the DB.
-   * Nested property mutations would silently bypass persistence.
+   * `setState` merges top-level keys only, so the nested `protected` object is merged
+   * here before being swapped in wholesale.
    */
   #setProtectedState(patch: Partial<ProtectedStrategyState>): void {
-    const proxied = this.getProxiedState<ProtectedContainerState>();
-    proxied[PROTECTED_STATE_KEY] = {...proxied[PROTECTED_STATE_KEY], ...patch};
+    this.setState<ProtectedContainerState>({
+      [PROTECTED_STATE_KEY]: {...this.#protectedState, ...patch},
+    });
   }
 
   /** Read-only snapshot of the current protected state. Useful for tests and diagnostics. */
@@ -448,9 +447,9 @@ export class ProtectedStrategy extends Strategy {
     });
 
     /*
-     * The base class only updates `#_state`; the proxied state still points at
-     * the original object from the constructor. Reassigning `protected` through
-     * the proxy propagates restored values into the proxied state.
+     * The base class only updates the persisted snapshot; the proxied state still
+     * points at the original object from the constructor. Writing the restored
+     * values via `setState` propagates them into the proxied state as well.
      */
     this.#setProtectedState(restoredProtected);
   }
