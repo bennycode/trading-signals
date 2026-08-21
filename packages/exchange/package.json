@@ -16,6 +16,9 @@
     "url": "git+https://github.com/bennycode/trading-signals.git",
     "directory": "packages/exchange"
   },
+  "bin": {
+    "exchange-cli": "./dist/cli/exchange-cli.js"
+  },
   "files": [
     "dist",
     "!dist/start",
@@ -31,8 +34,7 @@
   "scripts": {
     "alpaca:testAll": "tsx src/broker/alpaca/demo/testAll.ts",
     "alpaca:fetchCandles": "tsx src/broker/alpaca/demo/fetchCandles.ts",
-    "trading212:buy": "tsx src/broker/trading212/demo/buy.ts",
-    "trading212:listBalances": "tsx src/broker/trading212/demo/listBalances.ts",
+    "cli": "tsx --env-file-if-exists=.env.defaults --env-file-if-exists=.env src/cli/exchange-cli.ts",
     "build": "tsc -p tsconfig.build.json",
     "clean": "rimraf coverage dist",
     "dist": "npm run clean && npm run build",
