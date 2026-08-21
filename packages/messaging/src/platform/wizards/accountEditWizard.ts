@@ -2,7 +2,8 @@ import {getAuthenticatedBrokerClient} from '@typedtrader/exchange';
 import {buildMarketDataFromAccount} from '../../broker/getAccountBrokerClient.js';
 import {Account} from '../../database/models/Account.js';
 import {logger} from '../../logger.js';
-import {restartAccountSessions, type StrategyMonitor, type WatchMonitor} from '../../service/index.js';
+import {restartAccountSessions} from '../../service/index.js';
+import type {StrategyMonitorPort, WatchMonitorPort} from '../MessagingPlatform.js';
 import {
   deleteSecretMessages,
   inlineKeyboard,
@@ -16,8 +17,8 @@ export interface AccountEditWizardArgs {
 }
 
 export function makeAccountEditWizard(deps: {
-  strategyMonitor: () => StrategyMonitor | undefined;
-  watchMonitor: () => WatchMonitor | undefined;
+  strategyMonitor: () => StrategyMonitorPort | undefined;
+  watchMonitor: () => WatchMonitorPort | undefined;
 }) {
   return async function accountEditWizard(
     conversation: WizardConversation,

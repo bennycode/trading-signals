@@ -7,7 +7,7 @@ import {Watch} from '../../database/models/Watch.js';
 import {assertInterval} from '../../validation/assertInterval.js';
 import {parseThreshold} from '../../validation/parseThreshold.js';
 import {logger} from '../../logger.js';
-import type {WatchMonitor} from '../../service/index.js';
+import type {WatchMonitorPort} from '../MessagingPlatform.js';
 import {
   inlineKeyboard,
   waitForTextOrCancel,
@@ -22,7 +22,7 @@ export interface WatchAddWizardArgs {
 
 const INTERVALS = ['1m', '5m', '15m', '1h', '6h', '12h', '1d'] as const;
 
-export function makeWatchAddWizard(deps: {watchMonitor: () => WatchMonitor | undefined}) {
+export function makeWatchAddWizard(deps: {watchMonitor: () => WatchMonitorPort | undefined}) {
   return async function watchAddWizard(
     conversation: WizardConversation,
     ctx: WizardContext,

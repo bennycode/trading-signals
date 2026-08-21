@@ -5,14 +5,21 @@ import {type Conversation, type ConversationFlavor, conversations, createConvers
 import {z} from 'zod';
 import {OrderSide, TradingPair} from '@typedtrader/exchange';
 import {getAvailableReportNames, reportRequiresAccount} from 'trading-strategies';
-import type {CommandHandler, MessageContext, MessagingPlatform, PlatformInfo} from './MessagingPlatform.js';
+import type {
+  CommandHandler,
+  MessageContext,
+  MessagingPlatform,
+  PlatformInfo,
+  ReportSchedulerPort,
+  StrategyMonitorPort,
+  WatchMonitorPort,
+} from './MessagingPlatform.js';
 import {markdownToTelegramHtml, splitForTelegram} from './telegramMarkdown.js';
 import {getAccountBrokerClient} from '../broker/getAccountBrokerClient.js';
 import {placeOrder} from '../command/placeOrder.js';
 import {reportAdd} from '../command/report/reportAdd.js';
 import {assertInterval} from '../validation/assertInterval.js';
 import {Account} from '../database/models/Account.js';
-import type {ReportScheduler, StrategyMonitor, WatchMonitor} from '../service/index.js';
 import {logger} from '../logger.js';
 import {
   ACCOUNT_ADD_WIZARD_ID,
@@ -314,9 +321,9 @@ export class TelegramPlatform implements MessagingPlatform {
   readonly #ownerIds: string[];
   readonly #commands: Map<string, CommandHandler> = new Map();
   #platformInfo: PlatformInfo = {botAddress: '', sdkVersion: ''};
-  #reportScheduler?: ReportScheduler;
-  #watchMonitor?: WatchMonitor;
-  #strategyMonitor?: StrategyMonitor;
+  #reportScheduler?: ReportSchedulerPort;
+  #watchMonitor?: WatchMonitorPort;
+  #strategyMonitor?: StrategyMonitorPort;
 
   constructor(botToken: string, ownerIds?: string) {
     this.#bot = new Bot<TradeContext>(botToken);
@@ -430,15 +437,15 @@ export class TelegramPlatform implements MessagingPlatform {
     });
   }
 
-  setReportScheduler(scheduler: ReportScheduler): void {
+  setReportScheduler(scheduler: ReportSchedulerPort): void {
     this.#reportScheduler = scheduler;
   }
 
-  setWatchMonitor(monitor: WatchMonitor): void {
+  setWatchMonitor(monitor: WatchMonitorPort): void {
     this.#watchMonitor = monitor;
   }
 
-  setStrategyMonitor(monitor: StrategyMonitor): void {
+  setStrategyMonitor(monitor: StrategyMonitorPort): void {
     this.#strategyMonitor = monitor;
   }
 
