@@ -1,0 +1,25 @@
+---
+title: 'VIDYA'
+description: 'Variable Index Dynamic Average'
+---
+
+import {IndicatorPageDemo} from '../../../components/IndicatorPageDemo';
+
+# Variable Index Dynamic Average (VIDYA)
+
+EMA variant that scales its smoothing weight by the absolute Chande Momentum Oscillator: strong one-directional momentum makes it track price closely, while choppy sideways action flattens it into a noise filter.
+
+## Live Demo
+
+Pick a market regime to see how VIDYA(10) reacts:
+
+<IndicatorPageDemo category="trend" id="vidya" />
+
+## Usage
+
+```ts twoslash
+import {VIDYA} from 'trading-signals';
+
+// VIDYA yields results once 11 inputs have been added
+const vidya = new VIDYA(10);
+```

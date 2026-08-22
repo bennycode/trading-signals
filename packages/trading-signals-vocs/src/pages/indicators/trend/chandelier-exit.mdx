@@ -1,0 +1,25 @@
+---
+title: 'Chandelier Exit'
+description: 'Chandelier Exit'
+---
+
+import {IndicatorPageDemo} from '../../../components/IndicatorPageDemo';
+
+# Chandelier Exit
+
+A volatility-adjusted trailing stop: the long exit hangs three ATRs below the highest high of the lookback, the short exit mirrors it above the lowest low. Volatile markets get more room to breathe, quiet markets get a tighter stop.
+
+## Live Demo
+
+Pick a market regime to see how Chandelier Exit(22) reacts:
+
+<IndicatorPageDemo category="trend" id="chandelier-exit" />
+
+## Usage
+
+```ts twoslash
+import {ChandelierExit} from 'trading-signals';
+
+// ChandelierExit yields results once 22 inputs have been added
+const chandelierExit = new ChandelierExit();
+```

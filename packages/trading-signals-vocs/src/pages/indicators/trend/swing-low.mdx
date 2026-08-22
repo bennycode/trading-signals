@@ -1,0 +1,25 @@
+---
+title: 'SwingLow'
+description: 'Swing Low Detector'
+---
+
+import {IndicatorPageDemo} from '../../../components/IndicatorPageDemo';
+
+# Swing Low Detector (SwingLow)
+
+Detects symmetric pullback lows (fractal pivots). A candle is confirmed as a swing low once the configured number of candles on each side print strictly higher lows. Commonly used to mark support levels and structural stop-loss references.
+
+## Live Demo
+
+Pick a market regime to see how SwingLow(5) reacts:
+
+<IndicatorPageDemo category="trend" id="swing-low" />
+
+## Usage
+
+```ts twoslash
+import {SwingLookback, SwingLow} from 'trading-signals';
+
+// SwingLow yields results once 5 inputs have been added
+const swingLow = new SwingLow({lookback: SwingLookback.BILL_WILLIAMS});
+```

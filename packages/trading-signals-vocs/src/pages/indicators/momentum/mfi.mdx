@@ -1,0 +1,25 @@
+---
+title: 'MFI'
+description: 'Money Flow Index'
+---
+
+import {IndicatorPageDemo} from '../../../components/IndicatorPageDemo';
+
+# Money Flow Index (MFI)
+
+A volume-weighted RSI: each candle's typical price is weighted by trading volume, so moves backed by heavy volume shift the index more than moves on thin volume. Values above 80 indicate overbought, below 20 indicate oversold.
+
+## Live Demo
+
+Pick a market regime to see how MFI(14) reacts:
+
+<IndicatorPageDemo category="momentum" id="mfi" />
+
+## Usage
+
+```ts twoslash
+import {MFI} from 'trading-signals';
+
+// MFI yields results once 15 inputs have been added
+const mfi = new MFI(14);
+```

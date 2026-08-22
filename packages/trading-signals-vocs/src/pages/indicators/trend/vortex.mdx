@@ -1,0 +1,25 @@
+---
+title: 'Vortex Indicator'
+description: 'Vortex Indicator'
+---
+
+import {IndicatorPageDemo} from '../../../components/IndicatorPageDemo';
+
+# Vortex Indicator
+
+Tracks upward and downward trend movement as two lines normalized by the true range. The upper line names the side in control; a crossover of VI+ and VI− suggests a trend change.
+
+## Live Demo
+
+Pick a market regime to see how Vortex Indicator(14) reacts:
+
+<IndicatorPageDemo category="trend" id="vortex" />
+
+## Usage
+
+```ts twoslash
+import {VortexIndicator} from 'trading-signals';
+
+// VortexIndicator yields results once 15 inputs have been added
+const vortexIndicator = new VortexIndicator(14);
+```

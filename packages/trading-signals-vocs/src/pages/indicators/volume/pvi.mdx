@@ -1,0 +1,25 @@
+---
+title: 'PVI'
+description: 'Positive Volume Index'
+---
+
+import {IndicatorPageDemo} from '../../../components/IndicatorPageDemo';
+
+# Positive Volume Index (PVI)
+
+Cumulative index starting at 1000 that compounds the percentage price change only on bars with rising volume — tracking what the crowd does on busy days. Read against its own long moving average: above suggests bull-market odds, below warns of a bear market.
+
+## Live Demo
+
+Pick a market regime to see how PVI(1) reacts:
+
+<IndicatorPageDemo category="volume" id="pvi" />
+
+## Usage
+
+```ts twoslash
+import {PVI} from 'trading-signals';
+
+// PVI yields results once 1 inputs have been added
+const pvi = new PVI();
+```

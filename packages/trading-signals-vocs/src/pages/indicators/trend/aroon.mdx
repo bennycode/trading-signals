@@ -1,0 +1,25 @@
+---
+title: 'Aroon'
+description: 'Aroon'
+---
+
+import {IndicatorPageDemo} from '../../../components/IndicatorPageDemo';
+
+# Aroon
+
+Identifies emerging trends by measuring how recently the highest high and lowest low occurred within the interval. An Aroon Up above 70 with an Aroon Down below 30 indicates a strong uptrend; crossovers of the two lines can signal trend changes.
+
+## Live Demo
+
+Pick a market regime to see how Aroon(14) reacts:
+
+<IndicatorPageDemo category="trend" id="aroon" />
+
+## Usage
+
+```ts twoslash
+import {Aroon} from 'trading-signals';
+
+// Aroon yields results once 15 inputs have been added
+const aroon = new Aroon(14);
+```

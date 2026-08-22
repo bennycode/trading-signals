@@ -1,0 +1,25 @@
+---
+title: 'SMA15'
+description: "Spencer's 15-Point Moving Average"
+---
+
+import {IndicatorPageDemo} from '../../../components/IndicatorPageDemo';
+
+# Spencer's 15-Point Moving Average (SMA15)
+
+A specialized 15-point weighted moving average using Spencer’s fixed weights, designed to preserve trend while filtering seasonal and irregular variations.
+
+## Live Demo
+
+Pick a market regime to see how SMA15(15) reacts:
+
+<IndicatorPageDemo category="trend" id="sma15" />
+
+## Usage
+
+```ts twoslash
+import {SMA15} from 'trading-signals';
+
+// SMA15 yields results once 15 inputs have been added
+const sma15 = new SMA15(15);
+```

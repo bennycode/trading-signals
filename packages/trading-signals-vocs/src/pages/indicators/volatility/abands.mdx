@@ -1,0 +1,25 @@
+---
+title: 'ABANDS'
+description: 'Acceleration Bands'
+---
+
+import {IndicatorPageDemo} from '../../../components/IndicatorPageDemo';
+
+# Acceleration Bands (ABANDS)
+
+Acceleration Bands
+
+## Live Demo
+
+Pick a market regime to see how ABANDS(20) reacts:
+
+<IndicatorPageDemo category="volatility" id="abands" />
+
+## Usage
+
+```ts twoslash
+import {AccelerationBands} from 'trading-signals';
+
+// AccelerationBands yields results once 20 inputs have been added
+const accelerationBands = new AccelerationBands(20, 4);
+```

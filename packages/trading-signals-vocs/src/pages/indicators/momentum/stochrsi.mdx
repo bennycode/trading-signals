@@ -1,0 +1,25 @@
+---
+title: 'StochRSI'
+description: 'Stochastic RSI'
+---
+
+import {IndicatorPageDemo} from '../../../components/IndicatorPageDemo';
+
+# Stochastic RSI (StochRSI)
+
+Applies Stochastic Oscillator to RSI values. More sensitive to overbought/oversold than standard RSI.
+
+## Live Demo
+
+Pick a market regime to see how StochRSI(14) reacts:
+
+<IndicatorPageDemo category="momentum" id="stochrsi" />
+
+## Usage
+
+```ts twoslash
+import {StochasticRSI} from 'trading-signals';
+
+// StochasticRSI yields results once 14 inputs have been added
+const stochasticRSI = new StochasticRSI(14);
+```

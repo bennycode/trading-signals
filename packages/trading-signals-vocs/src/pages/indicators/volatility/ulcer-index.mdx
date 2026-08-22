@@ -1,0 +1,25 @@
+---
+title: 'Ulcer Index'
+description: 'Ulcer Index'
+---
+
+import {IndicatorPageDemo} from '../../../components/IndicatorPageDemo';
+
+# Ulcer Index
+
+Downside volatility measure by Peter Martin. Root mean square of percentage drawdowns from the highest close in the window, penalizing both the depth and the duration of declines — upside moves never increase it.
+
+## Live Demo
+
+Pick a market regime to see how Ulcer Index(14) reacts:
+
+<IndicatorPageDemo category="volatility" id="ulcer-index" />
+
+## Usage
+
+```ts twoslash
+import {UlcerIndex} from 'trading-signals';
+
+// UlcerIndex yields results once 14 inputs have been added
+const ulcerIndex = new UlcerIndex(14);
+```

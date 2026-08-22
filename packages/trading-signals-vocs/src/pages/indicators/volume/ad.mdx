@@ -1,0 +1,25 @@
+---
+title: 'AD'
+description: 'Accumulation/Distribution'
+---
+
+import {IndicatorPageDemo} from '../../../components/IndicatorPageDemo';
+
+# Accumulation/Distribution (AD)
+
+Uses the relationship between close price and high-low range, weighted by volume, to measure money flow. Rising AD confirms an uptrend, falling AD confirms a downtrend.
+
+## Live Demo
+
+Pick a market regime to see how AD(1) reacts:
+
+<IndicatorPageDemo category="volume" id="ad" />
+
+## Usage
+
+```ts twoslash
+import {AD} from 'trading-signals';
+
+// AD yields results once 1 inputs have been added
+const ad = new AD();
+```

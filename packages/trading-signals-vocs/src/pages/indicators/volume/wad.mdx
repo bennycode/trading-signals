@@ -1,0 +1,25 @@
+---
+title: 'WAD'
+description: 'Williams Accumulation/Distribution'
+---
+
+import {IndicatorPageDemo} from '../../../components/IndicatorPageDemo';
+
+# Williams Accumulation/Distribution (WAD)
+
+Larry Williams' cumulative line: an up-close adds the run from the true low to the close, a down-close subtracts the drop from the true high. Built from price alone — unlike Chaikin's AD, which weights by volume. Read against price for divergence: a price high the line refuses to confirm warns of distribution.
+
+## Live Demo
+
+Pick a market regime to see how WAD(2) reacts:
+
+<IndicatorPageDemo category="volume" id="wad" />
+
+## Usage
+
+```ts twoslash
+import {WAD} from 'trading-signals';
+
+// WAD yields results once 2 inputs have been added
+const wad = new WAD();
+```

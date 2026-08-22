@@ -1,0 +1,25 @@
+---
+title: 'ALMA'
+description: 'Arnaud Legoux Moving Average'
+---
+
+import {IndicatorPageDemo} from '../../../components/IndicatorPageDemo';
+
+# Arnaud Legoux Moving Average (ALMA)
+
+Weights the price window with a Gaussian bell whose peak is shifted toward the newest prices: prices near the peak dominate the average for low lag, while the tails of the bell still dampen outliers for smoothness. Offset steers the peak, sigma the width of the bell.
+
+## Live Demo
+
+Pick a market regime to see how ALMA(9) reacts:
+
+<IndicatorPageDemo category="trend" id="alma" />
+
+## Usage
+
+```ts twoslash
+import {ALMA} from 'trading-signals';
+
+// ALMA yields results once 9 inputs have been added
+const alma = new ALMA(9);
+```

@@ -1,0 +1,25 @@
+---
+title: 'APO'
+description: 'Absolute Price Oscillator'
+---
+
+import {IndicatorPageDemo} from '../../../components/IndicatorPageDemo';
+
+# Absolute Price Oscillator (APO)
+
+The MACD line without the signal line: reports the spread between the fast and slow EMA in the instrument's own price units, so the reading is directly actionable for a single instrument. Crossings of the zero line signal trend changes.
+
+## Live Demo
+
+Pick a market regime to see how APO(26) reacts:
+
+<IndicatorPageDemo category="momentum" id="apo" />
+
+## Usage
+
+```ts twoslash
+import {APO} from 'trading-signals';
+
+// APO yields results once 26 inputs have been added
+const apo = new APO();
+```

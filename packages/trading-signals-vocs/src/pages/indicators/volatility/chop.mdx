@@ -1,0 +1,25 @@
+---
+title: 'Choppiness Index'
+description: 'Choppiness Index'
+---
+
+import {IndicatorPageDemo} from '../../../components/IndicatorPageDemo';
+
+# Choppiness Index
+
+Compares the ground price actually covered (the sum of true ranges) with the span of the window on a logarithmic scale, bounded between 0 and 100. Readings above 61.8 mark a consolidating, choppy market where trend-following entries are prone to whipsaws; readings below 38.2 mark a strong trend. The reading is direction-agnostic — a crash and a rally both read as trending — so the direction must come from a companion trend indicator.
+
+## Live Demo
+
+Pick a market regime to see how Choppiness Index(14) reacts:
+
+<IndicatorPageDemo category="volatility" id="chop" />
+
+## Usage
+
+```ts twoslash
+import {CHOP} from 'trading-signals';
+
+// CHOP yields results once 15 inputs have been added
+const chop = new CHOP(14);
+```

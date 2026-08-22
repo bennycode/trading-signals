@@ -1,0 +1,25 @@
+---
+title: 'KVO'
+description: 'Klinger Volume Oscillator'
+---
+
+import {IndicatorPageDemo} from '../../../components/IndicatorPageDemo';
+
+# Klinger Volume Oscillator (KVO)
+
+Turns each candle into a signed "volume force" — full volume counted as buying or selling pressure by the trend of the high/low/close sum and scaled by its share of the current swing — then charts the spread between a short and a long EMA of that force to catch money-flow reversals early.
+
+## Live Demo
+
+Pick a market regime to see how KVO(2) reacts:
+
+<IndicatorPageDemo category="volume" id="kvo" />
+
+## Usage
+
+```ts twoslash
+import {KVO} from 'trading-signals';
+
+// KVO yields results once 2 inputs have been added
+const kvo = new KVO();
+```

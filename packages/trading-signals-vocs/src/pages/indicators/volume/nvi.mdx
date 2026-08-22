@@ -1,0 +1,25 @@
+---
+title: 'NVI'
+description: 'Negative Volume Index'
+---
+
+import {IndicatorPageDemo} from '../../../components/IndicatorPageDemo';
+
+# Negative Volume Index (NVI)
+
+Cumulative index that starts at 1000 and follows price changes only on falling-volume days, on the premise that "smart money" positions itself quietly while crowded high-volume days are noise. Traditionally read against its own one-year moving average rather than a fixed threshold.
+
+## Live Demo
+
+Pick a market regime to see how NVI(1) reacts:
+
+<IndicatorPageDemo category="volume" id="nvi" />
+
+## Usage
+
+```ts twoslash
+import {NVI} from 'trading-signals';
+
+// NVI yields results once 1 inputs have been added
+const nvi = new NVI();
+```

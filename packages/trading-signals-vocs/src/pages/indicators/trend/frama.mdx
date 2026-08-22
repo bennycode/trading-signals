@@ -1,0 +1,25 @@
+---
+title: 'FRAMA'
+description: 'Fractal Adaptive Moving Average'
+---
+
+import {IndicatorPageDemo} from '../../../components/IndicatorPageDemo';
+
+# Fractal Adaptive Moving Average (FRAMA)
+
+Measures the fractal dimension of the price curve over the interval and adapts its smoothing accordingly: it hugs prices almost one-to-one when they travel in a straight line and turns as sluggish as a 200-period average in dense congestion, flattening out whipsaws.
+
+## Live Demo
+
+Pick a market regime to see how FRAMA(16) reacts:
+
+<IndicatorPageDemo category="trend" id="frama" />
+
+## Usage
+
+```ts twoslash
+import {FRAMA} from 'trading-signals';
+
+// FRAMA yields results once 16 inputs have been added
+const frama = new FRAMA(16);
+```

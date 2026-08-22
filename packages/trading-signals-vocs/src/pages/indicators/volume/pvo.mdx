@@ -1,0 +1,25 @@
+---
+title: 'PVO'
+description: 'Percentage Volume Oscillator'
+---
+
+import {IndicatorPageDemo} from '../../../components/IndicatorPageDemo';
+
+# Percentage Volume Oscillator (PVO)
+
+The PPO applied to volume: divides the spread between the fast and slow volume EMA by the slow EMA. Readings above zero mean volume is expanding and lends conviction to the current move; crossings of the zero line mark a volume regime change.
+
+## Live Demo
+
+Pick a market regime to see how PVO(26) reacts:
+
+<IndicatorPageDemo category="volume" id="pvo" />
+
+## Usage
+
+```ts twoslash
+import {PVO} from 'trading-signals';
+
+// PVO yields results once 26 inputs have been added
+const pvo = new PVO();
+```

@@ -1,0 +1,25 @@
+---
+title: 'Vertical Horizontal Filter'
+description: 'Vertical Horizontal Filter'
+---
+
+import {IndicatorPageDemo} from '../../../components/IndicatorPageDemo';
+
+# Vertical Horizontal Filter
+
+Relates the widest span between closing prices to the total ground those closes covered over the window, bounded between 0 and 1. Readings near 1 mark a market walking its span in a straight line (trending); readings near 0 mark a market crossing the same prices again and again (congesting). There is no fixed banding — the reading is compared against its own recent history, and it is direction-agnostic: a crash and a rally both read as trending, so the direction must come from a companion trend indicator.
+
+## Live Demo
+
+Pick a market regime to see how Vertical Horizontal Filter(28) reacts:
+
+<IndicatorPageDemo category="trend" id="vhf" />
+
+## Usage
+
+```ts twoslash
+import {VHF} from 'trading-signals';
+
+// VHF yields results once 29 inputs have been added
+const vhf = new VHF(28);
+```

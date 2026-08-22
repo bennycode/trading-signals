@@ -1,0 +1,25 @@
+---
+title: 'CFO'
+description: 'Chande Forecast Oscillator'
+---
+
+import {IndicatorPageDemo} from '../../../components/IndicatorPageDemo';
+
+# Chande Forecast Oscillator (CFO)
+
+Measures the percentage gap between the close and the close projected by a linear regression over the preceding closes. Positive readings show price running ahead of its own trend (bullish pressure), negative readings show it falling short (bearish pressure).
+
+## Live Demo
+
+Pick a market regime to see how CFO(14) reacts:
+
+<IndicatorPageDemo category="momentum" id="cfo" />
+
+## Usage
+
+```ts twoslash
+import {CFO} from 'trading-signals';
+
+// CFO yields results once 15 inputs have been added
+const cfo = new CFO(14);
+```

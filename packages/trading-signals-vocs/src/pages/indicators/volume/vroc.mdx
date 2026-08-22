@@ -1,0 +1,25 @@
+---
+title: 'VROC'
+description: 'Volume Rate of Change'
+---
+
+import {IndicatorPageDemo} from '../../../components/IndicatorPageDemo';
+
+# Volume Rate of Change (VROC)
+
+Measures percentage change in volume over a period. Positive VROC indicates increasing volume (confirms trend), negative VROC indicates declining volume (weakening trend).
+
+## Live Demo
+
+Pick a market regime to see how VROC(14) reacts:
+
+<IndicatorPageDemo category="volume" id="vroc" />
+
+## Usage
+
+```ts twoslash
+import {VROC} from 'trading-signals';
+
+// VROC yields results once 15 inputs have been added
+const vroc = new VROC(14);
+```

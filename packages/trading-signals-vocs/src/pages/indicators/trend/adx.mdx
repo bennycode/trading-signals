@@ -1,0 +1,25 @@
+---
+title: 'ADX'
+description: 'Average Directional Index'
+---
+
+import {IndicatorPageDemo} from '../../../components/IndicatorPageDemo';
+
+# Average Directional Index (ADX)
+
+Measures trend strength regardless of direction. Values above 25 indicate a strong trend, below 20 suggest a weak trend.
+
+## Live Demo
+
+Pick a market regime to see how ADX(14) reacts:
+
+<IndicatorPageDemo category="trend" id="adx" />
+
+## Usage
+
+```ts twoslash
+import {ADX} from 'trading-signals';
+
+// ADX yields results once 14 inputs have been added
+const adx = new ADX(14);
+```

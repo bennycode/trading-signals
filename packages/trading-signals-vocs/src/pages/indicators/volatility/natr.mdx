@@ -1,0 +1,25 @@
+---
+title: 'NATR'
+description: 'Normalized Average True Range'
+---
+
+import {IndicatorPageDemo} from '../../../components/IndicatorPageDemo';
+
+# Normalized Average True Range (NATR)
+
+Expresses the ATR as a percentage of the closing price, making volatility comparable across differently priced instruments — a raw $5 ATR is huge for a $50 stock and noise for a $5,000 one.
+
+## Live Demo
+
+Pick a market regime to see how NATR(14) reacts:
+
+<IndicatorPageDemo category="volatility" id="natr" />
+
+## Usage
+
+```ts twoslash
+import {NATR} from 'trading-signals';
+
+// NATR yields results once 14 inputs have been added
+const natr = new NATR(14);
+```

@@ -1,0 +1,25 @@
+---
+title: 'ROC'
+description: 'Rate of Change'
+---
+
+import {IndicatorPageDemo} from '../../../components/IndicatorPageDemo';
+
+# Rate of Change (ROC)
+
+Measures the percentage change in price from n periods ago. Positive values indicate upward momentum, negative values indicate downward momentum.
+
+## Live Demo
+
+Pick a market regime to see how ROC(9) reacts:
+
+<IndicatorPageDemo category="momentum" id="roc" />
+
+## Usage
+
+```ts twoslash
+import {ROC} from 'trading-signals';
+
+// ROC yields results once 9 inputs have been added
+const roc = new ROC(9);
+```

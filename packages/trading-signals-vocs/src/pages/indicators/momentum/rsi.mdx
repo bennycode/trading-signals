@@ -1,0 +1,25 @@
+---
+title: 'RSI'
+description: 'Relative Strength Index'
+---
+
+import {IndicatorPageDemo} from '../../../components/IndicatorPageDemo';
+
+# Relative Strength Index (RSI)
+
+RSI measures the magnitude of recent price changes to evaluate overbought or oversold conditions. Values above 70 indicate overbought, below 30 indicate oversold.
+
+## Live Demo
+
+Pick a market regime to see how RSI(14) reacts:
+
+<IndicatorPageDemo category="momentum" id="rsi" />
+
+## Usage
+
+```ts twoslash
+import {RSI} from 'trading-signals';
+
+// RSI yields results once 14 inputs have been added
+const rsi = new RSI(14);
+```

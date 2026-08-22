@@ -1,0 +1,25 @@
+---
+title: 'T3'
+description: 'Tillson T3 Moving Average'
+---
+
+import {IndicatorPageDemo} from '../../../components/IndicatorPageDemo';
+
+# Tillson T3 Moving Average (T3)
+
+Applies Tim Tillson’s "generalized DEMA" three times — a weighted blend of six cascaded EMAs — producing a curve that is smoother than an EMA yet turns with less lag. The volume factor (default 0.7) steers it between a plain EMA (0) and a full DEMA (1).
+
+## Live Demo
+
+Pick a market regime to see how T3(5) reacts:
+
+<IndicatorPageDemo category="trend" id="t3" />
+
+## Usage
+
+```ts twoslash
+import {T3} from 'trading-signals';
+
+// T3 yields results once 25 inputs have been added
+const t3 = new T3(5);
+```

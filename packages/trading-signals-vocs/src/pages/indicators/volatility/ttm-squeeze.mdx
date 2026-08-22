@@ -1,0 +1,25 @@
+---
+title: 'TTM Squeeze'
+description: 'TTM Squeeze (Squeeze Momentum)'
+---
+
+import {IndicatorPageDemo} from '../../../components/IndicatorPageDemo';
+
+# TTM Squeeze (Squeeze Momentum) (TTM Squeeze)
+
+TTM Squeeze (Squeeze Momentum)
+
+## Live Demo
+
+Pick a market regime to see how TTM Squeeze(39) reacts:
+
+<IndicatorPageDemo category="volatility" id="ttm-squeeze" />
+
+## Usage
+
+```ts twoslash
+import {TTMSqueeze} from 'trading-signals';
+
+// TTMSqueeze yields results once 39 inputs have been added
+const tTMSqueeze = new TTMSqueeze();
+```
