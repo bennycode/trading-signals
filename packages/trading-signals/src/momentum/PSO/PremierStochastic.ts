@@ -1,5 +1,5 @@
 import type {HighLowClose} from '../../base/Candle.type.js';
-import {ZeroCrossSeries} from '../../base/Indicator.js';
+import {IndicatorInputShape, ZeroCrossSeries} from '../../base/Indicator.js';
 import {EMA} from '../../trend/EMA/EMA.js';
 import {getMaximum} from '../../util/math/getMaximum.js';
 import {getMinimum} from '../../util/math/getMinimum.js';
@@ -31,6 +31,8 @@ export type PremierStochasticConfig = {
  * @see https://www.quantconnect.com/docs/v2/writing-algorithms/indicators/supported-indicators/premier-stochastic-oscillator
  */
 export class PremierStochastic extends ZeroCrossSeries<HighLowClose<number>> {
+  override readonly inputShape = IndicatorInputShape.HIGH_LOW_CLOSE;
+
   public readonly stochInterval: number;
   public readonly smoothInterval: number;
   readonly #candles: HighLowClose<number>[] = [];

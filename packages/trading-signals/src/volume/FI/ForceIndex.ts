@@ -1,5 +1,5 @@
 import type {HighLowCloseVolume} from '../../base/Candle.type.js';
-import {ZeroCrossSeries} from '../../base/Indicator.js';
+import {IndicatorInputShape, ZeroCrossSeries} from '../../base/Indicator.js';
 import {EMA} from '../../trend/EMA/EMA.js';
 import {pushUpdate} from '../../util/array/pushUpdate.js';
 
@@ -24,6 +24,8 @@ import {pushUpdate} from '../../util/array/pushUpdate.js';
  * @see Alexander Elder, "Trading for a Living" (1993), where the indicator was introduced
  */
 export class ForceIndex extends ZeroCrossSeries<HighLowCloseVolume> {
+  override readonly inputShape = IndicatorInputShape.HIGH_LOW_CLOSE_VOLUME;
+
   readonly #candles: HighLowCloseVolume[] = [];
   readonly #ema: EMA;
 

@@ -1,5 +1,5 @@
 import type {OpenHighLowClose} from '../../base/Candle.type.js';
-import {IndicatorSeries} from '../../base/Indicator.js';
+import {IndicatorInputShape, IndicatorSeries} from '../../base/Indicator.js';
 import {pushUpdate} from '../../util/index.js';
 
 /**
@@ -31,6 +31,8 @@ import {pushUpdate} from '../../util/index.js';
  * @see https://portfolioslab.com/tools/rogers-satchell
  */
 export class RogersSatchellVolatility extends IndicatorSeries<OpenHighLowClose> {
+  override readonly inputShape = IndicatorInputShape.OPEN_HIGH_LOW_CLOSE;
+
   readonly #barVariances: number[] = [];
 
   public readonly interval: number;

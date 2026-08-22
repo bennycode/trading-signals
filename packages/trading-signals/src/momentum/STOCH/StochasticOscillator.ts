@@ -1,6 +1,6 @@
 import {SMA} from '../../trend/SMA/SMA.js';
 import type {HighLowClose} from '../../base/Candle.type.js';
-import {TradingSignal, TrendIndicator} from '../../base/Indicator.js';
+import {IndicatorInputShape, TradingSignal, TrendIndicator} from '../../base/Indicator.js';
 import type {SignalThresholds} from '../../base/SignalThresholds.type.js';
 import {pushUpdate} from '../../util/array/pushUpdate.js';
 
@@ -44,6 +44,8 @@ export type StochasticOscillatorConfig = {
  * @see https://tulipindicators.org/stoch
  */
 export class StochasticOscillator extends TrendIndicator<StochasticResult, HighLowClose<number>> {
+  override readonly inputShape = IndicatorInputShape.HIGH_LOW_CLOSE;
+
   public readonly candles: HighLowClose<number>[] = [];
   readonly #smoothK: SMA;
   readonly #smoothD: SMA;

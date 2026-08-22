@@ -1,6 +1,6 @@
 import {EMA} from '../../trend/EMA/EMA.js';
 import type {HighLowClose} from '../../base/Candle.type.js';
-import {TradingSignal, TrendIndicator} from '../../base/Indicator.js';
+import {IndicatorInputShape, TradingSignal, TrendIndicator} from '../../base/Indicator.js';
 
 export type ElderRayResult = {
   /** Sellers' ability to drag the price below the consensus of value (negative readings show seller strength) */
@@ -26,6 +26,8 @@ export type ElderRayResult = {
  * @see https://www.investopedia.com/articles/trading/03/022603.asp
  */
 export class ElderRay extends TrendIndicator<ElderRayResult, HighLowClose<number>> {
+  override readonly inputShape = IndicatorInputShape.HIGH_LOW_CLOSE;
+
   readonly #ema: EMA;
   public readonly interval: number;
 

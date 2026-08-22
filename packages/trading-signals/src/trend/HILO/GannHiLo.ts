@@ -1,5 +1,5 @@
 import type {HighLowClose} from '../../base/Candle.type.js';
-import {TechnicalIndicator, TradingSignal} from '../../base/Indicator.js';
+import {IndicatorInputShape, TechnicalIndicator, TradingSignal} from '../../base/Indicator.js';
 import {SMA} from '../SMA/SMA.js';
 
 export type GannHiLoResult = {
@@ -48,6 +48,8 @@ type GannHiLoState = {
  * @see https://www.sierrachart.com/index.php?page=doc/StudiesReference.php&ID=447&Name=Gann_HiLo_Activator
  */
 export class GannHiLo extends TechnicalIndicator<GannHiLoResult, HighLowClose<number>, GannHiLoState> {
+  override readonly inputShape = IndicatorInputShape.HIGH_LOW_CLOSE;
+
   readonly #highSma: SMA;
   readonly #lowSma: SMA;
 

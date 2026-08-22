@@ -1,5 +1,5 @@
 import type {HighLow} from '../../base/Candle.type.js';
-import {TechnicalIndicator} from '../../base/Indicator.js';
+import {IndicatorInputShape, TechnicalIndicator} from '../../base/Indicator.js';
 import {Alligator, type AlligatorConfig} from './Alligator.js';
 
 export type GatorOscillatorResult = {
@@ -28,6 +28,8 @@ export type GatorOscillatorResult = {
  * @see https://www.metatrader5.com/en/terminal/help/indicators/bw_indicators/go
  */
 export class GatorOscillator extends TechnicalIndicator<GatorOscillatorResult, HighLow<number>> {
+  override readonly inputShape = IndicatorInputShape.HIGH_LOW;
+
   readonly #alligator: Alligator;
 
   constructor(config?: AlligatorConfig) {

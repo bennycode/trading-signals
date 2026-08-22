@@ -1,4 +1,4 @@
-import {ZeroCrossSeries} from '../../base/Indicator.js';
+import {IndicatorInputShape, ZeroCrossSeries} from '../../base/Indicator.js';
 import {EMA} from '../../trend/EMA/EMA.js';
 
 export type PPOConfig = {
@@ -21,6 +21,8 @@ export type PPOConfig = {
  * @see https://tulipindicators.org/ppo
  */
 export class PPO extends ZeroCrossSeries {
+  override readonly inputShape = IndicatorInputShape.VALUE;
+
   readonly #fast: EMA;
   readonly #slow: EMA;
 

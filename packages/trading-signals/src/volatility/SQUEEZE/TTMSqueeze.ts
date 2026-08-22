@@ -1,5 +1,5 @@
 import type {HighLowClose} from '../../base/Candle.type.js';
-import {TradingSignal, TrendIndicator} from '../../base/Indicator.js';
+import {IndicatorInputShape, TradingSignal, TrendIndicator} from '../../base/Indicator.js';
 import {getLinearRegression} from '../../util/math/getLinearRegression.js';
 import {getAverage} from '../../util/math/getAverage.js';
 import {pushUpdate} from '../../util/array/pushUpdate.js';
@@ -48,6 +48,8 @@ export type TTMSqueezeConfig = {
  * @see https://school.stockcharts.com/doku.php?id=technical_indicators:ttm_squeeze
  */
 export class TTMSqueeze extends TrendIndicator<TTMSqueezeResult, HighLowClose<number>> {
+  override readonly inputShape = IndicatorInputShape.HIGH_LOW_CLOSE;
+
   public readonly bbInterval: number;
   public readonly bbMultiplier: number;
   public readonly kcInterval: number;

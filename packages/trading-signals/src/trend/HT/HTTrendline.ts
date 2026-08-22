@@ -1,4 +1,4 @@
-import {IndicatorSeries} from '../../base/Indicator.js';
+import {IndicatorInputShape, IndicatorSeries} from '../../base/Indicator.js';
 import type {HilbertCycleState} from './HilbertTransform.js';
 import {createHilbertCycleState, lag, measureDominantCycle, pushCapped} from './HilbertTransform.js';
 
@@ -26,6 +26,8 @@ type HTTrendlineState = HilbertCycleState & {
  * @see https://github.com/TA-Lib/ta-lib/blob/main/src/ta_func/ta_HT_TRENDLINE.c
  */
 export class HTTrendline extends IndicatorSeries<number, HTTrendlineState> {
+  override readonly inputShape = IndicatorInputShape.VALUE;
+
   protected override state: HTTrendlineState = {
     ...createHilbertCycleState(),
     barsTotal: 0,

@@ -1,5 +1,5 @@
 import type {HighLowClose} from '../../base/Candle.type.js';
-import {IndicatorSeries} from '../../base/Indicator.js';
+import {IndicatorInputShape, IndicatorSeries} from '../../base/Indicator.js';
 import {pushUpdate} from '../../util/array/pushUpdate.js';
 
 type TrueExtremes = {
@@ -30,6 +30,8 @@ type TrueExtremes = {
  * @see https://school.stockcharts.com/doku.php?id=technical_indicators:choppiness_index
  */
 export class CHOP extends IndicatorSeries<HighLowClose<number>> {
+  override readonly inputShape = IndicatorInputShape.HIGH_LOW_CLOSE;
+
   readonly #window: TrueExtremes[] = [];
   #previousClose?: number;
   #twoPreviousClose?: number;

@@ -1,4 +1,4 @@
-import {ThresholdCrossSeries} from '../../base/Indicator.js';
+import {IndicatorInputShape, ThresholdCrossSeries} from '../../base/Indicator.js';
 import type {SignalThresholds} from '../../base/SignalThresholds.type.js';
 import {WSMA} from '../../trend/WSMA/WSMA.js';
 import {pushUpdate} from '../../util/array/pushUpdate.js';
@@ -33,6 +33,8 @@ export type RMIConfig = {
  * @see https://docs.motivewave.com/studies/q-r#relative-momentum-index
  */
 export class RMI extends ThresholdCrossSeries {
+  override readonly inputShape = IndicatorInputShape.VALUE;
+
   readonly #closes: number[] = [];
   readonly #avgUpMomentum: WSMA;
   readonly #avgDownMomentum: WSMA;

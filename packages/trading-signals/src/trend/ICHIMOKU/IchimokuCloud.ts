@@ -1,5 +1,5 @@
 import type {HighLow} from '../../base/Candle.type.js';
-import {TechnicalIndicator} from '../../base/Indicator.js';
+import {IndicatorInputShape, TechnicalIndicator} from '../../base/Indicator.js';
 import {pushUpdate} from '../../util/array/pushUpdate.js';
 
 export type IchimokuCloudResult = {
@@ -41,6 +41,8 @@ export type IchimokuCloudConfig = {
  * @see https://en.wikipedia.org/wiki/Ichimoku_Kink%C5%8D_Hy%C5%8D
  */
 export class IchimokuCloud extends TechnicalIndicator<IchimokuCloudResult, HighLow<number>> {
+  override readonly inputShape = IndicatorInputShape.HIGH_LOW;
+
   readonly #candles: HighLow<number>[] = [];
   public readonly baseInterval: number;
   public readonly conversionInterval: number;

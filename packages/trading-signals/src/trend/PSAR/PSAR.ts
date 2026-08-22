@@ -1,5 +1,5 @@
 import type {HighLow} from '../../base/Candle.type.js';
-import {IndicatorSeries} from '../../base/Indicator.js';
+import {IndicatorInputShape, IndicatorSeries} from '../../base/Indicator.js';
 import {getMedianPrice} from '../../util/candle/getMedianPrice.js';
 
 export type PSARConfig = {
@@ -42,6 +42,8 @@ type PSARState = {
  *
  */
 export class PSAR extends IndicatorSeries<HighLow<number>, PSARState> {
+  override readonly inputShape = IndicatorInputShape.HIGH_LOW;
+
   private readonly accelerationStep: number;
   private readonly accelerationMax: number;
   protected override state: PSARState = {

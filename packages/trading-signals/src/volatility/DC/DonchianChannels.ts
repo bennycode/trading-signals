@@ -1,5 +1,5 @@
 import type {HighLow} from '../../base/Candle.type.js';
-import {TechnicalIndicator} from '../../base/Indicator.js';
+import {IndicatorInputShape, TechnicalIndicator} from '../../base/Indicator.js';
 import {pushUpdate} from '../../util/index.js';
 
 export type DonchianChannelsResult = {
@@ -25,6 +25,8 @@ export type DonchianChannelsResult = {
  * @see https://dotnet.stockindicators.dev/indicators/Donchian/
  */
 export class DonchianChannels extends TechnicalIndicator<DonchianChannelsResult, HighLow<number>> {
+  override readonly inputShape = IndicatorInputShape.HIGH_LOW;
+
   readonly #candles: HighLow<number>[] = [];
   public readonly interval: number;
 

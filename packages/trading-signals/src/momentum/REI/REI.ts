@@ -1,5 +1,5 @@
 import type {HighLowClose} from '../../base/Candle.type.js';
-import {TradingSignal, TrendIndicatorSeries} from '../../base/Indicator.js';
+import {IndicatorInputShape, TradingSignal, TrendIndicatorSeries} from '../../base/Indicator.js';
 import type {SignalThresholds} from '../../base/SignalThresholds.type.js';
 
 /**
@@ -22,6 +22,8 @@ import type {SignalThresholds} from '../../base/SignalThresholds.type.js';
  * @see https://www.sierrachart.com/index.php?page=doc/StudiesReference.php&ID=448
  */
 export class REI extends TrendIndicatorSeries<HighLowClose<number>> {
+  override readonly inputShape = IndicatorInputShape.HIGH_LOW_CLOSE;
+
   readonly #highs: number[] = [];
   readonly #lows: number[] = [];
   readonly #closes: number[] = [];
