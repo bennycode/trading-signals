@@ -1,6 +1,7 @@
 import {parseArgs} from 'node:util';
 import Big from 'big.js';
 import {ms, type StringValue} from 'ms';
+import {ATR, EMA, RSI, SMA} from 'trading-signals';
 import type {Broker, Candle} from '../broker/Broker.js';
 import {OrderSide, OrderType} from '../broker/Broker.js';
 import {getBrokerClient} from '../broker/getBrokerClient.js';
@@ -79,6 +80,13 @@ const COMMANDS: readonly (readonly [name: string, spec: CommandSpec])[] = [
   ['wait', {args: '<ticker> <orderId>', description: 'Poll until the order fills or dies (--timeout, --poll)'}],
   ['cancel', {args: '<ticker> <orderId>', description: 'Cancel one order (or all for the ticker with --all)'}],
   ['candles', {args: '<ticker>', description: 'Most recent candles (--interval, --count)'}],
+  [
+    'indicator',
+    {
+      args: '<name> <ticker>',
+      description: 'Latest indicator value over recent candles: atr, ema, rsi, sma (--period, --interval)',
+    },
+  ],
   ['watch-candles', {args: '<ticker>', description: 'Stream live candles as NDJSON until Ctrl-C (or --take)'}],
   ['watch-orders', {description: 'Stream order fills as NDJSON until Ctrl-C (or --take)'}],
   ['time', {description: 'Broker time'}],
@@ -97,6 +105,7 @@ const CLI_OPTIONS = {
   interval: {default: '1m', type: 'string'},
   limit: {type: 'string'},
   live: {default: false, type: 'boolean'},
+  period: {type: 'string'},
   poll: {type: 'string'},
   take: {type: 'string'},
   timeout: {default: '5m', type: 'string'},
@@ -120,6 +129,10 @@ const OPTION_HELP: Record<keyof typeof CLI_OPTIONS, {description: string; placeh
   interval: {description: 'Candle interval, e.g. 1m, 5m, 1h (default: 1m)', placeholder: '<duration>'},
   limit: {description: 'Turn buy/sell into a limit order at this price', placeholder: '<price>'},
   live: {description: 'Use the LIVE account (default: paper)'},
+  period: {
+    description: 'With indicator: lookback period (defaults: atr 14, rsi 14, ema 20, sma 20)',
+    placeholder: '<n>',
+  },
   poll: {description: "With wait: poll interval (default: matches the broker's rate limit)", placeholder: '<duration>'},
   take: {description: 'Stop a watch-* stream after n events (default: run until Ctrl-C)', placeholder: '<n>'},
   timeout: {
@@ -400,6 +413,54 @@ async function dryRunOrder(
 }
 
 /**
+ * Indicators the `indicator` command can compute over recent candles. Each spec owns its
+ * input shape (close-only vs high/low/close), so adding one is a single entry here.
+ */
+const INDICATOR_SPECS: Record<string, {defaultPeriod: number; compute: (candles: Candle[], period: number) => number}> =
+  {
+    atr: {
+      compute: (candles, period) => {
+        const atr = new ATR(period);
+        for (const candle of candles) {
+          atr.add({close: Number(candle.close), high: Number(candle.high), low: Number(candle.low)});
+        }
+        return atr.getResultOrThrow();
+      },
+      defaultPeriod: 14,
+    },
+    ema: {
+      compute: (candles, period) => {
+        const ema = new EMA(period);
+        for (const candle of candles) {
+          ema.add(Number(candle.close));
+        }
+        return ema.getResultOrThrow();
+      },
+      defaultPeriod: 20,
+    },
+    rsi: {
+      compute: (candles, period) => {
+        const rsi = new RSI(period);
+        for (const candle of candles) {
+          rsi.add(Number(candle.close));
+        }
+        return rsi.getResultOrThrow();
+      },
+      defaultPeriod: 14,
+    },
+    sma: {
+      compute: (candles, period) => {
+        const sma = new SMA(period);
+        for (const candle of candles) {
+          sma.add(Number(candle.close));
+        }
+        return sma.getResultOrThrow();
+      },
+      defaultPeriod: 20,
+    },
+  };
+
+/**
  * Trading212 has no market data of its own, so its candle commands are fed from Alpaca.
  * Market data always comes from Alpaca's production endpoints; `usePaperTrading` only
  * selects the trading-API host used for instrument metadata, matching the key type the
@@ -559,6 +620,34 @@ export async function runCli(argv: string[], overrides: Partial<CliDeps> = {}): 
         const pair = new TradingPair(ticker, await resolveCounter(ticker));
         const count = parsePositiveInt(values.count ?? '10', '--count');
         return {json: await broker.getRecentCandles(pair, count, parseInterval(values.interval, '--interval'))};
+      }
+      case 'indicator': {
+        const name = requireArg('name', 0).toLowerCase();
+        const spec = INDICATOR_SPECS[name];
+        if (!spec) {
+          throw new Error(`Unknown indicator "${name}". Available: ${Object.keys(INDICATOR_SPECS).join(', ')}.`);
+        }
+        const ticker = requireArg('ticker', 1);
+        const pair = new TradingPair(ticker, await resolveCounter(ticker));
+        const period = values.period ? parsePositiveInt(values.period, '--period') : spec.defaultPeriod;
+        // Smoothed indicators need a warm-up well beyond the period to converge; 5x is a solid default.
+        const count = values.count ? parsePositiveInt(values.count, '--count') : period * 5;
+        const candles = await broker.getRecentCandles(pair, count, parseInterval(values.interval, '--interval'));
+        const value = spec.compute(candles, period);
+        const lastClose = Number(candles[candles.length - 1]?.close);
+        return {
+          json: {
+            candles: candles.length,
+            indicator: name,
+            interval: values.interval,
+            lastClose,
+            pair,
+            period,
+            value,
+            // ATR is in price units; the normalized percent is what makes wobble comparable across instruments.
+            ...(name === 'atr' && {valuePct: (value / lastClose) * 100}),
+          },
+        };
       }
       case 'quote': {
         const ticker = requireArg('ticker', 0);
