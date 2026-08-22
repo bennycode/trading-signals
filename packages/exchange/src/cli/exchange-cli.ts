@@ -1,18 +1,13 @@
 #!/usr/bin/env node
+import {loadEnvFiles} from '../util/loadEnvFiles.js';
 import {runCli} from './runCli.js';
 
 /*
  * --live picks the environment file: .env.live for the real account, .env.sandbox otherwise.
- * This happens before argument parsing so credentials are in place when runCli reads them.
- * Variables already present in the environment (shell, .env via the npm script) win —
- * `process.loadEnvFile` never overrides. Both files are optional.
+ * .env carries shared, non-broker keys. This happens before argument parsing so credentials
+ * are in place when runCli reads them; variables already present in the environment win.
  */
-const envFile = process.argv.includes('--live') ? '.env.live' : '.env.sandbox';
-try {
-  process.loadEnvFile(envFile);
-} catch {
-  // No environment file — whatever the process environment already provides is used as-is.
-}
+loadEnvFiles('.env', process.argv.includes('--live') ? '.env.live' : '.env.sandbox');
 
 /**
  * Exit explicitly after flushing instead of relying on a natural exit: broker WebSocket

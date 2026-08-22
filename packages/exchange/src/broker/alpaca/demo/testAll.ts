@@ -1,6 +1,9 @@
 import {ms, format} from 'ms';
 import {getAlpacaClient} from '../getAlpacaClient.js';
 import {TradingPair} from '../../TradingPair.js';
+import {loadEnvFiles} from '../../../util/loadEnvFiles.js';
+
+loadEnvFiles('.env', '.env.sandbox');
 
 const exchange = getAlpacaClient({
   apiKey: process.env.ALPACA_PAPER_API_KEY ?? '',

@@ -32,9 +32,9 @@
     "access": "public"
   },
   "scripts": {
-    "alpaca:testAll": "tsx --env-file-if-exists=.env --env-file-if-exists=.env.sandbox src/broker/alpaca/demo/testAll.ts",
-    "alpaca:fetchCandles": "tsx --env-file-if-exists=.env --env-file-if-exists=.env.sandbox src/broker/alpaca/demo/fetchCandles.ts",
-    "cli": "tsx --env-file-if-exists=.env src/cli/exchange-cli.ts",
+    "alpaca:testAll": "tsx src/broker/alpaca/demo/testAll.ts",
+    "alpaca:fetchCandles": "tsx src/broker/alpaca/demo/fetchCandles.ts",
+    "cli": "tsx src/cli/exchange-cli.ts",
     "build": "tsc -p tsconfig.build.json",
     "clean": "rimraf coverage dist",
     "dist": "npm run clean && npm run build",
@@ -50,7 +50,7 @@
     "test:units": "vitest run --passWithNoTests",
     "test:units:watch": "vitest --watch",
     "test:mutation": "stryker run",
-    "trading212:testAll": "tsx --env-file-if-exists=.env --env-file-if-exists=.env.sandbox src/broker/trading212/demo/testAll.ts"
+    "trading212:testAll": "tsx src/broker/trading212/demo/testAll.ts"
   },
   "dependencies": {
     "@types/big.js": "^7.0.0",

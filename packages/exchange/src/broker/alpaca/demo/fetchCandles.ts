@@ -4,6 +4,9 @@ import {parseArgs} from 'node:util';
 import {writeCandles} from '../../../candle/writeCandles.js';
 import {TradingPair} from '../../TradingPair.js';
 import {getAlpacaClient} from '../getAlpacaClient.js';
+import {loadEnvFiles} from '../../../util/loadEnvFiles.js';
+
+loadEnvFiles('.env', '.env.sandbox');
 
 const {values} = parseArgs({
   options: {
