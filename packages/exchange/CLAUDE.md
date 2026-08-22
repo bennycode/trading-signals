@@ -77,7 +77,7 @@ When implementing an exchange integration, follow these patterns:
 
 ### Testing Credentials
 
-- Always test exchange logins by using the library's own API classes (e.g., `AlpacaAPI`) with credentials from `.env`
+- Always test exchange logins by using the library's own API classes (e.g., `AlpacaAPI`) with credentials from `.env.sandbox` / `.env.live` (shared, non-broker keys stay in `.env`)
 - Do not use raw `curl` or `fetch` calls — use the existing exchange client code to verify connectivity
 
 ### Structure
