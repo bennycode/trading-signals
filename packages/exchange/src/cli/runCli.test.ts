@@ -9,6 +9,8 @@ import type {CliDeps, InstrumentInfo} from './runCli.js';
 import {runCli, USAGE} from './runCli.js';
 
 const ENV = {
+  ALPACA_LIVE_API_KEY: 'alpaca-live-key',
+  ALPACA_LIVE_API_SECRET: 'alpaca-live-secret',
   ALPACA_PAPER_API_KEY: 'alpaca-paper-key',
   ALPACA_PAPER_API_SECRET: 'alpaca-paper-secret',
   TRADING212_LIVE_API_KEY: 'live-key',
@@ -315,6 +317,54 @@ describe('runCli', () => {
       'Trading212 candle streams ride the Alpaca socket, so they must hold the Alpaca-key lock'
     ).toHaveBeenCalledWith('alpaca-paper-key');
     expect(deps.releaseStreamLock).toHaveBeenCalledTimes(1);
+  });
+
+  it('locks on the live Alpaca key when executing live', async () => {
+    const emitter = new EventEmitter();
+    const broker = {
+      ...createBrokerStub(),
+      off: emitter.off.bind(emitter),
+      on: emitter.on.bind(emitter),
+      unwatchCandles: vi.fn(),
+      watchCandles: vi.fn().mockImplementation(() => {
+        setTimeout(() => emitter.emit('topic-1', {close: '1'}), 0);
+        return Promise.resolve('topic-1');
+      }),
+    };
+    const deps = createDeps(broker);
+
+    await runCli(
+      ['watch-candles', 'RRl_EQ', '--broker', 'trading212', '--live', '--counter', 'GBX', '--take', '1'],
+      deps
+    );
+
+    expect(
+      deps.acquireStreamLock,
+      'live execution must run on live-grade market data, so the lock follows the live key'
+    ).toHaveBeenCalledWith('alpaca-live-key');
+  });
+
+  it('falls back to the other Alpaca pair when the environment-matching one is missing', async () => {
+    const emitter = new EventEmitter();
+    const broker = {
+      ...createBrokerStub(),
+      off: emitter.off.bind(emitter),
+      on: emitter.on.bind(emitter),
+      unwatchCandles: vi.fn(),
+      watchCandles: vi.fn().mockImplementation(() => {
+        setTimeout(() => emitter.emit('topic-1', {close: '1'}), 0);
+        return Promise.resolve('topic-1');
+      }),
+    };
+    const {ALPACA_PAPER_API_KEY: _key, ALPACA_PAPER_API_SECRET: _secret, ...envWithoutAlpacaPaper} = ENV;
+    const deps = {...createDeps(broker), env: envWithoutAlpacaPaper};
+
+    await runCli(['watch-candles', 'RRl_EQ', '--broker', 'trading212', '--counter', 'GBX', '--take', '1'], deps);
+
+    expect(
+      deps.acquireStreamLock,
+      'market data is read-only, so a paper run may borrow the live keys rather than have no candles'
+    ).toHaveBeenCalledWith('alpaca-live-key');
   });
 
   it('releases the stream lock when the watch fails', async () => {
