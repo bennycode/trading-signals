@@ -1,4 +1,4 @@
-import {ZeroCrossSeries} from '../../base/Indicator.js';
+import {IndicatorInputShape, ZeroCrossSeries} from '../../base/Indicator.js';
 import type {MovingAverage} from '../../trend/MA/MovingAverage.js';
 import type {MovingAverageTypes} from '../../trend/MA/MovingAverageTypes.js';
 import {SMA} from '../../trend/SMA/SMA.js';
@@ -23,6 +23,8 @@ import {SMA} from '../../trend/SMA/SMA.js';
  * @see https://www.investopedia.com/terms/d/disparityindex.asp
  */
 export class DisparityIndex extends ZeroCrossSeries {
+  override readonly inputShape = IndicatorInputShape.VALUE;
+
   readonly #ma: MovingAverage;
 
   public readonly interval: number;

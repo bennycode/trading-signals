@@ -1,5 +1,5 @@
 import {ADX} from '../ADX/ADX.js';
-import {IndicatorSeries} from '../../base/Indicator.js';
+import {IndicatorInputShape, IndicatorSeries} from '../../base/Indicator.js';
 import type {HighLowClose} from '../../base/Candle.type.js';
 import type {MovingAverageTypes} from '../MA/MovingAverageTypes.js';
 import {pushUpdate} from '../../util/array/pushUpdate.js';
@@ -29,6 +29,8 @@ import {WSMA} from '../WSMA/WSMA.js';
  * @see https://www.fmlabs.com/reference/ADXR.htm
  */
 export class ADXR extends IndicatorSeries<HighLowClose<number>> {
+  override readonly inputShape = IndicatorInputShape.HIGH_LOW_CLOSE;
+
   readonly #adx: ADX;
   readonly #adxHistory: number[] = [];
 

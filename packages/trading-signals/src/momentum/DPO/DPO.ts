@@ -1,4 +1,4 @@
-import {ZeroCrossSeries} from '../../base/Indicator.js';
+import {IndicatorInputShape, ZeroCrossSeries} from '../../base/Indicator.js';
 import {SMA} from '../../trend/SMA/SMA.js';
 import {pushUpdate} from '../../util/array/pushUpdate.js';
 
@@ -23,6 +23,8 @@ import {pushUpdate} from '../../util/array/pushUpdate.js';
  * @see https://www.investopedia.com/terms/d/detrended-price-oscillator-dpo.asp
  */
 export class DPO extends ZeroCrossSeries {
+  override readonly inputShape = IndicatorInputShape.VALUE;
+
   public readonly interval: number;
   readonly #average: SMA;
   readonly #displacement: number;

@@ -1,5 +1,5 @@
 import {SMA} from '../../trend/SMA/SMA.js';
-import {TradingSignal, TrendIndicatorSeries} from '../../base/Indicator.js';
+import {IndicatorInputShape, TradingSignal, TrendIndicatorSeries} from '../../base/Indicator.js';
 import {pushUpdate} from '../../util/array/pushUpdate.js';
 
 /**
@@ -18,6 +18,8 @@ import {pushUpdate} from '../../util/array/pushUpdate.js';
  * @see http://www.mesasoftware.com/papers/TheCGOscillator.pdf
  */
 export class CG extends TrendIndicatorSeries {
+  override readonly inputShape = IndicatorInputShape.VALUE;
+
   public signal: SMA;
 
   public readonly prices: number[] = [];

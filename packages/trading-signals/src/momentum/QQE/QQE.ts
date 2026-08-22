@@ -1,4 +1,4 @@
-import {TradingSignal, TrendIndicator} from '../../base/Indicator.js';
+import {IndicatorInputShape, TradingSignal, TrendIndicator} from '../../base/Indicator.js';
 import {EMA} from '../../trend/EMA/EMA.js';
 import {RSI} from '../RSI/RSI.js';
 
@@ -57,6 +57,8 @@ type QQEState = {
  * @see https://www.tradingview.com/script/34U0KMEK-QQE-MT4-Glaz-modified-by-JustUncleL/
  */
 export class QQE extends TrendIndicator<QQEResult, number, QQEState> {
+  override readonly inputShape = IndicatorInputShape.VALUE;
+
   readonly #rsi: RSI;
   readonly #rsiSmoothing: EMA;
   readonly #firstVolatilitySmoothing: EMA;

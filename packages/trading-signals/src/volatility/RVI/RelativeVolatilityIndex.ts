@@ -1,4 +1,4 @@
-import {ThresholdCrossSeries} from '../../base/Indicator.js';
+import {IndicatorInputShape, ThresholdCrossSeries} from '../../base/Indicator.js';
 import type {SignalThresholds} from '../../base/SignalThresholds.type.js';
 import {WSMA} from '../../trend/WSMA/WSMA.js';
 import {getStandardDeviation, pushUpdate} from '../../util/index.js';
@@ -37,6 +37,8 @@ export type RelativeVolatilityIndexConfig = {
  * @see https://docs.motivewave.com/studies/q-r#relative-volatility-index
  */
 export class RelativeVolatilityIndex extends ThresholdCrossSeries {
+  override readonly inputShape = IndicatorInputShape.VALUE;
+
   readonly #closes: number[] = [];
   readonly #avgUpVolatility: WSMA;
   readonly #avgDownVolatility: WSMA;

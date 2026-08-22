@@ -1,4 +1,4 @@
-import {TechnicalIndicator} from '../../base/Indicator.js';
+import {IndicatorInputShape, TechnicalIndicator} from '../../base/Indicator.js';
 import type {HighLowClose} from '../../base/Candle.type.js';
 import {EMA} from '../../trend/EMA/EMA.js';
 import {ATR} from '../ATR/ATR.js';
@@ -36,6 +36,8 @@ export type KeltnerChannelsConfig = {
  * @see https://www.investopedia.com/terms/k/keltnerchannel.asp
  */
 export class KeltnerChannels extends TechnicalIndicator<KeltnerChannelsResult, HighLowClose<number>> {
+  override readonly inputShape = IndicatorInputShape.HIGH_LOW_CLOSE;
+
   readonly #middle: EMA;
   readonly #atr: ATR;
 

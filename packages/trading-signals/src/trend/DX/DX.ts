@@ -1,5 +1,5 @@
 import {ATR} from '../../volatility/ATR/ATR.js';
-import {IndicatorSeries} from '../../base/Indicator.js';
+import {IndicatorInputShape, IndicatorSeries} from '../../base/Indicator.js';
 import type {MovingAverage} from '../MA/MovingAverage.js';
 import type {MovingAverageTypes} from '../MA/MovingAverageTypes.js';
 import type {HighLowClose} from '../../base/Candle.type.js';
@@ -19,6 +19,8 @@ import {WSMA} from '../WSMA/WSMA.js';
  * @see https://www.fidelity.com/learning-center/trading-investing/technical-analysis/technical-indicator-guide/dmi
  */
 export class DX extends IndicatorSeries<HighLowClose<number>> {
+  override readonly inputShape = IndicatorInputShape.HIGH_LOW_CLOSE;
+
   readonly #movesUp: MovingAverage;
   readonly #movesDown: MovingAverage;
   #previousCandle?: HighLowClose<number>;

@@ -1,3 +1,4 @@
+import {IndicatorInputShape} from '../base/Indicator.js';
 import {TechnicalIndicator} from './Indicator.js';
 import {pushUpdate} from '../util/array/pushUpdate.js';
 
@@ -7,6 +8,8 @@ export type PeriodResult = {
 };
 
 export class Period extends TechnicalIndicator<PeriodResult, number> {
+  override readonly inputShape = IndicatorInputShape.VALUE;
+
   public values: number[];
   /** Highest return value during the current period. */
   #highest?: number;

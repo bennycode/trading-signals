@@ -1,5 +1,5 @@
 import type {HighLow} from '../../base/Candle.type.js';
-import {ZeroCrossSeries} from '../../base/Indicator.js';
+import {IndicatorInputShape, ZeroCrossSeries} from '../../base/Indicator.js';
 import {EMA} from '../../trend/EMA/EMA.js';
 import {pushUpdate} from '../../util/array/pushUpdate.js';
 
@@ -22,6 +22,8 @@ import {pushUpdate} from '../../util/array/pushUpdate.js';
  * @see https://www.metastock.com/customer/resources/taaz/?p=120
  */
 export class CVI extends ZeroCrossSeries<HighLow<number>> {
+  override readonly inputShape = IndicatorInputShape.HIGH_LOW;
+
   public readonly interval: number;
   readonly #smoothedRange: EMA;
   readonly #smoothedRangeHistory: number[];

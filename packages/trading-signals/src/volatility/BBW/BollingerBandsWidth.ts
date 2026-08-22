@@ -1,5 +1,5 @@
 import type {BollingerBands} from '../BBANDS/BollingerBands.js';
-import {IndicatorSeries} from '../../base/Indicator.js';
+import {IndicatorInputShape, IndicatorSeries} from '../../base/Indicator.js';
 
 /**
  * Bollinger Bands Width (BBW)
@@ -10,6 +10,8 @@ import {IndicatorSeries} from '../../base/Indicator.js';
  * @see https://www.tradingview.com/support/solutions/43000501972-bollinger-bands-width-bbw/
  */
 export class BollingerBandsWidth extends IndicatorSeries {
+  override readonly inputShape = IndicatorInputShape.VALUE;
+
   public readonly bollingerBands: BollingerBands;
 
   constructor(bollingerBands: BollingerBands) {

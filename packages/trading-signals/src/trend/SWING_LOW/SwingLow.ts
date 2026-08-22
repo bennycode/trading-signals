@@ -1,4 +1,4 @@
-import {IndicatorSeries} from '../../base/Indicator.js';
+import {IndicatorInputShape, IndicatorSeries} from '../../base/Indicator.js';
 import type {HighLow} from '../../base/Candle.type.js';
 import {pushUpdate} from '../../util/array/pushUpdate.js';
 
@@ -24,6 +24,8 @@ export type SwingLowConfig = {
  * @see https://www.investopedia.com/terms/f/fractal.asp
  */
 export class SwingLow extends IndicatorSeries<HighLow> {
+  override readonly inputShape = IndicatorInputShape.HIGH_LOW;
+
   readonly #lookback: number;
   readonly #window: number[] = [];
   #lastEmitted = false;

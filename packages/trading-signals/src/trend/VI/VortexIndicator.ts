@@ -1,5 +1,5 @@
 import type {HighLowClose} from '../../base/Candle.type.js';
-import {TradingSignal, TrendIndicator} from '../../base/Indicator.js';
+import {IndicatorInputShape, TradingSignal, TrendIndicator} from '../../base/Indicator.js';
 import {getTrueRange} from '../../util/candle/getTrueRange.js';
 import {pushUpdate} from '../../util/array/pushUpdate.js';
 
@@ -27,6 +27,8 @@ export type VortexResult = {
  * @see https://www.investopedia.com/terms/v/vortex-indicator-vi.asp
  */
 export class VortexIndicator extends TrendIndicator<VortexResult, HighLowClose<number>> {
+  override readonly inputShape = IndicatorInputShape.HIGH_LOW_CLOSE;
+
   public readonly interval: number;
   readonly #candles: HighLowClose<number>[] = [];
 

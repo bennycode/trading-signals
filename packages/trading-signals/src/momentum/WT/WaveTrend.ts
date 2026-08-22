@@ -1,7 +1,7 @@
 import {EMA} from '../../trend/EMA/EMA.js';
 import {SMA} from '../../trend/SMA/SMA.js';
 import type {HighLowClose} from '../../base/Candle.type.js';
-import {TradingSignal, TrendIndicator} from '../../base/Indicator.js';
+import {IndicatorInputShape, TradingSignal, TrendIndicator} from '../../base/Indicator.js';
 
 export type WaveTrendResult = {
   /** Fast wave line (WT1) */
@@ -37,6 +37,8 @@ export type WaveTrendConfig = {
  * @see https://medium.com/@samuel.mcculloch/lets-take-a-look-at-wavetrend-with-crosses-lazybear-s-indicator-2ece1737f72f
  */
 export class WaveTrend extends TrendIndicator<WaveTrendResult, HighLowClose<number>> {
+  override readonly inputShape = IndicatorInputShape.HIGH_LOW_CLOSE;
+
   public readonly averageInterval: number;
   public readonly channelInterval: number;
   public readonly smoothingInterval: number;

@@ -1,4 +1,4 @@
-import {ThresholdCrossSeries} from '../../base/Indicator.js';
+import {IndicatorInputShape, ThresholdCrossSeries} from '../../base/Indicator.js';
 import type {SignalThresholds} from '../../base/SignalThresholds.type.js';
 import {pushUpdate} from '../../util/array/pushUpdate.js';
 
@@ -19,6 +19,8 @@ import {pushUpdate} from '../../util/array/pushUpdate.js';
  * @see https://tulipindicators.org/cmo
  */
 export class CMO extends ThresholdCrossSeries {
+  override readonly inputShape = IndicatorInputShape.VALUE;
+
   readonly #prices: number[] = [];
 
   public readonly interval: number;

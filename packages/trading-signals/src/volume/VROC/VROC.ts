@@ -1,4 +1,4 @@
-import {ZeroCrossSeries} from '../../base/Indicator.js';
+import {IndicatorInputShape, ZeroCrossSeries} from '../../base/Indicator.js';
 import {pushUpdate} from '../../util/array/pushUpdate.js';
 
 /**
@@ -15,6 +15,8 @@ import {pushUpdate} from '../../util/array/pushUpdate.js';
  * @see https://www.investopedia.com/terms/v/volumerateofchange.asp
  */
 export class VROC extends ZeroCrossSeries {
+  override readonly inputShape = IndicatorInputShape.VALUE;
+
   readonly #volumes: number[] = [];
   readonly #historyLength: number;
 

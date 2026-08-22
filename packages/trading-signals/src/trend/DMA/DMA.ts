@@ -1,4 +1,4 @@
-import {TechnicalIndicator} from '../../base/Indicator.js';
+import {IndicatorInputShape, TechnicalIndicator} from '../../base/Indicator.js';
 import type {MovingAverage} from '../MA/MovingAverage.js';
 import type {MovingAverageTypes} from '../MA/MovingAverageTypes.js';
 import {SMA} from '../SMA/SMA.js';
@@ -21,6 +21,8 @@ export type DMAResult = {
  * @see https://faculty.fuqua.duke.edu/~charvey/Teaching/BA453_2002/CCAM/CCAM.htm#_Toc2634228
  */
 export class DMA extends TechnicalIndicator<DMAResult, number> {
+  override readonly inputShape = IndicatorInputShape.VALUE;
+
   public readonly short: MovingAverage;
   public readonly long: MovingAverage;
 

@@ -1,6 +1,6 @@
 import type {DEMA} from '../../trend/DEMA/DEMA.js';
 import type {EMA} from '../../trend/EMA/EMA.js';
-import {TradingSignal, TrendIndicator} from '../../base/Indicator.js';
+import {IndicatorInputShape, TradingSignal, TrendIndicator} from '../../base/Indicator.js';
 import {pushUpdate} from '../../util/array/pushUpdate.js';
 
 export type MACDResult = {
@@ -19,6 +19,8 @@ export type MACDResult = {
  * @see https://www.investopedia.com/terms/m/macd.asp
  */
 export class MACD extends TrendIndicator<MACDResult, number> {
+  override readonly inputShape = IndicatorInputShape.VALUE;
+
   public readonly prices: number[] = [];
 
   public readonly short: EMA | DEMA;

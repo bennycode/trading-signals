@@ -1,4 +1,4 @@
-import {IndicatorSeries} from '../../base/Indicator.js';
+import {IndicatorInputShape, IndicatorSeries} from '../../base/Indicator.js';
 import {EMA} from '../EMA/EMA.js';
 
 /**
@@ -16,6 +16,8 @@ import {EMA} from '../EMA/EMA.js';
  * @see https://tulipindicators.org/tema
  */
 export class TEMA extends IndicatorSeries {
+  override readonly inputShape = IndicatorInputShape.VALUE;
+
   readonly #single: EMA;
   readonly #double: EMA;
   readonly #triple: EMA;
