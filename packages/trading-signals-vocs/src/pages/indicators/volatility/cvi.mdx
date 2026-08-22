@@ -1,0 +1,25 @@
+---
+title: 'Chaikin Volatility'
+description: 'Chaikin Volatility'
+---
+
+import {IndicatorPageDemo} from '../../../components/IndicatorPageDemo';
+
+# Chaikin Volatility
+
+Smooths the candle range (high minus low) and reports how much that smoothed range has grown or shrunk over the lookback, in percent. Positive readings mean volatility is expanding, negative readings a calming market, so a zero-cross flags a volatility regime change. Marc Chaikin reads it together with price direction: a volatility spike while prices fall often marks panic selling near a bottom, while fading volatility during rising prices points to a maturing uptrend.
+
+## Live Demo
+
+Pick a market regime to see how Chaikin Volatility(10) reacts:
+
+<IndicatorPageDemo category="volatility" id="cvi" />
+
+## Usage
+
+```ts twoslash
+import {CVI} from 'trading-signals';
+
+// CVI yields results once 20 inputs have been added
+const cvi = new CVI(10);
+```

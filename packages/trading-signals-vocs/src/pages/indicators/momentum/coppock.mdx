@@ -1,0 +1,25 @@
+---
+title: 'Coppock Curve'
+description: 'Coppock Curve'
+---
+
+import {IndicatorPageDemo} from '../../../components/IndicatorPageDemo';
+
+# Coppock Curve
+
+A long-term momentum oscillator designed for monthly bars: it adds a 14-period and an 11-period rate of change and smooths the sum with a 10-period weighted moving average. Readings above zero signal bullish momentum; the classic buy signal is an upturn from below zero after a major bottom.
+
+## Live Demo
+
+Pick a market regime to see how Coppock Curve(24) reacts:
+
+<IndicatorPageDemo category="momentum" id="coppock" />
+
+## Usage
+
+```ts twoslash
+import {CoppockCurve} from 'trading-signals';
+
+// CoppockCurve yields results once 24 inputs have been added
+const coppockCurve = new CoppockCurve();
+```

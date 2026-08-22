@@ -1,0 +1,25 @@
+---
+title: 'ZigZag'
+description: 'ZigZag Indicator'
+---
+
+import {IndicatorPageDemo} from '../../../components/IndicatorPageDemo';
+
+# ZigZag Indicator (ZigZag)
+
+Filters out minor price movements by connecting significant pivot highs and lows. A new pivot is only confirmed once price reverses by at least the configured percentage (deviation).
+
+## Live Demo
+
+Pick a market regime to see how ZigZag(1) reacts:
+
+<IndicatorPageDemo category="trend" id="zigzag" />
+
+## Usage
+
+```ts twoslash
+import {ZigZag} from 'trading-signals';
+
+// ZigZag yields results once 1 inputs have been added
+const zigZag = new ZigZag({deviation: 5});
+```

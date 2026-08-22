@@ -1,0 +1,25 @@
+---
+title: 'Rogers-Satchell Volatility'
+description: 'Rogers-Satchell Volatility'
+---
+
+import {IndicatorPageDemo} from '../../../components/IndicatorPageDemo';
+
+# Rogers-Satchell Volatility
+
+Drift-independent range volatility estimator by Rogers and Satchell (1991). Each bar contributes a variance estimate built from how far its high and low stray from open and close, and the reading is the root of the window mean. A trending bar that runs straight from open to close reads as drift, not volatility, so it complements the close-to-close standard deviation, which is blind to intrabar ranges. Volatility carries no directional information, so there is no signal.
+
+## Live Demo
+
+Pick a market regime to see how Rogers-Satchell Volatility(14) reacts:
+
+<IndicatorPageDemo category="volatility" id="rogers-satchell" />
+
+## Usage
+
+```ts twoslash
+import {RogersSatchellVolatility} from 'trading-signals';
+
+// RogersSatchellVolatility yields results once 14 inputs have been added
+const rogersSatchellVolatility = new RogersSatchellVolatility(14);
+```

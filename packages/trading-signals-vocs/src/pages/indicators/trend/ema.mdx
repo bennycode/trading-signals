@@ -1,0 +1,25 @@
+---
+title: 'EMA'
+description: 'Exponential Moving Average'
+---
+
+import {IndicatorPageDemo} from '../../../components/IndicatorPageDemo';
+
+# Exponential Moving Average (EMA)
+
+Gives more weight to recent prices, reacting faster to price changes than SMA. Popular for identifying short-term trends.
+
+## Live Demo
+
+Pick a market regime to see how EMA(5) reacts:
+
+<IndicatorPageDemo category="trend" id="ema" />
+
+## Usage
+
+```ts twoslash
+import {EMA} from 'trading-signals';
+
+// EMA yields results once 5 inputs have been added
+const ema = new EMA(5);
+```

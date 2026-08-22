@@ -1,0 +1,25 @@
+---
+title: 'ATR'
+description: 'Average True Range'
+---
+
+import {IndicatorPageDemo} from '../../../components/IndicatorPageDemo';
+
+# Average True Range (ATR)
+
+Measures market volatility by analyzing the range of price movements. Higher values indicate higher volatility; useful for setting stop-loss levels.
+
+## Live Demo
+
+Pick a market regime to see how ATR(14) reacts:
+
+<IndicatorPageDemo category="volatility" id="atr" />
+
+## Usage
+
+```ts twoslash
+import {ATR} from 'trading-signals';
+
+// ATR yields results once 14 inputs have been added
+const atr = new ATR(14);
+```

@@ -1,0 +1,25 @@
+---
+title: 'Fisher Transform'
+description: 'Fisher Transform'
+---
+
+import {IndicatorPageDemo} from '../../../components/IndicatorPageDemo';
+
+# Fisher Transform
+
+Reshapes prices into a nearly Gaussian distribution by locating each bar's midpoint within the recent high-low range, turning reversals into sharp peaks and troughs around the zero line. The prior bar's value doubles as the classic signal line.
+
+## Live Demo
+
+Pick a market regime to see how Fisher Transform(10) reacts:
+
+<IndicatorPageDemo category="momentum" id="fisher" />
+
+## Usage
+
+```ts twoslash
+import {FisherTransform} from 'trading-signals';
+
+// FisherTransform yields results once 10 inputs have been added
+const fisherTransform = new FisherTransform(10);
+```

@@ -1,0 +1,25 @@
+---
+title: 'SuperSmoother'
+description: 'SuperSmoother Filter'
+---
+
+import {IndicatorPageDemo} from '../../../components/IndicatorPageDemo';
+
+# SuperSmoother Filter (SuperSmoother)
+
+John Ehlers' 2-pole Butterworth low-pass filter fed with a two-bar price average. It rejects wave components shorter than the interval as aliasing noise while following price with considerably less lag than an SMA or EMA of comparable smoothness.
+
+## Live Demo
+
+Pick a market regime to see how SuperSmoother(10) reacts:
+
+<IndicatorPageDemo category="trend" id="supersmoother" />
+
+## Usage
+
+```ts twoslash
+import {SuperSmoother} from 'trading-signals';
+
+// SuperSmoother yields results once 10 inputs have been added
+const superSmoother = new SuperSmoother(10);
+```

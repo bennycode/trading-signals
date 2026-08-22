@@ -1,0 +1,25 @@
+---
+title: 'MARKETFI'
+description: 'Market Facilitation Index'
+---
+
+import {IndicatorPageDemo} from '../../../components/IndicatorPageDemo';
+
+# Market Facilitation Index (MARKETFI)
+
+Bill Williams' Market Facilitation Index (BW MFI, unrelated to the Money Flow Index) divides each candle's trading range by its volume, showing how much price movement one unit of volume produced. Williams reads it only next to the volume change of the same candle — rising index on rising volume confirms participation, rising index on falling volume warns of a move without backing — so the value carries no standalone signal.
+
+## Live Demo
+
+Pick a market regime to see how MARKETFI(1) reacts:
+
+<IndicatorPageDemo category="volume" id="marketfi" />
+
+## Usage
+
+```ts twoslash
+import {MarketFacilitationIndex} from 'trading-signals';
+
+// MarketFacilitationIndex yields results once 1 inputs have been added
+const marketFacilitationIndex = new MarketFacilitationIndex();
+```

@@ -1,0 +1,25 @@
+---
+title: 'PPO'
+description: 'Percentage Price Oscillator'
+---
+
+import {IndicatorPageDemo} from '../../../components/IndicatorPageDemo';
+
+# Percentage Price Oscillator (PPO)
+
+The MACD's percentage sibling: divides the spread between the fast and slow EMA by the slow EMA, making momentum readings comparable across differently priced instruments. Crossings of the zero line signal trend changes.
+
+## Live Demo
+
+Pick a market regime to see how PPO(26) reacts:
+
+<IndicatorPageDemo category="momentum" id="ppo" />
+
+## Usage
+
+```ts twoslash
+import {PPO} from 'trading-signals';
+
+// PPO yields results once 26 inputs have been added
+const ppo = new PPO();
+```

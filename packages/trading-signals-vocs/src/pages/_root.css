@@ -1,0 +1,66 @@
+/*
+ * Tailwind without preflight: the base reset would clobber the Vocs shell, and the demo
+ * components only need theme variables and utility classes.
+ */
+@import 'tailwindcss/theme.css' layer(theme);
+@import 'tailwindcss/utilities.css' layer(utilities);
+
+@source '../components';
+@source '../utils';
+@source '../indicator-demos';
+
+/* Demo styling hooks bound to the Vocs theme so demos adapt to light/dark automatically. */
+:root {
+  --demo-accent: #8b5cf6;
+  --demo-border: var(--vocs-border-color-primary, #e2e8f0);
+  --demo-heading: var(--vocs-text-color-heading, inherit);
+  --demo-muted: var(--vocs-text-color-muted, #64748b);
+  --demo-surface: var(--vocs-background-color-surface, transparent);
+  --demo-text: var(--vocs-text-color-primary, inherit);
+}
+
+.demo-card {
+  background: var(--demo-surface);
+  border: 1px solid var(--demo-border);
+  border-radius: 8px;
+  padding: 16px;
+}
+
+.demo-divider {
+  border-color: var(--demo-border);
+}
+
+.demo-heading {
+  color: var(--demo-heading);
+}
+
+.demo-muted {
+  color: var(--demo-muted);
+}
+
+.demo-text {
+  color: var(--demo-text);
+}
+
+/*
+ * The demo charts ship inline colors from the original dark-themed site. Stylesheet
+ * `!important` outranks inline SVG styles, so the charts pick up the Vocs theme here without
+ * touching every demo file.
+ */
+.demo-card .highcharts-title,
+.demo-card .highcharts-axis-title text,
+.demo-card .highcharts-axis-title {
+  fill: var(--demo-text) !important;
+}
+
+.demo-card .highcharts-axis-labels text {
+  fill: var(--demo-muted) !important;
+}
+
+.demo-card .highcharts-legend-item text {
+  fill: var(--demo-muted) !important;
+}
+
+.demo-card .highcharts-grid-line {
+  stroke: var(--demo-border) !important;
+}

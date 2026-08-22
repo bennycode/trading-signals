@@ -1,0 +1,25 @@
+---
+title: 'WMA'
+description: 'Weighted Moving Average'
+---
+
+import {IndicatorPageDemo} from '../../../components/IndicatorPageDemo';
+
+# Weighted Moving Average (WMA)
+
+Assigns linearly increasing weights to recent data points. The most recent price has the highest weight.
+
+## Live Demo
+
+Pick a market regime to see how WMA(5) reacts:
+
+<IndicatorPageDemo category="trend" id="wma" />
+
+## Usage
+
+```ts twoslash
+import {WMA} from 'trading-signals';
+
+// WMA yields results once 5 inputs have been added
+const wma = new WMA(5);
+```

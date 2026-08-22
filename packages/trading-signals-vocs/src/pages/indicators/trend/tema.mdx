@@ -1,0 +1,25 @@
+---
+title: 'TEMA'
+description: 'Triple Exponential Moving Average'
+---
+
+import {IndicatorPageDemo} from '../../../components/IndicatorPageDemo';
+
+# Triple Exponential Moving Average (TEMA)
+
+Combines a single, double and triple smoothed EMA (3×EMA − 3×EMA² + EMA³) to cancel out the lag that stacking EMAs would normally add — hugging price more closely than both EMA and DEMA.
+
+## Live Demo
+
+Pick a market regime to see how TEMA(9) reacts:
+
+<IndicatorPageDemo category="trend" id="tema" />
+
+## Usage
+
+```ts twoslash
+import {TEMA} from 'trading-signals';
+
+// TEMA yields results once 25 inputs have been added
+const tema = new TEMA(9);
+```

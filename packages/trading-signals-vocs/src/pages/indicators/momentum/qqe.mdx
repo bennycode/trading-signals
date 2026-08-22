@@ -1,0 +1,25 @@
+---
+title: 'QQE'
+description: 'Quantitative Qualitative Estimation'
+---
+
+import {IndicatorPageDemo} from '../../../components/IndicatorPageDemo';
+
+# Quantitative Qualitative Estimation (QQE)
+
+Smooths the RSI into a calmer line and trails a volatility-based stop behind it — the SuperTrend construction applied to the RSI instead of price. The side the smoothed RSI takes of its trailing stop names the momentum direction; a flip of the stop line marks a momentum reversal.
+
+## Live Demo
+
+Pick a market regime to see how QQE(30) reacts:
+
+<IndicatorPageDemo category="momentum" id="qqe" />
+
+## Usage
+
+```ts twoslash
+import {QQE} from 'trading-signals';
+
+// QQE yields results once 30 inputs have been added
+const qqe = new QQE({fastFactor: 2.618, rsiInterval: 6, smoothInterval: 3});
+```

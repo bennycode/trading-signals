@@ -1,0 +1,25 @@
+---
+title: 'PSAR'
+description: 'Parabolic SAR'
+---
+
+import {IndicatorPageDemo} from '../../../components/IndicatorPageDemo';
+
+# Parabolic SAR (PSAR)
+
+Identifies potential reversal points by placing dots above or below price. Dots below = uptrend, dots above = downtrend.
+
+## Live Demo
+
+Pick a market regime to see how PSAR(2) reacts:
+
+<IndicatorPageDemo category="trend" id="psar" />
+
+## Usage
+
+```ts twoslash
+import {PSAR} from 'trading-signals';
+
+// PSAR yields results once 2 inputs have been added
+const psar = new PSAR({accelerationMax: 0.2, accelerationStep: 0.02});
+```

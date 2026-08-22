@@ -1,0 +1,25 @@
+---
+title: 'Gopalakrishnan Range Index'
+description: 'Gopalakrishnan Range Index'
+---
+
+import {IndicatorPageDemo} from '../../../components/IndicatorPageDemo';
+
+# Gopalakrishnan Range Index
+
+Relates the trading range of the window (highest high minus lowest low) to the window length on a logarithmic scale. Rising readings mean the range is widening (growing volatility), falling readings a contracting, quiet market. Range expansion carries no directional information, so the reading must be paired with a trend indicator to trade it.
+
+## Live Demo
+
+Pick a market regime to see how Gopalakrishnan Range Index(14) reacts:
+
+<IndicatorPageDemo category="volatility" id="gapo" />
+
+## Usage
+
+```ts twoslash
+import {GAPO} from 'trading-signals';
+
+// GAPO yields results once 14 inputs have been added
+const gapo = new GAPO(14);
+```

@@ -1,0 +1,25 @@
+---
+title: 'ConnorsRSI'
+description: 'Connors RSI'
+---
+
+import {IndicatorPageDemo} from '../../../components/IndicatorPageDemo';
+
+# Connors RSI (ConnorsRSI)
+
+ConnorsRSI averages three momentum readings: a 3-period RSI on closes, a 2-period RSI on the streak of consecutive up/down closes, and the percent rank of the one-bar return over the last 100 returns. Values above 90 indicate overbought, below 10 indicate oversold.
+
+## Live Demo
+
+Pick a market regime to see how ConnorsRSI(102) reacts:
+
+<IndicatorPageDemo category="momentum" id="connors-rsi" />
+
+## Usage
+
+```ts twoslash
+import {ConnorsRSI} from 'trading-signals';
+
+// ConnorsRSI yields results once 102 inputs have been added
+const connorsRSI = new ConnorsRSI();
+```

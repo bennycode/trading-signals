@@ -1,0 +1,25 @@
+---
+title: 'RVI'
+description: 'Relative Volatility Index'
+---
+
+import {IndicatorPageDemo} from '../../../components/IndicatorPageDemo';
+
+# Relative Volatility Index (RVI)
+
+Donald Dorsey's RSI-style oscillator over volatility instead of price change: the standard deviation of recent closes feeds an up stream when the close rises and a down stream when it falls, and Wilder-smoothing both streams yields the share of recent volatility that built up while prices were rising (0 to 100). Values above 60 indicate volatility building on the upside, below 40 on the downside. Dorsey designed it as a confirmation filter for other indicators, not a standalone signal.
+
+## Live Demo
+
+Pick a market regime to see how RVI(14) reacts:
+
+<IndicatorPageDemo category="volatility" id="rvi" />
+
+## Usage
+
+```ts twoslash
+import {RelativeVolatilityIndex} from 'trading-signals';
+
+// RelativeVolatilityIndex yields results once 23 inputs have been added
+const relativeVolatilityIndex = new RelativeVolatilityIndex();
+```

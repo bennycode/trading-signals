@@ -1,0 +1,25 @@
+---
+title: 'DeMarker'
+description: 'DeMarker Indicator'
+---
+
+import {IndicatorPageDemo} from '../../../components/IndicatorPageDemo';
+
+# DeMarker Indicator (DeMarker)
+
+Weighs how far each candle pushes above the previous high against how far it dips below the previous low, averaged over the interval. Thomas DeMark designed it to read intra-bar extremes instead of closes, producing an oscillator between 0 and 1: readings of 0.7 or above flag an overbought market, 0.3 or below an oversold one, and a dead market reads neutral (0.5).
+
+## Live Demo
+
+Pick a market regime to see how DeMarker(14) reacts:
+
+<IndicatorPageDemo category="momentum" id="demarker" />
+
+## Usage
+
+```ts twoslash
+import {DeMarker} from 'trading-signals';
+
+// DeMarker yields results once 15 inputs have been added
+const deMarker = new DeMarker();
+```

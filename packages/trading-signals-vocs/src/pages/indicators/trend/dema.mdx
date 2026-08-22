@@ -1,0 +1,25 @@
+---
+title: 'DEMA'
+description: 'Double Exponential Moving Average'
+---
+
+import {IndicatorPageDemo} from '../../../components/IndicatorPageDemo';
+
+# Double Exponential Moving Average (DEMA)
+
+Reduces lag by applying EMA twice, providing faster signals than standard EMA while maintaining smoothness.
+
+## Live Demo
+
+Pick a market regime to see how DEMA(5) reacts:
+
+<IndicatorPageDemo category="trend" id="dema" />
+
+## Usage
+
+```ts twoslash
+import {DEMA} from 'trading-signals';
+
+// DEMA yields results once 9 inputs have been added
+const dema = new DEMA(5);
+```

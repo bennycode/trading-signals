@@ -1,0 +1,25 @@
+---
+title: 'REI'
+description: 'Range Expansion Index'
+---
+
+import {IndicatorPageDemo} from '../../../components/IndicatorPageDemo';
+
+# Range Expansion Index (REI)
+
+Measures range expansion to identify potential breakouts.
+
+## Live Demo
+
+Pick a market regime to see how REI(5) reacts:
+
+<IndicatorPageDemo category="momentum" id="rei" />
+
+## Usage
+
+```ts twoslash
+import {REI} from 'trading-signals';
+
+// REI yields results once 5 inputs have been added
+const rei = new REI(5);
+```

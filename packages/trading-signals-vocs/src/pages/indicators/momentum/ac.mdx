@@ -1,0 +1,25 @@
+---
+title: 'AC'
+description: 'Accelerator Oscillator'
+---
+
+import {IndicatorPageDemo} from '../../../components/IndicatorPageDemo';
+
+# Accelerator Oscillator (AC)
+
+Shows acceleration or deceleration of the current driving force. Earlier signal of potential trend change than AO.
+
+## Live Demo
+
+Pick a market regime to see how AC(39) reacts:
+
+<IndicatorPageDemo category="momentum" id="ac" />
+
+## Usage
+
+```ts twoslash
+import {AC} from 'trading-signals';
+
+// AC yields results once 39 inputs have been added
+const ac = new AC(5, 34, 5);
+```

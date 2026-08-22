@@ -1,0 +1,30 @@
+---
+title: 'WAE'
+description: 'Waddah Attar Explosion'
+---
+
+import {IndicatorPageDemo} from '../../../components/IndicatorPageDemo';
+
+# Waddah Attar Explosion (WAE)
+
+Waddah Attar Explosion
+
+## Live Demo
+
+Pick a market regime to see how WAE(21) reacts:
+
+<IndicatorPageDemo category="momentum" id="waddah-attar" />
+
+## Usage
+
+```ts twoslash
+import {WaddahAttarExplosion} from 'trading-signals';
+
+// WaddahAttarExplosion yields results once 21 inputs have been added
+const waddahAttarExplosion = new WaddahAttarExplosion({
+  atrInterval: 20,
+  bandsInterval: 10,
+  longInterval: 20,
+  shortInterval: 10,
+});
+```

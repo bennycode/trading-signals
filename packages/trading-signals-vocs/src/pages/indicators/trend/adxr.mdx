@@ -1,0 +1,25 @@
+---
+title: 'ADXR'
+description: 'Average Directional Movement Index Rating'
+---
+
+import {IndicatorPageDemo} from '../../../components/IndicatorPageDemo';
+
+# Average Directional Movement Index Rating (ADXR)
+
+Averages the current ADX with its reading from one interval earlier, smoothing out ADX spikes. Wilder used it to rate how trendy a market is: high ratings mark instruments in sustained trends, low ratings mark directionless ones. Like the ADX, it measures only trend strength, never direction.
+
+## Live Demo
+
+Pick a market regime to see how ADXR(14) reacts:
+
+<IndicatorPageDemo category="trend" id="adxr" />
+
+## Usage
+
+```ts twoslash
+import {ADXR} from 'trading-signals';
+
+// ADXR yields results once 40 inputs have been added
+const adxr = new ADXR(14);
+```

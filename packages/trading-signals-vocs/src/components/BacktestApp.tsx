@@ -1,0 +1,383 @@
+'use client';
+
+import {useState, useCallback, useEffect, useRef} from 'react';
+import Big from 'big.js';
+import {AlpacaBrokerMock, TradingPair} from '@typedtrader/exchange';
+import type {Candle} from '@typedtrader/exchange';
+import {
+  BacktestExecutor,
+  BuyOnceStrategy,
+  BuyBelowSellAboveStrategy,
+  CoinFlipStrategy,
+  MultiIndicatorConfluenceStrategy,
+  ScalpStrategy,
+  MeanReversionStrategy,
+  SmaCrossoverStrategy,
+  ProtectedStrategy,
+  TrailingStopStrategy,
+  type BacktestResult,
+} from 'trading-strategies';
+import {DatasetSelector} from './DatasetSelector';
+import {StrategyConfigurator} from './StrategyConfigurator';
+import {BacktestResults} from './BacktestResults';
+import {ProtectionModal} from './ProtectionModal';
+import {datasets} from '../utils/datasets';
+import type {CandleDataset} from '../utils/types';
+import {
+  strategyDefinitions,
+  type StrategyId,
+  BuyOnceSchema,
+  BuyBelowSellAboveSchema,
+  CoinFlipSchema,
+  MultiIndicatorConfluenceSchema,
+  ScalpSchema,
+  MeanReversionSchema,
+  SmaCrossoverSchema,
+  ProtectedStrategySchema,
+  TrailingStopSchema,
+} from '../utils/strategySchemas';
+
+function createStrategy(strategyId: StrategyId, config: Record<string, unknown>) {
+  switch (strategyId) {
+    case 'buy-and-hold':
+      return new BuyOnceStrategy(BuyOnceSchema.parse(config));
+    case 'coin-flip':
+      return new CoinFlipStrategy(CoinFlipSchema.parse(config));
+    case 'buy-once':
+      return new BuyOnceStrategy(BuyOnceSchema.parse(config));
+    case 'buy-below-sell-above':
+      return new BuyBelowSellAboveStrategy(BuyBelowSellAboveSchema.parse(config));
+    case 'multi-indicator-confluence':
+      return new MultiIndicatorConfluenceStrategy(MultiIndicatorConfluenceSchema.parse(config));
+    case 'scalp':
+      return new ScalpStrategy(ScalpSchema.parse(config));
+    case 'mean-reversion':
+      return new MeanReversionStrategy({config: MeanReversionSchema.parse(config)});
+    case 'sma-crossover':
+      return new SmaCrossoverStrategy(SmaCrossoverSchema.parse(config));
+    case 'protection-only':
+      return new ProtectedStrategy({config: ProtectedStrategySchema.parse(config)});
+    case 'trailing-stop':
+      return new TrailingStopStrategy(TrailingStopSchema.parse(config));
+  }
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function parseInitialAmount(value: string, label: string): Big {
+  const trimmed = value.trim();
+
+  if (trimmed === '') {
+    return new Big(0);
+  }
+
+  if (!/^\d+(\.\d+)?$/.test(trimmed)) {
+    throw new Error(`Invalid ${label} amount: "${value}". Please enter a non-negative numeric value.`);
+  }
+
+  return new Big(trimmed);
+}
+
+function createExchange(candles: Candle[], initialBase: string, initialCounter: string) {
+  const base = candles[0]?.base ?? 'BTC';
+  const counter = candles[0]?.counter ?? 'USD';
+  const balances = new Map([
+    [base, {available: parseInitialAmount(initialBase, 'base'), hold: new Big(0)}],
+    [counter, {available: parseInitialAmount(initialCounter, 'counter'), hold: new Big(0)}],
+  ]);
+  return new AlpacaBrokerMock({balances});
+}
+
+export function BacktestApp() {
+  // Highcharts and the broker mocks touch browser globals, so render only after hydration.
+  const [isMounted, setIsMounted] = useState(false);
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  const [selectedDataset, setSelectedDataset] = useState(datasets[0].id);
+  const [selectedStrategy, setSelectedStrategy] = useState<StrategyId>('buy-and-hold');
+  const [configJson, setConfigJson] = useState('{}');
+  const [validationError, setValidationError] = useState<string | null>(null);
+  const [result, setResult] = useState<BacktestResult | null>(null);
+  const [baselineResult, setBaselineResult] = useState<BacktestResult | null>(null);
+  const [running, setRunning] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [customDataset, setCustomDataset] = useState<CandleDataset | null>(null);
+  const [initialBase, setInitialBase] = useState('0');
+  const [initialCounter, setInitialCounter] = useState('10000');
+  const [protectionModalOpen, setProtectionModalOpen] = useState(false);
+  const [toast, setToast] = useState<string | null>(null);
+  const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const showToast = useCallback((message: string) => {
+    if (toastTimer.current) {
+      clearTimeout(toastTimer.current);
+    }
+    setToast(message);
+    toastTimer.current = setTimeout(() => setToast(null), 2000);
+  }, []);
+
+  const currentDataset = selectedDataset === 'custom' ? customDataset : datasets.find(d => d.id === selectedDataset)!;
+  const candles = currentDataset?.candles ?? [];
+
+  /*
+   * Recompute defaults only when the strategy changes — deliberately NOT on Market Condition
+   * (dataset) changes, so manual config edits survive switching between datasets.
+   */
+  useEffect(() => {
+    const def = strategyDefinitions.find(s => s.id === selectedStrategy)!;
+    const defaults = def.getDefaultConfig(candles);
+    setConfigJson(JSON.stringify(defaults, null, 2));
+  }, [selectedStrategy]);
+
+  // Validate JSON on every change
+  useEffect(() => {
+    try {
+      const parsed: unknown = JSON.parse(configJson);
+      const def = strategyDefinitions.find(s => s.id === selectedStrategy)!;
+      const parseResult = def.schema.safeParse(parsed);
+      if (!parseResult.success) {
+        const issues = parseResult.error.issues;
+        setValidationError(issues.map(i => `${i.path.join('.')}: ${i.message}`).join('; '));
+      } else {
+        setValidationError(null);
+      }
+    } catch {
+      setValidationError('Invalid JSON');
+    }
+  }, [configJson, selectedStrategy]);
+
+  const currentProtected: Record<string, unknown> | undefined = (() => {
+    try {
+      const parsed: unknown = JSON.parse(configJson);
+      if (isRecord(parsed) && isRecord(parsed.protected)) {
+        return parsed.protected;
+      }
+    } catch {
+      // invalid JSON — user is mid-edit, treat as no protection
+    }
+    return undefined;
+  })();
+
+  const handleProtectionSave = useCallback(
+    (nextProtected: Record<string, unknown> | undefined) => {
+      try {
+        const parsed: unknown = JSON.parse(configJson);
+        const next: Record<string, unknown> = isRecord(parsed) ? {...parsed} : {};
+        if (nextProtected === undefined) {
+          delete next.protected;
+        } else {
+          next.protected = nextProtected;
+        }
+        setConfigJson(JSON.stringify(next, null, 2));
+      } catch {
+        showToast('Cannot update protection: config JSON is invalid');
+      }
+    },
+    [configJson, showToast]
+  );
+
+  const copyConfig = useCallback(async () => {
+    try {
+      // Compact to a single line so it drops cleanly onto a /strategyAdd line in the messenger.
+      const compact = JSON.stringify(JSON.parse(configJson));
+      await navigator.clipboard.writeText(compact);
+      showToast('Strategy config copied to clipboard');
+    } catch {
+      showToast('Failed to copy config');
+    }
+  }, [configJson, showToast]);
+
+  const runBacktest = useCallback(async () => {
+    setRunning(true);
+    setError(null);
+    try {
+      const parsed: unknown = JSON.parse(configJson);
+      const def = strategyDefinitions.find(s => s.id === selectedStrategy)!;
+      const parseResult = def.schema.safeParse(parsed);
+      if (!parseResult.success) {
+        setError('Invalid configuration');
+        return;
+      }
+
+      const config = parseResult.data as Record<string, unknown>;
+      const strategy = createStrategy(selectedStrategy, config);
+      const base = candles[0]?.base ?? 'BTC';
+      const counter = candles[0]?.counter ?? 'USD';
+      const tradingPair = new TradingPair(base, counter);
+
+      const [backtestResult, baseline] = await Promise.all([
+        new BacktestExecutor({
+          broker: createExchange(candles, initialBase, initialCounter),
+          candles,
+          strategy,
+          tradingPair,
+        }).execute(),
+        new BacktestExecutor({
+          broker: createExchange(candles, initialBase, initialCounter),
+          candles,
+          strategy: new BuyOnceStrategy(),
+          tradingPair,
+        }).execute(),
+      ]);
+
+      setResult(backtestResult);
+      setBaselineResult(baseline);
+      showToast(
+        `Backtest complete — ${backtestResult.trades.length} trade${backtestResult.trades.length === 1 ? '' : 's'} simulated`
+      );
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Backtest failed');
+    } finally {
+      setRunning(false);
+    }
+  }, [configJson, selectedStrategy, candles, initialBase, initialCounter, showToast]);
+
+  const handleStrategyChange = (id: StrategyId) => {
+    setSelectedStrategy(id);
+    setResult(null);
+    setBaselineResult(null);
+  };
+
+  const handleDatasetChange = (id: string) => {
+    setSelectedDataset(id);
+    setResult(null);
+    setBaselineResult(null);
+  };
+
+  const handleCustomDataset = (candles: Candle[], name: string) => {
+    setCustomDataset({candles, description: `Custom upload: ${name} (${candles.length} candles)`, id: 'custom', name});
+    setSelectedDataset('custom');
+    setResult(null);
+    setBaselineResult(null);
+  };
+
+  if (!isMounted) {
+    return <div style={{minHeight: 800}} />;
+  }
+
+  return (
+    <div className="not-prose flex gap-6 relative max-lg:flex-col">
+      {/* Sidebar */}
+      <div className="w-64 shrink-0 space-y-4 sticky top-4 self-start">
+        <DatasetSelector
+          datasets={datasets}
+          selectedDataset={selectedDataset}
+          onDatasetChange={handleDatasetChange}
+          onCustomDataset={handleCustomDataset}
+          customDatasetName={customDataset?.name}
+        />
+        <div className="demo-card">
+          <h3 className="text-sm font-semibold demo-heading mb-3">Initial Balance</h3>
+          <div className="space-y-2">
+            <div>
+              <label className="block text-xs demo-muted mb-1">Base ({candles[0]?.base ?? 'Base'})</label>
+              <input
+                type="text"
+                value={initialBase}
+                onChange={e => setInitialBase(e.target.value)}
+                className="w-full demo-card rounded px-2 py-1.5 text-sm demo-heading focus:outline-none focus:border-purple-500"
+              />
+            </div>
+            <div>
+              <label className="block text-xs demo-muted mb-1">Counter ({candles[0]?.counter ?? 'Counter'})</label>
+              <input
+                type="text"
+                value={initialCounter}
+                onChange={e => setInitialCounter(e.target.value)}
+                className="w-full demo-card rounded px-2 py-1.5 text-sm demo-heading focus:outline-none focus:border-purple-500"
+              />
+            </div>
+          </div>
+        </div>
+        <StrategyConfigurator
+          selectedStrategy={selectedStrategy}
+          onStrategyChange={handleStrategyChange}
+          configJson={configJson}
+          onConfigJsonChange={setConfigJson}
+          validationError={validationError}
+          candles={candles}
+        />
+        <button
+          onClick={() => setProtectionModalOpen(true)}
+          className="w-full py-2.5 px-4 rounded-lg text-sm font-medium transition-colors bg-(--demo-accent) hover:opacity-90 text-white cursor-pointer flex items-center justify-center gap-2">
+          <span>{currentProtected ? 'Edit Protection' : 'Add Protection'}</span>
+          {currentProtected && (
+            <span className="text-xs bg-purple-500/15 text-(--demo-accent) px-2 py-0.5 rounded-full">active</span>
+          )}
+        </button>
+        <button
+          onClick={copyConfig}
+          disabled={!!validationError}
+          className={`w-full py-2.5 px-4 rounded-lg text-sm font-medium transition-colors ${
+            validationError
+              ? 'bg-slate-500/20 demo-muted cursor-not-allowed'
+              : 'bg-(--demo-accent) hover:opacity-90 text-white cursor-pointer'
+          }`}>
+          Copy Config
+        </button>
+        <button
+          onClick={runBacktest}
+          disabled={!!validationError || running}
+          className={`w-full py-2.5 px-4 rounded-lg text-sm font-medium transition-colors ${
+            validationError || running
+              ? 'bg-slate-500/20 demo-muted cursor-not-allowed'
+              : 'bg-purple-600 hover:bg-purple-700 text-white cursor-pointer'
+          }`}>
+          {running ? 'Running...' : 'Run Backtest'}
+        </button>
+        {error && (
+          <div className="bg-red-900/20 border border-red-800/50 rounded-lg p-3">
+            <p className="text-red-500 text-xs">{error}</p>
+          </div>
+        )}
+      </div>
+
+      <ProtectionModal
+        open={protectionModalOpen}
+        initialProtected={currentProtected}
+        onSave={handleProtectionSave}
+        onClose={() => setProtectionModalOpen(false)}
+      />
+
+      {/* Toast notification */}
+      {toast && (
+        <div className="fixed top-6 right-6 z-50 bg-purple-600 text-white text-sm font-medium px-4 py-3 rounded-lg shadow-lg animate-[fadeIn_0.15s_ease-out]">
+          {toast}
+        </div>
+      )}
+
+      {/* Main content */}
+      <div className="flex-1 min-w-0">
+        {result ? (
+          <BacktestResults result={result} baselineResult={baselineResult} candles={candles} />
+        ) : (
+          <div className="demo-card p-12 text-center">
+            <h2 className="text-xl font-semibold demo-heading mb-3">Visual Backtester</h2>
+            <p className="demo-muted max-w-md mx-auto">
+              Select a dataset and strategy from the sidebar, configure parameters, then click &ldquo;Run
+              Backtest&rdquo; to see the results.
+            </p>
+            <div className="mt-6 grid grid-cols-3 gap-4 max-w-lg mx-auto text-left">
+              <div className="bg-slate-500/10 rounded-lg p-3">
+                <div className="text-(--demo-accent) font-semibold text-sm">1. Dataset</div>
+                <div className="demo-muted text-xs mt-1">Choose market conditions</div>
+              </div>
+              <div className="bg-slate-500/10 rounded-lg p-3">
+                <div className="text-(--demo-accent) font-semibold text-sm">2. Strategy</div>
+                <div className="demo-muted text-xs mt-1">Pick a trading strategy</div>
+              </div>
+              <div className="bg-slate-500/10 rounded-lg p-3">
+                <div className="text-(--demo-accent) font-semibold text-sm">3. Run</div>
+                <div className="demo-muted text-xs mt-1">Analyze performance</div>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}

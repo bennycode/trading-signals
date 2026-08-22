@@ -1,0 +1,25 @@
+---
+title: 'TR'
+description: 'True Range'
+---
+
+import {IndicatorPageDemo} from '../../../components/IndicatorPageDemo';
+
+# True Range (TR)
+
+Measures the greatest of: current high minus current low, absolute value of current high minus previous close, or absolute value of current low minus previous close. Low values indicate a sideways trend with little volatility.
+
+## Live Demo
+
+Pick a market regime to see how TR(2) reacts:
+
+<IndicatorPageDemo category="volatility" id="tr" />
+
+## Usage
+
+```ts twoslash
+import {TR} from 'trading-signals';
+
+// TR yields results once 2 inputs have been added
+const tr = new TR();
+```

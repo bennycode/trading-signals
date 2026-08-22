@@ -1,0 +1,39 @@
+{
+  "name": "trading-signals-vocs",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Spike for issue #1288: Vocs-based documentation site with interactive MDX",
+  "type": "module",
+  "scripts": {
+    "dev": "tsx scripts/site.ts dev",
+    "build": "tsx scripts/site.ts build",
+    "dist": "npm run build",
+    "generate": "tsx --tsconfig scripts/tsconfig.json scripts/generate-indicator-pages.ts",
+    "preview": "vocs preview"
+  },
+  "dependencies": {
+    "@highcharts/react": "^5.2.2",
+    "@tailwindcss/postcss": "^4.3.2",
+    "@typedtrader/candles": "0.2.3",
+    "@typedtrader/exchange": "0.3.3",
+    "@types/big.js": "^7.0.0",
+    "big.js": "^7.0.1",
+    "events": "^3.3.0",
+    "highcharts": "^13.0.0",
+    "mermaid": "^11.12.2",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7",
+    "tailwindcss": "^4.3.2",
+    "trading-signals": "8.3.0",
+    "trading-strategies": "0.4.5",
+    "vite": "^8.1.3",
+    "vocs": "^2.8.5",
+    "waku": "1.0.0-beta.6",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^6.0.3",
+    "tsx": "^4.22.5",
+    "typescript": "^5.9.3"
+  }
+}

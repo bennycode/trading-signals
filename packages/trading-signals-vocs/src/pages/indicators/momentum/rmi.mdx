@@ -1,0 +1,25 @@
+---
+title: 'RMI'
+description: 'Relative Momentum Index'
+---
+
+import {IndicatorPageDemo} from '../../../components/IndicatorPageDemo';
+
+# Relative Momentum Index (RMI)
+
+Roger Altman's generalization of RSI, published in Technical Analysis of Stocks & Commodities (February 1993): momentum is measured as the close's change over a multi-bar span (default 5) instead of bar-to-bar, and Wilder-smoothing the up and down streams yields an oscillator from 0 to 100. The multi-bar span filters out bar-to-bar noise, so readings swing more decisively into overbought (70 and above) and oversold (30 and below) territory than RSI. With a one-bar span, RMI degenerates into RSI.
+
+## Live Demo
+
+Pick a market regime to see how RMI(14) reacts:
+
+<IndicatorPageDemo category="momentum" id="rmi" />
+
+## Usage
+
+```ts twoslash
+import {RMI} from 'trading-signals';
+
+// RMI yields results once 19 inputs have been added
+const rmi = new RMI();
+```

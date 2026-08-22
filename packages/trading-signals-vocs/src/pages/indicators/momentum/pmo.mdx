@@ -1,0 +1,25 @@
+---
+title: 'PMO'
+description: 'DecisionPoint Price Momentum Oscillator'
+---
+
+import {IndicatorPageDemo} from '../../../components/IndicatorPageDemo';
+
+# DecisionPoint Price Momentum Oscillator (PMO)
+
+DecisionPoint Price Momentum Oscillator
+
+## Live Demo
+
+Pick a market regime to see how PMO(55) reacts:
+
+<IndicatorPageDemo category="momentum" id="pmo" />
+
+## Usage
+
+```ts twoslash
+import {PMO} from 'trading-signals';
+
+// PMO yields results once 55 inputs have been added
+const pmo = new PMO();
+```

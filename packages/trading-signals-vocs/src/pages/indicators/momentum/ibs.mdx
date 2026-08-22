@@ -1,0 +1,25 @@
+---
+title: 'IBS'
+description: 'Internal Bar Strength'
+---
+
+import {IndicatorPageDemo} from '../../../components/IndicatorPageDemo';
+
+# Internal Bar Strength (IBS)
+
+Locates each close within its candle range on a scale from 0 (close at the low) to 1 (close at the high). A mean-reversion primitive: values of 0.8 or above indicate overbought, 0.2 or below indicate oversold.
+
+## Live Demo
+
+Pick a market regime to see how IBS(1) reacts:
+
+<IndicatorPageDemo category="momentum" id="ibs" />
+
+## Usage
+
+```ts twoslash
+import {IBS} from 'trading-signals';
+
+// IBS yields results once 1 inputs have been added
+const ibs = new IBS();
+```

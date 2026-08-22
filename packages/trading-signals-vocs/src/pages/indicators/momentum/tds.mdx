@@ -1,0 +1,25 @@
+---
+title: 'TDS'
+description: 'Tom DeMark Sequential'
+---
+
+import {IndicatorPageDemo} from '../../../components/IndicatorPageDemo';
+
+# Tom DeMark Sequential (TDS)
+
+TDS tracks consecutive closes compared to the close 4 bars earlier. Bullish Setup: 9 consecutive closes greater than the close 4 bars earlier (returns 1, signals potential reversal - BEARISH). Bearish Setup: 9 consecutive closes less than the close 4 bars earlier (returns -1, signals potential reversal - BULLISH).
+
+## Live Demo
+
+Pick a market regime to see how TDS(1) reacts:
+
+<IndicatorPageDemo category="momentum" id="tds" />
+
+## Usage
+
+```ts twoslash
+import {TDS} from 'trading-signals';
+
+// TDS yields results once 1 inputs have been added
+const tds = new TDS();
+```

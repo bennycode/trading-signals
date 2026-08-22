@@ -1,0 +1,25 @@
+---
+title: 'IQR'
+description: 'Interquartile Range'
+---
+
+import {IndicatorPageDemo} from '../../../components/IndicatorPageDemo';
+
+# Interquartile Range (IQR)
+
+Statistical measure of variability showing the middle 50% of data. Robust measure of spread that is less sensitive to outliers than standard deviation.
+
+## Live Demo
+
+Pick a market regime to see how IQR(13) reacts:
+
+<IndicatorPageDemo category="volatility" id="iqr" />
+
+## Usage
+
+```ts twoslash
+import {IQR} from 'trading-signals';
+
+// IQR yields results once 13 inputs have been added
+const iqr = new IQR(13);
+```

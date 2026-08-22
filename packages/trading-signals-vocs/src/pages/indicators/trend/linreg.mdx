@@ -1,0 +1,25 @@
+---
+title: 'LINREG'
+description: 'Linear Regression'
+---
+
+import {IndicatorPageDemo} from '../../../components/IndicatorPageDemo';
+
+# Linear Regression (LINREG)
+
+Fits a straight line to recent prices using least-squares. The prediction is the point on the line at the latest bar; the slope indicates trend direction and strength.
+
+## Live Demo
+
+Pick a market regime to see how LINREG(14) reacts:
+
+<IndicatorPageDemo category="trend" id="linreg" />
+
+## Usage
+
+```ts twoslash
+import {LinearRegression} from 'trading-signals';
+
+// LinearRegression yields results once 14 inputs have been added
+const linearRegression = new LinearRegression(14);
+```

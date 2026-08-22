@@ -1,0 +1,25 @@
+---
+title: 'VWAP'
+description: 'Volume Weighted Average Price'
+---
+
+import {IndicatorPageDemo} from '../../../components/IndicatorPageDemo';
+
+# Volume Weighted Average Price (VWAP)
+
+Calculates the average price weighted by volume. Used to assess whether trades are being executed at favorable prices.
+
+## Live Demo
+
+Pick a market regime to see how VWAP(1) reacts:
+
+<IndicatorPageDemo category="trend" id="vwap" />
+
+## Usage
+
+```ts twoslash
+import {VWAP} from 'trading-signals';
+
+// VWAP yields results once 1 inputs have been added
+const vwap = new VWAP();
+```

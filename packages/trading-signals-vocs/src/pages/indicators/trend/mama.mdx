@@ -1,0 +1,25 @@
+---
+title: 'MAMA'
+description: 'MESA Adaptive Moving Average'
+---
+
+import {IndicatorPageDemo} from '../../../components/IndicatorPageDemo';
+
+# MESA Adaptive Moving Average (MAMA)
+
+Adapts its smoothing to the dominant market cycle measured by a Hilbert transform: it hugs price during trends and freezes in congestion. MAMA crossing above its following average (FAMA) signals bullish pressure, crossing below signals bearish pressure.
+
+## Live Demo
+
+Pick a market regime to see how MAMA(33) reacts:
+
+<IndicatorPageDemo category="trend" id="mama" />
+
+## Usage
+
+```ts twoslash
+import {MAMA} from 'trading-signals';
+
+// MAMA yields results once 33 inputs have been added
+const mama = new MAMA();
+```

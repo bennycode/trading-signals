@@ -1,0 +1,25 @@
+---
+title: 'Stochastic'
+description: 'Stochastic Oscillator'
+---
+
+import {IndicatorPageDemo} from '../../../components/IndicatorPageDemo';
+
+# Stochastic Oscillator (Stochastic)
+
+Stochastic Oscillator
+
+## Live Demo
+
+Pick a market regime to see how Stochastic(17) reacts:
+
+<IndicatorPageDemo category="momentum" id="stoch" />
+
+## Usage
+
+```ts twoslash
+import {StochasticOscillator} from 'trading-signals';
+
+// StochasticOscillator yields results once 17 inputs have been added
+const stochasticOscillator = new StochasticOscillator({dPeriod: 3, kPeriod: 14, kSlowingPeriod: 3});
+```

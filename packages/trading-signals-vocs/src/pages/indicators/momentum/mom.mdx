@@ -1,0 +1,25 @@
+---
+title: 'MOM'
+description: 'Momentum'
+---
+
+import {IndicatorPageDemo} from '../../../components/IndicatorPageDemo';
+
+# Momentum (MOM)
+
+Momentum measures the change in price over n periods. Bullish when momentum is positive (price rising), bearish when momentum is negative (price falling).
+
+## Live Demo
+
+Pick a market regime to see how MOM(5) reacts:
+
+<IndicatorPageDemo category="momentum" id="mom" />
+
+## Usage
+
+```ts twoslash
+import {MOM} from 'trading-signals';
+
+// MOM yields results once 5 inputs have been added
+const mom = new MOM(5);
+```

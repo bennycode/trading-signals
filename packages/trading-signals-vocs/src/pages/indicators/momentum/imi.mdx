@@ -1,0 +1,25 @@
+---
+title: 'IMI'
+description: 'Intraday Momentum Index'
+---
+
+import {IndicatorPageDemo} from '../../../components/IndicatorPageDemo';
+
+# Intraday Momentum Index (IMI)
+
+Applies the RSI recipe to candle bodies: sums the open-to-close gains of up candles and losses of down candles over an interval, expressing buying pressure as a share of total pressure. Values above 70 indicate overbought, below 30 indicate oversold.
+
+## Live Demo
+
+Pick a market regime to see how IMI(14) reacts:
+
+<IndicatorPageDemo category="momentum" id="imi" />
+
+## Usage
+
+```ts twoslash
+import {IMI} from 'trading-signals';
+
+// IMI yields results once 14 inputs have been added
+const imi = new IMI();
+```

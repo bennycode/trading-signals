@@ -1,0 +1,25 @@
+---
+title: 'MACD'
+description: 'Moving Average Convergence Divergence'
+---
+
+import {IndicatorPageDemo} from '../../../components/IndicatorPageDemo';
+
+# Moving Average Convergence Divergence (MACD)
+
+Moving Average Convergence Divergence
+
+## Live Demo
+
+Pick a market regime to see how MACD(33) reacts:
+
+<IndicatorPageDemo category="momentum" id="macd" />
+
+## Usage
+
+```ts twoslash
+import {EMA, MACD} from 'trading-signals';
+
+// MACD yields results once 33 inputs have been added
+const macd = new MACD(new EMA(12), new EMA(26), new EMA(9));
+```

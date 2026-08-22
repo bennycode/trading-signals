@@ -1,0 +1,25 @@
+---
+title: 'WSMA'
+description: "Wilder's Smoothed Moving Average"
+---
+
+import {IndicatorPageDemo} from '../../../components/IndicatorPageDemo';
+
+# Wilder's Smoothed Moving Average (WSMA)
+
+Similar to RMA, this is a smoothed moving average that reduces noise and provides a clearer view of the trend.
+
+## Live Demo
+
+Pick a market regime to see how WSMA(5) reacts:
+
+<IndicatorPageDemo category="trend" id="wsma" />
+
+## Usage
+
+```ts twoslash
+import {WSMA} from 'trading-signals';
+
+// WSMA yields results once 5 inputs have been added
+const wsma = new WSMA(5);
+```

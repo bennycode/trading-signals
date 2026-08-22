@@ -1,0 +1,25 @@
+---
+title: 'OBV'
+description: 'On-Balance Volume'
+---
+
+import {IndicatorPageDemo} from '../../../components/IndicatorPageDemo';
+
+# On-Balance Volume (OBV)
+
+Cumulative volume-based indicator. Rising OBV with rising prices confirms uptrend.
+
+## Live Demo
+
+Pick a market regime to see how OBV(5) reacts:
+
+<IndicatorPageDemo category="momentum" id="obv" />
+
+## Usage
+
+```ts twoslash
+import {OBV} from 'trading-signals';
+
+// OBV yields results once 1 inputs have been added
+const obv = new OBV(5);
+```
