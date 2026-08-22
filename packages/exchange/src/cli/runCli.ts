@@ -59,49 +59,130 @@ export interface CliResult {
   text?: string;
 }
 
-export const USAGE = `Usage: exchange-cli <command> --broker <${BROKER_KEYS.join('|')}> [options]
+interface CommandSpec {
+  /** Positional arguments as shown in the usage, e.g. "<ticker> <quantity>". */
+  args?: string;
+  description: string;
+}
 
-Commands:
-  verify                          Check that the credentials authenticate
-  balances                        List positions and cash
-  instruments <query>             Search tradable instruments by ticker/name/ISIN
-  rules <ticker>                  Trading rules (min size, increments) for an instrument
-  orders <ticker>                 List open orders for an instrument
-  fills <ticker>                  List filled orders for an instrument
-  quote <ticker>                  Latest price for an instrument
-  buy <ticker> <quantity>         Place a market BUY (or limit with --limit)
-  sell <ticker> <quantity>        Place a market SELL (or limit with --limit)
-  wait <ticker> <orderId>         Poll until the order fills or dies (--timeout, --poll)
-  cancel <ticker> <orderId>       Cancel one order (or all for the ticker with --all)
-  candles <ticker>                Most recent candles (--interval, --count)
-  watch-candles <ticker>          Stream live candles as NDJSON until Ctrl-C (or --take)
-  watch-orders                    Stream order fills as NDJSON until Ctrl-C (or --take)
-  time                            Broker time
+/** Every dispatchable command, in workflow order (which is also the display order in the usage text). */
+const COMMANDS: readonly (readonly [name: string, spec: CommandSpec])[] = [
+  ['verify', {description: 'Check that the credentials authenticate'}],
+  ['balances', {description: 'List positions and cash'}],
+  ['instruments', {args: '<query>', description: 'Search tradable instruments by ticker/name/ISIN'}],
+  ['rules', {args: '<ticker>', description: 'Trading rules (min size, increments) for an instrument'}],
+  ['orders', {args: '<ticker>', description: 'List open orders for an instrument'}],
+  ['fills', {args: '<ticker>', description: 'List filled orders for an instrument'}],
+  ['quote', {args: '<ticker>', description: 'Latest price for an instrument'}],
+  ['buy', {args: '<ticker> <quantity>', description: 'Place a market BUY (or limit with --limit)'}],
+  ['sell', {args: '<ticker> <quantity>', description: 'Place a market SELL (or limit with --limit)'}],
+  ['wait', {args: '<ticker> <orderId>', description: 'Poll until the order fills or dies (--timeout, --poll)'}],
+  ['cancel', {args: '<ticker> <orderId>', description: 'Cancel one order (or all for the ticker with --all)'}],
+  ['candles', {args: '<ticker>', description: 'Most recent candles (--interval, --count)'}],
+  ['watch-candles', {args: '<ticker>', description: 'Stream live candles as NDJSON until Ctrl-C (or --take)'}],
+  ['watch-orders', {description: 'Stream order fills as NDJSON until Ctrl-C (or --take)'}],
+  ['time', {description: 'Broker time'}],
+];
 
-Options:
-  --broker <name>                 Required. One of: ${BROKER_KEYS.join(', ')}
-  --live                          Use the LIVE account (default: paper)
-  --limit <price>                 Turn buy/sell into a limit order at this price
-  --dry-run                       With buy/sell: validate against trading rules and estimate
-                                  fees without placing the order
-  --timeout <duration>            With wait: give up after this long (default: 5m); the order
-                                  stays open on timeout
-  --poll <duration>               With wait: poll interval (default: matches the broker's rate limit)
-  --counter <currency>            Counter currency of the pair (skips the instrument lookup)
-  --all                           With cancel: cancel every open order for the ticker
-  --interval <duration>           Candle interval, e.g. 1m, 5m, 1h (default: 1m)
-  --count <n>                     Number of candles to fetch (default: 10)
-  --take <n>                      Stop a watch-* stream after n events (default: run until Ctrl-C)
-  --idle <duration>               Fail a watch-* stream when no event arrives within this window
-                                  (catches a starved stream — Alpaca serves one market-data
-                                  connection per API key, and a newer one silently takes over)
+const COMMAND_NAMES = new Set(COMMANDS.map(([name]) => name));
 
-Credentials come from <BROKER>_PAPER_API_KEY + <BROKER>_PAPER_API_SECRET (or the _LIVE_
+/** The `parseArgs` configuration; kept as a plain literal so `values` stays precisely typed. */
+const CLI_OPTIONS = {
+  all: {default: false, type: 'boolean'},
+  broker: {type: 'string'},
+  count: {type: 'string'},
+  counter: {type: 'string'},
+  'dry-run': {default: false, type: 'boolean'},
+  idle: {type: 'string'},
+  interval: {default: '1m', type: 'string'},
+  limit: {type: 'string'},
+  live: {default: false, type: 'boolean'},
+  poll: {type: 'string'},
+  take: {type: 'string'},
+  timeout: {default: '5m', type: 'string'},
+} as const;
+
+/**
+ * Help metadata for every CLI option. Keyed by `keyof typeof CLI_OPTIONS`, so adding an
+ * option without help (or help without an option) fails to compile.
+ */
+const OPTION_HELP: Record<keyof typeof CLI_OPTIONS, {description: string; placeholder?: string}> = {
+  all: {description: 'With cancel: cancel every open order for the ticker'},
+  broker: {description: `Required. One of: ${BROKER_KEYS.join(', ')}`, placeholder: '<name>'},
+  count: {description: 'Number of candles to fetch (default: 10)', placeholder: '<n>'},
+  counter: {description: 'Counter currency of the pair (skips the instrument lookup)', placeholder: '<currency>'},
+  'dry-run': {description: 'With buy/sell: validate against trading rules and estimate fees without placing the order'},
+  idle: {
+    description:
+      'Fail a watch-* stream when no event arrives within this window (catches a starved stream: Alpaca serves one market-data connection per API key, and a newer one silently takes over)',
+    placeholder: '<duration>',
+  },
+  interval: {description: 'Candle interval, e.g. 1m, 5m, 1h (default: 1m)', placeholder: '<duration>'},
+  limit: {description: 'Turn buy/sell into a limit order at this price', placeholder: '<price>'},
+  live: {description: 'Use the LIVE account (default: paper)'},
+  poll: {description: "With wait: poll interval (default: matches the broker's rate limit)", placeholder: '<duration>'},
+  take: {description: 'Stop a watch-* stream after n events (default: run until Ctrl-C)', placeholder: '<n>'},
+  timeout: {
+    description: 'With wait: give up after this long (default: 5m); the order stays open on timeout',
+    placeholder: '<duration>',
+  },
+};
+
+const USAGE_FOOTER = `Credentials come from <BROKER>_PAPER_API_KEY + <BROKER>_PAPER_API_SECRET (or the _LIVE_
 pair) environment variables, e.g. TRADING212_PAPER_API_KEY and TRADING212_PAPER_API_SECRET.
 Output is JSON on stdout; watch-* commands emit one JSON object per line as events arrive.
 
 Trading212 has no market data of its own: candle commands source it from Alpaca using
 ALPACA_PAPER_* or ALPACA_LIVE_* credentials (picked via ALPACA_USE_PAPER).`;
+
+const USAGE_WIDTH = 100;
+
+/** Renders "  left  right" rows with a shared column for `right`, wrapping long descriptions. */
+function renderRows(rows: [left: string, right: string][]): string {
+  const column = Math.max(...rows.map(([left]) => left.length)) + 2;
+  return rows
+    .map(([left, right]) => {
+      const prefix = `  ${left.padEnd(column)}`;
+      const lineWidth = Math.max(USAGE_WIDTH - prefix.length, 40);
+      const lines: string[] = [];
+      let line = '';
+      for (const word of right.split(' ')) {
+        if (line && line.length + word.length + 1 > lineWidth) {
+          lines.push(line);
+          line = word;
+        } else {
+          line = line ? `${line} ${word}` : word;
+        }
+      }
+      lines.push(line);
+      return prefix + lines.join(`\n${' '.repeat(prefix.length)}`);
+    })
+    .join('\n');
+}
+
+function renderUsage(): string {
+  const commandRows = COMMANDS.map(([name, spec]): [string, string] => [
+    spec.args ? `${name} ${spec.args}` : name,
+    spec.description,
+  ]);
+  const optionRows = Object.entries(OPTION_HELP).map(([name, help]): [string, string] => [
+    help.placeholder ? `--${name} ${help.placeholder}` : `--${name}`,
+    help.description,
+  ]);
+  return [
+    `Usage: exchange-cli <command> --broker <${BROKER_KEYS.join('|')}> [options]`,
+    '',
+    'Commands:',
+    renderRows(commandRows),
+    '',
+    'Options:',
+    renderRows(optionRows),
+    '',
+    USAGE_FOOTER,
+  ].join('\n');
+}
+
+export const USAGE = renderUsage();
 
 /**
  * Fallback for brokers that need an external market-data source (Trading212) when no
@@ -398,25 +479,15 @@ export async function runCli(argv: string[], overrides: Partial<CliDeps> = {}): 
   const {values, positionals} = parseArgs({
     allowPositionals: true,
     args: argv,
-    options: {
-      all: {default: false, type: 'boolean'},
-      broker: {type: 'string'},
-      count: {type: 'string'},
-      counter: {type: 'string'},
-      'dry-run': {default: false, type: 'boolean'},
-      idle: {type: 'string'},
-      interval: {default: '1m', type: 'string'},
-      limit: {type: 'string'},
-      live: {default: false, type: 'boolean'},
-      poll: {type: 'string'},
-      take: {type: 'string'},
-      timeout: {default: '5m', type: 'string'},
-    },
+    options: CLI_OPTIONS,
   });
 
   const [command, ...args] = positionals;
   if (!command || command === 'help') {
     return {text: USAGE};
+  }
+  if (!COMMAND_NAMES.has(command)) {
+    throw new Error(`Unknown command "${command}". Run "exchange-cli help" for usage.`);
   }
 
   if (!values.broker) {
