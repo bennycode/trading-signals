@@ -79,7 +79,7 @@ import {AlpacaMarketData, getTrading212Client, TradingPair} from '@typedtrader/e
 const marketData = new AlpacaMarketData({
   apiKey: 'ALPACA_API_KEY',
   apiSecret: 'ALPACA_API_SECRET',
-  usePaperTrading: false, // read-only; doesn't place orders
+  usePaperTrading: true, // matches the key type; market data itself always comes from Alpaca's production endpoints
 });
 
 // 2. Wire it into the Trading212 broker.

@@ -401,15 +401,16 @@ async function dryRunOrder(
 
 /**
  * Trading212 has no market data of its own, so its candle commands are fed from Alpaca.
- * Always on the production data hosts: Alpaca's sandbox data hosts are Broker-API-partner
- * infrastructure and reject regular account keys with a 401.
+ * Market data always comes from Alpaca's production endpoints; `usePaperTrading` only
+ * selects the trading-API host used for instrument metadata, matching the key type the
+ * environment file provides (paper keys in .env.sandbox, live keys in .env.live).
  */
-function getTrading212MarketData(env: NodeJS.ProcessEnv): MarketDataSource {
+function getTrading212MarketData(env: NodeJS.ProcessEnv, live: boolean): MarketDataSource {
   const alpacaCredentials = getAlpacaMarketDataCredentials(env);
   if (!alpacaCredentials) {
     return new UnavailableMarketDataSource();
   }
-  return new AlpacaMarketData({...alpacaCredentials, usePaperTrading: false});
+  return new AlpacaMarketData({...alpacaCredentials, usePaperTrading: !live});
 }
 
 /** The Alpaca credential set that feeds Trading212's market data (see getTrading212MarketData). */
@@ -529,7 +530,7 @@ export async function runCli(argv: string[], overrides: Partial<CliDeps> = {}): 
   }
 
   // Alpaca brings its own market data; Trading212 needs an external source (see getTrading212MarketData).
-  const marketData = brokerKey === 'trading212' ? getTrading212MarketData(deps.env) : undefined;
+  const marketData = brokerKey === 'trading212' ? getTrading212MarketData(deps.env, values.live) : undefined;
 
   const broker = deps.getBroker(
     {
