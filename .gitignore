@@ -23,3 +23,7 @@ npm-debug.log*
 .stryker-tmp/
 reports/
 stryker.log
+
+# exchange-cli environment files (selected via --live)
+.env.live
+.env.sandbox

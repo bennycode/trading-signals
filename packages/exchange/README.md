@@ -129,7 +129,7 @@ exchange-cli watch-candles ETH --broker alpaca --counter USD --take 3
 
 That covers the whole agent trade loop: check the price (`quote`), validate the order against trading rules and estimated fees without placing it (`--dry-run`), place it, block until it fills or dies (`wait`), and stream live candles or fills as NDJSON (`watch-candles` / `watch-orders`, one JSON object per line, `--take n` to exit after n events).
 
-Credentials come from environment variables following the pattern `<BROKER>_PAPER_API_KEY` / `<BROKER>_LIVE_API_KEY` (plus the matching `_API_SECRET`), e.g. `TRADING212_PAPER_API_KEY`. Run `exchange-cli help` for all commands.
+Credentials come from environment variables following the pattern `<BROKER>_PAPER_API_KEY` / `<BROKER>_LIVE_API_KEY` (plus the matching `_API_SECRET`), e.g. `TRADING212_PAPER_API_KEY`. The CLI loads them from `.env.live` when `--live` is passed and from `.env.sandbox` otherwise (both optional; variables already present in the environment win). Keeping the live credentials in their own file means a machine without `.env.live` simply cannot trade the real account. Run `exchange-cli help` for all commands.
 
 The CLI is designed to be driven by coding agents (Claude Code, Codex, ...) as much as by humans:
 

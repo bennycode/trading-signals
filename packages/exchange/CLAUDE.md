@@ -17,7 +17,7 @@ npm run cli -- cancel RRl_EQ <orderId> --broker trading212 --counter GBX
 npm run cli -- watch-candles ETH --broker alpaca --counter USD --take 3
 ```
 
-- Paper by default; `--live` targets the real account.
+- Paper by default; `--live` targets the real account. Credentials load from `.env.sandbox` (paper) or `.env.live` (live) in the package directory — both gitignored; variables already present in the environment (including `.env` via the npm script) take precedence, so credentials must live in the mode files, not `.env`.
 - Output is JSON on stdout; errors (including the broker's `/api-errors/...` problem types) go to stderr with exit code 1.
 - `--counter <currency>` skips the instrument lookup Trading212 otherwise needs to resolve the pair (its metadata endpoint is heavily rate-limited).
 - **One `watch-*` at a time per Alpaca key:** Alpaca allows a single market-data WebSocket per API key; a second connection makes the server close the first (whose crash-restart handler exits 1). The CLI enforces this with a per-key process lock on this machine — a second stream fails fast naming the holding PID. Consumers on other machines (e.g. a deployed bot sharing the keys) can't be locked out: pass `--idle <duration>` so a silently starved stream fails with a diagnostic instead of hanging.

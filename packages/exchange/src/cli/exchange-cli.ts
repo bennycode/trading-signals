@@ -1,6 +1,19 @@
 #!/usr/bin/env node
 import {runCli} from './runCli.js';
 
+/*
+ * --live picks the environment file: .env.live for the real account, .env.sandbox otherwise.
+ * This happens before argument parsing so credentials are in place when runCli reads them.
+ * Variables already present in the environment (shell, .env via the npm script) win —
+ * `process.loadEnvFile` never overrides. Both files are optional.
+ */
+const envFile = process.argv.includes('--live') ? '.env.live' : '.env.sandbox';
+try {
+  process.loadEnvFile(envFile);
+} catch {
+  // No environment file — whatever the process environment already provides is used as-is.
+}
+
 /**
  * Exit explicitly after flushing instead of relying on a natural exit: broker WebSocket
  * connections (e.g. Alpaca's market-data stream) deliberately stay open for long-running

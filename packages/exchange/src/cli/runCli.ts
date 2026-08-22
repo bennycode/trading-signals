@@ -130,7 +130,9 @@ const OPTION_HELP: Record<keyof typeof CLI_OPTIONS, {description: string; placeh
 
 const USAGE_FOOTER = `Credentials come from <BROKER>_PAPER_API_KEY + <BROKER>_PAPER_API_SECRET (or the _LIVE_
 pair) environment variables, e.g. TRADING212_PAPER_API_KEY and TRADING212_PAPER_API_SECRET.
-Output is JSON on stdout; watch-* commands emit one JSON object per line as events arrive.
+--live loads them from .env.live, otherwise from .env.sandbox (both optional; variables
+already present in the environment win). Output is JSON on stdout; watch-* commands emit
+one JSON object per line as events arrive.
 
 Trading212 has no market data of its own: candle commands source it from Alpaca using the
 ALPACA_* credentials matching the execution environment (falling back to the other pair,
