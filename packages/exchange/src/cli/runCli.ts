@@ -128,15 +128,13 @@ const OPTION_HELP: Record<keyof typeof CLI_OPTIONS, {description: string; placeh
   },
 };
 
-const USAGE_FOOTER = `Credentials come from <BROKER>_PAPER_API_KEY + <BROKER>_PAPER_API_SECRET (or the _LIVE_
-pair) environment variables, e.g. TRADING212_PAPER_API_KEY and TRADING212_PAPER_API_SECRET.
---live loads them from .env.live, otherwise from .env.sandbox (both optional; variables
-already present in the environment win). Output is JSON on stdout; watch-* commands emit
-one JSON object per line as events arrive.
+const USAGE_FOOTER = `Credentials come from <BROKER>_API_KEY + <BROKER>_API_SECRET environment variables
+(e.g. TRADING212_API_KEY). --live loads them from .env.live, otherwise from .env.sandbox
+(both optional; variables already present in the environment win). Output is JSON on
+stdout; watch-* commands emit one JSON object per line as events arrive.
 
-Trading212 has no market data of its own: candle commands source it from Alpaca using the
-ALPACA_* credentials matching the execution environment (falling back to the other pair,
-since market data is read-only).`;
+Trading212 has no market data of its own: candle commands source it from Alpaca using
+ALPACA_API_KEY + ALPACA_API_SECRET from the same environment file.`;
 
 const USAGE_WIDTH = 100;
 
@@ -194,7 +192,7 @@ export const USAGE = renderUsage();
  */
 class UnavailableMarketDataSource extends MarketDataSource {
   static readonly REASON =
-    'No market-data source configured. Trading212 has no market data of its own — set ALPACA_PAPER_API_KEY and ALPACA_PAPER_API_SECRET (or the ALPACA_LIVE_* pair) to source candles from Alpaca.';
+    'No market-data source configured. Trading212 has no market data of its own — set ALPACA_API_KEY and ALPACA_API_SECRET in the environment file to source candles from Alpaca.';
 
   async getCandles(): Promise<Candle[]> {
     throw new Error(UnavailableMarketDataSource.REASON);
@@ -401,45 +399,35 @@ async function dryRunOrder(
   };
 }
 
-/** Trading212 has no market data of its own, so its candle commands are fed from Alpaca. */
-function getTrading212MarketData(env: NodeJS.ProcessEnv, live: boolean): MarketDataSource {
-  const alpacaCredentials = getAlpacaMarketDataCredentials(env, live);
+/**
+ * Trading212 has no market data of its own, so its candle commands are fed from Alpaca.
+ * Always on the production data hosts: Alpaca's sandbox data hosts are Broker-API-partner
+ * infrastructure and reject regular account keys with a 401.
+ */
+function getTrading212MarketData(env: NodeJS.ProcessEnv): MarketDataSource {
+  const alpacaCredentials = getAlpacaMarketDataCredentials(env);
   if (!alpacaCredentials) {
     return new UnavailableMarketDataSource();
   }
-  return new AlpacaMarketData(alpacaCredentials);
+  return new AlpacaMarketData({...alpacaCredentials, usePaperTrading: false});
 }
 
-/**
- * The Alpaca credential set that feeds Trading212's market data. Prefers the pair matching
- * the execution environment — live execution should run on live-grade data, and Alpaca's
- * sandbox stream host is a test environment with no real-time guarantee. Falls back to the
- * other pair when the preferred one is not configured: market data is read-only, so
- * borrowing the other environment's keys is safe and beats having no candles at all.
- */
-function getAlpacaMarketDataCredentials(
-  env: NodeJS.ProcessEnv,
-  live: boolean
-): (Credentials & {usePaperTrading: boolean}) | undefined {
-  const infixes = live ? (['LIVE', 'PAPER'] as const) : (['PAPER', 'LIVE'] as const);
-  for (const infix of infixes) {
-    const apiKey = env[`ALPACA_${infix}_API_KEY`];
-    const apiSecret = env[`ALPACA_${infix}_API_SECRET`];
-    if (apiKey && apiSecret) {
-      return {apiKey, apiSecret, usePaperTrading: infix === 'PAPER'};
-    }
-  }
-  return undefined;
+/** The Alpaca credential set that feeds Trading212's market data (see getTrading212MarketData). */
+function getAlpacaMarketDataCredentials(env: NodeJS.ProcessEnv): Credentials | undefined {
+  const apiKey = env.ALPACA_API_KEY;
+  const apiSecret = env.ALPACA_API_SECRET;
+  return apiKey && apiSecret ? {apiKey, apiSecret} : undefined;
 }
 
 function getCredentials(env: NodeJS.ProcessEnv, broker: BrokerKey, live: boolean): Credentials {
-  const infix = live ? 'LIVE' : 'PAPER';
-  const keyVar = `${ENV_PREFIXES[broker]}_${infix}_API_KEY`;
-  const secretVar = `${ENV_PREFIXES[broker]}_${infix}_API_SECRET`;
+  const keyVar = `${ENV_PREFIXES[broker]}_API_KEY`;
+  const secretVar = `${ENV_PREFIXES[broker]}_API_SECRET`;
   const apiKey = env[keyVar];
   const apiSecret = env[secretVar];
   if (!apiKey || !apiSecret) {
-    throw new Error(`Missing ${keyVar} and/or ${secretVar} in environment.`);
+    throw new Error(
+      `Missing ${keyVar} and/or ${secretVar} in environment (loaded from ${live ? '.env.live' : '.env.sandbox'}).`
+    );
   }
   return {apiKey, apiSecret};
 }
@@ -541,7 +529,7 @@ export async function runCli(argv: string[], overrides: Partial<CliDeps> = {}): 
   }
 
   // Alpaca brings its own market data; Trading212 needs an external source (see getTrading212MarketData).
-  const marketData = brokerKey === 'trading212' ? getTrading212MarketData(deps.env, values.live) : undefined;
+  const marketData = brokerKey === 'trading212' ? getTrading212MarketData(deps.env) : undefined;
 
   const broker = deps.getBroker(
     {
@@ -595,7 +583,7 @@ export async function runCli(argv: string[], overrides: Partial<CliDeps> = {}): 
          * REST and needs no lock.
          */
         const alpacaStreamKey =
-          brokerKey === 'alpaca' ? credentials.apiKey : getAlpacaMarketDataCredentials(deps.env, values.live)?.apiKey;
+          brokerKey === 'alpaca' ? credentials.apiKey : getAlpacaMarketDataCredentials(deps.env)?.apiKey;
         const needsLock = isCandles || brokerKey === 'alpaca';
         const subscribe = isCandles
           ? async () => {

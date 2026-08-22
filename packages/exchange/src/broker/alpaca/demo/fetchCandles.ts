@@ -20,8 +20,8 @@ const {values} = parseArgs({
 });
 
 const exchange = getAlpacaClient({
-  apiKey: process.env.ALPACA_PAPER_API_KEY ?? '',
-  apiSecret: process.env.ALPACA_PAPER_API_SECRET ?? '',
+  apiKey: process.env.ALPACA_API_KEY ?? '',
+  apiSecret: process.env.ALPACA_API_SECRET ?? '',
   usePaperTrading: true,
 });
 

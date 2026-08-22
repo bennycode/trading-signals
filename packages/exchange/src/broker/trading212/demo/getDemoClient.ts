@@ -3,31 +3,31 @@ import {AlpacaMarketData} from '../../alpaca/AlpacaMarketData.js';
 import type {Trading212Broker} from '../Trading212Broker.js';
 import {getTrading212Client} from '../getTrading212Client.js';
 
+/**
+ * Demo scripts always run against the paper account; live access goes through the CLI,
+ * which requires the explicit --live flag. Credentials come from `.env.sandbox` (loaded
+ * by the calling demo script via `loadEnvFiles`).
+ */
 export function getDemoClient(): Trading212Broker {
-  const usePaperTrading = process.env.TRADING212_USE_PAPER !== 'false';
-  const keyVar = usePaperTrading ? 'TRADING212_PAPER_API_KEY' : 'TRADING212_LIVE_API_KEY';
-  const secretVar = usePaperTrading ? 'TRADING212_PAPER_API_SECRET' : 'TRADING212_LIVE_API_SECRET';
-  const apiKey = process.env[keyVar];
-  const apiSecret = process.env[secretVar];
-  assert.ok(apiKey, `Missing ${keyVar} in environment`);
-  assert.ok(apiSecret, `Missing ${secretVar} in environment`);
+  const apiKey = process.env.TRADING212_API_KEY;
+  const apiSecret = process.env.TRADING212_API_SECRET;
+  assert.ok(apiKey, 'Missing TRADING212_API_KEY in environment (.env.sandbox)');
+  assert.ok(apiSecret, 'Missing TRADING212_API_SECRET in environment (.env.sandbox)');
 
   /*
-   * Trading212 has no candle endpoints; the demo wires AlpacaMarketData with separate
-   * Alpaca paper credentials so candle methods on the broker work end-to-end.
+   * Trading212 has no candle endpoints; Alpaca fills that gap. Always on the production
+   * data hosts — Alpaca's sandbox data hosts are Broker-API-partner infrastructure and
+   * reject regular account keys.
    */
-  const alpacaKey = process.env.ALPACA_PAPER_API_KEY;
-  const alpacaSecret = process.env.ALPACA_PAPER_API_SECRET;
-  assert.ok(alpacaKey, 'Missing ALPACA_PAPER_API_KEY in environment (Trading212 needs an external market-data source)');
-  assert.ok(
-    alpacaSecret,
-    'Missing ALPACA_PAPER_API_SECRET in environment (Trading212 needs an external market-data source)'
-  );
+  const alpacaKey = process.env.ALPACA_API_KEY;
+  const alpacaSecret = process.env.ALPACA_API_SECRET;
+  assert.ok(alpacaKey, 'Missing ALPACA_API_KEY in environment (Trading212 needs an external market-data source)');
+  assert.ok(alpacaSecret, 'Missing ALPACA_API_SECRET in environment (Trading212 needs an external market-data source)');
   const marketData = new AlpacaMarketData({
     apiKey: alpacaKey,
     apiSecret: alpacaSecret,
-    usePaperTrading: true,
+    usePaperTrading: false,
   });
 
-  return getTrading212Client({apiKey, apiSecret, marketData, usePaperTrading});
+  return getTrading212Client({apiKey, apiSecret, marketData, usePaperTrading: true});
 }

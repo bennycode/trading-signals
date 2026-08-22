@@ -9,14 +9,10 @@ import type {CliDeps, InstrumentInfo} from './runCli.js';
 import {runCli, USAGE} from './runCli.js';
 
 const ENV = {
-  ALPACA_LIVE_API_KEY: 'alpaca-live-key',
-  ALPACA_LIVE_API_SECRET: 'alpaca-live-secret',
-  ALPACA_PAPER_API_KEY: 'alpaca-paper-key',
-  ALPACA_PAPER_API_SECRET: 'alpaca-paper-secret',
-  TRADING212_LIVE_API_KEY: 'live-key',
-  TRADING212_LIVE_API_SECRET: 'live-secret',
-  TRADING212_PAPER_API_KEY: 'paper-key',
-  TRADING212_PAPER_API_SECRET: 'paper-secret',
+  ALPACA_API_KEY: 'alpaca-key',
+  ALPACA_API_SECRET: 'alpaca-secret',
+  TRADING212_API_KEY: 'trading212-key',
+  TRADING212_API_SECRET: 'trading212-secret',
 };
 
 const INSTRUMENTS: InstrumentInfo[] = [
@@ -72,10 +68,10 @@ describe('runCli', () => {
   it('names the exact env vars when credentials are missing', async () => {
     const broker = createBrokerStub();
     const deps = {...createDeps(broker), env: {}};
-    await expect(runCli(['balances', '--broker', 'trading212'], deps)).rejects.toThrow('TRADING212_PAPER_API_KEY');
+    await expect(runCli(['balances', '--broker', 'trading212'], deps)).rejects.toThrow('TRADING212_API_KEY');
   });
 
-  it('targets the live account with live credentials when --live is given', async () => {
+  it('targets the live account when --live is given', async () => {
     const broker = createBrokerStub();
     broker.placeMarketOrder.mockResolvedValue({id: '1'});
     const deps = createDeps(broker);
@@ -83,7 +79,7 @@ describe('runCli', () => {
     await runCli(['buy', 'RRl_EQ', '1', '--broker', 'trading212', '--live', '--counter', 'GBX'], deps);
 
     expect(deps.getBroker).toHaveBeenCalledWith(
-      {apiKey: 'live-key', apiSecret: 'live-secret', exchangeId: 'Trading212', isPaper: false},
+      {apiKey: 'trading212-key', apiSecret: 'trading212-secret', exchangeId: 'Trading212', isPaper: false},
       expect.anything()
     );
   });
@@ -315,56 +311,8 @@ describe('runCli', () => {
     expect(
       deps.acquireStreamLock,
       'Trading212 candle streams ride the Alpaca socket, so they must hold the Alpaca-key lock'
-    ).toHaveBeenCalledWith('alpaca-paper-key');
+    ).toHaveBeenCalledWith('alpaca-key');
     expect(deps.releaseStreamLock).toHaveBeenCalledTimes(1);
-  });
-
-  it('locks on the live Alpaca key when executing live', async () => {
-    const emitter = new EventEmitter();
-    const broker = {
-      ...createBrokerStub(),
-      off: emitter.off.bind(emitter),
-      on: emitter.on.bind(emitter),
-      unwatchCandles: vi.fn(),
-      watchCandles: vi.fn().mockImplementation(() => {
-        setTimeout(() => emitter.emit('topic-1', {close: '1'}), 0);
-        return Promise.resolve('topic-1');
-      }),
-    };
-    const deps = createDeps(broker);
-
-    await runCli(
-      ['watch-candles', 'RRl_EQ', '--broker', 'trading212', '--live', '--counter', 'GBX', '--take', '1'],
-      deps
-    );
-
-    expect(
-      deps.acquireStreamLock,
-      'live execution must run on live-grade market data, so the lock follows the live key'
-    ).toHaveBeenCalledWith('alpaca-live-key');
-  });
-
-  it('falls back to the other Alpaca pair when the environment-matching one is missing', async () => {
-    const emitter = new EventEmitter();
-    const broker = {
-      ...createBrokerStub(),
-      off: emitter.off.bind(emitter),
-      on: emitter.on.bind(emitter),
-      unwatchCandles: vi.fn(),
-      watchCandles: vi.fn().mockImplementation(() => {
-        setTimeout(() => emitter.emit('topic-1', {close: '1'}), 0);
-        return Promise.resolve('topic-1');
-      }),
-    };
-    const {ALPACA_PAPER_API_KEY: _key, ALPACA_PAPER_API_SECRET: _secret, ...envWithoutAlpacaPaper} = ENV;
-    const deps = {...createDeps(broker), env: envWithoutAlpacaPaper};
-
-    await runCli(['watch-candles', 'RRl_EQ', '--broker', 'trading212', '--counter', 'GBX', '--take', '1'], deps);
-
-    expect(
-      deps.acquireStreamLock,
-      'market data is read-only, so a paper run may borrow the live keys rather than have no candles'
-    ).toHaveBeenCalledWith('alpaca-live-key');
   });
 
   it('releases the stream lock when the watch fails', async () => {
