@@ -1,11 +1,12 @@
-// @ts-ignore No type declarations available for dotenv-defaults
-import 'dotenv-defaults/config.js';
 import type {StringValue} from 'ms';
 import {ms} from 'ms';
 import {parseArgs} from 'node:util';
 import {writeCandles} from '../../../candle/writeCandles.js';
 import {TradingPair} from '../../TradingPair.js';
 import {getAlpacaClient} from '../getAlpacaClient.js';
+import {loadEnvFiles} from '../../../util/loadEnvFiles.js';
+
+loadEnvFiles('.env', '.env.sandbox');
 
 const {values} = parseArgs({
   options: {
@@ -19,8 +20,8 @@ const {values} = parseArgs({
 });
 
 const exchange = getAlpacaClient({
-  apiKey: process.env.ALPACA_PAPER_API_KEY ?? '',
-  apiSecret: process.env.ALPACA_PAPER_API_SECRET ?? '',
+  apiKey: process.env.ALPACA_API_KEY ?? '',
+  apiSecret: process.env.ALPACA_API_SECRET ?? '',
   usePaperTrading: true,
 });
 

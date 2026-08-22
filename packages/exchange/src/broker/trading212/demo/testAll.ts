@@ -1,8 +1,10 @@
-import 'dotenv-defaults/config';
 import axios from 'axios';
 import {OrderSide} from '../../Broker.js';
 import {TradingPair} from '../../TradingPair.js';
+import {loadEnvFiles} from '../../../util/loadEnvFiles.js';
 import {getDemoClient} from './getDemoClient.js';
+
+loadEnvFiles('.env', '.env.sandbox');
 
 const exchange = getDemoClient();
 

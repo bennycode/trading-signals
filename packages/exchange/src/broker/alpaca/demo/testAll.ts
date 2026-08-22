@@ -1,11 +1,13 @@
-import 'dotenv-defaults/config';
 import {ms, format} from 'ms';
 import {getAlpacaClient} from '../getAlpacaClient.js';
 import {TradingPair} from '../../TradingPair.js';
+import {loadEnvFiles} from '../../../util/loadEnvFiles.js';
+
+loadEnvFiles('.env', '.env.sandbox');
 
 const exchange = getAlpacaClient({
-  apiKey: process.env.ALPACA_PAPER_API_KEY ?? '',
-  apiSecret: process.env.ALPACA_PAPER_API_SECRET ?? '',
+  apiKey: process.env.ALPACA_API_KEY ?? '',
+  apiSecret: process.env.ALPACA_API_SECRET ?? '',
   usePaperTrading: true,
 });
 

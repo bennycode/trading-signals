@@ -309,10 +309,10 @@ export abstract class Broker extends EventEmitter {
    * decide whether an expected price move covers round-trip costs. The estimate combines
    * the order-type commission rate and (when applicable) the currency-conversion rate.
    *
-   * `feeAsset` is the currency the fee will actually be debited in — typically the account
-   * currency, which can differ from `pair.counter` on cross-currency accounts.
-   *
-   * Returns the *expected* fee. Actual realised fees come back on `Fill.fee` after the
+   * The estimate is denominated in `pair.counter` — the same unit as `notional` and prices,
+   * so it can be compared directly against an expected price move. Brokers may debit the
+   * realised fee in a different currency (e.g. Trading212 debits the account currency);
+   * the actual amount and currency come back on `Fill.fee` / `Fill.feeAsset` after the
    * order executes and may differ slightly (broker-side spreads, FX rate variation).
    */
   async estimateFee(
@@ -327,18 +327,9 @@ export abstract class Broker extends EventEmitter {
     return {
       commission,
       currencyConversion,
-      feeAsset: await this.getFeeAsset(pair),
+      feeAsset: pair.counter,
       total: commission.plus(currencyConversion),
     };
-  }
-
-  /**
-   * The currency in which broker fees are debited. Defaults to `pair.counter`; brokers
-   * with cross-currency accounts (e.g. Trading212 EUR account trading USD instruments)
-   * override this to return the account currency.
-   */
-  protected async getFeeAsset(pair: TradingPair) {
-    return pair.counter;
   }
 
   /**

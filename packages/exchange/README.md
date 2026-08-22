@@ -2,7 +2,7 @@
 
 Typed broker clients for algorithmic trading in TypeScript. Trade through brokers like [Alpaca](https://alpaca.markets/) and [Trading212](https://www.trading212.com/) with one consistent API: every response validated at runtime (zod), all money math in arbitrary precision (big.js), live candles streamed over WebSocket.
 
-### [Install](#installation) · [Brokers](#supported-brokers) · [Quick Start](#quick-start-alpaca) · [Raw API](#raw-api-access) · [Rate Limits](#rate-limiting) · [Extend](#bring-your-own-broker)
+### [Install](#installation) · [Brokers](#supported-brokers) · [Quick Start](#quick-start-alpaca) · [CLI](#command-line-interface) · [Raw API](#raw-api-access) · [Rate Limits](#rate-limiting) · [Extend](#bring-your-own-broker)
 
 ## Motivation
 
@@ -26,6 +26,7 @@ The package is ESM-only and targets the latest Node.js LTS.
 - **High precision:** `big.js` for order sizes, prices, and fees, with no floating-point drift
 - **Streaming candles:** WebSocket-fed minute bars, batched into larger timeframes using human-readable intervals (e.g. `"5m"`, `"1h"`)
 - **Fee awareness:** `getFeeRates()` / `estimateFee()` let strategies subtract round-trip costs before entering a position
+- **Agent-friendly CLI:** inspect accounts and manage orders from the terminal with JSON output, built for coding agents like Claude Code as much as for humans (see [CLI](#command-line-interface))
 
 ## Supported Brokers
 
@@ -78,7 +79,7 @@ import {AlpacaMarketData, getTrading212Client, TradingPair} from '@typedtrader/e
 const marketData = new AlpacaMarketData({
   apiKey: 'ALPACA_API_KEY',
   apiSecret: 'ALPACA_API_SECRET',
-  usePaperTrading: false, // read-only; doesn't place orders
+  usePaperTrading: true, // matches the key type; market data itself always comes from Alpaca's production endpoints
 });
 
 // 2. Wire it into the Trading212 broker.
@@ -110,6 +111,35 @@ await broker.placeLimitOrder(pair, {side: 'BUY', size: '1', price: latest.close}
 - **Order updates are polled.** Trading212 has no order-stream WebSocket, so `watchOrders` polls once per minute (matching Trading212's documented rate limit). Fills arrive within ~60 seconds rather than push-style.
 
 **Resources:** [API Documentation](https://docs.trading212.com/api) · [Fees](https://helpcentre.trading212.com/hc/en-us/articles/11471996799517)
+
+## Command-Line Interface
+
+The package ships an `exchange-cli` binary that covers account inspection and the full order lifecycle on any supported broker:
+
+```sh
+exchange-cli balances --broker trading212
+exchange-cli instruments rolls-royce --broker trading212
+exchange-cli quote RRl_EQ --broker trading212 --counter GBX
+exchange-cli buy RRl_EQ 1 --broker trading212 --limit 1000 --dry-run
+exchange-cli buy RRl_EQ 1 --broker trading212 --limit 1000
+exchange-cli wait RRl_EQ 53700021713 --broker trading212 --counter GBX --timeout 5m
+exchange-cli cancel RRl_EQ 53700021713 --broker trading212 --counter GBX
+exchange-cli watch-candles ETH --broker alpaca --counter USD --take 3
+```
+
+That covers the whole agent trade loop: check the price (`quote`), validate the order against trading rules and estimated fees without placing it (`--dry-run`), place it, block until it fills or dies (`wait`), and stream live candles or fills as NDJSON (`watch-candles` / `watch-orders`, one JSON object per line, `--take n` to exit after n events).
+
+Credentials come from `<BROKER>_API_KEY` + `<BROKER>_API_SECRET` environment variables (e.g. `TRADING212_API_KEY`), loaded from `.env.live` when `--live` is passed and from `.env.sandbox` otherwise — the file _is_ the environment, so each one holds the same variable names with that environment's keys. Both are optional and variables already present in the environment win. Keeping live credentials in their own file means a machine without `.env.live` simply cannot trade the real account. Run `exchange-cli help` for all commands.
+
+The CLI is designed to be driven by coding agents (Claude Code, Codex, ...) as much as by humans:
+
+- **JSON on stdout** — every command result is machine-readable, no table scraping
+- **Errors are diagnostic** — the broker's raw problem type (e.g. `/api-errors/extended-hours-trading-not-allowed`) goes to stderr verbatim, with exit code 1
+- **Safe by default** — paper trading unless `--live` is passed, so an agent cannot touch real money without you spelling it out
+- **Stream guard rails** — Alpaca serves one market-data WebSocket per API key, so a second `watch-*` on the same machine fails fast naming the process that holds the connection, and `--idle <duration>` turns a silently starved stream (e.g. a bot on another machine took the slot) into a quick diagnostic failure
+- **Exercises the production path** — commands run through the same `Broker` clients your strategies use, so a working CLI call proves the integration works
+
+Point your agent at this section, or drop the command list into its project instructions, and it can verify balances, look up tickers, and test order flows without writing throwaway scripts.
 
 ## Raw API Access
 

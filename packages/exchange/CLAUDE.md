@@ -1,5 +1,29 @@
 # Exchange Package
 
+## CLI — use this instead of writing demo scripts
+
+The package ships a broker-generic CLI (`src/cli/`) that covers account inspection and the full order lifecycle through the real composition root (`getBrokerClient`), so every invocation also exercises the production path:
+
+```sh
+npm run cli -- help
+npm run cli -- balances --broker trading212
+npm run cli -- instruments rolls-royce --broker trading212
+npm run cli -- quote RRl_EQ --broker trading212 --counter GBX
+npm run cli -- buy RRl_EQ 1 --broker trading212 --limit 1000 --dry-run
+npm run cli -- buy RRl_EQ 1 --broker trading212 --limit 1000
+npm run cli -- wait RRl_EQ <orderId> --broker trading212 --counter GBX --timeout 5m
+npm run cli -- orders RRl_EQ --broker trading212 --counter GBX
+npm run cli -- cancel RRl_EQ <orderId> --broker trading212 --counter GBX
+npm run cli -- watch-candles ETH --broker alpaca --counter USD --take 3
+```
+
+- Paper by default; `--live` targets the real account. Credentials are unprefixed (`TRADING212_API_KEY`, `ALPACA_API_KEY`, ...) and load from `.env.sandbox` (paper) or `.env.live` (live) in the package directory — the file is the environment. Both are gitignored; shared non-broker keys stay in `.env`. Variables already present in the environment take precedence, so broker credentials must live in the mode files, not `.env`.
+- Output is JSON on stdout; errors (including the broker's `/api-errors/...` problem types) go to stderr with exit code 1.
+- `--counter <currency>` skips the instrument lookup Trading212 otherwise needs to resolve the pair (its metadata endpoint is heavily rate-limited).
+- **One `watch-*` at a time per Alpaca key:** Alpaca allows a single market-data WebSocket per API key; a second connection makes the server close the first (whose crash-restart handler exits 1). The CLI enforces this with a per-key process lock on this machine — a second stream fails fast naming the holding PID. Consumers on other machines (e.g. a deployed bot sharing the keys) can't be locked out: pass `--idle <duration>` so a silently starved stream fails with a diagnostic instead of hanging.
+
+Only write a one-off script under `src/<exchange>/demo/` when the CLI can't express the call (and delete it afterwards); extend the CLI when the gap is generic.
+
 For the full architectural template (layering, outer composition root, mapper layer, streaming manager, neutral `Exchange` base, etc.), see [BROKER_TEMPLATE.md](./BROKER_TEMPLATE.md). The notes below are a condensed checklist.
 
 ## Design Decisions
@@ -53,7 +77,7 @@ When implementing an exchange integration, follow these patterns:
 
 ### Testing Credentials
 
-- Always test exchange logins by using the library's own API classes (e.g., `AlpacaAPI`) with credentials from `.env`
+- Always test exchange logins by using the library's own API classes (e.g., `AlpacaAPI`) with credentials from `.env.sandbox` / `.env.live` (shared, non-broker keys stay in `.env`)
 - Do not use raw `curl` or `fetch` calls — use the existing exchange client code to verify connectivity
 
 ### Structure

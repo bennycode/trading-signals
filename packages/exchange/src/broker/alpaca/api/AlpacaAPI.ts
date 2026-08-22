@@ -71,9 +71,14 @@ export class AlpacaAPI {
     axiosRetry(this.#tradingClient, retryConfig);
     simplifyError(this.#tradingClient);
 
-    // @see https://docs.alpaca.markets/us/docs/market-data-faq#checklist-for-broker-partners
+    /*
+     * Market data is account-entitled, not environment-specific: paper and live keys both
+     * authenticate against the production data host. The sandbox data host is Broker-API-
+     * partner infrastructure and rejects regular account keys with a 401.
+     * @see https://docs.alpaca.markets/us/docs/market-data-faq#checklist-for-broker-partners
+     */
     this.#marketDataClient = axios.create({
-      baseURL: options.usePaperTrading ? 'https://data.sandbox.alpaca.markets' : 'https://data.alpaca.markets',
+      baseURL: 'https://data.alpaca.markets',
       headers,
     });
     axiosRetry(this.#marketDataClient, retryConfig);

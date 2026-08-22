@@ -21,9 +21,29 @@ import {
 } from '../Broker.js';
 import {TradingPair} from '../TradingPair.js';
 import type {MarketDataSource} from '../MarketDataSource.js';
+import {SimplifiedHttpError} from '../../util/SimplifiedHttpError.js';
 import {Trading212API} from './api/Trading212API.js';
 import {Trading212OrderStatus, Trading212TimeValidity} from './api/schema/OrderSchema.js';
 import {Trading212BrokerMapper} from './Trading212BrokerMapper.js';
+
+/**
+ * Problem type returned by Trading212 when an order requests extended hours on an
+ * instrument whose venue doesn't offer them (e.g. LSE stocks like `RRl_EQ`).
+ *
+ * @see https://t212public-api-docs.redoc.ly/#operation/placeMarketOrder
+ */
+const EXTENDED_HOURS_NOT_ALLOWED = '/api-errors/extended-hours-trading-not-allowed';
+
+function isExtendedHoursNotAllowedError(error: unknown): error is SimplifiedHttpError {
+  return (
+    error instanceof SimplifiedHttpError &&
+    error.status === 400 &&
+    typeof error.data === 'object' &&
+    error.data !== null &&
+    'type' in error.data &&
+    error.data.type === EXTENDED_HOURS_NOT_ALLOWED
+  );
+}
 
 export class Trading212Broker extends Broker implements MarketDataSource {
   static readonly NAME = 'Trading212';
@@ -367,15 +387,6 @@ export class Trading212Broker extends Broker implements MarketDataSource {
     };
   }
 
-  /**
-   * Trading212 debits all fees in the account currency, not the instrument currency.
-   * Strategies on a EUR account trading USD stocks see fees in EUR.
-   */
-  protected override async getFeeAsset(_pair: TradingPair) {
-    const accountInfo = await this.#api.getAccountInfo();
-    return accountInfo.currencyCode;
-  }
-
   protected override async placeOrder(pair: TradingPair, options: LimitOrderOptions): Promise<PendingLimitOrder>;
   protected override async placeOrder(pair: TradingPair, options: MarketOrderOptions): Promise<PendingMarketOrder>;
   protected override async placeOrder(pair: TradingPair, options: OrderOptions): Promise<PendingOrder> {
@@ -388,13 +399,11 @@ export class Trading212Broker extends Broker implements MarketDataSource {
 
     if (options.type === OrderType.LIMIT) {
       /*
-       * Trading212 rejects GTC for stock limit orders ("Invalid payload"). DAY is the only
-       * time-in-force that works across paper and live for equity limit orders.
-       * `extendedHours: true` always — routes through Trading212's 24/5 venue so orders
-       * submitted outside NASDAQ regular hours (14:30-21:00 UTC) don't get cancelled.
+       * DAY time-in-force: Trading212 rejects GTC for stock limit orders ("Invalid payload").
+       * No `extendedHours` here — the limit endpoint rejects the field entirely (see
+       * `PlaceLimitOrderRequestSchema`), so limit orders always rest on the regular session.
        */
       const order = await this.#api.placeLimitOrder({
-        extendedHours: true,
         limitPrice: Number(options.price),
         quantity: signedQuantity,
         ticker: pair.base,
@@ -403,11 +412,32 @@ export class Trading212Broker extends Broker implements MarketDataSource {
       return Trading212BrokerMapper.toPendingOrder(order, pair, options);
     }
 
-    const order = await this.#api.placeMarketOrder({
-      extendedHours: true,
-      quantity: signedQuantity,
-      ticker: pair.base,
-    });
+    const order = await this.#placeWithExtendedHoursFallback(extendedHours =>
+      this.#api.placeMarketOrder({
+        extendedHours,
+        quantity: signedQuantity,
+        ticker: pair.base,
+      })
+    );
     return Trading212BrokerMapper.toPendingOrder(order, pair, options);
+  }
+
+  /**
+   * Places with `extendedHours: true` first — that routes US equities through Trading212's
+   * 24/5 venue, so orders submitted outside NASDAQ regular hours (14:30-21:00 UTC) don't get
+   * cancelled. Venues without extended hours (e.g. LSE) reject that flag with a 400
+   * ({@link EXTENDED_HOURS_NOT_ALLOWED}), so the order is retried once on regular hours.
+   *
+   * Market orders only: the limit endpoint rejects the `extendedHours` field entirely.
+   */
+  async #placeWithExtendedHoursFallback<OrderT>(place: (extendedHours: boolean) => Promise<OrderT>): Promise<OrderT> {
+    try {
+      return await place(true);
+    } catch (error) {
+      if (isExtendedHoursNotAllowedError(error)) {
+        return place(false);
+      }
+      throw error;
+    }
   }
 }
