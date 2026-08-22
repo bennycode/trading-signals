@@ -51,8 +51,10 @@ export interface CliDeps {
   writeEvent: (line: string) => void;
 }
 
-/** Exactly one of the two is set: `text` for help output, `json` for command results. */
+/** Exactly one of `text` (help output) and `json` (command results) is set. */
 export interface CliResult {
+  /** Print `json` compactly on a single line — set by watch-* commands so the closing summary keeps the NDJSON contract. */
+  compact?: boolean;
   json?: unknown;
   text?: string;
 }
@@ -94,9 +96,9 @@ Options:
                                   (catches a starved stream — Alpaca serves one market-data
                                   connection per API key, and a newer one silently takes over)
 
-Credentials come from <BROKER>_PAPER_API_KEY/_SECRET or <BROKER>_LIVE_API_KEY/_SECRET
-environment variables (e.g. TRADING212_PAPER_API_KEY). Output is JSON on stdout;
-watch-* commands emit one JSON object per line as events arrive.
+Credentials come from <BROKER>_PAPER_API_KEY + <BROKER>_PAPER_API_SECRET (or the _LIVE_
+pair) environment variables, e.g. TRADING212_PAPER_API_KEY and TRADING212_PAPER_API_SECRET.
+Output is JSON on stdout; watch-* commands emit one JSON object per line as events arrive.
 
 Trading212 has no market data of its own: candle commands source it from Alpaca using
 ALPACA_PAPER_* or ALPACA_LIVE_* credentials (picked via ALPACA_USE_PAPER).`;
@@ -108,7 +110,7 @@ ALPACA_PAPER_* or ALPACA_LIVE_* credentials (picked via ALPACA_USE_PAPER).`;
  */
 class UnavailableMarketDataSource extends MarketDataSource {
   static readonly REASON =
-    'No market-data source configured. Trading212 has no market data of its own — set ALPACA_PAPER_API_KEY/_SECRET (or ALPACA_LIVE_*) to source candles from Alpaca.';
+    'No market-data source configured. Trading212 has no market data of its own — set ALPACA_PAPER_API_KEY and ALPACA_PAPER_API_SECRET (or the ALPACA_LIVE_* pair) to source candles from Alpaca.';
 
   async getCandles(): Promise<Candle[]> {
     throw new Error(UnavailableMarketDataSource.REASON);
@@ -137,9 +139,9 @@ function isIntervalString(value: string): value is StringValue {
   );
 }
 
-function parseInterval(value: string): number {
+function parseInterval(value: string, flag: string): number {
   if (!isIntervalString(value)) {
-    throw new Error(`Invalid --interval "${value}". Use a duration like 1m, 5m, or 1h.`);
+    throw new Error(`Invalid ${flag} "${value}". Use a duration like 1m, 5m, or 1h.`);
   }
   return ms(value);
 }
@@ -181,8 +183,9 @@ async function watchStream(options: {
   unsubscribe: (topicId: string) => void;
   writeEvent: (line: string) => void;
 }): Promise<number> {
+  // Validate flags before taking the lock, so a parse error cannot leak the lock file.
+  const idleMillis = options.idle ? parseInterval(options.idle, '--idle') : undefined;
   const releaseLock = options.acquireLock?.();
-  const idleMillis = options.idle ? parseInterval(options.idle) : undefined;
   let idleTimer: NodeJS.Timeout | undefined;
   let topicId: string | undefined;
   let events = 0;
@@ -244,7 +247,7 @@ async function waitForOrder(
   pollMillis: number,
   timeout: string
 ) {
-  const deadline = Date.now() + parseInterval(timeout);
+  const deadline = Date.now() + parseInterval(timeout, '--timeout');
 
   for (;;) {
     const fill = await broker.getFillByOrderId(pair, orderId);
@@ -488,7 +491,7 @@ export async function runCli(argv: string[], overrides: Partial<CliDeps> = {}): 
         const ticker = requireArg('ticker', 0);
         const pair = new TradingPair(ticker, await resolveCounter(ticker));
         const count = parsePositiveInt(values.count ?? '10', '--count');
-        return {json: await broker.getRecentCandles(pair, count, parseInterval(values.interval))};
+        return {json: await broker.getRecentCandles(pair, count, parseInterval(values.interval, '--interval'))};
       }
       case 'quote': {
         const ticker = requireArg('ticker', 0);
@@ -502,7 +505,7 @@ export async function runCli(argv: string[], overrides: Partial<CliDeps> = {}): 
         const ticker = requireArg('ticker', 0);
         const orderId = requireArg('orderId', 1);
         const pair = new TradingPair(ticker, await resolveCounter(ticker));
-        const pollMillis = values.poll ? parseInterval(values.poll) : DEFAULT_WAIT_POLL_MS[brokerKey];
+        const pollMillis = values.poll ? parseInterval(values.poll, '--poll') : DEFAULT_WAIT_POLL_MS[brokerKey];
         return {json: await waitForOrder(broker, pair, orderId, pollMillis, values.timeout)};
       }
       case 'watch-candles':
@@ -520,7 +523,7 @@ export async function runCli(argv: string[], overrides: Partial<CliDeps> = {}): 
           ? async () => {
               const ticker = requireArg('ticker', 0);
               const pair = new TradingPair(ticker, await resolveCounter(ticker));
-              return broker.watchCandles(pair, parseInterval(values.interval), new Date().toISOString());
+              return broker.watchCandles(pair, parseInterval(values.interval, '--interval'), new Date().toISOString());
             }
           : () => broker.watchOrders();
 
@@ -533,7 +536,7 @@ export async function runCli(argv: string[], overrides: Partial<CliDeps> = {}): 
           unsubscribe: topicId => (isCandles ? broker.unwatchCandles(topicId) : broker.unwatchOrders(topicId)),
           writeEvent: deps.writeEvent,
         });
-        return {json: {events}};
+        return {compact: true, json: {events}};
       }
       case 'rules': {
         const ticker = requireArg('ticker', 0);

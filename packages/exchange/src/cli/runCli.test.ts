@@ -371,6 +371,49 @@ describe('runCli', () => {
     expect(broker.unwatchCandles).toHaveBeenCalledWith('topic-1');
   });
 
+  it('rejects an invalid --idle before acquiring the stream lock', async () => {
+    const broker = createBrokerStub();
+    const deps = createDeps(broker);
+
+    const invalid = runCli(
+      ['watch-candles', 'RRl_EQ', '--broker', 'trading212', '--counter', 'GBX', '--idle', 'banana'],
+      deps
+    );
+
+    await expect(invalid).rejects.toThrow('Invalid --idle');
+    expect(deps.acquireStreamLock, 'a flag parse error must never leak the lock file').not.toHaveBeenCalled();
+  });
+
+  it('names the flag that failed duration parsing', async () => {
+    const broker = createBrokerStub();
+    const deps = createDeps(broker);
+    await expect(
+      runCli(['wait', 'RRl_EQ', '42', '--broker', 'trading212', '--counter', 'GBX', '--timeout', 'banana'], deps)
+    ).rejects.toThrow('Invalid --timeout');
+  });
+
+  it('marks the watch summary as compact so stdout stays NDJSON', async () => {
+    const emitter = new EventEmitter();
+    const broker = {
+      ...createBrokerStub(),
+      off: emitter.off.bind(emitter),
+      on: emitter.on.bind(emitter),
+      unwatchCandles: vi.fn(),
+      watchCandles: vi.fn().mockImplementation(() => {
+        setTimeout(() => emitter.emit('topic-1', {close: '1'}), 0);
+        return Promise.resolve('topic-1');
+      }),
+    };
+    const deps = createDeps(broker);
+
+    const result = await runCli(
+      ['watch-candles', 'RRl_EQ', '--broker', 'trading212', '--counter', 'GBX', '--take', '1'],
+      deps
+    );
+
+    expect(result.compact, 'a pretty-printed summary would break one-JSON-object-per-line output').toBe(true);
+  });
+
   it('rejects an interval that is not a duration', async () => {
     const broker = createBrokerStub();
     const deps = createDeps(broker);

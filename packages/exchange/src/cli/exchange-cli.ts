@@ -13,7 +13,9 @@ function flushAndExit(stream: NodeJS.WriteStream, line: string, code: number): v
 
 try {
   const result = await runCli(process.argv.slice(2));
-  flushAndExit(process.stdout, result.text ?? JSON.stringify(result.json, null, 2), 0);
+  // `compact` keeps the closing summary of watch-* commands on one line, preserving NDJSON output.
+  const json = result.compact ? JSON.stringify(result.json) : JSON.stringify(result.json, null, 2);
+  flushAndExit(process.stdout, result.text ?? json, 0);
 } catch (error) {
   flushAndExit(process.stderr, error instanceof Error ? error.message : String(error), 1);
 }
