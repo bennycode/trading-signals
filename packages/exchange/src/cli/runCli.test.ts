@@ -29,7 +29,6 @@ function createBrokerStub() {
     getFillByOrderId: vi.fn<Broker['getFillByOrderId']>(),
     getLatestCandle: vi.fn<MarketDataSource['getLatestCandle']>(),
     getOpenOrders: vi.fn<Broker['getOpenOrders']>(),
-    getRecentCandles: vi.fn<MarketDataSource['getRecentCandles']>(),
     getSmallestInterval: vi.fn<Broker['getSmallestInterval']>().mockReturnValue(60_000),
     getTradingRules: vi.fn<Broker['getTradingRules']>(),
     listBalances: vi.fn<Broker['listBalances']>().mockResolvedValue([]),
@@ -180,43 +179,6 @@ describe('runCli', () => {
       price: '1492.7',
       time: '2026-08-21T10:00:00.000Z',
     });
-  });
-
-  it('computes an indicator over recent candles', async () => {
-    const broker = createBrokerStub();
-    const closes = ['10', '20', '30'];
-    broker.getRecentCandles.mockResolvedValue(closes.map(close => ({...CANDLE, close})));
-    const deps = createDeps(broker);
-
-    const result = await runCli(
-      ['indicator', 'sma', 'RRl_EQ', '--broker', 'trading212', '--counter', 'GBX', '--period', '2', '--count', '3'],
-      deps
-    );
-
-    expect(result.json).toMatchObject({indicator: 'sma', lastClose: 30, period: 2, value: 25});
-  });
-
-  it('reports the ATR additionally as a percent of the last close', async () => {
-    const broker = createBrokerStub();
-    // Constant 10-point range on every candle at close 100 → ATR 10 → 10%
-    const candles = Array.from({length: 10}, () => ({...CANDLE, close: '100', high: '105', low: '95'}));
-    broker.getRecentCandles.mockResolvedValue(candles);
-    const deps = createDeps(broker);
-
-    const result = await runCli(
-      ['indicator', 'atr', 'RRl_EQ', '--broker', 'trading212', '--counter', 'GBX', '--period', '3', '--count', '10'],
-      deps
-    );
-
-    expect(result.json).toMatchObject({indicator: 'atr', value: 10, valuePct: 10});
-  });
-
-  it('rejects unknown indicators and lists the available ones', async () => {
-    const broker = createBrokerStub();
-    const deps = createDeps(broker);
-    await expect(
-      runCli(['indicator', 'macd', 'RRl_EQ', '--broker', 'trading212', '--counter', 'GBX'], deps)
-    ).rejects.toThrow('atr, ema, rsi, sma');
   });
 
   it('waits until the order fills and returns the fill', async () => {
