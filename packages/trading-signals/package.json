@@ -38,6 +38,9 @@
     "url": "git+https://github.com/bennycode/trading-signals.git",
     "directory": "packages/trading-signals"
   },
+  "bin": {
+    "trading-signals": "./dist/cli/cli.js"
+  },
   "files": [
     "dist",
     "!dist/start",
