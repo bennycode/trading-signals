@@ -19,7 +19,7 @@ import {IndicatorInputShape, IndicatorSeries} from '../../base/Indicator.js';
  * @see https://arongroups.co/technical-analyze/relative-volume-indicator/
  */
 export class RVOL extends IndicatorSeries {
-  override readonly inputShape = IndicatorInputShape.VALUE;
+  override readonly inputShape = IndicatorInputShape.VOLUME;
 
   readonly #period: number;
   readonly #priorVolumes: number[] = [];

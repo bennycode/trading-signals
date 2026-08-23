@@ -25,7 +25,7 @@ export type PVOConfig = {
  * @see https://www.investopedia.com/terms/p/ppo.asp
  */
 export class PVO extends ZeroCrossSeries {
-  override readonly inputShape = IndicatorInputShape.VALUE;
+  override readonly inputShape = IndicatorInputShape.VOLUME;
 
   readonly #fast: EMA;
   readonly #slow: EMA;

@@ -256,7 +256,7 @@ cat candles.json | trading-signals rsi 14
 trading-signals stochasticoscillator kPeriod=5 dPeriod=3 kSlowingPeriod=3 --csv candles.csv
 ```
 
-The indicator is resolved generically from the package's exports, so every indicator (and every future one) is available by its lowercased class name — run `trading-signals help` for the full list. Each indicator declares which candle fields it consumes via its `inputShape`, so the CLI feeds closes to value-series indicators and full candles to candle-based ones automatically.
+The indicator is resolved generically from the package's exports, so every indicator (and every future one) is available by its lowercased class name — run `trading-signals help` for the full list. Each indicator declares which candle fields it consumes via its `inputShape`, so the CLI feeds closes to price-series indicators, volumes to volume-series ones (VROC, PVO, RVOL), and full candles to candle-based ones automatically.
 
 Input is streamed: one result line (`{"time": ..., "value": ...}`) is printed per stable candle as it arrives, which makes the CLI composable with live feeds. Pass `--last` to print only the final value.
 

@@ -12,8 +12,18 @@ function readLines(csvPath: string | undefined) {
   return createInterface({crlfDelay: Infinity, input: source});
 }
 
-const csvFlagIndex = process.argv.indexOf('--csv');
-const csvPath = csvFlagIndex === -1 ? undefined : process.argv[csvFlagIndex + 1];
+/** Supports both option spellings: "--csv path" and "--csv=path". */
+function getCsvPath(argv: string[]): string | undefined {
+  const flagIndex = argv.indexOf('--csv');
+
+  if (flagIndex !== -1) {
+    return argv[flagIndex + 1];
+  }
+
+  return argv.find(arg => arg.startsWith('--csv='))?.slice('--csv='.length);
+}
+
+const csvPath = getCsvPath(process.argv);
 
 try {
   await runCli(

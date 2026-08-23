@@ -32,6 +32,37 @@ function isIndicatorConstructor(value: unknown): value is IndicatorConstructor {
   );
 }
 
+/**
+ * MACD and BollingerBandsWidth take other indicator instances instead of plain numbers, so
+ * generic construction from command-line parameters cannot wire them. These factories
+ * translate flat numeric parameters into the wired-up dependencies; every other indicator
+ * constructs generically.
+ */
+const INDICATOR_FACTORIES: Record<string, (numbers: number[]) => AnyIndicator> = {
+  bollingerbandswidth: numbers => {
+    const [interval, deviationMultiplier] = numbers;
+
+    if (interval === undefined) {
+      throw new Error('bollingerbandswidth needs parameters: <interval> [deviationMultiplier].');
+    }
+
+    return new library.BollingerBandsWidth(
+      deviationMultiplier === undefined
+        ? new library.BollingerBands(interval)
+        : new library.BollingerBands(interval, deviationMultiplier)
+    );
+  },
+  macd: numbers => {
+    const [short, long, signal] = numbers;
+
+    if (short === undefined || long === undefined || signal === undefined) {
+      throw new Error('macd needs three parameters: <shortInterval> <longInterval> <signalInterval>.');
+    }
+
+    return new library.MACD(new library.EMA(short), new library.EMA(long), new library.EMA(signal));
+  },
+};
+
 /** Every exported concrete indicator, resolved generically from the package's exports. */
 function getIndicatorRegistry(): Map<string, IndicatorConstructor> {
   const registry = new Map<string, IndicatorConstructor>();
@@ -50,13 +81,14 @@ export const USAGE = () => `Usage: trading-signals <indicator> [params...] [opti
 
 Computes an indicator over candles piped to stdin or read from --csv. Params are the
 indicator's constructor arguments: plain numbers are passed positionally, key=value pairs
-are collected into a single config object.
+are collected into a single config object (dotted keys nest, e.g. signalThresholds.overbought=4).
 
   cat candles.csv | trading-signals sma 20
   trading-signals atr 14 --csv candles.csv
-  exchange-cli candles AAPL ... | trading-signals rsi 14
+  trading-signals macd 12 26 9 --csv candles.csv
   exchange-cli watch-candles AAPL ... | trading-signals ema 20
   trading-signals stochasticoscillator kPeriod=5 dPeriod=3 kSlowingPeriod=3 --csv candles.csv
+  trading-signals pgo interval=14 signalThresholds.overbought=4 --csv candles.csv
 
 Input formats (auto-detected): CSV with a header row, NDJSON (one candle object per line),
 or a JSON array of candles. Recognized fields: open/high/low/close/volume (or o/h/l/c/v)
@@ -88,10 +120,34 @@ function wrapList(names: string[]): string {
   return lines.join('\n');
 }
 
-/** Builds constructor arguments: numeric positionals first, then one config object if any key=value pairs exist. */
-function parseConstructorArgs(params: string[]): unknown[] {
+/** Dotted keys nest one level, so config objects like {signalThresholds: {overbought}} stay reachable from the command line. */
+function setConfigValue(config: Record<string, unknown>, path: string, value: number): void {
+  const separator = path.indexOf('.');
+
+  if (separator === -1) {
+    config[path] = value;
+    return;
+  }
+
+  const outer = path.slice(0, separator);
+  const inner = path.slice(separator + 1);
+  const nested = config[outer];
+
+  if (isRecord(nested)) {
+    nested[inner] = value;
+  } else {
+    config[outer] = {[inner]: value};
+  }
+}
+
+/** Splits CLI parameters into numeric positionals and one optional config object built from key=value pairs. */
+export function parseConstructorArgs(params: string[]): {
+  config: Record<string, unknown> | undefined;
+  numbers: number[];
+} {
   const numbers: number[] = [];
-  const config: Record<string, number> = {};
+  const config: Record<string, unknown> = {};
+  let hasConfig = false;
 
   for (const param of params) {
     const separator = param.indexOf('=');
@@ -110,11 +166,12 @@ function parseConstructorArgs(params: string[]): unknown[] {
       if (Number.isNaN(value)) {
         throw new Error(`Invalid indicator parameter "${param}". The value has to be a number.`);
       }
-      config[key] = value;
+      setConfigValue(config, key, value);
+      hasConfig = true;
     }
   }
 
-  return Object.keys(config).length > 0 ? [...numbers, config] : [...numbers];
+  return {config: hasConfig ? config : undefined, numbers};
 }
 
 const FIELD_ALIASES: Record<string, string> = {
@@ -137,9 +194,11 @@ function normalizeRow(row: Record<string, unknown>): CandleRow {
 }
 
 function requireField(row: CandleRow, field: string): number {
-  const value = Number(row[field]);
+  const raw = row[field];
+  // Number('') is 0, so an empty CSV cell must not silently pass as a valid zero.
+  const value = raw === undefined || raw.trim() === '' ? Number.NaN : Number(raw);
 
-  if (row[field] === undefined || Number.isNaN(value)) {
+  if (!Number.isFinite(value)) {
     throw new Error(`Candle is missing a numeric "${field}" field: ${JSON.stringify(row)}`);
   }
 
@@ -151,6 +210,8 @@ function toIndicatorInput(shape: IndicatorInputShapes, row: CandleRow): unknown 
   switch (shape) {
     case IndicatorInputShape.VALUE:
       return requireField(row, 'close');
+    case IndicatorInputShape.VOLUME:
+      return requireField(row, 'volume');
     case IndicatorInputShape.HIGH_LOW:
       return {high: requireField(row, 'high'), low: requireField(row, 'low')};
     case IndicatorInputShape.HIGH_LOW_CLOSE:
@@ -184,8 +245,36 @@ function getTime(row: CandleRow): string | undefined {
   return row.time ?? row.opentimeiniso ?? row.date ?? row.timestamp;
 }
 
+/** Splits a CSV line honoring double-quoted cells, including commas inside quotes and "" escapes. */
 function parseCsvLine(line: string): string[] {
-  return line.split(',').map(cell => cell.trim());
+  const cells: string[] = [];
+  let cell = '';
+  let quoted = false;
+
+  for (let index = 0; index < line.length; index++) {
+    const char = line[index];
+
+    if (quoted) {
+      if (char === '"' && line[index + 1] === '"') {
+        cell += '"';
+        index++;
+      } else if (char === '"') {
+        quoted = false;
+      } else {
+        cell += char;
+      }
+    } else if (char === '"' && cell === '') {
+      quoted = true;
+    } else if (char === ',') {
+      cells.push(cell.trim());
+      cell = '';
+    } else {
+      cell += char;
+    }
+  }
+  cells.push(cell.trim());
+
+  return cells;
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -287,8 +376,11 @@ export async function runCli(
     throw new Error(`Unknown indicator "${name}". Run "trading-signals help" to list the available ones.`);
   }
 
-  const constructorArgs = parseConstructorArgs(params);
-  const indicator = new IndicatorClass(...constructorArgs);
+  const {config, numbers} = parseConstructorArgs(params);
+  const factory = INDICATOR_FACTORIES[name.toLowerCase()];
+  const indicator = factory
+    ? factory(numbers)
+    : new IndicatorClass(...(config === undefined ? numbers : [...numbers, config]));
   let lastResult: unknown;
   let lastTime: string | undefined;
 

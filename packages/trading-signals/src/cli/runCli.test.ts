@@ -1,4 +1,4 @@
-import {runCli, USAGE} from './runCli.js';
+import {parseConstructorArgs, runCli, USAGE} from './runCli.js';
 
 async function* linesFrom(text: string) {
   for (const line of text.split('\n')) {
@@ -77,8 +77,9 @@ describe('runCli', () => {
 
     const lines = await run(['stochasticoscillator', 'kPeriod=2', 'dPeriod=2', 'kSlowingPeriod=2'], candles);
 
-    // A close in the middle of a constant range pins every stochastic line at 50.
-    expect(lines.at(-1)).toBe(JSON.stringify({value: {stochD: 50, stochJ: 50, stochK: 50}}));
+    expect(lines.at(-1), 'a close in the middle of a constant range pins every stochastic line at 50').toBe(
+      JSON.stringify({value: {stochD: 50, stochJ: 50, stochK: 50}})
+    );
   });
 
   it('prints only the final value with --last', async () => {
@@ -120,8 +121,65 @@ describe('runCli', () => {
 
     const lines = await run(['bop', '2', '--last'], candles);
 
-    // (close 100 - open 98) / (high 105 - low 95) = 0.2 on every candle.
-    expect(lines).toEqual([JSON.stringify({value: 0.2})]);
+    expect(lines, '(close 100 - open 98) / (high 105 - low 95) = 0.2 on every candle').toEqual([
+      JSON.stringify({value: 0.2}),
+    ]);
+  });
+
+  it('feeds volumes, not closes, to volume-series indicators', async () => {
+    const candles = [
+      '{"close": 100, "volume": 100}',
+      '{"close": 100, "volume": 200}',
+      '{"close": 100, "volume": 400}',
+    ].join('\n');
+
+    const lines = await run(['vroc', '2'], candles);
+
+    expect(lines, 'constant closes with quadrupling volume must register as +300% volume change').toEqual([
+      JSON.stringify({value: 300}),
+    ]);
+  });
+
+  it('wires dependency-injected indicators through their factories', async () => {
+    const candles = Array.from({length: 10}, () => '{"close": 100}').join('\n');
+
+    const macd = await run(['macd', '3', '5', '2', '--last'], candles);
+    const bbw = await run(['bollingerbandswidth', '2', '--last'], candles);
+    const bbwWithMultiplier = await run(['bollingerbandswidth', '2', '3', '--last'], candles);
+
+    expect(macd, 'constant closes keep every MACD line at zero').toEqual([
+      JSON.stringify({value: {histogram: 0, macd: 0, signal: 0}}),
+    ]);
+    expect(bbw, 'zero deviation collapses the bandwidth to zero').toEqual([JSON.stringify({value: 0})]);
+    expect(bbwWithMultiplier).toEqual([JSON.stringify({value: 0})]);
+  });
+
+  it('rejects factory indicators that miss their required parameters', async () => {
+    await expect(run(['macd', '12'])).rejects.toThrow('macd needs three parameters');
+    await expect(run(['bollingerbandswidth'])).rejects.toThrow('bollingerbandswidth needs parameters');
+  });
+
+  it('parses quoted CSV cells including commas and escaped quotes', async () => {
+    const csv = ['"time","close"', '"day ""one""","10"', '"Jan 02, 2026","20"'].join('\n');
+
+    const lines = await run(['sma', '2'], csv);
+
+    expect(lines).toEqual([JSON.stringify({time: 'Jan 02, 2026', value: 15})]);
+  });
+
+  it('rejects an empty CSV cell instead of reading it as zero', async () => {
+    const csv = ['time,close', '2026-01-01,'].join('\n');
+
+    await expect(run(['sma', '2'], csv)).rejects.toThrow('missing a numeric "close" field');
+  });
+
+  it('nests dotted config keys into one config object', () => {
+    const parsed = parseConstructorArgs(['a=1', 'thresholds.overbought=4', 'thresholds.oversold=-4']);
+
+    expect(parsed).toEqual({
+      config: {a: 1, thresholds: {overbought: 4, oversold: -4}},
+      numbers: [],
+    });
   });
 
   it('skips blank lines before and between candles', async () => {
