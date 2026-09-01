@@ -34,7 +34,7 @@
     "react-dom": "^19.2.7",
     "trading-signals": "8.3.0",
     "trading-strategies": "0.4.5",
-    "zod": "^4.4.3"
+    "zod": "^4.5.1"
   },
   "devDependencies": {
     "@playwright/test": "^1.62.1",

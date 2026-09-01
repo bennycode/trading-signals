@@ -53,7 +53,7 @@
     "dotenv-defaults": "^6.0.0",
     "ms": "4.0.0-nightly.202508271359",
     "trading-signals": "8.3.0",
-    "zod": "^4.4.3"
+    "zod": "^4.5.1"
   },
   "devDependencies": {
     "tsx": "^4.22.5"
