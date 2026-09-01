@@ -50,7 +50,7 @@
     "big.js": "^7.0.1",
     "dotenv-defaults": "^6.0.0",
     "drizzle-orm": "^0.45.2",
-    "grammy": "^1.44.0",
+    "grammy": "^1.46.0",
     "ms": "4.0.0-nightly.202508271359",
     "pino": "^10.3.1",
     "pino-roll": "^4.0.0",
