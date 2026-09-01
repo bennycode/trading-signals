@@ -51,7 +51,7 @@
   },
   "dependencies": {
     "@types/big.js": "^7.0.0",
-    "axios": "^1.18.1",
+    "axios": "^1.20.0",
     "axios-retry": "^4.5.0",
     "big.js": "^7.0.1",
     "ms": "4.0.0-nightly.202508271359",
