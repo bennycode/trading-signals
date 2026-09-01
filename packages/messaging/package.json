@@ -46,7 +46,7 @@
     "@typedtrader/exchange": "0.3.3",
     "@types/big.js": "^7.0.0",
     "better-sqlite3": "^13.0.3",
-    "better-sqlite3-multiple-ciphers": "^12.11.1",
+    "better-sqlite3-multiple-ciphers": "^13.0.3",
     "big.js": "^7.0.1",
     "dotenv-defaults": "^6.0.0",
     "drizzle-orm": "^0.45.2",
