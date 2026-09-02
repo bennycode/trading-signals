@@ -2,13 +2,13 @@ import {transform} from 'esbuild';
 import {defineConfig} from 'vitest/config';
 
 /*
- * Allows using the "accessor" keyword in TypeScript:
- * https://github.com/vitest-dev/vitest/issues/5976#issuecomment-2190804966
+ * Keeps tests on the same language level that ships in `dist` (the `target` in tsconfig.lib.json)
+ * rather than Vitest's older default, and keeps the decorator transform below in step with it.
  */
 const target = 'es2022';
 
 export default defineConfig({
-  esbuild: {
+  oxc: {
     target,
   },
   plugins: [
