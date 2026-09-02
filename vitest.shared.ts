@@ -1,11 +1,13 @@
 import {transform} from 'esbuild';
 import {defineConfig} from 'vitest/config';
+import tsconfig from './tsconfig.lib.json';
 
 /*
- * Keeps tests on the same language level that ships in `dist` (the `target` in tsconfig.lib.json)
- * rather than Vitest's older default, and keeps the decorator transform below in step with it.
+ * Keeps tests on the same language level that ships in `dist` rather than Vitest's older default,
+ * and keeps the decorator transform below in step with it. Read from the tsconfig so the two
+ * cannot drift apart.
  */
-const target = 'es2022';
+const target = tsconfig.compilerOptions.target;
 
 export default defineConfig({
   oxc: {
