@@ -1,6 +1,6 @@
 import {transform} from 'esbuild';
 import {defineConfig} from 'vitest/config';
-import tsconfig from './tsconfig.lib.json';
+import tsconfig from './tsconfig.lib.json' with {type: 'json'};
 
 /*
  * Keeps tests on the same language level that ships in `dist` rather than Vitest's older default,
