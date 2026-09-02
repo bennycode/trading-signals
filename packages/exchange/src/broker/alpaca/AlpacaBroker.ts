@@ -350,6 +350,7 @@ export class AlpacaBroker extends Broker implements MarketDataSource {
       quantity: order.filled_qty,
       rates,
       side: fill.side,
+      tradedAt: order.filled_at ?? order.created_at,
     });
 
     return {...fill, fee: fee.toFixed(), feeAsset};
