@@ -19,8 +19,11 @@ export default defineConfig({
        * oxc (the transformer behind Vitest 4) can only downlevel legacy `experimentalDecorators`,
        * not TC39 standard decorators, so decorator-bearing files would reach Node as raw decorator
        * syntax and fail to parse. esbuild (already installed via tsx) downlevels them; scoped to
-       * files that actually use decorators so everything else stays on oxc. Drop this plugin once
-       * oxc ships standard-decorator support.
+       * files that actually use decorators so everything else stays on oxc.
+       *
+       * This is not a short-lived bridge: oxc has deferred standard decorators until the spec
+       * stabilizes, and the proposal has since moved back to Stage 2.7. Drop the plugin when
+       * https://github.com/oxc-project/oxc/issues/9170 closes.
        */
       async transform(code, id) {
         if (!/\.tsx?$/.test(id) || !/^\s*@[A-Za-z_$]/m.test(code)) {
