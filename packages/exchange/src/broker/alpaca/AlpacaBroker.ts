@@ -25,6 +25,7 @@ import type {MarketDataSource} from '../MarketDataSource.js';
 import type {TradingPair} from '../TradingPair.js';
 import {createAlpacaSymbol, isAlpacaCryptoSymbol} from './alpacaSymbol.js';
 import {getCreditedAsset, getTradeCost} from './AlpacaFees.js';
+import {SecFeeRateSource} from './SecFeeRateSource.js';
 import {AlpacaAssetClass, AlpacaOrderStatus, AlpacaOrderType, type Order} from './api/schema/OrderSchema.js';
 import {AlpacaAPI} from './api/AlpacaAPI.js';
 import {PositionSide} from './api/schema/PositionSchema.js';
@@ -50,6 +51,7 @@ export class AlpacaBroker extends Broker implements MarketDataSource {
   readonly #marketData: MarketDataSource;
   readonly #candleListenerByTopic = new Map<string, (candle: unknown) => void>();
 
+  readonly #secFeeRates: SecFeeRateSource | undefined;
   readonly #orderTopics: Map<string, (message: TradeUpdateMessage) => void> = new Map();
   #tradingConnectionId: string | null = null;
   readonly #connectTradingStream: () => Promise<AlpacaTradingConnection>;
@@ -64,6 +66,16 @@ export class AlpacaBroker extends Broker implements MarketDataSource {
      * wires an `AlpacaMarketData` from the same credentials.
      */
     marketData: MarketDataSource;
+    /**
+     * Look up SEC Section 31 rate changes from the Federal Register instead of relying only on the
+     * rate table shipped with this release.
+     *
+     * Off by default. The vendored table prices a historical fill the same on every run, which
+     * backtests and P&L reconciliation depend on. Switching this on gives up that guarantee for
+     * the newest window in exchange for staying correct when a new fiscal year starts before the
+     * next release.
+     */
+    refreshSecFeeRates?: boolean;
   }) {
     super(AlpacaBroker.NAME);
 
@@ -74,6 +86,7 @@ export class AlpacaBroker extends Broker implements MarketDataSource {
     });
 
     this.#marketData = options.marketData;
+    this.#secFeeRates = options.refreshSecFeeRates ? new SecFeeRateSource() : undefined;
 
     this.#connectTradingStream = async (): Promise<AlpacaTradingConnection> => {
       return alpacaTradingWebSocket.connect(options);
@@ -325,6 +338,7 @@ export class AlpacaBroker extends Broker implements MarketDataSource {
     const orders = await this.#alpacaAPI.getOrders({status: 'closed', symbols: symbol});
     const filledOrders = orders.filter(order => order.status === AlpacaOrderStatus.FILLED);
     const rates = await this.getFeeRates(pair);
+    await this.#secFeeRates?.refresh();
     return filledOrders.map(order => this.#toFillWithFee(order, pair, rates));
   }
 
@@ -349,6 +363,11 @@ export class AlpacaBroker extends Broker implements MarketDataSource {
       price: order.filled_avg_price,
       quantity: order.filled_qty,
       rates,
+      /*
+       * Read whatever the source holds now. It is only ever refreshed from `getFills`, so the
+       * stream callback stays synchronous and never reaches the network to price a fill.
+       */
+      secRates: this.#secFeeRates?.getRates(),
       side: fill.side,
       tradedAt: order.filled_at ?? order.created_at,
     });
