@@ -100,7 +100,11 @@ export class AlpacaBrokerMapper {
 
     return {
       created_at: `${order.created_at}`,
-      /** Alpaca does not charge a commission (except for crypto) for trades: https://files.alpaca.markets/disclosures/library/BrokFeeSched.pdf */
+      /**
+       * Alpaca's order payload carries no fee field, so there is nothing to map here. Crypto fills
+       * do cost a commission; `AlpacaBroker` derives it (see `AlpacaFees`) and overwrites these two
+       * values on the way out.
+       */
       fee: '0',
       feeAsset: pair.counter,
       order_id: `${order.id}`,

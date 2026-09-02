@@ -318,7 +318,8 @@ export abstract class Broker extends EventEmitter {
   async estimateFee(
     pair: TradingPair,
     orderType: OrderType,
-    notional: Big
+    notional: Big,
+    side: OrderSide
   ): Promise<{commission: Big; currencyConversion: Big; total: Big; feeAsset: string}> {
     const rates = await this.getFeeRates(pair);
     const commission = notional.times(rates[orderType]);
@@ -327,7 +328,7 @@ export abstract class Broker extends EventEmitter {
     return {
       commission,
       currencyConversion,
-      feeAsset: await this.getFeeAsset(pair),
+      feeAsset: await this.getFeeAsset(pair, side),
       total: commission.plus(currencyConversion),
     };
   }
@@ -336,8 +337,11 @@ export abstract class Broker extends EventEmitter {
    * The currency in which broker fees are debited. Defaults to `pair.counter`; brokers
    * with cross-currency accounts (e.g. Trading212 EUR account trading USD instruments)
    * override this to return the account currency.
+   *
+   * `side` matters on venues that bill out of the asset you are credited with: Alpaca takes a
+   * crypto BUY fee in the base asset and a SELL fee in the counter.
    */
-  protected async getFeeAsset(pair: TradingPair) {
+  protected async getFeeAsset(pair: TradingPair, _side: OrderSide) {
     return pair.counter;
   }
 

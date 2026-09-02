@@ -162,6 +162,70 @@ describe('AlpacaBroker', {concurrent: false}, () => {
       expect(fills[0]?.order_id).toBe('order-1');
       expect(fills[0]?.price).toBe('53.05');
       expect(fills[0]?.side).toBe(OrderSide.BUY);
+      expect(fills[0]?.fee, 'stock trades are commission-free on Alpaca').toBe('0');
+      expect(fills[0]?.feeAsset).toBe('USD');
+    });
+
+    it('derives the crypto commission the order payload does not carry', async () => {
+      mockMethods.getCryptoBarsLatest.mockResolvedValue({bars: {'USDT/USD': {c: 1}}});
+      mockMethods.getOrders.mockResolvedValue([
+        {
+          asset_class: AlpacaAssetClass.CRYPTO,
+          created_at: '2023-09-23T10:21:09.000000Z',
+          filled_avg_price: '0.99912',
+          filled_qty: '56.7732',
+          id: 'crypto-sell',
+          side: AlpacaOrderSide.SELL,
+          status: AlpacaOrderStatus.FILLED,
+          type: AlpacaOrderType.MARKET,
+        },
+      ]);
+
+      const fills = await exchange.getFills(new TradingPair('USDT', 'USD'));
+
+      expect(fills[0]?.fee, 'matches the CFEE activity Alpaca charged for this exact fill').toBe('0.15');
+      expect(fills[0]?.feeAsset, 'a SELL is credited in the counter asset').toBe('USD');
+    });
+
+    it('bills a crypto BUY in the base asset', async () => {
+      mockMethods.getCryptoBarsLatest.mockResolvedValue({bars: {'BTC/USD': {c: 1}}});
+      mockMethods.getOrders.mockResolvedValue([
+        {
+          asset_class: AlpacaAssetClass.CRYPTO,
+          created_at: '2024-05-06T09:00:00.000001Z',
+          filled_avg_price: '61234.5',
+          filled_qty: '2.5',
+          id: 'crypto-buy',
+          side: AlpacaOrderSide.BUY,
+          status: AlpacaOrderStatus.FILLED,
+          type: AlpacaOrderType.MARKET,
+        },
+      ]);
+
+      const fills = await exchange.getFills(new TradingPair('BTC', 'USD'));
+
+      expect(fills[0]?.fee, '2.5 BTC * 0.0025 taker rate').toBe('0.00625');
+      expect(fills[0]?.feeAsset, 'a BUY is credited in the base asset').toBe('BTC');
+    });
+
+    it('keeps a zero fee when the order has no average fill price', async () => {
+      mockMethods.getCryptoBarsLatest.mockResolvedValue({bars: {'BTC/USD': {c: 1}}});
+      mockMethods.getOrders.mockResolvedValue([
+        {
+          asset_class: AlpacaAssetClass.CRYPTO,
+          created_at: '2024-05-06T09:00:00.000001Z',
+          filled_avg_price: null,
+          filled_qty: '2.5',
+          id: 'crypto-no-price',
+          side: AlpacaOrderSide.BUY,
+          status: AlpacaOrderStatus.FILLED,
+          type: AlpacaOrderType.MARKET,
+        },
+      ]);
+
+      const fills = await exchange.getFills(new TradingPair('BTC', 'USD'));
+
+      expect(fills[0]?.fee, 'without a notional there is no rate to apply').toBe('0');
     });
   });
 
