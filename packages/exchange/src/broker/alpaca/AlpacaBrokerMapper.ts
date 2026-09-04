@@ -98,22 +98,14 @@ export class AlpacaBrokerMapper {
       throw new Error(`Order ID "${order.id}" is not filled.`);
     }
 
-    /*
-     * Interpolating a null here would hand downstream a Fill whose price is the string "null",
-     * which survives every type check and then throws inside `new Big(fill.price)` far away from
-     * the payload that caused it.
-     */
+    // Interpolating null yields the string "null", which type-checks and throws far downstream.
     if (order.filled_avg_price === null) {
       throw new Error(`Order ID "${order.id}" is filled but has no average fill price.`);
     }
 
     return {
       created_at: `${order.created_at}`,
-      /**
-       * Alpaca's order payload carries no fee field, so there is nothing to map here. Crypto fills
-       * do cost a commission; `AlpacaBroker` derives it (see `AlpacaFees`) and overwrites these two
-       * values on the way out.
-       */
+      /** No fee on the wire; `AlpacaBroker` derives it and overwrites both fields. */
       fee: '0',
       feeAsset: pair.counter,
       order_id: `${order.id}`,

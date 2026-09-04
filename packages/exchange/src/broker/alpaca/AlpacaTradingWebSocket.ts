@@ -76,10 +76,7 @@ class AlpacaTradingWebSocket {
             const listeners = this.#listeners.get(connectionId);
             if (listeners) {
               for (const cb of listeners) {
-                /*
-                 * Listeners are independent subscribers: one that throws on a malformed payload
-                 * must not stop the others in this loop from seeing the update.
-                 */
+                // One throwing listener must not stop the others in this loop.
                 try {
                   cb(parsed.data);
                 } catch (error) {

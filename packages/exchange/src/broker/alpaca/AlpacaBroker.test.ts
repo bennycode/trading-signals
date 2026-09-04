@@ -63,11 +63,7 @@ const {AlpacaBroker} = await import('./AlpacaBroker.js');
 const {AlpacaMarketData} = await import('./AlpacaMarketData.js');
 const {SimplifiedHttpError} = await import('../../util/SimplifiedHttpError.js');
 
-/*
- * Typed builders for the API payloads. The shared mocks carry their real `AlpacaAPI` signatures,
- * so a fixture has to satisfy the whole schema; these supply the fields a test does not care about
- * and keep each case down to the handful that matter.
- */
+// The mocks carry real AlpacaAPI signatures, so fixtures must satisfy the whole schema.
 function anOrder(overrides: Partial<Order> = {}): Order {
   return {
     asset_class: AlpacaAssetClass.US_EQUITY,
@@ -678,10 +674,6 @@ describe('AlpacaBroker', {concurrent: false}, () => {
     });
 
     it('derives the crypto fee on a streamed fill', async () => {
-      /*
-       * The other stream cases use a US equity, where this path and a bare `toFilledOrder` both
-       * produce a zero fee — so neither would notice if the fee derivation were dropped here.
-       */
       const topicId = await exchange.watchOrders();
       const fillHandler = vi.fn();
       exchange.on(topicId, fillHandler);

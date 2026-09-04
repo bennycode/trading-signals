@@ -75,11 +75,6 @@ describe('AlpacaFees', () => {
     });
 
     it('rounds a fiat fee up to the penny, the way Alpaca bills it', () => {
-      /*
-       * Taken from a live account: a USDT/USD market SELL of 56.7732 @ 0.99912 has a notional of
-       * 56.723239584 USD, which at the 0.25% taker rate computes to 0.14180809896 USD. Alpaca
-       * billed a CFEE activity of 0.15 USD for it.
-       */
       const cost = getTradeCost({
         isCrypto: true,
         orderType: OrderType.MARKET,
