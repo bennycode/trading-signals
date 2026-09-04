@@ -21,11 +21,6 @@ function fill(overrides: Partial<Fill> = {}): Fill {
 
 describe('getFilledBaseAmount', () => {
   it('subtracts a fee the venue took out of the base asset', () => {
-    /*
-     * Observed on a live Alpaca account: a market BUY executed for 0.001254903 BTC and the position
-     * grew by 0.001251765, because the 0.25% taker fee was deducted from the credited BTC rather
-     * than charged in USD.
-     */
     const amount = getFilledBaseAmount(fill({fee: '0.000003138', feeAsset: 'BTC'}));
 
     expect(amount.toFixed(), 'the fee never arrives, so the position grows by less than it executed').toBe(

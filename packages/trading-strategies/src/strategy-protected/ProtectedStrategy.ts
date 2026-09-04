@@ -393,11 +393,6 @@ export class ProtectedStrategy extends Strategy {
   async onFill(fill: Fill, _state: TradingSessionState): Promise<void> {
     const protectedState = this.#protectedState;
     const fillPrice = new Big(fill.price);
-    /*
-     * What the order executed for, which is what it cost, and what actually landed in the account,
-     * which is less whenever the venue takes its fee out of the credited asset. The two differ on
-     * a crypto BUY and must not be used interchangeably.
-     */
     const executedSize = new Big(fill.size);
     const receivedSize = getFilledBaseAmount(fill);
 

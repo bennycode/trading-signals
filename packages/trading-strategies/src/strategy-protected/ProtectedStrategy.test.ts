@@ -953,10 +953,6 @@ describe('ProtectedStrategy', () => {
 
   describe('position tracking', () => {
     it('grows the position by what arrived, not by what executed', async () => {
-      /*
-       * Observed on a live Alpaca account: a crypto BUY executed for 0.001254903 BTC and delivered
-       * 0.001251765, because the taker fee was deducted from the credited BTC.
-       */
       const strategy = new TestProtectedStrategy({protected: {takeProfitPct: '5'}});
       const fill = {...makeFill('79660.975468455', '0.001254903', OrderSide.BUY), fee: '0.000003138', feeAsset: 'AAPL'};
 
