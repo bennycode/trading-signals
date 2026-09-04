@@ -44,7 +44,7 @@ export const SEC_FEE_RATES: readonly DatedRate[] = [
 /**
  * FINRA Trading Activity Fee, per share sold and capped per trade. Dated for the day FINRA moves it.
  *
- * @see https://www.finra.org/finra-data/browse-catalog/trading-activity-fee
+ * @see https://www.finra.org/rules-guidance/guidance/trading-activity-fee
  */
 const TAF_RATES: readonly DatedRate[] = [{from: '2023-01-01', rate: new Big('0.000166')}];
 
