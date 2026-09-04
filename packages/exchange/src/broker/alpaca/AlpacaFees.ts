@@ -28,11 +28,6 @@ export interface AlpacaTradeCost {
   fee: Big;
   /** Asset the fee is debited in. */
   feeAsset: string;
-  /**
-   * The same fee expressed in `pair.counter`, so callers can compare costs across trades without
-   * caring which asset was debited. Equal to `fee` whenever `feeAsset` is the counter.
-   */
-  feeInCounter: Big;
 }
 
 export interface AlpacaTradeCostRequest {
@@ -84,12 +79,11 @@ export function getTradeCost(request: AlpacaTradeCostRequest): AlpacaTradeCost {
   const feeAsset = getCreditedAsset(pair, side, isCrypto);
 
   if (!isCrypto) {
-    return {fee: new Big(0), feeAsset, feeInCounter: new Big(0)};
+    return {fee: new Big(0), feeAsset};
   }
 
   const rate = rates[orderType];
   const notional = new Big(quantity).times(price);
-  const feeInCounter = notional.times(rate).round(FIAT_FEE_DECIMAL_PLACES, Big.roundUp);
 
   if (feeAsset === pair.base) {
     /*
@@ -97,8 +91,8 @@ export function getTradeCost(request: AlpacaTradeCostRequest): AlpacaTradeCost {
      * documented equivalent for crypto quantities, and BTC/USD's trade increment (0.000000001) is
      * fine enough that inventing one would distort the number more than leaving it alone.
      */
-    return {fee: new Big(quantity).times(rate), feeAsset, feeInCounter};
+    return {fee: new Big(quantity).times(rate), feeAsset};
   }
 
-  return {fee: feeInCounter, feeAsset, feeInCounter};
+  return {fee: notional.times(rate).round(FIAT_FEE_DECIMAL_PLACES, Big.roundUp), feeAsset};
 }

@@ -93,35 +93,5 @@ describe('AlpacaFees', () => {
       expect(cost.fee.toFixed(), 'matches the CFEE activity Alpaca actually charged').toBe('0.15');
       expect(cost.feeAsset).toBe('USD');
     });
-
-    it('reports the counter-currency equivalent of a base-denominated fee', () => {
-      const cost = getTradeCost({
-        isCrypto: true,
-        orderType: OrderType.MARKET,
-        pair: BTC_USD,
-        price: '61234.5',
-        quantity: '2.5',
-        rates: RATES,
-        side: OrderSide.BUY,
-      });
-
-      expect(cost.fee.toFixed(), 'debited in BTC').toBe('0.00625');
-      expect(cost.feeInCounter.toFixed(), '2.5 * 61234.5 USD * 0.0025, rounded up to the penny').toBe('382.72');
-      expect(
-        cost.fee.times('61234.5').round(2, Big.roundUp).toFixed(),
-        'both denominations describe the same fee at the fill price'
-      ).toBe(cost.feeInCounter.toFixed());
-    });
-
-    it('bills BUY and SELL at the same fraction of the notional', () => {
-      const shared = {isCrypto: true, orderType: OrderType.MARKET, pair: BTC_USD, price: '61234.5', rates: RATES};
-
-      const buy = getTradeCost({...shared, quantity: '2.5', side: OrderSide.BUY});
-      const sell = getTradeCost({...shared, quantity: '2.5', side: OrderSide.SELL});
-
-      expect(buy.feeInCounter.toFixed(), 'only the denomination differs between sides, not the rate').toBe(
-        sell.feeInCounter.toFixed()
-      );
-    });
   });
 });

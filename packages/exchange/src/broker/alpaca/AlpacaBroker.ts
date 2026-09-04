@@ -8,7 +8,6 @@ import {
   type Balance,
   type Candle,
   type CandleImportRequest,
-  type FeeEstimateRequest,
   type FeeRate,
   type Fill,
   type LimitOrderOptions,
@@ -25,7 +24,7 @@ import {
 import type {MarketDataSource} from '../MarketDataSource.js';
 import type {TradingPair} from '../TradingPair.js';
 import {createAlpacaSymbol, isAlpacaCryptoSymbol} from './alpacaSymbol.js';
-import {getCreditedAsset, getTradeCost} from './AlpacaFees.js';
+import {getTradeCost} from './AlpacaFees.js';
 import {AlpacaAssetClass, AlpacaOrderStatus, AlpacaOrderType, type Order} from './api/schema/OrderSchema.js';
 import {AlpacaAPI} from './api/AlpacaAPI.js';
 import {PositionSide} from './api/schema/PositionSchema.js';
@@ -399,42 +398,6 @@ export class AlpacaBroker extends Broker implements MarketDataSource {
   async getFeeRates(_pair: TradingPair): Promise<FeeRate> {
     // TODO: Refine according to "30-Day Crypto Volume (USD)" and make fee rate dependant on crypto or stocks
     return AlpacaBroker.DEFAULT_FEE_RATES;
-  }
-
-  /**
-   * Alpaca deducts a crypto fee from the asset you are credited with, so a BUY is billed in the
-   * base asset and a SELL in the counter. Stocks settle in the counter currency either way.
-   */
-  override async getFeeAsset(pair: TradingPair, side: OrderSide) {
-    const isCrypto = await isAlpacaCryptoSymbol(this.#alpacaAPI, pair);
-    return getCreditedAsset(pair, side, isCrypto);
-  }
-
-  /**
-   * Routes through the same calculator the realised `Fill` fee uses, so a pre-trade estimate and
-   * the fee that comes back after execution cannot disagree.
-   *
-   * The base `Broker` implementation would apply `getFeeRates` to everything, and Alpaca's rates
-   * are the *crypto* schedule — charging a commission on commission-free equities.
-   */
-  override async estimateFee(pair: TradingPair, request: FeeEstimateRequest) {
-    const isCrypto = await isAlpacaCryptoSymbol(this.#alpacaAPI, pair);
-    const cost = getTradeCost({
-      isCrypto,
-      orderType: request.orderType,
-      pair,
-      price: request.price,
-      quantity: request.quantity,
-      rates: await this.getFeeRates(pair),
-      side: request.side,
-    });
-
-    return {
-      commission: cost.feeInCounter,
-      currencyConversion: new Big(0),
-      feeAsset: pair.counter,
-      total: cost.feeInCounter,
-    };
   }
 
   /**
