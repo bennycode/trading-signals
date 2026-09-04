@@ -6,6 +6,8 @@ export default mergeConfig(
   defineConfig({
     test: {
       coverage: {
+        // The bin entry only wires stdin/stdout to runCli(), which carries the tested logic.
+        exclude: ['src/cli/cli.ts'],
         thresholds: {
           branches: 100,
           functions: 100,

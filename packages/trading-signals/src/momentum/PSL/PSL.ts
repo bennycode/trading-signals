@@ -1,4 +1,4 @@
-import {ThresholdCrossSeries} from '../../base/Indicator.js';
+import {IndicatorInputShape, ThresholdCrossSeries} from '../../base/Indicator.js';
 import type {SignalThresholds} from '../../base/SignalThresholds.type.js';
 import {pushUpdate} from '../../util/array/pushUpdate.js';
 
@@ -31,6 +31,8 @@ export type PSLConfig = {
  * @see https://www.quantshare.com/item-851-psychological-line
  */
 export class PSL extends ThresholdCrossSeries {
+  override readonly inputShape = IndicatorInputShape.VALUE;
+
   readonly #closes: number[] = [];
   public readonly interval: number;
 

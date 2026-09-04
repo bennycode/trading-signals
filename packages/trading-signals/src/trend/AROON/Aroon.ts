@@ -1,5 +1,5 @@
 import type {HighLow} from '../../base/Candle.type.js';
-import {TechnicalIndicator} from '../../base/Indicator.js';
+import {IndicatorInputShape, TechnicalIndicator} from '../../base/Indicator.js';
 import {pushUpdate} from '../../util/array/pushUpdate.js';
 
 export type AroonResult = {
@@ -22,6 +22,8 @@ export type AroonResult = {
  * @see https://tulipindicators.org/aroon
  */
 export class Aroon extends TechnicalIndicator<AroonResult, HighLow<number>> {
+  override readonly inputShape = IndicatorInputShape.HIGH_LOW;
+
   readonly #candles: HighLow<number>[] = [];
   public readonly interval: number;
 

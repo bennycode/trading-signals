@@ -241,6 +241,25 @@ console.log(sma.lowest?.toFixed(2)); // "23.33"
 console.log(sma.highest?.toFixed(2)); // "53.33"
 ```
 
+## Command-Line Interface
+
+The package ships a `trading-signals` binary that computes any of the exported indicators over candle data — no code required:
+
+```sh
+# candles from a CSV file (header row with open/high/low/close/volume columns)
+trading-signals atr 14 --csv candles.csv
+
+# candles piped in as NDJSON or a JSON array
+cat candles.json | trading-signals rsi 14
+
+# composite indicators take key=value constructor parameters
+trading-signals stochasticoscillator kPeriod=5 dPeriod=3 kSlowingPeriod=3 --csv candles.csv
+```
+
+The indicator is resolved generically from the package's exports, so every indicator (and every future one) is available by its lowercased class name — run `trading-signals help` for the full list. Each indicator declares which candle fields it consumes via its `inputShape`, so the CLI feeds closes to price-series indicators, volumes to volume-series ones (VROC, PVO, RVOL), and full candles to candle-based ones automatically.
+
+Input is streamed: one result line (`{"time": ..., "value": ...}`) is printed per stable candle as it arrives, which makes the CLI composable with live feeds. Pass `--last` to print only the final value.
+
 ## Technical Indicator Types
 
 ### Indicator Function

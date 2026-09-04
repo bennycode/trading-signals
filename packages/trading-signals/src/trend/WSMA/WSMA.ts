@@ -1,4 +1,4 @@
-import {IndicatorSeries} from '../../base/Indicator.js';
+import {IndicatorInputShape, IndicatorSeries} from '../../base/Indicator.js';
 import {SMA} from '../SMA/SMA.js';
 
 /**
@@ -17,6 +17,8 @@ import {SMA} from '../SMA/SMA.js';
  * @see https://tlc.thinkorswim.com/center/reference/Tech-Indicators/studies-library/V-Z/WildersSmoothing
  */
 export class WSMA extends IndicatorSeries {
+  override readonly inputShape = IndicatorInputShape.VALUE;
+
   readonly #indicator: SMA;
   readonly #smoothingFactor: number;
 

@@ -1,4 +1,4 @@
-import {IndicatorSeries} from '../../base/Indicator.js';
+import {IndicatorInputShape, IndicatorSeries} from '../../base/Indicator.js';
 import type {HighLowCloseVolume} from '../../base/Candle.type.js';
 import {getTypicalPrice} from '../../util/candle/getTypicalPrice.js';
 
@@ -13,6 +13,8 @@ import {getTypicalPrice} from '../../util/candle/getTypicalPrice.js';
  * @see https://www.investopedia.com/terms/v/vwap.asp
  */
 export class VWAP extends IndicatorSeries<HighLowCloseVolume<number>> {
+  override readonly inputShape = IndicatorInputShape.HIGH_LOW_CLOSE_VOLUME;
+
   #cumulativeTypicalPriceVolume: number = 0;
   #cumulativeVolume: number = 0;
   #lastCandle: HighLowCloseVolume<number> | null = null;

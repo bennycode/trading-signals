@@ -1,5 +1,5 @@
 import type {HighLowClose} from '../../base/Candle.type.js';
-import {TradingSignal, TrendIndicator} from '../../base/Indicator.js';
+import {IndicatorInputShape, TradingSignal, TrendIndicator} from '../../base/Indicator.js';
 import {pushUpdate} from '../../util/array/pushUpdate.js';
 import {ATR} from '../../volatility/ATR/ATR.js';
 
@@ -34,6 +34,8 @@ export type RandomWalkIndexResult = {
  * @see https://github.com/ta4j/ta4j/blob/master/ta4j-core/src/main/java/org/ta4j/core/indicators/RWILowIndicator.java
  */
 export class RandomWalkIndex extends TrendIndicator<RandomWalkIndexResult, HighLowClose<number>> {
+  override readonly inputShape = IndicatorInputShape.HIGH_LOW_CLOSE;
+
   public readonly interval: number;
   readonly #candles: HighLowClose<number>[] = [];
   readonly #atrs: ATR[] = [];

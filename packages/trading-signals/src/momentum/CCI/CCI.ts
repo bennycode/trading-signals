@@ -1,6 +1,6 @@
 import {SMA} from '../../trend/SMA/SMA.js';
 import type {HighLowClose} from '../../base/Candle.type.js';
-import {ThresholdCrossSeries} from '../../base/Indicator.js';
+import {IndicatorInputShape, ThresholdCrossSeries} from '../../base/Indicator.js';
 import type {SignalThresholds} from '../../base/SignalThresholds.type.js';
 import {getTypicalPrice, pushUpdate} from '../../util/index.js';
 import {MAD} from '../../volatility/MAD/MAD.js';
@@ -30,6 +30,8 @@ import {MAD} from '../../volatility/MAD/MAD.js';
  * @see https://en.wikipedia.org/wiki/Commodity_channel_index
  */
 export class CCI extends ThresholdCrossSeries<HighLowClose<number>> {
+  override readonly inputShape = IndicatorInputShape.HIGH_LOW_CLOSE;
+
   readonly #sma: SMA;
   readonly #typicalPrices: number[];
   public readonly interval: number;

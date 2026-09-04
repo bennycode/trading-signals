@@ -1,4 +1,4 @@
-import {TechnicalIndicator} from '../../base/Indicator.js';
+import {IndicatorInputShape, TechnicalIndicator} from '../../base/Indicator.js';
 import type {LinearRegressionResult} from '../../util/math/getLinearRegression.js';
 import {getLinearRegression} from '../../util/math/getLinearRegression.js';
 import {pushUpdate} from '../../util/array/pushUpdate.js';
@@ -10,6 +10,8 @@ import {pushUpdate} from '../../util/array/pushUpdate.js';
  * It fits a straight line to price data over a chosen period using the least-squares method. The slope of the line shows the trend direction and strength. It’s similar in use to moving averages but mathematically more precise, since it minimizes the squared distance between price points and the fitted line.
  */
 export class LinearRegression extends TechnicalIndicator<LinearRegressionResult, number> {
+  override readonly inputShape = IndicatorInputShape.VALUE;
+
   public readonly prices: number[] = [];
 
   public readonly interval: number;

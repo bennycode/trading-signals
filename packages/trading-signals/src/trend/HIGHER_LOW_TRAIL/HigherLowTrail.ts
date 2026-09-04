@@ -1,4 +1,4 @@
-import {IndicatorSeries} from '../../base/Indicator.js';
+import {IndicatorInputShape, IndicatorSeries} from '../../base/Indicator.js';
 import type {HighLow} from '../../base/Candle.type.js';
 import {pushUpdate} from '../../util/array/pushUpdate.js';
 
@@ -32,6 +32,8 @@ export type HigherLowTrailConfig = {
  * actual reversals rather than arbitrary local minima.
  */
 export class HigherLowTrail extends IndicatorSeries<HighLow> {
+  override readonly inputShape = IndicatorInputShape.HIGH_LOW;
+
   readonly #lookback: number;
   readonly #monotonic: boolean;
   readonly #window: number[] = [];

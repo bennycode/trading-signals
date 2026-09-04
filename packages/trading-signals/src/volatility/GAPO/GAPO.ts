@@ -1,5 +1,5 @@
 import type {HighLow} from '../../base/Candle.type.js';
-import {IndicatorSeries} from '../../base/Indicator.js';
+import {IndicatorInputShape, IndicatorSeries} from '../../base/Indicator.js';
 import {pushUpdate} from '../../util/array/pushUpdate.js';
 
 /**
@@ -20,6 +20,8 @@ import {pushUpdate} from '../../util/array/pushUpdate.js';
  * @see https://www.fmlabs.com/reference/default.htm?url=GAPO.htm
  */
 export class GAPO extends IndicatorSeries<HighLow> {
+  override readonly inputShape = IndicatorInputShape.HIGH_LOW;
+
   readonly #candles: HighLow[] = [];
   public readonly interval: number;
 

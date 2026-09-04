@@ -1,5 +1,5 @@
 import type {OpenHighLowClose} from '../../base/Candle.type.js';
-import {TradingSignal, TrendIndicator} from '../../base/Indicator.js';
+import {IndicatorInputShape, TradingSignal, TrendIndicator} from '../../base/Indicator.js';
 import {pushUpdate} from '../../util/array/pushUpdate.js';
 
 export type RelativeVigorIndexResult = {
@@ -27,6 +27,8 @@ export type RelativeVigorIndexResult = {
  * @see https://www.investopedia.com/terms/r/relative_vigor_index.asp
  */
 export class RelativeVigorIndex extends TrendIndicator<RelativeVigorIndexResult, OpenHighLowClose<number>> {
+  override readonly inputShape = IndicatorInputShape.OPEN_HIGH_LOW_CLOSE;
+
   public readonly interval: number;
   readonly #candles: OpenHighLowClose<number>[] = [];
 

@@ -1,4 +1,4 @@
-import {TradingSignal, TrendIndicatorSeries, type TradingSignals} from '../../base/Indicator.js';
+import {IndicatorInputShape, TradingSignal, TrendIndicatorSeries, type TradingSignals} from '../../base/Indicator.js';
 
 type TDSState = {
   closes: number[];
@@ -27,6 +27,8 @@ type TDSState = {
  * @see https://practicaltechnicalanalysis.blogspot.com/2013/01/tom-demark-sequential.html
  */
 export class TDS extends TrendIndicatorSeries<number, TradingSignals, TDSState> {
+  override readonly inputShape = IndicatorInputShape.VALUE;
+
   protected override state: TDSState = {
     closes: [],
     lastBarCompletedSetup: false,

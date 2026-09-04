@@ -1,5 +1,5 @@
 import type {OpenHighLowClose} from '../../base/Candle.type.js';
-import {ZeroCrossSeries} from '../../base/Indicator.js';
+import {IndicatorInputShape, ZeroCrossSeries} from '../../base/Indicator.js';
 import {SMA} from '../../trend/SMA/SMA.js';
 
 /**
@@ -21,6 +21,8 @@ import {SMA} from '../../trend/SMA/SMA.js';
  * @see https://www.investopedia.com/terms/q/qstick.asp
  */
 export class Qstick extends ZeroCrossSeries<OpenHighLowClose> {
+  override readonly inputShape = IndicatorInputShape.OPEN_HIGH_LOW_CLOSE;
+
   readonly #sma: SMA;
 
   public readonly interval: number;
