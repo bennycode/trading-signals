@@ -76,7 +76,15 @@ class AlpacaTradingWebSocket {
             const listeners = this.#listeners.get(connectionId);
             if (listeners) {
               for (const cb of listeners) {
-                cb(parsed.data);
+                /*
+                 * Listeners are independent subscribers: one that throws on a malformed payload
+                 * must not stop the others in this loop from seeing the update.
+                 */
+                try {
+                  cb(parsed.data);
+                } catch (error) {
+                  console.error(`Trade update listener failed for connection "${connectionId}".`, error);
+                }
               }
             }
           } else {

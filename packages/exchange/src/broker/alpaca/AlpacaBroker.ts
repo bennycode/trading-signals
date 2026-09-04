@@ -8,6 +8,7 @@ import {
   type Balance,
   type Candle,
   type CandleImportRequest,
+  type FeeEstimateRequest,
   type FeeRate,
   type Fill,
   type LimitOrderOptions,
@@ -331,22 +332,16 @@ export class AlpacaBroker extends Broker implements MarketDataSource {
   /**
    * Maps a filled order and fills in the fee the wire payload does not carry.
    *
-   * The fee is derived, not reported: see `AlpacaFees` for what that costs in accuracy. Orders
-   * without an average fill price keep the mapper's neutral zero fee, since there is no notional
-   * to apply a rate to.
+   * The fee is derived, not reported: see `AlpacaFees` for what that costs in accuracy.
    */
   #toFillWithFee(order: Order, pair: TradingPair, rates: FeeRate): Fill {
     const fill = AlpacaBrokerMapper.toFilledOrder(order, pair);
-
-    if (order.filled_avg_price === null) {
-      return fill;
-    }
 
     const {fee, feeAsset} = getTradeCost({
       isCrypto: order.asset_class === AlpacaAssetClass.CRYPTO,
       orderType: order.type === AlpacaOrderType.LIMIT ? OrderType.LIMIT : OrderType.MARKET,
       pair,
-      price: order.filled_avg_price,
+      price: fill.price,
       quantity: order.filled_qty,
       rates,
       side: fill.side,
@@ -410,9 +405,36 @@ export class AlpacaBroker extends Broker implements MarketDataSource {
    * Alpaca deducts a crypto fee from the asset you are credited with, so a BUY is billed in the
    * base asset and a SELL in the counter. Stocks settle in the counter currency either way.
    */
-  protected override async getFeeAsset(pair: TradingPair, side: OrderSide) {
+  override async getFeeAsset(pair: TradingPair, side: OrderSide) {
     const isCrypto = await isAlpacaCryptoSymbol(this.#alpacaAPI, pair);
     return getCreditedAsset(pair, side, isCrypto);
+  }
+
+  /**
+   * Routes through the same calculator the realised `Fill` fee uses, so a pre-trade estimate and
+   * the fee that comes back after execution cannot disagree.
+   *
+   * The base `Broker` implementation would apply `getFeeRates` to everything, and Alpaca's rates
+   * are the *crypto* schedule — charging a commission on commission-free equities.
+   */
+  override async estimateFee(pair: TradingPair, request: FeeEstimateRequest) {
+    const isCrypto = await isAlpacaCryptoSymbol(this.#alpacaAPI, pair);
+    const cost = getTradeCost({
+      isCrypto,
+      orderType: request.orderType,
+      pair,
+      price: request.price,
+      quantity: request.quantity,
+      rates: await this.getFeeRates(pair),
+      side: request.side,
+    });
+
+    return {
+      commission: cost.feeInCounter,
+      currencyConversion: new Big(0),
+      feeAsset: pair.counter,
+      total: cost.feeInCounter,
+    };
   }
 
   /**
