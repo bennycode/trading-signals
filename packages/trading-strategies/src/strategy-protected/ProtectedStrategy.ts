@@ -146,38 +146,6 @@ type ProtectedContainerState = {[PROTECTED_STATE_KEY]: ProtectedStrategyState};
  *       }
  *     }
  */
-/**
- * Whether a tracked position exceeds what the broker reports holding, by more than rounding.
- *
- * Only an overshoot counts. `held` is the whole account's balance of the base asset, so it
- * legitimately exceeds one strategy's slice whenever the asset was also bought elsewhere — but a
- * strategy can never own more than the account does. Tracking more than that means state has
- * diverged from reality (a fill event was missed, the pair was traded by hand, a restart replayed
- * badly), and the next stop-loss or take-profit would size an order against base that is not there.
- *
- * `increment` is the smallest tradeable amount, so a gap below it is rounding rather than drift.
- */
-/**
- * What closing a position at `price` would actually book, after the commission on the exit.
- *
- * A broker's own unrealised P/L is a price delta: position size times the move since entry. It
- * cannot include the exit fee, which has not been charged yet, and on venues that bill in kind it
- * does not include the entry fee either — that one was taken as a smaller position rather than a
- * cash cost, so it never appears in the basis. Both omissions push the reported number the same
- * way, and a take-profit set to a percentage smaller than the round trip fires on a gain that does
- * not exist.
- *
- * `costBasis` must be what the position actually cost, which is executed size times fill price.
- */
-export function getNetProfit(params: {costBasis: Big; exitFeeRate: Big; positionSize: Big; price: Big}): Big {
-  const grossProceeds = params.positionSize.mul(params.price);
-  return grossProceeds.minus(grossProceeds.mul(params.exitFeeRate)).minus(params.costBasis);
-}
-
-export function exceedsBrokerBalance(tracked: Big, held: Big, increment: Big): boolean {
-  return tracked.minus(held).gt(increment);
-}
-
 export class ProtectedStrategy extends Strategy {
   static override NAME = '@typedtrader/strategy-protected';
   static override marketTypes: readonly MarketType[] = [MarketType.UTILITY];
