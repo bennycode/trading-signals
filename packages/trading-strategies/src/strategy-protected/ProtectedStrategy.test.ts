@@ -950,4 +950,39 @@ describe('ProtectedStrategy', () => {
       assertMarketSell(advice);
     });
   });
+
+  describe('position tracking', () => {
+    it('grows the position by what arrived, not by what executed', async () => {
+      const strategy = new TestProtectedStrategy({protected: {takeProfitPct: '5'}});
+      const fill = {...makeFill('79660.975468455', '0.001254903', OrderSide.BUY), fee: '0.000003138', feeAsset: 'AAPL'};
+
+      await strategy.onFill(fill, mockState);
+
+      expect(
+        strategy.protectedState.totalPositionSize,
+        'the fee never arrives, so it is not part of the position'
+      ).toBe('0.001251765');
+    });
+
+    it('keeps the full outlay in the cost basis even when the fee was taken in kind', async () => {
+      const strategy = new TestProtectedStrategy({protected: {takeProfitPct: '5'}});
+      const fill = {...makeFill('79660.975468455', '0.001254903', OrderSide.BUY), fee: '0.000003138', feeAsset: 'AAPL'};
+
+      await strategy.onFill(fill, mockState);
+
+      expect(
+        new Big(strategy.protectedState.totalCostBasis).toFixed(4),
+        'cost basis is executed size times price; netting it here would hide the fee from P&L'
+      ).toBe('99.9668');
+    });
+
+    it('grows the position by the full size when the fee is charged in the counter currency', async () => {
+      const strategy = new TestProtectedStrategy({protected: {takeProfitPct: '5'}});
+      const fill = {...makeFill('100', '10', OrderSide.BUY), fee: '0.25', feeAsset: 'USD'};
+
+      await strategy.onFill(fill, mockState);
+
+      expect(strategy.protectedState.totalPositionSize).toBe('10');
+    });
+  });
 });

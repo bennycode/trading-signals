@@ -116,6 +116,21 @@ export interface Fill {
   size: string;
 }
 
+/**
+ * Base-asset quantity a fill delivered, which is less than `fill.size` when the venue takes its
+ * commission out of the asset it credits — Alpaca does this on a crypto BUY. `fill.size` stays the
+ * executed quantity because `size × price` is the cost basis.
+ */
+export function getFilledBaseAmount(fill: Fill): Big {
+  const size = new Big(fill.size);
+
+  if (fill.side === OrderSide.BUY && fill.feeAsset === fill.pair.base) {
+    return size.minus(fill.fee);
+  }
+
+  return size;
+}
+
 export interface ExchangePendingOrderBase {
   id: string;
   pair: TradingPair;

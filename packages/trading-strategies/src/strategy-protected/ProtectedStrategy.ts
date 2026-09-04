@@ -1,6 +1,6 @@
 import Big from 'big.js';
 import {z} from 'zod';
-import {OrderSide, OrderType} from '@typedtrader/exchange';
+import {getFilledBaseAmount, OrderSide, OrderType} from '@typedtrader/exchange';
 import {AllAvailableAmount} from '../trader/index.js';
 import type {Fill, PendingOrder, OneMinuteBatchedCandle} from '@typedtrader/exchange';
 import type {LimitOrderAdvice, OrderAdvice, TradingSessionState} from '../trader/index.js';
@@ -393,11 +393,12 @@ export class ProtectedStrategy extends Strategy {
   async onFill(fill: Fill, _state: TradingSessionState): Promise<void> {
     const protectedState = this.#protectedState;
     const fillPrice = new Big(fill.price);
-    const fillSize = new Big(fill.size);
+    const executedSize = new Big(fill.size);
+    const receivedSize = getFilledBaseAmount(fill);
 
     if (fill.side === OrderSide.BUY) {
-      const newCostBasis = new Big(protectedState.totalCostBasis).plus(fillPrice.mul(fillSize));
-      const newPositionSize = new Big(protectedState.totalPositionSize).plus(fillSize);
+      const newCostBasis = new Big(protectedState.totalCostBasis).plus(fillPrice.mul(executedSize));
+      const newPositionSize = new Big(protectedState.totalPositionSize).plus(receivedSize);
       this.#setProtectedState({
         totalCostBasis: newCostBasis.toFixed(),
         totalPositionSize: newPositionSize.toFixed(),
@@ -412,7 +413,7 @@ export class ProtectedStrategy extends Strategy {
     }
 
     const avgEntry = new Big(protectedState.totalCostBasis).div(currentPositionSize);
-    const newPositionSize = currentPositionSize.minus(fillSize);
+    const newPositionSize = currentPositionSize.minus(receivedSize);
 
     if (newPositionSize.lte(0)) {
       this.#setProtectedState({totalCostBasis: '0', totalPositionSize: '0'});
