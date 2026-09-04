@@ -1,6 +1,6 @@
 import Big from 'big.js';
 import {z} from 'zod';
-import {OrderSide, OrderType} from '@typedtrader/exchange';
+import {getFilledBaseAmount, OrderSide, OrderType} from '@typedtrader/exchange';
 import {AllAvailableAmount} from '../trader/index.js';
 import type {Fill, PendingOrder, OneMinuteBatchedCandle} from '@typedtrader/exchange';
 import type {LimitOrderAdvice, OrderAdvice, TradingSessionState} from '../trader/index.js';
@@ -146,6 +146,21 @@ type ProtectedContainerState = {[PROTECTED_STATE_KEY]: ProtectedStrategyState};
  *       }
  *     }
  */
+/**
+ * Whether a tracked position exceeds what the broker reports holding, by more than rounding.
+ *
+ * Only an overshoot counts. `held` is the whole account's balance of the base asset, so it
+ * legitimately exceeds one strategy's slice whenever the asset was also bought elsewhere — but a
+ * strategy can never own more than the account does. Tracking more than that means state has
+ * diverged from reality (a fill event was missed, the pair was traded by hand, a restart replayed
+ * badly), and the next stop-loss or take-profit would size an order against base that is not there.
+ *
+ * `increment` is the smallest tradeable amount, so a gap below it is rounding rather than drift.
+ */
+export function exceedsBrokerBalance(tracked: Big, held: Big, increment: Big): boolean {
+  return tracked.minus(held).gt(increment);
+}
+
 export class ProtectedStrategy extends Strategy {
   static override NAME = '@typedtrader/strategy-protected';
   static override marketTypes: readonly MarketType[] = [MarketType.UTILITY];
@@ -390,18 +405,25 @@ export class ProtectedStrategy extends Strategy {
     }
   }
 
-  async onFill(fill: Fill, _state: TradingSessionState): Promise<void> {
+  async onFill(fill: Fill, state: TradingSessionState): Promise<void> {
     const protectedState = this.#protectedState;
     const fillPrice = new Big(fill.price);
-    const fillSize = new Big(fill.size);
+    /*
+     * What the order executed for, which is what it cost, and what actually landed in the account,
+     * which is less whenever the venue takes its fee out of the credited asset. The two differ on
+     * a crypto BUY and must not be used interchangeably.
+     */
+    const executedSize = new Big(fill.size);
+    const receivedSize = getFilledBaseAmount(fill);
 
     if (fill.side === OrderSide.BUY) {
-      const newCostBasis = new Big(protectedState.totalCostBasis).plus(fillPrice.mul(fillSize));
-      const newPositionSize = new Big(protectedState.totalPositionSize).plus(fillSize);
+      const newCostBasis = new Big(protectedState.totalCostBasis).plus(fillPrice.mul(executedSize));
+      const newPositionSize = new Big(protectedState.totalPositionSize).plus(receivedSize);
       this.#setProtectedState({
         totalCostBasis: newCostBasis.toFixed(),
         totalPositionSize: newPositionSize.toFixed(),
       });
+      this.#warnOnPositionDrift(state);
       return;
     }
 
@@ -412,7 +434,7 @@ export class ProtectedStrategy extends Strategy {
     }
 
     const avgEntry = new Big(protectedState.totalCostBasis).div(currentPositionSize);
-    const newPositionSize = currentPositionSize.minus(fillSize);
+    const newPositionSize = currentPositionSize.minus(receivedSize);
 
     if (newPositionSize.lte(0)) {
       this.#setProtectedState({totalCostBasis: '0', totalPositionSize: '0'});
@@ -423,6 +445,17 @@ export class ProtectedStrategy extends Strategy {
       totalCostBasis: avgEntry.mul(newPositionSize).toFixed(),
       totalPositionSize: newPositionSize.toFixed(),
     });
+    this.#warnOnPositionDrift(state);
+  }
+
+  #warnOnPositionDrift(state: TradingSessionState): void {
+    const tracked = new Big(this.#protectedState.totalPositionSize);
+
+    if (exceedsBrokerBalance(tracked, state.baseBalance, new Big(state.tradingRules.base_increment))) {
+      console.warn(
+        `Position drift: strategy tracks ${tracked.toFixed()} ${state.tradingRules.pair.base} but the broker reports ${state.baseBalance.toFixed()}. Orders sized from the tracked position may be rejected.`
+      );
+    }
   }
 
   /**

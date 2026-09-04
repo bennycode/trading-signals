@@ -6,7 +6,7 @@ import {CandleBatcher, OrderPosition, OrderSide, OrderType, TradingPair} from '@
 import {AllAvailableAmount} from '../trader/index.js';
 import type {Candle, Fill, PendingOrder, OneMinuteBatchedCandle} from '@typedtrader/exchange';
 import type {LimitOrderAdvice, MarketOrderAdvice, OrderAdvice, TradingSessionState} from '../trader/index.js';
-import {ProtectedStrategy, ProtectedStrategySchema} from './ProtectedStrategy.js';
+import {exceedsBrokerBalance, ProtectedStrategy, ProtectedStrategySchema} from './ProtectedStrategy.js';
 
 function assertLimitSell(advice: OrderAdvice | void): asserts advice is LimitOrderAdvice {
   if (!advice || advice.type !== OrderType.LIMIT || advice.side !== OrderSide.SELL) {
@@ -948,6 +948,85 @@ describe('ProtectedStrategy', () => {
       // Retry on restored instance should still be MARKET, not LIMIT
       const advice = await restored.onCandle(makeCandle(50), mockState);
       assertMarketSell(advice);
+    });
+  });
+
+  describe('position tracking', () => {
+    it('grows the position by what arrived, not by what executed', async () => {
+      /*
+       * Observed on a live Alpaca account: a crypto BUY executed for 0.001254903 BTC and delivered
+       * 0.001251765, because the taker fee was deducted from the credited BTC.
+       */
+      const strategy = new TestProtectedStrategy({protected: {takeProfitPct: '5'}});
+      const fill = {...makeFill('79660.975468455', '0.001254903', OrderSide.BUY), fee: '0.000003138', feeAsset: 'AAPL'};
+
+      await strategy.onFill(fill, mockState);
+
+      expect(
+        strategy.protectedState.totalPositionSize,
+        'the fee never arrives, so it is not part of the position'
+      ).toBe('0.001251765');
+    });
+
+    it('keeps the full outlay in the cost basis even when the fee was taken in kind', async () => {
+      const strategy = new TestProtectedStrategy({protected: {takeProfitPct: '5'}});
+      const fill = {...makeFill('79660.975468455', '0.001254903', OrderSide.BUY), fee: '0.000003138', feeAsset: 'AAPL'};
+
+      await strategy.onFill(fill, mockState);
+
+      expect(
+        new Big(strategy.protectedState.totalCostBasis).toFixed(4),
+        'cost basis is executed size times price; netting it here would hide the fee from P&L'
+      ).toBe('99.9668');
+    });
+
+    it('grows the position by the full size when the fee is charged in the counter currency', async () => {
+      const strategy = new TestProtectedStrategy({protected: {takeProfitPct: '5'}});
+      const fill = {...makeFill('100', '10', OrderSide.BUY), fee: '0.25', feeAsset: 'USD'};
+
+      await strategy.onFill(fill, mockState);
+
+      expect(strategy.protectedState.totalPositionSize).toBe('10');
+    });
+  });
+
+  describe('position drift', () => {
+    const increment = new Big(mockState.tradingRules.base_increment);
+
+    it('reports drift when the strategy tracks more base than the account holds', () => {
+      expect(
+        exceedsBrokerBalance(new Big('10'), new Big('4'), increment),
+        'an order sized from the tracked position would be rejected'
+      ).toBe(true);
+    });
+
+    it('stays quiet when the account holds more than this strategy bought', () => {
+      expect(
+        exceedsBrokerBalance(new Big('10'), new Big('25'), increment),
+        'the base asset may also be held from trades this strategy did not make'
+      ).toBe(false);
+    });
+
+    it('tolerates a discrepancy smaller than one trade increment', () => {
+      expect(
+        exceedsBrokerBalance(new Big('10'), new Big('9.995'), increment),
+        'below one increment the gap is rounding, not drift'
+      ).toBe(false);
+    });
+
+    it('reports drift once the gap exceeds one full increment', () => {
+      expect(exceedsBrokerBalance(new Big('10'), new Big('9.98'), increment)).toBe(true);
+    });
+
+    it('leaves the tracked position above the broker balance after an oversized SELL', async () => {
+      const strategy = new TestProtectedStrategy({protected: {takeProfitPct: '5'}});
+      await strategy.onFill(makeFill('100', '10', OrderSide.BUY), mockState);
+      await strategy.onFill(makeFill('100', '4', OrderSide.SELL), mockState);
+
+      expect(
+        exceedsBrokerBalance(new Big(strategy.protectedState.totalPositionSize), new Big('1'), increment),
+        'six units tracked against one held is drift the operator should see'
+      ).toBe(true);
     });
   });
 });

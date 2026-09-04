@@ -116,6 +116,28 @@ export interface Fill {
   size: string;
 }
 
+/**
+ * Base-asset quantity a fill actually moved, which is not always `fill.size`.
+ *
+ * Some venues take the commission out of the asset they credit you with rather than charging it
+ * separately: Alpaca deducts a crypto BUY fee in the base asset, so an order filled for 0.001254903
+ * BTC delivers 0.001251765 and the difference never arrives. `fill.size` stays the executed
+ * quantity — `size × price` is what the trade cost, and cost-basis math needs that — so the
+ * shortfall has to be read off `fee` and `feeAsset` instead.
+ *
+ * Anything tracking a position across fills must use this rather than `fill.size`, or the position
+ * drifts upward by one fee per buy until it tries to sell more than it holds.
+ */
+export function getFilledBaseAmount(fill: Fill): Big {
+  const size = new Big(fill.size);
+
+  if (fill.side === OrderSide.BUY && fill.feeAsset === fill.pair.base) {
+    return size.minus(fill.fee);
+  }
+
+  return size;
+}
+
 export interface ExchangePendingOrderBase {
   id: string;
   pair: TradingPair;
