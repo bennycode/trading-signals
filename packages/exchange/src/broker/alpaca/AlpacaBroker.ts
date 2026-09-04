@@ -189,11 +189,7 @@ export class AlpacaBroker extends Broker implements MarketDataSource {
     const cb = (message: TradeUpdateMessage) => {
       if (message.event === TradeUpdateEvent.FILL) {
         const pair = AlpacaBrokerMapper.symbolToPair(message.order.symbol, message.order.asset_class);
-        /*
-         * The stream is account-wide, so there is no single pair to query rates for. The default
-         * schedule is what `getFeeRates` returns today anyway, and using it keeps the hot path
-         * free of an HTTP round trip per fill.
-         */
+        // Account-wide stream: no single pair to query rates for, and no round trip per fill.
         const fill = this.#toFillWithFee(message.order, pair, AlpacaBroker.DEFAULT_FEE_RATES);
         this.emit(topicId, fill);
       }
@@ -328,11 +324,6 @@ export class AlpacaBroker extends Broker implements MarketDataSource {
     return filledOrders.map(order => this.#toFillWithFee(order, pair, rates));
   }
 
-  /**
-   * Maps a filled order and fills in the fee the wire payload does not carry.
-   *
-   * The fee is derived, not reported: see `AlpacaFees` for what that costs in accuracy.
-   */
   #toFillWithFee(order: Order, pair: TradingPair, rates: FeeRate): Fill {
     const fill = AlpacaBrokerMapper.toFilledOrder(order, pair);
 

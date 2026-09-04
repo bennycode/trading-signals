@@ -3,28 +3,16 @@ import {OrderSide, type FeeRate, type OrderType} from '../Broker.js';
 import type {TradingPair} from '../TradingPair.js';
 
 /**
- * Alpaca's order payload carries no fee field, so a per-fill fee has to be derived here. How well
- * that can be checked afterwards differs by asset class:
- *
- * - Crypto fees post as `CFEE` activities within seconds, one per execution, each carrying the
- *   `order_id`. They are therefore attributable, and this module's crypto figures can be
- *   reconciled exactly. (Alpaca's `order_id` query parameter does not filter `CFEE`, so the match
- *   has to be made client-side.)
- * - Equity regulatory fees post as `FEE` activities aggregated per day and per fee type, with no
- *   order, symbol or quantity. Nothing can attribute those to a trade, so `getRegulatoryFee` is an
- *   estimate with no per-fill ground truth.
+ * Alpaca's order payload carries no fee field, so every figure here is derived. Crypto fees can be
+ * reconciled afterwards against per-execution `CFEE` activities; equity `FEE` activities are
+ * day-aggregated with no order reference, so those cannot.
  *
  * @see https://docs.alpaca.markets/docs/crypto-fees
- * @see https://files.alpaca.markets/disclosures/library/BrokFeeSched.pdf
  */
 
 /**
- * Alpaca rounds a fee *up* in whatever unit it bills, so a fiat fee rounds up to the penny.
- *
- * This is deliberately not `TradingRules.counter_increment`: that is the pair's *price* increment,
- * which for BTC/USD is `0.000000001`. Price precision and billing precision are different things.
- *
- * @see https://alpaca.markets/support/regulatory-fees
+ * Alpaca rounds a fee up in whatever unit it bills. Deliberately not
+ * `TradingRules.counter_increment`, which is the pair's *price* increment — `0.000000001` for BTC/USD.
  */
 const FIAT_FEE_DECIMAL_PLACES = 2;
 
@@ -90,14 +78,11 @@ function findRate(rates: readonly DatedRate[], tradedAt: string): Big {
 }
 
 export interface AlpacaTradeCost {
-  /** Fee amount, denominated in `feeAsset`. */
   fee: Big;
-  /** Asset the fee is debited in. */
   feeAsset: string;
 }
 
 export interface AlpacaTradeCostRequest {
-  /** `false` for stocks and ETFs, which pay no commission. */
   isCrypto: boolean;
   orderType: OrderType;
   pair: TradingPair;
@@ -150,10 +135,8 @@ export function getRegulatoryFee(request: AlpacaRegulatoryFeeRequest): Big {
 }
 
 /**
- * The asset Alpaca debits a fee from.
- *
- * Crypto fees are taken out of the *credited* asset — what you receive — so a BUY pays in the base
- * asset and a SELL pays in the counter. Everything else settles in the counter currency.
+ * Crypto fees come out of the asset you are credited with, so a BUY pays in the base asset and a
+ * SELL in the counter. Everything else settles in the counter.
  */
 export function getCreditedAsset(pair: TradingPair, side: OrderSide, isCrypto: boolean): string {
   if (isCrypto && side === OrderSide.BUY) {
@@ -163,23 +146,12 @@ export function getCreditedAsset(pair: TradingPair, side: OrderSide, isCrypto: b
 }
 
 /**
- * Derives the fee for a single Alpaca execution.
- *
- * The commission is `notional × rate` regardless of side; only the denomination changes. A BUY
- * billed in the base asset works out to `quantity × rate`, a SELL billed in the counter to
- * `quantity × price × rate`. Either way the result is rounded up, in the unit it is billed in.
- *
- * Alpaca bills per execution rather than per order, so an order that fills in several legs is
- * charged a separately rounded fee for each. Computing once over the whole order can therefore
- * come out up to one increment per leg low.
- *
  * Limit orders are billed at the maker rate and everything else at the taker rate. That is the best
- * available signal, not the truth: a marketable limit order executes as a taker, but the order
- * payload does not say whether the fill added or removed liquidity.
+ * available signal, not the truth: a marketable limit order pays taker, and the payload does not
+ * say whether the fill added or removed liquidity.
  *
- * Stocks and ETFs pay no commission, only the regulatory fees `getRegulatoryFee` covers.
- *
- * @see https://alpaca.markets/support/regulatory-fees
+ * Alpaca bills per execution, so an order filled in several legs is charged a separately rounded fee
+ * for each and computing once over the whole order can come out low.
  */
 export function getTradeCost(request: AlpacaTradeCostRequest): AlpacaTradeCost {
   const {isCrypto, orderType, pair, price, quantity, rates, side, tradedAt} = request;
