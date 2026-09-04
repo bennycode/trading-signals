@@ -446,7 +446,10 @@ export class AlpacaBroker extends Broker implements MarketDataSource {
       price: request.price,
       quantity: request.quantity,
       rates: await this.getFeeRates(pair),
+      secRates: this.#secFeeRates?.getRates(),
       side: request.side,
+      // An estimate is for an order not yet placed, so today's rates are the ones it will pay.
+      tradedAt: new Date().toISOString(),
     });
 
     return {

@@ -136,6 +136,52 @@ describe('AlpacaFees', () => {
       );
     });
 
+    it('rounds a base-denominated fee up to the crypto trade increment', () => {
+      /*
+       * Taken from a live account: a market BUY of 0.001254903 BTC at the 0.25% taker rate computes
+       * to 0.0000031372575 BTC. Alpaca billed 0.000003138 and the position grew by exactly the
+       * difference, so the fee rounds up in its own unit just as a fiat fee rounds up to the penny.
+       */
+      const cost = getTradeCost({
+        isCrypto: true,
+        orderType: OrderType.MARKET,
+        pair: BTC_USD,
+        price: '79660.975468455',
+        quantity: '0.001254903',
+        rates: RATES,
+        side: OrderSide.BUY,
+        tradedAt: '2026-09-04T19:43:21.705Z',
+      });
+
+      expect(cost.fee.toFixed(), 'matches the CFEE activities Alpaca charged for this fill').toBe('0.000003138');
+      expect(cost.feeAsset).toBe('BTC');
+    });
+
+    it('bills each execution of a partially filled order separately', () => {
+      /*
+       * The same live order filled in two legs and drew two CFEE entries, each rounded up on its
+       * own. Computing once over the whole order can come out low by up to one increment per leg.
+       */
+      const leg = (quantity: string) =>
+        getTradeCost({
+          isCrypto: true,
+          orderType: OrderType.MARKET,
+          pair: BTC_USD,
+          price: '79660.975468455',
+          quantity,
+          rates: RATES,
+          side: OrderSide.BUY,
+          tradedAt: '2026-09-04T19:43:21.705Z',
+        }).fee;
+
+      const first = leg('0.0010082');
+      const second = leg('0.000246703');
+
+      expect(first.toFixed(), 'first execution, billed on its own').toBe('0.000002521');
+      expect(second.toFixed(), 'second execution, billed on its own').toBe('0.000000617');
+      expect(first.plus(second).toFixed(), 'and together they are what the account was charged').toBe('0.000003138');
+    });
+
     it('charges regulatory fees on a stock SELL', () => {
       const cost = getTradeCost({
         isCrypto: false,

@@ -3,18 +3,23 @@ import {OrderSide, type FeeRate, type OrderType} from '../Broker.js';
 import type {TradingPair} from '../TradingPair.js';
 
 /**
- * Alpaca's order payload carries no fee field, and the authoritative `CFEE` account activity is a
- * daily aggregate without an order reference, so a per-fill fee has to be derived. Everything in
- * this module is therefore an *estimate* — reconcile against account activities when exact figures
- * matter.
+ * Alpaca's order payload carries no fee field, so a per-fill fee has to be derived here. How well
+ * that can be checked afterwards differs by asset class:
+ *
+ * - Crypto fees post as `CFEE` activities within seconds, one per execution, each carrying the
+ *   `order_id`. They are therefore attributable, and this module's crypto figures can be
+ *   reconciled exactly. (Alpaca's `order_id` query parameter does not filter `CFEE`, so the match
+ *   has to be made client-side.)
+ * - Equity regulatory fees post as `FEE` activities aggregated per day and per fee type, with no
+ *   order, symbol or quantity. Nothing can attribute those to a trade, so `getRegulatoryFee` is an
+ *   estimate with no per-fill ground truth.
  *
  * @see https://docs.alpaca.markets/docs/crypto-fees
  * @see https://files.alpaca.markets/disclosures/library/BrokFeeSched.pdf
  */
 
 /**
- * Alpaca rounds fiat fees *up* to the penny, both for crypto commissions and for regulatory
- * pass-through fees.
+ * Alpaca rounds a fee *up* in whatever unit it bills, so a fiat fee rounds up to the penny.
  *
  * This is deliberately not `TradingRules.counter_increment`: that is the pair's *price* increment,
  * which for BTC/USD is `0.000000001`. Price precision and billing precision are different things.
@@ -22,6 +27,15 @@ import type {TradingPair} from '../TradingPair.js';
  * @see https://alpaca.markets/support/regulatory-fees
  */
 const FIAT_FEE_DECIMAL_PLACES = 2;
+
+/**
+ * Decimal places a base-denominated fee is rounded up to.
+ *
+ * Verified against a live account: a market BUY of 0.001254903 BTC at the 0.25% taker rate computes
+ * to 0.0000031372575 BTC and was billed 0.000003138, one increment higher. Alpaca's crypto trade
+ * increment is `0.000000001`, which is nine places.
+ */
+const BASE_FEE_DECIMAL_PLACES = 9;
 
 export interface DatedRate {
   /** Inclusive ISO date (YYYY-MM-DD) from which `rate` applies. */
@@ -165,7 +179,11 @@ export function getCreditedAsset(pair: TradingPair, side: OrderSide, isCrypto: b
  *
  * The commission is `notional × rate` regardless of side; only the denomination changes. A BUY
  * billed in the base asset works out to `quantity × rate`, a SELL billed in the counter to
- * `quantity × price × rate`.
+ * `quantity × price × rate`. Either way the result is rounded up, in the unit it is billed in.
+ *
+ * Alpaca bills per execution rather than per order, so an order that fills in several legs is
+ * charged a separately rounded fee for each. Computing once over the whole order can therefore
+ * come out up to one increment per leg low.
  *
  * Limit orders are billed at the maker rate and everything else at the taker rate. That is the best
  * available signal, not the truth: a marketable limit order executes as a taker, but the order
@@ -190,12 +208,7 @@ export function getTradeCost(request: AlpacaTradeCostRequest): AlpacaTradeCost {
   const feeInCounter = notional.times(rate).round(FIAT_FEE_DECIMAL_PLACES, Big.roundUp);
 
   if (feeAsset === pair.base) {
-    /*
-     * Base-denominated fees are left exact. The penny rounding observed on fiat fees has no
-     * documented equivalent for crypto quantities, and BTC/USD's trade increment (0.000000001) is
-     * fine enough that inventing one would distort the number more than leaving it alone.
-     */
-    return {fee: new Big(quantity).times(rate), feeAsset, feeInCounter};
+    return {fee: new Big(quantity).times(rate).round(BASE_FEE_DECIMAL_PLACES, Big.roundUp), feeAsset, feeInCounter};
   }
 
   return {fee: feeInCounter, feeAsset, feeInCounter};
