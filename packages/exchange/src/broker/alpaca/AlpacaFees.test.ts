@@ -94,11 +94,6 @@ describe('AlpacaFees', () => {
     });
 
     it('rounds a base-denominated fee up to the crypto trade increment', () => {
-      /*
-       * Taken from a live account: a market BUY of 0.001254903 BTC at the 0.25% taker rate computes
-       * to 0.0000031372575 BTC. Alpaca billed 0.000003138 and the position grew by exactly the
-       * difference, so the fee rounds up in its own unit just as a fiat fee rounds up to the penny.
-       */
       const cost = getTradeCost({
         isCrypto: true,
         orderType: OrderType.MARKET,
@@ -115,10 +110,6 @@ describe('AlpacaFees', () => {
     });
 
     it('bills each execution of a partially filled order separately', () => {
-      /*
-       * The same live order filled in two legs and drew two CFEE entries, each rounded up on its
-       * own. Computing once over the whole order can come out low by up to one increment per leg.
-       */
       const leg = (quantity: string) =>
         getTradeCost({
           isCrypto: true,
@@ -182,10 +173,6 @@ describe('AlpacaFees', () => {
     });
 
     it('charges no SEC fee while the rate sits at zero', () => {
-      /*
-       * The SEC set the rate to $0.00 from 2025-05-14 until 2026-04-04. On the live account this
-       * shows up as sell days in that window carrying a TAF charge and no REG charge at all.
-       */
       expect(sell('1000', '0', '2025-05-13T15:00:00Z').toFixed(), 'last day of the $27.80 rate').toBe('0.0278');
       expect(sell('1000', '0', '2025-05-14T15:00:00Z').toFixed(), 'first day of the $0.00 rate').toBe('0');
       expect(sell('1000', '0', '2026-04-03T15:00:00Z').toFixed(), 'last day of the $0.00 rate').toBe('0');
@@ -206,11 +193,6 @@ describe('AlpacaFees', () => {
     });
 
     it('does not round per trade, because Alpaca rounds once per day', () => {
-      /*
-       * On 2024-07-19 the live account sold 48 shares across 9 trades and was billed $0.01 of TAF
-       * in total. Rounding each trade up to a penny would have reported $0.09. Nine unrounded
-       * estimates instead sum to 0.007968, which rounds up to the $0.01 actually charged.
-       */
       const dayTotal = sell('0', '48', '2024-07-19T15:00:00Z');
       const perTrade = sell('0', new Big('48').div(9).toFixed(), '2024-07-19T15:00:00Z');
 
