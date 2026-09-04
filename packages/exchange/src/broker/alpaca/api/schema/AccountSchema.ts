@@ -10,7 +10,11 @@ export const AccountSchema = z.looseObject({
   cash: z.string(),
   created_at: z.string(),
   currency: z.string(),
-  daytrade_count: z.number(),
+  /**
+   * Only returned for margin accounts. Pattern Day Trader rules apply to margin trading, so a cash
+   * account (`multiplier: "1"`) omits this field entirely rather than reporting zero.
+   */
+  daytrade_count: z.number().optional(),
   equity: z.string(),
   id: z.string(),
   initial_margin: z.string(),
@@ -18,7 +22,8 @@ export const AccountSchema = z.looseObject({
   long_market_value: z.string(),
   maintenance_margin: z.string(),
   multiplier: z.string(),
-  pattern_day_trader: z.boolean(),
+  /** Omitted on cash accounts for the same reason as {@link AccountSchema} `daytrade_count`. */
+  pattern_day_trader: z.boolean().optional(),
   portfolio_value: z.string(),
   short_market_value: z.string(),
   shorting_enabled: z.boolean(),
