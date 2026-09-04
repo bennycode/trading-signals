@@ -344,7 +344,6 @@ export class ProtectedStrategy extends Strategy {
       const targetPrice = this.#resolveTakeProfitLimit(avgEntry, positionSize);
       if (currentPrice.gte(targetPrice)) {
         const orderType = this.#takeProfitOrder;
-        this.#warnOnPhantomGain(state, positionSize, orderType === 'limit' ? targetPrice : currentPrice);
         const reason = this.#takeProfitReason(avgEntry, currentPrice, positionSize, targetPrice, orderType);
         this.#setProtectedState({
           killed: true,
@@ -423,7 +422,7 @@ export class ProtectedStrategy extends Strategy {
     }
   }
 
-  async onFill(fill: Fill, state: TradingSessionState): Promise<void> {
+  async onFill(fill: Fill, _state: TradingSessionState): Promise<void> {
     const protectedState = this.#protectedState;
     const fillPrice = new Big(fill.price);
     /*
@@ -441,7 +440,6 @@ export class ProtectedStrategy extends Strategy {
         totalCostBasis: newCostBasis.toFixed(),
         totalPositionSize: newPositionSize.toFixed(),
       });
-      this.#warnOnPositionDrift(state);
       return;
     }
 
@@ -463,43 +461,6 @@ export class ProtectedStrategy extends Strategy {
       totalCostBasis: avgEntry.mul(newPositionSize).toFixed(),
       totalPositionSize: newPositionSize.toFixed(),
     });
-    this.#warnOnPositionDrift(state);
-  }
-
-  /**
-   * Flags a take-profit that would close at a loss once the exit commission is paid.
-   *
-   * The trigger compares price against entry price, so on a pair whose round trip costs more than
-   * the configured target it fires on a gain that only exists before fees. The order is still
-   * placed — the configuration is the operator's to choose — but the discrepancy is no longer
-   * silent.
-   */
-  #warnOnPhantomGain(state: TradingSessionState, positionSize: Big, exitPrice: Big): void {
-    const orderType = this.#takeProfitOrder === 'limit' ? OrderType.LIMIT : OrderType.MARKET;
-    const netProfit = getNetProfit({
-      costBasis: new Big(this.#protectedState.totalCostBasis),
-      exitFeeRate: state.feeRates[orderType],
-      positionSize,
-      price: exitPrice,
-    });
-
-    if (netProfit.gt(0)) {
-      return;
-    }
-
-    console.warn(
-      `Take-profit would close at ${netProfit.toFixed(2)} ${state.tradingRules.pair.counter} after the exit fee. The trigger measures price against entry and does not account for commission.`
-    );
-  }
-
-  #warnOnPositionDrift(state: TradingSessionState): void {
-    const tracked = new Big(this.#protectedState.totalPositionSize);
-
-    if (exceedsBrokerBalance(tracked, state.baseBalance, new Big(state.tradingRules.base_increment))) {
-      console.warn(
-        `Position drift: strategy tracks ${tracked.toFixed()} ${state.tradingRules.pair.base} but the broker reports ${state.baseBalance.toFixed()}. Orders sized from the tracked position may be rejected.`
-      );
-    }
   }
 
   /**
