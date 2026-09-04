@@ -3,7 +3,6 @@ export * from './AlpacaBrokerMapper.js';
 export * from './AlpacaBrokerMock.js';
 export * from './AlpacaFees.js';
 export * from './AlpacaMarketData.js';
-export * from './SecFeeRateSource.js';
 export * from './getAlpacaClient.js';
 export * from './getAlpacaMarketData.js';
 export * from './getAlpacaRules.js';

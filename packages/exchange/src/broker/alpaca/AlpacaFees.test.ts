@@ -98,44 +98,6 @@ describe('AlpacaFees', () => {
       expect(cost.feeAsset).toBe('USD');
     });
 
-    it('reports the counter-currency equivalent of a base-denominated fee', () => {
-      const cost = getTradeCost({
-        isCrypto: true,
-        orderType: OrderType.MARKET,
-        pair: BTC_USD,
-        price: '61234.5',
-        quantity: '2.5',
-        rates: RATES,
-        side: OrderSide.BUY,
-        tradedAt: '2026-06-11T15:00:00Z',
-      });
-
-      expect(cost.fee.toFixed(), 'debited in BTC').toBe('0.00625');
-      expect(cost.feeInCounter.toFixed(), '2.5 * 61234.5 USD * 0.0025, rounded up to the penny').toBe('382.72');
-      expect(
-        cost.fee.times('61234.5').round(2, Big.roundUp).toFixed(),
-        'both denominations describe the same fee at the fill price'
-      ).toBe(cost.feeInCounter.toFixed());
-    });
-
-    it('bills BUY and SELL at the same fraction of the notional', () => {
-      const shared = {
-        isCrypto: true,
-        orderType: OrderType.MARKET,
-        pair: BTC_USD,
-        price: '61234.5',
-        rates: RATES,
-        tradedAt: '2026-06-11T15:00:00Z',
-      };
-
-      const buy = getTradeCost({...shared, quantity: '2.5', side: OrderSide.BUY});
-      const sell = getTradeCost({...shared, quantity: '2.5', side: OrderSide.SELL});
-
-      expect(buy.feeInCounter.toFixed(), 'only the denomination differs between sides, not the rate').toBe(
-        sell.feeInCounter.toFixed()
-      );
-    });
-
     it('rounds a base-denominated fee up to the crypto trade increment', () => {
       /*
        * Taken from a live account: a market BUY of 0.001254903 BTC at the 0.25% taker rate computes

@@ -52,8 +52,8 @@ export interface DatedRate {
  * corroborated by `REG` activities on a live account: the $0.00 window shows up as sell days that
  * carry a `TAF` charge and no `REG` charge at all.
  *
- * Every window is parsed straight out of the SEC's own Section 31 orders by `SecFeeRateSource`,
- * which can also append newer ones at runtime. Regenerate rather than hand-edit.
+ * Every window below was read out of the SEC's own Section 31 order. Add the next one from the
+ * fee rate advisories when a new fiscal year takes effect.
  *
  * @see https://www.sec.gov/rules-regulations/fee-rate-advisories
  */
@@ -94,11 +94,6 @@ export interface AlpacaTradeCost {
   fee: Big;
   /** Asset the fee is debited in. */
   feeAsset: string;
-  /**
-   * The same fee expressed in `pair.counter`, so callers can compare costs across trades without
-   * caring which asset was debited. Equal to `fee` whenever `feeAsset` is the counter.
-   */
-  feeInCounter: Big;
 }
 
 export interface AlpacaTradeCostRequest {
@@ -111,8 +106,6 @@ export interface AlpacaTradeCostRequest {
   /** Executed quantity, in base units. */
   quantity: Big.BigSource;
   rates: FeeRate;
-  /** SEC rate table to read. Defaults to the vendored {@link SEC_FEE_RATES}. */
-  secRates?: readonly DatedRate[];
   side: OrderSide;
   /** ISO timestamp of the execution, used to pick the regulatory rates in force that day. */
   tradedAt: string;
@@ -123,11 +116,6 @@ export interface AlpacaRegulatoryFeeRequest {
   proceeds: Big.BigSource;
   /** Shares sold; fractional shares are pro-rated. */
   quantity: Big.BigSource;
-  /**
-   * SEC rate table to read. Defaults to the vendored {@link SEC_FEE_RATES}; `SecFeeRateSource`
-   * supplies a copy extended with orders published since this release.
-   */
-  secRates?: readonly DatedRate[];
   side: OrderSide;
   /** ISO timestamp of the execution. */
   tradedAt: string;
@@ -149,13 +137,13 @@ export interface AlpacaRegulatoryFeeRequest {
  * @see https://alpaca.markets/support/regulatory-fees
  */
 export function getRegulatoryFee(request: AlpacaRegulatoryFeeRequest): Big {
-  const {proceeds, quantity, secRates = SEC_FEE_RATES, side, tradedAt} = request;
+  const {proceeds, quantity, side, tradedAt} = request;
 
   if (side !== OrderSide.SELL) {
     return new Big(0);
   }
 
-  const secFee = new Big(proceeds).times(findRate(secRates, tradedAt));
+  const secFee = new Big(proceeds).times(findRate(SEC_FEE_RATES, tradedAt));
   const tafFee = new Big(quantity).times(findRate(TAF_RATES, tradedAt));
 
   return secFee.plus(tafFee.gt(TAF_CAP) ? TAF_CAP : tafFee);
@@ -194,22 +182,21 @@ export function getCreditedAsset(pair: TradingPair, side: OrderSide, isCrypto: b
  * @see https://alpaca.markets/support/regulatory-fees
  */
 export function getTradeCost(request: AlpacaTradeCostRequest): AlpacaTradeCost {
-  const {isCrypto, orderType, pair, price, quantity, rates, secRates, side, tradedAt} = request;
+  const {isCrypto, orderType, pair, price, quantity, rates, side, tradedAt} = request;
 
   const feeAsset = getCreditedAsset(pair, side, isCrypto);
   const notional = new Big(quantity).times(price);
 
   if (!isCrypto) {
-    const fee = getRegulatoryFee({proceeds: notional, quantity, secRates, side, tradedAt});
-    return {fee, feeAsset, feeInCounter: fee};
+    const fee = getRegulatoryFee({proceeds: notional, quantity, side, tradedAt});
+    return {fee, feeAsset};
   }
 
   const rate = rates[orderType];
-  const feeInCounter = notional.times(rate).round(FIAT_FEE_DECIMAL_PLACES, Big.roundUp);
 
   if (feeAsset === pair.base) {
-    return {fee: new Big(quantity).times(rate).round(BASE_FEE_DECIMAL_PLACES, Big.roundUp), feeAsset, feeInCounter};
+    return {fee: new Big(quantity).times(rate).round(BASE_FEE_DECIMAL_PLACES, Big.roundUp), feeAsset};
   }
 
-  return {fee: feeInCounter, feeAsset, feeInCounter};
+  return {fee: notional.times(rate).round(FIAT_FEE_DECIMAL_PLACES, Big.roundUp), feeAsset};
 }

@@ -95,15 +95,6 @@ export interface FeeRate {
   CURRENCY_CONVERSION_FEE?: Big;
 }
 
-export interface FeeEstimateRequest {
-  orderType: OrderType;
-  /** Expected execution price, in counter units per base unit. */
-  price: Big.BigSource;
-  /** Order size in base units. */
-  quantity: Big.BigSource;
-  side: OrderSide;
-}
-
 export const OrderPosition = {
   LONG: 'LONG',
   SHORT: 'SHORT',
@@ -311,47 +302,6 @@ export abstract class Broker extends EventEmitter {
   async getFeeRate(pair: TradingPair, orderType: OrderType): Promise<Big> {
     const feeRate = await this.getFeeRates(pair);
     return feeRate[orderType];
-  }
-
-  /**
-   * Expected cost of one order leg, so a strategy can decide whether a price move covers the
-   * round trip.
-   *
-   * **Always denominated in `pair.counter`, whatever asset the broker actually debits.** Some
-   * venues take the fee out of the asset they credit you with — Alpaca bills a crypto BUY in the
-   * base asset — but a cost estimate is only useful when every leg is expressed in one currency,
-   * so those are converted at `price` rather than reported in their native unit. Ask
-   * {@link getFeeAsset} for the asset a fee is charged in.
-   *
-   * This is the *expected* fee. Realised fees arrive on `Fill.fee` and may differ (broker-side
-   * spreads, FX variation, maker/taker classification).
-   */
-  async estimateFee(
-    pair: TradingPair,
-    request: FeeEstimateRequest
-  ): Promise<{commission: Big; currencyConversion: Big; total: Big; feeAsset: string}> {
-    const rates = await this.getFeeRates(pair);
-    const notional = new Big(request.quantity).times(request.price);
-    const commission = notional.times(rates[request.orderType]);
-    const conversionRate = rates.CURRENCY_CONVERSION_FEE;
-    const currencyConversion = conversionRate ? notional.times(conversionRate) : new Big(0);
-    return {
-      commission,
-      currencyConversion,
-      feeAsset: pair.counter,
-      total: commission.plus(currencyConversion),
-    };
-  }
-
-  /**
-   * The asset a fee is debited from, which is not always `pair.counter`.
-   *
-   * Brokers with cross-currency accounts (a Trading212 EUR account trading USD instruments) charge
-   * in the account currency, and venues that bill out of the credited asset depend on the side —
-   * Alpaca takes a crypto BUY fee in the base asset and a SELL fee in the counter.
-   */
-  async getFeeAsset(pair: TradingPair, _side: OrderSide) {
-    return pair.counter;
   }
 
   /**
