@@ -1,12 +1,7 @@
 import {describe, expect, it} from 'vitest';
-import {AccountSchema} from './AccountSchema.js';
+import {AccountSchema, type Account} from './AccountSchema.js';
 
-/**
- * Shape of a live cash account, trimmed to the fields the schema declares. Alpaca returns no
- * `daytrade_count` and no `pattern_day_trader` here: both belong to Pattern Day Trader tracking,
- * which only applies to margin accounts.
- */
-const CASH_ACCOUNT = {
+const CASH_ACCOUNT: Account = {
   account_blocked: false,
   account_number: '245695408',
   buying_power: '325.7',
@@ -27,7 +22,7 @@ const CASH_ACCOUNT = {
   trade_suspended_by_user: false,
   trading_blocked: false,
   transfers_blocked: false,
-} as const;
+};
 
 describe('AccountSchema', () => {
   it('parses a cash account that omits the Pattern Day Trader fields', () => {
