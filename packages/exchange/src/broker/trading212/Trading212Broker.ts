@@ -371,7 +371,7 @@ export class Trading212Broker extends Broker implements MarketDataSource {
    * Trading212 debits all fees in the account currency, not the instrument currency.
    * Strategies on a EUR account trading USD stocks see fees in EUR.
    */
-  protected override async getFeeAsset(_pair: TradingPair, _side: OrderSide) {
+  override async getFeeAsset(_pair: TradingPair, _side: OrderSide) {
     const accountInfo = await this.#api.getAccountInfo();
     return accountInfo.currencyCode;
   }

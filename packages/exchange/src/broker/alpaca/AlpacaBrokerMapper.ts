@@ -98,6 +98,15 @@ export class AlpacaBrokerMapper {
       throw new Error(`Order ID "${order.id}" is not filled.`);
     }
 
+    /*
+     * Interpolating a null here would hand downstream a Fill whose price is the string "null",
+     * which survives every type check and then throws inside `new Big(fill.price)` far away from
+     * the payload that caused it.
+     */
+    if (order.filled_avg_price === null) {
+      throw new Error(`Order ID "${order.id}" is filled but has no average fill price.`);
+    }
+
     return {
       created_at: `${order.created_at}`,
       /**
@@ -111,7 +120,7 @@ export class AlpacaBrokerMapper {
       pair,
       /** @see https://forum.alpaca.markets/t/13480 */
       position: OrderPosition.LONG,
-      price: `${order.filled_avg_price}`,
+      price: order.filled_avg_price,
       side: order.side === 'buy' ? OrderSide.BUY : OrderSide.SELL,
       size: `${order.filled_qty}`,
     };
