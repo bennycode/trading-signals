@@ -6,7 +6,7 @@ import {CandleBatcher, OrderPosition, OrderSide, OrderType, TradingPair} from '@
 import {AllAvailableAmount} from '../trader/index.js';
 import type {Candle, Fill, PendingOrder, OneMinuteBatchedCandle} from '@typedtrader/exchange';
 import type {LimitOrderAdvice, MarketOrderAdvice, OrderAdvice, TradingSessionState} from '../trader/index.js';
-import {exceedsBrokerBalance, ProtectedStrategy, ProtectedStrategySchema} from './ProtectedStrategy.js';
+import {exceedsBrokerBalance, getNetProfit, ProtectedStrategy, ProtectedStrategySchema} from './ProtectedStrategy.js';
 
 function assertLimitSell(advice: OrderAdvice | void): asserts advice is LimitOrderAdvice {
   if (!advice || advice.type !== OrderType.LIMIT || advice.side !== OrderSide.SELL) {
@@ -1027,6 +1027,57 @@ describe('ProtectedStrategy', () => {
         exceedsBrokerBalance(new Big(strategy.protectedState.totalPositionSize), new Big('1'), increment),
         'six units tracked against one held is drift the operator should see'
       ).toBe(true);
+    });
+  });
+
+  describe('net profit', () => {
+    it('subtracts the exit commission from the gross proceeds', () => {
+      const net = getNetProfit({
+        costBasis: new Big('1000'),
+        exitFeeRate: new Big('0.0025'),
+        positionSize: new Big('10'),
+        price: new Big('110'),
+      });
+
+      expect(net.toFixed(2), '1100 gross - 2.75 fee - 1000 basis').toBe('97.25');
+    });
+
+    it('reports a loss when the move does not cover the round trip', () => {
+      /*
+       * The live BTC round trip: 0.001251765 BTC held against a 99.96 USD outlay, marked at the
+       * price Alpaca was showing a +0.13 USD unrealised gain on. After the exit fee it is a loss.
+       */
+      const net = getNetProfit({
+        costBasis: new Big('99.96'),
+        exitFeeRate: new Big('0.0025'),
+        positionSize: new Big('0.001251765'),
+        price: new Big('79768.05'),
+      });
+
+      expect(net.lt(0), 'the broker showed +0.13 USD on the same position, because it counts neither fee').toBe(true);
+      expect(net.toFixed(2)).toBe('-0.36');
+    });
+
+    it('is unprofitable at exactly break-even on price, because the exit still costs', () => {
+      const net = getNetProfit({
+        costBasis: new Big('1000'),
+        exitFeeRate: new Big('0.0025'),
+        positionSize: new Big('10'),
+        price: new Big('100'),
+      });
+
+      expect(net.lt(0), 'a flat price still owes the exit commission').toBe(true);
+    });
+
+    it('treats a zero fee rate as a pure price delta', () => {
+      const net = getNetProfit({
+        costBasis: new Big('1000'),
+        exitFeeRate: new Big('0'),
+        positionSize: new Big('10'),
+        price: new Big('110'),
+      });
+
+      expect(net.toFixed(2)).toBe('100.00');
     });
   });
 });

@@ -157,6 +157,23 @@ type ProtectedContainerState = {[PROTECTED_STATE_KEY]: ProtectedStrategyState};
  *
  * `increment` is the smallest tradeable amount, so a gap below it is rounding rather than drift.
  */
+/**
+ * What closing a position at `price` would actually book, after the commission on the exit.
+ *
+ * A broker's own unrealised P/L is a price delta: position size times the move since entry. It
+ * cannot include the exit fee, which has not been charged yet, and on venues that bill in kind it
+ * does not include the entry fee either — that one was taken as a smaller position rather than a
+ * cash cost, so it never appears in the basis. Both omissions push the reported number the same
+ * way, and a take-profit set to a percentage smaller than the round trip fires on a gain that does
+ * not exist.
+ *
+ * `costBasis` must be what the position actually cost, which is executed size times fill price.
+ */
+export function getNetProfit(params: {costBasis: Big; exitFeeRate: Big; positionSize: Big; price: Big}): Big {
+  const grossProceeds = params.positionSize.mul(params.price);
+  return grossProceeds.minus(grossProceeds.mul(params.exitFeeRate)).minus(params.costBasis);
+}
+
 export function exceedsBrokerBalance(tracked: Big, held: Big, increment: Big): boolean {
   return tracked.minus(held).gt(increment);
 }
@@ -327,6 +344,7 @@ export class ProtectedStrategy extends Strategy {
       const targetPrice = this.#resolveTakeProfitLimit(avgEntry, positionSize);
       if (currentPrice.gte(targetPrice)) {
         const orderType = this.#takeProfitOrder;
+        this.#warnOnPhantomGain(state, positionSize, orderType === 'limit' ? targetPrice : currentPrice);
         const reason = this.#takeProfitReason(avgEntry, currentPrice, positionSize, targetPrice, orderType);
         this.#setProtectedState({
           killed: true,
@@ -446,6 +464,32 @@ export class ProtectedStrategy extends Strategy {
       totalPositionSize: newPositionSize.toFixed(),
     });
     this.#warnOnPositionDrift(state);
+  }
+
+  /**
+   * Flags a take-profit that would close at a loss once the exit commission is paid.
+   *
+   * The trigger compares price against entry price, so on a pair whose round trip costs more than
+   * the configured target it fires on a gain that only exists before fees. The order is still
+   * placed — the configuration is the operator's to choose — but the discrepancy is no longer
+   * silent.
+   */
+  #warnOnPhantomGain(state: TradingSessionState, positionSize: Big, exitPrice: Big): void {
+    const orderType = this.#takeProfitOrder === 'limit' ? OrderType.LIMIT : OrderType.MARKET;
+    const netProfit = getNetProfit({
+      costBasis: new Big(this.#protectedState.totalCostBasis),
+      exitFeeRate: state.feeRates[orderType],
+      positionSize,
+      price: exitPrice,
+    });
+
+    if (netProfit.gt(0)) {
+      return;
+    }
+
+    console.warn(
+      `Take-profit would close at ${netProfit.toFixed(2)} ${state.tradingRules.pair.counter} after the exit fee. The trigger measures price against entry and does not account for commission.`
+    );
   }
 
   #warnOnPositionDrift(state: TradingSessionState): void {
