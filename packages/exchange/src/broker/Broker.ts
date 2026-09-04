@@ -305,43 +305,6 @@ export abstract class Broker extends EventEmitter {
   }
 
   /**
-   * Estimate the per-leg fee for a single order before placing it. Strategies use this to
-   * decide whether an expected price move covers round-trip costs. The estimate combines
-   * the order-type commission rate and (when applicable) the currency-conversion rate.
-   *
-   * `feeAsset` is the currency the fee will actually be debited in — typically the account
-   * currency, which can differ from `pair.counter` on cross-currency accounts.
-   *
-   * Returns the *expected* fee. Actual realised fees come back on `Fill.fee` after the
-   * order executes and may differ slightly (broker-side spreads, FX rate variation).
-   */
-  async estimateFee(
-    pair: TradingPair,
-    orderType: OrderType,
-    notional: Big
-  ): Promise<{commission: Big; currencyConversion: Big; total: Big; feeAsset: string}> {
-    const rates = await this.getFeeRates(pair);
-    const commission = notional.times(rates[orderType]);
-    const conversionRate = rates.CURRENCY_CONVERSION_FEE;
-    const currencyConversion = conversionRate ? notional.times(conversionRate) : new Big(0);
-    return {
-      commission,
-      currencyConversion,
-      feeAsset: await this.getFeeAsset(pair),
-      total: commission.plus(currencyConversion),
-    };
-  }
-
-  /**
-   * The currency in which broker fees are debited. Defaults to `pair.counter`; brokers
-   * with cross-currency accounts (e.g. Trading212 EUR account trading USD instruments)
-   * override this to return the account currency.
-   */
-  protected async getFeeAsset(pair: TradingPair) {
-    return pair.counter;
-  }
-
-  /**
    * Returns the positions that your account is holding on the exchange.
    */
   async getAvailableBalances(pair: TradingPair): Promise<ExchangeAvailableBalance> {

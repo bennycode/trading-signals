@@ -98,16 +98,21 @@ export class AlpacaBrokerMapper {
       throw new Error(`Order ID "${order.id}" is not filled.`);
     }
 
+    // Interpolating null yields the string "null", which type-checks and throws far downstream.
+    if (order.filled_avg_price === null) {
+      throw new Error(`Order ID "${order.id}" is filled but has no average fill price.`);
+    }
+
     return {
       created_at: `${order.created_at}`,
-      /** Alpaca does not charge a commission (except for crypto) for trades: https://files.alpaca.markets/disclosures/library/BrokFeeSched.pdf */
+      /** No fee on the wire; `AlpacaBroker` derives it and overwrites both fields. */
       fee: '0',
       feeAsset: pair.counter,
       order_id: `${order.id}`,
       pair,
       /** @see https://forum.alpaca.markets/t/13480 */
       position: OrderPosition.LONG,
-      price: `${order.filled_avg_price}`,
+      price: order.filled_avg_price,
       side: order.side === 'buy' ? OrderSide.BUY : OrderSide.SELL,
       size: `${order.filled_qty}`,
     };

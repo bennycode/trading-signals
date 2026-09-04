@@ -7,21 +7,26 @@ import {AlpacaAssetClass, AlpacaOrderSide, AlpacaOrderStatus, AlpacaOrderType} f
 import {PositionSide} from './api/schema/PositionSchema.js';
 import {TradeUpdateEvent} from './api/schema/TradingStreamSchema.js';
 import type {AlpacaAPI} from './api/AlpacaAPI.js';
+import type {Account} from './api/schema/AccountSchema.js';
+import type {Asset} from './api/schema/AssetSchema.js';
+import type {Bar} from './api/schema/BarSchema.js';
+import type {Order} from './api/schema/OrderSchema.js';
+import type {Position} from './api/schema/PositionSchema.js';
 import type {alpacaTradingWebSocket} from './AlpacaTradingWebSocket.js';
 
 // Shared mock references
 const mockMethods = {
-  deleteOrder: vi.fn(),
-  getAccount: vi.fn(),
-  getAssets: vi.fn(),
-  getClock: vi.fn(),
-  getCryptoBars: vi.fn(),
-  getCryptoBarsLatest: vi.fn().mockResolvedValue({bars: {}}),
-  getOrders: vi.fn(),
-  getPositions: vi.fn(),
-  getStockBars: vi.fn(),
-  getStockBarsLatest: vi.fn(),
-  postOrder: vi.fn(),
+  deleteOrder: vi.fn<AlpacaAPI['deleteOrder']>(),
+  getAccount: vi.fn<AlpacaAPI['getAccount']>(),
+  getAssets: vi.fn<AlpacaAPI['getAssets']>(),
+  getClock: vi.fn<AlpacaAPI['getClock']>(),
+  getCryptoBars: vi.fn<AlpacaAPI['getCryptoBars']>(),
+  getCryptoBarsLatest: vi.fn<AlpacaAPI['getCryptoBarsLatest']>().mockResolvedValue({bars: {}}),
+  getOrders: vi.fn<AlpacaAPI['getOrders']>(),
+  getPositions: vi.fn<AlpacaAPI['getPositions']>(),
+  getStockBars: vi.fn<AlpacaAPI['getStockBars']>(),
+  getStockBarsLatest: vi.fn<AlpacaAPI['getStockBarsLatest']>(),
+  postOrder: vi.fn<AlpacaAPI['postOrder']>(),
 };
 
 vi.mock(import('./api/AlpacaAPI.js'), () => ({
@@ -58,6 +63,111 @@ const {AlpacaBroker} = await import('./AlpacaBroker.js');
 const {AlpacaMarketData} = await import('./AlpacaMarketData.js');
 const {SimplifiedHttpError} = await import('../../util/SimplifiedHttpError.js');
 
+// The mocks carry real AlpacaAPI signatures, so fixtures must satisfy the whole schema.
+function anOrder(overrides: Partial<Order> = {}): Order {
+  return {
+    asset_class: AlpacaAssetClass.US_EQUITY,
+    asset_id: 'asset-1',
+    canceled_at: null,
+    client_order_id: 'client-1',
+    created_at: '2023-08-21T15:57:26.195019Z',
+    expired_at: null,
+    extended_hours: false,
+    failed_at: null,
+    filled_at: '2023-08-21T15:57:27.000000Z',
+    filled_avg_price: '53.05',
+    filled_qty: '3',
+    id: 'order-1',
+    legs: null,
+    limit_price: null,
+    notional: null,
+    qty: '3',
+    replaced_at: null,
+    replaced_by: null,
+    replaces: null,
+    side: AlpacaOrderSide.BUY,
+    status: AlpacaOrderStatus.FILLED,
+    stop_price: null,
+    submitted_at: '2023-08-21T15:57:26.000000Z',
+    symbol: 'SHOP',
+    time_in_force: 'day',
+    type: AlpacaOrderType.MARKET,
+    updated_at: '2023-08-21T15:57:27.000000Z',
+    ...overrides,
+  };
+}
+
+function aPosition(overrides: Partial<Position> = {}): Position {
+  return {
+    asset_class: AlpacaAssetClass.US_EQUITY,
+    asset_id: 'asset-1',
+    avg_entry_price: '50',
+    change_today: '0',
+    cost_basis: '150',
+    current_price: '53',
+    lastday_price: '52',
+    market_value: '159',
+    qty: '3',
+    qty_available: '3',
+    side: PositionSide.LONG,
+    symbol: 'SHOP',
+    unrealized_intraday_pl: '0',
+    unrealized_intraday_plpc: '0',
+    unrealized_pl: '9',
+    unrealized_plpc: '0.06',
+    ...overrides,
+  };
+}
+
+function anAccount(overrides: Partial<Account> = {}): Account {
+  return {
+    account_blocked: false,
+    account_number: '123456789',
+    buying_power: '1000',
+    cash: '1000',
+    created_at: '2023-01-01T00:00:00Z',
+    currency: 'USD',
+    daytrade_count: 0,
+    equity: '1000',
+    id: 'account-1',
+    initial_margin: '0',
+    last_equity: '30000',
+    long_market_value: '0',
+    maintenance_margin: '0',
+    multiplier: '1',
+    pattern_day_trader: false,
+    portfolio_value: '1000',
+    short_market_value: '0',
+    shorting_enabled: false,
+    status: 'ACTIVE',
+    trade_suspended_by_user: false,
+    trading_blocked: false,
+    transfers_blocked: false,
+    ...overrides,
+  };
+}
+
+function anAsset(overrides: Partial<Asset> = {}): Asset {
+  return {
+    class: 'us_equity',
+    easy_to_borrow: false,
+    exchange: 'NASDAQ',
+    fractionable: true,
+    id: 'asset-1',
+    marginable: false,
+    name: 'Test Asset',
+    shortable: false,
+    status: 'active',
+    symbol: 'SHOP',
+    tradable: true,
+    ...overrides,
+  };
+}
+
+function aBar(close: number): Bar {
+  return {c: close, h: close, l: close, n: 1, o: close, t: '2024-01-01T00:00:00Z', v: 1, vw: close};
+}
+
 describe('AlpacaBroker', {concurrent: false}, () => {
   let exchange: InstanceType<typeof AlpacaBroker>;
 
@@ -82,9 +192,9 @@ describe('AlpacaBroker', {concurrent: false}, () => {
   describe('listBalances', () => {
     it('returns positions and account cash', async () => {
       mockMethods.getPositions.mockResolvedValue([
-        {asset_class: 'us_equity', qty: '3', side: PositionSide.LONG, symbol: 'SHOP'},
+        aPosition({asset_class: 'us_equity', qty: '3', side: PositionSide.LONG, symbol: 'SHOP'}),
       ]);
-      mockMethods.getAccount.mockResolvedValue({cash: '500.50', currency: 'USD', last_equity: '30000'});
+      mockMethods.getAccount.mockResolvedValue(anAccount({cash: '500.50', currency: 'USD', last_equity: '30000'}));
 
       const balances = await exchange.listBalances();
 
@@ -100,9 +210,9 @@ describe('AlpacaBroker', {concurrent: false}, () => {
 
     it('trims crypto USD suffix from symbol', async () => {
       mockMethods.getPositions.mockResolvedValue([
-        {asset_class: 'crypto', qty: '100', side: PositionSide.LONG, symbol: 'USDTUSD'},
+        aPosition({asset_class: 'crypto', qty: '100', side: PositionSide.LONG, symbol: 'USDTUSD'}),
       ]);
-      mockMethods.getAccount.mockResolvedValue({cash: '0', currency: 'USD', last_equity: '30000'});
+      mockMethods.getAccount.mockResolvedValue(anAccount({cash: '0', currency: 'USD', last_equity: '30000'}));
 
       const balances = await exchange.listBalances();
       expect(balances[0]?.currency).toBe('USDT');
@@ -110,9 +220,9 @@ describe('AlpacaBroker', {concurrent: false}, () => {
 
     it('uses absolute values for SHORT positions', async () => {
       mockMethods.getPositions.mockResolvedValue([
-        {asset_class: 'us_equity', qty: '-3', side: PositionSide.SHORT, symbol: 'TSLA'},
+        aPosition({asset_class: 'us_equity', qty: '-3', side: PositionSide.SHORT, symbol: 'TSLA'}),
       ]);
-      mockMethods.getAccount.mockResolvedValue({cash: '0', currency: 'USD', last_equity: '30000'});
+      mockMethods.getAccount.mockResolvedValue(anAccount({cash: '0', currency: 'USD', last_equity: '30000'}));
 
       const balances = await exchange.listBalances();
       expect(balances[0]).toEqual({
@@ -125,9 +235,15 @@ describe('AlpacaBroker', {concurrent: false}, () => {
 
     it('throws an error when Alpaca returns an unknown position side', async () => {
       mockMethods.getPositions.mockResolvedValue([
-        {asset_class: 'us_equity', qty: '3', side: 'unknown', symbol: 'SHOP'},
+        aPosition({
+          asset_class: 'us_equity',
+          qty: '3',
+          // Deliberately invalid: this test exists to prove the broker rejects a side it cannot map.
+          side: 'unknown' as PositionSide,
+          symbol: 'SHOP',
+        }),
       ]);
-      mockMethods.getAccount.mockResolvedValue({cash: '0', currency: 'USD', last_equity: '30000'});
+      mockMethods.getAccount.mockResolvedValue(anAccount({cash: '0', currency: 'USD', last_equity: '30000'}));
 
       await expect(exchange.listBalances()).rejects.toThrow();
     });
@@ -135,7 +251,7 @@ describe('AlpacaBroker', {concurrent: false}, () => {
 
   describe('getFills', () => {
     it('returns only filled orders mapped to Fill', async () => {
-      const filledOrder = {
+      const filledOrder = anOrder({
         asset_class: AlpacaAssetClass.US_EQUITY,
         created_at: '2023-08-21T15:57:26.195019Z',
         filled_avg_price: '53.05',
@@ -143,15 +259,15 @@ describe('AlpacaBroker', {concurrent: false}, () => {
         id: 'order-1',
         side: AlpacaOrderSide.BUY,
         status: AlpacaOrderStatus.FILLED,
-      };
+      });
 
-      const canceledOrder = {
+      const canceledOrder = anOrder({
         ...filledOrder,
         filled_avg_price: null,
         filled_qty: '0',
         id: 'order-2',
         status: AlpacaOrderStatus.CANCELED,
-      };
+      });
 
       mockMethods.getOrders.mockResolvedValue([filledOrder, canceledOrder]);
 
@@ -162,6 +278,71 @@ describe('AlpacaBroker', {concurrent: false}, () => {
       expect(fills[0]?.order_id).toBe('order-1');
       expect(fills[0]?.price).toBe('53.05');
       expect(fills[0]?.side).toBe(OrderSide.BUY);
+      expect(fills[0]?.fee, 'stock trades are commission-free on Alpaca').toBe('0');
+      expect(fills[0]?.feeAsset).toBe('USD');
+    });
+
+    it('derives the crypto commission the order payload does not carry', async () => {
+      mockMethods.getCryptoBarsLatest.mockResolvedValue({bars: {'USDT/USD': aBar(1)}});
+      mockMethods.getOrders.mockResolvedValue([
+        anOrder({
+          asset_class: AlpacaAssetClass.CRYPTO,
+          created_at: '2023-09-23T10:21:09.000000Z',
+          filled_avg_price: '0.99912',
+          filled_qty: '56.7732',
+          id: 'crypto-sell',
+          side: AlpacaOrderSide.SELL,
+          status: AlpacaOrderStatus.FILLED,
+          type: AlpacaOrderType.MARKET,
+        }),
+      ]);
+
+      const fills = await exchange.getFills(new TradingPair('USDT', 'USD'));
+
+      expect(fills[0]?.fee, 'matches the CFEE activity Alpaca charged for this exact fill').toBe('0.15');
+      expect(fills[0]?.feeAsset, 'a SELL is credited in the counter asset').toBe('USD');
+    });
+
+    it('bills a crypto BUY in the base asset', async () => {
+      mockMethods.getCryptoBarsLatest.mockResolvedValue({bars: {'BTC/USD': aBar(1)}});
+      mockMethods.getOrders.mockResolvedValue([
+        anOrder({
+          asset_class: AlpacaAssetClass.CRYPTO,
+          created_at: '2024-05-06T09:00:00.000001Z',
+          filled_avg_price: '61234.5',
+          filled_qty: '2.5',
+          id: 'crypto-buy',
+          side: AlpacaOrderSide.BUY,
+          status: AlpacaOrderStatus.FILLED,
+          type: AlpacaOrderType.MARKET,
+        }),
+      ]);
+
+      const fills = await exchange.getFills(new TradingPair('BTC', 'USD'));
+
+      expect(fills[0]?.fee, '2.5 BTC * 0.0025 taker rate').toBe('0.00625');
+      expect(fills[0]?.feeAsset, 'a BUY is credited in the base asset').toBe('BTC');
+    });
+
+    it('rejects a filled order that has no average fill price', async () => {
+      mockMethods.getCryptoBarsLatest.mockResolvedValue({bars: {'BTC/USD': aBar(1)}});
+      mockMethods.getOrders.mockResolvedValue([
+        anOrder({
+          asset_class: AlpacaAssetClass.CRYPTO,
+          created_at: '2024-05-06T09:00:00.000001Z',
+          filled_avg_price: null,
+          filled_qty: '2.5',
+          id: 'crypto-no-price',
+          side: AlpacaOrderSide.BUY,
+          status: AlpacaOrderStatus.FILLED,
+          type: AlpacaOrderType.MARKET,
+        }),
+      ]);
+
+      await expect(
+        exchange.getFills(new TradingPair('BTC', 'USD')),
+        'a Fill priced "null" would throw later inside new Big(fill.price)'
+      ).rejects.toThrowError(/no average fill price/);
     });
   });
 
@@ -178,16 +359,16 @@ describe('AlpacaBroker', {concurrent: false}, () => {
   describe('getTradingRules', () => {
     it('returns crypto trading rules with exchange-provided values', async () => {
       mockMethods.getCryptoBarsLatest.mockResolvedValue({
-        bars: {'BTC/USD': {c: 1, h: 1, l: 1, n: 1, o: 1, t: '', v: 1, vw: 1}},
+        bars: {'BTC/USD': aBar(1)},
       });
       mockMethods.getAssets.mockResolvedValue([
-        {
+        anAsset({
           class: 'crypto',
           min_order_size: '0.0001',
           min_trade_increment: '0.0001',
           price_increment: '0.01',
           symbol: 'BTC/USD',
-        },
+        }),
       ]);
 
       const pair = new TradingPair('BTC', 'USD');
@@ -200,7 +381,7 @@ describe('AlpacaBroker', {concurrent: false}, () => {
     });
 
     it('returns stock trading rules with hardcoded defaults', async () => {
-      mockMethods.getAssets.mockResolvedValue([{class: 'us_equity', symbol: 'SHOP'}]);
+      mockMethods.getAssets.mockResolvedValue([anAsset({class: 'us_equity', symbol: 'SHOP'})]);
 
       const pair = new TradingPair('SHOP', 'USD');
       const rules = await exchange.getTradingRules(pair);
@@ -225,13 +406,15 @@ describe('AlpacaBroker', {concurrent: false}, () => {
     const uuidMatcher: unknown = expect.toSatisfy(isUuid);
 
     it('places a stock MARKET BUY order with notional amount', async () => {
-      mockMethods.postOrder.mockResolvedValue({
-        id: 'order-123',
-        notional: '200',
-        qty: null,
-        side: AlpacaOrderSide.BUY,
-        type: AlpacaOrderType.MARKET,
-      });
+      mockMethods.postOrder.mockResolvedValue(
+        anOrder({
+          id: 'order-123',
+          notional: '200',
+          qty: null,
+          side: AlpacaOrderSide.BUY,
+          type: AlpacaOrderType.MARKET,
+        })
+      );
 
       const pair = new TradingPair('SHOP', 'USD');
       const order = await exchange.placeMarketOrder(pair, {
@@ -254,14 +437,16 @@ describe('AlpacaBroker', {concurrent: false}, () => {
     });
 
     it('places a stock LIMIT SELL order with gtc for whole shares', async () => {
-      mockMethods.postOrder.mockResolvedValue({
-        id: 'order-456',
-        limit_price: '100',
-        notional: null,
-        qty: '5',
-        side: AlpacaOrderSide.SELL,
-        type: AlpacaOrderType.LIMIT,
-      });
+      mockMethods.postOrder.mockResolvedValue(
+        anOrder({
+          id: 'order-456',
+          limit_price: '100',
+          notional: null,
+          qty: '5',
+          side: AlpacaOrderSide.SELL,
+          type: AlpacaOrderType.LIMIT,
+        })
+      );
 
       const pair = new TradingPair('SHOP', 'USD');
       const order = await exchange.placeLimitOrder(pair, {
@@ -284,14 +469,16 @@ describe('AlpacaBroker', {concurrent: false}, () => {
     });
 
     it('places a stock LIMIT SELL order with day and extended hours for fractional shares', async () => {
-      mockMethods.postOrder.mockResolvedValue({
-        id: 'order-frac',
-        limit_price: '100',
-        notional: null,
-        qty: '5.5',
-        side: AlpacaOrderSide.SELL,
-        type: AlpacaOrderType.LIMIT,
-      });
+      mockMethods.postOrder.mockResolvedValue(
+        anOrder({
+          id: 'order-frac',
+          limit_price: '100',
+          notional: null,
+          qty: '5.5',
+          side: AlpacaOrderSide.SELL,
+          type: AlpacaOrderType.LIMIT,
+        })
+      );
 
       const pair = new TradingPair('SHOP', 'USD');
       const order = await exchange.placeLimitOrder(pair, {
@@ -316,15 +503,17 @@ describe('AlpacaBroker', {concurrent: false}, () => {
 
     it('uses gtc time_in_force for crypto orders', async () => {
       mockMethods.getCryptoBarsLatest.mockResolvedValue({
-        bars: {'BTC/USD': {c: 1, h: 1, l: 1, n: 1, o: 1, t: '', v: 1, vw: 1}},
+        bars: {'BTC/USD': aBar(1)},
       });
-      mockMethods.postOrder.mockResolvedValue({
-        id: 'order-789',
-        notional: '100',
-        qty: null,
-        side: AlpacaOrderSide.BUY,
-        type: AlpacaOrderType.MARKET,
-      });
+      mockMethods.postOrder.mockResolvedValue(
+        anOrder({
+          id: 'order-789',
+          notional: '100',
+          qty: null,
+          side: AlpacaOrderSide.BUY,
+          type: AlpacaOrderType.MARKET,
+        })
+      );
 
       const pair = new TradingPair('BTC', 'USD');
       await exchange.placeMarketOrder(pair, {
@@ -344,13 +533,15 @@ describe('AlpacaBroker', {concurrent: false}, () => {
     });
 
     it('sends a fresh client_order_id (UUID) with every placement so operators can reconcile failed submissions', async () => {
-      mockMethods.postOrder.mockResolvedValue({
-        id: 'order-123',
-        notional: '200',
-        qty: null,
-        side: AlpacaOrderSide.BUY,
-        type: AlpacaOrderType.MARKET,
-      });
+      mockMethods.postOrder.mockResolvedValue(
+        anOrder({
+          id: 'order-123',
+          notional: '200',
+          qty: null,
+          side: AlpacaOrderSide.BUY,
+          type: AlpacaOrderType.MARKET,
+        })
+      );
 
       const pair = new TradingPair('SHOP', 'USD');
       const options = {side: OrderSide.BUY, size: '200', sizeInCounter: true} as const;
@@ -358,7 +549,7 @@ describe('AlpacaBroker', {concurrent: false}, () => {
       await exchange.placeMarketOrder(pair, options);
 
       const clientOrderIds = mockMethods.postOrder.mock.calls.map(call => {
-        const [params] = call as Parameters<AlpacaAPI['postOrder']>;
+        const [params] = call;
         return params.client_order_id;
       });
       expect(clientOrderIds).toHaveLength(2);
@@ -371,7 +562,7 @@ describe('AlpacaBroker', {concurrent: false}, () => {
 
   describe('cancelOpenOrders', () => {
     it('cancels all open orders for a pair', async () => {
-      mockMethods.getOrders.mockResolvedValue([{id: 'open-1'}, {id: 'open-2'}]);
+      mockMethods.getOrders.mockResolvedValue([anOrder({id: 'open-1'}), anOrder({id: 'open-2'})]);
       mockMethods.deleteOrder.mockResolvedValue(undefined);
 
       const pair = new TradingPair('SHOP', 'USD');
@@ -384,7 +575,7 @@ describe('AlpacaBroker', {concurrent: false}, () => {
     });
 
     it('ignores orders that filled between fetching and canceling them', async () => {
-      mockMethods.getOrders.mockResolvedValue([{id: 'open-1'}]);
+      mockMethods.getOrders.mockResolvedValue([anOrder({id: 'open-1'})]);
       mockMethods.deleteOrder.mockRejectedValue(
         new SimplifiedHttpError({
           data: {code: 42210000, message: 'order is already in "filled" state'},
@@ -399,7 +590,7 @@ describe('AlpacaBroker', {concurrent: false}, () => {
     });
 
     it('rethrows unexpected cancellation errors', async () => {
-      mockMethods.getOrders.mockResolvedValue([{id: 'open-1'}]);
+      mockMethods.getOrders.mockResolvedValue([anOrder({id: 'open-1'})]);
       mockMethods.deleteOrder.mockRejectedValue(
         new SimplifiedHttpError({data: {message: 'internal server error'}, status: 500})
       );
@@ -479,6 +670,33 @@ describe('AlpacaBroker', {concurrent: false}, () => {
           side: OrderSide.BUY,
           size: '10',
         })
+      );
+    });
+
+    it('derives the crypto fee on a streamed fill', async () => {
+      const topicId = await exchange.watchOrders();
+      const fillHandler = vi.fn();
+      exchange.on(topicId, fillHandler);
+
+      const registeredCb = mockTradingWebSocket.onTradeUpdate.mock.calls[0]?.[1];
+      registeredCb?.({
+        event: TradeUpdateEvent.FILL,
+        order: anOrder({
+          asset_class: AlpacaAssetClass.CRYPTO,
+          filled_avg_price: '61234.5',
+          filled_qty: '2.5',
+          id: 'crypto-stream-buy',
+          side: AlpacaOrderSide.BUY,
+          symbol: 'BTC/USD',
+          type: AlpacaOrderType.MARKET,
+        }),
+        price: '61234.5',
+        qty: '2.5',
+        timestamp: '2024-05-06T09:00:00.600000Z',
+      });
+
+      expect(fillHandler).toHaveBeenCalledWith(
+        expect.objectContaining({fee: '0.00625', feeAsset: 'BTC', order_id: 'crypto-stream-buy'})
       );
     });
 

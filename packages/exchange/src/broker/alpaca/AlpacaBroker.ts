@@ -24,7 +24,8 @@ import {
 import type {MarketDataSource} from '../MarketDataSource.js';
 import type {TradingPair} from '../TradingPair.js';
 import {createAlpacaSymbol, isAlpacaCryptoSymbol} from './alpacaSymbol.js';
-import {AlpacaOrderStatus} from './api/schema/OrderSchema.js';
+import {getTradeCost} from './AlpacaFees.js';
+import {AlpacaAssetClass, AlpacaOrderStatus, AlpacaOrderType, type Order} from './api/schema/OrderSchema.js';
 import {AlpacaAPI} from './api/AlpacaAPI.js';
 import {PositionSide} from './api/schema/PositionSchema.js';
 import {alpacaTradingWebSocket, type AlpacaTradingConnection} from './AlpacaTradingWebSocket.js';
@@ -188,7 +189,8 @@ export class AlpacaBroker extends Broker implements MarketDataSource {
     const cb = (message: TradeUpdateMessage) => {
       if (message.event === TradeUpdateEvent.FILL) {
         const pair = AlpacaBrokerMapper.symbolToPair(message.order.symbol, message.order.asset_class);
-        const fill = AlpacaBrokerMapper.toFilledOrder(message.order, pair);
+        // Account-wide stream: no single pair to query rates for, and no round trip per fill.
+        const fill = this.#toFillWithFee(message.order, pair, AlpacaBroker.DEFAULT_FEE_RATES);
         this.emit(topicId, fill);
       }
     };
@@ -318,7 +320,24 @@ export class AlpacaBroker extends Broker implements MarketDataSource {
     const symbol = await this.#createReliableSymbol(pair);
     const orders = await this.#alpacaAPI.getOrders({status: 'closed', symbols: symbol});
     const filledOrders = orders.filter(order => order.status === AlpacaOrderStatus.FILLED);
-    return filledOrders.map(order => AlpacaBrokerMapper.toFilledOrder(order, pair));
+    const rates = await this.getFeeRates(pair);
+    return filledOrders.map(order => this.#toFillWithFee(order, pair, rates));
+  }
+
+  #toFillWithFee(order: Order, pair: TradingPair, rates: FeeRate): Fill {
+    const fill = AlpacaBrokerMapper.toFilledOrder(order, pair);
+
+    const {fee, feeAsset} = getTradeCost({
+      isCrypto: order.asset_class === AlpacaAssetClass.CRYPTO,
+      orderType: order.type === AlpacaOrderType.LIMIT ? OrderType.LIMIT : OrderType.MARKET,
+      pair,
+      price: fill.price,
+      quantity: order.filled_qty,
+      rates,
+      side: fill.side,
+    });
+
+    return {...fill, fee: fee.toFixed(), feeAsset};
   }
 
   async getFillByOrderId(pair: TradingPair, orderId: string): Promise<Fill | undefined> {
