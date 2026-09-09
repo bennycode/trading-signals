@@ -1,5 +1,5 @@
 import {EventEmitter} from 'node:events';
-import {spawnSync} from 'node:child_process';
+import {execFile, type ExecFileException} from 'node:child_process';
 import Big from 'big.js';
 import {describe, expect, it, vi} from 'vitest';
 import type {Broker, Candle, Fill} from '../broker/Broker.js';
@@ -51,7 +51,7 @@ function setup() {
     getLatestCandle: vi.fn<MarketDataSource['getLatestCandle']>().mockResolvedValue(CANDLE),
     getOpenOrders: vi.fn<Broker['getOpenOrders']>().mockResolvedValue([]),
     getRecentCandles: vi.fn<MarketDataSource['getRecentCandles']>().mockResolvedValue([CANDLE]),
-    getSmallestInterval: vi.fn().mockReturnValue(60_000),
+    getSmallestInterval: vi.fn<Broker['getSmallestInterval']>().mockReturnValue(60_000),
     getTime: vi.fn<Broker['getTime']>().mockResolvedValue(CANDLE.openTimeInISO),
     getTradingRules: vi.fn<Broker['getTradingRules']>().mockResolvedValue({
       base_increment: '0.1',
@@ -62,15 +62,29 @@ function setup() {
       pair: PAIR,
     }),
     listBalances: vi.fn<Broker['listBalances']>().mockResolvedValue([]),
-    placeLimitOrder: vi.fn<Broker['placeLimitOrder']>(),
-    placeMarketOrder: vi.fn<Broker['placeMarketOrder']>(),
+    placeLimitOrder: vi.fn<Broker['placeLimitOrder']>().mockResolvedValue({
+      id: '42',
+      pair: PAIR,
+      price: '100',
+      side: OrderSide.BUY,
+      size: '1',
+      type: OrderType.LIMIT,
+    }),
+    placeMarketOrder: vi.fn<Broker['placeMarketOrder']>().mockResolvedValue({
+      id: '42',
+      pair: PAIR,
+      side: OrderSide.BUY,
+      size: '1',
+      sizeInCounter: false,
+      type: OrderType.MARKET,
+    }),
     unwatchCandles: vi.fn(),
     unwatchOrders: vi.fn(),
     verifyCredentials: vi.fn<Broker['verifyCredentials']>().mockResolvedValue(undefined),
     watchCandles: vi.fn<MarketDataSource['watchCandles']>().mockResolvedValue('candles'),
     watchOrders: vi.fn<Broker['watchOrders']>().mockResolvedValue('orders'),
   });
-  const listInstruments = vi.fn().mockResolvedValue(INSTRUMENTS);
+  const listInstruments = vi.fn<ReturnType<typeof createCliBroker>['listInstruments']>().mockResolvedValue(INSTRUMENTS);
   const deps = {
     createBroker: vi.fn<CliDeps['createBroker']>().mockReturnValue({
       broker: broker as unknown as Broker & MarketDataSource,
@@ -191,6 +205,46 @@ describe('runCli', () => {
     expect(broker.estimateFee).not.toHaveBeenCalled();
   });
 
+  it('rejects a limit preview with a price between permitted increments', async () => {
+    const {broker, run} = setup();
+    await expect(run(['buy', 'AAPL', '1', '--dry-run', '--limit', '100.001'])).rejects.toThrow(
+      'Limit price must be a multiple of 0.01'
+    );
+    expect(broker.estimateFee).not.toHaveBeenCalled();
+    expect(broker.placeLimitOrder).not.toHaveBeenCalled();
+  });
+
+  it.each([[], ['--limit', '0.99']])('rejects a preview below the minimum order value: %j', async (...flags) => {
+    const {broker, run} = setup();
+    broker.getLatestCandle.mockResolvedValue({...CANDLE, close: '0.99'});
+    await expect(run(['buy', 'AAPL', '1', '--dry-run', ...flags])).rejects.toThrow(
+      'Order value must be at least 1 USD'
+    );
+    expect(broker.estimateFee).not.toHaveBeenCalled();
+    expect(broker.placeMarketOrder).not.toHaveBeenCalled();
+    expect(broker.placeLimitOrder).not.toHaveBeenCalled();
+  });
+
+  it('accepts a limit preview exactly at the minimum order value', async () => {
+    const {broker, run} = setup();
+    expect(await run(['buy', 'AAPL', '0.1', '--dry-run', '--limit', '10'])).toMatchObject({json: {dryRun: true}});
+    expect(broker.estimateFee).toHaveBeenCalledWith(PAIR, OrderType.LIMIT, new Big(1));
+  });
+
+  it('does not apply the limit-price increment to a market-price estimate', async () => {
+    const {broker, run} = setup();
+    broker.getLatestCandle.mockResolvedValue({...CANDLE, close: '100.001'});
+    expect(await run(['buy', 'AAPL', '1', '--dry-run'])).toMatchObject({json: {dryRun: true}});
+    expect(broker.estimateFee).toHaveBeenCalledWith(PAIR, OrderType.MARKET, new Big('100.001'));
+  });
+
+  it('allows a limit price when no positive price increment is configured', async () => {
+    const {broker, run} = setup();
+    const rules = await broker.getTradingRules(PAIR);
+    broker.getTradingRules.mockResolvedValue({...rules, counter_increment: '0'});
+    expect(await run(['buy', 'AAPL', '1', '--dry-run', '--limit', '100.001'])).toMatchObject({json: {dryRun: true}});
+  });
+
   it('quotes the most recent candle close and passes candle parameters through', async () => {
     const {broker, run} = setup();
     expect(await run(['quote', 'AAPL'])).toEqual({
@@ -284,19 +338,33 @@ describe('runCli', () => {
   });
 });
 
-describe('exchange-cli executable', () => {
+/*
+ * These spawn real Node processes. Run them sequentially without blocking the test worker;
+ * cold tsx startup can be slow when CI runs all workspace tests at the same time.
+ */
+describe('exchange-cli executable', {concurrent: false, timeout: 15_000}, () => {
   it.each([
     {args: ['--help'], code: 0, output: 'Usage:'},
     {args: ['balances', '--broker', 'alpaca'], code: 1, output: 'ALPACA_PAPER_API_KEY'},
     {args: ['buy', 'AAPL', '0', '--broker', 'alpaca'], code: 1, output: 'Invalid quantity'},
-  ])('flushes the correct output stream and exits: $args', ({args, code, output}) => {
-    const result = spawnSync(process.execPath, ['--import', 'tsx', `${import.meta.dirname}/exchange-cli.ts`, ...args], {
-      encoding: 'utf8',
-      env: {PATH: process.env.PATH},
-      timeout: 10_000,
+  ])('flushes the correct output stream and exits: $args', async ({args, code, output}) => {
+    const result = await new Promise<{error: ExecFileException | null; stdout: string; stderr: string}>(resolve => {
+      execFile(
+        process.execPath,
+        ['--import', 'tsx', `${import.meta.dirname}/exchange-cli.ts`, ...args],
+        {
+          encoding: 'utf8',
+          env: {PATH: process.env.PATH},
+          timeout: 10_000,
+        },
+        (error, stdout, stderr) => resolve({error, stderr, stdout})
+      );
     });
-    expect(result.error).toBeUndefined();
-    expect(result.status).toBe(code);
+    if (code === 0) {
+      expect(result.error).toBeNull();
+    } else {
+      expect(result.error).toMatchObject({code, killed: false, signal: null});
+    }
     expect(code === 0 ? result.stdout : result.stderr).toContain(output);
     expect(code === 0 ? result.stderr : result.stdout).toBe('');
   });

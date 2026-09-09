@@ -29,7 +29,7 @@ Commands:
 Options:
   --live                         Use live credentials and trading (default: paper)
   --counter <currency>           Skip currency lookup (Alpaca defaults to USD)
-  --dry-run                      With buy/sell: check size rules and estimate fees
+  --dry-run                      With buy/sell: check trading rules and estimate fees
   --limit <price>                With buy/sell: limit price
   --all                          With cancel: cancel every open order for the ticker
   --interval <duration>          Candle interval (default: 1m)
@@ -116,7 +116,13 @@ async function previewOrder(broker: Client, pair: TradingPair, side: OrderSide, 
   const price = limit
     ? new Big(limit)
     : new Big((await broker.getLatestCandle(pair, broker.getSmallestInterval())).close);
+  if (limit && new Big(rules.counter_increment).gt(0) && !price.mod(rules.counter_increment).eq(0)) {
+    throw new Error(`Limit price must be a multiple of ${rules.counter_increment}.`);
+  }
   const notional = price.times(quantity);
+  if (notional.lt(rules.counter_min_size)) {
+    throw new Error(`Order value must be at least ${rules.counter_min_size} ${pair.counter}.`);
+  }
   return {
     dryRun: true,
     estimatedFee: await broker.estimateFee(pair, limit ? OrderType.LIMIT : OrderType.MARKET, notional),
