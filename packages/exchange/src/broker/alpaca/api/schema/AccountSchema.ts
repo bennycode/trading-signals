@@ -10,8 +10,7 @@ export const AccountSchema = z.looseObject({
   cash: z.string(),
   created_at: z.string(),
   currency: z.string(),
-  /** Omitted on some live accounts (e.g. cash accounts without day-trade tracking). */
-  daytrade_count: z.number().nullish(),
+  daytrade_count: z.number().optional(),
   equity: z.string(),
   id: z.string(),
   initial_margin: z.string(),
@@ -19,8 +18,7 @@ export const AccountSchema = z.looseObject({
   long_market_value: z.string(),
   maintenance_margin: z.string(),
   multiplier: z.string(),
-  /** Omitted on some live accounts (e.g. cash accounts without day-trade tracking). */
-  pattern_day_trader: z.boolean().nullish(),
+  pattern_day_trader: z.boolean().optional(),
   portfolio_value: z.string(),
   short_market_value: z.string(),
   shorting_enabled: z.boolean(),

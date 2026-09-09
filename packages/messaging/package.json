@@ -45,17 +45,17 @@
     "@grammyjs/conversations": "^2.1.1",
     "@typedtrader/exchange": "0.3.3",
     "@types/big.js": "^7.0.0",
-    "better-sqlite3": "^13.0.1",
+    "better-sqlite3": "^13.0.3",
     "better-sqlite3-multiple-ciphers": "^12.11.1",
     "big.js": "^7.0.1",
     "dotenv-defaults": "^6.0.0",
     "drizzle-orm": "^0.45.2",
-    "grammy": "^1.44.0",
+    "grammy": "^1.46.0",
     "ms": "4.0.0-nightly.202508271359",
     "pino": "^10.3.1",
     "pino-roll": "^4.0.0",
     "trading-strategies": "0.4.5",
-    "zod": "^4.4.3"
+    "zod": "^4.5.1"
   },
   "devDependencies": {
     "@types/node": "^26.1.0",
