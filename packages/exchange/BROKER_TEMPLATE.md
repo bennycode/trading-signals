@@ -36,7 +36,7 @@ Every broker has a thin outer class that owns `rest` + `ws`/`stream`, exposes en
 - **Auth via request interceptor** (`httpClient.interceptors.request.use(...)`). More flexible than baked-in headers — supports token refresh, signing, clock skew. Auto-recovery (refresh token, re-login) belongs inside `retryCondition`.
 - **Expose `defaults` and `interceptors` getters** so callers can layer logging/tracing/extra retries without subclassing.
 - **Per-endpoint retry-delay tables must match paginated URLs.** When a vendor's rate limit is per-endpoint (e.g. 1 req / 60s), use `startsWith` / prefix matching against the request URL so cursor-paginated follow-ups (`?cursor=…`) hit the same calibrated wait instead of busy-looping the default delay.
-- **`.env.defaults` selects the safe environment.** Default the `USE_PAPER` / `USE_SANDBOX` flag to `true` so a populated live API key alone does not fire orders on a real account.
+- **The env file selects the environment.** Credentials live in `.env.sandbox` (paper) and `.env.live` (real money), loaded by the entrypoint via `loadEnvFiles()`; paper is the default and `--live` is an explicit opt-in. A machine without `.env.live` cannot trade the real account, so no flag can be misread into firing live orders.
 
 ### Order submission reconciliation
 
@@ -110,7 +110,7 @@ When the broker can already tell us something, don't ask the caller. `#isCryptoS
 
 - **Per-resource folders, not per-layer folders.** `account/`, `order/`, `fill/` each contain the API class + types + tests + `index.ts` barrel. Beats top-level `controllers/`, `types/`, `tests/` splits.
 - `index.ts` re-export barrels at every directory level so consumers import from the package root.
-- `demo/` directory with runnable scripts loaded via `dotenv-defaults` for manual smoke tests against real credentials.
+- Smoke-test against real credentials with the `exchange-cli` (`npm run cli -- ...`), which drives the broker through the production composition root. Only add a one-off script under `demo/` when the CLI cannot express the call, and delete it afterwards.
 - Test exchange logins with the project's own API classes, not raw `curl`/`fetch`.
 
 ## Things deliberately absent
