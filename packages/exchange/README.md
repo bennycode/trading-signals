@@ -2,7 +2,7 @@
 
 Typed broker clients for algorithmic trading in TypeScript. Trade through brokers like [Alpaca](https://alpaca.markets/) and [Trading212](https://www.trading212.com/) with one consistent API: every response validated at runtime (zod), all money math in arbitrary precision (big.js), live candles streamed over WebSocket.
 
-### [Install](#installation) · [Brokers](#supported-brokers) · [Quick Start](#quick-start-alpaca) · [Raw API](#raw-api-access) · [Rate Limits](#rate-limiting) · [Extend](#bring-your-own-broker)
+### [Install](#installation) · [Brokers](#supported-brokers) · [Quick Start](#quick-start-alpaca) · [CLI](#command-line-interface) · [Raw API](#raw-api-access) · [Rate Limits](#rate-limiting) · [Extend](#bring-your-own-broker)
 
 ## Motivation
 
@@ -110,6 +110,35 @@ await broker.placeLimitOrder(pair, {side: 'BUY', size: '1', price: latest.close}
 - **Order updates are polled.** Trading212 has no order-stream WebSocket, so `watchOrders` polls once per minute (matching Trading212's documented rate limit). Fills arrive within ~60 seconds rather than push-style.
 
 **Resources:** [API Documentation](https://docs.trading212.com/api) · [Fees](https://helpcentre.trading212.com/hc/en-us/articles/11471996799517)
+
+## Command-Line Interface
+
+`exchange-cli` exposes the existing broker clients from the terminal. Results are JSON on stdout, streaming events are NDJSON, and errors go to stderr with exit code 1.
+
+```sh
+exchange-cli help
+exchange-cli balances --broker trading212
+exchange-cli instruments rolls --broker trading212
+exchange-cli orders RRl_EQ --broker trading212 --counter GBX
+exchange-cli buy AAPL 1 --broker alpaca --limit 100 --dry-run
+exchange-cli buy AAPL 1 --broker alpaca --limit 100
+exchange-cli wait AAPL <orderId> --broker alpaca --timeout 5m
+exchange-cli cancel AAPL <orderId> --broker alpaca
+exchange-cli candles AAPL --broker alpaca --count 10 --interval 5m
+exchange-cli watch-candles AAPL --broker alpaca --take 3
+```
+
+Set `<BROKER>_PAPER_API_KEY` and `<BROKER>_PAPER_API_SECRET` in the environment, for example `ALPACA_PAPER_API_KEY`. Paper trading is the default. `--live` selects `<BROKER>_LIVE_API_KEY` / `<BROKER>_LIVE_API_SECRET` and the live trading host. The CLI does not load environment files automatically or read `*_USE_PAPER`; Node's `--env-file` can load an existing file:
+
+```sh
+node --env-file=.env dist/cli/exchange-cli.js balances --broker alpaca
+```
+
+From this package's source directory, use `npm run cli -- <command> ...` with exported credentials.
+
+Commands include `verify`, `balances`, `instruments`, `quote`, `rules`, `orders`, `fills`, `buy`, `sell`, `cancel`, `wait`, `candles`, `watch-candles`, `watch-orders`, and `time`. `quote` reports the latest candle close, not a bid/ask quote. `--dry-run` checks quantity rules and returns the broker's fee estimate without submitting an order; it does not guarantee acceptance. A `wait` timeout leaves the order open. Streaming runs until Ctrl-C unless `--take` is supplied.
+
+Market-data commands use Alpaca. Trading212 account and order commands need only Trading212 credentials; currency lookup can be skipped with `--counter`. Trading212 market-data commands and market-order previews are unavailable because its instrument identifiers need a separate market-data mapping. Use a limit price for a Trading212 preview. All commands inherit the existing clients' endpoint selection, order handling, fee estimates, and connection limits.
 
 ## Raw API Access
 
