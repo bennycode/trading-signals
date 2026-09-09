@@ -7,7 +7,8 @@ import {OrderPosition, OrderSide, OrderType} from '../broker/Broker.js';
 import type {MarketDataSource} from '../broker/MarketDataSource.js';
 import {TradingPair} from '../broker/TradingPair.js';
 import {createCliBroker} from './cliBroker.js';
-import {runCli, USAGE, type CliDeps} from './runCli.js';
+import {USAGE} from './parseCliArgs.js';
+import {runCli, type CliDeps} from './runCli.js';
 
 const PAIR = new TradingPair('AAPL', 'USD');
 const CANDLE: Candle = {
