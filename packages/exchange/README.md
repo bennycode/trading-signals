@@ -136,7 +136,25 @@ node --env-file=.env dist/cli/exchange-cli.js balances --broker alpaca
 
 From this package's source directory, use `npm run cli -- <command> ...` with exported credentials.
 
-Commands include `verify`, `balances`, `instruments`, `quote`, `rules`, `orders`, `fills`, `buy`, `sell`, `cancel`, `wait`, `candles`, `watch-candles`, `watch-orders`, and `time`. `quote` reports the latest candle close, not a bid/ask quote. `--dry-run` checks quantity rules, the limit-price increment, and the minimum order value, then returns the broker's fee estimate without submitting an order; it does not guarantee acceptance. A `wait` timeout leaves the order open. Streaming runs until Ctrl-C unless `--take` is supplied.
+| Command | Description |
+| --- | --- |
+| `verify` | Check broker credentials. |
+| `balances` | List cash balances and positions. |
+| `instruments <query>` | Search equities by ticker, name, or ISIN. |
+| `quote <ticker>` | Show the latest candle close, not a bid/ask quote. |
+| `rules <ticker>` | Show trading rules for a ticker. |
+| `orders <ticker>` | List open orders for a ticker. |
+| `fills <ticker>` | List order fills for a ticker. |
+| `buy <ticker> <quantity>` | Place a market buy, or use `--limit <price>` for a limit order. |
+| `sell <ticker> <quantity>` | Place a market sell, or use `--limit <price>` for a limit order. |
+| `cancel <ticker> <orderId>` | Request cancellation of one order; use `--all` instead of the order ID to target all open orders for the ticker. |
+| `wait <ticker> <orderId>` | Wait for a fill or for the order to close. |
+| `candles <ticker>` | Fetch recent candles. |
+| `watch-candles <ticker>` | Stream candles as NDJSON. |
+| `watch-orders` | Stream order fills as NDJSON. |
+| `time` | Show the broker client's time. |
+
+`--dry-run` checks quantity rules, the limit-price increment, and the minimum order value, then returns the broker's fee estimate without submitting an order; it does not guarantee acceptance. A `wait` timeout leaves the order open. Streaming runs until Ctrl-C unless `--take` is supplied.
 
 Market-data commands use Alpaca. Candle intervals must be whole minutes below one hour, whole hours up to one day, or one day exactly. Equivalent durations such as `60s` and `120m` are accepted; `90m` is rejected because the current adapter would round it to two hours. Trading212 account and order commands need only Trading212 credentials; currency lookup can be skipped with `--counter`. Trading212 market-data commands and market-order previews are unavailable because its instrument identifiers need a separate market-data mapping. Use a limit price for a Trading212 preview. All commands inherit the existing clients' endpoint selection, order handling, fee estimates, and connection limits.
 
