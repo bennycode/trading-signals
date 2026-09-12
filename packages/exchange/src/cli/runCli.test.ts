@@ -151,6 +151,31 @@ describe('runCli', () => {
     expect(deps.createBroker).not.toHaveBeenCalled();
   });
 
+  it.each(
+    [
+      {args: ['candles', 'AAPL'], flag: '--interval'},
+      {args: ['watch-candles', 'AAPL'], flag: '--interval'},
+      {args: ['wait', 'AAPL', '42'], flag: '--timeout'},
+      {args: ['wait', 'AAPL', '42'], flag: '--poll'},
+    ].flatMap(({args, flag}) => ['nonsense', '0m', '-1m'].map(value => ({args, flag, value})))
+  )('rejects $flag=$value before constructing a broker: $args', async ({args, flag, value}) => {
+    const {deps, run} = setup();
+    deps.createBroker.mockImplementation(() => {
+      throw new Error('Unexpected broker construction');
+    });
+    await expect(run([...args, flag, value])).rejects.toThrow(flag);
+    expect(deps.createBroker, 'invalid durations must not start broker connections or polling').not.toHaveBeenCalled();
+  });
+
+  it.each(['', '   '])('rejects a blank --counter before constructing a broker: %j', async counter => {
+    const {deps, run} = setup();
+    deps.createBroker.mockImplementation(() => {
+      throw new Error('Unexpected broker construction');
+    });
+    await expect(run(['buy', 'AAPL', '1', '--counter', counter])).rejects.toThrow('--counter');
+    expect(deps.createBroker).not.toHaveBeenCalled();
+  });
+
   it('requires an explicit supported broker', async () => {
     await expect(runCli(['balances'])).rejects.toThrow('--broker');
     await expect(runCli(['balances', '--broker', 'binance'])).rejects.toThrow('--broker');

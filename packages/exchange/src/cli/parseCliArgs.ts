@@ -33,6 +33,14 @@ function positiveInt(value: string): number {
   return number;
 }
 
+function positiveDuration(value: string): number {
+  const duration = parseDuration(value);
+  if (!Number.isFinite(duration) || duration <= 0) {
+    throw new InvalidArgumentError('Use a positive duration, e.g. 1m or 5s.');
+  }
+  return duration;
+}
+
 function positiveDecimal(value: string): string {
   try {
     if (new Big(value).gt(0)) {
@@ -46,6 +54,9 @@ function positiveDecimal(value: string): string {
 
 function invocation(command: Command) {
   const values = command.optsWithGlobals<Options>();
+  if (values.counter !== undefined && !values.counter.trim()) {
+    throw new InvalidArgumentError('--counter must not be blank.');
+  }
   const processedArgs: unknown[] = command.processedArgs;
   const args = processedArgs.filter((arg): arg is string => typeof arg === 'string');
   if (args.some(arg => !arg.trim())) {
@@ -112,22 +123,26 @@ export function parseCliArgs(argv: string[]) {
   command('wait <ticker> <orderId>', 'Wait for a fill or for the order to close')
     .addOption(
       new Option('--timeout <duration>', 'Wait deadline; does not cancel the order')
-        .argParser(parseDuration)
+        .argParser(positiveDuration)
         .default(parseDuration('5m'), '5m')
     )
-    .option('--poll <duration>', 'Poll interval (default: broker rate limit)', parseDuration);
+    .option('--poll <duration>', 'Poll interval (default: broker rate limit)', positiveDuration);
   command('cancel <ticker> [orderId]', 'Cancel one order, or all with --all').option(
     '--all',
     'Cancel every open order for the ticker'
   );
   command('candles <ticker>', 'Recent candles')
     .addOption(
-      new Option('--interval <duration>', 'Candle interval').argParser(parseDuration).default(parseDuration('1m'), '1m')
+      new Option('--interval <duration>', 'Candle interval')
+        .argParser(positiveDuration)
+        .default(parseDuration('1m'), '1m')
     )
     .option('--count <n>', 'Number of candles', positiveInt, 10);
   command('watch-candles <ticker>', 'Stream candles as NDJSON')
     .addOption(
-      new Option('--interval <duration>', 'Candle interval').argParser(parseDuration).default(parseDuration('1m'), '1m')
+      new Option('--interval <duration>', 'Candle interval')
+        .argParser(positiveDuration)
+        .default(parseDuration('1m'), '1m')
     )
     .option('--take <n>', 'Stop after n events (default: until Ctrl-C)', positiveInt);
   command('watch-orders', 'Stream fills as NDJSON').option(
