@@ -156,7 +156,7 @@ From this package's source directory, use `npm run cli -- <command> ...` with ex
 
 `--dry-run` checks quantity rules, the limit-price increment, and the minimum order value, then returns the broker's fee estimate without submitting an order; it does not guarantee acceptance. A `wait` timeout leaves the order open. Streaming runs until Ctrl-C unless `--take` is supplied.
 
-Market-data commands use Alpaca. Candle intervals must be whole minutes below one hour, whole hours up to one day, or one day exactly. Equivalent durations such as `60s` and `120m` are accepted; `90m` is rejected because the current adapter would round it to two hours. Trading212 account and order commands need only Trading212 credentials; currency lookup can be skipped with `--counter`. Trading212 market-data commands and market-order previews are unavailable because its instrument identifiers need a separate market-data mapping. Use a limit price for a Trading212 preview. All commands inherit the existing clients' endpoint selection, order handling, fee estimates, and connection limits.
+Market-data commands use Alpaca. Durations for `--interval`, `--timeout`, and `--poll` are parsed with `ms`, including formats such as `90m` and `1 hour`. The broker determines which candle intervals it supports. Trading212 account and order commands need only Trading212 credentials; currency lookup can be skipped with `--counter`. Trading212 market-data commands and market-order previews are unavailable because its instrument identifiers need a separate market-data mapping. Use a limit price for a Trading212 preview. All commands inherit the existing clients' endpoint selection, order handling, fee estimates, and connection limits.
 
 ## Raw API Access
 

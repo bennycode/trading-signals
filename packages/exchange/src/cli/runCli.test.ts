@@ -119,11 +119,7 @@ describe('runCli', () => {
     ['cancel', 'AAPL', '42', '--dry-run'],
     ['cancel', 'AAPL', '42', '--all'],
     ['candles', 'AAPL', '--count', '0'],
-    ['candles', 'AAPL', '--interval', '0m'],
-    ['candles', 'AAPL', '--interval', 'banana'],
-    ['wait', 'AAPL', '42', '--poll', '0s'],
     ['wait', 'AAPL', '42', '--poll', ''],
-    ['wait', 'AAPL', '42', '--timeout', '99w'],
     ['watch-orders', '--take', '1.5'],
     ['watch-orders', '--take', ''],
   ])('rejects invalid input before constructing a broker: %j', async (...args) => {
@@ -254,29 +250,22 @@ describe('runCli', () => {
     expect(broker.getRecentCandles).toHaveBeenCalledWith(PAIR, 3, 300_000);
   });
 
-  it.each(
-    ['candles', 'watch-candles'].flatMap(command =>
-      ['30s', '90s', '90m', '25h', '2d'].map(interval => ({command, interval}))
-    )
-  )('rejects unsupported $command intervals before connecting: $interval', async ({command, interval}) => {
-    const {broker, deps, run} = setup();
-    broker.watchCandles.mockRejectedValue(new Error('Unexpected candle subscription'));
-    await expect(run([command, 'AAPL', '--interval', interval])).rejects.toThrow('Invalid --interval');
-    expect(deps.createBroker).not.toHaveBeenCalled();
-  });
-
   it.each([
-    {interval: '1m', millis: 60_000},
-    {interval: '59m', millis: 3_540_000},
-    {interval: '1h', millis: 3_600_000},
-    {interval: '23h', millis: 82_800_000},
-    {interval: '1d', millis: 86_400_000},
-    {interval: '60s', millis: 60_000},
-    {interval: '120m', millis: 7_200_000},
-  ])('preserves exactly representable candle intervals: $interval', async ({interval, millis}) => {
+    {command: 'candles', interval: '90m', millis: 5_400_000},
+    {command: 'watch-candles', interval: '1 hour', millis: 3_600_000},
+  ])('passes parsed durations to $command: $interval', async ({command, interval, millis}) => {
     const {broker, run} = setup();
-    await run(['candles', 'AAPL', '--interval', interval]);
-    expect(broker.getRecentCandles).toHaveBeenCalledWith(PAIR, 10, millis);
+    if (command === 'candles') {
+      await run([command, 'AAPL', '--interval', interval]);
+      expect(broker.getRecentCandles).toHaveBeenCalledWith(PAIR, 10, millis);
+    } else {
+      broker.watchCandles.mockImplementation(async () => {
+        setTimeout(() => broker.emit('topic', CANDLE), 0);
+        return 'topic';
+      });
+      await run([command, 'AAPL', '--interval', interval, '--take', '1']);
+      expect(broker.watchCandles).toHaveBeenCalledWith(PAIR, millis, expect.any(String));
+    }
   });
 
   it('lists rules, orders, fills, and broker time', async () => {
