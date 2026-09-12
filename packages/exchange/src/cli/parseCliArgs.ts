@@ -1,144 +1,148 @@
-import {parseArgs} from 'node:util';
 import Big from 'big.js';
+import {Argument, Command, CommanderError, InvalidArgumentError, Option} from 'commander';
 import {parse as parseDuration} from 'ms';
-import {BROKERS} from './cliBroker.js';
+import {BROKERS, type BrokerKey} from './cliBroker.js';
 
-export const USAGE = `Usage: exchange-cli <command> --broker <alpaca|trading212> [options]
+interface Options {
+  all?: boolean;
+  broker: BrokerKey;
+  count?: number;
+  counter?: string;
+  dryRun?: boolean;
+  interval?: number;
+  limit?: string;
+  live?: boolean;
+  poll?: number;
+  take?: number;
+  timeout?: number;
+}
 
-Commands:
-  verify                         Check credentials
-  balances                       List cash and positions
-  instruments <query>            Search equities by ticker, name, or ISIN
-  quote <ticker>                 Latest candle close (not a bid/ask quote)
-  rules <ticker>                 Trading rules
-  orders <ticker>                Open orders
-  fills <ticker>                 Order fills
-  buy|sell <ticker> <quantity>    Market order; --limit <price> for a limit order
-  wait <ticker> <orderId>         Wait for a fill or for the order to close
-  cancel <ticker> <orderId>       Cancel one order; --all cancels all for the ticker
-  candles <ticker>               Recent candles
-  watch-candles <ticker>          Stream candles as NDJSON
-  watch-orders                   Stream fills as NDJSON
-  time                           Broker time
+function brokerName(value: string): BrokerKey {
+  const key = value.toLowerCase();
+  if (key === 'alpaca' || key === 'trading212') {
+    return key;
+  }
+  throw new InvalidArgumentError('Choose alpaca or trading212.');
+}
 
-Options:
-  --live                         Use live credentials and trading (default: paper)
-  --counter <currency>           Skip currency lookup (Alpaca defaults to USD)
-  --dry-run                      With buy/sell: check trading rules and estimate fees
-  --limit <price>                With buy/sell: limit price
-  --all                          With cancel: cancel every open order for the ticker
-  --interval <duration>          Candle interval (default: 1m)
-  --count <n>                     Number of candles (default: 10)
-  --take <n>                      Stop streaming after n events (default: until Ctrl-C)
-  --timeout <duration>           Wait deadline (default: 5m); does not cancel the order
-  --poll <duration>              Wait poll interval (default: broker rate limit)
-  --help                         Print this help without connecting
-
-Credentials: <BROKER>_PAPER_API_KEY and <BROKER>_PAPER_API_SECRET, or
-<BROKER>_LIVE_API_KEY and <BROKER>_LIVE_API_SECRET with --live.
-For example: ALPACA_PAPER_API_KEY. Set them in the environment or use Node's
---env-file option. Market-data commands are available with Alpaca.
-Results are JSON on stdout; failures go to stderr with exit code 1.`;
-
-// Keep validation local to the CLI; broker APIs remain responsible for trading behavior.
-const COMMAND_ARGS: Record<string, number> = {
-  balances: 0,
-  buy: 2,
-  cancel: 2,
-  candles: 1,
-  fills: 1,
-  instruments: 1,
-  orders: 1,
-  quote: 1,
-  rules: 1,
-  sell: 2,
-  time: 0,
-  verify: 0,
-  wait: 2,
-  'watch-candles': 1,
-  'watch-orders': 0,
-};
-
-function positiveInt(value: string, flag: string): number {
+function positiveInt(value: string): number {
   const number = Number(value);
   if (!Number.isSafeInteger(number) || number <= 0) {
-    throw new Error(`Invalid ${flag} "${value}". Use a positive integer.`);
+    throw new InvalidArgumentError('Use a positive integer.');
   }
   return number;
 }
 
-function validateDecimal(value: string, name: string): void {
+function positiveDecimal(value: string): string {
   try {
-    const number = new Big(value);
-    if (number.gt(0)) {
-      return;
+    if (new Big(value).gt(0)) {
+      return value;
     }
   } catch {
     // Report the CLI argument rather than big.js internals.
   }
-  throw new Error(`Invalid ${name} "${value}". Use a positive decimal.`);
+  throw new InvalidArgumentError('Use a positive decimal.');
 }
 
-/** Parse one command before constructing a broker. */
-export function parseCliArgs(argv: string[]) {
-  const {positionals, values} = parseArgs({
-    allowPositionals: true,
-    args: argv,
-    options: {
-      all: {type: 'boolean'},
-      broker: {type: 'string'},
-      count: {type: 'string'},
-      counter: {type: 'string'},
-      'dry-run': {type: 'boolean'},
-      help: {short: 'h', type: 'boolean'},
-      interval: {type: 'string'},
-      limit: {type: 'string'},
-      live: {type: 'boolean'},
-      poll: {type: 'string'},
-      take: {type: 'string'},
-      timeout: {type: 'string'},
-    },
-  });
-  const [command, ...args] = positionals;
-  if (!command || command === 'help' || values.help) {
-    return undefined;
+function invocation(command: Command) {
+  const values = command.optsWithGlobals<Options>();
+  const processedArgs: unknown[] = command.processedArgs;
+  const args = processedArgs.filter((arg): arg is string => typeof arg === 'string');
+  if (args.some(arg => !arg.trim())) {
+    throw new Error('Arguments must not be blank.');
   }
-  if (!Object.hasOwn(COMMAND_ARGS, command)) {
-    throw new Error(`Unknown command "${command}". Run "exchange-cli help" for usage.`);
+  if (command.name() === 'cancel' && Boolean(values.all) === Boolean(args[1])) {
+    throw new Error('Supply exactly one of <orderId> or --all.');
   }
-  const expected = command === 'cancel' && values.all ? 1 : COMMAND_ARGS[command];
-  if (args.length !== expected || args.some(arg => !arg.trim())) {
-    throw new Error(`Expected ${expected} argument(s) for "${command}". Run "exchange-cli help" for usage.`);
-  }
-  for (const [flag, commands] of Object.entries({
-    all: ['cancel'],
-    count: ['candles'],
-    'dry-run': ['buy', 'sell'],
-    interval: ['candles', 'watch-candles'],
-    limit: ['buy', 'sell'],
-    poll: ['wait'],
-    take: ['watch-candles', 'watch-orders'],
-    timeout: ['wait'],
-  })) {
-    if (Object.hasOwn(values, flag) && !commands.includes(command)) {
-      throw new Error(`--${flag} only applies to: ${commands.join(', ')}.`);
-    }
-  }
-  const key = values.broker?.toLowerCase();
-  if (key !== 'alpaca' && key !== 'trading212') {
-    throw new Error('Missing or unknown --broker. Choose alpaca or trading212.');
-  }
-  const interval = parseDuration(values.interval ?? '1m');
-  const timeout = parseDuration(values.timeout ?? '5m');
-  const poll = values.poll !== undefined ? parseDuration(values.poll) : BROKERS[key].pollInterval;
-  const count = positiveInt(values.count ?? '10', '--count');
-  const take = values.take !== undefined ? positiveInt(values.take, '--take') : Infinity;
-  if (command === 'buy' || command === 'sell') {
-    validateDecimal(args[1], 'quantity');
-    if (values.limit !== undefined) {
-      validateDecimal(values.limit, '--limit');
-    }
-  }
+  return {
+    args,
+    command: command.name(),
+    count: values.count ?? 10,
+    interval: values.interval ?? parseDuration('1m'),
+    key: values.broker,
+    poll: values.poll ?? BROKERS[values.broker].pollInterval,
+    take: values.take ?? Infinity,
+    timeout: values.timeout ?? parseDuration('5m'),
+    values,
+  };
+}
 
-  return {args, command, count, interval, key, poll, take, timeout, values} as const;
+/** Parse one command, or generate its help, before constructing a broker. */
+export function parseCliArgs(argv: string[]) {
+  let result: ReturnType<typeof invocation> | undefined;
+  let help = '';
+  const program = new Command('exchange-cli')
+    .description('JSON access to trading brokers (paper trading by default).')
+    .requiredOption('--broker <name>', 'alpaca or trading212', brokerName)
+    .option('--live', 'Use live credentials and trading')
+    .option('--counter <currency>', 'Skip currency lookup (Alpaca defaults to USD)')
+    .configureHelp({showGlobalOptions: true})
+    .configureOutput({
+      writeErr: () => {},
+      writeOut: text => {
+        help += text;
+      },
+    })
+    .addHelpText(
+      'after',
+      "\nCredentials: <BROKER>_PAPER_API_KEY and <BROKER>_PAPER_API_SECRET; use LIVE with --live.\nSet them in the environment or with Node's --env-file option.\nMarket data requires Alpaca. Results are JSON; failures go to stderr with exit code 1."
+    )
+    .exitOverride();
+  const command = (signature: string, description: string) => {
+    const cmd = program.command(signature).description(description);
+    cmd.action(() => {
+      result = invocation(cmd);
+    });
+    return cmd;
+  };
+
+  command('verify', 'Check credentials');
+  command('balances', 'List cash and positions');
+  command('instruments <query>', 'Search equities by ticker, name, or ISIN');
+  command('quote <ticker>', 'Latest candle close (not a bid/ask quote)');
+  command('rules <ticker>', 'Trading rules');
+  command('orders <ticker>', 'Open orders');
+  command('fills <ticker>', 'Order fills');
+  for (const side of ['buy', 'sell']) {
+    command(`${side} <ticker>`, 'Place a market or limit order')
+      .addArgument(new Argument('<quantity>', 'Positive quantity').argParser(positiveDecimal))
+      .option('--limit <price>', 'Limit price', positiveDecimal)
+      .option('--dry-run', 'Check trading rules and estimate fees');
+  }
+  command('wait <ticker> <orderId>', 'Wait for a fill or for the order to close')
+    .addOption(
+      new Option('--timeout <duration>', 'Wait deadline; does not cancel the order')
+        .argParser(parseDuration)
+        .default(parseDuration('5m'), '5m')
+    )
+    .option('--poll <duration>', 'Poll interval (default: broker rate limit)', parseDuration);
+  command('cancel <ticker> [orderId]', 'Cancel one order, or all with --all').option(
+    '--all',
+    'Cancel every open order for the ticker'
+  );
+  command('candles <ticker>', 'Recent candles')
+    .addOption(
+      new Option('--interval <duration>', 'Candle interval').argParser(parseDuration).default(parseDuration('1m'), '1m')
+    )
+    .option('--count <n>', 'Number of candles', positiveInt, 10);
+  command('watch-candles <ticker>', 'Stream candles as NDJSON')
+    .addOption(
+      new Option('--interval <duration>', 'Candle interval').argParser(parseDuration).default(parseDuration('1m'), '1m')
+    )
+    .option('--take <n>', 'Stop after n events (default: until Ctrl-C)', positiveInt);
+  command('watch-orders', 'Stream fills as NDJSON').option(
+    '--take <n>',
+    'Stop after n events (default: until Ctrl-C)',
+    positiveInt
+  );
+  command('time', 'Broker time');
+
+  try {
+    program.parse(argv.length ? argv : ['--help'], {from: 'user'});
+  } catch (error) {
+    if (!(error instanceof CommanderError) || error.exitCode !== 0) {
+      throw error;
+    }
+  }
+  return result ?? {help};
 }

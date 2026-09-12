@@ -2,7 +2,7 @@ import {OrderSide} from '../broker/Broker.js';
 import {TradingPair} from '../broker/TradingPair.js';
 import {BROKERS, createCliBroker} from './cliBroker.js';
 import {placeCliOrder, waitForOrder} from './cliOrders.js';
-import {parseCliArgs, USAGE} from './parseCliArgs.js';
+import {parseCliArgs} from './parseCliArgs.js';
 import {streamEvents} from './streamEvents.js';
 
 export interface CliDeps {
@@ -16,8 +16,8 @@ type CliResult = {text: string} | {json: unknown};
 /** Dispatch one command and always release its broker; the executable owns process I/O. */
 export async function runCli(argv: string[], overrides: Partial<CliDeps> = {}): Promise<CliResult> {
   const invocation = parseCliArgs(argv);
-  if (!invocation) {
-    return {text: USAGE};
+  if ('help' in invocation) {
+    return {text: invocation.help};
   }
   const {args, command, count, interval, key, poll, take, timeout, values} = invocation;
   const {broker, listInstruments} = (overrides.createBroker ?? createCliBroker)(
@@ -82,7 +82,7 @@ export async function runCli(argv: string[], overrides: Partial<CliDeps> = {}): 
       case 'sell': {
         return {
           json: await placeCliOrder(broker, pair, {
-            dryRun: values['dry-run'],
+            dryRun: values.dryRun,
             limit: values.limit,
             side: command === 'buy' ? OrderSide.BUY : OrderSide.SELL,
             size: args[1],

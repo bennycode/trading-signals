@@ -115,6 +115,8 @@ await broker.placeLimitOrder(pair, {side: 'BUY', size: '1', price: latest.close}
 
 `exchange-cli` exposes the existing broker clients from the terminal. Results are JSON on stdout, streaming events are NDJSON, and errors go to stderr with exit code 1.
 
+Commander generates help from the command definitions. Use `exchange-cli --help` for an overview or `exchange-cli buy --help` (also `exchange-cli help buy`) for a command's arguments and options. Help requires no credentials. Put command-specific options after the command; global options such as `--broker` and `--live` work before or after it.
+
 ```sh
 exchange-cli help
 exchange-cli balances --broker trading212

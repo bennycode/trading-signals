@@ -7,7 +7,6 @@ import {OrderPosition, OrderSide, OrderType} from '../broker/Broker.js';
 import type {MarketDataSource} from '../broker/MarketDataSource.js';
 import {TradingPair} from '../broker/TradingPair.js';
 import {createCliBroker} from './cliBroker.js';
-import {USAGE} from './parseCliArgs.js';
 import {runCli, type CliDeps} from './runCli.js';
 
 const PAIR = new TradingPair('AAPL', 'USD');
@@ -101,7 +100,28 @@ function setup() {
 describe('runCli', () => {
   it.each([[], ['help'], ['--help']])('shows help without constructing a broker: %j', async (...args) => {
     const {deps} = setup();
-    expect(await runCli(args, deps)).toEqual({text: USAGE});
+    const result = await runCli(args, deps);
+    expect(result).toHaveProperty('text');
+    if ('text' in result) {
+      expect(result.text).toContain('Usage: exchange-cli');
+    }
+    expect(deps.createBroker).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    ['buy', '--help'],
+    ['help', 'buy'],
+  ])('generates command-specific help without constructing a broker: %j', async (...args) => {
+    const {deps} = setup();
+    const result = await runCli(args, deps);
+    expect(result).toHaveProperty('text');
+    if ('text' in result) {
+      expect(result.text).toContain('exchange-cli buy [options] <ticker> <quantity>');
+      expect(result.text).toContain('--limit');
+      expect(result.text).toContain('--dry-run');
+      expect(result.text).toContain('--broker');
+      expect(result.text).not.toContain('--take');
+    }
     expect(deps.createBroker).not.toHaveBeenCalled();
   });
 
@@ -113,9 +133,12 @@ describe('runCli', () => {
     ['buy', 'AAPL', '0'],
     ['buy', 'AAPL', '--', '-1'],
     ['buy', 'AAPL', 'NaN'],
+    ['buy', ' ', '1'],
     ['buy', 'AAPL', '1', '--limit', '0'],
     ['buy', 'AAPL', '1', '--limit', ''],
     ['buy', 'AAPL', '1', '--all'],
+    ['buy', 'AAPL', '1', '--count', '2'],
+    ['cancel', 'AAPL'],
     ['cancel', 'AAPL', '42', '--dry-run'],
     ['cancel', 'AAPL', '42', '--all'],
     ['candles', 'AAPL', '--count', '0'],
@@ -140,6 +163,13 @@ describe('runCli', () => {
     expect(deps.createBroker).toHaveBeenCalledWith('alpaca', false, deps.env);
     await run(['balances', '--live']);
     expect(deps.createBroker).toHaveBeenLastCalledWith('alpaca', true, deps.env);
+  });
+
+  it('accepts global options before a command and normalizes the broker name', async () => {
+    const {broker, deps} = setup();
+    await runCli(['--broker', 'ALPACA', '--live', 'balances'], deps);
+    expect(deps.createBroker).toHaveBeenCalledWith('alpaca', true, deps.env);
+    expect(broker.listBalances).toHaveBeenCalledOnce();
   });
 
   it('selects only the requested environment credentials', () => {
@@ -364,8 +394,9 @@ describe('runCli', () => {
 describe('exchange-cli executable', {concurrent: false, timeout: 15_000}, () => {
   it.each([
     {args: ['--help'], code: 0, output: 'Usage:'},
+    {args: ['buy', '--help'], code: 0, output: '--limit'},
     {args: ['balances', '--broker', 'alpaca'], code: 1, output: 'ALPACA_PAPER_API_KEY'},
-    {args: ['buy', 'AAPL', '0', '--broker', 'alpaca'], code: 1, output: 'Invalid quantity'},
+    {args: ['buy', 'AAPL', '0', '--broker', 'alpaca'], code: 1, output: 'positive decimal'},
   ])('flushes the correct output stream and exits: $args', async ({args, code, output}) => {
     const result = await new Promise<{error: ExecFileException | null; stdout: string; stderr: string}>(resolve => {
       execFile(
