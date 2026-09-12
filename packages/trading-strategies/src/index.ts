@@ -1,6 +1,12 @@
 export * from './backtest/index.js';
 export * from './strategy/index.js';
 export * from './trader/index.js';
+export {
+  AtrTrailStrategy,
+  AtrTrailSchema,
+  type AtrTrailConfig,
+  type AtrTrailState,
+} from './strategy-atr-trail/AtrTrailStrategy.js';
 export {BuyOnceStrategy, BuyOnceSchema, type BuyOnceConfig} from './strategy-buy-once/BuyOnceStrategy.js';
 /** @deprecated Use {@link BuyOnceStrategy} without `buyAt` instead. */
 export {
