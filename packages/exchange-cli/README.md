@@ -30,10 +30,10 @@ exchange-cli watch-candles AAPL --broker alpaca --take 3
 Set `<BROKER>_PAPER_API_KEY` and `<BROKER>_PAPER_API_SECRET` in the environment, for example `ALPACA_PAPER_API_KEY`. Paper trading is the default. `--live` selects `<BROKER>_LIVE_API_KEY` / `<BROKER>_LIVE_API_SECRET` and the live trading host. The CLI does not load environment files automatically or read `*_USE_PAPER`; Node's `--env-file` can load an existing file:
 
 ```sh
-node --env-file=.env node_modules/@typedtrader/exchange-cli/dist/exchange-cli.js balances --broker alpaca
+node --env-file=.env "$(which exchange-cli)" balances --broker alpaca
 ```
 
-From this package's source directory, use `npm run cli -- <command> ...` with exported credentials.
+The command resolves the installed executable, so it works the same for a global and a local installation. From this package's source directory, use `npm run cli -- <command> ...` with exported credentials.
 
 | Command | Description |
 | --- | --- |
