@@ -58,8 +58,8 @@ function assertUsable(results: readonly unknown[], onNaN: string): void {
  * reads no field at all. Indicators differ in how long they collect inputs before reaching for a
  * price (Ichimoku Cloud takes 52 bars), hence a probe that runs until the warm-up is over.
  */
-function readsCandleFields(create: () => Indicator, candle: Candle, bars: number): boolean {
-  let readsField = false;
+function readCandleFields(create: () => Indicator, candle: Candle, bars: number): Set<PriceField> {
+  const read = new Set<PriceField>();
   const probe: Candle = {};
   for (const field of PRICE_FIELDS) {
     /*
@@ -71,14 +71,14 @@ function readsCandleFields(create: () => Indicator, candle: Candle, bars: number
       configurable: true,
       enumerable: false,
       get() {
-        readsField = true;
+        read.add(field);
         return candle[field];
       },
     });
   }
 
   const indicator = create();
-  for (let bar = 0; bar < bars && !readsField; bar++) {
+  for (let bar = 0; bar < bars; bar++) {
     try {
       indicator.update(probe, false);
     } catch {
@@ -86,7 +86,7 @@ function readsCandleFields(create: () => Indicator, candle: Candle, bars: number
       break;
     }
   }
-  return readsField;
+  return read;
 }
 
 export function runIndicator(create: () => Indicator, series: Series, price: PriceField): IndicatorRun {
@@ -104,11 +104,23 @@ export function runIndicator(create: () => Indicator, series: Series, price: Pri
    */
   const probeBars = Math.max(2, Math.min(required + 2, series.candles.length));
 
-  if (readsCandleFields(create, first, probeBars)) {
+  const fieldsRead = readCandleFields(create, first, probeBars);
+  if (fieldsRead.size > 0) {
     if (series.pricesOnly) {
       throw new Error(
-        'The indicator reads candle fields, but the input holds plain prices. Pipe objects with high, low, open, and volume.'
+        `The indicator reads candle fields (${[...fieldsRead].join(', ')}), but the input holds plain prices.`
       );
+    }
+    /*
+     * A field the input does not carry reaches the indicator as undefined, and a comparison against
+     * undefined is merely false rather than an error: NVI keeps its index at 1000 and reports that
+     * as a reading. The fields the probe saw it reach for therefore have to be present on every bar.
+     */
+    for (const field of fieldsRead) {
+      const missing = series.candles.findIndex(candle => candle[field] === undefined);
+      if (missing !== -1) {
+        throw new Error(`The indicator reads "${field}", which input ${missing + 1} does not carry.`);
+      }
     }
     const run = feed(create(), series.candles);
     assertUsable(

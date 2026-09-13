@@ -12,7 +12,9 @@ export interface Series {
 }
 
 function toNumber(value: unknown, context: string): number {
-  const parsed = typeof value === 'string' || typeof value === 'number' ? Number(value) : Number.NaN;
+  // Number("") and Number(" ") are 0, which would turn a blank price into a free zero.
+  const isBlank = typeof value === 'string' && value.trim().length === 0;
+  const parsed = !isBlank && (typeof value === 'string' || typeof value === 'number') ? Number(value) : Number.NaN;
   if (!Number.isFinite(parsed)) {
     throw new Error(`${context} is not a number: ${JSON.stringify(value)}`);
   }
@@ -35,10 +37,8 @@ function toCandle(value: object, position: number): Candle {
 
 function parseArray(text: string): unknown[] {
   const parsed: unknown = JSON.parse(text);
-  if (!Array.isArray(parsed)) {
-    throw new Error('The input is a JSON value but not an array of candles or prices.');
-  }
-  return parsed;
+  // Only reached for a text starting with "[", which either parses as an array or throws.
+  return Array.isArray(parsed) ? parsed : [parsed];
 }
 
 function parseLines(text: string): unknown[] {

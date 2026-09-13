@@ -1,4 +1,7 @@
 import {execFile, type ExecFileException} from 'node:child_process';
+import {writeFileSync} from 'node:fs';
+import {tmpdir} from 'node:os';
+import {join} from 'node:path';
 import {describe, expect, it} from 'vitest';
 import {ATR, CG, NVI, RSI, SMA} from 'trading-signals';
 import {parseSeries} from './parseSeries.js';
@@ -14,6 +17,144 @@ const CANDLES = PRICES.map((close, index) => ({
   open: index === 0 ? close : PRICES[index - 1],
   volume: 100 + (index % 2) * 50,
 }));
+
+/**
+ * Every indicator the CLI exposes, spelled out so that an indicator disappearing from the registry
+ * fails here instead of going unnoticed. A new indicator in the library is meant to show up in this
+ * list: add it, that is the promise the command makes.
+ */
+const ALL_INDICATORS = [
+  'AC',
+  'AD',
+  'ADOSC',
+  'ADX',
+  'ADXR',
+  'ALMA',
+  'AO',
+  'APO',
+  'ATR',
+  'AccelerationBands',
+  'AccumulativeSwingIndex',
+  'Alligator',
+  'Aroon',
+  'BOP',
+  'BollingerBands',
+  'BollingerBandsWidth',
+  'BreakoutBarLow',
+  'CCI',
+  'CFO',
+  'CG',
+  'CHOP',
+  'CMF',
+  'CMO',
+  'CVI',
+  'ChandeKrollStop',
+  'ChandelierExit',
+  'ConnorsRSI',
+  'CoppockCurve',
+  'DEMA',
+  'DMA',
+  'DPO',
+  'DX',
+  'DeMarker',
+  'DerivativeOscillator',
+  'DisparityIndex',
+  'DonchianChannels',
+  'EMA',
+  'EMV',
+  'ER',
+  'ElderRay',
+  'FRAMA',
+  'FisherTransform',
+  'ForceIndex',
+  'GAPO',
+  'GannHiLo',
+  'GatorOscillator',
+  'HMA',
+  'HTTrendline',
+  'HigherLowTrail',
+  'IBS',
+  'IMI',
+  'IQR',
+  'IchimokuCloud',
+  'KAMA',
+  'KST',
+  'KVO',
+  'KeltnerChannels',
+  'LaguerreRSI',
+  'LinearRegression',
+  'MACD',
+  'MAD',
+  'MAMA',
+  'MFI',
+  'MOM',
+  'MarketFacilitationIndex',
+  'MassIndex',
+  'McGinleyDynamic',
+  'NATR',
+  'NVI',
+  'OBV',
+  'PGO',
+  'PMO',
+  'PPO',
+  'PSAR',
+  'PSL',
+  'PVI',
+  'PVO',
+  'PVT',
+  'PercentB',
+  'PremierStochastic',
+  'ProjectionOscillator',
+  'QQE',
+  'Qstick',
+  'RCI',
+  'REI',
+  'RMA',
+  'RMI',
+  'ROC',
+  'RSI',
+  'RVOL',
+  'RandomWalkIndex',
+  'RelativeVigorIndex',
+  'RelativeVolatilityIndex',
+  'RogersSatchellVolatility',
+  'SMA',
+  'SMA15',
+  'SMI',
+  'STC',
+  'StochasticOscillator',
+  'StochasticRSI',
+  'SuperSmoother',
+  'SuperTrend',
+  'SwingHigh',
+  'SwingIndex',
+  'SwingLow',
+  'T3',
+  'TDS',
+  'TEMA',
+  'TR',
+  'TRIMA',
+  'TRIX',
+  'TSI',
+  'TTMSqueeze',
+  'UlcerIndex',
+  'UltimateOscillator',
+  'VHF',
+  'VIDYA',
+  'VROC',
+  'VWAP',
+  'VWMA',
+  'VolatilityStop',
+  'VortexIndicator',
+  'WAD',
+  'WMA',
+  'WSMA',
+  'WaddahAttarExplosion',
+  'WaveTrend',
+  'WilliamsR',
+  'ZLEMA',
+  'ZigZag',
+] as const;
 
 function run(args: string[], input: unknown = PRICES) {
   const result = runCli(args, {readInput: () => (typeof input === 'string' ? input : JSON.stringify(input))});
@@ -36,21 +177,21 @@ describe('runCli', () => {
     }
   });
 
-  it('lists the indicators and nothing else the library exports', () => {
+  it('lists every indicator and nothing else the library exports', () => {
     const names = run(['list']);
     expect(typeof names).toBe('string');
     if (typeof names !== 'string') {
       return;
     }
-    const listed = names.split('\n');
-    // Exact tokens, so that dropping SMA cannot be covered by SMA15 being listed.
-    expect(listed).toEqual(expect.arrayContaining(['SMA', 'EMA', 'RSI', 'MACD', 'ATR', 'BollingerBands', 'ZigZag']));
-    expect(listed.length, 'the library ships well over a hundred indicators').toBeGreaterThan(100);
     expect(
-      listed.filter(name =>
-        ['NotEnoughDataError', 'TechnicalIndicator', 'IndicatorSeries', 'getAverage'].includes(name)
+      names.split('\n'),
+      'the list is the promise that every indicator of the library is reachable from the command line'
+    ).toEqual([...ALL_INDICATORS]);
+    expect(
+      ALL_INDICATORS.filter(name =>
+        ['NotEnoughDataError', 'TechnicalIndicator', 'IndicatorSeries', 'Period', 'getAverage'].includes(name)
       ),
-      'errors, base classes and utility functions are exported too, but they are not indicators'
+      'errors, base classes and helpers are exported too, but they are not indicators'
     ).toEqual([]);
   });
 
@@ -83,12 +224,10 @@ describe('runCli', () => {
   });
 
   it('feeds prices to a price indicator even when the input is candles', () => {
-    /*
-     * CG divides by the sum of its prices and falls back to zero when that sum is not positive, so a
-     * candle reaching it reports a plausible 0 instead of failing. The input flavour has to be
-     * settled by what the indicator reads, not by whether a number came out.
-     */
-    expect(run(['cg', '10', '3'], CANDLES)).toMatchObject({
+    expect(
+      run(['cg', '10', '3'], CANDLES),
+      'CG falls back to zero when the sum of its prices is not positive, so a candle reaching it reports a plausible 0 rather than failing'
+    ).toMatchObject({
       input: 'close',
       result: new CG(10, 3).updates(PRICES, false).at(-1),
     });
@@ -137,13 +276,11 @@ describe('runCli', () => {
   });
 
   it('reports an indicator that stays silent although the input is long enough', () => {
-    /*
-     * A config object that is missing a setting cannot be told apart from a complete one, so this
-     * is where the silent case survives: without kSlowingPeriod the smoothing never produces a
-     * value, and the indicator emits nothing however much data it gets.
-     */
     const result = run(['stochasticoscillator', '{"dPeriod":3,"kPeriod":4}'], CANDLES);
-    expect(JSON.stringify(result)).toContain('Check the arguments of StochasticOscillator');
+    expect(
+      JSON.stringify(result),
+      'an incomplete config cannot be told apart from a complete one, so without kSlowingPeriod the smoothing never produces a value however much data arrives'
+    ).toContain('Check the arguments of StochasticOscillator');
   });
 
   it('leaves out the hint while the indicator is still warming up', () => {
@@ -152,12 +289,18 @@ describe('runCli', () => {
   });
 
   it('probes at least two bars, so a one-bar series cannot pass a candle indicator off as a price one', () => {
-    /*
-     * NVI reads no field on the first bar, because there is nothing to compare it to yet, while
-     * already emitting the 1000 its index starts at. One probe bar would take that for a price
-     * indicator and accept plain numbers.
-     */
-    expect(() => run(['nvi'], [1])).toThrow('reads candle fields, but the input holds plain prices');
+    expect(
+      () => run(['nvi'], [1]),
+      'NVI reads no field on the first bar yet already emits the 1000 its index starts at, which one probe bar would take for a price indicator'
+    ).toThrow('reads candle fields');
+  });
+
+  it('rejects candles that lack a field the indicator reaches for', () => {
+    const withoutVolume = CANDLES.map(({close, high, low, open}) => ({close, high, low, open}));
+    expect(
+      () => run(['nvi'], withoutVolume),
+      'a missing field arrives as undefined, and comparing against it is merely false: NVI would keep and report its initial index'
+    ).toThrow('reads "volume", which input 1 does not carry');
   });
 
   it('keeps helpers that are not indicators out of the registry', () => {
@@ -167,14 +310,17 @@ describe('runCli', () => {
   });
 
   it('rejects positional arguments for an indicator that takes a config object', () => {
-    /*
-     * JavaScript boxes the number, the destructuring finds none of its properties and every default
-     * applies, so new SuperTrend(14, 5) quietly runs with an interval of 10 and a multiplier of 3.
-     */
-    expect(() => run(['supertrend', '14', '5'], CANDLES)).toThrow('takes its settings in a config object');
+    expect(
+      () => run(['supertrend', '14', '5'], CANDLES),
+      'the boxed number carries none of the properties, so every default would apply and 14 and 5 would be lost'
+    ).toThrow('takes its settings in a config object');
     expect(
       () => run(['supertrend', '{}', '14'], CANDLES),
       'a trailing number is dropped by the destructuring just as silently'
+    ).toThrow('takes its settings in a config object');
+    expect(
+      () => run(['supertrend', '[]'], CANDLES),
+      'an array is an object to typeof but carries no settings either'
     ).toThrow('takes its settings in a config object');
     expect(
       run(['stochasticoscillator', '{"dPeriod":3,"kPeriod":4,"kSlowingPeriod":2}', '{"overbought":75}'], CANDLES),
@@ -187,8 +333,10 @@ describe('runCli', () => {
   });
 
   it('rejects an infinite result instead of printing it as null', () => {
-    // Bollinger Bands Width divides by its middle band, which is zero for these prices.
-    expect(() => run(['bollingerbandswidth', 'BollingerBands:3,2'], [-1, 0, 1])).toThrow('infinite value');
+    expect(
+      () => run(['bollingerbandswidth', 'BollingerBands:3,2'], [-1, 0, 1]),
+      'the width divides by a middle band that is zero for these prices'
+    ).toThrow('infinite value');
   });
 
   it('does not probe longer than the input, whatever interval was asked for', () => {
@@ -202,7 +350,7 @@ describe('runCli', () => {
     {args: ['sma', 'abc'], message: 'Cannot read the argument "abc"'},
     {args: ['sma'], message: 'SMA cannot run with []'},
     {args: ['sma', '0'], message: 'they leave it needing "0" inputs'},
-    {args: ['atr', '14'], message: 'reads candle fields, but the input holds plain prices'},
+    {args: ['atr', '14'], message: 'reads candle fields (high, low, close), but the input holds plain prices'},
     {args: ['sma', '5', '--price', 'volume'], message: 'Not every input carries a "volume" price'},
     {args: ['sma', '5', '--price', 'nope'], message: 'Unknown price field "nope"'},
     {args: ['list', 'nope'], message: 'No indicator matches "nope"'},
@@ -233,6 +381,8 @@ describe('parseSeries', () => {
     {input: 'hello', message: 'Input 1 is not a number'},
     {input: '[{"high":1}]', message: 'has no "close" price'},
     {input: '[{"close":"abc"}]', message: 'is not a number'},
+    {input: '[""]', message: 'is not a number'},
+    {input: '[{"close":"  "}]', message: 'is not a number'},
   ])('rejects $input', ({input, message}) => {
     expect(() => parseSeries(input)).toThrow(message);
   });
@@ -242,6 +392,10 @@ describe('parseSeries', () => {
     expect(parseSeries('[{"close":1,"high":2}]').pricesOnly).toBe(false);
   });
 });
+
+/** Reading a file instead of stdin happens only in the executable, where no reader is injected. */
+const INPUT_FILE = join(tmpdir(), 'trading-signals-cli-input.json');
+writeFileSync(INPUT_FILE, JSON.stringify([10, 20, 30]));
 
 /*
  * These spawn real Node processes. Run them sequentially without blocking the test worker;
@@ -254,6 +408,8 @@ describe('trading-signals-cli executable', {concurrent: false, timeout: 15_000},
     {args: ['sma', '3'], code: 0, input: '[1, 2, 3]', output: '"result":2'},
     {args: ['sma', '3'], code: 1, input: 'oops', output: 'is not a number'},
     {args: ['nope'], code: 1, input: '[1]', output: 'Unknown indicator'},
+    {args: ['sma', '3', '--input', INPUT_FILE], code: 0, input: '', output: '"result":20'},
+    {args: ['sma', '3', '--input', `${INPUT_FILE}.missing`], code: 1, input: '', output: 'ENOENT'},
   ])('flushes the correct output stream and exits: $args', async ({args, code, input, output}) => {
     const result = await new Promise<{error: ExecFileException | null; stdout: string; stderr: string}>(resolve => {
       const child = execFile(

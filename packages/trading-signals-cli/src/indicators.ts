@@ -46,10 +46,17 @@ function collectIndicators() {
 const INDICATORS = collectIndicators();
 const BY_LOWERCASE_NAME = new Map(Array.from(INDICATORS, ([name, value]) => [name.toLowerCase(), {name, value}]));
 
-/** Indicator names in the order `trading-signals` exports them, optionally narrowed by a substring. */
+/**
+ * Indicator names in alphabetical order, optionally narrowed by a substring. Sorted explicitly
+ * rather than left to the order the exports are enumerated in: a module namespace hands them over
+ * sorted, but a bundler's stand-in for one keeps the order they were declared in, and the command
+ * should not print a different list depending on how its input was loaded.
+ */
 export function listIndicators(query = ''): string[] {
   const needle = query.toLowerCase();
-  return Array.from(INDICATORS.keys()).filter(name => name.toLowerCase().includes(needle));
+  return Array.from(INDICATORS.keys())
+    .filter(name => name.toLowerCase().includes(needle))
+    .sort();
 }
 
 export function findIndicator(name: string) {
@@ -134,7 +141,9 @@ export function createIndicator(name: string, args: string[]): {create: () => In
    * result.
    */
   const parsed = args.map(parseArgument);
-  if (parsed.some(argument => typeof argument !== 'object' || argument === null)) {
+  // An array is an object to `typeof` but carries none of the settings either.
+  const isConfig = (argument: unknown) => typeof argument === 'object' && argument !== null && !Array.isArray(argument);
+  if (!parsed.every(isConfig)) {
     const fields = configFields(IndicatorConstructor);
     if (fields.length > 0) {
       throw new Error(
