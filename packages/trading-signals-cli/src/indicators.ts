@@ -77,6 +77,42 @@ function parseArgument(argument: string): unknown {
   }
 }
 
+/**
+ * Names the settings a constructor expects in a config object, or nothing when it takes positional
+ * arguments.
+ *
+ * A constructor that destructures its first parameter reads the settings off it. Handed a number
+ * instead, JavaScript boxes that number, the destructuring finds none of the properties, and every
+ * default applies: `new SuperTrend(14, 5)` silently runs with an interval of 10 and a multiplier of
+ * 3. So the constructor is offered a Proxy and asked which properties it looks for.
+ */
+function configFields(IndicatorConstructor: new (...args: unknown[]) => Indicator): string[] {
+  const fields: string[] = [];
+  const probe = new Proxy(
+    {},
+    {
+      get(target, key) {
+        /*
+         * A positional constructor does arithmetic on its interval, and coercing the probe to a
+         * number reads `valueOf` and `toString` off it. Those are not settings, and neither is
+         * anything else Object.prototype already answers for.
+         */
+        if (typeof key === 'string' && !(key in Object.prototype)) {
+          fields.push(key);
+        }
+        const value: unknown = Reflect.get(target, key);
+        return value;
+      },
+    }
+  );
+  try {
+    new IndicatorConstructor(probe);
+  } catch {
+    // Whatever it read before giving up still tells us it wanted a config.
+  }
+  return fields;
+}
+
 export function createIndicator(name: string, args: string[]): {create: () => Indicator; name: string} {
   const {name: exportedName, value: IndicatorConstructor} = findIndicator(name);
   /*
@@ -84,6 +120,16 @@ export function createIndicator(name: string, args: string[]): {create: () => In
    * first attempt into the second, so each attempt needs its own instance.
    */
   const create = () => new IndicatorConstructor(...args.map(parseArgument));
+
+  const [firstArgument] = args.map(parseArgument);
+  if (firstArgument !== undefined && (typeof firstArgument !== 'object' || firstArgument === null)) {
+    const fields = configFields(IndicatorConstructor);
+    if (fields.length > 0) {
+      throw new Error(
+        `${exportedName} takes its settings in one config object, so [${args.join(', ')}] would leave every default in place. Pass JSON instead, for example {${fields.map(field => `"${field}":…`).join(', ')}}.`
+      );
+    }
+  }
 
   /*
    * Indicators take their settings in whichever shape suits them (an interval, several, a config

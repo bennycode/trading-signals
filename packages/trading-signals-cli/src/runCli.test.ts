@@ -1,7 +1,6 @@
 import {execFile, type ExecFileException} from 'node:child_process';
 import {describe, expect, it} from 'vitest';
 import {ATR, CG, NVI, RSI, SMA} from 'trading-signals';
-import {listIndicators} from './indicators.js';
 import {parseSeries} from './parseSeries.js';
 import {runCli} from './runCli.js';
 
@@ -37,14 +36,22 @@ describe('runCli', () => {
     }
   });
 
-  it('lists every indicator the library exports', () => {
+  it('lists the indicators and nothing else the library exports', () => {
     const names = run(['list']);
     expect(typeof names).toBe('string');
-    if (typeof names === 'string') {
-      expect(names.split('\n'), 'one name per line, for piping into other tools').toEqual(listIndicators());
-      expect(names).toContain('SMA');
-      expect(names).toContain('BollingerBands');
+    if (typeof names !== 'string') {
+      return;
     }
+    const listed = names.split('\n');
+    // Exact tokens, so that dropping SMA cannot be covered by SMA15 being listed.
+    expect(listed).toEqual(expect.arrayContaining(['SMA', 'EMA', 'RSI', 'MACD', 'ATR', 'BollingerBands', 'ZigZag']));
+    expect(listed.length, 'the library ships well over a hundred indicators').toBeGreaterThan(100);
+    expect(
+      listed.filter(name =>
+        ['NotEnoughDataError', 'TechnicalIndicator', 'IndicatorSeries', 'getAverage'].includes(name)
+      ),
+      'errors, base classes and utility functions are exported too, but they are not indicators'
+    ).toEqual([]);
   });
 
   it('narrows the list by a query', () => {
@@ -130,16 +137,41 @@ describe('runCli', () => {
   });
 
   it('reports an indicator that stays silent although the input is long enough', () => {
-    const result = run(['zigzag', '5'], CANDLES);
-    expect(
-      JSON.stringify(result),
-      'ZigZag takes {deviation}, so a bare number leaves it without one and it never emits'
-    ).toContain('Check the arguments of ZigZag');
+    /*
+     * A config object that is missing a setting cannot be told apart from a complete one, so this
+     * is where the silent case survives: without kSlowingPeriod the smoothing never produces a
+     * value, and the indicator emits nothing however much data it gets.
+     */
+    const result = run(['stochasticoscillator', '{"dPeriod":3,"kPeriod":4}'], CANDLES);
+    expect(JSON.stringify(result)).toContain('Check the arguments of StochasticOscillator');
   });
 
   it('leaves out the hint while the indicator is still warming up', () => {
     expect(run(['sma', '50'])).toMatchObject({required: 50, result: null, stable: false});
     expect(run(['sma', '50'])).not.toHaveProperty('hint');
+  });
+
+  it('rejects positional arguments for an indicator that takes a config object', () => {
+    /*
+     * JavaScript boxes the number, the destructuring finds none of its properties and every default
+     * applies, so new SuperTrend(14, 5) quietly runs with an interval of 10 and a multiplier of 3.
+     */
+    expect(() => run(['supertrend', '14', '5'], CANDLES)).toThrow('takes its settings in one config object');
+    expect(
+      run(['supertrend', '{"interval":14,"multiplier":5}'], CANDLES),
+      'the config form sets the interval'
+    ).toMatchObject({required: 14});
+  });
+
+  it('rejects an infinite result instead of printing it as null', () => {
+    // Bollinger Bands Width divides by its middle band, which is zero for these prices.
+    expect(() => run(['bollingerbandswidth', 'BollingerBands:3,2'], [-1, 0, 1])).toThrow('infinite value');
+  });
+
+  it('does not probe longer than the input, whatever interval was asked for', () => {
+    const started = Date.now();
+    expect(run(['sma', '1000000000'], [1, 2, 3])).toMatchObject({required: 1_000_000_000, result: null});
+    expect(Date.now() - started, 'a billion-bar warm-up must not be probed bar by bar').toBeLessThan(1_000);
   });
 
   it.each([

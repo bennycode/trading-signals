@@ -10,14 +10,41 @@ export interface IndicatorRun {
   results: unknown[];
 }
 
-function hasNaN(value: unknown): boolean {
+/**
+ * NaN and Infinity both survive to the output as `null` once JSON.stringify is done with them,
+ * which would pair an empty result with `stable: true`. They arise for different reasons, so they
+ * are told apart rather than lumped together.
+ */
+function findUnusable(value: unknown): 'infinite' | 'not a number' | undefined {
   if (typeof value === 'number') {
-    return Number.isNaN(value);
+    if (Number.isNaN(value)) {
+      return 'not a number';
+    }
+    return Number.isFinite(value) ? undefined : 'infinite';
   }
   if (value !== null && typeof value === 'object') {
-    return Object.values(value).some(hasNaN);
+    for (const entry of Object.values(value)) {
+      const unusable = findUnusable(entry);
+      if (unusable) {
+        return unusable;
+      }
+    }
   }
-  return false;
+  return undefined;
+}
+
+function assertUsable(results: readonly unknown[], onNaN: string): void {
+  for (const result of results) {
+    const unusable = findUnusable(result);
+    if (unusable === 'infinite') {
+      throw new Error(
+        'The indicator computed an infinite value, which happens when the input drives one of its divisors to zero.'
+      );
+    }
+    if (unusable) {
+      throw new Error(onNaN);
+    }
+  }
 }
 
 /**
@@ -26,13 +53,12 @@ function hasNaN(value: unknown): boolean {
  * loud either: an indicator reading `high` off a number gets undefined and returns NaN, but one
  * dividing by a NaN sum may land on a plausible-looking zero.
  *
- * So the indicator is asked instead of guessed: it runs against a candle behind a Proxy that
- * records the fields it reads. A price indicator coerces that object to a number (through
- * Symbol.toPrimitive) and reads no field at all. The probe runs past the warm-up because an
- * indicator that only collects inputs, or that compares a bar to the one before it, touches no
- * field on the first bar.
+ * So the indicator is asked instead of guessed: it runs against a candle whose prices sit behind
+ * getters that record being read. A price indicator coerces that object to a number instead and
+ * reads no field at all. Indicators differ in how long they collect inputs before reaching for a
+ * price (Ichimoku Cloud takes 52 bars), hence a probe that runs until the warm-up is over.
  */
-function readsCandleFields(create: () => Indicator, candle: Candle, required: number): boolean {
+function readsCandleFields(create: () => Indicator, candle: Candle, bars: number): boolean {
   let readsField = false;
   const probe: Candle = {};
   for (const field of PRICE_FIELDS) {
@@ -52,7 +78,7 @@ function readsCandleFields(create: () => Indicator, candle: Candle, required: nu
   }
 
   const indicator = create();
-  for (let bar = 0; bar < required + 2 && !readsField; bar++) {
+  for (let bar = 0; bar < bars && !readsField; bar++) {
     try {
       indicator.update(probe, false);
     } catch {
@@ -67,18 +93,24 @@ export function runIndicator(create: () => Indicator, series: Series, price: Pri
   const required = create().getRequiredInputs();
   const [first] = series.candles;
 
-  if (readsCandleFields(create, first, required)) {
+  /*
+   * Never probe for longer than the series itself: the warm-up comes from a user-supplied interval,
+   * so `sma 1000000000` would otherwise run a billion synthetic bars. An indicator that reads no
+   * price within the data it is about to be given cannot produce a result from it either.
+   */
+  const probeBars = Math.min(required + 2, series.candles.length);
+
+  if (readsCandleFields(create, first, probeBars)) {
     if (series.pricesOnly) {
       throw new Error(
         'The indicator reads candle fields, but the input holds plain prices. Pipe objects with high, low, open, and volume.'
       );
     }
     const run = feed(create(), series.candles);
-    if (run.results.some(hasNaN)) {
-      throw new Error(
-        'The indicator computed no number. It either reads a candle field the input does not carry (high, low, open, volume), or its arguments are incomplete.'
-      );
-    }
+    assertUsable(
+      run.results,
+      'The indicator computed no number. It either reads a candle field the input does not carry (high, low, open, volume), or its arguments are incomplete.'
+    );
     return {...run, input: 'candle'};
   }
 
@@ -89,9 +121,7 @@ export function runIndicator(create: () => Indicator, series: Series, price: Pri
     create(),
     series.candles.map(candle => candle[price])
   );
-  if (run.results.some(hasNaN)) {
-    throw new Error(`The indicator computed no number from the ${price} prices. Check its arguments.`);
-  }
+  assertUsable(run.results, `The indicator computed no number from the ${price} prices. Check its arguments.`);
   return {...run, input: price};
 }
 
