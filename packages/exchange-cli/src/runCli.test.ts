@@ -2,10 +2,16 @@ import {EventEmitter} from 'node:events';
 import {execFile, type ExecFileException} from 'node:child_process';
 import Big from 'big.js';
 import {describe, expect, it, vi} from 'vitest';
-import type {Broker, Candle, Fill} from '../broker/Broker.js';
-import {OrderPosition, OrderSide, OrderType} from '../broker/Broker.js';
-import type {MarketDataSource} from '../broker/MarketDataSource.js';
-import {TradingPair} from '../broker/TradingPair.js';
+import {
+  OrderPosition,
+  OrderSide,
+  OrderType,
+  TradingPair,
+  type Broker,
+  type Candle,
+  type Fill,
+  type MarketDataSource,
+} from '@typedtrader/exchange';
 import {createCliBroker} from './cliBroker.js';
 import {runCli, type CliDeps} from './runCli.js';
 

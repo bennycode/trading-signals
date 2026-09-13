@@ -1,5 +1,4 @@
-import {OrderSide} from '../broker/Broker.js';
-import {TradingPair} from '../broker/TradingPair.js';
+import {OrderSide, TradingPair} from '@typedtrader/exchange';
 import {BROKERS, createCliBroker} from './cliBroker.js';
 import {placeCliOrder, waitForOrder} from './cliOrders.js';
 import {parseCliArgs} from './parseCliArgs.js';
