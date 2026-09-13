@@ -371,6 +371,14 @@ describe('runCli', () => {
     );
   });
 
+  it('reads the real bars, so a field behind a branch of the data is still seen', () => {
+    const risingWithoutLow = PRICES.map((_, index) => ({close: 100 + index, high: 100 + index, open: 100 + index}));
+    expect(
+      () => run(['breakoutbarlow', '{"lookback":3}'], risingWithoutLow),
+      'a breakout reaches for the low of the bar that broke out, which one repeated candle never does'
+    ).toThrow('reads "low", which input 1 does not carry');
+  });
+
   it('names the missing field when candles carry fewer than an indicator reads', () => {
     const closesOnly = PRICES.map(close => ({close}));
     expect(
@@ -394,6 +402,10 @@ describe('runCli', () => {
     expect(run(['rmi'], PRICES), 'the same reading against the default band').toMatchObject({
       signal: {state: 'BULLISH'},
     });
+    expect(
+      () => run(['rmi', '{"signalThresholds":5}'], PRICES),
+      'a number where a nested config belongs is boxed and ignored, like a whole config would be'
+    ).toThrow('RMI\'s "signalThresholds" takes its settings in a config object');
   });
 
   it('rejects a config key the constructor does not read', () => {
@@ -404,11 +416,10 @@ describe('runCli', () => {
   });
 
   it('accepts a reading the indicator recovered from an infinite intermediate one', () => {
-    /*
-     * Bollinger Bands Width divides by its middle band, which is zero for the first window of this
-     * series and positive for the last. Only the reading that gets reported has to hold up.
-     */
-    expect(run(['bollingerbandswidth', 'BollingerBands:3,2'], [-1, 0, 1, 1])).toMatchObject({stable: true});
+    expect(
+      run(['bollingerbandswidth', 'BollingerBands:3,2'], [-1, 0, 1, 1]),
+      'the width divides by a middle band that is zero for the first window of this series and positive for the last, and only the reported reading has to hold up'
+    ).toMatchObject({stable: true});
     expect(
       () => run(['bollingerbandswidth', 'BollingerBands:3,2', '--all'], [-1, 0, 1, 1]),
       'every reading is printed with --all, so every reading has to survive JSON'

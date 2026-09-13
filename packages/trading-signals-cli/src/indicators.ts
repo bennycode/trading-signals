@@ -281,10 +281,17 @@ export function createIndicator(name: string, args: string[]): {create: () => In
     if (fields.length > 0 && argument !== null && typeof argument === 'object') {
       assertKeysAreRead(exportedName, argument, fields);
       for (const [key, nestedFields] of nested) {
-        const value: unknown = Reflect.get(argument, key);
-        if (nestedFields.length > 0 && value !== null && typeof value === 'object') {
-          assertKeysAreRead(`${exportedName}'s "${key}"`, value, nestedFields);
+        if (nestedFields.length === 0 || !(key in argument)) {
+          continue;
         }
+        const value: unknown = Reflect.get(argument, key);
+        // A setting of its own that is handed a number is boxed and ignored, exactly like a whole config would be.
+        if (value === null || typeof value !== 'object' || Array.isArray(value)) {
+          throw new Error(
+            `${exportedName}'s "${key}" takes its settings in a config object, so "${JSON.stringify(value)}" would leave those defaults in place. It expects ${nestedFields.map(field => `"${field}"`).join(', ')}.`
+          );
+        }
+        assertKeysAreRead(`${exportedName}'s "${key}"`, value, nestedFields);
       }
     }
   });

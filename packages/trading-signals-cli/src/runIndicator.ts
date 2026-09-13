@@ -58,29 +58,37 @@ export function assertUsable(results: readonly unknown[], onNaN: string): void {
  * reads no field at all. Indicators differ in how long they collect inputs before reaching for a
  * price (Ichimoku Cloud takes 52 bars), hence a probe that runs until the warm-up is over.
  */
-function readCandleFields(create: () => Indicator, candle: Candle, bars: number): Set<PriceField> {
+function readCandleFields(create: () => Indicator, candles: readonly Candle[], bars: number): Set<PriceField> {
   const read = new Set<PriceField>();
-  const probe: Candle = {};
-  for (const field of PRICE_FIELDS) {
-    /*
-     * Non-enumerable on purpose: indicators clone their state between bars, and structuredClone
-     * copies own enumerable properties only. A hidden getter is therefore read when the indicator
-     * reaches for a price, but not when it merely carries the candle along.
-     */
-    Object.defineProperty(probe, field, {
-      configurable: true,
-      enumerable: false,
-      get() {
-        read.add(field);
-        return candle[field];
-      },
-    });
-  }
+  /*
+   * Non-enumerable on purpose: indicators clone their state between bars, and structuredClone
+   * copies own enumerable properties only. A hidden getter is therefore read when the indicator
+   * reaches for a price, but not when it merely carries the candle along.
+   */
+  const watch = (candle: Candle): Candle => {
+    const probe: Candle = {};
+    for (const field of PRICE_FIELDS) {
+      Object.defineProperty(probe, field, {
+        configurable: true,
+        enumerable: false,
+        get() {
+          read.add(field);
+          return candle[field];
+        },
+      });
+    }
+    return probe;
+  };
 
   const indicator = create();
   for (let bar = 0; bar < bars; bar++) {
+    /*
+     * The real bars, because a field can sit behind a branch the data decides: a breakout reaches
+     * for the low of the bar that broke out, and repeating one candle never breaks out. A series
+     * shorter than the probe repeats from the start, which is only the single-bar case.
+     */
     try {
-      indicator.update(probe, false);
+      indicator.update(watch(candles[bar % candles.length]), false);
     } catch {
       // An indicator that rejects the probe has read whatever it needed to reject it.
       break;
@@ -91,7 +99,6 @@ function readCandleFields(create: () => Indicator, candle: Candle, bars: number)
 
 export function runIndicator(create: () => Indicator, series: Series, price: PriceField): IndicatorRun {
   const required = create().getRequiredInputs();
-  const [first] = series.candles;
 
   /*
    * Never probe for longer than the series itself: the warm-up comes from a user-supplied interval,
@@ -104,7 +111,7 @@ export function runIndicator(create: () => Indicator, series: Series, price: Pri
    */
   const probeBars = Math.max(2, Math.min(required + 2, series.candles.length));
 
-  const fieldsRead = readCandleFields(create, first, probeBars);
+  const fieldsRead = readCandleFields(create, series.candles, probeBars);
   if (fieldsRead.size > 0) {
     if (series.pricesOnly) {
       throw new Error(
