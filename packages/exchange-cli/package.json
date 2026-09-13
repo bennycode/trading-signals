@@ -31,6 +31,7 @@
   "scripts": {
     "cli": "tsx src/exchange-cli.ts",
     "build": "tsc -p tsconfig.build.json",
+    "postbuild": "node --eval \"require('node:fs').chmodSync('dist/exchange-cli.js', 0o755)\"",
     "clean": "rimraf coverage dist",
     "dist": "npm run clean && npm run build",
     "fix": "npm run fix:code && npm run fix:other",

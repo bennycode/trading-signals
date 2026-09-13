@@ -426,6 +426,16 @@ describe('runCli', () => {
     ).toThrow('infinite value');
   });
 
+  it('gives a failure raised while reading the input its context back', () => {
+    expect(
+      () => run(['stochasticrsi', '10', 'SMA', '5'], PRICES),
+      'StochasticRSI keeps its pair of smoothing averages untouched until a bar arrives, so a wrong shape passes every check and breaks on the first update'
+    ).toThrow('The indicator failed on the input');
+    expect(run(['stochasticrsi', '10'], PRICES), 'the forms the command can express still work').toMatchObject({
+      stable: true,
+    });
+  });
+
   it('rejects an infinite result instead of printing it as null', () => {
     expect(
       () => run(['bollingerbandswidth', 'BollingerBands:3,2'], [-1, 0, 1]),

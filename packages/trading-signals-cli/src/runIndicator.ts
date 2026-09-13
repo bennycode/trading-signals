@@ -157,6 +157,17 @@ export function runIndicator(create: () => Indicator, series: Series, price: Pri
 }
 
 function feed(indicator: Indicator, inputs: readonly unknown[]) {
-  const results = inputs.map(input => indicator.update(input, false));
-  return {indicator, required: indicator.getRequiredInputs(), results};
+  /*
+   * An argument of the wrong shape can pass every check and still break here, because an indicator
+   * may keep it untouched until a bar arrives: StochasticRSI stores its pair of smoothing averages
+   * and reaches for them on the first update. The raw failure says nothing about where it came
+   * from, so it is given its context back.
+   */
+  try {
+    const results = inputs.map(input => indicator.update(input, false));
+    return {indicator, required: indicator.getRequiredInputs(), results};
+  } catch (error) {
+    const reason = error instanceof Error ? error.message : String(error);
+    throw new Error(`The indicator failed on the input: ${reason}. One of its arguments has the wrong shape.`);
+  }
 }
