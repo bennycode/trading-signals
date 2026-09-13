@@ -371,6 +371,31 @@ describe('runCli', () => {
     );
   });
 
+  it('names the missing field when candles carry fewer than an indicator reads', () => {
+    const closesOnly = PRICES.map(close => ({close}));
+    expect(
+      () => run(['tr', ...[]], closesOnly),
+      'a candle carrying only a close is still a candle, so the field is what is missing, not the shape'
+    ).toThrow('reads "high", which input 1 does not carry');
+    expect(() => run(['tr'], PRICES), 'plain numbers are the case where the shape is wrong').toThrow(
+      'the input holds plain prices'
+    );
+  });
+
+  it('rejects a misspelled setting inside a nested config', () => {
+    expect(
+      () => run(['rmi', '{"signalThresholds":{"overbougt":80}}'], PRICES),
+      'a nested destructuring drops an unknown key as quietly as a top-level one'
+    ).toThrow('RMI\'s "signalThresholds" does not read "overbougt"');
+    expect(
+      run(['rmi', '{"signalThresholds":{"overbought":99,"oversold":1}}'], PRICES),
+      'a reading of 97 is bullish against the default band and neutral against the one passed in, so the signal proves the nested settings arrived'
+    ).toMatchObject({signal: {state: 'SIDEWAYS'}});
+    expect(run(['rmi'], PRICES), 'the same reading against the default band').toMatchObject({
+      signal: {state: 'BULLISH'},
+    });
+  });
+
   it('rejects a config key the constructor does not read', () => {
     expect(
       () => run(['supertrend', '{"intervall":14,"multiplier":5}'], CANDLES),
@@ -481,6 +506,10 @@ describe('parseSeries', () => {
   it('marks a series of plain numbers as prices only', () => {
     expect(parseSeries('1 2 3').pricesOnly).toBe(true);
     expect(parseSeries('[{"close":1,"high":2}]').pricesOnly).toBe(false);
+    expect(
+      parseSeries('[{"close":1}]').pricesOnly,
+      'a candle that carries only a close was still written as a candle'
+    ).toBe(false);
   });
 });
 

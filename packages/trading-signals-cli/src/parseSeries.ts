@@ -7,7 +7,12 @@ export type Candle = Partial<Record<PriceField, number>>;
 
 export interface Series {
   candles: Candle[];
-  /** True when the input was plain numbers, so there is nothing but the price to feed. */
+  /**
+   * True when the input was plain numbers, so there is nothing but the price to feed. Taken from
+   * the shape that was read, not from the fields that came out of it: a candle carrying only a
+   * close is still a candle, and an indicator that needs its high should say which field is
+   * missing rather than claim the caller passed prices.
+   */
   pricesOnly: boolean;
 }
 
@@ -75,10 +80,13 @@ export function parseSeries(text: string): Series {
     throw new Error('No input data.');
   }
 
-  const candles = items.map((item, index) =>
-    item !== null && typeof item === 'object'
-      ? toCandle(item, index + 1)
-      : {close: toNumber(item, `Input ${index + 1}`)}
-  );
-  return {candles, pricesOnly: candles.every(candle => Object.keys(candle).length === 1)};
+  let pricesOnly = true;
+  const candles = items.map((item, index) => {
+    if (item !== null && typeof item === 'object') {
+      pricesOnly = false;
+      return toCandle(item, index + 1);
+    }
+    return {close: toNumber(item, `Input ${index + 1}`)};
+  });
+  return {candles, pricesOnly};
 }

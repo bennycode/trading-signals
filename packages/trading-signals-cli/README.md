@@ -44,14 +44,14 @@ trading-signals-cli macd EMA:12 EMA:26 EMA:9                # indicator instance
 
 An argument is read as JSON, unless it names an indicator: a bare name (`SMA`) passes that class, and `NAME:ARGS` (`EMA:12`) passes an instance of it. Indicator names are matched without case, so `bollingerbands` and `BollingerBands` both work.
 
-An indicator that takes its settings in one config object has to be given JSON. Numbers would be accepted by JavaScript and then ignored — `supertrend 14 5` would run with the default interval of 10 — so the CLI rejects them and names the settings it expects:
+An indicator that takes its settings in one config object has to be given JSON. A number would be accepted by JavaScript and then ignored — `supertrend 14` would run with the default interval of 10 — so the CLI rejects it and names the settings it expects:
 
 ```sh
-$ trading-signals-cli supertrend 14 5
-SuperTrend expects a config object in position 1, so "14" would leave those defaults in place. Pass JSON instead, for example {"interval":…, "multiplier":…}.
+$ trading-signals-cli supertrend 14
+SuperTrend takes its settings in a config object, so "14" would leave those defaults in place. Pass JSON instead, for example {"interval":…, "multiplier":…}.
 ```
 
-The same holds for a setting that arrives in a later position, such as the thresholds an oscillator reads its signal from: `cci 20 1` is rejected rather than run with the default band. An argument beyond the ones a constructor declares (`sma 5 999`), and a key it does not read (`supertrend '{"intervall":14}'`), are refused for the same reason — each would otherwise be dropped without a word and the reading would come from settings you did not ask for.
+The same holds for a setting that arrives in a later position, such as the thresholds an oscillator reads its signal from: `cci 20 1` is rejected rather than run with the default band. An argument beyond the ones a constructor declares (`sma 5 999`), a key it does not read (`supertrend '{"intervall":14}'`), and a misspelling nested inside a config (`rmi '{"signalThresholds":{"overbougt":80}}'`) are refused for the same reason — each would otherwise be dropped without a word and the reading would come from settings you did not ask for.
 
 ### Output
 
@@ -62,4 +62,4 @@ $ trading-signals-cli rsi 14 --input candles.json
 
 `input` reports whether the indicator read whole candles or a single price per bar; which of the two it takes is decided by the fields it actually reads, not by the shape of the input. `required` is the number of inputs it needs before it emits anything, and `result` is `null` while it is still warming up. `signal` appears for indicators that derive a trend from their result.
 
-An indicator that reads a candle field the input does not carry is reported as an error rather than computed from missing values, and one that stays silent although the input is long enough is flagged with a `hint`, which usually means an argument is missing.
+An indicator that reads a candle field the input does not carry is reported as an error rather than computed from missing values. One that stays silent although the input is long enough is flagged with a `hint`: either it emits only at an event the data does not contain, such as a swing or a breakout, or a setting never reached it.
