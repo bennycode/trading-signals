@@ -151,12 +151,35 @@ describe('runCli', () => {
     expect(run(['sma', '50'])).not.toHaveProperty('hint');
   });
 
+  it('probes at least two bars, so a one-bar series cannot pass a candle indicator off as a price one', () => {
+    /*
+     * NVI reads no field on the first bar, because there is nothing to compare it to yet, while
+     * already emitting the 1000 its index starts at. One probe bar would take that for a price
+     * indicator and accept plain numbers.
+     */
+    expect(() => run(['nvi'], [1])).toThrow('reads candle fields, but the input holds plain prices');
+  });
+
+  it('keeps helpers that are not indicators out of the registry', () => {
+    expect(() => run(['period', '5'], CANDLES), 'Period tracks a window extreme for other indicators').toThrow(
+      'Unknown indicator "period"'
+    );
+  });
+
   it('rejects positional arguments for an indicator that takes a config object', () => {
     /*
      * JavaScript boxes the number, the destructuring finds none of its properties and every default
      * applies, so new SuperTrend(14, 5) quietly runs with an interval of 10 and a multiplier of 3.
      */
-    expect(() => run(['supertrend', '14', '5'], CANDLES)).toThrow('takes its settings in one config object');
+    expect(() => run(['supertrend', '14', '5'], CANDLES)).toThrow('takes its settings in a config object');
+    expect(
+      () => run(['supertrend', '{}', '14'], CANDLES),
+      'a trailing number is dropped by the destructuring just as silently'
+    ).toThrow('takes its settings in a config object');
+    expect(
+      run(['stochasticoscillator', '{"dPeriod":3,"kPeriod":4,"kSlowingPeriod":2}', '{"overbought":75}'], CANDLES),
+      'the optional second config object stays allowed'
+    ).toMatchObject({stable: true});
     expect(
       run(['supertrend', '{"interval":14,"multiplier":5}'], CANDLES),
       'the config form sets the interval'
@@ -200,6 +223,7 @@ describe('parseSeries', () => {
     {input: '1\n2\n3', name: 'one number per line'},
     {input: '{"close":1}\n{"close":2}\n{"close":3}', name: 'newline-delimited JSON'},
     {input: '[{"close":"1"},{"close":"2"},{"close":"3"}]', name: 'string prices, as brokers report them'},
+    {input: '"1"\n"2"\n"3"', name: 'newline-delimited string prices, both documented forms at once'},
   ])('reads $name', ({input}) => {
     expect(parseSeries(input).candles).toEqual([{close: 1}, {close: 2}, {close: 3}]);
   });

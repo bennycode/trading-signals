@@ -97,8 +97,12 @@ export function runIndicator(create: () => Indicator, series: Series, price: Pri
    * Never probe for longer than the series itself: the warm-up comes from a user-supplied interval,
    * so `sma 1000000000` would otherwise run a billion synthetic bars. An indicator that reads no
    * price within the data it is about to be given cannot produce a result from it either.
+   *
+   * Two bars regardless, because the indicators that compare a bar to the one before it read
+   * nothing on the first while already emitting a value (NVI starts its index at 1000). A single
+   * bar would classify those as price indicators and hand them a number they cannot read.
    */
-  const probeBars = Math.min(required + 2, series.candles.length);
+  const probeBars = Math.max(2, Math.min(required + 2, series.candles.length));
 
   if (readsCandleFields(create, first, probeBars)) {
     if (series.pricesOnly) {

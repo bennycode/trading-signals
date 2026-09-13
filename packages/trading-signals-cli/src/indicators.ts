@@ -27,10 +27,16 @@ function isIndicatorClass(value: unknown): value is IndicatorClass {
   return typeof update === 'function';
 }
 
+/**
+ * `Period` tracks the highest and lowest value of a window. It is a building block the indicators
+ * use, not a technical indicator itself, and it is concrete enough to pass for one.
+ */
+const HELPERS: ReadonlySet<string> = new Set(['Period']);
+
 function collectIndicators() {
   const indicators = new Map<string, IndicatorClass>();
   for (const [name, value] of Object.entries(library)) {
-    if (isIndicatorClass(value)) {
+    if (isIndicatorClass(value) && !HELPERS.has(name)) {
       indicators.set(name, value);
     }
   }
@@ -121,12 +127,18 @@ export function createIndicator(name: string, args: string[]): {create: () => In
    */
   const create = () => new IndicatorConstructor(...args.map(parseArgument));
 
-  const [firstArgument] = args.map(parseArgument);
-  if (firstArgument !== undefined && (typeof firstArgument !== 'object' || firstArgument === null)) {
+  /*
+   * Every setting of a config constructor arrives in an object, including the optional second one
+   * that some of them take for signal thresholds. Anything else in any position is dropped on the
+   * floor by the destructuring, so "supertrend {} 14" would run the defaults and report them as a
+   * result.
+   */
+  const parsed = args.map(parseArgument);
+  if (parsed.some(argument => typeof argument !== 'object' || argument === null)) {
     const fields = configFields(IndicatorConstructor);
     if (fields.length > 0) {
       throw new Error(
-        `${exportedName} takes its settings in one config object, so [${args.join(', ')}] would leave every default in place. Pass JSON instead, for example {${fields.map(field => `"${field}":…`).join(', ')}}.`
+        `${exportedName} takes its settings in a config object, so [${args.join(', ')}] would leave every default in place. Pass JSON instead, for example {${fields.map(field => `"${field}":…`).join(', ')}}.`
       );
     }
   }

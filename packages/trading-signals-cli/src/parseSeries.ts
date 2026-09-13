@@ -48,7 +48,8 @@ function parseLines(text: string): unknown[] {
     if (trimmed.length === 0) {
       continue;
     }
-    if (trimmed.startsWith('{')) {
+    // A candle, or a quoted price as brokers write it, is one JSON value per line; bare numbers may share a line.
+    if (trimmed.startsWith('{') || trimmed.startsWith('"')) {
       const parsed: unknown = JSON.parse(trimmed);
       items.push(parsed);
     } else {
