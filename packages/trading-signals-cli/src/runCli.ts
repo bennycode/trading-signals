@@ -2,7 +2,7 @@ import {readFileSync} from 'node:fs';
 import {parseArgs} from 'node:util';
 import {createIndicator, listIndicators} from './indicators.js';
 import {PRICE_FIELDS, parseSeries, type PriceField} from './parseSeries.js';
-import {runIndicator} from './runIndicator.js';
+import {assertUsable, runIndicator} from './runIndicator.js';
 
 export interface CliDeps {
   readInput: (file?: string) => string;
@@ -87,6 +87,8 @@ export function runCli(argv: string[], overrides: Partial<CliDeps> = {}): CliRes
   const {indicator, input, required, results} = runIndicator(create, series, parsePriceField(values.price));
 
   if (values.all) {
+    // Every reading is printed here, so every reading has to be one that survives JSON.
+    assertUsable(results, 'The indicator computed no number for at least one bar of the input.');
     return {text: results.map(result => JSON.stringify(result ?? null)).join('\n')};
   }
 

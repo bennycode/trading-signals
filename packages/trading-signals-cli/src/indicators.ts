@@ -135,6 +135,50 @@ function isIndicatorInstance(value: object): boolean {
   return typeof Reflect.get(value, 'update') === 'function';
 }
 
+/**
+ * How many parameters the constructor that actually runs declares. A value consumed by assignment
+ * leaves no trace for a probe to find, so `new SMA(5, 999)` keeps the 999 to itself; the parameter
+ * list is the only place the excess shows up.
+ *
+ * Read from the source of the nearest class that declares a constructor, because a subclass without
+ * one inherits it: SMA takes its interval from MovingAverage. An unreadable parameter list, or a
+ * chain that declares none at all, yields no limit rather than a guessed one.
+ */
+function declaredParameterCount(IndicatorConstructor: new (...args: unknown[]) => Indicator): number {
+  for (
+    let current: unknown = IndicatorConstructor;
+    typeof current === 'function';
+    current = Object.getPrototypeOf(current)
+  ) {
+    const source = String(current);
+    const start = source.indexOf('constructor(');
+    if (start === -1) {
+      continue;
+    }
+    let depth = 0;
+    let separators = 0;
+    let hasParameter = false;
+    for (let index = start + 'constructor'.length; index < source.length; index++) {
+      const character = source[index];
+      if (character === '(' || character === '[' || character === '{') {
+        depth++;
+      } else if (character === ')' || character === ']' || character === '}') {
+        depth--;
+        if (depth === 0) {
+          return hasParameter ? separators + 1 : 0;
+        }
+      } else if (depth === 1) {
+        if (character === ',') {
+          separators++;
+        }
+        hasParameter ||= character.trim().length > 0;
+      }
+    }
+    break;
+  }
+  return Number.POSITIVE_INFINITY;
+}
+
 export function createIndicator(name: string, args: string[]): {create: () => Indicator; name: string} {
   const {name: exportedName, value: IndicatorConstructor} = findIndicator(name);
   /*
@@ -150,8 +194,19 @@ export function createIndicator(name: string, args: string[]): {create: () => In
    * constructor never reads is lost the same way.
    */
   const parsed = args.map(parseArgument);
+
   const positions = configPositions(IndicatorConstructor, parsed.length);
   const settingsComeAsConfig = (positions[0]?.length ?? 0) > 0;
+
+  const declared = declaredParameterCount(IndicatorConstructor);
+  if (parsed.length > declared) {
+    const takes = declared === 0 ? 'no arguments' : `${declared} argument${declared === 1 ? '' : 's'}`;
+    // Naming the shape as well spares a second attempt when the count was not the only thing wrong.
+    const shape = settingsComeAsConfig
+      ? ` It expects one config object, for example {${positions[0].map(field => `"${field}":…`).join(', ')}}.`
+      : '';
+    throw new Error(`${exportedName} takes ${takes}, so "${args[declared]}" would be ignored.${shape}`);
+  }
   parsed.forEach((argument, index) => {
     const fields = positions[index];
     // An array is an object to `typeof`, but it carries no settings either.
@@ -168,13 +223,25 @@ export function createIndicator(name: string, args: string[]): {create: () => In
     }
     /*
      * A number consumed by assignment leaves no trace, so an unread position is only suspicious for
-     * a value that could not be one: a bare object, or anything at all once the settings are known
-     * to arrive in a config, since those constructors take nothing else.
+     * a value that could not be one: a bare object. Excess arguments are caught by their count.
      */
-    if (fields.length === 0 && (isBareObject || settingsComeAsConfig)) {
+    if (fields.length === 0 && isBareObject) {
       throw new Error(
         `${exportedName} never reads the argument in position ${index + 1}, so "${args[index]}" is lost.`
       );
+    }
+    /*
+     * The keys are checked against the ones the constructor reached for, because a misspelled
+     * setting is dropped by the destructuring and leaves its default in place: an indicator asked
+     * for "intervall" would report a reading for the interval it was never given.
+     */
+    if (fields.length > 0 && argument !== null && typeof argument === 'object') {
+      const unread = Object.keys(argument).filter(key => !fields.includes(key));
+      if (unread.length > 0) {
+        throw new Error(
+          `${exportedName} does not read ${unread.map(key => `"${key}"`).join(', ')}. It expects ${fields.map(field => `"${field}"`).join(', ')}.`
+        );
+      }
     }
   });
 

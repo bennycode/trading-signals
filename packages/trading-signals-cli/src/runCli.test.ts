@@ -314,15 +314,19 @@ describe('runCli', () => {
     expect(
       () => run(['supertrend', '14', '5'], CANDLES),
       'the boxed number carries none of the properties, so every default would apply and 14 and 5 would be lost'
-    ).toThrow('expects a config object in position 1');
+    ).toThrow('It expects one config object, for example {"interval":…, "multiplier":…}');
     expect(
       () => run(['supertrend', '{}', '14'], CANDLES),
       'a trailing number is dropped by the destructuring just as silently'
-    ).toThrow('never reads the argument in position 2');
+    ).toThrow('SuperTrend takes 1 argument');
     expect(
       () => run(['supertrend', '[]'], CANDLES),
       'an array is an object to typeof but carries no settings either'
     ).toThrow('takes its settings in a config object');
+    expect(
+      () => run(['atr', '14', '{}'], CANDLES),
+      'a bare object in a position the constructor never reads is lost, even within the arguments it declares'
+    ).toThrow('never reads the argument in position 2');
     expect(
       () => run(['cci', '20', '1'], CANDLES),
       'CCI takes a positional interval and its thresholds in a config object, so the position decides'
@@ -330,7 +334,7 @@ describe('runCli', () => {
     expect(
       () => run(['supertrend', '{"interval":14}', '{"multiplier":5}'], CANDLES),
       'a second object is dropped by a constructor that reads only one'
-    ).toThrow('never reads the argument in position 2');
+    ).toThrow('SuperTrend takes 1 argument');
     expect(
       run(['stochasticoscillator', '{"dPeriod":3,"kPeriod":4,"kSlowingPeriod":2}', '{"overbought":75}'], CANDLES),
       'the optional second config object stays allowed, because the constructor reads that position too'
@@ -346,6 +350,35 @@ describe('runCli', () => {
       run(['supertrend', '{"interval":14,"multiplier":5}'], CANDLES),
       'the config form sets the interval'
     ).toMatchObject({required: 14});
+  });
+
+  it('rejects an argument beyond the ones the constructor declares', () => {
+    expect(
+      () => run(['sma', '5', '999'], PRICES),
+      'a number consumed by assignment leaves no trace, so the parameter list is where the excess shows up'
+    ).toThrow('SMA takes 1 argument, so "999" would be ignored');
+    expect(() => run(['vwap', '{"interval":14}'], CANDLES), 'VWAP declares no parameters at all').toThrow(
+      'VWAP takes no arguments'
+    );
+  });
+
+  it('rejects a config key the constructor does not read', () => {
+    expect(
+      () => run(['supertrend', '{"intervall":14,"multiplier":5}'], CANDLES),
+      'a misspelled key is dropped by the destructuring and leaves the default interval of 10 in place'
+    ).toThrow('does not read "intervall"');
+  });
+
+  it('accepts a reading the indicator recovered from an infinite intermediate one', () => {
+    /*
+     * Bollinger Bands Width divides by its middle band, which is zero for the first window of this
+     * series and positive for the last. Only the reading that gets reported has to hold up.
+     */
+    expect(run(['bollingerbandswidth', 'BollingerBands:3,2'], [-1, 0, 1, 1])).toMatchObject({stable: true});
+    expect(
+      () => run(['bollingerbandswidth', 'BollingerBands:3,2', '--all'], [-1, 0, 1, 1]),
+      'every reading is printed with --all, so every reading has to survive JSON'
+    ).toThrow('infinite value');
   });
 
   it('rejects an infinite result instead of printing it as null', () => {

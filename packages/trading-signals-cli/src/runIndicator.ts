@@ -33,7 +33,7 @@ function findUnusable(value: unknown): 'infinite' | 'not a number' | undefined {
   return undefined;
 }
 
-function assertUsable(results: readonly unknown[], onNaN: string): void {
+export function assertUsable(results: readonly unknown[], onNaN: string): void {
   for (const result of results) {
     const unusable = findUnusable(result);
     if (unusable === 'infinite') {
@@ -123,8 +123,13 @@ export function runIndicator(create: () => Indicator, series: Series, price: Pri
       }
     }
     const run = feed(create(), series.candles);
+    /*
+     * Only the reading that gets reported has to be usable. An early window can divide by a zero
+     * that later windows do not have, and rejecting the run for it would refuse data the indicator
+     * recovers from; printing every reading (--all) is where they all have to hold up.
+     */
     assertUsable(
-      run.results,
+      [run.indicator.getResult()],
       'The indicator computed no number. It either reads a candle field the input does not carry (high, low, open, volume), or its arguments are incomplete.'
     );
     return {...run, input: 'candle'};
@@ -137,7 +142,10 @@ export function runIndicator(create: () => Indicator, series: Series, price: Pri
     create(),
     series.candles.map(candle => candle[price])
   );
-  assertUsable(run.results, `The indicator computed no number from the ${price} prices. Check its arguments.`);
+  assertUsable(
+    [run.indicator.getResult()],
+    `The indicator computed no number from the ${price} prices. Check its arguments.`
+  );
   return {...run, input: price};
 }
 

@@ -51,7 +51,7 @@ $ trading-signals-cli supertrend 14 5
 SuperTrend expects a config object in position 1, so "14" would leave those defaults in place. Pass JSON instead, for example {"interval":…, "multiplier":…}.
 ```
 
-The same holds for a setting that arrives in a later position, such as the thresholds an oscillator reads its signal from: `cci 20 1` is rejected rather than run with the default band.
+The same holds for a setting that arrives in a later position, such as the thresholds an oscillator reads its signal from: `cci 20 1` is rejected rather than run with the default band. An argument beyond the ones a constructor declares (`sma 5 999`), and a key it does not read (`supertrend '{"intervall":14}'`), are refused for the same reason — each would otherwise be dropped without a word and the reading would come from settings you did not ask for.
 
 ### Output
 
