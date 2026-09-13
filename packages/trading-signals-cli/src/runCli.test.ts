@@ -313,19 +313,34 @@ describe('runCli', () => {
     expect(
       () => run(['supertrend', '14', '5'], CANDLES),
       'the boxed number carries none of the properties, so every default would apply and 14 and 5 would be lost'
-    ).toThrow('takes its settings in a config object');
+    ).toThrow('expects a config object in position 1');
     expect(
       () => run(['supertrend', '{}', '14'], CANDLES),
       'a trailing number is dropped by the destructuring just as silently'
-    ).toThrow('takes its settings in a config object');
+    ).toThrow('never reads the argument in position 2');
     expect(
       () => run(['supertrend', '[]'], CANDLES),
       'an array is an object to typeof but carries no settings either'
     ).toThrow('takes its settings in a config object');
     expect(
+      () => run(['cci', '20', '1'], CANDLES),
+      'CCI takes a positional interval and its thresholds in a config object, so the position decides'
+    ).toThrow('expects a config object in position 2');
+    expect(
+      () => run(['supertrend', '{"interval":14}', '{"multiplier":5}'], CANDLES),
+      'a second object is dropped by a constructor that reads only one'
+    ).toThrow('never reads the argument in position 2');
+    expect(
       run(['stochasticoscillator', '{"dPeriod":3,"kPeriod":4,"kSlowingPeriod":2}', '{"overbought":75}'], CANDLES),
-      'the optional second config object stays allowed'
+      'the optional second config object stays allowed, because the constructor reads that position too'
     ).toMatchObject({stable: true});
+    expect(
+      run(['cci', '20', '{"overbought":130,"oversold":-130}'], CANDLES),
+      'a reading of 124 is bullish against the default band of 100 and neutral against the one asked for, so the signal proves the thresholds arrived'
+    ).toMatchObject({signal: {state: 'SIDEWAYS'}});
+    expect(run(['cci', '20'], CANDLES), 'the same reading against the default band').toMatchObject({
+      signal: {state: 'BULLISH'},
+    });
     expect(
       run(['supertrend', '{"interval":14,"multiplier":5}'], CANDLES),
       'the config form sets the interval'

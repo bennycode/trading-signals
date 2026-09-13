@@ -94,36 +94,45 @@ function parseArgument(argument: string): unknown {
  * Names the settings a constructor expects in a config object, or nothing when it takes positional
  * arguments.
  *
- * A constructor that destructures its first parameter reads the settings off it. Handed a number
- * instead, JavaScript boxes that number, the destructuring finds none of the properties, and every
- * default applies: `new SuperTrend(14, 5)` silently runs with an interval of 10 and a multiplier of
- * 3. So the constructor is offered a Proxy and asked which properties it looks for.
+ * A constructor that destructures a parameter reads the settings off it. Handed a number instead,
+ * JavaScript boxes that number, the destructuring finds none of the properties, and every default
+ * applies: `new SuperTrend(14, 5)` silently runs with an interval of 10 and a multiplier of 3, and
+ * `new CCI(20, 1)` with the default thresholds. So every position the caller filled is offered a
+ * Proxy, and the constructor is asked which of them it reads settings from.
  */
-function configFields(IndicatorConstructor: new (...args: unknown[]) => Indicator): string[] {
-  const fields: string[] = [];
-  const probe = new Proxy(
-    {},
-    {
-      get(target, key) {
-        /*
-         * A positional constructor does arithmetic on its interval, and coercing the probe to a
-         * number reads `valueOf` and `toString` off it. Those are not settings, and neither is
-         * anything else Object.prototype already answers for.
-         */
-        if (typeof key === 'string' && !(key in Object.prototype)) {
-          fields.push(key);
+function configPositions(IndicatorConstructor: new (...args: unknown[]) => Indicator, count: number): string[][] {
+  const fieldsPerPosition: string[][] = Array.from({length: count}, () => []);
+  const probes = fieldsPerPosition.map(
+    fields =>
+      new Proxy(
+        {},
+        {
+          get(target, key) {
+            /*
+             * A positional constructor does arithmetic on its interval, and coercing the probe to a
+             * number reads `valueOf` and `toString` off it. Those are not settings, and neither is
+             * anything else Object.prototype already answers for.
+             */
+            if (typeof key === 'string' && !(key in Object.prototype)) {
+              fields.push(key);
+            }
+            const value: unknown = Reflect.get(target, key);
+            return value;
+          },
         }
-        const value: unknown = Reflect.get(target, key);
-        return value;
-      },
-    }
+      )
   );
   try {
-    new IndicatorConstructor(probe);
+    new IndicatorConstructor(...probes);
   } catch {
-    // Whatever it read before giving up still tells us it wanted a config.
+    // Whatever it read before giving up still tells us which positions wanted a config.
   }
-  return fields;
+  return fieldsPerPosition;
+}
+
+/** An indicator instance passes as an argument (MACD takes three); a bare config object does not. */
+function isIndicatorInstance(value: object): boolean {
+  return typeof Reflect.get(value, 'update') === 'function';
 }
 
 export function createIndicator(name: string, args: string[]): {create: () => Indicator; name: string} {
@@ -135,22 +144,39 @@ export function createIndicator(name: string, args: string[]): {create: () => In
   const create = () => new IndicatorConstructor(...args.map(parseArgument));
 
   /*
-   * Every setting of a config constructor arrives in an object, including the optional second one
-   * that some of them take for signal thresholds. Anything else in any position is dropped on the
-   * floor by the destructuring, so "supertrend {} 14" would run the defaults and report them as a
-   * result.
+   * Settings reach a constructor in an object, and anything else in that position is dropped on the
+   * floor by the destructuring, leaving the defaults in place: "supertrend 14 5" and "cci 20 1" are
+   * both accepted by JavaScript and both ignore what was asked for. An object in a position the
+   * constructor never reads is lost the same way.
    */
   const parsed = args.map(parseArgument);
-  // An array is an object to `typeof` but carries none of the settings either.
-  const isConfig = (argument: unknown) => typeof argument === 'object' && argument !== null && !Array.isArray(argument);
-  if (!parsed.every(isConfig)) {
-    const fields = configFields(IndicatorConstructor);
-    if (fields.length > 0) {
+  const positions = configPositions(IndicatorConstructor, parsed.length);
+  const settingsComeAsConfig = (positions[0]?.length ?? 0) > 0;
+  parsed.forEach((argument, index) => {
+    const fields = positions[index];
+    // An array is an object to `typeof`, but it carries no settings either.
+    const isBareObject =
+      typeof argument === 'object' && argument !== null && !Array.isArray(argument) && !isIndicatorInstance(argument);
+    const expectation =
+      args.length === 1
+        ? `${exportedName} takes its settings in a config object`
+        : `${exportedName} expects a config object in position ${index + 1}`;
+    if (fields.length > 0 && !isBareObject) {
       throw new Error(
-        `${exportedName} takes its settings in a config object, so [${args.join(', ')}] would leave every default in place. Pass JSON instead, for example {${fields.map(field => `"${field}":…`).join(', ')}}.`
+        `${expectation}, so "${args[index]}" would leave those defaults in place. Pass JSON instead, for example {${fields.map(field => `"${field}":…`).join(', ')}}.`
       );
     }
-  }
+    /*
+     * A number consumed by assignment leaves no trace, so an unread position is only suspicious for
+     * a value that could not be one: a bare object, or anything at all once the settings are known
+     * to arrive in a config, since those constructors take nothing else.
+     */
+    if (fields.length === 0 && (isBareObject || settingsComeAsConfig)) {
+      throw new Error(
+        `${exportedName} never reads the argument in position ${index + 1}, so "${args[index]}" is lost.`
+      );
+    }
+  });
 
   /*
    * Indicators take their settings in whichever shape suits them (an interval, several, a config

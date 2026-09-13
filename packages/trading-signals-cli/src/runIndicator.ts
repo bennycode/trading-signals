@@ -38,7 +38,7 @@ function assertUsable(results: readonly unknown[], onNaN: string): void {
     const unusable = findUnusable(result);
     if (unusable === 'infinite') {
       throw new Error(
-        'The indicator computed an infinite value, which happens when the input drives one of its divisors to zero.'
+        'The indicator computed an infinite value, which happens when a value overflows or one of its divisors reaches zero.'
       );
     }
     if (unusable) {
