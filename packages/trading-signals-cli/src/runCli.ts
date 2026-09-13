@@ -99,13 +99,13 @@ export function runCli(argv: string[], overrides: Partial<CliDeps> = {}): CliRes
   const result = indicator.getResult() ?? null;
   const signal = indicator.getSignal?.();
   /*
-   * An indicator reads settings it was not given as undefined and then silently never emits, which
-   * is indistinguishable from a warm-up on the result alone. Having more inputs than the warm-up
-   * needs and still no result is the observable symptom, so it is reported next to the empty result.
+   * Past the warm-up an empty reading has two causes that cannot be told apart from here: an
+   * indicator that emits only at an event the data may not contain, or a setting it never received
+   * and read as undefined. Both are named, because guessing at one of them misdiagnoses the other.
    */
   const hint =
     result === null && series.candles.length >= required
-      ? `No result from ${series.candles.length} inputs although ${required} would be enough. Check the arguments of ${name}: some indicators take a config object, as in zigzag '{"deviation":5}'.`
+      ? `No result from ${series.candles.length} inputs although ${required} would be enough. Either ${name} emits only at an event this input does not contain, such as a swing or a breakout, or one of its settings is missing.`
       : undefined;
   return {
     json: {

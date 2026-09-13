@@ -281,7 +281,16 @@ describe('runCli', () => {
     expect(
       JSON.stringify(result),
       'an incomplete config cannot be told apart from a complete one, so without kSlowingPeriod the smoothing never produces a value however much data arrives'
-    ).toContain('Check the arguments of StochasticOscillator');
+    ).toContain('one of its settings is missing');
+  });
+
+  it('names the harmless cause of an empty reading as well', () => {
+    const rising = PRICES.map((_, index) => ({close: 100 + index, high: 101 + index, low: 99 + index}));
+    const result = run(['swinglow', '{"lookback":3}'], rising);
+    expect(
+      JSON.stringify(result),
+      'a strictly rising series holds no swing low, so the arguments are not what is wrong here'
+    ).toContain('emits only at an event this input does not contain');
   });
 
   it('leaves out the hint while the indicator is still warming up', () => {
