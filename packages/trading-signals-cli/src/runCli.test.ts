@@ -5,6 +5,7 @@ import {join} from 'node:path';
 import {describe, expect, it} from 'vitest';
 import {ATR, CG, NVI, RSI, SMA} from 'trading-signals';
 import {parseSeries} from './parseSeries.js';
+import {runIndicator} from './runIndicator.js';
 import {runCli} from './runCli.js';
 
 const PRICES = [10, 11, 12, 11, 10, 12, 13, 14, 13, 12, 11, 13, 15, 16, 15, 14, 16, 17, 18, 17, 16, 18];
@@ -376,6 +377,39 @@ describe('runCli', () => {
   it('rejects an indicator that needs a candle field the input lacks', () => {
     const withoutVolume = CANDLES.map(({close, high, low, open}) => ({close, high, low, open}));
     expect(() => run(['obv', '5'], withoutVolume)).toThrow('does not carry');
+  });
+});
+
+describe('runIndicator', () => {
+  /** A price indicator whose reading is whatever it is handed, to reach results the library will not produce. */
+  const fake = (result: unknown) => () => ({
+    getRequiredInputs: () => 1,
+    getResult: () => result,
+    update: () => result,
+  });
+
+  it.each([
+    {name: 'a bare NaN', result: Number.NaN},
+    {name: 'a NaN inside a composite result', result: {histogram: 1, macd: Number.NaN}},
+    {name: 'a NaN nested deeper', result: {bands: {lower: Number.NaN, upper: 2}}},
+  ])('rejects $name', ({result}) => {
+    expect(
+      () => runIndicator(fake(result), parseSeries('1 2 3'), 'close'),
+      'JSON.stringify turns NaN into null, which would pair an empty result with stable: true'
+    ).toThrow('computed no number');
+  });
+
+  it('rejects an infinite value wherever it sits in the result', () => {
+    expect(() => runIndicator(fake({width: Number.POSITIVE_INFINITY}), parseSeries('1 2 3'), 'close')).toThrow(
+      'infinite value'
+    );
+  });
+
+  it('passes a finite composite result through', () => {
+    expect(runIndicator(fake({lower: 1, upper: 2}), parseSeries('1 2 3'), 'close')).toMatchObject({
+      input: 'close',
+      required: 1,
+    });
   });
 });
 

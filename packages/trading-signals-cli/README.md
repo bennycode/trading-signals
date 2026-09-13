@@ -48,9 +48,10 @@ An indicator that takes its settings in one config object has to be given JSON. 
 
 ```sh
 $ trading-signals-cli supertrend 14 5
-SuperTrend takes its settings in one config object, so [14, 5] would leave every default in place.
-Pass JSON instead, for example {"interval":…, "multiplier":…}.
+SuperTrend expects a config object in position 1, so "14" would leave those defaults in place. Pass JSON instead, for example {"interval":…, "multiplier":…}.
 ```
+
+The same holds for a setting that arrives in a later position, such as the thresholds an oscillator reads its signal from: `cci 20 1` is rejected rather than run with the default band.
 
 ### Output
 
