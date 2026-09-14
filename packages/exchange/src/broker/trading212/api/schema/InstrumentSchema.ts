@@ -16,6 +16,8 @@ export const Trading212InstrumentTypeSchema = z.enum([
 export const InstrumentSchema = z.looseObject({
   addedOn: z.string(),
   currencyCode: z.string(),
+  /** Whether the instrument trades on Trading212's 24/5 venue outside its exchange's hours. */
+  extendedHours: z.boolean().nullish(),
   /** International Securities Identification Number, e.g. "US0378331005" */
   isin: z.string().nullish(),
   maxOpenQuantity: z.number().nullish(),

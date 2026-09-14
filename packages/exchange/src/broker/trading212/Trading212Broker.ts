@@ -56,6 +56,7 @@ export class Trading212Broker extends Broker implements MarketDataSource {
   static readonly ORDER_POLL_INTERVAL_MS = 60_000;
 
   readonly #api: Trading212API;
+  #instruments?: Promise<Awaited<ReturnType<Trading212API['getInstruments']>>>;
   readonly #orderWatchers = new Map<string, NodeJS.Timeout>();
   readonly #orderStoppers = new Map<string, () => void>();
   readonly #marketData: MarketDataSource;
@@ -161,12 +162,24 @@ export class Trading212Broker extends Broker implements MarketDataSource {
    *
    * The first tick takes a baseline snapshot so historical fills are not replayed.
    */
+  /**
+   * The instrument list is several megabytes and Trading212 allows one request per 50 seconds, so
+   * it is fetched once and reused. A failed fetch is dropped, so the next caller tries again.
+   */
+  async #getInstruments() {
+    this.#instruments ??= this.#api.getInstruments().catch((error: unknown) => {
+      this.#instruments = undefined;
+      throw error;
+    });
+    return this.#instruments;
+  }
+
   async watchOrders(intervalInMillis: number = Trading212Broker.ORDER_POLL_INTERVAL_MS) {
     const topicId = randomUUID();
 
     const [accountInfo, instruments, baseline] = await Promise.all([
       this.#api.getAccountInfo(),
-      this.#api.getInstruments(),
+      this.#getInstruments(),
       this.#api.getHistoryOrdersPage(),
     ]);
 
@@ -331,7 +344,7 @@ export class Trading212Broker extends Broker implements MarketDataSource {
   }
 
   async getTradingRules(pair: TradingPair): Promise<TradingRules> {
-    const instruments = await this.#api.getInstruments();
+    const instruments = await this.#getInstruments();
     const instrument = instruments.find(item => item.ticker === pair.base);
 
     if (!instrument) {
@@ -390,8 +403,7 @@ export class Trading212Broker extends Broker implements MarketDataSource {
       /*
        * Trading212 rejects GTC for stock limit orders ("Invalid payload"), so DAY is the only
        * time-in-force that works for them. The limit endpoint rejects `extendedHours` the same
-       * way, unlike the market endpoint, which is why only the latter routes through the 24/5
-       * venue below.
+       * way, whatever the instrument allows; only the market endpoint below accepts it.
        */
       const order = await this.#api.placeLimitOrder({
         limitPrice: Number(options.price),
@@ -402,8 +414,14 @@ export class Trading212Broker extends Broker implements MarketDataSource {
       return Trading212BrokerMapper.toPendingOrder(order, pair, options);
     }
 
+    /*
+     * Whether an instrument reaches the 24/5 venue is a property of the instrument: Apple trades
+     * there, Rolls-Royce on the London exchange does not. Claiming it for one that does not have it
+     * misdescribes the order, so the instrument's own answer is used and left out when unknown.
+     */
+    const instrument = (await this.#getInstruments()).find(item => item.ticker === pair.base);
     const order = await this.#api.placeMarketOrder({
-      extendedHours: true,
+      extendedHours: instrument?.extendedHours ?? undefined,
       quantity: signedQuantity,
       ticker: pair.base,
     });

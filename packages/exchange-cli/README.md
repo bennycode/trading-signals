@@ -39,7 +39,7 @@ The command resolves the installed executable, so it works the same for a global
 | --- | --- |
 | `verify` | Check broker credentials. |
 | `balances` | List cash balances and positions. |
-| `instruments <query>` | Search equities by ticker, name, or ISIN. |
+| `instruments <query>` | Search equities by ticker, name, or ISIN. Reports the venue and whether the instrument trades outside exchange hours, and on Alpaca also whether it is tradable and fractionable. |
 | `quote <ticker>` | Show the latest candle close, not a bid/ask quote. |
 | `rules <ticker>` | Show trading rules for a ticker. |
 | `orders <ticker>` | List open orders for a ticker. |
@@ -52,5 +52,22 @@ The command resolves the installed executable, so it works the same for a global
 | `watch-candles <ticker>` | Stream candles as NDJSON. |
 | `watch-orders` | Stream order fills as NDJSON. |
 | `time` | Show the broker client's time. |
+
+An instrument carries what its broker publishes about it:
+
+```sh
+$ exchange-cli instruments msci --broker alpaca | jq -c '.[] | select(.ticker == "URTH" or .ticker == "IRRRF")'
+{"currency":"USD","exchange":"OTC","fractionable":false,"name":"iShares III plc Core MSCI World UCITS ETF (Ireland)","ticker":"IRRRF","tradable":false}
+{"currency":"USD","exchange":"ARCA","fractionable":true,"name":"iShares MSCI World ETF","ticker":"URTH","tradable":true}
+```
+
+Alpaca marks each asset as tradable or not, which separates a US-listed ETF from the foreign listings that share its name. Trading212 publishes neither flag, so those two fields are left out for it rather than guessed; its venue is resolved from the instrument's working schedule.
+
+`extendedHours` says whether the instrument trades outside its exchange's hours, on the 24/5 venue each broker runs for that purpose. Both publish it, under different names, so both report it:
+
+```sh
+$ exchange-cli instruments apple --broker trading212 | jq -c '.[] | select(.ticker == "AAPL_US_EQ")'
+{"currency":"USD","exchange":"NASDAQ","extendedHours":true,"isin":"US0378331005","name":"Apple","ticker":"AAPL_US_EQ"}
+```
 
 `--dry-run` checks quantity rules, the limit-price increment, and the minimum order value, then returns the broker's fee estimate without submitting an order; it does not guarantee acceptance. A `wait` timeout leaves the order open. Streaming runs until Ctrl-C unless `--take` is supplied.

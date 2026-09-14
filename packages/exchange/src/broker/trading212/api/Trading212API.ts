@@ -4,6 +4,7 @@ import {retry} from '../../../util/retry.js';
 import {simplifyError} from '../../../util/simplifyError.js';
 import {AccountCashSchema, AccountInfoSchema} from './schema/AccountSchema.js';
 import {HistoryOrderPageSchema, type HistoryOrder} from './schema/HistoryOrderSchema.js';
+import {ExchangeSchema} from './schema/ExchangeSchema.js';
 import {InstrumentSchema} from './schema/InstrumentSchema.js';
 import {
   OrderSchema,
@@ -18,6 +19,7 @@ const URL = {
   ACCOUNT_CASH: '/api/v0/equity/account/cash',
   ACCOUNT_INFO: '/api/v0/equity/account/info',
   HISTORY_ORDERS: '/api/v0/equity/history/orders',
+  METADATA_EXCHANGES: '/api/v0/equity/metadata/exchanges',
   METADATA_INSTRUMENTS: '/api/v0/equity/metadata/instruments',
   ORDERS: '/api/v0/equity/orders',
   ORDERS_LIMIT: '/api/v0/equity/orders/limit',
@@ -124,6 +126,18 @@ export class Trading212API {
     const validated = PlaceLimitOrderRequestSchema.parse(request);
     const response = await this.#httpClient.post(URL.ORDERS_LIMIT, validated);
     return OrderSchema.parse(response.data);
+  }
+
+  /**
+   * The venues behind the instruments: an instrument names a working schedule, and the schedule
+   * belongs to an exchange.
+   *
+   * @see https://t212public-api-docs.redoc.ly/#operation/exchanges
+   */
+  @retry({delayMs: 30_000})
+  async getExchanges() {
+    const response = await this.#httpClient.get(URL.METADATA_EXCHANGES);
+    return z.array(ExchangeSchema).parse(response.data);
   }
 
   /** @see https://t212public-api-docs.redoc.ly/#operation/instruments */
