@@ -37,6 +37,7 @@ This project uses [Lerna](https://lerna.js.org/) to manage a [monorepo](https://
 | Package | Description |
 | --- | --- |
 | [**trading-signals**](./packages/trading-signals) | [Technical indicators](https://en.wikipedia.org/wiki/Technical_indicator) (SMA, EMA, RSI, MACD, Bollinger Bands, ...) for algorithmic trading with streaming updates, replace mode, lazy evaluation, and memory efficiency. Battle-tested in production. |
+| [**trading-signals-cli**](./packages/trading-signals-cli) | Terminal access to every indicator of the library. Pipe candles or prices in, get the indicator's reading as JSON, without writing a script for a quick check. |
 | [**trading-strategies**](./packages/trading-strategies) | [Trading strategies](https://en.wikipedia.org/wiki/Trading_strategy) that combine indicators into actionable advice. Ships with a library of ready-to-use strategies and a `ProtectedStrategy` base that wires stop-loss and take-profit kill switches into any subclass. |
 | [**@typedtrader/exchange**](./packages/exchange) | Unified exchange interface for different brokers (currently [Alpaca](https://alpaca.markets/)). Type-safe data transformation, WebSocket candles and order updates, paper- and live-trading environments behind a single API. |
 | [**@typedtrader/exchange-cli**](./packages/exchange-cli) | Terminal access to the same broker clients. Check balances, search instruments, place and cancel orders, and stream candles or fills as NDJSON, with JSON on stdout for piping into `jq` or scripts. |

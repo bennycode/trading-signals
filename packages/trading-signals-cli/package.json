@@ -1,11 +1,13 @@
 {
-  "name": "@typedtrader/exchange-cli",
+  "name": "trading-signals-cli",
   "version": "0.0.0",
-  "description": "Command-line interface for the typed broker clients of @typedtrader/exchange.",
+  "description": "Command-line interface for the technical indicators of trading-signals.",
   "keywords": [
     "cli",
-    "trading",
-    "typedtrader"
+    "indicator",
+    "technical-analysis",
+    "technical-indicators",
+    "trading"
   ],
   "homepage": "https://bennycode.com/trading-signals",
   "bugs": {
@@ -15,10 +17,10 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/bennycode/trading-signals.git",
-    "directory": "packages/exchange-cli"
+    "directory": "packages/trading-signals-cli"
   },
   "bin": {
-    "exchange-cli": "./dist/exchange-cli.js"
+    "trading-signals-cli": "./dist/trading-signals-cli.js"
   },
   "files": [
     "dist",
@@ -29,9 +31,9 @@
     "access": "public"
   },
   "scripts": {
-    "cli": "tsx src/exchange-cli.ts",
+    "cli": "tsx src/trading-signals-cli.ts",
     "build": "tsc -p tsconfig.build.json",
-    "postbuild": "node --eval \"require('node:fs').chmodSync('dist/exchange-cli.js', 0o755)\"",
+    "postbuild": "node --eval \"require('node:fs').chmodSync('dist/trading-signals-cli.js', 0o755)\"",
     "clean": "rimraf coverage dist",
     "dist": "npm run clean && npm run build",
     "fix": "npm run fix:code && npm run fix:other",
@@ -46,10 +48,6 @@
     "test:units:watch": "vitest --watch"
   },
   "dependencies": {
-    "@typedtrader/exchange": "0.3.3",
-    "@types/big.js": "^7.0.0",
-    "big.js": "^7.0.1",
-    "commander": "^14.0.3",
-    "ms": "4.0.0-nightly.202508271359"
+    "trading-signals": "8.3.0"
   }
 }
