@@ -12,6 +12,7 @@ import {
   type Fill,
   type MarketDataSource,
 } from '@typedtrader/exchange';
+import {AlpacaAPI, Trading212API} from '@typedtrader/exchange';
 import {createCliBroker} from './cliBroker.js';
 import {runCli, type CliDeps} from './runCli.js';
 
@@ -406,6 +407,71 @@ describe('runCli', () => {
     broker.listBalances.mockRejectedValue(new Error('/api-errors/example'));
     await expect(run(['balances'])).rejects.toThrow('/api-errors/example');
     expect(broker.disconnect).toHaveBeenCalledOnce();
+  });
+
+  it('reports what each broker knows about an instrument', async () => {
+    vi.spyOn(AlpacaAPI.prototype, 'getAssets').mockResolvedValue([
+      {
+        class: 'us_equity',
+        easy_to_borrow: true,
+        exchange: 'ARCA',
+        fractionable: true,
+        id: 'a',
+        marginable: true,
+        name: 'iShares MSCI World ETF',
+        shortable: true,
+        status: 'active',
+        symbol: 'URTH',
+        tradable: true,
+      },
+    ]);
+    const alpaca = createCliBroker('alpaca', false, {
+      ALPACA_PAPER_API_KEY: 'test-key',
+      ALPACA_PAPER_API_SECRET: 'test-secret',
+    });
+    await expect(alpaca.listInstruments()).resolves.toEqual([
+      {
+        currency: 'USD',
+        exchange: 'ARCA',
+        fractionable: true,
+        name: 'iShares MSCI World ETF',
+        ticker: 'URTH',
+        tradable: true,
+      },
+    ]);
+    alpaca.broker.disconnect();
+
+    vi.spyOn(Trading212API.prototype, 'getExchanges').mockResolvedValue([
+      {id: 1, name: 'London Stock Exchange', workingSchedules: [{id: 55}]},
+    ]);
+    vi.spyOn(Trading212API.prototype, 'getInstruments').mockResolvedValue([
+      {
+        addedOn: '2018-07-12T07:10:10.000+03:00',
+        currencyCode: 'GBX',
+        isin: 'GB00B63H8491',
+        name: 'Rolls-Royce',
+        ticker: 'RRl_EQ',
+        type: 'STOCK',
+        workingScheduleId: 55,
+      },
+    ]);
+    const trading212 = createCliBroker('trading212', false, {
+      TRADING212_PAPER_API_KEY: 'test-key',
+      TRADING212_PAPER_API_SECRET: 'test-secret',
+    });
+    await expect(
+      trading212.listInstruments(),
+      'the venue comes from the working schedule, while tradability and fractions are absent because Trading212 publishes neither'
+    ).resolves.toEqual([
+      {
+        currency: 'GBX',
+        exchange: 'London Stock Exchange',
+        isin: 'GB00B63H8491',
+        name: 'Rolls-Royce',
+        ticker: 'RRl_EQ',
+      },
+    ]);
+    trading212.broker.disconnect();
   });
 
   it('supports Trading212 account composition without Alpaca credentials', async () => {

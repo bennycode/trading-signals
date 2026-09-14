@@ -17,9 +17,21 @@ export type BrokerKey = keyof typeof BROKERS;
 
 export interface Instrument {
   currency: string;
+  /** Venue the instrument trades on. */
+  exchange?: string;
+  /**
+   * Whether the broker accepts a fractional quantity. Left out when the broker does not say:
+   * Trading212's instrument metadata carries no fractional information at all.
+   */
+  fractionable?: boolean;
   isin?: string;
   name: string;
   ticker: string;
+  /**
+   * Whether the broker currently accepts orders for it. Left out when the broker does not say:
+   * everything Trading212 lists is on offer, so it publishes no such flag.
+   */
+  tradable?: boolean;
 }
 
 /*
@@ -63,8 +75,21 @@ export function createCliBroker(key: BrokerKey, live: boolean, env: NodeJS.Proce
   // Instrument discovery is not part of Broker; adapt the existing REST methods here.
   const listInstruments = async (): Promise<Instrument[]> => {
     if (key === 'trading212') {
-      return (await new Trading212API(options).getInstruments()).map(instrument => ({
+      const api = new Trading212API(options);
+      /*
+       * An instrument names a working schedule rather than a venue, and the schedule belongs to an
+       * exchange, so the venue comes from joining the two lists.
+       */
+      const exchanges = await api.getExchanges();
+      const venues = new Map<number, string>();
+      for (const exchange of exchanges) {
+        for (const schedule of exchange.workingSchedules ?? []) {
+          venues.set(schedule.id, exchange.name);
+        }
+      }
+      return (await api.getInstruments()).map(instrument => ({
         currency: instrument.currencyCode,
+        exchange: instrument.workingScheduleId === null ? undefined : venues.get(instrument.workingScheduleId ?? -1),
         isin: instrument.isin ?? undefined,
         name: instrument.name,
         ticker: instrument.ticker,
@@ -72,8 +97,11 @@ export function createCliBroker(key: BrokerKey, live: boolean, env: NodeJS.Proce
     }
     return (await new AlpacaAPI(options).getAssets({asset_class: AlpacaAssetClass.US_EQUITY})).map(asset => ({
       currency: 'USD',
+      exchange: asset.exchange,
+      fractionable: asset.fractionable,
       name: asset.name,
       ticker: asset.symbol,
+      tradable: asset.tradable,
     }));
   };
 
