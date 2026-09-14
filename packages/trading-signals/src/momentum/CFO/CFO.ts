@@ -23,7 +23,7 @@ import {pushUpdate} from '../../util/array/pushUpdate.js';
  * @see https://www.fmlabs.com/reference/default.htm?url=ForecastOscillator.htm
  */
 export class CFO extends ZeroCrossSeries {
-  override readonly inputShape = IndicatorInputShape.VALUE;
+  override readonly inputShape = IndicatorInputShape.PRICE;
 
   readonly #closes: number[] = [];
 

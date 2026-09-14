@@ -38,7 +38,7 @@ export type DerivativeOscillatorConfig = {
  * @see https://www.tradingview.com/support/solutions/43000502248-derivative-oscillator/
  */
 export class DerivativeOscillator extends ZeroCrossSeries {
-  override readonly inputShape = IndicatorInputShape.VALUE;
+  override readonly inputShape = IndicatorInputShape.PRICE;
 
   readonly #rsi: RSI;
   readonly #firstSmoothing: EMA;

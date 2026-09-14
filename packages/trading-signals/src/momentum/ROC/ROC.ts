@@ -11,7 +11,7 @@ import {pushUpdate} from '../../util/array/pushUpdate.js';
  * @see https://www.investopedia.com/terms/r/rateofchange.asp
  */
 export class ROC extends TrendIndicatorSeries {
-  override readonly inputShape = IndicatorInputShape.VALUE;
+  override readonly inputShape = IndicatorInputShape.PRICE;
 
   public readonly prices: number[] = [];
 

@@ -33,7 +33,7 @@ export type RMIConfig = {
  * @see https://docs.motivewave.com/studies/q-r#relative-momentum-index
  */
 export class RMI extends ThresholdCrossSeries {
-  override readonly inputShape = IndicatorInputShape.VALUE;
+  override readonly inputShape = IndicatorInputShape.PRICE;
 
   readonly #closes: number[] = [];
   readonly #avgUpMomentum: WSMA;

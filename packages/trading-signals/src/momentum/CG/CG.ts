@@ -18,7 +18,7 @@ import {pushUpdate} from '../../util/array/pushUpdate.js';
  * @see http://www.mesasoftware.com/papers/TheCGOscillator.pdf
  */
 export class CG extends TrendIndicatorSeries {
-  override readonly inputShape = IndicatorInputShape.VALUE;
+  override readonly inputShape = IndicatorInputShape.PRICE;
 
   public signal: SMA;
 

@@ -17,7 +17,7 @@ import {EMA} from '../../trend/EMA/EMA.js';
  * @see https://tulipindicators.org/trix
  */
 export class TRIX extends ZeroCrossSeries {
-  override readonly inputShape = IndicatorInputShape.VALUE;
+  override readonly inputShape = IndicatorInputShape.PRICE;
 
   readonly #single: EMA;
   readonly #double: EMA;

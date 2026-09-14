@@ -13,7 +13,7 @@ import {getAverage, getStandardDeviation, pushUpdate} from '../../util/index.js'
  * @see https://www.investopedia.com/terms/b/bollingerbands.asp
  */
 export class BollingerBands extends TechnicalIndicator<BandsResult, number> {
-  override readonly inputShape = IndicatorInputShape.VALUE;
+  override readonly inputShape = IndicatorInputShape.PRICE;
 
   public readonly prices: number[] = [];
   #previousResult?: BandsResult;

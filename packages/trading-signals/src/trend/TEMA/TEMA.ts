@@ -16,7 +16,7 @@ import {EMA} from '../EMA/EMA.js';
  * @see https://tulipindicators.org/tema
  */
 export class TEMA extends IndicatorSeries {
-  override readonly inputShape = IndicatorInputShape.VALUE;
+  override readonly inputShape = IndicatorInputShape.PRICE;
 
   readonly #single: EMA;
   readonly #double: EMA;

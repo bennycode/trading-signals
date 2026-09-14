@@ -30,7 +30,7 @@ export type CoppockCurveConfig = {
  * @see https://school.stockcharts.com/doku.php?id=technical_indicators:coppock_curve
  */
 export class CoppockCurve extends ZeroCrossSeries {
-  override readonly inputShape = IndicatorInputShape.VALUE;
+  override readonly inputShape = IndicatorInputShape.PRICE;
 
   readonly #longRoc: ROC;
   readonly #shortRoc: ROC;

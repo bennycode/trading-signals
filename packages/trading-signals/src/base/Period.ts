@@ -8,7 +8,7 @@ export type PeriodResult = {
 };
 
 export class Period extends TechnicalIndicator<PeriodResult, number> {
-  override readonly inputShape = IndicatorInputShape.VALUE;
+  override readonly inputShape = IndicatorInputShape.PRICE;
 
   public values: number[];
   /** Highest return value during the current period. */

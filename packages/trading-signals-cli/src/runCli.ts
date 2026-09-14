@@ -84,7 +84,7 @@ export function runCli(argv: string[], overrides: Partial<CliDeps> = {}): CliRes
 
   const {create, name} = createIndicator(command, args);
   const series = parseSeries((overrides.readInput ?? readInput)(values.input));
-  const {indicator, input, required, results} = runIndicator(create, series, parsePriceField(values.price), name);
+  const {indicator, input, required, results} = runIndicator(create, series, parsePriceField(values.price));
 
   if (values.all) {
     // Every reading is printed here, so every reading has to be one that survives JSON.

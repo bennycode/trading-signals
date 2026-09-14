@@ -15,7 +15,7 @@ import {pushUpdate} from '../../util/array/pushUpdate.js';
  * @see https://www.investopedia.com/terms/v/volumerateofchange.asp
  */
 export class VROC extends ZeroCrossSeries {
-  override readonly inputShape = IndicatorInputShape.VALUE;
+  override readonly inputShape = IndicatorInputShape.VOLUME;
 
   readonly #volumes: number[] = [];
   readonly #historyLength: number;

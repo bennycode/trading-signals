@@ -24,7 +24,7 @@ export type APOConfig = {
  * @see https://tulipindicators.org/apo
  */
 export class APO extends ZeroCrossSeries {
-  override readonly inputShape = IndicatorInputShape.VALUE;
+  override readonly inputShape = IndicatorInputShape.PRICE;
 
   readonly #fast: EMA;
   readonly #slow: EMA;

@@ -10,7 +10,7 @@ import {IndicatorInputShape, IndicatorSeries} from '../../base/Indicator.js';
  * @see https://www.tradingview.com/support/solutions/43000501972-bollinger-bands-width-bbw/
  */
 export class BollingerBandsWidth extends IndicatorSeries {
-  override readonly inputShape = IndicatorInputShape.VALUE;
+  override readonly inputShape = IndicatorInputShape.PRICE;
 
   public readonly bollingerBands: BollingerBands;
 

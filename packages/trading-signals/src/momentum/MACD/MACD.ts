@@ -19,7 +19,7 @@ export type MACDResult = {
  * @see https://www.investopedia.com/terms/m/macd.asp
  */
 export class MACD extends TrendIndicator<MACDResult, number> {
-  override readonly inputShape = IndicatorInputShape.VALUE;
+  override readonly inputShape = IndicatorInputShape.PRICE;
 
   public readonly prices: number[] = [];
 

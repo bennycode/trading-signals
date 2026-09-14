@@ -31,7 +31,7 @@ export type PSLConfig = {
  * @see https://www.quantshare.com/item-851-psychological-line
  */
 export class PSL extends ThresholdCrossSeries {
-  override readonly inputShape = IndicatorInputShape.VALUE;
+  override readonly inputShape = IndicatorInputShape.PRICE;
 
   readonly #closes: number[] = [];
   public readonly interval: number;

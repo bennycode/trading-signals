@@ -25,7 +25,7 @@ import {pushUpdate} from '../../util/array/pushUpdate.js';
  * @see https://www.incrediblecharts.com/indicators/vertical_horizontal_filter.php
  */
 export class VHF extends IndicatorSeries {
-  override readonly inputShape = IndicatorInputShape.VALUE;
+  override readonly inputShape = IndicatorInputShape.PRICE;
 
   readonly #closes: number[] = [];
   readonly #changes: number[] = [];

@@ -10,7 +10,7 @@ import {IndicatorInputShape, IndicatorSeries} from '../../base/Indicator.js';
  */
 export abstract class MovingAverage extends IndicatorSeries {
   // Every moving average smooths a single value series, so the shape is fixed for the family.
-  override readonly inputShape = IndicatorInputShape.VALUE;
+  override readonly inputShape = IndicatorInputShape.PRICE;
 
   public readonly interval: number;
 

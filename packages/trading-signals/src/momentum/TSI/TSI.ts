@@ -28,7 +28,7 @@ export type TSIConfig = {
  * @see https://www.investopedia.com/terms/t/tsi.asp
  */
 export class TSI extends ZeroCrossSeries {
-  override readonly inputShape = IndicatorInputShape.VALUE;
+  override readonly inputShape = IndicatorInputShape.PRICE;
 
   readonly #longMomentum: EMA;
   readonly #longAbsMomentum: EMA;

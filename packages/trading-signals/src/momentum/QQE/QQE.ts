@@ -57,7 +57,7 @@ type QQEState = {
  * @see https://www.tradingview.com/script/34U0KMEK-QQE-MT4-Glaz-modified-by-JustUncleL/
  */
 export class QQE extends TrendIndicator<QQEResult, number, QQEState> {
-  override readonly inputShape = IndicatorInputShape.VALUE;
+  override readonly inputShape = IndicatorInputShape.PRICE;
 
   readonly #rsi: RSI;
   readonly #rsiSmoothing: EMA;

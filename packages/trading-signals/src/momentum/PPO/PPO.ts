@@ -21,7 +21,7 @@ export type PPOConfig = {
  * @see https://tulipindicators.org/ppo
  */
 export class PPO extends ZeroCrossSeries {
-  override readonly inputShape = IndicatorInputShape.VALUE;
+  override readonly inputShape = IndicatorInputShape.PRICE;
 
   readonly #fast: EMA;
   readonly #slow: EMA;

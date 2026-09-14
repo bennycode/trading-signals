@@ -10,7 +10,7 @@ import {getAverage, pushUpdate} from '../../util/index.js';
  * @see https://en.wikipedia.org/wiki/Average_absolute_deviation
  */
 export class MAD extends IndicatorSeries {
-  override readonly inputShape = IndicatorInputShape.VALUE;
+  override readonly inputShape = IndicatorInputShape.PRICE;
 
   public readonly prices: number[] = [];
 
