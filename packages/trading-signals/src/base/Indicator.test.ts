@@ -1,4 +1,5 @@
-import {IndicatorInputShape, IndicatorSeries} from './Indicator.js';
+import {ATR} from '../volatility/ATR/ATR.js';
+import {IndicatorInputShape, IndicatorSeries, assertInputShape} from './Indicator.js';
 import {NotEnoughDataError} from '../error/NotEnoughDataError.js';
 
 describe('Indicator', () => {
@@ -149,5 +150,42 @@ describe('inputShape', () => {
       disagreeing,
       'an indicator reading a volume series declares VOLUME and names its parameter "volume"'
     ).toEqual([]);
+  });
+});
+
+describe('assertInputShape', () => {
+  it.each([
+    {input: 5, label: 'a number where a candle belongs', message: 'reads high, low, close of a candle'},
+    {input: {close: 2, high: 3}, label: 'a candle short of a field', message: 'reads "low"'},
+    {input: null, label: 'nothing at all', message: 'reads high, low, close of a candle'},
+  ])('refuses $label', ({input, message}) => {
+    expect(
+      () => assertInputShape(input, IndicatorInputShape.HIGH_LOW_CLOSE, 'ATR'),
+      'an unchecked candle indicator reads undefined fields and answers NaN, which travels'
+    ).toThrow(message);
+  });
+
+  it.each([
+    {input: {close: 1}, label: 'an object', shape: IndicatorInputShape.PRICE},
+    {input: '5', label: 'a string', shape: IndicatorInputShape.VOLUME},
+  ])('refuses $label where a single number belongs', ({input, shape}) => {
+    expect(() => assertInputShape(input, shape, 'SMA')).toThrow('reads a single');
+  });
+
+  it.each([
+    {input: 5, shape: IndicatorInputShape.PRICE},
+    {input: 5, shape: IndicatorInputShape.VOLUME},
+    {input: {close: 1, high: 2, low: 0, open: 1, volume: 9}, shape: IndicatorInputShape.OPEN_HIGH_LOW_CLOSE_VOLUME},
+    {input: {high: 2, low: 0}, shape: IndicatorInputShape.HIGH_LOW},
+    {input: {close: 1, high: 2, low: 0, open: 1}, shape: IndicatorInputShape.OPEN_HIGH_LOW_CLOSE},
+    {input: {close: 1, high: 2, low: 0, volume: 9}, shape: IndicatorInputShape.HIGH_LOW_CLOSE_VOLUME},
+  ])('accepts what $shape asks for', ({input, shape}) => {
+    expect(() => assertInputShape(input, shape)).not.toThrow();
+  });
+
+  it('names the indicator that was handed the wrong input', () => {
+    expect(() => new ATR(14).add(5 as never), 'the message has to point at the call that caused it').toThrow(
+      'ATR reads high, low, close'
+    );
   });
 });

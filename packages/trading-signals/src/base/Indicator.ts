@@ -56,6 +56,49 @@ export type InputShapeOf<Input> = unknown extends Input
               ? typeof IndicatorInputShape.HIGH_LOW
               : never;
 
+/**
+ * The candle fields behind each shape. An empty list marks the two shapes that take a plain number,
+ * which is also what tells them apart from a candle at runtime.
+ */
+export const INPUT_SHAPE_FIELDS: Record<
+  IndicatorInputShapes,
+  readonly ('close' | 'high' | 'low' | 'open' | 'volume')[]
+> = {
+  [IndicatorInputShape.HIGH_LOW]: ['high', 'low'],
+  [IndicatorInputShape.HIGH_LOW_CLOSE]: ['high', 'low', 'close'],
+  [IndicatorInputShape.HIGH_LOW_CLOSE_VOLUME]: ['high', 'low', 'close', 'volume'],
+  [IndicatorInputShape.OPEN_HIGH_LOW_CLOSE]: ['open', 'high', 'low', 'close'],
+  [IndicatorInputShape.OPEN_HIGH_LOW_CLOSE_VOLUME]: ['open', 'high', 'low', 'close', 'volume'],
+  [IndicatorInputShape.PRICE]: [],
+  [IndicatorInputShape.VOLUME]: [],
+};
+
+/**
+ * Checks an input against the shape the indicator declares. Without it a candle indicator handed a
+ * number reads `undefined` fields and answers NaN, and one handed a candle short of a field does
+ * the same — a wrong answer rather than a complaint, and the further it travels the harder it is to
+ * trace back to the call that caused it.
+ */
+export function assertInputShape(input: unknown, shape: IndicatorInputShapes, indicatorName = 'The indicator'): void {
+  const fields = INPUT_SHAPE_FIELDS[shape];
+
+  if (fields.length === 0) {
+    if (typeof input !== 'number') {
+      throw new TypeError(`${indicatorName} reads a single ${shape}, but received ${typeof input}.`);
+    }
+    return;
+  }
+
+  if (input === null || typeof input !== 'object') {
+    throw new TypeError(`${indicatorName} reads ${fields.join(', ')} of a candle, but received ${typeof input}.`);
+  }
+  for (const field of fields) {
+    if (typeof Reflect.get(input, field) !== 'number') {
+      throw new TypeError(`${indicatorName} reads "${field}", which this input does not carry.`);
+    }
+  }
+}
+
 interface Indicator<Result = number, Input = number> {
   isStable: boolean;
   add(input: Input): Nullable<Result>;
@@ -140,18 +183,27 @@ export abstract class TechnicalIndicator<
     return this.result !== undefined;
   }
 
+  /*
+   * The public entry points check what they are handed; `update` stays the unchecked path, so an
+   * indicator driving another one internally pays nothing per bar.
+   */
   add(input: Input) {
+    assertInputShape(input, this.inputShape, this.constructor.name);
     return this.update(input, false);
   }
 
   replace(input: Input) {
+    assertInputShape(input, this.inputShape, this.constructor.name);
     return this.update(input, true);
   }
 
   abstract update(input: Input, replace: boolean): Result | null;
 
   updates(inputs: readonly Input[], replace: boolean = false) {
-    return inputs.map(input => this.update(input, replace));
+    return inputs.map(input => {
+      assertInputShape(input, this.inputShape, this.constructor.name);
+      return this.update(input, replace);
+    });
   }
 }
 
