@@ -1,4 +1,4 @@
-import {IndicatorInputShape, type IndicatorInputShapes} from 'trading-signals';
+import {INPUT_SHAPE_FIELDS, IndicatorInputShape} from 'trading-signals';
 import type {Indicator} from './indicators.js';
 import type {PriceField, Series} from './parseSeries.js';
 
@@ -10,20 +10,6 @@ export interface IndicatorRun {
   required: number;
   results: unknown[];
 }
-
-/**
- * The candle fields behind each declared shape. An empty list means the indicator takes a single
- * number per bar, and the shape says whether that number is a price or a volume.
- */
-const FIELDS_BY_SHAPE: Record<IndicatorInputShapes, readonly PriceField[]> = {
-  [IndicatorInputShape.HIGH_LOW]: ['high', 'low'],
-  [IndicatorInputShape.HIGH_LOW_CLOSE]: ['high', 'low', 'close'],
-  [IndicatorInputShape.HIGH_LOW_CLOSE_VOLUME]: ['high', 'low', 'close', 'volume'],
-  [IndicatorInputShape.OPEN_HIGH_LOW_CLOSE]: ['open', 'high', 'low', 'close'],
-  [IndicatorInputShape.OPEN_HIGH_LOW_CLOSE_VOLUME]: ['open', 'high', 'low', 'close', 'volume'],
-  [IndicatorInputShape.PRICE]: [],
-  [IndicatorInputShape.VOLUME]: [],
-};
 
 /**
  * NaN and Infinity both survive to the output as `null` once JSON.stringify is done with them,
@@ -101,7 +87,7 @@ export function runIndicator(create: () => Indicator, series: Series, price: Pri
   if (shape === undefined) {
     throw new Error('The indicator does not declare which input it takes. Update the trading-signals package.');
   }
-  const fields = FIELDS_BY_SHAPE[shape];
+  const fields = INPUT_SHAPE_FIELDS[shape];
 
   if (fields.length > 0) {
     if (series.pricesOnly) {
