@@ -1,4 +1,4 @@
-import {ThresholdCrossSeries} from '../../base/Indicator.js';
+import {IndicatorInputShape, ThresholdCrossSeries} from '../../base/Indicator.js';
 import type {SignalThresholds} from '../../base/SignalThresholds.type.js';
 import {pushUpdate} from '../../util/array/pushUpdate.js';
 
@@ -31,6 +31,8 @@ import {pushUpdate} from '../../util/array/pushUpdate.js';
  * @see https://strategyquant.com/codebase/rci3lines/
  */
 export class RCI extends ThresholdCrossSeries {
+  override readonly inputShape = IndicatorInputShape.VALUE;
+
   readonly #closes: number[] = [];
 
   public readonly interval: number;

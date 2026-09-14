@@ -1,4 +1,4 @@
-import {IndicatorSeries} from '../../base/Indicator.js';
+import {IndicatorInputShape, IndicatorSeries} from '../../base/Indicator.js';
 import type {HighLowClose} from '../../base/Candle.type.js';
 import {getTrueRange} from '../../util/candle/getTrueRange.js';
 
@@ -13,6 +13,8 @@ import {getTrueRange} from '../../util/candle/getTrueRange.js';
  * @see https://www.linnsoft.com/techind/true-range-tr
  */
 export class TR extends IndicatorSeries<HighLowClose<number>> {
+  override readonly inputShape = IndicatorInputShape.HIGH_LOW_CLOSE;
+
   #previousCandle?: HighLowClose<number>;
   #twoPreviousCandle?: HighLowClose<number>;
 

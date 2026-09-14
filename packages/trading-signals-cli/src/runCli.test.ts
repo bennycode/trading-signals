@@ -3,7 +3,7 @@ import {writeFileSync} from 'node:fs';
 import {tmpdir} from 'node:os';
 import {join} from 'node:path';
 import {describe, expect, it} from 'vitest';
-import {ATR, CG, NVI, RSI, SMA} from 'trading-signals';
+import {ATR, CG, IndicatorInputShape, NVI, RSI, SMA, VROC} from 'trading-signals';
 import {parseSeries} from './parseSeries.js';
 import {runIndicator} from './runIndicator.js';
 import {runCli} from './runCli.js';
@@ -222,6 +222,14 @@ describe('runCli', () => {
       input: 'candle',
       result: new ATR(14).updates(CANDLES, false).at(-1),
     });
+  });
+
+  it('feeds volumes to a volume series, which no amount of probing could tell from a price series', () => {
+    const volumes = CANDLES.map(candle => candle.volume);
+    expect(
+      run(['vroc', '10'], CANDLES),
+      'Volume Rate of Change over closing prices reads like a perfectly ordinary result, which is why the library declares the difference'
+    ).toMatchObject({input: 'volume', result: new VROC(10).updates(volumes, false).at(-1)});
   });
 
   it('feeds prices to a price indicator even when the input is candles', () => {
@@ -473,6 +481,7 @@ describe('runIndicator', () => {
   const fake = (result: unknown) => () => ({
     getRequiredInputs: () => 1,
     getResult: () => result,
+    inputShape: IndicatorInputShape.VALUE,
     update: () => result,
   });
 

@@ -1,4 +1,4 @@
-import {ThresholdCrossSeries} from '../../base/Indicator.js';
+import {IndicatorInputShape, ThresholdCrossSeries} from '../../base/Indicator.js';
 import type {SignalThresholds} from '../../base/SignalThresholds.type.js';
 import {EMA} from '../../trend/EMA/EMA.js';
 import {pushUpdate} from '../../util/array/pushUpdate.js';
@@ -52,6 +52,8 @@ function stochasticPosition(window: readonly number[]) {
  * @see https://www.investopedia.com/articles/forex/10/schaff-trend-cycle-indicator.asp
  */
 export class STC extends ThresholdCrossSeries {
+  override readonly inputShape = IndicatorInputShape.VALUE;
+
   readonly #fastEma: EMA;
   readonly #slowEma: EMA;
   readonly #dSmoothing: EMA;

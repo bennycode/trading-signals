@@ -1,4 +1,4 @@
-import {ZeroCrossSeries} from '../../base/Indicator.js';
+import {IndicatorInputShape, ZeroCrossSeries} from '../../base/Indicator.js';
 import {SMA} from '../../trend/SMA/SMA.js';
 import {ROC} from '../ROC/ROC.js';
 
@@ -44,6 +44,8 @@ type WeightedChain = {
  * @see https://chartschool.stockcharts.com/table-of-contents/technical-indicators-and-overlays/technical-indicators/know-sure-thing-kst
  */
 export class KST extends ZeroCrossSeries {
+  override readonly inputShape = IndicatorInputShape.VALUE;
+
   readonly #chains: readonly WeightedChain[];
 
   constructor({

@@ -1,4 +1,4 @@
-import {TechnicalIndicator, TradingSignal} from '../../base/Indicator.js';
+import {IndicatorInputShape, TechnicalIndicator, TradingSignal} from '../../base/Indicator.js';
 import type {MovingAverage} from '../../trend/MA/MovingAverage.js';
 import type {MovingAverageTypes} from '../../trend/MA/MovingAverageTypes.js';
 import {SMA} from '../../trend/SMA/SMA.js';
@@ -24,6 +24,8 @@ import type {HighLowClose} from '../../base/Candle.type.js';
  * @see https://github.com/twopirllc/pandas-ta/blob/master/pandas_ta/volatility/accbands.py
  */
 export class AccelerationBands extends TechnicalIndicator<BandsResult, HighLowClose<number>> {
+  override readonly inputShape = IndicatorInputShape.HIGH_LOW_CLOSE;
+
   readonly #lowerBand: MovingAverage;
   readonly #middleBand: MovingAverage;
   readonly #upperBand: MovingAverage;

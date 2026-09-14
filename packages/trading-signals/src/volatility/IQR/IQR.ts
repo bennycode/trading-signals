@@ -1,4 +1,4 @@
-import {IndicatorSeries} from '../../base/Indicator.js';
+import {IndicatorInputShape, IndicatorSeries} from '../../base/Indicator.js';
 import {getQuartile} from '../../util/math/getQuartile.js';
 
 /**
@@ -11,6 +11,8 @@ import {getQuartile} from '../../util/math/getQuartile.js';
  * @see https://en.wikipedia.org/wiki/Interquartile_range
  */
 export class IQR extends IndicatorSeries {
+  override readonly inputShape = IndicatorInputShape.VALUE;
+
   readonly #values: number[] = [];
 
   public readonly interval: number;

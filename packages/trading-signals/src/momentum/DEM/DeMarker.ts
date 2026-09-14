@@ -1,5 +1,5 @@
 import type {HighLow} from '../../base/Candle.type.js';
-import {ThresholdCrossSeries} from '../../base/Indicator.js';
+import {IndicatorInputShape, ThresholdCrossSeries} from '../../base/Indicator.js';
 import type {SignalThresholds} from '../../base/SignalThresholds.type.js';
 import {pushUpdate} from '../../util/array/pushUpdate.js';
 
@@ -28,6 +28,8 @@ export type DeMarkerConfig = {
  * @see https://www.investopedia.com/terms/d/demarkerindicator.asp
  */
 export class DeMarker extends ThresholdCrossSeries<HighLow<number>> {
+  override readonly inputShape = IndicatorInputShape.HIGH_LOW;
+
   readonly #candles: HighLow<number>[] = [];
   public readonly interval: number;
 

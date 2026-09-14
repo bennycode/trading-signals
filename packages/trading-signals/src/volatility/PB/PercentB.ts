@@ -1,4 +1,4 @@
-import {ThresholdCrossSeries} from '../../base/Indicator.js';
+import {IndicatorInputShape, ThresholdCrossSeries} from '../../base/Indicator.js';
 import type {SignalThresholds} from '../../base/SignalThresholds.type.js';
 import {BollingerBands} from '../BBANDS/BollingerBands.js';
 
@@ -30,6 +30,8 @@ export type PercentBConfig = {
  * @see https://www.tradingview.com/support/solutions/43000501971-bollinger-bands-b-b/
  */
 export class PercentB extends ThresholdCrossSeries {
+  override readonly inputShape = IndicatorInputShape.VALUE;
+
   readonly #bollingerBands: BollingerBands;
 
   constructor({

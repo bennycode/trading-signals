@@ -1,4 +1,4 @@
-import {TechnicalIndicator, TradingSignal} from '../../base/Indicator.js';
+import {IndicatorInputShape, TechnicalIndicator, TradingSignal} from '../../base/Indicator.js';
 import type {BandsResult} from '../../base/BandsResult.type.js';
 import {getAverage, getStandardDeviation, pushUpdate} from '../../util/index.js';
 
@@ -13,6 +13,8 @@ import {getAverage, getStandardDeviation, pushUpdate} from '../../util/index.js'
  * @see https://www.investopedia.com/terms/b/bollingerbands.asp
  */
 export class BollingerBands extends TechnicalIndicator<BandsResult, number> {
+  override readonly inputShape = IndicatorInputShape.VALUE;
+
   public readonly prices: number[] = [];
   #previousResult?: BandsResult;
   #twoPreviousResult?: BandsResult;

@@ -1,5 +1,5 @@
 import type {HighLowClose} from '../../base/Candle.type.js';
-import {IndicatorSeries} from '../../base/Indicator.js';
+import {IndicatorInputShape, IndicatorSeries} from '../../base/Indicator.js';
 import type {MovingAverageTypes} from '../../trend/MA/MovingAverageTypes.js';
 import {WSMA} from '../../trend/WSMA/WSMA.js';
 import {ATR} from '../ATR/ATR.js';
@@ -16,6 +16,8 @@ import {ATR} from '../ATR/ATR.js';
  * @see https://tulipindicators.org/natr
  */
 export class NATR extends IndicatorSeries<HighLowClose<number>> {
+  override readonly inputShape = IndicatorInputShape.HIGH_LOW_CLOSE;
+
   readonly #atr: ATR;
 
   public readonly interval: number;

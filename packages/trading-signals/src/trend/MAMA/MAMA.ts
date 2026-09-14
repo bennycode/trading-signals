@@ -1,4 +1,4 @@
-import {TradingSignal, TrendIndicator} from '../../base/Indicator.js';
+import {IndicatorInputShape, TradingSignal, TrendIndicator} from '../../base/Indicator.js';
 import type {HilbertCycleState} from '../HT/HilbertTransform.js';
 import {createHilbertCycleState, measureDominantCycle, pushCapped} from '../HT/HilbertTransform.js';
 
@@ -46,6 +46,8 @@ const RAD_TO_DEG = 180 / Math.PI;
  * @see https://github.com/TA-Lib/ta-lib/blob/main/src/ta_func/ta_MAMA.c
  */
 export class MAMA extends TrendIndicator<MAMAResult, number, MAMAState> {
+  override readonly inputShape = IndicatorInputShape.VALUE;
+
   public readonly fastLimit: number;
   public readonly slowLimit: number;
 

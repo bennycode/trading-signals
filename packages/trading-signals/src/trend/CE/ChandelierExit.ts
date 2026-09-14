@@ -1,5 +1,5 @@
 import type {HighLowClose} from '../../base/Candle.type.js';
-import {TechnicalIndicator} from '../../base/Indicator.js';
+import {IndicatorInputShape, TechnicalIndicator} from '../../base/Indicator.js';
 import {pushUpdate} from '../../util/array/pushUpdate.js';
 import {ATR} from '../../volatility/ATR/ATR.js';
 
@@ -33,6 +33,8 @@ export type ChandelierExitConfig = {
  * @see https://chartschool.stockcharts.com/table-of-contents/technical-indicators-and-overlays/technical-overlays/chandelier-exit
  */
 export class ChandelierExit extends TechnicalIndicator<ChandelierExitResult, HighLowClose<number>> {
+  override readonly inputShape = IndicatorInputShape.HIGH_LOW_CLOSE;
+
   readonly #atr: ATR;
   readonly #candles: HighLowClose<number>[] = [];
 

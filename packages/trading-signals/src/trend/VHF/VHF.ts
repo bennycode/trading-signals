@@ -1,4 +1,4 @@
-import {IndicatorSeries} from '../../base/Indicator.js';
+import {IndicatorInputShape, IndicatorSeries} from '../../base/Indicator.js';
 import {getMaximum} from '../../util/math/getMaximum.js';
 import {getMinimum} from '../../util/math/getMinimum.js';
 import {pushUpdate} from '../../util/array/pushUpdate.js';
@@ -25,6 +25,8 @@ import {pushUpdate} from '../../util/array/pushUpdate.js';
  * @see https://www.incrediblecharts.com/indicators/vertical_horizontal_filter.php
  */
 export class VHF extends IndicatorSeries {
+  override readonly inputShape = IndicatorInputShape.VALUE;
+
   readonly #closes: number[] = [];
   readonly #changes: number[] = [];
   #previousClose?: number;

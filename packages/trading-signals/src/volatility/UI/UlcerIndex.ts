@@ -1,4 +1,4 @@
-import {IndicatorSeries} from '../../base/Indicator.js';
+import {IndicatorInputShape, IndicatorSeries} from '../../base/Indicator.js';
 import {pushUpdate} from '../../util/index.js';
 
 /**
@@ -16,6 +16,8 @@ import {pushUpdate} from '../../util/index.js';
  * @see https://school.stockcharts.com/doku.php?id=technical_indicators:ulcer_index
  */
 export class UlcerIndex extends IndicatorSeries {
+  override readonly inputShape = IndicatorInputShape.VALUE;
+
   readonly #closes: number[] = [];
 
   public readonly interval: number;

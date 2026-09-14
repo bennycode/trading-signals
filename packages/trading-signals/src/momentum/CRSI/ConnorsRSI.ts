@@ -1,4 +1,4 @@
-import {ThresholdCrossSeries} from '../../base/Indicator.js';
+import {IndicatorInputShape, ThresholdCrossSeries} from '../../base/Indicator.js';
 import type {SignalThresholds} from '../../base/SignalThresholds.type.js';
 import {RSI} from '../RSI/RSI.js';
 
@@ -41,6 +41,8 @@ type ConnorsRSIState = {
  * @see https://chartschool.stockcharts.com/table-of-contents/technical-indicators-and-overlays/technical-indicators/connorsrsi
  */
 export class ConnorsRSI extends ThresholdCrossSeries<number, ConnorsRSIState> {
+  override readonly inputShape = IndicatorInputShape.VALUE;
+
   protected override state: ConnorsRSIState = {
     previousClose: null,
     returns: [],

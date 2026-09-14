@@ -1,4 +1,4 @@
-import {ZeroCrossSeries} from '../../base/Indicator.js';
+import {IndicatorInputShape, ZeroCrossSeries} from '../../base/Indicator.js';
 import {pushUpdate} from '../../util/array/pushUpdate.js';
 
 /**
@@ -11,6 +11,8 @@ import {pushUpdate} from '../../util/array/pushUpdate.js';
  * @see https://www.warriortrading.com/momentum-indicator/
  */
 export class MOM extends ZeroCrossSeries {
+  override readonly inputShape = IndicatorInputShape.VALUE;
+
   readonly #history: number[];
   readonly #historyLength: number;
 

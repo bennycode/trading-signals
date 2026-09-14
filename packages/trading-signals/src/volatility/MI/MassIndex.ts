@@ -1,5 +1,5 @@
 import type {HighLow} from '../../base/Candle.type.js';
-import {IndicatorSeries} from '../../base/Indicator.js';
+import {IndicatorInputShape, IndicatorSeries} from '../../base/Indicator.js';
 import {EMA} from '../../trend/EMA/EMA.js';
 import {pushUpdate} from '../../util/array/pushUpdate.js';
 
@@ -22,6 +22,8 @@ import {pushUpdate} from '../../util/array/pushUpdate.js';
  * @see https://tulipindicators.org/mass
  */
 export class MassIndex extends IndicatorSeries<HighLow> {
+  override readonly inputShape = IndicatorInputShape.HIGH_LOW;
+
   readonly #single: EMA;
   readonly #double: EMA;
   readonly #ratios: number[] = [];

@@ -1,4 +1,4 @@
-import {IndicatorSeries} from '../../base/Indicator.js';
+import {IndicatorInputShape, IndicatorSeries} from '../../base/Indicator.js';
 
 /**
  * Moving Average (MA)
@@ -9,6 +9,9 @@ import {IndicatorSeries} from '../../base/Indicator.js';
  * @see https://www.investopedia.com/terms/m/movingaverage.asp
  */
 export abstract class MovingAverage extends IndicatorSeries {
+  // Every moving average smooths a single value series, so the shape is fixed for the family.
+  override readonly inputShape = IndicatorInputShape.VALUE;
+
   public readonly interval: number;
 
   constructor(interval: number) {

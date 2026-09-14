@@ -1,5 +1,5 @@
 import type {HighLowClose} from '../../base/Candle.type.js';
-import {TechnicalIndicator} from '../../base/Indicator.js';
+import {IndicatorInputShape, TechnicalIndicator} from '../../base/Indicator.js';
 import {pushUpdate} from '../../util/array/pushUpdate.js';
 import {ATR} from '../../volatility/ATR/ATR.js';
 
@@ -37,6 +37,8 @@ export type ChandeKrollStopConfig = {
  * @see https://www.quantifiedstrategies.com/chande-kroll-stop/
  */
 export class ChandeKrollStop extends TechnicalIndicator<ChandeKrollStopResult, HighLowClose<number>> {
+  override readonly inputShape = IndicatorInputShape.HIGH_LOW_CLOSE;
+
   readonly #atr: ATR;
   readonly #candles: HighLowClose<number>[] = [];
   readonly #preliminaryStops: ChandeKrollStopResult[] = [];

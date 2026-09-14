@@ -1,4 +1,4 @@
-import {ZeroCrossSeries} from '../../base/Indicator.js';
+import {IndicatorInputShape, ZeroCrossSeries} from '../../base/Indicator.js';
 import {EMA} from '../../trend/EMA/EMA.js';
 import {SMA} from '../../trend/SMA/SMA.js';
 import {RSI} from '../RSI/RSI.js';
@@ -38,6 +38,8 @@ export type DerivativeOscillatorConfig = {
  * @see https://www.tradingview.com/support/solutions/43000502248-derivative-oscillator/
  */
 export class DerivativeOscillator extends ZeroCrossSeries {
+  override readonly inputShape = IndicatorInputShape.VALUE;
+
   readonly #rsi: RSI;
   readonly #firstSmoothing: EMA;
   readonly #secondSmoothing: EMA;
