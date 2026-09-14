@@ -21,27 +21,28 @@ export const IndicatorInputShape = {
   HIGH_LOW_CLOSE_VOLUME: 'high-low-close-volume',
   OPEN_HIGH_LOW_CLOSE: 'open-high-low-close',
   OPEN_HIGH_LOW_CLOSE_VOLUME: 'open-high-low-close-volume',
-  /** A single price series — the close by convention, but any value series works. */
+  /**
+   * A single number per bar. Which series that is belongs to the indicator's own documentation:
+   * closes for a price indicator, volumes for one that reads volume. The type system cannot tell
+   * those apart, so this shape does not pretend to.
+   */
   VALUE: 'value',
-  /** A single volume series. Same runtime type as VALUE, but consumers must feed volumes, not prices. */
-  VOLUME: 'volume',
 } as const;
 
 export type IndicatorInputShapes = (typeof IndicatorInputShape)[keyof typeof IndicatorInputShape];
 
 /**
- * Maps an indicator's `Input` generic to the correct {@link IndicatorInputShape} literal,
- * so declaring a wrong shape fails to compile. Checked from the widest candle down, because
- * candle types extend each other structurally. Scalar inputs allow VALUE or VOLUME — the
- * type system cannot tell a price series from a volume series, so that distinction is the
- * one part a human declares. Indicators with a custom input (e.g. another indicator's
- * result type) map to `never` — they have no generic candle shape to declare. Generic
- * consumers that hold an indicator with an `unknown` input see the full union.
+ * Maps an indicator's `Input` generic to the one correct {@link IndicatorInputShape} literal, so
+ * every declaration is derived rather than chosen: a wrong shape, or a missing one on a new
+ * indicator, fails to compile. Checked from the widest candle down, because candle types extend
+ * each other structurally. Indicators with a custom input (e.g. another indicator's result type)
+ * map to `never` — they have no generic candle shape to declare. Generic consumers holding an
+ * indicator with an `unknown` input see the full union.
  */
 export type InputShapeOf<Input> = unknown extends Input
   ? IndicatorInputShapes
   : Input extends number
-    ? typeof IndicatorInputShape.VALUE | typeof IndicatorInputShape.VOLUME
+    ? typeof IndicatorInputShape.VALUE
     : Input extends OpenHighLowCloseVolume<number>
       ? typeof IndicatorInputShape.OPEN_HIGH_LOW_CLOSE_VOLUME
       : Input extends HighLowCloseVolume<number>
