@@ -62,8 +62,11 @@ export const PlaceMarketOrderRequestSchema = z.object({
 });
 
 export const PlaceLimitOrderRequestSchema = z.object({
-  /** Route to Trading212's 24/5 overnight venue (true) or regular session only (default). */
-  extendedHours: z.boolean().optional(),
+  /*
+   * No `extendedHours` here on purpose: the limit endpoint answers "Invalid payload" when it is
+   * sent, while the market endpoint accepts it. Leaving it out of the type keeps it from coming
+   * back.
+   */
   limitPrice: z.number(),
   quantity: z.number(),
   ticker: z.string(),

@@ -191,6 +191,8 @@ All indicators can be updated over time by streaming data (prices or [candles](h
 npm install trading-signals
 ```
 
+To try an indicator on real data from a terminal instead of code, install [trading-signals-cli](../trading-signals-cli).
+
 ## Usage
 
 The library is published as ESM:

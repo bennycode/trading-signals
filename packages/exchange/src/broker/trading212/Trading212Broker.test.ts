@@ -3,12 +3,14 @@ import {OrderSide, type Candle} from '../Broker.js';
 import {TradingPair} from '../TradingPair.js';
 import {MarketDataSource} from '../MarketDataSource.js';
 import type {Trading212API} from './api/Trading212API.js';
+import {Trading212OrderStatus} from './api/schema/OrderSchema.js';
 
 // Shared mock references
 const mockMethods = {
   getAccountCash: vi.fn(),
   getAccountInfo: vi.fn<Trading212API['getAccountInfo']>(),
   getInstruments: vi.fn<Trading212API['getInstruments']>(),
+  placeLimitOrder: vi.fn<Trading212API['placeLimitOrder']>(),
   placeMarketOrder: vi.fn<Trading212API['placeMarketOrder']>(),
 };
 
@@ -17,6 +19,7 @@ vi.mock(import('./api/Trading212API.js'), () => ({
     getAccountCash = mockMethods.getAccountCash;
     getAccountInfo = mockMethods.getAccountInfo;
     getInstruments = mockMethods.getInstruments;
+    placeLimitOrder = mockMethods.placeLimitOrder;
     placeMarketOrder = mockMethods.placeMarketOrder;
   } as unknown as typeof Trading212API,
 }));
@@ -89,7 +92,8 @@ describe('Trading212Broker', {concurrent: false}, () => {
       await expect(failure).rejects.toMatchObject({status: 401});
     });
   });
-  describe('placeMarketOrder', () => {
+  describe('placeOrder', () => {
+    const LIMIT_PAIR = new TradingPair('AMD_US_EQ', 'USD');
     const INSTRUMENTS = [
       {
         addedOn: '2018-07-12T07:10:11.000+03:00',
@@ -108,18 +112,34 @@ describe('Trading212Broker', {concurrent: false}, () => {
         type: 'STOCK' as const,
       },
     ];
+    const ACCEPTED_ORDER = {
+      creationTime: '2026-09-13T22:00:00.000Z',
+      id: 1,
+      limitPrice: 172,
+      quantity: 1,
+      status: Trading212OrderStatus.CONFIRMED,
+      strategy: 'QUANTITY',
+      ticker: 'AMD_US_EQ',
+      type: 'LIMIT',
+      value: null,
+    } as const;
 
     beforeEach(() => {
       mockMethods.getAccountInfo.mockResolvedValue({currencyCode: 'EUR', id: 1});
       mockMethods.getInstruments.mockResolvedValue(INSTRUMENTS);
-      mockMethods.placeMarketOrder.mockResolvedValue({
-        creationTime: '2026-09-14T00:00:00.000Z',
-        id: 1,
+      mockMethods.placeLimitOrder.mockResolvedValue(ACCEPTED_ORDER);
+      mockMethods.placeMarketOrder.mockResolvedValue({...ACCEPTED_ORDER, limitPrice: null, type: 'MARKET'});
+    });
+
+    it('sends a limit order without the field the limit endpoint refuses', async () => {
+      await broker.placeLimitOrder(LIMIT_PAIR, {price: '172', side: OrderSide.BUY, size: '1'});
+
+      const payload = mockMethods.placeLimitOrder.mock.calls[0]?.[0];
+      expect(payload, 'Trading212 answers "Invalid payload" when extendedHours reaches the limit endpoint').toEqual({
+        limitPrice: 172,
         quantity: 1,
-        status: 'CONFIRMED',
-        strategy: 'QUANTITY',
-        ticker: 'AAPL_US_EQ',
-        type: 'MARKET',
+        ticker: 'AMD_US_EQ',
+        timeValidity: 'DAY',
       });
     });
 
@@ -128,12 +148,17 @@ describe('Trading212Broker', {concurrent: false}, () => {
       {expected: false, ticker: 'RRl_EQ', venue: 'a London listing that does not'},
     ])('sends what the instrument itself says about extended hours: $venue', async ({expected, ticker}) => {
       await broker.placeMarketOrder(new TradingPair(ticker, ticker === 'RRl_EQ' ? 'GBX' : 'USD'), {
-        side: OrderSide.BUY,
-        size: '1',
+        side: OrderSide.SELL,
+        size: '2',
         sizeInCounter: false,
       });
 
-      expect(mockMethods.placeMarketOrder.mock.calls[0]?.[0]).toMatchObject({extendedHours: expected});
+      const payload = mockMethods.placeMarketOrder.mock.calls[0]?.[0];
+      expect(payload, 'the sign of the quantity is how Trading212 encodes the side').toEqual({
+        extendedHours: expected,
+        quantity: -2,
+        ticker,
+      });
     });
 
     it('leaves the field out for an instrument it does not know', async () => {
