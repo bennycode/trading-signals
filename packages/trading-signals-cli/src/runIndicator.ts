@@ -22,8 +22,15 @@ const FIELDS_BY_SHAPE: Record<IndicatorInputShapes, readonly PriceField[]> = {
   [IndicatorInputShape.OPEN_HIGH_LOW_CLOSE]: ['open', 'high', 'low', 'close'],
   [IndicatorInputShape.OPEN_HIGH_LOW_CLOSE_VOLUME]: ['open', 'high', 'low', 'close', 'volume'],
   [IndicatorInputShape.VALUE]: [],
-  [IndicatorInputShape.VOLUME]: [],
 };
+
+/*
+ * A value series is a plain number per bar, and the library does not say which series: closes for a
+ * price indicator, volumes for these three. Nothing in the type system separates them, so the list
+ * lives here, with the consumer that has to choose a field. Feeding closes to Volume Rate of Change
+ * yields a reading that looks perfectly sound, which is why it is worth naming them.
+ */
+const VOLUME_SERIES: ReadonlySet<string> = new Set(['PVO', 'RVOL', 'VROC']);
 
 /**
  * NaN and Infinity both survive to the output as `null` once JSON.stringify is done with them,
@@ -95,7 +102,7 @@ function feed(indicator: Indicator, inputs: readonly unknown[]) {
  * series. That declaration is the only way to tell the last two apart, because both take a plain
  * number, and feeding closes to Volume Rate of Change yields a reading that looks perfectly sound.
  */
-export function runIndicator(create: () => Indicator, series: Series, price: PriceField): IndicatorRun {
+export function runIndicator(create: () => Indicator, series: Series, price: PriceField, name = ''): IndicatorRun {
   const indicator = create();
   const shape = indicator.inputShape;
   if (shape === undefined) {
@@ -120,8 +127,7 @@ export function runIndicator(create: () => Indicator, series: Series, price: Pri
     return {...run, input: 'candle'};
   }
 
-  // A volume series is fed volumes whatever --price says, because the indicator is explicit about it.
-  const readsVolume = shape === IndicatorInputShape.VOLUME;
+  const readsVolume = VOLUME_SERIES.has(name);
   const field: PriceField = readsVolume ? 'volume' : price;
   requireField(series, field, !readsVolume);
   const run = feed(
