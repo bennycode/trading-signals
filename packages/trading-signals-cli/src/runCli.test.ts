@@ -3,7 +3,7 @@ import {writeFileSync} from 'node:fs';
 import {tmpdir} from 'node:os';
 import {join} from 'node:path';
 import {describe, expect, it} from 'vitest';
-import {ATR, CG, NVI, RSI, SMA} from 'trading-signals';
+import {ATR, CG, IndicatorInputShape, NVI, RSI, SMA, VROC} from 'trading-signals';
 import {parseSeries} from './parseSeries.js';
 import {runIndicator} from './runIndicator.js';
 import {runCli} from './runCli.js';
@@ -222,6 +222,15 @@ describe('runCli', () => {
       input: 'candle',
       result: new ATR(14).updates(CANDLES, false).at(-1),
     });
+  });
+
+  it('feeds volumes to an indicator that declares it reads them', () => {
+    const volumes = CANDLES.map(candle => candle.volume);
+    expect(
+      run(['vroc', '10'], CANDLES),
+      'a price and a volume are both plain numbers, so the declaration is the only thing that separates them'
+    ).toMatchObject({input: 'volume', result: new VROC(10).updates(volumes, false).at(-1)});
+    expect(run(['rvol', '10'], CANDLES)).toMatchObject({input: 'volume'});
   });
 
   it('feeds prices to a price indicator even when the input is candles', () => {
@@ -473,6 +482,7 @@ describe('runIndicator', () => {
   const fake = (result: unknown) => () => ({
     getRequiredInputs: () => 1,
     getResult: () => result,
+    inputShape: IndicatorInputShape.PRICE,
     update: () => result,
   });
 

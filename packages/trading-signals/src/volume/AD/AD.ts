@@ -1,5 +1,5 @@
 import type {HighLowCloseVolume} from '../../base/Candle.type.js';
-import {TradingSignal, TrendIndicatorSeries} from '../../base/Indicator.js';
+import {IndicatorInputShape, TradingSignal, TrendIndicatorSeries} from '../../base/Indicator.js';
 
 /**
  * Accumulation/Distribution (AD)
@@ -17,6 +17,8 @@ import {TradingSignal, TrendIndicatorSeries} from '../../base/Indicator.js';
  * @see https://www.investopedia.com/terms/a/accumulationdistribution.asp
  */
 export class AD extends TrendIndicatorSeries<HighLowCloseVolume> {
+  override readonly inputShape = IndicatorInputShape.HIGH_LOW_CLOSE_VOLUME;
+
   #previousCandle: HighLowCloseVolume | null = null;
   #previousAD: number | null = null;
 

@@ -1,7 +1,10 @@
 import * as library from 'trading-signals';
+import type {IndicatorInputShapes} from 'trading-signals';
 
 export interface Indicator {
   getRequiredInputs(): number;
+  /** Which part of a candle the indicator consumes, as the library declares it. */
+  inputShape?: IndicatorInputShapes;
   getResult(): unknown;
   getSignal?(): unknown;
   update(input: unknown, replace: boolean): unknown;

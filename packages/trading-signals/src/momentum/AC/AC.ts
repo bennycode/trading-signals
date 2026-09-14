@@ -1,6 +1,6 @@
 import {SMA} from '../../trend/SMA/SMA.js';
 import type {HighLow} from '../../base/Candle.type.js';
-import {TrendIndicatorSeries, TradingSignal} from '../../base/Indicator.js';
+import {IndicatorInputShape, TrendIndicatorSeries, TradingSignal} from '../../base/Indicator.js';
 import {AO} from '../AO/AO.js';
 import {MOM} from '../MOM/MOM.js';
 
@@ -14,6 +14,8 @@ import {MOM} from '../MOM/MOM.js';
  * @see https://help.quantower.com/quantower/analytics-panels/chart/technical-indicators/oscillators/accelerator-oscillator
  */
 export class AC extends TrendIndicatorSeries<HighLow<number>> {
+  override readonly inputShape = IndicatorInputShape.HIGH_LOW;
+
   public readonly ao: AO;
   public readonly momentum: MOM;
   public readonly signal: SMA;

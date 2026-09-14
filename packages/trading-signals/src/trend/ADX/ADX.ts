@@ -1,5 +1,5 @@
 import {DX} from '../DX/DX.js';
-import {IndicatorSeries} from '../../base/Indicator.js';
+import {IndicatorInputShape, IndicatorSeries} from '../../base/Indicator.js';
 import type {MovingAverage} from '../MA/MovingAverage.js';
 import type {MovingAverageTypes} from '../MA/MovingAverageTypes.js';
 import type {HighLowClose} from '../../base/Candle.type.js';
@@ -37,6 +37,8 @@ import {WSMA} from '../WSMA/WSMA.js';
  * @see https://medium.com/codex/algorithmic-trading-with-average-directional-index-in-python-2b5a20ecf06a
  */
 export class ADX extends IndicatorSeries<HighLowClose<number>> {
+  override readonly inputShape = IndicatorInputShape.HIGH_LOW_CLOSE;
+
   readonly #dx: DX;
   readonly #smoothed: MovingAverage;
 

@@ -1,5 +1,5 @@
 import type {HighLowCloseVolume} from '../../base/Candle.type.js';
-import {IndicatorSeries} from '../../base/Indicator.js';
+import {IndicatorInputShape, IndicatorSeries} from '../../base/Indicator.js';
 import {pushUpdate} from '../../util/array/pushUpdate.js';
 
 type PVIState = {
@@ -25,6 +25,8 @@ type PVIState = {
  * @see https://tulipindicators.org/pvi
  */
 export class PVI extends IndicatorSeries<HighLowCloseVolume, PVIState> {
+  override readonly inputShape = IndicatorInputShape.HIGH_LOW_CLOSE_VOLUME;
+
   protected override state: PVIState = {candles: [], pvi: 1_000};
 
   override getRequiredInputs() {

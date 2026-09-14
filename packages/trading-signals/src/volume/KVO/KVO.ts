@@ -1,5 +1,5 @@
 import type {HighLowCloseVolume} from '../../base/Candle.type.js';
-import {ZeroCrossSeries} from '../../base/Indicator.js';
+import {IndicatorInputShape, ZeroCrossSeries} from '../../base/Indicator.js';
 
 type KVOState = {
   /**
@@ -42,6 +42,8 @@ const createInitialState = (): KVOState => ({
  * @see https://tulipindicators.org/kvo
  */
 export class KVO extends ZeroCrossSeries<HighLowCloseVolume> {
+  override readonly inputShape = IndicatorInputShape.HIGH_LOW_CLOSE_VOLUME;
+
   public readonly shortInterval: number;
   public readonly longInterval: number;
   readonly #shortSmoothing: number;

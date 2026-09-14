@@ -1,5 +1,5 @@
 import type {HighLowClose} from '../../base/Candle.type.js';
-import {ThresholdCrossSeries} from '../../base/Indicator.js';
+import {IndicatorInputShape, ThresholdCrossSeries} from '../../base/Indicator.js';
 import type {SignalThresholds} from '../../base/SignalThresholds.type.js';
 import {pushUpdate} from '../../util/array/pushUpdate.js';
 
@@ -30,6 +30,8 @@ export type ProjectionOscillatorConfig = {
  * @see https://www.fmlabs.com/reference/default.htm?url=ProjectionOscillator.htm
  */
 export class ProjectionOscillator extends ThresholdCrossSeries<HighLowClose<number>> {
+  override readonly inputShape = IndicatorInputShape.HIGH_LOW_CLOSE;
+
   readonly #candles: HighLowClose<number>[] = [];
   public readonly interval: number;
 

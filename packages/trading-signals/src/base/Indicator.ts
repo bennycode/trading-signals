@@ -1,7 +1,77 @@
 import {NotEnoughDataError} from '../error/NotEnoughDataError.js';
+import type {
+  HighLow,
+  HighLowClose,
+  HighLowCloseVolume,
+  OpenHighLowClose,
+  OpenHighLowCloseVolume,
+} from './Candle.type.js';
 import type {SignalThresholds} from './SignalThresholds.type.js';
 
 type Nullable<Result> = Result | null;
+
+/**
+ * The candle fields an indicator consumes. TypeScript's input types are erased at runtime,
+ * so generic consumers (CLIs, strategy builders, docs) need this as a value to know which
+ * part of a candle to feed into `add()` without hardcoding knowledge per indicator.
+ */
+export const IndicatorInputShape = {
+  HIGH_LOW: 'high-low',
+  HIGH_LOW_CLOSE: 'high-low-close',
+  HIGH_LOW_CLOSE_VOLUME: 'high-low-close-volume',
+  OPEN_HIGH_LOW_CLOSE: 'open-high-low-close',
+  OPEN_HIGH_LOW_CLOSE_VOLUME: 'open-high-low-close-volume',
+  /** A single price per bar, the close by convention. */
+  PRICE: 'price',
+  /** A single volume per bar. */
+  VOLUME: 'volume',
+} as const;
+
+export type IndicatorInputShapes = (typeof IndicatorInputShape)[keyof typeof IndicatorInputShape];
+
+/**
+ * Maps an indicator's `Input` generic to the {@link IndicatorInputShape} literals it may declare,
+ * so a wrong shape, or a missing one on a new indicator, fails to compile. Checked from the widest
+ * candle down, because candle types extend each other structurally.
+ *
+ * A price and a volume are both a plain number, so those two the compiler cannot separate: that
+ * single choice is the indicator's to state, beside the `update` that reads the series. Everything
+ * else follows from the input type. Indicators with a custom input (e.g. another indicator's result
+ * type) map to `never` — they have no generic candle shape to declare. Generic consumers holding an
+ * indicator with an `unknown` input see the full union.
+ */
+export type InputShapeOf<Input> = unknown extends Input
+  ? IndicatorInputShapes
+  : Input extends number
+    ? typeof IndicatorInputShape.PRICE | typeof IndicatorInputShape.VOLUME
+    : Input extends OpenHighLowCloseVolume<number>
+      ? typeof IndicatorInputShape.OPEN_HIGH_LOW_CLOSE_VOLUME
+      : Input extends HighLowCloseVolume<number>
+        ? typeof IndicatorInputShape.HIGH_LOW_CLOSE_VOLUME
+        : Input extends OpenHighLowClose<number>
+          ? typeof IndicatorInputShape.OPEN_HIGH_LOW_CLOSE
+          : Input extends HighLowClose<number>
+            ? typeof IndicatorInputShape.HIGH_LOW_CLOSE
+            : Input extends HighLow<number>
+              ? typeof IndicatorInputShape.HIGH_LOW
+              : never;
+
+/**
+ * The candle fields behind each shape, for consumers that receive candles at runtime and have to
+ * pick the parts an indicator reads. An empty list marks the two shapes that take a plain number.
+ */
+export const INPUT_SHAPE_FIELDS: Record<
+  IndicatorInputShapes,
+  readonly ('close' | 'high' | 'low' | 'open' | 'volume')[]
+> = {
+  [IndicatorInputShape.HIGH_LOW]: ['high', 'low'],
+  [IndicatorInputShape.HIGH_LOW_CLOSE]: ['high', 'low', 'close'],
+  [IndicatorInputShape.HIGH_LOW_CLOSE_VOLUME]: ['high', 'low', 'close', 'volume'],
+  [IndicatorInputShape.OPEN_HIGH_LOW_CLOSE]: ['open', 'high', 'low', 'close'],
+  [IndicatorInputShape.OPEN_HIGH_LOW_CLOSE_VOLUME]: ['open', 'high', 'low', 'close', 'volume'],
+  [IndicatorInputShape.PRICE]: [],
+  [IndicatorInputShape.VOLUME]: [],
+};
 
 interface Indicator<Result = number, Input = number> {
   isStable: boolean;
@@ -34,6 +104,12 @@ export abstract class TechnicalIndicator<
   protected result: Result | undefined;
   protected state: State = {} as State;
   #previousState?: State;
+
+  /**
+   * The candle fields this indicator consumes, as a runtime value. The type ties the
+   * declaration to the `Input` generic, so a mismatching shape fails to compile.
+   */
+  abstract readonly inputShape: InputShapeOf<Input>;
 
   abstract getRequiredInputs(): number;
 
