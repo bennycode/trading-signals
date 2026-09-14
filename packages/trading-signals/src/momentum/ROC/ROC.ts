@@ -1,4 +1,4 @@
-import {TrendIndicatorSeries, TradingSignal} from '../../base/Indicator.js';
+import {IndicatorInputShape, TrendIndicatorSeries, TradingSignal} from '../../base/Indicator.js';
 import {pushUpdate} from '../../util/array/pushUpdate.js';
 
 /**
@@ -11,6 +11,8 @@ import {pushUpdate} from '../../util/array/pushUpdate.js';
  * @see https://www.investopedia.com/terms/r/rateofchange.asp
  */
 export class ROC extends TrendIndicatorSeries {
+  override readonly inputShape = IndicatorInputShape.VALUE;
+
   public readonly prices: number[] = [];
 
   public readonly interval: number;

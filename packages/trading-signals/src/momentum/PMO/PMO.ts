@@ -1,4 +1,4 @@
-import {TradingSignal, TrendIndicator} from '../../base/Indicator.js';
+import {IndicatorInputShape, TradingSignal, TrendIndicator} from '../../base/Indicator.js';
 import {EMA} from '../../trend/EMA/EMA.js';
 
 export type PMOConfig = {
@@ -80,6 +80,8 @@ class DecisionPointSmoothing {
  * @see https://chartschool.stockcharts.com/table-of-contents/technical-indicators-and-overlays/technical-indicators/decisionpoint-price-momentum-oscillator-pmo
  */
 export class PMO extends TrendIndicator<PMOResult, number> {
+  override readonly inputShape = IndicatorInputShape.VALUE;
+
   #previousPrice?: number;
   #penultimatePrice?: number;
 

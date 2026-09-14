@@ -1,4 +1,4 @@
-import {ZeroCrossSeries} from '../../base/Indicator.js';
+import {IndicatorInputShape, ZeroCrossSeries} from '../../base/Indicator.js';
 import {EMA} from '../../trend/EMA/EMA.js';
 
 export type TSIConfig = {
@@ -28,6 +28,8 @@ export type TSIConfig = {
  * @see https://www.investopedia.com/terms/t/tsi.asp
  */
 export class TSI extends ZeroCrossSeries {
+  override readonly inputShape = IndicatorInputShape.VALUE;
+
   readonly #longMomentum: EMA;
   readonly #longAbsMomentum: EMA;
   readonly #shortMomentum: EMA;

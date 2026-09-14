@@ -1,4 +1,4 @@
-import {ZeroCrossSeries} from '../../base/Indicator.js';
+import {IndicatorInputShape, ZeroCrossSeries} from '../../base/Indicator.js';
 import {EMA} from '../../trend/EMA/EMA.js';
 
 /**
@@ -17,6 +17,8 @@ import {EMA} from '../../trend/EMA/EMA.js';
  * @see https://tulipindicators.org/trix
  */
 export class TRIX extends ZeroCrossSeries {
+  override readonly inputShape = IndicatorInputShape.VALUE;
+
   readonly #single: EMA;
   readonly #double: EMA;
   readonly #triple: EMA;

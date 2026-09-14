@@ -1,5 +1,5 @@
 import type {HighLowCloseVolume} from '../../base/Candle.type.js';
-import {TradingSignal, TrendIndicatorSeries, type TradingSignals} from '../../base/Indicator.js';
+import {IndicatorInputShape, TradingSignal, TrendIndicatorSeries, type TradingSignals} from '../../base/Indicator.js';
 import {pushUpdate} from '../../util/array/pushUpdate.js';
 
 type PVTState = {
@@ -20,6 +20,8 @@ type PVTState = {
  * @see https://www.investopedia.com/terms/p/pvt.asp
  */
 export class PVT extends TrendIndicatorSeries<HighLowCloseVolume, TradingSignals, PVTState> {
+  override readonly inputShape = IndicatorInputShape.HIGH_LOW_CLOSE_VOLUME;
+
   protected override state: PVTState = {candles: []};
 
   override getRequiredInputs() {

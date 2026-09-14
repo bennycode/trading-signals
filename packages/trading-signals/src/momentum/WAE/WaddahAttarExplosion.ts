@@ -1,5 +1,5 @@
 import type {HighLowClose} from '../../base/Candle.type.js';
-import {TradingSignal, TrendIndicator} from '../../base/Indicator.js';
+import {IndicatorInputShape, TradingSignal, TrendIndicator} from '../../base/Indicator.js';
 import {EMA} from '../../trend/EMA/EMA.js';
 import {ATR} from '../../volatility/ATR/ATR.js';
 import {BollingerBands} from '../../volatility/BBANDS/BollingerBands.js';
@@ -56,6 +56,8 @@ export type WaddahAttarExplosionConfig = {
  * @see https://www.tradingview.com/script/iu3kKWDI-Waddah-Attar-Explosion-LazyBear/
  */
 export class WaddahAttarExplosion extends TrendIndicator<WaddahAttarExplosionResult, HighLowClose<number>> {
+  override readonly inputShape = IndicatorInputShape.HIGH_LOW_CLOSE;
+
   public readonly deadZoneMultiplier: number;
   public readonly sensitivity: number;
 

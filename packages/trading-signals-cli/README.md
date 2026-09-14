@@ -24,11 +24,11 @@ Input arrives on stdin or through `--input <file>`, as a JSON array, newline-del
 exchange-cli candles AAPL --broker alpaca --count 50 | trading-signals-cli macd EMA:12 EMA:26 EMA:9
 ```
 
-| Option            | Description                                                                                     |
-| ----------------- | ----------------------------------------------------------------------------------------------- |
-| `--input <file>`  | Read the input from a file instead of stdin.                                                    |
-| `--price <field>` | Price that feeds price-based indicators: `close` (default), `high`, `low`, `open`, or `volume`. |
-| `--all`           | Print every intermediate result as NDJSON instead of the last one.                              |
+| Option | Description |
+| --- | --- |
+| `--input <file>` | Read the input from a file instead of stdin. |
+| `--price <field>` | Price that feeds price-series indicators: `close` (default), `high`, `low`, `open`, or `volume`. Indicators that declare a volume series read volumes regardless. |
+| `--all` | Print every intermediate result as NDJSON instead of the last one. |
 
 ### Indicator arguments
 
@@ -60,6 +60,6 @@ $ trading-signals-cli rsi 14 --input candles.json
 {"indicator":"RSI","input":"close","inputs":1235,"required":15,"result":39.15918894698538,"stable":true,"signal":{"hasChanged":false,"state":"SIDEWAYS"}}
 ```
 
-`input` reports whether the indicator read whole candles or a single price per bar; which of the two it takes is decided by the fields it actually reads, not by the shape of the input. `required` is the number of inputs it needs before it emits anything, and `result` is `null` while it is still warming up. `signal` appears for indicators that derive a trend from their result.
+`input` reports what the indicator was fed: whole candles, or one value per bar taken from that field. Each indicator declares which part of a candle it consumes, so a volume series such as `vroc` is fed volumes rather than closes, which no inspection of the input could decide. `required` is the number of inputs it needs before it emits anything, and `result` is `null` while it is still warming up. `signal` appears for indicators that derive a trend from their result.
 
 An indicator that reads a candle field the input does not carry is reported as an error rather than computed from missing values. One that stays silent although the input is long enough is flagged with a `hint`: either it emits only at an event the data does not contain, such as a swing or a breakout, or a setting never reached it.

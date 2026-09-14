@@ -2,7 +2,7 @@ import type {MovingAverage} from '../../trend/MA/MovingAverage.js';
 import type {MovingAverageTypes} from '../../trend/MA/MovingAverageTypes.js';
 import {SMA} from '../../trend/SMA/SMA.js';
 import {WSMA} from '../../trend/WSMA/WSMA.js';
-import {ThresholdCrossSeries} from '../../base/Indicator.js';
+import {IndicatorInputShape, ThresholdCrossSeries} from '../../base/Indicator.js';
 import {Period} from '../../base/Period.js';
 import type {SignalThresholds} from '../../base/SignalThresholds.type.js';
 import {RSI} from '../RSI/RSI.js';
@@ -27,6 +27,8 @@ import {RSI} from '../RSI/RSI.js';
  * @see https://alchemymarkets.com/education/indicators/stochastic-rsi/
  */
 export class StochasticRSI extends ThresholdCrossSeries {
+  override readonly inputShape = IndicatorInputShape.VALUE;
+
   readonly #period: Period;
   readonly #rsi: RSI;
 

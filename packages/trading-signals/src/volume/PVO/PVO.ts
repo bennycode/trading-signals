@@ -1,4 +1,4 @@
-import {ZeroCrossSeries} from '../../base/Indicator.js';
+import {IndicatorInputShape, ZeroCrossSeries} from '../../base/Indicator.js';
 import {EMA} from '../../trend/EMA/EMA.js';
 
 export type PVOConfig = {
@@ -25,6 +25,8 @@ export type PVOConfig = {
  * @see https://www.investopedia.com/terms/p/ppo.asp
  */
 export class PVO extends ZeroCrossSeries {
+  override readonly inputShape = IndicatorInputShape.VOLUME;
+
   readonly #fast: EMA;
   readonly #slow: EMA;
 

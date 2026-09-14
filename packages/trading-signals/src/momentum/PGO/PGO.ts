@@ -1,5 +1,5 @@
 import type {HighLowClose} from '../../base/Candle.type.js';
-import {ThresholdCrossSeries} from '../../base/Indicator.js';
+import {IndicatorInputShape, ThresholdCrossSeries} from '../../base/Indicator.js';
 import type {SignalThresholds} from '../../base/SignalThresholds.type.js';
 import {EMA} from '../../trend/EMA/EMA.js';
 import {SMA} from '../../trend/SMA/SMA.js';
@@ -36,6 +36,8 @@ export type PGOConfig = {
  * @see https://github.com/twopirllc/pandas-ta
  */
 export class PGO extends ThresholdCrossSeries<HighLowClose<number>> {
+  override readonly inputShape = IndicatorInputShape.HIGH_LOW_CLOSE;
+
   readonly #sma: SMA;
   readonly #atr: ATR;
   readonly #atrSmoothing: EMA;

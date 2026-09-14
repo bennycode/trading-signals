@@ -1,5 +1,5 @@
 import {EMA} from '../EMA/EMA.js';
-import {IndicatorSeries} from '../../base/Indicator.js';
+import {IndicatorInputShape, IndicatorSeries} from '../../base/Indicator.js';
 import {NotEnoughDataError} from '../../error/index.js';
 
 /**
@@ -11,6 +11,8 @@ import {NotEnoughDataError} from '../../error/index.js';
  * @see https://www.investopedia.com/terms/d/double-exponential-moving-average.asp
  */
 export class DEMA extends IndicatorSeries {
+  override readonly inputShape = IndicatorInputShape.VALUE;
+
   readonly #inner: EMA;
   readonly #outer: EMA;
 

@@ -1,5 +1,5 @@
 import type {HighLowClose} from '../../base/Candle.type.js';
-import {IndicatorSeries} from '../../base/Indicator.js';
+import {IndicatorInputShape, IndicatorSeries} from '../../base/Indicator.js';
 
 type WADState = {
   previousClose: number | null;
@@ -35,6 +35,8 @@ type WADState = {
  * @see https://github.com/TulipCharts/tulipindicators/blob/v0.9.1/indicators/wad.c
  */
 export class WAD extends IndicatorSeries<HighLowClose<number>, WADState> {
+  override readonly inputShape = IndicatorInputShape.HIGH_LOW_CLOSE;
+
   protected override state: WADState = {previousClose: null, wad: 0};
 
   override getRequiredInputs() {

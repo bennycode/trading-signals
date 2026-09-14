@@ -1,5 +1,5 @@
 import type {OpenHighLowClose} from '../../base/Candle.type.js';
-import {IndicatorSeries} from '../../base/Indicator.js';
+import {IndicatorInputShape, IndicatorSeries} from '../../base/Indicator.js';
 import {pushUpdate} from '../../util/array/pushUpdate.js';
 
 /**
@@ -34,6 +34,8 @@ import {pushUpdate} from '../../util/array/pushUpdate.js';
  * @see https://github.com/QuantConnect/Lean/blob/master/Indicators/WilderSwingIndex.cs
  */
 export class SwingIndex extends IndicatorSeries<OpenHighLowClose> {
+  override readonly inputShape = IndicatorInputShape.OPEN_HIGH_LOW_CLOSE;
+
   readonly #limitMove: number;
   readonly #candles: OpenHighLowClose[] = [];
 

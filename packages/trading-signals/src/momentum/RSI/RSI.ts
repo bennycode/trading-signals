@@ -1,4 +1,4 @@
-import {ThresholdCrossSeries} from '../../base/Indicator.js';
+import {IndicatorInputShape, ThresholdCrossSeries} from '../../base/Indicator.js';
 import type {SignalThresholds} from '../../base/SignalThresholds.type.js';
 import type {MovingAverage} from '../../trend/MA/MovingAverage.js';
 import type {MovingAverageTypes} from '../../trend/MA/MovingAverageTypes.js';
@@ -21,6 +21,8 @@ import {WSMA} from '../../trend/WSMA/WSMA.js';
  * @see https://www.investopedia.com/terms/r/rsi.asp
  */
 export class RSI extends ThresholdCrossSeries {
+  override readonly inputShape = IndicatorInputShape.VALUE;
+
   readonly #previousPrices: number[] = [];
   readonly #avgGain: MovingAverage;
   readonly #avgLoss: MovingAverage;

@@ -1,5 +1,5 @@
 import type {HighLowCloseVolume} from '../../base/Candle.type.js';
-import {ZeroCrossSeries} from '../../base/Indicator.js';
+import {IndicatorInputShape, ZeroCrossSeries} from '../../base/Indicator.js';
 import {EMA} from '../../trend/EMA/EMA.js';
 import {AD} from '../AD/AD.js';
 
@@ -23,6 +23,8 @@ export type ADOSCConfig = {
  * @see https://tulipindicators.org/adosc
  */
 export class ADOSC extends ZeroCrossSeries<HighLowCloseVolume> {
+  override readonly inputShape = IndicatorInputShape.HIGH_LOW_CLOSE_VOLUME;
+
   readonly #ad = new AD();
   readonly #fast: EMA;
   readonly #slow: EMA;

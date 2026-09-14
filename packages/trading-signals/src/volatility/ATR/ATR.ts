@@ -1,4 +1,4 @@
-import {IndicatorSeries} from '../../base/Indicator.js';
+import {IndicatorInputShape, IndicatorSeries} from '../../base/Indicator.js';
 import type {MovingAverage} from '../../trend/MA/MovingAverage.js';
 import type {MovingAverageTypes} from '../../trend/MA/MovingAverageTypes.js';
 import {TR} from '../TR/TR.js';
@@ -22,6 +22,8 @@ import {WSMA} from '../../trend/WSMA/WSMA.js';
  * @see https://www.investopedia.com/terms/a/atr.asp
  */
 export class ATR extends IndicatorSeries<HighLowClose<number>> {
+  override readonly inputShape = IndicatorInputShape.HIGH_LOW_CLOSE;
+
   readonly #tr: TR;
   readonly #smoothing: MovingAverage;
 

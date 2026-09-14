@@ -1,4 +1,4 @@
-import {ZeroCrossSeries} from '../../base/Indicator.js';
+import {IndicatorInputShape, ZeroCrossSeries} from '../../base/Indicator.js';
 import {WMA} from '../../trend/WMA/WMA.js';
 import {ROC} from '../ROC/ROC.js';
 
@@ -30,6 +30,8 @@ export type CoppockCurveConfig = {
  * @see https://school.stockcharts.com/doku.php?id=technical_indicators:coppock_curve
  */
 export class CoppockCurve extends ZeroCrossSeries {
+  override readonly inputShape = IndicatorInputShape.VALUE;
+
   readonly #longRoc: ROC;
   readonly #shortRoc: ROC;
   readonly #wma: WMA;

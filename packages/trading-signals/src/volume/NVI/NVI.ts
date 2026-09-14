@@ -1,5 +1,5 @@
 import type {HighLowCloseVolume} from '../../base/Candle.type.js';
-import {IndicatorSeries} from '../../base/Indicator.js';
+import {IndicatorInputShape, IndicatorSeries} from '../../base/Indicator.js';
 
 type NVIState = {
   nvi: number;
@@ -28,6 +28,8 @@ type NVIState = {
  * @see https://github.com/TulipCharts/tulipindicators/blob/v0.9.1/indicators/nvi.c
  */
 export class NVI extends IndicatorSeries<HighLowCloseVolume, NVIState> {
+  override readonly inputShape = IndicatorInputShape.HIGH_LOW_CLOSE_VOLUME;
+
   protected override state: NVIState = {nvi: 1_000, previousCandle: null};
 
   override getRequiredInputs() {

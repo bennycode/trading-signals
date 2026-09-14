@@ -1,4 +1,4 @@
-import {TradingSignal, TrendIndicatorSeries} from '../../base/Indicator.js';
+import {IndicatorInputShape, TradingSignal, TrendIndicatorSeries} from '../../base/Indicator.js';
 import type {HighLowClose} from '../../base/Candle.type.js';
 import {getMaximum} from '../../util/math/getMaximum.js';
 import {getMinimum} from '../../util/math/getMinimum.js';
@@ -23,6 +23,8 @@ export type ERThresholds = {
  * @see https://www.investopedia.com/terms/e/efficiencyratio.asp
  */
 export class ER extends TrendIndicatorSeries<HighLowClose> {
+  override readonly inputShape = IndicatorInputShape.HIGH_LOW_CLOSE;
+
   readonly #closes: number[] = [];
   readonly #highs: number[] = [];
   readonly #lows: number[] = [];

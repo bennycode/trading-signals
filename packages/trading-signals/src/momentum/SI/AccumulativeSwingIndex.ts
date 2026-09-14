@@ -1,5 +1,5 @@
 import type {OpenHighLowClose} from '../../base/Candle.type.js';
-import {IndicatorSeries} from '../../base/Indicator.js';
+import {IndicatorInputShape, IndicatorSeries} from '../../base/Indicator.js';
 import {SwingIndex} from './SwingIndex.js';
 
 type AccumulativeSwingIndexState = {
@@ -26,6 +26,8 @@ type AccumulativeSwingIndexState = {
  * @see https://www.metatrader5.com/en/terminal/help/indicators/bw_indicators/asi
  */
 export class AccumulativeSwingIndex extends IndicatorSeries<OpenHighLowClose, AccumulativeSwingIndexState> {
+  override readonly inputShape = IndicatorInputShape.OPEN_HIGH_LOW_CLOSE;
+
   protected override state: AccumulativeSwingIndexState = {runningTotal: 0};
   readonly #swingIndex: SwingIndex;
 
