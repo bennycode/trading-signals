@@ -20,6 +20,11 @@ export interface Instrument {
   /** Venue the instrument trades on. */
   exchange?: string;
   /**
+   * Whether the instrument trades outside its exchange's hours, on the 24/5 venue each broker runs
+   * for that purpose. Alpaca calls this an "overnight_tradable" asset, Trading212 "extendedHours".
+   */
+  extendedHours?: boolean;
+  /**
    * Whether the broker accepts a fractional quantity. Left out when the broker does not say:
    * Trading212's instrument metadata carries no fractional information at all.
    */
@@ -90,6 +95,7 @@ export function createCliBroker(key: BrokerKey, live: boolean, env: NodeJS.Proce
       return (await api.getInstruments()).map(instrument => ({
         currency: instrument.currencyCode,
         exchange: instrument.workingScheduleId === null ? undefined : venues.get(instrument.workingScheduleId ?? -1),
+        extendedHours: instrument.extendedHours ?? undefined,
         isin: instrument.isin ?? undefined,
         name: instrument.name,
         ticker: instrument.ticker,
@@ -98,6 +104,11 @@ export function createCliBroker(key: BrokerKey, live: boolean, env: NodeJS.Proce
     return (await new AlpacaAPI(options).getAssets({asset_class: AlpacaAssetClass.US_EQUITY})).map(asset => ({
       currency: 'USD',
       exchange: asset.exchange,
+      /*
+       * Alpaca reports the same capability as an attribute. "overnight_halted" is its counterpart
+       * and never appears together with it, so the one flag answers the question on its own.
+       */
+      extendedHours: asset.attributes?.includes('overnight_tradable') ?? undefined,
       fractionable: asset.fractionable,
       name: asset.name,
       ticker: asset.symbol,
