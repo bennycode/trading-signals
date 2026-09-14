@@ -52,7 +52,7 @@ function stochasticPosition(window: readonly number[]) {
  * @see https://www.investopedia.com/articles/forex/10/schaff-trend-cycle-indicator.asp
  */
 export class STC extends ThresholdCrossSeries {
-  override readonly inputShape = IndicatorInputShape.VALUE;
+  override readonly inputShape = IndicatorInputShape.PRICE;
 
   readonly #fastEma: EMA;
   readonly #slowEma: EMA;

@@ -37,7 +37,7 @@ export type RelativeVolatilityIndexConfig = {
  * @see https://docs.motivewave.com/studies/q-r#relative-volatility-index
  */
 export class RelativeVolatilityIndex extends ThresholdCrossSeries {
-  override readonly inputShape = IndicatorInputShape.VALUE;
+  override readonly inputShape = IndicatorInputShape.PRICE;
 
   readonly #closes: number[] = [];
   readonly #avgUpVolatility: WSMA;

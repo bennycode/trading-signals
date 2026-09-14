@@ -23,7 +23,7 @@ import {SMA} from '../../trend/SMA/SMA.js';
  * @see https://www.investopedia.com/terms/d/disparityindex.asp
  */
 export class DisparityIndex extends ZeroCrossSeries {
-  override readonly inputShape = IndicatorInputShape.VALUE;
+  override readonly inputShape = IndicatorInputShape.PRICE;
 
   readonly #ma: MovingAverage;
 

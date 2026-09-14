@@ -27,7 +27,7 @@ import {RSI} from '../RSI/RSI.js';
  * @see https://alchemymarkets.com/education/indicators/stochastic-rsi/
  */
 export class StochasticRSI extends ThresholdCrossSeries {
-  override readonly inputShape = IndicatorInputShape.VALUE;
+  override readonly inputShape = IndicatorInputShape.PRICE;
 
   readonly #period: Period;
   readonly #rsi: RSI;

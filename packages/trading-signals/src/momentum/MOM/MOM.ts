@@ -11,7 +11,7 @@ import {pushUpdate} from '../../util/array/pushUpdate.js';
  * @see https://www.warriortrading.com/momentum-indicator/
  */
 export class MOM extends ZeroCrossSeries {
-  override readonly inputShape = IndicatorInputShape.VALUE;
+  override readonly inputShape = IndicatorInputShape.PRICE;
 
   readonly #history: number[];
   readonly #historyLength: number;

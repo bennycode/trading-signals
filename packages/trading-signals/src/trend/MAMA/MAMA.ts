@@ -46,7 +46,7 @@ const RAD_TO_DEG = 180 / Math.PI;
  * @see https://github.com/TA-Lib/ta-lib/blob/main/src/ta_func/ta_MAMA.c
  */
 export class MAMA extends TrendIndicator<MAMAResult, number, MAMAState> {
-  override readonly inputShape = IndicatorInputShape.VALUE;
+  override readonly inputShape = IndicatorInputShape.PRICE;
 
   public readonly fastLimit: number;
   public readonly slowLimit: number;

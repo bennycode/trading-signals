@@ -51,7 +51,7 @@ type LaguerreRSIState = {
  * @see https://github.com/StockSharp/StockSharp/blob/master/Algo.Indicators/LaguerreRSI.cs
  */
 export class LaguerreRSI extends ThresholdCrossSeries<number, LaguerreRSIState> {
-  override readonly inputShape = IndicatorInputShape.VALUE;
+  override readonly inputShape = IndicatorInputShape.PRICE;
 
   protected override state: LaguerreRSIState = {
     barsTotal: 0,

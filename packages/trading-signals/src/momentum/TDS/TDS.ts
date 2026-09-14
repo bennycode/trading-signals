@@ -27,7 +27,7 @@ type TDSState = {
  * @see https://practicaltechnicalanalysis.blogspot.com/2013/01/tom-demark-sequential.html
  */
 export class TDS extends TrendIndicatorSeries<number, TradingSignals, TDSState> {
-  override readonly inputShape = IndicatorInputShape.VALUE;
+  override readonly inputShape = IndicatorInputShape.PRICE;
 
   protected override state: TDSState = {
     closes: [],

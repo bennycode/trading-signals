@@ -11,7 +11,7 @@ import {getQuartile} from '../../util/math/getQuartile.js';
  * @see https://en.wikipedia.org/wiki/Interquartile_range
  */
 export class IQR extends IndicatorSeries {
-  override readonly inputShape = IndicatorInputShape.VALUE;
+  override readonly inputShape = IndicatorInputShape.PRICE;
 
   readonly #values: number[] = [];
 

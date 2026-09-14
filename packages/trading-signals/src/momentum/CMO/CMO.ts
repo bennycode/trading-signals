@@ -19,7 +19,7 @@ import {pushUpdate} from '../../util/array/pushUpdate.js';
  * @see https://tulipindicators.org/cmo
  */
 export class CMO extends ThresholdCrossSeries {
-  override readonly inputShape = IndicatorInputShape.VALUE;
+  override readonly inputShape = IndicatorInputShape.PRICE;
 
   readonly #prices: number[] = [];
 

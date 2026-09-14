@@ -23,7 +23,7 @@ import {pushUpdate} from '../../util/array/pushUpdate.js';
  * @see https://www.investopedia.com/terms/d/detrended-price-oscillator-dpo.asp
  */
 export class DPO extends ZeroCrossSeries {
-  override readonly inputShape = IndicatorInputShape.VALUE;
+  override readonly inputShape = IndicatorInputShape.PRICE;
 
   public readonly interval: number;
   readonly #average: SMA;

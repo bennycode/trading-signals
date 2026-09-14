@@ -31,7 +31,7 @@ import {pushUpdate} from '../../util/array/pushUpdate.js';
  * @see https://strategyquant.com/codebase/rci3lines/
  */
 export class RCI extends ThresholdCrossSeries {
-  override readonly inputShape = IndicatorInputShape.VALUE;
+  override readonly inputShape = IndicatorInputShape.PRICE;
 
   readonly #closes: number[] = [];
 

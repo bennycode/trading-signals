@@ -30,7 +30,7 @@ export type PercentBConfig = {
  * @see https://www.tradingview.com/support/solutions/43000501971-bollinger-bands-b-b/
  */
 export class PercentB extends ThresholdCrossSeries {
-  override readonly inputShape = IndicatorInputShape.VALUE;
+  override readonly inputShape = IndicatorInputShape.PRICE;
 
   readonly #bollingerBands: BollingerBands;
 

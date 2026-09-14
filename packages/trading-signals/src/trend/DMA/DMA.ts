@@ -21,7 +21,7 @@ export type DMAResult = {
  * @see https://faculty.fuqua.duke.edu/~charvey/Teaching/BA453_2002/CCAM/CCAM.htm#_Toc2634228
  */
 export class DMA extends TechnicalIndicator<DMAResult, number> {
-  override readonly inputShape = IndicatorInputShape.VALUE;
+  override readonly inputShape = IndicatorInputShape.PRICE;
 
   public readonly short: MovingAverage;
   public readonly long: MovingAverage;

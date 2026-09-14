@@ -41,7 +41,7 @@ type ConnorsRSIState = {
  * @see https://chartschool.stockcharts.com/table-of-contents/technical-indicators-and-overlays/technical-indicators/connorsrsi
  */
 export class ConnorsRSI extends ThresholdCrossSeries<number, ConnorsRSIState> {
-  override readonly inputShape = IndicatorInputShape.VALUE;
+  override readonly inputShape = IndicatorInputShape.PRICE;
 
   protected override state: ConnorsRSIState = {
     previousClose: null,

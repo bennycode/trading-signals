@@ -26,7 +26,7 @@ type HTTrendlineState = HilbertCycleState & {
  * @see https://github.com/TA-Lib/ta-lib/blob/main/src/ta_func/ta_HT_TRENDLINE.c
  */
 export class HTTrendline extends IndicatorSeries<number, HTTrendlineState> {
-  override readonly inputShape = IndicatorInputShape.VALUE;
+  override readonly inputShape = IndicatorInputShape.PRICE;
 
   protected override state: HTTrendlineState = {
     ...createHilbertCycleState(),

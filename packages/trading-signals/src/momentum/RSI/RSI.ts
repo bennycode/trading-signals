@@ -21,7 +21,7 @@ import {WSMA} from '../../trend/WSMA/WSMA.js';
  * @see https://www.investopedia.com/terms/r/rsi.asp
  */
 export class RSI extends ThresholdCrossSeries {
-  override readonly inputShape = IndicatorInputShape.VALUE;
+  override readonly inputShape = IndicatorInputShape.PRICE;
 
   readonly #previousPrices: number[] = [];
   readonly #avgGain: MovingAverage;

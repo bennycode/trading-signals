@@ -80,7 +80,7 @@ class DecisionPointSmoothing {
  * @see https://chartschool.stockcharts.com/table-of-contents/technical-indicators-and-overlays/technical-indicators/decisionpoint-price-momentum-oscillator-pmo
  */
 export class PMO extends TrendIndicator<PMOResult, number> {
-  override readonly inputShape = IndicatorInputShape.VALUE;
+  override readonly inputShape = IndicatorInputShape.PRICE;
 
   #previousPrice?: number;
   #penultimatePrice?: number;
