@@ -82,14 +82,27 @@ export class AlpacaBroker extends Broker implements MarketDataSource {
   static NAME = 'Alpaca';
 
   /**
-   * Default Alpaca fee rates.
+   * Alpaca crypto fee rates, charged on the credited asset per trade. Assumes 30-day
+   * volume tier 1.
    *
    * @see https://docs.alpaca.markets/docs/crypto-fees
    * @see https://files.alpaca.markets/disclosures/library/BrokFeeSched.pdf
    */
-  static DEFAULT_FEE_RATES: FeeRate = {
+  static DEFAULT_CRYPTO_FEE_RATES: FeeRate = {
     [OrderType.LIMIT]: new Big(0.0015),
     [OrderType.MARKET]: new Big(0.0025),
+  };
+
+  /**
+   * Alpaca charges no commission on US equities. Regulatory pass-through charges (SEC fee,
+   * FINRA TAF) still apply to sales, but they are levied per sale at rates that change
+   * periodically and settle onto the account a day later, so they are not modelled as a rate.
+   *
+   * @see https://files.alpaca.markets/disclosures/library/BrokFeeSched.pdf
+   */
+  static DEFAULT_STOCK_FEE_RATES: FeeRate = {
+    [OrderType.LIMIT]: new Big(0),
+    [OrderType.MARKET]: new Big(0),
   };
 
   /**
@@ -362,14 +375,16 @@ export class AlpacaBroker extends Broker implements MarketDataSource {
   }
 
   /**
-   * The crypto fee will be charged on the credited crypto asset/fiat (what you receive) per trade.
+   * Crypto trades pay a maker/taker commission on the credited crypto asset/fiat (what you
+   * receive) per trade; US equities are commission-free.
    *
    * @see https://docs.alpaca.markets/docs/crypto-fees
    * @see https://files.alpaca.markets/disclosures/library/BrokFeeSched.pdf
    */
-  async getFeeRates(_pair: TradingPair): Promise<FeeRate> {
-    // TODO: Refine according to "30-Day Crypto Volume (USD)" and make fee rate dependant on crypto or stocks
-    return AlpacaBroker.DEFAULT_FEE_RATES;
+  async getFeeRates(pair: TradingPair): Promise<FeeRate> {
+    // TODO: Refine the crypto rates according to "30-Day Crypto Volume (USD)"
+    const isCrypto = await isAlpacaCryptoSymbol(this.#alpacaAPI, pair);
+    return isCrypto ? AlpacaBroker.DEFAULT_CRYPTO_FEE_RATES : AlpacaBroker.DEFAULT_STOCK_FEE_RATES;
   }
 
   /**

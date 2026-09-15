@@ -15,7 +15,7 @@ export class AlpacaBrokerMock extends BrokerMock {
     tradingRules?: Omit<TradingRules, 'pair'>;
   }) {
     super({balances: config.balances, slippage: config.slippage});
-    this.#feeRates = config.feeRates ?? AlpacaBroker.DEFAULT_FEE_RATES;
+    this.#feeRates = config.feeRates ?? AlpacaBroker.DEFAULT_CRYPTO_FEE_RATES;
     this.#tradingRules = config.tradingRules ?? AlpacaBroker.DEFAULT_CRYPTO_TRADING_RULES;
     this.setCachedFeeRates(this.#feeRates);
   }
