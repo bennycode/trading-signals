@@ -39,7 +39,7 @@ function createMockExchange() {
   return Object.assign(new EventEmitter(), {
     cancelOpenOrders: vi.fn().mockResolvedValue([]),
     getAvailableBalances: vi.fn().mockResolvedValue({base: new Big('10'), counter: new Big('5000')}),
-    getFeeRates: vi.fn().mockResolvedValue(AlpacaBroker.DEFAULT_FEE_RATES),
+    getFeeRates: vi.fn().mockResolvedValue(AlpacaBroker.DEFAULT_CRYPTO_FEE_RATES),
     getFills: vi.fn().mockResolvedValue([sampleFill]),
     getLatestCandle: vi.fn().mockResolvedValue(sampleCandle),
     getOpenOrders: vi.fn().mockResolvedValue([]),
