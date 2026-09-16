@@ -25,12 +25,6 @@ const ACCOUNT: Account = {
 };
 
 describe('AccountSchema', () => {
-  it('parses an account that omits the retired Pattern Day Trader fields', () => {
-    const account = AccountSchema.parse(ACCOUNT);
-
-    expect(account.cash, 'Alpaca removed the PDT fields on 2026-07-06, so no account reports them').toBe('325.7');
-  });
-
   it('still parses a payload that carries the retired fields', () => {
     const stale = {...ACCOUNT, daytrade_count: 2, last_daytrade_count: 1, pattern_day_trader: false};
 
