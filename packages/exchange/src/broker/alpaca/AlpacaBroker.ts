@@ -82,8 +82,7 @@ export class AlpacaBroker extends Broker implements MarketDataSource {
   static NAME = 'Alpaca';
 
   /**
-   * Alpaca crypto fee rates, charged on the credited asset per trade. Assumes 30-day
-   * volume tier 1.
+   * Charged on the credited asset. Assumes 30-day volume tier 1.
    *
    * @see https://docs.alpaca.markets/docs/crypto-fees
    * @see https://files.alpaca.markets/disclosures/library/BrokFeeSched.pdf
@@ -94,9 +93,8 @@ export class AlpacaBroker extends Broker implements MarketDataSource {
   };
 
   /**
-   * Alpaca charges no commission on US equities. Regulatory pass-through charges (SEC fee,
-   * FINRA TAF) still apply to sales, but they are levied per sale at rates that change
-   * periodically and settle onto the account a day later, so they are not modelled as a rate.
+   * US equities are commission-free. SEC and FINRA TAF charges still apply to sales but do
+   * not fit a per-leg rate, so they are left out.
    *
    * @see https://files.alpaca.markets/disclosures/library/BrokFeeSched.pdf
    */
@@ -375,9 +373,6 @@ export class AlpacaBroker extends Broker implements MarketDataSource {
   }
 
   /**
-   * Crypto trades pay a maker/taker commission on the credited crypto asset/fiat (what you
-   * receive) per trade; US equities are commission-free.
-   *
    * @see https://docs.alpaca.markets/docs/crypto-fees
    * @see https://files.alpaca.markets/disclosures/library/BrokFeeSched.pdf
    */
