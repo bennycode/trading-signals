@@ -1,7 +1,7 @@
 import {describe, expect, it} from 'vitest';
 import {AccountSchema, type Account} from './AccountSchema.js';
 
-const CASH_ACCOUNT: Account = {
+const ACCOUNT: Account = {
   account_blocked: false,
   account_number: '245695408',
   buying_power: '325.7',
@@ -25,32 +25,27 @@ const CASH_ACCOUNT: Account = {
 };
 
 describe('AccountSchema', () => {
-  it('parses a cash account that omits the Pattern Day Trader fields', () => {
-    const account = AccountSchema.parse(CASH_ACCOUNT);
+  it('parses an account that omits the retired Pattern Day Trader fields', () => {
+    const account = AccountSchema.parse(ACCOUNT);
 
-    expect(account.cash, 'a cash account must parse; PDT tracking is margin-only').toBe('325.7');
-    expect(account.daytrade_count).toBeUndefined();
-    expect(account.pattern_day_trader).toBeUndefined();
+    expect(account.cash, 'Alpaca removed the PDT fields on 2026-07-06, so no account reports them').toBe('325.7');
   });
 
-  it('parses a margin account that reports them', () => {
-    const account = AccountSchema.parse({
-      ...CASH_ACCOUNT,
-      daytrade_count: 2,
-      multiplier: '4',
-      pattern_day_trader: false,
-    });
+  it('still parses a payload that carries the retired fields', () => {
+    const stale = {...ACCOUNT, daytrade_count: 2, last_daytrade_count: 1, pattern_day_trader: false};
 
-    expect(account.daytrade_count).toBe(2);
-    expect(account.pattern_day_trader).toBe(false);
+    expect(
+      () => AccountSchema.parse(stale),
+      'the schema is loose, so a replayed or cached payload must not start throwing'
+    ).not.toThrow();
   });
 
   it('still rejects a response missing a field every account reports', () => {
-    const {cash: _cash, ...withoutCash} = CASH_ACCOUNT;
+    const {cash: _cash, ...withoutCash} = ACCOUNT;
 
     expect(
       () => AccountSchema.parse(withoutCash),
-      'making the PDT fields optional must not loosen the rest of the schema'
+      'dropping the PDT fields must not loosen the rest of the schema'
     ).toThrowError();
   });
 });

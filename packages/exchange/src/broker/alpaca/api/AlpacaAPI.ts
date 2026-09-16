@@ -17,10 +17,13 @@ function hasResponseCode(error: AxiosError): error is AxiosError<{code: number}>
 }
 
 /**
- * Alpaca Error Code 40310100 typically means your order was forbidden by Alpaca's system
- * because it would trigger a Pattern Day Trader (PDT) violation.
+ * Alpaca Error Code 40310100 meant the order was forbidden because it would trigger a
+ * Pattern Day Trader (PDT) violation. FINRA retired the PDT rule on 2026-06-04 in favour of
+ * an intraday margin framework, so this rejection should no longer occur for that reason.
+ * The check is kept because Alpaca may still return the code for an intraday margin
+ * rejection; it costs nothing if the code is never sent again.
  *
- * @see https://docs.alpaca.markets/us/docs/user-protection#pattern-day-trader-pdt-protection-at-alpaca
+ * @see https://alpaca.markets/blog/finra-retires-the-pdt-rule-introducing-alpacas-new-intraday-margin-framework/
  */
 function isPatternDayTrader(error: AxiosError) {
   return hasResponseCode(error) && error.response?.data.code === 40310100;
