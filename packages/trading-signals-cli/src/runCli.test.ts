@@ -509,6 +509,21 @@ describe('runIndicator', () => {
       required: 1,
     });
   });
+
+  it('rejects an indicator without an input shape declaration', () => {
+    expect(
+      () =>
+        runIndicator(
+          () => ({
+            getRequiredInputs: () => 1,
+            getResult: () => 1,
+            update: () => 1,
+          }),
+          parseSeries('1 2 3'),
+          'close'
+        )
+    ).toThrow('The indicator does not declare which input it takes. Update the trading-signals package.');
+  });
 });
 
 describe('parseSeries', () => {
