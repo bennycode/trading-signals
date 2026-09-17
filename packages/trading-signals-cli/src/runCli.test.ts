@@ -516,8 +516,12 @@ describe('runIndicator', () => {
         runIndicator(
           () => ({
             getRequiredInputs: () => 1,
-            getResult: () => 1,
-            update: () => 1,
+            getResult: () => {
+              throw new Error('getResult should not be reached without inputShape');
+            },
+            update: () => {
+              throw new Error('update should not be reached without inputShape');
+            },
           }),
           parseSeries('1 2 3'),
           'close'
