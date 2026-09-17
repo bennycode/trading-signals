@@ -30,7 +30,7 @@ npm run start:docs
 npm run start:bot
 ```
 
-## 📦 Packages
+## Packages
 
 This project uses [Lerna](https://lerna.js.org/) to manage a [monorepo](https://monorepo.tools/) with independent versioning.
 
