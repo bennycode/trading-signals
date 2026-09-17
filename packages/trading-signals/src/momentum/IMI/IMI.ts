@@ -1,5 +1,5 @@
 import type {OpenHighLowClose} from '../../base/Candle.type.js';
-import {ThresholdCrossSeries} from '../../base/Indicator.js';
+import {IndicatorInputShape, ThresholdCrossSeries} from '../../base/Indicator.js';
 import type {SignalThresholds} from '../../base/SignalThresholds.type.js';
 import {pushUpdate} from '../../util/array/pushUpdate.js';
 
@@ -23,6 +23,8 @@ import {pushUpdate} from '../../util/array/pushUpdate.js';
  * @see https://www.fidelity.com/learning-center/trading-investing/technical-analysis/technical-indicator-guide/imi
  */
 export class IMI extends ThresholdCrossSeries<OpenHighLowClose> {
+  override readonly inputShape = IndicatorInputShape.OPEN_HIGH_LOW_CLOSE;
+
   readonly #candles: OpenHighLowClose[] = [];
 
   public readonly interval: number;

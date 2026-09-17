@@ -1,5 +1,5 @@
 import type {HighLowClose} from '../../base/Candle.type.js';
-import {ThresholdCrossSeries} from '../../base/Indicator.js';
+import {IndicatorInputShape, ThresholdCrossSeries} from '../../base/Indicator.js';
 import type {SignalThresholds} from '../../base/SignalThresholds.type.js';
 import {EMA} from '../../trend/EMA/EMA.js';
 import {pushUpdate} from '../../util/array/pushUpdate.js';
@@ -37,6 +37,8 @@ export type SMIConfig = {
  * @see https://www.fmlabs.com/reference/SMI.htm
  */
 export class SMI extends ThresholdCrossSeries<HighLowClose<number>> {
+  override readonly inputShape = IndicatorInputShape.HIGH_LOW_CLOSE;
+
   readonly #candles: HighLowClose<number>[] = [];
   readonly #smoothedDistance: EMA;
   readonly #smoothedRange: EMA;

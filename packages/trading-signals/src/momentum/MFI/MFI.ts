@@ -1,5 +1,5 @@
 import type {HighLowCloseVolume} from '../../base/Candle.type.js';
-import {ThresholdCrossSeries} from '../../base/Indicator.js';
+import {IndicatorInputShape, ThresholdCrossSeries} from '../../base/Indicator.js';
 import type {SignalThresholds} from '../../base/SignalThresholds.type.js';
 import {getTypicalPrice} from '../../util/candle/getTypicalPrice.js';
 import {pushUpdate} from '../../util/array/pushUpdate.js';
@@ -22,6 +22,8 @@ import {pushUpdate} from '../../util/array/pushUpdate.js';
  * @see https://tulipindicators.org/mfi
  */
 export class MFI extends ThresholdCrossSeries<HighLowCloseVolume<number>> {
+  override readonly inputShape = IndicatorInputShape.HIGH_LOW_CLOSE_VOLUME;
+
   readonly #candles: HighLowCloseVolume<number>[] = [];
   public readonly interval: number;
 

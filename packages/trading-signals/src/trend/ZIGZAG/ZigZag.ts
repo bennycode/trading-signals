@@ -1,4 +1,4 @@
-import {IndicatorSeries} from '../../base/Indicator.js';
+import {IndicatorInputShape, IndicatorSeries} from '../../base/Indicator.js';
 import type {HighLow} from '../../base/Candle.type.js';
 
 export type ZigZagConfig = {
@@ -40,6 +40,8 @@ type ZigZagState = {
  * @see https://corporatefinanceinstitute.com/resources/career-map/sell-side/capital-markets/zig-zag-indicator/
  */
 export class ZigZag extends IndicatorSeries<HighLow, ZigZagState> {
+  override readonly inputShape = IndicatorInputShape.HIGH_LOW;
+
   readonly #deviation: number;
   protected override state: ZigZagState = {
     highestExtreme: null,

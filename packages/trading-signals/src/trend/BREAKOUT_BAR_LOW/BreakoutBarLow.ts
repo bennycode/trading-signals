@@ -1,4 +1,4 @@
-import {IndicatorSeries} from '../../base/Indicator.js';
+import {IndicatorInputShape, IndicatorSeries} from '../../base/Indicator.js';
 import type {HighLow} from '../../base/Candle.type.js';
 import {pushUpdate} from '../../util/array/pushUpdate.js';
 
@@ -24,6 +24,8 @@ export type BreakoutBarLowConfig = {
  * pivots. Unlike those two, it fires the same bar the breakout prints — no confirmation lag.
  */
 export class BreakoutBarLow extends IndicatorSeries<HighLow> {
+  override readonly inputShape = IndicatorInputShape.HIGH_LOW;
+
   readonly #lookback: number;
   readonly #highs: number[] = [];
   #lastEmitted = false;
