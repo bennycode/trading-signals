@@ -511,21 +511,20 @@ describe('runIndicator', () => {
   });
 
   it('rejects an indicator without an input shape declaration', () => {
-    expect(
-      () =>
-        runIndicator(
-          () => ({
-            getRequiredInputs: () => 1,
-            getResult: () => {
-              throw new Error('getResult should not be reached without inputShape');
-            },
-            update: () => {
-              throw new Error('update should not be reached without inputShape');
-            },
-          }),
-          parseSeries('1 2 3'),
-          'close'
-        )
+    expect(() =>
+      runIndicator(
+        () => ({
+          getRequiredInputs: () => 1,
+          getResult: () => {
+            throw new Error('getResult should not be reached without inputShape');
+          },
+          update: () => {
+            throw new Error('update should not be reached without inputShape');
+          },
+        }),
+        parseSeries('1 2 3'),
+        'close'
+      )
     ).toThrow('The indicator does not declare which input it takes. Update the trading-signals package.');
   });
 });
