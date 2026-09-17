@@ -1,4 +1,4 @@
-import {IndicatorInputShape, IndicatorSeries} from './Indicator.js';
+import {INPUT_SHAPE_FIELDS, IndicatorInputShape, IndicatorSeries} from './Indicator.js';
 import {NotEnoughDataError} from '../error/NotEnoughDataError.js';
 
 describe('Indicator', () => {
@@ -149,5 +149,19 @@ describe('inputShape', () => {
       disagreeing,
       'an indicator reading a volume series declares VOLUME and names its parameter "volume"'
     ).toEqual([]);
+  });
+});
+
+describe('INPUT_SHAPE_FIELDS', () => {
+  it.each([
+    [IndicatorInputShape.HIGH_LOW, ['high', 'low']],
+    [IndicatorInputShape.HIGH_LOW_CLOSE, ['high', 'low', 'close']],
+    [IndicatorInputShape.HIGH_LOW_CLOSE_VOLUME, ['high', 'low', 'close', 'volume']],
+    [IndicatorInputShape.OPEN_HIGH_LOW_CLOSE, ['open', 'high', 'low', 'close']],
+    [IndicatorInputShape.OPEN_HIGH_LOW_CLOSE_VOLUME, ['open', 'high', 'low', 'close', 'volume']],
+    [IndicatorInputShape.PRICE, []],
+    [IndicatorInputShape.VOLUME, []],
+  ])('lists the candle fields for %s', (shape, fields) => {
+    expect(INPUT_SHAPE_FIELDS[shape]).toEqual(fields);
   });
 });
