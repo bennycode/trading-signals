@@ -1,5 +1,5 @@
 import {testIndicatorContract} from '../../fixtures/testIndicatorContract.js';
-import {EMA, SMA} from '../../index.js';
+import {EMA, SMA, TradingSignal} from '../../index.js';
 import twoDays from '../../fixtures/DMA/LTC-USDT-1h-2d.json' with {type: 'json'};
 import {DMA} from './DMA.js';
 
@@ -89,6 +89,61 @@ describe('DMA', () => {
       expect(dma.getRequiredInputs()).toBe(longInterval);
       expect(dma.isStable).toBe(true);
       expect(short > long).toBe(true);
+    });
+  });
+
+  describe('getSignal', () => {
+    it('returns UNKNOWN until both moving averages are stable', () => {
+      const dma = new DMA(2, 3, SMA);
+      dma.updates([1, 2], false);
+      expect(dma.getSignal().state).toBe(TradingSignal.UNKNOWN);
+    });
+
+    it('returns BULLISH when the short MA is above the long MA', () => {
+      const dma = new DMA(2, 3, SMA);
+      dma.updates([1, 2, 3], false);
+      expect(dma.getResultOrThrow()).toEqual({long: 2, short: 2.5});
+      expect(dma.getSignal().state).toBe(TradingSignal.BULLISH);
+    });
+
+    it('returns BEARISH when the short MA is below the long MA', () => {
+      const dma = new DMA(2, 3, SMA);
+      dma.updates([3, 2, 1], false);
+      expect(dma.getResultOrThrow()).toEqual({long: 2, short: 1.5});
+      expect(dma.getSignal().state).toBe(TradingSignal.BEARISH);
+    });
+
+    it('returns SIDEWAYS when both MAs are equal', () => {
+      const dma = new DMA(2, 3, SMA);
+      dma.updates([5, 5, 5], false);
+      expect(dma.getSignal().state).toBe(TradingSignal.SIDEWAYS);
+    });
+
+    it('reports a crossover through hasChanged', () => {
+      const dma = new DMA(2, 3, SMA);
+      dma.updates([1, 2, 3, 4], false);
+      expect(dma.getSignal(), 'short MA stays above the long MA').toEqual({
+        hasChanged: false,
+        state: TradingSignal.BULLISH,
+      });
+
+      dma.add(0);
+      expect(dma.getSignal(), 'short MA (2) crosses below the long MA (2.33)').toEqual({
+        hasChanged: true,
+        state: TradingSignal.BEARISH,
+      });
+    });
+
+    it('restores the previous signal state when replacing a value', () => {
+      const dma = new DMA(2, 3, SMA);
+      dma.updates([1, 2, 3, 4, 0], false);
+      expect(dma.getSignal().state).toBe(TradingSignal.BEARISH);
+
+      dma.replace(5);
+      expect(dma.getSignal(), 'replacing the crossing candle undoes the crossover').toEqual({
+        hasChanged: false,
+        state: TradingSignal.BULLISH,
+      });
     });
   });
 });
