@@ -1,5 +1,5 @@
 import type {Candle} from '@typedtrader/exchange';
-import {strategyDefinitions, type StrategyId} from '../utils/strategySchemas';
+import {getStrategyDefinition, strategyDefinitions, type StrategyId} from '../utils/strategySchemas';
 import {SchemaReference} from './SchemaReference';
 
 interface StrategyConfiguratorProps {
@@ -19,12 +19,14 @@ export function StrategyConfigurator({
   selectedStrategy,
   validationError,
 }: StrategyConfiguratorProps) {
-  const definition = strategyDefinitions.find(s => s.id === selectedStrategy)!;
+  const definition = getStrategyDefinition(selectedStrategy);
 
   const handleStrategyChange = (id: string) => {
-    const newId = id as StrategyId;
-    onStrategyChange(newId);
-    const newDef = strategyDefinitions.find(s => s.id === newId)!;
+    const newDef = strategyDefinitions.find(s => s.id === id);
+    if (!newDef) {
+      return;
+    }
+    onStrategyChange(newDef.id);
     const defaults = newDef.getDefaultConfig(candles);
     onConfigJsonChange(JSON.stringify(defaults, null, 2));
   };

@@ -24,7 +24,7 @@ import {ProtectionModal} from './ProtectionModal';
 import {datasets} from '../utils/datasets';
 import type {CandleDataset} from '../utils/types';
 import {
-  strategyDefinitions,
+  getStrategyDefinition,
   type StrategyId,
   BuyOnceSchema,
   BuyBelowSellAboveSchema,
@@ -37,7 +37,7 @@ import {
   TrailingStopSchema,
 } from '../utils/strategySchemas';
 
-function createStrategy(strategyId: StrategyId, config: Record<string, unknown>) {
+function createStrategy(strategyId: StrategyId, config: unknown) {
   switch (strategyId) {
     case 'buy-and-hold':
       return new BuyOnceStrategy(BuyOnceSchema.parse(config));
@@ -120,7 +120,7 @@ export function BacktestApp() {
     toastTimer.current = setTimeout(() => setToast(null), 2000);
   }, []);
 
-  const currentDataset = selectedDataset === 'custom' ? customDataset : datasets.find(d => d.id === selectedDataset)!;
+  const currentDataset = selectedDataset === 'custom' ? customDataset : datasets.find(d => d.id === selectedDataset);
   const candles = currentDataset?.candles ?? [];
 
   /*
@@ -128,7 +128,7 @@ export function BacktestApp() {
    * (dataset) changes, so manual config edits survive switching between datasets.
    */
   useEffect(() => {
-    const def = strategyDefinitions.find(s => s.id === selectedStrategy)!;
+    const def = getStrategyDefinition(selectedStrategy);
     const defaults = def.getDefaultConfig(candles);
     setConfigJson(JSON.stringify(defaults, null, 2));
   }, [selectedStrategy]);
@@ -137,7 +137,7 @@ export function BacktestApp() {
   useEffect(() => {
     try {
       const parsed: unknown = JSON.parse(configJson);
-      const def = strategyDefinitions.find(s => s.id === selectedStrategy)!;
+      const def = getStrategyDefinition(selectedStrategy);
       const parseResult = def.schema.safeParse(parsed);
       if (!parseResult.success) {
         const issues = parseResult.error.issues;
@@ -196,15 +196,14 @@ export function BacktestApp() {
     setError(null);
     try {
       const parsed: unknown = JSON.parse(configJson);
-      const def = strategyDefinitions.find(s => s.id === selectedStrategy)!;
+      const def = getStrategyDefinition(selectedStrategy);
       const parseResult = def.schema.safeParse(parsed);
       if (!parseResult.success) {
         setError('Invalid configuration');
         return;
       }
 
-      const config = parseResult.data as Record<string, unknown>;
-      const strategy = createStrategy(selectedStrategy, config);
+      const strategy = createStrategy(selectedStrategy, parseResult.data);
       const base = candles[0]?.base ?? 'BTC';
       const counter = candles[0]?.counter ?? 'USD';
       const tradingPair = new TradingPair(base, counter);

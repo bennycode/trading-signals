@@ -47,7 +47,7 @@ export default function CalculatorDemo({example}: {example: CalculatorExample}) 
       setResult(formatResult(value));
       setError(null);
     } catch (caught) {
-      setError((caught as Error).message);
+      setError(caught instanceof Error ? caught.message : String(caught));
       setResult('');
     }
   }, [a, b, example]);

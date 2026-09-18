@@ -66,6 +66,14 @@ function getPriceStats(candles: Candle[]): {firstClose: number; minClose: number
   return {firstClose, maxClose, minClose};
 }
 
+export function getStrategyDefinition(id: StrategyId): StrategyDefinition {
+  const definition = strategyDefinitions.find(candidate => candidate.id === id);
+  if (!definition) {
+    throw new Error(`Unknown strategy: ${id}`);
+  }
+  return definition;
+}
+
 export const strategyDefinitions: StrategyDefinition[] = [
   {
     description: 'Buys once at the first candle and holds for the entire period. Simplest baseline strategy.',

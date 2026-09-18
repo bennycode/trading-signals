@@ -1,20 +1,27 @@
-import React from 'react';
+import {isValidElement, type ReactNode} from 'react';
+import type {ColumnDef} from '../utils/types';
 import {CollapsibleCard} from './CollapsibleCard';
 
-interface TableColumn<T> {
-  header: string;
-  key: keyof T;
-  render?: (value: any, row: T) => React.ReactNode;
-  className?: string;
-}
-
-interface DataTableProps<T> {
+interface DataTableProps {
   title?: string;
-  columns: TableColumn<T>[];
-  data: T[];
+  columns: ColumnDef[];
+  data: Record<string, unknown>[];
 }
 
-export function DataTable<T extends Record<string, any>>({columns, data, title}: DataTableProps<T>) {
+function toCell(value: unknown): ReactNode {
+  if (
+    value === null ||
+    value === undefined ||
+    typeof value === 'string' ||
+    typeof value === 'number' ||
+    isValidElement(value)
+  ) {
+    return value;
+  }
+  return String(value);
+}
+
+export function DataTable({columns, data, title}: DataTableProps) {
   const table = (
     <div className="overflow-x-auto">
       <table className="w-full text-sm">
@@ -32,7 +39,7 @@ export function DataTable<T extends Record<string, any>>({columns, data, title}:
             <tr key={rowIdx} className="border-b demo-divider">
               {columns.map((col, colIdx) => {
                 const value = row[col.key];
-                const content = col.render ? col.render(value, row) : value;
+                const content = col.render ? col.render(value, row) : toCell(value);
                 const className = col.className || 'demo-muted py-2 px-3';
 
                 return (
