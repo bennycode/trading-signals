@@ -6,6 +6,7 @@ import type {Candle} from '@typedtrader/exchange';
 import {createSharedTooltipFormatter, type ChartDataPoint} from '../../components/Chart';
 import {NotAvailable} from '../../components/NotAvailable';
 import PriceChart, {type PriceData} from '../../components/PriceChart';
+import {SignalBadge} from '../../components/SignalBadge';
 import {formatDate} from '../../utils/formatDate';
 import {collectPriceData} from '../../utils/renderUtils';
 import type {IndicatorConfig} from '../../utils/types';
@@ -21,11 +22,13 @@ const renderDMA = (config: IndicatorConfig, selectedCandles: Candle[]) => {
     close: number;
     short: ReactNode;
     long: ReactNode;
+    signal: string;
   }[] = [];
 
   selectedCandles.forEach((candle, idx) => {
     dma.add(Number(candle.close));
     const result = dma.isStable ? dma.getResult() : null;
+    const signal = dma.getSignal();
     chartDataShort.push({x: idx + 1, y: result?.short ?? null});
     chartDataLong.push({x: idx + 1, y: result?.long ?? null});
 
@@ -37,6 +40,7 @@ const renderDMA = (config: IndicatorConfig, selectedCandles: Candle[]) => {
       long: result ? result.long.toFixed(2) : <NotAvailable />,
       period: idx + 1,
       short: result ? result.short.toFixed(2) : <NotAvailable />,
+      signal: signal.state,
     });
   });
 
@@ -99,6 +103,7 @@ const renderDMA = (config: IndicatorConfig, selectedCandles: Candle[]) => {
                 <th className="text-left py-2 px-3 demo-muted font-medium">Close</th>
                 <th className="text-left py-2 px-3 demo-muted font-medium">Short MA</th>
                 <th className="text-left py-2 px-3 demo-muted font-medium">Long MA</th>
+                <th className="text-left py-2 px-3 demo-muted font-medium">Signal</th>
               </tr>
             </thead>
             <tbody>
@@ -109,6 +114,9 @@ const renderDMA = (config: IndicatorConfig, selectedCandles: Candle[]) => {
                   <td className="py-2 px-3 demo-text">${row.close.toFixed(2)}</td>
                   <td className="py-2 px-3 demo-text font-mono">{row.short}</td>
                   <td className="py-2 px-3 demo-text font-mono">{row.long}</td>
+                  <td className="py-2 px-3">
+                    <SignalBadge signal={row.signal} />
+                  </td>
                 </tr>
               ))}
             </tbody>
