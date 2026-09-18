@@ -1,4 +1,4 @@
-import {IndicatorInputShape, TechnicalIndicator} from '../../base/Indicator.js';
+import {IndicatorInputShape, TradingSignal, TrendIndicator} from '../../base/Indicator.js';
 import type {MovingAverage} from '../MA/MovingAverage.js';
 import type {MovingAverageTypes} from '../MA/MovingAverageTypes.js';
 import {SMA} from '../SMA/SMA.js';
@@ -20,7 +20,7 @@ export type DMAResult = {
  *
  * @see https://faculty.fuqua.duke.edu/~charvey/Teaching/BA453_2002/CCAM/CCAM.htm#_Toc2634228
  */
-export class DMA extends TechnicalIndicator<DMAResult, number> {
+export class DMA extends TrendIndicator<DMAResult, number> {
   override readonly inputShape = IndicatorInputShape.PRICE;
 
   public readonly short: MovingAverage;
@@ -45,12 +45,31 @@ export class DMA extends TechnicalIndicator<DMAResult, number> {
     this.long.update(price, replace);
 
     if (this.isStable) {
-      return (this.result = {
-        long: this.long.getResultOrThrow(),
-        short: this.short.getResultOrThrow(),
-      });
+      return this.setResult(
+        {
+          long: this.long.getResultOrThrow(),
+          short: this.short.getResultOrThrow(),
+        },
+        replace
+      );
     }
 
     return null;
+  }
+
+  protected calculateSignalState(result?: DMAResult | null) {
+    if (result === null || result === undefined) {
+      return TradingSignal.UNKNOWN;
+    }
+
+    if (result.short > result.long) {
+      return TradingSignal.BULLISH;
+    }
+
+    if (result.short < result.long) {
+      return TradingSignal.BEARISH;
+    }
+
+    return TradingSignal.SIDEWAYS;
   }
 }
