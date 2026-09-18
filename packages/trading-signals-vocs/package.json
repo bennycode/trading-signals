@@ -2,14 +2,17 @@
   "name": "trading-signals-vocs",
   "version": "0.0.0",
   "private": true,
-  "description": "Spike for issue #1288: Vocs-based documentation site with interactive MDX",
+  "description": "Vocs-based documentation site for trading-signals with interactive demos and backtesting",
   "type": "module",
   "scripts": {
+    "prebuild": "npm run generate",
     "dev": "tsx scripts/site.ts dev",
     "build": "tsx scripts/site.ts build",
     "dist": "npm run build",
-    "generate": "tsx --tsconfig scripts/tsconfig.json scripts/generate-indicator-pages.ts",
-    "preview": "vocs preview"
+    "generate": "tsx --tsconfig scripts/tsconfig.json scripts/generate-indicator-pages.ts && oxfmt src/pages/indicators src/sidebar.generated.ts",
+    "preview": "vocs preview",
+    "test": "npm run test:types",
+    "test:types": "tsc --noEmit"
   },
   "dependencies": {
     "@highcharts/react": "^5.2.2",
