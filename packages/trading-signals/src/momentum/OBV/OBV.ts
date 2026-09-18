@@ -1,5 +1,5 @@
 import type {OpenHighLowCloseVolume} from '../../base/Candle.type.js';
-import {TrendIndicatorSeries, TradingSignal} from '../../base/Indicator.js';
+import {IndicatorInputShape, TrendIndicatorSeries, TradingSignal} from '../../base/Indicator.js';
 import {pushUpdate} from '../../util/array/pushUpdate.js';
 
 /**
@@ -11,6 +11,8 @@ import {pushUpdate} from '../../util/array/pushUpdate.js';
  * @see https://www.investopedia.com/terms/o/onbalancevolume.asp
  */
 export class OBV extends TrendIndicatorSeries<OpenHighLowCloseVolume<number>> {
+  override readonly inputShape = IndicatorInputShape.OPEN_HIGH_LOW_CLOSE_VOLUME;
+
   public readonly candles: OpenHighLowCloseVolume<number>[] = [];
 
   public readonly interval: number;

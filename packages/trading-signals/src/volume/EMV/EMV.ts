@@ -1,5 +1,5 @@
 import type {HighLowCloseVolume} from '../../base/Candle.type.js';
-import {ZeroCrossSeries} from '../../base/Indicator.js';
+import {IndicatorInputShape, ZeroCrossSeries} from '../../base/Indicator.js';
 import {SMA} from '../../trend/SMA/SMA.js';
 import {getMedianPrice} from '../../util/candle/getMedianPrice.js';
 import {pushUpdate} from '../../util/array/pushUpdate.js';
@@ -21,6 +21,8 @@ import {pushUpdate} from '../../util/array/pushUpdate.js';
  * @see https://www.investopedia.com/terms/e/easeofmovement.asp
  */
 export class EMV extends ZeroCrossSeries<HighLowCloseVolume> {
+  override readonly inputShape = IndicatorInputShape.HIGH_LOW_CLOSE_VOLUME;
+
   readonly #candles: HighLowCloseVolume[] = [];
   readonly #sma: SMA;
   readonly #scale: number;

@@ -18,6 +18,8 @@ npm install @typedtrader/exchange
 
 The package is ESM-only and targets the latest Node.js LTS.
 
+To drive the brokers from a terminal instead of code, install [@typedtrader/exchange-cli](../exchange-cli).
+
 ## Features
 
 - **One API for every broker:** place market/limit orders, list balances, watch fills and candles with the same methods on every supported broker

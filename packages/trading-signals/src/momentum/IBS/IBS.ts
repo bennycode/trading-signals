@@ -1,5 +1,5 @@
 import type {HighLowClose} from '../../base/Candle.type.js';
-import {ThresholdCrossSeries} from '../../base/Indicator.js';
+import {IndicatorInputShape, ThresholdCrossSeries} from '../../base/Indicator.js';
 import type {SignalThresholds} from '../../base/SignalThresholds.type.js';
 
 /**
@@ -22,6 +22,8 @@ import type {SignalThresholds} from '../../base/SignalThresholds.type.js';
  * @see https://www.naaim.org/wp-content/uploads/2014/04/00V_Alexander_Pagonidis_The-IBS-Effect-Mean-Reversion-in-Equity-ETFs-1.pdf
  */
 export class IBS extends ThresholdCrossSeries<HighLowClose<number>> {
+  override readonly inputShape = IndicatorInputShape.HIGH_LOW_CLOSE;
+
   constructor({overbought = 0.8, oversold = 0.2}: SignalThresholds = {}) {
     super({overbought, oversold});
   }

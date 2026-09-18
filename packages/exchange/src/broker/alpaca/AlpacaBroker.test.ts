@@ -70,12 +70,41 @@ describe('AlpacaBroker', {concurrent: false}, () => {
   });
 
   describe('getFeeRates', () => {
-    it('returns hardcoded Alpaca fee rates', async () => {
-      const pair = new TradingPair('SHOP', 'USD');
-      const fees = await exchange.getFeeRates(pair);
+    it('charges no commission on stocks', async () => {
+      const fees = await exchange.getFeeRates(new TradingPair('SHOP', 'USD'));
+
+      expect(fees[OrderType.MARKET].toString(), 'Alpaca US equities are commission-free').toBe('0');
+      expect(fees[OrderType.LIMIT].toString(), 'Alpaca US equities are commission-free').toBe('0');
+    });
+
+    it('charges the maker/taker commission on crypto', async () => {
+      mockMethods.getCryptoBarsLatest.mockResolvedValue({bars: {'BTC/USD': {c: 100}}});
+
+      const fees = await exchange.getFeeRates(new TradingPair('BTC', 'USD'));
 
       expect(fees[OrderType.MARKET]).toEqual(new Big(0.0025));
       expect(fees[OrderType.LIMIT]).toEqual(new Big(0.0015));
+    });
+  });
+
+  describe('estimateFee', () => {
+    it('does not predict a commission for a stock market order', async () => {
+      const estimate = await exchange.estimateFee(new TradingPair('F', 'USD'), OrderType.MARKET, new Big('13.825'));
+
+      expect(
+        estimate.commission.toString(),
+        'a commission-free stock must not be predicted to cost the crypto taker rate'
+      ).toBe('0');
+      expect(estimate.total.toString(), 'no commission and no currency conversion leaves nothing to pay').toBe('0');
+    });
+
+    it('predicts the taker commission for a crypto market order', async () => {
+      mockMethods.getCryptoBarsLatest.mockResolvedValue({bars: {'BTC/USD': {c: 100}}});
+
+      const estimate = await exchange.estimateFee(new TradingPair('BTC', 'USD'), OrderType.MARKET, new Big('1000'));
+
+      expect(estimate.commission.toString(), '1000 USD at the 0.25% taker rate').toBe('2.5');
+      expect(estimate.feeAsset, 'the fee is debited in the counter currency').toBe('USD');
     });
   });
 

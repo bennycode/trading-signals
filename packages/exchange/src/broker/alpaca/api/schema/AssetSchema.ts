@@ -4,6 +4,8 @@ export type Asset = z.infer<typeof AssetSchema>;
 
 /** @see https://docs.alpaca.markets/reference/get-v2-assets */
 export const AssetSchema = z.looseObject({
+  /** Flags such as "overnight_tradable", "overnight_halted" or "fractional_eh_enabled". */
+  attributes: z.array(z.string()).nullish(),
   class: z.string(),
   easy_to_borrow: z.boolean(),
   exchange: z.string(),

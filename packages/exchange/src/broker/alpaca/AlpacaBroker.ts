@@ -82,14 +82,25 @@ export class AlpacaBroker extends Broker implements MarketDataSource {
   static NAME = 'Alpaca';
 
   /**
-   * Default Alpaca fee rates.
+   * Charged on the credited asset. Assumes 30-day volume tier 1.
    *
    * @see https://docs.alpaca.markets/docs/crypto-fees
    * @see https://files.alpaca.markets/disclosures/library/BrokFeeSched.pdf
    */
-  static DEFAULT_FEE_RATES: FeeRate = {
+  static DEFAULT_CRYPTO_FEE_RATES: FeeRate = {
     [OrderType.LIMIT]: new Big(0.0015),
     [OrderType.MARKET]: new Big(0.0025),
+  };
+
+  /**
+   * US equities are commission-free. SEC and FINRA TAF charges still apply to sales but do
+   * not fit a per-leg rate, so they are left out.
+   *
+   * @see https://files.alpaca.markets/disclosures/library/BrokFeeSched.pdf
+   */
+  static DEFAULT_STOCK_FEE_RATES: FeeRate = {
+    [OrderType.LIMIT]: new Big(0),
+    [OrderType.MARKET]: new Big(0),
   };
 
   /**
@@ -265,13 +276,6 @@ export class AlpacaBroker extends Broker implements MarketDataSource {
      */
     const account = await this.#alpacaAPI.getAccount();
 
-    // @see https://docs.alpaca.markets/docs/user-protection#pattern-day-trader-pdt-protection-at-alpaca
-    if (parseFloat(account.last_equity || '0') < 25_000) {
-      console.warn(
-        `Your account isn't entitled for Pattern Day Trader (PDT). Your equity ("${account.last_equity} USD") as of previous trading day at 16:00:00 ET is too low. Read more: https://docs.alpaca.markets/docs/user-protection#pattern-day-trader-pdt-protection-at-alpaca`
-      );
-    }
-
     balances.push({
       available: new Big(account.cash).toFixed(),
       currency: account.currency,
@@ -362,14 +366,13 @@ export class AlpacaBroker extends Broker implements MarketDataSource {
   }
 
   /**
-   * The crypto fee will be charged on the credited crypto asset/fiat (what you receive) per trade.
-   *
    * @see https://docs.alpaca.markets/docs/crypto-fees
    * @see https://files.alpaca.markets/disclosures/library/BrokFeeSched.pdf
    */
-  async getFeeRates(_pair: TradingPair): Promise<FeeRate> {
-    // TODO: Refine according to "30-Day Crypto Volume (USD)" and make fee rate dependant on crypto or stocks
-    return AlpacaBroker.DEFAULT_FEE_RATES;
+  async getFeeRates(pair: TradingPair): Promise<FeeRate> {
+    // TODO: Refine the crypto rates according to "30-Day Crypto Volume (USD)"
+    const isCrypto = await isAlpacaCryptoSymbol(this.#alpacaAPI, pair);
+    return isCrypto ? AlpacaBroker.DEFAULT_CRYPTO_FEE_RATES : AlpacaBroker.DEFAULT_STOCK_FEE_RATES;
   }
 
   /**

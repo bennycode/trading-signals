@@ -1,5 +1,5 @@
 import type {HighLowClose} from '../../base/Candle.type.js';
-import {TechnicalIndicator, TradingSignal} from '../../base/Indicator.js';
+import {IndicatorInputShape, TechnicalIndicator, TradingSignal} from '../../base/Indicator.js';
 import {getMedianPrice} from '../../util/candle/getMedianPrice.js';
 import {ATR} from '../../volatility/ATR/ATR.js';
 
@@ -42,6 +42,8 @@ type SuperTrendState = {
  * @see https://trendspider.com/learning-center/supertrend-indicator-a-comprehensive-guide/
  */
 export class SuperTrend extends TechnicalIndicator<SuperTrendResult, HighLowClose<number>> {
+  override readonly inputShape = IndicatorInputShape.HIGH_LOW_CLOSE;
+
   readonly #atr: ATR;
   #state?: SuperTrendState;
   /** One-deep undo snapshot so `replace()` can rewind the recursive band/trend state */

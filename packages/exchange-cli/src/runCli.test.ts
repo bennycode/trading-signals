@@ -1,0 +1,518 @@
+import {EventEmitter} from 'node:events';
+import {execFile, type ExecFileException} from 'node:child_process';
+import Big from 'big.js';
+import {describe, expect, it, vi} from 'vitest';
+import {
+  OrderPosition,
+  OrderSide,
+  OrderType,
+  TradingPair,
+  type Broker,
+  type Candle,
+  type Fill,
+  type MarketDataSource,
+} from '@typedtrader/exchange';
+import {AlpacaAPI, Trading212API} from '@typedtrader/exchange';
+import {createCliBroker} from './cliBroker.js';
+import {runCli, type CliDeps} from './runCli.js';
+
+const PAIR = new TradingPair('AAPL', 'USD');
+const CANDLE: Candle = {
+  base: 'AAPL',
+  close: '100',
+  counter: 'USD',
+  high: '101',
+  low: '99',
+  open: '100',
+  openTimeInISO: '2026-09-09T10:00:00.000Z',
+  openTimeInMillis: 1788948000000,
+  sizeInMillis: 60_000,
+  volume: '10',
+};
+const FILL: Fill = {
+  created_at: CANDLE.openTimeInISO,
+  fee: '0',
+  feeAsset: 'USD',
+  order_id: '42',
+  pair: PAIR,
+  position: OrderPosition.LONG,
+  price: '100',
+  side: OrderSide.BUY,
+  size: '1',
+};
+const INSTRUMENTS = [{currency: 'GBX', isin: 'GB00B63H8491', name: 'Rolls-Royce', ticker: 'RRl_EQ'}];
+
+function setup() {
+  const broker = Object.assign(new EventEmitter(), {
+    cancelOpenOrders: vi.fn<Broker['cancelOpenOrders']>().mockResolvedValue(['42', '43']),
+    cancelOrderById: vi.fn<Broker['cancelOrderById']>().mockResolvedValue(undefined),
+    disconnect: vi.fn(),
+    estimateFee: vi.fn<Broker['estimateFee']>().mockResolvedValue({
+      commission: new Big(0),
+      currencyConversion: new Big(0),
+      feeAsset: 'USD',
+      total: new Big(0),
+    }),
+    getFillByOrderId: vi.fn<Broker['getFillByOrderId']>().mockResolvedValue(undefined),
+    getFills: vi.fn<Broker['getFills']>().mockResolvedValue([FILL]),
+    getLatestCandle: vi.fn<MarketDataSource['getLatestCandle']>().mockResolvedValue(CANDLE),
+    getOpenOrders: vi.fn<Broker['getOpenOrders']>().mockResolvedValue([]),
+    getRecentCandles: vi.fn<MarketDataSource['getRecentCandles']>().mockResolvedValue([CANDLE]),
+    getSmallestInterval: vi.fn<Broker['getSmallestInterval']>().mockReturnValue(60_000),
+    getTime: vi.fn<Broker['getTime']>().mockResolvedValue(CANDLE.openTimeInISO),
+    getTradingRules: vi.fn<Broker['getTradingRules']>().mockResolvedValue({
+      base_increment: '0.1',
+      base_max_size: '100',
+      base_min_size: '0.1',
+      counter_increment: '0.01',
+      counter_min_size: '1',
+      pair: PAIR,
+    }),
+    listBalances: vi.fn<Broker['listBalances']>().mockResolvedValue([]),
+    placeLimitOrder: vi.fn<Broker['placeLimitOrder']>().mockResolvedValue({
+      id: '42',
+      pair: PAIR,
+      price: '100',
+      side: OrderSide.BUY,
+      size: '1',
+      type: OrderType.LIMIT,
+    }),
+    placeMarketOrder: vi.fn<Broker['placeMarketOrder']>().mockResolvedValue({
+      id: '42',
+      pair: PAIR,
+      side: OrderSide.BUY,
+      size: '1',
+      sizeInCounter: false,
+      type: OrderType.MARKET,
+    }),
+    unwatchCandles: vi.fn(),
+    unwatchOrders: vi.fn(),
+    verifyCredentials: vi.fn<Broker['verifyCredentials']>().mockResolvedValue(undefined),
+    watchCandles: vi.fn<MarketDataSource['watchCandles']>().mockResolvedValue('candles'),
+    watchOrders: vi.fn<Broker['watchOrders']>().mockResolvedValue('orders'),
+  });
+  const listInstruments = vi.fn<ReturnType<typeof createCliBroker>['listInstruments']>().mockResolvedValue(INSTRUMENTS);
+  const deps = {
+    createBroker: vi.fn<CliDeps['createBroker']>().mockReturnValue({
+      broker: broker as unknown as Broker & MarketDataSource,
+      listInstruments,
+    }),
+    env: {},
+    writeEvent: vi.fn<CliDeps['writeEvent']>(),
+  };
+  const run = (args: string[]) => runCli([...args, '--broker', 'alpaca'], deps);
+  return {broker, deps, listInstruments, run};
+}
+
+describe('runCli', () => {
+  it.each([[], ['help'], ['--help']])('shows help without constructing a broker: %j', async (...args) => {
+    const {deps} = setup();
+    const result = await runCli(args, deps);
+    expect(result).toHaveProperty('text');
+    if ('text' in result) {
+      expect(result.text).toContain('Usage: exchange-cli');
+    }
+    expect(deps.createBroker).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    ['buy', '--help'],
+    ['help', 'buy'],
+  ])('generates command-specific help without constructing a broker: %j', async (...args) => {
+    const {deps} = setup();
+    const result = await runCli(args, deps);
+    expect(result).toHaveProperty('text');
+    if ('text' in result) {
+      expect(result.text).toContain('exchange-cli buy [options] <ticker> <quantity>');
+      expect(result.text).toContain('--limit');
+      expect(result.text).toContain('--dry-run');
+      expect(result.text).toContain('--broker');
+      expect(result.text).not.toContain('--take');
+    }
+    expect(deps.createBroker).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    ['unknown'],
+    ['toString'],
+    ['buy', 'AAPL'],
+    ['buy', 'AAPL', '1', 'extra'],
+    ['buy', 'AAPL', '0'],
+    ['buy', 'AAPL', '--', '-1'],
+    ['buy', 'AAPL', 'NaN'],
+    ['buy', ' ', '1'],
+    ['buy', 'AAPL', '1', '--limit', '0'],
+    ['buy', 'AAPL', '1', '--limit', ''],
+    ['buy', 'AAPL', '1', '--all'],
+    ['buy', 'AAPL', '1', '--count', '2'],
+    ['cancel', 'AAPL'],
+    ['cancel', 'AAPL', '42', '--dry-run'],
+    ['cancel', 'AAPL', '42', '--all'],
+    ['candles', 'AAPL', '--count', '0'],
+    ['wait', 'AAPL', '42', '--poll', ''],
+    ['watch-orders', '--take', '1.5'],
+    ['watch-orders', '--take', ''],
+  ])('rejects invalid input before constructing a broker: %j', async (...args) => {
+    const {deps, run} = setup();
+    await expect(run(args)).rejects.toThrow();
+    expect(deps.createBroker).not.toHaveBeenCalled();
+  });
+
+  it.each(
+    [
+      {args: ['candles', 'AAPL'], flag: '--interval'},
+      {args: ['watch-candles', 'AAPL'], flag: '--interval'},
+      {args: ['wait', 'AAPL', '42'], flag: '--timeout'},
+      {args: ['wait', 'AAPL', '42'], flag: '--poll'},
+    ].flatMap(({args, flag}) => ['nonsense', '0m', '-1m'].map(value => ({args, flag, value})))
+  )('rejects $flag=$value before constructing a broker: $args', async ({args, flag, value}) => {
+    const {deps, run} = setup();
+    deps.createBroker.mockImplementation(() => {
+      throw new Error('Unexpected broker construction');
+    });
+    await expect(run([...args, flag, value])).rejects.toThrow(flag);
+    expect(deps.createBroker, 'invalid durations must not start broker connections or polling').not.toHaveBeenCalled();
+  });
+
+  it.each(['', '   '])('rejects a blank --counter before constructing a broker: %j', async counter => {
+    const {deps, run} = setup();
+    deps.createBroker.mockImplementation(() => {
+      throw new Error('Unexpected broker construction');
+    });
+    await expect(run(['buy', 'AAPL', '1', '--counter', counter])).rejects.toThrow('--counter');
+    expect(deps.createBroker).not.toHaveBeenCalled();
+  });
+
+  it('requires an explicit supported broker', async () => {
+    await expect(runCli(['balances'])).rejects.toThrow('--broker');
+    await expect(runCli(['balances', '--broker', 'binance'])).rejects.toThrow('--broker');
+  });
+
+  it('defaults to paper even if an environment flag requests live', async () => {
+    const {deps, run} = setup();
+    deps.env = {ALPACA_USE_PAPER: 'false'};
+    await run(['balances']);
+    expect(deps.createBroker).toHaveBeenCalledWith('alpaca', false, deps.env);
+    await run(['balances', '--live']);
+    expect(deps.createBroker).toHaveBeenLastCalledWith('alpaca', true, deps.env);
+  });
+
+  it('accepts global options before a command and normalizes the broker name', async () => {
+    const {broker, deps} = setup();
+    await runCli(['--broker', 'ALPACA', '--live', 'balances'], deps);
+    expect(deps.createBroker).toHaveBeenCalledWith('alpaca', true, deps.env);
+    expect(broker.listBalances).toHaveBeenCalledOnce();
+  });
+
+  it('selects only the requested environment credentials', () => {
+    const env = {ALPACA_LIVE_API_KEY: 'live-key', ALPACA_LIVE_API_SECRET: 'live-secret'};
+    expect(() => createCliBroker('alpaca', false, env)).toThrow('ALPACA_PAPER_API_KEY');
+    expect(() => createCliBroker('trading212', true, {})).toThrow('TRADING212_LIVE_API_KEY');
+  });
+
+  it('verifies credentials and labels the selected mode', async () => {
+    const {broker, run} = setup();
+    expect(await run(['verify'])).toEqual({json: {broker: 'Alpaca', environment: 'paper', ok: true}});
+    expect(broker.verifyCredentials).toHaveBeenCalledOnce();
+  });
+
+  it.each(['rolls', 'rRl_EQ', 'GB00B63H8491'])('searches instrument names, tickers and ISINs: %s', async query => {
+    const {run} = setup();
+    expect(await run(['instruments', query])).toEqual({json: INSTRUMENTS});
+  });
+
+  it('resolves Trading212 currency before placing an order', async () => {
+    const {broker, deps} = setup();
+    await runCli(['buy', 'RRl_EQ', '1', '--broker', 'trading212'], deps);
+    expect(broker.placeMarketOrder).toHaveBeenCalledWith(new TradingPair('RRl_EQ', 'GBX'), {
+      side: OrderSide.BUY,
+      size: '1',
+      sizeInCounter: false,
+    });
+  });
+
+  it('passes limit orders through and skips metadata with --counter', async () => {
+    const {broker, listInstruments, run} = setup();
+    await run(['sell', 'AAPL', '1.2', '--limit', '150', '--counter', 'USD']);
+    expect(broker.placeLimitOrder).toHaveBeenCalledWith(PAIR, {price: '150', side: OrderSide.SELL, size: '1.2'});
+    expect(listInstruments).not.toHaveBeenCalled();
+  });
+
+  it('rejects unknown Trading212 symbols before submission', async () => {
+    const {broker, deps} = setup();
+    await expect(runCli(['buy', 'UNKNOWN', '1', '--broker', 'trading212'], deps)).rejects.toThrow('Cannot resolve');
+    expect(broker.placeMarketOrder).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    {flags: [], notional: '200', type: OrderType.MARKET},
+    {flags: ['--limit', '120'], notional: '240', type: OrderType.LIMIT},
+  ])('previews a $type order without submitting it', async ({flags, notional, type}) => {
+    const {broker, run} = setup();
+    const result = await run(['buy', 'AAPL', '2', '--dry-run', ...flags]);
+    expect(result).toMatchObject({json: {dryRun: true, estimatedNotional: new Big(notional)}});
+    expect(broker.estimateFee).toHaveBeenCalledWith(PAIR, type, new Big(notional));
+    expect(broker.placeMarketOrder).not.toHaveBeenCalled();
+    expect(broker.placeLimitOrder).not.toHaveBeenCalled();
+  });
+
+  it.each(['0.01', '101', '1.25'])('rejects a preview that violates quantity rules: %s', async size => {
+    const {broker, run} = setup();
+    await expect(run(['buy', 'AAPL', size, '--dry-run', '--limit', '100'])).rejects.toThrow('Quantity');
+    expect(broker.placeLimitOrder).not.toHaveBeenCalled();
+    expect(broker.estimateFee).not.toHaveBeenCalled();
+  });
+
+  it('rejects a limit preview with a price between permitted increments', async () => {
+    const {broker, run} = setup();
+    await expect(run(['buy', 'AAPL', '1', '--dry-run', '--limit', '100.001'])).rejects.toThrow(
+      'Limit price must be a multiple of 0.01'
+    );
+    expect(broker.estimateFee).not.toHaveBeenCalled();
+    expect(broker.placeLimitOrder).not.toHaveBeenCalled();
+  });
+
+  it.each([[], ['--limit', '0.99']])('rejects a preview below the minimum order value: %j', async (...flags) => {
+    const {broker, run} = setup();
+    broker.getLatestCandle.mockResolvedValue({...CANDLE, close: '0.99'});
+    await expect(run(['buy', 'AAPL', '1', '--dry-run', ...flags])).rejects.toThrow(
+      'Order value must be at least 1 USD'
+    );
+    expect(broker.estimateFee).not.toHaveBeenCalled();
+    expect(broker.placeMarketOrder).not.toHaveBeenCalled();
+    expect(broker.placeLimitOrder).not.toHaveBeenCalled();
+  });
+
+  it('accepts a limit preview exactly at the minimum order value', async () => {
+    const {broker, run} = setup();
+    expect(await run(['buy', 'AAPL', '0.1', '--dry-run', '--limit', '10'])).toMatchObject({json: {dryRun: true}});
+    expect(broker.estimateFee).toHaveBeenCalledWith(PAIR, OrderType.LIMIT, new Big(1));
+  });
+
+  it('does not apply the limit-price increment to a market-price estimate', async () => {
+    const {broker, run} = setup();
+    broker.getLatestCandle.mockResolvedValue({...CANDLE, close: '100.001'});
+    expect(await run(['buy', 'AAPL', '1', '--dry-run'])).toMatchObject({json: {dryRun: true}});
+    expect(broker.estimateFee).toHaveBeenCalledWith(PAIR, OrderType.MARKET, new Big('100.001'));
+  });
+
+  it('allows a limit price when no positive price increment is configured', async () => {
+    const {broker, run} = setup();
+    const rules = await broker.getTradingRules(PAIR);
+    broker.getTradingRules.mockResolvedValue({...rules, counter_increment: '0'});
+    expect(await run(['buy', 'AAPL', '1', '--dry-run', '--limit', '100.001'])).toMatchObject({json: {dryRun: true}});
+  });
+
+  it('quotes the most recent candle close and passes candle parameters through', async () => {
+    const {broker, run} = setup();
+    expect(await run(['quote', 'AAPL'])).toEqual({
+      json: {base: 'AAPL', counter: 'USD', price: '100', time: CANDLE.openTimeInISO},
+    });
+    expect(await run(['candles', 'AAPL', '--count', '3', '--interval', '5m'])).toEqual({json: [CANDLE]});
+    expect(broker.getRecentCandles).toHaveBeenCalledWith(PAIR, 3, 300_000);
+  });
+
+  it.each([
+    {command: 'candles', interval: '90m', millis: 5_400_000},
+    {command: 'watch-candles', interval: '1 hour', millis: 3_600_000},
+  ])('passes parsed durations to $command: $interval', async ({command, interval, millis}) => {
+    const {broker, run} = setup();
+    if (command === 'candles') {
+      await run([command, 'AAPL', '--interval', interval]);
+      expect(broker.getRecentCandles).toHaveBeenCalledWith(PAIR, 10, millis);
+    } else {
+      broker.watchCandles.mockImplementation(async () => {
+        setTimeout(() => broker.emit('topic', CANDLE), 0);
+        return 'topic';
+      });
+      await run([command, 'AAPL', '--interval', interval, '--take', '1']);
+      expect(broker.watchCandles).toHaveBeenCalledWith(PAIR, millis, expect.any(String));
+    }
+  });
+
+  it('lists rules, orders, fills, and broker time', async () => {
+    const {broker, run} = setup();
+    await run(['rules', 'AAPL']);
+    expect(broker.getTradingRules).toHaveBeenCalledWith(PAIR);
+    expect(await run(['orders', 'AAPL'])).toEqual({json: []});
+    expect(await run(['fills', 'AAPL'])).toEqual({json: [FILL]});
+    expect(await run(['time'])).toEqual({json: {time: CANDLE.openTimeInISO}});
+  });
+
+  it('cancels one order or every order for the selected pair', async () => {
+    const {broker, run} = setup();
+    expect(await run(['cancel', 'AAPL', '42'])).toEqual({json: {cancelled: ['42']}});
+    expect(broker.cancelOrderById).toHaveBeenCalledWith(PAIR, '42');
+    expect(await run(['cancel', 'AAPL', '--all'])).toEqual({json: {cancelled: ['42', '43']}});
+    expect(broker.cancelOpenOrders).toHaveBeenCalledWith(PAIR);
+  });
+
+  it('returns a fill and reconciles an order that fills between requests', async () => {
+    const {broker, run} = setup();
+    broker.getFillByOrderId.mockResolvedValueOnce(undefined).mockResolvedValue(FILL);
+    expect(await run(['wait', 'AAPL', '42'])).toEqual({json: {fill: FILL, status: 'FILLED'}});
+    expect(broker.getFillByOrderId).toHaveBeenCalledTimes(2);
+  });
+
+  it('reports a closed order without a fill', async () => {
+    const {run} = setup();
+    await expect(run(['wait', 'AAPL', '42'])).rejects.toThrow('cancelled or rejected');
+  });
+
+  it('times out without cancelling the order', async () => {
+    const {broker, run} = setup();
+    broker.getOpenOrders.mockResolvedValue([
+      {id: '42', pair: PAIR, price: '100', side: OrderSide.BUY, size: '1', type: 'LIMIT'},
+    ]);
+    await expect(run(['wait', 'AAPL', '42', '--timeout', '1ms'])).rejects.toThrow('does not cancel');
+    expect(broker.cancelOrderById).not.toHaveBeenCalled();
+    expect(broker.cancelOpenOrders).not.toHaveBeenCalled();
+  });
+
+  it.each(['watch-orders', 'watch-candles'])('streams exactly --take events and cleans up: %s', async command => {
+    const {broker, deps, run} = setup();
+    const candles = command === 'watch-candles';
+    const subscribe = candles ? broker.watchCandles : broker.watchOrders;
+    subscribe.mockImplementation(async () => {
+      setTimeout(() => [1, 2, 3].forEach(value => broker.emit('topic', {value})), 0);
+      return 'topic';
+    });
+    expect(await run([command, ...(candles ? ['AAPL', '--interval', '2h'] : []), '--take', '2'])).toEqual({
+      json: {events: 2},
+    });
+    if (candles) {
+      expect(broker.watchCandles).toHaveBeenCalledWith(PAIR, 7_200_000, expect.any(String));
+    }
+    expect(deps.writeEvent.mock.calls).toEqual([['{"value":1}'], ['{"value":2}']]);
+    expect(candles ? broker.unwatchCandles : broker.unwatchOrders).toHaveBeenCalledWith('topic');
+    expect(broker.listenerCount('topic')).toBe(0);
+    expect(broker.listenerCount('error')).toBe(0);
+    expect(broker.disconnect).toHaveBeenCalledOnce();
+  });
+
+  it('unsubscribes and disconnects when a stream fails', async () => {
+    const {broker, run} = setup();
+    broker.watchOrders.mockImplementation(async () => {
+      setTimeout(() => broker.emit('error', new Error('stream failed')), 0);
+      return 'topic';
+    });
+    await expect(run(['watch-orders'])).rejects.toThrow('stream failed');
+    expect(broker.unwatchOrders).toHaveBeenCalledWith('topic');
+    expect(broker.listenerCount('error')).toBe(0);
+    expect(broker.disconnect).toHaveBeenCalledOnce();
+  });
+
+  it('preserves broker errors and disconnects after a failed command', async () => {
+    const {broker, run} = setup();
+    broker.listBalances.mockRejectedValue(new Error('/api-errors/example'));
+    await expect(run(['balances'])).rejects.toThrow('/api-errors/example');
+    expect(broker.disconnect).toHaveBeenCalledOnce();
+  });
+
+  it('reports what each broker knows about an instrument', async () => {
+    vi.spyOn(AlpacaAPI.prototype, 'getAssets').mockResolvedValue([
+      {
+        class: 'us_equity',
+        easy_to_borrow: true,
+        exchange: 'ARCA',
+        fractionable: true,
+        id: 'a',
+        marginable: true,
+        name: 'iShares MSCI World ETF',
+        shortable: true,
+        status: 'active',
+        symbol: 'URTH',
+        tradable: true,
+      },
+    ]);
+    const alpaca = createCliBroker('alpaca', false, {
+      ALPACA_PAPER_API_KEY: 'test-key',
+      ALPACA_PAPER_API_SECRET: 'test-secret',
+    });
+    await expect(alpaca.listInstruments()).resolves.toEqual([
+      {
+        currency: 'USD',
+        exchange: 'ARCA',
+        fractionable: true,
+        name: 'iShares MSCI World ETF',
+        ticker: 'URTH',
+        tradable: true,
+      },
+    ]);
+    alpaca.broker.disconnect();
+
+    vi.spyOn(Trading212API.prototype, 'getExchanges').mockResolvedValue([
+      {id: 1, name: 'London Stock Exchange', workingSchedules: [{id: 55}]},
+    ]);
+    vi.spyOn(Trading212API.prototype, 'getInstruments').mockResolvedValue([
+      {
+        addedOn: '2018-07-12T07:10:10.000+03:00',
+        currencyCode: 'GBX',
+        isin: 'GB00B63H8491',
+        name: 'Rolls-Royce',
+        ticker: 'RRl_EQ',
+        type: 'STOCK',
+        workingScheduleId: 55,
+      },
+    ]);
+    const trading212 = createCliBroker('trading212', false, {
+      TRADING212_PAPER_API_KEY: 'test-key',
+      TRADING212_PAPER_API_SECRET: 'test-secret',
+    });
+    await expect(
+      trading212.listInstruments(),
+      'the venue comes from the working schedule, while tradability and fractions are absent because Trading212 publishes neither'
+    ).resolves.toEqual([
+      {
+        currency: 'GBX',
+        exchange: 'London Stock Exchange',
+        isin: 'GB00B63H8491',
+        name: 'Rolls-Royce',
+        ticker: 'RRl_EQ',
+      },
+    ]);
+    trading212.broker.disconnect();
+  });
+
+  it('supports Trading212 account composition without Alpaca credentials', async () => {
+    const {broker} = createCliBroker('trading212', false, {
+      TRADING212_PAPER_API_KEY: 'test-key',
+      TRADING212_PAPER_API_SECRET: 'test-secret',
+    });
+    await expect(broker.getLatestCandle(PAIR, 60_000)).rejects.toThrow('Use --broker alpaca');
+    broker.disconnect();
+  });
+});
+
+/*
+ * These spawn real Node processes. Run them sequentially without blocking the test worker;
+ * cold tsx startup can be slow when CI runs all workspace tests at the same time.
+ */
+describe('exchange-cli executable', {concurrent: false, timeout: 15_000}, () => {
+  it.each([
+    {args: ['--help'], code: 0, output: 'Usage:'},
+    {args: ['buy', '--help'], code: 0, output: '--limit'},
+    {args: ['balances', '--broker', 'alpaca'], code: 1, output: 'ALPACA_PAPER_API_KEY'},
+    {args: ['buy', 'AAPL', '0', '--broker', 'alpaca'], code: 1, output: 'positive decimal'},
+  ])('flushes the correct output stream and exits: $args', async ({args, code, output}) => {
+    const result = await new Promise<{error: ExecFileException | null; stdout: string; stderr: string}>(resolve => {
+      execFile(
+        process.execPath,
+        ['--import', 'tsx', `${import.meta.dirname}/exchange-cli.ts`, ...args],
+        {
+          encoding: 'utf8',
+          env: {PATH: process.env.PATH},
+          timeout: 10_000,
+        },
+        (error, stdout, stderr) => resolve({error, stderr, stdout})
+      );
+    });
+    if (code === 0) {
+      expect(result.error).toBeNull();
+    } else {
+      expect(result.error).toMatchObject({code, killed: false, signal: null});
+    }
+    expect(code === 0 ? result.stdout : result.stderr).toContain(output);
+    expect(code === 0 ? result.stderr : result.stdout).toBe('');
+  });
+});

@@ -1,5 +1,5 @@
 import type {HighLowCloseVolume} from '../../base/Candle.type.js';
-import {IndicatorSeries} from '../../base/Indicator.js';
+import {IndicatorInputShape, IndicatorSeries} from '../../base/Indicator.js';
 
 /**
  * Market Facilitation Index (MARKETFI)
@@ -22,6 +22,8 @@ import {IndicatorSeries} from '../../base/Indicator.js';
  * @see https://tulipindicators.org/marketfi
  */
 export class MarketFacilitationIndex extends IndicatorSeries<HighLowCloseVolume> {
+  override readonly inputShape = IndicatorInputShape.HIGH_LOW_CLOSE_VOLUME;
+
   override getRequiredInputs() {
     return 1;
   }

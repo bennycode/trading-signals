@@ -1,5 +1,5 @@
 import type {HighLow} from '../../base/Candle.type.js';
-import {TechnicalIndicator} from '../../base/Indicator.js';
+import {IndicatorInputShape, TechnicalIndicator} from '../../base/Indicator.js';
 import {getMedianPrice} from '../../util/candle/getMedianPrice.js';
 import {pushUpdate} from '../../util/array/pushUpdate.js';
 import {WSMA} from '../WSMA/WSMA.js';
@@ -59,6 +59,8 @@ type AlligatorState = {
  * @see https://www.metatrader5.com/en/terminal/help/indicators/bw_indicators/alligator
  */
 export class Alligator extends TechnicalIndicator<AlligatorResult, HighLow<number>, AlligatorState> {
+  override readonly inputShape = IndicatorInputShape.HIGH_LOW;
+
   protected override state: AlligatorState = {jawBuffer: [], lipsBuffer: [], teethBuffer: []};
   readonly #jaw: WSMA;
   readonly #lips: WSMA;

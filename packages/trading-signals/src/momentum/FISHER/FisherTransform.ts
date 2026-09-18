@@ -1,5 +1,5 @@
 import type {HighLow} from '../../base/Candle.type.js';
-import {ZeroCrossSeries} from '../../base/Indicator.js';
+import {IndicatorInputShape, ZeroCrossSeries} from '../../base/Indicator.js';
 import {getMaximum} from '../../util/math/getMaximum.js';
 import {getMedianPrice} from '../../util/candle/getMedianPrice.js';
 import {getMinimum} from '../../util/math/getMinimum.js';
@@ -25,6 +25,8 @@ import {pushUpdate} from '../../util/array/pushUpdate.js';
  * @see https://github.com/TulipCharts/tulipindicators/blob/v0.9.1/indicators/fisher.c
  */
 export class FisherTransform extends ZeroCrossSeries<HighLow<number>> {
+  override readonly inputShape = IndicatorInputShape.HIGH_LOW;
+
   public readonly interval: number;
 
   readonly #medians: number[] = [];

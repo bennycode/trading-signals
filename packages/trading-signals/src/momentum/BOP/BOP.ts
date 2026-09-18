@@ -1,5 +1,5 @@
 import type {OpenHighLowClose} from '../../base/Candle.type.js';
-import {ZeroCrossSeries} from '../../base/Indicator.js';
+import {IndicatorInputShape, ZeroCrossSeries} from '../../base/Indicator.js';
 
 /**
  * Balance of Power (BOP)
@@ -21,6 +21,8 @@ import {ZeroCrossSeries} from '../../base/Indicator.js';
  * @see https://www.tradingview.com/support/solutions/43000589100-balance-of-power-bop/
  */
 export class BOP extends ZeroCrossSeries<OpenHighLowClose> {
+  override readonly inputShape = IndicatorInputShape.OPEN_HIGH_LOW_CLOSE;
+
   override getRequiredInputs() {
     return 1;
   }

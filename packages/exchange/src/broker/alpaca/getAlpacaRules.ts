@@ -24,7 +24,7 @@ export async function getAlpacaRules(
   }
 
   return {
-    feeRates: AlpacaBroker.DEFAULT_FEE_RATES,
+    feeRates: AlpacaBroker.DEFAULT_CRYPTO_FEE_RATES,
     tradingRules: {
       ...AlpacaBroker.DEFAULT_CRYPTO_TRADING_RULES,
       pair,
