@@ -2,9 +2,7 @@
 pre-commit:
   commands:
     oxc:
-      # A merge or rebase stages code that was already linted on its own branch. Rewriting it here
-      # (with --fix and stage_fixed) changes other people's code, and in a fresh checkout without a
-      # built dist the type-aware rules misread imports and strip casts that are actually needed.
+      # A merge or rebase stages code that was already linted on its own branch.
       skip:
         - merge
         - rebase
