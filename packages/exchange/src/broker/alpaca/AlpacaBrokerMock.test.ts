@@ -2,6 +2,7 @@ import Big from 'big.js';
 import {describe, expect, it} from 'vitest';
 import type {Candle} from '../Broker.js';
 import {OrderSide, OrderType} from '../Broker.js';
+import type {MarketDataSource} from '../MarketDataSource.js';
 import {TradingPair} from '../TradingPair.js';
 import {AlpacaBrokerMock} from './AlpacaBrokerMock.js';
 
@@ -25,6 +26,23 @@ function createCandle(overrides: Partial<Candle> & {open: string; close: string}
 }
 
 describe('AlpacaBrokerMock', () => {
+  describe('getRecentCandles', () => {
+    it('serves history from the configured market data', async () => {
+      const ONE_MINUTE = 60_000;
+      const history = [
+        createCandle({close: '100', open: '100', openTimeInMillis: 1735689600000}),
+        createCandle({close: '101', open: '100', openTimeInMillis: 1735689600000 + ONE_MINUTE}),
+      ];
+      const marketData: Pick<MarketDataSource, 'getCandles'> = {getCandles: async () => history};
+      const exchange = new AlpacaBrokerMock({balances: new Map(), marketData});
+      exchange.setStartTime(new Date(1735689600000 + 10 * ONE_MINUTE).toISOString());
+
+      const result = await exchange.getRecentCandles(pair, 2, ONE_MINUTE);
+
+      expect(result, 'the mock passes its market data on to the base class').toEqual(history);
+    });
+  });
+
   it('threads the slippage config through to fills', async () => {
     const exchange = new AlpacaBrokerMock({
       balances: new Map([

@@ -936,6 +936,11 @@ describe('BacktestExecutor', () => {
       #candlesProcessed = 0;
 
       override async init(market: Pick<MarketDataSource, 'getRecentCandles'>, pair: TradingPair): Promise<void> {
+        /*
+         * Suspend past the candle loop, which only ever awaits microtasks: an init that is started
+         * but not awaited would resume after the backtest already processed its candles.
+         */
+        await new Promise(resolve => setTimeout(resolve, 0));
         this.initCalls += 1;
         this.candlesBeforeInit = this.#candlesProcessed;
         this.initArgs = [market, pair];

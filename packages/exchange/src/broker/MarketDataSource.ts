@@ -36,10 +36,9 @@ export abstract class MarketDataSource extends EventEmitter {
 }
 
 /**
- * Fetch the newest `count` candles of the given interval that open at or before
- * `untilInMillis`, oldest first. The cutoff is any point in time, not necessarily a candle open:
- * {@link MarketDataSource.getRecentCandles} passes the latest candle's open, while a backtest
- * passes the moment its window starts, which can fall anywhere inside a candle.
+ * Fetch the newest `count` candles of the given interval that open at or before `untilInMillis`,
+ * oldest first. The cutoff is any point in time, not necessarily a candle open, and each caller
+ * decides which moment it stands for.
  */
 export async function getCandlesUntil(
   source: Pick<MarketDataSource, 'getCandles'>,
