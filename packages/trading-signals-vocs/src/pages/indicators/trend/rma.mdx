@@ -1,0 +1,25 @@
+---
+title: 'RMA'
+description: "Relative Moving Average (Wilder's MA)"
+---
+
+import {IndicatorPageDemo} from '../../../components/IndicatorPageDemo';
+
+# Relative Moving Average (Wilder's MA) (RMA)
+
+Developed by J. Welles Wilder Jr., this smoothed moving average gives more weight to historical data, resulting in a smoother line.
+
+## Live Demo
+
+Pick a market regime to see how RMA(5) reacts:
+
+<IndicatorPageDemo category="trend" id="rma" />
+
+## Usage
+
+```ts twoslash
+import {RMA} from 'trading-signals';
+
+// RMA yields results once 5 inputs have been added
+const rma = new RMA(5);
+```

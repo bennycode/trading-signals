@@ -1,0 +1,128 @@
+import type {ChartOptions, HighchartsReactRefObject} from '@highcharts/react';
+import {Chart as HighchartsChart} from '@highcharts/react';
+import {useRef} from 'react';
+
+export interface ChartDataPoint {
+  x: number;
+  y: number | null;
+}
+
+export interface FlagPoint {
+  x: number;
+  title: string;
+  text: string;
+}
+
+export interface ChartProps {
+  title: string;
+  data: ChartDataPoint[];
+  yAxisLabel?: string;
+  color?: string;
+  flags?: FlagPoint[];
+  /** Render without the bordered card wrapper (for embedding into an existing card). */
+  bare?: boolean;
+}
+
+type TooltipFormatter = NonNullable<NonNullable<ChartOptions['tooltip']>['formatter']>;
+
+/**
+ * Every multi-series demo chart shares one tooltip look; each chart only customizes how a
+ * value is printed (e.g. 4 decimals for MACD, a `$` prefix for prices).
+ */
+export const createSharedTooltipFormatter = (
+  formatValue: (y: number) => string = y => y.toFixed(2)
+): TooltipFormatter =>
+  function () {
+    let s = `<b>Period ${this.x}</b><br/>`;
+    this.points?.forEach(point => {
+      const yValue = typeof point.y === 'number' ? formatValue(point.y) : 'N/A';
+      s += `${point.series.name}: ${yValue}<br/>`;
+    });
+    return s;
+  };
+
+export default function Chart({bare = false, color = '#3b82f6', data, title, yAxisLabel = 'Value'}: ChartProps) {
+  const chartRef = useRef<HighchartsReactRefObject>(null);
+
+  const options: ChartOptions = {
+    chart: {
+      backgroundColor: 'transparent',
+      height: 300,
+      type: 'line',
+    },
+    credits: {
+      enabled: false,
+    },
+    legend: {
+      enabled: false,
+    },
+    plotOptions: {
+      line: {
+        lineWidth: 2,
+        marker: {
+          enabled: true,
+          radius: 3,
+        },
+      },
+    },
+    series: [
+      {
+        color: color,
+        data: data.map(point => [point.x, point.y]),
+        id: 'main-series',
+        marker: {
+          fillColor: color,
+        },
+        name: yAxisLabel,
+        type: 'line',
+      },
+    ],
+    title: {
+      style: {
+        color: '#e2e8f0',
+        fontSize: '16px',
+        fontWeight: '600',
+      },
+      text: title,
+    },
+    tooltip: {
+      backgroundColor: '#1e293b',
+      borderColor: '#475569',
+      formatter: function () {
+        const yValue = typeof this.y === 'number' ? this.y.toFixed(2) : 'N/A';
+        return `<b>Period ${this.x}</b><br/>${yAxisLabel}: ${yValue}`;
+      },
+      style: {
+        color: '#e2e8f0',
+      },
+    },
+    xAxis: {
+      gridLineColor: '#334155',
+      labels: {
+        style: {color: '#94a3b8'},
+      },
+      title: {
+        style: {color: '#94a3b8'},
+        text: 'Period',
+      },
+    },
+    yAxis: {
+      gridLineColor: '#334155',
+      labels: {
+        style: {color: '#94a3b8'},
+      },
+      title: {
+        style: {color: '#94a3b8'},
+        text: yAxisLabel,
+      },
+    },
+  };
+
+  const chart = <HighchartsChart options={options} ref={chartRef} />;
+
+  if (bare) {
+    return chart;
+  }
+
+  return <div className="demo-card">{chart}</div>;
+}

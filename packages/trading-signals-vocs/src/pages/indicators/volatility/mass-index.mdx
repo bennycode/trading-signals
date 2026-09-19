@@ -1,0 +1,25 @@
+---
+title: 'Mass Index'
+description: 'Mass Index'
+---
+
+import {IndicatorPageDemo} from '../../../components/IndicatorPageDemo';
+
+# Mass Index
+
+Sums the ratio of a single- to a double-smoothed high-low range over 25 bars, so widening ranges inflate the reading regardless of direction. Donald Dorsey’s "reversal bulge" — a rise above 27 followed by a drop below 26.5 — flags a likely trend change, while the direction of the new trend must be read from a companion indicator.
+
+## Live Demo
+
+Pick a market regime to see how Mass Index(25) reacts:
+
+<IndicatorPageDemo category="volatility" id="mass-index" />
+
+## Usage
+
+```ts twoslash
+import {MassIndex} from 'trading-signals';
+
+// MassIndex yields results once 41 inputs have been added
+const massIndex = new MassIndex(25);
+```

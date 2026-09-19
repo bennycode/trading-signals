@@ -1,0 +1,25 @@
+---
+title: 'Ichimoku Cloud'
+description: 'Ichimoku Cloud'
+---
+
+import {IndicatorPageDemo} from '../../../components/IndicatorPageDemo';
+
+# Ichimoku Cloud
+
+Maps trend and equilibrium at a glance: each line is the midpoint between the highest high and the lowest low of its window, and the two spans enclose the cloud that traders read as support and resistance. All values are computed at the current bar — the traditional 26-bar forward displacement of the cloud is left to the chart.
+
+## Live Demo
+
+Pick a market regime to see how Ichimoku Cloud(52) reacts:
+
+<IndicatorPageDemo category="trend" id="ichimoku" />
+
+## Usage
+
+```ts twoslash
+import {IchimokuCloud} from 'trading-signals';
+
+// IchimokuCloud yields results once 52 inputs have been added
+const ichimokuCloud = new IchimokuCloud();
+```

@@ -1,0 +1,25 @@
+---
+title: 'BreakoutBarLow'
+description: 'Breakout-Bar Low'
+---
+
+import {IndicatorPageDemo} from '../../../components/IndicatorPageDemo';
+
+# Breakout-Bar Low (BreakoutBarLow)
+
+Emits the low of any candle whose high strictly exceeds the highest high of the prior N candles — a breakout bar. The breakout-bar low is commonly used as a momentum-based stop: if price trades back below it, the breakout has failed.
+
+## Live Demo
+
+Pick a market regime to see how BreakoutBarLow(21) reacts:
+
+<IndicatorPageDemo category="trend" id="breakout-bar-low" />
+
+## Usage
+
+```ts twoslash
+import {BreakoutBarLow} from 'trading-signals';
+
+// BreakoutBarLow yields results once 21 inputs have been added
+const breakoutBarLow = new BreakoutBarLow({lookback: 20});
+```

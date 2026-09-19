@@ -1,0 +1,25 @@
+---
+title: 'ZLEMA'
+description: 'Zero-Lag Exponential Moving Average'
+---
+
+import {IndicatorPageDemo} from '../../../components/IndicatorPageDemo';
+
+# Zero-Lag Exponential Moving Average (ZLEMA)
+
+Cancels most of the EMA lag by amplifying the newest price with its gain over the price from half an interval ago before smoothing. Hugs turning points that a plain EMA reaches several bars later.
+
+## Live Demo
+
+Pick a market regime to see how ZLEMA(5) reacts:
+
+<IndicatorPageDemo category="trend" id="zlema" />
+
+## Usage
+
+```ts twoslash
+import {ZLEMA} from 'trading-signals';
+
+// ZLEMA yields results once 5 inputs have been added
+const zlema = new ZLEMA(5);
+```

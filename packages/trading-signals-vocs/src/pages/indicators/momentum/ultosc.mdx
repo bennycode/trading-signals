@@ -1,0 +1,25 @@
+---
+title: 'ULTOSC'
+description: 'Ultimate Oscillator'
+---
+
+import {IndicatorPageDemo} from '../../../components/IndicatorPageDemo';
+
+# Ultimate Oscillator (ULTOSC)
+
+Blends buying pressure across three timeframes (7/14/28, weighted 4:2:1) to avoid the false divergences single-period oscillators produce. Values above 70 indicate overbought, below 30 indicate oversold.
+
+## Live Demo
+
+Pick a market regime to see how ULTOSC(29) reacts:
+
+<IndicatorPageDemo category="momentum" id="ultosc" />
+
+## Usage
+
+```ts twoslash
+import {UltimateOscillator} from 'trading-signals';
+
+// UltimateOscillator yields results once 29 inputs have been added
+const ultimateOscillator = new UltimateOscillator();
+```

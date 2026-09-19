@@ -1,0 +1,25 @@
+---
+title: 'CG'
+description: 'Center of Gravity'
+---
+
+import {IndicatorPageDemo} from '../../../components/IndicatorPageDemo';
+
+# Center of Gravity (CG)
+
+Identifies turning points with minimal lag. Oscillates around zero line.
+
+## Live Demo
+
+Pick a market regime to see how CG(10) reacts:
+
+<IndicatorPageDemo category="momentum" id="cg" />
+
+## Usage
+
+```ts twoslash
+import {CG} from 'trading-signals';
+
+// CG yields results once 10 inputs have been added
+const cg = new CG(10, 10);
+```

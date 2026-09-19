@@ -1,0 +1,25 @@
+---
+title: 'BBW'
+description: 'Bollinger Bands Width'
+---
+
+import {IndicatorPageDemo} from '../../../components/IndicatorPageDemo';
+
+# Bollinger Bands Width (BBW)
+
+Measures the width between the upper and lower Bollinger Bands relative to the middle band. Useful for identifying squeezes and potential breakouts.
+
+## Live Demo
+
+Pick a market regime to see how BBW(20) reacts:
+
+<IndicatorPageDemo category="volatility" id="bbw" />
+
+## Usage
+
+```ts twoslash
+import {BollingerBands, BollingerBandsWidth} from 'trading-signals';
+
+// BollingerBandsWidth yields results once 20 inputs have been added
+const bollingerBandsWidth = new BollingerBandsWidth(new BollingerBands(20, 2));
+```

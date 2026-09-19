@@ -1,0 +1,25 @@
+---
+title: 'ER'
+description: 'Range Efficiency'
+---
+
+import {IndicatorPageDemo} from '../../../components/IndicatorPageDemo';
+
+# Range Efficiency (ER)
+
+Measures how much of the price range was directional movement versus noise. Returns a value between 0 and 1 — near 0 means choppy/range-bound, near 1 means strongly trending. Formula: |close_now − close_N_ago| / (highest_high − lowest_low).
+
+## Live Demo
+
+Pick a market regime to see how ER(14) reacts:
+
+<IndicatorPageDemo category="momentum" id="er" />
+
+## Usage
+
+```ts twoslash
+import {ER} from 'trading-signals';
+
+// ER yields results once 14 inputs have been added
+const er = new ER(14);
+```

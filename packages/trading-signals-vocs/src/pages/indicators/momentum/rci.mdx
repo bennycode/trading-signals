@@ -1,0 +1,25 @@
+---
+title: 'RCI'
+description: 'Rank Correlation Index'
+---
+
+import {IndicatorPageDemo} from '../../../components/IndicatorPageDemo';
+
+# Rank Correlation Index (RCI)
+
+RCI applies Spearman rank correlation to price and time: it ranks the closes of the last 9 bars by recency and by price and measures how well the two rankings agree. A market that closes higher every bar reads +100, one that closes lower every bar reads -100. Values above +80 indicate overbought, below -80 indicate oversold.
+
+## Live Demo
+
+Pick a market regime to see how RCI(9) reacts:
+
+<IndicatorPageDemo category="momentum" id="rci" />
+
+## Usage
+
+```ts twoslash
+import {RCI} from 'trading-signals';
+
+// RCI yields results once 9 inputs have been added
+const rci = new RCI(9);
+```

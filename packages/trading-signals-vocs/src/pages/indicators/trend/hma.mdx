@@ -1,0 +1,25 @@
+---
+title: 'HMA'
+description: 'Hull Moving Average'
+---
+
+import {IndicatorPageDemo} from '../../../components/IndicatorPageDemo';
+
+# Hull Moving Average (HMA)
+
+Solves the classic moving average dilemma: smoothing adds lag, and lag-reduction adds noise. The HMA amplifies recent price action and smooths the result over the square root of the interval — tracking price nearly in real time while staying smooth.
+
+## Live Demo
+
+Pick a market regime to see how HMA(14) reacts:
+
+<IndicatorPageDemo category="trend" id="hma" />
+
+## Usage
+
+```ts twoslash
+import {HMA} from 'trading-signals';
+
+// HMA yields results once 16 inputs have been added
+const hma = new HMA(14);
+```

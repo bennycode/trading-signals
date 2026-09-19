@@ -1,0 +1,25 @@
+---
+title: 'PO'
+description: 'Projection Oscillator'
+---
+
+import {IndicatorPageDemo} from '../../../components/IndicatorPageDemo';
+
+# Projection Oscillator (PO)
+
+Locates the close within projection bands that ride the linear regression trend of the window: 100 means the close sits on the upper band, 0 on the lower band. Because the bands follow the trend, readings of 80/20 flag overbought/oversold conditions relative to the trend channel instead of a horizontal range.
+
+## Live Demo
+
+Pick a market regime to see how PO(14) reacts:
+
+<IndicatorPageDemo category="volatility" id="projection-oscillator" />
+
+## Usage
+
+```ts twoslash
+import {ProjectionOscillator} from 'trading-signals';
+
+// ProjectionOscillator yields results once 14 inputs have been added
+const projectionOscillator = new ProjectionOscillator({interval: 14});
+```

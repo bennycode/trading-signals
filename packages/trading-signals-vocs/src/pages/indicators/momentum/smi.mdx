@@ -1,0 +1,25 @@
+---
+title: 'SMI'
+description: 'Stochastic Momentum Index'
+---
+
+import {IndicatorPageDemo} from '../../../components/IndicatorPageDemo';
+
+# Stochastic Momentum Index (SMI)
+
+Locates the close relative to the midpoint of the recent high/low range and double-smooths that distance with two EMAs, bounding readings between -100 and +100. Readings of +40 and above indicate an overbought market, -40 and below an oversold market.
+
+## Live Demo
+
+Pick a market regime to see how SMI(10) reacts:
+
+<IndicatorPageDemo category="momentum" id="smi" />
+
+## Usage
+
+```ts twoslash
+import {SMI} from 'trading-signals';
+
+// SMI yields results once 14 inputs have been added
+const smi = new SMI();
+```

@@ -1,0 +1,25 @@
+---
+title: 'KAMA'
+description: "Kaufman's Adaptive Moving Average"
+---
+
+import {IndicatorPageDemo} from '../../../components/IndicatorPageDemo';
+
+# Kaufman's Adaptive Moving Average (KAMA)
+
+Adapts its smoothing based on how efficiently price traveled over the interval: fast in clean trends, slow in noise. Hugs trending prices closely while staying flat through choppy sideways markets.
+
+## Live Demo
+
+Pick a market regime to see how KAMA(10) reacts:
+
+<IndicatorPageDemo category="trend" id="kama" />
+
+## Usage
+
+```ts twoslash
+import {KAMA} from 'trading-signals';
+
+// KAMA yields results once 10 inputs have been added
+const kama = new KAMA(10);
+```

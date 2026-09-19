@@ -1,0 +1,25 @@
+---
+title: 'RVGI'
+description: 'Relative Vigor Index'
+---
+
+import {IndicatorPageDemo} from '../../../components/IndicatorPageDemo';
+
+# Relative Vigor Index (RVGI)
+
+Relative Vigor Index
+
+## Live Demo
+
+Pick a market regime to see how RVGI(10) reacts:
+
+<IndicatorPageDemo category="momentum" id="rvgi" />
+
+## Usage
+
+```ts twoslash
+import {RelativeVigorIndex} from 'trading-signals';
+
+// RelativeVigorIndex yields results once 16 inputs have been added
+const relativeVigorIndex = new RelativeVigorIndex(10);
+```

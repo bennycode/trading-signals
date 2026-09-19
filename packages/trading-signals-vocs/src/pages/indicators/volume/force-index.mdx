@@ -1,0 +1,25 @@
+---
+title: 'ForceIndex'
+description: 'Force Index'
+---
+
+import {IndicatorPageDemo} from '../../../components/IndicatorPageDemo';
+
+# Force Index (ForceIndex)
+
+Dr. Alexander Elder's Force Index combines the direction of a price change, its extent, and the volume behind it into a single measure of the power of buyers or sellers, smoothed with a 13-period EMA. Readings above zero indicate buying pressure, below zero selling pressure.
+
+## Live Demo
+
+Pick a market regime to see how ForceIndex(13) reacts:
+
+<IndicatorPageDemo category="volume" id="force-index" />
+
+## Usage
+
+```ts twoslash
+import {ForceIndex} from 'trading-signals';
+
+// ForceIndex yields results once 14 inputs have been added
+const forceIndex = new ForceIndex();
+```

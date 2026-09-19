@@ -1,0 +1,25 @@
+---
+title: 'DPO'
+description: 'Detrended Price Oscillator'
+---
+
+import {IndicatorPageDemo} from '../../../components/IndicatorPageDemo';
+
+# Detrended Price Oscillator (DPO)
+
+Strips the prevailing trend by comparing a displaced close against its surrounding average, exposing the short-term price cycle. Above zero the cycle trades above the average (bullish pressure), below zero beneath it (bearish pressure). Each reading describes the bar half an interval plus one bar back, not the latest candle.
+
+## Live Demo
+
+Pick a market regime to see how DPO(20) reacts:
+
+<IndicatorPageDemo category="momentum" id="dpo" />
+
+## Usage
+
+```ts twoslash
+import {DPO} from 'trading-signals';
+
+// DPO yields results once 20 inputs have been added
+const dpo = new DPO(20);
+```

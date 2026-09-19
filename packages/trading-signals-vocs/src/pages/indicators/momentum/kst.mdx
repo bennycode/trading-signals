@@ -1,0 +1,25 @@
+---
+title: 'KST'
+description: 'Know Sure Thing'
+---
+
+import {IndicatorPageDemo} from '../../../components/IndicatorPageDemo';
+
+# Know Sure Thing (KST)
+
+Martin Pring's Know Sure Thing blends the smoothed percentage rate of change of four timeframes, weighting the longer ones more heavily. Readings above zero mean bullish momentum confirmed across timeframes, readings below zero mean bearish momentum; zero-line crossings signal momentum shifts.
+
+## Live Demo
+
+Pick a market regime to see how KST(45) reacts:
+
+<IndicatorPageDemo category="momentum" id="kst" />
+
+## Usage
+
+```ts twoslash
+import {KST} from 'trading-signals';
+
+// KST yields results once 45 inputs have been added
+const kst = new KST();
+```

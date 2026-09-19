@@ -1,0 +1,25 @@
+---
+title: 'PGO'
+description: 'Pretty Good Oscillator'
+---
+
+import {IndicatorPageDemo} from '../../../components/IndicatorPageDemo';
+
+# Pretty Good Oscillator (PGO)
+
+Measures how far the close has traveled from its simple moving average, expressed in units of smoothed true range. Mark Johnson used it as a breakout system: readings above +3 flag a long breakout, readings below -3 a short breakout.
+
+## Live Demo
+
+Pick a market regime to see how PGO(14) reacts:
+
+<IndicatorPageDemo category="momentum" id="pgo" />
+
+## Usage
+
+```ts twoslash
+import {PGO} from 'trading-signals';
+
+// PGO yields results once 27 inputs have been added
+const pgo = new PGO();
+```

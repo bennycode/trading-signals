@@ -1,0 +1,25 @@
+---
+title: 'Laguerre RSI'
+description: 'Laguerre Relative Strength Index'
+---
+
+import {IndicatorPageDemo} from '../../../components/IndicatorPageDemo';
+
+# Laguerre Relative Strength Index (Laguerre RSI)
+
+John Ehlers runs the RSI pressure reading over the four stages of a Laguerre filter instead of raw closes, so four data points behave like a full-length RSI with far less lag. The oscillator ranges from 0 to 1: readings of 0.8 or above flag an overbought market, 0.2 or below an oversold one. The damping factor gamma stretches the effective look-back — 0 compares the last four closes directly, values closer to 1 calm the oscillator.
+
+## Live Demo
+
+Pick a market regime to see how Laguerre RSI(4) reacts:
+
+<IndicatorPageDemo category="momentum" id="laguerre-rsi" />
+
+## Usage
+
+```ts twoslash
+import {LaguerreRSI} from 'trading-signals';
+
+// LaguerreRSI yields results once 4 inputs have been added
+const laguerreRSI = new LaguerreRSI();
+```

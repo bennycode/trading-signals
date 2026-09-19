@@ -1,0 +1,25 @@
+---
+title: 'Bollinger Bands'
+description: 'Bollinger Bands'
+---
+
+import {IndicatorPageDemo} from '../../../components/IndicatorPageDemo';
+
+# Bollinger Bands
+
+Bollinger Bands
+
+## Live Demo
+
+Pick a market regime to see how Bollinger Bands(20) reacts:
+
+<IndicatorPageDemo category="volatility" id="bbands" />
+
+## Usage
+
+```ts twoslash
+import {BollingerBands} from 'trading-signals';
+
+// BollingerBands yields results once 20 inputs have been added
+const bollingerBands = new BollingerBands(20, 2);
+```

@@ -1,0 +1,25 @@
+---
+title: '%B'
+description: 'Bollinger Bands %B'
+---
+
+import {IndicatorPageDemo} from '../../../components/IndicatorPageDemo';
+
+# Bollinger Bands %B (%B)
+
+Locates the close within the Bollinger Bands: 1 means the close sits on the upper band, 0 on the lower band and 0.5 on the middle band. The reading is not clamped, so values above 1 or below 0 flag closes breaking out of the bands (overbought/oversold pressure).
+
+## Live Demo
+
+Pick a market regime to see how %B(20) reacts:
+
+<IndicatorPageDemo category="volatility" id="percent-b" />
+
+## Usage
+
+```ts twoslash
+import {PercentB} from 'trading-signals';
+
+// PercentB yields results once 20 inputs have been added
+const percentB = new PercentB({deviationMultiplier: 2, interval: 20});
+```

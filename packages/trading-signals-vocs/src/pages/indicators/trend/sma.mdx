@@ -1,0 +1,25 @@
+---
+title: 'SMA'
+description: 'Simple Moving Average'
+---
+
+import {IndicatorPageDemo} from '../../../components/IndicatorPageDemo';
+
+# Simple Moving Average (SMA)
+
+Calculates the arithmetic mean of prices over a specified period. Smooths out price fluctuations to identify the trend direction.
+
+## Live Demo
+
+Pick a market regime to see how SMA(5) reacts:
+
+<IndicatorPageDemo category="trend" id="sma" />
+
+## Usage
+
+```ts twoslash
+import {SMA} from 'trading-signals';
+
+// SMA yields results once 5 inputs have been added
+const sma = new SMA(5);
+```

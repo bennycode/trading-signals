@@ -1,0 +1,25 @@
+---
+title: 'STC'
+description: 'Schaff Trend Cycle'
+---
+
+import {IndicatorPageDemo} from '../../../components/IndicatorPageDemo';
+
+# Schaff Trend Cycle (STC)
+
+STC runs the MACD line through two rounds of stochastic scaling and halfway smoothing, so it completes its 0-100 swings well before the MACD turns. Values of 75 or above indicate overbought, 25 or below indicate oversold.
+
+## Live Demo
+
+Pick a market regime to see how STC(68) reacts:
+
+<IndicatorPageDemo category="momentum" id="stc" />
+
+## Usage
+
+```ts twoslash
+import {STC} from 'trading-signals';
+
+// STC yields results once 68 inputs have been added
+const stc = new STC();
+```

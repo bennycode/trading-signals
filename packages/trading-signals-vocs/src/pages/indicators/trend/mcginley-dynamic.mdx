@@ -1,0 +1,25 @@
+---
+title: 'MD'
+description: 'McGinley Dynamic'
+---
+
+import {IndicatorPageDemo} from '../../../components/IndicatorPageDemo';
+
+# McGinley Dynamic (MD)
+
+A self-adjusting moving average that speeds up in falling markets and slows down in rising ones, hugging price more closely than an EMA without the whipsaws of a fixed-period average.
+
+## Live Demo
+
+Pick a market regime to see how MD(14) reacts:
+
+<IndicatorPageDemo category="trend" id="mcginley-dynamic" />
+
+## Usage
+
+```ts twoslash
+import {McGinleyDynamic} from 'trading-signals';
+
+// McGinleyDynamic yields results once 14 inputs have been added
+const mcGinleyDynamic = new McGinleyDynamic(14);
+```

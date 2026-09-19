@@ -1,0 +1,25 @@
+---
+title: 'ASI'
+description: 'Accumulative Swing Index'
+---
+
+import {IndicatorPageDemo} from '../../../components/IndicatorPageDemo';
+
+# Accumulative Swing Index (ASI)
+
+Running total of Wilder's Swing Index, which scores each bar-to-bar move by weighing the close-to-close change against gaps and candle bodies. The accumulated line forms a synthetic price chart: trendline breaks on the index confirm breakouts on price, while a breakout the index refuses to follow is suspect.
+
+## Live Demo
+
+Pick a market regime to see how ASI(2) reacts:
+
+<IndicatorPageDemo category="momentum" id="asi" />
+
+## Usage
+
+```ts twoslash
+import {AccumulativeSwingIndex} from 'trading-signals';
+
+// AccumulativeSwingIndex yields results once 2 inputs have been added
+const accumulativeSwingIndex = new AccumulativeSwingIndex();
+```

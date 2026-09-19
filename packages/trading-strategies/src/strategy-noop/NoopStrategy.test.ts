@@ -2,6 +2,7 @@ import Big from 'big.js';
 import {describe, expect, it} from 'vitest';
 import {CandleBatcher, OrderType, TradingPair} from '@typedtrader/exchange';
 import type {Candle} from '@typedtrader/exchange';
+import {createStrategy, getStrategyNames} from '../strategy/StrategyRegistry.js';
 import type {TradingSessionState} from '../trader/index.js';
 import {NoopStrategy} from './NoopStrategy.js';
 
@@ -52,9 +53,7 @@ describe('NoopStrategy', () => {
     expect(advice2).toBeUndefined();
   });
 
-  it('is discoverable via the strategy registry', async () => {
-    const {createStrategy, getStrategyNames} = await import('../strategy/StrategyRegistry.js');
-
+  it('is discoverable via the strategy registry', () => {
     expect(getStrategyNames()).toContain(NoopStrategy.NAME);
     expect(createStrategy(NoopStrategy.NAME, {})).toBeInstanceOf(NoopStrategy);
   });

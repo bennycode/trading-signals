@@ -1,0 +1,25 @@
+---
+title: 'DI'
+description: 'Disparity Index'
+---
+
+import {IndicatorPageDemo} from '../../../components/IndicatorPageDemo';
+
+# Disparity Index (DI)
+
+Measures how far the close has stretched above or below its own moving average, expressed as a percentage of that average. Above zero the close trades above its average (bullish pressure), below zero beneath it (bearish pressure). Extreme readings flag an over-extended move that is prone to snap back toward the average.
+
+## Live Demo
+
+Pick a market regime to see how DI(14) reacts:
+
+<IndicatorPageDemo category="momentum" id="disparity-index" />
+
+## Usage
+
+```ts twoslash
+import {DisparityIndex} from 'trading-signals';
+
+// DisparityIndex yields results once 14 inputs have been added
+const disparityIndex = new DisparityIndex(14);
+```

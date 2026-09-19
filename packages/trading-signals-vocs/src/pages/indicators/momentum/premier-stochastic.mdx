@@ -1,0 +1,25 @@
+---
+title: 'Premier Stochastic'
+description: 'Premier Stochastic Oscillator'
+---
+
+import {IndicatorPageDemo} from '../../../components/IndicatorPageDemo';
+
+# Premier Stochastic Oscillator (Premier Stochastic)
+
+Centers a fast stochastic around zero, calms it with a double EMA pass, and normalizes the outcome into the -1..+1 range. Lee Leibfarth published it in 2008: the zero line separates bullish from bearish momentum, readings beyond ±0.9 flag exhausted moves, and a pullback through ±0.2 marks the reversal.
+
+## Live Demo
+
+Pick a market regime to see how Premier Stochastic(12) reacts:
+
+<IndicatorPageDemo category="momentum" id="premier-stochastic" />
+
+## Usage
+
+```ts twoslash
+import {PremierStochastic} from 'trading-signals';
+
+// PremierStochastic yields results once 12 inputs have been added
+const premierStochastic = new PremierStochastic();
+```

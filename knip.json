@@ -13,6 +13,19 @@
     "packages/trading-signals-docs": {
       "entry": ["e2e/**/*.ts"]
     },
+    "packages/trading-signals-vocs": {
+      "entry": [
+        "vocs.config.ts",
+        "scripts/stubs/highcharts-react.ts",
+        "src/components/BacktestApp.tsx",
+        "src/components/IndicatorPageDemo.tsx",
+        "src/components/PackageGrid.tsx",
+        "src/components/UtilitiesDemo.tsx",
+        "src/pages/_root.css",
+        "src/shims/*.ts"
+      ],
+      "ignoreDependencies": ["events"]
+    },
     "packages/trading-strategies": {
       "entry": ["src/start/**/*.ts"]
     }

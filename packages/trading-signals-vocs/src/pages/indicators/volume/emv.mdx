@@ -1,0 +1,25 @@
+---
+title: 'EMV'
+description: 'Ease of Movement'
+---
+
+import {IndicatorPageDemo} from '../../../components/IndicatorPageDemo';
+
+# Ease of Movement (EMV)
+
+Relates price change to volume to assess trend strength. Positive EMV means prices are advancing with ease, negative EMV means prices are declining easily. Uses SMA smoothing.
+
+## Live Demo
+
+Pick a market regime to see how EMV(14) reacts:
+
+<IndicatorPageDemo category="volume" id="emv" />
+
+## Usage
+
+```ts twoslash
+import {EMV} from 'trading-signals';
+
+// EMV yields results once 15 inputs have been added
+const emv = new EMV(14);
+```

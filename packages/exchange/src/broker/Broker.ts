@@ -1,7 +1,9 @@
 import Big from 'big.js';
 import {EventEmitter} from 'node:events';
 import type {TradingPair} from './TradingPair.js';
-import {z} from 'zod';
+
+export {CandleBaseSchema, CandleSchema} from '../schemas.js';
+export type {Candle, CandleBase} from '../schemas.js';
 
 export const OrderSide = {
   BUY: 'BUY',
@@ -15,25 +17,6 @@ interface OrderBase {
   type: OrderType;
 }
 
-export const CandleBaseSchema = z.object({
-  /** ID of base asset */
-  base: z.string(),
-
-  /** ID of quote asset */
-  counter: z.string(),
-
-  /** True, if this candle is the latest / current candle from the exchange. This flag is good to know if a candle comes from a history import or not. */
-  isLatest: z.boolean().optional(),
-  /** Bucket start time in simplified extended ISO 8601 format */
-  openTimeInISO: z.string(),
-  /** Bucket start time converted to milliseconds (note: Coinbase Pro actually uses seconds) */
-  openTimeInMillis: z.number(),
-  /** Candle size in milliseconds */
-  sizeInMillis: z.number(),
-});
-
-export type CandleBase = z.infer<typeof CandleBaseSchema>;
-
 export const OrderType = {
   /** Maker */
   LIMIT: 'LIMIT',
@@ -41,31 +24,6 @@ export const OrderType = {
   MARKET: 'MARKET',
 } as const;
 export type OrderType = (typeof OrderType)[keyof typeof OrderType];
-
-export const CandleSchema = z
-  .object({
-    /** Closing price (last trade) during the candle interval */
-    close: z.string(),
-    /** Represents the minimum price that a seller was willing to take at the end of the candle */
-    closeAsk: z.string().optional(),
-    /** Highest price during the candle interval */
-    high: z.string(),
-    /** Represents the minimum price that a seller was willing to take at the peak of the candle */
-    highAsk: z.string().optional(),
-    /** Lowest price during the candle interval */
-    low: z.string(),
-    /** Represents the minimum price that a seller was willing to take at the bottom of the candle */
-    lowAsk: z.string().optional(),
-    /** Opening price (first trade) during the candle interval */
-    open: z.string(),
-    /** Represents the minimum price that a seller was willing to take at the beginning of the candle */
-    openAsk: z.string().optional(),
-    /** Amount of traded base currency during the candle interval */
-    volume: z.string(),
-  })
-  .merge(CandleBaseSchema);
-
-export type Candle = z.infer<typeof CandleSchema>;
 
 export interface CandleImportRequest {
   /** Candle size in milliseconds, i.e. 60000 for 1 minute */

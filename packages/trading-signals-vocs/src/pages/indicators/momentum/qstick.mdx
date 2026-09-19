@@ -1,0 +1,25 @@
+---
+title: 'Qstick'
+description: 'Qstick'
+---
+
+import {IndicatorPageDemo} from '../../../components/IndicatorPageDemo';
+
+# Qstick
+
+Averages the candle bodies (close minus open) over an interval to show whether buyers or sellers control the closes. Above zero buyers close candles above their opens, below zero sellers pin closes below the opens.
+
+## Live Demo
+
+Pick a market regime to see how Qstick(8) reacts:
+
+<IndicatorPageDemo category="momentum" id="qstick" />
+
+## Usage
+
+```ts twoslash
+import {Qstick} from 'trading-signals';
+
+// Qstick yields results once 8 inputs have been added
+const qstick = new Qstick();
+```

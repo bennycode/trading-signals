@@ -1,0 +1,25 @@
+---
+title: 'ADOSC'
+description: 'Chaikin Oscillator'
+---
+
+import {IndicatorPageDemo} from '../../../components/IndicatorPageDemo';
+
+# Chaikin Oscillator (ADOSC)
+
+Applies the MACD principle to the Accumulation/Distribution line: the spread between a fast and slow EMA of A/D measures the momentum of money flow, flagging accumulation or distribution before price shows it.
+
+## Live Demo
+
+Pick a market regime to see how ADOSC(10) reacts:
+
+<IndicatorPageDemo category="volume" id="adosc" />
+
+## Usage
+
+```ts twoslash
+import {ADOSC} from 'trading-signals';
+
+// ADOSC yields results once 10 inputs have been added
+const adosc = new ADOSC();
+```

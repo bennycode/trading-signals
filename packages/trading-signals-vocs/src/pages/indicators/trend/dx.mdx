@@ -1,0 +1,25 @@
+---
+title: 'DX'
+description: 'Directional Movement Index'
+---
+
+import {IndicatorPageDemo} from '../../../components/IndicatorPageDemo';
+
+# Directional Movement Index (DX)
+
+Measures the strength of directional movement. The ADX is derived from smoothing the DX values over time.
+
+## Live Demo
+
+Pick a market regime to see how DX(14) reacts:
+
+<IndicatorPageDemo category="trend" id="dx" />
+
+## Usage
+
+```ts twoslash
+import {DX} from 'trading-signals';
+
+// DX yields results once 14 inputs have been added
+const dx = new DX(14);
+```

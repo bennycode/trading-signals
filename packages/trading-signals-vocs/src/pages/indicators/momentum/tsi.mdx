@@ -1,0 +1,25 @@
+---
+title: 'TSI'
+description: 'True Strength Index'
+---
+
+import {IndicatorPageDemo} from '../../../components/IndicatorPageDemo';
+
+# True Strength Index (TSI)
+
+Double-smooths bar-to-bar price change with a long and a short EMA and divides it by the equally smoothed absolute change, bounding readings between -100 and +100. Above zero, buyers dominate; below zero, sellers dominate — zero-line crossings mark momentum changing sides.
+
+## Live Demo
+
+Pick a market regime to see how TSI(38) reacts:
+
+<IndicatorPageDemo category="momentum" id="tsi" />
+
+## Usage
+
+```ts twoslash
+import {TSI} from 'trading-signals';
+
+// TSI yields results once 38 inputs have been added
+const tsi = new TSI();
+```

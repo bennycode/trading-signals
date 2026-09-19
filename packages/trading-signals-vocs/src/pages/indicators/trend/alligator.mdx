@@ -1,0 +1,25 @@
+---
+title: 'Williams Alligator'
+description: 'Williams Alligator'
+---
+
+import {IndicatorPageDemo} from '../../../components/IndicatorPageDemo';
+
+# Williams Alligator
+
+Bill Williams reads the market as an alligator that sleeps, awakens and eats: three smoothed moving averages of the median price form its jaw (13 bars), teeth (8 bars) and lips (5 bars). Because each line is displaced forward by a different amount (8, 5 and 3 bars) and their alignment is the indicator, the displacement is applied internally — every value shown is the one its line produced that many bars earlier.
+
+## Live Demo
+
+Pick a market regime to see how Williams Alligator(21) reacts:
+
+<IndicatorPageDemo category="trend" id="alligator" />
+
+## Usage
+
+```ts twoslash
+import {Alligator} from 'trading-signals';
+
+// Alligator yields results once 21 inputs have been added
+const alligator = new Alligator();
+```

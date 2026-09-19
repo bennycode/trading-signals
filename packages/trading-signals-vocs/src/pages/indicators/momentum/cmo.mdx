@@ -1,0 +1,25 @@
+---
+title: 'CMO'
+description: 'Chande Momentum Oscillator'
+---
+
+import {IndicatorPageDemo} from '../../../components/IndicatorPageDemo';
+
+# Chande Momentum Oscillator (CMO)
+
+Relates the sum of gains to the sum of losses over the interval — faster and more symmetric than the RSI, oscillating between -100 and +100. Values above +50 indicate overbought, below -50 indicate oversold.
+
+## Live Demo
+
+Pick a market regime to see how CMO(14) reacts:
+
+<IndicatorPageDemo category="momentum" id="cmo" />
+
+## Usage
+
+```ts twoslash
+import {CMO} from 'trading-signals';
+
+// CMO yields results once 15 inputs have been added
+const cmo = new CMO(14);
+```

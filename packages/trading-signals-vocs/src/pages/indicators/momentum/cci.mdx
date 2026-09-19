@@ -1,0 +1,25 @@
+---
+title: 'CCI'
+description: 'Commodity Channel Index'
+---
+
+import {IndicatorPageDemo} from '../../../components/IndicatorPageDemo';
+
+# Commodity Channel Index (CCI)
+
+Measures deviation from the average price. Readings above +100 suggest overbought, below -100 suggest oversold.
+
+## Live Demo
+
+Pick a market regime to see how CCI(20) reacts:
+
+<IndicatorPageDemo category="momentum" id="cci" />
+
+## Usage
+
+```ts twoslash
+import {CCI} from 'trading-signals';
+
+// CCI yields results once 20 inputs have been added
+const cci = new CCI(20);
+```

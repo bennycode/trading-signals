@@ -1,0 +1,25 @@
+---
+title: 'HT Trendline'
+description: 'Hilbert Transform Instantaneous Trendline'
+---
+
+import {IndicatorPageDemo} from '../../../components/IndicatorPageDemo';
+
+# Hilbert Transform Instantaneous Trendline (HT Trendline)
+
+Measures the dominant market cycle with a Hilbert transform and averages price over exactly that many bars, cancelling the cycle component out of the series. What remains is the trend, tracked with less lag than a fixed-length moving average of comparable smoothness.
+
+## Live Demo
+
+Pick a market regime to see how HT Trendline(64) reacts:
+
+<IndicatorPageDemo category="trend" id="ht-trendline" />
+
+## Usage
+
+```ts twoslash
+import {HTTrendline} from 'trading-signals';
+
+// HTTrendline yields results once 64 inputs have been added
+const hTTrendline = new HTTrendline();
+```

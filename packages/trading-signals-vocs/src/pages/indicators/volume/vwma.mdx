@@ -1,0 +1,25 @@
+---
+title: 'VWMA'
+description: 'Volume Weighted Moving Average'
+---
+
+import {IndicatorPageDemo} from '../../../components/IndicatorPageDemo';
+
+# Volume Weighted Moving Average (VWMA)
+
+Similar to SMA but weights each price by its volume. High-volume bars have more influence. Uses a signal line (SMA by default) for crossover signals. When VWMA crosses above the signal line, it indicates bullish momentum.
+
+## Live Demo
+
+Pick a market regime to see how VWMA(20) reacts:
+
+<IndicatorPageDemo category="volume" id="vwma" />
+
+## Usage
+
+```ts twoslash
+import {VWMA} from 'trading-signals';
+
+// VWMA yields results once 20 inputs have been added
+const vwma = new VWMA(20);
+```

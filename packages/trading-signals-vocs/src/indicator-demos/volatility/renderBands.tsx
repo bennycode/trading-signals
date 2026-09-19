@@ -1,0 +1,165 @@
+import {CollapsibleCard} from '../../components/CollapsibleCard';
+import {Chart as HighchartsChart} from '@highcharts/react';
+import type {ReactNode} from 'react';
+import type {BandsResult} from 'trading-signals';
+import type {Candle} from '@typedtrader/exchange';
+import {createSharedTooltipFormatter, type ChartDataPoint} from '../../components/Chart';
+import {NotAvailable} from '../../components/NotAvailable';
+import PriceChart, {type PriceData} from '../../components/PriceChart';
+import {SignalBadge} from '../../components/SignalBadge';
+import {formatDate} from '../../utils/formatDate';
+import {collectPriceData} from '../../utils/renderUtils';
+import type {IndicatorConfig} from '../../utils/types';
+
+/** The slice of a bands-style indicator (Bollinger Bands, Acceleration Bands, …) this renderer reads. */
+interface BandsIndicator {
+  isStable: boolean;
+  getResult(): BandsResult | null;
+  getRequiredInputs(): number;
+  getSignal?(): {state: string; hasChanged: boolean};
+}
+
+export interface BandsOptions<TIndicator extends BandsIndicator> {
+  label: string;
+  paramString: string;
+  createIndicator: () => TIndicator;
+  addCandle: (indicator: TIndicator, candle: Candle) => void;
+  details: string;
+}
+
+export const renderBands = <TIndicator extends BandsIndicator>(
+  config: IndicatorConfig,
+  selectedCandles: Candle[],
+  options: BandsOptions<TIndicator>
+) => {
+  const indicator = options.createIndicator();
+  const chartDataUpper: ChartDataPoint[] = [];
+  const chartDataMiddle: ChartDataPoint[] = [];
+  const chartDataLower: ChartDataPoint[] = [];
+  const priceData: PriceData[] = [];
+  const sampleValues: {
+    period: number;
+    date: string;
+    close: number;
+    upper: ReactNode;
+    middle: ReactNode;
+    lower: ReactNode;
+    signal: string;
+  }[] = [];
+
+  selectedCandles.forEach((candle, idx) => {
+    options.addCandle(indicator, candle);
+    const result = indicator.isStable ? indicator.getResult() : null;
+    const signal = indicator.getSignal?.() ?? {hasChanged: false, state: 'UNKNOWN'};
+
+    chartDataUpper.push({x: idx + 1, y: result?.upper ?? null});
+    chartDataMiddle.push({x: idx + 1, y: result?.middle ?? null});
+    chartDataLower.push({x: idx + 1, y: result?.lower ?? null});
+
+    priceData.push(collectPriceData(candle, idx));
+
+    sampleValues.push({
+      close: Number(candle.close),
+      date: formatDate(candle.openTimeInISO),
+      lower: result ? result.lower.toFixed(2) : <NotAvailable />,
+      middle: result ? result.middle.toFixed(2) : <NotAvailable />,
+      period: idx + 1,
+      signal: signal.state,
+      upper: result ? result.upper.toFixed(2) : <NotAvailable />,
+    });
+  });
+
+  return (
+    <div className="space-y-6">
+      <div className="demo-card">
+        <HighchartsChart
+          options={{
+            chart: {backgroundColor: 'transparent', height: 300, type: 'line'},
+            credits: {enabled: false},
+            legend: {enabled: true, itemStyle: {color: '#e2e8f0'}},
+            plotOptions: {line: {lineWidth: 2, marker: {enabled: true, radius: 3}}},
+            series: [
+              {
+                color: '#ef4444',
+                data: chartDataUpper.map(point => [point.x, point.y]),
+                marker: {fillColor: '#ef4444'},
+                name: 'Upper',
+                type: 'line',
+              },
+              {
+                color: config.color,
+                data: chartDataMiddle.map(point => [point.x, point.y]),
+                marker: {fillColor: config.color},
+                name: 'Middle',
+                type: 'line',
+              },
+              {
+                color: '#10b981',
+                data: chartDataLower.map(point => [point.x, point.y]),
+                marker: {fillColor: '#10b981'},
+                name: 'Lower',
+                type: 'line',
+              },
+            ],
+            title: {
+              style: {color: '#e2e8f0', fontSize: '16px', fontWeight: '600'},
+              text: `${options.label} (${options.paramString})`,
+            },
+            tooltip: {
+              backgroundColor: '#1e293b',
+              borderColor: '#475569',
+              formatter: createSharedTooltipFormatter(),
+              shared: true,
+              style: {color: '#e2e8f0'},
+            },
+            xAxis: {
+              gridLineColor: '#334155',
+              labels: {style: {color: '#94a3b8'}},
+              title: {style: {color: '#94a3b8'}, text: 'Period'},
+            },
+            yAxis: {
+              gridLineColor: '#334155',
+              labels: {style: {color: '#94a3b8'}},
+              title: {style: {color: '#94a3b8'}, text: 'Price'},
+            },
+          }}
+        />
+      </div>
+
+      <PriceChart title="Input Prices" data={priceData} />
+
+      <CollapsibleCard title="All Sample Values">
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b demo-divider">
+                <th className="text-left py-2 px-3 demo-muted font-medium">Period</th>
+                <th className="text-left py-2 px-3 demo-muted font-medium">Date</th>
+                <th className="text-left py-2 px-3 demo-muted font-medium">Close</th>
+                <th className="text-left py-2 px-3 demo-muted font-medium">Upper</th>
+                <th className="text-left py-2 px-3 demo-muted font-medium">Middle</th>
+                <th className="text-left py-2 px-3 demo-muted font-medium">Lower</th>
+                <th className="text-left py-2 px-3 demo-muted font-medium">Signal</th>
+              </tr>
+            </thead>
+            <tbody>
+              {sampleValues.map((row, idx) => (
+                <tr key={idx} className="border-b demo-divider">
+                  <td className="py-2 px-3 demo-text font-mono">{row.period}</td>
+                  <td className="py-2 px-3 demo-text">{row.date}</td>
+                  <td className="py-2 px-3 demo-text">${row.close.toFixed(2)}</td>
+                  <td className="py-2 px-3 demo-text font-mono">{row.upper}</td>
+                  <td className="py-2 px-3 demo-text font-mono">{row.middle}</td>
+                  <td className="py-2 px-3 demo-text font-mono">{row.lower}</td>
+                  <td className="py-2 px-3">
+                    <SignalBadge signal={row.signal} />
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </CollapsibleCard>
+    </div>
+  );
+};

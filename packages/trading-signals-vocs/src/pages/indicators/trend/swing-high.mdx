@@ -1,0 +1,25 @@
+---
+title: 'SwingHigh'
+description: 'Swing High Detector'
+---
+
+import {IndicatorPageDemo} from '../../../components/IndicatorPageDemo';
+
+# Swing High Detector (SwingHigh)
+
+Detects symmetric pivot highs (fractal pivots). A candle is confirmed as a swing high once the configured number of candles on each side print strictly lower highs. Commonly used to mark resistance and breakout targets.
+
+## Live Demo
+
+Pick a market regime to see how SwingHigh(5) reacts:
+
+<IndicatorPageDemo category="trend" id="swing-high" />
+
+## Usage
+
+```ts twoslash
+import {SwingHigh, SwingLookback} from 'trading-signals';
+
+// SwingHigh yields results once 5 inputs have been added
+const swingHigh = new SwingHigh({lookback: SwingLookback.BILL_WILLIAMS});
+```

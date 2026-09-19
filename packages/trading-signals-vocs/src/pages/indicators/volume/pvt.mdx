@@ -1,0 +1,25 @@
+---
+title: 'PVT'
+description: 'Price Volume Trend'
+---
+
+import {IndicatorPageDemo} from '../../../components/IndicatorPageDemo';
+
+# Price Volume Trend (PVT)
+
+Cumulative indicator that adds a proportional amount of volume based on percentage price change. More sensitive than OBV because it weights volume by price change rather than adding full volume.
+
+## Live Demo
+
+Pick a market regime to see how PVT(2) reacts:
+
+<IndicatorPageDemo category="volume" id="pvt" />
+
+## Usage
+
+```ts twoslash
+import {PVT} from 'trading-signals';
+
+// PVT yields results once 2 inputs have been added
+const pvt = new PVT();
+```

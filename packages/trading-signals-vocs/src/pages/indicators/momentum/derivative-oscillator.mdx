@@ -1,0 +1,25 @@
+---
+title: 'DOSC'
+description: 'Derivative Oscillator'
+---
+
+import {IndicatorPageDemo} from '../../../components/IndicatorPageDemo';
+
+# Derivative Oscillator (DOSC)
+
+Constance Brown’s histogram of a double smoothed RSI: the RSI is filtered through two EMAs and the plotted value is its distance from a simple moving average signal line — the MACD construction applied to the RSI. Readings above zero signal bullish momentum, below zero bearish momentum, and divergences from price warn of exhaustion.
+
+## Live Demo
+
+Pick a market regime to see how DOSC(29) reacts:
+
+<IndicatorPageDemo category="momentum" id="derivative-oscillator" />
+
+## Usage
+
+```ts twoslash
+import {DerivativeOscillator} from 'trading-signals';
+
+// DerivativeOscillator yields results once 29 inputs have been added
+const derivativeOscillator = new DerivativeOscillator();
+```

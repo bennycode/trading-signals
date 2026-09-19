@@ -1,0 +1,25 @@
+---
+title: 'PSL'
+description: 'Psychological Line'
+---
+
+import {IndicatorPageDemo} from '../../../components/IndicatorPageDemo';
+
+# Psychological Line (PSL)
+
+Measures crowd sentiment as the percentage of the last 12 bars that closed above their previous close. Readings of 75 or above indicate overbought, 25 or below indicate oversold — the conventional bands on the Asian trading platforms where the indicator (also known as PSY) is a standard.
+
+## Live Demo
+
+Pick a market regime to see how PSL(12) reacts:
+
+<IndicatorPageDemo category="momentum" id="psl" />
+
+## Usage
+
+```ts twoslash
+import {PSL} from 'trading-signals';
+
+// PSL yields results once 13 inputs have been added
+const psl = new PSL();
+```

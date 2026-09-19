@@ -1,0 +1,25 @@
+---
+title: 'HigherLowTrail'
+description: 'Higher-Low Trailing Stop'
+---
+
+import {IndicatorPageDemo} from '../../../components/IndicatorPageDemo';
+
+# Higher-Low Trailing Stop (HigherLowTrail)
+
+Tracks a progressively rising stop-loss level by detecting one-sided pullback lows. Unlike a symmetric swing low, only right-side confirmation is required, so the trail responds faster. In monotonic mode (the default), the emitted level only ever rises.
+
+## Live Demo
+
+Pick a market regime to see how HigherLowTrail(2) reacts:
+
+<IndicatorPageDemo category="trend" id="higher-low-trail" />
+
+## Usage
+
+```ts twoslash
+import {HigherLowTrail} from 'trading-signals';
+
+// HigherLowTrail yields results once 2 inputs have been added
+const higherLowTrail = new HigherLowTrail({lookback: 1});
+```

@@ -1,0 +1,25 @@
+---
+title: 'WaveTrend'
+description: 'WaveTrend Oscillator'
+---
+
+import {IndicatorPageDemo} from '../../../components/IndicatorPageDemo';
+
+# WaveTrend Oscillator (WaveTrend)
+
+WaveTrend Oscillator
+
+## Live Demo
+
+Pick a market regime to see how WaveTrend(21) reacts:
+
+<IndicatorPageDemo category="momentum" id="wavetrend" />
+
+## Usage
+
+```ts twoslash
+import {WaveTrend} from 'trading-signals';
+
+// WaveTrend yields results once 21 inputs have been added
+const waveTrend = new WaveTrend();
+```

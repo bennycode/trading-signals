@@ -1,0 +1,25 @@
+---
+title: 'AO'
+description: 'Awesome Oscillator'
+---
+
+import {IndicatorPageDemo} from '../../../components/IndicatorPageDemo';
+
+# Awesome Oscillator (AO)
+
+Measures market momentum using the difference between a 5-period and 34-period simple moving average of the bar's midpoints.
+
+## Live Demo
+
+Pick a market regime to see how AO(34) reacts:
+
+<IndicatorPageDemo category="momentum" id="ao" />
+
+## Usage
+
+```ts twoslash
+import {AO} from 'trading-signals';
+
+// AO yields results once 34 inputs have been added
+const ao = new AO(5, 34);
+```

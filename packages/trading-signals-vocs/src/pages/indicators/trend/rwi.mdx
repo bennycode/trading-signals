@@ -1,0 +1,25 @@
+---
+title: 'Random Walk Index'
+description: 'Random Walk Index'
+---
+
+import {IndicatorPageDemo} from '../../../components/IndicatorPageDemo';
+
+# Random Walk Index
+
+Compares how far price actually travelled against how far a random walk would drift. Readings above 1 mark non-random, trending movement; the greater line names the side in control.
+
+## Live Demo
+
+Pick a market regime to see how Random Walk Index(14) reacts:
+
+<IndicatorPageDemo category="trend" id="rwi" />
+
+## Usage
+
+```ts twoslash
+import {RandomWalkIndex} from 'trading-signals';
+
+// RandomWalkIndex yields results once 15 inputs have been added
+const randomWalkIndex = new RandomWalkIndex(14);
+```

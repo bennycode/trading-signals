@@ -1,0 +1,105 @@
+import {useEffect, useState} from 'react';
+import {CodeBlock} from './CodeBlock';
+import {DemoCard} from './DemoCard';
+
+export interface IndicatorExample {
+  name: string;
+  description: string;
+  code: string;
+  inputValues: number[];
+  calculate: (values: number[]) => {result: string | null; allResults: {value: number; result: string | null}[]};
+}
+
+export default function IndicatorDemo({example}: {example: IndicatorExample}) {
+  const [customInput, setCustomInput] = useState('');
+  const [values, setValues] = useState<number[]>(example.inputValues);
+  const [currentResult, setCurrentResult] = useState<string | null>(null);
+  const [allResults, setAllResults] = useState<{value: number; result: string | null}[]>([]);
+
+  useEffect(() => {
+    const {allResults, result} = example.calculate(values);
+    setCurrentResult(result);
+    setAllResults(allResults);
+  }, [values, example]);
+
+  const handleAddValue = () => {
+    const newValue = parseFloat(customInput);
+    if (!isNaN(newValue)) {
+      setValues([...values, newValue]);
+      setCustomInput('');
+    }
+  };
+
+  const handleReset = () => {
+    setValues(example.inputValues);
+    setCustomInput('');
+  };
+
+  const handleKeyPress = (event: React.KeyboardEvent) => {
+    if (event.key === 'Enter') {
+      handleAddValue();
+    }
+  };
+
+  return (
+    <DemoCard name={example.name} description={example.description}>
+      {/* Interactive Demo */}
+      <div>
+        <h4 className="text-sm font-semibold demo-text mb-3">Interactive Demo</h4>
+
+        {/* Input Controls */}
+        <div className="flex gap-2 mb-4">
+          <input
+            type="number"
+            value={customInput}
+            onChange={event => setCustomInput(event.target.value)}
+            onKeyPress={handleKeyPress}
+            placeholder="Enter a value"
+            className="flex-1 px-3 py-2 demo-card demo-text text-sm focus:outline-none focus:border-blue-500"
+          />
+          <button
+            onClick={handleAddValue}
+            className="px-4 py-2 bg-blue-600 demo-heading rounded text-sm hover:bg-blue-700 transition-colors">
+            Add
+          </button>
+          <button
+            onClick={handleReset}
+            className="px-4 py-2 bg-(--demo-accent) text-white rounded text-sm hover:opacity-90 transition-colors">
+            Reset
+          </button>
+        </div>
+
+        {/* Current Result */}
+        <div className="demo-card mb-4">
+          <div className="text-xs demo-muted mb-1">Current Result:</div>
+          <div className="text-2xl font-mono font-bold text-green-400">{currentResult ?? 'Not enough data'}</div>
+        </div>
+
+        {/* Value History */}
+        <div className="demo-card max-h-60 overflow-y-auto">
+          <div className="text-xs demo-muted mb-2">Values & Results ({allResults.length} total):</div>
+          <div className="space-y-1">
+            {allResults.map((item, idx) => (
+              <div
+                key={idx}
+                className="flex justify-between items-center text-sm py-1 border-b demo-divider last:border-0">
+                <span className="demo-text font-mono">
+                  #{idx + 1}: {item.value}
+                </span>
+                <span className={`font-mono ${item.result ? 'text-green-500' : 'demo-muted'}`}>
+                  {item.result ?? '—'}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Code Example */}
+      <div>
+        <h4 className="text-sm font-semibold demo-text mb-3">Code Example</h4>
+        <CodeBlock code={example.code} size="xs" />
+      </div>
+    </DemoCard>
+  );
+}

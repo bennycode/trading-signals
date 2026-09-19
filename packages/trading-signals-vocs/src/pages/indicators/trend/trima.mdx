@@ -1,0 +1,25 @@
+---
+title: 'TRIMA'
+description: 'Triangular Moving Average'
+---
+
+import {IndicatorPageDemo} from '../../../components/IndicatorPageDemo';
+
+# Triangular Moving Average (TRIMA)
+
+Weights the middle of the interval most heavily, tapering off towards the oldest and newest prices — equivalent to smoothing an SMA with a second SMA. Filters out most short-lived noise at the cost of extra lag.
+
+## Live Demo
+
+Pick a market regime to see how TRIMA(10) reacts:
+
+<IndicatorPageDemo category="trend" id="trima" />
+
+## Usage
+
+```ts twoslash
+import {TRIMA} from 'trading-signals';
+
+// TRIMA yields results once 10 inputs have been added
+const trima = new TRIMA(10);
+```

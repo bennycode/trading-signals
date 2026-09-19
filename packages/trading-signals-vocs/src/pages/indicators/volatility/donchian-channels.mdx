@@ -1,0 +1,25 @@
+---
+title: 'Donchian Channels'
+description: 'Donchian Channels'
+---
+
+import {IndicatorPageDemo} from '../../../components/IndicatorPageDemo';
+
+# Donchian Channels
+
+Donchian Channels
+
+## Live Demo
+
+Pick a market regime to see how Donchian Channels(20) reacts:
+
+<IndicatorPageDemo category="volatility" id="donchian-channels" />
+
+## Usage
+
+```ts twoslash
+import {DonchianChannels} from 'trading-signals';
+
+// DonchianChannels yields results once 20 inputs have been added
+const donchianChannels = new DonchianChannels(20);
+```

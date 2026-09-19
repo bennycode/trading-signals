@@ -1,0 +1,25 @@
+---
+title: 'MAD'
+description: 'Mean Absolute Deviation'
+---
+
+import {IndicatorPageDemo} from '../../../components/IndicatorPageDemo';
+
+# Mean Absolute Deviation (MAD)
+
+Average absolute deviation from the mean. Measures the average distance between each data point and the mean of the dataset.
+
+## Live Demo
+
+Pick a market regime to see how MAD(10) reacts:
+
+<IndicatorPageDemo category="volatility" id="mad" />
+
+## Usage
+
+```ts twoslash
+import {MAD} from 'trading-signals';
+
+// MAD yields results once 10 inputs have been added
+const mad = new MAD(10);
+```

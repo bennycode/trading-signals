@@ -1,0 +1,25 @@
+---
+title: 'TRIX'
+description: 'Triple Smoothed EMA Rate of Change'
+---
+
+import {IndicatorPageDemo} from '../../../components/IndicatorPageDemo';
+
+# Triple Smoothed EMA Rate of Change (TRIX)
+
+The percent change of a triple smoothed EMA. The smoothing filters out moves shorter than the interval, so zero-line crossings whipsaw less than raw momentum oscillators.
+
+## Live Demo
+
+Pick a market regime to see how TRIX(9) reacts:
+
+<IndicatorPageDemo category="momentum" id="trix" />
+
+## Usage
+
+```ts twoslash
+import {TRIX} from 'trading-signals';
+
+// TRIX yields results once 26 inputs have been added
+const trix = new TRIX(9);
+```

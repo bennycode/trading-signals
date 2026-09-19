@@ -1,0 +1,25 @@
+---
+title: 'Chande Kroll Stop'
+description: 'Chande Kroll Stop'
+---
+
+import {IndicatorPageDemo} from '../../../components/IndicatorPageDemo';
+
+# Chande Kroll Stop
+
+Two volatility-adjusted trailing stops derived in two passes: a preliminary short stop hangs one ATR below the highest high, a preliminary long stop sits one ATR above the lowest low, and the final lines take the most conservative preliminary stop of the last nine bars. Price crossing below the long stop exits longs; price crossing above the short stop exits shorts.
+
+## Live Demo
+
+Pick a market regime to see how Chande Kroll Stop(10) reacts:
+
+<IndicatorPageDemo category="trend" id="chande-kroll-stop" />
+
+## Usage
+
+```ts twoslash
+import {ChandeKrollStop} from 'trading-signals';
+
+// ChandeKrollStop yields results once 18 inputs have been added
+const chandeKrollStop = new ChandeKrollStop();
+```

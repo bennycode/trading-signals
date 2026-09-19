@@ -1,0 +1,25 @@
+---
+title: 'CMF'
+description: 'Chaikin Money Flow'
+---
+
+import {IndicatorPageDemo} from '../../../components/IndicatorPageDemo';
+
+# Chaikin Money Flow (CMF)
+
+Measures buying and selling pressure over a period. Oscillates between -1 and +1. Values above 0 indicate accumulation (buying pressure), below 0 indicate distribution (selling pressure).
+
+## Live Demo
+
+Pick a market regime to see how CMF(20) reacts:
+
+<IndicatorPageDemo category="volume" id="cmf" />
+
+## Usage
+
+```ts twoslash
+import {CMF} from 'trading-signals';
+
+// CMF yields results once 20 inputs have been added
+const cmf = new CMF(20);
+```

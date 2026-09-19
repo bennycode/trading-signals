@@ -1,0 +1,25 @@
+---
+title: 'Williams %R'
+description: 'Williams Percent Range'
+---
+
+import {IndicatorPageDemo} from '../../../components/IndicatorPageDemo';
+
+# Williams Percent Range (Williams %R)
+
+Measures overbought and oversold levels on an inverted scale from 0 to -100. Values from 0 to -20 indicate overbought conditions, while -80 to -100 indicate oversold conditions.
+
+## Live Demo
+
+Pick a market regime to see how Williams %R(14) reacts:
+
+<IndicatorPageDemo category="momentum" id="willr" />
+
+## Usage
+
+```ts twoslash
+import {WilliamsR} from 'trading-signals';
+
+// WilliamsR yields results once 14 inputs have been added
+const williamsR = new WilliamsR(14);
+```

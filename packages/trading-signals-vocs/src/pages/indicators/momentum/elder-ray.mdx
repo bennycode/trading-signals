@@ -1,0 +1,25 @@
+---
+title: 'Elder Ray'
+description: 'Elder Ray Index'
+---
+
+import {IndicatorPageDemo} from '../../../components/IndicatorPageDemo';
+
+# Elder Ray Index (Elder Ray)
+
+Elder Ray Index
+
+## Live Demo
+
+Pick a market regime to see how Elder Ray(13) reacts:
+
+<IndicatorPageDemo category="momentum" id="elder-ray" />
+
+## Usage
+
+```ts twoslash
+import {ElderRay} from 'trading-signals';
+
+// ElderRay yields results once 13 inputs have been added
+const elderRay = new ElderRay(13);
+```
