@@ -29,13 +29,15 @@ export interface AlpacaMarketDataOptions {
  * @see https://docs.alpaca.markets/docs/real-time-crypto-pricing-data
  */
 export class AlpacaMarketData extends MarketDataSource {
-  static readonly STOCK_STREAM_SOURCE = 'v2/iex';
+  /** The free plan streams the IEX exchange; Algo Trader Plus streams the consolidated SIP feed. */
+  static readonly STOCK_STREAM_SOURCE_IEX = 'v2/iex';
+  static readonly STOCK_STREAM_SOURCE_SIP = 'v2/sip';
   static readonly CRYPTO_STREAM_SOURCE = 'v1beta3/crypto/us';
 
   readonly #alpacaAPI: AlpacaAPI;
-  readonly #SUBSCRIPTION_PLAN = 'iex' as const;
   readonly #connectStream: (source: string) => Promise<AlpacaConnection>;
   readonly #candleTopics = new Map<string, {symbol: string; connectionId: string}>();
+  #stockStreamSource: Promise<string> | undefined;
 
   constructor(options: AlpacaMarketDataOptions) {
     super();
@@ -96,7 +98,7 @@ export class AlpacaMarketData extends MarketDataSource {
     const topicId = randomUUID();
     const isCrypto = await isAlpacaCryptoSymbol(this.#alpacaAPI, pair);
     const symbol = createAlpacaSymbol(pair, isCrypto);
-    const source = isCrypto ? AlpacaMarketData.CRYPTO_STREAM_SOURCE : AlpacaMarketData.STOCK_STREAM_SOURCE;
+    const source = isCrypto ? AlpacaMarketData.CRYPTO_STREAM_SOURCE : await this.#resolveStockStreamSource(symbol);
     const cb = new CandleBatcher(intervalInMillis);
     const connection = await this.#connectStream(source);
     const smallestInterval = ms('1m');
@@ -137,9 +139,22 @@ export class AlpacaMarketData extends MarketDataSource {
     this.#candleTopics.clear();
   }
 
+  /*
+   * Historical and latest endpoints pick the best feed the subscription allows when `feed` is
+   * omitted, but a stream URL has to name one, so the entitlement is probed once: asking a latest
+   * endpoint for SIP fails without the subscription. Anything else going wrong also falls back to
+   * IEX, which every account can stream.
+   */
+  async #resolveStockStreamSource(symbol: string): Promise<string> {
+    this.#stockStreamSource ??= this.#alpacaAPI
+      .getStockBarsLatest({feed: 'sip', symbols: symbol})
+      .then(() => AlpacaMarketData.STOCK_STREAM_SOURCE_SIP)
+      .catch(() => AlpacaMarketData.STOCK_STREAM_SOURCE_IEX);
+    return this.#stockStreamSource;
+  }
+
   #fetchLatestStockBars(pair: TradingPair) {
     return this.#alpacaAPI.getStockBarsLatest({
-      feed: this.#SUBSCRIPTION_PLAN,
       symbols: createAlpacaSymbol(pair, false),
     });
   }
@@ -167,7 +182,6 @@ export class AlpacaMarketData extends MarketDataSource {
     }
     return this.#alpacaAPI.getStockBars({
       end: request.startTimeLastCandle,
-      feed: this.#SUBSCRIPTION_PLAN,
       limit: 10_000,
       page_token: pageToken,
       start: request.startTimeFirstCandle,
