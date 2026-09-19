@@ -2,6 +2,10 @@
 pre-commit:
   commands:
     oxc:
+      # A merge or rebase stages code that was already linted on its own branch.
+      skip:
+        - merge
+        - rebase
       run: |
         npx oxlint --fix --no-error-on-unmatched-pattern {staged_files}
         npx oxfmt --no-error-on-unmatched-pattern {staged_files}
