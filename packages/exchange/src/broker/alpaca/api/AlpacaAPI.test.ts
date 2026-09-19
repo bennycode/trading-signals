@@ -144,3 +144,24 @@ describe('postOrder', () => {
     expect(placedOrder.id).toBe('order-1');
   });
 });
+
+describe('AlpacaAPI hosts', () => {
+  const createdBaseURLs = (usePaperTrading: boolean) => {
+    const createSpy = vi.spyOn(axios, 'create');
+    // Tests run concurrently and share the spy; construction is synchronous, so its calls are contiguous.
+    const before = createSpy.mock.calls.length;
+    new AlpacaAPI({apiKey: 'test', apiSecret: 'test', usePaperTrading});
+    return createSpy.mock.calls.slice(before).map(([config]) => config?.baseURL);
+  };
+
+  it('trades on the paper host but reads market data from the regular data host in paper mode', () => {
+    expect(createdBaseURLs(true), 'the sandbox data host is for Broker API partners and rejects paper keys').toEqual([
+      'https://paper-api.alpaca.markets',
+      'https://data.alpaca.markets',
+    ]);
+  });
+
+  it('uses the live hosts in live mode', () => {
+    expect(createdBaseURLs(false)).toEqual(['https://api.alpaca.markets', 'https://data.alpaca.markets']);
+  });
+});

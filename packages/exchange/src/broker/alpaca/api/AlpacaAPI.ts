@@ -73,9 +73,13 @@ export class AlpacaAPI {
     axiosRetry(this.#tradingClient, retryConfig);
     simplifyError(this.#tradingClient);
 
-    // @see https://docs.alpaca.markets/us/docs/market-data-faq#checklist-for-broker-partners
+    /*
+     * Paper and live accounts read market data from the same host. The sandbox data host is for
+     * Broker API partners and rejects Trading API keys with a 401.
+     * @see https://docs.alpaca.markets/us/docs/historical-api
+     */
     this.#marketDataClient = axios.create({
-      baseURL: options.usePaperTrading ? 'https://data.sandbox.alpaca.markets' : 'https://data.alpaca.markets',
+      baseURL: 'https://data.alpaca.markets',
       headers,
     });
     axiosRetry(this.#marketDataClient, retryConfig);
