@@ -44,7 +44,13 @@ export class BacktestExecutor {
     // The exact same advice→order translation a live TradingSession uses
     const adviceExecutor = new AdviceExecutor({broker: exchange, feeRates, pair: tradingPair, tradingRules});
 
-    // Same call TradingSession.start() makes before the first candle, with the broker as market.
+    /*
+     * Same call TradingSession.start() makes before the first candle, with the broker as market.
+     * A live session starts "now"; a backtest starts when its first candle opens.
+     */
+    if (candles[0]) {
+      exchange.setStartTime(candles[0].openTimeInISO);
+    }
     await strategy.init?.(exchange, tradingPair);
 
     const trades: BacktestTrade[] = [];

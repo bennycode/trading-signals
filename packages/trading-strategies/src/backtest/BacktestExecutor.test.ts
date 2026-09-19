@@ -959,5 +959,29 @@ describe('BacktestExecutor', () => {
       expect(strategy.initArgs?.[0], 'the broker mock stands in for the live broker as market').toBe(broker);
       expect(strategy.initArgs?.[1]).toBe(tradingPair);
     });
+
+    it('sets the broker clock to the first candle before init runs', async () => {
+      const broker = createMockExchange();
+      let timeAtInit: string | undefined;
+      class ClockProbeStrategy extends Strategy {
+        static override NAME = 'ClockProbe';
+
+        override async init(): Promise<void> {
+          timeAtInit = await broker.getTime();
+        }
+
+        protected override async processCandle(): Promise<OrderAdvice | void> {}
+      }
+      const candles = [
+        createCandle({close: '105', open: '100', openTimeInISO: '2025-03-01T09:30:00.000Z'}),
+        createCandle({close: '110', open: '105', openTimeInISO: '2025-03-01T09:31:00.000Z'}),
+      ];
+
+      await new BacktestExecutor({broker, candles, strategy: new ClockProbeStrategy(), tradingPair}).execute();
+
+      expect(timeAtInit, 'a backtest starts when its first candle opens, not at the real current time').toBe(
+        '2025-03-01T09:30:00.000Z'
+      );
+    });
   });
 });

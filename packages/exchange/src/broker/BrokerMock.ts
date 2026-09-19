@@ -42,6 +42,7 @@ export abstract class BrokerMock extends Broker {
   readonly #orderHolds = new Map<string, {amount: Big; currency: string}>();
   readonly #fills: Fill[] = [];
   #currentCandle: Candle | undefined;
+  #startTime: string | undefined;
   #nextOrderId = 1;
   readonly #orderTopics = new Set<string>();
   readonly #slippageRate: Big;
@@ -446,8 +447,16 @@ export abstract class BrokerMock extends Broker {
     return this.#currentCandle;
   }
 
+  /**
+   * Sets the clock for the time before the first candle is processed, e.g. to the start of a
+   * backtest window, so a strategy warming up at that point is not handed the real current time.
+   */
+  setStartTime(timeInISO: string) {
+    this.#startTime = timeInISO;
+  }
+
   async getTime() {
-    return this.#currentCandle?.openTimeInISO ?? new Date().toISOString();
+    return this.#currentCandle?.openTimeInISO ?? this.#startTime ?? new Date().toISOString();
   }
 
   async getOpenOrders(pair: TradingPair) {

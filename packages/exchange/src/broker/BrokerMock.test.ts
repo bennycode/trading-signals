@@ -71,6 +71,27 @@ function createExchange(baseAmount: string, counterAmount: string, slippage?: Br
 }
 
 describe('BrokerMock', () => {
+  describe('getTime', () => {
+    it('reports the start time until the first candle, then the candle time', async () => {
+      const exchange = createExchange('0', '1000');
+      exchange.setStartTime('2025-01-01T00:00:00.000Z');
+
+      expect(await exchange.getTime(), 'before any candle, e.g. while a strategy warms up').toBe(
+        '2025-01-01T00:00:00.000Z'
+      );
+
+      exchange.processCandle(
+        createCandle({
+          close: '100',
+          open: '100',
+          openTimeInISO: '2025-01-01T00:01:00.000Z',
+          openTimeInMillis: 1735689660000,
+        })
+      );
+      expect(await exchange.getTime()).toBe('2025-01-01T00:01:00.000Z');
+    });
+  });
+
   describe('market orders', () => {
     it('fills market buy order at the next candle open price', async () => {
       const exchange = createExchange('0', '10000');
