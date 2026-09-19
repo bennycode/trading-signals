@@ -9,6 +9,33 @@ const REGIME_BADGE: Record<MarketRegime, string> = {
   sideways: 'bg-slate-500/15 demo-muted',
 };
 
+const PRICE_FIELDS = ['open', 'high', 'low', 'close', 'volume'] as const;
+const BIG_NUMBER = /^-?(\d+(\.\d*)?|\.\d+)(e[+-]?\d+)?$/i;
+
+/**
+ * The candle schema only checks structure, so prices like "abc" pass it. The demos would plot
+ * those as NaN and the backtester would throw inside Big, so reject them here with a clear message.
+ */
+function findCandleProblem(candles: Candle[]): string | null {
+  for (const [idx, candle] of candles.entries()) {
+    for (const field of PRICE_FIELDS) {
+      const value = candle[field];
+      // Big's own number pattern (rejects "", "abc", "0x10"), plus finite for the charts (rejects "1e999").
+      if (!BIG_NUMBER.test(value) || !Number.isFinite(Number(value))) {
+        return `${idx}.${field}: "${value}" is not a number`;
+      }
+    }
+    if (Number.isNaN(Date.parse(candle.openTimeInISO))) {
+      return `${idx}.openTimeInISO: "${candle.openTimeInISO}" is not a valid date`;
+    }
+    const previous = candles[idx - 1];
+    if (previous && candle.openTimeInMillis <= previous.openTimeInMillis) {
+      return `${idx}.openTimeInMillis: candles must be in chronological order`;
+    }
+  }
+  return null;
+}
+
 interface Dataset {
   id: string;
   name: string;
@@ -61,6 +88,11 @@ export function DatasetSelector({
         }
         if (result.data.length === 0) {
           setUploadError('File contains no candles');
+          return;
+        }
+        const problem = findCandleProblem(result.data);
+        if (problem) {
+          setUploadError(problem);
           return;
         }
         const name = file.name.replace(/\.json$/i, '');
