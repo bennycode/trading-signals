@@ -11,14 +11,14 @@
       "entry": ["src/start/**/*.ts"]
     },
     "packages/trading-signals-docs": {
-      "entry": ["e2e/**/*.ts"]
-    },
-    "packages/trading-signals-vocs": {
       "entry": [
         "vocs.config.ts",
+        "playwright.config.ts",
+        "e2e/**/*.ts",
         "scripts/stubs/highcharts-react.ts",
         "src/components/BacktestApp.tsx",
         "src/components/IndicatorPageDemo.tsx",
+        "src/components/LegacyHashRedirect.tsx",
         "src/components/PackageGrid.tsx",
         "src/components/UtilitiesDemo.tsx",
         "src/pages/_root.css",

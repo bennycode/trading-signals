@@ -30,18 +30,6 @@ jobs:
           cache: 'npm'
       - name: 'Setup Pages'
         uses: actions/configure-pages@v6
-        with:
-          static_site_generator: next
-      - name: 'Restore Cache'
-        uses: actions/cache@v6
-        with:
-          path: |
-            packages/trading-signals-docs/.next/cache
-          # Generate a new cache whenever packages or source files change.
-          key: ${{ runner.os }}-nextjs-${{ hashFiles('**/package-lock.json', '**/yarn.lock') }}-${{ hashFiles('**.[jt]s', '**.[jt]sx') }}
-          # If source files changed but packages didn't, rebuild from a prior cache.
-          restore-keys: |
-            ${{ runner.os }}-nextjs-${{ hashFiles('**/package-lock.json', '**/yarn.lock') }}-
       - name: 'Install Dependencies'
         run: npm ci
       - name: 'Build Documentation'
@@ -49,7 +37,7 @@ jobs:
       - name: 'Upload Artifact'
         uses: actions/upload-pages-artifact@v5
         with:
-          path: packages/trading-signals-docs/out
+          path: packages/trading-signals-docs/dist/public
   deploy:
     environment:
       name: github-pages

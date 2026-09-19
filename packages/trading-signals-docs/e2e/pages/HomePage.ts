@@ -7,10 +7,9 @@ export class HomePage {
     await this.page.goto('/');
   }
 
-  async openCategory(category: string): Promise<void> {
-    await this.page
-      .getByRole('link', {name: new RegExp(category)})
-      .first()
-      .click();
+  async openIndicator(category: string, name: string): Promise<void> {
+    const sidebar = this.page.getByRole('navigation');
+    await sidebar.getByRole('button', {name: category}).click();
+    await sidebar.getByRole('link', {exact: true, name}).click();
   }
 }

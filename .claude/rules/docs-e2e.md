@@ -5,11 +5,11 @@ paths:
 
 # Docs E2E (Playwright)
 
-Playwright lives at `packages/trading-signals-docs/e2e/`. Vitest excludes that folder; the two suites do not overlap.
+Playwright lives at `packages/trading-signals-docs/e2e/`. The docs package has no unit test runner; `npm test` there only typechecks.
 
 ## Write E2E only for cross-cutting behavior
 
-A spec earns an E2E slot only when the integration itself is the test — page navigation, hydration of client components, third-party widgets (Highcharts, etc.) actually rendering, or anything that needs a real browser to be meaningful. Anything that can be exercised with a mocked render belongs in the vitest unit suite (co-located `*.test.ts(x)` files next to the code under test).
+A spec earns an E2E slot only when the integration itself is the test — page navigation, hydration of client components, third-party widgets (Highcharts, etc.) actually rendering, or anything that needs a real browser to be meaningful. Logic that can be tested without a browser belongs in a unit test in the package that owns it (e.g. `trading-signals` or `trading-strategies`).
 
 ## Page objects are classes
 
@@ -39,7 +39,7 @@ npm run test:e2e        # headless
 npx playwright test --ui # interactive runner
 ```
 
-Playwright auto-starts `next dev` via the `webServer` config and reuses an existing dev server when one is already running locally. On CI the suite runs with 1 worker, 2 retries, JUnit reporter, and traces/screenshots on failure.
+Playwright serves the static build with `vocs preview` via the `webServer` config (so run `npm run build` first) and reuses a server that is already running locally. Testing the build rather than the dev server means a page missing from the output fails here the same way it would on GitHub Pages. On CI the suite runs with 1 worker, 2 retries, JUnit reporter, and traces/screenshots on failure.
 
 First-time setup on a fresh machine: `npx playwright install chromium`.
 
