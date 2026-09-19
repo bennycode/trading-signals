@@ -1,8 +1,6 @@
 {
   "compilerOptions": {
-    "allowJs": true,
     "forceConsistentCasingInFileNames": true,
-    "incremental": true,
     "isolatedModules": true,
     "jsx": "react-jsx",
     "lib": ["dom", "esnext"],
@@ -10,15 +8,13 @@
     "moduleResolution": "bundler",
     "noEmit": true,
     "noUnusedLocals": true,
-    "paths": {
-      "@/*": ["./*"]
-    },
     "resolveJsonModule": true,
     "skipLibCheck": true,
     "strict": true,
-    "target": "ES2020",
+    "target": "ES2022",
+    "types": ["node"],
     "esModuleInterop": true
   },
-  "exclude": ["eslint.config.ts", "node_modules"],
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx"]
+  "exclude": ["dist", "node_modules"],
+  "include": ["**/*.ts", "**/*.tsx"]
 }

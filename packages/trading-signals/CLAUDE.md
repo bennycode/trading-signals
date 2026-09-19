@@ -27,7 +27,7 @@ Reference implementation: [PR #1214 (MFI)](https://github.com/bennycode/trading-
    - Add a single-instance bidirectional `replace()` test asserting exact values for the original, replaced and restored results — the contract fixture only checks state equality, not the concrete numbers.
    - Cover every signal state the indicator can emit (`UNKNOWN`, `BULLISH`, `BEARISH`, `SIDEWAYS`) with its own test.
    - Cover behavioral edge cases so a mutated comparison operator fails the suite (e.g. tie-breaking of equal extremes in Aroon, zero total money flow in MFI).
-10. **Add a docs demo** — create `packages/trading-signals-docs/indicator-demos/<category>/<Class>.demo.tsx` exporting an `IndicatorConfig` and register it in that folder's `index.tsx` (the `indicators` array order drives the sidebar order; the config's `id` becomes the URL hash, e.g. `/indicators/momentum#mom`). The docs site consumes the built library, so preview with `npm run start:docs` from the repo root — it rebuilds the package first.
+10. **Add a docs demo** — create `packages/trading-signals-docs/src/indicator-demos/<category>/<Class>.demo.tsx` exporting an `IndicatorConfig` and register it in that folder's `index.tsx`. The config's `id` becomes the page URL, e.g. `/indicators/momentum/mom`. Run `npm run generate` in `packages/trading-signals-docs` to create the page and sidebar entry (the build also does this). The docs site consumes the built library, so preview with `npm run start:docs` from the repo root — it rebuilds the package first.
 
 # Coding Conventions
 
