@@ -36,16 +36,17 @@ export abstract class MarketDataSource extends EventEmitter {
 }
 
 /**
- * Fetch the `count` candles of the given interval that end with the one opening at
- * `lastOpenTimeInMillis`, oldest first. {@link MarketDataSource.getRecentCandles} uses it for the
- * present; a backtest uses it for the moment its first candle opens.
+ * Fetch the newest `count` candles of the given interval that open at or before
+ * `untilInMillis`, oldest first. The cutoff is any point in time, not necessarily a candle open:
+ * {@link MarketDataSource.getRecentCandles} passes the latest candle's open, while a backtest
+ * passes the moment its window starts, which can fall anywhere inside a candle.
  */
 export async function getCandlesUntil(
   source: Pick<MarketDataSource, 'getCandles'>,
   pair: TradingPair,
   count: number,
   intervalInMillis: number,
-  lastOpenTimeInMillis: number
+  untilInMillis: number
 ): Promise<Candle[]> {
   if (count <= 0) {
     return [];
@@ -61,7 +62,7 @@ export async function getCandlesUntil(
    */
   const MAX_ATTEMPTS = 8;
   let collected: Candle[] = [];
-  let windowEndInMillis = lastOpenTimeInMillis;
+  let windowEndInMillis = untilInMillis;
   let spanInMillis = intervalInMillis * count;
 
   for (let attempt = 0; attempt < MAX_ATTEMPTS && collected.length < count; attempt++) {
