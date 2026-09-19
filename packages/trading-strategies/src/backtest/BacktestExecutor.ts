@@ -29,7 +29,7 @@ export class BacktestExecutor {
   }
 
   async execute(): Promise<BacktestResult> {
-    const {broker: exchange, candles, strategy, tradingPair} = this.#config;
+    const {broker: exchange, candles, strategy, tradingPair, warmup} = this.#config;
 
     const initialBalances = await exchange.getAvailableBalances(tradingPair);
     const initialBaseBalance = initialBalances.base;
@@ -43,6 +43,21 @@ export class BacktestExecutor {
 
     // The exact same advice→order translation a live TradingSession uses
     const adviceExecutor = new AdviceExecutor({broker: exchange, feeRates, pair: tradingPair, tradingRules});
+
+    // Warm up before the first candle, like TradingSession.start(), without letting init see the backtest window.
+    const windowStart = candles[0]?.openTimeInMillis;
+    await strategy.init?.(
+      {
+        getRecentCandles: async (pair, count, intervalInMillis) => {
+          if (!warmup || windowStart === undefined) {
+            return [];
+          }
+          const history = await warmup.getRecentCandles(pair, count, intervalInMillis);
+          return history.filter(candle => candle.openTimeInMillis + candle.sizeInMillis <= windowStart);
+        },
+      },
+      tradingPair
+    );
 
     const trades: BacktestTrade[] = [];
     const skippedAdvices: BacktestSkippedAdvice[] = [];

@@ -111,10 +111,10 @@ const exchange = new AlpacaBrokerMock({
 });
 
 /*
- * 4. Warm up the strategy. With Alpaca credentials configured, warmup candles are fetched
- * live from just before the backtest window, so the warmup never sees the candles the
- * backtest replays. Without credentials (or when the fetch fails, e.g. for non-Alpaca
- * pairs), the file's own history is served instead — with the look-ahead that implies.
+ * 4. Warmup history for the strategy's init(). With Alpaca credentials configured, candles are
+ * fetched live from just before the backtest window. The file itself cannot serve as warmup: the
+ * executor only lets init see candles that closed before the window, so without credentials (or
+ * when the fetch fails, e.g. for non-Alpaca pairs) the strategy starts without history.
  */
 const alpacaApiKey = process.env.ALPACA_LIVE_API_KEY;
 const alpacaApiSecret = process.env.ALPACA_LIVE_API_SECRET;
@@ -144,31 +144,29 @@ const market: Pick<MarketDataSource, 'getRecentCandles'> = {
       }
     }
 
-    console.log('Warmup:    using the backtest file itself (includes the replayed window)');
-    return candles;
+    console.log('Warmup:    no pre-window history available, the strategy starts cold');
+    return [];
   },
 };
 
-await strategy.init(market, tradingPair);
+// 5. Run backtest (the executor calls the strategy's init() with the warmup first)
+const result = await new BacktestExecutor({
+  broker: exchange,
+  candles,
+  strategy,
+  tradingPair,
+  warmup: market,
+}).execute();
 
 if (strategy.config?.offset) {
-  console.log(`Auto-computed offset: ${strategy.config.offset} ${counter}`);
+  console.log(`Offset:          ${strategy.config.offset} ${counter}`);
 }
 
 if (strategy instanceof ScalpStrategy) {
   console.log(
     `Scalp-friendly (ER): ${strategy.scalpFriendly ? 'Yes' : 'No — stock is trending, strategy will not trade'}`
   );
-  console.log('---');
 }
-
-// 5. Run backtest
-const result = await new BacktestExecutor({
-  broker: exchange,
-  candles,
-  strategy,
-  tradingPair,
-}).execute();
 
 // 6. Print results
 const {performance} = result;
