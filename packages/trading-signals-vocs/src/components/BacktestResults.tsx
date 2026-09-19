@@ -26,7 +26,8 @@ function PerformanceCards({candles, result}: ResultProps) {
   const {performance} = result;
   const returnPct = Number(performance.returnPercentage.toFixed(2));
   const winRate = Number(performance.winRate.toFixed(1));
-  const hasCycles = result.trades.some(t => t.side === OrderSide.SELL);
+  // Every completed buy→sell cycle counts toward one of the streaks, so this is true exactly when a cycle exists.
+  const hasCycles = performance.maxWinStreak + performance.maxLossStreak > 0;
   const lossRate = hasCycles ? (100 - winRate).toFixed(1) : null;
   const pnl = Number(result.profitOrLoss.toFixed(2));
   const base = candles[0]?.base ?? 'Base';
@@ -299,22 +300,23 @@ function WinnerBadge() {
 }
 
 export function BacktestResults({baselineResult, candles, result}: BacktestResultsProps) {
-  const strategyWins = baselineResult
-    ? result.performance.returnPercentage.gte(baselineResult.performance.returnPercentage)
-    : null;
+  // 1 when the strategy beats the baseline, -1 when it trails, 0 on a tie (no winner shown).
+  const comparison = baselineResult
+    ? result.performance.returnPercentage.cmp(baselineResult.performance.returnPercentage)
+    : 0;
 
   return (
     <div className="space-y-6">
       <div>
         <h3 className="text-sm font-semibold demo-muted uppercase tracking-wider mb-3">
-          Selected Strategy{strategyWins === true && <WinnerBadge />}
+          Selected Strategy{comparison > 0 && <WinnerBadge />}
         </h3>
         <PerformanceCards result={result} candles={candles} />
       </div>
       {baselineResult && (
         <div>
           <h3 className="text-sm font-semibold demo-muted uppercase tracking-wider mb-3">
-            Buy &amp; Hold Baseline{strategyWins === false && <WinnerBadge />}
+            Buy &amp; Hold Baseline{comparison < 0 && <WinnerBadge />}
           </h3>
           <PerformanceCards result={baselineResult} candles={candles} />
         </div>
