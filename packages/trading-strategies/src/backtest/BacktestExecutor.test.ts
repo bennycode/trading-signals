@@ -1,5 +1,5 @@
 import Big from 'big.js';
-import {describe, expect, it, vi} from 'vitest';
+import {describe, expect, it} from 'vitest';
 import {AlpacaBrokerMock, OrderSide, OrderType} from '@typedtrader/exchange';
 import {AllAvailableAmount} from '../trader/index.js';
 import type {Candle, MarketDataSource, TradingRules} from '@typedtrader/exchange';
@@ -928,32 +928,18 @@ describe('BacktestExecutor', () => {
   });
 
   describe('strategy init', () => {
-    const MINUTE = 60_000;
-    const DAY = 24 * 60 * MINUTE;
-    const windowStart = Date.UTC(2025, 0, 1, 0, 10);
-    /** A candle opening `minutes` after the start of the backtest window (negative = before it). */
-    const candleAt = (minutes: number, sizeInMillis = MINUTE) =>
-      createCandle({
-        close: '100',
-        open: '100',
-        openTimeInISO: new Date(windowStart + minutes * MINUTE).toISOString(),
-        openTimeInMillis: windowStart + minutes * MINUTE,
-        sizeInMillis,
-      });
-    const runCandles = [candleAt(0), candleAt(1)];
-
-    /** Records when its init runs and which history it receives. */
-    class WarmupProbeStrategy extends Strategy {
-      static override NAME = 'WarmupProbe';
+    /** Records when its init runs and what it is handed. */
+    class InitProbeStrategy extends Strategy {
+      static override NAME = 'InitProbe';
       initCalls = 0;
       candlesBeforeInit: number | undefined;
-      warmupCandles: Candle[] | undefined;
+      initArgs: [Pick<MarketDataSource, 'getRecentCandles'>, TradingPair] | undefined;
       #candlesProcessed = 0;
 
       override async init(market: Pick<MarketDataSource, 'getRecentCandles'>, pair: TradingPair): Promise<void> {
         this.initCalls += 1;
         this.candlesBeforeInit = this.#candlesProcessed;
-        this.warmupCandles = await market.getRecentCandles(pair, 10, MINUTE);
+        this.initArgs = [market, pair];
       }
 
       protected override async processCandle(): Promise<OrderAdvice | void> {
@@ -961,43 +947,17 @@ describe('BacktestExecutor', () => {
       }
     }
 
-    const run = (strategy: Strategy, warmup?: BacktestConfig['warmup']) =>
-      new BacktestExecutor({
-        broker: createMockExchange(),
-        candles: runCandles,
-        strategy,
-        tradingPair,
-        warmup,
-      }).execute();
+    it('calls init once before the first candle with the broker and pair, like a live TradingSession', async () => {
+      const broker = createMockExchange();
+      const strategy = new InitProbeStrategy();
+      const candles = [createCandle({close: '105', open: '100'}), createCandle({close: '110', open: '105'})];
 
-    it('calls init once before the first candle, like a live TradingSession', async () => {
-      const strategy = new WarmupProbeStrategy();
-      await run(strategy);
+      await new BacktestExecutor({broker, candles, strategy, tradingPair}).execute();
 
       expect(strategy.initCalls).toBe(1);
       expect(strategy.candlesBeforeInit).toBe(0);
-    });
-
-    it('serves init only history that closed before the backtest window', async () => {
-      const preWindow = [candleAt(-2), candleAt(-1)];
-      const overlappingDay = candleAt(-1, DAY);
-      const warmup = {getRecentCandles: vi.fn<MarketDataSource['getRecentCandles']>()};
-      warmup.getRecentCandles.mockResolvedValue([...preWindow, overlappingDay, candleAt(0)]);
-      const strategy = new WarmupProbeStrategy();
-
-      await run(strategy, warmup);
-
-      expect(strategy.warmupCandles, 'a daily candle opening before the window still closes inside it').toEqual(
-        preWindow
-      );
-      expect(warmup.getRecentCandles).toHaveBeenCalledWith(tradingPair, 10, MINUTE);
-    });
-
-    it('gives init no history when no warmup is configured', async () => {
-      const strategy = new WarmupProbeStrategy();
-      await run(strategy);
-
-      expect(strategy.warmupCandles).toEqual([]);
+      expect(strategy.initArgs?.[0], 'the broker mock stands in for the live broker as market').toBe(broker);
+      expect(strategy.initArgs?.[1]).toBe(tradingPair);
     });
   });
 });

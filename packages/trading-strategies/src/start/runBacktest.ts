@@ -1,23 +1,11 @@
 import {readFile} from 'node:fs/promises';
 import {parseArgs} from 'node:util';
-import {config} from 'dotenv-defaults';
 import {z} from 'zod';
-import {AlpacaBrokerMock, AlpacaMarketData, CandleSchema, OrderType, TradingPair} from '@typedtrader/exchange';
-import type {Candle, MarketDataSource} from '@typedtrader/exchange';
+import {AlpacaBrokerMock, CandleSchema, OrderType, TradingPair} from '@typedtrader/exchange';
+import type {Candle} from '@typedtrader/exchange';
 import Big from 'big.js';
 import {BacktestExecutor} from '../backtest/BacktestExecutor.js';
 import {createStrategy, getStrategyNames} from '../strategy/StrategyRegistry.js';
-import {ScalpStrategy} from '../strategy-scalp/ScalpStrategy.js';
-
-/*
- * Credentials load from the monorepo root .env first, then from the exchange package's .env
- * (the current home of broker secrets). Root wins on duplicate keys, so secrets can be
- * consolidated into a single root file without touching this script. No defaults file is
- * loaded — its placeholder values would masquerade as real credentials and trigger doomed
- * live-warmup requests on machines without a configured .env.
- */
-config({path: '../../.env'});
-config({path: '../exchange/.env'});
 
 const {values} = parseArgs({
   allowNegative: true,
@@ -110,65 +98,15 @@ const exchange = new AlpacaBrokerMock({
   slippage: {clamp: slippageClamp, rate: slippageRate},
 });
 
-/*
- * 4. Warmup history for the strategy's init(). With Alpaca credentials configured, candles are
- * fetched live from just before the backtest window. The file itself cannot serve as warmup: the
- * executor only lets init see candles that closed before the window, so without credentials (or
- * when the fetch fails, e.g. for non-Alpaca pairs) the strategy starts without history.
- */
-const alpacaApiKey = process.env.ALPACA_LIVE_API_KEY;
-const alpacaApiSecret = process.env.ALPACA_LIVE_API_SECRET;
-const liveMarketData =
-  alpacaApiKey && alpacaApiSecret
-    ? new AlpacaMarketData({apiKey: alpacaApiKey, apiSecret: alpacaApiSecret, usePaperTrading: false})
-    : null;
-
-const market: Pick<MarketDataSource, 'getRecentCandles'> = {
-  getRecentCandles: async (pair, count, intervalInMillis) => {
-    if (liveMarketData) {
-      try {
-        // Over-ask 2x so weekends and market holidays still leave enough candles.
-        const spanInMillis = count * intervalInMillis * 2;
-        const preWindowCandles = await liveMarketData.getCandles(pair, {
-          intervalInMillis,
-          startTimeFirstCandle: new Date(firstCandle.openTimeInMillis - spanInMillis).toISOString(),
-          startTimeLastCandle: new Date(firstCandle.openTimeInMillis - intervalInMillis).toISOString(),
-        });
-
-        if (preWindowCandles.length > 0) {
-          console.log(`Warmup:    ${Math.min(count, preWindowCandles.length)} pre-window candles from Alpaca`);
-          return preWindowCandles.slice(-count);
-        }
-      } catch (error) {
-        console.warn(`Warmup:    live fetch failed (${error instanceof Error ? error.message : String(error)})`);
-      }
-    }
-
-    console.log('Warmup:    no pre-window history available, the strategy starts cold');
-    return [];
-  },
-};
-
-// 5. Run backtest (the executor calls the strategy's init() with the warmup first)
+// 4. Run backtest (the executor calls the strategy's init() before the first candle)
 const result = await new BacktestExecutor({
   broker: exchange,
   candles,
   strategy,
   tradingPair,
-  warmup: market,
 }).execute();
 
-if (strategy.config?.offset) {
-  console.log(`Offset:          ${strategy.config.offset} ${counter}`);
-}
-
-if (strategy instanceof ScalpStrategy) {
-  console.log(
-    `Scalp-friendly (ER): ${strategy.scalpFriendly ? 'Yes' : 'No — stock is trending, strategy will not trade'}`
-  );
-}
-
-// 6. Print results
+// 5. Print results
 const {performance} = result;
 
 console.log('');

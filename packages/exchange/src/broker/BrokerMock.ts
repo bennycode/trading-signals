@@ -42,7 +42,6 @@ export abstract class BrokerMock extends Broker {
   readonly #orderHolds = new Map<string, {amount: Big; currency: string}>();
   readonly #fills: Fill[] = [];
   #currentCandle: Candle | undefined;
-  #historicalCandles: Candle[] = [];
   #nextOrderId = 1;
   readonly #orderTopics = new Set<string>();
   readonly #slippageRate: Big;
@@ -59,14 +58,9 @@ export abstract class BrokerMock extends Broker {
     this.#clampSlippage = config.slippage?.clamp ?? true;
   }
 
-  /** Seed the candles returned by {@link getRecentCandles} (used to exercise strategy warm-up). */
-  setHistoricalCandles(candles: Candle[]) {
-    this.#historicalCandles = candles;
-  }
-
-  /** Returns the most recent `count` seeded candles, oldest first — mirrors the live backward fetch. */
-  async getRecentCandles(_pair: TradingPair, count: number, _intervalInMillis: number): Promise<Candle[]> {
-    return count <= 0 ? [] : this.#historicalCandles.slice(-count);
+  /** A backtest has no market history before its first candle, so a strategy's warm-up gets none. */
+  async getRecentCandles(_pair: TradingPair, _count: number, _intervalInMillis: number): Promise<Candle[]> {
+    return [];
   }
 
   abstract override getFeeRates(pair: TradingPair): Promise<FeeRate>;
