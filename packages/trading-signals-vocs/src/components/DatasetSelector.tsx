@@ -25,6 +25,11 @@ function findCandleProblem(candles: Candle[]): string | null {
         return `${idx}.${field}: "${value}" is not a number`;
       }
     }
+    // The broker mock fills orders within [low, high], so an impossible range produces nonsense fills.
+    const [open, high, low, close] = [candle.open, candle.high, candle.low, candle.close].map(Number);
+    if (low > Math.min(open, close) || high < Math.max(open, close)) {
+      return `${idx}: low (${candle.low}) and high (${candle.high}) must contain open and close`;
+    }
     if (Number.isNaN(Date.parse(candle.openTimeInISO))) {
       return `${idx}.openTimeInISO: "${candle.openTimeInISO}" is not a valid date`;
     }
