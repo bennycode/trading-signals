@@ -928,7 +928,6 @@ describe('BacktestExecutor', () => {
   });
 
   describe('strategy init', () => {
-    /** Records when its init runs and what it is handed. */
     class InitProbeStrategy extends Strategy {
       static override NAME = 'InitProbe';
       initCalls = 0;

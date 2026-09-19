@@ -74,7 +74,12 @@ export async function getCandlesUntil(
 
     // `getCandles` returns oldest-first and every window is older than the previous one.
     collected = candles.concat(collected);
-    windowEndInMillis = windowStartInMillis - intervalInMillis;
+    /*
+     * The window includes both ends, so the next one stops a millisecond earlier. Stepping back a
+     * whole interval instead would skip a bar whenever the anchor is not aligned to the source
+     * bars, e.g. daily bars opening at 05:00 with a backtest starting at 14:30.
+     */
+    windowEndInMillis = windowStartInMillis - 1;
     spanInMillis *= 2;
   }
 
