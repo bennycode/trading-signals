@@ -86,7 +86,7 @@ function buildUsageSnippet(config: IndicatorConfig, requiredInputs: number): str
   const imports = [className, ...referencedExports].sort((a, b) => a.localeCompare(b));
   return `import {${imports.join(', ')}} from 'trading-signals';
 
-// ${className} yields results once ${requiredInputs} inputs have been added
+// ${className} yields results once ${requiredInputs} ${requiredInputs === 1 ? 'input has' : 'inputs have'} been added
 const ${variableName} = new ${className}(${args});`;
 }
 
