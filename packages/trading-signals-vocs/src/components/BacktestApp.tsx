@@ -23,6 +23,7 @@ import {BacktestResults} from './BacktestResults';
 import {ProtectionModal} from './ProtectionModal';
 import {datasets} from '../utils/datasets';
 import type {CandleDataset} from '../utils/types';
+import {extractNestedProperties} from '../utils/schemaProperties';
 import {
   getStrategyDefinition,
   type StrategyId,
@@ -149,6 +150,10 @@ export function BacktestApp() {
       setValidationError('Invalid JSON');
     }
   }, [configJson, selectedStrategy]);
+
+  // Strategies without a `protected` key in their schema would silently strip the settings.
+  const supportsProtection =
+    extractNestedProperties(getStrategyDefinition(selectedStrategy).schema, 'protected').length > 0;
 
   const currentProtected: Record<string, unknown> | undefined = (() => {
     try {
@@ -300,14 +305,16 @@ export function BacktestApp() {
           validationError={validationError}
           candles={candles}
         />
-        <button
-          onClick={() => setProtectionModalOpen(true)}
-          className="w-full py-2.5 px-4 rounded-lg text-sm font-medium transition-colors bg-(--demo-accent) hover:opacity-90 text-white cursor-pointer flex items-center justify-center gap-2">
-          <span>{currentProtected ? 'Edit Protection' : 'Add Protection'}</span>
-          {currentProtected && (
-            <span className="text-xs bg-purple-500/15 text-(--demo-accent) px-2 py-0.5 rounded-full">active</span>
-          )}
-        </button>
+        {supportsProtection && (
+          <button
+            onClick={() => setProtectionModalOpen(true)}
+            className="w-full py-2.5 px-4 rounded-lg text-sm font-medium transition-colors bg-(--demo-accent) hover:opacity-90 text-white cursor-pointer flex items-center justify-center gap-2">
+            <span>{currentProtected ? 'Edit Protection' : 'Add Protection'}</span>
+            {currentProtected && (
+              <span className="text-xs bg-purple-500/15 text-(--demo-accent) px-2 py-0.5 rounded-full">active</span>
+            )}
+          </button>
+        )}
         <button
           onClick={copyConfig}
           disabled={!!validationError}

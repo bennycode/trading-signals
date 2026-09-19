@@ -76,7 +76,8 @@ export function extractNestedProperties(schema: z.ZodType, key: string): SchemaP
     if (property !== undefined && typeof property !== 'boolean') {
       return property;
     }
-    for (const child of node.allOf ?? []) {
+    // Intersections (`.and()`) serialize to `allOf`, unions to `anyOf`; the key can sit in either.
+    for (const child of [...(node.allOf ?? []), ...(node.anyOf ?? [])]) {
       const found = findNested(child);
       if (found) {
         return found;
