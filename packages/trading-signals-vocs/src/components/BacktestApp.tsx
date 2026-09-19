@@ -113,6 +113,12 @@ export function BacktestApp() {
   const [toast, setToast] = useState<string | null>(null);
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  // Results are only valid for the inputs they were computed with, so any input change drops them.
+  const clearResults = useCallback(() => {
+    setResult(null);
+    setBaselineResult(null);
+  }, []);
+
   const showToast = useCallback((message: string) => {
     if (toastTimer.current) {
       clearTimeout(toastTimer.current);
@@ -178,11 +184,12 @@ export function BacktestApp() {
           next.protected = nextProtected;
         }
         setConfigJson(JSON.stringify(next, null, 2));
+        clearResults();
       } catch {
         showToast('Cannot update protection: config JSON is invalid');
       }
     },
-    [configJson, showToast]
+    [clearResults, configJson, showToast]
   );
 
   const copyConfig = useCallback(async () => {
@@ -242,21 +249,18 @@ export function BacktestApp() {
 
   const handleStrategyChange = (id: StrategyId) => {
     setSelectedStrategy(id);
-    setResult(null);
-    setBaselineResult(null);
+    clearResults();
   };
 
   const handleDatasetChange = (id: string) => {
     setSelectedDataset(id);
-    setResult(null);
-    setBaselineResult(null);
+    clearResults();
   };
 
   const handleCustomDataset = (candles: Candle[], name: string) => {
     setCustomDataset({candles, description: `Custom upload: ${name} (${candles.length} candles)`, id: 'custom', name});
     setSelectedDataset('custom');
-    setResult(null);
-    setBaselineResult(null);
+    clearResults();
   };
 
   if (!isMounted) {
@@ -282,7 +286,10 @@ export function BacktestApp() {
               <input
                 type="text"
                 value={initialBase}
-                onChange={e => setInitialBase(e.target.value)}
+                onChange={e => {
+                  setInitialBase(e.target.value);
+                  clearResults();
+                }}
                 className="w-full demo-card rounded px-2 py-1.5 text-sm demo-heading focus:outline-none focus:border-purple-500"
               />
             </div>
@@ -291,7 +298,10 @@ export function BacktestApp() {
               <input
                 type="text"
                 value={initialCounter}
-                onChange={e => setInitialCounter(e.target.value)}
+                onChange={e => {
+                  setInitialCounter(e.target.value);
+                  clearResults();
+                }}
                 className="w-full demo-card rounded px-2 py-1.5 text-sm demo-heading focus:outline-none focus:border-purple-500"
               />
             </div>
@@ -301,7 +311,10 @@ export function BacktestApp() {
           selectedStrategy={selectedStrategy}
           onStrategyChange={handleStrategyChange}
           configJson={configJson}
-          onConfigJsonChange={setConfigJson}
+          onConfigJsonChange={json => {
+            setConfigJson(json);
+            clearResults();
+          }}
           validationError={validationError}
           candles={candles}
         />
