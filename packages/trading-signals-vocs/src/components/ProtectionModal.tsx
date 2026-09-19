@@ -119,7 +119,7 @@ export function ProtectionModal({initialProtected, onClose, onSave, open}: Prote
   const builtConfig = buildProtectedConfig(stopLoss, takeProfit);
   const hasIncompleteGuard =
     (stopLoss.enabled && !stopLoss.value.trim()) || (takeProfit.enabled && !takeProfit.value.trim());
-  const canSave = builtConfig !== undefined;
+  const canSave = builtConfig !== undefined && !hasIncompleteGuard;
   const hint = hasIncompleteGuard
     ? 'Enter a value for each enabled guard to save.'
     : !stopLoss.enabled && !takeProfit.enabled
