@@ -1,4 +1,4 @@
-import {useState, useEffect} from 'react';
+import {useEffect, useId, useRef, useState} from 'react';
 
 type TriggerType = 'pct' | 'nominal' | 'price';
 type OrderType = 'limit' | 'market';
@@ -94,6 +94,19 @@ interface ProtectionModalProps {
 export function ProtectionModal({initialProtected, onClose, onSave, open}: ProtectionModalProps) {
   const [stopLoss, setStopLoss] = useState<GuardForm>(emptyGuard);
   const [takeProfit, setTakeProfit] = useState<GuardForm>(emptyGuard);
+  const dialogRef = useRef<HTMLDialogElement>(null);
+  const titleId = useId();
+
+  /*
+   * A native modal dialog makes the page behind it inert and moves focus into the dialog, so none
+   * of that is rebuilt by hand. Escape is handled through `cancel` so React state decides when it
+   * unmounts; the native `close` event is not delivered reliably (e.g. in background tabs).
+   */
+  useEffect(() => {
+    if (open && !dialogRef.current?.open) {
+      dialogRef.current?.showModal();
+    }
+  }, [open]);
 
   useEffect(() => {
     if (!open) {
@@ -140,9 +153,25 @@ export function ProtectionModal({initialProtected, onClose, onSave, open}: Prote
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4" onClick={onClose}>
-      <div className="demo-card p-6 w-full max-w-md shadow-xl" onClick={e => e.stopPropagation()}>
-        <h3 className="text-lg font-semibold demo-heading mb-2">Protection settings</h3>
+    <dialog
+      ref={dialogRef}
+      aria-labelledby={titleId}
+      onCancel={e => {
+        e.preventDefault();
+        onClose();
+      }}
+      onClose={onClose}
+      // Only a click on the backdrop targets the dialog itself; the content fills it edge to edge.
+      onClick={e => {
+        if (e.target === e.currentTarget) {
+          onClose();
+        }
+      }}
+      className="m-auto w-[calc(100%-2rem)] max-w-md bg-transparent p-0 backdrop:bg-black/60">
+      <div className="demo-card p-6 shadow-xl">
+        <h3 id={titleId} className="text-lg font-semibold demo-heading mb-2">
+          Protection settings
+        </h3>
         <p className="text-xs demo-muted mb-4">
           Stop-loss and take-profit kill switches run on top of the selected strategy. Enable either or both to have the
           backtester exit automatically when thresholds are reached. Once a guard fires, the strategy is terminal for
@@ -178,7 +207,7 @@ export function ProtectionModal({initialProtected, onClose, onSave, open}: Prote
           </button>
         </div>
       </div>
-    </div>
+    </dialog>
   );
 }
 
