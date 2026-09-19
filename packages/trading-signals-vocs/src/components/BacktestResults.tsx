@@ -22,6 +22,11 @@ function formatBig(val: Big, decimals = 2) {
   });
 }
 
+/** Uploaded candles can be quoted in any asset, so only USD amounts get a dollar sign. */
+function withCurrency(amount: string, counter: string) {
+  return counter === 'USD' ? `$${amount}` : `${amount} ${counter}`;
+}
+
 function PerformanceCards({candles, result}: ResultProps) {
   const {performance} = result;
   const returnPct = Number(performance.returnPercentage.toFixed(2));
@@ -44,13 +49,13 @@ function PerformanceCards({candles, result}: ResultProps) {
       info: 'Absolute gain or loss in counter currency compared to the starting portfolio value.',
       label: 'Profit & Loss',
       positive: pnl >= 0,
-      value: `${pnl >= 0 ? '+' : '-'}$${formatBig(result.profitOrLoss.abs())}`,
+      value: `${pnl >= 0 ? '+' : '-'}${withCurrency(formatBig(result.profitOrLoss.abs()), counter)}`,
     },
     {
       info: 'Total trading fees paid across all executed orders.',
       label: 'Total Fees',
       positive: null,
-      value: `$${formatBig(result.totalFees)}`,
+      value: withCurrency(formatBig(result.totalFees), counter),
     },
     {
       info: 'Number of individual orders executed (buys + sells).',
@@ -86,13 +91,13 @@ function PerformanceCards({candles, result}: ResultProps) {
       info: 'Initial portfolio value in counter currency (base × first open price + counter balance).',
       label: 'Start Value',
       positive: null,
-      value: `$${formatBig(performance.initialPortfolioValue)}`,
+      value: withCurrency(formatBig(performance.initialPortfolioValue), counter),
     },
     {
       info: 'Final portfolio value in counter currency (base × last close price + counter balance).',
       label: 'Final Value',
       positive: null,
-      value: `$${formatBig(performance.finalPortfolioValue)}`,
+      value: withCurrency(formatBig(performance.finalPortfolioValue), counter),
     },
     {
       info: `Remaining ${base} balance at the end of the backtest.`,
@@ -104,7 +109,7 @@ function PerformanceCards({candles, result}: ResultProps) {
       info: `Remaining ${counter} cash balance at the end of the backtest.`,
       label: `Final Counter (${counter})`,
       positive: null,
-      value: `$${formatBig(result.finalCounterBalance)}`,
+      value: withCurrency(formatBig(result.finalCounterBalance), counter),
     },
   ];
 
@@ -135,6 +140,7 @@ function PerformanceCards({candles, result}: ResultProps) {
 }
 
 function PriceChartWithTrades({candles, result}: ResultProps) {
+  const counter = candles[0]?.counter ?? 'USD';
   const priceData = candles.map((c, i) => ({
     close: Number(c.close),
     high: Number(c.high),
@@ -151,7 +157,7 @@ function PriceChartWithTrades({candles, result}: ResultProps) {
     .filter(t => t.side === OrderSide.BUY)
     .map(t => {
       const x = candleIndexByTime.get(t.openTimeInISO) ?? 0;
-      return {name: `BUY @ $${t.price.toFixed(2)}`, x, y: Number(t.price.toFixed(2))};
+      return {name: `BUY @ ${withCurrency(t.price.toFixed(2), counter)}`, x, y: Number(t.price.toFixed(2))};
     })
     .filter(m => m.x > 0);
 
@@ -159,7 +165,7 @@ function PriceChartWithTrades({candles, result}: ResultProps) {
     .filter(t => t.side === OrderSide.SELL)
     .map(t => {
       const x = candleIndexByTime.get(t.openTimeInISO) ?? 0;
-      return {name: `SELL @ $${t.price.toFixed(2)}`, x, y: Number(t.price.toFixed(2))};
+      return {name: `SELL @ ${withCurrency(t.price.toFixed(2), counter)}`, x, y: Number(t.price.toFixed(2))};
     })
     .filter(m => m.x > 0);
 
@@ -207,10 +213,10 @@ function PriceChartWithTrades({candles, result}: ResultProps) {
         const ohlc = priceData.find(p => p.x === this.x);
         let s = `<b>${ohlc?.time ?? `Period ${this.x}`}</b><br/>`;
         if (ohlc) {
-          s += `Open: $${ohlc.open.toFixed(2)}<br/>`;
-          s += `High: $${ohlc.high.toFixed(2)}<br/>`;
-          s += `Low: $${ohlc.low.toFixed(2)}<br/>`;
-          s += `Close: $${ohlc.close.toFixed(2)}<br/>`;
+          s += `Open: ${withCurrency(ohlc.open.toFixed(2), counter)}<br/>`;
+          s += `High: ${withCurrency(ohlc.high.toFixed(2), counter)}<br/>`;
+          s += `Low: ${withCurrency(ohlc.low.toFixed(2), counter)}<br/>`;
+          s += `Close: ${withCurrency(ohlc.close.toFixed(2), counter)}<br/>`;
         }
         this.points?.forEach(point => {
           if (point.series.type === 'scatter') {
@@ -241,7 +247,7 @@ function PriceChartWithTrades({candles, result}: ResultProps) {
   );
 }
 
-function TradeHistoryTable({result}: {result: BacktestResult}) {
+function TradeHistoryTable({counter, result}: {counter: string; result: BacktestResult}) {
   if (result.trades.length === 0) {
     return (
       <div className="demo-card">
@@ -279,10 +285,16 @@ function TradeHistoryTable({result}: {result: BacktestResult}) {
                   {trade.advice.side} {trade.advice.type}
                 </span>
               </td>
-              <td className="py-2 px-3 text-right demo-text font-mono">${formatBig(trade.price)}</td>
+              <td className="py-2 px-3 text-right demo-text font-mono">
+                {withCurrency(formatBig(trade.price), counter)}
+              </td>
               <td className="py-2 px-3 text-right demo-text font-mono">{formatBig(trade.size, 6)}</td>
-              <td className="py-2 px-3 text-right demo-text font-mono">${formatBig(trade.size.times(trade.price))}</td>
-              <td className="py-2 px-3 text-right demo-muted font-mono">${formatBig(trade.fee, 4)}</td>
+              <td className="py-2 px-3 text-right demo-text font-mono">
+                {withCurrency(formatBig(trade.size.times(trade.price)), counter)}
+              </td>
+              <td className="py-2 px-3 text-right demo-muted font-mono">
+                {withCurrency(formatBig(trade.fee, 4), counter)}
+              </td>
             </tr>
           ))}
         </tbody>
@@ -322,7 +334,7 @@ export function BacktestResults({baselineResult, candles, result}: BacktestResul
         </div>
       )}
       <PriceChartWithTrades result={result} candles={candles} />
-      <TradeHistoryTable result={result} />
+      <TradeHistoryTable result={result} counter={candles[0]?.counter ?? 'USD'} />
     </div>
   );
 }
