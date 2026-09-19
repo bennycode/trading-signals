@@ -23,7 +23,7 @@ npm install
 # Run the full test matrix across all packages
 npm test
 
-# Launch the indicator showcase (Next.js)
+# Launch the documentation site (Vocs)
 npm run start:docs
 
 # Start the Telegram bot (requires TELEGRAM_BOT_TOKEN in your env)
@@ -42,7 +42,7 @@ This project uses [Lerna](https://lerna.js.org/) to manage a [monorepo](https://
 | [**@typedtrader/exchange**](./packages/exchange) | Unified exchange interface for different brokers (currently [Alpaca](https://alpaca.markets/)). Type-safe data transformation, WebSocket candles and order updates, paper- and live-trading environments behind a single API. |
 | [**@typedtrader/exchange-cli**](./packages/exchange-cli) | Terminal access to the same broker clients. Check balances, search instruments, place and cancel orders, and stream candles or fills as NDJSON, with JSON on stdout for piping into `jq` or scripts. |
 | [**@typedtrader/messaging**](./packages/messaging) | Remote-control layer for your personal trading bot via [Telegram](https://core.telegram.org/bots). Add accounts, run strategies, watch prices, schedule reports, and inspect live strategy state — all from chat. Persistence via SQLite + Drizzle ORM. |
-| [**trading-signals-docs**](./packages/trading-signals-docs) | [Interactive showcase and visual backtester](https://typedtrader.com/) built with Next.js. Explore every indicator in action, then [backtest strategies](https://typedtrader.com/backtest/) against real historical candles with charts, trade markers, and P&L stats. |
+| [**trading-signals-docs**](./packages/trading-signals-docs) | [Documentation site and visual backtester](https://typedtrader.com/) built with [Vocs](https://vocs.dev/). Explore every indicator in action, then [backtest strategies](https://typedtrader.com/backtest/) against real historical candles with charts, trade markers, and P&L stats. |
 
 ## How it fits together
 
