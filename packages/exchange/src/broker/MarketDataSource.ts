@@ -52,27 +52,31 @@ export async function getCandlesUntil(
   }
 
   /*
-   * Start at a 2x over-ask and keep doubling the look-back when closures leave us short. The
-   * attempt cap is a backstop against an instrument whose history is simply shorter than `count`;
-   * each doubling reaches back exponentially, so a handful of attempts covers years of bars.
+   * `getCandles` takes a time window, not a number of candles, and closures (nights, weekends,
+   * holidays) mean a window of `count` intervals holds fewer than `count` candles. So walk
+   * backwards one window at a time, keeping what each one returns, until enough have come in.
+   * Each window is older than the last, so no candle is fetched twice. Windows grow as they go
+   * back: an instrument that is mostly closed, or listed later than expected, is reached in a few
+   * requests instead of many. The attempt cap stops the walk for a history shorter than `count`.
    */
   const MAX_ATTEMPTS = 8;
-  let spanInMillis = intervalInMillis * count * 2;
+  let collected: Candle[] = [];
+  let windowEndInMillis = lastOpenTimeInMillis;
+  let spanInMillis = intervalInMillis * count;
 
-  let candles: Candle[] = [];
-  for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
-    candles = await source.getCandles(pair, {
+  for (let attempt = 0; attempt < MAX_ATTEMPTS && collected.length < count; attempt++) {
+    const windowStartInMillis = windowEndInMillis - spanInMillis;
+    const candles = await source.getCandles(pair, {
       intervalInMillis,
-      startTimeFirstCandle: new Date(lastOpenTimeInMillis - spanInMillis).toISOString(),
-      startTimeLastCandle: new Date(lastOpenTimeInMillis).toISOString(),
+      startTimeFirstCandle: new Date(windowStartInMillis).toISOString(),
+      startTimeLastCandle: new Date(windowEndInMillis).toISOString(),
     });
 
-    if (candles.length >= count) {
-      break;
-    }
+    // `getCandles` returns oldest-first and every window is older than the previous one.
+    collected = candles.concat(collected);
+    windowEndInMillis = windowStartInMillis - intervalInMillis;
     spanInMillis *= 2;
   }
 
-  // `getCandles` returns oldest-first, so the most recent `count` are the tail.
-  return candles.slice(-count);
+  return collected.slice(-count);
 }
