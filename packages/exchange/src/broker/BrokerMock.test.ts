@@ -2,6 +2,7 @@ import Big from 'big.js';
 import {describe, expect, it} from 'vitest';
 import {BrokerMock, type BrokerMockSlippageConfig, type ExchangeMockBalance} from './BrokerMock.js';
 import {type Candle, type FeeRate, type Fill, OrderSide, OrderType, type TradingRules} from './Broker.js';
+import type {MarketDataSource} from './MarketDataSource.js';
 import {TradingPair} from './TradingPair.js';
 import {ms} from 'ms';
 
@@ -19,8 +20,12 @@ class TestExchangeMock extends BrokerMock {
     counter_min_size: '1',
   };
 
-  constructor(balances: Map<string, ExchangeMockBalance>, slippage?: BrokerMockSlippageConfig) {
-    super({balances, slippage});
+  constructor(
+    balances: Map<string, ExchangeMockBalance>,
+    slippage?: BrokerMockSlippageConfig,
+    marketData?: Pick<MarketDataSource, 'getCandles'>
+  ) {
+    super({balances, marketData, slippage});
     this.setCachedFeeRates(TestExchangeMock.TEST_FEE_RATES);
   }
 
@@ -71,6 +76,44 @@ function createExchange(baseAmount: string, counterAmount: string, slippage?: Br
 }
 
 describe('BrokerMock', () => {
+  describe('getRecentCandles', () => {
+    const ONE_DAY = ms('1d');
+    const firstDay = Date.UTC(2025, 0, 1);
+    const days = Array.from({length: 60}, (_, day) =>
+      createCandle({
+        close: '100',
+        open: '100',
+        openTimeInISO: new Date(firstDay + day * ONE_DAY).toISOString(),
+        openTimeInMillis: firstDay + day * ONE_DAY,
+        sizeInMillis: ONE_DAY,
+      })
+    );
+    /** Serves the candles opening inside the requested window, like a real data source. */
+    const marketData: Pick<MarketDataSource, 'getCandles'> = {
+      getCandles: async (_pair, {startTimeFirstCandle, startTimeLastCandle}) =>
+        days.filter(
+          c =>
+            c.openTimeInMillis >= Date.parse(startTimeFirstCandle) &&
+            c.openTimeInMillis <= Date.parse(startTimeLastCandle)
+        ),
+    };
+
+    it('has no history without market data', async () => {
+      const exchange = createExchange('0', '1000');
+
+      expect(await exchange.getRecentCandles(pair, 5, ONE_DAY)).toEqual([]);
+    });
+
+    it('fetches the candles that closed before its current time', async () => {
+      const exchange = new TestExchangeMock(new Map(), undefined, marketData);
+      exchange.setStartTime(days[31].openTimeInISO);
+
+      const history = await exchange.getRecentCandles(pair, 5, ONE_DAY);
+
+      expect(history, 'the five days before the start, oldest first').toEqual(days.slice(26, 31));
+    });
+  });
+
   describe('getTime', () => {
     it('reports the start time until the first candle, then the candle time', async () => {
       const exchange = createExchange('0', '1000');

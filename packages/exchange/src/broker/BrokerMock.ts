@@ -18,6 +18,7 @@ import {
   type PendingOrder,
   type TradingRules,
 } from './Broker.js';
+import {getCandlesUntil, type MarketDataSource} from './MarketDataSource.js';
 import type {TradingPair} from './TradingPair.js';
 
 export interface ExchangeMockBalance {
@@ -43,14 +44,21 @@ export abstract class BrokerMock extends Broker {
   readonly #fills: Fill[] = [];
   #currentCandle: Candle | undefined;
   #startTime: string | undefined;
+  readonly #marketData: Pick<MarketDataSource, 'getCandles'> | undefined;
   #nextOrderId = 1;
   readonly #orderTopics = new Set<string>();
   readonly #slippageRate: Big;
   readonly #clampSlippage: boolean;
 
-  constructor(config: {balances: Map<string, ExchangeMockBalance>; slippage?: BrokerMockSlippageConfig}) {
+  constructor(config: {
+    balances: Map<string, ExchangeMockBalance>;
+    /** Real candle history for {@link getRecentCandles}, e.g. a strategy's warm-up. Without it there is none. */
+    marketData?: Pick<MarketDataSource, 'getCandles'>;
+    slippage?: BrokerMockSlippageConfig;
+  }) {
     super('BrokerMock');
     this.#balances = config.balances;
+    this.#marketData = config.marketData;
     this.#slippageRate = config.slippage?.rate ?? new Big(0);
     assert.ok(
       this.#slippageRate.gte(0) && this.#slippageRate.lt(1),
@@ -59,9 +67,17 @@ export abstract class BrokerMock extends Broker {
     this.#clampSlippage = config.slippage?.clamp ?? true;
   }
 
-  /** A backtest has no market history before its first candle, so a strategy's warm-up gets none. */
-  async getRecentCandles(_pair: TradingPair, _count: number, _intervalInMillis: number): Promise<Candle[]> {
-    return [];
+  /**
+   * The `count` candles that closed before the mock's current time (see {@link getTime}), fetched
+   * from the configured market data. At the start of a backtest that is the history before its
+   * first candle, so a strategy can warm up without seeing the candles it is tested on.
+   */
+  async getRecentCandles(pair: TradingPair, count: number, intervalInMillis: number): Promise<Candle[]> {
+    if (!this.#marketData) {
+      return [];
+    }
+    const nowInMillis = Date.parse(await this.getTime());
+    return getCandlesUntil(this.#marketData, pair, count, intervalInMillis, nowInMillis - intervalInMillis);
   }
 
   abstract override getFeeRates(pair: TradingPair): Promise<FeeRate>;

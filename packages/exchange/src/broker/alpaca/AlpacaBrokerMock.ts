@@ -2,6 +2,7 @@ import {ms} from 'ms';
 import type {FeeRate, TradingRules} from '../Broker.js';
 import type {TradingPair} from '../TradingPair.js';
 import {BrokerMock, type BrokerMockSlippageConfig, type ExchangeMockBalance} from '../BrokerMock.js';
+import type {MarketDataSource} from '../MarketDataSource.js';
 import {AlpacaBroker} from './AlpacaBroker.js';
 
 export class AlpacaBrokerMock extends BrokerMock {
@@ -11,10 +12,11 @@ export class AlpacaBrokerMock extends BrokerMock {
   constructor(config: {
     balances: Map<string, ExchangeMockBalance>;
     feeRates?: FeeRate;
+    marketData?: Pick<MarketDataSource, 'getCandles'>;
     slippage?: BrokerMockSlippageConfig;
     tradingRules?: Omit<TradingRules, 'pair'>;
   }) {
-    super({balances: config.balances, slippage: config.slippage});
+    super({balances: config.balances, marketData: config.marketData, slippage: config.slippage});
     this.#feeRates = config.feeRates ?? AlpacaBroker.DEFAULT_CRYPTO_FEE_RATES;
     this.#tradingRules = config.tradingRules ?? AlpacaBroker.DEFAULT_CRYPTO_TRADING_RULES;
     this.setCachedFeeRates(this.#feeRates);
