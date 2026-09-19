@@ -94,13 +94,15 @@ const strategyConfig: unknown = JSON.parse(values.config);
 const strategy = createStrategy(values.strategy, strategyConfig);
 
 /*
- * 3. Set up mock exchange (commission-free for US stocks). With Alpaca credentials, the mock serves
+ * 3. Set up mock exchange (commission-free for US stocks). With Alpaca paper credentials, the mock serves
  * a strategy's warm-up from real candles that closed before the first backtest candle.
  */
-const apiKey = process.env.ALPACA_LIVE_API_KEY;
-const apiSecret = process.env.ALPACA_LIVE_API_SECRET;
-const marketData = apiKey && apiSecret ? new AlpacaMarketData({apiKey, apiSecret, usePaperTrading: false}) : undefined;
-console.log(`Warmup:    ${marketData ? 'Alpaca candles before the backtest window' : 'none (no Alpaca credentials)'}`);
+const apiKey = process.env.ALPACA_PAPER_API_KEY;
+const apiSecret = process.env.ALPACA_PAPER_API_SECRET;
+const marketData = apiKey && apiSecret ? new AlpacaMarketData({apiKey, apiSecret, usePaperTrading: true}) : undefined;
+console.log(
+  `Warmup:    ${marketData ? 'Alpaca candles before the backtest window' : 'none (no Alpaca paper credentials)'}`
+);
 
 const exchange = new AlpacaBrokerMock({
   balances: new Map([
