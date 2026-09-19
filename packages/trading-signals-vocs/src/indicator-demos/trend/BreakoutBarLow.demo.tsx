@@ -14,7 +14,6 @@ export const BreakoutBarLow: IndicatorConfig = {
   id: 'breakout-bar-low',
   name: 'BreakoutBarLow',
   processData: makeProcessData({rowInputs: ['high', 'low']}),
-  requiredInputs: 21,
   type: 'single',
   yAxisLabel: 'Price',
 };

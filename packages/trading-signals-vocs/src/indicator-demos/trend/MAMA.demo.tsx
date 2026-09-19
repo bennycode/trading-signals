@@ -135,6 +135,5 @@ export const MAMA: IndicatorConfig = {
     'Adapts its smoothing to the dominant market cycle measured by a Hilbert transform: it hugs price during trends and freezes in congestion. MAMA crossing above its following average (FAMA) signals bullish pressure, crossing below signals bearish pressure.',
   id: 'mama',
   name: 'MAMA',
-  requiredInputs: 33,
   type: 'custom',
 };

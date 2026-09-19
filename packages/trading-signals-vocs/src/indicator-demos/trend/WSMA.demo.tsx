@@ -14,7 +14,6 @@ export const WSMA: IndicatorConfig = {
   id: 'wsma',
   name: 'WSMA',
   processData: makeProcessData({rowInputs: ['close']}),
-  requiredInputs: 5,
   type: 'single',
   yAxisLabel: 'Price',
 };

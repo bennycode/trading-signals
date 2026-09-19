@@ -14,7 +14,6 @@ export const UltimateOscillator: IndicatorConfig = {
   id: 'ultosc',
   name: 'ULTOSC',
   processData: makeProcessData({addInputs: ['close', 'high', 'low'], rowInputs: ['close']}),
-  requiredInputs: 29,
   type: 'single',
   yAxisLabel: 'ULTOSC',
 };

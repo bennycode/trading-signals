@@ -14,7 +14,6 @@ export const CHOP: IndicatorConfig = {
   id: 'chop',
   name: 'Choppiness Index',
   processData: makeProcessData({addInputs: ['high', 'low', 'close'], rowInputs: ['close']}),
-  requiredInputs: 15,
   type: 'single',
   yAxisLabel: 'CHOP',
 };

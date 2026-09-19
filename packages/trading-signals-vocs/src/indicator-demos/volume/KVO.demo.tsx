@@ -14,7 +14,6 @@ export const KVO: IndicatorConfig = {
   id: 'kvo',
   name: 'KVO',
   processData: makeProcessData({addInputs: ['close', 'high', 'low', 'volume'], rowInputs: ['close', 'volume']}),
-  requiredInputs: 2,
   type: 'single',
   yAxisLabel: 'KVO',
 };

@@ -17,7 +17,6 @@ export const NVI: IndicatorConfig = {
     addInputs: ['close', 'high', 'low', 'volume'],
     rowInputs: ['close', 'volume'],
   }),
-  requiredInputs: 1,
   type: 'single',
   yAxisLabel: 'NVI',
 };

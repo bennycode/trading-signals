@@ -14,7 +14,6 @@ export const VROC: IndicatorConfig = {
   id: 'vroc',
   name: 'VROC',
   processData: makeProcessData({rowInputs: ['volume']}),
-  requiredInputs: 15,
   type: 'single',
   yAxisLabel: 'VROC %',
 };

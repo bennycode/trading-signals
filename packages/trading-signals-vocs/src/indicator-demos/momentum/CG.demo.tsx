@@ -13,7 +13,6 @@ export const CG: IndicatorConfig = {
   id: 'cg',
   name: 'CG',
   processData: makeProcessData({rowInputs: ['close']}),
-  requiredInputs: 10,
   type: 'single',
   yAxisLabel: 'CG',
 };

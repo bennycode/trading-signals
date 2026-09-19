@@ -14,7 +14,6 @@ export const PercentB: IndicatorConfig = {
   id: 'percent-b',
   name: '%B',
   processData: makeProcessData({rowInputs: ['close']}),
-  requiredInputs: 20,
   type: 'single',
   yAxisLabel: '%B',
 };

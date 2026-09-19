@@ -14,7 +14,6 @@ export const IBS: IndicatorConfig = {
   id: 'ibs',
   name: 'IBS',
   processData: makeProcessData({rowInputs: ['high', 'low', 'close']}),
-  requiredInputs: 1,
   type: 'single',
   yAxisLabel: 'IBS',
 };

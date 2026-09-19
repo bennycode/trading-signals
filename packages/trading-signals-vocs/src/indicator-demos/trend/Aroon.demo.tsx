@@ -123,6 +123,5 @@ export const Aroon: IndicatorConfig = {
     'Identifies emerging trends by measuring how recently the highest high and lowest low occurred within the interval. An Aroon Up above 70 with an Aroon Down below 30 indicates a strong uptrend; crossovers of the two lines can signal trend changes.',
   id: 'aroon',
   name: 'Aroon',
-  requiredInputs: 15,
   type: 'custom',
 };

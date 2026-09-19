@@ -14,7 +14,6 @@ export const TRIMA: IndicatorConfig = {
   id: 'trima',
   name: 'TRIMA',
   processData: makeProcessData({rowInputs: ['close']}),
-  requiredInputs: 10,
   type: 'single',
   yAxisLabel: 'Price',
 };

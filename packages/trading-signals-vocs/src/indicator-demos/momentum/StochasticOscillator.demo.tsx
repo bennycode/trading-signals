@@ -150,6 +150,5 @@ export const StochasticOscillator: IndicatorConfig = {
   description: 'Stochastic Oscillator',
   id: 'stoch',
   name: 'Stochastic',
-  requiredInputs: 17,
   type: 'custom',
 };

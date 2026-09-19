@@ -14,7 +14,6 @@ export const ROC: IndicatorConfig = {
   id: 'roc',
   name: 'ROC',
   processData: makeProcessData({rowInputs: ['close']}),
-  requiredInputs: 9,
   type: 'single',
   yAxisLabel: 'ROC %',
 };

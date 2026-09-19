@@ -138,6 +138,5 @@ export const QQE: IndicatorConfig = {
     'Smooths the RSI into a calmer line and trails a volatility-based stop behind it — the SuperTrend construction applied to the RSI instead of price. The side the smoothed RSI takes of its trailing stop names the momentum direction; a flip of the stop line marks a momentum reversal.',
   id: 'qqe',
   name: 'QQE',
-  requiredInputs: 30,
   type: 'custom',
 };

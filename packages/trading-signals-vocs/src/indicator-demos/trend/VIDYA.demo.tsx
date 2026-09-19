@@ -14,7 +14,6 @@ export const VIDYA: IndicatorConfig = {
   id: 'vidya',
   name: 'VIDYA',
   processData: makeProcessData({rowInputs: ['close']}),
-  requiredInputs: 11,
   type: 'single',
   yAxisLabel: 'Price',
 };

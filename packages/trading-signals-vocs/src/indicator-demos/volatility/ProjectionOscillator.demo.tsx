@@ -14,7 +14,6 @@ export const ProjectionOscillator: IndicatorConfig = {
   id: 'projection-oscillator',
   name: 'PO',
   processData: makeProcessData({addInputs: ['high', 'low', 'close'], rowInputs: ['close']}),
-  requiredInputs: 14,
   type: 'single',
   yAxisLabel: 'PO',
 };

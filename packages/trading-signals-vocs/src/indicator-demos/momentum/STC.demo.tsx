@@ -14,7 +14,6 @@ export const STC: IndicatorConfig = {
   id: 'stc',
   name: 'STC',
   processData: makeProcessData({rowInputs: ['close']}),
-  requiredInputs: 68,
   type: 'single',
   yAxisLabel: 'STC',
 };

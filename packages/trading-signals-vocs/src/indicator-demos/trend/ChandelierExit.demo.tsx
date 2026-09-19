@@ -130,6 +130,5 @@ export const ChandelierExit: IndicatorConfig = {
     'A volatility-adjusted trailing stop: the long exit hangs three ATRs below the highest high of the lookback, the short exit mirrors it above the lowest low. Volatile markets get more room to breathe, quiet markets get a tighter stop.',
   id: 'chandelier-exit',
   name: 'Chandelier Exit',
-  requiredInputs: 22,
   type: 'custom',
 };

@@ -3,9 +3,11 @@ import type {UtilityConfig} from './types';
 
 export const getMedianDemo: UtilityConfig = {
   calculate: values => {
-    const result = values.length > 0 ? getMedian(values).toFixed(2) : null;
+    // getMedian expects sorted input; sort copies so the history keeps the order values were added in.
+    const sorted = (list: number[]) => [...list].sort((a, b) => a - b);
+    const result = values.length > 0 ? getMedian(sorted(values)).toFixed(2) : null;
     const allResults = values.map((value, idx) => ({
-      result: getMedian(values.slice(0, idx + 1)).toFixed(2),
+      result: getMedian(sorted(values.slice(0, idx + 1))).toFixed(2),
       value,
     }));
 

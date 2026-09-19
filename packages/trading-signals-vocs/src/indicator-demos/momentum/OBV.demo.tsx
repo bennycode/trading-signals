@@ -13,7 +13,6 @@ export const OBV: IndicatorConfig = {
   id: 'obv',
   name: 'OBV',
   processData: makeProcessData({alwaysStable: true, rowInputs: ['close', 'volume']}),
-  requiredInputs: 1,
   type: 'single',
   yAxisLabel: 'OBV',
 };

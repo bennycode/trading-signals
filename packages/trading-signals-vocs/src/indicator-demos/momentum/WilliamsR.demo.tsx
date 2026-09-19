@@ -14,7 +14,6 @@ export const WilliamsR: IndicatorConfig = {
   id: 'willr',
   name: 'Williams %R',
   processData: makeProcessData({rowInputs: ['high', 'low', 'close']}),
-  requiredInputs: 14,
   type: 'single',
   yAxisLabel: 'Williams %R',
 };

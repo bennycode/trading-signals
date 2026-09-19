@@ -130,6 +130,5 @@ export const SuperTrend: IndicatorConfig = {
     'Answers the one question a trend follower keeps asking: which side of the market to be on right now. It plots a single ATR-based band that trails below price in an uptrend and above it in a downtrend, and because the band only ratchets in the direction of the trend, it doubles as a volatility-adjusted trailing stop. The line flips sides only when the close breaks through the active band, so a flip marks a potential trend reversal.',
   id: 'supertrend',
   name: 'SuperTrend',
-  requiredInputs: 10,
   type: 'custom',
 };

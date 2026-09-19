@@ -126,6 +126,5 @@ export const PMO: IndicatorConfig = {
   description: 'DecisionPoint Price Momentum Oscillator',
   id: 'pmo',
   name: 'PMO',
-  requiredInputs: 55,
   type: 'custom',
 };

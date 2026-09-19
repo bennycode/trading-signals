@@ -14,7 +14,6 @@ export const BollingerBandsWidth: IndicatorConfig = {
   id: 'bbw',
   name: 'BBW',
   processData: makeProcessData({rowInputs: ['close']}),
-  requiredInputs: 20,
   type: 'single',
   yAxisLabel: 'BBW',
 };

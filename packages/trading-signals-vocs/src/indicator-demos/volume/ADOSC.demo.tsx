@@ -14,7 +14,6 @@ export const ADOSC: IndicatorConfig = {
   id: 'adosc',
   name: 'ADOSC',
   processData: makeProcessData({addInputs: ['close', 'high', 'low', 'volume'], rowInputs: ['close', 'volume']}),
-  requiredInputs: 10,
   type: 'single',
   yAxisLabel: 'ADOSC',
 };

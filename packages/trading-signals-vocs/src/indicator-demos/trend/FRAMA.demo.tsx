@@ -14,7 +14,6 @@ export const FRAMA: IndicatorConfig = {
   id: 'frama',
   name: 'FRAMA',
   processData: makeProcessData({rowInputs: ['close']}),
-  requiredInputs: 16,
   type: 'single',
   yAxisLabel: 'Price',
 };

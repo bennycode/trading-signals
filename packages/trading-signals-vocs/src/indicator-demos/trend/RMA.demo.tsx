@@ -14,7 +14,6 @@ export const RMA: IndicatorConfig = {
   id: 'rma',
   name: 'RMA',
   processData: makeProcessData({rowInputs: ['close']}),
-  requiredInputs: 5,
   type: 'single',
   yAxisLabel: 'Price',
 };

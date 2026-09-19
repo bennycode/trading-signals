@@ -14,7 +14,6 @@ export const KAMA: IndicatorConfig = {
   id: 'kama',
   name: 'KAMA',
   processData: makeProcessData({rowInputs: ['close']}),
-  requiredInputs: 10,
   type: 'single',
   yAxisLabel: 'Price',
 };

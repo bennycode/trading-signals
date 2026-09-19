@@ -14,7 +14,6 @@ export const MOM: IndicatorConfig = {
   id: 'mom',
   name: 'MOM',
   processData: makeProcessData({rowInputs: ['close']}),
-  requiredInputs: 5,
   type: 'single',
   yAxisLabel: 'MOM',
 };

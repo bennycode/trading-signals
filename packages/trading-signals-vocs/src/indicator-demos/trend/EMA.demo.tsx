@@ -14,7 +14,6 @@ export const EMA: IndicatorConfig = {
   id: 'ema',
   name: 'EMA',
   processData: makeProcessData({rowInputs: ['close']}),
-  requiredInputs: 5,
   type: 'single',
   yAxisLabel: 'Price',
 };

@@ -14,7 +14,6 @@ export const FisherTransform: IndicatorConfig = {
   id: 'fisher',
   name: 'Fisher Transform',
   processData: makeProcessData({rowInputs: ['high', 'low']}),
-  requiredInputs: 10,
   type: 'single',
   yAxisLabel: 'Fisher',
 };

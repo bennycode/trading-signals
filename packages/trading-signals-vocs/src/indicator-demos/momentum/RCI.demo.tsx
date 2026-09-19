@@ -14,7 +14,6 @@ export const RCI: IndicatorConfig = {
   id: 'rci',
   name: 'RCI',
   processData: makeProcessData({rowInputs: ['close']}),
-  requiredInputs: 9,
   type: 'single',
   yAxisLabel: 'RCI',
 };

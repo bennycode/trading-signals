@@ -14,7 +14,6 @@ export const BOP: IndicatorConfig = {
   id: 'bop',
   name: 'BOP',
   processData: makeProcessData({rowInputs: ['open', 'high', 'low', 'close']}),
-  requiredInputs: 1,
   type: 'single',
   yAxisLabel: 'BOP',
 };

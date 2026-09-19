@@ -14,7 +14,6 @@ export const CCI: IndicatorConfig = {
   id: 'cci',
   name: 'CCI',
   processData: makeProcessData({addInputs: ['high', 'low', 'close'], rowInputs: ['close']}),
-  requiredInputs: 20,
   type: 'single',
   yAxisLabel: 'CCI',
 };

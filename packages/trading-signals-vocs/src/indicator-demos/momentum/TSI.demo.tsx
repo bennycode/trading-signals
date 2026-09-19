@@ -14,7 +14,6 @@ export const TSI: IndicatorConfig = {
   id: 'tsi',
   name: 'TSI',
   processData: makeProcessData({rowInputs: ['close']}),
-  requiredInputs: 38,
   type: 'single',
   yAxisLabel: 'TSI',
 };

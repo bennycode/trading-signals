@@ -14,7 +14,6 @@ export const DPO: IndicatorConfig = {
   id: 'dpo',
   name: 'DPO',
   processData: makeProcessData({rowInputs: ['close']}),
-  requiredInputs: 20,
   type: 'single',
   yAxisLabel: 'DPO',
 };

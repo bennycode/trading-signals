@@ -14,7 +14,6 @@ export const NATR: IndicatorConfig = {
   id: 'natr',
   name: 'NATR',
   processData: makeProcessData({addInputs: ['close', 'high', 'low'], rowInputs: ['close']}),
-  requiredInputs: 14,
   type: 'single',
   yAxisLabel: 'NATR (%)',
 };

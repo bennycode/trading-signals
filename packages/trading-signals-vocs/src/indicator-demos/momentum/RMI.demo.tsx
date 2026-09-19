@@ -14,7 +14,6 @@ export const RMI: IndicatorConfig = {
   id: 'rmi',
   name: 'RMI',
   processData: makeProcessData({rowInputs: ['close']}),
-  requiredInputs: 19,
   type: 'single',
   yAxisLabel: 'RMI',
 };

@@ -14,7 +14,6 @@ export const SwingHigh: IndicatorConfig = {
   id: 'swing-high',
   name: 'SwingHigh',
   processData: makeProcessData({addInputs: ['high', 'low'], rowInputs: ['high', 'close']}),
-  requiredInputs: 5,
   type: 'single',
   yAxisLabel: 'Price',
 };

@@ -14,7 +14,6 @@ export const TDS: IndicatorConfig = {
   id: 'tds',
   name: 'TDS',
   processData: makeProcessData({alwaysStable: true, rowInputs: ['close']}),
-  requiredInputs: 1,
   type: 'single',
   yAxisLabel: 'TDS',
 };

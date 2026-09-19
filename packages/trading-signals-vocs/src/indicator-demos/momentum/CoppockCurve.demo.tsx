@@ -14,7 +14,6 @@ export const CoppockCurve: IndicatorConfig = {
   id: 'coppock',
   name: 'Coppock Curve',
   processData: makeProcessData({rowInputs: ['close']}),
-  requiredInputs: 24,
   type: 'single',
   yAxisLabel: 'Coppock',
 };

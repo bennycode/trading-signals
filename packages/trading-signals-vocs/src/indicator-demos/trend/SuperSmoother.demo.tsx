@@ -14,7 +14,6 @@ export const SuperSmoother: IndicatorConfig = {
   id: 'supersmoother',
   name: 'SuperSmoother',
   processData: makeProcessData({rowInputs: ['close']}),
-  requiredInputs: 10,
   type: 'single',
   yAxisLabel: 'Price',
 };

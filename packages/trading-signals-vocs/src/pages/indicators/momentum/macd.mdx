@@ -11,7 +11,7 @@ Moving Average Convergence Divergence
 
 ## Live Demo
 
-Pick a market regime to see how MACD(33) reacts:
+Pick a market regime to see how MACD(26) reacts:
 
 <IndicatorPageDemo category="momentum" id="macd" />
 
@@ -20,6 +20,6 @@ Pick a market regime to see how MACD(33) reacts:
 ```ts twoslash
 import {EMA, MACD} from 'trading-signals';
 
-// MACD yields results once 33 inputs have been added
+// MACD yields results once 26 inputs have been added
 const macd = new MACD(new EMA(12), new EMA(26), new EMA(9));
 ```

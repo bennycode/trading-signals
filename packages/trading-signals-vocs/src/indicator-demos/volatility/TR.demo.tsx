@@ -14,7 +14,6 @@ export const TR: IndicatorConfig = {
   id: 'tr',
   name: 'TR',
   processData: makeProcessData({addInputs: ['high', 'low', 'close'], rowInputs: ['close']}),
-  requiredInputs: 2,
   type: 'single',
   yAxisLabel: 'TR',
 };

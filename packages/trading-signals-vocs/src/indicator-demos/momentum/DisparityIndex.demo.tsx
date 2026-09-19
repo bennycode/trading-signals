@@ -14,7 +14,6 @@ export const DisparityIndex: IndicatorConfig = {
   id: 'disparity-index',
   name: 'DI',
   processData: makeProcessData({rowInputs: ['close']}),
-  requiredInputs: 14,
   type: 'single',
   yAxisLabel: 'DI',
 };

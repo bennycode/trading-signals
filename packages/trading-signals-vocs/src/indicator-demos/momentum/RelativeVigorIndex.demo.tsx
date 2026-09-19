@@ -131,6 +131,5 @@ export const RVGI: IndicatorConfig = {
   description: 'Relative Vigor Index',
   id: 'rvgi',
   name: 'RVGI',
-  requiredInputs: 16,
   type: 'custom',
 };

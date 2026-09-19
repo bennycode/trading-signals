@@ -14,7 +14,6 @@ export const VHF: IndicatorConfig = {
   id: 'vhf',
   name: 'Vertical Horizontal Filter',
   processData: makeProcessData({rowInputs: ['close']}),
-  requiredInputs: 29,
   type: 'single',
   yAxisLabel: 'VHF',
 };

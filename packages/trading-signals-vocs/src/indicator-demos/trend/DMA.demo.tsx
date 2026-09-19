@@ -136,6 +136,5 @@ export const DMA: IndicatorConfig = {
     'Compares two moving averages. When the short MA crosses above the long MA, it signals a potential buy opportunity.',
   id: 'dma',
   name: 'DMA',
-  requiredInputs: 9,
   type: 'custom',
 };

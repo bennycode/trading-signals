@@ -17,7 +17,6 @@ export const WAD: IndicatorConfig = {
     addInputs: ['close', 'high', 'low'],
     rowInputs: ['close'],
   }),
-  requiredInputs: 2,
   type: 'single',
   yAxisLabel: 'WAD',
 };

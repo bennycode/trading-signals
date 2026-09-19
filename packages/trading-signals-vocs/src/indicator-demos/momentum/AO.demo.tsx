@@ -14,7 +14,6 @@ export const AO: IndicatorConfig = {
   id: 'ao',
   name: 'AO',
   processData: makeProcessData({rowInputs: ['high', 'low']}),
-  requiredInputs: 34,
   type: 'single',
   yAxisLabel: 'AO',
 };

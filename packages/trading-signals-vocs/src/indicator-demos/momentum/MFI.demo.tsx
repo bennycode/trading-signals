@@ -14,7 +14,6 @@ export const MFI: IndicatorConfig = {
   id: 'mfi',
   name: 'MFI',
   processData: makeProcessData({addInputs: ['close', 'high', 'low', 'volume'], rowInputs: ['close', 'volume']}),
-  requiredInputs: 15,
   type: 'single',
   yAxisLabel: 'MFI',
 };

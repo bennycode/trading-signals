@@ -14,7 +14,6 @@ export const ALMA: IndicatorConfig = {
   id: 'alma',
   name: 'ALMA',
   processData: makeProcessData({rowInputs: ['close']}),
-  requiredInputs: 9,
   type: 'single',
   yAxisLabel: 'Price',
 };

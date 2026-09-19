@@ -18,7 +18,6 @@ export const PVT: IndicatorConfig = {
     alwaysStable: true,
     rowInputs: ['close', 'volume'],
   }),
-  requiredInputs: 2,
   type: 'single',
   yAxisLabel: 'PVT',
 };

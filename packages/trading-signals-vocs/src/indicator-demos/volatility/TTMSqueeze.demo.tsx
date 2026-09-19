@@ -159,6 +159,5 @@ export const TTMSqueeze: IndicatorConfig = {
   description: 'TTM Squeeze (Squeeze Momentum)',
   id: 'ttm-squeeze',
   name: 'TTM Squeeze',
-  requiredInputs: 39,
   type: 'custom',
 };

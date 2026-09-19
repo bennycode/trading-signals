@@ -14,7 +14,6 @@ export const RelativeVolatilityIndex: IndicatorConfig = {
   id: 'rvi',
   name: 'RVI',
   processData: makeProcessData({rowInputs: ['close']}),
-  requiredInputs: 23,
   type: 'single',
   yAxisLabel: 'RVI',
 };

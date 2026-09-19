@@ -14,7 +14,6 @@ export const CMF: IndicatorConfig = {
   id: 'cmf',
   name: 'CMF',
   processData: makeProcessData({addInputs: ['close', 'high', 'low', 'volume'], rowInputs: ['close', 'volume']}),
-  requiredInputs: 20,
   type: 'single',
   yAxisLabel: 'CMF',
 };

@@ -14,7 +14,6 @@ export const ZLEMA: IndicatorConfig = {
   id: 'zlema',
   name: 'ZLEMA',
   processData: makeProcessData({rowInputs: ['close']}),
-  requiredInputs: 5,
   type: 'single',
   yAxisLabel: 'Price',
 };

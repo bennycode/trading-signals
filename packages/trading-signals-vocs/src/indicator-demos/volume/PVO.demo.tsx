@@ -14,7 +14,6 @@ export const PVO: IndicatorConfig = {
   id: 'pvo',
   name: 'PVO',
   processData: makeProcessData({rowInputs: ['volume']}),
-  requiredInputs: 26,
   type: 'single',
   yAxisLabel: 'PVO (%)',
 };

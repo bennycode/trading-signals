@@ -14,7 +14,6 @@ export const CMO: IndicatorConfig = {
   id: 'cmo',
   name: 'CMO',
   processData: makeProcessData({rowInputs: ['close']}),
-  requiredInputs: 15,
   type: 'single',
   yAxisLabel: 'CMO',
 };

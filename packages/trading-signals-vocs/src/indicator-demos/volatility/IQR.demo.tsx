@@ -14,7 +14,6 @@ export const IQR: IndicatorConfig = {
   id: 'iqr',
   name: 'IQR',
   processData: makeProcessData({rowInputs: ['close']}),
-  requiredInputs: 13,
   type: 'single',
   yAxisLabel: 'IQR',
 };

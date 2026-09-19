@@ -14,7 +14,6 @@ export const ATR: IndicatorConfig = {
   id: 'atr',
   name: 'ATR',
   processData: makeProcessData({addInputs: ['high', 'low', 'close'], rowInputs: ['close']}),
-  requiredInputs: 14,
   type: 'single',
   yAxisLabel: 'ATR',
 };

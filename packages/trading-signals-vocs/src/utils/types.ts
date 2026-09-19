@@ -22,7 +22,7 @@ export type DemoSignal = ReturnType<TrendIndicatorSeries['getSignal']>;
  * input types remain assignable. Result and input shapes differ per indicator, so a config that
  * reads them parameterizes `IndicatorConfig<TIndicator>`.
  */
-export type DemoIndicator = Pick<TechnicalIndicator<unknown, never>, 'isStable' | 'getResult'> & {
+export type DemoIndicator = Pick<TechnicalIndicator<unknown, never>, 'isStable' | 'getResult' | 'getRequiredInputs'> & {
   interval?: number;
   add(input: DemoIndicatorInput): unknown;
   getSignal?(): DemoSignal;
@@ -40,7 +40,6 @@ interface BaseIndicatorConfig<TIndicator = DemoIndicator> {
   name: string;
   description: string;
   color: string;
-  requiredInputs: number;
   details?: string;
   createIndicator: () => TIndicator;
 }

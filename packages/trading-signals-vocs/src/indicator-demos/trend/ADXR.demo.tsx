@@ -14,7 +14,6 @@ export const ADXR: IndicatorConfig = {
   id: 'adxr',
   name: 'ADXR',
   processData: makeProcessData({rowInputs: ['high', 'low', 'close']}),
-  requiredInputs: 40,
   type: 'single',
   yAxisLabel: 'ADXR',
 };

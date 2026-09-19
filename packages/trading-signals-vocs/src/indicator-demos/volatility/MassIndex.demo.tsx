@@ -14,7 +14,6 @@ export const MassIndex: IndicatorConfig = {
   id: 'mass-index',
   name: 'Mass Index',
   processData: makeProcessData({rowInputs: ['high', 'low']}),
-  requiredInputs: 41,
   type: 'single',
   yAxisLabel: 'Mass Index',
 };

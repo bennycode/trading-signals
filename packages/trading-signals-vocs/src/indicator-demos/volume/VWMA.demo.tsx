@@ -14,7 +14,6 @@ export const VWMA: IndicatorConfig = {
   id: 'vwma',
   name: 'VWMA',
   processData: makeProcessData({addInputs: ['close', 'high', 'low', 'volume'], rowInputs: ['close', 'volume']}),
-  requiredInputs: 20,
   type: 'single',
   yAxisLabel: 'VWMA',
 };

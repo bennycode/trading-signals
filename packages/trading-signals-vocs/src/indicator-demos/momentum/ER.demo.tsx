@@ -14,7 +14,6 @@ export const ER: IndicatorConfig = {
   id: 'er',
   name: 'ER',
   processData: makeProcessData({addInputs: ['high', 'low', 'close'], rowInputs: ['close']}),
-  requiredInputs: 14,
   type: 'single',
   yAxisLabel: 'ER',
 };

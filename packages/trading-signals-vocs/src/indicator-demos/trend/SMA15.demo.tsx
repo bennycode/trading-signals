@@ -14,7 +14,6 @@ export const SMA15: IndicatorConfig = {
   id: 'sma15',
   name: 'SMA15',
   processData: makeProcessData({rowInputs: ['close']}),
-  requiredInputs: 15,
   type: 'single',
   yAxisLabel: 'Price',
 };

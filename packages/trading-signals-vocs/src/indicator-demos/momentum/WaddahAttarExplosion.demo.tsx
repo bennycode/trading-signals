@@ -166,6 +166,5 @@ export const WaddahAttarExplosion: IndicatorConfig = {
   description: 'Waddah Attar Explosion',
   id: 'waddah-attar',
   name: 'WAE',
-  requiredInputs: 21,
   type: 'custom',
 };

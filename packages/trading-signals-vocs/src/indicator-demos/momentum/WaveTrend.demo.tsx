@@ -136,6 +136,5 @@ export const WaveTrend: IndicatorConfig = {
   description: 'WaveTrend Oscillator',
   id: 'wavetrend',
   name: 'WaveTrend',
-  requiredInputs: 21,
   type: 'custom',
 };

@@ -14,7 +14,6 @@ export const CFO: IndicatorConfig = {
   id: 'cfo',
   name: 'CFO',
   processData: makeProcessData({rowInputs: ['close']}),
-  requiredInputs: 15,
   type: 'single',
   yAxisLabel: 'CFO',
 };

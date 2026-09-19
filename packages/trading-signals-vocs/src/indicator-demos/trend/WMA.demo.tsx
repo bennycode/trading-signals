@@ -13,7 +13,6 @@ export const WMA: IndicatorConfig = {
   id: 'wma',
   name: 'WMA',
   processData: makeProcessData({rowInputs: ['close']}),
-  requiredInputs: 5,
   type: 'single',
   yAxisLabel: 'Price',
 };

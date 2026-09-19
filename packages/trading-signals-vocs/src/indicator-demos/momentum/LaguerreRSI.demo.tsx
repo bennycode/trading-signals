@@ -14,7 +14,6 @@ export const LaguerreRSI: IndicatorConfig = {
   id: 'laguerre-rsi',
   name: 'Laguerre RSI',
   processData: makeProcessData({rowInputs: ['close']}),
-  requiredInputs: 4,
   type: 'single',
   yAxisLabel: 'LRSI',
 };

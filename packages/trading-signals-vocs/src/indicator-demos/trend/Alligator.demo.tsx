@@ -144,6 +144,5 @@ export const Alligator: IndicatorConfig = {
     'Bill Williams reads the market as an alligator that sleeps, awakens and eats: three smoothed moving averages of the median price form its jaw (13 bars), teeth (8 bars) and lips (5 bars). Because each line is displaced forward by a different amount (8, 5 and 3 bars) and their alignment is the indicator, the displacement is applied internally — every value shown is the one its line produced that many bars earlier.',
   id: 'alligator',
   name: 'Williams Alligator',
-  requiredInputs: 21,
   type: 'custom',
 };

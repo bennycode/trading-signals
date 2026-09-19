@@ -130,6 +130,5 @@ export const VolatilityStop: IndicatorConfig = {
     "Trails a stop a multiple of the Average True Range behind the closing price, so the stop only ratchets in the trade's favor: it rises (never falls) below price in an uptrend and falls (never rises) above price in a downtrend. A close beyond the stop flips it to the other side of the price — the stop switches from acting as support to acting as resistance (or back), signaling a trend change rather than mere noise.",
   id: 'volatility-stop',
   name: 'Volatility Stop',
-  requiredInputs: 5,
   type: 'custom',
 };

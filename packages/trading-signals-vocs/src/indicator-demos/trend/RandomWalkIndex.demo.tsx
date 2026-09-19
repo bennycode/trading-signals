@@ -136,6 +136,5 @@ export const RandomWalkIndex: IndicatorConfig = {
     'Compares how far price actually travelled against how far a random walk would drift. Readings above 1 mark non-random, trending movement; the greater line names the side in control.',
   id: 'rwi',
   name: 'Random Walk Index',
-  requiredInputs: 15,
   type: 'custom',
 };

@@ -14,7 +14,6 @@ export const GAPO: IndicatorConfig = {
   id: 'gapo',
   name: 'Gopalakrishnan Range Index',
   processData: makeProcessData({rowInputs: ['high', 'low']}),
-  requiredInputs: 14,
   type: 'single',
   yAxisLabel: 'GAPO',
 };

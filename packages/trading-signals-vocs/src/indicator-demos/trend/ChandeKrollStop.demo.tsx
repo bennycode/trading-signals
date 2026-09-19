@@ -133,6 +133,5 @@ export const ChandeKrollStop: IndicatorConfig = {
     'Two volatility-adjusted trailing stops derived in two passes: a preliminary short stop hangs one ATR below the highest high, a preliminary long stop sits one ATR above the lowest low, and the final lines take the most conservative preliminary stop of the last nine bars. Price crossing below the long stop exits longs; price crossing above the short stop exits shorts.',
   id: 'chande-kroll-stop',
   name: 'Chande Kroll Stop',
-  requiredInputs: 18,
   type: 'custom',
 };

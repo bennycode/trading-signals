@@ -14,7 +14,6 @@ export const PGO: IndicatorConfig = {
   id: 'pgo',
   name: 'PGO',
   processData: makeProcessData({addInputs: ['high', 'low', 'close'], rowInputs: ['close']}),
-  requiredInputs: 27,
   type: 'single',
   yAxisLabel: 'PGO',
 };

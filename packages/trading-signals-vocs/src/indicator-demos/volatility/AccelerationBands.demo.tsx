@@ -18,6 +18,5 @@ export const AccelerationBands: IndicatorConfig = {
   description: 'Acceleration Bands',
   id: 'abands',
   name: 'ABANDS',
-  requiredInputs: 20,
   type: 'custom',
 };

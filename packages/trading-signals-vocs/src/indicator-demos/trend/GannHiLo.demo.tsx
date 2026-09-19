@@ -133,6 +133,5 @@ export const GannHiLo: IndicatorConfig = {
     'Robert Krausz built his Gann swing trading plans around this activator: it tracks a simple moving average of the highs and one of the lows, and the close picks which of the two is plotted. Closing above the previous average of the highs activates the average of the lows as rising support, closing below the previous average of the lows activates the average of the highs as falling resistance, and between the two averages the line freezes, so a pullback never loosens the stop.',
   id: 'gann-hilo',
   name: 'Gann HiLo Activator',
-  requiredInputs: 21,
   type: 'custom',
 };

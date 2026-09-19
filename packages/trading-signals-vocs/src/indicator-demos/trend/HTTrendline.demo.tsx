@@ -14,7 +14,6 @@ export const HTTrendline: IndicatorConfig = {
   id: 'ht-trendline',
   name: 'HT Trendline',
   processData: makeProcessData({rowInputs: ['close']}),
-  requiredInputs: 64,
   type: 'single',
   yAxisLabel: 'Price',
 };

@@ -13,7 +13,6 @@ export const REI: IndicatorConfig = {
   id: 'rei',
   name: 'REI',
   processData: makeProcessData({addInputs: ['high', 'low', 'close', 'open'], rowInputs: ['close']}),
-  requiredInputs: 5,
   type: 'single',
   yAxisLabel: 'REI',
 };

@@ -134,6 +134,5 @@ export const ElderRay: IndicatorConfig = {
   description: 'Elder Ray Index',
   id: 'elder-ray',
   name: 'Elder Ray',
-  requiredInputs: 13,
   type: 'custom',
 };

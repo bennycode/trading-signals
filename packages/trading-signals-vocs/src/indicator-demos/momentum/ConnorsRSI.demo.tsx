@@ -14,7 +14,6 @@ export const ConnorsRSI: IndicatorConfig = {
   id: 'connors-rsi',
   name: 'ConnorsRSI',
   processData: makeProcessData({rowInputs: ['close']}),
-  requiredInputs: 102,
   type: 'single',
   yAxisLabel: 'CRSI',
 };

@@ -14,7 +14,6 @@ export const IMI: IndicatorConfig = {
   id: 'imi',
   name: 'IMI',
   processData: makeProcessData({rowInputs: ['open', 'high', 'low', 'close']}),
-  requiredInputs: 14,
   type: 'single',
   yAxisLabel: 'IMI',
 };

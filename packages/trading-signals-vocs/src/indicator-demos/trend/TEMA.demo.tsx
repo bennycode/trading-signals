@@ -14,7 +14,6 @@ export const TEMA: IndicatorConfig = {
   id: 'tema',
   name: 'TEMA',
   processData: makeProcessData({rowInputs: ['close']}),
-  requiredInputs: 25,
   type: 'single',
   yAxisLabel: 'Price',
 };

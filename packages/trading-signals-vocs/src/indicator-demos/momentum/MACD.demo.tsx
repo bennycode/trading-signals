@@ -136,6 +136,5 @@ export const MACD: IndicatorConfig = {
   description: 'Moving Average Convergence Divergence',
   id: 'macd',
   name: 'MACD',
-  requiredInputs: 33,
   type: 'custom',
 };

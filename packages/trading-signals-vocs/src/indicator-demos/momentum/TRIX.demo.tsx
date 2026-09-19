@@ -14,7 +14,6 @@ export const TRIX: IndicatorConfig = {
   id: 'trix',
   name: 'TRIX',
   processData: makeProcessData({rowInputs: ['close']}),
-  requiredInputs: 26,
   type: 'single',
   yAxisLabel: 'TRIX (%)',
 };

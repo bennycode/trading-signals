@@ -14,7 +14,6 @@ export const RSI: IndicatorConfig = {
   id: 'rsi',
   name: 'RSI',
   processData: makeProcessData({rowInputs: ['close']}),
-  requiredInputs: 14,
   type: 'single',
   yAxisLabel: 'RSI',
 };

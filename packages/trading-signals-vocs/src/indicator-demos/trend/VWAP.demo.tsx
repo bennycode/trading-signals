@@ -18,7 +18,6 @@ export const VWAP: IndicatorConfig = {
     alwaysStable: true,
     rowInputs: ['close', 'volume'],
   }),
-  requiredInputs: 1,
   type: 'single',
   yAxisLabel: 'Price',
 };

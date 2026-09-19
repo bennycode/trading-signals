@@ -13,7 +13,7 @@ interface ProcessDataOptions {
 }
 
 /** Narrower than `DemoIndicator`: every indicator routed through here yields a single numeric result. */
-type SeriesIndicator = Pick<IndicatorSeries, 'isStable' | 'getResult'> & {
+type SeriesIndicator = Pick<IndicatorSeries, 'isStable' | 'getResult' | 'getRequiredInputs'> & {
   add(input: DemoIndicatorInput): unknown;
   getSignal?(): DemoSignal;
 };

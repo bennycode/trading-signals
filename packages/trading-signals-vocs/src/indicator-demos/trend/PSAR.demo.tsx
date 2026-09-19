@@ -14,7 +14,6 @@ export const PSAR: IndicatorConfig = {
   id: 'psar',
   name: 'PSAR',
   processData: makeProcessData({rowInputs: ['high', 'low', 'close']}),
-  requiredInputs: 2,
   type: 'single',
   yAxisLabel: 'Price',
 };

@@ -13,7 +13,6 @@ export const StochasticRSI: IndicatorConfig = {
   id: 'stochrsi',
   name: 'StochRSI',
   processData: makeProcessData({rowInputs: ['close']}),
-  requiredInputs: 14,
   type: 'single',
   yAxisLabel: 'StochRSI',
 };

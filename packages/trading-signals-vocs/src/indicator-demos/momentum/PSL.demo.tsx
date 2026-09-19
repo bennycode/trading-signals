@@ -14,7 +14,6 @@ export const PSL: IndicatorConfig = {
   id: 'psl',
   name: 'PSL',
   processData: makeProcessData({rowInputs: ['close']}),
-  requiredInputs: 13,
   type: 'single',
   yAxisLabel: 'PSL',
 };

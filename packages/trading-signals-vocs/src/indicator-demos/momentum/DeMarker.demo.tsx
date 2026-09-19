@@ -14,7 +14,6 @@ export const DeMarker: IndicatorConfig = {
   id: 'demarker',
   name: 'DeMarker',
   processData: makeProcessData({addInputs: ['high', 'low'], rowInputs: ['high', 'low']}),
-  requiredInputs: 15,
   type: 'single',
   yAxisLabel: 'DeM',
 };

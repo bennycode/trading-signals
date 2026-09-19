@@ -14,7 +14,6 @@ export const T3: IndicatorConfig = {
   id: 't3',
   name: 'T3',
   processData: makeProcessData({rowInputs: ['close']}),
-  requiredInputs: 25,
   type: 'single',
   yAxisLabel: 'Price',
 };

@@ -18,6 +18,5 @@ export const KeltnerChannels: IndicatorConfig = {
   description: 'Keltner Channels',
   id: 'keltner-channels',
   name: 'Keltner Channels',
-  requiredInputs: 20,
   type: 'custom',
 };

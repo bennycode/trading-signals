@@ -14,7 +14,6 @@ export const CVI: IndicatorConfig = {
   id: 'cvi',
   name: 'Chaikin Volatility',
   processData: makeProcessData({rowInputs: ['high', 'low']}),
-  requiredInputs: 20,
   type: 'single',
   yAxisLabel: 'CVI',
 };

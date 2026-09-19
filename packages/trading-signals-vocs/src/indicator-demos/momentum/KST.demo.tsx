@@ -14,7 +14,6 @@ export const KST: IndicatorConfig = {
   id: 'kst',
   name: 'KST',
   processData: makeProcessData({rowInputs: ['close']}),
-  requiredInputs: 45,
   type: 'single',
   yAxisLabel: 'KST',
 };

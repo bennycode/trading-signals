@@ -14,7 +14,6 @@ export const AccumulativeSwingIndex: IndicatorConfig = {
   id: 'asi',
   name: 'ASI',
   processData: makeProcessData({rowInputs: ['open', 'high', 'low', 'close']}),
-  requiredInputs: 2,
   type: 'single',
   yAxisLabel: 'ASI',
 };

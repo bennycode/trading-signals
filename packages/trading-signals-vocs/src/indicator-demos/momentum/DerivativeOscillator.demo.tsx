@@ -14,7 +14,6 @@ export const DerivativeOscillator: IndicatorConfig = {
   id: 'derivative-oscillator',
   name: 'DOSC',
   processData: makeProcessData({rowInputs: ['close']}),
-  requiredInputs: 29,
   type: 'single',
   yAxisLabel: 'DOSC',
 };

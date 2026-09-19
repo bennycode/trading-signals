@@ -14,7 +14,6 @@ export const MarketFacilitationIndex: IndicatorConfig = {
   id: 'marketfi',
   name: 'MARKETFI',
   processData: makeProcessData({addInputs: ['close', 'high', 'low', 'volume'], rowInputs: ['high', 'low', 'volume']}),
-  requiredInputs: 1,
   type: 'single',
   yAxisLabel: 'MARKETFI',
 };

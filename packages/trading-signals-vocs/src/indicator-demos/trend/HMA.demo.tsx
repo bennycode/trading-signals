@@ -14,7 +14,6 @@ export const HMA: IndicatorConfig = {
   id: 'hma',
   name: 'HMA',
   processData: makeProcessData({rowInputs: ['close']}),
-  requiredInputs: 16,
   type: 'single',
   yAxisLabel: 'Price',
 };

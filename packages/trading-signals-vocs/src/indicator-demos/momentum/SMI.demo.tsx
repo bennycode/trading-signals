@@ -14,7 +14,6 @@ export const SMI: IndicatorConfig = {
   id: 'smi',
   name: 'SMI',
   processData: makeProcessData({rowInputs: ['high', 'low', 'close']}),
-  requiredInputs: 14,
   type: 'single',
   yAxisLabel: 'SMI',
 };

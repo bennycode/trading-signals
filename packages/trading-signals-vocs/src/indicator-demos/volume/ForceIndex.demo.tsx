@@ -14,7 +14,6 @@ export const ForceIndex: IndicatorConfig = {
   id: 'force-index',
   name: 'ForceIndex',
   processData: makeProcessData({addInputs: ['close', 'high', 'low', 'volume'], rowInputs: ['close', 'volume']}),
-  requiredInputs: 14,
   type: 'single',
   yAxisLabel: 'FI',
 };

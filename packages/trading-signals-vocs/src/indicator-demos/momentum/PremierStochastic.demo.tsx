@@ -14,7 +14,6 @@ export const PremierStochastic: IndicatorConfig = {
   id: 'premier-stochastic',
   name: 'Premier Stochastic',
   processData: makeProcessData({addInputs: ['high', 'low', 'close'], rowInputs: ['close']}),
-  requiredInputs: 12,
   type: 'single',
   yAxisLabel: 'PSO',
 };

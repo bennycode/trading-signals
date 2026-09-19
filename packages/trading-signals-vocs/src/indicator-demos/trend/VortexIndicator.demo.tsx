@@ -135,6 +135,5 @@ export const VortexIndicator: IndicatorConfig = {
     'Tracks upward and downward trend movement as two lines normalized by the true range. The upper line names the side in control; a crossover of VI+ and VI− suggests a trend change.',
   id: 'vortex',
   name: 'Vortex Indicator',
-  requiredInputs: 15,
   type: 'custom',
 };

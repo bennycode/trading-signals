@@ -14,7 +14,6 @@ export const MAD: IndicatorConfig = {
   id: 'mad',
   name: 'MAD',
   processData: makeProcessData({rowInputs: ['close']}),
-  requiredInputs: 10,
   type: 'single',
   yAxisLabel: 'MAD',
 };

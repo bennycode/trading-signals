@@ -69,7 +69,7 @@ function extractConstructorArgs(config: IndicatorConfig): string | undefined {
 }
 
 /** Twoslash-checked usage snippet, or undefined when the class is not a public trading-signals export. */
-function buildUsageSnippet(config: IndicatorConfig): string | undefined {
+function buildUsageSnippet(config: IndicatorConfig, requiredInputs: number): string | undefined {
   const className = config.createIndicator().constructor.name;
   if (!(className in tradingSignals)) {
     return undefined;
@@ -86,7 +86,7 @@ function buildUsageSnippet(config: IndicatorConfig): string | undefined {
   const imports = [className, ...referencedExports].sort((a, b) => a.localeCompare(b));
   return `import {${imports.join(', ')}} from 'trading-signals';
 
-// ${className} yields results once ${config.requiredInputs} inputs have been added
+// ${className} yields results once ${requiredInputs} inputs have been added
 const ${variableName} = new ${className}(${args});`;
 }
 
@@ -111,8 +111,10 @@ for (const {id: category, title: categoryTitle} of categoryMeta) {
       introCount += 1;
     }
     const lead = intro ?? config.details ?? config.description;
-    const interval = config.createIndicator().interval ?? config.requiredInputs;
-    const usage = buildUsageSnippet(config);
+    const indicator = config.createIndicator();
+    const requiredInputs = indicator.getRequiredInputs();
+    const interval = indicator.interval ?? requiredInputs;
+    const usage = buildUsageSnippet(config, requiredInputs);
     if (usage) {
       usageCount += 1;
     }

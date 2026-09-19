@@ -34,7 +34,6 @@ export const LinearRegression: SingleIndicatorConfig<LinearRegressionClass> = {
       slope: full?.slope ?? null,
     };
   },
-  requiredInputs: 14,
   type: 'single',
   yAxisLabel: 'Price',
 };

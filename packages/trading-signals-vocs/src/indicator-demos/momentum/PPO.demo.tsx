@@ -14,7 +14,6 @@ export const PPO: IndicatorConfig = {
   id: 'ppo',
   name: 'PPO',
   processData: makeProcessData({rowInputs: ['close']}),
-  requiredInputs: 26,
   type: 'single',
   yAxisLabel: 'PPO (%)',
 };

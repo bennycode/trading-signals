@@ -154,6 +154,5 @@ export const IchimokuCloud: IndicatorConfig = {
     'Maps trend and equilibrium at a glance: each line is the midpoint between the highest high and the lowest low of its window, and the two spans enclose the cloud that traders read as support and resistance. All values are computed at the current bar — the traditional 26-bar forward displacement of the cloud is left to the chart.',
   id: 'ichimoku',
   name: 'Ichimoku Cloud',
-  requiredInputs: 52,
   type: 'custom',
 };

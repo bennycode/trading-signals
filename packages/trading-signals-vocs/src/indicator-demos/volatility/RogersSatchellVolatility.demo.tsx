@@ -14,7 +14,6 @@ export const RogersSatchellVolatility: IndicatorConfig = {
   id: 'rogers-satchell',
   name: 'Rogers-Satchell Volatility',
   processData: makeProcessData({rowInputs: ['open', 'high', 'low', 'close']}),
-  requiredInputs: 14,
   type: 'single',
   yAxisLabel: 'RSV',
 };

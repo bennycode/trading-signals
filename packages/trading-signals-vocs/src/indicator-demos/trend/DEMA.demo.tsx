@@ -14,7 +14,6 @@ export const DEMA: IndicatorConfig = {
   id: 'dema',
   name: 'DEMA',
   processData: makeProcessData({rowInputs: ['close']}),
-  requiredInputs: 9,
   type: 'single',
   yAxisLabel: 'Price',
 };

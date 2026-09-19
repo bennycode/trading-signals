@@ -14,7 +14,6 @@ export const UlcerIndex: IndicatorConfig = {
   id: 'ulcer-index',
   name: 'Ulcer Index',
   processData: makeProcessData({rowInputs: ['close']}),
-  requiredInputs: 14,
   type: 'single',
   yAxisLabel: 'UI',
 };

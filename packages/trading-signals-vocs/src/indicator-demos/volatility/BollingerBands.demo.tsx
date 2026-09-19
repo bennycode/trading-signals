@@ -17,6 +17,5 @@ export const BollingerBands: IndicatorConfig = {
   description: 'Bollinger Bands',
   id: 'bbands',
   name: 'Bollinger Bands',
-  requiredInputs: 20,
   type: 'custom',
 };

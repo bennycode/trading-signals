@@ -14,7 +14,6 @@ export const APO: IndicatorConfig = {
   id: 'apo',
   name: 'APO',
   processData: makeProcessData({rowInputs: ['close']}),
-  requiredInputs: 26,
   type: 'single',
   yAxisLabel: 'APO',
 };

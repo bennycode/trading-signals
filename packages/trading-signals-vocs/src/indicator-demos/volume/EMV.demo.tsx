@@ -14,7 +14,6 @@ export const EMV: IndicatorConfig = {
   id: 'emv',
   name: 'EMV',
   processData: makeProcessData({addInputs: ['close', 'high', 'low', 'volume'], rowInputs: ['close', 'volume']}),
-  requiredInputs: 15,
   type: 'single',
   yAxisLabel: 'EMV',
 };

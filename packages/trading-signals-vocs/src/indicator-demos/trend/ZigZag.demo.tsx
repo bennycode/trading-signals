@@ -14,7 +14,6 @@ export const ZigZag: IndicatorConfig = {
   id: 'zigzag',
   name: 'ZigZag',
   processData: makeProcessData({rowInputs: ['high', 'low']}),
-  requiredInputs: 1,
   type: 'single',
   yAxisLabel: 'Price',
 };

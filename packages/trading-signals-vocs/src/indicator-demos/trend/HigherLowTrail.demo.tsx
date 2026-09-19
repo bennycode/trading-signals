@@ -14,7 +14,6 @@ export const HigherLowTrail: IndicatorConfig = {
   id: 'higher-low-trail',
   name: 'HigherLowTrail',
   processData: makeProcessData({addInputs: ['high', 'low'], rowInputs: ['low', 'close']}),
-  requiredInputs: 2,
   type: 'single',
   yAxisLabel: 'Price',
 };

@@ -14,7 +14,6 @@ export const McGinleyDynamic: IndicatorConfig = {
   id: 'mcginley-dynamic',
   name: 'MD',
   processData: makeProcessData({rowInputs: ['close']}),
-  requiredInputs: 14,
   type: 'single',
   yAxisLabel: 'Price',
 };

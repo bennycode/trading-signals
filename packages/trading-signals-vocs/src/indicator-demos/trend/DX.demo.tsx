@@ -13,7 +13,6 @@ export const DX: IndicatorConfig = {
   id: 'dx',
   name: 'DX',
   processData: makeProcessData({rowInputs: ['high', 'low', 'close']}),
-  requiredInputs: 14,
   type: 'single',
   yAxisLabel: 'DX',
 };

@@ -14,7 +14,6 @@ export const Qstick: IndicatorConfig = {
   id: 'qstick',
   name: 'Qstick',
   processData: makeProcessData({rowInputs: ['open', 'high', 'low', 'close']}),
-  requiredInputs: 8,
   type: 'single',
   yAxisLabel: 'Qstick',
 };

@@ -17,6 +17,5 @@ export const DonchianChannels: IndicatorConfig = {
   description: 'Donchian Channels',
   id: 'donchian-channels',
   name: 'Donchian Channels',
-  requiredInputs: 20,
   type: 'custom',
 };
