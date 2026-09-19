@@ -89,7 +89,7 @@ export class AlpacaAPI {
   }
 
   /** @see https://docs.alpaca.markets/reference/stocklatestbars */
-  async getStockBarsLatest(params: {feed: string; symbols: string}) {
+  async getStockBarsLatest(params: {feed?: string; symbols: string}) {
     const response = await this.#marketDataClient.get('/v2/stocks/bars/latest', {params});
     return LatestBarsResponseSchema.parse(response.data);
   }
@@ -103,7 +103,7 @@ export class AlpacaAPI {
   /** @see https://docs.alpaca.markets/reference/stockbars */
   async getStockBars(params: {
     end: string;
-    feed: string;
+    feed?: string;
     limit: number;
     page_token?: string;
     start: string;
@@ -115,7 +115,7 @@ export class AlpacaAPI {
   }
 
   /** @see https://docs.alpaca.markets/reference/stocksnapshots-1 */
-  async getStockSnapshots(params: {feed: string; symbols: string}) {
+  async getStockSnapshots(params: {feed?: string; symbols: string}) {
     const response = await this.#marketDataClient.get('/v2/stocks/snapshots', {params});
     return SnapshotsResponseSchema.parse(response.data);
   }
