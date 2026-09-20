@@ -27,35 +27,61 @@ export abstract class MarketDataSource extends EventEmitter {
     }
 
     const latest = await this.getLatestCandle(pair, intervalInMillis);
-    const endInMillis = latest.openTimeInMillis;
-
-    /*
-     * Start at a 2x over-ask and keep doubling the look-back when closures leave us short. The
-     * attempt cap is a backstop against an instrument whose history is simply shorter than `count`;
-     * each doubling reaches back exponentially, so a handful of attempts covers years of bars.
-     */
-    const MAX_ATTEMPTS = 8;
-    let spanInMillis = intervalInMillis * count * 2;
-
-    let candles: Candle[] = [];
-    for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
-      candles = await this.getCandles(pair, {
-        intervalInMillis,
-        startTimeFirstCandle: new Date(endInMillis - spanInMillis).toISOString(),
-        startTimeLastCandle: new Date(endInMillis).toISOString(),
-      });
-
-      if (candles.length >= count) {
-        break;
-      }
-      spanInMillis *= 2;
-    }
-
-    // `getCandles` returns oldest-first, so the most recent `count` are the tail.
-    return candles.slice(-count);
+    return getCandlesUntil(this, pair, count, intervalInMillis, latest.openTimeInMillis);
   }
 
   abstract watchCandles(pair: TradingPair, intervalInMillis: number, openTimeInISO: string): Promise<string>;
   abstract unwatchCandles(topicId: string): void;
   abstract disconnect(): void;
+}
+
+/**
+ * Fetch the newest `count` candles of the given interval that open at or before `untilInMillis`,
+ * oldest first. The cutoff is any point in time, not necessarily a candle open, and each caller
+ * decides which moment it stands for.
+ */
+export async function getCandlesUntil(
+  source: Pick<MarketDataSource, 'getCandles'>,
+  pair: TradingPair,
+  count: number,
+  intervalInMillis: number,
+  untilInMillis: number
+): Promise<Candle[]> {
+  if (count <= 0) {
+    return [];
+  }
+
+  /*
+   * `getCandles` takes a time window, not a number of candles, and closures (nights, weekends,
+   * holidays) mean a window of `count` intervals holds fewer than `count` candles. So walk
+   * backwards one window at a time, keeping what each one returns, until enough have come in.
+   * Each window is older than the last, so no candle is fetched twice. Windows grow as they go
+   * back: an instrument that is mostly closed, or listed later than expected, is reached in a few
+   * requests instead of many. The attempt cap stops the walk for a history shorter than `count`.
+   */
+  const MAX_ATTEMPTS = 8;
+  let collected: Candle[] = [];
+  let windowEndInMillis = untilInMillis;
+  let spanInMillis = intervalInMillis * count;
+
+  for (let attempt = 0; attempt < MAX_ATTEMPTS && collected.length < count; attempt++) {
+    const windowStartInMillis = windowEndInMillis - spanInMillis;
+    const candles = await source.getCandles(pair, {
+      intervalInMillis,
+      startTimeFirstCandle: new Date(windowStartInMillis).toISOString(),
+      startTimeLastCandle: new Date(windowEndInMillis).toISOString(),
+    });
+
+    // `getCandles` returns oldest-first and every window is older than the previous one.
+    collected = candles.concat(collected);
+    /*
+     * The window includes both ends, so the next one stops a millisecond earlier. Stepping back a
+     * whole interval instead would skip a bar whenever the anchor is not aligned to the source
+     * bars, e.g. daily bars opening at 05:00 with a backtest starting at 14:30.
+     */
+    windowEndInMillis = windowStartInMillis - 1;
+    spanInMillis *= 2;
+  }
+
+  return collected.slice(-count);
 }

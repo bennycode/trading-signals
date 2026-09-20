@@ -2,7 +2,7 @@ import Big from 'big.js';
 import {describe, expect, it} from 'vitest';
 import {AlpacaBrokerMock, OrderSide, OrderType} from '@typedtrader/exchange';
 import {AllAvailableAmount} from '../trader/index.js';
-import type {Candle, TradingRules} from '@typedtrader/exchange';
+import type {Candle, MarketDataSource, TradingRules} from '@typedtrader/exchange';
 import type {OrderAdvice, TradingSessionState} from '../trader/index.js';
 import {TradingPair} from '@typedtrader/exchange';
 import {BacktestExecutor} from './BacktestExecutor.js';
@@ -924,6 +924,68 @@ describe('BacktestExecutor', () => {
 
       // The rounded price (100.00) is below the candle's low (100.10) — no fill should occur
       expect(result.trades).toHaveLength(0);
+    });
+  });
+
+  describe('strategy init', () => {
+    class InitProbeStrategy extends Strategy {
+      static override NAME = 'InitProbe';
+      initCalls = 0;
+      candlesBeforeInit: number | undefined;
+      initArgs: [Pick<MarketDataSource, 'getRecentCandles'>, TradingPair] | undefined;
+      #candlesProcessed = 0;
+
+      override async init(market: Pick<MarketDataSource, 'getRecentCandles'>, pair: TradingPair): Promise<void> {
+        /*
+         * Suspend past the candle loop, which only ever awaits microtasks: an init that is started
+         * but not awaited would resume after the backtest already processed its candles.
+         */
+        await new Promise(resolve => setTimeout(resolve, 0));
+        this.initCalls += 1;
+        this.candlesBeforeInit = this.#candlesProcessed;
+        this.initArgs = [market, pair];
+      }
+
+      protected override async processCandle(): Promise<OrderAdvice | void> {
+        this.#candlesProcessed += 1;
+      }
+    }
+
+    it('calls init once before the first candle with the broker and pair, like a live TradingSession', async () => {
+      const broker = createMockExchange();
+      const strategy = new InitProbeStrategy();
+      const candles = [createCandle({close: '105', open: '100'}), createCandle({close: '110', open: '105'})];
+
+      await new BacktestExecutor({broker, candles, strategy, tradingPair}).execute();
+
+      expect(strategy.initCalls).toBe(1);
+      expect(strategy.candlesBeforeInit).toBe(0);
+      expect(strategy.initArgs?.[0], 'the broker mock stands in for the live broker as market').toBe(broker);
+      expect(strategy.initArgs?.[1]).toBe(tradingPair);
+    });
+
+    it('sets the broker clock to the first candle before init runs', async () => {
+      const broker = createMockExchange();
+      let timeAtInit: string | undefined;
+      class ClockProbeStrategy extends Strategy {
+        static override NAME = 'ClockProbe';
+
+        override async init(): Promise<void> {
+          timeAtInit = await broker.getTime();
+        }
+
+        protected override async processCandle(): Promise<OrderAdvice | void> {}
+      }
+      const candles = [
+        createCandle({close: '105', open: '100', openTimeInISO: '2025-03-01T09:30:00.000Z'}),
+        createCandle({close: '110', open: '105', openTimeInISO: '2025-03-01T09:31:00.000Z'}),
+      ];
+
+      await new BacktestExecutor({broker, candles, strategy: new ClockProbeStrategy(), tradingPair}).execute();
+
+      expect(timeAtInit, 'a backtest starts when its first candle opens, not at the real current time').toBe(
+        '2025-03-01T09:30:00.000Z'
+      );
     });
   });
 });
