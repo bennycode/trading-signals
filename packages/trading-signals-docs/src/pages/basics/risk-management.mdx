@@ -1,0 +1,121 @@
+---
+title: 'Risk Management'
+description: 'Position sizing, stop placement, trailing exits and the arithmetic that decides whether a strategy survives its losing streaks'
+---
+
+# Risk Management
+
+Most people who start building a trading bot spend their time on entries. Which indicator, which threshold, which crossover. Entries are the fun part, and they are also the part that matters least.
+
+Risk management is what decides whether an edge survives contact with a losing streak. A strategy that is right 60% of the time will still go to zero if the 40% are allowed to run. This page covers the arithmetic behind that.
+
+## Losses Are Not Symmetrical
+
+The first thing to internalise is that a loss costs more than the same-sized gain wins back. If you lose 20% of an account, a 20% gain does not get you back to even, because the gain applies to a smaller balance.
+
+| Drawdown | Gain needed to recover |
+| -------- | ---------------------- |
+| 10%      | 11.1%                  |
+| 20%      | 25%                    |
+| 33%      | 49.3%                  |
+| 50%      | 100%                   |
+| 75%      | 300%                   |
+| 90%      | 900%                   |
+
+The formula is `1 / (1 - drawdown) - 1`. Notice how gentle the top of the table is and how violent the bottom is. Down 10% is a bad month. Down 50% means you now need to double your money just to get back to where you started, and doubling is not something you do on demand.
+
+This is why the whole discipline is built around capping the downside rather than maximising the upside. Staying in the shallow part of that table is worth more than any entry signal.
+
+## Position Sizing
+
+The single most important number in a trading system is not the entry price. It is how much you buy.
+
+The standard approach is to fix the **risk per trade** as a percentage of the account, usually 1% to 2%, and then derive the position size from it. The point is that risking 1% of your account is not the same as putting 1% of your account into the trade.
+
+```
+position size = (account value × risk per trade) / (entry price - stop price)
+```
+
+Work through it. A $10,000 account, risking 1% per trade, so $100 at risk. You want to buy at $50 and you have decided the trade is wrong if it reaches $47.50:
+
+- Risk per share: `$50.00 - $47.50 = $2.50`
+- Position size: `$100 / $2.50 = 40 shares`
+- Position value: `40 × $50 = $2,000`
+
+So a 1% account risk translated into a 20% position. Those are different numbers and conflating them is one of the most common ways to blow up a small account.
+
+Now move the stop closer, to $49:
+
+- Risk per share: `$1.00`
+- Position size: `$100 / $1.00 = 100 shares`
+- Position value: `100 × $50 = $5,000`
+
+Same $100 of risk, but half the account is now in one position. This is the part that surprises people: **the stop distance determines the position size**, not the other way around. A tight stop is not automatically safer. It buys you a bigger position and a higher chance of being stopped out by noise.
+
+The same arithmetic works for shorts, where the stop sits above the entry, because only the distance between the two prices matters. Note that the result is usually fractional, and a position can legitimately be `0.0431 BTC` — before an order goes out it has to be rounded to the exchange's [step size](/basics/glossary#orders-and-execution).
+
+## Where To Put The Stop
+
+Three common approaches, in rough order of how much they respect the market:
+
+**Fixed percentage.** "Exit if it drops 5%." Simple, predictable, and completely blind to how the instrument actually moves. A 5% stop is loose on a utility stock and gets hit by lunchtime on a small-cap biotech.
+
+**Volatility-based.** Scale the stop to how much the instrument typically moves, using [ATR](/indicators/volatility/atr) (Average True Range). A stop at 2× or 3× ATR below entry adapts automatically: wider when the market is choppy, tighter when it is calm. This is usually the best default, because it means "the move is bigger than this instrument's normal noise" rather than an arbitrary round number.
+
+One practical consequence: ATR needs a full interval of candles before it reports anything. Until it has them you have no volatility estimate at all, so a system that sizes positions this way has to wait rather than guess.
+
+**Structural.** Put the stop just below the most recent [swing low](/indicators/trend/swing-low), on the logic that if price breaks the level that previously held, the reason you entered is gone. This is the most meaningful of the three and the hardest to automate, because identifying the relevant swing is partly a judgement call.
+
+## Fixed vs Trailing Stops
+
+A fixed stop protects your capital. A trailing stop protects your profit.
+
+A fixed stop sits at a price you chose on entry and stays there. If the trade goes your way and then reverses, a fixed stop lets the entire unrealised gain evaporate before it fires, because it is still sitting where you put it.
+
+A trailing stop moves up behind the price and never moves down. It converts an open profit into a floor. The cost is that you will be taken out of trends by ordinary pullbacks, and the tighter you trail, the more often that happens.
+
+The library ships several indicators designed to be used as trailing exits:
+
+- [Chandelier Exit](/indicators/trend/chandelier-exit): trails a multiple of ATR below the highest high since entry
+- [Volatility Stop](/indicators/trend/volatility-stop): ATR-based trailing stop that flips with the trend
+- [Chande Kroll Stop](/indicators/trend/chande-kroll-stop): similar idea with separate long and short stop lines
+- [Parabolic SAR](/indicators/trend/psar): accelerates toward price the longer a trend runs
+- [SuperTrend](/indicators/trend/supertrend): ATR band that acts as both trend filter and trailing stop
+
+The two are not interchangeable in practice. A fixed stop is decided once, at entry, and can then be left alone. A trailing stop has to be recalculated on every candle, because its whole purpose is to move. That makes trailing an ongoing part of the strategy rather than a one-time exit rule, and it is worth being clear about which of the two you actually have.
+
+## Take-Profit and the Win Rate You Actually Need
+
+Risk management has an upside too, and the two are linked by the **R multiple**: your reward expressed in units of your risk. If you risk $2.50 per share and target $5.00 of gain, that is a 2R trade.
+
+R decides how often you need to be right. Break even when `win rate × R = 1 - win rate`, which solves to:
+
+```
+breakeven win rate = 1 / (R + 1)
+```
+
+| Reward:risk | Breakeven win rate |
+| ----------- | ------------------ |
+| 1R          | 50%                |
+| 1.5R        | 40%                |
+| 2R          | 33.3%              |
+| 3R          | 25%                |
+| 5R          | 16.7%              |
+
+A strategy that wins a third of the time is profitable at 2R and a disaster at 1R. This is why "what is your win rate?" is close to a meaningless question on its own, and why a strategy that feels bad to run, because it is wrong most of the time, can be the better one.
+
+The trap at the high-R end is that targets get less realistic the further out they sit. A 5R target only needs a 16.7% hit rate, but if the instrument rarely moves five times its own ATR before reversing, you will not get 16.7%. The R has to be reachable within the instrument's actual behaviour, which brings you back to volatility.
+
+## Getting Out: Limit or Market
+
+Deciding to exit and actually exiting are different problems. Once a stop or target is hit, an order still has to reach the market, and the order type is a real trade-off:
+
+|  | Limit | Market |
+| --- | --- | --- |
+| **Fill guarantee** | May not fill if the market gaps past the target | Near-immediate on live exchanges |
+| **Price guarantee** | Exits at exactly the configured target | Exits wherever the market is at that moment |
+| **Best for** | Take-profit: sell at your target or better | Hard stop-loss that must exit in all conditions |
+
+For a **stop-loss**, this matters more than it looks. A fast drop can gap straight past your limit price, leaving the order resting on the book while the price keeps falling away from it. Your loss is no longer capped at the number you configured; you are simply not out. If the exit has to happen in all conditions, use a market order and accept a worse price.
+
+For a **take-profit**, limit is the natural choice. You picked that target on purpose, and there is no urgency, if it does not fill, you still hold a position that is doing well.
