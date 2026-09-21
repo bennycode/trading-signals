@@ -22,6 +22,7 @@ export * from './trading/getCAGR.js';
 export * from './trading/getGrid.js';
 export * from './trading/getLogReturns.js';
 export * from './trading/getMaxDrawdown.js';
+export * from './trading/getPositionSize.js';
 export * from './trading/getReturns.js';
 export * from './trading/getSharpeRatio.js';
 export * from './trading/getWeekday.js';

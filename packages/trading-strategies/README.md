@@ -58,49 +58,7 @@ type Config = MultiIndicatorConfluenceConfig; // z.infer<typeof MultiIndicatorCo
 
 ## Domain Knowledge
 
-- An **exchange** (such as the [NYSE](https://en.wikipedia.org/wiki/New_York_Stock_Exchange) or [NASDAQ](https://en.wikipedia.org/wiki/Nasdaq)) is a marketplace where buyers and sellers trade assets, it matches orders by price and time, and it operates only during **specific opening hours**. An exchange does not hold customer accounts; it runs the order book.
-
-- A **broker** (such as [Alpaca](https://alpaca.markets/), [Trading212](https://www.trading212.com/), or [Interactive Brokers](https://www.interactivebrokers.com/)) is a service that holds customer accounts, accepts orders, and routes them to one or more exchanges (or to market makers for internalization). Brokers are the middle layer between the trader and the market.
-
-- **Market data** is the stream of price information published by an exchange (or redistributed by a vendor): historical candles (OHLC bars), real-time trade ticks, quotes (bid/ask), and order-book snapshots. A broker may resell market data alongside execution (Alpaca, Coinbase). A pure data vendor (Polygon, Twelve Data, Finnhub, Bloomberg) sells price feeds without holding accounts.
-
-- **Backtesting** is the process of evaluating a trading strategy by running it on historical market data to see how it would have performed.
-
-- **Paper trading** is the process of evaluating a trading strategy in real time using simulated money to mimic live trading without financial risk.
-
-- An **order book** is a real-time list of all the buy and sell orders for an asset, organized by price, showing where traders are willing to **buy (bids)** and **sell (asks)** and how much liquidity (trading volume) is available at each level.
-
-- The **spread** is the difference between the **bid price** buyers offer and the **ask price** sellers accept. A wide spread often signals low liquidity or higher uncertainty in the market, while a tighter spread suggests the opposite.
-
-- A **long position** is when a trader buys an asset because they expect its price to rise, and they plan to sell it later for a profit.
-
-- A **short position** is when a trader sells an asset they do not own by borrowing it because they expect its price to fall, and they plan to buy it back later at a lower price.
-
-- A **market order** tells the broker to buy or sell immediately at the best available current price.
-
-- A **limit order** tells the broker to buy or sell only at a specific price, so it won’t execute unless the market reaches that price.
-
-- A **market maker** adds liquidity by placing orders that sit on the order book and wait for someone to trade against them. This usually affects broker fees because brokers often reward makers with lower trading fees when placing their orders. **Limit orders** are usually market maker orders when they rest on the order book and wait to be filled.
-
-- A **market taker** removes liquidity by placing orders that execute immediately against those resting orders on the order book. This usually leads to higher trading fees because brokers often charge more for taking liquidity from the order book. **Market orders** are usually market taker orders because they execute immediately against orders already on the book.
-
-- **Spot trading** is when a trader buys or sells an asset with immediate settlement, meaning ownership of the asset is transferred right away.
-
-- **Futures trading** is when a trader buys or sells a contract that represents an agreement to trade an asset at a later date.
-
-- **Fungible assets** are assets where each unit is interchangeable with another unit of the same type, meaning they have identical value and properties and can be exchanged one for one without loss. Stocks are fungible assets because one share of a company’s common stock is interchangeable with any other share of the same class, carrying the same rights, value, and economic exposure regardless of who owns it.
-
-- **Non-fungible assets** are assets where each unit is unique and not directly interchangeable with another, meaning their value depends on specific characteristics such as rarity, condition, history, or ownership rather than a standard market price. A Pokémon trading card is a non-fungible asset because each card can differ in edition, rarity, condition, and even print run, so one card is not perfectly interchangeable with another, even if they feature the same Pokémon.
-
-- **Trading filters** constrain exchange orders to valid values. The **tick size** is the smallest allowed price increment: with a tick size of `0.01`, a price of `2500.01` is valid but `2500.015` is not. The **step size** (or lot size) works the same way for quantities: with a step size of `0.0001`, a quantity of `0.0002` is valid but `0.00025` is not. Exchanges also set a **minimum notional value**, which is the minimum total order value (price × quantity). If the minimum notional is `5 USDT`, buying `0.001 BTC` at `2500 USDT` would be rejected because `0.001 × 2500 = 2.5 USDT` falls below the limit. Traders need to query the exchange's trading rules (e.g., [Binance's Spot Trading Rules](https://www.binance.com/en/academy/articles/binance-spot-trading-rules-a-comprehensive-guide)) and round their values before submitting orders.
-
-- **Asset identifiers** differ by market and licensing. A **ticker symbol** (e.g., `AAPL` for [Apple Inc.](https://en.wikipedia.org/wiki/Apple_Inc.)) is an exchange-specific code and not globally unique. An **ISIN** (`US0378331005`) is a 12-character global identifier under ISO 6166, while a **CUSIP** (`037833100`) is a 9-character code used mainly in the U.S. and Canada. Both ISIN and CUSIP databases are maintained by commercial organizations and require paid licenses for redistribution, which is why many open-source projects and free APIs rely on ticker symbols instead ([source](https://forum.alpaca.markets/t/is-there-a-list-for-all-etfs/9117/4)).
-
-- A **day trader** opens and closes every position within the same trading session and holds nothing overnight, which avoids gap risk and overnight margin costs but demands constant attention. Profits come from many small intraday moves, so the typical reference candles are 1-minute to 15-minute, and stops are tight because the horizon (minutes to hours) leaves no room for adverse moves to recover.
-
-- A **swing trader** holds positions for several days to a few weeks to capture a single directional "swing" within a broader trend. The horizon is long enough to ride out intraday noise but short enough that long-term fundamentals are secondary to chart patterns and momentum. Daily and 4-hour candles are the typical reference timeframes, and stops are wider than a day trader's to absorb overnight volatility.
-
-- A **position trader** holds for months to years and treats short-term price action as noise around a longer thesis driven by fundamentals (earnings, macro shifts, structural changes). Technical analysis serves mainly to time entries; once in, drawdowns of 20% or more are tolerated as part of normal holding behavior. Weekly and monthly candles are the relevant timeframes, and trade frequency is low enough that transaction costs barely matter.
+Exchanges, brokers, order types, market makers vs. takers, trading filters, trader profiles: all explained in the [Trading Glossary](https://bennycode.com/trading-signals/basics/glossary).
 
 ## Strategies
 

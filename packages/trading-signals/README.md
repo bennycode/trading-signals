@@ -169,6 +169,7 @@ All indicators can be updated over time by streaming data (prices or [candles](h
 | `getMedianPrice` | Midpoint of a candle's trading range (HL/2). |
 | `getMinimum` | Smallest value of a series. |
 | `getPercentageChange` | Percentage change between two values (going from 100 to 125 gives 25). |
+| `getPositionSize` | Units to trade so that being stopped out costs a fixed share of the account. |
 | `getQuartile` | Quartile (25th, 50th or 75th percentile) of a series. |
 | `getReturns` | Per-bar simple returns of a price series, in percent. |
 | `getShare` | Percentage share an amount represents of a total. |
@@ -245,29 +246,7 @@ console.log(sma.highest?.toFixed(2)); // "53.33"
 
 ## Technical Indicator Types
 
-### Indicator Function
-
-- Momentum indicators: Measure the speed and strength (intensity) of price movements in a particular direction (overbought/oversold)
-- Trend indicators: Measure the direction of a trend (bullish/bearish)
-- Volatility indicators: Measure the degree of variation in prices over time, regardless of direction
-- Volume indicators: Measure the strength of a trend based on volume
-
-**Key readings:**
-
-- Bullish sentiment: expect prices to rise
-- Bearish sentiment: expect prices to fall
-- Overbought condition: price may have risen too much too fast, meaning it’s trending up, but traders expect a short-term dip before continuing higher
-- Oversold condition: price may have dropped too much too fast, meaning it’s trending down, but traders expect a short-term bounce before continuing lower or reversing upward
-
-### Indicator Timing
-
-- Leading Indicators: Predictive tools that try to signal future price movements before they happen (i.e. RSI, Stochastic Oscillator, Volume spikes)
-- Lagging Indicators: Confirmative tools that signal after a trend or move has already started (i.e. Moving Averages, MACD, ADX)
-
-### Indicator Scale
-
-- Indicators: Have no upper or lower limits
-- Oscillators: Move within a fixed range (e.g. 0-100, –1 to +1)
+Indicators are classified by function (momentum, trend, volatility, volume), by timing (leading vs. lagging), and by scale (indicator vs. oscillator). See [Indicator Types](https://bennycode.com/trading-signals/basics/indicator-types).
 
 ## Maintainers
 
