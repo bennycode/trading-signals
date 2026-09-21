@@ -36,7 +36,6 @@
     "@vitest/coverage-v8": "^4.0.18",
     "conventional-changelog-conventionalcommits": "^10.4.0",
     "esbuild": "^0.28.2",
-    "github-actionlint": "^1.7.12",
     "jsdom": "^30.1.0",
     "knip": "^6.37.0",
     "lefthook": "^2.1.14",
