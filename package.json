@@ -53,8 +53,18 @@
     "encoding": "^0.1.13"
   },
   "overrides": {
+    "@esbuild-kit/core-utils": {
+      "esbuild": ">=0.25.0"
+    },
     "lerna": {
-      "js-yaml": "^5.4.2"
+      "js-yaml": "^5.4.2",
+      "pacote": "^21.5.1"
+    },
+    "nx": {
+      "smol-toml": "^1.7.1"
+    },
+    "remark-mdx-frontmatter": {
+      "toml": "^5.0.0"
     }
   }
 }
