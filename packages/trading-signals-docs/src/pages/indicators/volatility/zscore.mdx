@@ -1,0 +1,25 @@
+---
+title: 'ZSCORE'
+description: 'Z-Score'
+---
+
+import {IndicatorPageDemo} from '../../../components/IndicatorPageDemo';
+
+# Z-Score (ZSCORE)
+
+Number of standard deviations the current value sits from the average of the prior values. Readings above 2 or below -2 mark unusually high or low values.
+
+## Live Demo
+
+Pick a market regime to see how ZSCORE(21) reacts:
+
+<IndicatorPageDemo category="volatility" id="zscore" />
+
+## Usage
+
+```ts twoslash
+import {ZScore} from 'trading-signals';
+
+// ZScore yields results once 21 inputs have been added
+const zScore = new ZScore(20);
+```

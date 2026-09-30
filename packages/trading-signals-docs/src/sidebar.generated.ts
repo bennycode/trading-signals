@@ -464,6 +464,10 @@ export const indicatorSidebar = [
         link: '/indicators/volatility/ulcer-index',
         text: 'Ulcer Index',
       },
+      {
+        link: '/indicators/volatility/zscore',
+        text: 'ZSCORE',
+      },
     ],
     text: 'Volatility Indicators',
   },

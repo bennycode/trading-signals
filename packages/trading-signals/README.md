@@ -148,6 +148,7 @@ All indicators can be updated over time by streaming data (prices or [candles](h
 1. Wilder's Smoothed Moving Average (WSMA / WWS / SMMA / MEMA)
 1. Williams %R (WILLR)
 1. Williams Accumulation/Distribution (WAD)
+1. Z-Score (ZSCORE)
 1. Zero-Lag Exponential Moving Average (ZLEMA)
 1. Zig Zag Indicator (ZigZag)
 
