@@ -1,11 +1,10 @@
 import {IndicatorInputShape, TradingSignal} from '../../base/Indicator.js';
 import {testIndicatorContract} from '../../fixtures/testIndicatorContract.js';
-import {getZScore} from '../../util/index.js';
 import {ZScore} from './ZScore.js';
 
 describe('ZScore', () => {
   describe('update', () => {
-    it('scores the current input against the population of prior inputs', () => {
+    it('scores the current input against a population it belongs to', () => {
       /*
        * Population with mean 5 and population standard deviation 2:
        * https://en.wikipedia.org/wiki/Standard_deviation#Population_standard_deviation_of_grades_of_eight_students
@@ -17,56 +16,61 @@ describe('ZScore', () => {
         zScore.add(value);
       }
 
-      expect(zScore.add(9), 'two standard deviations above the mean').toBe(2);
-      expect(zScore.replace(1), 'two standard deviations below the mean').toBe(-2);
-      expect(zScore.replace(5), 'exactly on the mean').toBe(0);
+      expect(zScore.getResultOrThrow(), 'the newest grade sits two standard deviations above the mean').toBe(2);
     });
 
-    it('excludes the current input from its own baseline', () => {
-      const zScore = new ZScore(2);
+    it('yields its first result once the window is full', () => {
+      const zScore = new ZScore(3);
 
-      zScore.add(1);
-      zScore.add(3);
-
-      expect(zScore.add(3), 'against [1, 3] only, including the current input would yield 1 / sqrt(2)').toBe(1);
+      expect(zScore.add(1)).toBeNull();
+      expect(zScore.add(3)).toBeNull();
+      expect(zScore.add(3)?.toFixed(4), 'against [1, 3, 3] including the current input').toBe('0.7071');
     });
 
-    it('slides the baseline forward with every input', () => {
+    it('slides the window forward with every input', () => {
       const values = [10, 12, 11, 15, 9, 14, 20, 8] as const;
-      const period = 4;
-      const zScore = new ZScore(period);
+      const expectations = ['1.6036', '-1.2702', '0.7338', '1.4084', '-0.9972'] as const;
+      const zScore = new ZScore(4);
+      const offset = zScore.getRequiredInputs() - 1;
 
       values.forEach((value, i) => {
         const result = zScore.add(value);
 
-        if (i < period) {
+        if (i < offset) {
           expect(result).toBeNull();
         } else {
-          expect(result).toBe(getZScore(values.slice(i - period, i), value));
+          expect(result?.toFixed(4)).toBe(expectations[i - offset]);
         }
       });
     });
 
-    it('returns null when the prior inputs have no variance', () => {
+    it('caps a spike at the square root of one less than the period', () => {
+      const zScore = new ZScore(5);
+
+      for (const value of [0, 0, 0, 0, 1_000_000]) {
+        zScore.add(value);
+      }
+
+      expect(zScore.getResultOrThrow(), 'however large the spike, it dilutes its own window').toBe(2);
+    });
+
+    it('returns null when the window has no variance', () => {
       const zScore = new ZScore(3);
 
       zScore.add(0.1);
       zScore.add(0.1);
-      zScore.add(0.1);
 
-      expect(zScore.add(0.2), 'floating-point noise must not fake a deviation').toBeNull();
+      expect(zScore.add(0.1), 'floating-point noise must not fake a deviation').toBeNull();
       expect(zScore.isStable).toBe(false);
     });
 
-    it('clears a previous result once the prior inputs lose their variance', () => {
+    it('clears a previous result once the window loses its variance', () => {
       const zScore = new ZScore(2);
 
       zScore.add(1);
-      zScore.add(3);
 
-      expect(zScore.add(5)).toBe(3);
-      expect(zScore.add(5)).toBe(1);
-      expect(zScore.add(5)).toBeNull();
+      expect(zScore.add(3)).toBe(1);
+      expect(zScore.add(3)).toBeNull();
       expect(zScore.isStable).toBe(false);
       expect(() => zScore.getResultOrThrow()).toThrow();
     });
@@ -77,15 +81,14 @@ describe('ZScore', () => {
       const zScore = new ZScore(2);
 
       zScore.add(1);
-      zScore.add(3);
 
-      const originalResult = zScore.add(5);
+      const originalResult = zScore.add(3);
       const replacedResult = zScore.replace(0);
 
-      expect(originalResult).toBe(3);
-      expect(replacedResult).toBe(-2);
+      expect(originalResult).toBe(1);
+      expect(replacedResult).toBe(-1);
 
-      const restoredResult = zScore.replace(5);
+      const restoredResult = zScore.replace(3);
 
       expect(restoredResult).toBe(originalResult);
     });
@@ -99,22 +102,22 @@ describe('ZScore', () => {
     });
 
     it('returns BULLISH for an input at least two deviations above normal', () => {
-      const zScore = new ZScore(2);
+      const zScore = new ZScore(5);
 
-      zScore.add(1);
-      zScore.add(3);
-      zScore.add(4);
+      for (const value of [0, 0, 0, 0, 4]) {
+        zScore.add(value);
+      }
 
       expect(zScore.getResultOrThrow(), 'the overbought threshold itself counts').toBe(2);
       expect(zScore.getSignal().state).toBe(TradingSignal.BULLISH);
     });
 
     it('returns BEARISH for an input at least two deviations below normal', () => {
-      const zScore = new ZScore(2);
+      const zScore = new ZScore(5);
 
-      zScore.add(1);
-      zScore.add(3);
-      zScore.add(0);
+      for (const value of [4, 4, 4, 4, 0]) {
+        zScore.add(value);
+      }
 
       expect(zScore.getResultOrThrow(), 'the oversold threshold itself counts').toBe(-2);
       expect(zScore.getSignal().state).toBe(TradingSignal.BEARISH);
@@ -125,7 +128,6 @@ describe('ZScore', () => {
 
       zScore.add(1);
       zScore.add(3);
-      zScore.add(3);
 
       expect(zScore.getResultOrThrow()).toBe(1);
       expect(zScore.getSignal().state).toBe(TradingSignal.SIDEWAYS);
@@ -135,7 +137,7 @@ describe('ZScore', () => {
       const sensitiveBull = new ZScore(2, {overbought: 1});
       const sensitiveBear = new ZScore(2, {oversold: 1});
 
-      for (const value of [1, 3, 3]) {
+      for (const value of [1, 3]) {
         sensitiveBull.add(value);
         sensitiveBear.add(value);
       }

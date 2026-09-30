@@ -1,19 +1,21 @@
 import {IndicatorInputShape, type InputShapeOf, ThresholdCrossSeries} from '../../base/Indicator.js';
 import type {SignalThresholds} from '../../base/SignalThresholds.type.js';
-import {getAverage, getStandardDeviation, pushUpdate} from '../../util/index.js';
+import {getZScore, pushUpdate} from '../../util/index.js';
 
 /**
  * Z-Score (ZSCORE)
  * Type: Volatility
  *
  * Expresses how many (population) standard deviations the current input sits away from the
- * average of the *prior* `period` inputs. The current input is not part of its own baseline,
- * so a spike is measured against what was normal before it instead of diluting that normal.
+ * average of the last `period` inputs, the current one included. Because a spike is part of its
+ * own window, it can score at most the square root of `period - 1`, so a window of 5 inputs never
+ * reads beyond 2 and short periods rarely reach the default thresholds.
  *
  * Works on any scalar series: feed closing prices for mean-reversion setups or per-bar volumes
  * to spot unusual participation. Declare which one it reads, so consumers that feed candles
- * pick the right field, because a price and a volume are both plain numbers. Returns `null` when the prior inputs have no variance, because
- * distance from normal is undefined when every prior input was the same.
+ * pick the right field, because a price and a volume are both plain numbers. Returns `null` when
+ * the window has no variance, because distance from normal is undefined when every input was the
+ * same.
  *
  * Interpretation:
  * A reading of 0 means the input is exactly average. A reading of 2 or above marks an unusually
@@ -47,29 +49,26 @@ export class ZScore extends ThresholdCrossSeries {
   }
 
   override getRequiredInputs() {
-    return this.#period + 1;
+    return this.#period;
   }
 
   override update(value: number, replace: boolean) {
-    pushUpdate({array: this.#values, item: value, maxLength: this.#period + 1, replace});
+    pushUpdate({array: this.#values, item: value, maxLength: this.#period, replace});
 
-    if (this.#values.length <= this.#period) {
+    if (this.#values.length < this.#period) {
       return null;
     }
-
-    const priorValues = this.#values.slice(0, -1);
 
     /*
      * Compare exactly instead of testing for a zero deviation, because floating-point noise
      * turns a flat window of decimals into a tiny deviation and an absurdly large score.
      */
-    if (priorValues.every(priorValue => priorValue === priorValues[0])) {
+    if (this.#values.every(windowValue => windowValue === value)) {
       // Clear the last score so a stale reading cannot pass for the current one.
       this.result = undefined;
       return null;
     }
 
-    const average = getAverage(priorValues);
-    return this.setResult((value - average) / getStandardDeviation(priorValues, average), replace);
+    return this.setResult(getZScore(this.#values), replace);
   }
 }

@@ -9,7 +9,7 @@ export const ZScore: IndicatorConfig = {
   createIndicator: () => new ZScoreClass(20),
   description: 'Z-Score',
   details:
-    'Number of standard deviations the current value sits from the average of the prior values. Readings above 2 or below -2 mark unusually high or low values.',
+    'Number of standard deviations the current value sits from the average of the window it closes. Readings above 2 or below -2 mark unusually high or low values.',
   getTableColumns: indicator => buildTableColumns({indicator, inputs: ['close']}),
   id: 'zscore',
   name: 'ZSCORE',
