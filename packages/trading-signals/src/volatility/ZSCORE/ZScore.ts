@@ -1,6 +1,6 @@
 import {IndicatorInputShape, type InputShapeOf, ThresholdCrossSeries} from '../../base/Indicator.js';
 import type {SignalThresholds} from '../../base/SignalThresholds.type.js';
-import {getZScore, pushUpdate} from '../../util/index.js';
+import {getAverage, getStandardDeviation, pushUpdate} from '../../util/index.js';
 
 /**
  * Z-Score (ZSCORE)
@@ -59,16 +59,33 @@ export class ZScore extends ThresholdCrossSeries {
       return null;
     }
 
-    /*
-     * Compare exactly instead of testing for a zero deviation, because floating-point noise
-     * turns a flat window of decimals into a tiny deviation and an absurdly large score.
-     */
-    if (this.#values.every(windowValue => windowValue === value)) {
+    const zScore = ZScore.getResultFromBatch(this.#values);
+
+    if (zScore === null) {
       // Clear the last score so a stale reading cannot pass for the current one.
       this.result = undefined;
       return null;
     }
 
-    return this.setResult(getZScore(this.#values), replace);
+    return this.setResult(zScore, replace);
+  }
+
+  /**
+   * Scores the newest value of a window the same way the streaming indicator does, for callers
+   * that already hold the whole window.
+   */
+  static getResultFromBatch(values: number[]) {
+    const value = values.at(-1);
+
+    /*
+     * Compare exactly instead of testing for a zero deviation, because floating-point noise
+     * turns a flat window of decimals into a tiny deviation and an absurdly large score.
+     */
+    if (value === undefined || values.every(windowValue => windowValue === value)) {
+      return null;
+    }
+
+    const average = getAverage(values);
+    return (value - average) / getStandardDeviation(values, average);
   }
 }

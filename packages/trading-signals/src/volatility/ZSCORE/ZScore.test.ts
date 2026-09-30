@@ -159,6 +159,33 @@ describe('ZScore', () => {
     });
   });
 
+  describe('getResultFromBatch', () => {
+    it('scores the newest value of the window', () => {
+      expect(ZScore.getResultFromBatch([2, 4, 4, 4, 5, 5, 7, 9]), 'the Wikipedia grades from the streaming test').toBe(
+        2
+      );
+    });
+
+    it('agrees with the streaming indicator', () => {
+      const values = [10, 12, 11, 15] as const;
+      const zScore = new ZScore(values.length);
+
+      for (const value of values) {
+        zScore.add(value);
+      }
+
+      expect(ZScore.getResultFromBatch([...values])).toBe(zScore.getResultOrThrow());
+    });
+
+    it('returns null for an empty window', () => {
+      expect(ZScore.getResultFromBatch([])).toBeNull();
+    });
+
+    it('returns null for a window without variance', () => {
+      expect(ZScore.getResultFromBatch([0.1, 0.1, 0.1]), 'floating-point noise must not fake a deviation').toBeNull();
+    });
+  });
+
   it('rejects a period without room for variance', () => {
     expect(() => new ZScore(1)).toThrowError('period must be >= 2, got "1"');
   });

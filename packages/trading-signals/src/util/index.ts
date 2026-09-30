@@ -17,7 +17,6 @@ export * from './math/getQuartile.js';
 export * from './math/getShare.js';
 export * from './math/getStandardDeviation.js';
 export * from './math/getStreaks.js';
-export * from './math/getZScore.js';
 export * from './trading/getCAGR.js';
 export * from './trading/getGrid.js';
 export * from './trading/getLogReturns.js';
