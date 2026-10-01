@@ -148,6 +148,7 @@ All indicators can be updated over time by streaming data (prices or [candles](h
 1. Wilder's Smoothed Moving Average (WSMA / WWS / SMMA / MEMA)
 1. Williams %R (WILLR)
 1. Williams Accumulation/Distribution (WAD)
+1. Z-Score (ZSCORE)
 1. Zero-Lag Exponential Moving Average (ZLEMA)
 1. Zig Zag Indicator (ZigZag)
 
@@ -178,7 +179,6 @@ All indicators can be updated over time by streaming data (prices or [candles](h
 | `getTrueRange` | A candle's range widened by any gap from the previous close. |
 | `getTypicalPrice` | Collapses a candle into the price most of its trading happened around (HLC/3). |
 | `getWeightedClose` | Candle price with the close counted twice (HLCC/4). |
-| `getZScore` | How many standard deviations a value sits from its window's mean. |
 | `hasCrossedOver` | Detects the moment series A crosses above series B (golden cross). |
 | `hasCrossedUnder` | Detects the moment series A crosses below series B (death cross). |
 | `isMonday` to `isSunday` | Weekday checks for a date in a given IANA timezone. |

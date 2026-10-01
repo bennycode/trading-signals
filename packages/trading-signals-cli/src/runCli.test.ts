@@ -154,6 +154,7 @@ const ALL_INDICATORS = [
   'WaveTrend',
   'WilliamsR',
   'ZLEMA',
+  'ZScore',
   'ZigZag',
 ] as const;
 

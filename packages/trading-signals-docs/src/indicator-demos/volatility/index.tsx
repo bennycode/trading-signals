@@ -18,6 +18,7 @@ import {RogersSatchellVolatility} from './RogersSatchellVolatility.demo';
 import {TR} from './TR.demo';
 import {TTMSqueeze} from './TTMSqueeze.demo';
 import {UlcerIndex} from './UlcerIndex.demo';
+import {ZScore} from './ZScore.demo';
 import type {IndicatorConfig} from '../../utils/types';
 
 export const indicators: IndicatorConfig[] = [
@@ -41,4 +42,5 @@ export const indicators: IndicatorConfig[] = [
   TTMSqueeze,
   RogersSatchellVolatility,
   RelativeVolatilityIndex,
+  ZScore,
 ];

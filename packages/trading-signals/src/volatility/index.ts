@@ -18,3 +18,4 @@ export * from './RVI/RelativeVolatilityIndex.js';
 export * from './SQUEEZE/TTMSqueeze.js';
 export * from './TR/TR.js';
 export * from './UI/UlcerIndex.js';
+export * from './ZSCORE/ZScore.js';
