@@ -49,7 +49,7 @@
     "@typedtrader/exchange": "0.3.3",
     "@types/big.js": "^7.0.0",
     "big.js": "^7.0.1",
-    "commander": "^14.0.3",
+    "commander": "^15.0.0",
     "ms": "4.0.0-nightly.202508271359"
   }
 }
