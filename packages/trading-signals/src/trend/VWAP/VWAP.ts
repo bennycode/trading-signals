@@ -1,4 +1,4 @@
-import {IndicatorInputShape, IndicatorSeries} from '../../base/Indicator.js';
+import {IndicatorInputShape, TradingSignal, TrendIndicatorSeries} from '../../base/Indicator.js';
 import type {HighLowCloseVolume} from '../../base/Candle.type.js';
 import {getTypicalPrice} from '../../util/candle/getTypicalPrice.js';
 
@@ -10,9 +10,13 @@ import {getTypicalPrice} from '../../util/candle/getTypicalPrice.js';
  *
  * Formula: VWAP = (Sum of (Price × Volume)) / Total Volume
  *
+ * Interpretation:
+ * A close above the VWAP means buyers are paying more than the session's average price, which is bullish; a close
+ * below it is bearish.
+ *
  * @see https://www.investopedia.com/terms/v/vwap.asp
  */
-export class VWAP extends IndicatorSeries<HighLowCloseVolume<number>> {
+export class VWAP extends TrendIndicatorSeries<HighLowCloseVolume<number>> {
   override readonly inputShape = IndicatorInputShape.HIGH_LOW_CLOSE_VOLUME;
 
   #cumulativeTypicalPriceVolume: number = 0;
@@ -52,5 +56,21 @@ export class VWAP extends IndicatorSeries<HighLowCloseVolume<number>> {
 
     const vwap = this.#cumulativeTypicalPriceVolume / this.#cumulativeVolume;
     return this.setResult(vwap, replace);
+  }
+
+  protected calculateSignalState(result?: number | null) {
+    if (result === null || result === undefined || this.#lastCandle === null) {
+      return TradingSignal.UNKNOWN;
+    }
+
+    if (this.#lastCandle.close > result) {
+      return TradingSignal.BULLISH;
+    }
+
+    if (this.#lastCandle.close < result) {
+      return TradingSignal.BEARISH;
+    }
+
+    return TradingSignal.SIDEWAYS;
   }
 }

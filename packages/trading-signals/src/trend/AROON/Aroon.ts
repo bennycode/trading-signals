@@ -1,5 +1,5 @@
 import type {HighLow} from '../../base/Candle.type.js';
-import {IndicatorInputShape, TechnicalIndicator} from '../../base/Indicator.js';
+import {IndicatorInputShape, TradingSignal, TrendIndicator} from '../../base/Indicator.js';
 import {pushUpdate} from '../../util/array/pushUpdate.js';
 
 export type AroonResult = {
@@ -21,7 +21,7 @@ export type AroonResult = {
  * @see https://www.investopedia.com/terms/a/aroon.asp
  * @see https://tulipindicators.org/aroon
  */
-export class Aroon extends TechnicalIndicator<AroonResult, HighLow<number>> {
+export class Aroon extends TrendIndicator<AroonResult, HighLow<number>> {
   override readonly inputShape = IndicatorInputShape.HIGH_LOW;
 
   readonly #candles: HighLow<number>[] = [];
@@ -61,6 +61,22 @@ export class Aroon extends TechnicalIndicator<AroonResult, HighLow<number>> {
     const aroonDown = (100 * (this.interval - (newestIndex - lowestIndex))) / this.interval;
     const aroonUp = (100 * (this.interval - (newestIndex - highestIndex))) / this.interval;
 
-    return (this.result = {aroonDown, aroonUp});
+    return this.setResult({aroonDown, aroonUp}, replace);
+  }
+
+  protected calculateSignalState(result?: AroonResult | null) {
+    if (!result) {
+      return TradingSignal.UNKNOWN;
+    }
+
+    if (result.aroonUp > result.aroonDown) {
+      return TradingSignal.BULLISH;
+    }
+
+    if (result.aroonUp < result.aroonDown) {
+      return TradingSignal.BEARISH;
+    }
+
+    return TradingSignal.SIDEWAYS;
   }
 }

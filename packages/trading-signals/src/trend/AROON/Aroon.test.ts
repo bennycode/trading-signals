@@ -1,3 +1,4 @@
+import {TradingSignal} from '../../base/Indicator.js';
 import {testIndicatorContract} from '../../fixtures/testIndicatorContract.js';
 import {Aroon} from './Aroon.js';
 
@@ -123,4 +124,44 @@ testIndicatorContract({
     {high: 83.33, low: 82.49},
     {high: 84.3, low: 82.3},
   ],
+});
+
+describe('Aroon signal', () => {
+  const risingCandles = Array.from({length: 80}, (_, i) => ({close: 100 + i, high: 101 + i, low: 99 + i}));
+  const fallingCandles = Array.from({length: 80}, (_, i) => ({close: 200 - i, high: 201 - i, low: 199 - i}));
+  const flatCandles = Array.from({length: 80}, () => ({close: 100, high: 101, low: 99}));
+
+  it('returns UNKNOWN before the first result', () => {
+    expect(new Aroon(3).getSignal().state).toBe(TradingSignal.UNKNOWN);
+  });
+
+  it('returns BULLISH in a rising market', () => {
+    const indicator = new Aroon(3);
+
+    for (const candle of risingCandles) {
+      indicator.add(candle);
+    }
+
+    expect(indicator.getSignal().state).toBe(TradingSignal.BULLISH);
+  });
+
+  it('returns BEARISH in a falling market', () => {
+    const indicator = new Aroon(3);
+
+    for (const candle of fallingCandles) {
+      indicator.add(candle);
+    }
+
+    expect(indicator.getSignal().state).toBe(TradingSignal.BEARISH);
+  });
+
+  it('returns SIDEWAYS in a flat market', () => {
+    const indicator = new Aroon(3);
+
+    for (const candle of flatCandles) {
+      indicator.add(candle);
+    }
+
+    expect(indicator.getSignal().state).toBe(TradingSignal.SIDEWAYS);
+  });
 });

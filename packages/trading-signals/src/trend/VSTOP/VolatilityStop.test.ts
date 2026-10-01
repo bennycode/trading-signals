@@ -1,3 +1,4 @@
+import {TradingSignal} from '../../base/Indicator.js';
 import {testIndicatorContract} from '../../fixtures/testIndicatorContract.js';
 import {VolatilityStop} from './VolatilityStop.js';
 
@@ -116,4 +117,33 @@ testIndicatorContract({
     {close: 13, high: 13.5, low: 9},
     {close: 14, high: 15, low: 13},
   ],
+});
+
+describe('VolatilityStop signal', () => {
+  const risingCandles = Array.from({length: 80}, (_, i) => ({close: 100 + i, high: 101 + i, low: 99 + i}));
+  const fallingCandles = Array.from({length: 80}, (_, i) => ({close: 200 - i, high: 201 - i, low: 199 - i}));
+
+  it('returns UNKNOWN before the first result', () => {
+    expect(new VolatilityStop({interval: 3, multiplier: 1}).getSignal().state).toBe(TradingSignal.UNKNOWN);
+  });
+
+  it('returns BULLISH in a rising market', () => {
+    const indicator = new VolatilityStop({interval: 3, multiplier: 1});
+
+    for (const candle of risingCandles) {
+      indicator.add(candle);
+    }
+
+    expect(indicator.getSignal().state).toBe(TradingSignal.BULLISH);
+  });
+
+  it('returns BEARISH in a falling market', () => {
+    const indicator = new VolatilityStop({interval: 3, multiplier: 1});
+
+    for (const candle of fallingCandles) {
+      indicator.add(candle);
+    }
+
+    expect(indicator.getSignal().state).toBe(TradingSignal.BEARISH);
+  });
 });

@@ -1,4 +1,4 @@
-import {IndicatorInputShape, TechnicalIndicator} from '../../base/Indicator.js';
+import {IndicatorInputShape, TradingSignal, TrendIndicator} from '../../base/Indicator.js';
 import type {LinearRegressionResult} from '../../util/math/getLinearRegression.js';
 import {getLinearRegression} from '../../util/math/getLinearRegression.js';
 import {pushUpdate} from '../../util/array/pushUpdate.js';
@@ -9,7 +9,7 @@ import {pushUpdate} from '../../util/array/pushUpdate.js';
  *
  * It fits a straight line to price data over a chosen period using the least-squares method. The slope of the line shows the trend direction and strength. It’s similar in use to moving averages but mathematically more precise, since it minimizes the squared distance between price points and the fitted line.
  */
-export class LinearRegression extends TechnicalIndicator<LinearRegressionResult, number> {
+export class LinearRegression extends TrendIndicator<LinearRegressionResult, number> {
   override readonly inputShape = IndicatorInputShape.PRICE;
 
   public readonly prices: number[] = [];
@@ -38,7 +38,23 @@ export class LinearRegression extends TechnicalIndicator<LinearRegressionResult,
       return null;
     }
 
-    return (this.result = getLinearRegression(this.prices));
+    return this.setResult(getLinearRegression(this.prices), replace);
+  }
+
+  protected calculateSignalState(result?: LinearRegressionResult | null) {
+    if (!result) {
+      return TradingSignal.UNKNOWN;
+    }
+
+    if (result.slope > 0) {
+      return TradingSignal.BULLISH;
+    }
+
+    if (result.slope < 0) {
+      return TradingSignal.BEARISH;
+    }
+
+    return TradingSignal.SIDEWAYS;
   }
 
   override get isStable() {

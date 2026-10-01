@@ -1,5 +1,5 @@
 import type {HighLow} from '../../base/Candle.type.js';
-import {IndicatorInputShape, IndicatorSeries} from '../../base/Indicator.js';
+import {IndicatorInputShape, TradingSignal, type TradingSignals, TrendIndicatorSeries} from '../../base/Indicator.js';
 import {getMedianPrice} from '../../util/candle/getMedianPrice.js';
 
 export type PSARConfig = {
@@ -41,7 +41,7 @@ type PSARState = {
  * It's particularly useful in trending markets, but less reliable in sideways or choppy markets.
  *
  */
-export class PSAR extends IndicatorSeries<HighLow<number>, PSARState> {
+export class PSAR extends TrendIndicatorSeries<HighLow<number>, TradingSignals, PSARState> {
   override readonly inputShape = IndicatorInputShape.HIGH_LOW;
 
   private readonly accelerationStep: number;
@@ -212,5 +212,13 @@ export class PSAR extends IndicatorSeries<HighLow<number>, PSARState> {
 
   override getResultOrThrow() {
     return super.getResultOrThrow();
+  }
+
+  protected calculateSignalState(result?: number | null) {
+    if (result === null || result === undefined) {
+      return TradingSignal.UNKNOWN;
+    }
+
+    return this.state.isLong ? TradingSignal.BULLISH : TradingSignal.BEARISH;
   }
 }

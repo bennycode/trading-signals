@@ -1,5 +1,5 @@
 import type {HighLow} from '../../base/Candle.type.js';
-import {IndicatorInputShape, TechnicalIndicator} from '../../base/Indicator.js';
+import {IndicatorInputShape, TradingSignal, TrendIndicator} from '../../base/Indicator.js';
 import {pushUpdate} from '../../util/array/pushUpdate.js';
 
 export type IchimokuCloudResult = {
@@ -40,7 +40,7 @@ export type IchimokuCloudConfig = {
  * @see https://www.investopedia.com/terms/i/ichimoku-cloud.asp
  * @see https://en.wikipedia.org/wiki/Ichimoku_Kink%C5%8D_Hy%C5%8D
  */
-export class IchimokuCloud extends TechnicalIndicator<IchimokuCloudResult, HighLow<number>> {
+export class IchimokuCloud extends TrendIndicator<IchimokuCloudResult, HighLow<number>> {
   override readonly inputShape = IndicatorInputShape.HIGH_LOW;
 
   readonly #candles: HighLow<number>[] = [];
@@ -84,11 +84,30 @@ export class IchimokuCloud extends TechnicalIndicator<IchimokuCloudResult, HighL
     const conversion = this.#getMidpoint(this.conversionInterval);
     const base = this.#getMidpoint(this.baseInterval);
 
-    return (this.result = {
-      base,
-      conversion,
-      spanA: (conversion + base) / 2,
-      spanB: this.#getMidpoint(this.spanBInterval),
-    });
+    return this.setResult(
+      {
+        base,
+        conversion,
+        spanA: (conversion + base) / 2,
+        spanB: this.#getMidpoint(this.spanBInterval),
+      },
+      replace
+    );
+  }
+
+  protected calculateSignalState(result?: IchimokuCloudResult | null) {
+    if (!result) {
+      return TradingSignal.UNKNOWN;
+    }
+
+    if (result.conversion > result.base) {
+      return TradingSignal.BULLISH;
+    }
+
+    if (result.conversion < result.base) {
+      return TradingSignal.BEARISH;
+    }
+
+    return TradingSignal.SIDEWAYS;
   }
 }

@@ -1,3 +1,4 @@
+import {TradingSignal} from '../../base/Indicator.js';
 import {testIndicatorContract} from '../../fixtures/testIndicatorContract.js';
 import {KeltnerChannels} from './KeltnerChannels.js';
 import {ATR} from '../ATR/ATR.js';
@@ -198,4 +199,79 @@ testIndicatorContract({
   create: () => new KeltnerChannels(referenceConfig),
   divergentInput: {close: 90, high: 100, low: 80},
   inputs: referenceCandles,
+});
+
+describe('KeltnerChannels signal', () => {
+  const risingCandles = Array.from({length: 80}, (_, i) => ({close: 100 + i, high: 101 + i, low: 99 + i}));
+  const fallingCandles = Array.from({length: 80}, (_, i) => ({close: 200 - i, high: 201 - i, low: 199 - i}));
+  const flatCandles = Array.from({length: 80}, () => ({close: 100, high: 101, low: 99}));
+
+  it('returns UNKNOWN before the first result', () => {
+    expect(new KeltnerChannels({atrInterval: 2, emaInterval: 2, multiplier: 0.1}).getSignal().state).toBe(
+      TradingSignal.UNKNOWN
+    );
+  });
+
+  it('returns BULLISH in a rising market', () => {
+    const indicator = new KeltnerChannels({atrInterval: 2, emaInterval: 2, multiplier: 0.1});
+
+    for (const candle of risingCandles) {
+      indicator.add(candle);
+    }
+
+    expect(indicator.getSignal().state).toBe(TradingSignal.BULLISH);
+  });
+
+  it('returns BEARISH in a falling market', () => {
+    const indicator = new KeltnerChannels({atrInterval: 2, emaInterval: 2, multiplier: 0.1});
+
+    for (const candle of fallingCandles) {
+      indicator.add(candle);
+    }
+
+    expect(indicator.getSignal().state).toBe(TradingSignal.BEARISH);
+  });
+
+  it('returns SIDEWAYS in a flat market', () => {
+    const indicator = new KeltnerChannels({atrInterval: 2, emaInterval: 2, multiplier: 0.1});
+
+    for (const candle of flatCandles) {
+      indicator.add(candle);
+    }
+
+    expect(indicator.getSignal().state).toBe(TradingSignal.SIDEWAYS);
+  });
+
+  it('returns SIDEWAYS for a close on the channel lines', () => {
+    const indicator = new KeltnerChannels({atrInterval: 2, emaInterval: 2, multiplier: 0.1});
+
+    for (let i = 0; i < 5; i++) {
+      indicator.add({close: 100, high: 100, low: 100});
+    }
+
+    const {lower, upper} = indicator.getResultOrThrow();
+
+    expect([lower, upper], 'candles without a range leave a channel without width').toEqual([100, 100]);
+    expect(indicator.getSignal().state).toBe(TradingSignal.SIDEWAYS);
+  });
+
+  it('judges a replaced candle by its own close', () => {
+    const indicator = new KeltnerChannels({atrInterval: 2, emaInterval: 2, multiplier: 0.1});
+
+    for (const candle of risingCandles) {
+      indicator.add(candle);
+    }
+
+    const lastCandle = risingCandles[risingCandles.length - 1];
+
+    indicator.replace({...lastCandle, close: 100, low: 100});
+
+    expect(indicator.getSignal().state, 'a crash to 100 closes below the lower channel line').toBe(
+      TradingSignal.BEARISH
+    );
+
+    indicator.replace(lastCandle);
+
+    expect(indicator.getSignal().state).toBe(TradingSignal.BULLISH);
+  });
 });

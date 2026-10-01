@@ -1,4 +1,4 @@
-import {IndicatorInputShape, IndicatorSeries} from '../../base/Indicator.js';
+import {IndicatorInputShape, TradingSignal, type TradingSignals, TrendIndicatorSeries} from '../../base/Indicator.js';
 import type {HilbertCycleState} from './HilbertTransform.js';
 import {createHilbertCycleState, lag, measureDominantCycle, pushCapped} from './HilbertTransform.js';
 
@@ -22,10 +22,14 @@ type HTTrendlineState = HilbertCycleState & {
  * last four cycle averages — the same weighting Ehlers applies to raw price before the cycle
  * measurement — polishes off the residual stair-stepping of the whole-bar window.
  *
+ * Interpretation:
+ * Price above the trendline is an uptrend and price below it a downtrend; Ehlers reads a crossing of the two as the
+ * trend turning.
+ *
  * @see https://www.mesasoftware.com/papers/MAMA.pdf
  * @see https://github.com/TA-Lib/ta-lib/blob/main/src/ta_func/ta_HT_TRENDLINE.c
  */
-export class HTTrendline extends IndicatorSeries<number, HTTrendlineState> {
+export class HTTrendline extends TrendIndicatorSeries<number, TradingSignals, HTTrendlineState> {
   override readonly inputShape = IndicatorInputShape.PRICE;
 
   protected override state: HTTrendlineState = {
@@ -101,5 +105,23 @@ export class HTTrendline extends IndicatorSeries<number, HTTrendlineState> {
     }
 
     return this.setResult(trendline, replace);
+  }
+
+  protected calculateSignalState(result?: number | null) {
+    if (result === null || result === undefined) {
+      return TradingSignal.UNKNOWN;
+    }
+
+    const price = lag(this.state.prices, 0);
+
+    if (price > result) {
+      return TradingSignal.BULLISH;
+    }
+
+    if (price < result) {
+      return TradingSignal.BEARISH;
+    }
+
+    return TradingSignal.SIDEWAYS;
   }
 }

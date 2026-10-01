@@ -1,4 +1,4 @@
-import {IndicatorInputShape, TechnicalIndicator} from '../../base/Indicator.js';
+import {IndicatorInputShape, TradingSignal, TrendIndicator} from '../../base/Indicator.js';
 import type {HighLowClose} from '../../base/Candle.type.js';
 import {EMA} from '../../trend/EMA/EMA.js';
 import {ATR} from '../ATR/ATR.js';
@@ -32,14 +32,19 @@ export type KeltnerChannelsConfig = {
  * inside bands derived from the high-low range. This implementation follows the modern definition
  * popularized by Linda Bradford Raschke: an EMA middle line with ATR-based channel lines.
  *
+ * Interpretation:
+ * A close above the upper channel line marks a bullish breakout, a close below the lower line a
+ * bearish one, and a close inside the channel a sideways market.
+ *
  * @see https://school.stockcharts.com/doku.php?id=technical_indicators:keltner_channels
  * @see https://www.investopedia.com/terms/k/keltnerchannel.asp
  */
-export class KeltnerChannels extends TechnicalIndicator<KeltnerChannelsResult, HighLowClose<number>> {
+export class KeltnerChannels extends TrendIndicator<KeltnerChannelsResult, HighLowClose<number>> {
   override readonly inputShape = IndicatorInputShape.HIGH_LOW_CLOSE;
 
   readonly #middle: EMA;
   readonly #atr: ATR;
+  #close?: number;
 
   public readonly atrInterval: number;
   public readonly emaInterval: number;
@@ -61,18 +66,38 @@ export class KeltnerChannels extends TechnicalIndicator<KeltnerChannelsResult, H
   update(candle: HighLowClose<number>, replace: boolean) {
     this.#middle.update(candle.close, replace);
     this.#atr.update(candle, replace);
+    this.#close = candle.close;
 
     if (this.#middle.isStable && this.#atr.isStable) {
       const middle = this.#middle.getResultOrThrow();
       const channelOffset = this.multiplier * this.#atr.getResultOrThrow();
 
-      return (this.result = {
-        lower: middle - channelOffset,
-        middle,
-        upper: middle + channelOffset,
-      });
+      return this.setResult(
+        {
+          lower: middle - channelOffset,
+          middle,
+          upper: middle + channelOffset,
+        },
+        replace
+      );
     }
 
     return null;
+  }
+
+  protected calculateSignalState(result?: {lower: number; upper: number} | null) {
+    if (!result || this.#close === undefined) {
+      return TradingSignal.UNKNOWN;
+    }
+
+    if (this.#close > result.upper) {
+      return TradingSignal.BULLISH;
+    }
+
+    if (this.#close < result.lower) {
+      return TradingSignal.BEARISH;
+    }
+
+    return TradingSignal.SIDEWAYS;
   }
 }

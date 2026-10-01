@@ -1,3 +1,4 @@
+import {TradingSignal} from '../../base/Indicator.js';
 import {testIndicatorContract} from '../../fixtures/testIndicatorContract.js';
 import {PSAR} from './PSAR.js';
 import {NotEnoughDataError} from '../../error/index.js';
@@ -990,4 +991,33 @@ testIndicatorContract({
     {high: 83.33, low: 82.49},
     {high: 84.3, low: 82.3},
   ],
+});
+
+describe('PSAR signal', () => {
+  const risingCandles = Array.from({length: 80}, (_, i) => ({close: 100 + i, high: 101 + i, low: 99 + i}));
+  const fallingCandles = Array.from({length: 80}, (_, i) => ({close: 200 - i, high: 201 - i, low: 199 - i}));
+
+  it('returns UNKNOWN before the first result', () => {
+    expect(new PSAR({accelerationMax: 0.2, accelerationStep: 0.02}).getSignal().state).toBe(TradingSignal.UNKNOWN);
+  });
+
+  it('returns BULLISH in a rising market', () => {
+    const indicator = new PSAR({accelerationMax: 0.2, accelerationStep: 0.02});
+
+    for (const candle of risingCandles) {
+      indicator.add(candle);
+    }
+
+    expect(indicator.getSignal().state).toBe(TradingSignal.BULLISH);
+  });
+
+  it('returns BEARISH in a falling market', () => {
+    const indicator = new PSAR({accelerationMax: 0.2, accelerationStep: 0.02});
+
+    for (const candle of fallingCandles) {
+      indicator.add(candle);
+    }
+
+    expect(indicator.getSignal().state).toBe(TradingSignal.BEARISH);
+  });
 });

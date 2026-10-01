@@ -1,3 +1,4 @@
+import {TradingSignal} from '../../base/Indicator.js';
 import {testIndicatorContract} from '../../fixtures/testIndicatorContract.js';
 import {WSMA} from '../WSMA/WSMA.js';
 import {Alligator} from './Alligator.js';
@@ -298,4 +299,112 @@ testIndicatorContract({
     new GatorOscillator({jawInterval: 3, jawShift: 0, lipsInterval: 1, lipsShift: 0, teethInterval: 2, teethShift: 0}),
   divergentInput: {high: 31, low: 29},
   inputs: worksheetCandles,
+});
+
+describe('Alligator signal', () => {
+  const risingCandles = Array.from({length: 80}, (_, i) => ({close: 100 + i, high: 101 + i, low: 99 + i}));
+  const fallingCandles = Array.from({length: 80}, (_, i) => ({close: 200 - i, high: 201 - i, low: 199 - i}));
+  const flatCandles = Array.from({length: 80}, () => ({close: 100, high: 101, low: 99}));
+
+  it('returns UNKNOWN before the first result', () => {
+    expect(
+      new Alligator({
+        jawInterval: 3,
+        jawShift: 0,
+        lipsInterval: 1,
+        lipsShift: 0,
+        teethInterval: 2,
+        teethShift: 0,
+      }).getSignal().state
+    ).toBe(TradingSignal.UNKNOWN);
+  });
+
+  it('returns BULLISH in a rising market', () => {
+    const indicator = new Alligator({
+      jawInterval: 3,
+      jawShift: 0,
+      lipsInterval: 1,
+      lipsShift: 0,
+      teethInterval: 2,
+      teethShift: 0,
+    });
+
+    for (const candle of risingCandles) {
+      indicator.add(candle);
+    }
+
+    expect(indicator.getSignal().state).toBe(TradingSignal.BULLISH);
+  });
+
+  it('returns BEARISH in a falling market', () => {
+    const indicator = new Alligator({
+      jawInterval: 3,
+      jawShift: 0,
+      lipsInterval: 1,
+      lipsShift: 0,
+      teethInterval: 2,
+      teethShift: 0,
+    });
+
+    for (const candle of fallingCandles) {
+      indicator.add(candle);
+    }
+
+    expect(indicator.getSignal().state).toBe(TradingSignal.BEARISH);
+  });
+
+  it('returns SIDEWAYS in a flat market', () => {
+    const indicator = new Alligator({
+      jawInterval: 3,
+      jawShift: 0,
+      lipsInterval: 1,
+      lipsShift: 0,
+      teethInterval: 2,
+      teethShift: 0,
+    });
+
+    for (const candle of flatCandles) {
+      indicator.add(candle);
+    }
+
+    expect(indicator.getSignal().state).toBe(TradingSignal.SIDEWAYS);
+  });
+
+  it('returns SIDEWAYS while the lines are only partly fanned', () => {
+    const indicator = new Alligator({
+      jawInterval: 3,
+      jawShift: 0,
+      lipsInterval: 1,
+      lipsShift: 0,
+      teethInterval: 2,
+      teethShift: 0,
+    });
+
+    for (const median of [10, 11, 12, 13, 14, 15, 12]) {
+      indicator.add({high: median + 1, low: median - 1});
+    }
+
+    const {jaw, lips, teeth} = indicator.getResultOrThrow();
+
+    expect(lips < teeth && teeth > jaw, 'the lips dropped below the teeth while the teeth still lead the jaw').toBe(
+      true
+    );
+    expect(indicator.getSignal().state).toBe(TradingSignal.SIDEWAYS);
+  });
+
+  it.each([
+    ['lips', 'teeth', risingCandles, {jawInterval: 3, lipsInterval: 1, teethInterval: 1}],
+    ['lips', 'teeth', fallingCandles, {jawInterval: 3, lipsInterval: 1, teethInterval: 1}],
+    ['teeth', 'jaw', risingCandles, {jawInterval: 3, lipsInterval: 1, teethInterval: 3}],
+    ['teeth', 'jaw', fallingCandles, {jawInterval: 3, lipsInterval: 1, teethInterval: 3}],
+  ])('returns SIDEWAYS while the %s meet the %s', (_first, _second, candles, intervals) => {
+    // Two lines with the same smoothing coincide, so the fan cannot be strictly ordered
+    const indicator = new Alligator({...intervals, jawShift: 0, lipsShift: 0, teethShift: 0});
+
+    for (const candle of candles) {
+      indicator.add(candle);
+    }
+
+    expect(indicator.getSignal().state).toBe(TradingSignal.SIDEWAYS);
+  });
 });
