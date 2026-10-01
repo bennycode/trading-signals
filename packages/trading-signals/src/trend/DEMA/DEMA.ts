@@ -1,5 +1,5 @@
 import {EMA} from '../EMA/EMA.js';
-import {IndicatorInputShape, IndicatorSeries} from '../../base/Indicator.js';
+import {MovingAverage} from '../MA/MovingAverage.js';
 import {NotEnoughDataError} from '../../error/index.js';
 
 /**
@@ -10,17 +10,12 @@ import {NotEnoughDataError} from '../../error/index.js';
  *
  * @see https://www.investopedia.com/terms/d/double-exponential-moving-average.asp
  */
-export class DEMA extends IndicatorSeries {
-  override readonly inputShape = IndicatorInputShape.PRICE;
-
+export class DEMA extends MovingAverage {
   readonly #inner: EMA;
   readonly #outer: EMA;
 
-  public readonly interval: number;
-
   constructor(interval: number) {
-    super();
-    this.interval = interval;
+    super(interval);
     this.#inner = new EMA(interval);
     this.#outer = new EMA(interval);
   }

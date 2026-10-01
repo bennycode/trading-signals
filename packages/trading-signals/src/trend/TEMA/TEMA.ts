@@ -1,4 +1,4 @@
-import {IndicatorInputShape, IndicatorSeries} from '../../base/Indicator.js';
+import {MovingAverage} from '../MA/MovingAverage.js';
 import {EMA} from '../EMA/EMA.js';
 
 /**
@@ -15,18 +15,13 @@ import {EMA} from '../EMA/EMA.js';
  * @see https://www.investopedia.com/terms/t/triple-exponential-moving-average.asp
  * @see https://tulipindicators.org/tema
  */
-export class TEMA extends IndicatorSeries {
-  override readonly inputShape = IndicatorInputShape.PRICE;
-
+export class TEMA extends MovingAverage {
   readonly #single: EMA;
   readonly #double: EMA;
   readonly #triple: EMA;
 
-  public readonly interval: number;
-
   constructor(interval: number) {
-    super();
-    this.interval = interval;
+    super(interval);
     this.#single = new EMA(interval);
     this.#double = new EMA(interval);
     this.#triple = new EMA(interval);
