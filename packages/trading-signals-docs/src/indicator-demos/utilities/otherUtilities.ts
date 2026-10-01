@@ -21,6 +21,16 @@ export const otherUtilities: UtilityInfoConfig[] = [
       "getGrid({ lower, upper, levels, spacing, tickSize? }): number[]\n// spacing: 'arithmetic' | 'geometric'",
   },
   {
+    description: 'Sizes a position so that being stopped out costs a fixed share of the account',
+    details:
+      "The distance between `entryPrice` and `stopPrice` is the risk per unit, so a tighter stop yields a larger position for the same risk budget. Works for longs and shorts, since only the distance between the two prices matters. The result is fractional (a position can be `0.0431 BTC`), so round it to the exchange's step size before ordering. See [Risk Management](/basics/risk-management) for the reasoning.",
+    id: 'position-size',
+    kind: 'info',
+    name: 'getPositionSize',
+    signature:
+      'getPositionSize(accountValue: number, riskPercent: number, entryPrice: number, stopPrice: number): number',
+  },
+  {
     description: 'Returns the lengths and percentage moves of continuous up- or down-streaks in a price series',
     details:
       'Walks the price series and groups consecutive moves in the same direction. Pass `up` to keep uptrends, `down` for downtrends. Each returned `Streak` reports the number of consecutive moves and the total percentage change across the streak. Useful for momentum analysis and indicators that need streak length as input (e.g. Connors RSI).',

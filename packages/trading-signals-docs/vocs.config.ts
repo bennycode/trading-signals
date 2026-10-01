@@ -13,6 +13,15 @@ export default defineConfig({
       link: '/',
       text: 'Getting Started',
     },
+    {
+      collapsed: true,
+      items: [
+        {link: '/basics/glossary', text: 'Trading Glossary'},
+        {link: '/basics/indicator-types', text: 'Indicator Types'},
+        {link: '/basics/risk-management', text: 'Risk Management'},
+      ],
+      text: 'Trading Basics',
+    },
     ...indicatorSidebar.map(section => ({
       collapsed: true,
       items: section.items,
