@@ -242,6 +242,19 @@ describe('KeltnerChannels signal', () => {
     expect(indicator.getSignal().state).toBe(TradingSignal.SIDEWAYS);
   });
 
+  it('returns SIDEWAYS for a close on the channel lines', () => {
+    const indicator = new KeltnerChannels({atrInterval: 2, emaInterval: 2, multiplier: 0.1});
+
+    for (let i = 0; i < 5; i++) {
+      indicator.add({close: 100, high: 100, low: 100});
+    }
+
+    const {lower, upper} = indicator.getResultOrThrow();
+
+    expect([lower, upper], 'candles without a range leave a channel without width').toEqual([100, 100]);
+    expect(indicator.getSignal().state).toBe(TradingSignal.SIDEWAYS);
+  });
+
   it('judges a replaced candle by its own close', () => {
     const indicator = new KeltnerChannels({atrInterval: 2, emaInterval: 2, multiplier: 0.1});
 

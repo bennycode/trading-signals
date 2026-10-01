@@ -391,4 +391,20 @@ describe('Alligator signal', () => {
     );
     expect(indicator.getSignal().state).toBe(TradingSignal.SIDEWAYS);
   });
+
+  it.each([
+    ['lips', 'teeth', risingCandles, {jawInterval: 3, lipsInterval: 1, teethInterval: 1}],
+    ['lips', 'teeth', fallingCandles, {jawInterval: 3, lipsInterval: 1, teethInterval: 1}],
+    ['teeth', 'jaw', risingCandles, {jawInterval: 3, lipsInterval: 1, teethInterval: 3}],
+    ['teeth', 'jaw', fallingCandles, {jawInterval: 3, lipsInterval: 1, teethInterval: 3}],
+  ])('returns SIDEWAYS while the %s meet the %s', (_first, _second, candles, intervals) => {
+    // Two lines with the same smoothing coincide, so the fan cannot be strictly ordered
+    const indicator = new Alligator({...intervals, jawShift: 0, lipsShift: 0, teethShift: 0});
+
+    for (const candle of candles) {
+      indicator.add(candle);
+    }
+
+    expect(indicator.getSignal().state).toBe(TradingSignal.SIDEWAYS);
+  });
 });
