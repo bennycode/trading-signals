@@ -1,8 +1,10 @@
+import Big from 'big.js';
 import type {TradingPair} from '../TradingPair.js';
 import {
   OrderPosition,
   OrderSide,
   OrderType,
+  type Balance,
   type Fill,
   type LimitOrderOptions,
   type MarketOrderOptions,
@@ -10,7 +12,10 @@ import {
   type PendingLimitOrder,
   type PendingMarketOrder,
   type PendingOrder,
+  type TradingRules,
 } from '../Broker.js';
+import type {Instrument} from './api/schema/InstrumentSchema.js';
+import type {Position} from './api/schema/PositionSchema.js';
 import type {HistoryOrder} from './api/schema/HistoryOrderSchema.js';
 import type {Order} from './api/schema/OrderSchema.js';
 import {Trading212OrderStatus} from './api/schema/OrderSchema.js';
@@ -132,6 +137,32 @@ export class Trading212BrokerMapper {
       price: `${fill.price ?? 0}`,
       side,
       size: `${Math.abs(signedQty)}`,
+    };
+  }
+
+  static toBalance(position: Position): Balance {
+    return {
+      available: new Big(position.quantity).abs().toFixed(),
+      currency: position.ticker,
+      hold: '0',
+      position: position.quantity < 0 ? OrderPosition.SHORT : OrderPosition.LONG,
+    };
+  }
+
+  static toTradingRules(instrument: Instrument, pair: TradingPair): TradingRules {
+    /*
+     * Trading212's `minTradeQuantity` is the floor *and* the increment for fractional shares.
+     * Use the same non-zero fallback for both — falling back to '0' on `base_min_size` would
+     * let computed sizes of zero pass the trading session's min-size guard.
+     */
+    const minQuantity = `${instrument.minTradeQuantity ?? '0.000000001'}`;
+    return {
+      base_increment: minQuantity,
+      base_max_size: `${instrument.maxOpenQuantity ?? Number.MAX_SAFE_INTEGER}`,
+      base_min_size: minQuantity,
+      counter_increment: '0.01',
+      counter_min_size: '1',
+      pair,
     };
   }
 }

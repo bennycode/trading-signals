@@ -1,4 +1,6 @@
+import type {Context} from 'grammy';
 import {MESSAGE_BREAK} from 'trading-strategies';
+import {logger} from '../logger.js';
 
 const HTML_ESCAPES: Record<string, string> = {
   '&': '&amp;',
@@ -141,4 +143,19 @@ function splitSectionForTelegram(markdown: string, maxLength: number): string[] 
   }
   flush();
   return chunks;
+}
+
+export async function replyWithMarkdown(ctx: Context, text: string): Promise<void> {
+  for (const chunk of splitForTelegram(text)) {
+    try {
+      await ctx.reply(markdownToTelegramHtml(chunk), {parse_mode: 'HTML'});
+    } catch (error) {
+      /*
+       * Log the escaper failure instead of silently swallowing it — a silent
+       * fallback would hide a real escaper bug (and any XSS it enables).
+       */
+      logger.warn({err: error}, 'Falling back to plaintext after markdown-to-HTML render failure');
+      await ctx.reply(chunk);
+    }
+  }
 }

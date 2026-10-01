@@ -7,6 +7,7 @@ import type {LimitOrderAdvice, OrderAdvice, TradingSessionState} from '../trader
 import {MarketType} from '../strategy/MarketType.js';
 import {Strategy} from '../strategy/Strategy.js';
 import {positiveNumberString} from '../util/validators.js';
+import {guardReason, guardTargetPrice, isGuardTriggered, parseGuard, type Guard, type GuardOrderType} from './guard.js';
 
 /**
  * All kill-switch settings live under a single nested `protected` key so they can't
@@ -78,22 +79,44 @@ export const ProtectedStrategySchema = z.object({
 export type ProtectedConfig = z.infer<typeof ProtectedConfigSchema>;
 export type ProtectedStrategyConfig = z.infer<typeof ProtectedStrategySchema>;
 
-type GuardOrderType = 'limit' | 'market';
+function isValidBigString(value: string) {
+  try {
+    new Big(value);
+    return true;
+  } catch {
+    return false;
+  }
+}
 
-type GuardMode = {kind: 'pct'; pct: Big} | {kind: 'nominal'; nominal: Big} | {kind: 'price'; price: Big} | null;
+const bigString = z.string().refine(isValidBigString);
 
-export type ProtectedStrategyState = {
-  killed: boolean;
-  killedReason: string | null;
-  /** Order type used when a guard fires. `null` until a guard fires. */
-  killedOrderType: GuardOrderType | null;
-  /** Limit price of the kill-switch sell order, as a Big string. `null` for market orders or until a guard fires. */
-  killedLimitPrice: string | null;
-  /** Cumulative cost basis across all BUY fills: sum of (price * size). Stored as a Big string. */
-  totalCostBasis: string;
-  /** Net base quantity held (BUYs minus SELLs). Stored as a Big string. */
-  totalPositionSize: string;
-};
+/**
+ * Persisted state is validated on restore. Besides the shape, a killed state must be
+ * fully specified so the retry path in `onCandle` can re-emit the correct advice: a
+ * `killed=true` state without `killedOrderType` would leave an open position with no
+ * further exit, and a limit kill needs its `killedLimitPrice`. Invalid state falls back
+ * to the default, re-arming the guards on the next candle.
+ */
+const ProtectedStrategyStateSchema = z
+  .object({
+    killed: z.boolean(),
+    /** Limit price of the kill-switch sell order. `null` for market orders or until a guard fires. */
+    killedLimitPrice: bigString.nullable(),
+    /** Order type used when a guard fires. `null` until a guard fires. */
+    killedOrderType: z.enum(['limit', 'market']).nullable(),
+    killedReason: z.string().nullable(),
+    /** Cumulative cost basis across all BUY fills: sum of (price * size). */
+    totalCostBasis: bigString,
+    /** Net base quantity held (BUYs minus SELLs). */
+    totalPositionSize: bigString,
+  })
+  .refine(
+    state =>
+      !state.killed ||
+      (state.killedOrderType !== null && (state.killedOrderType !== 'limit' || state.killedLimitPrice !== null))
+  );
+
+export type ProtectedStrategyState = z.infer<typeof ProtectedStrategyStateSchema>;
 
 const PROTECTED_STATE_KEY = 'protected';
 
@@ -149,10 +172,7 @@ type ProtectedContainerState = {[PROTECTED_STATE_KEY]: ProtectedStrategyState};
 export class ProtectedStrategy extends Strategy {
   static override NAME = '@typedtrader/strategy-protected';
   static override marketTypes: readonly MarketType[] = [MarketType.UTILITY];
-  readonly #stopLoss: GuardMode;
-  readonly #takeProfit: GuardMode;
-  readonly #stopLossOrder: GuardOrderType;
-  readonly #takeProfitOrder: GuardOrderType;
+  readonly #guards: Guard[];
   readonly #seedFromBalance: boolean;
 
   constructor(options: {config: Record<string, unknown>; state?: Record<string, unknown>} = {config: {}}) {
@@ -167,50 +187,26 @@ export class ProtectedStrategy extends Strategy {
     // Parse only the nested `protected` sub-object — the subclass owns the rest of the config.
     const protectedConfig = ProtectedConfigSchema.parse(options.config[PROTECTED_STATE_KEY] ?? {});
 
-    /*
-     * Zod's `.refine()` would turn the schema into `ZodEffects`, which cannot
-     * be `.extend()`-ed by subclasses. Mutual exclusion is validated here instead.
-     */
-    const stopLossFields = [
-      protectedConfig.stopLossPct,
-      protectedConfig.stopLossNominal,
-      protectedConfig.stopLossPrice,
-    ].filter((value): value is string => value !== undefined);
-    if (stopLossFields.length > 1) {
-      throw new Error(
-        'ProtectedStrategy: stopLossPct, stopLossNominal, and stopLossPrice are mutually exclusive — set at most one'
-      );
-    }
-
-    const takeProfitFields = [
-      protectedConfig.takeProfitPct,
-      protectedConfig.takeProfitNominal,
-      protectedConfig.takeProfitPrice,
-    ].filter((value): value is string => value !== undefined);
-    if (takeProfitFields.length > 1) {
-      throw new Error(
-        'ProtectedStrategy: takeProfitPct, takeProfitNominal, and takeProfitPrice are mutually exclusive — set at most one'
-      );
-    }
-
-    this.#stopLoss = protectedConfig.stopLossPct
-      ? {kind: 'pct', pct: new Big(protectedConfig.stopLossPct)}
-      : protectedConfig.stopLossNominal
-        ? {kind: 'nominal', nominal: new Big(protectedConfig.stopLossNominal)}
-        : protectedConfig.stopLossPrice
-          ? {kind: 'price', price: new Big(protectedConfig.stopLossPrice)}
-          : null;
-
-    this.#takeProfit = protectedConfig.takeProfitPct
-      ? {kind: 'pct', pct: new Big(protectedConfig.takeProfitPct)}
-      : protectedConfig.takeProfitNominal
-        ? {kind: 'nominal', nominal: new Big(protectedConfig.takeProfitNominal)}
-        : protectedConfig.takeProfitPrice
-          ? {kind: 'price', price: new Big(protectedConfig.takeProfitPrice)}
-          : null;
-
-    this.#stopLossOrder = protectedConfig.stopLossOrder;
-    this.#takeProfitOrder = protectedConfig.takeProfitOrder;
+    this.#guards = [
+      parseGuard(
+        'stopLoss',
+        {
+          nominal: protectedConfig.stopLossNominal,
+          pct: protectedConfig.stopLossPct,
+          price: protectedConfig.stopLossPrice,
+        },
+        protectedConfig.stopLossOrder
+      ),
+      parseGuard(
+        'takeProfit',
+        {
+          nominal: protectedConfig.takeProfitNominal,
+          pct: protectedConfig.takeProfitPct,
+          price: protectedConfig.takeProfitPrice,
+        },
+        protectedConfig.takeProfitOrder
+      ),
+    ].filter(guard => guard !== null);
     this.#seedFromBalance = protectedConfig.seedFromBalance;
   }
 
@@ -270,7 +266,7 @@ export class ProtectedStrategy extends Strategy {
     candle: OneMinuteBatchedCandle,
     state: TradingSessionState
   ): Promise<OrderAdvice | void> {
-    if (!this.#stopLoss && !this.#takeProfit) {
+    if (this.#guards.length === 0) {
       return;
     }
 
@@ -293,11 +289,11 @@ export class ProtectedStrategy extends Strategy {
     const avgEntry = new Big(this.#protectedState.totalCostBasis).div(positionSize);
     const currentPrice = candle.close;
 
-    if (this.#stopLoss) {
-      const targetPrice = this.#resolveStopLossLimit(avgEntry, positionSize);
-      if (currentPrice.lte(targetPrice)) {
-        const orderType = this.#stopLossOrder;
-        const reason = this.#stopLossReason(avgEntry, currentPrice, positionSize, targetPrice, orderType);
+    for (const guard of this.#guards) {
+      const targetPrice = guardTargetPrice(guard, avgEntry, positionSize);
+      if (isGuardTriggered(guard, currentPrice, targetPrice)) {
+        const {orderType} = guard;
+        const reason = guardReason(guard, avgEntry, currentPrice, positionSize, targetPrice);
         this.#setProtectedState({
           killed: true,
           killedLimitPrice: orderType === 'limit' ? targetPrice.toFixed() : null,
@@ -306,87 +302,6 @@ export class ProtectedStrategy extends Strategy {
         });
         return this.#killSwitchAdvice(reason, orderType, orderType === 'limit' ? targetPrice : null);
       }
-    }
-
-    if (this.#takeProfit) {
-      const targetPrice = this.#resolveTakeProfitLimit(avgEntry, positionSize);
-      if (currentPrice.gte(targetPrice)) {
-        const orderType = this.#takeProfitOrder;
-        const reason = this.#takeProfitReason(avgEntry, currentPrice, positionSize, targetPrice, orderType);
-        this.#setProtectedState({
-          killed: true,
-          killedLimitPrice: orderType === 'limit' ? targetPrice.toFixed() : null,
-          killedOrderType: orderType,
-          killedReason: reason,
-        });
-        return this.#killSwitchAdvice(reason, orderType, orderType === 'limit' ? targetPrice : null);
-      }
-    }
-  }
-
-  #resolveStopLossLimit(avgEntry: Big, positionSize: Big): Big {
-    if (!this.#stopLoss) {
-      throw new Error('unreachable: stop-loss is not configured');
-    }
-    switch (this.#stopLoss.kind) {
-      case 'pct':
-        return avgEntry.mul(new Big(1).minus(this.#stopLoss.pct.div(100)));
-      case 'nominal':
-        return avgEntry.minus(this.#stopLoss.nominal.div(positionSize));
-      case 'price':
-        return this.#stopLoss.price;
-    }
-  }
-
-  #resolveTakeProfitLimit(avgEntry: Big, positionSize: Big): Big {
-    if (!this.#takeProfit) {
-      throw new Error('unreachable: take-profit is not configured');
-    }
-    switch (this.#takeProfit.kind) {
-      case 'pct':
-        return avgEntry.mul(new Big(1).plus(this.#takeProfit.pct.div(100)));
-      case 'nominal':
-        return avgEntry.plus(this.#takeProfit.nominal.div(positionSize));
-      case 'price':
-        return this.#takeProfit.price;
-    }
-  }
-
-  #stopLossReason(avgEntry: Big, currentPrice: Big, positionSize: Big, targetPrice: Big, orderType: GuardOrderType) {
-    if (!this.#stopLoss) {
-      return '';
-    }
-    const orderSuffix = orderType === 'limit' ? `(limit ${targetPrice.toFixed()})` : '(market)';
-    switch (this.#stopLoss.kind) {
-      case 'pct': {
-        const pctChange = currentPrice.minus(avgEntry).div(avgEntry).mul(100);
-        return `Stop-loss: ${pctChange.toFixed(2)}% <= -${this.#stopLoss.pct.toFixed(2)}% ${orderSuffix}`;
-      }
-      case 'nominal': {
-        const unrealized = currentPrice.minus(avgEntry).mul(positionSize);
-        return `Stop-loss: unrealized ${unrealized.toFixed(2)} <= -${this.#stopLoss.nominal.toFixed(2)} ${orderSuffix}`;
-      }
-      case 'price':
-        return `Stop-loss: price ${currentPrice.toFixed()} <= target ${this.#stopLoss.price.toFixed()} ${orderSuffix}`;
-    }
-  }
-
-  #takeProfitReason(avgEntry: Big, currentPrice: Big, positionSize: Big, targetPrice: Big, orderType: GuardOrderType) {
-    if (!this.#takeProfit) {
-      return '';
-    }
-    const orderSuffix = orderType === 'limit' ? `(limit ${targetPrice.toFixed()})` : '(market)';
-    switch (this.#takeProfit.kind) {
-      case 'pct': {
-        const pctChange = currentPrice.minus(avgEntry).div(avgEntry).mul(100);
-        return `Take-profit: +${pctChange.toFixed(2)}% >= +${this.#takeProfit.pct.toFixed(2)}% ${orderSuffix}`;
-      }
-      case 'nominal': {
-        const unrealized = currentPrice.minus(avgEntry).mul(positionSize);
-        return `Take-profit: unrealized +${unrealized.toFixed(2)} >= +${this.#takeProfit.nominal.toFixed(2)} ${orderSuffix}`;
-      }
-      case 'price':
-        return `Take-profit: price ${currentPrice.toFixed()} >= target ${this.#takeProfit.price.toFixed()} ${orderSuffix}`;
     }
   }
 
@@ -438,10 +353,8 @@ export class ProtectedStrategy extends Strategy {
   }
 
   override restoreState(persisted: Record<string, unknown>): void {
-    const existing = persisted[PROTECTED_STATE_KEY];
-    const restoredProtected: ProtectedStrategyState = isProtectedStrategyState(existing)
-      ? existing
-      : defaultProtectedState();
+    const parsed = ProtectedStrategyStateSchema.safeParse(persisted[PROTECTED_STATE_KEY]);
+    const restoredProtected = parsed.success ? parsed.data : defaultProtectedState();
 
     super.restoreState({
       ...persisted,
@@ -478,80 +391,5 @@ export class ProtectedStrategy extends Strategy {
       type: OrderType.LIMIT,
     };
     return advice;
-  }
-}
-
-/**
- * Validates that a persisted object is a well-formed `ProtectedStrategyState`.
- *
- * Beyond shape checks, this also enforces cross-field invariants that
- * `restoreState` relies on to produce a safe runtime state:
- *
- * - If `killed === true`, `killedOrderType` must be set so the retry path in
- *   `onCandle` can re-emit the correct advice kind. A `killed=true` state with
- *   `killedOrderType=null` would leave an open position with no further exit.
- * - If `killedOrderType === 'limit'`, `killedLimitPrice` must be set so the
- *   retry can re-build the limit advice.
- * - Numeric string fields (`totalCostBasis`, `totalPositionSize`,
- *   `killedLimitPrice`) must be parseable by `Big` — otherwise the next
- *   `onCandle` would throw inside `new Big(...)`.
- *
- * Returning `false` from here causes `restoreState` to fall back to the
- * default state, re-arming the guards on the next candle.
- */
-function isProtectedStrategyState(value: unknown): value is ProtectedStrategyState {
-  if (!value || typeof value !== 'object') {
-    return false;
-  }
-  const candidate = value as Record<string, unknown>;
-
-  if (typeof candidate.killed !== 'boolean') {
-    return false;
-  }
-  if (candidate.killedReason !== null && typeof candidate.killedReason !== 'string') {
-    return false;
-  }
-  if (
-    candidate.killedOrderType !== null &&
-    candidate.killedOrderType !== 'limit' &&
-    candidate.killedOrderType !== 'market'
-  ) {
-    return false;
-  }
-  if (candidate.killedLimitPrice !== null && typeof candidate.killedLimitPrice !== 'string') {
-    return false;
-  }
-  if (typeof candidate.totalCostBasis !== 'string' || !isValidBigString(candidate.totalCostBasis)) {
-    return false;
-  }
-  if (typeof candidate.totalPositionSize !== 'string' || !isValidBigString(candidate.totalPositionSize)) {
-    return false;
-  }
-  if (typeof candidate.killedLimitPrice === 'string' && !isValidBigString(candidate.killedLimitPrice)) {
-    return false;
-  }
-
-  /*
-   * Cross-field invariants: a killed state must be fully specified so that
-   * the retry path in onCandle has everything it needs to build fresh advice.
-   */
-  if (candidate.killed === true) {
-    if (candidate.killedOrderType === null) {
-      return false;
-    }
-    if (candidate.killedOrderType === 'limit' && candidate.killedLimitPrice === null) {
-      return false;
-    }
-  }
-
-  return true;
-}
-
-function isValidBigString(value: string) {
-  try {
-    new Big(value);
-    return true;
-  } catch {
-    return false;
   }
 }

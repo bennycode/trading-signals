@@ -3,7 +3,6 @@ import {randomUUID} from 'node:crypto';
 import Big from 'big.js';
 import {
   Broker,
-  type Balance,
   type Candle,
   type FeeRate,
   type Fill,
@@ -20,11 +19,16 @@ import {
 } from './Broker.js';
 import {getCandlesUntil, type MarketDataSource} from './MarketDataSource.js';
 import type {TradingPair} from './TradingPair.js';
+import {MockBalances, type ExchangeMockBalance} from './MockBalances.js';
+import {
+  applyNotionalTradingRules,
+  applyTradingRules,
+  limitFillPrice,
+  marketFillPrice,
+  roundDownToIncrement,
+} from './brokerMockPricing.js';
 
-export interface ExchangeMockBalance {
-  available: Big;
-  hold: Big;
-}
+export type {ExchangeMockBalance};
 
 export interface BrokerMockSlippageConfig {
   /** Fraction of the fill price lost to slippage: "0.01" is 1%. Applied against market fills only. */
@@ -34,7 +38,7 @@ export interface BrokerMockSlippageConfig {
 }
 
 export abstract class BrokerMock extends Broker {
-  readonly #balances: Map<string, ExchangeMockBalance>;
+  readonly #balances: MockBalances;
   readonly #pendingOrders: PendingOrder[] = [];
   /**
    * Exact amount put on hold per order, so cancels and fills release precisely what was
@@ -57,7 +61,7 @@ export abstract class BrokerMock extends Broker {
     slippage?: BrokerMockSlippageConfig;
   }) {
     super('BrokerMock');
-    this.#balances = config.balances;
+    this.#balances = new MockBalances(config.balances);
     this.#marketData = config.marketData;
     this.#slippageRate = config.slippage?.rate ?? new Big(0);
     assert.ok(
@@ -116,118 +120,52 @@ export abstract class BrokerMock extends Broker {
     return newFills;
   }
 
-  #tryMatch(order: PendingOrder, candle: Candle) {
-    const pair = order.pair;
-    const candleOpen = new Big(candle.open);
-    const candleLow = new Big(candle.low);
-    const candleHigh = new Big(candle.high);
-    const size = new Big(order.size);
-
-    let fillPrice: Big;
-
-    if (order.type === OrderType.MARKET) {
-      fillPrice = this.#applySlippage(order.side, candleOpen, candleLow, candleHigh);
-
-      if (order.sizeInCounter) {
-        /*
-         * Notional order: `size` is the total counter spend. The fee comes out of that
-         * spend, and the base quantity is whatever the remainder buys at the fill price —
-         * conversion happens here, at fill time, never at placement time with a stale price.
-         */
-        const feeRate = this.#getFeeRateSync(OrderType.MARKET);
-        const grossCounter = new Big(order.size);
-        const netCounter = grossCounter.div(new Big(1).plus(feeRate));
-        const fee = grossCounter.minus(netCounter);
-
-        const fill: Fill = {
-          created_at: candle.openTimeInISO,
-          fee: fee.toFixed(),
-          feeAsset: pair.counter,
-          order_id: order.id,
-          pair,
-          position: OrderPosition.LONG,
-          price: fillPrice.toFixed(),
-          side: order.side,
-          size: netCounter.div(fillPrice).toFixed(),
-        };
-        return fill;
-      }
-    } else {
-      // Limit order
-      const limitPrice = new Big(order.price);
-
-      if (order.side === OrderSide.BUY) {
-        // Limit buy fills if candle.low <= order.price
-        if (candleLow.gt(limitPrice)) {
-          return null;
-        }
-        // Price improvement: min(order.price, candle.open)
-        fillPrice = limitPrice.lt(candleOpen) ? limitPrice : candleOpen;
-      } else {
-        // Limit sell fills if candle.high >= order.price
-        if (candleHigh.lt(limitPrice)) {
-          return null;
-        }
-        // Price improvement: max(order.price, candle.open)
-        fillPrice = limitPrice.gt(candleOpen) ? limitPrice : candleOpen;
-      }
+  #tryMatch(order: PendingOrder, candle: Candle): Fill | null {
+    const range = {high: new Big(candle.high), low: new Big(candle.low), open: new Big(candle.open)};
+    const fillPrice =
+      order.type === OrderType.MARKET
+        ? marketFillPrice(order.side, range, this.#slippageRate, this.#clampSlippage)
+        : limitFillPrice(order.side, new Big(order.price), range);
+    if (!fillPrice) {
+      return null;
     }
 
     const feeRate = this.#getFeeRateSync(order.type);
-    const revenue = size.mul(fillPrice);
-    const fee = revenue.mul(feeRate);
+    let fee: Big;
+    let size: string;
 
-    const fill: Fill = {
+    if (order.type === OrderType.MARKET && order.sizeInCounter) {
+      /*
+       * Notional order: `size` is the total counter spend. The fee comes out of that
+       * spend, and the base quantity is whatever the remainder buys at the fill price —
+       * conversion happens here, at fill time, never at placement time with a stale price.
+       */
+      const grossCounter = new Big(order.size);
+      const netCounter = grossCounter.div(new Big(1).plus(feeRate));
+      fee = grossCounter.minus(netCounter);
+      size = netCounter.div(fillPrice).toFixed();
+    } else {
+      fee = new Big(order.size).mul(fillPrice).mul(feeRate);
+      size = order.size;
+    }
+
+    return {
       created_at: candle.openTimeInISO,
       fee: fee.toFixed(),
-      feeAsset: pair.counter,
+      feeAsset: order.pair.counter,
       order_id: order.id,
-      pair,
+      pair: order.pair,
       position: OrderPosition.LONG,
       price: fillPrice.toFixed(),
       side: order.side,
-      size: order.size,
+      size,
     };
-    return fill;
-  }
-
-  /** Market orders pay for immediacy: the fill lands worse than the candle open, never better. */
-  #applySlippage(side: OrderSide, candleOpen: Big, candleLow: Big, candleHigh: Big) {
-    if (side === OrderSide.BUY) {
-      const slipped = candleOpen.mul(new Big(1).plus(this.#slippageRate));
-      return this.#clampSlippage && slipped.gt(candleHigh) ? candleHigh : slipped;
-    }
-    const slipped = candleOpen.mul(new Big(1).minus(this.#slippageRate));
-    return this.#clampSlippage && slipped.lt(candleLow) ? candleLow : slipped;
   }
 
   #applyFill(fill: Fill, order: PendingOrder) {
-    const size = new Big(fill.size);
-    const price = new Big(fill.price);
-    const fee = new Big(fill.fee);
     const hold = this.#orderHolds.get(order.id);
     assert.ok(hold, `No hold recorded for order "${order.id}"`);
-
-    if (order.side === OrderSide.BUY) {
-      const counterCost = size.mul(price).plus(fee);
-      this.#releaseHold(order.pair.counter, hold.amount);
-      /*
-       * The hold was an estimate (limit price, or a pre-fill price for market orders).
-       * Settle the difference: refund unspent counter on price improvement, or charge
-       * the shortfall when the fill came in above the estimate.
-       */
-      const refund = hold.amount.minus(counterCost);
-      if (!refund.eq(0)) {
-        this.#addAvailable(order.pair.counter, refund);
-      }
-      this.#addAvailable(order.pair.base, size);
-    } else {
-      // Release base hold, add counter revenue
-      this.#releaseHold(order.pair.base, hold.amount);
-      const netRevenue = size.mul(price).minus(fee);
-      this.#addAvailable(order.pair.counter, netRevenue);
-    }
-
+    this.#balances.settle(fill, hold.amount);
     this.#orderHolds.delete(order.id);
     this.#fills.push(fill);
   }
@@ -236,127 +174,59 @@ export abstract class BrokerMock extends Broker {
   protected override async placeOrder(pair: TradingPair, options: MarketOrderOptions): Promise<PendingMarketOrder>;
   protected override async placeOrder(pair: TradingPair, options: OrderOptions) {
     const rules = await this.getTradingRules(pair);
-    const isCounterSized = options.type === OrderType.MARKET && options.sizeInCounter;
-
-    let size: Big;
-
-    if (isCounterSized) {
-      assert.ok(options.side === OrderSide.BUY, 'BrokerMock only supports counter-sized (notional) MARKET BUY orders');
-      size = this.#applyNotionalTradingRules(new Big(options.size), rules);
-    } else {
-      const validated = this.#applyTradingRules(new Big(options.size), options, rules);
-      assert.ok(validated, `Order size "${options.size}" violates the trading rules`);
-      size = validated;
-    }
-
+    const size = this.#validatedSize(options, rules);
+    const limitPrice =
+      options.type === OrderType.LIMIT
+        ? roundDownToIncrement(new Big(options.price), new Big(rules.counter_increment))
+        : undefined;
     const orderId = String(this.#nextOrderId++);
 
     // Validate balance and put amount on hold
-    if (options.side === OrderSide.BUY) {
-      let counterNeeded: Big;
-      if (options.type === OrderType.LIMIT) {
-        const price = this.#roundDownToIncrement(new Big(options.price), new Big(rules.counter_increment));
-        counterNeeded = size.mul(price);
-        // Add estimated fee
-        const feeRate = this.#getFeeRateSync(options.type);
-        counterNeeded = counterNeeded.plus(counterNeeded.mul(feeRate));
-      } else if (options.sizeInCounter) {
-        // Notional market order: the size IS the full counter spend, fee included.
-        counterNeeded = size;
-      } else {
-        // Market order, best-effort: hold based on current candle price if available.
-        const estimatedPrice = this.#currentCandle ? new Big(this.#currentCandle.close) : new Big(0);
-        counterNeeded = size.mul(estimatedPrice);
-        const feeRate = this.#getFeeRateSync(options.type);
-        counterNeeded = counterNeeded.plus(counterNeeded.mul(feeRate));
-      }
+    const hold =
+      options.side === OrderSide.BUY
+        ? {amount: this.#counterToHold(options, size, limitPrice), currency: pair.counter}
+        : {amount: size, currency: pair.base};
+    this.#balances.hold(hold.currency, hold.amount);
+    this.#orderHolds.set(orderId, hold);
 
-      this.#holdBalance(pair.counter, counterNeeded);
-      this.#orderHolds.set(orderId, {amount: counterNeeded, currency: pair.counter});
-    } else {
-      this.#holdBalance(pair.base, size);
-      this.#orderHolds.set(orderId, {amount: size, currency: pair.base});
-    }
-
-    if (options.type === OrderType.LIMIT) {
-      const price = this.#roundDownToIncrement(new Big(options.price), new Big(rules.counter_increment));
-      const pending: PendingLimitOrder = {
-        id: orderId,
-        pair,
-        price: price.toFixed(),
-        side: options.side,
-        size: size.toFixed(),
-        type: OrderType.LIMIT,
-      };
+    const base = {id: orderId, pair, side: options.side, size: size.toFixed()};
+    if (options.type === OrderType.LIMIT && limitPrice) {
+      const pending: PendingLimitOrder = {...base, price: limitPrice.toFixed(), type: OrderType.LIMIT};
       this.#pendingOrders.push(pending);
       return pending;
     }
 
     const pending: PendingMarketOrder = {
-      id: orderId,
-      pair,
-      side: options.side,
-      size: size.toFixed(),
-      sizeInCounter: options.sizeInCounter,
+      ...base,
+      sizeInCounter: options.type === OrderType.MARKET && options.sizeInCounter,
       type: OrderType.MARKET,
     };
     this.#pendingOrders.push(pending);
     return pending;
   }
 
-  /**
-   * Rule enforcement for counter-sized (notional) orders. The base quantity is only known
-   * at fill time, so the base minimum is checked against an estimate from the current
-   * candle — mirroring a real broker rejecting an order that is too small to execute.
-   */
-  #applyNotionalTradingRules(counterAmount: Big, rules: TradingRules) {
-    const size = this.#roundDownToIncrement(counterAmount, new Big(rules.counter_increment));
-    assert.ok(
-      size.gte(rules.counter_min_size),
-      `Notional size "${size.toFixed()}" is below the minimum of "${rules.counter_min_size}"`
-    );
-
-    if (this.#currentCandle) {
-      const estimatedPrice = new Big(this.#currentCandle.close);
-      if (estimatedPrice.gt(0)) {
-        const feeRate = this.#getFeeRateSync(OrderType.MARKET);
-        const estimatedBase = size.div(new Big(1).plus(feeRate)).div(estimatedPrice);
-        assert.ok(
-          estimatedBase.gte(rules.base_min_size),
-          `Notional size "${size.toFixed()}" buys an estimated "${estimatedBase.toFixed()}" base units, below the minimum of "${rules.base_min_size}"`
-        );
-      }
+  #validatedSize(options: OrderOptions, rules: TradingRules) {
+    if (options.type === OrderType.MARKET && options.sizeInCounter) {
+      assert.ok(options.side === OrderSide.BUY, 'BrokerMock only supports counter-sized (notional) MARKET BUY orders');
+      const price = this.#currentCandle ? new Big(this.#currentCandle.close) : undefined;
+      const estimate = price?.gt(0) ? {feeRate: this.#getFeeRateSync(OrderType.MARKET), price} : undefined;
+      return applyNotionalTradingRules(new Big(options.size), rules, estimate);
     }
-
-    return size;
+    const validated = applyTradingRules(new Big(options.size), options, rules);
+    assert.ok(validated, `Order size "${options.size}" violates the trading rules`);
+    return validated;
   }
 
-  #applyTradingRules(size: Big, options: OrderOptions, rules: TradingRules) {
-    const baseIncrement = new Big(rules.base_increment);
-    const baseMinSize = new Big(rules.base_min_size);
-    const counterMinSize = new Big(rules.counter_min_size);
-
-    size = this.#roundDownToIncrement(size, baseIncrement);
-
-    if (size.lt(baseMinSize)) {
-      return null;
+  /** Counter amount a BUY puts on hold: the estimated cost plus fee, or the notional spend as-is. */
+  #counterToHold(options: OrderOptions, size: Big, limitPrice: Big | undefined) {
+    if (options.type === OrderType.MARKET && options.sizeInCounter) {
+      // Notional market order: the size IS the full counter spend, fee included.
+      return size;
     }
-
-    // Check minimum notional
-    if (options.type === OrderType.LIMIT) {
-      const counterIncrement = new Big(rules.counter_increment);
-      const price = this.#roundDownToIncrement(new Big(options.price), counterIncrement);
-      const notional = size.mul(price);
-      if (notional.lt(counterMinSize)) {
-        return null;
-      }
-    }
-
-    return size;
-  }
-
-  #roundDownToIncrement(value: Big, increment: Big) {
-    return value.div(increment).round(0, Big.roundDown).mul(increment);
+    // Market orders hold best-effort, based on the current candle price if available.
+    const price = limitPrice ?? (this.#currentCandle ? new Big(this.#currentCandle.close) : new Big(0));
+    const cost = size.mul(price);
+    return cost.plus(cost.mul(this.#getFeeRateSync(options.type)));
   }
 
   /** Cached fee rates to avoid async in hot path */
@@ -373,49 +243,8 @@ export abstract class BrokerMock extends Broker {
     return this.#cachedFeeRates[orderType];
   }
 
-  #getBalance(currency: string) {
-    let balance = this.#balances.get(currency);
-    if (!balance) {
-      balance = {available: new Big(0), hold: new Big(0)};
-      this.#balances.set(currency, balance);
-    }
-    return balance;
-  }
-
-  #holdBalance(currency: string, amount: Big) {
-    const balance = this.#getBalance(currency);
-    if (balance.available.lt(amount)) {
-      throw new Error(
-        `Insufficient ${currency} balance: need ${amount.toFixed()}, available ${balance.available.toFixed()}`
-      );
-    }
-    balance.available = balance.available.minus(amount);
-    balance.hold = balance.hold.plus(amount);
-  }
-
-  #releaseHold(currency: string, amount: Big) {
-    const balance = this.#getBalance(currency);
-    // Release up to what's on hold (may differ from original hold due to price improvement)
-    const releaseAmount = amount.gt(balance.hold) ? balance.hold : amount;
-    balance.hold = balance.hold.minus(releaseAmount);
-  }
-
-  #addAvailable(currency: string, amount: Big) {
-    const balance = this.#getBalance(currency);
-    balance.available = balance.available.plus(amount);
-  }
-
   async listBalances() {
-    const balances: Balance[] = [];
-    for (const [currency, balance] of this.#balances) {
-      balances.push({
-        available: balance.available.toFixed(),
-        currency,
-        hold: balance.hold.toFixed(),
-        position: OrderPosition.LONG,
-      });
-    }
-    return balances;
+    return this.#balances.list();
   }
 
   async getFills(pair: TradingPair) {
@@ -441,8 +270,7 @@ export abstract class BrokerMock extends Broker {
     const hold = this.#orderHolds.get(orderId);
     assert.ok(hold, `No hold recorded for order "${orderId}"`);
 
-    this.#releaseHold(hold.currency, hold.amount);
-    this.#addAvailable(hold.currency, hold.amount);
+    this.#balances.refund(hold.currency, hold.amount);
     this.#orderHolds.delete(orderId);
   }
 

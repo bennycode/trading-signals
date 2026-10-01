@@ -2,7 +2,8 @@ import {describe, it, expect, vi, beforeEach} from 'vitest';
 import type {Bot as GrammyBot, Context} from 'grammy';
 import type {getAvailableReportNames} from 'trading-strategies';
 import type {Account} from '../database/models/Account.js';
-import {TelegramPlatform, lowercaseCommandMiddleware} from './TelegramPlatform.js';
+import {TelegramPlatform} from './TelegramPlatform.js';
+import {lowercaseCommandMiddleware} from './lowercaseCommandMiddleware.js';
 import {reportAdd} from '../command/report/reportAdd.js';
 import {logger} from '../logger.js';
 
