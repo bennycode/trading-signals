@@ -7,7 +7,7 @@ function rateLimitError() {
 }
 
 // Sequential: fake timers are process-global, so concurrently running tests would advance each other's clocks.
-describe.sequential('retry', () => {
+describe('retry', {concurrent: false}, () => {
   beforeEach(() => {
     vi.useFakeTimers();
   });

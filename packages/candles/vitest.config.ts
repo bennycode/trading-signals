@@ -1,3 +1,3 @@
-import baseConfig from '../../vitest.shared';
+import baseConfig from '../../vitest.shared.ts';
 
 export default baseConfig;

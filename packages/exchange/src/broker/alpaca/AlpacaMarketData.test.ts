@@ -51,7 +51,7 @@ describe('AlpacaMarketData', () => {
   });
 
   // Sequential: the tests share one mocked API, so a queued probe result must not land in the other test.
-  describe.sequential('watchCandles', () => {
+  describe('watchCandles', {concurrent: false}, () => {
     const watch = async () => {
       const marketData = new AlpacaMarketData(credentials);
       await marketData.watchCandles(pair, 60_000, '2025-12-01T00:00:00.000Z');

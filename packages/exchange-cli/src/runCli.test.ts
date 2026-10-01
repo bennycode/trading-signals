@@ -104,7 +104,11 @@ function setup() {
   return {broker, deps, listInstruments, run};
 }
 
-describe('runCli', () => {
+/*
+ * Vitest clears all mocks before each test. Running these concurrently would let one test's clear
+ * wipe the call history another test is about to assert on.
+ */
+describe('runCli', {concurrent: false}, () => {
   it.each([[], ['help'], ['--help']])('shows help without constructing a broker: %j', async (...args) => {
     const {deps} = setup();
     const result = await runCli(args, deps);
