@@ -2,7 +2,18 @@ import type {Bar} from './api/schema/BarSchema.js';
 import {type Order, AlpacaOrderStatus, type AlpacaAssetClass} from './api/schema/OrderSchema.js';
 import {ms} from 'ms';
 import {TradingPair} from '../TradingPair.js';
-import type {Candle, Fill, OrderOptions, PendingLimitOrder, PendingMarketOrder, PendingOrder} from '../Broker.js';
+import Big from 'big.js';
+import type {
+  Balance,
+  Candle,
+  Fill,
+  OrderOptions,
+  PendingLimitOrder,
+  PendingMarketOrder,
+  PendingOrder,
+} from '../Broker.js';
+import {PositionSide, type Position} from './api/schema/PositionSchema.js';
+import type {AlpacaAPI} from './api/AlpacaAPI.js';
 import {OrderPosition, OrderSide, OrderType} from '../Broker.js';
 
 export class AlpacaBrokerMapper {
@@ -110,6 +121,55 @@ export class AlpacaBrokerMapper {
       price: `${order.filled_avg_price}`,
       side: order.side === 'buy' ? OrderSide.BUY : OrderSide.SELL,
       size: `${order.filled_qty}`,
+    };
+  }
+
+  /**
+   * Note: The quantity of a position is negative (i.e. -100) if it is a SHORT position.
+   */
+  static toBalance(position: Position): Balance {
+    // A USDT/USD symbol is returned as "USDTUSD" on Alpaca, so we have to adjust this
+    const needsTrimming = position.asset_class === 'crypto' && position.symbol.endsWith('USD');
+    const currency = needsTrimming ? position.symbol.replace(/USD$/, '') : position.symbol;
+
+    if (position.side !== PositionSide.LONG && position.side !== PositionSide.SHORT) {
+      throw new Error(`Unknown position side "${position.side}" for symbol "${position.symbol}"`);
+    }
+
+    return {
+      // We are using absolute values here to have positive quantity for SHORT positions
+      available: new Big(position.qty).abs().toFixed(),
+      currency,
+      hold: '0',
+      position: position.side === PositionSide.LONG ? OrderPosition.LONG : OrderPosition.SHORT,
+    };
+  }
+
+  static toOrderRequest(
+    options: OrderOptions,
+    symbol: string,
+    isCrypto: boolean,
+    clientOrderId: string
+  ): Parameters<AlpacaAPI['postOrder']>[0] {
+    /*
+     * Crypto orders cannot use 'day' and must be placed with 'gtc' (error code: 42210000)
+     * Stock fractional and notional orders must use 'day' (error code: 42210000), whole share orders can use 'gtc'
+     * @see https://docs.alpaca.markets/docs/fractional-trading
+     */
+    const isFractional = options.sizeInCounter || options.size.includes('.');
+    const time_in_force = isCrypto || !isFractional ? 'gtc' : 'day';
+    const isLimit = options.type === OrderType.LIMIT;
+
+    return {
+      client_order_id: clientOrderId,
+      side: options.side === OrderSide.BUY ? 'buy' : 'sell',
+      symbol,
+      time_in_force,
+      type: isLimit ? 'limit' : 'market',
+      ...(options.sizeInCounter ? {notional: options.size} : {qty: options.size}),
+      ...(isLimit ? {limit_price: options.price} : {}),
+      // @see https://docs.alpaca.markets/docs/orders-at-alpaca#submitting-an-extended-hours-eligible-order
+      ...(isLimit && time_in_force === 'day' ? {extended_hours: true} : {}),
     };
   }
 }

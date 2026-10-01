@@ -1,0 +1,5 @@
+{
+  "exclude_directories": ["/trading-signals-docs"],
+  "exclude_filenames": ["*.test.ts"],
+  "score_cap": 60
+}

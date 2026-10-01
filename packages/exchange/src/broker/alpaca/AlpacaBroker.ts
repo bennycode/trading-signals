@@ -14,7 +14,6 @@ import {
   type MarketOrderOptions,
   type OrderOptions,
   OrderPosition,
-  OrderSide,
   OrderType,
   type PendingLimitOrder,
   type PendingMarketOrder,
@@ -26,7 +25,6 @@ import type {TradingPair} from '../TradingPair.js';
 import {createAlpacaSymbol, isAlpacaCryptoSymbol} from './alpacaSymbol.js';
 import {AlpacaOrderStatus} from './api/schema/OrderSchema.js';
 import {AlpacaAPI} from './api/AlpacaAPI.js';
-import {PositionSide} from './api/schema/PositionSchema.js';
 import {alpacaTradingWebSocket, type AlpacaTradingConnection} from './AlpacaTradingWebSocket.js';
 import {TradeUpdateEvent, type TradeUpdateMessage} from './api/schema/TradingStreamSchema.js';
 
@@ -235,40 +233,10 @@ export class AlpacaBroker extends Broker implements MarketDataSource {
     return createAlpacaSymbol(pair, isCrypto);
   }
 
-  /**
-   * Note: The quantity of a position is negative (i.e. -100) if it is a SHORT position.
-   *
-   * @see https://docs.alpaca.markets/reference/getallopenpositions
-   */
+  /** @see https://docs.alpaca.markets/reference/getallopenpositions */
   async listBalances(): Promise<Balance[]> {
-    const balances: Balance[] = [];
-
     const positions = await this.#alpacaAPI.getPositions();
-
-    for (const position of positions) {
-      const cashSymbol = 'USD';
-      // A USDT/USD symbol is returned as "USDTUSD" on Alpaca, so we have to adjust this
-      const needsTrimming = position.asset_class === 'crypto' && position.symbol.endsWith(cashSymbol);
-      const currency = needsTrimming ? position.symbol.replace(/USD$/, '') : position.symbol;
-
-      let side: OrderPosition;
-
-      if (position.side === PositionSide.LONG) {
-        side = OrderPosition.LONG;
-      } else if (position.side === PositionSide.SHORT) {
-        side = OrderPosition.SHORT;
-      } else {
-        throw new Error(`Unknown position side "${position.side}" for symbol "${position.symbol}"`);
-      }
-
-      balances.push({
-        // We are using absolute values here to have positive quantity for SHORT positions
-        available: new Big(position.qty).abs().toFixed(),
-        currency,
-        hold: '0',
-        position: side,
-      });
-    }
+    const balances = positions.map(position => AlpacaBrokerMapper.toBalance(position));
 
     /*
      * The Alpaca exchange handles available portfolio cash within the "Account API"
@@ -345,24 +313,23 @@ export class AlpacaBroker extends Broker implements MarketDataSource {
     const assets = await this.#alpacaAPI.getAssets({asset_class: assetClass});
     const asset = assets.find(a => a.symbol === symbol);
 
-    if (asset) {
-      if (asset.class === 'crypto') {
-        return {
-          base_increment: asset.min_trade_increment || AlpacaBroker.DEFAULT_CRYPTO_TRADING_RULES.base_increment,
-          base_max_size: Number.MAX_SAFE_INTEGER.toString(),
-          base_min_size: asset.min_order_size || AlpacaBroker.DEFAULT_CRYPTO_TRADING_RULES.base_min_size,
-          counter_increment: asset.price_increment || AlpacaBroker.DEFAULT_CRYPTO_TRADING_RULES.counter_increment,
-          counter_min_size: pair.counter === 'USD' ? '1' : '0',
-          pair,
-        };
-      }
-      return {
-        ...AlpacaBroker.DEFAULT_FRACTIONAL_TRADING_RULES,
-        pair,
-      };
+    if (!asset) {
+      throw new Error(`Could not find trading rules for symbol "${symbol}" of asset class "${assetClass}".`);
     }
 
-    throw new Error(`Could not find trading rules for symbol "${symbol}" of asset class "${assetClass}".`);
+    if (asset.class !== 'crypto') {
+      return {...AlpacaBroker.DEFAULT_FRACTIONAL_TRADING_RULES, pair};
+    }
+
+    const defaults = AlpacaBroker.DEFAULT_CRYPTO_TRADING_RULES;
+    return {
+      base_increment: asset.min_trade_increment || defaults.base_increment,
+      base_max_size: Number.MAX_SAFE_INTEGER.toString(),
+      base_min_size: asset.min_order_size || defaults.base_min_size,
+      counter_increment: asset.price_increment || defaults.counter_increment,
+      counter_min_size: pair.counter === 'USD' ? '1' : '0',
+      pair,
+    };
   }
 
   /**
@@ -386,56 +353,13 @@ export class AlpacaBroker extends Broker implements MarketDataSource {
     const isCrypto = await isAlpacaCryptoSymbol(this.#alpacaAPI, pair);
     const symbol = createAlpacaSymbol(pair, isCrypto);
     /*
-     * Crypto orders cannot use 'day' and must be placed with 'gtc' (error code: 42210000)
-     * Stock fractional and notional orders must use 'day' (error code: 42210000), whole share orders can use 'gtc'
-     * @see https://docs.alpaca.markets/docs/fractional-trading
+     * The client-side id makes order placement safe to retry: a re-submission carries the same
+     * id, so if the original POST already landed server-side, Alpaca rejects the duplicate
+     * instead of opening a second position — and operators can reconcile any in-doubt
+     * submission by querying the id.
+     * @see https://docs.alpaca.markets/us/docs/working-with-orders#using-client-order-ids
      */
-    const isFractional = options.sizeInCounter || options.size.includes('.');
-    const time_in_force = isCrypto || !isFractional ? 'gtc' : 'day';
-    const side = options.side === OrderSide.BUY ? 'buy' : 'sell';
-    const type = options.type === OrderType.MARKET ? 'market' : 'limit';
-
-    const config: {
-      client_order_id: string;
-      extended_hours?: boolean;
-      limit_price?: string;
-      notional?: string;
-      qty?: string;
-      side: string;
-      symbol: string;
-      time_in_force: string;
-      type: string;
-    } = {
-      /*
-       * The client-side id makes order placement safe to retry: a re-submission carries the same
-       * id, so if the original POST already landed server-side, Alpaca rejects the duplicate
-       * instead of opening a second position — and operators can reconcile any in-doubt
-       * submission by querying the id.
-       * @see https://docs.alpaca.markets/us/docs/working-with-orders#using-client-order-ids
-       */
-      client_order_id: randomUUID(),
-      side,
-      symbol,
-      time_in_force,
-      type,
-    };
-
-    if (options.sizeInCounter) {
-      config.notional = options.size;
-    } else {
-      config.qty = options.size;
-    }
-
-    if (options.type === OrderType.LIMIT) {
-      config.limit_price = options.price;
-    }
-
-    // @see https://docs.alpaca.markets/docs/orders-at-alpaca#submitting-an-extended-hours-eligible-order
-    const isEligibleForExtendedHours = type === 'limit' && time_in_force === 'day';
-    if (isEligibleForExtendedHours) {
-      config.extended_hours = true;
-    }
-
+    const config = AlpacaBrokerMapper.toOrderRequest(options, symbol, isCrypto, randomUUID());
     const order = await this.#alpacaAPI.postOrder(config);
     return AlpacaBrokerMapper.toPendingOrder(order, pair, options);
   }

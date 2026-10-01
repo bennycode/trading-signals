@@ -24,6 +24,7 @@ import type {MarketDataSource} from '../MarketDataSource.js';
 import {Trading212API} from './api/Trading212API.js';
 import {Trading212OrderStatus, Trading212TimeValidity} from './api/schema/OrderSchema.js';
 import {Trading212BrokerMapper} from './Trading212BrokerMapper.js';
+import {fetchFilledOrdersSince, latestFilledOrderId} from './newFilledOrders.js';
 
 export class Trading212Broker extends Broker implements MarketDataSource {
   static readonly NAME = 'Trading212';
@@ -156,13 +157,6 @@ export class Trading212Broker extends Broker implements MarketDataSource {
   }
 
   /**
-   * Trading212 has no order-stream WebSocket, so this polls `/api/v0/equity/history/orders`
-   * on a timer and emits any newly-`FILLED` entries since the last tick. Latency therefore
-   * equals the poll interval (default 60s, matching Trading212's documented rate limit).
-   *
-   * The first tick takes a baseline snapshot so historical fills are not replayed.
-   */
-  /**
    * The instrument list is several megabytes and Trading212 allows one request per 50 seconds, so
    * it is fetched once and reused. A failed fetch is dropped, so the next caller tries again.
    */
@@ -174,6 +168,13 @@ export class Trading212Broker extends Broker implements MarketDataSource {
     return this.#instruments;
   }
 
+  /**
+   * Trading212 has no order-stream WebSocket, so this polls `/api/v0/equity/history/orders`
+   * on a timer and emits any newly-`FILLED` entries since the last tick. Latency therefore
+   * equals the poll interval (default 60s, matching Trading212's documented rate limit).
+   *
+   * The first tick takes a baseline snapshot so historical fills are not replayed.
+   */
   async watchOrders(intervalInMillis: number = Trading212Broker.ORDER_POLL_INTERVAL_MS) {
     const topicId = randomUUID();
 
@@ -184,39 +185,12 @@ export class Trading212Broker extends Broker implements MarketDataSource {
     ]);
 
     const tickerToCurrency = new Map(instruments.map(instrument => [instrument.ticker, instrument.currencyCode]));
-    let lastSeenId = baseline.items
-      .filter(item => item.order.id != null && item.order.status === Trading212OrderStatus.FILLED)
-      .reduce((max, item) => Math.max(max, item.order.id ?? 0), 0);
+    let lastSeenId = latestFilledOrderId(baseline.items);
     let stopped = false;
 
     const tick = async () => {
       try {
-        /*
-         * Page through history (newest first) until we reach an id we've already seen.
-         * Without this loop, more than 50 fills between polls would silently drop the older
-         * ones off the first page.
-         */
-        const newFills: typeof baseline.items = [];
-        let nextPath: string | null = null;
-        do {
-          const page = await this.#api.getHistoryOrdersPage(nextPath ? {nextPath} : undefined);
-          let reachedSeen = false;
-          for (const item of page.items) {
-            const orderId = item.order.id;
-            if (orderId != null && orderId <= lastSeenId) {
-              reachedSeen = true;
-              break;
-            }
-            if (item.order.status === Trading212OrderStatus.FILLED && orderId != null && item.fill) {
-              newFills.push(item);
-            }
-          }
-          nextPath = reachedSeen ? null : page.nextPagePath;
-        } while (nextPath);
-
-        newFills.sort((a, b) => (a.order.id ?? 0) - (b.order.id ?? 0));
-
-        for (const item of newFills) {
+        for (const item of await fetchFilledOrdersSince(this.#api, lastSeenId)) {
           const ticker = item.order.ticker ?? '';
           const counter = tickerToCurrency.get(ticker) ?? accountInfo.currencyCode;
           const pair = new TradingPair(ticker, counter);
@@ -282,12 +256,7 @@ export class Trading212Broker extends Broker implements MarketDataSource {
       this.#api.getAccountInfo(),
     ]);
 
-    const balances: Balance[] = positions.map(position => ({
-      available: new Big(position.quantity).abs().toFixed(),
-      currency: position.ticker,
-      hold: '0',
-      position: position.quantity < 0 ? OrderPosition.SHORT : OrderPosition.LONG,
-    }));
+    const balances = positions.map(position => Trading212BrokerMapper.toBalance(position));
 
     balances.push({
       available: new Big(cash.free).toFixed(),
@@ -355,20 +324,7 @@ export class Trading212Broker extends Broker implements MarketDataSource {
       throw new Error(`Instrument "${pair.base}" is quoted in "${instrument.currencyCode}", not "${pair.counter}".`);
     }
 
-    /*
-     * Trading212's `minTradeQuantity` is the floor *and* the increment for fractional shares.
-     * Use the same non-zero fallback for both — falling back to '0' on `base_min_size` would
-     * let computed sizes of zero pass the trading session's min-size guard.
-     */
-    const minQuantity = `${instrument.minTradeQuantity ?? '0.000000001'}`;
-    return {
-      base_increment: minQuantity,
-      base_max_size: `${instrument.maxOpenQuantity ?? Number.MAX_SAFE_INTEGER}`,
-      base_min_size: minQuantity,
-      counter_increment: '0.01',
-      counter_min_size: '1',
-      pair,
-    };
+    return Trading212BrokerMapper.toTradingRules(instrument, pair);
   }
 
   async getFeeRates(pair: TradingPair): Promise<FeeRate> {
