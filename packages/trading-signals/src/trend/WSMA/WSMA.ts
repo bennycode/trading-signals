@@ -1,4 +1,4 @@
-import {IndicatorInputShape, IndicatorSeries} from '../../base/Indicator.js';
+import {MovingAverage} from '../MA/MovingAverage.js';
 import {SMA} from '../SMA/SMA.js';
 
 /**
@@ -16,17 +16,12 @@ import {SMA} from '../SMA/SMA.js';
  *
  * @see https://tlc.thinkorswim.com/center/reference/Tech-Indicators/studies-library/V-Z/WildersSmoothing
  */
-export class WSMA extends IndicatorSeries {
-  override readonly inputShape = IndicatorInputShape.PRICE;
-
+export class WSMA extends MovingAverage {
   readonly #indicator: SMA;
   readonly #smoothingFactor: number;
 
-  public readonly interval: number;
-
   constructor(interval: number) {
-    super();
-    this.interval = interval;
+    super(interval);
     this.#indicator = new SMA(interval);
     this.#smoothingFactor = 1 / this.interval;
   }
