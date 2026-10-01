@@ -1,3 +1,4 @@
+import {TradingSignal} from '../../base/Indicator.js';
 import {testIndicatorContract} from '../../fixtures/testIndicatorContract.js';
 import {NVI} from './NVI.js';
 
@@ -137,4 +138,54 @@ testIndicatorContract({
     {close: 82.87, high: 83.03, low: 81.31, volume: 7_690_900},
     {close: 83.0, high: 83.3, low: 82.65, volume: 3_831_400},
   ],
+});
+
+describe('NVI signal', () => {
+  const risingCandles = Array.from({length: 80}, (_, i) => ({close: 100 + i, high: 101 + i, low: 99 + i}));
+  const fallingCandles = Array.from({length: 80}, (_, i) => ({close: 200 - i, high: 201 - i, low: 199 - i}));
+  const flatCandles = Array.from({length: 80}, () => ({close: 100, high: 101, low: 99}));
+
+  it('returns UNKNOWN before the first result', () => {
+    expect(new NVI(3).getSignal().state).toBe(TradingSignal.UNKNOWN);
+  });
+
+  it('returns BULLISH in a rising market', () => {
+    const indicator = new NVI(3);
+
+    risingCandles.forEach((candle, i) => {
+      indicator.add({...candle, volume: 1_000 - i});
+    });
+
+    expect(indicator.getSignal().state).toBe(TradingSignal.BULLISH);
+  });
+
+  it('returns BEARISH in a falling market', () => {
+    const indicator = new NVI(3);
+
+    fallingCandles.forEach((candle, i) => {
+      indicator.add({...candle, volume: 1_000 - i});
+    });
+
+    expect(indicator.getSignal().state).toBe(TradingSignal.BEARISH);
+  });
+
+  it('returns SIDEWAYS in a flat market', () => {
+    const indicator = new NVI(3);
+
+    flatCandles.forEach((candle, i) => {
+      indicator.add({...candle, volume: 1_000 - i});
+    });
+
+    expect(indicator.getSignal().state).toBe(TradingSignal.SIDEWAYS);
+  });
+
+  it('returns UNKNOWN until the signal line has warmed up', () => {
+    const indicator = new NVI(3);
+
+    indicator.add({close: 100, high: 101, low: 99, volume: 1_000});
+    indicator.add({close: 101, high: 102, low: 100, volume: 900});
+
+    expect(indicator.isStable).toBe(true);
+    expect(indicator.getSignal().state).toBe(TradingSignal.UNKNOWN);
+  });
 });

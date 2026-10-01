@@ -1,3 +1,4 @@
+import {TradingSignal} from '../../base/Indicator.js';
 import {testIndicatorContract} from '../../fixtures/testIndicatorContract.js';
 import {DonchianChannels} from './DonchianChannels.js';
 
@@ -177,4 +178,64 @@ testIndicatorContract({
     {high: 214.53, low: 213.91},
     {high: 214.89, low: 213.52},
   ],
+});
+
+describe('DonchianChannels signal', () => {
+  const risingCandles = Array.from({length: 80}, (_, i) => ({close: 100 + i, high: 101 + i, low: 99 + i}));
+  const fallingCandles = Array.from({length: 80}, (_, i) => ({close: 200 - i, high: 201 - i, low: 199 - i}));
+  const flatCandles = Array.from({length: 80}, () => ({close: 100, high: 101, low: 99}));
+
+  it('returns UNKNOWN before the first result', () => {
+    expect(new DonchianChannels(3).getSignal().state).toBe(TradingSignal.UNKNOWN);
+  });
+
+  it('returns BULLISH in a rising market', () => {
+    const indicator = new DonchianChannels(3);
+
+    for (const candle of risingCandles) {
+      indicator.add(candle);
+    }
+
+    expect(indicator.getSignal().state).toBe(TradingSignal.BULLISH);
+  });
+
+  it('returns BEARISH in a falling market', () => {
+    const indicator = new DonchianChannels(3);
+
+    for (const candle of fallingCandles) {
+      indicator.add(candle);
+    }
+
+    expect(indicator.getSignal().state).toBe(TradingSignal.BEARISH);
+  });
+
+  it('returns SIDEWAYS in a flat market', () => {
+    const indicator = new DonchianChannels(3);
+
+    for (const candle of flatCandles) {
+      indicator.add(candle);
+    }
+
+    expect(indicator.getSignal().state).toBe(TradingSignal.SIDEWAYS);
+  });
+
+  it('returns SIDEWAYS for a candle that sets both the high and the low', () => {
+    const indicator = new DonchianChannels(3);
+
+    indicator.add({high: 10, low: 8});
+    indicator.add({high: 11, low: 9});
+    indicator.add({high: 12, low: 7});
+
+    expect(indicator.getSignal().state).toBe(TradingSignal.SIDEWAYS);
+  });
+
+  it('returns SIDEWAYS for a candle inside the channel', () => {
+    const indicator = new DonchianChannels(3);
+
+    indicator.add({high: 10, low: 8});
+    indicator.add({high: 12, low: 7});
+    indicator.add({high: 11, low: 8});
+
+    expect(indicator.getSignal().state).toBe(TradingSignal.SIDEWAYS);
+  });
 });

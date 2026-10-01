@@ -214,25 +214,39 @@ export abstract class TrendIndicatorSeries<
   State extends object = Record<string, never>,
 > extends IndicatorSeries<Input, State> {
   protected abstract calculateSignalState(result?: number | null | undefined): SignalState;
+  #signalState?: SignalState;
   #previousSignalState?: SignalState;
 
   protected override setResult(value: number, replace: boolean) {
-    // When replacing, restore the previous signal state
-    if (replace && this.previousResult !== undefined) {
-      this.#previousSignalState = this.calculateSignalState(this.previousResult);
-    } else if (!replace) {
-      // Cache the previous signal state before updating
-      this.#previousSignalState = this.calculateSignalState(this.result);
+    const result = super.setResult(value, replace);
+
+    // A replacement keeps the state of the bar before the replaced one
+    if (!replace) {
+      this.#previousSignalState = this.#signalState ?? this.calculateSignalState(undefined);
     }
 
-    return super.setResult(value, replace);
+    /*
+     * Judged now, while the indicator still holds the context of the bar behind this result, so a
+     * signal can weigh the result against that bar's price or internal lines.
+     */
+    this.#signalState = this.calculateSignalState(result);
+
+    return result;
+  }
+
+  protected override rollbackLastResult(): void {
+    super.rollbackLastResult();
+    this.#signalState = this.#previousSignalState;
   }
 
   getSignal(): {
     state: SignalState;
     hasChanged: boolean;
   } {
-    const currentState = this.calculateSignalState(this.getResult());
+    const currentState =
+      this.result === undefined || this.#signalState === undefined
+        ? this.calculateSignalState(this.getResult())
+        : this.#signalState;
     const hasChanged = this.#previousSignalState !== undefined && this.#previousSignalState !== currentState;
 
     return {
@@ -255,17 +269,10 @@ export abstract class TrendIndicator<
 > extends TechnicalIndicator<Result, Input, State> {
   protected abstract calculateSignalState(result?: Result | null | undefined): SignalState;
   protected previousResult?: Result;
+  #signalState?: SignalState;
   #previousSignalState?: SignalState;
 
   protected setResult(value: Result, replace: boolean) {
-    // When replacing, restore the previous signal state
-    if (replace && this.previousResult !== undefined) {
-      this.#previousSignalState = this.calculateSignalState(this.previousResult);
-    } else if (!replace) {
-      // Cache the previous signal state before updating
-      this.#previousSignalState = this.calculateSignalState(this.result);
-    }
-
     // When replacing the latest value, restore previous result first
     if (replace) {
       this.result = this.previousResult;
@@ -273,6 +280,14 @@ export abstract class TrendIndicator<
 
     // Cache previous result
     this.previousResult = this.result;
+
+    // A replacement keeps the state of the bar before the replaced one
+    if (!replace) {
+      this.#previousSignalState = this.#signalState ?? this.calculateSignalState(undefined);
+    }
+
+    // Judged now, while the indicator still holds the context of the bar behind this result
+    this.#signalState = this.calculateSignalState(value);
 
     // Set new result
     return (this.result = value);
@@ -282,7 +297,10 @@ export abstract class TrendIndicator<
     state: SignalState;
     hasChanged: boolean;
   } {
-    const currentState = this.calculateSignalState(this.getResult());
+    const currentState =
+      this.result === undefined || this.#signalState === undefined
+        ? this.calculateSignalState(this.getResult())
+        : this.#signalState;
     const hasChanged = this.#previousSignalState !== undefined && this.#previousSignalState !== currentState;
 
     return {

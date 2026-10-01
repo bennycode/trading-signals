@@ -1,3 +1,4 @@
+import {TradingSignal} from '../../base/Indicator.js';
 import {testIndicatorContract} from '../../fixtures/testIndicatorContract.js';
 import {VWAP} from './VWAP.js';
 
@@ -75,4 +76,44 @@ testIndicatorContract({
     {close: 10, high: 10, low: 10, volume: 120},
     {close: 8, high: 8, low: 8, volume: 90},
   ],
+});
+
+describe('VWAP signal', () => {
+  const risingCandles = Array.from({length: 80}, (_, i) => ({close: 100 + i, high: 101 + i, low: 99 + i}));
+  const fallingCandles = Array.from({length: 80}, (_, i) => ({close: 200 - i, high: 201 - i, low: 199 - i}));
+  const flatCandles = Array.from({length: 80}, () => ({close: 100, high: 101, low: 99}));
+
+  it('returns UNKNOWN before the first result', () => {
+    expect(new VWAP().getSignal().state).toBe(TradingSignal.UNKNOWN);
+  });
+
+  it('returns BULLISH in a rising market', () => {
+    const indicator = new VWAP();
+
+    for (const candle of risingCandles) {
+      indicator.add({...candle, volume: 1_000});
+    }
+
+    expect(indicator.getSignal().state).toBe(TradingSignal.BULLISH);
+  });
+
+  it('returns BEARISH in a falling market', () => {
+    const indicator = new VWAP();
+
+    for (const candle of fallingCandles) {
+      indicator.add({...candle, volume: 1_000});
+    }
+
+    expect(indicator.getSignal().state).toBe(TradingSignal.BEARISH);
+  });
+
+  it('returns SIDEWAYS in a flat market', () => {
+    const indicator = new VWAP();
+
+    for (const candle of flatCandles) {
+      indicator.add({...candle, volume: 1_000});
+    }
+
+    expect(indicator.getSignal().state).toBe(TradingSignal.SIDEWAYS);
+  });
 });

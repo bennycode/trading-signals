@@ -1,5 +1,5 @@
 import type {HighLowClose} from '../../base/Candle.type.js';
-import {IndicatorInputShape, TechnicalIndicator, TradingSignal} from '../../base/Indicator.js';
+import {IndicatorInputShape, TradingSignal, TrendIndicator} from '../../base/Indicator.js';
 import {getMedianPrice} from '../../util/candle/getMedianPrice.js';
 import {ATR} from '../../volatility/ATR/ATR.js';
 
@@ -41,7 +41,7 @@ type SuperTrendState = {
  * @see https://www.tradingview.com/support/solutions/43000634738-supertrend/
  * @see https://trendspider.com/learning-center/supertrend-indicator-a-comprehensive-guide/
  */
-export class SuperTrend extends TechnicalIndicator<SuperTrendResult, HighLowClose<number>> {
+export class SuperTrend extends TrendIndicator<SuperTrendResult, HighLowClose<number>> {
   override readonly inputShape = IndicatorInputShape.HIGH_LOW_CLOSE;
 
   readonly #atr: ATR;
@@ -102,9 +102,16 @@ export class SuperTrend extends TechnicalIndicator<SuperTrendResult, HighLowClos
     this.#previousState = previous;
     this.#state = {close: candle.close, finalLowerBand, finalUpperBand, isUp};
 
-    return (this.result = {
-      supertrend: isUp ? finalLowerBand : finalUpperBand,
-      trend: isUp ? TradingSignal.BULLISH : TradingSignal.BEARISH,
-    });
+    return this.setResult(
+      {
+        supertrend: isUp ? finalLowerBand : finalUpperBand,
+        trend: isUp ? TradingSignal.BULLISH : TradingSignal.BEARISH,
+      },
+      replace
+    );
+  }
+
+  protected calculateSignalState(result?: SuperTrendResult | null) {
+    return result ? result.trend : TradingSignal.UNKNOWN;
   }
 }

@@ -1,5 +1,5 @@
 import type {HighLow} from '../../base/Candle.type.js';
-import {IndicatorInputShape, TechnicalIndicator} from '../../base/Indicator.js';
+import {IndicatorInputShape, TradingSignal, TrendIndicator} from '../../base/Indicator.js';
 import {getMedianPrice} from '../../util/candle/getMedianPrice.js';
 import {pushUpdate} from '../../util/array/pushUpdate.js';
 import {WSMA} from '../WSMA/WSMA.js';
@@ -53,12 +53,13 @@ type AlligatorState = {
  * When the three lines are intertwined, the alligator sleeps and the market is range-bound — Williams stays out of
  * such stretches, and the longer the sleep, the stronger the move he expects afterwards. When the lines fan open
  * with the lips leading, the teeth in the middle and the jaw trailing, the alligator awakens and eats: an uptrend
- * when price runs above the fanned lines, a downtrend when it runs below. Reading these phases requires the mutual
- * alignment of three lines over time rather than a fixed threshold, so this class emits no standalone signal.
+ * when price runs above the fanned lines, a downtrend when it runs below. The signal reads the current fan: lips above
+ * teeth above jaw is bullish, the reverse order bearish, and intertwined lines sideways. How long the alligator has
+ * slept before it wakes is left to the caller, because it takes the history of the lines rather than their order.
  *
  * @see https://www.metatrader5.com/en/terminal/help/indicators/bw_indicators/alligator
  */
-export class Alligator extends TechnicalIndicator<AlligatorResult, HighLow<number>, AlligatorState> {
+export class Alligator extends TrendIndicator<AlligatorResult, HighLow<number>, AlligatorState> {
   override readonly inputShape = IndicatorInputShape.HIGH_LOW;
 
   protected override state: AlligatorState = {jawBuffer: [], lipsBuffer: [], teethBuffer: []};
@@ -141,9 +142,27 @@ export class Alligator extends TechnicalIndicator<AlligatorResult, HighLow<numbe
       lipsBuffer.length > this.lipsShift &&
       teethBuffer.length > this.teethShift
     ) {
-      return (this.result = {jaw: jawBuffer[0], lips: lipsBuffer[0], teeth: teethBuffer[0]});
+      return this.setResult({jaw: jawBuffer[0], lips: lipsBuffer[0], teeth: teethBuffer[0]}, replace);
     }
 
     return null;
+  }
+
+  protected calculateSignalState(result?: AlligatorResult | null) {
+    if (!result) {
+      return TradingSignal.UNKNOWN;
+    }
+
+    const {jaw, lips, teeth} = result;
+
+    if (lips > teeth && teeth > jaw) {
+      return TradingSignal.BULLISH;
+    }
+
+    if (lips < teeth && teeth < jaw) {
+      return TradingSignal.BEARISH;
+    }
+
+    return TradingSignal.SIDEWAYS;
   }
 }

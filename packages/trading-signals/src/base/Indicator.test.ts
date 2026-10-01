@@ -1,4 +1,11 @@
-import {INPUT_SHAPE_FIELDS, IndicatorInputShape, IndicatorSeries} from './Indicator.js';
+import {
+  INPUT_SHAPE_FIELDS,
+  IndicatorInputShape,
+  IndicatorSeries,
+  TradingSignal,
+  TrendIndicator,
+  TrendIndicatorSeries,
+} from './Indicator.js';
 import {NotEnoughDataError} from '../error/NotEnoughDataError.js';
 
 describe('Indicator', () => {
@@ -163,5 +170,116 @@ describe('INPUT_SHAPE_FIELDS', () => {
     [IndicatorInputShape.VOLUME, []],
   ])('lists the candle fields for %s', (shape, fields) => {
     expect(INPUT_SHAPE_FIELDS[shape]).toEqual(fields);
+  });
+});
+
+/*
+ * Both test indicators report a fixed level of 10 and read the price of the bar against it, so their
+ * signal depends on the bar behind a result rather than on the result alone.
+ */
+class PriceAboveLevel extends TrendIndicatorSeries {
+  override readonly inputShape = IndicatorInputShape.PRICE;
+
+  #price?: number;
+
+  override getRequiredInputs() {
+    return 1;
+  }
+
+  update(price: number, replace: boolean) {
+    this.#price = price;
+    return this.setResult(10, replace);
+  }
+
+  undo() {
+    this.rollbackLastResult();
+  }
+
+  protected calculateSignalState(result?: number | null) {
+    if (result === null || result === undefined || this.#price === undefined) {
+      return TradingSignal.UNKNOWN;
+    }
+
+    return this.#price > result ? TradingSignal.BULLISH : TradingSignal.BEARISH;
+  }
+}
+
+class PriceAboveLevelObject extends TrendIndicator<{level: number}> {
+  override readonly inputShape = IndicatorInputShape.PRICE;
+
+  #price?: number;
+
+  override getRequiredInputs() {
+    return 1;
+  }
+
+  update(price: number, replace: boolean) {
+    this.#price = price;
+    return this.setResult({level: 10}, replace);
+  }
+
+  protected calculateSignalState(result?: {level: number} | null) {
+    if (!result || this.#price === undefined) {
+      return TradingSignal.UNKNOWN;
+    }
+
+    return this.#price > result.level ? TradingSignal.BULLISH : TradingSignal.BEARISH;
+  }
+}
+
+describe.each([
+  ['TrendIndicatorSeries', () => new PriceAboveLevel()],
+  ['TrendIndicator', () => new PriceAboveLevelObject()],
+])('%s signals', (_name, create) => {
+  it('reports UNKNOWN before the first result', () => {
+    expect(create().getSignal()).toEqual({hasChanged: false, state: TradingSignal.UNKNOWN});
+  });
+
+  it('judges every result against the bar that produced it', () => {
+    const indicator = create();
+
+    indicator.add(20);
+
+    expect(indicator.getSignal()).toEqual({hasChanged: true, state: TradingSignal.BULLISH});
+
+    indicator.add(5);
+
+    expect(
+      indicator.getSignal(),
+      'the earlier bar was bullish, even though the same level now sits above the price'
+    ).toEqual({hasChanged: true, state: TradingSignal.BEARISH});
+
+    indicator.add(1);
+
+    expect(indicator.getSignal()).toEqual({hasChanged: false, state: TradingSignal.BEARISH});
+  });
+
+  it('compares a replaced bar with the bar before it', () => {
+    const indicator = create();
+
+    indicator.add(20);
+    indicator.add(5);
+
+    expect(indicator.replace(30)).toBeDefined();
+    expect(indicator.getSignal(), 'both bars are now bullish').toEqual({
+      hasChanged: false,
+      state: TradingSignal.BULLISH,
+    });
+
+    indicator.replace(5);
+
+    expect(indicator.getSignal()).toEqual({hasChanged: true, state: TradingSignal.BEARISH});
+  });
+});
+
+describe('TrendIndicatorSeries', () => {
+  it('rolls the signal back together with the result', () => {
+    const indicator = new PriceAboveLevel();
+
+    indicator.add(20);
+    indicator.add(5);
+    indicator.undo();
+
+    expect(indicator.getSignal().state).toBe(TradingSignal.BULLISH);
   });
 });

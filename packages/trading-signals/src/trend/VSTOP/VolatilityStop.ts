@@ -1,5 +1,5 @@
 import type {HighLowClose} from '../../base/Candle.type.js';
-import {IndicatorInputShape, TechnicalIndicator, TradingSignal} from '../../base/Indicator.js';
+import {IndicatorInputShape, TradingSignal, TrendIndicator} from '../../base/Indicator.js';
 import {ATR} from '../../volatility/ATR/ATR.js';
 
 export type VolatilityStopResult = {
@@ -37,7 +37,7 @@ export type VolatilityStopConfig = {
  * @see https://traders.com/Documentation/FEEDbk_docs/2009/06/TradersTips.html
  * @see https://toslc.thinkorswim.com/center/reference/Tech-Indicators/studies-library/A-B/ATRTrailingStop
  */
-export class VolatilityStop extends TechnicalIndicator<VolatilityStopResult, HighLowClose<number>> {
+export class VolatilityStop extends TrendIndicator<VolatilityStopResult, HighLowClose<number>> {
   override readonly inputShape = IndicatorInputShape.HIGH_LOW_CLOSE;
 
   readonly #atr: ATR;
@@ -96,6 +96,10 @@ export class VolatilityStop extends TechnicalIndicator<VolatilityStopResult, Hig
 
     this.#previous = {close, stop: result.stop};
 
-    return (this.result = result);
+    return this.setResult(result, replace);
+  }
+
+  protected calculateSignalState(result?: VolatilityStopResult | null) {
+    return result ? result.signal : TradingSignal.UNKNOWN;
   }
 }

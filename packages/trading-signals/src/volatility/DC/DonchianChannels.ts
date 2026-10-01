@@ -1,5 +1,5 @@
 import type {HighLow} from '../../base/Candle.type.js';
-import {IndicatorInputShape, TechnicalIndicator} from '../../base/Indicator.js';
+import {IndicatorInputShape, TradingSignal, TrendIndicator} from '../../base/Indicator.js';
 import {pushUpdate} from '../../util/index.js';
 
 export type DonchianChannelsResult = {
@@ -21,10 +21,14 @@ export type DonchianChannelsResult = {
  * Skender.Stock.Indicators) build the channel from the preceding candles only, which yields the same series shifted
  * by one candle.
  *
+ * Interpretation:
+ * A candle that sets the channel's high is a bullish breakout and one that sets its low a bearish breakout, the
+ * Turtle Traders' entry rule. A candle setting both, or neither, leaves the market sideways.
+ *
  * @see https://www.investopedia.com/terms/d/donchianchannels.asp
  * @see https://dotnet.stockindicators.dev/indicators/Donchian/
  */
-export class DonchianChannels extends TechnicalIndicator<DonchianChannelsResult, HighLow<number>> {
+export class DonchianChannels extends TrendIndicator<DonchianChannelsResult, HighLow<number>> {
   override readonly inputShape = IndicatorInputShape.HIGH_LOW;
 
   readonly #candles: HighLow<number>[] = [];
@@ -55,10 +59,33 @@ export class DonchianChannels extends TechnicalIndicator<DonchianChannelsResult,
       lower = Math.min(lower, low);
     }
 
-    return (this.result = {
-      lower,
-      middle: (upper + lower) / 2,
-      upper,
-    });
+    return this.setResult(
+      {
+        lower,
+        middle: (upper + lower) / 2,
+        upper,
+      },
+      replace
+    );
+  }
+
+  protected calculateSignalState(result?: DonchianChannelsResult | null) {
+    if (!result) {
+      return TradingSignal.UNKNOWN;
+    }
+
+    const candle = this.#candles[this.#candles.length - 1];
+    const isNewHigh = candle.high === result.upper;
+    const isNewLow = candle.low === result.lower;
+
+    if (isNewHigh && !isNewLow) {
+      return TradingSignal.BULLISH;
+    }
+
+    if (isNewLow && !isNewHigh) {
+      return TradingSignal.BEARISH;
+    }
+
+    return TradingSignal.SIDEWAYS;
   }
 }

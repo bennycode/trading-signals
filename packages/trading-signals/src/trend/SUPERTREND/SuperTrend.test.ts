@@ -1,3 +1,4 @@
+import {TradingSignal} from '../../base/Indicator.js';
 import {testIndicatorContract} from '../../fixtures/testIndicatorContract.js';
 import {SuperTrend} from './SuperTrend.js';
 
@@ -131,4 +132,33 @@ testIndicatorContract({
     {close: 91, high: 92, low: 89},
     {close: 92, high: 93, low: 90},
   ],
+});
+
+describe('SuperTrend signal', () => {
+  const risingCandles = Array.from({length: 80}, (_, i) => ({close: 100 + i, high: 101 + i, low: 99 + i}));
+  const fallingCandles = Array.from({length: 80}, (_, i) => ({close: 200 - i, high: 201 - i, low: 199 - i}));
+
+  it('returns UNKNOWN before the first result', () => {
+    expect(new SuperTrend({interval: 3, multiplier: 1}).getSignal().state).toBe(TradingSignal.UNKNOWN);
+  });
+
+  it('returns BULLISH in a rising market', () => {
+    const indicator = new SuperTrend({interval: 3, multiplier: 1});
+
+    for (const candle of risingCandles) {
+      indicator.add(candle);
+    }
+
+    expect(indicator.getSignal().state).toBe(TradingSignal.BULLISH);
+  });
+
+  it('returns BEARISH in a falling market', () => {
+    const indicator = new SuperTrend({interval: 3, multiplier: 1});
+
+    for (const candle of fallingCandles) {
+      indicator.add(candle);
+    }
+
+    expect(indicator.getSignal().state).toBe(TradingSignal.BEARISH);
+  });
 });
