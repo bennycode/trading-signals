@@ -27,13 +27,10 @@ class MyAverage extends MovingAverage {
     return this.interval;
   }
 
-  update(price: number) {
-    if (this.result === undefined) {
-      this.result = 0;
-    }
+  update(price: number, replace: boolean) {
     this.iterations += 1;
     this.total += price;
-    return (this.result = this.total / this.iterations);
+    return this.setResult(this.total / this.iterations, replace);
   }
 }
 
@@ -49,6 +46,18 @@ describe('MovingAverage', () => {
   });
 
   describe('getSignal', () => {
+    it('gives custom averages the trend of their readings', () => {
+      const average = new MyAverage(2);
+
+      for (const price of [10, 20, 30]) {
+        average.add(price);
+      }
+
+      expect(average.getSignal().state, 'the running mean of 20 is above the 10 it read two inputs earlier').toBe(
+        TradingSignal.BULLISH
+      );
+    });
+
     it('compares the average of the latest interval with the average of the interval before it', () => {
       const sma = new SMA(3);
 
