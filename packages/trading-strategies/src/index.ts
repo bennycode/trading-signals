@@ -72,3 +72,10 @@ export {
   ScalpScannerSchema,
   type ScalpScannerConfig,
 } from './report-scalp-scanner/ScalpScannerReport.js';
+export {HypeScreen} from './hype-screen/HypeScreen.js';
+export {
+  computeHypeScreen,
+  type HypeScreenFactors,
+  type HypeScreenInput,
+  type HypeScreenRow,
+} from './hype-screen/computeHypeScreen.js';
