@@ -37,16 +37,30 @@ const credentials = {apiKey: 'key', apiSecret: 'secret', usePaperTrading: false}
 const pair = new TradingPair('AAPL', 'USD');
 
 describe('AlpacaMarketData', () => {
-  describe('getCandles', () => {
-    it('sends no feed so the subscription picks the best one', async () => {
+  // Sequential: the tests share one mocked API, so a queued probe result must not land in the other test.
+  describe('getCandles', {concurrent: false}, () => {
+    const fetchFeed = async () => {
       await new AlpacaMarketData(credentials).getCandles(pair, {
         intervalInMillis: 86_400_000,
         startTimeFirstCandle: '2025-12-01T00:00:00.000Z',
         startTimeLastCandle: '2025-12-02T00:00:00.000Z',
       });
+      return mockMethods.getStockBars.mock.calls.at(-1)?.[0].feed;
+    };
 
-      const [params] = mockMethods.getStockBars.mock.calls.at(-1) ?? [];
-      expect(params, 'a forced feed would downgrade SIP history to a single exchange').not.toHaveProperty('feed');
+    it('queries SIP history when the subscription allows it', async () => {
+      mockMethods.getStockBarsLatest.mockResolvedValue({bars: {}});
+
+      expect(await fetchFeed(), 'SIP covers every US exchange, not a single one').toBe('sip');
+    });
+
+    it('queries IEX history without a SIP subscription', async () => {
+      mockMethods.getStockBarsLatest.mockRejectedValue(new Error('subscription does not permit'));
+
+      expect(
+        await fetchFeed(),
+        'historical bars default to SIP, which refuses the last 15 minutes to a free plan'
+      ).toBe('iex');
     });
   });
 

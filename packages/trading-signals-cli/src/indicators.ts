@@ -1,5 +1,7 @@
 import * as library from 'trading-signals';
 import type {IndicatorInputShapes} from 'trading-signals';
+import {ALIASES} from './aliases.js';
+import {assertKeysAreRead, configPositions, declaredParameterCount} from './constructorProbe.js';
 
 export interface Indicator {
   getRequiredInputs(): number;
@@ -48,6 +50,13 @@ function collectIndicators() {
 
 const INDICATORS = collectIndicators();
 const BY_LOWERCASE_NAME = new Map(Array.from(INDICATORS, ([name, value]) => [name.toLowerCase(), {name, value}]));
+for (const [alias, name] of Object.entries(ALIASES)) {
+  const value = INDICATORS.get(name);
+  if (value) {
+    BY_LOWERCASE_NAME.set(alias.toLowerCase(), {name, value});
+  }
+}
+const ALIASES_BY_NAME = new Map(Object.entries(ALIASES).map(([alias, name]) => [name, alias.toLowerCase()]));
 
 /**
  * Indicator names in alphabetical order, optionally narrowed by a substring. Sorted explicitly
@@ -58,7 +67,7 @@ const BY_LOWERCASE_NAME = new Map(Array.from(INDICATORS, ([name, value]) => [nam
 export function listIndicators(query = ''): string[] {
   const needle = query.toLowerCase();
   return Array.from(INDICATORS.keys())
-    .filter(name => name.toLowerCase().includes(needle))
+    .filter(name => name.toLowerCase().includes(needle) || ALIASES_BY_NAME.get(name)?.includes(needle))
     .sort();
 }
 
@@ -93,136 +102,9 @@ function parseArgument(argument: string): unknown {
   }
 }
 
-/**
- * Names the settings a constructor expects in a config object, or nothing when it takes positional
- * arguments.
- *
- * A constructor that destructures a parameter reads the settings off it. Handed a number instead,
- * JavaScript boxes that number, the destructuring finds none of the properties, and every default
- * applies: `new SuperTrend(14, 5)` silently runs with an interval of 10 and a multiplier of 3, and
- * `new CCI(20, 1)` with the default thresholds. So every position the caller filled is offered a
- * Proxy, and the constructor is asked which of them it reads settings from.
- */
-export interface ConfigShape {
-  /** The settings read off this position. */
-  fields: string[];
-  /** The settings read inside one of them, for a config that nests, such as signal thresholds. */
-  nested: Map<string, string[]>;
-}
-
-/*
- * Settings are not settings to `typeof`: a key the constructor never reads looks exactly like one
- * it does. So the read itself is the evidence, one level deep, which is as far as the configs of
- * this library nest.
- */
-function isSetting(key: string | symbol): key is string {
-  /*
-   * A positional constructor does arithmetic on its interval, and coercing the probe to a number
-   * reads `valueOf` and `toString` off it. Those are not settings, and neither is anything else
-   * Object.prototype already answers for.
-   */
-  return typeof key === 'string' && !(key in Object.prototype);
-}
-
-function configPositions(IndicatorConstructor: new (...args: unknown[]) => Indicator, count: number): ConfigShape[] {
-  const shapes: ConfigShape[] = Array.from({length: count}, () => ({fields: [], nested: new Map()}));
-  const probes = shapes.map(
-    shape =>
-      new Proxy(
-        {},
-        {
-          get(_target, key) {
-            if (!isSetting(key)) {
-              return undefined;
-            }
-            shape.fields.push(key);
-            /*
-             * Handing back a recorder rather than undefined lets a nested destructuring run, so a
-             * misspelling inside a config object is caught like one at the top level. Its own keys
-             * answer undefined, which ends the recursion.
-             */
-            const nested: string[] = [];
-            shape.nested.set(key, nested);
-            return new Proxy(
-              {},
-              {
-                get(_nestedTarget, nestedKey) {
-                  if (isSetting(nestedKey)) {
-                    nested.push(nestedKey);
-                  }
-                  return undefined;
-                },
-              }
-            );
-          },
-        }
-      )
-  );
-  try {
-    new IndicatorConstructor(...probes);
-  } catch {
-    // Whatever it read before giving up still tells us which positions wanted a config.
-  }
-  return shapes;
-}
-
 /** An indicator instance passes as an argument (MACD takes three); a bare config object does not. */
 function isIndicatorInstance(value: object): boolean {
   return typeof Reflect.get(value, 'update') === 'function';
-}
-
-/**
- * How many parameters the constructor that actually runs declares. A value consumed by assignment
- * leaves no trace for a probe to find, so `new SMA(5, 999)` keeps the 999 to itself; the parameter
- * list is the only place the excess shows up.
- *
- * Read from the source of the nearest class that declares a constructor, because a subclass without
- * one inherits it: SMA takes its interval from MovingAverage. An unreadable parameter list, or a
- * chain that declares none at all, yields no limit rather than a guessed one.
- */
-function declaredParameterCount(IndicatorConstructor: new (...args: unknown[]) => Indicator): number {
-  for (
-    let current: unknown = IndicatorConstructor;
-    typeof current === 'function';
-    current = Object.getPrototypeOf(current)
-  ) {
-    const source = String(current);
-    const start = source.indexOf('constructor(');
-    if (start === -1) {
-      continue;
-    }
-    let depth = 0;
-    let separators = 0;
-    let hasParameter = false;
-    for (let index = start + 'constructor'.length; index < source.length; index++) {
-      const character = source[index];
-      if (character === '(' || character === '[' || character === '{') {
-        depth++;
-      } else if (character === ')' || character === ']' || character === '}') {
-        depth--;
-        if (depth === 0) {
-          return hasParameter ? separators + 1 : 0;
-        }
-      } else if (depth === 1) {
-        if (character === ',') {
-          separators++;
-        }
-        hasParameter ||= character.trim().length > 0;
-      }
-    }
-    break;
-  }
-  return Number.POSITIVE_INFINITY;
-}
-
-/** Rejects a setting the constructor never reached for, which the destructuring would drop. */
-function assertKeysAreRead(subject: string, config: object, fields: readonly string[]): void {
-  const unread = Object.keys(config).filter(key => !fields.includes(key));
-  if (unread.length > 0) {
-    throw new Error(
-      `${subject} does not read ${unread.map(key => `"${key}"`).join(', ')}. It expects ${fields.map(field => `"${field}"`).join(', ')}.`
-    );
-  }
 }
 
 export function createIndicator(name: string, args: string[]): {create: () => Indicator; name: string} {
@@ -241,10 +123,11 @@ export function createIndicator(name: string, args: string[]): {create: () => In
    */
   const parsed = args.map(parseArgument);
 
-  const positions = configPositions(IndicatorConstructor, parsed.length);
+  const declared = declaredParameterCount(IndicatorConstructor);
+  // Every declared position is probed, so a config the caller left out can be named too.
+  const positions = configPositions(IndicatorConstructor, Number.isFinite(declared) ? declared : parsed.length);
   const settingsComeAsConfig = (positions[0]?.fields.length ?? 0) > 0;
 
-  const declared = declaredParameterCount(IndicatorConstructor);
   if (parsed.length > declared) {
     const takes = declared === 0 ? 'no arguments' : `${declared} argument${declared === 1 ? '' : 's'}`;
     // Naming the shape as well spares a second attempt when the count was not the only thing wrong.
@@ -310,6 +193,17 @@ export function createIndicator(name: string, args: string[]): {create: () => In
   try {
     required = create().getRequiredInputs();
   } catch (error) {
+    /*
+     * A config the caller left out arrives as undefined, and the constructor fails reading a setting
+     * off it. The language's message names the setting but not the remedy, so the expected shape is
+     * offered instead.
+     */
+    const missing = positions.slice(parsed.length).find(({fields}) => fields.length > 0);
+    if (error instanceof TypeError && missing) {
+      throw new Error(
+        `${describe}: it needs a config object, for example {${missing.fields.map(field => `"${field}":…`).join(', ')}}.`
+      );
+    }
     throw new Error(`${describe}: ${error instanceof Error ? error.message : String(error)}`);
   }
   if (!Number.isInteger(required) || required < 1) {

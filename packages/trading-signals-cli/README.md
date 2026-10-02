@@ -42,7 +42,7 @@ trading-signals-cli atr 14 SMA                              # an indicator class
 trading-signals-cli macd EMA:12 EMA:26 EMA:9                # indicator instances
 ```
 
-An argument is read as JSON, unless it names an indicator: a bare name (`SMA`) passes that class, and `NAME:ARGS` (`EMA:12`) passes an instance of it. Indicator names are matched without case, so `bollingerbands` and `BollingerBands` both work.
+An argument is read as JSON, unless it names an indicator: a bare name (`SMA`) passes that class, and `NAME:ARGS` (`EMA:12`) passes an instance of it. Indicator names are matched without case, so `bollingerbands` and `BollingerBands` both work. Indicators exported under a long name also answer to their short code, so `stoch`, `willr` and `bbands` work too.
 
 An indicator that takes its settings in one config object has to be given JSON. A number would be accepted by JavaScript and then ignored — `supertrend 14` would run with the default interval of 10 — so the CLI rejects it and names the settings it expects:
 

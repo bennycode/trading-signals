@@ -37,7 +37,7 @@ export class AlpacaMarketData extends MarketDataSource {
   readonly #alpacaAPI: AlpacaAPI;
   readonly #connectStream: (source: string) => Promise<AlpacaConnection>;
   readonly #candleTopics = new Map<string, {symbol: string; connectionId: string}>();
-  #stockStreamSource: Promise<string> | undefined;
+  #stockFeed: Promise<'iex' | 'sip'> | undefined;
 
   constructor(options: AlpacaMarketDataOptions) {
     super();
@@ -98,7 +98,11 @@ export class AlpacaMarketData extends MarketDataSource {
     const topicId = randomUUID();
     const isCrypto = await isAlpacaCryptoSymbol(this.#alpacaAPI, pair);
     const symbol = createAlpacaSymbol(pair, isCrypto);
-    const source = isCrypto ? AlpacaMarketData.CRYPTO_STREAM_SOURCE : await this.#resolveStockStreamSource(symbol);
+    const source = isCrypto
+      ? AlpacaMarketData.CRYPTO_STREAM_SOURCE
+      : (await this.#resolveStockFeed(symbol)) === 'sip'
+        ? AlpacaMarketData.STOCK_STREAM_SOURCE_SIP
+        : AlpacaMarketData.STOCK_STREAM_SOURCE_IEX;
     const cb = new CandleBatcher(intervalInMillis);
     const connection = await this.#connectStream(source);
     const smallestInterval = ms('1m');
@@ -140,17 +144,17 @@ export class AlpacaMarketData extends MarketDataSource {
   }
 
   /*
-   * Historical and latest endpoints pick the best feed the subscription allows when `feed` is
-   * omitted, but a stream URL has to name one, so the entitlement is probed once: asking a latest
-   * endpoint for SIP fails without the subscription. Anything else going wrong also falls back to
-   * IEX, which every account can stream.
+   * Latest endpoints fall back to IEX without a SIP subscription, but historical bars default to SIP
+   * for every account and refuse its last 15 minutes to a free plan, and a stream URL has to name a
+   * feed anyway. So the entitlement is probed once: asking a latest endpoint for SIP fails without
+   * the subscription. Anything else going wrong also falls back to IEX, which every account can use.
    */
-  async #resolveStockStreamSource(symbol: string): Promise<string> {
-    this.#stockStreamSource ??= this.#alpacaAPI
+  async #resolveStockFeed(symbol: string) {
+    this.#stockFeed ??= this.#alpacaAPI
       .getStockBarsLatest({feed: 'sip', symbols: symbol})
-      .then(() => AlpacaMarketData.STOCK_STREAM_SOURCE_SIP)
-      .catch(() => AlpacaMarketData.STOCK_STREAM_SOURCE_IEX);
-    return this.#stockStreamSource;
+      .then((): 'sip' => 'sip')
+      .catch((): 'iex' => 'iex');
+    return this.#stockFeed;
   }
 
   #fetchLatestStockBars(pair: TradingPair) {
@@ -176,16 +180,18 @@ export class AlpacaMarketData extends MarketDataSource {
     });
   }
 
-  #fetchStockBars(pair: TradingPair, request: CandleImportRequest, pageToken: string | undefined) {
+  async #fetchStockBars(pair: TradingPair, request: CandleImportRequest, pageToken: string | undefined) {
     if (pair.counter !== 'USD') {
       throw new Error(`Cannot use "${pair.counter}". Stock "${pair.base}" can only be traded in USD on Alpaca.`);
     }
+    const symbol = createAlpacaSymbol(pair, false);
     return this.#alpacaAPI.getStockBars({
       end: request.startTimeLastCandle,
+      feed: await this.#resolveStockFeed(symbol),
       limit: 10_000,
       page_token: pageToken,
       start: request.startTimeFirstCandle,
-      symbols: createAlpacaSymbol(pair, false),
+      symbols: symbol,
       timeframe: AlpacaBrokerMapper.mapInterval(request.intervalInMillis),
     });
   }
