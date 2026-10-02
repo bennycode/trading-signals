@@ -370,6 +370,20 @@ export function createIndicator(name: string, args: string[]): {create: () => In
   try {
     required = create().getRequiredInputs();
   } catch (error) {
+    /*
+     * A config the caller left out arrives as undefined, and the constructor fails reading a setting
+     * off it. The language's message names the setting but not the remedy, so the expected shape is
+     * offered instead.
+     */
+    const count = Number.isFinite(declared) ? declared : parsed.length;
+    const missing = configPositions(IndicatorConstructor, count)
+      .slice(parsed.length)
+      .find(({fields}) => fields.length > 0);
+    if (error instanceof TypeError && missing) {
+      throw new Error(
+        `${describe}: it needs a config object, for example {${missing.fields.map(field => `"${field}":…`).join(', ')}}.`
+      );
+    }
     throw new Error(`${describe}: ${error instanceof Error ? error.message : String(error)}`);
   }
   if (!Number.isInteger(required) || required < 1) {

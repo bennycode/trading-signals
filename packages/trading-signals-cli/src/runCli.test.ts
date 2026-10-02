@@ -212,6 +212,15 @@ describe('runCli', () => {
     expect(run(['list', 'willr'])).toBe('WilliamsR');
   });
 
+  it.each([
+    ['psar', '{"accelerationStep":…, "accelerationMax":…}'],
+    ['stoch', '{"dPeriod":…, "kPeriod":…, "kSlowingPeriod":…}'],
+  ])('names the config a %s call without arguments left out', (name, shape) => {
+    expect(() => run([name], CANDLES), 'the missing config is named instead of a crash reading it').toThrow(
+      `it needs a config object, for example ${shape}.`
+    );
+  });
+
   it('resolves every indicator folder of the library', () => {
     const source = join(import.meta.dirname, '../../trading-signals/src');
     const folders = ['momentum', 'trend', 'volatility', 'volume'].flatMap(category =>
