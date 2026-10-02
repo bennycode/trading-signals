@@ -1,9 +1,10 @@
 import {execFile, type ExecFileException} from 'node:child_process';
-import {writeFileSync} from 'node:fs';
+import {readdirSync, writeFileSync} from 'node:fs';
 import {tmpdir} from 'node:os';
 import {join} from 'node:path';
 import {describe, expect, it} from 'vitest';
 import {ATR, CG, IndicatorInputShape, NVI, RSI, SMA, VROC} from 'trading-signals';
+import {ALIASES, findIndicator, listIndicators} from './indicators.js';
 import {parseSeries} from './parseSeries.js';
 import {runIndicator} from './runIndicator.js';
 import {runCli} from './runCli.js';
@@ -199,6 +200,41 @@ describe('runCli', () => {
 
   it('narrows the list by a query', () => {
     expect(run(['list', 'stoch'])).toBe('PremierStochastic\nStochasticOscillator\nStochasticRSI');
+  });
+
+  it('finds an indicator by the short name it is filed under', () => {
+    const candles = CANDLES.slice(0, 14);
+    expect(run(['stoch', '{"kPeriod":5,"kSlowingPeriod":3,"dPeriod":3}'], candles)).toMatchObject({
+      indicator: 'StochasticOscillator',
+      stable: true,
+    });
+    expect(run(['WILLR', '5'], candles)).toMatchObject({indicator: 'WilliamsR', stable: true});
+    expect(run(['list', 'willr'])).toBe('WilliamsR');
+  });
+
+  it('resolves every indicator folder of the library', () => {
+    const source = join(import.meta.dirname, '../../trading-signals/src');
+    const folders = ['momentum', 'trend', 'volatility', 'volume'].flatMap(category =>
+      readdirSync(join(source, category), {withFileTypes: true})
+        .filter(entry => entry.isDirectory())
+        .map(entry => entry.name)
+    );
+    const unresolved = folders.filter(folder => {
+      try {
+        findIndicator(folder);
+        return false;
+      } catch {
+        return true;
+      }
+    });
+    expect(
+      unresolved,
+      'an indicator exported under a long class name needs a short-name alias; MA only holds the abstract moving average'
+    ).toEqual(['MA']);
+    expect(
+      Object.values(ALIASES).filter(name => !listIndicators().includes(name)),
+      'every alias points at an exported indicator'
+    ).toEqual([]);
   });
 
   it('computes the same value as the library', () => {

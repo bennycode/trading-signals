@@ -46,8 +46,68 @@ function collectIndicators() {
   return indicators;
 }
 
+/**
+ * The library files each indicator under its short code (STOCH), which is what traders type, but
+ * exports some under a long name (StochasticOscillator). The exports carry no trace of the code, so
+ * it is mapped here, and a test checks that every indicator folder of the library resolves.
+ */
+export const ALIASES: Readonly<Record<string, string>> = {
+  ABANDS: 'AccelerationBands',
+  BBANDS: 'BollingerBands',
+  BBW: 'BollingerBandsWidth',
+  BREAKOUT_BAR_LOW: 'BreakoutBarLow',
+  CE: 'ChandelierExit',
+  CKS: 'ChandeKrollStop',
+  COPPOCK: 'CoppockCurve',
+  CRSI: 'ConnorsRSI',
+  DC: 'DonchianChannels',
+  DEM: 'DeMarker',
+  DI: 'DisparityIndex',
+  DOSC: 'DerivativeOscillator',
+  ERI: 'ElderRay',
+  FI: 'ForceIndex',
+  FISHER: 'FisherTransform',
+  HIGHER_LOW_TRAIL: 'HigherLowTrail',
+  HILO: 'GannHiLo',
+  HT: 'HTTrendline',
+  ICHIMOKU: 'IchimokuCloud',
+  KC: 'KeltnerChannels',
+  LINREG: 'LinearRegression',
+  LRSI: 'LaguerreRSI',
+  MARKETFI: 'MarketFacilitationIndex',
+  MD: 'McGinleyDynamic',
+  MI: 'MassIndex',
+  PB: 'PercentB',
+  PO: 'ProjectionOscillator',
+  PSO: 'PremierStochastic',
+  RSV: 'RogersSatchellVolatility',
+  RVGI: 'RelativeVigorIndex',
+  RVI: 'RelativeVolatilityIndex',
+  RWI: 'RandomWalkIndex',
+  SI: 'SwingIndex',
+  SQUEEZE: 'TTMSqueeze',
+  STOCH: 'StochasticOscillator',
+  STOCHRSI: 'StochasticRSI',
+  SWING_HIGH: 'SwingHigh',
+  SWING_LOW: 'SwingLow',
+  UI: 'UlcerIndex',
+  ULTOSC: 'UltimateOscillator',
+  VI: 'VortexIndicator',
+  VSTOP: 'VolatilityStop',
+  WAE: 'WaddahAttarExplosion',
+  WILLR: 'WilliamsR',
+  WT: 'WaveTrend',
+};
+
 const INDICATORS = collectIndicators();
 const BY_LOWERCASE_NAME = new Map(Array.from(INDICATORS, ([name, value]) => [name.toLowerCase(), {name, value}]));
+for (const [alias, name] of Object.entries(ALIASES)) {
+  const value = INDICATORS.get(name);
+  if (value) {
+    BY_LOWERCASE_NAME.set(alias.toLowerCase(), {name, value});
+  }
+}
+const ALIASES_BY_NAME = new Map(Object.entries(ALIASES).map(([alias, name]) => [name, alias.toLowerCase()]));
 
 /**
  * Indicator names in alphabetical order, optionally narrowed by a substring. Sorted explicitly
@@ -58,7 +118,7 @@ const BY_LOWERCASE_NAME = new Map(Array.from(INDICATORS, ([name, value]) => [nam
 export function listIndicators(query = ''): string[] {
   const needle = query.toLowerCase();
   return Array.from(INDICATORS.keys())
-    .filter(name => name.toLowerCase().includes(needle))
+    .filter(name => name.toLowerCase().includes(needle) || ALIASES_BY_NAME.get(name)?.includes(needle))
     .sort();
 }
 
