@@ -1,4 +1,4 @@
-import 'dotenv-defaults/config';
+import '../../../loadEnv.js';
 import {getDemoClient} from './getDemoClient.js';
 
 const exchange = getDemoClient();

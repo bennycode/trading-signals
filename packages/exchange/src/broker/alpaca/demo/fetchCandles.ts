@@ -1,5 +1,4 @@
-// @ts-ignore No type declarations available for dotenv-defaults
-import 'dotenv-defaults/config.js';
+import '../../../loadEnv.js';
 import type {StringValue} from 'ms';
 import {ms} from 'ms';
 import {parseArgs} from 'node:util';

@@ -1,6 +1,7 @@
+import {existsSync} from 'node:fs';
 import {readFile} from 'node:fs/promises';
+import {resolve} from 'node:path';
 import {parseArgs} from 'node:util';
-import {config} from 'dotenv-defaults';
 import {z} from 'zod';
 import {AlpacaBrokerMock, AlpacaMarketData, CandleSchema, OrderType, TradingPair} from '@typedtrader/exchange';
 import type {Candle} from '@typedtrader/exchange';
@@ -9,11 +10,13 @@ import {BacktestExecutor} from '../backtest/BacktestExecutor.js';
 import {createStrategy, getStrategyNames} from '../strategy/StrategyRegistry.js';
 
 /*
- * Alpaca credentials load from the monorepo root .env first, then from the exchange package's
- * .env. No defaults file is loaded: its placeholder values would look like real credentials.
+ * Alpaca credentials load from the monorepo root .env, when there is one. No defaults file is
+ * loaded: its placeholder values would look like real credentials.
  */
-config({path: '../../.env'});
-config({path: '../exchange/.env'});
+const envFile = resolve(import.meta.dirname, '../../../../.env');
+if (existsSync(envFile)) {
+  process.loadEnvFile(envFile);
+}
 
 const {values} = parseArgs({
   allowNegative: true,
