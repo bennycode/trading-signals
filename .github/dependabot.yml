@@ -21,3 +21,7 @@ updates:
     commit-message:
       prefix: chore
       include: scope
+    ignore:
+      # vocs only supports mermaid v11 (optional peer dependency)
+      - dependency-name: 'mermaid'
+        update-types: ['version-update:semver-major']
