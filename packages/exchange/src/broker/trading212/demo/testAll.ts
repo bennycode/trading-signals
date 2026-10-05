@@ -1,4 +1,3 @@
-import '../../../loadEnv.js';
 import axios from 'axios';
 import {OrderSide} from '../../Broker.js';
 import {TradingPair} from '../../TradingPair.js';

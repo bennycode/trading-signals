@@ -1,4 +1,3 @@
-import '../../../loadEnv.js';
 import {getDemoClient} from './getDemoClient.js';
 
 const exchange = getDemoClient();

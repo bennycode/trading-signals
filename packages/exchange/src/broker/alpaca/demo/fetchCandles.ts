@@ -1,4 +1,3 @@
-import '../../../loadEnv.js';
 import type {StringValue} from 'ms';
 import {ms} from 'ms';
 import {parseArgs} from 'node:util';

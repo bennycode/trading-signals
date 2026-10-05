@@ -1,4 +1,3 @@
-import '../../../loadEnv.js';
 import {ms, format} from 'ms';
 import {getAlpacaClient} from '../getAlpacaClient.js';
 import {TradingPair} from '../../TradingPair.js';

@@ -1,4 +1,3 @@
-import '../../../loadEnv.js';
 import {OrderSide} from '../../Broker.js';
 import {TradingPair} from '../../TradingPair.js';
 import {getDemoClient} from './getDemoClient.js';

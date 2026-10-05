@@ -31,8 +31,8 @@
     "build": "tsc -p tsconfig.build.json",
     "clean": "rimraf coverage dist",
     "dist": "npm run clean && npm run build",
-    "backtest": "tsx src/start/runBacktest.ts",
-    "strategy": "tsx src/start/runStrategy.ts",
+    "backtest": "tsx --env-file-if-exists=../../.env src/start/runBacktest.ts",
+    "strategy": "tsx --env-file=../../.env.defaults --env-file-if-exists=../../.env src/start/runStrategy.ts",
     "fix": "npm run fix:code && npm run fix:other",
     "fix:code": "oxlint . --fix || true",
     "fix:other": "oxfmt",
@@ -50,7 +50,6 @@
     "@typedtrader/exchange": "0.3.3",
     "@types/big.js": "^7.0.0",
     "big.js": "^7.0.1",
-    "dotenv-defaults": "^6.0.0",
     "ms": "4.0.0-nightly.202508271359",
     "trading-signals": "8.3.0",
     "zod": "^4.6.5"

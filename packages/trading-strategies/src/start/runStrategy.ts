@@ -1,4 +1,3 @@
-import '../loadEnv.js';
 import {AlpacaMarketData, getTrading212Client, OrderSide, TradingPair} from '@typedtrader/exchange';
 import {TradingSession} from '../trader/index.js';
 import {BuyOnceStrategy} from '../strategy-buy-once/BuyOnceStrategy.js';

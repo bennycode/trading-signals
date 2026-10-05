@@ -110,7 +110,7 @@ When the broker can already tell us something, don't ask the caller. `#isCryptoS
 
 - **Per-resource folders, not per-layer folders.** `account/`, `order/`, `fill/` each contain the API class + types + tests + `index.ts` barrel. Beats top-level `controllers/`, `types/`, `tests/` splits.
 - `index.ts` re-export barrels at every directory level so consumers import from the package root.
-- `demo/` directory with runnable scripts loaded via `dotenv-defaults` for manual smoke tests against real credentials.
+- `demo/` directory with runnable scripts for manual smoke tests against real credentials, each wired to an npm script that loads the root env files with Node's `--env-file` flags.
 - Test exchange logins with the project's own API classes, not raw `curl`/`fetch`.
 
 ## Things deliberately absent
