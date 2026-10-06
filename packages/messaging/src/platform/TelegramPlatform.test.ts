@@ -5,7 +5,6 @@ import type {Account} from '../database/models/Account.js';
 import {TelegramPlatform} from './TelegramPlatform.js';
 import {lowercaseCommandMiddleware} from './lowercaseCommandMiddleware.js';
 import {reportAdd} from '../command/report/reportAdd.js';
-import {logger} from '../logger.js';
 
 /*
  * The captured-handler types describe only the ctx surface the tests drive — enough for the
@@ -356,16 +355,12 @@ describe('TelegramPlatform', () => {
       });
     });
 
-    it('starts in open mode with an empty owner list and warns about it', async () => {
-      const warnSpy = vi.spyOn(logger, 'warn');
-      const platform = new TelegramPlatform('bot-token');
+    it.each([undefined, '', ' , , '])('refuses to start without owner IDs (%j)', async ownerIds => {
+      const platform = new TelegramPlatform('bot-token', ownerIds);
 
-      await platform.start();
-
-      expect(mockInit).toHaveBeenCalled();
-      expect(mockStart).toHaveBeenCalledWith({drop_pending_updates: true});
-      expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('TELEGRAM_OWNER_IDS is unset or empty'));
-      warnSpy.mockRestore();
+      await expect(platform.start()).rejects.toThrow('TELEGRAM_OWNER_IDS is unset or empty');
+      expect(mockInit, 'the bot never connects, so nobody can reach it').not.toHaveBeenCalled();
+      expect(mockStart).not.toHaveBeenCalled();
     });
   });
 
@@ -429,8 +424,8 @@ describe('TelegramPlatform', () => {
       expect(handler).toHaveBeenCalledOnce();
     });
 
-    it('accepts every sender when ownerIds is not set (open mode)', async () => {
-      const platform = new TelegramPlatform('bot-token');
+    it.each([undefined, ' ', ',', ' , , '])('rejects every sender without owner IDs (%j)', async ownerIds => {
+      const platform = new TelegramPlatform('bot-token', ownerIds);
 
       const handler = vi.fn().mockResolvedValue(undefined);
 
@@ -446,31 +441,8 @@ describe('TelegramPlatform', () => {
 
       await registeredCallback(ctxAnySender);
 
-      expect(handler).toHaveBeenCalledOnce();
+      expect(handler, 'an empty owner list authorizes nobody instead of everybody').not.toHaveBeenCalled();
     });
-
-    it.each([' ', ',', ' , , '])(
-      'collapses whitespace/comma-only ownerIds (%j) to open mode instead of rejecting every sender',
-      async ownerIds => {
-        const platform = new TelegramPlatform('bot-token', ownerIds);
-
-        const handler = vi.fn().mockResolvedValue(undefined);
-
-        platform.registerCommand('help', handler);
-
-        const registeredCallback = findRegisteredCallback('help');
-
-        const ctxAnySender = {
-          from: {id: 999},
-          message: {text: '/help'},
-          reply: vi.fn(),
-        };
-
-        await registeredCallback(ctxAnySender);
-
-        expect(handler).toHaveBeenCalledOnce();
-      }
-    );
 
     it('silently drops updates with no sender', async () => {
       const platform = new TelegramPlatform('bot-token', '111');
