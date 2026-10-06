@@ -1,7 +1,7 @@
 {
   "$schema": "https://unpkg.com/knip@6/schema.json",
   "exclude": ["exports", "nsExports", "nsTypes", "types"],
-  "ignoreBinaries": ["nx"],
+  "ignoreBinaries": ["nx", "op"],
   "ignoreDependencies": ["conventional-changelog-conventionalcommits", "pino-roll"],
   "workspaces": {
     "packages/exchange": {
