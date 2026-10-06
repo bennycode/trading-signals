@@ -306,6 +306,16 @@ export class TelegramPlatform implements MessagingPlatform {
         'TELEGRAM_OWNER_IDS is unset or empty. Set it to a comma-separated list of Telegram user IDs; the bot refuses to start without one.'
       );
     }
+    /*
+     * Telegram user IDs are positive integers. Anything else (a username, a typo like "111;222")
+     * can never match a sender, so the bot would start and silently reject its own owner.
+     */
+    const invalidIds = this.#ownerIds.filter(id => !/^[1-9]\d*$/.test(id));
+    if (invalidIds.length > 0) {
+      throw new Error(
+        `TELEGRAM_OWNER_IDS contains ${invalidIds.map(id => `"${id}"`).join(', ')}, which is not a numeric Telegram user ID. Look up yours via @userinfobot.`
+      );
+    }
     logger.info({ownerIds: this.#ownerIds}, 'Telegram bot owner restriction active');
 
     await this.#bot.init();

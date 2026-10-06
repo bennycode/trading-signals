@@ -355,6 +355,28 @@ describe('TelegramPlatform', () => {
       });
     });
 
+    it.each([
+      ['@benny', '"@benny"'],
+      ['111;222', '"111;222"'],
+      ['111, abc, 0', '"abc", "0"'],
+      ['-1001234', '"-1001234"'],
+    ])('refuses to start with an owner ID that is not a Telegram user ID (%j)', async (ownerIds, named) => {
+      const platform = new TelegramPlatform('bot-token', ownerIds);
+
+      await expect(platform.start(), 'the error names every invalid entry').rejects.toThrow(
+        `TELEGRAM_OWNER_IDS contains ${named}, which is not a numeric Telegram user ID`
+      );
+      expect(mockInit).not.toHaveBeenCalled();
+    });
+
+    it('starts with numeric owner IDs, surrounding whitespace included', async () => {
+      const platform = new TelegramPlatform('bot-token', ' 111 , 222 ');
+
+      await platform.start();
+
+      expect(mockInit).toHaveBeenCalled();
+    });
+
     it.each([undefined, '', ' , , '])('refuses to start without owner IDs (%j)', async ownerIds => {
       const platform = new TelegramPlatform('bot-token', ownerIds);
 
