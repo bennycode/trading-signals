@@ -9,7 +9,7 @@ import {parseEnv} from 'node:util';
  */
 const root = resolve(import.meta.dirname, '..');
 const read = (file: string) => parseEnv(readFileSync(resolve(root, file), 'utf8'));
-const isReference = (value: string) => value.startsWith('op://');
+const isReference = (value: string | undefined) => value?.startsWith('op://') === true;
 
 const problems = [
   ...Object.entries(read('.env.op'))
