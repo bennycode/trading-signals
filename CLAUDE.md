@@ -9,8 +9,8 @@
 
 ## Environment Variables
 
-- One `.env.defaults` (committed) and one optional `.env` (gitignored) at the repository root serve every package. npm scripts load them with Node's `--env-file=../../.env.defaults --env-file-if-exists=../../.env` flags.
-- Secrets live in the "trading-signals" 1Password vault. `.env.op` (committed) holds only `op://` references; run a script with `op run --env-file=.env.op -- npm run <script>` to inject them.
+- `.env.op` (committed) at the repository root lists every variable the packages read: secrets as `op://` references to the "trading-signals" 1Password vault, settings as plain values. Run a script with `op run --env-file=.env.op -- npm run <script>`.
+- Without 1Password, a gitignored `.env` at the root holds the same variables with real values. npm scripts load it with Node's `--env-file-if-exists=../../.env` flag.
 
 ## Commit & PR Conventions
 

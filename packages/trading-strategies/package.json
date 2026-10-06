@@ -32,7 +32,7 @@
     "clean": "rimraf coverage dist",
     "dist": "npm run clean && npm run build",
     "backtest": "tsx --env-file-if-exists=../../.env src/start/runBacktest.ts",
-    "strategy": "tsx --env-file=../../.env.defaults --env-file-if-exists=../../.env src/start/runStrategy.ts",
+    "strategy": "tsx --env-file-if-exists=../../.env src/start/runStrategy.ts",
     "fix": "npm run fix:code && npm run fix:other",
     "fix:code": "oxlint . --fix || true",
     "fix:other": "oxfmt",

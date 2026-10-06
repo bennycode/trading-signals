@@ -7,11 +7,6 @@ import Big from 'big.js';
 import {BacktestExecutor} from '../backtest/BacktestExecutor.js';
 import {createStrategy, getStrategyNames} from '../strategy/StrategyRegistry.js';
 
-/*
- * Alpaca credentials come from the root .env only. The npm script leaves the defaults file out on
- * purpose: its placeholder values would look like real credentials.
- */
-
 const {values} = parseArgs({
   allowNegative: true,
   options: {
