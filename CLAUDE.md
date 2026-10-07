@@ -11,7 +11,7 @@
 
 Configuration is split into secrets and flags, in three files at the repository root:
 
-- `.env.flags` (committed): flags and settings as plain values, e.g. `TRADING212_USE_PAPER=true`. Never secrets.
+- `.env.flags` (committed): flags and settings as plain values, e.g. `TYPEDTRADER_DB_DIRECTORY=.database`. Never secrets.
 - `.env.op` (committed): secrets only, each as an `op://` reference to the "trading-signals" 1Password vault. Never plain values, since `op run` masks every output matching a resolved value.
 - `.env` (gitignored, optional): real secret values for setups without 1Password, and local overrides of flags.
 

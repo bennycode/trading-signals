@@ -36,7 +36,7 @@ Every broker has a thin outer class that owns `rest` + `ws`/`stream`, exposes en
 - **Auth via request interceptor** (`httpClient.interceptors.request.use(...)`). More flexible than baked-in headers — supports token refresh, signing, clock skew. Auto-recovery (refresh token, re-login) belongs inside `retryCondition`.
 - **Expose `defaults` and `interceptors` getters** so callers can layer logging/tracing/extra retries without subclassing.
 - **Per-endpoint retry-delay tables must match paginated URLs.** When a vendor's rate limit is per-endpoint (e.g. 1 req / 60s), use `startsWith` / prefix matching against the request URL so cursor-paginated follow-ups (`?cursor=…`) hit the same calibrated wait instead of busy-looping the default delay.
-- **The code selects the safe environment.** Treat the `USE_PAPER` / `USE_SANDBOX` flag as `true` unless it is explicitly `"false"`, so a populated live API key alone does not fire orders on a real account.
+- **The code selects the safe environment.** Paper or sandbox mode is a constructor option (`usePaperTrading`), never an environment flag. Demos hardcode it to `true`, so a populated live API key alone does not fire orders on a real account.
 
 ### Order submission reconciliation
 
