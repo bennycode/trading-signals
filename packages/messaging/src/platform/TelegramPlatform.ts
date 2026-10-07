@@ -307,10 +307,12 @@ export class TelegramPlatform implements MessagingPlatform {
       );
     }
     /*
-     * Telegram user IDs are positive integers. Anything else (a username, a typo like "111;222")
-     * can never match a sender, so the bot would start and silently reject its own owner.
+     * Telegram user IDs are positive integers of at most 52 bits, compared as decimal strings.
+     * Anything else (a username, a typo like "111;222", "1e3") can never match a sender, so the
+     * bot would start and silently reject its own owner.
      */
-    const invalidIds = this.#ownerIds.filter(id => !/^[1-9]\d*$/.test(id));
+    const isUserId = (id: string) => /^[1-9]\d*$/.test(id) && Number.isSafeInteger(Number(id));
+    const invalidIds = this.#ownerIds.filter(id => !isUserId(id));
     if (invalidIds.length > 0) {
       throw new Error(
         `TELEGRAM_OWNER_IDS contains ${invalidIds.map(id => `"${id}"`).join(', ')}, which is not a numeric Telegram user ID. Look up yours via @userinfobot.`

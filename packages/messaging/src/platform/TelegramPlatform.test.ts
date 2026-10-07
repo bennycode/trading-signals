@@ -360,6 +360,8 @@ describe('TelegramPlatform', () => {
       ['111;222', '"111;222"'],
       ['111, abc, 0', '"abc", "0"'],
       ['-1001234', '"-1001234"'],
+      ['1e3', '"1e3"'],
+      ['9007199254740992', '"9007199254740992"'],
     ])('refuses to start with an owner ID that is not a Telegram user ID (%j)', async (ownerIds, named) => {
       const platform = new TelegramPlatform('bot-token', ownerIds);
 
