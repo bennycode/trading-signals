@@ -15,7 +15,7 @@ Configuration is split into secrets and flags, in three files at the repository 
 - `.env.op` (committed): secrets only, each as an `op://` reference to the "trading-signals" 1Password vault. Never plain values, since `op run` masks every output matching a resolved value.
 - `.env` (gitignored, optional): real secret values for setups without 1Password, and local overrides of flags.
 
-`npm run lint:env` enforces the split. Scripts that need configuration preload `loadEnv.ts` with `tsx --import ../../loadEnv.ts`, and each has an `:op` variant (`op run --env-file=../../.env.op -- npm run <script>`) that resolves the secrets. The shell environment wins over `.env`, which wins over `.env.flags`.
+Scripts that need configuration preload `loadEnv.ts` with `tsx --import ../../loadEnv.ts`, and each has an `:op` variant (`op run --env-file=../../.env.op -- npm run <script>`) that resolves the secrets. The shell environment wins over `.env`, which wins over `.env.flags`.
 
 ## Commit & PR Conventions
 

@@ -6,5 +6,5 @@
   },
   "exclude": [],
   "extends": "./tsconfig.lib.json",
-  "include": ["${configDir}/loadEnv.ts", "${configDir}/scripts"]
+  "include": ["${configDir}/loadEnv.ts"]
 }
