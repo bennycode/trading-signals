@@ -39,7 +39,7 @@ const {PlatformDispatcher} = await import('./PlatformDispatcher.js');
 function createMockPlatform(): MessagingPlatform {
   return {
     commandList: [],
-    platformInfo: {botAddress: '', sdkVersion: ''},
+    platformInfo: {botAddress: ''},
     registerCommand: vi.fn(),
     sendMessage: vi.fn(),
     start: vi.fn(),

@@ -84,7 +84,7 @@ function expectDefined<T>(value: T): asserts value is Exclude<T, undefined> {
 function createMockPlatform(): MessagingPlatform {
   return {
     commandList: [],
-    platformInfo: {botAddress: '', sdkVersion: ''},
+    platformInfo: {botAddress: ''},
     registerCommand: vi.fn(),
     sendMessage: vi.fn(),
     start: vi.fn(),

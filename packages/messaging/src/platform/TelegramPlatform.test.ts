@@ -352,7 +352,6 @@ describe('TelegramPlatform', () => {
       expect(mockStart).toHaveBeenCalledWith({drop_pending_updates: true});
       expect(platform.platformInfo).toEqual({
         botAddress: '@testbot',
-        sdkVersion: 'grammY',
       });
     });
 

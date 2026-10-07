@@ -220,7 +220,8 @@ function registerCommands(platform: MessagingPlatform, monitors: Monitors): void
   });
 
   platform.registerCommand('version', async ctx => {
-    await ctx.reply(`My version is: ${platform.platformInfo.sdkVersion}`);
+    // npm sets this from the package's own package.json for every `npm run` script, including `start:bot` via lerna.
+    await ctx.reply(`My version is: ${process.env.npm_package_version ?? 'unknown'}`);
   });
 }
 

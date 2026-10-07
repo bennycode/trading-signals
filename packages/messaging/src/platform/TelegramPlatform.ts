@@ -40,7 +40,7 @@ export class TelegramPlatform implements MessagingPlatform {
   readonly #bot: Bot<WizardContext>;
   readonly #ownerIds: string[];
   readonly #commands: Map<string, CommandHandler> = new Map();
-  #platformInfo: PlatformInfo = {botAddress: '', sdkVersion: ''};
+  #platformInfo: PlatformInfo = {botAddress: ''};
   #reportScheduler?: ReportScheduler;
   #watchMonitor?: WatchMonitor;
   #strategyMonitor?: StrategyMonitor;
@@ -305,7 +305,6 @@ export class TelegramPlatform implements MessagingPlatform {
     await this.#bot.init();
     this.#platformInfo = {
       botAddress: `@${this.#bot.botInfo.username}`,
-      sdkVersion: 'grammY',
     };
 
     /*
