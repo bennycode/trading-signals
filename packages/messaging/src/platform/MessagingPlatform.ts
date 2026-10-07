@@ -14,8 +14,6 @@ export type CommandHandler = (ctx: MessageContext) => Promise<void>;
 export interface PlatformInfo {
   /** The bot's own address/username on this platform */
   botAddress: string;
-  /** SDK/library version string */
-  sdkVersion: string;
 }
 
 export interface MessagingPlatform {
