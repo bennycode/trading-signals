@@ -220,8 +220,12 @@ function registerCommands(platform: MessagingPlatform, monitors: Monitors): void
   });
 
   platform.registerCommand('version', async ctx => {
-    // npm sets this from the package's own package.json for every `npm run` script, including `start:bot` via lerna.
-    await ctx.reply(`My version is: ${process.env.npm_package_version ?? 'unknown'}`);
+    /*
+     * npm sets this from the package's own package.json for every `npm run` script, including `start:bot` via lerna.
+     * Dokku sets GIT_REV on git-push deploys.
+     */
+    const commit = process.env.GIT_REV ?? 'unknown';
+    await ctx.reply(`My version is: ${process.env.npm_package_version ?? 'unknown'} (commit: ${commit.slice(0, 7)})`);
   });
 }
 
