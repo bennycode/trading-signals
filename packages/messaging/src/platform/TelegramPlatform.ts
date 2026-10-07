@@ -56,8 +56,8 @@ export class TelegramPlatform implements MessagingPlatform {
       })
     );
     /*
-     * Filter out empty entries so whitespace- or comma-only inputs (e.g. " " or ",")
-     * collapse to an empty list and are treated as open mode, not as a list of empty IDs.
+     * Filter out empty entries so whitespace- or comma-only inputs (e.g. " " or ",") collapse to
+     * an empty list, which the bot refuses to start with, instead of a list of empty IDs.
      */
     this.#ownerIds = ownerIds
       ? ownerIds
@@ -226,8 +226,9 @@ export class TelegramPlatform implements MessagingPlatform {
    * for downstream queries — the double-check is defense-in-depth against a
    * future handler that bypasses the middleware.
    *
-   * When `TELEGRAM_OWNER_IDS` is empty, the bot runs in open mode and accepts
-   * messages from anyone. `start()` logs a warning in this case.
+   * The bot is fail-closed: without owner IDs it authorizes nobody. `start()`
+   * already refuses to run in that case, so this only guards against a path
+   * that handles updates without starting the bot first.
    */
   #authorizedUserId(ctx: Context): string | null {
     const senderId = ctx.from?.id?.toString();
@@ -235,7 +236,7 @@ export class TelegramPlatform implements MessagingPlatform {
       return null;
     }
     if (this.#ownerIds.length === 0) {
-      return `${PLATFORM_PREFIX}${senderId}`;
+      return null;
     }
     if (!this.#ownerIds.includes(senderId)) {
       logger.warn({ownerIds: this.#ownerIds, senderId}, 'Ignoring unauthorized Telegram update');
@@ -296,11 +297,28 @@ export class TelegramPlatform implements MessagingPlatform {
   }
 
   async start(): Promise<void> {
+    /*
+     * Anyone who finds the bot could otherwise drive the trading wizards against the configured
+     * broker accounts, so a missing owner list stops the bot instead of opening it to everyone.
+     */
     if (this.#ownerIds.length === 0) {
-      logger.warn('TELEGRAM_OWNER_IDS is unset or empty — bot running in open mode');
-    } else {
-      logger.info({ownerIds: this.#ownerIds}, 'Telegram bot owner restriction active');
+      throw new Error(
+        'TELEGRAM_OWNER_IDS is unset or empty. Set it to a comma-separated list of Telegram user IDs; the bot refuses to start without one.'
+      );
     }
+    /*
+     * Telegram user IDs are positive integers of at most 52 bits, compared as decimal strings.
+     * Anything else (a username, a typo like "111;222", "1e3") can never match a sender, so the
+     * bot would start and silently reject its own owner.
+     */
+    const isUserId = (id: string) => /^[1-9]\d*$/.test(id) && Number.isSafeInteger(Number(id));
+    const invalidIds = this.#ownerIds.filter(id => !isUserId(id));
+    if (invalidIds.length > 0) {
+      throw new Error(
+        `TELEGRAM_OWNER_IDS contains ${invalidIds.map(id => `"${id}"`).join(', ')}, which is not a numeric Telegram user ID. Look up yours via @userinfobot.`
+      );
+    }
+    logger.info({ownerIds: this.#ownerIds}, 'Telegram bot owner restriction active');
 
     await this.#bot.init();
     this.#platformInfo = {
