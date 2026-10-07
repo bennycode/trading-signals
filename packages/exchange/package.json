@@ -38,10 +38,16 @@
     "access": "public"
   },
   "scripts": {
-    "alpaca:testAll": "tsx src/broker/alpaca/demo/testAll.ts",
-    "alpaca:fetchCandles": "tsx src/broker/alpaca/demo/fetchCandles.ts",
-    "trading212:buy": "tsx src/broker/trading212/demo/buy.ts",
-    "trading212:listBalances": "tsx src/broker/trading212/demo/listBalances.ts",
+    "alpaca:testAll": "tsx --import ../../loadEnv.ts src/broker/alpaca/demo/testAll.ts",
+    "alpaca:testAll:op": "op run --env-file=../../.env.op -- npm run alpaca:testAll",
+    "alpaca:fetchCandles": "tsx --import ../../loadEnv.ts src/broker/alpaca/demo/fetchCandles.ts",
+    "alpaca:fetchCandles:op": "op run --env-file=../../.env.op -- npm run alpaca:fetchCandles --",
+    "trading212:buy": "tsx --import ../../loadEnv.ts src/broker/trading212/demo/buy.ts",
+    "trading212:buy:op": "op run --env-file=../../.env.op -- npm run trading212:buy",
+    "trading212:listBalances": "tsx --import ../../loadEnv.ts src/broker/trading212/demo/listBalances.ts",
+    "trading212:listBalances:op": "op run --env-file=../../.env.op -- npm run trading212:listBalances",
+    "trading212:testAll": "tsx --import ../../loadEnv.ts src/broker/trading212/demo/testAll.ts",
+    "trading212:testAll:op": "op run --env-file=../../.env.op -- npm run trading212:testAll",
     "build": "tsc -p tsconfig.build.json",
     "clean": "rimraf coverage dist",
     "dist": "npm run clean && npm run build",
@@ -66,8 +72,5 @@
     "ms": "4.0.0-nightly.202508271359",
     "ts-retry-promise": "^0.8.1",
     "zod": "^4.6.5"
-  },
-  "devDependencies": {
-    "dotenv-defaults": "^6.0.0"
   }
 }

@@ -36,7 +36,7 @@ Every broker has a thin outer class that owns `rest` + `ws`/`stream`, exposes en
 - **Auth via request interceptor** (`httpClient.interceptors.request.use(...)`). More flexible than baked-in headers — supports token refresh, signing, clock skew. Auto-recovery (refresh token, re-login) belongs inside `retryCondition`.
 - **Expose `defaults` and `interceptors` getters** so callers can layer logging/tracing/extra retries without subclassing.
 - **Per-endpoint retry-delay tables must match paginated URLs.** When a vendor's rate limit is per-endpoint (e.g. 1 req / 60s), use `startsWith` / prefix matching against the request URL so cursor-paginated follow-ups (`?cursor=…`) hit the same calibrated wait instead of busy-looping the default delay.
-- **`.env.defaults` selects the safe environment.** Default the `USE_PAPER` / `USE_SANDBOX` flag to `true` so a populated live API key alone does not fire orders on a real account.
+- **The code selects the safe environment.** Paper or sandbox mode is a constructor option (`usePaperTrading`), never an environment flag. Demos hardcode it to `true`, so a populated live API key alone does not fire orders on a real account.
 
 ### Order submission reconciliation
 
@@ -110,7 +110,7 @@ When the broker can already tell us something, don't ask the caller. `#isCryptoS
 
 - **Per-resource folders, not per-layer folders.** `account/`, `order/`, `fill/` each contain the API class + types + tests + `index.ts` barrel. Beats top-level `controllers/`, `types/`, `tests/` splits.
 - `index.ts` re-export barrels at every directory level so consumers import from the package root.
-- `demo/` directory with runnable scripts loaded via `dotenv-defaults` for manual smoke tests against real credentials.
+- `demo/` directory with runnable scripts for manual smoke tests against real credentials, each wired to an npm script that loads the root env files with Node's `--env-file` flags.
 - Test exchange logins with the project's own API classes, not raw `curl`/`fetch`.
 
 ## Things deliberately absent

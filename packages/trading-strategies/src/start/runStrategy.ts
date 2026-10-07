@@ -1,13 +1,6 @@
-import {config} from 'dotenv-defaults';
 import {AlpacaMarketData, getTrading212Client, OrderSide, TradingPair} from '@typedtrader/exchange';
 import {TradingSession} from '../trader/index.js';
 import {BuyOnceStrategy} from '../strategy-buy-once/BuyOnceStrategy.js';
-
-/*
- * The exchange package owns the credentials. Load its env so this script can run from
- * trading-strategies/ without duplicating secrets.
- */
-config({defaults: '../exchange/.env.defaults', path: '../exchange/.env'});
 
 const marketData = new AlpacaMarketData({
   apiKey: process.env.ALPACA_LIVE_API_KEY!,

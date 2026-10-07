@@ -1,4 +1,3 @@
-import 'dotenv-defaults/config';
 import {OrderSide} from '../../Broker.js';
 import {TradingPair} from '../../TradingPair.js';
 import {getDemoClient} from './getDemoClient.js';
