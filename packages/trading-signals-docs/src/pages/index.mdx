@@ -58,6 +58,23 @@ sma.add(34);
 console.log(sma.getResult()); // 47
 ```
 
+### Indicators on Larger Timeframes
+
+A strategy receives 1-minute candles. To run an indicator on hourly or daily bars, wrap it in a `BatchedIndicator` from the [trading-strategies](https://www.npmjs.com/package/trading-strategies) package. It batches the candles and only feeds completed bars to the indicator:
+
+```ts
+import {ms} from 'ms';
+import {SMA} from 'trading-signals';
+import {BatchedIndicator} from 'trading-strategies';
+
+const sma = new SMA(3);
+const hourly = new BatchedIndicator('1h', sma, bar => bar.close.toNumber());
+
+hourly.warmUp(await market.getRecentCandles(pair, sma.getRequiredInputs(), ms('1h')));
+hourly.add(candle); // SMA result when this minute completes an hour, otherwise undefined
+hourly.getResult(); // latest SMA result at any time
+```
+
 <PackageGrid />
 
 ---
