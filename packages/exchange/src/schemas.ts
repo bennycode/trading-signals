@@ -13,8 +13,6 @@ export const CandleBaseSchema = z.object({
   /** ID of quote asset */
   counter: z.string(),
 
-  /** True, if this candle is the latest / current candle from the exchange. This flag is good to know if a candle comes from a history import or not. */
-  isLatest: z.boolean().optional(),
   /** Bucket start time in simplified extended ISO 8601 format */
   openTimeInISO: z.string(),
   /** Bucket start time converted to milliseconds (note: Coinbase Pro actually uses seconds) */
