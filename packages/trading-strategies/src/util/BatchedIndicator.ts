@@ -11,8 +11,6 @@ import type {TechnicalIndicator} from 'trading-signals';
 export class BatchedIndicator<Result, Input> {
   readonly indicator: TechnicalIndicator<Result, Input>;
   readonly #batcher: CandleBatcher;
-  readonly #intervalInMillis: number;
-  #startedMidInterval: boolean | undefined;
   readonly #toInput: (bar: BatchedCandle) => Input;
 
   constructor(
@@ -21,8 +19,7 @@ export class BatchedIndicator<Result, Input> {
     toInput: (bar: BatchedCandle) => Input
   ) {
     this.indicator = indicator;
-    this.#intervalInMillis = ms(interval);
-    this.#batcher = new CandleBatcher(this.#intervalInMillis);
+    this.#batcher = new CandleBatcher(ms(interval));
     this.#toInput = toInput;
   }
 
@@ -30,24 +27,10 @@ export class BatchedIndicator<Result, Input> {
     return this.indicator.getResult();
   }
 
-  /**
-   * Returns the indicator's result when this candle completes an interval, otherwise `undefined`. When the first
-   * candle arrives mid-interval, the minutes before it are missing, so that first bar never reaches the indicator.
-   */
+  /** Returns the indicator's result when this candle completes an interval, otherwise `undefined`. */
   add(candle: OneMinuteBatchedCandle) {
-    this.#startedMidInterval ??= candle.openTimeInMillis % this.#intervalInMillis !== 0;
     const bar = this.#batcher.addToBatch(candle);
-
-    if (!bar) {
-      return undefined;
-    }
-
-    if (this.#startedMidInterval) {
-      this.#startedMidInterval = false;
-      return undefined;
-    }
-
-    return this.indicator.add(this.#toInput(bar));
+    return bar ? this.indicator.add(this.#toInput(bar)) : undefined;
   }
 
   /** Feeds history that is already at the target interval, so the indicator is ready from the first live candle. */

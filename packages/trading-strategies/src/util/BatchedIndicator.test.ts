@@ -61,23 +61,4 @@ describe('BatchedIndicator', () => {
     expect(hourly.add(minute('2026-04-28T13:00:00.000Z', 30))).toBeUndefined();
     expect(hourly.add(minute('2026-04-28T13:59:00.000Z', 40)), 'SMA of the hourly closes 20 and 40').toBe(30);
   });
-
-  it('skips the first bar when the first candle arrives mid-interval', () => {
-    const sma = new SMA(2);
-    const hourly = new BatchedIndicator('1h', sma, bar => bar.close.toNumber());
-
-    hourly.warmUp([
-      candle('2026-04-28T11:00:00.000Z', 10, 3_600_000),
-      candle('2026-04-28T12:00:00.000Z', 20, 3_600_000),
-    ]);
-
-    expect(hourly.add(minute('2026-04-28T13:20:00.000Z', 30))).toBeUndefined();
-    expect(
-      hourly.add(minute('2026-04-28T13:59:00.000Z', 40)),
-      'the 13:00 bar lacks its first 20 minutes'
-    ).toBeUndefined();
-    expect(hourly.getResult(), 'still the SMA of the warm-up closes 10 and 20').toBe(15);
-    expect(hourly.add(minute('2026-04-28T14:00:00.000Z', 50))).toBeUndefined();
-    expect(hourly.add(minute('2026-04-28T14:59:00.000Z', 60)), 'SMA of the hourly closes 20 and 60').toBe(40);
-  });
 });
