@@ -230,7 +230,7 @@ describe('CandleBatcher', () => {
       expect(batch?.volume.toString()).toBe('8481.612');
     });
 
-    it('closes a 5-minute interval when 5 minutes are over and candles are missing in the start', () => {
+    it('drops the first batch when the first candle arrives mid-interval', () => {
       const cb = new CandleBatcher(ms('5m'));
       const batchedCandles: BatchedCandle[] = [];
 
@@ -241,13 +241,10 @@ describe('CandleBatcher', () => {
         }
       });
 
-      expect(batchedCandles[0].openTimeInISO).toBe('2021-05-25T08:00:00.000Z');
-      expect(batchedCandles[0].openTimeInMillis).toBe(1621929600000);
-      // First batch consists only of 2 candles (08:03 & 08:04)
-      expect(batchedCandles[0].medianPrice.valueOf()).toBe('610.85');
-
-      expect(batchedCandles[1].openTimeInISO).toBe('2021-05-25T08:05:00.000Z');
-      expect(batchedCandles[1].openTimeInMillis).toBe(1621929900000);
+      expect(
+        batchedCandles.map(batch => batch.openTimeInISO),
+        'the 08:00 batch only saw 08:03 and 08:04, so it is not emitted'
+      ).toEqual(['2021-05-25T08:05:00.000Z']);
     });
 
     it('closes a 5-minute interval when 5 minutes are over and last candle is missing', () => {
