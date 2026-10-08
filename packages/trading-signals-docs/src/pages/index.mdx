@@ -71,6 +71,8 @@ const sma = new SMA(3);
 const hourly = new BatchedIndicator('1h', sma, bar => bar.close.toNumber());
 
 hourly.warmUp(await market.getRecentCandles(pair, sma.getRequiredInputs(), ms('1h')));
+hourly.getResult(); // SMA of the last 3 finished hours, ready before the first live candle
+
 hourly.add(candle); // SMA result when this minute completes an hour, otherwise undefined
 hourly.getResult(); // latest SMA result at any time
 ```
