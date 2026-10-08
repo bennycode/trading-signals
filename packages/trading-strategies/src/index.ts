@@ -44,6 +44,7 @@ export {
 } from './strategy-protected/ProtectedStrategy.js';
 export {suggestScalpOffset} from './strategy-scalp/suggestScalpOffset.js';
 export {atrTrailStop, percentTrailStop, trailStop, type TrailStopOptions} from './util/trailStop.js';
+export {BatchedIndicator} from './util/BatchedIndicator.js';
 export {TrendFilter} from './util/TrendFilter.js';
 export {AtrPercent, atrToPercent} from './util/AtrPercent.js';
 export {
