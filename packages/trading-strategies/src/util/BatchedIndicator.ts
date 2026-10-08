@@ -3,11 +3,6 @@ import {CandleBatcher} from '@typedtrader/exchange';
 import type {BatchedCandle, Candle, OneMinuteBatchedCandle} from '@typedtrader/exchange';
 import type {TechnicalIndicator} from 'trading-signals';
 
-/**
- * Runs an indicator on a larger timeframe than the 1-minute candles a strategy receives, e.g. an
- * SMA(3) over hourly bars. Only completed bars reach the indicator, so its result changes once per
- * interval rather than on every minute.
- */
 export class BatchedIndicator<Result, Input> {
   readonly indicator: TechnicalIndicator<Result, Input>;
   readonly #batcher: CandleBatcher;
