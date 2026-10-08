@@ -143,4 +143,14 @@ describe('MarketDataSource.getRecentCandles', () => {
 
     expect(result, 'never invents bars — caps at available history').toEqual(dataset);
   });
+
+  it('leaves out the bar that is still forming', async () => {
+    const formingOpenTime = Date.now() - ONE_DAY / 2;
+    const dataset = [candle(formingOpenTime - 2 * ONE_DAY), candle(formingOpenTime - ONE_DAY), candle(formingOpenTime)];
+    const source = new TestMarketDataSource(dataset);
+
+    const result = await source.getRecentCandles(PAIR, 2, ONE_DAY);
+
+    expect(result, 'only finished bars, so a warm-up never counts a partial bar').toEqual(dataset.slice(0, 2));
+  });
 });
