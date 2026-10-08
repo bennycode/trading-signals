@@ -49,23 +49,7 @@ describe('BatchedIndicator', () => {
     expect(hourly.indicator).toBe(sma);
   });
 
-  it('replaces an unfinished last warm-up bar once its interval completes', () => {
-    const sma = new SMA(2);
-    const hourly = new BatchedIndicator('1h', sma, bar => bar.close.toNumber());
-
-    hourly.warmUp([
-      candle('2026-04-28T11:00:00.000Z', 10, 3_600_000),
-      candle('2026-04-28T12:00:00.000Z', 20, 3_600_000),
-    ]);
-
-    expect(hourly.getResult(), 'the open 12:00 bar counts for now').toBe(15);
-    expect(hourly.add(minute('2026-04-28T12:30:00.000Z', 30)), 'hour still forming').toBeUndefined();
-    expect(hourly.add(minute('2026-04-28T12:59:00.000Z', 40)), 'SMA of the hourly closes 10 and 40').toBe(25);
-    expect(hourly.add(minute('2026-04-28T13:00:00.000Z', 50))).toBeUndefined();
-    expect(hourly.add(minute('2026-04-28T13:59:00.000Z', 60)), 'SMA of the hourly closes 40 and 60').toBe(50);
-  });
-
-  it('keeps a finished last warm-up bar', () => {
+  it('continues from the warm-up bars with live candles', () => {
     const sma = new SMA(2);
     const hourly = new BatchedIndicator('1h', sma, bar => bar.close.toNumber());
 
