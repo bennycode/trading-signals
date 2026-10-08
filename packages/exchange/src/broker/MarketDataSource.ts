@@ -18,8 +18,9 @@ export abstract class MarketDataSource extends EventEmitter {
   abstract getLatestCandle(pair: TradingPair, intervalInMillis: number): Promise<Candle>;
 
   /**
-   * Fetch the most recent `count` candles of the given interval, oldest first — so a strategy can
-   * say "300 hourly candles" without computing calendar windows itself.
+   * Fetch the most recent `count` finished candles of the given interval, oldest first — so a
+   * strategy can say "300 hourly candles" without computing calendar windows itself. The bar that
+   * is still forming is left out, the same as in a backtest.
    */
   async getRecentCandles(pair: TradingPair, count: number, intervalInMillis: number): Promise<Candle[]> {
     if (count <= 0) {
@@ -27,7 +28,9 @@ export abstract class MarketDataSource extends EventEmitter {
     }
 
     const latest = await this.getLatestCandle(pair, intervalInMillis);
-    return getCandlesUntil(this, pair, count, intervalInMillis, latest.openTimeInMillis);
+    const isFinished = latest.openTimeInMillis + intervalInMillis <= Date.now();
+    const untilInMillis = isFinished ? latest.openTimeInMillis : latest.openTimeInMillis - 1;
+    return getCandlesUntil(this, pair, count, intervalInMillis, untilInMillis);
   }
 
   abstract watchCandles(pair: TradingPair, intervalInMillis: number, openTimeInISO: string): Promise<string>;
