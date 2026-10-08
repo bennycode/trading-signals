@@ -70,9 +70,11 @@ import {BatchedIndicator} from 'trading-strategies';
 const sma = new SMA(3);
 const hourly = new BatchedIndicator('1h', sma, bar => bar.close.toNumber());
 
+// Seed the SMA with the last 3 finished hourly bars, so it has a result before the first live candle
 hourly.warmUp(await market.getRecentCandles(pair, sma.getRequiredInputs(), ms('1h')));
 hourly.getResult();
 
+// Feed every 1-minute candle; the SMA only updates when a candle completes an hour
 hourly.add(candle);
 hourly.getResult();
 ```
