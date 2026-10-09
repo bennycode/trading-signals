@@ -8,6 +8,7 @@ import TenMinutesInTenCandles from '../../fixtures/candles/TenMinutesInTenCandle
 import TenMinutesMissingEnd from '../../fixtures/candles/TenMinutesMissingEnd.json' with {type: 'json'};
 import TenMinutesMissingStart from '../../fixtures/candles/TenMinutesMissingStart.json' with {type: 'json'};
 import AMD_2026_10_07_to_2026_10_08_1h from '../../fixtures/candles/AMD_2026-10-07_to_2026-10-08_1h.json' with {type: 'json'};
+import BTC_2026_10_07_to_2026_10_08_1h from '../../fixtures/candles/BTC_2026-10-07_to_2026-10-08_1h.json' with {type: 'json'};
 import hours from '../../fixtures/candles/batch/1h-in-1h.json' with {type: 'json'};
 import minutes from '../../fixtures/candles/batch/1h-in-1m.json' with {type: 'json'};
 import one_day_in_minutes from '../../fixtures/candles/candle-batcher/one_day_in_minutes.json' with {type: 'json'};
@@ -263,6 +264,27 @@ describe('CandleBatcher', () => {
         [days[0].high.toFixed(), days[0].low.toFixed(), days[0].close.toFixed()],
         "matches high, low and close of Alpaca's daily bar for 2026-10-07"
       ).toEqual(['648.31', '633.965', '645.905']);
+    });
+
+    it('emits each day of a market that trades around the clock with its last hourly bar', () => {
+      const cb = new CandleBatcher(ms('1d'));
+      const days = BTC_2026_10_07_to_2026_10_08_1h.map(candle => cb.addToBatch(candle)).filter(
+        day => day !== undefined
+      );
+
+      expect(
+        days.map(day => [
+          day.openTimeInISO,
+          day.open.toFixed(),
+          day.high.toFixed(),
+          day.low.toFixed(),
+          day.close.toFixed(),
+        ]),
+        "matches Alpaca's daily bars for 2026-10-07 and 2026-10-08"
+      ).toEqual([
+        ['2026-10-07T00:00:00.000Z', '85548.51', '85598.935', '82736.345', '83280.89'],
+        ['2026-10-08T00:00:00.000Z', '83265.72', '83486.65', '80319.2', '81692.5065'],
+      ]);
     });
 
     it('closes a 5-minute interval when 5 minutes are over and last candle is missing', () => {
