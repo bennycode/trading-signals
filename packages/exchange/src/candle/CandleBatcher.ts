@@ -13,7 +13,6 @@ type EventMap = {
 export class CandleBatcher extends EventEmitter<EventMap> {
   #batch: Candle[] = [];
   readonly #desiredIntervalInMillis: number;
-  #startedMidInterval: boolean | undefined;
 
   constructor(desiredIntervalInMillis: number) {
     super();
@@ -128,26 +127,16 @@ export class CandleBatcher extends EventEmitter<EventMap> {
    *
    * Example: If you aim for a 1-hour batch, and you include 15-minute candles, this function will produce a 1-hour
    * candle once you've added four sets of 15-minute candles.
-   *
-   * When the first candle arrives mid-interval, e.g. at 10:20 for hourly batches, the minutes before it are missing, so
-   * that first batch is dropped instead of being returned as if it were complete.
    */
   addToBatch(candle: Candle | BatchedCandle): BatchedCandle | undefined {
     const exchangeCandle = CandleBatcher.isBatchedCandle(candle) ? CandleBatcher.toCandle(candle) : candle;
-    this.#startedMidInterval ??= exchangeCandle.openTimeInMillis % this.#desiredIntervalInMillis !== 0;
     const {currentBatchArray, newBatch} = CandleBatcher.add(exchangeCandle, this.#batch, this.#desiredIntervalInMillis);
     this.#batch = currentBatchArray;
 
-    if (!newBatch) {
-      return undefined;
+    if (newBatch) {
+      this.emit('batchedCandle', newBatch);
     }
 
-    if (this.#startedMidInterval) {
-      this.#startedMidInterval = false;
-      return undefined;
-    }
-
-    this.emit('batchedCandle', newBatch);
     return newBatch;
   }
 

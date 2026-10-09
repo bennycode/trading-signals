@@ -7,6 +7,8 @@ import TenMinutesInEightCandles from '../../fixtures/candles/TenMinutesInEightCa
 import TenMinutesInTenCandles from '../../fixtures/candles/TenMinutesInTenCandles.json' with {type: 'json'};
 import TenMinutesMissingEnd from '../../fixtures/candles/TenMinutesMissingEnd.json' with {type: 'json'};
 import TenMinutesMissingStart from '../../fixtures/candles/TenMinutesMissingStart.json' with {type: 'json'};
+import AMD_2026_10_07_to_2026_10_08_1h from '../../fixtures/candles/AMD_2026-10-07_to_2026-10-08_1h.json' with {type: 'json'};
+import BTC_2026_10_07_to_2026_10_08_1h from '../../fixtures/candles/BTC_2026-10-07_to_2026-10-08_1h.json' with {type: 'json'};
 import hours from '../../fixtures/candles/batch/1h-in-1h.json' with {type: 'json'};
 import minutes from '../../fixtures/candles/batch/1h-in-1m.json' with {type: 'json'};
 import one_day_in_minutes from '../../fixtures/candles/candle-batcher/one_day_in_minutes.json' with {type: 'json'};
@@ -230,7 +232,7 @@ describe('CandleBatcher', () => {
       expect(batch?.volume.toString()).toBe('8481.612');
     });
 
-    it('drops the first batch when the first candle arrives mid-interval', () => {
+    it('closes a 5-minute interval when 5 minutes are over and candles are missing in the start', () => {
       const cb = new CandleBatcher(ms('5m'));
       const batchedCandles: BatchedCandle[] = [];
 
@@ -241,10 +243,48 @@ describe('CandleBatcher', () => {
         }
       });
 
+      expect(batchedCandles[0].openTimeInISO).toBe('2021-05-25T08:00:00.000Z');
+      expect(batchedCandles[0].openTimeInMillis).toBe(1621929600000);
+      // First batch consists only of 2 candles (08:03 & 08:04)
+      expect(batchedCandles[0].medianPrice.valueOf()).toBe('610.85');
+
+      expect(batchedCandles[1].openTimeInISO).toBe('2021-05-25T08:05:00.000Z');
+      expect(batchedCandles[1].openTimeInMillis).toBe(1621929900000);
+    });
+
+    it('emits the first trading day although the market opens hours after midnight UTC', () => {
+      const cb = new CandleBatcher(ms('1d'));
+      const days = AMD_2026_10_07_to_2026_10_08_1h.map(candle => cb.addToBatch(candle)).filter(
+        day => day !== undefined
+      );
+
+      expect(days, 'the 2026-10-07 session completes when the first 2026-10-08 bar arrives').toHaveLength(1);
+      expect(days[0].openTimeInISO).toBe('2026-10-07T00:00:00.000Z');
       expect(
-        batchedCandles.map(batch => batch.openTimeInISO),
-        'the 08:00 batch only saw 08:03 and 08:04, so it is not emitted'
-      ).toEqual(['2021-05-25T08:05:00.000Z']);
+        [days[0].high.toFixed(), days[0].low.toFixed(), days[0].close.toFixed()],
+        "matches high, low and close of Alpaca's daily bar for 2026-10-07"
+      ).toEqual(['648.31', '633.965', '645.905']);
+    });
+
+    it('emits each day of a market that trades around the clock with its last hourly bar', () => {
+      const cb = new CandleBatcher(ms('1d'));
+      const days = BTC_2026_10_07_to_2026_10_08_1h.map(candle => cb.addToBatch(candle)).filter(
+        day => day !== undefined
+      );
+
+      expect(
+        days.map(day => [
+          day.openTimeInISO,
+          day.open.toFixed(),
+          day.high.toFixed(),
+          day.low.toFixed(),
+          day.close.toFixed(),
+        ]),
+        "matches Alpaca's daily bars for 2026-10-07 and 2026-10-08"
+      ).toEqual([
+        ['2026-10-07T00:00:00.000Z', '85548.51', '85598.935', '82736.345', '83280.89'],
+        ['2026-10-08T00:00:00.000Z', '83265.72', '83486.65', '80319.2', '81692.5065'],
+      ]);
     });
 
     it('closes a 5-minute interval when 5 minutes are over and last candle is missing', () => {
