@@ -1,6 +1,5 @@
 import {z} from 'zod';
-import type {AlpacaAPI} from '@typedtrader/exchange';
-import type {Bar} from '@typedtrader/exchange';
+import {AlpacaAPI, type Bar} from '@typedtrader/exchange';
 import {ER} from 'trading-signals';
 import {MESSAGE_BREAK, Report} from '../report/Report.js';
 import {SP500_TICKERS} from '../util/sp500Tickers.js';
@@ -143,6 +142,7 @@ export class ScalpScannerReport extends Report<ScalpScannerConfig> {
 
     do {
       const response = await this.#api.getStockBars({
+        adjustment: AlpacaAPI.CONTINUOUS_PRICE_ADJUSTMENT,
         end: end.toISOString(),
         feed: 'iex',
         limit: 10_000,

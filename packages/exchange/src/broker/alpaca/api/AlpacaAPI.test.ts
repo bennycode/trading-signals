@@ -165,3 +165,19 @@ describe('AlpacaAPI hosts', () => {
     expect(createdBaseURLs(false)).toEqual(['https://api.alpaca.markets', 'https://data.alpaca.markets']);
   });
 });
+
+describe('CONTINUOUS_PRICE_ADJUSTMENT', () => {
+  it('corrects the corporate actions that break a price series', () => {
+    expect(
+      AlpacaAPI.CONTINUOUS_PRICE_ADJUSTMENT.split(','),
+      'splits and spin-offs restate the share count, so an unadjusted series shows a cliff that was never traded'
+    ).toEqual(['split', 'spin-off']);
+  });
+
+  it('leaves cash dividends in place', () => {
+    expect(
+      AlpacaAPI.CONTINUOUS_PRICE_ADJUSTMENT,
+      'adjusting for dividends invents prices that never traded and rewrites history on every payout'
+    ).not.toContain('dividend');
+  });
+});

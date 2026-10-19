@@ -12,6 +12,8 @@ const mockMethods = {
 
 vi.mock(import('./api/AlpacaAPI.js'), () => ({
   AlpacaAPI: class {
+    // A stub class has no statics of its own, and the candle request reads this one off the class.
+    static CONTINUOUS_PRICE_ADJUSTMENT = 'split,spin-off' as const;
     getCryptoBarsLatest = mockMethods.getCryptoBarsLatest;
     getStockBars = mockMethods.getStockBars;
     getStockBarsLatest = mockMethods.getStockBarsLatest;
@@ -61,6 +63,21 @@ describe('AlpacaMarketData', () => {
         await fetchFeed(),
         'historical bars default to SIP, which refuses the last 15 minutes to a free plan'
       ).toBe('iex');
+    });
+
+    it('asks for prices that stay continuous across splits and spin-offs', async () => {
+      mockMethods.getStockBarsLatest.mockResolvedValue({bars: {}});
+
+      await new AlpacaMarketData(credentials).getCandles(pair, {
+        intervalInMillis: 86_400_000,
+        startTimeFirstCandle: '2025-12-01T00:00:00.000Z',
+        startTimeLastCandle: '2025-12-02T00:00:00.000Z',
+      });
+
+      expect(
+        mockMethods.getStockBars.mock.calls.at(-1)?.[0].adjustment,
+        'Alpaca adjusts nothing unless asked, so a 2:1 split reaches every indicator as a 50% crash'
+      ).toBe('split,spin-off');
     });
   });
 
