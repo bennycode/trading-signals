@@ -18,7 +18,7 @@ export const Trading212OrderTypeSchema = z.enum(['MARKET', 'LIMIT', 'STOP', 'STO
 
 export const Trading212OrderStrategySchema = z.enum(['QUANTITY', 'VALUE']);
 
-export const Trading212TimeValiditySchema = z.enum(['DAY', 'GTC']);
+export const Trading212TimeValiditySchema = z.enum(['DAY', 'GOOD_TILL_CANCEL']);
 
 export const Trading212OrderStatus = {
   CANCELLED: 'CANCELLED',
@@ -36,7 +36,8 @@ export const Trading212OrderStatus = {
 
 export const Trading212TimeValidity = {
   DAY: 'DAY',
-  GTC: 'GTC',
+  /** Trading212 spells this one out in full; `GTC` is answered with "Invalid payload". */
+  GOOD_TILL_CANCEL: 'GOOD_TILL_CANCEL',
 } as const;
 
 export const OrderSchema = z.looseObject({
