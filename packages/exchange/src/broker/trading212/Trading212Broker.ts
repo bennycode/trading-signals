@@ -357,17 +357,17 @@ export class Trading212Broker extends Broker implements MarketDataSource {
 
     if (options.type === OrderType.LIMIT) {
       /*
-       * The API's token for "good till cancel" is `GOOD_TILL_CANCEL`; `GTC` is answered with
-       * "Invalid payload", which is what once made DAY look like the only accepted validity.
-       * DAY is still what this method sends, so a limit order never rests beyond the session.
-       * The limit endpoint rejects `extendedHours` whatever the instrument allows; only the
-       * market endpoint below accepts it.
+       * A limit order rests until it fills or is cancelled, matching what `AlpacaBroker` sends for
+       * whole-share orders and what a strategy waiting on a limit fill across sessions expects.
+       * Trading212 takes the validity for fractional quantities too, so unlike Alpaca there is
+       * nothing to decide per order here. The limit endpoint rejects `extendedHours` whatever the
+       * instrument allows; only the market endpoint below accepts it.
        */
       const order = await this.#api.placeLimitOrder({
         limitPrice: Number(options.price),
         quantity: signedQuantity,
         ticker: pair.base,
-        timeValidity: Trading212TimeValidity.DAY,
+        timeValidity: Trading212TimeValidity.GOOD_TILL_CANCEL,
       });
       return Trading212BrokerMapper.toPendingOrder(order, pair, options);
     }
