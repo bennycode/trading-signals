@@ -3,6 +3,7 @@ import Big from 'big.js';
 import {ms} from 'ms';
 import {
   Broker,
+  OrderLifetime,
   OrderPosition,
   OrderSide,
   OrderType,
@@ -17,6 +18,8 @@ import {
   type PendingLimitOrder,
   type PendingMarketOrder,
   type PendingOrder,
+  type PendingStopOrder,
+  type StopOrderOptions,
   type TradingRules,
 } from '../Broker.js';
 import {TradingPair} from '../TradingPair.js';
@@ -39,6 +42,7 @@ export class Trading212Broker extends Broker implements MarketDataSource {
   static readonly DEFAULT_FEE_RATES: FeeRate = {
     [OrderType.LIMIT]: new Big(0),
     [OrderType.MARKET]: new Big(0),
+    [OrderType.STOP]: new Big(0),
   };
 
   /**
@@ -272,8 +276,8 @@ export class Trading212Broker extends Broker implements MarketDataSource {
     const orders = await this.#api.getOrders();
     /*
      * Drop orders that don't fit the neutral model:
-     * - STOP / STOP_LIMIT (e.g. placed manually in the Trading212 app): neutral `OrderType`
-     *   only models MARKET and LIMIT; coercing would silently lose `stopPrice`.
+     * - STOP_LIMIT: neutral `OrderType` has no equivalent, and reporting it as a plain STOP would
+     *   lose the limit price the order would place once triggered.
      * - VALUE-strategy orders (notional amount in `value` instead of `quantity`): neutral
      *   `PendingOrder.size` is base-asset units, not notional. Filter to QUANTITY-strategy
      *   orders only.
@@ -281,7 +285,9 @@ export class Trading212Broker extends Broker implements MarketDataSource {
     return orders
       .filter(
         order =>
-          order.ticker === pair.base && (order.type === 'MARKET' || order.type === 'LIMIT') && order.quantity != null
+          order.ticker === pair.base &&
+          (order.type === 'MARKET' || order.type === 'LIMIT' || order.type === 'STOP') &&
+          order.quantity != null
       )
       .map(order => Trading212BrokerMapper.toOpenOrder(order, pair));
   }
@@ -345,6 +351,15 @@ export class Trading212Broker extends Broker implements MarketDataSource {
     return accountInfo.currencyCode;
   }
 
+  /**
+   * Trading212 takes either validity for fractional quantities as well, so an omitted lifetime
+   * rests the order rather than letting it expire at the close.
+   */
+  private static toTimeValidity(lifetime: OrderLifetime | undefined) {
+    return lifetime === OrderLifetime.SESSION ? Trading212TimeValidity.DAY : Trading212TimeValidity.GOOD_TILL_CANCEL;
+  }
+
+  protected override async placeOrder(pair: TradingPair, options: StopOrderOptions): Promise<PendingStopOrder>;
   protected override async placeOrder(pair: TradingPair, options: LimitOrderOptions): Promise<PendingLimitOrder>;
   protected override async placeOrder(pair: TradingPair, options: MarketOrderOptions): Promise<PendingMarketOrder>;
   protected override async placeOrder(pair: TradingPair, options: OrderOptions): Promise<PendingOrder> {
@@ -357,17 +372,24 @@ export class Trading212Broker extends Broker implements MarketDataSource {
 
     if (options.type === OrderType.LIMIT) {
       /*
-       * A limit order rests until it fills or is cancelled, matching what `AlpacaBroker` sends for
-       * whole-share orders and what a strategy waiting on a limit fill across sessions expects.
-       * Trading212 takes the validity for fractional quantities too, so unlike Alpaca there is
-       * nothing to decide per order here. The limit endpoint rejects `extendedHours` whatever the
-       * instrument allows; only the market endpoint below accepts it.
+       * The limit endpoint rejects `extendedHours` whatever the instrument allows; only the market
+       * endpoint below accepts it.
        */
       const order = await this.#api.placeLimitOrder({
         limitPrice: Number(options.price),
         quantity: signedQuantity,
         ticker: pair.base,
-        timeValidity: Trading212TimeValidity.GOOD_TILL_CANCEL,
+        timeValidity: Trading212Broker.toTimeValidity(options.lifetime),
+      });
+      return Trading212BrokerMapper.toPendingOrder(order, pair, options);
+    }
+
+    if (options.type === OrderType.STOP) {
+      const order = await this.#api.placeStopOrder({
+        quantity: signedQuantity,
+        stopPrice: Number(options.stopPrice),
+        ticker: pair.base,
+        timeValidity: Trading212Broker.toTimeValidity(options.lifetime),
       });
       return Trading212BrokerMapper.toPendingOrder(order, pair, options);
     }
