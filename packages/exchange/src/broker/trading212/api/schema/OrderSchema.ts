@@ -36,7 +36,6 @@ export const Trading212OrderStatus = {
 
 export const Trading212TimeValidity = {
   DAY: 'DAY',
-  /** Trading212 spells this one out in full; `GTC` is answered with "Invalid payload". */
   GOOD_TILL_CANCEL: 'GOOD_TILL_CANCEL',
 } as const;
 
@@ -51,7 +50,6 @@ export const OrderSchema = z.looseObject({
   stopPrice: z.number().nullish(),
   strategy: Trading212OrderStrategySchema,
   ticker: z.string(),
-  /** Responses name the validity `timeInForce`, while requests send it as `timeValidity`. */
   timeInForce: Trading212TimeValiditySchema.nullish(),
   type: Trading212OrderTypeSchema,
   value: z.number().nullish(),
