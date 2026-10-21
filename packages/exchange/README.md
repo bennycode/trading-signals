@@ -40,6 +40,18 @@ More brokers are planned, and the `Broker` abstraction is built for it (see [Bri
 
 You create the API keys yourself in each broker's dashboard. The package uses your credentials but never creates accounts or keys for you: [Alpaca API keys](https://docs.alpaca.markets/us/docs/getting-started) · [Trading212 API keys](https://helpcentre.trading212.com/hc/en-us/articles/14584770928157-Trading-212-API-key)
 
+### API Specifications
+
+Both brokers publish machine-readable OpenAPI documents. They are the source of truth for the wire formats this package maps, so reach for them when extending a client or checking a schema against what the broker really returns.
+
+| broker | document | covers |
+| --- | --- | --- |
+| `trading212` | [api.json](https://docs.trading212.com/_bundle/api.json) | the whole public API: orders, positions, pies, history, metadata |
+| `alpaca` | [Trader API](https://dash.readme.com/api/v1/api-registry/p2k4b2qltotv8ji) | account, orders, positions, clock, calendar |
+| `alpaca` | [Market Data API](https://dash.readme.com/api/v1/api-registry/h2b341mfb3htc6) | bars, quotes, trades, snapshots |
+
+Trading212 serves one bundled document that tracks the current API, and it states each endpoint's rate limit in the endpoint description. Alpaca's are version-pinned snapshots out of its documentation registry, so when one of those links goes stale, [docs.alpaca.markets/openapi](https://docs.alpaca.markets/openapi) is the place to pick a current one — it lists every API and version, the Broker API included.
+
 ## Quick Start: Alpaca
 
 ```ts
