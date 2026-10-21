@@ -46,6 +46,8 @@
     "trading212:buy:op": "op run --env-file=../../.env.op -- npm run trading212:buy",
     "trading212:listBalances": "tsx --import ../../loadEnv.ts src/broker/trading212/demo/listBalances.ts",
     "trading212:listBalances:op": "op run --env-file=../../.env.op -- npm run trading212:listBalances",
+    "trading212:stopLoss": "tsx --import ../../loadEnv.ts src/broker/trading212/placeStopLoss.ts",
+    "trading212:stopLoss:op": "op run --env-file=../../.env.op -- npm run trading212:stopLoss --",
     "trading212:testAll": "tsx --import ../../loadEnv.ts src/broker/trading212/demo/testAll.ts",
     "trading212:testAll:op": "op run --env-file=../../.env.op -- npm run trading212:testAll",
     "build": "tsc -p tsconfig.build.json",

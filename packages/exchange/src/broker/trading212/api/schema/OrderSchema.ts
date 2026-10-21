@@ -51,6 +51,8 @@ export const OrderSchema = z.looseObject({
   stopPrice: z.number().nullish(),
   strategy: Trading212OrderStrategySchema,
   ticker: z.string(),
+  /** Responses name the validity `timeInForce`, while requests send it as `timeValidity`. */
+  timeInForce: Trading212TimeValiditySchema.nullish(),
   type: Trading212OrderTypeSchema,
   value: z.number().nullish(),
 });
@@ -74,6 +76,15 @@ export const PlaceLimitOrderRequestSchema = z.object({
   timeValidity: Trading212TimeValiditySchema,
 });
 
+export const PlaceStopOrderRequestSchema = z.object({
+  /** Negative sells, positive buys — the sign is the only thing that carries the side. */
+  quantity: z.number(),
+  stopPrice: z.number(),
+  ticker: z.string(),
+  timeValidity: Trading212TimeValiditySchema,
+});
+
 export type Order = z.infer<typeof OrderSchema>;
 export type PlaceMarketOrderRequest = z.infer<typeof PlaceMarketOrderRequestSchema>;
 export type PlaceLimitOrderRequest = z.infer<typeof PlaceLimitOrderRequestSchema>;
+export type PlaceStopOrderRequest = z.infer<typeof PlaceStopOrderRequestSchema>;
