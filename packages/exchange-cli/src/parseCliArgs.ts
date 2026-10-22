@@ -13,6 +13,7 @@ interface Options {
   limit?: string;
   live?: boolean;
   poll?: number;
+  stop?: string;
   take?: number;
   timeout?: number;
 }
@@ -115,9 +116,18 @@ export function parseCliArgs(argv: string[]) {
   command('orders <ticker>', 'Open orders');
   command('fills <ticker>', 'Order fills');
   for (const side of ['buy', 'sell']) {
-    command(`${side} <ticker>`, 'Place a market or limit order')
+    command(`${side} <ticker>`, 'Place a market, limit or stop order')
       .addArgument(new Argument('<quantity>', 'Positive quantity').argParser(positiveDecimal))
       .option('--limit <price>', 'Limit price', positiveDecimal)
+      /*
+       * A broker that takes both at once treats the pair as a stop-limit order, which the neutral
+       * Broker has no representation for, so the combination is refused instead of half-honoured.
+       */
+      .addOption(
+        new Option('--stop <price>', 'Stop price; triggers a market order')
+          .argParser(positiveDecimal)
+          .conflicts('limit')
+      )
       .option('--dry-run', 'Check trading rules and estimate fees');
   }
   command('wait <ticker> <orderId>', 'Wait for a fill or for the order to close')

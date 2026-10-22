@@ -10,6 +10,7 @@ class TestExchangeMock extends BrokerMock {
   static readonly TEST_FEE_RATES: FeeRate = {
     [OrderType.LIMIT]: new Big(0.0015),
     [OrderType.MARKET]: new Big(0.0025),
+    [OrderType.STOP]: new Big(0.0025),
   };
 
   static readonly TEST_TRADING_RULES = {
@@ -76,6 +77,49 @@ function createExchange(baseAmount: string, counterAmount: string, slippage?: Br
 }
 
 describe('BrokerMock', () => {
+  describe('stop orders', () => {
+    it('rests while the candle stays clear of the stop', async () => {
+      const exchange = createExchange('1', '1000');
+      await exchange.placeStopOrder(pair, {side: OrderSide.SELL, size: '1', stopPrice: '90'});
+
+      const fills = exchange.processCandle(createCandle({close: '98', high: '100', low: '95', open: '96'}));
+
+      expect(fills, 'the market never traded down to 90').toEqual([]);
+      expect(await exchange.getOpenOrders(pair)).toHaveLength(1);
+    });
+
+    it('fills at the stop once the candle trades through it', async () => {
+      const exchange = createExchange('1', '1000');
+      await exchange.placeStopOrder(pair, {side: OrderSide.SELL, size: '1', stopPrice: '90'});
+
+      const fills = exchange.processCandle(createCandle({close: '95', high: '100', low: '85', open: '100'}));
+
+      expect(fills).toHaveLength(1);
+      expect(fills[0]?.price).toBe('90');
+      expect(fills[0]?.fee, 'a triggered stop is charged the taker rate, not the maker rate').toBe(
+        new Big(1).mul(90).mul(TestExchangeMock.TEST_FEE_RATES[OrderType.STOP]).toFixed()
+      );
+    });
+
+    it('fills at the open when the candle gapped straight past the stop', async () => {
+      const exchange = createExchange('1', '1000');
+      await exchange.placeStopOrder(pair, {side: OrderSide.SELL, size: '1', stopPrice: '90'});
+
+      const fills = exchange.processCandle(createCandle({close: '79', high: '82', low: '78', open: '80'}));
+
+      expect(fills[0]?.price, 'a gap down fills below the stop, which is the risk a stop carries').toBe('80');
+    });
+
+    it('triggers a buy stop on the way up', async () => {
+      const exchange = createExchange('0', '1000');
+      await exchange.placeStopOrder(pair, {side: OrderSide.BUY, size: '1', stopPrice: '110'});
+
+      const fills = exchange.processCandle(createCandle({close: '112', high: '115', low: '100', open: '100'}));
+
+      expect(fills[0]?.price).toBe('110');
+    });
+  });
+
   describe('getRecentCandles', () => {
     const ONE_DAY = ms('1d');
     const firstDay = Date.UTC(2025, 0, 1);

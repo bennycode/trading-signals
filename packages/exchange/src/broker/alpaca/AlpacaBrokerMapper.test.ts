@@ -13,7 +13,6 @@ import type {BatchedCandle} from '../../candle/BatchedCandle.js';
 import {CandleBatcher} from '../../candle/CandleBatcher.js';
 import {TradingPair} from '../TradingPair.js';
 import {OrderPosition, OrderSide} from '../Broker.js';
-
 describe('AlpacaBrokerMapper', () => {
   describe('mapInterval', () => {
     it('maps milliseconds into Alpaca-specific bar aggregation timeframes', () => {

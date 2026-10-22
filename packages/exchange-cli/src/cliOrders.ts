@@ -5,11 +5,14 @@ import {OrderType, type Broker, type MarketDataSource, type OrderSide, type Trad
 export async function placeCliOrder(
   broker: Broker & MarketDataSource,
   pair: TradingPair,
-  order: {side: OrderSide; size: string; limit?: string; dryRun?: boolean}
+  order: {side: OrderSide; size: string; limit?: string; stop?: string; dryRun?: boolean}
 ) {
-  const {side, size, limit, dryRun} = order;
+  const {side, size, limit, stop, dryRun} = order;
   if (dryRun) {
-    return previewOrder(broker, pair, side, size, limit);
+    return previewOrder(broker, pair, side, size, limit, stop);
+  }
+  if (stop) {
+    return broker.placeStopOrder(pair, {side, size, stopPrice: stop});
   }
   return limit
     ? broker.placeLimitOrder(pair, {price: limit, side, size})
@@ -21,7 +24,8 @@ async function previewOrder(
   pair: TradingPair,
   side: OrderSide,
   size: string,
-  limit?: string
+  limit?: string,
+  stop?: string
 ) {
   const quantity = new Big(size);
   const rules = await broker.getTradingRules(pair);
@@ -31,21 +35,29 @@ async function previewOrder(
   if (new Big(rules.base_increment).gt(0) && !quantity.mod(rules.base_increment).eq(0)) {
     throw new Error(`Quantity must be a multiple of ${rules.base_increment}.`);
   }
-  const price = limit
-    ? new Big(limit)
+  /*
+   * A limit price is where the order fills; a stop price is only where it triggers, and the fill
+   * that follows is a market order. Both are prices the broker has to accept on submission, so
+   * both are checked against the increment, but the estimate below is what a stop would cost if
+   * it filled at its trigger rather than a promise that it will.
+   */
+  const restingPrice = limit ?? stop;
+  const price = restingPrice
+    ? new Big(restingPrice)
     : new Big((await broker.getLatestCandle(pair, broker.getSmallestInterval())).close);
-  if (limit && new Big(rules.counter_increment).gt(0) && !price.mod(rules.counter_increment).eq(0)) {
-    throw new Error(`Limit price must be a multiple of ${rules.counter_increment}.`);
+  if (restingPrice && new Big(rules.counter_increment).gt(0) && !price.mod(rules.counter_increment).eq(0)) {
+    throw new Error(`${limit ? 'Limit' : 'Stop'} price must be a multiple of ${rules.counter_increment}.`);
   }
   const notional = price.times(quantity);
   if (notional.lt(rules.counter_min_size)) {
     throw new Error(`Order value must be at least ${rules.counter_min_size} ${pair.counter}.`);
   }
+  const type = stop ? OrderType.STOP : limit ? OrderType.LIMIT : OrderType.MARKET;
   return {
     dryRun: true,
-    estimatedFee: await broker.estimateFee(pair, limit ? OrderType.LIMIT : OrderType.MARKET, notional),
+    estimatedFee: await broker.estimateFee(pair, type, notional),
     estimatedNotional: notional,
-    order: {pair, price: limit, side, size, type: limit ? OrderType.LIMIT : OrderType.MARKET},
+    order: {pair, side, size, type, ...(limit ? {price: limit} : {}), ...(stop ? {stopPrice: stop} : {})},
     rules,
   };
 }

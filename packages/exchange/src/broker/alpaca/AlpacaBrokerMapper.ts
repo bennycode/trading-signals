@@ -11,10 +11,11 @@ import type {
   PendingLimitOrder,
   PendingMarketOrder,
   PendingOrder,
+  PendingStopOrder,
 } from '../Broker.js';
 import {PositionSide, type Position} from './api/schema/PositionSchema.js';
-import type {AlpacaAPI} from './api/AlpacaAPI.js';
-import {OrderPosition, OrderSide, OrderType} from '../Broker.js';
+import type {PostOrderRequest} from './api/AlpacaAPI.js';
+import {OrderLifetime, OrderPosition, OrderSide, OrderType} from '../Broker.js';
 
 export class AlpacaBrokerMapper {
   static mapInterval(intervalInMillis: number) {
@@ -47,6 +48,17 @@ export class AlpacaBrokerMapper {
   }
 
   static toPendingOrder(order: Order, pair: TradingPair, options: OrderOptions) {
+    if (order.type === 'stop') {
+      const pendingOrder: PendingStopOrder = {
+        id: order.id,
+        pair,
+        side: options.side,
+        size: `${order.qty}`,
+        stopPrice: `${order.stop_price}`,
+        type: OrderType.STOP,
+      };
+      return pendingOrder;
+    }
     if (order.type === 'market') {
       const pendingOrder: PendingMarketOrder = {
         id: order.id,
@@ -81,6 +93,18 @@ export class AlpacaBrokerMapper {
 
   static toOpenOrder(order: Order, pair: TradingPair): PendingOrder {
     const side = order.side === 'buy' ? OrderSide.BUY : OrderSide.SELL;
+
+    if (order.type === 'stop') {
+      const pendingOrder: PendingStopOrder = {
+        id: order.id,
+        pair,
+        side,
+        size: `${order.qty}`,
+        stopPrice: `${order.stop_price}`,
+        type: OrderType.STOP,
+      };
+      return pendingOrder;
+    }
 
     if (order.type === 'market') {
       const pendingOrder: PendingMarketOrder = {
@@ -145,31 +169,74 @@ export class AlpacaBrokerMapper {
     };
   }
 
+  /**
+   * Alpaca accepts only one validity for some orders, so an explicit {@link OrderLifetime} it
+   * cannot honour is refused instead of quietly downgraded — a caller that asked for a resting
+   * order and silently got one expiring at the close has no way to notice.
+   *
+   * Crypto orders cannot use 'day' and must be placed with 'gtc' (error code: 42210000).
+   * Stock fractional and notional orders must use 'day' (error code: 42210000), whole share orders
+   * can use either. A fractional stop is refused with 'gtc' too ("stop/stop_limit fractional GTC
+   * orders are not enabled").
+   *
+   * @see https://docs.alpaca.markets/docs/fractional-trading
+   */
+  private static toTimeInForce(
+    lifetime: OrderLifetime | undefined,
+    isCrypto: boolean,
+    isFractional: boolean
+  ): 'day' | 'gtc' {
+    if (isCrypto) {
+      if (lifetime === OrderLifetime.SESSION) {
+        throw new Error('Alpaca rejects day validity for crypto orders, so SESSION cannot be honoured.');
+      }
+      return 'gtc';
+    }
+
+    if (isFractional) {
+      if (lifetime === OrderLifetime.UNTIL_CANCELLED) {
+        throw new Error(
+          'Alpaca accepts a fractional or notional order only with day validity, so UNTIL_CANCELLED cannot be honoured. Send a whole-share size instead.'
+        );
+      }
+      return 'day';
+    }
+
+    return lifetime === OrderLifetime.SESSION ? 'day' : 'gtc';
+  }
+
   static toOrderRequest(
     options: OrderOptions,
     symbol: string,
     isCrypto: boolean,
     clientOrderId: string
-  ): Parameters<AlpacaAPI['postOrder']>[0] {
-    /*
-     * Crypto orders cannot use 'day' and must be placed with 'gtc' (error code: 42210000)
-     * Stock fractional and notional orders must use 'day' (error code: 42210000), whole share orders can use 'gtc'
-     * @see https://docs.alpaca.markets/docs/fractional-trading
-     */
+  ): PostOrderRequest {
     const isFractional = options.sizeInCounter || options.size.includes('.');
-    const time_in_force = isCrypto || !isFractional ? 'gtc' : 'day';
-    const isLimit = options.type === OrderType.LIMIT;
+    const lifetime = 'lifetime' in options ? options.lifetime : undefined;
+    const time_in_force = AlpacaBrokerMapper.toTimeInForce(lifetime, isCrypto, isFractional);
 
-    return {
+    const base = {
       client_order_id: clientOrderId,
       side: options.side === OrderSide.BUY ? 'buy' : 'sell',
       symbol,
       time_in_force,
-      type: isLimit ? 'limit' : 'market',
       ...(options.sizeInCounter ? {notional: options.size} : {qty: options.size}),
-      ...(isLimit ? {limit_price: options.price} : {}),
-      // @see https://docs.alpaca.markets/docs/orders-at-alpaca#submitting-an-extended-hours-eligible-order
-      ...(isLimit && time_in_force === 'day' ? {extended_hours: true} : {}),
     };
+
+    if (options.type === OrderType.STOP) {
+      return {...base, stop_price: options.stopPrice, type: 'stop'};
+    }
+
+    if (options.type === OrderType.LIMIT) {
+      return {
+        ...base,
+        limit_price: options.price,
+        type: 'limit',
+        // @see https://docs.alpaca.markets/docs/orders-at-alpaca#submitting-an-extended-hours-eligible-order
+        ...(time_in_force === 'day' ? {extended_hours: true} : {}),
+      };
+    }
+
+    return {...base, type: 'market'};
   }
 }

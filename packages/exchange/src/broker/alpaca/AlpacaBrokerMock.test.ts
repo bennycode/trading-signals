@@ -49,7 +49,7 @@ describe('AlpacaBrokerMock', () => {
         ['BTC', {available: new Big(0), hold: new Big(0)}],
         ['USD', {available: new Big(10000), hold: new Big(0)}],
       ]),
-      feeRates: {[OrderType.LIMIT]: new Big(0), [OrderType.MARKET]: new Big(0)},
+      feeRates: {[OrderType.LIMIT]: new Big(0), [OrderType.MARKET]: new Big(0), [OrderType.STOP]: new Big(0)},
       slippage: {rate: new Big('0.01')},
     });
 
@@ -71,7 +71,7 @@ describe('AlpacaBrokerMock', () => {
         ['BTC', {available: new Big(0), hold: new Big(0)}],
         ['USD', {available: new Big(10000), hold: new Big(0)}],
       ]),
-      feeRates: {[OrderType.LIMIT]: new Big(0), [OrderType.MARKET]: new Big(0)},
+      feeRates: {[OrderType.LIMIT]: new Big(0), [OrderType.MARKET]: new Big(0), [OrderType.STOP]: new Big(0)},
     });
 
     exchange.processCandle(createCandle({close: '100', open: '100'}));

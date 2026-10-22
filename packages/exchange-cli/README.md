@@ -21,6 +21,7 @@ exchange-cli instruments rolls --broker trading212
 exchange-cli orders RRl_EQ --broker trading212 --counter GBX
 exchange-cli buy AAPL 1 --broker alpaca --limit 100 --dry-run
 exchange-cli buy AAPL 1 --broker alpaca --limit 100
+exchange-cli sell AAPL 1 --broker alpaca --stop 90
 exchange-cli wait AAPL <orderId> --broker alpaca --timeout 5m
 exchange-cli cancel AAPL <orderId> --broker alpaca
 exchange-cli candles AAPL --broker alpaca --count 10 --interval 5m
@@ -44,8 +45,8 @@ The command resolves the installed executable, so it works the same for a global
 | `rules <ticker>` | Show trading rules for a ticker. |
 | `orders <ticker>` | List open orders for a ticker. |
 | `fills <ticker>` | List order fills for a ticker. |
-| `buy <ticker> <quantity>` | Place a market buy, or use `--limit <price>` for a limit order. |
-| `sell <ticker> <quantity>` | Place a market sell, or use `--limit <price>` for a limit order. |
+| `buy <ticker> <quantity>` | Place a market buy, or use `--limit <price>` for a limit order and `--stop <price>` for a stop order. |
+| `sell <ticker> <quantity>` | Place a market sell, or use `--limit <price>` for a limit order and `--stop <price>` for a stop order. |
 | `cancel <ticker> <orderId>` | Request cancellation of one order; use `--all` instead of the order ID to target all open orders for the ticker. |
 | `wait <ticker> <orderId>` | Wait for a fill or for the order to close. |
 | `candles <ticker>` | Fetch recent candles. |
@@ -70,4 +71,8 @@ $ exchange-cli instruments apple --broker trading212 | jq -c '.[] | select(.tick
 {"currency":"USD","exchange":"NASDAQ","extendedHours":true,"isin":"US0378331005","name":"Apple","ticker":"AAPL_US_EQ"}
 ```
 
-`--dry-run` checks quantity rules, the limit-price increment, and the minimum order value, then returns the broker's fee estimate without submitting an order; it does not guarantee acceptance. A `wait` timeout leaves the order open. Streaming runs until Ctrl-C unless `--take` is supplied.
+`--limit` and `--stop` cannot be combined, because the brokers would read the pair as a stop-limit order and the neutral `Broker` has no representation for one.
+
+A stop order rests until the market trades through `--stop <price>`, then executes at whatever the market offers, so the price you set is the trigger and not the price you get. The CLI does not check that the trigger sits on the correct side of the current price: a sell stop placed above the market, or a buy stop below it, triggers on submission and becomes an immediate market order. Trading212 accepts such an order without complaint, and the CLI has no market data for Trading212 to compare against, so check the direction yourself with `quote`.
+
+`--dry-run` checks quantity rules, the limit or stop price increment, and the minimum order value, then returns the broker's fee estimate without submitting an order; it does not guarantee acceptance. For a stop it values the order at the trigger price, which the actual fill can miss. A `wait` timeout leaves the order open. Streaming runs until Ctrl-C unless `--take` is supplied.

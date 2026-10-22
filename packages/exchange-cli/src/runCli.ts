@@ -85,6 +85,7 @@ export async function runCli(argv: string[], overrides: Partial<CliDeps> = {}): 
             limit: values.limit,
             side: command === 'buy' ? OrderSide.BUY : OrderSide.SELL,
             size: args[1],
+            stop: values.stop,
           }),
         };
       }

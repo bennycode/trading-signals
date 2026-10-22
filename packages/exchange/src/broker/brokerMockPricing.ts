@@ -23,6 +23,32 @@ export function marketFillPrice(side: OrderSide, candle: CandleRange, slippageRa
 }
 
 /**
+ * A stop sell triggers once the candle trades at or below its stop, a stop buy once it trades at or
+ * above. Triggering turns the order into a taker order, so the fill pays slippage from the trigger
+ * price rather than resting at it. A candle that opened already past the stop triggers at its open,
+ * which is how a stop-loss ends up filling well below where it was set.
+ *
+ * Returns `null` when the candle never reached the stop.
+ */
+export function stopFillPrice(side: OrderSide, stopPrice: Big, candle: CandleRange, slippageRate: Big, clamp: boolean) {
+  if (side === OrderSide.SELL) {
+    if (candle.low.gt(stopPrice)) {
+      return null;
+    }
+    const triggerPrice = candle.open.lt(stopPrice) ? candle.open : stopPrice;
+    const slipped = triggerPrice.mul(new Big(1).minus(slippageRate));
+    return clamp && slipped.lt(candle.low) ? candle.low : slipped;
+  }
+
+  if (candle.high.lt(stopPrice)) {
+    return null;
+  }
+  const triggerPrice = candle.open.gt(stopPrice) ? candle.open : stopPrice;
+  const slipped = triggerPrice.mul(new Big(1).plus(slippageRate));
+  return clamp && slipped.gt(candle.high) ? candle.high : slipped;
+}
+
+/**
  * A limit buy fills once the candle trades at or below its price, a limit sell once it
  * trades at or above. Either way the fill gets price improvement from the candle open.
  * Returns `null` when the candle never reached the limit.

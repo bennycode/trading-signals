@@ -12,6 +12,8 @@ import {
   type PendingLimitOrder,
   type PendingMarketOrder,
   type PendingOrder,
+  type PendingStopOrder,
+  type StopOrderOptions,
   type TradingRules,
 } from '../Broker.js';
 import type {Instrument} from './api/schema/InstrumentSchema.js';
@@ -31,6 +33,7 @@ import {Trading212OrderStatus} from './api/schema/OrderSchema.js';
  * VALUE-strategy orders (placed via the Trading212 app) carry it in `value`/`orderedValue`/`filledValue`.
  */
 export class Trading212BrokerMapper {
+  static toPendingOrder(order: Order, pair: TradingPair, options: StopOrderOptions): PendingStopOrder;
   static toPendingOrder(order: Order, pair: TradingPair, options: LimitOrderOptions): PendingLimitOrder;
   static toPendingOrder(order: Order, pair: TradingPair, options: MarketOrderOptions): PendingMarketOrder;
   static toPendingOrder(order: Order, pair: TradingPair, options: OrderOptions): PendingOrder {
@@ -43,6 +46,20 @@ export class Trading212BrokerMapper {
       throw new Error(`Trading212 returned an order without a quantity (id: ${order.id}).`);
     }
     const size = `${Math.abs(order.quantity)}`;
+    if (options.type === OrderType.STOP) {
+      if (order.stopPrice == null) {
+        throw new Error(`Trading212 returned a STOP order without a stopPrice (id: ${order.id}).`);
+      }
+      const stop: PendingStopOrder = {
+        id: `${order.id}`,
+        pair,
+        side: options.side,
+        size,
+        stopPrice: `${order.stopPrice}`,
+        type: OrderType.STOP,
+      };
+      return stop;
+    }
     if (options.type === OrderType.LIMIT) {
       if (order.limitPrice == null) {
         throw new Error(`Trading212 returned a LIMIT order without a limitPrice (id: ${order.id}).`);
@@ -79,6 +96,21 @@ export class Trading212BrokerMapper {
     const signedSize = order.quantity;
     const side = signedSize < 0 ? OrderSide.SELL : OrderSide.BUY;
     const size = `${Math.abs(signedSize)}`;
+
+    if (order.type === 'STOP') {
+      if (order.stopPrice == null) {
+        throw new Error(`Trading212 returned a STOP order without a stopPrice (id: ${order.id}).`);
+      }
+      const stop: PendingStopOrder = {
+        id: `${order.id}`,
+        pair,
+        side,
+        size,
+        stopPrice: `${order.stopPrice}`,
+        type: OrderType.STOP,
+      };
+      return stop;
+    }
 
     if (order.type === 'LIMIT') {
       if (order.limitPrice == null) {
