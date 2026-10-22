@@ -1,6 +1,6 @@
 import axios, {AxiosError, AxiosHeaders, type AxiosResponse, type InternalAxiosRequestConfig} from 'axios';
 import {z} from 'zod';
-import {AlpacaAPI, shouldRetryAlpacaRequest} from './AlpacaAPI.js';
+import {AlpacaAPI, shouldRetryAlpacaRequest, type PostOrderRequest} from './AlpacaAPI.js';
 import type {Order} from './schema/OrderSchema.js';
 
 type Request = {method: string; url: string};
@@ -15,6 +15,25 @@ function networkError(code: string, request?: Request): AxiosError {
   const config: InternalAxiosRequestConfig = {headers: new AxiosHeaders(), ...request};
   return new AxiosError(`Network error: ${code}`, code, config);
 }
+
+describe('PostOrderRequest', () => {
+  it('rejects a validity that Alpaca refuses for stop orders', () => {
+    const base = {client_order_id: 'a', qty: '1', side: 'buy', symbol: 'AAPL'} as const;
+
+    const resting: PostOrderRequest = {...base, stop_price: '100', time_in_force: 'gtc', type: 'stop'};
+    /*
+     * Rejected because 'ioc' excludes the stop branch, leaving only market/limit — which in turn
+     * refuses the stop_price. The compiler reports it on the assignment rather than the property.
+     */
+    // @ts-expect-error Alpaca takes only day or gtc on a stop, so the type must not admit 'ioc'.
+    const immediate: PostOrderRequest = {...base, stop_price: '100', time_in_force: 'ioc', type: 'stop'};
+
+    // A plain market order may use the full set, so the narrowing has to be per order type.
+    const market: PostOrderRequest = {...base, time_in_force: 'ioc', type: 'market'};
+
+    expect([resting, immediate, market], 'the compiler, not this assertion, is the check').toHaveLength(3);
+  });
+});
 
 describe('shouldRetryAlpacaRequest', () => {
   it('retries on rate limits (HTTP 429)', () => {

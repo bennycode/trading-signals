@@ -181,7 +181,11 @@ export class AlpacaBrokerMapper {
    *
    * @see https://docs.alpaca.markets/docs/fractional-trading
    */
-  private static toTimeInForce(lifetime: OrderLifetime | undefined, isCrypto: boolean, isFractional: boolean) {
+  private static toTimeInForce(
+    lifetime: OrderLifetime | undefined,
+    isCrypto: boolean,
+    isFractional: boolean
+  ): 'day' | 'gtc' {
     if (isCrypto) {
       if (lifetime === OrderLifetime.SESSION) {
         throw new Error('Alpaca rejects day validity for crypto orders, so SESSION cannot be honoured.');

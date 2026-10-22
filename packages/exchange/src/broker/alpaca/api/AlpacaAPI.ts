@@ -5,7 +5,7 @@ import {AccountSchema} from './schema/AccountSchema.js';
 import {AssetSchema} from './schema/AssetSchema.js';
 import {BarsResponseSchema, LatestBarsResponseSchema} from './schema/BarSchema.js';
 import {ClockSchema} from './schema/ClockSchema.js';
-import {OrderSchema, type AlpacaAssetClass} from './schema/OrderSchema.js';
+import {OrderSchema, type AlpacaAssetClass, type TimeInForce} from './schema/OrderSchema.js';
 import {PositionSchema} from './schema/PositionSchema.js';
 import {simplifyError} from '../../../util/simplifyError.js';
 import {SnapshotsResponseSchema} from './schema/SnapshotSchema.js';
@@ -60,21 +60,31 @@ interface PostOrderRequestBase {
    * day-for-fractional rule `AlpacaBrokerMapper.toOrderRequest` already applies to market and limit
    * orders.
    *
+   * Unlike the validity narrowing below, this half of the rule cannot be a type: whether a size is
+   * fractional is a property of the string's value, and every caller computes it at runtime, so
+   * `toTimeInForce` enforces it instead.
+   *
    * @see https://docs.alpaca.markets/docs/fractional-trading
    */
   qty?: string;
   side: string;
   symbol: string;
-  /** A stop order takes `day` or `gtc` only; Alpaca rejects the other values outright. */
-  time_in_force: string;
 }
+
+type AlpacaTimeInForce = (typeof TimeInForce)[keyof typeof TimeInForce];
 
 /**
  * `stop_price` is what turns an order into a stop, and Alpaca rejects the pairing either way
- * round, so the two travel together rather than as two independent optional fields.
+ * round, so the two travel together rather than as two independent optional fields. A stop also
+ * narrows the validities on offer, so `time_in_force` is paired with `type` rather than shared.
+ *
+ * @see https://docs.alpaca.markets/docs/orders-at-alpaca
  */
 export type PostOrderRequest = PostOrderRequestBase &
-  ({type: 'market' | 'limit'; stop_price?: never} | {type: 'stop' | 'stop_limit'; stop_price: string});
+  (
+    | {stop_price?: never; time_in_force: AlpacaTimeInForce; type: 'market' | 'limit'}
+    | {stop_price: string; time_in_force: 'day' | 'gtc'; type: 'stop' | 'stop_limit'}
+  );
 
 export class AlpacaAPI {
   readonly #tradingClient;
