@@ -85,6 +85,14 @@ function setup() {
       sizeInCounter: false,
       type: OrderType.MARKET,
     }),
+    placeStopOrder: vi.fn<Broker['placeStopOrder']>().mockResolvedValue({
+      id: '42',
+      pair: PAIR,
+      side: OrderSide.SELL,
+      size: '1',
+      stopPrice: '90',
+      type: OrderType.STOP,
+    }),
     unwatchCandles: vi.fn(),
     unwatchOrders: vi.fn(),
     verifyCredentials: vi.fn<Broker['verifyCredentials']>().mockResolvedValue(undefined),
@@ -240,6 +248,42 @@ describe('runCli', {concurrent: false}, () => {
     await run(['sell', 'AAPL', '1.2', '--limit', '150', '--counter', 'USD']);
     expect(broker.placeLimitOrder).toHaveBeenCalledWith(PAIR, {price: '150', side: OrderSide.SELL, size: '1.2'});
     expect(listInstruments).not.toHaveBeenCalled();
+  });
+
+  it('passes stop orders through', async () => {
+    const {broker, run} = setup();
+    await run(['sell', 'AAPL', '1.2', '--stop', '90', '--counter', 'USD']);
+    expect(broker.placeStopOrder).toHaveBeenCalledWith(PAIR, {side: OrderSide.SELL, size: '1.2', stopPrice: '90'});
+    expect(broker.placeMarketOrder, 'a stop must not degrade into a market order').not.toHaveBeenCalled();
+    expect(broker.placeLimitOrder).not.toHaveBeenCalled();
+  });
+
+  it('refuses a stop and a limit price together', async () => {
+    const {broker, run} = setup();
+    await expect(run(['sell', 'AAPL', '1', '--stop', '90', '--limit', '95'])).rejects.toThrow(/cannot be used with/);
+    expect(broker.placeStopOrder, 'a stop-limit order has no neutral representation').not.toHaveBeenCalled();
+  });
+
+  it('previews a stop order against its trigger price', async () => {
+    const {broker, run} = setup();
+    const result = await run(['sell', 'AAPL', '2', '--stop', '90', '--dry-run']);
+    expect(result).toMatchObject({json: {dryRun: true, estimatedNotional: new Big('180')}});
+    expect(broker.estimateFee, 'a triggered stop pays the taker rate').toHaveBeenCalledWith(
+      PAIR,
+      OrderType.STOP,
+      new Big('180')
+    );
+    expect(broker.getLatestCandle, 'the trigger price makes a market quote unnecessary').not.toHaveBeenCalled();
+    expect(broker.placeStopOrder).not.toHaveBeenCalled();
+  });
+
+  it('rejects a stop preview with a price between permitted increments', async () => {
+    const {broker, run} = setup();
+    await expect(run(['sell', 'AAPL', '1', '--stop', '90.001', '--dry-run'])).rejects.toThrow(
+      'Stop price must be a multiple of 0.01'
+    );
+    expect(broker.estimateFee).not.toHaveBeenCalled();
+    expect(broker.placeStopOrder).not.toHaveBeenCalled();
   });
 
   it('rejects unknown Trading212 symbols before submission', async () => {
