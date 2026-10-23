@@ -43,6 +43,12 @@ const CALENDAR_DAYS = 400;
  * held, from 44% at 17 days to 38% at 41. The move reverts, so an exit that leaves it room only
  * gives more back.
  *
+ * The opposite construction fails too, which is worth knowing before anyone builds it: buying the
+ * breakout from a tight base near the highs, the momentum-shaped version of the same story, lost
+ * 1.7% to 3.2% against the market over 63 days in all 18 variants tried, on both the unseen half
+ * and the independent universe (t as low as -4.93). Neither buying the laggard before it reclaims
+ * an old high nor buying the leader as it clears one paid in this sample.
+ *
  * What survived both universes is the downside of the ranking: the slowest recoveries
  * underperformed, which is why {@link rankQuietComebacks} drops them.
  *
