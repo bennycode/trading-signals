@@ -3,6 +3,7 @@ import type {AlpacaAPI} from '@typedtrader/exchange';
 import type {Report} from './Report.js';
 import {SP500HeatmapReport, SP500HeatmapSchema} from '../report-sp500-heatmap/SP500HeatmapReport.js';
 import {SP500MomentumReport, SP500MomentumSchema} from '../report-sp500-momentum/SP500MomentumReport.js';
+import {QuietComebackReport, QuietComebackSchema} from '../report-quiet-comeback/QuietComebackReport.js';
 import {ScalpScannerReport, ScalpScannerSchema} from '../report-scalp-scanner/ScalpScannerReport.js';
 
 interface ReportEntry {
@@ -53,6 +54,13 @@ const registry: Record<string, ReportEntry> = {
     requiresAccount: true,
     resolveConfig: () => ({}),
     schema: SP500MomentumSchema,
+  },
+  [QuietComebackReport.NAME]: {
+    create: (config, api) =>
+      new QuietComebackReport(QuietComebackSchema.parse(config), requireApi(QuietComebackReport.NAME, api)),
+    requiresAccount: true,
+    resolveConfig: () => ({}),
+    schema: QuietComebackSchema,
   },
 };
 

@@ -68,6 +68,17 @@ export {
   type SP500MomentumConfig,
 } from './report-sp500-momentum/SP500MomentumReport.js';
 export {
+  QuietComebackReport,
+  QuietComebackSchema,
+  type QuietComebackConfig,
+} from './report-quiet-comeback/QuietComebackReport.js';
+export {
+  findQuietComeback,
+  QUIET_COMEBACK_DEFAULTS,
+  rankQuietComebacks,
+  type QuietComebackCandidate,
+} from './report-quiet-comeback/findQuietComeback.js';
+export {
   ScalpScannerReport,
   ScalpScannerSchema,
   type ScalpScannerConfig,
