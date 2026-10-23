@@ -1,4 +1,9 @@
-import {findQuietComeback, rankQuietComebacks, type QuietComebackParams} from './findQuietComeback.js';
+import {
+  findQuietComeback,
+  LIKELY_TO_CROSS_STEP,
+  rankQuietComebacks,
+  type QuietComebackParams,
+} from './findQuietComeback.js';
 
 const config: QuietComebackParams = {
   grindWindow: 6,
@@ -65,6 +70,18 @@ describe('findQuietComeback', () => {
     expect(sideways, 'fewer than minUpDays rises in the grind window is not a comeback').toBeUndefined();
   });
 
+  it('flags a stock whose biggest recent day clears the cross-likelihood threshold', () => {
+    const steady = findQuietComeback('TEST', quietComeback(), config);
+    // Same shape, but the final session jumps rather than drifting.
+    const jumped = quietComeback();
+    jumped[jumped.length - 1] = jumped[jumped.length - 2] * (1 + LIKELY_TO_CROSS_STEP + 0.005);
+    const sudden = findQuietComeback('TEST', jumped, config);
+
+    expect(steady?.recentMaxStep, 'a steady grind rises in small steps').toBeLessThan(LIKELY_TO_CROSS_STEP);
+    expect(steady?.likelyToCross, 'so it is not in the higher-cross-rate group').toBe(false);
+    expect(sudden?.likelyToCross, 'a single large up-day puts it in that group').toBe(true);
+  });
+
   it('silently excludes a split that was not price-adjusted, instead of reporting it', () => {
     const adjusted = quietComeback();
     const raw = adjusted.map((close, index) => (index <= 10 ? close * 10 : close));
@@ -84,7 +101,9 @@ describe('rankQuietComebacks', () => {
     gainPerDay,
     gapToLevel: -0.03,
     level: 100,
+    likelyToCross: false,
     quietDays: 145,
+    recentMaxStep: 0.01,
     riseDays: 45,
     symbol,
   });

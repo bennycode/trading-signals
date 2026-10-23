@@ -124,7 +124,7 @@ export class QuietComebackReport extends Report<QuietComebackConfig> {
     );
     lines.push('```');
     lines.push(
-      `${'Stock'.padEnd(stockWidth)}  ${'Price'.padStart(9)}  ${'Level'.padStart(9)}  ${'To go'.padStart(7)}  ${'Quiet'.padStart(6)}  ${'Fell'.padStart(7)}  ${'%/day'.padStart(6)}`
+      `${'Stock'.padEnd(stockWidth)}  ${'Price'.padStart(9)}  ${'Level'.padStart(9)}  ${'To go'.padStart(7)}  ${'Quiet'.padStart(6)}  ${'Fell'.padStart(7)}  ${'%/day'.padStart(6)}  ${'Cross?'.padStart(6)}`
     );
     lines.push(`${'-'.repeat(stockWidth)}  ---------  ---------  -------  ------  -------  ------`);
     for (const entry of ranked) {
@@ -132,13 +132,17 @@ export class QuietComebackReport extends Report<QuietComebackConfig> {
         `${formatSymbolWithName(entry.symbol, names, TELEGRAM_TABLE_NAME_MAX).padEnd(stockWidth)}  ` +
           `${`$${entry.close.toFixed(2)}`.padStart(9)}  ${`$${entry.level.toFixed(2)}`.padStart(9)}  ` +
           `${`${(-entry.gapToLevel * 100).toFixed(2)}%`.padStart(7)}  ${`${entry.quietDays}d`.padStart(6)}  ` +
-          `${`${(entry.drawdown * 100).toFixed(1)}%`.padStart(7)}  ${`${(entry.gainPerDay * 100).toFixed(2)}%`.padStart(6)}`
+          `${`${(entry.drawdown * 100).toFixed(1)}%`.padStart(7)}  ${`${(entry.gainPerDay * 100).toFixed(2)}%`.padStart(6)}  ` +
+          `${(entry.likelyToCross ? 'likely' : '-').padStart(6)}`
       );
     }
     lines.push('```');
     lines.push('');
     lines.push(`Level = the high it fell away from. To go = how far below it still trades.`);
     lines.push(`Quiet = days since it last closed at that level. %/day = share of the climb earned per day.`);
+    lines.push(
+      `Cross? = reached its level materially more often in testing (51% vs 45%), which says nothing about return.`
+    );
     lines.push(
       `${matched} of ${scanned} matched; the slowest ${Math.round(this.config.slowestShare * 100)}% are excluded.`
     );

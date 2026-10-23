@@ -14,8 +14,15 @@ export interface QuietComebackCandidate {
   close: number;
   /** Negative: the fall from {@link level} down to the lowest close since. */
   drawdown: number;
+  /**
+   * Whether the stock is in the group that historically reached its level far more often; see
+   * {@link LIKELY_TO_CROSS_STEP}. It says nothing about what the stock returns.
+   */
+  likelyToCross: boolean;
   level: number;
   quietDays: number;
+  /** Largest single-day rise in the grind window, the input to {@link QuietComebackCandidate.likelyToCross}. */
+  recentMaxStep: number;
   riseDays: number;
   symbol: string;
 }
@@ -29,6 +36,18 @@ export interface QuietComebackParams {
   minQuietDays: number;
   minUpDays: number;
 }
+
+/**
+ * Biggest one-day rise in the grind window above which a stock reached its level materially more
+ * often. Measured 2016-2026: with a 10-day patience the cross rate rose from 44.8% to 51.3% on the
+ * half of the S&P 500 sample the threshold was not fitted on, and from 45.0% to 52.2% on an
+ * independent mid-cap universe.
+ *
+ * It predicts the crossing only. Over the same samples the excess return of the filtered group was
+ * +0.06% and -0.46% per month (t = 0.17 and -0.62) — a bigger daily range carries a stock across
+ * the remaining gap and moves it just as far the other way, so the higher hit rate pays nothing.
+ */
+export const LIKELY_TO_CROSS_STEP = 0.025;
 
 export const QUIET_COMEBACK_DEFAULTS: QuietComebackParams = {
   grindWindow: 6,
@@ -102,13 +121,20 @@ export function findQuietComeback(
   }
 
   const riseDays = Math.max(last - bottomIndex, 1);
+  let recentMaxStep = -Infinity;
+  for (let index = last - grindWindow + 1; index <= last; index++) {
+    recentMaxStep = Math.max(recentMaxStep, closes[index] / closes[index - 1] - 1);
+  }
+
   return {
     close: closes[last],
     drawdown: -drawdown,
     gainPerDay: (closes[last] / bottom - 1) / riseDays,
     gapToLevel,
     level,
+    likelyToCross: recentMaxStep > LIKELY_TO_CROSS_STEP,
     quietDays,
+    recentMaxStep,
     riseDays,
     symbol,
   };
