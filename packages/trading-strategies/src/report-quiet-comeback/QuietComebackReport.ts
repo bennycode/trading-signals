@@ -42,14 +42,18 @@ const CALENDAR_DAYS = 400;
  * What survived both universes is the downside of the ranking: the slowest recoveries
  * underperformed, which is why {@link rankQuietComebacks} drops them.
  *
- * Three avenues were tested and closed, recorded here so they are not re-run. Insider buying ahead
+ * The three non-price avenues worth trying were tested and closed, recorded here so they are not re-run. Insider buying ahead
  * of a setup, joined from the SEC Form 345 data sets by filing date over the same decade, made
  * outcomes worse rather than better: where insiders were net buyers in the prior 90 days the
  * excess return was -2.27% and -3.02% per month (t = -2.93 and -3.67) in two of three samples, and
  * the cross rate fell. Short interest, joined from FINRA Reg SHO consolidated short volume over
  * the same decade, fails the squeeze thesis it was meant to test: the most heavily shorted
  * quartile of setups did worse, by -3.27% per month (t = -3.59) in the independent universe, and
- * shorts covering ahead of the signal did not help either. And requiring a meaningful fall from
+ * shorts covering ahead of the signal did not help either. Reported earnings, taken from the SEC
+ * XBRL frames and treated as public 60 days after period end, are the third: setups whose earnings
+ * were both up year on year and accelerating still returned -0.57%, -0.11% and -0.60% per month.
+ * Only the downside replicates there too, deteriorating earnings costing -1.30% (t = -4.10).
+ * And requiring a meaningful fall from
  * the level, rather than any high at all, selects a population that trails the market in every
  * sample (-0.57% to -0.76% per month).
  */
