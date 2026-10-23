@@ -41,6 +41,13 @@ const CALENDAR_DAYS = 400;
  *
  * What survived both universes is the downside of the ranking: the slowest recoveries
  * underperformed, which is why {@link rankQuietComebacks} drops them.
+ *
+ * Two avenues were tested and closed, recorded here so they are not re-run. Insider buying ahead
+ * of a setup, joined from the SEC Form 345 data sets by filing date over the same decade, made
+ * outcomes worse rather than better: where insiders were net buyers in the prior 90 days the
+ * excess return was -2.27% and -3.02% per month (t = -2.93 and -3.67) in two of three samples, and
+ * the cross rate fell. And requiring a meaningful fall from the level, rather than any high at
+ * all, selects a population that trails the market in every sample (-0.57% to -0.76% per month).
  */
 export class QuietComebackReport extends Report<QuietComebackConfig> {
   static override NAME = '@typedtrader/report-quiet-comeback';
