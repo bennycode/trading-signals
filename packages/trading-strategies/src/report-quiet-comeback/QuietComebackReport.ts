@@ -37,7 +37,11 @@ const CALENDAR_DAYS = 400;
  * returned the same as the market: the climb up to the level earns 2-3% over the market, but only
  * 20-30% of setups ever reach it and the rest give that back. The 21 days *after* a cross were
  * negative in all 16 configurations tested across both universes, so there is nothing to collect
- * by holding through one.
+ * by holding through one. Holding longer is worse rather than better: across 24 exit and level
+ * variants, including intraday highs in place of closing highs and three trailing stops, the
+ * median trade trailed the market in every one, and the win rate fell the longer a position was
+ * held, from 44% at 17 days to 38% at 41. The move reverts, so an exit that leaves it room only
+ * gives more back.
  *
  * What survived both universes is the downside of the ranking: the slowest recoveries
  * underperformed, which is why {@link rankQuietComebacks} drops them.
