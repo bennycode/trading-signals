@@ -50,11 +50,9 @@ export function shouldRetryAlpacaRequest(error: AxiosError) {
 
 export class AlpacaAPI {
   /**
-   * Splits and spin-offs change the share count, so an unadjusted series shows a cliff that was
-   * never traded: a 2:1 split reads as a 50% crash to every indicator and every return
-   * calculation. Cash dividends are deliberately left out — adjusting for them invents prices the
-   * stock never traded at, which makes price levels fictional, and every new payout rewrites the
-   * whole history, so a cached series drifts and a backtest stops being reproducible.
+   * Unadjusted, a 2:1 split reads as a 50% crash to every indicator. Dividends are left out on
+   * purpose: each new payout rewrites past prices, so a cached series drifts and a backtest stops
+   * being reproducible.
    */
   static readonly CONTINUOUS_PRICE_ADJUSTMENT = 'split,spin-off';
 
@@ -116,10 +114,9 @@ export class AlpacaAPI {
   /** @see https://docs.alpaca.markets/reference/stockbars */
   async getStockBars(params: {
     /**
-     * Corporate-action adjustment: `raw`, `split`, `dividend`, `spin-off`, `all`, or several
-     * comma-separated. Alpaca applies none when it is omitted, which leaves splits in the series —
-     * callers that compare prices across time want {@link AlpacaAPI.CONTINUOUS_PRICE_ADJUSTMENT}.
-     * Left optional because reconciling a broker's reported fill price against a bar needs `raw`.
+     * `raw`, `split`, `dividend`, `spin-off`, `all`, or a comma-separated mix. Alpaca adjusts
+     * nothing when omitted, so comparing prices across time wants
+     * {@link AlpacaAPI.CONTINUOUS_PRICE_ADJUSTMENT}, while reconciling a fill wants `raw`.
      */
     adjustment?: string;
     end: string;

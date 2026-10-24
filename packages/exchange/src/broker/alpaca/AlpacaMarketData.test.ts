@@ -12,7 +12,7 @@ const mockMethods = {
 
 vi.mock(import('./api/AlpacaAPI.js'), () => ({
   AlpacaAPI: class {
-    // A stub class has no statics of its own, and the candle request reads this one off the class.
+    // The mock replaces the real class, so the static the candle request reads has to come along.
     static CONTINUOUS_PRICE_ADJUSTMENT = 'split,spin-off' as const;
     getCryptoBarsLatest = mockMethods.getCryptoBarsLatest;
     getStockBars = mockMethods.getStockBars;
