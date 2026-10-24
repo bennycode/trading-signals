@@ -36,6 +36,15 @@ describe('QuietComebackReport', () => {
     expect(config.slowestShare, 'ranking without excluding anything is a valid choice').toBe(0);
   });
 
+  it('defaults to months below the level but accepts weeks', () => {
+    expect(QuietComebackSchema.parse({}).minQuietDays, 'roughly three months of trading days').toBe(60);
+    expect(QuietComebackSchema.parse({minQuietDays: 15}).minQuietDays, 'three weeks is a valid base').toBe(15);
+    expect(
+      QuietComebackSchema.safeParse({minQuietDays: 5}).success,
+      'under two weeks there is no quiet stretch to speak of'
+    ).toBe(false);
+  });
+
   it('stores config from constructor', () => {
     const config = QuietComebackSchema.parse({symbols: ['WM']});
     const report = new QuietComebackReport(config, createApi());

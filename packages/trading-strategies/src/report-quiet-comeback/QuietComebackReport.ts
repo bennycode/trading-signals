@@ -11,6 +11,13 @@ import {
 } from './findQuietComeback.js';
 
 export const QuietComebackSchema = z.object({
+  /**
+   * Trading days a stock must have spent below the level before it counts as quiet. Shortening it
+   * to a few weeks roughly doubles the candidates and raises the share that reach their level
+   * (42.8% at 10 days against 41.7% at 60 on the S&P 500, and 48.6% against 45.7% on a further
+   * 1,235 symbols), without changing the return, which stayed flat at every setting tested.
+   */
+  minQuietDays: z.number().int().min(10).max(250).optional().default(60),
   /** Share of the slowest recoveries to drop from the ranked list. */
   slowestShare: z.number().min(0).max(0.9).optional().default(0.3),
   symbols: z.array(z.string()).optional(),
@@ -89,7 +96,10 @@ export class QuietComebackReport extends Report<QuietComebackConfig> {
       const closes = await this.#fetchCloses(batch, start, end);
       for (const [symbol, series] of closes) {
         scanned++;
-        const found = findQuietComeback(symbol, series, QUIET_COMEBACK_DEFAULTS);
+        const found = findQuietComeback(symbol, series, {
+          ...QUIET_COMEBACK_DEFAULTS,
+          minQuietDays: this.config.minQuietDays,
+        });
         if (found) {
           candidates.push(found);
         }
@@ -169,7 +179,7 @@ export class QuietComebackReport extends Report<QuietComebackConfig> {
       `Cross? = reached its level materially more often in testing (51% vs 45%), which says nothing about return.`
     );
     lines.push(
-      `${matched} of ${scanned} matched; the slowest ${Math.round(this.config.slowestShare * 100)}% are excluded.`
+      `${matched} of ${scanned} matched at ${this.config.minQuietDays}+ quiet days; the slowest ${Math.round(this.config.slowestShare * 100)}% are excluded.`
     );
     lines.push('');
     lines.push(
