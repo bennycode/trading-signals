@@ -39,7 +39,7 @@ Available reports include:
 - **`SP500MomentumReport`** — ranks the S&P 500 by 12-1 cross-sectional momentum (Jegadeesh & Titman, 1993).
 - **`SP500HeatmapReport`** — a snapshot of S&P 500 performance.
 - **`ScalpScannerReport`** — scans for short-term scalping opportunities.
-- **`QuietComebackReport`** — names stocks that spent months below a high they fell away from and are climbing back toward it. A triage list: the setup matched the market in testing, so it says where to look, not what to buy.
+- **`QuietComebackReport`** — names stocks that spent weeks or months below a high they fell away from and are climbing back toward it. A triage list: the setup matched the market in testing, so it says where to look, not what to buy.
 
 Adding a **fingerprint (a short hash of the raw result data)** to a report is good practice: when two runs share the same fingerprint nothing changed.
 

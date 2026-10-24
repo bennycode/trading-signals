@@ -1,5 +1,5 @@
 /**
- * A stock that spent months below a high it had previously reached, fell meaningfully away from
+ * A stock that spent weeks or months below a high it had previously reached, fell meaningfully away from
  * it, and has now started climbing back toward it without having reached it yet.
  *
  * The level is whichever high sits at the top of the lookback window, so it is "a high of

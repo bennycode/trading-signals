@@ -36,7 +36,7 @@ const SIP_DELAY_MS = 20 * 60 * 1000;
 const CALENDAR_DAYS = 400;
 
 /**
- * Names stocks that spent months below a high of magnitude and have started climbing back toward
+ * Names stocks that spent weeks or months below a high of magnitude and have started climbing back toward
  * it without having reached it yet.
  *
  * This is a triage list, not a buy signal, and the distinction is measured rather than cautionary.
