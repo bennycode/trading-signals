@@ -3,12 +3,21 @@ import type {OneMinuteBatchedCandle} from '@typedtrader/exchange';
 import type {OrderAdvice, TradingSessionState, TradingSessionStrategy} from '../trader/index.js';
 import type {MarketType} from './MarketType.js';
 
+/** Freezes `value` and everything reachable from it. Already-frozen objects stop the walk, so cycles terminate. */
+function deepFreeze<T>(value: T): T {
+  if (typeof value === 'object' && value !== null && !Object.isFrozen(value)) {
+    Object.freeze(value);
+    Object.values(value).forEach(deepFreeze);
+  }
+  return value;
+}
+
 /**
  * State persistence is snapshot-based: the Proxy behind `getProxiedState()` only traps
- * TOP-LEVEL assignments, so mutating a nested object reached through it in place (e.g.
- * `this.getProxiedState().foo.bar = x`) changes memory but is silently lost on restart.
- * Use {@link setState} to update nested state — it merges the patch and
- * persists in one step.
+ * TOP-LEVEL assignments, so it hands out nested objects frozen. Mutating one in place
+ * (e.g. `this.getProxiedState().foo.bar = x`) throws a TypeError rather than changing
+ * memory that is lost on the next restart. Use {@link setState} to update nested state —
+ * it merges the patch and persists in one step.
  */
 export abstract class Strategy implements TradingSessionStrategy {
   static NAME: string;
@@ -150,6 +159,14 @@ export abstract class Strategy implements TradingSessionStrategy {
     persist: (snapshot: Record<string, unknown>) => void
   ): Record<string, unknown> {
     return new Proxy(target, {
+      get: (t, property, receiver) => {
+        /*
+         * Hand out nested objects frozen: only top-level assignments are trapped, so an
+         * in-place nested mutation would be kept in memory and lost on the next restart.
+         * Freezing turns that silent data loss into a TypeError that points at setState().
+         */
+        return deepFreeze(Reflect.get(t, property, receiver));
+      },
       set: (t, property, value, receiver) => {
         Reflect.set(t, property, value, receiver);
         persist({...t});

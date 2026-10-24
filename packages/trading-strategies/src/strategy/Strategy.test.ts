@@ -57,12 +57,24 @@ describe('Strategy', () => {
   });
 
   describe('nested mutation trap', () => {
-    it('does NOT fire onSave when a nested property is mutated without setState', () => {
+    it('throws instead of dropping a nested mutation made without setState', () => {
       const {onSave, strategy} = makeStrategy();
 
-      strategy.proxiedState.nested.value = 99;
-
+      expect(() => {
+        strategy.proxiedState.nested.value = 99;
+      }, 'nested state is frozen, so a write that would be lost on restart fails loudly').toThrow(TypeError);
       expect(onSave).not.toHaveBeenCalled();
+    });
+
+    it('merges a frozen nested object into a replacement via setState', () => {
+      const {strategy} = makeStrategy();
+
+      strategy.setState<TestState>({nested: {...strategy.proxiedState.nested, value: 7}});
+
+      expect(strategy.state, 'reading and spreading frozen nested state still works').toEqual({
+        counter: 0,
+        nested: {value: 7},
+      });
     });
 
     it('fires onSave for top-level assignments on the proxied state', () => {
