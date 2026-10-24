@@ -3,7 +3,7 @@ import type {OneMinuteBatchedCandle} from '@typedtrader/exchange';
 import type {OrderAdvice, TradingSessionState, TradingSessionStrategy} from '../trader/index.js';
 import type {MarketType} from './MarketType.js';
 
-/** Freezes `value` and everything reachable from it. Already-frozen objects stop the walk, so cycles terminate. */
+/** Freezes `value` and everything reachable from it; already-frozen objects stop the walk, so cycles terminate. */
 function deepFreeze<T>(value: T): T {
   if (typeof value === 'object' && value !== null && !Object.isFrozen(value)) {
     Object.freeze(value);
@@ -13,11 +13,9 @@ function deepFreeze<T>(value: T): T {
 }
 
 /**
- * State persistence is snapshot-based: the Proxy behind `getProxiedState()` only traps
- * TOP-LEVEL assignments, so it hands out nested objects frozen. Mutating one in place
- * (e.g. `this.getProxiedState().foo.bar = x`) throws a TypeError rather than changing
- * memory that is lost on the next restart. Use {@link setState} to update nested state —
- * it merges the patch and persists in one step.
+ * Persistence is snapshot-based: the Proxy behind `getProxiedState()` traps TOP-LEVEL
+ * assignments only, so it hands out nested objects frozen and `state.foo.bar = x` throws
+ * instead of being lost on restart. Nested updates go through {@link setState}.
  */
 export abstract class Strategy implements TradingSessionStrategy {
   static NAME: string;
@@ -100,11 +98,7 @@ export abstract class Strategy implements TradingSessionStrategy {
     this.#_state = persisted;
   }
 
-  /**
-   * The supported way to update nested state (see the class doc for the Proxy trap this
-   * avoids). Writes go to the raw target instead of through the Proxy so a multi-key
-   * patch persists once, not once per key.
-   */
+  /** Merges `patch` into the state. Writes bypass the Proxy, so a multi-key patch persists once. */
   setState<T extends Record<string, unknown>>(patch: Partial<T>): void {
     const snapshot = this.state;
     if (!snapshot) {
@@ -112,11 +106,7 @@ export abstract class Strategy implements TradingSessionStrategy {
     }
 
     if (this.#stateTarget) {
-      /*
-       * Sync the Proxy's target to the persisted snapshot before patching: restoreState()
-       * replaces the snapshot but not the target, so merging from the target alone would
-       * resurrect stale pre-restore values and clobber restored keys.
-       */
+      // restoreState() replaces the snapshot but not the target, so sync it or stale keys come back.
       for (const key of Object.keys(this.#stateTarget)) {
         if (!Object.hasOwn(snapshot, key)) {
           delete this.#stateTarget[key];
@@ -159,14 +149,8 @@ export abstract class Strategy implements TradingSessionStrategy {
     persist: (snapshot: Record<string, unknown>) => void
   ): Record<string, unknown> {
     return new Proxy(target, {
-      get: (t, property, receiver) => {
-        /*
-         * Hand out nested objects frozen: only top-level assignments are trapped, so an
-         * in-place nested mutation would be kept in memory and lost on the next restart.
-         * Freezing turns that silent data loss into a TypeError that points at setState().
-         */
-        return deepFreeze(Reflect.get(t, property, receiver));
-      },
+      // Frozen, so an unpersistable nested write throws instead of vanishing on restart.
+      get: (t, property, receiver) => deepFreeze(Reflect.get(t, property, receiver)),
       set: (t, property, value, receiver) => {
         Reflect.set(t, property, value, receiver);
         persist({...t});

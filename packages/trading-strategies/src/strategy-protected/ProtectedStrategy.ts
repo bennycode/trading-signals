@@ -218,10 +218,7 @@ export class ProtectedStrategy extends Strategy {
     return this.getProxiedState<ProtectedContainerState>()[PROTECTED_STATE_KEY];
   }
 
-  /**
-   * `setState` merges top-level keys only, so the nested `protected` object is merged
-   * here before being swapped in wholesale.
-   */
+  /** `setState` merges top-level keys only, so the nested object is merged here first. */
   #setProtectedState(patch: Partial<ProtectedStrategyState>): void {
     this.setState<ProtectedContainerState>({
       [PROTECTED_STATE_KEY]: {...this.#protectedState, ...patch},
@@ -446,11 +443,7 @@ export class ProtectedStrategy extends Strategy {
       [PROTECTED_STATE_KEY]: restoredProtected,
     });
 
-    /*
-     * The base class only updates the persisted snapshot; the proxied state still
-     * points at the original object from the constructor. Writing the restored
-     * values via `setState` propagates them into the proxied state as well.
-     */
+    // The base class updates the snapshot only; this propagates it into the proxied state.
     this.#setProtectedState(restoredProtected);
   }
 
