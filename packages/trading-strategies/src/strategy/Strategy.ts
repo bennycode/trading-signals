@@ -7,7 +7,7 @@ import type {MarketType} from './MarketType.js';
  * State persistence is snapshot-based: the Proxy behind `getProxiedState()` only traps
  * TOP-LEVEL assignments, so mutating a nested object reached through it in place (e.g.
  * `this.getProxiedState().foo.bar = x`) changes memory but is silently lost on restart.
- * Use {@link Strategy.setState} to update nested state — it merges the patch and
+ * Use {@link setState} to update nested state — it merges the patch and
  * persists in one step.
  */
 export abstract class Strategy implements TradingSessionStrategy {
@@ -109,7 +109,7 @@ export abstract class Strategy implements TradingSessionStrategy {
        * resurrect stale pre-restore values and clobber restored keys.
        */
       for (const key of Object.keys(this.#stateTarget)) {
-        if (!(key in snapshot)) {
+        if (!Object.hasOwn(snapshot, key)) {
           delete this.#stateTarget[key];
         }
       }
