@@ -24,13 +24,40 @@ npm install trading-strategies
 
 ## How a Strategy Works
 
-A strategy watches the market one candle at a time and decides what to do next: **buy, sell, or wait.** You write that decision; the library handles the rest — turning it into a correctly sized order and keeping track of balances, fees, and each exchange's trading rules for you.
+A strategy watches the market one candle at a time and decides what to do next: **buy, sell, or wait.** You write that decision and the library handles the rest, turning it into a correctly sized order while keeping track of balances, fees, and each exchange's trading rules for you.
 
 On every new candle your strategy sees the latest price data and a snapshot of your account, then returns one of:
 
-- **Buy** — at the current price (market order) or at a price you set (limit order)
-- **Sell** — at the current price or at a price you set
-- **Nothing** — sit this one out
+- **Buy** at the current price (market order) or at a price you set (limit order)
+- **Sell** at the current price or at a price you set
+- **Nothing**, to sit this one out
+
+In code, that decision is the return value of `processCandle`:
+
+```ts
+import {OrderSide, OrderType, type OneMinuteBatchedCandle} from '@typedtrader/exchange';
+import {AllAvailableAmount, Strategy, type OrderAdvice, type TradingSessionState} from 'trading-strategies';
+
+class BuyTheDipStrategy extends Strategy {
+  static override NAME = 'buy-the-dip';
+
+  protected override async processCandle(
+    candle: OneMinuteBatchedCandle,
+    state: TradingSessionState
+  ): Promise<OrderAdvice | void> {
+    if (state.baseBalance.eq(0) && candle.close.lt(100)) {
+      return {
+        amount: AllAvailableAmount,
+        amountIn: 'counter',
+        reason: 'price dipped below 100',
+        side: OrderSide.BUY,
+        type: OrderType.MARKET,
+      };
+    }
+    // Returning nothing means "wait".
+  }
+}
+```
 
 A strategy never places orders itself. It only gives _advice_, and the library works out how to fill it safely.
 
@@ -40,10 +67,10 @@ You can also start from a ready-made base instead of from scratch. For example, 
 
 Write a strategy once and run it in two places without changing a line:
 
-- **Backtest** — replay historical candles to measure how it would have performed.
-- **Live or paper trading** — stream real candles from a broker and trade for real, or with simulated money.
+- **Backtest**: replay historical candles to measure how it would have performed.
+- **Live or paper trading**: stream real candles from a broker and trade for real, or with simulated money.
 
-Both give the strategy the same information and handle its advice the same way, so a backtest is a faithful rehearsal of live trading — not a rough approximation. Always backtest before you go live (see [Backtesting](#backtesting)).
+Both give the strategy the same information and handle its advice the same way, so a backtest is a faithful rehearsal of live trading rather than a rough approximation. Always backtest before you go live (see [Backtesting](#backtesting)).
 
 Running a backtest looks like this:
 
@@ -62,7 +89,7 @@ console.log(result.performance.returnPercentage);
 
 ## What a Strategy Can Use
 
-Most strategies combine **technical indicators** from the companion [trading-signals](https://www.npmjs.com/package/trading-signals) library — moving averages, RSI, Bollinger Bands, and so on. That's the common case, but not a rule: a strategy is ordinary code, so before it decides it can also draw on anything else — your own database, the latest news or earnings, or analyst ratings from an outside service.
+Most strategies combine **technical indicators** from the companion [trading-signals](https://www.npmjs.com/package/trading-signals) library, such as moving averages, RSI or Bollinger Bands. That's the common case, but not a rule: a strategy is ordinary code, so before it decides it can also draw on anything else: your own database, the latest news or earnings, or analyst ratings from an outside service.
 
 ## Reports
 
@@ -186,14 +213,22 @@ The strategy seeds its position tracking from the account's base balance and the
 
 ## Strategy Signals
 
-A strategy expresses intent by returning an `OrderAdvice` from `processCandle` (see [The Strategy Contract](#the-strategy-contract)), or `void`/`undefined` for "no action". The four actionable shapes:
+A strategy expresses intent by returning an `OrderAdvice` from `processCandle` (see [How a Strategy Works](#how-a-strategy-works)), or `void`/`undefined` for "no action". A market order fills at the current price, a limit order only at the price you name:
 
-- **Buy at market** — `{type: 'MARKET', side: 'BUY', amountIn: 'counter', amount}`
-- **Buy at limit** — `{type: 'LIMIT', side: 'BUY', amountIn: 'base', amount, price}`
-- **Sell at market** — `{type: 'MARKET', side: 'SELL', amountIn: 'base', amount}`
-- **Sell at limit** — `{type: 'LIMIT', side: 'SELL', amountIn: 'base', amount, price}`
+```ts
+// Market buy, sized in the counter currency (e.g. spend USD) or in the base currency
+{type: 'MARKET', side: 'BUY', amountIn: 'counter', amount: AllAvailableAmount}
+{type: 'MARKET', side: 'BUY', amountIn: 'base', amount: '0.5'}
 
-Use `AllAvailableAmount` as `amount` to trade the full available balance.
+// Market sell, sized in either currency
+{type: 'MARKET', side: 'SELL', amountIn: 'base', amount: AllAvailableAmount}
+
+// Limit order, always sized in the base currency and always with a price
+{type: 'LIMIT', side: 'BUY', amountIn: 'base', amount: '0.5', price: '95'}
+{type: 'LIMIT', side: 'SELL', amountIn: 'base', amount: AllAvailableAmount, price: '105'}
+```
+
+Every shape takes an optional `reason` string for logs and diagnostics. `AllAvailableAmount` trades the full available balance, with one exception: a market buy sized in the base currency needs an explicit amount, because without a price the quantity cannot be derived.
 
 ## Market Regimes
 
