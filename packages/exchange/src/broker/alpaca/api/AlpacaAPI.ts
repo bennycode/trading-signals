@@ -49,6 +49,13 @@ export function shouldRetryAlpacaRequest(error: AxiosError) {
 }
 
 export class AlpacaAPI {
+  /**
+   * Unadjusted, a 2:1 split reads as a 50% crash to every indicator. Dividends are left out on
+   * purpose: each new payout rewrites past prices, so a cached series drifts and a backtest stops
+   * being reproducible.
+   */
+  static readonly CONTINUOUS_PRICE_ADJUSTMENT = 'split,spin-off';
+
   readonly #tradingClient;
   readonly #marketDataClient;
 
@@ -106,6 +113,12 @@ export class AlpacaAPI {
 
   /** @see https://docs.alpaca.markets/reference/stockbars */
   async getStockBars(params: {
+    /**
+     * `raw`, `split`, `dividend`, `spin-off`, `all`, or a comma-separated mix. Alpaca adjusts
+     * nothing when omitted, so comparing prices across time wants
+     * {@link AlpacaAPI.CONTINUOUS_PRICE_ADJUSTMENT}, while reconciling a fill wants `raw`.
+     */
+    adjustment?: string;
     end: string;
     feed?: string;
     limit: number;

@@ -1,6 +1,6 @@
 import {createHash} from 'node:crypto';
 import {z} from 'zod';
-import type {AlpacaAPI} from '@typedtrader/exchange';
+import {AlpacaAPI} from '@typedtrader/exchange';
 import {MESSAGE_BREAK, Report} from '../report/Report.js';
 import {fetchUsEquityNames, formatSymbolWithName, TELEGRAM_TABLE_NAME_MAX} from '../util/formatSymbolWithName.js';
 import {getDateString} from '../util/TimeUtil.js';
@@ -192,6 +192,7 @@ export class SP500MomentumReport extends Report<SP500MomentumConfig> {
     const result = new Map<string, number>();
 
     const response = await this.#api.getStockBars({
+      adjustment: AlpacaAPI.CONTINUOUS_PRICE_ADJUSTMENT,
       end: end.toISOString(),
       feed: 'iex',
       limit: 10_000,

@@ -186,6 +186,7 @@ export class AlpacaMarketData extends MarketDataSource {
     }
     const symbol = createAlpacaSymbol(pair, false);
     return this.#alpacaAPI.getStockBars({
+      adjustment: AlpacaAPI.CONTINUOUS_PRICE_ADJUSTMENT,
       end: request.startTimeLastCandle,
       feed: await this.#resolveStockFeed(symbol),
       limit: 10_000,
