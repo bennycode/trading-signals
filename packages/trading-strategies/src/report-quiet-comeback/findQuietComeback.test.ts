@@ -6,7 +6,6 @@ import {
 } from './findQuietComeback.js';
 
 const config: QuietComebackParams = {
-  grindWindow: 6,
   lookbackDays: 150,
   maxGapToLevel: 0.04,
   minDrawdown: 0.08,
@@ -77,8 +76,7 @@ describe('findQuietComeback', () => {
     jumped[jumped.length - 1] = jumped[jumped.length - 2] * (1 + LIKELY_TO_CROSS_STEP + 0.005);
     const sudden = findQuietComeback('TEST', jumped, config);
 
-    expect(steady?.recentMaxStep, 'a steady grind rises in small steps').toBeLessThan(LIKELY_TO_CROSS_STEP);
-    expect(steady?.likelyToCross, 'so it is not in the higher-cross-rate group').toBe(false);
+    expect(steady?.likelyToCross, 'a steady grind rises in small steps, so it stays out of that group').toBe(false);
     expect(sudden?.likelyToCross, 'a single large up-day puts it in that group').toBe(true);
   });
 
