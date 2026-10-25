@@ -48,6 +48,34 @@ export function shouldRetryAlpacaRequest(error: AxiosError) {
   return axiosRetry.isRetryableError(error);
 }
 
+interface PostOrderRequestBase {
+  client_order_id: string;
+  /** Alpaca honours this for limit orders only. */
+  extended_hours?: boolean;
+  limit_price?: string;
+  notional?: string;
+  /**
+   * Number of shares. A stop order takes a fractional quantity only alongside `day` validity; with
+   * `gtc` Alpaca answers "stop/stop_limit fractional GTC orders are not enabled". This is the same
+   * day-for-fractional rule `AlpacaBrokerMapper.toOrderRequest` already applies to market and limit
+   * orders.
+   *
+   * @see https://docs.alpaca.markets/docs/fractional-trading
+   */
+  qty?: string;
+  side: string;
+  symbol: string;
+  /** A stop order takes `day` or `gtc` only; Alpaca rejects the other values outright. */
+  time_in_force: string;
+}
+
+/**
+ * `stop_price` is what turns an order into a stop, and Alpaca rejects the pairing either way
+ * round, so the two travel together rather than as two independent optional fields.
+ */
+export type PostOrderRequest = PostOrderRequestBase &
+  ({type: 'market' | 'limit'; stop_price?: never} | {type: 'stop' | 'stop_limit'; stop_price: string});
+
 export class AlpacaAPI {
   /**
    * Unadjusted, a 2:1 split reads as a 50% crash to every indicator. Dividends are left out on
@@ -177,17 +205,7 @@ export class AlpacaAPI {
    * @see https://docs.alpaca.markets/reference/postorder
    * @see https://docs.alpaca.markets/us/docs/working-with-orders#using-client-order-ids
    */
-  async postOrder(params: {
-    client_order_id: string;
-    extended_hours?: boolean;
-    limit_price?: string;
-    notional?: string;
-    qty?: string;
-    side: string;
-    symbol: string;
-    time_in_force: string;
-    type: string;
-  }) {
+  async postOrder(params: PostOrderRequest) {
     const response = await this.#tradingClient.post('/v2/orders', params);
     return OrderSchema.parse(response.data);
   }

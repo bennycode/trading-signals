@@ -139,7 +139,7 @@ describe('Trading212Broker', {concurrent: false}, () => {
         limitPrice: 172,
         quantity: 1,
         ticker: 'AMD_US_EQ',
-        timeValidity: 'DAY',
+        timeValidity: 'GOOD_TILL_CANCEL',
       });
     });
 
