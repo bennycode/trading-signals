@@ -108,6 +108,28 @@ describe('Strategy', () => {
       expect(restored.state).toEqual({counter: 7, nested: {value: 4}});
       expect(restored.proxiedState.counter).toBe(7);
     });
+
+    it('serves the restored values to the strategy right away', () => {
+      const {onSave, strategy} = makeStrategy();
+
+      strategy.restoreState({counter: 7, nested: {value: 3}});
+
+      expect(strategy.proxiedState, 'the strategy reads what was restored, not what it started with').toEqual({
+        counter: 7,
+        nested: {value: 3},
+      });
+      expect(onSave, 'adopting a snapshot is not a change worth writing back').not.toHaveBeenCalled();
+    });
+
+    it('drops keys the restored snapshot no longer has', () => {
+      const strategy = new TestStrategy({counter: 0, nested: {value: 1}});
+
+      strategy.restoreState({counter: 7});
+
+      expect(strategy.proxiedState, 'a key gone from the snapshot must not survive in the strategy').toEqual({
+        counter: 7,
+      });
+    });
   });
 
   describe('without state', () => {

@@ -92,8 +92,13 @@ export abstract class Strategy implements TradingSessionStrategy {
     return advice;
   }
 
+  /**
+   * Adopts a persisted snapshot, e.g. after a restart. Restoring is not a change worth
+   * persisting again, so it deliberately does not trigger a save.
+   */
   restoreState(persisted: Record<string, unknown>): void {
     this.#_state = persisted;
+    this.#adoptSnapshot(persisted);
   }
 
   /** Merges `patch` into the state. Writes bypass the Proxy, so a multi-key patch persists once. */
@@ -104,18 +109,31 @@ export abstract class Strategy implements TradingSessionStrategy {
     }
 
     if (this.#stateTarget) {
-      // restoreState() replaces the snapshot but not the target, so sync it or stale keys come back.
-      for (const key of Object.keys(this.#stateTarget)) {
-        if (!Object.hasOwn(snapshot, key)) {
-          delete this.#stateTarget[key];
-        }
-      }
-      Object.assign(this.#stateTarget, snapshot, patch);
+      this.#adoptSnapshot({...snapshot, ...patch});
       this.state = {...this.#stateTarget};
       return;
     }
 
     this.state = {...snapshot, ...patch};
+  }
+
+  /**
+   * Strategies read their state through the Proxy, which hands out the object the Proxy wraps
+   * rather than the persisted snapshot. Writing a snapshot therefore has to reach that object as
+   * well, or a strategy keeps reading the values it started with and stale keys come back.
+   */
+  #adoptSnapshot(snapshot: Record<string, unknown>): void {
+    if (!this.#stateTarget) {
+      return;
+    }
+
+    for (const key of Object.keys(this.#stateTarget)) {
+      if (!Object.hasOwn(snapshot, key)) {
+        delete this.#stateTarget[key];
+      }
+    }
+
+    Object.assign(this.#stateTarget, snapshot);
   }
 
   /**

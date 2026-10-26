@@ -356,9 +356,6 @@ export class ProtectedStrategy extends Strategy {
       ...persisted,
       [PROTECTED_STATE_KEY]: restoredProtected,
     });
-
-    // The base class updates the snapshot only; this propagates it into the proxied state.
-    this.#setProtectedState(restoredProtected);
   }
 
   #killSwitchAdvice(reason: string, orderType: GuardOrderType, limitPrice: Big | null): OrderAdvice {
