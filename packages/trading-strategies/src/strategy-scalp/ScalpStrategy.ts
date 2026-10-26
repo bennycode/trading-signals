@@ -32,6 +32,14 @@ type ScalpState = {
   lastFillSide: OrderSide | null;
 };
 
+function isPhase(value: unknown): value is Phase {
+  return value === 'entry' || value === 'pendingAdvice' || value === 'waitingForFill';
+}
+
+function isOrderSide(value: unknown): value is OrderSide {
+  return value === OrderSide.BUY || value === OrderSide.SELL;
+}
+
 export class ScalpStrategy extends ProtectedStrategy {
   static override NAME = '@typedtrader/strategy-scalp';
   static override marketTypes: readonly MarketType[] = [MarketType.RANGING];
@@ -149,19 +157,12 @@ export class ScalpStrategy extends ProtectedStrategy {
   }
 
   override restoreState(persisted: Record<string, unknown>): void {
-    super.restoreState(persisted);
-
-    if (typeof persisted.lastFillPrice === 'string') {
-      this.#state.lastFillPrice = persisted.lastFillPrice;
-    }
-
-    if (typeof persisted.lastFillSide === 'string') {
-      this.#state.lastFillSide = persisted.lastFillSide as OrderSide;
-    }
-
-    if (typeof persisted.phase === 'string') {
-      this.#state.phase = persisted.phase as Phase;
-    }
+    super.restoreState({
+      ...persisted,
+      lastFillPrice: typeof persisted.lastFillPrice === 'string' ? persisted.lastFillPrice : null,
+      lastFillSide: isOrderSide(persisted.lastFillSide) ? persisted.lastFillSide : null,
+      phase: isPhase(persisted.phase) ? persisted.phase : 'entry',
+    });
   }
 
   protected override async processCandle(
