@@ -57,6 +57,7 @@
     "zod": "^4.6.5"
   },
   "devDependencies": {
+    "@typedtrader/candles": "0.2.3",
     "tsx": "^4.23.15"
   }
 }
