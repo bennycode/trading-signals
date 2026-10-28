@@ -35,9 +35,13 @@ Use market orders. A limit order fixes only the quote, while the EUR conversion 
 
 Trading212's 24/5 venue covers only instruments whose `extendedHours` is true, which in practice means US lines. London, Paris and Amsterdam positions trade in their own session, so run the whole thing in the 15:30 to 17:30 CET overlap when those and New York are all open. Quantity carries the side: negative sells.
 
-## Positions the orders endpoint cannot touch
+## An AutoInvest pie hides part of a position
 
-A holding inside an AutoInvest pie answers `selling-equity-not-owned, owned: 0.0` however much the portfolio says you own. Detect it with `pieQuantity` equal to `quantity` and `maxSell` null, report it, and tell the user to unwind that pie in the app rather than retrying.
+The orders endpoint can only reach `quantity` minus `pieQuantity`, and refuses anything above it with `selling-equity-not-owned`, quoting that remainder as what is owned. The whole-position case is obvious enough: Meta answered `owned: 0.0` while the portfolio reported 0.105 shares.
+
+The partial case is the one that bites, because nothing about it looks wrong. Apple reported 90.86 shares with 0.38 of them in a pie, and a full-size order was rejected outright. So the quantity to sell is always the free remainder, and the result that selling it realises is only that share of `ppl` — promising the whole `ppl` overstates the loss a cut would bank, which then oversizes the offset.
+
+Report a wholly pie-held position and say to unwind the pie in the app rather than retrying. For a partly held one, size to the remainder and say so, since the plan no longer realises what the portfolio screen implies.
 
 ## Confirm before placing, and do not pose as tax advice
 

@@ -13,11 +13,44 @@ import type {Position} from '../../../packages/exchange/src/broker/trading212/ap
 const FX_FEE_RATE = 0.0015;
 
 /**
- * A position held inside an AutoInvest pie cannot be sold through the orders endpoint — it answers
- * `selling-equity-not-owned, owned: 0.0`. The pie has to be unwound in the app first.
+ * Shares the orders endpoint can actually reach. An AutoInvest pie can hold a position whole or in
+ * part, and the endpoint refuses anything above the free remainder with `selling-equity-not-owned`,
+ * quoting that remainder as what is owned. Apple showed the partial case: 90.86 shares of which
+ * 0.38 sat in a pie, so the full-size order was rejected and 90.48 went through.
  */
+export function freeQuantity(position: Position): number {
+  return position.quantity - position.pieQuantity;
+}
+
+/** Whether any of the position can be reached at all; a wholly pie-held one cannot. */
 export function isSellable(position: Position): boolean {
-  return position.pieQuantity < position.quantity;
+  return freeQuantity(position) > 0;
+}
+
+/**
+ * The result selling only the free portion would realise. A pie holding back part of a position
+ * holds back that share of its gain or loss too, so the plan must not promise the whole `ppl`.
+ */
+export function realisableEur(position: Position): number {
+  return position.ppl * (freeQuantity(position) / position.quantity);
+}
+
+/**
+ * Trims a FIFO queue to the shares that can actually be sold. The tranches are replayed from the
+ * full order history, so they sum to the whole position including whatever a pie has locked away.
+ */
+export function capTranches(tranches: Tranche[], maxQty: number): Tranche[] {
+  const capped: Tranche[] = [];
+  let remaining = maxQty;
+  for (const tranche of tranches) {
+    if (remaining <= 1e-9) {
+      break;
+    }
+    const qty = Math.min(tranche.qty, remaining);
+    capped.push({eurPerShare: tranche.eurPerShare, qty});
+    remaining -= qty;
+  }
+  return capped;
 }
 
 /**
@@ -29,15 +62,20 @@ export function pickLosers(positions: Position[], thresholdEur: number) {
   const losers = positions.filter(p => p.ppl < 0 && Math.abs(p.ppl) < thresholdEur);
   return {
     blocked: losers.filter(p => !isSellable(p)),
-    sellable: losers.filter(p => isSellable(p)).sort((a, b) => b.ppl - a.ppl),
+    /** Partly pie-held, so cutting them realises less than their `ppl` says. */
+    partial: losers.filter(p => isSellable(p) && p.pieQuantity > 0),
+    sellable: losers.filter(p => isSellable(p)).sort((a, b) => realisableEur(b) - realisableEur(a)),
   };
 }
 
-/** The smallest winner whose own gain covers `needEur`, which is what keeps the rest untouched. */
+/**
+ * The smallest winner whose own gain covers `needEur`, which is what keeps the rest untouched. The
+ * gain that counts is the reachable one: a pie holding part of a winner holds back part of its gain.
+ */
 export function pickWinner(positions: Position[], needEur: number) {
   return positions
-    .filter(p => p.ppl >= needEur && isSellable(p))
-    .sort((a, b) => a.ppl - b.ppl)
+    .filter(p => isSellable(p) && realisableEur(p) >= needEur)
+    .sort((a, b) => realisableEur(a) - realisableEur(b))
     .at(0);
 }
 
@@ -154,21 +192,41 @@ function selftest(): void {
     pos({ppl: -120, ticker: 'SMALL_LOSS'}),
     pos({ppl: -40, ticker: 'TINY_LOSS'}),
     pos({pieQuantity: 1, ppl: -12, ticker: 'PIE_LOSS'}),
+    // Half pie-held, so only half of the -60 is reachable (the Apple shape, which the API rejects).
+    pos({pieQuantity: 5, ppl: -60, quantity: 10, ticker: 'HALF_PIE_LOSS'}),
     pos({ppl: 90, ticker: 'SMALL_WIN'}),
     pos({ppl: 400, ticker: 'MID_WIN'}),
     pos({ppl: 5000, ticker: 'BIG_WIN'}),
   ];
 
-  const {blocked, sellable} = pickLosers(positions, 1000);
+  assert.equal(freeQuantity(pos({pieQuantity: 0.38164414, quantity: 90.86413138})).toFixed(8), '90.48248724');
+  assert.equal(isSellable(pos({pieQuantity: 1, quantity: 1})), false, 'a wholly pie-held position is unreachable');
+  assert.equal(
+    isSellable(pos({pieQuantity: 0.38, quantity: 90.86})),
+    true,
+    'a partly pie-held position still has shares the endpoint can reach'
+  );
+
+  const {blocked, partial, sellable} = pickLosers(positions, 1000);
   assert.deepEqual(
     sellable.map(p => p.ticker),
-    ['TINY_LOSS', 'SMALL_LOSS'],
-    'only losses under the threshold, and the pie position is not among them'
+    ['HALF_PIE_LOSS', 'TINY_LOSS', 'SMALL_LOSS'],
+    'ordered by the loss actually reachable, so the half-pie -60 ranks as -30 and sorts first'
   );
   assert.deepEqual(
     blocked.map(p => p.ticker),
     ['PIE_LOSS'],
-    'a pie position is reported, not silently skipped'
+    'a wholly pie-held position is reported, not silently skipped'
+  );
+  assert.deepEqual(
+    partial.map(p => p.ticker),
+    ['HALF_PIE_LOSS'],
+    'a partly blocked position is called out'
+  );
+  assert.equal(
+    realisableEur(pos({pieQuantity: 5, ppl: -60, quantity: 10})),
+    -30,
+    'a pie holds back its share of the result'
   );
 
   assert.equal(
@@ -178,6 +236,26 @@ function selftest(): void {
   );
   assert.equal(pickWinner(positions, 4000)?.ticker, 'BIG_WIN', 'falls through to the next winner up when needed');
   assert.equal(pickWinner(positions, 99_999), undefined, 'no single winner can cover it');
+  assert.equal(
+    pickWinner([pos({pieQuantity: 9, ppl: 500, quantity: 10, ticker: 'MOSTLY_PIE_WIN'})], 300),
+    undefined,
+    'a winner whose gain is mostly locked in a pie cannot cover the loss'
+  );
+
+  assert.deepEqual(
+    capTranches(
+      [
+        {eurPerShare: 50, qty: 10},
+        {eurPerShare: 80, qty: 10},
+      ],
+      14
+    ),
+    [
+      {eurPerShare: 50, qty: 10},
+      {eurPerShare: 80, qty: 4},
+    ],
+    'the queue is trimmed to the sellable shares, oldest tranche first'
+  );
 
   // A ticker fully exited and re-bought keeps only the newest basis (the Rolls-Royce shape).
   const fill = (filledAt: string, quantity: number, netValue: number): HistoryOrder => ({
@@ -217,13 +295,14 @@ async function main(): Promise<void> {
 
   const api = new Trading212API({apiKey, apiSecret, usePaperTrading: false});
   const positions = await api.getPositions();
-  const {blocked, sellable} = pickLosers(positions, thresholdEur);
+  const {blocked, partial, sellable} = pickLosers(positions, thresholdEur);
 
   console.log(`Cut (loss under ${thresholdEur} EUR):`);
   for (const p of sellable) {
-    console.log(`  SELL ${p.ticker} qty=${p.quantity} ppl=${p.ppl.toFixed(2)}`);
+    const note = p.pieQuantity > 0 ? ` (${p.pieQuantity} of ${p.quantity} pie-held, full ppl ${p.ppl.toFixed(2)})` : '';
+    console.log(`  SELL ${p.ticker} qty=${freeQuantity(p)} loss=${realisableEur(p).toFixed(2)}${note}`);
   }
-  const lossEur = sellable.reduce((sum, p) => sum + p.ppl, 0);
+  const lossEur = sellable.reduce((sum, p) => sum + realisableEur(p), 0);
   if (sellable.length > 0) {
     console.log(
       `  estimated realised loss ${lossEur.toFixed(2)} EUR (confirm against the fills before sizing the offset)`
@@ -233,7 +312,12 @@ async function main(): Promise<void> {
   }
 
   for (const p of blocked) {
-    console.log(`  SKIP ${p.ticker} ppl=${p.ppl.toFixed(2)} — held in an AutoInvest pie, sell it in the app`);
+    console.log(`  SKIP ${p.ticker} ppl=${p.ppl.toFixed(2)} — wholly pie-held, so sell it in the app instead`);
+  }
+  if (partial.length > 0) {
+    console.log(
+      `  note: ${partial.map(p => p.ticker).join(', ')} partly pie-held, so the loss above is under their full ppl`
+    );
   }
 
   if (sellable.length === 0) {
@@ -246,14 +330,17 @@ async function main(): Promise<void> {
     return;
   }
 
-  const tranches = openTranches(await api.getHistoryOrders(winner.ticker));
-  const totalCostEur = tranches.reduce((sum, t) => sum + t.qty * t.eurPerShare, 0);
+  const allTranches = openTranches(await api.getHistoryOrders(winner.ticker));
+  // The cost basis spans the whole position, while only its free part can actually be sold.
+  const totalCostEur = allTranches.reduce((sum, t) => sum + t.qty * t.eurPerShare, 0);
   const perShare = proceedsPerShare(winner, totalCostEur);
-  const {gainEur, qty} = sizeSale(tranches, perShare, -lossEur);
+  const {gainEur, qty} = sizeSale(capTranches(allTranches, freeQuantity(winner)), perShare, -lossEur);
 
-  console.log(`\nOffset from ${winner.ticker} (smallest winner covering it alone, ppl ${winner.ppl.toFixed(2)}):`);
   console.log(
-    `  SELL ${qty} of ${winner.quantity} -> gain ${gainEur.toFixed(2)} EUR, residual ${(gainEur + lossEur).toFixed(2)}`
+    `\nOffset from ${winner.ticker} (smallest winner covering it alone, reachable gain ${realisableEur(winner).toFixed(2)}):`
+  );
+  console.log(
+    `  SELL ${qty} of ${freeQuantity(winner)} sellable -> gain ${gainEur.toFixed(2)} EUR, residual ${(gainEur + lossEur).toFixed(2)}`
   );
   console.log(`\nMarket orders, in the 15:30-17:30 CET overlap. Nothing placed — confirm first.`);
 }
