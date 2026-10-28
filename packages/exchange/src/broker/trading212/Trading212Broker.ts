@@ -17,6 +17,8 @@ import {
   type PendingLimitOrder,
   type PendingMarketOrder,
   type PendingOrder,
+  type PendingStopOrder,
+  type StopOrderOptions,
   type TradingRules,
 } from '../Broker.js';
 import {TradingPair} from '../TradingPair.js';
@@ -39,6 +41,7 @@ export class Trading212Broker extends Broker implements MarketDataSource {
   static readonly DEFAULT_FEE_RATES: FeeRate = {
     [OrderType.LIMIT]: new Big(0),
     [OrderType.MARKET]: new Big(0),
+    [OrderType.STOP]: new Big(0),
   };
 
   /**
@@ -272,8 +275,8 @@ export class Trading212Broker extends Broker implements MarketDataSource {
     const orders = await this.#api.getOrders();
     /*
      * Drop orders that don't fit the neutral model:
-     * - STOP / STOP_LIMIT (e.g. placed manually in the Trading212 app): neutral `OrderType`
-     *   only models MARKET and LIMIT; coercing would silently lose `stopPrice`.
+     * - STOP_LIMIT: neutral `OrderType` has no equivalent, and reporting it as a plain STOP would
+     *   lose the limit price the order would place once triggered.
      * - VALUE-strategy orders (notional amount in `value` instead of `quantity`): neutral
      *   `PendingOrder.size` is base-asset units, not notional. Filter to QUANTITY-strategy
      *   orders only.
@@ -281,7 +284,9 @@ export class Trading212Broker extends Broker implements MarketDataSource {
     return orders
       .filter(
         order =>
-          order.ticker === pair.base && (order.type === 'MARKET' || order.type === 'LIMIT') && order.quantity != null
+          order.ticker === pair.base &&
+          (order.type === 'MARKET' || order.type === 'LIMIT' || order.type === 'STOP') &&
+          order.quantity != null
       )
       .map(order => Trading212BrokerMapper.toOpenOrder(order, pair));
   }
@@ -345,6 +350,7 @@ export class Trading212Broker extends Broker implements MarketDataSource {
     return accountInfo.currencyCode;
   }
 
+  protected override async placeOrder(pair: TradingPair, options: StopOrderOptions): Promise<PendingStopOrder>;
   protected override async placeOrder(pair: TradingPair, options: LimitOrderOptions): Promise<PendingLimitOrder>;
   protected override async placeOrder(pair: TradingPair, options: MarketOrderOptions): Promise<PendingMarketOrder>;
   protected override async placeOrder(pair: TradingPair, options: OrderOptions): Promise<PendingOrder> {
@@ -366,6 +372,20 @@ export class Trading212Broker extends Broker implements MarketDataSource {
       const order = await this.#api.placeLimitOrder({
         limitPrice: Number(options.price),
         quantity: signedQuantity,
+        ticker: pair.base,
+        timeValidity: Trading212TimeValidity.GOOD_TILL_CANCEL,
+      });
+      return Trading212BrokerMapper.toPendingOrder(order, pair, options);
+    }
+
+    if (options.type === OrderType.STOP) {
+      /*
+       * A stop rests until it triggers or is cancelled, for the same reason a limit order does: a
+       * stop-loss that quietly expired at the close would leave the position unprotected overnight.
+       */
+      const order = await this.#api.placeStopOrder({
+        quantity: signedQuantity,
+        stopPrice: Number(options.stopPrice),
         ticker: pair.base,
         timeValidity: Trading212TimeValidity.GOOD_TILL_CANCEL,
       });

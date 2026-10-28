@@ -17,6 +17,8 @@ import {
   OrderType,
   type PendingLimitOrder,
   type PendingMarketOrder,
+  type PendingStopOrder,
+  type StopOrderOptions,
   type PendingOrder,
   type TradingRules,
 } from '../Broker.js';
@@ -88,6 +90,7 @@ export class AlpacaBroker extends Broker implements MarketDataSource {
   static DEFAULT_CRYPTO_FEE_RATES: FeeRate = {
     [OrderType.LIMIT]: new Big(0.0015),
     [OrderType.MARKET]: new Big(0.0025),
+    [OrderType.STOP]: new Big(0.0025),
   };
 
   /**
@@ -99,6 +102,7 @@ export class AlpacaBroker extends Broker implements MarketDataSource {
   static DEFAULT_STOCK_FEE_RATES: FeeRate = {
     [OrderType.LIMIT]: new Big(0),
     [OrderType.MARKET]: new Big(0),
+    [OrderType.STOP]: new Big(0),
   };
 
   /**
@@ -349,6 +353,7 @@ export class AlpacaBroker extends Broker implements MarketDataSource {
    */
   protected override async placeOrder(pair: TradingPair, options: LimitOrderOptions): Promise<PendingLimitOrder>;
   protected override async placeOrder(pair: TradingPair, options: MarketOrderOptions): Promise<PendingMarketOrder>;
+  protected override async placeOrder(pair: TradingPair, options: StopOrderOptions): Promise<PendingStopOrder>;
   protected override async placeOrder(pair: TradingPair, options: OrderOptions): Promise<PendingOrder> {
     const isCrypto = await isAlpacaCryptoSymbol(this.#alpacaAPI, pair);
     const symbol = createAlpacaSymbol(pair, isCrypto);

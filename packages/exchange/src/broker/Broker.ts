@@ -22,6 +22,8 @@ export const OrderType = {
   LIMIT: 'LIMIT',
   /** Taker */
   MARKET: 'MARKET',
+  /** Rests at the venue until the price trades through its stop, then executes as a taker order. */
+  STOP: 'STOP',
 } as const;
 export type OrderType = (typeof OrderType)[keyof typeof OrderType];
 
@@ -44,6 +46,8 @@ export interface FeeRate {
   LIMIT: Big;
   /** The taker commission: Market orders are usually filled immediately, but they reduce available liquidity on an order book, which isn't good for exchanges. To prevent this, exchanges usually have higher taker fees than maker fees. */
   MARKET: Big;
+  /** A triggered stop executes as a taker order, so it is charged at the market rate. */
+  STOP: Big;
   /**
    * Per-leg rate charged when the account currency differs from `pair.counter` and the
    * broker auto-converts. Undefined / zero when no conversion happens. The name matches
@@ -102,6 +106,12 @@ export interface PendingLimitOrder extends ExchangePendingOrderBase {
   type: 'LIMIT';
 }
 
+export interface PendingStopOrder extends ExchangePendingOrderBase {
+  /** Price the market has to trade through before the order executes. */
+  stopPrice: string;
+  type: 'STOP';
+}
+
 export interface PendingMarketOrder extends ExchangePendingOrderBase {
   /** Market orders don't have a price. */
   type: 'MARKET';
@@ -129,9 +139,16 @@ export interface LimitOrderOptions extends OrderBase {
   type: 'LIMIT';
 }
 
-export type OrderOptions = MarketOrderOptions | LimitOrderOptions;
+export interface StopOrderOptions extends OrderBase {
+  sizeInCounter: false;
+  /** Price the market has to trade through before the order executes. */
+  stopPrice: string;
+  type: 'STOP';
+}
 
-export type PendingOrder = PendingLimitOrder | PendingMarketOrder;
+export type OrderOptions = MarketOrderOptions | LimitOrderOptions | StopOrderOptions;
+
+export type PendingOrder = PendingLimitOrder | PendingMarketOrder | PendingStopOrder;
 
 export interface Balance {
   /** How much of the position is available */
@@ -369,6 +386,7 @@ export abstract class Broker extends EventEmitter {
    */
   protected abstract placeOrder(pair: TradingPair, options: LimitOrderOptions): Promise<PendingLimitOrder>;
   protected abstract placeOrder(pair: TradingPair, options: MarketOrderOptions): Promise<PendingMarketOrder>;
+  protected abstract placeOrder(pair: TradingPair, options: StopOrderOptions): Promise<PendingStopOrder>;
   protected abstract placeOrder(pair: TradingPair, options: OrderOptions): Promise<PendingOrder>;
 
   /**
@@ -385,6 +403,26 @@ export abstract class Broker extends EventEmitter {
       size: options.size,
       sizeInCounter: false,
       type: OrderType.LIMIT,
+    });
+  }
+
+  /**
+   * Places a STOP order, the shape a stop-loss takes: it rests at the venue until the market trades
+   * through `stopPrice` and then executes as a taker order, so a gap can carry the fill well past
+   * the trigger. Brokers without a stop endpoint throw.
+   *
+   * @see https://www.investopedia.com/terms/s/stoporder.asp
+   */
+  placeStopOrder(
+    pair: TradingPair,
+    options: Omit<StopOrderOptions, 'type' | 'sizeInCounter'>
+  ): Promise<PendingStopOrder> {
+    return this.placeOrder(pair, {
+      side: options.side,
+      size: options.size,
+      sizeInCounter: false,
+      stopPrice: options.stopPrice,
+      type: OrderType.STOP,
     });
   }
 

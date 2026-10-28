@@ -15,6 +15,8 @@ import {
   type PendingLimitOrder,
   type PendingMarketOrder,
   type PendingOrder,
+  type PendingStopOrder,
+  type StopOrderOptions,
   type TradingRules,
 } from './Broker.js';
 import {getCandlesUntil, type MarketDataSource} from './MarketDataSource.js';
@@ -25,6 +27,7 @@ import {
   applyTradingRules,
   limitFillPrice,
   marketFillPrice,
+  stopFillPrice,
   roundDownToIncrement,
 } from './brokerMockPricing.js';
 
@@ -125,7 +128,9 @@ export abstract class BrokerMock extends Broker {
     const fillPrice =
       order.type === OrderType.MARKET
         ? marketFillPrice(order.side, range, this.#slippageRate, this.#clampSlippage)
-        : limitFillPrice(order.side, new Big(order.price), range);
+        : order.type === OrderType.STOP
+          ? stopFillPrice(order.side, new Big(order.stopPrice), range, this.#slippageRate, this.#clampSlippage)
+          : limitFillPrice(order.side, new Big(order.price), range);
     if (!fillPrice) {
       return null;
     }
@@ -172,26 +177,30 @@ export abstract class BrokerMock extends Broker {
 
   protected override async placeOrder(pair: TradingPair, options: LimitOrderOptions): Promise<PendingLimitOrder>;
   protected override async placeOrder(pair: TradingPair, options: MarketOrderOptions): Promise<PendingMarketOrder>;
+  protected override async placeOrder(pair: TradingPair, options: StopOrderOptions): Promise<PendingStopOrder>;
   protected override async placeOrder(pair: TradingPair, options: OrderOptions) {
     const rules = await this.getTradingRules(pair);
     const size = this.#validatedSize(options, rules);
-    const limitPrice =
-      options.type === OrderType.LIMIT
-        ? roundDownToIncrement(new Big(options.price), new Big(rules.counter_increment))
-        : undefined;
+    const restingPrice = BrokerMock.#restingPrice(options, rules);
     const orderId = String(this.#nextOrderId++);
 
     // Validate balance and put amount on hold
     const hold =
       options.side === OrderSide.BUY
-        ? {amount: this.#counterToHold(options, size, limitPrice), currency: pair.counter}
+        ? {amount: this.#counterToHold(options, size, restingPrice), currency: pair.counter}
         : {amount: size, currency: pair.base};
     this.#balances.hold(hold.currency, hold.amount);
     this.#orderHolds.set(orderId, hold);
 
     const base = {id: orderId, pair, side: options.side, size: size.toFixed()};
-    if (options.type === OrderType.LIMIT && limitPrice) {
-      const pending: PendingLimitOrder = {...base, price: limitPrice.toFixed(), type: OrderType.LIMIT};
+    if (options.type === OrderType.LIMIT && restingPrice) {
+      const pending: PendingLimitOrder = {...base, price: restingPrice.toFixed(), type: OrderType.LIMIT};
+      this.#pendingOrders.push(pending);
+      return pending;
+    }
+
+    if (options.type === OrderType.STOP && restingPrice) {
+      const pending: PendingStopOrder = {...base, stopPrice: restingPrice.toFixed(), type: OrderType.STOP};
       this.#pendingOrders.push(pending);
       return pending;
     }
@@ -203,6 +212,18 @@ export abstract class BrokerMock extends Broker {
     };
     this.#pendingOrders.push(pending);
     return pending;
+  }
+
+  /** The price a resting order waits at, which is what a BUY has to put on hold. */
+  static #restingPrice(options: OrderOptions, rules: TradingRules) {
+    const increment = new Big(rules.counter_increment);
+    if (options.type === OrderType.LIMIT) {
+      return roundDownToIncrement(new Big(options.price), increment);
+    }
+    if (options.type === OrderType.STOP) {
+      return roundDownToIncrement(new Big(options.stopPrice), increment);
+    }
+    return undefined;
   }
 
   #validatedSize(options: OrderOptions, rules: TradingRules) {
@@ -218,13 +239,13 @@ export abstract class BrokerMock extends Broker {
   }
 
   /** Counter amount a BUY puts on hold: the estimated cost plus fee, or the notional spend as-is. */
-  #counterToHold(options: OrderOptions, size: Big, limitPrice: Big | undefined) {
+  #counterToHold(options: OrderOptions, size: Big, restingPrice: Big | undefined) {
     if (options.type === OrderType.MARKET && options.sizeInCounter) {
       // Notional market order: the size IS the full counter spend, fee included.
       return size;
     }
     // Market orders hold best-effort, based on the current candle price if available.
-    const price = limitPrice ?? (this.#currentCandle ? new Big(this.#currentCandle.close) : new Big(0));
+    const price = restingPrice ?? (this.#currentCandle ? new Big(this.#currentCandle.close) : new Big(0));
     const cost = size.mul(price);
     return cost.plus(cost.mul(this.#getFeeRateSync(options.type)));
   }
