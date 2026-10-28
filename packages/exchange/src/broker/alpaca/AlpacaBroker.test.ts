@@ -282,6 +282,53 @@ describe('AlpacaBroker', {concurrent: false}, () => {
       });
     });
 
+    it('places a stock STOP SELL order, resting until cancelled for whole shares', async () => {
+      mockMethods.postOrder.mockResolvedValue({
+        id: 'order-789',
+        limit_price: null,
+        notional: null,
+        qty: '5',
+        side: AlpacaOrderSide.SELL,
+        stop_price: '90',
+        type: AlpacaOrderType.STOP,
+      });
+
+      const pair = new TradingPair('SHOP', 'USD');
+      const order = await exchange.placeStopOrder(pair, {side: OrderSide.SELL, size: '5', stopPrice: '90'});
+
+      expect(order.type).toBe(OrderType.STOP);
+      expect(order.stopPrice).toBe('90');
+      expect(mockMethods.postOrder).toHaveBeenCalledWith({
+        client_order_id: uuidMatcher,
+        qty: '5',
+        side: 'sell',
+        stop_price: '90',
+        symbol: 'SHOP',
+        time_in_force: 'gtc',
+        type: 'stop',
+      });
+    });
+
+    it('sends day validity for a fractional stop, which is all Alpaca accepts', async () => {
+      mockMethods.postOrder.mockResolvedValue({
+        id: 'order-790',
+        limit_price: null,
+        notional: null,
+        qty: '0.5',
+        side: AlpacaOrderSide.SELL,
+        stop_price: '90',
+        type: AlpacaOrderType.STOP,
+      });
+
+      await exchange.placeStopOrder(new TradingPair('SHOP', 'USD'), {
+        side: OrderSide.SELL,
+        size: '0.5',
+        stopPrice: '90',
+      });
+
+      expect(mockMethods.postOrder).toHaveBeenCalledWith(expect.objectContaining({time_in_force: 'day'}));
+    });
+
     it('places a stock LIMIT SELL order with gtc for whole shares', async () => {
       mockMethods.postOrder.mockResolvedValue({
         id: 'order-456',

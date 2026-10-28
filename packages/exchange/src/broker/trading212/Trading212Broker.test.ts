@@ -10,8 +10,10 @@ const mockMethods = {
   getAccountCash: vi.fn(),
   getAccountInfo: vi.fn<Trading212API['getAccountInfo']>(),
   getInstruments: vi.fn<Trading212API['getInstruments']>(),
+  getOrders: vi.fn<Trading212API['getOrders']>(),
   placeLimitOrder: vi.fn<Trading212API['placeLimitOrder']>(),
   placeMarketOrder: vi.fn<Trading212API['placeMarketOrder']>(),
+  placeStopOrder: vi.fn<Trading212API['placeStopOrder']>(),
 };
 
 vi.mock(import('./api/Trading212API.js'), () => ({
@@ -19,8 +21,10 @@ vi.mock(import('./api/Trading212API.js'), () => ({
     getAccountCash = mockMethods.getAccountCash;
     getAccountInfo = mockMethods.getAccountInfo;
     getInstruments = mockMethods.getInstruments;
+    getOrders = mockMethods.getOrders;
     placeLimitOrder = mockMethods.placeLimitOrder;
     placeMarketOrder = mockMethods.placeMarketOrder;
+    placeStopOrder = mockMethods.placeStopOrder;
   } as unknown as typeof Trading212API,
 }));
 
@@ -129,6 +133,38 @@ describe('Trading212Broker', {concurrent: false}, () => {
       mockMethods.getInstruments.mockResolvedValue(INSTRUMENTS);
       mockMethods.placeLimitOrder.mockResolvedValue(ACCEPTED_ORDER);
       mockMethods.placeMarketOrder.mockResolvedValue({...ACCEPTED_ORDER, limitPrice: null, type: 'MARKET'});
+      mockMethods.placeStopOrder.mockResolvedValue({
+        ...ACCEPTED_ORDER,
+        limitPrice: null,
+        quantity: -1,
+        stopPrice: 150,
+        type: 'STOP',
+      });
+    });
+
+    it('rests a stop order until it triggers or is cancelled', async () => {
+      const order = await broker.placeStopOrder(LIMIT_PAIR, {side: OrderSide.SELL, size: '1', stopPrice: '150'});
+
+      expect(mockMethods.placeStopOrder.mock.calls[0]?.[0]).toEqual({
+        quantity: -1,
+        stopPrice: 150,
+        ticker: 'AMD_US_EQ',
+        timeValidity: 'GOOD_TILL_CANCEL',
+      });
+      expect(order.stopPrice, 'the trigger price survives the round trip through the neutral model').toBe('150');
+    });
+
+    it('reports a resting stop among the open orders, with its trigger price', async () => {
+      mockMethods.getOrders.mockResolvedValue([
+        {...ACCEPTED_ORDER, limitPrice: null, quantity: -1, stopPrice: 150, type: 'STOP'},
+        {...ACCEPTED_ORDER, limitPrice: null, quantity: -1, stopPrice: 150, type: 'STOP_LIMIT'},
+      ]);
+
+      const open = await broker.getOpenOrders(LIMIT_PAIR);
+
+      expect(open, 'STOP_LIMIT has no neutral equivalent and is still dropped').toEqual([
+        {id: '1', pair: LIMIT_PAIR, side: OrderSide.SELL, size: '1', stopPrice: '150', type: 'STOP'},
+      ]);
     });
 
     it('sends a limit order without the field the limit endpoint refuses', async () => {
