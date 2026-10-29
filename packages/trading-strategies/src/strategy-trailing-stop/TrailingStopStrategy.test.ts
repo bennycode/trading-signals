@@ -462,3 +462,176 @@ describe('TrailingStopStrategy', () => {
     expect(strategy.trailingState.stopPrice).toBe('108');
   });
 });
+
+describe('TrailingStopStrategy ATR trail', () => {
+  const tradingPair = new TradingPair('BTC', 'USD');
+
+  /**
+   * Daily bars whose true range is 10 on every bar, so Wilder smoothing settles on an ATR of
+   * exactly 10 and the expected stop is a round `peak - multiple * 10`.
+   */
+  function dailyBarsWithAtrOfTen(count: number): Candle[] {
+    return Array.from({length: count}, (_, i) =>
+      createCandle({
+        close: '105',
+        high: '110',
+        low: '100',
+        open: '105',
+        openTimeInISO: new Date(Date.UTC(2025, 0, i + 1)).toISOString(),
+        openTimeInMillis: Date.UTC(2025, 0, i + 1),
+        sizeInMillis: 86_400_000,
+      })
+    );
+  }
+
+  it('places the stop a multiple of ATR below the peak', async () => {
+    const strategy = new TrailingStopStrategy(
+      {atrInterval: '1d', atrMultiple: '3', atrPeriod: 14},
+      {fetchCandles: async () => dailyBarsWithAtrOfTen(15)}
+    );
+
+    const config: BacktestConfig = {
+      broker: createMockExchange({baseBalance: '5'}),
+      // Attach at high=200, so the trail sits at 200 - 3 * 10.
+      candles: [createCandle({close: '195', high: '200', low: '190', open: '195'})],
+      strategy,
+      tradingPair,
+    };
+
+    await new BacktestExecutor(config).execute();
+
+    expect(strategy.trailingState.peakPrice).toBe('200');
+    expect(strategy.trailingState.stopPrice, 'peak 200 less 3x the ATR of 10').toBe('170');
+  });
+
+  it('exits once the close breaches the ATR trail', async () => {
+    const strategy = new TrailingStopStrategy(
+      {atrInterval: '1d', atrMultiple: '3', atrPeriod: 14, exitOrder: 'market'},
+      {fetchCandles: async () => dailyBarsWithAtrOfTen(15)}
+    );
+
+    const config: BacktestConfig = {
+      broker: createMockExchange({baseBalance: '5'}),
+      candles: [
+        createCandle({close: '195', high: '200', low: '190', open: '195'}),
+        // 169 is below the 170 trail.
+        createCandle({close: '169', high: '196', low: '168', open: '195', openTimeInISO: '2025-01-01T00:01:00.000Z'}),
+        // The sell needs a following candle to execute against.
+        createCandle({close: '168', high: '170', low: '166', open: '169', openTimeInISO: '2025-01-01T00:02:00.000Z'}),
+      ],
+      strategy,
+      tradingPair,
+    };
+
+    const result = await new BacktestExecutor(config).execute();
+
+    expect(result.trades).toHaveLength(1);
+    expect(result.trades[0].advice.side).toBe(OrderSide.SELL);
+    expect(strategy.trailingState.exitReason).toContain('3x ATR');
+  });
+
+  it('takes the looser of the ATR and percentage trails, so volatility only widens it', async () => {
+    const strategy = new TrailingStopStrategy(
+      // 3x ATR puts the stop at 170; 25% puts it at 150, which is the looser of the two.
+      {atrInterval: '1d', atrMultiple: '3', atrPeriod: 14, trailDownPct: '25'},
+      {fetchCandles: async () => dailyBarsWithAtrOfTen(15)}
+    );
+
+    const config: BacktestConfig = {
+      broker: createMockExchange({baseBalance: '5'}),
+      candles: [createCandle({close: '195', high: '200', low: '190', open: '195'})],
+      strategy,
+      tradingPair,
+    };
+
+    await new BacktestExecutor(config).execute();
+
+    expect(strategy.trailingState.stopPrice, 'the wider percentage trail wins over the tighter ATR one').toBe('150');
+  });
+
+  it('waits rather than attaching when an ATR trail has no reading yet', async () => {
+    // No history to warm up from, and a single one-minute candle completes no daily bar.
+    const strategy = new TrailingStopStrategy({atrInterval: '1d', atrMultiple: '3', atrPeriod: 14});
+
+    const config: BacktestConfig = {
+      broker: createMockExchange({baseBalance: '5'}),
+      candles: [createCandle({close: '195', high: '200', low: '190', open: '195'})],
+      strategy,
+      tradingPair,
+    };
+
+    const result = await new BacktestExecutor(config).execute();
+
+    expect(strategy.trailingState.peakPrice, 'attaching with no stop would strand peak and stop out of step').toBe('0');
+    expect(result.trades, 'nothing is sold while the trail distance is unknown').toHaveLength(0);
+  });
+
+  it('never loosens a stop already in place when volatility expands', async () => {
+    const HOUR = 3_600_000;
+    // Hourly history with a true range of 10 settles the ATR at 10, so the first stop is 200 - 30.
+    const history = Array.from({length: 15}, (_, i) =>
+      createCandle({
+        close: '105',
+        high: '110',
+        low: '100',
+        open: '105',
+        openTimeInISO: new Date(Date.UTC(2025, 0, 1) + i * HOUR).toISOString(),
+        openTimeInMillis: Date.UTC(2025, 0, 1) + i * HOUR,
+        sizeInMillis: HOUR,
+      })
+    );
+    const strategy = new TrailingStopStrategy(
+      {atrInterval: '1h', atrMultiple: '3', atrPeriod: 14},
+      {fetchCandles: async () => history}
+    );
+
+    /*
+     * The high stays flat so the peak cannot ratchet, while the range widens tenfold downward so
+     * the ATR climbs. Without the ratchet guard the stop slid from 170 to about 87.
+     */
+    const start = Date.UTC(2025, 0, 2);
+    const candles = [
+      createCandle({close: '200', high: '200', low: '199', open: '200', openTimeInMillis: start}),
+      ...Array.from({length: 5}, (_, i) =>
+        createCandle({
+          close: '199',
+          high: '200',
+          low: '100',
+          open: '199',
+          openTimeInISO: new Date(start + (i + 1) * HOUR).toISOString(),
+          openTimeInMillis: start + (i + 1) * HOUR,
+        })
+      ),
+    ];
+
+    const config: BacktestConfig = {
+      broker: createMockExchange({baseBalance: '5'}),
+      candles,
+      strategy,
+      tradingPair,
+    };
+
+    await new BacktestExecutor(config).execute();
+
+    expect(strategy.trailingState.peakPrice, 'the flat high gives the peak nothing to ratchet to').toBe('200');
+    expect(
+      strategy.trailingState.stopPrice,
+      'a widening range may give a future peak more room but must not pull back the stop being held'
+    ).toBe('170');
+  });
+
+  it('still falls back to a 10% trail when no method is configured at all', async () => {
+    const strategy = new TrailingStopStrategy({});
+
+    const config: BacktestConfig = {
+      broker: createMockExchange({baseBalance: '5'}),
+      candles: [createCandle({close: '95', high: '100', low: '90', open: '95'})],
+      strategy,
+      tradingPair,
+    };
+
+    await new BacktestExecutor(config).execute();
+
+    expect(strategy.trailingState.stopPrice).toBe('90');
+  });
+});

@@ -1,14 +1,34 @@
 import Big from 'big.js';
 import {z} from 'zod';
 import {OrderSide, OrderType} from '@typedtrader/exchange';
+import {ATR, type HighLowClose} from 'trading-signals';
 import {AllAvailableAmount} from '../trader/index.js';
-import type {Fill, PendingOrder, OneMinuteBatchedCandle} from '@typedtrader/exchange';
+import type {Candle, Fill, PendingOrder, OneMinuteBatchedCandle} from '@typedtrader/exchange';
 import type {LimitOrderAdvice, OrderAdvice, TradingSessionState} from '../trader/index.js';
 import {MarketType} from '../strategy/MarketType.js';
 import {Strategy} from '../strategy/Strategy.js';
+import {BatchedIndicator} from '../util/BatchedIndicator.js';
+import {trailStop} from '../util/trailStop.js';
 import {positiveNumberString} from '../util/validators.js';
 
 export const TrailingStopSchema = z.object({
+  /**
+   * Candle size the ATR is measured on. A trail quoted in ATRs means nothing without it: 3× ATR
+   * of a one-minute bar is a far tighter stop than 3× ATR of a daily one. Only read when
+   * `atrMultiple` is set.
+   */
+  atrInterval: z.enum(['1h', '4h', '1d', '1w']).default('1d'),
+  /**
+   * Trail distance as a multiple of ATR, so the room scales with the instrument's own volatility
+   * instead of a percentage guessed per symbol. The Chandelier Exit convention is "3"; see
+   * {@link ATR_TRAIL_BANDS} for why below 2 tends to whipsaw.
+   *
+   * Set alongside `trailDownPct` to get the looser of the two, so volatility can only widen the
+   * trail and never tighten it.
+   */
+  atrMultiple: positiveNumberString.optional(),
+  /** ATR lookback in `atrInterval` bars. Wilder's original is 14. Only read when `atrMultiple` is set. */
+  atrPeriod: z.number().int().positive().default(14),
   /**
    * Order type used to exit. `"limit"` (default) places the sell at the trail target —
    * guaranteed price, but may not fill on a gap. `"market"` guarantees fill at the
@@ -25,9 +45,10 @@ export const TrailingStopSchema = z.object({
   pivotPrice: positiveNumberString.optional(),
   /**
    * Exit threshold as a percentage of the running peak. "5" → exit when close drops to
-   * peak * 0.95. Defaults to "10" (10%).
+   * peak * 0.95. Falls back to "10" when no `atrMultiple` is configured either, so a
+   * configuration naming no trail method at all still gets one.
    */
-  trailDownPct: positiveNumberString.default('10'),
+  trailDownPct: positiveNumberString.optional(),
   /**
    * Optional hysteresis on peak ratcheting. When set, a new candle high only updates
    * the peak if it exceeds the previous peak by at least `trailUpPct` percent — i.e.
@@ -114,18 +135,68 @@ export class TrailingStopStrategy extends Strategy {
   static override NAME = '@typedtrader/strategy-trailing-stop';
   static override marketTypes: readonly MarketType[] = [MarketType.BULLISH];
 
-  readonly #trailDownPct: Big;
+  readonly #trailDownPct: Big | null;
   readonly #trailUpPct: Big | null;
   readonly #pivotPrice: Big | null;
   readonly #exitOrder: 'limit' | 'market';
+  readonly #atrMultiple: Big | null;
+  readonly #atr: BatchedIndicator<number, HighLowClose<number>> | null;
+  readonly #fetchCandles: (() => Promise<Candle[]>) | undefined;
+  #warmedUp = false;
 
-  constructor(config: TrailingStopConfig) {
+  /**
+   * `fetchCandles` must return bars already at `atrInterval`, which is what
+   * {@link BatchedIndicator.warmUp} expects. Without it an ATR trail stays unattached until enough
+   * live candles have arrived to stabilise the indicator, leaving the position untrailed meanwhile.
+   */
+  constructor(config: TrailingStopConfig, options?: {fetchCandles?: () => Promise<Candle[]>}) {
     super({config, state: defaultState()});
     const parsed = TrailingStopSchema.parse(config);
-    this.#trailDownPct = new Big(parsed.trailDownPct);
+    this.#atrMultiple = parsed.atrMultiple ? new Big(parsed.atrMultiple) : null;
+    /*
+     * The percentage default only stands in when nothing else would trail. Applying it next to an
+     * ATR multiple would hand `trailStop` a 10% candidate that is almost always the looser of the
+     * two, so the ATR trail would be computed and then never bind.
+     */
+    const trailDownPct = parsed.trailDownPct ?? (this.#atrMultiple === null ? '10' : null);
+    this.#trailDownPct = trailDownPct === null ? null : new Big(trailDownPct);
     this.#trailUpPct = parsed.trailUpPct ? new Big(parsed.trailUpPct) : null;
     this.#pivotPrice = parsed.pivotPrice ? new Big(parsed.pivotPrice) : null;
     this.#exitOrder = parsed.exitOrder;
+    this.#fetchCandles = options?.fetchCandles;
+    this.#atr =
+      this.#atrMultiple === null
+        ? null
+        : new BatchedIndicator(parsed.atrInterval, new ATR(parsed.atrPeriod), bar => ({
+            close: bar.close.toNumber(),
+            high: bar.high.toNumber(),
+            low: bar.low.toNumber(),
+          }));
+  }
+
+  /**
+   * The trail target for a peak, from whichever methods are configured, or `null` while an ATR
+   * trail is still warming up and no percentage is configured to stand in for it.
+   */
+  #stopFor(peak: Big): Big | null {
+    const atr = this.#atr?.getResult();
+    const trailDownPct = this.#trailDownPct ?? undefined;
+
+    if (this.#atrMultiple !== null && atr !== undefined && atr !== null) {
+      return trailStop({atr, atrMultiple: this.#atrMultiple, peak, trailDownPct});
+    }
+
+    return trailDownPct === undefined ? null : trailStop({peak, trailDownPct});
+  }
+
+  async #warmUp(): Promise<void> {
+    this.#warmedUp = true;
+
+    if (!this.#fetchCandles || !this.#atr) {
+      return;
+    }
+
+    this.#atr.warmUp(await this.#fetchCandles());
   }
 
   get #state(): TrailingStopState {
@@ -149,6 +220,13 @@ export class TrailingStopStrategy extends Strategy {
     candle: OneMinuteBatchedCandle,
     state: TradingSessionState
   ): Promise<OrderAdvice | void> {
+    if (!this.#warmedUp) {
+      await this.#warmUp();
+    }
+
+    // The ATR tracks every candle, attached or not, so its reading is current the moment it is used.
+    this.#atr?.add(candle);
+
     const attached = this.#isAttached;
     const holding = this.hasSellablePosition(state);
 
@@ -175,15 +253,35 @@ export class TrailingStopStrategy extends Strategy {
     }
   }
 
-  /** Latches the trail onto the current position: records the starting peak and its stop target. */
+  /**
+   * Latches the trail onto the current position: records the starting peak and its stop target.
+   *
+   * An ATR trail with no history to warm up from cannot name a stop yet, and attaching without one
+   * would leave the peak set and the stop at zero, breaking the invariant that the two are either
+   * both unset or both known. So the trail waits for the indicator instead.
+   */
   #attach(candle: OneMinuteBatchedCandle) {
     const peak = this.#pivotPrice ?? candle.high;
-    const stopTarget = peak.mul(new Big(1).minus(this.#trailDownPct.div(100)));
+    const stopTarget = this.#stopFor(peak);
+    if (stopTarget === null) {
+      return;
+    }
+
     this.#state.peakPrice = peak.toFixed();
     this.#state.stopPrice = stopTarget.toFixed();
-    this.onMessage?.(
-      `Trail attached. Peak: ${peak.toFixed()}, stop: ${stopTarget.toFixed()} (-${this.#trailDownPct.toFixed()}%)`
-    );
+    this.onMessage?.(`Trail attached. Peak: ${peak.toFixed()}, stop: ${stopTarget.toFixed()} (${this.#trailLabel()})`);
+  }
+
+  /** How the trail distance is being measured, for the log line. */
+  #trailLabel(): string {
+    const parts: string[] = [];
+    if (this.#atrMultiple !== null) {
+      parts.push(`${this.#atrMultiple.toFixed()}x ATR`);
+    }
+    if (this.#trailDownPct !== null) {
+      parts.push(`-${this.#trailDownPct.toFixed()}%`);
+    }
+    return parts.join(' or ');
   }
 
   async #finishPositionGone() {
@@ -209,7 +307,19 @@ export class TrailingStopStrategy extends Strategy {
       this.#state.peakPrice = newPeak.toFixed();
     }
 
-    const trailTarget = newPeak.mul(new Big(1).minus(this.#trailDownPct.div(100)));
+    /*
+     * The stop ratchets: it only ever moves up. A percentage trail gets that for free because the
+     * peak is the only thing that moves, but an ATR trail also moves with volatility, and a
+     * widening range would otherwise pull a stop already in place back down — on a flat peak, a
+     * range widening to ten times its old width would hand back half the protection. Volatility
+     * may give a *future* peak more room; it may never loosen the stop being held right now.
+     *
+     * An unreadable ATR (a restored state whose indicator has not warmed up again) keeps the last
+     * known stop for the same reason.
+     */
+    const previousStop = new Big(this.#state.stopPrice);
+    const candidate = this.#stopFor(newPeak);
+    const trailTarget = candidate !== null && candidate.gt(previousStop) ? candidate : previousStop;
     this.#state.stopPrice = trailTarget.toFixed();
 
     if (peakRatcheted) {
@@ -220,7 +330,7 @@ export class TrailingStopStrategy extends Strategy {
       return undefined;
     }
 
-    const reason = `Trailing stop: close ${candle.close.toFixed()} <= peak ${newPeak.toFixed()} - ${this.#trailDownPct.toFixed()}% (target ${trailTarget.toFixed()})`;
+    const reason = `Trailing stop: close ${candle.close.toFixed()} <= peak ${newPeak.toFixed()} - ${this.#trailLabel()} (target ${trailTarget.toFixed()})`;
     if (this.#state.exitReason === null) {
       this.#state.exitReason = reason;
       this.onMessage?.(reason);
