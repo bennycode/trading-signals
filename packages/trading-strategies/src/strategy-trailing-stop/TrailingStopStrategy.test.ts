@@ -566,6 +566,60 @@ describe('TrailingStopStrategy ATR trail', () => {
     expect(result.trades, 'nothing is sold while the trail distance is unknown').toHaveLength(0);
   });
 
+  it('never loosens a stop already in place when volatility expands', async () => {
+    const HOUR = 3_600_000;
+    // Hourly history with a true range of 10 settles the ATR at 10, so the first stop is 200 - 30.
+    const history = Array.from({length: 15}, (_, i) =>
+      createCandle({
+        close: '105',
+        high: '110',
+        low: '100',
+        open: '105',
+        openTimeInISO: new Date(Date.UTC(2025, 0, 1) + i * HOUR).toISOString(),
+        openTimeInMillis: Date.UTC(2025, 0, 1) + i * HOUR,
+        sizeInMillis: HOUR,
+      })
+    );
+    const strategy = new TrailingStopStrategy(
+      {atrInterval: '1h', atrMultiple: '3', atrPeriod: 14},
+      {fetchCandles: async () => history}
+    );
+
+    /*
+     * The high stays flat so the peak cannot ratchet, while the range widens tenfold downward so
+     * the ATR climbs. Without the ratchet guard the stop slid from 170 to about 87.
+     */
+    const start = Date.UTC(2025, 0, 2);
+    const candles = [
+      createCandle({close: '200', high: '200', low: '199', open: '200', openTimeInMillis: start}),
+      ...Array.from({length: 5}, (_, i) =>
+        createCandle({
+          close: '199',
+          high: '200',
+          low: '100',
+          open: '199',
+          openTimeInISO: new Date(start + (i + 1) * HOUR).toISOString(),
+          openTimeInMillis: start + (i + 1) * HOUR,
+        })
+      ),
+    ];
+
+    const config: BacktestConfig = {
+      broker: createMockExchange({baseBalance: '5'}),
+      candles,
+      strategy,
+      tradingPair,
+    };
+
+    await new BacktestExecutor(config).execute();
+
+    expect(strategy.trailingState.peakPrice, 'the flat high gives the peak nothing to ratchet to').toBe('200');
+    expect(
+      strategy.trailingState.stopPrice,
+      'a widening range may give a future peak more room but must not pull back the stop being held'
+    ).toBe('170');
+  });
+
   it('still falls back to a 10% trail when no method is configured at all', async () => {
     const strategy = new TrailingStopStrategy({});
 

@@ -308,11 +308,18 @@ export class TrailingStopStrategy extends Strategy {
     }
 
     /*
-     * An ATR trail that has gone unreadable (a restored state whose indicator has not warmed up
-     * again) keeps the last known stop rather than widening to nothing, so the protection a
-     * restart inherits is never weaker than the one it had.
+     * The stop ratchets: it only ever moves up. A percentage trail gets that for free because the
+     * peak is the only thing that moves, but an ATR trail also moves with volatility, and a
+     * widening range would otherwise pull a stop already in place back down — on a flat peak, a
+     * range widening to ten times its old width would hand back half the protection. Volatility
+     * may give a *future* peak more room; it may never loosen the stop being held right now.
+     *
+     * An unreadable ATR (a restored state whose indicator has not warmed up again) keeps the last
+     * known stop for the same reason.
      */
-    const trailTarget = this.#stopFor(newPeak) ?? new Big(this.#state.stopPrice);
+    const previousStop = new Big(this.#state.stopPrice);
+    const candidate = this.#stopFor(newPeak);
+    const trailTarget = candidate !== null && candidate.gt(previousStop) ? candidate : previousStop;
     this.#state.stopPrice = trailTarget.toFixed();
 
     if (peakRatcheted) {
