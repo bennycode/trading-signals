@@ -3,7 +3,13 @@ import {describe, expect, it, vi, beforeEach} from 'vitest';
 import {z} from 'zod';
 import {TradingPair} from '../TradingPair.js';
 import {OrderPosition, OrderSide, OrderType} from '../Broker.js';
-import {AlpacaAssetClass, AlpacaOrderSide, AlpacaOrderStatus, AlpacaOrderType} from './api/schema/OrderSchema.js';
+import {
+  AlpacaAssetClass,
+  AlpacaOrderSide,
+  AlpacaOrderStatus,
+  AlpacaOrderType,
+  type Order,
+} from './api/schema/OrderSchema.js';
 import {PositionSide} from './api/schema/PositionSchema.js';
 import {TradeUpdateEvent} from './api/schema/TradingStreamSchema.js';
 import type {AlpacaAPI} from './api/AlpacaAPI.js';
@@ -21,8 +27,45 @@ const mockMethods = {
   getPositions: vi.fn(),
   getStockBars: vi.fn(),
   getStockBarsLatest: vi.fn(),
+  patchOrder: vi.fn<AlpacaAPI['patchOrder']>(),
   postOrder: vi.fn(),
 };
+
+/**
+ * A complete Alpaca order, so a typed mock of `patchOrder` can return one without each test
+ * restating the two dozen fields it does not care about.
+ */
+function createAlpacaOrder(overrides: Partial<Order> & Pick<Order, 'id'>): Order {
+  return {
+    asset_class: 'us_equity',
+    asset_id: 'asset-1',
+    canceled_at: null,
+    client_order_id: 'client-1',
+    created_at: '2026-10-30T00:00:00Z',
+    expired_at: null,
+    extended_hours: false,
+    failed_at: null,
+    filled_at: null,
+    filled_avg_price: null,
+    filled_qty: '0',
+    legs: null,
+    limit_price: null,
+    notional: null,
+    qty: '10',
+    replaced_at: null,
+    replaced_by: null,
+    replaces: null,
+    side: AlpacaOrderSide.SELL,
+    status: 'accepted',
+    stop_price: null,
+    submitted_at: '2026-10-30T00:00:00Z',
+    symbol: 'SHOP',
+    time_in_force: 'gtc',
+    type: AlpacaOrderType.STOP,
+    updated_at: '2026-10-30T00:00:00Z',
+    ...overrides,
+  };
+}
 
 vi.mock(import('./api/AlpacaAPI.js'), () => ({
   AlpacaAPI: class {
@@ -33,6 +76,7 @@ vi.mock(import('./api/AlpacaAPI.js'), () => ({
     getCryptoBars = mockMethods.getCryptoBars;
     getCryptoBarsLatest = mockMethods.getCryptoBarsLatest;
     getOrders = mockMethods.getOrders;
+    patchOrder = mockMethods.patchOrder;
     getPositions = mockMethods.getPositions;
     getStockBars = mockMethods.getStockBars;
     getStockBarsLatest = mockMethods.getStockBarsLatest;
@@ -327,6 +371,36 @@ describe('AlpacaBroker', {concurrent: false}, () => {
       });
 
       expect(mockMethods.postOrder).toHaveBeenCalledWith(expect.objectContaining({time_in_force: 'day'}));
+    });
+
+    it('replaces an order in one call instead of cancelling and re-placing it', async () => {
+      mockMethods.patchOrder.mockResolvedValue(createAlpacaOrder({id: 'order-replaced', qty: '20', stop_price: '90'}));
+
+      const updated = await exchange.updateOrder(new TradingPair('SHOP', 'USD'), 'order-123', {size: '20'});
+
+      expect(mockMethods.patchOrder).toHaveBeenCalledWith('order-123', {
+        limit_price: undefined,
+        qty: '20',
+        stop_price: undefined,
+      });
+      expect(
+        mockMethods.deleteOrder,
+        'Alpaca amends in place, so the order never leaves the venue'
+      ).not.toHaveBeenCalled();
+      expect(updated.size).toBe('20');
+      expect(updated.id, 'Alpaca answers with a new order ID').toBe('order-replaced');
+    });
+
+    it('passes a new trigger price through to the replacement', async () => {
+      mockMethods.patchOrder.mockResolvedValue(createAlpacaOrder({id: 'order-replaced', qty: '10', stop_price: '95'}));
+
+      await exchange.updateOrder(new TradingPair('SHOP', 'USD'), 'order-123', {stopPrice: '95'});
+
+      expect(mockMethods.patchOrder).toHaveBeenCalledWith('order-123', {
+        limit_price: undefined,
+        qty: undefined,
+        stop_price: '95',
+      });
     });
 
     it('places a stock LIMIT SELL order with gtc for whole shares', async () => {

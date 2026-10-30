@@ -76,6 +76,20 @@ interface PostOrderRequestBase {
 export type PostOrderRequest = PostOrderRequestBase &
   ({type: 'market' | 'limit'; stop_price?: never} | {type: 'stop' | 'stop_limit'; stop_price: string});
 
+/**
+ * Alpaca replaces an order in one call, so a resting order never leaves the venue. Only the fields
+ * being changed are sent; `qty` and `notional` are mutually exclusive, and a non-IPO notional order
+ * cannot be replaced at all.
+ *
+ * @see https://docs.alpaca.markets/reference/patchorderbyorderid
+ */
+export interface PatchOrderRequest {
+  limit_price?: string;
+  qty?: string;
+  stop_price?: string;
+  time_in_force?: string;
+}
+
 export class AlpacaAPI {
   readonly #tradingClient;
   readonly #marketDataClient;
@@ -194,6 +208,17 @@ export class AlpacaAPI {
    */
   async postOrder(params: PostOrderRequest) {
     const response = await this.#tradingClient.post('/v2/orders', params);
+    return OrderSchema.parse(response.data);
+  }
+
+  /**
+   * Replaces a resting order, returning it under a new ID. Atomic, so unlike a cancel followed by a
+   * fresh order there is no window in which the venue holds nothing.
+   *
+   * @see https://docs.alpaca.markets/reference/patchorderbyorderid
+   */
+  async patchOrder(orderId: string, params: PatchOrderRequest) {
+    const response = await this.#tradingClient.patch(`/v2/orders/${orderId}`, params);
     return OrderSchema.parse(response.data);
   }
 
