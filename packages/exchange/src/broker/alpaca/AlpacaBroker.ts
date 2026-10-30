@@ -12,6 +12,7 @@ import {
   type Fill,
   type LimitOrderOptions,
   type MarketOrderOptions,
+  type OrderUpdate,
   type OrderOptions,
   OrderPosition,
   OrderType,
@@ -278,6 +279,23 @@ export class AlpacaBroker extends Broker implements MarketDataSource {
         throw error;
       }
     }
+  }
+
+  /**
+   * Alpaca replaces an order in a single call, so this overrides the base implementation's cancel
+   * and re-place: the order never leaves the venue, and a rejected change leaves the original
+   * resting instead of nothing. Alpaca still answers with a new order ID, as the base contract
+   * says to expect.
+   *
+   * @see https://docs.alpaca.markets/reference/patchorderbyorderid
+   */
+  override async updateOrder(pair: TradingPair, orderId: string, changes: OrderUpdate): Promise<PendingOrder> {
+    const patched = await this.#alpacaAPI.patchOrder(orderId, {
+      limit_price: changes.price,
+      qty: changes.size,
+      stop_price: changes.stopPrice,
+    });
+    return AlpacaBrokerMapper.toOpenOrder(patched, pair);
   }
 
   /** @see https://docs.alpaca.markets/reference/getallorders */

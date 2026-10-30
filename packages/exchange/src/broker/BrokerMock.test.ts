@@ -1,7 +1,16 @@
 import Big from 'big.js';
-import {describe, expect, it} from 'vitest';
+import {describe, expect, it, vi} from 'vitest';
 import {BrokerMock, type BrokerMockSlippageConfig, type ExchangeMockBalance} from './BrokerMock.js';
-import {type Candle, type FeeRate, type Fill, OrderSide, OrderType, type TradingRules} from './Broker.js';
+import {
+  applyOrderUpdate,
+  type Candle,
+  type FeeRate,
+  type Fill,
+  OrderReplacementFailedError,
+  OrderSide,
+  OrderType,
+  type TradingRules,
+} from './Broker.js';
 import type {MarketDataSource} from './MarketDataSource.js';
 import {TradingPair} from './TradingPair.js';
 import {ms} from 'ms';
@@ -770,6 +779,112 @@ describe('BrokerMock', () => {
       exchange.processCandle(createCandle({close: '110', open: '105', openTimeInISO: '2025-01-01T00:01:00.000Z'}));
 
       expect(received, 'disconnect() should stop fill emissions').toHaveLength(0);
+    });
+  });
+});
+
+describe('Broker.updateOrder', () => {
+  const pair = new TradingPair('BTC', 'USD');
+
+  it('resizes a resting stop to cover a position that has grown', async () => {
+    const exchange = createExchange('20', '0');
+    const original = await exchange.placeStopOrder(pair, {side: OrderSide.SELL, size: '10', stopPrice: '90'});
+
+    const updated = await exchange.updateOrder(pair, original.id, {size: '20'});
+
+    expect(updated.size, 'the whole position is covered now').toBe('20');
+    expect(updated.type, 'a stop stays a stop').toBe(OrderType.STOP);
+    const open = await exchange.getOpenOrders(pair);
+    expect(open, 'the original was replaced, not duplicated').toHaveLength(1);
+    expect(open[0]?.size).toBe('20');
+  });
+
+  it('keeps the fields that were not named', async () => {
+    const exchange = createExchange('20', '0');
+    const original = await exchange.placeStopOrder(pair, {side: OrderSide.SELL, size: '10', stopPrice: '90'});
+
+    const updated = await exchange.updateOrder(pair, original.id, {size: '20'});
+
+    expect(updated.type).toBe(OrderType.STOP);
+    expect(updated.type === OrderType.STOP ? updated.stopPrice : null, 'the trigger is untouched').toBe('90');
+    expect(updated.side, 'so is the side').toBe(OrderSide.SELL);
+  });
+
+  it('moves a trigger without touching the size', async () => {
+    const exchange = createExchange('20', '0');
+    const original = await exchange.placeStopOrder(pair, {side: OrderSide.SELL, size: '10', stopPrice: '90'});
+
+    const updated = await exchange.updateOrder(pair, original.id, {stopPrice: '95'});
+
+    expect(updated.type === OrderType.STOP ? updated.stopPrice : null).toBe('95');
+    expect(updated.size).toBe('10');
+  });
+
+  it('updates a limit price', async () => {
+    const exchange = createExchange('20', '0');
+    const original = await exchange.placeLimitOrder(pair, {price: '90', side: OrderSide.SELL, size: '10'});
+
+    const updated = await exchange.updateOrder(pair, original.id, {price: '95', size: '12'});
+
+    expect(updated.type === OrderType.LIMIT ? updated.price : null).toBe('95');
+    expect(updated.size).toBe('12');
+  });
+
+  it('refuses an order ID that is not resting', async () => {
+    const exchange = createExchange('20', '0');
+
+    await expect(exchange.updateOrder(pair, 'nope', {size: '1'})).rejects.toThrow(/No open order with ID "nope"/);
+  });
+
+  it('reports the cancelled order when the replacement is refused', async () => {
+    const exchange = createExchange('20', '0');
+    const original = await exchange.placeStopOrder(pair, {side: OrderSide.SELL, size: '10', stopPrice: '90'});
+    /*
+     * A venue refusing the replacement is the case that matters: without an amend endpoint the
+     * original is already gone, so the caller has to learn that nothing is resting any more.
+     */
+    const refuse = vi.spyOn(exchange, 'placeStopOrder').mockRejectedValue(new Error('size too large'));
+
+    const failure = await exchange.updateOrder(pair, original.id, {size: '999'}).catch((error: unknown) => error);
+
+    expect(failure).toBeInstanceOf(OrderReplacementFailedError);
+    expect((failure as OrderReplacementFailedError).cancelledOrderId).toBe(original.id);
+    expect((failure as Error).message).toContain('no order rests at the venue any more');
+    expect(await exchange.getOpenOrders(pair), 'and the venue really does hold nothing').toHaveLength(0);
+    refuse.mockRestore();
+  });
+});
+
+describe('applyOrderUpdate', () => {
+  const pair = new TradingPair('BTC', 'USD');
+
+  it('carries a stop trigger through when only the size changes', () => {
+    const merged = applyOrderUpdate(
+      {id: '1', pair, side: OrderSide.SELL, size: '10', stopPrice: '90', type: OrderType.STOP},
+      {size: '20'}
+    );
+
+    expect(merged).toEqual({
+      side: OrderSide.SELL,
+      size: '20',
+      sizeInCounter: false,
+      stopPrice: '90',
+      type: OrderType.STOP,
+    });
+  });
+
+  it('ignores a stop price handed to a limit order', () => {
+    const merged = applyOrderUpdate(
+      {id: '1', pair, price: '90', side: OrderSide.SELL, size: '10', type: OrderType.LIMIT},
+      {stopPrice: '80'}
+    );
+
+    expect(merged, 'a limit order has no trigger to move').toEqual({
+      price: '90',
+      side: OrderSide.SELL,
+      size: '10',
+      sizeInCounter: false,
+      type: OrderType.LIMIT,
     });
   });
 });

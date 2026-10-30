@@ -150,6 +150,73 @@ export type OrderOptions = MarketOrderOptions | LimitOrderOptions | StopOrderOpt
 
 export type PendingOrder = PendingLimitOrder | PendingMarketOrder | PendingStopOrder;
 
+/**
+ * What {@link Broker.updateOrder} may change about a resting order. Every field is optional and an
+ * omitted one keeps its current value, so bumping a stop-loss to cover a position that has grown is
+ * `{size}` alone.
+ *
+ * The order's type is deliberately absent: turning a stop into a limit is a different order, not an
+ * update, and `price` and `stopPrice` are only honoured by the type that has them.
+ */
+export interface OrderUpdate {
+  /** New limit price. Only meaningful for a LIMIT order. */
+  price?: string;
+  /** New size in base units. */
+  size?: string;
+  /** New trigger price. Only meaningful for a STOP order. */
+  stopPrice?: string;
+}
+
+/**
+ * Raised when a broker without an amend endpoint cancelled the original order and was then refused
+ * the replacement, so the venue holds neither. The order the caller believed in is gone, which is
+ * why this is its own type rather than the rejection passed straight through: a stop-loss that
+ * silently stopped existing is worth alerting on.
+ */
+export class OrderReplacementFailedError extends Error {
+  /** The order that was cancelled and no longer exists at the venue. */
+  readonly cancelledOrderId: string;
+
+  constructor(cancelledOrderId: string, cause: unknown) {
+    super(
+      `Order "${cancelledOrderId}" was cancelled but its replacement was refused, so no order rests at the venue any more: ${cause instanceof Error ? cause.message : String(cause)}`,
+      {cause}
+    );
+    this.name = 'OrderReplacementFailedError';
+    this.cancelledOrderId = cancelledOrderId;
+  }
+}
+
+/**
+ * Merges an update into a resting order, producing the options that would re-place it. Kept beside
+ * the types it switches over so a new order type cannot be added without the compiler pointing
+ * here.
+ */
+export function applyOrderUpdate(existing: PendingOrder, changes: OrderUpdate): OrderOptions {
+  const size = changes.size ?? existing.size;
+
+  switch (existing.type) {
+    case OrderType.LIMIT:
+      return {
+        price: changes.price ?? existing.price,
+        side: existing.side,
+        size,
+        sizeInCounter: false,
+        type: OrderType.LIMIT,
+      };
+    case OrderType.STOP:
+      return {
+        side: existing.side,
+        size,
+        sizeInCounter: false,
+        stopPrice: changes.stopPrice ?? existing.stopPrice,
+        type: OrderType.STOP,
+      };
+    case OrderType.MARKET:
+      return {side: existing.side, size, sizeInCounter: false, type: OrderType.MARKET};
+  }
+}
+
 export interface Balance {
   /** How much of the position is available */
   available: string;
@@ -424,6 +491,49 @@ export abstract class Broker extends EventEmitter {
       stopPrice: options.stopPrice,
       type: OrderType.STOP,
     });
+  }
+
+  /**
+   * Changes a resting order's size, or its price, without the caller having to know whether the
+   * venue can amend one. Returns the order as it now rests, which carries a new `id` on any broker
+   * that had to replace it.
+   *
+   * A MARKET order cannot be updated: it is filled or it is gone, so there is nothing resting to
+   * change. Fields left out keep their current value, and the type never changes — a stop stays a
+   * stop.
+   *
+   * **The default implementation cancels and re-places**, because most venues have no amend
+   * endpoint. Two consequences the caller has to plan for, neither of which this method can hide:
+   *
+   * - Between the cancel and the replacement the order is **not at the venue**, so a position
+   *   relying on it for protection is briefly unguarded. On a stop-loss, prefer a moment when the
+   *   market for that instrument is closed.
+   * - If the replacement is rejected, the original is already gone. That surfaces as
+   *   {@link OrderReplacementFailedError}, which names the order that no longer exists, so a caller
+   *   can alert instead of assuming its stop is still in place.
+   *
+   * A broker whose API can amend in one call should override this and does not raise either
+   * problem; {@link AlpacaBroker} does, since Alpaca replaces an order atomically.
+   */
+  async updateOrder(pair: TradingPair, orderId: string, changes: OrderUpdate): Promise<PendingOrder> {
+    const existing = (await this.getOpenOrders(pair)).find(order => order.id === orderId);
+    if (!existing) {
+      throw new Error(`No open order with ID "${orderId}" for "${pair.base}${pair.counter}".`);
+    }
+    if (existing.type === OrderType.MARKET) {
+      throw new Error(
+        `Order "${orderId}" is a MARKET order, which never rests at the venue and so has nothing to update.`
+      );
+    }
+
+    const next = applyOrderUpdate(existing, changes);
+    await this.cancelOrderById(pair, orderId);
+
+    try {
+      return await this.placeOrder(pair, next);
+    } catch (error) {
+      throw new OrderReplacementFailedError(orderId, error);
+    }
   }
 
   /**
