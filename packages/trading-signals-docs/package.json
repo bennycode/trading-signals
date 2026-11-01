@@ -16,7 +16,7 @@
     "test:e2e": "playwright test"
   },
   "dependencies": {
-    "@highcharts/react": "^5.3.0",
+    "@highcharts/react": "^5.4.0",
     "@tailwindcss/postcss": "^4.3.3",
     "@typedtrader/candles": "0.2.3",
     "@typedtrader/exchange": "0.3.3",
