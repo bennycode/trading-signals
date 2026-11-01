@@ -53,7 +53,7 @@
     "drizzle-orm": "^0.45.3",
     "grammy": "^1.46.0",
     "ms": "4.0.0-nightly.202508271359",
-    "pino": "^10.3.1",
+    "pino": "^10.4.0",
     "pino-roll": "^4.0.0",
     "trading-strategies": "0.4.5",
     "zod": "^4.6.7"
