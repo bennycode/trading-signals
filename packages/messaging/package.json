@@ -50,7 +50,7 @@
     "better-sqlite3": "^13.0.3",
     "better-sqlite3-multiple-ciphers": "^12.11.1",
     "big.js": "^7.0.1",
-    "drizzle-orm": "^0.45.3",
+    "drizzle-orm": "^0.45.4",
     "grammy": "^1.46.0",
     "ms": "4.0.0-nightly.202508271359",
     "pino": "^10.3.1",
