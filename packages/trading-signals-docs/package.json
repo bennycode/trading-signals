@@ -31,7 +31,7 @@
     "trading-signals": "8.3.0",
     "trading-strategies": "0.4.5",
     "vite": "^8.3.0",
-    "vocs": "^2.10.0",
+    "vocs": "^2.12.0",
     "waku": "1.0.0-rc.1",
     "zod": "^4.6.5"
   },
