@@ -31,14 +31,16 @@ To drive the brokers from a terminal instead of code, install [@typedtrader/exch
 
 ## Supported Brokers
 
-| id | name | markets | paper trading | market data | order updates | API docs |
-| --- | --- | --- | :-: | --- | --- | --- |
-| `alpaca` | [Alpaca](https://alpaca.markets/) | US stocks, ETFs, crypto | ✅ | ✅ IEX feed, WebSocket streamed | ✅ WebSocket stream | [docs.alpaca.markets](https://docs.alpaca.markets/reference/) |
-| `trading212` | [Trading212](https://www.trading212.com/) | 13,000+ US/UK/EU stocks and ETFs | ✅ | ❌ bring your own source | 🔁 polled (~60s) | [docs.trading212.com](https://docs.trading212.com/api) |
+| id | name | markets | paper trading | market data | order updates | API docs | OpenAPI |
+| --- | --- | --- | :-: | --- | --- | --- | --- |
+| `alpaca` | [Alpaca](https://alpaca.markets/) | US stocks, ETFs, crypto | ✅ | ✅ IEX feed, WebSocket streamed | ✅ WebSocket stream | [docs.alpaca.markets](https://docs.alpaca.markets/reference/) | [Trader API](https://dash.readme.com/api/v1/api-registry/p2k4b2qltotv8ji) · [Market Data API](https://dash.readme.com/api/v1/api-registry/h2b341mfb3htc6) |
+| `trading212` | [Trading212](https://www.trading212.com/) | 13,000+ US/UK/EU stocks and ETFs | ✅ | ❌ bring your own source | 🔁 polled (~60s) | [docs.trading212.com](https://docs.trading212.com/api) | [api.json](https://docs.trading212.com/_bundle/api.json) |
 
 More brokers are planned, and the `Broker` abstraction is built for it (see [Bring Your Own Broker](#bring-your-own-broker)).
 
 You create the API keys yourself in each broker's dashboard. The package uses your credentials but never creates accounts or keys for you: [Alpaca API keys](https://docs.alpaca.markets/us/docs/getting-started) · [Trading212 API keys](https://helpcentre.trading212.com/hc/en-us/articles/14584770928157-Trading-212-API-key)
+
+The OpenAPI documents are the source of truth for the wire formats this package maps, so reach for them when extending a client or checking a schema. Trading212 serves one bundled document that tracks the current API and states each endpoint's rate limit in its description. Alpaca's are version-pinned snapshots out of its documentation registry, so when one of those links goes stale, [docs.alpaca.markets/openapi](https://docs.alpaca.markets/openapi) lists every API and version.
 
 ## Quick Start: Alpaca
 

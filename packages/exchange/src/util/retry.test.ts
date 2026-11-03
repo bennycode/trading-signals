@@ -120,6 +120,49 @@ describe('retry', {concurrent: false}, () => {
     expect(attempts, 'the second retry waits 1000 ms').toHaveBeenCalledTimes(3);
   });
 
+  it('waits the window the server stated instead of the configured delay', async () => {
+    const attempts = vi.fn();
+
+    class Api {
+      @retry({delayMs: 30_000})
+      async load() {
+        attempts();
+        if (attempts.mock.calls.length < 2) {
+          throw new SimplifiedHttpError({data: 'Too Many Requests', retryAfterMs: 4_000, status: 429});
+        }
+        return 'ok';
+      }
+    }
+
+    const pending = new Api().load();
+    await vi.advanceTimersByTimeAsync(4_000);
+
+    await expect(pending, 'retried on the 4s window, not the 30s fallback').resolves.toBe('ok');
+    expect(attempts).toHaveBeenCalledTimes(2);
+  });
+
+  it('falls back to the configured delay when the response states no window', async () => {
+    const attempts = vi.fn();
+
+    class Api {
+      @retry({delayMs: 5_000})
+      async load() {
+        attempts();
+        if (attempts.mock.calls.length < 2) {
+          throw rateLimitError();
+        }
+        return 'ok';
+      }
+    }
+
+    const pending = new Api().load();
+    await vi.advanceTimersByTimeAsync(4_999);
+    expect(attempts, 'still waiting out the configured delay').toHaveBeenCalledTimes(1);
+
+    await vi.advanceTimersByTimeAsync(1);
+    await expect(pending).resolves.toBe('ok');
+  });
+
   it('honors a custom retry predicate', async () => {
     const attempts = vi.fn();
 

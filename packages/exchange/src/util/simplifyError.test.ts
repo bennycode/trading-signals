@@ -1,6 +1,6 @@
 import axios, {AxiosError, AxiosHeaders} from 'axios';
 import {describe, expect, it} from 'vitest';
-import {simplifyError} from './simplifyError.js';
+import {getRetryAfterMs, simplifyError} from './simplifyError.js';
 import {SimplifiedHttpError} from './SimplifiedHttpError.js';
 
 function createClientThatFailsWith(error: AxiosError) {
@@ -83,5 +83,42 @@ describe('simplifyError', () => {
       expect(serialised).not.toContain(FAKE_KEY_ID);
       expect(serialised).not.toContain(FAKE_SECRET);
     }
+  });
+});
+
+describe('getRetryAfterMs', () => {
+  /** Headers copied from a real Trading212 429 on `GET /api/v0/equity/orders`. */
+  const rateLimited = {
+    'retry-after': '4',
+    'x-ratelimit-limit': '1',
+    'x-ratelimit-period': '5',
+    'x-ratelimit-remaining': '0',
+    'x-ratelimit-reset': '1792611356',
+    'x-ratelimit-used': '1',
+  };
+
+  it('prefers the relative Retry-After header, which no clock skew can distort', () => {
+    expect(getRetryAfterMs(rateLimited, 1_792_611_351_000)).toBe(4_000);
+  });
+
+  it('falls back to the absolute reset timestamp, read as Unix seconds', () => {
+    const {'retry-after': _unused, ...withoutRetryAfter} = rateLimited;
+
+    expect(getRetryAfterMs(withoutRetryAfter, 1_792_611_351_000), '1792611356s is 5s after now').toBe(5_000);
+  });
+
+  it('states no window once the reset time has passed', () => {
+    const {'retry-after': _unused, ...withoutRetryAfter} = rateLimited;
+
+    expect(getRetryAfterMs(withoutRetryAfter, 1_792_611_400_000)).toBeUndefined();
+  });
+
+  it('caps a wait that a header asks to stretch beyond a minute', () => {
+    expect(getRetryAfterMs({'retry-after': '3600'}), 'retried early and rate-limited again at worst').toBe(60_000);
+  });
+
+  it('states no window when the response carries no rate-limit headers', () => {
+    expect(getRetryAfterMs({'content-type': 'application/json'})).toBeUndefined();
+    expect(getRetryAfterMs(undefined)).toBeUndefined();
   });
 });

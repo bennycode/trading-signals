@@ -10,8 +10,10 @@ import {
   OrderSchema,
   PlaceLimitOrderRequestSchema,
   PlaceMarketOrderRequestSchema,
+  PlaceStopOrderRequestSchema,
   type PlaceLimitOrderRequest,
   type PlaceMarketOrderRequest,
+  type PlaceStopOrderRequest,
 } from './schema/OrderSchema.js';
 import {PositionSchema} from './schema/PositionSchema.js';
 
@@ -24,6 +26,7 @@ const URL = {
   ORDERS: '/api/v0/equity/orders',
   ORDERS_LIMIT: '/api/v0/equity/orders/limit',
   ORDERS_MARKET: '/api/v0/equity/orders/market',
+  ORDERS_STOP: '/api/v0/equity/orders/stop',
   PORTFOLIO: '/api/v0/equity/portfolio',
 } as const;
 
@@ -125,6 +128,14 @@ export class Trading212API {
   async placeLimitOrder(request: PlaceLimitOrderRequest) {
     const validated = PlaceLimitOrderRequestSchema.parse(request);
     const response = await this.#httpClient.post(URL.ORDERS_LIMIT, validated);
+    return OrderSchema.parse(response.data);
+  }
+
+  /** @see https://t212public-api-docs.redoc.ly/#operation/placeStopOrder */
+  @retry()
+  async placeStopOrder(request: PlaceStopOrderRequest) {
+    const validated = PlaceStopOrderRequestSchema.parse(request);
+    const response = await this.#httpClient.post(URL.ORDERS_STOP, validated);
     return OrderSchema.parse(response.data);
   }
 

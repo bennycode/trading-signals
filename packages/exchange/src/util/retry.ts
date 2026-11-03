@@ -3,7 +3,12 @@ import {SimplifiedHttpError} from './SimplifiedHttpError.js';
 type AsyncMethod<This, Args extends unknown[], Result> = (this: This, ...args: Args) => Promise<Result>;
 
 export interface RetryOptions {
-  /** Fixed delay in milliseconds, or a function of the attempt number (starting at 1). Defaults to `attempt * 1_000`. */
+  /**
+   * Fixed delay in milliseconds, or a function of the attempt number (starting at 1). Defaults to
+   * `attempt * 1_000`. A rate-limited response that states its own window (`Retry-After` or
+   * `x-ratelimit-reset`) overrides this, since the server knows when it will accept the next call;
+   * this delay still governs failures that carry no such header, like 5xx and network errors.
+   */
   delayMs?: number | ((attempt: number) => number);
   /** Defaults to retrying transient HTTP failures: network errors, 429 rate limits and 5xx responses. */
   isRetryable?: (error: unknown) => boolean;
@@ -45,7 +50,8 @@ export function retry({
           if (attempt > retries || !isRetryable(error)) {
             throw error;
           }
-          const delay = typeof delayMs === 'function' ? delayMs(attempt) : delayMs;
+          const serverDelayMs = error instanceof SimplifiedHttpError ? error.retryAfterMs : undefined;
+          const delay = serverDelayMs ?? (typeof delayMs === 'function' ? delayMs(attempt) : delayMs);
           await new Promise(resolve => setTimeout(resolve, delay));
         }
       }

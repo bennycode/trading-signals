@@ -18,7 +18,7 @@ export const Trading212OrderTypeSchema = z.enum(['MARKET', 'LIMIT', 'STOP', 'STO
 
 export const Trading212OrderStrategySchema = z.enum(['QUANTITY', 'VALUE']);
 
-export const Trading212TimeValiditySchema = z.enum(['DAY', 'GTC']);
+export const Trading212TimeValiditySchema = z.enum(['DAY', 'GOOD_TILL_CANCEL']);
 
 export const Trading212OrderStatus = {
   CANCELLED: 'CANCELLED',
@@ -36,7 +36,7 @@ export const Trading212OrderStatus = {
 
 export const Trading212TimeValidity = {
   DAY: 'DAY',
-  GTC: 'GTC',
+  GOOD_TILL_CANCEL: 'GOOD_TILL_CANCEL',
 } as const;
 
 export const OrderSchema = z.looseObject({
@@ -50,6 +50,7 @@ export const OrderSchema = z.looseObject({
   stopPrice: z.number().nullish(),
   strategy: Trading212OrderStrategySchema,
   ticker: z.string(),
+  timeInForce: Trading212TimeValiditySchema.nullish(),
   type: Trading212OrderTypeSchema,
   value: z.number().nullish(),
 });
@@ -73,6 +74,15 @@ export const PlaceLimitOrderRequestSchema = z.object({
   timeValidity: Trading212TimeValiditySchema,
 });
 
+export const PlaceStopOrderRequestSchema = z.object({
+  /** Negative sells, positive buys — the sign is the only thing that carries the side. */
+  quantity: z.number(),
+  stopPrice: z.number(),
+  ticker: z.string(),
+  timeValidity: Trading212TimeValiditySchema,
+});
+
 export type Order = z.infer<typeof OrderSchema>;
 export type PlaceMarketOrderRequest = z.infer<typeof PlaceMarketOrderRequestSchema>;
 export type PlaceLimitOrderRequest = z.infer<typeof PlaceLimitOrderRequestSchema>;
+export type PlaceStopOrderRequest = z.infer<typeof PlaceStopOrderRequestSchema>;

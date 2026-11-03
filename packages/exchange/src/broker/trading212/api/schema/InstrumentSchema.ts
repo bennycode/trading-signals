@@ -23,7 +23,7 @@ export const InstrumentSchema = z.looseObject({
   maxOpenQuantity: z.number().nullish(),
   minTradeQuantity: z.number().nullish(),
   name: z.string(),
-  shortname: z.string().nullish(),
+  shortName: z.string().nullish(),
   /** The vendor ticker, e.g. "AAPL_US_EQ" */
   ticker: z.string(),
   type: Trading212InstrumentTypeSchema,
