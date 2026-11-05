@@ -49,6 +49,7 @@
     "test:units:watch": "vitest --watch"
   },
   "dependencies": {
+    "@typedtrader/candles": "0.2.3",
     "@typedtrader/exchange": "0.3.3",
     "@types/big.js": "^7.0.0",
     "big.js": "^7.0.1",
