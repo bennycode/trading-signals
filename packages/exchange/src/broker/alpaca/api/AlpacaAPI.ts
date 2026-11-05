@@ -106,6 +106,12 @@ export class AlpacaAPI {
 
   /** @see https://docs.alpaca.markets/reference/stockbars */
   async getStockBars(params: {
+    /**
+     * Corporate-action adjustment: "raw" (the API default), "split", "dividend", "all", or a
+     * comma-separated combination. Raw bars quote pre-split prices as they printed, so any
+     * comparison spanning a split — a long-run high, an ATR, a backtest — needs at least "split".
+     */
+    adjustment?: string;
     end: string;
     feed?: string;
     limit: number;
