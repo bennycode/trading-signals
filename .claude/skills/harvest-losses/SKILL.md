@@ -15,9 +15,17 @@ Two cheap ways to catch it: account-level `ppl` from `/account/cash` equals the 
 
 ## The real result is the difference between the `netValue`s
 
-`walletImpact.netValue` on each fill is the actual EUR cash moved, fees included. Sale `netValue` minus the FIFO buy `netValue` is the figure that matters, and it is also what German tax wants, because each leg is already converted at its own day's rate.
+`walletImpact.netValue` on each fill is the actual cash moved, fees included. Sale `netValue` minus the FIFO buy `netValue` is the figure that matters, and it is also what German tax wants, because each leg is already converted at its own day's rate.
 
-T212's own `walletImpact.realisedProfitLoss` excludes transaction costs, so it reads smaller than the real loss. On the 2026-10-28 harvest it said -500.56 against an actual -508.47, the gap being 7.91 of conversion fees, stamp duty and French FTT.
+Check `walletImpact.currency` before treating any `netValue` as euros. A fill settled straight from a USD balance comes back as `{currency: "USD", fxRate: 1}`, where `netValue` is the dollar amount. Reading one such Apple tranche as euros inflated the cost basis and reported a realised +1051 against an actual +2775 on 2026-11-03. The payload carries no day rate for those fills, so `openTranches` refuses them rather than guessing, and the ticker has to be sized by hand.
+
+T212's own `walletImpact.realisedProfitLoss` excludes transaction costs, so it reads smaller than the real loss. On the 2026-10-28 harvest it said -500.56 against an actual -508.47, the gap being 7.91 of conversion fees, stamp duty and French FTT. It is still the right figure to quote back for a completed sale, because it needs no replay and so cannot be thrown off by a mixed-currency history.
+
+## Derive the live rate from the position, never from a past fill
+
+A sale's EUR proceeds need today's EUR/USD, and the obvious shortcut of reusing `fxRate` from the most recent fill is wrong by however much the rate has moved since. Divide the position's USD market value by its EUR value instead: `quantity * currentPrice / (costEur + ppl)`.
+
+The shortcut has cost real accuracy twice. A June fill's 1.16226 against an actual 1.11544 understated a Microsoft gain by about 300, and on the Mastercard sale a stale rate moved the estimate by 6.61 of a 503 result. A gain is a small difference between two large converted numbers, so a 0.4% rate error lands roughly ten times magnified on the result.
 
 ## Cost basis comes from replaying the history, not from `averagePrice`
 

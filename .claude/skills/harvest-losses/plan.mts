@@ -86,9 +86,14 @@ export interface Tranche {
 
 /**
  * Replays the order history into the FIFO tranches still open, which is the cost basis German tax
- * uses: each buy converted at its own day's rate. `netValue` is the real EUR cash moved, fees
+ * uses: each buy converted at its own day's rate. `netValue` is the real cash moved, fees
  * included, so it needs no separate fee adjustment. A ticker that was fully exited and re-bought
  * (Rolls-Royce did this twice) must not drag its old basis forward, hence the replay.
+ *
+ * `netValue` is only EUR when `walletImpact.currency` says so. A fill settled straight from a USD
+ * balance comes back as `{currency: 'USD', fxRate: 1}`, and reading that as euros understated one
+ * Apple tranche by about 1.700 EUR on 2026-11-03. The payload carries no day rate to convert it
+ * with, so such a history cannot be replayed here and the ticker has to be sized by hand.
  */
 export function openTranches(history: HistoryOrder[]): Tranche[] {
   const fills = history
@@ -100,6 +105,12 @@ export function openTranches(history: HistoryOrder[]): Tranche[] {
     const qty = fill?.quantity ?? 0;
     const netValue = fill?.walletImpact?.netValue ?? 0;
     if (qty > 0) {
+      const currency = fill?.walletImpact?.currency;
+      assert.equal(
+        currency,
+        'EUR',
+        `The buy filled at ${fill?.filledAt} settled in ${currency}, so its netValue of ${netValue} is not euros and this cost basis cannot be replayed.`
+      );
       queue.push({eurPerShare: netValue / qty, qty});
       continue;
     }
@@ -258,8 +269,8 @@ function selftest(): void {
   );
 
   // A ticker fully exited and re-bought keeps only the newest basis (the Rolls-Royce shape).
-  const fill = (filledAt: string, quantity: number, netValue: number): HistoryOrder => ({
-    fill: {filledAt, quantity, walletImpact: {netValue}},
+  const fill = (filledAt: string, quantity: number, netValue: number, currency = 'EUR'): HistoryOrder => ({
+    fill: {filledAt, quantity, walletImpact: {currency, netValue}},
     order: {},
   });
   const reentered = openTranches([
@@ -278,6 +289,13 @@ function selftest(): void {
   assert.ok(exact.qty > 10, 'a target beyond the first tranche must consume part of the second');
   assert.ok(exact.gainEur <= 600, 'rounding leaves the gain at or under the target, never above');
   assert.ok(600 - exact.gainEur < 1, 'and still within a euro of it');
+
+  // A USD-settled buy must stop the replay rather than be read as euros (the Apple shape).
+  assert.throws(
+    () => openTranches([fill('2026-05-13T00:00:00Z', 39.48248724, 11689.58, 'USD')]),
+    /settled in USD/,
+    'a non-EUR netValue is refused instead of silently becoming the basis'
+  );
 
   const single = sizeSale([{eurPerShare: 496.741, qty: 10}], 552.47, 508.47, 2);
   assert.equal(single.qty, 9.12, 'reproduces the Mastercard sizing from 2026-10-28');
