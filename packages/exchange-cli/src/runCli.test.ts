@@ -343,6 +343,94 @@ describe('runCli', {concurrent: false}, () => {
     expect(await run(['time'])).toEqual({json: {time: CANDLE.openTimeInISO}});
   });
 
+  describe('risk', () => {
+    /** 40 daily candles with a true range of 10 around a close of 100, so ATR% settles at 10%. */
+    const steadyCandles: Candle[] = Array.from({length: 40}, (_unused, index) => ({
+      ...CANDLE,
+      close: '100',
+      high: '105',
+      low: '95',
+      openTimeInMillis: CANDLE.openTimeInMillis + index * 86_400_000,
+      sizeInMillis: 86_400_000,
+    }));
+
+    function riskSetup() {
+      const context = setup();
+      context.broker.getRecentCandles.mockResolvedValue(steadyCandles);
+      context.broker.listBalances.mockResolvedValue([
+        {available: '10000', currency: 'USD', hold: '0', position: OrderPosition.LONG},
+        {available: '3', currency: 'NVDA', hold: '0', position: OrderPosition.LONG},
+      ]);
+      return context;
+    }
+
+    it('sizes the position so that being stopped out costs the requested share of the account', async () => {
+      const {run} = riskSetup();
+
+      const result = await run(['risk', 'AAPL', '--risk', '1', '--atr-multiple', '3']);
+
+      expect(result).toMatchObject({
+        json: {
+          atr: {interval: 14, percentOfPrice: '10.00', value: '10.00'},
+          price: '100',
+          // 1% of 10000 is 100 of risk; the stop is 30 away, so 3.33 units cost 100 if it is hit.
+          size: {lossAtStop: '100.00', quantity: '3.3333', shareOfAccount: '3.33'},
+          stop: {band: 'balanced', distancePercent: '30.00', multiple: 3, price: '70.00'},
+          ticker: 'AAPL',
+        },
+      });
+    });
+
+    it('measures the ATR on daily candles by default', async () => {
+      const {broker, run} = riskSetup();
+
+      await run(['risk', 'AAPL']);
+
+      expect(broker.getRecentCandles, 'ATR(14) needs 2n+1 daily candles to stabilize').toHaveBeenCalledWith(
+        PAIR,
+        29,
+        86_400_000
+      );
+    });
+
+    it('sizes against the counter-currency balance until an account value is given', async () => {
+      const {run} = riskSetup();
+
+      const fromBalance = await run(['risk', 'AAPL']);
+      const fromOption = await run(['risk', 'AAPL', '--account', '50000']);
+
+      expect(fromBalance).toHaveProperty('json.size.accountValueSource', 'USD balance');
+      expect(fromBalance).toHaveProperty('json.size.accountValue', '10000.00');
+      expect(fromOption).toHaveProperty('json.size.accountValueSource', 'provided');
+      expect(fromOption).toHaveProperty('json.size.accountValue', '50000.00');
+    });
+
+    it('reports what is already held, so the position is not read in isolation', async () => {
+      const {broker, run} = riskSetup();
+      broker.listBalances.mockResolvedValue([
+        {available: '10000', currency: 'USD', hold: '0', position: OrderPosition.LONG},
+        {available: '2', currency: 'AAPL', hold: '0', position: OrderPosition.LONG},
+        {available: '3', currency: 'NVDA', hold: '0', position: OrderPosition.LONG},
+      ]);
+
+      expect(await run(['risk', 'AAPL'])).toHaveProperty('json.holding', {otherPositions: ['NVDA'], owned: '2'});
+    });
+
+    it('refuses to guess when there is too little history to measure volatility', async () => {
+      const {broker, run} = riskSetup();
+      broker.getRecentCandles.mockResolvedValue(steadyCandles.slice(0, 3));
+
+      await expect(run(['risk', 'AAPL'])).rejects.toThrow('Not enough history');
+    });
+
+    it('says which balance is missing instead of sizing against nothing', async () => {
+      const {broker, run} = riskSetup();
+      broker.listBalances.mockResolvedValue([]);
+
+      await expect(run(['risk', 'AAPL'])).rejects.toThrow('No USD balance to size against');
+    });
+  });
+
   it('cancels one order or every order for the selected pair', async () => {
     const {broker, run} = setup();
     expect(await run(['cancel', 'AAPL', '42'])).toEqual({json: {cancelled: ['42']}});

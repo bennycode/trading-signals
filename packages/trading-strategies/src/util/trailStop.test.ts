@@ -1,5 +1,5 @@
 import {describe, expect, it} from 'vitest';
-import {atrTrailStop, percentTrailStop, trailStop} from './trailStop.js';
+import {atrTrailStop, percentTrailStop, sizeFromRisk, trailStop} from './trailStop.js';
 
 describe('percentTrailStop', () => {
   it('places the stop the given percentage below the peak', () => {
@@ -47,5 +47,28 @@ describe('trailStop', () => {
   it('rejects a request with no trail method, and guards untyped callers at runtime', () => {
     // @ts-expect-error - the type requires a percentage or a complete ATR pair; the throw guards untyped callers
     expect(() => trailStop({peak: 100})).toThrowError('trailStop requires trailDownPct, or both atr and atrMultiple');
+  });
+});
+
+describe('sizeFromRisk', () => {
+  it('sizes the position so that hitting the stop costs exactly the risk budget', () => {
+    const quantity = sizeFromRisk({accountValue: 10_000, entryPrice: 100, riskPct: 1, stopPrice: 90});
+
+    expect(quantity.toFixed(2), '100 of risk over a 10 per unit stop distance').toBe('10.00');
+    expect(quantity.mul(10).toFixed(2), 'the loss at the stop is 1% of the account').toBe('100.00');
+  });
+
+  it('buys less of a wider-stopped instrument so both carry the same risk', () => {
+    const calm = sizeFromRisk({accountValue: 10_000, entryPrice: 100, riskPct: 1, stopPrice: 98});
+    const volatile = sizeFromRisk({accountValue: 10_000, entryPrice: 100, riskPct: 1, stopPrice: 80});
+
+    expect(calm.toFixed(2)).toBe('50.00');
+    expect(volatile.toFixed(2), 'ten times the stop distance, a tenth of the position').toBe('5.00');
+  });
+
+  it('refuses a stop that is not below the entry, which would invert the risk', () => {
+    expect(() => sizeFromRisk({accountValue: 10_000, entryPrice: 100, riskPct: 1, stopPrice: 100})).toThrowError(
+      'sizeFromRisk requires a stop below the entry price'
+    );
   });
 });

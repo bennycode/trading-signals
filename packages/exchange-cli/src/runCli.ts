@@ -1,6 +1,7 @@
 import {OrderSide, TradingPair} from '@typedtrader/exchange';
 import {BROKERS, createCliBroker} from './cliBroker.js';
 import {placeCliOrder, waitForOrder} from './cliOrders.js';
+import {assessRisk} from './cliRisk.js';
 import {parseCliArgs} from './parseCliArgs.js';
 import {streamEvents} from './streamEvents.js';
 
@@ -73,6 +74,16 @@ export async function runCli(argv: string[], overrides: Partial<CliDeps> = {}): 
         return {json: await broker.getRecentCandles(pair, count, interval)};
       case 'rules':
         return {json: await broker.getTradingRules(pair)};
+      case 'risk':
+        return {
+          json: await assessRisk(broker, pair, {
+            accountValue: values.account,
+            atrInterval: values.atrInterval ?? 14,
+            atrIntervalMillis: interval,
+            atrMultiple: values.atrMultiple ?? 3,
+            riskPct: values.risk ?? '1',
+          }),
+        };
       case 'orders':
         return {json: await broker.getOpenOrders(pair)};
       case 'fills':

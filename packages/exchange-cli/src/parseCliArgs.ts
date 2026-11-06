@@ -4,7 +4,10 @@ import {parse as parseDuration} from 'ms';
 import {BROKERS, type BrokerKey} from './cliBroker.js';
 
 interface Options {
+  account?: string;
   all?: boolean;
+  atrInterval?: number;
+  atrMultiple?: number;
   broker: BrokerKey;
   count?: number;
   counter?: string;
@@ -13,6 +16,7 @@ interface Options {
   limit?: string;
   live?: boolean;
   poll?: number;
+  risk?: string;
   take?: number;
   timeout?: number;
 }
@@ -50,6 +54,26 @@ function positiveDecimal(value: string): string {
     // Report the CLI argument rather than big.js internals.
   }
   throw new InvalidArgumentError('Use a positive decimal.');
+}
+
+function riskPercent(value: string): string {
+  try {
+    const percent = new Big(value);
+    if (percent.gt(0) && percent.lte(100)) {
+      return value;
+    }
+  } catch {
+    // Report the CLI argument rather than big.js internals.
+  }
+  throw new InvalidArgumentError('Use a percentage above 0 and at most 100.');
+}
+
+function positiveFloat(value: string): number {
+  const number = Number(value);
+  if (!Number.isFinite(number) || number <= 0) {
+    throw new InvalidArgumentError('Use a positive number.');
+  }
+  return number;
 }
 
 function invocation(command: Command) {
@@ -150,6 +174,16 @@ export function parseCliArgs(argv: string[]) {
     'Stop after n events (default: until Ctrl-C)',
     positiveInt
   );
+  command('risk <ticker>', 'What a position would cost you if the stop is hit')
+    .addOption(
+      new Option('--interval <duration>', 'Candle interval the ATR is measured on')
+        .argParser(positiveDuration)
+        .default(parseDuration('1d'), '1d')
+    )
+    .option('--atr-interval <n>', 'ATR lookback in candles', positiveInt, 14)
+    .option('--atr-multiple <n>', 'How many ATR the stop sits below the entry', positiveFloat, 3)
+    .option('--risk <percent>', 'Share of the account to lose if the stop is hit', riskPercent, '1')
+    .option('--account <value>', 'Account value to size against (default: counter-currency balance)', positiveDecimal);
   command('time', 'Broker time');
 
   try {
