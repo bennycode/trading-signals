@@ -80,6 +80,16 @@ describe('CCI', () => {
       const actual = cci.getResultOrThrow().toFixed(2);
       expect(actual).toBe('71.93');
     });
+
+    it('returns zero when prices are flat', () => {
+      const cci = new CCI(5);
+
+      for (let i = 0; i < 5; i++) {
+        cci.add({close: 100, high: 100, low: 100});
+      }
+
+      expect(cci.getResultOrThrow()).toBe(0);
+    });
   });
 
   describe('getSignal', () => {
