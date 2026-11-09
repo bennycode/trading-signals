@@ -54,6 +54,12 @@ export class CCI extends ThresholdCrossSeries<HighLowClose<number>> {
     if (this.#sma.isStable) {
       const mean = this.#sma.getResultOrThrow();
       const meanDeviation = MAD.getResultFromBatch(this.#typicalPrices, mean);
+
+      // A completely flat window has no deviation from its mean
+      if (meanDeviation === 0) {
+        return this.setResult(0, replace);
+      }
+
       const numerator = typicalPrice - mean;
       const denominator = 0.015 * meanDeviation;
       return this.setResult(numerator / denominator, replace);
