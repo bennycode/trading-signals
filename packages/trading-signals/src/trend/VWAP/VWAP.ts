@@ -42,10 +42,7 @@ export class VWAP extends TrendIndicatorSeries<HighLowCloseVolume<number>> {
       this.#cumulativeVolume = this.#cumulativeVolume - this.#lastCandle.volume;
     }
 
-    /*
-     * A candle without trades contributes nothing to either running total, but it is still the
-     * candle a replacement has to unwind, so it has to be remembered like any other.
-     */
+    // Cache the latest values for potential future replacement
     this.#lastCandle = candle;
 
     const typicalPriceVolume = this.#calculateTypicalPriceVolume(candle);
