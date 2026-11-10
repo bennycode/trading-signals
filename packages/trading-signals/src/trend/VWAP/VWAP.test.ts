@@ -10,6 +10,16 @@ describe('VWAP', () => {
       const result = vwap.add({close: 9, high: 10, low: 8, volume: 0});
       expect(result).toBe(null);
     });
+
+    it('keeps the running average when a candle has no trades yet', () => {
+      const vwap = new VWAP();
+
+      vwap.add({close: 10, high: 10, low: 10, volume: 100});
+
+      const result = vwap.add({close: 20, high: 20, low: 20, volume: 0});
+
+      expect(result, 'a candle without trades cannot move a volume-weighted average').toBe(10);
+    });
   });
 
   describe('replace', () => {
@@ -34,6 +44,17 @@ describe('VWAP', () => {
 
       vwap.replace(data[data.length - 1]);
       expect(vwap.getResultOrThrow().toFixed()).toBe('300');
+    });
+
+    it('replaces a candle that was first added without trades', () => {
+      const vwap = new VWAP();
+
+      vwap.add({close: 10, high: 10, low: 10, volume: 100});
+      vwap.add({close: 20, high: 20, low: 20, volume: 0});
+
+      const result = vwap.replace({close: 20, high: 20, low: 20, volume: 100});
+
+      expect(result, 'replacing the untraded candle must not drop the candle before it').toBe(15);
     });
   });
 

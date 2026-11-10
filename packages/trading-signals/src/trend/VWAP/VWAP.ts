@@ -36,23 +36,26 @@ export class VWAP extends TrendIndicatorSeries<HighLowCloseVolume<number>> {
   }
 
   override update(candle: HighLowCloseVolume<number>, replace: boolean) {
-    // Only calculate VWAP if we have volume data
-    if (candle.volume === 0) {
-      return null;
-    }
-
     if (replace && this.#lastCandle !== null) {
       const lastTypicalPriceVolume = this.#calculateTypicalPriceVolume(this.#lastCandle);
       this.#cumulativeTypicalPriceVolume = this.#cumulativeTypicalPriceVolume - lastTypicalPriceVolume;
       this.#cumulativeVolume = this.#cumulativeVolume - this.#lastCandle.volume;
     }
 
-    // Cache the latest values for potential future replacement
+    /*
+     * A candle without trades contributes nothing to either running total, but it is still the
+     * candle a replacement has to unwind, so it has to be remembered like any other.
+     */
     this.#lastCandle = candle;
 
     const typicalPriceVolume = this.#calculateTypicalPriceVolume(candle);
     this.#cumulativeTypicalPriceVolume = this.#cumulativeTypicalPriceVolume + typicalPriceVolume;
     this.#cumulativeVolume = this.#cumulativeVolume + candle.volume;
+
+    // Nothing has traded yet, so there is no volume-weighted price to report
+    if (this.#cumulativeVolume === 0) {
+      return null;
+    }
 
     const vwap = this.#cumulativeTypicalPriceVolume / this.#cumulativeVolume;
     return this.setResult(vwap, replace);
