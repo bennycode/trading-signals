@@ -411,25 +411,52 @@ describe('PSAR', () => {
     expect(psar['state'].acceleration).toBe(psar['accelerationMax']);
   });
 
-  it('adjusts SAR on reversal when SAR >= low', () => {
-    // This tests lines 164-166 specifically
+  it('parks the SAR on the extreme point when the SAR would reach the current low', () => {
     const psar = new PSAR({accelerationMax: 0.2, accelerationStep: 0.02});
 
-    // Set up a scenario where we'll have a trend reversal with SAR >= low
     psar.add({high: 10, low: 9});
-    psar.add({high: 9, low: 8}); // Initial downtrend
-
-    // Force down trend with extreme low
+    psar.add({high: 9, low: 8});
     psar.add({high: 7, low: 6});
 
-    /*
-     * Now create a scenario where price reverses but SAR would be equal to low
-     * This will test line 164-166 where SAR needs adjustment when sar >= low
-     */
-    psar.add({high: 11, low: 6});
+    const result = psar.add({high: 11, low: 6});
 
-    // The SAR should be adjusted to low - 0.01
-    expect(psar.getResultOrThrow()).toBe(5.99);
+    expect(result, 'a reversal stops at the lowest low of the downtrend, never below it').toBe(6);
+  });
+
+  // Expected values follow Tulip Indicators `psar`: https://tulipindicators.org/psar
+  it('holds the SAR outside the pre-previous range when the price does not cross it', () => {
+    const psar = new PSAR({accelerationMax: 0.2, accelerationStep: 0.02});
+    const candles = [
+      {high: 6, low: 3},
+      {high: 12, low: 8},
+      {high: 5, low: 2},
+      {high: 11, low: 8},
+    ] as const;
+
+    let result: number | null = null;
+
+    for (const candle of candles) {
+      result = psar.add(candle);
+    }
+
+    expect(result, 'a downtrend keeps the stop at or above the highs of the last two candles').toBe(12);
+  });
+
+  it('keeps the SAR positive for an asset priced below a cent', () => {
+    const psar = new PSAR({accelerationMax: 0.2, accelerationStep: 0.02});
+    const candles = [
+      {high: 0.00012, low: 0.00011},
+      {high: 0.00011, low: 0.0001},
+      {high: 0.00013, low: 0.00009},
+      {high: 0.00014, low: 0.00012},
+    ] as const;
+    const expectations = [null, 0.00012, 0.00009, 0.00009] as const;
+
+    candles.forEach((candle, index) => {
+      const result = psar.add(candle);
+
+      expect(result, 'a stop below zero would be impossible to place').toBe(expectations[index]);
+    });
   });
 
   it('adjusts SAR when previous high exceeds pre-previous high', () => {
@@ -442,8 +469,7 @@ describe('PSAR', () => {
     psar.add({high: prePreviousHigh, low});
     psar.add({high: previousHigh, low});
 
-    // The SAR should be adjusted to low - 0.01
-    expect(psar.getResultOrThrow()).toBe(low - 0.01);
+    expect(psar.getResultOrThrow(), 'the reversal parks the stop on the lowest low of the downtrend').toBe(low);
   });
 
   it('hits acceleration max in uptrend', () => {
@@ -807,7 +833,7 @@ describe('PSAR', () => {
 
     // Execute with high > sar to hit the branch
     const downTrendResult = psarDown.add({high: 15, low: 12});
-    expect(downTrendResult).toBe(11.99);
+    expect(downTrendResult, 'the reversal parks the stop on the lowest low of the downtrend').toBe(12);
   });
 
   it('tests specific SAR adjustment in downtrend with prePrevious high > sar and previous high > sar', () => {
@@ -856,25 +882,16 @@ describe('PSAR', () => {
     expect(result).toBeGreaterThan(6.5);
   });
 
-  it('handles edge case where SAR equals or exceeds the low price on reversal to uptrend', () => {
+  it('keeps the SAR at the extreme point when a new high reverses the downtrend', () => {
     const psar = new PSAR({accelerationMax: 0.2, accelerationStep: 0.02});
 
-    // Initialize downtrend
-    psar.update({high: 10, low: 9}, false);
-    psar.update({high: 9, low: 8}, false); // Establish downtrend
+    psar.add({high: 10, low: 9});
+    psar.add({high: 9, low: 8});
+    psar.add({high: 8, low: 7});
 
-    // Continue downtrend
-    psar.update({high: 8, low: 7}, false);
+    const result = psar.add({high: 11, low: 7});
 
-    /*
-     * Create a scenario where price creates a new high that triggers reversal
-     * but the extreme point (low) would be equal to or higher than the new low
-     */
-    const result = psar.update({high: 11, low: 7}, false); // High causes reversal but extreme would equal low
-
-    // The SAR should be properly adjusted to be below the price (low - 0.01)
-    expect(result).toBeLessThan(7);
-    expect(result).toBeCloseTo(6.99, 2); // Should be low - 0.01
+    expect(result, 'the stop sits on the lowest low of the downtrend, not an arbitrary amount below it').toBe(7);
   });
 
   it('handles replace flag for second candle', () => {
