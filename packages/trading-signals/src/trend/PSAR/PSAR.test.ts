@@ -423,40 +423,48 @@ describe('PSAR', () => {
     expect(result, 'a reversal stops at the lowest low of the downtrend, never below it').toBe(6);
   });
 
-  it('holds the uptrend SAR outside the pre-previous range when the price does not cross it', () => {
-    const psar = new PSAR({accelerationMax: 0.2, accelerationStep: 0.02});
-    const candles = [
-      {high: 17, low: 14},
-      {high: 12, low: 8},
-      {high: 18, low: 15},
-      {high: 12, low: 9},
-    ] as const;
+  it(
+    'holds the uptrend SAR outside the pre-previous range when the price does not cross it',
+    {tags: ['tulipindicators']},
+    () => {
+      const psar = new PSAR({accelerationMax: 0.2, accelerationStep: 0.02});
+      const candles = [
+        {high: 17, low: 14},
+        {high: 12, low: 8},
+        {high: 18, low: 15},
+        {high: 12, low: 9},
+      ] as const;
 
-    const results = candles.map(candle => psar.add(candle));
+      const results = candles.map(candle => psar.add(candle));
 
-    expect(results.at(-1), 'an uptrend keeps the stop at or below the lows of the last two candles').toBe(8);
-  });
+      expect(results.at(-1), 'an uptrend keeps the stop at or below the lows of the last two candles').toBe(8);
+    }
+  );
 
   // Expected values follow Tulip Indicators `psar`: https://tulipindicators.org/psar
-  it('holds the SAR outside the pre-previous range when the price does not cross it', () => {
-    const psar = new PSAR({accelerationMax: 0.2, accelerationStep: 0.02});
-    const candles = [
-      {high: 6, low: 3},
-      {high: 12, low: 8},
-      {high: 5, low: 2},
-      {high: 11, low: 8},
-    ] as const;
+  it(
+    'holds the SAR outside the pre-previous range when the price does not cross it',
+    {tags: ['tulipindicators']},
+    () => {
+      const psar = new PSAR({accelerationMax: 0.2, accelerationStep: 0.02});
+      const candles = [
+        {high: 6, low: 3},
+        {high: 12, low: 8},
+        {high: 5, low: 2},
+        {high: 11, low: 8},
+      ] as const;
 
-    let result: number | null = null;
+      let result: number | null = null;
 
-    for (const candle of candles) {
-      result = psar.add(candle);
+      for (const candle of candles) {
+        result = psar.add(candle);
+      }
+
+      expect(result, 'a downtrend keeps the stop at or above the highs of the last two candles').toBe(12);
     }
+  );
 
-    expect(result, 'a downtrend keeps the stop at or above the highs of the last two candles').toBe(12);
-  });
-
-  it('keeps the SAR positive for an asset priced below a cent', () => {
+  it('keeps the SAR positive for an asset priced below a cent', {tags: ['tulipindicators']}, () => {
     const psar = new PSAR({accelerationMax: 0.2, accelerationStep: 0.02});
     const candles = [
       {high: 0.00012, low: 0.00011},
