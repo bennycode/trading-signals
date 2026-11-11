@@ -31,29 +31,29 @@
     "version": "oxfmt packages/*/CHANGELOG.md"
   },
   "devDependencies": {
-    "@stryker-mutator/core": "^10.0.0",
-    "@stryker-mutator/vitest-runner": "^10.0.0",
+    "@stryker-mutator/core": "^10.1.1",
+    "@stryker-mutator/vitest-runner": "^10.1.1",
     "@stylistic/eslint-plugin": "^5.10.0",
-    "@types/node": "^26.6.2",
-    "@vitest/coverage-v8": "^5.0.3",
+    "@types/node": "^26.6.6",
+    "@vitest/coverage-v8": "^5.1.0",
     "conventional-changelog-conventionalcommits": "^10.4.0",
     "esbuild": "^0.28.2",
-    "fta-cli": "^3.0.1",
-    "jsdom": "^30.1.0",
+    "fta-cli": "^3.1.0",
+    "jsdom": "^31.0.0",
     "knip": "^6.37.0",
-    "lefthook": "^2.1.14",
+    "lefthook": "^2.2.2",
     "lerna": "^10.0.1",
-    "oxfmt": "^0.75.0",
-    "oxlint": "^1.83.0",
-    "oxlint-tsgolint": "^7.0.2002",
-    "rimraf": "^6.1.3",
+    "oxfmt": "^0.78.0",
+    "oxlint": "^1.93.0",
+    "oxlint-tsgolint": "^7.0.2006",
+    "rimraf": "^6.1.4",
     "tsx": "^4.23.15",
     "typescript": "^7.0.2",
-    "vite": "^8.3.0",
-    "vitest": "^5.0.3"
+    "vite": "^8.3.7",
+    "vitest": "^5.1.0"
   },
   "optionalDependencies": {
-    "encoding": "^0.1.13"
+    "encoding": "^0.1.14"
   },
   "overrides": {
     "@chevrotain/cst-dts-gen": {
@@ -68,17 +68,20 @@
     "chevrotain": {
       "lodash-es": "^4.18.1"
     },
+    "glob": "^14.0.2",
+    "katex": "^0.18.2",
     "lerna": {
       "js-yaml": "^5.4.2",
       "pacote": "^21.5.1"
     },
+    "minimatch": "^11.0.1",
     "nx": {
       "axios": "^1.20.0",
       "brace-expansion": "^5.0.12",
-      "smol-toml": "^1.7.1"
+      "smol-toml": "^1.7.1",
+      "undici": "^7.30.1"
     },
-    "remark-mdx-frontmatter": {
-      "toml": "^5.0.0"
-    }
+    "qs": "^6.17.1",
+    "toml": "^5.0.1"
   }
 }
