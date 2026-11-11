@@ -24,13 +24,6 @@ export interface TradingSessionStrategy {
   onCandle(candle: OneMinuteBatchedCandle, state: TradingSessionState): Promise<OrderAdvice | void>;
   onFill?(fill: Fill, state: TradingSessionState): Promise<void>;
   /**
-   * Called after `onFill` once the session determines that one of the strategy's
-   * own orders is fully filled. The strategy receives the pending order the session
-   * placed on its behalf, which it can compare by reference or side without having
-   * to match raw exchange order ids from the fill.
-   */
-  onOrderFilled?(order: PendingOrder, state: TradingSessionState): Promise<void>;
-  /**
    * Set by the `TradingSession` when the strategy is attached. Strategies call it to
    * surface a user-facing message (re-emitted as a `'message'` event by the session,
    * which downstream consumers like `StrategyMonitor` forward to the user). Strategies
