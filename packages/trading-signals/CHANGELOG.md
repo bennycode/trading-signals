@@ -2,6 +2,25 @@
 
 All notable changes to this project will be documented in this file. See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [8.4.0](https://github.com/bennycode/trading-signals/compare/trading-signals%408.3.0...trading-signals%408.4.0) (2026-11-11)
+
+### Features
+
+- **trading-signals-cli:** add a CLI for the technical indicators ([#1361](https://github.com/bennycode/trading-signals/issues/1361)) ([05061cf](https://github.com/bennycode/trading-signals/commit/05061cf850f4d106e39b30a17dd7375701ee94b9))
+- **trading-signals-docs:** move the trading knowledge to the website ([#1377](https://github.com/bennycode/trading-signals/issues/1377)) ([43f6425](https://github.com/bennycode/trading-signals/commit/43f642566163806bc78316a3a74305cc52e6b253))
+- **trading-signals-docs:** replace the Next.js site with the Vocs site ([#1372](https://github.com/bennycode/trading-signals/issues/1372)) ([5c4329e](https://github.com/bennycode/trading-signals/commit/5c4329e14beab3656c6d5f77b5f4aca21fab1fd5))
+- **trading-signals:** add a crossover signal to DMA ([#1370](https://github.com/bennycode/trading-signals/issues/1370)) ([eff3c11](https://github.com/bennycode/trading-signals/commit/eff3c11d4657884de63a28f4ad88fedcbeb88872))
+- **trading-signals:** add a trend signal to all moving averages ([#1393](https://github.com/bennycode/trading-signals/issues/1393)) ([87fc7e4](https://github.com/bennycode/trading-signals/commit/87fc7e437a3840a89ed664c1985ec4ac8444587d))
+- **trading-signals:** add signals to trend, channel and volume indicators ([#1394](https://github.com/bennycode/trading-signals/issues/1394)) ([4997c52](https://github.com/bennycode/trading-signals/commit/4997c524836af0a91666b5900c024db2821e4c90))
+- **trading-signals:** add Z-Score indicator ([#1379](https://github.com/bennycode/trading-signals/issues/1379)) ([ddef5db](https://github.com/bennycode/trading-signals/commit/ddef5db517d32d759485a694ffbf8af5e2fcafe8))
+- **trading-signals:** declare the input shape of every indicator ([#1364](https://github.com/bennycode/trading-signals/issues/1364)) ([5bd071c](https://github.com/bennycode/trading-signals/commit/5bd071cf5445a20c44b5cc980bdb91ec279302bf))
+
+### Bug Fixes
+
+- **trading-signals:** correct the PSAR clamp and reversal stop ([#1474](https://github.com/bennycode/trading-signals/issues/1474)) ([3f0b983](https://github.com/bennycode/trading-signals/commit/3f0b98370d4f0aaa768c45cef368253ff407a065))
+- **trading-signals:** keep earlier candles when replacing an untraded candle ([#1473](https://github.com/bennycode/trading-signals/issues/1473)) ([74a7500](https://github.com/bennycode/trading-signals/commit/74a7500f69bf335b706f3a20c40a72234cd0387d))
+- **trading-signals:** return 0 from CCI when prices are flat ([#1470](https://github.com/bennycode/trading-signals/issues/1470)) ([c3f91c4](https://github.com/bennycode/trading-signals/commit/c3f91c462df2cc3a72707f61b33ceecc17d7d6b5))
+
 ## [8.3.0](https://github.com/bennycode/trading-signals/compare/trading-signals@8.2.1...trading-signals@8.3.0) (2026-08-11)
 
 ### Features

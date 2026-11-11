@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file. See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.6.0](https://github.com/bennycode/trading-signals/compare/%40typedtrader%2Fmessaging%400.5.5...%40typedtrader%2Fmessaging%400.6.0) (2026-11-11)
+
+### Features
+
+- **@typedtrader/messaging:** report the deployed commit on /version ([#1413](https://github.com/bennycode/trading-signals/issues/1413)) ([9e425e6](https://github.com/bennycode/trading-signals/commit/9e425e6efbc4ae6275775b25adc549b0a2a215be))
+
+### Bug Fixes
+
+- **@typedtrader/messaging:** refuse to start the Telegram bot without owner IDs ([#1409](https://github.com/bennycode/trading-signals/issues/1409)) ([52efbfb](https://github.com/bennycode/trading-signals/commit/52efbfb482404824731730c73f1bf0cd0c7e3ef3))
+- **@typedtrader/messaging:** report the bot's package version on /version ([#1412](https://github.com/bennycode/trading-signals/issues/1412)) ([45a8878](https://github.com/bennycode/trading-signals/commit/45a8878297083e3a935fb8a39320fdaf83de38e4))
+
 ## [0.5.5](https://github.com/bennycode/trading-signals/compare/@typedtrader/messaging@0.5.4...@typedtrader/messaging@0.5.5) (2026-08-11)
 
 **Note:** Version bump only for package @typedtrader/messaging

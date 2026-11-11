@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file. See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.2.4](https://github.com/bennycode/trading-signals/compare/%40typedtrader%2Fcandles%400.2.3...%40typedtrader%2Fcandles%400.2.4) (2026-11-11)
+
+**Note:** Version bump only for package @typedtrader/candles
+
 ## [0.2.3](https://github.com/bennycode/trading-signals/compare/@typedtrader/candles@0.2.2...@typedtrader/candles@0.2.3) (2026-08-08)
 
 **Note:** Version bump only for package @typedtrader/candles

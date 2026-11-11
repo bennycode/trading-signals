@@ -1,6 +1,6 @@
 {
   "name": "trading-signals-cli",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Command-line interface for the technical indicators of trading-signals.",
   "keywords": [
     "cli",
@@ -48,6 +48,6 @@
     "test:units:watch": "vitest --watch"
   },
   "dependencies": {
-    "trading-signals": "8.3.0"
+    "trading-signals": "8.4.0"
   }
 }

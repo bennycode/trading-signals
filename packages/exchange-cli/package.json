@@ -1,6 +1,6 @@
 {
   "name": "@typedtrader/exchange-cli",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Command-line interface for the typed broker clients of @typedtrader/exchange.",
   "keywords": [
     "cli",
@@ -46,7 +46,7 @@
     "test:units:watch": "vitest --watch"
   },
   "dependencies": {
-    "@typedtrader/exchange": "0.3.3",
+    "@typedtrader/exchange": "0.4.0",
     "@types/big.js": "^7.0.0",
     "big.js": "^7.0.1",
     "commander": "^15.0.0",

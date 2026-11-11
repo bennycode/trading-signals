@@ -2,6 +2,24 @@
 
 All notable changes to this project will be documented in this file. See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.5.0](https://github.com/bennycode/trading-signals/compare/trading-strategies%400.4.5...trading-strategies%400.5.0) (2026-11-11)
+
+### Features
+
+- **exchange:** configurable slippage in BrokerMock ([#1279](https://github.com/bennycode/trading-signals/issues/1279)) ([280e3e5](https://github.com/bennycode/trading-signals/commit/280e3e5183403156c0534659faf8c7070d904233))
+- **trading-signals-docs:** move the trading knowledge to the website ([#1377](https://github.com/bennycode/trading-signals/issues/1377)) ([43f6425](https://github.com/bennycode/trading-signals/commit/43f642566163806bc78316a3a74305cc52e6b253))
+- **trading-signals-vocs:** add Vocs documentation site with interactive demos and backtesting ([#1318](https://github.com/bennycode/trading-signals/issues/1318)) ([2331df3](https://github.com/bennycode/trading-signals/commit/2331df355467d549fd56e8c80f818e9c4463c049))
+- **trading-strategies:** add BatchedIndicator to run indicators on a larger timeframe ([#1414](https://github.com/bennycode/trading-signals/issues/1414)) ([e94bf7d](https://github.com/bennycode/trading-signals/commit/e94bf7dfceb12e87c70e72f506c93e6caf12f56d))
+- **trading-strategies:** add performance risk metrics ([#1316](https://github.com/bennycode/trading-signals/issues/1316)) ([62985e1](https://github.com/bennycode/trading-signals/commit/62985e1ed759e08881410bb7672b01271e6f3baf))
+
+### Bug Fixes
+
+- **@typedtrader/exchange:** request split- and spin-off-adjusted stock bars ([#1424](https://github.com/bennycode/trading-signals/issues/1424)) ([0550403](https://github.com/bennycode/trading-signals/commit/05504034aef41ca4cd366f8d314ff02fdef81640))
+- **@typedtrader/exchange:** stop charging the crypto commission on stocks ([#1365](https://github.com/bennycode/trading-signals/issues/1365)) ([3cb4709](https://github.com/bennycode/trading-signals/commit/3cb4709660142fb328a43f314270e495b8411fa4))
+- **trading-strategies:** call strategy init in BacktestExecutor ([#1373](https://github.com/bennycode/trading-signals/issues/1373)) ([752cc2b](https://github.com/bennycode/trading-signals/commit/752cc2b06b994ee27c4b341c06d51b8cf1f0e8bb))
+- **trading-strategies:** serve restored state to the strategy, not just the snapshot ([#1430](https://github.com/bennycode/trading-signals/issues/1430)) ([2d0c4ee](https://github.com/bennycode/trading-signals/commit/2d0c4eeca504c1dad2c729c8b2c3e84f95fd52d2))
+- **trading-strategies:** track the position a fill actually delivered ([#1353](https://github.com/bennycode/trading-signals/issues/1353)) ([fc625a3](https://github.com/bennycode/trading-signals/commit/fc625a369546261dd4ef2c2af1b735e29cecaad4))
+
 ## [0.4.5](https://github.com/bennycode/trading-signals/compare/trading-strategies@0.4.4...trading-strategies@0.4.5) (2026-08-11)
 
 **Note:** Version bump only for package trading-strategies

@@ -1,6 +1,6 @@
 {
   "name": "@typedtrader/messaging",
-  "version": "0.5.5",
+  "version": "0.6.0",
   "private": true,
   "description": "Trading bot via messaging service.",
   "keywords": [
@@ -45,7 +45,7 @@
   "dependencies": {
     "@grammyjs/auto-retry": "^2.0.2",
     "@grammyjs/conversations": "^2.1.1",
-    "@typedtrader/exchange": "0.3.3",
+    "@typedtrader/exchange": "0.4.0",
     "@types/big.js": "^7.0.0",
     "better-sqlite3": "^13.0.3",
     "better-sqlite3-multiple-ciphers": "^12.11.1",
@@ -55,7 +55,7 @@
     "ms": "4.0.0-nightly.202508271359",
     "pino": "^10.4.0",
     "pino-roll": "^4.0.0",
-    "trading-strategies": "0.4.5",
+    "trading-strategies": "0.5.0",
     "zod": "^4.6.7"
   },
   "devDependencies": {
