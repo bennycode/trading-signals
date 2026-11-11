@@ -118,22 +118,15 @@ export class PSAR extends TrendIndicatorSeries<HighLow<number>, TradingSignals, 
     // Adjust SAR position if needed
     if (state.isLong) {
       /*
-       * Adjust SAR based on previous lows
-       * If pre-previous candle exists and current low is less than SAR
+       * In an uptrend the stop trails below the price, so it may never rise into the range of
+       * either of the two preceding candles.
        */
-      const hasPrevPrev = state.prePreviousCandle != null;
-      if (hasPrevPrev && low < sar) {
-        // Apply pre-previous low adjustment if needed
-        if (state.prePreviousCandle!.low < sar) {
-          sar = state.prePreviousCandle!.low;
-        }
-
-        // Apply previous low adjustment
-        sar = state.previousCandle.low < sar ? state.previousCandle.low : sar;
-      }
-      // No pre-previous candle, but check previous low
-      else if (state.previousCandle.low < sar) {
+      if (state.previousCandle.low < sar) {
         sar = state.previousCandle.low;
+      }
+
+      if (state.prePreviousCandle !== null && state.prePreviousCandle.low < sar) {
+        sar = state.prePreviousCandle.low;
       }
 
       // Update acceleration factor and extreme point if price makes new high
@@ -157,23 +150,15 @@ export class PSAR extends TrendIndicatorSeries<HighLow<number>, TradingSignals, 
       }
     } else {
       /*
-       * Short position
-       * Adjust SAR based on previous highs
-       * If pre-previous candle exists and current high is greater than SAR
+       * In a downtrend the stop trails above the price, so it may never drop into the range of
+       * either of the two preceding candles.
        */
-      const hasPrevPrev = state.prePreviousCandle != null;
-      if (hasPrevPrev && high > sar) {
-        // Apply pre-previous high adjustment if needed
-        if (state.prePreviousCandle!.high > sar) {
-          sar = state.prePreviousCandle!.high;
-        }
-
-        // Apply previous high adjustment
-        sar = state.previousCandle.high > sar ? state.previousCandle.high : sar;
-      }
-      // No pre-previous candle, but check previous high
-      else if (state.previousCandle.high > sar) {
+      if (state.previousCandle.high > sar) {
         sar = state.previousCandle.high;
+      }
+
+      if (state.prePreviousCandle !== null && state.prePreviousCandle.high > sar) {
+        sar = state.prePreviousCandle.high;
       }
 
       // Update acceleration factor and extreme point if price makes new low
@@ -192,14 +177,6 @@ export class PSAR extends TrendIndicatorSeries<HighLow<number>, TradingSignals, 
         sar = state.extreme!; // Set SAR to the extreme point
         state.extreme = high; // Set new extreme to current high
         state.acceleration = this.accelerationStep; // Reset acceleration
-
-        /*
-         * Ensure the SAR is below the price in the uptrend by setting it slightly below the low
-         * This fixes the edge case in the test
-         */
-        if (sar >= low) {
-          sar = low - 0.01;
-        }
       }
     }
 
