@@ -70,6 +70,35 @@ describe('TrailingStopStrategy', () => {
     expect(strategy.trailingState.exitLimitPrice).toBe('108');
   });
 
+  it('finishes when its own exit fills during a backtest', async () => {
+    /*
+     * Same four candles as above: the trail breaches on C3 and the limit sell fills on C4.
+     * The backtester reports fills only, so teardown has to ride on the fill itself.
+     */
+    const strategy = new TrailingStopStrategy({trailDownPct: '10'});
+    let finishedCount = 0;
+    strategy.onFinish = () => {
+      finishedCount++;
+    };
+
+    const config: BacktestConfig = {
+      broker: createMockExchange({baseBalance: '5'}),
+      candles: [
+        createCandle({close: '100', high: '101', low: '99', open: '100', openTimeInISO: '2025-01-01T00:00:00.000Z'}),
+        createCandle({close: '118', high: '120', low: '104', open: '105', openTimeInISO: '2025-01-01T00:01:00.000Z'}),
+        createCandle({close: '107', high: '120', low: '106', open: '118', openTimeInISO: '2025-01-01T00:02:00.000Z'}),
+        createCandle({close: '107', high: '108', low: '105', open: '107', openTimeInISO: '2025-01-01T00:03:00.000Z'}),
+      ],
+      strategy,
+      tradingPair,
+    };
+
+    await new BacktestExecutor(config).execute();
+
+    expect(strategy.trailingState.exited, 'the trail sold its position').toBe(true);
+    expect(finishedCount, 'runtime is told to tear the session down exactly once').toBe(1);
+  });
+
   it('finishes (auto-removes) when an attached position is gone, e.g. closed externally', async () => {
     /*
      * Simulate a strategy that attached to a position on a previous run, then the position was

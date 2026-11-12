@@ -147,9 +147,6 @@ export class TradingSession extends EventEmitter<TradingSessionEventMap> {
       }
 
       this.emit('orderFilled', pending);
-      if (this.#strategy.onOrderFilled) {
-        await this.#strategy.onOrderFilled(pending, this.#state);
-      }
     } catch (error) {
       this.emit('error', error instanceof Error ? error : new Error(String(error)));
     }

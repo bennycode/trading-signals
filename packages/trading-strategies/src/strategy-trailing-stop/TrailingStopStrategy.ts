@@ -2,7 +2,7 @@ import Big from 'big.js';
 import {z} from 'zod';
 import {OrderSide, OrderType} from '@typedtrader/exchange';
 import {AllAvailableAmount} from '../trader/index.js';
-import type {Fill, PendingOrder, OneMinuteBatchedCandle} from '@typedtrader/exchange';
+import type {Fill, OneMinuteBatchedCandle} from '@typedtrader/exchange';
 import type {LimitOrderAdvice, OrderAdvice, TradingSessionState} from '../trader/index.js';
 import {MarketType} from '../strategy/MarketType.js';
 import {Strategy} from '../strategy/Strategy.js';
@@ -262,10 +262,9 @@ export class TrailingStopStrategy extends Strategy {
     if (!this.hasSellablePosition(state)) {
       this.#state.exited = true;
     }
-  }
 
-  async onOrderFilled(order: PendingOrder, _state: TradingSessionState): Promise<void> {
-    if (this.#state.exited && order.side === OrderSide.SELL) {
+    /* Nothing left to trail once the exit emptied the position, so let the runtime tear down. */
+    if (this.#state.exited) {
       await this.onFinish?.();
     }
   }

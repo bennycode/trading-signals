@@ -2,7 +2,7 @@ import Big from 'big.js';
 import {z} from 'zod';
 import {getFilledBaseAmount, OrderSide, OrderType} from '@typedtrader/exchange';
 import {AllAvailableAmount} from '../trader/index.js';
-import type {Fill, PendingOrder, OneMinuteBatchedCandle} from '@typedtrader/exchange';
+import type {Fill, OneMinuteBatchedCandle} from '@typedtrader/exchange';
 import type {LimitOrderAdvice, OrderAdvice, TradingSessionState} from '../trader/index.js';
 import {MarketType} from '../strategy/MarketType.js';
 import {Strategy} from '../strategy/Strategy.js';
@@ -302,6 +302,19 @@ export class ProtectedStrategy extends Strategy {
   }
 
   async onFill(fill: Fill, _state: TradingSessionState): Promise<void> {
+    this.#trackFill(fill);
+
+    /*
+     * While `killed === true` the subclass cannot place new orders, so any SELL that fills is
+     * necessarily the kill-switch sell: the position is gone and the session can be torn down.
+     */
+    if (this.#protectedState.killed && fill.side === OrderSide.SELL) {
+      await this.onFinish?.();
+    }
+  }
+
+  /** Cost-basis averaging, so multiple buys and partial sells track the position correctly. */
+  #trackFill(fill: Fill): void {
     const protectedState = this.#protectedState;
     const fillPrice = new Big(fill.price);
     const executedSize = new Big(fill.size);
@@ -335,17 +348,6 @@ export class ProtectedStrategy extends Strategy {
       totalCostBasis: avgEntry.mul(newPositionSize).toFixed(),
       totalPositionSize: newPositionSize.toFixed(),
     });
-  }
-
-  /**
-   * Fires `onFinish` when the session reports that a SELL order of ours has fully filled
-   * while the kill switch is active. While `killed === true` the subclass cannot place
-   * new orders, so any SELL the session has in flight is necessarily the kill-switch sell.
-   */
-  async onOrderFilled(order: PendingOrder, _state: TradingSessionState): Promise<void> {
-    if (this.#protectedState.killed && order.side === OrderSide.SELL) {
-      await this.onFinish?.();
-    }
   }
 
   override restoreState(persisted: Record<string, unknown>): void {

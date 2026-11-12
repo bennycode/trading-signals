@@ -4,7 +4,7 @@ import {describe, expect, it, vi} from 'vitest';
 import {z} from 'zod';
 import {CandleBatcher, OrderPosition, OrderSide, OrderType, TradingPair} from '@typedtrader/exchange';
 import {AllAvailableAmount} from '../trader/index.js';
-import type {Candle, Fill, PendingOrder, OneMinuteBatchedCandle} from '@typedtrader/exchange';
+import type {Candle, Fill, OneMinuteBatchedCandle} from '@typedtrader/exchange';
 import type {LimitOrderAdvice, MarketOrderAdvice, OrderAdvice, TradingSessionState} from '../trader/index.js';
 import {ProtectedStrategy, ProtectedStrategySchema} from './ProtectedStrategy.js';
 
@@ -70,13 +70,6 @@ function makeFill(price: string, size: string, side: OrderSide): Fill {
     side,
     size,
   };
-}
-
-function makeOrder(side: OrderSide, type: OrderType = OrderType.LIMIT): PendingOrder {
-  if (type === OrderType.LIMIT) {
-    return {id: 'order-1', pair, price: '100', side, size: '10', type: OrderType.LIMIT};
-  }
-  return {id: 'order-1', pair, side, size: '10', type: OrderType.MARKET};
 }
 
 const TestSchema = ProtectedStrategySchema.extend({
@@ -447,7 +440,7 @@ describe('ProtectedStrategy', () => {
       expect(strategy.ownLogicCallCount).toBe(0);
     });
 
-    it('fires onFinish when the session reports the killed sell order fully filled', async () => {
+    it('fires onFinish when the kill-switch sell fills', async () => {
       const strategy = new TestProtectedStrategy({protected: {stopLossPct: '5'}});
       const onFinish = vi.fn();
       strategy.onFinish = onFinish;
@@ -457,9 +450,8 @@ describe('ProtectedStrategy', () => {
       expect(strategy.protectedState.killed).toBe(true);
       expect(onFinish).not.toHaveBeenCalled();
 
-      // Kill-switch sell actually fills → session reports order done
+      // Kill-switch sell actually fills
       await strategy.onFill(makeFill('94', '10', OrderSide.SELL), mockState);
-      await strategy.onOrderFilled(makeOrder(OrderSide.SELL), mockState);
       expect(onFinish).toHaveBeenCalledTimes(1);
     });
 
@@ -470,13 +462,12 @@ describe('ProtectedStrategy', () => {
 
       await strategy.onFill(makeFill('100', '10', OrderSide.BUY), mockState);
       await strategy.onFill(makeFill('110', '10', OrderSide.SELL), mockState);
-      await strategy.onOrderFilled(makeOrder(OrderSide.SELL), mockState);
 
       expect(strategy.protectedState.killed).toBe(false);
       expect(onFinish).not.toHaveBeenCalled();
     });
 
-    it('does not fire onFinish when a BUY order fills while killed', async () => {
+    it('does not fire onFinish when a BUY fills while killed', async () => {
       const strategy = new TestProtectedStrategy({protected: {stopLossPct: '5'}});
       const onFinish = vi.fn();
       strategy.onFinish = onFinish;
@@ -485,8 +476,8 @@ describe('ProtectedStrategy', () => {
       await strategy.onCandle(makeCandle(94), mockState);
       expect(strategy.protectedState.killed).toBe(true);
 
-      // A BUY order completing (shouldn't happen in practice once killed, but guard anyway)
-      await strategy.onOrderFilled(makeOrder(OrderSide.BUY), mockState);
+      // A BUY filling (shouldn't happen in practice once killed, but guard anyway)
+      await strategy.onFill(makeFill('94', '10', OrderSide.BUY), mockState);
       expect(onFinish).not.toHaveBeenCalled();
     });
   });
