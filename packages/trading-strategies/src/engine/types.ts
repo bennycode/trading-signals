@@ -1,6 +1,6 @@
 import type Big from 'big.js';
 import type {StringValue} from 'ms';
-import type {OneMinuteBatchedCandle} from '@typedtrader/exchange';
+import type {Candle, OneMinuteBatchedCandle} from '@typedtrader/exchange';
 import type {MarketType} from '../strategy/MarketType.js';
 
 /** A size written on a rule. `'all'` means the whole balance or the whole position. */
@@ -28,7 +28,11 @@ export interface PositionFacts {
 }
 
 export interface ExitFacts {
-  /** Candle close at which the exit rule fired, not necessarily the price it filled at. */
+  /**
+   * What the exit actually got: the price its fill reported, or the candle close when the position
+   * turned out to be gone without a fill of ours. A rule that prices its next entry off the last
+   * exit therefore works from a traded price.
+   */
   price: Big;
   /** Whether the rule behind this exit ended the strategy, as `stopLoss()` does. */
   final: boolean;
@@ -114,10 +118,21 @@ export type CloseRule<F> = RuleBase<F> & {
 export interface IndicatorHandle<Result> {
   add(candle: OneMinuteBatchedCandle): void;
   getResult(): Result | null | undefined;
+  /**
+   * Handed the bars the declaration's `history` asked for, before the first live candle. A handle
+   * that wants no history leaves this out and the engine fetches nothing for it.
+   */
+  warmUp?(candles: Candle[]): void;
 }
 
 export interface IndicatorDeclaration<Result, Config> {
   create: (config: Config) => IndicatorHandle<Result>;
+  /**
+   * Past bars the engine fetches from the broker before the session starts, so a strategy that
+   * needs history to decide anything can trade from its first live candle instead of waiting
+   * days for it. Declarations asking for the same bars share one fetch.
+   */
+  history?: {count: number; interval: StringValue};
 }
 
 export type IndicatorResults<Indicators> = {

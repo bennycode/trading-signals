@@ -2,6 +2,7 @@ import {EventEmitter} from 'node:events';
 import {CandleBatcher, ONE_MINUTE_IN_MS} from '@typedtrader/exchange';
 import type {BatchedCandle, Candle, Fill, PendingOrder} from '@typedtrader/exchange';
 import {AdviceExecutor} from './AdviceExecutor.js';
+import {baseOnHold} from './baseOnHold.js';
 import type {
   OrderAdvice,
   TradingSessionEventMap,
@@ -59,6 +60,7 @@ export class TradingSession extends EventEmitter<TradingSessionEventMap> {
 
     this.#state = {
       baseBalance: balances.base,
+      baseBalanceOnHold: this.#baseOnHold(),
       counterBalance: balances.counter,
       feeRates,
       lastOrderSide,
@@ -138,6 +140,7 @@ export class TradingSession extends EventEmitter<TradingSessionEventMap> {
       this.#state = {
         ...this.#state,
         baseBalance: balances.base,
+        baseBalanceOnHold: this.#baseOnHold(),
         counterBalance: balances.counter,
         lastOrderSide: fill.side,
       };
@@ -167,9 +170,15 @@ export class TradingSession extends EventEmitter<TradingSessionEventMap> {
 
     const outcome = await this.#adviceExecutor!.execute(advice);
 
+    // Recorded before the state is read, so what the new order holds counts towards the position.
+    if (outcome.status === 'PLACED') {
+      this.#pendingOrders.set(outcome.order.id, outcome.order);
+    }
+
     this.#state = {
       ...this.#state!,
       baseBalance: outcome.balances.base,
+      baseBalanceOnHold: this.#baseOnHold(),
       counterBalance: outcome.balances.counter,
     };
 
@@ -178,7 +187,11 @@ export class TradingSession extends EventEmitter<TradingSessionEventMap> {
       return;
     }
 
-    this.#pendingOrders.set(outcome.order.id, outcome.order);
     this.emit('order', outcome.order);
+  }
+
+  /** What our own unfilled orders are holding, which the available balance leaves out. */
+  #baseOnHold() {
+    return baseOnHold([...this.#pendingOrders.values()]);
   }
 }

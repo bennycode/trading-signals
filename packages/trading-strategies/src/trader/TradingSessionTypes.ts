@@ -76,6 +76,12 @@ export type OrderAdvice = MarketOrderAdvice | LimitOrderAdvice;
 
 export interface TradingSessionState {
   readonly baseBalance: Big;
+  /**
+   * Base currency held by orders of ours that have not filled. A strategy reading its position off
+   * the balance has to count it: while a limit sell rests on the exchange the position is not
+   * available to trade, but it has not been sold either.
+   */
+  readonly baseBalanceOnHold: Big;
   readonly counterBalance: Big;
   readonly lastOrderSide?: OrderSide;
   readonly tradingRules: TradingRules;

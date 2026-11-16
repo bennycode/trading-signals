@@ -24,6 +24,7 @@ function createCandle(): Candle {
 function createState(): TradingSessionState {
   return {
     baseBalance: new Big(0),
+    baseBalanceOnHold: new Big(0),
     counterBalance: new Big(1000),
     feeRates: {
       [OrderType.LIMIT]: new Big('0.001'),

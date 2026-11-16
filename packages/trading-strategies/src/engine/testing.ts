@@ -24,6 +24,12 @@ export const holdingFromTheStart: Balances = {baseBalance: '1', counterBalance: 
 /** Flat with cash to spend, which is what an open rule needs. */
 export const flatWithCash: Balances = {baseBalance: '0', counterBalance: '50000'};
 
+/**
+ * How long a test gets when it replays {@link loadCandles}. Ten thousand candles through two
+ * strategies is slower than Vitest allows by default, and slower again under coverage.
+ */
+export const WEEK_LONG_TIMEOUT = 30_000;
+
 /** A week of real one-minute candles, for comparing a ported strategy against the class it replaces. */
 export function loadCandles(): Candle[] {
   const file = join(import.meta.dirname, '../backtest/candles/BNB_USDT_2021_02_19_1_week.json');
@@ -51,22 +57,57 @@ export function candlesAt(prices: string[], startAt = 0): Candle[] {
   return prices.flatMap((price, index) => flatCandles(1, price, startAt + index * ONE_MINUTE_IN_MS));
 }
 
-export function createBroker(balances: Balances) {
+/**
+ * `history` is what the strategy's own warm-up asks the broker for, which is separate from the
+ * candles it is tested on: bars dated before the first of those, as a real exchange would serve.
+ */
+export function createBroker(balances: Balances, history: Candle[] = []) {
   return new AlpacaBrokerMock({
     balances: new Map([
       ['BTC', {available: new Big(balances.baseBalance), hold: new Big(0)}],
       ['USDT', {available: new Big(balances.counterBalance), hold: new Big(0)}],
     ]),
+    marketData: {
+      getCandles: async (_pair, {startTimeFirstCandle, startTimeLastCandle}) =>
+        history.filter(
+          candle =>
+            candle.openTimeInMillis >= Date.parse(startTimeFirstCandle) &&
+            candle.openTimeInMillis <= Date.parse(startTimeLastCandle)
+        ),
+    },
   });
 }
 
 export async function backtest(
   strategy: TradingSessionStrategy,
   candles: Candle[],
-  balances: Balances
+  balances: Balances,
+  history: Candle[] = []
 ): Promise<BacktestResult> {
-  const config: BacktestConfig = {broker: createBroker(balances), candles, strategy, tradingPair};
+  const config: BacktestConfig = {broker: createBroker(balances, history), candles, strategy, tradingPair};
   return new BacktestExecutor(config).execute();
+}
+
+/** Daily bars walking through the given closes, the last of them closing before `endBefore`. */
+export function dailyCandles(closes: string[], endBefore: number): Candle[] {
+  const oneDayInMillis = 24 * 60 * ONE_MINUTE_IN_MS;
+
+  return closes.map((close, index) => {
+    const openTimeInMillis = endBefore - (closes.length - index) * oneDayInMillis;
+    const price = parseFloat(close);
+    return {
+      base: 'BTC',
+      close,
+      counter: 'USDT',
+      high: String(price + 1),
+      low: String(price - 1),
+      open: close,
+      openTimeInISO: new Date(openTimeInMillis).toISOString(),
+      openTimeInMillis,
+      sizeInMillis: oneDayInMillis,
+      volume: '1',
+    };
+  });
 }
 
 /** Trades reduced to what a trader would compare: direction, size and price, in order. */

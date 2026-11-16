@@ -2,7 +2,14 @@ import Big from 'big.js';
 import {ms, type StringValue} from 'ms';
 import {z} from 'zod';
 import {CandleBatcher, getFilledBaseAmount, ONE_MINUTE_IN_MS, OrderSide, OrderType} from '@typedtrader/exchange';
-import type {BatchedCandle, Fill, OneMinuteBatchedCandle} from '@typedtrader/exchange';
+import type {
+  BatchedCandle,
+  Candle,
+  Fill,
+  MarketDataSource,
+  OneMinuteBatchedCandle,
+  TradingPair,
+} from '@typedtrader/exchange';
 import {AllAvailableAmount} from '../trader/index.js';
 import type {OrderAdvice, TradingSessionState} from '../trader/index.js';
 import type {MarketType} from '../strategy/MarketType.js';
@@ -216,13 +223,52 @@ function build<
       super.restoreState(parsed.success ? parsed.data : emptyLedger());
     }
 
+    /**
+     * Fetches the past bars every indicator declared and hands them over before the first live
+     * candle, so a strategy whose settings come from history does not have to wait days of live
+     * candles to learn them. Declarations asking for the same bars share one request.
+     */
+    override async init(market: Pick<MarketDataSource, 'getRecentCandles'>, pair: TradingPair): Promise<void> {
+      const requests = new Map<string, {count: number; handles: IndicatorHandle<unknown>[]; interval: StringValue}>();
+
+      for (const [name, declaration] of Object.entries(definition.indicators ?? {})) {
+        const {history} = declaration;
+        const handle = this.#indicators.get(name);
+        if (!history || !handle?.warmUp) {
+          continue;
+        }
+        const key = `${history.count}:${history.interval}`;
+        const request = requests.get(key) ?? {count: history.count, handles: [], interval: history.interval};
+        request.handles.push(handle);
+        requests.set(key, request);
+      }
+
+      for (const {count, handles, interval} of requests.values()) {
+        let candles: Candle[];
+        try {
+          candles = await market.getRecentCandles(pair, count, ms(interval));
+        } catch (error) {
+          /*
+           * History is a convenience, never a precondition: a broker that cannot serve it leaves
+           * the declaration to decide on nothing, which is what keeps a strategy from refusing to
+           * start over an exchange's missing candle endpoint.
+           */
+          this.onMessage?.(`Could not load ${count} bars of ${interval} history: ${String(error)}`);
+          continue;
+        }
+        for (const handle of handles) {
+          handle.warmUp?.(candles);
+        }
+      }
+    }
+
     protected override async processCandle(
       candle: OneMinuteBatchedCandle,
       state: TradingSessionState
     ): Promise<OrderAdvice | void> {
       this.#feedIndicators(candle);
       const bars = this.#feedRuleBatchers(candle);
-      const holding = this.hasSellablePosition(state);
+      const holding = this.#holds(state);
 
       if (holding) {
         this.#openPositionIfUntracked(candle, state);
@@ -422,25 +468,47 @@ function build<
           continue;
         }
 
-        const because = typeof rule.because === 'string' ? rule.because : rule.because(facts);
-        const price = rule.limit?.(facts) ?? null;
-        const written = 'spend' in rule && rule.spend !== undefined ? rule.spend : (rule.quantity ?? 'all');
-        const sizing = typeof written === 'function' ? written(facts) : written;
-        const spending = side === OrderSide.BUY && 'spend' in rule && rule.spend !== undefined;
-
-        if ('then' in rule && rule.then === 'finish') {
-          this.setState<Ledger>({
-            pendingFinalExit: {
-              because,
-              price: price ? price.toFixed() : null,
-              quantity: sizing === 'all' ? null : new Big(sizing).toFixed(),
-            },
-          });
+        /*
+         * A rule's reason, price and size read the same facts its condition did, so an indicator
+         * that is not ready is read here the same way: this rule cannot act yet, and the next one
+         * gets its turn. Catching it around the whole rule rather than around the condition alone
+         * is what lets `when: 'always'` price an order off an indicator.
+         */
+        try {
+          return this.#place(rule, facts, side);
+        } catch (error) {
+          if (error instanceof IndicatorNotReady) {
+            continue;
+          }
+          throw error;
         }
-
-        this.onMessage?.(because);
-        return this.#advice(side, sizing, price ? price.toFixed() : null, because, spending);
       }
+    }
+
+    /** Turns a rule that matched into the order it asks for, and records it when it is terminal. */
+    #place(
+      rule: OpenRule<StrategyFacts> | CloseRule<StrategyFacts>,
+      facts: StrategyFacts,
+      side: OrderSide
+    ): OrderAdvice {
+      const because = typeof rule.because === 'string' ? rule.because : rule.because(facts);
+      const price = rule.limit?.(facts) ?? null;
+      const written = 'spend' in rule && rule.spend !== undefined ? rule.spend : (rule.quantity ?? 'all');
+      const sizing = typeof written === 'function' ? written(facts) : written;
+      const spending = side === OrderSide.BUY && 'spend' in rule && rule.spend !== undefined;
+
+      if ('then' in rule && rule.then === 'finish') {
+        this.setState<Ledger>({
+          pendingFinalExit: {
+            because,
+            price: price ? price.toFixed() : null,
+            quantity: sizing === 'all' ? null : new Big(sizing).toFixed(),
+          },
+        });
+      }
+
+      this.onMessage?.(because);
+      return this.#advice(side, sizing, price ? price.toFixed() : null, because, spending);
     }
 
     /** A rule waiting on an indicator that has no result yet simply does not match. */
@@ -510,6 +578,21 @@ function build<
     }
 
     /**
+     * The position as the strategy owns it, which is not the same as what it can trade: an unfilled
+     * limit sell of its own holds the balance it is offering. Counting only what is available would
+     * read that resting order as a position that had disappeared, and the engine would clear its
+     * ledger, re-enter, and leave the old order to fill later on its own.
+     */
+    #positionSize(state: TradingSessionState): Big {
+      return state.baseBalance.plus(state.baseBalanceOnHold);
+    }
+
+    /** Dust below the exchange's minimum order size is not a position, whoever is holding it. */
+    #holds(state: TradingSessionState): boolean {
+      return this.#positionSize(state).gte(new Big(state.tradingRules.base_min_size));
+    }
+
+    /**
      * ponytail: entry price for a position this strategy did not open is taken from the candle it
      * first sees, so percentage rules measure from attach time rather than from what was actually
      * paid. Read `avg_entry_price` off the broker position once `TradingSessionState` carries it.
@@ -519,10 +602,11 @@ function build<
         return;
       }
 
+      const size = this.#positionSize(state);
       this.setState<Ledger>({
         bestPrice: candle.high.toFixed(),
-        costBasis: candle.close.mul(state.baseBalance).toFixed(),
-        size: state.baseBalance.toFixed(),
+        costBasis: candle.close.mul(size).toFixed(),
+        size: size.toFixed(),
       });
     }
 

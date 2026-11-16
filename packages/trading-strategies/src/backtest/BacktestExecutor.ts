@@ -2,6 +2,7 @@ import Big from 'big.js';
 import {CandleBatcher} from '@typedtrader/exchange';
 import type {Candle, FeeRate, TradingRules, TradingPair} from '@typedtrader/exchange';
 import {AdviceExecutor} from '../trader/AdviceExecutor.js';
+import {baseOnHold} from '../trader/baseOnHold.js';
 import type {OrderAdvice, TradingSessionState} from '../trader/TradingSessionTypes.js';
 import type {BacktestConfig} from './BacktestConfig.js';
 import type {
@@ -162,11 +163,16 @@ export class BacktestExecutor {
 
   async #buildState(pair: TradingPair, tradingRules: TradingRules, feeRates: FeeRate): Promise<TradingSessionState> {
     const {broker: exchange} = this.#config;
-    const [balances, fills] = await Promise.all([exchange.getAvailableBalances(pair), exchange.getFills(pair)]);
+    const [balances, fills, openOrders] = await Promise.all([
+      exchange.getAvailableBalances(pair),
+      exchange.getFills(pair),
+      exchange.getOpenOrders(pair),
+    ]);
     const lastOrderSide = fills.length > 0 ? fills[0].side : undefined;
 
     return {
       baseBalance: balances.base,
+      baseBalanceOnHold: baseOnHold(openOrders),
       counterBalance: balances.counter,
       feeRates,
       lastOrderSide,

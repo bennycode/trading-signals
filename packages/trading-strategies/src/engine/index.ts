@@ -7,14 +7,17 @@ export {
 } from './defineStrategy.js';
 export {
   every,
+  fromHistory,
   ProtectionSchema,
   required,
   stopLoss,
   takeProfit,
   trailingStop,
+  type OrderKind,
   type Percentage,
   type ProtectionFacts,
   type ProtectionOptions,
+  type TrailingStopOptions,
 } from './rules.js';
 export type {
   Amount,
