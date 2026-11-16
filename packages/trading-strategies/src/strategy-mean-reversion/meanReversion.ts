@@ -1,19 +1,13 @@
-import {z} from 'zod';
+import type {z} from 'zod';
 import {BollingerBands} from 'trading-signals';
-import {defineStrategy, every, stopLoss, takeProfit} from '../engine/index.js';
+import {defineStrategy, every, ProtectionSchema, stopLoss, takeProfit} from '../engine/index.js';
 import {MarketType} from '../strategy/MarketType.js';
-import {positiveNumberString} from '../util/validators.js';
 
 const BAR = '1h';
 const PERIOD = 20;
 const DEVIATION_MULTIPLIER = 2.5;
 
-export const MeanReversionSchema = z.object({
-  /** Sell everything and stop when the position is this many percent down. Omit to run unprotected. */
-  stopLossPct: positiveNumberString.optional(),
-  /** Sell everything and stop when the position is this many percent up. Omit to run unprotected. */
-  takeProfitPct: positiveNumberString.optional(),
-});
+export const MeanReversionSchema = ProtectionSchema;
 
 export type MeanReversionConfig = z.input<typeof MeanReversionSchema>;
 type Settings = z.output<typeof MeanReversionSchema>;
@@ -23,8 +17,7 @@ type Settings = z.output<typeof MeanReversionSchema>;
  * upper band, on the assumption that a range-bound market returns to its mean. Entries and exits
  * are judged on hourly bars; the stops are checked on every candle.
  */
-export const MeanReversion = defineStrategy({
-  config: MeanReversionSchema,
+export const MeanReversion = defineStrategy(MeanReversionSchema)({
   indicators: {
     bands: every(BAR, () => new BollingerBands(PERIOD, DEVIATION_MULTIPLIER)),
   },

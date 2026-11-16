@@ -7,6 +7,8 @@ export {
 } from './defineStrategy.js';
 export {
   every,
+  ProtectionSchema,
+  required,
   stopLoss,
   takeProfit,
   trailingStop,
@@ -17,6 +19,8 @@ export {
 export type {
   Amount,
   CloseRule,
+  Condition,
+  Crossing,
   ExitFacts,
   ExplicitAmount,
   Facts,

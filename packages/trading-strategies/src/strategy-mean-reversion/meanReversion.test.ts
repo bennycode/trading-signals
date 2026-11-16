@@ -1,67 +1,19 @@
-import {readFileSync} from 'node:fs';
-import {join} from 'node:path';
-import Big from 'big.js';
 import {describe, expect, it} from 'vitest';
-import {z} from 'zod';
-import {AlpacaBrokerMock, CandleSchema, OrderSide, TradingPair} from '@typedtrader/exchange';
-import type {Candle} from '@typedtrader/exchange';
-import {BacktestExecutor} from '../backtest/BacktestExecutor.js';
-import type {BacktestConfig} from '../backtest/BacktestConfig.js';
-import type {BacktestResult} from '../backtest/BacktestResult.js';
-import type {TradingSessionStrategy} from '../trader/index.js';
+import {OrderSide} from '@typedtrader/exchange';
+import {
+  backtest,
+  flatCandles,
+  flatWithCash,
+  holdingFromTheStart,
+  loadCandles,
+  tradeLog,
+  ONE_MINUTE_IN_MS,
+} from '../engine/testing.js';
 import {MeanReversionStrategy} from './MeanReversionStrategy.js';
 import {MeanReversion} from './meanReversion.js';
 
-const tradingPair = new TradingPair('BTC', 'USDT');
-const ONE_MINUTE_IN_MS = 60_000;
-
-function loadCandles(): Candle[] {
-  const file = join(import.meta.dirname, '../backtest/candles/BNB_USDT_2021_02_19_1_week.json');
-  return z.array(CandleSchema).parse(JSON.parse(readFileSync(file, 'utf8')));
-}
-
-/** A run of identical one-minute candles, so the Bollinger Bands warm up without moving. */
-function flatCandles(count: number, price: string, startAt = 0): Candle[] {
-  return Array.from({length: count}, (_, index) => ({
-    base: 'BTC',
-    close: price,
-    counter: 'USDT',
-    high: price,
-    low: price,
-    open: price,
-    openTimeInISO: new Date(startAt + index * ONE_MINUTE_IN_MS).toISOString(),
-    openTimeInMillis: startAt + index * ONE_MINUTE_IN_MS,
-    sizeInMillis: ONE_MINUTE_IN_MS,
-    volume: '1',
-  }));
-}
-
-function createBroker(options: {baseBalance: string; counterBalance: string}) {
-  return new AlpacaBrokerMock({
-    balances: new Map([
-      ['BTC', {available: new Big(options.baseBalance), hold: new Big(0)}],
-      ['USDT', {available: new Big(options.counterBalance), hold: new Big(0)}],
-    ]),
-  });
-}
-
-async function backtest(
-  strategy: TradingSessionStrategy,
-  candles: Candle[],
-  balances: {baseBalance: string; counterBalance: string}
-): Promise<BacktestResult> {
-  const config: BacktestConfig = {broker: createBroker(balances), candles, strategy, tradingPair};
-  return new BacktestExecutor(config).execute();
-}
-
-/** Trades reduced to what a trader would compare: direction, size and price, in order. */
-function tradeLog(result: BacktestResult): string[] {
-  return result.trades.map(trade => `${trade.side} ${trade.size.toFixed()} @ ${trade.price.toFixed()}`);
-}
-
 describe('MeanReversion', () => {
   const candles = loadCandles();
-  const holdingFromTheStart = {baseBalance: '1', counterBalance: '0'};
 
   it('trades identically to the class it replaces', async () => {
     const legacy = await backtest(new MeanReversionStrategy({config: {}}), candles, holdingFromTheStart);
@@ -78,9 +30,8 @@ describe('MeanReversion', () => {
      * sell has moved it to `waitingForRebuy`. The rules derive the phase from the balance, so the
      * first thing they do is open.
      */
-    const flat = {baseBalance: '0', counterBalance: '50000'};
-    const legacy = await backtest(new MeanReversionStrategy({config: {}}), candles, flat);
-    const ported = await backtest(new MeanReversion(), candles, flat);
+    const legacy = await backtest(new MeanReversionStrategy({config: {}}), candles, flatWithCash);
+    const ported = await backtest(new MeanReversion(), candles, flatWithCash);
 
     expect(ported.trades[0]?.side, 'the rules open the position themselves').toBe(OrderSide.BUY);
     expect(
@@ -94,10 +45,9 @@ describe('MeanReversion', () => {
      * The band rules need twenty hourly bars before they can judge anything. The stop reads only
      * the position, so it does not wait for them.
      */
-    const candles = [...flatCandles(10, '100'), ...flatCandles(10, '98', 10 * ONE_MINUTE_IN_MS)];
-    const strategy = new MeanReversion({stopLossPct: '1'});
+    const dropped = [...flatCandles(10, '100'), ...flatCandles(10, '98', 10 * ONE_MINUTE_IN_MS)];
 
-    const result = await backtest(strategy, candles, holdingFromTheStart);
+    const result = await backtest(new MeanReversion({stopLossPct: '1'}), dropped, holdingFromTheStart);
 
     expect(result.trades, 'the stop fires during warm-up').toHaveLength(1);
     expect(result.trades[0]?.advice.reason, 'and it is the stop that fired').toContain('Stop-loss');

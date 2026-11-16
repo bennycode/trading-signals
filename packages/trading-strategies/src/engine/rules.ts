@@ -1,10 +1,12 @@
 import Big from 'big.js';
 import type {BigSource} from 'big.js';
 import type {StringValue} from 'ms';
+import {z} from 'zod';
 import type {OneMinuteBatchedCandle} from '@typedtrader/exchange';
 import type {TechnicalIndicator} from 'trading-signals';
 import {BatchedIndicator} from '../util/BatchedIndicator.js';
 import {percentTrailStop} from '../util/trailStop.js';
+import {positiveNumberString} from '../util/validators.js';
 import type {CloseRule, IndicatorDeclaration, PositionFacts} from './types.js';
 
 /**
@@ -13,12 +15,39 @@ import type {CloseRule, IndicatorDeclaration, PositionFacts} from './types.js';
  * it was declared with. Rules never see the indicator itself, only its latest result.
  */
 export function every<Result, Config>(
-  interval: StringValue,
+  interval: StringValue | ((config: Config) => StringValue),
   create: (config: Config) => TechnicalIndicator<Result, number>
 ): IndicatorDeclaration<Result, Config> {
   return {
-    create: config => new BatchedIndicator(interval, create(config), bar => bar.close.toNumber()),
+    create: config =>
+      new BatchedIndicator(typeof interval === 'function' ? interval(config) : interval, create(config), bar =>
+        bar.close.toNumber()
+      ),
   };
+}
+
+/**
+ * The thresholds {@link stopLoss} and {@link takeProfit} read when a strategy offers them as
+ * config. A strategy extends this schema and then lists the rules it wants, so the settings a
+ * user sees and the rules that act on them cannot drift apart.
+ */
+export const ProtectionSchema = z.object({
+  /** Sell everything and stop when the position is this many percent down. Omit to run unprotected. */
+  stopLossPct: positiveNumberString.optional(),
+  /** Sell everything and stop when the position is this many percent up. Omit to run unprotected. */
+  takeProfitPct: positiveNumberString.optional(),
+});
+
+/**
+ * Reads a value that a rule's `when` has already proved present, for the `at` and sizing
+ * callbacks that run afterwards. Throwing rather than substituting a fallback keeps a wrong price
+ * or size from reaching the broker as an order.
+ */
+export function required<T>(value: T | undefined, what: string): T {
+  if (value === undefined) {
+    throw new Error(`${what} is missing although the rule reading it matched`);
+  }
+  return value;
 }
 
 /** The facts a protective rule reads. Declaring it separately keeps these helpers strategy-agnostic. */
@@ -46,18 +75,6 @@ function resolve<Config>(percentage: Percentage<Config>, facts: ProtectionFacts<
 }
 
 /**
- * A protective rule only reaches `at` once its `when` matched, so the inputs it needs are present
- * by then. Throwing rather than returning a fallback price keeps a real bug from being placed as
- * an order.
- */
-function required(price: Big | undefined): Big {
-  if (price === undefined) {
-    throw new Error('A protective limit price needs an open position and a configured percentage');
-  }
-  return price;
-}
-
-/**
  * Sells the position once it is down `pct` percent from its entry price, and stops the strategy:
  * the engine re-places the exit until the position is gone and never opens again, because a stop
  * firing means the reason for holding was wrong.
@@ -78,9 +95,9 @@ export function stopLoss<Config>(options: ProtectionOptions<Config>): CloseRule<
   };
 
   return {
-    at: options.as === 'limit' ? facts => required(threshold(facts)) : undefined,
     because: facts =>
       `Stop-loss: ${facts.position?.unrealizedPct.toFixed(2) ?? '0'}% <= -${resolve(options.pct, facts)?.toFixed(2) ?? '0'}%`,
+    limit: options.as === 'limit' ? threshold : undefined,
     then: 'finish',
     timeframe: '1m',
     when: facts => {
@@ -104,9 +121,9 @@ export function takeProfit<Config>(options: ProtectionOptions<Config>): CloseRul
   };
 
   return {
-    at: options.as === 'limit' ? facts => required(threshold(facts)) : undefined,
     because: facts =>
       `Take-profit: ${facts.position?.unrealizedPct.toFixed(2) ?? '0'}% >= +${resolve(options.pct, facts)?.toFixed(2) ?? '0'}%`,
+    limit: options.as === 'limit' ? threshold : undefined,
     then: 'finish',
     timeframe: '1m',
     when: facts => {
@@ -134,9 +151,9 @@ export function trailingStop<Config>(options: ProtectionOptions<Config>): CloseR
   };
 
   return {
-    at: options.as === 'limit' ? facts => required(threshold(facts)) : undefined,
     because: facts =>
       `Trailing stop: close ${facts.candle.close.toFixed()} <= ${threshold(facts)?.toFixed() ?? '0'} (best ${facts.position?.bestPrice.toFixed() ?? '0'})`,
+    limit: options.as === 'limit' ? threshold : undefined,
     then: 'finish',
     timeframe: '1m',
     when: facts => {

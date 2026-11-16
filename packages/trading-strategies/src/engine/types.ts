@@ -9,6 +9,9 @@ export type Amount = Big | string | number | 'all';
 /** A base-denominated buy cannot be sized `'all'`: without a price there is no share count to derive. */
 export type ExplicitAmount = Big | string | number;
 
+/** A size written on a rule, or read from facts at evaluation time when it comes from config. */
+export type Sizing<F, A = Amount> = A | ((facts: F) => A);
+
 export interface PositionFacts {
   /** Average price paid across every entry fill, weighted by size. */
   entryPrice: Big;
@@ -53,29 +56,49 @@ export type Facts<Config, Indicators> = {
   position: PositionFacts | null;
 } & Indicators;
 
+/** A condition judged on the facts of one evaluation. */
+export type Condition<F> = (facts: F) => boolean;
+
+/**
+ * A condition that counts only at the moment it turns true, which is what a crossing is: `becomes`
+ * wraps it so the engine compares each evaluation against the one before instead of matching for
+ * as long as the condition stays true. Built by {@link becomes}.
+ */
+export interface Crossing<F> {
+  becomes: Condition<F>;
+}
+
 interface RuleBase<F> {
   /** Why this rule fired, shown to the user and recorded on the order. */
   because: string | ((facts: F) => string);
-  /** Limit price. A rule without it places a market order. */
-  at?: (facts: F) => Big;
+  /**
+   * Limit price. A rule without it, or one whose callback returns `undefined`, places a market
+   * order.
+   *
+   * Do not rename this to anything `Array.prototype` also has (`at`, `find`, `some`): a rule slot
+   * accepts one rule or an array of them, and a name both shapes carry leaves the callback's
+   * facts untyped.
+   */
+  limit?: (facts: F) => Big | undefined;
   /**
    * Overrides the strategy's `interval` for this one rule: it is then
    * evaluated only when a bar of this size completes, and reads `close`, `high` and `low` from
    * that bar. `'1m'` is the candle itself, which is what a protective rule wants.
    */
   timeframe?: StringValue;
-  when: 'always' | ((facts: F) => boolean);
+  when: 'always' | Condition<F> | Crossing<F>;
 }
 
 /**
  * A rule that opens a position. `spend` is counter currency (cash), `quantity` is base asset
  * (shares or coins); the engine derives the order side from the slot the rule sits in.
  */
-export type OpenRule<F> = RuleBase<F> & ({quantity?: never; spend: Amount} | {quantity: ExplicitAmount; spend?: never});
+export type OpenRule<F> = RuleBase<F> &
+  ({quantity?: never; spend: Sizing<F>} | {quantity: Sizing<F, ExplicitAmount>; spend?: never});
 
 /** A rule that closes a position. Omitting `quantity` closes all of it. */
 export type CloseRule<F> = RuleBase<F> & {
-  quantity?: Amount;
+  quantity?: Sizing<F>;
   /**
    * `'finish'` makes the exit terminal: the engine keeps re-placing it until the position is
    * gone, never opens again, and then tears the session down.

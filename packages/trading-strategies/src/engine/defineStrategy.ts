@@ -10,6 +10,7 @@ import {Strategy} from '../strategy/Strategy.js';
 import type {
   Amount,
   CloseRule,
+  Crossing,
   Facts,
   IndicatorDeclaration,
   IndicatorHandle,
@@ -37,6 +38,12 @@ const LedgerSchema = z.object({
   bestPrice: bigString,
   /** Sum of `price × size` across every entry fill, which divided by `size` gives the entry price. */
   costBasis: bigString,
+  /**
+   * The last answer each `becomes()` condition gave, keyed by the rule's slot and position. It is
+   * persisted because a crossing is a comparison against the previous candle, which a restart
+   * would otherwise lose, and a missing entry means "not judged yet", which never fires.
+   */
+  crossings: z.record(z.string(), z.boolean()),
   entries: z.number().int().nonnegative(),
   exits: z.number().int().nonnegative(),
   /** `true` once a terminal exit has fully filled. The engine never opens again after that. */
@@ -58,6 +65,7 @@ export type Ledger = z.infer<typeof LedgerSchema>;
 const emptyLedger = (): Ledger => ({
   bestPrice: '0',
   costBasis: '0',
+  crossings: {},
   entries: 0,
   exits: 0,
   lastExitFinal: false,
@@ -110,16 +118,46 @@ export type StrategyConstructor<Schema extends z.ZodType> = {
  *
  * Rules are evaluated top to bottom and the first match wins, which is why a protective rule
  * belongs at the top of a `close` list. At most one order is placed per candle.
+ *
+ * The config schema is passed first and the rules second, so that by the time the rules are
+ * checked their `config` is the parsed shape of that schema rather than something to annotate.
  */
-export function defineStrategy<
+export function defineStrategy<Schema extends z.ZodType<Record<string, unknown>>>(config: Schema) {
+  // The default is what a strategy without indicators resolves to, so its rules still read facts.
+  return function fromRules<
+    Indicators extends Record<string, IndicatorDeclaration<unknown, z.output<Schema>>> = Record<never, never>,
+  >(
+    /*
+     * `indicators` is the only place the engine infers the indicator types from. Blocking
+     * inference everywhere else stops a strategy-agnostic helper such as `stopLoss()`, whose
+     * facts are deliberately narrower, from being taken as evidence of what the facts are.
+     */
+    definition: {indicators?: Indicators} & StrategyDefinition<z.output<Schema>, NoInfer<Indicators>>
+  ): StrategyConstructor<Schema> {
+    return build<Schema, Indicators>(config, definition);
+  };
+}
+
+function build<
   Schema extends z.ZodType<Record<string, unknown>>,
   Indicators extends Record<string, IndicatorDeclaration<unknown, z.output<Schema>>>,
->(definition: {config: Schema} & StrategyDefinition<z.output<Schema>, Indicators>): StrategyConstructor<Schema> {
+>(config: Schema, definition: StrategyDefinition<z.output<Schema>, Indicators>): StrategyConstructor<Schema> {
   type ParsedConfig = z.output<Schema>;
   type StrategyFacts = Facts<ParsedConfig, IndicatorResults<Indicators>>;
 
   const openRules = asList<OpenRule<StrategyFacts>>(definition.long.open);
   const closeRules = asList<CloseRule<StrategyFacts>>(definition.long.close);
+
+  type Slot = 'close' | 'open';
+
+  /** A rule is identified by where it sits, which is fixed once the strategy is defined. */
+  function keyOf(slot: Slot, index: number): string {
+    return `${slot}:${index}`;
+  }
+
+  function isCrossing(when: OpenRule<StrategyFacts>['when']): when is Crossing<StrategyFacts> {
+    return typeof when === 'object';
+  }
 
   /**
    * A rule's own `timeframe` wins over the strategy's `interval`. A minute is the size of the
@@ -143,7 +181,7 @@ export function defineStrategy<
   return class EngineStrategy extends Strategy {
     static override NAME = definition.name;
     static override marketTypes: readonly MarketType[] = definition.markets;
-    static schema = definition.config;
+    static schema = config;
 
     readonly #config: ParsedConfig;
     readonly #indicators: Map<string, IndicatorHandle<unknown>>;
@@ -155,8 +193,8 @@ export function defineStrategy<
         .map(timeframe => [timeframe, new CandleBatcher(ms(timeframe))])
     );
 
-    constructor(config?: z.input<Schema>) {
-      const parsed: ParsedConfig = definition.config.parse(config ?? {});
+    constructor(settings?: z.input<Schema>) {
+      const parsed: ParsedConfig = config.parse(settings ?? {});
       super({config: parsed, state: emptyLedger()});
       this.#config = parsed;
       this.#indicators = new Map(
@@ -203,8 +241,16 @@ export function defineStrategy<
         return this.#advice(OrderSide.SELL, pending.quantity ?? 'all', pending.price, pending.because);
       }
 
+      /*
+       * Crossings are judged for every rule, in both slots, before any rule fires. A crossing is
+       * a comparison against the last answer, so a rule that went unevaluated (because a rule
+       * above it fired, or because the position was on the other side) would come back with a
+       * stale one and read a move that never happened.
+       */
+      const crossed = this.#judgeCrossings(candle, bars);
+
       if (holding) {
-        return this.#fire(closeRules, candle, bars, OrderSide.SELL);
+        return this.#fire(closeRules, 'close', candle, bars, crossed, OrderSide.SELL);
       }
 
       // A strategy that ended on a terminal exit stays flat for good.
@@ -212,7 +258,7 @@ export function defineStrategy<
         return;
       }
 
-      return this.#fire(openRules, candle, bars, OrderSide.BUY);
+      return this.#fire(openRules, 'open', candle, bars, crossed, OrderSide.BUY);
     }
 
     /** Batchers are fed on every candle so a rule that is skipped cannot desynchronise its bars. */
@@ -240,14 +286,14 @@ export function defineStrategy<
      * reads an indicator waits for it, a rule that does not (a stop-loss) runs from the first
      * candle, and no rule body needs a null check. Facts are therefore built, never spread.
      */
-    #indicatorFacts(): IndicatorResults<Indicators> {
+    #indicatorFacts(read: (indicator: IndicatorHandle<unknown>) => unknown): IndicatorResults<Indicators> {
       const facts: Record<string, unknown> = {};
 
       for (const [name, indicator] of this.#indicators) {
         Object.defineProperty(facts, name, {
           enumerable: true,
           get: () => {
-            const result = indicator.getResult();
+            const result = read(indicator);
             if (result === undefined || result === null) {
               throw new IndicatorNotReady(name);
             }
@@ -277,47 +323,109 @@ export function defineStrategy<
         };
       }
 
-      return Object.assign(this.#indicatorFacts(), {
-        candle,
-        close: prices.close.toNumber(),
-        config: this.#config,
-        entries: ledger.entries,
-        exits: ledger.exits,
-        high: prices.high.toNumber(),
-        lastExit: lastExitPrice === null ? null : {final: ledger.lastExitFinal, price: new Big(lastExitPrice)},
-        low: prices.low.toNumber(),
-        position,
-      });
+      return Object.assign(
+        this.#indicatorFacts(indicator => indicator.getResult()),
+        {
+          candle,
+          close: prices.close.toNumber(),
+          config: this.#config,
+          entries: ledger.entries,
+          exits: ledger.exits,
+          high: prices.high.toNumber(),
+          lastExit: lastExitPrice === null ? null : {final: ledger.lastExitFinal, price: new Big(lastExitPrice)},
+          low: prices.low.toNumber(),
+          position,
+        }
+      );
+    }
+
+    /**
+     * Records what each `becomes()` condition says about this candle and returns the rules whose
+     * condition turned true on it, which is the only thing such a rule can fire on.
+     */
+    #judgeCrossings(candle: OneMinuteBatchedCandle, bars: Map<StringValue, BatchedCandle | undefined>): Set<string> {
+      const turnedTrue = new Set<string>();
+      const answers = {...this.#ledger.crossings};
+      let changed = false;
+
+      for (const [slot, rules] of [
+        ['close', closeRules],
+        ['open', openRules],
+      ] as const) {
+        rules.forEach((rule, index) => {
+          const {when} = rule;
+          if (!isCrossing(when)) {
+            return;
+          }
+
+          const prices = this.#pricesFor(rule, candle, bars);
+          // Its bar has not closed yet, so there is nothing new to compare against.
+          if (!prices) {
+            return;
+          }
+
+          let now: boolean;
+          try {
+            now = when.becomes(this.#facts(candle, prices));
+          } catch (error) {
+            if (error instanceof IndicatorNotReady) {
+              return;
+            }
+            throw error;
+          }
+
+          const key = keyOf(slot, index);
+          if (now && answers[key] === false) {
+            turnedTrue.add(key);
+          }
+          if (answers[key] !== now) {
+            answers[key] = now;
+            changed = true;
+          }
+        });
+      }
+
+      if (changed) {
+        this.setState<Ledger>({crossings: answers});
+      }
+      return turnedTrue;
+    }
+
+    /** The candle a rule judges: its own completed bar, or `undefined` while that bar is open. */
+    #pricesFor(
+      rule: OpenRule<StrategyFacts> | CloseRule<StrategyFacts>,
+      candle: OneMinuteBatchedCandle,
+      bars: Map<StringValue, BatchedCandle | undefined>
+    ): BatchedCandle | undefined {
+      const timeframe = timeframeOf(rule);
+      return timeframe === undefined ? candle : bars.get(timeframe);
     }
 
     #fire(
       rules: (OpenRule<StrategyFacts> | CloseRule<StrategyFacts>)[],
+      slot: Slot,
       candle: OneMinuteBatchedCandle,
       bars: Map<StringValue, BatchedCandle | undefined>,
+      crossed: Set<string>,
       side: OrderSide
     ): OrderAdvice | void {
-      for (const rule of rules) {
-        let prices: BatchedCandle = candle;
-        const timeframe = timeframeOf(rule);
-
-        if (timeframe !== undefined) {
-          const bar = bars.get(timeframe);
-          // Its bar has not closed yet, so this rule has nothing new to judge.
-          if (!bar) {
-            continue;
-          }
-          prices = bar;
+      for (const [index, rule] of rules.entries()) {
+        const prices = this.#pricesFor(rule, candle, bars);
+        // Its bar has not closed yet, so this rule has nothing new to judge.
+        if (!prices) {
+          continue;
         }
 
         const facts = this.#facts(candle, prices);
 
-        if (!this.#matches(rule, facts)) {
+        if (!this.#matches(rule, facts, crossed.has(keyOf(slot, index)))) {
           continue;
         }
 
         const because = typeof rule.because === 'string' ? rule.because : rule.because(facts);
-        const price = rule.at ? rule.at(facts) : null;
-        const sizing = 'spend' in rule && rule.spend !== undefined ? rule.spend : (rule.quantity ?? 'all');
+        const price = rule.limit?.(facts) ?? null;
+        const written = 'spend' in rule && rule.spend !== undefined ? rule.spend : (rule.quantity ?? 'all');
+        const sizing = typeof written === 'function' ? written(facts) : written;
         const spending = side === OrderSide.BUY && 'spend' in rule && rule.spend !== undefined;
 
         if ('then' in rule && rule.then === 'finish') {
@@ -336,9 +444,22 @@ export function defineStrategy<
     }
 
     /** A rule waiting on an indicator that has no result yet simply does not match. */
-    #matches(rule: OpenRule<StrategyFacts> | CloseRule<StrategyFacts>, facts: StrategyFacts): boolean {
+    #matches(
+      rule: OpenRule<StrategyFacts> | CloseRule<StrategyFacts>,
+      facts: StrategyFacts,
+      turnedTrue: boolean
+    ): boolean {
+      const {when} = rule;
+      if (when === 'always') {
+        return true;
+      }
+      // Already judged, against the previous candle, which is the whole point of a crossing.
+      if (isCrossing(when)) {
+        return turnedTrue;
+      }
+
       try {
-        return rule.when === 'always' || rule.when(facts);
+        return when(facts);
       } catch (error) {
         if (error instanceof IndicatorNotReady) {
           return false;
