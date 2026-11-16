@@ -54,6 +54,8 @@ Same $100 of risk, but half the account is now in one position. This is the part
 
 The same arithmetic works for shorts, where the stop sits above the entry, because only the distance between the two prices matters. Note that the result is usually fractional, and a position can legitimately be `0.0431 BTC` — before an order goes out it has to be rounded to the exchange's [step size](/basics/glossary#orders-and-execution).
 
+One thing the formula does not know is how much cash you have. It sizes against your risk budget alone, so a wide budget or a tight stop can ask for more units than the account can buy: risking 40% of a $10,000 account on a stop 5% below a $200 entry comes out at 400 shares, an $80,000 position. Cap the result at `cash / entry price`. When that cap is the smaller of the two, your capital is the binding constraint and the risk budget is simply not spent in full.
+
 ## Where To Put The Stop
 
 Three common approaches, in rough order of how much they respect the market:
