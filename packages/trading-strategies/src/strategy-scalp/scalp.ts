@@ -2,7 +2,7 @@ import Big from 'big.js';
 import {z} from 'zod';
 import type {Candle} from '@typedtrader/exchange';
 import {EMA, ER} from 'trading-signals';
-import {defineStrategy, every, fromHistory, ProtectionSchema, required, stopLoss, takeProfit} from '../engine/index.js';
+import {defineStrategy, every, fromHistory, ProtectionSchema, required, protection} from '../engine/index.js';
 import {MarketType} from '../strategy/MarketType.js';
 import {positiveNumberString} from '../util/validators.js';
 import {suggestScalpOffset} from './suggestScalpOffset.js';
@@ -91,8 +91,7 @@ export const Scalp = defineStrategy(ScalpSchema)({
   },
   long: {
     close: [
-      stopLoss<Settings>({pct: ({config}) => config.stopLossPct}),
-      takeProfit<Settings>({pct: ({config}) => config.takeProfitPct}),
+      ...protection<Settings>(),
       {
         because: ({offset, position}) =>
           `Scalp sell: fill ${required(position, 'position').entryPrice.toFixed(2)} + offset ${offset.toFixed(2)}`,

@@ -1,6 +1,6 @@
 import type {z} from 'zod';
 import {BollingerBands} from 'trading-signals';
-import {defineStrategy, every, ProtectionSchema, stopLoss, takeProfit} from '../engine/index.js';
+import {defineStrategy, every, ProtectionSchema, protection} from '../engine/index.js';
 import {MarketType} from '../strategy/MarketType.js';
 
 const BAR = '1h';
@@ -24,8 +24,7 @@ export const MeanReversion = defineStrategy(MeanReversionSchema)({
   interval: BAR,
   long: {
     close: [
-      stopLoss<Settings>({pct: ({config}) => config.stopLossPct}),
-      takeProfit<Settings>({pct: ({config}) => config.takeProfitPct}),
+      ...protection<Settings>(),
       {
         because: ({bands, close}) => `Price ${close.toFixed(2)} broke above upper band ${bands.upper.toFixed(2)}`,
         when: ({bands, close}) => close > bands.upper,

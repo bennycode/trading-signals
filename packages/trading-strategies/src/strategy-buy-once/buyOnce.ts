@@ -1,7 +1,7 @@
 import Big from 'big.js';
 import type {z} from 'zod';
 import type {OneMinuteBatchedCandle} from '@typedtrader/exchange';
-import {defineStrategy, ProtectionSchema, required, stopLoss, takeProfit} from '../engine/index.js';
+import {defineStrategy, ProtectionSchema, required, protection} from '../engine/index.js';
 import {MarketType} from '../strategy/MarketType.js';
 import {BuyAmountSchema, positiveNumberString} from '../util/validators.js';
 
@@ -31,10 +31,7 @@ function buyAt({config}: {config: Settings}): Big | undefined {
  */
 export const BuyOnce = defineStrategy(BuyOnceSchema)({
   long: {
-    close: [
-      stopLoss<Settings>({pct: ({config}) => config.stopLossPct}),
-      takeProfit<Settings>({pct: ({config}) => config.takeProfitPct}),
-    ],
+    close: [...protection<Settings>()],
     open: [
       {
         because: ({candle}) => `Buying a fixed quantity at ${candle.close.toFixed(2)}`,

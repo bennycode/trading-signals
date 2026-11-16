@@ -52,4 +52,29 @@ describe('BuyOnce', () => {
       'the entry, then the stop, and nothing after it'
     ).toStrictEqual([OrderSide.BUY, OrderSide.SELL]);
   });
+
+  it('stops out a loss named in counter currency, scaled by how much is held', async () => {
+    const candles = candlesAt(['100', '100', '100', '94', '94']);
+
+    const result = await backtest(new BuyOnce({quantity: '10', stopLossNominal: '50'}), candles, flatWithCash);
+
+    expect(
+      result.trades[1]?.advice.reason,
+      'a 50 loss spread over ten shares is 5 off the entry price, so the exit sits at 95'
+    ).toContain('<= 95');
+  });
+
+  it('takes profit at a price it was told outright', async () => {
+    const candles = candlesAt(['100', '100', '111', '111']);
+
+    const result = await backtest(new BuyOnce({quantity: '10', takeProfitPrice: '110'}), candles, flatWithCash);
+
+    expect(result.trades[1]?.advice.reason, 'the target is the price itself, not a distance from the entry').toContain(
+      '>= 110'
+    );
+  });
+
+  it('refuses two ways of saying where the same exit goes', () => {
+    expect(() => new BuyOnce({stopLossNominal: '50', stopLossPct: '5'})).toThrow(/stopLossPct and stopLossNominal/);
+  });
 });

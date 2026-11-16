@@ -8,15 +8,17 @@ export {
 export {
   every,
   fromHistory,
+  protection,
   ProtectionSchema,
   required,
   stopLoss,
   takeProfit,
   trailingStop,
   type OrderKind,
-  type Percentage,
   type ProtectionFacts,
   type ProtectionOptions,
+  type ProtectionSettings,
+  type Threshold,
   type TrailingStopOptions,
 } from './rules.js';
 export type {

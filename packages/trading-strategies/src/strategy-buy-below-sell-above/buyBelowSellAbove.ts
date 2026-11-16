@@ -1,5 +1,5 @@
 import type {z} from 'zod';
-import {defineStrategy, ProtectionSchema, stopLoss, takeProfit} from '../engine/index.js';
+import {defineStrategy, ProtectionSchema, protection} from '../engine/index.js';
 import {MarketType} from '../strategy/MarketType.js';
 import {positiveNumberString} from '../util/validators.js';
 
@@ -21,8 +21,7 @@ type Settings = z.output<typeof BuyBelowSellAboveSchema>;
 export const BuyBelowSellAbove = defineStrategy(BuyBelowSellAboveSchema)({
   long: {
     close: [
-      stopLoss<Settings>({pct: ({config}) => config.stopLossPct}),
-      takeProfit<Settings>({pct: ({config}) => config.takeProfitPct}),
+      ...protection<Settings>(),
       {
         because: ({candle, config}) => `Price ${candle.close.toFixed(2)} rose above ${config.sellAbove ?? ''}`,
         limit: ({candle}) => candle.close,
