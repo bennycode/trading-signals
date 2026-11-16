@@ -12,6 +12,10 @@
  * The result is deliberately fractional, because a position can be (`0.0431 BTC`). Round it to the
  * exchange's step size before sending an order.
  *
+ * The risk budget is the only cap, so a wide `riskPercent` or a tight stop can ask for
+ * more units than the account can afford. Cap the result at `accountValue / entryPrice`
+ * when the available cash is what limits the position.
+ *
  * @throws If any input is zero or negative, or if entry and stop are the same price, because a
  *   position sized against no risk per unit is unbounded.
  */
