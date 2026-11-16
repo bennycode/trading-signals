@@ -1,4 +1,5 @@
 export * from './backtest/index.js';
+export * from './engine/index.js';
 export * from './strategy/index.js';
 export * from './trader/index.js';
 export {BuyOnceStrategy, BuyOnceSchema, type BuyOnceConfig} from './strategy-buy-once/BuyOnceStrategy.js';
