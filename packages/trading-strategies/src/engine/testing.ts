@@ -2,8 +2,8 @@ import {readFileSync} from 'node:fs';
 import {join} from 'node:path';
 import Big from 'big.js';
 import {z} from 'zod';
-import {AlpacaBrokerMock, CandleSchema, ONE_MINUTE_IN_MS, TradingPair} from '@typedtrader/exchange';
-import type {Candle} from '@typedtrader/exchange';
+import {AlpacaBrokerMock, CandleBatcher, CandleSchema, ONE_MINUTE_IN_MS, TradingPair} from '@typedtrader/exchange';
+import type {Candle, OneMinuteBatchedCandle} from '@typedtrader/exchange';
 import {BacktestExecutor} from '../backtest/BacktestExecutor.js';
 import type {BacktestConfig} from '../backtest/BacktestConfig.js';
 import type {BacktestResult} from '../backtest/BacktestResult.js';
@@ -50,6 +50,15 @@ export function flatCandles(count: number, price: string, startAt = 0): Candle[]
     sizeInMillis: ONE_MINUTE_IN_MS,
     volume: '1',
   }));
+}
+
+/**
+ * One minute of price action in the shape a strategy receives it, for the few tests that drive
+ * `onCandle` directly because they need to change the account between candles.
+ */
+export function batched(candle: Candle): OneMinuteBatchedCandle {
+  const {sizeInMillis: _ignored, ...batchedCandle} = CandleBatcher.toBatchedCandle(candle);
+  return {...batchedCandle, sizeInMillis: ONE_MINUTE_IN_MS};
 }
 
 /** One-minute candles that walk through the given prices in order. */
@@ -108,6 +117,19 @@ export function dailyCandles(closes: string[], endBefore: number): Candle[] {
       volume: '1',
     };
   });
+}
+
+/**
+ * The arguments a mock was called with, failing loudly when that call never happened. Reading
+ * `mock.calls[0]` directly hands back a possibly-missing tuple, which a test then destructures
+ * into values that silently read as `undefined`.
+ */
+export function callArgs<Args extends unknown[]>(mock: {mock: {calls: Args[]}}, index = 0): Args {
+  const call = mock.mock.calls[index];
+  if (!call) {
+    throw new Error(`Expected call #${index + 1}, but the mock was called ${mock.mock.calls.length} time(s)`);
+  }
+  return call;
 }
 
 /** Trades reduced to what a trader would compare: direction, size and price, in order. */

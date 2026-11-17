@@ -121,7 +121,7 @@ export const ProtectionSchema = z
 export type ProtectionSettings = z.output<typeof ProtectionSchema>;
 
 /**
- * Reads a value that a rule's `when` has already proved present, for the `at` and sizing
+ * Reads a value that a rule's `when` has already proved present, for the `limit` and sizing
  * callbacks that run afterwards. Throwing rather than substituting a fallback keeps a wrong price
  * or size from reaching the broker as an order.
  */

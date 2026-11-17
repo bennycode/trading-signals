@@ -4,6 +4,7 @@ import type {EventEmitter} from 'node:events';
 import type {
   BatchedCandle,
   Candle,
+  Balance,
   ExchangeAvailableBalance,
   FeeRate,
   Fill,
@@ -29,7 +30,7 @@ export interface TradingSessionStrategy {
    * which downstream consumers like `StrategyMonitor` forward to the user). Strategies
    * are responsible for not being chatty — every call reaches the user.
    */
-  onMessage?: (text: string) => void;
+  onMessage?: ((text: string) => void) | undefined;
 }
 
 /** Use as `amount` in an `OrderAdvice` to use the full available balance. */
@@ -83,7 +84,7 @@ export interface TradingSessionState {
    */
   readonly baseBalanceOnHold: Big;
   readonly counterBalance: Big;
-  readonly lastOrderSide?: OrderSide;
+  readonly lastOrderSide?: OrderSide | undefined;
   readonly tradingRules: TradingRules;
   readonly feeRates: FeeRate;
 }
@@ -96,6 +97,8 @@ export interface TradingSessionBroker extends Pick<EventEmitter, 'on'> {
   getOpenOrders(pair: TradingPair): Promise<PendingOrder[]>;
   getRecentCandles(pair: TradingPair, count: number, intervalInMillis: number): Promise<Candle[]>;
   getTradingRules(pair: TradingPair): Promise<TradingRules>;
+  /** Read for what an unfilled order is holding, which `getAvailableBalances` leaves out. */
+  listBalances(): Promise<Balance[]>;
   placeLimitOrder(
     pair: TradingPair,
     options: Omit<LimitOrderOptions, 'type' | 'sizeInCounter'>

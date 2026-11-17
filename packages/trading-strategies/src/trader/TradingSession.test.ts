@@ -2,11 +2,12 @@ import Big from 'big.js';
 import type {Mock} from 'vitest';
 import {EventEmitter} from 'node:events';
 import {AlpacaBroker, OrderPosition, OrderSide, OrderType, TradingPair} from '@typedtrader/exchange';
-import type {Candle, Fill, PendingLimitOrder, PendingMarketOrder} from '@typedtrader/exchange';
+import type {Balance, Candle, Fill, PendingLimitOrder, PendingMarketOrder} from '@typedtrader/exchange';
+import {callArgs} from '../engine/testing.js';
 import {TradingSession} from './TradingSession.js';
 import {OrderSizeBelowMinimumError} from './OrderSizeBelowMinimumError.js';
 import {AllAvailableAmount} from './TradingSessionTypes.js';
-import type {OrderAdvice, TradingSessionStrategy} from './TradingSessionTypes.js';
+import type {OrderAdvice, TradingSessionBroker, TradingSessionStrategy} from './TradingSessionTypes.js';
 
 const pair = new TradingPair('TSLA', 'USD');
 
@@ -35,6 +36,14 @@ const sampleCandle: Candle = {
   volume: '1000',
 };
 
+/** What the broker reports it is holding: `hold` is base reserved against an unfilled order. */
+function balanceSnapshot(base: string, counter: string, baseOnHold = '0'): Balance[] {
+  return [
+    {available: base, currency: pair.base, hold: baseOnHold, position: OrderPosition.LONG},
+    {available: counter, currency: pair.counter, hold: '0', position: OrderPosition.LONG},
+  ];
+}
+
 function createMockExchange() {
   return Object.assign(new EventEmitter(), {
     cancelOpenOrders: vi.fn().mockResolvedValue([]),
@@ -45,6 +54,7 @@ function createMockExchange() {
     getOpenOrders: vi.fn().mockResolvedValue([]),
     getRecentCandles: vi.fn().mockResolvedValue([]),
     getTradingRules: vi.fn().mockResolvedValue(AlpacaBroker.DEFAULT_FRACTIONAL_TRADING_RULES),
+    listBalances: vi.fn<TradingSessionBroker['listBalances']>().mockResolvedValue(balanceSnapshot('10', '5000')),
     placeLimitOrder: vi.fn().mockResolvedValue({
       id: 'order-1',
       pair,
@@ -104,7 +114,7 @@ describe('TradingSession', {concurrent: false}, () => {
       expect(exchange.getTradingRules).toHaveBeenCalledWith(pair);
       expect(exchange.getFeeRates).toHaveBeenCalledWith(pair);
       expect(exchange.getOpenOrders).toHaveBeenCalledWith(pair);
-      expect(exchange.getAvailableBalances).toHaveBeenCalledWith(pair);
+      expect(exchange.listBalances).toHaveBeenCalled();
       expect(exchange.getFills).toHaveBeenCalledWith(pair);
       expect(exchange.watchCandles).toHaveBeenCalledWith(pair, 60_000, expect.any(String));
       expect(exchange.watchOrders).toHaveBeenCalled();
@@ -125,7 +135,7 @@ describe('TradingSession', {concurrent: false}, () => {
        * init receives the broker as a read-only data source plus the session's pair, so the strategy
        * can pull history with a count + interval and never has to compute calendar windows.
        */
-      const [market, initPair] = init.mock.calls[0];
+      const [market, initPair] = callArgs(init);
       expect(initPair, 'init is handed the session pair').toBe(pair);
 
       await market.getRecentCandles(pair, 300, 86_400_000);
@@ -160,7 +170,7 @@ describe('TradingSession', {concurrent: false}, () => {
 
       await session.start();
 
-      exchange.getAvailableBalances.mockResolvedValue({base: new Big('15'), counter: new Big('3800')});
+      exchange.listBalances.mockResolvedValue(balanceSnapshot('15', '3800'));
       const onFill = vi.fn();
       session.on('fill', onFill);
 
@@ -168,8 +178,8 @@ describe('TradingSession', {concurrent: false}, () => {
       const fill: Fill = {...sampleFill, order_id: 'previous-order-2', side: OrderSide.SELL};
       exchange.emit('order-topic-1', fill);
 
-      await vi.waitFor(() => expect(onFill).toHaveBeenCalledTimes(1));
-      expect(strategy.onFill).toHaveBeenCalled();
+      await vi.waitFor(() => expect(strategy.onFill).toHaveBeenCalled());
+      expect(onFill, 'the session reports the fill it recognised').toHaveBeenCalledTimes(1);
     });
   });
 
@@ -180,7 +190,7 @@ describe('TradingSession', {concurrent: false}, () => {
       exchange.emit('candle-topic-1', sampleCandle);
       await vi.waitFor(() => expect(strategy.onCandle).toHaveBeenCalledTimes(1));
 
-      const [batchedCandle, state] = strategy.onCandle.mock.calls[0];
+      const [batchedCandle, state] = callArgs(strategy.onCandle);
       expect(batchedCandle.close).toBeInstanceOf(Big);
       expect(batchedCandle.close.eq('253.00')).toBe(true);
       expect(state.baseBalance.eq('10')).toBe(true);
@@ -387,7 +397,7 @@ describe('TradingSession', {concurrent: false}, () => {
       await vi.waitFor(() => expect(exchange.placeMarketOrder).toHaveBeenCalledTimes(1));
 
       // Update balances for post-fill
-      exchange.getAvailableBalances.mockResolvedValue({base: new Big('10.4'), counter: new Big('4900')});
+      exchange.listBalances.mockResolvedValue(balanceSnapshot('10.4', '4900'));
 
       const onFill = vi.fn();
       session.on('fill', onFill);
@@ -396,8 +406,8 @@ describe('TradingSession', {concurrent: false}, () => {
       const fill: Fill = {...sampleFill, order_id: 'order-2', side: OrderSide.BUY};
       exchange.emit('order-topic-1', fill);
 
-      await vi.waitFor(() => expect(onFill).toHaveBeenCalledTimes(1));
-      const [forwardedFill, fillState] = strategy.onFill.mock.calls[0];
+      await vi.waitFor(() => expect(strategy.onFill).toHaveBeenCalled());
+      const [forwardedFill, fillState] = callArgs(strategy.onFill);
       expect(forwardedFill).toEqual(fill);
       expect(fillState.baseBalance).toBeInstanceOf(Big);
       expect(fillState.counterBalance).toBeInstanceOf(Big);
@@ -439,6 +449,7 @@ describe('TradingSession', {concurrent: false}, () => {
        * outside the strategy and the strategy's persisted state hasn't caught up. The
        * session must drop the advice instead of forwarding a zero quantity to the broker.
        */
+      exchange.listBalances.mockResolvedValue(balanceSnapshot('0', '5000'));
       exchange.getAvailableBalances.mockResolvedValue({base: new Big('0'), counter: new Big('5000')});
       const advice: OrderAdvice = {
         amount: AllAvailableAmount,
@@ -456,7 +467,7 @@ describe('TradingSession', {concurrent: false}, () => {
       exchange.emit('candle-topic-1', sampleCandle);
       await vi.waitFor(() => expect(onError).toHaveBeenCalledTimes(1));
 
-      const [[error]] = onError.mock.calls;
+      const [error] = callArgs(onError);
       expectInstanceOf(error, OrderSizeBelowMinimumError);
       expect(error.side).toBe(OrderSide.SELL);
       expect(error.amountIn).toBe('base');
@@ -476,6 +487,7 @@ describe('TradingSession', {concurrent: false}, () => {
         base_min_size: '0.01',
         pair,
       });
+      exchange.listBalances.mockResolvedValue(balanceSnapshot('0.001', '5000'));
       exchange.getAvailableBalances.mockResolvedValue({base: new Big('0.001'), counter: new Big('5000')});
       const advice: OrderAdvice = {
         amount: AllAvailableAmount,
@@ -493,7 +505,7 @@ describe('TradingSession', {concurrent: false}, () => {
       exchange.emit('candle-topic-1', sampleCandle);
       await vi.waitFor(() => expect(onError).toHaveBeenCalledTimes(1));
 
-      const [[error]] = onError.mock.calls;
+      const [error] = callArgs(onError);
       expectInstanceOf(error, OrderSizeBelowMinimumError);
       expect(error.side).toBe(OrderSide.SELL);
       expect(error.amountIn).toBe('base');
@@ -513,7 +525,7 @@ describe('TradingSession', {concurrent: false}, () => {
       exchange.emit('candle-topic-1', sampleCandle);
       await vi.waitFor(() => expect(onError).toHaveBeenCalledTimes(1));
 
-      expect(onError.mock.calls[0][0].message).toBe('Strategy crashed');
+      expect(callArgs(onError)[0].message).toBe('Strategy crashed');
     });
   });
 

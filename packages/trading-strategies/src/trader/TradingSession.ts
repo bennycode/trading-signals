@@ -2,7 +2,7 @@ import {EventEmitter} from 'node:events';
 import {CandleBatcher, ONE_MINUTE_IN_MS} from '@typedtrader/exchange';
 import type {BatchedCandle, Candle, Fill, PendingOrder} from '@typedtrader/exchange';
 import {AdviceExecutor} from './AdviceExecutor.js';
-import {baseOnHold} from './baseOnHold.js';
+import {sessionBalances} from './sessionBalances.js';
 import type {
   OrderAdvice,
   TradingSessionEventMap,
@@ -54,13 +54,13 @@ export class TradingSession extends EventEmitter<TradingSessionEventMap> {
       this.#pendingOrders.set(order.id, order);
     }
 
-    const balances = await this.#broker.getAvailableBalances(this.#pair);
+    const balances = await this.#balances();
     const fills = await this.#broker.getFills(this.#pair);
-    const lastOrderSide = fills.length > 0 ? fills[0].side : undefined;
+    const lastOrderSide = fills[0]?.side;
 
     this.#state = {
       baseBalance: balances.base,
-      baseBalanceOnHold: this.#baseOnHold(),
+      baseBalanceOnHold: balances.baseOnHold,
       counterBalance: balances.counter,
       feeRates,
       lastOrderSide,
@@ -136,11 +136,11 @@ export class TradingSession extends EventEmitter<TradingSessionEventMap> {
       this.#pendingOrders.delete(fill.order_id);
       this.emit('fill', fill);
 
-      const balances = await this.#broker.getAvailableBalances(this.#pair);
+      const balances = await this.#balances();
       this.#state = {
         ...this.#state,
         baseBalance: balances.base,
-        baseBalanceOnHold: this.#baseOnHold(),
+        baseBalanceOnHold: balances.baseOnHold,
         counterBalance: balances.counter,
         lastOrderSide: fill.side,
       };
@@ -170,16 +170,21 @@ export class TradingSession extends EventEmitter<TradingSessionEventMap> {
 
     const outcome = await this.#adviceExecutor!.execute(advice);
 
-    // Recorded before the state is read, so what the new order holds counts towards the position.
     if (outcome.status === 'PLACED') {
       this.#pendingOrders.set(outcome.order.id, outcome.order);
     }
 
+    /*
+     * Read after the order was placed rather than from the outcome, which the executor captured
+     * before placing it: a resting sell has moved base out of the available balance by now, and
+     * mixing the two snapshots would count what it holds twice.
+     */
+    const balances = await this.#balances();
     this.#state = {
       ...this.#state!,
-      baseBalance: outcome.balances.base,
-      baseBalanceOnHold: this.#baseOnHold(),
-      counterBalance: outcome.balances.counter,
+      baseBalance: balances.base,
+      baseBalanceOnHold: balances.baseOnHold,
+      counterBalance: balances.counter,
     };
 
     if (outcome.status === 'SKIPPED') {
@@ -190,8 +195,7 @@ export class TradingSession extends EventEmitter<TradingSessionEventMap> {
     this.emit('order', outcome.order);
   }
 
-  /** What our own unfilled orders are holding, which the available balance leaves out. */
-  #baseOnHold() {
-    return baseOnHold([...this.#pendingOrders.values()]);
+  async #balances() {
+    return sessionBalances(await this.#broker.listBalances(), this.#pair);
   }
 }

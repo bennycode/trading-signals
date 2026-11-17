@@ -1,16 +1,18 @@
-import {z} from 'zod';
-import {defineStrategy} from '../engine/index.js';
+import type {z} from 'zod';
+import {defineStrategy, protection, ProtectionSchema} from '../engine/index.js';
 import {MarketType} from '../strategy/MarketType.js';
 
-export const CoinFlipSchema = z.object({});
+export const CoinFlipSchema = ProtectionSchema;
 export type CoinFlipConfig = z.input<typeof CoinFlipSchema>;
+type Settings = z.output<typeof CoinFlipSchema>;
 
 /**
  * Bitwise AND rather than modulo: a Uint8 ranges 0–255, which is not evenly divisible by 100, so
  * modulo would bias the outcome.
  */
 function headsUp(): boolean {
-  return (globalThis.crypto.getRandomValues(new Uint8Array(1))[0] & 1) === 0;
+  const [byte = 0] = globalThis.crypto.getRandomValues(new Uint8Array(1));
+  return (byte & 1) === 0;
 }
 
 /**
@@ -19,11 +21,15 @@ function headsUp(): boolean {
  */
 export const CoinFlip = defineStrategy(CoinFlipSchema)({
   long: {
-    close: {
-      because: 'Coin flip came up tails',
-      quantity: 'all',
-      when: () => !headsUp(),
-    },
+    close: [
+      // A kill switch comes before the coin, so a run of bad flips cannot be ridden all the way down.
+      ...protection<Settings>(),
+      {
+        because: 'Coin flip came up tails',
+        quantity: 'all',
+        when: () => !headsUp(),
+      },
+    ],
     open: {
       because: 'Coin flip came up heads',
       spend: 'all',

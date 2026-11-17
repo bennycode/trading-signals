@@ -1,7 +1,9 @@
 import Big from 'big.js';
 import {describe, expect, it} from 'vitest';
-import {OrderSide, OrderType} from '@typedtrader/exchange';
-import {backtest, candlesAt, holdingFromTheStart} from '../engine/testing.js';
+import {AlpacaBroker, OrderSide, OrderType} from '@typedtrader/exchange';
+import {required} from '../engine/index.js';
+import {backtest, batched, candlesAt, holdingFromTheStart, tradingPair} from '../engine/testing.js';
+import type {TradingSessionState} from '../trader/index.js';
 import {TrailingStop} from './trailingStop.js';
 
 describe('TrailingStop', () => {
@@ -84,5 +86,32 @@ describe('TrailingStop', () => {
     expect(result.trades, 'the rally that follows buys nothing back').toHaveLength(1);
     expect(strategy.ledger.lastExitFinal, 'the exit is recorded as terminal').toBe(true);
     expect(finishedCount, 'the runtime is told to tear the session down once').toBe(1);
+  });
+
+  it('stops for good when the position it guarded is sold by someone else', async () => {
+    /*
+     * A position that disappears without the trail firing — sold by hand, rebalanced away — leaves
+     * this strategy nothing to guard and no way to buy anything back. It has to finish, or the
+     * session stays subscribed and silently attaches the trail to the next position on the pair.
+     */
+    const strategy = new TrailingStop({trailDownPct: '10'});
+    let finishedCount = 0;
+    strategy.onFinish = () => {
+      finishedCount++;
+    };
+    const [attachCandle, afterCandle] = candlesAt(['100', '101']);
+    const state = (baseBalance: string): TradingSessionState => ({
+      baseBalance: new Big(baseBalance),
+      baseBalanceOnHold: new Big(0),
+      counterBalance: new Big(0),
+      feeRates: {[OrderType.LIMIT]: new Big(0), [OrderType.MARKET]: new Big(0)},
+      tradingRules: {...AlpacaBroker.DEFAULT_FRACTIONAL_TRADING_RULES, pair: tradingPair},
+    });
+
+    await strategy.onCandle(batched(required(attachCandle, 'attach candle')), state('1'));
+    await strategy.onCandle(batched(required(afterCandle, 'next candle')), state('0'));
+
+    expect(finishedCount, 'the vanished position ends the strategy as an exit of its own would').toBe(1);
+    expect(strategy.ledger.lastExitFinal, 'and it is recorded as terminal, so nothing re-attaches').toBe(true);
   });
 });

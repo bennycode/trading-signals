@@ -218,8 +218,21 @@ function build<
       return {...this.#ledger};
     }
 
+    /**
+     * A snapshot this engine did not write cannot be read: the classes these strategies replace
+     * each persisted their own shape (a peak price, a tripped kill switch, a `bought` flag), and
+     * none of it maps onto the ledger. Starting from an empty ledger is safe — the position is
+     * re-adopted from the balance on the next candle — but it does lose a ratcheted trail and the
+     * entry price a percentage threshold was measured from, so it is reported rather than assumed.
+     */
     override restoreState(persisted: Record<string, unknown>): void {
       const parsed = LedgerSchema.safeParse(persisted);
+      if (!parsed.success && Object.keys(persisted).length > 0) {
+        this.onMessage?.(
+          `${definition.name}: the saved state could not be read and was reset. The position is adopted from the ` +
+            `current balance, so a percentage threshold now measures from the price it attaches at.`
+        );
+      }
       super.restoreState(parsed.success ? parsed.data : emptyLedger());
     }
 
@@ -627,18 +640,23 @@ function build<
         return;
       }
 
-      const wasFinal = ledger.pendingFinalExit !== null;
+      /*
+       * A strategy with no entry rule is done the moment it holds nothing, however the position
+       * went: it cannot buy one back, so staying alive would only let it attach to whatever is
+       * bought on this pair next and sell that against a trail it never agreed to.
+       */
+      const final = ledger.pendingFinalExit !== null || openRules.length === 0;
       this.setState<Ledger>({
         bestPrice: '0',
         costBasis: '0',
         exits: ledger.exits + 1,
-        lastExitFinal: wasFinal,
+        lastExitFinal: final,
         lastExitPrice: candle.close.toFixed(),
         pendingFinalExit: null,
         size: '0',
       });
 
-      if (wasFinal) {
+      if (final) {
         await this.onFinish?.();
       }
     }

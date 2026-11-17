@@ -1,3 +1,4 @@
+import {parse} from 'ms';
 import {z} from 'zod';
 import {SMA} from 'trading-signals';
 import {defineStrategy, every} from '../engine/index.js';
@@ -17,10 +18,15 @@ export const SmaCrossoverSchema = z
     /** Bar size the slow SMA is computed on. */
     slowTimeframe: timeframeString.default('5m'),
   })
-  .refine(config => config.fastPeriod !== config.slowPeriod || config.fastTimeframe !== config.slowTimeframe, {
-    message: 'The fast and slow SMA must differ in period or timeframe, otherwise they never cross',
-    path: ['fastPeriod'],
-  });
+  .refine(
+    config =>
+      // Compared as durations rather than as text: "1m" and "60s" are the same bar.
+      config.fastPeriod !== config.slowPeriod || parse(config.fastTimeframe) !== parse(config.slowTimeframe),
+    {
+      message: 'The fast and slow SMA must differ in period or timeframe, otherwise they never cross',
+      path: ['fastPeriod'],
+    }
+  );
 
 export type SmaCrossoverConfig = z.input<typeof SmaCrossoverSchema>;
 type Settings = z.output<typeof SmaCrossoverSchema>;
@@ -55,7 +61,11 @@ export const SmaCrossover = defineStrategy(SmaCrossoverSchema)({
     close: {
       because: facts => `${fastLabel(facts)} crossed below ${slowLabel(facts)}`,
       quantity: 'all',
-      when: {becomes: ({fast, slow}) => fast < slow},
+      /*
+       * `<=`, so a fast average that falls level with the slow one closes rather than waiting for
+       * it to go further, which on a flat market may never happen.
+       */
+      when: {becomes: ({fast, slow}) => fast <= slow},
     },
     open: {
       because: facts => `${fastLabel(facts)} crossed above ${slowLabel(facts)}`,

@@ -18,9 +18,9 @@ function defaultOrderType(prefix: 'stopLoss' | 'takeProfit'): OrderType {
   return prefix === 'stopLoss' ? 'market' : 'limit';
 }
 
-const emptyGuard = (): GuardForm => ({
+const emptyGuard = (prefix: 'stopLoss' | 'takeProfit'): GuardForm => ({
   enabled: false,
-  orderType: 'limit',
+  orderType: defaultOrderType(prefix),
   triggerType: 'pct',
   value: '',
 });
@@ -35,7 +35,7 @@ function toOrderType(value: string): OrderType {
 
 function parseGuard(settings: Record<string, unknown> | undefined, prefix: 'stopLoss' | 'takeProfit'): GuardForm {
   if (!settings) {
-    return emptyGuard();
+    return emptyGuard(prefix);
   }
   const pct = settings[`${prefix}Pct`];
   const nominal = settings[`${prefix}Nominal`];
@@ -52,7 +52,7 @@ function parseGuard(settings: Record<string, unknown> | undefined, prefix: 'stop
   if (typeof price === 'string') {
     return {enabled: true, orderType, triggerType: 'price', value: price};
   }
-  return emptyGuard();
+  return emptyGuard(prefix);
 }
 
 function buildSettings(stopLoss: GuardForm, takeProfit: GuardForm): Record<string, unknown> | undefined {
@@ -97,8 +97,8 @@ interface ProtectionModalProps {
 }
 
 export function ProtectionModal({initialSettings, onClose, onSave, open}: ProtectionModalProps) {
-  const [stopLoss, setStopLoss] = useState<GuardForm>(emptyGuard);
-  const [takeProfit, setTakeProfit] = useState<GuardForm>(emptyGuard);
+  const [stopLoss, setStopLoss] = useState<GuardForm>(() => emptyGuard('stopLoss'));
+  const [takeProfit, setTakeProfit] = useState<GuardForm>(() => emptyGuard('takeProfit'));
   const dialogRef = useRef<HTMLDialogElement>(null);
   const titleId = useId();
 
@@ -126,7 +126,7 @@ export function ProtectionModal({initialSettings, onClose, onSave, open}: Protec
        * form is visible immediately. User just has to type a value and Save.
        */
       setStopLoss({enabled: true, orderType: defaultOrderType('stopLoss'), triggerType: 'pct', value: ''});
-      setTakeProfit(emptyGuard());
+      setTakeProfit(emptyGuard('takeProfit'));
     }
   }, [open, initialSettings]);
 
