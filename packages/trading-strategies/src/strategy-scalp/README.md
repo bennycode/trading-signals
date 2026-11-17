@@ -1,14 +1,16 @@
-# ScalpStrategy
+# Scalp
 
 A scalping strategy that enters on short-term EMA momentum and then ping-pongs limit orders at a fixed offset above and below each fill price.
 
 ## How it works
 
-| Phase              | Action                                                                                        |
-| ------------------ | --------------------------------------------------------------------------------------------- |
-| **entry**          | Feeds 1-minute candles into a short EMA. When price closes above the EMA, fires a market BUY. |
-| **pendingAdvice**  | After a fill, places a limit order on the opposite side at `fill_price +/- offset`.           |
-| **waitingForFill** | Sits idle until the limit order fills, then loops back to pendingAdvice.                      |
+| Rule            | Action                                                                                        |
+| --------------- | --------------------------------------------------------------------------------------------- |
+| **first entry** | Feeds 1-minute candles into a short EMA. Buys at market the first time price closes above it. |
+| **exit**        | Offers the position as a limit sell at the entry fill plus the offset.                        |
+| **re-entry**    | Offers a limit buy at the last exit's fill minus the offset, which starts the loop again.     |
+
+Each leg is priced off a traded price rather than a timer, so the strategy only ever has one order working at a time.
 
 ## Configuration
 
@@ -19,7 +21,7 @@ A scalping strategy that enters on short-term EMA momentum and then ping-pongs l
 
 ### Auto-offset
 
-When no `offset` is provided, `init(market, pair)` fetches the last 30 daily candles from the given market-data source and auto-computes one using `suggestScalpOffset()`. This function aggregates candles to daily bars (regardless of input interval) and returns `ATR(14) * 0.2`. The computation takes <5ms even on 20k+ candles. Both the live `TradingSession` and the backtest runner invoke `init()` automatically before the first candle.
+When no `offset` is provided, the engine fetches the last 30 daily candles before the first live candle and derives one with `suggestScalpOffset()`. The same history decides whether the instrument is range-bound enough to scalp at all: if it is trending, no offset is produced and the strategy never trades. This function aggregates candles to daily bars (regardless of input interval) and returns `ATR(14) * 0.2`. The computation takes <5ms even on 20k+ candles. Both the live `TradingSession` and the backtest runner fetch that history automatically.
 
 ## When to use it
 

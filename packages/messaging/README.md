@@ -60,7 +60,7 @@ Use `/strategyAdd` to attach a trading strategy to an account. The format is:
 For example, to protect an existing AAPL position with a 5% stop-loss and 10% take-profit:
 
 ```
-/strategyAdd 1 AAPL,USD {"protected":{"stopLossPct":"5","takeProfitPct":"10","seedFromBalance":true}}
+/strategyAdd 1 AAPL,USD {"stopLossPct":"5","takeProfitPct":"10"}
 ```
 
 ## Motivation
