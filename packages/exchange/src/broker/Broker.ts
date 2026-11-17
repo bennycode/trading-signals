@@ -306,6 +306,206 @@ export abstract class Broker extends EventEmitter {
   }
 
   /**
+   * The price at which closing a position finally clears a profit, once every cost is paid.
+   *
+   * Which way the bound runs depends on the position: a long needs a *floor* to sell above, a
+   * short a *ceiling* to buy back below. The entry's side decides, so one method answers both and
+   * neither direction is assumed.
+   *
+   * A percentage target is not a profit: on a small position the round trip can cost more than
+   * the move it is measured against. One share of Ford bought at USD 11.55 cost USD 0.12 to buy
+   * and USD 0.12 to sell, so a 1% take-profit at 11.78 would have realised a loss. This answers
+   * the question that actually matters — what price makes the exit worth taking.
+   *
+   * The entry is either an order already filled (side and fees read from the execution) or a
+   * hypothetical price and size, which is treated as long unless `side` says otherwise.
+   * `minProfit` defaults to one cent, the smallest amount a currency can express.
+   *
+   * The result is rounded *up* to the instrument's price tick, so it is a placeable limit price.
+   * Fees are not proportional — IBKR bills per share with a floor, which no rate can describe —
+   * so the price is solved for rather than divided out, then checked against the fee actually
+   * quoted at that price.
+   *
+   * Everything is denominated in `pair.counter`, the currency the price is quoted in, `minProfit`
+   * included. A broker that debits fees in another currency (Trading212 bills a EUR account in EUR
+   * for a USD instrument) needs `feeToCounterRate` to bring them into that currency; without it
+   * the sum would silently mix currencies, so the call fails instead.
+   */
+  async getProfitableExitPrice(
+    pair: TradingPair,
+    entry: {orderId: string} | {fee?: Big | string; price: Big | string; side?: OrderSide; size: Big | string},
+    options?: {
+      /** Multiplier from the fee currency into `pair.counter`, needed only when the two differ. */
+      feeToCounterRate?: Big | string;
+      minProfit?: Big | string;
+      orderType?: OrderType;
+    }
+  ): Promise<{
+    currency: string;
+    entryFee: Big;
+    /** `BUY` for a long position, `SELL` for a short one. Taken from the fill when resolved by id. */
+    entrySide: OrderSide;
+    /** A long's total outlay including its fee, or a short's proceeds net of it. */
+    entryValue: Big;
+    exitFee: Big;
+    /** The side that closes the position: `SELL` out of a long, `BUY` back into a short. */
+    exitSide: OrderSide;
+    minProfit: Big;
+    price: Big;
+    profit: Big;
+  }> {
+    const minProfit = new Big(options?.minProfit ?? '0.01');
+    const orderType = options?.orderType ?? OrderType.LIMIT;
+    const feeAsset = await this.getFeeAsset(pair);
+    const currency = pair.counter;
+
+    /*
+     * A fee in another currency is not comparable with a price in `pair.counter`, and adding the
+     * two would produce a confident but meaningless target. Converting needs a rate this class has
+     * no way to look up, so the caller supplies one or gets an error.
+     */
+    if (feeAsset !== currency && options?.feeToCounterRate === undefined) {
+      throw new Error(
+        `${this.getName()} debits fees in ${feeAsset} while ${pair.asString('/')} is priced in ${currency}. Pass \`feeToCounterRate\` (${feeAsset}→${currency}) so the fees can be added to the price.`
+      );
+    }
+
+    const feeRate = new Big(options?.feeToCounterRate ?? 1);
+    const resolved = await this.#resolveEntry(pair, entry);
+    const entryFee = resolved.fee.mul(feeRate);
+    const size = resolved.size;
+
+    if (size.lte(0)) {
+      throw new Error(`Cannot price an exit for a position of ${size.toFixed()} ${pair.base}.`);
+    }
+
+    const entrySide = resolved.side;
+    const isShort = entrySide === OrderSide.SELL;
+    const exitSide = isShort ? OrderSide.BUY : OrderSide.SELL;
+    const gross = resolved.price.mul(size);
+
+    /*
+     * A long paid `gross` plus its fee and has to earn that back; a short already received `gross`
+     * less its fee and has to buy back for less than that. So the fee moves the bar the same way
+     * in both cases — against the trader — but the price solved for runs in opposite directions.
+     */
+    const entryValue = isShort ? gross.minus(entryFee) : gross.plus(entryFee);
+    const rules = await this.getTradingRules(pair);
+    const tick = new Big(rules.counter_increment);
+
+    const priceFor = async (candidate: Big) =>
+      (await this.estimateFee(pair, orderType, candidate.mul(size))).total.mul(feeRate);
+
+    /*
+     * Fixed-point iteration in both directions: price the fee at the current guess, move the
+     * price to cover it, repeat. A step can only change the fee by less than it changes the price,
+     * so this settles; the cap stops a broker whose fee grows with price from looping forever.
+     */
+    const MAX_ROUNDS = 8;
+    let exitFee = new Big(0);
+    let price: Big;
+
+    if (isShort) {
+      /*
+       * The most the buy-back may cost, fee included. Rounded *down*: a lower buy price only adds
+       * profit, while rounding up would hand back the cent that was being protected.
+       */
+      const budget = entryValue.minus(minProfit);
+
+      if (budget.lte(0)) {
+        throw new Error(
+          `Closing this short for a profit of ${minProfit.toFixed()} ${currency} would need a price at or below zero, because the position only took in ${entryValue.toFixed()}.`
+        );
+      }
+
+      price = Broker.roundToTick(budget.div(size), tick, Big.roundDown);
+
+      for (let round = 0; round < MAX_ROUNDS; round++) {
+        exitFee = await priceFor(price);
+
+        if (price.mul(size).plus(exitFee).lte(budget)) {
+          break;
+        }
+
+        price = Broker.roundToTick(budget.minus(exitFee).div(size), tick, Big.roundDown);
+      }
+    } else {
+      // What the sale has to bring in, the entry's fee and the requested profit included.
+      const target = entryValue.plus(minProfit);
+      price = Broker.roundToTick(target.div(size), tick, Big.roundUp);
+
+      for (let round = 0; round < MAX_ROUNDS; round++) {
+        exitFee = await priceFor(price);
+        const needed = Broker.roundToTick(target.plus(exitFee).div(size), tick, Big.roundUp);
+
+        if (needed.lte(price)) {
+          break;
+        }
+
+        price = needed;
+      }
+    }
+
+    const exitValue = isShort ? price.mul(size).plus(exitFee) : price.mul(size).minus(exitFee);
+
+    return {
+      currency,
+      entryFee,
+      entrySide,
+      entryValue,
+      exitFee,
+      exitSide,
+      minProfit,
+      price,
+      profit: isShort ? entryValue.minus(exitValue) : exitValue.minus(entryValue),
+    };
+  }
+
+  /**
+   * Snaps a price onto the instrument's tick, since a price between ticks cannot be placed.
+   *
+   * The direction is the caller's to choose and is never neutral: a long's exit rounds up and a
+   * short's rounds down, so that rounding always costs the venue a fraction of a tick rather than
+   * eating into the profit the price was solved for.
+   */
+  protected static roundToTick(price: Big, tick: Big, mode: typeof Big.roundUp | typeof Big.roundDown): Big {
+    if (tick.lte(0)) {
+      return price;
+    }
+    return price.div(tick).round(0, mode).mul(tick);
+  }
+
+  async #resolveEntry(
+    pair: TradingPair,
+    entry: {orderId: string} | {fee?: Big | string; price: Big | string; side?: OrderSide; size: Big | string}
+  ): Promise<{fee: Big; price: Big; side: OrderSide; size: Big}> {
+    if (!('orderId' in entry)) {
+      return {
+        fee: new Big(entry.fee ?? 0),
+        price: new Big(entry.price),
+        // A position is long unless stated otherwise, which is the common case.
+        side: entry.side ?? OrderSide.BUY,
+        size: new Big(entry.size),
+      };
+    }
+
+    const fill = await this.getFillByOrderId(pair, entry.orderId);
+
+    if (!fill) {
+      throw new Error(
+        `No fill found for order "${entry.orderId}" on ${pair.asString('/')}, so its cost basis is unknown.`
+      );
+    }
+
+    /*
+     * The fill's own side decides the direction. Reading it is what separates a long from a short:
+     * ignoring it prices a short's exit as if the position had been bought, which moves the target
+     * the wrong way entirely.
+     */
+    return {fee: new Big(fill.fee), price: new Big(fill.price), side: fill.side, size: new Big(fill.size)};
+  }
+
+  /**
    * The currency in which broker fees are debited. Defaults to `pair.counter`; brokers
    * with cross-currency accounts (e.g. Trading212 EUR account trading USD instruments)
    * override this to return the account currency.

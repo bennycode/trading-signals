@@ -1,0 +1,65 @@
+# Client Portal Gateway for the IBKR broker.
+#
+# IBKR's retail Web API authenticates through the Client Portal Gateway, a local Java process that
+# signs requests with a browser-established session. IBeam packages that gateway and performs the
+# login headlessly, so the bot talks to plain HTTPS on localhost instead of a hand-driven browser.
+#
+# Start with `npm run gateway:ibkr:op` (resolves the credentials from 1Password).
+#
+# @see https://www.interactivebrokers.com/docs/web-api/getting-started
+# @see https://github.com/Voyz/ibeam
+services:
+  ibkr-gateway:
+    image: voyz/ibeam:0.6.0
+    container_name: ibkr-gateway
+    environment:
+      # Plain interpolation, not `${VAR:?message}`: a required-variable guard is evaluated for
+      # every compose subcommand, so it makes `down`, `logs` and `ps` fail without the secrets
+      # loaded. Missing credentials surface as IBeam's own login error instead.
+      IBEAM_ACCOUNT: ${IBKR_ACCOUNT}
+      IBEAM_PASSWORD: ${IBKR_PASSWORD}
+      # IBKR locks an account after repeated failed logins, so stop at the first failure rather
+      # than letting the maintenance loop retry a wrong password or an unanswered 2FA prompt.
+      IBEAM_MAX_FAILED_AUTH: 1
+      # The post-submit page can take longer than the 15s default when IBKR interposes a 2FA
+      # challenge, and a timeout there is indistinguishable from a broken login. Both values
+      # matter: PAGE_LOAD_TIMEOUT covers loading the login page, while OAUTH_TIMEOUT is the one
+      # that bounds the wait *after* the form is submitted, which is where a 2FA prompt lands.
+      IBEAM_PAGE_LOAD_TIMEOUT: 60
+      # Generous, because this window has to cover a human noticing the IB Key push and tapping
+      # approve. 90s was repeatedly too short in practice.
+      IBEAM_OAUTH_TIMEOUT: 240
+      # Writes a screenshot of the page IBeam gave up on into /srv/outputs, which is the only way
+      # to tell a 2FA prompt apart from a changed login form.
+      IBEAM_ERROR_SCREENSHOTS: 'true'
+      # IBKR interposes a "Select Second Factor Device" dropdown for accounts with more than one
+      # 2FA method enrolled. IBeam 0.6.0 looks for it under a stale id and so never picks a
+      # device, leaving the login parked on "Select Type" until it times out — Voyz/ibeam#271,
+      # fixed upstream in the unmerged #277. The dropdown's current class is xyz-multipleselect.
+      IBEAM_TWO_FA_SELECT_EL_ID: CLASS_NAME@@xyz-multipleselect
+      # Which entry to pick from that dropdown. IB Key sends a push to the phone, so the login
+      # still needs a human tap; it is the method the Web API supports, unlike a passkey.
+      IBEAM_TWO_FA_SELECT_TARGET: IB Key
+    volumes:
+      # Screenshots show a logged-in brokerage page, so this directory is gitignored.
+      - ./.ibeam-outputs:/srv/outputs
+      # IBeam copies anything here into the gateway's own `root` folder before starting it. The
+      # bundled conf.yaml only allows 127.0.0.1, 192.* and 131.216.*, so a request forwarded from
+      # the host reaches the container from the Docker bridge (172.*) and is refused with
+      # "Access Denied" — including from the broker client. This copy adds that range.
+      - ./ibeam-inputs:/srv/inputs
+    ports:
+      # The gateway serves HTTPS with a self-signed certificate, so clients must accept it.
+      # Published on 5001 because macOS Control Center (AirPlay Receiver) occupies 5000, which is
+      # the gateway's own port inside the container.
+      - '127.0.0.1:5001:5000'
+    # No `restart: unless-stopped`: with IBEAM_MAX_FAILED_AUTH=1 a restart loop would become a
+    # login-attempt loop against the live account.
+    healthcheck:
+      test: ['CMD', 'curl', '-kfs', '--max-time', '5', 'https://localhost:5000/v1/api/iserver/auth/status']
+      interval: 30s
+      timeout: 10s
+      # The first login drives a headless browser and can take well over a minute, so failures
+      # before that are expected rather than a sign the container is broken.
+      start_period: 180s
+      retries: 3

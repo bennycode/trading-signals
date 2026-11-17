@@ -3,6 +3,7 @@ import {z} from 'zod';
 import {retry} from '../../../util/retry.js';
 import {simplifyError} from '../../../util/simplifyError.js';
 import {AccountCashSchema, AccountInfoSchema} from './schema/AccountSchema.js';
+import {TransactionPageSchema, type Transaction} from './schema/TransactionSchema.js';
 import {HistoryOrderPageSchema, type HistoryOrder} from './schema/HistoryOrderSchema.js';
 import {ExchangeSchema} from './schema/ExchangeSchema.js';
 import {InstrumentSchema} from './schema/InstrumentSchema.js';
@@ -19,6 +20,7 @@ const URL = {
   ACCOUNT_CASH: '/api/v0/equity/account/cash',
   ACCOUNT_INFO: '/api/v0/equity/account/info',
   HISTORY_ORDERS: '/api/v0/equity/history/orders',
+  HISTORY_TRANSACTIONS: '/api/v0/history/transactions',
   METADATA_EXCHANGES: '/api/v0/equity/metadata/exchanges',
   METADATA_INSTRUMENTS: '/api/v0/equity/metadata/instruments',
   ORDERS: '/api/v0/equity/orders',
@@ -166,6 +168,48 @@ export class Trading212API {
     }
     const response = await this.#httpClient.get(URL.HISTORY_ORDERS, {params});
     return HistoryOrderPageSchema.parse(response.data);
+  }
+
+  /**
+   * One page of the cash ledger. The only endpoint that names a currency, so the only way to see
+   * a wallet other than the account's primary one.
+   *
+   * @see https://t212public-api-docs.redoc.ly/#operation/transactions
+   */
+  @retry({delayMs: 60_000})
+  async getTransactionsPage(options?: {nextPath?: string}) {
+    if (options?.nextPath) {
+      const response = await this.#httpClient.get(options.nextPath);
+      return TransactionPageSchema.parse(response.data);
+    }
+    const response = await this.#httpClient.get(URL.HISTORY_TRANSACTIONS, {params: {limit: '50'}});
+    return TransactionPageSchema.parse(response.data);
+  }
+
+  /**
+   * The whole cash ledger, newest first, auto-paginated. Undecorated on purpose: each page goes
+   * through {@link getTransactionsPage}, so a transient failure retries that page rather than
+   * restarting the walk.
+   *
+   * These are cash movements only — deposits, withdrawals, fees and interest. Trades are absent,
+   * so this cannot be replayed into wallet balances; see {@link TransactionSchema}.
+   *
+   * @see https://t212public-api-docs.redoc.ly/#operation/transactions
+   */
+  async getTransactions(options?: {maxPages?: number}): Promise<Transaction[]> {
+    const maxPages = options?.maxPages ?? 20;
+    const items: Transaction[] = [];
+    let nextPath: string | undefined = undefined;
+    let pages = 0;
+
+    do {
+      const page = await this.getTransactionsPage({nextPath});
+      items.push(...page.items);
+      nextPath = page.nextPagePath ?? undefined;
+      pages += 1;
+    } while (nextPath && pages < maxPages);
+
+    return items;
   }
 
   /**
