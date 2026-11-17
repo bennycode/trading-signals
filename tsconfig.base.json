@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "noFallthroughCasesInSwitch": true,
     "paths": {
       "@typedtrader/*": ["./packages/*/src"],
       "trading-signals": ["./packages/trading-signals/src"],

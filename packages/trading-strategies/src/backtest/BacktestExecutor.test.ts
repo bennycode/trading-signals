@@ -140,8 +140,8 @@ describe('BacktestExecutor', () => {
 
       // Order placed on candle 1, fills on candle 2
       expect(result.trades).toHaveLength(1);
-      expect(result.trades[0].advice.side).toBe(OrderSide.BUY);
-      expect(result.trades[0].advice.type).toBe(OrderType.LIMIT);
+      expect(result.trades[0]?.advice.side).toBe(OrderSide.BUY);
+      expect(result.trades[0]?.advice.type).toBe(OrderType.LIMIT);
       expect(result.finalCounterBalance.lt(new Big(1000))).toBe(true);
       expect(result.finalBaseBalance.gt(new Big(0))).toBe(true);
     });
@@ -168,8 +168,8 @@ describe('BacktestExecutor', () => {
       const result = await new BacktestExecutor(config).execute();
 
       expect(result.trades).toHaveLength(1);
-      expect(result.trades[0].advice.side).toBe(OrderSide.SELL);
-      expect(result.trades[0].advice.type).toBe(OrderType.LIMIT);
+      expect(result.trades[0]?.advice.side).toBe(OrderSide.SELL);
+      expect(result.trades[0]?.advice.type).toBe(OrderType.LIMIT);
       expect(result.finalBaseBalance.toFixed(2)).toBe('0.00');
       expect(result.finalCounterBalance.gt(new Big(0))).toBe(true);
     });
@@ -202,7 +202,7 @@ describe('BacktestExecutor', () => {
        * Limit fee: 0.15% of 1000 = 1.50
        */
       const trade = result.trades[0];
-      expect(trade.fee.toFixed(2)).toBe('1.50');
+      expect(trade?.fee.toFixed(2)).toBe('1.50');
       expect(result.totalFees.toFixed(2)).toBe('1.50');
     });
 
@@ -252,7 +252,7 @@ describe('BacktestExecutor', () => {
 
       const trade = result.trades[0];
       // Market order fee: 0.25%
-      expect(trade.fee.gt(0)).toBe(true);
+      expect(trade?.fee.gt(0)).toBe(true);
       expect(result.finalBaseBalance.gt(new Big(0))).toBe(true);
     });
 
@@ -336,8 +336,8 @@ describe('BacktestExecutor', () => {
 
       // Dropped advice is reported, not silently swallowed — one skip per advising candle
       expect(result.skippedAdvices).toHaveLength(2);
-      expect(result.skippedAdvices[0].reason).toContain('below minimum');
-      expect(result.skippedAdvices[0].advice.side).toBe(OrderSide.SELL);
+      expect(result.skippedAdvices[0]?.reason).toContain('below minimum');
+      expect(result.skippedAdvices[0]?.advice.side).toBe(OrderSide.SELL);
     });
 
     it('cancels an outstanding order when newer advice arrives, mirroring a live session', async () => {
@@ -459,7 +459,7 @@ describe('BacktestExecutor', () => {
 
       expect(result.trades).toHaveLength(1);
       // Capped to 5 (the available balance), not 100
-      expect(result.trades[0].size.toFixed(2)).toBe('5.00');
+      expect(result.trades[0]?.size.toFixed(2)).toBe('5.00');
       expect(result.finalBaseBalance.toFixed(2)).toBe('0.00');
     });
 
@@ -566,7 +566,7 @@ describe('BacktestExecutor', () => {
 
       // Every trade should have a positive fee
       result.trades.forEach(trade => {
-        expect(trade.fee.gt(0)).toBe(true);
+        expect(trade?.fee.gt(0)).toBe(true);
       });
     });
 
@@ -790,7 +790,7 @@ describe('BacktestExecutor', () => {
 
       expect(result.trades).toHaveLength(0);
       expect(result.skippedAdvices).toHaveLength(2);
-      expect(result.skippedAdvices[0].reason).toContain('below the minimum');
+      expect(result.skippedAdvices[0]?.reason).toContain('below the minimum');
     });
 
     it('skips sell trades when the base balance is below base_min_size', async () => {

@@ -64,7 +64,11 @@ if (candles.length === 0) {
 }
 
 const firstCandle = candles[0];
-const lastCandle = candles[candles.length - 1];
+const lastCandle = candles.at(-1);
+if (!firstCandle || !lastCandle) {
+  console.error(`Candle file "${values.data}" has no usable candles.`);
+  process.exit(1);
+}
 const tradingPair = new TradingPair(firstCandle.base, firstCandle.counter);
 const startingBalance = new Big(values.balance);
 const slippageRate = new Big(values['slippage-rate']);
@@ -105,7 +109,8 @@ const exchange = new AlpacaBrokerMock({
     [OrderType.LIMIT]: new Big(0),
     [OrderType.MARKET]: new Big(0),
   },
-  marketData,
+  // Omitted rather than passed as undefined, which an optional property no longer accepts.
+  ...(marketData ? {marketData} : {}),
   slippage: {clamp: slippageClamp, rate: slippageRate},
 });
 

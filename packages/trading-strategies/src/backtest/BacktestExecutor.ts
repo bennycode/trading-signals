@@ -2,7 +2,7 @@ import Big from 'big.js';
 import {CandleBatcher} from '@typedtrader/exchange';
 import type {Candle, FeeRate, TradingRules, TradingPair} from '@typedtrader/exchange';
 import {AdviceExecutor} from '../trader/AdviceExecutor.js';
-import {baseOnHold} from '../trader/baseOnHold.js';
+import {sessionBalances} from '../trader/sessionBalances.js';
 import type {OrderAdvice, TradingSessionState} from '../trader/TradingSessionTypes.js';
 import type {BacktestConfig} from './BacktestConfig.js';
 import type {
@@ -57,7 +57,7 @@ export class BacktestExecutor {
     const trades: BacktestTrade[] = [];
     const skippedAdvices: BacktestSkippedAdvice[] = [];
     let totalFees = new Big(0);
-    const firstOpenPrice = candles.length > 0 ? new Big(candles[0].open) : new Big(0);
+    const firstOpenPrice = candles[0] ? new Big(candles[0].open) : new Big(0);
     const initialPortfolioValue = initialBaseBalance.mul(firstOpenPrice).plus(initialCounterBalance);
     const equityCurve = [initialPortfolioValue];
 
@@ -122,7 +122,8 @@ export class BacktestExecutor {
     await exchange.cancelOpenOrders(tradingPair);
 
     const finalBalances = await exchange.getAvailableBalances(tradingPair);
-    const lastClosePrice = candles.length > 0 ? new Big(candles[candles.length - 1].close) : new Big(0);
+    const lastCandle = candles.at(-1);
+    const lastClosePrice = lastCandle ? new Big(lastCandle.close) : new Big(0);
 
     const finalPortfolioValue = finalBalances.base.mul(lastClosePrice).plus(finalBalances.counter);
     const profitOrLoss = finalPortfolioValue.minus(initialPortfolioValue);
@@ -163,16 +164,13 @@ export class BacktestExecutor {
 
   async #buildState(pair: TradingPair, tradingRules: TradingRules, feeRates: FeeRate): Promise<TradingSessionState> {
     const {broker: exchange} = this.#config;
-    const [balances, fills, openOrders] = await Promise.all([
-      exchange.getAvailableBalances(pair),
-      exchange.getFills(pair),
-      exchange.getOpenOrders(pair),
-    ]);
-    const lastOrderSide = fills.length > 0 ? fills[0].side : undefined;
+    const [rawBalances, fills] = await Promise.all([exchange.listBalances(), exchange.getFills(pair)]);
+    const balances = sessionBalances(rawBalances, pair);
+    const lastOrderSide = fills[0]?.side;
 
     return {
       baseBalance: balances.base,
-      baseBalanceOnHold: baseOnHold(openOrders),
+      baseBalanceOnHold: balances.baseOnHold,
       counterBalance: balances.counter,
       feeRates,
       lastOrderSide,

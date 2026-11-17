@@ -146,7 +146,7 @@ export class ScalpScannerReport extends Report<ScalpScannerConfig> {
         end: end.toISOString(),
         feed: 'iex',
         limit: 10_000,
-        page_token: pageToken,
+        ...(pageToken === undefined ? {} : {page_token: pageToken}),
         start: start.toISOString(),
         symbols: symbols.join(','),
         timeframe: '1Day',
@@ -208,8 +208,7 @@ export class ScalpScannerReport extends Report<ScalpScannerConfig> {
     lines.push('```');
     lines.push(`Rank  ${'Stock'.padEnd(stockColWidth)}  ER     ATR%    Offset`);
     lines.push(`----  ${'-'.repeat(stockColWidth)}  -----  ------  -------`);
-    for (let i = 0; i < scalpFriendlyTop.length; i++) {
-      const r = scalpFriendlyTop[i];
+    for (const [i, r] of scalpFriendlyTop.entries()) {
       const stock = formatSymbolWithName(r.symbol, names, TELEGRAM_TABLE_NAME_MAX).padEnd(stockColWidth);
       lines.push(
         `${String(i + 1).padStart(4)}  ${stock}  ${r.er.toFixed(2).padStart(5)}  ${(r.atrPct.toFixed(1) + '%').padStart(6)}  ${r.suggestedOffset.padStart(7)}`
@@ -223,8 +222,7 @@ export class ScalpScannerReport extends Report<ScalpScannerConfig> {
     lines.push('```');
     lines.push(`Rank  ${'Stock'.padEnd(stockColWidth)}  ER     ATR%`);
     lines.push(`----  ${'-'.repeat(stockColWidth)}  -----  ------`);
-    for (let i = 0; i < trendingTop.length; i++) {
-      const r = trendingTop[i];
+    for (const [i, r] of trendingTop.entries()) {
       const stock = formatSymbolWithName(r.symbol, names, TELEGRAM_TABLE_NAME_MAX).padEnd(stockColWidth);
       lines.push(
         `${String(i + 1).padStart(4)}  ${stock}  ${r.er.toFixed(2).padStart(5)}  ${(r.atrPct.toFixed(1) + '%').padStart(6)}`
@@ -245,8 +243,7 @@ export class ScalpScannerReport extends Report<ScalpScannerConfig> {
       lines.push('```');
       lines.push(`Rank  ${'Stock'.padEnd(pickColWidth)}  ER     ATR%    Offset`);
       lines.push(`----  ${'-'.repeat(pickColWidth)}  -----  ------  -------`);
-      for (let i = 0; i < picks.length; i++) {
-        const r = picks[i];
+      for (const [i, r] of picks.entries()) {
         const stock = formatSymbolWithName(r.symbol, names, TELEGRAM_TABLE_NAME_MAX).padEnd(pickColWidth);
         lines.push(
           `${String(i + 1).padStart(4)}  ${stock}  ${r.er.toFixed(2).padStart(5)}  ${(r.atrPct.toFixed(1) + '%').padStart(6)}  ${r.suggestedOffset.padStart(7)}`
