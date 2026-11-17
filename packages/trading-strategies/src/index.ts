@@ -2,47 +2,24 @@ export * from './backtest/index.js';
 export * from './engine/index.js';
 export * from './strategy/index.js';
 export * from './trader/index.js';
-export {BuyOnceStrategy, BuyOnceSchema, type BuyOnceConfig} from './strategy-buy-once/BuyOnceStrategy.js';
-/** @deprecated Use {@link BuyOnceStrategy} without `buyAt` instead. */
+export {BuyOnce, BuyOnceSchema, type BuyOnceConfig} from './strategy-buy-once/buyOnce.js';
 export {
-  BuyOnceStrategy as BuyAndHoldStrategy,
-  BuyOnceSchema as BuyAndHoldSchema,
-} from './strategy-buy-once/BuyOnceStrategy.js';
-export {
-  BuyBelowSellAboveStrategy,
+  BuyBelowSellAbove,
   BuyBelowSellAboveSchema,
   type BuyBelowSellAboveConfig,
-} from './strategy-buy-below-sell-above/BuyBelowSellAboveStrategy.js';
-export {CoinFlipStrategy, CoinFlipSchema, type CoinFlipConfig} from './strategy-coin-flip/CoinFlipStrategy.js';
+} from './strategy-buy-below-sell-above/buyBelowSellAbove.js';
+export {CoinFlip, CoinFlipSchema, type CoinFlipConfig} from './strategy-coin-flip/coinFlip.js';
 export {
-  MultiIndicatorConfluenceStrategy,
+  MultiIndicatorConfluence,
   MultiIndicatorConfluenceSchema,
   type MultiIndicatorConfluenceConfig,
-} from './strategy-multi-indicator-confluence/MultiIndicatorConfluenceStrategy.js';
-export {ScalpStrategy, ScalpSchema, type ScalpConfig} from './strategy-scalp/ScalpStrategy.js';
-export {
-  SmaCrossoverStrategy,
-  SmaCrossoverSchema,
-  type SmaCrossoverConfig,
-} from './strategy-sma-crossover/SmaCrossoverStrategy.js';
-export {
-  MeanReversionStrategy,
-  MeanReversionSchema,
-  type MeanReversionConfig,
-} from './strategy-mean-reversion/MeanReversionStrategy.js';
+} from './strategy-multi-indicator-confluence/multiIndicatorConfluence.js';
+export {Scalp, ScalpSchema, type ScalpConfig} from './strategy-scalp/scalp.js';
+export {SmaCrossover, SmaCrossoverSchema, type SmaCrossoverConfig} from './strategy-sma-crossover/smaCrossover.js';
+export {MeanReversion, MeanReversionSchema, type MeanReversionConfig} from './strategy-mean-reversion/meanReversion.js';
 export {NoopStrategy, NoopSchema, type NoopConfig} from './strategy-noop/NoopStrategy.js';
-export {
-  TrailingStopStrategy,
-  TrailingStopSchema,
-  type TrailingStopConfig,
-  type TrailingStopState,
-} from './strategy-trailing-stop/TrailingStopStrategy.js';
-export {
-  ProtectedStrategy,
-  ProtectedStrategySchema,
-  type ProtectedStrategyConfig,
-  type ProtectedStrategyState,
-} from './strategy-protected/ProtectedStrategy.js';
+export {TrailingStop, TrailingStopSchema, type TrailingStopConfig} from './strategy-trailing-stop/trailingStop.js';
+export {Protected, ProtectedSchema, type ProtectedConfig} from './strategy-protected/protected.js';
 export {suggestScalpOffset} from './strategy-scalp/suggestScalpOffset.js';
 export {atrTrailStop, percentTrailStop, trailStop, type TrailStopOptions} from './util/trailStop.js';
 export {BatchedIndicator} from './util/BatchedIndicator.js';

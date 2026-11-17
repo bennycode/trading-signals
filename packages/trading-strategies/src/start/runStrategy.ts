@@ -1,6 +1,6 @@
 import {AlpacaMarketData, getTrading212Client, OrderSide, TradingPair} from '@typedtrader/exchange';
 import {TradingSession} from '../trader/index.js';
-import {BuyOnceStrategy} from '../strategy-buy-once/BuyOnceStrategy.js';
+import {BuyOnce} from '../strategy-buy-once/buyOnce.js';
 
 const marketData = new AlpacaMarketData({
   apiKey: process.env.ALPACA_LIVE_API_KEY!,
@@ -14,9 +14,9 @@ const broker = getTrading212Client({
   usePaperTrading: true,
 });
 
-const strategy = new BuyOnceStrategy({
-  protected: {takeProfitNominal: '0.10'},
+const strategy = new BuyOnce({
   quantity: '1',
+  takeProfitNominal: '0.10',
 });
 
 const pair = new TradingPair('AMD_US_EQ', 'USD');

@@ -1,30 +1,10 @@
 import {describe, expect, it} from 'vitest';
 import {OrderSide} from '@typedtrader/exchange';
-import {
-  backtest,
-  flatWithCash,
-  holdingFromTheStart,
-  loadCandles,
-  tradeLog,
-  WEEK_LONG_TIMEOUT,
-} from '../engine/testing.js';
-import {SmaCrossoverStrategy} from './SmaCrossoverStrategy.js';
+import {backtest, flatWithCash, holdingFromTheStart, loadCandles, WEEK_LONG_TIMEOUT} from '../engine/testing.js';
 import {SmaCrossover} from './smaCrossover.js';
 
 describe('SmaCrossover', () => {
   const candles = loadCandles();
-
-  it(
-    'trades identically to the class it replaces',
-    async () => {
-      const legacy = await backtest(new SmaCrossoverStrategy(), candles, flatWithCash);
-      const ported = await backtest(new SmaCrossover(), candles, flatWithCash);
-
-      expect(tradeLog(ported), 'the ported rules reproduce the class trade for trade').toStrictEqual(tradeLog(legacy));
-      expect(ported.trades.length, 'the week of candles actually produces crossings to compare').toBeGreaterThan(0);
-    },
-    WEEK_LONG_TIMEOUT
-  );
 
   it(
     'fires at the crossing rather than on every bar on one side of it',

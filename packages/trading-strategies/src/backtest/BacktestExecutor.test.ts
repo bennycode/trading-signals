@@ -6,7 +6,7 @@ import type {Candle, MarketDataSource, TradingRules} from '@typedtrader/exchange
 import type {OrderAdvice, TradingSessionState} from '../trader/index.js';
 import {TradingPair} from '@typedtrader/exchange';
 import {BacktestExecutor} from './BacktestExecutor.js';
-import {BuyBelowSellAboveStrategy} from '../strategy-buy-below-sell-above/BuyBelowSellAboveStrategy.js';
+import {BuyBelowSellAbove} from '../strategy-buy-below-sell-above/buyBelowSellAbove.js';
 import type {BacktestConfig} from './BacktestConfig.js';
 import {Strategy} from '../strategy/Strategy.js';
 import type {OneMinuteBatchedCandle} from '@typedtrader/exchange';
@@ -72,7 +72,7 @@ describe('BacktestExecutor', () => {
     });
 
     it('handles no candles gracefully', async () => {
-      const strategy = new BuyBelowSellAboveStrategy({buyBelow: '50'});
+      const strategy = new BuyBelowSellAbove({buyBelow: '50'});
 
       const config: BacktestConfig = {
         broker: createMockExchange(),
@@ -118,7 +118,7 @@ describe('BacktestExecutor', () => {
     });
 
     it('executes a buy with 1-candle delay when price drops below the buyBelow threshold', async () => {
-      const strategy = new BuyBelowSellAboveStrategy({buyBelow: '100'});
+      const strategy = new BuyBelowSellAbove({buyBelow: '100'});
 
       /*
        * Candle 1: close=90 < 100 → advice to BUY_LIMIT, order placed
@@ -147,7 +147,7 @@ describe('BacktestExecutor', () => {
     });
 
     it('executes a sell with 1-candle delay when price rises above the sellAbove threshold', async () => {
-      const strategy = new BuyBelowSellAboveStrategy({sellAbove: '100'});
+      const strategy = new BuyBelowSellAbove({sellAbove: '100'});
 
       /*
        * Candle 1: close=110 > 100 → advice to SELL_LIMIT, order placed
@@ -175,7 +175,7 @@ describe('BacktestExecutor', () => {
     });
 
     it('deducts maker fees on limit orders', async () => {
-      const strategy = new BuyBelowSellAboveStrategy({sellAbove: '50'});
+      const strategy = new BuyBelowSellAbove({sellAbove: '50'});
 
       /*
        * Candle 1: close=100 > 50 → SELL_LIMIT advice
@@ -257,7 +257,7 @@ describe('BacktestExecutor', () => {
     });
 
     it('runs a full buy-and-sell cycle and computes profit/loss', async () => {
-      const strategy = new BuyBelowSellAboveStrategy({
+      const strategy = new BuyBelowSellAbove({
         buyBelow: '100',
         sellAbove: '120',
       });
@@ -296,7 +296,24 @@ describe('BacktestExecutor', () => {
     });
 
     it('skips trades when there is insufficient balance', async () => {
-      const strategy = new BuyBelowSellAboveStrategy({sellAbove: '50'});
+      /*
+       * A rule engine will not close a position the balance says it does not hold, so the advice
+       * the executor has to drop can only come from a strategy that asks for the sell regardless.
+       */
+      class SellRegardless extends Strategy {
+        static override NAME = 'SellRegardless';
+
+        protected override async processCandle(): Promise<OrderAdvice> {
+          return {
+            amount: AllAvailableAmount,
+            amountIn: 'base',
+            reason: 'selling whether or not there is anything to sell',
+            side: OrderSide.SELL,
+            type: OrderType.MARKET,
+          };
+        }
+      }
+      const strategy = new SellRegardless();
 
       const candles = [
         createCandle({close: '100', open: '100', openTimeInISO: '2025-01-01T00:00:00.000Z'}),
@@ -377,7 +394,7 @@ describe('BacktestExecutor', () => {
     });
 
     it('tracks the total number of candles processed', async () => {
-      const strategy = new BuyBelowSellAboveStrategy({buyBelow: '1000'});
+      const strategy = new BuyBelowSellAbove({buyBelow: '1000'});
 
       const candles = [
         createCandle({close: '50', high: '52', low: '48', open: '50', openTimeInISO: '2025-01-01T00:00:00.000Z'}),
@@ -448,7 +465,7 @@ describe('BacktestExecutor', () => {
 
     it('handles many buy-sell cycles over a long series of candles', async () => {
       // Strategy: buy below 50, sell above 60 → oscillating price triggers multiple cycles
-      const strategy = new BuyBelowSellAboveStrategy({
+      const strategy = new BuyBelowSellAbove({
         buyBelow: '50',
         sellAbove: '60',
       });
@@ -554,7 +571,7 @@ describe('BacktestExecutor', () => {
     });
 
     it('reports a positive win rate when buying low and selling high', async () => {
-      const strategy = new BuyBelowSellAboveStrategy({
+      const strategy = new BuyBelowSellAbove({
         buyBelow: '50',
         sellAbove: '80',
       });
@@ -823,7 +840,7 @@ describe('BacktestExecutor', () => {
     });
 
     it('allows trades that meet all trading rule requirements', async () => {
-      const strategy = new BuyBelowSellAboveStrategy({
+      const strategy = new BuyBelowSellAbove({
         buyBelow: '100',
         sellAbove: '120',
       });

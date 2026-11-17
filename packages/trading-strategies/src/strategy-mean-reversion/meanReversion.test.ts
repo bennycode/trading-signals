@@ -6,45 +6,22 @@ import {
   flatWithCash,
   holdingFromTheStart,
   loadCandles,
-  tradeLog,
   ONE_MINUTE_IN_MS,
   WEEK_LONG_TIMEOUT,
 } from '../engine/testing.js';
-import {MeanReversionStrategy} from './MeanReversionStrategy.js';
 import {MeanReversion} from './meanReversion.js';
 
 describe('MeanReversion', () => {
   const candles = loadCandles();
 
   it(
-    'trades identically to the class it replaces',
+    'opens from flat rather than trying to sell what it does not hold',
     async () => {
-      const legacy = await backtest(new MeanReversionStrategy({config: {}}), candles, holdingFromTheStart);
-      const ported = await backtest(new MeanReversion(), candles, holdingFromTheStart);
+      const result = await backtest(new MeanReversion(), candles, flatWithCash);
 
-      expect(tradeLog(ported), 'the ported rules reproduce the class trade for trade').toStrictEqual(tradeLog(legacy));
-      expect(ported.trades.length, 'the week of candles actually produces trades to compare').toBeGreaterThan(0);
-    },
-    WEEK_LONG_TIMEOUT
-  );
-
-  it(
-    'opens from flat without needing an unfillable sell first',
-    async () => {
-      /*
-       * The class flips its phase when it emits advice rather than when the advice fills, so from
-       * flat it first tries to sell a position it does not hold, and only buys once that phantom
-       * sell has moved it to `waitingForRebuy`. The rules derive the phase from the balance, so the
-       * first thing they do is open.
-       */
-      const legacy = await backtest(new MeanReversionStrategy({config: {}}), candles, flatWithCash);
-      const ported = await backtest(new MeanReversion(), candles, flatWithCash);
-
-      expect(ported.trades[0]?.side, 'the rules open the position themselves').toBe(OrderSide.BUY);
-      expect(
-        ported.trades[0]?.openTimeInISO.localeCompare(legacy.trades[0]?.openTimeInISO ?? ''),
-        'the rules enter at the first middle-band touch instead of waiting for an upper-band break'
-      ).toBeLessThan(0);
+      expect(result.trades[0]?.side, 'the phase comes from the balance, so from flat there is nothing to close').toBe(
+        OrderSide.BUY
+      );
     },
     WEEK_LONG_TIMEOUT
   );

@@ -33,7 +33,7 @@ const MINIMUM_BARS = 14;
  * Efficiency Ratio above which the instrument is trending rather than ranging. Scalping a trend
  * means selling a position that keeps going up, or re-buying one that keeps going down.
  */
-const ER_THRESHOLD = 0.4;
+export const ER_THRESHOLD = 0.4;
 
 function isRangeBound(candles: Candle[]): boolean {
   const er = new ER(candles.length);

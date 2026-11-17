@@ -3,13 +3,13 @@ import {AlpacaAPI, type Bar} from '@typedtrader/exchange';
 import {ER} from 'trading-signals';
 import {MESSAGE_BREAK, Report} from '../report/Report.js';
 import {SP500_TICKERS} from '../util/sp500Tickers.js';
-import {ScalpStrategy} from '../strategy-scalp/ScalpStrategy.js';
+import {ER_THRESHOLD} from '../strategy-scalp/scalp.js';
 import {suggestScalpOffset} from '../strategy-scalp/suggestScalpOffset.js';
 import {fetchUsEquityNames, formatSymbolWithName, TELEGRAM_TABLE_NAME_MAX} from '../util/formatSymbolWithName.js';
 
 export const ScalpScannerSchema = z.object({
   /** ER threshold below which a stock is considered scalp-friendly (default: 0.4) */
-  erThreshold: z.number().positive().optional().default(ScalpStrategy.ER_THRESHOLD),
+  erThreshold: z.number().positive().optional().default(ER_THRESHOLD),
   /** Number of trading days to analyze (default: 60, ~3 months) */
   lookbackDays: z.number().int().positive().optional().default(60),
   /** Stock symbols to scan (defaults to S&P 500) */

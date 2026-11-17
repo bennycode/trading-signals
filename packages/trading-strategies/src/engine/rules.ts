@@ -82,12 +82,24 @@ export const ProtectionSchema = z
   .object({
     /** Sell everything and stop once the position is down this much counter currency. */
     stopLossNominal: positiveNumberString.optional(),
+    /**
+     * `"market"` (the default) takes whatever the market offers and always fills. `"limit"`
+     * offers exactly the threshold instead, which caps what the exit gives up, at the risk of
+     * resting unfilled above a market that gapped straight through it.
+     */
+    stopLossOrder: z.enum(['limit', 'market']).default('market'),
     /** Sell everything and stop once the position is down this many percent. */
     stopLossPct: positiveNumberString.optional(),
     /** Sell everything and stop once price reaches this, wherever the position was entered. */
     stopLossPrice: positiveNumberString.optional(),
     /** Sell everything and stop once the position is up this much counter currency. */
     takeProfitNominal: positiveNumberString.optional(),
+    /**
+     * `"limit"` (the default) offers exactly the threshold, so the profit taken is the profit
+     * configured. Unlike a stop-loss there is nothing to lose by waiting for that price, which is
+     * why this one defaults the other way. `"market"` takes whatever the market offers.
+     */
+    takeProfitOrder: z.enum(['limit', 'market']).default('limit'),
     /** Sell everything and stop once the position is up this many percent. */
     takeProfitPct: positiveNumberString.optional(),
     /** Sell everything and stop once price reaches this, wherever the position was entered. */
@@ -266,11 +278,13 @@ export function takeProfit<Config>(options: ProtectionOptions<Config>): CloseRul
 export function protection<Config extends ProtectionSettings>(): CloseRule<ProtectionFacts<Config>>[] {
   return [
     stopLoss<Config>({
+      as: ({config}) => config.stopLossOrder,
       nominal: ({config}) => config.stopLossNominal,
       pct: ({config}) => config.stopLossPct,
       price: ({config}) => config.stopLossPrice,
     }),
     takeProfit<Config>({
+      as: ({config}) => config.takeProfitOrder,
       nominal: ({config}) => config.takeProfitNominal,
       pct: ({config}) => config.takeProfitPct,
       price: ({config}) => config.takeProfitPrice,

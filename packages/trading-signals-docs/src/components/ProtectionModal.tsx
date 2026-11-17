@@ -10,6 +10,14 @@ interface GuardForm {
   orderType: OrderType;
 }
 
+/**
+ * What the strategy schema does when the setting is absent: a stop-loss takes what the market
+ * offers so it always fills, while a take-profit waits for the price it was promised.
+ */
+function defaultOrderType(prefix: 'stopLoss' | 'takeProfit'): OrderType {
+  return prefix === 'stopLoss' ? 'market' : 'limit';
+}
+
 const emptyGuard = (): GuardForm => ({
   enabled: false,
   orderType: 'limit',
@@ -25,18 +33,15 @@ function toOrderType(value: string): OrderType {
   return value === 'market' ? 'market' : 'limit';
 }
 
-function parseGuard(
-  protectedConfig: Record<string, unknown> | undefined,
-  prefix: 'stopLoss' | 'takeProfit'
-): GuardForm {
-  if (!protectedConfig) {
+function parseGuard(settings: Record<string, unknown> | undefined, prefix: 'stopLoss' | 'takeProfit'): GuardForm {
+  if (!settings) {
     return emptyGuard();
   }
-  const pct = protectedConfig[`${prefix}Pct`];
-  const nominal = protectedConfig[`${prefix}Nominal`];
-  const price = protectedConfig[`${prefix}Price`];
-  const order = protectedConfig[`${prefix}Order`];
-  const orderType: OrderType = typeof order === 'string' ? toOrderType(order) : 'limit';
+  const pct = settings[`${prefix}Pct`];
+  const nominal = settings[`${prefix}Nominal`];
+  const price = settings[`${prefix}Price`];
+  const order = settings[`${prefix}Order`];
+  const orderType: OrderType = typeof order === 'string' ? toOrderType(order) : defaultOrderType(prefix);
 
   if (typeof pct === 'string') {
     return {enabled: true, orderType, triggerType: 'pct', value: pct};
@@ -50,7 +55,7 @@ function parseGuard(
   return emptyGuard();
 }
 
-function buildProtectedConfig(stopLoss: GuardForm, takeProfit: GuardForm): Record<string, unknown> | undefined {
+function buildSettings(stopLoss: GuardForm, takeProfit: GuardForm): Record<string, unknown> | undefined {
   const result: Record<string, unknown> = {};
 
   if (stopLoss.enabled && stopLoss.value.trim()) {
@@ -86,12 +91,12 @@ function buildProtectedConfig(stopLoss: GuardForm, takeProfit: GuardForm): Recor
 
 interface ProtectionModalProps {
   open: boolean;
-  initialProtected: Record<string, unknown> | undefined;
-  onSave: (protectedConfig: Record<string, unknown> | undefined) => void;
+  initialSettings: Record<string, unknown> | undefined;
+  onSave: (settings: Record<string, unknown> | undefined) => void;
   onClose: () => void;
 }
 
-export function ProtectionModal({initialProtected, onClose, onSave, open}: ProtectionModalProps) {
+export function ProtectionModal({initialSettings, onClose, onSave, open}: ProtectionModalProps) {
   const [stopLoss, setStopLoss] = useState<GuardForm>(emptyGuard);
   const [takeProfit, setTakeProfit] = useState<GuardForm>(emptyGuard);
   const dialogRef = useRef<HTMLDialogElement>(null);
@@ -112,24 +117,24 @@ export function ProtectionModal({initialProtected, onClose, onSave, open}: Prote
     if (!open) {
       return;
     }
-    if (initialProtected) {
-      setStopLoss(parseGuard(initialProtected, 'stopLoss'));
-      setTakeProfit(parseGuard(initialProtected, 'takeProfit'));
+    if (initialSettings) {
+      setStopLoss(parseGuard(initialSettings, 'stopLoss'));
+      setTakeProfit(parseGuard(initialSettings, 'takeProfit'));
     } else {
       /*
        * Fresh open with no existing protection: pre-enable stop-loss so the
        * form is visible immediately. User just has to type a value and Save.
        */
-      setStopLoss({enabled: true, orderType: 'limit', triggerType: 'pct', value: ''});
+      setStopLoss({enabled: true, orderType: defaultOrderType('stopLoss'), triggerType: 'pct', value: ''});
       setTakeProfit(emptyGuard());
     }
-  }, [open, initialProtected]);
+  }, [open, initialSettings]);
 
   if (!open) {
     return null;
   }
 
-  const builtConfig = buildProtectedConfig(stopLoss, takeProfit);
+  const builtConfig = buildSettings(stopLoss, takeProfit);
   const hasIncompleteGuard =
     (stopLoss.enabled && !stopLoss.value.trim()) || (takeProfit.enabled && !takeProfit.value.trim());
   const canSave = builtConfig !== undefined && !hasIncompleteGuard;

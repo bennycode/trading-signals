@@ -1,20 +1,14 @@
 import type {z} from 'zod';
-import {BuyOnceStrategy, BuyOnceSchema} from '../strategy-buy-once/BuyOnceStrategy.js';
-import {
-  BuyBelowSellAboveStrategy,
-  BuyBelowSellAboveSchema,
-} from '../strategy-buy-below-sell-above/BuyBelowSellAboveStrategy.js';
-import {CoinFlipStrategy, CoinFlipSchema} from '../strategy-coin-flip/CoinFlipStrategy.js';
-import {
-  MultiIndicatorConfluenceStrategy,
-  MultiIndicatorConfluenceSchema,
-} from '../strategy-multi-indicator-confluence/MultiIndicatorConfluenceStrategy.js';
-import {MeanReversionStrategy, MeanReversionSchema} from '../strategy-mean-reversion/MeanReversionStrategy.js';
+import {BuyBelowSellAbove} from '../strategy-buy-below-sell-above/buyBelowSellAbove.js';
+import {BuyOnce} from '../strategy-buy-once/buyOnce.js';
+import {CoinFlip} from '../strategy-coin-flip/coinFlip.js';
+import {MeanReversion} from '../strategy-mean-reversion/meanReversion.js';
+import {MultiIndicatorConfluence} from '../strategy-multi-indicator-confluence/multiIndicatorConfluence.js';
 import {NoopStrategy, NoopSchema} from '../strategy-noop/NoopStrategy.js';
-import {ScalpStrategy, ScalpSchema} from '../strategy-scalp/ScalpStrategy.js';
-import {SmaCrossoverStrategy, SmaCrossoverSchema} from '../strategy-sma-crossover/SmaCrossoverStrategy.js';
-import {ProtectedStrategy, ProtectedStrategySchema} from '../strategy-protected/ProtectedStrategy.js';
-import {TrailingStopStrategy, TrailingStopSchema} from '../strategy-trailing-stop/TrailingStopStrategy.js';
+import {Protected} from '../strategy-protected/protected.js';
+import {Scalp} from '../strategy-scalp/scalp.js';
+import {SmaCrossover} from '../strategy-sma-crossover/smaCrossover.js';
+import {TrailingStop} from '../strategy-trailing-stop/trailingStop.js';
 import type {Strategy} from './Strategy.js';
 
 interface StrategyEntry {
@@ -22,46 +16,64 @@ interface StrategyEntry {
   schema: z.ZodType;
 }
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+/**
+ * Lifts the kill-switch settings of a stored config out of the `protected` key they used to be
+ * nested under. A stored config outlives the code that wrote it, and these are now settings of
+ * the strategy itself, so both shapes are read and a flat setting wins over a nested one.
+ */
+function unnestProtection(config: unknown): unknown {
+  if (!isRecord(config) || !isRecord(config.protected)) {
+    return config;
+  }
+  const {protected: nested, ...flat} = config;
+  return {...nested, ...flat};
+}
+
 const registry: Record<string, StrategyEntry> = {
-  [BuyBelowSellAboveStrategy.NAME]: {
-    create: (config: unknown) => new BuyBelowSellAboveStrategy(BuyBelowSellAboveSchema.parse(config)),
-    schema: BuyBelowSellAboveSchema,
+  [BuyBelowSellAbove.NAME]: {
+    create: (config: unknown) => new BuyBelowSellAbove(BuyBelowSellAbove.schema.parse(unnestProtection(config))),
+    schema: BuyBelowSellAbove.schema,
   },
-  [BuyOnceStrategy.NAME]: {
-    create: (config: unknown) => new BuyOnceStrategy(BuyOnceSchema.parse(config ?? {})),
-    schema: BuyOnceSchema,
+  [BuyOnce.NAME]: {
+    create: (config: unknown) => new BuyOnce(BuyOnce.schema.parse(unnestProtection(config) ?? {})),
+    schema: BuyOnce.schema,
   },
-  [CoinFlipStrategy.NAME]: {
-    create: (config: unknown) => new CoinFlipStrategy(CoinFlipSchema.parse(config ?? {})),
-    schema: CoinFlipSchema,
+  [CoinFlip.NAME]: {
+    create: (config: unknown) => new CoinFlip(CoinFlip.schema.parse(unnestProtection(config) ?? {})),
+    schema: CoinFlip.schema,
   },
-  [MeanReversionStrategy.NAME]: {
-    create: (config: unknown) => new MeanReversionStrategy({config: MeanReversionSchema.parse(config ?? {})}),
-    schema: MeanReversionSchema,
+  [MeanReversion.NAME]: {
+    create: (config: unknown) => new MeanReversion(MeanReversion.schema.parse(unnestProtection(config) ?? {})),
+    schema: MeanReversion.schema,
   },
-  [MultiIndicatorConfluenceStrategy.NAME]: {
-    create: (config: unknown) => new MultiIndicatorConfluenceStrategy(MultiIndicatorConfluenceSchema.parse(config)),
-    schema: MultiIndicatorConfluenceSchema,
+  [MultiIndicatorConfluence.NAME]: {
+    create: (config: unknown) =>
+      new MultiIndicatorConfluence(MultiIndicatorConfluence.schema.parse(unnestProtection(config))),
+    schema: MultiIndicatorConfluence.schema,
   },
   [NoopStrategy.NAME]: {
     create: (config: unknown) => new NoopStrategy(NoopSchema.parse(config ?? {})),
     schema: NoopSchema,
   },
-  [ProtectedStrategy.NAME]: {
-    create: (config: unknown) => new ProtectedStrategy({config: ProtectedStrategySchema.parse(config ?? {})}),
-    schema: ProtectedStrategySchema,
+  [Protected.NAME]: {
+    create: (config: unknown) => new Protected(Protected.schema.parse(unnestProtection(config) ?? {})),
+    schema: Protected.schema,
   },
-  [ScalpStrategy.NAME]: {
-    create: (config: unknown) => new ScalpStrategy(ScalpSchema.parse(config)),
-    schema: ScalpSchema,
+  [Scalp.NAME]: {
+    create: (config: unknown) => new Scalp(Scalp.schema.parse(unnestProtection(config))),
+    schema: Scalp.schema,
   },
-  [SmaCrossoverStrategy.NAME]: {
-    create: (config: unknown) => new SmaCrossoverStrategy(SmaCrossoverSchema.parse(config ?? {})),
-    schema: SmaCrossoverSchema,
+  [SmaCrossover.NAME]: {
+    create: (config: unknown) => new SmaCrossover(SmaCrossover.schema.parse(unnestProtection(config) ?? {})),
+    schema: SmaCrossover.schema,
   },
-  [TrailingStopStrategy.NAME]: {
-    create: (config: unknown) => new TrailingStopStrategy(TrailingStopSchema.parse(config ?? {})),
-    schema: TrailingStopSchema,
+  [TrailingStop.NAME]: {
+    create: (config: unknown) => new TrailingStop(TrailingStop.schema.parse(unnestProtection(config) ?? {})),
+    schema: TrailingStop.schema,
   },
 };
 
