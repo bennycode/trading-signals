@@ -398,16 +398,16 @@ function build<
         ['close', closeRules],
         ['open', openRules],
       ] as const) {
-        rules.forEach((rule, index) => {
+        for (const [index, rule] of rules.entries()) {
           const {when} = rule;
           if (!isCrossing(when)) {
-            return;
+            continue;
           }
 
           const prices = this.#pricesFor(rule, candle, bars);
           // Its bar has not closed yet, so there is nothing new to compare against.
           if (!prices) {
-            return;
+            continue;
           }
 
           let now: boolean;
@@ -415,7 +415,7 @@ function build<
             now = when.becomes(this.#facts(candle, prices));
           } catch (error) {
             if (error instanceof IndicatorNotReady) {
-              return;
+              continue;
             }
             throw error;
           }
@@ -428,7 +428,7 @@ function build<
             answers[key] = now;
             changed = true;
           }
-        });
+        }
       }
 
       if (changed) {

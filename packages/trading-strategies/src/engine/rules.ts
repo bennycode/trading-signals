@@ -134,9 +134,9 @@ export function required<T>(value: T | null | undefined, what: string): T {
 
 /** The facts a protective rule reads. Declaring it separately keeps these helpers strategy-agnostic. */
 export interface ProtectionFacts<Config> {
-  candle: OneMinuteBatchedCandle;
-  config: Config;
-  position: PositionFacts | null;
+  readonly candle: OneMinuteBatchedCandle;
+  readonly config: Config;
+  readonly position: PositionFacts | null;
 }
 
 /** A threshold written on a rule, or read from the strategy's own config at evaluation time. */

@@ -14,17 +14,17 @@ export type Sizing<F, A = Amount> = A | ((facts: F) => A);
 
 export interface PositionFacts {
   /** Average price paid across every entry fill, weighted by size. */
-  entryPrice: Big;
+  readonly entryPrice: Big;
   /**
    * The most favourable price seen since the position opened, which is the running high for a
    * long. Named for the position's benefit rather than the chart's direction, so that a short's
    * running low will read the same way without renaming every trailing-stop rule.
    */
-  bestPrice: Big;
-  side: 'long';
-  size: Big;
+  readonly bestPrice: Big;
+  readonly side: 'long';
+  readonly size: Big;
   /** Profit in percent, positive whenever the position is winning. */
-  unrealizedPct: Big;
+  readonly unrealizedPct: Big;
 }
 
 export interface ExitFacts {
@@ -33,9 +33,9 @@ export interface ExitFacts {
    * turned out to be gone without a fill of ours. A rule that prices its next entry off the last
    * exit therefore works from a traded price.
    */
-  price: Big;
+  readonly price: Big;
   /** Whether the rule behind this exit ended the strategy, as `stopLoss()` does. */
-  final: boolean;
+  readonly final: boolean;
 }
 
 /**
@@ -44,20 +44,20 @@ export interface ExitFacts {
  * reach.
  */
 export type Facts<Config, Indicators> = {
-  candle: OneMinuteBatchedCandle;
+  readonly candle: OneMinuteBatchedCandle;
   /** Candle close as a number, ready to compare against indicator results. */
-  close: number;
-  config: Config;
+  readonly close: number;
+  readonly config: Config;
   /** How many positions this strategy has opened. */
-  entries: number;
+  readonly entries: number;
   /** How many positions this strategy has closed. */
-  exits: number;
-  high: number;
+  readonly exits: number;
+  readonly high: number;
   /** The exit this strategy made most recently, or `null` until it has closed a position. */
-  lastExit: ExitFacts | null;
-  low: number;
+  readonly lastExit: ExitFacts | null;
+  readonly low: number;
   /** The open position, or `null` while flat. */
-  position: PositionFacts | null;
+  readonly position: PositionFacts | null;
 } & Indicators;
 
 /** A condition judged on the facts of one evaluation. */

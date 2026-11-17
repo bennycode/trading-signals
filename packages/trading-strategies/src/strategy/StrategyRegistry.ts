@@ -1,4 +1,3 @@
-import type {z} from 'zod';
 import {BuyBelowSellAbove} from '../strategy-buy-below-sell-above/buyBelowSellAbove.js';
 import {BuyOnce} from '../strategy-buy-once/buyOnce.js';
 import {CoinFlip} from '../strategy-coin-flip/coinFlip.js';
@@ -11,11 +10,6 @@ import {SmaCrossover} from '../strategy-sma-crossover/smaCrossover.js';
 import {TrailingStop} from '../strategy-trailing-stop/trailingStop.js';
 import type {Strategy} from './Strategy.js';
 
-interface StrategyEntry {
-  create: (config: unknown) => Strategy;
-  schema: z.ZodType;
-}
-
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
@@ -24,65 +18,44 @@ function isRecord(value: unknown): value is Record<string, unknown> {
  * Lifts the kill-switch settings of a stored config out of the `protected` key they used to be
  * nested under. A stored config outlives the code that wrote it, and these are now settings of
  * the strategy itself, so both shapes are read and a flat setting wins over a nested one.
+ *
+ * An absent config becomes an empty one, so a strategy that needs a setting reports that setting
+ * as missing rather than reporting the whole config as the wrong type.
  */
-function unnestProtection(config: unknown): unknown {
-  if (!isRecord(config) || !isRecord(config.protected)) {
+function settingsOf(config: unknown): Record<string, unknown> {
+  if (!isRecord(config)) {
+    return {};
+  }
+  if (!isRecord(config.protected)) {
     return config;
   }
   const {protected: nested, ...flat} = config;
   return {...nested, ...flat};
 }
 
-const registry: Record<string, StrategyEntry> = {
-  [BuyBelowSellAbove.NAME]: {
-    create: (config: unknown) => new BuyBelowSellAbove(BuyBelowSellAbove.schema.parse(unnestProtection(config))),
-    schema: BuyBelowSellAbove.schema,
-  },
-  [BuyOnce.NAME]: {
-    create: (config: unknown) => new BuyOnce(BuyOnce.schema.parse(unnestProtection(config) ?? {})),
-    schema: BuyOnce.schema,
-  },
-  [CoinFlip.NAME]: {
-    create: (config: unknown) => new CoinFlip(CoinFlip.schema.parse(unnestProtection(config) ?? {})),
-    schema: CoinFlip.schema,
-  },
-  [MeanReversion.NAME]: {
-    create: (config: unknown) => new MeanReversion(MeanReversion.schema.parse(unnestProtection(config) ?? {})),
-    schema: MeanReversion.schema,
-  },
-  [MultiIndicatorConfluence.NAME]: {
-    create: (config: unknown) =>
-      new MultiIndicatorConfluence(MultiIndicatorConfluence.schema.parse(unnestProtection(config))),
-    schema: MultiIndicatorConfluence.schema,
-  },
-  [NoopStrategy.NAME]: {
-    create: (config: unknown) => new NoopStrategy(NoopSchema.parse(config ?? {})),
-    schema: NoopSchema,
-  },
-  [Protected.NAME]: {
-    create: (config: unknown) => new Protected(Protected.schema.parse(unnestProtection(config) ?? {})),
-    schema: Protected.schema,
-  },
-  [Scalp.NAME]: {
-    create: (config: unknown) => new Scalp(Scalp.schema.parse(unnestProtection(config))),
-    schema: Scalp.schema,
-  },
-  [SmaCrossover.NAME]: {
-    create: (config: unknown) => new SmaCrossover(SmaCrossover.schema.parse(unnestProtection(config) ?? {})),
-    schema: SmaCrossover.schema,
-  },
-  [TrailingStop.NAME]: {
-    create: (config: unknown) => new TrailingStop(TrailingStop.schema.parse(unnestProtection(config) ?? {})),
-    schema: TrailingStop.schema,
-  },
+/** Builds one strategy from a stored config. The schemas themselves are exported per strategy. */
+type StrategyFactory = (config: unknown) => Strategy;
+
+const registry: Record<string, StrategyFactory> = {
+  [BuyBelowSellAbove.NAME]: config => new BuyBelowSellAbove(BuyBelowSellAbove.schema.parse(settingsOf(config))),
+  [BuyOnce.NAME]: config => new BuyOnce(BuyOnce.schema.parse(settingsOf(config))),
+  [CoinFlip.NAME]: config => new CoinFlip(CoinFlip.schema.parse(settingsOf(config))),
+  [MeanReversion.NAME]: config => new MeanReversion(MeanReversion.schema.parse(settingsOf(config))),
+  [MultiIndicatorConfluence.NAME]: config =>
+    new MultiIndicatorConfluence(MultiIndicatorConfluence.schema.parse(settingsOf(config))),
+  [NoopStrategy.NAME]: config => new NoopStrategy(NoopSchema.parse(settingsOf(config))),
+  [Protected.NAME]: config => new Protected(Protected.schema.parse(settingsOf(config))),
+  [Scalp.NAME]: config => new Scalp(Scalp.schema.parse(settingsOf(config))),
+  [SmaCrossover.NAME]: config => new SmaCrossover(SmaCrossover.schema.parse(settingsOf(config))),
+  [TrailingStop.NAME]: config => new TrailingStop(TrailingStop.schema.parse(settingsOf(config))),
 };
 
 export function createStrategy(name: string, config: unknown): Strategy {
-  const entry = registry[name];
-  if (!entry) {
+  const create = registry[name];
+  if (!create) {
     throw new Error(`Unknown strategy "${name}". Available: ${getStrategyNames().join(', ')}`);
   }
-  return entry.create(config);
+  return create(config);
 }
 
 export function getStrategyNames(): string[] {
