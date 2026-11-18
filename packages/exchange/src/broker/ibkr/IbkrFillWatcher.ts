@@ -1,3 +1,4 @@
+import Big from 'big.js';
 import {randomUUID} from 'node:crypto';
 import type {Fill} from '../Broker.js';
 import {TradingPair} from '../TradingPair.js';
@@ -35,24 +36,91 @@ export function toExecutionKey(trade: IbkrTrade): string {
   ]);
 }
 
+/** Merges the executions of one order into the single fill a strategy expects. */
+export function mergeFills(fills: Fill[]): Fill | undefined {
+  const first = fills[0];
+  if (!first) {
+    return undefined;
+  }
+
+  let size = new Big(0);
+  let notional = new Big(0);
+  let fee = new Big(0);
+
+  for (const fill of fills) {
+    const fillSize = new Big(fill.size);
+    size = size.plus(fillSize);
+    notional = notional.plus(fillSize.times(fill.price));
+    fee = fee.plus(fill.fee);
+  }
+
+  return {
+    ...first,
+    fee: fee.toString(),
+    price: size.gt(0) ? notional.div(size).toString() : first.price,
+    size: size.toString(),
+  };
+}
+
+export interface IbkrFillWatcher {
+  stop: () => void;
+}
+
 /**
- * Polls for executions and reports each new one.
+ * Polls for executions and reports each completed order once.
  *
  * The Web API does offer a WebSocket, but it needs its own session handshake and re-subscribes on
  * every reconnect; polling the trades endpoint covers the same ground for a strategy that places
  * an order and waits for its fill. Only executions seen after the first poll are reported, so a
  * fresh watcher does not replay the day's history as if it had just happened.
+ *
+ * An order is reported when IBKR no longer lists it as working, with its executions merged. IBKR
+ * fills a four-share order as one share and then three, and the consumer contract removes the
+ * pending order on the first fill it is handed, so emitting each execution separately would hand
+ * a strategy one share and drop the other three.
  */
-export function startIbkrFillWatcher(input: {
+export async function startIbkrFillWatcher(input: {
   api: IbkrAPI;
   emit: (fill: Fill) => void;
   getFeeAsset: (pair: TradingPair) => Promise<string>;
   getQuoteCurrency: (conid: string | number | null | undefined) => Promise<string>;
+  isStillWorking: (orderId: string) => Promise<boolean>;
   pollIntervalMs: number;
-}): NodeJS.Timeout {
-  const {api, emit, getFeeAsset, getQuoteCurrency, pollIntervalMs} = input;
+}): Promise<IbkrFillWatcher> {
+  const {api, emit, getFeeAsset, getQuoteCurrency, isStillWorking, pollIntervalMs} = input;
   const seenExecutions = new Set<string>();
+  const reportedOrders = new Set<string>();
   let primed = false;
+  let stopped = false;
+  let timer: NodeJS.Timeout | undefined;
+
+  /** Executions of an order that is still working, held until IBKR says it is done. */
+  const pendingByOrder = new Map<string, Fill[]>();
+
+  const collect = async (trade: IbkrTrade): Promise<void> => {
+    if (!IbkrBrokerMapper.isInstrumentTrade(trade)) {
+      // Currency conversions share this feed but are nobody's order — see `isInstrumentTrade`.
+      return;
+    }
+
+    const symbol = trade.symbol;
+    if (!symbol) {
+      return;
+    }
+
+    const pair = new TradingPair(symbol, await getQuoteCurrency(trade.conid));
+    const fill = IbkrBrokerMapper.toFill(trade, pair, await getFeeAsset(pair));
+    if (!fill) {
+      return;
+    }
+
+    const existing = pendingByOrder.get(fill.order_id);
+    if (existing) {
+      existing.push(fill);
+    } else {
+      pendingByOrder.set(fill.order_id, [fill]);
+    }
+  };
 
   const poll = async () => {
     try {
@@ -63,26 +131,31 @@ export function startIbkrFillWatcher(input: {
         if (seenExecutions.has(executionKey)) {
           continue;
         }
-        seenExecutions.add(executionKey);
 
         if (!primed) {
+          seenExecutions.add(executionKey);
           continue;
         }
 
-        // Currency conversions share this feed but are nobody's order — see `isInstrumentTrade`.
-        if (!IbkrBrokerMapper.isInstrumentTrade(trade)) {
+        /*
+         * Marked seen only once it has been turned into a fill. Reserving the key up front means
+         * a failed currency or fee lookup — swallowed by the catch below — drops that execution
+         * from every later poll, losing the fill even after the gateway recovers.
+         */
+        await collect(trade);
+        seenExecutions.add(executionKey);
+      }
+
+      for (const [orderId, fills] of pendingByOrder) {
+        if (reportedOrders.has(orderId) || (await isStillWorking(orderId))) {
           continue;
         }
 
-        const symbol = trade.symbol;
-        if (!symbol) {
-          continue;
-        }
-
-        const pair = new TradingPair(symbol, await getQuoteCurrency(trade.conid));
-        const fill = IbkrBrokerMapper.toFill(trade, pair, await getFeeAsset(pair));
-        if (fill) {
-          emit(fill);
+        const merged = mergeFills(fills);
+        if (merged) {
+          reportedOrders.add(orderId);
+          pendingByOrder.delete(orderId);
+          emit(merged);
         }
       }
 
@@ -92,8 +165,34 @@ export function startIbkrFillWatcher(input: {
     }
   };
 
-  void poll();
-  return setInterval(() => void poll(), pollIntervalMs);
+  /*
+   * The baseline is awaited before the watcher is handed back. Leaving it in flight lets an order
+   * placed straight afterwards execute while the first response is still on its way: that
+   * execution then arrives in the baseline, is filed as history and never reported.
+   */
+  await poll();
+
+  /*
+   * Chained rather than `setInterval`: a tick must not start while the previous poll is still
+   * awaiting `getTrades`. That call retries indefinitely by default, so overlapping ticks pile up
+   * one more retry loop every interval for as long as the gateway is down.
+   */
+  const scheduleNext = () => {
+    if (stopped) {
+      return;
+    }
+    timer = setTimeout(() => void poll().finally(scheduleNext), pollIntervalMs);
+  };
+  scheduleNext();
+
+  return {
+    stop: () => {
+      stopped = true;
+      if (timer) {
+        clearTimeout(timer);
+      }
+    },
+  };
 }
 
 /** A topic id for one fill subscription. */

@@ -51,6 +51,18 @@ export function getBrokerClient(
     }
     case IbkrBroker.NAME: {
       /*
+       * Unlike Alpaca and Trading212 there is no paper endpoint to switch to: the gateway serves
+       * whichever account the session logged into, and this broker never asks for a paper one. A
+       * caller that passed `isPaper: true` and got a live client would place real orders
+       * believing it was on paper, so it is refused rather than silently ignored.
+       */
+      if (account.isPaper) {
+        throw new Error(
+          `${IbkrBroker.NAME} has no paper mode here: the Client Portal Gateway trades the account it is logged in as. Log the gateway into an IBKR paper account and pass \`isPaper: false\`, or use another broker for paper trading.`
+        );
+      }
+
+      /*
        * No API key: the Client Portal Gateway holds a logged-in session and signs requests
        * itself, so `account.apiKey` / `account.apiSecret` carry nothing for this broker. The
        * account id is discovered from that session, and candles come from IBKR's own history

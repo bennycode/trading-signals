@@ -103,9 +103,14 @@ export class IbkrBrokerMapper {
       return undefined;
     }
 
-    const createdAt = trade.trade_time_r
-      ? new Date(trade.trade_time_r).toISOString()
-      : new Date(trade.trade_time ?? Date.now()).toISOString();
+    /*
+     * `trade_time_r` only. `trade_time` is a display string like `20261117-11:30:00`, which
+     * `Date` cannot parse: it yields an Invalid Date and `toISOString` then throws a RangeError,
+     * taking down `getFills` — or, in the fill watcher, getting swallowed after the execution was
+     * already marked seen, which drops the fill for good. It is also in the account's timezone,
+     * which nothing here knows, so the clock is a safer fallback than a guessed offset.
+     */
+    const createdAt = new Date(trade.trade_time_r ?? Date.now()).toISOString();
 
     return {
       created_at: createdAt,

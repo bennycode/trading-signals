@@ -3,12 +3,14 @@ import {TradingPair} from '../TradingPair.js';
 import type {IbkrAPI} from './api/IbkrAPI.js';
 
 const mockMethods = {
+  getContractInfoAndRules: vi.fn<IbkrAPI['getContractInfoAndRules']>(),
   getHistory: vi.fn<IbkrAPI['getHistory']>(),
   searchContracts: vi.fn<IbkrAPI['searchContracts']>(),
 };
 
 vi.mock(import('./api/IbkrAPI.js'), () => ({
   IbkrAPI: class {
+    getContractInfoAndRules = mockMethods.getContractInfoAndRules;
     getHistory = mockMethods.getHistory;
     searchContracts = mockMethods.searchContracts;
   } as unknown as typeof IbkrAPI,
@@ -34,6 +36,8 @@ describe('IbkrMarketData', {concurrent: false}, () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockMethods.searchContracts.mockResolvedValue([{conid: 9_599_491, sections: [{secType: 'STK'}], symbol: 'F'}]);
+    // The resolver confirms the contract quotes in the pair's counter currency before accepting it.
+    mockMethods.getContractInfoAndRules.mockResolvedValue({currency: 'USD'});
     mockMethods.getHistory.mockResolvedValue({data: FORD_DAILY, priceFactor: 100, volumeFactor: 100});
     marketData = new IbkrMarketData();
   });

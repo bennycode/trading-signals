@@ -30,6 +30,7 @@ const URL = {
   PORTFOLIO_ACCOUNTS: '/v1/api/portfolio/accounts',
   REPLY: '/v1/api/iserver/reply',
   SECDEF_SEARCH: '/v1/api/iserver/secdef/search',
+  SELECT_ACCOUNT: '/v1/api/iserver/account',
   SESSION_INIT: '/v1/api/iserver/auth/ssodh/init',
   TICKLE: '/v1/api/tickle',
   TRADES: '/v1/api/iserver/account/trades',
@@ -137,6 +138,19 @@ export class IbkrAPI {
   async getAccounts() {
     const response = await this.#httpClient.get(URL.ACCOUNTS);
     return IbkrAccountsSchema.parse(response.data);
+  }
+
+  /**
+   * Makes an account the session's current one.
+   *
+   * Order monitoring reads whichever account is selected rather than taking one as a parameter,
+   * so a session left on another account reports that account's orders.
+   *
+   * @see https://www.interactivebrokers.com/docs/web-api/api-reference/trading/accounts
+   */
+  @retry({retries: 1})
+  async selectAccount(accountId: string): Promise<void> {
+    await this.#httpClient.post(URL.SELECT_ACCOUNT, {acctId: accountId});
   }
 
   /** @see https://www.interactivebrokers.com/docs/web-api/api-reference/trading/portfolio */

@@ -22,6 +22,7 @@ const mockMethods = {
   previewOrder: vi.fn<IbkrAPI['previewOrder']>(),
   replyToOrderMessage: vi.fn<IbkrAPI['replyToOrderMessage']>(),
   searchContracts: vi.fn<IbkrAPI['searchContracts']>(),
+  selectAccount: vi.fn<IbkrAPI['selectAccount']>(),
   submitOrder: vi.fn<IbkrAPI['submitOrder']>(),
 };
 
@@ -34,6 +35,7 @@ vi.mock(import('./api/IbkrAPI.js'), () => ({
     getContractInfoAndRules = mockMethods.getContractInfoAndRules;
     getLedger = mockMethods.getLedger;
     getLiveOrders = mockMethods.getLiveOrders;
+    selectAccount = mockMethods.selectAccount;
     getPortfolioAccounts = mockMethods.getPortfolioAccounts;
     getPositions = mockMethods.getPositions;
     getTrades = mockMethods.getTrades;
@@ -90,6 +92,11 @@ describe('IbkrBroker', {concurrent: false}, () => {
     marketData = new MarketDataSourceStub();
     broker = new IbkrBroker({accountId: 'U1', marketData});
     mockMethods.searchContracts.mockResolvedValue([{conid: '265598', sections: [{secType: 'STK'}], symbol: 'AAPL'}]);
+    // The resolver confirms the contract quotes in the pair's counter currency before accepting it.
+    mockMethods.getContractInfoAndRules.mockResolvedValue({currency: 'USD'});
+    // The session is already on U1, so no account switch is needed; see `#resolveAccountId`.
+    mockMethods.getAccounts.mockResolvedValue({accounts: ['U1'], selectedAccount: 'U1'});
+    mockMethods.getLiveOrders.mockResolvedValue({orders: [], snapshot: true});
   });
 
   describe('verifyCredentials', () => {
@@ -129,6 +136,13 @@ describe('IbkrBroker', {concurrent: false}, () => {
       await expect(broker.getConid(pair)).resolves.toBe(265598);
     });
 
+    it('rejects an unresolvable currency instead of guessing', async () => {
+      mockMethods.searchContracts.mockResolvedValue([{conid: '111', sections: [{secType: 'STK'}], symbol: 'AAPL'}]);
+      mockMethods.getContractInfoAndRules.mockResolvedValue({currency: 'GBP'});
+
+      await expect(broker.getConid(pair)).rejects.toThrow(/none quoting in USD/);
+    });
+
     it('looks a symbol up once and reuses the result', async () => {
       await broker.getConid(pair);
       await broker.getConid(pair);
@@ -146,7 +160,49 @@ describe('IbkrBroker', {concurrent: false}, () => {
     it('fails loudly when IBKR knows no such symbol', async () => {
       mockMethods.searchContracts.mockResolvedValue([]);
 
-      await expect(broker.getConid(new TradingPair('NOPE', 'USD'))).rejects.toThrow(/no contract for symbol/);
+      await expect(broker.getConid(new TradingPair('NOPE', 'USD'))).rejects.toThrow(/no stock with the exact symbol/);
+    });
+
+    it('refuses a partial match rather than ordering a different instrument', async () => {
+      mockMethods.searchContracts.mockResolvedValue([{conid: '111', sections: [{secType: 'STK'}], symbol: 'AAPLX'}]);
+
+      await expect(
+        broker.getConid(pair),
+        'placing an order for a symbol the caller never named is worse than failing'
+      ).rejects.toThrow(/no stock with the exact symbol/);
+    });
+
+    it('refuses a listing with no tradable stock section', async () => {
+      mockMethods.searchContracts.mockResolvedValue([{conid: '111', sections: [{secType: 'OPT'}], symbol: 'AAPL'}]);
+
+      await expect(broker.getConid(pair)).rejects.toThrow(/no stock with the exact symbol/);
+    });
+
+    it('picks the listing quoting in the pair’s counter currency', async () => {
+      mockMethods.searchContracts.mockResolvedValue([
+        {conid: '111', sections: [{secType: 'STK'}], symbol: 'AAPL'},
+        {conid: '265598', sections: [{secType: 'STK'}], symbol: 'AAPL'},
+      ]);
+      mockMethods.getContractInfoAndRules.mockResolvedValueOnce({currency: 'GBP'});
+      mockMethods.getContractInfoAndRules.mockResolvedValueOnce({currency: 'USD'});
+
+      await expect(
+        broker.getConid(pair),
+        'two listings can share a ticker and quote in different currencies, and only one is AAPL/USD'
+      ).resolves.toBe(265598);
+    });
+
+    it('caches by the whole pair, not by its base', async () => {
+      mockMethods.getContractInfoAndRules.mockResolvedValue({currency: 'USD'});
+      await broker.getConid(pair);
+
+      mockMethods.searchContracts.mockResolvedValue([{conid: '999', sections: [{secType: 'STK'}], symbol: 'AAPL'}]);
+      mockMethods.getContractInfoAndRules.mockResolvedValue({currency: 'GBP'});
+
+      await expect(
+        broker.getConid(new TradingPair('AAPL', 'GBP')),
+        'a base-only cache key would hand AAPL/GBP the contract AAPL/USD resolved to'
+      ).resolves.toBe(999);
     });
   });
 
@@ -251,6 +307,33 @@ describe('IbkrBroker', {concurrent: false}, () => {
       await expect(
         broker.placeMarketOrder(pair, {side: OrderSide.BUY, size: '3', sizeInCounter: false})
       ).rejects.toThrow(/Order size exceeds limit/);
+    });
+
+    it('reads the answer to its last allowed reply instead of reporting a live order as failed', async () => {
+      mockMethods.submitOrder.mockResolvedValue([{id: 'reply-1', message: ['again']}]);
+      mockMethods.replyToOrderMessage
+        .mockResolvedValueOnce([{id: 'reply-1', message: ['again']}])
+        .mockResolvedValueOnce([{id: 'reply-1', message: ['again']}])
+        .mockResolvedValueOnce([{id: 'reply-1', message: ['again']}])
+        .mockResolvedValueOnce([{id: 'reply-1', message: ['again']}])
+        .mockResolvedValueOnce([{order_id: '999', order_status: 'Submitted'}]);
+
+      const order = await broker.placeMarketOrder(pair, {side: OrderSide.BUY, size: '3', sizeInCounter: false});
+
+      expect(
+        order.id,
+        'IBKR accepted the order on the fifth reply; throwing there leaves it live while the caller places it again'
+      ).toBe('999');
+      expect(mockMethods.replyToOrderMessage).toHaveBeenCalledTimes(5);
+    });
+
+    it('names the client order id when IBKR does not say whether the order landed', async () => {
+      mockMethods.submitOrder.mockRejectedValue(new Error('socket hang up'));
+
+      await expect(
+        broker.placeMarketOrder(pair, {side: OrderSide.BUY, size: '3', sizeInCounter: false}),
+        'without the cOID there is no handle on an order IBKR may have created, so a retry risks a double fill'
+      ).rejects.toThrow(/Look it up by client order id [0-9a-f]{32}/);
     });
 
     it('surfaces a rejection that arrives behind another entry', async () => {
@@ -389,9 +472,59 @@ describe('IbkrBroker', {concurrent: false}, () => {
     });
   });
 
+  describe('getFillByOrderId', () => {
+    it('reports nothing while the order is still working', async () => {
+      mockMethods.getLiveOrders.mockResolvedValue({
+        orders: [{conid: '265598', orderId: '55', status: 'Submitted'}],
+        snapshot: true,
+      });
+      mockMethods.getTrades.mockResolvedValue([
+        {commission: '0.35', conid: '265598', order_id: 55, price: '100', side: 'B', size: 1, trade_time_r: 1_000},
+      ]);
+
+      await expect(
+        broker.getFillByOrderId(pair, '55'),
+        'a partially filled order already has executions, and reporting them reads a four-share order as filled on its first share'
+      ).resolves.toBeUndefined();
+    });
+  });
+
+  describe('listBalances', () => {
+    it('reads every page of positions', async () => {
+      mockMethods.getLedger.mockResolvedValue({});
+      const fullPage = Array.from({length: 30}, (_unused, index) => ({
+        conid: index,
+        contractDesc: `S${index}`,
+        position: 1,
+      }));
+      mockMethods.getPositions
+        .mockResolvedValueOnce(fullPage)
+        .mockResolvedValueOnce([{conid: 99, contractDesc: 'LAST', position: 1}]);
+
+      const balances = await broker.listBalances();
+
+      expect(
+        balances.some(balance => balance.currency === 'LAST'),
+        'IBKR pages positions at 30, and stopping at the first page reports a larger account as flat'
+      ).toBe(true);
+    });
+  });
+
+  describe('getOpenOrders', () => {
+    it('refuses an order list IBKR says is incomplete', async () => {
+      mockMethods.getLiveOrders.mockResolvedValue({orders: [], snapshot: false});
+
+      await expect(
+        broker.getOpenOrders(pair),
+        'an empty-but-incomplete list makes cancelOpenOrders report success having cancelled nothing'
+      ).rejects.toThrow(/did not finish assembling/);
+    });
+  });
+
   describe('getTradingRules', () => {
-    it('uses the finest price tick across IBKR’s price bands', async () => {
+    it('uses the price tick that is legal in every one of IBKR’s bands', async () => {
       mockMethods.getContractInfoAndRules.mockResolvedValue({
+        currency: 'USD',
         rules: {
           increment: 0.05,
           incrementRules: [
@@ -403,11 +536,14 @@ describe('IbkrBroker', {concurrent: false}, () => {
 
       const rules = await broker.getTradingRules(pair);
 
-      expect(rules.counter_increment, 'a coarser tick would be rejected in the finer band').toBe('0.01');
+      expect(
+        rules.counter_increment,
+        'the neutral rules hold one scalar, so it must be the coarsest tick: advertising 0.01 invites a price like 100.01 that the band above 100 rejects, and both order sizing and getProfitableExitPrice would then produce an unplaceable price'
+      ).toBe('0.05');
     });
 
     it('trades in whole shares when the contract allows no fractional orders', async () => {
-      mockMethods.getContractInfoAndRules.mockResolvedValue({rules: {fraqTypes: [], increment: 0.01}});
+      mockMethods.getContractInfoAndRules.mockResolvedValue({currency: 'USD', rules: {fraqTypes: [], increment: 0.01}});
 
       const rules = await broker.getTradingRules(pair);
 
@@ -417,6 +553,7 @@ describe('IbkrBroker', {concurrent: false}, () => {
 
     it('ignores sizeIncrement, which is an order-ticket spinner step and not a tradable minimum', async () => {
       mockMethods.getContractInfoAndRules.mockResolvedValue({
+        currency: 'USD',
         rules: {defaultSize: 100, fraqTypes: [], increment: 0.01, sizeIncrement: 40},
       });
 
@@ -427,6 +564,7 @@ describe('IbkrBroker', {concurrent: false}, () => {
 
     it('allows a fractional order down to the contract’s decimal places', async () => {
       mockMethods.getContractInfoAndRules.mockResolvedValue({
+        currency: 'USD',
         rules: {fraqInt: 4, fraqTypes: ['limit', 'market'], increment: 0.01, sizeIncrement: 40},
       });
 
@@ -438,6 +576,7 @@ describe('IbkrBroker', {concurrent: false}, () => {
 
     it('does not use exponent notation for a very fine fractional step', async () => {
       mockMethods.getContractInfoAndRules.mockResolvedValue({
+        currency: 'USD',
         rules: {fraqInt: 8, fraqTypes: ['market'], increment: 0.01},
       });
 

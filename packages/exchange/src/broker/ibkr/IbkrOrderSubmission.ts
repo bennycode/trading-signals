@@ -71,10 +71,16 @@ export async function submitIbkrOrder(input: {
     ...(isLimit ? {price: Number(options.price)} : {}),
   };
 
-  let response = await api.submitOrder(accountId, request);
+  let response = await submitOrAnnotate(() => api.submitOrder(accountId, request), request.cOID, pair);
 
+  /*
+   * One more response is read than there are replies to send: the answer to the last allowed
+   * reply still has to be inspected, or an order IBKR accepted on that reply is reported as a
+   * failure. Since `submitOrder` is deliberately not retried, the caller would then place it
+   * again and hold two positions.
+   */
   const MAX_CONFIRMATIONS = 5;
-  for (let attempt = 0; attempt < MAX_CONFIRMATIONS; attempt++) {
+  for (let repliesSent = 0; repliesSent <= MAX_CONFIRMATIONS; repliesSent++) {
     if (response.length === 0) {
       throw new Error(`IBKR returned an empty response when placing an order for ${pair.asString('/')}.`);
     }
@@ -98,7 +104,10 @@ export async function submitIbkrOrder(input: {
      */
     const prompt = response.find(isIbkrOrderReplyMessage);
     if (prompt) {
-      response = await api.replyToOrderMessage(prompt.id, true);
+      if (repliesSent === MAX_CONFIRMATIONS) {
+        break;
+      }
+      response = await submitOrAnnotate(() => api.replyToOrderMessage(prompt.id, true), request.cOID, pair);
       continue;
     }
 
@@ -129,4 +138,39 @@ export async function submitIbkrOrder(input: {
   throw new Error(
     `IBKR kept asking for confirmation after ${MAX_CONFIRMATIONS} replies when placing an order for ${pair.asString('/')}.`
   );
+}
+
+/**
+ * Raised when a submission neither succeeded nor was refused, so whether an order exists is
+ * unknown.
+ *
+ * It carries the `cOID` because that is the only handle on the order IBKR may have created:
+ * `simplifyError` strips Axios's request config from the thrown error, so without this the id
+ * generated above dies with the call and the reconciliation it exists for is impossible. A caller
+ * looks the order up by {@link clientOrderId} instead of resubmitting into a possible double fill.
+ */
+export class IbkrAmbiguousOrderError extends Error {
+  readonly clientOrderId: string | undefined;
+
+  constructor(input: {cause: unknown; clientOrderId: string | undefined; pair: string}) {
+    const reason = input.cause instanceof Error ? input.cause.message : String(input.cause);
+    super(
+      `IBKR did not say whether the order for ${input.pair} was placed: ${reason}. Look it up by client order id ${input.clientOrderId ?? '(none generated)'} before placing it again.`
+    );
+    this.name = 'IbkrAmbiguousOrderError';
+    this.clientOrderId = input.clientOrderId;
+    this.cause = input.cause;
+  }
+}
+
+async function submitOrAnnotate<T>(
+  send: () => Promise<T>,
+  clientOrderId: string | undefined,
+  pair: TradingPair
+): Promise<T> {
+  try {
+    return await send();
+  } catch (error) {
+    throw new IbkrAmbiguousOrderError({cause: error, clientOrderId, pair: pair.asString('/')});
+  }
 }

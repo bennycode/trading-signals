@@ -19,24 +19,39 @@ export async function estimateIbkrFee(input: {
   getLatestClose: () => Promise<Big>;
   notional: Big;
   pair: TradingPair;
+  /**
+   * The exact ticket, when the caller knows it. IBKR bills per share, so the share count is what
+   * sets the commission, and a notional alone only yields one after dividing by some price.
+   */
+  ticket?: {price?: Big; size?: Big};
 }): Promise<{commission: Big; currencyConversion: Big; feeAsset: string; total: Big}> {
-  const {api, feeAsset, getAccountId, getConid, getLatestClose, notional, pair} = input;
+  const {api, feeAsset, getAccountId, getConid, getLatestClose, notional, pair, ticket} = input;
+
+  /*
+   * The caller's own size and price whenever it has them, because the alternative is wrong rather
+   * than merely imprecise: previewing a notional as `cashQty` asks IBKR to price whatever number
+   * of shares that buys at the *current* quote. Closing 1,000 shares at a target of 100 while the
+   * market sits at 200 previews 500 shares and estimates half the commission. Equal MARKET and
+   * LIMIT schedules do not make different quantities equivalent.
+   */
+  const size = ticket?.size;
+  const price = ticket?.price;
 
   try {
     const [accountId, conid] = await Promise.all([getAccountId(), getConid(pair)]);
     const preview = await api.previewOrder(accountId, {
-      cashQty: Number(notional.toString()),
       conid,
-      /*
-       * Always previewed as a MARKET ticket, even when pricing a LIMIT order. `whatif` rejects a
-       * LIMIT ticket that carries no `price` with "Invalid order price fields", and a fee
-       * estimate has no limit price to offer. Asking as MARKET costs nothing in accuracy because
-       * IBKR bills the same per-share commission either way, which is why `getFeeRates` reports
-       * one rate for both.
-       */
-      orderType: IbkrOrderType.MARKET,
       side: IbkrOrderSide.BUY,
       tif: IbkrTimeInForce.DAY,
+      ...(size && price
+        ? {orderType: IbkrOrderType.LIMIT, price: Number(price.toString()), quantity: Number(size.toString())}
+        : /*
+           * Without a ticket there is no quantity to send, so the notional goes as `cashQty` and
+           * the type has to be MARKET: `whatif` refuses a LIMIT ticket carrying no price with
+           * "Invalid order price fields", and that throw used to be swallowed into the local
+           * fallback, reporting a guess as IBKR's own number.
+           */
+          {cashQty: Number(notional.toString()), orderType: IbkrOrderType.MARKET}),
     });
 
     const value = parseIbkrCommission(preview.amount?.commission);
@@ -51,9 +66,12 @@ export async function estimateIbkrFee(input: {
    * No session, so the schedule is applied locally. Deliberately not `super.estimateFee`, which
    * multiplies the notional by a flat rate: IBKR's floor and cap dominate a small order, and a
    * rate alone priced one Ford share at USD 0.005 against the 0.12 actually charged.
+   *
+   * The candidate price is used when there is one, for the same reason the preview uses it: the
+   * latest close prices a different number of shares than the order being estimated.
    */
-  const candle = await getLatestClose();
-  const commission = ibkrCommissionFor(notional, candle);
+  const referencePrice = price ?? (await getLatestClose());
+  const commission = ibkrCommissionFor(size ? size.mul(referencePrice) : notional, referencePrice);
 
   return {commission, currencyConversion: new Big(0), feeAsset, total: commission};
 }

@@ -14,13 +14,16 @@ export function toIbkrTradingRules(info: IbkrContractInfo, pair: TradingPair): T
 
   /*
    * IBKR varies the price tick by price band and returns the bands in `incrementRules`. The
-   * smallest one is used, so a limit price is never rejected for being finer than allowed at
-   * the band it lands in.
+   * neutral `TradingRules` holds one scalar, so it has to be the tick that is legal in *every*
+   * band, which is the coarsest rather than the finest: with bands of 0.01 below 100 and 0.05
+   * above, advertising 0.01 invites a price like 100.01 that the upper band rejects, and both
+   * order sizing and `getProfitableExitPrice` would then produce an unplaceable price. The
+   * coarsest is safe everywhere because IBKR's bands are multiples of one another.
    */
   const increments = (rules?.incrementRules ?? [])
     .map(rule => rule.increment)
     .filter((increment): increment is number => typeof increment === 'number' && increment > 0);
-  const priceIncrement = increments.length > 0 ? Math.min(...increments) : (rules?.increment ?? 0.01);
+  const priceIncrement = increments.length > 0 ? Math.max(...increments) : (rules?.increment ?? 0.01);
 
   /*
    * Deliberately not `rules.sizeIncrement`: that is the step the order ticket's quantity

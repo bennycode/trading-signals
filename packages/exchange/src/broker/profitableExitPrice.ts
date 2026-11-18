@@ -23,7 +23,7 @@ export interface ExitPriceInput {
   entryFee: Big;
   entryPrice: Big;
   /** The fee the venue quotes for closing at this notional, already in `currency`. */
-  estimateExitFee: (notional: Big) => Promise<Big>;
+  estimateExitFee: (notional: Big, price: Big) => Promise<Big>;
   isShort: boolean;
   minProfit: Big;
   size: Big;
@@ -75,7 +75,7 @@ export async function solveExitPrice(input: ExitPriceInput): Promise<ExitPriceRe
 /** The floor a long has to sell above, rounded up so rounding never gives the profit away. */
 async function solveLong(input: {
   entryValue: Big;
-  estimateExitFee: (notional: Big) => Promise<Big>;
+  estimateExitFee: (notional: Big, price: Big) => Promise<Big>;
   maxRounds: number;
   minProfit: Big;
   size: Big;
@@ -89,7 +89,7 @@ async function solveLong(input: {
   let exitFee = new Big(0);
 
   for (let round = 0; round < maxRounds; round++) {
-    exitFee = await estimateExitFee(price.mul(size));
+    exitFee = await estimateExitFee(price.mul(size), price);
     const needed = roundToTick(target.plus(exitFee).div(size), tick, Big.roundUp);
 
     if (needed.lte(price)) {
@@ -106,7 +106,7 @@ async function solveLong(input: {
 async function solveShort(input: {
   currency: string;
   entryValue: Big;
-  estimateExitFee: (notional: Big) => Promise<Big>;
+  estimateExitFee: (notional: Big, price: Big) => Promise<Big>;
   maxRounds: number;
   minProfit: Big;
   size: Big;
@@ -127,7 +127,7 @@ async function solveShort(input: {
   let exitFee = new Big(0);
 
   for (let round = 0; round < maxRounds; round++) {
-    exitFee = await estimateExitFee(price.mul(size));
+    exitFee = await estimateExitFee(price.mul(size), price);
 
     if (price.mul(size).plus(exitFee).lte(budget)) {
       break;
@@ -225,7 +225,12 @@ export interface ProfitableExitPrice {
 
 /** The part of a broker this needs, kept structural so the module does not depend on the class. */
 interface ExitPriceBroker {
-  estimateFee(pair: TradingPair, orderType: OrderType, notional: Big): Promise<{total: Big}>;
+  estimateFee(
+    pair: TradingPair,
+    orderType: OrderType,
+    notional: Big,
+    ticket?: {price?: Big; size?: Big}
+  ): Promise<{total: Big}>;
   getFillByOrderId(pair: TradingPair, orderId: string): Promise<Fill | undefined>;
   getName(): string;
   getTradingRules(pair: TradingPair): Promise<{counter_increment: string}>;
@@ -288,7 +293,14 @@ export async function resolveProfitableExitPrice(input: {
     currency,
     entryFee,
     entryPrice: resolved.price,
-    estimateExitFee: async notional => (await broker.estimateFee(pair, orderType, notional)).total.mul(feeRate),
+    /*
+     * The size is the position being closed and the notional is that size at the candidate
+     * price, so both are known exactly. A broker billing per share needs them: handed a notional
+     * alone it has to divide by some price, and the only one it has is the current quote, which
+     * prices a different number of shares than the exit actually sells.
+     */
+    estimateExitFee: async (notional, price) =>
+      (await broker.estimateFee(pair, orderType, notional, {price, size: resolved.size})).total.mul(feeRate),
     isShort,
     minProfit,
     size: resolved.size,

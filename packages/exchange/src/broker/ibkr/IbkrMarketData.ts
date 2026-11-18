@@ -201,22 +201,46 @@ export class IbkrMarketData extends MarketDataSource {
       }
     };
 
-    // A transient gateway error must not kill the timer, or the feed stops silently.
-    const safePoll = () => void poll().catch(() => undefined);
-
-    const interval = setInterval(
-      safePoll,
-      Math.min(IbkrMarketData.MAX_POLL_INTERVAL_MS, Math.max(IbkrMarketData.MIN_POLL_INTERVAL_MS, intervalInMillis))
+    const pollIntervalMs = Math.min(
+      IbkrMarketData.MAX_POLL_INTERVAL_MS,
+      Math.max(IbkrMarketData.MIN_POLL_INTERVAL_MS, intervalInMillis)
     );
+
+    /*
+     * Chained rather than `setInterval`, so a tick never begins while the previous poll is still
+     * awaiting `getHistory`. That call retries indefinitely by default, so with the gateway down
+     * every overlapping tick would add another retry loop that `unwatchCandles` cannot reach, and
+     * a transient error must not kill the timer or the feed stops silently.
+     */
+    const scheduleNext = () => {
+      if (!this.#watchers.has(topicId)) {
+        return;
+      }
+      this.#watchers.set(topicId, [
+        setTimeout(
+          () =>
+            void poll()
+              .catch(() => undefined)
+              .finally(scheduleNext),
+          pollIntervalMs
+        ),
+      ]);
+    };
 
     /*
      * The first poll is scheduled rather than awaited, because a caller can only attach a listener
      * once it holds the topic id. Awaiting it here emitted the bars that had closed since
      * `openTimeInISO` into an empty emitter, losing them on every subscription.
      */
-    const firstPoll = setTimeout(safePoll, 0);
-
-    this.#watchers.set(topicId, [firstPoll, interval]);
+    this.#watchers.set(topicId, [
+      setTimeout(
+        () =>
+          void poll()
+            .catch(() => undefined)
+            .finally(scheduleNext),
+        0
+      ),
+    ]);
 
     return topicId;
   }

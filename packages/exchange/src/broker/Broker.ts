@@ -279,7 +279,13 @@ export abstract class Broker extends EventEmitter {
   async estimateFee(
     pair: TradingPair,
     orderType: OrderType,
-    notional: Big
+    notional: Big,
+    /**
+     * The exact ticket, when the caller knows it. A rate applied to a notional does not need it,
+     * but a broker billing per share or with a per-order floor cannot recover the share count
+     * from a notional without assuming a price — so anyone who knows the real one says so.
+     */
+    _ticket?: {price?: Big; size?: Big}
   ): Promise<{commission: Big; currencyConversion: Big; total: Big; feeAsset: string}> {
     const rates = await this.getFeeRates(pair);
     const commission = notional.times(rates[orderType]);

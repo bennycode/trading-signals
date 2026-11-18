@@ -21,7 +21,7 @@ import type {TradingPair} from '../TradingPair.js';
 import {IbkrAPI} from './api/IbkrAPI.js';
 import {IbkrTimeInForce} from './api/schema/OrderSchema.js';
 import {IbkrBrokerMapper} from './IbkrBrokerMapper.js';
-import {createFillTopicId, startIbkrFillWatcher} from './IbkrFillWatcher.js';
+import {createFillTopicId, startIbkrFillWatcher, type IbkrFillWatcher} from './IbkrFillWatcher.js';
 import {estimateIbkrFee} from './IbkrFeeEstimate.js';
 import type {IbkrBrokerOptions} from './IbkrBrokerOptions.js';
 import {verifyIbkrSession} from './IbkrSession.js';
@@ -49,15 +49,30 @@ export class IbkrBroker extends Broker implements MarketDataSource {
   /** `getOpenOrders` polls this often when watching for fills. */
   static readonly ORDER_POLL_INTERVAL_MS = 5_000;
 
+  /** IBKR's page size for `/portfolio/{id}/positions/{page}`. */
+  static readonly POSITIONS_PER_PAGE = 30;
+
+  /** Enough pages for 3,000 holdings, past which a runaway loop is likelier than a real account. */
+  static readonly MAX_POSITION_PAGES = 100;
+
+  /** How many times to re-ask for the order list while IBKR reports it incomplete. */
+  static readonly SNAPSHOT_ATTEMPTS = 5;
+
+  static readonly SNAPSHOT_RETRY_MS = 250;
+
   readonly #api: IbkrAPI;
   readonly #overnight: boolean;
   readonly #timeInForce: typeof IbkrTimeInForce.DAY | typeof IbkrTimeInForce.GTC;
   readonly #marketData: MarketDataSource;
   readonly #conids: IbkrConidResolver;
   readonly #currencyByConid = new Map<number, string>();
-  readonly #orderWatchers = new Map<string, NodeJS.Timeout>();
+  readonly #orderWatchers = new Map<string, IbkrFillWatcher>();
   readonly #candleListenerByTopic = new Map<string, (candle: unknown) => void>();
-  #accountId?: string;
+  /** What the caller asked for, if anything; the settled id lives in `#accountIdPromise`. */
+  readonly #requestedAccountId?: string;
+
+  /** Shared so a concurrent burst of calls selects the account once rather than racing. */
+  #accountIdPromise?: Promise<string>;
   #accountCurrency?: string;
 
   constructor(options?: IbkrBrokerOptions) {
@@ -67,7 +82,7 @@ export class IbkrBroker extends Broker implements MarketDataSource {
     this.#marketData = options?.marketData ?? new IbkrMarketData({api: this.#api, conids: this.#conids});
     this.#overnight = options?.overnight ?? false;
     this.#timeInForce = options?.timeInForce ?? IbkrTimeInForce.GTC;
-    this.#accountId = options?.accountId;
+    this.#requestedAccountId = options?.accountId;
   }
 
   get api(): IbkrAPI {
@@ -104,18 +119,47 @@ export class IbkrBroker extends Broker implements MarketDataSource {
    * name one, because a session already knows which account it serves.
    */
   async getAccountId(): Promise<string> {
-    if (this.#accountId) {
-      return this.#accountId;
+    this.#accountIdPromise ??= this.#resolveAccountId();
+    return this.#accountIdPromise;
+  }
+
+  /**
+   * Settles which account this broker works on and makes the gateway agree.
+   *
+   * Placement, cancellation and balances all name the account in their path, but order monitoring
+   * reads whichever account the session has selected. Without this, a broker constructed with
+   * `{accountId: 'U2'}` against a session sitting on U1 places orders in U2 and reads U1's open
+   * orders — so `getOpenOrders` misses the order it just placed and `cancelOpenOrders` cancels
+   * nothing. The selection is verified rather than assumed, because a shared session can be moved
+   * by anyone else holding it.
+   */
+  async #resolveAccountId(): Promise<string> {
+    const accounts = await this.#api.getAccounts();
+    const requested = this.#requestedAccountId;
+
+    if (requested && !accounts.accounts.includes(requested)) {
+      throw new Error(
+        `The IBKR session does not serve account "${requested}". It has: ${accounts.accounts.join(', ') || '(none)'}.`
+      );
     }
 
-    const accounts = await this.#api.getAccounts();
-    const accountId = accounts.selectedAccount ?? accounts.accounts[0];
+    const accountId = requested ?? accounts.selectedAccount ?? accounts.accounts[0];
 
     if (!accountId) {
       throw new Error('The IBKR session reports no accounts.');
     }
 
-    this.#accountId = accountId;
+    if (accounts.selectedAccount !== accountId) {
+      await this.#api.selectAccount(accountId);
+
+      const reselected = await this.#api.getAccounts();
+      if (reselected.selectedAccount !== accountId) {
+        throw new Error(
+          `IBKR did not switch the session to account "${accountId}" (it reports "${reselected.selectedAccount ?? 'none'}" selected), so order monitoring would read a different account than orders are placed in.`
+        );
+      }
+    }
+
     return accountId;
   }
 
@@ -164,21 +208,95 @@ export class IbkrBroker extends Broker implements MarketDataSource {
     }
 
     const info = await this.#api.getContractInfoAndRules(key).catch(() => undefined);
-    const currency = info?.currency ?? fallback;
-    this.#currencyByConid.set(key, currency);
-    return currency;
+
+    /*
+     * Only a currency IBKR actually returned is cached. Storing the fallback would make one
+     * transient lookup failure permanent, labelling every later fill for this contract `F/EUR`
+     * instead of `F/USD` until the process restarts — exactly the mislabelling this method exists
+     * to prevent, and the same trap `IbkrConidResolver` already avoids.
+     */
+    if (info?.currency) {
+      this.#currencyByConid.set(key, info.currency);
+      return info.currency;
+    }
+
+    return fallback;
+  }
+
+  /**
+   * Every page of open positions. IBKR serves these 30 at a time, and stopping at the first page
+   * would report an account holding more than 30 instruments as if the rest were flat, which a
+   * strategy reads as "no position" and acts on.
+   */
+  async #getAllPositions() {
+    const accountId = await this.getAccountId();
+    const positions = [];
+
+    for (let pageId = 0; pageId < IbkrBroker.MAX_POSITION_PAGES; pageId++) {
+      const page = await this.#api.getPositions(accountId, pageId);
+      positions.push(...page);
+
+      if (page.length < IbkrBroker.POSITIONS_PER_PAGE) {
+        break;
+      }
+    }
+
+    return positions;
   }
 
   async listBalances(): Promise<Balance[]> {
     const accountId = await this.getAccountId();
-    const [ledger, positions] = await Promise.all([this.#api.getLedger(accountId), this.#api.getPositions(accountId)]);
+    const [ledger, positions] = await Promise.all([this.#api.getLedger(accountId), this.#getAllPositions()]);
     return IbkrBrokerMapper.toBalances(ledger, positions);
+  }
+
+  /**
+   * Ledger cash in the pair's currencies, which on a cross-currency IBKR account understates
+   * what can actually be spent.
+   *
+   * IBKR funds a USD trade from a EUR balance by converting on the fly, so a EUR-funded account
+   * can buy a US stock while its ledger reports no USD whatsoever and this reports a counter
+   * balance of zero. A caller sizing an order from that figure (`AdviceExecutor` does) skips the
+   * buy rather than using the account's real buying power.
+   *
+   * Deliberately not converted here. The ledger's per-currency `exchangerate` is the only rate on
+   * offer, an account holding one currency carries no entry for the other to read it from, and
+   * guessing the direction would overstate buying power by the square of the rate — which is how
+   * orders get rejected for insufficient funds. Converting needs a rate confirmed against a live
+   * cross-currency account, so until then this reports what the ledger says and says why.
+   */
+  override async getAvailableBalances(pair: TradingPair): Promise<{base: Big; counter: Big}> {
+    return super.getAvailableBalances(pair);
+  }
+
+  /**
+   * The live-order list, once IBKR says it is complete.
+   *
+   * `snapshot: false` means it is still assembling the list, and the schema says so. Treating
+   * that as authoritative returns an empty list while orders are working, which makes
+   * `cancelOpenOrders` report success having cancelled nothing and lets a session start blind to
+   * its own pending orders. Bounded, so a gateway that never settles fails loudly instead of
+   * spinning.
+   */
+  async #getCompleteLiveOrders() {
+    for (let attempt = 0; attempt < IbkrBroker.SNAPSHOT_ATTEMPTS; attempt++) {
+      const response = await this.#api.getLiveOrders();
+
+      if (response.snapshot !== false) {
+        return response.orders ?? [];
+      }
+
+      await new Promise(resolve => setTimeout(resolve, IbkrBroker.SNAPSHOT_RETRY_MS));
+    }
+
+    throw new Error(
+      `IBKR did not finish assembling its order list after ${IbkrBroker.SNAPSHOT_ATTEMPTS} attempts, so it cannot be told apart from an account with no open orders.`
+    );
   }
 
   async getOpenOrders(pair: TradingPair): Promise<PendingOrder[]> {
     const conid = await this.getConid(pair);
-    const response = await this.#api.getLiveOrders();
-    const orders = response.orders ?? [];
+    const orders = await this.#getCompleteLiveOrders();
 
     return orders
       .filter(order => Number(order.conid) === conid && IbkrBrokerMapper.isLiveOrder(order))
@@ -220,8 +338,17 @@ export class IbkrBroker extends Broker implements MarketDataSource {
   /**
    * IBKR splits a single order into one trade per execution, so the fills are merged back into
    * one: quantity-weighted average price, summed size and summed commission.
+   *
+   * Nothing is returned while the order is still working. A partially filled order already has
+   * executions in `getTrades()`, and reporting those as the fill would break the
+   * {@link Broker.getFillByOrderId} contract of `undefined` until an order is done — a caller
+   * would read a four-share order as filled on its first share.
    */
   async getFillByOrderId(pair: TradingPair, orderId: string): Promise<Fill | undefined> {
+    if (await this.#isStillWorking(orderId)) {
+      return undefined;
+    }
+
     const fills = (await this.getFills(pair)).filter(fill => fill.order_id === orderId);
 
     const first = fills[0];
@@ -248,6 +375,13 @@ export class IbkrBroker extends Broker implements MarketDataSource {
       price: size.gt(0) ? notional.div(size).toString() : first.price,
       size: size.toString(),
     };
+  }
+
+  /** Whether IBKR still lists the order as live, which is what makes its executions partial. */
+  async #isStillWorking(orderId: string): Promise<boolean> {
+    const orders = await this.#getCompleteLiveOrders();
+
+    return orders.some(order => String(order.orderId) === orderId && IbkrBrokerMapper.isLiveOrder(order));
   }
 
   async getTradingRules(pair: TradingPair): Promise<TradingRules> {
@@ -287,7 +421,8 @@ export class IbkrBroker extends Broker implements MarketDataSource {
     pair: TradingPair,
     /** Unused: IBKR bills the same commission whether the order is a limit or a market order. */
     _orderType: OrderType,
-    notional: Big
+    notional: Big,
+    ticket?: {price?: Big; size?: Big}
   ): Promise<{commission: Big; currencyConversion: Big; total: Big; feeAsset: string}> {
     return estimateIbkrFee({
       api: this.#api,
@@ -298,6 +433,7 @@ export class IbkrBroker extends Broker implements MarketDataSource {
         new Big((await this.#marketData.getLatestCandle(pair, IbkrBroker.SMALLEST_INTERVAL_MS)).close),
       notional,
       pair,
+      ticket,
     });
   }
 
@@ -333,27 +469,31 @@ export class IbkrBroker extends Broker implements MarketDataSource {
    * on every reconnect; polling the trades endpoint covers the same ground for a strategy that
    * places an order and waits for its fill. Only executions seen after subscribing are emitted,
    * so a fresh watcher does not replay the day's history as if it had just happened.
+   *
+   * One event per completed order, with its executions merged, rather than one per execution:
+   * see {@link startIbkrFillWatcher}.
    */
   async watchOrders(): Promise<string> {
     const topicId = createFillTopicId();
 
-    const timer = startIbkrFillWatcher({
+    const watcher = await startIbkrFillWatcher({
       api: this.#api,
       emit: fill => this.emit(topicId, fill),
       getFeeAsset: pair => this.getFeeAsset(pair),
       getQuoteCurrency: conid => this.#getQuoteCurrency(conid),
+      isStillWorking: orderId => this.#isStillWorking(orderId),
       pollIntervalMs: IbkrBroker.ORDER_POLL_INTERVAL_MS,
     });
 
-    this.#orderWatchers.set(topicId, timer);
+    this.#orderWatchers.set(topicId, watcher);
 
     return topicId;
   }
 
   unwatchOrders(topicId: string): void {
-    const timer = this.#orderWatchers.get(topicId);
-    if (timer) {
-      clearInterval(timer);
+    const watcher = this.#orderWatchers.get(topicId);
+    if (watcher) {
+      watcher.stop();
       this.#orderWatchers.delete(topicId);
     }
     this.removeAllListeners(topicId);
