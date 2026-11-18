@@ -25,13 +25,24 @@ export class TradingSession extends EventEmitter<TradingSessionEventMap> {
   readonly #pair;
   readonly #strategy;
 
+  /**
+   * Readings without an order on the book that still count it as working. One is the fill race; a
+   * second reading without it, and without a fill, says the book lost it for another reason.
+   */
+  static readonly #MISSED_READINGS_ALLOWED = 1;
+
   #state: TradingSessionState | null = null;
   /** The order currently on the book, so advice asking for that same order can keep it. */
   #workingOrder: PendingOrder | null = null;
-  /** Orders of ours the broker stopped listing once, which a second reading confirms are gone. */
-  readonly #missingFromBook = new Set<string>();
   #adviceExecutor: AdviceExecutor | null = null;
+  /**
+   * Orders of ours whose outcome is still unaccounted for, which a fill arriving late has to find
+   * to be worth anything: it carries the price that was paid or received. An order is dropped from
+   * here only once its outcome is known — its fill was handled, or the broker confirmed the cancel.
+   */
   readonly #pendingOrders = new Map<string, PendingOrder>();
+  /** Readings of the broker's book in a row that have not listed a pending order of ours. */
+  readonly #missedReadings = new Map<string, number>();
   #candleTopicId: string | null = null;
   #orderTopicId: string | null = null;
   #running = false;
@@ -112,7 +123,7 @@ export class TradingSession extends EventEmitter<TradingSessionEventMap> {
 
     this.#running = false;
     this.#pendingOrders.clear();
-    this.#missingFromBook.clear();
+    this.#missedReadings.clear();
     this.#workingOrder = null;
     this.#state = null;
     this.#adviceExecutor = null;
@@ -189,7 +200,7 @@ export class TradingSession extends EventEmitter<TradingSessionEventMap> {
         await this.#strategy.onFill(fill, this.#state);
       }
 
-      this.#pendingOrders.delete(fill.order_id);
+      this.#forget(fill.order_id);
       this.emit('orderFilled', pending);
     } catch (error) {
       this.emit('error', error instanceof Error ? error : new Error(String(error)));
@@ -212,7 +223,7 @@ export class TradingSession extends EventEmitter<TradingSessionEventMap> {
       return;
     }
 
-    if (this.#pendingOrders.size > 0) {
+    if (this.#ordersStillWorking().length > 0) {
       /*
        * Only forget orders that were actually canceled. Any pending order missing
        * from the canceled list filled before our cancel reached the exchange —
@@ -220,7 +231,7 @@ export class TradingSession extends EventEmitter<TradingSessionEventMap> {
        */
       const canceledIds = await this.#broker.cancelOpenOrders(this.#pair);
       for (const orderId of canceledIds) {
-        this.#pendingOrders.delete(orderId);
+        this.#forget(orderId);
       }
       this.#workingOrder = null;
     }
@@ -261,16 +272,17 @@ export class TradingSession extends EventEmitter<TradingSessionEventMap> {
       this.#broker.getOpenOrders(this.#pair),
     ]);
     const balances = sessionBalances(rawBalances, this.#pair);
-    this.#forgetOrdersThatLeftTheBook(openOrders);
-    const ours = [...this.#pendingOrders.values()];
+    this.#countMissedReadings(openOrders);
+    const ours = this.#ordersStillWorking();
 
     return {
       ...balances,
       /*
-       * Answered from this session's own unresolved orders, not from the broker's book. Someone
-       * else's resting order is no reason to leave a holding unguarded, and an order of ours that
-       * has left the book may still have a fill on its way: until that fill is in, the position
-       * it explains is this session's to account for.
+       * Answered from this session's own orders, not from the broker's book: someone else's
+       * resting order is no reason to leave a holding unguarded. An order that has left the book
+       * still counts for a reading or two, because a filled order leaves the book at the same
+       * moment its notification is sent, and reading that gap as "nothing of ours is working"
+       * would let a position be adopted that our own fill is about to explain.
        */
       hasOutstandingBuy: ours.some(order => order.side === OrderSide.BUY),
       hasOutstandingSell: ours.some(order => order.side === OrderSide.SELL),
@@ -278,29 +290,38 @@ export class TradingSession extends EventEmitter<TradingSessionEventMap> {
     };
   }
 
-  /**
-   * Drops an order of ours that the broker has stopped listing and never reported a fill for.
-   * Trading212's day orders expire overnight, and anyone can cancel one in the broker's own
-   * interface; an order remembered forever would block adoption forever with it.
-   *
-   * Two readings are needed before forgetting one, because the first can race its fill: an order
-   * that filled leaves the book at the same moment its notification is sent.
-   */
-  #forgetOrdersThatLeftTheBook(openOrders: readonly PendingOrder[]): void {
+  #countMissedReadings(openOrders: readonly PendingOrder[]): void {
     const onTheBook = new Set(openOrders.map(order => order.id));
 
     for (const id of this.#pendingOrders.keys()) {
       if (onTheBook.has(id)) {
-        this.#missingFromBook.delete(id);
-        continue;
+        this.#missedReadings.delete(id);
+      } else {
+        this.#missedReadings.set(id, (this.#missedReadings.get(id) ?? 0) + 1);
       }
-      if (this.#missingFromBook.has(id)) {
-        this.#pendingOrders.delete(id);
-        this.#missingFromBook.delete(id);
-        continue;
-      }
-      this.#missingFromBook.add(id);
     }
+  }
+
+  /**
+   * The orders of ours that can still do something. An order the broker has stopped listing is one
+   * of them for another reading, because the book loses a filled order at the same moment its
+   * notification is sent; past that it is treated as no longer working, since Trading212's day
+   * orders expire overnight and anyone can cancel one in the broker's own interface, and an order
+   * counted as working forever would block adoption forever with it.
+   *
+   * It is still remembered for its fill, which is a separate question from whether it is working:
+   * a delayed notification has to find its order to report the price it traded at.
+   */
+  #ordersStillWorking(): PendingOrder[] {
+    return [...this.#pendingOrders]
+      .filter(([id]) => (this.#missedReadings.get(id) ?? 0) <= TradingSession.#MISSED_READINGS_ALLOWED)
+      .map(([, order]) => order);
+  }
+
+  /** Drops an order whose outcome is now known, so nothing is waiting for a fill that cannot come. */
+  #forget(orderId: string): void {
+    this.#pendingOrders.delete(orderId);
+    this.#missedReadings.delete(orderId);
   }
 
   /** The state fields a snapshot of the broker decides, which every state build shares. */

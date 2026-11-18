@@ -424,6 +424,99 @@ describe('TradingSession', {concurrent: false}, () => {
     });
   });
 
+  describe('an order that leaves the book', () => {
+    const restingSell: PendingLimitOrder = {
+      id: 'order-1',
+      pair,
+      price: '253.00',
+      side: OrderSide.SELL,
+      size: '1',
+      type: OrderType.LIMIT,
+    };
+    const advice: OrderAdvice = {
+      amount: '1',
+      amountIn: 'base',
+      price: new Big('253'),
+      side: OrderSide.SELL,
+      type: OrderType.LIMIT,
+    };
+
+    /** Places the order, feeds the book readings given one candle each, and answers the last state. */
+    async function placeThenRead(...books: PendingLimitOrder[][]) {
+      strategy.onCandle.mockResolvedValue(advice);
+      await session.start();
+
+      exchange.emit('candle-topic-1', sampleCandle);
+      await vi.waitFor(() => expect(exchange.placeLimitOrder).toHaveBeenCalledTimes(1));
+
+      let candles = 1;
+      for (const book of books) {
+        exchange.getOpenOrders.mockResolvedValue(book);
+        exchange.emit('candle-topic-1', sampleCandle);
+        candles += 1;
+        await vi.waitFor(() => expect(strategy.onCandle).toHaveBeenCalledTimes(candles));
+      }
+
+      return callArgs(strategy.onCandle, candles - 1)[1];
+    }
+
+    it('is still working after one reading without it', async () => {
+      const state = await placeThenRead([restingSell], []);
+
+      expect(
+        state.hasOutstandingSell,
+        'a filled order leaves the book at the moment its notification is sent, so one absence proves nothing'
+      ).toBe(true);
+    });
+
+    it('is working again when the next reading lists it', async () => {
+      const state = await placeThenRead([], [restingSell], []);
+
+      expect(state.hasOutstandingSell, 'the absence was a gap in the book, not the end of the order').toBe(true);
+    });
+
+    it('stops working once a second reading in a row has not listed it', async () => {
+      const state = await placeThenRead([], []);
+
+      expect(
+        state.hasOutstandingSell,
+        'a day order expires overnight and anyone can cancel one by hand, which no fill will ever explain'
+      ).toBe(false);
+    });
+
+    it('still reports a fill that arrives after it stopped working', async () => {
+      /*
+       * The advice keeps matching, so once the first order is written off a replacement goes out.
+       * Giving that one an id of its own leaves the late fill recognisable only if the order it
+       * belongs to is still remembered.
+       */
+      exchange.placeLimitOrder.mockResolvedValueOnce(restingSell).mockResolvedValue({...restingSell, id: 'order-2'});
+
+      await placeThenRead([], [], []);
+
+      const onOrderFilled = vi.fn();
+      session.on('orderFilled', onOrderFilled);
+
+      const lateFill: Fill = {...sampleFill, order_id: 'order-1', side: OrderSide.SELL};
+      exchange.emit('order-topic-1', lateFill);
+
+      await vi.waitFor(() => expect(onOrderFilled).toHaveBeenCalledTimes(1));
+      expect(
+        strategy.onFill,
+        'the notification carries the price it sold at, which is lost if the order is not recognised'
+      ).toHaveBeenCalledWith(lateFill, expect.anything());
+    });
+
+    it('is not kept as the order a repeated advice can rest on', async () => {
+      await placeThenRead([]);
+
+      expect(
+        exchange.placeLimitOrder,
+        'the advice still matches, but the order it was placed for is not on the book to work for it'
+      ).toHaveBeenCalledTimes(2);
+    });
+  });
+
   describe('fill handling', () => {
     it('updates state when matching fill arrives', async () => {
       const advice: OrderAdvice = {
