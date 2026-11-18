@@ -1,6 +1,6 @@
 import Big from 'big.js';
 import {describe, expect, it} from 'vitest';
-import {adoptedPosition, afterExitFill, emptyLedger} from './ledger.js';
+import {adoptedPosition, afterExitFill, emptyLedger, resizedToOwned} from './ledger.js';
 
 const MINIMUM = new Big('0.01');
 
@@ -29,6 +29,32 @@ describe('afterExitFill', () => {
 
   it('has nothing to do for a sell while flat', () => {
     expect(afterExitFill(emptyLedger(), {price: new Big('120'), receivedSize: new Big('1')}, MINIMUM)).toBeNull();
+  });
+});
+
+describe('resizedToOwned', () => {
+  const holding = {...emptyLedger(), costBasis: '1000', size: '10'};
+  const close = new Big('120');
+
+  it('has nothing to do while the holding is the size it is tracked at', () => {
+    expect(resizedToOwned(holding, new Big('10'), close)).toBeNull();
+  });
+
+  it('keeps the entry price of what is left of a holding sold into', () => {
+    const next = resizedToOwned(holding, new Big('4'), close);
+
+    expect(next?.size).toBe('4');
+    expect(next?.costBasis, 'the part still held was bought at 100, whatever the price is today').toBe('400');
+  });
+
+  it('follows a holding that was topped up outside the strategy', () => {
+    const next = resizedToOwned(holding, new Big('12'), close);
+
+    expect(next?.size, 'a threshold per unit divides by the size, so an untracked top-up exits late').toBe('12');
+    expect(
+      next?.costBasis,
+      'the two units that appeared are priced where they were found, as an adopted position is'
+    ).toBe('1240');
   });
 });
 

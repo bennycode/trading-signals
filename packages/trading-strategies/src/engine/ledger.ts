@@ -1,5 +1,7 @@
 import Big from 'big.js';
 import {z} from 'zod';
+import {getFilledBaseAmount, OrderSide} from '@typedtrader/exchange';
+import type {Fill} from '@typedtrader/exchange';
 
 const bigString = z.string().refine(value => {
   try {
@@ -87,6 +89,16 @@ export function afterEntryFill(
 }
 
 /**
+ * What a fill of ours makes of the ledger, whichever side it was on. The size received is not the
+ * size executed: a fee taken in the asset leaves fewer units than were bought.
+ */
+export function afterFill(ledger: Ledger, fill: Fill, minimumSize: Big): Partial<Ledger> | null {
+  const sizes = {executedSize: new Big(fill.size), price: new Big(fill.price), receivedSize: getFilledBaseAmount(fill)};
+
+  return fill.side === OrderSide.BUY ? afterEntryFill(ledger, sizes) : afterExitFill(ledger, sizes, minimumSize);
+}
+
+/**
  * An exit fill. A partial exit keeps the entry price it was measured against, so the rest of the
  * position is still judged against what it cost rather than against what this exit got.
  */
@@ -131,17 +143,26 @@ export function closedPosition(ledger: Ledger, price: Big, final: boolean): Part
 }
 
 /**
- * A tracked position brought down to what is actually owned, or nothing when it already matches.
- * A holding can be reduced without a fill of ours — sold by hand, rebalanced — and a threshold
- * measured per unit would then divide what the position cost by a size that is no longer there.
- * The entry price is kept, because the part still held was bought at it.
+ * A tracked position brought in line with what is actually owned, or nothing when it already
+ * matches. A holding can change without a fill of ours — sold by hand, topped up, rebalanced —
+ * and a threshold measured per unit would then divide what the position cost by a size that is
+ * not there: too small a size exits late, too large a one exits early.
+ *
+ * What is still held was bought at the entry price it was tracked with, so a reduction keeps it.
+ * Units that appeared are priced at `price`, the same anchor a position adopted whole gets, since
+ * no fill of ours says what was paid for them.
  */
-export function resizedToOwned(ledger: Ledger, owned: Big): Partial<Ledger> | null {
+export function resizedToOwned(ledger: Ledger, owned: Big, price: Big): Partial<Ledger> | null {
   const tracked = new Big(ledger.size);
-  if (tracked.lte(0) || owned.gte(tracked)) {
+  if (tracked.lte(0) || owned.eq(tracked)) {
     return null;
   }
 
-  const entryPrice = new Big(ledger.costBasis).div(tracked);
-  return {costBasis: entryPrice.mul(owned).toFixed(), size: owned.toFixed()};
+  if (owned.lt(tracked)) {
+    const entryPrice = new Big(ledger.costBasis).div(tracked);
+    return {costBasis: entryPrice.mul(owned).toFixed(), size: owned.toFixed()};
+  }
+
+  const added = owned.minus(tracked);
+  return {costBasis: new Big(ledger.costBasis).plus(added.mul(price)).toFixed(), size: owned.toFixed()};
 }

@@ -1,4 +1,5 @@
 import Big from 'big.js';
+import type {BigSource} from 'big.js';
 import {OrderSide} from '@typedtrader/exchange';
 import type {PendingOrder, TradingRules} from '@typedtrader/exchange';
 import {applyPrecision} from './applyPrecision.js';
@@ -17,6 +18,19 @@ function samePrice(advice: OrderAdvice, order: PendingOrder, rules: TradingRules
     return wanted === offered;
   }
   return wanted.eq(offered);
+}
+
+/**
+ * What the advice actually went to the book as. A sell is never offered above the holding, so a
+ * rule asking for more than is owned has an order for the holding instead, and comparing it
+ * against the rule's own number would find a difference in every candle it rests through.
+ */
+function cappedByHolding(advice: OrderAdvice, amount: BigSource, ownedBase: Big): Big {
+  const requested = new Big(amount);
+  if (advice.side !== OrderSide.SELL || advice.amountIn !== 'base') {
+    return requested;
+  }
+  return requested.gt(ownedBase) ? ownedBase : requested;
 }
 
 /**
@@ -62,5 +76,5 @@ export function sameOrder(
   }
 
   const increment = advice.amountIn === 'base' ? rules.base_increment : rules.counter_increment;
-  return applyPrecision(new Big(advice.amount), increment).eq(new Big(order.size));
+  return applyPrecision(cappedByHolding(advice, advice.amount, ownedBase), increment).eq(new Big(order.size));
 }

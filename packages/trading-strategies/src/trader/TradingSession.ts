@@ -11,7 +11,6 @@ import type {SessionBalances} from './sessionBalances.js';
 type BrokerSnapshot = SessionBalances & {
   hasOutstandingBuy: boolean;
   hasOutstandingSell: boolean;
-  openOrders: PendingOrder[];
 };
 import type {
   OrderAdvice,
@@ -26,14 +25,19 @@ export class TradingSession extends EventEmitter<TradingSessionEventMap> {
   readonly #strategy;
 
   /**
-   * Readings without an order on the book that still count it as working. One is the fill race; a
-   * second reading without it, and without a fill, says the book lost it for another reason.
+   * How long an order the book has stopped listing still counts as working. A filled order leaves
+   * the book when it fills, which is before its fill is reported: Trading212 polls fills once a
+   * minute, so anything shorter than that would read a fill on its way as an order that is gone.
    */
-  static readonly #MISSED_READINGS_ALLOWED = 1;
+  static readonly #FILL_REPORT_GRACE_IN_MS = 2 * ONE_MINUTE_IN_MS;
 
   #state: TradingSessionState | null = null;
-  /** The order currently on the book, so advice asking for that same order can keep it. */
-  #workingOrder: PendingOrder | null = null;
+  /**
+   * The orders of ours the broker's book listed when it was last read, so advice asking for one
+   * of them can keep it. Read from the book rather than remembered from placing, because a
+   * session that restarts onto its own resting orders never placed them.
+   */
+  #ordersOnTheBook: readonly PendingOrder[] = [];
   #adviceExecutor: AdviceExecutor | null = null;
   /**
    * Orders of ours whose outcome is still unaccounted for, which a fill arriving late has to find
@@ -41,8 +45,10 @@ export class TradingSession extends EventEmitter<TradingSessionEventMap> {
    * here only once its outcome is known — its fill was handled, or the broker confirmed the cancel.
    */
   readonly #pendingOrders = new Map<string, PendingOrder>();
-  /** Readings of the broker's book in a row that have not listed a pending order of ours. */
-  readonly #missedReadings = new Map<string, number>();
+  /** When a pending order of ours was first found missing from the book, by candle time. */
+  readonly #missingSince = new Map<string, number>();
+  /** The candle the session is on, which is the clock the fill-report grace is measured by. */
+  #candleTime: number | null = null;
   #candleTopicId: string | null = null;
   #orderTopicId: string | null = null;
   #running = false;
@@ -123,14 +129,34 @@ export class TradingSession extends EventEmitter<TradingSessionEventMap> {
 
     this.#running = false;
     this.#pendingOrders.clear();
-    this.#missedReadings.clear();
-    this.#workingOrder = null;
+    this.#missingSince.clear();
+    this.#candleTime = null;
+    this.#ordersOnTheBook = [];
     this.#state = null;
     this.#adviceExecutor = null;
     this.emit('stopped');
   }
 
-  readonly #onCandle = async (candle: Candle | BatchedCandle): Promise<void> => {
+  /**
+   * Candles and fills are handled one at a time, in the order they arrive. An event emitter does
+   * not wait for an async listener, so two candles arriving while the broker is answering would
+   * otherwise be in flight at once: whichever reply came back first would feed its candle to the
+   * indicators, and either could place an order against the balance the other had read.
+   */
+  #work: Promise<void> = Promise.resolve();
+
+  #inTurn(task: () => Promise<void>): Promise<void> {
+    // Both arms run the next task, so one that rejects cannot leave the queue refusing its turn.
+    this.#work = this.#work.then(task, task);
+    return this.#work;
+  }
+
+  readonly #onCandle = (candle: Candle | BatchedCandle): Promise<void> =>
+    this.#inTurn(() => this.#handleCandle(candle));
+
+  readonly #onFill = (fill: Fill): Promise<void> => this.#inTurn(() => this.#handleFill(fill));
+
+  async #handleCandle(candle: Candle | BatchedCandle): Promise<void> {
     try {
       const batchedCandle = CandleBatcher.isBatchedCandle(candle) ? candle : CandleBatcher.toBatchedCandle(candle);
       if (!CandleBatcher.isOneMinuteCandle(batchedCandle)) {
@@ -140,6 +166,7 @@ export class TradingSession extends EventEmitter<TradingSessionEventMap> {
         );
       }
       this.emit('candle', batchedCandle);
+      this.#candleTime = batchedCandle.openTimeInMillis;
 
       /*
        * Read before every candle rather than only after our own orders and fills. A strategy
@@ -150,13 +177,6 @@ export class TradingSession extends EventEmitter<TradingSessionEventMap> {
        * state per candle for the same reason.
        */
       const snapshot = await this.#snapshot();
-      /*
-       * An order this session placed can leave the book without a fill of ours: Trading212's day
-       * orders expire overnight, and anyone can cancel one in the broker's own interface. The
-       * advice it was placed for is then not working any more, however well it is remembered.
-       */
-      const stillOpen = snapshot.openOrders.find(order => order.id === this.#workingOrder?.id);
-      this.#workingOrder = stillOpen ?? null;
 
       // The session may have been stopped while the broker was answering.
       if (!this.#state) {
@@ -173,16 +193,16 @@ export class TradingSession extends EventEmitter<TradingSessionEventMap> {
     } catch (error) {
       this.emit('error', error instanceof Error ? error : new Error(String(error)));
     }
-  };
+  }
 
-  readonly #onFill = async (fill: Fill): Promise<void> => {
+  async #handleFill(fill: Fill): Promise<void> {
     try {
       const pending = this.#pendingOrders.get(fill.order_id);
       if (!this.#state || !pending) {
         return;
       }
 
-      this.#workingOrder = null;
+      this.#ordersOnTheBook = this.#ordersOnTheBook.filter(order => order.id !== fill.order_id);
       this.emit('fill', fill);
 
       const snapshot = await this.#snapshot();
@@ -205,7 +225,7 @@ export class TradingSession extends EventEmitter<TradingSessionEventMap> {
     } catch (error) {
       this.emit('error', error instanceof Error ? error : new Error(String(error)));
     }
-  };
+  }
 
   async #executeAdvice(advice: OrderAdvice): Promise<void> {
     /*
@@ -214,12 +234,13 @@ export class TradingSession extends EventEmitter<TradingSessionEventMap> {
      * of the exchange's queue each time and report a trade the user has already been told about,
      * so an order that is already working for this advice is left alone.
      */
-    const working = this.#workingOrder;
-    if (
-      working &&
-      this.#state &&
-      sameOrder(advice, working, {ownedBase: ownedBase(this.#state), rules: this.#state.tradingRules})
-    ) {
+    const state = this.#state;
+    const resting =
+      state &&
+      this.#ordersOnTheBook.find(order =>
+        sameOrder(advice, order, {ownedBase: ownedBase(state), rules: state.tradingRules})
+      );
+    if (resting) {
       return;
     }
 
@@ -233,14 +254,14 @@ export class TradingSession extends EventEmitter<TradingSessionEventMap> {
       for (const orderId of canceledIds) {
         this.#forget(orderId);
       }
-      this.#workingOrder = null;
+      this.#ordersOnTheBook = [];
     }
 
     const outcome = await this.#adviceExecutor!.execute(advice);
 
     if (outcome.status === 'PLACED') {
       this.#pendingOrders.set(outcome.order.id, outcome.order);
-      this.#workingOrder = outcome.order;
+      this.#ordersOnTheBook = [outcome.order];
       if (advice.reason) {
         this.#strategy.onMessage?.(advice.reason);
       }
@@ -272,7 +293,8 @@ export class TradingSession extends EventEmitter<TradingSessionEventMap> {
       this.#broker.getOpenOrders(this.#pair),
     ]);
     const balances = sessionBalances(rawBalances, this.#pair);
-    this.#countMissedReadings(openOrders);
+    this.#noteOrdersMissingFromBook(openOrders);
+    this.#ordersOnTheBook = openOrders.filter(order => this.#pendingOrders.has(order.id));
     const ours = this.#ordersStillWorking();
 
     return {
@@ -286,42 +308,45 @@ export class TradingSession extends EventEmitter<TradingSessionEventMap> {
        */
       hasOutstandingBuy: ours.some(order => order.side === OrderSide.BUY),
       hasOutstandingSell: ours.some(order => order.side === OrderSide.SELL),
-      openOrders,
     };
   }
 
-  #countMissedReadings(openOrders: readonly PendingOrder[]): void {
+  #noteOrdersMissingFromBook(openOrders: readonly PendingOrder[]): void {
     const onTheBook = new Set(openOrders.map(order => order.id));
 
     for (const id of this.#pendingOrders.keys()) {
       if (onTheBook.has(id)) {
-        this.#missedReadings.delete(id);
-      } else {
-        this.#missedReadings.set(id, (this.#missedReadings.get(id) ?? 0) + 1);
+        this.#missingSince.delete(id);
+      } else if (this.#candleTime !== null && !this.#missingSince.has(id)) {
+        this.#missingSince.set(id, this.#candleTime);
       }
     }
   }
 
   /**
-   * The orders of ours that can still do something. An order the broker has stopped listing is one
-   * of them for another reading, because the book loses a filled order at the same moment its
-   * notification is sent; past that it is treated as no longer working, since Trading212's day
-   * orders expire overnight and anyone can cancel one in the broker's own interface, and an order
-   * counted as working forever would block adoption forever with it.
+   * The orders of ours that can still do something. An order the broker has stopped listing goes
+   * on counting until its fill has had time to be reported, and is treated as no longer working
+   * after that: Trading212's day orders expire overnight and anyone can cancel one in the broker's
+   * own interface, and an order counted as working forever would block adoption forever with it.
    *
    * It is still remembered for its fill, which is a separate question from whether it is working:
    * a delayed notification has to find its order to report the price it traded at.
    */
   #ordersStillWorking(): PendingOrder[] {
+    const now = this.#candleTime;
+
     return [...this.#pendingOrders]
-      .filter(([id]) => (this.#missedReadings.get(id) ?? 0) <= TradingSession.#MISSED_READINGS_ALLOWED)
+      .filter(([id]) => {
+        const since = this.#missingSince.get(id);
+        return since === undefined || now === null || now - since < TradingSession.#FILL_REPORT_GRACE_IN_MS;
+      })
       .map(([, order]) => order);
   }
 
   /** Drops an order whose outcome is now known, so nothing is waiting for a fill that cannot come. */
   #forget(orderId: string): void {
     this.#pendingOrders.delete(orderId);
-    this.#missedReadings.delete(orderId);
+    this.#missingSince.delete(orderId);
   }
 
   /** The state fields a snapshot of the broker decides, which every state build shares. */

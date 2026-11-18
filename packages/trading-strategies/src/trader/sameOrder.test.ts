@@ -72,6 +72,17 @@ describe('sameOrder', () => {
     );
   });
 
+  it('is the same order when a sell for more than is held became an order for the holding', () => {
+    expect(
+      sameOrder(limitSell('10'), restingSell('5'), context('5')),
+      'a sell is never offered above the holding, so this is what the rule asking for 10 placed'
+    ).toBe(true);
+  });
+
+  it('is a different order when the holding it was capped to has changed', () => {
+    expect(sameOrder(limitSell('10'), restingSell('5'), context('7'))).toBe(false);
+  });
+
   describe('selling everything', () => {
     it('is the same order while the position is still the quantity resting', () => {
       expect(sameOrder(limitSell(AllAvailableAmount), restingSell('1'), context('1'))).toBe(true);

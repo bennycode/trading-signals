@@ -18,7 +18,7 @@ export type PositionChange = {
 };
 
 /**
- * ponytail: the entry price of a position this strategy did not open is taken from the candle it
+ * TODO: the entry price of a position this strategy did not open is taken from the candle it
  * first sees, so percentage rules measure from attach time rather than from what was actually
  * paid. Read `avg_entry_price` off the broker position once `TradingSessionState` carries it.
  */
@@ -39,13 +39,17 @@ function adoption(ledger: Ledger, state: TradingSessionState, candle: OneMinuteB
   return {adopted: true, final: false, patch: adoptedPosition(candle, ownedBase(state))};
 }
 
-/** A holding that was reduced without a fill of ours, which its thresholds have to follow. */
-function reduction(ledger: Ledger, state: TradingSessionState): PositionChange | null {
-  if (state.hasOutstandingSell) {
+/** A holding that changed size without a fill of ours, which its thresholds have to follow. */
+function resize(ledger: Ledger, state: TradingSessionState, candle: OneMinuteBatchedCandle): PositionChange | null {
+  /*
+   * An order of ours is still working, so this size may be its doing and its fill will account
+   * for it: following the balance now would count the same trade twice.
+   */
+  if (state.hasOutstandingSell || state.hasOutstandingBuy) {
     return null;
   }
 
-  const patch = resizedToOwned(ledger, ownedBase(state));
+  const patch = resizedToOwned(ledger, ownedBase(state), candle.close);
   return patch ? {adopted: false, final: false, patch} : null;
 }
 
@@ -55,7 +59,7 @@ export function heldPositionChange(
   state: TradingSessionState,
   candle: OneMinuteBatchedCandle
 ): PositionChange | null {
-  return adoption(ledger, state, candle) ?? reduction(ledger, state);
+  return adoption(ledger, state, candle) ?? resize(ledger, state, candle);
 }
 
 /**

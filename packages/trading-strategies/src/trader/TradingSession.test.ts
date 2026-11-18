@@ -198,6 +198,38 @@ describe('TradingSession', {concurrent: false}, () => {
       expect(state.lastOrderSide).toBe(OrderSide.BUY);
     });
 
+    it('hands candles to the strategy in the order they arrived', async () => {
+      /*
+       * Two candles arrive while the broker is answering the first one's balance read. Nothing
+       * awaits an event listener, so without a queue of its own the session would judge whichever
+       * read came back first — feeding the indicators a later candle before an earlier one.
+       */
+      const second: Candle = {
+        ...sampleCandle,
+        close: '260.00',
+        openTimeInMillis: sampleCandle.openTimeInMillis + 60_000,
+      };
+
+      await session.start();
+
+      let answered = 0;
+      exchange.listBalances.mockImplementation(async () => {
+        answered += 1;
+        // The first candle's read is the slow one, so answering in order would reverse the candles.
+        await new Promise(resolve => setTimeout(resolve, answered === 1 ? 40 : 0));
+        return balanceSnapshot('10', '5000');
+      });
+
+      exchange.emit('candle-topic-1', sampleCandle);
+      exchange.emit('candle-topic-1', second);
+      await vi.waitFor(() => expect(strategy.onCandle).toHaveBeenCalledTimes(2));
+
+      expect(
+        strategy.onCandle.mock.calls.map(([candle]) => candle.close.toFixed()),
+        'the strategy sees the earlier candle first, however long its balance read took'
+      ).toStrictEqual(['253', '260']);
+    });
+
     it('emits candle event', async () => {
       const onCandle = vi.fn();
       session.on('candle', onCandle);
@@ -441,18 +473,28 @@ describe('TradingSession', {concurrent: false}, () => {
       type: OrderType.LIMIT,
     };
 
-    /** Places the order, feeds the book readings given one candle each, and answers the last state. */
+    /**
+     * Places the order, then feeds the book readings given, one minute-candle each, and answers
+     * the state the last of them was judged on. Each candle moves the clock the grace is measured
+     * by, which is what makes "has its fill had time to arrive" a question about elapsed time.
+     */
     async function placeThenRead(...books: PendingLimitOrder[][]) {
       strategy.onCandle.mockResolvedValue(advice);
       await session.start();
 
-      exchange.emit('candle-topic-1', sampleCandle);
+      const minute = (index: number): Candle => ({
+        ...sampleCandle,
+        openTimeInISO: new Date(sampleCandle.openTimeInMillis + index * 60_000).toISOString(),
+        openTimeInMillis: sampleCandle.openTimeInMillis + index * 60_000,
+      });
+
+      exchange.emit('candle-topic-1', minute(0));
       await vi.waitFor(() => expect(exchange.placeLimitOrder).toHaveBeenCalledTimes(1));
 
       let candles = 1;
       for (const book of books) {
         exchange.getOpenOrders.mockResolvedValue(book);
-        exchange.emit('candle-topic-1', sampleCandle);
+        exchange.emit('candle-topic-1', minute(candles));
         candles += 1;
         await vi.waitFor(() => expect(strategy.onCandle).toHaveBeenCalledTimes(candles));
       }
@@ -460,12 +502,12 @@ describe('TradingSession', {concurrent: false}, () => {
       return callArgs(strategy.onCandle, candles - 1)[1];
     }
 
-    it('is still working after one reading without it', async () => {
+    it('is still working while its fill could still be reported', async () => {
       const state = await placeThenRead([restingSell], []);
 
       expect(
         state.hasOutstandingSell,
-        'a filled order leaves the book at the moment its notification is sent, so one absence proves nothing'
+        'a filled order leaves the book when it fills, which is before its fill is reported'
       ).toBe(true);
     });
 
@@ -475,13 +517,22 @@ describe('TradingSession', {concurrent: false}, () => {
       expect(state.hasOutstandingSell, 'the absence was a gap in the book, not the end of the order').toBe(true);
     });
 
-    it('stops working once a second reading in a row has not listed it', async () => {
-      const state = await placeThenRead([], []);
+    it('stops working once its fill has had time to be reported', async () => {
+      const state = await placeThenRead([], [], []);
 
       expect(
         state.hasOutstandingSell,
         'a day order expires overnight and anyone can cancel one by hand, which no fill will ever explain'
       ).toBe(false);
+    });
+
+    it('is still working when two readings fall inside the same fill-report window', async () => {
+      const state = await placeThenRead([], []);
+
+      expect(
+        state.hasOutstandingSell,
+        'two readings a minute apart say nothing about a broker that reports fills once a minute'
+      ).toBe(true);
     });
 
     it('still reports a fill that arrives after it stopped working', async () => {
@@ -492,7 +543,7 @@ describe('TradingSession', {concurrent: false}, () => {
        */
       exchange.placeLimitOrder.mockResolvedValueOnce(restingSell).mockResolvedValue({...restingSell, id: 'order-2'});
 
-      await placeThenRead([], [], []);
+      await placeThenRead([], [], [], []);
 
       const onOrderFilled = vi.fn();
       session.on('orderFilled', onOrderFilled);
@@ -505,6 +556,23 @@ describe('TradingSession', {concurrent: false}, () => {
         strategy.onFill,
         'the notification carries the price it sold at, which is lost if the order is not recognised'
       ).toHaveBeenCalledWith(lateFill, expect.anything());
+    });
+
+    it('keeps a restored order that the first advice asks for again', async () => {
+      /*
+       * A session that restarts onto its own resting order never placed it, so the only thing that
+       * says it is working for this advice is the broker's book.
+       */
+      exchange.getOpenOrders.mockResolvedValue([restingSell]);
+      strategy.onCandle.mockResolvedValue(advice);
+
+      await session.start();
+
+      exchange.emit('candle-topic-1', sampleCandle);
+      await vi.waitFor(() => expect(strategy.onCandle).toHaveBeenCalledTimes(1));
+
+      expect(exchange.placeLimitOrder, 'the order it would place is already on the book').not.toHaveBeenCalled();
+      expect(exchange.cancelOpenOrders, 'and it is not cancelled to be replaced by its twin').not.toHaveBeenCalled();
     });
 
     it('is not kept as the order a repeated advice can rest on', async () => {

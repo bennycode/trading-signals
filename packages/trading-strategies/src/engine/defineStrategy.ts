@@ -1,7 +1,7 @@
 import Big from 'big.js';
 import {ms, type StringValue} from 'ms';
 import type {z} from 'zod';
-import {CandleBatcher, getFilledBaseAmount, OrderSide} from '@typedtrader/exchange';
+import {CandleBatcher, OrderSide} from '@typedtrader/exchange';
 import type {BatchedCandle, Fill, MarketDataSource, OneMinuteBatchedCandle, TradingPair} from '@typedtrader/exchange';
 import {holdsPosition} from '../trader/sessionBalances.js';
 import {adviceFor, plannedOrder} from './advice.js';
@@ -10,7 +10,8 @@ import {notices} from './notices.js';
 import {gonePositionChange, heldPositionChange} from './position.js';
 import {firstMatch, judgeCrossings, refuseShadowedRules, timeframeOf} from './matching.js';
 import {warmUpFromHistory} from './warmUp.js';
-import {afterEntryFill, afterExitFill, emptyLedger, LedgerSchema, type Ledger} from './ledger.js';
+import {restoredLedger} from './legacyLedger.js';
+import {afterFill, emptyLedger, type Ledger} from './ledger.js';
 import type {OrderAdvice, TradingSessionState} from '../trader/index.js';
 import type {MarketType} from '../strategy/MarketType.js';
 import {Strategy} from '../strategy/Strategy.js';
@@ -123,18 +124,17 @@ function build<
     }
 
     /**
-     * A snapshot this engine did not write cannot be read: the classes these strategies replace
-     * each persisted their own shape (a peak price, a tripped kill switch, a `bought` flag), and
-     * none of it maps onto the ledger. Starting from an empty ledger is safe — the position is
-     * re-adopted from the balance on the next candle — but it does lose a ratcheted trail and the
-     * entry price a percentage threshold was measured from, so it is reported rather than assumed.
+     * A snapshot written by one of the strategy classes this engine replaces is translated into a
+     * ledger, because the decisions in it cannot be taken again: a kill switch that fired, the
+     * position it was measured against, a `bought` flag that is the whole of BuyOnce. Anything
+     * else is replaced by an empty ledger, which is safe — the position is re-adopted from the
+     * balance on the next candle — but loses a ratcheted trail, so it is reported rather than
+     * assumed.
      */
     override restoreState(persisted: Record<string, unknown>): void {
-      const parsed = LedgerSchema.safeParse(persisted);
-      if (!parsed.success && Object.keys(persisted).length > 0) {
-        this.#stateWasReset = true;
-      }
-      super.restoreState(parsed.success ? parsed.data : emptyLedger());
+      const {ledger, wasReset} = restoredLedger(persisted);
+      this.#stateWasReset = wasReset;
+      super.restoreState(ledger);
     }
 
     /**
@@ -212,6 +212,17 @@ function build<
 
       // A strategy that ended on a terminal exit stays flat for good.
       if (this.#ledger.lastExitFinal) {
+        return;
+      }
+
+      /*
+       * The balance holds nothing, and yet the ledger still does: a sale of ours has gone through
+       * at the broker and its fill has not been reported, which on Trading212 takes up to a minute.
+       * Buying here would open a position between the sale and the fill that explains it — on the
+       * candle after a stop fired, which is the one thing a kill switch promises cannot happen —
+       * and the entry would then be averaged into a position that was already sold.
+       */
+      if (new Big(this.#ledger.size).gt(0) || this.#ledger.pendingFinalExit !== null) {
         return;
       }
 
@@ -354,22 +365,13 @@ function build<
     }
 
     async onFill(fill: Fill, state: TradingSessionState): Promise<void> {
-      const ledger = this.#ledger;
-      const fillPrice = new Big(fill.price);
-      const fillSizes = {executedSize: new Big(fill.size), price: fillPrice, receivedSize: getFilledBaseAmount(fill)};
-
-      if (fill.side === OrderSide.BUY) {
-        this.setState<Ledger>(afterEntryFill(ledger, fillSizes));
+      const patch = afterFill(this.#ledger, fill, new Big(state.tradingRules.base_min_size));
+      if (!patch) {
         return;
       }
+      this.setState<Ledger>(patch);
 
-      const exited = afterExitFill(ledger, fillSizes, new Big(state.tradingRules.base_min_size));
-      if (!exited) {
-        return;
-      }
-      this.setState<Ledger>(exited);
-
-      if (exited.lastExitFinal) {
+      if (patch.lastExitFinal) {
         await this.onFinish?.();
       }
     }
