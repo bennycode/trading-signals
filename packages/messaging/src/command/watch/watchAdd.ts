@@ -28,7 +28,7 @@ export const watchAdd = async (request: string, userId: string): Promise<WatchRe
     };
   }
 
-  const [pairPart, accountIdStr, interval, thresholdStr] = parts;
+  const [pairPart = '', accountIdStr = '', interval = '', thresholdStr = ''] = parts;
 
   const threshold = parseThreshold(thresholdStr);
   if (!threshold) {

@@ -3,7 +3,12 @@ export class SimplifiedHttpError extends Error {
   readonly data: unknown;
   readonly url: string;
 
-  constructor(params: {status: number | undefined; statusText?: string; data: unknown; url?: string}) {
+  constructor(params: {
+    status: number | undefined;
+    statusText?: string | undefined;
+    data: unknown;
+    url?: string | undefined;
+  }) {
     const status = params.status ?? 0;
     const statusText = params.statusText ?? 'Unknown Error';
     const url = params.url ?? 'Unknown URL';

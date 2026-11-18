@@ -61,10 +61,10 @@ describe('MAMA', () => {
       const first = results[0];
       const last = results[results.length - 1];
 
-      expect(first.mama.toFixed(4)).toBe('85.3643');
-      expect(first.fama.toFixed(2)).toBe('81.88');
-      expect(last.mama.toFixed(4)).toBe('110.1116');
-      expect(last.fama.toFixed(2)).toBe('108.82');
+      expect(first?.mama.toFixed(4)).toBe('85.3643');
+      expect(first?.fama.toFixed(2)).toBe('81.88');
+      expect(last?.mama.toFixed(4)).toBe('110.1116');
+      expect(last?.fama.toFixed(2)).toBe('108.82');
     });
 
     it('matches a line-by-line port of the TA-Lib reference implementation bar for bar', () => {
@@ -120,8 +120,8 @@ describe('MAMA', () => {
         if (result) {
           verifiedBars++;
           const expected = expectations[i - offset];
-          expect(result.mama.toFixed(8)).toBe(expected.mama);
-          expect(result.fama.toFixed(8)).toBe(expected.fama);
+          expect(result.mama.toFixed(8)).toBe(expected?.mama);
+          expect(result.fama.toFixed(8)).toBe(expected?.fama);
         }
       });
 
@@ -147,10 +147,10 @@ describe('MAMA', () => {
       const first = results[0];
       const last = results[results.length - 1];
 
-      expect(first.mama.toFixed(8)).toBe('86.16493452');
-      expect(first.fama.toFixed(8)).toBe('84.88020055');
-      expect(last.mama.toFixed(8)).toBe('84.77229582');
-      expect(last.fama.toFixed(8)).toBe('85.61075332');
+      expect(first?.mama.toFixed(8)).toBe('86.16493452');
+      expect(first?.fama.toFixed(8)).toBe('84.88020055');
+      expect(last?.mama.toFixed(8)).toBe('84.77229582');
+      expect(last?.fama.toFixed(8)).toBe('85.61075332');
     });
 
     it('follows a slow swing whose cycle is longer than the measurable 50-bar band', () => {
@@ -174,8 +174,8 @@ describe('MAMA', () => {
 
       const last = results[results.length - 1];
 
-      expect(last.mama.toFixed(8)).toBe('81.12254429');
-      expect(last.fama.toFixed(8)).toBe('80.37168933');
+      expect(last?.mama.toFixed(8)).toBe('81.12254429');
+      expect(last?.fama.toFixed(8)).toBe('80.37168933');
     });
 
     it('pins both averages inside the corridor their smoothing limits allow', () => {

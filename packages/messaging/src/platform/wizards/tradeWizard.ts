@@ -34,7 +34,12 @@ function tradeCommandShape(name: TradeCommandName): TradeCommandShape {
   }
 }
 
-function buildTradeActionLabel(cmd: TradeCommandName, pair: TradingPair, quantity: string, limitPrice?: string) {
+function buildTradeActionLabel(
+  cmd: TradeCommandName,
+  pair: TradingPair,
+  quantity: string,
+  limitPrice?: string | undefined
+) {
   const {isLimit, side} = tradeCommandShape(cmd);
   const sideLabel = side === OrderSide.BUY ? 'BUY' : 'SELL';
   const kindLabel = isLimit ? 'LIMIT' : 'MARKET';
@@ -51,7 +56,7 @@ export interface TradeArgs {
   pairStr: string;
   quantity: string;
   /** Undefined for market orders, positive-number string for limit orders. */
-  limitPrice?: string;
+  limitPrice?: string | undefined;
 }
 
 /**
@@ -76,7 +81,7 @@ export async function parseTradeCommandInput(ctx: Context, cmd: TradeCommandName
     return null;
   }
 
-  const [pairStr, quantity, priceInput] = parts;
+  const [pairStr = '', quantity = '', priceInput = ''] = parts;
 
   try {
     TradingPair.fromString(pairStr, ',');

@@ -72,7 +72,9 @@ describe('getAccountBrokerClient', () => {
       apiSecret: 'alp-secret',
       usePaperTrading: false,
     });
-    const [, options] = getBrokerClientMock.mock.calls[0];
+    const [firstCall] = getBrokerClientMock.mock.calls;
+    assert.exists(firstCall);
+    const [, options] = firstCall;
     expect(options?.marketData).toBeInstanceOf(AlpacaMarketDataMock);
   });
 

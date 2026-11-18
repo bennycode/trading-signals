@@ -469,7 +469,7 @@ describe('TelegramPlatform', () => {
     function buildCtx(text: string): Context {
       return {
         message: {
-          entities: [{length: text.split(' ')[0].length, offset: 0, type: 'bot_command'}],
+          entities: [{length: (text.split(' ')[0] ?? text).length, offset: 0, type: 'bot_command'}],
           text,
         },
       } as unknown as Context;

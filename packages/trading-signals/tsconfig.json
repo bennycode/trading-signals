@@ -1,3 +1,14 @@
 {
+  "compilerOptions": {
+    /*
+     * The indicator math reads its sliding windows by index, and which indices are there is
+     * guaranteed by each indicator's warm-up count rather than by anything the compiler can see.
+     * Turning these on here means roughly two hundred and thirty of those reads, each of which
+     * wants either a guard stating that contract or a shared read helper on a hot path — a
+     * decision about this library, not a mechanical change, so it is made on its own.
+     */
+    "exactOptionalPropertyTypes": false,
+    "noUncheckedIndexedAccess": false
+  },
   "extends": "../../tsconfig.lib.json"
 }

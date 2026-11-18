@@ -17,7 +17,7 @@ export function getBrokerClient(
      * Market-data source. Required when the broker has none of its own (Trading212);
      * optional for brokers that bring one (Alpaca uses its own AlpacaMarketData by default).
      */
-    marketData?: MarketDataSource;
+    marketData?: MarketDataSource | undefined;
   }
 ): Broker & MarketDataSource {
   switch (account.exchangeId) {

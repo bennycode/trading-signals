@@ -36,7 +36,10 @@ export function makeAccountAddWizard() {
 
     const exchangeCb = await conversation.waitForCallbackQuery(EXCHANGES.map(n => `accountadd:ex:${n}`));
     await exchangeCb.answerCallbackQuery();
-    const exchange = typeof exchangeCb.match === 'string' ? exchangeCb.match.split(':')[2] : EXCHANGES[0];
+    // The buttons only offer the brokers this bot knows, so the pick is one of them.
+    const [defaultExchange = 'alpaca'] = EXCHANGES;
+    const picked = typeof exchangeCb.match === 'string' ? exchangeCb.match.split(':')[2] : undefined;
+    const exchange = picked ?? defaultExchange;
 
     await exchangeCb.editMessageText(
       `Broker: ${exchange}\nChoose account mode:`,
@@ -92,8 +95,8 @@ export function makeAccountAddWizard() {
         dataSourceAccounts.map(candidate => `accountadd:mds:${candidate.id}`)
       );
       await dataSourceCb.answerCallbackQuery();
-      marketDataAccountId =
-        typeof dataSourceCb.match === 'string' ? Number(dataSourceCb.match.split(':')[2]) : dataSourceAccounts[0].id;
+      const pickedSource = typeof dataSourceCb.match === 'string' ? dataSourceCb.match.split(':')[2] : undefined;
+      marketDataAccountId = pickedSource === undefined ? (dataSourceAccounts[0]?.id ?? null) : Number(pickedSource);
 
       await dataSourceCb.editMessageText(
         `Broker: ${exchange}\nMode: ${isPaper ? 'Paper' : 'Live'}\n\nSend a name for this account:`

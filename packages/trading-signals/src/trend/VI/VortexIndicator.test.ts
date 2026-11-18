@@ -114,8 +114,8 @@ describe('VortexIndicator', () => {
         if (result) {
           verifiedBars++;
           const expected = expectations[i - offset];
-          expect(result.minus.toFixed(4)).toBe(expected.minus);
-          expect(result.plus.toFixed(4)).toBe(expected.plus);
+          expect(result.minus.toFixed(4)).toBe(expected?.minus);
+          expect(result.plus.toFixed(4)).toBe(expected?.plus);
         }
       });
 

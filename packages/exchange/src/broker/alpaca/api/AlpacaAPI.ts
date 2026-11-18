@@ -100,7 +100,7 @@ export class AlpacaAPI {
   }
 
   /** @see https://docs.alpaca.markets/reference/stocklatestbars */
-  async getStockBarsLatest(params: {feed?: string; symbols: string}) {
+  async getStockBarsLatest(params: {feed?: string | undefined; symbols: string}) {
     const response = await this.#marketDataClient.get('/v2/stocks/bars/latest', {params});
     return LatestBarsResponseSchema.parse(response.data);
   }
@@ -118,11 +118,11 @@ export class AlpacaAPI {
      * nothing when omitted, so comparing prices across time wants
      * {@link AlpacaAPI.CONTINUOUS_PRICE_ADJUSTMENT}, while reconciling a fill wants `raw`.
      */
-    adjustment?: string;
+    adjustment?: string | undefined;
     end: string;
-    feed?: string;
+    feed?: string | undefined;
     limit: number;
-    page_token?: string;
+    page_token?: string | undefined;
     start: string;
     symbols: string;
     timeframe: string;
@@ -132,7 +132,7 @@ export class AlpacaAPI {
   }
 
   /** @see https://docs.alpaca.markets/reference/stocksnapshots-1 */
-  async getStockSnapshots(params: {feed?: string; symbols: string}) {
+  async getStockSnapshots(params: {feed?: string | undefined; symbols: string}) {
     const response = await this.#marketDataClient.get('/v2/stocks/snapshots', {params});
     return SnapshotsResponseSchema.parse(response.data);
   }
@@ -141,7 +141,7 @@ export class AlpacaAPI {
   async getCryptoBars(params: {
     end: string;
     limit: number;
-    page_token?: string;
+    page_token?: string | undefined;
     start: string;
     symbols: string;
     timeframe: string;
@@ -179,10 +179,10 @@ export class AlpacaAPI {
    */
   async postOrder(params: {
     client_order_id: string;
-    extended_hours?: boolean;
-    limit_price?: string;
-    notional?: string;
-    qty?: string;
+    extended_hours?: boolean | undefined;
+    limit_price?: string | undefined;
+    notional?: string | undefined;
+    qty?: string | undefined;
     side: string;
     symbol: string;
     time_in_force: string;

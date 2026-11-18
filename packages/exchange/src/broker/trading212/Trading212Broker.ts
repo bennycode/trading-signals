@@ -57,7 +57,7 @@ export class Trading212Broker extends Broker implements MarketDataSource {
   static readonly ORDER_POLL_INTERVAL_MS = 60_000;
 
   readonly #api: Trading212API;
-  #instruments?: Promise<Awaited<ReturnType<Trading212API['getInstruments']>>>;
+  #instruments?: Promise<Awaited<ReturnType<Trading212API['getInstruments']>>> | undefined;
   readonly #orderWatchers = new Map<string, NodeJS.Timeout>();
   readonly #orderStoppers = new Map<string, () => void>();
   readonly #marketData: MarketDataSource;
