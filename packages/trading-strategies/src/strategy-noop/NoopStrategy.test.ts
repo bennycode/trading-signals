@@ -30,6 +30,7 @@ function createState(): TradingSessionState {
       [OrderType.LIMIT]: new Big('0.001'),
       [OrderType.MARKET]: new Big('0.002'),
     },
+    hasOutstandingOrder: false,
     tradingRules: {
       base_increment: '0.01',
       base_max_size: '10000',

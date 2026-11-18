@@ -55,10 +55,16 @@ export const emptyLedger = (): Ledger => ({
   size: '0',
 });
 
-/** What a position adopted from the balance starts out as, since no fill of ours described it. */
-export function adoptedPosition(candle: {close: Big; high: Big}, size: Big): Partial<Ledger> {
+/**
+ * What a position adopted from the balance starts out as, since no fill of ours described it.
+ *
+ * The anchor is the close rather than the high: the high happened before this strategy was
+ * holding anything, and treating it as the best price seen would put a trailing stop's target
+ * below a price the position never had — enough to sell it on the very candle it attached.
+ */
+export function adoptedPosition(candle: {close: Big}, size: Big): Partial<Ledger> {
   return {
-    bestPrice: candle.high.toFixed(),
+    bestPrice: candle.close.toFixed(),
     costBasis: candle.close.mul(size).toFixed(),
     size: size.toFixed(),
   };
@@ -84,14 +90,24 @@ export function afterEntryFill(
  * An exit fill. A partial exit keeps the entry price it was measured against, so the rest of the
  * position is still judged against what it cost rather than against what this exit got.
  */
-export function afterExitFill(ledger: Ledger, fill: {price: Big; receivedSize: Big}): Partial<Ledger> | null {
+export function afterExitFill(
+  ledger: Ledger,
+  fill: {price: Big; receivedSize: Big},
+  minimumSize: Big
+): Partial<Ledger> | null {
   const size = new Big(ledger.size);
   if (size.lte(0)) {
     return null;
   }
 
+  /*
+   * Selling everything is rounded down to the exchange's increment, which can leave a remainder
+   * too small to ever sell again. Treating that dust as a position still held would hold a
+   * terminal exit open and let the next candle's close, rather than this fill, stand as the price
+   * the position left at.
+   */
   const remaining = size.minus(fill.receivedSize);
-  if (remaining.gt(0)) {
+  if (remaining.gte(minimumSize)) {
     return {
       costBasis: new Big(ledger.costBasis).div(size).mul(remaining).toFixed(),
       size: remaining.toFixed(),

@@ -41,6 +41,27 @@ describe('StrategyRegistry', () => {
     ).toThrow();
   });
 
+  it('lets a flat setting win over the nested one it replaced', () => {
+    const strategy = createStrategy('@typedtrader/strategy-buy-once', {
+      protected: {stopLossPct: '5'},
+      stopLossPct: '10',
+    });
+
+    expect(
+      strategy.config?.stopLossPct,
+      'a config edited since the settings moved keeps the newer, top-level answer'
+    ).toBe('10');
+  });
+
+  it('refuses a stored config that is not an object at all', () => {
+    for (const broken of [[], 'bad', false, 42]) {
+      expect(
+        () => createStrategy('@typedtrader/strategy-buy-once', broken),
+        `${JSON.stringify(broken)} has to fail validation rather than read as "use the defaults"`
+      ).toThrow();
+    }
+  });
+
   it('exports settings the config UI can render as JSON Schema', () => {
     let checked = 0;
 

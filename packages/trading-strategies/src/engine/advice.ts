@@ -41,9 +41,17 @@ export function adviceFor(
   }
 
   if (side === OrderSide.BUY) {
-    // A base-denominated market buy needs an explicit quantity, which `OpenRule` enforces.
+    if (sizing === 'all') {
+      /*
+       * Sizing a market buy in base means naming a quantity: there is no price yet to turn a cash
+       * amount into one. `OpenRule` asks for that quantity, but `'all'` is a string like any other
+       * to the type system, so it can still arrive here — and ordering nothing would look like a
+       * rule that simply chose not to fire.
+       */
+      throw new Error("A market buy sized in the base asset needs a quantity, not 'all'");
+    }
     return {
-      amount: new Big(sizing === 'all' ? 0 : sizing),
+      amount: new Big(sizing),
       amountIn: 'base',
       reason: because,
       side: OrderSide.BUY,

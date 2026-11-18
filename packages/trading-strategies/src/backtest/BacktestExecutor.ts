@@ -164,7 +164,11 @@ export class BacktestExecutor {
 
   async #buildState(pair: TradingPair, tradingRules: TradingRules, feeRates: FeeRate): Promise<TradingSessionState> {
     const {broker: exchange} = this.#config;
-    const [rawBalances, fills] = await Promise.all([exchange.listBalances(), exchange.getFills(pair)]);
+    const [rawBalances, fills, openOrders] = await Promise.all([
+      exchange.listBalances(),
+      exchange.getFills(pair),
+      exchange.getOpenOrders(pair),
+    ]);
     const balances = sessionBalances(rawBalances, pair);
     const lastOrderSide = fills[0]?.side;
 
@@ -173,6 +177,7 @@ export class BacktestExecutor {
       baseBalanceOnHold: balances.baseOnHold,
       counterBalance: balances.counter,
       feeRates,
+      hasOutstandingOrder: openOrders.length > 0,
       lastOrderSide,
       tradingRules,
     };

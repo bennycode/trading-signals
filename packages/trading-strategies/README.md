@@ -155,7 +155,7 @@ Buys once and then stays silent. Supports two modes depending on whether `buyAt`
 | `quantity: "10"` | Buy exactly 10 units of the base asset      |
 | `spend: "500"`   | Spend exactly 500 units of counter currency |
 
-Every strategy offers the stop-loss and take-profit kill switches as settings of its own (see [Protected](./src/strategy-protected/README.md) for all of them):
+Most strategies offer the stop-loss and take-profit kill switches as settings of their own (see [Protected](./src/strategy-protected/README.md) for all of them). `SmaCrossover` and `TrailingStop` do not: the first has no protective rule, and the second _is_ one. Setting a kill switch on either has no effect.
 
 ```json
 {

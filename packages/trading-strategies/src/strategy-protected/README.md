@@ -2,7 +2,7 @@
 
 A strategy that is nothing but **kill switches**: a stop-loss and a take-profit, and no entry rule at all. It protects a position it did not open — bought by hand, by another strategy, or carried across a restart — and once it has sold, there is nothing that could buy back in.
 
-The same two switches are available to any strategy: extend `ProtectionSchema` and add the `protection()` rule, which is what every strategy in this package does.
+The same two switches are available to any strategy: extend `ProtectionSchema` and add the `protection()` rule, which is what most strategies in this package do. The exceptions are `SmaCrossover`, which offers no kill switch, and `TrailingStop`, which is one.
 
 ```ts
 import {defineStrategy, protection, ProtectionSchema} from '@typedtrader/trading-strategies';

@@ -84,6 +84,13 @@ export interface TradingSessionState {
    */
   readonly baseBalanceOnHold: Big;
   readonly counterBalance: Big;
+  /**
+   * Whether an order of ours is still on the book. A balance can show a purchase before its fill
+   * notification arrives — Trading212 polls fills once a minute — and a strategy that adopted it
+   * as a position found lying around would then count the same purchase again when the fill
+   * finally lands.
+   */
+  readonly hasOutstandingOrder: boolean;
   readonly lastOrderSide?: OrderSide | undefined;
   readonly tradingRules: TradingRules;
   readonly feeRates: FeeRate;

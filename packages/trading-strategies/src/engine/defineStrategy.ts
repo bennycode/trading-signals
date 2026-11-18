@@ -90,12 +90,7 @@ function build<
 
   type Slot = 'close' | 'open';
 
-  refuseShadowedRules({
-    closeRules,
-    hasOpenSlot: definition.long.open !== undefined,
-    name: definition.name,
-    openRules,
-  });
+  refuseShadowedRules({closeRules, name: definition.name, openRules});
 
   return class EngineStrategy extends Strategy {
     static override NAME = definition.name;
@@ -103,6 +98,8 @@ function build<
     static schema = config;
 
     readonly #config: ParsedConfig;
+    /** Set when a snapshot this engine could not read was replaced, to report once a relay exists. */
+    #stateWasReset = false;
     readonly #indicators: Map<string, IndicatorHandle<unknown>>;
     /** One batcher per timeframe any rule declared, so a rule can be evaluated per bar. */
     readonly #ruleBatchers = new Map<StringValue, CandleBatcher>(
@@ -140,10 +137,7 @@ function build<
     override restoreState(persisted: Record<string, unknown>): void {
       const parsed = LedgerSchema.safeParse(persisted);
       if (!parsed.success && Object.keys(persisted).length > 0) {
-        this.onMessage?.(
-          `${definition.name}: the saved state could not be read and was reset. The position is adopted from the ` +
-            `current balance, so a percentage threshold now measures from the price it attaches at.`
-        );
+        this.#stateWasReset = true;
       }
       super.restoreState(parsed.success ? parsed.data : emptyLedger());
     }
@@ -154,6 +148,19 @@ function build<
      * candles to learn them. Declarations asking for the same bars share one request.
      */
     override async init(market: Pick<MarketDataSource, 'getRecentCandles'>, pair: TradingPair): Promise<void> {
+      /*
+       * Reported from here rather than from `restoreState`, which runs before a session exists to
+       * relay anything: the runtime restores a strategy's state and only then wires up its
+       * messages, so a notice sent any earlier reaches nobody.
+       */
+      if (this.#stateWasReset) {
+        this.onMessage?.(
+          `${definition.name}: the saved state could not be read and was reset. The position is adopted from the ` +
+            `current balance, so a percentage threshold now measures from the price it attaches at.`
+        );
+        this.#stateWasReset = false;
+      }
+
       await warmUpFromHistory({
         declarations: definition.indicators ?? {},
         handles: this.#indicators,
@@ -172,8 +179,15 @@ function build<
       const holding = holdsPosition(state);
 
       if (holding) {
-        this.#openPositionIfUntracked(candle, state);
-        this.#ratchetBestPrice(candle);
+        /*
+         * The high of the candle a position is adopted on belongs to a time before this strategy
+         * held anything, so it is not a best price it saw. Ratcheting to it would put a trailing
+         * target below a price the position never had — far enough, on a candle that ran up and
+         * closed back down, to sell it the moment it attached.
+         */
+        if (!this.#openPositionIfUntracked(candle, state)) {
+          this.#ratchetBestPrice(candle);
+        }
       } else {
         await this.#forgetPositionThatIsGone(candle);
       }
@@ -307,12 +321,22 @@ function build<
      * first sees, so percentage rules measure from attach time rather than from what was actually
      * paid. Read `avg_entry_price` off the broker position once `TradingSessionState` carries it.
      */
-    #openPositionIfUntracked(candle: OneMinuteBatchedCandle, state: TradingSessionState): void {
+    /** Whether a position was adopted, which is what tells the caller this candle was not held. */
+    #openPositionIfUntracked(candle: OneMinuteBatchedCandle, state: TradingSessionState): boolean {
       if (new Big(this.#ledger.size).gt(0)) {
-        return;
+        return false;
+      }
+
+      /*
+       * An order of ours is still working, so this balance may be its doing. Its fill will account
+       * for it; adopting it now would count the same purchase twice.
+       */
+      if (state.hasOutstandingOrder) {
+        return false;
       }
 
       this.setState<Ledger>(adoptedPosition(candle, ownedBase(state)));
+      return true;
     }
 
     #ratchetBestPrice(candle: OneMinuteBatchedCandle): void {
@@ -345,7 +369,7 @@ function build<
       }
     }
 
-    async onFill(fill: Fill, _state: TradingSessionState): Promise<void> {
+    async onFill(fill: Fill, state: TradingSessionState): Promise<void> {
       const ledger = this.#ledger;
       const fillPrice = new Big(fill.price);
       const fillSizes = {executedSize: new Big(fill.size), price: fillPrice, receivedSize: getFilledBaseAmount(fill)};
@@ -355,7 +379,7 @@ function build<
         return;
       }
 
-      const exited = afterExitFill(ledger, fillSizes);
+      const exited = afterExitFill(ledger, fillSizes, new Big(state.tradingRules.base_min_size));
       if (!exited) {
         return;
       }

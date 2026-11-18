@@ -139,21 +139,20 @@ export function firstMatch<F>(options: {
  */
 export function refuseShadowedRules<F>(options: {
   closeRules: readonly CloseRule<F>[];
-  hasOpenSlot: boolean;
   name: string;
   openRules: readonly OpenRule<F>[];
 }): void {
-  const {closeRules, hasOpenSlot, name, openRules} = options;
-  const alwaysIndex = [...openRules, ...closeRules].findIndex(rule => rule.when === 'always');
-  const bothSlotsFilled = openRules.length > 0 && closeRules.length > 0;
+  const {closeRules, name, openRules} = options;
 
-  if (alwaysIndex === -1 || bothSlotsFilled) {
-    return;
-  }
-
-  const list = hasOpenSlot ? openRules : closeRules;
-  if (alwaysIndex < list.length - 1) {
-    throw new Error(`${name}: rule with when: 'always' shadows the rule below it`);
+  for (const rules of [openRules, closeRules]) {
+    /*
+     * Only a rule judged on every candle can be counted on to match: one with a timeframe of its
+     * own is skipped while its bar is still open, which gives the rules under it their turn.
+     */
+    const index = rules.findIndex(rule => rule.when === 'always' && rule.timeframe === undefined);
+    if (index !== -1 && index < rules.length - 1) {
+      throw new Error(`${name}: rule with when: 'always' shadows the rule below it`);
+    }
   }
 }
 

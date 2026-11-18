@@ -66,6 +66,7 @@ export class TradingSession extends EventEmitter<TradingSessionEventMap> {
       baseBalanceOnHold: balances.baseOnHold,
       counterBalance: balances.counter,
       feeRates,
+      hasOutstandingOrder: this.#pendingOrders.size > 0,
       lastOrderSide,
       tradingRules,
     };
@@ -134,6 +135,7 @@ export class TradingSession extends EventEmitter<TradingSessionEventMap> {
         baseBalance: balances.base,
         baseBalanceOnHold: balances.baseOnHold,
         counterBalance: balances.counter,
+        hasOutstandingOrder: this.#pendingOrders.size > 0,
       };
 
       const advice = await this.#strategy.onCandle(batchedCandle, this.#state);
@@ -163,6 +165,7 @@ export class TradingSession extends EventEmitter<TradingSessionEventMap> {
         baseBalance: balances.base,
         baseBalanceOnHold: balances.baseOnHold,
         counterBalance: balances.counter,
+        hasOutstandingOrder: this.#pendingOrders.size > 0,
         lastOrderSide: fill.side,
       };
 
@@ -221,6 +224,7 @@ export class TradingSession extends EventEmitter<TradingSessionEventMap> {
       baseBalance: balances.base,
       baseBalanceOnHold: balances.baseOnHold,
       counterBalance: balances.counter,
+      hasOutstandingOrder: this.#pendingOrders.size > 0,
     };
 
     if (outcome.status === 'SKIPPED') {

@@ -20,13 +20,14 @@ function isRecord(value: unknown): value is Record<string, unknown> {
  * the strategy itself, so both shapes are read and a flat setting wins over a nested one.
  *
  * An absent config becomes an empty one, so a strategy that needs a setting reports that setting
- * as missing rather than reporting the whole config as the wrong type.
+ * as missing rather than reporting the whole config as the wrong type. Anything else is handed on
+ * untouched: a stored `[]` or `"bad"` has to fail the strategy's schema, not be read as "default".
  */
-function settingsOf(config: unknown): Record<string, unknown> {
-  if (!isRecord(config)) {
+function settingsOf(config: unknown): unknown {
+  if (config === undefined || config === null) {
     return {};
   }
-  if (!isRecord(config.protected)) {
+  if (!isRecord(config) || !isRecord(config.protected)) {
     return config;
   }
   const {protected: nested, ...flat} = config;

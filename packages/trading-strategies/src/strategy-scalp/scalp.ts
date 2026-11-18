@@ -93,8 +93,13 @@ export const Scalp = defineStrategy(ScalpSchema)({
     close: [
       ...protection<Settings>(),
       {
+        /*
+         * Priced off what the position cost per unit held rather than off the fill price: a fee
+         * taken in the base asset leaves fewer units than were paid for, and this leg has to clear
+         * what they cost to be worth selling.
+         */
         because: ({offset, position}) =>
-          `Scalp sell: fill ${required(position, 'position').entryPrice.toFixed(2)} + offset ${offset.toFixed(2)}`,
+          `Scalp sell: cost ${required(position, 'position').entryPrice.toFixed(2)} + offset ${offset.toFixed(2)}`,
         limit: ({offset, position}) => required(position, 'position').entryPrice.plus(offset),
         quantity: 'all',
         when: 'always',

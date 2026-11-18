@@ -1,4 +1,5 @@
 import Big from 'big.js';
+import {OrderPosition} from '@typedtrader/exchange';
 import type {Balance, TradingPair} from '@typedtrader/exchange';
 import type {TradingSessionState} from './TradingSessionTypes.js';
 
@@ -27,12 +28,18 @@ export interface SessionBalances {
  */
 export function sessionBalances(balances: readonly Balance[], pair: TradingPair): SessionBalances {
   const of = (currency: string) => balances.find(balance => balance.currency === currency);
-  const base = of(pair.base);
   const counter = of(pair.counter);
+  const base = of(pair.base);
+  /*
+   * Brokers report a short as a positive quantity with the side alongside it. The rules are
+   * long-only, and a long rule let loose on a short would sell to "protect" a position that
+   * selling makes larger, so a short counts as nothing to this session.
+   */
+  const long = base?.position === OrderPosition.SHORT ? undefined : base;
 
   return {
-    base: new Big(base?.available ?? 0),
-    baseOnHold: new Big(base?.hold ?? 0),
+    base: new Big(long?.available ?? 0),
+    baseOnHold: new Big(long?.hold ?? 0),
     counter: new Big(counter?.available ?? 0),
   };
 }

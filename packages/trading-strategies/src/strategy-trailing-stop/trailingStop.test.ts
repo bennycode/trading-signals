@@ -88,6 +88,52 @@ describe('TrailingStop', () => {
     expect(finishedCount, 'the runtime is told to tear the session down once').toBe(1);
   });
 
+  it('attaches at the pivot instead of selling on the candle it arrived on', async () => {
+    /*
+     * The candle it attaches on ran up to 120 before closing at 100. That high belongs to a time
+     * when this strategy held nothing, so taking it as the best price seen would put the target at
+     * 108 and sell the position immediately — at the pivot the user named, the target is 90.
+     */
+    const [attachCandle] = candlesAt(['100']);
+    const runUp = batched({...required(attachCandle, 'attach candle'), high: '120'});
+    const strategy = new TrailingStop({pivotPrice: '100', trailDownPct: '10'});
+
+    const advice = await strategy.onCandle(runUp, {
+      baseBalance: new Big('1'),
+      baseBalanceOnHold: new Big(0),
+      counterBalance: new Big(0),
+      feeRates: {[OrderType.LIMIT]: new Big(0), [OrderType.MARKET]: new Big(0)},
+      hasOutstandingOrder: false,
+      tradingRules: {...AlpacaBroker.DEFAULT_FRACTIONAL_TRADING_RULES, pair: tradingPair},
+    });
+
+    expect(strategy.ledger.bestPrice, 'the anchor is where the position was found, not the run-up').toBe('100');
+    expect(advice, 'so a 10% trail sits at 90 and nothing is sold').toBeUndefined();
+  });
+
+  it('leaves a balance alone while an order of its own is still working', async () => {
+    /*
+     * A balance can show a purchase before its fill notification arrives. Adopting it as a
+     * position found lying around would count the same purchase again once the fill lands.
+     */
+    const strategy = new TrailingStop({trailDownPct: '10'});
+    const [candle] = candlesAt(['100']);
+    const state = (hasOutstandingOrder: boolean): TradingSessionState => ({
+      baseBalance: new Big('1'),
+      baseBalanceOnHold: new Big(0),
+      counterBalance: new Big(0),
+      feeRates: {[OrderType.LIMIT]: new Big(0), [OrderType.MARKET]: new Big(0)},
+      hasOutstandingOrder,
+      tradingRules: {...AlpacaBroker.DEFAULT_FRACTIONAL_TRADING_RULES, pair: tradingPair},
+    });
+
+    await strategy.onCandle(batched(required(candle, 'candle')), state(true));
+    expect(strategy.ledger.size, 'the pending order will account for it').toBe('0');
+
+    await strategy.onCandle(batched(required(candle, 'candle')), state(false));
+    expect(strategy.ledger.size, 'and once nothing is in flight the position is adopted').toBe('1');
+  });
+
   it('stops for good when the position it guarded is sold by someone else', async () => {
     /*
      * A position that disappears without the trail firing — sold by hand, rebalanced away — leaves
@@ -105,6 +151,7 @@ describe('TrailingStop', () => {
       baseBalanceOnHold: new Big(0),
       counterBalance: new Big(0),
       feeRates: {[OrderType.LIMIT]: new Big(0), [OrderType.MARKET]: new Big(0)},
+      hasOutstandingOrder: false,
       tradingRules: {...AlpacaBroker.DEFAULT_FRACTIONAL_TRADING_RULES, pair: tradingPair},
     });
 

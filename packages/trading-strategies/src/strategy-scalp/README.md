@@ -7,7 +7,7 @@ A scalping strategy that enters on short-term EMA momentum and then ping-pongs l
 | Rule            | Action                                                                                        |
 | --------------- | --------------------------------------------------------------------------------------------- |
 | **first entry** | Feeds 1-minute candles into a short EMA. Buys at market the first time price closes above it. |
-| **exit**        | Offers the position as a limit sell at the entry fill plus the offset.                        |
+| **exit**        | Offers the position as a limit sell at what it cost per unit, plus the offset.                |
 | **re-entry**    | Offers a limit buy at the last exit's fill minus the offset, which starts the loop again.     |
 
 Each leg is priced off a traded price rather than a timer, so the strategy only ever has one order working at a time.

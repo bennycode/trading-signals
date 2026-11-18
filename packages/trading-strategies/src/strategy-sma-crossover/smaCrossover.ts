@@ -7,6 +7,19 @@ import {timeframeString} from '../util/validators.js';
 
 const barCount = z.number().int().positive();
 
+/**
+ * Whether two bar sizes are the same length of time. Zod runs an object-level refinement even
+ * when a field of its own failed, so this is also reached with a timeframe `ms` cannot read: an
+ * unreadable one is not "the same" as anything, and the field's own error is what the user sees.
+ */
+function sameDuration(one: string, other: string): boolean {
+  try {
+    return parse(one) === parse(other);
+  } catch {
+    return false;
+  }
+}
+
 export const SmaCrossoverSchema = z
   .object({
     /** Number of bars in the fast SMA. */
@@ -21,7 +34,7 @@ export const SmaCrossoverSchema = z
   .refine(
     config =>
       // Compared as durations rather than as text: "1m" and "60s" are the same bar.
-      config.fastPeriod !== config.slowPeriod || parse(config.fastTimeframe) !== parse(config.slowTimeframe),
+      config.fastPeriod !== config.slowPeriod || sameDuration(config.fastTimeframe, config.slowTimeframe) === false,
     {
       message: 'The fast and slow SMA must differ in period or timeframe, otherwise they never cross',
       path: ['fastPeriod'],

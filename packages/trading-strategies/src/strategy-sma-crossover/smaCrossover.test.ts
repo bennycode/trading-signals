@@ -8,7 +8,7 @@ import {
   loadCandles,
   WEEK_LONG_TIMEOUT,
 } from '../engine/testing.js';
-import {SmaCrossover} from './smaCrossover.js';
+import {SmaCrossover, SmaCrossoverSchema} from './smaCrossover.js';
 
 describe('SmaCrossover', () => {
   const candles = loadCandles();
@@ -35,6 +35,35 @@ describe('SmaCrossover', () => {
       () => new SmaCrossover({fastPeriod: 10, fastTimeframe: '5m', slowPeriod: 10, slowTimeframe: '5m'}),
       'identical periods on identical bars are the same average'
     ).toThrow();
+  });
+
+  it('holds a position until the fast average crosses down through the slow one', async () => {
+    /*
+     * Starting out holding, with the fast average already below the slow one: there is no crossing
+     * to sell on, however long the gap stays open. The sale comes from the crossing that follows a
+     * rally, not from the comparison being true on arrival.
+     */
+    const result = await backtest(
+      new SmaCrossover({fastPeriod: 2, fastTimeframe: '1m', slowPeriod: 4, slowTimeframe: '1m'}),
+      candlesAt(['110', '108', '106', '104', '102', '100', '112', '130', '150', '120', '100', '80']),
+      holdingFromTheStart
+    );
+
+    expect(result.trades.length, 'the position is held through the gap and sold on a crossing').toBeGreaterThan(0);
+    expect(result.trades[0]?.side).toBe(OrderSide.SELL);
+    expect(
+      result.trades[0]?.advice.reason,
+      'and it is the downward crossing that sells, not the readings being bearish to begin with'
+    ).toContain('crossed below');
+  });
+
+  it('refuses a timeframe it cannot read instead of throwing', () => {
+    const result = SmaCrossoverSchema.safeParse({fastPeriod: 10, fastTimeframe: '', slowPeriod: 10});
+
+    expect(
+      result.success,
+      'the duration comparison also runs on a field that already failed, so it must survive one'
+    ).toBe(false);
   });
 
   it('rejects two averages whose bar sizes are spelled differently but are the same', () => {
