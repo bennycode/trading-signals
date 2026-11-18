@@ -153,6 +153,12 @@ export interface StrategyDefinition<Config, Indicators> {
    * can opt out with its own `timeframe`.
    */
   interval?: StringValue;
+  /**
+   * How far above the anchor a new high has to reach before it becomes the anchor, as a percent.
+   * Without it every higher high moves the anchor, which for a trailing exit means the exit
+   * tightens on every tick up; with it the anchor holds until the move is worth following.
+   */
+  ratchetBy?: (config: Config) => string | undefined;
   long: {
     close?:
       | CloseRule<Facts<Config, IndicatorResults<Indicators>>>

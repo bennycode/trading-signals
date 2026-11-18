@@ -9,7 +9,7 @@ import {z} from 'zod';
 import {MarketType} from '@typedtrader/exchange';
 import {defineStrategy, positiveNumberString, protection, ProtectionSchema} from 'trading-strategies';
 
-const MyStrategySchema = ProtectionSchema.extend({
+const MyStrategySchema = ProtectionSchema.safeExtend({
   dipBelow: positiveNumberString,
 });
 type Settings = z.output<typeof MyStrategySchema>;

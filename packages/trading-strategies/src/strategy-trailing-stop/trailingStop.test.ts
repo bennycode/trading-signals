@@ -113,6 +113,36 @@ describe('TrailingStop', () => {
     expect(advice, 'so a 10% trail sits at 90 and nothing is sold').toBeUndefined();
   });
 
+  /** Holding a whole unit with nothing reserved and no order of ours working. */
+  const holdingState: TradingSessionState = {
+    baseBalance: new Big('1'),
+    baseBalanceOnHold: new Big(0),
+    counterBalance: new Big(0),
+    feeRates: {[OrderType.LIMIT]: new Big(0), [OrderType.MARKET]: new Big(0)},
+    hasOutstandingBuy: false,
+    hasOutstandingSell: false,
+    shortBase: new Big(0),
+    tradingRules: {...AlpacaBroker.DEFAULT_FRACTIONAL_TRADING_RULES, pair: tradingPair},
+  };
+
+  it('holds its anchor until a new high clears the step it was given', async () => {
+    /*
+     * A peak of 100 and a 5% step: a high of 104 is not enough to move the anchor, so the exit
+     * stays 10% below 100 rather than tightening to 10% below 104 on every tick up.
+     */
+    const strategy = new TrailingStop({pivotPrice: '100', trailDownPct: '10', trailUpPct: '5'});
+    const [attach, small, big] = candlesAt(['100', '100', '100']);
+
+    await strategy.onCandle(batched(required(attach, 'attach candle')), holdingState);
+    await strategy.onCandle(batched({...required(small, 'small candle'), high: '104'}), holdingState);
+
+    expect(strategy.ledger.bestPrice, 'four percent is not the five it was told to wait for').toBe('100');
+
+    await strategy.onCandle(batched({...required(big, 'big candle'), high: '106'}), holdingState);
+
+    expect(strategy.ledger.bestPrice, 'and a move that clears the step takes the anchor with it').toBe('106');
+  });
+
   it('leaves a balance alone while an order of its own is still working', async () => {
     /*
      * A balance can show a purchase before its fill notification arrives. Adopting it as a

@@ -5,7 +5,7 @@ import {MarketType} from '../strategy/MarketType.js';
 
 const CANDLE = '1m';
 
-export const MultiIndicatorConfluenceSchema = ProtectionSchema.extend({
+export const MultiIndicatorConfluenceSchema = ProtectionSchema.safeExtend({
   /** Bollinger Bands standard deviation multiplier. */
   bollingerDeviationMultiplier: z.number().positive(),
   /** Bollinger Bands period. */

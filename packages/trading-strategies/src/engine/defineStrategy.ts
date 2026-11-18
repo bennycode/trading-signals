@@ -7,7 +7,7 @@ import {holdsPosition} from '../trader/sessionBalances.js';
 import {adviceFor, plannedOrder} from './advice.js';
 import {factsFor} from './facts.js';
 import {notices} from './notices.js';
-import {gonePositionChange, heldPositionChange} from './position.js';
+import {gonePositionChange, heldPositionChange, ratchetedBestPrice} from './position.js';
 import {firstMatch, judgeCrossings, refuseShadowedRules, timeframeOf} from './matching.js';
 import {warmUpFromHistory} from './warmUp.js';
 import {restoredLedger} from './legacyLedger.js';
@@ -226,6 +226,15 @@ function build<
         return;
       }
 
+      /*
+       * An entry of ours is already working. Its fill is what counts it as an entry, so a rule
+       * written as "buy once" is still eligible until that fill lands: on a broker that reports
+       * fills on a poll, the candle in between would buy the position a second time.
+       */
+      if (state.hasOutstandingBuy) {
+        return;
+      }
+
       return this.#fire(openRules, 'open', candle, bars, crossed, OrderSide.BUY);
     }
 
@@ -359,8 +368,9 @@ function build<
     }
 
     #ratchetBestPrice(candle: OneMinuteBatchedCandle): void {
-      if (candle.high.gt(new Big(this.#ledger.bestPrice))) {
-        this.#ledger.bestPrice = candle.high.toFixed();
+      const next = ratchetedBestPrice(this.#ledger.bestPrice, candle, definition.ratchetBy?.(this.#config));
+      if (next !== null) {
+        this.#ledger.bestPrice = next;
       }
     }
 

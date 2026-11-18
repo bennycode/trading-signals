@@ -5,7 +5,7 @@ import {defineStrategy, ProtectionSchema, required, protection} from '../engine/
 import {MarketType} from '../strategy/MarketType.js';
 import {BuyAmountSchema, positiveNumberString} from '../util/validators.js';
 
-export const BuyOnceSchema = ProtectionSchema.extend({
+export const BuyOnceSchema = ProtectionSchema.safeExtend({
   /** Limit price to wait for. Omit to buy at market on the first candle. */
   buyAt: positiveNumberString.optional(),
 }).and(BuyAmountSchema);

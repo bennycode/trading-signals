@@ -3,7 +3,7 @@ import {defineStrategy, ProtectionSchema, protection} from '../engine/index.js';
 import {MarketType} from '../strategy/MarketType.js';
 import {positiveNumberString} from '../util/validators.js';
 
-export const BuyBelowSellAboveSchema = ProtectionSchema.extend({
+export const BuyBelowSellAboveSchema = ProtectionSchema.safeExtend({
   /** Buy the whole balance once the price drops below this. Omit to never buy. */
   buyBelow: positiveNumberString.optional(),
   /** Sell the whole position once the price rises above this. Omit to never sell. */

@@ -7,12 +7,16 @@ import {MarketType} from '../strategy/MarketType.js';
 import {positiveNumberString} from '../util/validators.js';
 import {suggestScalpOffset} from './suggestScalpOffset.js';
 
-export const ScalpSchema = ProtectionSchema.extend({
+export const ScalpSchema = ProtectionSchema.safeExtend({
   /** Period of the moving average the first entry waits to be above. */
   emaPeriod: z.number().int().positive().default(5),
   /**
-   * Nominal price distance of each leg: sell at the entry fill plus this, re-buy at the exit fill
-   * minus it. Omit it to have one derived from how far the instrument actually moves in a day.
+   * Nominal price distance of each leg: offer the position back at what it cost per unit plus
+   * this, re-buy at the exit fill minus it. The sell leg measures from the cost per unit rather
+   * than from the fill price, because a fee charged in the base asset leaves fewer units than
+   * were paid for and this leg has to clear what they cost.
+   *
+   * Omit it to have one derived from how far the instrument actually moves in a day.
    */
   offset: positiveNumberString.optional(),
 });
@@ -25,6 +29,9 @@ type Settings = z.output<typeof ScalpSchema>;
  * and shortened weeks cannot leave either of them short of data.
  */
 const HISTORY_DAYS = 30;
+
+/** One-minute bars the moving average is warmed with, which covers a generous `emaPeriod`. */
+const EMA_WARM_UP_BARS = 300;
 
 /** Bars both the Efficiency Ratio and the ATR behind the offset need before they mean anything. */
 const MINIMUM_BARS = 14;
@@ -78,15 +85,21 @@ function canScalp(facts: {offset: Big}): boolean {
 
 /**
  * Takes the same small bite over and over: enters once price is above its moving average, offers
- * the position back at the entry fill plus an offset, and on the way down re-buys at the exit fill
- * minus the same offset. Both legs are limit orders, so the offset is the margin per round trip.
+ * the position back at what it cost per unit plus an offset, and on the way down re-buys at the
+ * exit fill minus the same offset. Both legs are limit orders, so the offset is the margin per
+ * round trip.
  *
  * It only runs where that works. A trending instrument is refused outright, because there the
  * strategy sells a position that keeps rising and buys one that keeps falling.
  */
 export const Scalp = defineStrategy(ScalpSchema)({
   indicators: {
-    ema: every('1m', config => new EMA(config.emaPeriod)),
+    /*
+     * Warmed from history, so the first entry can be judged on the first candle of a session
+     * rather than after the average has sat through its own period. The count covers any period
+     * a user is likely to set, and an average given fewer bars than that simply reads from them.
+     */
+    ema: every('1m', config => new EMA(config.emaPeriod), EMA_WARM_UP_BARS),
     offset: fromHistory(HISTORY_DAYS, '1d', scalpOffset),
   },
   long: {

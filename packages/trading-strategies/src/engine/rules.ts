@@ -13,16 +13,28 @@ import type {CloseRule, IndicatorDeclaration, PositionFacts} from './types.js';
  * Declares an indicator on a timeframe. The engine creates it from the parsed config, rolls the
  * session's one-minute candles up to `interval`, and exposes its result to rules under the name
  * it was declared with. Rules never see the indicator itself, only its latest result.
+ *
+ * `warmUpBars` is how many past bars of that size to feed it before the first live candle, for an
+ * indicator whose rule should be able to fire straight away rather than after the session has sat
+ * through its period. One request is shared by every config, so the count is fixed.
  */
 export function every<Result, Config>(
   interval: StringValue | ((config: Config) => StringValue),
-  create: (config: Config) => TechnicalIndicator<Result, number>
+  create: (config: Config) => TechnicalIndicator<Result, number>,
+  warmUpBars?: number
 ): IndicatorDeclaration<Result, Config> {
+  if (warmUpBars !== undefined && typeof interval === 'function') {
+    throw new Error('History can only be fetched for a fixed bar size, because every config shares the one request');
+  }
+
   return {
     create: config =>
       new BatchedIndicator(typeof interval === 'function' ? interval(config) : interval, create(config), bar =>
         bar.close.toNumber()
       ),
+    ...(warmUpBars !== undefined && typeof interval !== 'function'
+      ? {history: {count: warmUpBars, interval}}
+      : undefined),
   };
 }
 

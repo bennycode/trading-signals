@@ -25,13 +25,17 @@ const AlwaysIn = defineStrategy(ProtectionSchema)({
   name: '@typedtrader/strategy-test-always-in',
 });
 
-function state(options: {base: string; hasOutstandingSell?: boolean}): TradingSessionState {
+function state(options: {
+  base: string;
+  hasOutstandingBuy?: boolean;
+  hasOutstandingSell?: boolean;
+}): TradingSessionState {
   return {
     baseBalance: new Big(options.base),
     baseBalanceOnHold: new Big(0),
     counterBalance: new Big('1000'),
     feeRates: {[OrderType.LIMIT]: new Big(0), [OrderType.MARKET]: new Big(0)},
-    hasOutstandingBuy: false,
+    hasOutstandingBuy: options.hasOutstandingBuy ?? false,
     hasOutstandingSell: options.hasOutstandingSell ?? false,
     shortBase: new Big(0),
     tradingRules: {...AlpacaBroker.DEFAULT_FRACTIONAL_TRADING_RULES, pair: tradingPair},
@@ -62,6 +66,24 @@ describe('defineStrategy', () => {
       'an entry rule that always matches must not buy back in on the candle after a stop fired'
     ).toBeUndefined();
     expect(strategy.ledger.size, "the position is still this engine's to account for until the fill").toBe('1');
+  });
+
+  it('places no second entry while the first one is still working', async () => {
+    /*
+     * The buy went out, the balance has not moved yet, and the fill that would count it as an
+     * entry is still on its way. A rule eligible while flat would buy the position twice.
+     */
+    const strategy = new AlwaysIn();
+
+    const first = await strategy.onCandle(batched(required(candlesAt(['100'])[0], 'first candle')), state({base: '0'}));
+    expect(first, 'the entry rule fires while there is nothing held').toBeDefined();
+
+    const second = await strategy.onCandle(
+      batched(required(candlesAt(['101'])[0], 'next candle')),
+      state({base: '0', hasOutstandingBuy: true})
+    );
+
+    expect(second, 'and says nothing more until the order it placed has an outcome').toBeUndefined();
   });
 
   it('opens again once an exit of its own turns out not to have been terminal', async () => {

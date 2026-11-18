@@ -17,6 +17,12 @@ export const TrailingStopSchema = z.object({
   pivotPrice: positiveNumberString.optional(),
   /** Exit once price falls this many percent from the anchor. */
   trailDownPct: positiveNumberString.default('10'),
+  /**
+   * How far above the anchor a new high has to reach before it becomes the anchor, as a percent.
+   * Without it every higher high moves the anchor, so the exit tightens on every tick up; with it
+   * the anchor holds until the move is worth following, and the exit keeps the room it had.
+   */
+  trailUpPct: positiveNumberString.optional(),
 });
 
 export type TrailingStopConfig = z.input<typeof TrailingStopSchema>;
@@ -38,4 +44,5 @@ export const TrailingStop = defineStrategy(TrailingStopSchema)({
   },
   markets: [MarketType.BULLISH],
   name: '@typedtrader/strategy-trailing-stop',
+  ratchetBy: config => config.trailUpPct,
 });

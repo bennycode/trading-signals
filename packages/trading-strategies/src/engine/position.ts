@@ -53,6 +53,22 @@ function resize(ledger: Ledger, state: TradingSessionState, candle: OneMinuteBat
   return patch ? {adopted: false, final: false, patch} : null;
 }
 
+/**
+ * The anchor a trailing exit measures from, after this candle. A higher high moves it, unless a
+ * step is given: then the high has to clear the anchor by that percent to become the new anchor,
+ * which is what keeps an exit from tightening on every tick up. `null` when it does not move.
+ */
+export function ratchetedBestPrice(
+  bestPrice: string,
+  candle: {high: Big},
+  stepPct?: string | undefined
+): string | null {
+  const anchor = new Big(bestPrice);
+  const minimum = stepPct === undefined ? anchor : anchor.mul(new Big(100).plus(stepPct).div(100));
+
+  return candle.high.gt(anchor) && candle.high.gte(minimum) ? candle.high.toFixed() : null;
+}
+
 /** What a candle makes of a position the balance says is still there. */
 export function heldPositionChange(
   ledger: Ledger,
