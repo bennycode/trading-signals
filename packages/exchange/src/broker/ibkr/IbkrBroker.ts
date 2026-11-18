@@ -21,6 +21,7 @@ import type {TradingPair} from '../TradingPair.js';
 import {IbkrAPI} from './api/IbkrAPI.js';
 import {IbkrTimeInForce} from './api/schema/OrderSchema.js';
 import {IbkrBrokerMapper} from './IbkrBrokerMapper.js';
+import {toIbkrGatewayLauncher, type IbkrGatewayLauncher, type IbkrGatewayState} from './gateway/IbkrGatewayLauncher.js';
 import {resolveIbkrAccountId} from './IbkrAccountSelection.js';
 import {IbkrCurrencyResolver} from './IbkrCurrencyResolver.js';
 import {createFillTopicId, startIbkrFillWatcher, type IbkrFillWatcher} from './IbkrFillWatcher.js';
@@ -54,6 +55,7 @@ export class IbkrBroker extends Broker implements MarketDataSource {
   static readonly ORDER_POLL_INTERVAL_MS = 5_000;
 
   readonly #api: IbkrAPI;
+  readonly #gateway?: IbkrGatewayLauncher;
   readonly #overnight: boolean;
   readonly #timeInForce: typeof IbkrTimeInForce.DAY | typeof IbkrTimeInForce.GTC;
   readonly #marketData: MarketDataSource;
@@ -69,7 +71,18 @@ export class IbkrBroker extends Broker implements MarketDataSource {
 
   constructor(options?: IbkrBrokerOptions) {
     super(IbkrBroker.NAME);
-    this.#api = new IbkrAPI({gatewayUrl: options?.gatewayUrl});
+    /*
+     * Credentials mean "run the gateway for me". Started lazily, so constructing a broker never
+     * blocks on the IB Key push, and the API client waits on its readiness so a call made during
+     * login queues instead of coming back 401.
+     */
+    this.#gateway = toIbkrGatewayLauncher(options);
+    const gateway = this.#gateway;
+
+    this.#api = new IbkrAPI({
+      gatewayUrl: options?.gatewayUrl,
+      ...(gateway ? {waitForSession: () => gateway.ready} : {}),
+    });
     this.#conids = new IbkrConidResolver(this.#api);
     this.#currencies = new IbkrCurrencyResolver({api: this.#api, getAccountId: () => this.getAccountId()});
     this.#marketData = options?.marketData ?? new IbkrMarketData({api: this.#api, conids: this.#conids});
@@ -80,6 +93,16 @@ export class IbkrBroker extends Broker implements MarketDataSource {
 
   get api(): IbkrAPI {
     return this.#api;
+  }
+
+  /** Resolves when the gateway has a session; at once when it is not ours. @see {@link IbkrGatewayLauncher} */
+  get ready(): Promise<void> {
+    return this.#gateway?.ready ?? Promise.resolve();
+  }
+
+  /** Gateway progress, for telling a caller what is being waited on; `undefined` when not ours. */
+  get gatewayState(): IbkrGatewayState | undefined {
+    return this.#gateway?.state;
   }
 
   getName(): string {
@@ -383,5 +406,7 @@ export class IbkrBroker extends Broker implements MarketDataSource {
     for (const topicId of [...this.#candleListenerByTopic.keys()]) {
       this.unwatchCandles(topicId);
     }
+    // Only a gateway this broker started is stopped; see `IbkrGatewayLauncher.stop`.
+    this.#gateway?.stop();
   }
 }

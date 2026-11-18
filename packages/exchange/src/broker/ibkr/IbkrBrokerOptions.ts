@@ -1,10 +1,33 @@
 import type {MarketDataSource} from '../MarketDataSource.js';
 import type {IbkrTimeInForce} from './api/schema/OrderSchema.js';
+import type {IbkrGatewayState} from './gateway/IbkrGatewayLauncher.js';
 
 /** How an {@link IbkrBroker} talks to the gateway and what it does with the orders it sends. */
 export interface IbkrBrokerOptions {
+  /**
+   * IBKR Pro username. Supply it with {@link password} and the broker runs the gateway itself:
+   * downloading it on first use, starting it, and logging in.
+   *
+   * Leave both out to talk to a gateway somebody else has already logged in, which is what the
+   * repo's own `npm run gateway:ibkr:op` provides.
+   */
+  account?: string;
   accountId?: string;
   gatewayUrl?: string;
+  /**
+   * Called as the gateway comes up. The useful one is `awaiting-two-factor`: IBKR has pushed to
+   * the phone and nothing proceeds until somebody taps it, so this is the moment to say so rather
+   * than appear hung.
+   */
+  onGatewayStateChange?: (state: IbkrGatewayState) => void;
+  /**
+   * IBKR Pro password, used only to fill the gateway's login form and never sent anywhere else.
+   * Requires {@link account}, and requires the optional `playwright` peer dependency, because
+   * that form is built in client-side JavaScript and cannot be posted to directly.
+   */
+  password?: string;
+  /** Which second factor to pick when the account has more than one enrolled. */
+  twoFactorMethod?: string;
   /**
    * Routes limit orders to IBKR Overnight, the 20:00–03:50 ET session, which together with the
    * regular and extended sessions gives near-continuous weekday coverage.

@@ -82,5 +82,13 @@
   },
   "devDependencies": {
     "playwright": "^1.65.1"
+  },
+  "peerDependencies": {
+    "playwright": "^1.0.0"
+  },
+  "peerDependenciesMeta": {
+    "playwright": {
+      "optional": true
+    }
   }
 }

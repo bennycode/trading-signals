@@ -130,23 +130,38 @@ await broker.placeLimitOrder(pair, {side: 'BUY', size: '1', price: latest.close}
 
 ## Quick Start: Interactive Brokers
 
-IBKR's retail Web API authenticates through the Client Portal Gateway, a local Java process that holds a logged-in session and signs requests, so the broker carries no API keys of its own. What the gateway does not do is log itself in — that is a web form — so `npm run gateway:ibkr` starts it, drives the login with Playwright, and keeps the session alive:
+IBKR's retail Web API authenticates through the Client Portal Gateway, a local Java process that holds a logged-in session and signs requests, so the broker carries no API keys of its own. Give it your IBKR Pro credentials and it runs that gateway for you — downloading it on first use, starting it, and logging in:
 
 ```sh
-npm run gateway:ibkr:op   # resolves IBKR_ACCOUNT / IBKR_PASSWORD from 1Password
+npm install @typedtrader/exchange playwright
 ```
-
-Approve the IB Key push on your phone when it arrives, then the broker talks to the gateway on localhost:
 
 ```ts
 import {getIbkrClient, TradingPair} from '@typedtrader/exchange';
 
-const broker = getIbkrClient();
+const broker = getIbkrClient({
+  account: process.env.IBKR_ACCOUNT,
+  password: process.env.IBKR_PASSWORD,
+  onGatewayStateChange: ({stage}) => console.info(`gateway: ${stage}`),
+});
+
+// Approve the IB Key push on your phone; calls made before then wait rather than fail.
+await broker.ready;
 
 // No market-data source needed: IBKR serves its own candles.
 const pair = new TradingPair('F', 'USD');
 const latest = await broker.getLatestCandle(pair, 86_400_000);
 await broker.placeLimitOrder(pair, {side: 'BUY', size: '1', price: latest.close});
+```
+
+`playwright` is an **optional peer dependency**, needed only for this automated login: the gateway's login page builds its form in client-side JavaScript, so there is nothing to post credentials to and a real browser has to drive it. Installing `@typedtrader/exchange` on its own pulls no browser, so an Alpaca-only user pays nothing for it.
+
+**The IB Key push cannot be automated away.** IBKR does not accept a passkey for the Web API, so a fresh login always waits on a tap. `getIbkrClient` therefore does not block: construction returns immediately, `broker.ready` is the awaitable, and `onGatewayStateChange` reports progress (`downloading` → `starting` → `awaiting-two-factor` → `authenticated`) so an application can say what it is waiting for. A gateway that is already logged in is reused rather than re-authenticated, which keeps the pushes to roughly one a day.
+
+To use a gateway you manage yourself, omit `account` and `password`. Inside this repository that is what the bundled launcher is for:
+
+```sh
+npm run gateway:ibkr:op   # resolves IBKR_ACCOUNT / IBKR_PASSWORD from 1Password
 ```
 
 **Why Interactive Brokers:**

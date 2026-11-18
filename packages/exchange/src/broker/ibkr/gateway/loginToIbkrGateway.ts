@@ -1,5 +1,23 @@
-import {chromium, type Browser, type Page} from 'playwright';
+import type {Browser, Page} from 'playwright';
 import {IbkrAPI} from '../api/IbkrAPI.js';
+
+/**
+ * Playwright, loaded only when a login actually happens.
+ *
+ * An optional peer dependency rather than a real one: it pulls a browser of its own, and someone
+ * trading on Alpaca should not download Chromium to install this package. Imported dynamically so
+ * its absence is a clear instruction at the point of use instead of a resolution failure at
+ * import time.
+ */
+async function loadChromium() {
+  try {
+    return (await import('playwright')).chromium;
+  } catch {
+    throw new Error(
+      'Logging into the IBKR gateway needs a browser, because its login form is built by client-side JavaScript and has no form to post to. Install the optional peer dependency with `npm i playwright`, or start and log into the gateway yourself and construct the client without `account`/`password`.'
+    );
+  }
+}
 
 /**
  * Selectors on the gateway's own login page, read off the served markup rather than guessed.
@@ -50,6 +68,7 @@ export async function loginToIbkrGateway(options: IbkrLoginOptions): Promise<voi
   let browser: Browser | undefined;
 
   try {
+    const chromium = await loadChromium();
     browser = await chromium.launch();
     /*
      * The gateway's certificate is self-signed, so a loopback connection has no chain to verify

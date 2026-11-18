@@ -76,7 +76,18 @@ export class IbkrAPI {
     }
   }
 
-  constructor(options?: {gatewayUrl?: string}) {
+  constructor(options?: {
+    gatewayUrl?: string;
+    /**
+     * Held off until this resolves, when something is bringing the gateway up.
+     *
+     * One interceptor rather than a check in every method: without it a credentials-only client
+     * answers its first calls with 401s while the login is still in flight, which reads as bad
+     * credentials rather than "not ready yet". Whatever brings the gateway up must use a client
+     * without this, or it waits on itself.
+     */
+    waitForSession?: () => Promise<void>;
+  }) {
     const gatewayUrl = options?.gatewayUrl ?? IbkrAPI.URL_GATEWAY;
 
     this.#httpClient = axios.create({
@@ -90,6 +101,14 @@ export class IbkrAPI {
        */
       httpsAgent: new Agent({rejectUnauthorized: !IbkrAPI.isLoopback(gatewayUrl)}),
     });
+
+    const waitForSession = options?.waitForSession;
+    if (waitForSession) {
+      this.#httpClient.interceptors.request.use(async config => {
+        await waitForSession();
+        return config;
+      });
+    }
 
     simplifyError(this.#httpClient);
   }
