@@ -115,7 +115,7 @@ export class IbkrAPI {
   }
 
   /**
-   * Keeps the session from lapsing. IBeam does this too when it manages the gateway, but a
+   * Keeps the session from lapsing. The gateway launcher does this too, but a
    * directly-launched gateway has nobody else to do it.
    *
    * @see https://www.interactivebrokers.com/docs/web-api/api-reference/trading/trading-session

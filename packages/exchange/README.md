@@ -130,7 +130,7 @@ await broker.placeLimitOrder(pair, {side: 'BUY', size: '1', price: latest.close}
 
 ## Quick Start: Interactive Brokers
 
-IBKR's retail Web API authenticates through the Client Portal Gateway, a local process that holds a logged-in session and signs requests, so the broker carries no API keys of its own. `compose.yaml` in this package runs [IBeam](https://github.com/Voyz/ibeam), which packages the gateway and performs the login headlessly:
+IBKR's retail Web API authenticates through the Client Portal Gateway, a local Java process that holds a logged-in session and signs requests, so the broker carries no API keys of its own. What the gateway does not do is log itself in — that is a web form — so `npm run gateway:ibkr` starts it, drives the login with Playwright, and keeps the session alive:
 
 ```sh
 npm run gateway:ibkr:op   # resolves IBKR_ACCOUNT / IBKR_PASSWORD from 1Password
@@ -164,12 +164,13 @@ await broker.placeLimitOrder(pair, {side: 'BUY', size: '1', price: latest.close}
 
 **Good to know:**
 
-- **The session needs a human.** IBeam automates the login, but IBKR's 2FA sends an IB Key push that has to be approved on your phone, and the session expires roughly daily. A passkey cannot be used: IBKR's Web API supports IB Key, Handy Key, SMS and DSC+ only.
+- **The session needs a human.** The login is automated, but IBKR's 2FA sends an IB Key push that has to be approved on your phone, and the session expires roughly daily, which brings another push. A passkey cannot be used: IBKR's Web API supports IB Key, Handy Key, SMS and DSC+ only.
+- **The login form is IBKR's to change.** Its field and dropdown selectors live in `gateway/loginToIbkrGateway.ts`; a redesign there is what breaks the login, and a failed attempt leaves a screenshot in `.gateway-outputs/`.
 - **Market data may be delayed.** Without a market-data subscription the quote feed reports `D` (delayed) and can return no price fields at all during regular hours. The history endpoint used for candles is unaffected.
 - **Order updates are polled.** `watchOrders` polls the trades endpoint rather than opening IBKR's WebSocket, which needs its own handshake and re-subscribes on every reconnect.
 - **The orders snapshot lags.** `/iserver/account/orders` does not include an order placed moments earlier, and can still report a filled order as working, so do not read it back immediately after placing.
 
-**Resources:** [Web API](https://www.interactivebrokers.com/docs/web-api/getting-started) · [API Reference](https://www.interactivebrokers.com/docs/openapi/api-reference.json) · [IBeam](https://github.com/Voyz/ibeam) · [Overnight Trading](https://www.interactivebrokers.com/en/trading/orders/overnight-trading-orders.php)
+**Resources:** [Web API](https://www.interactivebrokers.com/docs/web-api/getting-started) · [API Reference](https://www.interactivebrokers.com/docs/openapi/api-reference.json) · [Overnight Trading](https://www.interactivebrokers.com/en/trading/orders/overnight-trading-orders.php)
 
 ## Raw API Access
 

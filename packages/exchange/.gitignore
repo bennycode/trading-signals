@@ -1,6 +1,6 @@
 
-# IBeam login screenshots (show a logged-in brokerage page)
-.ibeam-outputs/
-
-# Client Portal Gateway (downloaded IBKR binary, see compose.yaml)
+# Client Portal Gateway (IBKR's own binary, downloaded on first run)
 .clientportal.gw/
+
+# Screenshots of a failed gateway login (they show a logged-in brokerage page)
+.gateway-outputs/
