@@ -54,15 +54,34 @@ export class IbkrAPI {
 
   readonly #httpClient: AxiosInstance;
 
+  /**
+   * Whether a gateway address is this machine, and so reachable without crossing a network where
+   * a certificate would be the only thing proving who answered.
+   */
+  static isLoopback(gatewayUrl: string): boolean {
+    try {
+      // `globalThis.URL` because this module's own `URL` constant of endpoint paths shadows it.
+      const {hostname} = new globalThis.URL(gatewayUrl);
+      return hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '[::1]' || hostname === '::1';
+    } catch {
+      // An address that will not parse is not one that can be shown to be local.
+      return false;
+    }
+  }
+
   constructor(options?: {gatewayUrl?: string}) {
+    const gatewayUrl = options?.gatewayUrl ?? IbkrAPI.URL_GATEWAY;
+
     this.#httpClient = axios.create({
-      baseURL: options?.gatewayUrl ?? IbkrAPI.URL_GATEWAY,
+      baseURL: gatewayUrl,
       /*
-       * The gateway generates its own certificate for `localhost`, so there is no chain to verify
-       * against. Scoped to this client rather than set process-wide, which would silently disable
-       * verification for every other broker in the process too.
+       * The gateway generates its own certificate for `localhost`, so a loopback connection has no
+       * chain to verify against and verification has to be off. Anywhere else it stays on: a
+       * remote gateway crosses a network, and skipping verification there would leave the session
+       * open to anyone able to answer in its place. Scoped to this client rather than set
+       * process-wide, which would disable verification for every other broker too.
        */
-      httpsAgent: new Agent({rejectUnauthorized: false}),
+      httpsAgent: new Agent({rejectUnauthorized: !IbkrAPI.isLoopback(gatewayUrl)}),
     });
 
     simplifyError(this.#httpClient);

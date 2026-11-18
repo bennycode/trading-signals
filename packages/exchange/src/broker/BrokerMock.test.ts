@@ -780,6 +780,15 @@ describe('BrokerMock', () => {
       ).toBe(true);
     });
 
+    it('refuses a short whose exit fee alone exceeds what it took in', async () => {
+      const exchange = createExchange('1', '0');
+
+      await expect(
+        exchange.getProfitableExitPrice(pair, {price: '0.02', side: OrderSide.SELL, size: '1'}),
+        'without this the iteration converges on a price at or below zero and returns it as an answer'
+      ).rejects.toThrow(/impossible|cannot be placed|at or below zero/);
+    });
+
     it('refuses a short it cannot close profitably', async () => {
       const exchange = createExchange('1', '0');
 

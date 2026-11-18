@@ -427,7 +427,24 @@ export abstract class Broker extends EventEmitter {
           break;
         }
 
+        /*
+         * The buy-back fee has eaten the whole budget, so no price above zero closes this short
+         * for the profit asked. Caught here rather than left to converge, which would otherwise
+         * hand back a price of zero or less and look like an answer.
+         */
+        if (budget.minus(exitFee).lte(0)) {
+          throw new Error(
+            `Closing this short for a profit of ${minProfit.toFixed()} ${currency} is impossible: the exit fee of ${exitFee.toFixed()} alone exceeds the ${budget.toFixed()} the position has to spend.`
+          );
+        }
+
         price = Broker.roundToTick(budget.minus(exitFee).div(size), tick, Big.roundDown);
+      }
+
+      if (price.lte(0)) {
+        throw new Error(
+          `Closing this short for a profit of ${minProfit.toFixed()} ${currency} would need a price of ${price.toFixed()}, which cannot be placed.`
+        );
       }
     } else {
       // What the sale has to bring in, the entry's fee and the requested profit included.

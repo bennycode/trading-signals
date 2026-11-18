@@ -3,7 +3,10 @@ import {beforeEach, describe, expect, it, vi} from 'vitest';
 import {OrderSide, OrderType, type Candle, type Fill} from '../Broker.js';
 import {MarketDataSource} from '../MarketDataSource.js';
 import {TradingPair} from '../TradingPair.js';
+import type * as ActualIbkrAPIModuleNamespace from './api/IbkrAPI.js';
 import type {IbkrAPI} from './api/IbkrAPI.js';
+
+type ActualIbkrAPIModule = typeof ActualIbkrAPIModuleNamespace;
 
 const mockMethods = {
   cancelOrder: vi.fn<IbkrAPI['cancelOrder']>(),
@@ -560,6 +563,20 @@ describe('IbkrBroker', {concurrent: false}, () => {
 
       broker.unwatchOrders(topicId);
       vi.useRealTimers();
+    });
+  });
+
+  describe('isLoopback', () => {
+    it('keeps certificate verification on for anything but this machine', async () => {
+      const {IbkrAPI: RealIbkrAPI} = await vi.importActual<ActualIbkrAPIModule>('./api/IbkrAPI.js');
+
+      expect(RealIbkrAPI.isLoopback('https://localhost:5000')).toBe(true);
+      expect(RealIbkrAPI.isLoopback('https://127.0.0.1:5001')).toBe(true);
+      expect(
+        RealIbkrAPI.isLoopback('https://gateway.example.com:5000'),
+        'a remote gateway crosses a network, where the certificate is the only thing proving who answered'
+      ).toBe(false);
+      expect(RealIbkrAPI.isLoopback('not a url'), 'an unparseable address cannot be shown to be local').toBe(false);
     });
   });
 

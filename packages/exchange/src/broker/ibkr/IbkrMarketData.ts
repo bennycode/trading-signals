@@ -46,9 +46,16 @@ export class IbkrMarketData extends MarketDataSource {
   /** A poll any tighter than this would hammer the gateway without producing a new closed bar. */
   static readonly MIN_POLL_INTERVAL_MS = ms('15s');
 
+  /**
+   * The slowest a watcher polls, whatever the bar size. Polling once per interval would mean a
+   * daily bar is noticed up to a day after it closed, which is useless to a strategy waiting on
+   * it; the gateway is a local process, so a minute between requests costs nothing.
+   */
+  static readonly MAX_POLL_INTERVAL_MS = ms('1m');
+
   readonly #api: IbkrAPI;
   readonly #conids: IbkrConidResolver;
-  readonly #watchers = new Map<string, NodeJS.Timeout>();
+  readonly #watchers = new Map<string, NodeJS.Timeout[]>();
 
   constructor(options?: {api?: IbkrAPI; conids?: IbkrConidResolver; gatewayUrl?: string}) {
     super();
@@ -194,34 +201,40 @@ export class IbkrMarketData extends MarketDataSource {
       }
     };
 
+    // A transient gateway error must not kill the timer, or the feed stops silently.
+    const safePoll = () => void poll().catch(() => undefined);
+
     const interval = setInterval(
-      () => {
-        // A transient gateway error must not kill the timer, or the feed stops silently.
-        void poll().catch(() => undefined);
-      },
-      Math.max(IbkrMarketData.MIN_POLL_INTERVAL_MS, intervalInMillis)
+      safePoll,
+      Math.min(IbkrMarketData.MAX_POLL_INTERVAL_MS, Math.max(IbkrMarketData.MIN_POLL_INTERVAL_MS, intervalInMillis))
     );
 
-    this.#watchers.set(topicId, interval);
-    await poll();
+    /*
+     * The first poll is scheduled rather than awaited, because a caller can only attach a listener
+     * once it holds the topic id. Awaiting it here emitted the bars that had closed since
+     * `openTimeInISO` into an empty emitter, losing them on every subscription.
+     */
+    const firstPoll = setTimeout(safePoll, 0);
+
+    this.#watchers.set(topicId, [firstPoll, interval]);
 
     return topicId;
   }
 
   unwatchCandles(topicId: string): void {
-    const interval = this.#watchers.get(topicId);
-
-    if (interval) {
-      clearInterval(interval);
-      this.#watchers.delete(topicId);
+    for (const timer of this.#watchers.get(topicId) ?? []) {
+      clearTimeout(timer);
     }
+    this.#watchers.delete(topicId);
 
     this.removeAllListeners(topicId);
   }
 
   disconnect(): void {
-    for (const interval of this.#watchers.values()) {
-      clearInterval(interval);
+    for (const timers of this.#watchers.values()) {
+      for (const timer of timers) {
+        clearTimeout(timer);
+      }
     }
     this.#watchers.clear();
     this.removeAllListeners();

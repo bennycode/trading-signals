@@ -193,12 +193,9 @@ export class IbkrBroker extends Broker implements MarketDataSource {
   }
 
   /**
-   * The currency IBKR debits fees in. On a EUR account trading USD instruments this differs from
-   * `pair.counter`, so fills and fee estimates would otherwise claim the wrong currency.
-   */
-  /**
    * The currency the account settles in, which is where a trade's funds come from but is *not*
-   * what fees are denominated in — see {@link getFeeAsset}. Cached because it never changes.
+   * what fees are denominated in — IBKR bills a US stock in USD from a EUR account, so fees follow
+   * `pair.counter`. Cached because it never changes.
    */
   async #getAccountCurrency(): Promise<string | undefined> {
     if (this.#accountCurrency) {

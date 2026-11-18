@@ -161,6 +161,21 @@ describe('IbkrMarketData', {concurrent: false}, () => {
   });
 
   describe('watchCandles', () => {
+    it('reaches a listener attached after subscribing', async () => {
+      vi.useFakeTimers();
+      vi.setSystemTime(new Date('2026-11-17T11:30:00.000Z'));
+      const seen: string[] = [];
+
+      const topicId = await marketData.watchCandles(pair, ONE_DAY, '2026-11-13T00:00:00.000Z');
+      marketData.on(topicId, (candle: {openTimeInISO: string}) => seen.push(candle.openTimeInISO));
+      await vi.advanceTimersByTimeAsync(1_000);
+
+      expect(
+        seen,
+        'a caller can only attach once it holds the topic id, so awaiting the first poll inside watchCandles emitted these into an empty emitter'
+      ).toStrictEqual(['2026-11-13T14:30:00.000Z', '2026-11-16T14:30:00.000Z']);
+    });
+
     it('emits each closed bar once', async () => {
       vi.useFakeTimers();
       vi.setSystemTime(new Date('2026-11-17T11:30:00.000Z'));
@@ -169,12 +184,26 @@ describe('IbkrMarketData', {concurrent: false}, () => {
       const topicId = await marketData.watchCandles(pair, ONE_DAY, '2026-11-13T00:00:00.000Z');
       marketData.on(topicId, (candle: {openTimeInISO: string}) => seen.push(candle.openTimeInISO));
 
-      await marketData.watchCandles(pair, ONE_DAY, '2026-11-13T00:00:00.000Z');
+      await vi.advanceTimersByTimeAsync(1_000);
+      const afterFirstPoll = seen.length;
+      await vi.advanceTimersByTimeAsync(IbkrMarketData.MAX_POLL_INTERVAL_MS * 3);
+
+      expect(seen.length, 'a later poll returning the same bars must not emit them again').toBe(afterFirstPoll);
+    });
+
+    it('polls often enough to notice a closed daily bar', async () => {
+      vi.useFakeTimers();
+      const topicId = await marketData.watchCandles(pair, ONE_DAY, '2026-11-13T00:00:00.000Z');
+      await vi.advanceTimersByTimeAsync(1_000);
+      mockMethods.getHistory.mockClear();
+
+      await vi.advanceTimersByTimeAsync(IbkrMarketData.MAX_POLL_INTERVAL_MS + 1_000);
 
       expect(
-        seen.length,
-        'the first poll runs before a listener can attach, so re-polling must not replay what was already emitted'
-      ).toBe(0);
+        mockMethods.getHistory.mock.calls.length,
+        'polling once per interval would notice a closed daily bar up to a day late'
+      ).toBeGreaterThan(0);
+      marketData.unwatchCandles(topicId);
     });
 
     it('stops polling once unwatched', async () => {

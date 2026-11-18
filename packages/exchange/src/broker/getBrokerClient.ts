@@ -21,8 +21,9 @@ export function getBrokerClient(
      */
     gatewayUrl?: string;
     /**
-     * Market-data source. Required when the broker has none of its own (Trading212, IBKR);
-     * optional for brokers that bring one (Alpaca uses its own AlpacaMarketData by default).
+     * Market-data source. Required only for Trading212, which has no candle endpoints. Alpaca and
+     * IBKR each bring their own (`AlpacaMarketData`, `IbkrMarketData`), so passing one there just
+     * overrides the default feed.
      */
     marketData?: MarketDataSource;
   }
