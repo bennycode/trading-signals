@@ -141,7 +141,7 @@ Approve the IB Key push on your phone when it arrives, then the broker talks to 
 ```ts
 import {getIbkrClient, TradingPair} from '@typedtrader/exchange';
 
-const broker = getIbkrClient({gatewayUrl: 'https://localhost:5001'});
+const broker = getIbkrClient();
 
 // No market-data source needed: IBKR serves its own candles.
 const pair = new TradingPair('F', 'USD');

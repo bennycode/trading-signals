@@ -3,6 +3,8 @@ import {existsSync} from 'node:fs';
 import {mkdir, rm, writeFile} from 'node:fs/promises';
 import {join} from 'node:path';
 import {Readable} from 'node:stream';
+import {IbkrAPI} from '../api/IbkrAPI.js';
+import {SimplifiedHttpError} from '../../../util/SimplifiedHttpError.js';
 import {isAuthenticated, loginToIbkrGateway} from './loginToIbkrGateway.js';
 
 /**
@@ -18,11 +20,16 @@ import {isAuthenticated, loginToIbkrGateway} from './loginToIbkrGateway.js';
  */
 export const GATEWAY_DOWNLOAD_URL = 'https://download2.interactivebrokers.com/portal/clientportal.gw.zip';
 
-/** Where the unpacked gateway lives, gitignored because it is a vendor binary. */
-export const GATEWAY_DIR = new URL('../../../../.clientportal.gw/', import.meta.url).pathname;
+/**
+ * Where the unpacked gateway lives, gitignored because it is a vendor binary.
+ *
+ * Built from `import.meta.dirname` rather than a `file:` URL, whose `pathname` is percent-encoded
+ * and so breaks on any checkout with a space in its path.
+ */
+export const GATEWAY_DIR = join(import.meta.dirname, '..', '..', '..', '..', '.clientportal.gw');
 
-/** The port `root/conf.yaml` ships with. */
-export const GATEWAY_URL = 'https://localhost:5001';
+/** The gateway's address, taken from the port IBKR's own `root/conf.yaml` listens on. */
+export const GATEWAY_URL = IbkrAPI.URL_GATEWAY;
 
 /** Re-checked this often; a lapsed session is logged in again. */
 const MAINTENANCE_INTERVAL_MS = 60_000;
@@ -50,33 +57,65 @@ export async function ensureGateway(dir: string = GATEWAY_DIR): Promise<void> {
 
 /** Starts the gateway and resolves once it answers, so a login is not attempted against a dead port. */
 export async function startGateway(dir: string = GATEWAY_DIR): Promise<ChildProcess> {
-  const child = spawn('bash', ['bin/run.sh', 'root/conf.yaml'], {cwd: dir, stdio: ['ignore', 'pipe', 'pipe']});
+  /*
+   * `detached` puts the shell and the `java` it starts in one process group, which is what
+   * {@link stopGateway} needs to take both down together.
+   */
+  const child = spawn('bash', ['bin/run.sh', 'root/conf.yaml'], {
+    cwd: dir,
+    detached: true,
+    stdio: ['ignore', 'pipe', 'pipe'],
+  });
 
   child.stdout?.on('data', (chunk: Buffer) => process.stdout.write(`[gateway] ${chunk.toString()}`));
   child.stderr?.on('data', (chunk: Buffer) => process.stderr.write(`[gateway] ${chunk.toString()}`));
 
   const deadline = Date.now() + 60_000;
   while (Date.now() < deadline) {
-    // Any answer at all means it is listening; `isAuthenticated` reports false until the login runs.
-    await isAuthenticated(GATEWAY_URL);
     if (await isListening(GATEWAY_URL)) {
       return child;
     }
     await delay(1_000);
   }
 
-  child.kill();
+  stopGateway(child);
   throw new Error('The gateway did not start listening within 60s.');
 }
 
+/**
+ * Whether anything is answering on the gateway's port yet.
+ *
+ * A 401 counts: the port being open is the question here, and the gateway answers every
+ * `/iserver` call with one until somebody logs in. Only a transport failure means it is not up,
+ * and {@link SimplifiedHttpError} reports that as status 0 — the interceptor drops Axios's
+ * `ECONNREFUSED` code, so the status is the only thing left to read it from.
+ */
 async function isListening(gatewayUrl: string): Promise<boolean> {
   try {
-    const {IbkrAPI} = await import('../api/IbkrAPI.js');
     await new IbkrAPI({gatewayUrl}).getAuthStatus();
     return true;
   } catch (error) {
-    // A refused connection means it is not up yet; any HTTP answer means it is.
-    return !String(error).includes('ECONNREFUSED');
+    return !(error instanceof SimplifiedHttpError) || error.status !== 0;
+  }
+}
+
+/**
+ * Takes down the gateway and the `java` it runs.
+ *
+ * IBKR's `run.sh` starts `java` as a child instead of `exec`-ing it, so signalling the shell alone
+ * leaves Java reparented to PID 1, still holding the port, and the next run finds a stale gateway
+ * answering. Signalling the negated pid reaches the whole process group instead.
+ */
+export function stopGateway(child: ChildProcess): void {
+  if (child.pid === undefined) {
+    return;
+  }
+
+  try {
+    process.kill(-child.pid, 'SIGTERM');
+  } catch {
+    // Already gone, or never made it into a group of its own; the direct signal is the fallback.
+    child.kill('SIGTERM');
   }
 }
 
@@ -101,7 +140,7 @@ export async function runGateway(options: {account: string; password: string; tw
   const child = await startGateway();
 
   const shutdown = () => {
-    child.kill();
+    stopGateway(child);
     process.exit(0);
   };
   process.on('SIGINT', shutdown);

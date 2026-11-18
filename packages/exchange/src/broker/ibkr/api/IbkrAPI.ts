@@ -49,8 +49,14 @@ const URL = {
 export class IbkrAPI {
   static readonly URL = URL;
 
-  /** The gateway's default address. It serves HTTPS with a self-signed certificate. */
-  static readonly URL_GATEWAY = 'https://localhost:5000';
+  /**
+   * The gateway's default address, which is where `root/conf.yaml` in IBKR's own distribution
+   * listens (`listenPort: 5001`). It serves HTTPS with a self-signed certificate.
+   *
+   * The launcher and the `gateway:ibkr:status` script read the port from here, so a gateway
+   * configured onto another port only has to be named once.
+   */
+  static readonly URL_GATEWAY = 'https://localhost:5001';
 
   readonly #httpClient: AxiosInstance;
 

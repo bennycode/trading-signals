@@ -51,7 +51,13 @@ export async function loginToIbkrGateway(options: IbkrLoginOptions): Promise<voi
 
   try {
     browser = await chromium.launch();
-    const context = await browser.newContext({ignoreHTTPSErrors: true});
+    /*
+     * The gateway's certificate is self-signed, so a loopback connection has no chain to verify
+     * and verification has to be off. Anywhere else it stays on, and for a stronger reason than
+     * in `IbkrAPI`: this page is where the IBKR password is typed, so accepting any certificate
+     * on a remote gateway would hand the credentials to whoever answered.
+     */
+    const context = await browser.newContext({ignoreHTTPSErrors: IbkrAPI.isLoopback(gatewayUrl)});
     const page = await context.newPage();
 
     await page.goto(`${gatewayUrl}/sso/Login?forwardTo=22&RL=1&ip2loc=on`, {waitUntil: 'domcontentloaded'});

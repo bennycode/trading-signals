@@ -3,6 +3,7 @@ import {TradingPair} from '../../TradingPair.js';
 import {getIbkrClient} from '../getIbkrClient.js';
 import Big from 'big.js';
 import {ms} from 'ms';
+import {IbkrAPI} from '../api/IbkrAPI.js';
 
 /**
  * Read-only smoke test against a running Client Portal Gateway. Places no orders, so it is safe
@@ -14,7 +15,7 @@ const pair = new TradingPair(process.env.IBKR_DEMO_SYMBOL ?? 'AAPL', 'USD');
 
 /** No `marketData`: candles come from IBKR's own history endpoint. */
 const broker = getIbkrClient({
-  gatewayUrl: process.env.IBKR_GATEWAY_URL ?? 'https://localhost:5001',
+  gatewayUrl: process.env.IBKR_GATEWAY_URL ?? IbkrAPI.URL_GATEWAY,
 });
 
 async function section(name: string, run: () => Promise<unknown>) {

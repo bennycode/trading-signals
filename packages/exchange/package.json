@@ -50,7 +50,7 @@
     "fix:other": "oxfmt",
     "gateway:ibkr": "tsx --import ../../loadEnv.ts src/broker/ibkr/gateway/gateway.ts",
     "gateway:ibkr:op": "op run --env-file=../../.env.op -- npm run gateway:ibkr",
-    "gateway:ibkr:status": "curl -kfs https://localhost:5001/v1/api/iserver/auth/status",
+    "gateway:ibkr:status": "tsx -e \"const {IbkrAPI}=await import('./src/broker/ibkr/api/IbkrAPI.js');console.log(JSON.stringify(await new IbkrAPI().getAuthStatus()))\"",
     "ibkr:testAll": "tsx --import ../../loadEnv.ts src/broker/ibkr/demo/testAll.ts",
     "ibkr:testAll:op": "op run --env-file=../../.env.op -- npm run ibkr:testAll",
     "lint": "npm run lint:code && npm run lint:other",

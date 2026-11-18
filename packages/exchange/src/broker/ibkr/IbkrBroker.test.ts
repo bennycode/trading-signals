@@ -28,7 +28,7 @@ const mockMethods = {
 vi.mock(import('./api/IbkrAPI.js'), () => ({
   IbkrAPI: class {
     cancelOrder = mockMethods.cancelOrder;
-    defaults = {baseURL: 'https://localhost:5000'};
+    defaults = {baseURL: 'https://localhost:5001'};
     getAccounts = mockMethods.getAccounts;
     getAuthStatus = mockMethods.getAuthStatus;
     getContractInfoAndRules = mockMethods.getContractInfoAndRules;
@@ -601,7 +601,7 @@ describe('IbkrBroker', {concurrent: false}, () => {
     it('keeps certificate verification on for anything but this machine', async () => {
       const {IbkrAPI: RealIbkrAPI} = await vi.importActual<ActualIbkrAPIModule>('./api/IbkrAPI.js');
 
-      expect(RealIbkrAPI.isLoopback('https://localhost:5000')).toBe(true);
+      expect(RealIbkrAPI.isLoopback('https://localhost:5001')).toBe(true);
       expect(RealIbkrAPI.isLoopback('https://127.0.0.1:5001')).toBe(true);
       expect(
         RealIbkrAPI.isLoopback('https://gateway.example.com:5000'),
