@@ -47,7 +47,7 @@ describe('DEMA', () => {
         dema.add(price);
         if (dema.isStable) {
           const result = dema10results[index];
-          expect(dema.getResultOrThrow().toPrecision(4)).toEqual(result.toPrecision(4));
+          expect(dema.getResultOrThrow().toPrecision(4)).toEqual(result?.toPrecision(4));
         }
       });
 

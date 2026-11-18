@@ -14,7 +14,7 @@ export const price = async (request: string, userId: string) => {
     return 'Invalid format. Usage: /price <accountId> <pair>';
   }
 
-  const [accountIdStr, pairPart] = parts;
+  const [accountIdStr = '', pairPart = ''] = parts;
 
   try {
     const accountId = assertId(accountIdStr);

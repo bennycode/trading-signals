@@ -23,7 +23,7 @@ export const strategyAdd = async (request: string, userId: string): Promise<Stra
     };
   }
 
-  const [strategyName, accountIdStr, pairStr, ...configParts] = parts;
+  const [strategyName = '', accountIdStr = '', pairStr = '', ...configParts] = parts;
 
   // Validate pair format early
   let pair: TradingPair;

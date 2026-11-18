@@ -43,7 +43,10 @@ export function makeWatchAddWizard(deps: {watchMonitor: () => WatchMonitor | und
 
     const accountCb = await conversation.waitForCallbackQuery(accounts.map(a => `watchadd:acc:${a.id}`));
     await accountCb.answerCallbackQuery();
-    const accountId = Number.parseInt(typeof accountCb.match === 'string' ? accountCb.match.split(':')[2] : '', 10);
+    const accountId = Number.parseInt(
+      typeof accountCb.match === 'string' ? (accountCb.match.split(':')[2] ?? '') : '',
+      10
+    );
 
     await accountCb.editMessageText('Send a trading pair (e.g. SHOP,USD):');
     const pairResp = await waitForTextOrCancel(conversation, ctx);
@@ -121,7 +124,7 @@ export function makeWatchAddWizard(deps: {watchMonitor: () => WatchMonitor | und
         }
         const client = getAccountBrokerClient(account);
         const smallestInterval = client.getSmallestInterval();
-        const intervalMs = assertInterval(interval);
+        const intervalMs = assertInterval(interval ?? '');
         if (intervalMs < smallestInterval) {
           return {
             error: `Minimum interval for ${account.exchange} is ${ms(smallestInterval, {long: true})}.`,

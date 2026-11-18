@@ -18,7 +18,7 @@ export class PlatformDispatcher {
   }
 
   async sendToUser(userId: string, message: string) {
-    const platformPrefix = userId.split(':')[0];
+    const platformPrefix = userId.split(':')[0] ?? '';
     const platform = this.#platforms.get(platformPrefix);
     if (!platform) {
       logger.warn({platformPrefix, userId}, 'No platform found to send notification');

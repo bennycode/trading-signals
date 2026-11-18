@@ -21,7 +21,7 @@ export async function accountEdit(request: string, userId: string): Promise<Acco
     return {message: 'Invalid format. Usage: /accountEdit <id> <apiKey> <apiSecret>'};
   }
 
-  const [idStr, apiKey, apiSecret] = parts;
+  const [idStr = '', apiKey = '', apiSecret = ''] = parts;
 
   try {
     const accountId = assertId(idStr);
