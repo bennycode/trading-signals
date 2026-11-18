@@ -122,11 +122,6 @@ export const Scalp = defineStrategy(ScalpSchema)({
          * adopted rather than opened leaves no entry behind: counting entries would send it back
          * to the EMA rule, which buys at market instead of waiting an offset below the exit.
          */
-        /*
-         * Phased on the last exit rather than on the entry count, because a position this strategy
-         * adopted rather than opened leaves no entry behind: counting entries would send it back
-         * to the EMA rule, which buys at market instead of waiting an offset below the exit.
-         */
         when: ({lastExit}) => lastExit !== null,
       },
     ],

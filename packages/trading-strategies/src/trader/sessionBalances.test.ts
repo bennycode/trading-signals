@@ -31,6 +31,22 @@ describe('sessionBalances', () => {
     ).toBe('2');
   });
 
+  it('reports a short position rather than reading it as something to hold', () => {
+    const balances = [
+      {available: '5', currency: pair.base, hold: '2', position: OrderPosition.SHORT},
+      {available: '100', currency: pair.counter, hold: '0', position: OrderPosition.LONG},
+    ];
+
+    const result = sessionBalances(balances, pair);
+
+    expect(
+      result.base.plus(result.baseOnHold).toFixed(),
+      'selling to protect a short would make the short bigger, so the long-only rules see nothing'
+    ).toBe('0');
+    expect(result.shortBase.toFixed(), 'all of it is short, whether it is reserved or not').toBe('7');
+    expect(result.counter.toFixed(), 'the cash is still the account cash').toBe('100');
+  });
+
   it('is nothing at all for a pair the account holds neither side of', () => {
     const result = sessionBalances([balance('ETH', '5', '1')], pair);
 
@@ -74,21 +90,5 @@ describe('holdsPosition', () => {
 
   it('does not count dust below the minimum order size', () => {
     expect(holdsPosition(stateWith('0.009', '0', '0.01')), 'what cannot be sold is not a position').toBe(false);
-  });
-
-  it('reports a short position rather than reading it as something to hold', () => {
-    const balances = [
-      {available: '5', currency: pair.base, hold: '2', position: OrderPosition.SHORT},
-      {available: '100', currency: pair.counter, hold: '0', position: OrderPosition.LONG},
-    ];
-
-    const result = sessionBalances(balances, pair);
-
-    expect(
-      result.base.plus(result.baseOnHold).toFixed(),
-      'selling to protect a short would make the short bigger, so the long-only rules see nothing'
-    ).toBe('0');
-    expect(result.shortBase.toFixed(), 'all of it is short, whether it is reserved or not').toBe('7');
-    expect(result.counter.toFixed(), 'the cash is still the account cash').toBe('100');
   });
 });

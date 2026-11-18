@@ -5,7 +5,9 @@ A strategy that is nothing but **kill switches**: a stop-loss and a take-profit,
 The same two switches are available to any strategy: extend `ProtectionSchema` and add the `protection()` rule, which is what most strategies in this package do. The exceptions are `SmaCrossover`, which offers no kill switch, and `TrailingStop`, which is one.
 
 ```ts
-import {defineStrategy, protection, ProtectionSchema} from '@typedtrader/trading-strategies';
+import {z} from 'zod';
+import {MarketType} from '@typedtrader/exchange';
+import {defineStrategy, positiveNumberString, protection, ProtectionSchema} from 'trading-strategies';
 
 const MyStrategySchema = ProtectionSchema.extend({
   dipBelow: positiveNumberString,
@@ -41,7 +43,7 @@ Each switch can be told where it fires in three equivalent units, of which exact
 | `stopLossNominal` / `takeProfitNominal` | Counter currency away from it, spread over the position. `"10"` on 10 shares at $100 → $99. |
 | `stopLossPrice` / `takeProfitPrice` | The price itself, wherever the position was entered. `"95"` → $95. |
 
-The order each exit goes out as is configured per direction, and the two default differently:
+The order each exit goes out as is configured per direction, and both default to a limit:
 
 | Setting           | Default   | Meaning                                                   |
 | ----------------- | --------- | --------------------------------------------------------- |

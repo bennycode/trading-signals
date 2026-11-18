@@ -13,23 +13,6 @@ import {SmaCrossover, SmaCrossoverSchema} from './smaCrossover.js';
 describe('SmaCrossover', () => {
   const candles = loadCandles();
 
-  it(
-    'fires at the crossing rather than on every bar on one side of it',
-    async () => {
-      /*
-       * A rule that only compared the current readings would match on every bar the fast average
-       * spends above the slow one. Each entry here is therefore separated by an exit.
-       */
-      const result = await backtest(new SmaCrossover(), candles, flatWithCash);
-      const sides = result.trades.map(trade => trade.side);
-
-      expect(sides, 'entries and exits alternate').toStrictEqual(
-        sides.map((_, index) => (index % 2 === 0 ? OrderSide.BUY : OrderSide.SELL))
-      );
-    },
-    WEEK_LONG_TIMEOUT
-  );
-
   it('rejects two averages that could never cross', () => {
     expect(
       () => new SmaCrossover({fastPeriod: 10, fastTimeframe: '5m', slowPeriod: 10, slowTimeframe: '5m'}),

@@ -54,13 +54,13 @@ Command names are case-insensitive — `/reportAdd`, `/reportadd`, and `/REPORTA
 Use `/strategyAdd` to attach a trading strategy to an account. The format is:
 
 ```
-/strategyAdd <accountId> <PAIR> <configJSON>
+/strategyAdd <strategyName> <accountId> <PAIR> [configJSON]
 ```
 
-For example, to protect an existing AAPL position with a 5% stop-loss and 10% take-profit:
+For example, to protect an existing AAPL position with a 5% stop-loss and 10% take-profit. The strategy named is the one that does nothing but guard a position it did not open — naming an entry strategy here would have it buy as well:
 
 ```
-/strategyAdd 1 AAPL,USD {"stopLossPct":"5","takeProfitPct":"10"}
+/strategyAdd @typedtrader/strategy-protected 1 AAPL,USD {"stopLossPct":"5","takeProfitPct":"10"}
 ```
 
 ## Motivation

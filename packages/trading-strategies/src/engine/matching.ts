@@ -134,8 +134,8 @@ export function firstMatch<F>(options: {
 
 /**
  * Refuses a rule list whose `when: 'always'` rule can never be reached. Such a rule matches every
- * evaluation, so anything below it in the same slot is dead — except where the engine picks the
- * slot by the balance, which is why a strategy with both slots filled is left alone.
+ * evaluation, so anything below it in the same slot is dead. Each slot is judged on its own,
+ * because the engine picks the slot by the balance and then works down the rules in it.
  */
 export function refuseShadowedRules<F>(options: {
   closeRules: readonly CloseRule<F>[];

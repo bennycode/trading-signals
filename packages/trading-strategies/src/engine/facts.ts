@@ -31,11 +31,11 @@ function indicatorFacts<Indicators>(
   return facts as IndicatorResults<Indicators>;
 }
 
-/** `prices` is the candle itself, or the completed bar of a rule that declared a timeframe. */
-
 /**
  * Everything a rule may read about one evaluation. Built fresh each time and never spread, because
  * the indicator values are getters that throw while their indicator is still warming up.
+ *
+ * `prices` is the candle itself, or the completed bar of a rule that declared a timeframe.
  */
 export function factsFor<Config, Indicators>(options: {
   candle: OneMinuteBatchedCandle;
