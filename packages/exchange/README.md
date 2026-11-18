@@ -35,10 +35,11 @@ To drive the brokers from a terminal instead of code, install [@typedtrader/exch
 | --- | --- | --- | :-: | --- | --- | --- |
 | `alpaca` | [Alpaca](https://alpaca.markets/) | US stocks, ETFs, crypto | ✅ | ✅ IEX feed, WebSocket streamed | ✅ WebSocket stream | [docs.alpaca.markets](https://docs.alpaca.markets/reference/) |
 | `trading212` | [Trading212](https://www.trading212.com/) | 13,000+ US/UK/EU stocks and ETFs | ✅ | ❌ bring your own source | 🔁 polled (~60s) | [docs.trading212.com](https://docs.trading212.com/api) |
+| `ibkr` | [Interactive Brokers](https://www.interactivebrokers.com/) | US stocks and ETFs, 24/5 overnight | ❌ live session only | ✅ own history endpoint | 🔁 polled (~5s) | [Web API](https://www.interactivebrokers.com/docs/web-api/getting-started) |
 
 More brokers are planned, and the `Broker` abstraction is built for it (see [Bring Your Own Broker](#bring-your-own-broker)).
 
-You create the API keys yourself in each broker's dashboard. The package uses your credentials but never creates accounts or keys for you: [Alpaca API keys](https://docs.alpaca.markets/us/docs/getting-started) · [Trading212 API keys](https://helpcentre.trading212.com/hc/en-us/articles/14584770928157-Trading-212-API-key)
+You create the API keys yourself in each broker's dashboard. The package uses your credentials but never creates accounts or keys for you: [Alpaca API keys](https://docs.alpaca.markets/us/docs/getting-started) · [Trading212 API keys](https://helpcentre.trading212.com/hc/en-us/articles/14584770928157-Trading-212-API-key) · [Interactive Brokers](https://www.interactivebrokers.com/docs/web-api/getting-started) signs requests through a local gateway instead of API keys
 
 ## Quick Start: Alpaca
 
@@ -126,6 +127,49 @@ await broker.placeLimitOrder(pair, {side: 'BUY', size: '1', price: latest.close}
 - **Order updates are polled.** Trading212 has no order-stream WebSocket, so `watchOrders` polls once per minute (matching Trading212's documented rate limit). Fills arrive within ~60 seconds rather than push-style.
 
 **Resources:** [API Documentation](https://docs.trading212.com/api) · [Fees](https://helpcentre.trading212.com/hc/en-us/articles/11471996799517)
+
+## Quick Start: Interactive Brokers
+
+IBKR's retail Web API authenticates through the Client Portal Gateway, a local process that holds a logged-in session and signs requests, so the broker carries no API keys of its own. `compose.yaml` in this package runs [IBeam](https://github.com/Voyz/ibeam), which packages the gateway and performs the login headlessly:
+
+```sh
+npm run gateway:ibkr:op   # resolves IBKR_ACCOUNT / IBKR_PASSWORD from 1Password
+```
+
+Approve the IB Key push on your phone when it arrives, then the broker talks to the gateway on localhost:
+
+```ts
+import {getIbkrClient, TradingPair} from '@typedtrader/exchange';
+
+const broker = getIbkrClient({gatewayUrl: 'https://localhost:5001'});
+
+// No market-data source needed: IBKR serves its own candles.
+const pair = new TradingPair('F', 'USD');
+const latest = await broker.getLatestCandle(pair, 86_400_000);
+await broker.placeLimitOrder(pair, {side: 'BUY', size: '1', price: latest.close});
+```
+
+**Why Interactive Brokers:**
+
+- **Candles included**, so no second data provider is needed — unlike Trading212.
+- **Fee estimates from IBKR itself.** `estimateFee()` prices the exact ticket through IBKR's `whatif` preview rather than modelling the commission schedule.
+- **[24/5 overnight trading](https://www.interactivebrokers.com/en/trading/orders/overnight-trading-orders.php)** of US stocks and ETFs, from 20:00 to 03:50 ET.
+- **Automatic FX.** A USD instrument bought from a EUR account is funded by an IDEALPRO conversion, which the trades feed reports alongside the fill.
+
+**Trading permissions are per product**, and a product you have not been granted is refused at submission rather than at account level. Open **Client Portal → Settings → Account Settings → Trading Permissions**, where each product is a tile that is either already granted or carries a _Request_ button:
+
+- **Stocks** is what this package needs, and it is also what IBKR says is sufficient for overnight trading — there is no separate overnight tile to request.
+- **Stock, Index and Forex CFDs** must be activated there before any CFD can be traded. It is the usual route to a short position for an account without margin, though this package trades stocks rather than CFDs.
+- **Currency/Forex** covers the IDEALPRO conversions that fund a cross-currency trade.
+
+**Good to know:**
+
+- **The session needs a human.** IBeam automates the login, but IBKR's 2FA sends an IB Key push that has to be approved on your phone, and the session expires roughly daily. A passkey cannot be used: IBKR's Web API supports IB Key, Handy Key, SMS and DSC+ only.
+- **Market data may be delayed.** Without a market-data subscription the quote feed reports `D` (delayed) and can return no price fields at all during regular hours. The history endpoint used for candles is unaffected.
+- **Order updates are polled.** `watchOrders` polls the trades endpoint rather than opening IBKR's WebSocket, which needs its own handshake and re-subscribes on every reconnect.
+- **The orders snapshot lags.** `/iserver/account/orders` does not include an order placed moments earlier, and can still report a filled order as working, so do not read it back immediately after placing.
+
+**Resources:** [Web API](https://www.interactivebrokers.com/docs/web-api/getting-started) · [API Reference](https://www.interactivebrokers.com/docs/openapi/api-reference.json) · [IBeam](https://github.com/Voyz/ibeam) · [Overnight Trading](https://www.interactivebrokers.com/en/trading/orders/overnight-trading-orders.php)
 
 ## Raw API Access
 

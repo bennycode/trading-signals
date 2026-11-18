@@ -90,11 +90,13 @@ export class IbkrBroker extends Broker implements MarketDataSource {
      * carries its own liquidity and spreads, and only limit orders reach it — a market order is
      * refused rather than quietly held until the opening bell.
      *
-     * **The account must be enabled for overnight trading**, which is a separate agreement in
-     * Client Portal. Without it the order is still accepted and reports `tif: OND` and
-     * `Submitted`, then is cancelled unfilled once the session opens, with no reason on the order
-     * and `warning_message: null` — a silence worth recognising rather than debugging. A `whatif`
-     * preview does not catch it either, since it prices the ticket without checking permissions.
+     * No extra permission is needed: Client Portal lists permissions per product and has no
+     * overnight tile, and IBKR states that an existing US stock permission covers the session.
+     *
+     * Failure here is silent, so recognise it rather than debug it. An order IBKR will not honour
+     * is still accepted, reports `tif: OND` and `Submitted`, and is then cancelled unfilled once
+     * the session opens, with no reason on the order and `warning_message: null`. A `whatif`
+     * preview does not catch it either, since it prices a ticket it will never route.
      */
     overnight?: boolean;
     /**
