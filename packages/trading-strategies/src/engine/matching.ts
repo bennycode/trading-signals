@@ -139,17 +139,19 @@ export function firstMatch<F>(options: {
  */
 export function refuseShadowedRules<F>(options: {
   closeRules: readonly CloseRule<F>[];
+  interval: StringValue | undefined;
   name: string;
   openRules: readonly OpenRule<F>[];
 }): void {
-  const {closeRules, name, openRules} = options;
+  const {closeRules, interval, name, openRules} = options;
 
   for (const rules of [openRules, closeRules]) {
     /*
-     * Only a rule judged on every candle can be counted on to match: one with a timeframe of its
-     * own is skipped while its bar is still open, which gives the rules under it their turn.
+     * Only a rule judged on every candle can be counted on to match: one judged on a larger bar
+     * is skipped while that bar is still open, which gives the rules under it their turn. What a
+     * rule is judged on is its own timeframe or, failing that, the strategy's interval.
      */
-    const index = rules.findIndex(rule => rule.when === 'always' && rule.timeframe === undefined);
+    const index = rules.findIndex(rule => rule.when === 'always' && timeframeOf(rule, interval) === undefined);
     if (index !== -1 && index < rules.length - 1) {
       throw new Error(`${name}: rule with when: 'always' shadows the rule below it`);
     }

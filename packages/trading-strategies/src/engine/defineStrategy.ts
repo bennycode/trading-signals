@@ -3,20 +3,14 @@ import {ms, type StringValue} from 'ms';
 import type {z} from 'zod';
 import {CandleBatcher, getFilledBaseAmount, OrderSide} from '@typedtrader/exchange';
 import type {BatchedCandle, Fill, MarketDataSource, OneMinuteBatchedCandle, TradingPair} from '@typedtrader/exchange';
-import {holdsPosition, ownedBase} from '../trader/sessionBalances.js';
+import {holdsPosition} from '../trader/sessionBalances.js';
 import {adviceFor, plannedOrder} from './advice.js';
 import {factsFor} from './facts.js';
+import {notices} from './notices.js';
+import {gonePositionChange, heldPositionChange} from './position.js';
 import {firstMatch, judgeCrossings, refuseShadowedRules, timeframeOf} from './matching.js';
 import {warmUpFromHistory} from './warmUp.js';
-import {
-  adoptedPosition,
-  afterEntryFill,
-  afterExitFill,
-  closedPosition,
-  emptyLedger,
-  LedgerSchema,
-  type Ledger,
-} from './ledger.js';
+import {afterEntryFill, afterExitFill, emptyLedger, LedgerSchema, type Ledger} from './ledger.js';
 import type {OrderAdvice, TradingSessionState} from '../trader/index.js';
 import type {MarketType} from '../strategy/MarketType.js';
 import {Strategy} from '../strategy/Strategy.js';
@@ -90,7 +84,7 @@ function build<
 
   type Slot = 'close' | 'open';
 
-  refuseShadowedRules({closeRules, name: definition.name, openRules});
+  refuseShadowedRules({closeRules, interval: definition.interval, name: definition.name, openRules});
 
   return class EngineStrategy extends Strategy {
     static override NAME = definition.name;
@@ -100,6 +94,7 @@ function build<
     readonly #config: ParsedConfig;
     /** Set when a snapshot this engine could not read was replaced, to report once a relay exists. */
     #stateWasReset = false;
+    #reportedShort = false;
     readonly #indicators: Map<string, IndicatorHandle<unknown>>;
     /** One batcher per timeframe any rule declared, so a rule can be evaluated per bar. */
     readonly #ruleBatchers = new Map<StringValue, CandleBatcher>(
@@ -154,10 +149,7 @@ function build<
        * messages, so a notice sent any earlier reaches nobody.
        */
       if (this.#stateWasReset) {
-        this.onMessage?.(
-          `${definition.name}: the saved state could not be read and was reset. The position is adopted from the ` +
-            `current balance, so a percentage threshold now measures from the price it attaches at.`
-        );
+        this.onMessage?.(notices.stateReset(definition.name));
         this.#stateWasReset = false;
       }
 
@@ -176,20 +168,24 @@ function build<
     ): Promise<OrderAdvice | void> {
       this.#feedIndicators(candle);
       const bars = this.#feedRuleBatchers(candle);
+
+      if (state.shortBase.gt(0)) {
+        this.#reportShortOnce();
+        return;
+      }
+
       const holding = holdsPosition(state);
 
-      if (holding) {
-        /*
-         * The high of the candle a position is adopted on belongs to a time before this strategy
-         * held anything, so it is not a best price it saw. Ratcheting to it would put a trailing
-         * target below a price the position never had — far enough, on a candle that ran up and
-         * closed back down, to sell it the moment it attached.
-         */
-        if (!this.#openPositionIfUntracked(candle, state)) {
-          this.#ratchetBestPrice(candle);
-        }
-      } else {
-        await this.#forgetPositionThatIsGone(candle);
+      /*
+       * The high of the candle a position is adopted on belongs to a time before this strategy
+       * held anything, so it is not a best price it saw. Ratcheting to it would put a trailing
+       * target below a price the position never had — far enough, on a candle that ran up and
+       * closed back down, to sell it the moment it attached.
+       */
+      const {adopted} = await this.#reconcilePosition(candle, state, holding);
+
+      if (holding && !adopted) {
+        this.#ratchetBestPrice(candle);
       }
 
       /*
@@ -317,55 +313,43 @@ function build<
     }
 
     /**
-     * ponytail: entry price for a position this strategy did not open is taken from the candle it
-     * first sees, so percentage rules measure from attach time rather than from what was actually
-     * paid. Read `avg_entry_price` off the broker position once `TradingSessionState` carries it.
+     * Applies what this candle changes about the position itself, and reports the changes nobody
+     * asked for. Returns whether the position was adopted on this candle, which is the one candle
+     * whose high is not a best price this strategy saw.
      */
-    /** Whether a position was adopted, which is what tells the caller this candle was not held. */
-    #openPositionIfUntracked(candle: OneMinuteBatchedCandle, state: TradingSessionState): boolean {
-      if (new Big(this.#ledger.size).gt(0)) {
-        return false;
+    async #reconcilePosition(candle: OneMinuteBatchedCandle, state: TradingSessionState, holding: boolean) {
+      const change = holding
+        ? heldPositionChange(this.#ledger, state, candle)
+        : gonePositionChange(this.#ledger, state, candle, openRules.length > 0);
+
+      if (!change) {
+        return {adopted: false};
       }
 
-      /*
-       * An order of ours is still working, so this balance may be its doing. Its fill will account
-       * for it; adopting it now would count the same purchase twice.
-       */
-      if (state.hasOutstandingOrder) {
-        return false;
+      this.setState<Ledger>(change.patch);
+
+      if (!change.adopted && holding) {
+        this.onMessage?.(notices.positionResized(definition.name, change.patch.size ?? '0'));
+      }
+      if (change.final) {
+        await this.onFinish?.();
       }
 
-      this.setState<Ledger>(adoptedPosition(candle, ownedBase(state)));
-      return true;
+      return {adopted: change.adopted};
+    }
+
+    /** Said once per session: a short does not become news again on the next candle. */
+    #reportShortOnce(): void {
+      if (this.#reportedShort) {
+        return;
+      }
+      this.#reportedShort = true;
+      this.onMessage?.(notices.shortHeld(definition.name));
     }
 
     #ratchetBestPrice(candle: OneMinuteBatchedCandle): void {
       if (candle.high.gt(new Big(this.#ledger.bestPrice))) {
         this.#ledger.bestPrice = candle.high.toFixed();
-      }
-    }
-
-    /**
-     * The position can disappear without a fill of ours: sold by hand, by a rebalance or by
-     * another strategy. Clearing the ledger here is what stops the engine reporting a position
-     * that no longer exists, and it completes a terminal exit whose fill we never saw.
-     */
-    async #forgetPositionThatIsGone(candle: OneMinuteBatchedCandle): Promise<void> {
-      const ledger = this.#ledger;
-      if (new Big(ledger.size).lte(0)) {
-        return;
-      }
-
-      /*
-       * A strategy with no entry rule is done the moment it holds nothing, however the position
-       * went: it cannot buy one back, so staying alive would only let it attach to whatever is
-       * bought on this pair next and sell that against a trail it never agreed to.
-       */
-      const final = ledger.pendingFinalExit !== null || openRules.length === 0;
-      this.setState<Ledger>(closedPosition(ledger, candle.close, final));
-
-      if (final) {
-        await this.onFinish?.();
       }
     }
 

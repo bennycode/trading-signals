@@ -129,3 +129,19 @@ export function closedPosition(ledger: Ledger, price: Big, final: boolean): Part
     size: '0',
   };
 }
+
+/**
+ * A tracked position brought down to what is actually owned, or nothing when it already matches.
+ * A holding can be reduced without a fill of ours — sold by hand, rebalanced — and a threshold
+ * measured per unit would then divide what the position cost by a size that is no longer there.
+ * The entry price is kept, because the part still held was bought at it.
+ */
+export function resizedToOwned(ledger: Ledger, owned: Big): Partial<Ledger> | null {
+  const tracked = new Big(ledger.size);
+  if (tracked.lte(0) || owned.gte(tracked)) {
+    return null;
+  }
+
+  const entryPrice = new Big(ledger.costBasis).div(tracked);
+  return {costBasis: entryPrice.mul(owned).toFixed(), size: owned.toFixed()};
+}

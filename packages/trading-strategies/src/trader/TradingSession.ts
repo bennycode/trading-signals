@@ -1,9 +1,18 @@
 import {EventEmitter} from 'node:events';
-import {CandleBatcher, ONE_MINUTE_IN_MS} from '@typedtrader/exchange';
+import {CandleBatcher, ONE_MINUTE_IN_MS, OrderSide} from '@typedtrader/exchange';
 import type {BatchedCandle, Candle, Fill, PendingOrder} from '@typedtrader/exchange';
 import {AdviceExecutor} from './AdviceExecutor.js';
 import {sameOrder} from './sameOrder.js';
+import {ownedBase} from './sessionBalances.js';
 import {sessionBalances} from './sessionBalances.js';
+import type {SessionBalances} from './sessionBalances.js';
+
+/** What one read of the broker says: what is owned, and which of our orders are still working. */
+type BrokerSnapshot = SessionBalances & {
+  hasOutstandingBuy: boolean;
+  hasOutstandingSell: boolean;
+  openOrders: PendingOrder[];
+};
 import type {
   OrderAdvice,
   TradingSessionEventMap,
@@ -17,8 +26,8 @@ export class TradingSession extends EventEmitter<TradingSessionEventMap> {
   readonly #strategy;
 
   #state: TradingSessionState | null = null;
-  /** The advice the order currently on the book was placed for, so an identical one can be kept. */
-  #workingAdvice: OrderAdvice | null = null;
+  /** The order currently on the book, so advice asking for that same order can keep it. */
+  #workingOrder: PendingOrder | null = null;
   #adviceExecutor: AdviceExecutor | null = null;
   readonly #pendingOrders = new Map<string, PendingOrder>();
   #candleTopicId: string | null = null;
@@ -57,16 +66,13 @@ export class TradingSession extends EventEmitter<TradingSessionEventMap> {
       this.#pendingOrders.set(order.id, order);
     }
 
-    const balances = await this.#balances();
+    const snapshot = await this.#snapshot();
     const fills = await this.#broker.getFills(this.#pair);
     const lastOrderSide = fills[0]?.side;
 
     this.#state = {
-      baseBalance: balances.base,
-      baseBalanceOnHold: balances.baseOnHold,
-      counterBalance: balances.counter,
+      ...this.#stateFrom(snapshot),
       feeRates,
-      hasOutstandingOrder: this.#pendingOrders.size > 0,
       lastOrderSide,
       tradingRules,
     };
@@ -104,7 +110,7 @@ export class TradingSession extends EventEmitter<TradingSessionEventMap> {
 
     this.#running = false;
     this.#pendingOrders.clear();
-    this.#workingAdvice = null;
+    this.#workingOrder = null;
     this.#state = null;
     this.#adviceExecutor = null;
     this.emit('stopped');
@@ -129,14 +135,21 @@ export class TradingSession extends EventEmitter<TradingSessionEventMap> {
        * guards, and would keep reporting one that is long gone. The backtester rebuilds this
        * state per candle for the same reason.
        */
-      const balances = await this.#balances();
-      this.#state = {
-        ...this.#state!,
-        baseBalance: balances.base,
-        baseBalanceOnHold: balances.baseOnHold,
-        counterBalance: balances.counter,
-        hasOutstandingOrder: this.#pendingOrders.size > 0,
-      };
+      const snapshot = await this.#snapshot();
+      /*
+       * An order this session placed can leave the book without a fill of ours: Trading212's day
+       * orders expire overnight, and anyone can cancel one in the broker's own interface. The
+       * advice it was placed for is then not working any more, however well it is remembered.
+       */
+      const stillOpen = snapshot.openOrders.find(order => order.id === this.#workingOrder?.id);
+      this.#workingOrder = stillOpen ?? null;
+
+      // The session may have been stopped while the broker was answering.
+      if (!this.#state) {
+        return;
+      }
+
+      this.#state = {...this.#state, ...this.#stateFrom(snapshot)};
 
       const advice = await this.#strategy.onCandle(batchedCandle, this.#state);
       if (advice) {
@@ -155,17 +168,17 @@ export class TradingSession extends EventEmitter<TradingSessionEventMap> {
         return;
       }
 
-      this.#pendingOrders.delete(fill.order_id);
-      this.#workingAdvice = null;
+      this.#workingOrder = null;
       this.emit('fill', fill);
 
-      const balances = await this.#balances();
+      const snapshot = await this.#snapshot();
+      if (!this.#state) {
+        return;
+      }
+
       this.#state = {
         ...this.#state,
-        baseBalance: balances.base,
-        baseBalanceOnHold: balances.baseOnHold,
-        counterBalance: balances.counter,
-        hasOutstandingOrder: this.#pendingOrders.size > 0,
+        ...this.#stateFrom(snapshot),
         lastOrderSide: fill.side,
       };
 
@@ -173,6 +186,7 @@ export class TradingSession extends EventEmitter<TradingSessionEventMap> {
         await this.#strategy.onFill(fill, this.#state);
       }
 
+      this.#pendingOrders.delete(fill.order_id);
       this.emit('orderFilled', pending);
     } catch (error) {
       this.emit('error', error instanceof Error ? error : new Error(String(error)));
@@ -186,7 +200,8 @@ export class TradingSession extends EventEmitter<TradingSessionEventMap> {
      * of the exchange's queue each time and report a trade the user has already been told about,
      * so an order that is already working for this advice is left alone.
      */
-    if (this.#workingAdvice && sameOrder(this.#workingAdvice, advice) && this.#pendingOrders.size > 0) {
+    const working = this.#workingOrder;
+    if (working && this.#state && sameOrder(advice, working, ownedBase(this.#state))) {
       return;
     }
 
@@ -200,33 +215,24 @@ export class TradingSession extends EventEmitter<TradingSessionEventMap> {
       for (const orderId of canceledIds) {
         this.#pendingOrders.delete(orderId);
       }
-      this.#workingAdvice = null;
+      this.#workingOrder = null;
     }
 
     const outcome = await this.#adviceExecutor!.execute(advice);
 
     if (outcome.status === 'PLACED') {
       this.#pendingOrders.set(outcome.order.id, outcome.order);
-      this.#workingAdvice = advice;
+      this.#workingOrder = outcome.order;
       if (advice.reason) {
         this.#strategy.onMessage?.(advice.reason);
       }
     }
 
     /*
-     * Read after the order was placed rather than from the outcome, which the executor captured
-     * before placing it: a resting sell has moved base out of the available balance by now, and
-     * mixing the two snapshots would count what it holds twice.
+     * The balance is left as the candle read it. Reading it again here would mix a snapshot taken
+     * before the order was placed with one taken after, and the next candle reads it afresh
+     * anyway — which is the only moment a strategy sees it.
      */
-    const balances = await this.#balances();
-    this.#state = {
-      ...this.#state!,
-      baseBalance: balances.base,
-      baseBalanceOnHold: balances.baseOnHold,
-      counterBalance: balances.counter,
-      hasOutstandingOrder: this.#pendingOrders.size > 0,
-    };
-
     if (outcome.status === 'SKIPPED') {
       this.emit('error', outcome.error);
       return;
@@ -235,7 +241,37 @@ export class TradingSession extends EventEmitter<TradingSessionEventMap> {
     this.emit('order', outcome.order);
   }
 
-  async #balances() {
-    return sessionBalances(await this.#broker.listBalances(), this.#pair);
+  /**
+   * What the broker says right now: the balances, and the orders of ours still on its book. Both
+   * are read together so that a decision is never made from two different moments, and both come
+   * from the broker rather than from what this session remembers placing — an order can leave the
+   * book without a fill of ours (expired, cancelled by hand, rejected later) and only the broker
+   * knows that it has.
+   */
+  async #snapshot() {
+    const [rawBalances, openOrders] = await Promise.all([
+      this.#broker.listBalances(),
+      this.#broker.getOpenOrders(this.#pair),
+    ]);
+    const balances = sessionBalances(rawBalances, this.#pair);
+
+    return {
+      ...balances,
+      hasOutstandingBuy: openOrders.some(order => order.side === OrderSide.BUY),
+      hasOutstandingSell: openOrders.some(order => order.side === OrderSide.SELL),
+      openOrders,
+    };
+  }
+
+  /** The state fields a snapshot of the broker decides, which every state build shares. */
+  #stateFrom(snapshot: BrokerSnapshot) {
+    return {
+      baseBalance: snapshot.base,
+      baseBalanceOnHold: snapshot.baseOnHold,
+      counterBalance: snapshot.counter,
+      hasOutstandingBuy: snapshot.hasOutstandingBuy,
+      hasOutstandingSell: snapshot.hasOutstandingSell,
+      shortBase: snapshot.shortBase,
+    };
   }
 }

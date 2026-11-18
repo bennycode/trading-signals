@@ -46,7 +46,9 @@ function stateWith(base: string, baseOnHold: string, minimumSize = '0.000000001'
     baseBalanceOnHold: new Big(baseOnHold),
     counterBalance: new Big(0),
     feeRates: AlpacaBroker.DEFAULT_CRYPTO_FEE_RATES,
-    hasOutstandingOrder: false,
+    hasOutstandingBuy: false,
+    hasOutstandingSell: false,
+    shortBase: new Big(0),
     tradingRules: {...AlpacaBroker.DEFAULT_FRACTIONAL_TRADING_RULES, base_min_size: minimumSize, pair},
   };
 }

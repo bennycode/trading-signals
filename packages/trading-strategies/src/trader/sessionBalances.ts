@@ -20,6 +20,12 @@ export interface SessionBalances {
   baseOnHold: Big;
   /** Counter currency that can be spent right now. */
   counter: Big;
+  /**
+   * Base currency held short, as a positive quantity. The rules are long-only: buying would cover
+   * or reverse the short and selling would enlarge it, so a session that finds one does nothing
+   * rather than guess which was meant.
+   */
+  shortBase: Big;
 }
 
 /**
@@ -35,12 +41,14 @@ export function sessionBalances(balances: readonly Balance[], pair: TradingPair)
    * long-only, and a long rule let loose on a short would sell to "protect" a position that
    * selling makes larger, so a short counts as nothing to this session.
    */
-  const long = base?.position === OrderPosition.SHORT ? undefined : base;
+  const short = base?.position === OrderPosition.SHORT ? base : undefined;
+  const long = short ? undefined : base;
 
   return {
     base: new Big(long?.available ?? 0),
     baseOnHold: new Big(long?.hold ?? 0),
     counter: new Big(counter?.available ?? 0),
+    shortBase: new Big(short?.available ?? 0).plus(short?.hold ?? 0),
   };
 }
 

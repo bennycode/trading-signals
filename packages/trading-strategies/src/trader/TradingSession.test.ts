@@ -407,6 +407,11 @@ describe('TradingSession', {concurrent: false}, () => {
       await vi.waitFor(() => expect(exchange.placeLimitOrder).toHaveBeenCalledTimes(1));
       const cancelCallsAfterFirstOrder = exchange.cancelOpenOrders.mock.calls.length;
 
+      // The broker now reports that order as working, which is what keeping it depends on.
+      exchange.getOpenOrders.mockResolvedValue([
+        {id: 'order-1', pair, price: '253.00', side: OrderSide.SELL, size: '1', type: OrderType.LIMIT},
+      ]);
+
       exchange.emit('candle-topic-1', sampleCandle);
       exchange.emit('candle-topic-1', sampleCandle);
       await vi.waitFor(() => expect(strategy.onCandle).toHaveBeenCalledTimes(3));

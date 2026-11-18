@@ -49,12 +49,16 @@ describe('SmaCrossover', () => {
       holdingFromTheStart
     );
 
-    expect(result.trades.length, 'the position is held through the gap and sold on a crossing').toBeGreaterThan(0);
+    expect(result.trades.length, 'the position is held through the gap and sold on a crossing').toBe(1);
     expect(result.trades[0]?.side).toBe(OrderSide.SELL);
     expect(
       result.trades[0]?.advice.reason,
       'and it is the downward crossing that sells, not the readings being bearish to begin with'
     ).toContain('crossed below');
+    expect(
+      result.trades[0]?.price.toFixed(),
+      'the sale happens on the candle after the averages cross, not on the first bar they can be read'
+    ).toBe('80');
   });
 
   it('refuses a timeframe it cannot read instead of throwing', () => {

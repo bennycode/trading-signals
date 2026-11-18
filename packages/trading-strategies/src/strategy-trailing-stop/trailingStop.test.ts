@@ -103,7 +103,9 @@ describe('TrailingStop', () => {
       baseBalanceOnHold: new Big(0),
       counterBalance: new Big(0),
       feeRates: {[OrderType.LIMIT]: new Big(0), [OrderType.MARKET]: new Big(0)},
-      hasOutstandingOrder: false,
+      hasOutstandingBuy: false,
+      hasOutstandingSell: false,
+      shortBase: new Big(0),
       tradingRules: {...AlpacaBroker.DEFAULT_FRACTIONAL_TRADING_RULES, pair: tradingPair},
     });
 
@@ -123,15 +125,107 @@ describe('TrailingStop', () => {
       baseBalanceOnHold: new Big(0),
       counterBalance: new Big(0),
       feeRates: {[OrderType.LIMIT]: new Big(0), [OrderType.MARKET]: new Big(0)},
-      hasOutstandingOrder,
+      hasOutstandingBuy: hasOutstandingOrder,
+      hasOutstandingSell: false,
+      shortBase: new Big(0),
       tradingRules: {...AlpacaBroker.DEFAULT_FRACTIONAL_TRADING_RULES, pair: tradingPair},
     });
 
     await strategy.onCandle(batched(required(candle, 'candle')), state(true));
-    expect(strategy.ledger.size, 'the pending order will account for it').toBe('0');
+    expect(strategy.ledger.size, 'the pending buy will account for it').toBe('0');
 
     await strategy.onCandle(batched(required(candle, 'candle')), state(false));
-    expect(strategy.ledger.size, 'and once nothing is in flight the position is adopted').toBe('1');
+    expect(strategy.ledger.size, 'and once no buy is in flight the position is adopted').toBe('1');
+  });
+
+  it('guards a holding that already has a sell order resting against it', async () => {
+    /*
+     * Attaching to a position someone has already offered for sale is the ordinary case for a
+     * protective strategy. Waiting for that order to clear would leave the holding unguarded for
+     * as long as it rests.
+     */
+    const strategy = new TrailingStop({trailDownPct: '10'});
+    const [candle] = candlesAt(['100']);
+
+    await strategy.onCandle(batched(required(candle, 'candle')), {
+      baseBalance: new Big(0),
+      baseBalanceOnHold: new Big('1'),
+      counterBalance: new Big(0),
+      feeRates: {[OrderType.LIMIT]: new Big(0), [OrderType.MARKET]: new Big(0)},
+      hasOutstandingBuy: false,
+      hasOutstandingSell: true,
+      shortBase: new Big(0),
+      tradingRules: {...AlpacaBroker.DEFAULT_FRACTIONAL_TRADING_RULES, pair: tradingPair},
+    });
+
+    expect(strategy.ledger.size, 'the resting sell holds the position, it does not hide it').toBe('1');
+  });
+
+  it('keeps a position whose own sale has not been reported yet', async () => {
+    /*
+     * A sale can leave the balance before its fill notification arrives. Reading that as "someone
+     * else closed it" would lose the price it sold at and could end the session before the fill.
+     */
+    const strategy = new TrailingStop({trailDownPct: '10'});
+    const [attach, after] = candlesAt(['100', '101']);
+    const state = (baseBalance: string, hasOutstandingSell: boolean): TradingSessionState => ({
+      baseBalance: new Big(baseBalance),
+      baseBalanceOnHold: new Big(0),
+      counterBalance: new Big(0),
+      feeRates: {[OrderType.LIMIT]: new Big(0), [OrderType.MARKET]: new Big(0)},
+      hasOutstandingBuy: false,
+      hasOutstandingSell,
+      shortBase: new Big(0),
+      tradingRules: {...AlpacaBroker.DEFAULT_FRACTIONAL_TRADING_RULES, pair: tradingPair},
+    });
+
+    await strategy.onCandle(batched(required(attach, 'attach candle')), state('1', false));
+    await strategy.onCandle(batched(required(after, 'next candle')), state('0', true));
+
+    expect(strategy.ledger.exits, 'the sale is ours to account for, so no external close is recorded').toBe(0);
+  });
+
+  it('measures its thresholds from what is left after a position is partly sold elsewhere', async () => {
+    const strategy = new TrailingStop({trailDownPct: '10'});
+    const [attach, after] = candlesAt(['100', '100']);
+    const state = (baseBalance: string): TradingSessionState => ({
+      baseBalance: new Big(baseBalance),
+      baseBalanceOnHold: new Big(0),
+      counterBalance: new Big(0),
+      feeRates: {[OrderType.LIMIT]: new Big(0), [OrderType.MARKET]: new Big(0)},
+      hasOutstandingBuy: false,
+      hasOutstandingSell: false,
+      shortBase: new Big(0),
+      tradingRules: {...AlpacaBroker.DEFAULT_FRACTIONAL_TRADING_RULES, pair: tradingPair},
+    });
+
+    await strategy.onCandle(batched(required(attach, 'attach candle')), state('10'));
+    await strategy.onCandle(batched(required(after, 'next candle')), state('5'));
+
+    expect(strategy.ledger.size, 'half of it is gone, so half of it is what is tracked').toBe('5');
+    expect(strategy.ledger.costBasis, 'and what is left still cost what it cost per unit').toBe('500');
+  });
+
+  it('leaves a short position alone', async () => {
+    const strategy = new TrailingStop({trailDownPct: '10'});
+    const [candle] = candlesAt(['100']);
+    const messages: string[] = [];
+    strategy.onMessage = text => messages.push(text);
+
+    const advice = await strategy.onCandle(batched(required(candle, 'candle')), {
+      baseBalance: new Big(0),
+      baseBalanceOnHold: new Big(0),
+      counterBalance: new Big(0),
+      feeRates: {[OrderType.LIMIT]: new Big(0), [OrderType.MARKET]: new Big(0)},
+      hasOutstandingBuy: false,
+      hasOutstandingSell: false,
+      shortBase: new Big('5'),
+      tradingRules: {...AlpacaBroker.DEFAULT_FRACTIONAL_TRADING_RULES, pair: tradingPair},
+    });
+
+    expect(advice, 'selling to protect a short would enlarge it, so nothing is advised').toBeUndefined();
+    expect(strategy.ledger.size, 'and it is not adopted as something to hold').toBe('0');
+    expect(messages.join(' '), 'the user is told why nothing happens').toContain('short position');
   });
 
   it('stops for good when the position it guarded is sold by someone else', async () => {
@@ -151,7 +245,9 @@ describe('TrailingStop', () => {
       baseBalanceOnHold: new Big(0),
       counterBalance: new Big(0),
       feeRates: {[OrderType.LIMIT]: new Big(0), [OrderType.MARKET]: new Big(0)},
-      hasOutstandingOrder: false,
+      hasOutstandingBuy: false,
+      hasOutstandingSell: false,
+      shortBase: new Big(0),
       tradingRules: {...AlpacaBroker.DEFAULT_FRACTIONAL_TRADING_RULES, pair: tradingPair},
     });
 

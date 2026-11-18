@@ -85,12 +85,19 @@ export interface TradingSessionState {
   readonly baseBalanceOnHold: Big;
   readonly counterBalance: Big;
   /**
-   * Whether an order of ours is still on the book. A balance can show a purchase before its fill
+   * Whether a buy of ours is still on the book. A balance can show a purchase before its fill
    * notification arrives — Trading212 polls fills once a minute — and a strategy that adopted it
-   * as a position found lying around would then count the same purchase again when the fill
-   * finally lands.
+   * as a position found lying around would count the same purchase again when the fill lands.
    */
-  readonly hasOutstandingOrder: boolean;
+  readonly hasOutstandingBuy: boolean;
+  /**
+   * Whether a sell of ours is still on the book. A position can leave the balance before its fill
+   * notification arrives, and reading that as "someone else closed it" loses the price it sold at
+   * and can tear the session down before the fill is in.
+   */
+  readonly hasOutstandingSell: boolean;
+  /** Base currency held short, which the long-only rules refuse to act on. See `sessionBalances`. */
+  readonly shortBase: Big;
   readonly lastOrderSide?: OrderSide | undefined;
   readonly tradingRules: TradingRules;
   readonly feeRates: FeeRate;

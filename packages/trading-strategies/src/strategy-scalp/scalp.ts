@@ -102,7 +102,7 @@ export const Scalp = defineStrategy(ScalpSchema)({
           `Scalp sell: cost ${required(position, 'position').entryPrice.toFixed(2)} + offset ${offset.toFixed(2)}`,
         limit: ({offset, position}) => required(position, 'position').entryPrice.plus(offset),
         quantity: 'all',
-        when: 'always',
+        when: ({position}) => position !== null,
       },
     ],
     open: [

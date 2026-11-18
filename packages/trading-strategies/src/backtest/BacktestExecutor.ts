@@ -1,5 +1,5 @@
 import Big from 'big.js';
-import {CandleBatcher} from '@typedtrader/exchange';
+import {CandleBatcher, OrderSide} from '@typedtrader/exchange';
 import type {Candle, FeeRate, TradingRules, TradingPair} from '@typedtrader/exchange';
 import {AdviceExecutor} from '../trader/AdviceExecutor.js';
 import {sessionBalances} from '../trader/sessionBalances.js';
@@ -177,8 +177,10 @@ export class BacktestExecutor {
       baseBalanceOnHold: balances.baseOnHold,
       counterBalance: balances.counter,
       feeRates,
-      hasOutstandingOrder: openOrders.length > 0,
+      hasOutstandingBuy: openOrders.some(order => order.side === OrderSide.BUY),
+      hasOutstandingSell: openOrders.some(order => order.side === OrderSide.SELL),
       lastOrderSide,
+      shortBase: balances.shortBase,
       tradingRules,
     };
   }
