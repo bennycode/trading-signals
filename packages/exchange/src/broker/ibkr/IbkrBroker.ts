@@ -511,8 +511,14 @@ export class IbkrBroker extends Broker implements MarketDataSource {
        * Limit orders are marked for the extended sessions, matching what Alpaca's mapper does.
        * IBKR allows only limit-family types there (`orderTypesOutside`), and a market order sent
        * with this flag would be refused, so it is set for limit orders alone.
+       *
+       * Never alongside an overnight time-in-force: that picks IBKR Overnight, a venue of its own,
+       * and the extended-hours flag describes the pre-market and after-hours books instead. IBKR
+       * does not combine the two, and a `whatif` preview accepts the pair without complaint, so
+       * sending both produced an order that reported `Submitted` and was then cancelled unfilled
+       * when the session opened.
        */
-      ...(isLimit ? {outsideRTH: true} : {}),
+      ...(isLimit && !this.#overnight ? {outsideRTH: true} : {}),
       side: options.side === 'BUY' ? IbkrOrderSide.BUY : IbkrOrderSide.SELL,
       /*
        * `OND` rather than `OVT`: an overnight-only order is cancelled at 03:50 ET if it has not

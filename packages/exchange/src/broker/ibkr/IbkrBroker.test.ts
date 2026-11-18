@@ -208,11 +208,16 @@ describe('IbkrBroker', {concurrent: false}, () => {
       mockMethods.submitOrder.mockResolvedValue([{order_id: '999'}]);
 
       await overnightBroker.placeLimitOrder(pair, {price: '190', side: OrderSide.BUY, size: '1'});
+      const ticket = mockMethods.submitOrder.mock.calls[0]?.[1];
 
       expect(
-        mockMethods.submitOrder.mock.calls[0]?.[1]?.tif,
+        ticket?.tif,
         'OVT would cancel an unfilled order at 03:50 ET, dropping it before the session it was meant to span'
       ).toBe('OND');
+      expect(
+        ticket?.outsideRTH,
+        'the overnight venue is not the extended-hours book, and sending both flags had IBKR cancel the order unfilled once the session opened'
+      ).toBeUndefined();
       overnightBroker.disconnect();
     });
 
