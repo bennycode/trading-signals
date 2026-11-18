@@ -8,7 +8,7 @@ import {
   ScalpSchema,
   MeanReversionSchema,
   SmaCrossoverSchema,
-  ProtectedStrategySchema,
+  ProtectedSchema,
   TrailingStopSchema,
   suggestScalpOffset,
 } from 'trading-strategies';
@@ -21,7 +21,7 @@ export {
   ScalpSchema,
   MeanReversionSchema,
   SmaCrossoverSchema,
-  ProtectedStrategySchema,
+  ProtectedSchema,
   TrailingStopSchema,
 };
 
@@ -172,17 +172,14 @@ export const strategyDefinitions: StrategyDefinition[] = [
   },
   {
     description:
-      'Never opens a position. Use with seedFromBalance to attach stop-loss / take-profit guards to an existing position opened manually or by another strategy.',
+      'Never opens a position. Attaches a stop-loss and a take-profit to whatever base balance is already held, opened manually or by another strategy.',
     getDefaultConfig: () => ({
-      protected: {
-        seedFromBalance: true,
-        stopLossPct: '5',
-        takeProfitPct: '10',
-      },
+      stopLossPct: '5',
+      takeProfitPct: '10',
     }),
     id: 'protection-only',
     name: 'Protection Only',
-    schema: ProtectedStrategySchema,
+    schema: ProtectedSchema,
   },
   {
     description:

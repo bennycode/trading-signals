@@ -107,8 +107,8 @@ export class SP500HeatmapReport extends Report<SP500HeatmapConfig> {
     lines.push('```');
     lines.push(`Rank  ${'Stock'.padEnd(stockColWidth)}  Change    Price`);
     lines.push(`----  ${'-'.repeat(stockColWidth)}  --------  ---------`);
-    for (let i = 0; i < winners.length; i++) {
-      lines.push(renderRow(i + 1, winners[i]));
+    for (const [i, row] of winners.entries()) {
+      lines.push(renderRow(i + 1, row));
     }
     lines.push('```');
 
@@ -117,8 +117,8 @@ export class SP500HeatmapReport extends Report<SP500HeatmapConfig> {
     lines.push('```');
     lines.push(`Rank  ${'Stock'.padEnd(stockColWidth)}  Change    Price`);
     lines.push(`----  ${'-'.repeat(stockColWidth)}  --------  ---------`);
-    for (let i = 0; i < losers.length; i++) {
-      lines.push(renderRow(i + 1, losers[i]));
+    for (const [i, row] of losers.entries()) {
+      lines.push(renderRow(i + 1, row));
     }
     lines.push('```');
 

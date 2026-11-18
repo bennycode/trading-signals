@@ -1,5 +1,5 @@
-import {CoinFlipStrategy} from './strategy-coin-flip/CoinFlipStrategy.js';
+import {CoinFlip} from './strategy-coin-flip/coinFlip.js';
 
-const strategy = new CoinFlipStrategy();
+const strategy = new CoinFlip();
 
-console.log(CoinFlipStrategy.NAME, strategy.latestAdvice);
+console.log(CoinFlip.NAME, strategy.latestAdvice);

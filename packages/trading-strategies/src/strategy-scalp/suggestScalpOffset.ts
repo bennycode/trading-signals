@@ -32,7 +32,11 @@ function aggregateToDailyCandles(candles: Candle[]): Candle[] {
   for (const [, bars] of sortedDayEntries) {
     const sortedBars = [...bars].sort((a, b) => a.openTimeInMillis - b.openTimeInMillis);
     const first = sortedBars[0];
-    const last = sortedBars[sortedBars.length - 1];
+    const last = sortedBars.at(-1);
+    // A day only lands in the map because a bar was put there, so neither end can be missing.
+    if (!first || !last) {
+      continue;
+    }
     let high = parseFloat(first.high);
     let low = parseFloat(first.low);
     let volume = 0;
@@ -78,7 +82,7 @@ function aggregateToDailyCandles(candles: Candle[]): Candle[] {
  * @param atrPeriod - ATR smoothing period (default: 14)
  */
 export function suggestScalpOffset(candles: Candle[], atrPeriod: number = 14): Big {
-  const isSubDaily = candles.length > 0 && candles[0].sizeInMillis < ONE_DAY_IN_MS;
+  const isSubDaily = (candles[0]?.sizeInMillis ?? ONE_DAY_IN_MS) < ONE_DAY_IN_MS;
   const effectiveCandles = isSubDaily ? aggregateToDailyCandles(candles) : candles;
 
   if (effectiveCandles.length < atrPeriod) {

@@ -6,15 +6,15 @@ import {AlpacaBrokerMock, TradingPair} from '@typedtrader/exchange';
 import type {Candle} from '@typedtrader/exchange';
 import {
   BacktestExecutor,
-  BuyOnceStrategy,
-  BuyBelowSellAboveStrategy,
-  CoinFlipStrategy,
-  MultiIndicatorConfluenceStrategy,
-  ScalpStrategy,
-  MeanReversionStrategy,
-  SmaCrossoverStrategy,
-  ProtectedStrategy,
-  TrailingStopStrategy,
+  BuyOnce,
+  BuyBelowSellAbove,
+  CoinFlip,
+  MultiIndicatorConfluence,
+  Scalp,
+  MeanReversion,
+  SmaCrossover,
+  Protected,
+  TrailingStop,
   type BacktestResult,
 } from 'trading-strategies';
 import {DatasetSelector} from './DatasetSelector';
@@ -23,7 +23,7 @@ import {BacktestResults} from './BacktestResults';
 import {ProtectionModal} from './ProtectionModal';
 import {datasets} from '../utils/datasets';
 import type {CandleDataset} from '../utils/types';
-import {extractNestedProperties} from '../utils/schemaProperties';
+import {extractProperties} from '../utils/schemaProperties';
 import {
   getStrategyDefinition,
   type StrategyId,
@@ -34,34 +34,46 @@ import {
   ScalpSchema,
   MeanReversionSchema,
   SmaCrossoverSchema,
-  ProtectedStrategySchema,
+  ProtectedSchema,
   TrailingStopSchema,
 } from '../utils/strategySchemas';
 
 function createStrategy(strategyId: StrategyId, config: unknown) {
   switch (strategyId) {
     case 'buy-and-hold':
-      return new BuyOnceStrategy(BuyOnceSchema.parse(config));
+      return new BuyOnce(BuyOnceSchema.parse(config));
     case 'coin-flip':
-      return new CoinFlipStrategy(CoinFlipSchema.parse(config));
+      return new CoinFlip(CoinFlipSchema.parse(config));
     case 'buy-once':
-      return new BuyOnceStrategy(BuyOnceSchema.parse(config));
+      return new BuyOnce(BuyOnceSchema.parse(config));
     case 'buy-below-sell-above':
-      return new BuyBelowSellAboveStrategy(BuyBelowSellAboveSchema.parse(config));
+      return new BuyBelowSellAbove(BuyBelowSellAboveSchema.parse(config));
     case 'multi-indicator-confluence':
-      return new MultiIndicatorConfluenceStrategy(MultiIndicatorConfluenceSchema.parse(config));
+      return new MultiIndicatorConfluence(MultiIndicatorConfluenceSchema.parse(config));
     case 'scalp':
-      return new ScalpStrategy(ScalpSchema.parse(config));
+      return new Scalp(ScalpSchema.parse(config));
     case 'mean-reversion':
-      return new MeanReversionStrategy({config: MeanReversionSchema.parse(config)});
+      return new MeanReversion(MeanReversionSchema.parse(config));
     case 'sma-crossover':
-      return new SmaCrossoverStrategy(SmaCrossoverSchema.parse(config));
+      return new SmaCrossover(SmaCrossoverSchema.parse(config));
     case 'protection-only':
-      return new ProtectedStrategy({config: ProtectedStrategySchema.parse(config)});
+      return new Protected(ProtectedSchema.parse(config));
     case 'trailing-stop':
-      return new TrailingStopStrategy(TrailingStopSchema.parse(config));
+      return new TrailingStop(TrailingStopSchema.parse(config));
   }
 }
+
+/** Every setting the protection modal owns, so saving one strips the ones it turned off. */
+const PROTECTION_KEYS = [
+  'stopLossNominal',
+  'stopLossOrder',
+  'stopLossPct',
+  'stopLossPrice',
+  'takeProfitNominal',
+  'takeProfitOrder',
+  'takeProfitPct',
+  'takeProfitPrice',
+];
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -157,16 +169,19 @@ export function BacktestApp() {
     }
   }, [configJson, selectedStrategy]);
 
-  // Strategies without a `protected` key in their schema would silently strip the settings.
-  const supportsProtection =
-    extractNestedProperties(getStrategyDefinition(selectedStrategy).schema, 'protected').length > 0;
+  // Strategies that do not offer the settings would silently strip whatever the modal wrote.
+  const supportsProtection = extractProperties(getStrategyDefinition(selectedStrategy).schema).some(
+    property => property.name === 'stopLossPct'
+  );
 
-  const currentProtected: Record<string, unknown> | undefined = (() => {
+  const currentProtection: Record<string, unknown> | undefined = (() => {
     try {
       const parsed: unknown = JSON.parse(configJson);
-      if (isRecord(parsed) && isRecord(parsed.protected)) {
-        return parsed.protected;
+      if (!isRecord(parsed)) {
+        return undefined;
       }
+      const settings = Object.fromEntries(PROTECTION_KEYS.filter(key => key in parsed).map(key => [key, parsed[key]]));
+      return Object.keys(settings).length > 0 ? settings : undefined;
     } catch {
       // invalid JSON — user is mid-edit, treat as no protection
     }
@@ -174,16 +189,11 @@ export function BacktestApp() {
   })();
 
   const handleProtectionSave = useCallback(
-    (nextProtected: Record<string, unknown> | undefined) => {
+    (nextProtection: Record<string, unknown> | undefined) => {
       try {
         const parsed: unknown = JSON.parse(configJson);
-        const next: Record<string, unknown> = isRecord(parsed) ? {...parsed} : {};
-        if (nextProtected === undefined) {
-          delete next.protected;
-        } else {
-          next.protected = nextProtected;
-        }
-        setConfigJson(JSON.stringify(next, null, 2));
+        const rest = Object.entries(isRecord(parsed) ? parsed : {}).filter(([key]) => !PROTECTION_KEYS.includes(key));
+        setConfigJson(JSON.stringify({...Object.fromEntries(rest), ...nextProtection}, null, 2));
         clearResults();
       } catch {
         showToast('Cannot update protection: config JSON is invalid');
@@ -230,7 +240,7 @@ export function BacktestApp() {
         new BacktestExecutor({
           broker: createExchange(candles, initialBase, initialCounter),
           candles,
-          strategy: new BuyOnceStrategy(),
+          strategy: new BuyOnce(),
           tradingPair,
         }).execute(),
       ]);
@@ -322,8 +332,8 @@ export function BacktestApp() {
           <button
             onClick={() => setProtectionModalOpen(true)}
             className="w-full py-2.5 px-4 rounded-lg text-sm font-medium transition-colors bg-(--demo-accent) hover:opacity-90 text-white cursor-pointer flex items-center justify-center gap-2">
-            <span>{currentProtected ? 'Edit Protection' : 'Add Protection'}</span>
-            {currentProtected && (
+            <span>{currentProtection ? 'Edit Protection' : 'Add Protection'}</span>
+            {currentProtection && (
               <span className="text-xs bg-purple-500/15 text-(--demo-accent) px-2 py-0.5 rounded-full">active</span>
             )}
           </button>
@@ -357,7 +367,7 @@ export function BacktestApp() {
 
       <ProtectionModal
         open={protectionModalOpen}
-        initialProtected={currentProtected}
+        initialSettings={currentProtection}
         onSave={handleProtectionSave}
         onClose={() => setProtectionModalOpen(false)}
       />

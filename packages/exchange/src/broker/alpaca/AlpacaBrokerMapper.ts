@@ -52,7 +52,13 @@ export class AlpacaBrokerMapper {
         id: order.id,
         pair,
         side: options.side,
+        /*
+         * A notional order's size is an amount of cash rather than a quantity, which is only
+         * readable from the field it came back in: whoever compares this order to the advice it
+         * was placed for has no other way of telling the two apart.
+         */
         size: order.notional ? `${order.notional}` : `${order.qty}`,
+        sizeInCounter: Boolean(order.notional),
         type: OrderType.MARKET,
       };
       return pendingOrder;
@@ -87,7 +93,9 @@ export class AlpacaBrokerMapper {
         id: order.id,
         pair,
         side,
+        /** @see {@link toPendingOrder} for why the denomination has to travel with the size. */
         size: order.notional ? `${order.notional}` : `${order.qty}`,
+        sizeInCounter: Boolean(order.notional),
         type: OrderType.MARKET,
       };
       return pendingOrder;

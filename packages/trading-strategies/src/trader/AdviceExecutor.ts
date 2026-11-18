@@ -4,6 +4,7 @@ import type {ExchangeAvailableBalance, FeeRate, PendingOrder, TradingPair, Tradi
 import {OrderSizeBelowMinimumError} from './OrderSizeBelowMinimumError.js';
 import {AllAvailableAmount} from './TradingSessionTypes.js';
 import type {OrderAdvice, TradingSessionBroker} from './TradingSessionTypes.js';
+import {applyPrecision} from './applyPrecision.js';
 
 export type AdviceExecutorBroker = Pick<
   TradingSessionBroker,
@@ -54,7 +55,7 @@ export class AdviceExecutor {
     const balances = await this.#broker.getAvailableBalances(this.#pair);
 
     if (advice.type === OrderType.LIMIT) {
-      const price = this.#applyPrecision(new Big(advice.price), this.#tradingRules.counter_increment);
+      const price = applyPrecision(new Big(advice.price), this.#tradingRules.counter_increment);
 
       if (price.lte(0)) {
         return {
@@ -133,7 +134,7 @@ export class AdviceExecutor {
 
     return {
       minimumSize: base_min_size,
-      size: this.#applyPrecision(amount, base_increment),
+      size: applyPrecision(amount, base_increment),
       sizeInCounter: false,
     };
   }
@@ -150,7 +151,7 @@ export class AdviceExecutor {
       const amount = requested.gt(balances.counter) ? balances.counter : requested;
       return {
         minimumSize: counter_min_size,
-        size: this.#applyPrecision(amount, counter_increment),
+        size: applyPrecision(amount, counter_increment),
         sizeInCounter: true,
       };
     }
@@ -159,7 +160,7 @@ export class AdviceExecutor {
       // BUY in base: the amount is always explicit (enforced by MarketBuyBaseAdvice).
       return {
         minimumSize: base_min_size,
-        size: this.#applyPrecision(new Big(advice.amount), base_increment),
+        size: applyPrecision(new Big(advice.amount), base_increment),
         sizeInCounter: false,
       };
     }
@@ -169,7 +170,7 @@ export class AdviceExecutor {
       // "Sell everything" always means the full base holding, even when the advice is denominated in counter.
       return {
         minimumSize: base_min_size,
-        size: this.#applyPrecision(balances.base, base_increment),
+        size: applyPrecision(balances.base, base_increment),
         sizeInCounter: false,
       };
     }
@@ -178,7 +179,7 @@ export class AdviceExecutor {
       // Notional sell: the broker sells however much base is needed to receive this counter amount.
       return {
         minimumSize: counter_min_size,
-        size: this.#applyPrecision(new Big(advice.amount), counter_increment),
+        size: applyPrecision(new Big(advice.amount), counter_increment),
         sizeInCounter: true,
       };
     }
@@ -187,7 +188,7 @@ export class AdviceExecutor {
     const amount = requested.gt(balances.base) ? balances.base : requested;
     return {
       minimumSize: base_min_size,
-      size: this.#applyPrecision(amount, base_increment),
+      size: applyPrecision(amount, base_increment),
       sizeInCounter: false,
     };
   }
@@ -202,11 +203,6 @@ export class AdviceExecutor {
       });
     }
     return null;
-  }
-
-  #applyPrecision(value: Big, increment: string): Big {
-    const inc = new Big(increment);
-    return value.div(inc).round(0, Big.roundDown).mul(inc);
   }
 }
 

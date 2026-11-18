@@ -6,7 +6,7 @@ import type {Candle, MarketDataSource, TradingRules} from '@typedtrader/exchange
 import type {OrderAdvice, TradingSessionState} from '../trader/index.js';
 import {TradingPair} from '@typedtrader/exchange';
 import {BacktestExecutor} from './BacktestExecutor.js';
-import {BuyBelowSellAboveStrategy} from '../strategy-buy-below-sell-above/BuyBelowSellAboveStrategy.js';
+import {BuyBelowSellAbove} from '../strategy-buy-below-sell-above/buyBelowSellAbove.js';
 import type {BacktestConfig} from './BacktestConfig.js';
 import {Strategy} from '../strategy/Strategy.js';
 import type {OneMinuteBatchedCandle} from '@typedtrader/exchange';
@@ -72,7 +72,7 @@ describe('BacktestExecutor', () => {
     });
 
     it('handles no candles gracefully', async () => {
-      const strategy = new BuyBelowSellAboveStrategy({buyBelow: '50'});
+      const strategy = new BuyBelowSellAbove({buyBelow: '50'});
 
       const config: BacktestConfig = {
         broker: createMockExchange(),
@@ -118,7 +118,7 @@ describe('BacktestExecutor', () => {
     });
 
     it('executes a buy with 1-candle delay when price drops below the buyBelow threshold', async () => {
-      const strategy = new BuyBelowSellAboveStrategy({buyBelow: '100'});
+      const strategy = new BuyBelowSellAbove({buyBelow: '100'});
 
       /*
        * Candle 1: close=90 < 100 → advice to BUY_LIMIT, order placed
@@ -140,14 +140,14 @@ describe('BacktestExecutor', () => {
 
       // Order placed on candle 1, fills on candle 2
       expect(result.trades).toHaveLength(1);
-      expect(result.trades[0].advice.side).toBe(OrderSide.BUY);
-      expect(result.trades[0].advice.type).toBe(OrderType.LIMIT);
+      expect(result.trades[0]?.advice.side).toBe(OrderSide.BUY);
+      expect(result.trades[0]?.advice.type).toBe(OrderType.LIMIT);
       expect(result.finalCounterBalance.lt(new Big(1000))).toBe(true);
       expect(result.finalBaseBalance.gt(new Big(0))).toBe(true);
     });
 
     it('executes a sell with 1-candle delay when price rises above the sellAbove threshold', async () => {
-      const strategy = new BuyBelowSellAboveStrategy({sellAbove: '100'});
+      const strategy = new BuyBelowSellAbove({sellAbove: '100'});
 
       /*
        * Candle 1: close=110 > 100 → advice to SELL_LIMIT, order placed
@@ -168,14 +168,14 @@ describe('BacktestExecutor', () => {
       const result = await new BacktestExecutor(config).execute();
 
       expect(result.trades).toHaveLength(1);
-      expect(result.trades[0].advice.side).toBe(OrderSide.SELL);
-      expect(result.trades[0].advice.type).toBe(OrderType.LIMIT);
+      expect(result.trades[0]?.advice.side).toBe(OrderSide.SELL);
+      expect(result.trades[0]?.advice.type).toBe(OrderType.LIMIT);
       expect(result.finalBaseBalance.toFixed(2)).toBe('0.00');
       expect(result.finalCounterBalance.gt(new Big(0))).toBe(true);
     });
 
     it('deducts maker fees on limit orders', async () => {
-      const strategy = new BuyBelowSellAboveStrategy({sellAbove: '50'});
+      const strategy = new BuyBelowSellAbove({sellAbove: '50'});
 
       /*
        * Candle 1: close=100 > 50 → SELL_LIMIT advice
@@ -202,7 +202,7 @@ describe('BacktestExecutor', () => {
        * Limit fee: 0.15% of 1000 = 1.50
        */
       const trade = result.trades[0];
-      expect(trade.fee.toFixed(2)).toBe('1.50');
+      expect(trade?.fee.toFixed(2)).toBe('1.50');
       expect(result.totalFees.toFixed(2)).toBe('1.50');
     });
 
@@ -252,12 +252,12 @@ describe('BacktestExecutor', () => {
 
       const trade = result.trades[0];
       // Market order fee: 0.25%
-      expect(trade.fee.gt(0)).toBe(true);
+      expect(trade?.fee.gt(0)).toBe(true);
       expect(result.finalBaseBalance.gt(new Big(0))).toBe(true);
     });
 
     it('runs a full buy-and-sell cycle and computes profit/loss', async () => {
-      const strategy = new BuyBelowSellAboveStrategy({
+      const strategy = new BuyBelowSellAbove({
         buyBelow: '100',
         sellAbove: '120',
       });
@@ -296,7 +296,24 @@ describe('BacktestExecutor', () => {
     });
 
     it('skips trades when there is insufficient balance', async () => {
-      const strategy = new BuyBelowSellAboveStrategy({sellAbove: '50'});
+      /*
+       * A rule engine will not close a position the balance says it does not hold, so the advice
+       * the executor has to drop can only come from a strategy that asks for the sell regardless.
+       */
+      class SellRegardless extends Strategy {
+        static override NAME = 'SellRegardless';
+
+        protected override async processCandle(): Promise<OrderAdvice> {
+          return {
+            amount: AllAvailableAmount,
+            amountIn: 'base',
+            reason: 'selling whether or not there is anything to sell',
+            side: OrderSide.SELL,
+            type: OrderType.MARKET,
+          };
+        }
+      }
+      const strategy = new SellRegardless();
 
       const candles = [
         createCandle({close: '100', open: '100', openTimeInISO: '2025-01-01T00:00:00.000Z'}),
@@ -319,8 +336,8 @@ describe('BacktestExecutor', () => {
 
       // Dropped advice is reported, not silently swallowed — one skip per advising candle
       expect(result.skippedAdvices).toHaveLength(2);
-      expect(result.skippedAdvices[0].reason).toContain('below minimum');
-      expect(result.skippedAdvices[0].advice.side).toBe(OrderSide.SELL);
+      expect(result.skippedAdvices[0]?.reason).toContain('below minimum');
+      expect(result.skippedAdvices[0]?.advice.side).toBe(OrderSide.SELL);
     });
 
     it('cancels an outstanding order when newer advice arrives, mirroring a live session', async () => {
@@ -377,7 +394,7 @@ describe('BacktestExecutor', () => {
     });
 
     it('tracks the total number of candles processed', async () => {
-      const strategy = new BuyBelowSellAboveStrategy({buyBelow: '1000'});
+      const strategy = new BuyBelowSellAbove({buyBelow: '1000'});
 
       const candles = [
         createCandle({close: '50', high: '52', low: '48', open: '50', openTimeInISO: '2025-01-01T00:00:00.000Z'}),
@@ -442,13 +459,13 @@ describe('BacktestExecutor', () => {
 
       expect(result.trades).toHaveLength(1);
       // Capped to 5 (the available balance), not 100
-      expect(result.trades[0].size.toFixed(2)).toBe('5.00');
+      expect(result.trades[0]?.size.toFixed(2)).toBe('5.00');
       expect(result.finalBaseBalance.toFixed(2)).toBe('0.00');
     });
 
     it('handles many buy-sell cycles over a long series of candles', async () => {
       // Strategy: buy below 50, sell above 60 → oscillating price triggers multiple cycles
-      const strategy = new BuyBelowSellAboveStrategy({
+      const strategy = new BuyBelowSellAbove({
         buyBelow: '50',
         sellAbove: '60',
       });
@@ -549,12 +566,12 @@ describe('BacktestExecutor', () => {
 
       // Every trade should have a positive fee
       result.trades.forEach(trade => {
-        expect(trade.fee.gt(0)).toBe(true);
+        expect(trade?.fee.gt(0)).toBe(true);
       });
     });
 
     it('reports a positive win rate when buying low and selling high', async () => {
-      const strategy = new BuyBelowSellAboveStrategy({
+      const strategy = new BuyBelowSellAbove({
         buyBelow: '50',
         sellAbove: '80',
       });
@@ -773,7 +790,7 @@ describe('BacktestExecutor', () => {
 
       expect(result.trades).toHaveLength(0);
       expect(result.skippedAdvices).toHaveLength(2);
-      expect(result.skippedAdvices[0].reason).toContain('below the minimum');
+      expect(result.skippedAdvices[0]?.reason).toContain('below the minimum');
     });
 
     it('skips sell trades when the base balance is below base_min_size', async () => {
@@ -823,7 +840,7 @@ describe('BacktestExecutor', () => {
     });
 
     it('allows trades that meet all trading rule requirements', async () => {
-      const strategy = new BuyBelowSellAboveStrategy({
+      const strategy = new BuyBelowSellAbove({
         buyBelow: '100',
         sellAbove: '120',
       });

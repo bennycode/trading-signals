@@ -67,31 +67,3 @@ export function extractProperties(schema: z.ZodType): SchemaProperty[] {
   collectProperties(jsonSchema, topRequired, result);
   return Array.from(result.values());
 }
-
-export function extractNestedProperties(schema: z.ZodType, key: string): SchemaProperty[] {
-  const jsonSchema = z.toJSONSchema(schema);
-
-  function findNested(node: JsonSchemaNode): JsonSchemaNode | undefined {
-    const property = node.properties?.[key];
-    if (property !== undefined && typeof property !== 'boolean') {
-      return property;
-    }
-    // Intersections (`.and()`) serialize to `allOf`, unions to `anyOf`; the key can sit in either.
-    for (const child of [...(node.allOf ?? []), ...(node.anyOf ?? [])]) {
-      const found = findNested(child);
-      if (found) {
-        return found;
-      }
-    }
-    return undefined;
-  }
-
-  const nested = findNested(jsonSchema);
-  if (!nested) {
-    return [];
-  }
-  const result = new Map<string, SchemaProperty>();
-  const nestedRequired = new Set(nested.required ?? []);
-  collectProperties(nested, nestedRequired, result);
-  return Array.from(result.values());
-}
