@@ -43,6 +43,17 @@ export async function warmUpFromHistory(options: {
       report?.(`Could not load ${count} bars of ${interval} history: ${String(error)}`);
       continue;
     }
+    /*
+     * An empty answer is not an error, and it is not nothing either: a setting that comes from
+     * history falls back to whatever the config says, which for a strategy that refuses to trade
+     * on the wrong instrument means the refusal never gets a chance to apply. Said out loud, so
+     * that a backtest on a dataset with no run-up, or a broker serving no bars, is not read as a
+     * strategy that judged the instrument and approved it.
+     */
+    if (candles.length === 0) {
+      report?.(`No ${interval} history available, so settings derived from it fall back to the configuration`);
+    }
+
     for (const handle of handles) {
       handle.warmUp?.(candles);
     }
