@@ -253,6 +253,36 @@ describe('IbkrBroker', {concurrent: false}, () => {
       ).rejects.toThrow(/Order size exceeds limit/);
     });
 
+    it('surfaces a rejection that arrives behind another entry', async () => {
+      mockMethods.submitOrder.mockResolvedValue([
+        {id: 'reply-1', message: ['Market order outside hours?']},
+        {error: 'Order size exceeds limit'},
+      ]);
+
+      await expect(
+        broker.placeMarketOrder(pair, {side: OrderSide.BUY, size: '3', sizeInCounter: false})
+      ).rejects.toThrow(/Order size exceeds limit/);
+      expect(
+        mockMethods.replyToOrderMessage,
+        'a refused order has nothing left to confirm, so its sibling prompt must not be answered'
+      ).not.toHaveBeenCalled();
+    });
+
+    it('answers a prompt that arrives behind an accepted order', async () => {
+      mockMethods.submitOrder.mockResolvedValue([
+        {order_id: '999', order_status: 'Submitted'},
+        {id: 'reply-1', message: ['Confirm the size?']},
+      ]);
+      mockMethods.replyToOrderMessage.mockResolvedValue([{order_id: '999', order_status: 'Submitted'}]);
+
+      await broker.placeMarketOrder(pair, {side: OrderSide.BUY, size: '3', sizeInCounter: false});
+
+      expect(
+        mockMethods.replyToOrderMessage,
+        'the order does not exist until every prompt is answered, so an unanswered one cannot be read as acceptance'
+      ).toHaveBeenCalledWith('reply-1', true);
+    });
+
     it('sends a notional market order as cashQty rather than a share count', async () => {
       mockMethods.submitOrder.mockResolvedValue([{order_id: '999'}]);
 

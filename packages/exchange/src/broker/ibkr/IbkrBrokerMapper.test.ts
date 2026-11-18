@@ -72,14 +72,14 @@ describe('IbkrBrokerMapper', () => {
   });
 
   describe('toFill', () => {
-    it('labels the fee with the account currency rather than the quote currency', () => {
+    it('labels the fee with the currency the caller supplies', () => {
       const fill = IbkrBrokerMapper.toFill(
         {commission: '0.35', conid: 265598, price: '190.5', side: 'B', size: 10, trade_time_r: 1_700_000_000_000},
         pair,
         'EUR'
       );
 
-      expect(fill?.feeAsset, 'IBKR debits fees in the account currency').toBe('EUR');
+      expect(fill?.feeAsset, 'the mapper reports the fee currency it was given, it does not derive one').toBe('EUR');
       expect(fill?.fee).toBe('0.35');
       expect(fill?.side).toBe(OrderSide.BUY);
       expect(fill?.size).toBe('10');

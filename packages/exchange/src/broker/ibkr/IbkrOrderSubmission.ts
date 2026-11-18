@@ -75,41 +75,52 @@ export async function submitIbkrOrder(input: {
 
   const MAX_CONFIRMATIONS = 5;
   for (let attempt = 0; attempt < MAX_CONFIRMATIONS; attempt++) {
-    const entry = response[0];
-
-    if (!entry) {
+    if (response.length === 0) {
       throw new Error(`IBKR returned an empty response when placing an order for ${pair.asString('/')}.`);
     }
 
-    if (isIbkrOrderSubmitSuccess(entry)) {
-      const base: PendingOrder =
-        options.type === OrderType.LIMIT
-          ? {
-              id: entry.order_id,
-              pair,
-              price: options.price,
-              side: options.side,
-              size: options.size,
-              type: OrderType.LIMIT,
-            }
-          : {
-              id: entry.order_id,
-              pair,
-              side: options.side,
-              size: options.size,
-              sizeInCounter: options.sizeInCounter,
-              type: OrderType.MARKET,
-            };
-      return base;
+    /*
+     * The whole array is examined rather than just its first entry, because IBKR can answer with
+     * several: two prompts at once, or a prompt next to a rejection. The precedence below is what
+     * keeps a mixed answer from being misread.
+     *
+     * A rejection wins: there is no order to confirm, so answering a sibling prompt would only
+     * send a reply for something IBKR has already refused.
+     */
+    const rejection = response.find(isIbkrOrderSubmitError);
+    if (rejection) {
+      throw new Error(`IBKR rejected the order for ${pair.asString('/')}: ${rejection.error}`);
     }
 
-    if (isIbkrOrderReplyMessage(entry)) {
-      response = await api.replyToOrderMessage(entry.id, true);
+    /*
+     * A prompt comes before a success: until every prompt is answered the order does not exist,
+     * and each reply returns whatever is still outstanding, so the loop drains them one per turn.
+     */
+    const prompt = response.find(isIbkrOrderReplyMessage);
+    if (prompt) {
+      response = await api.replyToOrderMessage(prompt.id, true);
       continue;
     }
 
-    if (isIbkrOrderSubmitError(entry)) {
-      throw new Error(`IBKR rejected the order for ${pair.asString('/')}: ${entry.error}`);
+    const accepted = response.find(isIbkrOrderSubmitSuccess);
+    if (accepted) {
+      return options.type === OrderType.LIMIT
+        ? {
+            id: accepted.order_id,
+            pair,
+            price: options.price,
+            side: options.side,
+            size: options.size,
+            type: OrderType.LIMIT,
+          }
+        : {
+            id: accepted.order_id,
+            pair,
+            side: options.side,
+            size: options.size,
+            sizeInCounter: options.sizeInCounter,
+            type: OrderType.MARKET,
+          };
     }
 
     throw new Error(`IBKR returned an unrecognised order response for ${pair.asString('/')}.`);

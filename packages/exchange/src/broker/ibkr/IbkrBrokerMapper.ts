@@ -93,8 +93,9 @@ export class IbkrBrokerMapper {
   }
 
   /**
-   * A single execution. Fees come back as `commission` in the account currency, which on a
-   * cross-currency account differs from `pair.counter` — hence the explicit `feeAsset`.
+   * A single execution. IBKR reports `commission` as a bare number with no currency, so the
+   * caller supplies the `feeAsset` it belongs to — see {@link IbkrBroker.getFeeAsset}, which bills
+   * a US stock in USD even from a EUR account.
    */
   static toFill(trade: IbkrTrade, pair: TradingPair, feeAsset: string): Fill | undefined {
     const side = IbkrBrokerMapper.toOrderSide(trade.side);
