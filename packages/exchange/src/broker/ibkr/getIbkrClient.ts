@@ -1,6 +1,6 @@
 import type {MarketDataSource} from '../MarketDataSource.js';
 import type {IbkrAPI} from './api/IbkrAPI.js';
-import type {IbkrGatewayState} from './gateway/IbkrGatewayLauncher.js';
+import type {IbkrGatewayState} from './gateway/IbkrGatewayState.js';
 import {IbkrBroker} from './IbkrBroker.js';
 
 /**

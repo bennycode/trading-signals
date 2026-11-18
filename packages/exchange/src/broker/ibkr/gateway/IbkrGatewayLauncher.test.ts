@@ -1,7 +1,7 @@
 import type {ChildProcess} from 'node:child_process';
 import {describe, expect, it, vi} from 'vitest';
 import type {IbkrAPI} from '../api/IbkrAPI.js';
-import {IbkrGatewayStage} from './IbkrGatewayLauncher.js';
+import {IbkrGatewayStage} from './IbkrGatewayState.js';
 
 const mockMethods = {
   ensureGateway: vi.fn<() => Promise<void>>(),

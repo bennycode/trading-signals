@@ -25,6 +25,20 @@ const shims: Record<string, string> = {
 };
 
 /**
+ * Node-only modules inside @typedtrader/exchange, matched by path rather than by specifier.
+ *
+ * The IBKR gateway launcher runs a Java process and drives its login with Playwright, so its
+ * graph reaches `node:child_process` and Playwright's `fs`/`dns`. Shimming those built-ins one by
+ * one would chase Playwright's internals forever; replacing the launcher cuts the whole subtree.
+ * `IbkrBroker` imports it dynamically, which a bundler still resolves, so this is required rather
+ * than an optimisation.
+ */
+const moduleShims: [match: RegExp, shim: string][] = [
+  // Matches the specifier as written, which for the broker's dynamic import is relative.
+  [/(^|\/)gateway\/IbkrGatewayLauncher(\.js)?$/, path.join(shimsDir, 'ibkr-gateway.ts')],
+];
+
+/**
  * Shims Node.js built-ins in the client environment only: server environments run in Node.js
  * where the real built-ins exist (and vocs' own server dependencies rely on them).
  */
@@ -35,6 +49,10 @@ function nodeShims(): vite.Plugin {
     resolveId(source, importer) {
       if (this.environment.name !== 'client') {
         return null;
+      }
+      const matched = moduleShims.find(([match]) => match.test(source))?.[1];
+      if (matched) {
+        return matched;
       }
       const shim = shims[source];
       if (!shim) {

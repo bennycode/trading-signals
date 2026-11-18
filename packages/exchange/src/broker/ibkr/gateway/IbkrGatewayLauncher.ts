@@ -1,29 +1,8 @@
 import type {ChildProcess} from 'node:child_process';
 import {IbkrAPI} from '../api/IbkrAPI.js';
+import {IbkrGatewayStage, type IbkrGatewayState} from './IbkrGatewayState.js';
 import {isAuthenticated, loginToIbkrGateway} from './loginToIbkrGateway.js';
 import {ensureGateway, startGateway, stopGateway} from './startIbkrGateway.js';
-
-/** Where a launcher has got to, so a caller can tell waiting from failing. */
-export const IbkrGatewayStage = {
-  /** The gateway reports a session; every call will work from here. */
-  AUTHENTICATED: 'authenticated',
-  /** Credentials are in and IBKR has pushed to the phone. Nothing proceeds until it is approved. */
-  AWAITING_TWO_FACTOR: 'awaiting-two-factor',
-  /** Downloading IBKR's distribution, which happens once and is ~100 MB. */
-  DOWNLOADING: 'downloading',
-  /** Gave up. {@link IbkrGatewayState.error} says why. */
-  FAILED: 'failed',
-  /** Nothing started yet. */
-  IDLE: 'idle',
-  /** The Java process is up; the login form is next. */
-  STARTING: 'starting',
-} as const;
-export type IbkrGatewayStage = (typeof IbkrGatewayStage)[keyof typeof IbkrGatewayStage];
-
-export interface IbkrGatewayState {
-  error?: Error;
-  stage: IbkrGatewayStage;
-}
 
 export interface IbkrGatewayLauncherOptions {
   account: string;

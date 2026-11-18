@@ -1,6 +1,6 @@
 import type {MarketDataSource} from '../MarketDataSource.js';
 import type {IbkrTimeInForce} from './api/schema/OrderSchema.js';
-import type {IbkrGatewayState} from './gateway/IbkrGatewayLauncher.js';
+import type {IbkrGatewayState} from './gateway/IbkrGatewayState.js';
 
 /** How an {@link IbkrBroker} talks to the gateway and what it does with the orders it sends. */
 export interface IbkrBrokerOptions {
