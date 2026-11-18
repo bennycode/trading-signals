@@ -10,17 +10,12 @@ interface GuardForm {
   orderType: OrderType;
 }
 
-/**
- * What the strategy schema does when the setting is absent: a stop-loss takes what the market
- * offers so it always fills, while a take-profit waits for the price it was promised.
- */
-function defaultOrderType(prefix: 'stopLoss' | 'takeProfit'): OrderType {
-  return prefix === 'stopLoss' ? 'market' : 'limit';
-}
+/** What the strategy schema does when the setting is absent: offer the threshold and wait for it. */
+const DEFAULT_ORDER_TYPE: OrderType = 'limit';
 
-const emptyGuard = (prefix: 'stopLoss' | 'takeProfit'): GuardForm => ({
+const emptyGuard = (): GuardForm => ({
   enabled: false,
-  orderType: defaultOrderType(prefix),
+  orderType: DEFAULT_ORDER_TYPE,
   triggerType: 'pct',
   value: '',
 });
@@ -35,13 +30,13 @@ function toOrderType(value: string): OrderType {
 
 function parseGuard(settings: Record<string, unknown> | undefined, prefix: 'stopLoss' | 'takeProfit'): GuardForm {
   if (!settings) {
-    return emptyGuard(prefix);
+    return emptyGuard();
   }
   const pct = settings[`${prefix}Pct`];
   const nominal = settings[`${prefix}Nominal`];
   const price = settings[`${prefix}Price`];
   const order = settings[`${prefix}Order`];
-  const orderType: OrderType = typeof order === 'string' ? toOrderType(order) : defaultOrderType(prefix);
+  const orderType: OrderType = typeof order === 'string' ? toOrderType(order) : DEFAULT_ORDER_TYPE;
 
   if (typeof pct === 'string') {
     return {enabled: true, orderType, triggerType: 'pct', value: pct};
@@ -52,7 +47,7 @@ function parseGuard(settings: Record<string, unknown> | undefined, prefix: 'stop
   if (typeof price === 'string') {
     return {enabled: true, orderType, triggerType: 'price', value: price};
   }
-  return emptyGuard(prefix);
+  return emptyGuard();
 }
 
 function buildSettings(stopLoss: GuardForm, takeProfit: GuardForm): Record<string, unknown> | undefined {
@@ -97,8 +92,8 @@ interface ProtectionModalProps {
 }
 
 export function ProtectionModal({initialSettings, onClose, onSave, open}: ProtectionModalProps) {
-  const [stopLoss, setStopLoss] = useState<GuardForm>(() => emptyGuard('stopLoss'));
-  const [takeProfit, setTakeProfit] = useState<GuardForm>(() => emptyGuard('takeProfit'));
+  const [stopLoss, setStopLoss] = useState<GuardForm>(emptyGuard);
+  const [takeProfit, setTakeProfit] = useState<GuardForm>(emptyGuard);
   const dialogRef = useRef<HTMLDialogElement>(null);
   const titleId = useId();
 
@@ -125,8 +120,8 @@ export function ProtectionModal({initialSettings, onClose, onSave, open}: Protec
        * Fresh open with no existing protection: pre-enable stop-loss so the
        * form is visible immediately. User just has to type a value and Save.
        */
-      setStopLoss({enabled: true, orderType: defaultOrderType('stopLoss'), triggerType: 'pct', value: ''});
-      setTakeProfit(emptyGuard('takeProfit'));
+      setStopLoss({enabled: true, orderType: DEFAULT_ORDER_TYPE, triggerType: 'pct', value: ''});
+      setTakeProfit(emptyGuard());
     }
   }, [open, initialSettings]);
 

@@ -54,7 +54,7 @@ describe('BuyOnce', () => {
   });
 
   it('stops out a loss named in counter currency, scaled by how much is held', async () => {
-    const candles = candlesAt(['100', '100', '100', '94', '94']);
+    const candles = candlesAt(['100', '100', '100', '94', '95', '95']);
 
     const result = await backtest(new BuyOnce({quantity: '10', stopLossNominal: '50'}), candles, flatWithCash);
 

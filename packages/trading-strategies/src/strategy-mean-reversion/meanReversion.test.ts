@@ -31,7 +31,12 @@ describe('MeanReversion', () => {
      * The band rules need twenty hourly bars before they can judge anything. The stop reads only
      * the position, so it does not wait for them.
      */
-    const dropped = [...flatCandles(10, '100'), ...flatCandles(10, '98', 10 * ONE_MINUTE_IN_MS)];
+    const dropped = [
+      ...flatCandles(10, '100'),
+      ...flatCandles(10, '98', 10 * ONE_MINUTE_IN_MS),
+      // The stop rests at 99, where this last stretch fills it.
+      ...flatCandles(5, '99', 20 * ONE_MINUTE_IN_MS),
+    ];
 
     const result = await backtest(new MeanReversion({stopLossPct: '1'}), dropped, holdingFromTheStart);
 
@@ -42,7 +47,11 @@ describe('MeanReversion', () => {
   it('stops out and then stays flat for good', async () => {
     // Twenty hourly bars of warm-up at 100, then a drop past the 1% stop.
     const warmUp = flatCandles(20 * 60, '100');
-    const drop = flatCandles(60, '98', 20 * 60 * ONE_MINUTE_IN_MS);
+    const drop = [
+      ...flatCandles(60, '98', 20 * 60 * ONE_MINUTE_IN_MS),
+      // The stop rests at 99, where this last stretch fills it.
+      ...flatCandles(5, '99', (20 * 60 + 60) * ONE_MINUTE_IN_MS),
+    ];
     const strategy = new MeanReversion({stopLossPct: '1'});
     let finishedCount = 0;
     strategy.onFinish = () => {

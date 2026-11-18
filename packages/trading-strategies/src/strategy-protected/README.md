@@ -43,12 +43,12 @@ Each switch can be told where it fires in three equivalent units, of which exact
 
 The order each exit goes out as is configured per direction, and the two default differently:
 
-| Setting           | Default    | Meaning                                                                     |
-| ----------------- | ---------- | --------------------------------------------------------------------------- |
-| `stopLossOrder`   | `"market"` | Takes whatever the market offers, so the exit always fills.                 |
-| `takeProfitOrder` | `"limit"`  | Offers exactly the threshold, so the profit taken is the profit configured. |
+| Setting           | Default   | Meaning                                                   |
+| ----------------- | --------- | --------------------------------------------------------- |
+| `stopLossOrder`   | `"limit"` | Offers exactly the threshold, so the exit is the one set. |
+| `takeProfitOrder` | `"limit"` | Takes whatever the market offers when set to `"market"`.  |
 
-`"limit"` caps what the exit gives up but can rest unfilled above a market that gapped straight through it, which is why a stop-loss does not default to it: a stop that may never fill is not a stop. A take-profit has nothing to lose by waiting for the price it was promised. Mixing is allowed, so `{"stopLossPct": "5", "stopLossOrder": "limit", "takeProfitNominal": "10"}` offers both exits as limits, one priced in percent and one in money.
+`"limit"` caps what the exit gives up: the loss taken is the loss configured, and the profit taken is the profit configured. The risk it carries is a market that gaps straight through the threshold, leaving the order resting above it and the position unprotected until price comes back — `"market"` always fills instead, at whatever the market offers at that moment. A stop-loss on an instrument that gaps is the case for setting it. Mixing is allowed, so `{"stopLossPct": "5", "stopLossOrder": "market", "takeProfitNominal": "10"}` exits a loss at market and takes profit at a limit.
 
 ```json
 {

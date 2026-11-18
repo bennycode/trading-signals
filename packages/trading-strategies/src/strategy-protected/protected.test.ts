@@ -40,18 +40,31 @@ describe('Protected', () => {
     ).toStrictEqual([OrderSide.SELL]);
   });
 
-  it('takes whatever the market offers when a stop fires', async () => {
+  it('offers exactly the threshold when a stop fires', async () => {
     const result = await backtest(
       new Protected({stopLossPct: '5'}),
+      candlesAt(['100', '100', '94', '95', '95']),
+      holdingFromTheStart
+    );
+
+    expect(result.trades[0]?.advice.type, 'the loss taken is the loss configured').toBe(OrderType.LIMIT);
+    expect(limitPriceOf(result.trades[0]?.advice)).toBe('95');
+  });
+
+  it('takes whatever the market offers when the config asks for a market stop', async () => {
+    /*
+     * The price gaps straight through the threshold and never comes back, which is the case a
+     * market stop exists for: a limit resting at 95 would still be waiting.
+     */
+    const result = await backtest(
+      new Protected({stopLossOrder: 'market', stopLossPct: '5'}),
       candlesAt(['100', '100', '80', '80']),
       holdingFromTheStart
     );
 
-    expect(
-      result.trades[0]?.advice.type,
-      'a stop offered as a limit above a market that gapped through it would never fill'
-    ).toBe(OrderType.MARKET);
+    expect(result.trades[0]?.advice.type).toBe(OrderType.MARKET);
     expect(limitPriceOf(result.trades[0]?.advice), 'so it names no price of its own').toBeNull();
+    expect(result.trades[0]?.price.toFixed(), 'and leaves at what the market offered').toBe('80');
   });
 
   it('offers exactly the threshold when a take-profit fires', async () => {
@@ -65,14 +78,17 @@ describe('Protected', () => {
     expect(limitPriceOf(result.trades[0]?.advice), 'the profit taken is the profit configured').toBe('110');
   });
 
-  it('offers the stop as a limit when the config asks for one', async () => {
+  it('leaves a limit stop resting when the market gaps through it', async () => {
+    /*
+     * The trade-off the default accepts: price never comes back to the threshold, so the order
+     * sits there and the position stays held rather than being sold at any price going.
+     */
     const result = await backtest(
-      new Protected({stopLossOrder: 'limit', stopLossPct: '5'}),
-      candlesAt(['100', '100', '95', '95']),
+      new Protected({stopLossPct: '5'}),
+      candlesAt(['100', '100', '80', '80', '80']),
       holdingFromTheStart
     );
 
-    expect(result.trades[0]?.advice.type).toBe(OrderType.LIMIT);
-    expect(limitPriceOf(result.trades[0]?.advice), 'at the threshold it was told to stop at').toBe('95');
+    expect(result.trades, 'nothing fills above a market that has gapped below it').toHaveLength(0);
   });
 });

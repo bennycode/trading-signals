@@ -40,7 +40,8 @@ describe('BuyBelowSellAbove', () => {
   it('stops out of a position it did not open', async () => {
     const strategy = new BuyBelowSellAbove({sellAbove: '110', stopLossPct: '5'});
 
-    const result = await backtest(strategy, candlesAt(['100', '100', '90', '90']), holdingFromTheStart);
+    // The stop rests at 95 and fills on the bounce back to it.
+    const result = await backtest(strategy, candlesAt(['100', '100', '90', '95', '95']), holdingFromTheStart);
 
     expect(result.trades, 'the stop applies to the balance the strategy attached to').toHaveLength(1);
     expect(result.trades[0]?.advice.reason, 'the stop-loss rule is the one that fired').toContain('Stop-loss');
