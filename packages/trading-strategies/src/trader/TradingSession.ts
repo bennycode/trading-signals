@@ -28,6 +28,8 @@ export class TradingSession extends EventEmitter<TradingSessionEventMap> {
   #state: TradingSessionState | null = null;
   /** The order currently on the book, so advice asking for that same order can keep it. */
   #workingOrder: PendingOrder | null = null;
+  /** Orders of ours the broker stopped listing once, which a second reading confirms are gone. */
+  readonly #missingFromBook = new Set<string>();
   #adviceExecutor: AdviceExecutor | null = null;
   readonly #pendingOrders = new Map<string, PendingOrder>();
   #candleTopicId: string | null = null;
@@ -110,6 +112,7 @@ export class TradingSession extends EventEmitter<TradingSessionEventMap> {
 
     this.#running = false;
     this.#pendingOrders.clear();
+    this.#missingFromBook.clear();
     this.#workingOrder = null;
     this.#state = null;
     this.#adviceExecutor = null;
@@ -201,7 +204,11 @@ export class TradingSession extends EventEmitter<TradingSessionEventMap> {
      * so an order that is already working for this advice is left alone.
      */
     const working = this.#workingOrder;
-    if (working && this.#state && sameOrder(advice, working, ownedBase(this.#state))) {
+    if (
+      working &&
+      this.#state &&
+      sameOrder(advice, working, {ownedBase: ownedBase(this.#state), rules: this.#state.tradingRules})
+    ) {
       return;
     }
 
@@ -254,13 +261,46 @@ export class TradingSession extends EventEmitter<TradingSessionEventMap> {
       this.#broker.getOpenOrders(this.#pair),
     ]);
     const balances = sessionBalances(rawBalances, this.#pair);
+    this.#forgetOrdersThatLeftTheBook(openOrders);
+    const ours = [...this.#pendingOrders.values()];
 
     return {
       ...balances,
-      hasOutstandingBuy: openOrders.some(order => order.side === OrderSide.BUY),
-      hasOutstandingSell: openOrders.some(order => order.side === OrderSide.SELL),
+      /*
+       * Answered from this session's own unresolved orders, not from the broker's book. Someone
+       * else's resting order is no reason to leave a holding unguarded, and an order of ours that
+       * has left the book may still have a fill on its way: until that fill is in, the position
+       * it explains is this session's to account for.
+       */
+      hasOutstandingBuy: ours.some(order => order.side === OrderSide.BUY),
+      hasOutstandingSell: ours.some(order => order.side === OrderSide.SELL),
       openOrders,
     };
+  }
+
+  /**
+   * Drops an order of ours that the broker has stopped listing and never reported a fill for.
+   * Trading212's day orders expire overnight, and anyone can cancel one in the broker's own
+   * interface; an order remembered forever would block adoption forever with it.
+   *
+   * Two readings are needed before forgetting one, because the first can race its fill: an order
+   * that filled leaves the book at the same moment its notification is sent.
+   */
+  #forgetOrdersThatLeftTheBook(openOrders: readonly PendingOrder[]): void {
+    const onTheBook = new Set(openOrders.map(order => order.id));
+
+    for (const id of this.#pendingOrders.keys()) {
+      if (onTheBook.has(id)) {
+        this.#missingFromBook.delete(id);
+        continue;
+      }
+      if (this.#missingFromBook.has(id)) {
+        this.#pendingOrders.delete(id);
+        this.#missingFromBook.delete(id);
+        continue;
+      }
+      this.#missingFromBook.add(id);
+    }
   }
 
   /** The state fields a snapshot of the broker decides, which every state build shares. */

@@ -51,7 +51,7 @@ function createMockExchange() {
     getFeeRates: vi.fn().mockResolvedValue(AlpacaBroker.DEFAULT_CRYPTO_FEE_RATES),
     getFills: vi.fn().mockResolvedValue([sampleFill]),
     getLatestCandle: vi.fn().mockResolvedValue(sampleCandle),
-    getOpenOrders: vi.fn().mockResolvedValue([]),
+    getOpenOrders: vi.fn<TradingSessionBroker['getOpenOrders']>().mockResolvedValue([]),
     getRecentCandles: vi.fn().mockResolvedValue([]),
     getTradingRules: vi.fn().mockResolvedValue(AlpacaBroker.DEFAULT_FRACTIONAL_TRADING_RULES),
     listBalances: vi.fn<TradingSessionBroker['listBalances']>().mockResolvedValue(balanceSnapshot('10', '5000')),
