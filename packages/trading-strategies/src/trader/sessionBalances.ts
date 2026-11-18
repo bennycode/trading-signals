@@ -1,5 +1,6 @@
 import Big from 'big.js';
 import type {Balance, TradingPair} from '@typedtrader/exchange';
+import type {TradingSessionState} from './TradingSessionTypes.js';
 
 export interface SessionBalances {
   /** Base currency that can be spent right now. */
@@ -34,4 +35,18 @@ export function sessionBalances(balances: readonly Balance[], pair: TradingPair)
     baseOnHold: new Big(base?.hold ?? 0),
     counter: new Big(counter?.available ?? 0),
   };
+}
+
+/**
+ * The position as a strategy owns it, which is not the same as what it can trade: an unfilled
+ * limit sell of its own holds the balance it is offering. Counting only what is available would
+ * read that resting order as a position that had disappeared.
+ */
+export function ownedBase(state: TradingSessionState): Big {
+  return state.baseBalance.plus(state.baseBalanceOnHold);
+}
+
+/** Dust below the exchange's minimum order size is not a position, whoever is holding it. */
+export function holdsPosition(state: TradingSessionState): boolean {
+  return ownedBase(state).gte(new Big(state.tradingRules.base_min_size));
 }
