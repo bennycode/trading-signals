@@ -83,12 +83,18 @@ export class IbkrBroker extends Broker implements MarketDataSource {
     accountId?: string;
     gatewayUrl?: string;
     /**
-     * Routes limit orders to IBKR Overnight so they can execute between 20:00 and 03:50 ET, which
-     * together with the regular and extended sessions gives near-continuous weekday coverage.
+     * Routes limit orders to IBKR Overnight, the 20:00–03:50 ET session, which together with the
+     * regular and extended sessions gives near-continuous weekday coverage.
      *
      * Off by default, because it is not a widening of a day order: the overnight venue is separate,
      * carries its own liquidity and spreads, and only limit orders reach it — a market order is
      * refused rather than quietly held until the opening bell.
+     *
+     * **The account must be enabled for overnight trading**, which is a separate agreement in
+     * Client Portal. Without it the order is still accepted and reports `tif: OND` and
+     * `Submitted`, then is cancelled unfilled once the session opens, with no reason on the order
+     * and `warning_message: null` — a silence worth recognising rather than debugging. A `whatif`
+     * preview does not catch it either, since it prices the ticket without checking permissions.
      */
     overnight?: boolean;
     /**
