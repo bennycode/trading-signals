@@ -46,6 +46,7 @@ vi.mock(import('./api/IbkrAPI.js'), () => ({
 }));
 
 const {IbkrBroker} = await import('./IbkrBroker.js');
+const {ibkrCommissionFor, parseIbkrCommission} = await import('./IbkrFees.js');
 
 class MarketDataSourceStub extends MarketDataSource {
   latestClose = '200';
@@ -599,13 +600,13 @@ describe('IbkrBroker', {concurrent: false}, () => {
     it.each(measured)('bills $commission for $quantity shares, where IBKR quotes $ibkr', ({commission, quantity}) => {
       const price = new Big('11.5');
 
-      expect(IbkrBroker.commissionFor(price.mul(quantity), price).toString()).toBe(commission);
+      expect(ibkrCommissionFor(price.mul(quantity), price).toString()).toBe(commission);
     });
 
     it('treats an empty order as free rather than charging the floor', () => {
-      expect(IbkrBroker.commissionFor(new Big(0), new Big('11.5')).toString()).toBe('0');
+      expect(ibkrCommissionFor(new Big(0), new Big('11.5')).toString()).toBe('0');
       expect(
-        IbkrBroker.commissionFor(new Big(100), new Big(0)).toString(),
+        ibkrCommissionFor(new Big(100), new Big(0)).toString(),
         'an unknown price cannot be turned into a share count'
       ).toBe('0');
     });
@@ -613,14 +614,14 @@ describe('IbkrBroker', {concurrent: false}, () => {
 
   describe('parseCommission', () => {
     it('reads the formats IBKR actually sends', () => {
-      expect(IbkrBroker.parseCommission('1.70 USD')?.toString()).toBe('1.7');
-      expect(IbkrBroker.parseCommission('0.35')?.toString()).toBe('0.35');
+      expect(parseIbkrCommission('1.70 USD')?.toString()).toBe('1.7');
+      expect(parseIbkrCommission('0.35')?.toString()).toBe('0.35');
       expect(
-        IbkrBroker.parseCommission('0.11 ... 0.12 USD')?.toString(),
+        parseIbkrCommission('0.11 ... 0.12 USD')?.toString(),
         'the upper bound keeps an estimate from being optimistic'
       ).toBe('0.12');
-      expect(IbkrBroker.parseCommission(undefined)).toBeUndefined();
-      expect(IbkrBroker.parseCommission('USD'), 'no figure means no estimate, not zero').toBeUndefined();
+      expect(parseIbkrCommission(undefined)).toBeUndefined();
+      expect(parseIbkrCommission('USD'), 'no figure means no estimate, not zero').toBeUndefined();
     });
   });
 

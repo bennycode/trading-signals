@@ -1,9 +1,7 @@
-import {randomUUID} from 'node:crypto';
 import Big from 'big.js';
 import {ms} from 'ms';
 import {
   Broker,
-  OrderType,
   type Balance,
   type Candle,
   type CandleImportRequest,
@@ -15,21 +13,21 @@ import {
   type PendingLimitOrder,
   type PendingMarketOrder,
   type PendingOrder,
+  type OrderType,
   type TradingRules,
 } from '../Broker.js';
 import type {MarketDataSource} from '../MarketDataSource.js';
-import {TradingPair} from '../TradingPair.js';
+import type {TradingPair} from '../TradingPair.js';
 import {IbkrAPI} from './api/IbkrAPI.js';
-import {
-  IbkrOrderSide,
-  IbkrOrderType,
-  IbkrTimeInForce,
-  isIbkrOrderReplyMessage,
-  isIbkrOrderSubmitError,
-  isIbkrOrderSubmitSuccess,
-  type IbkrOrderRequest,
-} from './api/schema/OrderSchema.js';
+import {IbkrTimeInForce} from './api/schema/OrderSchema.js';
 import {IbkrBrokerMapper} from './IbkrBrokerMapper.js';
+import {createFillTopicId, startIbkrFillWatcher} from './IbkrFillWatcher.js';
+import {estimateIbkrFee} from './IbkrFeeEstimate.js';
+import type {IbkrBrokerOptions} from './IbkrBrokerOptions.js';
+import {verifyIbkrSession} from './IbkrSession.js';
+import {submitIbkrOrder} from './IbkrOrderSubmission.js';
+import {toIbkrTradingRules} from './IbkrTradingRules.js';
+import {ibkrFeeRates} from './IbkrFees.js';
 import {IbkrConidResolver} from './IbkrConidResolver.js';
 import {IbkrMarketData} from './IbkrMarketData.js';
 
@@ -44,23 +42,6 @@ import {IbkrMarketData} from './IbkrMarketData.js';
  */
 export class IbkrBroker extends Broker implements MarketDataSource {
   static readonly NAME = 'InteractiveBrokers';
-
-  /**
-   * IBKR's Fixed US-equity commission: USD 0.005 per share, at least USD 1.00 per order, never
-   * more than 1% of trade value. Read off this account's own `whatif` previews for Ford at USD
-   * 11.50 — 1 share costs 0.12, 2 cost 0.23, 5 cost 0.58, and 10 through 100 all cost 1.00, which
-   * is `min(max(0.005 × shares, 1.00), 1% × notional)` at every point.
-   *
-   * The Tiered schedule (0.0035 per share, 0.35 minimum) does not apply here, and the 1% cap is
-   * what makes a small order cheap: a single share is billed 1% of 11.50 rather than the 1.00
-   * minimum. Only {@link estimateFee}'s offline fallback uses these; a live estimate asks IBKR
-   * and a realised fee arrives on the fill.
-   *
-   * @see https://www.interactivebrokers.com/en/pricing/commissions-stocks.php
-   */
-  static readonly COMMISSION_PER_SHARE = new Big('0.005');
-  static readonly COMMISSION_MINIMUM = new Big('1');
-  static readonly COMMISSION_MAX_RATE = new Big('0.01');
 
   /** IBKR's smallest documented bar for the history endpoint. */
   static readonly SMALLEST_INTERVAL_MS = ms('1m');
@@ -79,46 +60,7 @@ export class IbkrBroker extends Broker implements MarketDataSource {
   #accountId?: string;
   #accountCurrency?: string;
 
-  constructor(options?: {
-    accountId?: string;
-    gatewayUrl?: string;
-    /**
-     * Routes limit orders to IBKR Overnight, the 20:00–03:50 ET session, which together with the
-     * regular and extended sessions gives near-continuous weekday coverage.
-     *
-     * Off by default, because it is not a widening of a day order: the overnight venue is separate,
-     * carries its own liquidity and spreads, and only limit orders reach it — a market order is
-     * refused rather than quietly held until the opening bell.
-     *
-     * No extra permission is needed: Client Portal lists permissions per product and has no
-     * overnight tile, and IBKR states that an existing US stock permission covers the session.
-     *
-     * Failure here is silent, so recognise it rather than debug it. An order IBKR will not honour
-     * is still accepted, reports `tif: OND` and `Submitted`, and is then cancelled unfilled once
-     * the session opens, with no reason on the order and `warning_message: null`. A `whatif`
-     * preview does not catch it either, since it prices a ticket it will never route.
-     */
-    overnight?: boolean;
-    /**
-     * How long an unfilled order rests. `GTC` by default, so an order survives the close rather
-     * than being silently discarded — IBKR accepts it for every order type and alongside
-     * `outsideRTH`, so nothing here forces `DAY`. Alpaca makes the same choice wherever its API
-     * allows it.
-     *
-     * Pass `DAY` for a strategy that re-places its orders each candle, so yesterday's unfilled
-     * order cannot fire on a thesis that has since expired.
-     *
-     * Ignored when `overnight` is set, which needs its own time-in-force to reach that venue.
-     */
-    timeInForce?: typeof IbkrTimeInForce.DAY | typeof IbkrTimeInForce.GTC;
-    /**
-     * Another provider's feed, for instruments IBKR serves no bars for. Defaults to
-     * {@link IbkrMarketData}, so IBKR's own history endpoint supplies candles and no second
-     * provider is needed. An injected source's lifecycle belongs to whoever constructed it —
-     * `disconnect()` does not close it.
-     */
-    marketData?: MarketDataSource;
-  }) {
+  constructor(options?: IbkrBrokerOptions) {
     super(IbkrBroker.NAME);
     this.#api = new IbkrAPI({gatewayUrl: options?.gatewayUrl});
     this.#conids = new IbkrConidResolver(this.#api);
@@ -149,27 +91,12 @@ export class IbkrBroker extends Broker implements MarketDataSource {
   }
 
   /**
-   * Proves there is a usable session. A gateway that is running but not logged in answers 401 to
-   * everything, so this reports that distinctly instead of letting it surface later as an
-   * unexplained failure on the first real call.
+   * Confirms the gateway holds a usable session, since this broker carries no credentials.
+   *
+   * @see {@link verifyIbkrSession}
    */
   override async verifyCredentials(): Promise<void> {
-    const status = await this.#api.getAuthStatus().catch(() => undefined);
-
-    if (!status?.authenticated) {
-      // Opening a session is enough when the gateway is logged in but the session has lapsed.
-      const initialized = await this.#api.initSession().catch(() => undefined);
-      if (!initialized?.authenticated) {
-        throw new Error(
-          `The IBKR Client Portal Gateway at ${this.#api.defaults.baseURL} has no authenticated session. ` +
-            `Log in at ${this.#api.defaults.baseURL} and approve the two-factor prompt.${
-              status?.message ? ` Gateway reported: ${status.message}` : ''
-            }`
-        );
-      }
-    }
-
-    await this.getAccountId();
+    return verifyIbkrSession(this.#api, () => this.getAccountId());
   }
 
   /**
@@ -326,66 +253,19 @@ export class IbkrBroker extends Broker implements MarketDataSource {
   async getTradingRules(pair: TradingPair): Promise<TradingRules> {
     const conid = await this.getConid(pair);
     const info = await this.#api.getContractInfoAndRules(conid);
-    const rules = info.rules;
 
-    /*
-     * IBKR varies the price tick by price band and returns the bands in `incrementRules`. The
-     * smallest one is used, so a limit price is never rejected for being finer than allowed at
-     * the band it lands in.
-     */
-    const increments = (rules?.incrementRules ?? [])
-      .map(rule => rule.increment)
-      .filter((increment): increment is number => typeof increment === 'number' && increment > 0);
-    const priceIncrement = increments.length > 0 ? Math.min(...increments) : (rules?.increment ?? 0.01);
-
-    /*
-     * Deliberately not `rules.sizeIncrement`: that is the step the order ticket's quantity
-     * spinner moves by (IBKR reports 40 for AAPL, which trades one share at a time), so using it
-     * would invent a 40-share minimum. The real floor is one share, or a fraction of one when
-     * the contract and account allow fractional orders.
-     */
-    const fractionalDigits = rules?.fraqInt;
-    const supportsFractional =
-      (rules?.fraqTypes?.length ?? 0) > 0 && typeof fractionalDigits === 'number' && fractionalDigits > 0;
-    /*
-     * `toFixed()` rather than `toString()`: Big.js switches to exponential notation below 1e-7,
-     * and a `base_increment` of "1e-8" is not a decimal any consumer can parse.
-     */
-    const sizeIncrement = supportsFractional ? new Big(1).div(new Big(10).pow(fractionalDigits)).toFixed() : '1';
-
-    return {
-      base_increment: sizeIncrement,
-      /*
-       * IBKR documents no per-instrument maximum; limits are margin- and risk-based and are
-       * enforced at submission. Reporting a finite cap here would invent one.
-       */
-      base_max_size: String(Number.MAX_SAFE_INTEGER),
-      base_min_size: sizeIncrement,
-      counter_increment: String(priceIncrement),
-      counter_min_size: '0',
-      pair,
-    };
+    return toIbkrTradingRules(info, pair);
   }
 
   /**
-   * IBKR's commission as a rate, which it is not: the schedule has a per-order floor and a cap,
-   * so the true rate depends on the order's size and no single number covers it. This reports the
-   * rate a large order pays, `0.005 / price` under the 1% ceiling.
+   * IBKR's commission as a rate, which it is not. Prefer {@link estimateFee}.
    *
-   * Prefer {@link estimateFee}, which knows the notional and so can apply the floor and the cap —
-   * for a small order those dominate, and this rate understates the fee several-fold.
+   * @see {@link ibkrFeeRates}
    */
   async getFeeRates(pair: TradingPair): Promise<FeeRate> {
     const candle = await this.#marketData.getLatestCandle(pair, IbkrBroker.SMALLEST_INTERVAL_MS);
-    const price = new Big(candle.close);
 
-    const rate = price.gt(0) ? IbkrBroker.COMMISSION_PER_SHARE.div(price) : IbkrBroker.COMMISSION_MAX_RATE;
-    const capped = rate.gt(IbkrBroker.COMMISSION_MAX_RATE) ? IbkrBroker.COMMISSION_MAX_RATE : rate;
-
-    return {
-      [OrderType.LIMIT]: capped,
-      [OrderType.MARKET]: capped,
-    };
+    return ibkrFeeRates(new Big(candle.close));
   }
 
   /**
@@ -396,40 +276,12 @@ export class IbkrBroker extends Broker implements MarketDataSource {
    * is rounded up to whole cents, which is how IBKR bills: 1% of USD 11.50 is 0.115 and the
    * preview quotes 0.12.
    */
+
   /**
-   * Reads the figure out of a `whatif` commission, which is a display string rather than a number:
-   * `"1.70 USD"`, a bare `"0.35"`, or a range like `"0.11 ... 0.12 USD"` when IBKR will not commit
-   * to one value. The upper bound is taken, so an estimate is never optimistic.
+   * Asks IBKR what the order would cost, falling back to the schedule applied locally when there
+   * is no session to ask.
    *
-   * Stripping non-numeric characters instead would turn that range into `"0.11...0.12"`, which is
-   * not a number — the throw was being swallowed and every ranged quote fell back to local
-   * arithmetic.
-   */
-  static parseCommission(commission: string | null | undefined): Big | undefined {
-    const figures = commission?.match(/\d+(?:\.\d+)?/g);
-    const highest = figures?.at(-1);
-    return highest === undefined ? undefined : new Big(highest);
-  }
-
-  static commissionFor(notional: Big, price: Big): Big {
-    if (notional.lte(0) || price.lte(0)) {
-      return new Big(0);
-    }
-
-    const shares = notional.div(price);
-    const perShare = IbkrBroker.COMMISSION_PER_SHARE.mul(shares);
-    const withFloor = perShare.lt(IbkrBroker.COMMISSION_MINIMUM) ? IbkrBroker.COMMISSION_MINIMUM : perShare;
-    const cap = notional.mul(IbkrBroker.COMMISSION_MAX_RATE);
-    const billed = withFloor.gt(cap) ? cap : withFloor;
-
-    return new Big(billed.toFixed(2, Big.roundUp));
-  }
-
-  /**
-   * Asks IBKR what the order would cost. `whatif` prices the exact ticket, which removes the need
-   * to model the tiered schedule, the order minimum and the 1% cap locally. Falls back to the
-   * arithmetic in {@link Broker.estimateFee} when the preview is unavailable — it needs a live
-   * session and a resolvable contract, neither of which holds during a backtest.
+   * @see {@link estimateIbkrFee}
    */
   override async estimateFee(
     pair: TradingPair,
@@ -437,42 +289,16 @@ export class IbkrBroker extends Broker implements MarketDataSource {
     _orderType: OrderType,
     notional: Big
   ): Promise<{commission: Big; currencyConversion: Big; total: Big; feeAsset: string}> {
-    const feeAsset = await this.getFeeAsset(pair);
-
-    try {
-      const [accountId, conid] = await Promise.all([this.getAccountId(), this.getConid(pair)]);
-      const preview = await this.#api.previewOrder(accountId, {
-        cashQty: Number(notional.toString()),
-        conid,
-        /*
-         * Always previewed as a MARKET ticket, even when pricing a LIMIT order. `whatif` rejects a
-         * LIMIT ticket that carries no `price` with "Invalid order price fields", and a fee
-         * estimate has no limit price to offer. Asking as MARKET costs nothing in accuracy because
-         * IBKR bills the same per-share commission either way, which is why `getFeeRates` reports
-         * one rate for both.
-         */
-        orderType: IbkrOrderType.MARKET,
-        side: IbkrOrderSide.BUY,
-        tif: IbkrTimeInForce.DAY,
-      });
-
-      const value = IbkrBroker.parseCommission(preview.amount?.commission);
-      if (value) {
-        return {commission: value, currencyConversion: new Big(0), feeAsset, total: value};
-      }
-    } catch {
-      // Fall through to the local estimate below.
-    }
-
-    /*
-     * No session, so the schedule is applied locally. Deliberately not `super.estimateFee`, which
-     * multiplies the notional by a flat rate: IBKR's floor and cap dominate a small order, and a
-     * rate alone priced one Ford share at USD 0.005 against the 0.12 actually charged.
-     */
-    const candle = await this.#marketData.getLatestCandle(pair, IbkrBroker.SMALLEST_INTERVAL_MS);
-    const commission = IbkrBroker.commissionFor(notional, new Big(candle.close));
-
-    return {commission, currencyConversion: new Big(0), feeAsset, total: commission};
+    return estimateIbkrFee({
+      api: this.#api,
+      feeAsset: await this.getFeeAsset(pair),
+      getAccountId: () => this.getAccountId(),
+      getConid: target => this.getConid(target),
+      getLatestClose: async () =>
+        new Big((await this.#marketData.getLatestCandle(pair, IbkrBroker.SMALLEST_INTERVAL_MS)).close),
+      notional,
+      pair,
+    });
   }
 
   /**
@@ -489,93 +315,15 @@ export class IbkrBroker extends Broker implements MarketDataSource {
   protected async placeOrder(pair: TradingPair, options: OrderOptions): Promise<PendingOrder> {
     const [accountId, conid] = await Promise.all([this.getAccountId(), this.getConid(pair)]);
 
-    const isLimit = options.type === OrderType.LIMIT;
-
-    if (this.#overnight && !isLimit) {
-      throw new Error(
-        `IBKR Overnight accepts limit orders only, so a ${options.type} order for ${pair.asString('/')} cannot reach it. Place a limit order, or construct the broker without \`overnight\`.`
-      );
-    }
-
-    const isNotional = options.type === OrderType.MARKET && options.sizeInCounter;
-    const request: IbkrOrderRequest = {
-      /*
-       * A client-generated id makes a failed POST reconcilable: the order can be looked up by it
-       * instead of guessing whether the request landed, and IBKR deduplicates a resubmission.
-       */
-      cOID: randomUUID().replaceAll('-', '').slice(0, 32),
+    return submitIbkrOrder({
+      accountId,
+      api: this.#api,
       conid,
-      orderType: isLimit ? IbkrOrderType.LIMIT : IbkrOrderType.MARKET,
-      /*
-       * Limit orders are marked for the extended sessions, matching what Alpaca's mapper does.
-       * IBKR allows only limit-family types there (`orderTypesOutside`), and a market order sent
-       * with this flag would be refused, so it is set for limit orders alone.
-       *
-       * Never alongside an overnight time-in-force: that picks IBKR Overnight, a venue of its own,
-       * and the extended-hours flag describes the pre-market and after-hours books instead. IBKR
-       * does not combine the two, and a `whatif` preview accepts the pair without complaint, so
-       * sending both produced an order that reported `Submitted` and was then cancelled unfilled
-       * when the session opened.
-       */
-      ...(isLimit && !this.#overnight ? {outsideRTH: true} : {}),
-      side: options.side === 'BUY' ? IbkrOrderSide.BUY : IbkrOrderSide.SELL,
-      /*
-       * `OND` rather than `OVT`: an overnight-only order is cancelled at 03:50 ET if it has not
-       * filled, which would silently drop a strategy's order before the regular session it was
-       * probably meant to span. `OND` carries it through into that session instead.
-       */
-      tif: this.#overnight ? IbkrTimeInForce.OVERNIGHT_AND_DAY : this.#timeInForce,
-      ...(isNotional ? {cashQty: Number(options.size)} : {quantity: Number(options.size)}),
-      ...(isLimit ? {price: Number(options.price)} : {}),
-    };
-
-    let response = await this.#api.submitOrder(accountId, request);
-
-    const MAX_CONFIRMATIONS = 5;
-    for (let attempt = 0; attempt < MAX_CONFIRMATIONS; attempt++) {
-      const entry = response[0];
-
-      if (!entry) {
-        throw new Error(`IBKR returned an empty response when placing an order for ${pair.asString('/')}.`);
-      }
-
-      if (isIbkrOrderSubmitSuccess(entry)) {
-        const base: PendingOrder =
-          options.type === OrderType.LIMIT
-            ? {
-                id: entry.order_id,
-                pair,
-                price: options.price,
-                side: options.side,
-                size: options.size,
-                type: OrderType.LIMIT,
-              }
-            : {
-                id: entry.order_id,
-                pair,
-                side: options.side,
-                size: options.size,
-                sizeInCounter: options.sizeInCounter,
-                type: OrderType.MARKET,
-              };
-        return base;
-      }
-
-      if (isIbkrOrderReplyMessage(entry)) {
-        response = await this.#api.replyToOrderMessage(entry.id, true);
-        continue;
-      }
-
-      if (isIbkrOrderSubmitError(entry)) {
-        throw new Error(`IBKR rejected the order for ${pair.asString('/')}: ${entry.error}`);
-      }
-
-      throw new Error(`IBKR returned an unrecognised order response for ${pair.asString('/')}.`);
-    }
-
-    throw new Error(
-      `IBKR kept asking for confirmation after ${MAX_CONFIRMATIONS} replies when placing an order for ${pair.asString('/')}.`
-    );
+      options,
+      overnight: this.#overnight,
+      pair,
+      timeInForce: this.#timeInForce,
+    });
   }
 
   /**
@@ -587,50 +335,16 @@ export class IbkrBroker extends Broker implements MarketDataSource {
    * so a fresh watcher does not replay the day's history as if it had just happened.
    */
   async watchOrders(): Promise<string> {
-    const topicId = randomUUID();
-    const seenExecutions = new Set<string>();
-    let primed = false;
+    const topicId = createFillTopicId();
 
-    const poll = async () => {
-      try {
-        const trades = await this.#api.getTrades();
+    const timer = startIbkrFillWatcher({
+      api: this.#api,
+      emit: fill => this.emit(topicId, fill),
+      getFeeAsset: pair => this.getFeeAsset(pair),
+      getQuoteCurrency: conid => this.#getQuoteCurrency(conid),
+      pollIntervalMs: IbkrBroker.ORDER_POLL_INTERVAL_MS,
+    });
 
-        for (const trade of trades) {
-          const executionId = trade.execution_id ?? `${trade.order_id}-${trade.trade_time_r}`;
-          if (seenExecutions.has(executionId)) {
-            continue;
-          }
-          seenExecutions.add(executionId);
-
-          if (!primed) {
-            continue;
-          }
-
-          // Currency conversions share this feed but are nobody's order — see `isInstrumentTrade`.
-          if (!IbkrBrokerMapper.isInstrumentTrade(trade)) {
-            continue;
-          }
-
-          const symbol = trade.symbol;
-          if (!symbol) {
-            continue;
-          }
-
-          const pair = new TradingPair(symbol, await this.#getQuoteCurrency(trade.conid));
-          const fill = IbkrBrokerMapper.toFill(trade, pair, await this.getFeeAsset(pair));
-          if (fill) {
-            this.emit(topicId, fill);
-          }
-        }
-
-        primed = true;
-      } catch {
-        // A failed poll is transient; the next tick tries again rather than killing the watcher.
-      }
-    };
-
-    void poll();
-    const timer = setInterval(() => void poll(), IbkrBroker.ORDER_POLL_INTERVAL_MS);
     this.#orderWatchers.set(topicId, timer);
 
     return topicId;
