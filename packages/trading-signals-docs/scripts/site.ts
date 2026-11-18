@@ -18,6 +18,7 @@ const shims: Record<string, string> = {
   'node:assert': path.join(shimsDir, 'node-assert.ts'),
   'node:assert/strict': path.join(shimsDir, 'node-assert.ts'),
   'node:crypto': path.join(shimsDir, 'node-crypto.ts'),
+  'node:https': path.join(shimsDir, 'node-https.ts'),
   // The `events` npm package is an API-compatible EventEmitter that works in every runtime.
   'node:events': 'events',
   'node:util': path.join(shimsDir, 'node-util.ts'),
