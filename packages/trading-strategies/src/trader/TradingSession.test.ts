@@ -320,6 +320,9 @@ describe('TradingSession', {concurrent: false}, () => {
       exchange.emit('candle-topic-1', sampleCandle);
       await vi.waitFor(() => expect(exchange.placeLimitOrder).toHaveBeenCalledTimes(1));
 
+      // A different price, so this is a new order rather than the one already working.
+      strategy.onCandle.mockResolvedValue({...advice, price: new Big('260')});
+
       /*
        * Race window: the order filled on the exchange before our cancel reached it,
        * so cancelOpenOrders has no IDs to return. The order must stay tracked so the
@@ -371,12 +374,48 @@ describe('TradingSession', {concurrent: false}, () => {
       // cancelOpenOrders was called once during start, reset to track new calls
       const cancelCallsAfterStart = exchange.cancelOpenOrders.mock.calls.length;
 
-      // Second candle → should cancel the pending order first
+      // Second candle, asking for something else → cancel the pending order first
+      strategy.onCandle.mockResolvedValue({...advice, amount: '200'});
       exchange.emit('candle-topic-1', sampleCandle);
       await vi.waitFor(() => expect(exchange.placeMarketOrder).toHaveBeenCalledTimes(2));
 
       // One extra cancel call for clearing the pending order
       expect(exchange.cancelOpenOrders.mock.calls.length).toBeGreaterThan(cancelCallsAfterStart);
+    });
+
+    it('leaves an order that is already working for the same advice alone', async () => {
+      /*
+       * A rule priced off a fill matches on every candle until its order fills. Cancelling and
+       * re-placing the identical order would lose its place in the exchange's queue and announce
+       * a trade the user has already been told about.
+       */
+      const advice: OrderAdvice = {
+        amount: '1',
+        amountIn: 'base',
+        price: new Big('253'),
+        reason: 'Scalp sell: fill 250 + offset 3',
+        side: OrderSide.SELL,
+        type: OrderType.LIMIT,
+      };
+      strategy.onCandle.mockResolvedValue(advice);
+      const onMessage = vi.fn();
+      session.on('message', onMessage);
+
+      await session.start();
+
+      exchange.emit('candle-topic-1', sampleCandle);
+      await vi.waitFor(() => expect(exchange.placeLimitOrder).toHaveBeenCalledTimes(1));
+      const cancelCallsAfterFirstOrder = exchange.cancelOpenOrders.mock.calls.length;
+
+      exchange.emit('candle-topic-1', sampleCandle);
+      exchange.emit('candle-topic-1', sampleCandle);
+      await vi.waitFor(() => expect(strategy.onCandle).toHaveBeenCalledTimes(3));
+
+      expect(exchange.placeLimitOrder, 'the resting order stays as it is').toHaveBeenCalledTimes(1);
+      expect(exchange.cancelOpenOrders.mock.calls.length, 'and is never cancelled to be re-placed').toBe(
+        cancelCallsAfterFirstOrder
+      );
+      expect(onMessage, 'the reason is reported once, for the order that was actually placed').toHaveBeenCalledTimes(1);
     });
   });
 

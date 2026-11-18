@@ -1,4 +1,5 @@
 import {describe, expect, it} from 'vitest';
+import {OrderSide} from '@typedtrader/exchange';
 import {backtest, candlesAt, dailyCandles, flatWithCash, holdingFromTheStart, tradeLog} from '../engine/testing.js';
 import {Scalp} from './scalp.js';
 
@@ -55,6 +56,22 @@ describe('Scalp', () => {
       withoutHistory.trades,
       'with neither a configured nor a derivable offset there is no price to offer'
     ).toHaveLength(0);
+  });
+
+  it('waits an offset below its exit to re-enter, even for a position it adopted', async () => {
+    /*
+     * A position the strategy did not open leaves no entry behind, so phasing on the entry count
+     * would send it back to the EMA rule after that position is sold — which buys at market, into
+     * a price that has already run away, instead of waiting an offset below the exit.
+     */
+    const candles = candlesAt(['100', '101', '102', '103'], START);
+
+    const result = await backtest(new Scalp({emaPeriod: 2, offset: '1'}), candles, holdingFromTheStart, RANGING);
+
+    expect(
+      result.trades.map(trade => trade.side),
+      'the adopted position is sold, and the re-entry rests below the exit instead of chasing'
+    ).toStrictEqual([OrderSide.SELL]);
   });
 
   it('stops scalping for good once the stop-loss fires', async () => {

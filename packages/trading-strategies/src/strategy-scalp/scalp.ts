@@ -105,14 +105,24 @@ export const Scalp = defineStrategy(ScalpSchema)({
         because: ({close, config, ema}) =>
           `Entry: price ${close.toFixed(2)} above EMA(${config.emaPeriod}) ${ema.toFixed(2)}`,
         spend: 'all',
-        when: facts => facts.entries === 0 && canScalp(facts) && facts.close > facts.ema,
+        when: facts => facts.lastExit === null && canScalp(facts) && facts.close > facts.ema,
       },
       {
         because: ({lastExit, offset}) =>
           `Scalp buy: fill ${required(lastExit, 'last exit').price.toFixed(2)} - offset ${offset.toFixed(2)}`,
         limit: ({lastExit, offset}) => required(lastExit, 'last exit').price.minus(offset),
         spend: 'all',
-        when: ({entries}) => entries > 0,
+        /*
+         * Phased on the last exit rather than on the entry count, because a position this strategy
+         * adopted rather than opened leaves no entry behind: counting entries would send it back
+         * to the EMA rule, which buys at market instead of waiting an offset below the exit.
+         */
+        /*
+         * Phased on the last exit rather than on the entry count, because a position this strategy
+         * adopted rather than opened leaves no entry behind: counting entries would send it back
+         * to the EMA rule, which buys at market instead of waiting an offset below the exit.
+         */
+        when: ({lastExit}) => lastExit !== null,
       },
     ],
   },

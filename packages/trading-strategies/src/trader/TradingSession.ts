@@ -2,6 +2,7 @@ import {EventEmitter} from 'node:events';
 import {CandleBatcher, ONE_MINUTE_IN_MS} from '@typedtrader/exchange';
 import type {BatchedCandle, Candle, Fill, PendingOrder} from '@typedtrader/exchange';
 import {AdviceExecutor} from './AdviceExecutor.js';
+import {sameOrder} from './sameOrder.js';
 import {sessionBalances} from './sessionBalances.js';
 import type {
   OrderAdvice,
@@ -16,6 +17,8 @@ export class TradingSession extends EventEmitter<TradingSessionEventMap> {
   readonly #strategy;
 
   #state: TradingSessionState | null = null;
+  /** The advice the order currently on the book was placed for, so an identical one can be kept. */
+  #workingAdvice: OrderAdvice | null = null;
   #adviceExecutor: AdviceExecutor | null = null;
   readonly #pendingOrders = new Map<string, PendingOrder>();
   #candleTopicId: string | null = null;
@@ -100,6 +103,7 @@ export class TradingSession extends EventEmitter<TradingSessionEventMap> {
 
     this.#running = false;
     this.#pendingOrders.clear();
+    this.#workingAdvice = null;
     this.#state = null;
     this.#adviceExecutor = null;
     this.emit('stopped');
@@ -116,7 +120,23 @@ export class TradingSession extends EventEmitter<TradingSessionEventMap> {
       }
       this.emit('candle', batchedCandle);
 
-      const advice = await this.#strategy.onCandle(batchedCandle, this.#state!);
+      /*
+       * Read before every candle rather than only after our own orders and fills. A strategy
+       * derives its position from this balance, and a position can appear or disappear without
+       * us: bought by hand, closed by a rebalance, sold by another strategy. Reading it once at
+       * startup would leave an exit-only strategy waiting forever for a position it already
+       * guards, and would keep reporting one that is long gone. The backtester rebuilds this
+       * state per candle for the same reason.
+       */
+      const balances = await this.#balances();
+      this.#state = {
+        ...this.#state!,
+        baseBalance: balances.base,
+        baseBalanceOnHold: balances.baseOnHold,
+        counterBalance: balances.counter,
+      };
+
+      const advice = await this.#strategy.onCandle(batchedCandle, this.#state);
       if (advice) {
         this.emit('advice', advice);
         await this.#executeAdvice(advice);
@@ -134,6 +154,7 @@ export class TradingSession extends EventEmitter<TradingSessionEventMap> {
       }
 
       this.#pendingOrders.delete(fill.order_id);
+      this.#workingAdvice = null;
       this.emit('fill', fill);
 
       const balances = await this.#balances();
@@ -156,6 +177,16 @@ export class TradingSession extends EventEmitter<TradingSessionEventMap> {
   };
 
   async #executeAdvice(advice: OrderAdvice): Promise<void> {
+    /*
+     * A rule that keeps matching — a resting limit sell priced off a fill, say — produces the same
+     * advice on every candle. Replacing the order with an identical one would send it to the back
+     * of the exchange's queue each time and report a trade the user has already been told about,
+     * so an order that is already working for this advice is left alone.
+     */
+    if (this.#workingAdvice && sameOrder(this.#workingAdvice, advice) && this.#pendingOrders.size > 0) {
+      return;
+    }
+
     if (this.#pendingOrders.size > 0) {
       /*
        * Only forget orders that were actually canceled. Any pending order missing
@@ -166,12 +197,17 @@ export class TradingSession extends EventEmitter<TradingSessionEventMap> {
       for (const orderId of canceledIds) {
         this.#pendingOrders.delete(orderId);
       }
+      this.#workingAdvice = null;
     }
 
     const outcome = await this.#adviceExecutor!.execute(advice);
 
     if (outcome.status === 'PLACED') {
       this.#pendingOrders.set(outcome.order.id, outcome.order);
+      this.#workingAdvice = advice;
+      if (advice.reason) {
+        this.#strategy.onMessage?.(advice.reason);
+      }
     }
 
     /*

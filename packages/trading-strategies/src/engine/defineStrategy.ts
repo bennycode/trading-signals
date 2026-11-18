@@ -299,7 +299,6 @@ function build<
         this.setState<Ledger>({pendingFinalExit: {because, price, quantity}});
       }
 
-      this.onMessage?.(because);
       return advice;
     }
 
