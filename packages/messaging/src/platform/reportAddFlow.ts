@@ -31,7 +31,7 @@ function isKnownReport(reportName: string) {
  * account or a report the bot does not expose.
  */
 function validateReportInput(userId: string, reportInput: string): ReportInputValidation {
-  const [reportName = '', accountIdStr = ''] = reportInput.split(/\s+/);
+  const [reportName = '', accountIdStr] = reportInput.split(/\s+/);
 
   if (!isKnownReport(reportName)) {
     return {message: `Unknown report "${reportName}".`, ok: false};

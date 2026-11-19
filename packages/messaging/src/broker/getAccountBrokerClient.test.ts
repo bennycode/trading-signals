@@ -1,4 +1,4 @@
-import {describe, it, expect, vi, beforeEach} from 'vitest';
+import {assert, describe, it, expect, vi, beforeEach} from 'vitest';
 import type {AlpacaBroker, AlpacaMarketData, getBrokerClient} from '@typedtrader/exchange';
 import type {Account, AccountAttributes} from '../database/models/Account.js';
 
