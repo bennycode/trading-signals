@@ -100,7 +100,7 @@ export function registerReportAddFlow(bot: Bot<WizardContext>, deps: ReportAddFl
 
   // Step 2: User selected a report — if it needs an account, ask for one; otherwise ask run mode
   onCallback(new RegExp(`^${REPORT_CALLBACK_PREFIX}(.+)$`), async (ctx, userId) => {
-    const reportName = ctx.match[1];
+    const reportName = ctx.match[1] ?? '';
     if (!isKnownReport(reportName)) {
       await ctx.editMessageText(`Unknown report "${reportName}".`);
       return;
@@ -130,7 +130,7 @@ export function registerReportAddFlow(bot: Bot<WizardContext>, deps: ReportAddFl
 
   // Step 2b: User selected an account — ask run mode
   onCallback(new RegExp(`^${ACCOUNT_CALLBACK_PREFIX}(\\d+):(.+)$`), async (ctx, userId) => {
-    const accountId = ctx.match[1];
+    const accountId = ctx.match[1] ?? '';
     const reportName = ctx.match[2];
     // Carry accountId through by appending it to the reportName in the callback data
     const reportInput = `${reportName} ${accountId}`;
@@ -149,7 +149,7 @@ export function registerReportAddFlow(bot: Bot<WizardContext>, deps: ReportAddFl
 
   // Step 3a: Run once
   onCallback(new RegExp(`^${MODE_CALLBACK_PREFIX}once:(.+)$`), async (ctx, userId) => {
-    const reportInput = ctx.match[1];
+    const reportInput = ctx.match[1] ?? '';
     const validation = validateReportInput(userId, reportInput);
     if (!validation.ok) {
       await ctx.editMessageText(validation.message);
@@ -163,7 +163,7 @@ export function registerReportAddFlow(bot: Bot<WizardContext>, deps: ReportAddFl
 
   // Step 3b: Schedule — ask for interval
   onCallback(new RegExp(`^${MODE_CALLBACK_PREFIX}schedule:(.+)$`), async (ctx, userId) => {
-    const reportInput = ctx.match[1];
+    const reportInput = ctx.match[1] ?? '';
     const validation = validateReportInput(userId, reportInput);
     if (!validation.ok) {
       await ctx.editMessageText(validation.message);
@@ -175,8 +175,8 @@ export function registerReportAddFlow(bot: Bot<WizardContext>, deps: ReportAddFl
 
   // Step 4: Schedule with chosen interval
   onCallback(new RegExp(`^${INTERVAL_CALLBACK_PREFIX}([^:]+):(.+)$`), async (ctx, userId) => {
-    const interval = ctx.match[1];
-    const reportInput = ctx.match[2];
+    const interval = ctx.match[1] ?? '';
+    const reportInput = ctx.match[2] ?? '';
     const validation = validateReportInput(userId, reportInput);
     if (!validation.ok) {
       await ctx.editMessageText(validation.message);

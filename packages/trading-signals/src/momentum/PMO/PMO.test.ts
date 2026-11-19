@@ -45,8 +45,8 @@ describe('PMO', () => {
         if (result !== null) {
           const expected = expectations[i - offset];
 
-          expect(result.pmo.toFixed(4)).toBe(expected.pmo);
-          expect(result.signal.toFixed(4)).toBe(expected.signal);
+          expect(result.pmo.toFixed(4)).toBe(expected?.pmo);
+          expect(result.signal.toFixed(4)).toBe(expected?.signal);
         }
       });
 

@@ -70,7 +70,7 @@ describe('WatchMonitor platform routing', () => {
     platforms.set('telegram', mockTelegramPlatform);
 
     const userId = 'telegram:123456' as const;
-    expect(platforms.get(userId.split(':')[0])).toBe(mockTelegramPlatform);
+    expect(platforms.get(userId.split(':')[0] ?? '')).toBe(mockTelegramPlatform);
   });
 
   it('returns undefined for an unknown platform prefix', () => {
@@ -78,7 +78,7 @@ describe('WatchMonitor platform routing', () => {
     platforms.set('telegram', createMockPlatform());
 
     const userId = 'discord:someuser' as const;
-    expect(platforms.get(userId.split(':')[0])).toBeUndefined();
+    expect(platforms.get(userId.split(':')[0] ?? '')).toBeUndefined();
   });
 });
 

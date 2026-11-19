@@ -57,8 +57,8 @@ export abstract class BrokerMock extends Broker {
   constructor(config: {
     balances: Map<string, ExchangeMockBalance>;
     /** Real candle history for {@link getRecentCandles}, e.g. a strategy's warm-up. Without it there is none. */
-    marketData?: Pick<MarketDataSource, 'getCandles'>;
-    slippage?: BrokerMockSlippageConfig;
+    marketData?: Pick<MarketDataSource, 'getCandles'> | undefined;
+    slippage?: BrokerMockSlippageConfig | undefined;
   }) {
     super('BrokerMock');
     this.#balances = new MockBalances(config.balances);

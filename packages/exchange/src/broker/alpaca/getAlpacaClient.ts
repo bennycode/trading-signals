@@ -37,7 +37,7 @@ export function getAlpacaClient(options: {
    * the same credentials so the broker is fully usable on its own. Pass an existing source
    * (e.g. one already feeding another broker) to share connections.
    */
-  marketData?: MarketDataSource;
+  marketData?: MarketDataSource | undefined;
 }) {
   const ownedMarketData = options.marketData ? null : new AlpacaMarketData(options);
   const marketData = options.marketData ?? ownedMarketData!;

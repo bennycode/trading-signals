@@ -59,7 +59,10 @@ export function makeStrategyAddWizard(deps: {strategyMonitor: () => StrategyMoni
 
     const accountCb = await conversation.waitForCallbackQuery(accounts.map(a => `strategyadd:acc:${a.id}`));
     await accountCb.answerCallbackQuery();
-    const accountId = Number.parseInt(typeof accountCb.match === 'string' ? accountCb.match.split(':')[2] : '', 10);
+    const accountId = Number.parseInt(
+      typeof accountCb.match === 'string' ? (accountCb.match.split(':')[2] ?? '') : '',
+      10
+    );
     const selectedAccount = accounts.find(a => a.id === accountId);
     const accountLabel = selectedAccount ? selectedAccount.name : `#${accountId}`;
 

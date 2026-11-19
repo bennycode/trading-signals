@@ -90,7 +90,7 @@ export function findIndicator(name: string) {
  * of being handed over: constructors accept it silently and then report nonsense.
  */
 function parseArgument(argument: string): unknown {
-  const [head, tail] = argument.split(':', 2);
+  const [head = argument, tail] = argument.split(':', 2);
   const indicator = BY_LOWERCASE_NAME.get(head.toLowerCase());
   if (indicator) {
     return tail === undefined ? indicator.value : new indicator.value(...tail.split(',').map(parseArgument));
@@ -131,13 +131,19 @@ export function createIndicator(name: string, args: string[]): {create: () => In
   if (parsed.length > declared) {
     const takes = declared === 0 ? 'no arguments' : `${declared} argument${declared === 1 ? '' : 's'}`;
     // Naming the shape as well spares a second attempt when the count was not the only thing wrong.
-    const shape = settingsComeAsConfig
-      ? ` It expects one config object, for example {${positions[0].fields.map(field => `"${field}":…`).join(', ')}}.`
-      : '';
+    const first = positions[0];
+    const shape =
+      settingsComeAsConfig && first
+        ? ` It expects one config object, for example {${first.fields.map(field => `"${field}":…`).join(', ')}}.`
+        : '';
     throw new Error(`${exportedName} takes ${takes}, so "${args[declared]}" would be ignored.${shape}`);
   }
-  parsed.forEach((argument, index) => {
-    const {fields, nested} = positions[index];
+  for (const [index, argument] of parsed.entries()) {
+    const position = positions[index];
+    if (!position) {
+      continue;
+    }
+    const {fields, nested} = position;
     // An array is an object to `typeof`, but it carries no settings either.
     const isBareObject =
       typeof argument === 'object' && argument !== null && !Array.isArray(argument) && !isIndicatorInstance(argument);
@@ -180,7 +186,7 @@ export function createIndicator(name: string, args: string[]): {create: () => In
         assertKeysAreRead(`${exportedName}'s "${key}"`, value, nestedFields);
       }
     }
-  });
+  }
 
   /*
    * Indicators take their settings in whichever shape suits them (an interval, several, a config

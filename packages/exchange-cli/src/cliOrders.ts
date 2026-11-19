@@ -5,7 +5,7 @@ import {OrderType, type Broker, type MarketDataSource, type OrderSide, type Trad
 export async function placeCliOrder(
   broker: Broker & MarketDataSource,
   pair: TradingPair,
-  order: {side: OrderSide; size: string; limit?: string; dryRun?: boolean}
+  order: {side: OrderSide; size: string; limit?: string | undefined; dryRun?: boolean | undefined}
 ) {
   const {side, size, limit, dryRun} = order;
   if (dryRun) {

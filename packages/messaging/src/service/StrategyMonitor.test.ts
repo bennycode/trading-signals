@@ -124,7 +124,7 @@ describe('StrategyMonitor platform routing', () => {
 
     const userId = 'telegram:42';
     const message = formatStrategyMessage('Trail', 'BTC-USD', 'attached');
-    const platform = platforms.get(userId.split(':')[0]);
+    const platform = platforms.get(userId.split(':')[0] ?? '');
     await platform?.sendMessage(userId, message);
 
     expect(telegram.sendMessage).toHaveBeenCalledTimes(1);
@@ -136,7 +136,7 @@ describe('StrategyMonitor platform routing', () => {
     platforms.set('telegram', createMockPlatform());
 
     const userId = 'discord:99';
-    expect(platforms.get(userId.split(':')[0])).toBeUndefined();
+    expect(platforms.get(userId.split(':')[0] ?? '')).toBeUndefined();
   });
 });
 

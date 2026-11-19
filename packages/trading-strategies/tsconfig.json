@@ -1,7 +1,3 @@
 {
-  "compilerOptions": {
-    "exactOptionalPropertyTypes": true,
-    "noUncheckedIndexedAccess": true
-  },
   "extends": "../../tsconfig.lib.json"
 }

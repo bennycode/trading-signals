@@ -1,3 +1,8 @@
 {
+  "compilerOptions": {
+    // The same hole as in `tsconfig.json`, which a build does not read; the reasoning is there.
+    "exactOptionalPropertyTypes": false,
+    "noUncheckedIndexedAccess": false
+  },
   "extends": "../../tsconfig.build.json"
 }

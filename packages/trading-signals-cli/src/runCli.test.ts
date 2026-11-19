@@ -320,7 +320,8 @@ describe('runCli', () => {
         'null',
         'null',
       ]);
-      expect(JSON.parse(lines.split('\n')[4])).toBe(new SMA(5).updates(PRICES, false)[4]);
+      const fifthLine = lines.split('\n')[4] ?? '';
+      expect(JSON.parse(fifthLine)).toBe(new SMA(5).updates(PRICES, false)[4]);
     }
   });
 

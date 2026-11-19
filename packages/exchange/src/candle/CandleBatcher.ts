@@ -48,8 +48,11 @@ export class CandleBatcher extends EventEmitter<EventMap> {
   static createBatchedCandle(batch: Candle[], desiredIntervalInMillis: number): BatchedCandle {
     const openTimesArray = batch.map(candle => candle.openTimeInMillis);
     batch = batch.filter((candle, index) => index === openTimesArray.indexOf(candle.openTimeInMillis));
-    const firstCandle: Candle = batch[0];
-    const lastCandle: Candle = batch[batch.length - 1];
+    const firstCandle = batch[0];
+    const lastCandle = batch.at(-1);
+    if (!firstCandle || !lastCandle) {
+      throw new Error('A batched candle needs at least one candle to describe');
+    }
     const isPositive = new Big(lastCandle.close).gt(firstCandle.open);
 
     const accumulator: BatchedCandle = {
@@ -201,10 +204,11 @@ export class CandleBatcher extends EventEmitter<EventMap> {
       }
     } else {
       const firstCandle = currentBatchArray[0];
-      const isNextInterval =
-        candle.openTimeInMillis + candle.sizeInMillis - firstCandle.openTimeInMillis > desiredIntervalInMillis;
-      const isEndOfCurrentInterval =
-        candle.openTimeInMillis + candle.sizeInMillis - firstCandle.openTimeInMillis === desiredIntervalInMillis;
+      // Nothing to measure an interval against yet: this candle is what the batch starts from.
+      const reach =
+        firstCandle === undefined ? 0 : candle.openTimeInMillis + candle.sizeInMillis - firstCandle.openTimeInMillis;
+      const isNextInterval = reach > desiredIntervalInMillis;
+      const isEndOfCurrentInterval = reach === desiredIntervalInMillis;
       if (isNextInterval || isEndOfCurrentInterval) {
         if (isEndOfCurrentInterval) {
           currentBatchArray.push(candle);
@@ -231,11 +235,16 @@ export class CandleBatcher extends EventEmitter<EventMap> {
   }
 
   static toBatchedCandles(candles: Candle[]): BatchedCandle[] {
-    return CandleBatcher.batchMany(candles, candles[0].sizeInMillis);
+    const [first] = candles;
+    return first ? CandleBatcher.batchMany(candles, first.sizeInMillis) : [];
   }
 
   static toBatchedCandle(candle: Candle): BatchedCandle {
-    return CandleBatcher.batchMany([candle], candle.sizeInMillis)[0];
+    const [batched] = CandleBatcher.batchMany([candle], candle.sizeInMillis);
+    if (!batched) {
+      throw new Error('One candle always batches into one candle of the same size');
+    }
+    return batched;
   }
 
   static toCandles(candles: BatchedCandle[]): Candle[] {
@@ -288,6 +297,9 @@ export class CandleBatcher extends EventEmitter<EventMap> {
     };
 
     const [firstCandle] = candles;
+    if (!firstCandle) {
+      throw new Error('A high and a low need at least one candle');
+    }
 
     return candles.reduce(reducer, {
       high: new Big(firstCandle.high),
