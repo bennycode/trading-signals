@@ -17,7 +17,7 @@ export interface AlpacaMarketDataOptions {
 }
 
 /**
- * Alpaca market-data layer: historical bars (`getCandles`, `getLatestCandle`) and the
+ * Alpaca market-data layer: historical bars (`getCandles`, `getRecentCandles`) and the
  * WebSocket-driven candle stream (`watchCandles`). Owns subscriptions to `alpacaWebSocket`
  * and aggregates the always-1-minute Alpaca bars into the requested interval via
  * `CandleBatcher`.
@@ -65,7 +65,7 @@ export class AlpacaMarketData extends MarketDataSource {
     return candles;
   }
 
-  async getLatestCandle(pair: TradingPair, intervalInMillis: number): Promise<Candle> {
+  protected override async getNewestCandle(pair: TradingPair, intervalInMillis: number): Promise<Candle> {
     const isCrypto = await isAlpacaCryptoSymbol(this.#alpacaAPI, pair);
     const symbol = createAlpacaSymbol(pair, isCrypto);
     const fetchMethod = isCrypto ? this.#fetchLatestCryptoBars.bind(this) : this.#fetchLatestStockBars.bind(this);

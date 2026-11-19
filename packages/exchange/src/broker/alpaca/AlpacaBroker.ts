@@ -20,7 +20,7 @@ import {
   type PendingOrder,
   type TradingRules,
 } from '../Broker.js';
-import type {MarketDataSource} from '../MarketDataSource.js';
+import type {CandleFeed, MarketDataSource} from '../MarketDataSource.js';
 import type {TradingPair} from '../TradingPair.js';
 import {createAlpacaSymbol, isAlpacaCryptoSymbol} from './alpacaSymbol.js';
 import {AlpacaOrderStatus} from './api/schema/OrderSchema.js';
@@ -42,7 +42,7 @@ function isAlreadyFilledOrder(error: unknown) {
   return !!data && typeof data === 'object' && 'code' in data && data.code === 42210000;
 }
 
-export class AlpacaBroker extends Broker implements MarketDataSource {
+export class AlpacaBroker extends Broker implements CandleFeed {
   readonly #alpacaAPI: AlpacaAPI;
   readonly #marketData: MarketDataSource;
   readonly #candleListenerByTopic = new Map<string, (candle: unknown) => void>();

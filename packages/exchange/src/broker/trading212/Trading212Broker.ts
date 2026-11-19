@@ -20,13 +20,13 @@ import {
   type TradingRules,
 } from '../Broker.js';
 import {TradingPair} from '../TradingPair.js';
-import type {MarketDataSource} from '../MarketDataSource.js';
+import type {CandleFeed, MarketDataSource} from '../MarketDataSource.js';
 import {Trading212API} from './api/Trading212API.js';
 import {Trading212OrderStatus, Trading212TimeValidity} from './api/schema/OrderSchema.js';
 import {Trading212BrokerMapper} from './Trading212BrokerMapper.js';
 import {fetchFilledOrdersSince, latestFilledOrderId} from './newFilledOrders.js';
 
-export class Trading212Broker extends Broker implements MarketDataSource {
+export class Trading212Broker extends Broker implements CandleFeed {
   static readonly NAME = 'Trading212';
 
   /**

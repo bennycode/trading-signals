@@ -155,7 +155,7 @@ export class IbkrMarketData extends MarketDataSource {
     return bars.filter(candle => !IbkrMarketData.isForming(candle, intervalInMillis, now)).slice(-count);
   }
 
-  async getLatestCandle(pair: TradingPair, intervalInMillis: number): Promise<Candle> {
+  protected override async getNewestCandle(pair: TradingPair, intervalInMillis: number): Promise<Candle> {
     /*
      * Two intervals of span, so the request still spans a bar across a weekend or a holiday, when
      * the newest bar can be days old.
@@ -171,6 +171,11 @@ export class IbkrMarketData extends MarketDataSource {
     }
 
     return latest;
+  }
+
+  /** @see {@link IbkrMarketData.isForming} */
+  protected override isForming(candle: Candle, intervalInMillis: number, nowInMillis: number): boolean {
+    return IbkrMarketData.isForming(candle, intervalInMillis, nowInMillis);
   }
 
   /**

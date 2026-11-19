@@ -150,17 +150,30 @@ describe('IbkrMarketData', {concurrent: false}, () => {
   });
 
   describe('getLatestCandle', () => {
-    it('returns the newest bar, forming or not', async () => {
+    it('returns the newest closed bar', async () => {
+      vi.setSystemTime(new Date('2026-11-17T11:30:00.000Z'));
+
       const candle = await marketData.getLatestCandle(pair, ONE_DAY);
 
       expect(candle.close).toBe('11.57');
       expect(candle.openTimeInISO).toBe('2026-11-16T14:30:00.000Z');
     });
 
+    it('withholds the session that is still running', async () => {
+      vi.setSystemTime(new Date('2026-11-16T18:00:00.000Z'));
+
+      const candle = await marketData.getLatestCandle(pair, ONE_DAY);
+
+      expect(
+        candle.openTimeInISO,
+        'the same contract as getRecentCandles, so a displayed price and an indicator price agree'
+      ).toBe('2026-11-13T14:30:00.000Z');
+    });
+
     it('reports an empty history rather than returning undefined', async () => {
       mockMethods.getHistory.mockResolvedValue({data: [], priceFactor: 1, volumeFactor: 1});
 
-      await expect(marketData.getLatestCandle(pair, ONE_DAY)).rejects.toThrow(/no 86400000 ms candles/);
+      await expect(marketData.getLatestCandle(pair, ONE_DAY)).rejects.toThrow(/No closed 86400000 ms candle/);
     });
   });
 

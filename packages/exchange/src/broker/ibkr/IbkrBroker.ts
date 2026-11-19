@@ -16,7 +16,7 @@ import {
   type OrderType,
   type TradingRules,
 } from '../Broker.js';
-import type {MarketDataSource} from '../MarketDataSource.js';
+import type {CandleFeed, MarketDataSource} from '../MarketDataSource.js';
 import type {TradingPair} from '../TradingPair.js';
 import {IbkrAPI} from './api/IbkrAPI.js';
 import {IbkrTimeInForce} from './api/schema/OrderSchema.js';
@@ -46,7 +46,7 @@ import {IbkrMarketData} from './IbkrMarketData.js';
  *
  * @see https://www.interactivebrokers.com/docs/web-api/getting-started
  */
-export class IbkrBroker extends Broker implements MarketDataSource {
+export class IbkrBroker extends Broker implements CandleFeed {
   static readonly NAME = 'InteractiveBrokers';
 
   /** IBKR's smallest documented bar for the history endpoint. */

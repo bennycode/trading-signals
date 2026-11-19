@@ -54,10 +54,14 @@ class MarketDataSourceStub extends MarketDataSource {
   latestClose = '200';
 
   async getCandles(): Promise<Candle[]> {
-    throw new Error('Not implemented');
+    return [this.#candle()];
   }
 
-  async getLatestCandle(): Promise<Candle> {
+  protected override async getNewestCandle(): Promise<Candle> {
+    return this.#candle();
+  }
+
+  #candle(): Candle {
     return {
       base: 'AAPL',
       close: this.latestClose,

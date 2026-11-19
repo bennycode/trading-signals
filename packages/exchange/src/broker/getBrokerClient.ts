@@ -3,7 +3,7 @@ import {getAlpacaClient} from './alpaca/getAlpacaClient.js';
 import type {Broker} from './Broker.js';
 import {IbkrBroker} from './ibkr/IbkrBroker.js';
 import {getIbkrClient} from './ibkr/getIbkrClient.js';
-import type {MarketDataSource} from './MarketDataSource.js';
+import type {CandleFeed, MarketDataSource} from './MarketDataSource.js';
 import {Trading212Broker} from './trading212/Trading212Broker.js';
 import {getTrading212Client} from './trading212/getTrading212Client.js';
 
@@ -27,7 +27,7 @@ export function getBrokerClient(
      */
     marketData?: MarketDataSource;
   }
-): Broker & MarketDataSource {
+): Broker & CandleFeed {
   switch (account.exchangeId) {
     case AlpacaBroker.NAME:
       return getAlpacaClient({

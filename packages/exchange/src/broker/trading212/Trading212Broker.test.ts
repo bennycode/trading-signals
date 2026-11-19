@@ -37,7 +37,7 @@ class MarketDataSourceStub extends MarketDataSource {
     throw new Error('Not implemented');
   }
 
-  async getLatestCandle(): Promise<Candle> {
+  protected override async getNewestCandle(): Promise<Candle> {
     throw new Error('Not implemented');
   }
 

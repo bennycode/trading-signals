@@ -48,7 +48,7 @@ class TestMarketDataSource extends MarketDataSource {
     return this.#dataset.filter(c => c.openTimeInMillis >= startInMillis && c.openTimeInMillis <= endInMillis);
   }
 
-  async getLatestCandle(): Promise<Candle> {
+  protected override async getNewestCandle(): Promise<Candle> {
     return this.#dataset[this.#dataset.length - 1];
   }
 

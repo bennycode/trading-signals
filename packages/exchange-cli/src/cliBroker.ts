@@ -50,7 +50,7 @@ class UnavailableMarketData extends MarketDataSource {
     throw new Error(UnavailableMarketData.REASON);
   }
 
-  async getLatestCandle(): Promise<Candle> {
+  protected override async getNewestCandle(): Promise<Candle> {
     throw new Error(UnavailableMarketData.REASON);
   }
 
