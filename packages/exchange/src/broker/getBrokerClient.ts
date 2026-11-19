@@ -10,8 +10,14 @@ import {getTrading212Client} from './trading212/getTrading212Client.js';
 export function getBrokerClient(
   account: {
     exchangeId: string;
+    /** The broker's API key, or for IBKR the Pro username, which has no API keys. */
     apiKey: string;
+    /** The broker's API secret, or for IBKR the Pro password. */
     apiSecret: string;
+    /**
+     * Ignored by IBKR, which refuses it: the gateway trades whichever account it logged into, so
+     * paper is chosen by giving a paper username rather than by setting this.
+     */
     isPaper: boolean;
   },
   options?: {
@@ -63,14 +69,19 @@ export function getBrokerClient(
       }
 
       /*
-       * No API key: the Client Portal Gateway holds a logged-in session and signs requests
-       * itself, so `account.apiKey` / `account.apiSecret` carry nothing for this broker. The
-       * account id is discovered from that session, and candles come from IBKR's own history
+       * IBKR has no API keys: the Client Portal Gateway holds a logged-in session and signs
+       * requests itself. The credential pair is the IBKR Pro username and password instead, which
+       * is what lets the broker start that gateway and log in rather than requiring one somebody
+       * else brought up. Both are optional, so an empty pair still talks to a running gateway.
+       *
+       * The account id is discovered from the session, and candles come from IBKR's own history
        * endpoint unless a different feed is supplied.
        */
       return getIbkrClient({
+        ...(account.apiKey ? {account: account.apiKey} : {}),
         gatewayUrl: options?.gatewayUrl,
         marketData: options?.marketData,
+        ...(account.apiSecret ? {password: account.apiSecret} : {}),
       });
     }
     default:
