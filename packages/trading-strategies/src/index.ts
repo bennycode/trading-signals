@@ -21,7 +21,7 @@ export {NoopStrategy, NoopSchema, type NoopConfig} from './strategy-noop/NoopStr
 export {TrailingStop, TrailingStopSchema, type TrailingStopConfig} from './strategy-trailing-stop/trailingStop.js';
 export {Protected, ProtectedSchema, type ProtectedConfig} from './strategy-protected/protected.js';
 export {suggestScalpOffset} from './strategy-scalp/suggestScalpOffset.js';
-export {atrTrailStop, percentTrailStop, trailStop, type TrailStopOptions} from './util/trailStop.js';
+export {atrTrailStop, percentTrailStop, sizeFromRisk, trailStop, type TrailStopOptions} from './util/trailStop.js';
 export {BatchedIndicator} from './util/BatchedIndicator.js';
 export {positiveNumberString, timeframeString} from './util/validators.js';
 export {TrendFilter} from './util/TrendFilter.js';
