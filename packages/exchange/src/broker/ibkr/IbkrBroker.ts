@@ -5,6 +5,7 @@ import {
   type Balance,
   type Candle,
   type CandleImportRequest,
+  type ExchangeAvailableBalance,
   type FeeRate,
   type Fill,
   type LimitOrderOptions,
@@ -24,6 +25,7 @@ import {IbkrBrokerMapper} from './IbkrBrokerMapper.js';
 import type {IbkrGatewayLauncher} from './gateway/IbkrGatewayLauncher.js';
 import {IbkrGatewayStage, type IbkrGatewayState} from './gateway/IbkrGatewayState.js';
 import {resolveIbkrAccountId} from './IbkrAccountSelection.js';
+import {toAvailableCash} from './IbkrCashConversion.js';
 import {IbkrCurrencyResolver} from './IbkrCurrencyResolver.js';
 import {createFillTopicId, startIbkrFillWatcher, type IbkrFillWatcher} from './IbkrFillWatcher.js';
 import {getCompleteIbkrLiveOrders, isIbkrOrderWorking} from './IbkrLiveOrders.js';
@@ -181,13 +183,9 @@ export class IbkrBroker extends Broker implements CandleFeed {
   /**
    * Ledger cash and open positions, every page of them.
    *
-   * Note that cash here understates what can be spent: IBKR funds a USD trade from a EUR balance
-   * by converting on the fly, so a EUR-funded account can buy a US stock while reporting no USD
-   * at all, and the inherited `getAvailableBalances` consequently reports a counter balance of
-   * zero. Converting it is not attempted, because the only rate on offer is the ledger's
-   * per-currency `exchangerate` and a single-currency ledger carries no entry for the other
-   * currency to read it from. Guessing the direction would overstate funds, which is how an
-   * order gets rejected for insufficient funds.
+   * Cash is reported per currency, exactly as IBKR holds it. What can actually be spent on one
+   * pair is a different question, because IBKR converts as it fills — see
+   * {@link getAvailableBalances}.
    */
   async listBalances(): Promise<Balance[]> {
     const accountId = await this.getAccountId();
@@ -196,6 +194,31 @@ export class IbkrBroker extends Broker implements CandleFeed {
       getAllIbkrPositions({accountId, api: this.#api}),
     ]);
     return IbkrBrokerMapper.toBalances(ledger, positions);
+  }
+
+  /**
+   * Overridden because a per-currency cash balance is not what IBKR lets an order spend.
+   *
+   * IBKR funds a USD trade out of a EUR balance by converting on the fly, so a EUR-funded
+   * account can buy a US stock while its ledger shows no USD whatsoever. The inherited version
+   * looks for a row in the counter currency, finds none, and reports zero — which an order-sizing
+   * caller reads as "no buying power", so the strategy never buys.
+   *
+   * The counter side is therefore the account's whole settled cash expressed in that currency.
+   * The base side keeps the inherited answer, since that one is a position in the instrument
+   * rather than cash and no conversion applies.
+   *
+   * {@link toAvailableCash} declines to convert when the ledger cannot support it, and the
+   * inherited figure stands in that case — understating funds rather than overstating them.
+   */
+  override async getAvailableBalances(pair: TradingPair): Promise<ExchangeAvailableBalance> {
+    const [inherited, accountId] = await Promise.all([super.getAvailableBalances(pair), this.getAccountId()]);
+    const ledger = await this.#api.getLedger(accountId);
+
+    return {
+      base: inherited.base,
+      counter: toAvailableCash(ledger, pair.counter) ?? inherited.counter,
+    };
   }
 
   async getOpenOrders(pair: TradingPair): Promise<PendingOrder[]> {

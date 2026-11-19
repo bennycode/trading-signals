@@ -1,7 +1,5 @@
-import type {MarketDataSource} from '../MarketDataSource.js';
-import type {IbkrAPI} from './api/IbkrAPI.js';
-import type {IbkrGatewayState} from './gateway/IbkrGatewayState.js';
 import {IbkrBroker} from './IbkrBroker.js';
+import type {IbkrBrokerOptions} from './IbkrBrokerOptions.js';
 
 /**
  * An IBKR client.
@@ -17,25 +15,6 @@ import {IbkrBroker} from './IbkrBroker.js';
  *
  * Omit the credentials to use a gateway that is already logged in.
  */
-export function getIbkrClient(options?: {
-  /** IBKR Pro username. With `password`, the gateway is launched and logged in for you. */
-  account?: string | undefined;
-  /** Discovered from the session when omitted. */
-  accountId?: string | undefined;
-  /** Defaults to {@link IbkrAPI.URL_GATEWAY}, the address IBKR's own `conf.yaml` listens on. */
-  gatewayUrl?: string | undefined;
-  /** Defaults to IBKR's own history endpoint; pass a source only to use another provider's feed. */
-  marketData?: MarketDataSource | undefined;
-  /** Progress while the gateway comes up, including when it is waiting on the IB Key push. */
-  onGatewayStateChange?: ((state: IbkrGatewayState) => void) | undefined;
-  /** Routes limit orders to IBKR Overnight (20:00-03:50 ET). Limit orders only. */
-  overnight?: boolean | undefined;
-  /** IBKR Pro password. Only ever typed into the gateway's own login form. */
-  password?: string | undefined;
-  /** `GTC` (default) rests until filled or cancelled; `DAY` expires at the close. */
-  timeInForce?: 'DAY' | 'GTC';
-  /** Which second factor to pick when the account has more than one enrolled. */
-  twoFactorMethod?: string | undefined;
-}): IbkrBroker {
+export function getIbkrClient(options?: IbkrBrokerOptions): IbkrBroker {
   return new IbkrBroker(options);
 }
