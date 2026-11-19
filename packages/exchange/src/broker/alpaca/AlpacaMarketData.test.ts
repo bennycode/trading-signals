@@ -81,6 +81,37 @@ describe('AlpacaMarketData', () => {
     });
   });
 
+  // Sequential: the tests share one mocked API and move the clock, which a parallel run would interleave.
+  describe('getLatestCandle', {concurrent: false}, () => {
+    /** Two hourly AAPL bars: 09:00 UTC is closed, 10:00 UTC is still running at the clock below. */
+    const HOURLY = [
+      {c: 100, h: 101, l: 99, n: 1, o: 100, t: '2026-11-19T09:00:00Z', v: 10, vw: 100},
+      {c: 200, h: 201, l: 199, n: 1, o: 200, t: '2026-11-19T10:00:00Z', v: 10, vw: 200},
+    ];
+
+    it('withholds the bar that is still forming', async () => {
+      vi.useFakeTimers();
+      vi.setSystemTime(new Date('2026-11-19T10:30:00.000Z'));
+      mockMethods.getStockBarsLatest.mockResolvedValue({bars: {AAPL: HOURLY[1]}});
+      // Alpaca filters by the requested window server-side; a mock that ignores it would hide the bug.
+      mockMethods.getStockBars.mockImplementation(async params => ({
+        bars: {
+          AAPL: HOURLY.filter(
+            bar =>
+              Date.parse(bar.t) >= Date.parse(String(params.start)) &&
+              Date.parse(bar.t) <= Date.parse(String(params.end))
+          ),
+        },
+        next_page_token: null,
+      }));
+
+      const candle = await new AlpacaMarketData(credentials).getLatestCandle(pair, 3_600_000);
+
+      expect(candle.close, 'Alpaca serves the in-progress bar, so the newest one it returns is half-built').toBe('100');
+      vi.useRealTimers();
+    });
+  });
+
   // Sequential: the tests share one mocked API, so a queued probe result must not land in the other test.
   describe('watchCandles', {concurrent: false}, () => {
     const watch = async () => {
