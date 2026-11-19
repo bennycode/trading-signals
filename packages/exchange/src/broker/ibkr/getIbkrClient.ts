@@ -19,23 +19,23 @@ import {IbkrBroker} from './IbkrBroker.js';
  */
 export function getIbkrClient(options?: {
   /** IBKR Pro username. With `password`, the gateway is launched and logged in for you. */
-  account?: string;
+  account?: string | undefined;
   /** Discovered from the session when omitted. */
-  accountId?: string;
+  accountId?: string | undefined;
   /** Defaults to {@link IbkrAPI.URL_GATEWAY}, the address IBKR's own `conf.yaml` listens on. */
-  gatewayUrl?: string;
+  gatewayUrl?: string | undefined;
   /** Defaults to IBKR's own history endpoint; pass a source only to use another provider's feed. */
-  marketData?: MarketDataSource;
+  marketData?: MarketDataSource | undefined;
   /** Progress while the gateway comes up, including when it is waiting on the IB Key push. */
-  onGatewayStateChange?: (state: IbkrGatewayState) => void;
+  onGatewayStateChange?: ((state: IbkrGatewayState) => void) | undefined;
   /** Routes limit orders to IBKR Overnight (20:00-03:50 ET). Limit orders only. */
-  overnight?: boolean;
+  overnight?: boolean | undefined;
   /** IBKR Pro password. Only ever typed into the gateway's own login form. */
-  password?: string;
+  password?: string | undefined;
   /** `GTC` (default) rests until filled or cancelled; `DAY` expires at the close. */
   timeInForce?: 'DAY' | 'GTC';
   /** Which second factor to pick when the account has more than one enrolled. */
-  twoFactorMethod?: string;
+  twoFactorMethod?: string | undefined;
 }): IbkrBroker {
   return new IbkrBroker(options);
 }

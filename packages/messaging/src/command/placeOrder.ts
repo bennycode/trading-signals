@@ -11,7 +11,7 @@ export interface PlaceOrderParams {
   /** Quantity in base asset (e.g. "100" for 100 shares). */
   quantity: string;
   /** Limit price in counter asset. Omit for market orders. */
-  limitPrice?: string;
+  limitPrice?: string | undefined;
 }
 
 /**

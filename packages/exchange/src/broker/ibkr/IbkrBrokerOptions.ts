@@ -11,23 +11,23 @@ export interface IbkrBrokerOptions {
    * Leave both out to talk to a gateway somebody else has already logged in, which is what the
    * repo's own `npm run gateway:ibkr:op` provides.
    */
-  account?: string;
-  accountId?: string;
-  gatewayUrl?: string;
+  account?: string | undefined;
+  accountId?: string | undefined;
+  gatewayUrl?: string | undefined;
   /**
    * Called as the gateway comes up. The useful one is `awaiting-two-factor`: IBKR has pushed to
    * the phone and nothing proceeds until somebody taps it, so this is the moment to say so rather
    * than appear hung.
    */
-  onGatewayStateChange?: (state: IbkrGatewayState) => void;
+  onGatewayStateChange?: ((state: IbkrGatewayState) => void) | undefined;
   /**
    * IBKR Pro password, used only to fill the gateway's login form and never sent anywhere else.
    * Requires {@link account}, and requires the optional `playwright` peer dependency, because
    * that form is built in client-side JavaScript and cannot be posted to directly.
    */
-  password?: string;
+  password?: string | undefined;
   /** Which second factor to pick when the account has more than one enrolled. */
-  twoFactorMethod?: string;
+  twoFactorMethod?: string | undefined;
   /**
    * Routes limit orders to IBKR Overnight, the 20:00–03:50 ET session, which together with the
    * regular and extended sessions gives near-continuous weekday coverage.
@@ -44,7 +44,7 @@ export interface IbkrBrokerOptions {
    * the session opens, with no reason on the order and `warning_message: null`. A `whatif`
    * preview does not catch it either, since it prices a ticket it will never route.
    */
-  overnight?: boolean;
+  overnight?: boolean | undefined;
   /**
    * How long an unfilled order rests. `GTC` by default, so an order survives the close rather
    * than being silently discarded — IBKR accepts it for every order type and alongside
@@ -56,12 +56,12 @@ export interface IbkrBrokerOptions {
    *
    * Ignored when `overnight` is set, which needs its own time-in-force to reach that venue.
    */
-  timeInForce?: typeof IbkrTimeInForce.DAY | typeof IbkrTimeInForce.GTC;
+  timeInForce?: typeof IbkrTimeInForce.DAY | typeof IbkrTimeInForce.GTC | undefined;
   /**
    * Another provider's feed, for instruments IBKR serves no bars for. Defaults to
    * {@link IbkrMarketData}, so IBKR's own history endpoint supplies candles and no second
    * provider is needed. An injected source's lifecycle belongs to whoever constructed it —
    * `disconnect()` does not close it.
    */
-  marketData?: MarketDataSource;
+  marketData?: MarketDataSource | undefined;
 }

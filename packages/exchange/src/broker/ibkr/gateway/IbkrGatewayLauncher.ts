@@ -6,12 +6,12 @@ import {ensureGateway, startGateway, stopGateway} from './startIbkrGateway.js';
 
 export interface IbkrGatewayLauncherOptions {
   account: string;
-  gatewayUrl?: string;
+  gatewayUrl?: string | undefined;
   /** Reported as the launcher advances, so a caller can say "approve the push on your phone". */
-  onStateChange?: (state: IbkrGatewayState) => void;
+  onStateChange?: ((state: IbkrGatewayState) => void) | undefined;
   password: string;
   /** The second factor to pick when the account has several enrolled. */
-  twoFactorMethod?: string;
+  twoFactorMethod?: string | undefined;
 }
 
 /**
@@ -38,8 +38,8 @@ export class IbkrGatewayLauncher {
   readonly #options: IbkrGatewayLauncherOptions;
   readonly gatewayUrl: string;
 
-  #child?: ChildProcess;
-  #ready?: Promise<void>;
+  #child?: ChildProcess | undefined;
+  #ready?: Promise<void> | undefined;
   #state: IbkrGatewayState = {stage: IbkrGatewayStage.IDLE};
 
   private constructor(options: IbkrGatewayLauncherOptions) {
@@ -148,11 +148,11 @@ export class IbkrGatewayLauncher {
  * Kept out of {@link IbkrBroker} so the broker holds only the handle, not the decision.
  */
 export function toIbkrGatewayLauncher(options?: {
-  account?: string;
-  gatewayUrl?: string;
-  onGatewayStateChange?: (state: IbkrGatewayState) => void;
-  password?: string;
-  twoFactorMethod?: string;
+  account?: string | undefined;
+  gatewayUrl?: string | undefined;
+  onGatewayStateChange?: ((state: IbkrGatewayState) => void) | undefined;
+  password?: string | undefined;
+  twoFactorMethod?: string | undefined;
 }): IbkrGatewayLauncher | undefined {
   if (!options?.account || !options.password) {
     return undefined;

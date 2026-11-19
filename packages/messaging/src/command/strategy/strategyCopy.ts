@@ -25,7 +25,7 @@ export const strategyCopy = async (request: string, userId: string): Promise<Str
     };
   }
 
-  const [sourceIdStr, targetAccountIdStr, pairStr] = parts;
+  const [sourceIdStr = '', targetAccountIdStr = '', pairStr = ''] = parts;
 
   let pair: TradingPair;
   try {

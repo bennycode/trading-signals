@@ -15,7 +15,7 @@ export const candle = async (request: string, userId: string) => {
     return 'Invalid format. Usage: /candle <accountId> <pair> <interval>';
   }
 
-  const [accountIdStr, pairPart, interval] = parts;
+  const [accountIdStr = '', pairPart = '', interval = ''] = parts;
 
   try {
     const accountId = assertId(accountIdStr);

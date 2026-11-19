@@ -28,11 +28,12 @@ describe('datasets', () => {
     });
 
     it('is ordered by strictly increasing open time', () => {
-      dataset.candles.forEach((candle, i) => {
-        if (i > 0) {
-          expect(candle.openTimeInMillis).toBeGreaterThan(dataset.candles[i - 1].openTimeInMillis);
+      for (const [index, candle] of dataset.candles.entries()) {
+        const previous = dataset.candles[index - 1];
+        if (previous) {
+          expect(candle.openTimeInMillis).toBeGreaterThan(previous.openTimeInMillis);
         }
-      });
+      }
     });
 
     it('keeps "openTimeInISO" and "openTimeInMillis" in sync', () => {

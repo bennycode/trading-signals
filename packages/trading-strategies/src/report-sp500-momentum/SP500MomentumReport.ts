@@ -202,9 +202,10 @@ export class SP500MomentumReport extends Report<SP500MomentumConfig> {
     });
 
     for (const [symbol, symbolBars] of Object.entries(response.bars)) {
-      if (symbolBars.length > 0) {
-        // Use the first available bar's close as the price near the target date
-        result.set(symbol, symbolBars[0].c);
+      // Use the first available bar's close as the price near the target date
+      const [firstBar] = symbolBars;
+      if (firstBar) {
+        result.set(symbol, firstBar.c);
       }
     }
 
@@ -253,9 +254,9 @@ export class SP500MomentumReport extends Report<SP500MomentumConfig> {
     lines.push('```');
     lines.push(header);
     lines.push(divider);
-    for (let i = 0; i < losers.length; i++) {
-      // Invert the arrow: the losers list is worst-first, so "got worse" means rising toward #1.
-      lines.push(renderRow(i + 1, losers[i], true));
+    // Invert the arrow: the losers list is worst-first, so "got worse" means rising toward #1.
+    for (const [i, row] of losers.entries()) {
+      lines.push(renderRow(i + 1, row, true));
     }
     lines.push('```');
 

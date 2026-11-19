@@ -62,7 +62,7 @@ describe('AlpacaBrokerMock', () => {
     );
 
     expect(fills).toHaveLength(1);
-    expect(fills[0].price, '105 open + 1% slippage').toBe('106.05');
+    expect(fills[0]?.price, '105 open + 1% slippage').toBe('106.05');
   });
 
   it('defaults to no slippage', async () => {
@@ -82,6 +82,6 @@ describe('AlpacaBrokerMock', () => {
       createCandle({close: '110', open: '105', openTimeInISO: '2025-01-01T00:01:00.000Z'})
     );
 
-    expect(fills[0].price).toBe('105');
+    expect(fills[0]?.price).toBe('105');
   });
 });

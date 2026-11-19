@@ -12,6 +12,15 @@ export interface CliDeps {
 
 type CliResult = {text: string} | {json: unknown};
 
+/** A positional argument the command cannot run without, so its absence is a usage error. */
+function argument(args: readonly string[], index: number, what: string): string {
+  const value = args[index];
+  if (value === undefined) {
+    throw new Error(`Missing ${what}. Run with --help to see the command's arguments.`);
+  }
+  return value;
+}
+
 /** Dispatch one command and always release its broker; the executable owns process I/O. */
 export async function runCli(argv: string[], overrides: Partial<CliDeps> = {}): Promise<CliResult> {
   const invocation = parseCliArgs(argv);
@@ -35,7 +44,7 @@ export async function runCli(argv: string[], overrides: Partial<CliDeps> = {}): 
       case 'time':
         return {json: {time: await broker.getTime()}};
       case 'instruments': {
-        const query = args[0].toLowerCase();
+        const query = argument(args, 0, 'search query').toLowerCase();
         return {
           json: (await listInstruments()).filter(instrument =>
             [instrument.ticker, instrument.name, instrument.isin ?? ''].some(field =>
@@ -56,7 +65,7 @@ export async function runCli(argv: string[], overrides: Partial<CliDeps> = {}): 
         };
     }
 
-    const ticker = args[0];
+    const ticker = argument(args, 0, 'ticker');
     const counter =
       values.counter ??
       (key === 'alpaca' ? 'USD' : (await listInstruments()).find(instrument => instrument.ticker === ticker)?.currency);
@@ -84,7 +93,7 @@ export async function runCli(argv: string[], overrides: Partial<CliDeps> = {}): 
             dryRun: values.dryRun,
             limit: values.limit,
             side: command === 'buy' ? OrderSide.BUY : OrderSide.SELL,
-            size: args[1],
+            size: argument(args, 1, 'order size'),
           }),
         };
       }
@@ -92,10 +101,10 @@ export async function runCli(argv: string[], overrides: Partial<CliDeps> = {}): 
         if (values.all) {
           return {json: {cancelled: await broker.cancelOpenOrders(pair)}};
         }
-        await broker.cancelOrderById(pair, args[1]);
-        return {json: {cancelled: [args[1]]}};
+        await broker.cancelOrderById(pair, argument(args, 1, 'order id'));
+        return {json: {cancelled: [argument(args, 1, 'order id')]}};
       case 'wait':
-        return {json: await waitForOrder(broker, pair, args[1], timeout, poll)};
+        return {json: await waitForOrder(broker, pair, argument(args, 1, 'order id'), timeout, poll)};
       case 'watch-candles':
         return {
           json: await streamEvents(

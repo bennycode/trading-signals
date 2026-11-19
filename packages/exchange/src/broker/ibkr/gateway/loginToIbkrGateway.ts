@@ -42,7 +42,7 @@ export interface IbkrLoginOptions {
   /** How long to wait for the second factor, which needs a human to tap the push. */
   twoFactorTimeoutMs?: number;
   /** The entry to pick in the device chooser, matched case-insensitively. */
-  twoFactorMethod?: string;
+  twoFactorMethod?: string | undefined;
   password: string;
 }
 

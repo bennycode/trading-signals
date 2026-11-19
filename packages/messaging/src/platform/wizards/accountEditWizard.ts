@@ -41,9 +41,14 @@ export function makeAccountEditWizard(deps: {
 
     const accountCb = await conversation.waitForCallbackQuery(accounts.map(a => `accountedit:acc:${a.id}`));
     await accountCb.answerCallbackQuery();
-    const selectedId =
-      typeof accountCb.match === 'string' ? parseInt(accountCb.match.split(':')[2], 10) : accounts[0].id;
-    const account = accounts.find(a => a.id === selectedId) ?? accounts[0];
+    const [firstAccount] = accounts;
+    if (!firstAccount) {
+      await ctx.reply('No account found. Use /accountAdd first.');
+      return;
+    }
+    const pickedId = typeof accountCb.match === 'string' ? accountCb.match.split(':')[2] : undefined;
+    const selectedId = pickedId === undefined ? firstAccount.id : Number.parseInt(pickedId, 10);
+    const account = accounts.find(a => a.id === selectedId) ?? firstAccount;
 
     /*
      * The account ID, name, exchange and paper mode are kept — only the

@@ -24,11 +24,15 @@ function createCandle(): Candle {
 function createState(): TradingSessionState {
   return {
     baseBalance: new Big(0),
+    baseBalanceOnHold: new Big(0),
     counterBalance: new Big(1000),
     feeRates: {
       [OrderType.LIMIT]: new Big('0.001'),
       [OrderType.MARKET]: new Big('0.002'),
     },
+    hasOutstandingBuy: false,
+    hasOutstandingSell: false,
+    shortBase: new Big(0),
     tradingRules: {
       base_increment: '0.01',
       base_max_size: '10000',

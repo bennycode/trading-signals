@@ -1,6 +1,6 @@
 import {Big} from 'big.js';
 import {ms} from 'ms';
-import {describe, expect, it, vi} from 'vitest';
+import {assert, describe, expect, it, vi} from 'vitest';
 import LTC_USDT_2d_1m_1606066988989 from '../../fixtures/StopLossStrategy/LTC_USDT_2d_1m_1606066988989.json' with {type: 'json'};
 import OneWeekInMinutes from '../../fixtures/candles/OneWeekInMinutes.json' with {type: 'json'};
 import TenMinutesInEightCandles from '../../fixtures/candles/TenMinutesInEightCandles.json' with {type: 'json'};
@@ -26,6 +26,7 @@ describe('CandleBatcher', () => {
   describe('addToBatch', () => {
     it('returns a batched candle if enough candles have been added', () => {
       const expected = hours[0];
+      assert.exists(expected);
       const cb = new CandleBatcher(ms('1h'));
       let actual: BatchedCandle | undefined;
 
@@ -139,13 +140,13 @@ describe('CandleBatcher', () => {
 
       expect(batchedCandles.length, 'zero-volume candle completes the interval instead of being dropped').toBe(1);
       const [batch] = batchedCandles;
-      expect(batch.open.toString()).toBe('50000');
-      expect(batch.high.toString()).toBe('50300');
-      expect(batch.low.toString()).toBe('49900');
-      expect(batch.close.toString(), 'close comes from the zero-volume candle').toBe('50200');
-      expect(batch.volume.toString()).toBe('25');
+      expect(batch?.open.toString()).toBe('50000');
+      expect(batch?.high.toString()).toBe('50300');
+      expect(batch?.low.toString()).toBe('49900');
+      expect(batch?.close.toString(), 'close comes from the zero-volume candle').toBe('50200');
+      expect(batch?.volume.toString()).toBe('25');
       expect(
-        batch.weightedMedianPrice.toString(),
+        batch?.weightedMedianPrice.toString(),
         'weighted median only counts traded volume: (10 * 50000 + 15 * 50150 + 0) / 25'
       ).toBe('50090');
     });
@@ -169,7 +170,7 @@ describe('CandleBatcher', () => {
       expect(batch.volume.toString()).toBe('0');
       expect(batch.close.toString()).toBe('50000');
       expect(
-        batch.weightedMedianPrice.toString(),
+        batch?.weightedMedianPrice.toString(),
         'zero total volume falls back to the close price instead of dividing by zero'
       ).toBe('50000');
     });
@@ -216,16 +217,21 @@ describe('CandleBatcher', () => {
         },
       ];
 
-      cb.addToBatch(candles[0]);
+      const [firstCandle, secondCandle, thirdCandle] = candles;
+      assert.exists(firstCandle);
+      assert.exists(secondCandle);
+      assert.exists(thirdCandle);
+
+      cb.addToBatch(firstCandle);
       expect(cb.present).toBe(1);
 
-      cb.addToBatch(candles[1]);
+      cb.addToBatch(secondCandle);
       expect(cb.present).toBe(2);
 
       // Add duplicate
-      cb.addToBatch(candles[1]);
+      cb.addToBatch(secondCandle);
 
-      const batch = cb.addToBatch(candles[2]);
+      const batch = cb.addToBatch(thirdCandle);
       // Candle duplicates are filtered
       expect(batch?.volume.toString()).toBe('8481.612');
     });
@@ -258,11 +264,11 @@ describe('CandleBatcher', () => {
         }
       });
 
-      expect(batchedCandles[0].openTimeInISO).toBe('2021-05-25T08:00:00.000Z');
+      expect(batchedCandles[0]?.openTimeInISO).toBe('2021-05-25T08:00:00.000Z');
       // Candle from 08:04 is missing
-      expect(batchedCandles[0].close.valueOf()).toBe('611.5');
+      expect(batchedCandles[0]?.close.valueOf()).toBe('611.5');
 
-      expect(batchedCandles[1].openTimeInISO).toBe('2021-05-25T08:05:00.000Z');
+      expect(batchedCandles[1]?.openTimeInISO).toBe('2021-05-25T08:05:00.000Z');
     });
 
     it('emits events for batched candles', () => {
@@ -297,12 +303,12 @@ describe('CandleBatcher', () => {
       expect(TenMinutesInTenCandles.length).toBe(10);
       expect(batchedCandles.length).toBe(2);
 
-      expect(batchedCandles[0].openTimeInISO).toBe('2021-05-25T08:00:00.000Z');
-      expect(batchedCandles[0].openTimeInMillis).toBe(1621929600000);
-      expect(batchedCandles[0].medianPrice.valueOf()).toBe('611.165');
+      expect(batchedCandles[0]?.openTimeInISO).toBe('2021-05-25T08:00:00.000Z');
+      expect(batchedCandles[0]?.openTimeInMillis).toBe(1621929600000);
+      expect(batchedCandles[0]?.medianPrice.valueOf()).toBe('611.165');
 
-      expect(batchedCandles[1].openTimeInISO).toBe('2021-05-25T08:05:00.000Z');
-      expect(batchedCandles[1].openTimeInMillis).toBe(1621929900000);
+      expect(batchedCandles[1]?.openTimeInISO).toBe('2021-05-25T08:05:00.000Z');
+      expect(batchedCandles[1]?.openTimeInMillis).toBe(1621929900000);
     });
 
     it('closes a 5-minute interval when 5 minutes are over and a candle is missing in-between', () => {
@@ -310,13 +316,13 @@ describe('CandleBatcher', () => {
       expect(TenMinutesInEightCandles.length).toBe(8);
       expect(batchedCandles.length).toBe(2);
 
-      expect(batchedCandles[0].openTimeInISO).toBe('2021-05-25T08:00:00.000Z');
-      expect(batchedCandles[0].openTimeInMillis).toBe(1621929600000);
+      expect(batchedCandles[0]?.openTimeInISO).toBe('2021-05-25T08:00:00.000Z');
+      expect(batchedCandles[0]?.openTimeInMillis).toBe(1621929600000);
       // Candles from 08:02 & 08:03 are missing
-      expect(batchedCandles[0].medianPrice.valueOf()).toBe('610.785');
+      expect(batchedCandles[0]?.medianPrice.valueOf()).toBe('610.785');
 
-      expect(batchedCandles[1].openTimeInISO).toBe('2021-05-25T08:05:00.000Z');
-      expect(batchedCandles[1].openTimeInMillis).toBe(1621929900000);
+      expect(batchedCandles[1]?.openTimeInISO).toBe('2021-05-25T08:05:00.000Z');
+      expect(batchedCandles[1]?.openTimeInMillis).toBe(1621929900000);
     });
 
     it('closes a 5-minute interval when 5 minutes are over and candles are missing in the start', () => {
@@ -324,13 +330,13 @@ describe('CandleBatcher', () => {
       expect(TenMinutesMissingStart.length).toBe(7);
       expect(batchedCandles.length).toBe(2);
 
-      expect(batchedCandles[0].openTimeInISO).toBe('2021-05-25T08:00:00.000Z');
-      expect(batchedCandles[0].openTimeInMillis).toBe(1621929600000);
+      expect(batchedCandles[0]?.openTimeInISO).toBe('2021-05-25T08:00:00.000Z');
+      expect(batchedCandles[0]?.openTimeInMillis).toBe(1621929600000);
       // First batch consists only of 2 candles (08:03 & 08:04)
-      expect(batchedCandles[0].medianPrice.valueOf()).toBe('610.85');
+      expect(batchedCandles[0]?.medianPrice.valueOf()).toBe('610.85');
 
-      expect(batchedCandles[1].openTimeInISO).toBe('2021-05-25T08:05:00.000Z');
-      expect(batchedCandles[1].openTimeInMillis).toBe(1621929900000);
+      expect(batchedCandles[1]?.openTimeInISO).toBe('2021-05-25T08:05:00.000Z');
+      expect(batchedCandles[1]?.openTimeInMillis).toBe(1621929900000);
     });
   });
 
@@ -362,7 +368,9 @@ describe('CandleBatcher', () => {
         },
       ];
 
-      const candle = CandleBatcher.createBatchedCandle(candles, candles[0].sizeInMillis);
+      const [first] = candles;
+      assert.exists(first);
+      const candle = CandleBatcher.createBatchedCandle(candles, first.sizeInMillis);
       expect(candle.change.toFixed(2)).toBe('0.47');
     });
   });

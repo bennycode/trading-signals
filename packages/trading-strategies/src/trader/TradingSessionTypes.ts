@@ -4,6 +4,7 @@ import type {EventEmitter} from 'node:events';
 import type {
   BatchedCandle,
   Candle,
+  Balance,
   ExchangeAvailableBalance,
   FeeRate,
   Fill,
@@ -29,7 +30,7 @@ export interface TradingSessionStrategy {
    * which downstream consumers like `StrategyMonitor` forward to the user). Strategies
    * are responsible for not being chatty — every call reaches the user.
    */
-  onMessage?: (text: string) => void;
+  onMessage?: ((text: string) => void) | undefined;
 }
 
 /** Use as `amount` in an `OrderAdvice` to use the full available balance. */
@@ -76,8 +77,28 @@ export type OrderAdvice = MarketOrderAdvice | LimitOrderAdvice;
 
 export interface TradingSessionState {
   readonly baseBalance: Big;
+  /**
+   * Base currency held by orders of ours that have not filled. A strategy reading its position off
+   * the balance has to count it: while a limit sell rests on the exchange the position is not
+   * available to trade, but it has not been sold either.
+   */
+  readonly baseBalanceOnHold: Big;
   readonly counterBalance: Big;
-  readonly lastOrderSide?: OrderSide;
+  /**
+   * Whether a buy of ours is still on the book. A balance can show a purchase before its fill
+   * notification arrives — Trading212 polls fills once a minute — and a strategy that adopted it
+   * as a position found lying around would count the same purchase again when the fill lands.
+   */
+  readonly hasOutstandingBuy: boolean;
+  /**
+   * Whether a sell of ours is still on the book. A position can leave the balance before its fill
+   * notification arrives, and reading that as "someone else closed it" loses the price it sold at
+   * and can tear the session down before the fill is in.
+   */
+  readonly hasOutstandingSell: boolean;
+  /** Base currency held short, which the long-only rules refuse to act on. See `sessionBalances`. */
+  readonly shortBase: Big;
+  readonly lastOrderSide?: OrderSide | undefined;
   readonly tradingRules: TradingRules;
   readonly feeRates: FeeRate;
 }
@@ -90,6 +111,8 @@ export interface TradingSessionBroker extends Pick<EventEmitter, 'on'> {
   getOpenOrders(pair: TradingPair): Promise<PendingOrder[]>;
   getRecentCandles(pair: TradingPair, count: number, intervalInMillis: number): Promise<Candle[]>;
   getTradingRules(pair: TradingPair): Promise<TradingRules>;
+  /** Read for what an unfilled order is holding, which `getAvailableBalances` leaves out. */
+  listBalances(): Promise<Balance[]>;
   placeLimitOrder(
     pair: TradingPair,
     options: Omit<LimitOrderOptions, 'type' | 'sizeInCounter'>

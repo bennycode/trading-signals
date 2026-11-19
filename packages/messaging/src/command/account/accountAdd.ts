@@ -15,7 +15,7 @@ export async function accountAdd(request: string, userId: string) {
     return 'Invalid format. Usage: /accountAdd <name> <exchange> <isPaper> <apiKey> <apiSecret> [marketDataAccountId]';
   }
 
-  const [name, exchange, isPaperStr, apiKey, apiSecret, marketDataAccountIdStr] = parts;
+  const [name = '', exchange = '', isPaperStr = '', apiKey = '', apiSecret = '', marketDataAccountIdStr = ''] = parts;
 
   const isPaper = isPaperStr.toLowerCase() === 'true';
 

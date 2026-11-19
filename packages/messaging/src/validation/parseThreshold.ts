@@ -12,7 +12,7 @@ export function parseThreshold(thresholdStr: string): ParsedThreshold | null {
   const absoluteMatch = trimmed.match(/^([+-])(\d+(?:\.\d+)?)$/);
 
   if (percentMatch) {
-    const [, sign, valueStr] = percentMatch;
+    const [, sign = '', valueStr = ''] = percentMatch;
     const value = parseFloat(valueStr);
 
     // Validate that the value is a positive number greater than zero
@@ -28,7 +28,7 @@ export function parseThreshold(thresholdStr: string): ParsedThreshold | null {
   }
 
   if (absoluteMatch) {
-    const [, sign, valueStr] = absoluteMatch;
+    const [, sign = '', valueStr = ''] = absoluteMatch;
     const value = parseFloat(valueStr);
 
     // Validate that the value is a positive number greater than zero

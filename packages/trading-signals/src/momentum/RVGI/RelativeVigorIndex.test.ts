@@ -128,10 +128,10 @@ describe('RelativeVigorIndex', () => {
         if (result) {
           verifiedBars++;
           const expected = expectations[i - offset];
-          expect(result.rvgi.toFixed(8)).toBe(expected.rvgi);
+          expect(result.rvgi.toFixed(8)).toBe(expected?.rvgi);
 
           if (expected.signal !== null) {
-            expect(result.signal.toFixed(8)).toBe(expected.signal);
+            expect(result.signal.toFixed(8)).toBe(expected?.signal);
           }
         }
       });

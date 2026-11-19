@@ -10,7 +10,7 @@ export interface StrategyAddResult {
 }
 
 /*
- * Request Example: "/strategyAdd @typedtrader/strategy-buy-and-hold 1 SHOP,USD"
+ * Request Example: "/strategyAdd @typedtrader/strategy-buy-once 1 SHOP,USD"
  * Request Example: "/strategyAdd @typedtrader/strategy-buy-once 1 SHOP,USD {"buyAt":"150"}"
  * Format: "<strategyName> <accountId> <pair> [configJSON]"
  */
@@ -19,11 +19,11 @@ export const strategyAdd = async (request: string, userId: string): Promise<Stra
 
   if (parts.length < 3) {
     return {
-      message: `Invalid format. Usage: /strategyAdd <strategyName> <accountId> <pair> [configJSON]\nExample: /strategyAdd @typedtrader/strategy-buy-and-hold 1 SHOP,USD\nAvailable strategies: ${getStrategyNames().join(', ')}`,
+      message: `Invalid format. Usage: /strategyAdd <strategyName> <accountId> <pair> [configJSON]\nExample: /strategyAdd @typedtrader/strategy-buy-once 1 SHOP,USD\nAvailable strategies: ${getStrategyNames().join(', ')}`,
     };
   }
 
-  const [strategyName, accountIdStr, pairStr, ...configParts] = parts;
+  const [strategyName = '', accountIdStr = '', pairStr = '', ...configParts] = parts;
 
   // Validate pair format early
   let pair: TradingPair;

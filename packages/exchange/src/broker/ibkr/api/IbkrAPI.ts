@@ -77,7 +77,7 @@ export class IbkrAPI {
   }
 
   constructor(options?: {
-    gatewayUrl?: string;
+    gatewayUrl?: string | undefined;
     /**
      * Held off until this resolves, when something is bringing the gateway up.
      *
@@ -86,7 +86,7 @@ export class IbkrAPI {
      * credentials rather than "not ready yet". Whatever brings the gateway up must use a client
      * without this, or it waits on itself.
      */
-    waitForSession?: () => Promise<void>;
+    waitForSession?: (() => Promise<void>) | undefined;
   }) {
     const gatewayUrl = options?.gatewayUrl ?? IbkrAPI.URL_GATEWAY;
 

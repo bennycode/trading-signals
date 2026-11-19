@@ -135,7 +135,7 @@ async function run(command: string, args: string[]): Promise<void> {
  * The session lapses roughly daily and IBKR then sends a fresh push, so this stays in the
  * foreground: it is a thing a human is expected to be near, not a daemon.
  */
-export async function runGateway(options: {account: string; password: string; twoFactorMethod?: string}) {
+export async function runGateway(options: {account: string; password: string; twoFactorMethod?: string | undefined}) {
   await ensureGateway();
   const child = await startGateway();
 

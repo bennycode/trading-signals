@@ -59,10 +59,10 @@ describe('HTTrendline', () => {
       }
 
       expect(results.length).toBe(189);
-      expect(results[0].toFixed(2)).toBe('88.26');
-      expect(results[186].toFixed(2)).toBe('109.69');
-      expect(results[187].toFixed(2)).toBe('110.18');
-      expect(results[188].toFixed(2)).toBe('110.46');
+      expect(results[0]?.toFixed(2)).toBe('88.26');
+      expect(results[186]?.toFixed(2)).toBe('109.69');
+      expect(results[187]?.toFixed(2)).toBe('110.18');
+      expect(results[188]?.toFixed(2)).toBe('110.46');
     });
 
     it('matches a line-by-line port of the TA-Lib reference implementation bar for bar', () => {
@@ -186,8 +186,8 @@ describe('HTTrendline', () => {
       }
 
       expect(results.length).toBe(37);
-      expect(results[0].toFixed(2)).toBe('60.20');
-      expect(results[results.length - 1].toFixed(2)).toBe('86.15');
+      expect(results[0]?.toFixed(2)).toBe('60.20');
+      expect(results[results.length - 1]?.toFixed(2)).toBe('86.15');
     });
 
     it('follows a slow swing whose cycle is longer than the measurable 50-bar band', () => {
@@ -208,8 +208,8 @@ describe('HTTrendline', () => {
       }
 
       expect(results.length).toBe(37);
-      expect(results[0].toFixed(8)).toBe('80.94674498');
-      expect(results[results.length - 1].toFixed(8)).toBe('105.63074564');
+      expect(results[0]?.toFixed(8)).toBe('80.94674498');
+      expect(results[results.length - 1]?.toFixed(8)).toBe('105.63074564');
     });
   });
 

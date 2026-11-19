@@ -63,8 +63,8 @@ describe('GannHiLo', () => {
         if (result) {
           verifiedBars++;
           const expected = expectations[i - offset];
-          expect(result.line.toFixed(2)).toBe(expected.line);
-          expect(result.trend).toBe(expected.trend);
+          expect(result.line.toFixed(2)).toBe(expected?.line);
+          expect(result.trend).toBe(expected?.trend);
         }
       });
 

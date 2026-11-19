@@ -57,9 +57,9 @@ export class IbkrBroker extends Broker implements CandleFeed {
 
   readonly #api: IbkrAPI;
   /** Resolved on first use, so the launcher's `node:child_process` stays off the static graph. */
-  #gatewayPromise?: Promise<IbkrGatewayLauncher>;
-  #gatewayState?: IbkrGatewayState;
-  readonly #credentials?: IbkrBrokerOptions;
+  #gatewayPromise?: Promise<IbkrGatewayLauncher> | undefined;
+  #gatewayState?: IbkrGatewayState | undefined;
+  readonly #credentials?: IbkrBrokerOptions | undefined;
   readonly #overnight: boolean;
   readonly #timeInForce: typeof IbkrTimeInForce.DAY | typeof IbkrTimeInForce.GTC;
   readonly #marketData: MarketDataSource;
@@ -68,10 +68,10 @@ export class IbkrBroker extends Broker implements CandleFeed {
   readonly #orderWatchers = new Map<string, IbkrFillWatcher>();
   readonly #candleListenerByTopic = new Map<string, (candle: unknown) => void>();
   /** What the caller asked for, if anything; the settled id lives in `#accountIdPromise`. */
-  readonly #requestedAccountId?: string;
+  readonly #requestedAccountId?: string | undefined;
 
   /** Shared so a concurrent burst of calls selects the account once rather than racing. */
-  #accountIdPromise?: Promise<string>;
+  #accountIdPromise?: Promise<string> | undefined;
 
   constructor(options?: IbkrBrokerOptions) {
     super(IbkrBroker.NAME);

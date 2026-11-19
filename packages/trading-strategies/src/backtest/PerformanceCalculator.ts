@@ -86,8 +86,13 @@ export class PerformanceCalculator {
       return new Big(0);
     }
 
-    const firstClose = new Big(candles[0].close);
-    const lastClose = new Big(candles[candles.length - 1].close);
+    const firstCandle = candles[0];
+    const lastCandle = candles.at(-1);
+    if (!firstCandle || !lastCandle) {
+      return new Big(0);
+    }
+    const firstClose = new Big(firstCandle.close);
+    const lastClose = new Big(lastCandle.close);
 
     if (firstClose.eq(0)) {
       return new Big(0);
@@ -147,12 +152,12 @@ export class PerformanceCalculator {
 
   static #calculateReturns(equityCurve: readonly Big[]): Big[] {
     const returns: Big[] = [];
-    for (let index = 1; index < equityCurve.length; index++) {
+    for (const [index, current] of equityCurve.entries()) {
       const previous = equityCurve[index - 1];
-      if (previous.eq(0)) {
+      if (!previous || previous.eq(0)) {
         continue;
       }
-      returns.push(equityCurve[index].minus(previous).div(previous));
+      returns.push(current.minus(previous).div(previous));
     }
     return returns;
   }

@@ -23,7 +23,7 @@ export async function estimateIbkrFee(input: {
    * The exact ticket, when the caller knows it. IBKR bills per share, so the share count is what
    * sets the commission, and a notional alone only yields one after dividing by some price.
    */
-  ticket?: {price?: Big; size?: Big};
+  ticket?: {price?: Big | undefined; size?: Big | undefined} | undefined;
 }): Promise<{commission: Big; currencyConversion: Big; feeAsset: string; total: Big}> {
   const {api, feeAsset, getAccountId, getConid, getLatestClose, notional, pair, ticket} = input;
 

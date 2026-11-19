@@ -14,7 +14,7 @@ import type {IbkrAPI} from './api/IbkrAPI.js';
  *
  * @see https://www.interactivebrokers.com/docs/web-api/v1/endpoints/order-monitoring/live-orders
  */
-export async function resolveIbkrAccountId(input: {api: IbkrAPI; requested?: string}): Promise<string> {
+export async function resolveIbkrAccountId(input: {api: IbkrAPI; requested?: string | undefined}): Promise<string> {
   const {api, requested} = input;
   const accounts = await api.getAccounts();
 

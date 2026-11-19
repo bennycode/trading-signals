@@ -25,7 +25,7 @@ export function getBrokerClient(
      * IBKR each bring their own (`AlpacaMarketData`, `IbkrMarketData`), so passing one there just
      * overrides the default feed.
      */
-    marketData?: MarketDataSource;
+    marketData?: MarketDataSource | undefined;
   }
 ): Broker & CandleFeed {
   switch (account.exchangeId) {

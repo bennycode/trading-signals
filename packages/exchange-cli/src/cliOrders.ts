@@ -5,7 +5,7 @@ import {OrderType, type Broker, type CandleFeed, type OrderSide, type TradingPai
 export async function placeCliOrder(
   broker: Broker & CandleFeed,
   pair: TradingPair,
-  order: {side: OrderSide; size: string; limit?: string; dryRun?: boolean}
+  order: {side: OrderSide; size: string; limit?: string | undefined; dryRun?: boolean | undefined}
 ) {
   const {side, size, limit, dryRun} = order;
   if (dryRun) {

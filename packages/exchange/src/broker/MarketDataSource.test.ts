@@ -49,7 +49,11 @@ class TestMarketDataSource extends MarketDataSource {
   }
 
   protected override async getNewestCandle(): Promise<Candle> {
-    return this.#dataset[this.#dataset.length - 1];
+    const latest = this.#dataset.at(-1);
+    if (!latest) {
+      throw new Error('The fixture has no candles to return');
+    }
+    return latest;
   }
 
   async watchCandles() {
@@ -87,7 +91,7 @@ describe('MarketDataSource.getRecentCandles', () => {
 
     await source.getRecentCandles(PAIR, 5, ONE_DAY);
 
-    expect(source.windows[0].endInMillis, 'window ends at the latest bar').toBe(latest.openTimeInMillis);
+    expect(source?.windows[0]?.endInMillis, 'window ends at the latest bar').toBe(latest?.openTimeInMillis);
   });
 
   it('reaches further back when market closures leave the first window short', async () => {
@@ -101,7 +105,7 @@ describe('MarketDataSource.getRecentCandles', () => {
     expect(result, 'and they are the newest 10 bars, oldest first').toEqual(dataset.slice(-10));
     expect(source.windows.length, 'needed more than one window to fill the request').toBeGreaterThan(1);
     const spans = source.windows.map(w => w.endInMillis - w.startInMillis);
-    expect(spans[1], 'each window reaches twice as far back as the one before').toBe(spans[0] * 2);
+    expect(spans[1], 'each window reaches twice as far back as the one before').toBe((spans[0] ?? 0) * 2);
   });
 
   it('keeps bars that open between two windows when the anchor is not bar-aligned', async () => {
@@ -129,9 +133,10 @@ describe('MarketDataSource.getRecentCandles', () => {
 
     await source.getRecentCandles(PAIR, 10, ONE_DAY);
 
-    const overlapping = source.windows.filter(
-      (window, index) => index > 0 && window.endInMillis >= source.windows[index - 1].startInMillis
-    );
+    const overlapping = source.windows.filter((window, index) => {
+      const previous = source.windows[index - 1];
+      return previous !== undefined && window.endInMillis >= previous.startInMillis;
+    });
     expect(overlapping, 'each window ends before the previous one starts, so no candle is fetched twice').toEqual([]);
   });
 

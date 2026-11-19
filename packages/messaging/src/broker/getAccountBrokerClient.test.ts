@@ -1,4 +1,4 @@
-import {describe, it, expect, vi, beforeEach} from 'vitest';
+import {assert, describe, it, expect, vi, beforeEach} from 'vitest';
 import type {AlpacaBroker, AlpacaMarketData, getBrokerClient} from '@typedtrader/exchange';
 import type {Account, AccountAttributes} from '../database/models/Account.js';
 
@@ -72,7 +72,9 @@ describe('getAccountBrokerClient', () => {
       apiSecret: 'alp-secret',
       usePaperTrading: false,
     });
-    const [, options] = getBrokerClientMock.mock.calls[0];
+    const [firstCall] = getBrokerClientMock.mock.calls;
+    assert.exists(firstCall);
+    const [, options] = firstCall;
     expect(options?.marketData).toBeInstanceOf(AlpacaMarketDataMock);
   });
 

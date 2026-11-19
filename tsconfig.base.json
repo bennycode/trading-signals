@@ -1,5 +1,8 @@
 {
   "compilerOptions": {
+    "exactOptionalPropertyTypes": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedIndexedAccess": true,
     "paths": {
       "@typedtrader/*": ["./packages/*/src"],
       "trading-signals": ["./packages/trading-signals/src"],

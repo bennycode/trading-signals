@@ -109,7 +109,7 @@ export function declaredParameterCount(IndicatorConstructor: new (...args: unkno
         if (character === ',') {
           separators++;
         }
-        hasParameter ||= character.trim().length > 0;
+        hasParameter ||= (character ?? '').trim().length > 0;
       }
     }
     break;

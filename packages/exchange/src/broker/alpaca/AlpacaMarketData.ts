@@ -76,7 +76,11 @@ export class AlpacaMarketData extends MarketDataSource {
      * endpoint gives us the latest 1-minute bar's timestamp; we ask `getCandles()` to
      * align that to the requested `intervalInMillis` and return the candle that includes it.
      */
-    const latestBarStart = new Date(bars[symbol].t).getTime();
+    const latestBar = bars[symbol];
+    if (!latestBar) {
+      throw new Error(`Alpaca returned no latest bar for "${symbol}"`);
+    }
+    const latestBarStart = new Date(latestBar.t).getTime();
     const startTimeFirstCandle = latestBarStart - intervalInMillis + ms('1m');
     const candles = await this.getCandles(pair, {
       intervalInMillis,

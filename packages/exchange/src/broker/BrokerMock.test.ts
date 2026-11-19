@@ -1,5 +1,5 @@
 import Big from 'big.js';
-import {describe, expect, it} from 'vitest';
+import {assert, describe, expect, it} from 'vitest';
 import {BrokerMock, type BrokerMockSlippageConfig, type ExchangeMockBalance} from './BrokerMock.js';
 import {type Candle, type FeeRate, type Fill, OrderSide, OrderType, type TradingRules} from './Broker.js';
 import type {MarketDataSource} from './MarketDataSource.js';
@@ -106,7 +106,9 @@ describe('BrokerMock', () => {
 
     it('fetches the candles that closed before its current time', async () => {
       const exchange = new TestExchangeMock(new Map(), undefined, marketData);
-      exchange.setStartTime(days[31].openTimeInISO);
+      const thirtySecondDay = days[31];
+      assert.exists(thirtySecondDay);
+      exchange.setStartTime(thirtySecondDay.openTimeInISO);
 
       const history = await exchange.getRecentCandles(pair, 5, ONE_DAY);
 
@@ -155,8 +157,8 @@ describe('BrokerMock', () => {
       );
 
       expect(fills).toHaveLength(1);
-      expect(fills[0].price).toBe('105');
-      expect(fills[0].side).toBe(OrderSide.BUY);
+      expect(fills[0]?.price).toBe('105');
+      expect(fills[0]?.side).toBe(OrderSide.BUY);
     });
 
     it('fills market sell order at the next candle open price', async () => {
@@ -175,8 +177,8 @@ describe('BrokerMock', () => {
       );
 
       expect(fills).toHaveLength(1);
-      expect(fills[0].price).toBe('98');
-      expect(fills[0].side).toBe(OrderSide.SELL);
+      expect(fills[0]?.price).toBe('98');
+      expect(fills[0]?.side).toBe(OrderSide.SELL);
     });
 
     it('converts a counter-sized (notional) market buy at the fill price with the fee inside the spend', async () => {
@@ -197,17 +199,17 @@ describe('BrokerMock', () => {
 
       expect(fills).toHaveLength(1);
       const fill = fills[0];
-      expect(fill.price).toBe('105');
+      expect(fill?.price).toBe('105');
 
       // The 0.25% taker fee comes out of the 1000 USD spend, so net = 1000 / 1.0025
       const net = new Big('1000').div('1.0025');
-      expect(new Big(fill.fee).toFixed(8)).toBe(new Big('1000').minus(net).toFixed(8));
-      expect(new Big(fill.size).toFixed(8)).toBe(net.div('105').toFixed(8));
+      expect(new Big(fill?.fee ?? 0).toFixed(8)).toBe(new Big('1000').minus(net).toFixed(8));
+      expect(new Big(fill?.size ?? 0).toFixed(8)).toBe(net.div('105').toFixed(8));
 
       // Exactly the notional amount left the counter balance — no more, no less
       const balances = await exchange.getAvailableBalances(pair);
       expect(balances.counter.toFixed(2)).toBe('9000.00');
-      expect(balances.base.eq(fill.size)).toBe(true);
+      expect(balances.base.eq(fill?.size ?? 0)).toBe(true);
     });
 
     it('releases the full hold when a counter-sized market buy is canceled', async () => {
@@ -226,8 +228,8 @@ describe('BrokerMock', () => {
       expect(balances.counter.toFixed(2)).toBe('10000.00');
 
       const [btc, usd] = await exchange.listBalances();
-      expect(btc.hold).toBe('0');
-      expect(usd.hold).toBe('0');
+      expect(btc?.hold).toBe('0');
+      expect(usd?.hold).toBe('0');
     });
   });
 
@@ -250,7 +252,7 @@ describe('BrokerMock', () => {
 
       expect(fills).toHaveLength(1);
       // Fill at limit price since open (98) > limit (95)
-      expect(fills[0].price).toBe('95');
+      expect(fills[0]?.price).toBe('95');
     });
 
     it('stays pending when limit buy price is not reached', async () => {
@@ -290,7 +292,7 @@ describe('BrokerMock', () => {
       );
 
       expect(fills).toHaveLength(1);
-      expect(fills[0].price).toBe('360');
+      expect(fills[0]?.price).toBe('360');
     });
 
     it('fills limit sell when candle high reaches the limit price', async () => {
@@ -311,7 +313,7 @@ describe('BrokerMock', () => {
 
       expect(fills).toHaveLength(1);
       // Fill at limit price since open (102) < limit (105)
-      expect(fills[0].price).toBe('105');
+      expect(fills[0]?.price).toBe('105');
     });
 
     it('gives price improvement when candle opens above limit sell price', async () => {
@@ -331,7 +333,7 @@ describe('BrokerMock', () => {
       );
 
       expect(fills).toHaveLength(1);
-      expect(fills[0].price).toBe('450');
+      expect(fills[0]?.price).toBe('450');
     });
   });
 
@@ -424,7 +426,7 @@ describe('BrokerMock', () => {
 
       expect(fills).toHaveLength(1);
       // Fee: 1 * 100 * 0.0015 = 0.15
-      expect(fills[0].fee).toBe('0.15');
+      expect(fills[0]?.fee).toBe('0.15');
 
       // Counter balance: revenue (100) - fee (0.15) = 99.85
       const balances = await exchange.listBalances();
@@ -450,7 +452,7 @@ describe('BrokerMock', () => {
       );
 
       expect(fills).toHaveLength(1);
-      expect(fills[0].price, '105 open + 1% slippage').toBe('106.05');
+      expect(fills[0]?.price, '105 open + 1% slippage').toBe('106.05');
     });
 
     it('fills a market sell below the candle open when slippage is configured', async () => {
@@ -469,7 +471,7 @@ describe('BrokerMock', () => {
       );
 
       expect(fills).toHaveLength(1);
-      expect(fills[0].price, '98 open - 1% slippage').toBe('97.02');
+      expect(fills[0]?.price, '98 open - 1% slippage').toBe('97.02');
     });
 
     it('applies slippage to a counter-sized (notional) market buy', async () => {
@@ -489,11 +491,11 @@ describe('BrokerMock', () => {
 
       expect(fills).toHaveLength(1);
       const fill = fills[0];
-      expect(fill.price, '105 open + 1% slippage').toBe('106.05');
+      expect(fill?.price, '105 open + 1% slippage').toBe('106.05');
 
       const net = new Big('1000').div('1.0025');
-      expect(new Big(fill.fee).toFixed(8)).toBe(new Big('1000').minus(net).toFixed(8));
-      expect(new Big(fill.size).toFixed(8)).toBe(net.div('106.05').toFixed(8));
+      expect(new Big(fill?.fee ?? 0).toFixed(8)).toBe(new Big('1000').minus(net).toFixed(8));
+      expect(new Big(fill?.size ?? 0).toFixed(8)).toBe(net.div('106.05').toFixed(8));
     });
 
     it('clamps a slipped market buy to the candle high when the rate would fill above it', async () => {
@@ -512,7 +514,7 @@ describe('BrokerMock', () => {
       );
 
       expect(fills).toHaveLength(1);
-      expect(fills[0].price, '100 open + 5% slippage would be 105, clamped to the candle high').toBe('100.5');
+      expect(fills[0]?.price, '100 open + 5% slippage would be 105, clamped to the candle high').toBe('100.5');
     });
 
     it('clamps a slipped market sell to the candle low when the rate would fill below it', async () => {
@@ -531,7 +533,7 @@ describe('BrokerMock', () => {
       );
 
       expect(fills).toHaveLength(1);
-      expect(fills[0].price, '100 open - 5% slippage would be 95, clamped to the candle low').toBe('99.5');
+      expect(fills[0]?.price, '100 open - 5% slippage would be 95, clamped to the candle low').toBe('99.5');
     });
 
     it('fills a market buy above the candle high when clamping is disabled', async () => {
@@ -550,7 +552,7 @@ describe('BrokerMock', () => {
       );
 
       expect(fills).toHaveLength(1);
-      expect(fills[0].price, 'the full 5% rate, above the 100.5 candle high').toBe('105');
+      expect(fills[0]?.price, 'the full 5% rate, above the 100.5 candle high').toBe('105');
     });
 
     it('fills a market sell below the candle low when clamping is disabled', async () => {
@@ -569,7 +571,7 @@ describe('BrokerMock', () => {
       );
 
       expect(fills).toHaveLength(1);
-      expect(fills[0].price, 'the full 5% rate, below the 99.5 candle low').toBe('95');
+      expect(fills[0]?.price, 'the full 5% rate, below the 99.5 candle low').toBe('95');
     });
 
     it('applies no slippage to a clamped buy when the candle opens at its high', async () => {
@@ -588,7 +590,7 @@ describe('BrokerMock', () => {
       );
 
       expect(fills).toHaveLength(1);
-      expect(fills[0].price, 'the clamp caps the rate at the candle range, which is zero above the open').toBe('100');
+      expect(fills[0]?.price, 'the clamp caps the rate at the candle range, which is zero above the open').toBe('100');
     });
 
     it('defaults to zero slippage when not configured', async () => {
@@ -606,7 +608,7 @@ describe('BrokerMock', () => {
         createCandle({close: '110', open: '105', openTimeInISO: '2025-01-01T00:01:00.000Z'})
       );
 
-      expect(fills[0].price).toBe('105');
+      expect(fills[0]?.price).toBe('105');
     });
 
     it('does not apply slippage to limit order fills', async () => {
@@ -625,7 +627,7 @@ describe('BrokerMock', () => {
       );
 
       expect(fills).toHaveLength(1);
-      expect(fills[0].price, 'unaffected by the 5% market-order slippage rate').toBe('95');
+      expect(fills[0]?.price, 'unaffected by the 5% market-order slippage rate').toBe('95');
     });
 
     it('rejects a slippage rate outside [0, 1)', () => {
@@ -690,7 +692,7 @@ describe('BrokerMock', () => {
       );
 
       expect(received, 'subscriber receives exactly the fills returned by processCandle').toEqual(fills);
-      expect(received[0].side).toBe(OrderSide.BUY);
+      expect(received[0]?.side).toBe(OrderSide.BUY);
     });
 
     it('stops emitting after unwatchOrders()', async () => {

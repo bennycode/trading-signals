@@ -257,7 +257,7 @@ export async function resolveProfitableExitPrice(input: {
   broker: ExitPriceBroker;
   entry: ExitPriceEntry;
   feeAsset: string;
-  options?: ExitPriceOptions;
+  options?: ExitPriceOptions | undefined;
   pair: TradingPair;
 }): Promise<ProfitableExitPrice> {
   const {broker, entry, feeAsset, options, pair} = input;

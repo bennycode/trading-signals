@@ -46,8 +46,8 @@ describe('WaveTrend', () => {
 
         if (result) {
           const expected = expectations[i - offset];
-          expect(result.wt1.toFixed(4)).toBe(expected.wt1);
-          expect(result.wt2.toFixed(4)).toBe(expected.wt2);
+          expect(result.wt1.toFixed(4)).toBe(expected?.wt1);
+          expect(result.wt2.toFixed(4)).toBe(expected?.wt2);
         }
       });
 

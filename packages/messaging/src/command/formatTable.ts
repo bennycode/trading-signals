@@ -15,7 +15,11 @@ export function formatTelegramTable<T>(title: string, rows: T[], columns: TableC
 
   const renderCells = (cells: string[]) =>
     cells
-      .map((cell, i) => (columns[i].align === 'right' ? cell.padStart(widths[i]) : cell.padEnd(widths[i])))
+      .map((cell, index) => {
+        // Cells are rendered against the columns they came from, so the two walk together.
+        const width = widths[index] ?? cell.length;
+        return columns[index]?.align === 'right' ? cell.padStart(width) : cell.padEnd(width);
+      })
       .join('  ');
 
   const lines: string[] = [];

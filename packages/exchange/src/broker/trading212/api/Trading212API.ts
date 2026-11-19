@@ -157,7 +157,7 @@ export class Trading212API {
    * @see https://t212public-api-docs.redoc.ly/#operation/orders_1
    */
   @retry({delayMs: 60_000})
-  async getHistoryOrdersPage(options?: {nextPath?: string; ticker?: string}) {
+  async getHistoryOrdersPage(options?: {nextPath?: string | undefined; ticker?: string | undefined}) {
     if (options?.nextPath) {
       const response = await this.#httpClient.get(options.nextPath);
       return HistoryOrderPageSchema.parse(response.data);
@@ -177,7 +177,7 @@ export class Trading212API {
    * @see https://t212public-api-docs.redoc.ly/#operation/transactions
    */
   @retry({delayMs: 60_000})
-  async getTransactionsPage(options?: {nextPath?: string}) {
+  async getTransactionsPage(options?: {nextPath?: string | undefined}) {
     if (options?.nextPath) {
       const response = await this.#httpClient.get(options.nextPath);
       return TransactionPageSchema.parse(response.data);

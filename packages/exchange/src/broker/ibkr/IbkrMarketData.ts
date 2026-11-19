@@ -57,7 +57,7 @@ export class IbkrMarketData extends MarketDataSource {
   readonly #conids: IbkrConidResolver;
   readonly #watchers = new Map<string, NodeJS.Timeout[]>();
 
-  constructor(options?: {api?: IbkrAPI; conids?: IbkrConidResolver; gatewayUrl?: string}) {
+  constructor(options?: {api?: IbkrAPI; conids?: IbkrConidResolver; gatewayUrl?: string | undefined}) {
     super();
     this.#api = options?.api ?? new IbkrAPI({gatewayUrl: options?.gatewayUrl});
     this.#conids = options?.conids ?? new IbkrConidResolver(this.#api);

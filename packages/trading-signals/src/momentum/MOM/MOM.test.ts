@@ -37,7 +37,7 @@ describe('MOM', () => {
         momentum.add(input);
         if (momentum.isStable) {
           const expected = outputs[index - interval];
-          expect(momentum.getResultOrThrow().toFixed(2)).toBe(expected.toFixed(2));
+          expect(momentum.getResultOrThrow().toFixed(2)).toBe(expected?.toFixed(2));
         }
       }
 

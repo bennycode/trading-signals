@@ -61,7 +61,22 @@ class BuyTheDipStrategy extends Strategy {
 
 A strategy never places orders itself. It only gives _advice_, and the library works out how to fill it safely.
 
-You can also start from a ready-made base instead of from scratch. For example, **`ProtectedStrategy`** adds automatic stop-loss and take-profit guards: build your buy/sell logic on top of it and your position is protected with no extra work.
+A strategy can also be written as a list of **rules** instead of as a class, which is how every strategy in this package is written. The engine then owns candle batching, indicator warm-up, position tracking and persistence, and the strategy contains nothing but the conditions under which it opens and closes:
+
+```ts
+export const BuyTheDip = defineStrategy(BuyTheDipSchema)({
+  long: {
+    close: protection<Settings>(), // stop-loss and take-profit, from config
+    open: {
+      because: ({candle}) => `price dipped below 100 at ${candle.close.toFixed(2)}`,
+      spend: 'all',
+      when: ({close}) => close < 100,
+    },
+  },
+  markets: [MarketType.BULLISH],
+  name: '@typedtrader/strategy-buy-the-dip',
+});
+```
 
 ## Same Strategy, Backtest or Live
 
@@ -75,12 +90,12 @@ Both give the strategy the same information and handle its advice the same way, 
 Running a backtest looks like this:
 
 ```ts
-import {BacktestExecutor, MeanReversionStrategy} from 'trading-strategies';
+import {BacktestExecutor, MeanReversion} from 'trading-strategies';
 
 const result = await new BacktestExecutor({
   candles, // historical price data
   broker, // a simulated exchange
-  strategy: new MeanReversionStrategy(),
+  strategy: new MeanReversion(),
   tradingPair,
 }).execute();
 
@@ -140,34 +155,29 @@ Buys once and then stays silent. Supports two modes depending on whether `buyAt`
 | `quantity: "10"` | Buy exactly 10 units of the base asset      |
 | `spend: "500"`   | Spend exactly 500 units of counter currency |
 
-All strategies extend `ProtectedStrategy`, so stop-loss and take-profit guards can be added via the `protected` key:
+Most strategies offer the stop-loss and take-profit kill switches as settings of their own (see [Protected](./src/strategy-protected/README.md) for all of them). `SmaCrossover` and `TrailingStop` do not: the first has no protective rule, and the second _is_ one. Setting a kill switch on either has no effect.
 
 ```json
 {
   "buyAt": "95",
   "spend": "500",
-  "protected": {
-    "stopLossPct": "5",
-    "takeProfitPct": "10"
-  }
+  "stopLossPct": "5",
+  "takeProfitPct": "10"
 }
 ```
 
-### ProtectionOnly
+### Protected
 
-Never opens a position. Use with `seedFromBalance: true` to attach guards to an existing position:
+Never opens a position: it attaches the kill switches to a position that is already held, opened by hand or by another strategy.
 
 ```json
 {
-  "protected": {
-    "stopLossPct": "5",
-    "takeProfitPct": "10",
-    "seedFromBalance": true
-  }
+  "stopLossPct": "5",
+  "takeProfitPct": "10"
 }
 ```
 
-The strategy seeds its position tracking from the account's base balance and the first candle's close price. Guards fire relative to that baseline.
+The engine adopts the base balance it finds at the price of the candle it attached on, and the percentage and nominal thresholds are measured from there.
 
 ## Strategy Signals
 

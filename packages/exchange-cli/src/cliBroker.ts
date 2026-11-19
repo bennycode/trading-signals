@@ -18,25 +18,25 @@ export type BrokerKey = keyof typeof BROKERS;
 export interface Instrument {
   currency: string;
   /** Venue the instrument trades on. */
-  exchange?: string;
+  exchange?: string | undefined;
   /**
    * Whether the instrument trades outside its exchange's hours, on the 24/5 venue each broker runs
    * for that purpose. Alpaca calls this an "overnight_tradable" asset, Trading212 "extendedHours".
    */
-  extendedHours?: boolean;
+  extendedHours?: boolean | undefined;
   /**
    * Whether the broker accepts a fractional quantity. Left out when the broker does not say:
    * Trading212's instrument metadata carries no fractional information at all.
    */
-  fractionable?: boolean;
-  isin?: string;
+  fractionable?: boolean | undefined;
+  isin?: string | undefined;
   name: string;
   ticker: string;
   /**
    * Whether the broker currently accepts orders for it. Left out when the broker does not say:
    * everything Trading212 lists is on offer, so it publishes no such flag.
    */
-  tradable?: boolean;
+  tradable?: boolean | undefined;
 }
 
 /*

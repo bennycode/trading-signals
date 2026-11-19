@@ -464,6 +464,9 @@ describe('AlpacaBroker', {concurrent: false}, () => {
 
       // Get the registered callback and simulate a fill event
       const registeredCb = mockTradingWebSocket.onTradeUpdate.mock.calls[0]?.[1];
+      if (typeof registeredCb !== 'function') {
+        throw new Error('No trade-update callback was registered');
+      }
       registeredCb({
         event: TradeUpdateEvent.FILL,
         order: {
@@ -518,6 +521,9 @@ describe('AlpacaBroker', {concurrent: false}, () => {
       exchange.on(topicId, fillHandler);
 
       const registeredCb = mockTradingWebSocket.onTradeUpdate.mock.calls[0]?.[1];
+      if (typeof registeredCb !== 'function') {
+        throw new Error('No trade-update callback was registered');
+      }
       registeredCb({
         event: TradeUpdateEvent.NEW,
         order: {

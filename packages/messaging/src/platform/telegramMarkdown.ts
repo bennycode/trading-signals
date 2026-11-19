@@ -9,7 +9,7 @@ const HTML_ESCAPES: Record<string, string> = {
 };
 
 function escapeHtml(text: string) {
-  return text.replace(/[&<>]/g, ch => HTML_ESCAPES[ch]);
+  return text.replace(/[&<>]/g, ch => HTML_ESCAPES[ch] ?? ch);
 }
 
 function trimNewlines(text: string) {
@@ -47,7 +47,7 @@ export function markdownToTelegramHtml(markdown: string) {
     if (match.index > lastIndex) {
       parts.push(convertOutsideCode(markdown.slice(lastIndex, match.index)));
     }
-    const code = trimNewlines(match[1]);
+    const code = trimNewlines(match[1] ?? '');
     parts.push(`<pre>${escapeHtml(code)}</pre>`);
     lastIndex = match.index + match[0].length;
   }

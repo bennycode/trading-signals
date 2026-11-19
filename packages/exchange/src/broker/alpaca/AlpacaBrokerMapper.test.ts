@@ -61,6 +61,56 @@ describe('AlpacaBrokerMapper', () => {
     });
   });
 
+  describe('toOpenOrder', () => {
+    const marketOrder = {
+      asset_class: AlpacaAssetClass.US_EQUITY,
+      asset_id: '78856c3d-67c8-43bc-8cd4-e95b686cf741',
+      canceled_at: null,
+      client_order_id: 'bb5de406-f656-4b51-9e64-03dfda718ff8',
+      created_at: '2023-08-21T15:57:26.195019Z',
+      expired_at: null,
+      extended_hours: false,
+      failed_at: null,
+      filled_at: null,
+      filled_avg_price: null,
+      filled_qty: '0',
+      id: 'b5bb0958-095f-4fa7-8ed5-294d027a9a7d',
+      legs: null,
+      limit_price: null,
+      notional: null,
+      qty: null,
+      replaced_at: null,
+      replaced_by: null,
+      replaces: null,
+      side: AlpacaOrderSide.BUY,
+      status: AlpacaOrderStatus.NEW,
+      stop_price: null,
+      submitted_at: '2023-08-21T15:57:26.200646Z',
+      symbol: 'SHOP',
+      time_in_force: TimeInForce.DAY,
+      type: AlpacaOrderType.MARKET,
+      updated_at: '2023-08-21T15:57:26.842893Z',
+    } as const;
+    const pair = new TradingPair('SHOP', 'USD');
+
+    it('says that a notional order is sized in the counter currency', () => {
+      const order = AlpacaBrokerMapper.toOpenOrder({...marketOrder, notional: '200'}, pair);
+
+      expect(order.size, 'the size of a notional order is an amount of cash').toBe('200');
+      expect(
+        'sizeInCounter' in order && order.sizeInCounter,
+        'which is the only thing telling it apart from an order for 200 shares'
+      ).toBe(true);
+    });
+
+    it('says that a quantity order is sized in the base currency', () => {
+      const order = AlpacaBrokerMapper.toOpenOrder({...marketOrder, qty: '200'}, pair);
+
+      expect(order.size).toBe('200');
+      expect('sizeInCounter' in order && order.sizeInCounter).toBe(false);
+    });
+  });
+
   describe('toFilledOrder', () => {
     it('maps a filled BUY order', () => {
       const order = {
