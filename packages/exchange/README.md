@@ -166,7 +166,7 @@ npm run gateway:ibkr:op   # resolves IBKR_ACCOUNT / IBKR_PASSWORD from 1Password
 
 **Why Interactive Brokers:**
 
-- **Candles included**, so no second data provider is needed — unlike Trading212.
+- **Candles included**, so no second data provider is needed — unlike Trading212. They are delayed without a market-data subscription, though; see _Good to know_ below.
 - **Fee estimates from IBKR itself.** `estimateFee()` prices the exact ticket through IBKR's `whatif` preview rather than modelling the commission schedule.
 - **[24/5 overnight trading](https://www.interactivebrokers.com/en/trading/orders/overnight-trading-orders.php)** of US stocks and ETFs, from 20:00 to 03:50 ET.
 - **Automatic FX.** A USD instrument bought from a EUR account is funded by an IDEALPRO conversion, which the trades feed reports alongside the fill.
@@ -181,7 +181,7 @@ npm run gateway:ibkr:op   # resolves IBKR_ACCOUNT / IBKR_PASSWORD from 1Password
 
 - **The session needs a human.** The login is automated, but IBKR's 2FA sends an IB Key push that has to be approved on your phone, and the session expires roughly daily, which brings another push. A passkey cannot be used: IBKR's Web API supports IB Key, Handy Key, SMS and DSC+ only.
 - **The login form is IBKR's to change.** Its field and dropdown selectors live in `gateway/loginToIbkrGateway.ts`; a redesign there is what breaks the login, and a failed attempt leaves a screenshot in `.gateway-outputs/`.
-- **Market data may be delayed.** Without a market-data subscription the quote feed reports `D` (delayed) and can return no price fields at all during regular hours. The history endpoint used for candles is unaffected.
+- **Market data may be delayed, candles included.** Without a market-data subscription for the relevant exchange, bars arrive roughly 15 minutes behind the market — measured across three US equities at once, all lagging 15.1–15.2 minutes. The quote feed separately reports `D` (delayed) and can return no price fields at all during regular hours. Nothing errors, so the delay is only visible by comparing a bar's open time against the clock. Two consequences worth planning for: `estimateFee()` and `getFeeRates()` price off a close from a quarter of an hour ago, and `watchCandles()` anchored at `new Date()` emits nothing until the feed catches up to that anchor — pass an `openTimeInISO` behind the delay if you want bars immediately. A subscription is bought per exchange in **Client Portal → Settings → User Settings → Market Data Subscriptions**.
 - **Order updates are polled.** `watchOrders` polls the trades endpoint rather than opening IBKR's WebSocket, which needs its own handshake and re-subscribes on every reconnect.
 - **The orders snapshot lags.** `/iserver/account/orders` does not include an order placed moments earlier, and can still report a filled order as working, so do not read it back immediately after placing.
 

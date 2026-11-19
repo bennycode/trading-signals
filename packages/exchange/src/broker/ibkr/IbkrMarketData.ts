@@ -11,7 +11,9 @@ import {IbkrConidResolver} from './IbkrConidResolver.js';
  * Candles from IBKR's own history endpoint, so a strategy needs no second data provider.
  *
  * The endpoint answers from the gateway's logged-in session and needed no market-data
- * subscription for US equities when this was checked against a live account.
+ * subscription for US equities when this was checked against a live account. Without one the bars
+ * are real but roughly 15 minutes old, which nothing in the response announces — so a caller that
+ * needs a current price must buy the subscription rather than poll harder.
  *
  * Streaming goes through polling rather than IBKR's WebSocket, which needs its own session
  * handshake and re-subscription on every reconnect; a candle feed gains nothing from it, since a
