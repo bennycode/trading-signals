@@ -188,12 +188,18 @@ export class IbkrBroker extends Broker implements CandleFeed {
    * {@link getAvailableBalances}.
    */
   async listBalances(): Promise<Balance[]> {
+    const {ledger, positions} = await this.#loadPortfolio();
+    return IbkrBrokerMapper.toBalances(ledger, positions);
+  }
+
+  /** The raw ledger and every page of positions, fetched together. */
+  async #loadPortfolio() {
     const accountId = await this.getAccountId();
     const [ledger, positions] = await Promise.all([
       this.#api.getLedger(accountId),
       getAllIbkrPositions({accountId, api: this.#api}),
     ]);
-    return IbkrBrokerMapper.toBalances(ledger, positions);
+    return {ledger, positions};
   }
 
   /**
@@ -209,15 +215,17 @@ export class IbkrBroker extends Broker implements CandleFeed {
    * rather than cash and no conversion applies.
    *
    * {@link toAvailableCash} declines to convert when the ledger cannot support it, and the
-   * inherited figure stands in that case — understating funds rather than overstating them.
+   * per-currency figure stands in that case — understating funds rather than overstating them.
    */
   override async getAvailableBalances(pair: TradingPair): Promise<ExchangeAvailableBalance> {
-    const [inherited, accountId] = await Promise.all([super.getAvailableBalances(pair), this.getAccountId()]);
-    const ledger = await this.#api.getLedger(accountId);
+    const {ledger, positions} = await this.#loadPortfolio();
+    const balances = IbkrBrokerMapper.toBalances(ledger, positions);
+    const availableOf = (currency: string) =>
+      new Big(balances.find(balance => balance.currency === currency)?.available ?? 0);
 
     return {
-      base: inherited.base,
-      counter: toAvailableCash(ledger, pair.counter) ?? inherited.counter,
+      base: availableOf(pair.base),
+      counter: toAvailableCash(ledger, pair.counter) ?? availableOf(pair.counter),
     };
   }
 
@@ -321,15 +329,6 @@ export class IbkrBroker extends Broker implements CandleFeed {
 
     return ibkrFeeRates(new Big(candle.close));
   }
-
-  /**
-   * IBKR's Fixed schedule worked out locally, for when its own preview is unavailable — a
-   * backtest has no session to ask.
-   *
-   * Billed per share, so the share count is recovered from the notional and the price. The result
-   * is rounded up to whole cents, which is how IBKR bills: 1% of USD 11.50 is 0.115 and the
-   * preview quotes 0.12.
-   */
 
   /**
    * Asks IBKR what the order would cost, falling back to the schedule applied locally when there

@@ -57,8 +57,8 @@ class MarketDataSourceStub extends MarketDataSource {
     return [this.#candle()];
   }
 
-  protected override async getNewestCandle(): Promise<Candle> {
-    return this.#candle();
+  protected override async getNewestCandles(): Promise<Candle[]> {
+    return [this.#candle()];
   }
 
   #candle(): Candle {

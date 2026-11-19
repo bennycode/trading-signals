@@ -34,15 +34,20 @@ export abstract class MarketDataSource extends EventEmitter implements CandleFee
   abstract getCandles(pair: TradingPair, request: CandleImportRequest): Promise<Candle[]>;
 
   /**
-   * The newest bar the source holds, forming or not, used only to anchor a history walk.
+   * The newest bars the source can reach in one probe, oldest first, the last of which may still
+   * be forming. Throws when the source has none.
    *
    * Protected because a half-built bar is not something a caller should receive: every public
    * accessor here returns closed candles. The anchor comes from the data rather than the clock
    * because bar opens need not sit on the interval grid — IBKR stamps a daily bar at the session
    * open — and because starting at the newest real bar reaches a stale instrument in one request
    * instead of widening the window until it finds one.
+   *
+   * A batch rather than the single newest bar so that {@link getRecentCandles} can answer from the
+   * probe alone when it already holds enough closed candles. Implementations should reach back far
+   * enough to clear the forming bar, since asking for the newest closed candle is the common case.
    */
-  protected abstract getNewestCandle(pair: TradingPair, intervalInMillis: number): Promise<Candle>;
+  protected abstract getNewestCandles(pair: TradingPair, intervalInMillis: number): Promise<Candle[]>;
 
   /**
    * Whether a bar is still being built, and so must be withheld from a caller.
@@ -64,10 +69,21 @@ export abstract class MarketDataSource extends EventEmitter implements CandleFee
       return [];
     }
 
-    const newest = await this.getNewestCandle(pair, intervalInMillis);
-    const untilInMillis = this.isForming(newest, intervalInMillis, Date.now())
-      ? newest.openTimeInMillis - 1
-      : newest.openTimeInMillis;
+    const probed = await this.getNewestCandles(pair, intervalInMillis);
+    const newest = probed.at(-1);
+
+    if (!newest) {
+      throw new Error(`No ${intervalInMillis} ms candle is available for ${pair.asString('/')}.`);
+    }
+
+    const closed = this.isForming(newest, intervalInMillis, Date.now()) ? probed.slice(0, -1) : probed;
+
+    // The probe reached far enough, so the walk below would only re-fetch what is already here.
+    if (closed.length >= count) {
+      return closed.slice(-count);
+    }
+
+    const untilInMillis = closed.at(-1)?.openTimeInMillis ?? newest.openTimeInMillis - 1;
     return getCandlesUntil(this, pair, count, intervalInMillis, untilInMillis);
   }
 

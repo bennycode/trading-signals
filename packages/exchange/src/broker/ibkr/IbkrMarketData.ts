@@ -155,22 +155,20 @@ export class IbkrMarketData extends MarketDataSource {
     return bars.filter(candle => !IbkrMarketData.isForming(candle, intervalInMillis, now)).slice(-count);
   }
 
-  protected override async getNewestCandle(pair: TradingPair, intervalInMillis: number): Promise<Candle> {
+  protected override async getNewestCandles(pair: TradingPair, intervalInMillis: number): Promise<Candle[]> {
     /*
-     * Two intervals of span, so the request still spans a bar across a weekend or a holiday, when
-     * the newest bar can be days old.
+     * Three intervals of span, so the request still spans a closed bar and the one forming across
+     * a weekend or a holiday, when the newest bar can be days old.
      */
     const bars = await this.#getBars(pair, intervalInMillis, {
-      period: IbkrMarketData.toPeriod(intervalInMillis * 2),
+      period: IbkrMarketData.toPeriod(intervalInMillis * 3),
     });
 
-    const latest = bars.at(-1);
-
-    if (!latest) {
+    if (bars.length === 0) {
       throw new Error(`IBKR returned no ${intervalInMillis} ms candles for ${pair.asString('/')}.`);
     }
 
-    return latest;
+    return bars;
   }
 
   /** @see {@link IbkrMarketData.isForming} */

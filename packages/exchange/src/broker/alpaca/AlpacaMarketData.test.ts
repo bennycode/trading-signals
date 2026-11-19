@@ -104,9 +104,15 @@ describe('AlpacaMarketData', () => {
         next_page_token: null,
       }));
 
+      mockMethods.getStockBars.mockClear();
+
       const candle = await new AlpacaMarketData(credentials).getLatestCandle(pair, 3_600_000);
 
       expect(candle.close, 'Alpaca serves the in-progress bar, so the newest one it returns is half-built').toBe('100');
+      expect(
+        mockMethods.getStockBars.mock.calls.length,
+        'the probe window already spans a closed bar, so no second walk is needed to reach it'
+      ).toBe(1);
       vi.useRealTimers();
     });
   });

@@ -65,26 +65,27 @@ export class AlpacaMarketData extends MarketDataSource {
     return candles;
   }
 
-  protected override async getNewestCandle(pair: TradingPair, intervalInMillis: number): Promise<Candle> {
+  protected override async getNewestCandles(pair: TradingPair, intervalInMillis: number): Promise<Candle[]> {
     const isCrypto = await isAlpacaCryptoSymbol(this.#alpacaAPI, pair);
     const symbol = createAlpacaSymbol(pair, isCrypto);
     const fetchMethod = isCrypto ? this.#fetchLatestCryptoBars.bind(this) : this.#fetchLatestStockBars.bind(this);
     const {bars} = await fetchMethod(pair);
-    /*
-     * Fetch a window large enough to contain at least one bar of the requested interval,
-     * then sort by `openTimeInMillis` and return the most recent one. The bars/latest
-     * endpoint gives us the latest 1-minute bar's timestamp; we ask `getCandles()` to
-     * align that to the requested `intervalInMillis` and return the candle that includes it.
-     */
+
     const latestBar = bars[symbol];
     if (!latestBar) {
       throw new Error(`Alpaca returned no latest bar for "${symbol}"`);
     }
+
+    /*
+     * The bars/latest endpoint only dates the newest 1-minute bar, so the window is aligned to the
+     * requested interval here. Two intervals of it rather than one: Alpaca serves the bar that is
+     * still forming, and a window holding only that bar would send the caller back for another
+     * request to reach the newest closed one.
+     */
     const latestBarStart = new Date(latestBar.t).getTime();
-    const startTimeFirstCandle = latestBarStart - intervalInMillis + ms('1m');
     const candles = await this.getCandles(pair, {
       intervalInMillis,
-      startTimeFirstCandle: new Date(startTimeFirstCandle).toISOString(),
+      startTimeFirstCandle: new Date(latestBarStart - intervalInMillis * 2).toISOString(),
       startTimeLastCandle: new Date(latestBarStart).toISOString(),
     });
 
@@ -92,7 +93,7 @@ export class AlpacaMarketData extends MarketDataSource {
       throw new Error(`Alpaca returned no candles for ${pair.asString('/')}.`);
     }
 
-    return candles.reduce((latest, candle) => (candle.openTimeInMillis > latest.openTimeInMillis ? candle : latest));
+    return [...candles].sort((a, b) => a.openTimeInMillis - b.openTimeInMillis);
   }
 
   /**
