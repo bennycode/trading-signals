@@ -1,4 +1,4 @@
-import {AlpacaBroker, Trading212Broker, getAuthenticatedBrokerClient} from '@typedtrader/exchange';
+import {AlpacaBroker, IbkrBroker, Trading212Broker, getAuthenticatedBrokerClient} from '@typedtrader/exchange';
 import {buildMarketDataFromAccount} from '../../broker/getAccountBrokerClient.js';
 import {Account} from '../../database/models/Account.js';
 import {logger} from '../../logger.js';
@@ -21,7 +21,20 @@ export interface AccountAddWizardArgs {
   userId: string;
 }
 
-const EXCHANGES = [AlpacaBroker.NAME, Trading212Broker.NAME] as const;
+const EXCHANGES = [AlpacaBroker.NAME, Trading212Broker.NAME, IbkrBroker.NAME] as const;
+
+/**
+ * What the stored credential pair is called, for brokers where it is not an API key.
+ *
+ * IBKR issues none: the Client Portal Gateway holds a logged-in session and signs requests
+ * itself, so the pair it needs is the Pro username and password, which is what starts that
+ * gateway. Asking for an "API key" would be asking for something that does not exist.
+ */
+const CREDENTIAL_LABELS: Readonly<Record<string, {key: string; secret: string}>> = {
+  [IbkrBroker.NAME]: {key: 'IBKR Pro username', secret: 'IBKR Pro password'},
+};
+
+const DEFAULT_CREDENTIAL_LABELS = {key: 'API key', secret: 'API secret'} as const;
 
 export function makeAccountAddWizard() {
   return async function accountAddWizard(
@@ -41,19 +54,35 @@ export function makeAccountAddWizard() {
     const picked = typeof exchangeCb.match === 'string' ? exchangeCb.match.split(':')[2] : undefined;
     const exchange = picked ?? defaultExchange;
 
-    await exchangeCb.editMessageText(
-      `Broker: ${exchange}\nChoose account mode:`,
-      inlineKeyboard([
-        [
-          {callback_data: 'accountadd:mode:paper', text: '📝 Paper'},
-          {callback_data: 'accountadd:mode:live', text: '💵 Live'},
-        ],
-      ])
-    );
+    /*
+     * IBKR has no paper endpoint to switch to: the gateway trades whichever account it logged
+     * into, so paper is picked by giving a paper username and `getBrokerClient` refuses the flag
+     * outright. Asking the question would offer a choice that cannot be honoured.
+     */
+    const picksMode = exchange !== IbkrBroker.NAME;
+    let isPaper = false;
+    let activeCb = exchangeCb;
 
-    const modeCb = await conversation.waitForCallbackQuery(['accountadd:mode:paper', 'accountadd:mode:live']);
-    await modeCb.answerCallbackQuery();
-    const isPaper = modeCb.match === 'accountadd:mode:paper';
+    if (picksMode) {
+      await exchangeCb.editMessageText(
+        `Broker: ${exchange}\nChoose account mode:`,
+        inlineKeyboard([
+          [
+            {callback_data: 'accountadd:mode:paper', text: '📝 Paper'},
+            {callback_data: 'accountadd:mode:live', text: '💵 Live'},
+          ],
+        ])
+      );
+
+      const modeCb = await conversation.waitForCallbackQuery(['accountadd:mode:paper', 'accountadd:mode:live']);
+      await modeCb.answerCallbackQuery();
+      isPaper = modeCb.match === 'accountadd:mode:paper';
+      activeCb = modeCb;
+    }
+
+    const header = picksMode
+      ? `Broker: ${exchange}\nMode: ${isPaper ? 'Paper' : 'Live'}`
+      : `Broker: ${exchange}\nMode: whichever account the gateway logs into`;
 
     /*
      * Brokers without their own market-data feed (e.g. Trading212) reuse another account's
@@ -74,7 +103,7 @@ export function makeAccountAddWizard() {
       );
 
       if (dataSourceAccounts.length === 0) {
-        await modeCb.editMessageText(
+        await activeCb.editMessageText(
           `${exchange} has no market data of its own and needs an existing ${modeLabel} ${AlpacaBroker.NAME} account as its data source.\n\nAdd a ${modeLabel} ${AlpacaBroker.NAME} account first, then re-run /accountAdd.`
         );
         return;
@@ -86,8 +115,8 @@ export function makeAccountAddWizard() {
           text: `${candidate.name} (${candidate.isPaper ? 'Paper' : 'Live'})`,
         },
       ]);
-      await modeCb.editMessageText(
-        `Broker: ${exchange}\nMode: ${isPaper ? 'Paper' : 'Live'}\n\nPick the account to use for market data:`,
+      await activeCb.editMessageText(
+        `${header}\n\nPick the account to use for market data:`,
         inlineKeyboard(dataSourceButtons)
       );
 
@@ -98,13 +127,9 @@ export function makeAccountAddWizard() {
       const pickedSource = typeof dataSourceCb.match === 'string' ? dataSourceCb.match.split(':')[2] : undefined;
       marketDataAccountId = pickedSource === undefined ? (dataSourceAccounts[0]?.id ?? null) : Number(pickedSource);
 
-      await dataSourceCb.editMessageText(
-        `Broker: ${exchange}\nMode: ${isPaper ? 'Paper' : 'Live'}\n\nSend a name for this account:`
-      );
+      await dataSourceCb.editMessageText(`${header}\n\nSend a name for this account:`);
     } else {
-      await modeCb.editMessageText(
-        `Broker: ${exchange}\nMode: ${isPaper ? 'Paper' : 'Live'}\n\nSend a name for this account:`
-      );
+      await activeCb.editMessageText(`${header}\n\nSend a name for this account:`);
     }
 
     const nameResp = await waitForTextOrCancel(conversation, ctx);
@@ -117,7 +142,9 @@ export function makeAccountAddWizard() {
       return;
     }
 
-    await ctx.reply('Send the API key (the message will be deleted after receipt):');
+    const labels = CREDENTIAL_LABELS[exchange] ?? DEFAULT_CREDENTIAL_LABELS;
+
+    await ctx.reply(`Send the ${labels.key} (the message will be deleted after receipt):`);
     const apiKeyCtx = await conversation.waitFor('message:text');
     const apiKey = apiKeyCtx.msg.text.trim();
     const apiKeyChatId = apiKeyCtx.msg.chat.id;
@@ -128,7 +155,7 @@ export function makeAccountAddWizard() {
       return;
     }
 
-    await ctx.reply('Send the API secret (the message will be deleted after receipt):');
+    await ctx.reply(`Send the ${labels.secret} (the message will be deleted after receipt):`);
     const apiSecretCtx = await conversation.waitFor('message:text');
     const apiSecret = apiSecretCtx.msg.text.trim();
     const apiSecretChatId = apiSecretCtx.msg.chat.id;
@@ -141,9 +168,20 @@ export function makeAccountAddWizard() {
     }
 
     await deleteSecretMessages(conversation, ctx, 'accountAdd', [
-      {chatId: apiKeyChatId, label: 'API key', messageId: apiKeyMessageId},
-      {chatId: apiSecretChatId, label: 'API secret', messageId: apiSecretMessageId},
+      {chatId: apiKeyChatId, label: labels.key, messageId: apiKeyMessageId},
+      {chatId: apiSecretChatId, label: labels.secret, messageId: apiSecretMessageId},
     ]);
+
+    /*
+     * Verifying IBKR is not a request but a gateway launch: it downloads the Client Portal
+     * Gateway on first use, drives its login form, and then waits on a second factor. Saying so
+     * first, because otherwise the wizard looks hung for the minutes that takes.
+     */
+    if (exchange === IbkrBroker.NAME) {
+      await ctx.reply(
+        'Starting the IBKR Client Portal Gateway and logging in. The gateway is downloaded on first use, and IBKR then asks for your second factor — approve it on your phone. This can take a few minutes.'
+      );
+    }
 
     await ctx.reply('Validating credentials…');
 

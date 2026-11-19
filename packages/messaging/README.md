@@ -18,6 +18,13 @@ This package starts a chatbot based on environment variables. Control your tradi
 
 Set `TELEGRAM_BOT_TOKEN` to enable. Message the bot from Telegram. Create a bot token via [@BotFather](https://t.me/BotFather).
 
+### Brokers
+
+`/accountAdd` offers Alpaca, Trading212 and Interactive Brokers. The first two are an API key and secret, which is all a chat message can carry. The other two are not:
+
+- **Trading212** serves no candles, so it borrows them from an Alpaca account you added first, in the same paper or live mode.
+- **Interactive Brokers** has no API keys at all. Its credential pair is the IBKR Pro username and password, which the broker uses to start the Client Portal Gateway and log in — so the **host running this bot needs that gateway**, along with Java and the optional `playwright` dependency. Adding the account launches it and waits for your second factor, which takes minutes rather than seconds on first use. There is no paper toggle: the gateway trades whichever account it logged into, so add a paper account by giving a paper username. Expect to re-approve the second factor roughly daily, and note that an account without a market-data subscription returns candles about 15 minutes delayed.
+
 You must also set `TELEGRAM_OWNER_IDS` to a comma-separated list of Telegram user IDs (e.g. `TELEGRAM_OWNER_IDS=111111,222222`). The bot is **fail-closed**: if no owner IDs are configured, it refuses to start instead of accepting messages from anyone. Look up your numeric user ID via [@userinfobot](https://t.me/userinfobot).
 
 ### Commands
