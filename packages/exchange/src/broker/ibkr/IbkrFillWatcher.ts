@@ -36,7 +36,16 @@ export function toExecutionKey(trade: IbkrTrade): string {
   ]);
 }
 
-/** Merges the executions of one order into the single fill a strategy expects. */
+/**
+ * Merges the executions of one order into the single fill a strategy expects: summed size and
+ * commission, quantity-weighted average price.
+ *
+ * The timestamp is the earliest execution's, which is when the order started filling, and is
+ * found by comparing the timestamps rather than by taking an end of the array. The two callers
+ * hand their executions over in opposite orders — the watcher in whatever order the trades feed
+ * returned them, {@link IbkrBroker.getFillByOrderId} newest-first — so a positional answer is one
+ * of them reporting the wrong time.
+ */
 export function mergeFills(fills: Fill[]): Fill | undefined {
   const first = fills[0];
   if (!first) {
@@ -46,16 +55,22 @@ export function mergeFills(fills: Fill[]): Fill | undefined {
   let size = new Big(0);
   let notional = new Big(0);
   let fee = new Big(0);
+  let earliest = first;
 
   for (const fill of fills) {
     const fillSize = new Big(fill.size);
     size = size.plus(fillSize);
     notional = notional.plus(fillSize.times(fill.price));
     fee = fee.plus(fill.fee);
+
+    if (Date.parse(fill.created_at) < Date.parse(earliest.created_at)) {
+      earliest = fill;
+    }
   }
 
   return {
     ...first,
+    created_at: earliest.created_at,
     fee: fee.toString(),
     price: size.gt(0) ? notional.div(size).toString() : first.price,
     size: size.toString(),

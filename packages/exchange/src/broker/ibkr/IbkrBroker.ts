@@ -27,7 +27,7 @@ import {IbkrGatewayStage, type IbkrGatewayState} from './gateway/IbkrGatewayStat
 import {resolveIbkrAccountId} from './IbkrAccountSelection.js';
 import {toAvailableCash} from './IbkrCashConversion.js';
 import {IbkrCurrencyResolver} from './IbkrCurrencyResolver.js';
-import {createFillTopicId, startIbkrFillWatcher, type IbkrFillWatcher} from './IbkrFillWatcher.js';
+import {createFillTopicId, mergeFills, startIbkrFillWatcher, type IbkrFillWatcher} from './IbkrFillWatcher.js';
 import {getCompleteIbkrLiveOrders, isIbkrOrderWorking} from './IbkrLiveOrders.js';
 import {getAllIbkrPositions} from './IbkrPortfolio.js';
 import {estimateIbkrFee} from './IbkrFeeEstimate.js';
@@ -284,32 +284,7 @@ export class IbkrBroker extends Broker implements CandleFeed {
       return undefined;
     }
 
-    const fills = (await this.getFills(pair)).filter(fill => fill.order_id === orderId);
-
-    const first = fills[0];
-    if (!first) {
-      return undefined;
-    }
-
-    let size = new Big(0);
-    let notional = new Big(0);
-    let fee = new Big(0);
-
-    for (const fill of fills) {
-      const fillSize = new Big(fill.size);
-      size = size.plus(fillSize);
-      notional = notional.plus(fillSize.times(fill.price));
-      fee = fee.plus(fill.fee);
-    }
-
-    return {
-      ...first,
-      // Oldest execution is the order's own timestamp; `getFills` sorts newest first.
-      created_at: fills[fills.length - 1]?.created_at ?? first.created_at,
-      fee: fee.toString(),
-      price: size.gt(0) ? notional.div(size).toString() : first.price,
-      size: size.toString(),
-    };
+    return mergeFills((await this.getFills(pair)).filter(fill => fill.order_id === orderId));
   }
 
   async getTradingRules(pair: TradingPair): Promise<TradingRules> {

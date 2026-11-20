@@ -1,5 +1,7 @@
 import {describe, expect, it} from 'vitest';
-import {toExecutionKey} from './IbkrFillWatcher.js';
+import {OrderPosition, OrderSide, type Fill} from '../Broker.js';
+import {TradingPair} from '../TradingPair.js';
+import {mergeFills, toExecutionKey} from './IbkrFillWatcher.js';
 
 describe('toExecutionKey', () => {
   it('prefers IBKR’s own execution id', () => {
@@ -26,5 +28,47 @@ describe('toExecutionKey', () => {
     const trade = {conid: 9599491, order_id: 55, price: '11.55', side: 'B', size: 1, trade_time_r: 1_000};
 
     expect(toExecutionKey(trade)).toBe(toExecutionKey({...trade}));
+  });
+});
+
+describe('mergeFills', () => {
+  /** IBKR fills a four-share order as one share and then three, each its own execution. */
+  const execution = (createdAt: string, size: string, price: string, fee: string): Fill => ({
+    created_at: createdAt,
+    fee,
+    feeAsset: 'USD',
+    order_id: '55',
+    pair: new TradingPair('F', 'USD'),
+    position: OrderPosition.LONG,
+    price,
+    side: OrderSide.BUY,
+    size,
+  });
+
+  const OPENING = execution('2026-11-20T01:00:00.000Z', '1', '11.50', '0.35');
+  const CLOSING = execution('2026-11-20T01:00:09.000Z', '3', '11.60', '0.35');
+
+  it('sums the executions into one fill', () => {
+    const merged = mergeFills([OPENING, CLOSING]);
+
+    expect(merged?.size, 'a strategy is handed the order, not the executions it arrived in').toBe('4');
+    expect(merged?.price, 'quantity-weighted, so the three shares count for three').toBe('11.575');
+    expect(merged?.fee, 'IBKR bills each execution, and the order paid both').toBe('0.7');
+  });
+
+  it('timestamps the fill from the earliest execution whichever order they arrive in', () => {
+    expect(
+      mergeFills([OPENING, CLOSING])?.created_at,
+      'the order started filling then, and the trades feed hands them over oldest-first'
+    ).toBe(OPENING.created_at);
+
+    expect(
+      mergeFills([CLOSING, OPENING])?.created_at,
+      'getFillByOrderId sorts newest-first, and must not therefore report a later time for the same order'
+    ).toBe(OPENING.created_at);
+  });
+
+  it('reports nothing for an order with no executions', () => {
+    expect(mergeFills([])).toBeUndefined();
   });
 });
