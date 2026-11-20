@@ -30,9 +30,20 @@ const SELECTOR = {
   /** Shown only when the account has more than one second factor enrolled. */
   deviceChooser: 'select#xyz-field-multipleselect',
   password: '#xyz-field-password',
+  /** IBKR's own "Didn't receive the notification?" link on the push-waiting page. */
+  resendNotification: 'a.xyz-resendnotification',
   submit: 'button.xyz-button-login',
   username: '#xyz-field-username',
 } as const;
+
+/**
+ * How long a push is left in front of the human before another is sent.
+ *
+ * IBKR expires an untapped push and then replaces the waiting page with a challenge-and-response
+ * form, which has no field this automation can fill — so a login that was only ever waiting for a
+ * tap ends as a form nobody is there to complete. Resending keeps a live push there instead.
+ */
+const RESEND_INTERVAL_MS = 90_000;
 
 export interface IbkrLoginOptions {
   account: string;
@@ -88,10 +99,18 @@ export async function loginToIbkrGateway(options: IbkrLoginOptions): Promise<voi
     await selectTwoFactorMethod(page, twoFactorMethod);
 
     const deadline = Date.now() + twoFactorTimeoutMs;
+    let nextResendInMillis = Date.now() + RESEND_INTERVAL_MS;
+
     while (Date.now() < deadline) {
       if (await isAuthenticated(gatewayUrl)) {
         return;
       }
+
+      if (Date.now() >= nextResendInMillis) {
+        await resendNotification(page);
+        nextResendInMillis = Date.now() + RESEND_INTERVAL_MS;
+      }
+
       await page.waitForTimeout(2_000);
     }
 
@@ -100,11 +119,26 @@ export async function loginToIbkrGateway(options: IbkrLoginOptions): Promise<voi
     }
 
     throw new Error(
-      `IBKR did not confirm the session within ${Math.round(twoFactorTimeoutMs / 1_000)}s. If a push was sent, it needs approving on the phone.${screenshotPath ? ` The page it gave up on is at ${screenshotPath}.` : ''}`
+      `IBKR did not confirm the session within ${Math.round(twoFactorTimeoutMs / 1_000)}s. It pushed a notification to the phone enrolled for this account, which has to be tapped.${screenshotPath ? ` The page it gave up on is at ${screenshotPath}.` : ''}`
     );
   } finally {
     await browser?.close();
   }
+}
+
+/**
+ * Asks IBKR for a fresh push, so an expired one does not leave the page on a form nobody will
+ * fill.
+ *
+ * Absence is not an error: the link only exists while the push page is up, so it is gone once
+ * IBKR has already fallen back, and a click that cannot land must not end a wait that the status
+ * endpoint is still the authority on.
+ */
+async function resendNotification(page: Page): Promise<void> {
+  await page
+    .locator(SELECTOR.resendNotification)
+    .click({timeout: 2_000})
+    .catch(() => undefined);
 }
 
 /**
