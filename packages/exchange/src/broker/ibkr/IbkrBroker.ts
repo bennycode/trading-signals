@@ -57,6 +57,12 @@ export class IbkrBroker extends Broker implements CandleFeed {
   /** `getOpenOrders` polls this often when watching for fills. */
   static readonly ORDER_POLL_INTERVAL_MS = 5_000;
 
+  /** How long {@link getFillByOrderId} waits for a filled order's executions to reach the trades feed. */
+  static readonly FILL_PROPAGATION_TIMEOUT_MS = ms('90s');
+
+  /** How often it re-asks the trades feed in the meantime. */
+  static readonly FILL_PROPAGATION_POLL_MS = ms('3s');
+
   readonly #api: IbkrAPI;
   /** Resolved on first use, so the launcher's `node:child_process` stays off the static graph. */
   #gatewayPromise?: Promise<IbkrGatewayLauncher> | undefined;
@@ -278,13 +284,42 @@ export class IbkrBroker extends Broker implements CandleFeed {
    * executions in `getTrades()`, and reporting those as the fill would break the
    * {@link Broker.getFillByOrderId} contract of `undefined` until an order is done — a caller
    * would read a four-share order as filled on its first share.
+   *
+   * A filled order's executions can lag in the trades feed by a minute or two after IBKR already
+   * reports the order `Filled` — a live overnight fill showed up there about ninety seconds late.
+   * Returning `undefined` in that window is not just a late answer: a caller that then checks the
+   * open orders finds the order gone and reads "filled but no fill" as cancelled. So a `Filled`
+   * order is re-asked until its executions land. A cancelled or rejected order is not: it has no
+   * executions coming, and polling for them would hang every such call to the timeout.
    */
   async getFillByOrderId(pair: TradingPair, orderId: string): Promise<Fill | undefined> {
-    if (await isIbkrOrderWorking(this.#api, orderId)) {
+    const orders = await getCompleteIbkrLiveOrders(this.#api);
+    const order = orders.find(candidate => String(candidate.orderId) === orderId);
+
+    if (order && IbkrBrokerMapper.isLiveOrder(order)) {
       return undefined;
     }
 
-    return mergeFills((await this.getFills(pair)).filter(fill => fill.order_id === orderId));
+    // A listed order that is done but not filled has no execution to wait for.
+    if (order && order.status !== 'Filled') {
+      return undefined;
+    }
+
+    const readFill = async () => mergeFills((await this.getFills(pair)).filter(fill => fill.order_id === orderId));
+
+    // Only a confirmed fill is worth waiting on; an order aged out of the list gets a single read.
+    if (order?.status !== 'Filled') {
+      return readFill();
+    }
+
+    const deadline = Date.now() + IbkrBroker.FILL_PROPAGATION_TIMEOUT_MS;
+    for (;;) {
+      const fill = await readFill();
+      if (fill || Date.now() >= deadline) {
+        return fill;
+      }
+      await new Promise(resolve => setTimeout(resolve, IbkrBroker.FILL_PROPAGATION_POLL_MS));
+    }
   }
 
   async getTradingRules(pair: TradingPair): Promise<TradingRules> {

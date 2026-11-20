@@ -458,6 +458,45 @@ describe('IbkrBroker', {concurrent: false}, () => {
 
       await expect(broker.getFillByOrderId(pair, '55')).resolves.toBeUndefined();
     });
+
+    it('waits for a filled order’s executions to reach the lagging trades feed', async () => {
+      vi.useFakeTimers();
+      try {
+        mockMethods.getPortfolioAccounts.mockResolvedValue([{currency: 'EUR', id: 'U1'}]);
+        mockMethods.getLiveOrders.mockResolvedValue({
+          orders: [{conid: '265598', orderId: '55', status: 'Filled'}],
+          snapshot: true,
+        });
+        mockMethods.getTrades
+          .mockResolvedValueOnce([])
+          .mockResolvedValue([
+            {commission: '0.35', conid: '265598', order_id: 55, price: '100', side: 'B', size: 1, trade_time_r: 1_000},
+          ]);
+
+        const pending = broker.getFillByOrderId(pair, '55');
+        await vi.advanceTimersByTimeAsync(IbkrBroker.FILL_PROPAGATION_POLL_MS);
+
+        expect(
+          (await pending)?.size,
+          'IBKR reports the order Filled before its execution reaches getTrades, so the fill is re-asked until it lands'
+        ).toBe('1');
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+
+    it('does not wait on a cancelled order, which has no execution coming', async () => {
+      mockMethods.getLiveOrders.mockResolvedValue({
+        orders: [{conid: '265598', orderId: '55', status: 'Cancelled'}],
+        snapshot: true,
+      });
+
+      await expect(broker.getFillByOrderId(pair, '55')).resolves.toBeUndefined();
+      expect(
+        mockMethods.getTrades,
+        'a cancelled order has no fill, so the trades feed is not even consulted'
+      ).not.toHaveBeenCalled();
+    });
   });
 
   describe('getFeeAsset', () => {
