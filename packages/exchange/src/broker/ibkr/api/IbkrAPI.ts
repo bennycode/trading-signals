@@ -110,7 +110,86 @@ export class IbkrAPI {
       });
     }
 
+    /*
+     * Registered before `simplifyError` so its rejection handler sees the raw Axios error, which
+     * still carries the request `config` needed to re-issue the call. A non-recoverable error is
+     * re-thrown and falls through to `simplifyError` unchanged.
+     */
+    this.#httpClient.interceptors.response.use(undefined, (error: unknown) => this.#recoverFromDroppedBridge(error));
+
     simplifyError(this.#httpClient);
+  }
+
+  /** Re-opened lazily when a request finds the brokerage session gone; shared so a burst re-opens once. */
+  #bridgeReopen?: Promise<void> | undefined;
+  /** When the last re-open settled, so a request that still finds no bridge right after one gives up. */
+  #lastBridgeReopenInMillis = 0;
+  /** True only while the re-open call itself is in flight, so it cannot try to recover its own request. */
+  #reopeningBridge = false;
+
+  /**
+   * Re-opens the brokerage session when a request fails because it has dropped, then re-issues that
+   * request once.
+   *
+   * The Client Portal Gateway keeps its browser login alive but tears the brokerage session down
+   * after a spell of inactivity, after which every `/iserver` call answers `400 … no bridge` until
+   * the session is opened again — which {@link initSession} does without a new login. A strategy
+   * that places an order after any idle period would otherwise fail its first call outright, as a
+   * live overnight order did.
+   *
+   * Safe to retry even an order submission here: `no bridge` is the gateway refusing to route
+   * before the request reaches IBKR, so nothing was placed and re-issuing cannot double-fill. That
+   * is a different failure from a timeout, which {@link submitOrder} still refuses to retry.
+   */
+  async #recoverFromDroppedBridge(error: unknown): Promise<unknown> {
+    const config = axios.isAxiosError(error) ? error.config : undefined;
+
+    if (this.#reopeningBridge || !config || !IbkrAPI.#isDroppedBridge(error)) {
+      return Promise.reject(error);
+    }
+
+    // The re-open just ran and the bridge is still gone: opening it again now will not help.
+    if (!this.#bridgeReopen && Date.now() - this.#lastBridgeReopenInMillis < IbkrAPI.#BRIDGE_REOPEN_COOLDOWN_MS) {
+      return Promise.reject(error);
+    }
+
+    this.#bridgeReopen ??= this.#reopenBridge();
+
+    try {
+      await this.#bridgeReopen;
+    } catch {
+      return Promise.reject(error);
+    }
+
+    return this.#httpClient.request(config);
+  }
+
+  async #reopenBridge(): Promise<void> {
+    this.#reopeningBridge = true;
+    try {
+      await this.initSession();
+    } finally {
+      this.#reopeningBridge = false;
+      this.#lastBridgeReopenInMillis = Date.now();
+      this.#bridgeReopen = undefined;
+    }
+  }
+
+  /** Long enough to cover a re-open, so a second attempt is a real change of state, not a tight loop. */
+  static readonly #BRIDGE_REOPEN_COOLDOWN_MS = 5_000;
+
+  /** IBKR answers a request made with no brokerage session with a `no bridge` body under 400/401/503. */
+  static #isDroppedBridge(error: unknown): boolean {
+    if (!axios.isAxiosError(error)) {
+      return false;
+    }
+    const status = error.response?.status;
+    if (status !== 400 && status !== 401 && status !== 503) {
+      return false;
+    }
+    const body: unknown = error.response?.data;
+    const text = typeof body === 'string' ? body : JSON.stringify(body ?? '');
+    return /no bridge/i.test(text);
   }
 
   get defaults(): AxiosDefaults {
