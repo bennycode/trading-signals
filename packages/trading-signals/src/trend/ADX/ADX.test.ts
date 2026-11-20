@@ -74,6 +74,24 @@ describe('ADX', () => {
       expect(adx.pdi?.toFixed(2)).toBe('0.42');
       expect(adx.mdi?.toFixed(2)).toBe('0.06');
     });
+
+    it('measures the trend once prices start moving after flat candles', {tags: ['regression']}, () => {
+      const interval = 5;
+      const adx = new ADX(interval);
+
+      for (let i = 0; i < 2 * interval; i++) {
+        adx.add({close: 100, high: 100, low: 100});
+      }
+
+      expect(adx.getResultOrThrow(), 'flat candles carry no trend').toBe(0);
+
+      for (const candle of candles) {
+        adx.add(candle);
+      }
+
+      expect(adx.getResultOrThrow(), 'the flat start does not block later readings').toBeGreaterThan(0);
+      expect(adx.pdi > adx.mdi, 'the uptrend that follows is detected').toBe(true);
+    });
   });
 
   describe('isStable', () => {
