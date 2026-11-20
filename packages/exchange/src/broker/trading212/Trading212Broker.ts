@@ -20,13 +20,13 @@ import {
   type TradingRules,
 } from '../Broker.js';
 import {TradingPair} from '../TradingPair.js';
-import type {MarketDataSource} from '../MarketDataSource.js';
+import type {CandleFeed, MarketDataSource} from '../MarketDataSource.js';
 import {Trading212API} from './api/Trading212API.js';
 import {Trading212OrderStatus, Trading212TimeValidity} from './api/schema/OrderSchema.js';
 import {Trading212BrokerMapper} from './Trading212BrokerMapper.js';
 import {fetchFilledOrdersSince, latestFilledOrderId} from './newFilledOrders.js';
 
-export class Trading212Broker extends Broker implements MarketDataSource {
+export class Trading212Broker extends Broker implements CandleFeed {
   static readonly NAME = 'Trading212';
 
   /**
@@ -329,6 +329,13 @@ export class Trading212Broker extends Broker implements MarketDataSource {
 
   async getFeeRates(pair: TradingPair): Promise<FeeRate> {
     const accountInfo = await this.#api.getAccountInfo();
+    /*
+     * Compared against the primary currency on purpose, even though a Trading212 Invest account
+     * can hold wallets in other currencies. Picking the wallet an order spends is an in-app
+     * feature: neither order endpoint takes a currency, so an order placed through the API always
+     * settles from the primary currency and always converts. A USD wallet sitting in a EUR account
+     * does not change that.
+     */
     const isCrossCurrency = accountInfo.currencyCode !== pair.counter;
     return {
       ...Trading212Broker.DEFAULT_FEE_RATES,
@@ -337,8 +344,19 @@ export class Trading212Broker extends Broker implements MarketDataSource {
   }
 
   /**
-   * Trading212 debits all fees in the account currency, not the instrument currency.
-   * Strategies on a EUR account trading USD stocks see fees in EUR.
+   * Trading212 debits a trade's fees in the wallet that settled it, which for an API-placed order
+   * is the account's primary currency — not the instrument's.
+   *
+   * Confirmed against 184 live fills: every US-stock purchase settled `walletImpact.currency: EUR`
+   * on a EUR account and carried its `CURRENCY_CONVERSION_FEE` in EUR (`-7.5 EUR` on an AMD buy,
+   * `-1.5 EUR` on NUE), while EUR instruments settled at `fxRate: 1` with no fee at all.
+   *
+   * Do not be misled by the cash ledger, where a *manual* wallet conversion books its fee in the
+   * currency acquired (`{"type":"FEE","amount":-0.6,"currency":"USD"}`). That is a different
+   * operation from a trade, and reading it as the trade rule mislabels every fee on the account.
+   *
+   * A consequence: `getProfitableExitPrice` needs a `feeToCounterRate` here, because a EUR fee cannot
+   * be added to a USD price.
    */
   protected override async getFeeAsset(_pair: TradingPair) {
     const accountInfo = await this.#api.getAccountInfo();

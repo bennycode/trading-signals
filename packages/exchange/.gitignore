@@ -1,0 +1,6 @@
+
+# Client Portal Gateway (IBKR's own binary, downloaded on first run)
+.clientportal.gw/
+
+# Screenshots of a failed gateway login (they show a logged-in brokerage page)
+.gateway-outputs/

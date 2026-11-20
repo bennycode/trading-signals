@@ -95,6 +95,20 @@ Every broker has a thin outer class that owns `rest` + `ws`/`stream`, exposes en
 - `disconnect()` is the single shutdown seam — every async resource the class owns is reachable from one method.
 - `getSmallestInterval()` + `CandleBatcher`: when the wire format has a fixed granularity (e.g. 1-minute bars only), expose it honestly and aggregate locally rather than pretending the broker streams what it doesn't.
 
+## Order lifetime and trading hours
+
+Keep an order alive and executable for as long as the venue allows. A strategy's edge is its entry and exit prices; an order that expires at the close, or that can only trade for 6.5 hours a day, throws away chances to get them without the strategy ever knowing.
+
+- **Prefer GTC over DAY.** Default to the longest time-in-force the venue accepts, so an unfilled order survives the close instead of being silently discarded. DAY stays available as an option — it is the right choice for a strategy that re-places its orders every candle, where a resting order from yesterday could fire on a thesis that has since expired — but it is never the default.
+- **Prefer the widest session the venue offers**, in this order: 24/7 where it exists (crypto), then 24/5 overnight sessions for equities, then extended hours, then regular hours. Reach for each only as far as the instrument and account actually support it.
+- **Probe the constraint, never assume it.** Every time-in-force and session restriction in this package was found by asking the venue, not by reading its pricing page:
+  - Alpaca forces `day` on fractional and notional orders (error `42210000`) and takes `gtc` otherwise; `extended_hours` is accepted only together with `day`.
+  - Trading212 rejects `GTC` on the limit endpoint as `"Invalid payload"`, so DAY is forced there. The same endpoint rejects `extendedHours` whatever the instrument allows.
+  - IBKR forces nothing: `GTC` previews clean for market and limit orders and alongside `outsideRTH`, so it is the default. The overnight venue is separate from extended hours — `outsideRTH` covers pre-market and after-hours, while reaching 20:00–03:50 ET needs the `OND` or `OVT` time-in-force, and that venue takes limit orders only.
+- **A wider session is not a free upgrade.** Overnight and extended-hours books are thinner, so the spread is worse and a market order is often refused outright. Enable the wider session, and let the caller decide whether to use it — do not quietly convert a market order into something the venue will accept.
+- **An accepted order is not a working one.** A venue may take a ticket, acknowledge it, and cancel it unfilled when the session opens, because what it will actually route is settled later than submission. An IBKR order carrying both `outsideRTH` and an overnight time-in-force does exactly this: it reports `tif: OND` and `Submitted`, then dies with no reason attached and `warning_message: null`. A preview does not catch it either, since it prices a ticket it will never route. So confirm a session against a _filled_ order, never against an accepted one, and say which of the two a claim rests on.
+- **Say which venue a flag reaches.** "Extended hours" and "overnight" are different books at some brokers. Name the sessions a flag actually covers in its docblock, with the hours, rather than calling it "after hours" and leaving the reader to guess.
+
 ## Subscription handles
 
 - `watchX()` returns a UUID `topicId`.
@@ -130,4 +144,5 @@ These are not in any of the reference implementations and should stay out:
 3. Build `XxxBrokerMapper` (wire → neutral types).
 4. Wire REST methods first (`getCandles`, `listBalances`, `placeOrder`, …) and write the test file alongside.
 5. Add `XxxStream` (native WebSocket) + `XxxWebSocket` manager only when REST is green.
-6. Register the broker in the factory (`getBrokerClient` or equivalent).
+6. Probe the venue for the longest time-in-force and the widest trading session it accepts, and default to them — see [Order lifetime and trading hours](#order-lifetime-and-trading-hours). Record each refusal with the error the venue returned.
+7. Register the broker in the factory (`getBrokerClient` or equivalent).

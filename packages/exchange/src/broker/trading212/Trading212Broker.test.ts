@@ -1,5 +1,6 @@
 import {beforeEach, describe, expect, it, vi} from 'vitest';
-import {OrderSide, type Candle} from '../Broker.js';
+import Big from 'big.js';
+import {OrderSide, OrderType, type Candle} from '../Broker.js';
 import {TradingPair} from '../TradingPair.js';
 import {MarketDataSource} from '../MarketDataSource.js';
 import type {Trading212API} from './api/Trading212API.js';
@@ -10,6 +11,7 @@ const mockMethods = {
   getAccountCash: vi.fn(),
   getAccountInfo: vi.fn<Trading212API['getAccountInfo']>(),
   getInstruments: vi.fn<Trading212API['getInstruments']>(),
+  getTransactions: vi.fn<Trading212API['getTransactions']>(),
   placeLimitOrder: vi.fn<Trading212API['placeLimitOrder']>(),
   placeMarketOrder: vi.fn<Trading212API['placeMarketOrder']>(),
 };
@@ -17,6 +19,7 @@ const mockMethods = {
 vi.mock(import('./api/Trading212API.js'), () => ({
   Trading212API: class {
     getAccountCash = mockMethods.getAccountCash;
+    getTransactions = mockMethods.getTransactions;
     getAccountInfo = mockMethods.getAccountInfo;
     getInstruments = mockMethods.getInstruments;
     placeLimitOrder = mockMethods.placeLimitOrder;
@@ -34,7 +37,7 @@ class MarketDataSourceStub extends MarketDataSource {
     throw new Error('Not implemented');
   }
 
-  async getLatestCandle(): Promise<Candle> {
+  protected override async getNewestCandles(): Promise<Candle[]> {
     throw new Error('Not implemented');
   }
 
@@ -185,6 +188,45 @@ describe('Trading212Broker', {concurrent: false}, () => {
         mockMethods.getInstruments,
         'Trading212 allows one instrument request per 50 seconds, which no order path should spend twice'
       ).toHaveBeenCalledTimes(1);
+    });
+  });
+  describe('getFeeRates', () => {
+    it('charges the conversion fee only when the instrument is in another currency', async () => {
+      mockMethods.getAccountInfo.mockResolvedValue({currencyCode: 'EUR', id: 1});
+
+      const foreign = await broker.getFeeRates(new TradingPair('AAPL', 'USD'));
+      const domestic = await broker.getFeeRates(new TradingPair('ALV', 'EUR'));
+
+      expect(
+        foreign.CURRENCY_CONVERSION_FEE?.toString(),
+        'Trading212 bakes 0.15% into the rate when an order has to convert, as its ledger shows'
+      ).toBe('0.0015');
+      expect(domestic.CURRENCY_CONVERSION_FEE, 'no conversion, no conversion fee').toBeUndefined();
+    });
+
+    it('compares against the primary currency even though wallets exist in others', async () => {
+      mockMethods.getAccountInfo.mockResolvedValue({currencyCode: 'EUR', id: 1});
+
+      const rates = await broker.getFeeRates(new TradingPair('AAPL', 'USD'));
+
+      expect(
+        rates.CURRENCY_CONVERSION_FEE?.toString(),
+        'neither order endpoint takes a currency, so an API order settles from the primary currency and converts however the account is funded'
+      ).toBe('0.0015');
+    });
+  });
+
+  describe('getFeeAsset', () => {
+    it('reports a trade’s fees in the settling wallet, not the instrument currency', async () => {
+      mockMethods.getAccountInfo.mockResolvedValue({currencyCode: 'EUR', id: 1});
+      const pair = new TradingPair('AAPL', 'USD');
+
+      const estimate = await broker.estimateFee(pair, OrderType.MARKET, new Big(1_000));
+
+      expect(
+        estimate.feeAsset,
+        'every live US-stock fill on this EUR account booked its CURRENCY_CONVERSION_FEE in EUR; a manual wallet conversion charges in the acquired currency, which is a different operation'
+      ).toBe('EUR');
     });
   });
 });

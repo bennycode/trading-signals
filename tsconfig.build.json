@@ -7,6 +7,7 @@
     "${configDir}/src/start",
     "${configDir}/src/start.ts",
     "${configDir}/src/**/demo",
+    "${configDir}/src/**/gateway/gateway.ts",
     "${configDir}/*.config.ts",
     "**/*.test.ts"
   ],

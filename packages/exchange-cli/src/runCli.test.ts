@@ -10,6 +10,7 @@ import {
   type Broker,
   type Candle,
   type Fill,
+  type CandleFeed,
   type MarketDataSource,
 } from '@typedtrader/exchange';
 import {AlpacaAPI, Trading212API} from '@typedtrader/exchange';
@@ -94,7 +95,7 @@ function setup() {
   const listInstruments = vi.fn<ReturnType<typeof createCliBroker>['listInstruments']>().mockResolvedValue(INSTRUMENTS);
   const deps = {
     createBroker: vi.fn<CliDeps['createBroker']>().mockReturnValue({
-      broker: broker as unknown as Broker & MarketDataSource,
+      broker: broker as unknown as Broker & CandleFeed,
       listInstruments,
     }),
     env: {},

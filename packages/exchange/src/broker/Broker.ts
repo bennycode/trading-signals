@@ -1,29 +1,23 @@
 import Big from 'big.js';
 import {EventEmitter} from 'node:events';
+import {OrderPosition, OrderSide, OrderType} from './orderEnums.js';
 import type {TradingPair} from './TradingPair.js';
+import {
+  resolveProfitableExitPrice,
+  type ExitPriceEntry,
+  type ExitPriceOptions,
+  type ProfitableExitPrice,
+} from './profitableExitPrice.js';
 
 export {CandleBaseSchema, CandleSchema} from '../schemas.js';
+export {OrderPosition, OrderSide, OrderType} from './orderEnums.js';
 export type {Candle, CandleBase} from '../schemas.js';
-
-export const OrderSide = {
-  BUY: 'BUY',
-  SELL: 'SELL',
-} as const;
-export type OrderSide = (typeof OrderSide)[keyof typeof OrderSide];
 
 interface OrderBase {
   side: OrderSide;
   size: string;
   type: OrderType;
 }
-
-export const OrderType = {
-  /** Maker */
-  LIMIT: 'LIMIT',
-  /** Taker */
-  MARKET: 'MARKET',
-} as const;
-export type OrderType = (typeof OrderType)[keyof typeof OrderType];
 
 export interface CandleImportRequest {
   /** Candle size in milliseconds, i.e. 60000 for 1 minute */
@@ -52,12 +46,6 @@ export interface FeeRate {
    */
   CURRENCY_CONVERSION_FEE?: Big;
 }
-
-export const OrderPosition = {
-  LONG: 'LONG',
-  SHORT: 'SHORT',
-} as const;
-export type OrderPosition = (typeof OrderPosition)[keyof typeof OrderPosition];
 
 export interface Fill {
   /** Date in ISO 8601 format */
@@ -291,7 +279,13 @@ export abstract class Broker extends EventEmitter {
   async estimateFee(
     pair: TradingPair,
     orderType: OrderType,
-    notional: Big
+    notional: Big,
+    /**
+     * The exact ticket, when the caller knows it. A rate applied to a notional does not need it,
+     * but a broker billing per share or with a per-order floor cannot recover the share count
+     * from a notional without assuming a price — so anyone who knows the real one says so.
+     */
+    _ticket?: {price?: Big; size?: Big}
   ): Promise<{commission: Big; currencyConversion: Big; total: Big; feeAsset: string}> {
     const rates = await this.getFeeRates(pair);
     const commission = notional.times(rates[orderType]);
@@ -303,6 +297,26 @@ export abstract class Broker extends EventEmitter {
       feeAsset: await this.getFeeAsset(pair),
       total: commission.plus(currencyConversion),
     };
+  }
+
+  /**
+   * The price at which closing a position finally clears a profit, once every cost is paid.
+   *
+   * @see {@link resolveProfitableExitPrice} for how the bound is solved and why it runs in
+   * opposite directions for a long and a short.
+   */
+  async getProfitableExitPrice(
+    pair: TradingPair,
+    entry: ExitPriceEntry,
+    options?: ExitPriceOptions
+  ): Promise<ProfitableExitPrice> {
+    return resolveProfitableExitPrice({
+      broker: this,
+      entry,
+      feeAsset: await this.getFeeAsset(pair),
+      options,
+      pair,
+    });
   }
 
   /**
