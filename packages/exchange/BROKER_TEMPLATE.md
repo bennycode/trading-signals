@@ -146,3 +146,13 @@ These are not in any of the reference implementations and should stay out:
 5. Add `XxxStream` (native WebSocket) + `XxxWebSocket` manager only when REST is green.
 6. Probe the venue for the longest time-in-force and the widest trading session it accepts, and default to them — see [Order lifetime and trading hours](#order-lifetime-and-trading-hours). Record each refusal with the error the venue returned.
 7. Register the broker in the factory (`getBrokerClient` or equivalent).
+8. Reference the broker everywhere a user could look for it. A broker that only the factory knows about is invisible, and every one of these has been missed at least once:
+   - `packages/exchange/README.md` — the broker table, plus a quick start with its credentials, trade-offs and limitations.
+   - `README.md` (repository root) — the broker-agnostic execution bullet, the `@typedtrader/exchange` row, and the mermaid diagram.
+   - `packages/trading-signals-docs/src/pages/index.mdx` — the prose list of brokers and the mermaid diagram.
+   - `packages/trading-signals-docs/src/pages/basics/glossary.mdx` — the broker examples.
+   - `packages/exchange-cli` — `BROKERS` in `cliBroker.ts`, `brokerName` in `parseCliArgs.ts`, the `--broker` help text, and the README.
+   - `packages/messaging` — `EXCHANGES` in `accountAddWizard.ts` (with credential labels when they are not an API key pair) and the README's Brokers section.
+   - `packages/exchange/CLAUDE.md` — the "first-class" list.
+
+   A broker whose credentials, paper mode or market data work differently from the others needs that difference stated in each of those places, not just in the code that enforces it.

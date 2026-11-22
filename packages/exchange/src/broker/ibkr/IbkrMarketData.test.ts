@@ -91,6 +91,39 @@ describe('IbkrMarketData', {concurrent: false}, () => {
       expect(IbkrMarketData.isForming(candle as never, ONE_HOUR, Date.parse('2026-11-16T18:30:00Z'))).toBe(true);
       expect(IbkrMarketData.isForming(candle as never, ONE_HOUR, Date.parse('2026-11-16T19:00:00Z'))).toBe(false);
     });
+
+    /** An ASX session opens 10:00 AEDT, which is 23:00 UTC the day before, and closes 05:00 UTC. */
+    const asxCandle = {openTimeInMillis: Date.parse('2026-11-16T23:00:00Z')};
+
+    it('does not report a session closed at UTC midnight while it is still trading', () => {
+      const stillForming = IbkrMarketData.isForming(asxCandle as never, ONE_DAY, Date.parse('2026-11-17T02:00:00Z'));
+
+      expect(
+        stillForming,
+        'the UTC date rolls over mid-session on ASX, so the date shortcut must not answer for it'
+      ).toBe(true);
+    });
+
+    it('falls back to the clock for a session that outlasts its own UTC date', () => {
+      const stillForming = IbkrMarketData.isForming(asxCandle as never, ONE_DAY, Date.parse('2026-11-17T23:00:00Z'));
+
+      expect(stillForming, 'a full interval past the open is the honest answer without a venue calendar').toBe(false);
+    });
+
+    it('decides the shortcut from how much of the UTC day the open leaves', () => {
+      expect(
+        IbkrMarketData.closesOnItsOpeningDate(Date.parse('2026-11-16T14:30:00Z')),
+        'a US open leaves 9.5 hours, which fits any regular session'
+      ).toBe(true);
+      expect(
+        IbkrMarketData.closesOnItsOpeningDate(Date.parse('2026-11-16T00:00:00Z')),
+        'a Tokyo open leaves the whole UTC day'
+      ).toBe(true);
+      expect(
+        IbkrMarketData.closesOnItsOpeningDate(Date.parse('2026-11-16T23:00:00Z')),
+        'an ASX open leaves one hour, so its session must cross midnight'
+      ).toBe(false);
+    });
   });
 
   describe('getCandles', () => {

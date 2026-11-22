@@ -1,6 +1,7 @@
 import {
   AlpacaAPI,
   AlpacaAssetClass,
+  IbkrBroker,
   MarketDataSource,
   Trading212API,
   Trading212Broker,
@@ -10,13 +11,18 @@ import {
 
 export const BROKERS = {
   alpaca: {id: 'Alpaca', pollInterval: 5_000},
+  ibkr: {id: IbkrBroker.NAME, pollInterval: IbkrBroker.ORDER_POLL_INTERVAL_MS},
   trading212: {id: 'Trading212', pollInterval: Trading212Broker.ORDER_POLL_INTERVAL_MS},
 } as const;
 
 export type BrokerKey = keyof typeof BROKERS;
 
 export interface Instrument {
-  currency: string;
+  /**
+   * Left out when the broker does not say: IBKR's contract search reports a listing exchange but
+   * no currency, which would otherwise cost one contract lookup per search hit to fill in.
+   */
+  currency?: string | undefined;
   /** Venue the instrument trades on. */
   exchange?: string | undefined;
   /**
@@ -62,14 +68,29 @@ class UnavailableMarketData extends MarketDataSource {
   disconnect(): void {}
 }
 
-/** Uses the existing PAPER/LIVE credential names; loading env files belongs to the caller. */
-export function createCliBroker(key: BrokerKey, live: boolean, env: NodeJS.ProcessEnv) {
+/**
+ * IBKR reads one unprefixed pair rather than the PAPER/LIVE names the others use, because it has
+ * neither API keys nor a paper endpoint: the pair is the Pro username and password its gateway
+ * logs in with. Both may be missing, which still talks to a gateway somebody logged in already,
+ * so this does not insist on them the way a vendor API has to.
+ */
+function readCredentials(key: BrokerKey, live: boolean, env: NodeJS.ProcessEnv) {
+  if (key === 'ibkr') {
+    return {apiKey: env.IBKR_ACCOUNT ?? '', apiSecret: env.IBKR_PASSWORD ?? ''};
+  }
+
   const prefix = `${key.toUpperCase()}_${live ? 'LIVE' : 'PAPER'}`;
   const apiKey = env[`${prefix}_API_KEY`];
   const apiSecret = env[`${prefix}_API_SECRET`];
   if (!apiKey || !apiSecret) {
     throw new Error(`Missing ${prefix}_API_KEY and/or ${prefix}_API_SECRET in environment.`);
   }
+  return {apiKey, apiSecret};
+}
+
+/** Uses the existing PAPER/LIVE credential names; loading env files belongs to the caller. */
+export function createCliBroker(key: BrokerKey, live: boolean, env: NodeJS.ProcessEnv) {
+  const {apiKey, apiSecret} = readCredentials(key, live, env);
 
   const options = {apiKey, apiSecret, usePaperTrading: !live};
   const broker = getBrokerClient(
@@ -77,8 +98,28 @@ export function createCliBroker(key: BrokerKey, live: boolean, env: NodeJS.Proce
     key === 'trading212' ? {marketData: new UnavailableMarketData()} : undefined
   );
 
-  // Instrument discovery is not part of Broker; adapt the existing REST methods here.
-  const listInstruments = async (): Promise<Instrument[]> => {
+  /*
+   * Instrument discovery is not part of Broker; adapt the existing REST methods here.
+   *
+   * The query is IBKR's alone: it searches server-side instead of publishing a list, so it cannot
+   * answer without one. Alpaca and Trading212 download their catalogue and leave the filtering to
+   * the caller, which is why they ignore it.
+   */
+  const listInstruments = async (query?: string): Promise<Instrument[]> => {
+    if (broker instanceof IbkrBroker) {
+      if (!query) {
+        throw new Error('IBKR publishes no instrument list to download. Search by ticker or company name instead.');
+      }
+      /*
+       * `broker.api` rather than a fresh client: that one waits for the gateway login, so a search
+       * issued while the session is still coming up queues instead of returning 401.
+       */
+      return (await broker.api.searchContracts(query)).map(contract => ({
+        exchange: contract.description ?? undefined,
+        name: contract.companyName ?? contract.companyHeader ?? contract.symbol ?? '',
+        ticker: contract.symbol ?? '',
+      }));
+    }
     if (key === 'trading212') {
       const api = new Trading212API(options);
       /*

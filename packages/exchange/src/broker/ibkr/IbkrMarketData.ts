@@ -118,20 +118,47 @@ export class IbkrMarketData extends MarketDataSource {
   }
 
   /**
+   * The longest regular cash-equity session any venue runs, which is what decides whether a bar's
+   * UTC date can stand in for its session. The widest are Xetra and Euronext at 8.5 hours
+   * (09:00-17:30 CET), so nine hours is above every one of them and still below the 9.5 hours a
+   * US bar leaves in its own UTC day. Extended-hours books run far longer, but a daily bar covers
+   * the regular session.
+   */
+  static readonly MAX_SESSION_MS = ms('9h');
+
+  /**
    * Whether a bar is still being built, and so must be withheld from a strategy.
    *
    * `open + interval <= now` is the obvious test and the one {@link MarketDataSource} applies, but
    * it is wrong for a daily bar: IBKR stamps it with the session open, so yesterday's closed
    * session only "finishes" 24 hours later and would be withheld for a whole trading day. A daily
-   * bar belongs to a session instead, which for every exchange opens and closes on one UTC date.
+   * bar belongs to a session instead, and the UTC date it opened on stands in for that session.
+   *
+   * That substitution is only sound while the session cannot outlast the UTC day it opened in,
+   * which {@link closesOnItsOpeningDate} is what establishes. A venue that opens too late for
+   * that — ASX runs 23:00-05:00 UTC — falls back to the clock, which reports the bar closed hours
+   * late rather than hours early. Late is survivable; early hands a strategy half a session and
+   * is the one outcome that must not happen.
    */
   static isForming(candle: Candle, intervalInMillis: number, nowInMillis: number): boolean {
-    if (intervalInMillis === ms('1d')) {
+    if (intervalInMillis === ms('1d') && IbkrMarketData.closesOnItsOpeningDate(candle.openTimeInMillis)) {
       const day = (millis: number) => new Date(millis).toISOString().slice(0, 10);
       return day(candle.openTimeInMillis) === day(nowInMillis);
     }
 
     return candle.openTimeInMillis + intervalInMillis > nowInMillis;
+  }
+
+  /**
+   * Whether a session starting at this instant must end before the UTC date rolls over, which is
+   * what lets a date comparison answer for the session. Derived from the bar's own stamp, so it
+   * needs neither a venue calendar nor another call to IBKR.
+   */
+  static closesOnItsOpeningDate(openInMillis: number): boolean {
+    const open = new Date(openInMillis);
+    const nextMidnightInMillis = Date.UTC(open.getUTCFullYear(), open.getUTCMonth(), open.getUTCDate() + 1);
+
+    return nextMidnightInMillis - openInMillis >= IbkrMarketData.MAX_SESSION_MS;
   }
 
   /**

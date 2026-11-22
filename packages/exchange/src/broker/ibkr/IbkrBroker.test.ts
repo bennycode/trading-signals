@@ -716,6 +716,15 @@ describe('IbkrBroker', {concurrent: false}, () => {
   });
 
   describe('watchOrders', () => {
+    it('rejects when the baseline poll fails rather than filing later fills as history', async () => {
+      mockMethods.getTrades.mockRejectedValueOnce(new Error('no bridge'));
+
+      await expect(
+        broker.watchOrders(),
+        'without a baseline the next poll files every execution it sees as pre-existing, so the failure has to reach the caller'
+      ).rejects.toThrow('no bridge');
+    });
+
     it('emits the instrument fill without the conversions that funded it', async () => {
       vi.useFakeTimers();
       mockMethods.getPortfolioAccounts.mockResolvedValue([{currency: 'EUR', id: 'U1'}]);

@@ -193,6 +193,13 @@ describe('runCli', {concurrent: false}, () => {
     await expect(runCli(['balances', '--broker', 'binance'])).rejects.toThrow('--broker');
   });
 
+  it('accepts ibkr as a broker name', async () => {
+    const {broker, deps} = setup();
+    await runCli(['--broker', 'IBKR', '--live', 'balances'], deps);
+    expect(deps.createBroker).toHaveBeenCalledWith('ibkr', true, deps.env);
+    expect(broker.listBalances).toHaveBeenCalledOnce();
+  });
+
   it('defaults to paper even if an environment flag requests live', async () => {
     const {deps, run} = setup();
     deps.env = {ALPACA_USE_PAPER: 'false'};
@@ -213,6 +220,23 @@ describe('runCli', {concurrent: false}, () => {
     const env = {ALPACA_LIVE_API_KEY: 'live-key', ALPACA_LIVE_API_SECRET: 'live-secret'};
     expect(() => createCliBroker('alpaca', false, env)).toThrow('ALPACA_PAPER_API_KEY');
     expect(() => createCliBroker('trading212', true, {})).toThrow('TRADING212_LIVE_API_KEY');
+  });
+
+  it('reads IBKR credentials without the PAPER/LIVE prefix, and tolerates their absence', () => {
+    expect(
+      () => createCliBroker('ibkr', true, {IBKR_ACCOUNT: 'user', IBKR_PASSWORD: 'secret'}),
+      'IBKR takes the Pro username and password, not an API key pair'
+    ).not.toThrow();
+    expect(
+      () => createCliBroker('ibkr', true, {}),
+      'an empty pair still addresses a gateway somebody logged in already'
+    ).not.toThrow();
+  });
+
+  it('refuses IBKR without --live, because its gateway trades whatever it logged into', () => {
+    expect(() => createCliBroker('ibkr', false, {IBKR_ACCOUNT: 'user', IBKR_PASSWORD: 'secret'})).toThrow(
+      'no paper mode'
+    );
   });
 
   it('verifies credentials and labels the selected mode', async () => {

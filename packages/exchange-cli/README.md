@@ -1,6 +1,6 @@
 # @typedtrader/exchange-cli
 
-Command-line interface for [@typedtrader/exchange](../exchange). It exposes the typed broker clients for [Alpaca](https://alpaca.markets/) and [Trading212](https://www.trading212.com/) from the terminal: results are JSON on stdout, streaming events are NDJSON, and errors go to stderr with exit code 1.
+Command-line interface for [@typedtrader/exchange](../exchange). It exposes the typed broker clients for [Alpaca](https://alpaca.markets/), [Trading212](https://www.trading212.com/) and [Interactive Brokers](https://www.interactivebrokers.com/) from the terminal: results are JSON on stdout, streaming events are NDJSON, and errors go to stderr with exit code 1.
 
 ## Installation
 
@@ -25,6 +25,8 @@ exchange-cli wait AAPL <orderId> --broker alpaca --timeout 5m
 exchange-cli cancel AAPL <orderId> --broker alpaca
 exchange-cli candles AAPL --broker alpaca --count 10 --interval 5m
 exchange-cli watch-candles AAPL --broker alpaca --take 3
+exchange-cli balances --broker ibkr --live
+exchange-cli instruments ANT --broker ibkr --live
 ```
 
 Set `<BROKER>_PAPER_API_KEY` and `<BROKER>_PAPER_API_SECRET` in the environment, for example `ALPACA_PAPER_API_KEY`. Paper trading is the default. `--live` selects `<BROKER>_LIVE_API_KEY` / `<BROKER>_LIVE_API_SECRET` and the live trading host. The CLI does not load environment files automatically or read `*_USE_PAPER`; Node's `--env-file` can load an existing file:
@@ -35,11 +37,19 @@ node --env-file=.env "$(which exchange-cli)" balances --broker alpaca
 
 The command resolves the installed executable, so it works the same for a global and a local installation. From this package's source directory, use `npm run cli -- <command> ...` with exported credentials.
 
+### Interactive Brokers
+
+IBKR is the exception to everything above. It has no API keys, so its credential pair is `IBKR_ACCOUNT` and `IBKR_PASSWORD` — the IBKR Pro username and password — with no `PAPER`/`LIVE` prefix. Both may be omitted when a gateway is already logged in.
+
+Orders go through the [Client Portal Gateway](../exchange#quick-start-interactive-brokers), a local Java process that must be running and logged in before any command, which `npm run gateway:ibkr` in the exchange package starts. The login needs an IB Key push approved on your phone, so it cannot run unattended.
+
+There is no paper mode: the gateway trades whichever account its session belongs to, so every IBKR command requires `--live`. Point the gateway at an IBKR paper login if that is what you want to trade. Market data comes from IBKR itself, and is delayed by about 15 minutes without a market-data subscription.
+
 | Command | Description |
 | --- | --- |
 | `verify` | Check broker credentials. |
 | `balances` | List cash balances and positions. |
-| `instruments <query>` | Search equities by ticker, name, or ISIN. Reports the venue and whether the instrument trades outside exchange hours, and on Alpaca also whether it is tradable and fractionable. |
+| `instruments <query>` | Search equities by ticker, name, or ISIN. Reports the venue and whether the instrument trades outside exchange hours, and on Alpaca also whether it is tradable and fractionable. IBKR searches its contract database server-side and reports no currency. |
 | `quote <ticker>` | Show the latest candle close, not a bid/ask quote. |
 | `rules <ticker>` | Show trading rules for a ticker. |
 | `orders <ticker>` | List open orders for a ticker. |

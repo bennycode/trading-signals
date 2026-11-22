@@ -138,52 +138,53 @@ export async function startIbkrFillWatcher(input: {
   };
 
   const poll = async () => {
-    try {
-      const trades = await api.getTrades();
+    const trades = await api.getTrades();
 
-      for (const trade of trades) {
-        const executionKey = toExecutionKey(trade);
-        if (seenExecutions.has(executionKey)) {
-          continue;
-        }
+    for (const trade of trades) {
+      const executionKey = toExecutionKey(trade);
+      if (seenExecutions.has(executionKey)) {
+        continue;
+      }
 
-        if (!primed) {
-          seenExecutions.add(executionKey);
-          continue;
-        }
-
-        /*
-         * Marked seen only once it has been turned into a fill. Reserving the key up front means
-         * a failed currency or fee lookup — swallowed by the catch below — drops that execution
-         * from every later poll, losing the fill even after the gateway recovers.
-         */
-        await collect(trade);
+      if (!primed) {
         seenExecutions.add(executionKey);
+        continue;
       }
 
-      for (const [orderId, fills] of pendingByOrder) {
-        if (reportedOrders.has(orderId) || (await isStillWorking(orderId))) {
-          continue;
-        }
-
-        const merged = mergeFills(fills);
-        if (merged) {
-          reportedOrders.add(orderId);
-          pendingByOrder.delete(orderId);
-          emit(merged);
-        }
-      }
-
-      primed = true;
-    } catch {
-      // A failed poll is transient; the next tick tries again rather than killing the watcher.
+      /*
+       * Marked seen only once it has been turned into a fill. Reserving the key up front means a
+       * failed currency or fee lookup — swallowed by the caller of a scheduled poll — drops that
+       * execution from every later poll, losing the fill even after the gateway recovers.
+       */
+      await collect(trade);
+      seenExecutions.add(executionKey);
     }
+
+    for (const [orderId, fills] of pendingByOrder) {
+      if (reportedOrders.has(orderId) || (await isStillWorking(orderId))) {
+        continue;
+      }
+
+      const merged = mergeFills(fills);
+      if (merged) {
+        reportedOrders.add(orderId);
+        pendingByOrder.delete(orderId);
+        emit(merged);
+      }
+    }
+
+    primed = true;
   };
 
   /*
    * The baseline is awaited before the watcher is handed back. Leaving it in flight lets an order
    * placed straight afterwards execute while the first response is still on its way: that
    * execution then arrives in the baseline, is filed as history and never reported.
+   *
+   * It is also the one poll allowed to fail outwards. Swallowing it would leave `primed` false and
+   * hand back a watcher whose next successful poll files everything it sees as history — including
+   * the executions of orders placed after this call, which are then suppressed for good. A caller
+   * can retry a rejection; it cannot notice a watcher that has quietly gone deaf.
    */
   await poll();
 
@@ -196,7 +197,14 @@ export async function startIbkrFillWatcher(input: {
     if (stopped) {
       return;
     }
-    timer = setTimeout(() => void poll().finally(scheduleNext), pollIntervalMs);
+    // A failed poll is transient: the next tick tries again rather than killing the watcher.
+    timer = setTimeout(
+      () =>
+        void poll()
+          .catch(() => undefined)
+          .finally(scheduleNext),
+      pollIntervalMs
+    );
   };
   scheduleNext();
 
