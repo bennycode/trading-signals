@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.6.0](https://github.com/bennycode/trading-signals/compare/trading-strategies%400.5.0...trading-strategies%400.6.0) (2026-11-22)
+
+### Features
+
+- **trading-strategies:** define strategies as rules instead of class hierarchies ([#1479](https://github.com/bennycode/trading-signals/issues/1479)) ([589a4fc](https://github.com/bennycode/trading-signals/commit/589a4fcfafd6182d0c21fb8fdbb57850f5c5e60a))
+
+### Bug Fixes
+
+- **trading-strategies:** tear sessions down from onFill ([#1476](https://github.com/bennycode/trading-signals/issues/1476)) ([2c38baa](https://github.com/bennycode/trading-signals/commit/2c38baadf7bced6cdd11128671d721cfb1e7c148))
+
 ## [0.5.0](https://github.com/bennycode/trading-signals/compare/trading-strategies%400.4.5...trading-strategies%400.5.0) (2026-11-11)
 
 ### Features

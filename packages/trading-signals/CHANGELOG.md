@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [8.4.1](https://github.com/bennycode/trading-signals/compare/trading-signals%408.4.0...trading-signals%408.4.1) (2026-11-22)
+
+### Bug Fixes
+
+- **trading-signals:** keep PMO measuring after a price of zero ([#1484](https://github.com/bennycode/trading-signals/issues/1484)) ([9f2fb48](https://github.com/bennycode/trading-signals/commit/9f2fb48c90563ccd6935bd8540548e3467b56fcc))
+- **trading-signals:** return 0 from DX when candles are flat ([#1483](https://github.com/bennycode/trading-signals/issues/1483)) ([a1c1d43](https://github.com/bennycode/trading-signals/commit/a1c1d43bee32f2ace18063cee4f12604b4cefc57))
+
 ## [8.4.0](https://github.com/bennycode/trading-signals/compare/trading-signals%408.3.0...trading-signals%408.4.0) (2026-11-11)
 
 ### Features

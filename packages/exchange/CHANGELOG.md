@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file. See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.5.0](https://github.com/bennycode/trading-signals/compare/%40typedtrader%2Fexchange%400.4.0...%40typedtrader%2Fexchange%400.5.0) (2026-11-22)
+
+### Features
+
+- **trading-strategies:** define strategies as rules instead of class hierarchies ([#1479](https://github.com/bennycode/trading-signals/issues/1479)) ([589a4fc](https://github.com/bennycode/trading-signals/commit/589a4fcfafd6182d0c21fb8fdbb57850f5c5e60a))
+
 ## [0.4.0](https://github.com/bennycode/trading-signals/compare/%40typedtrader%2Fexchange%400.3.3...%40typedtrader%2Fexchange%400.4.0) (2026-11-11)
 
 ### Features
