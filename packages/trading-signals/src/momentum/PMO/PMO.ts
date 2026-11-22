@@ -121,7 +121,12 @@ export class PMO extends TrendIndicator<PMOResult, number> {
       return null;
     }
 
-    const rateOfChange = 100 * (price / previousPrice - 1);
+    /*
+     * A market that was worth nothing has no percentage change to measure. Without this the bar
+     * reads as no number at all, and both smoothing stages carry that forever, so the indicator
+     * never recovers once prices move again.
+     */
+    const rateOfChange = previousPrice === 0 ? 0 : 100 * (price / previousPrice - 1);
     const smoothedRateOfChange = this.#rateOfChangeSmoothing.update(rateOfChange, replace);
 
     if (this.#rateOfChangeSmoothing.isStable) {
