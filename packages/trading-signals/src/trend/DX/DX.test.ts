@@ -96,6 +96,18 @@ describe('DX', () => {
       expect(dx.isStable).toBe(true);
       expect(dx.getResultOrThrow()).toBe(0);
     });
+
+    it('returns zero when prices are flat', {tags: ['regression']}, () => {
+      const dx = new DX(5);
+
+      for (let i = 0; i < 5; i++) {
+        dx.add({close: 100, high: 100, low: 100});
+      }
+
+      expect(dx.getResultOrThrow(), 'a market without any price range has no trend').toBe(0);
+      expect(dx.pdi, 'no upward movement without any price range').toBe(0);
+      expect(dx.mdi, 'no downward movement without any price range').toBe(0);
+    });
   });
 });
 

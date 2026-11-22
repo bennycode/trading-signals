@@ -85,8 +85,17 @@ export class DX extends IndicatorSeries<HighLowClose<number>> {
     this.#updateState(candle, pdm, mdm, replace);
 
     if (this.#movesUp.isStable) {
-      this.pdi = this.#movesUp.getResultOrThrow() / this.#atr.getResultOrThrow();
-      this.mdi = this.#movesDown.getResultOrThrow() / this.#atr.getResultOrThrow();
+      const atr = this.#atr.getResultOrThrow();
+
+      // Flat candles have no price range, so there is no directional movement to measure
+      if (atr === 0) {
+        this.pdi = 0;
+        this.mdi = 0;
+        return this.setResult(0, replace);
+      }
+
+      this.pdi = this.#movesUp.getResultOrThrow() / atr;
+      this.mdi = this.#movesDown.getResultOrThrow() / atr;
 
       const dmDiff = Math.abs(this.pdi - this.mdi);
       const dmSum = this.pdi + this.mdi;
