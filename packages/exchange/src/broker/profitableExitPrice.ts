@@ -224,7 +224,7 @@ export interface ProfitableExitPrice {
 }
 
 /** The part of a broker this needs, kept structural so the module does not depend on the class. */
-interface ExitPriceBroker {
+export interface ExitPriceBroker {
   estimateFee(
     pair: TradingPair,
     orderType: OrderType,
