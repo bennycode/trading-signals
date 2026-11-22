@@ -64,6 +64,25 @@ describe('PMO', () => {
       expect(pmo.getResultOrThrow().pmo).toBe(1000);
       expect(pmo.getResultOrThrow().signal).toBe(1000);
     });
+
+    it('measures momentum again once prices leave zero behind', {tags: ['regression']}, () => {
+      const pmo = new PMO({signalInterval: 3, smoothing1: 4, smoothing2: 3});
+
+      for (let i = 0; i < 8; i++) {
+        pmo.add(0);
+      }
+
+      expect(pmo.getResultOrThrow().pmo, 'a market worth nothing has no momentum').toBe(0);
+
+      for (let i = 0; i < 40; i++) {
+        pmo.add(2 ** i);
+      }
+
+      expect(pmo.getResultOrThrow().pmo.toFixed(4), 'the stretch at zero does not block later readings').toBe(
+        '1000.0000'
+      );
+      expect(pmo.getResultOrThrow().signal.toFixed(4)).toBe('1000.0000');
+    });
   });
 
   describe('constructor', () => {
