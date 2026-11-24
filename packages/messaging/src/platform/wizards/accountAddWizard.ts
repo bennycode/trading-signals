@@ -23,18 +23,29 @@ export interface AccountAddWizardArgs {
 
 const EXCHANGES = [AlpacaBroker.NAME, Trading212Broker.NAME, IbkrBroker.NAME] as const;
 
+const DEFAULT_CREDENTIAL_LABELS = {key: 'API key', secret: 'API secret'} as const;
+
 /**
  * What the stored credential pair is called, for brokers where it is not an API key.
  *
- * IBKR issues none: the Client Portal Gateway holds a logged-in session and signs requests
- * itself, so the pair it needs is the Pro username and password, which is what starts that
- * gateway. Asking for an "API key" would be asking for something that does not exist.
+ * IBKR issues none: the Client Portal Gateway holds a logged-in session and signs requests itself,
+ * so the pair it needs is a username and password, and asking for an "API key" would be asking for
+ * something that does not exist.
+ *
+ * Which username matters. IBKR gives the paper account its own, separate from the live one, and
+ * the Web API has no switch between them — the credentials entered here are what decide the
+ * environment, so the mode picked a moment ago has to be in the prompt or the wrong pair gets
+ * typed in.
  */
-const CREDENTIAL_LABELS: Readonly<Record<string, {key: string; secret: string}>> = {
-  [IbkrBroker.NAME]: {key: 'IBKR Pro username', secret: 'IBKR Pro password'},
-};
+function credentialLabels(exchange: string, isPaper: boolean): {key: string; secret: string} {
+  if (exchange !== IbkrBroker.NAME) {
+    return DEFAULT_CREDENTIAL_LABELS;
+  }
 
-const DEFAULT_CREDENTIAL_LABELS = {key: 'API key', secret: 'API secret'} as const;
+  return isPaper
+    ? {key: 'IBKR paper trading username', secret: 'IBKR paper trading password'}
+    : {key: 'IBKR Pro username', secret: 'IBKR Pro password'};
+}
 
 export function makeAccountAddWizard() {
   return async function accountAddWizard(
@@ -54,35 +65,22 @@ export function makeAccountAddWizard() {
     const picked = typeof exchangeCb.match === 'string' ? exchangeCb.match.split(':')[2] : undefined;
     const exchange = picked ?? defaultExchange;
 
-    /*
-     * IBKR has no paper endpoint to switch to: the gateway trades whichever account it logged
-     * into, so paper is picked by giving a paper username and `getBrokerClient` refuses the flag
-     * outright. Asking the question would offer a choice that cannot be honoured.
-     */
-    const picksMode = exchange !== IbkrBroker.NAME;
-    let isPaper = false;
-    let activeCb = exchangeCb;
+    await exchangeCb.editMessageText(
+      `Broker: ${exchange}\nChoose account mode:`,
+      inlineKeyboard([
+        [
+          {callback_data: 'accountadd:mode:paper', text: '📝 Paper'},
+          {callback_data: 'accountadd:mode:live', text: '💵 Live'},
+        ],
+      ])
+    );
 
-    if (picksMode) {
-      await exchangeCb.editMessageText(
-        `Broker: ${exchange}\nChoose account mode:`,
-        inlineKeyboard([
-          [
-            {callback_data: 'accountadd:mode:paper', text: '📝 Paper'},
-            {callback_data: 'accountadd:mode:live', text: '💵 Live'},
-          ],
-        ])
-      );
+    const modeCb = await conversation.waitForCallbackQuery(['accountadd:mode:paper', 'accountadd:mode:live']);
+    await modeCb.answerCallbackQuery();
+    const isPaper = modeCb.match === 'accountadd:mode:paper';
+    const activeCb = modeCb;
 
-      const modeCb = await conversation.waitForCallbackQuery(['accountadd:mode:paper', 'accountadd:mode:live']);
-      await modeCb.answerCallbackQuery();
-      isPaper = modeCb.match === 'accountadd:mode:paper';
-      activeCb = modeCb;
-    }
-
-    const header = picksMode
-      ? `Broker: ${exchange}\nMode: ${isPaper ? 'Paper' : 'Live'}`
-      : `Broker: ${exchange}\nMode: whichever account the gateway logs into`;
+    const header = `Broker: ${exchange}\nMode: ${isPaper ? 'Paper' : 'Live'}`;
 
     /*
      * Brokers without their own market-data feed (e.g. Trading212) reuse another account's
@@ -142,7 +140,7 @@ export function makeAccountAddWizard() {
       return;
     }
 
-    const labels = CREDENTIAL_LABELS[exchange] ?? DEFAULT_CREDENTIAL_LABELS;
+    const labels = credentialLabels(exchange, isPaper);
 
     await ctx.reply(`Send the ${labels.key} (the message will be deleted after receipt):`);
     const apiKeyCtx = await conversation.waitFor('message:text');
@@ -179,7 +177,7 @@ export function makeAccountAddWizard() {
      */
     if (exchange === IbkrBroker.NAME) {
       await ctx.reply(
-        'Starting the IBKR Client Portal Gateway and logging in. The gateway is downloaded on first use, and IBKR then asks for your second factor — approve it on your phone. This can take a few minutes.'
+        `Starting the IBKR Client Portal Gateway and logging in as this ${isPaper ? 'paper' : 'live'} user. The gateway is downloaded on first use, and IBKR then asks for your second factor — approve it on your phone. This can take a few minutes.`
       );
     }
 
