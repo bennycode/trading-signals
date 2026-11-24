@@ -153,6 +153,55 @@ const planned = await broker.getProfitableExitPrice(
 planned.price; // the floor to sell above, already snapped to the instrument's tick
 ```
 
+### The Whole Round Trip
+
+Buy, wait for the execution, ask what it has to be sold for, and place that order:
+
+```ts twoslash
+import {TradingPair, OrderSide, type Broker, type Fill} from '@typedtrader/exchange';
+
+declare const broker: Broker;
+declare function sleep(ms: number): Promise<void>;
+// ---cut---
+const pair = new TradingPair('F', 'USD');
+
+// 1. Buy at market
+const entry = await broker.placeMarketOrder(pair, {
+  side: OrderSide.BUY,
+  size: '1',
+  sizeInCounter: false,
+});
+
+/*
+ * 2. Wait for the execution, because the entry fee is not known until then. A market order is not
+ *    filled the moment it is accepted, and the fee is what the exit price is solved against — an
+ *    estimate here would be solving for a cost the account never paid.
+ */
+let fill: Fill | undefined;
+while (!fill) {
+  fill = await broker.getFillByOrderId(pair, entry.id);
+  if (!fill) {
+    await sleep(1_000);
+  }
+}
+
+/*
+ * 3. Ask what clearing a profit costs. Passing the order id rather than the numbers means the
+ *    real fee and the real side come from the execution, so a partial fill at a worse average
+ *    price moves the target instead of being ignored.
+ */
+const exit = await broker.getProfitableExitPrice(pair, {orderId: entry.id}, {minProfit: '0.50'});
+
+// 4. Place that exact price. It is already on the instrument's tick, so nothing needs rounding.
+await broker.placeLimitOrder(pair, {
+  price: exit.price.toString(),
+  side: exit.exitSide,
+  size: fill.size,
+});
+```
+
+Step 2 is the one worth not skipping. Everything after it is arithmetic on a number the broker has confirmed; everything before it is a guess about a fee that has not been charged yet.
+
 Three things it handles that a hand-rolled percentage does not:
 
 - **Direction follows the position.** A long needs a floor to sell above, a short a ceiling to buy back below. When the entry is an order id, the side comes from the execution, so a short is never priced as though it had been bought.
