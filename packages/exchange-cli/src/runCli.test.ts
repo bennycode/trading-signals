@@ -251,6 +251,19 @@ describe('runCli', {concurrent: false}, () => {
     ).toBe(expected);
   });
 
+  it('takes the IBKR pair whole rather than completing it from the unprefixed names', () => {
+    const credentials = readCredentials('ibkr', false, {
+      IBKR_ACCOUNT: 'live-user',
+      IBKR_PAPER_ACCOUNT: 'paper-user',
+      IBKR_PASSWORD: 'live-secret',
+    });
+
+    expect(
+      credentials.apiSecret,
+      'IBKR gives paper and live different passwords, so borrowing the live one builds a pair belonging to neither login'
+    ).toBe('');
+  });
+
   it('verifies credentials and labels the selected mode', async () => {
     const {broker, run} = setup();
     expect(await run(['verify'])).toEqual({json: {broker: 'Alpaca', environment: 'paper', ok: true}});

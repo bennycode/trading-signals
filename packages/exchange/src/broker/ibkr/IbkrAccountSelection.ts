@@ -14,21 +14,6 @@ import type {IbkrAPI} from './api/IbkrAPI.js';
  *
  * @see https://www.interactivebrokers.com/docs/web-api/v1/endpoints/order-monitoring/live-orders
  */
-/**
- * Whether an account number belongs to IBKR's simulated environment.
- *
- * IBKR numbers paper accounts `DU…`, or `DF…` under an advisor, against `U…` and `F…` for the
- * accounts that hold real money. The prefix is the only thing in the session that says which kind
- * it is: the Web API has no live/paper switch, so a paper account is reached by logging the gateway
- * in as the paper user and nothing in the response announces that.
- *
- * @see https://www.interactivebrokers.com/docs/web-api/authentication/paper
- */
-export function isIbkrPaperAccount(accountId: string): boolean {
-  const prefix = accountId.toUpperCase();
-  return prefix.startsWith('DU') || prefix.startsWith('DF');
-}
-
 export async function resolveIbkrAccountId(input: {
   /** Narrowed to the two calls this makes, so a test stands one up without the rest of the API. */
   api: Pick<IbkrAPI, 'getAccounts' | 'selectAccount'>;
@@ -77,4 +62,19 @@ export async function resolveIbkrAccountId(input: {
   }
 
   return accountId;
+}
+
+/**
+ * Whether an account number belongs to IBKR's simulated environment.
+ *
+ * IBKR numbers paper accounts `DU…`, or `DF…` under an advisor, against `U…` and `F…` for the
+ * accounts that hold real money. The prefix is the only thing in the session that says which kind
+ * it is: the Web API has no live/paper switch, so a paper account is reached by logging the gateway
+ * in as the paper user and nothing in the response announces that.
+ *
+ * @see https://www.interactivebrokers.com/docs/web-api/authentication/paper
+ */
+export function isIbkrPaperAccount(accountId: string): boolean {
+  const id = accountId.toUpperCase();
+  return id.startsWith('DU') || id.startsWith('DF');
 }

@@ -79,12 +79,19 @@ class UnavailableMarketData extends MarketDataSource {
  */
 export function readCredentials(key: BrokerKey, live: boolean, env: NodeJS.ProcessEnv) {
   if (key === 'ibkr') {
-    const prefixed = live ? env.IBKR_LIVE_ACCOUNT : env.IBKR_PAPER_ACCOUNT;
-    const prefixedSecret = live ? env.IBKR_LIVE_PASSWORD : env.IBKR_PAPER_PASSWORD;
-    return {
-      apiKey: prefixed ?? env.IBKR_ACCOUNT ?? '',
-      apiSecret: prefixedSecret ?? env.IBKR_PASSWORD ?? '',
-    };
+    const scopedKey = live ? env.IBKR_LIVE_ACCOUNT : env.IBKR_PAPER_ACCOUNT;
+    const scopedSecret = live ? env.IBKR_LIVE_PASSWORD : env.IBKR_PAPER_PASSWORD;
+
+    /*
+     * The pair falls back whole rather than field by field. IBKR's paper and live logins have
+     * different passwords by design, so filling a prefixed username's missing password from the
+     * unprefixed one builds a pair that belongs to neither login and fails to authenticate.
+     */
+    if (scopedKey ?? scopedSecret) {
+      return {apiKey: scopedKey ?? '', apiSecret: scopedSecret ?? ''};
+    }
+
+    return {apiKey: env.IBKR_ACCOUNT ?? '', apiSecret: env.IBKR_PASSWORD ?? ''};
   }
 
   const prefix = `${key.toUpperCase()}_${live ? 'LIVE' : 'PAPER'}`;
