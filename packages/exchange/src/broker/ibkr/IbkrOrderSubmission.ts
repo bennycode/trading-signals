@@ -80,6 +80,7 @@ export async function submitIbkrOrder(input: {
    * again and hold two positions.
    */
   const MAX_CONFIRMATIONS = 5;
+  let unanswered = '';
   for (let repliesSent = 0; repliesSent <= MAX_CONFIRMATIONS; repliesSent++) {
     if (response.length === 0) {
       throw new Error(`IBKR returned an empty response when placing an order for ${pair.asString('/')}.`);
@@ -105,8 +106,18 @@ export async function submitIbkrOrder(input: {
     const prompt = response.find(isIbkrOrderReplyMessage);
     if (prompt) {
       if (repliesSent === MAX_CONFIRMATIONS) {
+        unanswered = describePrompt(prompt);
         break;
       }
+      /*
+       * Every prompt is answered yes, because a strategy has nobody at the keyboard to ask. That
+       * makes this line the only record that IBKR objected at all, and some of these objections
+       * explain a fill afterwards: an order priced far from the market, or sized above the venue's
+       * average daily volume, is waved through here and looks inexplicable later without it.
+       */
+      console.warn(
+        `IBKR asked for confirmation when placing an order for ${pair.asString('/')} and was answered yes: ${describePrompt(prompt)}`
+      );
       response = await submitOrAnnotate(() => api.replyToOrderMessage(prompt.id, true), request.cOID, pair);
       continue;
     }
@@ -136,8 +147,14 @@ export async function submitIbkrOrder(input: {
   }
 
   throw new Error(
-    `IBKR kept asking for confirmation after ${MAX_CONFIRMATIONS} replies when placing an order for ${pair.asString('/')}.`
+    `IBKR kept asking for confirmation after ${MAX_CONFIRMATIONS} replies when placing an order for ${pair.asString('/')}. Still asking: ${unanswered}`
   );
+}
+
+/** Names what IBKR objected to, so a blanket yes still leaves something to read back. */
+function describePrompt(prompt: {id: string; message?: string[] | null | undefined}): string {
+  const lines = prompt.message?.filter(line => line.trim()) ?? [];
+  return lines.length ? lines.join(' ') : `(prompt ${prompt.id} carried no message)`;
 }
 
 /**

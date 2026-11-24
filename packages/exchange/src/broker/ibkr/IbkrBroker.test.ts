@@ -225,6 +225,33 @@ describe('IbkrBroker', {concurrent: false}, () => {
       expect(order.type).toBe(OrderType.MARKET);
     });
 
+    it('records what it waved through, since nothing else does', {concurrent: false}, async () => {
+      const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+      mockMethods.submitOrder.mockResolvedValue([
+        {id: 'reply-1', message: ['Price is 12% away from the last trade.', 'Submit anyway?']},
+      ]);
+      mockMethods.replyToOrderMessage.mockResolvedValue([{order_id: '999', order_status: 'Submitted'}]);
+
+      await broker.placeMarketOrder(pair, {side: OrderSide.BUY, size: '3', sizeInCounter: false});
+
+      expect(
+        warn.mock.calls[0]?.[0],
+        'the prompt is answered yes unseen, so this log is the only trace that IBKR objected and why'
+      ).toContain('Price is 12% away from the last trade. Submit anyway?');
+    });
+
+    it('names the prompt it could not get past', async () => {
+      mockMethods.submitOrder.mockResolvedValue([{id: 'reply-1', message: ['Account lacks the Overnight agreement.']}]);
+      mockMethods.replyToOrderMessage.mockResolvedValue([
+        {id: 'reply-1', message: ['Account lacks the Overnight agreement.']},
+      ]);
+
+      await expect(
+        broker.placeMarketOrder(pair, {side: OrderSide.BUY, size: '3', sizeInCounter: false}),
+        'a bare reply count gives nobody a reason to act on; the prompt text is what says the account needs changing'
+      ).rejects.toThrow(/Account lacks the Overnight agreement/);
+    });
+
     it('answers a chain of prompts until the order is accepted', async () => {
       mockMethods.submitOrder.mockResolvedValue([{id: 'reply-1', message: ['first']}]);
       mockMethods.replyToOrderMessage
