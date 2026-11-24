@@ -114,6 +114,21 @@ describe('BrokerMock', () => {
 
       expect(history, 'the five days before the start, oldest first').toEqual(days.slice(26, 31));
     });
+
+    it('stops one candle short of the one getLatestCandle reports', async () => {
+      const exchange = new TestExchangeMock(new Map(), undefined, marketData);
+      const thirtySecondDay = days[31];
+      assert.exists(thirtySecondDay);
+      exchange.processCandle(thirtySecondDay);
+
+      expect(await exchange.getLatestCandle(pair, ONE_DAY), 'the bar being processed is the price as of now').toEqual(
+        thirtySecondDay
+      );
+      expect(
+        (await exchange.getRecentCandles(pair, 1, ONE_DAY)).at(-1),
+        'warm-up must not see the bar under test, so the two are deliberately one candle apart and cannot be merged'
+      ).toEqual(days[30]);
+    });
   });
 
   describe('getTime', () => {

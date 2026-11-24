@@ -88,12 +88,19 @@ export abstract class MarketDataSource extends EventEmitter implements CandleFee
   }
 
   /**
-   * The newest *closed* candle, i.e. `getRecentCandles(pair, 1, interval)` as a single value.
+   * The price as of now, which on a live feed is the newest *closed* candle.
    *
-   * Deliberately the same contract as {@link getRecentCandles} rather than "whatever bar is newest":
-   * one rule for the whole interface means a price shown to a user, a price used to size an order
-   * and a price fed to an indicator all refer to the same bar. The cost is staleness of up to one
-   * interval, which is why callers wanting a live price should ask for the smallest interval.
+   * Not merely `getRecentCandles(pair, 1, interval)` unwrapped, even though that is how this
+   * implements it and what it returns here. The two ask different questions, and
+   * {@link BrokerMock} answers them differently on purpose: there this is the candle the backtest
+   * is currently processing, while `getRecentCandles` stops one candle short of it so a strategy
+   * warming up cannot see the bars it is about to be tested on. Collapsing the two would move
+   * every backtest price back one bar without failing anything.
+   *
+   * On a live source they coincide, and deliberately so rather than reporting "whatever bar is
+   * newest": one rule means a price shown to a user, a price used to size an order and a price fed
+   * to an indicator all refer to the same bar. The cost is staleness of up to one interval, which
+   * is why callers wanting a live price should ask for the smallest interval.
    */
   async getLatestCandle(pair: TradingPair, intervalInMillis: number): Promise<Candle> {
     const [candle] = await this.getRecentCandles(pair, 1, intervalInMillis);
