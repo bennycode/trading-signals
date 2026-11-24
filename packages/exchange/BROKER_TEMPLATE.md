@@ -40,7 +40,7 @@ Every broker has a thin outer class that owns `rest` + `ws`/`stream`, exposes en
 
 ### Order submission reconciliation
 
-- **Send a client-generated order id with every placement** when the vendor supports it (e.g. Alpaca's `client_order_id`). A failed POST can then be reconciled: query by the client id to learn whether the original request landed, and a manual re-submission with the same id is deduplicated server-side. See https://docs.alpaca.markets/us/docs/working-with-orders#using-client-order-ids.
+- **Send a client-generated order id with every placement** when the vendor supports it. A failed POST can then be reconciled: query by that id to learn whether the original request landed, and a re-submission carrying it is deduplicated server-side. Without one, a timed-out placement leaves no way to tell "never arrived" from "filled", and the only safe move is to do nothing.
 
 ## API classes (skip when a quality vendor SDK exists)
 
@@ -87,9 +87,9 @@ Every broker has a thin outer class that owns `rest` + `ws`/`stream`, exposes en
 ## The neutral `Broker` base
 
 - `Broker` covers **brokerage capabilities only** — orders, fills, balances, trading rules, fee rates, order-stream watchers. Market data lives in a separate `MarketDataSource` abstract class.
-- **Every broker class takes a mandatory `marketData: MarketDataSource` in its constructor** and delegates candle methods (`getCandles`, `getLatestCandle`, `watchCandles`, `unwatchCandles`) to it. There is no "optional, throws if missing" path — the contract is honest at the type level. Brokers that ship their own data (Alpaca) construct a default `AlpacaMarketData` inside `getAlpacaClient`; brokers without their own (Trading212) require the caller to pass one.
-- The market-data class is independent: `AlpacaMarketData extends MarketDataSource` lives next to `AlpacaBroker` but can be instantiated alone (`getAlpacaMarketData`) and re-used as the data source for any other broker. The same instance can feed multiple brokers.
-- Lifecycle of the market-data source is owned by **whoever constructed it**. A broker's `disconnect()` does not close an injected data source — only the trading-side connections it owns directly. `getAlpacaClient` distinguishes between a caller-injected source (don't close) and an internally-constructed one (close on SIGINT).
+- **Every broker class takes a mandatory `marketData: MarketDataSource` in its constructor** and delegates the candle methods to it. There is no "optional, throws if missing" path — the contract is honest at the type level. A broker that ships its own data constructs a default source inside its `get…Client` factory; one without any requires the caller to pass one.
+- The market-data class is independent: it lives next to its broker but can be instantiated alone and reused as the data source for a different broker, and one instance can feed several.
+- Lifecycle of the market-data source is owned by **whoever constructed it**. A broker's `disconnect()` closes the trading-side connections it owns and leaves an injected source alone, so each factory distinguishes a caller-injected source from one it created itself.
 - Strategies depend on `Broker`, `MarketDataSource`, or `Broker & MarketDataSource` — never on a concrete broker class.
 - Domain types (`Candle`, `Fill`, `PendingOrder`, `Balance`, `TradingRules`, `FeeRate`, `OrderSide`/`OrderType`/`OrderPosition`) are broker-neutral. Resist leaking vendor fields into them.
 - `disconnect()` is the single shutdown seam — every async resource the class owns is reachable from one method.
@@ -101,12 +101,9 @@ Keep an order alive and executable for as long as the venue allows. A strategy's
 
 - **Prefer GTC over DAY.** Default to the longest time-in-force the venue accepts, so an unfilled order survives the close instead of being silently discarded. DAY stays available as an option — it is the right choice for a strategy that re-places its orders every candle, where a resting order from yesterday could fire on a thesis that has since expired — but it is never the default.
 - **Prefer the widest session the venue offers**, in this order: 24/7 where it exists (crypto), then 24/5 overnight sessions for equities, then extended hours, then regular hours. Reach for each only as far as the instrument and account actually support it.
-- **Probe the constraint, never assume it.** Every time-in-force and session restriction in this package was found by asking the venue, not by reading its pricing page:
-  - Alpaca forces `day` on fractional and notional orders (error `42210000`) and takes `gtc` otherwise; `extended_hours` is accepted only together with `day`.
-  - Trading212 rejects `GTC` on the limit endpoint as `"Invalid payload"`, so DAY is forced there. The same endpoint rejects `extendedHours` whatever the instrument allows.
-  - IBKR forces nothing: `GTC` previews clean for market and limit orders and alongside `outsideRTH`, so it is the default. The overnight venue is separate from extended hours — `outsideRTH` covers pre-market and after-hours, while reaching 20:00–03:50 ET needs the `OND` or `OVT` time-in-force, and that venue takes limit orders only.
+- **Probe the constraint, never assume it.** Every time-in-force and session restriction in this package was found by asking the venue, not by reading its pricing page: Each venue's actual answers belong in that broker's own docblocks and README, not here — what is shared is that the answer has to come from the venue. Record the error it returned, because the refusal is the evidence.
 - **A wider session is not a free upgrade.** Overnight and extended-hours books are thinner, so the spread is worse and a market order is often refused outright. Enable the wider session, and let the caller decide whether to use it — do not quietly convert a market order into something the venue will accept.
-- **An accepted order is not a working one.** A venue may take a ticket, acknowledge it, and cancel it unfilled when the session opens, because what it will actually route is settled later than submission. An IBKR order carrying both `outsideRTH` and an overnight time-in-force does exactly this: it reports `tif: OND` and `Submitted`, then dies with no reason attached and `warning_message: null`. A preview does not catch it either, since it prices a ticket it will never route. So confirm a session against a _filled_ order, never against an accepted one, and say which of the two a claim rests on.
+- **An accepted order is not a working one.** A venue may take an order, acknowledge it, and then cancel it unfilled when the session opens, because what it will actually route is settled later than submission — sometimes with no reason attached, and sometimes after a preview priced it without complaint. So confirm a session against a _filled_ order, never against an accepted one, and say which of the two a claim rests on.
 - **Say which venue a flag reaches.** "Extended hours" and "overnight" are different books at some brokers. Name the sessions a flag actually covers in its docblock, with the hours, rather than calling it "after hours" and leaving the reader to guess.
 
 ## Subscription handles
@@ -118,13 +115,14 @@ Keep an order alive and executable for as long as the venue allows. A strategy's
 
 ## Probe, don't configure
 
-When the broker can already tell us something, don't ask the caller. `#isCryptoSymbol` probes the crypto endpoint and treats 4xx as "not crypto" instead of requiring an `assetClass` param. Same idea wherever a broker has multiple asset classes with different endpoints.
+When the broker can already tell us something, don't ask the caller. An asset class that decides which endpoint to call is discoverable by calling one and reading the refusal, which beats a parameter the caller has to get right. Same idea for account currency, tick size and permissions: ask the session.
 
 ## Code organization
 
 - **Per-resource folders, not per-layer folders.** `account/`, `order/`, `fill/` each contain the API class + types + tests + `index.ts` barrel. Beats top-level `controllers/`, `types/`, `tests/` splits.
 - `index.ts` re-export barrels at every directory level so consumers import from the package root.
-- `demo/` directory with runnable scripts for manual smoke tests against real credentials, each wired to an npm script that loads the root env files with Node's `--env-file` flags.
+- A `README.md` beside the implementation holds everything specific to that broker: how it authenticates, how paper trading is reached, what its market data costs, and the limitations worth knowing before trusting it. The package README stays high-level and links to it.
+- Manual smoke runs against real credentials go through `@typedtrader/exchange-cli` (`exchange-cli --broker <id> smoke <ticker>`) rather than per-broker scripts, so one command covers every integration.
 - Test exchange logins with the project's own API classes, not raw `curl`/`fetch`.
 
 ## Things deliberately absent
@@ -147,7 +145,8 @@ These are not in any of the reference implementations and should stay out:
 6. Probe the venue for the longest time-in-force and the widest trading session it accepts, and default to them — see [Order lifetime and trading hours](#order-lifetime-and-trading-hours). Record each refusal with the error the venue returned.
 7. Register the broker in the factory (`getBrokerClient` or equivalent).
 8. Reference the broker everywhere a user could look for it. A broker that only the factory knows about is invisible, and every one of these has been missed at least once:
-   - `packages/exchange/README.md` — the broker table, plus a quick start with its credentials, trade-offs and limitations.
+   - `packages/exchange/README.md` — the broker table and the list of per-broker READMEs.
+   - `packages/exchange/src/broker/<broker>/README.md` — its credentials, paper mode, market data, trade-offs and limitations.
    - `README.md` (repository root) — the broker-agnostic execution bullet, the `@typedtrader/exchange` row, and the mermaid diagram.
    - `packages/trading-signals-docs/src/pages/index.mdx` — the prose list of brokers and the mermaid diagram.
    - `packages/trading-signals-docs/src/pages/basics/glossary.mdx` — the broker examples.

@@ -2,7 +2,7 @@
 
 Typed broker clients for algorithmic trading in TypeScript. Trade through brokers like [Alpaca](https://alpaca.markets/) and [Trading212](https://www.trading212.com/) with one consistent API: every response validated at runtime (zod), all money math in arbitrary precision (big.js), live candles streamed over WebSocket.
 
-### [Install](#installation) · [Brokers](#supported-brokers) · [Quick Start](#quick-start-alpaca) · [Raw API](#raw-api-access) · [Rate Limits](#rate-limiting) · [Extend](#bring-your-own-broker)
+### [Install](#installation) · [Brokers](#supported-brokers) · [Quick Start](#quick-start) · [Raw API](#raw-api-access) · [Rate Limits](#rate-limiting) · [Extend](#bring-your-own-broker)
 
 ## Motivation
 
@@ -23,7 +23,7 @@ To drive the brokers from a terminal instead of code, install [@typedtrader/exch
 ## Features
 
 - **One API for every broker:** place market/limit orders, list balances, watch fills and candles with the same methods on every supported broker
-- **Paper trading:** a single `usePaperTrading` flag switches a broker to its sandbox environment
+- **Paper trading:** every supported broker offers one, reached by a flag where the broker has a sandbox endpoint and by paper credentials where it does not
 - **Runtime validation:** every API response is parsed with zod schemas, so malformed data fails loudly instead of corrupting your strategy
 - **High precision:** `big.js` for order sizes, prices, and fees, with no floating-point drift
 - **Streaming candles:** WebSocket-fed minute bars, batched into larger timeframes using human-readable intervals (e.g. `"5m"`, `"1h"`)
@@ -35,13 +35,15 @@ To drive the brokers from a terminal instead of code, install [@typedtrader/exch
 | --- | --- | --- | :-: | --- | --- | --- |
 | `alpaca` | [Alpaca](https://alpaca.markets/) | US stocks, ETFs, crypto | ✅ | ✅ IEX feed, WebSocket streamed | ✅ WebSocket stream | [docs.alpaca.markets](https://docs.alpaca.markets/reference/) |
 | `trading212` | [Trading212](https://www.trading212.com/) | 13,000+ US/UK/EU stocks and ETFs | ✅ | ❌ bring your own source | 🔁 polled (~60s) | [docs.trading212.com](https://docs.trading212.com/api) |
-| `ibkr` | [Interactive Brokers](https://www.interactivebrokers.com/) | US stocks and ETFs, 24/5 overnight | ❌ live session only | ✅ own history endpoint | 🔁 polled (~5s) | [Web API](https://www.interactivebrokers.com/docs/web-api/getting-started) |
+| `ibkr` | [Interactive Brokers](https://www.interactivebrokers.com/) | US stocks and ETFs, 24/5 overnight | ✅ separate paper login | ✅ own history endpoint | 🔁 polled (~5s) | [Web API](https://www.interactivebrokers.com/docs/web-api/getting-started) |
 
 More brokers are planned, and the `Broker` abstraction is built for it (see [Bring Your Own Broker](#bring-your-own-broker)).
 
-You create the API keys yourself in each broker's dashboard. The package uses your credentials but never creates accounts or keys for you: [Alpaca API keys](https://docs.alpaca.markets/us/docs/getting-started) · [Trading212 API keys](https://helpcentre.trading212.com/hc/en-us/articles/14584770928157-Trading-212-API-key) · [Interactive Brokers](https://www.interactivebrokers.com/docs/web-api/getting-started) signs requests through a local gateway instead of API keys
+You create the credentials yourself in each broker's dashboard. The package uses them but never creates accounts or keys for you; each broker's README links the page to create them on.
 
-## Quick Start: Alpaca
+## Quick Start
+
+Every broker is constructed by its own `get…Client` function and then used through the same `Broker` methods:
 
 ```ts
 import {getAlpacaClient, TradingPair} from '@typedtrader/exchange';
@@ -59,134 +61,13 @@ const latest = await broker.getLatestCandle(pair, 60_000);
 await broker.placeLimitOrder(pair, {side: 'BUY', size: '1', price: latest.close});
 ```
 
-**Why Alpaca:**
+Swap `getAlpacaClient` for `getTrading212Client` or `getIbkrClient` and the rest of the code is unchanged. What differs per broker is how it authenticates, where its candles come from and which of them it needs supplied — each broker's README covers that:
 
-- **Commission-free** US stocks and ETFs, with fractional shares.
-- **Free paper trading** that mirrors the live API, so strategies can be validated without risking capital.
-- **Free market data** via the IEX feed, including WebSocket-streamed minute bars (the source this package pairs with other brokers).
-- **Crypto** trades 24/7 alongside equities.
-- **[24/5 trading](https://docs.alpaca.markets/us/docs/245-trading)** of US stocks via an overnight session, so positions can be opened or closed from Sunday evening through Friday evening.
-- **Add funds commission-free** with [Revolut](https://www.revolut.com/), avoiding the transfer fees most banks charge.
+- [**Alpaca**](src/broker/alpaca/README.md) — API keys, its own free market data
+- [**Trading212**](src/broker/trading212/README.md) — API keys, needs an external market-data source
+- [**Interactive Brokers**](src/broker/ibkr/README.md) — no API keys; a local gateway holds the session
 
-**Shorting needs enabling first.** A new account is a cash account, and a cash account cannot sell short at any balance — a `SELL` without a position is rejected with `403 {"code":40310000,"message":"account is not allowed to short"}`. Switch it on under [Account Configuration](https://app.alpaca.markets/account/configuration), for the paper account as well as the live one. Alpaca also requires USD 2,000 or more in account equity to trade on margin or sell short.
-
-Check it before a strategy relies on it, because the account reports both facts:
-
-```ts
-import {AlpacaAPI} from '@typedtrader/exchange';
-
-const api = new AlpacaAPI({apiKey: 'ALPACA_API_KEY', apiSecret: 'ALPACA_API_SECRET', usePaperTrading: true});
-const account = await api.getAccount();
-// shorting_enabled: true, multiplier: '4' — a cash account answers false and '1'.
-```
-
-`multiplier` is the clearer signal: `1` is a cash account, while `2` or `4` means margin. Equity alone says nothing, since the limit is the account type rather than the balance.
-
-**Resources:** [API Reference](https://docs.alpaca.markets/reference/) · [OpenAPI Files](https://docs.alpaca.markets/openapi) · [24/5 Trading](https://docs.alpaca.markets/us/docs/245-trading) · [Account Configuration](https://app.alpaca.markets/account/configuration)
-
-## Quick Start: Trading212
-
-Trading212's API has no historical bars and no WebSocket, so the broker is paired with an external market-data source. For US equities, Alpaca's feed is the natural choice: it is free, works with a paper account, and streams minute bars over WebSocket.
-
-```ts
-import {AlpacaMarketData, getTrading212Client, TradingPair} from '@typedtrader/exchange';
-
-// 1. Construct an Alpaca-backed market-data source.
-const marketData = new AlpacaMarketData({
-  apiKey: 'ALPACA_API_KEY',
-  apiSecret: 'ALPACA_API_SECRET',
-  usePaperTrading: false, // read-only; doesn't place orders
-});
-
-// 2. Wire it into the Trading212 broker.
-const broker = getTrading212Client({
-  apiKey: 'TRADING212_API_KEY',
-  apiSecret: 'TRADING212_API_SECRET',
-  usePaperTrading: true,
-  marketData, // required: Trading212 has no candles of its own
-});
-
-// 3. Use the broker as if it provided everything natively. Symbol mapping is automatic:
-// Trading212's `AAPL_US_EQ` is stripped to Alpaca's `AAPL` behind the scenes.
-const pair = new TradingPair('AAPL_US_EQ', 'USD');
-const latest = await broker.getLatestCandle(pair, 60_000); // → from Alpaca's WebSocket
-await broker.placeLimitOrder(pair, {side: 'BUY', size: '1', price: latest.close}); // → Trading212
-```
-
-**Why Trading212:**
-
-- **Commission-free** investing in 13,000+ stocks and ETFs, with fractional shares from £1/€1.
-- **Broad UK, European, and US coverage.**
-- **Multi-currency accounts** for depositing and investing in 13 currencies.
-- **Tax-advantaged Stocks & Shares ISA** (and Cash ISA) for UK residents, with no account fees.
-- **Daily [interest](https://www.trading212.com/interest-on-cash)** paid on uninvested cash.
-
-**Good to know:**
-
-- **Cross-currency fees.** Trading212 debits a currency-conversion fee on cross-currency trades (e.g. a EUR account buying USD instruments) at ~0.15% per leg. `getFeeRates()` surfaces this as `CURRENCY_CONVERSION_FEE`; `estimateFee()` includes it in the total.
-- **Order updates are polled.** Trading212 has no order-stream WebSocket, so `watchOrders` polls once per minute (matching Trading212's documented rate limit). Fills arrive within ~60 seconds rather than push-style.
-
-**Resources:** [API Documentation](https://docs.trading212.com/api) · [Fees](https://helpcentre.trading212.com/hc/en-us/articles/11471996799517)
-
-## Quick Start: Interactive Brokers
-
-IBKR's retail Web API authenticates through the Client Portal Gateway, a local Java process that holds a logged-in session and signs requests, so the broker carries no API keys of its own. Give it your IBKR Pro credentials and it runs that gateway for you — downloading it on first use, starting it, and logging in:
-
-```sh
-npm install @typedtrader/exchange playwright
-```
-
-```ts
-import {getIbkrClient, TradingPair} from '@typedtrader/exchange';
-
-const broker = getIbkrClient({
-  account: process.env.IBKR_ACCOUNT,
-  password: process.env.IBKR_PASSWORD,
-  onGatewayStateChange: ({stage}) => console.info(`gateway: ${stage}`),
-});
-
-// Approve the IB Key push on your phone; calls made before then wait rather than fail.
-await broker.ready;
-
-// No market-data source needed: IBKR serves its own candles.
-const pair = new TradingPair('F', 'USD');
-const latest = await broker.getLatestCandle(pair, 86_400_000);
-await broker.placeLimitOrder(pair, {side: 'BUY', size: '1', price: latest.close});
-```
-
-`playwright` is an **optional peer dependency**, needed only for this automated login: the gateway's login page builds its form in client-side JavaScript, so there is nothing to post credentials to and a real browser has to drive it. Installing `@typedtrader/exchange` on its own pulls no browser, so an Alpaca-only user pays nothing for it.
-
-**The IB Key push cannot be automated away.** IBKR does not accept a passkey for the Web API, so a fresh login always waits on a tap. `getIbkrClient` therefore does not block: construction returns immediately, `broker.ready` is the awaitable, and `onGatewayStateChange` reports progress (`downloading` → `starting` → `awaiting-two-factor` → `authenticated`) so an application can say what it is waiting for. A gateway that is already logged in is reused rather than re-authenticated, which keeps the pushes to roughly one a day.
-
-To use a gateway you manage yourself, omit `account` and `password`. Inside this repository that is what the bundled launcher is for:
-
-```sh
-npm run gateway:ibkr:op   # resolves IBKR_ACCOUNT / IBKR_PASSWORD from 1Password
-```
-
-**Why Interactive Brokers:**
-
-- **Candles included**, so no second data provider is needed — unlike Trading212. They are delayed without a market-data subscription, though; see _Good to know_ below.
-- **Fee estimates from IBKR itself.** `estimateFee()` prices the exact ticket through IBKR's `whatif` preview rather than modelling the commission schedule.
-- **[24/5 overnight trading](https://www.interactivebrokers.com/en/trading/orders/overnight-trading-orders.php)** of US stocks and ETFs, from 20:00 to 03:50 ET.
-- **Automatic FX.** A USD instrument bought from a EUR account is funded by an IDEALPRO conversion, which the trades feed reports alongside the fill.
-
-**Trading permissions are per product**, and a product you have not been granted is refused at submission rather than at account level. Open **Client Portal → Settings → Account Settings → Trading Permissions**, where each product is a tile that is either already granted or carries a _Request_ button:
-
-- **Stocks** is what this package needs, and it is also what IBKR says is sufficient for overnight trading — there is no separate overnight tile to request.
-- **Stock, Index and Forex CFDs** must be activated there before any CFD can be traded. It is the usual route to a short position for an account without margin, though this package trades stocks rather than CFDs.
-- **Currency/Forex** covers the IDEALPRO conversions that fund a cross-currency trade.
-
-**Good to know:**
-
-- **The session needs a human.** The login is automated, but IBKR's 2FA sends an IB Key push that has to be approved on your phone, and the session expires roughly daily, which brings another push. A passkey cannot be used: IBKR's Web API supports IB Key, Handy Key, SMS and DSC+ only.
-- **The login form is IBKR's to change.** Its field and dropdown selectors live in `gateway/loginToIbkrGateway.ts`; a redesign there is what breaks the login, and a failed attempt leaves a screenshot in `.gateway-outputs/`.
-- **Market data may be delayed, candles included.** Without a market-data subscription for the relevant exchange, bars arrive roughly 15 minutes behind the market — measured across three US equities at once, all lagging 15.1–15.2 minutes. The quote feed separately reports `D` (delayed) and can return no price fields at all during regular hours. Nothing errors, so the delay is only visible by comparing a bar's open time against the clock. Two consequences worth planning for: `estimateFee()` and `getFeeRates()` price off a close from a quarter of an hour ago, and `watchCandles()` anchored at `new Date()` emits nothing until the feed catches up to that anchor — pass an `openTimeInISO` behind the delay if you want bars immediately. A subscription is bought per exchange in **Client Portal → Settings → User Settings → Market Data Subscriptions**.
-- **Order updates are polled.** `watchOrders` polls the trades endpoint rather than opening IBKR's WebSocket, which needs its own handshake and re-subscribes on every reconnect.
-- **The orders snapshot lags.** `/iserver/account/orders` does not include an order placed moments earlier, and can still report a filled order as working, so do not read it back immediately after placing.
-- **A daily bar on an overnight-opening venue arrives late.** IBKR stamps a daily bar with its session open, so a bar counts as closed once the UTC date it opened on has passed. Where a session cannot fit in the rest of that UTC day (an ASX session opens 23:00 UTC and closes 05:00 UTC) the bar is held until a full 24 hours after the open instead, which is hours later than the real close. Never earlier, so a strategy is never handed a partial session. US and European listings are unaffected, as are all intraday intervals.
-
-**Resources:** [Web API](https://www.interactivebrokers.com/docs/web-api/getting-started) · [API Reference](https://www.interactivebrokers.com/docs/openapi/api-reference.json) · [Overnight Trading](https://www.interactivebrokers.com/en/trading/orders/overnight-trading-orders.php)
+To pick a broker at runtime from stored credentials instead, `getBrokerClient({exchangeId, apiKey, apiSecret, isPaper})` constructs whichever one `exchangeId` names.
 
 ## Raw API Access
 
