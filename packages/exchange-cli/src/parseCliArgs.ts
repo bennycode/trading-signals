@@ -96,7 +96,7 @@ export function parseCliArgs(argv: string[]) {
     })
     .addHelpText(
       'after',
-      "\nCredentials: <BROKER>_PAPER_API_KEY and <BROKER>_PAPER_API_SECRET; use LIVE with --live.\nIBKR has no API keys and needs its Client Portal Gateway running: it reads IBKR_PAPER_ACCOUNT\nand IBKR_PAPER_PASSWORD (IBKR_LIVE_* with --live, or IBKR_ACCOUNT/IBKR_PASSWORD for either),\nand its paper account has its own username, so the gateway must be logged in as that user.\nSet them in the environment or with Node's --env-file option.\nMarket data requires Alpaca or IBKR. Results are JSON; failures go to stderr with exit code 1."
+      "\nCredentials: <BROKER>_PAPER_API_KEY and <BROKER>_PAPER_API_SECRET; use LIVE with --live.\nIBKR has no API keys and needs its Client Portal Gateway running: it reads IBKR_PAPER_USERNAME\nand IBKR_PAPER_PASSWORD (IBKR_LIVE_* with --live, or IBKR_USERNAME/IBKR_PASSWORD for either),\nand its paper account has its own username, so the gateway must be logged in as that user.\nSet them in the environment or with Node's --env-file option.\nMarket data requires Alpaca or IBKR. Results are JSON; failures go to stderr with exit code 1."
     )
     .exitOverride();
   const command = (signature: string, description: string) => {

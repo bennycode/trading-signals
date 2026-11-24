@@ -10,7 +10,7 @@ npm install @typedtrader/exchange playwright
 import {getIbkrClient, TradingPair} from '@typedtrader/exchange';
 
 const broker = getIbkrClient({
-  account: process.env.IBKR_ACCOUNT,
+  account: process.env.IBKR_USERNAME,
   password: process.env.IBKR_PASSWORD,
   onGatewayStateChange: ({stage}) => console.info(`gateway: ${stage}`),
 });
@@ -29,7 +29,7 @@ await broker.placeLimitOrder(pair, {side: 'BUY', size: '1', price: latest.close}
 To use a gateway you manage yourself, omit `account` and `password`. Inside this repository that is what the bundled launcher is for:
 
 ```sh
-npm run gateway:ibkr:op   # resolves IBKR_ACCOUNT / IBKR_PASSWORD from 1Password
+npm run gateway:ibkr:op   # resolves IBKR_USERNAME / IBKR_PASSWORD from 1Password
 ```
 
 ## Paper Trading
@@ -38,15 +38,26 @@ IBKR's paper account has **its own username and its own account number** (`DU…
 
 ```ts
 const broker = getIbkrClient({
-  account: process.env.IBKR_PAPER_ACCOUNT,
+  account: process.env.IBKR_PAPER_USERNAME,
   password: process.env.IBKR_PAPER_PASSWORD,
   paper: true, // refuses the session if it turns out to be a live account
 });
 ```
 
+Inside this repository, the bundled launcher logs the gateway into either one:
+
+```sh
+npm run gateway:ibkr:paper:op   # the paper login
+npm run gateway:ibkr:op         # the live login
+```
+
+It prints the username it is logging in as, so you can see which environment you are about to approve a second factor for.
+
 `paper` is a check rather than a switch. Set it and a session on the wrong side is refused on the first call, which is the difference between a configuration error and a strategy placing real orders while believing it is simulated. Leave it unset to trade whatever the gateway is logged into.
 
 Find the paper username under **Client Portal → Settings → Account Configuration → Paper Trading Account**, and set a password there with _Reset Paper Trading Password_ if you have never used it. Identical live and paper credentials cause login errors, so give the paper account its own.
+
+That screen shows the paper **username** next to the paper **account number** (`DU…`). The username is the login; the account number is not, and the gateway rejects it.
 
 ## Why Interactive Brokers
 

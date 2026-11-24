@@ -39,7 +39,9 @@ The command resolves the installed executable, so it works the same for a global
 
 ### Interactive Brokers
 
-IBKR is the exception to everything above. It has no API keys, so its credential pair is a username and password: `IBKR_PAPER_ACCOUNT` / `IBKR_PAPER_PASSWORD`, or the `IBKR_LIVE_*` pair with `--live`. A single-environment setup can use the unprefixed `IBKR_ACCOUNT` / `IBKR_PASSWORD` for either. Both may be omitted when a gateway is already logged in.
+IBKR is the exception to everything above. It has no API keys, so its credential pair is a username and password: `IBKR_PAPER_USERNAME` / `IBKR_PAPER_PASSWORD`, or the `IBKR_LIVE_*` pair with `--live`. A single-environment setup can use the unprefixed `IBKR_USERNAME` / `IBKR_PASSWORD` for either. Both may be omitted when a gateway is already logged in.
+
+It is the **username**, not the `DU…` account number that Client Portal shows beside it — the account number is not a login and the gateway will reject it.
 
 Orders go through the [Client Portal Gateway](../exchange/src/broker/ibkr/README.md), a local Java process that must be running and logged in before any command, which `npm run gateway:ibkr` in the exchange package starts. The login needs an IB Key push approved on your phone, so it cannot run unattended.
 

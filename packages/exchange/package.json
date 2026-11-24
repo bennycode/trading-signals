@@ -48,6 +48,8 @@
     "fix:other": "oxfmt",
     "gateway:ibkr": "tsx --import ../../loadEnv.ts src/broker/ibkr/gateway/gateway.ts",
     "gateway:ibkr:op": "op run --env-file=../../.env.op -- npm run gateway:ibkr",
+    "gateway:ibkr:paper": "tsx --import ../../loadEnv.ts src/broker/ibkr/gateway/gateway.ts -- --paper",
+    "gateway:ibkr:paper:op": "op run --env-file=../../.env.op -- npm run gateway:ibkr:paper",
     "gateway:ibkr:status": "tsx -e \"const {IbkrAPI}=await import('./src/broker/ibkr/api/IbkrAPI.js');console.log(JSON.stringify(await new IbkrAPI().getAuthStatus()))\"",
     "lint": "npm run lint:code && npm run lint:other",
     "lint:code": "oxlint .",

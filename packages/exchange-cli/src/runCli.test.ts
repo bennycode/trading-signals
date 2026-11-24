@@ -225,7 +225,7 @@ describe('runCli', {concurrent: false}, () => {
 
   it('reads IBKR credentials without the PAPER/LIVE prefix, and tolerates their absence', () => {
     expect(
-      () => createCliBroker('ibkr', true, {IBKR_ACCOUNT: 'user', IBKR_PASSWORD: 'secret'}),
+      () => createCliBroker('ibkr', true, {IBKR_PASSWORD: 'secret', IBKR_USERNAME: 'user'}),
       'IBKR takes the Pro username and password, not an API key pair'
     ).not.toThrow();
     expect(
@@ -236,14 +236,18 @@ describe('runCli', {concurrent: false}, () => {
 
   it('builds an IBKR broker for paper trading, which is a separate login rather than an endpoint', () => {
     expect(() =>
-      createCliBroker('ibkr', false, {IBKR_PAPER_ACCOUNT: 'paper-user', IBKR_PAPER_PASSWORD: 'secret'})
+      createCliBroker('ibkr', false, {IBKR_PAPER_PASSWORD: 'secret', IBKR_PAPER_USERNAME: 'paper-user'})
     ).not.toThrow();
   });
 
   it.each([
-    {env: {IBKR_PAPER_ACCOUNT: 'paper-user', IBKR_PAPER_PASSWORD: 'paper-secret'}, expected: 'paper-user', live: false},
-    {env: {IBKR_LIVE_ACCOUNT: 'live-user', IBKR_LIVE_PASSWORD: 'live-secret'}, expected: 'live-user', live: true},
-    {env: {IBKR_ACCOUNT: 'either-user', IBKR_PASSWORD: 'either-secret'}, expected: 'either-user', live: false},
+    {
+      env: {IBKR_PAPER_PASSWORD: 'paper-secret', IBKR_PAPER_USERNAME: 'paper-user'},
+      expected: 'paper-user',
+      live: false,
+    },
+    {env: {IBKR_LIVE_PASSWORD: 'live-secret', IBKR_LIVE_USERNAME: 'live-user'}, expected: 'live-user', live: true},
+    {env: {IBKR_PASSWORD: 'either-secret', IBKR_USERNAME: 'either-user'}, expected: 'either-user', live: false},
   ])('reads the IBKR credentials for the environment asked for: $expected', ({env, expected, live}) => {
     expect(
       readCredentials('ibkr', live, env).apiKey,
@@ -253,9 +257,9 @@ describe('runCli', {concurrent: false}, () => {
 
   it('takes the IBKR pair whole rather than completing it from the unprefixed names', () => {
     const credentials = readCredentials('ibkr', false, {
-      IBKR_ACCOUNT: 'live-user',
-      IBKR_PAPER_ACCOUNT: 'paper-user',
+      IBKR_PAPER_USERNAME: 'paper-user',
       IBKR_PASSWORD: 'live-secret',
+      IBKR_USERNAME: 'live-user',
     });
 
     expect(

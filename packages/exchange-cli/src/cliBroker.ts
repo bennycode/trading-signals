@@ -71,15 +71,19 @@ class UnavailableMarketData extends MarketDataSource {
 /**
  * IBKR's pair is named differently because it is a different thing: no API keys exist, so the pair
  * is the username and password its gateway logs in with. Paper is a separate login rather than a
- * separate endpoint, so the PAPER/LIVE pair is read when present and the unprefixed `IBKR_ACCOUNT`
- * is kept as the fallback for a single-environment setup.
+ * separate endpoint, so the PAPER/LIVE pair is read when present and an unprefixed pair is the
+ * fallback for a single-environment setup.
+ *
+ * `USERNAME` rather than `ACCOUNT`, because IBKR shows the paper username next to the paper
+ * account number (`DU…`) on the same Client Portal screen, and only the former is a login. The
+ * legacy `IBKR_ACCOUNT` is still read so an existing setup keeps working.
  *
  * Missing credentials are allowed here alone: an empty pair still talks to a gateway somebody
  * logged in already, which a vendor API has no equivalent of.
  */
 export function readCredentials(key: BrokerKey, live: boolean, env: NodeJS.ProcessEnv) {
   if (key === 'ibkr') {
-    const scopedKey = live ? env.IBKR_LIVE_ACCOUNT : env.IBKR_PAPER_ACCOUNT;
+    const scopedKey = live ? env.IBKR_LIVE_USERNAME : env.IBKR_PAPER_USERNAME;
     const scopedSecret = live ? env.IBKR_LIVE_PASSWORD : env.IBKR_PAPER_PASSWORD;
 
     /*
@@ -91,7 +95,7 @@ export function readCredentials(key: BrokerKey, live: boolean, env: NodeJS.Proce
       return {apiKey: scopedKey ?? '', apiSecret: scopedSecret ?? ''};
     }
 
-    return {apiKey: env.IBKR_ACCOUNT ?? '', apiSecret: env.IBKR_PASSWORD ?? ''};
+    return {apiKey: env.IBKR_USERNAME ?? env.IBKR_ACCOUNT ?? '', apiSecret: env.IBKR_PASSWORD ?? ''};
   }
 
   const prefix = `${key.toUpperCase()}_${live ? 'LIVE' : 'PAPER'}`;
