@@ -96,7 +96,7 @@ export function parseCliArgs(argv: string[]) {
     })
     .addHelpText(
       'after',
-      "\nCredentials: <BROKER>_PAPER_API_KEY and <BROKER>_PAPER_API_SECRET; use LIVE with --live.\nIBKR instead reads IBKR_ACCOUNT and IBKR_PASSWORD, needs its Client Portal Gateway running,\nand has no paper mode, so it requires --live.\nSet them in the environment or with Node's --env-file option.\nMarket data requires Alpaca or IBKR. Results are JSON; failures go to stderr with exit code 1."
+      "\nCredentials: <BROKER>_PAPER_API_KEY and <BROKER>_PAPER_API_SECRET; use LIVE with --live.\nIBKR has no API keys and needs its Client Portal Gateway running: it reads IBKR_PAPER_ACCOUNT\nand IBKR_PAPER_PASSWORD (IBKR_LIVE_* with --live, or IBKR_ACCOUNT/IBKR_PASSWORD for either),\nand its paper account has its own username, so the gateway must be logged in as that user.\nSet them in the environment or with Node's --env-file option.\nMarket data requires Alpaca or IBKR. Results are JSON; failures go to stderr with exit code 1."
     )
     .exitOverride();
   const command = (signature: string, description: string) => {
@@ -151,6 +151,11 @@ export function parseCliArgs(argv: string[]) {
     positiveInt
   );
   command('time', 'Broker time');
+  command('smoke <ticker>', 'Run every read-only call against one instrument; places no orders').addOption(
+    new Option('--interval <duration>', 'Candle interval for the market-data checks')
+      .argParser(positiveDuration)
+      .default(parseDuration('1d'), '1d')
+  );
 
   try {
     program.parse(argv.length ? argv : ['--help'], {from: 'user'});

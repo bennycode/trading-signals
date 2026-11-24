@@ -54,6 +54,7 @@ function setup() {
       feeAsset: 'USD',
       total: new Big(0),
     }),
+    getFeeRates: vi.fn<Broker['getFeeRates']>().mockResolvedValue({LIMIT: new Big(0), MARKET: new Big(0)}),
     getFillByOrderId: vi.fn<Broker['getFillByOrderId']>().mockResolvedValue(undefined),
     getFills: vi.fn<Broker['getFills']>().mockResolvedValue([FILL]),
     getLatestCandle: vi.fn<MarketDataSource['getLatestCandle']>().mockResolvedValue(CANDLE),
@@ -330,6 +331,41 @@ describe('runCli', {concurrent: false}, () => {
     const rules = await broker.getTradingRules(PAIR);
     broker.getTradingRules.mockResolvedValue({...rules, counter_increment: '0'});
     expect(await run(['buy', 'AAPL', '1', '--dry-run', '--limit', '100.001'])).toMatchObject({json: {dryRun: true}});
+  });
+
+  it('runs every read-only call under smoke and places no orders', async () => {
+    const {broker, run} = setup();
+
+    const result = await run(['smoke', 'AAPL']);
+
+    expect(result).toMatchObject({code: 0, json: {ok: true, pair: 'AAPL/USD'}});
+    expect(
+      broker.placeMarketOrder,
+      'this is pointed at live accounts to see what a broker answers, so it must not trade'
+    ).not.toHaveBeenCalled();
+    expect(broker.placeLimitOrder).not.toHaveBeenCalled();
+    expect(broker.cancelOpenOrders).not.toHaveBeenCalled();
+    expect(broker.verifyCredentials).toHaveBeenCalled();
+    expect(broker.getFills).toHaveBeenCalled();
+  });
+
+  it('reports a failing call and still runs the rest, with a non-zero exit code', async () => {
+    const {broker, run} = setup();
+    broker.getTradingRules.mockRejectedValue(new Error('No market data subscription'));
+
+    const result = await run(['smoke', 'AAPL', '--interval', '1h']);
+
+    const reportedError: unknown = expect.stringContaining('No market data subscription');
+    const expectedChecks: unknown = expect.arrayContaining([
+      expect.objectContaining({check: 'getTradingRules', error: reportedError, ok: false}),
+      expect.objectContaining({check: 'getFills', ok: true}),
+    ]);
+
+    expect(
+      result,
+      'an unentitled endpoint is one broken call, not a broken broker, so the others still have to be reported'
+    ).toMatchObject({code: 1, json: {checks: expectedChecks, ok: false}});
+    expect(broker.getRecentCandles).toHaveBeenCalledWith(PAIR, 3, 3_600_000);
   });
 
   it('quotes the most recent candle close and passes candle parameters through', async () => {

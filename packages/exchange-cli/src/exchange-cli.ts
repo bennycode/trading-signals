@@ -11,7 +11,11 @@ function flushAndExit(stream: NodeJS.WriteStream, output: string, code: number):
 
 try {
   const result = await runCli(process.argv.slice(2));
-  flushAndExit(process.stdout, 'text' in result ? result.text : JSON.stringify(result.json), 0);
+  flushAndExit(
+    process.stdout,
+    'text' in result ? result.text : JSON.stringify(result.json),
+    'text' in result ? 0 : (result.code ?? 0)
+  );
 } catch (error) {
   flushAndExit(process.stderr, error instanceof Error ? error.message : String(error), 1);
 }
