@@ -1,5 +1,5 @@
 import Big from 'big.js';
-import type {Fill} from './Broker.js';
+import type {FeeEstimateOrder, Fill} from './Broker.js';
 import {OrderSide, OrderType} from './orderEnums.js';
 import type {TradingPair} from './TradingPair.js';
 
@@ -225,12 +225,7 @@ export interface ProfitableExitPrice {
 
 /** The part of a broker this needs, kept structural so the module does not depend on the class. */
 export interface ExitPriceBroker {
-  estimateFee(
-    pair: TradingPair,
-    orderType: OrderType,
-    notional: Big,
-    ticket?: {price?: Big; size?: Big}
-  ): Promise<{total: Big}>;
+  estimateFee(pair: TradingPair, orderType: OrderType, notional: Big, order?: FeeEstimateOrder): Promise<{total: Big}>;
   getFillByOrderId(pair: TradingPair, orderId: string): Promise<Fill | undefined>;
   getName(): string;
   getTradingRules(pair: TradingPair): Promise<{counter_increment: string}>;

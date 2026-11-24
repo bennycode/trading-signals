@@ -14,8 +14,33 @@ import type {IbkrAPI} from './api/IbkrAPI.js';
  *
  * @see https://www.interactivebrokers.com/docs/web-api/v1/endpoints/order-monitoring/live-orders
  */
-export async function resolveIbkrAccountId(input: {api: IbkrAPI; requested?: string | undefined}): Promise<string> {
-  const {api, requested} = input;
+/**
+ * Whether an account number belongs to IBKR's simulated environment.
+ *
+ * IBKR numbers paper accounts `DU…`, or `DF…` under an advisor, against `U…` and `F…` for the
+ * accounts that hold real money. The prefix is the only thing in the session that says which kind
+ * it is: the Web API has no live/paper switch, so a paper account is reached by logging the gateway
+ * in as the paper user and nothing in the response announces that.
+ *
+ * @see https://www.interactivebrokers.com/docs/web-api/authentication/paper
+ */
+export function isIbkrPaperAccount(accountId: string): boolean {
+  const prefix = accountId.toUpperCase();
+  return prefix.startsWith('DU') || prefix.startsWith('DF');
+}
+
+export async function resolveIbkrAccountId(input: {
+  /** Narrowed to the two calls this makes, so a test stands one up without the rest of the API. */
+  api: Pick<IbkrAPI, 'getAccounts' | 'selectAccount'>;
+  /**
+   * Which environment the caller believes it is trading. The session is checked against it rather
+   * than switched to it, because the Web API offers nothing to switch: a mismatch means somebody
+   * would place real orders thinking they were simulated, which is worth a refusal.
+   */
+  paper?: boolean | undefined;
+  requested?: string | undefined;
+}): Promise<string> {
+  const {api, paper, requested} = input;
   const accounts = await api.getAccounts();
 
   if (requested && !accounts.accounts.includes(requested)) {
@@ -28,6 +53,14 @@ export async function resolveIbkrAccountId(input: {api: IbkrAPI; requested?: str
 
   if (!accountId) {
     throw new Error('The IBKR session reports no accounts.');
+  }
+
+  if (paper !== undefined && paper !== isIbkrPaperAccount(accountId)) {
+    throw new Error(
+      paper
+        ? `The IBKR gateway is logged in as live account "${accountId}", but paper trading was asked for, and orders placed on it would spend real money. Log the gateway in with the paper username from Client Portal → Settings → Account Configuration → Paper Trading Account.`
+        : `The IBKR gateway is logged in as paper account "${accountId}", but live trading was asked for, so every order would be simulated and the results would not be real. Log the gateway in with the live username.`
+    );
   }
 
   if (accounts.selectedAccount === accountId) {

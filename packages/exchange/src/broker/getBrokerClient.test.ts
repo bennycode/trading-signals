@@ -36,9 +36,17 @@ describe('getBrokerClient', () => {
     ).toBeUndefined();
   });
 
-  it('refuses a paper IBKR account rather than trading a live one', () => {
-    expect(() =>
-      getBrokerClient({apiKey: 'ibkr-username', apiSecret: 'ibkr-password', exchangeId: IbkrBroker.NAME, isPaper: true})
-    ).toThrow(/no paper mode/);
+  it('accepts a paper IBKR account, which it reaches through the paper username', () => {
+    const broker = getBrokerClient({
+      apiKey: 'ibkr-paper-username',
+      apiSecret: 'ibkr-paper-password',
+      exchangeId: IbkrBroker.NAME,
+      isPaper: true,
+    });
+
+    expect(
+      broker instanceof IbkrBroker,
+      'IBKR paper trading is a separate login rather than a separate endpoint, so the stored pair is all that is needed'
+    ).toBe(true);
   });
 });

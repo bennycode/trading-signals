@@ -6,6 +6,7 @@ import {
   type Candle,
   type CandleImportRequest,
   type ExchangeAvailableBalance,
+  type FeeEstimateOrder,
   type FeeRate,
   type Fill,
   type LimitOrderOptions,
@@ -75,6 +76,9 @@ export class IbkrBroker extends Broker implements CandleFeed {
   readonly #currencies: IbkrCurrencyResolver;
   readonly #orderWatchers = new Map<string, IbkrFillWatcher>();
   readonly #candleListenerByTopic = new Map<string, (candle: unknown) => void>();
+  /** Which environment the caller expects, checked against the session on first use. */
+  readonly #paper?: boolean | undefined;
+
   /** What the caller asked for, if anything; the settled id lives in `#accountIdPromise`. */
   readonly #requestedAccountId?: string | undefined;
 
@@ -103,6 +107,7 @@ export class IbkrBroker extends Broker implements CandleFeed {
     this.#overnight = options?.overnight ?? false;
     this.#timeInForce = options?.timeInForce ?? IbkrTimeInForce.GTC;
     this.#requestedAccountId = options?.accountId;
+    this.#paper = options?.paper;
   }
 
   get api(): IbkrAPI {
@@ -177,7 +182,11 @@ export class IbkrBroker extends Broker implements CandleFeed {
    * name one, because a session already knows which account it serves.
    */
   async getAccountId(): Promise<string> {
-    this.#accountIdPromise ??= resolveIbkrAccountId({api: this.#api, requested: this.#requestedAccountId});
+    this.#accountIdPromise ??= resolveIbkrAccountId({
+      api: this.#api,
+      paper: this.#paper,
+      requested: this.#requestedAccountId,
+    });
     return this.#accountIdPromise;
   }
 
@@ -351,7 +360,7 @@ export class IbkrBroker extends Broker implements CandleFeed {
     /** Unused: IBKR bills the same commission whether the order is a limit or a market order. */
     _orderType: OrderType,
     notional: Big,
-    ticket?: {price?: Big; size?: Big}
+    order?: FeeEstimateOrder
   ): Promise<{commission: Big; currencyConversion: Big; total: Big; feeAsset: string}> {
     return estimateIbkrFee({
       api: this.#api,
@@ -361,8 +370,8 @@ export class IbkrBroker extends Broker implements CandleFeed {
       getLatestClose: async () =>
         new Big((await this.#marketData.getLatestCandle(pair, IbkrBroker.SMALLEST_INTERVAL_MS)).close),
       notional,
+      order,
       pair,
-      ticket,
     });
   }
 

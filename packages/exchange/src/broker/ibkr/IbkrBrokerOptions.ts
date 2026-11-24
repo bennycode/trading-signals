@@ -21,6 +21,19 @@ export interface IbkrBrokerOptions {
    */
   onGatewayStateChange?: ((state: IbkrGatewayState) => void) | undefined;
   /**
+   * Which environment this broker is allowed to trade: `true` for the simulated `DU…` account,
+   * `false` for the one holding real money, and unset to take whatever the gateway is logged into.
+   *
+   * It is a check, not a switch. IBKR's Web API has no live/paper toggle — a paper account is
+   * reached by logging the gateway in as the paper user, whose credentials are separate from the
+   * live ones ({@link account} and {@link password} carry whichever pair applies). Set this and a
+   * session on the wrong side is refused on the first call rather than silently placing real
+   * orders for a strategy that believes it is on paper.
+   *
+   * @see https://www.interactivebrokers.com/docs/web-api/authentication/paper
+   */
+  paper?: boolean | undefined;
+  /**
    * IBKR Pro password, used only to fill the gateway's login form and never sent anywhere else.
    * Requires {@link account}, and requires the optional `playwright` peer dependency, because
    * that form is built in client-side JavaScript and cannot be posted to directly.

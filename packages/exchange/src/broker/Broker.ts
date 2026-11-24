@@ -47,6 +47,21 @@ export interface FeeRate {
   CURRENCY_CONVERSION_FEE?: Big;
 }
 
+/**
+ * The order {@link Broker.estimateFee} is being asked to price, for the brokers that cannot answer
+ * from a notional alone.
+ *
+ * A broker charging a percentage needs nothing but the notional. One charging per unit, or with a
+ * per-order minimum, has to know how many units — and recovering a unit count from a notional
+ * means assuming a price, which puts a guess underneath the estimate. So a caller that already
+ * knows the real numbers passes them, and both fields are optional because callers that only hold
+ * a notional still get the percentage answer.
+ */
+export interface FeeEstimateOrder {
+  price?: Big | undefined;
+  size?: Big | undefined;
+}
+
 export interface Fill {
   /** Date in ISO 8601 format */
   created_at: string;
@@ -275,17 +290,15 @@ export abstract class Broker extends EventEmitter {
    *
    * Returns the *expected* fee. Actual realised fees come back on `Fill.fee` after the
    * order executes and may differ slightly (broker-side spreads, FX rate variation).
+   *
+   * {@link FeeEstimateOrder} is ignored here, because a rate times a notional is the whole answer
+   * for a broker that charges one. Brokers that bill per unit override this and read it.
    */
   async estimateFee(
     pair: TradingPair,
     orderType: OrderType,
     notional: Big,
-    /**
-     * The exact ticket, when the caller knows it. A rate applied to a notional does not need it,
-     * but a broker billing per share or with a per-order floor cannot recover the share count
-     * from a notional without assuming a price — so anyone who knows the real one says so.
-     */
-    _ticket?: {price?: Big; size?: Big}
+    _order?: FeeEstimateOrder
   ): Promise<{commission: Big; currencyConversion: Big; total: Big; feeAsset: string}> {
     const rates = await this.getFeeRates(pair);
     const commission = notional.times(rates[orderType]);
