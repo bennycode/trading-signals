@@ -77,7 +77,7 @@ class UnavailableMarketData extends MarketDataSource {
  * Missing credentials are allowed here alone: an empty pair still talks to a gateway somebody
  * logged in already, which a vendor API has no equivalent of.
  */
-function readCredentials(key: BrokerKey, live: boolean, env: NodeJS.ProcessEnv) {
+export function readCredentials(key: BrokerKey, live: boolean, env: NodeJS.ProcessEnv) {
   if (key === 'ibkr') {
     const prefixed = live ? env.IBKR_LIVE_ACCOUNT : env.IBKR_PAPER_ACCOUNT;
     const prefixedSecret = live ? env.IBKR_LIVE_PASSWORD : env.IBKR_PAPER_PASSWORD;

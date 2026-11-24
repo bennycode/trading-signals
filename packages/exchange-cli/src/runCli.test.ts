@@ -14,7 +14,7 @@ import {
   type MarketDataSource,
 } from '@typedtrader/exchange';
 import {AlpacaAPI, Trading212API} from '@typedtrader/exchange';
-import {createCliBroker} from './cliBroker.js';
+import {createCliBroker, readCredentials} from './cliBroker.js';
 import {runCli, type CliDeps} from './runCli.js';
 
 const PAIR = new TradingPair('AAPL', 'USD');
@@ -234,10 +234,21 @@ describe('runCli', {concurrent: false}, () => {
     ).not.toThrow();
   });
 
-  it('refuses IBKR without --live, because its gateway trades whatever it logged into', () => {
-    expect(() => createCliBroker('ibkr', false, {IBKR_ACCOUNT: 'user', IBKR_PASSWORD: 'secret'})).toThrow(
-      'no paper mode'
-    );
+  it('builds an IBKR broker for paper trading, which is a separate login rather than an endpoint', () => {
+    expect(() =>
+      createCliBroker('ibkr', false, {IBKR_PAPER_ACCOUNT: 'paper-user', IBKR_PAPER_PASSWORD: 'secret'})
+    ).not.toThrow();
+  });
+
+  it.each([
+    {env: {IBKR_PAPER_ACCOUNT: 'paper-user', IBKR_PAPER_PASSWORD: 'paper-secret'}, expected: 'paper-user', live: false},
+    {env: {IBKR_LIVE_ACCOUNT: 'live-user', IBKR_LIVE_PASSWORD: 'live-secret'}, expected: 'live-user', live: true},
+    {env: {IBKR_ACCOUNT: 'either-user', IBKR_PASSWORD: 'either-secret'}, expected: 'either-user', live: false},
+  ])('reads the IBKR credentials for the environment asked for: $expected', ({env, expected, live}) => {
+    expect(
+      readCredentials('ibkr', live, env).apiKey,
+      'the paper account has its own username, so the live pair would log the gateway into the wrong environment'
+    ).toBe(expected);
   });
 
   it('verifies credentials and labels the selected mode', async () => {
