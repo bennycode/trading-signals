@@ -42,6 +42,23 @@ const FILL: Fill = {
   size: '1',
 };
 const INSTRUMENTS = [{currency: 'GBX', isin: 'GB00B63H8491', name: 'Rolls-Royce', ticker: 'RRl_EQ'}];
+const ONE_DAY_IN_MS = 86_400_000;
+
+/** Enough day-aligned candles for the chart health card to warm up and judge. */
+function dailySeries(base: string, close: (index: number) => number, length = 240): Candle[] {
+  return Array.from({length}, (_, index) => ({
+    base,
+    close: String(close(index)),
+    counter: 'USD',
+    high: String(close(index) + 1),
+    low: String(close(index) - 1),
+    open: String(close(Math.max(0, index - 1))),
+    openTimeInISO: new Date(index * ONE_DAY_IN_MS).toISOString(),
+    openTimeInMillis: index * ONE_DAY_IN_MS,
+    sizeInMillis: ONE_DAY_IN_MS,
+    volume: '1000',
+  }));
+}
 
 function setup() {
   const broker = Object.assign(new EventEmitter(), {
@@ -186,6 +203,12 @@ describe('runCli', {concurrent: false}, () => {
       throw new Error('Unexpected broker construction');
     });
     await expect(run(['buy', 'AAPL', '1', '--counter', counter])).rejects.toThrow('--counter');
+    expect(deps.createBroker).not.toHaveBeenCalled();
+  });
+
+  it.each(['', '   '])('rejects a blank --benchmark before constructing a broker: %j', async benchmark => {
+    const {deps, run} = setup();
+    await expect(run(['health', 'AAPL', '--benchmark', benchmark])).rejects.toThrow('--benchmark');
     expect(deps.createBroker).not.toHaveBeenCalled();
   });
 
@@ -421,6 +444,53 @@ describe('runCli', {concurrent: false}, () => {
       await run([command, 'AAPL', '--interval', interval, '--take', '1']);
       expect(broker.watchCandles).toHaveBeenCalledWith(PAIR, millis, expect.any(String));
     }
+  });
+
+  it('scores chart health on daily bars', async () => {
+    const {broker, run} = setup();
+    broker.getRecentCandles.mockImplementation(async pair => dailySeries(pair.base, index => 100 + index));
+
+    const result = await run(['health', 'AAPL']);
+
+    expect(broker.getRecentCandles).toHaveBeenCalledWith(PAIR, 300, 86_400_000);
+    expect(result).toHaveProperty('json');
+    if ('json' in result) {
+      expect(result.json).toMatchObject({health: 100, timeframe: '1d', verdict: 'noise'});
+    }
+  });
+
+  it('leaves relative strength unread until a benchmark is named', async () => {
+    const {broker, run} = setup();
+    /*
+     * The instrument creeps up in a zigzag rather than a straight line, so that every other check
+     * has both up and down bars to read and relative strength is the only unanswered one.
+     */
+    broker.getRecentCandles.mockImplementation(async pair =>
+      dailySeries(pair.base, index =>
+        pair.base === 'SPY' ? 400 + index * 2 : 100 + index * 0.2 + (index % 2 === 0 ? 0 : 0.5)
+      )
+    );
+
+    const alone = await run(['health', 'AAPL']);
+    const compared = await run(['health', 'AAPL', '--benchmark', 'SPY']);
+
+    expect(broker.getRecentCandles).toHaveBeenCalledWith(new TradingPair('SPY', 'USD'), 300, 86_400_000);
+    if ('json' in alone && 'json' in compared) {
+      expect(alone.json, 'the check that needs a second series has nothing to read').toMatchObject({
+        health: 92,
+        unreadWeight: 15,
+      });
+      expect(
+        compared.json,
+        'a stock creeping up while its index runs is losing ground, which costs it the full 15 points'
+      ).toMatchObject({health: 77, unreadWeight: 0});
+    }
+  });
+
+  it('names the warm-up it needs when too little history arrives', async () => {
+    const {run} = setup();
+
+    await expect(run(['health', 'AAPL'])).rejects.toThrow(/at least 219 daily candles, but 1 arrived/);
   });
 
   it('lists rules, orders, fills, and broker time', async () => {

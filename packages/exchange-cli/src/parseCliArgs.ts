@@ -5,6 +5,7 @@ import {BROKERS, type BrokerKey} from './cliBroker.js';
 
 interface Options {
   all?: boolean;
+  benchmark?: string;
   broker: BrokerKey;
   count?: number;
   counter?: string;
@@ -56,6 +57,9 @@ function invocation(command: Command) {
   const values = command.optsWithGlobals<Options>();
   if (values.counter !== undefined && !values.counter.trim()) {
     throw new InvalidArgumentError('--counter must not be blank.');
+  }
+  if (values.benchmark !== undefined && !values.benchmark.trim()) {
+    throw new InvalidArgumentError('--benchmark must not be blank.');
   }
   const processedArgs: unknown[] = command.processedArgs;
   const args = processedArgs.filter((arg): arg is string => typeof arg === 'string');
@@ -138,6 +142,9 @@ export function parseCliArgs(argv: string[]) {
         .default(parseDuration('1m'), '1m')
     )
     .option('--count <n>', 'Number of candles', positiveInt, 10);
+  command('health <ticker>', 'Score chart health on daily bars, from 100 (nothing against it) down to 0')
+    .option('--benchmark <ticker>', 'Index or sector proxy for the relative strength check')
+    .option('--count <n>', 'Candles to request; the card needs a long warm-up', positiveInt, 300);
   command('watch-candles <ticker>', 'Stream candles as NDJSON')
     .addOption(
       new Option('--interval <duration>', 'Candle interval')

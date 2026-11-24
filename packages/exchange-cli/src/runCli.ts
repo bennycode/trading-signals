@@ -1,5 +1,6 @@
 import {OrderSide, TradingPair} from '@typedtrader/exchange';
 import {BROKERS, createCliBroker} from './cliBroker.js';
+import {scoreChartHealth} from './cliHealth.js';
 import {placeCliOrder, waitForOrder} from './cliOrders.js';
 import {runSmokeChecks} from './cliSmoke.js';
 import {parseCliArgs} from './parseCliArgs.js';
@@ -89,6 +90,13 @@ export async function runCli(argv: string[], overrides: Partial<CliDeps> = {}): 
       }
       case 'candles':
         return {json: await broker.getRecentCandles(pair, count, interval)};
+      case 'health':
+        return {
+          json: await scoreChartHealth(broker, pair, {
+            benchmark: values.benchmark === undefined ? undefined : new TradingPair(values.benchmark, counter),
+            count,
+          }),
+        };
       case 'rules':
         return {json: await broker.getTradingRules(pair)};
       case 'orders':
