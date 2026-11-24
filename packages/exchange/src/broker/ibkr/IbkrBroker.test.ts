@@ -813,6 +813,53 @@ describe('IbkrBroker', {concurrent: false}, () => {
       broker.unwatchOrders(topicId);
       vi.useRealTimers();
     });
+
+    it('ignores executions IBKR reports without an order id', async () => {
+      vi.useFakeTimers();
+      mockMethods.getPortfolioAccounts.mockResolvedValue([{currency: 'USD', id: 'U1'}]);
+      mockMethods.getContractInfoAndRules.mockResolvedValue({currency: 'USD'});
+      mockMethods.getTrades.mockResolvedValue([]);
+
+      const seen: Fill[] = [];
+      const topicId = await broker.watchOrders();
+      broker.on(topicId, (fill: Fill) => seen.push(fill));
+      await vi.advanceTimersByTimeAsync(IbkrBroker.ORDER_POLL_INTERVAL_MS + 100);
+
+      /** Two trades placed by hand in TWS, which IBKR reports with no order id at all. */
+      mockMethods.getTrades.mockResolvedValue([
+        {
+          commission: '1.0',
+          conid: 9_599_491,
+          execution_id: 'manual-1',
+          price: '11.55',
+          sec_type: 'STK',
+          side: 'B',
+          size: 1,
+          symbol: 'F',
+          trade_time_r: 1_794_925_927_000,
+        },
+        {
+          commission: '1.0',
+          conid: 265_598,
+          execution_id: 'manual-2',
+          price: '190.50',
+          sec_type: 'STK',
+          side: 'S',
+          size: 10,
+          symbol: 'AAPL',
+          trade_time_r: 1_794_925_928_000,
+        },
+      ]);
+      await vi.advanceTimersByTimeAsync(IbkrBroker.ORDER_POLL_INTERVAL_MS + 100);
+
+      expect(
+        seen,
+        'a missing order id reads as one empty key, which would merge a Ford buy and an Apple sell into a single fill of 11 shares at a blended price'
+      ).toStrictEqual([]);
+
+      broker.unwatchOrders(topicId);
+      vi.useRealTimers();
+    });
   });
 
   describe('isLoopback', () => {

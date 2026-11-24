@@ -129,6 +129,17 @@ export async function startIbkrFillWatcher(input: {
       return;
     }
 
+    if (!fill.order_id) {
+      /*
+       * IBKR omits `order_id` on anything not placed through the API, and the mapper reports that
+       * absence as an empty string. Grouping by it would file every manually placed execution on
+       * the account under one key and merge them into a single fill with a summed size and a
+       * blended price across unrelated instruments. Nothing here placed those orders, so there is
+       * no pending order waiting on them either.
+       */
+      return;
+    }
+
     const existing = pendingByOrder.get(fill.order_id);
     if (existing) {
       existing.push(fill);
