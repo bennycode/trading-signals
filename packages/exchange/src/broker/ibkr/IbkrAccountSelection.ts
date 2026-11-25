@@ -69,8 +69,8 @@ export async function resolveIbkrAccountId(input: {
  *
  * IBKR numbers paper accounts `DU…`, or `DF…` under an advisor, against `U…` and `F…` for the
  * accounts that hold real money. The prefix is the only thing in the session that says which kind
- * it is: the Web API has no live/paper switch, so a paper account is reached by logging the gateway
- * in as the paper user and nothing in the response announces that.
+ * it is: which environment the gateway logged into is settled at its login page, and nothing in
+ * the API's responses announces the answer.
  *
  * @see https://www.interactivebrokers.com/docs/web-api/authentication/paper
  */

@@ -8,8 +8,10 @@ import {runGateway} from './startIbkrGateway.js';
  *   npm run gateway:ibkr:paper:op      # the paper login
  *
  * Which account the gateway logs into is the only thing that decides whether orders are simulated,
- * because the Web API has no live/paper switch. So the pair is chosen here and nowhere else, and
- * the username is printed to make the choice visible before a second factor is approved.
+ * and nothing downstream can change it afterwards. So the login is settled here and nowhere else —
+ * the credential pair and the login page's Live/Paper mode, which IBKR refuses a paper username
+ * without — and the username is printed to make the choice visible before a second factor is
+ * approved.
  */
 const paper = process.argv.includes('--paper');
 
@@ -44,6 +46,7 @@ console.info(`Logging the gateway in as "${username}" (${paper ? 'paper' : 'live
 
 await runGateway({
   account: username,
+  paper,
   password,
   // IB Key sends a push to the phone. A passkey cannot be used: the Web API does not support it.
   twoFactorMethod: process.env.IBKR_TWO_FACTOR_METHOD ?? 'IB Key',

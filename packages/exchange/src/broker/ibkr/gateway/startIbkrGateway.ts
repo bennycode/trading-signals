@@ -135,7 +135,12 @@ async function run(command: string, args: string[]): Promise<void> {
  * The session lapses roughly daily and IBKR then sends a fresh push, so this stays in the
  * foreground: it is a thing a human is expected to be near, not a daemon.
  */
-export async function runGateway(options: {account: string; password: string; twoFactorMethod?: string | undefined}) {
+export async function runGateway(options: {
+  account: string;
+  paper?: boolean | undefined;
+  password: string;
+  twoFactorMethod?: string | undefined;
+}) {
   await ensureGateway();
   const child = await startGateway();
 
@@ -156,6 +161,7 @@ export async function runGateway(options: {account: string; password: string; tw
     await loginToIbkrGateway({
       account: options.account,
       gatewayUrl: GATEWAY_URL,
+      paper: options.paper,
       password: options.password,
       screenshotPath: join(GATEWAY_DIR, '..', '.gateway-outputs', `login-failed-${Date.now()}.png`),
       twoFactorMethod: options.twoFactorMethod,

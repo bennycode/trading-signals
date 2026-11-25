@@ -80,10 +80,10 @@ export function getBrokerClient(account: BrokerAccount, options?: BrokerClientOp
        * the broker start that gateway and log in rather than requiring one somebody else brought
        * up. Both are optional, so an empty pair still talks to a running gateway.
        *
-       * `paper` is passed as a check rather than a switch, because IBKR's paper account has its
-       * own username and the Web API has no live/paper toggle to flip: the credentials above
-       * decide which environment the session lands in, and this is what refuses the session that
-       * contradicts the caller.
+       * `paper` reaches two different things. The login page has a Live/Paper switch that a paper
+       * username is refused without, so this decides which mode the gateway logs in with; and once
+       * there is a session, it is the check that refuses one on the side the caller did not ask
+       * for, whoever brought that session up.
        *
        * The account id is discovered from the session, and candles come from IBKR's own history
        * endpoint unless a different feed is supplied.

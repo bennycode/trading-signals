@@ -43,9 +43,9 @@ IBKR is the exception to everything above. It has no API keys, so its credential
 
 It is the **username**, not the `DU…` account number that Client Portal shows beside it — the account number is not a login and the gateway will reject it.
 
-Orders go through the [Client Portal Gateway](../exchange/src/broker/ibkr/README.md), a local Java process that must be running and logged in before any command, which `npm run gateway:ibkr` in the exchange package starts. The login needs an IB Key push approved on your phone, so it cannot run unattended.
+Orders go through the [Client Portal Gateway](../exchange/src/broker/ibkr/README.md), a local Java process that must be running and logged in before any command, which `npm run gateway:ibkr` in the exchange package starts. A live login needs an IB Key push approved on your phone, so it cannot run unattended; a paper login has no second factor.
 
-Paper trading is a separate login rather than a separate endpoint: IBKR issues the paper account its own username and account number, and the Web API has no switch between them. So the gateway has to be logged in as the paper user, and the CLI refuses the command when the session turns out to be on the other side of what `--live` asked for. Market data comes from IBKR itself, and is delayed by about 15 minutes without a market-data subscription.
+Paper trading is a separate login rather than a separate endpoint: IBKR issues the paper account its own username and account number, and the gateway's login page has a Live/Paper switch that must match — a paper username submitted in live mode is refused. So the gateway has to be logged in as the paper user, which `npm run gateway:ibkr:paper` does, and the CLI refuses the command when the session turns out to be on the other side of what `--live` asked for. Market data comes from IBKR itself, and is delayed by about 15 minutes without a market-data subscription.
 
 | Command | Description |
 | --- | --- |

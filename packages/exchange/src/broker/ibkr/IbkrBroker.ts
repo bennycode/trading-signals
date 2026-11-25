@@ -142,6 +142,7 @@ export class IbkrBroker extends Broker implements CandleFeed {
           this.#gatewayState = state;
           credentials.onGatewayStateChange?.(state);
         },
+        paper: this.#paper,
         password: credentials.password ?? '',
         twoFactorMethod: credentials.twoFactorMethod,
       })

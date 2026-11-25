@@ -34,13 +34,13 @@ npm run gateway:ibkr:op   # resolves IBKR_USERNAME / IBKR_PASSWORD from 1Passwor
 
 ## Paper Trading
 
-IBKR's paper account has **its own username and its own account number** (`DU…`, against `U…` for the account holding real money), and the Web API has no live/paper switch to flip. The credentials decide which environment the session lands in, so paper trading means logging the gateway in as the paper user:
+IBKR's paper account has **its own username and its own account number** (`DU…`, against `U…` for the account holding real money). Paper trading means logging the gateway in as the paper user, with the gateway's login page switched to paper mode — IBKR refuses a paper username submitted in live mode, and says so only after the credentials have been sent:
 
 ```ts
 const broker = getIbkrClient({
   account: process.env.IBKR_PAPER_USERNAME,
   password: process.env.IBKR_PAPER_PASSWORD,
-  paper: true, // refuses the session if it turns out to be a live account
+  paper: true, // logs in in paper mode, and refuses the session if it turns out to be a live account
 });
 ```
 
@@ -51,9 +51,9 @@ npm run gateway:ibkr:paper:op   # the paper login
 npm run gateway:ibkr:op         # the live login
 ```
 
-It prints the username it is logging in as, so you can see which environment you are about to approve a second factor for.
+It prints the username and the environment it is logging in as, so you can see which one you are about to authenticate. The paper login carries no second factor, so it completes without a phone — unlike the live one.
 
-`paper` is a check rather than a switch. Set it and a session on the wrong side is refused on the first call, which is the difference between a configuration error and a strategy placing real orders while believing it is simulated. Leave it unset to trade whatever the gateway is logged into.
+`paper` also stays a check after the login. On a gateway somebody else brought up, a session on the wrong side is refused on the first call, which is the difference between a configuration error and a strategy placing real orders while believing it is simulated. Leave it unset to trade whatever the gateway is logged into.
 
 Find the paper username under **Client Portal → Settings → Account Configuration → Paper Trading Account**, and set a password there with _Reset Paper Trading Password_ if you have never used it. Identical live and paper credentials cause login errors, so give the paper account its own.
 
@@ -76,7 +76,7 @@ Permissions are **per product**, and a product you have not been granted is refu
 
 ## Good to know
 
-- **The session needs a human.** The login is automated, but IBKR's 2FA sends an IB Key push that has to be approved on your phone, and the session expires roughly daily, which brings another push. A passkey cannot be used: IBKR's Web API supports IB Key, Handy Key, SMS and DSC+ only. `getIbkrClient` therefore does not block: construction returns immediately, `broker.ready` is the awaitable, and `onGatewayStateChange` reports progress (`downloading` → `starting` → `awaiting-two-factor` → `authenticated`) so an application can say what it is waiting for. A gateway that is already logged in is reused rather than re-authenticated, which keeps the pushes to roughly one a day.
+- **A live session needs a human.** The login is automated, but IBKR's 2FA sends an IB Key push that has to be approved on your phone, and the session expires roughly daily, which brings another push. A passkey cannot be used: IBKR's Web API supports IB Key, Handy Key, SMS and DSC+ only. `getIbkrClient` therefore does not block: construction returns immediately, `broker.ready` is the awaitable, and `onGatewayStateChange` reports progress (`downloading` → `starting` → `awaiting-two-factor` → `authenticated`) so an application can say what it is waiting for. A gateway that is already logged in is reused rather than re-authenticated, which keeps the pushes to roughly one a day.
 - **The login form is IBKR's to change.** Its field and dropdown selectors live in `gateway/loginToIbkrGateway.ts`; a redesign there is what breaks the login, and a failed attempt leaves a screenshot in `.gateway-outputs/`.
 - **Market data may be delayed, candles included.** Without a market-data subscription for the relevant exchange, bars arrive roughly 15 minutes behind the market — measured across three US equities at once, all lagging 15.1–15.2 minutes. The quote feed separately reports `D` (delayed) and can return no price fields at all during regular hours. Nothing errors, so the delay is only visible by comparing a bar's open time against the clock. Two consequences worth planning for: `estimateFee()` and `getFeeRates()` price off a close from a quarter of an hour ago, and `watchCandles()` anchored at `new Date()` emits nothing until the feed catches up to that anchor — pass an `openTimeInISO` behind the delay if you want bars immediately. A subscription is bought per exchange in **Client Portal → Settings → User Settings → Market Data Subscriptions**.
 - **Order updates are polled.** `watchOrders` polls the trades endpoint rather than opening IBKR's WebSocket, which needs its own handshake and re-subscribes on every reconnect.

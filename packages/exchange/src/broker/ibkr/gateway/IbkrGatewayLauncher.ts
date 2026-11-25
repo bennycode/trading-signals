@@ -9,6 +9,8 @@ export interface IbkrGatewayLauncherOptions {
   gatewayUrl?: string | undefined;
   /** Reported as the launcher advances, so a caller can say "approve the push on your phone". */
   onStateChange?: ((state: IbkrGatewayState) => void) | undefined;
+  /** Logs in through the login page's paper mode, which a paper username is refused without. */
+  paper?: boolean | undefined;
   password: string;
   /** The second factor to pick when the account has several enrolled. */
   twoFactorMethod?: string | undefined;
@@ -104,6 +106,7 @@ export class IbkrGatewayLauncher {
       await loginToIbkrGateway({
         account: this.#options.account,
         gatewayUrl: this.gatewayUrl,
+        paper: this.#options.paper,
         password: this.#options.password,
         twoFactorMethod: this.#options.twoFactorMethod,
       });

@@ -24,10 +24,13 @@ export interface IbkrBrokerOptions {
    * Which environment this broker is allowed to trade: `true` for the simulated `DU…` account,
    * `false` for the one holding real money, and unset to take whatever the gateway is logged into.
    *
-   * It is a check, not a switch. IBKR's Web API has no live/paper toggle — a paper account is
-   * reached by logging the gateway in as the paper user, whose credentials are separate from the
-   * live ones ({@link account} and {@link password} carry whichever pair applies). Set this and a
-   * session on the wrong side is refused on the first call rather than silently placing real
+   * A paper account is reached by logging the gateway in as the paper user, whose credentials are
+   * separate from the live ones ({@link account} and {@link password} carry whichever pair
+   * applies), and in the login page's paper mode, which this selects — IBKR refuses a paper
+   * username submitted in live mode.
+   *
+   * It stays a check afterwards, and that is what it is for on a gateway somebody else logged in:
+   * a session on the wrong side is refused on the first call rather than silently placing real
    * orders for a strategy that believes it is on paper.
    *
    * @see https://www.interactivebrokers.com/docs/web-api/authentication/paper

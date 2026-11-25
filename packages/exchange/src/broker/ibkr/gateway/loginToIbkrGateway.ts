@@ -29,6 +29,9 @@ async function loadChromium() {
 const SELECTOR = {
   /** Shown only when the account has more than one second factor enrolled. */
   deviceChooser: 'select#xyz-field-multipleselect',
+  /** The Live/Paper switch. Styled, so the input itself is never visible and its label takes the click. */
+  paperSwitch: 'input#toggle1[name=paperSwitch]',
+  paperSwitchLabel: 'label[for=toggle1]',
   password: '#xyz-field-password',
   /** IBKR's own "Didn't receive the notification?" link on the push-waiting page. */
   resendNotification: 'a.xyz-resendnotification',
@@ -48,6 +51,15 @@ const RESEND_INTERVAL_MS = 90_000;
 export interface IbkrLoginOptions {
   account: string;
   gatewayUrl: string;
+  /**
+   * Whether to log in in paper trading mode.
+   *
+   * The login page has a Live/Paper switch that defaults to live, and the two modes are not
+   * interchangeable: a paper username submitted in live mode is refused with "You have selected
+   * the Live Account Mode, but the specified user is a Paper Trading user", which costs the full
+   * second-factor wait before anything says so.
+   */
+  paper?: boolean | undefined;
   /** Written here when the login fails, which is the only way to tell a prompt from a changed form. */
   screenshotPath?: string;
   /** How long to wait for the second factor, which needs a human to tap the push. */
@@ -92,6 +104,10 @@ export async function loginToIbkrGateway(options: IbkrLoginOptions): Promise<voi
 
     await page.goto(`${gatewayUrl}/sso/Login?forwardTo=22&RL=1&ip2loc=on`, {waitUntil: 'domcontentloaded'});
 
+    if (options.paper) {
+      await selectPaperMode(page);
+    }
+
     await page.locator(SELECTOR.username).fill(account);
     await page.locator(SELECTOR.password).fill(password);
     await page.locator(SELECTOR.submit).click();
@@ -123,6 +139,28 @@ export async function loginToIbkrGateway(options: IbkrLoginOptions): Promise<voi
     );
   } finally {
     await browser?.close();
+  }
+}
+
+/**
+ * Flips the login page's Live/Paper switch to paper.
+ *
+ * Checked state is read first rather than clicked blindly, so the switch is left alone if IBKR
+ * ever changes which mode the page opens in. The state is read back afterwards because the
+ * alternative failure is silent: a switch that moved or stopped responding submits the paper
+ * username against live, and IBKR only says so after the credentials have been sent.
+ */
+async function selectPaperMode(page: Page): Promise<void> {
+  const toggle = page.locator(SELECTOR.paperSwitch);
+
+  if (!(await toggle.isChecked())) {
+    await page.locator(SELECTOR.paperSwitchLabel).click();
+  }
+
+  if (!(await toggle.isChecked())) {
+    throw new Error(
+      'Could not switch the IBKR login page to paper trading mode. Its Live/Paper switch did not respond, and a paper username submitted in live mode is refused. The selectors are in `loginToIbkrGateway.ts`.'
+    );
   }
 }
 
