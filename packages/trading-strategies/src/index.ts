@@ -43,6 +43,7 @@ export {
   type WeaknessCategory,
   type WeaknessCheck,
   type WeaknessCheckName,
+  type WeaknessMeasure,
   type WeaknessVerdict,
 } from './util/ChartHealth.js';
 export * from './report/index.js';

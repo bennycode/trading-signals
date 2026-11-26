@@ -1,7 +1,13 @@
 import type {Candle} from '@typedtrader/exchange';
 import {NotEnoughDataError} from 'trading-signals';
 import {describe, expect, it} from 'vitest';
-import {classifyChartHealth, ChartHealth, type WeaknessCheckName, type ChartHealthOptions} from './ChartHealth.js';
+import {
+  classifyChartHealth,
+  ChartHealth,
+  type ChartHealthOptions,
+  type HealthReport,
+  type WeaknessCheckName,
+} from './ChartHealth.js';
 
 const ONE_DAY_IN_MS = 86_400_000;
 
@@ -159,11 +165,44 @@ describe('ChartHealth', () => {
     expect(withBenchmark.unreadWeight, 'every check has something to read once a benchmark arrives').toBe(0);
   });
 
+  it('shows by how much a check missed, not only that it missed', () => {
+    const rising = scoreOf(dailyCandles(risingCloses, CALM_BARS)).getReportOrThrow();
+    const breaking = scoreOf(dailyCandles(breakdownCloses, BREAKDOWN_BARS)).getReportOrThrow();
+    const gap = (report: HealthReport) =>
+      report.checks
+        .find(check => check.name === 'belowFallingFastAverage')
+        ?.measures.find(entry => entry.label === 'close against the fast average')?.deviationPercent;
+
+    expect(gap(rising), 'an advancing price sits above its own average').toBeGreaterThan(0);
+    expect(gap(breaking), 'a breaking price sits below it, and the number says how far').toBeLessThan(-10);
+    expect(
+      (gap(breaking) ?? 0) * 100,
+      'the percentage is rounded to two decimals, because it is read rather than computed with'
+    ).toBe(Math.round((gap(breaking) ?? 0) * 100));
+  });
+
+  it('withholds a percentage where one would be meaningless', () => {
+    const report = scoreOf(dailyCandles(breakdownCloses, BREAKDOWN_BARS)).getReportOrThrow();
+    const check = report.checks.find(entry => entry.name === 'macdBelowZero');
+    const zeroLine = check?.measures.find(entry => entry.label === 'trend oscillator against its zero line');
+
+    expect(zeroLine?.deviationPercent, 'nothing is a percentage of zero').toBeNull();
+    expect(zeroLine?.reading, 'the reading itself is still there to be judged').toBeLessThan(0);
+  });
+
+  it('dates the reading by the last bar the checks read', () => {
+    const series = dailyCandles(risingCloses, CALM_BARS);
+    const report = scoreOf(series).getReportOrThrow();
+
+    expect(report.asOf).toBe(series.at(-1)?.openTimeInISO);
+  });
+
   it('leaves distribution unread when the window holds no bars of one kind', () => {
     const report = scoreOf(dailyCandles(breakdownCloses, BREAKDOWN_BARS)).getReportOrThrow();
     const distribution = report.checks.find(check => check.name === 'distribution');
 
     expect(distribution?.fired, 'a relentless decline has no up bars whose volume could be compared').toBeNull();
+    expect(distribution?.measures, 'a check that compared nothing has no numbers to show').toStrictEqual([]);
   });
 
   it('lets no single category reach the confirmed band on its own', () => {

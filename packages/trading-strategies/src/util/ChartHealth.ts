@@ -31,6 +31,25 @@ export type WeaknessCheckName =
   | 'rsiBearRange'
   | 'volumeLineFalling';
 
+/**
+ * One comparison a check made, kept so a reader can see whether it missed by a mile or by a hair.
+ * A bare `fired: false` cannot be reviewed: price 25% under a still-rising average and price a
+ * cent under it are the same answer until the numbers are on the page.
+ */
+export type WeaknessMeasure = {
+  /**
+   * How far {@link WeaknessMeasure.reading} sits from {@link WeaknessMeasure.limit}, in percent of
+   * the limit, rounded to two decimals because it is read rather than computed with. Negative means
+   * below the limit. `null` where a percentage would be meaningless, as against a zero line.
+   */
+  deviationPercent: number | null;
+  /** What the two numbers are, in the card's own terms rather than in indicator names. */
+  label: string;
+  /** The line this check watches: an average, a band, a threshold, or the window's own opening. */
+  limit: number;
+  reading: number;
+};
+
 export type WeaknessCheck = {
   category: WeaknessCategory;
   /**
@@ -38,6 +57,8 @@ export type WeaknessCheck = {
    * `false`: an unread check deducts nothing, so it flatters the score by its own weight.
    */
   fired: boolean | null;
+  /** Empty for a check that could not be read at all, since it compared nothing. */
+  measures: WeaknessMeasure[];
   name: WeaknessCheckName;
   weight: number;
 };
@@ -45,6 +66,12 @@ export type WeaknessCheck = {
 export type WeaknessVerdict = 'distribution' | 'downtrend' | 'noise' | 'weakening';
 
 export type HealthReport = {
+  /**
+   * Open of the last bar the checks read. A score with no date on it cannot be compared with the
+   * next one, and a feed that withholds the session still forming makes the latest bar older than
+   * the moment of the reading.
+   */
+  asOf: string;
   checks: WeaknessCheck[];
   /**
    * What is left of a clean chart once the fired checks are deducted, out of 100. It reads like a
@@ -166,6 +193,7 @@ type Bar = {
   macd: number;
   macdSignal: number;
   obv: number;
+  openTimeInISO: string;
   /** Close divided by the benchmark's close, or `null` while no benchmark has been fed. */
   relative: number | null;
   rsi: number;
@@ -180,6 +208,23 @@ type Part = {
   intervalInMillis: number;
   requiredInputs: number;
 };
+
+/** A check's verdict together with the comparisons it reached that verdict on. */
+type Reading = {fired: boolean | null; measures: WeaknessMeasure[]};
+
+/** A check the window held nothing to read: it compared nothing, so it shows no numbers. */
+const UNREAD: Reading = {fired: null, measures: []};
+
+function measure(label: string, reading: number, limit: number): WeaknessMeasure {
+  const deviation = limit === 0 ? null : ((reading - limit) / Math.abs(limit)) * 100;
+
+  return {
+    deviationPercent: deviation === null ? null : Math.round(deviation * 100) / 100,
+    label,
+    limit,
+    reading,
+  };
+}
 
 function olderAndRecentHalf(bars: readonly Bar[]) {
   const middle = Math.floor(bars.length / 2);
@@ -341,7 +386,8 @@ export class ChartHealth {
     const readings = this.#evaluate({latest, oldest});
     const checks = WEIGHTS.map(entry => ({
       category: entry.category,
-      fired: readings[entry.name],
+      fired: readings[entry.name].fired,
+      measures: readings[entry.name].measures,
       name: entry.name,
       weight: entry.weight,
     }));
@@ -349,6 +395,7 @@ export class ChartHealth {
     const health = Math.max(0, FULL_HEALTH - deducted);
 
     return {
+      asOf: latest.openTimeInISO,
       checks,
       health,
       soleCategory: soleCategory(checks),
@@ -407,6 +454,7 @@ export class ChartHealth {
         macd: macd.macd,
         macdSignal: macd.signal,
         obv,
+        openTimeInISO: bar.openTimeInISO,
         relative: this.#benchmarkClose === null ? null : bar.close.toNumber() / this.#benchmarkClose,
         rsi,
         slowAverage,
@@ -417,11 +465,17 @@ export class ChartHealth {
     });
   }
 
-  #evaluate({latest, oldest}: {latest: Bar; oldest: Bar}): Record<WeaknessCheckName, boolean | null> {
+  #evaluate({latest, oldest}: {latest: Bar; oldest: Bar}): Record<WeaknessCheckName, Reading> {
     const {older, recent} = olderAndRecentHalf(this.#window);
     const indexValues = this.#window.map(bar => bar.rsi);
     const recentHigh = getMaximum(recent.map(bar => bar.high));
     const olderHigh = getMaximum(older.map(bar => bar.high));
+    const recentLow = getMinimum(recent.map(bar => bar.low));
+    const olderLow = getMinimum(older.map(bar => bar.low));
+    const recentIndexPeak = getMaximum(recent.map(bar => bar.rsi));
+    const olderIndexPeak = getMaximum(older.map(bar => bar.rsi));
+    const recentVolumePeak = getMaximum(recent.map(bar => bar.obv));
+    const olderVolumePeak = getMaximum(older.map(bar => bar.obv));
 
     const upVolumes: number[] = [];
     const downVolumes: number[] = [];
@@ -442,53 +496,124 @@ export class ChartHealth {
 
     return {
       // Range widening as price falls is what separates a breakdown from a slow drift lower.
-      atrExpandingWhileFalling: latest.close < oldest.close && latest.atr > oldest.atr,
+      atrExpandingWhileFalling: {
+        fired: latest.close < oldest.close && latest.atr > oldest.atr,
+        measures: [
+          measure('close against the window opening', latest.close, oldest.close),
+          measure('average range against the window opening', latest.atr, oldest.atr),
+        ],
+      },
       /*
        * Price reaching a higher high while the index or the volume line does not: the move is
        * running on less force than the one before it.
        */
-      bearishDivergence:
-        recentHigh > olderHigh &&
-        (getMaximum(recent.map(bar => bar.rsi)) < getMaximum(older.map(bar => bar.rsi)) ||
-          getMaximum(recent.map(bar => bar.obv)) < getMaximum(older.map(bar => bar.obv))),
+      bearishDivergence: {
+        fired: recentHigh > olderHigh && (recentIndexPeak < olderIndexPeak || recentVolumePeak < olderVolumePeak),
+        measures: [
+          measure('latest high against the earlier high', recentHigh, olderHigh),
+          measure('momentum peak against the earlier peak', recentIndexPeak, olderIndexPeak),
+          measure('volume line peak against the earlier peak', recentVolumePeak, olderVolumePeak),
+        ],
+      },
       /*
        * Both conditions, because price below a still-rising average is usually a pullback rather
        * than a change of trend.
        */
-      belowFallingFastAverage: latest.close < latest.fastAverage && latest.fastAverage < oldest.fastAverage,
-      deathCross:
-        latest.fastAverage < latest.slowAverage ||
-        (latest.close < latest.slowAverage && latest.slowAverage < oldest.slowAverage),
+      belowFallingFastAverage: {
+        fired: latest.close < latest.fastAverage && latest.fastAverage < oldest.fastAverage,
+        measures: [
+          measure('close against the fast average', latest.close, latest.fastAverage),
+          measure('fast average against the window opening', latest.fastAverage, oldest.fastAverage),
+        ],
+      },
+      deathCross: {
+        fired:
+          latest.fastAverage < latest.slowAverage ||
+          (latest.close < latest.slowAverage && latest.slowAverage < oldest.slowAverage),
+        measures: [
+          measure('fast average against the slow average', latest.fastAverage, latest.slowAverage),
+          measure('close against the slow average', latest.close, latest.slowAverage),
+          measure('slow average against the window opening', latest.slowAverage, oldest.slowAverage),
+        ],
+      },
       /*
        * Heavier trade on down bars than on up bars. A rise in volume on its own says nothing about
        * which side is in a hurry, which is the whole point of separating the two. A window with no
        * bars of one kind has nothing to compare, which a relentless decline produces.
        */
       distribution:
-        upVolumes.length === 0 || downVolumes.length === 0 ? null : getAverage(downVolumes) > getAverage(upVolumes),
-      lowerBandRide: latest.close <= latest.lowerBand && latest.bandWidth > oldest.bandWidth,
+        upVolumes.length === 0 || downVolumes.length === 0
+          ? UNREAD
+          : {
+              fired: getAverage(downVolumes) > getAverage(upVolumes),
+              measures: [
+                measure(
+                  'volume on down bars against volume on up bars',
+                  getAverage(downVolumes),
+                  getAverage(upVolumes)
+                ),
+              ],
+            },
+      lowerBandRide: {
+        fired: latest.close <= latest.lowerBand && latest.bandWidth > oldest.bandWidth,
+        measures: [
+          measure('close against the lower band', latest.close, latest.lowerBand),
+          measure('band width against the window opening', latest.bandWidth, oldest.bandWidth),
+        ],
+      },
       /*
        * Compared half-window against half-window rather than by pivot detection, so a single
        * outlying bar cannot decide it. Real swing-pivot detection would be stricter about what
        * counts as a high, at the price of needing a pivot definition of its own.
        */
-      lowerHighsAndLows:
-        recentHigh < olderHigh && getMinimum(recent.map(bar => bar.low)) < getMinimum(older.map(bar => bar.low)),
+      lowerHighsAndLows: {
+        fired: recentHigh < olderHigh && recentLow < olderLow,
+        measures: [
+          measure('latest high against the earlier high', recentHigh, olderHigh),
+          measure('latest low against the earlier low', recentLow, olderLow),
+        ],
+      },
       /*
        * Below the zero line and freshly back below its signal. Below zero alone only restates the
        * trend the first three checks already cover, so the crossing has to be inside the window.
        */
-      macdBelowZero:
-        latest.macd < 0 && latest.macd < latest.macdSignal && this.#window.some(bar => bar.macd >= bar.macdSignal),
+      macdBelowZero: {
+        fired:
+          latest.macd < 0 && latest.macd < latest.macdSignal && this.#window.some(bar => bar.macd >= bar.macdSignal),
+        measures: [
+          measure('trend oscillator against its zero line', latest.macd, 0),
+          measure('trend oscillator against its signal', latest.macd, latest.macdSignal),
+        ],
+      },
       /*
        * Ground lost to the benchmark across the window. Measured on the ratio of the two closes
        * rather than on price, so it fires on an instrument that rises less than its index as well
        * as on one that falls harder, which is what makes it an early warning rather than a
        * restatement of the trend checks.
        */
-      relativeStrength: latest.relative === null || oldest.relative === null ? null : latest.relative < oldest.relative,
-      rsiBearRange: getMaximum(indexValues) <= BEAR_RANGE_CEILING && getMinimum(indexValues) <= BEAR_RANGE_FLOOR,
-      volumeLineFalling: latest.close >= oldest.close && latest.obv < oldest.obv,
+      relativeStrength:
+        latest.relative === null || oldest.relative === null
+          ? UNREAD
+          : {
+              fired: latest.relative < oldest.relative,
+              measures: [
+                measure('ratio to the benchmark against the window opening', latest.relative, oldest.relative),
+              ],
+            },
+      rsiBearRange: {
+        fired: getMaximum(indexValues) <= BEAR_RANGE_CEILING && getMinimum(indexValues) <= BEAR_RANGE_FLOOR,
+        measures: [
+          measure('momentum peak against the bear range ceiling', getMaximum(indexValues), BEAR_RANGE_CEILING),
+          measure('momentum low against the oversold floor', getMinimum(indexValues), BEAR_RANGE_FLOOR),
+        ],
+      },
+      volumeLineFalling: {
+        fired: latest.close >= oldest.close && latest.obv < oldest.obv,
+        measures: [
+          measure('volume line against the window opening', latest.obv, oldest.obv),
+          measure('close against the window opening', latest.close, oldest.close),
+        ],
+      },
     };
   }
 }
