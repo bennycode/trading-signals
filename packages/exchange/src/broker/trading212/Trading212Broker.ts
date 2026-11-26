@@ -26,7 +26,7 @@ import {
 import {TradingPair} from '../TradingPair.js';
 import type {CandleFeed, MarketDataSource} from '../MarketDataSource.js';
 import {Trading212API} from './api/Trading212API.js';
-import {Trading212OrderStatus, Trading212TimeValidity} from './api/schema/OrderSchema.js';
+import {Trading212OrderStatus, Trading212StopTimeValidity, Trading212TimeValidity} from './api/schema/OrderSchema.js';
 import {Trading212BrokerMapper} from './Trading212BrokerMapper.js';
 import {fetchFilledOrdersSince, latestFilledOrderId} from './newFilledOrders.js';
 
@@ -367,11 +367,6 @@ export class Trading212Broker extends Broker implements CandleFeed {
     return accountInfo.currencyCode;
   }
 
-  /** Not yet: the client carries no stop request, so a requested stop must not reach an order. */
-  override get supportsStopOrders(): boolean {
-    return false;
-  }
-
   protected override async placeOrder(pair: TradingPair, options: LimitOrderOptions): Promise<PendingLimitOrder>;
   protected override async placeOrder(pair: TradingPair, options: MarketOrderOptions): Promise<PendingMarketOrder>;
   protected override async placeOrder(pair: TradingPair, options: StopOrderOptions): Promise<PendingStopOrder>;
@@ -384,17 +379,34 @@ export class Trading212Broker extends Broker implements CandleFeed {
       throw new Error('Notional (sizeInCounter) orders are not supported by the Trading212 public API.');
     }
 
-    /*
-     * Trading212 does expose stop and stop-limit endpoints, and its order schema already reads them
-     * back, but this client carries no request for either yet. Refusing is the only honest answer:
-     * falling through to the market endpoint below would sell the position immediately.
-     */
-    if (options.type === OrderType.STOP || options.type === OrderType.STOP_LIMIT) {
-      throw new Error(`${options.type} orders are not wired into the Trading212 client yet.`);
-    }
-
     // Trading212 encodes side in the sign of `quantity`: positive = BUY, negative = SELL.
     const signedQuantity = options.side === OrderSide.SELL ? -Number(options.size) : Number(options.size);
+
+    /*
+     * `GOOD_TILL_CANCEL` rather than the `GTC` the limit endpoint takes: the stop endpoints answer
+     * "Invalid payload" to the short spelling. A protective stop outlives the session it was placed
+     * in, so expiring it at midnight would quietly leave the position unprotected overnight.
+     */
+    if (options.type === OrderType.STOP) {
+      const order = await this.#api.placeStopOrder({
+        quantity: signedQuantity,
+        stopPrice: Number(options.stopPrice),
+        ticker: pair.base,
+        timeValidity: Trading212StopTimeValidity.GOOD_TILL_CANCEL,
+      });
+      return Trading212BrokerMapper.toPendingOrder(order, pair, options);
+    }
+
+    if (options.type === OrderType.STOP_LIMIT) {
+      const order = await this.#api.placeStopLimitOrder({
+        limitPrice: Number(options.price),
+        quantity: signedQuantity,
+        stopPrice: Number(options.stopPrice),
+        ticker: pair.base,
+        timeValidity: Trading212StopTimeValidity.GOOD_TILL_CANCEL,
+      });
+      return Trading212BrokerMapper.toPendingOrder(order, pair, options);
+    }
 
     if (options.type === OrderType.LIMIT) {
       /*

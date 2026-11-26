@@ -81,6 +81,39 @@ export const PlaceLimitOrderRequestSchema = z.object({
   timeValidity: Trading212TimeValiditySchema,
 });
 
+/**
+ * The stop endpoints spell "good till cancel" in full, where the limit endpoint takes `GTC`. Sending
+ * `GTC` here answers `"Invalid payload"` against a control payload that reaches the business rules,
+ * so the two are not interchangeable and this enum stays separate from
+ * {@link Trading212TimeValiditySchema}.
+ */
+export const Trading212StopTimeValiditySchema = z.enum(['DAY', 'GOOD_TILL_CANCEL']);
+
+export const Trading212StopTimeValidity = {
+  DAY: 'DAY',
+  GOOD_TILL_CANCEL: 'GOOD_TILL_CANCEL',
+} as const;
+
+export const PlaceStopOrderRequestSchema = z.object({
+  /** Negative sells (the stop-loss case), positive buys. */
+  quantity: z.number(),
+  /** Triggers off the instrument's last traded price, and is not the price the order fills at. */
+  stopPrice: z.number(),
+  ticker: z.string(),
+  timeValidity: Trading212StopTimeValiditySchema,
+});
+
+export const PlaceStopLimitOrderRequestSchema = z.object({
+  /** Worst price the triggered limit order may fill at. */
+  limitPrice: z.number(),
+  quantity: z.number(),
+  stopPrice: z.number(),
+  ticker: z.string(),
+  timeValidity: Trading212StopTimeValiditySchema,
+});
+
 export type Order = z.infer<typeof OrderSchema>;
 export type PlaceMarketOrderRequest = z.infer<typeof PlaceMarketOrderRequestSchema>;
 export type PlaceLimitOrderRequest = z.infer<typeof PlaceLimitOrderRequestSchema>;
+export type PlaceStopOrderRequest = z.infer<typeof PlaceStopOrderRequestSchema>;
+export type PlaceStopLimitOrderRequest = z.infer<typeof PlaceStopLimitOrderRequestSchema>;

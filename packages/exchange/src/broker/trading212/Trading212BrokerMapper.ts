@@ -12,6 +12,10 @@ import {
   type PendingLimitOrder,
   type PendingMarketOrder,
   type PendingOrder,
+  type PendingStopLimitOrder,
+  type PendingStopOrder,
+  type StopLimitOrderOptions,
+  type StopOrderOptions,
   type TradingRules,
 } from '../Broker.js';
 import type {Instrument} from './api/schema/InstrumentSchema.js';
@@ -33,6 +37,8 @@ import {Trading212OrderStatus} from './api/schema/OrderSchema.js';
 export class Trading212BrokerMapper {
   static toPendingOrder(order: Order, pair: TradingPair, options: LimitOrderOptions): PendingLimitOrder;
   static toPendingOrder(order: Order, pair: TradingPair, options: MarketOrderOptions): PendingMarketOrder;
+  static toPendingOrder(order: Order, pair: TradingPair, options: StopOrderOptions): PendingStopOrder;
+  static toPendingOrder(order: Order, pair: TradingPair, options: StopLimitOrderOptions): PendingStopLimitOrder;
   static toPendingOrder(order: Order, pair: TradingPair, options: OrderOptions): PendingOrder {
     /*
      * We only ever place QUANTITY-strategy orders, so `quantity` is always populated on
@@ -56,6 +62,40 @@ export class Trading212BrokerMapper {
         type: OrderType.LIMIT,
       };
       return limit;
+    }
+    if (options.type === OrderType.STOP || options.type === OrderType.STOP_LIMIT) {
+      /*
+       * Read back from the response rather than echoed from the request: a venue that rounds the
+       * trigger to a tick would otherwise be reported at the price asked for, and the whole point
+       * of a protective stop is knowing where it actually sits.
+       */
+      if (order.stopPrice == null) {
+        throw new Error(`Trading212 returned a ${options.type} order without a stopPrice (id: ${order.id}).`);
+      }
+      if (options.type === OrderType.STOP) {
+        const stop: PendingStopOrder = {
+          id: `${order.id}`,
+          pair,
+          side: options.side,
+          size,
+          stopPrice: `${order.stopPrice}`,
+          type: OrderType.STOP,
+        };
+        return stop;
+      }
+      if (order.limitPrice == null) {
+        throw new Error(`Trading212 returned a STOP_LIMIT order without a limitPrice (id: ${order.id}).`);
+      }
+      const stopLimit: PendingStopLimitOrder = {
+        id: `${order.id}`,
+        pair,
+        price: `${order.limitPrice}`,
+        side: options.side,
+        size,
+        stopPrice: `${order.stopPrice}`,
+        type: OrderType.STOP_LIMIT,
+      };
+      return stopLimit;
     }
     const market: PendingMarketOrder = {
       id: `${order.id}`,
@@ -93,6 +133,40 @@ export class Trading212BrokerMapper {
         type: OrderType.LIMIT,
       };
       return limit;
+    }
+
+    /*
+     * A resting stop reported as a market order would read as an order about to fill at any moment,
+     * which is the opposite of what it is, so the trigger is carried through instead of dropped.
+     */
+    if (order.type === 'STOP' || order.type === 'STOP_LIMIT') {
+      if (order.stopPrice == null) {
+        throw new Error(`Trading212 returned a ${order.type} order without a stopPrice (id: ${order.id}).`);
+      }
+      if (order.type === 'STOP') {
+        const stop: PendingStopOrder = {
+          id: `${order.id}`,
+          pair,
+          side,
+          size,
+          stopPrice: `${order.stopPrice}`,
+          type: OrderType.STOP,
+        };
+        return stop;
+      }
+      if (order.limitPrice == null) {
+        throw new Error(`Trading212 returned a STOP_LIMIT order without a limitPrice (id: ${order.id}).`);
+      }
+      const stopLimit: PendingStopLimitOrder = {
+        id: `${order.id}`,
+        pair,
+        price: `${order.limitPrice}`,
+        side,
+        size,
+        stopPrice: `${order.stopPrice}`,
+        type: OrderType.STOP_LIMIT,
+      };
+      return stopLimit;
     }
 
     const market: PendingMarketOrder = {

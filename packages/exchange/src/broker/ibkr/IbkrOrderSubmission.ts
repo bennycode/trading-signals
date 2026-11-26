@@ -12,6 +12,14 @@ import {
   type IbkrOrderRequest,
 } from './api/schema/OrderSchema.js';
 
+/** IBKR's wire spelling for each neutral order type. */
+const ORDER_TYPES = {
+  [OrderType.LIMIT]: IbkrOrderType.LIMIT,
+  [OrderType.MARKET]: IbkrOrderType.MARKET,
+  [OrderType.STOP]: IbkrOrderType.STOP,
+  [OrderType.STOP_LIMIT]: IbkrOrderType.STOP_LIMIT,
+} as const satisfies Record<OrderOptions['type'], string>;
+
 /**
  * Builds an IBKR order ticket and sees its confirmation dialogue through.
  *
@@ -32,6 +40,8 @@ export async function submitIbkrOrder(input: {
   const {accountId, api, conid, options, overnight, pair, timeInForce} = input;
 
   const isLimit = options.type === OrderType.LIMIT;
+  const isStop = options.type === OrderType.STOP;
+  const isStopLimit = options.type === OrderType.STOP_LIMIT;
 
   if (overnight && !isLimit) {
     throw new Error(
@@ -47,7 +57,7 @@ export async function submitIbkrOrder(input: {
      */
     cOID: randomUUID().replaceAll('-', '').slice(0, 32),
     conid,
-    orderType: isLimit ? IbkrOrderType.LIMIT : IbkrOrderType.MARKET,
+    orderType: ORDER_TYPES[options.type],
     /*
      * Limit orders are marked for the extended sessions, matching what Alpaca's mapper does.
      * IBKR allows only limit-family types there (`orderTypesOutside`), and a market order sent
@@ -68,7 +78,13 @@ export async function submitIbkrOrder(input: {
      */
     tif: overnight ? IbkrTimeInForce.OVERNIGHT_AND_DAY : timeInForce,
     ...(isNotional ? {cashQty: Number(options.size)} : {quantity: Number(options.size)}),
-    ...(isLimit ? {price: Number(options.price)} : {}),
+    /*
+     * `price` is the limit on a limit-family order and the trigger on a plain stop, so a `STP LMT`
+     * needs both fields and the two single-price types each need only their own.
+     */
+    ...(isLimit || isStopLimit ? {price: Number(options.price)} : {}),
+    ...(isStop ? {price: Number(options.stopPrice)} : {}),
+    ...(isStopLimit ? {auxPrice: Number(options.stopPrice)} : {}),
   };
 
   let response = await submitOrAnnotate(() => api.submitOrder(accountId, request), request.cOID, pair);
@@ -124,23 +140,17 @@ export async function submitIbkrOrder(input: {
 
     const accepted = response.find(isIbkrOrderSubmitSuccess);
     if (accepted) {
-      return options.type === OrderType.LIMIT
-        ? {
-            id: accepted.order_id,
-            pair,
-            price: options.price,
-            side: options.side,
-            size: options.size,
-            type: OrderType.LIMIT,
-          }
-        : {
-            id: accepted.order_id,
-            pair,
-            side: options.side,
-            size: options.size,
-            sizeInCounter: options.sizeInCounter,
-            type: OrderType.MARKET,
-          };
+      const base = {id: accepted.order_id, pair, side: options.side, size: options.size};
+      switch (options.type) {
+        case OrderType.LIMIT:
+          return {...base, price: options.price, type: OrderType.LIMIT};
+        case OrderType.STOP:
+          return {...base, stopPrice: options.stopPrice, type: OrderType.STOP};
+        case OrderType.STOP_LIMIT:
+          return {...base, price: options.price, stopPrice: options.stopPrice, type: OrderType.STOP_LIMIT};
+        case OrderType.MARKET:
+          return {...base, sizeInCounter: options.sizeInCounter, type: OrderType.MARKET};
+      }
     }
 
     throw new Error(`IBKR returned an unrecognised order response for ${pair.asString('/')}.`);
