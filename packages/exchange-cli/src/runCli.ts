@@ -1,4 +1,7 @@
-import {OrderSide, TradingPair} from '@typedtrader/exchange';
+import Big from 'big.js';
+import {OrderSide, TradingPair, getFilledBaseAmount} from '@typedtrader/exchange';
+import {classifyAtrMultiple} from 'trading-strategies';
+import {planStop, previewDistance, readTrueRange} from './cliStop.js';
 import {BROKERS, createCliBroker} from './cliBroker.js';
 import {formatHealthReport, scoreChartHealth} from './cliHealth.js';
 import {placeCliOrder, waitForOrder} from './cliOrders.js';
@@ -30,7 +33,7 @@ export async function runCli(argv: string[], overrides: Partial<CliDeps> = {}): 
     return {text: invocation.help};
   }
   const {args, command, count, interval, key, poll, take, timeout, values} = invocation;
-  const {broker, listInstruments} = (overrides.createBroker ?? createCliBroker)(
+  const {broker, listInstruments, placeStopOrder} = (overrides.createBroker ?? createCliBroker)(
     key,
     values.live ?? false,
     overrides.env ?? process.env
@@ -105,14 +108,70 @@ export async function runCli(argv: string[], overrides: Partial<CliDeps> = {}): 
         return {json: await broker.getFills(pair)};
       case 'buy':
       case 'sell': {
-        return {
-          json: await placeCliOrder(broker, pair, {
-            dryRun: values.dryRun,
-            limit: values.limit,
-            side: command === 'buy' ? OrderSide.BUY : OrderSide.SELL,
-            size: argument(args, 1, 'order size'),
-          }),
+        const request = {
+          dryRun: values.dryRun,
+          limit: values.limit,
+          side: command === 'buy' ? OrderSide.BUY : OrderSide.SELL,
+          size: argument(args, 1, 'order size'),
         };
+        const atrMultiple = command === 'buy' ? values.stopAtr : undefined;
+
+        if (atrMultiple === undefined) {
+          return {json: await placeCliOrder(broker, pair, request)};
+        }
+
+        /*
+         * Refused before the order rather than after it, because the outcome to avoid is a filled
+         * position that cannot be protected.
+         */
+        if (!placeStopOrder) {
+          throw new Error(
+            `${BROKERS[key].id} cannot place a protective stop from this CLI. Omit --stop-atr and place the stop yourself.`
+          );
+        }
+
+        if (values.dryRun) {
+          // The preview's own rule checks come first, so a rejected order says why it was rejected.
+          const preview = await placeCliOrder(broker, pair, request);
+          const planned = await readTrueRange(broker, pair);
+
+          return {
+            json: {
+              ...preview,
+              plannedStop: {
+                atr: planned.atr,
+                atrMultiple,
+                atrPercent: planned.atrPercent,
+                distancePercent: previewDistance(atrMultiple, planned.atrPercent),
+                room: classifyAtrMultiple(Number(atrMultiple)),
+              },
+            },
+          };
+        }
+
+        const trueRange = await readTrueRange(broker, pair);
+        const order = await placeCliOrder(broker, pair, request);
+
+        if (!('id' in order)) {
+          throw new Error('The order was previewed rather than placed, so there is nothing to protect.');
+        }
+
+        const {fill} = await waitForOrder(broker, pair, order.id, timeout, poll);
+        const placement = planStop({
+          anchorPrice: new Big(fill.price),
+          atr: trueRange.atr,
+          atrMultiple,
+          atrPercent: trueRange.atrPercent,
+          increment: (await broker.getTradingRules(pair)).counter_increment,
+          priorClose: trueRange.priorClose,
+        });
+        const stop = await placeStopOrder({
+          pair,
+          quantity: getFilledBaseAmount(fill).toString(),
+          stopPrice: placement.stopPrice,
+        });
+
+        return {json: {fill, order, stop: {...placement, ...stop}}};
       }
       case 'cancel':
         if (values.all) {

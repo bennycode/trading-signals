@@ -1,13 +1,16 @@
+import {randomUUID} from 'node:crypto';
 import {
   AlpacaAPI,
   AlpacaAssetClass,
   AlpacaMarketData,
+  AlpacaOrderType,
   IbkrBroker,
   MarketDataSource,
   Trading212API,
   Trading212Broker,
   getBrokerClient,
   type Candle,
+  type TradingPair,
 } from '@typedtrader/exchange';
 
 export const BROKERS = {
@@ -203,5 +206,27 @@ export function createCliBroker(key: BrokerKey, live: boolean, env: NodeJS.Proce
     }));
   };
 
-  return {broker, listInstruments};
+  /*
+   * A protective stop is not part of Broker, which knows only limit and market orders, so it is
+   * adapted here the same way instrument discovery is. Equities only: Alpaca takes no stop order
+   * on crypto, and none on a fractional quantity.
+   */
+  const placeStopOrder =
+    key === 'alpaca'
+      ? async ({pair, quantity, stopPrice}: {pair: TradingPair; quantity: string; stopPrice: string}) => {
+          const order = await new AlpacaAPI(options).postOrder({
+            client_order_id: randomUUID(),
+            qty: quantity,
+            side: 'sell',
+            stop_price: stopPrice,
+            symbol: pair.base,
+            time_in_force: 'gtc',
+            type: AlpacaOrderType.STOP,
+          });
+
+          return {orderId: order.id, stopPrice: order.stop_price ?? stopPrice};
+        }
+      : undefined;
+
+  return {broker, listInstruments, placeStopOrder};
 }

@@ -1,6 +1,7 @@
 import Big from 'big.js';
 import {Argument, Command, CommanderError, InvalidArgumentError, Option} from 'commander';
 import {parse as parseDuration} from 'ms';
+import {DEFAULT_ATR_TRAIL_MULTIPLE} from 'trading-strategies';
 import {BROKERS, type BrokerKey} from './cliBroker.js';
 
 interface Options {
@@ -14,6 +15,7 @@ interface Options {
   limit?: string;
   live?: boolean;
   poll?: number;
+  stopAtr?: string;
   table?: boolean;
   take?: number;
   timeout?: number;
@@ -120,10 +122,31 @@ export function parseCliArgs(argv: string[]) {
   command('orders <ticker>', 'Open orders');
   command('fills <ticker>', 'Order fills');
   for (const side of ['buy', 'sell']) {
-    command(`${side} <ticker>`, 'Place a market or limit order')
+    const order = command(`${side} <ticker>`, 'Place a market or limit order')
       .addArgument(new Argument('<quantity>', 'Positive quantity').argParser(positiveDecimal))
       .option('--limit <price>', 'Limit price', positiveDecimal)
       .option('--dry-run', 'Check trading rules and estimate fees');
+
+    if (side !== 'buy') {
+      continue;
+    }
+
+    /*
+     * Asking for a protective stop also asks the command to wait for the fill, because the stop is
+     * anchored to the price actually paid rather than to the price at the time of the order.
+     */
+    order
+      .option(
+        '--stop-atr <multiple>',
+        `Place a protective stop this many average ranges below the fill (e.g. ${DEFAULT_ATR_TRAIL_MULTIPLE})`,
+        positiveDecimal
+      )
+      .addOption(
+        new Option('--timeout <duration>', 'How long to wait for the fill the stop anchors to')
+          .argParser(positiveDuration)
+          .default(parseDuration('5m'), '5m')
+      )
+      .option('--poll <duration>', 'Fill poll interval (default: broker rate limit)', positiveDuration);
   }
   command('wait <ticker> <orderId>', 'Wait for a fill or for the order to close')
     .addOption(

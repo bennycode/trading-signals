@@ -184,6 +184,8 @@ export class AlpacaAPI {
     notional?: string | undefined;
     qty?: string | undefined;
     side: string;
+    /** Trigger price of a `stop` or `stop_limit` order, which the venue requires for those types. */
+    stop_price?: string | undefined;
     symbol: string;
     time_in_force: string;
     type: string;
