@@ -563,6 +563,25 @@ describe('runCli', {concurrent: false}, () => {
     }
   });
 
+  it('withholds the session still forming from a card dated today', async () => {
+    const {run} = setup();
+    vi.useFakeTimers({now: Date.parse('2026-09-01T12:00:00Z'), toFake: ['Date']});
+
+    try {
+      const result = await run(['health', 'AAPL', '--date', '2026-09-01']);
+
+      expect(result).toHaveProperty('json');
+      if ('json' in result) {
+        expect(
+          result.json,
+          'the bar of the requested day has not closed yet, so the card ends on the one before it'
+        ).toMatchObject({asOf: '2026-08-31T00:00:00.000Z'});
+      }
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   // `2026-02-31` is the case a shape test passes: it is the right shape and is not a day.
   it.each(['2026-13-40', '2026-02-31', '2026-1-2', 'yesterday'])(
     'rejects %j, which is not a calendar day',

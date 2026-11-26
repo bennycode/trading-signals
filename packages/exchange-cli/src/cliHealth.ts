@@ -55,10 +55,25 @@ export async function scoreChartHealth(
   const intervalInMillis = ms(TIMEFRAME);
   // The whole of the requested day, so the bar opening within it is the last one on the card.
   const cutoffInMillis = asOf === undefined ? undefined : Date.parse(`${asOf}T23:59:59.999Z`);
-  const history = (series: TradingPair) =>
-    cutoffInMillis === undefined
-      ? broker.getRecentCandles(series, count, intervalInMillis)
-      : getCandlesUntil(broker, series, count, intervalInMillis, cutoffInMillis);
+  const history = async (series: TradingPair) => {
+    if (cutoffInMillis === undefined) {
+      return broker.getRecentCandles(series, count, intervalInMillis);
+    }
+
+    const candles = await getCandlesUntil(broker, series, count, intervalInMillis, cutoffInMillis);
+    const nowInMillis = Date.now();
+
+    /*
+     * A window ending today reaches the session that is still forming, and half a bar answers the
+     * checks differently from the whole one. `getRecentCandles` withholds it, so a dated card has
+     * to as well, or asking for today would read a different card than asking for no date at all.
+     *
+     * By the bar's own stated size, which is conservative on a feed that stamps a daily bar at the
+     * session open rather than on the grid: at worst the card ends one session earlier than it
+     * could, and `asOf` says which bar it read.
+     */
+    return candles.filter(candle => candle.openTimeInMillis + candle.sizeInMillis <= nowInMillis);
+  };
 
   const candles = await history(pair);
   const benchmarkByOpenTime = new Map<number, Candle>();
