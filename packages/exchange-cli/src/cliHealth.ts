@@ -1,4 +1,5 @@
-import {parse as parseDuration} from 'ms';
+import {ms} from 'ms';
+import {z} from 'zod';
 import {getCandlesUntil, type Candle, type CandleFeed, type TradingPair} from '@typedtrader/exchange';
 import {ChartHealth, type HealthReport} from 'trading-strategies';
 
@@ -10,15 +11,31 @@ import {ChartHealth, type HealthReport} from 'trading-strategies';
  */
 const TIMEFRAME = '1d';
 
+/**
+ * A day a card can be read as of, checked rather than trusted: `2026-02-31` has the right shape and
+ * is not a day, and `2026-1-2` is not one either on a feed that stamps bars `YYYY-MM-DD`.
+ *
+ * Branded, so the checked day is what travels on to the candle request and an unchecked string does
+ * not type-check its way there. Everything downstream dates a bar by it.
+ */
+export const CalendarDaySchema = z.iso.date().brand<'CalendarDay'>();
+export type CalendarDay = z.output<typeof CalendarDaySchema>;
+
 export interface HealthRequest {
   /**
-   * Calendar day (`YYYY-MM-DD`, UTC) the card is read as of, so every period on it counts back
-   * from that session instead of from today. A day rather than an instant because the card is
-   * daily: asking for the 20th means the session of the 20th, whatever hour its bar is stamped
-   * with. Left out, the card reads the newest closed bar.
+   * Day (UTC) the card is read as of, so every period on it counts back from that session instead
+   * of from today. A day rather than an instant because the card is daily: asking for the 20th
+   * means the session of the 20th, whatever hour its bar is stamped with. Left out, the card reads
+   * the newest closed bar.
    */
-  asOf?: string | undefined;
-  /** Index or sector proxy the relative strength check measures the instrument against. */
+  asOf?: CalendarDay | undefined;
+  /**
+   * Index or sector proxy the relative strength check measures the instrument against, such as
+   * `SPY` for the broad market or the SPDR sector fund the instrument belongs to, `XLK` for a
+   * technology name and `XLE` for an oil one. A proxy only answers the question it is: measured
+   * against `SPY`, a chip maker in a falling semiconductor market reads as weak even when it is
+   * the strongest name in its sector.
+   */
   benchmark?: TradingPair | undefined;
   count: number;
 }
@@ -35,7 +52,7 @@ export async function scoreChartHealth(
   pair: TradingPair,
   {asOf, benchmark, count}: HealthRequest
 ): Promise<HealthReport> {
-  const intervalInMillis = parseDuration(TIMEFRAME);
+  const intervalInMillis = ms(TIMEFRAME);
   // The whole of the requested day, so the bar opening within it is the last one on the card.
   const cutoffInMillis = asOf === undefined ? undefined : Date.parse(`${asOf}T23:59:59.999Z`);
   const history = (series: TradingPair) =>

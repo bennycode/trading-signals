@@ -563,16 +563,17 @@ describe('runCli', {concurrent: false}, () => {
     }
   });
 
-  it('rejects anything but a calendar day', async () => {
-    const {deps} = setup();
-    await expect(runCli(['--broker', 'alpaca', 'health', 'AAPL', '--date', '2026-13-40'], deps)).rejects.toThrow(
-      'calendar day'
-    );
-    await expect(runCli(['--broker', 'alpaca', 'health', 'AAPL', '--date', 'yesterday'], deps)).rejects.toThrow(
-      'calendar day'
-    );
-    expect(deps.createBroker).not.toHaveBeenCalled();
-  });
+  // `2026-02-31` is the case a shape test passes: it is the right shape and is not a day.
+  it.each(['2026-13-40', '2026-02-31', '2026-1-2', 'yesterday'])(
+    'rejects %j, which is not a calendar day',
+    async date => {
+      const {deps} = setup();
+      await expect(runCli(['--broker', 'alpaca', 'health', 'AAPL', '--date', date], deps)).rejects.toThrow(
+        'calendar day'
+      );
+      expect(deps.createBroker).not.toHaveBeenCalled();
+    }
+  );
 
   it('leaves relative strength unread until a benchmark is named', async () => {
     const {broker, run} = setup();

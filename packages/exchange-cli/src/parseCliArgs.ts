@@ -1,8 +1,9 @@
 import Big from 'big.js';
 import {Argument, Command, CommanderError, InvalidArgumentError, Option} from 'commander';
-import {parse as parseDuration} from 'ms';
+import {parse} from 'ms';
 import {DEFAULT_ATR_TRAIL_MULTIPLE} from 'trading-strategies';
 import {BROKERS, type BrokerKey} from './cliBroker.js';
+import {CalendarDaySchema, type CalendarDay} from './cliHealth.js';
 
 interface Options {
   all?: boolean;
@@ -10,7 +11,7 @@ interface Options {
   broker: BrokerKey;
   count?: number;
   counter?: string;
-  date?: string;
+  date?: CalendarDay;
   dryRun?: boolean;
   interval?: number;
   limit?: string;
@@ -39,7 +40,7 @@ function positiveInt(value: string): number {
 }
 
 function positiveDuration(value: string): number {
-  const duration = parseDuration(value);
+  const duration = parse(value);
   if (!Number.isFinite(duration) || duration <= 0) {
     throw new InvalidArgumentError('Use a positive duration, e.g. 1m or 5s.');
   }
@@ -50,11 +51,14 @@ function positiveDuration(value: string): number {
  * A calendar day, which is as precise as a daily card can be read: the bar of that session is the
  * last one on it, whatever hour the broker stamps the bar with.
  */
-function calendarDay(value: string): string {
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(value) || Number.isNaN(Date.parse(`${value}T00:00:00Z`))) {
+function calendarDay(value: string): CalendarDay {
+  const day = CalendarDaySchema.safeParse(value);
+
+  if (!day.success) {
     throw new InvalidArgumentError('Use a calendar day, e.g. 2026-11-20.');
   }
-  return value;
+
+  return day.data;
 }
 
 function positiveDecimal(value: string): string {
@@ -88,11 +92,11 @@ function invocation(command: Command) {
     args,
     command: command.name(),
     count: values.count ?? 10,
-    interval: values.interval ?? parseDuration('1m'),
+    interval: values.interval ?? parse('1m'),
     key: values.broker,
     poll: values.poll ?? BROKERS[values.broker].pollInterval,
     take: values.take ?? Infinity,
-    timeout: values.timeout ?? parseDuration('5m'),
+    timeout: values.timeout ?? parse('5m'),
     values,
   };
 }
@@ -156,7 +160,7 @@ export function parseCliArgs(argv: string[]) {
       .addOption(
         new Option('--timeout <duration>', 'How long to wait for the fill the stop anchors to')
           .argParser(positiveDuration)
-          .default(parseDuration('5m'), '5m')
+          .default(parse('5m'), '5m')
       )
       .option('--poll <duration>', 'Fill poll interval (default: broker rate limit)', positiveDuration);
   }
@@ -164,7 +168,7 @@ export function parseCliArgs(argv: string[]) {
     .addOption(
       new Option('--timeout <duration>', 'Wait deadline; does not cancel the order')
         .argParser(positiveDuration)
-        .default(parseDuration('5m'), '5m')
+        .default(parse('5m'), '5m')
     )
     .option('--poll <duration>', 'Poll interval (default: broker rate limit)', positiveDuration);
   command('cancel <ticker> [orderId]', 'Cancel one order, or all with --all').option(
@@ -173,9 +177,7 @@ export function parseCliArgs(argv: string[]) {
   );
   command('candles <ticker>', 'Recent candles')
     .addOption(
-      new Option('--interval <duration>', 'Candle interval')
-        .argParser(positiveDuration)
-        .default(parseDuration('1m'), '1m')
+      new Option('--interval <duration>', 'Candle interval').argParser(positiveDuration).default(parse('1m'), '1m')
     )
     .option('--count <n>', 'Number of candles', positiveInt, 10);
   command('health <ticker>', 'Score chart health on daily bars, from 100 (nothing against it) down to 0')
@@ -185,9 +187,7 @@ export function parseCliArgs(argv: string[]) {
     .option('--count <n>', 'Candles to request; the card needs a long warm-up', positiveInt, 300);
   command('watch-candles <ticker>', 'Stream candles as NDJSON')
     .addOption(
-      new Option('--interval <duration>', 'Candle interval')
-        .argParser(positiveDuration)
-        .default(parseDuration('1m'), '1m')
+      new Option('--interval <duration>', 'Candle interval').argParser(positiveDuration).default(parse('1m'), '1m')
     )
     .option('--take <n>', 'Stop after n events (default: until Ctrl-C)', positiveInt);
   command('watch-orders', 'Stream fills as NDJSON').option(
@@ -199,7 +199,7 @@ export function parseCliArgs(argv: string[]) {
   command('smoke <ticker>', 'Run every read-only call against one instrument; places no orders').addOption(
     new Option('--interval <duration>', 'Candle interval for the market-data checks')
       .argParser(positiveDuration)
-      .default(parseDuration('1d'), '1d')
+      .default(parse('1d'), '1d')
   );
 
   try {

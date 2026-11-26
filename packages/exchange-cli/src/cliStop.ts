@@ -1,5 +1,5 @@
 import Big from 'big.js';
-import {parse as parseDuration} from 'ms';
+import {ms} from 'ms';
 import type {MarketDataSource, TradingPair} from '@typedtrader/exchange';
 import {AtrPercent, atrMultipleToPercent, classifyAtrMultiple, type AtrRoomVerdict} from 'trading-strategies';
 
@@ -40,7 +40,7 @@ function decimals(value: Big, places = 4): string {
 
 /** Reads the instrument's average range off its own daily bars. */
 export async function readTrueRange(broker: Pick<MarketDataSource, 'getRecentCandles'>, pair: TradingPair) {
-  const candles = await broker.getRecentCandles(pair, WARM_UP_BARS, parseDuration(TIMEFRAME));
+  const candles = await broker.getRecentCandles(pair, WARM_UP_BARS, ms(TIMEFRAME));
   const average = new AtrPercent(TRUE_RANGE_PERIOD);
 
   for (const candle of candles) {
