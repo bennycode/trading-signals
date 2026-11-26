@@ -18,22 +18,32 @@ const paper = process.argv.includes('--paper');
 /**
  * The pair is taken whole: IBKR gives the two logins different passwords, so completing a prefixed
  * username with the unprefixed password builds a pair belonging to neither.
+ *
+ * Its variable name comes back with it, because the live pair has two spellings and naming the
+ * wrong one would send somebody to set a variable that was never going to be read.
  */
-function credentials(): {password: string | undefined; username: string | undefined} {
+function credentials(): {password: string | undefined; prefix: string; username: string | undefined} {
   if (paper) {
-    return {password: process.env.IBKR_PAPER_PASSWORD, username: process.env.IBKR_PAPER_USERNAME};
+    return {
+      password: process.env.IBKR_PAPER_PASSWORD,
+      prefix: 'IBKR_PAPER',
+      username: process.env.IBKR_PAPER_USERNAME,
+    };
   }
 
   if (process.env.IBKR_LIVE_USERNAME ?? process.env.IBKR_LIVE_PASSWORD) {
-    return {password: process.env.IBKR_LIVE_PASSWORD, username: process.env.IBKR_LIVE_USERNAME};
+    return {password: process.env.IBKR_LIVE_PASSWORD, prefix: 'IBKR_LIVE', username: process.env.IBKR_LIVE_USERNAME};
   }
 
   // `IBKR_ACCOUNT` predates the paper support and is still honoured so an existing setup keeps working.
-  return {password: process.env.IBKR_PASSWORD, username: process.env.IBKR_USERNAME ?? process.env.IBKR_ACCOUNT};
+  return {
+    password: process.env.IBKR_PASSWORD,
+    prefix: 'IBKR',
+    username: process.env.IBKR_USERNAME ?? process.env.IBKR_ACCOUNT,
+  };
 }
 
-const {password, username} = credentials();
-const prefix = paper ? 'IBKR_PAPER' : 'IBKR';
+const {password, prefix, username} = credentials();
 
 /*
  * Named one at a time: a paper password is set separately from the username and is the half more
@@ -42,7 +52,13 @@ const prefix = paper ? 'IBKR_PAPER' : 'IBKR';
 assert.ok(username, `Missing ${prefix}_USERNAME in environment`);
 assert.ok(password, `Missing ${prefix}_PASSWORD in environment`);
 
-console.info(`Logging the gateway in as "${username}" (${paper ? 'paper' : 'live'}).`);
+/*
+ * The variable, not its value. A username is half of a credential pair, and `op run` masks every
+ * resolved secret, so printing it only ever produced "<concealed by 1Password>" — the name says
+ * which login is about to be used, which is the part worth seeing before a second factor is
+ * approved.
+ */
+console.info(`Logging the gateway in with ${prefix}_USERNAME (${paper ? 'paper' : 'live'}).`);
 
 await runGateway({
   account: username,

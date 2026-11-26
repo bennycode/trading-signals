@@ -157,7 +157,15 @@ export async function runGateway(options: {
   });
 
   const logIn = async () => {
-    console.info('No session, logging in. Approve the push on your phone when it arrives.');
+    /*
+     * A paper login carries no second factor, so telling somebody to wait for a push would have
+     * them watching a phone that never buzzes while the login has already finished.
+     */
+    console.info(
+      options.paper
+        ? 'No session, logging in.'
+        : 'No session, logging in. Approve the push on your phone when it arrives.'
+    );
     await loginToIbkrGateway({
       account: options.account,
       gatewayUrl: GATEWAY_URL,
