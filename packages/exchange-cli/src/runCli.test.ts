@@ -557,7 +557,7 @@ describe('runCli', {concurrent: false}, () => {
     expect(broker.getRecentCandles).toHaveBeenCalledWith(PAIR, 120, 86_400_000);
     expect(result).toHaveProperty('json');
     if ('json' in result) {
-      expect(result.json).toMatchObject({health: 100, timeframe: '1d', verdict: 'noise'});
+      expect(result.json).toMatchObject({score: {outOf: 100, value: 100}, timeframe: '1d', verdict: 'noise'});
     }
   });
 
@@ -624,13 +624,12 @@ describe('runCli', {concurrent: false}, () => {
     expect(broker.getRecentCandles).toHaveBeenCalledWith(new TradingPair('SPY', 'USD'), 120, 86_400_000);
     if ('json' in alone && 'json' in compared) {
       expect(alone.json, 'the check that needs a second series has nothing to read').toMatchObject({
-        health: 90,
-        unreadWeight: 15,
+        score: {value: 90},
       });
       expect(
         compared.json,
         'a stock creeping up while its index runs is losing ground, which costs it the full 15 points'
-      ).toMatchObject({health: 75, unreadWeight: 0});
+      ).toMatchObject({score: {value: 75}});
     }
   });
 

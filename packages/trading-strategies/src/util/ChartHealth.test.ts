@@ -1,6 +1,7 @@
 import type {Candle} from '@typedtrader/exchange';
 import {NotEnoughDataError} from 'trading-signals';
 import {describe, expect, it} from 'vitest';
+import {unreadWeight} from '@typedtrader/scorecard';
 import {ChartHealth, type ChartHealthOptions} from './ChartHealth.js';
 import {classifyChartHealth, measure, type HealthReport, type WeaknessCheckName} from './chartHealthChecks.js';
 
@@ -50,7 +51,7 @@ function scoreOf(series: readonly Candle[], options?: ChartHealthOptions, benchm
 function firedNames(health: ChartHealth): WeaknessCheckName[] {
   return health
     .getReportOrThrow()
-    .checks.filter(check => check.fired === true)
+    .criteria.filter(check => check.fired === true)
     .map(check => check.name);
 }
 
@@ -100,7 +101,7 @@ describe('ChartHealth', () => {
   it('scores a steady advance as noise', () => {
     const report = scoreOf(dailyCandles(risingCloses, CALM_BARS)).getReportOrThrow();
 
-    expect(report.health).toBe(100);
+    expect(report.score.value).toBe(100);
     expect(report.verdict).toBe('noise');
     expect(report.soleCategory).toBeNull();
   });
@@ -115,14 +116,14 @@ describe('ChartHealth', () => {
       'rsiBearRange',
       'atrExpandingWhileFalling',
     ]);
-    expect(report.health).toBe(42);
+    expect(report.score.value).toBe(42);
     expect(report.verdict).toBe('downtrend');
     expect(report.soleCategory, 'three kinds of evidence agreed, so nothing here is one-sided').toBeNull();
   });
 
   it('calls a fall far below a fast average a break, without waiting for the average to turn', () => {
     const health = scoreOf(dailyCandles(crashCloses, CRASH_BARS));
-    const check = health.getReportOrThrow().checks.find(entry => entry.name === 'brokenBelowFastAverage');
+    const check = health.getReportOrThrow().criteria.find(entry => entry.name === 'brokenBelowFastAverage');
     const turn = check?.measures.find(entry => entry.label === 'average vs window start');
 
     expect((turn?.deviationPercent ?? 0) > 0, 'the premise of the test: the average has not turned down yet').toBe(
@@ -134,7 +135,7 @@ describe('ChartHealth', () => {
   it('leaves a pullback to a rising fast average alone', () => {
     const pullback = [...Array.from({length: 220}, (_, index) => 100 + index), ...[318, 315, 312, 310, 308]];
     const health = scoreOf(dailyCandles(pullback, CALM_BARS));
-    const check = health.getReportOrThrow().checks.find(entry => entry.name === 'brokenBelowFastAverage');
+    const check = health.getReportOrThrow().criteria.find(entry => entry.name === 'brokenBelowFastAverage');
 
     expect(check?.fired, 'a few quiet bars below a rising average is the ordinary case, not a break').toBe(false);
   });
@@ -146,7 +147,7 @@ describe('ChartHealth', () => {
     const report = health.getReportOrThrow();
 
     expect(firedNames(health)).toStrictEqual(['distribution', 'volumeLineFalling']);
-    expect(report.health).toBe(68);
+    expect(report.score.value).toBe(68);
     expect(report.verdict).toBe('weakening');
     expect(report.soleCategory, 'the chart is flat, so the warning rests entirely on the tape').toBe('volume');
   });
@@ -165,7 +166,7 @@ describe('ChartHealth', () => {
   });
 
   it('keeps the checks read from the instrument own bars worth 100 points in total', () => {
-    const {checks} = scoreOf(dailyCandles(risingCloses, CALM_BARS)).getReportOrThrow();
+    const {criteria: checks} = scoreOf(dailyCandles(risingCloses, CALM_BARS)).getReportOrThrow();
     const ownBars = checks.filter(check => check.category !== 'relative');
 
     expect(ownBars.reduce((sum, check) => sum + check.weight, 0)).toBe(100);
@@ -189,10 +190,10 @@ describe('ChartHealth', () => {
 
   it('counts an unread check as flattering the score by its own weight', () => {
     const withoutBenchmark = scoreOf(dailyCandles(flatCloses, CALM_BARS)).getReportOrThrow();
-    const relativeStrength = withoutBenchmark.checks.find(check => check.name === 'relativeStrength');
+    const relativeStrength = withoutBenchmark.criteria.find(check => check.name === 'relativeStrength');
 
     expect(relativeStrength?.fired, 'a check with no benchmark to read is unanswered, not answered "no"').toBeNull();
-    expect(withoutBenchmark.unreadWeight).toBe(15);
+    expect(unreadWeight(withoutBenchmark.criteria)).toBe(15);
 
     const withBenchmark = scoreOf(
       dailyCandles(flatCloses, CALM_BARS),
@@ -200,11 +201,11 @@ describe('ChartHealth', () => {
       dailyCandles(risingCloses, CALM_BARS)
     ).getReportOrThrow();
 
-    expect(withBenchmark.unreadWeight, 'every check has something to read once a benchmark arrives').toBe(0);
+    expect(unreadWeight(withBenchmark.criteria), 'every check has something to read once a benchmark arrives').toBe(0);
   });
 
   it('puts every check in plain words next to its domain name', () => {
-    const {checks} = scoreOf(dailyCandles(risingCloses, CALM_BARS)).getReportOrThrow();
+    const {criteria: checks} = scoreOf(dailyCandles(risingCloses, CALM_BARS)).getReportOrThrow();
 
     for (const check of checks) {
       expect(check.question, `"${check.name}" must read as a question whose yes is the bad answer`).toMatch(/\?$/);
@@ -220,7 +221,7 @@ describe('ChartHealth', () => {
     const rising = scoreOf(dailyCandles(risingCloses, CALM_BARS)).getReportOrThrow();
     const breaking = scoreOf(dailyCandles(breakdownCloses, BREAKDOWN_BARS)).getReportOrThrow();
     const gap = (report: HealthReport) =>
-      report.checks
+      report.criteria
         .find(check => check.name === 'brokenBelowFastAverage')
         ?.measures.find(entry => entry.indicator === 'SMA 50' && entry.label === 'close vs average')?.deviationPercent;
 
@@ -238,7 +239,7 @@ describe('ChartHealth', () => {
       rsiPeriod: 7,
     }).getReportOrThrow();
     const indicatorsOf = (name: WeaknessCheckName) =>
-      report.checks.find(check => check.name === name)?.measures.map(entry => entry.indicator);
+      report.criteria.find(check => check.name === name)?.measures.map(entry => entry.indicator);
 
     expect(
       indicatorsOf('brokenBelowFastAverage'),
@@ -263,7 +264,7 @@ describe('ChartHealth', () => {
 
   it('leaves distribution unread when the window holds no bars of one kind', () => {
     const report = scoreOf(dailyCandles(breakdownCloses, BREAKDOWN_BARS)).getReportOrThrow();
-    const distribution = report.checks.find(check => check.name === 'distribution');
+    const distribution = report.criteria.find(check => check.name === 'distribution');
 
     expect(distribution?.fired, 'a relentless decline has no up bars whose volume could be compared').toBeNull();
     expect(distribution?.measures, 'a check that compared nothing has no numbers to show').toStrictEqual([]);
@@ -272,7 +273,7 @@ describe('ChartHealth', () => {
   it('lets no single category reach the confirmed band on its own', () => {
     const perCategory = new Map<string, number>();
 
-    for (const check of scoreOf(dailyCandles(risingCloses, CALM_BARS)).getReportOrThrow().checks) {
+    for (const check of scoreOf(dailyCandles(risingCloses, CALM_BARS)).getReportOrThrow().criteria) {
       perCategory.set(check.category, (perCategory.get(check.category) ?? 0) + check.weight);
     }
 
@@ -313,9 +314,9 @@ describe('ChartHealth', () => {
     const dailyMomentum = scoreOf(series).getReportOrThrow();
 
     expect(
-      weeklyMomentum.health,
+      weeklyMomentum.score.value,
       'a weekly momentum reading does not sit in its bear range at the same moment a daily one does'
-    ).not.toBe(dailyMomentum.health);
+    ).not.toBe(dailyMomentum.score.value);
   });
 
   it('starts judging sooner with a shorter lookback', () => {

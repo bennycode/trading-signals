@@ -57,7 +57,7 @@ type Part = {
  *
  * Relative strength needs a second price series, so it is only read when {@link ChartHealth.add}
  * is given a benchmark candle for the same bar. Without one that check stays unread and the score
- * is optimistic by its weight, which {@link HealthReport.unreadWeight} states.
+ * is optimistic by its weight, which {@link unreadWeight} totals from the card.
  *
  * Earnings misses, guidance cuts, insider selling, dividend cuts and short interest are not in the
  * bars at all; treat any of them as a reason to read the verdict one band worse.
@@ -176,7 +176,7 @@ export class ChartHealth {
     }
 
     const readings = readChecks({latest, oldest, periods: this.#periods, window: this.#window});
-    const checks = CHECKS.map(entry => ({
+    const criteria = CHECKS.map(entry => ({
       category: entry.category,
       fired: readings[entry.name].fired,
       measures: readings[entry.name].measures,
@@ -184,16 +184,16 @@ export class ChartHealth {
       question: entry.question,
       weight: entry.weight,
     }));
-    const deducted = checks.reduce((sum, check) => (check.fired === true ? sum + check.weight : sum), 0);
+    const deducted = criteria.reduce((sum, check) => (check.fired === true ? sum + check.weight : sum), 0);
     const health = Math.max(0, FULL_HEALTH - deducted);
 
     return {
       asOf: latest.openTimeInISO,
-      checks,
-      health,
-      soleCategory: soleCategory(checks),
+      criteria,
+      firedMeans: 'weakness',
+      score: {kind: 'ratio', outOf: FULL_HEALTH, value: health},
+      soleCategory: soleCategory(criteria),
       timeframe: this.#timeframe,
-      unreadWeight: checks.reduce((sum, check) => (check.fired === null ? sum + check.weight : sum), 0),
       verdict: classifyChartHealth(health),
     };
   }

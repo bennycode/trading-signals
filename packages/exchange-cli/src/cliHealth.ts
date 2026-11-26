@@ -1,6 +1,7 @@
 import {ms} from 'ms';
 import {z} from 'zod';
 import {getCandlesUntil, type Candle, type CandleFeed, type TradingPair} from '@typedtrader/exchange';
+import {formatScore, unreadWeight} from '@typedtrader/scorecard';
 import {ChartHealth, type HealthReport, type WeaknessMeasure} from 'trading-strategies';
 
 /**
@@ -149,17 +150,18 @@ function measureRow({deviationPercent, indicator, label, limit, reading}: Weakne
  * and is blank where a percentage would be meaningless, as against a zero line.
  */
 export function formatHealthReport(ticker: string, report: HealthReport): string {
+  const unread = unreadWeight(report.criteria);
   const lines = [
-    `${ticker}  ${report.health}/100  ${report.verdict}`,
+    `${ticker}  ${formatScore(report.score)}  ${report.verdict}`,
     // The card is daily, so the calendar day is the whole of what its timestamp says.
     `as of ${report.asOf.slice(0, 10)} on ${report.timeframe} bars` +
-      (report.unreadWeight === 0 ? '' : `, ${report.unreadWeight} points unread`) +
+      (unread === 0 ? '' : `, ${unread} points unread`) +
       (report.soleCategory === null ? '' : `, resting on ${report.soleCategory} alone`),
     '',
     headerRow(),
   ];
 
-  for (const check of report.checks) {
+  for (const check of report.criteria) {
     const verdict = check.fired === null ? 'n/a' : check.fired ? 'YES' : 'no';
     const cost = check.fired === true ? `-${check.weight}` : '';
 
