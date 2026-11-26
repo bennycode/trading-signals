@@ -635,9 +635,10 @@ describe('runCli', {concurrent: false}, () => {
         'Is price making lower highs and lower lows?'
       );
       expect(result.text, 'a check that fired shows what it cost').toContain('-18');
-      expect(result.text, 'the numbers behind the question sit under it').toMatch(
-        /latest high against the earlier high/
+      expect(result.text, 'the columns are labelled, so a reader need not guess which number is which').toMatch(
+        /CRIT\s+CHECK\s+DESCRIPTION\s+VALUE\s+THRESHOLD\s+DIVERGENCE/
       );
+      expect(result.text, 'each reading names the indicator it came off').toMatch(/SMA 50 +close vs average/);
       expect(result.text, 'a score with no date cannot be compared with the next one').toContain('as of');
     }
   });

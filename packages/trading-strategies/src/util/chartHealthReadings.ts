@@ -34,26 +34,38 @@ function olderAndRecentHalf(bars: readonly Bar[]) {
   return {older: bars.slice(0, middle), recent: bars.slice(middle)};
 }
 
+/** The periods the card was built with, which name the indicator each reading comes off. */
+export type CheckPeriods = {
+  bollinger: number;
+  fastAverage: number;
+  rsi: number;
+  slowAverage: number;
+  trueRange: number;
+};
+
 /**
  * Answers every check off a window of bars that already carry their indicator values, which is
  * why it needs no indicator of its own: the same window read twice gives the same card.
  *
- * The two average periods come in only to word the measures, so a card read on weekly bars says
- * "50-bar average" about the same number the class fed in.
+ * The periods come in only to name what each reading was taken off, so a card built on a 20-bar
+ * average says `SMA 20` rather than claiming the conventional 50.
  */
 export function readChecks({
-  fastAveragePeriod,
   latest,
   oldest,
-  slowAveragePeriod,
+  periods,
   window,
 }: {
-  fastAveragePeriod: number;
   latest: Bar;
   oldest: Bar;
-  slowAveragePeriod: number;
+  periods: CheckPeriods;
   window: readonly Bar[];
 }): Record<WeaknessCheckName, Reading> {
+  const fast = `SMA ${periods.fastAverage}`;
+  const slow = `SMA ${periods.slowAverage}`;
+  const momentum = `RSI ${periods.rsi}`;
+  const range = `ATR ${periods.trueRange}`;
+  const bands = `Bollinger ${periods.bollinger}`;
   const {older, recent} = olderAndRecentHalf(window);
   const indexValues = window.map(bar => bar.rsi);
   const recentHigh = getMaximum(recent.map(bar => bar.high));
@@ -87,8 +99,8 @@ export function readChecks({
     atrExpandingWhileFalling: {
       fired: latest.close < oldest.close && latest.atr > oldest.atr,
       measures: [
-        measure('close against the window opening', latest.close, oldest.close),
-        measure('average range against the window opening', latest.atr, oldest.atr),
+        measure('Price', 'close vs window start', latest.close, oldest.close),
+        measure(range, 'range vs window start', latest.atr, oldest.atr),
       ],
     },
     /*
@@ -98,9 +110,9 @@ export function readChecks({
     bearishDivergence: {
       fired: recentHigh > olderHigh && (recentIndexPeak < olderIndexPeak || recentVolumePeak < olderVolumePeak),
       measures: [
-        measure('latest high against the earlier high', recentHigh, olderHigh),
-        measure('momentum peak against the earlier peak', recentIndexPeak, olderIndexPeak),
-        measure('volume line peak against the earlier peak', recentVolumePeak, olderVolumePeak),
+        measure('Price', 'recent high vs earlier high', recentHigh, olderHigh),
+        measure(momentum, 'recent peak vs earlier peak', recentIndexPeak, olderIndexPeak),
+        measure('OBV', 'recent peak vs earlier peak', recentVolumePeak, olderVolumePeak),
       ],
     },
     /*
@@ -110,8 +122,8 @@ export function readChecks({
     belowFallingFastAverage: {
       fired: latest.close < latest.fastAverage && latest.fastAverage < oldest.fastAverage,
       measures: [
-        measure(`close against the ${fastAveragePeriod}-bar average`, latest.close, latest.fastAverage),
-        measure(`${fastAveragePeriod}-bar average against the window opening`, latest.fastAverage, oldest.fastAverage),
+        measure(fast, 'close vs average', latest.close, latest.fastAverage),
+        measure(fast, 'average vs window start', latest.fastAverage, oldest.fastAverage),
       ],
     },
     deathCross: {
@@ -119,13 +131,9 @@ export function readChecks({
         latest.fastAverage < latest.slowAverage ||
         (latest.close < latest.slowAverage && latest.slowAverage < oldest.slowAverage),
       measures: [
-        measure(
-          `${fastAveragePeriod}-bar average against the ${slowAveragePeriod}-bar average`,
-          latest.fastAverage,
-          latest.slowAverage
-        ),
-        measure(`close against the ${slowAveragePeriod}-bar average`, latest.close, latest.slowAverage),
-        measure(`${slowAveragePeriod}-bar average against the window opening`, latest.slowAverage, oldest.slowAverage),
+        measure(`${fast}/${periods.slowAverage}`, 'fast vs slow average', latest.fastAverage, latest.slowAverage),
+        measure(slow, 'close vs average', latest.close, latest.slowAverage),
+        measure(slow, 'average vs window start', latest.slowAverage, oldest.slowAverage),
       ],
     },
     /*
@@ -138,15 +146,13 @@ export function readChecks({
         ? UNREAD
         : {
             fired: getAverage(downVolumes) > getAverage(upVolumes),
-            measures: [
-              measure('volume on down bars against volume on up bars', getAverage(downVolumes), getAverage(upVolumes)),
-            ],
+            measures: [measure('Volume', 'down bars vs up bars', getAverage(downVolumes), getAverage(upVolumes))],
           },
     lowerBandRide: {
       fired: latest.close <= latest.lowerBand && latest.bandWidth > oldest.bandWidth,
       measures: [
-        measure('close against the lower band', latest.close, latest.lowerBand),
-        measure('band width against the window opening', latest.bandWidth, oldest.bandWidth),
+        measure(bands, 'close vs lower band', latest.close, latest.lowerBand),
+        measure(bands, 'width vs window start', latest.bandWidth, oldest.bandWidth),
       ],
     },
     /*
@@ -157,8 +163,8 @@ export function readChecks({
     lowerHighsAndLows: {
       fired: recentHigh < olderHigh && recentLow < olderLow,
       measures: [
-        measure('latest high against the earlier high', recentHigh, olderHigh),
-        measure('latest low against the earlier low', recentLow, olderLow),
+        measure('Price', 'recent high vs earlier high', recentHigh, olderHigh),
+        measure('Price', 'recent low vs earlier low', recentLow, olderLow),
       ],
     },
     /*
@@ -168,8 +174,8 @@ export function readChecks({
     macdBelowZero: {
       fired: latest.macd < 0 && latest.macd < latest.macdSignal && window.some(bar => bar.macd >= bar.macdSignal),
       measures: [
-        measure('MACD against its zero line', latest.macd, 0),
-        measure('MACD against its signal line', latest.macd, latest.macdSignal),
+        measure('MACD', 'line vs zero', latest.macd, 0),
+        measure('MACD', 'line vs signal', latest.macd, latest.macdSignal),
       ],
     },
     /*
@@ -183,20 +189,20 @@ export function readChecks({
         ? UNREAD
         : {
             fired: latest.relative < oldest.relative,
-            measures: [measure('ratio to the benchmark against the window opening', latest.relative, oldest.relative)],
+            measures: [measure('Relative', 'ratio vs window start', latest.relative, oldest.relative)],
           },
     rsiBearRange: {
       fired: getMaximum(indexValues) <= BEAR_RANGE_CEILING && getMinimum(indexValues) <= BEAR_RANGE_FLOOR,
       measures: [
-        measure('momentum peak against the bear range ceiling', getMaximum(indexValues), BEAR_RANGE_CEILING),
-        measure('momentum low against the oversold floor', getMinimum(indexValues), BEAR_RANGE_FLOOR),
+        measure(momentum, 'peak vs bear ceiling', getMaximum(indexValues), BEAR_RANGE_CEILING),
+        measure(momentum, 'low vs oversold floor', getMinimum(indexValues), BEAR_RANGE_FLOOR),
       ],
     },
     volumeLineFalling: {
       fired: latest.close >= oldest.close && latest.obv < oldest.obv,
       measures: [
-        measure('volume line against the window opening', latest.obv, oldest.obv),
-        measure('close against the window opening', latest.close, oldest.close),
+        measure('OBV', 'line vs window start', latest.obv, oldest.obv),
+        measure('Price', 'close vs window start', latest.close, oldest.close),
       ],
     },
   };

@@ -34,7 +34,13 @@ export type WeaknessMeasure = {
    * below the limit. `null` where a percentage would be meaningless, as against a zero line.
    */
   deviationPercent: number | null;
-  /** What the two numbers are, in the card's own terms rather than in indicator names. */
+  /**
+   * Which instrument of the card the reading comes off, named as a trader would say it: `SMA 50`,
+   * `RSI 14`, `MACD`, `OBV`. It carries the period, since every one of them is configurable and a
+   * row that says `SMA 50` about a 20-bar average would be a lie.
+   */
+  indicator: string;
+  /** What the two numbers are, short enough to scan down a column. */
   label: string;
   /** The line this check watches: an average, a band, a threshold, or the window's own opening. */
   limit: number;
@@ -213,11 +219,12 @@ export type Reading = {fired: boolean | null; measures: WeaknessMeasure[]};
 /** A check the window held nothing to read: it compared nothing, so it shows no numbers. */
 export const UNREAD: Reading = {fired: null, measures: []};
 
-export function measure(label: string, reading: number, limit: number): WeaknessMeasure {
+export function measure(indicator: string, label: string, reading: number, limit: number): WeaknessMeasure {
   const deviation = limit === 0 ? null : ((reading - limit) / Math.abs(limit)) * 100;
 
   return {
     deviationPercent: deviation === null ? null : Math.round(deviation * 100) / 100,
+    indicator,
     label,
     limit,
     reading,

@@ -1,7 +1,7 @@
 import {ms} from 'ms';
 import {z} from 'zod';
 import {getCandlesUntil, type Candle, type CandleFeed, type TradingPair} from '@typedtrader/exchange';
-import {ChartHealth, type HealthReport} from 'trading-strategies';
+import {ChartHealth, type HealthReport, type WeaknessMeasure} from 'trading-strategies';
 
 /**
  * The card is read on daily bars, which is the size every period on it is conventionally counted
@@ -107,9 +107,46 @@ function amount(value: number): string {
 }
 
 /**
- * Lays the card out for a reader rather than for a parser: the questions in a column, a verdict
- * beside each, and the numbers that produced it underneath. Only what fired carries its cost, so
- * the deductions that add up to the score can be followed down the page.
+ * Column widths, so the header and every row under it line up without pulling in a table library.
+ * CHECK and DESCRIPTION are wide enough for the longest of each the card produces, `Bollinger 20`
+ * and `recent high vs earlier high`.
+ */
+const COLUMN = {check: 15, description: 29, divergence: 12, number: 16, verdict: 4} as const;
+const QUESTION_WIDTH = COLUMN.verdict + 2 + COLUMN.check + COLUMN.description + COLUMN.number * 2;
+
+function headerRow(): string {
+  return (
+    'CRIT'.padStart(COLUMN.verdict) +
+    '  ' +
+    'CHECK'.padEnd(COLUMN.check) +
+    'DESCRIPTION'.padEnd(COLUMN.description) +
+    'VALUE'.padStart(COLUMN.number) +
+    'THRESHOLD'.padStart(COLUMN.number) +
+    'DIVERGENCE'.padStart(COLUMN.divergence)
+  );
+}
+
+function measureRow({deviationPercent, indicator, label, limit, reading}: WeaknessMeasure): string {
+  const divergence = deviationPercent === null ? '' : `${deviationPercent > 0 ? '+' : ''}${deviationPercent}%`;
+
+  return (
+    ' '.repeat(COLUMN.verdict + 2) +
+    indicator.padEnd(COLUMN.check) +
+    label.padEnd(COLUMN.description) +
+    amount(reading).padStart(COLUMN.number) +
+    amount(limit).padStart(COLUMN.number) +
+    divergence.padStart(COLUMN.divergence)
+  );
+}
+
+/**
+ * Lays the card out for a reader rather than for a parser: a question per check with its verdict
+ * beside it, and under each one the numbers that produced it, so the deductions that add up to the
+ * score can be followed down the page.
+ *
+ * CRIT answers the question: `YES` is the bad answer and costs the points in the right-hand column,
+ * `n/a` is a check the window held nothing to read. DIVERGENCE is VALUE measured against THRESHOLD,
+ * and is blank where a percentage would be meaningless, as against a zero line.
  */
 export function formatHealthReport(ticker: string, report: HealthReport): string {
   const lines = [
@@ -119,19 +156,17 @@ export function formatHealthReport(ticker: string, report: HealthReport): string
       (report.unreadWeight === 0 ? '' : `, ${report.unreadWeight} points unread`) +
       (report.soleCategory === null ? '' : `, resting on ${report.soleCategory} alone`),
     '',
+    headerRow(),
   ];
 
   for (const check of report.checks) {
     const verdict = check.fired === null ? 'n/a' : check.fired ? 'YES' : 'no';
     const cost = check.fired === true ? `-${check.weight}` : '';
-    lines.push(`${verdict.padStart(3)}  ${check.question.padEnd(58)} ${cost}`);
 
-    for (const {deviationPercent, label, limit, reading} of check.measures) {
-      const gap = deviationPercent === null ? '' : `${deviationPercent > 0 ? '+' : ''}${deviationPercent}%`;
-      lines.push(
-        `     ${label.padEnd(50)} ${amount(reading).padStart(14)} vs ${amount(limit).padStart(14)} ${gap.padStart(9)}`
-      );
-    }
+    lines.push(
+      `${verdict.padStart(COLUMN.verdict)}  ${check.question}`.padEnd(QUESTION_WIDTH) + cost.padStart(COLUMN.divergence)
+    );
+    lines.push(...check.measures.map(measureRow));
   }
 
   return lines.join('\n');

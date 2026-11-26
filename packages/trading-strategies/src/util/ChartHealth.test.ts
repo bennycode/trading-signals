@@ -179,7 +179,7 @@ describe('ChartHealth', () => {
     const gap = (report: HealthReport) =>
       report.checks
         .find(check => check.name === 'belowFallingFastAverage')
-        ?.measures.find(entry => entry.label === 'close against the 50-bar average')?.deviationPercent;
+        ?.measures.find(entry => entry.indicator === 'SMA 50' && entry.label === 'close vs average')?.deviationPercent;
 
     expect(gap(rising), 'an advancing price sits above its own average').toBeGreaterThan(0);
     expect(gap(breaking), 'a breaking price sits below it, and the number says how far').toBeLessThan(-10);
@@ -189,10 +189,24 @@ describe('ChartHealth', () => {
     ).toBe(Math.round((gap(breaking) ?? 0) * 100));
   });
 
+  it('names the indicator each reading came off, with the period it was built with', () => {
+    const report = scoreOf(dailyCandles(risingCloses, CALM_BARS), {
+      fastAveragePeriod: 20,
+      slowAveragePeriod: 100,
+    }).getReportOrThrow();
+    const indicators = report.checks.find(check => check.name === 'deathCross')?.measures.map(entry => entry.indicator);
+
+    expect(indicators, 'a card built on other periods must not claim the conventional ones').toStrictEqual([
+      'SMA 20/100',
+      'SMA 100',
+      'SMA 100',
+    ]);
+  });
+
   it('withholds a percentage where one would be meaningless', () => {
     const report = scoreOf(dailyCandles(breakdownCloses, BREAKDOWN_BARS)).getReportOrThrow();
     const check = report.checks.find(entry => entry.name === 'macdBelowZero');
-    const zeroLine = check?.measures.find(entry => entry.label === 'MACD against its zero line');
+    const zeroLine = check?.measures.find(entry => entry.indicator === 'MACD' && entry.label === 'line vs zero');
 
     expect(zeroLine?.deviationPercent, 'nothing is a percentage of zero').toBeNull();
     expect(zeroLine?.reading, 'the reading itself is still there to be judged').toBeLessThan(0);

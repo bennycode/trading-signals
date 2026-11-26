@@ -2,7 +2,7 @@ import {ms, type StringValue} from 'ms';
 import {CandleBatcher, type BatchedCandle, type Candle} from '@typedtrader/exchange';
 import {ATR, BollingerBands, EMA, MACD, NotEnoughDataError, OBV, pushUpdate, RSI, SMA} from 'trading-signals';
 import {CHECKS, FULL_HEALTH, classifyChartHealth, soleCategory, type HealthReport} from './chartHealthChecks.js';
-import {readChecks, type Bar} from './chartHealthReadings.js';
+import {readChecks, type Bar, type CheckPeriods} from './chartHealthReadings.js';
 
 export type ChartHealthOptions = {
   bollingerDeviation?: number;
@@ -78,14 +78,13 @@ export class ChartHealth {
   /** Close of the last whole benchmark bar, which the instrument's close is measured against. */
   #benchmarkClose: number | null = null;
   readonly #fastAverage: SMA;
-  readonly #fastAveragePeriod: number;
   readonly #lookback: number;
   readonly #macd: MACD;
   readonly #obv: OBV;
   readonly #parts: readonly Part[];
   readonly #rsi: RSI;
+  readonly #periods: CheckPeriods;
   readonly #slowAverage: SMA;
-  readonly #slowAveragePeriod: number;
   readonly #timeframe: StringValue;
   readonly #window: Bar[] = [];
   readonly #windowBatcher: CandleBatcher;
@@ -106,7 +105,6 @@ export class ChartHealth {
     this.#atr = new ATR(trueRangePeriod);
     this.#bands = new BollingerBands(bollingerPeriod, bollingerDeviation);
     this.#fastAverage = new SMA(fastAveragePeriod);
-    this.#fastAveragePeriod = fastAveragePeriod;
     this.#lookback = lookback;
     // The 12/26/9 periods are the convention the zero line and the signal cross are read against.
     this.#macd = new MACD(new EMA(12), new EMA(26), new EMA(9));
@@ -114,7 +112,13 @@ export class ChartHealth {
     this.#obv = new OBV(2);
     this.#rsi = new RSI(rsiPeriod);
     this.#slowAverage = new SMA(slowAveragePeriod);
-    this.#slowAveragePeriod = slowAveragePeriod;
+    this.#periods = {
+      bollinger: bollingerPeriod,
+      fastAverage: fastAveragePeriod,
+      rsi: rsiPeriod,
+      slowAverage: slowAveragePeriod,
+      trueRange: trueRangePeriod,
+    };
     this.#timeframe = timeframe;
     this.#windowIntervalInMillis = ms(timeframe);
     this.#windowBatcher = new CandleBatcher(this.#windowIntervalInMillis);
@@ -203,13 +207,7 @@ export class ChartHealth {
       return null;
     }
 
-    const readings = readChecks({
-      fastAveragePeriod: this.#fastAveragePeriod,
-      latest,
-      oldest,
-      slowAveragePeriod: this.#slowAveragePeriod,
-      window: this.#window,
-    });
+    const readings = readChecks({latest, oldest, periods: this.#periods, window: this.#window});
     const checks = CHECKS.map(entry => ({
       category: entry.category,
       fired: readings[entry.name].fired,
