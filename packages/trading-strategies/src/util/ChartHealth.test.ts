@@ -1,13 +1,8 @@
 import type {Candle} from '@typedtrader/exchange';
 import {NotEnoughDataError} from 'trading-signals';
 import {describe, expect, it} from 'vitest';
-import {
-  classifyChartHealth,
-  ChartHealth,
-  type ChartHealthOptions,
-  type HealthReport,
-  type WeaknessCheckName,
-} from './ChartHealth.js';
+import {ChartHealth, type ChartHealthOptions} from './ChartHealth.js';
+import {classifyChartHealth, type HealthReport, type WeaknessCheckName} from './chartHealthChecks.js';
 
 const ONE_DAY_IN_MS = 86_400_000;
 
