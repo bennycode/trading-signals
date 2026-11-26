@@ -12,6 +12,15 @@ import {ChartHealth, type HealthReport, type WeaknessMeasure} from 'trading-stra
  */
 const TIMEFRAME = '1d';
 
+/*
+ * The relative-strength check is the only one that needs a second series, and it is the one that
+ * answers whether a fall belongs to the instrument or to the market. Left opt-in it was never read,
+ * so every card came back flattered by its weight. A broad US index is the default because that is
+ * what the rest of the card's conventions assume; an instrument on another exchange shares almost
+ * no session opens with it and degrades to the unread answer it already gave.
+ */
+export const DEFAULT_BENCHMARK = 'SPY';
+
 /**
  * A day a card can be read as of, checked rather than trusted: `2026-02-31` has the right shape and
  * is not a day, and `2026-1-2` is not one either on a feed that stamps bars `YYYY-MM-DD`.

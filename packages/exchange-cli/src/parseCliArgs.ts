@@ -3,7 +3,7 @@ import {Argument, Command, CommanderError, InvalidArgumentError, Option} from 'c
 import {parse} from 'ms';
 import {DEFAULT_ATR_TRAIL_MULTIPLE} from 'trading-strategies';
 import {BROKERS, type BrokerKey} from './cliBroker.js';
-import {CalendarDaySchema, type CalendarDay} from './cliHealth.js';
+import {CalendarDaySchema, DEFAULT_BENCHMARK, type CalendarDay} from './cliHealth.js';
 
 interface Options {
   all?: boolean;
@@ -186,7 +186,7 @@ export function parseCliArgs(argv: string[]) {
     )
     .option('--count <n>', 'Number of candles', positiveInt, 10);
   command('health <ticker>', 'Score chart health on daily bars, from 100 (nothing against it) down to 0')
-    .option('--benchmark <ticker>', 'Index or sector proxy for the relative strength check')
+    .option('--benchmark <ticker>', 'Index or sector proxy for the relative strength check', DEFAULT_BENCHMARK)
     .option('--date <YYYY-MM-DD>', 'Read the card as of this day (UTC) instead of the newest bar', calendarDay)
     .option('--table', 'Print the card for a reader instead of JSON')
     .option('--count <n>', 'Candles to request; the card warms up over the slowest indicator', positiveInt, 120);

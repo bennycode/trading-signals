@@ -188,6 +188,27 @@ describe('ChartHealth', () => {
     ).not.toContain('relativeStrength');
   });
 
+  it('separates an instrument that fell with the market from one that fell on its own', () => {
+    const falling = [...risingCloses].reverse();
+    const withTheMarket = scoreOf(dailyCandles(falling, CALM_BARS), undefined, dailyCandles(falling, CALM_BARS));
+    const onItsOwn = scoreOf(dailyCandles(falling, CALM_BARS), undefined, dailyCandles(risingCloses, CALM_BARS));
+
+    const excessOf = (card: ReturnType<typeof scoreOf>) =>
+      card
+        .getReportOrThrow()
+        .criteria.find(check => check.name === 'relativeStrength')
+        ?.measures.find(entry => entry.label === 'excess return vs flat')?.reading;
+
+    expect(
+      excessOf(withTheMarket),
+      'a chart that fell exactly as far as its benchmark gave up no ground, whatever the drop was'
+    ).toBe(0);
+    expect(
+      excessOf(onItsOwn),
+      'the same drop against a rising benchmark is this instrument, and the size of it has to be readable'
+    ).toBeLessThan(-15);
+  });
+
   it('counts an unread check as flattering the score by its own weight', () => {
     const withoutBenchmark = scoreOf(dailyCandles(flatCloses, CALM_BARS)).getReportOrThrow();
     const relativeStrength = withoutBenchmark.criteria.find(check => check.name === 'relativeStrength');

@@ -1,4 +1,4 @@
-import {getAverage, getMaximum, getMinimum} from 'trading-signals';
+import {getAverage, getMaximum, getMinimum, getPercentageChange} from 'trading-signals';
 import {
   BEAR_RANGE_CEILING,
   BEAR_RANGE_FLOOR,
@@ -71,6 +71,18 @@ export function readChecks({
   const olderIndexPeak = getMaximum(older.map(bar => bar.rsi));
   const recentVolumePeak = getMaximum(recent.map(bar => bar.obv));
   const olderVolumePeak = getMaximum(older.map(bar => bar.obv));
+
+  /*
+   * The benchmark's own closes, recovered from the ratio the bars carry, so the check can report
+   * how far the two moved rather than only which way the ratio went.
+   */
+  const benchmarkFirst = oldest.relative === null ? null : oldest.close / oldest.relative;
+  const benchmarkLast = latest.relative === null ? null : latest.close / latest.relative;
+  const ownReturn = getPercentageChange(oldest.close, latest.close);
+  const benchmarkReturn =
+    benchmarkFirst === null || benchmarkLast === null || benchmarkFirst === 0
+      ? null
+      : getPercentageChange(benchmarkFirst, benchmarkLast);
 
   const upVolumes: number[] = [];
   const downVolumes: number[] = [];
@@ -158,11 +170,20 @@ export function readChecks({
       ],
     },
     relativeStrength:
-      latest.relative === null || oldest.relative === null
+      benchmarkReturn === null
         ? UNREAD
         : {
-            fired: latest.relative < oldest.relative,
-            measures: [measure('Relative', 'ratio vs window start', latest.relative, oldest.relative)],
+            fired: ownReturn < benchmarkReturn,
+            measures: [
+              measure('Price', 'return vs benchmark return', ownReturn, benchmarkReturn),
+              /*
+               * The excess on its own line, because the pair above does not separate the two cases
+               * that matter: down 20% against an index down 18% is the market, down 20% against an
+               * index up 5% is this instrument. Both make the check fire, and only the size of the
+               * excess tells them apart.
+               */
+              measure('Relative', 'excess return vs flat', ownReturn - benchmarkReturn, 0),
+            ],
           },
     rsiBearRange: {
       fired: getMaximum(indexValues) <= BEAR_RANGE_CEILING && getMinimum(indexValues) <= BEAR_RANGE_FLOOR,
