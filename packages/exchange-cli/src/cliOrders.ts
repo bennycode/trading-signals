@@ -1,9 +1,9 @@
 import {setTimeout as sleep} from 'node:timers/promises';
 import Big from 'big.js';
-import {OrderType, type Broker, type MarketDataSource, type OrderSide, type TradingPair} from '@typedtrader/exchange';
+import {OrderType, type Broker, type CandleFeed, type OrderSide, type TradingPair} from '@typedtrader/exchange';
 
 export async function placeCliOrder(
-  broker: Broker & MarketDataSource,
+  broker: Broker & CandleFeed,
   pair: TradingPair,
   order: {side: OrderSide; size: string; limit?: string | undefined; dryRun?: boolean | undefined}
 ) {
@@ -17,7 +17,7 @@ export async function placeCliOrder(
 }
 
 async function previewOrder(
-  broker: Broker & MarketDataSource,
+  broker: Broker & CandleFeed,
   pair: TradingPair,
   side: OrderSide,
   size: string,

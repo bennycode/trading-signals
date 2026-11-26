@@ -3,6 +3,7 @@ import {
   AlpacaMarketData,
   getBrokerClient,
   type Broker,
+  type CandleFeed,
   type MarketDataSource,
 } from '@typedtrader/exchange';
 import {Account, type AccountAttributes} from '../database/models/Account.js';
@@ -64,7 +65,7 @@ function resolveMarketData(account: AccountAttributes): MarketDataSource | undef
  * broker needs one. Use this everywhere instead of calling `getBrokerClient` directly with raw
  * credentials, so Trading212 (and any other feed-less broker) gets its data source resolved.
  */
-export function getAccountBrokerClient(account: AccountAttributes): Broker & MarketDataSource {
+export function getAccountBrokerClient(account: AccountAttributes): Broker & CandleFeed {
   const marketData = resolveMarketData(account);
   return getBrokerClient(
     {

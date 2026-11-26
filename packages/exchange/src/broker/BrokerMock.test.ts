@@ -114,6 +114,21 @@ describe('BrokerMock', () => {
 
       expect(history, 'the five days before the start, oldest first').toEqual(days.slice(26, 31));
     });
+
+    it('stops one candle short of the one getLatestCandle reports', async () => {
+      const exchange = new TestExchangeMock(new Map(), undefined, marketData);
+      const thirtySecondDay = days[31];
+      assert.exists(thirtySecondDay);
+      exchange.processCandle(thirtySecondDay);
+
+      expect(await exchange.getLatestCandle(pair, ONE_DAY), 'the bar being processed is the price as of now').toEqual(
+        thirtySecondDay
+      );
+      expect(
+        (await exchange.getRecentCandles(pair, 1, ONE_DAY)).at(-1),
+        'warm-up must not see the bar under test, so the two are deliberately one candle apart and cannot be merged'
+      ).toEqual(days[30]);
+    });
   });
 
   describe('getTime', () => {
@@ -728,6 +743,139 @@ describe('BrokerMock', () => {
       exchange.processCandle(createCandle({close: '110', open: '105', openTimeInISO: '2025-01-01T00:01:00.000Z'}));
 
       expect(received, 'disconnect() should stop fill emissions').toHaveLength(0);
+    });
+  });
+  describe('getProfitableExitPrice', () => {
+    it('covers both legs and the requested profit', async () => {
+      const exchange = createExchange('1', '0');
+
+      const result = await exchange.getProfitableExitPrice(pair, {fee: '1.5', price: '100', size: '1'});
+
+      expect(result.entryValue.toFixed(), 'the entry fee is part of what the exit has to return').toBe('101.5');
+      expect(result.profit.gte(result.minProfit), 'the whole point is that the exit clears a profit').toBe(true);
+      expect(result.exitSide, 'a long is closed by selling').toBe(OrderSide.SELL);
+      expect(result.exitFee.gt(0), 'the exit leg costs something too').toBe(true);
+    });
+
+    it('prices a short exit as a ceiling to buy back below', async () => {
+      const exchange = createExchange('1', '0');
+
+      const long = await exchange.getProfitableExitPrice(pair, {
+        fee: '1.5',
+        price: '100',
+        side: OrderSide.BUY,
+        size: '1',
+      });
+      const short = await exchange.getProfitableExitPrice(pair, {
+        fee: '1.5',
+        price: '100',
+        side: OrderSide.SELL,
+        size: '1',
+      });
+
+      expect(short.exitSide, 'a short is closed by buying back').toBe(OrderSide.BUY);
+      expect(
+        short.price.lt(new Big('100')),
+        'a short profits by buying back cheaper, so its target sits below the entry while a long sits above'
+      ).toBe(true);
+      expect(long.price.gt(new Big('100'))).toBe(true);
+      expect(short.profit.gte(short.minProfit), 'the ceiling still has to clear the requested profit').toBe(true);
+    });
+
+    it('takes the direction from the fill rather than assuming long', async () => {
+      const exchange = createExchange('5', '10000');
+      exchange.processCandle(createCandle({close: '100', open: '100'}));
+      const order = await exchange.placeMarketOrder(pair, {side: OrderSide.SELL, size: '1', sizeInCounter: false});
+      exchange.processCandle(createCandle({close: '100', open: '100', openTimeInISO: '2025-01-01T00:01:00.000Z'}));
+
+      const result = await exchange.getProfitableExitPrice(pair, {orderId: order.id});
+
+      expect(result.entrySide, 'the fill says this position was sold into, not bought').toBe(OrderSide.SELL);
+      expect(
+        result.price.lt(new Big('100')),
+        'reading the fill as a purchase would push the target above the entry and guarantee a loss'
+      ).toBe(true);
+    });
+
+    it('refuses a short whose exit fee alone exceeds what it took in', async () => {
+      const exchange = createExchange('1', '0');
+
+      await expect(
+        exchange.getProfitableExitPrice(pair, {price: '0.02', side: OrderSide.SELL, size: '1'}),
+        'without this the iteration converges on a price at or below zero and returns it as an answer'
+      ).rejects.toThrow(/impossible|cannot be placed|at or below zero/);
+    });
+
+    it('refuses a short it cannot close profitably', async () => {
+      const exchange = createExchange('1', '0');
+
+      await expect(
+        exchange.getProfitableExitPrice(pair, {price: '1', side: OrderSide.SELL, size: '1'}, {minProfit: '100'}),
+        'a short that took in 1 cannot yield 100 of profit at any non-negative price'
+      ).rejects.toThrow(/at or below zero/);
+    });
+    it('defaults to one cent, the smallest amount a currency can express', async () => {
+      const exchange = createExchange('1', '0');
+
+      const result = await exchange.getProfitableExitPrice(pair, {price: '100', size: '1'});
+
+      expect(result.minProfit.toFixed()).toBe('0.01');
+    });
+
+    it('returns a price that lands on the instrument tick', async () => {
+      const exchange = createExchange('1', '0');
+
+      const result = await exchange.getProfitableExitPrice(pair, {fee: '0.37', price: '7.77', size: '3'});
+
+      expect(
+        result.price.mod(new Big(TestExchangeMock.TEST_TRADING_RULES.counter_increment)).toFixed(),
+        'a price off the tick cannot be placed, and rounding down would give away the profit'
+      ).toBe('0');
+      expect(result.profit.gte(result.minProfit), 'rounding up must never dip below the target').toBe(true);
+    });
+
+    it('scales the target with the profit asked for', async () => {
+      const exchange = createExchange('1', '0');
+
+      const cheap = await exchange.getProfitableExitPrice(pair, {price: '100', size: '1'});
+      const rich = await exchange.getProfitableExitPrice(pair, {price: '100', size: '1'}, {minProfit: '10'});
+
+      expect(rich.price.gt(cheap.price)).toBe(true);
+      expect(rich.profit.gte(new Big('10'))).toBe(true);
+    });
+
+    it('refuses a position it cannot price', async () => {
+      const exchange = createExchange('1', '0');
+
+      await expect(exchange.getProfitableExitPrice(pair, {price: '100', size: '0'})).rejects.toThrow(
+        /Cannot price an exit/
+      );
+    });
+
+    it('explains an order id it cannot find rather than guessing a basis', async () => {
+      const exchange = createExchange('1', '0');
+
+      await expect(exchange.getProfitableExitPrice(pair, {orderId: 'nope'})).rejects.toThrow(/No fill found for order/);
+    });
+
+    it('reads the cost basis from a filled order', async () => {
+      const exchange = createExchange('0', '10000');
+      exchange.processCandle(createCandle({close: '100', open: '100'}));
+      const order = await exchange.placeMarketOrder(pair, {side: OrderSide.BUY, size: '1', sizeInCounter: false});
+      exchange.processCandle(createCandle({close: '100', open: '100', openTimeInISO: '2025-01-01T00:01:00.000Z'}));
+
+      const fill = await exchange.getFillByOrderId(pair, order.id);
+
+      if (!fill) {
+        throw new Error('The order did not fill, so there is no cost basis to read.');
+      }
+
+      const result = await exchange.getProfitableExitPrice(pair, {orderId: order.id});
+
+      expect(result.entryFee.toFixed(), 'the fee actually charged on the entry, not an estimate').toBe(
+        new Big(fill.fee).toFixed()
+      );
+      expect(result.price.gt(new Big(fill.price)), 'the exit has to beat the entry by both legs of cost').toBe(true);
     });
   });
 });

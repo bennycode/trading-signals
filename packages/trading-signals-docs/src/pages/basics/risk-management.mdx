@@ -108,6 +108,108 @@ A strategy that wins a third of the time is profitable at 2R and a disaster at 1
 
 The trap at the high-R end is that targets get less realistic the further out they sit. A 5R target only needs a 16.7% hit rate, but if the instrument rarely moves five times its own ATR before reversing, you will not get 16.7%. The R has to be reachable within the instrument's actual behaviour, which brings you back to volatility.
 
+## Costs Come Out of the Target
+
+Every R multiple above is measured in gross price movement, and no broker charges nothing. A round trip pays a fee to get in and another to get out, and both come out of the same move the target was measured against.
+
+On a large position that is a rounding error. On a small one it decides the sign. One share of Ford bought at $11.55 cost $0.12 in commission to buy and $0.12 to sell:
+
+|                   | Amount                      |
+| ----------------- | --------------------------- |
+| Paid to open      | $11.55 + $0.12 = **$11.67** |
+| 1% take-profit    | $11.67                      |
+| Received on close | $11.67 - $0.12 = **$11.55** |
+| **Realised**      | **-$0.12**                  |
+
+A 1% target that _filled exactly as configured_ lost money. The share has to reach $11.80 before the trade clears a single cent, which is a 2.2% move, not 1%.
+
+Fees are also not reliably a percentage, so this cannot be fixed by padding the target with one. Interactive Brokers bills per share with a minimum of $1 per order, which on a single share of Ford is 8.7% of the notional and on a thousand shares is 0.03%. Dividing a target by "the fee rate" has no rate to divide by.
+
+### Solving For It
+
+`getProfitableExitPrice` works the problem backwards: given an entry and the profit you want to clear, it returns the price that finally clears it, with the broker's own fee schedule priced at the answer rather than at a guess.
+
+```ts twoslash
+import {TradingPair, type Broker} from '@typedtrader/exchange';
+
+declare const broker: Broker;
+// ---cut---
+const pair = new TradingPair('F', 'USD');
+
+// An order that already filled: its real fee and its side are read back from the execution
+const exit = await broker.getProfitableExitPrice(pair, {orderId: 'my-order-id'});
+
+exit.price; // the limit price to place
+exit.profit; // what closing there actually nets
+exit.exitSide; // SELL out of a long, BUY back into a short
+
+// Or a hypothetical entry, for sizing a trade that has not been placed yet
+const planned = await broker.getProfitableExitPrice(
+  pair,
+  {fee: '0.12', price: '11.55', size: '1'},
+  {minProfit: '0.50'}
+);
+
+planned.price; // the floor to sell above, already snapped to the instrument's tick
+```
+
+### The Whole Round Trip
+
+Buy, wait for the execution, ask what it has to be sold for, and place that order:
+
+```ts twoslash
+import {TradingPair, OrderSide, type Broker, type Fill} from '@typedtrader/exchange';
+
+declare const broker: Broker;
+declare function sleep(ms: number): Promise<void>;
+// ---cut---
+const pair = new TradingPair('F', 'USD');
+
+// 1. Buy at market
+const entry = await broker.placeMarketOrder(pair, {
+  side: OrderSide.BUY,
+  size: '1',
+  sizeInCounter: false,
+});
+
+/*
+ * 2. Wait for the execution, because the entry fee is not known until then. A market order is not
+ *    filled the moment it is accepted, and the fee is what the exit price is solved against — an
+ *    estimate here would be solving for a cost the account never paid.
+ */
+let fill: Fill | undefined;
+while (!fill) {
+  fill = await broker.getFillByOrderId(pair, entry.id);
+  if (!fill) {
+    await sleep(1_000);
+  }
+}
+
+/*
+ * 3. Ask what clearing a profit costs. Passing the order id rather than the numbers means the
+ *    real fee and the real side come from the execution, so a partial fill at a worse average
+ *    price moves the target instead of being ignored.
+ */
+const exit = await broker.getProfitableExitPrice(pair, {orderId: entry.id}, {minProfit: '0.50'});
+
+// 4. Place that exact price. It is already on the instrument's tick, so nothing needs rounding.
+await broker.placeLimitOrder(pair, {
+  price: exit.price.toString(),
+  side: exit.exitSide,
+  size: fill.size,
+});
+```
+
+Step 2 is the one worth not skipping. Everything after it is arithmetic on a number the broker has confirmed; everything before it is a guess about a fee that has not been charged yet.
+
+Three things it handles that a hand-rolled percentage does not:
+
+- **Direction follows the position.** A long needs a floor to sell above, a short a ceiling to buy back below. When the entry is an order id, the side comes from the execution, so a short is never priced as though it had been bought.
+- **The result lands on the instrument's tick,** rounded away from you — up for a long, down for a short — so snapping to a placeable price never quietly eats the profit it was solved for.
+- **Cross-currency fees are refused, not mixed.** A Trading 212 account in EUR holding a USD instrument is billed in EUR; adding that to a USD price would produce a confident, meaningless number, so the call asks for a conversion rate instead.
+
+`minProfit` defaults to one cent, the smallest amount a currency can express, which answers the narrower question of where the trade simply stops losing money.
+
 ## Getting Out: Limit or Market
 
 Deciding to exit and actually exiting are different problems. Once a stop or target is hit, an order still has to reach the market, and the order type is a real trade-off:

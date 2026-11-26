@@ -1,6 +1,7 @@
 import {OrderSide, TradingPair} from '@typedtrader/exchange';
 import {BROKERS, createCliBroker} from './cliBroker.js';
 import {placeCliOrder, waitForOrder} from './cliOrders.js';
+import {runSmokeChecks} from './cliSmoke.js';
 import {parseCliArgs} from './parseCliArgs.js';
 import {streamEvents} from './streamEvents.js';
 
@@ -10,7 +11,7 @@ export interface CliDeps {
   writeEvent: (line: string) => void;
 }
 
-type CliResult = {text: string} | {json: unknown};
+type CliResult = {text: string} | {code?: number; json: unknown};
 
 /** A positional argument the command cannot run without, so its absence is a usage error. */
 function argument(args: readonly string[], index: number, what: string): string {
@@ -44,9 +45,10 @@ export async function runCli(argv: string[], overrides: Partial<CliDeps> = {}): 
       case 'time':
         return {json: {time: await broker.getTime()}};
       case 'instruments': {
-        const query = argument(args, 0, 'search query').toLowerCase();
+        const search = argument(args, 0, 'search query');
+        const query = search.toLowerCase();
         return {
-          json: (await listInstruments()).filter(instrument =>
+          json: (await listInstruments(search)).filter(instrument =>
             [instrument.ticker, instrument.name, instrument.isin ?? ''].some(field =>
               field.toLowerCase().includes(query)
             )
@@ -68,7 +70,14 @@ export async function runCli(argv: string[], overrides: Partial<CliDeps> = {}): 
     const ticker = argument(args, 0, 'ticker');
     const counter =
       values.counter ??
-      (key === 'alpaca' ? 'USD' : (await listInstruments()).find(instrument => instrument.ticker === ticker)?.currency);
+      /*
+       * Only Trading212 needs the lookup: it lists instruments across European venues in their
+       * own currencies. Alpaca and IBKR are US equities here, which quote in USD, and `--counter`
+       * covers anything that is not.
+       */
+      (key === 'trading212'
+        ? (await listInstruments()).find(instrument => instrument.ticker === ticker)?.currency
+        : 'USD');
     if (!counter?.trim()) {
       throw new Error(`Cannot resolve currency for "${ticker}". Use instruments <query> or --counter <currency>.`);
     }
@@ -105,6 +114,11 @@ export async function runCli(argv: string[], overrides: Partial<CliDeps> = {}): 
         return {json: {cancelled: [argument(args, 1, 'order id')]}};
       case 'wait':
         return {json: await waitForOrder(broker, pair, argument(args, 1, 'order id'), timeout, poll)};
+      case 'smoke': {
+        const report = await runSmokeChecks(broker, pair, interval);
+        // A failing check has to reach a shell's exit code, or a broken integration reads as a pass.
+        return {code: report.ok ? 0 : 1, json: report};
+      }
       case 'watch-candles':
         return {
           json: await streamEvents(

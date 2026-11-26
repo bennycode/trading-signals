@@ -3,6 +3,23 @@ import type {Candle, CandleImportRequest} from './Broker.js';
 import type {TradingPair} from './TradingPair.js';
 
 /**
+ * The candle surface a caller consumes, independent of who serves it.
+ *
+ * A broker that owns no data of its own satisfies this by delegating to a {@link MarketDataSource},
+ * which is why it is an interface rather than the class: an adapter forwards the public calls
+ * without inheriting the fetching internals, and `implements MarketDataSource` would drag those
+ * protected members into the adapter's contract.
+ */
+export interface CandleFeed {
+  disconnect(): void;
+  getCandles(pair: TradingPair, request: CandleImportRequest): Promise<Candle[]>;
+  getLatestCandle(pair: TradingPair, intervalInMillis: number): Promise<Candle>;
+  getRecentCandles(pair: TradingPair, count: number, intervalInMillis: number): Promise<Candle[]>;
+  unwatchCandles(topicId: string): void;
+  watchCandles(pair: TradingPair, intervalInMillis: number, openTimeInISO: string): Promise<string>;
+}
+
+/**
  * A pluggable source of historical and real-time OHLC candle data.
  *
  * Decouples market data from execution: brokers that don't expose candles
@@ -13,9 +30,34 @@ import type {TradingPair} from './TradingPair.js';
  * Implementations emit candles on the EventEmitter via the topicId returned by
  * `watchCandles()`.
  */
-export abstract class MarketDataSource extends EventEmitter {
+export abstract class MarketDataSource extends EventEmitter implements CandleFeed {
   abstract getCandles(pair: TradingPair, request: CandleImportRequest): Promise<Candle[]>;
-  abstract getLatestCandle(pair: TradingPair, intervalInMillis: number): Promise<Candle>;
+
+  /**
+   * The newest bars the source can reach in one probe, oldest first, the last of which may still
+   * be forming. Throws when the source has none.
+   *
+   * Protected because a half-built bar is not something a caller should receive: every public
+   * accessor here returns closed candles. The anchor comes from the data rather than the clock
+   * because bar opens need not sit on the interval grid — IBKR stamps a daily bar at the session
+   * open — and because starting at the newest real bar reaches a stale instrument in one request
+   * instead of widening the window until it finds one.
+   *
+   * A batch rather than the single newest bar so that {@link getRecentCandles} can answer from the
+   * probe alone when it already holds enough closed candles. Implementations should reach back far
+   * enough to clear the forming bar, since asking for the newest closed candle is the common case.
+   */
+  protected abstract getNewestCandles(pair: TradingPair, intervalInMillis: number): Promise<Candle[]>;
+
+  /**
+   * Whether a bar is still being built, and so must be withheld from a caller.
+   *
+   * Overridable because `open + interval <= now` is right only for a grid-aligned bar. A source
+   * that stamps a bar with its session open needs its own test.
+   */
+  protected isForming(candle: Candle, intervalInMillis: number, nowInMillis: number): boolean {
+    return candle.openTimeInMillis + intervalInMillis > nowInMillis;
+  }
 
   /**
    * Fetch the most recent `count` finished candles of the given interval, oldest first — so a
@@ -27,10 +69,47 @@ export abstract class MarketDataSource extends EventEmitter {
       return [];
     }
 
-    const latest = await this.getLatestCandle(pair, intervalInMillis);
-    const isFinished = latest.openTimeInMillis + intervalInMillis <= Date.now();
-    const untilInMillis = isFinished ? latest.openTimeInMillis : latest.openTimeInMillis - 1;
+    const probed = await this.getNewestCandles(pair, intervalInMillis);
+    const newest = probed.at(-1);
+
+    if (!newest) {
+      throw new Error(`No ${intervalInMillis} ms candle is available for ${pair.asString('/')}.`);
+    }
+
+    const closed = this.isForming(newest, intervalInMillis, Date.now()) ? probed.slice(0, -1) : probed;
+
+    // The probe reached far enough, so the walk below would only re-fetch what is already here.
+    if (closed.length >= count) {
+      return closed.slice(-count);
+    }
+
+    const untilInMillis = closed.at(-1)?.openTimeInMillis ?? newest.openTimeInMillis - 1;
     return getCandlesUntil(this, pair, count, intervalInMillis, untilInMillis);
+  }
+
+  /**
+   * The price as of now, which on a live feed is the newest *closed* candle.
+   *
+   * Not merely `getRecentCandles(pair, 1, interval)` unwrapped, even though that is how this
+   * implements it and what it returns here. The two ask different questions, and
+   * {@link BrokerMock} answers them differently on purpose: there this is the candle the backtest
+   * is currently processing, while `getRecentCandles` stops one candle short of it so a strategy
+   * warming up cannot see the bars it is about to be tested on. Collapsing the two would move
+   * every backtest price back one bar without failing anything.
+   *
+   * On a live source they coincide, and deliberately so rather than reporting "whatever bar is
+   * newest": one rule means a price shown to a user, a price used to size an order and a price fed
+   * to an indicator all refer to the same bar. The cost is staleness of up to one interval, which
+   * is why callers wanting a live price should ask for the smallest interval.
+   */
+  async getLatestCandle(pair: TradingPair, intervalInMillis: number): Promise<Candle> {
+    const [candle] = await this.getRecentCandles(pair, 1, intervalInMillis);
+
+    if (!candle) {
+      throw new Error(`No closed ${intervalInMillis} ms candle is available for ${pair.asString('/')}.`);
+    }
+
+    return candle;
   }
 
   abstract watchCandles(pair: TradingPair, intervalInMillis: number, openTimeInISO: string): Promise<string>;

@@ -1,29 +1,23 @@
 import Big from 'big.js';
 import {EventEmitter} from 'node:events';
+import {OrderPosition, OrderSide, OrderType} from './orderEnums.js';
 import type {TradingPair} from './TradingPair.js';
+import {
+  resolveProfitableExitPrice,
+  type ExitPriceEntry,
+  type ExitPriceOptions,
+  type ProfitableExitPrice,
+} from './profitableExitPrice.js';
 
 export {CandleBaseSchema, CandleSchema} from '../schemas.js';
+export {OrderPosition, OrderSide, OrderType} from './orderEnums.js';
 export type {Candle, CandleBase} from '../schemas.js';
-
-export const OrderSide = {
-  BUY: 'BUY',
-  SELL: 'SELL',
-} as const;
-export type OrderSide = (typeof OrderSide)[keyof typeof OrderSide];
 
 interface OrderBase {
   side: OrderSide;
   size: string;
   type: OrderType;
 }
-
-export const OrderType = {
-  /** Maker */
-  LIMIT: 'LIMIT',
-  /** Taker */
-  MARKET: 'MARKET',
-} as const;
-export type OrderType = (typeof OrderType)[keyof typeof OrderType];
 
 export interface CandleImportRequest {
   /** Candle size in milliseconds, i.e. 60000 for 1 minute */
@@ -53,11 +47,20 @@ export interface FeeRate {
   CURRENCY_CONVERSION_FEE?: Big;
 }
 
-export const OrderPosition = {
-  LONG: 'LONG',
-  SHORT: 'SHORT',
-} as const;
-export type OrderPosition = (typeof OrderPosition)[keyof typeof OrderPosition];
+/**
+ * The order {@link Broker.estimateFee} is being asked to price, for the brokers that cannot answer
+ * from a notional alone.
+ *
+ * A broker charging a percentage needs nothing but the notional. One charging per unit, or with a
+ * per-order minimum, has to know how many units — and recovering a unit count from a notional
+ * means assuming a price, which puts a guess underneath the estimate. So a caller that already
+ * knows the real numbers passes them, and both fields are optional because callers that only hold
+ * a notional still get the percentage answer.
+ */
+export interface FeeEstimateOrder {
+  price?: Big | undefined;
+  size?: Big | undefined;
+}
 
 export interface Fill {
   /** Date in ISO 8601 format */
@@ -287,11 +290,15 @@ export abstract class Broker extends EventEmitter {
    *
    * Returns the *expected* fee. Actual realised fees come back on `Fill.fee` after the
    * order executes and may differ slightly (broker-side spreads, FX rate variation).
+   *
+   * {@link FeeEstimateOrder} is ignored here, because a rate times a notional is the whole answer
+   * for a broker that charges one. Brokers that bill per unit override this and read it.
    */
   async estimateFee(
     pair: TradingPair,
     orderType: OrderType,
-    notional: Big
+    notional: Big,
+    _order?: FeeEstimateOrder
   ): Promise<{commission: Big; currencyConversion: Big; total: Big; feeAsset: string}> {
     const rates = await this.getFeeRates(pair);
     const commission = notional.times(rates[orderType]);
@@ -303,6 +310,26 @@ export abstract class Broker extends EventEmitter {
       feeAsset: await this.getFeeAsset(pair),
       total: commission.plus(currencyConversion),
     };
+  }
+
+  /**
+   * The price at which closing a position finally clears a profit, once every cost is paid.
+   *
+   * @see {@link resolveProfitableExitPrice} for how the bound is solved and why it runs in
+   * opposite directions for a long and a short.
+   */
+  async getProfitableExitPrice(
+    pair: TradingPair,
+    entry: ExitPriceEntry,
+    options?: ExitPriceOptions
+  ): Promise<ProfitableExitPrice> {
+    return resolveProfitableExitPrice({
+      broker: this,
+      entry,
+      feeAsset: await this.getFeeAsset(pair),
+      options,
+      pair,
+    });
   }
 
   /**

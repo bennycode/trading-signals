@@ -2,7 +2,7 @@
 
 Typed broker clients for algorithmic trading in TypeScript. Trade through brokers like [Alpaca](https://alpaca.markets/) and [Trading212](https://www.trading212.com/) with one consistent API: every response validated at runtime (zod), all money math in arbitrary precision (big.js), live candles streamed over WebSocket.
 
-### [Install](#installation) · [Brokers](#supported-brokers) · [Quick Start](#quick-start-alpaca) · [Raw API](#raw-api-access) · [Rate Limits](#rate-limiting) · [Extend](#bring-your-own-broker)
+### [Install](#installation) · [Brokers](#supported-brokers) · [Quick Start](#quick-start) · [Raw API](#raw-api-access) · [Rate Limits](#rate-limiting) · [Extend](#bring-your-own-broker)
 
 ## Motivation
 
@@ -23,7 +23,7 @@ To drive the brokers from a terminal instead of code, install [@typedtrader/exch
 ## Features
 
 - **One API for every broker:** place market/limit orders, list balances, watch fills and candles with the same methods on every supported broker
-- **Paper trading:** a single `usePaperTrading` flag switches a broker to its sandbox environment
+- **Paper trading:** every supported broker offers one, reached by a flag where the broker has a sandbox endpoint and by paper credentials where it does not
 - **Runtime validation:** every API response is parsed with zod schemas, so malformed data fails loudly instead of corrupting your strategy
 - **High precision:** `big.js` for order sizes, prices, and fees, with no floating-point drift
 - **Streaming candles:** WebSocket-fed minute bars, batched into larger timeframes using human-readable intervals (e.g. `"5m"`, `"1h"`)
@@ -35,12 +35,15 @@ To drive the brokers from a terminal instead of code, install [@typedtrader/exch
 | --- | --- | --- | :-: | --- | --- | --- |
 | `alpaca` | [Alpaca](https://alpaca.markets/) | US stocks, ETFs, crypto | ✅ | ✅ IEX feed, WebSocket streamed | ✅ WebSocket stream | [docs.alpaca.markets](https://docs.alpaca.markets/reference/) |
 | `trading212` | [Trading212](https://www.trading212.com/) | 13,000+ US/UK/EU stocks and ETFs | ✅ | ❌ bring your own source | 🔁 polled (~60s) | [docs.trading212.com](https://docs.trading212.com/api) |
+| `ibkr` | [Interactive Brokers](https://www.interactivebrokers.com/) | US stocks and ETFs, 24/5 overnight | ✅ separate paper login | ✅ own history endpoint | 🔁 polled (~5s) | [Web API](https://www.interactivebrokers.com/docs/web-api/getting-started) |
 
 More brokers are planned, and the `Broker` abstraction is built for it (see [Bring Your Own Broker](#bring-your-own-broker)).
 
-You create the API keys yourself in each broker's dashboard. The package uses your credentials but never creates accounts or keys for you: [Alpaca API keys](https://docs.alpaca.markets/us/docs/getting-started) · [Trading212 API keys](https://helpcentre.trading212.com/hc/en-us/articles/14584770928157-Trading-212-API-key)
+You create the credentials yourself in each broker's dashboard. The package uses them but never creates accounts or keys for you; each broker's README links the page to create them on.
 
-## Quick Start: Alpaca
+## Quick Start
+
+Every broker is constructed by its own `get…Client` function and then used through the same `Broker` methods:
 
 ```ts
 import {getAlpacaClient, TradingPair} from '@typedtrader/exchange';
@@ -58,60 +61,13 @@ const latest = await broker.getLatestCandle(pair, 60_000);
 await broker.placeLimitOrder(pair, {side: 'BUY', size: '1', price: latest.close});
 ```
 
-**Why Alpaca:**
+Swap `getAlpacaClient` for `getTrading212Client` or `getIbkrClient` and the rest of the code is unchanged. What differs per broker is how it authenticates, where its candles come from and which of them it needs supplied — each broker's README covers that:
 
-- **Commission-free** US stocks and ETFs, with fractional shares.
-- **Free paper trading** that mirrors the live API, so strategies can be validated without risking capital.
-- **Free market data** via the IEX feed, including WebSocket-streamed minute bars (the source this package pairs with other brokers).
-- **Crypto** trades 24/7 alongside equities.
-- **[24/5 trading](https://docs.alpaca.markets/us/docs/245-trading)** of US stocks via an overnight session, so positions can be opened or closed from Sunday evening through Friday evening.
-- **Add funds commission-free** with [Revolut](https://www.revolut.com/), avoiding the transfer fees most banks charge.
+- [**Alpaca**](src/broker/alpaca/README.md) — API keys, its own free market data
+- [**Trading212**](src/broker/trading212/README.md) — API keys, needs an external market-data source
+- [**Interactive Brokers**](src/broker/ibkr/README.md) — no API keys; a local gateway holds the session
 
-**Resources:** [API Reference](https://docs.alpaca.markets/reference/) · [OpenAPI Files](https://docs.alpaca.markets/openapi) · [24/5 Trading](https://docs.alpaca.markets/us/docs/245-trading)
-
-## Quick Start: Trading212
-
-Trading212's API has no historical bars and no WebSocket, so the broker is paired with an external market-data source. For US equities, Alpaca's feed is the natural choice: it is free, works with a paper account, and streams minute bars over WebSocket.
-
-```ts
-import {AlpacaMarketData, getTrading212Client, TradingPair} from '@typedtrader/exchange';
-
-// 1. Construct an Alpaca-backed market-data source.
-const marketData = new AlpacaMarketData({
-  apiKey: 'ALPACA_API_KEY',
-  apiSecret: 'ALPACA_API_SECRET',
-  usePaperTrading: false, // read-only; doesn't place orders
-});
-
-// 2. Wire it into the Trading212 broker.
-const broker = getTrading212Client({
-  apiKey: 'TRADING212_API_KEY',
-  apiSecret: 'TRADING212_API_SECRET',
-  usePaperTrading: true,
-  marketData, // required: Trading212 has no candles of its own
-});
-
-// 3. Use the broker as if it provided everything natively. Symbol mapping is automatic:
-// Trading212's `AAPL_US_EQ` is stripped to Alpaca's `AAPL` behind the scenes.
-const pair = new TradingPair('AAPL_US_EQ', 'USD');
-const latest = await broker.getLatestCandle(pair, 60_000); // → from Alpaca's WebSocket
-await broker.placeLimitOrder(pair, {side: 'BUY', size: '1', price: latest.close}); // → Trading212
-```
-
-**Why Trading212:**
-
-- **Commission-free** investing in 13,000+ stocks and ETFs, with fractional shares from £1/€1.
-- **Broad UK, European, and US coverage.**
-- **Multi-currency accounts** for depositing and investing in 13 currencies.
-- **Tax-advantaged Stocks & Shares ISA** (and Cash ISA) for UK residents, with no account fees.
-- **Daily [interest](https://www.trading212.com/interest-on-cash)** paid on uninvested cash.
-
-**Good to know:**
-
-- **Cross-currency fees.** Trading212 debits a currency-conversion fee on cross-currency trades (e.g. a EUR account buying USD instruments) at ~0.15% per leg. `getFeeRates()` surfaces this as `CURRENCY_CONVERSION_FEE`; `estimateFee()` includes it in the total.
-- **Order updates are polled.** Trading212 has no order-stream WebSocket, so `watchOrders` polls once per minute (matching Trading212's documented rate limit). Fills arrive within ~60 seconds rather than push-style.
-
-**Resources:** [API Documentation](https://docs.trading212.com/api) · [Fees](https://helpcentre.trading212.com/hc/en-us/articles/11471996799517)
+To pick a broker at runtime from stored credentials instead, `getBrokerClient({exchangeId, apiKey, apiSecret, isPaper})` constructs whichever one `exchangeId` names.
 
 ## Raw API Access
 

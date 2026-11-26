@@ -1,4 +1,4 @@
-import type {Broker, Candle, MarketDataSource} from '@typedtrader/exchange';
+import type {Broker, Candle, CandleFeed} from '@typedtrader/exchange';
 import {TradingPair} from '@typedtrader/exchange';
 import {getAccountBrokerClient} from '../broker/getAccountBrokerClient.js';
 import {Account} from '../database/models/Account.js';
@@ -10,7 +10,7 @@ import type {PlatformDispatcher} from './PlatformDispatcher.js';
 interface ActiveSubscription {
   watchId: number;
   topicId: string;
-  broker: Broker & MarketDataSource;
+  broker: Broker & CandleFeed;
 }
 
 export class WatchMonitor {

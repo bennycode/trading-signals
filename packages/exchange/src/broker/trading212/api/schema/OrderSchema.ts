@@ -54,6 +54,14 @@ export const OrderSchema = z.looseObject({
   value: z.number().nullish(),
 });
 
+/*
+ * No `currency` on either request below, though a historical order carries one and selecting the
+ * asset's currency is what avoids the 0.15% FX fee ("Pay no FX fees by trading in the asset's
+ * currency"). Both endpoints answer `"Invalid payload"` when it is sent, against a control payload
+ * that validates — so wallet selection stays an in-app feature, and an order placed through the API
+ * settles from the account's primary currency and converts. The one USD-settled fill observed on a
+ * EUR account came from `initiatedFrom: "IOS"`, not the API.
+ */
 export const PlaceMarketOrderRequestSchema = z.object({
   /** Route to Trading212's 24/5 overnight venue (true) or regular session only (default). */
   extendedHours: z.boolean().optional(),

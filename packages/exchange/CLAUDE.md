@@ -6,7 +6,7 @@ For the full architectural template (layering, outer composition root, mapper la
 
 The `Broker` interface is intentionally kept generic so that any broker can implement it:
 
-- **Bring your own broker.** Alpaca and Trading212 are first-class, but the package is built to be extended.
+- **Bring your own broker.** Alpaca, Trading212 and Interactive Brokers are first-class, but the package is built to be extended.
 - **Extending the abstract `Broker` class** makes an integration plug straight into the `trading-strategies` package's `TradingSession` for live strategies and `BacktestExecutor` for backtesting — both for free, with no extra wiring.
 - **Execution and market data are deliberately separated.** `Broker` handles order execution; `MarketDataSource` handles candles. This lets any data provider be paired with any broker — essential for brokers without a market-data API (e.g. Trading212, which exposes no historical bars and no WebSocket, so `Trading212Broker` requires an external `MarketDataSource`).
 

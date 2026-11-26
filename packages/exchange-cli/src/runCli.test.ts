@@ -10,10 +10,11 @@ import {
   type Broker,
   type Candle,
   type Fill,
+  type CandleFeed,
   type MarketDataSource,
 } from '@typedtrader/exchange';
 import {AlpacaAPI, Trading212API} from '@typedtrader/exchange';
-import {createCliBroker} from './cliBroker.js';
+import {createCliBroker, readCredentials} from './cliBroker.js';
 import {runCli, type CliDeps} from './runCli.js';
 
 const PAIR = new TradingPair('AAPL', 'USD');
@@ -53,6 +54,7 @@ function setup() {
       feeAsset: 'USD',
       total: new Big(0),
     }),
+    getFeeRates: vi.fn<Broker['getFeeRates']>().mockResolvedValue({LIMIT: new Big(0), MARKET: new Big(0)}),
     getFillByOrderId: vi.fn<Broker['getFillByOrderId']>().mockResolvedValue(undefined),
     getFills: vi.fn<Broker['getFills']>().mockResolvedValue([FILL]),
     getLatestCandle: vi.fn<MarketDataSource['getLatestCandle']>().mockResolvedValue(CANDLE),
@@ -94,7 +96,7 @@ function setup() {
   const listInstruments = vi.fn<ReturnType<typeof createCliBroker>['listInstruments']>().mockResolvedValue(INSTRUMENTS);
   const deps = {
     createBroker: vi.fn<CliDeps['createBroker']>().mockReturnValue({
-      broker: broker as unknown as Broker & MarketDataSource,
+      broker: broker as unknown as Broker & CandleFeed,
       listInstruments,
     }),
     env: {},
@@ -192,6 +194,13 @@ describe('runCli', {concurrent: false}, () => {
     await expect(runCli(['balances', '--broker', 'binance'])).rejects.toThrow('--broker');
   });
 
+  it('accepts ibkr as a broker name', async () => {
+    const {broker, deps} = setup();
+    await runCli(['--broker', 'IBKR', '--live', 'balances'], deps);
+    expect(deps.createBroker).toHaveBeenCalledWith('ibkr', true, deps.env);
+    expect(broker.listBalances).toHaveBeenCalledOnce();
+  });
+
   it('defaults to paper even if an environment flag requests live', async () => {
     const {deps, run} = setup();
     deps.env = {ALPACA_USE_PAPER: 'false'};
@@ -212,6 +221,51 @@ describe('runCli', {concurrent: false}, () => {
     const env = {ALPACA_LIVE_API_KEY: 'live-key', ALPACA_LIVE_API_SECRET: 'live-secret'};
     expect(() => createCliBroker('alpaca', false, env)).toThrow('ALPACA_PAPER_API_KEY');
     expect(() => createCliBroker('trading212', true, {})).toThrow('TRADING212_LIVE_API_KEY');
+  });
+
+  it('reads IBKR credentials without the PAPER/LIVE prefix, and tolerates their absence', () => {
+    expect(
+      () => createCliBroker('ibkr', true, {IBKR_PASSWORD: 'secret', IBKR_USERNAME: 'user'}),
+      'IBKR takes the Pro username and password, not an API key pair'
+    ).not.toThrow();
+    expect(
+      () => createCliBroker('ibkr', true, {}),
+      'an empty pair still addresses a gateway somebody logged in already'
+    ).not.toThrow();
+  });
+
+  it('builds an IBKR broker for paper trading, which is a separate login rather than an endpoint', () => {
+    expect(() =>
+      createCliBroker('ibkr', false, {IBKR_PAPER_PASSWORD: 'secret', IBKR_PAPER_USERNAME: 'paper-user'})
+    ).not.toThrow();
+  });
+
+  it.each([
+    {
+      env: {IBKR_PAPER_PASSWORD: 'paper-secret', IBKR_PAPER_USERNAME: 'paper-user'},
+      expected: 'paper-user',
+      live: false,
+    },
+    {env: {IBKR_LIVE_PASSWORD: 'live-secret', IBKR_LIVE_USERNAME: 'live-user'}, expected: 'live-user', live: true},
+    {env: {IBKR_PASSWORD: 'either-secret', IBKR_USERNAME: 'either-user'}, expected: 'either-user', live: false},
+  ])('reads the IBKR credentials for the environment asked for: $expected', ({env, expected, live}) => {
+    expect(
+      readCredentials('ibkr', live, env).apiKey,
+      'the paper account has its own username, so the live pair would log the gateway into the wrong environment'
+    ).toBe(expected);
+  });
+
+  it('takes the IBKR pair whole rather than completing it from the unprefixed names', () => {
+    const credentials = readCredentials('ibkr', false, {
+      IBKR_PAPER_USERNAME: 'paper-user',
+      IBKR_PASSWORD: 'live-secret',
+      IBKR_USERNAME: 'live-user',
+    });
+
+    expect(
+      credentials.apiSecret,
+      'IBKR gives paper and live different passwords, so borrowing the live one builds a pair belonging to neither login'
+    ).toBe('');
   });
 
   it('verifies credentials and labels the selected mode', async () => {
@@ -305,6 +359,41 @@ describe('runCli', {concurrent: false}, () => {
     const rules = await broker.getTradingRules(PAIR);
     broker.getTradingRules.mockResolvedValue({...rules, counter_increment: '0'});
     expect(await run(['buy', 'AAPL', '1', '--dry-run', '--limit', '100.001'])).toMatchObject({json: {dryRun: true}});
+  });
+
+  it('runs every read-only call under smoke and places no orders', async () => {
+    const {broker, run} = setup();
+
+    const result = await run(['smoke', 'AAPL']);
+
+    expect(result).toMatchObject({code: 0, json: {ok: true, pair: 'AAPL/USD'}});
+    expect(
+      broker.placeMarketOrder,
+      'this is pointed at live accounts to see what a broker answers, so it must not trade'
+    ).not.toHaveBeenCalled();
+    expect(broker.placeLimitOrder).not.toHaveBeenCalled();
+    expect(broker.cancelOpenOrders).not.toHaveBeenCalled();
+    expect(broker.verifyCredentials).toHaveBeenCalled();
+    expect(broker.getFills).toHaveBeenCalled();
+  });
+
+  it('reports a failing call and still runs the rest, with a non-zero exit code', async () => {
+    const {broker, run} = setup();
+    broker.getTradingRules.mockRejectedValue(new Error('No market data subscription'));
+
+    const result = await run(['smoke', 'AAPL', '--interval', '1h']);
+
+    const reportedError: unknown = expect.stringContaining('No market data subscription');
+    const expectedChecks: unknown = expect.arrayContaining([
+      expect.objectContaining({check: 'getTradingRules', error: reportedError, ok: false}),
+      expect.objectContaining({check: 'getFills', ok: true}),
+    ]);
+
+    expect(
+      result,
+      'an unentitled endpoint is one broken call, not a broken broker, so the others still have to be reported'
+    ).toMatchObject({code: 1, json: {checks: expectedChecks, ok: false}});
+    expect(broker.getRecentCandles).toHaveBeenCalledWith(PAIR, 3, 3_600_000);
   });
 
   it('quotes the most recent candle close and passes candle parameters through', async () => {
@@ -483,7 +572,10 @@ describe('runCli', {concurrent: false}, () => {
       TRADING212_PAPER_API_KEY: 'test-key',
       TRADING212_PAPER_API_SECRET: 'test-secret',
     });
-    await expect(broker.getLatestCandle(PAIR, 60_000)).rejects.toThrow('Use --broker alpaca');
+    await expect(
+      broker.getLatestCandle(PAIR, 60_000),
+      'the borrowed feed is the only thing missing, so the failure names the variables that would supply it'
+    ).rejects.toThrow('Set ALPACA_PAPER_API_KEY and ALPACA_PAPER_API_SECRET');
     broker.disconnect();
   });
 });
