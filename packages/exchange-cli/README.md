@@ -37,6 +37,12 @@ node --env-file=.env "$(which exchange-cli)" balances --broker alpaca
 
 The command resolves the installed executable, so it works the same for a global and a local installation. From this package's source directory, use `npm run cli -- <command> ...` with exported credentials.
 
+### Trading212
+
+Trading212 publishes no historical bars and no public stream, so `candles`, `watch-candles` and `quote` borrow Alpaca's feed: set `ALPACA_PAPER_API_KEY` / `ALPACA_PAPER_API_SECRET` (or the `ALPACA_LIVE_*` pair with `--live`) alongside the Trading212 credentials. Account and order commands need no Alpaca keys, and the candle commands say so when they are missing.
+
+Its tickers carry a country and type suffix (`AAPL_US_EQ`), which is translated to the plain symbol before reaching Alpaca. Pass the Trading212 ticker and a `--counter` currency, since the suffix does not name one.
+
 ### Interactive Brokers
 
 IBKR is the exception to everything above. It has no API keys, so its credential pair is a username and password: `IBKR_PAPER_USERNAME` / `IBKR_PAPER_PASSWORD`, or the `IBKR_LIVE_*` pair with `--live`. A single-environment setup can use the unprefixed `IBKR_USERNAME` / `IBKR_PASSWORD` for either. Both may be omitted when a gateway is already logged in.

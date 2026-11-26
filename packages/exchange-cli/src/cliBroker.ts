@@ -1,6 +1,7 @@
 import {
   AlpacaAPI,
   AlpacaAssetClass,
+  AlpacaMarketData,
   IbkrBroker,
   MarketDataSource,
   Trading212API,
@@ -46,26 +47,52 @@ export interface Instrument {
 }
 
 /*
- * Trading212's factory requires a data source even for account/order commands. Keep this
- * CLI adapter explicit: cross-provider symbol mapping is outside the command-line layer.
+ * Trading212's factory requires a data source even for account and order commands, so this
+ * stands in when no Alpaca credentials are around to build a real one. It fails on the candle
+ * calls alone, which keeps `balances` and `orders` working for a Trading212-only setup.
  */
 class UnavailableMarketData extends MarketDataSource {
-  static readonly REASON = 'Trading212 market data is not configured in this CLI. Use --broker alpaca for market data.';
+  readonly #reason: string;
+
+  constructor(prefix: string) {
+    super();
+    this.#reason = `Trading212 publishes no candles of its own, so the CLI borrows Alpaca's feed. Set ${prefix}_API_KEY and ${prefix}_API_SECRET to use it.`;
+  }
 
   async getCandles(): Promise<Candle[]> {
-    throw new Error(UnavailableMarketData.REASON);
+    throw new Error(this.#reason);
   }
 
   protected override async getNewestCandles(): Promise<Candle[]> {
-    throw new Error(UnavailableMarketData.REASON);
+    throw new Error(this.#reason);
   }
 
   async watchCandles(): Promise<string> {
-    throw new Error(UnavailableMarketData.REASON);
+    throw new Error(this.#reason);
   }
 
   unwatchCandles(): void {}
   disconnect(): void {}
+}
+
+/**
+ * The feed Trading212 borrows, because it publishes no bars and no public stream of its own.
+ *
+ * Alpaca's, in the same environment as the command: its paper and live keys are separate and
+ * serve different data hosts, so a `--live` Trading212 command pairs with the live Alpaca keys.
+ * The vendor ticker is Trading212's own problem — {@link Trading212Broker.toMarketDataPair}
+ * turns `AAPL_US_EQ` into `AAPL` before anything reaches this.
+ */
+function borrowedMarketData(live: boolean, env: NodeJS.ProcessEnv): MarketDataSource {
+  const prefix = `ALPACA_${live ? 'LIVE' : 'PAPER'}`;
+  const apiKey = env[`${prefix}_API_KEY`];
+  const apiSecret = env[`${prefix}_API_SECRET`];
+
+  if (!apiKey || !apiSecret) {
+    return new UnavailableMarketData(prefix);
+  }
+
+  return new AlpacaMarketData({apiKey, apiSecret, usePaperTrading: !live});
 }
 
 /**
@@ -114,7 +141,7 @@ export function createCliBroker(key: BrokerKey, live: boolean, env: NodeJS.Proce
   const options = {apiKey, apiSecret, usePaperTrading: !live};
   const broker = getBrokerClient(
     {apiKey, apiSecret, exchangeId: BROKERS[key].id, isPaper: !live},
-    key === 'trading212' ? {marketData: new UnavailableMarketData()} : undefined
+    key === 'trading212' ? {marketData: borrowedMarketData(live, env)} : undefined
   );
 
   /*

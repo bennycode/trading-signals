@@ -572,7 +572,10 @@ describe('runCli', {concurrent: false}, () => {
       TRADING212_PAPER_API_KEY: 'test-key',
       TRADING212_PAPER_API_SECRET: 'test-secret',
     });
-    await expect(broker.getLatestCandle(PAIR, 60_000)).rejects.toThrow('Use --broker alpaca');
+    await expect(
+      broker.getLatestCandle(PAIR, 60_000),
+      'the borrowed feed is the only thing missing, so the failure names the variables that would supply it'
+    ).rejects.toThrow('Set ALPACA_PAPER_API_KEY and ALPACA_PAPER_API_SECRET');
     broker.disconnect();
   });
 });
