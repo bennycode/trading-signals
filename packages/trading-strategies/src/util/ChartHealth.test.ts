@@ -165,13 +165,26 @@ describe('ChartHealth', () => {
     expect(withBenchmark.unreadWeight, 'every check has something to read once a benchmark arrives').toBe(0);
   });
 
+  it('puts every check in plain words next to its domain name', () => {
+    const {checks} = scoreOf(dailyCandles(risingCloses, CALM_BARS)).getReportOrThrow();
+
+    for (const check of checks) {
+      expect(check.question, `"${check.name}" must read as a question whose yes is the bad answer`).toMatch(/\?$/);
+    }
+
+    expect(
+      checks.find(check => check.name === 'deathCross')?.question,
+      'a reader should not have to know what a death cross is'
+    ).toBe('Has the fast average crossed below the slow one?');
+  });
+
   it('shows by how much a check missed, not only that it missed', () => {
     const rising = scoreOf(dailyCandles(risingCloses, CALM_BARS)).getReportOrThrow();
     const breaking = scoreOf(dailyCandles(breakdownCloses, BREAKDOWN_BARS)).getReportOrThrow();
     const gap = (report: HealthReport) =>
       report.checks
         .find(check => check.name === 'belowFallingFastAverage')
-        ?.measures.find(entry => entry.label === 'close against the fast average')?.deviationPercent;
+        ?.measures.find(entry => entry.label === 'close against the 50-bar average')?.deviationPercent;
 
     expect(gap(rising), 'an advancing price sits above its own average').toBeGreaterThan(0);
     expect(gap(breaking), 'a breaking price sits below it, and the number says how far').toBeLessThan(-10);
@@ -184,7 +197,7 @@ describe('ChartHealth', () => {
   it('withholds a percentage where one would be meaningless', () => {
     const report = scoreOf(dailyCandles(breakdownCloses, BREAKDOWN_BARS)).getReportOrThrow();
     const check = report.checks.find(entry => entry.name === 'macdBelowZero');
-    const zeroLine = check?.measures.find(entry => entry.label === 'trend oscillator against its zero line');
+    const zeroLine = check?.measures.find(entry => entry.label === 'MACD against its zero line');
 
     expect(zeroLine?.deviationPercent, 'nothing is a percentage of zero').toBeNull();
     expect(zeroLine?.reading, 'the reading itself is still there to be judged').toBeLessThan(0);

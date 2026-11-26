@@ -59,6 +59,12 @@ export type WeaknessCheck = {
   fired: boolean | null;
   /** Empty for a check that could not be read at all, since it compared nothing. */
   measures: WeaknessMeasure[];
+  /**
+   * The check in plain words, as a question whose "yes" is the bad answer. {@link
+   * WeaknessCheck.name} stays the domain term a trader would look up, such as a death cross; this
+   * is what it means for anyone reading the card rather than maintaining it.
+   */
+  question: string;
   name: WeaknessCheckName;
   weight: number;
 };
@@ -99,27 +105,91 @@ export type HealthReport = {
 const FULL_HEALTH = 100;
 
 /**
- * Points each check deducts from full health. A check weighs more when it is hard to argue with on
- * its own terms: price making lower highs and lower lows needs no parameter and no threshold, while
- * a single tag of a Bollinger band is as often a bounce as a breakdown.
+ * Every check the card reads, with the plain question it answers and what a "yes" deducts from full
+ * health. A check weighs more when it is hard to argue with on its own terms: price making lower
+ * highs and lower lows needs no parameter and no threshold, while a single tag of a Bollinger band
+ * is as often a bounce as a breakdown.
+ *
+ * The questions are worded so that "yes" is always the bad answer, because a reader scanning a card
+ * should not have to work out which way each check points.
  *
  * The ten checks read from the instrument's own bars are a closed budget of 100. Relative strength
  * deducts on top of that budget rather than inside it, and health is floored at 0: a card given a
  * benchmark must not read a breakdown as healthier than the same card without one.
  */
-const WEIGHTS = [
-  {category: 'relative', name: 'relativeStrength', weight: 15},
-  {category: 'trend', name: 'lowerHighsAndLows', weight: 18},
-  {category: 'trend', name: 'belowFallingFastAverage', weight: 12},
-  {category: 'trend', name: 'deathCross', weight: 10},
-  {category: 'momentum', name: 'rsiBearRange', weight: 9},
-  {category: 'momentum', name: 'macdBelowZero', weight: 8},
-  {category: 'momentum', name: 'bearishDivergence', weight: 8},
-  {category: 'volume', name: 'distribution', weight: 13},
-  {category: 'volume', name: 'volumeLineFalling', weight: 12},
-  {category: 'volatility', name: 'atrExpandingWhileFalling', weight: 6},
-  {category: 'volatility', name: 'lowerBandRide', weight: 4},
-] as const satisfies readonly {category: WeaknessCategory; name: WeaknessCheckName; weight: number}[];
+const CHECKS = [
+  {
+    category: 'relative',
+    name: 'relativeStrength',
+    question: 'Is it losing ground to its benchmark?',
+    weight: 15,
+  },
+  {
+    category: 'trend',
+    name: 'lowerHighsAndLows',
+    question: 'Is price making lower highs and lower lows?',
+    weight: 18,
+  },
+  {
+    category: 'trend',
+    name: 'belowFallingFastAverage',
+    question: 'Is price below a fast average that has turned down?',
+    weight: 12,
+  },
+  {
+    category: 'trend',
+    name: 'deathCross',
+    question: 'Has the fast average crossed below the slow one?',
+    weight: 10,
+  },
+  {
+    category: 'momentum',
+    name: 'rsiBearRange',
+    question: 'Does momentum stall short of overbought and reach oversold?',
+    weight: 9,
+  },
+  {
+    category: 'momentum',
+    name: 'macdBelowZero',
+    question: 'Has MACD crossed below zero and below its signal?',
+    weight: 8,
+  },
+  {
+    category: 'momentum',
+    name: 'bearishDivergence',
+    question: 'Is a new high being made on less force than the last one?',
+    weight: 8,
+  },
+  {
+    category: 'volume',
+    name: 'distribution',
+    question: 'Is trade heavier on down bars than on up bars?',
+    weight: 13,
+  },
+  {
+    category: 'volume',
+    name: 'volumeLineFalling',
+    question: 'Is the volume line falling while price holds up?',
+    weight: 12,
+  },
+  {
+    category: 'volatility',
+    name: 'atrExpandingWhileFalling',
+    question: 'Are ranges widening as price falls?',
+    weight: 6,
+  },
+  {
+    category: 'volatility',
+    name: 'lowerBandRide',
+    question: 'Is price pinned to the lower band of a widening range?',
+    weight: 4,
+  },
+] as const satisfies readonly {
+  category: WeaknessCategory;
+  name: WeaknessCheckName;
+  question: string;
+  weight: number;
+}[];
 
 /**
  * Highest health that still reads as the named verdict, healthiest band first. No category can
@@ -262,12 +332,14 @@ export class ChartHealth {
   /** Close of the last whole benchmark bar, which the instrument's close is measured against. */
   #benchmarkClose: number | null = null;
   readonly #fastAverage: SMA;
+  readonly #fastAveragePeriod: number;
   readonly #lookback: number;
   readonly #macd: MACD;
   readonly #obv: OBV;
   readonly #parts: readonly Part[];
   readonly #rsi: RSI;
   readonly #slowAverage: SMA;
+  readonly #slowAveragePeriod: number;
   readonly #timeframe: StringValue;
   readonly #window: Bar[] = [];
   readonly #windowBatcher: CandleBatcher;
@@ -288,6 +360,7 @@ export class ChartHealth {
     this.#atr = new ATR(trueRangePeriod);
     this.#bands = new BollingerBands(bollingerPeriod, bollingerDeviation);
     this.#fastAverage = new SMA(fastAveragePeriod);
+    this.#fastAveragePeriod = fastAveragePeriod;
     this.#lookback = lookback;
     // The 12/26/9 periods are the convention the zero line and the signal cross are read against.
     this.#macd = new MACD(new EMA(12), new EMA(26), new EMA(9));
@@ -295,6 +368,7 @@ export class ChartHealth {
     this.#obv = new OBV(2);
     this.#rsi = new RSI(rsiPeriod);
     this.#slowAverage = new SMA(slowAveragePeriod);
+    this.#slowAveragePeriod = slowAveragePeriod;
     this.#timeframe = timeframe;
     this.#windowIntervalInMillis = ms(timeframe);
     this.#windowBatcher = new CandleBatcher(this.#windowIntervalInMillis);
@@ -384,11 +458,12 @@ export class ChartHealth {
     }
 
     const readings = this.#evaluate({latest, oldest});
-    const checks = WEIGHTS.map(entry => ({
+    const checks = CHECKS.map(entry => ({
       category: entry.category,
       fired: readings[entry.name].fired,
       measures: readings[entry.name].measures,
       name: entry.name,
+      question: entry.question,
       weight: entry.weight,
     }));
     const deducted = checks.reduce((sum, check) => (check.fired === true ? sum + check.weight : sum), 0);
@@ -522,8 +597,12 @@ export class ChartHealth {
       belowFallingFastAverage: {
         fired: latest.close < latest.fastAverage && latest.fastAverage < oldest.fastAverage,
         measures: [
-          measure('close against the fast average', latest.close, latest.fastAverage),
-          measure('fast average against the window opening', latest.fastAverage, oldest.fastAverage),
+          measure(`close against the ${this.#fastAveragePeriod}-bar average`, latest.close, latest.fastAverage),
+          measure(
+            `${this.#fastAveragePeriod}-bar average against the window opening`,
+            latest.fastAverage,
+            oldest.fastAverage
+          ),
         ],
       },
       deathCross: {
@@ -531,9 +610,17 @@ export class ChartHealth {
           latest.fastAverage < latest.slowAverage ||
           (latest.close < latest.slowAverage && latest.slowAverage < oldest.slowAverage),
         measures: [
-          measure('fast average against the slow average', latest.fastAverage, latest.slowAverage),
-          measure('close against the slow average', latest.close, latest.slowAverage),
-          measure('slow average against the window opening', latest.slowAverage, oldest.slowAverage),
+          measure(
+            `${this.#fastAveragePeriod}-bar average against the ${this.#slowAveragePeriod}-bar average`,
+            latest.fastAverage,
+            latest.slowAverage
+          ),
+          measure(`close against the ${this.#slowAveragePeriod}-bar average`, latest.close, latest.slowAverage),
+          measure(
+            `${this.#slowAveragePeriod}-bar average against the window opening`,
+            latest.slowAverage,
+            oldest.slowAverage
+          ),
         ],
       },
       /*
@@ -581,8 +668,8 @@ export class ChartHealth {
         fired:
           latest.macd < 0 && latest.macd < latest.macdSignal && this.#window.some(bar => bar.macd >= bar.macdSignal),
         measures: [
-          measure('trend oscillator against its zero line', latest.macd, 0),
-          measure('trend oscillator against its signal', latest.macd, latest.macdSignal),
+          measure('MACD against its zero line', latest.macd, 0),
+          measure('MACD against its signal line', latest.macd, latest.macdSignal),
         ],
       },
       /*
