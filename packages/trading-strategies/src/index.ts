@@ -35,6 +35,16 @@ export {
   type AtrRoomVerdict,
 } from './util/atrUnits.js';
 export {MarketRegimeFilter, type MarketRegimeOptions} from './util/MarketRegimeFilter.js';
+export {ChartHealth, type ChartHealthOptions} from './util/ChartHealth.js';
+export {
+  classifyChartHealth,
+  type HealthReport,
+  type WeaknessCategory,
+  type WeaknessCheck,
+  type WeaknessCheckName,
+  type WeaknessMeasure,
+  type WeaknessVerdict,
+} from './util/chartHealthChecks.js';
 export * from './report/index.js';
 export {
   SP500HeatmapReport,

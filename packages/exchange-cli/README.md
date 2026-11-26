@@ -21,9 +21,12 @@ exchange-cli instruments rolls --broker trading212
 exchange-cli orders RRl_EQ --broker trading212 --counter GBX
 exchange-cli buy AAPL 1 --broker alpaca --limit 100 --dry-run
 exchange-cli buy AAPL 1 --broker alpaca --limit 100
+exchange-cli buy AAPL 1 --broker alpaca --stop-atr 2
 exchange-cli wait AAPL <orderId> --broker alpaca --timeout 5m
 exchange-cli cancel AAPL <orderId> --broker alpaca
 exchange-cli candles AAPL --broker alpaca --count 10 --interval 5m
+exchange-cli health NVDA --broker alpaca --benchmark SPY --table
+exchange-cli health NVDA --broker alpaca --date 2026-10-15 --table
 exchange-cli watch-candles AAPL --broker alpaca --take 3
 exchange-cli balances --broker ibkr --live
 exchange-cli instruments ANT --broker ibkr --live
@@ -62,11 +65,12 @@ Paper trading is a separate login rather than a separate endpoint: IBKR issues t
 | `rules <ticker>` | Show trading rules for a ticker. |
 | `orders <ticker>` | List open orders for a ticker. |
 | `fills <ticker>` | List order fills for a ticker. |
-| `buy <ticker> <quantity>` | Place a market buy, or use `--limit <price>` for a limit order. |
+| `buy <ticker> <quantity>` | Place a market buy, or use `--limit <price>` for a limit order. With `--stop-atr <multiple>` it waits for the fill and places a protective stop that many average ranges below the price paid. Alpaca equities only. |
 | `sell <ticker> <quantity>` | Place a market sell, or use `--limit <price>` for a limit order. |
 | `cancel <ticker> <orderId>` | Request cancellation of one order; use `--all` instead of the order ID to target all open orders for the ticker. |
 | `wait <ticker> <orderId>` | Wait for a fill or for the order to close. |
 | `candles <ticker>` | Fetch recent candles. |
+| `health <ticker>` | Score chart health on daily bars, from 100 (nothing against it) down to 0, reading eight checks across trend, momentum, volume, volatility and relative strength. `--benchmark <ticker>` adds the relative strength check, `--table` prints the card for a reader instead of JSON, `--date <YYYY-MM-DD>` reads the card as of that day instead of the newest bar, so every period counts back from it, and `--count <n>` sets the candles requested for the warm-up (120 by default, against a warm-up of 69 daily bars). |
 | `watch-candles <ticker>` | Stream candles as NDJSON. |
 | `watch-orders` | Stream order fills as NDJSON. |
 | `time` | Show the broker client's time. |

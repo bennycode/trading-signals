@@ -3,6 +3,7 @@ import {randomUUID} from 'node:crypto';
 import Big from 'big.js';
 import {
   Broker,
+  chargedAs,
   type Candle,
   type FeeRate,
   type Fill,
@@ -14,6 +15,10 @@ import {
   OrderType,
   type PendingLimitOrder,
   type PendingMarketOrder,
+  type PendingStopLimitOrder,
+  type PendingStopOrder,
+  type StopLimitOrderOptions,
+  type StopOrderOptions,
   type PendingOrder,
   type TradingRules,
 } from './Broker.js';
@@ -122,10 +127,14 @@ export abstract class BrokerMock extends Broker {
 
   #tryMatch(order: PendingOrder, candle: Candle): Fill | null {
     const range = {high: new Big(candle.high), low: new Big(candle.low), open: new Big(candle.open)};
+    /*
+     * Only the two types this mock places can be resting here, so a trigger needs no fill rule of
+     * its own: `placeOrder` refuses one before it ever reaches the book.
+     */
     const fillPrice =
-      order.type === OrderType.MARKET
-        ? marketFillPrice(order.side, range, this.#slippageRate, this.#clampSlippage)
-        : limitFillPrice(order.side, new Big(order.price), range);
+      order.type === OrderType.LIMIT
+        ? limitFillPrice(order.side, new Big(order.price), range)
+        : marketFillPrice(order.side, range, this.#slippageRate, this.#clampSlippage);
     if (!fillPrice) {
       return null;
     }
@@ -170,9 +179,28 @@ export abstract class BrokerMock extends Broker {
     this.#fills.push(fill);
   }
 
+  /** Not yet: a trigger has to be watched bar by bar, which this simulation does not do. */
+  override get supportsStopOrders(): boolean {
+    return false;
+  }
+
   protected override async placeOrder(pair: TradingPair, options: LimitOrderOptions): Promise<PendingLimitOrder>;
   protected override async placeOrder(pair: TradingPair, options: MarketOrderOptions): Promise<PendingMarketOrder>;
-  protected override async placeOrder(pair: TradingPair, options: OrderOptions) {
+  protected override async placeOrder(pair: TradingPair, options: StopOrderOptions): Promise<PendingStopOrder>;
+  protected override async placeOrder(
+    pair: TradingPair,
+    options: StopLimitOrderOptions
+  ): Promise<PendingStopLimitOrder>;
+  protected override async placeOrder(pair: TradingPair, options: OrderOptions): Promise<PendingOrder> {
+    /*
+     * A trigger has to be watched bar by bar to know whether it fired, and against which price.
+     * Accepting one here would hand a backtest a fill the simulation never checked, which is worse
+     * than refusing to model it.
+     */
+    if (options.type === OrderType.STOP || options.type === OrderType.STOP_LIMIT) {
+      throw new Error(`${options.type} orders are not simulated yet.`);
+    }
+
     const rules = await this.getTradingRules(pair);
     const size = this.#validatedSize(options, rules);
     const limitPrice =
@@ -240,7 +268,7 @@ export abstract class BrokerMock extends Broker {
     if (!this.#cachedFeeRates) {
       throw new Error('Fee rates not cached. Call setCachedFeeRates() before processing candles.');
     }
-    return this.#cachedFeeRates[orderType];
+    return this.#cachedFeeRates[chargedAs(orderType)];
   }
 
   async listBalances() {

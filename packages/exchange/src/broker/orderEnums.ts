@@ -16,6 +16,14 @@ export const OrderType = {
   LIMIT: 'LIMIT',
   /** Taker */
   MARKET: 'MARKET',
+  /** Rests until the market reaches its trigger, then takes whatever price is available. */
+  STOP: 'STOP',
+  /**
+   * Rests until the market reaches its trigger, then rests again as a limit order. It cannot fill
+   * worse than its limit, and a gap straight through both prices leaves it unfilled, which is the
+   * trade-off against {@link OrderType.STOP}.
+   */
+  STOP_LIMIT: 'STOP_LIMIT',
 } as const;
 export type OrderType = (typeof OrderType)[keyof typeof OrderType];
 

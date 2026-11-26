@@ -11,10 +11,24 @@ import type {
   PendingLimitOrder,
   PendingMarketOrder,
   PendingOrder,
+  PendingStopLimitOrder,
+  PendingStopOrder,
 } from '../Broker.js';
 import {PositionSide, type Position} from './api/schema/PositionSchema.js';
 import type {AlpacaAPI} from './api/AlpacaAPI.js';
 import {OrderPosition, OrderSide, OrderType} from '../Broker.js';
+
+/**
+ * The one place the neutral order vocabulary meets Alpaca's, so a new order type cannot be
+ * half-translated: leaving an entry out is a compile error rather than an order quietly placed as a
+ * market order.
+ */
+const ALPACA_ORDER_TYPES = {
+  [OrderType.LIMIT]: 'limit',
+  [OrderType.MARKET]: 'market',
+  [OrderType.STOP]: 'stop',
+  [OrderType.STOP_LIMIT]: 'stop_limit',
+} as const satisfies Record<OrderType, string>;
 
 export class AlpacaBrokerMapper {
   static mapInterval(intervalInMillis: number) {
@@ -63,6 +77,31 @@ export class AlpacaBrokerMapper {
       };
       return pendingOrder;
     }
+    if (order.type === 'stop') {
+      const pendingOrder: PendingStopOrder = {
+        id: order.id,
+        pair,
+        side: options.side,
+        size: `${order.qty}`,
+        stopPrice: `${order.stop_price}`,
+        type: OrderType.STOP,
+      };
+      return pendingOrder;
+    }
+
+    if (order.type === 'stop_limit') {
+      const pendingOrder: PendingStopLimitOrder = {
+        id: order.id,
+        pair,
+        price: `${order.limit_price}`,
+        side: options.side,
+        size: `${order.qty}`,
+        stopPrice: `${order.stop_price}`,
+        type: OrderType.STOP_LIMIT,
+      };
+      return pendingOrder;
+    }
+
     const pendingOrder: PendingLimitOrder = {
       id: order.id,
       pair,
@@ -166,18 +205,20 @@ export class AlpacaBrokerMapper {
      */
     const isFractional = options.sizeInCounter || options.size.includes('.');
     const time_in_force = isCrypto || !isFractional ? 'gtc' : 'day';
-    const isLimit = options.type === OrderType.LIMIT;
+    const carriesLimit = options.type === OrderType.LIMIT || options.type === OrderType.STOP_LIMIT;
+    const carriesTrigger = options.type === OrderType.STOP || options.type === OrderType.STOP_LIMIT;
 
     return {
       client_order_id: clientOrderId,
       side: options.side === OrderSide.BUY ? 'buy' : 'sell',
       symbol,
       time_in_force,
-      type: isLimit ? 'limit' : 'market',
+      type: ALPACA_ORDER_TYPES[options.type],
       ...(options.sizeInCounter ? {notional: options.size} : {qty: options.size}),
-      ...(isLimit ? {limit_price: options.price} : {}),
+      ...(carriesLimit && 'price' in options ? {limit_price: options.price} : {}),
+      ...(carriesTrigger && 'stopPrice' in options ? {stop_price: options.stopPrice} : {}),
       // @see https://docs.alpaca.markets/docs/orders-at-alpaca#submitting-an-extended-hours-eligible-order
-      ...(isLimit && time_in_force === 'day' ? {extended_hours: true} : {}),
+      ...(options.type === OrderType.LIMIT && time_in_force === 'day' ? {extended_hours: true} : {}),
     };
   }
 }

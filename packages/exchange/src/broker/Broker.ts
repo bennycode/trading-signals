@@ -19,6 +19,15 @@ interface OrderBase {
   type: OrderType;
 }
 
+/**
+ * Which published rate an order is billed at. A trigger is not a fee tier: once it fires, a stop
+ * pays what a market order pays and a stop-limit what a limit order pays, so brokers publish the
+ * two rates they already have rather than four, two of them copies.
+ */
+export function chargedAs(orderType: OrderType): 'LIMIT' | 'MARKET' {
+  return orderType === OrderType.LIMIT || orderType === OrderType.STOP_LIMIT ? OrderType.LIMIT : OrderType.MARKET;
+}
+
 export interface CandleImportRequest {
   /** Candle size in milliseconds, i.e. 60000 for 1 minute */
   intervalInMillis: number;
@@ -132,9 +141,41 @@ export interface LimitOrderOptions extends OrderBase {
   type: 'LIMIT';
 }
 
-export type OrderOptions = MarketOrderOptions | LimitOrderOptions;
+/**
+ * A resting order that becomes live once the market trades through `stopPrice`. On a long position
+ * it is the protective exit, so the trigger sits below the market and the order sells into the
+ * decline it is there to escape.
+ */
+export interface StopOrderOptions extends OrderBase {
+  sizeInCounter: false;
+  /** Price that activates the order, not the price it fills at. */
+  stopPrice: string;
+  type: 'STOP';
+}
 
-export type PendingOrder = PendingLimitOrder | PendingMarketOrder;
+export interface StopLimitOrderOptions extends OrderBase {
+  /** Worst price the triggered order may fill at. */
+  price: string;
+  sizeInCounter: false;
+  /** Price that activates the order. */
+  stopPrice: string;
+  type: 'STOP_LIMIT';
+}
+
+export type OrderOptions = MarketOrderOptions | LimitOrderOptions | StopOrderOptions | StopLimitOrderOptions;
+
+export interface PendingStopOrder extends ExchangePendingOrderBase {
+  stopPrice: string;
+  type: 'STOP';
+}
+
+export interface PendingStopLimitOrder extends ExchangePendingOrderBase {
+  price: string;
+  stopPrice: string;
+  type: 'STOP_LIMIT';
+}
+
+export type PendingOrder = PendingLimitOrder | PendingMarketOrder | PendingStopOrder | PendingStopLimitOrder;
 
 export interface Balance {
   /** How much of the position is available */
@@ -277,7 +318,7 @@ export abstract class Broker extends EventEmitter {
    */
   async getFeeRate(pair: TradingPair, orderType: OrderType): Promise<Big> {
     const feeRate = await this.getFeeRates(pair);
-    return feeRate[orderType];
+    return feeRate[chargedAs(orderType)];
   }
 
   /**
@@ -301,7 +342,7 @@ export abstract class Broker extends EventEmitter {
     _order?: FeeEstimateOrder
   ): Promise<{commission: Big; currencyConversion: Big; total: Big; feeAsset: string}> {
     const rates = await this.getFeeRates(pair);
-    const commission = notional.times(rates[orderType]);
+    const commission = notional.times(rates[chargedAs(orderType)]);
     const conversionRate = rates.CURRENCY_CONVERSION_FEE;
     const currencyConversion = conversionRate ? notional.times(conversionRate) : new Big(0);
     return {
@@ -396,6 +437,8 @@ export abstract class Broker extends EventEmitter {
    */
   protected abstract placeOrder(pair: TradingPair, options: LimitOrderOptions): Promise<PendingLimitOrder>;
   protected abstract placeOrder(pair: TradingPair, options: MarketOrderOptions): Promise<PendingMarketOrder>;
+  protected abstract placeOrder(pair: TradingPair, options: StopOrderOptions): Promise<PendingStopOrder>;
+  protected abstract placeOrder(pair: TradingPair, options: StopLimitOrderOptions): Promise<PendingStopLimitOrder>;
   protected abstract placeOrder(pair: TradingPair, options: OrderOptions): Promise<PendingOrder>;
 
   /**
@@ -425,6 +468,56 @@ export abstract class Broker extends EventEmitter {
       size: options.size,
       sizeInCounter: options.sizeInCounter,
       type: OrderType.MARKET,
+    });
+  }
+
+  /**
+   * Whether {@link placeStopOrder} and {@link placeStopLimitOrder} reach the venue on this broker.
+   * It is asked before an entry order rather than after it, because the outcome to avoid is a
+   * filled position whose protective exit then turns out to be unplaceable.
+   */
+  get supportsStopOrders(): boolean {
+    return true;
+  }
+
+  /**
+   * Places a STOP order: the protective exit of a position, which rests until the market reaches
+   * `stopPrice` and then takes whatever price is available. It is filled in a fast decline, at an
+   * unknown price — which is the point, since the alternative is holding the decline.
+   *
+   * @see https://www.investopedia.com/terms/s/stoporder.asp
+   */
+  placeStopOrder(
+    pair: TradingPair,
+    options: Omit<StopOrderOptions, 'type' | 'sizeInCounter'>
+  ): Promise<PendingStopOrder> {
+    return this.placeOrder(pair, {
+      side: options.side,
+      size: options.size,
+      sizeInCounter: false,
+      stopPrice: options.stopPrice,
+      type: OrderType.STOP,
+    });
+  }
+
+  /**
+   * Places a STOP LIMIT order: like {@link placeStopOrder}, but the triggered order carries a
+   * limit, so it cannot fill below `price`. A market that gaps through both prices leaves it
+   * unfilled and the position unprotected, so it buys price certainty with execution risk.
+   *
+   * @see https://www.investopedia.com/terms/s/stop-limitorder.asp
+   */
+  placeStopLimitOrder(
+    pair: TradingPair,
+    options: Omit<StopLimitOrderOptions, 'type' | 'sizeInCounter'>
+  ): Promise<PendingStopLimitOrder> {
+    return this.placeOrder(pair, {
+      price: options.price,
+      side: options.side,
+      size: options.size,
+      sizeInCounter: false,
+      stopPrice: options.stopPrice,
+      type: OrderType.STOP_LIMIT,
     });
   }
 

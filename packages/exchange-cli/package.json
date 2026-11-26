@@ -50,6 +50,8 @@
     "@types/big.js": "^7.0.0",
     "big.js": "^7.0.1",
     "commander": "^15.0.0",
-    "ms": "4.0.0-nightly.202508271359"
+    "ms": "4.0.0-nightly.202508271359",
+    "trading-strategies": "0.6.0",
+    "zod": "^4.6.7"
   }
 }

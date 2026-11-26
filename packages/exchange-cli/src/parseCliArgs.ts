@@ -1,18 +1,24 @@
 import Big from 'big.js';
 import {Argument, Command, CommanderError, InvalidArgumentError, Option} from 'commander';
-import {parse as parseDuration} from 'ms';
+import {parse} from 'ms';
+import {DEFAULT_ATR_TRAIL_MULTIPLE} from 'trading-strategies';
 import {BROKERS, type BrokerKey} from './cliBroker.js';
+import {CalendarDaySchema, type CalendarDay} from './cliHealth.js';
 
 interface Options {
   all?: boolean;
+  benchmark?: string;
   broker: BrokerKey;
   count?: number;
   counter?: string;
+  date?: CalendarDay;
   dryRun?: boolean;
   interval?: number;
   limit?: string;
   live?: boolean;
   poll?: number;
+  stopAtr?: string;
+  table?: boolean;
   take?: number;
   timeout?: number;
 }
@@ -34,11 +40,25 @@ function positiveInt(value: string): number {
 }
 
 function positiveDuration(value: string): number {
-  const duration = parseDuration(value);
+  const duration = parse(value);
   if (!Number.isFinite(duration) || duration <= 0) {
     throw new InvalidArgumentError('Use a positive duration, e.g. 1m or 5s.');
   }
   return duration;
+}
+
+/**
+ * A calendar day, which is as precise as a daily card can be read: the bar of that session is the
+ * last one on it, whatever hour the broker stamps the bar with.
+ */
+function calendarDay(value: string): CalendarDay {
+  const day = CalendarDaySchema.safeParse(value);
+
+  if (!day.success) {
+    throw new InvalidArgumentError('Use a calendar day, e.g. 2026-11-20.');
+  }
+
+  return day.data;
 }
 
 function positiveDecimal(value: string): string {
@@ -57,6 +77,9 @@ function invocation(command: Command) {
   if (values.counter !== undefined && !values.counter.trim()) {
     throw new InvalidArgumentError('--counter must not be blank.');
   }
+  if (values.benchmark !== undefined && !values.benchmark.trim()) {
+    throw new InvalidArgumentError('--benchmark must not be blank.');
+  }
   const processedArgs: unknown[] = command.processedArgs;
   const args = processedArgs.filter((arg): arg is string => typeof arg === 'string');
   if (args.some(arg => !arg.trim())) {
@@ -69,11 +92,11 @@ function invocation(command: Command) {
     args,
     command: command.name(),
     count: values.count ?? 10,
-    interval: values.interval ?? parseDuration('1m'),
+    interval: values.interval ?? parse('1m'),
     key: values.broker,
     poll: values.poll ?? BROKERS[values.broker].pollInterval,
     take: values.take ?? Infinity,
-    timeout: values.timeout ?? parseDuration('5m'),
+    timeout: values.timeout ?? parse('5m'),
     values,
   };
 }
@@ -115,16 +138,37 @@ export function parseCliArgs(argv: string[]) {
   command('orders <ticker>', 'Open orders');
   command('fills <ticker>', 'Order fills');
   for (const side of ['buy', 'sell']) {
-    command(`${side} <ticker>`, 'Place a market or limit order')
+    const order = command(`${side} <ticker>`, 'Place a market or limit order')
       .addArgument(new Argument('<quantity>', 'Positive quantity').argParser(positiveDecimal))
       .option('--limit <price>', 'Limit price', positiveDecimal)
       .option('--dry-run', 'Check trading rules and estimate fees');
+
+    if (side !== 'buy') {
+      continue;
+    }
+
+    /*
+     * Asking for a protective stop also asks the command to wait for the fill, because the stop is
+     * anchored to the price actually paid rather than to the price at the time of the order.
+     */
+    order
+      .option(
+        '--stop-atr <multiple>',
+        `Place a protective stop this many average ranges below the fill (e.g. ${DEFAULT_ATR_TRAIL_MULTIPLE})`,
+        positiveDecimal
+      )
+      .addOption(
+        new Option('--timeout <duration>', 'How long to wait for the fill the stop anchors to')
+          .argParser(positiveDuration)
+          .default(parse('5m'), '5m')
+      )
+      .option('--poll <duration>', 'Fill poll interval (default: broker rate limit)', positiveDuration);
   }
   command('wait <ticker> <orderId>', 'Wait for a fill or for the order to close')
     .addOption(
       new Option('--timeout <duration>', 'Wait deadline; does not cancel the order')
         .argParser(positiveDuration)
-        .default(parseDuration('5m'), '5m')
+        .default(parse('5m'), '5m')
     )
     .option('--poll <duration>', 'Poll interval (default: broker rate limit)', positiveDuration);
   command('cancel <ticker> [orderId]', 'Cancel one order, or all with --all').option(
@@ -133,16 +177,17 @@ export function parseCliArgs(argv: string[]) {
   );
   command('candles <ticker>', 'Recent candles')
     .addOption(
-      new Option('--interval <duration>', 'Candle interval')
-        .argParser(positiveDuration)
-        .default(parseDuration('1m'), '1m')
+      new Option('--interval <duration>', 'Candle interval').argParser(positiveDuration).default(parse('1m'), '1m')
     )
     .option('--count <n>', 'Number of candles', positiveInt, 10);
+  command('health <ticker>', 'Score chart health on daily bars, from 100 (nothing against it) down to 0')
+    .option('--benchmark <ticker>', 'Index or sector proxy for the relative strength check')
+    .option('--date <YYYY-MM-DD>', 'Read the card as of this day (UTC) instead of the newest bar', calendarDay)
+    .option('--table', 'Print the card for a reader instead of JSON')
+    .option('--count <n>', 'Candles to request; the card warms up over the slowest indicator', positiveInt, 120);
   command('watch-candles <ticker>', 'Stream candles as NDJSON')
     .addOption(
-      new Option('--interval <duration>', 'Candle interval')
-        .argParser(positiveDuration)
-        .default(parseDuration('1m'), '1m')
+      new Option('--interval <duration>', 'Candle interval').argParser(positiveDuration).default(parse('1m'), '1m')
     )
     .option('--take <n>', 'Stop after n events (default: until Ctrl-C)', positiveInt);
   command('watch-orders', 'Stream fills as NDJSON').option(
@@ -154,7 +199,7 @@ export function parseCliArgs(argv: string[]) {
   command('smoke <ticker>', 'Run every read-only call against one instrument; places no orders').addOption(
     new Option('--interval <duration>', 'Candle interval for the market-data checks')
       .argParser(positiveDuration)
-      .default(parseDuration('1d'), '1d')
+      .default(parse('1d'), '1d')
   );
 
   try {

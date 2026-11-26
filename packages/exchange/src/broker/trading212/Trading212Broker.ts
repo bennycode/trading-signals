@@ -16,6 +16,10 @@ import {
   type OrderOptions,
   type PendingLimitOrder,
   type PendingMarketOrder,
+  type PendingStopLimitOrder,
+  type PendingStopOrder,
+  type StopLimitOrderOptions,
+  type StopOrderOptions,
   type PendingOrder,
   type TradingRules,
 } from '../Broker.js';
@@ -363,11 +367,30 @@ export class Trading212Broker extends Broker implements CandleFeed {
     return accountInfo.currencyCode;
   }
 
+  /** Not yet: the client carries no stop request, so a requested stop must not reach an order. */
+  override get supportsStopOrders(): boolean {
+    return false;
+  }
+
   protected override async placeOrder(pair: TradingPair, options: LimitOrderOptions): Promise<PendingLimitOrder>;
   protected override async placeOrder(pair: TradingPair, options: MarketOrderOptions): Promise<PendingMarketOrder>;
+  protected override async placeOrder(pair: TradingPair, options: StopOrderOptions): Promise<PendingStopOrder>;
+  protected override async placeOrder(
+    pair: TradingPair,
+    options: StopLimitOrderOptions
+  ): Promise<PendingStopLimitOrder>;
   protected override async placeOrder(pair: TradingPair, options: OrderOptions): Promise<PendingOrder> {
     if (options.sizeInCounter) {
       throw new Error('Notional (sizeInCounter) orders are not supported by the Trading212 public API.');
+    }
+
+    /*
+     * Trading212 does expose stop and stop-limit endpoints, and its order schema already reads them
+     * back, but this client carries no request for either yet. Refusing is the only honest answer:
+     * falling through to the market endpoint below would sell the position immediately.
+     */
+    if (options.type === OrderType.STOP || options.type === OrderType.STOP_LIMIT) {
+      throw new Error(`${options.type} orders are not wired into the Trading212 client yet.`);
     }
 
     // Trading212 encodes side in the sign of `quantity`: positive = BUY, negative = SELL.

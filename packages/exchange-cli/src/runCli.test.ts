@@ -42,6 +42,25 @@ const FILL: Fill = {
   size: '1',
 };
 const INSTRUMENTS = [{currency: 'GBX', isin: 'GB00B63H8491', name: 'Rolls-Royce', ticker: 'RRl_EQ'}];
+const ONE_DAY_IN_MS = 86_400_000;
+/** A real calendar day, so a card asked for a date lands on a bar instead of on the epoch. */
+const DAY_ZERO = Date.parse('2026-01-01T00:00:00Z');
+
+/** Enough day-aligned candles for the chart health card to warm up and judge. */
+function dailySeries(base: string, close: (index: number) => number, length = 240): Candle[] {
+  return Array.from({length}, (_, index) => ({
+    base,
+    close: String(close(index)),
+    counter: 'USD',
+    high: String(close(index) + 1),
+    low: String(close(index) - 1),
+    open: String(close(Math.max(0, index - 1))),
+    openTimeInISO: new Date(DAY_ZERO + index * ONE_DAY_IN_MS).toISOString(),
+    openTimeInMillis: DAY_ZERO + index * ONE_DAY_IN_MS,
+    sizeInMillis: ONE_DAY_IN_MS,
+    volume: '1000',
+  }));
+}
 
 function setup() {
   const broker = Object.assign(new EventEmitter(), {
@@ -54,12 +73,31 @@ function setup() {
       feeAsset: 'USD',
       total: new Big(0),
     }),
+    /*
+     * The time window a dated card walks back through, served off the same series as the probe
+     * above so that a cutoff lands on the bar of that day.
+     */
+    getCandles: vi
+      .fn<CandleFeed['getCandles']>()
+      .mockImplementation(async (pair, request) =>
+        dailySeries(pair.base, index => 100 + index, 400).filter(
+          candle =>
+            candle.openTimeInMillis >= Date.parse(request.startTimeFirstCandle) &&
+            candle.openTimeInMillis <= Date.parse(request.startTimeLastCandle)
+        )
+      ),
     getFeeRates: vi.fn<Broker['getFeeRates']>().mockResolvedValue({LIMIT: new Big(0), MARKET: new Big(0)}),
     getFillByOrderId: vi.fn<Broker['getFillByOrderId']>().mockResolvedValue(undefined),
     getFills: vi.fn<Broker['getFills']>().mockResolvedValue([FILL]),
     getLatestCandle: vi.fn<MarketDataSource['getLatestCandle']>().mockResolvedValue(CANDLE),
     getOpenOrders: vi.fn<Broker['getOpenOrders']>().mockResolvedValue([]),
-    getRecentCandles: vi.fn<MarketDataSource['getRecentCandles']>().mockResolvedValue([CANDLE]),
+    /*
+     * Enough history for the average range behind a protective stop, since that is what a buy
+     * fetches. A test that cares about the candles themselves narrows this to its own series.
+     */
+    getRecentCandles: vi
+      .fn<MarketDataSource['getRecentCandles']>()
+      .mockImplementation(async pair => dailySeries(pair.base, index => 100 + index, 60)),
     getSmallestInterval: vi.fn<Broker['getSmallestInterval']>().mockReturnValue(60_000),
     getTime: vi.fn<Broker['getTime']>().mockResolvedValue(CANDLE.openTimeInISO),
     getTradingRules: vi.fn<Broker['getTradingRules']>().mockResolvedValue({
@@ -87,6 +125,15 @@ function setup() {
       sizeInCounter: false,
       type: OrderType.MARKET,
     }),
+    placeStopOrder: vi.fn<Broker['placeStopOrder']>().mockImplementation(async (pair, {side, size, stopPrice}) => ({
+      id: '99',
+      pair,
+      side,
+      size,
+      stopPrice,
+      type: 'STOP',
+    })),
+    supportsStopOrders: true,
     unwatchCandles: vi.fn(),
     unwatchOrders: vi.fn(),
     verifyCredentials: vi.fn<Broker['verifyCredentials']>().mockResolvedValue(undefined),
@@ -186,6 +233,12 @@ describe('runCli', {concurrent: false}, () => {
       throw new Error('Unexpected broker construction');
     });
     await expect(run(['buy', 'AAPL', '1', '--counter', counter])).rejects.toThrow('--counter');
+    expect(deps.createBroker).not.toHaveBeenCalled();
+  });
+
+  it.each(['', '   '])('rejects a blank --benchmark before constructing a broker: %j', async benchmark => {
+    const {deps, run} = setup();
+    await expect(run(['health', 'AAPL', '--benchmark', benchmark])).rejects.toThrow('--benchmark');
     expect(deps.createBroker).not.toHaveBeenCalled();
   });
 
@@ -296,6 +349,61 @@ describe('runCli', {concurrent: false}, () => {
     expect(listInstruments).not.toHaveBeenCalled();
   });
 
+  it('protects a filled buy with a stop below the price it paid', async () => {
+    const {broker, run} = setup();
+    broker.getFillByOrderId.mockResolvedValue({...FILL, price: '500', size: '2'});
+
+    const result = await run(['buy', 'AAPL', '2', '--stop-atr', '3']);
+
+    expect(broker.placeStopOrder).toHaveBeenCalledWith(PAIR, {side: OrderSide.SELL, size: '2', stopPrice: '494'});
+    expect(result).toMatchObject({
+      json: {
+        stop: {anchor: 'fill', anchorPrice: '500', atr: '2', atrMultiple: '3', orderId: '99', stopPrice: '494'},
+      },
+    });
+  });
+
+  it.each([
+    {expected: '496', multiple: '2'},
+    {expected: '494', multiple: '3'},
+  ])('places the stop $multiple average ranges below the fill', async ({expected, multiple}) => {
+    const {broker, run} = setup();
+    broker.getFillByOrderId.mockResolvedValue({...FILL, price: '500', size: '1'});
+
+    await run(['buy', 'AAPL', '1', '--stop-atr', multiple]);
+
+    expect(broker.placeStopOrder).toHaveBeenCalledWith(PAIR, {side: OrderSide.SELL, size: '1', stopPrice: expected});
+  });
+
+  it('refuses to buy what it cannot protect', async () => {
+    const {broker, deps} = setup();
+    broker.supportsStopOrders = false;
+
+    await expect(runCli(['buy', 'RRl_EQ', '1', '--stop-atr', '3', '--broker', 'trading212'], deps)).rejects.toThrow(
+      'cannot place a protective stop'
+    );
+    expect(broker.placeMarketOrder, 'the position that must not exist is the one with no stop').not.toHaveBeenCalled();
+  });
+
+  it('places no stop unless one is asked for', async () => {
+    const {broker, run} = setup();
+
+    await run(['buy', 'AAPL', '1']);
+    await run(['sell', 'AAPL', '1']);
+
+    expect(broker.placeStopOrder).not.toHaveBeenCalled();
+  });
+
+  it('shows the stop a dry run would place without placing anything', async () => {
+    const {broker, run} = setup();
+
+    const result = await run(['buy', 'AAPL', '2', '--dry-run', '--stop-atr', '3']);
+
+    expect(result).toMatchObject({json: {dryRun: true, plannedStop: {atrMultiple: '3', room: 'balanced'}}});
+    expect(broker.placeStopOrder).not.toHaveBeenCalled();
+    expect(broker.placeMarketOrder).not.toHaveBeenCalled();
+  });
+
   it('rejects unknown Trading212 symbols before submission', async () => {
     const {broker, deps} = setup();
     await expect(runCli(['buy', 'UNKNOWN', '1', '--broker', 'trading212'], deps)).rejects.toThrow('Cannot resolve');
@@ -307,6 +415,8 @@ describe('runCli', {concurrent: false}, () => {
     {flags: ['--limit', '120'], notional: '240', type: OrderType.LIMIT},
   ])('previews a $type order without submitting it', async ({flags, notional, type}) => {
     const {broker, run} = setup();
+    broker.getRecentCandles.mockImplementation(async pair => dailySeries(pair.base, index => 100 + index, 60));
+
     const result = await run(['buy', 'AAPL', '2', '--dry-run', ...flags]);
     expect(result).toMatchObject({json: {dryRun: true, estimatedNotional: new Big(notional)}});
     expect(broker.estimateFee).toHaveBeenCalledWith(PAIR, type, new Big(notional));
@@ -358,6 +468,8 @@ describe('runCli', {concurrent: false}, () => {
     const {broker, run} = setup();
     const rules = await broker.getTradingRules(PAIR);
     broker.getTradingRules.mockResolvedValue({...rules, counter_increment: '0'});
+    broker.getRecentCandles.mockImplementation(async pair => dailySeries(pair.base, index => 100 + index, 60));
+
     expect(await run(['buy', 'AAPL', '1', '--dry-run', '--limit', '100.001'])).toMatchObject({json: {dryRun: true}});
   });
 
@@ -401,6 +513,7 @@ describe('runCli', {concurrent: false}, () => {
     expect(await run(['quote', 'AAPL'])).toEqual({
       json: {base: 'AAPL', counter: 'USD', price: '100', time: CANDLE.openTimeInISO},
     });
+    broker.getRecentCandles.mockResolvedValue([CANDLE]);
     expect(await run(['candles', 'AAPL', '--count', '3', '--interval', '5m'])).toEqual({json: [CANDLE]});
     expect(broker.getRecentCandles).toHaveBeenCalledWith(PAIR, 3, 300_000);
   });
@@ -421,6 +534,120 @@ describe('runCli', {concurrent: false}, () => {
       await run([command, 'AAPL', '--interval', interval, '--take', '1']);
       expect(broker.watchCandles).toHaveBeenCalledWith(PAIR, millis, expect.any(String));
     }
+  });
+
+  it('scores chart health on daily bars', async () => {
+    const {broker, run} = setup();
+    broker.getRecentCandles.mockImplementation(async pair => dailySeries(pair.base, index => 100 + index));
+
+    const result = await run(['health', 'AAPL']);
+
+    expect(broker.getRecentCandles).toHaveBeenCalledWith(PAIR, 120, 86_400_000);
+    expect(result).toHaveProperty('json');
+    if ('json' in result) {
+      expect(result.json).toMatchObject({health: 100, timeframe: '1d', verdict: 'noise'});
+    }
+  });
+
+  it('reads the card as of a given day, counting every period back from there', async () => {
+    const {broker, run} = setup();
+
+    const result = await run(['health', 'AAPL', '--date', '2026-09-01']);
+
+    expect(broker.getRecentCandles, 'a dated card reads a window, not the newest bars').not.toHaveBeenCalled();
+    expect(result).toHaveProperty('json');
+    if ('json' in result) {
+      expect(result.json, 'the last bar on the card is the session that was asked for').toMatchObject({
+        asOf: '2026-09-01T00:00:00.000Z',
+      });
+    }
+  });
+
+  it('withholds the session still forming from a card dated today', async () => {
+    const {run} = setup();
+    vi.useFakeTimers({now: Date.parse('2026-09-01T12:00:00Z'), toFake: ['Date']});
+
+    try {
+      const result = await run(['health', 'AAPL', '--date', '2026-09-01']);
+
+      expect(result).toHaveProperty('json');
+      if ('json' in result) {
+        expect(
+          result.json,
+          'the bar of the requested day has not closed yet, so the card ends on the one before it'
+        ).toMatchObject({asOf: '2026-08-31T00:00:00.000Z'});
+      }
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  // `2026-02-31` is the case a shape test passes: it is the right shape and is not a day.
+  it.each(['2026-13-40', '2026-02-31', '2026-1-2', 'yesterday'])(
+    'rejects %j, which is not a calendar day',
+    async date => {
+      const {deps} = setup();
+      await expect(runCli(['--broker', 'alpaca', 'health', 'AAPL', '--date', date], deps)).rejects.toThrow(
+        'calendar day'
+      );
+      expect(deps.createBroker).not.toHaveBeenCalled();
+    }
+  );
+
+  it('leaves relative strength unread until a benchmark is named', async () => {
+    const {broker, run} = setup();
+    /*
+     * The instrument creeps up in a zigzag rather than a straight line, so that every other check
+     * has both up and down bars to read and relative strength is the only unanswered one.
+     */
+    broker.getRecentCandles.mockImplementation(async pair =>
+      dailySeries(pair.base, index =>
+        pair.base === 'SPY' ? 400 + index * 2 : 100 + index * 0.2 + (index % 2 === 0 ? 0 : 0.5)
+      )
+    );
+
+    const alone = await run(['health', 'AAPL']);
+    const compared = await run(['health', 'AAPL', '--benchmark', 'SPY']);
+
+    expect(broker.getRecentCandles).toHaveBeenCalledWith(new TradingPair('SPY', 'USD'), 120, 86_400_000);
+    if ('json' in alone && 'json' in compared) {
+      expect(alone.json, 'the check that needs a second series has nothing to read').toMatchObject({
+        health: 90,
+        unreadWeight: 15,
+      });
+      expect(
+        compared.json,
+        'a stock creeping up while its index runs is losing ground, which costs it the full 15 points'
+      ).toMatchObject({health: 75, unreadWeight: 0});
+    }
+  });
+
+  it('lays the card out for a reader with --table', async () => {
+    const {broker, run} = setup();
+    broker.getRecentCandles.mockImplementation(async pair => dailySeries(pair.base, index => 400 - index));
+
+    const result = await run(['health', 'AAPL', '--table']);
+
+    expect(result).toHaveProperty('text');
+    if ('text' in result) {
+      expect(result.text).toContain('AAPL  ');
+      expect(result.text, 'the questions carry the card, not the check names').toContain(
+        'Is price making lower highs and lower lows?'
+      );
+      expect(result.text, 'a check that fired shows what it cost').toContain('-23');
+      expect(result.text, 'the columns are labelled, so a reader need not guess which number is which').toMatch(
+        /CRIT\s+CHECK\s+DESCRIPTION\s+VALUE\s+THRESHOLD\s+DIVERGENCE/
+      );
+      expect(result.text, 'each reading names the indicator it came off').toMatch(/SMA 50 +close vs average/);
+      expect(result.text, 'a score with no date cannot be compared with the next one').toContain('as of');
+    }
+  });
+
+  it('names the warm-up it needs when too little history arrives', async () => {
+    const {broker, run} = setup();
+    broker.getRecentCandles.mockResolvedValue([CANDLE]);
+
+    await expect(run(['health', 'AAPL'])).rejects.toThrow(/at least 69 daily candles, but 1 arrived/);
   });
 
   it('lists rules, orders, fills, and broker time', async () => {
