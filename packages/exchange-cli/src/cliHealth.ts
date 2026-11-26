@@ -54,3 +54,39 @@ export async function scoreChartHealth(
 
   return report;
 }
+
+/** Thousands separators and a fixed scale, so a volume and a price line up under each other. */
+function amount(value: number): string {
+  return value.toLocaleString('en-US', {maximumFractionDigits: 2, minimumFractionDigits: 2});
+}
+
+/**
+ * Lays the card out for a reader rather than for a parser: the questions in a column, a verdict
+ * beside each, and the numbers that produced it underneath. Only what fired carries its cost, so
+ * the deductions that add up to the score can be followed down the page.
+ */
+export function formatHealthReport(ticker: string, report: HealthReport): string {
+  const lines = [
+    `${ticker}  ${report.health}/100  ${report.verdict}`,
+    // The card is daily, so the calendar day is the whole of what its timestamp says.
+    `as of ${report.asOf.slice(0, 10)} on ${report.timeframe} bars` +
+      (report.unreadWeight === 0 ? '' : `, ${report.unreadWeight} points unread`) +
+      (report.soleCategory === null ? '' : `, resting on ${report.soleCategory} alone`),
+    '',
+  ];
+
+  for (const check of report.checks) {
+    const verdict = check.fired === null ? 'n/a' : check.fired ? 'YES' : 'no';
+    const cost = check.fired === true ? `-${check.weight}` : '';
+    lines.push(`${verdict.padStart(3)}  ${check.question.padEnd(58)} ${cost}`);
+
+    for (const {deviationPercent, label, limit, reading} of check.measures) {
+      const gap = deviationPercent === null ? '' : `${deviationPercent > 0 ? '+' : ''}${deviationPercent}%`;
+      lines.push(
+        `     ${label.padEnd(50)} ${amount(reading).padStart(14)} vs ${amount(limit).padStart(14)} ${gap.padStart(9)}`
+      );
+    }
+  }
+
+  return lines.join('\n');
+}

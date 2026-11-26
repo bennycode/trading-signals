@@ -14,6 +14,7 @@ interface Options {
   limit?: string;
   live?: boolean;
   poll?: number;
+  table?: boolean;
   take?: number;
   timeout?: number;
 }
@@ -144,6 +145,7 @@ export function parseCliArgs(argv: string[]) {
     .option('--count <n>', 'Number of candles', positiveInt, 10);
   command('health <ticker>', 'Score chart health on daily bars, from 100 (nothing against it) down to 0')
     .option('--benchmark <ticker>', 'Index or sector proxy for the relative strength check')
+    .option('--table', 'Print the card for a reader instead of JSON')
     .option('--count <n>', 'Candles to request; the card needs a long warm-up', positiveInt, 300);
   command('watch-candles <ticker>', 'Stream candles as NDJSON')
     .addOption(

@@ -487,6 +487,26 @@ describe('runCli', {concurrent: false}, () => {
     }
   });
 
+  it('lays the card out for a reader with --table', async () => {
+    const {broker, run} = setup();
+    broker.getRecentCandles.mockImplementation(async pair => dailySeries(pair.base, index => 400 - index));
+
+    const result = await run(['health', 'AAPL', '--table']);
+
+    expect(result).toHaveProperty('text');
+    if ('text' in result) {
+      expect(result.text).toContain('AAPL  ');
+      expect(result.text, 'the questions carry the card, not the check names').toContain(
+        'Is price making lower highs and lower lows?'
+      );
+      expect(result.text, 'a check that fired shows what it cost').toContain('-18');
+      expect(result.text, 'the numbers behind the question sit under it').toMatch(
+        /latest high against the earlier high/
+      );
+      expect(result.text, 'a score with no date cannot be compared with the next one').toContain('as of');
+    }
+  });
+
   it('names the warm-up it needs when too little history arrives', async () => {
     const {run} = setup();
 
