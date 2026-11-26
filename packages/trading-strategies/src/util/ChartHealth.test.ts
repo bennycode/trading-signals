@@ -65,6 +65,17 @@ const breakdownCloses = [
   ...Array.from({length: 60}, (_, index) => 320 - (index + 1) * 2.5),
 ];
 
+/**
+ * A long advance that ends in a few violent sessions: the kind of fall that leaves price far under
+ * a 50-bar average which is still pointing up, because an average that long needs weeks to turn.
+ */
+const crashCloses = [...Array.from({length: 220}, (_, index) => 100 + index), ...[290, 260, 230, 200, 170]];
+
+const CRASH_BARS: BarShape = {
+  range: index => (index < 220 ? 2 : 20),
+  volume: falling => (falling ? 3_000_000 : 1_000_000),
+};
+
 const BREAKDOWN_BARS: BarShape = {
   range: index => (index < 220 ? 2 : 2 + (index - 220) * 0.25),
   volume: falling => (falling ? 4_000_000 : 900_000),
@@ -100,13 +111,32 @@ describe('ChartHealth', () => {
 
     expect(firedNames(health)).toStrictEqual([
       'lowerHighsAndLows',
-      'belowFallingFastAverage',
+      'brokenBelowFastAverage',
       'rsiBearRange',
       'atrExpandingWhileFalling',
     ]);
     expect(report.health).toBe(42);
     expect(report.verdict).toBe('downtrend');
     expect(report.soleCategory, 'three kinds of evidence agreed, so nothing here is one-sided').toBeNull();
+  });
+
+  it('calls a fall far below a fast average a break, without waiting for the average to turn', () => {
+    const health = scoreOf(dailyCandles(crashCloses, CRASH_BARS));
+    const check = health.getReportOrThrow().checks.find(entry => entry.name === 'brokenBelowFastAverage');
+    const turn = check?.measures.find(entry => entry.label === 'average vs window start');
+
+    expect((turn?.deviationPercent ?? 0) > 0, 'the premise of the test: the average has not turned down yet').toBe(
+      true
+    );
+    expect(check?.fired, 'price sits more than two average ranges under it, which no pullback does').toBe(true);
+  });
+
+  it('leaves a pullback to a rising fast average alone', () => {
+    const pullback = [...Array.from({length: 220}, (_, index) => 100 + index), ...[318, 315, 312, 310, 308]];
+    const health = scoreOf(dailyCandles(pullback, CALM_BARS));
+    const check = health.getReportOrThrow().checks.find(entry => entry.name === 'brokenBelowFastAverage');
+
+    expect(check?.fired, 'a few quiet bars below a rising average is the ordinary case, not a break').toBe(false);
   });
 
   it('names the category when weakness shows up in volume alone', () => {
@@ -181,9 +211,9 @@ describe('ChartHealth', () => {
     }
 
     expect(
-      checks.find(check => check.name === 'belowFallingFastAverage')?.question,
+      checks.find(check => check.name === 'brokenBelowFastAverage')?.question,
       'a reader should not have to know what a fast average is called'
-    ).toBe('Is price below a fast average that has turned down?');
+    ).toBe('Has price broken below its fast average?');
   });
 
   it('shows by how much a check missed, not only that it missed', () => {
@@ -191,7 +221,7 @@ describe('ChartHealth', () => {
     const breaking = scoreOf(dailyCandles(breakdownCloses, BREAKDOWN_BARS)).getReportOrThrow();
     const gap = (report: HealthReport) =>
       report.checks
-        .find(check => check.name === 'belowFallingFastAverage')
+        .find(check => check.name === 'brokenBelowFastAverage')
         ?.measures.find(entry => entry.indicator === 'SMA 50' && entry.label === 'close vs average')?.deviationPercent;
 
     expect(gap(rising), 'an advancing price sits above its own average').toBeGreaterThan(0);
@@ -211,9 +241,9 @@ describe('ChartHealth', () => {
       report.checks.find(check => check.name === name)?.measures.map(entry => entry.indicator);
 
     expect(
-      indicatorsOf('belowFallingFastAverage'),
+      indicatorsOf('brokenBelowFastAverage'),
       'a card built on other periods must not claim the conventional ones'
-    ).toStrictEqual(['SMA 20', 'SMA 20']);
+    ).toStrictEqual(['SMA 20', 'SMA 20', 'SMA 20']);
     expect(indicatorsOf('rsiBearRange')).toStrictEqual(['RSI 7', 'RSI 7']);
   });
 

@@ -3,6 +3,7 @@ import {
   BEAR_RANGE_CEILING,
   BEAR_RANGE_FLOOR,
   DISTRIBUTION_MARGIN,
+  FAST_AVERAGE_BREAK_IN_ATR,
   UNREAD,
   measure,
   type Reading,
@@ -56,6 +57,8 @@ export function readChecks({
   window: readonly Bar[];
 }): Record<WeaknessCheckName, Reading> {
   const fast = `SMA ${periods.fastAverage}`;
+  /* Where a fall below the fast average stops being a pullback, in that instrument's own ranges. */
+  const breakLine = latest.fastAverage - FAST_AVERAGE_BREAK_IN_ATR * latest.atr;
   const momentum = `RSI ${periods.rsi}`;
   const range = `ATR ${periods.trueRange}`;
   const {older, recent} = olderAndRecentHalf(window);
@@ -108,14 +111,18 @@ export function readChecks({
       ],
     },
     /*
-     * Both conditions, because price below a still-rising average is usually a pullback rather
-     * than a change of trend.
+     * Price under the average is the premise, not the finding: on its own it is as often a pullback
+     * as a break. Either of two things makes it a finding. The average has turned down, which is
+     * the slow confirmation, or price has fallen {@link FAST_AVERAGE_BREAK_IN_ATR} average ranges
+     * below it, which says the same thing weeks earlier: a 50-bar average needs weeks of selling
+     * before it turns, and a chart does not wait for it.
      */
-    belowFallingFastAverage: {
-      fired: latest.close < latest.fastAverage && latest.fastAverage < oldest.fastAverage,
+    brokenBelowFastAverage: {
+      fired: latest.close < latest.fastAverage && (latest.fastAverage < oldest.fastAverage || latest.close < breakLine),
       measures: [
         measure(fast, 'close vs average', latest.close, latest.fastAverage),
         measure(fast, 'average vs window start', latest.fastAverage, oldest.fastAverage),
+        measure(fast, `close vs ${FAST_AVERAGE_BREAK_IN_ATR} ATR below average`, latest.close, breakLine),
       ],
     },
     /*

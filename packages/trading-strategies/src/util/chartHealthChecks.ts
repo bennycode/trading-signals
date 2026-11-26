@@ -12,7 +12,7 @@ export type WeaknessCategory = 'momentum' | 'relative' | 'trend' | 'volatility' 
 export type WeaknessCheckName =
   | 'atrExpandingWhileFalling'
   | 'bearishDivergence'
-  | 'belowFallingFastAverage'
+  | 'brokenBelowFastAverage'
   | 'distribution'
   | 'lowerHighsAndLows'
   | 'relativeStrength'
@@ -131,8 +131,8 @@ export const CHECKS = [
   },
   {
     category: 'trend',
-    name: 'belowFallingFastAverage',
-    question: 'Is price below a fast average that has turned down?',
+    name: 'brokenBelowFastAverage',
+    question: 'Has price broken below its fast average?',
     weight: 15,
   },
   {
@@ -201,6 +201,17 @@ export const BEAR_RANGE_FLOOR = 30;
  * can defend. Reasoned rather than fitted, like the weights it guards.
  */
 export const DISTRIBUTION_MARGIN = 0.1;
+
+/**
+ * How far below a still-rising fast average price has to fall, in average ranges, before
+ * {@link CHECKS} calls it a break rather than a pullback.
+ *
+ * Measured in {@link ATR} rather than in percent so the same test means the same thing on a quiet
+ * utility and on a chip maker: one average range is a normal day, and a price two of them under its
+ * own average has not had a normal day. Without it the check waits for the average to turn, which
+ * on a 50-bar average means waiting weeks after a break the chart already shows.
+ */
+export const FAST_AVERAGE_BREAK_IN_ATR = 2;
 
 export function classifyChartHealth(health: number): WeaknessVerdict {
   const band = BANDS.find(candidate => health >= candidate.minHealth);
