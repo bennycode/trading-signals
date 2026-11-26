@@ -21,7 +21,8 @@ exchange-cli instruments rolls --broker trading212
 exchange-cli orders RRl_EQ --broker trading212 --counter GBX
 exchange-cli buy AAPL 1 --broker alpaca --limit 100 --dry-run
 exchange-cli buy AAPL 1 --broker alpaca --limit 100
-exchange-cli buy AAPL 1 --broker alpaca --stop-atr 2
+exchange-cli buy AAPL 1 --broker alpaca --stop-atr
+exchange-cli buy AAPL 1 --broker alpaca --stop-atr 2.5
 exchange-cli wait AAPL <orderId> --broker alpaca --timeout 5m
 exchange-cli cancel AAPL <orderId> --broker alpaca
 exchange-cli candles AAPL --broker alpaca --count 10 --interval 5m
@@ -65,7 +66,7 @@ Paper trading is a separate login rather than a separate endpoint: IBKR issues t
 | `rules <ticker>` | Show trading rules for a ticker. |
 | `orders <ticker>` | List open orders for a ticker. |
 | `fills <ticker>` | List order fills for a ticker. |
-| `buy <ticker> <quantity>` | Place a market buy, or use `--limit <price>` for a limit order. With `--stop-atr <multiple>` it waits for the fill and places a protective stop that many average ranges below the price paid. Alpaca equities only. |
+| `buy <ticker> <quantity>` | Place a market buy, or use `--limit <price>` for a limit order. With `--stop-atr` it waits for the fill and places a protective stop 3 average ranges below the price paid; `--stop-atr <multiple>` picks a different multiple. Without the flag no stop is placed. |
 | `sell <ticker> <quantity>` | Place a market sell, or use `--limit <price>` for a limit order. |
 | `cancel <ticker> <orderId>` | Request cancellation of one order; use `--all` instead of the order ID to target all open orders for the ticker. |
 | `wait <ticker> <orderId>` | Wait for a fill or for the order to close. |

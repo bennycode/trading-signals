@@ -375,6 +375,18 @@ describe('runCli', {concurrent: false}, () => {
     expect(broker.placeStopOrder).toHaveBeenCalledWith(PAIR, {side: OrderSide.SELL, size: '1', stopPrice: expected});
   });
 
+  it('falls back to the house multiple when the flag carries no value', async () => {
+    const {broker, run} = setup();
+    broker.getFillByOrderId.mockResolvedValue({...FILL, price: '500', size: '1'});
+
+    await run(['buy', 'AAPL', '1', '--stop-atr']);
+
+    expect(
+      broker.placeStopOrder,
+      'asking for a stop without naming a multiple gets the Chandelier Exit default of 3'
+    ).toHaveBeenCalledWith(PAIR, {side: OrderSide.SELL, size: '1', stopPrice: '494'});
+  });
+
   it('refuses to buy what it cannot protect', async () => {
     const {broker, deps} = setup();
     broker.supportsStopOrders = false;

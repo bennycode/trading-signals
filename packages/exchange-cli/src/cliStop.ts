@@ -53,7 +53,7 @@ export async function readTrueRange(broker: Pick<MarketDataSource, 'getRecentCan
 
   if (atr === null || atrPercent === null || priorClose === undefined) {
     throw new Error(
-      `${pair.base} has no average range yet: ${candles.length} daily candles arrived, ${TRUE_RANGE_PERIOD} are needed. Buy with --no-stop, or place the stop by hand.`
+      `${pair.base} has no average range yet: ${candles.length} daily candles arrived, ${TRUE_RANGE_PERIOD} are needed. Buy without --stop-atr, or place the stop by hand.`
     );
   }
 

@@ -152,10 +152,15 @@ export function parseCliArgs(argv: string[]) {
      * anchored to the price actually paid rather than to the price at the time of the order.
      */
     order
-      .option(
-        '--stop-atr <multiple>',
-        `Place a protective stop this many average ranges below the fill (e.g. ${DEFAULT_ATR_TRAIL_MULTIPLE})`,
-        positiveDecimal
+      .addOption(
+        /*
+         * The multiple is optional so the flag alone asks for the house default, but the flag is
+         * still required: a buy without it places no stop, because the CLI should not decide on its
+         * own that an order needs protecting.
+         */
+        new Option('--stop-atr [multiple]', 'Place a protective stop this many average ranges below the fill')
+          .argParser(positiveDecimal)
+          .preset(`${DEFAULT_ATR_TRAIL_MULTIPLE}`)
       )
       .addOption(
         new Option('--timeout <duration>', 'How long to wait for the fill the stop anchors to')
