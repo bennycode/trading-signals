@@ -11,8 +11,12 @@ import {
   OrderSchema,
   PlaceLimitOrderRequestSchema,
   PlaceMarketOrderRequestSchema,
+  PlaceStopLimitOrderRequestSchema,
+  PlaceStopOrderRequestSchema,
   type PlaceLimitOrderRequest,
   type PlaceMarketOrderRequest,
+  type PlaceStopLimitOrderRequest,
+  type PlaceStopOrderRequest,
 } from './schema/OrderSchema.js';
 import {PositionSchema} from './schema/PositionSchema.js';
 
@@ -26,6 +30,8 @@ const URL = {
   ORDERS: '/api/v0/equity/orders',
   ORDERS_LIMIT: '/api/v0/equity/orders/limit',
   ORDERS_MARKET: '/api/v0/equity/orders/market',
+  ORDERS_STOP: '/api/v0/equity/orders/stop',
+  ORDERS_STOP_LIMIT: '/api/v0/equity/orders/stop_limit',
   PORTFOLIO: '/api/v0/equity/portfolio',
 } as const;
 
@@ -127,6 +133,32 @@ export class Trading212API {
   async placeLimitOrder(request: PlaceLimitOrderRequest) {
     const validated = PlaceLimitOrderRequestSchema.parse(request);
     const response = await this.#httpClient.post(URL.ORDERS_LIMIT, validated);
+    return OrderSchema.parse(response.data);
+  }
+
+  /**
+   * Places the resting protective exit: once the last traded price reaches `stopPrice`, Trading212
+   * sends a market order, so the trigger is a decision point and not the price it fills at.
+   *
+   * @see https://docs.trading212.com/api/orders/placestoporder_1
+   */
+  @retry({delayMs: 2_000})
+  async placeStopOrder(request: PlaceStopOrderRequest) {
+    const validated = PlaceStopOrderRequestSchema.parse(request);
+    const response = await this.#httpClient.post(URL.ORDERS_STOP, validated);
+    return OrderSchema.parse(response.data);
+  }
+
+  /**
+   * Like {@link placeStopOrder}, but the triggered order carries a limit, so a market that gaps
+   * through both prices leaves it resting and the position unprotected.
+   *
+   * @see https://docs.trading212.com/api/orders/placestoplimitorder
+   */
+  @retry({delayMs: 2_000})
+  async placeStopLimitOrder(request: PlaceStopLimitOrderRequest) {
+    const validated = PlaceStopLimitOrderRequestSchema.parse(request);
+    const response = await this.#httpClient.post(URL.ORDERS_STOP_LIMIT, validated);
     return OrderSchema.parse(response.data);
   }
 

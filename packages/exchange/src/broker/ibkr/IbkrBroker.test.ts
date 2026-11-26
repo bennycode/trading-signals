@@ -284,6 +284,36 @@ describe('IbkrBroker', {concurrent: false}, () => {
       ).toBeUndefined();
     });
 
+    it('sends a plain stop trigger as the price, where IBKR expects it', async () => {
+      mockMethods.submitOrder.mockResolvedValue([{order_id: '999'}]);
+
+      const order = await broker.placeStopOrder(pair, {side: OrderSide.SELL, size: '1', stopPrice: '170'});
+      const ticket = mockMethods.submitOrder.mock.calls[0]?.[1];
+
+      expect(ticket?.orderType).toBe('STP');
+      expect(ticket?.price, 'a plain STP carries its trigger in `price`, with no limit to compete for the field').toBe(
+        170
+      );
+      expect(ticket?.auxPrice, '`auxPrice` belongs to STP LMT alone').toBeUndefined();
+      expect(
+        ticket?.outsideRTH,
+        'IBKR allows only limit-family types outside regular hours, so flagging a stop would have it refused'
+      ).toBeUndefined();
+      expect(order.type).toBe(OrderType.STOP);
+      expect(order.stopPrice).toBe('170');
+    });
+
+    it('splits the two prices of a stop-limit order across price and auxPrice', async () => {
+      mockMethods.submitOrder.mockResolvedValue([{order_id: '999'}]);
+
+      await broker.placeStopLimitOrder(pair, {price: '168', side: OrderSide.SELL, size: '1', stopPrice: '170'});
+      const ticket = mockMethods.submitOrder.mock.calls[0]?.[1];
+
+      expect(ticket?.orderType).toBe('STP LMT');
+      expect(ticket?.price, 'on STP LMT the limit takes `price`').toBe(168);
+      expect(ticket?.auxPrice, 'swapping these two would price the order at the market').toBe(170);
+    });
+
     it('honours an explicit DAY for a strategy that re-places each candle', async () => {
       const dayBroker = new IbkrBroker({accountId: 'U1', marketData, timeInForce: 'DAY'});
       mockMethods.submitOrder.mockResolvedValue([{order_id: '999'}]);

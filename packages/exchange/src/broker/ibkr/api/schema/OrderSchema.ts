@@ -9,6 +9,9 @@ export type IbkrOrderSide = (typeof IbkrOrderSide)[keyof typeof IbkrOrderSide];
 export const IbkrOrderType = {
   LIMIT: 'LMT',
   MARKET: 'MKT',
+  STOP: 'STP',
+  /** The space is IBKR's own spelling, not a typo. */
+  STOP_LIMIT: 'STP LMT',
 } as const;
 export type IbkrOrderType = (typeof IbkrOrderType)[keyof typeof IbkrOrderType];
 
@@ -73,6 +76,12 @@ export const IbkrLiveOrdersResponseSchema = z.looseObject({
  * @see https://www.interactivebrokers.com/docs/web-api/api-reference/trading/order-management
  */
 export const IbkrOrderRequestSchema = z.object({
+  /**
+   * The stop trigger, but only for `STP LMT`, where `price` is already taken by the limit. A plain
+   * `STP` carries its trigger in `price` instead, so the two types disagree about which field means
+   * what and sending the trigger in the wrong one prices the order at the market.
+   */
+  auxPrice: z.number().optional(),
   /** Notional ("buy $200 worth") instead of a share count. */
   cashQty: z.number().optional(),
   cOID: z.string().optional(),
