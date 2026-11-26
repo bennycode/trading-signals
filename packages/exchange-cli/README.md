@@ -26,6 +26,7 @@ exchange-cli wait AAPL <orderId> --broker alpaca --timeout 5m
 exchange-cli cancel AAPL <orderId> --broker alpaca
 exchange-cli candles AAPL --broker alpaca --count 10 --interval 5m
 exchange-cli health NVDA --broker alpaca --benchmark SPY --table
+exchange-cli health NVDA --broker alpaca --date 2026-10-15 --table
 exchange-cli watch-candles AAPL --broker alpaca --take 3
 exchange-cli balances --broker ibkr --live
 exchange-cli instruments ANT --broker ibkr --live
@@ -69,7 +70,7 @@ Paper trading is a separate login rather than a separate endpoint: IBKR issues t
 | `cancel <ticker> <orderId>` | Request cancellation of one order; use `--all` instead of the order ID to target all open orders for the ticker. |
 | `wait <ticker> <orderId>` | Wait for a fill or for the order to close. |
 | `candles <ticker>` | Fetch recent candles. |
-| `health <ticker>` | Score chart health on daily bars, from 100 (nothing against it) down to 0, reading eleven checks across trend, momentum, volume, volatility and relative strength. `--benchmark <ticker>` adds the relative strength check, `--table` prints the card for a reader instead of JSON, and `--count <n>` sets the candles requested for the warm-up. |
+| `health <ticker>` | Score chart health on daily bars, from 100 (nothing against it) down to 0, reading eleven checks across trend, momentum, volume, volatility and relative strength. `--benchmark <ticker>` adds the relative strength check, `--table` prints the card for a reader instead of JSON, `--date <YYYY-MM-DD>` reads the card as of that day instead of the newest bar, so every period counts back from it, and `--count <n>` sets the candles requested for the warm-up. |
 | `watch-candles <ticker>` | Stream candles as NDJSON. |
 | `watch-orders` | Stream order fills as NDJSON. |
 | `time` | Show the broker client's time. |

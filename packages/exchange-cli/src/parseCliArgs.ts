@@ -10,6 +10,7 @@ interface Options {
   broker: BrokerKey;
   count?: number;
   counter?: string;
+  date?: string;
   dryRun?: boolean;
   interval?: number;
   limit?: string;
@@ -43,6 +44,17 @@ function positiveDuration(value: string): number {
     throw new InvalidArgumentError('Use a positive duration, e.g. 1m or 5s.');
   }
   return duration;
+}
+
+/**
+ * A calendar day, which is as precise as a daily card can be read: the bar of that session is the
+ * last one on it, whatever hour the broker stamps the bar with.
+ */
+function calendarDay(value: string): string {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value) || Number.isNaN(Date.parse(`${value}T00:00:00Z`))) {
+    throw new InvalidArgumentError('Use a calendar day, e.g. 2026-11-20.');
+  }
+  return value;
 }
 
 function positiveDecimal(value: string): string {
@@ -168,6 +180,7 @@ export function parseCliArgs(argv: string[]) {
     .option('--count <n>', 'Number of candles', positiveInt, 10);
   command('health <ticker>', 'Score chart health on daily bars, from 100 (nothing against it) down to 0')
     .option('--benchmark <ticker>', 'Index or sector proxy for the relative strength check')
+    .option('--date <YYYY-MM-DD>', 'Read the card as of this day (UTC) instead of the newest bar', calendarDay)
     .option('--table', 'Print the card for a reader instead of JSON')
     .option('--count <n>', 'Candles to request; the card needs a long warm-up', positiveInt, 300);
   command('watch-candles <ticker>', 'Stream candles as NDJSON')

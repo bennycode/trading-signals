@@ -95,6 +95,7 @@ export async function runCli(argv: string[], overrides: Partial<CliDeps> = {}): 
         return {json: await broker.getRecentCandles(pair, count, interval)};
       case 'health': {
         const report = await scoreChartHealth(broker, pair, {
+          asOf: values.date,
           benchmark: values.benchmark === undefined ? undefined : new TradingPair(values.benchmark, counter),
           count,
         });

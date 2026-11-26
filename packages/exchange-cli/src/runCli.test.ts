@@ -43,6 +43,8 @@ const FILL: Fill = {
 };
 const INSTRUMENTS = [{currency: 'GBX', isin: 'GB00B63H8491', name: 'Rolls-Royce', ticker: 'RRl_EQ'}];
 const ONE_DAY_IN_MS = 86_400_000;
+/** A real calendar day, so a card asked for a date lands on a bar instead of on the epoch. */
+const DAY_ZERO = Date.parse('2026-01-01T00:00:00Z');
 
 /** Enough day-aligned candles for the chart health card to warm up and judge. */
 function dailySeries(base: string, close: (index: number) => number, length = 240): Candle[] {
@@ -53,8 +55,8 @@ function dailySeries(base: string, close: (index: number) => number, length = 24
     high: String(close(index) + 1),
     low: String(close(index) - 1),
     open: String(close(Math.max(0, index - 1))),
-    openTimeInISO: new Date(index * ONE_DAY_IN_MS).toISOString(),
-    openTimeInMillis: index * ONE_DAY_IN_MS,
+    openTimeInISO: new Date(DAY_ZERO + index * ONE_DAY_IN_MS).toISOString(),
+    openTimeInMillis: DAY_ZERO + index * ONE_DAY_IN_MS,
     sizeInMillis: ONE_DAY_IN_MS,
     volume: '1000',
   }));
@@ -71,6 +73,19 @@ function setup() {
       feeAsset: 'USD',
       total: new Big(0),
     }),
+    /*
+     * The time window a dated card walks back through, served off the same series as the probe
+     * above so that a cutoff lands on the bar of that day.
+     */
+    getCandles: vi
+      .fn<CandleFeed['getCandles']>()
+      .mockImplementation(async (pair, request) =>
+        dailySeries(pair.base, index => 100 + index, 400).filter(
+          candle =>
+            candle.openTimeInMillis >= Date.parse(request.startTimeFirstCandle) &&
+            candle.openTimeInMillis <= Date.parse(request.startTimeLastCandle)
+        )
+      ),
     getFeeRates: vi.fn<Broker['getFeeRates']>().mockResolvedValue({LIMIT: new Big(0), MARKET: new Big(0)}),
     getFillByOrderId: vi.fn<Broker['getFillByOrderId']>().mockResolvedValue(undefined),
     getFills: vi.fn<Broker['getFills']>().mockResolvedValue([FILL]),
@@ -532,6 +547,31 @@ describe('runCli', {concurrent: false}, () => {
     if ('json' in result) {
       expect(result.json).toMatchObject({health: 100, timeframe: '1d', verdict: 'noise'});
     }
+  });
+
+  it('reads the card as of a given day, counting every period back from there', async () => {
+    const {broker, run} = setup();
+
+    const result = await run(['health', 'AAPL', '--date', '2026-09-01']);
+
+    expect(broker.getRecentCandles, 'a dated card reads a window, not the newest bars').not.toHaveBeenCalled();
+    expect(result).toHaveProperty('json');
+    if ('json' in result) {
+      expect(result.json, 'the last bar on the card is the session that was asked for').toMatchObject({
+        asOf: '2026-09-01T00:00:00.000Z',
+      });
+    }
+  });
+
+  it('rejects anything but a calendar day', async () => {
+    const {deps} = setup();
+    await expect(runCli(['--broker', 'alpaca', 'health', 'AAPL', '--date', '2026-13-40'], deps)).rejects.toThrow(
+      'calendar day'
+    );
+    await expect(runCli(['--broker', 'alpaca', 'health', 'AAPL', '--date', 'yesterday'], deps)).rejects.toThrow(
+      'calendar day'
+    );
+    expect(deps.createBroker).not.toHaveBeenCalled();
   });
 
   it('leaves relative strength unread until a benchmark is named', async () => {

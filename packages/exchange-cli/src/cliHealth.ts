@@ -1,5 +1,5 @@
 import {parse as parseDuration} from 'ms';
-import type {Candle, MarketDataSource, TradingPair} from '@typedtrader/exchange';
+import {getCandlesUntil, type Candle, type CandleFeed, type TradingPair} from '@typedtrader/exchange';
 import {ChartHealth, type HealthReport} from 'trading-strategies';
 
 /**
@@ -11,6 +11,13 @@ import {ChartHealth, type HealthReport} from 'trading-strategies';
 const TIMEFRAME = '1d';
 
 export interface HealthRequest {
+  /**
+   * Calendar day (`YYYY-MM-DD`, UTC) the card is read as of, so every period on it counts back
+   * from that session instead of from today. A day rather than an instant because the card is
+   * daily: asking for the 20th means the session of the 20th, whatever hour its bar is stamped
+   * with. Left out, the card reads the newest closed bar.
+   */
+  asOf?: string | undefined;
   /** Index or sector proxy the relative strength check measures the instrument against. */
   benchmark?: TradingPair | undefined;
   count: number;
@@ -24,16 +31,23 @@ export interface HealthRequest {
  * the wrong day of its index would be worse than not scoring it at all.
  */
 export async function scoreChartHealth(
-  broker: Pick<MarketDataSource, 'getRecentCandles'>,
+  broker: Pick<CandleFeed, 'getCandles' | 'getRecentCandles'>,
   pair: TradingPair,
-  {benchmark, count}: HealthRequest
+  {asOf, benchmark, count}: HealthRequest
 ): Promise<HealthReport> {
   const intervalInMillis = parseDuration(TIMEFRAME);
-  const candles = await broker.getRecentCandles(pair, count, intervalInMillis);
+  // The whole of the requested day, so the bar opening within it is the last one on the card.
+  const cutoffInMillis = asOf === undefined ? undefined : Date.parse(`${asOf}T23:59:59.999Z`);
+  const history = (series: TradingPair) =>
+    cutoffInMillis === undefined
+      ? broker.getRecentCandles(series, count, intervalInMillis)
+      : getCandlesUntil(broker, series, count, intervalInMillis, cutoffInMillis);
+
+  const candles = await history(pair);
   const benchmarkByOpenTime = new Map<number, Candle>();
 
   if (benchmark) {
-    for (const candle of await broker.getRecentCandles(benchmark, count, intervalInMillis)) {
+    for (const candle of await history(benchmark)) {
       benchmarkByOpenTime.set(candle.openTimeInMillis, candle);
     }
   }
@@ -48,7 +62,7 @@ export async function scoreChartHealth(
 
   if (!report) {
     throw new Error(
-      `Scoring ${pair.base} needs at least ${card.getRequiredBars()} daily candles, but ${candles.length} arrived. Raise --count.`
+      `Scoring ${pair.base}${asOf === undefined ? '' : ` as of ${asOf}`} needs at least ${card.getRequiredBars()} daily candles, but ${candles.length} arrived. Raise --count.`
     );
   }
 
