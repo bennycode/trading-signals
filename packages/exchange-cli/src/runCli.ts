@@ -33,7 +33,7 @@ export async function runCli(argv: string[], overrides: Partial<CliDeps> = {}): 
     return {text: invocation.help};
   }
   const {args, command, count, interval, key, poll, take, timeout, values} = invocation;
-  const {broker, listInstruments, placeStopOrder} = (overrides.createBroker ?? createCliBroker)(
+  const {broker, listInstruments} = (overrides.createBroker ?? createCliBroker)(
     key,
     values.live ?? false,
     overrides.env ?? process.env
@@ -121,12 +121,12 @@ export async function runCli(argv: string[], overrides: Partial<CliDeps> = {}): 
         }
 
         /*
-         * Refused before the order rather than after it, because the outcome to avoid is a filled
-         * position that cannot be protected.
+         * Asked before the order rather than after it, because the outcome to avoid is a filled
+         * position whose protective exit then turns out to be unplaceable.
          */
-        if (!placeStopOrder) {
+        if (!broker.supportsStopOrders) {
           throw new Error(
-            `${BROKERS[key].id} cannot place a protective stop from this CLI. Omit --stop-atr and place the stop yourself.`
+            `${BROKERS[key].id} cannot place a protective stop yet. Omit --stop-atr and place the stop yourself.`
           );
         }
 
@@ -165,13 +165,13 @@ export async function runCli(argv: string[], overrides: Partial<CliDeps> = {}): 
           increment: (await broker.getTradingRules(pair)).counter_increment,
           priorClose: trueRange.priorClose,
         });
-        const stop = await placeStopOrder({
-          pair,
-          quantity: getFilledBaseAmount(fill).toString(),
+        const stop = await broker.placeStopOrder(pair, {
+          side: OrderSide.SELL,
+          size: getFilledBaseAmount(fill).toString(),
           stopPrice: placement.stopPrice,
         });
 
-        return {json: {fill, order, stop: {...placement, ...stop}}};
+        return {json: {fill, order, stop: {...placement, orderId: stop.id, stopPrice: stop.stopPrice}}};
       }
       case 'cancel':
         if (values.all) {

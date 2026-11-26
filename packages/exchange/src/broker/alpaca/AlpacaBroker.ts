@@ -17,6 +17,10 @@ import {
   OrderType,
   type PendingLimitOrder,
   type PendingMarketOrder,
+  type PendingStopLimitOrder,
+  type PendingStopOrder,
+  type StopLimitOrderOptions,
+  type StopOrderOptions,
   type PendingOrder,
   type TradingRules,
 } from '../Broker.js';
@@ -349,6 +353,11 @@ export class AlpacaBroker extends Broker implements CandleFeed {
    */
   protected override async placeOrder(pair: TradingPair, options: LimitOrderOptions): Promise<PendingLimitOrder>;
   protected override async placeOrder(pair: TradingPair, options: MarketOrderOptions): Promise<PendingMarketOrder>;
+  protected override async placeOrder(pair: TradingPair, options: StopOrderOptions): Promise<PendingStopOrder>;
+  protected override async placeOrder(
+    pair: TradingPair,
+    options: StopLimitOrderOptions
+  ): Promise<PendingStopLimitOrder>;
   protected override async placeOrder(pair: TradingPair, options: OrderOptions): Promise<PendingOrder> {
     const isCrypto = await isAlpacaCryptoSymbol(this.#alpacaAPI, pair);
     const symbol = createAlpacaSymbol(pair, isCrypto);

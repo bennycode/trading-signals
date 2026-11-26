@@ -110,6 +110,15 @@ function setup() {
       sizeInCounter: false,
       type: OrderType.MARKET,
     }),
+    placeStopOrder: vi.fn<Broker['placeStopOrder']>().mockImplementation(async (pair, {side, size, stopPrice}) => ({
+      id: '99',
+      pair,
+      side,
+      size,
+      stopPrice,
+      type: 'STOP',
+    })),
+    supportsStopOrders: true,
     unwatchCandles: vi.fn(),
     unwatchOrders: vi.fn(),
     verifyCredentials: vi.fn<Broker['verifyCredentials']>().mockResolvedValue(undefined),
@@ -117,22 +126,16 @@ function setup() {
     watchOrders: vi.fn<Broker['watchOrders']>().mockResolvedValue('orders'),
   });
   const listInstruments = vi.fn<ReturnType<typeof createCliBroker>['listInstruments']>().mockResolvedValue(INSTRUMENTS);
-  const placeStopOrder = vi
-    .fn<NonNullable<ReturnType<typeof createCliBroker>['placeStopOrder']>>()
-    // The venue echoes the trigger it accepted, which is what the report has to carry.
-    .mockImplementation(async ({stopPrice}) => ({orderId: '99', stopPrice}));
   const deps = {
-    // Mirrors the real adapter, which can only place a stop on the broker that supports one.
-    createBroker: vi.fn<CliDeps['createBroker']>().mockImplementation(key => ({
+    createBroker: vi.fn<CliDeps['createBroker']>().mockReturnValue({
       broker: broker as unknown as Broker & CandleFeed,
       listInstruments,
-      placeStopOrder: key === 'alpaca' ? placeStopOrder : undefined,
-    })),
+    }),
     env: {},
     writeEvent: vi.fn<CliDeps['writeEvent']>(),
   };
   const run = (args: string[]) => runCli([...args, '--broker', 'alpaca'], deps);
-  return {broker, deps, listInstruments, placeStopOrder, run};
+  return {broker, deps, listInstruments, run};
 }
 
 /*
@@ -332,12 +335,12 @@ describe('runCli', {concurrent: false}, () => {
   });
 
   it('protects a filled buy with a stop below the price it paid', async () => {
-    const {broker, placeStopOrder, run} = setup();
+    const {broker, run} = setup();
     broker.getFillByOrderId.mockResolvedValue({...FILL, price: '500', size: '2'});
 
     const result = await run(['buy', 'AAPL', '2', '--stop-atr', '3']);
 
-    expect(placeStopOrder).toHaveBeenCalledWith({pair: PAIR, quantity: '2', stopPrice: '494'});
+    expect(broker.placeStopOrder).toHaveBeenCalledWith(PAIR, {side: OrderSide.SELL, size: '2', stopPrice: '494'});
     expect(result).toMatchObject({
       json: {
         stop: {anchor: 'fill', anchorPrice: '500', atr: '2', atrMultiple: '3', orderId: '99', stopPrice: '494'},
@@ -349,16 +352,17 @@ describe('runCli', {concurrent: false}, () => {
     {expected: '496', multiple: '2'},
     {expected: '494', multiple: '3'},
   ])('places the stop $multiple average ranges below the fill', async ({expected, multiple}) => {
-    const {broker, placeStopOrder, run} = setup();
+    const {broker, run} = setup();
     broker.getFillByOrderId.mockResolvedValue({...FILL, price: '500', size: '1'});
 
     await run(['buy', 'AAPL', '1', '--stop-atr', multiple]);
 
-    expect(placeStopOrder).toHaveBeenCalledWith({pair: PAIR, quantity: '1', stopPrice: expected});
+    expect(broker.placeStopOrder).toHaveBeenCalledWith(PAIR, {side: OrderSide.SELL, size: '1', stopPrice: expected});
   });
 
   it('refuses to buy what it cannot protect', async () => {
     const {broker, deps} = setup();
+    broker.supportsStopOrders = false;
 
     await expect(runCli(['buy', 'RRl_EQ', '1', '--stop-atr', '3', '--broker', 'trading212'], deps)).rejects.toThrow(
       'cannot place a protective stop'
@@ -367,21 +371,21 @@ describe('runCli', {concurrent: false}, () => {
   });
 
   it('places no stop unless one is asked for', async () => {
-    const {placeStopOrder, run} = setup();
+    const {broker, run} = setup();
 
     await run(['buy', 'AAPL', '1']);
     await run(['sell', 'AAPL', '1']);
 
-    expect(placeStopOrder).not.toHaveBeenCalled();
+    expect(broker.placeStopOrder).not.toHaveBeenCalled();
   });
 
   it('shows the stop a dry run would place without placing anything', async () => {
-    const {broker, placeStopOrder, run} = setup();
+    const {broker, run} = setup();
 
     const result = await run(['buy', 'AAPL', '2', '--dry-run', '--stop-atr', '3']);
 
     expect(result).toMatchObject({json: {dryRun: true, plannedStop: {atrMultiple: '3', room: 'balanced'}}});
-    expect(placeStopOrder).not.toHaveBeenCalled();
+    expect(broker.placeStopOrder).not.toHaveBeenCalled();
     expect(broker.placeMarketOrder).not.toHaveBeenCalled();
   });
 

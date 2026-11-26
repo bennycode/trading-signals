@@ -14,8 +14,12 @@ import {
   type OrderOptions,
   type PendingLimitOrder,
   type PendingMarketOrder,
+  type PendingStopLimitOrder,
+  type PendingStopOrder,
+  type StopLimitOrderOptions,
+  type StopOrderOptions,
   type PendingOrder,
-  type OrderType,
+  OrderType,
   type TradingRules,
 } from '../Broker.js';
 import type {CandleFeed, MarketDataSource} from '../MarketDataSource.js';
@@ -384,11 +388,27 @@ export class IbkrBroker extends Broker implements CandleFeed {
    * the order exists at all. Each answer can raise a further prompt, so this loops, with a cap so
    * an unexpected prompt cannot spin forever.
    */
+  /** Not yet: the client carries no stop request, so a requested stop must not reach an order. */
+  override get supportsStopOrders(): boolean {
+    return false;
+  }
+
   protected async placeOrder(pair: TradingPair, options: LimitOrderOptions): Promise<PendingLimitOrder>;
   protected async placeOrder(pair: TradingPair, options: MarketOrderOptions): Promise<PendingMarketOrder>;
+  protected async placeOrder(pair: TradingPair, options: StopOrderOptions): Promise<PendingStopOrder>;
+  protected async placeOrder(pair: TradingPair, options: StopLimitOrderOptions): Promise<PendingStopLimitOrder>;
   protected async placeOrder(pair: TradingPair, options: OrderOptions): Promise<PendingOrder>;
   protected async placeOrder(pair: TradingPair, options: OrderOptions): Promise<PendingOrder> {
     const [accountId, conid] = await Promise.all([this.getAccountId(), this.getConid(pair)]);
+
+    /*
+     * IBKR has STP and STP_LMT, but the submission below carries no trigger price, and its
+     * order-type choice treats everything that is not a limit as a market order. Refusing keeps a
+     * requested stop from being placed as an immediate market order.
+     */
+    if (options.type === OrderType.STOP || options.type === OrderType.STOP_LIMIT) {
+      throw new Error(`${options.type} orders are not wired into the IBKR client yet.`);
+    }
 
     return submitIbkrOrder({
       accountId,

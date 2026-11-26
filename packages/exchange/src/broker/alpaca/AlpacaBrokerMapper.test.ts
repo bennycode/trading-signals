@@ -195,3 +195,119 @@ describe('AlpacaBrokerMapper', () => {
     });
   });
 });
+
+describe('AlpacaBrokerMapper stop orders', () => {
+  const pair = new TradingPair('AAPL', 'USD');
+
+  describe('toOrderRequest', () => {
+    it('sends a stop order as a trigger with no limit', () => {
+      const request = AlpacaBrokerMapper.toOrderRequest(
+        {side: OrderSide.SELL, size: '2', sizeInCounter: false, stopPrice: '494', type: 'STOP'},
+        'AAPL',
+        false,
+        'client-1'
+      );
+
+      expect(request.type).toBe(AlpacaOrderType.STOP);
+      expect(request.stop_price).toBe('494');
+      expect(request.limit_price, 'a stop takes whatever price is available once it fires').toBeUndefined();
+      expect(request.qty).toBe('2');
+    });
+
+    it('sends a stop-limit order with both prices', () => {
+      const request = AlpacaBrokerMapper.toOrderRequest(
+        {price: '490', side: OrderSide.SELL, size: '2', sizeInCounter: false, stopPrice: '494', type: 'STOP_LIMIT'},
+        'AAPL',
+        false,
+        'client-2'
+      );
+
+      expect(request.type).toBe(AlpacaOrderType.STOP_LIMIT);
+      expect(request.stop_price, 'the trigger').toBe('494');
+      expect(request.limit_price, 'the worst price the triggered order may fill at').toBe('490');
+    });
+
+    it('keeps a stop out of extended hours, which only accepts limit orders', () => {
+      const request = AlpacaBrokerMapper.toOrderRequest(
+        {side: OrderSide.SELL, size: '0.5', sizeInCounter: false, stopPrice: '494', type: 'STOP'},
+        'AAPL',
+        false,
+        'client-3'
+      );
+
+      expect(request.extended_hours).toBeUndefined();
+    });
+  });
+
+  describe('toPendingOrder', () => {
+    const resting = {
+      asset_class: AlpacaAssetClass.US_EQUITY,
+      asset_id: '78856c3d-67c8-43bc-8cd4-e95b686cf741',
+      canceled_at: null,
+      client_order_id: 'bb5de406-f656-4b51-9e64-03dfda718ff8',
+      created_at: '2026-11-24T05:00:00Z',
+      expired_at: null,
+      extended_hours: false,
+      failed_at: null,
+      filled_at: null,
+      filled_avg_price: null,
+      filled_qty: '0',
+      id: 'order-1',
+      legs: null,
+      limit_price: '490',
+      notional: null,
+      qty: '2',
+      replaced_at: null,
+      replaced_by: null,
+      replaces: null,
+      side: AlpacaOrderSide.SELL,
+      status: AlpacaOrderStatus.NEW,
+      stop_price: '494',
+      submitted_at: '2026-11-24T05:00:00Z',
+      symbol: 'AAPL',
+      time_in_force: TimeInForce.GTC,
+      type: AlpacaOrderType.STOP,
+      updated_at: '2026-11-24T05:00:00Z',
+    };
+
+    it('reads a resting stop back with its trigger', () => {
+      const pending = AlpacaBrokerMapper.toPendingOrder(resting, pair, {
+        side: OrderSide.SELL,
+        size: '2',
+        sizeInCounter: false,
+        stopPrice: '494',
+        type: 'STOP',
+      });
+
+      expect(pending).toStrictEqual({
+        id: 'order-1',
+        pair,
+        side: OrderSide.SELL,
+        size: '2',
+        stopPrice: '494',
+        type: 'STOP',
+      });
+    });
+
+    it('reads a resting stop-limit back with both prices', () => {
+      const pending = AlpacaBrokerMapper.toPendingOrder({...resting, type: AlpacaOrderType.STOP_LIMIT}, pair, {
+        price: '490',
+        side: OrderSide.SELL,
+        size: '2',
+        sizeInCounter: false,
+        stopPrice: '494',
+        type: 'STOP_LIMIT',
+      });
+
+      expect(pending).toStrictEqual({
+        id: 'order-1',
+        pair,
+        price: '490',
+        side: OrderSide.SELL,
+        size: '2',
+        stopPrice: '494',
+        type: 'STOP_LIMIT',
+      });
+    });
+  });
+});
