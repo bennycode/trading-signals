@@ -13,11 +13,8 @@ export type WeaknessCheckName =
   | 'atrExpandingWhileFalling'
   | 'bearishDivergence'
   | 'belowFallingFastAverage'
-  | 'deathCross'
   | 'distribution'
-  | 'lowerBandRide'
   | 'lowerHighsAndLows'
-  | 'macdBelowZero'
   | 'relativeStrength'
   | 'rsiBearRange'
   | 'volumeLineFalling';
@@ -104,15 +101,20 @@ export const FULL_HEALTH = 100;
 /**
  * Every check the card reads, with the plain question it answers and what a "yes" deducts from full
  * health. A check weighs more when it is hard to argue with on its own terms: price making lower
- * highs and lower lows needs no parameter and no threshold, while a single tag of a Bollinger band
- * is as often a bounce as a breakdown.
+ * highs and lower lows needs no parameter and no threshold, while an average range that widens
+ * needs a period and a window to be read at all.
  *
  * The questions are worded so that "yes" is always the bad answer, because a reader scanning a card
  * should not have to work out which way each check points.
  *
- * The ten checks read from the instrument's own bars are a closed budget of 100. Relative strength
- * deducts on top of that budget rather than inside it, and health is floored at 0: a card given a
- * benchmark must not read a breakdown as healthier than the same card without one.
+ * Each one has to tell the reader something the others do not. A moving-average cross and a MACD
+ * zero line both restate where price sits against its own averages, which two checks here already
+ * read and read earlier, so neither is on the card; a tag of a Bollinger band is as often a bounce
+ * as a breakdown, so that is not either.
+ *
+ * The seven checks read from the instrument's own bars are a closed budget of 100. Relative
+ * strength deducts on top of that budget rather than inside it, and health is floored at 0: a card
+ * given a benchmark must not read a breakdown as healthier than the same card without one.
  */
 export const CHECKS = [
   {
@@ -125,61 +127,43 @@ export const CHECKS = [
     category: 'trend',
     name: 'lowerHighsAndLows',
     question: 'Is price making lower highs and lower lows?',
-    weight: 18,
+    weight: 23,
   },
   {
     category: 'trend',
     name: 'belowFallingFastAverage',
     question: 'Is price below a fast average that has turned down?',
-    weight: 12,
-  },
-  {
-    category: 'trend',
-    name: 'deathCross',
-    question: 'Has the fast average crossed below the slow one?',
-    weight: 10,
+    weight: 15,
   },
   {
     category: 'momentum',
     name: 'rsiBearRange',
     question: 'Does momentum stall short of overbought and reach oversold?',
-    weight: 9,
-  },
-  {
-    category: 'momentum',
-    name: 'macdBelowZero',
-    question: 'Has MACD crossed below zero and below its signal?',
-    weight: 8,
+    weight: 12,
   },
   {
     category: 'momentum',
     name: 'bearishDivergence',
     question: 'Is a new high being made on less force than the last one?',
-    weight: 8,
+    weight: 10,
   },
   {
     category: 'volume',
     name: 'distribution',
     question: 'Is trade heavier on down bars than on up bars?',
-    weight: 13,
+    weight: 17,
   },
   {
     category: 'volume',
     name: 'volumeLineFalling',
     question: 'Is the volume line falling while price holds up?',
-    weight: 12,
+    weight: 15,
   },
   {
     category: 'volatility',
     name: 'atrExpandingWhileFalling',
     question: 'Are ranges widening as price falls?',
-    weight: 6,
-  },
-  {
-    category: 'volatility',
-    name: 'lowerBandRide',
-    question: 'Is price pinned to the lower band of a widening range?',
-    weight: 4,
+    weight: 8,
   },
 ] as const satisfies readonly {
   category: WeaknessCategory;
@@ -207,6 +191,16 @@ const BANDS = [
  */
 export const BEAR_RANGE_CEILING = 60;
 export const BEAR_RANGE_FLOOR = 30;
+
+/**
+ * How much heavier trade on down bars has to be before {@link CHECKS} counts it as distribution.
+ *
+ * A bare "more than" makes the check a coin flip whenever the two averages are close, and 17 points
+ * is too much to hand to a tie: a reading of 2% more volume on down bars is one heavy session away
+ * from reading 2% less. A tenth more volume on the down bars of a whole window is a tilt a reader
+ * can defend. Reasoned rather than fitted, like the weights it guards.
+ */
+export const DISTRIBUTION_MARGIN = 0.1;
 
 export function classifyChartHealth(health: number): WeaknessVerdict {
   const band = BANDS.find(candidate => health >= candidate.minHealth);

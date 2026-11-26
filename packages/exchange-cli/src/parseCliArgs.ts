@@ -184,7 +184,7 @@ export function parseCliArgs(argv: string[]) {
     .option('--benchmark <ticker>', 'Index or sector proxy for the relative strength check')
     .option('--date <YYYY-MM-DD>', 'Read the card as of this day (UTC) instead of the newest bar', calendarDay)
     .option('--table', 'Print the card for a reader instead of JSON')
-    .option('--count <n>', 'Candles to request; the card needs a long warm-up', positiveInt, 300);
+    .option('--count <n>', 'Candles to request; the card warms up over the slowest indicator', positiveInt, 120);
   command('watch-candles <ticker>', 'Stream candles as NDJSON')
     .addOption(
       new Option('--interval <duration>', 'Candle interval').argParser(positiveDuration).default(parse('1m'), '1m')

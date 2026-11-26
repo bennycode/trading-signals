@@ -1,14 +1,10 @@
 import {ms, type StringValue} from 'ms';
 import {CandleBatcher, type BatchedCandle, type Candle} from '@typedtrader/exchange';
-import {ATR, BollingerBands, EMA, MACD, NotEnoughDataError, OBV, pushUpdate, RSI, SMA} from 'trading-signals';
+import {ATR, NotEnoughDataError, OBV, pushUpdate, RSI, SMA} from 'trading-signals';
 import {CHECKS, FULL_HEALTH, classifyChartHealth, soleCategory, type HealthReport} from './chartHealthChecks.js';
 import {readChecks, type Bar, type CheckPeriods} from './chartHealthReadings.js';
 
 export type ChartHealthOptions = {
-  bollingerDeviation?: number;
-  bollingerPeriod?: number;
-  /** Bar size the Bollinger bands are measured on. Defaults to {@link ChartHealthOptions.timeframe}. */
-  bollingerTimeframe?: StringValue;
   fastAveragePeriod?: number;
   /** Bar size the fast average is measured on. Defaults to {@link ChartHealthOptions.timeframe}. */
   fastAverageTimeframe?: StringValue;
@@ -19,16 +15,11 @@ export type ChartHealthOptions = {
    * to fire and quicker to change its mind.
    */
   lookback?: number;
-  /** Bar size the MACD is measured on. Defaults to {@link ChartHealthOptions.timeframe}. */
-  macdTimeframe?: StringValue;
   /** Bar size the volume line is measured on. Defaults to {@link ChartHealthOptions.timeframe}. */
   obvTimeframe?: StringValue;
   rsiPeriod?: number;
   /** Bar size the momentum index is measured on. Defaults to {@link ChartHealthOptions.timeframe}. */
   rsiTimeframe?: StringValue;
-  slowAveragePeriod?: number;
-  /** Bar size the slow average is measured on. Defaults to {@link ChartHealthOptions.timeframe}. */
-  slowAverageTimeframe?: StringValue;
   /**
    * Bar size of the card itself: the clock the window advances on, and the default bar size for
    * every indicator that does not name its own.
@@ -48,7 +39,7 @@ type Part = {
 };
 
 /**
- * Scores the chart health of a single instrument from 100 down to 0, by reading eleven checks
+ * Scores the chart health of a single instrument from 100 down to 0, by reading eight checks
  * across trend, momentum, volume, volatility and relative strength and deducting from full health
  * according to what each check is worth on its own. It reads like a credit score: 100 is an
  * instrument with nothing against it, 0 is one with the whole set against it.
@@ -73,50 +64,32 @@ type Part = {
  */
 export class ChartHealth {
   readonly #atr: ATR;
-  readonly #bands: BollingerBands;
   readonly #benchmarkBatcher: CandleBatcher;
   /** Close of the last whole benchmark bar, which the instrument's close is measured against. */
   #benchmarkClose: number | null = null;
   readonly #fastAverage: SMA;
   readonly #lookback: number;
-  readonly #macd: MACD;
   readonly #obv: OBV;
   readonly #parts: readonly Part[];
   readonly #rsi: RSI;
   readonly #periods: CheckPeriods;
-  readonly #slowAverage: SMA;
   readonly #timeframe: StringValue;
   readonly #window: Bar[] = [];
   readonly #windowBatcher: CandleBatcher;
   readonly #windowIntervalInMillis: number;
 
   constructor(options: ChartHealthOptions = {}) {
-    const {
-      bollingerDeviation = 2,
-      bollingerPeriod = 20,
-      fastAveragePeriod = 50,
-      lookback = 20,
-      rsiPeriod = 14,
-      slowAveragePeriod = 200,
-      timeframe = '1d',
-      trueRangePeriod = 14,
-    } = options;
+    const {fastAveragePeriod = 50, lookback = 20, rsiPeriod = 14, timeframe = '1d', trueRangePeriod = 14} = options;
 
     this.#atr = new ATR(trueRangePeriod);
-    this.#bands = new BollingerBands(bollingerPeriod, bollingerDeviation);
     this.#fastAverage = new SMA(fastAveragePeriod);
     this.#lookback = lookback;
-    // The 12/26/9 periods are the convention the zero line and the signal cross are read against.
-    this.#macd = new MACD(new EMA(12), new EMA(26), new EMA(9));
     // Two bars is enough to accumulate the running volume total from the first bar onwards.
     this.#obv = new OBV(2);
     this.#rsi = new RSI(rsiPeriod);
-    this.#slowAverage = new SMA(slowAveragePeriod);
     this.#periods = {
-      bollinger: bollingerPeriod,
       fastAverage: fastAveragePeriod,
       rsi: rsiPeriod,
-      slowAverage: slowAveragePeriod,
       trueRange: trueRangePeriod,
     };
     this.#timeframe = timeframe;
@@ -128,11 +101,9 @@ export class ChartHealth {
       part(options.trueRangeTimeframe ?? timeframe, this.#atr, bar =>
         this.#atr.add({close: bar.close.toNumber(), high: bar.high.toNumber(), low: bar.low.toNumber()})
       ),
-      part(options.bollingerTimeframe ?? timeframe, this.#bands, bar => this.#bands.add(bar.close.toNumber())),
       part(options.fastAverageTimeframe ?? timeframe, this.#fastAverage, bar =>
         this.#fastAverage.add(bar.close.toNumber())
       ),
-      part(options.macdTimeframe ?? timeframe, this.#macd, bar => this.#macd.add(bar.close.toNumber())),
       part(options.obvTimeframe ?? timeframe, this.#obv, bar =>
         this.#obv.add({
           close: bar.close.toNumber(),
@@ -143,9 +114,6 @@ export class ChartHealth {
         })
       ),
       part(options.rsiTimeframe ?? timeframe, this.#rsi, bar => this.#rsi.add(bar.close.toNumber())),
-      part(options.slowAverageTimeframe ?? timeframe, this.#slowAverage, bar =>
-        this.#slowAverage.add(bar.close.toNumber())
-      ),
     ];
   }
 
@@ -247,22 +215,11 @@ export class ChartHealth {
    */
   #takeSnapshot(bar: BatchedCandle): void {
     const atr = this.#atr.getResult();
-    const bands = this.#bands.getResult();
     const fastAverage = this.#fastAverage.getResult();
-    const macd = this.#macd.getResult();
     const obv = this.#obv.getResult();
     const rsi = this.#rsi.getResult();
-    const slowAverage = this.#slowAverage.getResult();
 
-    if (
-      atr === null ||
-      bands === null ||
-      fastAverage === null ||
-      macd === null ||
-      obv === null ||
-      rsi === null ||
-      slowAverage === null
-    ) {
+    if (atr === null || fastAverage === null || obv === null || rsi === null) {
       return;
     }
 
@@ -270,19 +227,14 @@ export class ChartHealth {
       array: this.#window,
       item: {
         atr,
-        bandWidth: bands.upper - bands.lower,
         close: bar.close.toNumber(),
         fastAverage,
         high: bar.high.toNumber(),
         low: bar.low.toNumber(),
-        lowerBand: bands.lower,
-        macd: macd.macd,
-        macdSignal: macd.signal,
         obv,
         openTimeInISO: bar.openTimeInISO,
         relative: this.#benchmarkClose === null ? null : bar.close.toNumber() / this.#benchmarkClose,
         rsi,
-        slowAverage,
         volume: bar.volume.toNumber(),
       },
       maxLength: this.#lookback,

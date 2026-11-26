@@ -2,7 +2,7 @@ import type {Candle} from '@typedtrader/exchange';
 import {NotEnoughDataError} from 'trading-signals';
 import {describe, expect, it} from 'vitest';
 import {ChartHealth, type ChartHealthOptions} from './ChartHealth.js';
-import {classifyChartHealth, type HealthReport, type WeaknessCheckName} from './chartHealthChecks.js';
+import {classifyChartHealth, measure, type HealthReport, type WeaknessCheckName} from './chartHealthChecks.js';
 
 const ONE_DAY_IN_MS = 86_400_000;
 
@@ -78,7 +78,8 @@ const flatCloses = [
 
 describe('ChartHealth', () => {
   it('withholds a report until every indicator behind the checks has a value', () => {
-    const health = scoreOf(dailyCandles(risingCloses.slice(0, 120), CALM_BARS));
+    // Fewer bars than the fast average alone needs, let alone a full window on top of it.
+    const health = scoreOf(dailyCandles(risingCloses.slice(0, 40), CALM_BARS));
 
     expect(health.isReady).toBe(false);
     expect(health.getReport(), 'a card with no readings on it makes no claim about the instrument').toBeNull();
@@ -100,11 +101,10 @@ describe('ChartHealth', () => {
     expect(firedNames(health)).toStrictEqual([
       'lowerHighsAndLows',
       'belowFallingFastAverage',
-      'deathCross',
       'rsiBearRange',
       'atrExpandingWhileFalling',
     ]);
-    expect(report.health).toBe(45);
+    expect(report.health).toBe(42);
     expect(report.verdict).toBe('downtrend');
     expect(report.soleCategory, 'three kinds of evidence agreed, so nothing here is one-sided').toBeNull();
   });
@@ -116,9 +116,22 @@ describe('ChartHealth', () => {
     const report = health.getReportOrThrow();
 
     expect(firedNames(health)).toStrictEqual(['distribution', 'volumeLineFalling']);
-    expect(report.health).toBe(75);
+    expect(report.health).toBe(68);
     expect(report.verdict).toBe('weakening');
     expect(report.soleCategory, 'the chart is flat, so the warning rests entirely on the tape').toBe('volume');
+  });
+
+  it('leaves a near-tie in up and down volume alone', () => {
+    const fired = (downVolume: number) =>
+      firedNames(
+        scoreOf(dailyCandles(flatCloses, {range: () => 1.2, volume: falling => (falling ? downVolume : 1_000_000)}))
+      );
+
+    expect(
+      fired(1_020_000),
+      'two percent more volume on down bars is one heavy session from reading the other way, so it costs nothing'
+    ).not.toContain('distribution');
+    expect(fired(1_300_000), 'a tilt a reader can defend still fires').toContain('distribution');
   });
 
   it('keeps the checks read from the instrument own bars worth 100 points in total', () => {
@@ -168,9 +181,9 @@ describe('ChartHealth', () => {
     }
 
     expect(
-      checks.find(check => check.name === 'deathCross')?.question,
-      'a reader should not have to know what a death cross is'
-    ).toBe('Has the fast average crossed below the slow one?');
+      checks.find(check => check.name === 'belowFallingFastAverage')?.question,
+      'a reader should not have to know what a fast average is called'
+    ).toBe('Is price below a fast average that has turned down?');
   });
 
   it('shows by how much a check missed, not only that it missed', () => {
@@ -192,24 +205,23 @@ describe('ChartHealth', () => {
   it('names the indicator each reading came off, with the period it was built with', () => {
     const report = scoreOf(dailyCandles(risingCloses, CALM_BARS), {
       fastAveragePeriod: 20,
-      slowAveragePeriod: 100,
+      rsiPeriod: 7,
     }).getReportOrThrow();
-    const indicators = report.checks.find(check => check.name === 'deathCross')?.measures.map(entry => entry.indicator);
+    const indicatorsOf = (name: WeaknessCheckName) =>
+      report.checks.find(check => check.name === name)?.measures.map(entry => entry.indicator);
 
-    expect(indicators, 'a card built on other periods must not claim the conventional ones').toStrictEqual([
-      'SMA 20/100',
-      'SMA 100',
-      'SMA 100',
-    ]);
+    expect(
+      indicatorsOf('belowFallingFastAverage'),
+      'a card built on other periods must not claim the conventional ones'
+    ).toStrictEqual(['SMA 20', 'SMA 20']);
+    expect(indicatorsOf('rsiBearRange')).toStrictEqual(['RSI 7', 'RSI 7']);
   });
 
   it('withholds a percentage where one would be meaningless', () => {
-    const report = scoreOf(dailyCandles(breakdownCloses, BREAKDOWN_BARS)).getReportOrThrow();
-    const check = report.checks.find(entry => entry.name === 'macdBelowZero');
-    const zeroLine = check?.measures.find(entry => entry.indicator === 'MACD' && entry.label === 'line vs zero');
+    const crossing = measure('OBV', 'line vs window start', -1200, 0);
 
-    expect(zeroLine?.deviationPercent, 'nothing is a percentage of zero').toBeNull();
-    expect(zeroLine?.reading, 'the reading itself is still there to be judged').toBeLessThan(0);
+    expect(crossing.deviationPercent, 'nothing is a percentage of zero').toBeNull();
+    expect(crossing.reading, 'the reading itself is still there to be judged').toBe(-1200);
   });
 
   it('dates the reading by the last bar the checks read', () => {
@@ -249,20 +261,20 @@ describe('ChartHealth', () => {
     const series = dailyCandles(risingCloses, CALM_BARS);
 
     expect(
-      scoreOf(series, {slowAveragePeriod: 200, slowAverageTimeframe: '1w'}).isReady,
+      scoreOf(series, {fastAveragePeriod: 200, fastAverageTimeframe: '1w'}).isReady,
       '200 weekly bars need far more daily candles than this series holds'
     ).toBe(false);
-    expect(scoreOf(series, {slowAveragePeriod: 200}).isReady).toBe(true);
+    expect(scoreOf(series, {fastAveragePeriod: 200}).isReady).toBe(true);
   });
 
   it('states how many of its own bars it needs before it can judge', () => {
-    const daily = new ChartHealth({lookback: 20, slowAveragePeriod: 200});
+    const daily = new ChartHealth({fastAveragePeriod: 50, lookback: 20});
 
-    expect(daily.getRequiredBars(), 'the slow average warm-up plus a full window').toBe(219);
+    expect(daily.getRequiredBars(), 'the slowest indicator warm-up plus a full window').toBe(69);
 
-    const weeklyTrend = new ChartHealth({lookback: 20, slowAveragePeriod: 200, slowAverageTimeframe: '1w'});
+    const weeklyTrend = new ChartHealth({fastAveragePeriod: 50, fastAverageTimeframe: '1w', lookback: 20});
 
-    expect(weeklyTrend.getRequiredBars(), '200 weekly bars measured in daily bars, plus the window').toBe(1419);
+    expect(weeklyTrend.getRequiredBars(), '50 weekly bars measured in daily bars, plus the window').toBe(369);
   });
 
   it('holds a slower indicator at its last close between its own bars', () => {
@@ -277,7 +289,8 @@ describe('ChartHealth', () => {
   });
 
   it('starts judging sooner with a shorter lookback', () => {
-    const series = dailyCandles(risingCloses.slice(0, 210), CALM_BARS);
+    // Exactly the fast average warm-up plus five bars, so only the shorter window fits.
+    const series = dailyCandles(risingCloses.slice(0, 54), CALM_BARS);
 
     expect(scoreOf(series, {lookback: 5}).isReady).toBe(true);
     expect(scoreOf(series).isReady, 'the default window still needs more bars than this series holds').toBe(false);

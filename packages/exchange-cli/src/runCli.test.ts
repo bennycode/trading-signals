@@ -542,7 +542,7 @@ describe('runCli', {concurrent: false}, () => {
 
     const result = await run(['health', 'AAPL']);
 
-    expect(broker.getRecentCandles).toHaveBeenCalledWith(PAIR, 300, 86_400_000);
+    expect(broker.getRecentCandles).toHaveBeenCalledWith(PAIR, 120, 86_400_000);
     expect(result).toHaveProperty('json');
     if ('json' in result) {
       expect(result.json).toMatchObject({health: 100, timeframe: '1d', verdict: 'noise'});
@@ -609,16 +609,16 @@ describe('runCli', {concurrent: false}, () => {
     const alone = await run(['health', 'AAPL']);
     const compared = await run(['health', 'AAPL', '--benchmark', 'SPY']);
 
-    expect(broker.getRecentCandles).toHaveBeenCalledWith(new TradingPair('SPY', 'USD'), 300, 86_400_000);
+    expect(broker.getRecentCandles).toHaveBeenCalledWith(new TradingPair('SPY', 'USD'), 120, 86_400_000);
     if ('json' in alone && 'json' in compared) {
       expect(alone.json, 'the check that needs a second series has nothing to read').toMatchObject({
-        health: 92,
+        health: 90,
         unreadWeight: 15,
       });
       expect(
         compared.json,
         'a stock creeping up while its index runs is losing ground, which costs it the full 15 points'
-      ).toMatchObject({health: 77, unreadWeight: 0});
+      ).toMatchObject({health: 75, unreadWeight: 0});
     }
   });
 
@@ -634,7 +634,7 @@ describe('runCli', {concurrent: false}, () => {
       expect(result.text, 'the questions carry the card, not the check names').toContain(
         'Is price making lower highs and lower lows?'
       );
-      expect(result.text, 'a check that fired shows what it cost').toContain('-18');
+      expect(result.text, 'a check that fired shows what it cost').toContain('-23');
       expect(result.text, 'the columns are labelled, so a reader need not guess which number is which').toMatch(
         /CRIT\s+CHECK\s+DESCRIPTION\s+VALUE\s+THRESHOLD\s+DIVERGENCE/
       );
@@ -647,7 +647,7 @@ describe('runCli', {concurrent: false}, () => {
     const {broker, run} = setup();
     broker.getRecentCandles.mockResolvedValue([CANDLE]);
 
-    await expect(run(['health', 'AAPL'])).rejects.toThrow(/at least 219 daily candles, but 1 arrived/);
+    await expect(run(['health', 'AAPL'])).rejects.toThrow(/at least 69 daily candles, but 1 arrived/);
   });
 
   it('lists rules, orders, fills, and broker time', async () => {

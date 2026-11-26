@@ -2,6 +2,7 @@ import {getAverage, getMaximum, getMinimum} from 'trading-signals';
 import {
   BEAR_RANGE_CEILING,
   BEAR_RANGE_FLOOR,
+  DISTRIBUTION_MARGIN,
   UNREAD,
   measure,
   type Reading,
@@ -11,20 +12,15 @@ import {
 /** What the checks need to know about one bar, once every indicator behind them has a value. */
 export type Bar = {
   atr: number;
-  bandWidth: number;
   close: number;
   fastAverage: number;
   high: number;
   low: number;
-  lowerBand: number;
-  macd: number;
-  macdSignal: number;
   obv: number;
   openTimeInISO: string;
   /** Close divided by the benchmark's close, or `null` while no benchmark has been fed. */
   relative: number | null;
   rsi: number;
-  slowAverage: number;
   volume: number;
 };
 
@@ -36,10 +32,8 @@ function olderAndRecentHalf(bars: readonly Bar[]) {
 
 /** The periods the card was built with, which name the indicator each reading comes off. */
 export type CheckPeriods = {
-  bollinger: number;
   fastAverage: number;
   rsi: number;
-  slowAverage: number;
   trueRange: number;
 };
 
@@ -62,10 +56,8 @@ export function readChecks({
   window: readonly Bar[];
 }): Record<WeaknessCheckName, Reading> {
   const fast = `SMA ${periods.fastAverage}`;
-  const slow = `SMA ${periods.slowAverage}`;
   const momentum = `RSI ${periods.rsi}`;
   const range = `ATR ${periods.trueRange}`;
-  const bands = `Bollinger ${periods.bollinger}`;
   const {older, recent} = olderAndRecentHalf(window);
   const indexValues = window.map(bar => bar.rsi);
   const recentHigh = getMaximum(recent.map(bar => bar.high));
@@ -126,35 +118,26 @@ export function readChecks({
         measure(fast, 'average vs window start', latest.fastAverage, oldest.fastAverage),
       ],
     },
-    deathCross: {
-      fired:
-        latest.fastAverage < latest.slowAverage ||
-        (latest.close < latest.slowAverage && latest.slowAverage < oldest.slowAverage),
-      measures: [
-        measure(`${fast}/${periods.slowAverage}`, 'fast vs slow average', latest.fastAverage, latest.slowAverage),
-        measure(slow, 'close vs average', latest.close, latest.slowAverage),
-        measure(slow, 'average vs window start', latest.slowAverage, oldest.slowAverage),
-      ],
-    },
     /*
-     * Heavier trade on down bars than on up bars. A rise in volume on its own says nothing about
-     * which side is in a hurry, which is the whole point of separating the two. A window with no
-     * bars of one kind has nothing to compare, which a relentless decline produces.
+     * Heavier trade on down bars than on up bars, by {@link DISTRIBUTION_MARGIN} rather than by any
+     * margin at all. A rise in volume on its own says nothing about which side is in a hurry, which
+     * is the whole point of separating the two. A window with no bars of one kind has nothing to
+     * compare, which a relentless decline produces.
      */
     distribution:
       upVolumes.length === 0 || downVolumes.length === 0
         ? UNREAD
         : {
-            fired: getAverage(downVolumes) > getAverage(upVolumes),
-            measures: [measure('Volume', 'down bars vs up bars', getAverage(downVolumes), getAverage(upVolumes))],
+            fired: getAverage(downVolumes) > getAverage(upVolumes) * (1 + DISTRIBUTION_MARGIN),
+            measures: [
+              measure(
+                'Volume',
+                'down bars vs up bars',
+                getAverage(downVolumes),
+                getAverage(upVolumes) * (1 + DISTRIBUTION_MARGIN)
+              ),
+            ],
           },
-    lowerBandRide: {
-      fired: latest.close <= latest.lowerBand && latest.bandWidth > oldest.bandWidth,
-      measures: [
-        measure(bands, 'close vs lower band', latest.close, latest.lowerBand),
-        measure(bands, 'width vs window start', latest.bandWidth, oldest.bandWidth),
-      ],
-    },
     /*
      * Compared half-window against half-window rather than by pivot detection, so a single
      * outlying bar cannot decide it. Real swing-pivot detection would be stricter about what
@@ -167,23 +150,6 @@ export function readChecks({
         measure('Price', 'recent low vs earlier low', recentLow, olderLow),
       ],
     },
-    /*
-     * Below the zero line and freshly back below its signal. Below zero alone only restates the
-     * trend the first three checks already cover, so the crossing has to be inside the window.
-     */
-    macdBelowZero: {
-      fired: latest.macd < 0 && latest.macd < latest.macdSignal && window.some(bar => bar.macd >= bar.macdSignal),
-      measures: [
-        measure('MACD', 'line vs zero', latest.macd, 0),
-        measure('MACD', 'line vs signal', latest.macd, latest.macdSignal),
-      ],
-    },
-    /*
-     * Ground lost to the benchmark across the window. Measured on the ratio of the two closes
-     * rather than on price, so it fires on an instrument that rises less than its index as well
-     * as on one that falls harder, which is what makes it an early warning rather than a
-     * restatement of the trend checks.
-     */
     relativeStrength:
       latest.relative === null || oldest.relative === null
         ? UNREAD
