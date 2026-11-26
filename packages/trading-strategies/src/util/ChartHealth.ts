@@ -1,8 +1,15 @@
 import {ms, type StringValue} from 'ms';
 import {CandleBatcher, type BatchedCandle, type Candle} from '@typedtrader/exchange';
-import {ATR, NotEnoughDataError, OBV, pushUpdate, RSI, SMA} from 'trading-signals';
+import {ATR, NotEnoughDataError, OBV, getPercentageChange, pushUpdate, RSI, SMA} from 'trading-signals';
 import {CHECKS, FULL_HEALTH, classifyChartHealth, soleCategory, type HealthReport} from './chartHealthChecks.js';
 import {readChecks, type Bar, type CheckPeriods} from './chartHealthReadings.js';
+import {
+  classifyOpportunity,
+  OPPORTUNITY_FIELDS,
+  readOpportunity,
+  scoreOpportunity,
+  type OpportunityCard,
+} from './chartOpportunity.js';
 
 export type ChartHealthOptions = {
   fastAveragePeriod?: number;
@@ -195,6 +202,41 @@ export class ChartHealth {
       soleCategory: soleCategory(criteria),
       timeframe: this.#timeframe,
       verdict: classifyChartHealth(health),
+    };
+  }
+
+  /**
+   * The opportunity card, read off the same window as the health card so the two cannot disagree
+   * about what the instrument did. It asks whether a fall belongs to the market rather than to the
+   * instrument, which the health card cannot answer because every answer it has is a deduction.
+   */
+  getOpportunityCard(): OpportunityCard | null {
+    const latest = this.#window.at(-1);
+    const oldest = this.#window.at(0);
+
+    if (!this.isReady || !latest || !oldest) {
+      return null;
+    }
+
+    const readings = readOpportunity({latest, oldest, periods: this.#periods, window: this.#window});
+    const criteria = OPPORTUNITY_FIELDS.map(field => ({
+      category: field.category,
+      fired: readings[field.name].fired,
+      measures: readings[field.name].measures,
+      name: field.name,
+      question: field.question,
+      weight: field.weight,
+    }));
+    const score = scoreOpportunity(criteria);
+    const returnPercent = getPercentageChange(oldest.close, latest.close);
+
+    return {
+      asOf: latest.openTimeInISO,
+      criteria,
+      firedMeans: 'strength',
+      returnPercent,
+      score,
+      verdict: classifyOpportunity(score.value, returnPercent <= 0),
     };
   }
 

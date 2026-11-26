@@ -45,6 +45,16 @@ export {
   type WeaknessMeasure,
   type WeaknessVerdict,
 } from './util/chartHealthChecks.js';
+export {
+  classifyOpportunity,
+  MARKET_FALL_TOLERANCE_IN_PERCENT,
+  OPPORTUNITY_BANDS,
+  type OpportunityCard,
+  type OpportunityCategory,
+  type OpportunityField,
+  type OpportunityFieldName,
+  type OpportunityVerdict,
+} from './util/chartOpportunity.js';
 export * from './report/index.js';
 export {
   SP500HeatmapReport,

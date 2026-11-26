@@ -16,6 +16,7 @@ interface Options {
   interval?: number;
   limit?: string;
   live?: boolean;
+  opportunity?: boolean;
   poll?: number;
   stopAtr?: string;
   table?: boolean;
@@ -187,6 +188,7 @@ export function parseCliArgs(argv: string[]) {
     .option('--count <n>', 'Number of candles', positiveInt, 10);
   command('health <ticker>', 'Score chart health on daily bars, from 100 (nothing against it) down to 0')
     .option('--benchmark <ticker>', 'Index or sector proxy for the relative strength check', DEFAULT_BENCHMARK)
+    .option('--opportunity', 'Read whether a fall belongs to the market instead of scoring weakness')
     .option('--date <YYYY-MM-DD>', 'Read the card as of this day (UTC) instead of the newest bar', calendarDay)
     .option('--table', 'Print the card for a reader instead of JSON')
     .option('--count <n>', 'Candles to request; the card warms up over the slowest indicator', positiveInt, 120);

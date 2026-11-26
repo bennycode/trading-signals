@@ -57,11 +57,11 @@ export interface HealthRequest {
  * because a halt or a late open leaves one of the two feeds a bar short and scoring a stock against
  * the wrong day of its index would be worse than not scoring it at all.
  */
-export async function scoreChartHealth(
+export async function readChart(
   broker: Pick<CandleFeed, 'getCandles' | 'getRecentCandles'>,
   pair: TradingPair,
   {asOf, benchmark, count}: HealthRequest
-): Promise<HealthReport> {
+): Promise<ChartHealth> {
   const intervalInMillis = ms(TIMEFRAME);
   // The whole of the requested day, so the bar opening within it is the last one on the card.
   const cutoffInMillis = asOf === undefined ? undefined : Date.parse(`${asOf}T23:59:59.999Z`);
@@ -100,15 +100,13 @@ export async function scoreChartHealth(
     card.add(candle, benchmarkByOpenTime.get(candle.openTimeInMillis));
   }
 
-  const report = card.getReport();
-
-  if (!report) {
+  if (!card.getReport()) {
     throw new Error(
       `Scoring ${pair.base}${asOf === undefined ? '' : ` as of ${asOf}`} needs at least ${card.getRequiredBars()} daily candles, but ${candles.length} arrived. Raise --count.`
     );
   }
 
-  return report;
+  return card;
 }
 
 /** Thousands separators and a fixed scale, so a volume and a price line up under each other. */
